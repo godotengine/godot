@@ -225,6 +225,7 @@ private:
 	void _tile_atlas_control_draw();
 	void _tile_atlas_control_mouse_exited();
 	void _tile_atlas_control_gui_input(const Ref<InputEvent> &p_event);
+	void _tile_atlas_view_transform_changed();
 
 	// A control over the alternative tiles.
 	Vector3i hovered_alternative_tile_coords = Vector3i(TileAtlasSource::INVALID_ATLAS_COORDS.x, TileAtlasSource::INVALID_ATLAS_COORDS.y, TileAtlasSource::INVALID_TILE_ALTERNATIVE);

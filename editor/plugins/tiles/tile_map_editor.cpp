@@ -148,6 +148,9 @@ void TileMapEditor::_update_atlas_view() {
 		tile_atlas_view->set_atlas_source(*tile_map->get_tileset(), -1);
 	}
 
+	// Synchronize atlas view.
+	TilesEditor::get_singleton()->synchronize_atlas_view(tile_atlas_view);
+
 	tile_atlas_control->update();
 }
 
@@ -1782,7 +1785,7 @@ TileMapEditor::TileMapEditor() {
 	sources_list->connect("item_selected", callable_mp(this, &TileMapEditor::_update_fix_selected_and_hovered).unbind(1));
 	sources_list->connect("item_selected", callable_mp(this, &TileMapEditor::_update_atlas_view).unbind(1));
 	sources_list->connect("item_selected", callable_mp(TilesEditor::get_singleton(), &TilesEditor::set_atlas_sources_lists_current));
-	sources_list->connect("visibility_changed", callable_mp(TilesEditor::get_singleton(), &TilesEditor::synchronize_atlas_sources_lists), varray(sources_list));
+	sources_list->connect("visibility_changed", callable_mp(TilesEditor::get_singleton(), &TilesEditor::synchronize_atlas_sources_list), varray(sources_list));
 	//sources_list->set_drag_forwarding(this);
 	atlas_sources_split_container->add_child(sources_list);
 
@@ -1791,7 +1794,8 @@ TileMapEditor::TileMapEditor() {
 	tile_atlas_view->set_v_size_flags(SIZE_EXPAND_FILL);
 	tile_atlas_view->set_texture_grid_visible(false);
 	tile_atlas_view->set_tile_shape_grid_visible(false);
-	TilesEditor::get_singleton()->register_atlas_view_for_synchronization(tile_atlas_view);
+	tile_atlas_view->connect("transform_changed", callable_mp(TilesEditor::get_singleton(), &TilesEditor::set_atlas_view_transform));
+	//tile_atlas_view->connect("visibility_changed", callable_mp(TilesEditor::get_singleton(), &TilesEditor::synchronize_atlas_view), varray(tile_atlas_view));
 	atlas_sources_split_container->add_child(tile_atlas_view);
 
 	tile_atlas_control = memnew(Control);

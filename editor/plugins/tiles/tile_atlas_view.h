@@ -50,7 +50,9 @@ private:
 
 	float previous_zoom = 1.0;
 	EditorZoomWidget *zoom_widget;
-	void _update_zoom(float p_zoom, bool p_zoom_on_mouse_pos = false);
+	void _zoom_widget_changed();
+	void _scroll_changed();
+	void _update_zoom(float p_zoom, bool p_zoom_on_mouse_pos = false, Vector2i p_scroll = Vector2i(-1, -1));
 	void _gui_input(const Ref<InputEvent> &p_event);
 
 	Map<Vector2, Map<int, Rect2i>> alternative_tiles_rect_cache;
@@ -108,7 +110,7 @@ public:
 	ScrollContainer *get_scroll_container() { return scroll_container; };
 
 	float get_zoom() const;
-	void set_zoom(float p_zoom);
+	void set_transform(float p_zoom, Vector2i p_scroll);
 
 	void set_padding(Side p_side, int p_padding);
 

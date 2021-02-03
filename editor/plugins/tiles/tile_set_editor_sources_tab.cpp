@@ -492,6 +492,9 @@ void TileSetEditorSourcesTab::_update_atlas_view() {
 	tile_atlas_control->update();
 	alternative_tiles_control->update();
 	tile_atlas_view->update();
+
+	// Synchronize atlas view.
+	TilesEditor::get_singleton()->synchronize_atlas_view(tile_atlas_view);
 }
 
 void TileSetEditorSourcesTab::_update_toolbar() {
@@ -515,6 +518,10 @@ void TileSetEditorSourcesTab::_tile_atlas_control_mouse_exited() {
 	hovered_base_tile_coords = TileAtlasSource::INVALID_ATLAS_COORDS;
 	tile_atlas_control->update();
 	tile_atlas_view->update();
+}
+
+void TileSetEditorSourcesTab::_tile_atlas_view_transform_changed() {
+	tile_atlas_control->update();
 }
 
 void TileSetEditorSourcesTab::_clear_tiles_outside_texture() {
@@ -1619,7 +1626,7 @@ TileSetEditorSourcesTab::TileSetEditorSourcesTab() {
 	sources_list->set_v_size_flags(SIZE_EXPAND_FILL);
 	sources_list->connect("item_selected", callable_mp(this, &TileSetEditorSourcesTab::_source_selected));
 	sources_list->connect("item_selected", callable_mp(TilesEditor::get_singleton(), &TilesEditor::set_atlas_sources_lists_current));
-	sources_list->connect("visibility_changed", callable_mp(TilesEditor::get_singleton(), &TilesEditor::synchronize_atlas_sources_lists), varray(sources_list));
+	sources_list->connect("visibility_changed", callable_mp(TilesEditor::get_singleton(), &TilesEditor::synchronize_atlas_sources_list), varray(sources_list));
 	sources_list->set_drag_forwarding(this);
 	split_container_left_side->add_child(sources_list);
 
@@ -1792,7 +1799,8 @@ TileSetEditorSourcesTab::TileSetEditorSourcesTab() {
 	tile_atlas_view = memnew(TileAtlasView);
 	tile_atlas_view->set_h_size_flags(SIZE_EXPAND_FILL);
 	tile_atlas_view->set_v_size_flags(SIZE_EXPAND_FILL);
-	TilesEditor::get_singleton()->register_atlas_view_for_synchronization(tile_atlas_view);
+	tile_atlas_view->connect("transform_changed", callable_mp(TilesEditor::get_singleton(), &TilesEditor::set_atlas_view_transform));
+	tile_atlas_view->connect("transform_changed", callable_mp(this, &TileSetEditorSourcesTab::_tile_atlas_view_transform_changed).unbind(2));
 	right_panel->add_child(tile_atlas_view);
 
 	base_tile_popup_menu = memnew(PopupMenu);
@@ -1810,7 +1818,6 @@ TileSetEditorSourcesTab::TileSetEditorSourcesTab() {
 	tile_atlas_control->connect("draw", callable_mp(this, &TileSetEditorSourcesTab::_tile_atlas_control_draw));
 	tile_atlas_control->connect("mouse_exited", callable_mp(this, &TileSetEditorSourcesTab::_tile_atlas_control_mouse_exited));
 	tile_atlas_control->connect("gui_input", callable_mp(this, &TileSetEditorSourcesTab::_tile_atlas_control_gui_input));
-	tile_atlas_view->connect("zoom_changed", callable_mp((CanvasItem *)tile_atlas_control, &CanvasItem::update));
 	tile_atlas_view->add_control_over_atlas_tiles(tile_atlas_control);
 
 	alternative_tile_popup_menu = memnew(PopupMenu);

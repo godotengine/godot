@@ -48,7 +48,7 @@ void TileAtlasView::_gui_input(const Ref<InputEvent> &p_event) {
 		if (ctrl && b->is_pressed() && b->get_button_index() == BUTTON_WHEEL_DOWN) {
 			// Zoom out
 			zoom_widget->set_zoom_by_increments(-2);
-			emit_signal("zoom_changed");
+			emit_signal("transform_changed", zoom_widget->get_zoom(), Vector2(scroll_container->get_h_scroll(), scroll_container->get_v_scroll()));
 			_update_zoom(zoom_widget->get_zoom(), true);
 			accept_event();
 		}
@@ -56,7 +56,7 @@ void TileAtlasView::_gui_input(const Ref<InputEvent> &p_event) {
 		if (ctrl && b->is_pressed() && b->get_button_index() == BUTTON_WHEEL_UP) {
 			// Zoom in
 			zoom_widget->set_zoom_by_increments(2);
-			emit_signal("zoom_changed");
+			emit_signal("transform_changed", zoom_widget->get_zoom(), Vector2(scroll_container->get_h_scroll(), scroll_container->get_v_scroll()));
 			_update_zoom(zoom_widget->get_zoom(), true);
 			accept_event();
 		}
@@ -115,7 +115,7 @@ Size2i TileAtlasView::_compute_alternative_tiles_control_size() {
 	return size;
 }
 
-void TileAtlasView::_update_zoom(float p_zoom, bool p_zoom_on_mouse_pos) {
+void TileAtlasView::_update_zoom(float p_zoom, bool p_zoom_on_mouse_pos, Vector2i p_scroll) {
 	if (!tile_set || !tile_set->has_atlas_source(source_id)) {
 		// Reinitialize everything.
 		base_tiles_root_control->set_custom_minimum_size(Vector2());
@@ -162,6 +162,11 @@ void TileAtlasView::_update_zoom(float p_zoom, bool p_zoom_on_mouse_pos) {
 	background_left->update();
 	background_right->update();
 
+	if (p_scroll != Vector2i(-1, -1)) {
+		scroll_container->set_h_scroll(p_scroll.x);
+		scroll_container->set_v_scroll(p_scroll.y);
+	}
+
 	// Zoom on the position.
 	if (previous_zoom != p_zoom) {
 		// TODO: solve this.
@@ -199,8 +204,15 @@ void TileAtlasView::_update_zoom(float p_zoom, bool p_zoom_on_mouse_pos) {
 
 		previous_zoom = p_zoom;
 	}
+}
 
-	emit_signal("zoom_changed");
+void TileAtlasView::_scroll_changed() {
+	emit_signal("transform_changed", zoom_widget->get_zoom(), Vector2(scroll_container->get_h_scroll(), scroll_container->get_v_scroll()));
+}
+
+void TileAtlasView::_zoom_widget_changed() {
+	_update_zoom(zoom_widget->get_zoom());
+	emit_signal("transform_changed", zoom_widget->get_zoom(), Vector2(scroll_container->get_h_scroll(), scroll_container->get_v_scroll()));
 }
 
 void TileAtlasView::_base_tiles_root_control_gui_input(const Ref<InputEvent> &p_event) {
@@ -437,8 +449,9 @@ float TileAtlasView::get_zoom() const {
 	return zoom_widget->get_zoom();
 };
 
-void TileAtlasView::set_zoom(float p_zoom) {
+void TileAtlasView::set_transform(float p_zoom, Vector2i p_scroll) {
 	zoom_widget->set_zoom(p_zoom);
+	_update_zoom(zoom_widget->get_zoom(), false, p_scroll);
 };
 
 void TileAtlasView::set_padding(Side p_side, int p_padding) {
@@ -538,19 +551,21 @@ void TileAtlasView::update() {
 }
 
 void TileAtlasView::_bind_methods() {
-	ADD_SIGNAL(MethodInfo("zoom_changed"));
+	ADD_SIGNAL(MethodInfo("transform_changed", PropertyInfo(Variant::FLOAT, "zoom"), PropertyInfo(Variant::VECTOR2, "scroll")));
 }
 
 TileAtlasView::TileAtlasView() {
 	//Scrolling
 	scroll_container = memnew(ScrollContainer);
+	scroll_container->get_h_scrollbar()->connect("value_changed", callable_mp(this, &TileAtlasView::_scroll_changed).unbind(1));
+	scroll_container->get_v_scrollbar()->connect("value_changed", callable_mp(this, &TileAtlasView::_scroll_changed).unbind(1));
 	add_child(scroll_container);
 	scroll_container->set_anchors_and_offsets_preset(Control::PRESET_WIDE);
 
 	zoom_widget = memnew(EditorZoomWidget);
 	add_child(zoom_widget);
 	zoom_widget->set_anchors_and_offsets_preset(Control::PRESET_TOP_LEFT, Control::PRESET_MODE_MINSIZE, 2 * EDSCALE);
-	zoom_widget->connect("zoom_changed", callable_mp(this, &TileAtlasView::_update_zoom), varray(false));
+	zoom_widget->connect("zoom_changed", callable_mp(this, &TileAtlasView::_zoom_widget_changed).unbind(1));
 
 	CenterContainer *center_container = memnew(CenterContainer);
 	center_container->set_h_size_flags(SIZE_EXPAND_FILL);

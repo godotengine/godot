@@ -107,7 +107,7 @@ void TilesEditor::set_atlas_sources_lists_current(int p_current) {
 	atlas_sources_lists_current = p_current;
 }
 
-void TilesEditor::synchronize_atlas_sources_lists(Object *p_current) {
+void TilesEditor::synchronize_atlas_sources_list(Object *p_current) {
 	ItemList *item_list = Object::cast_to<ItemList>(p_current);
 	ERR_FAIL_COND(!item_list);
 
@@ -121,30 +121,18 @@ void TilesEditor::synchronize_atlas_sources_lists(Object *p_current) {
 	}
 }
 
-void TilesEditor::_synchronize_atlas_views(Variant p_unused, Object *p_emitter) {
-	TileAtlasView *atlas_view = Object::cast_to<TileAtlasView>(p_emitter);
-	ERR_FAIL_COND(!atlas_view);
-
-	float zoom = atlas_view->get_zoom();
-	Vector2i scroll = Vector2i(atlas_view->get_scroll_container()->get_h_scroll(), atlas_view->get_scroll_container()->get_v_scroll());
-
-	for (Set<TileAtlasView *>::Element *E = atlases_views.front(); E; E = E->next()) {
-		// We synchronize only if the scrollable areas are the same.
-		E->get()->set_zoom(zoom);
-		if (E->get()->get_scroll_container()->get_h_scroll() != scroll.x) {
-			E->get()->get_scroll_container()->set_h_scroll(scroll.x);
-		}
-		if (E->get()->get_scroll_container()->get_v_scroll() != scroll.y) {
-			E->get()->get_scroll_container()->set_v_scroll(scroll.y);
-		}
-	}
+void TilesEditor::set_atlas_view_transform(float p_zoom, Vector2 p_scroll) {
+	atlas_view_zoom = p_zoom;
+	atlas_view_scroll = p_scroll;
 }
 
-void TilesEditor::register_atlas_view_for_synchronization(TileAtlasView *p_atlas_view) {
-	atlases_views.insert(p_atlas_view);
-	p_atlas_view->connect("zoom_changed", callable_mp(this, &TilesEditor::_synchronize_atlas_views), varray(0, Variant(p_atlas_view)));
-	p_atlas_view->get_scroll_container()->get_h_scrollbar()->connect("value_changed", callable_mp(this, &TilesEditor::_synchronize_atlas_views), varray(p_atlas_view));
-	p_atlas_view->get_scroll_container()->get_v_scrollbar()->connect("value_changed", callable_mp(this, &TilesEditor::_synchronize_atlas_views), varray(p_atlas_view));
+void TilesEditor::synchronize_atlas_view(Object *p_current) {
+	TileAtlasView *tile_atlas_view = Object::cast_to<TileAtlasView>(p_current);
+	ERR_FAIL_COND(!tile_atlas_view);
+
+	if (tile_atlas_view->is_visible_in_tree()) {
+		tile_atlas_view->set_transform(atlas_view_zoom, Vector2(atlas_view_scroll.x, atlas_view_scroll.y));
+	}
 }
 
 void TilesEditor::clear() {

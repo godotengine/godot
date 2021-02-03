@@ -59,8 +59,8 @@ private:
 
 	// For synchronization.
 	int atlas_sources_lists_current = 0;
-	Set<TileAtlasView *> atlases_views;
-	void _synchronize_atlas_views(Variant p_unused, Object *p_emitter); // TODO: remove the unused argument when connecting supports unbinding arguments with connect(...).
+	float atlas_view_zoom = 1.0;
+	Vector2 atlas_view_scroll = Vector2();
 
 	void _tile_map_changed();
 
@@ -76,9 +76,10 @@ public:
 
 	// To synchronize the atlas sources lists.
 	void set_atlas_sources_lists_current(int p_current);
-	void synchronize_atlas_sources_lists(Object *p_current);
+	void synchronize_atlas_sources_list(Object *p_current);
 
-	void register_atlas_view_for_synchronization(TileAtlasView *p_atlas_view);
+	void set_atlas_view_transform(float p_zoom, Vector2 p_scroll);
+	void synchronize_atlas_view(Object *p_current);
 
 	void clear();
 	void edit(Object *p_object);
