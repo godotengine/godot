@@ -265,7 +265,6 @@ private:
 	Point2 drop_pos;
 
 	EditorNode *editor;
-	EditorData *editor_data;
 	EditorSelection *editor_selection;
 	UndoRedo *undo_redo;
 

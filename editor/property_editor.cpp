@@ -266,9 +266,9 @@ void CustomPropertyEditor::_menu_option(int p_which) {
 
 					if (!obj) {
 						if (ScriptServer::is_global_class(intype)) {
-							obj = EditorNode::get_editor_data().script_class_instance(intype);
+							obj = EditorNode::get_editor_custom_types()->script_class_instance(intype);
 						} else {
-							obj = EditorNode::get_editor_data().instance_custom_type(intype, "Resource");
+							obj = EditorNode::get_editor_custom_types()->instance_custom_type(intype, "Resource");
 						}
 					}
 
@@ -853,10 +853,10 @@ bool CustomPropertyEditor::edit(Object *p_owner, const String &p_name, Variant::
 			} else if (hint_text != "") {
 				int idx = 0;
 
-				Vector<EditorData::CustomType> custom_resources;
+				Vector<EditorCustomTypes::CustomType> custom_resources;
 
-				if (EditorNode::get_editor_data().get_custom_types().has("Resource")) {
-					custom_resources = EditorNode::get_editor_data().get_custom_types()["Resource"];
+				if (EditorNode::get_editor_custom_types()->get_custom_types().has("Resource")) {
+					custom_resources = EditorNode::get_editor_custom_types()->get_custom_types()["Resource"];
 				}
 
 				for (int i = 0; i < hint_text.get_slice_count(","); i++) {
@@ -1068,9 +1068,9 @@ void CustomPropertyEditor::_type_create_selected(int p_idx) {
 
 		if (!obj) {
 			if (ScriptServer::is_global_class(intype)) {
-				obj = EditorNode::get_editor_data().script_class_instance(intype);
+				obj = EditorNode::get_editor_custom_types()->script_class_instance(intype);
 			} else {
-				obj = EditorNode::get_editor_data().instance_custom_type(intype, "Resource");
+				obj = EditorNode::get_editor_custom_types()->instance_custom_type(intype, "Resource");
 			}
 		}
 
@@ -1253,9 +1253,9 @@ void CustomPropertyEditor::_action_pressed(int p_which) {
 
 					if (!obj) {
 						if (ScriptServer::is_global_class(intype)) {
-							obj = EditorNode::get_editor_data().script_class_instance(intype);
+							obj = EditorNode::get_editor_custom_types()->script_class_instance(intype);
 						} else {
-							obj = EditorNode::get_editor_data().instance_custom_type(intype, "Resource");
+							obj = EditorNode::get_editor_custom_types()->instance_custom_type(intype, "Resource");
 						}
 					}
 

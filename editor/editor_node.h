@@ -393,14 +393,18 @@ private:
 	uint64_t update_spinner_step_frame;
 	int update_spinner_step;
 
-	Vector<EditorPlugin *> editor_plugins;
 	EditorPlugin *editor_plugin_screen;
 	EditorPluginList *editor_plugins_over;
 	EditorPluginList *editor_plugins_force_over;
 	EditorPluginList *editor_plugins_force_input_forwarding;
 
+	EditorUndoRedo editor_undo_redo;
+	EditorClipboard editor_clipboard;
+	EditorCustomTypes editor_custom_types;
+	EditorScenes editor_scenes;
+	EditorPlugins editor_plugins;
+
 	EditorHistory editor_history;
-	EditorData editor_data;
 	EditorRun editor_run;
 	EditorSelection *editor_selection;
 	ProjectExportDialog *project_export;
@@ -734,7 +738,7 @@ public:
 
 	void set_edited_scene(Node *p_scene);
 
-	Node *get_edited_scene() { return editor_data.get_edited_scene_root(); }
+	Node *get_edited_scene() { return editor_scenes.get_edited_scene_root(); }
 
 	SubViewport *get_scene_root() { return scene_root; } //root of the scene being edited
 
@@ -749,9 +753,14 @@ public:
 	void set_current_version(uint64_t p_version);
 	void set_current_scene(int p_idx);
 
-	static EditorData &get_editor_data() { return singleton->editor_data; }
-	static EditorFolding &get_editor_folding() { return singleton->editor_folding; }
-	EditorHistory *get_editor_history() { return &editor_history; }
+	static UndoRedo *get_undo_redo() { return &singleton->editor_undo_redo.get(); }
+	static EditorClipboard *get_editor_clipboard() { return &singleton->editor_clipboard; }
+	static EditorCustomTypes *get_editor_custom_types() { return &singleton->editor_custom_types; }
+	static EditorScenes *get_editor_scenes_manager() { return &singleton->editor_scenes; }
+	static EditorPlugins *get_editor_plugins() { return &singleton->editor_plugins; }
+
+	static EditorFolding *get_editor_folding() { return &singleton->editor_folding; }
+	static EditorHistory *get_editor_history() { return &singleton->editor_history; }
 
 	static VSplitContainer *get_top_split() { return singleton->top_split; }
 
@@ -761,7 +770,6 @@ public:
 	ImportDock *get_import_dock();
 	SceneTreeDock *get_scene_tree_dock();
 	InspectorDock *get_inspector_dock();
-	static UndoRedo *get_undo_redo() { return &singleton->editor_data.get_undo_redo(); }
 
 	EditorSelection *get_editor_selection() { return editor_selection; }
 

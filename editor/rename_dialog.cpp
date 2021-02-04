@@ -433,8 +433,8 @@ String RenameDialog::_substitute(const String &subject, const Node *node, int co
 		result = result.replace("${TYPE}", node->get_class());
 	}
 
-	int current = EditorNode::get_singleton()->get_editor_data().get_edited_scene();
-	result = result.replace("${SCENE}", EditorNode::get_singleton()->get_editor_data().get_scene_title(current));
+	int current = EditorNode::get_editor_scenes_manager()->get_edited_scene();
+	result = result.replace("${SCENE}", EditorNode::get_editor_scenes_manager()->get_scene_title(current));
 
 	Node *root_node = SceneTree::get_singleton()->get_edited_scene_root();
 	if (root_node) {

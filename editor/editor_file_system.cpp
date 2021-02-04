@@ -1404,8 +1404,8 @@ void EditorFileSystem::_scan_script_classes(EditorFileSystemDirectory *p_dir) {
 			}
 		}
 		ScriptServer::add_global_class(files[i]->script_class_name, files[i]->script_class_extends, lang, p_dir->get_file_path(i));
-		EditorNode::get_editor_data().script_class_set_icon_path(files[i]->script_class_name, files[i]->script_class_icon_path);
-		EditorNode::get_editor_data().script_class_set_name(files[i]->file, files[i]->script_class_name);
+		EditorNode::get_editor_custom_types()->script_class_set_icon_path(files[i]->script_class_name, files[i]->script_class_icon_path);
+		EditorNode::get_editor_custom_types()->script_class_set_name(files[i]->file, files[i]->script_class_name);
 	}
 	for (int i = 0; i < p_dir->get_subdir_count(); i++) {
 		_scan_script_classes(p_dir->get_subdir(i));
@@ -1424,7 +1424,7 @@ void EditorFileSystem::update_script_classes() {
 	}
 
 	ScriptServer::save_global_classes();
-	EditorNode::get_editor_data().script_class_save_icon_paths();
+	EditorNode::get_editor_custom_types()->script_class_save_icon_paths();
 
 	// Rescan custom loaders and savers.
 	// Doing the following here because the `filesystem_changed` signal fires multiple times and isn't always followed by script classes update.

@@ -304,13 +304,12 @@ void ProjectSettingsEditor::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("queue_save"), &ProjectSettingsEditor::queue_save);
 }
 
-ProjectSettingsEditor::ProjectSettingsEditor(EditorData *p_data) {
+ProjectSettingsEditor::ProjectSettingsEditor() {
 	singleton = this;
 	set_title(TTR("Project Settings (project.godot)"));
 
 	ps = ProjectSettings::get_singleton();
-	undo_redo = &p_data->get_undo_redo();
-	data = p_data;
+	undo_redo = EditorNode::get_undo_redo();
 
 	tab_container = memnew(TabContainer);
 	tab_container->set_tab_align(TabContainer::ALIGN_LEFT);
@@ -413,7 +412,7 @@ ProjectSettingsEditor::ProjectSettingsEditor(EditorData *p_data) {
 	}
 
 	inspector = memnew(SectionedInspector);
-	inspector->get_inspector()->set_undo_redo(EditorNode::get_singleton()->get_undo_redo());
+	inspector->get_inspector()->set_undo_redo(EditorNode::get_undo_redo());
 	inspector->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 	inspector->register_search_box(search_box);
 	inspector->get_inspector()->connect("property_selected", callable_mp(this, &ProjectSettingsEditor::_setting_selected));

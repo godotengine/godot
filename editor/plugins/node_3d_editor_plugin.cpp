@@ -2368,7 +2368,7 @@ void Node3DEditorViewport::_notification(int p_what) {
 
 		_update_freelook(delta);
 
-		Node *scene_root = editor->get_scene_tree_dock()->get_editor_data()->get_edited_scene_root();
+		Node *scene_root = editor->get_editor_scenes_manager()->get_edited_scene_root();
 		if (previewing_cinema && scene_root != nullptr) {
 			Camera3D *cam = scene_root->get_viewport()->get_camera();
 			if (cam != nullptr && cam != previewing) {
@@ -3765,15 +3765,15 @@ bool Node3DEditorViewport::_create_instance(Node *parent, String &path, const Po
 		instanced_scene->set_filename(ProjectSettings::get_singleton()->localize_path(path));
 	}
 
-	editor_data->get_undo_redo().add_do_method(parent, "add_child", instanced_scene);
-	editor_data->get_undo_redo().add_do_method(instanced_scene, "set_owner", editor->get_edited_scene());
-	editor_data->get_undo_redo().add_do_reference(instanced_scene);
-	editor_data->get_undo_redo().add_undo_method(parent, "remove_child", instanced_scene);
+	editor->get_undo_redo()->add_do_method(parent, "add_child", instanced_scene);
+	editor->get_undo_redo()->add_do_method(instanced_scene, "set_owner", editor->get_edited_scene());
+	editor->get_undo_redo()->add_do_reference(instanced_scene);
+	editor->get_undo_redo()->add_undo_method(parent, "remove_child", instanced_scene);
 
 	String new_name = parent->validate_child_name(instanced_scene);
 	EditorDebuggerNode *ed = EditorDebuggerNode::get_singleton();
-	editor_data->get_undo_redo().add_do_method(ed, "live_debug_instance_node", editor->get_edited_scene()->get_path_to(parent), path, new_name);
-	editor_data->get_undo_redo().add_undo_method(ed, "live_debug_remove_node", NodePath(String(editor->get_edited_scene()->get_path_to(parent)) + "/" + new_name));
+	editor->get_undo_redo()->add_do_method(ed, "live_debug_instance_node", editor->get_edited_scene()->get_path_to(parent), path, new_name);
+	editor->get_undo_redo()->add_undo_method(ed, "live_debug_remove_node", NodePath(String(editor->get_edited_scene()->get_path_to(parent)) + "/" + new_name));
 
 	Node3D *node3d = Object::cast_to<Node3D>(instanced_scene);
 	if (node3d) {
@@ -3786,7 +3786,7 @@ bool Node3DEditorViewport::_create_instance(Node *parent, String &path, const Po
 		global_transform.origin = spatial_editor->snap_point(_get_instance_position(p_point));
 		global_transform.basis *= node3d->get_transform().basis;
 
-		editor_data->get_undo_redo().add_do_method(instanced_scene, "set_global_transform", global_transform);
+		editor->get_undo_redo()->add_do_method(instanced_scene, "set_global_transform", global_transform);
 	}
 
 	return true;
@@ -3797,7 +3797,7 @@ void Node3DEditorViewport::_perform_drop_data() {
 
 	Vector<String> error_files;
 
-	editor_data->get_undo_redo().create_action(TTR("Create Node"));
+	editor->get_undo_redo()->create_action(TTR("Create Node"));
 
 	for (int i = 0; i < selected_files.size(); i++) {
 		String path = selected_files[i];
@@ -3815,7 +3815,7 @@ void Node3DEditorViewport::_perform_drop_data() {
 		}
 	}
 
-	editor_data->get_undo_redo().commit_action();
+	editor->get_undo_redo()->commit_action();
 
 	if (error_files.size() > 0) {
 		String files_str;
@@ -3937,7 +3937,6 @@ Node3DEditorViewport::Node3DEditorViewport(Node3DEditor *p_spatial_editor, Edito
 
 	index = p_index;
 	editor = p_editor;
-	editor_data = editor->get_scene_tree_dock()->get_editor_data();
 	editor_selection = editor->get_editor_selection();
 	undo_redo = editor->get_undo_redo();
 

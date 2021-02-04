@@ -2571,7 +2571,7 @@ void EditorPropertyResource::_menu_option(int p_which) {
 			}
 
 			if (!obj) {
-				obj = EditorNode::get_editor_data().instance_custom_type(intype, "Resource");
+				obj = EditorNode::get_editor_custom_types()->instance_custom_type(intype, "Resource");
 			}
 
 			Resource *resp = Object::cast_to<Resource>(obj);
@@ -2629,10 +2629,10 @@ void EditorPropertyResource::_update_menu_items() {
 	} else if (base_type != "") {
 		int idx = 0;
 
-		Vector<EditorData::CustomType> custom_resources;
+		Vector<EditorCustomTypes::CustomType> custom_resources;
 
-		if (EditorNode::get_editor_data().get_custom_types().has("Resource")) {
-			custom_resources = EditorNode::get_editor_data().get_custom_types()["Resource"];
+		if (EditorNode::get_editor_custom_types()->get_custom_types().has("Resource")) {
+			custom_resources = EditorNode::get_editor_custom_types()->get_custom_types()["Resource"];
 		}
 
 		for (int i = 0; i < base_type.get_slice_count(","); i++) {
@@ -2657,7 +2657,7 @@ void EditorPropertyResource::_update_menu_items() {
 			ScriptServer::get_global_class_list(&global_classes);
 			E = global_classes.front();
 			while (E) {
-				if (EditorNode::get_editor_data().script_class_is_parent(E->get(), base_type)) {
+				if (EditorNode::get_editor_custom_types()->script_class_is_parent(E->get(), base_type)) {
 					valid_inheritors.insert(E->get());
 				}
 				E = E->next();
@@ -2817,8 +2817,8 @@ void EditorPropertyResource::_fold_other_editors(Object *p_self) {
 		return;
 	}
 	bool use_editor = false;
-	for (int i = 0; i < EditorNode::get_editor_data().get_editor_plugin_count(); i++) {
-		EditorPlugin *ep = EditorNode::get_editor_data().get_editor_plugin(i);
+	for (int i = 0; i < EditorNode::get_editor_plugins()->get_editor_plugin_count(); i++) {
+		EditorPlugin *ep = EditorNode::get_editor_plugins()->get_editor_plugin(i);
 		if (ep->handles(res.ptr())) {
 			use_editor = true;
 		}
@@ -2872,8 +2872,8 @@ void EditorPropertyResource::update_property() {
 				assign->set_pressed(true);
 
 				bool use_editor = false;
-				for (int i = 0; i < EditorNode::get_editor_data().get_editor_plugin_count(); i++) {
-					EditorPlugin *ep = EditorNode::get_editor_data().get_editor_plugin(i);
+				for (int i = 0; i < EditorNode::get_editor_plugins()->get_editor_plugin_count(); i++) {
+					EditorPlugin *ep = EditorNode::get_editor_plugins()->get_editor_plugin(i);
 					if (ep->handles(res.ptr())) {
 						use_editor = true;
 					}

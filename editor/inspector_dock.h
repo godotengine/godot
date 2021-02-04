@@ -67,7 +67,6 @@ class InspectorDock : public VBoxContainer {
 	};
 
 	EditorNode *editor;
-	EditorData *editor_data;
 
 	EditorInspector *inspector;
 
@@ -129,7 +128,7 @@ public:
 	Container *get_addon_area();
 	EditorInspector *get_inspector() { return inspector; }
 
-	InspectorDock(EditorNode *p_editor, EditorData &p_editor_data);
+	InspectorDock(EditorNode *p_editor);
 	~InspectorDock();
 };
 

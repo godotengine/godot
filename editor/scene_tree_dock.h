@@ -123,7 +123,6 @@ class SceneTreeDock : public VBoxContainer {
 	void _tool_selected(int p_tool, bool p_confirm_override = false);
 	void _node_collapsed(Object *p_obj);
 
-	EditorData *editor_data;
 	EditorSelection *editor_selection;
 
 	ScriptCreateDialog *script_create_dialog;
@@ -251,7 +250,6 @@ public:
 	void fill_path_renames(Node *p_node, Node *p_new_parent, List<Pair<NodePath, NodePath>> *p_renames);
 	void perform_node_renames(Node *p_base, List<Pair<NodePath, NodePath>> *p_renames, Map<Ref<Animation>, Set<int>> *r_rem_anims = nullptr);
 	SceneTreeEditor *get_tree_editor() { return scene_tree; }
-	EditorData *get_editor_data() { return editor_data; }
 
 	void add_remote_tree_editor(Control *p_remote);
 	void show_remote_tree();
@@ -266,7 +264,7 @@ public:
 
 	ScriptCreateDialog *get_script_create_dialog() { return script_create_dialog; }
 
-	SceneTreeDock(EditorNode *p_editor, Node *p_scene_root, EditorSelection *p_editor_selection, EditorData &p_editor_data);
+	SceneTreeDock(EditorNode *p_editor, Node *p_scene_root, EditorSelection *p_editor_selection);
 };
 
 #endif // SCENE_TREE_DOCK_H

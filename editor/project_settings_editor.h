@@ -84,7 +84,6 @@ class ProjectSettingsEditor : public AcceptDialog {
 	PanelContainer *restart_container;
 	Button *restart_close_button;
 
-	EditorData *data;
 	UndoRedo *undo_redo;
 
 	void _advanced_pressed();
@@ -103,7 +102,6 @@ class ProjectSettingsEditor : public AcceptDialog {
 	void _editor_restart_close();
 
 	void _add_feature_overrides();
-	ProjectSettingsEditor();
 
 protected:
 	void _notification(int p_what);
@@ -120,7 +118,7 @@ public:
 
 	void queue_save();
 
-	ProjectSettingsEditor(EditorData *p_data);
+	ProjectSettingsEditor();
 };
 
 #endif // PROJECT_SETTINGS_EDITOR_H

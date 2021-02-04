@@ -1179,20 +1179,20 @@ void ScriptEditorDebugger::_live_edit_set() {
 
 	NodePath np = path;
 
-	editor->get_editor_data().set_edited_scene_live_edit_root(np);
+	editor->get_editor_scenes_manager()->set_edited_scene_live_edit_root(np);
 
 	update_live_edit_root();
 }
 
 void ScriptEditorDebugger::_live_edit_clear() {
 	NodePath np = NodePath("/root");
-	editor->get_editor_data().set_edited_scene_live_edit_root(np);
+	editor->get_editor_scenes_manager()->set_edited_scene_live_edit_root(np);
 
 	update_live_edit_root();
 }
 
 void ScriptEditorDebugger::update_live_edit_root() {
-	NodePath np = editor->get_editor_data().get_edited_scene_live_edit_root();
+	NodePath np = editor->get_editor_scenes_manager()->get_edited_scene_live_edit_root();
 
 	Array msg;
 	msg.push_back(np);

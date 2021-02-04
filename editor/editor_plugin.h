@@ -120,7 +120,7 @@ public:
 
 class EditorPlugin : public Node {
 	GDCLASS(EditorPlugin, Node);
-	friend class EditorData;
+	friend class EditorPlugins;
 	UndoRedo *undo_redo = nullptr;
 
 	UndoRedo *_get_undo_redo() { return undo_redo; }

@@ -54,7 +54,7 @@ class EditorHistory {
 		Vector<Obj> path;
 		int level = 0;
 	};
-	friend class EditorData;
+	friend class EditorScenes;
 
 	Vector<History> history;
 	int current;
@@ -100,14 +100,68 @@ public:
 
 class EditorSelection;
 
-class EditorData {
-public:
-	struct CustomType {
-		String name;
-		Ref<Script> script;
-		Ref<Texture2D> icon;
-	};
+/**
+ * Stores the undo redo state of the entire editor.
+ * Kept separate from EditorNode to minimise state in that class.
+*/
+class EditorUndoRedo {
+private:
+	UndoRedo undo_redo;
 
+public:
+	UndoRedo &get() { return undo_redo; }
+
+	EditorUndoRedo(){};
+	EditorUndoRedo(const EditorUndoRedo &) = delete;
+};
+
+/**
+ * Stores all Editor Plugins.
+*/
+class EditorPlugins {
+private:
+	Vector<EditorPlugin *> editor_plugins;
+
+public:
+	Dictionary get_editor_states() const;
+	void set_editor_states(const Dictionary &p_states);
+
+	EditorPlugin *get_editor(Object *p_object);
+	Vector<EditorPlugin *> get_subeditors(Object *p_object);
+	EditorPlugin *get_editor(String p_name);
+
+	void get_editor_breakpoints(List<String> *p_breakpoints);
+	void clear_editor_states();
+	void save_editor_external_data();
+	void apply_changes_in_editors();
+
+	void add_editor_plugin(EditorPlugin *p_plugin);
+	void remove_editor_plugin(EditorPlugin *p_plugin);
+
+	void save_editor_global_states();
+	void restore_editor_global_states();
+
+	int get_editor_plugin_count() const;
+	EditorPlugin *get_editor_plugin(int p_idx);
+
+	void notify_scene_closed(const String &p_filepath);
+	void notify_scene_changed(const Node *p_scene_root);
+	void notify_resource_saved(const Ref<Resource> &p_resource);
+
+	bool call_build();
+
+	void set_plugin_window_layout(Ref<ConfigFile> p_layout);
+	void get_plugin_window_layout(Ref<ConfigFile> p_layout);
+
+	EditorPlugins(){};
+	EditorPlugins(const EditorPlugins &) = delete;
+};
+
+/**
+ * Stores the open (edited) scenes in the editor.
+*/
+class EditorScenes {
+public:
 	struct EditedScene {
 		Node *root = nullptr;
 		String path;
@@ -121,58 +175,14 @@ public:
 	};
 
 private:
-	Vector<EditorPlugin *> editor_plugins;
-
-	struct PropertyData {
-		String name;
-		Variant value;
-	};
-	Map<String, Vector<CustomType>> custom_types;
-
-	List<PropertyData> clipboard;
-	UndoRedo undo_redo;
-
-	void _cleanup_history();
-
-	Vector<EditedScene> edited_scene;
-	int current_edited_scene;
+	Vector<EditedScene> edited_scenes;
+	int current_edited_scene = -1;
 
 	bool _find_updated_instances(Node *p_root, Node *p_node, Set<String> &checked_paths);
 
-	HashMap<StringName, String> _script_class_icon_paths;
-	HashMap<String, StringName> _script_class_file_to_path;
-
 public:
-	EditorPlugin *get_editor(Object *p_object);
-	Vector<EditorPlugin *> get_subeditors(Object *p_object);
-	EditorPlugin *get_editor(String p_name);
-
-	void copy_object_params(Object *p_object);
-	void paste_object_params(Object *p_object);
-
-	Dictionary get_editor_states() const;
+	Vector<EditedScene> get_edited_scenes() const;
 	Dictionary get_scene_editor_states(int p_idx) const;
-	void set_editor_states(const Dictionary &p_states);
-	void get_editor_breakpoints(List<String> *p_breakpoints);
-	void clear_editor_states();
-	void save_editor_external_data();
-	void apply_changes_in_editors();
-
-	void add_editor_plugin(EditorPlugin *p_plugin);
-	void remove_editor_plugin(EditorPlugin *p_plugin);
-
-	int get_editor_plugin_count() const;
-	EditorPlugin *get_editor_plugin(int p_idx);
-
-	UndoRedo &get_undo_redo();
-
-	void save_editor_global_states();
-	void restore_editor_global_states();
-
-	void add_custom_type(const String &p_type, const String &p_inherits, const Ref<Script> &p_script, const Ref<Texture2D> &p_icon);
-	Variant instance_custom_type(const String &p_type, const String &p_inherits);
-	void remove_custom_type(const String &p_type);
-	const Map<String, Vector<CustomType>> &get_custom_types() const { return custom_types; }
 
 	int add_edited_scene(int p_at_pos);
 	void move_edited_scene_index(int p_idx, int p_to_idx);
@@ -182,7 +192,6 @@ public:
 	int get_edited_scene() const;
 	Node *get_edited_scene_root(int p_idx = -1);
 	int get_edited_scene_count() const;
-	Vector<EditedScene> get_edited_scenes() const;
 	String get_scene_title(int p_idx) const;
 	String get_scene_path(int p_idx) const;
 	String get_scene_type(int p_idx) const;
@@ -195,15 +204,35 @@ public:
 	NodePath get_edited_scene_live_edit_root();
 	bool check_and_update_scene(int p_idx);
 	void move_edited_scene_to_index(int p_idx);
-	bool call_build();
-
-	void set_plugin_window_layout(Ref<ConfigFile> p_layout);
-	void get_plugin_window_layout(Ref<ConfigFile> p_layout);
 
 	void save_edited_scene_state(EditorSelection *p_selection, EditorHistory *p_history, const Dictionary &p_custom);
 	Dictionary restore_edited_scene_state(EditorSelection *p_selection, EditorHistory *p_history);
-	void notify_edited_scene_changed();
-	void notify_resource_saved(const Ref<Resource> &p_resource);
+
+	EditorScenes(){};
+	EditorScenes(const EditorScenes &) = delete;
+};
+/**
+ * Stores Custom Types for the editor.
+*/
+class EditorCustomTypes {
+public:
+	struct CustomType {
+		String name;
+		Ref<Script> script;
+		Ref<Texture2D> icon;
+	};
+
+private:
+	Map<String, Vector<CustomType>> custom_types;
+
+	HashMap<StringName, String> _script_class_icon_paths;
+	HashMap<String, StringName> _script_class_file_to_path;
+
+public:
+	const Map<String, Vector<CustomType>> &get_custom_types() const { return custom_types; }
+	void add_custom_type(const String &p_type, const String &p_inherits, const Ref<Script> &p_script, const Ref<Texture2D> &p_icon);
+	Variant instance_custom_type(const String &p_type, const String &p_inherits);
+	void remove_custom_type(const String &p_type);
 
 	bool script_class_is_parent(const String &p_class, const String &p_inherits);
 	StringName script_class_get_base(const String &p_class) const;
@@ -220,7 +249,24 @@ public:
 	void script_class_save_icon_paths();
 	void script_class_load_icon_paths();
 
-	EditorData();
+	EditorCustomTypes() { script_class_load_icon_paths(); };
+	EditorCustomTypes(const EditorCustomTypes &) = delete;
+};
+
+class EditorClipboard {
+	struct PropertyData {
+		String name;
+		Variant value;
+	};
+
+	List<PropertyData> clipboard;
+
+public:
+	void copy_object_params(Object *p_object);
+	void paste_object_params(Object *p_object);
+
+	EditorClipboard(){};
+	EditorClipboard(const EditorClipboard &) = delete;
 };
 
 class EditorSelection : public Object {

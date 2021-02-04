@@ -67,21 +67,21 @@ void InspectorDock::_menu_option(int p_option) {
 		} break;
 
 		case OBJECT_COPY_PARAMS: {
-			editor_data->apply_changes_in_editors();
+			editor->get_editor_plugins()->apply_changes_in_editors();
 			if (current) {
-				editor_data->copy_object_params(current);
+				editor->get_editor_clipboard()->copy_object_params(current);
 			}
 		} break;
 
 		case OBJECT_PASTE_PARAMS: {
-			editor_data->apply_changes_in_editors();
+			editor->get_editor_plugins()->apply_changes_in_editors();
 			if (current) {
-				editor_data->paste_object_params(current);
+				editor->get_editor_clipboard()->paste_object_params(current);
 			}
 		} break;
 
 		case OBJECT_UNIQUE_RESOURCES: {
-			editor_data->apply_changes_in_editors();
+			editor->get_editor_plugins()->apply_changes_in_editors();
 			if (current) {
 				List<PropertyInfo> props;
 				current->get_property_list(&props);
@@ -110,7 +110,7 @@ void InspectorDock::_menu_option(int p_option) {
 				}
 			}
 
-			editor_data->get_undo_redo().clear_history();
+			editor->get_undo_redo()->clear_history();
 
 			editor->get_editor_plugins_over()->edit(nullptr);
 			editor->get_editor_plugins_over()->edit(current);
@@ -387,7 +387,7 @@ void InspectorDock::clear() {
 }
 
 void InspectorDock::update(Object *p_object) {
-	EditorHistory *editor_history = EditorNode::get_singleton()->get_editor_history();
+	EditorHistory *editor_history = editor->get_editor_history();
 	backward_button->set_disabled(editor_history->is_at_beginning());
 	forward_button->set_disabled(editor_history->is_at_end());
 
@@ -477,7 +477,7 @@ void InspectorDock::update_keying() {
 	bool valid = false;
 
 	if (AnimationPlayerEditor::singleton->get_track_editor()->has_keying()) {
-		EditorHistory *editor_history = EditorNode::get_singleton()->get_editor_history();
+		EditorHistory *editor_history = editor->get_editor_history();
 		if (editor_history->get_path_size() >= 1) {
 			Object *obj = ObjectDB::get_instance(editor_history->get_path_object(0));
 			if (Object::cast_to<Node>(obj)) {
@@ -489,12 +489,11 @@ void InspectorDock::update_keying() {
 	inspector->set_keying(valid);
 }
 
-InspectorDock::InspectorDock(EditorNode *p_editor, EditorData &p_editor_data) {
+InspectorDock::InspectorDock(EditorNode *p_editor) {
 	set_name("Inspector");
 	set_theme(p_editor->get_gui_base()->get_theme());
 
 	editor = p_editor;
-	editor_data = &p_editor_data;
 
 	HBoxContainer *general_options_hb = memnew(HBoxContainer);
 	add_child(general_options_hb);
@@ -613,7 +612,7 @@ InspectorDock::InspectorDock(EditorNode *p_editor, EditorData &p_editor_data) {
 	inspector->set_enable_capitalize_paths(bool(EDITOR_GET("interface/inspector/capitalize_properties")));
 	inspector->set_use_folding(!bool(EDITOR_GET("interface/inspector/disable_folding")));
 	inspector->register_text_enter(search);
-	inspector->set_undo_redo(&editor_data->get_undo_redo());
+	inspector->set_undo_redo(editor->get_undo_redo());
 
 	inspector->set_use_filter(true); // TODO: check me
 

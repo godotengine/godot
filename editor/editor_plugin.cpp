@@ -206,7 +206,7 @@ Node *EditorInterface::get_edited_scene_root() {
 
 Array EditorInterface::get_open_scenes() const {
 	Array ret;
-	Vector<EditorData::EditedScene> scenes = EditorNode::get_editor_data().get_edited_scenes();
+	Vector<EditorScenes::EditedScene> scenes = EditorNode::get_editor_scenes_manager()->get_edited_scenes();
 
 	int scns_amount = scenes.size();
 	for (int idx_scn = 0; idx_scn < scns_amount; idx_scn++) {
@@ -347,11 +347,11 @@ EditorInterface::EditorInterface() {
 
 ///////////////////////////////////////////
 void EditorPlugin::add_custom_type(const String &p_type, const String &p_base, const Ref<Script> &p_script, const Ref<Texture2D> &p_icon) {
-	EditorNode::get_editor_data().add_custom_type(p_type, p_base, p_script, p_icon);
+	EditorNode::get_editor_custom_types()->add_custom_type(p_type, p_base, p_script, p_icon);
 }
 
 void EditorPlugin::remove_custom_type(const String &p_type) {
-	EditorNode::get_editor_data().remove_custom_type(p_type);
+	EditorNode::get_editor_custom_types()->remove_custom_type(p_type);
 }
 
 void EditorPlugin::add_autoload_singleton(const String &p_name, const String &p_path) {

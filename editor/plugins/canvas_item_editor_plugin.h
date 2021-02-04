@@ -673,7 +673,6 @@ class CanvasItemEditorViewport : public Control {
 	Point2 drop_pos;
 
 	EditorNode *editor;
-	EditorData *editor_data;
 	CanvasItemEditor *canvas_item_editor;
 	Node2D *preview_node;
 	AcceptDialog *accept;

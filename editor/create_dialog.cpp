@@ -80,18 +80,16 @@ void CreateDialog::_fill_type_list() {
 	ClassDB::get_class_list(&complete_type_list);
 	ScriptServer::get_global_class_list(&complete_type_list);
 
-	EditorData &ed = EditorNode::get_editor_data();
-
 	for (List<StringName>::Element *I = complete_type_list.front(); I; I = I->next()) {
 		String type = I->get();
 		if (!_should_hide_type(type)) {
 			type_list.push_back(type);
 
-			if (!ed.get_custom_types().has(type)) {
+			if (!EditorNode::get_editor_custom_types()->get_custom_types().has(type)) {
 				continue;
 			}
 
-			const Vector<EditorData::CustomType> &ct = ed.get_custom_types()[type];
+			const Vector<EditorCustomTypes::CustomType> &ct = EditorNode::get_editor_custom_types()->get_custom_types()[type];
 			for (int i = 0; i < ct.size(); i++) {
 				custom_type_parents[ct[i].name] = type;
 				custom_type_indices[ct[i].name] = i;
@@ -107,7 +105,7 @@ bool CreateDialog::_is_type_preferred(const String &p_type) const {
 		return ClassDB::is_parent_class(p_type, preferred_search_result_type);
 	}
 
-	return EditorNode::get_editor_data().script_class_is_parent(p_type, preferred_search_result_type);
+	return EditorNode::get_editor_custom_types()->script_class_is_parent(p_type, preferred_search_result_type);
 }
 
 bool CreateDialog::_is_class_disabled_by_feature_profile(const StringName &p_class) const {
@@ -144,7 +142,7 @@ bool CreateDialog::_should_hide_type(const String &p_type) const {
 			}
 		}
 	} else {
-		if (!EditorNode::get_editor_data().script_class_is_parent(p_type, base_type)) {
+		if (!EditorNode::get_editor_custom_types()->script_class_is_parent(p_type, base_type)) {
 			return true; // Wrong inheritance.
 		}
 		if (!ScriptServer::is_global_class(p_type)) {
@@ -209,7 +207,7 @@ void CreateDialog::_add_type(const String &p_type, bool p_cpp_type) {
 	if (p_cpp_type) {
 		inherits = ClassDB::get_parent_class(p_type);
 	} else if (ScriptServer::is_global_class(p_type)) {
-		inherits = EditorNode::get_editor_data().script_class_get_base(p_type);
+		inherits = EditorNode::get_editor_custom_types()->script_class_get_base(p_type);
 	} else {
 		inherits = custom_type_parents[p_type];
 	}
@@ -256,7 +254,7 @@ void CreateDialog::_configure_search_option_item(TreeItem *r_item, const String 
 	r_item->set_icon(0, EditorNode::get_singleton()->get_class_icon(p_type, icon_fallback));
 
 	if (!p_cpp_type && !script_type) {
-		Ref<Texture2D> icon = EditorNode::get_editor_data().get_custom_types()[custom_type_parents[p_type]][custom_type_indices[p_type]].icon;
+		Ref<Texture2D> icon = EditorNode::get_editor_custom_types()->get_custom_types()[custom_type_parents[p_type]][custom_type_indices[p_type]].icon;
 		if (icon.is_valid()) {
 			r_item->set_icon(0, icon);
 		}
@@ -420,13 +418,13 @@ Variant CreateDialog::instance_selected() {
 	if (md.get_type() != Variant::NIL) {
 		String custom = md;
 		if (ScriptServer::is_global_class(custom)) {
-			obj = EditorNode::get_editor_data().script_class_instance(custom);
+			obj = EditorNode::get_editor_custom_types()->script_class_instance(custom);
 			Node *n = Object::cast_to<Node>(obj);
 			if (n) {
 				n->set_name(custom);
 			}
 		} else {
-			obj = EditorNode::get_editor_data().instance_custom_type(selected->get_text(0), custom);
+			obj = EditorNode::get_editor_custom_types()->instance_custom_type(selected->get_text(0), custom);
 		}
 	} else {
 		obj = ClassDB::instance(selected->get_text(0));

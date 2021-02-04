@@ -1141,10 +1141,10 @@ void FileSystemDock::_try_move_item(const FileOrFolder &p_item, const String &p_
 		for (int i = 0; i < file_changed_paths.size(); ++i) {
 			String new_item_path = p_item.is_file ? new_path : file_changed_paths[i].replace_first(old_path, new_path);
 			if (ResourceLoader::get_resource_type(new_item_path) == "PackedScene" && editor->is_scene_open(file_changed_paths[i])) {
-				EditorData *ed = &editor->get_editor_data();
-				for (int j = 0; j < ed->get_edited_scene_count(); j++) {
-					if (ed->get_scene_path(j) == file_changed_paths[i]) {
-						ed->get_edited_scene_root(j)->set_filename(new_item_path);
+				EditorScenes *esm = editor->get_editor_scenes_manager();
+				for (int j = 0; j < esm->get_edited_scene_count(); j++) {
+					if (esm->get_scene_path(j) == file_changed_paths[i]) {
+						esm->get_edited_scene_root(j)->set_filename(new_item_path);
 						editor->save_layout();
 						break;
 					}
@@ -1224,26 +1224,26 @@ void FileSystemDock::_update_resource_paths_after_move(const Map<String, String>
 		r->set_path(base_path + extra_path);
 	}
 
-	for (int i = 0; i < EditorNode::get_editor_data().get_edited_scene_count(); i++) {
+	for (int i = 0; i < EditorNode::get_editor_scenes_manager()->get_edited_scene_count(); i++) {
 		String path;
-		if (i == EditorNode::get_editor_data().get_edited_scene()) {
+		if (i == EditorNode::get_editor_scenes_manager()->get_edited_scene()) {
 			if (!get_tree()->get_edited_scene_root()) {
 				continue;
 			}
 
 			path = get_tree()->get_edited_scene_root()->get_filename();
 		} else {
-			path = EditorNode::get_editor_data().get_scene_path(i);
+			path = EditorNode::get_editor_scenes_manager()->get_scene_path(i);
 		}
 
 		if (p_renames.has(path)) {
 			path = p_renames[path];
 		}
 
-		if (i == EditorNode::get_editor_data().get_edited_scene()) {
+		if (i == EditorNode::get_editor_scenes_manager()->get_edited_scene()) {
 			get_tree()->get_edited_scene_root()->set_filename(path);
 		} else {
-			EditorNode::get_editor_data().set_scene_path(i, path);
+			EditorNode::get_editor_scenes_manager()->set_scene_path(i, path);
 		}
 	}
 }
@@ -1405,7 +1405,7 @@ void FileSystemDock::_make_scene_confirm() {
 	memdelete(da);
 
 	int idx = editor->new_scene();
-	editor->get_editor_data().set_scene_path(idx, scene_name);
+	editor->get_editor_scenes_manager()->set_scene_path(idx, scene_name);
 }
 
 void FileSystemDock::_file_removed(String p_file) {
