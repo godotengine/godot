@@ -141,6 +141,11 @@ class RenderingDeviceVulkan : public RenderingDevice {
 
 		VkImageLayout layout;
 
+		uint64_t used_in_frame = 0;
+		bool used_in_transfer = false;
+		bool used_in_raster = false;
+		bool used_in_compute = false;
+
 		uint32_t read_aspect_mask = 0;
 		uint32_t barrier_aspect_mask = 0;
 		bool bound = false; //bound to framebffer
@@ -528,6 +533,8 @@ class RenderingDeviceVulkan : public RenderingDevice {
 
 		PushConstant push_constant;
 
+		uint32_t compute_local_size[3] = { 0, 0, 0 };
+
 		bool is_compute = false;
 		int max_output = 0;
 		Vector<Set> sets;
@@ -686,6 +693,7 @@ class RenderingDeviceVulkan : public RenderingDevice {
 		VkPipeline pipeline = VK_NULL_HANDLE;
 		uint32_t push_constant_size = 0;
 		uint32_t push_constant_stages = 0;
+		uint32_t local_group_size[3] = { 0, 0, 0 };
 	};
 
 	RID_Owner<ComputePipeline, true> compute_pipeline_owner;
@@ -808,8 +816,10 @@ class RenderingDeviceVulkan : public RenderingDevice {
 			uint32_t set_count = 0;
 			RID pipeline;
 			RID pipeline_shader;
+			uint32_t local_group_size[3] = { 0, 0, 0 };
 			VkPipelineLayout pipeline_layout = VK_NULL_HANDLE;
 			uint32_t pipeline_push_constant_stages = 0;
+			bool allow_draw_overlap;
 		} state;
 
 #ifdef DEBUG_ENABLED
@@ -1028,13 +1038,14 @@ public:
 	/**** COMPUTE LISTS ****/
 	/***********************/
 
-	virtual ComputeListID compute_list_begin();
+	virtual ComputeListID compute_list_begin(bool p_allow_draw_overlap = false);
 	virtual void compute_list_bind_compute_pipeline(ComputeListID p_list, RID p_compute_pipeline);
 	virtual void compute_list_bind_uniform_set(ComputeListID p_list, RID p_uniform_set, uint32_t p_index);
 	virtual void compute_list_set_push_constant(ComputeListID p_list, const void *p_data, uint32_t p_data_size);
 	virtual void compute_list_add_barrier(ComputeListID p_list);
 
 	virtual void compute_list_dispatch(ComputeListID p_list, uint32_t p_x_groups, uint32_t p_y_groups, uint32_t p_z_groups);
+	virtual void compute_list_dispatch_threads(ComputeListID p_list, uint32_t p_x_threads, uint32_t p_y_threads, uint32_t p_z_threads);
 	virtual void compute_list_dispatch_indirect(ComputeListID p_list, RID p_buffer, uint32_t p_offset);
 	virtual void compute_list_end(uint32_t p_post_barrier = BARRIER_MASK_ALL);
 
@@ -1084,6 +1095,10 @@ public:
 	virtual void draw_command_begin_label(String p_label_name, const Color p_color = Color(1, 1, 1, 1));
 	virtual void draw_command_insert_label(String p_label_name, const Color p_color = Color(1, 1, 1, 1));
 	virtual void draw_command_end_label();
+
+	virtual String get_device_vendor_name() const;
+	virtual String get_device_name() const;
+	virtual String get_device_pipeline_cache_uuid() const;
 
 	RenderingDeviceVulkan();
 	~RenderingDeviceVulkan();

@@ -343,6 +343,7 @@ public:
 		BARRIER_MASK_RASTER = 1,
 		BARRIER_MASK_COMPUTE = 2,
 		BARRIER_MASK_TRANSFER = 4,
+		BARRIER_MASK_NO_BARRIER = 8,
 		BARRIER_MASK_ALL = BARRIER_MASK_RASTER | BARRIER_MASK_COMPUTE | BARRIER_MASK_TRANSFER
 	};
 
@@ -944,6 +945,7 @@ public:
 	enum InitialAction {
 		INITIAL_ACTION_CLEAR, //start rendering and clear the whole framebuffer (region or not) (supply params)
 		INITIAL_ACTION_CLEAR_REGION, //start rendering and clear the framebuffer in the specified region (supply params)
+		INITIAL_ACTION_CLEAR_REGION_CONTINUE, //countinue rendering and clear the framebuffer in the specified region (supply params)
 		INITIAL_ACTION_KEEP, //start rendering, but keep attached color texture contents (depth will be cleared)
 		INITIAL_ACTION_DROP, //start rendering, ignore what is there, just write above it
 		INITIAL_ACTION_CONTINUE, //continue rendering (framebuffer must have been left in "continue" state as final action previously)
@@ -983,12 +985,12 @@ public:
 
 	typedef int64_t ComputeListID;
 
-	virtual ComputeListID compute_list_begin() = 0;
+	virtual ComputeListID compute_list_begin(bool p_allow_draw_overlap = false) = 0;
 	virtual void compute_list_bind_compute_pipeline(ComputeListID p_list, RID p_compute_pipeline) = 0;
 	virtual void compute_list_bind_uniform_set(ComputeListID p_list, RID p_uniform_set, uint32_t p_index) = 0;
 	virtual void compute_list_set_push_constant(ComputeListID p_list, const void *p_data, uint32_t p_data_size) = 0;
 	virtual void compute_list_dispatch(ComputeListID p_list, uint32_t p_x_groups, uint32_t p_y_groups, uint32_t p_z_groups) = 0;
-	virtual void compute_list_dispatch_threads(ComputeListID p_list, uint32_t p_x_threads, uint32_t p_y_threads, uint32_t p_z_threads, uint32_t p_x_local_group, uint32_t p_y_local_group, uint32_t p_z_local_group);
+	virtual void compute_list_dispatch_threads(ComputeListID p_list, uint32_t p_x_threads, uint32_t p_y_threads, uint32_t p_z_threads) = 0;
 	virtual void compute_list_dispatch_indirect(ComputeListID p_list, RID p_buffer, uint32_t p_offset) = 0;
 	virtual void compute_list_add_barrier(ComputeListID p_list) = 0;
 
@@ -1077,6 +1079,10 @@ public:
 	virtual void draw_command_begin_label(String p_label_name, const Color p_color = Color(1, 1, 1, 1)) = 0;
 	virtual void draw_command_insert_label(String p_label_name, const Color p_color = Color(1, 1, 1, 1)) = 0;
 	virtual void draw_command_end_label() = 0;
+
+	virtual String get_device_vendor_name() const = 0;
+	virtual String get_device_name() const = 0;
+	virtual String get_device_pipeline_cache_uuid() const = 0;
 
 	static RenderingDevice *get_singleton();
 	RenderingDevice();
