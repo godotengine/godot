@@ -265,7 +265,7 @@ VARIANT_ENUM_CAST(EditorPlugin::DockSlot);
 
 typedef EditorPlugin *(*EditorPluginCreateFunc)(EditorNode *);
 
-class EditorPlugins {
+class CustomEditorPlugins {
 	enum {
 		MAX_CREATE_FUNCS = 64
 	};

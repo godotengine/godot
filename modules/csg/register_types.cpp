@@ -47,7 +47,7 @@ void register_csg_types() {
 	ClassDB::register_class<CSGCombiner3D>();
 
 #ifdef TOOLS_ENABLED
-	EditorPlugins::add_by_type<EditorPluginCSG>();
+	CustomEditorPlugins::add_by_type<EditorPluginCSG>();
 #endif
 #endif
 }

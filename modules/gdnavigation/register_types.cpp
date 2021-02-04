@@ -64,7 +64,7 @@ void register_gdnavigation_types() {
 #endif
 
 #ifdef TOOLS_ENABLED
-	EditorPlugins::add_by_type<NavigationMeshEditorPlugin>();
+	CustomEditorPlugins::add_by_type<NavigationMeshEditorPlugin>();
 
 	ClassDB::APIType prev_api = ClassDB::get_current_api();
 	ClassDB::set_current_api(ClassDB::API_EDITOR);

@@ -6678,8 +6678,8 @@ EditorNode::EditorNode() {
 	add_editor_plugin(memnew(MaterialEditorPlugin(this)));
 	add_editor_plugin(memnew(GPUParticlesCollisionSDFEditorPlugin(this)));
 
-	for (int i = 0; i < EditorPlugins::get_plugin_count(); i++) {
-		add_editor_plugin(EditorPlugins::create(i, this));
+	for (int i = 0; i < CustomEditorPlugins::get_plugin_count(); i++) {
+		add_editor_plugin(CustomEditorPlugins::create(i, this));
 	}
 
 	for (int i = 0; i < plugin_init_callback_count; i++) {

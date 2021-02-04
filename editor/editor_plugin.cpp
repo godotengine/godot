@@ -915,6 +915,6 @@ void EditorPlugin::_bind_methods() {
 	BIND_ENUM_CONSTANT(DOCK_SLOT_MAX);
 }
 
-EditorPluginCreateFunc EditorPlugins::creation_funcs[MAX_CREATE_FUNCS];
+EditorPluginCreateFunc CustomEditorPlugins::creation_funcs[MAX_CREATE_FUNCS];
 
-int EditorPlugins::creation_func_count = 0;
+int CustomEditorPlugins::creation_func_count = 0;

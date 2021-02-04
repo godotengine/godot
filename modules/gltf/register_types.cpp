@@ -64,7 +64,7 @@ void register_gltf_types() {
 	ClassDB::set_current_api(ClassDB::API_EDITOR);
 	ClassDB::register_class<EditorSceneImporterGLTF>();
 	ClassDB::register_class<GLTFMesh>();
-	EditorPlugins::add_by_type<SceneExporterGLTFPlugin>();
+	CustomEditorPlugins::add_by_type<SceneExporterGLTFPlugin>();
 	ClassDB::set_current_api(prev_api);
 	EditorNode::add_init_callback(_editor_init);
 #endif
