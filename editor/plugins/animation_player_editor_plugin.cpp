@@ -298,7 +298,7 @@ void AnimationPlayerEditor::_animation_selected(int p_which) {
 
 	autoplay->set_pressed(current == player->get_autoplay());
 
-	AnimationPlayerEditor::singleton->get_track_editor()->update_keying();
+	AnimationPlayerEditor::get_singleton()->get_track_editor()->update_keying();
 	EditorNode::get_singleton()->update_keying();
 	_animation_key_editor_seek(timeline_position, false);
 }
@@ -826,7 +826,7 @@ void AnimationPlayerEditor::_update_player() {
 	pin->set_disabled(player == nullptr);
 
 	if (!player) {
-		AnimationPlayerEditor::singleton->get_track_editor()->update_keying();
+		AnimationPlayerEditor::get_singleton()->get_track_editor()->update_keying();
 		EditorNode::get_singleton()->update_keying();
 		return;
 	}

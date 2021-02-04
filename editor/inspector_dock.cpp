@@ -383,7 +383,7 @@ void InspectorDock::_menu_expandall() {
 }
 
 void InspectorDock::_property_keyed(const String &p_keyed, const Variant &p_value, bool p_advance) {
-	AnimationPlayerEditor::singleton->get_track_editor()->insert_value_key(p_keyed, p_value, p_advance);
+	AnimationPlayerEditor::get_singleton()->get_track_editor()->insert_value_key(p_keyed, p_value, p_advance);
 }
 
 void InspectorDock::_transform_keyed(Object *sp, const String &p_sub, const Transform3D &p_key) {
@@ -391,7 +391,7 @@ void InspectorDock::_transform_keyed(Object *sp, const String &p_sub, const Tran
 	if (!s) {
 		return;
 	}
-	AnimationPlayerEditor::singleton->get_track_editor()->insert_transform_key(s, p_sub, p_key);
+	AnimationPlayerEditor::get_singleton()->get_track_editor()->insert_transform_key(s, p_sub, p_key);
 }
 
 void InspectorDock::_warning_pressed() {
@@ -545,7 +545,7 @@ void InspectorDock::go_back() {
 void InspectorDock::update_keying() {
 	bool valid = false;
 
-	if (AnimationPlayerEditor::singleton->get_track_editor()->has_keying()) {
+	if (AnimationPlayerEditor::get_singleton()->get_track_editor()->has_keying()) {
 		EditorHistory *editor_history = EditorNode::get_singleton()->get_editor_history();
 		if (editor_history->get_path_size() >= 1) {
 			Object *obj = ObjectDB::get_instance(editor_history->get_path_object(0));

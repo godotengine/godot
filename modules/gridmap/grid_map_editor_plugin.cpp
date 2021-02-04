@@ -603,9 +603,9 @@ void GridMapEditor::_do_paste() {
 	_clear_clipboard_data();
 }
 
-bool GridMapEditor::forward_spatial_input_event(Camera3D *p_camera, const Ref<InputEvent> &p_event) {
+EditorPlugin::AfterGUIInput GridMapEditor::forward_spatial_input_event(Camera3D *p_camera, const Ref<InputEvent> &p_event) {
 	if (!node) {
-		return false;
+		return EditorPlugin::AFTER_GUI_INPUT_PASS;
 	}
 
 	Ref<InputEventMouseButton> mb = p_event;
@@ -616,12 +616,12 @@ bool GridMapEditor::forward_spatial_input_event(Camera3D *p_camera, const Ref<In
 				floor->set_value(floor->get_value() + mb->get_factor());
 			}
 
-			return true; // Eaten.
+			return EditorPlugin::AFTER_GUI_INPUT_STOP; // Eaten.
 		} else if (mb->get_button_index() == MOUSE_BUTTON_WHEEL_DOWN && (mb->is_command_pressed() || mb->is_shift_pressed())) {
 			if (mb->is_pressed()) {
 				floor->set_value(floor->get_value() - mb->get_factor());
 			}
-			return true;
+			return EditorPlugin::AFTER_GUI_INPUT_STOP;
 		}
 
 		if (mb->is_pressed()) {
@@ -648,19 +648,22 @@ bool GridMapEditor::forward_spatial_input_event(Camera3D *p_camera, const Ref<In
 					_clear_clipboard_data();
 					input_action = INPUT_NONE;
 					_update_paste_indicator();
-					return true;
+					return EditorPlugin::AFTER_GUI_INPUT_STOP;
 				} else if (selection.active) {
 					_set_selection(false);
-					return true;
+					return EditorPlugin::AFTER_GUI_INPUT_STOP;
 				} else {
 					input_action = INPUT_ERASE;
 					set_items.clear();
 				}
 			} else {
-				return false;
+				return EditorPlugin::AFTER_GUI_INPUT_PASS;
 			}
 
-			return do_input_action(p_camera, Point2(mb->get_position().x, mb->get_position().y), true);
+			if (do_input_action(p_camera, Point2(mb->get_position().x, mb->get_position().y), true)) {
+				return EditorPlugin::AFTER_GUI_INPUT_STOP;
+			}
+			return EditorPlugin::AFTER_GUI_INPUT_PASS;
 		} else {
 			if ((mb->get_button_index() == MOUSE_BUTTON_RIGHT && input_action == INPUT_ERASE) || (mb->get_button_index() == MOUSE_BUTTON_LEFT && input_action == INPUT_PAINT)) {
 				if (set_items.size()) {
@@ -677,7 +680,11 @@ bool GridMapEditor::forward_spatial_input_event(Camera3D *p_camera, const Ref<In
 				}
 				set_items.clear();
 				input_action = INPUT_NONE;
-				return set_items.size() > 0;
+
+				if (set_items.size() > 0) {
+					return EditorPlugin::AFTER_GUI_INPUT_STOP;
+				}
+				return EditorPlugin::AFTER_GUI_INPUT_PASS;
 			}
 
 			if (mb->get_button_index() == MOUSE_BUTTON_LEFT && input_action == INPUT_SELECT) {
@@ -690,11 +697,11 @@ bool GridMapEditor::forward_spatial_input_event(Camera3D *p_camera, const Ref<In
 			if (mb->get_button_index() == MOUSE_BUTTON_LEFT && input_action != INPUT_NONE) {
 				set_items.clear();
 				input_action = INPUT_NONE;
-				return true;
+				return EditorPlugin::AFTER_GUI_INPUT_STOP;
 			}
 			if (mb->get_button_index() == MOUSE_BUTTON_RIGHT && (input_action == INPUT_ERASE || input_action == INPUT_PASTE)) {
 				input_action = INPUT_NONE;
-				return true;
+				return EditorPlugin::AFTER_GUI_INPUT_STOP;
 			}
 		}
 	}
@@ -702,7 +709,10 @@ bool GridMapEditor::forward_spatial_input_event(Camera3D *p_camera, const Ref<In
 	Ref<InputEventMouseMotion> mm = p_event;
 
 	if (mm.is_valid()) {
-		return do_input_action(p_camera, mm->get_position(), false);
+		if (do_input_action(p_camera, mm->get_position(), false)) {
+			return EditorPlugin::AFTER_GUI_INPUT_STOP;
+		}
+		return EditorPlugin::AFTER_GUI_INPUT_PASS;
 	}
 
 	Ref<InputEventKey> k = p_event;
@@ -714,16 +724,16 @@ bool GridMapEditor::forward_spatial_input_event(Camera3D *p_camera, const Ref<In
 					_clear_clipboard_data();
 					input_action = INPUT_NONE;
 					_update_paste_indicator();
-					return true;
+					return EditorPlugin::AFTER_GUI_INPUT_STOP;
 				} else if (selection.active) {
 					_set_selection(false);
-					return true;
+					return EditorPlugin::AFTER_GUI_INPUT_STOP;
 				} else {
 					selected_palette = -1;
 					mesh_library_palette->deselect_all();
 					update_palette();
 					_update_cursor_instance();
-					return true;
+					return EditorPlugin::AFTER_GUI_INPUT_STOP;
 				}
 			}
 
@@ -731,12 +741,12 @@ bool GridMapEditor::forward_spatial_input_event(Camera3D *p_camera, const Ref<In
 				if (k->get_keycode() == options->get_popup()->get_item_accelerator(options->get_popup()->get_item_index(MENU_OPTION_PREV_LEVEL))) {
 					selection.click[edit_axis]--;
 					_validate_selection();
-					return true;
+					return EditorPlugin::AFTER_GUI_INPUT_STOP;
 				}
 				if (k->get_keycode() == options->get_popup()->get_item_accelerator(options->get_popup()->get_item_index(MENU_OPTION_NEXT_LEVEL))) {
 					selection.click[edit_axis]++;
 					_validate_selection();
-					return true;
+					return EditorPlugin::AFTER_GUI_INPUT_STOP;
 				}
 			}
 		}
@@ -755,12 +765,12 @@ bool GridMapEditor::forward_spatial_input_event(Camera3D *p_camera, const Ref<In
 			if (step) {
 				floor->set_value(floor->get_value() + step);
 			}
-			return true;
+			return EditorPlugin::AFTER_GUI_INPUT_STOP;
 		}
 	}
 	accumulated_floor_delta = 0.0;
 
-	return false;
+	return EditorPlugin::AFTER_GUI_INPUT_PASS;
 }
 
 struct _CGMEItemSort {
