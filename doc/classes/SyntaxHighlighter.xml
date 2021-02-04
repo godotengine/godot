@@ -21,7 +21,7 @@
 		<method name="_get_line_syntax_highlighting" qualifiers="virtual">
 			<return type="Dictionary">
 			</return>
-			<argument index="0" name="p_line" type="int">
+			<argument index="0" name="line" type="int">
 			</argument>
 			<description>
 				Virtual method which can be overridden to return syntax highlighting data.
@@ -46,7 +46,7 @@
 		<method name="get_line_syntax_highlighting">
 			<return type="Dictionary">
 			</return>
-			<argument index="0" name="p_line" type="int">
+			<argument index="0" name="line" type="int">
 			</argument>
 			<description>
 				Returns syntax highlighting data for a single line. If the line is not cached, calls [method _get_line_syntax_highlighting] to calculate the data.

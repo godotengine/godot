@@ -110,12 +110,12 @@ TextEdit *SyntaxHighlighter::get_text_edit() {
 }
 
 void SyntaxHighlighter::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("get_line_syntax_highlighting", "p_line"), &SyntaxHighlighter::get_line_syntax_highlighting);
+	ClassDB::bind_method(D_METHOD("get_line_syntax_highlighting", "line"), &SyntaxHighlighter::get_line_syntax_highlighting);
 	ClassDB::bind_method(D_METHOD("update_cache"), &SyntaxHighlighter::update_cache);
 	ClassDB::bind_method(D_METHOD("clear_highlighting_cache"), &SyntaxHighlighter::clear_highlighting_cache);
 	ClassDB::bind_method(D_METHOD("get_text_edit"), &SyntaxHighlighter::get_text_edit);
 
-	BIND_VMETHOD(MethodInfo(Variant::DICTIONARY, "_get_line_syntax_highlighting", PropertyInfo(Variant::INT, "p_line")));
+	BIND_VMETHOD(MethodInfo(Variant::DICTIONARY, "_get_line_syntax_highlighting", PropertyInfo(Variant::INT, "line")));
 	BIND_VMETHOD(MethodInfo("_clear_highlighting_cache"));
 	BIND_VMETHOD(MethodInfo("_update_cache"));
 }
@@ -573,11 +573,11 @@ void CodeHighlighter::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("clear_member_keyword_colors"), &CodeHighlighter::clear_member_keyword_colors);
 	ClassDB::bind_method(D_METHOD("get_member_keyword_colors"), &CodeHighlighter::get_member_keyword_colors);
 
-	ClassDB::bind_method(D_METHOD("add_color_region", "p_start_key", "p_end_key", "p_color", "p_line_only"), &CodeHighlighter::add_color_region, DEFVAL(false));
-	ClassDB::bind_method(D_METHOD("remove_color_region", "p_start_key"), &CodeHighlighter::remove_color_region);
-	ClassDB::bind_method(D_METHOD("has_color_region", "p_start_key"), &CodeHighlighter::has_color_region);
+	ClassDB::bind_method(D_METHOD("add_color_region", "start_key", "end_key", "color", "line_only"), &CodeHighlighter::add_color_region, DEFVAL(false));
+	ClassDB::bind_method(D_METHOD("remove_color_region", "start_key"), &CodeHighlighter::remove_color_region);
+	ClassDB::bind_method(D_METHOD("has_color_region", "start_key"), &CodeHighlighter::has_color_region);
 
-	ClassDB::bind_method(D_METHOD("set_color_regions", "p_color_regions"), &CodeHighlighter::set_color_regions);
+	ClassDB::bind_method(D_METHOD("set_color_regions", "color_regions"), &CodeHighlighter::set_color_regions);
 	ClassDB::bind_method(D_METHOD("clear_color_regions"), &CodeHighlighter::clear_color_regions);
 	ClassDB::bind_method(D_METHOD("get_color_regions"), &CodeHighlighter::get_color_regions);
 
