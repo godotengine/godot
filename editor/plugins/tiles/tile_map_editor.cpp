@@ -541,7 +541,7 @@ bool TileMapEditor::forward_canvas_gui_input(const Ref<InputEvent> &p_event) {
 	}
 
 	// Shortcuts
-	if (ED_IS_SHORTCUT("tiles_editor/copy", p_event)) {
+	if (ED_IS_SHORTCUT("tiles_editor/cut", p_event) || ED_IS_SHORTCUT("tiles_editor/copy", p_event)) {
 		// Fill in the clipboard.
 		if (!tile_map_selection.is_empty()) {
 			memdelete(tile_map_clipboard);
@@ -551,6 +551,22 @@ bool TileMapEditor::forward_canvas_gui_input(const Ref<InputEvent> &p_event) {
 			}
 			tile_map_clipboard = tile_map->get_pattern(coords_array);
 		}
+
+		if (ED_IS_SHORTCUT("tiles_editor/cut", p_event)) {
+			// Delete selected tiles.
+			if (!tile_map_selection.is_empty()) {
+				undo_redo->create_action("Delete tiles");
+				for (Set<Vector2i>::Element *E = tile_map_selection.front(); E; E = E->next()) {
+					undo_redo->add_do_method(tile_map, "set_cell", E->get(), -1, TileAtlasSource::INVALID_ATLAS_COORDS, TileAtlasSource::INVALID_TILE_ALTERNATIVE);
+					undo_redo->add_undo_method(tile_map, "set_cell", E->get(), tile_map->get_cell_source_id(E->get()), tile_map->get_cell_atlas_coords(E->get()), tile_map->get_cell_alternative_tile(E->get()));
+				}
+				undo_redo->add_undo_method(this, "_set_tile_map_selection", _get_tile_map_selection());
+				tile_map_selection.clear();
+				undo_redo->add_do_method(this, "_set_tile_map_selection", _get_tile_map_selection());
+				undo_redo->commit_action();
+			}
+		}
+
 		return true;
 	}
 	if (ED_IS_SHORTCUT("tiles_editor/paste", p_event)) {
@@ -1632,6 +1648,7 @@ TileMapEditor::TileMapEditor() {
 	CanvasItemEditor::get_singleton()->get_viewport_control()->connect("mouse_exited", callable_mp(this, &TileMapEditor::_mouse_exited_viewport));
 
 	// Shortcuts
+	ED_SHORTCUT("tiles_editor/cut", TTR("Cut"), KEY_MASK_CMD | KEY_X);
 	ED_SHORTCUT("tiles_editor/copy", TTR("Copy"), KEY_MASK_CMD | KEY_C);
 	ED_SHORTCUT("tiles_editor/paste", TTR("Paste"), KEY_MASK_CMD | KEY_V);
 	ED_SHORTCUT("tiles_editor/delete", TTR("Delete"), KEY_DELETE);
