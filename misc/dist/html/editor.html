@@ -327,7 +327,7 @@
 		function startEditor(zip) {
 
 			const INDETERMINATE_STATUS_STEP_MS = 100;
-			const persistentPaths = ['/home/web_user/.config', '/home/web_user/.cache', '/home/web_user/projects'];
+			const persistentPaths = ['/home/web_user/'];
 
 			var editorCanvas = document.getElementById('editor-canvas');
 			var gameCanvas = document.getElementById('game-canvas');
@@ -498,11 +498,11 @@
 				engine.setUnloadAfterInit(false); // Don't want to reload when starting game.
 				engine.init('godot.tools').then(function() {
 					if (zip) {
-						engine.copyToFS("/home/web_user/preload.zip", zip);
+						engine.copyToFS("/tmp/preload.zip", zip);
 					}
 					try {
 						// Avoid user creating project in the persistent root folder.
-						engine.copyToFS("/home/web_user/projects/keep", new Uint8Array());
+						engine.copyToFS("/home/web_user/keep", new Uint8Array());
 					} catch(e) {
 						// File exists
 					}
