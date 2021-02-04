@@ -1667,6 +1667,7 @@ TileMapEditor::TileMapEditor() {
 	tilemap_select_tool_button->set_flat(true);
 	tilemap_select_tool_button->set_toggle_mode(true);
 	tilemap_select_tool_button->set_button_group(tilemap_tool_buttons_group);
+	tilemap_select_tool_button->set_shortcut(ED_SHORTCUT("tiles_editor/selection_tool", "Selection", KEY_S));
 	tilemap_select_tool_button->connect("pressed", callable_mp(this, &TileMapEditor::_update_toolbar));
 	tilemap_tools_buttons->add_child(tilemap_select_tool_button);
 
@@ -1674,6 +1675,7 @@ TileMapEditor::TileMapEditor() {
 	tilemap_paint_tool_button->set_flat(true);
 	tilemap_paint_tool_button->set_toggle_mode(true);
 	tilemap_paint_tool_button->set_button_group(tilemap_tool_buttons_group);
+	tilemap_paint_tool_button->set_shortcut(ED_SHORTCUT("tiles_editor/paint_tool", "Paint", KEY_E));
 	tilemap_paint_tool_button->connect("pressed", callable_mp(this, &TileMapEditor::_update_toolbar));
 	tilemap_tools_buttons->add_child(tilemap_paint_tool_button);
 
@@ -1681,6 +1683,7 @@ TileMapEditor::TileMapEditor() {
 	tilemap_line_tool_button->set_flat(true);
 	tilemap_line_tool_button->set_toggle_mode(true);
 	tilemap_line_tool_button->set_button_group(tilemap_tool_buttons_group);
+	tilemap_line_tool_button->set_shortcut(ED_SHORTCUT("tiles_editor/line_tool", "Line", KEY_L));
 	tilemap_line_tool_button->connect("pressed", callable_mp(this, &TileMapEditor::_update_toolbar));
 	tilemap_tools_buttons->add_child(tilemap_line_tool_button);
 
@@ -1688,6 +1691,7 @@ TileMapEditor::TileMapEditor() {
 	tilemap_rect_tool_button->set_flat(true);
 	tilemap_rect_tool_button->set_toggle_mode(true);
 	tilemap_rect_tool_button->set_button_group(tilemap_tool_buttons_group);
+	tilemap_rect_tool_button->set_shortcut(ED_SHORTCUT("tiles_editor/rect_tool", "Rect", KEY_R));
 	tilemap_rect_tool_button->connect("pressed", callable_mp(this, &TileMapEditor::_update_toolbar));
 	tilemap_tools_buttons->add_child(tilemap_rect_tool_button);
 
@@ -1695,6 +1699,7 @@ TileMapEditor::TileMapEditor() {
 	tilemap_bucket_tool_button->set_flat(true);
 	tilemap_bucket_tool_button->set_toggle_mode(true);
 	tilemap_bucket_tool_button->set_button_group(tilemap_tool_buttons_group);
+	tilemap_bucket_tool_button->set_shortcut(ED_SHORTCUT("tiles_editor/bucket_tool", "Bucket", KEY_B));
 	tilemap_bucket_tool_button->connect("pressed", callable_mp(this, &TileMapEditor::_update_toolbar));
 	tilemap_tools_buttons->add_child(tilemap_bucket_tool_button);
 
