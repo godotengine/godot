@@ -2229,6 +2229,11 @@ RID VisualServer::instance_create2(RID p_base, RID p_scenario) {
 	RID instance = instance_create();
 	instance_set_base(instance, p_base);
 	instance_set_scenario(instance, p_scenario);
+
+	// instance_create2 is used mainly by editor instances.
+	// These should not be culled by the portal system when it is active, so we set their mode to global,
+	// for frustum culling only.
+	instance_set_portal_mode(instance, VisualServer::INSTANCE_PORTAL_MODE_GLOBAL);
 	return instance;
 }
 

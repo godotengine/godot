@@ -781,6 +781,7 @@ public:
 	void set_over_gizmo_handle(int idx) { over_gizmo_handle = idx; }
 
 	void set_can_preview(Camera *p_preview);
+	void set_message(String p_message, float p_time = 5);
 
 	SpatialEditorViewport *get_editor_viewport(int p_idx) {
 		ERR_FAIL_INDEX_V(p_idx, static_cast<int>(VIEWPORTS_COUNT), nullptr);

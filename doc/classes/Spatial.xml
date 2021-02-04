@@ -328,6 +328,16 @@
 		</member>
 	</members>
 	<signals>
+		<signal name="gameplay_entered">
+			<description>
+				Emitted by portal system gameplay monitor when a node enters the gameplay area.
+			</description>
+		</signal>
+		<signal name="gameplay_exited">
+			<description>
+				Emitted by portal system gameplay monitor when a node exits the gameplay area.
+			</description>
+		</signal>
 		<signal name="visibility_changed">
 			<description>
 				Emitted when node visibility changes.
@@ -347,6 +357,12 @@
 		</constant>
 		<constant name="NOTIFICATION_VISIBILITY_CHANGED" value="43">
 			Spatial nodes receives this notification when their visibility changes.
+		</constant>
+		<constant name="NOTIFICATION_ENTER_GAMEPLAY" value="45">
+			Spatial nodes receives this notification if the portal system gameplay monitor detects they have entered the gameplay area.
+		</constant>
+		<constant name="NOTIFICATION_EXIT_GAMEPLAY" value="46">
+			Spatial nodes receives this notification if the portal system gameplay monitor detects they have exited the gameplay area.
 		</constant>
 	</constants>
 </class>

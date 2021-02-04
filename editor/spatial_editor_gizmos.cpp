@@ -44,9 +44,11 @@
 #include "scene/3d/navigation_mesh.h"
 #include "scene/3d/particles.h"
 #include "scene/3d/physics_joint.h"
+#include "scene/3d/portal.h"
 #include "scene/3d/position_3d.h"
 #include "scene/3d/ray_cast.h"
 #include "scene/3d/reflection_probe.h"
+#include "scene/3d/room.h"
 #include "scene/3d/soft_body.h"
 #include "scene/3d/spring_arm.h"
 #include "scene/3d/sprite_3d.h"
@@ -162,6 +164,7 @@ void EditorSpatialGizmo::set_spatial_node(Spatial *p_node) {
 
 void EditorSpatialGizmo::Instance::create_instance(Spatial *p_base, bool p_hidden) {
 	instance = VS::get_singleton()->instance_create2(mesh->get_rid(), p_base->get_world()->get_scenario());
+	VS::get_singleton()->instance_set_portal_mode(instance, VisualServer::INSTANCE_PORTAL_MODE_GLOBAL);
 	VS::get_singleton()->instance_attach_object_instance_id(instance, p_base->get_instance_id());
 	if (skin_reference.is_valid()) {
 		VS::get_singleton()->instance_attach_skeleton(instance, skin_reference->get_skeleton());
@@ -4428,4 +4431,278 @@ void JointSpatialGizmoPlugin::CreateGeneric6DOFJointGizmo(
 	}
 
 #undef ADD_VTX
+}
+
+////
+
+RoomGizmoPlugin::RoomGizmoPlugin() {
+	create_material("room", Color(0.5, 1.0, 0.0), false, true, false);
+	create_material("room_overlap", Color(1.0, 0.0, 0.0), false, false, false);
+}
+
+bool RoomGizmoPlugin::has_gizmo(Spatial *p_spatial) {
+	if (Object::cast_to<Room>(p_spatial)) {
+		return true;
+	}
+
+	return false;
+}
+
+String RoomGizmoPlugin::get_name() const {
+	return "Room";
+}
+
+int RoomGizmoPlugin::get_priority() const {
+	return -1;
+}
+
+void RoomGizmoPlugin::redraw(EditorSpatialGizmo *p_gizmo) {
+	p_gizmo->clear();
+
+	Room *room = Object::cast_to<Room>(p_gizmo->get_spatial_node());
+
+	if (room) {
+		const Geometry::MeshData &md = room->_bound_mesh_data;
+		if (!md.edges.size())
+			return;
+
+		Vector<Vector3> lines;
+		Transform tr = room->get_global_transform();
+		tr.affine_invert();
+
+		Ref<Material> material = get_material("room", p_gizmo);
+		Ref<Material> material_overlap = get_material("room_overlap", p_gizmo);
+		Color color(1, 1, 1, 1);
+
+		for (int n = 0; n < md.edges.size(); n++) {
+			Vector3 a = md.vertices[md.edges[n].a];
+			Vector3 b = md.vertices[md.edges[n].b];
+
+			// xform
+			a = tr.xform(a);
+			b = tr.xform(b);
+
+			lines.push_back(a);
+			lines.push_back(b);
+		}
+
+		p_gizmo->add_lines(lines, material, false, color);
+
+		// overlap zones
+		for (int z = 0; z < room->_gizmo_overlap_zones.size(); z++) {
+			const Geometry::MeshData &md_overlap = room->_gizmo_overlap_zones[z];
+			Vector<Vector3> pts;
+
+			for (int f = 0; f < md_overlap.faces.size(); f++) {
+				const Geometry::MeshData::Face &face = md_overlap.faces[f];
+
+				for (int c = 0; c < face.indices.size() - 2; c++) {
+					pts.push_back(tr.xform(md_overlap.vertices[face.indices[0]]));
+					pts.push_back(tr.xform(md_overlap.vertices[face.indices[c + 1]]));
+					pts.push_back(tr.xform(md_overlap.vertices[face.indices[c + 2]]));
+				}
+			}
+
+			Ref<ArrayMesh> mesh = memnew(ArrayMesh);
+			Array array;
+			array.resize(Mesh::ARRAY_MAX);
+			array[Mesh::ARRAY_VERTEX] = pts;
+			mesh->add_surface_from_arrays(Mesh::PRIMITIVE_TRIANGLES, array);
+			p_gizmo->add_mesh(mesh, false, Ref<SkinReference>(), material_overlap);
+		}
+	}
+}
+
+////
+
+PortalGizmoPlugin::PortalGizmoPlugin() {
+	create_icon_material("portal_icon", SpatialEditor::get_singleton()->get_icon("GizmoPortal", "EditorIcons"), true);
+	create_material("portal", Color(1.0, 1.0, 1.0, 1.0), false, false, true);
+	create_material("portal_margin", Color(1.0, 0.1, 0.1, 0.3), false, false, false);
+	create_material("portal_edge", Color(0.0, 0.0, 0.0, 0.3), false, false, false);
+	create_material("portal_arrow", Color(1.0, 1.0, 1.0, 1.0), false, false, false);
+}
+
+bool PortalGizmoPlugin::has_gizmo(Spatial *p_spatial) {
+	if (Object::cast_to<Portal>(p_spatial)) {
+		return true;
+	}
+
+	return false;
+}
+
+String PortalGizmoPlugin::get_name() const {
+	return "Portal";
+}
+
+int PortalGizmoPlugin::get_priority() const {
+	return -1;
+}
+
+void PortalGizmoPlugin::redraw(EditorSpatialGizmo *p_gizmo) {
+	p_gizmo->clear();
+
+	Portal *portal = Object::cast_to<Portal>(p_gizmo->get_spatial_node());
+
+	if (portal) {
+		// warnings
+		if (portal->_warning_outside_room_aabb || portal->_warning_facing_wrong_way) {
+			Ref<Material> icon = get_material("portal_icon", p_gizmo);
+			p_gizmo->add_unscaled_billboard(icon, 0.05);
+		}
+
+		Transform tr = portal->get_global_transform();
+		tr.affine_invert();
+
+		Ref<Material> material_portal = get_material("portal", p_gizmo);
+		Ref<Material> material_margin = get_material("portal_margin", p_gizmo);
+		Ref<Material> material_edge = get_material("portal_edge", p_gizmo);
+		Ref<Material> material_arrow = get_material("portal_arrow", p_gizmo);
+		Color color(1, 1, 1, 1);
+		Color color_portal_front(0.05, 0.05, 1.0, 0.3);
+		Color color_portal_back(1.0, 1.0, 0.0, 0.15);
+
+		// make sure world points are up to date
+		portal->portal_update();
+
+		int num_points = portal->_pts_world.size();
+
+		// prevent compiler warnings later on
+		if (num_points < 3) {
+			return;
+		}
+
+		// margins
+		real_t margin = portal->get_active_portal_margin();
+		bool show_margins = Portal::_settings_gizmo_show_margins;
+
+		if (margin < 0.05f) {
+			show_margins = false;
+		}
+
+		PoolVector<Vector3> pts_portal;
+		PoolVector<Color> cols_portal;
+		PoolVector<Vector3> pts_margin;
+		Vector<Vector3> edge_pts;
+
+		Vector3 portal_normal_world_space = portal->_plane.normal;
+		portal_normal_world_space *= margin;
+
+		// this may not be necessary, dealing with non uniform scales,
+		// possible the affine_invert dealt with this earlier .. but it's just for
+		// the editor so not performance critical
+		Basis normal_basis = tr.basis;
+
+		Vector3 portal_normal = normal_basis.xform(portal_normal_world_space);
+		Vector3 pt_portal_first = tr.xform(portal->_pts_world[0]);
+
+		for (int n = 0; n < num_points; n++) {
+			Vector3 pt = portal->_pts_world[n];
+			pt = tr.xform(pt);
+
+			// CI for visual studio can't seem to get around the possibility
+			// that this could cause a divide by zero, so using a local to preclude the
+			// possibility of aliasing from another thread
+			int m = (n + 1) % num_points;
+			Vector3 pt_next = portal->_pts_world[m];
+			pt_next = tr.xform(pt_next);
+
+			// don't need the first and last triangles
+			if ((n != 0) && (n != (num_points - 1))) {
+				pts_portal.push_back(pt_portal_first);
+				pts_portal.push_back(pt);
+				pts_portal.push_back(pt_next);
+				cols_portal.push_back(color_portal_front);
+				cols_portal.push_back(color_portal_front);
+				cols_portal.push_back(color_portal_front);
+
+				pts_portal.push_back(pt_next);
+				pts_portal.push_back(pt);
+				pts_portal.push_back(pt_portal_first);
+				cols_portal.push_back(color_portal_back);
+				cols_portal.push_back(color_portal_back);
+				cols_portal.push_back(color_portal_back);
+			}
+
+			if (show_margins) {
+				Vector3 pt0 = pt - portal_normal;
+				Vector3 pt1 = pt + portal_normal;
+				Vector3 pt2 = pt_next - portal_normal;
+				Vector3 pt3 = pt_next + portal_normal;
+
+				pts_margin.push_back(pt0);
+				pts_margin.push_back(pt2);
+				pts_margin.push_back(pt1);
+
+				pts_margin.push_back(pt2);
+				pts_margin.push_back(pt3);
+				pts_margin.push_back(pt1);
+
+				edge_pts.push_back(pt0);
+				edge_pts.push_back(pt2);
+				edge_pts.push_back(pt1);
+				edge_pts.push_back(pt3);
+			}
+		}
+
+		// portal itself
+		{
+			Ref<ArrayMesh> mesh = memnew(ArrayMesh);
+			Array array;
+			array.resize(Mesh::ARRAY_MAX);
+			array[Mesh::ARRAY_VERTEX] = pts_portal;
+			array[Mesh::ARRAY_COLOR] = cols_portal;
+			mesh->add_surface_from_arrays(Mesh::PRIMITIVE_TRIANGLES, array);
+			p_gizmo->add_mesh(mesh, false, Ref<SkinReference>(), material_portal);
+		}
+
+		if (show_margins) {
+			Ref<ArrayMesh> mesh = memnew(ArrayMesh);
+			Array array;
+			array.resize(Mesh::ARRAY_MAX);
+			array[Mesh::ARRAY_VERTEX] = pts_margin;
+			mesh->add_surface_from_arrays(Mesh::PRIMITIVE_TRIANGLES, array);
+			p_gizmo->add_mesh(mesh, false, Ref<SkinReference>(), material_margin);
+
+			// lines around the outside of mesh
+			p_gizmo->add_lines(edge_pts, material_edge, false, color);
+		} // only if the margin is sufficient to be worth drawing
+
+		// arrow
+		if (show_margins) {
+			const int arrow_points = 7;
+			const float arrow_length = 0.5; // 1.5
+			const float arrow_width = 0.1; // 0.3
+			const float arrow_barb = 0.27; // 0.8
+
+			Vector3 arrow[arrow_points] = {
+				Vector3(0, 0, -1),
+				Vector3(0, arrow_barb, 0),
+				Vector3(0, arrow_width, 0),
+				Vector3(0, arrow_width, arrow_length),
+				Vector3(0, -arrow_width, arrow_length),
+				Vector3(0, -arrow_width, 0),
+				Vector3(0, -arrow_barb, 0)
+			};
+
+			int arrow_sides = 2;
+
+			Vector<Vector3> lines;
+
+			for (int i = 0; i < arrow_sides; i++) {
+				for (int j = 0; j < arrow_points; j++) {
+					Basis ma(Vector3(0, 0, 1), Math_PI * i / arrow_sides);
+
+					Vector3 v1 = arrow[j] - Vector3(0, 0, arrow_length);
+					Vector3 v2 = arrow[(j + 1) % arrow_points] - Vector3(0, 0, arrow_length);
+
+					lines.push_back(ma.xform(v1));
+					lines.push_back(ma.xform(v2));
+				}
+			}
+
+			p_gizmo->add_lines(lines, material_arrow, false, color);
+		}
+
+	} // was portal
 }

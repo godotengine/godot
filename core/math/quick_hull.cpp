@@ -33,18 +33,13 @@
 #include "core/map.h"
 
 uint32_t QuickHull::debug_stop_after = 0xFFFFFFFF;
+bool QuickHull::_flag_warnings = true;
 
-Error QuickHull::build(const Vector<Vector3> &p_points, Geometry::MeshData &r_mesh) {
+Error QuickHull::build(const Vector<Vector3> &p_points, Geometry::MeshData &r_mesh, real_t p_over_tolerance_epsilon) {
 	/* CREATE AABB VOLUME */
 
 	AABB aabb;
-	for (int i = 0; i < p_points.size(); i++) {
-		if (i == 0) {
-			aabb.position = p_points[i];
-		} else {
-			aabb.expand_to(p_points[i]);
-		}
-	}
+	aabb.create_from_points(p_points);
 
 	if (aabb.size == Vector3()) {
 		return ERR_CANT_CREATE;
@@ -171,7 +166,7 @@ Error QuickHull::build(const Vector<Vector3> &p_points, Geometry::MeshData &r_me
 		faces.push_back(f);
 	}
 
-	real_t over_tolerance = 3 * UNIT_EPSILON * (aabb.size.x + aabb.size.y + aabb.size.z);
+	real_t over_tolerance = p_over_tolerance_epsilon * (aabb.size.x + aabb.size.y + aabb.size.z);
 
 	/* COMPUTE AVAILABLE VERTICES */
 
@@ -366,6 +361,10 @@ Error QuickHull::build(const Vector<Vector3> &p_points, Geometry::MeshData &r_me
 
 	//fill faces
 
+	bool warning_f = false;
+	bool warning_o_equal_e = false;
+	bool warning_o = false;
+
 	for (List<Geometry::MeshData::Face>::Element *E = ret_faces.front(); E; E = E->next()) {
 		Geometry::MeshData::Face &f = E->get();
 
@@ -376,10 +375,20 @@ Error QuickHull::build(const Vector<Vector3> &p_points, Geometry::MeshData &r_me
 
 			Map<Edge, RetFaceConnect>::Element *F = ret_edges.find(e);
 
-			ERR_CONTINUE(!F);
+			if (unlikely(!F)) {
+				warning_f = true;
+				continue;
+			}
+
 			List<Geometry::MeshData::Face>::Element *O = F->get().left == E ? F->get().right : F->get().left;
-			ERR_CONTINUE(O == E);
-			ERR_CONTINUE(O == nullptr);
+			if (unlikely(O == E)) {
+				warning_o_equal_e = true;
+				continue;
+			}
+			if (unlikely(!O)) {
+				warning_o = true;
+				continue;
+			}
 
 			if (O->get().plane.is_equal_approx(f.plane)) {
 				//merge and delete edge and contiguous face, while repointing edges (uuugh!)
@@ -434,6 +443,18 @@ Error QuickHull::build(const Vector<Vector3> &p_points, Geometry::MeshData &r_me
 		}
 	}
 
+	if (_flag_warnings) {
+		if (warning_f) {
+			WARN_PRINT("QuickHull : !F");
+		}
+		if (warning_o_equal_e) {
+			WARN_PRINT("QuickHull : O == E");
+		}
+		if (warning_o) {
+			WARN_PRINT("QuickHull : O == nullptr");
+		}
+	}
+
 	//fill mesh
 	r_mesh.faces.clear();
 	r_mesh.faces.resize(ret_faces.size());
@@ -451,7 +472,28 @@ Error QuickHull::build(const Vector<Vector3> &p_points, Geometry::MeshData &r_me
 		r_mesh.edges.write[idx++] = e;
 	}
 
-	r_mesh.vertices = p_points;
+	// we are only interested in outputting the points that are used
+	Vector<int> out_indices;
+
+	for (int n = 0; n < r_mesh.faces.size(); n++) {
+		Geometry::MeshData::Face face = r_mesh.faces[n];
+		for (int i = 0; i < face.indices.size(); i++) {
+			face.indices.set(i, find_or_create_output_index(face.indices[i], out_indices));
+		}
+		r_mesh.faces.set(n, face);
+	}
+	for (int n = 0; n < r_mesh.edges.size(); n++) {
+		Geometry::MeshData::Edge e = r_mesh.edges[n];
+		e.a = find_or_create_output_index(e.a, out_indices);
+		e.b = find_or_create_output_index(e.b, out_indices);
+		r_mesh.edges.set(n, e);
+	}
+
+	// rejig the final vertices
+	r_mesh.vertices.resize(out_indices.size());
+	for (int n = 0; n < out_indices.size(); n++) {
+		r_mesh.vertices.set(n, p_points[out_indices[n]]);
+	}
 
 	return OK;
 }

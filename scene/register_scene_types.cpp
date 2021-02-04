@@ -195,11 +195,15 @@
 #include "scene/3d/path.h"
 #include "scene/3d/physics_body.h"
 #include "scene/3d/physics_joint.h"
+#include "scene/3d/portal.h"
 #include "scene/3d/position_3d.h"
 #include "scene/3d/proximity_group.h"
 #include "scene/3d/ray_cast.h"
 #include "scene/3d/reflection_probe.h"
 #include "scene/3d/remote_transform.h"
+#include "scene/3d/room.h"
+#include "scene/3d/room_group.h"
+#include "scene/3d/room_manager.h"
 #include "scene/3d/skeleton.h"
 #include "scene/3d/soft_body.h"
 #include "scene/3d/spring_arm.h"
@@ -397,6 +401,7 @@ void register_scene_types() {
 
 #ifndef _3D_DISABLED
 	ClassDB::register_virtual_class<VisualInstance>();
+	ClassDB::register_virtual_class<CullInstance>();
 	ClassDB::register_virtual_class<GeometryInstance>();
 	ClassDB::register_class<Camera>();
 	ClassDB::register_class<ClippedCamera>();
@@ -426,6 +431,10 @@ void register_scene_types() {
 	ClassDB::register_class<NavigationMeshInstance>();
 	ClassDB::register_class<NavigationMesh>();
 	ClassDB::register_class<Navigation>();
+	ClassDB::register_class<Room>();
+	ClassDB::register_class<RoomGroup>();
+	ClassDB::register_class<RoomManager>();
+	ClassDB::register_class<Portal>();
 
 	ClassDB::register_class<RootMotionView>();
 	ClassDB::set_class_enabled("RootMotionView", false); //disabled by default, enabled by editor

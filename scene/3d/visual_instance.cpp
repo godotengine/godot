@@ -38,6 +38,10 @@ AABB VisualInstance::get_transformed_aabb() const {
 	return get_global_transform().xform(get_aabb());
 }
 
+void VisualInstance::_refresh_portal_mode() {
+	VisualServer::get_singleton()->instance_set_portal_mode(instance, (VisualServer::InstancePortalMode)get_portal_mode());
+}
+
 void VisualInstance::_update_visibility() {
 	if (!is_inside_tree()) {
 		return;
@@ -137,7 +141,6 @@ void VisualInstance::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_layer_mask"), &VisualInstance::get_layer_mask);
 	ClassDB::bind_method(D_METHOD("set_layer_mask_bit", "layer", "enabled"), &VisualInstance::set_layer_mask_bit);
 	ClassDB::bind_method(D_METHOD("get_layer_mask_bit", "layer"), &VisualInstance::get_layer_mask_bit);
-
 	ClassDB::bind_method(D_METHOD("get_transformed_aabb"), &VisualInstance::get_transformed_aabb);
 
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "layers", PROPERTY_HINT_LAYERS_3D_RENDER), "set_layer_mask", "get_layer_mask");

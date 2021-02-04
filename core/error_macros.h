@@ -321,6 +321,24 @@ void _err_print_index_error(const char *p_function, const char *p_file, int p_li
 	}
 
 /**
+ * Should assert only if making a build with dev asserts.
+ * This should be a 'free' check for program flow and should not be needed in any releases,
+ *  only used in dev builds.
+ */
+// #define DEV_ASSERTS_ENABLED
+#ifdef DEV_ASSERTS_ENABLED
+#define DEV_ASSERT(m_cond)                                                                                                  \
+	{                                                                                                                       \
+		if (unlikely(!(m_cond))) {                                                                                          \
+			_err_print_error(FUNCTION_STR, __FILE__, __LINE__, "FATAL: DEV_ASSERT failed  \"" _STR(m_cond) "\" is false."); \
+			GENERATE_TRAP                                                                                                   \
+		}                                                                                                                   \
+	}
+#else
+#define DEV_ASSERT(m_cond)
+#endif
+
+/**
  * If `m_cond` evaluates to `true`, crashes the engine immediately with a generic error message.
  * Only use this if there's no sensible fallback (i.e. the error is unrecoverable).
  */

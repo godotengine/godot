@@ -139,8 +139,11 @@ public:
 		NOTIFICATION_EXIT_WORLD = 42,
 		NOTIFICATION_VISIBILITY_CHANGED = 43,
 		NOTIFICATION_LOCAL_TRANSFORM_CHANGED = 44,
+		NOTIFICATION_ENTER_GAMEPLAY = 45,
+		NOTIFICATION_EXIT_GAMEPLAY = 46,
 	};
 
+	virtual void notification_callback(int p_message_type);
 	Spatial *get_parent_spatial() const;
 
 	Ref<World> get_world() const;
