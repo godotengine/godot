@@ -1718,6 +1718,7 @@ TileMapEditor::TileMapEditor() {
 	tilemap_erase_button->set_flat(true);
 	tilemap_erase_button->set_toggle_mode(true);
 	tilemap_erase_button->set_shortcut(ED_SHORTCUT("tiles_editor/eraser", "Eraser", KEY_E));
+	tilemap_erase_button->connect("pressed", callable_mp(CanvasItemEditor::get_singleton(), &CanvasItemEditor::update_viewport));
 	tilemap_tools_settings->add_child(tilemap_erase_button);
 
 	// Separator 2.
