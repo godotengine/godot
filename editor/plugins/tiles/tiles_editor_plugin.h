@@ -44,6 +44,7 @@ class TilesEditor : public VBoxContainer {
 	static TilesEditor *singleton;
 
 private:
+	bool tile_map_changed_needs_update = false;
 	TileMap *tile_map = nullptr;
 	Ref<TileSet> tile_set;
 

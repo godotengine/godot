@@ -150,25 +150,25 @@ void TileSetAtlasPluginRendering::update_dirty_quadrants(TileMap *p_tile_map, Se
 		for (Map<Vector2i, Vector2i, TileMapQuadrant::CoordsWorldComparator>::Element *E = q.world_to_map.front(); E; E = E->next()) {
 			TileMapCell c = p_tile_map->get_cell(E->value());
 
-			if (tile_set->get_source_type(c.source_id) == TileSet::SOURCE_TYPE_ATLAS) {
-				TileAtlasSource *atlas = tile_set->get_atlas_source(c.source_id);
-
+			TileSetSource *source = *tile_set->get_source(c.source_id);
+			TileSetAtlasSource *atlas_source = Object::cast_to<TileSetAtlasSource>(source);
+			if (atlas_source) {
 				// Check if the tileset has a tile with the given ID, otherwise, ignore it.
-				if (!atlas->has_tile(c.get_atlas_coords()) || !atlas->has_alternative_tile(c.get_atlas_coords(), c.alternative_tile)) {
+				if (!atlas_source->has_tile(c.get_atlas_coords()) || !atlas_source->has_alternative_tile(c.get_atlas_coords(), c.alternative_tile)) {
 					continue;
 				}
 
 				// Get the texture.
-				Ref<Texture2D> tex = atlas->get_texture();
+				Ref<Texture2D> tex = atlas_source->get_texture();
 				if (!tex.is_valid()) {
 					continue;
 				}
 
 				// Get the material.
-				Ref<ShaderMaterial> mat = atlas->get_tile_data(c.get_atlas_coords(), c.alternative_tile)->tile_get_material();
+				Ref<ShaderMaterial> mat = atlas_source->get_tile_data(c.get_atlas_coords(), c.alternative_tile)->tile_get_material();
 
 				// Get the Z-index.
-				int z_index = atlas->get_tile_data(c.get_atlas_coords(), c.alternative_tile)->tile_get_z_index();
+				int z_index = atlas_source->get_tile_data(c.get_atlas_coords(), c.alternative_tile)->tile_get_z_index();
 
 				// Create two canvas items, for rendering and debug.
 				RID canvas_item;
@@ -203,7 +203,7 @@ void TileSetAtlasPluginRendering::update_dirty_quadrants(TileMap *p_tile_map, Se
 				}
 
 				// Get the tile region in the tileset, if it is defined.
-				Rect2 r = atlas->get_tile_texture_region(c.get_atlas_coords());
+				Rect2 r = atlas_source->get_tile_texture_region(c.get_atlas_coords());
 
 				// Get the texture size.
 				Size2 s;
@@ -213,10 +213,10 @@ void TileSetAtlasPluginRendering::update_dirty_quadrants(TileMap *p_tile_map, Se
 					s = r.size; // Region, use the region size.
 				}
 
-				bool transpose = atlas->get_tile_data(c.get_atlas_coords(), c.alternative_tile)->tile_get_transpose();
+				bool transpose = atlas_source->get_tile_data(c.get_atlas_coords(), c.alternative_tile)->tile_get_transpose();
 
 				// Compute the offset
-				Vector2i source_tile_size = atlas->get_tile_texture_region(c.get_atlas_coords()).size;
+				Vector2i source_tile_size = atlas_source->get_tile_texture_region(c.get_atlas_coords()).size;
 				Vector2i tile_offset = tile_set->get_tile_effective_texture_offset(c.source_id, c.get_atlas_coords(), c.alternative_tile);
 				Vector2 offset = E->key() - source_tile_size / 2 - q.pos - tile_offset;
 
@@ -244,7 +244,7 @@ void TileSetAtlasPluginRendering::update_dirty_quadrants(TileMap *p_tile_map, Se
                 rect.position += tile_ofs;
                 */
 				// Get the tile modulation.
-				Color modulate = atlas->get_tile_data(c.get_atlas_coords(), c.alternative_tile)->tile_get_modulate();
+				Color modulate = atlas_source->get_tile_data(c.get_atlas_coords(), c.alternative_tile)->tile_get_modulate();
 				Color self_modulate = p_tile_map->get_self_modulate();
 				modulate = Color(modulate.r * self_modulate.r, modulate.g * self_modulate.g, modulate.b * self_modulate.b, modulate.a * self_modulate.a);
 

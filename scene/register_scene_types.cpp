@@ -655,7 +655,8 @@ void register_scene_types() {
 	ClassDB::register_class<GrooveJoint2D>();
 	ClassDB::register_class<DampedSpringJoint2D>();
 	ClassDB::register_class<TileSet>();
-	ClassDB::register_class<TileAtlasSource>();
+	ClassDB::register_virtual_class<TileSetSource>();
+	ClassDB::register_class<TileSetAtlasSource>();
 	ClassDB::register_class<TileMap>();
 	ClassDB::register_class<ParallaxBackground>();
 	ClassDB::register_class<ParallaxLayer>();

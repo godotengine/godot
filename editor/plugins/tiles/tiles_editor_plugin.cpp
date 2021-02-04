@@ -52,13 +52,20 @@ void TilesEditor::_notification(int p_what) {
 		case NOTIFICATION_THEME_CHANGED: {
 			tileset_tilemap_switch_button->set_icon(get_theme_icon("TileSet", "EditorIcons"));
 		} break;
+		case NOTIFICATION_INTERNAL_PROCESS: {
+			if (tile_map_changed_needs_update) {
+				if (tile_map) {
+					tile_set = tile_map->get_tileset();
+				}
+				_update_switch_button();
+				_update_editors();
+			}
+		} break;
 	}
 }
 
 void TilesEditor::_tile_map_changed() {
-	tile_set = tile_map->get_tileset();
-	_update_switch_button();
-	_update_editors();
+	tile_map_changed_needs_update = true;
 }
 
 void TilesEditor::_update_switch_button() {
@@ -97,7 +104,7 @@ void TilesEditor::_update_editors() {
 
 	// If tile_map is not edited, we change the edited only if we are not editing a tile_set.
 	tilemap_editor->edit(tile_map);
-	tileset_editor->edit(*tile_set);
+	tileset_editor->edit(tile_set);
 
 	// Update the viewport
 	CanvasItemEditor::get_singleton()->update_viewport();
@@ -137,10 +144,13 @@ void TilesEditor::synchronize_atlas_view(Object *p_current) {
 
 void TilesEditor::clear() {
 	tile_map = nullptr;
-	edit(nullptr);
 }
 
 void TilesEditor::edit(Object *p_object) {
+	if (tile_map) {
+		tile_map->disconnect("changed", callable_mp(this, &TilesEditor::_tile_map_changed));
+	}
+
 	// Update edited objects.
 	tile_set = Ref<TileSet>();
 	if (p_object) {
@@ -179,6 +189,8 @@ void TilesEditor::_bind_methods() {
 }
 
 TilesEditor::TilesEditor(EditorNode *p_editor) {
+	set_process_internal(true);
+
 	// Update the singleton.
 	singleton = this;
 

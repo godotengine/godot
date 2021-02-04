@@ -128,8 +128,16 @@ public:
 	*/
 };
 
-class TileAtlasSource : public Object {
-	GDCLASS(TileAtlasSource, Object);
+class TileSetSource : public Resource {
+	GDCLASS(TileSetSource, Resource);
+
+public:
+	virtual bool has_tile(Vector2i p_atlas_coords) const = 0;
+	virtual bool has_alternative_tile(const Vector2i p_atlas_coords, int p_alternative_tile) const = 0;
+};
+
+class TileSetAtlasSource : public TileSetSource {
+	GDCLASS(TileSetAtlasSource, TileSetSource);
 
 public:
 	static const Vector2i INVALID_ATLAS_COORDS; // Vector2i(-1, -1);
@@ -184,7 +192,7 @@ public:
 	// Base tiles
 	void create_tile(const Vector2i p_atlas_coords, const Vector2i p_size = Vector2i(1, 1)); // Create a tile if it does not exists, or add alternative tile if it does.
 	void remove_tile(Vector2i p_atlas_coords); // Remove a tile. If p_tile_key.alternative_tile if different from 0, remove the alternative
-	bool has_tile(Vector2i p_atlas_coords) const;
+	virtual bool has_tile(Vector2i p_atlas_coords) const override;
 	bool can_move_tile_in_atlas(Vector2i p_atlas_coords, Vector2i p_new_atlas_coords = INVALID_ATLAS_COORDS, Vector2i p_new_size = Vector2i(-1, -1)) const;
 	void move_tile_in_atlas(Vector2i p_atlas_coords, Vector2i p_new_atlas_coords = INVALID_ATLAS_COORDS, Vector2i p_new_size = Vector2i(-1, -1));
 	Vector2i get_tile_size_in_atlas(Vector2i p_atlas_coords) const;
@@ -198,7 +206,7 @@ public:
 	int create_alternative_tile(const Vector2i p_atlas_coords, int p_alternative_id_override = -1);
 	void remove_alternative_tile(const Vector2i p_atlas_coords, int p_alternative_tile);
 	void set_alternative_tile_id(const Vector2i p_atlas_coords, int p_alternative_tile, int p_new_id);
-	bool has_alternative_tile(const Vector2i p_atlas_coords, int p_alternative_tile) const;
+	virtual bool has_alternative_tile(const Vector2i p_atlas_coords, int p_alternative_tile) const override;
 	int get_next_alternative_tile_id(const Vector2i p_atlas_coords) const;
 
 	int get_alternative_tiles_count(const Vector2i p_atlas_coords) const;
@@ -212,7 +220,7 @@ public:
 	void clear_tiles_outside_texture();
 	Rect2i get_tile_texture_region(Vector2i p_atlas_coords) const;
 
-	~TileAtlasSource();
+	~TileSetAtlasSource();
 };
 
 class TileSet : public Resource {
@@ -271,12 +279,6 @@ public:
 #endif // DISABLE_DEPRECATED
 
 public:
-	enum SourceType {
-		SOURCE_TYPE_INVALID = -1,
-		SOURCE_TYPE_ATLAS,
-		SOURCE_TYPE_SCENE
-	};
-
 	enum TileShape {
 		TILE_SHAPE_SQUARE,
 		TILE_SHAPE_ISOMETRIC,
@@ -325,12 +327,8 @@ private:
 	//NavigationTileSetData navigation;
 
 	// Per Atlas source data.
-	Map<int, TileAtlasSource *> source_atlas;
-	Vector<int> source_atlas_ids;
-
-	// Per Scene source data.
-	Map<int, PackedSceneSource> source_scenes;
-	Vector<int> source_scenes_ids;
+	Map<int, Ref<TileSetSource>> sources;
+	Vector<int> source_ids;
 	int next_source_id = 0;
 	// ---------------------
 
@@ -368,29 +366,22 @@ public:
 	Vector2 get_tile_skew() const;
 
 	// -- Sources management --
-	SourceType get_source_type(int p_source_id);
-	int get_next_source_id();
+	int get_next_source_id() const;
+	int get_source_count() const;
+	int get_source_id(int p_index) const;
+	int add_source(Ref<TileSetAtlasSource> p_tile_atlas_source, int p_source_id_override = -1);
+	void set_source_id(int p_source_id, int p_new_id);
+	void remove_source(int p_source_id);
+	bool has_source(int p_source_id) const;
+	Ref<TileSetSource> get_source(int p_source_id) const;
 
 	// Atlases
-	int add_atlas_source(int p_atlas_source_id_override = -1);
+	/*int add_atlas_source(int p_atlas_source_id_override = -1);
 	void remove_atlas_source(int p_source_id);
 	void set_atlas_source_id(int p_source_id, int p_new_id);
 	bool has_atlas_source(int p_source_id) const;
-	TileAtlasSource *get_atlas_source(int p_source_id) const;
-
-	int get_atlas_source_count() const;
-	int get_atlas_source_id(int p_index) const;
-
-	// Scenes
-	int add_scene_source(Ref<PackedScene> p_scene);
-	void remove_scene_source(int p_source_id);
-
-	void set_scene_source_scene(int p_source_id, Ref<PackedScene> p_packed_scene);
-	Ref<PackedScene> get_scene_source_scene(int p_source_id);
-
-	void set_scene_source_offset(int p_source_id, Vector2 p_offset);
-	Vector2 set_scene_source_offset(int p_source_id);
-
+	TileSetAtlasSource *get_atlas_source(int p_source_id) const;
+*/
 	/*
 	// -- Plugins data accessors --
 	// Terrain
@@ -432,7 +423,6 @@ public:
 public:
 	static void _append_property_list_with_prefix(const StringName &p_name, List<PropertyInfo> *p_to_prepend, List<PropertyInfo> *p_list);
 };
-VARIANT_ENUM_CAST(TileSet::SourceType);
 VARIANT_ENUM_CAST(TileSet::TileShape);
 VARIANT_ENUM_CAST(TileSet::TileLayout);
 VARIANT_ENUM_CAST(TileSet::TileOffsetAxis);

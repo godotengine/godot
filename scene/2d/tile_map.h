@@ -38,7 +38,7 @@
 #include "scene/resources/tile_set/tile_set.h"
 
 class TileSet;
-class TileAtlasSource;
+class TileSetAtlasSource;
 
 union TileMapCell {
 	struct {
@@ -49,7 +49,7 @@ union TileMapCell {
 	};
 
 	uint64_t _u64t;
-	TileMapCell(int p_source_id = -1, Vector2i p_atlas_coords = TileAtlasSource::INVALID_ATLAS_COORDS, int p_alternative_tile = TileAtlasSource::INVALID_TILE_ALTERNATIVE) {
+	TileMapCell(int p_source_id = -1, Vector2i p_atlas_coords = TileSetAtlasSource::INVALID_ATLAS_COORDS, int p_alternative_tile = TileSetAtlasSource::INVALID_TILE_ALTERNATIVE) {
 		source_id = p_source_id;
 		set_atlas_coords(p_atlas_coords);
 		alternative_tile = p_alternative_tile;
@@ -224,7 +224,7 @@ public:
 	void set_quadrant_size(int p_size);
 	int get_quadrant_size() const;
 
-	void set_cell(const Vector2i &p_coords, int p_source_id = -1, const Vector2i p_atlas_coords = TileAtlasSource::INVALID_ATLAS_COORDS, int p_alternative_tile = TileAtlasSource::INVALID_TILE_ALTERNATIVE);
+	void set_cell(const Vector2i &p_coords, int p_source_id = -1, const Vector2i p_atlas_coords = TileSetAtlasSource::INVALID_ATLAS_COORDS, int p_alternative_tile = TileSetAtlasSource::INVALID_TILE_ALTERNATIVE);
 	int get_cell_source_id(const Vector2i &p_coords) const;
 	Vector2i get_cell_atlas_coords(const Vector2i &p_coords) const;
 	int get_cell_alternative_tile(const Vector2i &p_coords) const;

@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  tile_set_editor_sources_tab.h                                        */
+/*  tile_set_atlas_source_editor.h                                       */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,8 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef TILE_SET_EDITOR_SOURCES_TAB_H
-#define TILE_SET_EDITOR_SOURCES_TAB_H
+#ifndef TILE_SET_ATLAS_SOURCE_EDITOR_H
+#define TILE_SET_ATLAS_SOURCE_EDITOR_H
 
 #include "tile_atlas_view.h"
 
@@ -40,16 +40,17 @@
 
 class TileSet;
 
-class TileSetEditorSourcesTab : public HSplitContainer {
-	GDCLASS(TileSetEditorSourcesTab, HSplitContainer);
+class TileSetAtlasSourceEditor : public HBoxContainer {
+	GDCLASS(TileSetAtlasSourceEditor, HBoxContainer);
 
 private:
 	// -- Proxy object for an atlas source, needed by the inspector --
-	class TileAtlasSourceProxyObject : public Object {
-		GDCLASS(TileAtlasSourceProxyObject, Object);
+	class TileSetAtlasSourceProxyObject : public Object {
+		GDCLASS(TileSetAtlasSourceProxyObject, Object);
 
 	private:
-		TileSet *tile_set = nullptr;
+		Ref<TileSet> tile_set;
+		TileSetAtlasSource *tile_set_atlas_source = nullptr;
 		int source_id;
 
 	protected:
@@ -62,7 +63,7 @@ private:
 		void set_id(int p_id);
 		int get_id();
 
-		void edit(TileSet *p_tile_set, int p_source_id = TileSet::SOURCE_TYPE_INVALID);
+		void edit(Ref<TileSet> p_tile_set, TileSetAtlasSource *p_tile_set_atlas_source, int p_source_id);
 	};
 
 	// -- Proxy object for a tile, needed by the inspector --
@@ -70,9 +71,9 @@ private:
 		GDCLASS(TileProxyObject, Object);
 
 	private:
-		TileSetEditorSourcesTab *tiles_editor_source_tab;
+		TileSetAtlasSourceEditor *tiles_editor_source_tab;
 
-		TileSet *tile_set = nullptr;
+		TileSetAtlasSource *tile_set_atlas_source = nullptr;
 		int source_id;
 		Vector2i coords;
 
@@ -87,9 +88,9 @@ private:
 		void set_size_in_atlas(Vector2i p_size_in_atlas);
 
 		// Update the proxyed object.
-		void edit(TileSet *p_tile_set, int p_source_id = TileSet::SOURCE_TYPE_INVALID, Vector2i p_coords = TileAtlasSource::INVALID_ATLAS_COORDS);
+		void edit(TileSetAtlasSource *p_tile_set_atlas_source, int p_source_id = -1, Vector2i p_coords = TileSetAtlasSource::INVALID_ATLAS_COORDS);
 
-		TileProxyObject(TileSetEditorSourcesTab *p_tiles_editor_source_tab) {
+		TileProxyObject(TileSetAtlasSourceEditor *p_tiles_editor_source_tab) {
 			tiles_editor_source_tab = p_tiles_editor_source_tab;
 		}
 	};
@@ -99,9 +100,9 @@ private:
 		GDCLASS(AlternativeTileProxyObject, Object);
 
 	private:
-		TileSetEditorSourcesTab *tiles_editor_source_tab;
+		TileSetAtlasSourceEditor *tiles_editor_source_tab;
 
-		TileSet *tile_set = nullptr;
+		TileSetAtlasSource *tile_set_atlas_source = nullptr;
 		int source_id;
 		Vector2i coords;
 		int alternative_tile;
@@ -115,27 +116,20 @@ private:
 		int get_id();
 
 		// Update the proxyed object.
-		void edit(TileSet *p_tile_set, int p_source_id = TileSet::SOURCE_TYPE_INVALID, Vector2i p_coords = TileAtlasSource::INVALID_ATLAS_COORDS, int p_alternative_tile = TileAtlasSource::INVALID_TILE_ALTERNATIVE);
+		void edit(TileSetAtlasSource *p_tile_set_atlas_source, int p_source_id = -1, Vector2i p_coords = TileSetAtlasSource::INVALID_ATLAS_COORDS, int p_alternative_tile = TileSetAtlasSource::INVALID_TILE_ALTERNATIVE);
 
-		AlternativeTileProxyObject(TileSetEditorSourcesTab *p_tiles_editor_source_tab) {
+		AlternativeTileProxyObject(TileSetAtlasSourceEditor *p_tiles_editor_source_tab) {
 			tiles_editor_source_tab = p_tiles_editor_source_tab;
 		}
 	};
 
-	TileSet *tile_set = nullptr;
+	Ref<TileSet> tile_set;
+	TileSetAtlasSource *tile_set_atlas_source = nullptr;
+	int tile_set_atlas_source_id = -1;
 
 	UndoRedo *undo_redo = EditorNode::get_undo_redo();
 
 	bool tileset_changed_needs_update = false;
-
-	// -- Sources management --
-	Button *sources_delete_button;
-	Button *sources_add_button;
-	ItemList *sources_list;
-	Ref<Texture2D> missing_texture_texture;
-	void _source_selected(int p_source_index);
-	void _source_add_pressed();
-	void _source_delete_pressed();
 
 	// -- Inspector --
 	TileProxyObject *tile_proxy_object;
@@ -146,11 +140,9 @@ private:
 	Label *alternative_tile_inspector_label;
 	EditorInspector *alternative_tile_inspector;
 
-	TileAtlasSourceProxyObject *atlas_source_proxy_object;
+	TileSetAtlasSourceProxyObject *atlas_source_proxy_object;
 	Label *atlas_source_inspector_label;
 	EditorInspector *atlas_source_inspector;
-	Button *atlas_source_fix_tiles_outside_texture_button;
-	void _clear_tiles_outside_texture();
 
 	// -- Atlas view --
 	HBoxContainer *toolbox;
@@ -187,7 +179,21 @@ private:
 	Set<Vector2i> drag_modified_tiles;
 	void _end_dragging();
 
-	Map<Vector2i, List<const PropertyInfo *>> _group_properties_per_tiles(const List<PropertyInfo> &r_list, const TileAtlasSource *p_atlas);
+	Map<Vector2i, List<const PropertyInfo *>> _group_properties_per_tiles(const List<PropertyInfo> &r_list, const TileSetAtlasSource *p_atlas);
+
+	// Popup functions.
+	enum MenuOptions {
+		TILE_CREATE,
+		TILE_CREATE_ALTERNATIVE,
+		TILE_DELETE,
+
+		ADVANCED_CLEANUP_TILES_OUTSIDE_TEXTURE,
+		ADVANCED_AUTO_CREATE_TILES,
+		ADVANCED_AUTO_REMOVE_TILES,
+	};
+	Vector2i menu_option_coords;
+	int menu_option_alternative;
+	void _menu_option(int p_option);
 
 	// Tool buttons.
 	Ref<ButtonGroup> tools_button_group;
@@ -200,22 +206,14 @@ private:
 	VSeparator *tool_settings_vsep;
 	Button *tools_settings_erase_button;
 
-	// Selection.
-	Vector2i selected_tile = TileAtlasSource::INVALID_ATLAS_COORDS;
-	int selected_alternative = TileAtlasSource::INVALID_TILE_ALTERNATIVE;
+	MenuButton *tool_advanced_menu_buttom;
 
-	// Popup functions.
-	enum MenuOptions {
-		TILE_CREATE,
-		TILE_CREATE_ALTERNATIVE,
-		TILE_DELETE,
-	};
-	Vector2i menu_option_coords;
-	int menu_option_alternative;
-	void _menu_option(int p_option);
+	// Selection.
+	Vector2i selected_tile = TileSetAtlasSource::INVALID_ATLAS_COORDS;
+	int selected_alternative = TileSetAtlasSource::INVALID_TILE_ALTERNATIVE;
 
 	// A control on the tile atlas to draw and handle input events.
-	Vector2i hovered_base_tile_coords = TileAtlasSource::INVALID_ATLAS_COORDS;
+	Vector2i hovered_base_tile_coords = TileSetAtlasSource::INVALID_ATLAS_COORDS;
 
 	PopupMenu *base_tile_popup_menu;
 	PopupMenu *empty_base_tile_popup_menu;
@@ -228,7 +226,7 @@ private:
 	void _tile_atlas_view_transform_changed();
 
 	// A control over the alternative tiles.
-	Vector3i hovered_alternative_tile_coords = Vector3i(TileAtlasSource::INVALID_ATLAS_COORDS.x, TileAtlasSource::INVALID_ATLAS_COORDS.y, TileAtlasSource::INVALID_TILE_ALTERNATIVE);
+	Vector3i hovered_alternative_tile_coords = Vector3i(TileSetAtlasSource::INVALID_ATLAS_COORDS.x, TileSetAtlasSource::INVALID_ATLAS_COORDS.y, TileSetAtlasSource::INVALID_TILE_ALTERNATIVE);
 
 	PopupMenu *alternative_tile_popup_menu;
 	Control *alternative_tiles_control;
@@ -238,7 +236,6 @@ private:
 
 	// -- Update functions --
 	void _update_tile_id_label();
-	void _update_atlas_sources_list();
 	void _update_source_inspector();
 	void _update_fix_selected_and_hovered_tiles();
 	void _update_tile_inspector();
@@ -251,6 +248,7 @@ private:
 
 	// -- Misc --
 	void _auto_create_tiles();
+	void _auto_remove_tiles();
 	AcceptDialog *confirm_auto_create_tiles;
 
 	void _tile_set_changed();
@@ -261,12 +259,11 @@ protected:
 	static void _bind_methods();
 
 public:
-	void edit(TileSet *p_tile_set);
-	void drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from);
-	bool can_drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from) const;
+	void edit(Ref<TileSet> p_tile_set, TileSetAtlasSource *p_tile_set_source, int p_source_id);
+	void init_source();
 
-	TileSetEditorSourcesTab();
-	~TileSetEditorSourcesTab();
+	TileSetAtlasSourceEditor();
+	~TileSetAtlasSourceEditor();
 };
 
-#endif // TILE_SET_EDITOR_PLUGIN_H
+#endif // TILE_SET_ATLAS_SOURCE_EDITOR_H

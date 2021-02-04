@@ -46,6 +46,7 @@ class TileAtlasView : public Control {
 
 private:
 	TileSet *tile_set;
+	TileSetAtlasSource *tile_set_atlas_source;
 	int source_id;
 
 	float previous_zoom = 1.0;
@@ -105,7 +106,7 @@ protected:
 
 public:
 	// Global.
-	void set_atlas_source(TileSet *p_tile_set, int p_source_id);
+	void set_atlas_source(TileSet *p_tile_set, TileSetAtlasSource *p_tile_set_atlas_source, int p_source_id);
 
 	ScrollContainer *get_scroll_container() { return scroll_container; };
 

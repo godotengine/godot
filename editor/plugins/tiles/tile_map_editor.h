@@ -51,7 +51,7 @@ private:
 	Label *missing_tileset_label;
 	TabContainer *tileset_tabs_container;
 	HSplitContainer *atlas_sources_split_container;
-	Label *missing_atlas_source_label;
+	Label *missing_source_label;
 	void _update_bottom_panel();
 
 	ItemList *sources_list;
@@ -159,6 +159,7 @@ public:
 	Control *get_toolbar() { return tilemap_toolbar; };
 
 	TileMapEditor();
+	~TileMapEditor();
 };
 
 #endif // TILE_MAP_EDITOR_PLUGIN_H

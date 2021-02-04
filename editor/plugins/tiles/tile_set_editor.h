@@ -31,7 +31,7 @@
 #ifndef TILE_SET_EDITOR_H
 #define TILE_SET_EDITOR_H
 
-#include "tile_set_editor_sources_tab.h"
+#include "tile_set_atlas_source_editor.h"
 
 #include "scene/gui/box_container.h"
 #include "scene/resources/tile_set/tile_set.h"
@@ -40,14 +40,37 @@ class TileSetEditor : public VBoxContainer {
 	GDCLASS(TileSetEditor, VBoxContainer);
 
 private:
-	TileSet *tile_set;
+	Ref<TileSet> tile_set;
+	bool tile_set_changed_needs_update = false;
 
-	TileSetEditorSourcesTab *tileset_tab_sources;
+	TileSetAtlasSourceEditor *tile_set_atlas_source_editor;
+
+	UndoRedo *undo_redo = EditorNode::get_undo_redo();
+
+	void _update_atlas_sources_list(int force_selected_id = -1);
+
+	// -- Sources management --
+	Button *sources_delete_button;
+	Button *sources_add_button;
+	ItemList *sources_list;
+	Ref<Texture2D> missing_texture_texture;
+	void _source_selected(int p_source_index);
+	void _source_add_pressed();
+	void _source_delete_pressed();
+
+	void _tile_set_changed();
+
+protected:
+	void _notification(int p_what);
+	static void _bind_methods();
 
 public:
-	void edit(TileSet *p_tile_set);
+	void edit(Ref<TileSet> p_tile_set);
+	void drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from);
+	bool can_drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from) const;
 
 	TileSetEditor();
+	~TileSetEditor();
 };
 
 #endif // TILE_SET_EDITOR_PLUGIN_H
