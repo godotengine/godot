@@ -725,6 +725,7 @@
 			Set additional options for BiDi override.
 		</member>
 		<member name="syntax_highlighter" type="SyntaxHighlighter" setter="set_syntax_highlighter" getter="get_syntax_highlighter">
+			Sets the [SyntaxHighlighter] to use.
 		</member>
 		<member name="text" type="String" setter="set_text" getter="get_text" default="&quot;&quot;">
 			String value of the [TextEdit].
@@ -914,7 +915,7 @@
 	</constants>
 	<theme_items>
 		<theme_item name="background_color" type="Color" default="Color( 0, 0, 0, 0 )">
-			Sets the background [Color] of this [TextEdit]. [member syntax_highlighting] has to be enabled.
+			Sets the background [Color] of this [TextEdit].
 		</theme_item>
 		<theme_item name="brace_mismatch_color" type="Color" default="Color( 1, 0.2, 0.2, 1 )">
 		</theme_item>
