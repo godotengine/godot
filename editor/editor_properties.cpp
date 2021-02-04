@@ -1267,16 +1267,20 @@ void EditorPropertyRect2::setup(double p_min, double p_max, double p_step, bool 
 
 EditorPropertyRect2::EditorPropertyRect2(bool p_force_wide) {
 	bool horizontal = p_force_wide || bool(EDITOR_GET("interface/inspector/horizontal_vector_types_editing"));
-
+	bool grid = false;
 	BoxContainer *bc;
 
 	if (p_force_wide) {
 		bc = memnew(HBoxContainer);
 		add_child(bc);
 	} else if (horizontal) {
-		bc = memnew(HBoxContainer);
+		bc = memnew(VBoxContainer);
 		add_child(bc);
 		set_bottom_editor(bc);
+
+		bc->add_child(memnew(HBoxContainer));
+		bc->add_child(memnew(HBoxContainer));
+		grid = true;
 	} else {
 		bc = memnew(VBoxContainer);
 		add_child(bc);
@@ -1287,7 +1291,13 @@ EditorPropertyRect2::EditorPropertyRect2(bool p_force_wide) {
 		spin[i] = memnew(EditorSpinSlider);
 		spin[i]->set_label(desc[i]);
 		spin[i]->set_flat(true);
-		bc->add_child(spin[i]);
+
+		if (grid) {
+			bc->get_child(i / 2)->add_child(spin[i]);
+		} else {
+			bc->add_child(spin[i]);
+		}
+
 		add_focusable(spin[i]);
 		spin[i]->connect("value_changed", callable_mp(this, &EditorPropertyRect2::_value_changed), varray(desc[i]));
 		if (horizontal) {
@@ -1530,16 +1540,20 @@ void EditorPropertyRect2i::setup(int p_min, int p_max, bool p_no_slider) {
 
 EditorPropertyRect2i::EditorPropertyRect2i(bool p_force_wide) {
 	bool horizontal = p_force_wide || bool(EDITOR_GET("interface/inspector/horizontal_vector_types_editing"));
-
+	bool grid = false;
 	BoxContainer *bc;
 
 	if (p_force_wide) {
 		bc = memnew(HBoxContainer);
 		add_child(bc);
 	} else if (horizontal) {
-		bc = memnew(HBoxContainer);
+		bc = memnew(VBoxContainer);
 		add_child(bc);
 		set_bottom_editor(bc);
+
+		bc->add_child(memnew(HBoxContainer));
+		bc->add_child(memnew(HBoxContainer));
+		grid = true;
 	} else {
 		bc = memnew(VBoxContainer);
 		add_child(bc);
@@ -1550,7 +1564,13 @@ EditorPropertyRect2i::EditorPropertyRect2i(bool p_force_wide) {
 		spin[i] = memnew(EditorSpinSlider);
 		spin[i]->set_label(desc[i]);
 		spin[i]->set_flat(true);
-		bc->add_child(spin[i]);
+
+		if (grid) {
+			bc->get_child(i / 2)->add_child(spin[i]);
+		} else {
+			bc->add_child(spin[i]);
+		}
+
 		add_focusable(spin[i]);
 		spin[i]->connect("value_changed", callable_mp(this, &EditorPropertyRect2i::_value_changed), varray(desc[i]));
 		if (horizontal) {
