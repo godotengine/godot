@@ -710,9 +710,12 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	// PopupMenu
 	const int popup_menu_margin_size = default_margin_size * 1.5 * EDSCALE;
 	Ref<StyleBoxFlat> style_popup_menu = style_popup->duplicate();
-	style_popup_menu->set_default_margin(SIDE_LEFT, popup_menu_margin_size);
+	// Use 1 pixel for the sides, since if 0 is used, the highlight of hovered items is drawn
+	// on top of the popup border. This causes a 'gap' in the panel border when an item is highlighted,
+	// and it looks weird. 1px solves this.
+	style_popup_menu->set_default_margin(SIDE_LEFT, 1 * EDSCALE);
 	style_popup_menu->set_default_margin(SIDE_TOP, popup_menu_margin_size);
-	style_popup_menu->set_default_margin(SIDE_RIGHT, popup_menu_margin_size);
+	style_popup_menu->set_default_margin(SIDE_RIGHT, 1 * EDSCALE);
 	style_popup_menu->set_default_margin(SIDE_BOTTOM, popup_menu_margin_size);
 
 	theme->set_stylebox("panel", "PopupMenu", style_popup_menu);
@@ -734,7 +737,10 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	theme->set_icon("visibility_hidden", "PopupMenu", theme->get_icon("GuiVisibilityHidden", "EditorIcons"));
 	theme->set_icon("visibility_visible", "PopupMenu", theme->get_icon("GuiVisibilityVisible", "EditorIcons"));
 	theme->set_icon("visibility_xray", "PopupMenu", theme->get_icon("GuiVisibilityXray", "EditorIcons"));
+
 	theme->set_constant("vseparation", "PopupMenu", (extra_spacing + default_margin_size + 1) * EDSCALE);
+	theme->set_constant("item_start_padding", "PopupMenu", popup_menu_margin_size * EDSCALE);
+	theme->set_constant("item_end_padding", "PopupMenu", popup_menu_margin_size * EDSCALE);
 
 	for (int i = 0; i < 16; i++) {
 		Color si_base_color = accent_color;
