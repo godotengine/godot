@@ -1298,10 +1298,10 @@ static void _register_variant_builtin_methods() {
 	bind_method(Array, pop_back, sarray(), varray());
 	bind_method(Array, pop_front, sarray(), varray());
 	bind_method(Array, sort, sarray(), varray());
-	bind_method(Array, sort_custom, sarray("obj", "func"), varray());
+	bind_method(Array, sort_custom, sarray("func"), varray());
 	bind_method(Array, shuffle, sarray(), varray());
 	bind_method(Array, bsearch, sarray("value", "before"), varray(true));
-	bind_method(Array, bsearch_custom, sarray("value", "obj", "func", "before"), varray(true));
+	bind_method(Array, bsearch_custom, sarray("value", "func", "before"), varray(true));
 	bind_method(Array, invert, sarray(), varray());
 	bind_method(Array, duplicate, sarray("deep"), varray(false));
 	bind_method(Array, slice, sarray("begin", "end", "step", "deep"), varray(1, false));
