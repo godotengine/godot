@@ -12,13 +12,13 @@
 		<method name="add_color_region">
 			<return type="void">
 			</return>
-			<argument index="0" name="p_start_key" type="String">
+			<argument index="0" name="start_key" type="String">
 			</argument>
-			<argument index="1" name="p_end_key" type="String">
+			<argument index="1" name="end_key" type="String">
 			</argument>
-			<argument index="2" name="p_color" type="Color">
+			<argument index="2" name="color" type="Color">
 			</argument>
-			<argument index="3" name="p_line_only" type="bool" default="false">
+			<argument index="3" name="line_only" type="bool" default="false">
 			</argument>
 			<description>
 				Adds a color region such as comments or strings.
@@ -93,7 +93,7 @@
 		<method name="has_color_region" qualifiers="const">
 			<return type="bool">
 			</return>
-			<argument index="0" name="p_start_key" type="String">
+			<argument index="0" name="start_key" type="String">
 			</argument>
 			<description>
 				Return [code]true[/code] if the start key exists, else [code]false[/code].
@@ -120,7 +120,7 @@
 		<method name="remove_color_region">
 			<return type="void">
 			</return>
-			<argument index="0" name="p_start_key" type="String">
+			<argument index="0" name="start_key" type="String">
 			</argument>
 			<description>
 				Removes the color region that uses that start key.
