@@ -1710,7 +1710,7 @@ TileMapEditor::TileMapEditor() {
 	// Continuous checkbox.
 	tilemap_bucket_continuous_checkbox = memnew(CheckBox);
 	tilemap_bucket_continuous_checkbox->set_flat(true);
-	tilemap_bucket_continuous_checkbox->set_text(TTR("Continuous"));
+	tilemap_bucket_continuous_checkbox->set_text(TTR("Contiguous"));
 	tilemap_tools_settings->add_child(tilemap_bucket_continuous_checkbox);
 
 	// Random tile checkbox.
