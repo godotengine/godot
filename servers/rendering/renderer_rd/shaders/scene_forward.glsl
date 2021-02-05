@@ -203,7 +203,7 @@ void main() {
 	uv2_interp = uv2_attrib;
 #endif
 
-#ifdef USE_OVERRIDE_POSITION
+#ifdef OVERRIDE_POSITION
 	vec4 position;
 #endif
 
@@ -298,7 +298,7 @@ VERTEX_SHADER_CODE
 
 #endif //MODE_RENDER_DEPTH
 
-#ifdef USE_OVERRIDE_POSITION
+#ifdef OVERRIDE_POSITION
 	gl_Position = position;
 #else
 	gl_Position = projection_matrix * vec4(vertex_interp, 1.0);
