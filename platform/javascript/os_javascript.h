@@ -134,6 +134,9 @@ public:
 	virtual void set_window_fullscreen(bool p_enabled);
 	virtual bool is_window_fullscreen() const;
 	virtual Size2 get_screen_size(int p_screen = -1) const;
+	virtual int get_screen_dpi(int p_screen = -1) const;
+	virtual float get_screen_scale(int p_screen = -1) const;
+	virtual float get_screen_max_scale() const;
 
 	virtual Point2 get_mouse_position() const;
 	virtual int get_mouse_button_state() const;
