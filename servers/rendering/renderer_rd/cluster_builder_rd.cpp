@@ -403,11 +403,11 @@ void ClusterBuilderRD::bake_cluster() {
 	RD::get_singleton()->draw_command_begin_label("Bake Light Cluster");
 
 	//clear cluster buffer
-	RD::get_singleton()->buffer_clear(cluster_buffer, 0, cluster_buffer_size, 0);
+	RD::get_singleton()->buffer_clear(cluster_buffer, 0, cluster_buffer_size, RD::BARRIER_MASK_RASTER | RD::BARRIER_MASK_COMPUTE);
 
 	if (render_element_count > 0) {
 		//clear render buffer
-		RD::get_singleton()->buffer_clear(cluster_render_buffer, 0, cluster_render_buffer_size, 0);
+		RD::get_singleton()->buffer_clear(cluster_render_buffer, 0, cluster_render_buffer_size, RD::BARRIER_MASK_RASTER);
 
 		{ //fill state uniform
 
@@ -422,16 +422,15 @@ void ClusterBuilderRD::bake_cluster() {
 			state.cluster_depth_offset = (render_element_max / 32);
 			state.cluster_data_size = state.cluster_depth_offset + render_element_max;
 
-			RD::get_singleton()->buffer_update(state_uniform, 0, sizeof(StateUniform), &state, 0);
+			RD::get_singleton()->buffer_update(state_uniform, 0, sizeof(StateUniform), &state, RD::BARRIER_MASK_RASTER | RD::BARRIER_MASK_COMPUTE);
 		}
 
 		//update instances
 
-		RD::get_singleton()->buffer_update(element_buffer, 0, sizeof(RenderElementData) * render_element_count, render_elements, 0);
+		RD::get_singleton()->buffer_update(element_buffer, 0, sizeof(RenderElementData) * render_element_count, render_elements, RD::BARRIER_MASK_RASTER | RD::BARRIER_MASK_COMPUTE);
 
 		RENDER_TIMESTAMP("Render Elements");
 
-		RD::get_singleton()->barrier(RD::BARRIER_MASK_TRANSFER, RD::BARRIER_MASK_RASTER);
 		//render elements
 		{
 			RD::DrawListID draw_list = RD::get_singleton()->draw_list_begin(framebuffer, RD::INITIAL_ACTION_DROP, RD::FINAL_ACTION_DISCARD, RD::INITIAL_ACTION_DROP, RD::FINAL_ACTION_DISCARD);

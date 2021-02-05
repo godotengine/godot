@@ -6226,7 +6226,7 @@ void RendererSceneRenderRD::_setup_reflections(const PagedArray<RID> &p_reflecti
 	}
 
 	if (cluster.reflection_count) {
-		RD::get_singleton()->buffer_update(cluster.reflection_buffer, 0, cluster.reflection_count * sizeof(ReflectionData), cluster.reflections, 0); //no barriers for now
+		RD::get_singleton()->buffer_update(cluster.reflection_buffer, 0, cluster.reflection_count * sizeof(ReflectionData), cluster.reflections, RD::BARRIER_MASK_RASTER | RD::BARRIER_MASK_COMPUTE);
 	}
 }
 
@@ -6620,15 +6620,15 @@ void RendererSceneRenderRD::_setup_lights(const PagedArray<RID> &p_lights, const
 
 	//update without barriers
 	if (cluster.omni_light_count) {
-		RD::get_singleton()->buffer_update(cluster.omni_light_buffer, 0, sizeof(Cluster::LightData) * cluster.omni_light_count, cluster.omni_lights, 0);
+		RD::get_singleton()->buffer_update(cluster.omni_light_buffer, 0, sizeof(Cluster::LightData) * cluster.omni_light_count, cluster.omni_lights, RD::BARRIER_MASK_RASTER | RD::BARRIER_MASK_COMPUTE);
 	}
 
 	if (cluster.spot_light_count) {
-		RD::get_singleton()->buffer_update(cluster.spot_light_buffer, 0, sizeof(Cluster::LightData) * cluster.spot_light_count, cluster.spot_lights, 0);
+		RD::get_singleton()->buffer_update(cluster.spot_light_buffer, 0, sizeof(Cluster::LightData) * cluster.spot_light_count, cluster.spot_lights, RD::BARRIER_MASK_RASTER | RD::BARRIER_MASK_COMPUTE);
 	}
 
 	if (r_directional_light_count) {
-		RD::get_singleton()->buffer_update(cluster.directional_light_buffer, 0, sizeof(Cluster::DirectionalLightData) * r_directional_light_count, cluster.directional_lights, 0);
+		RD::get_singleton()->buffer_update(cluster.directional_light_buffer, 0, sizeof(Cluster::DirectionalLightData) * r_directional_light_count, cluster.directional_lights, RD::BARRIER_MASK_RASTER | RD::BARRIER_MASK_COMPUTE);
 	}
 }
 
@@ -6789,7 +6789,7 @@ void RendererSceneRenderRD::_setup_decals(const PagedArray<RID> &p_decals, const
 	}
 
 	if (cluster.decal_count > 0) {
-		RD::get_singleton()->buffer_update(cluster.decal_buffer, 0, sizeof(Cluster::DecalData) * cluster.decal_count, cluster.decals);
+		RD::get_singleton()->buffer_update(cluster.decal_buffer, 0, sizeof(Cluster::DecalData) * cluster.decal_count, cluster.decals, RD::BARRIER_MASK_RASTER | RD::BARRIER_MASK_COMPUTE);
 	}
 }
 
@@ -7513,6 +7513,9 @@ void RendererSceneRenderRD::_pre_opaque_render(bool p_use_ssao, bool p_use_gi, R
 		}
 	}
 
+	//full barrier here, we need raster, transfer and compute and it depends from the previous work
+	RD::get_singleton()->barrier(RD::BARRIER_MASK_ALL, RD::BARRIER_MASK_ALL);
+
 	if (current_cluster_builder) {
 		current_cluster_builder->begin(render_state.cam_transform, render_state.cam_projection, !render_state.reflection_probe.is_valid());
 	}
@@ -7534,9 +7537,6 @@ void RendererSceneRenderRD::_pre_opaque_render(bool p_use_ssao, bool p_use_gi, R
 	_setup_decals(*render_state.decals, render_state.cam_transform.affine_inverse());
 
 	render_state.directional_light_count = directional_light_count;
-
-	//full barrier here, we need raster, transfer and compute and it depends from the previous work
-	RD::get_singleton()->barrier(RD::BARRIER_MASK_ALL, RD::BARRIER_MASK_ALL);
 
 	if (current_cluster_builder) {
 		current_cluster_builder->bake_cluster();
