@@ -95,7 +95,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2021-01-21 08:48+0000\n"
+"PO-Revision-Date: 2021-02-01 20:54+0000\n"
 "Last-Translator: Danil Alexeev <danil@alexeev.xyz>\n"
 "Language-Team: Russian <https://hosted.weblate.org/projects/godot-engine/"
 "godot/ru/>\n"
@@ -5727,7 +5727,7 @@ msgstr "Очистить пользовательские кости"
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "View"
-msgstr "Обзор"
+msgstr "Вид"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Always Show Grid"
@@ -5767,7 +5767,7 @@ msgstr "Кадрировать выбранное"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Preview Canvas Scale"
-msgstr "Просмотреть Canvas Scale"
+msgstr "Предпросмотр Canvas Scale"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Translation mask for inserting keys."
@@ -7406,6 +7406,11 @@ msgstr "Высота"
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Yaw"
 msgstr "Рыскание"
+
+#: editor/plugins/spatial_editor_plugin.cpp
+#, fuzzy
+msgid "Size"
+msgstr "Размер: "
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Objects Drawn"

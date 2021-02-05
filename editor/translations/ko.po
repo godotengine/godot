@@ -7303,6 +7303,11 @@ msgid "Yaw"
 msgstr "요"
 
 #: editor/plugins/spatial_editor_plugin.cpp
+#, fuzzy
+msgid "Size"
+msgstr "크기: "
+
+#: editor/plugins/spatial_editor_plugin.cpp
 msgid "Objects Drawn"
 msgstr "그려진 객체"
 
