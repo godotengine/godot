@@ -8,9 +8,9 @@ env:
   SCONS_CACHE_LIMIT: 4096
 
 jobs:
-  linux-editor-mono:
+  linux-editor:
     runs-on: "ubuntu-20.04"
-    name: Editor w/ Mono (target=release_debug, tools=yes, tests=yes)
+    name: Editor (target=release_debug, tools=yes, tests=yes)
 
     steps:
       - uses: actions/checkout@v2
@@ -62,13 +62,13 @@ jobs:
         env:
           SCONS_CACHE: ${{github.workspace}}/.scons_cache/
         run: |
-          scons tools=yes tests=yes target=release_debug module_mono_enabled=yes mono_glue=no
+          scons tools=yes tests=yes target=release_debug
           ls -l bin/
 
       # Execute unit tests for the editor
       - name: Unit Tests
         run: |
-          ./bin/godot.linuxbsd.opt.tools.64.mono --test
+          ./bin/godot.linuxbsd.opt.tools.64 --test
 
       - uses: actions/upload-artifact@v2
         with:
@@ -76,9 +76,9 @@ jobs:
           path: bin/*
           retention-days: 14
 
-  linux-editor-sanitizers:
+  linux-editor-sanitizers-mono:
     runs-on: "ubuntu-20.04"
-    name: Editor with sanitizers (target=debug, tools=yes, tests=yes, use_asan=yes, use_ubsan=yes)
+    name: Editor w/ Mono and sanitizers (target=debug, tools=yes, tests=yes, use_asan=yes, use_ubsan=yes)
 
     steps:
       - uses: actions/checkout@v2
@@ -130,13 +130,13 @@ jobs:
         env:
           SCONS_CACHE: ${{github.workspace}}/.scons_cache/
         run: |
-          scons tools=yes tests=yes target=debug use_asan=yes use_ubsan=yes
+          scons tools=yes tests=yes target=debug module_mono_enabled=yes mono_glue=no use_asan=yes use_ubsan=yes
           ls -l bin/
 
       # Execute unit tests for the editor
       - name: Unit Tests
         run: |
-          ./bin/godot.linuxbsd.tools.64s --test
+          ./bin/godot.linuxbsd.tools.64s.mono --test
 
   linux-template-mono:
     runs-on: "ubuntu-20.04"
