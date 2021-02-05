@@ -467,21 +467,42 @@ void TextureRegionEditor::_region_input(const Ref<InputEvent> &p_input) {
 			Vector2 dragged(mm->get_relative().x / draw_zoom, mm->get_relative().y / draw_zoom);
 			hscroll->set_value(hscroll->get_value() - dragged.x);
 			vscroll->set_value(vscroll->get_value() - dragged.y);
-
 		} else if (drag) {
 
 			if (edited_margin >= 0) {
 				float new_margin = 0;
-				if (edited_margin == 0)
-					new_margin = prev_margin + (mm->get_position().y - drag_from.y) / draw_zoom;
-				else if (edited_margin == 1)
-					new_margin = prev_margin - (mm->get_position().y - drag_from.y) / draw_zoom;
-				else if (edited_margin == 2)
-					new_margin = prev_margin + (mm->get_position().x - drag_from.x) / draw_zoom;
-				else if (edited_margin == 3)
-					new_margin = prev_margin - (mm->get_position().x - drag_from.x) / draw_zoom;
-				else
-					ERR_PRINT("Unexpected edited_margin");
+				if (snap_mode != SNAP_GRID) {
+					if (edited_margin == 0) {
+						new_margin = prev_margin + (mm->get_position().y - drag_from.y) / draw_zoom;
+					} else if (edited_margin == 1) {
+						new_margin = prev_margin - (mm->get_position().y - drag_from.y) / draw_zoom;
+					} else if (edited_margin == 2) {
+						new_margin = prev_margin + (mm->get_position().x - drag_from.x) / draw_zoom;
+					} else if (edited_margin == 3) {
+						new_margin = prev_margin - (mm->get_position().x - drag_from.x) / draw_zoom;
+					} else {
+						ERR_PRINT("Unexpected edited_margin");
+					}
+
+					if (snap_mode == SNAP_PIXEL) {
+						new_margin = Math::round(new_margin);
+					}
+				} else {
+					Vector2 pos_snapped = snap_point(mtx.affine_inverse().xform(mm->get_position()));
+					Rect2 rect_rounded = Rect2(rect.position.round(), rect.size.round());
+
+					if (edited_margin == 0) {
+						new_margin = pos_snapped.y - rect_rounded.position.y;
+					} else if (edited_margin == 1) {
+						new_margin = rect_rounded.size.y + rect_rounded.position.y - pos_snapped.y;
+					} else if (edited_margin == 2) {
+						new_margin = pos_snapped.x - rect_rounded.position.x;
+					} else if (edited_margin == 3) {
+						new_margin = rect_rounded.size.x + rect_rounded.position.x - pos_snapped.x;
+					} else {
+						ERR_PRINT("Unexpected edited_margin");
+					}
+				}
 
 				if (new_margin < 0)
 					new_margin = 0;

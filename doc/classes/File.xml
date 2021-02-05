@@ -445,8 +445,9 @@
 	</methods>
 	<members>
 		<member name="endian_swap" type="bool" setter="set_endian_swap" getter="get_endian_swap" default="false">
-			If [code]true[/code], the file's endianness is swapped. Use this if you're dealing with files written on big-endian machines.
-			[b]Note:[/b] This is about the file format, not CPU type. This is always reset to [code]false[/code] whenever you open the file.
+			If [code]true[/code], the file is read with big-endian [url=https://en.wikipedia.org/wiki/Endianness]endianness[/url]. If [code]false[/code], the file is read with little-endian endianness. If in doubt, leave this to [code]false[/code] as most files are written with little-endian endianness.
+			[b]Note:[/b] [member endian_swap] is only about the file format, not the CPU type. The CPU endianness doesn't affect the default endianness for files written.
+			[b]Note:[/b] This is always reset to [code]false[/code] whenever you open the file. Therefore, you must set [member endian_swap] [i]after[/i] opening the file, not before.
 		</member>
 	</members>
 	<constants>

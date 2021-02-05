@@ -204,7 +204,7 @@ private:
 				last_mix_with_audio = 0;
 				used = false;
 				active = false;
-				peak_volume = AudioFrame(0, 0);
+				peak_volume = AudioFrame(AUDIO_MIN_PEAK_DB, AUDIO_MIN_PEAK_DB);
 			}
 		};
 

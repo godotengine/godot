@@ -7320,6 +7320,11 @@ msgid "Yaw"
 msgstr "Náklon"
 
 #: editor/plugins/spatial_editor_plugin.cpp
+#, fuzzy
+msgid "Size"
+msgstr "Velikost: "
+
+#: editor/plugins/spatial_editor_plugin.cpp
 msgid "Objects Drawn"
 msgstr "Objekty vykreslené"
 

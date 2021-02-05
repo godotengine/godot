@@ -7385,6 +7385,11 @@ msgid "Yaw"
 msgstr "Παρέκκλιση"
 
 #: editor/plugins/spatial_editor_plugin.cpp
+#, fuzzy
+msgid "Size"
+msgstr "Μέγεθος: "
+
+#: editor/plugins/spatial_editor_plugin.cpp
 msgid "Objects Drawn"
 msgstr "Ζωγραφισμένα αντικείμενα"
 

@@ -7360,6 +7360,11 @@ msgid "Yaw"
 msgstr "Відхилення"
 
 #: editor/plugins/spatial_editor_plugin.cpp
+#, fuzzy
+msgid "Size"
+msgstr "Розмір: "
+
+#: editor/plugins/spatial_editor_plugin.cpp
 msgid "Objects Drawn"
 msgstr "Намальовано об'єктів"
 

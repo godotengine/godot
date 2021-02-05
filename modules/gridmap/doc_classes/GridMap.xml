@@ -8,6 +8,7 @@
 		GridMaps use a [MeshLibrary] which contains a list of tiles. Each tile is a mesh with materials plus optional collision and navigation shapes.
 		A GridMap contains a collection of cells. Each grid cell refers to a tile in the [MeshLibrary]. All cells in the map have the same dimensions.
 		Internally, a GridMap is split into a sparse collection of octants for efficient rendering and physics processing. Every octant has the same dimensions and can contain several cells.
+		[b]Note:[/b] GridMap doesn't extend [VisualInstance] and therefore can't be hidden or cull masked based on [member VisualInstance.layers]. If you make a light not affect the first layer, the whole GridMap won't be lit by the light in question.
 	</description>
 	<tutorials>
 		<link title="Using gridmaps">https://docs.godotengine.org/en/3.2/tutorials/3d/using_gridmaps.html</link>
