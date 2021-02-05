@@ -25,7 +25,7 @@ jobs:
       # Install all packages (except scons)
       - name: Configure dependencies
         run: |
-          sudo apt-get install build-essential pkg-config libx11-dev libxcursor-dev \
+          sudo apt-get install build-essential pkg-config libx11-dev libxcursor-dev xvfb \
             libxinerama-dev libgl1-mesa-dev libglu-dev libasound2-dev libpulse-dev libudev-dev libxi-dev libxrandr-dev yasm
 
       # Upload cache on completion and check it out now
@@ -63,6 +63,8 @@ jobs:
           SCONS_CACHE: ${{github.workspace}}/.scons_cache/
         run: |
           scons tools=yes target=release_debug module_mono_enabled=yes mono_glue=no
+          xvfb-run ./bin/godot.x11.opt.tools.64.mono --generate-mono-glue modules/mono/glue
+          scons tools=yes target=release_debug module_mono_enabled=yes mono_glue=yes
           ls -l bin/
 
       - uses: actions/upload-artifact@v2
