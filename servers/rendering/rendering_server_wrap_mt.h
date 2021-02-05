@@ -520,7 +520,7 @@ public:
 
 	FUNC9(environment_set_fog, RID, bool, const Color &, float, float, float, float, float, float)
 
-	FUNC9(environment_set_volumetric_fog, RID, bool, float, const Color &, float, float, float, float, EnvVolumetricFogShadowFilter)
+	FUNC11(environment_set_volumetric_fog, RID, bool, float, const Color &, float, float, float, float, EnvVolumetricFogShadowFilter, bool, float)
 
 	FUNC2(environment_set_volumetric_fog_volume_size, int, int)
 	FUNC1(environment_set_volumetric_fog_filter_active, bool)
