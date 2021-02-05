@@ -2173,7 +2173,7 @@ Array TileSetEditor::_get_tiles_in_current_texture(bool sorted) {
 		}
 	}
 	if (sorted) {
-		a.sort_custom(this, "_sort_tiles");
+		a.sort_custom(callable_mp(this, &TileSetEditor::_sort_tiles));
 	}
 	return a;
 }

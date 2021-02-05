@@ -191,11 +191,9 @@
 			</return>
 			<argument index="0" name="value" type="Variant">
 			</argument>
-			<argument index="1" name="obj" type="Object">
+			<argument index="1" name="func" type="Callable">
 			</argument>
-			<argument index="2" name="func" type="StringName">
-			</argument>
-			<argument index="3" name="before" type="bool" default="true">
+			<argument index="2" name="before" type="bool" default="true">
 			</argument>
 			<description>
 				Finds the index of an existing value (or the insertion index that maintains sorting order, if the value is not yet present in the array) using binary search and a custom comparison method. Optionally, a [code]before[/code] specifier can be passed. If [code]false[/code], the returned index comes after all existing entries of the value in the array. The custom method receives two arguments (an element from the array and the value searched for) and must return [code]true[/code] if the first argument is less than the second, and return [code]false[/code] otherwise.
@@ -537,12 +535,10 @@
 		<method name="sort_custom">
 			<return type="void">
 			</return>
-			<argument index="0" name="obj" type="Object">
-			</argument>
-			<argument index="1" name="func" type="StringName">
+			<argument index="0" name="func" type="Callable">
 			</argument>
 			<description>
-				Sorts the array using a custom method. The arguments are an object that holds the method and the name of such method. The custom method receives two arguments (a pair of elements from the array) and must return either [code]true[/code] or [code]false[/code].
+				Sorts the array using a custom method. The custom method receives two arguments (a pair of elements from the array) and must return either [code]true[/code] or [code]false[/code].
 				[b]Note:[/b] you cannot randomize the return value as the heapsort algorithm expects a deterministic result. Doing so will result in unexpected behavior.
 				[codeblocks]
 				[gdscript]
@@ -553,7 +549,7 @@
 				        return false
 
 				var my_items = [[5, "Potato"], [9, "Rice"], [4, "Tomato"]]
-				my_items.sort_custom(MyCustomSorter, "sort_ascending")
+				my_items.sort_custom(MyCustomSorter.sort_ascending)
 				print(my_items) # Prints [[4, Tomato], [5, Potato], [9, Rice]].
 				[/gdscript]
 				[csharp]
