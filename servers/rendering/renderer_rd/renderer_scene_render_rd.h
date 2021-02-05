@@ -745,6 +745,8 @@ private:
 		float volumetric_fog_detail_spread = 2.0;
 		RS::EnvVolumetricFogShadowFilter volumetric_fog_shadow_filter = RS::ENV_VOLUMETRIC_FOG_SHADOW_FILTER_LOW;
 		float volumetric_fog_gi_inject = 0.0;
+		bool volumetric_fog_temporal_reprojection = false;
+		float volumetric_fog_temporal_reprojection_amount = 0.95;
 
 		/// Glow
 
@@ -1515,6 +1517,10 @@ private:
 	} render_state;
 
 	struct VolumetricFog {
+		enum {
+			MAX_TEMPORAL_FRAMES = 16
+		};
+
 		uint32_t width = 0;
 		uint32_t height = 0;
 		uint32_t depth = 0;
@@ -1523,6 +1529,8 @@ private:
 		float spread;
 
 		RID light_density_map;
+		RID prev_light_density_map;
+
 		RID fog_map;
 		RID uniform_set;
 		RID uniform_set2;
@@ -1530,6 +1538,8 @@ private:
 		RID sky_uniform_set;
 
 		int last_shadow_filter = -1;
+
+		Transform prev_cam_transform;
 	};
 
 	enum {
@@ -1565,10 +1575,13 @@ private:
 			uint32_t cluster_shift;
 			uint32_t cluster_width;
 
-			uint32_t cluster_pad[3];
 			uint32_t max_cluster_element_count_div_32;
+			uint32_t use_temporal_reprojection;
+			uint32_t temporal_frame;
+			float temporal_blend;
 
 			float cam_rotation[12];
+			float to_prev_view[16];
 		};
 
 		VolumetricFogShaderRD shader;
@@ -1708,7 +1721,7 @@ public:
 	float environment_get_fog_height_density(RID p_env) const;
 	float environment_get_fog_aerial_perspective(RID p_env) const;
 
-	void environment_set_volumetric_fog(RID p_env, bool p_enable, float p_density, const Color &p_light, float p_light_energy, float p_length, float p_detail_spread, float p_gi_inject, RS::EnvVolumetricFogShadowFilter p_shadow_filter);
+	void environment_set_volumetric_fog(RID p_env, bool p_enable, float p_density, const Color &p_light, float p_light_energy, float p_length, float p_detail_spread, float p_gi_inject, RS::EnvVolumetricFogShadowFilter p_shadow_filter, bool p_temporal_reprojection, float p_temporal_reprojection_amount);
 
 	virtual void environment_set_volumetric_fog_volume_size(int p_size, int p_depth);
 	virtual void environment_set_volumetric_fog_filter_active(bool p_enable);
