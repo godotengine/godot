@@ -7371,6 +7371,11 @@ msgid "Yaw"
 msgstr "Yalpala"
 
 #: editor/plugins/spatial_editor_plugin.cpp
+#, fuzzy
+msgid "Size"
+msgstr "Boyut: "
+
+#: editor/plugins/spatial_editor_plugin.cpp
 msgid "Objects Drawn"
 msgstr "Çizilmiş Nesneler"
 

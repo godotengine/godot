@@ -7074,6 +7074,10 @@ msgid "Yaw"
 msgstr ""
 
 #: editor/plugins/spatial_editor_plugin.cpp
+msgid "Size"
+msgstr ""
+
+#: editor/plugins/spatial_editor_plugin.cpp
 msgid "Objects Drawn"
 msgstr ""
 

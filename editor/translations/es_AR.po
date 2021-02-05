@@ -3,7 +3,7 @@
 # Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).
 # This file is distributed under the same license as the Godot source code.
 # Diego López <diegodario21@gmail.com>, 2017.
-# Lisandro Lorea <lisandrolorea@gmail.com>, 2016-2018, 2019, 2020.
+# Lisandro Lorea <lisandrolorea@gmail.com>, 2016-2018, 2019, 2020, 2021.
 # Roger Blanco Ribera <roger.blancoribera@gmail.com>, 2016-2018.
 # Sebastian Silva <sebastian@sugarlabs.org>, 2016.
 # Jose Luis Bossio <joseluisbossio@gmail.com>, 2018.
@@ -21,7 +21,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2020-12-29 21:52+0000\n"
+"PO-Revision-Date: 2021-01-29 19:32+0000\n"
 "Last-Translator: Lisandro Lorea <lisandrolorea@gmail.com>\n"
 "Language-Team: Spanish (Argentina) <https://hosted.weblate.org/projects/"
 "godot-engine/godot/es_AR/>\n"
@@ -30,7 +30,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 4.4.1-dev\n"
+"X-Generator: Weblate 4.5-dev\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -2408,7 +2408,7 @@ msgstr "No hay escena definida para ejecutar."
 
 #: editor/editor_node.cpp
 msgid "Save scene before running..."
-msgstr ""
+msgstr "Guardar escena antes de ejecutar..."
 
 #: editor/editor_node.cpp
 msgid "Could not start subprocess!"
@@ -5193,14 +5193,13 @@ msgid "Assets ZIP File"
 msgstr "Archivo ZIP de Assets"
 
 #: editor/plugins/baked_lightmap_editor_plugin.cpp
-#, fuzzy
 msgid ""
 "Can't determine a save path for lightmap images.\n"
 "Save your scene and try again."
 msgstr ""
-"No se pudo determinar una ruta de guardado para las imagenes de lightmap.\n"
-"Guardá tu escena (para imagenes a ser guardadas en el mismo directorio), o "
-"elegí una ruta de guardado desde las propiedades de BakedLightmap."
+"No se puede determinar una ruta de guardado para las imágenes de los "
+"lightmaps.\n"
+"Guardá tu escena e inténtalo de nuevo."
 
 #: editor/plugins/baked_lightmap_editor_plugin.cpp
 msgid ""
@@ -5219,26 +5218,31 @@ msgstr ""
 #: editor/plugins/baked_lightmap_editor_plugin.cpp
 msgid "Failed determining lightmap size. Maximum lightmap size too small?"
 msgstr ""
+"Falló al determinar el tamaño del lightmap ¿El tamaño máximo de lightmap es "
+"demasiado pequeño?"
 
 #: editor/plugins/baked_lightmap_editor_plugin.cpp
 msgid ""
 "Some mesh is invalid. Make sure the UV2 channel values are contained within "
 "the [0.0,1.0] square region."
 msgstr ""
+"Alguna malla es inválida. Asegurate de que los valores del canal UV2 estén "
+"contenidos dentro de la región cuadrada [0,0,1,0]."
 
 #: editor/plugins/baked_lightmap_editor_plugin.cpp
 msgid ""
 "Godot editor was built without ray tracing support, lightmaps can't be baked."
 msgstr ""
+"El editor de Godot se compiló sin soporte de ray tracing, los lightmaps no "
+"pueden ser bakeados."
 
 #: editor/plugins/baked_lightmap_editor_plugin.cpp
 msgid "Bake Lightmaps"
 msgstr "Bake Lightmaps"
 
 #: editor/plugins/baked_lightmap_editor_plugin.cpp
-#, fuzzy
 msgid "Select lightmap bake file:"
-msgstr "Elegir Archivo de Plantilla"
+msgstr "Selecciona un archivo de lightmap bakeado:"
 
 #: editor/plugins/camera_editor_plugin.cpp
 #: editor/plugins/spatial_editor_plugin.cpp
@@ -6336,9 +6340,8 @@ msgstr ""
 "Solo se puede setear un punto en un material de proceso ParticlesMaterial"
 
 #: editor/plugins/particles_2d_editor_plugin.cpp
-#, fuzzy
 msgid "Convert to CPUParticles2D"
-msgstr "Convertir A CPUParticles"
+msgstr "Convertir a CPUParticles2D"
 
 #: editor/plugins/particles_2d_editor_plugin.cpp
 #: editor/plugins/particles_editor_plugin.cpp
@@ -7372,6 +7375,11 @@ msgstr "Altura"
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Yaw"
 msgstr "Yaw"
+
+#: editor/plugins/spatial_editor_plugin.cpp
+#, fuzzy
+msgid "Size"
+msgstr "Tamaño: "
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Objects Drawn"
@@ -11624,36 +11632,31 @@ msgstr "Asignar un recurso MeshLibrary a este GridMap para usar sus meshes."
 
 #: modules/lightmapper_cpu/lightmapper_cpu.cpp
 msgid "Begin Bake"
-msgstr ""
+msgstr "Iniciar Bake"
 
 #: modules/lightmapper_cpu/lightmapper_cpu.cpp
 msgid "Preparing data structures"
-msgstr ""
+msgstr "Preparando estructuras de datos"
 
 #: modules/lightmapper_cpu/lightmapper_cpu.cpp
-#, fuzzy
 msgid "Generate buffers"
-msgstr "Generar AABB"
+msgstr "Generar buffers"
 
 #: modules/lightmapper_cpu/lightmapper_cpu.cpp
-#, fuzzy
 msgid "Direct lighting"
-msgstr "Direcciones"
+msgstr "Iluminación directa"
 
 #: modules/lightmapper_cpu/lightmapper_cpu.cpp
-#, fuzzy
 msgid "Indirect lighting"
-msgstr "Indentar a la Der"
+msgstr "Iluminación indirecta"
 
 #: modules/lightmapper_cpu/lightmapper_cpu.cpp
-#, fuzzy
 msgid "Post processing"
-msgstr "Post-Procesado"
+msgstr "Post procesado"
 
 #: modules/lightmapper_cpu/lightmapper_cpu.cpp
-#, fuzzy
 msgid "Plotting lightmaps"
-msgstr "Trazando Luces:"
+msgstr "Trazando lightmatps"
 
 #: modules/mono/csharp_script.cpp
 msgid "Class name can't be a reserved keyword"
@@ -12173,7 +12176,7 @@ msgstr "Seleccionar dispositivo de la lista"
 
 #: platform/android/export/export.cpp
 msgid "Unable to find the 'apksigner' tool."
-msgstr ""
+msgstr "No se pudo encontrar la herramienta 'apksigner'."
 
 #: platform/android/export/export.cpp
 msgid ""
@@ -12195,18 +12198,13 @@ msgstr ""
 "exportación."
 
 #: platform/android/export/export.cpp
-#, fuzzy
 msgid "A valid Android SDK path is required in Editor Settings."
 msgstr ""
-"Ruta del SDK de Android inválida para la compilación personalizada en "
-"Configuración del Editor."
+"Se requiere una ruta válida al SDK de Android en la Configuración del Editor."
 
 #: platform/android/export/export.cpp
-#, fuzzy
 msgid "Invalid Android SDK path in Editor Settings."
-msgstr ""
-"Ruta del SDK de Android inválida para la compilación personalizada en "
-"Configuración del Editor."
+msgstr "Ruta del SDK de Android inválida en la Configuración del Editor."
 
 #: platform/android/export/export.cpp
 msgid "Missing 'platform-tools' directory!"
@@ -12214,23 +12212,22 @@ msgstr "¡No se encontró el directorio 'platform-tools'!"
 
 #: platform/android/export/export.cpp
 msgid "Unable to find Android SDK platform-tools' adb command."
-msgstr ""
+msgstr "No se pudo encontrar el comando adb en las Android SDK platform-tools."
 
 #: platform/android/export/export.cpp
-#, fuzzy
 msgid "Please check in the Android SDK directory specified in Editor Settings."
 msgstr ""
-"Ruta del SDK de Android inválida para la compilación personalizada en "
+"Por favor, comprueba el directorio del SDK de Android especificado en la "
 "Configuración del Editor."
 
 #: platform/android/export/export.cpp
-#, fuzzy
 msgid "Missing 'build-tools' directory!"
-msgstr "¡No se encontró el directorio 'platform-tools'!"
+msgstr "¡No se encontró el directorio 'build-tools'!"
 
 #: platform/android/export/export.cpp
 msgid "Unable to find Android SDK build-tools' apksigner command."
 msgstr ""
+"No se pudo encontrar el comando apksigner en las Android SDK build-tools."
 
 #: platform/android/export/export.cpp
 msgid "Invalid public key for APK expansion."
@@ -12713,27 +12710,23 @@ msgstr "ARVROrigin requiere un nodo hijo ARVRCamera."
 
 #: scene/3d/baked_lightmap.cpp
 msgid "Finding meshes and lights"
-msgstr ""
+msgstr "Encontrar mallas y luces"
 
 #: scene/3d/baked_lightmap.cpp
-#, fuzzy
 msgid "Preparing geometry (%d/%d)"
-msgstr "Parseando Geometría..."
+msgstr "Preparando geometría (%d/%d)"
 
 #: scene/3d/baked_lightmap.cpp
-#, fuzzy
 msgid "Preparing environment"
-msgstr "Ver Entorno"
+msgstr "Preparando entorno"
 
 #: scene/3d/baked_lightmap.cpp
-#, fuzzy
 msgid "Generating capture"
-msgstr "Generando Lightmaps"
+msgstr "Generando capturas"
 
 #: scene/3d/baked_lightmap.cpp
-#, fuzzy
 msgid "Saving lightmaps"
-msgstr "Generando Lightmaps"
+msgstr "Guardando lightmaps"
 
 #: scene/3d/baked_lightmap.cpp
 msgid "Done"
@@ -13142,6 +13135,8 @@ msgid ""
 "The sampler port is connected but not used. Consider changing the source to "
 "'SamplerPort'."
 msgstr ""
+"El puerto de muestreo está conectado, pero no se utiliza. Considerá la "
+"posibilidad de cambiar la fuente a \"SamplerPort\"."
 
 #: scene/resources/visual_shader_nodes.cpp
 msgid "Invalid source for preview."

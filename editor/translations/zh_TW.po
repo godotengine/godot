@@ -29,7 +29,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2021-01-01 10:30+0000\n"
+"PO-Revision-Date: 2021-01-27 23:21+0000\n"
 "Last-Translator: BinotaLIU <me@binota.org>\n"
 "Language-Team: Chinese (Traditional) <https://hosted.weblate.org/projects/"
 "godot-engine/godot/zh_Hant/>\n"
@@ -38,7 +38,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Weblate 4.4.1-dev\n"
+"X-Generator: Weblate 4.5-dev\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -2364,7 +2364,7 @@ msgstr "未定義欲執行之場景。"
 
 #: editor/editor_node.cpp
 msgid "Save scene before running..."
-msgstr ""
+msgstr "執行前先保存場景..."
 
 #: editor/editor_node.cpp
 msgid "Could not start subprocess!"
@@ -5072,14 +5072,12 @@ msgid "Assets ZIP File"
 msgstr "素材 ZIP 檔"
 
 #: editor/plugins/baked_lightmap_editor_plugin.cpp
-#, fuzzy
 msgid ""
 "Can't determine a save path for lightmap images.\n"
 "Save your scene and try again."
 msgstr ""
 "無法判斷光照圖的保存路徑。\n"
-"請保存場景（圖片將保存於相同資料夾），或是在 BackedLightmap 屬性內選擇一個保"
-"存路徑。"
+"請保存場景並重試。"
 
 #: editor/plugins/baked_lightmap_editor_plugin.cpp
 msgid ""
@@ -5094,27 +5092,27 @@ msgstr "建立光照圖失敗，請確保該路徑可寫入。"
 
 #: editor/plugins/baked_lightmap_editor_plugin.cpp
 msgid "Failed determining lightmap size. Maximum lightmap size too small?"
-msgstr ""
+msgstr "無法判斷光照圖大小。最大光照圖大小是否過小？"
 
 #: editor/plugins/baked_lightmap_editor_plugin.cpp
 msgid ""
 "Some mesh is invalid. Make sure the UV2 channel values are contained within "
 "the [0.0,1.0] square region."
-msgstr ""
+msgstr "部分網格無效。請確保 UV2 通道的值位於 [0.0,1.0] 矩形內。"
 
 #: editor/plugins/baked_lightmap_editor_plugin.cpp
 msgid ""
 "Godot editor was built without ray tracing support, lightmaps can't be baked."
 msgstr ""
+"Godot 編輯器在建制時未啟用光線追蹤 (Ray Tracing) 支援，無法烘焙光照圖。"
 
 #: editor/plugins/baked_lightmap_editor_plugin.cpp
 msgid "Bake Lightmaps"
 msgstr "烘焙光照圖"
 
 #: editor/plugins/baked_lightmap_editor_plugin.cpp
-#, fuzzy
 msgid "Select lightmap bake file:"
-msgstr "選擇樣板檔案"
+msgstr "選擇光照圖烘焙檔案："
 
 #: editor/plugins/camera_editor_plugin.cpp
 #: editor/plugins/spatial_editor_plugin.cpp
@@ -6194,9 +6192,8 @@ msgid "Can only set point into a ParticlesMaterial process material"
 msgstr "僅可設為指向 ProticlesMaterial 處理材料"
 
 #: editor/plugins/particles_2d_editor_plugin.cpp
-#, fuzzy
 msgid "Convert to CPUParticles2D"
-msgstr "轉換為 CPUParticles"
+msgstr "轉換為 CPUParticles2D"
 
 #: editor/plugins/particles_2d_editor_plugin.cpp
 #: editor/plugins/particles_editor_plugin.cpp
@@ -7219,6 +7216,11 @@ msgstr "仰角"
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Yaw"
 msgstr "偏航"
+
+#: editor/plugins/spatial_editor_plugin.cpp
+#, fuzzy
+msgid "Size"
+msgstr "大小： "
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Objects Drawn"
@@ -11380,36 +11382,31 @@ msgstr "提供 MeshLibrary 予該 GridMap 以使用其網格。"
 
 #: modules/lightmapper_cpu/lightmapper_cpu.cpp
 msgid "Begin Bake"
-msgstr ""
+msgstr "開始烘焙"
 
 #: modules/lightmapper_cpu/lightmapper_cpu.cpp
 msgid "Preparing data structures"
-msgstr ""
+msgstr "正在準備資料結構"
 
 #: modules/lightmapper_cpu/lightmapper_cpu.cpp
-#, fuzzy
 msgid "Generate buffers"
-msgstr "產生 AABB"
+msgstr "產生緩衝"
 
 #: modules/lightmapper_cpu/lightmapper_cpu.cpp
-#, fuzzy
 msgid "Direct lighting"
-msgstr "方向"
+msgstr "向性光照"
 
 #: modules/lightmapper_cpu/lightmapper_cpu.cpp
-#, fuzzy
 msgid "Indirect lighting"
-msgstr "向右縮排"
+msgstr "非向性光照"
 
 #: modules/lightmapper_cpu/lightmapper_cpu.cpp
-#, fuzzy
 msgid "Post processing"
 msgstr "後處理"
 
 #: modules/lightmapper_cpu/lightmapper_cpu.cpp
-#, fuzzy
 msgid "Plotting lightmaps"
-msgstr "正在繪製光照："
+msgstr "正在繪製光照"
 
 #: modules/mono/csharp_script.cpp
 msgid "Class name can't be a reserved keyword"
@@ -11909,9 +11906,8 @@ msgid "Select device from the list"
 msgstr "自清單中選擇裝置"
 
 #: platform/android/export/export.cpp
-#, fuzzy
 msgid "Unable to find the 'apksigner' tool."
-msgstr "找不到 zipalign 工具。"
+msgstr "找不到「apksigner」工具。"
 
 #: platform/android/export/export.cpp
 msgid ""
@@ -11928,14 +11924,12 @@ msgid "Release keystore incorrectly configured in the export preset."
 msgstr "發行金鑰儲存區中不正確之組態設定至匯出預設設定。"
 
 #: platform/android/export/export.cpp
-#, fuzzy
 msgid "A valid Android SDK path is required in Editor Settings."
-msgstr "編輯器設定中用於自定義設定之 Android SDK 路徑無效。"
+msgstr "必須於 [編輯器設定] 中提供一個有效的 Android SDK 路徑。"
 
 #: platform/android/export/export.cpp
-#, fuzzy
 msgid "Invalid Android SDK path in Editor Settings."
-msgstr "編輯器設定中用於自定義設定之 Android SDK 路徑無效。"
+msgstr "[編輯器設定] 中所指定的 Android SDK 路徑無效。"
 
 #: platform/android/export/export.cpp
 msgid "Missing 'platform-tools' directory!"
@@ -11943,12 +11937,11 @@ msgstr "缺少「platform-tools」資料夾！"
 
 #: platform/android/export/export.cpp
 msgid "Unable to find Android SDK platform-tools' adb command."
-msgstr ""
+msgstr "找不到 Android SDK platform-tools 的 adb 指令。"
 
 #: platform/android/export/export.cpp
-#, fuzzy
 msgid "Please check in the Android SDK directory specified in Editor Settings."
-msgstr "編輯器設定中用於自定義設定之 Android SDK 路徑無效。"
+msgstr "請檢查 [編輯器設定] 中所指定的 Android SDK 資料夾。"
 
 #: platform/android/export/export.cpp
 msgid "Missing 'build-tools' directory!"
@@ -11956,7 +11949,7 @@ msgstr "缺少「build-tools」資料夾！"
 
 #: platform/android/export/export.cpp
 msgid "Unable to find Android SDK build-tools' apksigner command."
-msgstr ""
+msgstr "找不到 Android SDK build-tools 的 apksigner 指令。"
 
 #: platform/android/export/export.cpp
 msgid "Invalid public key for APK expansion."
@@ -12391,32 +12384,27 @@ msgstr "ARVROrigin 必須有一個 ARVRCamera 子節點。"
 
 #: scene/3d/baked_lightmap.cpp
 msgid "Finding meshes and lights"
-msgstr ""
+msgstr "正在尋找網格與光照"
 
 #: scene/3d/baked_lightmap.cpp
-#, fuzzy
 msgid "Preparing geometry (%d/%d)"
-msgstr "正在解析多邊形..."
+msgstr "正在解析幾何 (%d/%d)"
 
 #: scene/3d/baked_lightmap.cpp
-#, fuzzy
 msgid "Preparing environment"
-msgstr "檢視環境"
+msgstr "正在準備環境"
 
 #: scene/3d/baked_lightmap.cpp
-#, fuzzy
 msgid "Generating capture"
-msgstr "正在產生光照圖"
+msgstr "正在產生捕捉"
 
 #: scene/3d/baked_lightmap.cpp
-#, fuzzy
 msgid "Saving lightmaps"
-msgstr "正在產生光照圖"
+msgstr "正在保存光照圖"
 
 #: scene/3d/baked_lightmap.cpp
-#, fuzzy
 msgid "Done"
-msgstr "完成！"
+msgstr "完成"
 
 #: scene/3d/collision_object.cpp
 msgid ""
@@ -12794,7 +12782,7 @@ msgstr "Viewport 大小必須大於 0 才可進行算繪。"
 msgid ""
 "The sampler port is connected but not used. Consider changing the source to "
 "'SamplerPort'."
-msgstr ""
+msgstr "已連線至取樣器連結埠但並未使用。建議將來源設為「SamplerPort」。"
 
 #: scene/resources/visual_shader_nodes.cpp
 msgid "Invalid source for preview."

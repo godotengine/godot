@@ -110,11 +110,13 @@
 # Lucas Dantas <lucas.lucantas38@gmail.com>, 2021.
 # Carlos Bonifacio <carlosboni.sa@gmail.com>, 2021.
 # Lucas Castro <castroclucas@gmail.com>, 2021.
+# Ricardo Zamarrenho Carvalho Correa <ricardozcc17@gmail.com>, 2021.
+# Diego dos Reis Macedo <diego_dragon97@hotmail.com>, 2021.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: 2016-05-30\n"
-"PO-Revision-Date: 2021-01-26 03:28+0000\n"
+"PO-Revision-Date: 2021-02-05 09:20+0000\n"
 "Last-Translator: Lucas Castro <castroclucas@gmail.com>\n"
 "Language-Team: Portuguese (Brazil) <https://hosted.weblate.org/projects/"
 "godot-engine/godot/pt_BR/>\n"
@@ -7443,6 +7445,11 @@ msgid "Yaw"
 msgstr "Guinada"
 
 #: editor/plugins/spatial_editor_plugin.cpp
+#, fuzzy
+msgid "Size"
+msgstr "Tamanho: "
+
+#: editor/plugins/spatial_editor_plugin.cpp
 msgid "Objects Drawn"
 msgstr "Objetos Desenhados"
 
@@ -11679,8 +11686,9 @@ msgid "Give a MeshLibrary resource to this GridMap to use its meshes."
 msgstr "Atribua um recurso MeshLibrary a este GridMap para usar seus meshes."
 
 #: modules/lightmapper_cpu/lightmapper_cpu.cpp
+#, fuzzy
 msgid "Begin Bake"
-msgstr ""
+msgstr "Iniciar pré-cálculo"
 
 #: modules/lightmapper_cpu/lightmapper_cpu.cpp
 msgid "Preparing data structures"
@@ -11695,19 +11703,18 @@ msgid "Direct lighting"
 msgstr "Direct lightning"
 
 #: modules/lightmapper_cpu/lightmapper_cpu.cpp
-#, fuzzy
 msgid "Indirect lighting"
-msgstr "Recuar Direita"
+msgstr "Iluminação indireta"
 
 #: modules/lightmapper_cpu/lightmapper_cpu.cpp
 #, fuzzy
 msgid "Post processing"
-msgstr "Pós-Processamento"
+msgstr "Pós-processamento"
 
 #: modules/lightmapper_cpu/lightmapper_cpu.cpp
 #, fuzzy
 msgid "Plotting lightmaps"
-msgstr "Planejando Luzes:"
+msgstr "Traçando mapas de luz"
 
 #: modules/mono/csharp_script.cpp
 msgid "Class name can't be a reserved keyword"
@@ -12249,18 +12256,12 @@ msgstr ""
 "exportação."
 
 #: platform/android/export/export.cpp
-#, fuzzy
 msgid "A valid Android SDK path is required in Editor Settings."
-msgstr ""
-"Caminho do Android SDK inválido para o build personalizado em Configurações "
-"do Editor."
+msgstr "Um caminho Android SDK é necessário nas Configurações do Editor."
 
 #: platform/android/export/export.cpp
-#, fuzzy
 msgid "Invalid Android SDK path in Editor Settings."
-msgstr ""
-"Caminho do Android SDK inválido para o build personalizado em Configurações "
-"do Editor."
+msgstr "Caminho do Android SDK está inválido para Configurações do Editor."
 
 #: platform/android/export/export.cpp
 msgid "Missing 'platform-tools' directory!"
@@ -12272,16 +12273,14 @@ msgstr ""
 "Não foi possível encontrar o comando adb nas ferramentas do Android SDK."
 
 #: platform/android/export/export.cpp
-#, fuzzy
 msgid "Please check in the Android SDK directory specified in Editor Settings."
 msgstr ""
-"Caminho do Android SDK inválido para o build personalizado em Configurações "
+"Por favor, verifique o caminho do Android SDK especificado nas Configurações "
 "do Editor."
 
 #: platform/android/export/export.cpp
-#, fuzzy
 msgid "Missing 'build-tools' directory!"
-msgstr "Diretório 'ferramentas-da-plataforma' ausente!"
+msgstr "Diretório 'ferramentas-da-plataforma' está faltando !"
 
 #: platform/android/export/export.cpp
 msgid "Unable to find Android SDK build-tools' apksigner command."
@@ -12765,19 +12764,17 @@ msgid "Preparing geometry (%d/%d)"
 msgstr "Analisando Geometria..."
 
 #: scene/3d/baked_lightmap.cpp
-#, fuzzy
 msgid "Preparing environment"
-msgstr "Visualizar Ambiente"
+msgstr "Preparando ambiente"
 
 #: scene/3d/baked_lightmap.cpp
-#, fuzzy
 msgid "Generating capture"
-msgstr "Generando Lightmaps"
+msgstr "Gerando captura"
 
 #: scene/3d/baked_lightmap.cpp
 #, fuzzy
 msgid "Saving lightmaps"
-msgstr "Generando Lightmaps"
+msgstr "Salvando mapas  de luz"
 
 #: scene/3d/baked_lightmap.cpp
 msgid "Done"
@@ -13123,9 +13120,8 @@ msgid "Must use a valid extension."
 msgstr "Deve usar uma extensão válida."
 
 #: scene/gui/graph_edit.cpp
-#, fuzzy
 msgid "Enable grid minimap."
-msgstr "Ativar Snap"
+msgstr "Ativar minimapa de grade."
 
 #: scene/gui/popup.cpp
 msgid ""

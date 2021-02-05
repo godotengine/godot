@@ -17,7 +17,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2021-01-22 10:21+0000\n"
+"PO-Revision-Date: 2021-02-05 09:20+0000\n"
 "Last-Translator: Любомир Василев <lyubomirv@gmx.com>\n"
 "Language-Team: Bulgarian <https://hosted.weblate.org/projects/godot-engine/"
 "godot/bg/>\n"
@@ -2232,11 +2232,11 @@ msgstr ""
 
 #: editor/editor_node.cpp
 msgid "Can't load MeshLibrary for merging!"
-msgstr ""
+msgstr "Не може да се зареди библиотеката с полигонни мрежи за сливане!"
 
 #: editor/editor_node.cpp
 msgid "Error saving MeshLibrary!"
-msgstr ""
+msgstr "Грешка при запазването на библиотеката с полигонни мрежи!"
 
 #: editor/editor_node.cpp
 msgid "Can't load TileSet for merging!"
@@ -2359,7 +2359,7 @@ msgstr "Операцията не може да се извърши без сц�
 
 #: editor/editor_node.cpp
 msgid "Export Mesh Library"
-msgstr ""
+msgstr "Изнасяне на библиотека с полигонни мрежи"
 
 #: editor/editor_node.cpp
 msgid "This operation can't be done without a root node."
@@ -2641,7 +2641,7 @@ msgstr ""
 
 #: editor/editor_node.cpp
 msgid "MeshLibrary..."
-msgstr ""
+msgstr "Библиотека с полигонни мрежи…"
 
 #: editor/editor_node.cpp
 msgid "TileSet..."
@@ -2758,6 +2758,8 @@ msgid ""
 "When this option is enabled, navigation meshes and polygons will be visible "
 "in the running project."
 msgstr ""
+"Ако тази настройка е включено, навигационните полигони и мрежи ще бъдат "
+"видими в изпълняващия се проект."
 
 #: editor/editor_node.cpp
 msgid "Synchronize Scene Changes"
@@ -3855,7 +3857,7 @@ msgstr ""
 
 #: editor/import/resource_importer_scene.cpp
 msgid "Generating for Mesh: "
-msgstr ""
+msgstr "Създаване за полигонна мрежа: "
 
 #: editor/import/resource_importer_scene.cpp
 msgid "Running Custom Script..."
@@ -4339,7 +4341,7 @@ msgstr "Ново име на анимацията:"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "New Anim"
-msgstr ""
+msgstr "Нова анимация"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Change Animation Name:"
@@ -4353,20 +4355,20 @@ msgstr "Изтриване на анимацията?"
 #: editor/plugins/animation_player_editor_plugin.cpp
 #: editor/plugins/sprite_frames_editor_plugin.cpp
 msgid "Remove Animation"
-msgstr ""
+msgstr "Премахване на анимацията"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Invalid animation name!"
-msgstr ""
+msgstr "Неправилно име на анимацията!"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Animation name already exists!"
-msgstr ""
+msgstr "Вече съществува анимация с това име!"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 #: editor/plugins/sprite_frames_editor_plugin.cpp
 msgid "Rename Animation"
-msgstr ""
+msgstr "Преименуване на анимацията"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Blend Next Changed"
@@ -4374,19 +4376,19 @@ msgstr ""
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Change Blend Time"
-msgstr ""
+msgstr "Промяна на времето на смесване"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Load Animation"
-msgstr ""
+msgstr "Зареждане на анимация"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Duplicate Animation"
-msgstr ""
+msgstr "Дублиране на анимацията"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "No animation to copy!"
-msgstr ""
+msgstr "Няма анимация за копиране!"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "No animation resource on clipboard!"
@@ -4394,11 +4396,11 @@ msgstr "Няма ресурс–анимация в буфера за обмен
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Pasted Animation"
-msgstr ""
+msgstr "Поставена анимация"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Paste Animation"
-msgstr ""
+msgstr "Поставяне на анимация"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "No animation to edit!"
@@ -4407,30 +4409,32 @@ msgstr "Няма анимация за редактиране!"
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Play selected animation backwards from current pos. (A)"
 msgstr ""
+"Възпроизвеждане на избраната анимация наобратно от текущата позиция. (A)"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Play selected animation backwards from end. (Shift+A)"
-msgstr ""
+msgstr "Възпроизвеждане на избраната анимация наобратно от края. (Shift+A)"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Stop animation playback. (S)"
-msgstr ""
+msgstr "Спиране на възпроизвеждането на анимацията. (S)"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Play selected animation from start. (Shift+D)"
-msgstr ""
+msgstr "Възпроизвеждане на избраната анимация от началото. (Shift+D)"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Play selected animation from current pos. (D)"
-msgstr ""
+msgstr "Възпроизвеждане на избраната анимация от текущата позиция. (D)"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Animation position (in seconds)."
-msgstr ""
+msgstr "Позиция в анимацията (в секунди)."
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Scale animation playback globally for the node."
 msgstr ""
+"Скалиране на скоростта на възпроизвеждане на анимацията глобално за възела."
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Animation Tools"
@@ -4438,7 +4442,7 @@ msgstr "Инструменти за анимациите"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Animation"
-msgstr ""
+msgstr "Анимация"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Edit Transitions..."
@@ -4446,7 +4450,7 @@ msgstr "Редактиране на преходите..."
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Open in Inspector"
-msgstr ""
+msgstr "Отваряне в инспектора"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Display list of animations in player."
@@ -4454,15 +4458,15 @@ msgstr ""
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Autoplay on Load"
-msgstr ""
+msgstr "Авт. възпроизвеждане при зареждане"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Enable Onion Skinning"
-msgstr ""
+msgstr "Показване на избледняващи кадри"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Onion Skinning Options"
-msgstr ""
+msgstr "Настройки на режима с избледняващи кадри"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Directions"
@@ -4510,11 +4514,11 @@ msgstr "Закачане на AnimationPlayer"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Create New Animation"
-msgstr ""
+msgstr "Създаване на нова анимация"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Animation Name:"
-msgstr ""
+msgstr "Име на анимацията:"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 #: editor/plugins/resource_preloader_editor_plugin.cpp
@@ -4525,15 +4529,15 @@ msgstr "Грешка!"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Blend Times:"
-msgstr ""
+msgstr "Времена на смесване:"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Next (Auto Queue):"
-msgstr ""
+msgstr "Следваща (авт. опашка):"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Cross-Animation Blend Times"
-msgstr ""
+msgstr "Времена на смесване между анимациите"
 
 #: editor/plugins/animation_state_machine_editor.cpp
 msgid "Move Node"
@@ -4550,23 +4554,23 @@ msgstr "Добавяне на преход"
 #: editor/plugins/animation_state_machine_editor.cpp
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Add Node"
-msgstr ""
+msgstr "Добавяне на възел"
 
 #: editor/plugins/animation_state_machine_editor.cpp
 msgid "End"
-msgstr ""
+msgstr "Край"
 
 #: editor/plugins/animation_state_machine_editor.cpp
 msgid "Immediate"
-msgstr ""
+msgstr "Незабавно"
 
 #: editor/plugins/animation_state_machine_editor.cpp
 msgid "Sync"
-msgstr ""
+msgstr "Синхронизиране"
 
 #: editor/plugins/animation_state_machine_editor.cpp
 msgid "At End"
-msgstr ""
+msgstr "На края"
 
 #: editor/plugins/animation_state_machine_editor.cpp
 msgid "Travel"
@@ -5461,7 +5465,7 @@ msgstr "Преглед"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Always Show Grid"
-msgstr ""
+msgstr "Винаги да се показва решетката"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Show Helpers"
@@ -5469,7 +5473,7 @@ msgstr ""
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Show Rulers"
-msgstr ""
+msgstr "Показване на линиите"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Show Guides"
@@ -5668,12 +5672,12 @@ msgstr ""
 #: editor/plugins/cpu_particles_editor_plugin.cpp
 #: editor/plugins/particles_editor_plugin.cpp
 msgid "Create Emission Points From Mesh"
-msgstr ""
+msgstr "Създаване на излъчващи точки от полигонната мрежа"
 
 #: editor/plugins/cpu_particles_editor_plugin.cpp
 #: editor/plugins/particles_editor_plugin.cpp
 msgid "Create Emission Points From Node"
-msgstr ""
+msgstr "Създаване на излъчващи точки от възела"
 
 #: editor/plugins/curve_editor_plugin.cpp
 msgid "Flat 0"
@@ -5770,7 +5774,7 @@ msgstr ""
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "Mesh is empty!"
-msgstr ""
+msgstr "Полигонната мрежа е празна!"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 #, fuzzy
@@ -5815,19 +5819,21 @@ msgstr "Създаване на няколко изпъкнали форми"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "Create Navigation Mesh"
-msgstr ""
+msgstr "Създаване на навигационна полигонна мрежа"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "Contained Mesh is not of type ArrayMesh."
-msgstr ""
+msgstr "Съдържащата се полигонна мрежа не е от тип ArrayMesh."
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "UV Unwrap failed, mesh may not be manifold?"
 msgstr ""
+"Разгъването на UV беше неуспешно. Възможно ли е полигонната мрежа да се "
+"състои от повече от една форма?"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "No mesh to debug."
-msgstr ""
+msgstr "Няма полигонна мрежа за дебъгване."
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "Model has no UV in this layer"
@@ -5835,15 +5841,15 @@ msgstr ""
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "MeshInstance lacks a Mesh!"
-msgstr ""
+msgstr "В MeshInstance няма полигонна мрежа!"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "Mesh has not surface to create outlines from!"
-msgstr ""
+msgstr "Полигонната мрежа няма повърхност, от която да се създадат контури!"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "Mesh primitive type is not PRIMITIVE_TRIANGLES!"
-msgstr ""
+msgstr "Примитивният тип на полигонната мрежа не е PRIMITIVE_TRIANGLES!"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "Could not create outline!"
@@ -5855,7 +5861,7 @@ msgstr "Създаване на контур"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "Mesh"
-msgstr ""
+msgstr "Полигонна мрежа"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "Create Trimesh Static Body"
@@ -5902,7 +5908,7 @@ msgstr ""
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "Create Outline Mesh..."
-msgstr ""
+msgstr "Създаване на контурна полигонна мрежа…"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid ""
@@ -5911,6 +5917,10 @@ msgid ""
 "This can be used instead of the SpatialMaterial Grow property when using "
 "that property isn't possible."
 msgstr ""
+"Създава статична полигонна мрежа за контура. Нормалите на контурната "
+"полигонна мрежа ще бъдат автоматично обърнати.\n"
+"Това може да се използва вместо свойството Grow на SpatialMaterial, когато "
+"това свойство не може да се променя."
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "View UV1"
@@ -5926,7 +5936,7 @@ msgstr ""
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "Create Outline Mesh"
-msgstr ""
+msgstr "Създаване на контурна полигонна мрежа"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "Outline Size:"
@@ -5950,7 +5960,7 @@ msgstr ""
 
 #: editor/plugins/mesh_library_editor_plugin.cpp
 msgid "Mesh Library"
-msgstr "Библиотека от полигонни мрежи"
+msgstr "Библиотека с полигонни мрежи"
 
 #: editor/plugins/mesh_library_editor_plugin.cpp
 #: editor/plugins/theme_editor_plugin.cpp
@@ -5972,22 +5982,27 @@ msgstr "Обновяване от сцена"
 #: editor/plugins/multimesh_editor_plugin.cpp
 msgid "No mesh source specified (and no MultiMesh set in node)."
 msgstr ""
+"Няма посочен източник за полигонна мрежа (и във възела няма MultiMesh)."
 
 #: editor/plugins/multimesh_editor_plugin.cpp
 msgid "No mesh source specified (and MultiMesh contains no Mesh)."
 msgstr ""
+"Няма посочен източник за полигонна мрежа (и MultiMesh не съдържа полигонна "
+"мрежа)."
 
 #: editor/plugins/multimesh_editor_plugin.cpp
 msgid "Mesh source is invalid (invalid path)."
-msgstr ""
+msgstr "Източникът за полигонна мрежа е неправилен (грешен път)."
 
 #: editor/plugins/multimesh_editor_plugin.cpp
 msgid "Mesh source is invalid (not a MeshInstance)."
-msgstr ""
+msgstr "Източникът за полигонна мрежа е неправилен (не е MeshInstance)."
 
 #: editor/plugins/multimesh_editor_plugin.cpp
 msgid "Mesh source is invalid (contains no Mesh resource)."
 msgstr ""
+"Източникът за полигонна мрежа е неправилен (не съдържа ресурс, който е "
+"полигонна мрежа)."
 
 #: editor/plugins/multimesh_editor_plugin.cpp
 msgid "No surface source specified."
@@ -6007,7 +6022,7 @@ msgstr ""
 
 #: editor/plugins/multimesh_editor_plugin.cpp
 msgid "Select a Source Mesh:"
-msgstr ""
+msgstr "Изберете източник за полигонна мрежа:"
 
 #: editor/plugins/multimesh_editor_plugin.cpp
 msgid "Select a Target Surface:"
@@ -6027,7 +6042,7 @@ msgstr ""
 
 #: editor/plugins/multimesh_editor_plugin.cpp
 msgid "Source Mesh:"
-msgstr ""
+msgstr "Източник за полигонна мрежа:"
 
 #: editor/plugins/multimesh_editor_plugin.cpp
 msgid "X-Axis"
@@ -6043,7 +6058,7 @@ msgstr ""
 
 #: editor/plugins/multimesh_editor_plugin.cpp
 msgid "Mesh Up Axis:"
-msgstr ""
+msgstr "Ос сочеща нагоре за полигонната мрежа:"
 
 #: editor/plugins/multimesh_editor_plugin.cpp
 msgid "Random Rotation:"
@@ -6118,15 +6133,15 @@ msgstr ""
 
 #: editor/plugins/particles_editor_plugin.cpp
 msgid "Emission Points:"
-msgstr ""
+msgstr "Излъчващи точки:"
 
 #: editor/plugins/particles_editor_plugin.cpp
 msgid "Surface Points"
-msgstr ""
+msgstr "Точки на повърхността"
 
 #: editor/plugins/particles_editor_plugin.cpp
 msgid "Surface Points+Normal (Directed)"
-msgstr ""
+msgstr "Точки на повърхността + нормали (насочени)"
 
 #: editor/plugins/particles_editor_plugin.cpp
 msgid "Volume"
@@ -6134,7 +6149,7 @@ msgstr "Обем"
 
 #: editor/plugins/particles_editor_plugin.cpp
 msgid "Emission Source: "
-msgstr ""
+msgstr "Източник на излъчването: "
 
 #: editor/plugins/particles_editor_plugin.cpp
 msgid "A processor material of type 'ParticlesMaterial' is required."
@@ -7108,6 +7123,10 @@ msgid "Yaw"
 msgstr ""
 
 #: editor/plugins/spatial_editor_plugin.cpp
+msgid "Size"
+msgstr ""
+
+#: editor/plugins/spatial_editor_plugin.cpp
 msgid "Objects Drawn"
 msgstr ""
 
@@ -7533,11 +7552,11 @@ msgstr ""
 
 #: editor/plugins/sprite_editor_plugin.cpp
 msgid "Invalid geometry, can't replace by mesh."
-msgstr ""
+msgstr "Неправилна геометрия. Не може да се замени с полигонна мрежа."
 
 #: editor/plugins/sprite_editor_plugin.cpp
 msgid "Convert to Mesh2D"
-msgstr ""
+msgstr "Преобразуване в Mesh2D"
 
 #: editor/plugins/sprite_editor_plugin.cpp
 msgid "Invalid geometry, can't create polygon."
@@ -11156,6 +11175,8 @@ msgstr "Филтриране на полигонните мрежи"
 #: modules/gridmap/grid_map_editor_plugin.cpp
 msgid "Give a MeshLibrary resource to this GridMap to use its meshes."
 msgstr ""
+"Задайте ресурс от тип MeshLibrary в този GridMap, за да можете да използвате "
+"полигонните му мрежи."
 
 #: modules/lightmapper_cpu/lightmapper_cpu.cpp
 msgid "Begin Bake"
@@ -11196,11 +11217,11 @@ msgstr ""
 
 #: modules/recast/navigation_mesh_editor_plugin.cpp
 msgid "Bake NavMesh"
-msgstr ""
+msgstr "Изпичане на NavMesh"
 
 #: modules/recast/navigation_mesh_editor_plugin.cpp
 msgid "Clear the navigation mesh."
-msgstr ""
+msgstr "Изчистване на навигационната полигонна мрежа."
 
 #: modules/recast/navigation_mesh_generator.cpp
 msgid "Setting up Configuration..."
@@ -11236,15 +11257,15 @@ msgstr ""
 
 #: modules/recast/navigation_mesh_generator.cpp
 msgid "Creating polymesh..."
-msgstr ""
+msgstr "Създаване на полигонна мрежа…"
 
 #: modules/recast/navigation_mesh_generator.cpp
 msgid "Converting to native navigation mesh..."
-msgstr ""
+msgstr "Преобразуване на навигационната полигонна мрежа в собствения формат…"
 
 #: modules/recast/navigation_mesh_generator.cpp
 msgid "Navigation Mesh Generator Setup:"
-msgstr ""
+msgstr "Настройка на генератора на навигационни полигонни мрежи:"
 
 #: modules/recast/navigation_mesh_generator.cpp
 msgid "Parsing Geometry..."
@@ -12147,7 +12168,7 @@ msgstr ""
 
 #: scene/3d/baked_lightmap.cpp
 msgid "Finding meshes and lights"
-msgstr ""
+msgstr "Търсене на полигонни мрежи и светлини"
 
 #: scene/3d/baked_lightmap.cpp
 msgid "Preparing geometry (%d/%d)"
@@ -12215,7 +12236,7 @@ msgstr ""
 
 #: scene/3d/cpu_particles.cpp
 msgid "Nothing is visible because no mesh has been assigned."
-msgstr ""
+msgstr "Не се вижда нищо, той като няма зададена полигонна мрежа."
 
 #: scene/3d/cpu_particles.cpp
 msgid ""
@@ -12225,7 +12246,7 @@ msgstr ""
 
 #: scene/3d/gi_probe.cpp
 msgid "Plotting Meshes"
-msgstr ""
+msgstr "Построяване на полигонните мрежи"
 
 #: scene/3d/gi_probe.cpp
 msgid "Finishing Plot"
@@ -12249,12 +12270,16 @@ msgstr ""
 #: scene/3d/navigation_mesh.cpp
 msgid "A NavigationMesh resource must be set or created for this node to work."
 msgstr ""
+"Трябва да се зададе или създаде ресурс от тип NavigationMesh, за може да "
+"работи този възел."
 
 #: scene/3d/navigation_mesh.cpp
 msgid ""
 "NavigationMeshInstance must be a child or grandchild to a Navigation node. "
 "It only provides navigation data."
 msgstr ""
+"NavigationMeshInstance трябва да бъде дъщерен или под-дъщерен на възел от "
+"тип Navigation. Той само предоставя данните за навигирането."
 
 #: scene/3d/particles.cpp
 msgid ""
@@ -12267,6 +12292,8 @@ msgstr ""
 msgid ""
 "Nothing is visible because meshes have not been assigned to draw passes."
 msgstr ""
+"Не се вижда нищо, тъй като полигонните мрежи не са били свързани към стъпки "
+"на изчертаване."
 
 #: scene/3d/particles.cpp
 msgid ""
@@ -12321,7 +12348,7 @@ msgstr ""
 
 #: scene/3d/soft_body.cpp
 msgid "This body will be ignored until you set a mesh."
-msgstr ""
+msgstr "Това тяло ще бъде игнорирано, докато не зададете полигонна мрежа."
 
 #: scene/3d/soft_body.cpp
 msgid ""

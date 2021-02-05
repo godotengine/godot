@@ -12,12 +12,13 @@
 # Arnold Marko <arnold.marko@gmail.com>, 2019.
 # Alex <alexrixhardson@gmail.com>, 2019.
 # Andrew Poženel <andrej.pozenel@outlook.com>, 2020.
+# Jakob Tadej Vrtačnik <minecraftalka2@gmail.com>, 2021.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2020-07-15 02:42+0000\n"
-"Last-Translator: Andrew Poženel <andrej.pozenel@outlook.com>\n"
+"PO-Revision-Date: 2021-02-01 20:54+0000\n"
+"Last-Translator: Jakob Tadej Vrtačnik <minecraftalka2@gmail.com>\n"
 "Language-Team: Slovenian <https://hosted.weblate.org/projects/godot-engine/"
 "godot/sl/>\n"
 "Language: sl\n"
@@ -26,7 +27,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=4; plural=n%100==1 ? 0 : n%100==2 ? 1 : n%100==3 || n"
 "%100==4 ? 2 : 3;\n"
-"X-Generator: Weblate 4.2-dev\n"
+"X-Generator: Weblate 4.5-dev\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -370,7 +371,7 @@ msgstr "Odstrani animacijsko sled"
 
 #: editor/animation_track_editor.cpp
 msgid "Create NEW track for %s and insert key?"
-msgstr "Ustvarim NOVO sled za %s in vstavim ključ?"
+msgstr "Ustvarim NOVO sled za %s in vstavi ključ?"
 
 #: editor/animation_track_editor.cpp
 msgid "Create %d NEW tracks and insert keys?"
@@ -7623,6 +7624,10 @@ msgstr ""
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Yaw"
+msgstr ""
+
+#: editor/plugins/spatial_editor_plugin.cpp
+msgid "Size"
 msgstr ""
 
 #: editor/plugins/spatial_editor_plugin.cpp

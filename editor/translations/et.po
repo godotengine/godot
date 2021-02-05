@@ -10,7 +10,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
-"PO-Revision-Date: 2021-01-22 10:21+0000\n"
+"PO-Revision-Date: 2021-02-05 09:20+0000\n"
 "Last-Translator: Kritzmensch <streef.gtx@gmail.com>\n"
 "Language-Team: Estonian <https://hosted.weblate.org/projects/godot-engine/"
 "godot/et/>\n"
@@ -4953,7 +4953,7 @@ msgstr ""
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Import..."
-msgstr ""
+msgstr "Impordi..."
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Plugins..."
@@ -7104,6 +7104,10 @@ msgstr "Frontaal"
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Yaw"
 msgstr "Sagitaal"
+
+#: editor/plugins/spatial_editor_plugin.cpp
+msgid "Size"
+msgstr ""
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Objects Drawn"
@@ -9579,12 +9583,17 @@ msgid ""
 "Please edit the project and set the main scene in the Project Settings under "
 "the \"Application\" category."
 msgstr ""
+"Projekti ei saa käivitada: peastseeni ei ole määratud.\n"
+"Redigeerige project.godot faili ja määrake projekti peastseen \"application"
+"\" alajaotuses."
 
 #: editor/project_manager.cpp
 msgid ""
 "Can't run project: Assets need to be imported.\n"
 "Please edit the project to trigger the initial import."
 msgstr ""
+"Projekti ei saa käivitada: varad tuleb importida.\n"
+"Redigeerige projekti käivitama algset importimise protsessi."
 
 #: editor/project_manager.cpp
 msgid "Are you sure to run %d projects at once?"
@@ -9659,7 +9668,7 @@ msgstr ""
 
 #: editor/project_manager.cpp
 msgid "Can't run project"
-msgstr ""
+msgstr "Projekti ei saa käivitada"
 
 #: editor/project_manager.cpp
 msgid ""

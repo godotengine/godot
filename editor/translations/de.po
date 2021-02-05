@@ -7426,6 +7426,11 @@ msgid "Yaw"
 msgstr "Gieren"
 
 #: editor/plugins/spatial_editor_plugin.cpp
+#, fuzzy
+msgid "Size"
+msgstr "Größe: "
+
+#: editor/plugins/spatial_editor_plugin.cpp
 msgid "Objects Drawn"
 msgstr "Gezeichnete Objekte"
 

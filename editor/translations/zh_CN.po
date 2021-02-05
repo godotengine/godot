@@ -58,7 +58,7 @@
 # idleman <1524328475@qq.com>, 2019.
 # king <wangding1992@126.com>, 2019.
 # silentbird <silentbird520@outlook.com>, 2019.
-# Haoyu Qiu <timothyqiu32@gmail.com>, 2019, 2020.
+# Haoyu Qiu <timothyqiu32@gmail.com>, 2019, 2020, 2021.
 # Revan Ji <jiruifancr@gmail.com>, 2020.
 # nieyuanhong <15625988003@163.com>, 2020.
 # binotaliu <binota@protonmail.ch>, 2020.
@@ -74,12 +74,13 @@
 # BinotaLIU <me@binota.org>, 2020.
 # TakWolf <takwolf@foxmail.com>, 2020.
 # twoBornottwoB <305766341@qq.com>, 2021.
+# Magian <magian1127@gmail.com>, 2021.
 msgid ""
 msgstr ""
 "Project-Id-Version: Chinese (Simplified) (Godot Engine)\n"
 "POT-Creation-Date: 2018-01-20 12:15+0200\n"
-"PO-Revision-Date: 2021-01-22 10:21+0000\n"
-"Last-Translator: twoBornottwoB <305766341@qq.com>\n"
+"PO-Revision-Date: 2021-01-27 23:21+0000\n"
+"Last-Translator: Haoyu Qiu <timothyqiu32@gmail.com>\n"
 "Language-Team: Chinese (Simplified) <https://hosted.weblate.org/projects/"
 "godot-engine/godot/zh_Hans/>\n"
 "Language: zh_CN\n"
@@ -3773,7 +3774,7 @@ msgstr "全部折叠"
 
 #: editor/filesystem_dock.cpp
 msgid "Duplicate..."
-msgstr "重复..."
+msgstr "复制为..."
 
 #: editor/filesystem_dock.cpp
 msgid "Move to Trash"
@@ -5119,7 +5120,6 @@ msgid "Assets ZIP File"
 msgstr "素材 ZIP 文件"
 
 #: editor/plugins/baked_lightmap_editor_plugin.cpp
-#, fuzzy
 msgid ""
 "Can't determine a save path for lightmap images.\n"
 "Save your scene and try again."
@@ -5140,18 +5140,18 @@ msgstr "创建光照贴图失败，切确保文件是可写的。"
 
 #: editor/plugins/baked_lightmap_editor_plugin.cpp
 msgid "Failed determining lightmap size. Maximum lightmap size too small?"
-msgstr ""
+msgstr "无法确定光照贴图大小。最大光照贴图大小太小？"
 
 #: editor/plugins/baked_lightmap_editor_plugin.cpp
 msgid ""
 "Some mesh is invalid. Make sure the UV2 channel values are contained within "
 "the [0.0,1.0] square region."
-msgstr ""
+msgstr "某些网格无效。确保UV2通道值包含在[0.0,1.0]平方区域内。"
 
 #: editor/plugins/baked_lightmap_editor_plugin.cpp
 msgid ""
 "Godot editor was built without ray tracing support, lightmaps can't be baked."
-msgstr ""
+msgstr "Godot编辑器是在没有光线跟踪支持的情况下构建的，光照贴图无法烘焙。"
 
 #: editor/plugins/baked_lightmap_editor_plugin.cpp
 msgid "Bake Lightmaps"
@@ -5159,7 +5159,7 @@ msgstr "烘焙光照贴图"
 
 #: editor/plugins/baked_lightmap_editor_plugin.cpp
 msgid "Select lightmap bake file:"
-msgstr "选择模板文件："
+msgstr "选择光照贴图烘焙文件:"
 
 #: editor/plugins/camera_editor_plugin.cpp
 #: editor/plugins/spatial_editor_plugin.cpp
@@ -6239,9 +6239,8 @@ msgid "Can only set point into a ParticlesMaterial process material"
 msgstr "只可设为指向 ParticlesMaterial 处理材料"
 
 #: editor/plugins/particles_2d_editor_plugin.cpp
-#, fuzzy
 msgid "Convert to CPUParticles2D"
-msgstr "转换为 CPUParticles"
+msgstr "转换为CPUParticles2D"
 
 #: editor/plugins/particles_2d_editor_plugin.cpp
 #: editor/plugins/particles_editor_plugin.cpp
@@ -7264,6 +7263,11 @@ msgstr "俯仰角"
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Yaw"
 msgstr "偏航角"
+
+#: editor/plugins/spatial_editor_plugin.cpp
+#, fuzzy
+msgid "Size"
+msgstr "大小： "
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Objects Drawn"
@@ -11425,35 +11429,31 @@ msgstr "向此 GridMap 提供网格库资源以使用其网格。"
 
 #: modules/lightmapper_cpu/lightmapper_cpu.cpp
 msgid "Begin Bake"
-msgstr ""
+msgstr "开始烘焙"
 
 #: modules/lightmapper_cpu/lightmapper_cpu.cpp
 msgid "Preparing data structures"
-msgstr ""
+msgstr "准备数据结构"
 
 #: modules/lightmapper_cpu/lightmapper_cpu.cpp
-#, fuzzy
 msgid "Generate buffers"
-msgstr "生成 AABB"
+msgstr "生成缓冲区"
 
 #: modules/lightmapper_cpu/lightmapper_cpu.cpp
-#, fuzzy
 msgid "Direct lighting"
-msgstr "方向"
+msgstr "直接照明"
 
 #: modules/lightmapper_cpu/lightmapper_cpu.cpp
-#, fuzzy
 msgid "Indirect lighting"
-msgstr "向右缩进"
+msgstr "间接照明"
 
 #: modules/lightmapper_cpu/lightmapper_cpu.cpp
-#, fuzzy
 msgid "Post processing"
-msgstr "后期处理"
+msgstr "后处理"
 
 #: modules/lightmapper_cpu/lightmapper_cpu.cpp
 msgid "Plotting lightmaps"
-msgstr "正在绘制灯光"
+msgstr "绘制光照图"
 
 #: modules/mono/csharp_script.cpp
 msgid "Class name can't be a reserved keyword"
@@ -11954,9 +11954,8 @@ msgid "Select device from the list"
 msgstr "从列表中选择设备"
 
 #: platform/android/export/export.cpp
-#, fuzzy
 msgid "Unable to find the 'apksigner' tool."
-msgstr "未找到 zipalign 工具。"
+msgstr "找不到“apksigner”工具。"
 
 #: platform/android/export/export.cpp
 msgid ""
@@ -11973,14 +11972,12 @@ msgid "Release keystore incorrectly configured in the export preset."
 msgstr "用于发布的密钥存储在导出预设中未被正确设置。"
 
 #: platform/android/export/export.cpp
-#, fuzzy
 msgid "A valid Android SDK path is required in Editor Settings."
-msgstr "用于 “编辑器设置” 中自定义构建的 Android SDK 路径是无效的。"
+msgstr "编辑器设置中需要有效的Android SDK路径。"
 
 #: platform/android/export/export.cpp
-#, fuzzy
 msgid "Invalid Android SDK path in Editor Settings."
-msgstr "用于 “编辑器设置” 中自定义构建的 Android SDK 路径是无效的。"
+msgstr "编辑器设置中的Android SDK路径无效。"
 
 #: platform/android/export/export.cpp
 msgid "Missing 'platform-tools' directory!"
@@ -11988,12 +11985,11 @@ msgstr "缺失“platform-tools”目录！"
 
 #: platform/android/export/export.cpp
 msgid "Unable to find Android SDK platform-tools' adb command."
-msgstr ""
+msgstr "找不到Android SDK平台工具的adb命令。"
 
 #: platform/android/export/export.cpp
-#, fuzzy
 msgid "Please check in the Android SDK directory specified in Editor Settings."
-msgstr "用于 “编辑器设置” 中自定义构建的 Android SDK 路径是无效的。"
+msgstr "请签入编辑器设置中指定的Android SDK目录。"
 
 #: platform/android/export/export.cpp
 msgid "Missing 'build-tools' directory!"
@@ -12001,7 +11997,7 @@ msgstr "缺失“build-tools”目录！"
 
 #: platform/android/export/export.cpp
 msgid "Unable to find Android SDK build-tools' apksigner command."
-msgstr ""
+msgstr "找不到Android SDK生成工具的apksigner命令。"
 
 #: platform/android/export/export.cpp
 msgid "Invalid public key for APK expansion."
@@ -12431,27 +12427,23 @@ msgstr "ARVROrigin 需要一个 ARVRCamera 子节点。"
 
 #: scene/3d/baked_lightmap.cpp
 msgid "Finding meshes and lights"
-msgstr ""
+msgstr "正在查找网格和灯光"
 
 #: scene/3d/baked_lightmap.cpp
-#, fuzzy
 msgid "Preparing geometry (%d/%d)"
-msgstr "解析多边形中..."
+msgstr "正在准备几何体（%d/%d）"
 
 #: scene/3d/baked_lightmap.cpp
-#, fuzzy
 msgid "Preparing environment"
-msgstr "查看环境"
+msgstr "正在准备环境"
 
 #: scene/3d/baked_lightmap.cpp
-#, fuzzy
 msgid "Generating capture"
-msgstr "正在生成光照贴图"
+msgstr "正在生成捕获"
 
 #: scene/3d/baked_lightmap.cpp
-#, fuzzy
 msgid "Saving lightmaps"
-msgstr "正在生成光照贴图"
+msgstr "正在保存光照贴图"
 
 #: scene/3d/baked_lightmap.cpp
 msgid "Done"
@@ -12833,7 +12825,7 @@ msgstr "Viewport 大小大于 0 时才能进行渲染。"
 msgid ""
 "The sampler port is connected but not used. Consider changing the source to "
 "'SamplerPort'."
-msgstr ""
+msgstr "采样器端口已连接但未使用。考虑将源更改为“SamplerPort”。"
 
 #: scene/resources/visual_shader_nodes.cpp
 msgid "Invalid source for preview."

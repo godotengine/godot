@@ -7463,6 +7463,10 @@ msgid "Yaw"
 msgstr "Lacet (hauteur)"
 
 #: editor/plugins/spatial_editor_plugin.cpp
+msgid "Size"
+msgstr "Taille"
+
+#: editor/plugins/spatial_editor_plugin.cpp
 msgid "Objects Drawn"
 msgstr "Objets dessinés"
 

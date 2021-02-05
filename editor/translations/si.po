@@ -3,12 +3,13 @@
 # Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).
 # This file is distributed under the same license as the Godot source code.
 # Yohan Sandun <Yohan99ysk@gmail.com>, 2018.
+# thushariii <thusharipahalage@gmail.com>, 2021.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2018-12-13 14:42+0100\n"
-"Last-Translator: Yohan Sandun <Yohan99ysk@gmail.com>\n"
+"PO-Revision-Date: 2021-02-05 09:20+0000\n"
+"Last-Translator: thushariii <thusharipahalage@gmail.com>\n"
 "Language-Team: Sinhala <https://hosted.weblate.org/projects/godot-engine/"
 "godot/si/>\n"
 "Language: si\n"
@@ -16,7 +17,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n > 1;\n"
-"X-Generator: Poedit 2.2\n"
+"X-Generator: Weblate 4.5-dev\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -103,11 +104,11 @@ msgstr "කැඩපත"
 
 #: editor/animation_bezier_editor.cpp editor/editor_profiler.cpp
 msgid "Time:"
-msgstr ""
+msgstr "කාලය:"
 
 #: editor/animation_bezier_editor.cpp
 msgid "Value:"
-msgstr ""
+msgstr "වටිනාකම:"
 
 #: editor/animation_bezier_editor.cpp
 msgid "Insert Key Here"
@@ -190,7 +191,7 @@ msgstr "සජීවීකරණ පුනරාවර්ථනය"
 #: editor/animation_track_editor.cpp
 #: editor/plugins/sprite_frames_editor_plugin.cpp
 msgid "Change Animation Loop"
-msgstr ""
+msgstr "සජීවිකරණ ලූපය වෙනස් කරන්න"
 
 #: editor/animation_track_editor.cpp
 msgid "Property Track"
@@ -249,7 +250,7 @@ msgstr "Anim පසුරු:"
 
 #: editor/animation_track_editor.cpp
 msgid "Change Track Path"
-msgstr ""
+msgstr "පථය වෙනස් කරන්න"
 
 #: editor/animation_track_editor.cpp
 msgid "Toggle this track on/off."
@@ -331,7 +332,7 @@ msgstr "යතුරු මකා දමන්න"
 
 #: editor/animation_track_editor.cpp
 msgid "Change Animation Update Mode"
-msgstr ""
+msgstr "සජීවිකරණ යාවත්කාලීන ප්‍රකාරය වෙනස් කරන්න"
 
 #: editor/animation_track_editor.cpp
 #, fuzzy
@@ -435,7 +436,7 @@ msgstr "ලුහුබදින්නෙක් එක් කරන්න"
 
 #: editor/animation_track_editor.cpp
 msgid "Track path is invalid, so can't add a key."
-msgstr ""
+msgstr "පථය අවලංගු බැවින් යතුරක් එක් කළ නොහැක."
 
 #: editor/animation_track_editor.cpp
 msgid "Track is not of type Spatial, can't insert key"
@@ -7106,6 +7107,10 @@ msgstr ""
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Yaw"
+msgstr ""
+
+#: editor/plugins/spatial_editor_plugin.cpp
+msgid "Size"
 msgstr ""
 
 #: editor/plugins/spatial_editor_plugin.cpp

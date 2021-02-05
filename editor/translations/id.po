@@ -7360,6 +7360,11 @@ msgid "Yaw"
 msgstr "Oleng"
 
 #: editor/plugins/spatial_editor_plugin.cpp
+#, fuzzy
+msgid "Size"
+msgstr "Ukuran: "
+
+#: editor/plugins/spatial_editor_plugin.cpp
 msgid "Objects Drawn"
 msgstr "Objek Digambar"
 

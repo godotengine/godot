@@ -50,8 +50,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2021-01-26 03:28+0000\n"
-"Last-Translator: gnu-ewm <gnu.ewm@protonmail.com>\n"
+"PO-Revision-Date: 2021-02-01 20:54+0000\n"
+"Last-Translator: Tomek <kobewi4e@gmail.com>\n"
 "Language-Team: Polish <https://hosted.weblate.org/projects/godot-engine/"
 "godot/pl/>\n"
 "Language: pl\n"
@@ -7361,6 +7361,11 @@ msgid "Yaw"
 msgstr "Odchylenie"
 
 #: editor/plugins/spatial_editor_plugin.cpp
+#, fuzzy
+msgid "Size"
+msgstr "Rozmiar: "
+
+#: editor/plugins/spatial_editor_plugin.cpp
 msgid "Objects Drawn"
 msgstr "Narysowane obiekty"
 
@@ -10154,15 +10159,15 @@ msgstr "Indeks przycisku myszy:"
 
 #: editor/project_settings_editor.cpp
 msgid "Left Button"
-msgstr "Lewy guzik"
+msgstr "Lewy przycisk"
 
 #: editor/project_settings_editor.cpp
 msgid "Right Button"
-msgstr "Prawy guzik"
+msgstr "Prawy przycisk"
 
 #: editor/project_settings_editor.cpp
 msgid "Middle Button"
-msgstr "Środkowy guzik"
+msgstr "Środkowy przycisk"
 
 #: editor/project_settings_editor.cpp
 msgid "Wheel Up Button"
@@ -12160,18 +12165,12 @@ msgstr ""
 "Wydaniowy keystore jest niepoprawnie skonfigurowany w profilu eksportu."
 
 #: platform/android/export/export.cpp
-#, fuzzy
 msgid "A valid Android SDK path is required in Editor Settings."
-msgstr ""
-"Niepoprawna ścieżka do SDK Androida dla własnego builda w Ustawieniach "
-"Edytora."
+msgstr "Wymagana jest poprawna ścieżka SDK Androida w Ustawieniach Edytora."
 
 #: platform/android/export/export.cpp
-#, fuzzy
 msgid "Invalid Android SDK path in Editor Settings."
-msgstr ""
-"Niepoprawna ścieżka do SDK Androida dla własnego builda w Ustawieniach "
-"Edytora."
+msgstr "Niepoprawna ścieżka do SDK Androida w Ustawieniach Edytora."
 
 #: platform/android/export/export.cpp
 msgid "Missing 'platform-tools' directory!"
@@ -12180,13 +12179,11 @@ msgstr "Folder \"platform-tools\" nie istnieje!"
 #: platform/android/export/export.cpp
 msgid "Unable to find Android SDK platform-tools' adb command."
 msgstr ""
+"Nie udało się znaleźć komendy adb z narzędzi platformowych SDK Androida."
 
 #: platform/android/export/export.cpp
-#, fuzzy
 msgid "Please check in the Android SDK directory specified in Editor Settings."
-msgstr ""
-"Niepoprawna ścieżka do SDK Androida dla własnego builda w Ustawieniach "
-"Edytora."
+msgstr "Sprawdź w folderze SDK Androida podanych w Ustawieniach Edytora."
 
 #: platform/android/export/export.cpp
 msgid "Missing 'build-tools' directory!"
@@ -12194,7 +12191,7 @@ msgstr "Brakuje folderu \"build-tools\"!"
 
 #: platform/android/export/export.cpp
 msgid "Unable to find Android SDK build-tools' apksigner command."
-msgstr ""
+msgstr "Nie udało się znaleźć komendy apksigner z narzędzi SDK Androida."
 
 #: platform/android/export/export.cpp
 msgid "Invalid public key for APK expansion."
@@ -12672,27 +12669,23 @@ msgstr "ARVROrigin wymaga węzła potomnego typu ARVRCamera."
 
 #: scene/3d/baked_lightmap.cpp
 msgid "Finding meshes and lights"
-msgstr ""
+msgstr "Szukanie siatek i świateł"
 
 #: scene/3d/baked_lightmap.cpp
-#, fuzzy
 msgid "Preparing geometry (%d/%d)"
-msgstr "Parsowanie Geometrii..."
+msgstr "Przygotowywanie geometrii (%d/%d)"
 
 #: scene/3d/baked_lightmap.cpp
-#, fuzzy
 msgid "Preparing environment"
-msgstr "Wyświetlaj środowisko"
+msgstr "Przygotowywanie środowiska"
 
 #: scene/3d/baked_lightmap.cpp
-#, fuzzy
 msgid "Generating capture"
-msgstr "Generowanie Lightmapy"
+msgstr "Generowanie przechwycenia"
 
 #: scene/3d/baked_lightmap.cpp
-#, fuzzy
 msgid "Saving lightmaps"
-msgstr "Generowanie Lightmapy"
+msgstr "Zapisywanie map światła"
 
 #: scene/3d/baked_lightmap.cpp
 msgid "Done"
@@ -13099,6 +13092,8 @@ msgid ""
 "The sampler port is connected but not used. Consider changing the source to "
 "'SamplerPort'."
 msgstr ""
+"Port samplera jest podłączony, ale nieużyty. Rozważ zmianę źródła na "
+"\"SamplerPort\"."
 
 #: scene/resources/visual_shader_nodes.cpp
 msgid "Invalid source for preview."

@@ -15,15 +15,15 @@
 # Mads K. Bredager <mbredager@gmail.com>, 2019.
 # Kristoffer Andersen <kjaa@google.com>, 2019.
 # Joe Osborne <reachjoe.o@gmail.com>, 2020.
-# Autowinto <happymansi@hotmail.com>, 2020.
+# Autowinto <happymansi@hotmail.com>, 2020, 2021.
 # Mikkel Mouridsen <mikkelmouridsen@me.com>, 2020, 2021.
 # snakatk <snaqii@live.dk>, 2021.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2021-01-26 16:32+0000\n"
-"Last-Translator: Mikkel Mouridsen <mikkelmouridsen@me.com>\n"
+"PO-Revision-Date: 2021-02-05 09:20+0000\n"
+"Last-Translator: snakatk <snaqii@live.dk>\n"
 "Language-Team: Danish <https://hosted.weblate.org/projects/godot-engine/"
 "godot/da/>\n"
 "Language: da\n"
@@ -142,7 +142,7 @@ msgstr "Tilføj Bezier-punkt"
 
 #: editor/animation_bezier_editor.cpp
 msgid "Move Bezier Points"
-msgstr "Flyt punkt"
+msgstr "Flyt Bezier-punkter"
 
 #: editor/animation_bezier_editor.cpp editor/animation_track_editor.cpp
 msgid "Anim Duplicate Keys"
@@ -198,9 +198,8 @@ msgid "Anim Multi Change Call"
 msgstr "Anim Skift Call"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Change Animation Length"
-msgstr "Ændre Animation Navn:"
+msgstr "Ændre Animationslængde"
 
 #: editor/animation_track_editor.cpp
 #: editor/plugins/sprite_frames_editor_plugin.cpp
@@ -7581,6 +7580,10 @@ msgstr ""
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Yaw"
+msgstr ""
+
+#: editor/plugins/spatial_editor_plugin.cpp
+msgid "Size"
 msgstr ""
 
 #: editor/plugins/spatial_editor_plugin.cpp
