@@ -52,15 +52,15 @@
 # Anonymous <noreply@weblate.org>, 2020.
 # riccardo boffelli <riccardo.boffelli.96@gmail.com>, 2020.
 # Lorenzo Asolan <brixiumx@gmail.com>, 2020.
-# Lorenzo Cerqua <lorenzocerqua@tutanota.com>, 2020.
+# Lorenzo Cerqua <lorenzocerqua@tutanota.com>, 2020, 2021.
 # Federico Manzella <ferdiu.manzella@gmail.com>, 2020.
 # Ziv D <wizdavid@gmail.com>, 2020.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2021-01-22 10:21+0000\n"
-"Last-Translator: Micila Micillotto <micillotto@gmail.com>\n"
+"PO-Revision-Date: 2021-02-01 20:53+0000\n"
+"Last-Translator: Lorenzo Cerqua <lorenzocerqua@tutanota.com>\n"
 "Language-Team: Italian <https://hosted.weblate.org/projects/godot-engine/"
 "godot/it/>\n"
 "Language: it\n"
@@ -472,16 +472,18 @@ msgid "Not possible to add a new track without a root"
 msgstr "Non è possibile aggiungere una nuova traccia senza un nodo radice"
 
 #: editor/animation_track_editor.cpp
+#, fuzzy
 msgid "Invalid track for Bezier (no suitable sub-properties)"
-msgstr "Traccia non valida per la curva Bézier (nessuna sottoproprietà adatta)"
+msgstr ""
+"Traccia non valida per una curva di Bézier (nessuna sotto-proprietà adatta)"
 
 #: editor/animation_track_editor.cpp
 msgid "Add Bezier Track"
-msgstr "Aggiungi traccia Bézier"
+msgstr "Aggiungi una traccia di curve di Bézier"
 
 #: editor/animation_track_editor.cpp
 msgid "Track path is invalid, so can't add a key."
-msgstr "Il tracciato non è valido, non è possibile aggiungere una chiave."
+msgstr "La traccia non è valida, quindi è impossibile aggiungere una chiave."
 
 #: editor/animation_track_editor.cpp
 msgid "Track is not of type Spatial, can't insert key"
@@ -489,21 +491,22 @@ msgstr "La traccia non è di tipo Spatial, impossibile aggiungere la chiave"
 
 #: editor/animation_track_editor.cpp
 msgid "Add Transform Track Key"
-msgstr "Aggiungi chiave traccia Transform"
+msgstr "Aggiungi una chiave a una traccia di trasformazioni"
 
 #: editor/animation_track_editor.cpp
 msgid "Add Track Key"
-msgstr "Aggiungi chiave traccia"
+msgstr "Aggiungi una chiave a una traccia"
 
 #: editor/animation_track_editor.cpp
+#, fuzzy
 msgid "Track path is invalid, so can't add a method key."
 msgstr ""
-"Il tracciato non è valido, non è possibile aggiungere una chiave di chiamata "
-"di funzione."
+"La traccia non è valida, quindi non è possibile aggiungere una chiave di "
+"chiamata di metodo."
 
 #: editor/animation_track_editor.cpp
 msgid "Add Method Track Key"
-msgstr "Aggiungi chiave alla traccia metodo"
+msgstr "Aggiungi una chiave a una traccia di chiamate di metodi"
 
 #: editor/animation_track_editor.cpp
 msgid "Method not found in object: "
@@ -511,7 +514,7 @@ msgstr "Metodo non trovato nell'oggetto: "
 
 #: editor/animation_track_editor.cpp
 msgid "Anim Move Keys"
-msgstr "Sposta chiavi animazione"
+msgstr "Sposta delle chiavi d'animazione"
 
 #: editor/animation_track_editor.cpp
 msgid "Clipboard is empty"
@@ -519,20 +522,21 @@ msgstr "Gli appunti sono vuoti"
 
 #: editor/animation_track_editor.cpp
 msgid "Paste Tracks"
-msgstr "Incolla tracce"
+msgstr "Incolla delle tracce"
 
 #: editor/animation_track_editor.cpp
 msgid "Anim Scale Keys"
-msgstr "Scala chiavi animazione"
+msgstr "Scala delle chiavi d'animazione"
 
 #: editor/animation_track_editor.cpp
 msgid ""
 "This option does not work for Bezier editing, as it's only a single track."
 msgstr ""
-"Questa opzione non funziona per modificare curve di Bézier, dato che si "
-"tratta di una traccia singola."
+"Questa opzione non funziona per modificare delle curve di Bézier, dato che "
+"si tratta di una singola traccia."
 
 #: editor/animation_track_editor.cpp
+#, fuzzy
 msgid ""
 "This animation belongs to an imported scene, so changes to imported tracks "
 "will not be saved.\n"
@@ -544,14 +548,14 @@ msgid ""
 "Alternatively, use an import preset that imports animations to separate "
 "files."
 msgstr ""
-"Questa animazione appartiene a una scena importata, eventuali modifiche alle "
-"tracce importate non saranno salvate.\n"
+"Quest'animazione appartiene a una scena importata, eventuali modifiche fatte "
+"alle tracce importate non verranno salvate.\n"
 "\n"
-"Per abilitare la possibilità di aggiungere ulteriori tracce, vai alle "
-"impostazioni di importazione della scena e imposta\n"
-"\"Animation > Storage\" su \"Files\", abilita \"Animation > Keep Custom "
-"Tracks\", e infine reimporta la scena.\n"
-"Altrimenti, usa un preset di importazione che importa le animazioni in file "
+"Per abilitare la possibilità di aggiungere ulteriori tracce, andare nelle "
+"impostazioni d'importazione della scena, impostare\n"
+"\"Animation > Storage\" su \"Files\", attivare \"Animation > Keep Custom "
+"Tracks\" e infine reimportare la scena.\n"
+"Altrimenti, usare una preimpostazione che importi le animazioni in file "
 "separati."
 
 #: editor/animation_track_editor.cpp
@@ -568,11 +572,11 @@ msgstr "Mostra solo le tracce dei nodi selezionati nell'albero."
 
 #: editor/animation_track_editor.cpp
 msgid "Group tracks by node or display them as plain list."
-msgstr "Raggruppa le tracce per nodo o mostra una lista semplice."
+msgstr "Raggruppa le tracce per nodo o le visualizza in una lista semplice."
 
 #: editor/animation_track_editor.cpp
 msgid "Snap:"
-msgstr "Snap:"
+msgstr "Scatto:"
 
 #: editor/animation_track_editor.cpp
 msgid "Animation step value."
@@ -599,25 +603,26 @@ msgstr "Modifica"
 
 #: editor/animation_track_editor.cpp
 msgid "Animation properties."
-msgstr "Proprietà animazione."
+msgstr "Proprietà dell'animazione."
 
 #: editor/animation_track_editor.cpp
 msgid "Copy Tracks"
-msgstr "Copia tracce"
+msgstr "Copia le tracce"
 
 #: editor/animation_track_editor.cpp
 msgid "Scale Selection"
-msgstr "Scala selezione"
+msgstr "Scala la selezione"
 
 #: editor/animation_track_editor.cpp
 msgid "Scale From Cursor"
-msgstr "Scala da cursore"
+msgstr "Scala a partire dal cursore"
 
 #: editor/animation_track_editor.cpp modules/gridmap/grid_map_editor_plugin.cpp
 msgid "Duplicate Selection"
-msgstr "Duplica selezione"
+msgstr "Duplica la selezione"
 
 #: editor/animation_track_editor.cpp
+#, fuzzy
 msgid "Duplicate Transposed"
 msgstr "Duplica trasposto"
 
@@ -626,20 +631,22 @@ msgid "Delete Selection"
 msgstr "Elimina la selezione"
 
 #: editor/animation_track_editor.cpp
+#, fuzzy
 msgid "Go to Next Step"
 msgstr "Va' al passo successivo"
 
 #: editor/animation_track_editor.cpp
+#, fuzzy
 msgid "Go to Previous Step"
 msgstr "Va' al passo precedente"
 
 #: editor/animation_track_editor.cpp
 msgid "Optimize Animation"
-msgstr "Ottimizza animazione"
+msgstr "Ottimizza l'animazione"
 
 #: editor/animation_track_editor.cpp
 msgid "Clean-Up Animation"
-msgstr "Pulisci animazione"
+msgstr "Pulisci l'animazione"
 
 #: editor/animation_track_editor.cpp
 msgid "Pick the node that will be animated:"
@@ -647,7 +654,7 @@ msgstr "Seleziona il nodo che verrà animato:"
 
 #: editor/animation_track_editor.cpp
 msgid "Use Bezier Curves"
-msgstr "Usa curve di Bézier"
+msgstr "Usa le curve di Bézier"
 
 #: editor/animation_track_editor.cpp
 msgid "Anim. Optimizer"
@@ -655,15 +662,15 @@ msgstr "Ottimizzatore anim."
 
 #: editor/animation_track_editor.cpp
 msgid "Max. Linear Error:"
-msgstr "Max. errore lineare:"
+msgstr "Max errore lineare:"
 
 #: editor/animation_track_editor.cpp
 msgid "Max. Angular Error:"
-msgstr "Max. errore angolare:"
+msgstr "Max errore angolare:"
 
 #: editor/animation_track_editor.cpp
 msgid "Max Optimizable Angle:"
-msgstr "Max. angolo ottimizzabile:"
+msgstr "Max angolo ottimizzabile:"
 
 #: editor/animation_track_editor.cpp
 msgid "Optimize"
@@ -671,11 +678,11 @@ msgstr "Ottimizza"
 
 #: editor/animation_track_editor.cpp
 msgid "Remove invalid keys"
-msgstr "Rimuovi chiavi non valide"
+msgstr "Rimuovi le chiavi non valide"
 
 #: editor/animation_track_editor.cpp
 msgid "Remove unresolved and empty tracks"
-msgstr "Rimuovi tracce irrisolte e vuote"
+msgstr "Rimuovi le tracce irrisolte e vuote"
 
 #: editor/animation_track_editor.cpp
 msgid "Clean-up all animations"
@@ -683,7 +690,7 @@ msgstr "Pulisci tutte le animazioni"
 
 #: editor/animation_track_editor.cpp
 msgid "Clean-Up Animation(s) (NO UNDO!)"
-msgstr "Pulisci animazione(i) (NON ANNULLABILE!)"
+msgstr "Pulisci le animazioni (NON ANNULLABILE!)"
 
 #: editor/animation_track_editor.cpp
 msgid "Clean-Up"
@@ -708,31 +715,33 @@ msgstr "Copia"
 
 #: editor/animation_track_editor.cpp
 msgid "Select All/None"
-msgstr "Seleziona Tutto/Nulla"
+msgstr "Seleziona tutto/nulla"
 
 #: editor/animation_track_editor_plugins.cpp
 msgid "Add Audio Track Clip"
-msgstr "Aggiungi traccia clip audio"
+msgstr "Aggiungi audio in una traccia di riproduzione audio"
 
 #: editor/animation_track_editor_plugins.cpp
+#, fuzzy
 msgid "Change Audio Track Clip Start Offset"
-msgstr "Cambia Offset di Inizio della Clip della Traccia Audio"
+msgstr "Cambia lo scostamento dell'inizio della traccia audio"
 
 #: editor/animation_track_editor_plugins.cpp
+#, fuzzy
 msgid "Change Audio Track Clip End Offset"
-msgstr "Cambia offset di fine della clip della traccia audio"
+msgstr "Cambia lo scostamento della fine della traccia audio"
 
 #: editor/array_property_edit.cpp
 msgid "Resize Array"
-msgstr "Ridimensiona array"
+msgstr "Ridimensiona lista"
 
 #: editor/array_property_edit.cpp
 msgid "Change Array Value Type"
-msgstr "Cambia tipo del valore dell'array"
+msgstr "Cambia il tipo del valore della lista"
 
 #: editor/array_property_edit.cpp
 msgid "Change Array Value"
-msgstr "Cambia valore array"
+msgstr "Cambia il valore della lista"
 
 #: editor/code_editor.cpp
 msgid "Go to Line"
@@ -740,7 +749,7 @@ msgstr "Vai alla linea"
 
 #: editor/code_editor.cpp
 msgid "Line Number:"
-msgstr "Numero linea:"
+msgstr "Numero della linea:"
 
 #: editor/code_editor.cpp
 msgid "%d replaced."
@@ -752,11 +761,11 @@ msgstr "%d corrispondenza."
 
 #: editor/code_editor.cpp editor/editor_help.cpp
 msgid "%d matches."
-msgstr "%d corrispondenza/e."
+msgstr "%d corrispondenze."
 
 #: editor/code_editor.cpp editor/find_in_files.cpp
 msgid "Match Case"
-msgstr "Distingui maiuscole"
+msgstr "Distingui le maiuscole"
 
 #: editor/code_editor.cpp editor/find_in_files.cpp
 msgid "Whole Words"
@@ -7419,6 +7428,11 @@ msgstr "Inclinazione"
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Yaw"
 msgstr "Imbardata"
+
+#: editor/plugins/spatial_editor_plugin.cpp
+#, fuzzy
+msgid "Size"
+msgstr "Dimensione: "
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Objects Drawn"
