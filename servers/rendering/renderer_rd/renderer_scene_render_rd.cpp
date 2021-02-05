@@ -3151,7 +3151,7 @@ float RendererSceneRenderRD::environment_get_fog_aerial_perspective(RID p_env) c
 	return env->fog_aerial_perspective;
 }
 
-void RendererSceneRenderRD::environment_set_volumetric_fog(RID p_env, bool p_enable, float p_density, const Color &p_light, float p_light_energy, float p_length, float p_detail_spread, float p_gi_inject, RenderingServer::EnvVolumetricFogShadowFilter p_shadow_filter) {
+void RendererSceneRenderRD::environment_set_volumetric_fog(RID p_env, bool p_enable, float p_density, const Color &p_light, float p_light_energy, float p_length, float p_detail_spread, float p_gi_inject, RenderingServer::EnvVolumetricFogShadowFilter p_shadow_filter, bool p_temporal_reprojection, float p_temporal_reprojection_amount) {
 	Environment *env = environment_owner.getornull(p_env);
 	ERR_FAIL_COND(!env);
 
@@ -3167,6 +3167,8 @@ void RendererSceneRenderRD::environment_set_volumetric_fog(RID p_env, bool p_ena
 	env->volumetric_fog_detail_spread = p_detail_spread;
 	env->volumetric_fog_shadow_filter = p_shadow_filter;
 	env->volumetric_fog_gi_inject = p_gi_inject;
+	env->volumetric_fog_temporal_reprojection = p_temporal_reprojection;
+	env->volumetric_fog_temporal_reprojection_amount = p_temporal_reprojection_amount;
 }
 
 void RendererSceneRenderRD::environment_set_volumetric_fog_volume_size(int p_size, int p_depth) {
@@ -6796,6 +6798,7 @@ void RendererSceneRenderRD::_setup_decals(const PagedArray<RID> &p_decals, const
 void RendererSceneRenderRD::_volumetric_fog_erase(RenderBuffers *rb) {
 	ERR_FAIL_COND(!rb->volumetric_fog);
 
+	RD::get_singleton()->free(rb->volumetric_fog->prev_light_density_map);
 	RD::get_singleton()->free(rb->volumetric_fog->light_density_map);
 	RD::get_singleton()->free(rb->volumetric_fog->fog_map);
 
@@ -6897,11 +6900,16 @@ void RendererSceneRenderRD::_update_volumetric_fog(RID p_render_buffers, RID p_e
 		tf.height = target_height;
 		tf.depth = volumetric_fog_depth;
 		tf.texture_type = RD::TEXTURE_TYPE_3D;
-		tf.usage_bits = RD::TEXTURE_USAGE_STORAGE_BIT;
+		tf.usage_bits = RD::TEXTURE_USAGE_STORAGE_BIT | RD::TEXTURE_USAGE_CAN_COPY_FROM_BIT;
 
 		rb->volumetric_fog->light_density_map = RD::get_singleton()->texture_create(tf, RD::TextureView());
 
-		tf.usage_bits |= RD::TEXTURE_USAGE_SAMPLING_BIT;
+		tf.usage_bits = RD::TEXTURE_USAGE_STORAGE_BIT | RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_CAN_COPY_TO_BIT;
+
+		rb->volumetric_fog->prev_light_density_map = RD::get_singleton()->texture_create(tf, RD::TextureView());
+		RD::get_singleton()->texture_clear(rb->volumetric_fog->prev_light_density_map, Color(0, 0, 0, 0), 0, 1, 0, 1);
+
+		tf.usage_bits = RD::TEXTURE_USAGE_STORAGE_BIT | RD::TEXTURE_USAGE_SAMPLING_BIT;
 
 		rb->volumetric_fog->fog_map = RD::get_singleton()->texture_create(tf, RD::TextureView());
 		_render_buffers_uniform_set_changed(p_render_buffers);
@@ -7211,6 +7219,13 @@ void RendererSceneRenderRD::_update_volumetric_fog(RID p_render_buffers, RID p_e
 			u.ids.push_back(volumetric_fog.params_ubo);
 			uniforms.push_back(u);
 		}
+		{
+			RD::Uniform u;
+			u.uniform_type = RD::UNIFORM_TYPE_TEXTURE;
+			u.binding = 15;
+			u.ids.push_back(rb->volumetric_fog->prev_light_density_map);
+			uniforms.push_back(u);
+		}
 
 		rb->volumetric_fog->uniform_set = RD::get_singleton()->uniform_set_create(uniforms, volumetric_fog.shader.version_get_shader(volumetric_fog.shader_version, 0), 0);
 
@@ -7312,6 +7327,13 @@ void RendererSceneRenderRD::_update_volumetric_fog(RID p_render_buffers, RID p_e
 	params.cam_rotation[11] = 0;
 	params.filter_axis = 0;
 	params.max_gi_probes = env->volumetric_fog_gi_inject > 0.001 ? p_gi_probe_count : 0;
+	params.temporal_frame = RSG::rasterizer->get_frame_number() % VolumetricFog::MAX_TEMPORAL_FRAMES;
+
+	Transform to_prev_cam_view = rb->volumetric_fog->prev_cam_transform.affine_inverse() * p_cam_transform;
+	storage->store_transform(to_prev_cam_view, params.to_prev_view);
+
+	params.use_temporal_reprojection = env->volumetric_fog_temporal_reprojection;
+	params.temporal_blend = env->volumetric_fog_temporal_reprojection_amount;
 
 	{
 		uint32_t cluster_size = rb->cluster_builder->get_cluster_size();
@@ -7351,7 +7373,12 @@ void RendererSceneRenderRD::_update_volumetric_fog(RID p_render_buffers, RID p_e
 	RD::get_singleton()->compute_list_dispatch_threads(compute_list, rb->volumetric_fog->width, rb->volumetric_fog->height, rb->volumetric_fog->depth);
 
 	RD::get_singleton()->draw_command_end_label();
-	RD::get_singleton()->compute_list_add_barrier(compute_list);
+
+	RD::get_singleton()->compute_list_end();
+
+	RD::get_singleton()->texture_copy(rb->volumetric_fog->light_density_map, rb->volumetric_fog->prev_light_density_map, Vector3(0, 0, 0), Vector3(0, 0, 0), Vector3(rb->volumetric_fog->width, rb->volumetric_fog->height, rb->volumetric_fog->depth), 0, 0, 0, 0);
+
+	compute_list = RD::get_singleton()->compute_list_begin();
 
 	if (use_filter) {
 		RD::get_singleton()->draw_command_begin_label("Filter Fog");
@@ -7392,6 +7419,8 @@ void RendererSceneRenderRD::_update_volumetric_fog(RID p_render_buffers, RID p_e
 
 	RENDER_TIMESTAMP("<Volumetric Fog");
 	RD::get_singleton()->draw_command_end_label();
+
+	rb->volumetric_fog->prev_cam_transform = p_cam_transform;
 }
 
 uint32_t RendererSceneRenderRD::_get_render_state_directional_light_count() const {
