@@ -111,7 +111,7 @@ void main() {
 	color_interp = color_attrib;
 #endif
 
-	uint instance_index = draw_call.instance_index;
+	instance_index = draw_call.instance_index;
 
 	bool is_multimesh = bool(instances.data[instance_index].flags & INSTANCE_FLAGS_MULTIMESH);
 	if (!is_multimesh) {
