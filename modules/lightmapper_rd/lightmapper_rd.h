@@ -54,8 +54,8 @@ class LightmapperRD : public Lightmapper {
 		float size;
 		float range;
 		float attenuation;
-		float spot_angle;
-		float spot_attenuation;
+		float cos_spot_angle;
+		float inv_spot_attenuation;
 		uint32_t static_bake;
 		uint32_t pad[3];
 

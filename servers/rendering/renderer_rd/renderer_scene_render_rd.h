@@ -406,10 +406,10 @@ private:
 		float attenuation;
 
 		float color[3];
-		float spot_angle_radians;
+		float cos_spot_angle;
 
 		float position[3];
-		float spot_attenuation;
+		float inv_spot_attenuation;
 
 		float direction[3];
 		uint32_t has_shadow;
@@ -1146,8 +1146,8 @@ private:
 			float attenuation;
 
 			uint32_t type;
-			float spot_angle;
-			float spot_attenuation;
+			float cos_spot_angle;
+			float inv_spot_attenuation;
 			float radius;
 
 			float shadow_color[4];
@@ -1362,8 +1362,8 @@ private:
 			float color[3];
 			float attenuation;
 
-			float cone_attenuation;
-			float cone_angle;
+			float inv_spot_attenuation;
+			float cos_spot_angle;
 			float specular_amount;
 			uint32_t shadow_enabled;
 

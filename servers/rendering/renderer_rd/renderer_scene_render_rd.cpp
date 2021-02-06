@@ -1611,8 +1611,8 @@ void RendererSceneRenderRD::_pre_process_gi(RID p_render_buffers, const Transfor
 				lights[idx].has_shadow = storage->light_has_shadow(li->light);
 				lights[idx].attenuation = storage->light_get_param(li->light, RS::LIGHT_PARAM_ATTENUATION);
 				lights[idx].radius = storage->light_get_param(li->light, RS::LIGHT_PARAM_RANGE);
-				lights[idx].spot_angle = Math::deg2rad(storage->light_get_param(li->light, RS::LIGHT_PARAM_SPOT_ANGLE));
-				lights[idx].spot_attenuation = storage->light_get_param(li->light, RS::LIGHT_PARAM_SPOT_ATTENUATION);
+				lights[idx].cos_spot_angle = Math::cos(Math::deg2rad(storage->light_get_param(li->light, RS::LIGHT_PARAM_SPOT_ANGLE)));
+				lights[idx].inv_spot_attenuation = 1.0f / storage->light_get_param(li->light, RS::LIGHT_PARAM_SPOT_ATTENUATION);
 
 				idx++;
 			}
@@ -4539,8 +4539,8 @@ void RendererSceneRenderRD::gi_probe_update(RID p_probe, bool p_update_light_ins
 				l.color[1] = color.g;
 				l.color[2] = color.b;
 
-				l.spot_angle_radians = Math::deg2rad(storage->light_get_param(light, RS::LIGHT_PARAM_SPOT_ANGLE));
-				l.spot_attenuation = storage->light_get_param(light, RS::LIGHT_PARAM_SPOT_ATTENUATION);
+				l.cos_spot_angle = Math::cos(Math::deg2rad(storage->light_get_param(light, RS::LIGHT_PARAM_SPOT_ANGLE)));
+				l.inv_spot_attenuation = 1.0f / storage->light_get_param(light, RS::LIGHT_PARAM_SPOT_ATTENUATION);
 
 				Transform xform = light_instance_get_base_transform(light_instance);
 
@@ -6491,9 +6491,9 @@ void RendererSceneRenderRD::_setup_lights(const PagedArray<RID> &p_lights, const
 
 		light_data.size = size;
 
-		light_data.cone_attenuation = storage->light_get_param(base, RS::LIGHT_PARAM_SPOT_ATTENUATION);
+		light_data.inv_spot_attenuation = 1.0f / storage->light_get_param(base, RS::LIGHT_PARAM_SPOT_ATTENUATION);
 		float spot_angle = storage->light_get_param(base, RS::LIGHT_PARAM_SPOT_ANGLE);
-		light_data.cone_angle = Math::cos(Math::deg2rad(spot_angle));
+		light_data.cos_spot_angle = Math::cos(Math::deg2rad(spot_angle));
 
 		light_data.mask = storage->light_get_cull_mask(base);
 
@@ -8094,8 +8094,8 @@ void RendererSceneRenderRD::_render_sdfgi_static_lights(RID p_render_buffers, ui
 				lights[idx].has_shadow = storage->light_has_shadow(li->light);
 				lights[idx].attenuation = storage->light_get_param(li->light, RS::LIGHT_PARAM_ATTENUATION);
 				lights[idx].radius = storage->light_get_param(li->light, RS::LIGHT_PARAM_RANGE);
-				lights[idx].spot_angle = Math::deg2rad(storage->light_get_param(li->light, RS::LIGHT_PARAM_SPOT_ANGLE));
-				lights[idx].spot_attenuation = storage->light_get_param(li->light, RS::LIGHT_PARAM_SPOT_ATTENUATION);
+				lights[idx].cos_spot_angle = Math::cos(Math::deg2rad(storage->light_get_param(li->light, RS::LIGHT_PARAM_SPOT_ANGLE)));
+				lights[idx].inv_spot_attenuation = 1.0f / storage->light_get_param(li->light, RS::LIGHT_PARAM_SPOT_ATTENUATION);
 
 				idx++;
 			}
