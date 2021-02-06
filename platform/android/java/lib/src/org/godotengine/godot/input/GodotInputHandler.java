@@ -38,6 +38,8 @@ import org.godotengine.godot.input.InputManagerCompat.InputDeviceListener;
 
 import android.os.Build;
 import android.util.Log;
+import android.util.SparseArray;
+import android.util.SparseIntArray;
 import android.view.InputDevice;
 import android.view.InputDevice.MotionRange;
 import android.view.KeyEvent;
@@ -46,14 +48,21 @@ import android.view.MotionEvent;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * Handles input related events for the {@link GodotView} view.
  */
 public class GodotInputHandler implements InputDeviceListener {
 
-	private final ArrayList<Joystick> joysticksDevices = new ArrayList<Joystick>();
+	private final String tag = this.getClass().getSimpleName();
+
+	private final SparseIntArray mJoystickIds = new SparseIntArray(4);
+	private final SparseArray<Joystick> mJoysticksDevices = new SparseArray<Joystick>(4);
 
 	private final GodotView godotView;
 	private final InputManagerCompat inputManager;
@@ -83,20 +92,20 @@ public class GodotInputHandler implements InputDeviceListener {
 
 		if (keyCode == KeyEvent.KEYCODE_VOLUME_UP || keyCode == KeyEvent.KEYCODE_VOLUME_DOWN) {
 			return false;
-		};
+		}
 
 		int source = event.getSource();
 		if (isKeyEvent_GameDevice(source)) {
-
-			final int button = getGodotButton(keyCode);
-			final int device_id = findJoystickDevice(event.getDeviceId());
-
 			// Check if the device exists
-			if (device_id > -1) {
+			final int deviceId = event.getDeviceId();
+			if (mJoystickIds.indexOfKey(deviceId) >= 0) {
+				final int button = getGodotButton(keyCode);
+				final int godotJoyId = mJoystickIds.get(deviceId);
+
 				queueEvent(new Runnable() {
 					@Override
 					public void run() {
-						GodotLib.joybutton(device_id, button, false);
+						GodotLib.joybutton(godotJoyId, button, false);
 					}
 				});
 			}
@@ -123,25 +132,25 @@ public class GodotInputHandler implements InputDeviceListener {
 
 		if (keyCode == KeyEvent.KEYCODE_VOLUME_UP || keyCode == KeyEvent.KEYCODE_VOLUME_DOWN) {
 			return false;
-		};
+		}
 
 		int source = event.getSource();
 		//Log.e(TAG, String.format("Key down! source %d, device %d, joystick %d, %d, %d", event.getDeviceId(), source, (source & InputDevice.SOURCE_JOYSTICK), (source & InputDevice.SOURCE_DPAD), (source & InputDevice.SOURCE_GAMEPAD)));
 
+		final int deviceId = event.getDeviceId();
+		// Check if source is a game device and that the device is a registered gamepad
 		if (isKeyEvent_GameDevice(source)) {
-
 			if (event.getRepeatCount() > 0) // ignore key echo
 				return true;
 
-			final int button = getGodotButton(keyCode);
-			final int device_id = findJoystickDevice(event.getDeviceId());
+			if (mJoystickIds.indexOfKey(deviceId) >= 0) {
+				final int button = getGodotButton(keyCode);
+				final int godotJoyId = mJoystickIds.get(deviceId);
 
-			// Check if the device exists
-			if (device_id > -1) {
 				queueEvent(new Runnable() {
 					@Override
 					public void run() {
-						GodotLib.joybutton(device_id, button, true);
+						GodotLib.joybutton(godotJoyId, button, true);
 					}
 				});
 			}
@@ -153,7 +162,7 @@ public class GodotInputHandler implements InputDeviceListener {
 					GodotLib.key(keyCode, chr, true);
 				}
 			});
-		};
+		}
 
 		return true;
 	}
@@ -204,39 +213,52 @@ public class GodotInputHandler implements InputDeviceListener {
 	}
 
 	public boolean onGenericMotionEvent(MotionEvent event) {
-		if ((event.getSource() & InputDevice.SOURCE_JOYSTICK) == InputDevice.SOURCE_JOYSTICK && event.getAction() == MotionEvent.ACTION_MOVE) {
-
-			final int device_id = findJoystickDevice(event.getDeviceId());
-
+		if (event.isFromSource(InputDevice.SOURCE_JOYSTICK) && event.getAction() == MotionEvent.ACTION_MOVE) {
 			// Check if the device exists
-			if (device_id > -1) {
-				Joystick joy = joysticksDevices.get(device_id);
+			final int deviceId = event.getDeviceId();
+			if (mJoystickIds.indexOfKey(deviceId) >= 0) {
+				final int godotJoyId = mJoystickIds.get(deviceId);
+				Joystick joystick = mJoysticksDevices.get(deviceId);
 
-				for (int i = 0; i < joy.axes.size(); i++) {
-					InputDevice.MotionRange range = joy.axes.get(i);
-					final float value = (event.getAxisValue(range.getAxis()) - range.getMin()) / range.getRange() * 2.0f - 1.0f;
-					final int idx = i;
-					queueEvent(new Runnable() {
-						@Override
-						public void run() {
-							GodotLib.joyaxis(device_id, idx, value);
-						}
-					});
+				for (int i = 0; i < joystick.axes.size(); i++) {
+					final int axis = joystick.axes.get(i);
+					final float value = event.getAxisValue(axis);
+					/**
+					 * As all axes are polled for each event, only fire an axis event if the value has actually changed.
+					 * Prevents flooding Godot with repeated events.
+					 */
+					if (joystick.axesValues.indexOfKey(axis) < 0 || (float)joystick.axesValues.get(axis) != value) {
+						// save value to prevent repeats
+						joystick.axesValues.put(axis, value);
+						final int godotAxisIdx = i;
+						queueEvent(new Runnable() {
+							@Override
+							public void run() {
+								GodotLib.joyaxis(godotJoyId, godotAxisIdx, value);
+								//Log.i(tag, "GodotLib.joyaxis("+godotJoyId+", "+godotAxisIdx+", "+value+");");
+							}
+						});
+					}
 				}
 
-				for (int i = 0; i < joy.hats.size(); i += 2) {
-					final int hatX = Math.round(event.getAxisValue(joy.hats.get(i).getAxis()));
-					final int hatY = Math.round(event.getAxisValue(joy.hats.get(i + 1).getAxis()));
-					queueEvent(new Runnable() {
-						@Override
-						public void run() {
-							GodotLib.joyhat(device_id, hatX, hatY);
-						}
-					});
+				if (joystick.hasAxisHat) {
+					final int hatX = Math.round(event.getAxisValue(MotionEvent.AXIS_HAT_X));
+					final int hatY = Math.round(event.getAxisValue(MotionEvent.AXIS_HAT_Y));
+					if (joystick.hatX != hatX || joystick.hatY != hatY) {
+						joystick.hatX = hatX;
+						joystick.hatY = hatY;
+						queueEvent(new Runnable() {
+							@Override
+							public void run() {
+								GodotLib.joyhat(godotJoyId, hatX, hatY);
+								//Log.i(tag, "GodotLib.joyhat("+godotJoyId+", "+hatX+", "+hatY+");");
+							}
+						});
+					}
 				}
 				return true;
 			}
-		} else if ((event.getSource() & InputDevice.SOURCE_STYLUS) == InputDevice.SOURCE_STYLUS) {
+		} else if (event.isFromSource(InputDevice.SOURCE_STYLUS)) {
 			final float x = event.getX();
 			final float y = event.getY();
 			final int type = event.getAction();
@@ -247,7 +269,7 @@ public class GodotInputHandler implements InputDeviceListener {
 				}
 			});
 			return true;
-		} else if ((event.getSource() & InputDevice.SOURCE_MOUSE) == InputDevice.SOURCE_MOUSE) {
+		} else if ((event.isFromSource(InputDevice.SOURCE_MOUSE))) {
 			if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
 				return handleMouseEvent(event);
 			}
@@ -262,73 +284,104 @@ public class GodotInputHandler implements InputDeviceListener {
 		for (int deviceId : deviceIds) {
 			InputDevice device = inputManager.getInputDevice(deviceId);
 			if (DEBUG) {
-				Log.v("GodotView", String.format("init() deviceId:%d, Name:%s\n", deviceId, device.getName()));
+				Log.v(tag, String.format("init() deviceId:%d, Name:%s\n", deviceId, device.getName()));
 			}
 			onInputDeviceAdded(deviceId);
 		}
 	}
 
+	private int assignJoystickIdNumber(int deviceId) {
+		int godotJoyId = 0;
+		while (mJoystickIds.indexOfValue(godotJoyId) >= 0) {
+			godotJoyId++;
+		}
+		mJoystickIds.put(deviceId, godotJoyId);
+		return godotJoyId;
+	}
+
 	@Override
 	public void onInputDeviceAdded(int deviceId) {
-		int id = findJoystickDevice(deviceId);
-
 		// Check if the device has not been already added
-		if (id < 0) {
-			InputDevice device = inputManager.getInputDevice(deviceId);
-			//device can be null if deviceId is not found
-			if (device != null) {
-				int sources = device.getSources();
-				if (((sources & InputDevice.SOURCE_GAMEPAD) == InputDevice.SOURCE_GAMEPAD) ||
-						((sources & InputDevice.SOURCE_JOYSTICK) == InputDevice.SOURCE_JOYSTICK)) {
-					id = joysticksDevices.size();
 
-					Joystick joy = new Joystick();
-					joy.device_id = deviceId;
-					joy.name = device.getName();
-					joy.axes = new ArrayList<InputDevice.MotionRange>();
-					joy.hats = new ArrayList<InputDevice.MotionRange>();
+		if (mJoystickIds.indexOfKey(deviceId) >= 0) {
+			return;
+		}
 
-					List<InputDevice.MotionRange> ranges = device.getMotionRanges();
-					Collections.sort(ranges, new RangeComparator());
+		InputDevice device = inputManager.getInputDevice(deviceId);
+		//device can be null if deviceId is not found
+		if (device == null) {
+			return;
+		}
 
-					for (InputDevice.MotionRange range : ranges) {
-						if (range.getAxis() == MotionEvent.AXIS_HAT_X || range.getAxis() == MotionEvent.AXIS_HAT_Y) {
-							joy.hats.add(range);
-						} else {
-							joy.axes.add(range);
-						}
-					}
+		int sources = device.getSources();
 
-					joysticksDevices.add(joy);
+		// Device may not be a joystick or gamepad
+		if ((sources & InputDevice.SOURCE_GAMEPAD) != InputDevice.SOURCE_GAMEPAD &&
+				(sources & InputDevice.SOURCE_JOYSTICK) != InputDevice.SOURCE_JOYSTICK) {
+			return;
+		}
 
-					final int device_id = id;
-					final String name = joy.name;
-					queueEvent(new Runnable() {
-						@Override
-						public void run() {
-							GodotLib.joyconnectionchanged(device_id, true, name);
-						}
-					});
+		// Assign first available number. Re-use numbers where possible.
+		final int id = assignJoystickIdNumber(deviceId);
+
+		final Joystick joystick = new Joystick();
+		joystick.device_id = deviceId;
+		joystick.name = device.getName();
+
+		//Helps with creating new joypad mappings.
+		Log.i(tag, "=== New Input Device: " + joystick.name);
+
+		Set<Integer> already = new HashSet<Integer>();
+		for (InputDevice.MotionRange range : device.getMotionRanges()) {
+			boolean isJoystick = range.isFromSource(InputDevice.SOURCE_JOYSTICK);
+			boolean isGamepad = range.isFromSource(InputDevice.SOURCE_GAMEPAD);
+			//Log.i(tag, "axis: "+range.getAxis()+ ", isJoystick: "+isJoystick+", isGamepad: "+isGamepad);
+			if (!isJoystick && !isGamepad) {
+				continue;
+			}
+			final int axis = range.getAxis();
+			if (axis == MotionEvent.AXIS_HAT_X || axis == MotionEvent.AXIS_HAT_Y) {
+				joystick.hasAxisHat = true;
+			} else {
+				if (!already.contains(axis)) {
+					already.add(axis);
+					joystick.axes.add(axis);
+				} else {
+					Log.w(tag, " - DUPLICATE AXIS VALUE IN LIST: " + axis);
 				}
 			}
 		}
+		Collections.sort(joystick.axes);
+		for (int idx = 0; idx < joystick.axes.size(); idx++) {
+			//Helps with creating new joypad mappings.
+			Log.i(tag, " - Mapping Android axis " + joystick.axes.get(idx) + " to Godot axis " + idx);
+		}
+		mJoysticksDevices.put(deviceId, joystick);
+
+		queueEvent(new Runnable() {
+			@Override
+			public void run() {
+				GodotLib.joyconnectionchanged(id, true, joystick.name);
+			}
+		});
 	}
 
 	@Override
 	public void onInputDeviceRemoved(int deviceId) {
-		final int device_id = findJoystickDevice(deviceId);
-
-		// Check if the evice has not been already removed
-		if (device_id > -1) {
-			joysticksDevices.remove(device_id);
-
-			queueEvent(new Runnable() {
-				@Override
-				public void run() {
-					GodotLib.joyconnectionchanged(device_id, false, "");
-				}
-			});
+		// Check if the device has not been already removed
+		if (mJoystickIds.indexOfKey(deviceId) < 0) {
+			return;
 		}
+		final int godotJoyId = mJoystickIds.get(deviceId);
+		mJoystickIds.delete(deviceId);
+		mJoysticksDevices.delete(deviceId);
+
+		queueEvent(new Runnable() {
+			@Override
+			public void run() {
+				GodotLib.joyconnectionchanged(godotJoyId, false, "");
+			}
+		});
 	}
 
 	@Override
@@ -407,16 +460,6 @@ public class GodotInputHandler implements InputDeviceListener {
 				break;
 		}
 		return button;
-	}
-
-	private int findJoystickDevice(int device_id) {
-		for (int i = 0; i < joysticksDevices.size(); i++) {
-			if (joysticksDevices.get(i).device_id == device_id) {
-				return i;
-			}
-		}
-
-		return -1;
 	}
 
 	private boolean handleMouseEvent(final MotionEvent event) {
