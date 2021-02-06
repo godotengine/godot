@@ -246,10 +246,7 @@ void Spatial::set_transform(const Transform &p_transform) {
 
 void Spatial::set_global_transform(const Transform &p_transform) {
 
-	Transform xform =
-			(data.parent && !data.toplevel_active) ?
-					  data.parent->get_global_transform().affine_inverse() * p_transform :
-					  p_transform;
+	Transform xform = (data.parent && !data.toplevel_active) ? data.parent->get_global_transform().affine_inverse() * p_transform : p_transform;
 
 	set_transform(xform);
 }
@@ -541,8 +538,9 @@ void Spatial::show() {
 
 	data.visible = true;
 
-	if (!is_inside_tree())
+	if (!is_inside_tree()) {
 		return;
+	}
 
 	_propagate_visibility_changed();
 }
@@ -554,8 +552,9 @@ void Spatial::hide() {
 
 	data.visible = false;
 
-	if (!is_inside_tree())
+	if (!is_inside_tree()) {
 		return;
+	}
 
 	_propagate_visibility_changed();
 }
@@ -833,6 +832,8 @@ Spatial::Spatial() :
 	data.inside_world = false;
 	data.visible = true;
 	data.disable_scale = false;
+
+	data.spatial_flags = SPATIAL_FLAG_VI_VISIBLE;
 
 #ifdef TOOLS_ENABLED
 	data.gizmo_disabled = false;

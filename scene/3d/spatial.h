@@ -54,6 +54,15 @@ class Spatial : public Node {
 	GDCLASS(Spatial, Node);
 	OBJ_CATEGORY("3D");
 
+public:
+	enum SpatialFlags {
+		// this is cached, and only currently kept up to date in visual instances
+		// this is set if a visual instance is
+		// (a) in the tree AND (b) visible via is_visible_in_tree() call
+		SPATIAL_FLAG_VI_VISIBLE = 1 << 0,
+	};
+
+private:
 	enum TransformDirty {
 		DIRTY_NONE = 0,
 		DIRTY_VECTORS = 1,
@@ -64,6 +73,9 @@ class Spatial : public Node {
 	mutable SelfList<Node> xform_change;
 
 	struct Data {
+
+		// defined in Spatial::SpatialFlags
+		uint32_t spatial_flags;
 
 		mutable Transform global_transform;
 		mutable Transform local_transform;
@@ -108,6 +120,16 @@ protected:
 	_FORCE_INLINE_ void set_ignore_transform_notification(bool p_ignore) { data.ignore_notification = p_ignore; }
 
 	_FORCE_INLINE_ void _update_local_transform() const;
+
+	uint32_t _get_spatial_flags() const { return data.spatial_flags; }
+	void _replace_spatial_flags(uint32_t p_flags) { data.spatial_flags = p_flags; }
+	void _set_spatial_flag(uint32_t p_flag, bool p_set) {
+		if (p_set) {
+			data.spatial_flags |= p_flag;
+		} else {
+			data.spatial_flags &= ~p_flag;
+		}
+	}
 
 	void _notification(int p_what);
 	static void _bind_methods();
