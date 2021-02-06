@@ -450,7 +450,7 @@ private:
 	void _canvas_layer_remove(CanvasLayer *p_canvas_layer);
 
 	void _drop_mouse_focus();
-	void _drop_physics_mouseover();
+	void _drop_physics_mouseover(bool p_paused_only = false);
 
 	void _update_canvas_items(Node *p_node);
 
@@ -479,6 +479,7 @@ protected:
 	bool _is_size_allocated() const;
 
 	void _notification(int p_what);
+	void _process_picking();
 	static void _bind_methods();
 	virtual void _validate_property(PropertyInfo &property) const override;
 
