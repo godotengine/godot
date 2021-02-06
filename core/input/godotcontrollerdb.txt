@@ -22,6 +22,12 @@ MacOSX045e028e,Xbox 360 Wired Controller,a:b11,b:b12,y:b14,x:b13,start:b4,back:b
 MacOSX045e02d1,Xbox One Controller,a:b11,b:b12,y:b14,x:b13,start:b4,back:b5,leftstick:b6,rightstick:b7,leftshoulder:b8,rightshoulder:b9,dpup:b0,dpleft:b2,dpdown:b1,dpright:b3,leftx:a0,lefty:a1,rightx:a2,righty:a3,lefttrigger:a4,righttrigger:a5,platform:Javascript
 MacOSX045e02ea,Xbox One S Controller,a:b11,b:b12,y:b14,x:b13,start:b4,back:b5,leftstick:b6,rightstick:b7,leftshoulder:b8,rightshoulder:b9,dpup:b0,dpleft:b2,dpdown:b1,dpright:b3,leftx:a0,lefty:a1,rightx:a2,righty:a3,lefttrigger:a4,righttrigger:a5,platform:Javascript
 MacOSX045e0b12,Xbox Series X Controller,a:b11,b:b12,y:b14,x:b13,start:b4,back:b5,leftstick:b6,rightstick:b7,leftshoulder:b8,rightshoulder:b9,dpup:b0,dpleft:b2,dpdown:b1,dpright:b3,leftx:a0,lefty:a1,rightx:a2,righty:a3,lefttrigger:a4,righttrigger:a5,platform:Javascript
+Linux15320a14,Razer Wolverine Ultimate,a:b0,b:b1,y:b3,x:b2,start:b7,back:b6,leftstick:b9,rightstick:b10,leftshoulder:b4,rightshoulder:b5,dpup:-a7,dpleft:-a6,dpdown:+a7,dpright:+a6,leftx:a0,lefty:a1,rightx:a3,righty:a4,lefttrigger:a2,righttrigger:a5,platform:Javascript
+Linux05832060,iBuffalo BSGP801,a:b1,b:b0,y:b2,x:b3,start:b7,back:b6,leftshoulder:b4,rightshoulder:b5,dpup:-a1,dpleft:-a0,dpdown:+a1,dpright:+a0,platform:Javascript
+MacOSX05832060,iBuffalo BSGP801,a:b1,b:b0,y:b2,x:b3,start:b7,back:b6,leftshoulder:b4,rightshoulder:b5,dpup:-a1,dpleft:-a0,dpdown:+a1,dpright:+a0,platform:Javascript
+Linux0e8f3013,HuiJia USB GamePad,a:b2,b:b1,y:b0,x:b3,start:b9,back:b8,leftshoulder:b6,rightshoulder:b7,dpup:-a1,dpleft:-a0,dpdown:+a1,dpright:+a0,platform:Javascript
+Windows0e8f3013,HuiJia USB GamePad,a:b2,b:b1,y:b0,x:b3,start:b9,back:b8,leftshoulder:b6,rightshoulder:b7,dpup:-a1,dpleft:-a0,dpdown:+a1,dpright:+a0,platform:Javascript
+MacOSX0e8f3013,HuiJia USB GamePad,a:b2,b:b1,y:b0,x:b3,start:b9,back:b8,leftshoulder:b6,rightshoulder:b7,dpup:-a4,dpleft:-a3,dpdown:+a4,dpright:+a3,platform:Javascript
 
 # UWP
 __UWP_GAMEPAD__,Xbox Controller,a:b2,b:b3,x:b4,y:b5,start:b0,back:b1,leftstick:b12,rightstick:b13,leftshoulder:b10,rightshoulder:b11,dpup:b6,dpdown:b7,dpleft:b8,dpright:b9,leftx:a0,lefty:a1,rightx:a2,righty:a3,lefttrigger:a4,righttrigger:a5,platform:UWP,
