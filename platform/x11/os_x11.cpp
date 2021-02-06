@@ -2172,10 +2172,10 @@ struct Property {
 
 static Property read_property(Display *p_display, Window p_window, Atom p_property) {
 
-	Atom actual_type;
-	int actual_format;
-	unsigned long nitems;
-	unsigned long bytes_after;
+	Atom actual_type = None;
+	int actual_format = 0;
+	unsigned long nitems = 0;
+	unsigned long bytes_after = 0;
 	unsigned char *ret = 0;
 
 	int read_bytes = 1024;
