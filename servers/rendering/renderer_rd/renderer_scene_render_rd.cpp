@@ -3151,7 +3151,7 @@ float RendererSceneRenderRD::environment_get_fog_aerial_perspective(RID p_env) c
 	return env->fog_aerial_perspective;
 }
 
-void RendererSceneRenderRD::environment_set_volumetric_fog(RID p_env, bool p_enable, float p_density, const Color &p_light, float p_light_energy, float p_length, float p_detail_spread, float p_gi_inject, RenderingServer::EnvVolumetricFogShadowFilter p_shadow_filter, bool p_temporal_reprojection, float p_temporal_reprojection_amount) {
+void RendererSceneRenderRD::environment_set_volumetric_fog(RID p_env, bool p_enable, float p_density, const Color &p_light, float p_light_energy, float p_length, float p_detail_spread, float p_gi_inject, bool p_temporal_reprojection, float p_temporal_reprojection_amount) {
 	Environment *env = environment_owner.getornull(p_env);
 	ERR_FAIL_COND(!env);
 
@@ -3165,7 +3165,6 @@ void RendererSceneRenderRD::environment_set_volumetric_fog(RID p_env, bool p_ena
 	env->volumetric_fog_light_energy = p_light_energy;
 	env->volumetric_fog_length = p_length;
 	env->volumetric_fog_detail_spread = p_detail_spread;
-	env->volumetric_fog_shadow_filter = p_shadow_filter;
 	env->volumetric_fog_gi_inject = p_gi_inject;
 	env->volumetric_fog_temporal_reprojection = p_temporal_reprojection;
 	env->volumetric_fog_temporal_reprojection_amount = p_temporal_reprojection_amount;
@@ -3178,25 +3177,6 @@ void RendererSceneRenderRD::environment_set_volumetric_fog_volume_size(int p_siz
 
 void RendererSceneRenderRD::environment_set_volumetric_fog_filter_active(bool p_enable) {
 	volumetric_fog_filter_active = p_enable;
-}
-void RendererSceneRenderRD::environment_set_volumetric_fog_directional_shadow_shrink_size(int p_shrink_size) {
-	p_shrink_size = nearest_power_of_2_templated(p_shrink_size);
-	if (volumetric_fog_directional_shadow_shrink == (uint32_t)p_shrink_size) {
-		return;
-	}
-
-	_clear_shadow_shrink_stages(directional_shadow.shrink_stages);
-}
-void RendererSceneRenderRD::environment_set_volumetric_fog_positional_shadow_shrink_size(int p_shrink_size) {
-	p_shrink_size = nearest_power_of_2_templated(p_shrink_size);
-	if (volumetric_fog_positional_shadow_shrink == (uint32_t)p_shrink_size) {
-		return;
-	}
-
-	for (uint32_t i = 0; i < shadow_atlas_owner.get_rid_count(); i++) {
-		ShadowAtlas *sa = shadow_atlas_owner.get_ptr_by_index(i);
-		_clear_shadow_shrink_stages(sa->shrink_stages);
-	}
 }
 
 void RendererSceneRenderRD::environment_set_sdfgi_ray_count(RS::EnvironmentSDFGIRayCount p_ray_count) {
@@ -3649,7 +3629,6 @@ void RendererSceneRenderRD::shadow_atlas_set_size(RID p_atlas, int p_size, bool 
 	if (shadow_atlas->depth.is_valid()) {
 		RD::get_singleton()->free(shadow_atlas->depth);
 		shadow_atlas->depth = RID();
-		_clear_shadow_shrink_stages(shadow_atlas->shrink_stages);
 	}
 	for (int i = 0; i < 4; i++) {
 		//clear subdivisions
@@ -3948,7 +3927,6 @@ void RendererSceneRenderRD::directional_shadow_atlas_set_size(int p_size, bool p
 
 	if (directional_shadow.depth.is_valid()) {
 		RD::get_singleton()->free(directional_shadow.depth);
-		_clear_shadow_shrink_stages(directional_shadow.shrink_stages);
 		directional_shadow.depth = RID();
 		_base_uniforms_changed();
 	}
@@ -6480,8 +6458,6 @@ void RendererSceneRenderRD::_setup_lights(const PagedArray<RID> &p_lights, const
 		LightInstance *li = (i < cluster.omni_light_count) ? cluster.omni_light_sort[index].instance : cluster.spot_light_sort[index].instance;
 		RID base = li->light;
 
-		cluster.lights_instances[i] = li->self;
-
 		Transform light_transform = li->transform;
 
 		float sign = storage->light_is_negative(base) ? -1 : 1;
@@ -6820,49 +6796,6 @@ void RendererSceneRenderRD::_volumetric_fog_erase(RenderBuffers *rb) {
 	rb->volumetric_fog = nullptr;
 }
 
-void RendererSceneRenderRD::_allocate_shadow_shrink_stages(RID p_base, int p_base_size, Vector<ShadowShrinkStage> &shrink_stages, uint32_t p_target_size) {
-	//create fog mipmaps
-	uint32_t fog_texture_size = p_target_size;
-	uint32_t base_texture_size = p_base_size;
-
-	ShadowShrinkStage first;
-	first.size = base_texture_size;
-	first.texture = p_base;
-	shrink_stages.push_back(first); //put depth first in case we dont find smaller ones
-
-	while (fog_texture_size < base_texture_size) {
-		base_texture_size = MAX(base_texture_size / 8, fog_texture_size);
-
-		ShadowShrinkStage s;
-		s.size = base_texture_size;
-
-		RD::TextureFormat tf;
-		tf.format = RD::DATA_FORMAT_R16_UNORM;
-		tf.width = base_texture_size;
-		tf.height = base_texture_size;
-		tf.usage_bits = RD::TEXTURE_USAGE_STORAGE_BIT;
-
-		if (base_texture_size == fog_texture_size) {
-			s.filter_texture = RD::get_singleton()->texture_create(tf, RD::TextureView());
-			tf.usage_bits |= RD::TEXTURE_USAGE_SAMPLING_BIT;
-		}
-
-		s.texture = RD::get_singleton()->texture_create(tf, RD::TextureView());
-
-		shrink_stages.push_back(s);
-	}
-}
-
-void RendererSceneRenderRD::_clear_shadow_shrink_stages(Vector<ShadowShrinkStage> &shrink_stages) {
-	for (int i = 1; i < shrink_stages.size(); i++) {
-		RD::get_singleton()->free(shrink_stages[i].texture);
-		if (shrink_stages[i].filter_texture.is_valid()) {
-			RD::get_singleton()->free(shrink_stages[i].filter_texture);
-		}
-	}
-	shrink_stages.clear();
-}
-
 void RendererSceneRenderRD::_update_volumetric_fog(RID p_render_buffers, RID p_environment, const CameraMatrix &p_cam_projection, const Transform &p_cam_transform, RID p_shadow_atlas, int p_directional_light_count, bool p_use_directional_shadows, int p_positional_light_count, int p_gi_probe_count) {
 	RenderBuffers *rb = render_buffers_owner.getornull(p_render_buffers);
 	ERR_FAIL_COND(!rb);
@@ -6926,173 +6859,6 @@ void RendererSceneRenderRD::_update_volumetric_fog(RID p_render_buffers, RID p_e
 		rb->volumetric_fog->sky_uniform_set = RD::get_singleton()->uniform_set_create(uniforms, sky_shader.default_shader_rd, SKY_SET_FOG);
 	}
 
-	//update directional shadow
-
-	RENDER_TIMESTAMP("Downsample Shadows");
-
-	if (p_use_directional_shadows) {
-		RD::get_singleton()->draw_command_begin_label("Downsample Directional Shadows");
-
-		if (directional_shadow.shrink_stages.is_empty()) {
-			if (rb->volumetric_fog->uniform_set.is_valid() && RD::get_singleton()->uniform_set_is_valid(rb->volumetric_fog->uniform_set)) {
-				//invalidate uniform set, we will need a new one
-				RD::get_singleton()->free(rb->volumetric_fog->uniform_set);
-				rb->volumetric_fog->uniform_set = RID();
-			}
-			_allocate_shadow_shrink_stages(directional_shadow.depth, directional_shadow.size, directional_shadow.shrink_stages, volumetric_fog_directional_shadow_shrink);
-		}
-
-		if (directional_shadow.shrink_stages.size() > 1) {
-			RD::ComputeListID compute_list = RD::get_singleton()->compute_list_begin();
-			for (int i = 1; i < directional_shadow.shrink_stages.size(); i++) {
-				int32_t src_size = directional_shadow.shrink_stages[i - 1].size;
-				int32_t dst_size = directional_shadow.shrink_stages[i].size;
-				Rect2i r(0, 0, src_size, src_size);
-				int32_t shrink_limit = 8 / (src_size / dst_size);
-
-				storage->get_effects()->reduce_shadow(directional_shadow.shrink_stages[i - 1].texture, directional_shadow.shrink_stages[i].texture, Size2i(src_size, src_size), r, shrink_limit, compute_list);
-				RD::get_singleton()->compute_list_add_barrier(compute_list);
-				if (env->volumetric_fog_shadow_filter != RS::ENV_VOLUMETRIC_FOG_SHADOW_FILTER_DISABLED && directional_shadow.shrink_stages[i].filter_texture.is_valid()) {
-					Rect2i rf(0, 0, dst_size, dst_size);
-					storage->get_effects()->filter_shadow(directional_shadow.shrink_stages[i].texture, directional_shadow.shrink_stages[i].filter_texture, Size2i(dst_size, dst_size), rf, env->volumetric_fog_shadow_filter, compute_list);
-				}
-			}
-			RD::get_singleton()->compute_list_end();
-		}
-		RD::get_singleton()->draw_command_end_label();
-	}
-
-	ShadowAtlas *shadow_atlas = shadow_atlas_owner.getornull(p_shadow_atlas);
-
-	if (shadow_atlas) {
-		//shrink shadows that need to be shrunk
-
-		RD::get_singleton()->draw_command_begin_label("Downsample Positional Shadows");
-
-		bool force_shrink_shadows = false;
-
-		if (shadow_atlas->shrink_stages.is_empty()) {
-			if (rb->volumetric_fog->uniform_set.is_valid() && RD::get_singleton()->uniform_set_is_valid(rb->volumetric_fog->uniform_set)) {
-				//invalidate uniform set, we will need a new one
-				RD::get_singleton()->free(rb->volumetric_fog->uniform_set);
-				rb->volumetric_fog->uniform_set = RID();
-			}
-			_allocate_shadow_shrink_stages(shadow_atlas->depth, shadow_atlas->size, shadow_atlas->shrink_stages, volumetric_fog_positional_shadow_shrink);
-			force_shrink_shadows = true;
-		}
-
-		if (rb->volumetric_fog->last_shadow_filter != env->volumetric_fog_shadow_filter) {
-			//if shadow filter changed, invalidate caches
-			rb->volumetric_fog->last_shadow_filter = env->volumetric_fog_shadow_filter;
-			force_shrink_shadows = true;
-		}
-
-		cluster.lights_shadow_rect_cache_count = 0;
-
-		for (uint32_t i = 0; i < cluster.omni_light_count + cluster.spot_light_count; i++) {
-			Cluster::LightData &ld = i < cluster.omni_light_count ? cluster.omni_lights[i] : cluster.spot_lights[i - cluster.omni_light_count];
-
-			if (ld.shadow_enabled != 0) {
-				RID li = cluster.lights_instances[i];
-
-				ERR_CONTINUE(!shadow_atlas->shadow_owners.has(li));
-
-				uint32_t key = shadow_atlas->shadow_owners[li];
-
-				uint32_t quadrant = (key >> ShadowAtlas::QUADRANT_SHIFT) & 0x3;
-				uint32_t shadow = key & ShadowAtlas::SHADOW_INDEX_MASK;
-
-				ERR_CONTINUE((int)shadow >= shadow_atlas->quadrants[quadrant].shadows.size());
-
-				ShadowAtlas::Quadrant::Shadow &s = shadow_atlas->quadrants[quadrant].shadows.write[shadow];
-
-				if (!force_shrink_shadows && s.fog_version == s.version) {
-					continue; //do not update, no need
-				}
-
-				s.fog_version = s.version;
-
-				uint32_t quadrant_size = shadow_atlas->size >> 1;
-
-				Rect2i atlas_rect;
-
-				atlas_rect.position.x = (quadrant & 1) * quadrant_size;
-				atlas_rect.position.y = (quadrant >> 1) * quadrant_size;
-
-				uint32_t shadow_size = (quadrant_size / shadow_atlas->quadrants[quadrant].subdivision);
-				atlas_rect.position.x += (shadow % shadow_atlas->quadrants[quadrant].subdivision) * shadow_size;
-				atlas_rect.position.y += (shadow / shadow_atlas->quadrants[quadrant].subdivision) * shadow_size;
-
-				atlas_rect.size.x = shadow_size;
-				atlas_rect.size.y = shadow_size;
-
-				cluster.lights_shadow_rect_cache[cluster.lights_shadow_rect_cache_count] = atlas_rect;
-
-				cluster.lights_shadow_rect_cache_count++;
-
-				if (cluster.lights_shadow_rect_cache_count == cluster.max_lights * 2) {
-					break; //light limit reached
-				}
-			}
-		}
-
-		if (cluster.lights_shadow_rect_cache_count > 0) {
-			//there are shadows to be shrunk, try to do them in parallel
-			RD::ComputeListID compute_list = RD::get_singleton()->compute_list_begin();
-
-			for (int i = 1; i < shadow_atlas->shrink_stages.size(); i++) {
-				int32_t base_size = shadow_atlas->shrink_stages[0].size;
-				int32_t src_size = shadow_atlas->shrink_stages[i - 1].size;
-				int32_t dst_size = shadow_atlas->shrink_stages[i].size;
-
-				uint32_t rect_divisor = base_size / src_size;
-
-				int32_t shrink_limit = 8 / (src_size / dst_size);
-
-				//shrink in parallel for more performance
-				for (uint32_t j = 0; j < cluster.lights_shadow_rect_cache_count; j++) {
-					Rect2i src_rect = cluster.lights_shadow_rect_cache[j];
-
-					src_rect.position /= rect_divisor;
-					src_rect.size /= rect_divisor;
-
-					storage->get_effects()->reduce_shadow(shadow_atlas->shrink_stages[i - 1].texture, shadow_atlas->shrink_stages[i].texture, Size2i(src_size, src_size), src_rect, shrink_limit, compute_list);
-				}
-
-				RD::get_singleton()->compute_list_add_barrier(compute_list);
-
-				if (env->volumetric_fog_shadow_filter != RS::ENV_VOLUMETRIC_FOG_SHADOW_FILTER_DISABLED && shadow_atlas->shrink_stages[i].filter_texture.is_valid()) {
-					uint32_t filter_divisor = base_size / dst_size;
-
-					//filter in parallel for more performance
-					for (uint32_t j = 0; j < cluster.lights_shadow_rect_cache_count; j++) {
-						Rect2i dst_rect = cluster.lights_shadow_rect_cache[j];
-
-						dst_rect.position /= filter_divisor;
-						dst_rect.size /= filter_divisor;
-
-						storage->get_effects()->filter_shadow(shadow_atlas->shrink_stages[i].texture, shadow_atlas->shrink_stages[i].filter_texture, Size2i(dst_size, dst_size), dst_rect, env->volumetric_fog_shadow_filter, compute_list, true, false);
-					}
-
-					RD::get_singleton()->compute_list_add_barrier(compute_list);
-
-					for (uint32_t j = 0; j < cluster.lights_shadow_rect_cache_count; j++) {
-						Rect2i dst_rect = cluster.lights_shadow_rect_cache[j];
-
-						dst_rect.position /= filter_divisor;
-						dst_rect.size /= filter_divisor;
-
-						storage->get_effects()->filter_shadow(shadow_atlas->shrink_stages[i].texture, shadow_atlas->shrink_stages[i].filter_texture, Size2i(dst_size, dst_size), dst_rect, env->volumetric_fog_shadow_filter, compute_list, false, true);
-					}
-				}
-			}
-
-			RD::get_singleton()->compute_list_end(RD::BARRIER_MASK_COMPUTE);
-		}
-
-		RD::get_singleton()->draw_command_end_label();
-	}
-
 	//update volumetric fog
 
 	if (rb->volumetric_fog->uniform_set.is_null() || !RD::get_singleton()->uniform_set_is_valid(rb->volumetric_fog->uniform_set)) {
@@ -7104,10 +6870,11 @@ void RendererSceneRenderRD::_update_volumetric_fog(RID p_render_buffers, RID p_e
 			RD::Uniform u;
 			u.uniform_type = RD::UNIFORM_TYPE_TEXTURE;
 			u.binding = 1;
-			if (shadow_atlas == nullptr || shadow_atlas->shrink_stages.size() == 0) {
+			ShadowAtlas *shadow_atlas = shadow_atlas_owner.getornull(p_shadow_atlas);
+			if (shadow_atlas == nullptr || shadow_atlas->depth.is_null()) {
 				u.ids.push_back(storage->texture_rd_get_default(RendererStorageRD::DEFAULT_RD_TEXTURE_BLACK));
 			} else {
-				u.ids.push_back(shadow_atlas->shrink_stages[shadow_atlas->shrink_stages.size() - 1].texture);
+				u.ids.push_back(shadow_atlas->depth);
 			}
 
 			uniforms.push_back(u);
@@ -7117,10 +6884,10 @@ void RendererSceneRenderRD::_update_volumetric_fog(RID p_render_buffers, RID p_e
 			RD::Uniform u;
 			u.uniform_type = RD::UNIFORM_TYPE_TEXTURE;
 			u.binding = 2;
-			if (directional_shadow.shrink_stages.size() == 0) {
-				u.ids.push_back(storage->texture_rd_get_default(RendererStorageRD::DEFAULT_RD_TEXTURE_BLACK));
+			if (directional_shadow.depth.is_valid()) {
+				u.ids.push_back(directional_shadow.depth);
 			} else {
-				u.ids.push_back(directional_shadow.shrink_stages[directional_shadow.shrink_stages.size() - 1].texture);
+				u.ids.push_back(storage->texture_rd_get_default(RendererStorageRD::DEFAULT_RD_TEXTURE_BLACK));
 			}
 			uniforms.push_back(u);
 		}
@@ -9079,10 +8846,6 @@ RendererSceneRenderRD::RendererSceneRenderRD(RendererStorageRD *p_storage) {
 		cluster.spot_light_sort = memnew_arr(Cluster::InstanceSort<LightInstance>, cluster.max_lights);
 		//defines += "\n#define MAX_LIGHT_DATA_STRUCTS " + itos(cluster.max_lights) + "\n";
 
-		//used for volumetric fog shrinking
-		cluster.lights_instances = memnew_arr(RID, cluster.max_lights * 2);
-		cluster.lights_shadow_rect_cache = memnew_arr(Rect2i, cluster.max_lights * 2);
-
 		cluster.max_directional_lights = MAX_DIRECTIONAL_LIGHTS;
 		uint32_t directional_light_buffer_size = cluster.max_directional_lights * sizeof(Cluster::DirectionalLightData);
 		cluster.directional_lights = memnew_arr(Cluster::DirectionalLightData, cluster.max_directional_lights);
@@ -9134,8 +8897,6 @@ RendererSceneRenderRD::RendererSceneRenderRD(RendererStorageRD *p_storage) {
 
 	environment_set_volumetric_fog_volume_size(GLOBAL_GET("rendering/volumetric_fog/volume_size"), GLOBAL_GET("rendering/volumetric_fog/volume_depth"));
 	environment_set_volumetric_fog_filter_active(GLOBAL_GET("rendering/volumetric_fog/use_filter"));
-	environment_set_volumetric_fog_directional_shadow_shrink_size(GLOBAL_GET("rendering/volumetric_fog/directional_shadow_shrink"));
-	environment_set_volumetric_fog_positional_shadow_shrink_size(GLOBAL_GET("rendering/volumetric_fog/positional_shadow_shrink"));
 
 	cull_argument.set_page_pool(&cull_argument_pool);
 
@@ -9197,8 +8958,6 @@ RendererSceneRenderRD::~RendererSceneRenderRD() {
 		memdelete_arr(cluster.spot_lights);
 		memdelete_arr(cluster.omni_light_sort);
 		memdelete_arr(cluster.spot_light_sort);
-		memdelete_arr(cluster.lights_shadow_rect_cache);
-		memdelete_arr(cluster.lights_instances);
 		memdelete_arr(cluster.reflections);
 		memdelete_arr(cluster.reflection_sort);
 		memdelete_arr(cluster.decals);

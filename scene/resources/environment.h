@@ -196,10 +196,9 @@ private:
 	float volumetric_fog_light_energy = 1.0;
 	float volumetric_fog_length = 64.0;
 	float volumetric_fog_detail_spread = 2.0;
-	VolumetricFogShadowFilter volumetric_fog_shadow_filter = VOLUMETRIC_FOG_SHADOW_FILTER_LOW;
 	float volumetric_fog_gi_inject = 0.0;
-	bool volumetric_fog_temporal_reproject = false;
-	float volumetric_fog_temporal_reproject_amount = 0.95;
+	bool volumetric_fog_temporal_reproject = true;
+	float volumetric_fog_temporal_reproject_amount = 0.9;
 	void _update_volumetric_fog();
 
 	// Adjustment
@@ -387,8 +386,6 @@ public:
 	float get_volumetric_fog_length() const;
 	void set_volumetric_fog_detail_spread(float p_detail_spread);
 	float get_volumetric_fog_detail_spread() const;
-	void set_volumetric_fog_shadow_filter(VolumetricFogShadowFilter p_filter);
-	VolumetricFogShadowFilter get_volumetric_fog_shadow_filter() const;
 	void set_volumetric_fog_gi_inject(float p_gi_inject);
 	float get_volumetric_fog_gi_inject() const;
 	void set_volumetric_fog_temporal_reprojection_enabled(bool p_enable);

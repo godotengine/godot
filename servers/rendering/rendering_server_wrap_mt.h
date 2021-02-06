@@ -520,12 +520,10 @@ public:
 
 	FUNC9(environment_set_fog, RID, bool, const Color &, float, float, float, float, float, float)
 
-	FUNC11(environment_set_volumetric_fog, RID, bool, float, const Color &, float, float, float, float, EnvVolumetricFogShadowFilter, bool, float)
+	FUNC10(environment_set_volumetric_fog, RID, bool, float, const Color &, float, float, float, float, bool, float)
 
 	FUNC2(environment_set_volumetric_fog_volume_size, int, int)
 	FUNC1(environment_set_volumetric_fog_filter_active, bool)
-	FUNC1(environment_set_volumetric_fog_directional_shadow_shrink_size, int)
-	FUNC1(environment_set_volumetric_fog_positional_shadow_shrink_size, int)
 
 	FUNC3R(Ref<Image>, environment_bake_panorama, RID, bool, const Size2i &)
 

@@ -991,12 +991,10 @@ public:
 	PASS7(environment_set_adjustment, RID, bool, float, float, float, bool, RID)
 
 	PASS9(environment_set_fog, RID, bool, const Color &, float, float, float, float, float, float)
-	PASS11(environment_set_volumetric_fog, RID, bool, float, const Color &, float, float, float, float, RS::EnvVolumetricFogShadowFilter, bool, float)
+	PASS10(environment_set_volumetric_fog, RID, bool, float, const Color &, float, float, float, float, bool, float)
 
 	PASS2(environment_set_volumetric_fog_volume_size, int, int)
 	PASS1(environment_set_volumetric_fog_filter_active, bool)
-	PASS1(environment_set_volumetric_fog_directional_shadow_shrink_size, int)
-	PASS1(environment_set_volumetric_fog_positional_shadow_shrink_size, int)
 
 	PASS11(environment_set_sdfgi, RID, bool, RS::EnvironmentSDFGICascades, float, RS::EnvironmentSDFGIYScale, bool, bool, bool, float, float, float)
 	PASS1(environment_set_sdfgi_ray_count, RS::EnvironmentSDFGIRayCount)
