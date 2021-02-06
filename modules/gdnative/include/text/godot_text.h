@@ -74,6 +74,10 @@ typedef struct {
 	godot_rid (*create_font_system)(void *, const godot_string *, int);
 	godot_rid (*create_font_resource)(void *, const godot_string *, int);
 	godot_rid (*create_font_memory)(void *, const uint8_t *, size_t, godot_string *, int);
+	godot_rid (*create_font_bitmap)(void *, float, float, int);
+	void (*font_bitmap_add_texture)(void *, godot_rid *, const godot_object *);
+	void (*font_bitmap_add_char)(void *, godot_rid *, char32_t, int, const godot_rect2 *, const godot_vector2 *, float);
+	void (*font_bitmap_add_kerning_pair)(void *, godot_rid *, char32_t, char32_t, int);
 	float (*font_get_height)(void *, godot_rid *, int);
 	float (*font_get_ascent)(void *, godot_rid *, int);
 	float (*font_get_descent)(void *, godot_rid *, int);
