@@ -93,8 +93,8 @@ void LightmapperRD::add_spot_light(bool p_static, const Vector3 &p_position, con
 	l.direction[2] = p_direction.z;
 	l.range = p_range;
 	l.attenuation = p_attenuation;
-	l.spot_angle = Math::deg2rad(p_spot_angle);
-	l.spot_attenuation = p_spot_attenuation;
+	l.cos_spot_angle = Math::cos(Math::deg2rad(p_spot_angle));
+	l.inv_spot_attenuation = 1.0f / p_spot_attenuation;
 	l.color[0] = p_color.r;
 	l.color[1] = p_color.g;
 	l.color[2] = p_color.b;
