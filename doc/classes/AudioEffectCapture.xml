@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="AudioEffectCapture" inherits="AudioEffect" version="4.0">
+	<brief_description>
+		Captures audio from an audio bus in real-time.
+	</brief_description>
+	<description>
+		AudioEffectCapture is an AudioEffect which copies all audio frames from the attached audio effect bus into its internal ring buffer.
+		Application code should consume these audio frames from this ring buffer using [method get_buffer] and process it as needed, for example to capture data from a microphone, implement application defined effects, or to transmit audio over the network.
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="can_get_buffer" qualifiers="const">
+			<return type="bool">
+			</return>
+			<argument index="0" name="frames" type="int">
+			</argument>
+			<description>
+				Returns [code]true[/code] if at least [code]frames[/code] audio frames are available to read in the internal ring buffer.
+			</description>
+		</method>
+		<method name="clear_buffer">
+			<return type="void">
+			</return>
+			<description>
+				Clears the internal ring buffer.
+			</description>
+		</method>
+		<method name="get_buffer">
+			<return type="PoolVector2Array">
+			</return>
+			<argument index="0" name="frames" type="int">
+			</argument>
+			<description>
+				Gets the next [code]frames[/code] audio samples from the internal ring buffer.
+				Returns a [PoolVector2Array] containing exactly [code]frames[/code] audio samples if available, or an empty [PoolVector2Array] if insufficient data was available.
+			</description>
+		</method>
+		<method name="get_buffer_length_frames" qualifiers="const">
+			<return type="int">
+			</return>
+			<description>
+				Returns the total size of the internal ring buffer in frames.
+			</description>
+		</method>
+		<method name="get_discarded_frames" qualifiers="const">
+			<return type="int">
+			</return>
+			<description>
+				Returns the number of audio frames discarded from the audio bus due to full buffer.
+			</description>
+		</method>
+		<method name="get_frames_available" qualifiers="const">
+			<return type="int">
+			</return>
+			<description>
+				Returns the number of frames available to read using [method get_buffer].
+			</description>
+		</method>
+		<method name="get_pushed_frames" qualifiers="const">
+			<return type="int">
+			</return>
+			<description>
+				Returns the number of audio frames inserted from the audio bus.
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="buffer_length" type="float" setter="set_buffer_length" getter="get_buffer_length" default="0.1">
+			Length of the internal ring buffer, in seconds.
+		</member>
+	</members>
+	<constants>
+	</constants>
+</class>

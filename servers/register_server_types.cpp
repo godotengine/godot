@@ -38,6 +38,7 @@
 #include "audio/audio_effect.h"
 #include "audio/audio_stream.h"
 #include "audio/effects/audio_effect_amplify.h"
+#include "audio/effects/audio_effect_capture.h"
 #include "audio/effects/audio_effect_chorus.h"
 #include "audio/effects/audio_effect_compressor.h"
 #include "audio/effects/audio_effect_delay.h"
@@ -170,6 +171,8 @@ void register_server_types() {
 		ClassDB::register_class<AudioEffectRecord>();
 		ClassDB::register_class<AudioEffectSpectrumAnalyzer>();
 		ClassDB::register_virtual_class<AudioEffectSpectrumAnalyzerInstance>();
+
+		ClassDB::register_class<AudioEffectCapture>();
 	}
 
 	ClassDB::register_class<CameraFeed>();
