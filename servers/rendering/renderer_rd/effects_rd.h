@@ -46,7 +46,6 @@
 #include "servers/rendering/renderer_rd/shaders/screen_space_reflection.glsl.gen.h"
 #include "servers/rendering/renderer_rd/shaders/screen_space_reflection_filter.glsl.gen.h"
 #include "servers/rendering/renderer_rd/shaders/screen_space_reflection_scale.glsl.gen.h"
-#include "servers/rendering/renderer_rd/shaders/shadow_reduce.glsl.gen.h"
 #include "servers/rendering/renderer_rd/shaders/sort.glsl.gen.h"
 #include "servers/rendering/renderer_rd/shaders/specular_merge.glsl.gen.h"
 #include "servers/rendering/renderer_rd/shaders/ssao.glsl.gen.h"
@@ -597,20 +596,6 @@ class EffectsRD {
 		RID pipelines[RESOLVE_MODE_MAX]; //3 quality levels
 	} resolve;
 
-	enum ShadowReduceMode {
-		SHADOW_REDUCE_REDUCE,
-		SHADOW_REDUCE_REDUCE_SUBGROUPS,
-		SHADOW_REDUCE_REDUCE_SUBGROUPS_8,
-		SHADOW_REDUCE_FILTER,
-		SHADOW_REDUCE_MAX
-	};
-
-	struct ShadowReduce {
-		ShadowReduceShaderRD shader;
-		RID shader_version;
-		RID pipelines[SHADOW_REDUCE_MAX];
-	} shadow_reduce;
-
 	enum SortMode {
 		SORT_MODE_BLOCK,
 		SORT_MODE_STEP,
@@ -766,9 +751,6 @@ public:
 	void sub_surface_scattering(RID p_diffuse, RID p_diffuse2, RID p_depth, const CameraMatrix &p_camera, const Size2i &p_screen_size, float p_scale, float p_depth_scale, RS::SubSurfaceScatteringQuality p_quality);
 
 	void resolve_gi(RID p_source_depth, RID p_source_normal_roughness, RID p_source_giprobe, RID p_dest_depth, RID p_dest_normal_roughness, RID p_dest_giprobe, Vector2i p_screen_size, int p_samples, uint32_t p_barrier = RD::BARRIER_MASK_ALL);
-
-	void reduce_shadow(RID p_source_shadow, RID p_dest_shadow, const Size2i &p_source_size, const Rect2i &p_source_rect, int p_shrink_limit, RenderingDevice::ComputeListID compute_list);
-	void filter_shadow(RID p_shadow, RID p_backing_shadow, const Size2i &p_source_size, const Rect2i &p_source_rect, RS::EnvVolumetricFogShadowFilter p_filter, RenderingDevice::ComputeListID compute_list, bool p_vertical = true, bool p_horizontal = true);
 
 	void sort_buffer(RID p_uniform_set, int p_size);
 

@@ -1423,60 +1423,6 @@ void EffectsRD::resolve_gi(RID p_source_depth, RID p_source_normal_roughness, RI
 	RD::get_singleton()->compute_list_end(p_barrier);
 }
 
-void EffectsRD::reduce_shadow(RID p_source_shadow, RID p_dest_shadow, const Size2i &p_source_size, const Rect2i &p_source_rect, int p_shrink_limit, RD::ComputeListID compute_list) {
-	uint32_t push_constant[8] = { (uint32_t)p_source_size.x, (uint32_t)p_source_size.y, (uint32_t)p_source_rect.position.x, (uint32_t)p_source_rect.position.y, (uint32_t)p_shrink_limit, 0, 0, 0 };
-
-	uint32_t height = p_source_rect.size.height;
-	if (true) { // subgroup support, @TODO must detect them
-		RD::get_singleton()->compute_list_bind_compute_pipeline(compute_list, shadow_reduce.pipelines[p_shrink_limit == 1 ? SHADOW_REDUCE_REDUCE_SUBGROUPS_8 : SHADOW_REDUCE_REDUCE_SUBGROUPS]);
-		height /= 2; //cause kernel is 8x4
-	} else {
-		RD::get_singleton()->compute_list_bind_compute_pipeline(compute_list, shadow_reduce.pipelines[SHADOW_REDUCE_REDUCE]);
-	}
-	RD::get_singleton()->compute_list_bind_uniform_set(compute_list, _get_compute_uniform_set_from_texture(p_source_shadow), 0);
-	RD::get_singleton()->compute_list_bind_uniform_set(compute_list, _get_uniform_set_from_image(p_dest_shadow), 1);
-	RD::get_singleton()->compute_list_set_push_constant(compute_list, &push_constant, sizeof(uint32_t) * 8);
-
-	RD::get_singleton()->compute_list_dispatch_threads(compute_list, p_source_rect.size.width, height, 1);
-}
-void EffectsRD::filter_shadow(RID p_shadow, RID p_backing_shadow, const Size2i &p_source_size, const Rect2i &p_source_rect, RenderingServer::EnvVolumetricFogShadowFilter p_filter, RD::ComputeListID compute_list, bool p_vertical, bool p_horizontal) {
-	uint32_t push_constant[8] = { (uint32_t)p_source_size.x, (uint32_t)p_source_size.y, (uint32_t)p_source_rect.position.x, (uint32_t)p_source_rect.position.y, 0, 0, 0, 0 };
-
-	switch (p_filter) {
-		case RS::ENV_VOLUMETRIC_FOG_SHADOW_FILTER_DISABLED:
-		case RS::ENV_VOLUMETRIC_FOG_SHADOW_FILTER_LOW: {
-			push_constant[5] = 0;
-		} break;
-		case RS::ENV_VOLUMETRIC_FOG_SHADOW_FILTER_MEDIUM: {
-			push_constant[5] = 9;
-		} break;
-		case RS::ENV_VOLUMETRIC_FOG_SHADOW_FILTER_HIGH: {
-			push_constant[5] = 18;
-		} break;
-	}
-
-	RD::get_singleton()->compute_list_bind_compute_pipeline(compute_list, shadow_reduce.pipelines[SHADOW_REDUCE_FILTER]);
-	if (p_vertical) {
-		push_constant[6] = 1;
-		push_constant[7] = 0;
-		RD::get_singleton()->compute_list_bind_uniform_set(compute_list, _get_uniform_set_from_image(p_shadow), 0);
-		RD::get_singleton()->compute_list_bind_uniform_set(compute_list, _get_uniform_set_from_image(p_backing_shadow), 1);
-		RD::get_singleton()->compute_list_set_push_constant(compute_list, &push_constant, sizeof(uint32_t) * 8);
-		RD::get_singleton()->compute_list_dispatch_threads(compute_list, p_source_rect.size.width, p_source_rect.size.height, 1);
-	}
-	if (p_vertical && p_horizontal) {
-		RD::get_singleton()->compute_list_add_barrier(compute_list);
-	}
-	if (p_horizontal) {
-		push_constant[6] = 0;
-		push_constant[7] = 1;
-		RD::get_singleton()->compute_list_bind_uniform_set(compute_list, _get_uniform_set_from_image(p_backing_shadow), 0);
-		RD::get_singleton()->compute_list_bind_uniform_set(compute_list, _get_uniform_set_from_image(p_shadow), 1);
-		RD::get_singleton()->compute_list_set_push_constant(compute_list, &push_constant, sizeof(uint32_t) * 8);
-		RD::get_singleton()->compute_list_dispatch_threads(compute_list, p_source_rect.size.width, p_source_rect.size.height, 1);
-	}
-}
-
 void EffectsRD::sort_buffer(RID p_uniform_set, int p_size) {
 	Sort::PushConstant push_constant;
 	push_constant.total_elements = p_size;
@@ -1973,22 +1919,6 @@ EffectsRD::EffectsRD() {
 	}
 
 	{
-		Vector<String> shadow_reduce_modes;
-		shadow_reduce_modes.push_back("\n#define MODE_REDUCE\n");
-		shadow_reduce_modes.push_back("\n#define MODE_REDUCE_SUBGROUP\n");
-		shadow_reduce_modes.push_back("\n#define MODE_REDUCE_SUBGROUP\n#define MODE_REDUCE_8\n");
-		shadow_reduce_modes.push_back("\n#define MODE_FILTER\n");
-
-		shadow_reduce.shader.initialize(shadow_reduce_modes);
-
-		shadow_reduce.shader_version = shadow_reduce.shader.version_create();
-
-		for (int i = 0; i < SHADOW_REDUCE_MAX; i++) {
-			shadow_reduce.pipelines[i] = RD::get_singleton()->compute_pipeline_create(shadow_reduce.shader.version_get_shader(shadow_reduce.shader_version, i));
-		}
-	}
-
-	{
 		Vector<String> sort_modes;
 		sort_modes.push_back("\n#define MODE_SORT_BLOCK\n");
 		sort_modes.push_back("\n#define MODE_SORT_STEP\n");
@@ -2076,5 +2006,4 @@ EffectsRD::~EffectsRD() {
 	ssr_scale.shader.version_free(ssr_scale.shader_version);
 	sss.shader.version_free(sss.shader_version);
 	tonemap.shader.version_free(tonemap.shader_version);
-	shadow_reduce.shader.version_free(shadow_reduce.shader_version);
 }

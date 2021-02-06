@@ -39,7 +39,6 @@ if "RD_GLSL" in env["BUILDERS"]:
     env.RD_GLSL("sdfgi_debug.glsl")
     env.RD_GLSL("sdfgi_debug_probes.glsl")
     env.RD_GLSL("volumetric_fog.glsl")
-    env.RD_GLSL("shadow_reduce.glsl")
     env.RD_GLSL("particles.glsl")
     env.RD_GLSL("particles_copy.glsl")
     env.RD_GLSL("sort.glsl")
