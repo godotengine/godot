@@ -147,6 +147,14 @@ void BakedLightmapData::clear_users() {
 	users.clear();
 }
 
+void BakedLightmapData::clear_data() {
+	clear_users();
+	if (baked_light.is_valid()) {
+		VS::get_singleton()->free(baked_light);
+	}
+	baked_light = VS::get_singleton()->lightmap_capture_create();
+}
+
 void BakedLightmapData::_set_user_data(const Array &p_data) {
 
 	// Detect old lightmapper format
@@ -226,6 +234,7 @@ void BakedLightmapData::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_user_path", "user_idx"), &BakedLightmapData::get_user_path);
 	ClassDB::bind_method(D_METHOD("get_user_lightmap", "user_idx"), &BakedLightmapData::get_user_lightmap);
 	ClassDB::bind_method(D_METHOD("clear_users"), &BakedLightmapData::clear_users);
+	ClassDB::bind_method(D_METHOD("clear_data"), &BakedLightmapData::clear_data);
 
 	ADD_PROPERTY(PropertyInfo(Variant::AABB, "bounds", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR), "set_bounds", "get_bounds");
 	ADD_PROPERTY(PropertyInfo(Variant::TRANSFORM, "cell_space_transform", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR), "set_cell_space_transform", "get_cell_space_transform");
@@ -317,6 +326,9 @@ Size2i BakedLightmap::_compute_lightmap_size(const MeshesFound &p_mesh) {
 }
 
 void BakedLightmap::_find_meshes_and_lights(Node *p_at_node, Vector<MeshesFound> &meshes, Vector<LightsFound> &lights) {
+
+	AABB bounds = AABB(-extents, extents * 2.0);
+
 	MeshInstance *mi = Object::cast_to<MeshInstance>(p_at_node);
 	if (mi && mi->get_flag(GeometryInstance::FLAG_USE_BAKED_LIGHT) && mi->is_visible_in_tree()) {
 		Ref<Mesh> mesh = mi->get_mesh();
@@ -339,27 +351,34 @@ void BakedLightmap::_find_meshes_and_lights(Node *p_at_node, Vector<MeshesFound>
 			}
 
 			if (surfaces_found && all_have_uv2_and_normal) {
-				MeshesFound mf;
-				mf.cast_shadows = mi->get_cast_shadows_setting() != GeometryInstance::SHADOW_CASTING_SETTING_OFF;
-				mf.generate_lightmap = mi->get_generate_lightmap();
-				mf.xform = get_global_transform().affine_inverse() * mi->get_global_transform();
-				mf.node_path = get_path_to(mi);
-				mf.subindex = -1;
-				mf.mesh = mesh;
 
-				static const int lightmap_scale[4] = { 1, 2, 4, 8 }; //GeometryInstance3D::LIGHTMAP_SCALE_MAX = { 1, 2, 4, 8 };
-				mf.lightmap_scale = lightmap_scale[mi->get_lightmap_scale()];
+				Transform mesh_xform = get_global_transform().affine_inverse() * mi->get_global_transform();
 
-				Ref<Material> all_override = mi->get_material_override();
-				for (int i = 0; i < mesh->get_surface_count(); i++) {
-					if (all_override.is_valid()) {
-						mf.overrides.push_back(all_override);
-					} else {
-						mf.overrides.push_back(mi->get_surface_material(i));
+				AABB aabb = mesh_xform.xform(mesh->get_aabb());
+
+				if (bounds.intersects(aabb)) {
+					MeshesFound mf;
+					mf.cast_shadows = mi->get_cast_shadows_setting() != GeometryInstance::SHADOW_CASTING_SETTING_OFF;
+					mf.generate_lightmap = mi->get_generate_lightmap();
+					mf.xform = mesh_xform;
+					mf.node_path = get_path_to(mi);
+					mf.subindex = -1;
+					mf.mesh = mesh;
+
+					static const int lightmap_scale[4] = { 1, 2, 4, 8 }; //GeometryInstance3D::LIGHTMAP_SCALE_MAX = { 1, 2, 4, 8 };
+					mf.lightmap_scale = lightmap_scale[mi->get_lightmap_scale()];
+
+					Ref<Material> all_override = mi->get_material_override();
+					for (int i = 0; i < mesh->get_surface_count(); i++) {
+						if (all_override.is_valid()) {
+							mf.overrides.push_back(all_override);
+						} else {
+							mf.overrides.push_back(mi->get_surface_material(i));
+						}
 					}
-				}
 
-				meshes.push_back(mf);
+					meshes.push_back(mf);
+				}
 			}
 		}
 	}
@@ -383,10 +402,16 @@ void BakedLightmap::_find_meshes_and_lights(Node *p_at_node, Vector<MeshesFound>
 					continue;
 				}
 
-				MeshesFound mf;
+				Transform mesh_xform = xf * bmeshes[i + 1];
 
-				Transform mesh_xf = bmeshes[i + 1];
-				mf.xform = xf * mesh_xf;
+				AABB aabb = mesh_xform.xform(mesh->get_aabb());
+
+				if (!bounds.intersects(aabb)) {
+					continue;
+				}
+
+				MeshesFound mf;
+				mf.xform = mesh_xform;
 				mf.node_path = get_path_to(s);
 				mf.subindex = i / 2;
 				mf.lightmap_scale = 1;
@@ -770,7 +795,7 @@ BakedLightmap::BakeError BakedLightmap::bake(Node *p_from_node, String p_data_sa
 	if (get_light_data().is_valid()) {
 		data = get_light_data();
 		set_light_data(Ref<BakedLightmapData>()); //clear
-		data->clear_users();
+		data->clear_data();
 	} else {
 		data.instance();
 	}

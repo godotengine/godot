@@ -393,11 +393,11 @@ Vector3 LightmapperCPU::_fix_sample_position(const Vector3 &p_position, const Ve
 			Vector3 target = p_texel_center + rotated_offset;
 			Vector3 ray_vector = target - corrected;
 
-			Vector3 ray_back_offset = -ray_vector.normalized() * parameters.bias;
+			Vector3 ray_back_offset = -ray_vector.normalized() * parameters.bias / 2.0;
 			Vector3 ray_origin = corrected + ray_back_offset;
 			ray_vector = target - ray_origin;
 			float ray_length = ray_vector.length();
-			LightmapRaycaster::Ray ray(ray_origin + p_normal * parameters.bias, ray_vector.normalized(), 0.0f, ray_length + parameters.bias);
+			LightmapRaycaster::Ray ray(ray_origin + p_normal * parameters.bias, ray_vector.normalized(), 0.0f, ray_length + parameters.bias / 2.0);
 
 			bool hit = raycaster->intersect(ray);
 			if (hit) {
@@ -476,8 +476,10 @@ void LightmapperCPU::_plot_triangle(const Vector2 *p_vertices, const Vector3 *p_
 		Vector2 p = centroid;
 		p[i] += 1;
 		Vector3 bary = Geometry::barycentric_coordinates_2d(p, v0, v1, v2);
-		Vector3 pos = p0 * bary[0] + p1 * bary[1] + p2 * bary[2];
-		texel_size[i] = centroid_pos.distance_to(pos);
+		if (bary.length() <= 1.0) {
+			Vector3 pos = p0 * bary[0] + p1 * bary[1] + p2 * bary[2];
+			texel_size[i] = centroid_pos.distance_to(pos);
+		}
 	}
 
 	Vector<Vector2> pixel_polygon;
@@ -676,7 +678,7 @@ void LightmapperCPU::_plot_triangle(const Vector2 *p_vertices, const Vector3 *p_
 			Vector2 texel_center = Vector2(i, j) + Vector2(0.5f, 0.5f);
 			Vector3 texel_center_bary = Geometry::barycentric_coordinates_2d(texel_center, v0, v1, v2);
 
-			if (!Math::is_nan(texel_center_bary.x) && !Math::is_nan(texel_center_bary.y) && !Math::is_nan(texel_center_bary.z) && !Math::is_inf(texel_center_bary.x) && !Math::is_inf(texel_center_bary.y) && !Math::is_inf(texel_center_bary.z)) {
+			if (texel_center_bary.length_squared() <= 1.3 && !Math::is_nan(texel_center_bary.x) && !Math::is_nan(texel_center_bary.y) && !Math::is_nan(texel_center_bary.z) && !Math::is_inf(texel_center_bary.x) && !Math::is_inf(texel_center_bary.y) && !Math::is_inf(texel_center_bary.z)) {
 				Vector3 texel_center_pos = p0 * texel_center_bary[0] + p1 * texel_center_bary[1] + p2 * texel_center_bary[2];
 				pos = _fix_sample_position(pos, texel_center_pos, normal, tangent, bitangent, texel_size);
 			}
@@ -855,8 +857,8 @@ void LightmapperCPU::_compute_indirect_light(uint32_t p_idx, void *r_lightmap) {
 			unsigned int hit_mesh_id = ray.geomID;
 			const Vector2i &size = mesh_instances[hit_mesh_id].size;
 
-			int x = ray.u * size.x;
-			int y = ray.v * size.y;
+			int x = CLAMP(ray.u * size.x, 0, size.x - 1);
+			int y = CLAMP(ray.v * size.y, 0, size.y - 1);
 
 			const int idx = scene_lightmap_indices[hit_mesh_id][y * size.x + x];
 
@@ -988,7 +990,7 @@ void LightmapperCPU::_post_process(uint32_t p_idx, void *r_output) {
 void LightmapperCPU::_compute_seams(const MeshInstance &p_mesh, LocalVector<UVSeam> &r_seams) {
 	float max_uv_distance = 1.0f / MAX(p_mesh.size.x, p_mesh.size.y);
 	max_uv_distance *= max_uv_distance; // We use distance_to_squared(), so wee need to square the max distance as well
-	float max_pos_distance = 0.0005f;
+	float max_pos_distance = 0.00025f;
 	float max_normal_distance = 0.05f;
 
 	const Vector<Vector3> &points = p_mesh.data.points;
@@ -1026,8 +1028,25 @@ void LightmapperCPU::_compute_seams(const MeshInstance &p_mesh, LocalVector<UVSe
 
 	for (unsigned int j = 0; j < edges.size(); j++) {
 		const SeamEdge &edge0 = edges[j];
+
+		if (edge0.uv[0].distance_squared_to(edge0.uv[1]) < 0.001) {
+			continue;
+		}
+
+		if (edge0.pos[0].distance_squared_to(edge0.pos[1]) < 0.001) {
+			continue;
+		}
+
 		for (unsigned int k = j + 1; k < edges.size() && edges[k].pos[0].x < (edge0.pos[0].x + max_pos_distance * 1.1f); k++) {
 			const SeamEdge &edge1 = edges[k];
+
+			if (edge1.uv[0].distance_squared_to(edge1.uv[1]) < 0.001) {
+				continue;
+			}
+
+			if (edge1.pos[0].distance_squared_to(edge1.pos[1]) < 0.001) {
+				continue;
+			}
 
 			if (edge0.uv[0].distance_squared_to(edge1.uv[0]) < max_uv_distance && edge0.uv[1].distance_squared_to(edge1.uv[1]) < max_uv_distance) {
 				continue;
