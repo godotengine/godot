@@ -175,61 +175,58 @@ Error BitmapFontDataFallback::load_from_file(const String &p_filename, int p_bas
 	return OK;
 }
 
-Error BitmapFontDataFallback::load_from_memory(const uint8_t *p_data, size_t p_size, int p_base_size) {
-	_THREAD_SAFE_METHOD_
-	ERR_FAIL_COND_V(p_data == nullptr, ERR_CANT_CREATE);
-	ERR_FAIL_COND_V(p_size != sizeof(TextServer::BitmapFontData), ERR_CANT_CREATE);
-
-	const TextServer::BitmapFontData *data = (const TextServer::BitmapFontData *)p_data;
-
-	if (RenderingServer::get_singleton() != nullptr) {
-		Ref<Image> image = memnew(Image(data->img));
-		Ref<ImageTexture> tex = memnew(ImageTexture);
-		tex->create_from_image(image);
-
-		textures.push_back(tex);
-	}
-
-	for (int i = 0; i < data->charcount; i++) {
-		const int *c = &data->char_rects[i * 8];
-
-		Character chr;
-		chr.rect.position.x = c[1];
-		chr.rect.position.y = c[2];
-		chr.rect.size.x = c[3];
-		chr.rect.size.y = c[4];
-		if (c[7] < 0) {
-			chr.advance.x = c[3];
-		} else {
-			chr.advance.x = c[7];
-		}
-		chr.align = Vector2(c[6], c[5]);
-		char_map[c[0]] = chr;
-	}
-
-	for (int i = 0; i < data->kerning_count; i++) {
-		KerningPairKey kpk;
-		kpk.A = data->kernings[i * 3 + 0];
-		kpk.B = data->kernings[i * 3 + 1];
-
-		if (data->kernings[i * 3 + 2] == 0 && kerning_map.has(kpk)) {
-			kerning_map.erase(kpk);
-		} else {
-			kerning_map[kpk] = data->kernings[i * 3 + 2];
-		}
-	}
-
-	height = data->height;
-	ascent = data->ascent;
+Error BitmapFontDataFallback::bitmap_new(float p_height, float p_ascent, int p_base_size) {
+	height = p_height;
+	ascent = p_ascent;
 
 	base_size = p_base_size;
 	if (base_size == 0) {
 		base_size = height;
 	}
 
+	char_map.clear();
+	textures.clear();
+	kerning_map.clear();
+
 	valid = true;
 
 	return OK;
+}
+
+void BitmapFontDataFallback::bitmap_add_texture(const Ref<Texture> &p_texture) {
+	ERR_FAIL_COND(!valid);
+	ERR_FAIL_COND_MSG(p_texture.is_null(), "It's not a reference to a valid Texture object.");
+
+	textures.push_back(p_texture);
+}
+
+void BitmapFontDataFallback::bitmap_add_char(char32_t p_char, int p_texture_idx, const Rect2 &p_rect, const Size2 &p_align, float p_advance) {
+	ERR_FAIL_COND(!valid);
+
+	Character chr;
+	chr.rect = p_rect;
+	chr.texture_idx = p_texture_idx;
+	if (p_advance < 0) {
+		chr.advance.x = chr.rect.size.x;
+	} else {
+		chr.advance.x = p_advance;
+	}
+	chr.align = p_align;
+	char_map[p_char] = chr;
+}
+
+void BitmapFontDataFallback::bitmap_add_kerning_pair(char32_t p_A, char32_t p_B, int p_kerning) {
+	ERR_FAIL_COND(!valid);
+
+	KerningPairKey kpk;
+	kpk.A = p_A;
+	kpk.B = p_B;
+
+	if (p_kerning == 0 && kerning_map.has(kpk)) {
+		kerning_map.erase(kpk);
+	} else {
+		kerning_map[kpk] = p_kerning;
+	}
 }
 
 float BitmapFontDataFallback::get_height(int p_size) const {

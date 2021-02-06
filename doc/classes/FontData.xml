@@ -11,6 +11,45 @@
 	<tutorials>
 	</tutorials>
 	<methods>
+		<method name="bitmap_add_char">
+			<return type="void">
+			</return>
+			<argument index="0" name="char" type="int">
+			</argument>
+			<argument index="1" name="texture_idx" type="int">
+			</argument>
+			<argument index="2" name="rect" type="Rect2">
+			</argument>
+			<argument index="3" name="align" type="Vector2">
+			</argument>
+			<argument index="4" name="advance" type="float">
+			</argument>
+			<description>
+				Adds a character to the font, where [code]character[/code] is the Unicode value, [code]texture[/code] is the texture index, [code]rect[/code] is the region in the texture (in pixels!), [code]align[/code] is the (optional) alignment for the character and [code]advance[/code] is the (optional) advance.
+			</description>
+		</method>
+		<method name="bitmap_add_kerning_pair">
+			<return type="void">
+			</return>
+			<argument index="0" name="A" type="int">
+			</argument>
+			<argument index="1" name="B" type="int">
+			</argument>
+			<argument index="2" name="kerning" type="int">
+			</argument>
+			<description>
+				Adds a kerning pair to the bitmap font as a difference. Kerning pairs are special cases where a typeface advance is determined by the next character.
+			</description>
+		</method>
+		<method name="bitmap_add_texture">
+			<return type="void">
+			</return>
+			<argument index="0" name="texture" type="Texture">
+			</argument>
+			<description>
+				Adds a texture to the bitmap font.
+			</description>
+		</method>
 		<method name="draw_glyph" qualifiers="const">
 			<return type="Vector2">
 			</return>
@@ -254,6 +293,19 @@
 			<description>
 				Creates new font from the file.
 				Note: For non-scalable fonts [code]base_size[/code] is ignored, use [method get_base_size] to check actual font size.
+			</description>
+		</method>
+		<method name="new_bitmap">
+			<return type="void">
+			</return>
+			<argument index="0" name="height" type="float">
+			</argument>
+			<argument index="1" name="ascent" type="float">
+			</argument>
+			<argument index="2" name="base_size" type="int">
+			</argument>
+			<description>
+				Creates new, empty bitmap font.
 			</description>
 		</method>
 		<method name="remove_language_support_override">
