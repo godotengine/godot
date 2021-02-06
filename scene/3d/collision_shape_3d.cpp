@@ -100,9 +100,6 @@ void CollisionShape3D::_notification(int p_what) {
 			if (parent) {
 				_update_in_shape_owner();
 			}
-			if (get_tree()->is_debugging_collisions_hint()) {
-				_update_debug_shape();
-			}
 		} break;
 		case NOTIFICATION_LOCAL_TRANSFORM_CHANGED: {
 			if (parent) {
@@ -163,8 +160,6 @@ void CollisionShape3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("make_convex_from_siblings"), &CollisionShape3D::make_convex_from_siblings);
 	ClassDB::set_method_flags("CollisionShape3D", "make_convex_from_siblings", METHOD_FLAGS_DEFAULT | METHOD_FLAG_EDITOR);
 
-	ClassDB::bind_method(D_METHOD("_update_debug_shape"), &CollisionShape3D::_update_debug_shape);
-
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "shape", PROPERTY_HINT_RESOURCE_TYPE, "Shape3D"), "set_shape", "get_shape");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "disabled"), "set_disabled", "is_disabled");
 }
@@ -224,34 +219,9 @@ CollisionShape3D::~CollisionShape3D() {
 	//RenderingServer::get_singleton()->free(indicator);
 }
 
-void CollisionShape3D::_update_debug_shape() {
-	debug_shape_dirty = false;
-
-	if (debug_shape) {
-		debug_shape->queue_delete();
-		debug_shape = nullptr;
-	}
-
-	Ref<Shape3D> s = get_shape();
-	if (s.is_null()) {
-		return;
-	}
-
-	Ref<Mesh> mesh = s->get_debug_mesh();
-	MeshInstance3D *mi = memnew(MeshInstance3D);
-	mi->set_mesh(mesh);
-	add_child(mi);
-	debug_shape = mi;
-}
-
 void CollisionShape3D::_shape_changed() {
 	// If this is a heightfield shape our center may have changed
 	if (parent) {
 		_update_in_shape_owner(true);
-	}
-
-	if (is_inside_tree() && get_tree()->is_debugging_collisions_hint() && !debug_shape_dirty) {
-		debug_shape_dirty = true;
-		call_deferred("_update_debug_shape");
 	}
 }
