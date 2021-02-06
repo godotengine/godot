@@ -244,20 +244,26 @@ void main() {
 
 		vec4 light;
 		if (hit) {
-			const float EPSILON = 0.001;
-			vec3 hit_normal = normalize(vec3(
-					texture(sampler3D(sdf_cascades[hit_cascade], linear_sampler), uvw + vec3(EPSILON, 0.0, 0.0)).r - texture(sampler3D(sdf_cascades[hit_cascade], linear_sampler), uvw - vec3(EPSILON, 0.0, 0.0)).r,
-					texture(sampler3D(sdf_cascades[hit_cascade], linear_sampler), uvw + vec3(0.0, EPSILON, 0.0)).r - texture(sampler3D(sdf_cascades[hit_cascade], linear_sampler), uvw - vec3(0.0, EPSILON, 0.0)).r,
-					texture(sampler3D(sdf_cascades[hit_cascade], linear_sampler), uvw + vec3(0.0, 0.0, EPSILON)).r - texture(sampler3D(sdf_cascades[hit_cascade], linear_sampler), uvw - vec3(0.0, 0.0, EPSILON)).r));
+			//avoid reading different texture from different threads
+			for (uint j = params.cascade; j < params.max_cascades; j++) {
+				if (j == hit_cascade) {
+					const float EPSILON = 0.001;
+					vec3 hit_normal = normalize(vec3(
+							texture(sampler3D(sdf_cascades[hit_cascade], linear_sampler), uvw + vec3(EPSILON, 0.0, 0.0)).r - texture(sampler3D(sdf_cascades[hit_cascade], linear_sampler), uvw - vec3(EPSILON, 0.0, 0.0)).r,
+							texture(sampler3D(sdf_cascades[hit_cascade], linear_sampler), uvw + vec3(0.0, EPSILON, 0.0)).r - texture(sampler3D(sdf_cascades[hit_cascade], linear_sampler), uvw - vec3(0.0, EPSILON, 0.0)).r,
+							texture(sampler3D(sdf_cascades[hit_cascade], linear_sampler), uvw + vec3(0.0, 0.0, EPSILON)).r - texture(sampler3D(sdf_cascades[hit_cascade], linear_sampler), uvw - vec3(0.0, 0.0, EPSILON)).r));
 
-			vec3 hit_light = texture(sampler3D(light_cascades[hit_cascade], linear_sampler), uvw).rgb;
-			vec4 aniso0 = texture(sampler3D(aniso0_cascades[hit_cascade], linear_sampler), uvw);
-			vec3 hit_aniso0 = aniso0.rgb;
-			vec3 hit_aniso1 = vec3(aniso0.a, texture(sampler3D(aniso1_cascades[hit_cascade], linear_sampler), uvw).rg);
+					vec3 hit_light = texture(sampler3D(light_cascades[hit_cascade], linear_sampler), uvw).rgb;
+					vec4 aniso0 = texture(sampler3D(aniso0_cascades[hit_cascade], linear_sampler), uvw);
+					vec3 hit_aniso0 = aniso0.rgb;
+					vec3 hit_aniso1 = vec3(aniso0.a, texture(sampler3D(aniso1_cascades[hit_cascade], linear_sampler), uvw).rg);
 
-			//one liner magic
-			light.rgb = hit_light * (dot(max(vec3(0.0), (hit_normal * hit_aniso0)), vec3(1.0)) + dot(max(vec3(0.0), (-hit_normal * hit_aniso1)), vec3(1.0)));
-			light.a = 1.0;
+					//one liner magic
+					light.rgb = hit_light * (dot(max(vec3(0.0), (hit_normal * hit_aniso0)), vec3(1.0)) + dot(max(vec3(0.0), (-hit_normal * hit_aniso1)), vec3(1.0)));
+					light.a = 1.0;
+				}
+			}
+
 		} else if (params.sky_mode == SKY_MODE_SKY) {
 #ifdef USE_CUBEMAP_ARRAY
 			light.rgb = textureLod(samplerCubeArray(sky_irradiance, linear_sampler_mipmaps), vec4(ray_dir, 0.0), 2.0).rgb; //use second mipmap because we dont usually throw a lot of rays, so this compensates
