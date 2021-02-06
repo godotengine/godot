@@ -517,8 +517,6 @@ void EditorNode::_notification(int p_what) {
 				RS::get_singleton()->gi_probe_set_quality(gi_probe_quality);
 				RS::get_singleton()->environment_set_volumetric_fog_volume_size(GLOBAL_GET("rendering/volumetric_fog/volume_size"), GLOBAL_GET("rendering/volumetric_fog/volume_depth"));
 				RS::get_singleton()->environment_set_volumetric_fog_filter_active(bool(GLOBAL_GET("rendering/volumetric_fog/use_filter")));
-				RS::get_singleton()->environment_set_volumetric_fog_directional_shadow_shrink_size(GLOBAL_GET("rendering/volumetric_fog/directional_shadow_shrink"));
-				RS::get_singleton()->environment_set_volumetric_fog_positional_shadow_shrink_size(GLOBAL_GET("rendering/volumetric_fog/positional_shadow_shrink"));
 				RS::get_singleton()->canvas_set_shadow_texture_size(GLOBAL_GET("rendering/quality/2d_shadow_atlas/size"));
 
 				bool use_half_res_gi = GLOBAL_DEF("rendering/quality/gi/use_half_resolution", false);

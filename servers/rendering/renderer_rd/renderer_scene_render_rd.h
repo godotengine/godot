@@ -591,8 +591,6 @@ private:
 		RID fb; //for copying
 
 		Map<RID, uint32_t> shadow_owners;
-
-		Vector<ShadowShrinkStage> shrink_stages;
 	};
 
 	RID_Owner<ShadowAtlas> shadow_atlas_owner;
@@ -626,12 +624,7 @@ private:
 		bool use_16_bits = false;
 		int current_light = 0;
 
-		Vector<ShadowShrinkStage> shrink_stages;
-
 	} directional_shadow;
-
-	void _allocate_shadow_shrink_stages(RID p_base, int p_base_size, Vector<ShadowShrinkStage> &shrink_stages, uint32_t p_target_size);
-	void _clear_shadow_shrink_stages(Vector<ShadowShrinkStage> &shrink_stages);
 
 	void _update_directional_shadow_atlas();
 
@@ -743,10 +736,9 @@ private:
 		float volumetric_fog_light_energy = 0.0;
 		float volumetric_fog_length = 64.0;
 		float volumetric_fog_detail_spread = 2.0;
-		RS::EnvVolumetricFogShadowFilter volumetric_fog_shadow_filter = RS::ENV_VOLUMETRIC_FOG_SHADOW_FILTER_LOW;
 		float volumetric_fog_gi_inject = 0.0;
-		bool volumetric_fog_temporal_reprojection = false;
-		float volumetric_fog_temporal_reprojection_amount = 0.95;
+		bool volumetric_fog_temporal_reprojection = true;
+		float volumetric_fog_temporal_reprojection_amount = 0.9;
 
 		/// Glow
 
@@ -1471,10 +1463,6 @@ private:
 		uint32_t omni_light_count = 0;
 		uint32_t spot_light_count = 0;
 
-		RID *lights_instances;
-		Rect2i *lights_shadow_rect_cache;
-		uint32_t lights_shadow_rect_cache_count = 0;
-
 		DirectionalLightData *directional_lights;
 		uint32_t max_directional_lights;
 		RID directional_light_buffer;
@@ -1594,9 +1582,7 @@ private:
 
 	uint32_t volumetric_fog_depth = 128;
 	uint32_t volumetric_fog_size = 128;
-	bool volumetric_fog_filter_active = false;
-	uint32_t volumetric_fog_directional_shadow_shrink = 512;
-	uint32_t volumetric_fog_positional_shadow_shrink = 512;
+	bool volumetric_fog_filter_active = true;
 
 	void _volumetric_fog_erase(RenderBuffers *rb);
 	void _update_volumetric_fog(RID p_render_buffers, RID p_environment, const CameraMatrix &p_cam_projection, const Transform &p_cam_transform, RID p_shadow_atlas, int p_directional_light_count, bool p_use_directional_shadows, int p_positional_light_count, int p_gi_probe_count);
@@ -1721,12 +1707,10 @@ public:
 	float environment_get_fog_height_density(RID p_env) const;
 	float environment_get_fog_aerial_perspective(RID p_env) const;
 
-	void environment_set_volumetric_fog(RID p_env, bool p_enable, float p_density, const Color &p_light, float p_light_energy, float p_length, float p_detail_spread, float p_gi_inject, RS::EnvVolumetricFogShadowFilter p_shadow_filter, bool p_temporal_reprojection, float p_temporal_reprojection_amount);
+	void environment_set_volumetric_fog(RID p_env, bool p_enable, float p_density, const Color &p_light, float p_light_energy, float p_length, float p_detail_spread, float p_gi_inject, bool p_temporal_reprojection, float p_temporal_reprojection_amount);
 
 	virtual void environment_set_volumetric_fog_volume_size(int p_size, int p_depth);
 	virtual void environment_set_volumetric_fog_filter_active(bool p_enable);
-	virtual void environment_set_volumetric_fog_directional_shadow_shrink_size(int p_shrink_size);
-	virtual void environment_set_volumetric_fog_positional_shadow_shrink_size(int p_shrink_size);
 
 	void environment_set_ssr(RID p_env, bool p_enable, int p_max_steps, float p_fade_int, float p_fade_out, float p_depth_tolerance);
 	void environment_set_ssao(RID p_env, bool p_enable, float p_radius, float p_intensity, float p_power, float p_detail, float p_horizon, float p_sharpness, float p_light_affect, float p_ao_channel_affect);
