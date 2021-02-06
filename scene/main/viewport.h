@@ -406,7 +406,7 @@ private:
 	void _canvas_layer_remove(CanvasLayer *p_canvas_layer);
 
 	void _drop_mouse_focus();
-	void _drop_physics_mouseover();
+	void _drop_physics_mouseover(bool p_paused_only = false);
 
 	void _update_canvas_items(Node *p_node);
 
@@ -414,6 +414,7 @@ private:
 
 protected:
 	void _notification(int p_what);
+	void _process_picking(bool p_ignore_paused);
 	static void _bind_methods();
 	virtual void _validate_property(PropertyInfo &property) const;
 
