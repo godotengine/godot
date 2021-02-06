@@ -45,11 +45,18 @@
 	m_name->add_fallback(FontJapanese); \
 	m_name->add_fallback(FontFallback);
 
+// Enable filtering and mipmaps on the editor fonts to improve text appearance
+// in editors that are zoomed in/out without having dedicated fonts to generate.
+// This is the case in GraphEdit-based editors such as the visual script and
+// visual shader editors.
+
 // the custom spacings might only work with Noto Sans
 #define MAKE_DEFAULT_FONT(m_name, m_size)                       \
 	Ref<DynamicFont> m_name;                                    \
 	m_name.instance();                                          \
 	m_name->set_size(m_size);                                   \
+	m_name->set_use_filter(true);                               \
+	m_name->set_use_mipmaps(true);                              \
 	if (CustomFont.is_valid()) {                                \
 		m_name->set_font_data(CustomFont);                      \
 		m_name->add_fallback(DefaultFont);                      \
@@ -64,6 +71,8 @@
 	Ref<DynamicFont> m_name;                                    \
 	m_name.instance();                                          \
 	m_name->set_size(m_size);                                   \
+	m_name->set_use_filter(true);                               \
+	m_name->set_use_mipmaps(true);                              \
 	if (CustomFontBold.is_valid()) {                            \
 		m_name->set_font_data(CustomFontBold);                  \
 		m_name->add_fallback(DefaultFontBold);                  \
@@ -78,6 +87,8 @@
 	Ref<DynamicFont> m_name;                                    \
 	m_name.instance();                                          \
 	m_name->set_size(m_size);                                   \
+	m_name->set_use_filter(true);                               \
+	m_name->set_use_mipmaps(true);                              \
 	if (CustomFontSource.is_valid()) {                          \
 		m_name->set_font_data(CustomFontSource);                \
 		m_name->add_fallback(dfmono);                           \
