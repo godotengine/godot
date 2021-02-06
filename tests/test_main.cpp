@@ -46,6 +46,7 @@
 #include "test_geometry_2d.h"
 #include "test_gradient.h"
 #include "test_gui.h"
+#include "test_image.h"
 #include "test_json.h"
 #include "test_list.h"
 #include "test_local_vector.h"
