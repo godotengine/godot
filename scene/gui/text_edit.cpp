@@ -2296,7 +2296,7 @@ void TextEdit::_gui_input(const Ref<InputEvent> &p_gui_input) {
 				int prev_col = cursor.column;
 				int prev_line = cursor.line;
 
-				cursor_set_line(row, true, false);
+				cursor_set_line(row, false, false);
 				cursor_set_column(col);
 
 				if (mb->get_shift() && (cursor.column != prev_col || cursor.line != prev_line)) {
