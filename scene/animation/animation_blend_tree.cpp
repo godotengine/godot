@@ -125,9 +125,6 @@ void AnimationNodeAnimation::_bind_methods() {
 }
 
 AnimationNodeAnimation::AnimationNodeAnimation() {
-	last_version = 0;
-	skip = false;
-	time = "time";
 }
 
 ////////////////////////////////////////////////////////
@@ -346,21 +343,6 @@ void AnimationNodeOneShot::_bind_methods() {
 AnimationNodeOneShot::AnimationNodeOneShot() {
 	add_input("in");
 	add_input("shot");
-
-	fade_in = 0.1;
-	fade_out = 0.1;
-	autorestart = false;
-	autorestart_delay = 1;
-	autorestart_random_delay = 0;
-
-	mix = MIX_MODE_BLEND;
-	sync = false;
-
-	active = "active";
-	prev_active = "prev_active";
-	time = "time";
-	remaining = "remaining";
-	time_to_restart = "time_to_restart";
 }
 
 ////////////////////////////////////////////////
@@ -405,10 +387,8 @@ void AnimationNodeAdd2::_bind_methods() {
 }
 
 AnimationNodeAdd2::AnimationNodeAdd2() {
-	add_amount = "add_amount";
 	add_input("in");
 	add_input("add");
-	sync = false;
 }
 
 ////////////////////////////////////////////////
@@ -454,11 +434,9 @@ void AnimationNodeAdd3::_bind_methods() {
 }
 
 AnimationNodeAdd3::AnimationNodeAdd3() {
-	add_amount = "add_amount";
 	add_input("-add");
 	add_input("in");
 	add_input("+add");
-	sync = false;
 }
 
 /////////////////////////////////////////////
@@ -504,10 +482,8 @@ void AnimationNodeBlend2::_bind_methods() {
 }
 
 AnimationNodeBlend2::AnimationNodeBlend2() {
-	blend_amount = "blend_amount";
 	add_input("in");
 	add_input("blend");
-	sync = false;
 }
 
 //////////////////////////////////////
@@ -583,7 +559,6 @@ void AnimationNodeTimeScale::_bind_methods() {
 }
 
 AnimationNodeTimeScale::AnimationNodeTimeScale() {
-	scale = "scale";
 	add_input("in");
 }
 
@@ -620,7 +595,6 @@ void AnimationNodeTimeSeek::_bind_methods() {
 
 AnimationNodeTimeSeek::AnimationNodeTimeSeek() {
 	add_input("in");
-	seek_pos = "seek_position";
 }
 
 /////////////////////////////////////////////////
@@ -811,16 +785,7 @@ void AnimationNodeTransition::_bind_methods() {
 }
 
 AnimationNodeTransition::AnimationNodeTransition() {
-	prev_xfading = "prev_xfading";
-	prev = "prev";
-	time = "time";
-	current = "current";
-	prev_current = "prev_current";
-	xfade = 0.0;
-
-	enabled_inputs = 0;
 	for (int i = 0; i < MAX_INPUTS; i++) {
-		inputs[i].auto_advance = false;
 		inputs[i].name = "state " + itos(i);
 	}
 }

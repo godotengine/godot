@@ -213,10 +213,6 @@ bool CollisionShape3D::is_disabled() const {
 
 CollisionShape3D::CollisionShape3D() {
 	//indicator = RenderingServer::get_singleton()->mesh_create();
-	disabled = false;
-	debug_shape = nullptr;
-	parent = nullptr;
-	owner_id = 0;
 	set_notify_local_transform(true);
 }
 

@@ -1872,32 +1872,6 @@ void TileMap::_changed_callback(Object *p_changed, const char *p_prop) {
 }
 
 TileMap::TileMap() {
-	rect_cache_dirty = true;
-	used_size_cache_dirty = true;
-	pending_update = false;
-	quadrant_order_dirty = false;
-	quadrant_size = 16;
-	cell_size = Size2(64, 64);
-	custom_transform = Transform2D(64, 0, 0, 64, 0, 0);
-	collision_layer = 1;
-	collision_mask = 1;
-	friction = 1;
-	bounce = 0;
-	mode = MODE_SQUARE;
-	half_offset = HALF_OFFSET_DISABLED;
-	use_parent = false;
-	collision_parent = nullptr;
-	use_kinematic = false;
-	navigation = nullptr;
-	use_y_sort = false;
-	compatibility_mode = false;
-	centered_textures = false;
-	occluder_light_mask = 1;
-	clip_uv = false;
-	format = FORMAT_1; // Assume lowest possible format if none is present
-
-	fp_adjust = 0.00001;
-	tile_origin = TILE_ORIGIN_TOP_LEFT;
 	set_notify_transform(true);
 	set_notify_local_transform(false);
 }

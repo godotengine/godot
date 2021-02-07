@@ -46,14 +46,14 @@ public:
 	};
 
 protected:
-	Rect2 aabb;
-	BuildMode build_mode;
+	Rect2 aabb = Rect2(-10, -10, 20, 20);
+	BuildMode build_mode = BUILD_SOLIDS;
 	Vector<Point2> polygon;
-	uint32_t owner_id;
-	CollisionObject2D *parent;
-	bool disabled;
-	bool one_way_collision;
-	real_t one_way_collision_margin;
+	uint32_t owner_id = 0;
+	CollisionObject2D *parent = nullptr;
+	bool disabled = false;
+	bool one_way_collision = false;
+	real_t one_way_collision_margin = 1.0;
 
 	Vector<Vector<Vector2>> _decompose_in_convex();
 

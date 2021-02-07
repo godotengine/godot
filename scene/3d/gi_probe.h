@@ -46,16 +46,16 @@ class GIProbeData : public Resource {
 	AABB bounds;
 	Vector3 octree_size;
 
-	float dynamic_range;
-	float energy;
-	float bias;
-	float normal_bias;
-	float propagation;
-	float anisotropy_strength;
-	float ao;
-	float ao_size;
-	bool interior;
-	bool use_two_bounces;
+	float dynamic_range = 4.0;
+	float energy = 1.0;
+	float bias = 1.5;
+	float normal_bias = 0.0;
+	float propagation = 0.7;
+	float anisotropy_strength = 0.5;
+	float ao = 0.0;
+	float ao_size = 0.5;
+	bool interior = false;
+	bool use_two_bounces = false;
 
 protected:
 	static void _bind_methods();
@@ -129,8 +129,8 @@ private:
 
 	RID gi_probe;
 
-	Subdiv subdiv;
-	Vector3 extents;
+	Subdiv subdiv = SUBDIV_128;
+	Vector3 extents = Vector3(10, 10, 10);
 
 	struct PlotMesh {
 		Ref<Material> override_material;

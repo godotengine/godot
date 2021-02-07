@@ -325,10 +325,7 @@ uint32_t CollisionObject3D::shape_find_owner(int p_shape_index) const {
 CollisionObject3D::CollisionObject3D(RID p_rid, bool p_area) {
 	rid = p_rid;
 	area = p_area;
-	capture_input_on_drag = false;
-	ray_pickable = true;
 	set_notify_transform(true);
-	total_subshapes = 0;
 
 	if (p_area) {
 		PhysicsServer3D::get_singleton()->area_attach_object_instance_id(rid, get_instance_id());
@@ -360,8 +357,6 @@ String CollisionObject3D::get_configuration_warning() const {
 }
 
 CollisionObject3D::CollisionObject3D() {
-	capture_input_on_drag = false;
-	ray_pickable = true;
 	set_notify_transform(true);
 	//owner=
 

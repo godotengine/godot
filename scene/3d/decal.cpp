@@ -220,18 +220,6 @@ void Decal::_bind_methods() {
 }
 
 Decal::Decal() {
-	extents = Vector3(1, 1, 1);
-	emission_energy = 1.0;
-	modulate = Color(1, 1, 1, 1);
-	albedo_mix = 1.0;
-	cull_mask = (1 << 20) - 1;
-	upper_fade = 0.3;
-	lower_fade = 0.3;
-	normal_fade = 0;
-	distance_fade_enabled = false;
-	distance_fade_begin = 10;
-	distance_fade_length = 1;
-
 	decal = RenderingServer::get_singleton()->decal_create();
 	RS::get_singleton()->instance_set_base(get_instance(), decal);
 }

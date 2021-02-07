@@ -94,20 +94,6 @@ static inline Vector2 interpolate(const Rect2 &r, const Vector2 &v) {
 //----------------------------------------------------------------------------
 
 LineBuilder::LineBuilder() {
-	joint_mode = Line2D::LINE_JOINT_SHARP;
-	width = 10;
-	curve = nullptr;
-	default_color = Color(0.4, 0.5, 1);
-	gradient = nullptr;
-	sharp_limit = 2.f;
-	round_precision = 8;
-	begin_cap_mode = Line2D::LINE_CAP_NONE;
-	end_cap_mode = Line2D::LINE_CAP_NONE;
-	tile_aspect = 1.f;
-
-	_interpolate_color = false;
-	_last_index[0] = 0;
-	_last_index[1] = 0;
 }
 
 void LineBuilder::clear_output() {

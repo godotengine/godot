@@ -38,14 +38,9 @@ class SpriteFrames : public Resource {
 	GDCLASS(SpriteFrames, Resource);
 
 	struct Anim {
-		float speed;
-		bool loop;
+		float speed = 5.0;
+		bool loop = true;
 		Vector<Ref<Texture2D>> frames;
-
-		Anim() {
-			loop = true;
-			speed = 5;
-		}
 	};
 
 	Map<StringName, Anim> animations;
@@ -109,20 +104,20 @@ class AnimatedSprite2D : public Node2D {
 	GDCLASS(AnimatedSprite2D, Node2D);
 
 	Ref<SpriteFrames> frames;
-	bool playing;
-	bool backwards;
-	StringName animation;
-	int frame;
-	float speed_scale;
+	bool playing = false;
+	bool backwards = false;
+	StringName animation = "default";
+	int frame = 0;
+	float speed_scale = 1.0f;
 
-	bool centered;
+	bool centered = true;
 	Point2 offset;
 
-	bool is_over;
-	float timeout;
+	bool is_over = false;
+	float timeout = 0.0;
 
-	bool hflip;
-	bool vflip;
+	bool hflip = false;
+	bool vflip = false;
 
 	void _res_changed();
 

@@ -308,7 +308,4 @@ void AnimationCache::set_root(Node *p_root) {
 }
 
 AnimationCache::AnimationCache() {
-	root = nullptr;
-	cache_dirty = true;
-	cache_valid = false;
 }

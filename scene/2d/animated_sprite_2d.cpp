@@ -712,15 +712,4 @@ void AnimatedSprite2D::_bind_methods() {
 }
 
 AnimatedSprite2D::AnimatedSprite2D() {
-	centered = true;
-	hflip = false;
-	vflip = false;
-
-	frame = 0;
-	speed_scale = 1.0f;
-	playing = false;
-	backwards = false;
-	animation = "default";
-	timeout = 0;
-	is_over = false;
 }

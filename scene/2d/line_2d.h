@@ -124,18 +124,18 @@ private:
 
 private:
 	Vector<Vector2> _points;
-	LineJointMode _joint_mode;
-	LineCapMode _begin_cap_mode;
-	LineCapMode _end_cap_mode;
-	float _width;
+	LineJointMode _joint_mode = LINE_JOINT_SHARP;
+	LineCapMode _begin_cap_mode = LINE_CAP_NONE;
+	LineCapMode _end_cap_mode = LINE_CAP_NONE;
+	float _width = 10.0;
 	Ref<Curve> _curve;
-	Color _default_color;
+	Color _default_color = Color(1, 1, 1);
 	Ref<Gradient> _gradient;
 	Ref<Texture2D> _texture;
-	LineTextureMode _texture_mode;
-	float _sharp_limit;
-	int _round_precision;
-	bool _antialiased;
+	LineTextureMode _texture_mode = LINE_TEXTURE_NONE;
+	float _sharp_limit = 2.f;
+	int _round_precision = 8;
+	bool _antialiased = false;
 };
 
 #endif // LINE2D_H

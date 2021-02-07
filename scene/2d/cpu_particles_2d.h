@@ -78,31 +78,31 @@ public:
 	};
 
 private:
-	bool emitting;
+	bool emitting = false;
 
 	struct Particle {
 		Transform2D transform;
 		Color color;
-		float custom[4];
-		float rotation;
+		float custom[4] = {};
+		float rotation = 0.0;
 		Vector2 velocity;
-		bool active;
-		float angle_rand;
-		float scale_rand;
-		float hue_rot_rand;
-		float anim_offset_rand;
-		float time;
-		float lifetime;
+		bool active = false;
+		float angle_rand = 0.0;
+		float scale_rand = 0.0;
+		float hue_rot_rand = 0.0;
+		float anim_offset_rand = 0.0;
+		float time = 0.0;
+		float lifetime = 0.0;
 		Color base_color;
 
-		uint32_t seed;
+		uint32_t seed = 0;
 	};
 
-	float time;
-	float inactive_time;
-	float frame_remainder;
-	int cycle;
-	bool redraw;
+	float time = 0.0;
+	float inactive_time = 0.0;
+	float frame_remainder = 0.0;
+	int cycle = 0;
+	bool redraw = false;
 
 	RID mesh;
 	RID multimesh;
@@ -112,7 +112,7 @@ private:
 	Vector<int> particle_order;
 
 	struct SortLifetime {
-		const Particle *particles;
+		const Particle *particles = nullptr;
 
 		bool operator()(int p_a, int p_b) const {
 			return particles[p_a].time > particles[p_b].time;
@@ -120,7 +120,7 @@ private:
 	};
 
 	struct SortAxis {
-		const Particle *particles;
+		const Particle *particles = nullptr;
 		Vector2 axis;
 		bool operator()(int p_a, int p_b) const {
 			return axis.dot(particles[p_a].transform[2]) < axis.dot(particles[p_b].transform[2]);
@@ -129,28 +129,28 @@ private:
 
 	//
 
-	bool one_shot;
+	bool one_shot = false;
 
-	float lifetime;
-	float pre_process_time;
-	float explosiveness_ratio;
-	float randomness_ratio;
-	float lifetime_randomness;
-	float speed_scale;
+	float lifetime = 1.0;
+	float pre_process_time = 0.0;
+	float explosiveness_ratio = 0.0;
+	float randomness_ratio = 0.0;
+	float lifetime_randomness = 0.0;
+	float speed_scale = 1.0;
 	bool local_coords;
-	int fixed_fps;
-	bool fractional_delta;
+	int fixed_fps = 0;
+	bool fractional_delta = true;
 
 	Transform2D inv_emission_transform;
 
-	DrawOrder draw_order;
+	DrawOrder draw_order = DRAW_ORDER_INDEX;
 
 	Ref<Texture2D> texture;
 
 	////////
 
-	Vector2 direction;
-	float spread;
+	Vector2 direction = Vector2(1, 0);
+	float spread = 45.0;
 
 	float parameters[PARAM_MAX];
 	float randomness[PARAM_MAX];
@@ -161,15 +161,15 @@ private:
 
 	bool particle_flags[PARTICLE_FLAG_MAX];
 
-	EmissionShape emission_shape;
-	float emission_sphere_radius;
-	Vector2 emission_rect_extents;
+	EmissionShape emission_shape = EMISSION_SHAPE_POINT;
+	float emission_sphere_radius = 1.0;
+	Vector2 emission_rect_extents = Vector2(1, 1);
 	Vector<Vector2> emission_points;
 	Vector<Vector2> emission_normals;
 	Vector<Color> emission_colors;
-	int emission_point_count;
+	int emission_point_count = 0;
 
-	Vector2 gravity;
+	Vector2 gravity = Vector2(0, 98);
 
 	void _update_internal();
 	void _particles_process(float p_delta);

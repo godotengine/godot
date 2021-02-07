@@ -249,8 +249,6 @@ void Joint2D::_bind_methods() {
 }
 
 Joint2D::Joint2D() {
-	bias = 0;
-	exclude_from_collision = true;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -300,7 +298,6 @@ void PinJoint2D::_bind_methods() {
 }
 
 PinJoint2D::PinJoint2D() {
-	softness = 0;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -364,8 +361,6 @@ void GrooveJoint2D::_bind_methods() {
 }
 
 GrooveJoint2D::GrooveJoint2D() {
-	length = 50;
-	initial_offset = 25;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -467,8 +462,4 @@ void DampedSpringJoint2D::_bind_methods() {
 }
 
 DampedSpringJoint2D::DampedSpringJoint2D() {
-	length = 50;
-	rest_length = 0;
-	stiffness = 20;
-	damping = 1;
 }

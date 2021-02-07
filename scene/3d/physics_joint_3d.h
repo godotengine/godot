@@ -44,8 +44,8 @@ class Joint3D : public Node3D {
 	NodePath a;
 	NodePath b;
 
-	int solver_priority;
-	bool exclude_from_collision;
+	int solver_priority = 1;
+	bool exclude_from_collision = true;
 	String warning;
 
 protected:

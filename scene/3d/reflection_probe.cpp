@@ -257,20 +257,6 @@ void ReflectionProbe::_bind_methods() {
 }
 
 ReflectionProbe::ReflectionProbe() {
-	intensity = 1.0;
-	ambient_mode = AMBIENT_ENVIRONMENT;
-	ambient_color = Color(0, 0, 0);
-	ambient_color_energy = 1.0;
-	max_distance = 0;
-	extents = Vector3(1, 1, 1);
-	origin_offset = Vector3(0, 0, 0);
-	box_projection = false;
-	interior = false;
-	enable_shadows = false;
-	cull_mask = (1 << 20) - 1;
-	update_mode = UPDATE_ONCE;
-	lod_threshold = 1.0;
-
 	probe = RenderingServer::get_singleton()->reflection_probe_create();
 	RS::get_singleton()->instance_set_base(get_instance(), probe);
 	set_disable_scale(true);

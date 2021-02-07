@@ -37,33 +37,28 @@
 class CollisionObject3D : public Node3D {
 	GDCLASS(CollisionObject3D, Node3D);
 
-	bool area;
+	bool area = false;
 
 	RID rid;
 
 	struct ShapeData {
-		Object *owner;
+		Object *owner = nullptr;
 		Transform xform;
 		struct ShapeBase {
 			Ref<Shape3D> shape;
-			int index;
+			int index = 0;
 		};
 
 		Vector<ShapeBase> shapes;
-		bool disabled;
-
-		ShapeData() {
-			disabled = false;
-			owner = nullptr;
-		}
+		bool disabled = false;
 	};
 
-	int total_subshapes;
+	int total_subshapes = 0;
 
 	Map<uint32_t, ShapeData> shapes;
 
-	bool capture_input_on_drag;
-	bool ray_pickable;
+	bool capture_input_on_drag = false;
+	bool ray_pickable = true;
 
 	void _update_pickable();
 

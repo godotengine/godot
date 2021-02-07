@@ -41,9 +41,9 @@ class AnimatedValuesBackup : public Reference {
 	GDCLASS(AnimatedValuesBackup, Reference);
 
 	struct Entry {
-		Object *object;
+		Object *object = nullptr;
 		Vector<StringName> subpath; // Unused if bone
-		int bone_idx; // -1 if not a bone
+		int bone_idx = -1; // -1 if not a bone
 		Variant value;
 	};
 	Vector<Entry> entries;
@@ -118,8 +118,6 @@ private:
 			Variant value_accum;
 			uint64_t accum_pass = 0;
 			Variant capture;
-
-			PropertyAnim() {}
 		};
 
 		Map<StringName, PropertyAnim> property_anim;
@@ -130,8 +128,6 @@ private:
 			float bezier_accum = 0.0;
 			Object *object = nullptr;
 			uint64_t accum_pass = 0;
-
-			BezierAnim() {}
 		};
 
 		Map<StringName, BezierAnim> bezier_anim;
@@ -141,7 +137,7 @@ private:
 
 	struct TrackNodeCacheKey {
 		ObjectID id;
-		int bone_idx;
+		int bone_idx = -1;
 
 		inline bool operator<(const TrackNodeCacheKey &p_right) const {
 			if (id == p_right.id) {
@@ -155,16 +151,16 @@ private:
 	Map<TrackNodeCacheKey, TrackNodeCache> node_cache_map;
 
 	TrackNodeCache *cache_update[NODE_CACHE_UPDATE_MAX];
-	int cache_update_size;
+	int cache_update_size = 0;
 	TrackNodeCache::PropertyAnim *cache_update_prop[NODE_CACHE_UPDATE_MAX];
-	int cache_update_prop_size;
+	int cache_update_prop_size = 0;
 	TrackNodeCache::BezierAnim *cache_update_bezier[NODE_CACHE_UPDATE_MAX];
-	int cache_update_bezier_size;
+	int cache_update_bezier_size = 0;
 	Set<TrackNodeCache *> playing_caches;
 
-	uint64_t accum_pass;
-	float speed_scale;
-	float default_blend_time;
+	uint64_t accum_pass = 1;
+	float speed_scale = 1.0;
+	float default_blend_time = 0.0;
 
 	struct AnimationData {
 		String name;
@@ -183,48 +179,37 @@ private:
 	Map<BlendKey, float> blend_times;
 
 	struct PlaybackData {
-		AnimationData *from;
-		float pos;
-		float speed_scale;
-
-		PlaybackData() {
-			pos = 0;
-			speed_scale = 1.0;
-			from = nullptr;
-		}
+		AnimationData *from = nullptr;
+		float pos = 0.0;
+		float speed_scale = 1.0;
 	};
 
 	struct Blend {
 		PlaybackData data;
 
-		float blend_time;
-		float blend_left;
-
-		Blend() {
-			blend_left = 0;
-			blend_time = 0;
-		}
+		float blend_time = 0.0;
+		float blend_left = 0.0;
 	};
 
 	struct Playback {
 		List<Blend> blend;
 		PlaybackData current;
 		StringName assigned;
-		bool seeked;
-		bool started;
+		bool seeked = false;
+		bool started = false;
 	} playback;
 
 	List<StringName> queued;
 
-	bool end_reached;
-	bool end_notify;
+	bool end_reached = false;
+	bool end_notify = false;
 
 	String autoplay;
-	bool reset_on_save;
-	AnimationProcessMode animation_process_mode;
-	AnimationMethodCallMode method_call_mode;
-	bool processing;
-	bool active;
+	bool reset_on_save = true;
+	AnimationProcessMode animation_process_mode = ANIMATION_PROCESS_IDLE;
+	AnimationMethodCallMode method_call_mode = ANIMATION_METHOD_CALL_DEFERRED;
+	bool processing = false;
+	bool active = true;
 
 	NodePath root;
 
@@ -257,7 +242,7 @@ private:
 
 	void _set_process(bool p_process, bool p_force = false);
 
-	bool playing;
+	bool playing = false;
 
 protected:
 	bool _set(const StringName &p_name, const Variant &p_value);

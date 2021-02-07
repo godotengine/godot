@@ -188,13 +188,9 @@ void RootMotionView::_bind_methods() {
 }
 
 RootMotionView::RootMotionView() {
-	zero_y = true;
-	radius = 10;
-	cell_size = 1;
 	set_process_internal(true);
 	immediate = RenderingServer::get_singleton()->immediate_create();
 	set_base(immediate);
-	color = Color(0.5, 0.5, 1.0);
 }
 
 RootMotionView::~RootMotionView() {

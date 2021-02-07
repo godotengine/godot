@@ -441,9 +441,6 @@ void AnimationNode::_bind_methods() {
 }
 
 AnimationNode::AnimationNode() {
-	state = nullptr;
-	parent = nullptr;
-	filter_enabled = false;
 }
 
 ////////////////////
@@ -1507,13 +1504,6 @@ void AnimationTree::_bind_methods() {
 }
 
 AnimationTree::AnimationTree() {
-	process_mode = ANIMATION_PROCESS_IDLE;
-	active = false;
-	cache_valid = false;
-	setup_pass = 1;
-	process_pass = 1;
-	started = true;
-	properties_dirty = true;
 }
 
 AnimationTree::~AnimationTree() {

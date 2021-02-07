@@ -627,20 +627,8 @@ void Area2D::_bind_methods() {
 
 Area2D::Area2D() :
 		CollisionObject2D(PhysicsServer2D::get_singleton()->area_create(), true) {
-	space_override = SPACE_OVERRIDE_DISABLED;
 	set_gravity(98);
 	set_gravity_vector(Vector2(0, 1));
-	gravity_is_point = false;
-	gravity_distance_scale = 0;
-	linear_damp = 0.1;
-	angular_damp = 1;
-	locked = false;
-	priority = 0;
-	monitoring = false;
-	monitorable = false;
-	collision_mask = 1;
-	collision_layer = 1;
-	audio_bus_override = false;
 	set_monitoring(true);
 	set_monitorable(true);
 }

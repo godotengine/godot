@@ -428,7 +428,6 @@ void MeshInstance3D::_bind_methods() {
 }
 
 MeshInstance3D::MeshInstance3D() {
-	skeleton_path = NodePath("..");
 }
 
 MeshInstance3D::~MeshInstance3D() {

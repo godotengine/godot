@@ -48,6 +48,5 @@ void YSort::_bind_methods() {
 }
 
 YSort::YSort() {
-	sort_enabled = true;
 	RS::get_singleton()->canvas_item_set_sort_children_by_y(get_canvas_item(), true);
 }

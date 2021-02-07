@@ -105,7 +105,6 @@ void BoneAttachment3D::_notification(int p_what) {
 }
 
 BoneAttachment3D::BoneAttachment3D() {
-	bound = false;
 }
 
 void BoneAttachment3D::_bind_methods() {

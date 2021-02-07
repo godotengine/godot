@@ -339,24 +339,10 @@ void SpriteBase3D::_bind_methods() {
 }
 
 SpriteBase3D::SpriteBase3D() {
-	color_dirty = true;
-	centered = true;
-	hflip = false;
-	vflip = false;
-	parent_sprite = nullptr;
-	pI = nullptr;
-
 	for (int i = 0; i < FLAG_MAX; i++) {
 		flags[i] = i == FLAG_TRANSPARENT || i == FLAG_DOUBLE_SIDED;
 	}
 
-	alpha_cut = ALPHA_CUT_DISABLED;
-	billboard_mode = StandardMaterial3D::BILLBOARD_DISABLED;
-	axis = Vector3::AXIS_Z;
-	pixel_size = 0.01;
-	modulate = Color(1, 1, 1, 1);
-	pending_update = false;
-	opacity = 1.0;
 	immediate = RenderingServer::get_singleton()->immediate_create();
 	set_base(immediate);
 }
@@ -1109,8 +1095,4 @@ void AnimatedSprite3D::_bind_methods() {
 }
 
 AnimatedSprite3D::AnimatedSprite3D() {
-	frame = 0;
-	playing = false;
-	animation = "default";
-	timeout = 0;
 }

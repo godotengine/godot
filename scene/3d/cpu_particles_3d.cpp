@@ -1445,13 +1445,6 @@ void CPUParticles3D::_bind_methods() {
 }
 
 CPUParticles3D::CPUParticles3D() {
-	time = 0;
-	inactive_time = 0;
-	frame_remainder = 0;
-	cycle = 0;
-	redraw = false;
-	emitting = false;
-
 	set_notify_transform(true);
 
 	multimesh = RenderingServer::get_singleton()->multimesh_create();
@@ -1459,23 +1452,8 @@ CPUParticles3D::CPUParticles3D() {
 	set_base(multimesh);
 
 	set_emitting(true);
-	set_one_shot(false);
 	set_amount(8);
-	set_lifetime(1);
-	set_fixed_fps(0);
-	set_fractional_delta(true);
-	set_pre_process_time(0);
-	set_explosiveness_ratio(0);
-	set_randomness_ratio(0);
-	set_lifetime_randomness(0);
-	set_use_local_coordinates(true);
 
-	set_draw_order(DRAW_ORDER_INDEX);
-	set_speed_scale(1);
-
-	set_direction(Vector3(1, 0, 0));
-	set_spread(45);
-	set_flatness(0);
 	set_param(PARAM_INITIAL_LINEAR_VELOCITY, 0);
 	set_param(PARAM_ANGULAR_VELOCITY, 0);
 	set_param(PARAM_ORBIT_VELOCITY, 0);
@@ -1488,23 +1466,6 @@ CPUParticles3D::CPUParticles3D() {
 	set_param(PARAM_HUE_VARIATION, 0);
 	set_param(PARAM_ANIM_SPEED, 0);
 	set_param(PARAM_ANIM_OFFSET, 0);
-	set_emission_shape(EMISSION_SHAPE_POINT);
-	set_emission_sphere_radius(1);
-	set_emission_box_extents(Vector3(1, 1, 1));
-
-	set_gravity(Vector3(0, -9.8, 0));
-
-	for (int i = 0; i < PARAM_MAX; i++) {
-		set_param_randomness(Parameter(i), 0);
-	}
-
-	for (int i = 0; i < PARTICLE_FLAG_MAX; i++) {
-		particle_flags[i] = false;
-	}
-
-	can_update = false;
-
-	set_color(Color(1, 1, 1, 1));
 }
 
 CPUParticles3D::~CPUParticles3D() {

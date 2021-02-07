@@ -44,13 +44,13 @@ public:
 	};
 
 private:
-	SwitchMode switch_mode;
-	bool auto_advance;
+	SwitchMode switch_mode = SWITCH_MODE_IMMEDIATE;
+	bool auto_advance = false;
 	StringName advance_condition;
 	StringName advance_condition_name;
-	float xfade;
-	bool disabled;
-	int priority;
+	float xfade = 0.0;
+	bool disabled = false;
+	int priority = 1;
 
 protected:
 	static void _bind_methods();
@@ -89,28 +89,28 @@ class AnimationNodeStateMachinePlayback : public Resource {
 	friend class AnimationNodeStateMachine;
 
 	struct AStarCost {
-		float distance;
+		float distance = 0.0;
 		StringName prev;
 	};
 
-	float len_total;
+	float len_total = 0.0;
 
-	float len_current;
-	float pos_current;
-	int loops_current;
+	float len_current = 0.0;
+	float pos_current = 0.0;
+	int loops_current = 0;
 
 	StringName current;
 
 	StringName fading_from;
-	float fading_time;
-	float fading_pos;
+	float fading_time = 0.0;
+	float fading_pos = 0.0;
 
 	Vector<StringName> path;
-	bool playing;
+	bool playing = false;
 
 	StringName start_request;
-	bool start_request_travel;
-	bool stop_request;
+	bool start_request_travel = false;
+	bool stop_request = false;
 
 	bool _travel(AnimationNodeStateMachine *p_state_machine, const StringName &p_travel);
 
@@ -154,7 +154,7 @@ private:
 
 	Vector<Transition> transitions;
 
-	StringName playback;
+	StringName playback = "playback";
 
 	StringName start_node;
 	StringName end_node;

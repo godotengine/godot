@@ -40,7 +40,7 @@ class Polygon2D : public Node2D {
 	Vector<Vector2> uv;
 	Vector<Color> vertex_colors;
 	Array polygons;
-	int internal_vertices;
+	int internal_vertices = 0;
 
 	struct Bone {
 		NodePath path;
@@ -49,19 +49,19 @@ class Polygon2D : public Node2D {
 
 	Vector<Bone> bone_weights;
 
-	Color color;
+	Color color = Color(1, 1, 1);
 	Ref<Texture2D> texture;
 
-	Size2 tex_scale;
+	Size2 tex_scale = Vector2(1, 1);
 	Vector2 tex_ofs;
-	bool tex_tile;
-	float tex_rot;
-	bool invert;
-	float invert_border;
-	bool antialiased;
+	bool tex_tile = true;
+	float tex_rot = 0.0;
+	bool invert = false;
+	float invert_border = 100.0;
+	bool antialiased = false;
 
 	Vector2 offset;
-	mutable bool rect_cache_dirty;
+	mutable bool rect_cache_dirty = true;
 	mutable Rect2 item_rect;
 
 	NodePath skeleton;

@@ -94,7 +94,6 @@ String CanvasModulate::get_configuration_warning() const {
 }
 
 CanvasModulate::CanvasModulate() {
-	color = Color(1, 1, 1, 1);
 }
 
 CanvasModulate::~CanvasModulate() {

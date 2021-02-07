@@ -150,7 +150,7 @@ Ref<NavigationMesh> NavigationRegion3D::get_navigation_mesh() const {
 }
 
 struct BakeThreadsArgs {
-	NavigationRegion3D *nav_region;
+	NavigationRegion3D *nav_region = nullptr;
 };
 
 void _bake_navigation_mesh(void *p_user_data) {

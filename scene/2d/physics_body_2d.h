@@ -41,8 +41,8 @@ class KinematicCollision2D;
 class PhysicsBody2D : public CollisionObject2D {
 	GDCLASS(PhysicsBody2D, CollisionObject2D);
 
-	uint32_t collision_layer;
-	uint32_t collision_mask;
+	uint32_t collision_layer = 1;
+	uint32_t collision_mask = 1;
 
 protected:
 	void _notification(int p_what);
@@ -74,7 +74,7 @@ class StaticBody2D : public PhysicsBody2D {
 	GDCLASS(StaticBody2D, PhysicsBody2D);
 
 	Vector2 constant_linear_velocity;
-	real_t constant_angular_velocity;
+	real_t constant_angular_velocity = 0.0;
 
 	Ref<PhysicsMaterial> physics_material_override;
 
@@ -116,30 +116,30 @@ public:
 	};
 
 private:
-	bool can_sleep;
-	PhysicsDirectBodyState2D *state;
-	Mode mode;
+	bool can_sleep = true;
+	PhysicsDirectBodyState2D *state = nullptr;
+	Mode mode = MODE_RIGID;
 
-	real_t mass;
+	real_t mass = 1.0;
 	Ref<PhysicsMaterial> physics_material_override;
-	real_t gravity_scale;
-	real_t linear_damp;
-	real_t angular_damp;
+	real_t gravity_scale = 1.0;
+	real_t linear_damp = -1.0;
+	real_t angular_damp = -1.0;
 
 	Vector2 linear_velocity;
-	real_t angular_velocity;
-	bool sleeping;
+	real_t angular_velocity = 0.0;
+	bool sleeping = false;
 
-	int max_contacts_reported;
+	int max_contacts_reported = 0;
 
-	bool custom_integrator;
+	bool custom_integrator = false;
 
-	CCDMode ccd_mode;
+	CCDMode ccd_mode = CCD_MODE_DISABLED;
 
 	struct ShapePair {
-		int body_shape;
-		int local_shape;
-		bool tagged;
+		int body_shape = 0;
+		int local_shape = 0;
+		bool tagged = false;
 		bool operator<(const ShapePair &p_sp) const {
 			if (body_shape == p_sp.body_shape) {
 				return local_shape < p_sp.local_shape;
@@ -160,16 +160,16 @@ private:
 	};
 	struct BodyState {
 		//int rc;
-		bool in_scene;
+		bool in_scene = false;
 		VSet<ShapePair> shapes;
 	};
 
 	struct ContactMonitor {
-		bool locked;
+		bool locked = false;
 		Map<ObjectID, BodyState> body_map;
 	};
 
-	ContactMonitor *contact_monitor;
+	ContactMonitor *contact_monitor = nullptr;
 	void _body_enter_tree(ObjectID p_id);
 	void _body_exit_tree(ObjectID p_id);
 
@@ -268,11 +268,11 @@ public:
 		Vector2 collider_vel;
 		ObjectID collider;
 		RID collider_rid;
-		int collider_shape;
+		int collider_shape = 0;
 		Variant collider_metadata;
 		Vector2 remainder;
 		Vector2 travel;
-		int local_shape;
+		int local_shape = 0;
 	};
 
 private:

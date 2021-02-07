@@ -47,32 +47,32 @@ private:
 
 	struct Output {
 		AudioFrame vol;
-		int bus_index;
-		Viewport *viewport; //pointer only used for reference to previous mix
+		int bus_index = 0;
+		Viewport *viewport = nullptr; //pointer only used for reference to previous mix
 	};
 
 	Output outputs[MAX_OUTPUTS];
-	volatile int output_count;
-	volatile bool output_ready;
+	volatile int output_count = 0;
+	volatile bool output_ready = false;
 
 	//these are used by audio thread to have a reference of previous volumes (for ramping volume and avoiding clicks)
 	Output prev_outputs[MAX_OUTPUTS];
-	int prev_output_count;
+	int prev_output_count = 0;
 
 	Ref<AudioStreamPlayback> stream_playback;
 	Ref<AudioStream> stream;
 	Vector<AudioFrame> mix_buffer;
 
-	volatile float setseek;
-	volatile bool active;
-	volatile float setplay;
+	volatile float setseek = -1.0;
+	volatile bool active = false;
+	volatile float setplay = -1.0;
 
-	float volume_db;
-	float pitch_scale;
-	bool autoplay;
-	bool stream_paused;
-	bool stream_paused_fade_in;
-	bool stream_paused_fade_out;
+	float volume_db = 0.0;
+	float pitch_scale = 1.0;
+	bool autoplay = false;
+	bool stream_paused = false;
+	bool stream_paused_fade_in = false;
+	bool stream_paused_fade_out = false;
 	StringName bus;
 
 	void _mix_audio();
@@ -83,10 +83,10 @@ private:
 
 	void _bus_layout_changed();
 
-	uint32_t area_mask;
+	uint32_t area_mask = 1;
 
-	float max_distance;
-	float attenuation;
+	float max_distance = 2000.0;
+	float attenuation = 1.0;
 
 protected:
 	void _validate_property(PropertyInfo &property) const override;

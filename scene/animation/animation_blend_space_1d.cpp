@@ -311,14 +311,6 @@ AnimationNodeBlendSpace1D::AnimationNodeBlendSpace1D() {
 	for (int i = 0; i < MAX_BLEND_POINTS; i++) {
 		blend_points[i].name = itos(i);
 	}
-	blend_points_used = 0;
-	max_space = 1;
-	min_space = -1;
-
-	snap = 0.1;
-	value_label = "value";
-
-	blend_position = "blend_position";
 }
 
 AnimationNodeBlendSpace1D::~AnimationNodeBlendSpace1D() {

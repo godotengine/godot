@@ -46,11 +46,11 @@ public:
 private:
 	RID occ_polygon;
 	Vector<Vector2> polygon;
-	bool closed;
-	CullMode cull;
+	bool closed = true;
+	CullMode cull = CULL_DISABLED;
 
 	mutable Rect2 item_rect;
-	mutable bool rect_cache_dirty;
+	mutable bool rect_cache_dirty = true;
 
 protected:
 	static void _bind_methods();

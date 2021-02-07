@@ -37,35 +37,29 @@
 class CollisionObject2D : public Node2D {
 	GDCLASS(CollisionObject2D, Node2D);
 
-	bool area;
+	bool area = false;
 	RID rid;
-	bool pickable;
+	bool pickable = false;
 
 	struct ShapeData {
-		Object *owner;
+		Object *owner = nullptr;
 		Transform2D xform;
 		struct Shape {
 			Ref<Shape2D> shape;
-			int index;
+			int index = 0;
 		};
 
 		Vector<Shape> shapes;
-		bool disabled;
-		bool one_way_collision;
-		real_t one_way_collision_margin;
 
-		ShapeData() {
-			disabled = false;
-			one_way_collision = false;
-			one_way_collision_margin = 0;
-			owner = nullptr;
-		}
+		bool disabled = false;
+		bool one_way_collision = false;
+		real_t one_way_collision_margin = 0.0;
 	};
 
-	int total_subshapes;
+	int total_subshapes = 0;
 
 	Map<uint32_t, ShapeData> shapes;
-	bool only_update_transform_changes; //this is used for sync physics in KinematicBody
+	bool only_update_transform_changes = false; //this is used for sync physics in KinematicBody
 
 protected:
 	CollisionObject2D(RID p_rid, bool p_area);

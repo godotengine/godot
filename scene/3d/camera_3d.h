@@ -57,26 +57,27 @@ public:
 	};
 
 private:
-	bool force_change;
-	bool current;
-	Viewport *viewport;
+	bool force_change = false;
+	bool current = false;
+	Viewport *viewport = nullptr;
 
-	Projection mode;
+	Projection mode = PROJECTION_PERSPECTIVE;
 
-	float fov;
-	float size;
+	float fov = 0.0;
+	float size = 1.0;
 	Vector2 frustum_offset;
-	float near, far;
-	float v_offset;
-	float h_offset;
-	KeepAspect keep_aspect;
+	float near = 0.0;
+	float far = 0.0;
+	float v_offset = 0.0;
+	float h_offset = 0.0;
+	KeepAspect keep_aspect = KEEP_HEIGHT;
 
 	RID camera;
 	RID scenario_id;
 
 	// String camera_group;
 
-	uint32_t layers;
+	uint32_t layers = 0xfffff;
 
 	Ref<Environment> environment;
 	Ref<CameraEffects> effects;
@@ -87,7 +88,7 @@ private:
 	friend class Viewport;
 	void _update_audio_listener_state();
 
-	DopplerTracking doppler_tracking;
+	DopplerTracking doppler_tracking = DOPPLER_TRACKING_DISABLED;
 	Ref<VelocityTracker3D> velocity_tracker;
 
 protected:
@@ -191,13 +192,13 @@ public:
 	};
 
 private:
-	ProcessMode process_mode;
+	ProcessMode process_mode = CLIP_PROCESS_PHYSICS;
 	RID pyramid_shape;
-	float margin;
-	float clip_offset;
-	uint32_t collision_mask;
-	bool clip_to_areas;
-	bool clip_to_bodies;
+	float margin = 0.0;
+	float clip_offset = 0.0;
+	uint32_t collision_mask = 1;
+	bool clip_to_areas = false;
+	bool clip_to_bodies = true;
 
 	Set<RID> exclude;
 

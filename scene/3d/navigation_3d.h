@@ -39,7 +39,7 @@ class Navigation3D : public Node3D {
 
 	RID map;
 
-	Vector3 up;
+	Vector3 up = Vector3(0, 1, 0);
 	real_t cell_size;
 	real_t edge_connection_margin;
 

@@ -392,13 +392,4 @@ void RayCast3D::_clear_debug_shape() {
 }
 
 RayCast3D::RayCast3D() {
-	enabled = true;
-	collided = false;
-	against_shape = 0;
-	collision_mask = 1;
-	target_position = Vector3(0, -1, 0);
-	debug_shape = nullptr;
-	exclude_parent_body = true;
-	collide_with_areas = false;
-	collide_with_bodies = true;
 }

@@ -36,7 +36,7 @@
 class BoneAttachment3D : public Node3D {
 	GDCLASS(BoneAttachment3D, Node3D);
 
-	bool bound;
+	bool bound = false;
 	String bone_name;
 
 	void _check_bind();

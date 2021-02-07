@@ -310,12 +310,5 @@ void CollisionPolygon2D::_bind_methods() {
 }
 
 CollisionPolygon2D::CollisionPolygon2D() {
-	aabb = Rect2(-10, -10, 20, 20);
-	build_mode = BUILD_SOLIDS;
 	set_notify_local_transform(true);
-	parent = nullptr;
-	owner_id = 0;
-	disabled = false;
-	one_way_collision = false;
-	one_way_collision_margin = 1.0;
 }

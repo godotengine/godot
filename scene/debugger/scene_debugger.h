@@ -77,7 +77,7 @@ public:
 class SceneDebuggerTree {
 public:
 	struct RemoteNode {
-		int child_count;
+		int child_count = 0;
 		String name;
 		String type_name;
 		ObjectID id;

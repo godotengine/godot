@@ -36,20 +36,20 @@
 class RayCast2D : public Node2D {
 	GDCLASS(RayCast2D, Node2D);
 
-	bool enabled;
-	bool collided;
+	bool enabled = true;
+	bool collided = false;
 	ObjectID against;
-	int against_shape;
+	int against_shape = 0;
 	Vector2 collision_point;
 	Vector2 collision_normal;
 	Set<RID> exclude;
-	uint32_t collision_mask;
-	bool exclude_parent_body;
+	uint32_t collision_mask = 1;
+	bool exclude_parent_body = true;
 
-	Vector2 target_position;
+	Vector2 target_position = Vector2(0, 50);
 
-	bool collide_with_areas;
-	bool collide_with_bodies;
+	bool collide_with_areas = false;
+	bool collide_with_bodies = true;
 
 protected:
 	void _notification(int p_what);

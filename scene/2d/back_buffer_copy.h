@@ -44,8 +44,8 @@ public:
 	};
 
 private:
-	Rect2 rect;
-	CopyMode copy_mode;
+	Rect2 rect = Rect2(-100, -100, 200, 200);
+	CopyMode copy_mode = COPY_MODE_RECT;
 
 	void _update_copy_mode();
 

@@ -1677,23 +1677,7 @@ void AnimationPlayer::_bind_methods() {
 }
 
 AnimationPlayer::AnimationPlayer() {
-	accum_pass = 1;
-	cache_update_size = 0;
-	cache_update_prop_size = 0;
-	cache_update_bezier_size = 0;
-	speed_scale = 1;
-	end_reached = false;
-	end_notify = false;
-	reset_on_save = true;
-	animation_process_mode = ANIMATION_PROCESS_IDLE;
-	method_call_mode = ANIMATION_METHOD_CALL_DEFERRED;
-	processing = false;
-	default_blend_time = 0;
 	root = SceneStringNames::get_singleton()->path_pp;
-	playing = false;
-	active = true;
-	playback.seeked = false;
-	playback.started = false;
 }
 
 AnimationPlayer::~AnimationPlayer() {
