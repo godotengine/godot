@@ -58,20 +58,27 @@ const GodotConfig = {
 	$GodotConfig: {
 		canvas: null,
 		locale: 'en',
-		resize_on_start: false,
+		canvas_resize_policy: 2, // Adaptive
 		on_execute: null,
+		on_exit: null,
 
 		init_config: function (p_opts) {
-			GodotConfig.resize_on_start = !!p_opts['resizeCanvasOnStart'];
+			GodotConfig.canvas_resize_policy = p_opts['canvasResizePolicy'];
 			GodotConfig.canvas = p_opts['canvas'];
 			GodotConfig.locale = p_opts['locale'] || GodotConfig.locale;
 			GodotConfig.on_execute = p_opts['onExecute'];
-			// This is called by emscripten, even if undocumented.
-			Module['onExit'] = p_opts['onExit']; // eslint-disable-line no-undef
+			GodotConfig.on_exit = p_opts['onExit'];
 		},
 
 		locate_file: function (file) {
 			return Module['locateFile'](file); // eslint-disable-line no-undef
+		},
+		clear: function () {
+			GodotConfig.canvas = null;
+			GodotConfig.locale = 'en';
+			GodotConfig.canvas_resize_policy = 2;
+			GodotConfig.on_execute = null;
+			GodotConfig.on_exit = null;
 		},
 	},
 
@@ -85,9 +92,9 @@ const GodotConfig = {
 		GodotRuntime.stringToHeap(GodotConfig.locale, p_ptr, p_ptr_max);
 	},
 
-	godot_js_config_is_resize_on_start__sig: 'i',
-	godot_js_config_is_resize_on_start: function () {
-		return GodotConfig.resize_on_start ? 1 : 0;
+	godot_js_config_canvas_resize_policy_get__sig: 'i',
+	godot_js_config_canvas_resize_policy_get: function () {
+		return GodotConfig.canvas_resize_policy;
 	},
 };
 
@@ -98,7 +105,6 @@ const GodotFS = {
 	$GodotFS__deps: ['$FS', '$IDBFS', '$GodotRuntime'],
 	$GodotFS__postset: [
 		'Module["initFS"] = GodotFS.init;',
-		'Module["deinitFS"] = GodotFS.deinit;',
 		'Module["copyToFS"] = GodotFS.copy_to_fs;',
 	].join(''),
 	$GodotFS: {
@@ -210,9 +216,10 @@ const GodotFS = {
 mergeInto(LibraryManager.library, GodotFS);
 
 const GodotOS = {
-	$GodotOS__deps: ['$GodotFS', '$GodotRuntime'],
+	$GodotOS__deps: ['$GodotRuntime', '$GodotConfig', '$GodotFS'],
 	$GodotOS__postset: [
 		'Module["request_quit"] = function() { GodotOS.request_quit() };',
+		'Module["onExit"] = GodotOS.cleanup;',
 		'GodotOS._fs_sync_promise = Promise.resolve();',
 	].join(''),
 	$GodotOS: {
@@ -222,6 +229,15 @@ const GodotOS = {
 
 		atexit: function (p_promise_cb) {
 			GodotOS._async_cbs.push(p_promise_cb);
+		},
+
+		cleanup: function (exit_code) {
+			const cb = GodotConfig.on_exit;
+			GodotFS.deinit();
+			GodotConfig.clear();
+			if (cb) {
+				cb(exit_code);
+			}
 		},
 
 		finish_async: function (callback) {
