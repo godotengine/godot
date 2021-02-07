@@ -1784,7 +1784,10 @@ void DisplayServerWindows::_dispatch_input_event(const Ref<InputEvent> &p_event)
 	Ref<InputEventFromWindow> event_from_window = p_event;
 	if (event_from_window.is_valid() && event_from_window->get_window_id() != INVALID_WINDOW_ID) {
 		//send to a window
-		ERR_FAIL_COND(!windows.has(event_from_window->get_window_id()));
+		if (!windows.has(event_from_window->get_window_id())) {
+			in_dispatch_input_event = false;
+			ERR_FAIL_MSG("DisplayServerWindows: Invalid window id in input event.");
+		}
 		Callable callable = windows[event_from_window->get_window_id()].input_event_callback;
 		if (callable.is_null()) {
 			in_dispatch_input_event = false;
