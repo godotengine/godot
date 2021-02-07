@@ -218,8 +218,8 @@
 			<argument index="0" name="flip" type="bool" default="false">
 			</argument>
 			<description>
-				Generates normals from vertices so you do not have to do it manually. If [code]flip[/code] is [code]true[/code], the resulting normals will be inverted.
-				Requires the primitive type to be set to [constant Mesh.PRIMITIVE_TRIANGLES].
+				Generates normals from vertices so you do not have to do it manually. If [code]flip[/code] is [code]true[/code], the resulting normals will be inverted. [method generate_normals] should be called [i]after[/i] generating geometry and [i]before[/i] committing the mesh using [method commit] or [method commit_to_arrays].
+				[b]Note:[/b] [method generate_normals] only works if the primitive type to be set to [constant Mesh.PRIMITIVE_TRIANGLES].
 			</description>
 		</method>
 		<method name="generate_tangents">
