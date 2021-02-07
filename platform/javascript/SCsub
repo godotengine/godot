@@ -73,6 +73,7 @@ sys_env.Depends(build[0], sys_env["JS_EXTERNS"])
 engine = [
     "js/engine/preloader.js",
     "js/engine/utils.js",
+    "js/engine/config.js",
     "js/engine/engine.js",
 ]
 externs = [env.File("#platform/javascript/js/engine/engine.externs.js")]

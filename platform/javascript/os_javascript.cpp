@@ -893,7 +893,7 @@ Error OS_JavaScript::initialize(const VideoMode &p_desired, int p_video_driver, 
 	if (p_desired.fullscreen) {
 		godot_js_display_window_request_fullscreen();
 	}
-	if (godot_js_config_is_resize_on_start()) {
+	if (godot_js_config_canvas_resize_policy_get() == 1) {
 		set_window_size(Size2(video_mode.width, video_mode.height));
 	} else {
 		set_window_size(get_window_size());
