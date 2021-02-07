@@ -497,31 +497,31 @@ void main() {
 
 				uint light_index = 32 * i + bit;
 
-				vec3 light_pos = omni_lights.data[light_index].position;
-				vec3 light_rel_vec = omni_lights.data[light_index].position - view_pos;
+				vec3 light_pos = spot_lights.data[light_index].position;
+				vec3 light_rel_vec = spot_lights.data[light_index].position - view_pos;
 				float d = length(light_rel_vec);
 				float shadow_attenuation = 1.0;
 
-				if (d * omni_lights.data[light_index].inv_radius < 1.0) {
-					float attenuation = get_omni_attenuation(d, omni_lights.data[light_index].inv_radius, omni_lights.data[light_index].attenuation);
+				if (d * spot_lights.data[light_index].inv_radius < 1.0) {
+					float attenuation = get_omni_attenuation(d, spot_lights.data[light_index].inv_radius, spot_lights.data[light_index].attenuation);
 
-					vec3 spot_dir = omni_lights.data[light_index].direction;
-					float scos = max(dot(-normalize(light_rel_vec), spot_dir), omni_lights.data[light_index].cone_angle);
-					float spot_rim = max(0.0001, (1.0 - scos) / (1.0 - omni_lights.data[light_index].cone_angle));
-					attenuation *= 1.0 - pow(spot_rim, omni_lights.data[light_index].cone_attenuation);
+					vec3 spot_dir = spot_lights.data[light_index].direction;
+					float scos = max(dot(-normalize(light_rel_vec), spot_dir), spot_lights.data[light_index].cone_angle);
+					float spot_rim = max(0.0001, (1.0 - scos) / (1.0 - spot_lights.data[light_index].cone_angle));
+					attenuation *= 1.0 - pow(spot_rim, spot_lights.data[light_index].cone_attenuation);
 
-					vec3 light = omni_lights.data[light_index].color / M_PI;
+					vec3 light = spot_lights.data[light_index].color / M_PI;
 
-					if (omni_lights.data[light_index].shadow_enabled) {
+					if (spot_lights.data[light_index].shadow_enabled) {
 						//has shadow
 						vec4 v = vec4(view_pos, 1.0);
 
-						vec4 splane = (omni_lights.data[light_index].shadow_matrix * v);
+						vec4 splane = (spot_lights.data[light_index].shadow_matrix * v);
 						splane /= splane.w;
 
 						float depth = texture(sampler2D(shadow_atlas, linear_sampler), splane.xy).r;
 
-						shadow_attenuation = exp(min(0.0, (depth - splane.z)) / omni_lights.data[light_index].inv_radius * omni_lights.data[light_index].shadow_volumetric_fog_fade);
+						shadow_attenuation = exp(min(0.0, (depth - splane.z)) / spot_lights.data[light_index].inv_radius * spot_lights.data[light_index].shadow_volumetric_fog_fade);
 					}
 
 					total_light += light * attenuation * shadow_attenuation;
