@@ -749,7 +749,7 @@ DisplayServerJavaScript::DisplayServerJavaScript(const String &p_rendering_drive
 #endif
 
 	window_set_mode(p_mode);
-	if (godot_js_config_is_resize_on_start()) {
+	if (godot_js_config_canvas_resize_policy_get() == 1) {
 		window_set_size(p_resolution);
 	}
 

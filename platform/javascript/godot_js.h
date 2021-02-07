@@ -40,7 +40,7 @@ extern "C" {
 // Config
 extern void godot_js_config_locale_get(char *p_ptr, int p_ptr_max);
 extern void godot_js_config_canvas_id_get(char *p_ptr, int p_ptr_max);
-extern int godot_js_config_is_resize_on_start();
+extern int godot_js_config_canvas_resize_policy_get();
 
 // OS
 extern void godot_js_os_finish_async(void (*p_callback)());
