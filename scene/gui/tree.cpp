@@ -3322,6 +3322,14 @@ void Tree::item_selected(int p_column, TreeItem *p_item) {
 }
 
 void Tree::item_deselected(int p_column, TreeItem *p_item) {
+	if (selected_item == p_item) {
+		selected_item = nullptr;
+	}
+
+	if (selected_col == p_column) {
+		selected_col = -1;
+	}
+
 	if (select_mode == SELECT_MULTI || select_mode == SELECT_SINGLE) {
 		p_item->cells.write[p_column].selected = false;
 	}
