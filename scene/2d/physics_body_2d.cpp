@@ -111,8 +111,6 @@ bool PhysicsBody2D::get_collision_layer_bit(int p_bit) const {
 PhysicsBody2D::PhysicsBody2D(PhysicsServer2D::BodyMode p_mode) :
 		CollisionObject2D(PhysicsServer2D::get_singleton()->body_create(), false) {
 	PhysicsServer2D::get_singleton()->body_set_mode(get_rid(), p_mode);
-	collision_layer = 1;
-	collision_mask = 1;
 	set_pickable(false);
 }
 
@@ -197,7 +195,6 @@ void StaticBody2D::_bind_methods() {
 
 StaticBody2D::StaticBody2D() :
 		PhysicsBody2D(PhysicsServer2D::BODY_MODE_STATIC) {
-	constant_angular_velocity = 0;
 }
 
 StaticBody2D::~StaticBody2D() {
@@ -320,8 +317,8 @@ void RigidBody2D::_body_inout(int p_status, ObjectID p_instance, int p_body_shap
 
 struct _RigidBody2DInOut {
 	ObjectID id;
-	int shape;
-	int local_shape;
+	int shape = 0;
+	int local_shape = 0;
 };
 
 bool RigidBody2D::_test_motion(const Vector2 &p_motion, bool p_infinite_inertia, real_t p_margin, const Ref<PhysicsTestMotionResult2D> &p_result) {
@@ -841,25 +838,6 @@ void RigidBody2D::_bind_methods() {
 
 RigidBody2D::RigidBody2D() :
 		PhysicsBody2D(PhysicsServer2D::BODY_MODE_RIGID) {
-	mode = MODE_RIGID;
-
-	mass = 1;
-
-	gravity_scale = 1;
-	linear_damp = -1;
-	angular_damp = -1;
-
-	max_contacts_reported = 0;
-	state = nullptr;
-
-	angular_velocity = 0;
-	sleeping = false;
-	ccd_mode = CCD_MODE_DISABLED;
-
-	custom_integrator = false;
-	contact_monitor = nullptr;
-	can_sleep = true;
-
 	PhysicsServer2D::get_singleton()->body_set_force_integration_callback(get_rid(), this, "_direct_state_changed");
 }
 

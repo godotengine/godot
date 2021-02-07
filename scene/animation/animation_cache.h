@@ -39,31 +39,23 @@ class AnimationCache : public Object {
 
 	struct Path {
 		RES resource;
-		Object *object;
-		Skeleton3D *skeleton; // haxor
-		Node *node;
-		Node3D *spatial;
+		Object *object = nullptr;
+		Skeleton3D *skeleton = nullptr; // haxor
+		Node *node = nullptr;
+		Node3D *spatial = nullptr;
 
-		int bone_idx;
+		int bone_idx = -1;
 		Vector<StringName> subpath;
-		bool valid;
-		Path() {
-			object = nullptr;
-			skeleton = nullptr;
-			node = nullptr;
-			bone_idx = -1;
-			valid = false;
-			spatial = nullptr;
-		}
+		bool valid = false;
 	};
 
 	Set<Node *> connected_nodes;
 	Vector<Path> path_cache;
 
-	Node *root;
+	Node *root = nullptr;
 	Ref<Animation> animation;
-	bool cache_dirty;
-	bool cache_valid;
+	bool cache_dirty = true;
+	bool cache_valid = false;
 
 	void _node_exit_tree(Node *p_node);
 

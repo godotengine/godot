@@ -66,10 +66,10 @@ public:
 
 private:
 	Path3D *path = nullptr;
-	real_t delta_offset = 0; // Change in offset since last _update_transform.
-	real_t offset = 0;
-	real_t h_offset = 0;
-	real_t v_offset = 0;
+	real_t delta_offset = 0.0; // Change in offset since last _update_transform.
+	real_t offset = 0.0;
+	real_t h_offset = 0.0;
+	real_t v_offset = 0.0;
 	bool cubic = true;
 	bool loop = true;
 	RotationMode rotation_mode = ROTATION_XYZ;

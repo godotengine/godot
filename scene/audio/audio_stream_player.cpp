@@ -402,18 +402,7 @@ void AudioStreamPlayer::_bind_methods() {
 }
 
 AudioStreamPlayer::AudioStreamPlayer() {
-	mix_volume_db = 0;
-	pitch_scale = 1.0;
-	volume_db = 0;
-	autoplay = false;
-	setseek = -1;
-	active = false;
-	stream_paused = false;
-	stream_paused_fade = false;
-	mix_target = MIX_TARGET_STEREO;
 	fadeout_buffer.resize(512);
-	setstop = false;
-	use_fadeout = false;
 
 	AudioServer::get_singleton()->connect("bus_layout_changed", callable_mp(this, &AudioStreamPlayer::_bus_layout_changed));
 }

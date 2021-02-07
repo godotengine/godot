@@ -39,14 +39,14 @@ class CollisionPolygon3D : public Node3D {
 	GDCLASS(CollisionPolygon3D, Node3D);
 
 protected:
-	real_t depth;
-	AABB aabb;
+	real_t depth = 1.0;
+	AABB aabb = AABB(Vector3(-1, -1, -1), Vector3(2, 2, 2));
 	Vector<Point2> polygon;
 
-	uint32_t owner_id;
-	CollisionObject3D *parent;
+	uint32_t owner_id = 0;
+	CollisionObject3D *parent = nullptr;
 
-	bool disabled;
+	bool disabled = false;
 
 	void _build_polygon();
 

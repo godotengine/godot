@@ -43,9 +43,9 @@ class Joint2D : public Node2D {
 
 	NodePath a;
 	NodePath b;
-	real_t bias;
+	real_t bias = 0.0;
 
-	bool exclude_from_collision;
+	bool exclude_from_collision = true;
 	String warning;
 
 protected:
@@ -80,7 +80,7 @@ public:
 class PinJoint2D : public Joint2D {
 	GDCLASS(PinJoint2D, Joint2D);
 
-	real_t softness;
+	real_t softness = 0.0;
 
 protected:
 	void _notification(int p_what);
@@ -97,8 +97,8 @@ public:
 class GrooveJoint2D : public Joint2D {
 	GDCLASS(GrooveJoint2D, Joint2D);
 
-	real_t length;
-	real_t initial_offset;
+	real_t length = 50.0;
+	real_t initial_offset = 25.0;
 
 protected:
 	void _notification(int p_what);
@@ -118,10 +118,10 @@ public:
 class DampedSpringJoint2D : public Joint2D {
 	GDCLASS(DampedSpringJoint2D, Joint2D);
 
-	real_t stiffness;
-	real_t damping;
-	real_t rest_length;
-	real_t length;
+	real_t stiffness = 20.0;
+	real_t damping = 1.0;
+	real_t rest_length = 0.0;
+	real_t length = 50.0;
 
 protected:
 	void _notification(int p_what);

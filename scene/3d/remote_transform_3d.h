@@ -40,10 +40,10 @@ class RemoteTransform3D : public Node3D {
 
 	ObjectID cache;
 
-	bool use_global_coordinates;
-	bool update_remote_position;
-	bool update_remote_rotation;
-	bool update_remote_scale;
+	bool use_global_coordinates = true;
+	bool update_remote_position = true;
+	bool update_remote_rotation = true;
+	bool update_remote_scale = true;
 
 	void _update_remote();
 	void _update_cache();

@@ -1007,7 +1007,4 @@ Transform Voxelizer::get_to_cell_space_xform() const {
 }
 
 Voxelizer::Voxelizer() {
-	sorted = false;
-	color_scan_cell_width = 4;
-	bake_texture_size = 128;
 }

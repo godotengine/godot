@@ -128,6 +128,4 @@ void VelocityTracker3D::_bind_methods() {
 
 VelocityTracker3D::VelocityTracker3D() {
 	position_history.resize(4); // should be configurable
-	position_history_len = 0;
-	physics_step = false;
 }

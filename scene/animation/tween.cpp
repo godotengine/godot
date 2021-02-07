@@ -1789,12 +1789,6 @@ void Tween::targeting_method(Object *p_object, StringName p_method, Object *p_in
 }
 
 Tween::Tween() {
-	// Initialize tween attributes
-	tween_process_mode = TWEEN_PROCESS_IDLE;
-	repeat = false;
-	speed_scale = 1;
-	pending_update = 0;
-	uid = 0;
 }
 
 Tween::~Tween() {

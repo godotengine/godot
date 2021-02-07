@@ -749,9 +749,6 @@ void Camera2D::_bind_methods() {
 }
 
 Camera2D::Camera2D() {
-	anchor_mode = ANCHOR_MODE_DRAG_CENTER;
-	rotating = false;
-	current = false;
 	limit[SIDE_LEFT] = -10000000;
 	limit[SIDE_TOP] = -10000000;
 	limit[SIDE_RIGHT] = 10000000;
@@ -761,27 +758,6 @@ Camera2D::Camera2D() {
 	drag_margin[SIDE_TOP] = 0.2;
 	drag_margin[SIDE_RIGHT] = 0.2;
 	drag_margin[SIDE_BOTTOM] = 0.2;
-	camera_pos = Vector2();
-	first = true;
-	smoothing_enabled = false;
-	limit_smoothing_enabled = false;
-	custom_viewport = nullptr;
-
-	process_mode = CAMERA2D_PROCESS_IDLE;
-
-	smoothing = 5.0;
-	zoom = Vector2(1, 1);
-
-	screen_drawing_enabled = true;
-	limit_drawing_enabled = false;
-	margin_drawing_enabled = false;
-
-	drag_horizontal_enabled = false;
-	drag_vertical_enabled = false;
-	drag_horizontal_offset = 0;
-	drag_vertical_offset = 0;
-	drag_horizontal_offset_changed = false;
-	drag_vertical_offset_changed = false;
 
 	set_notify_transform(true);
 }

@@ -157,10 +157,6 @@ String Bone2D::get_configuration_warning() const {
 }
 
 Bone2D::Bone2D() {
-	skeleton = nullptr;
-	parent_bone = nullptr;
-	skeleton_index = -1;
-	default_length = 16;
 	set_notify_local_transform(true);
 	//this is a clever hack so the bone knows no rest has been set yet, allowing to show an error.
 	for (int i = 0; i < 3; i++) {
@@ -293,9 +289,6 @@ void Skeleton2D::_bind_methods() {
 }
 
 Skeleton2D::Skeleton2D() {
-	bone_setup_dirty = true;
-	transform_dirty = true;
-
 	skeleton = RS::get_singleton()->skeleton_create();
 	set_notify_transform(true);
 }

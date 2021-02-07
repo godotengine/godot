@@ -159,8 +159,6 @@ void Listener3D::_bind_methods() {
 }
 
 Listener3D::Listener3D() {
-	current = false;
-	force_change = false;
 	set_notify_transform(true);
 	//active=false;
 }

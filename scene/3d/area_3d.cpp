@@ -681,29 +681,10 @@ void Area3D::_bind_methods() {
 
 Area3D::Area3D() :
 		CollisionObject3D(PhysicsServer3D::get_singleton()->area_create(), true) {
-	space_override = SPACE_OVERRIDE_DISABLED;
 	set_gravity(9.8);
-	locked = false;
 	set_gravity_vector(Vector3(0, -1, 0));
-	gravity_is_point = false;
-	gravity_distance_scale = 0;
-	linear_damp = 0.1;
-	angular_damp = 0.1;
-	priority = 0;
-	monitoring = false;
-	monitorable = false;
-	collision_mask = 1;
-	collision_layer = 1;
 	set_monitoring(true);
 	set_monitorable(true);
-
-	audio_bus_override = false;
-	audio_bus = "Master";
-
-	use_reverb_bus = false;
-	reverb_bus = "Master";
-	reverb_amount = 0.0;
-	reverb_uniformity = 0.0;
 }
 
 Area3D::~Area3D() {

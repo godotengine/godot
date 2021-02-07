@@ -1369,34 +1369,14 @@ void CPUParticles2D::_bind_methods() {
 }
 
 CPUParticles2D::CPUParticles2D() {
-	time = 0;
-	inactive_time = 0;
-	frame_remainder = 0;
-	cycle = 0;
-	redraw = false;
-	emitting = false;
-
 	mesh = RenderingServer::get_singleton()->mesh_create();
 	multimesh = RenderingServer::get_singleton()->multimesh_create();
 	RenderingServer::get_singleton()->multimesh_set_mesh(multimesh, mesh);
 
 	set_emitting(true);
-	set_one_shot(false);
 	set_amount(8);
-	set_lifetime(1);
-	set_fixed_fps(0);
-	set_fractional_delta(true);
-	set_pre_process_time(0);
-	set_explosiveness_ratio(0);
-	set_randomness_ratio(0);
-	set_lifetime_randomness(0);
 	set_use_local_coordinates(true);
 
-	set_draw_order(DRAW_ORDER_INDEX);
-	set_speed_scale(1);
-
-	set_direction(Vector2(1, 0));
-	set_spread(45);
 	set_param(PARAM_INITIAL_LINEAR_VELOCITY, 0);
 	set_param(PARAM_ANGULAR_VELOCITY, 0);
 	set_param(PARAM_ORBIT_VELOCITY, 0);
@@ -1409,11 +1389,6 @@ CPUParticles2D::CPUParticles2D() {
 	set_param(PARAM_HUE_VARIATION, 0);
 	set_param(PARAM_ANIM_SPEED, 0);
 	set_param(PARAM_ANIM_OFFSET, 0);
-	set_emission_shape(EMISSION_SHAPE_POINT);
-	set_emission_sphere_radius(1);
-	set_emission_rect_extents(Vector2(1, 1));
-
-	set_gravity(Vector2(0, 98));
 
 	for (int i = 0; i < PARAM_MAX; i++) {
 		set_param_randomness(Parameter(i), 0);

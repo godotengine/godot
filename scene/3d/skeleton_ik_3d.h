@@ -54,14 +54,12 @@ class FabrikInverseKinematic {
 		BoneId bone = -1;
 		PhysicalBone3D *pb = nullptr;
 
-		real_t length = 0;
+		real_t length = 0.0;
 		/// Positions relative to root bone
 		Transform initial_transform;
 		Vector3 current_pos;
 		// Direction from this bone to child
 		Vector3 current_ori;
-
-		ChainItem() {}
 
 		ChainItem *find_child(const BoneId p_bone_id);
 		ChainItem *add_child(const BoneId p_bone_id);
@@ -80,7 +78,7 @@ class FabrikInverseKinematic {
 
 	struct Chain {
 		ChainItem chain_root;
-		ChainItem *middle_chain_item;
+		ChainItem *middle_chain_item = nullptr;
 		Vector<ChainTip> tips;
 		Vector3 magnet_position;
 	};
@@ -130,7 +128,7 @@ class SkeletonIK3D : public Node {
 
 	StringName root_bone;
 	StringName tip_bone;
-	real_t interpolation = 1;
+	real_t interpolation = 1.0;
 	Transform target;
 	NodePath target_node_path_override;
 	bool override_tip_basis = true;
