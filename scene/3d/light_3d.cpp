@@ -220,6 +220,10 @@ void Light3D::_validate_property(PropertyInfo &property) const {
 		property.usage = 0;
 	}
 
+	if (get_light_type() == RS::LIGHT_DIRECTIONAL && property.name == "light_max_energy") {
+		property.usage = 0;
+	}
+
 	if (get_light_type() != RS::LIGHT_DIRECTIONAL && property.name == "light_angular_distance") {
 		property.usage = 0;
 	}
@@ -265,6 +269,7 @@ void Light3D::_bind_methods() {
 	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "light_angular_distance", PROPERTY_HINT_RANGE, "0,90,0.01"), "set_param", "get_param", PARAM_SIZE);
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "light_negative"), "set_negative", "is_negative");
 	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "light_specular", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_param", "get_param", PARAM_SPECULAR);
+	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "light_max_energy", PROPERTY_HINT_RANGE, "0.0,1024.0,0.01"), "set_param", "get_param", PARAM_MAX_ENERGY);
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "light_bake_mode", PROPERTY_HINT_ENUM, "Disabled,Dynamic,Static"), "set_bake_mode", "get_bake_mode");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "light_cull_mask", PROPERTY_HINT_LAYERS_3D_RENDER), "set_cull_mask", "get_cull_mask");
 	ADD_GROUP("Shadow", "shadow_");
@@ -288,6 +293,7 @@ void Light3D::_bind_methods() {
 	BIND_ENUM_CONSTANT(PARAM_ATTENUATION);
 	BIND_ENUM_CONSTANT(PARAM_SPOT_ANGLE);
 	BIND_ENUM_CONSTANT(PARAM_SPOT_ATTENUATION);
+	BIND_ENUM_CONSTANT(PARAM_MAX_ENERGY);
 	BIND_ENUM_CONSTANT(PARAM_SHADOW_MAX_DISTANCE);
 	BIND_ENUM_CONSTANT(PARAM_SHADOW_SPLIT_1_OFFSET);
 	BIND_ENUM_CONSTANT(PARAM_SHADOW_SPLIT_2_OFFSET);
@@ -341,6 +347,7 @@ Light3D::Light3D(RenderingServer::LightType p_type) {
 	set_param(PARAM_ATTENUATION, 1);
 	set_param(PARAM_SPOT_ANGLE, 45);
 	set_param(PARAM_SPOT_ATTENUATION, 1);
+	set_param(PARAM_MAX_ENERGY, 64.0);
 	set_param(PARAM_SHADOW_MAX_DISTANCE, 0);
 	set_param(PARAM_SHADOW_SPLIT_1_OFFSET, 0.1);
 	set_param(PARAM_SHADOW_SPLIT_2_OFFSET, 0.2);

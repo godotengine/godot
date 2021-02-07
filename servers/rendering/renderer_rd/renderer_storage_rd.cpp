@@ -5360,6 +5360,7 @@ RID RendererStorageRD::light_create(RS::LightType p_type) {
 	light.param[RS::LIGHT_PARAM_RANGE] = 1.0;
 	light.param[RS::LIGHT_PARAM_SIZE] = 0.0;
 	light.param[RS::LIGHT_PARAM_ATTENUATION] = 1.0;
+	light.param[RS::LIGHT_PARAM_MAX_ENERGY] = 64.0;
 	light.param[RS::LIGHT_PARAM_SPOT_ANGLE] = 45;
 	light.param[RS::LIGHT_PARAM_SPOT_ATTENUATION] = 1.0;
 	light.param[RS::LIGHT_PARAM_SHADOW_MAX_DISTANCE] = 0;

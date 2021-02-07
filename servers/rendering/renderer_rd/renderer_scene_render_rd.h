@@ -1376,7 +1376,7 @@ private:
 			float soft_shadow_scale;
 			uint32_t mask;
 			float shadow_volumetric_fog_fade;
-			uint32_t pad;
+			float max_energy;
 			float projector_rect[4];
 		};
 
