@@ -59,7 +59,13 @@ static const char *_button_names[JOY_BUTTON_MAX] = {
 	"D-Pad Up",
 	"D-Pad Down",
 	"D-Pad Left",
-	"D-Pad Right"
+	"D-Pad Right",
+	"Xbox Share, PS5 Microphone, Nintendo Capture",
+	"Xbox Paddle 1",
+	"Xbox Paddle 2",
+	"Xbox Paddle 3",
+	"Xbox Paddle 4",
+	"PS4/5 Touchpad",
 };
 
 static const char *_axis_names[JOY_AXIS_MAX * 2] = {
