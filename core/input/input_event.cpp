@@ -985,6 +985,12 @@ static const char *_joy_button_descriptions[JOY_BUTTON_SDL_MAX] = {
 	TTRC("D-pad Down"),
 	TTRC("D-pad Left"),
 	TTRC("D-pad Right"),
+	TTRC("Xbox Share, PS5 Microphone, Nintendo Capture"),
+	TTRC("Xbox Paddle 1"),
+	TTRC("Xbox Paddle 2"),
+	TTRC("Xbox Paddle 3"),
+	TTRC("Xbox Paddle 4"),
+	TTRC("PS4/5 Touchpad"),
 };
 
 String InputEventJoypadButton::as_text() const {
