@@ -666,13 +666,11 @@ void Skeleton2D::_notification(int p_what) {
 
 	if (p_what == NOTIFICATION_TRANSFORM_CHANGED) {
 		RS::get_singleton()->skeleton_set_base_transform_2d(skeleton, get_global_transform());
-	}
-	else if (p_what == NOTIFICATION_INTERNAL_PROCESS) {
+	} else if (p_what == NOTIFICATION_INTERNAL_PROCESS) {
 		if (modification_stack.is_valid()) {
 			execute_modifications(get_process_delta_time(), SkeletonModificationStack2D::EXECUTION_MODE::execution_mode_process);
 		}
-	}
-	else if (p_what == NOTIFICATION_INTERNAL_PHYSICS_PROCESS) {
+	} else if (p_what == NOTIFICATION_INTERNAL_PHYSICS_PROCESS) {
 		if (modification_stack.is_valid()) {
 			execute_modifications(get_physics_process_delta_time(), SkeletonModificationStack2D::EXECUTION_MODE::execution_mode_physics_process);
 		}

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -32,7 +32,6 @@
 #define SKELETONMODIFICATION2D_H
 
 #include "scene/2d/skeleton_2d.h"
-#include "core/templates/local_vector.h"
 
 ///////////////////////////////////////
 // SkeletonModificationStack2D
@@ -64,7 +63,7 @@ public:
 		execution_mode_physics_process
 	};
 
-	LocalVector<Ref<SkeletonModification2D>> modifications = LocalVector<Ref<SkeletonModification2D>>();
+	Vector<Ref<SkeletonModification2D>> modifications = Vector<Ref<SkeletonModification2D>>();
 
 	void setup();
 	void execute(float delta, int p_execution_mode);
@@ -155,7 +154,7 @@ private:
 
 	NodePath target_node;
 	ObjectID target_node_cache;
-	Node2D* target_node_reference = nullptr;
+	Node2D *target_node_reference = nullptr;
 
 	float additional_rotation = 0;
 	bool enable_constraint = false;

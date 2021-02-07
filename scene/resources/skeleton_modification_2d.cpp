@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -86,7 +86,7 @@ void SkeletonModificationStack2D::setup() {
 			if (!modifications[i].is_valid()) {
 				continue;
 			}
-			modifications[i]->_setup_modification(this);
+			modifications.get(i)->_setup_modification(this);
 		}
 
 #ifdef TOOLS_ENABLED
@@ -117,7 +117,7 @@ void SkeletonModificationStack2D::execute(float delta, int p_execution_mode) {
 		}
 
 		if (modifications[i]->get_execution_mode() == p_execution_mode) {
-			modifications[i]->_execute(delta);
+			modifications.get(i)->_execute(delta);
 		}
 	}
 }
@@ -134,7 +134,7 @@ void SkeletonModificationStack2D::draw_editor_gizmos() {
 			}
 
 			if (modifications[i]->editor_draw_gizmo) {
-				modifications[i]->_draw_editor_gizmo();
+				modifications.get(i)->_draw_editor_gizmo();
 			}
 		}
 		skeleton->draw_set_transform(Vector2(0, 0));
@@ -162,7 +162,7 @@ void SkeletonModificationStack2D::enable_all_modifications(bool p_enabled) {
 		if (!modifications[i].is_valid()) {
 			continue;
 		}
-		modifications[i]->set_enabled(p_enabled);
+		modifications.get(i)->set_enabled(p_enabled);
 	}
 }
 
@@ -193,10 +193,10 @@ void SkeletonModificationStack2D::set_modification(int p_mod_idx, Ref<SkeletonMo
 	ERR_FAIL_INDEX(p_mod_idx, modifications.size());
 
 	if (p_mod == nullptr) {
-		modifications[p_mod_idx] = Ref<SkeletonModification2D>();
+		modifications.insert(p_mod_idx, nullptr);
 	} else {
 		p_mod->_setup_modification(this);
-		modifications[p_mod_idx] = p_mod;
+		modifications.insert(p_mod_idx, p_mod);
 	}
 
 #ifdef TOOLS_ENABLED
@@ -740,7 +740,6 @@ void SkeletonModification2DLookAt::update_target_cache() {
 				ERR_FAIL_COND_MSG(!node->is_inside_tree(),
 						"Cannot update target cache: node is not in the scene tree!");
 				target_node_cache = node->get_instance_id();
-
 			}
 		}
 	}
@@ -1025,7 +1024,6 @@ void SkeletonModification2DCCDIK::_execute(float delta) {
 	for (int i = 0; i < ccdik_data_chain.size(); i++) {
 		_execute_ccdik_joint(i, target, tip);
 	}
-
 }
 
 void SkeletonModification2DCCDIK::_execute_ccdik_joint(int p_joint_idx, Node2D *target, Node2D *tip) {
@@ -1115,7 +1113,6 @@ void SkeletonModification2DCCDIK::update_target_cache() {
 				ERR_FAIL_COND_MSG(!node->is_inside_tree(),
 						"Cannot update target cache: node is not in the scene tree!");
 				target_node_cache = node->get_instance_id();
-
 			}
 		}
 	}
@@ -1137,7 +1134,6 @@ void SkeletonModification2DCCDIK::update_tip_cache() {
 				ERR_FAIL_COND_MSG(!node->is_inside_tree(),
 						"Cannot update tip cache: node is not in the scene tree!");
 				tip_node_cache = node->get_instance_id();
-
 			}
 		}
 	}
@@ -1167,7 +1163,6 @@ void SkeletonModification2DCCDIK::ccdik_joint_update_bone2d_cache(int p_joint_id
 				} else {
 					ERR_FAIL_MSG("CCDIK joint " + itos(p_joint_idx) + " Bone2D cache: Nodepath to Bone2D is not a Bone2D node!");
 				}
-
 			}
 		}
 	}
@@ -1640,7 +1635,6 @@ void SkeletonModification2DFABRIK::_execute(float delta) {
 		joint_bone2d_node->set_global_transform(chain_trans);
 		stack->skeleton->set_bone_local_pose_override(fabrik_data_chain[i].bone_idx, joint_bone2d_node->get_transform(), stack->strength, true);
 	}
-
 }
 
 void SkeletonModification2DFABRIK::chain_backwards() {
@@ -1760,7 +1754,6 @@ void SkeletonModification2DFABRIK::update_target_cache() {
 				ERR_FAIL_COND_MSG(!node->is_inside_tree(),
 						"Cannot update target cache: node is not in scene tree!");
 				target_node_cache = node->get_instance_id();
-
 			}
 		}
 	}
@@ -1806,7 +1799,6 @@ void SkeletonModification2DFABRIK::fabrik_joint_update_bone2d_cache(int p_joint_
 				} else {
 					ERR_FAIL_MSG("FABRIK joint " + itos(p_joint_idx) + " Bone2D cache: Nodepath to Bone2D is not a Bone2D node!");
 				}
-
 			}
 		}
 	}
@@ -2145,7 +2137,6 @@ void SkeletonModification2DJiggle::_execute(float delta) {
 	for (int i = 0; i < jiggle_data_chain.size(); i++) {
 		_execute_jiggle_joint(i, target, delta);
 	}
-
 }
 
 void SkeletonModification2DJiggle::_execute_jiggle_joint(int p_joint_idx, Node2D *target, float delta) {
@@ -2267,7 +2258,6 @@ void SkeletonModification2DJiggle::update_target_cache() {
 				ERR_FAIL_COND_MSG(!node->is_inside_tree(),
 						"Cannot update target cache: node is not in scene tree!");
 				target_node_cache = node->get_instance_id();
-
 			}
 		}
 	}
@@ -2297,7 +2287,6 @@ void SkeletonModification2DJiggle::jiggle_joint_update_bone2d_cache(int p_joint_
 				} else {
 					ERR_FAIL_MSG("Jiggle joint " + itos(p_joint_idx) + " Bone2D cache: Nodepath to Bone2D is not a Bone2D node!");
 				}
-
 			}
 		}
 	}
@@ -2712,7 +2701,6 @@ void SkeletonModification2DTwoBoneIK::_execute(float delta) {
 
 	stack->skeleton->set_bone_local_pose_override(joint_one_bone_idx, joint_one_bone->get_transform(), stack->strength, true);
 	stack->skeleton->set_bone_local_pose_override(joint_two_bone_idx, joint_two_bone->get_transform(), stack->strength, true);
-
 }
 
 void SkeletonModification2DTwoBoneIK::_setup_modification(SkeletonModificationStack2D *p_stack) {
@@ -2790,7 +2778,6 @@ void SkeletonModification2DTwoBoneIK::update_target_cache() {
 				ERR_FAIL_COND_MSG(!node->is_inside_tree(),
 						"Cannot update target cache: node is not in the scene tree!");
 				target_node_cache = node->get_instance_id();
-
 			}
 		}
 	}
@@ -2819,7 +2806,6 @@ void SkeletonModification2DTwoBoneIK::update_joint_one_bone2d_cache() {
 				} else {
 					ERR_FAIL_MSG("update joint one Bone2D cache: Nodepath to Bone2D is not a Bone2D node!");
 				}
-
 			}
 		}
 	}
@@ -2848,7 +2834,6 @@ void SkeletonModification2DTwoBoneIK::update_joint_two_bone2d_cache() {
 				} else {
 					ERR_FAIL_MSG("update joint two Bone2D cache: Nodepath to Bone2D is not a Bone2D node!");
 				}
-
 			}
 		}
 	}
@@ -3118,7 +3103,6 @@ void SkeletonModification2DPhysicalBones::_execute(float delta) {
 			stack->skeleton->set_bone_local_pose_override(physical_bone->get_bone2d_index(), bone_2d->get_transform(), stack->strength, true);
 		}
 	}
-
 }
 
 void SkeletonModification2DPhysicalBones::_setup_modification(SkeletonModificationStack2D *p_stack) {
@@ -3152,7 +3136,6 @@ void SkeletonModification2DPhysicalBones::_physical_bone_update_cache(int p_join
 				ERR_FAIL_COND_MSG(!node->is_inside_tree(),
 						"Cannot update Physical Bone2D " + itos(p_joint_idx) + " cache: node is not in scene tree!");
 				physical_bone_chain.write[p_joint_idx].physical_bone_node_cache = node->get_instance_id();
-
 			}
 		}
 	}
