@@ -208,7 +208,7 @@ def configure_msvc(env, manual_msvc_config):
         env.AppendUnique(CPPDEFINES=["DEBUG_ENABLED"])
         env.Append(LINKFLAGS=["/DEBUG"])
 
-    if env["debug_symbols"] == "yes":
+    if env["debug_symbols"]:
         env.AppendUnique(CCFLAGS=["/Z7"])
         env.AppendUnique(LINKFLAGS=["/DEBUG"])
 
@@ -339,13 +339,13 @@ def configure_mingw(env):
         else:  # optimize for size
             env.Prepend(CCFLAGS=["-Os"])
 
-        if env["debug_symbols"] == "yes":
+        if env["debug_symbols"]:
             env.Prepend(CCFLAGS=["-g2"])
 
     elif env["target"] == "release_debug":
         env.Append(CCFLAGS=["-O2"])
         env.Append(CPPDEFINES=["DEBUG_ENABLED"])
-        if env["debug_symbols"] == "yes":
+        if env["debug_symbols"]:
             env.Prepend(CCFLAGS=["-g2"])
         if env["optimize"] == "speed":  # optimize for speed (default)
             env.Append(CCFLAGS=["-O2"])
