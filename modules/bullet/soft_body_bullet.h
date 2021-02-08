@@ -32,7 +32,6 @@
 #define SOFT_BODY_BULLET_H
 
 #include "collision_object_bullet.h"
-#include "scene/resources/material.h" // TODO remove this please
 
 #ifdef None
 /// This is required to remove the macro None defined by x11 compiler because this word "None" is used internally by Bullet
@@ -58,7 +57,7 @@
 class SoftBodyBullet : public CollisionObjectBullet {
 private:
 	btSoftBody *bt_soft_body = nullptr;
-	Vector<Vector<int>> indices_table;
+	LocalVector<Vector<int>> indices_table;
 	btSoftBody::Material *mat0; // This is just a copy of pointer managed by btSoftBody
 	bool isScratched = false;
 
@@ -73,7 +72,7 @@ private:
 	real_t pose_matching_coefficient = 0.; // [0,1]
 	real_t damping_coefficient = 0.01; // [0,1]
 	real_t drag_coefficient = 0.; // [0,1]
-	Vector<int> pinned_nodes;
+	LocalVector<int> pinned_nodes;
 
 	// Other property to add
 	//btScalar				kVC;			// Volume conversation coefficient [0,+inf]
@@ -87,15 +86,14 @@ public:
 	SoftBodyBullet();
 	~SoftBodyBullet();
 
-	virtual void reload_body();
-	virtual void set_space(SpaceBullet *p_space);
+	virtual void do_reload_body() override;
+	virtual void set_space(SpaceBullet *p_space) override;
 
-	virtual void dispatch_callbacks() {}
-	virtual void on_collision_filters_change() {}
-	virtual void on_collision_checker_start() {}
-	virtual void on_collision_checker_end() {}
-	virtual void on_enter_area(AreaBullet *p_area);
-	virtual void on_exit_area(AreaBullet *p_area);
+	virtual void do_reload_collision_filters() override {}
+	virtual void on_collision_checker_start() override {}
+	virtual void on_collision_checker_end() override {}
+	virtual void on_enter_area(AreaBullet *p_area) override;
+	virtual void on_exit_area(AreaBullet *p_area) override;
 
 	_FORCE_INLINE_ btSoftBody *get_bt_soft_body() const { return bt_soft_body; }
 
