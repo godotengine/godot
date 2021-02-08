@@ -1,8 +1,0 @@
-<?xml version="1.0"?>
-<mime-info xmlns="http://www.freedesktop.org/standards/shared-mime-info">
-  <mime-type type="application/x-godot-project">
-    <comment>Godot Engine project</comment>
-    <icon name="godot" />
-    <glob pattern="*.godot" weight="100" />
-  </mime-type>
-</mime-info>
