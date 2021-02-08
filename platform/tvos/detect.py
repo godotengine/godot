@@ -12,7 +12,7 @@ def get_name():
 
 
 def can_build():
-    if sys.platform == "darwin" or ("OSXCROSS_IOS" in os.environ):
+    if sys.platform == "darwin" or ("OSXCROSS_TVOS" in os.environ):
         return True
 
     return False
@@ -29,6 +29,7 @@ def get_opts():
         ),
         ("TVOSSDK", "Path to the tvOS SDK", ""),
         BoolVariable("simulator", "Build for simulator", False),
+        ("tvos_triple", "Triple for tvOS toolchain", ""),
     ]
 
 
@@ -58,17 +59,14 @@ def configure(env):
         env.Append(CPPDEFINES=["_DEBUG", ("DEBUG", 1), "DEBUG_ENABLED"])
 
     if env["use_lto"]:
-        env.Append(CCFLAGS=["-flto"])
-        env.Append(LINKFLAGS=["-flto"])
+        env.Append(CCFLAGS=["-flto=thin"])
+        env.Append(LINKFLAGS=["-flto=thin"])
 
     ## Architecture
     if env["arch"] == "x86":  # i386
         env["bits"] = "32"
     elif env["arch"] == "x86_64":
         env["bits"] = "64"
-    elif env["arch"] == "arm" or env["arch"] == "arm32" or env["arch"] == "armv7" or env["bits"] == "32":  # arm
-        env["arch"] = "arm"
-        env["bits"] = "32"
     else:  # armv64
         env["arch"] = "arm64"
         env["bits"] = "64"
@@ -81,7 +79,7 @@ def configure(env):
 
     env["ENV"]["PATH"] = env["TVOSSDK"] + "/Developer/usr/bin/:" + env["ENV"]["PATH"]
 
-    compiler_path = "$TVOSPATH/usr/bin/${ios_triple}"
+    compiler_path = "$TVOSPATH/usr/bin/${tvos_triple}"
     s_compiler_path = "$TVOSPATH/Developer/usr/bin/"
 
     ccache_path = os.environ.get("CCACHE")
@@ -128,9 +126,13 @@ def configure(env):
 
     # Temp fix to silence 'aligned deallocation function' diagnostics
     env.Append(CCFLAGS=["-faligned-allocation"])
-    
+
     # Temp fix for ABS/MAX/MIN macros in tvOS/iOS SDK blocking compilation
     env.Append(CCFLAGS=["-Wno-ambiguous-macro"])
+
+    # tvOS requires Bitcode.
+    env.Append(CCFLAGS=["-fembed-bitcode"])
+    env.Append(LINKFLAGS=["-bitcode_bundle"])
 
     ## Link flags
 
@@ -149,7 +151,7 @@ def configure(env):
                 "-F$TVOSSDK",
             ]
         )
-        
+
     if env["arch"] == "arm64":
         env.Append(LINKFLAGS=["-arch", "arm64", "-Wl,-dead_strip"])
 

@@ -23,14 +23,14 @@ tvos_lib = [
 env_tvos = env.Clone()
 tvos_lib = env_tvos.add_library("tvos", tvos_lib)
 
-# (iOS) Enable module support
+# (tvOS) Enable module support
 env_tvos.Append(CCFLAGS=["-fmodules", "-fcxx-modules"])
 
 
 def combine_libs(target=None, source=None, env=None):
     lib_path = target[0].srcnode().abspath
     if "osxcross" in env:
-        libtool = "$TVOSPATH/usr/bin/${ios_triple}libtool"
+        libtool = "$TVOSPATH/usr/bin/${tvos_triple}libtool"
     else:
         libtool = "$TVOSPATH/usr/bin/libtool"
     env.Execute(
