@@ -684,6 +684,7 @@ void AnimationNodeStateMachineEditor::_state_machine_draw() {
 		Ref<AnimationNodeStateMachineTransition> tr = state_machine->get_transition(i);
 		tl.disabled = tr->is_disabled();
 		tl.auto_advance = tr->has_auto_advance();
+		tl.invert_condition = tr->get_invert_condition();
 		tl.advance_condition_name = tr->get_advance_condition_name();
 		tl.advance_condition_state = false;
 		tl.mode = tr->get_switch_mode();
@@ -727,9 +728,16 @@ void AnimationNodeStateMachineEditor::_state_machine_draw() {
 
 		bool auto_advance = tl.auto_advance;
 		StringName fullpath = AnimationTreeEditor::get_singleton()->get_base_path() + String(tl.advance_condition_name);
-		if (tl.advance_condition_name != StringName() && bool(AnimationTreeEditor::get_singleton()->get_tree()->get(fullpath))) {
-			tl.advance_condition_state = true;
-			auto_advance = true;
+		if (tl.advance_condition_name != StringName()) {
+			if (bool(AnimationTreeEditor::get_singleton()->get_tree()->get(fullpath))) {
+				tl.advance_condition_state = true;
+				auto_advance = true;
+			}
+
+			if (tl.invert_condition) {
+				tl.advance_condition_state = !tl.advance_condition_state;
+				auto_advance = !auto_advance;
+			}
 		}
 		_connection_draw(tl.from, tl.to, tl.mode, !tl.disabled, selected, travel, auto_advance);
 
