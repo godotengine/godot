@@ -54,7 +54,7 @@ def configure(env):
         if env["arch"] != "arm64":
             env.Prepend(CCFLAGS=["-msse2"])
 
-        if env["debug_symbols"] == "yes":
+        if env["debug_symbols"]:
             env.Prepend(CCFLAGS=["-g2"])
 
     elif env["target"] == "release_debug":
@@ -63,7 +63,7 @@ def configure(env):
         else:  # optimize for size
             env.Prepend(CCFLAGS=["-Os"])
         env.Prepend(CPPDEFINES=["DEBUG_ENABLED"])
-        if env["debug_symbols"] == "yes":
+        if env["debug_symbols"]:
             env.Prepend(CCFLAGS=["-g2"])
 
     elif env["target"] == "debug":
