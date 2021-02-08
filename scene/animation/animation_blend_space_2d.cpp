@@ -238,6 +238,8 @@ void AnimationNodeBlendSpace2D::set_min_space(const Vector2 &p_min) {
 	if (min_space.y >= max_space.y) {
 		min_space.y = max_space.y - 1;
 	}
+
+	clamp_points(min_space, max_space);
 }
 
 Vector2 AnimationNodeBlendSpace2D::get_min_space() const {
@@ -252,6 +254,8 @@ void AnimationNodeBlendSpace2D::set_max_space(const Vector2 &p_max) {
 	if (max_space.y <= min_space.y) {
 		max_space.y = min_space.y + 1;
 	}
+
+	clamp_points(min_space, max_space);
 }
 
 Vector2 AnimationNodeBlendSpace2D::get_max_space() const {
@@ -444,76 +448,17 @@ float AnimationNodeBlendSpace2D::process(float p_time, bool p_seek) {
 			return 0;
 		}
 
-		Vector2 best_point;
+		const TriangleWeights t_weights = get_triangle_blends(blend_pos);
+
 		bool first = true;
-		int blend_triangle = -1;
-		float blend_weights[3] = { 0, 0, 0 };
 
-		for (int i = 0; i < triangles.size(); i++) {
-			Vector2 points[3];
-			for (int j = 0; j < 3; j++) {
-				points[j] = get_blend_point_position(get_triangle_point(i, j));
-			}
-
-			if (Geometry2D::is_point_in_triangle(blend_pos, points[0], points[1], points[2])) {
-				blend_triangle = i;
-				_blend_triangle(blend_pos, points, blend_weights);
-				break;
-			}
-
-			for (int j = 0; j < 3; j++) {
-				Vector2 s[2] = {
-					points[j],
-					points[(j + 1) % 3]
-				};
-				Vector2 closest2 = Geometry2D::get_closest_point_to_segment(blend_pos, s);
-				if (first || closest2.distance_to(blend_pos) < best_point.distance_to(blend_pos)) {
-					best_point = closest2;
-					blend_triangle = i;
-					first = false;
-					float d = s[0].distance_to(s[1]);
-					if (d == 0.0) {
-						blend_weights[j] = 1.0;
-						blend_weights[(j + 1) % 3] = 0.0;
-						blend_weights[(j + 2) % 3] = 0.0;
-					} else {
-						float c = s[0].distance_to(closest2) / d;
-
-						blend_weights[j] = 1.0 - c;
-						blend_weights[(j + 1) % 3] = c;
-						blend_weights[(j + 2) % 3] = 0.0;
-					}
-				}
-			}
-		}
-
-		ERR_FAIL_COND_V(blend_triangle == -1, 0); //should never reach here
-
-		int triangle_points[3];
-		for (int j = 0; j < 3; j++) {
-			triangle_points[j] = get_triangle_point(blend_triangle, j);
-		}
-
-		first = true;
-
-		for (int i = 0; i < blend_points_used; i++) {
-			bool found = false;
-			for (int j = 0; j < 3; j++) {
-				if (i == triangle_points[j]) {
-					//blend with the given weight
-					float t = blend_node(blend_points[i].name, blend_points[i].node, p_time, p_seek, blend_weights[j], FILTER_IGNORE, false);
-					if (first || t < mind) {
-						mind = t;
-						first = false;
-					}
-					found = true;
-					break;
-				}
-			}
-
-			if (!found) {
-				//ignore
-				blend_node(blend_points[i].name, blend_points[i].node, p_time, p_seek, 0, FILTER_IGNORE, false);
+		for (int i = 0; i < 3; i++) {
+			const BlendPoint &blend_point = blend_points[t_weights.points[i]];
+			//blend with the given weight
+			float t = blend_node(blend_point.name, blend_point.node, p_time, p_seek, t_weights.weights[i], FILTER_IGNORE, false);
+			if (first || t < mind) {
+				mind = t;
+				first = false;
 			}
 		}
 	} else {
@@ -587,6 +532,69 @@ Ref<AnimationNode> AnimationNodeBlendSpace2D::get_child_by_name(const StringName
 
 void AnimationNodeBlendSpace2D::_tree_changed() {
 	emit_signal("tree_changed");
+}
+
+AnimationNodeBlendSpace2D::TriangleWeights AnimationNodeBlendSpace2D::get_triangle_blends(const Vector2 &p_blend_pos) {
+	Vector2 best_point;
+	bool first = true;
+
+	TriangleWeights t_weights;
+
+	for (int i = 0; i < triangles.size(); i++) {
+		Vector2 points[3];
+		for (int j = 0; j < 3; j++) {
+			points[j] = get_blend_point_position(get_triangle_point(i, j));
+		}
+
+		if (Geometry2D::is_point_in_triangle(p_blend_pos, points[0], points[1], points[2])) {
+			t_weights.triangle = i;
+			_blend_triangle(p_blend_pos, points, t_weights.weights);
+			break;
+		}
+
+		for (int j = 0; j < 3; j++) {
+			Vector2 s[2] = {
+				points[j],
+				points[(j + 1) % 3]
+			};
+			Vector2 closest2 = Geometry2D::get_closest_point_to_segment(p_blend_pos, s);
+			if (first || closest2.distance_to(p_blend_pos) < best_point.distance_to(p_blend_pos)) {
+				best_point = closest2;
+				t_weights.triangle = i;
+				first = false;
+				float d = s[0].distance_to(s[1]);
+				if (d == 0.0) {
+					t_weights.weights[j] = 1.0;
+					t_weights.weights[(j + 1) % 3] = 0.0;
+					t_weights.weights[(j + 2) % 3] = 0.0;
+				} else {
+					float c = s[0].distance_to(closest2) / d;
+
+					t_weights.weights[j] = 1.0 - c;
+					t_weights.weights[(j + 1) % 3] = c;
+					t_weights.weights[(j + 2) % 3] = 0.0;
+				}
+			}
+		}
+	}
+
+	ERR_FAIL_COND_V(t_weights.triangle == -1, TriangleWeights()); //should never reach here
+
+	for (int j = 0; j < 3; j++) {
+		t_weights.points[j] = get_triangle_point(t_weights.triangle, j);
+	}
+
+	return t_weights;
+}
+
+void AnimationNodeBlendSpace2D::clamp_points(const Vector2 &min_space, const Vector2 &max_space) {
+	for (int i = 0; i < blend_points_used; ++i) {
+		BlendPoint &blend_point = blend_points[i];
+		blend_point.position.x = CLAMP(blend_point.position.x, min_space.x, max_space.x);
+		blend_point.position.y = CLAMP(blend_point.position.y, min_space.y, max_space.y);
+	}
+
+	_update_triangles();
 }
 
 void AnimationNodeBlendSpace2D::set_blend_mode(BlendMode p_blend_mode) {

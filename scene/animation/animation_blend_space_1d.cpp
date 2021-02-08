@@ -219,6 +219,55 @@ void AnimationNodeBlendSpace1D::_add_blend_point(int p_index, const Ref<Animatio
 	}
 }
 
+AnimationNodeBlendSpace1D::BlendWeights AnimationNodeBlendSpace1D::get_blend_values(const float p_blend_pos) const {
+	BlendWeights values;
+
+	float pos_lower = 1e20;
+	float pos_higher = 1e20;
+
+	// Find the closest two points to blend between
+	for (int i = 0; i < blend_points_used; i++) {
+		float pos = blend_points[i].position;
+
+		if (pos <= p_blend_pos) {
+			if (values.points[0] == -1 || p_blend_pos - pos < p_blend_pos - pos_lower) {
+				values.points[0] = i;
+				pos_lower = pos;
+			}
+		} else {
+			if (values.points[1] == -1 || pos - p_blend_pos < pos_higher - p_blend_pos) {
+				values.points[1] = i;
+				pos_higher = pos;
+			}
+		}
+	}
+
+	// We are on the left side, and there are no other point to the left,
+	// so we just max the blend of the higher point.
+	if (values.points[0] == -1 && values.points[1] != -1) {
+		values.weights[0] = 0.0;
+		values.weights[1] = 1.0;
+		return values;
+	}
+
+	// There is no higher node, max the blend on the lowest point.
+	if (values.points[1] == -1) {
+		values.weights[0] = 1.0;
+		values.weights[1] = 0.0;
+		return values;
+	}
+
+	// We are in a state between two points.
+	// Figure out the linear blend percentage
+
+	const float distance_between_points = pos_higher - pos_lower;
+	const float current_pos_inbetween = p_blend_pos - pos_lower;
+
+	values.weights[1] = current_pos_inbetween / distance_between_points;
+	values.weights[0] = 1 - values.weights[1];
+	return values;
+}
+
 float AnimationNodeBlendSpace1D::process(float p_time, bool p_seek) {
 	if (blend_points_used == 0) {
 		return 0.0;
@@ -229,75 +278,19 @@ float AnimationNodeBlendSpace1D::process(float p_time, bool p_seek) {
 		return blend_node(blend_points[0].name, blend_points[0].node, p_time, p_seek, 1.0, FILTER_IGNORE, false);
 	}
 
-	float blend_pos = get_parameter(blend_position);
+	const float blend_pos = get_parameter(blend_position);
 
-	float weights[MAX_BLEND_POINTS] = {};
-
-	int point_lower = -1;
-	float pos_lower = 0.0;
-	int point_higher = -1;
-	float pos_higher = 0.0;
-
-	// find the closest two points to blend between
-	for (int i = 0; i < blend_points_used; i++) {
-		float pos = blend_points[i].position;
-
-		if (pos <= blend_pos) {
-			if (point_lower == -1) {
-				point_lower = i;
-				pos_lower = pos;
-			} else if ((blend_pos - pos) < (blend_pos - pos_lower)) {
-				point_lower = i;
-				pos_lower = pos;
-			}
-		} else {
-			if (point_higher == -1) {
-				point_higher = i;
-				pos_higher = pos;
-			} else if ((pos - blend_pos) < (pos_higher - blend_pos)) {
-				point_higher = i;
-				pos_higher = pos;
-			}
-		}
-	}
-
-	// fill in weights
-
-	if (point_lower == -1 && point_higher != -1) {
-		// we are on the left side, no other point to the left
-		// we just play the next point.
-
-		weights[point_higher] = 1.0;
-	} else if (point_higher == -1) {
-		// we are on the right side, no other point to the right
-		// we just play the previous point
-
-		weights[point_lower] = 1.0;
-	} else {
-		// we are between two points.
-		// figure out weights, then blend the animations
-
-		float distance_between_points = pos_higher - pos_lower;
-
-		float current_pos_inbetween = blend_pos - pos_lower;
-
-		float blend_percentage = current_pos_inbetween / distance_between_points;
-
-		float blend_lower = 1.0 - blend_percentage;
-		float blend_higher = blend_percentage;
-
-		weights[point_lower] = blend_lower;
-		weights[point_higher] = blend_higher;
-	}
-
-	// actually blend the animations now
+	const BlendWeights b_values = get_blend_values(blend_pos);
 
 	float max_time_remaining = 0.0;
 
-	for (int i = 0; i < blend_points_used; i++) {
-		float remaining = blend_node(blend_points[i].name, blend_points[i].node, p_time, p_seek, weights[i], FILTER_IGNORE, false);
+	for (int i = 0; i < 2; i++) {
+		if (b_values.weights[i] > 0.0) {
+			const BlendPoint &blend_point = blend_points[b_values.points[i]];
+			float remaining = blend_node(blend_point.name, blend_point.node, p_time, p_seek, b_values.weights[i], FILTER_IGNORE, false);
 
-		max_time_remaining = MAX(max_time_remaining, remaining);
+			max_time_remaining = MAX(max_time_remaining, remaining);
+		}
 	}
 
 	return max_time_remaining;
