@@ -52,12 +52,12 @@ class VideoStreamPlaybackTheora : public VideoStreamPlayback {
 	};
 
 	//Image frames[MAX_FRAMES];
-	Image::Format format;
+	Image::Format format = Image::Format::FORMAT_L8;
 	Vector<uint8_t> frame_data;
-	int frames_pending;
-	FileAccess *file;
+	int frames_pending = 0;
+	FileAccess *file = nullptr;
 	String file_name;
-	int audio_frames_wrote;
+	int audio_frames_wrote = 0;
 	Point2i size;
 
 	int buffer_data();
@@ -65,8 +65,8 @@ class VideoStreamPlaybackTheora : public VideoStreamPlayback {
 	void video_write();
 	float get_time() const;
 
-	bool theora_eos;
-	bool vorbis_eos;
+	bool theora_eos = false;
+	bool vorbis_eos = false;
 
 	ogg_sync_state oy;
 	ogg_page og;
@@ -74,33 +74,33 @@ class VideoStreamPlaybackTheora : public VideoStreamPlayback {
 	ogg_stream_state to;
 	th_info ti;
 	th_comment tc;
-	th_dec_ctx *td;
+	th_dec_ctx *td = nullptr;
 	vorbis_info vi;
 	vorbis_dsp_state vd;
 	vorbis_block vb;
 	vorbis_comment vc;
 	th_pixel_fmt px_fmt;
-	double videobuf_time;
-	int pp_inc;
+	double videobuf_time = 0;
+	int pp_inc = 0;
 
-	int theora_p;
-	int vorbis_p;
-	int pp_level_max;
-	int pp_level;
-	int videobuf_ready;
+	int theora_p = 0;
+	int vorbis_p = 0;
+	int pp_level_max = 0;
+	int pp_level = 0;
+	int videobuf_ready = 0;
 
-	bool playing;
-	bool buffering;
+	bool playing = false;
+	bool buffering = false;
 
-	double last_update_time;
-	double time;
-	double delay_compensation;
+	double last_update_time = 0;
+	double time = 0;
+	double delay_compensation = 0;
 
 	Ref<ImageTexture> texture;
 
 	AudioMixCallback mix_callback;
-	void *mix_udata;
-	bool paused;
+	void *mix_udata = nullptr;
+	bool paused = false;
 
 #ifdef THEORA_USE_THREAD_STREAMING
 
@@ -110,16 +110,16 @@ class VideoStreamPlaybackTheora : public VideoStreamPlayback {
 
 	RingBuffer<uint8_t> ring_buffer;
 	Vector<uint8_t> read_buffer;
-	bool thread_eof;
+	bool thread_eof = false;
 	Semaphore *thread_sem;
 	Thread thread;
-	volatile bool thread_exit;
+	volatile bool thread_exit = false;
 
 	static void _streaming_thread(void *ud);
 
 #endif
 
-	int audio_track;
+	int audio_track = 0;
 
 protected:
 	void clear();

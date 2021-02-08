@@ -365,12 +365,10 @@ Array RegEx::get_names() const {
 
 RegEx::RegEx() {
 	general_ctx = pcre2_general_context_create_32(&_regex_malloc, &_regex_free, nullptr);
-	code = nullptr;
 }
 
 RegEx::RegEx(const String &p_pattern) {
 	general_ctx = pcre2_general_context_create_32(&_regex_malloc, &_regex_free, nullptr);
-	code = nullptr;
 	compile(p_pattern);
 }
 

@@ -547,7 +547,7 @@ struct TextDocumentItem {
 	 * The version number of this document (it will increase after each
 	 * change, including undo/redo).
 	 */
-	int version;
+	int version = 0;
 
 	/**
 	 * The content of the opened text document.
@@ -584,7 +584,7 @@ struct TextDocumentContentChangeEvent {
 	/**
 	 * The length of the range that got replaced.
 	 */
-	int rangeLength;
+	int rangeLength = 0;
 
 	/**
 	 * The new text of the range/document.
@@ -656,12 +656,12 @@ struct Diagnostic {
 	 * The diagnostic's severity. Can be omitted. If omitted it is up to the
 	 * client to interpret diagnostics as error, warning, info or hint.
 	 */
-	int severity;
+	int severity = 0;
 
 	/**
 	 * The diagnostic's code, which might appear in the user interface.
 	 */
-	int code;
+	int code = 0;
 
 	/**
 	 * A human-readable string describing the source of this
@@ -833,7 +833,7 @@ struct CompletionItem {
 	 * an icon is chosen by the editor. The standardized set
 	 * of available values is defined in `CompletionItemKind`.
 	 */
-	int kind;
+	int kind = 0;
 
 	/**
 	 * A human-readable string with additional information
@@ -891,7 +891,7 @@ struct CompletionItem {
 	 * The format of the insert text. The format applies to both the `insertText` property
 	 * and the `newText` property of a provided `textEdit`.
 	 */
-	int insertTextFormat;
+	int insertTextFormat = 0;
 
 	/**
 	 * An edit which is applied to a document when selecting this completion. When an edit is provided the value of
@@ -1003,7 +1003,7 @@ struct CompletionList {
 	 * This list it not complete. Further typing should result in recomputing
 	 * this list.
 	 */
-	bool isIncomplete;
+	bool isIncomplete = false;
 
 	/**
 	 * The completion items.

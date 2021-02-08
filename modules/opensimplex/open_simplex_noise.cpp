@@ -33,12 +33,6 @@
 #include "core/core_string_names.h"
 
 OpenSimplexNoise::OpenSimplexNoise() {
-	seed = 0;
-	persistence = 0.5;
-	octaves = 3;
-	period = 64;
-	lacunarity = 2.0;
-
 	_init_seeds();
 }
 

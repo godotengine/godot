@@ -55,20 +55,20 @@ protected:
 	};
 
 	struct Packet {
-		int source;
-		int destination;
-		uint8_t *data;
-		uint32_t size;
+		int source = 0;
+		int destination = 0;
+		uint8_t *data = nullptr;
+		uint32_t size = 0;
 	};
 
 	List<Packet> _incoming_packets;
 	Map<int, Ref<WebSocketPeer>> _peer_map;
 	Packet _current_packet;
 
-	bool _is_multiplayer;
-	int _target_peer;
-	int _peer_id;
-	int _refusing;
+	bool _is_multiplayer = false;
+	int _target_peer = 0;
+	int _peer_id = 0;
+	int _refusing = false;
 
 	static void _bind_methods();
 

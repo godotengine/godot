@@ -44,7 +44,7 @@ private:
 
 	uint8_t packet_buffer[PACKET_BUFFER_SIZE];
 
-	Status status;
+	Status status = STATUS_DISCONNECTED;
 	String hostname;
 
 	Ref<PacketPeerUDP> base;

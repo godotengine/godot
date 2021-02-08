@@ -137,7 +137,6 @@ Ref<VisualScript> VisualScriptNode::get_visual_script() const {
 }
 
 VisualScriptNode::VisualScriptNode() {
-	breakpoint = false;
 }
 
 ////////////////
@@ -145,8 +144,6 @@ VisualScriptNode::VisualScriptNode() {
 /////////////////////
 
 VisualScriptNodeInstance::VisualScriptNodeInstance() {
-	sequence_outputs = nullptr;
-	input_ports = nullptr;
 }
 
 VisualScriptNodeInstance::~VisualScriptNodeInstance() {
@@ -2623,14 +2620,8 @@ void VisualScriptLanguage::get_registered_node_names(List<String> *r_names) {
 }
 
 VisualScriptLanguage::VisualScriptLanguage() {
-	notification = "_notification";
-	_step = "_step";
-	_subcall = "_subcall";
 	singleton = this;
 
-	_debug_parse_err_node = -1;
-	_debug_parse_err_file = "";
-	_debug_call_stack_pos = 0;
 	int dmcs = GLOBAL_DEF("debug/settings/visual_script/max_call_stack", 1024);
 	ProjectSettings::get_singleton()->set_custom_property_info("debug/settings/visual_script/max_call_stack", PropertyInfo(Variant::INT, "debug/settings/visual_script/max_call_stack", PROPERTY_HINT_RANGE, "1024,4096,1,or_greater")); //minimum is 1024
 

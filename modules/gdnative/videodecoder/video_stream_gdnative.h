@@ -118,7 +118,7 @@ class VideoStreamPlaybackGDNative : public VideoStreamPlayback {
 	AudioMixCallback mix_callback = nullptr;
 
 	int num_channels = -1;
-	float time = 0;
+	float time = 0.0;
 	bool seek_backward = false;
 	int mix_rate = 0;
 	double delay_compensation = 0;

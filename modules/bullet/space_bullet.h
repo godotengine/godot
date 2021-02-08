@@ -100,12 +100,12 @@ class SpaceBullet : public RIDBullet {
 	btGhostPairCallback *ghostPairCallback = nullptr;
 	GodotFilterCallback *godotFilterCallback = nullptr;
 
-	btGjkEpaPenetrationDepthSolver *gjk_epa_pen_solver;
-	btVoronoiSimplexSolver *gjk_simplex_solver;
+	btGjkEpaPenetrationDepthSolver *gjk_epa_pen_solver = nullptr;
+	btVoronoiSimplexSolver *gjk_simplex_solver = nullptr;
 
 	BulletPhysicsDirectSpaceState *direct_access;
 	Vector3 gravityDirection = Vector3(0, -1, 0);
-	real_t gravityMagnitude = 10;
+	real_t gravityMagnitude = 10.0;
 
 	real_t linear_damp = 0.0;
 	real_t angular_damp = 0.0;

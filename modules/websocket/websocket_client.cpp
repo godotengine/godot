@@ -33,7 +33,6 @@
 GDCINULL(WebSocketClient);
 
 WebSocketClient::WebSocketClient() {
-	verify_ssl = true;
 }
 
 WebSocketClient::~WebSocketClient() {

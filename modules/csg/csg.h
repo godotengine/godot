@@ -48,9 +48,9 @@ struct CSGBrush {
 		Vector3 vertices[3];
 		Vector2 uvs[3];
 		AABB aabb;
-		bool smooth;
-		bool invert;
-		int material;
+		bool smooth = false;
+		bool invert = false;
+		int material = 0;
 	};
 
 	Vector<Face> faces;
@@ -74,20 +74,20 @@ struct CSGBrushOperation {
 
 	struct MeshMerge {
 		struct Face {
-			bool from_b;
-			bool inside;
-			int points[3];
+			bool from_b = false;
+			bool inside = false;
+			int points[3] = {};
 			Vector2 uvs[3];
-			bool smooth;
-			bool invert;
-			int material_idx;
+			bool smooth = false;
+			bool invert = false;
+			int material_idx = 0;
 		};
 
 		struct FaceBVH {
-			int face;
-			int left;
-			int right;
-			int next;
+			int face = 0;
+			int left = 0;
+			int right = 0;
+			int next = 0;
 			Vector3 center;
 			AABB aabb;
 		};
@@ -142,7 +142,7 @@ struct CSGBrushOperation {
 		Map<Ref<Material>, int> materials;
 		Map<Vector3, int> vertex_map;
 		OAHashMap<VertexKey, int, VertexKeyHash> snap_cache;
-		float vertex_snap;
+		float vertex_snap = 0.0;
 
 		inline void _add_distance(List<real_t> &r_intersectionsA, List<real_t> &r_intersectionsB, bool p_from_B, real_t p_distance) const;
 		inline bool _bvh_inside(FaceBVH *facebvhptr, int p_max_depth, int p_bvh_first, int p_face_idx) const;
@@ -159,7 +159,7 @@ struct CSGBrushOperation {
 		};
 
 		struct Face2D {
-			int vertex_idx[3];
+			int vertex_idx[3] = {};
 		};
 
 		Vector<Vertex2D> vertices;
@@ -167,7 +167,7 @@ struct CSGBrushOperation {
 		Plane plane;
 		Transform to_2D;
 		Transform to_3D;
-		float vertex_snap2;
+		float vertex_snap2 = 0.0;
 
 		inline int _get_point_idx(const Vector2 &p_point);
 		inline int _add_vertex(const Vertex2D &p_vertex);

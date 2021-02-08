@@ -351,7 +351,7 @@ public:
 			OP_COMP_GREATER_EQUAL,
 		};
 
-		OpType operation;
+		OpType operation = OpType::OP_ADDITION;
 		Variant::Operator variant_op = Variant::OP_MAX;
 		ExpressionNode *left_operand = nullptr;
 		ExpressionNode *right_operand = nullptr;
@@ -753,7 +753,7 @@ public:
 
 	struct MatchBranchNode : public Node {
 		Vector<PatternNode *> patterns;
-		SuiteNode *block;
+		SuiteNode *block = nullptr;
 		bool has_wildcard = false;
 
 		MatchBranchNode() {
@@ -1001,7 +1001,7 @@ public:
 			OP_LOGIC_NOT,
 		};
 
-		OpType operation;
+		OpType operation = OP_POSITIVE;
 		Variant::Operator variant_op = Variant::OP_MAX;
 		ExpressionNode *operand = nullptr;
 

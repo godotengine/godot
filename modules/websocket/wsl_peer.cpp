@@ -329,10 +329,6 @@ void WSLPeer::invalidate() {
 }
 
 WSLPeer::WSLPeer() {
-	_data = nullptr;
-	_is_string = 0;
-	close_code = -1;
-	write_mode = WRITE_MODE_BINARY;
 }
 
 WSLPeer::~WSLPeer() {

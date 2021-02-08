@@ -95,9 +95,9 @@ public:
 class GDNativeLibraryEditorPlugin : public EditorPlugin {
 	GDCLASS(GDNativeLibraryEditorPlugin, EditorPlugin);
 
-	GDNativeLibraryEditor *library_editor;
-	EditorNode *editor;
-	Button *button;
+	GDNativeLibraryEditor *library_editor = nullptr;
+	EditorNode *editor = nullptr;
+	Button *button = nullptr;
 
 public:
 	virtual String get_name() const override { return "GDNativeLibrary"; }

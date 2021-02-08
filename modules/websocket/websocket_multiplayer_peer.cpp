@@ -33,15 +33,6 @@
 #include "core/os/os.h"
 
 WebSocketMultiplayerPeer::WebSocketMultiplayerPeer() {
-	_is_multiplayer = false;
-	_peer_id = 0;
-	_target_peer = 0;
-	_refusing = false;
-
-	_current_packet.source = 0;
-	_current_packet.destination = 0;
-	_current_packet.size = 0;
-	_current_packet.data = nullptr;
 }
 
 WebSocketMultiplayerPeer::~WebSocketMultiplayerPeer() {

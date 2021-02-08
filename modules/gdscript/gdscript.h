@@ -57,11 +57,11 @@ public:
 
 class GDScript : public Script {
 	GDCLASS(GDScript, Script);
-	bool tool;
-	bool valid;
+	bool tool = false;
+	bool valid = false;
 
 	struct MemberInfo {
-		int index;
+		int index = 0;
 		StringName setter;
 		StringName getter;
 		MultiplayerAPI::RPCMode rpc_mode;
@@ -77,8 +77,8 @@ class GDScript : public Script {
 
 	Ref<GDScriptNativeClass> native;
 	Ref<GDScript> base;
-	GDScript *_base; //fast pointer access
-	GDScript *_owner; //for subclasses
+	GDScript *_base = nullptr; //fast pointer access
+	GDScript *_owner = nullptr; //for subclasses
 
 	Set<StringName> members; //members are just indices to the instanced script.
 	Map<StringName, Variant> constants;
@@ -97,8 +97,8 @@ class GDScript : public Script {
 	Map<StringName, Variant> member_default_values_cache;
 	Ref<GDScript> base_cache;
 	Set<ObjectID> inheriters_cache;
-	bool source_changed_cache;
-	bool placeholder_fallback_enabled;
+	bool source_changed_cache = false;
+	bool placeholder_fallback_enabled = false;
 	void _update_exports_values(Map<StringName, Variant> &values, List<PropertyInfo> &propnames);
 
 	DocData::ClassDoc doc;
@@ -121,7 +121,7 @@ class GDScript : public Script {
 	GDScriptFunction *implicit_initializer = nullptr;
 	GDScriptFunction *initializer = nullptr; //direct pointer to new , faster to locate
 
-	int subclass_count;
+	int subclass_count = 0;
 	Set<Object *> instances;
 	//exported members
 	String source;
