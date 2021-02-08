@@ -65,11 +65,11 @@ class GridMapEditor : public VBoxContainer {
 	};
 
 	UndoRedo *undo_redo;
-	InputAction input_action;
+	InputAction input_action = INPUT_NONE;
 	Panel *panel;
 	MenuButton *options;
 	SpinBox *floor;
-	double accumulated_floor_delta;
+	double accumulated_floor_delta = 0.0;
 	Button *mode_thumbnail;
 	Button *mode_list;
 	LineEdit *search_box;
@@ -82,19 +82,19 @@ class GridMapEditor : public VBoxContainer {
 
 	struct SetItem {
 		Vector3i position;
-		int new_value;
-		int new_orientation;
-		int old_value;
-		int old_orientation;
+		int new_value = 0;
+		int new_orientation = 0;
+		int old_value = 0;
+		int old_orientation = 0;
 	};
 
 	List<SetItem> set_items;
 
 	GridMap *node = nullptr;
 	MeshLibrary *last_mesh_library;
-	ClipMode clip_mode;
+	ClipMode clip_mode = CLIP_DISABLED;
 
-	bool lock_view;
+	bool lock_view = false;
 	Transform grid_xform;
 	Transform edit_grid_xform;
 	Vector3::Axis edit_axis;
@@ -112,9 +112,9 @@ class GridMapEditor : public VBoxContainer {
 	RID paste_instance;
 
 	struct ClipboardItem {
-		int cell_item;
+		int cell_item = 0;
 		Vector3 grid_offset;
-		int orientation;
+		int orientation = 0;
 		RID instance;
 	};
 
@@ -125,14 +125,14 @@ class GridMapEditor : public VBoxContainer {
 	Ref<StandardMaterial3D> outer_mat;
 	Ref<StandardMaterial3D> selection_floor_mat;
 
-	bool updating;
+	bool updating = false;
 
 	struct Selection {
 		Vector3 click;
 		Vector3 current;
 		Vector3 begin;
 		Vector3 end;
-		bool active;
+		bool active = false;
 	} selection;
 	Selection last_selection;
 
@@ -141,18 +141,18 @@ class GridMapEditor : public VBoxContainer {
 		Vector3 current;
 		Vector3 begin;
 		Vector3 end;
-		int orientation;
+		int orientation = 0;
 	};
 	PasteIndicator paste_indicator;
 
-	bool cursor_visible;
+	bool cursor_visible = false;
 	Transform cursor_transform;
 
 	Vector3 cursor_origin;
 
-	int display_mode;
-	int selected_palette;
-	int cursor_rot;
+	int display_mode = DISPLAY_THUMBNAIL;
+	int selected_palette = -1;
+	int cursor_rot = 0;
 
 	enum Menu {
 		MENU_OPTION_NEXT_LEVEL,

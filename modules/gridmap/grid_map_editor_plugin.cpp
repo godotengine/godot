@@ -769,7 +769,7 @@ bool GridMapEditor::forward_spatial_input_event(Camera3D *p_camera, const Ref<In
 
 struct _CGMEItemSort {
 	String name;
-	int id;
+	int id = 0;
 	_FORCE_INLINE_ bool operator<(const _CGMEItemSort &r_it) const { return name < r_it.name; }
 };
 
@@ -1151,7 +1151,6 @@ void GridMapEditor::_bind_methods() {
 }
 
 GridMapEditor::GridMapEditor(EditorNode *p_editor) {
-	input_action = INPUT_NONE;
 	editor = p_editor;
 	undo_redo = p_editor->get_undo_redo();
 
@@ -1234,7 +1233,6 @@ GridMapEditor::GridMapEditor(EditorNode *p_editor) {
 	settings_pick_distance->set_value(EDITOR_DEF("editors/grid_map/pick_distance", 5000.0));
 	settings_vbc->add_margin_child(TTR("Pick Distance:"), settings_pick_distance);
 
-	clip_mode = CLIP_DISABLED;
 	options->get_popup()->connect("id_pressed", callable_mp(this, &GridMapEditor::_menu_option));
 
 	HBoxContainer *hb = memnew(HBoxContainer);
@@ -1275,8 +1273,6 @@ GridMapEditor::GridMapEditor(EditorNode *p_editor) {
 
 	EDITOR_DEF("editors/grid_map/preview_size", 64);
 
-	display_mode = DISPLAY_THUMBNAIL;
-
 	mesh_library_palette = memnew(ItemList);
 	add_child(mesh_library_palette);
 	mesh_library_palette->set_v_size_flags(SIZE_EXPAND_FILL);
@@ -1295,11 +1291,6 @@ GridMapEditor::GridMapEditor(EditorNode *p_editor) {
 	edit_floor[0] = -1;
 	edit_floor[1] = -1;
 	edit_floor[2] = -1;
-
-	cursor_visible = false;
-	selected_palette = -1;
-	lock_view = false;
-	cursor_rot = 0;
 
 	selection_mesh = RenderingServer::get_singleton()->mesh_create();
 	paste_mesh = RenderingServer::get_singleton()->mesh_create();
@@ -1418,8 +1409,6 @@ GridMapEditor::GridMapEditor(EditorNode *p_editor) {
 	}
 
 	_set_selection(false);
-	updating = false;
-	accumulated_floor_delta = 0.0;
 
 	indicator_mat.instance();
 	indicator_mat->set_shading_mode(StandardMaterial3D::SHADING_MODE_UNSHADED);

@@ -2391,7 +2391,7 @@ Error GLTFDocument::_serialize_meshes(Ref<GLTFState> state) {
 		e["targetNames"] = target_names;
 
 		for (int j = 0; j < target_names.size(); j++) {
-			real_t weight = 0;
+			real_t weight = 0.0;
 			if (j < state->meshes.write[gltf_mesh_i]->get_blend_weights().size()) {
 				weight = state->meshes.write[gltf_mesh_i]->get_blend_weights()[j];
 			}
@@ -5569,7 +5569,7 @@ void GLTFDocument::_import_animation(Ref<GLTFState> state, AnimationPlayer *ap, 
 		animation->set_loop(true);
 	}
 
-	float length = 0;
+	float length = 0.0;
 
 	for (Map<int, GLTFAnimation::Track>::Element *track_i = anim->get_tracks().front(); track_i; track_i = track_i->next()) {
 		const GLTFAnimation::Track &track = track_i->get();

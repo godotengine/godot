@@ -50,23 +50,23 @@ public:
 	};
 
 private:
-	Operation operation;
-	CSGShape3D *parent;
+	Operation operation = OPERATION_UNION;
+	CSGShape3D *parent = nullptr;
 
-	CSGBrush *brush;
+	CSGBrush *brush = nullptr;
 
 	AABB node_aabb;
 
-	bool dirty;
-	float snap;
+	bool dirty = false;
+	float snap = 0.001;
 
-	bool use_collision;
-	uint32_t collision_layer;
-	uint32_t collision_mask;
+	bool use_collision = false;
+	uint32_t collision_layer = 1;
+	uint32_t collision_mask = 1;
 	Ref<ConcavePolygonShape3D> root_collision_shape;
 	RID root_collision_instance;
 
-	bool calculate_tangents;
+	bool calculate_tangents = true;
 
 	Ref<ArrayMesh> root_mesh;
 
@@ -85,12 +85,12 @@ private:
 		Vector<Vector2> uvs;
 		Vector<float> tans;
 		Ref<Material> material;
-		int last_added;
+		int last_added = 0;
 
-		Vector3 *verticesw;
-		Vector3 *normalsw;
-		Vector2 *uvsw;
-		float *tansw;
+		Vector3 *verticesw = nullptr;
+		Vector3 *normalsw = nullptr;
+		Vector2 *uvsw = nullptr;
+		float *tansw = nullptr;
 	};
 
 	//mikktspace callbacks

@@ -50,7 +50,7 @@ class CookieContextMbedTLS : public Reference {
 	friend class SSLContextMbedTLS;
 
 protected:
-	bool inited;
+	bool inited = false;
 	mbedtls_entropy_context entropy;
 	mbedtls_ctr_drbg_context ctr_drbg;
 	mbedtls_ssl_cookie_ctx cookie_ctx;
@@ -65,7 +65,7 @@ public:
 
 class SSLContextMbedTLS : public Reference {
 protected:
-	bool inited;
+	bool inited = false;
 
 	static PackedByteArray _read_file(String p_path);
 

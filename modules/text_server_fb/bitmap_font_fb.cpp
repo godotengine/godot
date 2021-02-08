@@ -148,7 +148,7 @@ Error BitmapFontDataFallback::load_from_file(const String &p_filename, int p_bas
 			char_map[idx] = c;
 		} else if (type == "kerning") {
 			KerningPairKey kpk;
-			float k = 0;
+			float k = 0.0;
 			if (keys.has("first")) {
 				kpk.A = keys["first"].to_int();
 			}

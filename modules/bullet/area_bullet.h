@@ -80,18 +80,18 @@ public:
 private:
 	// These are used by function callEvent. Instead to create this each call I create if one time.
 	Variant call_event_res[5];
-	Variant *call_event_res_ptr[5];
+	Variant *call_event_res_ptr[5] = {};
 
-	btGhostObject *btGhost;
+	btGhostObject *btGhost = nullptr;
 	Vector<OverlappingObjectData> overlappingObjects;
 	bool monitorable = true;
 
 	PhysicsServer3D::AreaSpaceOverrideMode spOv_mode = PhysicsServer3D::AREA_SPACE_OVERRIDE_DISABLED;
 	bool spOv_gravityPoint = false;
-	real_t spOv_gravityPointDistanceScale = 0;
-	real_t spOv_gravityPointAttenuation = 1;
+	real_t spOv_gravityPointDistanceScale = 0.0;
+	real_t spOv_gravityPointAttenuation = 1.0;
 	Vector3 spOv_gravityVec = Vector3(0, -1, 0);
-	real_t spOv_gravityMag = 10;
+	real_t spOv_gravityMag = 10.0;
 	real_t spOv_linearDump = 0.1;
 	real_t spOv_angularDump = 0.1;
 	int spOv_priority = 0;

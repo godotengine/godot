@@ -36,7 +36,7 @@
 
 struct hb_bmp_font_t {
 	BitmapFontDataAdvanced *face = nullptr;
-	float font_size = 0;
+	float font_size = 0.0;
 	bool unref = false; /* Whether to destroy bm_face when done. */
 };
 
@@ -340,7 +340,7 @@ Error BitmapFontDataAdvanced::load_from_file(const String &p_filename, int p_bas
 			char_map[idx] = c;
 		} else if (type == "kerning") {
 			KerningPairKey kpk;
-			float k = 0;
+			float k = 0.0;
 			if (keys.has("first")) {
 				kpk.A = keys["first"].to_int();
 			}

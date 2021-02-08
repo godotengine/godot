@@ -189,8 +189,6 @@ void GDMonoLog::initialize() {
 
 GDMonoLog::GDMonoLog() {
 	singleton = this;
-
-	log_level_id = -1;
 }
 
 GDMonoLog::~GDMonoLog() {

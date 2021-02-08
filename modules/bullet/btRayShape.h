@@ -42,10 +42,10 @@
 /// Ray shape around z axis
 ATTRIBUTE_ALIGNED16(class)
 btRayShape : public btConvexInternalShape {
-	btScalar m_length;
-	bool slipsOnSlope;
+	btScalar m_length = 0;
+	bool slipsOnSlope = false;
 	/// The default axis is the z
-	btVector3 m_shapeAxis;
+	btVector3 m_shapeAxis = btVector3(0, 0, 1);
 
 	btTransform m_cacheSupportPoint;
 	btScalar m_cacheScaledLength;
