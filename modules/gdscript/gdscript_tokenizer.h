@@ -178,7 +178,6 @@ public:
 		}
 
 		Token() {
-			type = EMPTY;
 		}
 	};
 

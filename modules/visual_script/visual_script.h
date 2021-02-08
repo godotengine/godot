@@ -49,7 +49,7 @@ class VisualScriptNode : public Resource {
 	Ref<VisualScript> script_used;
 
 	Array default_input_values;
-	bool breakpoint;
+	bool breakpoint = false;
 
 	void _set_default_input_values(Array p_values);
 	Array _get_default_input_values() const;
@@ -90,13 +90,9 @@ public:
 	virtual VisualScriptNodeInstance *instance(VisualScriptInstance *p_instance) = 0;
 
 	struct TypeGuess {
-		Variant::Type type;
+		Variant::Type type = Variant::NIL;
 		StringName gdclass;
 		Ref<Script> script;
-
-		TypeGuess() {
-			type = Variant::NIL;
-		}
 	};
 
 	virtual TypeGuess guess_output_type(TypeGuess *p_inputs, int p_output) const;
@@ -114,19 +110,19 @@ class VisualScriptNodeInstance {
 		INPUT_DEFAULT_VALUE_BIT = INPUT_SHIFT, // from unassigned input port, using default value (edited by user)
 	};
 
-	int id;
-	int sequence_index;
-	VisualScriptNodeInstance **sequence_outputs;
-	int sequence_output_count;
+	int id = 0;
+	int sequence_index = 0;
+	VisualScriptNodeInstance **sequence_outputs = nullptr;
+	int sequence_output_count = 0;
 	Vector<VisualScriptNodeInstance *> dependencies;
-	int *input_ports;
-	int input_port_count;
-	int *output_ports;
-	int output_port_count;
-	int working_mem_idx;
-	int pass_idx;
+	int *input_ports = nullptr;
+	int input_port_count = 0;
+	int *output_ports = nullptr;
+	int output_port_count = 0;
+	int working_mem_idx = 0;
+	int pass_idx = 0;
 
-	VisualScriptNode *base;
+	VisualScriptNode *base = nullptr;
 
 public:
 	enum StartMode {
@@ -178,7 +174,7 @@ public:
 				uint64_t from_output : 16;
 				uint64_t to_node : 24;
 			};
-			uint64_t id;
+			uint64_t id = 0;
 		};
 
 		bool operator<(const SequenceConnection &p_connection) const {
@@ -194,7 +190,7 @@ public:
 				uint64_t to_node : 24;
 				uint64_t to_port : 8;
 			};
-			uint64_t id;
+			uint64_t id = 0;
 		};
 
 		bool operator<(const DataConnection &p_connection) const {
@@ -208,7 +204,7 @@ private:
 	StringName base_type;
 	struct Argument {
 		String name;
-		Variant::Type type;
+		Variant::Type type = Variant::Type::NIL;
 	};
 
 	struct NodeData {
@@ -231,7 +227,7 @@ private:
 	struct Variable {
 		PropertyInfo info;
 		Variant default_value;
-		bool _export;
+		bool _export = false;
 		// Add getter & setter options here.
 	};
 
@@ -388,26 +384,27 @@ public:
 };
 
 class VisualScriptInstance : public ScriptInstance {
-	Object *owner;
+	Object *owner = nullptr;
 	Ref<VisualScript> script;
 
 	Map<StringName, Variant> variables; // Using variable path, not script.
 	Map<int, VisualScriptNodeInstance *> instances;
 
 	struct Function {
-		int node;
-		int max_stack;
-		int trash_pos;
-		int flow_stack_size;
-		int pass_stack_size;
-		int node_count;
-		int argument_count;
+		int node = 0;
+		int max_stack = 0;
+		int trash_pos = 0;
+		int flow_stack_size = 0;
+		int pass_stack_size = 0;
+		int node_count = 0;
+		int argument_count = 0;
 	};
 
 	Map<StringName, Function> functions;
 
 	Vector<Variant> default_values;
-	int max_input_args, max_output_args;
+	int max_input_args = 0;
+	int max_output_args = 0;
 
 	StringName source;
 
@@ -479,14 +476,14 @@ class VisualScriptFunctionState : public Reference {
 
 	ObjectID instance_id;
 	ObjectID script_id;
-	VisualScriptInstance *instance;
+	VisualScriptInstance *instance = nullptr;
 	StringName function;
 	Vector<uint8_t> stack;
-	int working_mem_index;
-	int variant_stack_size;
-	VisualScriptNodeInstance *node;
-	int flow_stack_pos;
-	int pass;
+	int working_mem_index = 0;
+	int variant_stack_size = 0;
+	VisualScriptNodeInstance *node = nullptr;
+	int flow_stack_pos = 0;
+	int pass = 0;
 
 	Variant _signal_callback(const Variant **p_args, int p_argcount, Callable::CallError &r_error);
 
@@ -507,25 +504,25 @@ class VisualScriptLanguage : public ScriptLanguage {
 	Map<String, VisualScriptNodeRegisterFunc> register_funcs;
 
 	struct CallLevel {
-		Variant *stack;
-		Variant **work_mem;
-		const StringName *function;
-		VisualScriptInstance *instance;
-		int *current_id;
+		Variant *stack = nullptr;
+		Variant **work_mem = nullptr;
+		const StringName *function = nullptr;
+		VisualScriptInstance *instance = nullptr;
+		int *current_id = nullptr;
 	};
 
-	int _debug_parse_err_node;
-	String _debug_parse_err_file;
+	int _debug_parse_err_node = -1;
+	String _debug_parse_err_file = "";
 	String _debug_error;
-	int _debug_call_stack_pos;
+	int _debug_call_stack_pos = 0;
 	int _debug_max_call_stack;
 	CallLevel *_call_stack;
 
 public:
-	StringName notification;
+	StringName notification = "_notification";
 	StringName _get_output_port_unsequenced;
-	StringName _step;
-	StringName _subcall;
+	StringName _step = "_step";
+	StringName _subcall = "_subcall";
 
 	static VisualScriptLanguage *singleton;
 

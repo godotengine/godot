@@ -36,11 +36,6 @@
 #include "editor/editor_node.h"
 
 GDScriptLanguageServer::GDScriptLanguageServer() {
-	thread_running = false;
-	started = false;
-
-	use_thread = false;
-	port = 6008;
 	_EDITOR_DEF("network/language_server/remote_port", port);
 	_EDITOR_DEF("network/language_server/enable_smart_resolve", true);
 	_EDITOR_DEF("network/language_server/show_native_symbols_in_editor", false);

@@ -35,11 +35,11 @@
 
 struct ETC1Header {
 	char tag[6]; // "PKM 10"
-	uint16_t format; // Format == number of mips (== zero)
-	uint16_t texWidth; // Texture dimensions, multiple of 4 (big-endian)
-	uint16_t texHeight;
-	uint16_t origWidth; // Original dimensions (big-endian)
-	uint16_t origHeight;
+	uint16_t format = 0; // Format == number of mips (== zero)
+	uint16_t texWidth = 0; // Texture dimensions, multiple of 4 (big-endian)
+	uint16_t texHeight = 0;
+	uint16_t origWidth = 0; // Original dimensions (big-endian)
+	uint16_t origHeight = 0;
 };
 
 RES ResourceFormatPKM::load(const String &p_path, const String &p_original_path, Error *r_error, bool p_use_sub_threads, float *r_progress, bool p_no_cache) {

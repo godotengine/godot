@@ -44,10 +44,10 @@ class PluginScriptInstance : public ScriptInstance {
 
 private:
 	Ref<PluginScript> _script;
-	Object *_owner;
+	Object *_owner = nullptr;
 	Variant _owner_variant;
-	godot_pluginscript_instance_data *_data;
-	const godot_pluginscript_instance_desc *_desc;
+	godot_pluginscript_instance_data *_data = nullptr;
+	const godot_pluginscript_instance_desc *_desc = nullptr;
 
 public:
 	_FORCE_INLINE_ Object *get_owner() { return _owner; }

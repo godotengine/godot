@@ -246,7 +246,6 @@ int PacketPeerMbedDTLS::get_max_packet_size() const {
 
 PacketPeerMbedDTLS::PacketPeerMbedDTLS() {
 	ssl_ctx.instance();
-	status = STATUS_DISCONNECTED;
 }
 
 PacketPeerMbedDTLS::~PacketPeerMbedDTLS() {

@@ -106,8 +106,6 @@ void EMWSPeer::set_no_delay(bool p_enabled) {
 }
 
 EMWSPeer::EMWSPeer() {
-	peer_sock = -1;
-	write_mode = WRITE_MODE_BINARY;
 	close();
 };
 

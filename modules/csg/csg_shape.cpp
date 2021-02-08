@@ -625,15 +625,6 @@ void CSGShape3D::_bind_methods() {
 }
 
 CSGShape3D::CSGShape3D() {
-	operation = OPERATION_UNION;
-	parent = nullptr;
-	brush = nullptr;
-	dirty = false;
-	snap = 0.001;
-	use_collision = false;
-	collision_layer = 1;
-	collision_mask = 1;
-	calculate_tangents = true;
 	set_notify_local_transform(true);
 }
 

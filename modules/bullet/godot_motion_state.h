@@ -51,7 +51,7 @@ class GodotMotionState : public btMotionState {
 	/// This data is used to store last world position
 	btTransform bodyCurrentWorldTransform;
 
-	RigidBodyBullet *owner;
+	RigidBodyBullet *owner = nullptr;
 
 public:
 	GodotMotionState(RigidBodyBullet *p_owner) :

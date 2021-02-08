@@ -274,7 +274,6 @@ int StreamPeerMbedTLS::get_available_bytes() const {
 
 StreamPeerMbedTLS::StreamPeerMbedTLS() {
 	ssl_ctx.instance();
-	status = STATUS_DISCONNECTED;
 }
 
 StreamPeerMbedTLS::~StreamPeerMbedTLS() {

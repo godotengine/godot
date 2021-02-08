@@ -110,7 +110,7 @@ public:
 	};
 
 protected:
-	Type type;
+	Type type = TYPE_AREA;
 	ObjectID instance_id;
 	uint32_t collisionLayer = 0;
 	uint32_t collisionMask = 0;

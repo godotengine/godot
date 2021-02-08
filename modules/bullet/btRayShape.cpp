@@ -39,11 +39,9 @@
 */
 
 btRayShape::btRayShape(btScalar length) :
-		btConvexInternalShape(),
-		m_shapeAxis(0, 0, 1) {
+		btConvexInternalShape() {
 	m_shapeType = CUSTOM_CONVEX_SHAPE_TYPE;
 	setLength(length);
-	slipsOnSlope = false;
 }
 
 btRayShape::~btRayShape() {

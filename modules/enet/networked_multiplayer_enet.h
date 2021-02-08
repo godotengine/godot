@@ -62,35 +62,35 @@ private:
 		SYSCH_MAX
 	};
 
-	bool active;
-	bool server;
+	bool active = false;
+	bool server = false;
 
-	uint32_t unique_id;
+	uint32_t unique_id = 0;
 
-	int target_peer;
-	TransferMode transfer_mode;
-	int transfer_channel;
-	int channel_count;
-	bool always_ordered;
+	int target_peer = 0;
+	TransferMode transfer_mode = TRANSFER_MODE_RELIABLE;
+	int transfer_channel = -1;
+	int channel_count = SYSCH_MAX;
+	bool always_ordered = false;
 
 	ENetEvent event;
-	ENetPeer *peer;
-	ENetHost *host;
+	ENetPeer *peer = nullptr;
+	ENetHost *host = nullptr;
 
-	bool refuse_connections;
-	bool server_relay;
+	bool refuse_connections = false;
+	bool server_relay = true;
 
-	ConnectionStatus connection_status;
+	ConnectionStatus connection_status = CONNECTION_DISCONNECTED;
 
 	Map<int, ENetPeer *> peer_map;
 
 	struct Packet {
-		ENetPacket *packet;
-		int from;
-		int channel;
+		ENetPacket *packet = nullptr;
+		int from = 0;
+		int channel = 0;
 	};
 
-	CompressionMode compression_mode;
+	CompressionMode compression_mode = COMPRESS_NONE;
 
 	List<Packet> incoming_packets;
 
@@ -110,10 +110,10 @@ private:
 
 	IP_Address bind_ip;
 
-	bool dtls_enabled;
+	bool dtls_enabled = false;
 	Ref<CryptoKey> dtls_key;
 	Ref<X509Certificate> dtls_cert;
-	bool dtls_verify;
+	bool dtls_verify = true;
 
 protected:
 	static void _bind_methods();

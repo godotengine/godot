@@ -42,8 +42,8 @@ class RegExMatch : public Reference {
 	GDCLASS(RegExMatch, Reference);
 
 	struct Range {
-		int start;
-		int end;
+		int start = 0;
+		int end = 0;
 	};
 
 	String subject;
@@ -72,7 +72,7 @@ class RegEx : public Reference {
 	GDCLASS(RegEx, Reference);
 
 	void *general_ctx;
-	void *code;
+	void *code = nullptr;
 	String pattern;
 
 	void _pattern_info(uint32_t what, void *where) const;

@@ -81,8 +81,8 @@ public:
 	}
 
 public:
-	RigidBodyBullet *body;
-	real_t deltaTime;
+	RigidBodyBullet *body = nullptr;
+	real_t deltaTime = 0.0;
 
 private:
 	BulletPhysicsDirectBodyState3D() {}
@@ -144,13 +144,13 @@ public:
 class RigidBodyBullet : public RigidCollisionObjectBullet {
 public:
 	struct CollisionData {
-		RigidBodyBullet *otherObject;
-		int other_object_shape;
-		int local_shape;
+		RigidBodyBullet *otherObject = nullptr;
+		int other_object_shape = 0;
+		int local_shape = 0;
 		Vector3 hitLocalLocation;
 		Vector3 hitWorldLocation;
 		Vector3 hitNormal;
-		real_t appliedImpulse;
+		real_t appliedImpulse = 0.0;
 	};
 
 	struct ForceIntegrationCallback {
@@ -169,7 +169,7 @@ public:
 	};
 
 	struct KinematicUtilities {
-		RigidBodyBullet *owner;
+		RigidBodyBullet *owner = nullptr;
 		btScalar safe_margin;
 		Vector<KinematicShape> shapes;
 
@@ -194,10 +194,10 @@ private:
 	GodotMotionState *godotMotionState;
 	btRigidBody *btBody;
 	uint16_t locked_axis = 0;
-	real_t mass = 1;
-	real_t gravity_scale = 1;
-	real_t linearDamp = 0;
-	real_t angularDamp = 0;
+	real_t mass = 1.0;
+	real_t gravity_scale = 1.0;
+	real_t linearDamp = 0.0;
+	real_t angularDamp = 0.0;
 	bool can_sleep = true;
 	bool omit_forces_integration = false;
 	bool can_integrate_forces = false;

@@ -1507,12 +1507,6 @@ VisualScriptNodeInstance *VisualScriptExpression::instance(VisualScriptInstance 
 }
 
 VisualScriptExpression::VisualScriptExpression() {
-	output_type = Variant::NIL;
-	expression_dirty = true;
-	error_set = true;
-	root = nullptr;
-	nodes = nullptr;
-	sequenced = false;
 }
 
 VisualScriptExpression::~VisualScriptExpression() {

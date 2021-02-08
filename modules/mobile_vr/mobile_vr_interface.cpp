@@ -448,19 +448,7 @@ void MobileVRInterface::process() {
 	};
 };
 
-MobileVRInterface::MobileVRInterface() {
-	initialized = false;
-
-	// Just set some defaults for these. At some point we need to look at adding a lookup table for common device + headset combos and/or support reading cardboard QR codes
-	eye_height = 1.85;
-	intraocular_dist = 6.0;
-	display_width = 14.5;
-	display_to_lens = 4.0;
-	oversample = 1.5;
-	k1 = 0.215;
-	k2 = 0.215;
-	last_ticks = 0;
-};
+MobileVRInterface::MobileVRInterface() {}
 
 MobileVRInterface::~MobileVRInterface() {
 	// and make sure we cleanup if we haven't already

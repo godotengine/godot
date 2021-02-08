@@ -213,10 +213,10 @@ private:
 class HeightMapShapeBullet : public ShapeBullet {
 public:
 	Vector<real_t> heights;
-	int width;
-	int depth;
-	real_t min_height;
-	real_t max_height;
+	int width = 0;
+	int depth = 0;
+	real_t min_height = 0.0;
+	real_t max_height = 0.0;
 
 	HeightMapShapeBullet();
 
@@ -231,7 +231,7 @@ private:
 
 class RayShapeBullet : public ShapeBullet {
 public:
-	real_t length = 1;
+	real_t length = 1.0;
 	bool slips_on_slope = false;
 
 	RayShapeBullet();

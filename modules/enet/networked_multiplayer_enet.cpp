@@ -866,28 +866,12 @@ void NetworkedMultiplayerENet::_bind_methods() {
 }
 
 NetworkedMultiplayerENet::NetworkedMultiplayerENet() {
-	active = false;
-	server = false;
-	refuse_connections = false;
-	server_relay = true;
-	unique_id = 0;
-	target_peer = 0;
-	current_packet.packet = nullptr;
-	transfer_mode = TRANSFER_MODE_RELIABLE;
-	channel_count = SYSCH_MAX;
-	transfer_channel = -1;
-	always_ordered = false;
-	connection_status = CONNECTION_DISCONNECTED;
-	compression_mode = COMPRESS_NONE;
 	enet_compressor.context = this;
 	enet_compressor.compress = enet_compress;
 	enet_compressor.decompress = enet_decompress;
 	enet_compressor.destroy = enet_compressor_destroy;
 
 	bind_ip = IP_Address("*");
-
-	dtls_enabled = false;
-	dtls_verify = true;
 }
 
 NetworkedMultiplayerENet::~NetworkedMultiplayerENet() {

@@ -41,11 +41,11 @@ class AudioStreamOGGVorbis;
 class AudioStreamPlaybackOGGVorbis : public AudioStreamPlaybackResampled {
 	GDCLASS(AudioStreamPlaybackOGGVorbis, AudioStreamPlaybackResampled);
 
-	stb_vorbis *ogg_stream;
+	stb_vorbis *ogg_stream = nullptr;
 	stb_vorbis_alloc ogg_alloc;
-	uint32_t frames_mixed;
-	bool active;
-	int loops;
+	uint32_t frames_mixed = 0;
+	bool active = false;
+	int loops = 0;
 
 	friend class AudioStreamOGGVorbis;
 
@@ -76,15 +76,15 @@ class AudioStreamOGGVorbis : public AudioStream {
 
 	friend class AudioStreamPlaybackOGGVorbis;
 
-	void *data;
-	uint32_t data_len;
+	void *data = nullptr;
+	uint32_t data_len = 0;
 
-	int decode_mem_size;
-	float sample_rate;
-	int channels;
-	float length;
-	bool loop;
-	float loop_offset;
+	int decode_mem_size = 0;
+	float sample_rate = 1.0;
+	int channels = 1;
+	float length = 0.0;
+	bool loop = false;
+	float loop_offset = 0.0;
 	void clear_data();
 
 protected:

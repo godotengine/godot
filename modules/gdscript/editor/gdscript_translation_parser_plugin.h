@@ -39,8 +39,8 @@
 class GDScriptEditorTranslationParserPlugin : public EditorTranslationParserPlugin {
 	GDCLASS(GDScriptEditorTranslationParserPlugin, EditorTranslationParserPlugin);
 
-	Vector<String> *ids;
-	Vector<Vector<String>> *ids_ctx_plural;
+	Vector<String> *ids = nullptr;
+	Vector<Vector<String>> *ids_ctx_plural = nullptr;
 
 	// List of patterns used for extracting translation strings.
 	StringName tr_func = "tr";

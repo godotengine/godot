@@ -47,7 +47,7 @@ class TextureBasisU : public Texture {
 	RID texture;
 	Size2 tex_size;
 
-	uint32_t flags;
+	uint32_t flags = FLAGS_DEFAULT;
 
 	Vector<uint8_t> data;
 

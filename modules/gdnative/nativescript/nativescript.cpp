@@ -1196,13 +1196,6 @@ void NativeScriptLanguage::_unload_stuff(bool p_reload) {
 
 NativeScriptLanguage::NativeScriptLanguage() {
 	NativeScriptLanguage::singleton = this;
-#ifndef NO_THREADS
-	has_objects_to_register = false;
-#endif
-
-#ifdef DEBUG_ENABLED
-	profiling = false;
-#endif
 
 	_init_call_type = "nativescript_init";
 	_init_call_name = "nativescript_init";

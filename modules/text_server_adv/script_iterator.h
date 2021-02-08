@@ -45,9 +45,9 @@
 class ScriptIterator {
 public:
 	struct ScriptRange {
-		int start;
-		int end;
-		hb_script_t script;
+		int start = 0;
+		int end = 0;
+		hb_script_t script = HB_SCRIPT_COMMON;
 	};
 	Vector<ScriptRange> script_ranges;
 

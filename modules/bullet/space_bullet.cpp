@@ -1092,13 +1092,13 @@ private:
 	btDbvtVolume bounds;
 
 	const btCollisionObject *self_collision_object;
-	uint32_t collision_layer;
-	uint32_t collision_mask;
+	uint32_t collision_layer = 0;
+	uint32_t collision_mask = 0;
 
 	struct CompoundLeafCallback : btDbvt::ICollide {
 	private:
-		RecoverPenetrationBroadPhaseCallback *parent_callback;
-		btCollisionObject *collision_object;
+		RecoverPenetrationBroadPhaseCallback *parent_callback = nullptr;
+		btCollisionObject *collision_object = nullptr;
 
 	public:
 		CompoundLeafCallback(RecoverPenetrationBroadPhaseCallback *p_parent_callback, btCollisionObject *p_collision_object) :
@@ -1116,8 +1116,8 @@ private:
 
 public:
 	struct BroadphaseResult {
-		btCollisionObject *collision_object;
-		int compound_child_index;
+		btCollisionObject *collision_object = nullptr;
+		int compound_child_index = 0;
 	};
 
 	Vector<BroadphaseResult> results;

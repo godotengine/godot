@@ -34,15 +34,6 @@
 #include "core/config/project_settings.h"
 #include "core/os/os.h"
 
-WSLServer::PendingPeer::PendingPeer() {
-	use_ssl = false;
-	time = 0;
-	has_request = false;
-	response_sent = 0;
-	req_pos = 0;
-	memset(req_buf, 0, sizeof(req_buf));
-}
-
 bool WSLServer::PendingPeer::_parse_request(const Vector<String> p_protocols) {
 	Vector<String> psa = String((char *)req_buf).split("\r\n");
 	int len = psa.size();
@@ -310,10 +301,6 @@ Error WSLServer::set_buffers(int p_in_buffer, int p_in_packets, int p_out_buffer
 }
 
 WSLServer::WSLServer() {
-	_in_buf_size = DEF_BUF_SHIFT;
-	_in_pkt_size = DEF_PKT_SHIFT;
-	_out_buf_size = DEF_BUF_SHIFT;
-	_out_pkt_size = DEF_PKT_SHIFT;
 	_server.instance();
 }
 

@@ -207,7 +207,6 @@ Vector<uint8_t> TextureBasisU::get_basisu_data() const {
 };
 
 TextureBasisU::TextureBasisU() {
-	flags = FLAGS_DEFAULT;
 	texture = RenderingServer::get_singleton()->texture_create();
 };
 

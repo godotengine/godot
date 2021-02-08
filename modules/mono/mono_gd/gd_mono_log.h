@@ -46,9 +46,9 @@
 
 class GDMonoLog {
 #ifdef GD_MONO_LOG_ENABLED
-	int log_level_id;
+	int log_level_id = -1;
 
-	FileAccess *log_file;
+	FileAccess *log_file = nullptr;
 	String log_file_path;
 
 	bool _try_create_logs_dir(const String &p_logs_dir);

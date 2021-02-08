@@ -41,9 +41,9 @@ class UPNP : public Reference {
 	GDCLASS(UPNP, Reference);
 
 private:
-	String discover_multicast_if;
-	int discover_local_port;
-	bool discover_ipv6;
+	String discover_multicast_if = "";
+	int discover_local_port = 0;
+	bool discover_ipv6 = false;
 
 	Vector<Ref<UPNPDevice>> devices;
 

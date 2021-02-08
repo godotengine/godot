@@ -41,7 +41,7 @@ class BulletPhysicsServer3D;
 
 class RIDBullet {
 	RID self;
-	BulletPhysicsServer3D *physicsServer;
+	BulletPhysicsServer3D *physicsServer = nullptr;
 
 public:
 	_FORCE_INLINE_ void set_self(const RID &p_self) { self = p_self; }

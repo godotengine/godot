@@ -645,30 +645,13 @@ void VideoStreamPlaybackTheora::_streaming_thread(void *ud) {
 #endif
 
 VideoStreamPlaybackTheora::VideoStreamPlaybackTheora() {
-	file = nullptr;
-	theora_p = 0;
-	vorbis_p = 0;
-	videobuf_ready = 0;
-	playing = false;
-	frames_pending = 0;
-	videobuf_time = 0;
-	paused = false;
-
-	buffering = false;
 	texture = Ref<ImageTexture>(memnew(ImageTexture));
-	mix_callback = nullptr;
-	mix_udata = nullptr;
-	audio_track = 0;
-	delay_compensation = 0;
-	audio_frames_wrote = 0;
 
 #ifdef THEORA_USE_THREAD_STREAMING
 	int rb_power = nearest_shift(RB_SIZE_KB * 1024);
 	ring_buffer.resize(rb_power);
 	read_buffer.resize(RB_SIZE_KB * 1024);
 	thread_sem = Semaphore::create();
-	thread_exit = false;
-	thread_eof = false;
 
 #endif
 };

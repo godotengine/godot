@@ -133,8 +133,8 @@ class GDScriptCompiler {
 	Error _parse_class_level(GDScript *p_script, const GDScriptParser::ClassNode *p_class, bool p_keep_state);
 	Error _parse_class_blocks(GDScript *p_script, const GDScriptParser::ClassNode *p_class, bool p_keep_state);
 	void _make_scripts(GDScript *p_script, const GDScriptParser::ClassNode *p_class, bool p_keep_state);
-	int err_line;
-	int err_column;
+	int err_line = 0;
+	int err_column = 0;
 	StringName source;
 	String error;
 	bool within_await = false;

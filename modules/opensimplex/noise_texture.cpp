@@ -33,15 +33,6 @@
 #include "core/core_string_names.h"
 
 NoiseTexture::NoiseTexture() {
-	update_queued = false;
-	regen_queued = false;
-	first_time = true;
-
-	size = Vector2i(512, 512);
-	seamless = false;
-	as_normal_map = false;
-	bump_strength = 8.0;
-
 	noise = Ref<OpenSimplexNoise>();
 
 	_queue_update();

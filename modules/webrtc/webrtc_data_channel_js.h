@@ -42,16 +42,16 @@ private:
 	String _label;
 	String _protocol;
 
-	bool _was_string;
-	WriteMode _write_mode;
+	bool _was_string = false;
+	WriteMode _write_mode = WRITE_MODE_BINARY;
 
 	enum {
 		PACKET_BUFFER_SIZE = 65536 - 5 // 4 bytes for the size, 1 for for type
 	};
 
-	int _js_id;
+	int _js_id = 0;
 	RingBuffer<uint8_t> in_buffer;
-	int queue_count;
+	int queue_count = 0;
 	uint8_t packet_buffer[PACKET_BUFFER_SIZE];
 
 	static void _on_open(void *p_obj);

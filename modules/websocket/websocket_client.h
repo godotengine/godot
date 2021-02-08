@@ -42,7 +42,7 @@ class WebSocketClient : public WebSocketMultiplayerPeer {
 
 protected:
 	Ref<WebSocketPeer> _peer;
-	bool verify_ssl;
+	bool verify_ssl = true;
 	Ref<X509Certificate> ssl_cert;
 
 	static void _bind_methods();
