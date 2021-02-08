@@ -80,6 +80,7 @@ layout(set = 0, binding = 9, std140) buffer restrict readonly Lights {
 lights;
 
 layout(set = 0, binding = 10) uniform texture2DArray lightprobe_texture;
+layout(set = 0, binding = 11) uniform texture3D occlusion_texture;
 
 layout(push_constant, binding = 0, std430) uniform Params {
 	vec3 grid_size;
@@ -91,9 +92,9 @@ layout(push_constant, binding = 0, std430) uniform Params {
 	uint process_increment;
 
 	int probe_axis_size;
-	bool multibounce;
+	float bounce_feedback;
 	float y_mult;
-	uint pad;
+	bool use_occlusion;
 }
 params;
 
@@ -159,7 +160,8 @@ void main() {
 
 	// Add indirect light first, in order to save computation resources
 #ifdef MODE_PROCESS_DYNAMIC
-	if (params.multibounce) {
+	if (params.bounce_feedback > 0.001) {
+		vec3 feedback = (params.bounce_feedback < 1.0) ? (albedo * params.bounce_feedback) : mix(albedo, vec3(1.0), params.bounce_feedback - 1.0);
 		vec3 pos = (vec3(positioni) + vec3(0.5)) * float(params.probe_axis_size - 1) / params.grid_size;
 		ivec3 probe_base_pos = ivec3(pos);
 
@@ -172,7 +174,7 @@ void main() {
 
 		vec3 base_tex_posf = vec3(tex_pos);
 		vec2 tex_pixel_size = 1.0 / vec2(ivec2((OCT_SIZE + 2) * params.probe_axis_size * params.probe_axis_size, (OCT_SIZE + 2) * params.probe_axis_size));
-		vec3 probe_uv_offset = (ivec3(OCT_SIZE + 2, OCT_SIZE + 2, (OCT_SIZE + 2) * params.probe_axis_size)) * tex_pixel_size.xyx;
+		vec3 probe_uv_offset = vec3(ivec3(OCT_SIZE + 2, OCT_SIZE + 2, (OCT_SIZE + 2) * params.probe_axis_size)) * tex_pixel_size.xyx;
 
 		for (uint j = 0; j < 8; j++) {
 			ivec3 offset = (ivec3(j) >> ivec3(0, 1, 2)) & ivec3(1, 1, 1);
@@ -192,18 +194,35 @@ void main() {
 			for (uint k = 0; k < 6; k++) {
 				if (bool(valid_aniso & (1 << k))) {
 					vec3 n = aniso_dir[k];
-					float weight = trilinear.x * trilinear.y * trilinear.z * max(0.005, dot(n, probe_dir));
+					float weight = trilinear.x * trilinear.y * trilinear.z * max(0, dot(n, probe_dir));
 
-					vec3 tex_posf = base_tex_posf + vec3(octahedron_encode(n) * float(OCT_SIZE), 0.0);
-					tex_posf.xy *= tex_pixel_size;
+					if (weight > 0.0 && params.use_occlusion) {
+						ivec3 occ_indexv = abs((cascades.data[params.cascade].probe_world_offset + probe_posi) & ivec3(1, 1, 1)) * ivec3(1, 2, 4);
+						vec4 occ_mask = mix(vec4(0.0), vec4(1.0), equal(ivec4(occ_indexv.x | occ_indexv.y), ivec4(0, 1, 2, 3)));
 
-					vec3 pos_uvw = tex_posf;
-					pos_uvw.xy += vec2(offset.xy) * probe_uv_offset.xy;
-					pos_uvw.x += float(offset.z) * probe_uv_offset.z;
-					vec3 indirect_light = textureLod(sampler2DArray(lightprobe_texture, linear_sampler), pos_uvw, 0.0).rgb;
+						vec3 occ_pos = (vec3(positioni) + aniso_dir[k] + vec3(0.5)) / params.grid_size;
+						occ_pos.z += float(params.cascade);
+						if (occ_indexv.z != 0) { //z bit is on, means index is >=4, so make it switch to the other half of textures
+							occ_pos.x += 1.0;
+						}
+						occ_pos *= vec3(0.5, 1.0, 1.0 / float(params.max_cascades)); //renormalize
+						float occlusion = dot(textureLod(sampler3D(occlusion_texture, linear_sampler), occ_pos, 0.0), occ_mask);
 
-					light_accum[k] += indirect_light * weight;
-					weight_accum[k] += weight;
+						weight *= occlusion;
+					}
+
+					if (weight > 0.0) {
+						vec3 tex_posf = base_tex_posf + vec3(octahedron_encode(n) * float(OCT_SIZE), 0.0);
+						tex_posf.xy *= tex_pixel_size;
+
+						vec3 pos_uvw = tex_posf;
+						pos_uvw.xy += vec2(offset.xy) * probe_uv_offset.xy;
+						pos_uvw.x += float(offset.z) * probe_uv_offset.z;
+						vec3 indirect_light = textureLod(sampler2DArray(lightprobe_texture, linear_sampler), pos_uvw, 0.0).rgb;
+
+						light_accum[k] += indirect_light * weight;
+						weight_accum[k] += weight;
+					}
 				}
 			}
 		}
@@ -211,7 +230,7 @@ void main() {
 		for (uint k = 0; k < 6; k++) {
 			if (weight_accum[k] > 0.0) {
 				light_accum[k] /= weight_accum[k];
-				light_accum[k] *= albedo;
+				light_accum[k] *= feedback;
 			}
 		}
 	}

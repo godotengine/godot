@@ -156,7 +156,7 @@ private:
 	float sdfgi_min_cell_size = 0.2;
 	SDFGIYScale sdfgi_y_scale = SDFGI_Y_SCALE_DISABLED;
 	bool sdfgi_use_occlusion = false;
-	bool sdfgi_use_multibounce = false;
+	float sdfgi_bounce_feedback = 0.0;
 	bool sdfgi_read_sky_light = false;
 	float sdfgi_energy = 1.0;
 	float sdfgi_normal_bias = 1.1;
@@ -318,8 +318,8 @@ public:
 	SDFGIYScale get_sdfgi_y_scale() const;
 	void set_sdfgi_use_occlusion(bool p_enabled);
 	bool is_sdfgi_using_occlusion() const;
-	void set_sdfgi_use_multi_bounce(bool p_enabled);
-	bool is_sdfgi_using_multi_bounce() const;
+	void set_sdfgi_bounce_feedback(float p_amount);
+	float get_sdfgi_bounce_feedback() const;
 	void set_sdfgi_read_sky_light(bool p_enabled);
 	bool is_sdfgi_reading_sky_light() const;
 	void set_sdfgi_energy(float p_energy);
