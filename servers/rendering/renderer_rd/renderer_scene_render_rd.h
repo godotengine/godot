@@ -778,7 +778,7 @@ private:
 		RS::EnvironmentSDFGICascades sdfgi_cascades;
 		float sdfgi_min_cell_size = 0.2;
 		bool sdfgi_use_occlusion = false;
-		bool sdfgi_use_multibounce = false;
+		float sdfgi_bounce_feedback = 0.0;
 		bool sdfgi_read_sky_light = false;
 		float sdfgi_energy = 1.0;
 		float sdfgi_normal_bias = 1.1;
@@ -1028,7 +1028,7 @@ private:
 		RID cascades_ubo;
 
 		bool uses_occlusion = false;
-		bool uses_multibounce = false;
+		float bounce_feedback = 0.0;
 		bool reads_sky = false;
 		float energy = 1.0;
 		float normal_bias = 1.1;
@@ -1163,9 +1163,9 @@ private:
 			uint32_t process_increment;
 
 			int32_t probe_axis_size;
-			uint32_t multibounce;
+			float bounce_feedback;
 			float y_mult;
-			uint32_t pad;
+			uint32_t use_occlusion;
 		};
 
 		enum {
@@ -1721,7 +1721,7 @@ public:
 	bool environment_is_ssr_enabled(RID p_env) const;
 	bool environment_is_sdfgi_enabled(RID p_env) const;
 
-	virtual void environment_set_sdfgi(RID p_env, bool p_enable, RS::EnvironmentSDFGICascades p_cascades, float p_min_cell_size, RS::EnvironmentSDFGIYScale p_y_scale, bool p_use_occlusion, bool p_use_multibounce, bool p_read_sky, float p_energy, float p_normal_bias, float p_probe_bias);
+	virtual void environment_set_sdfgi(RID p_env, bool p_enable, RS::EnvironmentSDFGICascades p_cascades, float p_min_cell_size, RS::EnvironmentSDFGIYScale p_y_scale, bool p_use_occlusion, float p_bounce_feedback, bool p_read_sky, float p_energy, float p_normal_bias, float p_probe_bias);
 	virtual void environment_set_sdfgi_ray_count(RS::EnvironmentSDFGIRayCount p_ray_count);
 	virtual void environment_set_sdfgi_frames_to_converge(RS::EnvironmentSDFGIFramesToConverge p_frames);
 	virtual void environment_set_sdfgi_frames_to_update_light(RS::EnvironmentSDFGIFramesToUpdateLight p_update);

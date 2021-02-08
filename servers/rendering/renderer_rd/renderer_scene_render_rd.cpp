@@ -667,6 +667,13 @@ void RendererSceneRenderRD::sdfgi_update(RID p_render_buffers, RID p_environment
 				u.ids.push_back(rb->sdfgi->lightprobe_texture);
 				uniforms.push_back(u);
 			}
+			{
+				RD::Uniform u;
+				u.binding = 11;
+				u.uniform_type = RD::UNIFORM_TYPE_TEXTURE;
+				u.ids.push_back(rb->sdfgi->occlusion_texture);
+				uniforms.push_back(u);
+			}
 
 			cascade.sdf_direct_light_uniform_set = RD::get_singleton()->uniform_set_create(uniforms, sdfgi_shader.direct_light.version_get_shader(sdfgi_shader.direct_light_shader, 0), 0);
 		}
@@ -949,7 +956,7 @@ void RendererSceneRenderRD::sdfgi_update(RID p_render_buffers, RID p_environment
 			sdfgi->cascades[i].integrate_uniform_set = RD::get_singleton()->uniform_set_create(uniforms, sdfgi_shader.integrate.version_get_shader(sdfgi_shader.integrate_shader, 0), 0);
 		}
 
-		sdfgi->uses_multibounce = env->sdfgi_use_multibounce;
+		sdfgi->bounce_feedback = env->sdfgi_bounce_feedback;
 		sdfgi->energy = env->sdfgi_energy;
 		sdfgi->normal_bias = env->sdfgi_normal_bias;
 		sdfgi->probe_bias = env->sdfgi_probe_bias;
@@ -962,7 +969,7 @@ void RendererSceneRenderRD::sdfgi_update(RID p_render_buffers, RID p_environment
 
 	//check for updates
 
-	sdfgi->uses_multibounce = env->sdfgi_use_multibounce;
+	sdfgi->bounce_feedback = env->sdfgi_bounce_feedback;
 	sdfgi->energy = env->sdfgi_energy;
 	sdfgi->normal_bias = env->sdfgi_normal_bias;
 	sdfgi->probe_bias = env->sdfgi_probe_bias;
@@ -1172,8 +1179,9 @@ void RendererSceneRenderRD::_sdfgi_update_light(RID p_render_buffers, RID p_envi
 	push_constant.grid_size[2] = rb->sdfgi->cascade_size;
 	push_constant.max_cascades = rb->sdfgi->cascades.size();
 	push_constant.probe_axis_size = rb->sdfgi->probe_axis_count;
-	push_constant.multibounce = rb->sdfgi->uses_multibounce;
+	push_constant.bounce_feedback = rb->sdfgi->bounce_feedback;
 	push_constant.y_mult = rb->sdfgi->y_mult;
+	push_constant.use_occlusion = rb->sdfgi->uses_occlusion;
 
 	for (uint32_t i = 0; i < rb->sdfgi->cascades.size(); i++) {
 		SDFGI::Cascade &cascade = rb->sdfgi->cascades[i];
@@ -3073,7 +3081,7 @@ void RendererSceneRenderRD::environment_glow_set_use_high_quality(bool p_enable)
 	glow_high_quality = p_enable;
 }
 
-void RendererSceneRenderRD::environment_set_sdfgi(RID p_env, bool p_enable, RS::EnvironmentSDFGICascades p_cascades, float p_min_cell_size, RS::EnvironmentSDFGIYScale p_y_scale, bool p_use_occlusion, bool p_use_multibounce, bool p_read_sky, float p_energy, float p_normal_bias, float p_probe_bias) {
+void RendererSceneRenderRD::environment_set_sdfgi(RID p_env, bool p_enable, RS::EnvironmentSDFGICascades p_cascades, float p_min_cell_size, RS::EnvironmentSDFGIYScale p_y_scale, bool p_use_occlusion, float p_bounce_feedback, bool p_read_sky, float p_energy, float p_normal_bias, float p_probe_bias) {
 	Environment *env = environment_owner.getornull(p_env);
 	ERR_FAIL_COND(!env);
 
@@ -3085,7 +3093,7 @@ void RendererSceneRenderRD::environment_set_sdfgi(RID p_env, bool p_enable, RS::
 	env->sdfgi_cascades = p_cascades;
 	env->sdfgi_min_cell_size = p_min_cell_size;
 	env->sdfgi_use_occlusion = p_use_occlusion;
-	env->sdfgi_use_multibounce = p_use_multibounce;
+	env->sdfgi_bounce_feedback = p_bounce_feedback;
 	env->sdfgi_read_sky_light = p_read_sky;
 	env->sdfgi_energy = p_energy;
 	env->sdfgi_normal_bias = p_normal_bias;
@@ -7782,7 +7790,7 @@ void RendererSceneRenderRD::_render_sdfgi_region(RID p_render_buffers, int p_reg
 
 				RD::get_singleton()->compute_list_add_barrier(compute_list);
 
-				if (rb->sdfgi->uses_multibounce) {
+				if (rb->sdfgi->bounce_feedback > 0.0) {
 					//multibounce requires this to be stored so direct light can read from it
 
 					RD::get_singleton()->compute_list_bind_compute_pipeline(compute_list, sdfgi_shader.integrate_pipeline[SDGIShader::INTEGRATE_MODE_STORE]);
@@ -8120,8 +8128,9 @@ void RendererSceneRenderRD::_render_sdfgi_static_lights(RID p_render_buffers, ui
 	dl_push_constant.grid_size[2] = rb->sdfgi->cascade_size;
 	dl_push_constant.max_cascades = rb->sdfgi->cascades.size();
 	dl_push_constant.probe_axis_size = rb->sdfgi->probe_axis_count;
-	dl_push_constant.multibounce = false; // this is static light, do not multibounce yet
+	dl_push_constant.bounce_feedback = 0.0; // this is static light, do not multibounce yet
 	dl_push_constant.y_mult = rb->sdfgi->y_mult;
+	dl_push_constant.use_occlusion = rb->sdfgi->uses_occlusion;
 
 	//all must be processed
 	dl_push_constant.process_offset = 0;

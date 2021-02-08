@@ -620,7 +620,7 @@ public:
 	BIND2(environment_set_volumetric_fog_volume_size, int, int)
 	BIND1(environment_set_volumetric_fog_filter_active, bool)
 
-	BIND11(environment_set_sdfgi, RID, bool, EnvironmentSDFGICascades, float, EnvironmentSDFGIYScale, bool, bool, bool, float, float, float)
+	BIND11(environment_set_sdfgi, RID, bool, EnvironmentSDFGICascades, float, EnvironmentSDFGIYScale, bool, float, bool, float, float, float)
 	BIND1(environment_set_sdfgi_ray_count, EnvironmentSDFGIRayCount)
 	BIND1(environment_set_sdfgi_frames_to_converge, EnvironmentSDFGIFramesToConverge)
 	BIND1(environment_set_sdfgi_frames_to_update_light, EnvironmentSDFGIFramesToUpdateLight)

@@ -520,13 +520,12 @@ bool Environment::is_sdfgi_using_occlusion() const {
 	return sdfgi_use_occlusion;
 }
 
-void Environment::set_sdfgi_use_multi_bounce(bool p_enabled) {
-	sdfgi_use_multibounce = p_enabled;
+void Environment::set_sdfgi_bounce_feedback(float p_amount) {
+	sdfgi_bounce_feedback = p_amount;
 	_update_sdfgi();
 }
-
-bool Environment::is_sdfgi_using_multi_bounce() const {
-	return sdfgi_use_multibounce;
+float Environment::get_sdfgi_bounce_feedback() const {
+	return sdfgi_bounce_feedback;
 }
 
 void Environment::set_sdfgi_read_sky_light(bool p_enabled) {
@@ -573,7 +572,7 @@ void Environment::_update_sdfgi() {
 			sdfgi_min_cell_size,
 			RS::EnvironmentSDFGIYScale(sdfgi_y_scale),
 			sdfgi_use_occlusion,
-			sdfgi_use_multibounce,
+			sdfgi_bounce_feedback,
 			sdfgi_read_sky_light,
 			sdfgi_energy,
 			sdfgi_normal_bias,
@@ -1207,8 +1206,8 @@ void Environment::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_sdfgi_y_scale"), &Environment::get_sdfgi_y_scale);
 	ClassDB::bind_method(D_METHOD("set_sdfgi_use_occlusion", "enable"), &Environment::set_sdfgi_use_occlusion);
 	ClassDB::bind_method(D_METHOD("is_sdfgi_using_occlusion"), &Environment::is_sdfgi_using_occlusion);
-	ClassDB::bind_method(D_METHOD("set_sdfgi_use_multi_bounce", "enable"), &Environment::set_sdfgi_use_multi_bounce);
-	ClassDB::bind_method(D_METHOD("is_sdfgi_using_multi_bounce"), &Environment::is_sdfgi_using_multi_bounce);
+	ClassDB::bind_method(D_METHOD("set_sdfgi_bounce_feedback", "amount"), &Environment::set_sdfgi_bounce_feedback);
+	ClassDB::bind_method(D_METHOD("get_sdfgi_bounce_feedback"), &Environment::get_sdfgi_bounce_feedback);
 	ClassDB::bind_method(D_METHOD("set_sdfgi_read_sky_light", "enable"), &Environment::set_sdfgi_read_sky_light);
 	ClassDB::bind_method(D_METHOD("is_sdfgi_reading_sky_light"), &Environment::is_sdfgi_reading_sky_light);
 	ClassDB::bind_method(D_METHOD("set_sdfgi_energy", "amount"), &Environment::set_sdfgi_energy);
@@ -1220,9 +1219,9 @@ void Environment::_bind_methods() {
 
 	ADD_GROUP("SDFGI", "sdfgi_");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "sdfgi_enabled"), "set_sdfgi_enabled", "is_sdfgi_enabled");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "sdfgi_use_multi_bounce"), "set_sdfgi_use_multi_bounce", "is_sdfgi_using_multi_bounce");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "sdfgi_use_occlusion"), "set_sdfgi_use_occlusion", "is_sdfgi_using_occlusion");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "sdfgi_read_sky_light"), "set_sdfgi_read_sky_light", "is_sdfgi_reading_sky_light");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "sdfgi_bounce_feedback", PROPERTY_HINT_RANGE, "0,1.99,0.01"), "set_sdfgi_bounce_feedback", "get_sdfgi_bounce_feedback");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "sdfgi_cascades", PROPERTY_HINT_ENUM, "4 Cascades,6 Cascades,8 Cascades"), "set_sdfgi_cascades", "get_sdfgi_cascades");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "sdfgi_min_cell_size", PROPERTY_HINT_RANGE, "0.01,64,0.01"), "set_sdfgi_min_cell_size", "get_sdfgi_min_cell_size");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "sdfgi_cascade0_distance", PROPERTY_HINT_RANGE, "0.1,16384,0.1,or_greater"), "set_sdfgi_cascade0_distance", "get_sdfgi_cascade0_distance");
