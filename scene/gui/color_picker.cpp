@@ -52,6 +52,7 @@ void ColorPicker::_notification(int p_what) {
 			btn_pick->set_icon(get_theme_icon("screen_picker", "ColorPicker"));
 			bt_add_preset->set_icon(get_theme_icon("add_preset"));
 
+			_update_controls();
 			_update_color();
 
 #ifdef TOOLS_ENABLED
