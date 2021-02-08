@@ -98,6 +98,7 @@ private:
 	float inspect_edited_object_timeout;
 	bool auto_switch_remote_scene_tree;
 	ObjectID inspected_object_id;
+	String last_filter;
 	ScriptEditorDebuggerVariables *variables;
 	Map<ObjectID, ScriptEditorDebuggerInspectedObject *> remote_objects;
 	Set<RES> remote_dependencies;
