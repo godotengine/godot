@@ -176,21 +176,19 @@ def configure_msvc(env, manual_msvc_config):
     # Build type
 
     if env["target"] == "release":
-        if env["debug_symbols"] != "full":
-            if env["optimize"] == "speed":  # optimize for speed (default)
-                env.Append(CCFLAGS=["/O2"])
-            else:  # optimize for size
-                env.Append(CCFLAGS=["/O1"])
+        if env["optimize"] == "speed":  # optimize for speed (default)
+            env.Append(CCFLAGS=["/O2"])
+        else:  # optimize for size
+            env.Append(CCFLAGS=["/O1"])
         env.Append(LINKFLAGS=["/SUBSYSTEM:WINDOWS"])
         env.Append(LINKFLAGS=["/ENTRY:mainCRTStartup"])
         env.Append(LINKFLAGS=["/OPT:REF"])
 
     elif env["target"] == "release_debug":
-        if env["debug_symbols"] != "full":
-            if env["optimize"] == "speed":  # optimize for speed (default)
-                env.Append(CCFLAGS=["/O2"])
-            else:  # optimize for size
-                env.Append(CCFLAGS=["/O1"])
+        if env["optimize"] == "speed":  # optimize for speed (default)
+            env.Append(CCFLAGS=["/O2"])
+        else:  # optimize for size
+            env.Append(CCFLAGS=["/O1"])
         env.AppendUnique(CPPDEFINES=["DEBUG_ENABLED"])
         env.Append(LINKFLAGS=["/SUBSYSTEM:CONSOLE"])
         env.Append(LINKFLAGS=["/OPT:REF"])
@@ -201,7 +199,7 @@ def configure_msvc(env, manual_msvc_config):
         env.Append(LINKFLAGS=["/SUBSYSTEM:CONSOLE"])
         env.Append(LINKFLAGS=["/DEBUG"])
 
-    if env["debug_symbols"] == "yes":
+    if env["debug_symbols"]:
         env.AppendUnique(CCFLAGS=["/Z7"])
         env.AppendUnique(LINKFLAGS=["/DEBUG"])
 
@@ -308,16 +306,15 @@ def configure_mingw(env):
                 env.Append(CCFLAGS=["-O2"])
         else:  # optimize for size
             env.Prepend(CCFLAGS=["-Os"])
-
         env.Append(LINKFLAGS=["-Wl,--subsystem,windows"])
 
-        if env["debug_symbols"] == "yes":
+        if env["debug_symbols"]:
             env.Prepend(CCFLAGS=["-g2"])
 
     elif env["target"] == "release_debug":
         env.Append(CCFLAGS=["-O2"])
         env.Append(CPPDEFINES=["DEBUG_ENABLED"])
-        if env["debug_symbols"] == "yes":
+        if env["debug_symbols"]:
             env.Prepend(CCFLAGS=["-g2"])
         if env["optimize"] == "speed":  # optimize for speed (default)
             env.Append(CCFLAGS=["-O2"])
