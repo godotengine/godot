@@ -194,13 +194,13 @@ def configure_msvc(env, manual_msvc_config):
         env.Append(LINKFLAGS=["/OPT:REF"])
 
     elif env["target"] == "debug":
-        env.AppendUnique(CCFLAGS=["/Z7", "/Od", "/EHsc"])
+        env.AppendUnique(CCFLAGS=["/Zi", "/FS", "/Od", "/EHsc"])
         env.AppendUnique(CPPDEFINES=["DEBUG_ENABLED"])
         env.Append(LINKFLAGS=["/SUBSYSTEM:CONSOLE"])
         env.Append(LINKFLAGS=["/DEBUG"])
 
     if env["debug_symbols"]:
-        env.AppendUnique(CCFLAGS=["/Z7"])
+        env.AppendUnique(CCFLAGS=["/Zi", "/FS"])
         env.AppendUnique(LINKFLAGS=["/DEBUG"])
 
     ## Compile/link flags
@@ -209,6 +209,7 @@ def configure_msvc(env, manual_msvc_config):
         env.AppendUnique(CCFLAGS=["/MT"])
     else:
         env.AppendUnique(CCFLAGS=["/MD"])
+
     env.AppendUnique(CCFLAGS=["/Gd", "/GR", "/nologo"])
     # Force to use Unicode encoding
     env.AppendUnique(CCFLAGS=["/utf-8"])
