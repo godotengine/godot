@@ -595,21 +595,27 @@ StringName AnimationNodeStateMachine::get_node_name(const Ref<AnimationNode> &p_
 	ERR_FAIL_V(StringName());
 }
 
-void AnimationNodeStateMachine::get_child_nodes(List<ChildNode> *r_child_nodes) {
-	Vector<StringName> nodes;
+int AnimationNodeStateMachine::get_child_nodes(List<ChildNode> *r_child_nodes) {
+	int child_count = AnimationNode::get_child_nodes(r_child_nodes);
 
-	for (Map<StringName, State>::Element *E = states.front(); E; E = E->next()) {
-		nodes.push_back(E->key());
+	if (child_count == 0) {
+		Vector<StringName> nodes;
+
+		for (Map<StringName, State>::Element *E = states.front(); E; E = E->next()) {
+			nodes.push_back(E->key());
+		}
+
+		nodes.sort_custom<StringName::AlphCompare>();
+
+		for (int i = 0; i < nodes.size(); i++) {
+			ChildNode cn;
+			cn.name = nodes[i];
+			cn.node = states[cn.name].node;
+			r_child_nodes->push_back(cn);
+		}
+		child_count = nodes.size();
 	}
-
-	nodes.sort_custom<StringName::AlphCompare>();
-
-	for (int i = 0; i < nodes.size(); i++) {
-		ChildNode cn;
-		cn.name = nodes[i];
-		cn.node = states[cn.name].node;
-		r_child_nodes->push_back(cn);
-	}
+	return child_count;
 }
 
 bool AnimationNodeStateMachine::has_node(const StringName &p_name) const {

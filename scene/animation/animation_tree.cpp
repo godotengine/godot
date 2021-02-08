@@ -71,18 +71,40 @@ Variant AnimationNode::get_parameter(const StringName &p_name) const {
 	return state->tree->property_map[path];
 }
 
-void AnimationNode::get_child_nodes(List<ChildNode> *r_child_nodes) {
+int AnimationNode::get_child_nodes(List<ChildNode> *r_child_nodes) {
 	if (get_script_instance()) {
 		Dictionary cn = get_script_instance()->call("get_child_nodes");
 		List<Variant> keys;
 		cn.get_key_list(&keys);
 		for (List<Variant>::Element *E = keys.front(); E; E = E->next()) {
 			ChildNode child;
+			Variant node = cn[E->get()];
+
+			// Some rudimentary type safety
+			ERR_CONTINUE_MSG(node.get_type() != Variant::OBJECT, "Expected 'AnimationNode' type values from get_child_nodes. Got '" + Variant::get_type_name(node.get_type()) + "' instead.");
+
 			child.name = E->get();
 			child.node = cn[E->get()];
 			r_child_nodes->push_back(child);
 		}
+		return keys.size();
 	}
+	return 0;
+}
+
+Dictionary AnimationNode::_get_child_nodes_bind() {
+	// Exposes get_child_nodes to all scripts extending AnimationNode, including native subclasses such as AnimationNodeStateMachine
+
+	List<ChildNode> nodes;
+	get_child_nodes(&nodes);
+
+	Dictionary ret;
+	for (const List<ChildNode>::Element *iter = nodes.front(); iter; iter = iter->next()) {
+		ChildNode child = iter->get();
+		ret[child.name] = child.node;
+	}
+
+	return ret;
 }
 
 void AnimationNode::blend_animation(const StringName &p_animation, float p_time, float p_delta, bool p_seeked, float p_blend) {
@@ -115,6 +137,22 @@ void AnimationNode::blend_animation(const StringName &p_animation, float p_time,
 	state->animation_states.push_back(anim_state);
 }
 
+void AnimationNode::on_play(float p_time) {
+	if (get_script_instance()) {
+		get_script_instance()->call("_on_play", p_time);
+	}
+}
+
+void AnimationNode::on_stop(float p_time) {
+	if (get_script_instance()) {
+		get_script_instance()->call("_on_stop", p_time);
+	}
+}
+
+bool AnimationNode::is_processing() const {
+	return last_process_time > 0.f;
+}
+
 float AnimationNode::_pre_process(const StringName &p_base_path, AnimationNode *p_parent, State *p_state, float p_time, bool p_seek, const Vector<StringName> &p_connections) {
 	base_path = p_base_path;
 	parent = p_parent;
@@ -122,6 +160,9 @@ float AnimationNode::_pre_process(const StringName &p_base_path, AnimationNode *
 	state = p_state;
 
 	float t = process(p_time, p_seek);
+	if (!p_seek) {
+		process_time = t;
+	}
 
 	state = nullptr;
 	parent = nullptr;
@@ -336,6 +377,12 @@ float AnimationNode::process(float p_time, bool p_seek) {
 	return 0;
 }
 
+void AnimationNode::advance(float p_delta) {
+	if (get_script_instance()) {
+		get_script_instance()->call("_advance", p_delta);
+	}
+}
+
 void AnimationNode::set_filter_path(const NodePath &p_path, bool p_enable) {
 	if (p_enable) {
 		filter[p_path] = true;
@@ -415,8 +462,18 @@ void AnimationNode::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_parameter", "name", "value"), &AnimationNode::set_parameter);
 	ClassDB::bind_method(D_METHOD("get_parameter", "name"), &AnimationNode::get_parameter);
 
+	ClassDB::bind_method(D_METHOD("_get_child_nodes"), &AnimationNode::_get_child_nodes_bind);
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "child_nodes", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR), "", "_get_child_nodes");
+
+	ClassDB::bind_method(D_METHOD("_get_is_processing"), &AnimationNode::is_processing);
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "is_processing", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR), "", "_get_is_processing");
+
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "filter_enabled", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR), "set_filter_enabled", "is_filter_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "filters", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR | PROPERTY_USAGE_INTERNAL), "_set_filters", "_get_filters");
+
+	BIND_VMETHOD(MethodInfo("_on_play", PropertyInfo(Variant::FLOAT, "time")));
+	BIND_VMETHOD(MethodInfo("_on_stop", PropertyInfo(Variant::FLOAT, "time")));
+	BIND_VMETHOD(MethodInfo("_advance", PropertyInfo(Variant::FLOAT, "delta")));
 
 	BIND_VMETHOD(MethodInfo(Variant::DICTIONARY, "get_child_nodes"));
 	BIND_VMETHOD(MethodInfo(Variant::ARRAY, "get_parameter_list"));
@@ -444,6 +501,8 @@ AnimationNode::AnimationNode() {
 	state = nullptr;
 	parent = nullptr;
 	filter_enabled = false;
+	process_time = -1.f;
+	last_process_time = 0.f;
 }
 
 ////////////////////
@@ -796,6 +855,11 @@ void AnimationTree::_process_graph(float p_delta) {
 
 	//process
 
+	// Reset process_time count on every node in tree
+	for (List<AnimationNode::ChildNode>::Element *E = all_nodes.front(); E; E = E->next()) {
+		E->get().node->process_time = -1.f;
+	}
+
 	{
 		if (started) {
 			//if started, seek
@@ -804,6 +868,24 @@ void AnimationTree::_process_graph(float p_delta) {
 		}
 
 		root->_pre_process(SceneStringNames::get_singleton()->parameters_base_path, nullptr, &state, p_delta, false, Vector<StringName>());
+	}
+
+	// Check if processing occurred on each node
+	for (List<AnimationNode::ChildNode>::Element *E = all_nodes.front(); E; E = E->next()) {
+		Ref<AnimationNode> node = E->get().node;
+		// If there was a change in processing state, call the relevant script function
+		if (node->last_process_time < 0.f && node->process_time > 0.f) {
+			node->on_play(node->process_time); // node entered
+		}
+
+		if (node->is_processing()) {
+			node->advance(p_delta);
+		}
+
+		if (node->last_process_time >= 0.f && node->process_time < 0.f) {
+			node->on_stop(node->last_process_time); // node exited
+		}
+		node->last_process_time = node->process_time;
 	}
 
 	if (!state.valid) {
@@ -1373,11 +1455,22 @@ void AnimationTree::_update_properties_for_node(const String &p_base_path, Ref<A
 		properties.push_back(pinfo);
 	}
 
-	List<AnimationNode::ChildNode> children;
-	node->get_child_nodes(&children);
+	// Accumulate all child nodes into one list
+	List<AnimationNode::ChildNode>::Element *E = all_nodes.back();
+	int start = all_nodes.size();
+	node->get_child_nodes(&all_nodes);
 
-	for (List<AnimationNode::ChildNode>::Element *E = children.front(); E; E = E->next()) {
+	if (!E) {
+		E = all_nodes.front();
+	} else {
+		E = E->next();
+	}
+	int end = all_nodes.size();
+
+	// Update properties for each child node
+	for (int i = start; E && i < end; i++) {
 		_update_properties_for_node(p_base_path + E->get().name + "/", E->get().node);
+		E = E->next();
 	}
 }
 
@@ -1390,6 +1483,7 @@ void AnimationTree::_update_properties() {
 	property_parent_map.clear();
 	input_activity_map.clear();
 	input_activity_map_get.clear();
+	all_nodes.clear();
 
 	if (root.is_valid()) {
 		_update_properties_for_node(SceneStringNames::get_singleton()->parameters_base_path, root);

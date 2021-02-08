@@ -170,6 +170,34 @@
 				This function should return the time left for the current animation to finish (if unsure, pass the value from the main blend being called).
 			</description>
 		</method>
+		<method name="_on_play" qualifiers="virtual">
+			<return type="void">
+			</return>
+			<argument index="0" name="time" type="float">
+			</argument>
+			<description>
+				Called when a custom node begins processing. The [code]time[/code] parameter is the time remaining in the node's current animation, which is the same value returned by [method process].
+				When an animation starts, [code]time[/code] should be the same as the length of the animation.
+			</description>
+		</method>
+		<method name="_advance" qualifiers="virtual">
+			<return type="void">
+			</return>
+			<argument index="0" name="delta" type="float">
+			</argument>
+			<description>
+				Called when the custom node is processed by [AnimationTree]. The [code]delta[/code] parameter is the time (in seconds) since the last advance callback. It should be the same delta value provided to [method process] when [code]seek[/code] is [code]false[/code].
+			</description>
+		</method>
+		<method name="_on_stop" qualifiers="virtual">
+			<return type="void">
+			</return>
+			<argument index="0" name="time" type="float">
+			</argument>
+			<description>
+				Called when a custom node stops processing. The [code]time[/code] parameter is the time remaining in the node's current animation, which is the same value returned by [method process].
+			</description>
+		</method>
 		<method name="remove_input">
 			<return type="void">
 			</return>
@@ -205,6 +233,12 @@
 	<members>
 		<member name="filter_enabled" type="bool" setter="set_filter_enabled" getter="is_filter_enabled">
 			If [code]true[/code], filtering is enabled.
+		</member>
+		<member name="is_processing" type="bool">
+			Returns [code]true[/code] when [method process] is called on the current [AnimationTree] frame.
+		</member>
+		<member name="child_nodes" type="Dictionary">
+			Returns all child nodes as a [code]name: node[/code] dictionary. Custom nodes can change this behavior by overriding [method get_child_nodes].
 		</member>
 	</members>
 	<signals>

@@ -124,8 +124,9 @@ public:
 		Ref<AnimationNode> node;
 	};
 
-	virtual void get_child_nodes(List<ChildNode> *r_child_nodes);
+	virtual int get_child_nodes(List<ChildNode> *r_child_nodes);
 
+	bool is_processing() const;
 	virtual float process(float p_time, bool p_seek);
 	virtual String get_caption() const;
 
@@ -147,6 +148,16 @@ public:
 	virtual Ref<AnimationNode> get_child_by_name(const StringName &p_name);
 
 	AnimationNode();
+
+private:
+	float process_time;
+	float last_process_time;
+
+	void on_play(float p_time);
+	void advance(float p_delta);
+	void on_stop(float p_time);
+
+	Dictionary _get_child_nodes_bind();
 };
 
 VARIANT_ENUM_CAST(AnimationNode::FilterAction)
@@ -249,6 +260,7 @@ private:
 	Set<TrackCache *> playing_caches;
 
 	Ref<AnimationNode> root;
+	List<AnimationNode::ChildNode> all_nodes;
 
 	AnimationProcessMode process_mode;
 	bool active;

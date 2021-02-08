@@ -885,21 +885,26 @@ Vector2 AnimationNodeBlendTree::get_node_position(const StringName &p_node) cons
 	return nodes[p_node].position;
 }
 
-void AnimationNodeBlendTree::get_child_nodes(List<ChildNode> *r_child_nodes) {
-	Vector<StringName> ns;
+int AnimationNodeBlendTree::get_child_nodes(List<ChildNode> *r_child_nodes) {
+	int child_count = AnimationNode::get_child_nodes(r_child_nodes);
+	if (child_count == 0) {
+		Vector<StringName> ns;
+		child_count = nodes.size();
 
-	for (Map<StringName, Node>::Element *E = nodes.front(); E; E = E->next()) {
-		ns.push_back(E->key());
+		for (Map<StringName, Node>::Element *E = nodes.front(); E; E = E->next()) {
+			ns.push_back(E->key());
+		}
+
+		ns.sort_custom<StringName::AlphCompare>();
+
+		for (int i = 0; i < ns.size(); i++) {
+			ChildNode cn;
+			cn.name = ns[i];
+			cn.node = nodes[cn.name].node;
+			r_child_nodes->push_back(cn);
+		}
 	}
-
-	ns.sort_custom<StringName::AlphCompare>();
-
-	for (int i = 0; i < ns.size(); i++) {
-		ChildNode cn;
-		cn.name = ns[i];
-		cn.node = nodes[cn.name].node;
-		r_child_nodes->push_back(cn);
-	}
+	return child_count;
 }
 
 bool AnimationNodeBlendTree::has_node(const StringName &p_name) const {
