@@ -129,6 +129,8 @@ void EditorDebuggerTree::update_scene_tree(const SceneDebuggerTree *p_tree, int 
 	updating_scene_tree = true;
 	const String last_path = get_selected_path();
 	const String filter = EditorNode::get_singleton()->get_scene_tree_dock()->get_filter();
+	bool filter_changed = filter != last_filter;
+	TreeItem *scroll_item = nullptr;
 
 	// Nodes are in a flatten list, depth first. Use a stack of parents, avoid recursion.
 	List<Pair<TreeItem *, int>> parents;
@@ -162,11 +164,17 @@ void EditorDebuggerTree::update_scene_tree(const SceneDebuggerTree *p_tree, int 
 		if (debugger_id == p_debugger) { // Can use remote id.
 			if (node.id == inspected_object_id) {
 				item->select(0);
+				if (filter_changed) {
+					scroll_item = item;
+				}
 			}
 		} else { // Must use path
 			if (last_path == _get_path(item)) {
 				updating_scene_tree = false; // Force emission of new selection
 				item->select(0);
+				if (filter_changed) {
+					scroll_item = item;
+				}
 				updating_scene_tree = true;
 			}
 		}
@@ -183,6 +191,9 @@ void EditorDebuggerTree::update_scene_tree(const SceneDebuggerTree *p_tree, int 
 				}
 				parent->remove_child(item);
 				memdelete(item);
+				if (scroll_item == item) {
+					scroll_item = nullptr;
+				}
 				if (had_siblings) {
 					break; // Parent must survive.
 				}
@@ -199,6 +210,10 @@ void EditorDebuggerTree::update_scene_tree(const SceneDebuggerTree *p_tree, int 
 		}
 	}
 	debugger_id = p_debugger; // Needed by hook, could be avoided if every debugger had its own tree
+	if (scroll_item) {
+		call_deferred("scroll_to_item", scroll_item);
+	}
+	last_filter = filter;
 	updating_scene_tree = false;
 }
 
