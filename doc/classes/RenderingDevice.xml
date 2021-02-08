@@ -74,6 +74,8 @@
 		<method name="compute_list_begin">
 			<return type="int">
 			</return>
+			<argument index="0" name="allow_draw_overlap" type="bool" default="false">
+			</argument>
 			<description>
 			</description>
 		</method>
@@ -439,6 +441,24 @@
 		</method>
 		<method name="get_captured_timestamps_frame" qualifiers="const">
 			<return type="int">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_device_name" qualifiers="const">
+			<return type="String">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_device_pipeline_cache_uuid" qualifiers="const">
+			<return type="String">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_device_vendor_name" qualifiers="const">
+			<return type="String">
 			</return>
 			<description>
 			</description>
@@ -822,6 +842,8 @@
 		<constant name="BARRIER_MASK_TRANSFER" value="4">
 		</constant>
 		<constant name="BARRIER_MASK_ALL" value="7">
+		</constant>
+		<constant name="BARRIER_MASK_NO_BARRIER" value="8">
 		</constant>
 		<constant name="DATA_FORMAT_R4G4_UNORM_PACK8" value="0" enum="DataFormat">
 		</constant>
@@ -1587,13 +1609,15 @@
 		</constant>
 		<constant name="INITIAL_ACTION_CLEAR_REGION" value="1" enum="InitialAction">
 		</constant>
-		<constant name="INITIAL_ACTION_KEEP" value="2" enum="InitialAction">
+		<constant name="INITIAL_ACTION_CLEAR_REGION_CONTINUE" value="2" enum="InitialAction">
 		</constant>
-		<constant name="INITIAL_ACTION_DROP" value="3" enum="InitialAction">
+		<constant name="INITIAL_ACTION_KEEP" value="3" enum="InitialAction">
 		</constant>
-		<constant name="INITIAL_ACTION_CONTINUE" value="4" enum="InitialAction">
+		<constant name="INITIAL_ACTION_DROP" value="4" enum="InitialAction">
 		</constant>
-		<constant name="INITIAL_ACTION_MAX" value="5" enum="InitialAction">
+		<constant name="INITIAL_ACTION_CONTINUE" value="5" enum="InitialAction">
+		</constant>
+		<constant name="INITIAL_ACTION_MAX" value="6" enum="InitialAction">
 		</constant>
 		<constant name="FINAL_ACTION_READ" value="0" enum="FinalAction">
 		</constant>

@@ -265,7 +265,9 @@
 		</member>
 		<member name="volumetric_fog_light_energy" type="float" setter="set_volumetric_fog_light_energy" getter="get_volumetric_fog_light_energy" default="1.0">
 		</member>
-		<member name="volumetric_fog_shadow_filter" type="int" setter="set_volumetric_fog_shadow_filter" getter="get_volumetric_fog_shadow_filter" enum="Environment.VolumetricFogShadowFilter" default="1">
+		<member name="volumetric_fog_temporal_reprojection_amount" type="float" setter="set_volumetric_fog_temporal_reprojection_amount" getter="get_volumetric_fog_temporal_reprojection_amount" default="0.9">
+		</member>
+		<member name="volumetric_fog_temporal_reprojection_enabled" type="bool" setter="set_volumetric_fog_temporal_reprojection_enabled" getter="is_volumetric_fog_temporal_reprojection_enabled" default="true">
 		</member>
 	</members>
 	<constants>

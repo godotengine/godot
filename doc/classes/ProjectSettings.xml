@@ -1088,9 +1088,6 @@
 		</member>
 		<member name="rendering/lightmapper/probe_capture_update_speed" type="float" setter="" getter="" default="15">
 		</member>
-		<member name="rendering/limits/rendering/max_renderable_elements" type="int" setter="" getter="" default="128000">
-			Max amount of elements renderable in a frame. If more than this are visible per frame, they will be dropped. Keep in mind elements refer to mesh surfaces and not meshes themselves.
-		</member>
 		<member name="rendering/limits/time/time_rollover_secs" type="float" setter="" getter="" default="3600">
 		</member>
 		<member name="rendering/quality/2d/snap_2d_transforms_to_pixel" type="bool" setter="" getter="" default="false">
@@ -1306,11 +1303,7 @@
 		<member name="rendering/threads/thread_model" type="int" setter="" getter="" default="1">
 			Thread model for rendering. Rendering on a thread can vastly improve performance, but synchronizing to the main thread can cause a bit more jitter.
 		</member>
-		<member name="rendering/volumetric_fog/directional_shadow_shrink" type="int" setter="" getter="" default="512">
-		</member>
-		<member name="rendering/volumetric_fog/positional_shadow_shrink" type="int" setter="" getter="" default="512">
-		</member>
-		<member name="rendering/volumetric_fog/use_filter" type="int" setter="" getter="" default="0">
+		<member name="rendering/volumetric_fog/use_filter" type="int" setter="" getter="" default="1">
 		</member>
 		<member name="rendering/volumetric_fog/volume_depth" type="int" setter="" getter="" default="128">
 		</member>
