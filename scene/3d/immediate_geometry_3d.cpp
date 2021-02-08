@@ -150,7 +150,6 @@ void ImmediateGeometry3D::_bind_methods() {
 ImmediateGeometry3D::ImmediateGeometry3D() {
 	im = RenderingServer::get_singleton()->immediate_create();
 	set_base(im);
-	empty = true;
 }
 
 ImmediateGeometry3D::~ImmediateGeometry3D() {

@@ -39,21 +39,21 @@ class Sprite2D : public Node2D {
 
 	Ref<Texture2D> texture;
 	Color specular_color;
-	float shininess;
+	float shininess = 0.0;
 
-	bool centered;
+	bool centered = true;
 	Point2 offset;
 
-	bool hflip;
-	bool vflip;
-	bool region;
+	bool hflip = false;
+	bool vflip = false;
+	bool region = false;
 	Rect2 region_rect;
-	bool region_filter_clip;
+	bool region_filter_clip = false;
 
-	int frame;
+	int frame = 0;
 
-	int vframes;
-	int hframes;
+	int vframes = 1;
+	int hframes = 1;
 
 	void _get_rects(Rect2 &r_src_rect, Rect2 &r_dst_rect, bool &r_filter_clip) const;
 

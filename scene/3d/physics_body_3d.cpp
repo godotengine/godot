@@ -330,8 +330,8 @@ void RigidBody3D::_body_inout(int p_status, ObjectID p_instance, int p_body_shap
 
 struct _RigidBodyInOut {
 	ObjectID id;
-	int shape;
-	int local_shape;
+	int shape = 0;
+	int local_shape = 0;
 };
 
 void RigidBody3D::_direct_state_changed(Object *p_state) {
@@ -825,24 +825,6 @@ void RigidBody3D::_bind_methods() {
 
 RigidBody3D::RigidBody3D() :
 		PhysicsBody3D(PhysicsServer3D::BODY_MODE_RIGID) {
-	mode = MODE_RIGID;
-
-	mass = 1;
-	max_contacts_reported = 0;
-	state = nullptr;
-
-	gravity_scale = 1;
-	linear_damp = -1;
-	angular_damp = -1;
-
-	//angular_velocity=0;
-	sleeping = false;
-	ccd = false;
-
-	custom_integrator = false;
-	contact_monitor = nullptr;
-	can_sleep = true;
-
 	PhysicsServer3D::get_singleton()->body_set_force_integration_callback(get_rid(), this, "_direct_state_changed");
 }
 
@@ -1221,11 +1203,6 @@ void KinematicBody3D::_direct_state_changed(Object *p_state) {
 
 KinematicBody3D::KinematicBody3D() :
 		PhysicsBody3D(PhysicsServer3D::BODY_MODE_KINEMATIC) {
-	locked_axis = 0;
-	on_floor = false;
-	on_ceiling = false;
-	on_wall = false;
-
 	set_safe_margin(0.001);
 	PhysicsServer3D::get_singleton()->body_set_force_integration_callback(get_rid(), this, "_direct_state_changed");
 }

@@ -64,10 +64,10 @@ class PathFollow2D : public Node2D {
 public:
 private:
 	Path2D *path = nullptr;
-	real_t offset = 0;
-	real_t h_offset = 0;
-	real_t v_offset = 0;
-	real_t lookahead = 4;
+	real_t offset = 0.0;
+	real_t h_offset = 0.0;
+	real_t v_offset = 0.0;
+	real_t lookahead = 4.0;
 	bool cubic = true;
 	bool loop = true;
 	bool rotates = true;

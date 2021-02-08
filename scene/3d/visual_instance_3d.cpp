@@ -135,7 +135,6 @@ RID VisualInstance3D::get_base() const {
 VisualInstance3D::VisualInstance3D() {
 	instance = RenderingServer::get_singleton()->instance_create();
 	RenderingServer::get_singleton()->instance_attach_object_instance_id(instance, get_instance_id());
-	layers = 1;
 	set_notify_transform(true);
 }
 
@@ -412,17 +411,5 @@ void GeometryInstance3D::_bind_methods() {
 }
 
 GeometryInstance3D::GeometryInstance3D() {
-	lod_min_distance = 0;
-	lod_max_distance = 0;
-	lod_min_hysteresis = 0;
-	lod_max_hysteresis = 0;
-
-	lod_bias = 1.0;
-
-	gi_mode = GI_MODE_DISABLED;
-	lightmap_scale = LIGHTMAP_SCALE_1X;
-
-	shadow_casting_setting = SHADOW_CASTING_SETTING_ON;
-	extra_cull_margin = 0;
 	//RS::get_singleton()->instance_geometry_set_baked_light_texture_index(get_instance(),0);
 }

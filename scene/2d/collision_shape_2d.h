@@ -39,13 +39,13 @@ class CollisionObject2D;
 class CollisionShape2D : public Node2D {
 	GDCLASS(CollisionShape2D, Node2D);
 	Ref<Shape2D> shape;
-	Rect2 rect;
-	uint32_t owner_id;
-	CollisionObject2D *parent;
+	Rect2 rect = Rect2(-Point2(10, 10), Point2(20, 20));
+	uint32_t owner_id = 0;
+	CollisionObject2D *parent = nullptr;
 	void _shape_changed();
-	bool disabled;
-	bool one_way_collision;
-	real_t one_way_collision_margin;
+	bool disabled = false;
+	bool one_way_collision = false;
+	real_t one_way_collision_margin = 1.0;
 
 	void _update_in_shape_owner(bool p_xform_only = false);
 

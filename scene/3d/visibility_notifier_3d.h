@@ -41,7 +41,7 @@ class VisibilityNotifier3D : public Node3D {
 	Ref<World3D> world;
 	Set<Camera3D *> cameras;
 
-	AABB aabb;
+	AABB aabb = AABB(Vector3(-1, -1, -1), Vector3(2, 2, 2));
 
 protected:
 	virtual void _screen_enter() {}
@@ -76,7 +76,7 @@ protected:
 	virtual void _screen_enter() override;
 	virtual void _screen_exit() override;
 
-	bool visible;
+	bool visible = false;
 
 	void _find_nodes(Node *p_node);
 

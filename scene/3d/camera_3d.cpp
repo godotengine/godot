@@ -653,24 +653,10 @@ Vector3 Camera3D::get_doppler_tracked_velocity() const {
 
 Camera3D::Camera3D() {
 	camera = RenderingServer::get_singleton()->camera_create();
-	size = 1;
-	fov = 0;
-	frustum_offset = Vector2();
-	near = 0;
-	far = 0;
-	current = false;
-	viewport = nullptr;
-	force_change = false;
-	mode = PROJECTION_PERSPECTIVE;
 	set_perspective(75.0, 0.05, 4000.0);
-	keep_aspect = KEEP_HEIGHT;
-	layers = 0xfffff;
-	v_offset = 0;
-	h_offset = 0;
 	RenderingServer::get_singleton()->camera_set_cull_mask(camera, layers);
 	//active=false;
 	velocity_tracker.instance();
-	doppler_tracking = DOPPLER_TRACKING_DISABLED;
 	set_notify_transform(true);
 	set_disable_scale(true);
 }
@@ -882,16 +868,10 @@ void ClippedCamera3D::_bind_methods() {
 }
 
 ClippedCamera3D::ClippedCamera3D() {
-	margin = 0;
-	clip_offset = 0;
-	process_mode = CLIP_PROCESS_PHYSICS;
 	set_physics_process_internal(true);
-	collision_mask = 1;
 	set_notify_local_transform(Engine::get_singleton()->is_editor_hint());
 	points.resize(5);
 	pyramid_shape = PhysicsServer3D::get_singleton()->shape_create(PhysicsServer3D::SHAPE_CONVEX_POLYGON);
-	clip_to_areas = false;
-	clip_to_bodies = true;
 }
 
 ClippedCamera3D::~ClippedCamera3D() {

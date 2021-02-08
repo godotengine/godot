@@ -300,22 +300,6 @@ void Light2D::_bind_methods() {
 
 Light2D::Light2D() {
 	canvas_light = RenderingServer::get_singleton()->canvas_light_create();
-	enabled = true;
-	editor_only = false;
-	shadow = false;
-	color = Color(1, 1, 1);
-	height = 0;
-	z_min = -1024;
-	z_max = 1024;
-	layer_min = 0;
-	layer_max = 0;
-	item_mask = 1;
-	item_shadow_mask = 1;
-	energy = 1.0;
-	shadow_color = Color(0, 0, 0, 0);
-	shadow_filter = SHADOW_FILTER_NONE;
-	shadow_smooth = 0;
-	blend_mode = BLEND_MODE_ADD;
 	set_notify_transform(true);
 }
 

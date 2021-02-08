@@ -39,12 +39,12 @@ class RootMotionView : public VisualInstance3D {
 public:
 	RID immediate;
 	NodePath path;
-	float cell_size;
-	float radius;
-	bool use_in_game;
-	Color color;
-	bool first;
-	bool zero_y;
+	float cell_size = 1.0;
+	float radius = 10.0;
+	bool use_in_game = false;
+	Color color = Color(0.5, 0.5, 1.0);
+	bool first = true;
+	bool zero_y = true;
 
 	Transform accumulated;
 

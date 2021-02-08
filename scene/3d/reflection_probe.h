@@ -53,20 +53,20 @@ public:
 
 private:
 	RID probe;
-	float intensity;
-	float max_distance;
-	Vector3 extents;
-	Vector3 origin_offset;
-	bool box_projection;
-	bool enable_shadows;
-	bool interior;
-	AmbientMode ambient_mode;
-	Color ambient_color;
-	float ambient_color_energy;
-	float lod_threshold;
+	float intensity = 1.0;
+	float max_distance = 0.0;
+	Vector3 extents = Vector3(1, 1, 1);
+	Vector3 origin_offset = Vector3(0, 0, 0);
+	bool box_projection = false;
+	bool enable_shadows = false;
+	bool interior = false;
+	AmbientMode ambient_mode = AMBIENT_ENVIRONMENT;
+	Color ambient_color = Color(0, 0, 0);
+	float ambient_color_energy = 1.0;
+	float lod_threshold = 1.0;
 
-	uint32_t cull_mask;
-	UpdateMode update_mode;
+	uint32_t cull_mask = (1 << 20) - 1;
+	UpdateMode update_mode = UPDATE_ONCE;
 
 protected:
 	static void _bind_methods();

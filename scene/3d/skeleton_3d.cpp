@@ -927,10 +927,6 @@ void Skeleton3D::_bind_methods() {
 }
 
 Skeleton3D::Skeleton3D() {
-	animate_physical_bones = true;
-	dirty = false;
-	version = 1;
-	process_order_dirty = true;
 }
 
 Skeleton3D::~Skeleton3D() {

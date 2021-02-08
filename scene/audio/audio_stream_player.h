@@ -49,22 +49,22 @@ private:
 	Ref<AudioStream> stream;
 	Vector<AudioFrame> mix_buffer;
 	Vector<AudioFrame> fadeout_buffer;
-	bool use_fadeout;
+	bool use_fadeout = false;
 
-	volatile float setseek;
-	volatile bool active;
-	volatile bool setstop;
-	volatile bool stop_has_priority;
+	volatile float setseek = -1.0;
+	volatile bool active = false;
+	volatile bool setstop = false;
+	volatile bool stop_has_priority = false;
 
-	float mix_volume_db;
-	float pitch_scale;
-	float volume_db;
-	bool autoplay;
-	bool stream_paused;
-	bool stream_paused_fade;
+	float mix_volume_db = 0.0;
+	float pitch_scale = 1.0;
+	float volume_db = 0.0;
+	bool autoplay = false;
+	bool stream_paused = false;
+	bool stream_paused_fade = false;
 	StringName bus;
 
-	MixTarget mix_target;
+	MixTarget mix_target = MIX_TARGET_STEREO;
 
 	void _mix_internal(bool p_fadeout);
 	void _mix_audio();

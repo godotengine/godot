@@ -344,31 +344,6 @@ real_t VehicleWheel3D::get_rpm() const {
 }
 
 VehicleWheel3D::VehicleWheel3D() {
-	steers = false;
-	engine_traction = false;
-	m_steering = real_t(0.);
-	m_engineForce = real_t(0.);
-	m_rotation = real_t(0.);
-	m_deltaRotation = real_t(0.);
-	m_brake = real_t(0.);
-	m_rollInfluence = real_t(0.1);
-
-	m_suspensionRestLength = 0.15;
-	m_wheelRadius = 0.5; //0.28;
-	m_suspensionStiffness = 5.88;
-	m_wheelsDampingCompression = 0.83;
-	m_wheelsDampingRelaxation = 0.88;
-	m_frictionSlip = 10.5;
-	m_bIsFrontWheel = false;
-	m_maxSuspensionTravelCm = 500;
-	m_maxSuspensionForce = 6000;
-
-	m_suspensionRelativeVelocity = 0;
-	m_clippedInvContactDotSuspension = 1.0;
-	m_raycastInfo.m_isInContact = false;
-	m_raycastInfo.m_suspensionLength = 0.0;
-
-	body = nullptr;
 }
 
 void VehicleBody3D::_update_wheel_transform(VehicleWheel3D &wheel, PhysicsDirectBodyState3D *s) {
@@ -949,16 +924,6 @@ void VehicleBody3D::_bind_methods() {
 }
 
 VehicleBody3D::VehicleBody3D() {
-	m_pitchControl = 0;
-	m_currentVehicleSpeedKmHour = real_t(0.);
-	m_steeringValue = real_t(0.);
-
-	engine_force = 0;
-	brake = 0;
-
-	state = nullptr;
-	ccd = false;
-
 	exclude.insert(get_rid());
 	//PhysicsServer3D::get_singleton()->body_set_force_integration_callback(get_rid(), this, "_direct_state_changed");
 

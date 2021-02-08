@@ -78,30 +78,30 @@ public:
 	};
 
 private:
-	bool emitting;
+	bool emitting = false;
 
 	struct Particle {
 		Transform transform;
 		Color color;
-		float custom[4];
+		float custom[4] = {};
 		Vector3 velocity;
-		bool active;
-		float angle_rand;
-		float scale_rand;
-		float hue_rot_rand;
-		float anim_offset_rand;
-		float time;
-		float lifetime;
+		bool active = false;
+		float angle_rand = 0.0;
+		float scale_rand = 0.0;
+		float hue_rot_rand = 0.0;
+		float anim_offset_rand = 0.0;
+		float time = 0.0;
+		float lifetime = 0.0;
 		Color base_color;
 
-		uint32_t seed;
+		uint32_t seed = 0;
 	};
 
-	float time;
-	float inactive_time;
-	float frame_remainder;
-	int cycle;
-	bool redraw;
+	float time = 0.0;
+	float inactive_time = 0.0;
+	float frame_remainder = 0.0;
+	int cycle = 0;
+	bool redraw = false;
 
 	RID multimesh;
 
@@ -110,7 +110,7 @@ private:
 	Vector<int> particle_order;
 
 	struct SortLifetime {
-		const Particle *particles;
+		const Particle *particles = nullptr;
 
 		bool operator()(int p_a, int p_b) const {
 			return particles[p_a].time > particles[p_b].time;
@@ -118,7 +118,7 @@ private:
 	};
 
 	struct SortAxis {
-		const Particle *particles;
+		const Particle *particles = nullptr;
 		Vector3 axis;
 		bool operator()(int p_a, int p_b) const {
 			return axis.dot(particles[p_a].transform.origin) < axis.dot(particles[p_b].transform.origin);
@@ -127,50 +127,50 @@ private:
 
 	//
 
-	bool one_shot;
+	bool one_shot = false;
 
-	float lifetime;
-	float pre_process_time;
-	float explosiveness_ratio;
-	float randomness_ratio;
-	float lifetime_randomness;
-	float speed_scale;
-	bool local_coords;
-	int fixed_fps;
-	bool fractional_delta;
+	float lifetime = 1.0;
+	float pre_process_time = 0.0;
+	float explosiveness_ratio = 0.0;
+	float randomness_ratio = 0.0;
+	float lifetime_randomness = 0.0;
+	float speed_scale = 1.0;
+	bool local_coords = true;
+	int fixed_fps = 0;
+	bool fractional_delta = true;
 
 	Transform inv_emission_transform;
 
-	volatile bool can_update;
+	volatile bool can_update = false;
 
-	DrawOrder draw_order;
+	DrawOrder draw_order = DRAW_ORDER_INDEX;
 
 	Ref<Mesh> mesh;
 
 	////////
 
-	Vector3 direction;
-	float spread;
-	float flatness;
+	Vector3 direction = Vector3(1, 0, 0);
+	float spread = 45.0;
+	float flatness = 0.0;
 
 	float parameters[PARAM_MAX];
-	float randomness[PARAM_MAX];
+	float randomness[PARAM_MAX] = {};
 
 	Ref<Curve> curve_parameters[PARAM_MAX];
-	Color color;
+	Color color = Color(1, 1, 1, 1);
 	Ref<Gradient> color_ramp;
 
-	bool particle_flags[PARTICLE_FLAG_MAX];
+	bool particle_flags[PARTICLE_FLAG_MAX] = {};
 
-	EmissionShape emission_shape;
-	float emission_sphere_radius;
-	Vector3 emission_box_extents;
+	EmissionShape emission_shape = EMISSION_SHAPE_POINT;
+	float emission_sphere_radius = 1.0;
+	Vector3 emission_box_extents = Vector3(1, 1, 1);
 	Vector<Vector3> emission_points;
 	Vector<Vector3> emission_normals;
 	Vector<Color> emission_colors;
-	int emission_point_count;
+	int emission_point_count = 0;
 
-	Vector3 gravity;
+	Vector3 gravity = Vector3(0, -9.8, 0);
 
 	void _update_internal();
 	void _particles_process(float p_delta);

@@ -245,8 +245,6 @@ void Joint3D::_bind_methods() {
 }
 
 Joint3D::Joint3D() {
-	exclude_from_collision = true;
-	solver_priority = 1;
 	set_notify_transform(true);
 }
 

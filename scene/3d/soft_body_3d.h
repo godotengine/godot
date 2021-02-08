@@ -39,13 +39,13 @@ class SoftBodyRenderingServerHandler {
 	friend class SoftBody3D;
 
 	RID mesh;
-	int surface;
+	int surface = 0;
 	Vector<uint8_t> buffer;
-	uint32_t stride;
-	uint32_t offset_vertices;
-	uint32_t offset_normal;
+	uint32_t stride = 0;
+	uint32_t offset_vertices = 0;
+	uint32_t offset_normal = 0;
 
-	uint8_t *write_buffer;
+	uint8_t *write_buffer = nullptr;
 
 private:
 	SoftBodyRenderingServerHandler();
@@ -91,9 +91,9 @@ private:
 	bool pinned_points_cache_dirty = true;
 
 	Ref<ArrayMesh> debug_mesh_cache;
-	class MeshInstance3D *debug_mesh;
+	class MeshInstance3D *debug_mesh = nullptr;
 
-	bool capture_input_on_drag;
+	bool capture_input_on_drag = false;
 	bool ray_pickable = true;
 
 	void _update_pickable();
