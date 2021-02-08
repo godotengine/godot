@@ -5,5 +5,5 @@ Import("env_gdnative")
 
 env_gdnative.add_source_files(env.modules_sources, "*.cpp")
 
-if "platform" in env and env["platform"] in ["x11", "iphone"]:
+if "platform" in env and env["platform"] in ["x11", "iphone", "tvos"]:
     env.Append(LINKFLAGS=["-rdynamic"])

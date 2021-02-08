@@ -65,9 +65,9 @@
 #endif
 #endif
 
-#ifndef IPHONE_ENABLED
+#if !defined(IPHONE_ENABLED) && !defined(TVOS_ENABLED)
 // We include EGL below to get debug callback on GLES2 platforms,
-// but EGL is not available on iOS.
+// but EGL is not available on tvOS/iOS.
 #define CAN_DEBUG
 #endif
 

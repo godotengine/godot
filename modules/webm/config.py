@@ -1,5 +1,5 @@
 def can_build(env, platform):
-    return platform not in ["iphone"]
+    return platform not in ["iphone", "tvos"]
 
 
 def configure(env):

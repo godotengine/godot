@@ -94,7 +94,7 @@ GLuint RasterizerStorageGLES2::system_fbo = 0;
 #include <dlfcn.h> // needed to load extensions
 #endif
 
-#ifdef IPHONE_ENABLED
+#if defined(IPHONE_ENABLED) || defined(TVOS_ENABLED)
 
 #include <OpenGLES/ES2/glext.h>
 //void *glRenderbufferStorageMultisampleAPPLE;
@@ -4931,7 +4931,7 @@ void RasterizerStorageGLES2::_render_target_allocate(RenderTarget *rt) {
 
 		glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, rt->multisample_depth);
 
-#if defined(GLES_OVER_GL) || defined(IPHONE_ENABLED)
+#if defined(GLES_OVER_GL) || defined(IPHONE_ENABLED) || defined(TVOS_ENABLED)
 
 		glGenRenderbuffers(1, &rt->multisample_color);
 		glBindRenderbuffer(GL_RENDERBUFFER, rt->multisample_color);
@@ -6115,7 +6115,7 @@ void RasterizerStorageGLES2::initialize() {
 #ifndef GLES_OVER_GL
 	//Manually load extensions for android and ios
 
-#ifdef IPHONE_ENABLED
+#if defined(IPHONE_ENABLED) || defined(TVOS_ENABLED)
 	// appears that IPhone doesn't need to dlopen TODO: test this rigorously before removing
 	//void *gles2_lib = dlopen(NULL, RTLD_LAZY);
 	//glRenderbufferStorageMultisampleAPPLE = dlsym(gles2_lib, "glRenderbufferStorageMultisampleAPPLE");
