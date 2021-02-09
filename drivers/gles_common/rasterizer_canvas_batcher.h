@@ -2716,6 +2716,11 @@ PREAMBLE(bool)::sort_items_from(int p_start) {
 		return false;
 	}
 
+	// disallow sorting over copy back buffer
+	if (second.item->copy_back_buffer) {
+		return false;
+	}
+
 	// which neighbour to test
 	int test_last = 2 + bdata.settings_item_reordering_lookahead;
 	for (int test = 2; test < test_last; test++) {
