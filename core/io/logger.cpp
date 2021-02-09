@@ -207,7 +207,7 @@ void RotatedFileLogger::logv(const char *p_format, va_list p_list, bool p_err) {
 			Memory::free_static(buf);
 		}
 
-		if (p_err || GLOBAL_GET("application/run/flush_stdout_on_print")) {
+		if (p_err || !ProjectSettings::get_singleton() || GLOBAL_GET("application/run/flush_stdout_on_print")) {
 			// Don't always flush when printing stdout to avoid performance
 			// issues when `print()` is spammed in release builds.
 			file->flush();
@@ -228,7 +228,7 @@ void StdLogger::logv(const char *p_format, va_list p_list, bool p_err) {
 		vfprintf(stderr, p_format, p_list);
 	} else {
 		vprintf(p_format, p_list);
-		if (GLOBAL_GET("application/run/flush_stdout_on_print")) {
+		if (!ProjectSettings::get_singleton() || GLOBAL_GET("application/run/flush_stdout_on_print")) {
 			// Don't always flush when printing stdout to avoid performance
 			// issues when `print()` is spammed in release builds.
 			fflush(stdout);
