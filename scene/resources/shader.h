@@ -51,12 +51,12 @@ public:
 
 private:
 	RID shader;
-	Mode mode;
+	Mode mode = MODE_SPATIAL;
 
 	// hack the name of performance
 	// shaders keep a list of ShaderMaterial -> RenderingServer name translations, to make
 	// conversion fast and save memory.
-	mutable bool params_cache_dirty;
+	mutable bool params_cache_dirty = true;
 	mutable Map<StringName, StringName> params_cache; //map a shader param to a material param..
 	Map<StringName, Ref<Texture2D>> default_textures;
 

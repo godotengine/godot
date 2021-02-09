@@ -87,9 +87,6 @@ void RayShape3D::_bind_methods() {
 
 RayShape3D::RayShape3D() :
 		Shape3D(PhysicsServer3D::get_singleton()->shape_create(PhysicsServer3D::SHAPE_RAY)) {
-	length = 1.0;
-	slips_on_slope = false;
-
 	/* Code copied from setters to prevent the use of uninitialized variables */
 	_update_shape();
 	notify_change_to_owners();

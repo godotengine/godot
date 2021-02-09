@@ -719,17 +719,6 @@ void ColorPicker::_bind_methods() {
 
 ColorPicker::ColorPicker() :
 		BoxContainer(true) {
-	updating = true;
-	edit_alpha = true;
-	text_is_constructor = false;
-	hsv_mode_enabled = false;
-	raw_mode_enabled = false;
-	deferred_mode_enabled = false;
-	changing_color = false;
-	presets_enabled = true;
-	presets_visible = true;
-	screen = nullptr;
-
 	HBoxContainer *hb_edit = memnew(HBoxContainer);
 	add_child(hb_edit);
 	hb_edit->set_v_size_flags(SIZE_EXPAND_FILL);
@@ -1002,12 +991,5 @@ void ColorPickerButton::_bind_methods() {
 }
 
 ColorPickerButton::ColorPickerButton() {
-	// Initialization is now done deferred,
-	// this improves performance in the inspector as the color picker
-	// can be expensive to initialize.
-	picker = nullptr;
-	popup = nullptr;
-	edit_alpha = true;
-
 	set_toggle_mode(true);
 }

@@ -90,10 +90,7 @@ void SceneTreeTimer::release_connections() {
 	}
 }
 
-SceneTreeTimer::SceneTreeTimer() {
-	time_left = 0;
-	process_pause = true;
-}
+SceneTreeTimer::SceneTreeTimer() {}
 
 void SceneTree::tree_changed() {
 	tree_version++;

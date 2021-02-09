@@ -448,18 +448,7 @@ void BaseButton::_bind_methods() {
 }
 
 BaseButton::BaseButton() {
-	toggle_mode = false;
-	shortcut_in_tooltip = true;
-	keep_pressed_outside = false;
-	status.pressed = false;
-	status.press_attempt = false;
-	status.hovering = false;
-	status.pressing_inside = false;
-	status.disabled = false;
 	set_focus_mode(FOCUS_ALL);
-	action_mode = ACTION_MODE_BUTTON_RELEASE;
-	button_mask = BUTTON_MASK_LEFT;
-	shortcut_context = ObjectID();
 }
 
 BaseButton::~BaseButton() {

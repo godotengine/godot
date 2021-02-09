@@ -112,7 +112,5 @@ void CapsuleShape3D::_bind_methods() {
 
 CapsuleShape3D::CapsuleShape3D() :
 		Shape3D(PhysicsServer3D::get_singleton()->shape_create(PhysicsServer3D::SHAPE_CAPSULE)) {
-	radius = 1.0;
-	height = 1.0;
 	_update_shape();
 }

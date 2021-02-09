@@ -510,27 +510,4 @@ void NavigationMesh::_validate_property(PropertyInfo &property) const {
 	}
 }
 
-NavigationMesh::NavigationMesh() {
-	cell_size = 0.3f;
-	cell_height = 0.2f;
-	agent_height = 2.0f;
-	agent_radius = 0.6f;
-	agent_max_climb = 0.9f;
-	agent_max_slope = 45.0f;
-	region_min_size = 8.0f;
-	region_merge_size = 20.0f;
-	edge_max_length = 12.0f;
-	edge_max_error = 1.3f;
-	verts_per_poly = 6.0f;
-	detail_sample_distance = 6.0f;
-	detail_sample_max_error = 1.0f;
-
-	partition_type = SAMPLE_PARTITION_WATERSHED;
-	parsed_geometry_type = PARSED_GEOMETRY_MESH_INSTANCES;
-	collision_mask = 0xFFFFFFFF;
-	source_geometry_mode = SOURCE_GEOMETRY_NAVMESH_CHILDREN;
-	source_group_name = "navmesh";
-	filter_low_hanging_obstacles = false;
-	filter_ledge_spans = false;
-	filter_walkable_low_height_spans = false;
-}
+NavigationMesh::NavigationMesh() {}

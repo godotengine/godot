@@ -314,7 +314,7 @@ void RichTextLabel::_resize_line(ItemFrame *p_frame, int p_line, const Ref<Font>
 				table->rows.clear();
 
 				Vector2 offset;
-				float row_height = 0;
+				float row_height = 0.0;
 
 				for (List<Item *>::Element *E = table->subitems.front(); E; E = E->next()) {
 					ERR_CONTINUE(E->get()->type != ITEM_FRAME); // Children should all be frames.
@@ -553,7 +553,7 @@ void RichTextLabel::_shape_line(ItemFrame *p_frame, int p_line, const Ref<Font> 
 				table->rows.clear();
 
 				Vector2 offset;
-				float row_height = 0;
+				float row_height = 0.0;
 
 				for (List<Item *>::Element *E = table->subitems.front(); E; E = E->next()) {
 					ERR_CONTINUE(E->get()->type != ITEM_FRAME); // Children should all be frames.
@@ -1847,7 +1847,7 @@ int RichTextLabel::_find_list(Item *p_item, Vector<int> &r_index, Vector<ItemLis
 int RichTextLabel::_find_margin(Item *p_item, const Ref<Font> &p_base_font, int p_base_font_size) {
 	Item *item = p_item;
 
-	float margin = 0;
+	float margin = 0.0;
 
 	while (item) {
 		if (item->type == ITEM_INDENT) {
@@ -4066,19 +4066,6 @@ RichTextLabel::RichTextLabel() {
 	main->first_invalid_line = 0;
 	main->first_resized_line = 0;
 	current_frame = main;
-	tab_size = 4;
-	default_align = ALIGN_LEFT;
-	underline_meta = true;
-	meta_hovering = nullptr;
-	override_selected_font_color = false;
-
-	scroll_visible = false;
-	scroll_follow = false;
-	scroll_following = false;
-	updating_scroll = false;
-	scroll_active = true;
-	scroll_w = 0;
-	scroll_updated = false;
 
 	vscroll = memnew(VScrollBar);
 	add_child(vscroll);
@@ -4090,19 +4077,6 @@ RichTextLabel::RichTextLabel() {
 	vscroll->connect("value_changed", callable_mp(this, &RichTextLabel::_scroll_changed));
 	vscroll->set_step(1);
 	vscroll->hide();
-	use_bbcode = false;
-
-	selection.click_frame = nullptr;
-	selection.click_item = nullptr;
-	selection.active = false;
-	selection.enabled = false;
-
-	visible_characters = -1;
-	percent_visible = 1;
-	visible_line_count = 0;
-
-	fixed_width = -1;
-	fit_content_height = false;
 
 	set_clip_contents(true);
 }

@@ -54,15 +54,15 @@ private:
 	Ref<Texture2D> disabled;
 	Ref<Texture2D> focused;
 	Ref<BitMap> click_mask;
-	bool expand;
-	StretchMode stretch_mode;
+	bool expand = false;
+	StretchMode stretch_mode = STRETCH_SCALE;
 
 	Rect2 _texture_region;
 	Rect2 _position_rect;
-	bool _tile;
+	bool _tile = false;
 
-	bool hflip;
-	bool vflip;
+	bool hflip = false;
+	bool vflip = false;
 
 protected:
 	virtual Size2 get_minimum_size() const override;

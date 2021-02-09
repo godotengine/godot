@@ -44,19 +44,19 @@ class AudioStreamPlaybackSample : public AudioStreamPlayback {
 	};
 
 	struct IMA_ADPCM_State {
-		int16_t step_index;
-		int32_t predictor;
+		int16_t step_index = 0;
+		int32_t predictor = 0;
 		/* values at loop point */
-		int16_t loop_step_index;
-		int32_t loop_predictor;
-		int32_t last_nibble;
-		int32_t loop_pos;
-		int32_t window_ofs;
+		int16_t loop_step_index = 0;
+		int32_t loop_predictor = 0;
+		int32_t last_nibble = 0;
+		int32_t loop_pos = 0;
+		int32_t window_ofs = 0;
 	} ima_adpcm[2];
 
-	int64_t offset;
-	int sign;
-	bool active;
+	int64_t offset = 0;
+	int sign = 1;
+	bool active = false;
 	friend class AudioStreamSample;
 	Ref<AudioStreamSample> base;
 
@@ -103,14 +103,14 @@ private:
 		DATA_PAD = 16 //padding for interpolation
 	};
 
-	Format format;
-	LoopMode loop_mode;
-	bool stereo;
-	int loop_begin;
-	int loop_end;
-	int mix_rate;
-	void *data;
-	uint32_t data_bytes;
+	Format format = FORMAT_8_BITS;
+	LoopMode loop_mode = LOOP_DISABLED;
+	bool stereo = false;
+	int loop_begin = 0;
+	int loop_end = 0;
+	int mix_rate = 44100;
+	void *data = nullptr;
+	uint32_t data_bytes = 0;
 
 protected:
 	static void _bind_methods();

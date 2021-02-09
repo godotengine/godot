@@ -1370,7 +1370,6 @@ ParticlesMaterial::ParticlesMaterial() :
 	set_emission_box_extents(Vector3(1, 1, 1));
 	set_gravity(Vector3(0, -9.8, 0));
 	set_lifetime_randomness(0);
-	emission_point_count = 1;
 
 	set_sub_emitter_mode(SUB_EMITTER_DISABLED);
 	set_sub_emitter_frequency(4);
@@ -1393,7 +1392,6 @@ ParticlesMaterial::ParticlesMaterial() :
 
 	set_color(Color(1, 1, 1, 1));
 
-	current_key.key = 0;
 	current_key.invalid_key = 1;
 
 	_queue_shader_change();

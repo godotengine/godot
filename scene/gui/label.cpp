@@ -194,7 +194,7 @@ void Label::_notification(int p_what) {
 
 		style->draw(ci, Rect2(Point2(0, 0), get_size()));
 
-		float total_h = 0;
+		float total_h = 0.0;
 		int lines_visible = 0;
 
 		// Get number of lines to fit to the height.
@@ -391,7 +391,7 @@ int Label::get_visible_line_count() const {
 	Ref<StyleBox> style = get_theme_stylebox("normal");
 	int line_spacing = get_theme_constant("line_spacing");
 	int lines_visible = 0;
-	float total_h = 0;
+	float total_h = 0.0;
 	for (int64_t i = lines_skipped; i < lines_rid.size(); i++) {
 		total_h += TS->shaped_text_get_size(lines_rid[i]).y + font->get_spacing(Font::SPACING_TOP) + font->get_spacing(Font::SPACING_BOTTOM) + line_spacing;
 		if (total_h > (get_size().height - style->get_minimum_size().height + line_spacing)) {

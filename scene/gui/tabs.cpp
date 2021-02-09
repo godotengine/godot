@@ -1137,27 +1137,5 @@ void Tabs::_bind_methods() {
 }
 
 Tabs::Tabs() {
-	current = 0;
-	previous = 0;
-	tab_align = ALIGN_CENTER;
-	rb_hover = -1;
-	rb_pressing = false;
-	highlight_arrow = -1;
-
-	cb_hover = -1;
-	cb_pressing = false;
-	cb_displaypolicy = CLOSE_BUTTON_SHOW_NEVER;
-	offset = 0;
-	max_drawn_tab = 0;
-
-	select_with_rmb = false;
-
-	min_width = 0;
-	scrolling_enabled = true;
-	buttons_visible = false;
-	hover = -1;
-	drag_to_rearrange_enabled = false;
-	tabs_rearrange_group = -1;
-
 	connect("mouse_exited", callable_mp(this, &Tabs::_on_mouse_exited));
 }

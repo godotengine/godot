@@ -38,24 +38,24 @@ class Viewport;
 class CanvasLayer : public Node {
 	GDCLASS(CanvasLayer, Node);
 
-	bool locrotscale_dirty;
+	bool locrotscale_dirty = false;
 	Vector2 ofs;
-	Size2 scale;
-	real_t rot;
-	int layer;
+	Size2 scale = Vector2(1, 1);
+	real_t rot = 0.0;
+	int layer = 1;
 	Transform2D transform;
 	RID canvas;
 
 	ObjectID custom_viewport_id; // to check validity
-	Viewport *custom_viewport;
+	Viewport *custom_viewport = nullptr;
 
 	RID viewport;
-	Viewport *vp;
+	Viewport *vp = nullptr;
 
-	int sort_index;
+	int sort_index = 0;
 
-	bool follow_viewport;
-	float follow_viewport_scale;
+	bool follow_viewport = false;
+	float follow_viewport_scale = 1.0;
 
 	void _update_xform();
 	void _update_locrotscale();

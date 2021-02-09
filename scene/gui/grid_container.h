@@ -36,7 +36,7 @@
 class GridContainer : public Container {
 	GDCLASS(GridContainer, Container);
 
-	int columns;
+	int columns = 1;
 
 protected:
 	void _notification(int p_what);

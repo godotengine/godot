@@ -94,7 +94,7 @@ private:
 	Point2 ime_selection;
 
 	RID text_rid;
-	float full_width = 0;
+	float full_width = 0.0;
 
 	bool selecting_enabled = true;
 
@@ -129,19 +129,19 @@ private:
 	Ref<Texture2D> right_icon;
 
 	struct Selection {
-		int begin;
-		int end;
-		int cursor_start;
-		bool enabled;
-		bool creating;
-		bool doubleclick;
-		bool drag_attempt;
+		int begin = 0;
+		int end = 0;
+		int cursor_start = 0;
+		bool enabled = false;
+		bool creating = false;
+		bool doubleclick = false;
+		bool drag_attempt = false;
 	} selection;
 
 	struct TextOperation {
-		int cursor_pos;
-		int scroll_offset;
-		int cached_width;
+		int cursor_pos = 0;
+		int scroll_offset = 0;
+		int cached_width = 0;
 		String text;
 	};
 	List<TextOperation> undo_stack;

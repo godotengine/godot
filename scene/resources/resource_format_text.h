@@ -38,12 +38,12 @@
 #include "scene/resources/packed_scene.h"
 
 class ResourceLoaderText {
-	bool translation_remapped;
+	bool translation_remapped = false;
 	String local_path;
 	String res_path;
 	String error_text;
 
-	FileAccess *f;
+	FileAccess *f = nullptr;
 
 	VariantParser::StreamFile stream;
 
@@ -53,28 +53,28 @@ class ResourceLoaderText {
 		String type;
 	};
 
-	bool is_scene;
+	bool is_scene = false;
 	String res_type;
 
-	bool ignore_resource_parsing;
+	bool ignore_resource_parsing = false;
 
 	//Map<String,String> remaps;
 
 	Map<int, ExtResource> ext_resources;
 	Map<int, RES> int_resources;
 
-	int resources_total;
-	int resource_current;
+	int resources_total = 0;
+	int resource_current = 0;
 	String resource_type;
 
 	VariantParser::Tag next_tag;
 
-	bool use_nocache;
+	bool use_nocache = false;
 
-	bool use_sub_threads;
-	float *progress;
+	bool use_sub_threads = false;
+	float *progress = nullptr;
 
-	mutable int lines;
+	mutable int lines = 0;
 
 	Map<String, String> remaps;
 	//void _printerr();
@@ -107,7 +107,7 @@ class ResourceLoaderText {
 
 	friend class ResourceFormatLoaderText;
 
-	Error error;
+	Error error = OK;
 
 	RES resource;
 
@@ -152,11 +152,11 @@ class ResourceFormatSaverTextInstance {
 
 	Ref<PackedScene> packed_scene;
 
-	bool takeover_paths;
-	bool relative_paths;
-	bool bundle_resources;
-	bool skip_editor;
-	FileAccess *f;
+	bool takeover_paths = false;
+	bool relative_paths = false;
+	bool bundle_resources = false;
+	bool skip_editor = false;
+	FileAccess *f = nullptr;
 
 	struct NonPersistentKey { //for resource properties generated on the fly
 		RES base;
@@ -173,7 +173,7 @@ class ResourceFormatSaverTextInstance {
 
 	struct ResourceSort {
 		RES resource;
-		int index;
+		int index = 0;
 		bool operator<(const ResourceSort &p_right) const {
 			return index < p_right.index;
 		}

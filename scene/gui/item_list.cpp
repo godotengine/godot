@@ -899,7 +899,7 @@ void ItemList::_notification(int p_what) {
 		}
 
 		if (shape_changed) {
-			float max_column_width = 0;
+			float max_column_width = 0.0;
 
 			//1- compute item minimum sizes
 			for (int i = 0; i < items.size(); i++) {
@@ -1615,34 +1615,12 @@ void ItemList::_bind_methods() {
 }
 
 ItemList::ItemList() {
-	current = -1;
-
-	select_mode = SELECT_SINGLE;
-	icon_mode = ICON_MODE_LEFT;
-
-	fixed_column_width = 0;
-	same_column_width = false;
-	max_text_lines = 1;
-	max_columns = 1;
-	auto_height = false;
-	auto_height_value = 0.0f;
-
 	scroll_bar = memnew(VScrollBar);
 	add_child(scroll_bar);
 
-	shape_changed = true;
 	scroll_bar->connect("value_changed", callable_mp(this, &ItemList::_scroll_changed));
 
 	set_focus_mode(FOCUS_ALL);
-	current_columns = 1;
-	search_time_msec = 0;
-	ensure_selected_visible = false;
-	defer_select_single = -1;
-	allow_rmb_select = false;
-	allow_reselect = false;
-	do_autoscroll_to_bottom = false;
-
-	icon_scale = 1.0f;
 	set_clip_contents(true);
 }
 

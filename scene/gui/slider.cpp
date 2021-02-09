@@ -269,12 +269,5 @@ void Slider::_bind_methods() {
 
 Slider::Slider(Orientation p_orientation) {
 	orientation = p_orientation;
-	mouse_inside = false;
-	grab.active = false;
-	ticks = 0;
-	ticks_on_borders = false;
-	custom_step = -1;
-	editable = true;
-	scrollable = true;
 	set_focus_mode(FOCUS_ALL);
 }

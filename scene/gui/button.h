@@ -45,7 +45,7 @@ public:
 	};
 
 private:
-	bool flat;
+	bool flat = false;
 	String text;
 	String xl_text;
 	Ref<TextParagraph> text_buf;
@@ -55,10 +55,10 @@ private:
 	TextDirection text_direction = TEXT_DIRECTION_AUTO;
 
 	Ref<Texture2D> icon;
-	bool expand_icon;
-	bool clip_text;
-	TextAlign align;
-	float _internal_margin[4];
+	bool expand_icon = false;
+	bool clip_text = false;
+	TextAlign align = ALIGN_CENTER;
+	float _internal_margin[4] = {};
 
 	void _shape();
 

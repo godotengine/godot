@@ -102,8 +102,6 @@ void Sky::_bind_methods() {
 }
 
 Sky::Sky() {
-	mode = PROCESS_MODE_AUTOMATIC;
-	radiance_size = RADIANCE_SIZE_256;
 	sky = RS::get_singleton()->sky_create();
 }
 

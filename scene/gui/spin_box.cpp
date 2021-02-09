@@ -268,7 +268,6 @@ void SpinBox::_bind_methods() {
 }
 
 SpinBox::SpinBox() {
-	last_w = 0;
 	line_edit = memnew(LineEdit);
 	add_child(line_edit);
 

@@ -1466,11 +1466,6 @@ void Window::_bind_methods() {
 }
 
 Window::Window() {
-	for (int i = 0; i < FLAG_MAX; i++) {
-		flags[i] = false;
-	}
-	content_scale_mode = CONTENT_SCALE_MODE_DISABLED;
-	content_scale_aspect = CONTENT_SCALE_ASPECT_IGNORE;
 	RS::get_singleton()->viewport_set_update_mode(get_viewport_rid(), RS::VIEWPORT_UPDATE_DISABLED);
 }
 

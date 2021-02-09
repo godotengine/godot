@@ -203,8 +203,6 @@ void SubViewportContainer::_bind_methods() {
 }
 
 SubViewportContainer::SubViewportContainer() {
-	stretch = false;
-	shrink = 1;
 	set_process_input(true);
 	set_process_unhandled_input(true);
 }

@@ -153,6 +153,4 @@ void Skin::_bind_methods() {
 }
 
 Skin::Skin() {
-	bind_count = 0;
-	binds_ptr = nullptr;
 }

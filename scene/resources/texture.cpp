@@ -310,12 +310,7 @@ void ImageTexture::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_reload_hook", "rid"), &ImageTexture::_reload_hook);
 }
 
-ImageTexture::ImageTexture() {
-	w = h = 0;
-	image_stored = false;
-	mipmaps = false;
-	format = Image::FORMAT_L8;
-}
+ImageTexture::ImageTexture() {}
 
 ImageTexture::~ImageTexture() {
 	if (texture.is_valid()) {
@@ -733,11 +728,7 @@ void StreamTexture2D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "load_path", PROPERTY_HINT_FILE, "*.stex"), "load", "get_load_path");
 }
 
-StreamTexture2D::StreamTexture2D() {
-	format = Image::FORMAT_MAX;
-	w = 0;
-	h = 0;
-}
+StreamTexture2D::StreamTexture2D() {}
 
 StreamTexture2D::~StreamTexture2D() {
 	if (texture.is_valid()) {
@@ -1033,13 +1024,7 @@ void StreamTexture3D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "load_path", PROPERTY_HINT_FILE, "*.stex"), "load", "get_load_path");
 }
 
-StreamTexture3D::StreamTexture3D() {
-	format = Image::FORMAT_MAX;
-	w = 0;
-	h = 0;
-	d = 0;
-	mipmaps = false;
-}
+StreamTexture3D::StreamTexture3D() {}
 
 StreamTexture3D::~StreamTexture3D() {
 	if (texture.is_valid()) {
@@ -1295,9 +1280,7 @@ bool AtlasTexture::is_pixel_opaque(int p_x, int p_y) const {
 	return atlas->is_pixel_opaque(x, y);
 }
 
-AtlasTexture::AtlasTexture() {
-	filter_clip = false;
-}
+AtlasTexture::AtlasTexture() {}
 
 /////////////////////////////////////////
 
@@ -1698,9 +1681,7 @@ RID CurveTexture::get_rid() const {
 	return _texture;
 }
 
-CurveTexture::CurveTexture() {
-	_width = 2048;
-}
+CurveTexture::CurveTexture() {}
 
 CurveTexture::~CurveTexture() {
 	if (_texture.is_valid()) {
@@ -1711,9 +1692,6 @@ CurveTexture::~CurveTexture() {
 //////////////////
 
 GradientTexture::GradientTexture() {
-	update_pending = false;
-	width = 2048;
-
 	_queue_update();
 }
 
@@ -2128,13 +2106,6 @@ AnimatedTexture::AnimatedTexture() {
 	proxy = RS::get_singleton()->texture_proxy_create(proxy_ph);
 
 	RenderingServer::get_singleton()->texture_set_force_redraw_if_visible(proxy, true);
-	time = 0;
-	frame_count = 1;
-	fps = 4;
-	prev_ticks = 0;
-	current_frame = 0;
-	pause = false;
-	oneshot = false;
 	RenderingServer::get_singleton()->connect("frame_pre_draw", callable_mp(this, &AnimatedTexture::_update_proxy));
 }
 
@@ -2288,11 +2259,6 @@ void ImageTextureLayered::_bind_methods() {
 
 ImageTextureLayered::ImageTextureLayered(LayeredType p_layered_type) {
 	layered_type = p_layered_type;
-	format = Image::FORMAT_MAX;
-
-	width = 0;
-	height = 0;
-	layers = 0;
 }
 
 ImageTextureLayered::~ImageTextureLayered() {
@@ -2460,11 +2426,6 @@ void StreamTextureLayered::_bind_methods() {
 
 StreamTextureLayered::StreamTextureLayered(LayeredType p_type) {
 	layered_type = p_type;
-	format = Image::FORMAT_MAX;
-	w = 0;
-	h = 0;
-	layers = 0;
-	mipmaps = false;
 }
 
 StreamTextureLayered::~StreamTextureLayered() {
@@ -2626,10 +2587,7 @@ bool CameraTexture::get_camera_active() const {
 	}
 }
 
-CameraTexture::CameraTexture() {
-	camera_feed_id = 0;
-	which_feed = CameraServer::FEED_RGBA_IMAGE;
-}
+CameraTexture::CameraTexture() {}
 
 CameraTexture::~CameraTexture() {
 	// nothing to do here yet

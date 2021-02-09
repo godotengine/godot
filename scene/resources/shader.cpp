@@ -152,9 +152,7 @@ void Shader::_bind_methods() {
 }
 
 Shader::Shader() {
-	mode = MODE_SPATIAL;
 	shader = RenderingServer::get_singleton()->shader_create();
-	params_cache_dirty = true;
 }
 
 Shader::~Shader() {

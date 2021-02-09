@@ -83,12 +83,13 @@ class ImageTexture : public Texture2D {
 	RES_BASE_EXTENSION("tex");
 
 	mutable RID texture;
-	Image::Format format;
-	bool mipmaps;
-	int w, h;
+	Image::Format format = Image::FORMAT_L8;
+	bool mipmaps = false;
+	int w = 0;
+	int h = 0;
 	Size2 size_override;
 	mutable Ref<BitMap> alpha_cache;
-	bool image_stored;
+	bool image_stored = false;
 
 protected:
 	virtual void reload_from_file() override;
@@ -160,8 +161,9 @@ private:
 	Error _load_data(const String &p_path, int &tw, int &th, int &tw_custom, int &th_custom, Ref<Image> &image, bool &r_request_3d, bool &r_request_normal, bool &r_request_roughness, int &mipmap_limit, int p_size_limit = 0);
 	String path_to_file;
 	mutable RID texture;
-	Image::Format format;
-	int w, h;
+	Image::Format format = Image::FORMAT_MAX;
+	int w = 0;
+	int h = 0;
 	mutable Ref<BitMap> alpha_cache;
 
 	virtual void reload_from_file() override;
@@ -223,7 +225,7 @@ protected:
 	Ref<Texture2D> atlas;
 	Rect2 region;
 	Rect2 margin;
-	bool filter_clip;
+	bool filter_clip = false;
 
 	static void _bind_methods();
 
@@ -370,12 +372,12 @@ class ImageTextureLayered : public TextureLayered {
 	LayeredType layered_type;
 
 	mutable RID texture;
-	Image::Format format;
+	Image::Format format = Image::FORMAT_MAX;
 
-	int width;
-	int height;
-	int layers;
-	bool mipmaps;
+	int width = 0;
+	int height = 0;
+	int layers = 0;
+	bool mipmaps = false;
 
 	Error _create_from_images(const Array &p_images);
 
@@ -453,10 +455,12 @@ private:
 	Error _load_data(const String &p_path, Vector<Ref<Image>> &images, int &mipmap_limit, int p_size_limit = 0);
 	String path_to_file;
 	mutable RID texture;
-	Image::Format format;
-	int w, h, layers;
-	bool mipmaps;
-	LayeredType layered_type;
+	Image::Format format = Image::FORMAT_MAX;
+	int w = 0;
+	int h = 0;
+	int layers = 0;
+	bool mipmaps = false;
+	LayeredType layered_type = LayeredType::LAYERED_TYPE_2D_ARRAY;
 
 	virtual void reload_from_file() override;
 
@@ -594,9 +598,11 @@ private:
 	Error _load_data(const String &p_path, Vector<Ref<Image>> &r_data, Image::Format &r_format, int &r_width, int &r_height, int &r_depth, bool &r_mipmaps);
 	String path_to_file;
 	mutable RID texture;
-	Image::Format format;
-	int w, h, d;
-	bool mipmaps;
+	Image::Format format = Image::FORMAT_MAX;
+	int w = 0;
+	int h = 0;
+	int d = 0;
+	bool mipmaps = false;
 
 	virtual void reload_from_file() override;
 
@@ -638,7 +644,7 @@ class CurveTexture : public Texture2D {
 private:
 	mutable RID _texture;
 	Ref<Curve> _curve;
-	int _width;
+	int _width = 2048;
 
 	void _update();
 
@@ -680,7 +686,7 @@ class GradientTexture : public Texture2D {
 
 public:
 	struct Point {
-		float offset;
+		float offset = 0.0;
 		Color color;
 		bool operator<(const Point &p_ponit) const {
 			return offset < p_ponit.offset;
@@ -689,9 +695,9 @@ public:
 
 private:
 	Ref<Gradient> gradient;
-	bool update_pending;
+	bool update_pending = false;
 	RID texture;
-	int width;
+	int width = 2048;
 
 	void _queue_update();
 	void _update();
@@ -758,23 +764,19 @@ private:
 
 	struct Frame {
 		Ref<Texture2D> texture;
-		float delay_sec;
-
-		Frame() {
-			delay_sec = 0;
-		}
+		float delay_sec = 0.0;
 	};
 
 	Frame frames[MAX_FRAMES];
-	int frame_count;
-	int current_frame;
-	bool pause;
-	bool oneshot;
-	float fps;
+	int frame_count = 1.0;
+	int current_frame = 0;
+	bool pause = false;
+	bool oneshot = false;
+	float fps = 4.0;
 
-	float time;
+	float time = 0.0;
 
-	uint64_t prev_ticks;
+	uint64_t prev_ticks = 0;
 
 	void _update_proxy();
 
@@ -822,8 +824,8 @@ class CameraTexture : public Texture2D {
 	GDCLASS(CameraTexture, Texture2D);
 
 private:
-	int camera_feed_id;
-	CameraServer::FeedImage which_feed;
+	int camera_feed_id = 0;
+	CameraServer::FeedImage which_feed = CameraServer::FEED_RGBA_IMAGE;
 
 protected:
 	static void _bind_methods();

@@ -179,13 +179,13 @@ private:
 
 		LayoutDirection layout_dir = LAYOUT_DIRECTION_INHERITED;
 
-		float rotation = 0;
+		float rotation = 0.0;
 		Vector2 scale = Vector2(1, 1);
 		Vector2 pivot_offset;
 
 		int h_size_flags = SIZE_FILL;
 		int v_size_flags = SIZE_FILL;
-		float expand = 1;
+		float expand = 1.0;
 		Point2 custom_minimum_size;
 
 		MouseFilter mouse_filter = MOUSE_FILTER_STOP;

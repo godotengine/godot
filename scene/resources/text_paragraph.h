@@ -50,7 +50,7 @@ class TextParagraph : public Reference {
 
 	bool dirty_lines = true;
 
-	float width = -1;
+	float width = -1.0;
 	uint8_t flags = TextServer::BREAK_MANDATORY | TextServer::BREAK_WORD_BOUND | TextServer::JUSTIFICATION_WORD_BOUND | TextServer::JUSTIFICATION_KASHIDA;
 	HAlign align = HALIGN_LEFT;
 

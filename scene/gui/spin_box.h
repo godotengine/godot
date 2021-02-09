@@ -39,7 +39,7 @@ class SpinBox : public Range {
 	GDCLASS(SpinBox, Range);
 
 	LineEdit *line_edit;
-	int last_w;
+	int last_w = 0;
 
 	Timer *range_click_timer;
 	void _range_click_timeout();
@@ -52,11 +52,11 @@ class SpinBox : public Range {
 	void _line_edit_input(const Ref<InputEvent> &p_event);
 
 	struct Drag {
-		float base_val = 0;
+		float base_val = 0.0;
 		bool allowed = false;
 		bool enabled = false;
 		Vector2 capture_pos;
-		float diff_y = 0;
+		float diff_y = 0.0;
 	} drag;
 
 	void _line_edit_focus_exit();

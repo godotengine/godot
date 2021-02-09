@@ -314,17 +314,7 @@ bool Range::is_lesser_allowed() const {
 
 Range::Range() {
 	shared = memnew(Shared);
-	shared->min = 0;
-	shared->max = 100;
-	shared->val = 0;
-	shared->step = 1;
-	shared->page = 0;
 	shared->owners.insert(this);
-	shared->exp_ratio = false;
-	shared->allow_greater = false;
-	shared->allow_lesser = false;
-
-	_rounded_values = false;
 }
 
 Range::~Range() {

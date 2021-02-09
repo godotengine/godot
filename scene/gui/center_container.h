@@ -36,7 +36,7 @@
 class CenterContainer : public Container {
 	GDCLASS(CenterContainer, Container);
 
-	bool use_top_left;
+	bool use_top_left = false;
 
 protected:
 	void _notification(int p_what);

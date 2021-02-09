@@ -36,8 +36,8 @@
 class CapsuleShape2D : public Shape2D {
 	GDCLASS(CapsuleShape2D, Shape2D);
 
-	real_t height;
-	real_t radius;
+	real_t height = 20.0;
+	real_t radius = 10.0;
 
 	void _update_shape();
 	Vector<Vector2> _get_points() const;

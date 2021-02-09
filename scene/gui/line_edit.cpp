@@ -2264,9 +2264,6 @@ LineEdit::LineEdit() {
 	text_rid = TS->create_shaped_text();
 	_create_undo_state();
 
-	clear_button_status.press_attempt = false;
-	clear_button_status.pressing_inside = false;
-
 	deselect();
 	set_focus_mode(FOCUS_ALL);
 	set_default_cursor_shape(CURSOR_IBEAM);
