@@ -190,7 +190,7 @@ CameraMatrix XRInterfaceGDNative::get_projection_for_eye(XRInterface::Eyes p_eye
 
 	ERR_FAIL_COND_V(interface == nullptr, CameraMatrix());
 
-	interface->fill_projection_for_eye(data, (godot_real *)cm.matrix, (godot_int)p_eye, p_aspect, p_z_near, p_z_far);
+	interface->fill_projection_for_eye(data, (godot_float *)cm.matrix, (godot_int)p_eye, p_aspect, p_z_near, p_z_far);
 
 	return cm;
 }
@@ -234,7 +234,7 @@ void GDAPI godot_xr_register_interface(const godot_xr_interface_gdnative *p_inte
 	XRServer::get_singleton()->add_interface(new_interface);
 }
 
-godot_real GDAPI godot_xr_get_worldscale() {
+godot_float GDAPI godot_xr_get_worldscale() {
 	XRServer *xr_server = XRServer::get_singleton();
 	ERR_FAIL_NULL_V(xr_server, 1.0);
 
@@ -249,7 +249,7 @@ godot_transform GDAPI godot_xr_get_reference_frame() {
 	if (xr_server != nullptr) {
 		*reference_frame_ptr = xr_server->get_reference_frame();
 	} else {
-		godot_transform_new_identity(&reference_frame);
+		memnew_placement(&reference_frame, Transform);
 	}
 
 	return reference_frame;
@@ -387,7 +387,7 @@ void GDAPI godot_xr_set_controller_button(godot_int p_controller_id, godot_int p
 	}
 }
 
-void GDAPI godot_xr_set_controller_axis(godot_int p_controller_id, godot_int p_axis, godot_real p_value, godot_bool p_can_be_negative) {
+void GDAPI godot_xr_set_controller_axis(godot_int p_controller_id, godot_int p_axis, godot_float p_value, godot_bool p_can_be_negative) {
 	XRServer *xr_server = XRServer::get_singleton();
 	ERR_FAIL_NULL(xr_server);
 
@@ -406,7 +406,7 @@ void GDAPI godot_xr_set_controller_axis(godot_int p_controller_id, godot_int p_a
 	}
 }
 
-godot_real GDAPI godot_xr_get_controller_rumble(godot_int p_controller_id) {
+godot_float GDAPI godot_xr_get_controller_rumble(godot_int p_controller_id) {
 	XRServer *xr_server = XRServer::get_singleton();
 	ERR_FAIL_NULL_V(xr_server, 0.0);
 

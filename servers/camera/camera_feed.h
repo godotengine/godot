@@ -67,8 +67,8 @@ private:
 
 protected:
 	String name = ""; // name of our camera feed
-	FeedDataType datatype; // type of texture data stored
-	FeedPosition position; // position of camera on the device
+	FeedDataType datatype = FEED_NOIMAGE; // type of texture data stored
+	FeedPosition position = FEED_UNSPECIFIED; // position of camera on the device
 	Transform2D transform; // display transform
 
 	bool active = false; // only when active do we actually update the camera texture each frame

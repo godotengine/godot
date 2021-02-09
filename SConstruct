@@ -105,15 +105,14 @@ if profile:
 opts = Variables(customs, ARGUMENTS)
 
 # Target build options
-opts.Add("arch", "Platform-dependent architecture (arm/arm64/x86/x64/mips/...)", "")
-opts.Add(EnumVariable("bits", "Target platform bits", "default", ("default", "32", "64")))
 opts.Add("p", "Platform (alias for 'platform')", "")
 opts.Add("platform", "Target platform (%s)" % ("|".join(platform_list),), "")
-opts.Add(EnumVariable("target", "Compilation target", "debug", ("debug", "release_debug", "release")))
-opts.Add(EnumVariable("optimize", "Optimization type", "speed", ("speed", "size")))
-
 opts.Add(BoolVariable("tools", "Build the tools (a.k.a. the Godot editor)", True))
-opts.Add(BoolVariable("tests", "Build the unit tests", False))
+opts.Add(EnumVariable("target", "Compilation target", "debug", ("debug", "release_debug", "release")))
+opts.Add("arch", "Platform-dependent architecture (arm/arm64/x86/x64/mips/...)", "")
+opts.Add(EnumVariable("bits", "Target platform bits", "default", ("default", "32", "64")))
+opts.Add(EnumVariable("optimize", "Optimization type", "speed", ("speed", "size")))
+opts.Add(BoolVariable("production", "Set defaults to build Godot for use in production", False))
 opts.Add(BoolVariable("use_lto", "Use link-time optimization", False))
 
 # Components
@@ -121,13 +120,15 @@ opts.Add(BoolVariable("deprecated", "Enable deprecated features", True))
 opts.Add(BoolVariable("minizip", "Enable ZIP archive support using minizip", True))
 opts.Add(BoolVariable("xaudio2", "Enable the XAudio2 audio driver", False))
 opts.Add("custom_modules", "A list of comma-separated directory paths containing custom modules to build.", "")
+opts.Add(BoolVariable("custom_modules_recursive", "Detect custom modules recursively for each specified path.", True))
 
 # Advanced options
-opts.Add(BoolVariable("verbose", "Enable verbose output for the compilation", False))
+opts.Add(BoolVariable("dev", "If yes, alias for verbose=yes warnings=extra werror=yes", False))
 opts.Add(BoolVariable("progress", "Show a progress indicator during compilation", True))
+opts.Add(BoolVariable("tests", "Build the unit tests", False))
+opts.Add(BoolVariable("verbose", "Enable verbose output for the compilation", False))
 opts.Add(EnumVariable("warnings", "Level of compilation warnings", "all", ("extra", "all", "moderate", "no")))
 opts.Add(BoolVariable("werror", "Treat compiler warnings as errors", False))
-opts.Add(BoolVariable("dev", "If yes, alias for verbose=yes warnings=extra werror=yes", False))
 opts.Add("extra_suffix", "Custom extra suffix added to the base filename of all generated binary files", "")
 opts.Add(BoolVariable("vsproj", "Generate a Visual Studio solution", False))
 opts.Add(BoolVariable("disable_3d", "Disable 3D nodes for a smaller executable", False))
@@ -237,8 +238,14 @@ if env_base["custom_modules"]:
             Exit(255)
 
 for path in module_search_paths:
+    if path == "modules":
+        # Built-in modules don't have nested modules,
+        # so save the time it takes to parse directories.
+        modules = methods.detect_modules(path, recursive=False)
+    else:  # External.
+        modules = methods.detect_modules(path, env_base["custom_modules_recursive"])
     # Note: custom modules can override built-in ones.
-    modules_detected.update(methods.detect_modules(path))
+    modules_detected.update(modules)
     include_path = os.path.dirname(path)
     if include_path:
         env_base.Prepend(CPPPATH=[include_path])
@@ -308,7 +315,7 @@ if selected_platform in platform_list:
     else:
         env = env_base.Clone()
 
-    # Compilation DB requires SCons 3.1.1+.
+    # Generating the compilation DB (`compile_commands.json`) requires SCons 4.0.0 or later.
     from SCons import __version__ as scons_raw_version
 
     scons_ver = env._get_major_minor_revision(scons_raw_version)
@@ -317,12 +324,34 @@ if selected_platform in platform_list:
         env.Tool("compilation_db")
         env.Alias("compiledb", env.CompilationDatabase())
 
+    # 'dev' and 'production' are aliases to set default options if they haven't been set
+    # manually by the user. We use `ARGUMENTS.get()` to check if they were manually set.
     if env["dev"]:
-        env["verbose"] = True
-        env["warnings"] = "extra"
-        env["werror"] = True
+        env["verbose"] = ARGUMENTS.get("verbose", True)
+        env["warnings"] = ARGUMENTS.get("warnings", "extra")
+        env["werror"] = ARGUMENTS.get("werror", True)
         if env["tools"]:
-            env["tests"] = True
+            env["tests"] = ARGUMENTS.get("tests", True)
+    if env["production"]:
+        env["use_static_cpp"] = ARGUMENTS.get("use_static_cpp", True)
+        env["use_lto"] = ARGUMENTS.get("use_lto", True)
+        env["debug_symbols"] = ARGUMENTS.get("debug_symbols", False)
+        if not env["tools"] and env["target"] == "debug":
+            print(
+                "WARNING: Requested `production` build with `tools=no target=debug`, "
+                "this will give you a full debug template (use `target=release_debug` "
+                "for an optimized template with debug features)."
+            )
+        if env.msvc:
+            print(
+                "WARNING: For `production` Windows builds, you should use MinGW with GCC "
+                "or Clang instead of Visual Studio, as they can better optimize the "
+                "GDScript VM in a very significant way. MSVC LTO also doesn't work "
+                "reliably for our use case."
+                "If you want to use MSVC nevertheless for production builds, set "
+                "`debug_symbols=no use_lto=no` instead of the `production=yes` option."
+            )
+            Exit(255)
 
     env.extra_suffix = ""
 

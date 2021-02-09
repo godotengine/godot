@@ -36,7 +36,7 @@
 class CanvasModulate : public Node2D {
 	GDCLASS(CanvasModulate, Node2D);
 
-	Color color;
+	Color color = Color(1, 1, 1, 1);
 
 protected:
 	void _notification(int p_what);

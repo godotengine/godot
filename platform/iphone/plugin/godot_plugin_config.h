@@ -66,6 +66,7 @@ struct PluginConfigIOS {
 	inline static const char *DEPENDENCIES_SYSTEM_KEY = "system";
 	inline static const char *DEPENDENCIES_CAPABILITIES_KEY = "capabilities";
 	inline static const char *DEPENDENCIES_FILES_KEY = "files";
+	inline static const char *DEPENDENCIES_LINKER_FLAGS = "linker_flags";
 
 	inline static const char *PLIST_SECTION = "plist";
 
@@ -88,6 +89,8 @@ struct PluginConfigIOS {
 
 	Vector<String> files_to_copy;
 	Vector<String> capabilities;
+
+	Vector<String> linker_flags;
 
 	// Optional plist section
 	// Supports only string types for now
@@ -260,6 +263,8 @@ static inline PluginConfigIOS load_plugin_config(Ref<ConfigFile> config_file, co
 		plugin_config.files_to_copy = resolve_local_dependencies(config_base_dir, files);
 
 		plugin_config.capabilities = config_file->get_value(PluginConfigIOS::DEPENDENCIES_SECTION, PluginConfigIOS::DEPENDENCIES_CAPABILITIES_KEY, Vector<String>());
+
+		plugin_config.linker_flags = config_file->get_value(PluginConfigIOS::DEPENDENCIES_SECTION, PluginConfigIOS::DEPENDENCIES_LINKER_FLAGS, Vector<String>());
 	}
 
 	if (config_file->has_section(PluginConfigIOS::PLIST_SECTION)) {

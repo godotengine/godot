@@ -323,9 +323,7 @@ Error ResourceLoader::load_threaded_request(const String &p_path, const String &
 				ERR_FAIL_V_MSG(ERR_INVALID_PARAMETER, "Attempted to load a resource already being loaded from this thread, cyclic reference?");
 			}
 			//lock first if possible
-			if (ResourceCache::lock) {
-				ResourceCache::lock->read_lock();
-			}
+			ResourceCache::lock.read_lock();
 
 			//get ptr
 			Resource **rptr = ResourceCache::resources.getptr(local_path);
@@ -340,9 +338,7 @@ Error ResourceLoader::load_threaded_request(const String &p_path, const String &
 					load_task.progress = 1.0;
 				}
 			}
-			if (ResourceCache::lock) {
-				ResourceCache::lock->read_unlock();
-			}
+			ResourceCache::lock.read_unlock();
 		}
 
 		if (p_source_resource != String()) {
@@ -366,7 +362,8 @@ Error ResourceLoader::load_threaded_request(const String &p_path, const String &
 
 		print_lt("REQUEST: load count: " + itos(thread_loading_count) + " / wait count: " + itos(thread_waiting_count) + " / suspended count: " + itos(thread_suspended_count) + " / active: " + itos(thread_loading_count - thread_suspended_count));
 
-		load_task.thread = Thread::create(_thread_load_function, &thread_load_tasks[local_path]);
+		load_task.thread = memnew(Thread);
+		load_task.thread->start(_thread_load_function, &thread_load_tasks[local_path]);
 		load_task.loader_id = load_task.thread->get_id();
 	}
 
@@ -493,7 +490,7 @@ RES ResourceLoader::load_threaded_get(const String &p_path, Error *r_error) {
 
 	if (load_task.requests == 0) {
 		if (load_task.thread) { //thread may not have been used
-			Thread::wait_to_finish(load_task.thread);
+			load_task.thread->wait_to_finish();
 			memdelete(load_task.thread);
 		}
 		thread_load_tasks.erase(local_path);
@@ -535,9 +532,7 @@ RES ResourceLoader::load(const String &p_path, const String &p_type_hint, bool p
 		}
 
 		//Is it cached?
-		if (ResourceCache::lock) {
-			ResourceCache::lock->read_lock();
-		}
+		ResourceCache::lock.read_lock();
 
 		Resource **rptr = ResourceCache::resources.getptr(local_path);
 
@@ -546,9 +541,7 @@ RES ResourceLoader::load(const String &p_path, const String &p_type_hint, bool p
 
 			//it is possible this resource was just freed in a thread. If so, this referencing will not work and resource is considered not cached
 			if (res.is_valid()) {
-				if (ResourceCache::lock) {
-					ResourceCache::lock->read_unlock();
-				}
+				ResourceCache::lock.read_unlock();
 				thread_load_mutex->unlock();
 
 				if (r_error) {
@@ -559,9 +552,7 @@ RES ResourceLoader::load(const String &p_path, const String &p_type_hint, bool p
 			}
 		}
 
-		if (ResourceCache::lock) {
-			ResourceCache::lock->read_unlock();
-		}
+		ResourceCache::lock.read_unlock();
 
 		//load using task (but this thread)
 		ThreadLoadTask load_task;
@@ -955,9 +946,7 @@ String ResourceLoader::path_remap(const String &p_path) {
 }
 
 void ResourceLoader::reload_translation_remaps() {
-	if (ResourceCache::lock) {
-		ResourceCache::lock->read_lock();
-	}
+	ResourceCache::lock.read_lock();
 
 	List<Resource *> to_reload;
 	SelfList<Resource> *E = remapped_list.first();
@@ -967,9 +956,7 @@ void ResourceLoader::reload_translation_remaps() {
 		E = E->next();
 	}
 
-	if (ResourceCache::lock) {
-		ResourceCache::lock->read_unlock();
-	}
+	ResourceCache::lock.read_unlock();
 
 	//now just make sure to not delete any of these resources while changing locale..
 	while (to_reload.front()) {

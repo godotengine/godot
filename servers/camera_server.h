@@ -67,7 +67,7 @@ protected:
 
 	Vector<Ref<CameraFeed>> feeds;
 
-	static CameraServer *singleton = nullptr;
+	static CameraServer *singleton;
 
 	static void _bind_methods();
 

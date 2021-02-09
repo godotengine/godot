@@ -462,16 +462,6 @@ void Sprite2D::_bind_methods() {
 }
 
 Sprite2D::Sprite2D() {
-	centered = true;
-	hflip = false;
-	vflip = false;
-	region = false;
-	region_filter_clip = false;
-
-	frame = 0;
-
-	vframes = 1;
-	hframes = 1;
 }
 
 Sprite2D::~Sprite2D() {

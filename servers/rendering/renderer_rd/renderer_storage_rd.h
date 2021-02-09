@@ -95,6 +95,21 @@ public:
 		p_array[11] = 0;
 	}
 
+	static _FORCE_INLINE_ void store_transform_transposed_3x4(const Transform &p_mtx, float *p_array) {
+		p_array[0] = p_mtx.basis.elements[0][0];
+		p_array[1] = p_mtx.basis.elements[0][1];
+		p_array[2] = p_mtx.basis.elements[0][2];
+		p_array[3] = p_mtx.origin.x;
+		p_array[4] = p_mtx.basis.elements[1][0];
+		p_array[5] = p_mtx.basis.elements[1][1];
+		p_array[6] = p_mtx.basis.elements[1][2];
+		p_array[7] = p_mtx.origin.y;
+		p_array[8] = p_mtx.basis.elements[2][0];
+		p_array[9] = p_mtx.basis.elements[2][1];
+		p_array[10] = p_mtx.basis.elements[2][2];
+		p_array[11] = p_mtx.origin.z;
+	}
+
 	static _FORCE_INLINE_ void store_camera(const CameraMatrix &p_mtx, float *p_array) {
 		for (int i = 0; i < 4; i++) {
 			for (int j = 0; j < 4; j++) {
@@ -362,18 +377,11 @@ private:
 		Shader *shader = nullptr;
 		//shortcut to shader data and type
 		ShaderType shader_type;
-<<<<<<< HEAD
+		uint32_t shader_id = 0;
 		bool update_requested = false;
 		bool uniform_dirty = false;
 		bool texture_dirty = false;
 		Material *update_next = nullptr;
-=======
-		uint32_t shader_id = 0;
-		bool update_requested;
-		bool uniform_dirty;
-		bool texture_dirty;
-		Material *update_next;
->>>>>>> b72ad9d97b7d47fef925f48118ffbc4eb110f276
 		Map<StringName, Variant> params;
 		int32_t priority = 0;
 		RID next_pass;
@@ -469,6 +477,9 @@ private:
 		Vector<RID> material_cache;
 
 		List<MeshInstance *> instances;
+
+		RID shadow_mesh;
+		Set<Mesh *> shadow_owners;
 
 		Dependency dependency;
 	};
@@ -690,7 +701,7 @@ private:
 		float explosiveness = 0.0;
 		float randomness = 0.0;
 		bool restart_request = false;
-		AABB custom_aabb = AABB(Vector3(-4, -4, -4), Vector3(8, 8, 8))
+		AABB custom_aabb = AABB(Vector3(-4, -4, -4), Vector3(8, 8, 8));
 		bool use_local_coords = true;
 		RID process_material;
 
@@ -746,7 +757,7 @@ private:
 
 		Set<RID> collisions;
 
-		Particles() {	}
+		Particles() {}
 
 		Dependency dependency;
 
@@ -1046,7 +1057,7 @@ private:
 		PackedInt32Array bsp_tree;
 
 		struct BSP {
-			static const int32_t EMPTY_LEAF = INT32_MIN;
+			static const int32_t EMPTY_LEAF = 0;
 			float plane[4] = {};
 			int32_t over = EMPTY_LEAF, under = EMPTY_LEAF;
 		};
@@ -1163,10 +1174,10 @@ private:
 		HashMap<StringName, Variable> variables;
 
 		struct Value {
-			float x = 0.0;
-			float y = 0.0;
-			float z = 0.0;
-			float w = 0.0;
+			float x;
+			float y;
+			float z;
+			float w;
 		};
 
 		struct ValueInt {
@@ -1392,6 +1403,7 @@ public:
 	virtual AABB mesh_get_custom_aabb(RID p_mesh) const;
 
 	virtual AABB mesh_get_aabb(RID p_mesh, RID p_skeleton = RID());
+	virtual void mesh_set_shadow_mesh(RID p_mesh, RID p_shadow_mesh);
 
 	virtual void mesh_clear(RID p_mesh);
 
@@ -1430,6 +1442,13 @@ public:
 		return mesh->surfaces[p_surface_index];
 	}
 
+	_FORCE_INLINE_ RID mesh_get_shadow_mesh(RID p_mesh) {
+		Mesh *mesh = mesh_owner.getornull(p_mesh);
+		ERR_FAIL_COND_V(!mesh, RID());
+
+		return mesh->shadow_mesh;
+	}
+
 	_FORCE_INLINE_ RS::PrimitiveType mesh_surface_get_primitive(void *p_surface) {
 		Mesh::Surface *surface = reinterpret_cast<Mesh::Surface *>(p_surface);
 		return surface->primitive;
@@ -1440,13 +1459,7 @@ public:
 		return s->lod_count > 0;
 	}
 
-	_FORCE_INLINE_ RID mesh_surface_get_index_array(void *p_surface) const {
-		Mesh::Surface *s = reinterpret_cast<Mesh::Surface *>(p_surface);
-
-		return s->index_array;
-	}
-
-	_FORCE_INLINE_ RID mesh_surface_get_index_array_with_lod(void *p_surface, float p_model_scale, float p_distance_threshold, float p_lod_threshold) const {
+	_FORCE_INLINE_ uint32_t mesh_surface_get_lod(void *p_surface, float p_model_scale, float p_distance_threshold, float p_lod_threshold) const {
 		Mesh::Surface *s = reinterpret_cast<Mesh::Surface *>(p_surface);
 
 		int32_t current_lod = -1;
@@ -1458,9 +1471,19 @@ public:
 			current_lod = i;
 		}
 		if (current_lod == -1) {
+			return 0;
+		} else {
+			return current_lod + 1;
+		}
+	}
+
+	_FORCE_INLINE_ RID mesh_surface_get_index_array(void *p_surface, uint32_t p_lod) const {
+		Mesh::Surface *s = reinterpret_cast<Mesh::Surface *>(p_surface);
+
+		if (p_lod == 0) {
 			return s->index_array;
 		} else {
-			return s->lods[current_lod].index_array;
+			return s->lods[p_lod - 1].index_array;
 		}
 	}
 

@@ -42,7 +42,7 @@ class AudioStream;
 class AudioStreamSample;
 
 class AudioDriver {
-	static AudioDriver *singleton = nullptr;
+	static AudioDriver *singleton;
 	uint64_t _last_mix_time = 0;
 	uint64_t _last_mix_frames = 0;
 
@@ -191,11 +191,11 @@ private:
 		struct Channel {
 			bool used = false;
 			bool active = false;
-			AudioFrame peak_volume = AudioFrame(0, 0);
+			AudioFrame peak_volume = AudioFrame(AUDIO_MIN_PEAK_DB, AUDIO_MIN_PEAK_DB);
 			Vector<AudioFrame> buffer;
 			Vector<Ref<AudioEffectInstance>> effect_instances;
 			uint64_t last_mix_with_audio = 0;
-			Channel() {	}
+			Channel() {}
 		};
 
 		Vector<Channel> channels;
@@ -220,7 +220,7 @@ private:
 
 	void _update_bus_effects(int p_bus);
 
-	static AudioServer *singleton = nullptr;
+	static AudioServer *singleton;
 
 	void init_channels_and_buffers();
 
@@ -379,7 +379,7 @@ class AudioBusLayout : public Resource {
 		float volume_db = 0.0;
 		StringName send;
 
-		Bus() {	}
+		Bus() {}
 	};
 
 	Vector<Bus> buses;

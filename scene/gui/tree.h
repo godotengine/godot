@@ -459,7 +459,7 @@ private:
 		Ref<Texture2D> updown;
 
 		Color font_color;
-		Color font_color_selected;
+		Color font_selected_color;
 		Color guide_color;
 		Color drop_position_color;
 		Color relationship_line_color;
@@ -562,6 +562,10 @@ protected:
 
 	Rect2 _get_item_rect(Object *p_item, int p_column) const {
 		return get_item_rect(Object::cast_to<TreeItem>(p_item), p_column);
+	}
+
+	void _scroll_to_item(Object *p_item) {
+		scroll_to_item(Object::cast_to<TreeItem>(p_item));
 	}
 
 public:

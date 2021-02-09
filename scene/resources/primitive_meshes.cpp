@@ -304,8 +304,8 @@ void CapsuleMesh::_create_mesh_array(Array &p_arr) const {
 			u = i;
 			u /= radial_segments;
 
-			x = -sin(u * (Math_PI * 2.0));
-			z = cos(u * (Math_PI * 2.0));
+			x = -sin(u * Math_TAU);
+			z = cos(u * Math_TAU);
 
 			Vector3 p = Vector3(x * radius * w, y, -z * radius * w);
 			points.push_back(p + Vector3(0.0, 0.5 * mid_height, 0.0));
@@ -343,8 +343,8 @@ void CapsuleMesh::_create_mesh_array(Array &p_arr) const {
 			u = i;
 			u /= radial_segments;
 
-			x = -sin(u * (Math_PI * 2.0));
-			z = cos(u * (Math_PI * 2.0));
+			x = -sin(u * Math_TAU);
+			z = cos(u * Math_TAU);
 
 			Vector3 p = Vector3(x * radius, y, -z * radius);
 			points.push_back(p);
@@ -383,8 +383,8 @@ void CapsuleMesh::_create_mesh_array(Array &p_arr) const {
 			float u2 = i;
 			u2 /= radial_segments;
 
-			x = -sin(u2 * (Math_PI * 2.0));
-			z = cos(u2 * (Math_PI * 2.0));
+			x = -sin(u2 * Math_TAU);
+			z = cos(u2 * Math_TAU);
 
 			Vector3 p = Vector3(x * radius * w, y, -z * radius * w);
 			points.push_back(p + Vector3(0.0, -0.5 * mid_height, 0.0));
@@ -769,8 +769,8 @@ void CylinderMesh::_create_mesh_array(Array &p_arr) const {
 			u = i;
 			u /= radial_segments;
 
-			x = sin(u * (Math_PI * 2.0));
-			z = cos(u * (Math_PI * 2.0));
+			x = sin(u * Math_TAU);
+			z = cos(u * Math_TAU);
 
 			Vector3 p = Vector3(x * radius, y, z * radius);
 			points.push_back(p);
@@ -809,8 +809,8 @@ void CylinderMesh::_create_mesh_array(Array &p_arr) const {
 			float r = i;
 			r /= radial_segments;
 
-			x = sin(r * (Math_PI * 2.0));
-			z = cos(r * (Math_PI * 2.0));
+			x = sin(r * Math_TAU);
+			z = cos(r * Math_TAU);
 
 			u = ((x + 1.0) * 0.25);
 			v = 0.5 + ((z + 1.0) * 0.25);
@@ -845,8 +845,8 @@ void CylinderMesh::_create_mesh_array(Array &p_arr) const {
 			float r = i;
 			r /= radial_segments;
 
-			x = sin(r * (Math_PI * 2.0));
-			z = cos(r * (Math_PI * 2.0));
+			x = sin(r * Math_TAU);
+			z = cos(r * Math_TAU);
 
 			u = 0.5 + ((x + 1.0) * 0.25);
 			v = 1.0 - ((z + 1.0) * 0.25);
@@ -1458,8 +1458,8 @@ void SphereMesh::_create_mesh_array(Array &p_arr) const {
 			float u = i;
 			u /= radial_segments;
 
-			x = sin(u * (Math_PI * 2.0));
-			z = cos(u * (Math_PI * 2.0));
+			x = sin(u * Math_TAU);
+			z = cos(u * Math_TAU);
 
 			if (is_hemisphere && y < 0.0) {
 				points.push_back(Vector3(x * radius * w, 0.0, z * radius * w));

@@ -58,7 +58,7 @@ public:
 	};
 
 	friend class AudioEffectDistortionInstance;
-	Mode mode;
+	Mode mode = MODE_OVERDRIVE;
 	float pre_gain = 0.0;
 	float post_gain = 0.0;
 	float keep_hf_hz = 0.0;

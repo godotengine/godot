@@ -46,7 +46,7 @@ class RenderingServerWrapMT : public RenderingServer {
 
 	Thread::ID server_thread;
 	volatile bool exit = false;
-	Thread *thread = nullptr;
+	Thread thread;
 	volatile bool draw_thread_up = false;
 	bool create_thread = false;
 
@@ -62,7 +62,7 @@ class RenderingServerWrapMT : public RenderingServer {
 
 	//#define DEBUG_SYNC
 
-	static RenderingServerWrapMT *singleton_mt = nullptr;
+	static RenderingServerWrapMT *singleton_mt;
 
 #ifdef DEBUG_SYNC
 #define SYNC_DEBUG print_line("sync on: " + String(__FUNCTION__));
@@ -172,6 +172,7 @@ public:
 	FUNC2(mesh_set_custom_aabb, RID, const AABB &)
 	FUNC1RC(AABB, mesh_get_custom_aabb, RID)
 
+	FUNC2(mesh_set_shadow_mesh, RID, RID)
 	FUNC1(mesh_clear, RID)
 
 	/* MULTIMESH API */
@@ -445,7 +446,7 @@ public:
 
 	FUNC2(viewport_set_global_canvas_transform, RID, const Transform2D &)
 	FUNC4(viewport_set_canvas_stacking, RID, RID, int, int)
-	FUNC2(viewport_set_shadow_atlas_size, RID, int)
+	FUNC3(viewport_set_shadow_atlas_size, RID, int, bool)
 	FUNC3(viewport_set_sdf_oversize_and_scale, RID, ViewportSDFOversize, ViewportSDFScale)
 
 	FUNC3(viewport_set_shadow_atlas_quadrant_subdivision, RID, int, int)
@@ -470,7 +471,7 @@ public:
 		return rendering_server->viewport_get_measured_render_time_gpu(p_viewport);
 	}
 
-	FUNC1(directional_shadow_atlas_set_size, int)
+	FUNC2(directional_shadow_atlas_set_size, int, bool)
 
 	/* SKY API */
 
@@ -507,6 +508,7 @@ public:
 	FUNC11(environment_set_sdfgi, RID, bool, EnvironmentSDFGICascades, float, EnvironmentSDFGIYScale, bool, bool, bool, float, float, float)
 	FUNC1(environment_set_sdfgi_ray_count, EnvironmentSDFGIRayCount)
 	FUNC1(environment_set_sdfgi_frames_to_converge, EnvironmentSDFGIFramesToConverge)
+	FUNC1(environment_set_sdfgi_frames_to_update_light, EnvironmentSDFGIFramesToUpdateLight)
 
 	FUNC11(environment_set_glow, RID, bool, Vector<float>, float, float, float, float, EnvironmentGlowBlendMode, float, float, float)
 	FUNC1(environment_glow_set_use_bicubic_upscale, bool)
@@ -518,12 +520,10 @@ public:
 
 	FUNC9(environment_set_fog, RID, bool, const Color &, float, float, float, float, float, float)
 
-	FUNC9(environment_set_volumetric_fog, RID, bool, float, const Color &, float, float, float, float, EnvVolumetricFogShadowFilter)
+	FUNC10(environment_set_volumetric_fog, RID, bool, float, const Color &, float, float, float, float, bool, float)
 
 	FUNC2(environment_set_volumetric_fog_volume_size, int, int)
 	FUNC1(environment_set_volumetric_fog_filter_active, bool)
-	FUNC1(environment_set_volumetric_fog_directional_shadow_shrink_size, int)
-	FUNC1(environment_set_volumetric_fog_positional_shadow_shrink_size, int)
 
 	FUNC3R(Ref<Image>, environment_bake_panorama, RID, bool, const Size2i &)
 
@@ -744,6 +744,8 @@ public:
 		return rendering_server->get_video_adapter_vendor();
 	}
 
+	FUNC1(gi_set_use_half_resolution, bool)
+
 	FUNC4(set_boot_image, const Ref<Image> &, const Color &, bool, bool)
 	FUNC1(set_default_clear_color, const Color &)
 
@@ -784,6 +786,10 @@ public:
 
 	virtual void sdfgi_set_debug_probe_select(const Vector3 &p_position, const Vector3 &p_dir) {
 		rendering_server->sdfgi_set_debug_probe_select(p_position, p_dir);
+	}
+
+	virtual void set_print_gpu_profile(bool p_enable) {
+		rendering_server->set_print_gpu_profile(p_enable);
 	}
 
 	RenderingServerWrapMT(RenderingServer *p_contained, bool p_create_thread);

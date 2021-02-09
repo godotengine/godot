@@ -42,7 +42,7 @@ class VisualInstance3D : public Node3D {
 
 	RID base;
 	RID instance;
-	uint32_t layers;
+	uint32_t layers = 1;
 
 	RID _get_visual_instance_rid() const;
 
@@ -105,21 +105,21 @@ public:
 	};
 
 private:
-	ShadowCastingSetting shadow_casting_setting;
+	ShadowCastingSetting shadow_casting_setting = SHADOW_CASTING_SETTING_ON;
 	Ref<Material> material_override;
-	float lod_min_distance;
-	float lod_max_distance;
-	float lod_min_hysteresis;
-	float lod_max_hysteresis;
+	float lod_min_distance = 0.0;
+	float lod_max_distance = 0.0;
+	float lod_min_hysteresis = 0.0;
+	float lod_max_hysteresis = 0.0;
 
-	float lod_bias;
+	float lod_bias = 1.0;
 
 	mutable HashMap<StringName, Variant> instance_uniforms;
 	mutable HashMap<StringName, StringName> instance_uniform_property_remap;
 
-	float extra_cull_margin;
-	LightmapScale lightmap_scale;
-	GIMode gi_mode;
+	float extra_cull_margin = 0.0;
+	LightmapScale lightmap_scale = LIGHTMAP_SCALE_1X;
+	GIMode gi_mode = GI_MODE_DISABLED;
 
 	const StringName *_instance_uniform_get_remap(const StringName p_name) const;
 

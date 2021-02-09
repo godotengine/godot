@@ -393,9 +393,6 @@ void UPNP::_bind_methods() {
 }
 
 UPNP::UPNP() {
-	discover_multicast_if = "";
-	discover_local_port = 0;
-	discover_ipv6 = false;
 }
 
 UPNP::~UPNP() {

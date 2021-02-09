@@ -615,7 +615,7 @@
 		<theme_item name="font_color" type="Color" default="Color( 0.63, 0.63, 0.63, 1 )">
 			Default text [Color] of the item.
 		</theme_item>
-		<theme_item name="font_color_selected" type="Color" default="Color( 1, 1, 1, 1 )">
+		<theme_item name="font_selected_color" type="Color" default="Color( 1, 1, 1, 1 )">
 			Text [Color] used when the item is selected.
 		</theme_item>
 		<theme_item name="font_size" type="int">

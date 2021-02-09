@@ -44,27 +44,27 @@ class WSLClient : public WebSocketClient {
 	GDCIIMPL(WSLClient, WebSocketClient);
 
 private:
-	int _in_buf_size;
-	int _in_pkt_size;
-	int _out_buf_size;
-	int _out_pkt_size;
+	int _in_buf_size = DEF_BUF_SHIFT;
+	int _in_pkt_size = DEF_PKT_SHIFT;
+	int _out_buf_size = DEF_BUF_SHIFT;
+	int _out_pkt_size = DEF_PKT_SHIFT;
 
 	Ref<WSLPeer> _peer;
 	Ref<StreamPeerTCP> _tcp;
 	Ref<StreamPeer> _connection;
 
 	CharString _request;
-	int _requested;
+	int _requested = 0;
 
 	uint8_t _resp_buf[WSL_MAX_HEADER_SIZE];
-	int _resp_pos;
+	int _resp_pos = 0;
 
 	String _response;
 
 	String _key;
 	String _host;
 	Vector<String> _protocols;
-	bool _use_ssl;
+	bool _use_ssl = false;
 
 	void _do_handshake();
 	bool _verify_headers(String &r_protocol);

@@ -41,13 +41,13 @@ class RendererScene;
 
 class RenderingServerGlobals {
 public:
-	static RendererStorage *storage = nullptr;
-	static RendererCanvasRender *canvas_render = nullptr;
-	static RendererCompositor *rasterizer = nullptr;
+	static RendererStorage *storage;
+	static RendererCanvasRender *canvas_render;
+	static RendererCompositor *rasterizer;
 
-	static RendererCanvasCull *canvas = nullptr;
-	static RendererViewport *viewport = nullptr;
-	static RendererScene *scene = nullptr;
+	static RendererCanvasCull *canvas;
+	static RendererViewport *viewport;
+	static RendererScene *scene;
 };
 
 #define RSG RenderingServerGlobals

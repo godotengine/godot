@@ -232,6 +232,7 @@ public:
 	String get_user_data_dir() const;
 
 	Error set_thread_name(const String &p_name);
+	Thread::ID get_thread_caller_id() const;
 
 	bool has_feature(const String &p_feature) const;
 
@@ -553,7 +554,7 @@ protected:
 	volatile bool active = false;
 	Object *target_instance = nullptr;
 	StringName target_method;
-	Thread *thread = nullptr;
+	Thread thread;
 	static void _bind_methods();
 	static void _start_func(void *ud);
 
@@ -569,9 +570,6 @@ public:
 	String get_id() const;
 	bool is_active() const;
 	Variant wait_to_finish();
-
-	_Thread() {}
-	~_Thread();
 };
 
 VARIANT_ENUM_CAST(_Thread::Priority);

@@ -46,7 +46,7 @@ class NavigationRegion3D : public Node3D {
 
 	Navigation3D *navigation = nullptr;
 	Node *debug_view = nullptr;
-	Thread *bake_thread = nullptr;
+	Thread bake_thread;
 
 protected:
 	void _notification(int p_what);

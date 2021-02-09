@@ -36,7 +36,7 @@
 #include "servers/audio_server.h"
 
 struct AudioRBResampler {
-	uint32_t rb_bitsi = 0;
+	uint32_t rb_bits = 0;
 	uint32_t rb_len = 0;
 	uint32_t rb_mask = 0;
 	uint32_t read_buff_len = 0;

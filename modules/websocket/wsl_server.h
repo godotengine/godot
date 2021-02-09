@@ -53,26 +53,24 @@ private:
 	public:
 		Ref<StreamPeerTCP> tcp;
 		Ref<StreamPeer> connection;
-		bool use_ssl;
+		bool use_ssl = false;
 
-		int time;
-		uint8_t req_buf[WSL_MAX_HEADER_SIZE];
-		int req_pos;
+		int time = 0;
+		uint8_t req_buf[WSL_MAX_HEADER_SIZE] = {};
+		int req_pos = 0;
 		String key;
 		String protocol;
-		bool has_request;
+		bool has_request = false;
 		CharString response;
-		int response_sent;
-
-		PendingPeer();
+		int response_sent = 0;
 
 		Error do_handshake(const Vector<String> p_protocols);
 	};
 
-	int _in_buf_size;
-	int _in_pkt_size;
-	int _out_buf_size;
-	int _out_pkt_size;
+	int _in_buf_size = DEF_BUF_SHIFT;
+	int _in_pkt_size = DEF_PKT_SHIFT;
+	int _out_buf_size = DEF_BUF_SHIFT;
+	int _out_pkt_size = DEF_PKT_SHIFT;
 
 	List<Ref<PendingPeer>> _pending;
 	Ref<TCP_Server> _server;

@@ -140,9 +140,7 @@ void VideoStreamPlaybackTheora::clear() {
 #ifdef THEORA_USE_THREAD_STREAMING
 	thread_exit = true;
 	thread_sem->post(); //just in case
-	Thread::wait_to_finish(thread);
-	memdelete(thread);
-	thread = nullptr;
+	thread.wait_to_finish();
 	ring_buffer.clear();
 #endif
 
@@ -181,7 +179,7 @@ void VideoStreamPlaybackTheora::set_file(const String &p_file) {
 	int read = file->get_buffer(read_buffer.ptr(), to_read);
 	ring_buffer.write(read_buffer.ptr(), read);
 
-	thread = Thread::create(_streaming_thread, this);
+	thread.start(_streaming_thread, this);
 
 #endif
 
@@ -647,31 +645,13 @@ void VideoStreamPlaybackTheora::_streaming_thread(void *ud) {
 #endif
 
 VideoStreamPlaybackTheora::VideoStreamPlaybackTheora() {
-	file = nullptr;
-	theora_p = 0;
-	vorbis_p = 0;
-	videobuf_ready = 0;
-	playing = false;
-	frames_pending = 0;
-	videobuf_time = 0;
-	paused = false;
-
-	buffering = false;
 	texture = Ref<ImageTexture>(memnew(ImageTexture));
-	mix_callback = nullptr;
-	mix_udata = nullptr;
-	audio_track = 0;
-	delay_compensation = 0;
-	audio_frames_wrote = 0;
 
 #ifdef THEORA_USE_THREAD_STREAMING
 	int rb_power = nearest_shift(RB_SIZE_KB * 1024);
 	ring_buffer.resize(rb_power);
 	read_buffer.resize(RB_SIZE_KB * 1024);
 	thread_sem = Semaphore::create();
-	thread = nullptr;
-	thread_exit = false;
-	thread_eof = false;
 
 #endif
 };

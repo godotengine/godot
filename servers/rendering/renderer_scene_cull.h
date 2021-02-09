@@ -54,12 +54,13 @@ public:
 	enum {
 		SDFGI_MAX_CASCADES = 8,
 		SDFGI_MAX_REGIONS_PER_CASCADE = 3,
-		MAX_INSTANCE_PAIRS = 32
+		MAX_INSTANCE_PAIRS = 32,
+		MAX_UPDATE_SHADOWS = 512
 	};
 
 	uint64_t render_pass = 0;
 
-	static RendererSceneCull *singleton = nullptr;
+	static RendererSceneCull *singleton;
 
 	/* CAMERA API */
 
@@ -81,7 +82,7 @@ public:
 
 		Transform transform;
 
-		Camera() { }
+		Camera() {}
 	};
 
 	mutable RID_PtrOwner<Camera> camera_owner;
@@ -242,7 +243,7 @@ public:
 		uint32_t layer_mask = 0; //for fast layer-mask discard
 		RID base_rid;
 		union {
-			uint64_t instance_data_rid;
+			uint64_t instance_data_rid = 0;
 			RendererSceneRender::GeometryInstance *instance_geometry;
 		};
 		Instance *instance = nullptr;
@@ -444,9 +445,6 @@ public:
 		Instance() :
 				scenario_item(this),
 				update_item(this) {
-<<<<<<< HEAD
-			visible = true;
-=======
 			base_type = RS::INSTANCE_NONE;
 			cast_shadows = RS::SHADOW_CASTING_SETTING_ON;
 			receive_shadows = true;
@@ -486,7 +484,6 @@ public:
 			dependency_tracker.userdata = this;
 			dependency_tracker.changed_callback = dependency_changed;
 			dependency_tracker.deleted_callback = dependency_deleted;
->>>>>>> b72ad9d97b7d47fef925f48118ffbc4eb110f276
 		}
 
 		~Instance() {
@@ -513,7 +510,7 @@ public:
 		Set<Instance *> gi_probes;
 		Set<Instance *> lightmap_captures;
 
-		InstanceGeometryData() { }
+		InstanceGeometryData() {}
 	};
 
 	struct InstanceReflectionProbeData : public InstanceBaseData {
@@ -527,7 +524,7 @@ public:
 		int render_step = -1;
 
 		InstanceReflectionProbeData() :
-				update_list(this) {	}
+				update_list(this) {}
 	};
 
 	struct InstanceDecalData : public InstanceBaseData {
@@ -536,7 +533,7 @@ public:
 
 		Set<Instance *> geometries;
 
-		InstanceDecalData() {	}
+		InstanceDecalData() {}
 	};
 
 	SelfList<InstanceReflectionProbeData>::List reflection_probe_render_list;
@@ -559,7 +556,7 @@ public:
 		RS::LightBakeMode bake_mode = RS::LIGHT_BAKE_DISABLED;
 		uint32_t max_sdfgi_cascade = 2;
 
-		InstanceLightData() {	}
+		InstanceLightData() {}
 	};
 
 	struct InstanceGIProbeData : public InstanceBaseData {
@@ -595,7 +592,7 @@ public:
 		SelfList<InstanceGIProbeData> update_element;
 
 		InstanceGIProbeData() :
-				update_element(this) {	}
+				update_element(this) {}
 	};
 
 	SelfList<InstanceGIProbeData>::List gi_probe_update_list;
@@ -605,7 +602,7 @@ public:
 		Set<Instance *> geometries;
 		Set<Instance *> users;
 
-		InstanceLightmapData() {	}
+		InstanceLightmapData() {}
 	};
 
 	uint64_t pair_pass = 1;
@@ -674,7 +671,6 @@ public:
 
 	PagedArray<Instance *> instance_cull_result;
 	PagedArray<Instance *> instance_shadow_cull_result;
-	PagedArray<RendererSceneRender::GeometryInstance *> geometry_instances_to_shadow_render;
 
 	struct FrustumCullResult {
 		PagedArray<RendererSceneRender::GeometryInstance *> geometry_instances;
@@ -773,6 +769,7 @@ public:
 			lightmaps.set_page_pool(p_rid_pool);
 			reflections.set_page_pool(p_rid_pool);
 			decals.set_page_pool(p_rid_pool);
+			gi_probes.set_page_pool(p_rid_pool);
 			mesh_instances.set_page_pool(p_rid_pool);
 			for (int i = 0; i < RendererSceneRender::MAX_DIRECTIONAL_LIGHTS; i++) {
 				for (int j = 0; j < RendererSceneRender::MAX_DIRECTIONAL_LIGHT_CASCADES; j++) {
@@ -793,15 +790,17 @@ public:
 	FrustumCullResult frustum_cull_result;
 	LocalVector<FrustumCullResult> frustum_cull_result_threads;
 
+	RendererSceneRender::RenderShadowData render_shadow_data[MAX_UPDATE_SHADOWS];
+	uint32_t max_shadows_used = 0;
+
+	RendererSceneRender::RenderSDFGIData render_sdfgi_data[SDFGI_MAX_CASCADES * SDFGI_MAX_REGIONS_PER_CASCADE];
+	RendererSceneRender::RenderSDFGIUpdateData sdfgi_update_data;
+
 	uint32_t thread_cull_threshold = 200;
 
 	RID_PtrOwner<Instance> instance_owner;
 
-<<<<<<< HEAD
-	bool pair_volumes_to_mesh = false; // used in traditional forward, unnecesary on clustered
-=======
 	uint32_t geometry_instance_pair_mask; // used in traditional forward, unnecesary on clustered
->>>>>>> b72ad9d97b7d47fef925f48118ffbc4eb110f276
 
 	virtual RID instance_create();
 
@@ -878,21 +877,11 @@ public:
 
 		struct SDFGI {
 			//have arrays here because SDFGI functions expects this, plus regions can have areas
-<<<<<<< HEAD
-			PagedArray<RendererSceneRender::InstanceBase *> region_cull_result[SDFGI_MAX_CASCADES * SDFGI_MAX_REGIONS_PER_CASCADE] = {};
 			AABB region_aabb[SDFGI_MAX_CASCADES * SDFGI_MAX_REGIONS_PER_CASCADE] = {}; //max 3 regions per cascade
 			uint32_t region_cascade[SDFGI_MAX_CASCADES * SDFGI_MAX_REGIONS_PER_CASCADE] = {}; //max 3 regions per cascade
 			uint32_t region_count = 0;
 
-			PagedArray<RID> cascade_lights[SDFGI_MAX_CASCADES] = {};
 			uint32_t cascade_light_index[SDFGI_MAX_CASCADES] = {};
-=======
-			AABB region_aabb[SDFGI_MAX_CASCADES * SDFGI_MAX_REGIONS_PER_CASCADE]; //max 3 regions per cascade
-			uint32_t region_cascade[SDFGI_MAX_CASCADES * SDFGI_MAX_REGIONS_PER_CASCADE]; //max 3 regions per cascade
-			uint32_t region_count = 0;
-
-			uint32_t cascade_light_index[SDFGI_MAX_CASCADES];
->>>>>>> b72ad9d97b7d47fef925f48118ffbc4eb110f276
 			uint32_t cascade_light_count = 0;
 
 		} sdfgi;
@@ -915,8 +904,7 @@ public:
 	void _frustum_cull(FrustumCullData &cull_data, FrustumCullResult &cull_result, uint64_t p_from, uint64_t p_to);
 
 	bool _render_reflection_probe_step(Instance *p_instance, int p_step);
-	void _prepare_scene(const Transform p_cam_transform, const CameraMatrix &p_cam_projection, bool p_cam_orthogonal, bool p_cam_vaspect, RID p_render_buffers, RID p_environment, uint32_t p_visible_layers, RID p_scenario, RID p_shadow_atlas, RID p_reflection_probe, float p_screen_lod_threshold, bool p_using_shadows = true);
-	void _render_scene(RID p_render_buffers, const Transform p_cam_transform, const CameraMatrix &p_cam_projection, bool p_cam_orthogonal, RID p_environment, RID p_force_camera_effects, RID p_scenario, RID p_shadow_atlas, RID p_reflection_probe, int p_reflection_probe_pass, float p_screen_lod_threshold);
+	void _render_scene(const Transform p_cam_transform, const CameraMatrix &p_cam_projection, bool p_cam_orthogonal, bool p_cam_vaspect, RID p_render_buffers, RID p_environment, RID p_force_camera_effects, uint32_t p_visible_layers, RID p_scenario, RID p_shadow_atlas, RID p_reflection_probe, int p_reflection_probe_pass, float p_screen_lod_threshold, bool p_using_shadows = true);
 	void render_empty_scene(RID p_render_buffers, RID p_scenario, RID p_shadow_atlas);
 
 	void render_camera(RID p_render_buffers, RID p_camera, RID p_scenario, Size2 p_viewport_size, float p_screen_lod_threshold, RID p_shadow_atlas);
@@ -938,7 +926,7 @@ public:
 
 #define PASSBASE scene_render
 
-	PASS1(directional_shadow_atlas_set_size, int)
+	PASS2(directional_shadow_atlas_set_size, int, bool)
 	PASS1(gi_probe_set_quality, RS::GIProbeQuality)
 
 	/* SKY API */
@@ -977,16 +965,15 @@ public:
 	PASS7(environment_set_adjustment, RID, bool, float, float, float, bool, RID)
 
 	PASS9(environment_set_fog, RID, bool, const Color &, float, float, float, float, float, float)
-	PASS9(environment_set_volumetric_fog, RID, bool, float, const Color &, float, float, float, float, RS::EnvVolumetricFogShadowFilter)
+	PASS10(environment_set_volumetric_fog, RID, bool, float, const Color &, float, float, float, float, bool, float)
 
 	PASS2(environment_set_volumetric_fog_volume_size, int, int)
 	PASS1(environment_set_volumetric_fog_filter_active, bool)
-	PASS1(environment_set_volumetric_fog_directional_shadow_shrink_size, int)
-	PASS1(environment_set_volumetric_fog_positional_shadow_shrink_size, int)
 
 	PASS11(environment_set_sdfgi, RID, bool, RS::EnvironmentSDFGICascades, float, RS::EnvironmentSDFGIYScale, bool, bool, bool, float, float, float)
 	PASS1(environment_set_sdfgi_ray_count, RS::EnvironmentSDFGIRayCount)
 	PASS1(environment_set_sdfgi_frames_to_converge, RS::EnvironmentSDFGIFramesToConverge)
+	PASS1(environment_set_sdfgi_frames_to_update_light, RS::EnvironmentSDFGIFramesToUpdateLight)
 
 	PASS1RC(RS::EnvironmentBG, environment_get_background, RID)
 	PASS1RC(int, environment_get_canvas_max_layer, RID)
@@ -1016,10 +1003,11 @@ public:
 
 	PASS0R(RID, render_buffers_create)
 	PASS7(render_buffers_configure, RID, RID, int, int, RS::ViewportMSAA, RS::ViewportScreenSpaceAA, bool)
+	PASS1(gi_set_use_half_resolution, bool)
 
 	/* Shadow Atlas */
 	PASS0R(RID, shadow_atlas_create)
-	PASS2(shadow_atlas_set_size, RID, int)
+	PASS3(shadow_atlas_set_size, RID, int, bool)
 	PASS3(shadow_atlas_set_quadrant_subdivision, RID, int, int)
 
 	PASS1(set_debug_draw_mode, RS::ViewportDebugDraw)

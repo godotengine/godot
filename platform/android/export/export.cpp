@@ -269,7 +269,7 @@ class EditorExportPlatformAndroid : public EditorExportPlatform {
 	Vector<Device> devices;
 	volatile bool devices_changed;
 	Mutex device_lock;
-	Thread *check_for_changes_thread;
+	Thread check_for_changes_thread;
 	volatile bool quit_request;
 
 	static void _check_for_changes_poll_thread(void *ud) {
@@ -2848,13 +2848,12 @@ public:
 		devices_changed = true;
 		plugins_changed = true;
 		quit_request = false;
-		check_for_changes_thread = Thread::create(_check_for_changes_poll_thread, this);
+		check_for_changes_thread.start(_check_for_changes_poll_thread, this);
 	}
 
 	~EditorExportPlatformAndroid() {
 		quit_request = true;
-		Thread::wait_to_finish(check_for_changes_thread);
-		memdelete(check_for_changes_thread);
+		check_for_changes_thread.wait_to_finish();
 	}
 };
 

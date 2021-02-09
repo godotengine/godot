@@ -286,17 +286,6 @@ void GIProbeData::_bind_methods() {
 }
 
 GIProbeData::GIProbeData() {
-	ao = 0.0;
-	ao_size = 0.5;
-	dynamic_range = 4;
-	energy = 1.0;
-	bias = 1.5;
-	normal_bias = 0.0;
-	propagation = 0.7;
-	anisotropy_strength = 0.5;
-	interior = false;
-	use_two_bounces = false;
-
 	probe = RS::get_singleton()->gi_probe_create();
 }
 
@@ -520,7 +509,10 @@ String GIProbe::get_configuration_warning() const {
 			warning += "\n\n";
 		}
 		warning += TTR("GIProbes are not supported by the GLES2 video driver.\nUse a BakedLightmap instead.");
+	} else if (probe_data.is_null()) {
+		warning += TTR("No GIProbe data set, so this node is disabled. Bake static objects to enable GI.");
 	}
+
 	return warning;
 }
 
@@ -550,9 +542,6 @@ void GIProbe::_bind_methods() {
 }
 
 GIProbe::GIProbe() {
-	subdiv = SUBDIV_128;
-	extents = Vector3(10, 10, 10);
-
 	gi_probe = RS::get_singleton()->gi_probe_create();
 	set_disable_scale(true);
 }

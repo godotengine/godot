@@ -263,16 +263,7 @@ void AudioStreamOGGVorbis::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "loop_offset"), "set_loop_offset", "get_loop_offset");
 }
 
-AudioStreamOGGVorbis::AudioStreamOGGVorbis() {
-	data = nullptr;
-	data_len = 0;
-	length = 0;
-	sample_rate = 1;
-	channels = 1;
-	loop_offset = 0;
-	decode_mem_size = 0;
-	loop = false;
-}
+AudioStreamOGGVorbis::AudioStreamOGGVorbis() {}
 
 AudioStreamOGGVorbis::~AudioStreamOGGVorbis() {
 	clear_data();

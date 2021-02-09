@@ -73,7 +73,7 @@ public:
 	real_t m_damping = 1.0f; //!< Damping.
 	real_t m_limitSoftness = 0.5f; //! Relaxation factor
 	real_t m_ERP = 0.5f; //!< Error tolerance factor when joint is at limit
-	real_t m_bounce 0.0f; //!< restitution factor
+	real_t m_bounce = 0.0f; //!< restitution factor
 	bool m_enableMotor = false;
 	bool m_enableLimit = false;
 
@@ -86,7 +86,7 @@ public:
 	real_t m_accumulatedImpulse = 0.f;
 	//!@}
 
-	G6DOFRotationalLimitMotor3DSW() {	}
+	G6DOFRotationalLimitMotor3DSW() {}
 
 	//! Is limited
 	bool isLimited() {
@@ -119,9 +119,9 @@ public:
 	Vector3 m_damping = Vector3(1, 1, 1) * real_t(1.0f); //!< Damping for linear limit
 	Vector3 m_restitution = Vector3(1, 1, 1) * real_t(0.5f); //! Bounce parameter for linear limit
 	//!@}
-	bool enable_limit[3] = {true, true, true};
+	bool enable_limit[3] = { true, true, true };
 
-	G6DOFTranslationalLimitMotor3DSW() {	}
+	G6DOFTranslationalLimitMotor3DSW() {}
 
 	//! Test limit
 	/*!
@@ -148,8 +148,8 @@ class Generic6DOFJoint3DSW : public Joint3DSW {
 protected:
 	union {
 		struct {
-			Body3DSW *A = nulltpr;
-			Body3DSW *B = nullptr;
+			Body3DSW *A;
+			Body3DSW *B;
 		};
 
 		Body3DSW *_arr[2] = {};

@@ -377,7 +377,7 @@ class PhysicsDirectBodyState3DSW : public PhysicsDirectBodyState3D {
 	GDCLASS(PhysicsDirectBodyState3DSW, PhysicsDirectBodyState3D);
 
 public:
-	static PhysicsDirectBodyState3DSW *singleton = nullptr;
+	static PhysicsDirectBodyState3DSW *singleton;
 	Body3DSW *body = nullptr;
 	real_t step;
 
@@ -425,7 +425,7 @@ public:
 		ERR_FAIL_INDEX_V(p_contact_idx, body->contact_count, Vector3());
 		return body->contacts[p_contact_idx].local_normal;
 	}
-	virtual float get_contact_impulse(int p_contact_idx) const override {
+	virtual real_t get_contact_impulse(int p_contact_idx) const override {
 		return 0.0f; // Only implemented for bullet
 	}
 	virtual int get_contact_local_shape(int p_contact_idx) const override {

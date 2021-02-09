@@ -1196,13 +1196,6 @@ void NativeScriptLanguage::_unload_stuff(bool p_reload) {
 
 NativeScriptLanguage::NativeScriptLanguage() {
 	NativeScriptLanguage::singleton = this;
-#ifndef NO_THREADS
-	has_objects_to_register = false;
-#endif
-
-#ifdef DEBUG_ENABLED
-	profiling = false;
-#endif
 
 	_init_call_type = "nativescript_init";
 	_init_call_name = "nativescript_init";
@@ -1254,6 +1247,15 @@ void NativeScriptLanguage::init() {
 	if (E && E->next()) {
 		if (generate_c_api(E->next()->get()) != OK) {
 			ERR_PRINT("Failed to generate C API\n");
+		}
+		exit(0);
+	}
+
+	E = args.find("--gdnative-generate-json-builtin-api");
+
+	if (E && E->next()) {
+		if (generate_c_builtin_api(E->next()->get()) != OK) {
+			ERR_PRINT("Failed to generate C builtin API\n");
 		}
 		exit(0);
 	}
@@ -1724,6 +1726,12 @@ void NativeScriptLanguage::unregister_script(NativeScript *script) {
 		S->get().erase(script);
 		if (S->get().size() == 0) {
 			library_script_users.erase(S);
+
+			Map<String, Ref<GDNative>>::Element *G = library_gdnatives.find(script->lib_path);
+			if (G) {
+				G->get()->terminate();
+				library_gdnatives.erase(G);
+			}
 		}
 	}
 #ifndef NO_THREADS

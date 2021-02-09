@@ -80,13 +80,16 @@ AABB VisibilityNotifier3D::get_aabb() const {
 void VisibilityNotifier3D::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_ENTER_WORLD: {
-			get_world_3d()->_register_notifier(this, get_global_transform().xform(aabb));
+			world = get_world_3d();
+			ERR_FAIL_COND(!world.is_valid());
+			world->_register_notifier(this, get_global_transform().xform(aabb));
 		} break;
 		case NOTIFICATION_TRANSFORM_CHANGED: {
-			get_world_3d()->_update_notifier(this, get_global_transform().xform(aabb));
+			world->_update_notifier(this, get_global_transform().xform(aabb));
 		} break;
 		case NOTIFICATION_EXIT_WORLD: {
-			get_world_3d()->_remove_notifier(this);
+			ERR_FAIL_COND(!world.is_valid());
+			world->_remove_notifier(this);
 		} break;
 	}
 }
@@ -109,7 +112,6 @@ void VisibilityNotifier3D::_bind_methods() {
 }
 
 VisibilityNotifier3D::VisibilityNotifier3D() {
-	aabb = AABB(Vector3(-1, -1, -1), Vector3(2, 2, 2));
 	set_notify_transform(true);
 }
 
@@ -249,6 +251,4 @@ VisibilityEnabler3D::VisibilityEnabler3D() {
 	for (int i = 0; i < ENABLER_MAX; i++) {
 		enabler[i] = true;
 	}
-
-	visible = false;
 }

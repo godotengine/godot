@@ -59,7 +59,7 @@ class TestPhysics3DMainLoop : public MainLoop {
 
 	RID character;
 
-	float ofs_x, ofs_y;
+	real_t ofs_x, ofs_y;
 
 	Point2 joy_direction;
 
@@ -115,7 +115,7 @@ protected:
 		return b;
 	}
 
-	void configure_body(RID p_body, float p_mass, float p_friction, float p_bounce) {
+	void configure_body(RID p_body, real_t p_mass, real_t p_friction, real_t p_bounce) {
 		PhysicsServer3D *ps = PhysicsServer3D::get_singleton();
 		ps->body_set_param(p_body, PhysicsServer3D::BODY_PARAM_MASS, p_mass);
 		ps->body_set_param(p_body, PhysicsServer3D::BODY_PARAM_FRICTION, p_friction);
@@ -211,8 +211,8 @@ protected:
 		vs->instance_set_transform(triins, tritrans);
 	}
 
-	void make_grid(int p_width, int p_height, float p_cellsize, float p_cellheight, const Transform &p_xform = Transform()) {
-		Vector<Vector<float>> grid;
+	void make_grid(int p_width, int p_height, real_t p_cellsize, real_t p_cellheight, const Transform &p_xform = Transform()) {
+		Vector<Vector<real_t>> grid;
 
 		grid.resize(p_width);
 
@@ -253,8 +253,8 @@ public:
 		}
 
 		if (mm.is_valid() && mm->get_button_mask() & 1) {
-			float y = -mm->get_relative().y / 20.0;
-			float x = mm->get_relative().x / 20.0;
+			real_t y = -mm->get_relative().y / 20.0;
+			real_t x = mm->get_relative().x / 20.0;
 
 			if (mover.is_valid()) {
 				PhysicsServer3D *ps = PhysicsServer3D::get_singleton();
@@ -312,7 +312,7 @@ public:
 	}
 	virtual bool physics_process(float p_time) override {
 		if (mover.is_valid()) {
-			static float joy_speed = 10;
+			static real_t joy_speed = 10;
 			PhysicsServer3D *ps = PhysicsServer3D::get_singleton();
 			Transform t = ps->body_get_state(mover, PhysicsServer3D::BODY_STATE_TRANSFORM);
 			t.origin += Vector3(joy_speed * joy_direction.x * p_time, -joy_speed * joy_direction.y * p_time, 0);

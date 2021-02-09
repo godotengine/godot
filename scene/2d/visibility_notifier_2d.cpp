@@ -363,6 +363,4 @@ VisibilityEnabler2D::VisibilityEnabler2D() {
 	}
 	enabler[ENABLER_PARENT_PROCESS] = false;
 	enabler[ENABLER_PARENT_PHYSICS_PROCESS] = false;
-
-	visible = false;
 }

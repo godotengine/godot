@@ -148,7 +148,7 @@ Error BitmapFontDataFallback::load_from_file(const String &p_filename, int p_bas
 			char_map[idx] = c;
 		} else if (type == "kerning") {
 			KerningPairKey kpk;
-			float k = 0;
+			float k = 0.0;
 			if (keys.has("first")) {
 				kpk.A = keys["first"].to_int();
 			}
@@ -321,7 +321,7 @@ Vector2 BitmapFontDataFallback::draw_glyph(RID p_canvas, int p_size, const Vecto
 	ERR_FAIL_COND_V(c == nullptr, Vector2());
 	ERR_FAIL_COND_V(c->texture_idx < -1 || c->texture_idx >= textures.size(), Vector2());
 	if (c->texture_idx != -1) {
-		Point2 cpos = p_pos;
+		Point2i cpos = p_pos;
 		cpos += c->align * (float(p_size) / float(base_size));
 		cpos.y -= ascent * (float(p_size) / float(base_size));
 

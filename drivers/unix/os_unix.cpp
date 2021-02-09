@@ -35,11 +35,9 @@
 #include "core/config/project_settings.h"
 #include "core/debugger/engine_debugger.h"
 #include "core/debugger/script_debugger.h"
-#include "core/os/thread_dummy.h"
 #include "drivers/unix/dir_access_unix.h"
 #include "drivers/unix/file_access_unix.h"
 #include "drivers/unix/net_socket_posix.h"
-#include "drivers/unix/rw_lock_posix.h"
 #include "drivers/unix/thread_posix.h"
 #include "servers/rendering_server.h"
 
@@ -64,6 +62,7 @@
 #include <string.h>
 #include <sys/time.h>
 #include <sys/wait.h>
+#include <time.h>
 #include <unistd.h>
 
 /// Clock Setup function (used by get_ticks_usec)
@@ -117,13 +116,10 @@ int OS_Unix::unix_initialize_audio(int p_audio_driver) {
 }
 
 void OS_Unix::initialize_core() {
-#ifdef NO_THREADS
-	ThreadDummy::make_default();
-	RWLockDummy::make_default();
-#else
-	ThreadPosix::make_default();
-	RWLockPosix::make_default();
+#if !defined(NO_THREADS)
+	init_thread_posix();
 #endif
+
 	FileAccess::make_default<FileAccessUnix>(FileAccess::ACCESS_RESOURCES);
 	FileAccess::make_default<FileAccessUnix>(FileAccess::ACCESS_USERDATA);
 	FileAccess::make_default<FileAccessUnix>(FileAccess::ACCESS_FILESYSTEM);

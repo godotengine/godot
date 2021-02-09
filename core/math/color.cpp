@@ -408,6 +408,8 @@ Color Color::get_named_color(int p_idx) {
 	return named_colors[p_idx].color;
 }
 
+// For a version that errors on invalid values instead of returning
+// a default color, use the Color(String) constructor instead.
 Color Color::from_string(const String &p_string, const Color &p_default) {
 	if (html_is_valid(p_string)) {
 		return html(p_string);
@@ -544,12 +546,12 @@ Color Color::operator*(const Color &p_color) const {
 			a * p_color.a);
 }
 
-Color Color::operator*(real_t p_rvalue) const {
+Color Color::operator*(float p_scalar) const {
 	return Color(
-			r * p_rvalue,
-			g * p_rvalue,
-			b * p_rvalue,
-			a * p_rvalue);
+			r * p_scalar,
+			g * p_scalar,
+			b * p_scalar,
+			a * p_scalar);
 }
 
 void Color::operator*=(const Color &p_color) {
@@ -559,11 +561,11 @@ void Color::operator*=(const Color &p_color) {
 	a = a * p_color.a;
 }
 
-void Color::operator*=(real_t p_rvalue) {
-	r = r * p_rvalue;
-	g = g * p_rvalue;
-	b = b * p_rvalue;
-	a = a * p_rvalue;
+void Color::operator*=(float p_scalar) {
+	r = r * p_scalar;
+	g = g * p_scalar;
+	b = b * p_scalar;
+	a = a * p_scalar;
 }
 
 Color Color::operator/(const Color &p_color) const {
@@ -574,12 +576,12 @@ Color Color::operator/(const Color &p_color) const {
 			a / p_color.a);
 }
 
-Color Color::operator/(real_t p_rvalue) const {
+Color Color::operator/(float p_scalar) const {
 	return Color(
-			r / p_rvalue,
-			g / p_rvalue,
-			b / p_rvalue,
-			a / p_rvalue);
+			r / p_scalar,
+			g / p_scalar,
+			b / p_scalar,
+			a / p_scalar);
 }
 
 void Color::operator/=(const Color &p_color) {
@@ -589,18 +591,11 @@ void Color::operator/=(const Color &p_color) {
 	a = a / p_color.a;
 }
 
-void Color::operator/=(real_t p_rvalue) {
-	if (p_rvalue == 0) {
-		r = 1.0;
-		g = 1.0;
-		b = 1.0;
-		a = 1.0;
-	} else {
-		r = r / p_rvalue;
-		g = g / p_rvalue;
-		b = b / p_rvalue;
-		a = a / p_rvalue;
-	}
+void Color::operator/=(float p_scalar) {
+	r = r / p_scalar;
+	g = g / p_scalar;
+	b = b / p_scalar;
+	a = a / p_scalar;
 }
 
 Color Color::operator-() const {

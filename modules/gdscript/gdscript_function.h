@@ -420,19 +420,19 @@ private:
 
 public:
 	struct CallState {
-		GDScript *script;
-		GDScriptInstance *instance;
+		GDScript *script = nullptr;
+		GDScriptInstance *instance = nullptr;
 #ifdef DEBUG_ENABLED
 		StringName function_name;
 		String script_path;
 #endif
 		Vector<uint8_t> stack;
-		int stack_size;
+		int stack_size = 0;
 		Variant self;
-		uint32_t alloca_size;
-		int ip;
-		int line;
-		int defarg;
+		uint32_t alloca_size = 0;
+		int ip = 0;
+		int line = 0;
+		int defarg = 0;
 		Variant result;
 	};
 
@@ -488,7 +488,7 @@ public:
 class GDScriptFunctionState : public Reference {
 	GDCLASS(GDScriptFunctionState, Reference);
 	friend class GDScriptFunction;
-	GDScriptFunction *function;
+	GDScriptFunction *function = nullptr;
 	GDScriptFunction::CallState state;
 	Variant _signal_callback(const Variant **p_args, int p_argcount, Callable::CallError &r_error);
 	Ref<GDScriptFunctionState> first_state;

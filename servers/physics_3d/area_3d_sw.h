@@ -88,7 +88,7 @@ class Area3DSW : public CollisionObject3DSW {
 		int state = 0;
 		_FORCE_INLINE_ void inc() { state++; }
 		_FORCE_INLINE_ void dec() { state--; }
-		_FORCE_INLINE_ BodyState() { }
+		_FORCE_INLINE_ BodyState() {}
 	};
 
 	Map<BodyKey, BodyState> monitored_bodies;

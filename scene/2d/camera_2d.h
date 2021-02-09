@@ -51,32 +51,32 @@ public:
 protected:
 	Point2 camera_pos;
 	Point2 smoothed_camera_pos;
-	bool first;
+	bool first = true;
 
 	ObjectID custom_viewport_id; // to check validity
-	Viewport *custom_viewport;
-	Viewport *viewport;
+	Viewport *custom_viewport = nullptr;
+	Viewport *viewport = nullptr;
 
 	StringName group_name;
 	StringName canvas_group_name;
 	RID canvas;
 	Vector2 offset;
-	Vector2 zoom;
-	AnchorMode anchor_mode;
-	bool rotating;
-	bool current;
-	float smoothing;
-	bool smoothing_enabled;
+	Vector2 zoom = Vector2(1, 1);
+	AnchorMode anchor_mode = ANCHOR_MODE_DRAG_CENTER;
+	bool rotating = false;
+	bool current = false;
+	float smoothing = 5.0;
+	bool smoothing_enabled = false;
 	int limit[4];
-	bool limit_smoothing_enabled;
+	bool limit_smoothing_enabled = false;
 
 	float drag_margin[4];
-	bool drag_horizontal_enabled;
-	bool drag_vertical_enabled;
-	float drag_horizontal_offset;
-	float drag_vertical_offset;
-	bool drag_horizontal_offset_changed;
-	bool drag_vertical_offset_changed;
+	bool drag_horizontal_enabled = false;
+	bool drag_vertical_enabled = false;
+	float drag_horizontal_offset = 0.0;
+	float drag_vertical_offset = 0.0;
+	bool drag_horizontal_offset_changed = false;
+	bool drag_vertical_offset_changed = false;
 
 	Point2 camera_screen_center;
 	void _update_process_mode();
@@ -87,11 +87,11 @@ protected:
 
 	void _set_old_smoothing(float p_enable);
 
-	bool screen_drawing_enabled;
-	bool limit_drawing_enabled;
-	bool margin_drawing_enabled;
+	bool screen_drawing_enabled = true;
+	bool limit_drawing_enabled = false;
+	bool margin_drawing_enabled = false;
 
-	Camera2DProcessMode process_mode;
+	Camera2DProcessMode process_mode = CAMERA2D_PROCESS_IDLE;
 
 	Size2 _get_camera_screen_size() const;
 

@@ -213,6 +213,11 @@ class Node3DEditorViewport : public Control {
 		VIEW_DISPLAY_DEBUG_SDFGI_PROBES,
 		VIEW_DISPLAY_DEBUG_GI_BUFFER,
 		VIEW_DISPLAY_DEBUG_DISABLE_LOD,
+		VIEW_DISPLAY_DEBUG_CLUSTER_OMNI_LIGHTS,
+		VIEW_DISPLAY_DEBUG_CLUSTER_SPOT_LIGHTS,
+		VIEW_DISPLAY_DEBUG_CLUSTER_DECALS,
+		VIEW_DISPLAY_DEBUG_CLUSTER_REFLECTION_PROBES,
+
 		VIEW_LOCK_ROTATION,
 		VIEW_CINEMATIC_PREVIEW,
 		VIEW_AUTO_ORTHOGONAL,
@@ -585,7 +590,6 @@ private:
 	/////
 
 	ToolMode tool_mode;
-	bool orthogonal;
 
 	RenderingServer::ScenarioDebugMode scenario_debug;
 
@@ -618,6 +622,7 @@ private:
 	RID cursor_mesh;
 	RID cursor_instance;
 	Ref<StandardMaterial3D> indicator_mat;
+	Ref<ShaderMaterial> grid_mat[3];
 	Ref<StandardMaterial3D> cursor_material;
 
 	// Scene drag and drop support

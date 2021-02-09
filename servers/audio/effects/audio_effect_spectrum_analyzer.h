@@ -84,7 +84,7 @@ public:
 	friend class AudioEffectSpectrumAnalyzerInstance;
 	float buffer_length = 0.0;
 	float tapback_pos = 0.0;
-	FFT_Size fft_size;
+	FFT_Size fft_size = FFT_SIZE_MAX;
 
 protected:
 	static void _bind_methods();

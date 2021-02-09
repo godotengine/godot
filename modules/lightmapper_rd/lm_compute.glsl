@@ -313,13 +313,16 @@ void main() {
 
 			if (lights.data[i].type == LIGHT_TYPE_SPOT) {
 				vec3 rel = normalize(position - light_pos);
-				float angle = acos(dot(rel, lights.data[i].direction));
-				if (angle > lights.data[i].spot_angle) {
+				float cos_spot_angle = lights.data[i].cos_spot_angle;
+				float cos_angle = dot(rel, lights.data[i].direction);
+
+				if (cos_angle < cos_spot_angle) {
 					continue; //invisible, dont try
 				}
 
-				float d = clamp(angle / lights.data[i].spot_angle, 0, 1);
-				attenuation *= pow(1.0 - d, lights.data[i].spot_attenuation);
+				float scos = max(cos_angle, cos_spot_angle);
+				float spot_rim = max(0.0001, (1.0 - scos) / (1.0 - cos_spot_angle));
+				attenuation *= 1.0 - pow(spot_rim, lights.data[i].inv_spot_attenuation);
 			}
 		}
 

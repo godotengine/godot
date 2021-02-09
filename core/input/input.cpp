@@ -55,6 +55,12 @@ static const char *_joy_buttons[JOY_BUTTON_SDL_MAX] = {
 	"dpdown",
 	"dpleft",
 	"dpright",
+	"misc1",
+	"paddle1",
+	"paddle2",
+	"paddle3",
+	"paddle4",
+	"touchpad",
 };
 
 static const char *_joy_axes[JOY_AXIS_SDL_MAX] = {

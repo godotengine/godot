@@ -49,18 +49,18 @@ public:
 
 private:
 	RID decal;
-	Vector3 extents;
+	Vector3 extents = Vector3(1, 1, 1);
 	Ref<Texture2D> textures[TEXTURE_MAX];
-	float emission_energy;
-	float albedo_mix;
-	Color modulate;
-	uint32_t cull_mask;
-	float normal_fade;
-	float upper_fade;
-	float lower_fade;
-	bool distance_fade_enabled;
-	float distance_fade_begin;
-	float distance_fade_length;
+	float emission_energy = 1.0;
+	float albedo_mix = 1.0;
+	Color modulate = Color(1, 1, 1, 1);
+	uint32_t cull_mask = (1 << 20) - 1;
+	float normal_fade = 0.0;
+	float upper_fade = 0.3;
+	float lower_fade = 0.3;
+	bool distance_fade_enabled = false;
+	float distance_fade_begin = 10.0;
+	float distance_fade_length = 1.0;
 
 protected:
 	static void _bind_methods();

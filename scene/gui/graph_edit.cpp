@@ -154,6 +154,10 @@ Vector2 GraphEditMinimap::_convert_to_graph_position(const Vector2 &p_position) 
 }
 
 void GraphEditMinimap::_gui_input(const Ref<InputEvent> &p_ev) {
+	if (!ge->is_minimap_enabled()) {
+		return;
+	}
+
 	Ref<InputEventMouseButton> mb = p_ev;
 	Ref<InputEventMouseMotion> mm = p_ev;
 
@@ -1589,7 +1593,7 @@ void GraphEdit::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("remove_valid_connection_type", "from_type", "to_type"), &GraphEdit::remove_valid_connection_type);
 	ClassDB::bind_method(D_METHOD("is_valid_connection_type", "from_type", "to_type"), &GraphEdit::is_valid_connection_type);
 
-	ClassDB::bind_method(D_METHOD("set_zoom", "p_zoom"), &GraphEdit::set_zoom);
+	ClassDB::bind_method(D_METHOD("set_zoom", "zoom"), &GraphEdit::set_zoom);
 	ClassDB::bind_method(D_METHOD("get_zoom"), &GraphEdit::get_zoom);
 
 	ClassDB::bind_method(D_METHOD("set_snap", "pixels"), &GraphEdit::set_snap);
@@ -1604,9 +1608,9 @@ void GraphEdit::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_connection_lines_antialiased", "pixels"), &GraphEdit::set_connection_lines_antialiased);
 	ClassDB::bind_method(D_METHOD("is_connection_lines_antialiased"), &GraphEdit::is_connection_lines_antialiased);
 
-	ClassDB::bind_method(D_METHOD("set_minimap_size", "p_size"), &GraphEdit::set_minimap_size);
+	ClassDB::bind_method(D_METHOD("set_minimap_size", "size"), &GraphEdit::set_minimap_size);
 	ClassDB::bind_method(D_METHOD("get_minimap_size"), &GraphEdit::get_minimap_size);
-	ClassDB::bind_method(D_METHOD("set_minimap_opacity", "p_opacity"), &GraphEdit::set_minimap_opacity);
+	ClassDB::bind_method(D_METHOD("set_minimap_opacity", "opacity"), &GraphEdit::set_minimap_opacity);
 	ClassDB::bind_method(D_METHOD("get_minimap_opacity"), &GraphEdit::get_minimap_opacity);
 
 	ClassDB::bind_method(D_METHOD("set_minimap_enabled", "enable"), &GraphEdit::set_minimap_enabled);
@@ -1754,7 +1758,7 @@ GraphEdit::GraphEdit() {
 	top_layer->add_child(minimap);
 	minimap->set_name("_minimap");
 	minimap->set_modulate(Color(1, 1, 1, minimap_opacity));
-	minimap->set_mouse_filter(MOUSE_FILTER_STOP);
+	minimap->set_mouse_filter(MOUSE_FILTER_PASS);
 	minimap->set_custom_minimum_size(Vector2(50, 50));
 	minimap->set_size(minimap_size);
 	minimap->set_anchors_preset(Control::PRESET_BOTTOM_RIGHT);

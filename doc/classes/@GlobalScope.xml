@@ -2147,7 +2147,25 @@
 		<constant name="JOY_BUTTON_DPAD_RIGHT" value="14" enum="JoyButtonList">
 			Game controller D-pad right button.
 		</constant>
-		<constant name="JOY_BUTTON_SDL_MAX" value="15" enum="JoyButtonList">
+		<constant name="JOY_BUTTON_MISC1" value="15" enum="JoyButtonList">
+			Game controller SDL miscellaneous button. Corresponds to Xbox share button, PS5 microphone button, Nintendo capture button.
+		</constant>
+		<constant name="JOY_BUTTON_PADDLE1" value="16" enum="JoyButtonList">
+			Game controller SDL paddle 1 button.
+		</constant>
+		<constant name="JOY_BUTTON_PADDLE2" value="17" enum="JoyButtonList">
+			Game controller SDL paddle 2 button.
+		</constant>
+		<constant name="JOY_BUTTON_PADDLE3" value="18" enum="JoyButtonList">
+			Game controller SDL paddle 3 button.
+		</constant>
+		<constant name="JOY_BUTTON_PADDLE4" value="19" enum="JoyButtonList">
+			Game controller SDL paddle 4 button.
+		</constant>
+		<constant name="JOY_BUTTON_TOUCHPAD" value="20" enum="JoyButtonList">
+			Game controller SDL touchpad button.
+		</constant>
+		<constant name="JOY_BUTTON_SDL_MAX" value="21" enum="JoyButtonList">
 			The number of SDL game controller buttons.
 		</constant>
 		<constant name="JOY_BUTTON_MAX" value="36" enum="JoyButtonList">

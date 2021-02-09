@@ -46,7 +46,7 @@ public:
 	};
 
 private:
-	Type type;
+	Type type = TYPE_BODY;
 	RID self;
 	ObjectID instance_id;
 	ObjectID canvas_instance_id;
@@ -62,7 +62,7 @@ private:
 		bool disabled = false;
 		bool one_way_collision = false;
 		float one_way_collision_margin = 0.0;
-		Shape() {	}
+		Shape() {}
 	};
 
 	Vector<Shape> shapes;
@@ -149,7 +149,7 @@ public:
 		return shapes[p_idx].disabled;
 	}
 
-	_FORCE_INLINE_ void set_shape_as_one_way_collision(int p_idx, bool p_one_way_collision, float p_margin) {
+	_FORCE_INLINE_ void set_shape_as_one_way_collision(int p_idx, bool p_one_way_collision, real_t p_margin) {
 		CRASH_BAD_INDEX(p_idx, shapes.size());
 		shapes.write[p_idx].one_way_collision = p_one_way_collision;
 		shapes.write[p_idx].one_way_collision_margin = p_margin;
@@ -159,7 +159,7 @@ public:
 		return shapes[p_idx].one_way_collision;
 	}
 
-	_FORCE_INLINE_ float get_shape_one_way_collision_margin(int p_idx) const {
+	_FORCE_INLINE_ real_t get_shape_one_way_collision_margin(int p_idx) const {
 		CRASH_BAD_INDEX(p_idx, shapes.size());
 		return shapes[p_idx].one_way_collision_margin;
 	}

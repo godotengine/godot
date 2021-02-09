@@ -38,24 +38,24 @@ class PipelineCacheRD {
 	SpinLock spin_lock;
 
 	RID shader;
-	uint32_t input_mask = 0;
+	uint32_t input_mask;
 
 	RD::RenderPrimitive render_primitive;
 	RD::PipelineRasterizationState rasterization_state;
 	RD::PipelineMultisampleState multisample_state;
 	RD::PipelineDepthStencilState depth_stencil_state;
 	RD::PipelineColorBlendState blend_state;
-	int dynamic_state_flags = 0;
+	int dynamic_state_flags;
 
 	struct Version {
 		RD::VertexFormatID vertex_id;
 		RD::FramebufferFormatID framebuffer_id;
-		bool wireframe = false;
+		bool wireframe;
 		RID pipeline;
 	};
 
-	Version *versions = nullptr;
-	uint32_t version_count = 0;
+	Version *versions;
+	uint32_t version_count;
 
 	RID _generate_version(RD::VertexFormatID p_vertex_format_id, RD::FramebufferFormatID p_framebuffer_format_id, bool p_wireframe);
 

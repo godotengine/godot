@@ -36,7 +36,7 @@
 
 class StreamPeerMbedTLS : public StreamPeerSSL {
 private:
-	Status status;
+	Status status = STATUS_DISCONNECTED;
 	String hostname;
 
 	Ref<StreamPeer> base;

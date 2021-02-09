@@ -47,7 +47,7 @@ DirAccess *DirAccessJAndroid::create_fs() {
 
 Error DirAccessJAndroid::list_dir_begin() {
 	list_dir_end();
-	JNIEnv *env = ThreadAndroid::get_env();
+	JNIEnv *env = get_jni_env();
 
 	jstring js = env->NewStringUTF(current_dir.utf8().get_data());
 	int res = env->CallIntMethod(io, _dir_open, js);
@@ -62,7 +62,7 @@ Error DirAccessJAndroid::list_dir_begin() {
 String DirAccessJAndroid::get_next() {
 	ERR_FAIL_COND_V(id == 0, "");
 
-	JNIEnv *env = ThreadAndroid::get_env();
+	JNIEnv *env = get_jni_env();
 	jstring str = (jstring)env->CallObjectMethod(io, _dir_next, id);
 	if (!str)
 		return "";
@@ -73,7 +73,7 @@ String DirAccessJAndroid::get_next() {
 }
 
 bool DirAccessJAndroid::current_is_dir() const {
-	JNIEnv *env = ThreadAndroid::get_env();
+	JNIEnv *env = get_jni_env();
 
 	return env->CallBooleanMethod(io, _dir_is_dir, id);
 }
@@ -86,7 +86,7 @@ void DirAccessJAndroid::list_dir_end() {
 	if (id == 0)
 		return;
 
-	JNIEnv *env = ThreadAndroid::get_env();
+	JNIEnv *env = get_jni_env();
 	env->CallVoidMethod(io, _dir_close, id);
 	id = 0;
 }
@@ -100,7 +100,7 @@ String DirAccessJAndroid::get_drive(int p_drive) {
 }
 
 Error DirAccessJAndroid::change_dir(String p_dir) {
-	JNIEnv *env = ThreadAndroid::get_env();
+	JNIEnv *env = get_jni_env();
 
 	if (p_dir == "" || p_dir == "." || (p_dir == ".." && current_dir == ""))
 		return OK;
@@ -154,7 +154,7 @@ bool DirAccessJAndroid::file_exists(String p_file) {
 }
 
 bool DirAccessJAndroid::dir_exists(String p_dir) {
-	JNIEnv *env = ThreadAndroid::get_env();
+	JNIEnv *env = get_jni_env();
 
 	String sd;
 
@@ -207,7 +207,7 @@ size_t DirAccessJAndroid::get_space_left() {
 }
 
 void DirAccessJAndroid::setup(jobject p_io) {
-	JNIEnv *env = ThreadAndroid::get_env();
+	JNIEnv *env = get_jni_env();
 	io = p_io;
 
 	jclass c = env->GetObjectClass(io);

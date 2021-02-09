@@ -69,11 +69,11 @@ enum DDSFormat {
 
 struct DDSFormatInfo {
 	const char *name;
-	bool compressed;
-	bool palette;
-	uint32_t divisor;
-	uint32_t block_size;
-	Image::Format format;
+	bool compressed = false;
+	bool palette = false;
+	uint32_t divisor = 0;
+	uint32_t block_size = 0;
+	Image::Format format = Image::Format::FORMAT_BPTC_RGBA;
 };
 
 static const DDSFormatInfo dds_format_info[DDS_MAX] = {

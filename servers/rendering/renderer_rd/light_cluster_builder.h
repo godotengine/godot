@@ -101,7 +101,7 @@ private:
 	uint32_t depth = 0;
 
 	struct Cell {
-		uint32_t item_pointers[ITEM_TYPE_MAX] = {};
+		uint32_t item_pointers[ITEM_TYPE_MAX];
 	};
 
 	Vector<uint8_t> cluster_data;

@@ -45,20 +45,20 @@ class NoiseTexture : public Texture2D {
 private:
 	Ref<Image> data;
 
-	Thread *noise_thread;
+	Thread noise_thread;
 
-	bool first_time;
-	bool update_queued;
-	bool regen_queued;
+	bool first_time = true;
+	bool update_queued = false;
+	bool regen_queued = false;
 
 	mutable RID texture;
-	uint32_t flags;
+	uint32_t flags = 0;
 
 	Ref<OpenSimplexNoise> noise;
-	Vector2i size;
-	bool seamless;
-	bool as_normal_map;
-	float bump_strength;
+	Vector2i size = Vector2i(512, 512);
+	bool seamless = false;
+	bool as_normal_map = false;
+	float bump_strength = 8.0;
 
 	void _thread_done(const Ref<Image> &p_image);
 	static void _thread_function(void *p_ud);

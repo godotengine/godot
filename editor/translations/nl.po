@@ -28,7 +28,7 @@
 # rxadmin <r.van.eeghem@gmail.com>, 2018.
 # Peter Goelst <muis24@gmail.com>, 2019.
 # Wouter Buckens <wou.buc@gmail.com>, 2019.
-# Stijn Hinlopen <f.a.hinlopen@gmail.com>, 2019, 2020.
+# Stijn Hinlopen <f.a.hinlopen@gmail.com>, 2019, 2020, 2021.
 # jef dered <themen098s@vivaldi.net>, 2019.
 # Alex H. <sandertjeh13@hotmail.com>, 2019.
 # edouardgr <edouard.gruyters@gmail.com>, 2019.
@@ -47,7 +47,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2020-12-25 12:29+0000\n"
+"PO-Revision-Date: 2021-02-01 20:53+0000\n"
 "Last-Translator: Stijn Hinlopen <f.a.hinlopen@gmail.com>\n"
 "Language-Team: Dutch <https://hosted.weblate.org/projects/godot-engine/godot/"
 "nl/>\n"
@@ -56,7 +56,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 4.4.1-dev\n"
+"X-Generator: Weblate 4.5-dev\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -2430,7 +2430,7 @@ msgstr "Er is geen startscène ingesteld."
 
 #: editor/editor_node.cpp
 msgid "Save scene before running..."
-msgstr ""
+msgstr "Scène opslaan voor het afspelen..."
 
 #: editor/editor_node.cpp
 msgid "Could not start subprocess!"
@@ -3758,6 +3758,11 @@ msgid ""
 "\n"
 "Do you wish to overwrite them?"
 msgstr ""
+"De volgende bestanden of mappen conflicteren met elementen in '%s':\n"
+"\n"
+"%s\n"
+"\n"
+"Wil je deze overschrijven?"
 
 #: editor/filesystem_dock.cpp
 msgid "Renaming file:"
@@ -3950,19 +3955,16 @@ msgid "Searching..."
 msgstr "Aan het zoeken..."
 
 #: editor/find_in_files.cpp
-#, fuzzy
 msgid "%d match in %d file."
-msgstr "%d overeenkomst(en) gevonden."
+msgstr "%d overeenkomst in %d bestand."
 
 #: editor/find_in_files.cpp
-#, fuzzy
 msgid "%d matches in %d file."
-msgstr "%d overeenkomst(en) gevonden."
+msgstr "%d overeenkomsten in %d bestand."
 
 #: editor/find_in_files.cpp
-#, fuzzy
 msgid "%d matches in %d files."
-msgstr "%d overeenkomst(en) gevonden."
+msgstr "%d overeenkomsten in %d bestanden."
 
 #: editor/groups_editor.cpp
 msgid "Add to Group"
@@ -5242,9 +5244,8 @@ msgid "Bake Lightmaps"
 msgstr "Bak Lichtmappen"
 
 #: editor/plugins/baked_lightmap_editor_plugin.cpp
-#, fuzzy
 msgid "Select lightmap bake file:"
-msgstr "Selecteer sjabloonbestand"
+msgstr "Selecteer lightmap bake-bestand"
 
 #: editor/plugins/camera_editor_plugin.cpp
 #: editor/plugins/spatial_editor_plugin.cpp
@@ -5313,7 +5314,7 @@ msgstr "Maak nieuwe horizontale en verticale gidsen"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Set CanvasItem \"%s\" Pivot Offset to (%d, %d)"
-msgstr ""
+msgstr "Draaipuntverschuiving van het CanvasItem „%s“ op (%d, %d) zetten"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Rotate %d CanvasItems"
@@ -5336,24 +5337,20 @@ msgid "Resize Control \"%s\" to (%d, %d)"
 msgstr "Control \"%s\" vergrootten tot (%d, %d)"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Scale %d CanvasItems"
-msgstr "Schaal CanvasItem"
+msgstr "Schaal %d CanvasItems"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Scale CanvasItem \"%s\" to (%s, %s)"
-msgstr "Schaal CanvasItem"
+msgstr "Schaal CanvasItem \"%s\" naar (%s, %s)"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Move %d CanvasItems"
-msgstr "Verplaats CanvasItem"
+msgstr "Verplaats %d CanvasItems"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Move CanvasItem \"%s\" to (%d, %d)"
-msgstr "Verplaats CanvasItem"
+msgstr "CanvasItem \"%s\" naar (%d, %d) verplaatsen"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid ""
@@ -6347,9 +6344,8 @@ msgid "Can only set point into a ParticlesMaterial process material"
 msgstr "Kan punt alleen plaatsen in een PartikelsMateriaal proces materiaal"
 
 #: editor/plugins/particles_2d_editor_plugin.cpp
-#, fuzzy
 msgid "Convert to CPUParticles2D"
-msgstr "Zet om in CPUParticles"
+msgstr "Omzetten naar CPUParticles2D"
 
 #: editor/plugins/particles_2d_editor_plugin.cpp
 #: editor/plugins/particles_editor_plugin.cpp
@@ -6640,9 +6636,8 @@ msgid "Move Points"
 msgstr "Beweeg Punten"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
-#, fuzzy
 msgid "Command: Rotate"
-msgstr "Sleep: Roteer"
+msgstr "Ctrl: Roteer"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
 msgid "Shift: Move All"
@@ -6700,14 +6695,12 @@ msgid "Radius:"
 msgstr "Radius:"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
-#, fuzzy
 msgid "Copy Polygon to UV"
-msgstr "Creëer Polygon & UV"
+msgstr "Kopieer Polygon naar UV"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
-#, fuzzy
 msgid "Copy UV to Polygon"
-msgstr "Naar Polygon2D omzetten"
+msgstr "Kopieer UV naar Polygon2D"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
 msgid "Clear UV"
@@ -7387,6 +7380,11 @@ msgstr "Pitch"
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Yaw"
 msgstr "Yaw"
+
+#: editor/plugins/spatial_editor_plugin.cpp
+#, fuzzy
+msgid "Size"
+msgstr "Grootte: "
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Objects Drawn"
@@ -8253,13 +8251,12 @@ msgid "Paint Tile"
 msgstr "Teken Tegel"
 
 #: editor/plugins/tile_map_editor_plugin.cpp
-#, fuzzy
 msgid ""
 "Shift+LMB: Line Draw\n"
 "Shift+Command+LMB: Rectangle Paint"
 msgstr ""
-"Shift+LMB: Lijn Tekenen\n"
-"Shift+Ctrl+LMB: Vierkant Tekenen"
+"Shift+LMB: Lijn tekenen\n"
+"Shift+Ctrl+LMB: Vierkant tekenen"
 
 #: editor/plugins/tile_map_editor_plugin.cpp
 msgid ""
@@ -8414,23 +8411,20 @@ msgid "Create a new rectangle."
 msgstr "Creëer nieuwe driehoek."
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-#, fuzzy
 msgid "New Rectangle"
-msgstr "Teken Driehoek"
+msgstr "Nieuwe rechthoek"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Create a new polygon."
 msgstr "Nieuwe veelhoek aanmaken."
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-#, fuzzy
 msgid "New Polygon"
-msgstr "Beweeg Polygon"
+msgstr "Nieuwe veelhoek"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-#, fuzzy
 msgid "Delete Selected Shape"
-msgstr "Geselecteerde Verwijderen"
+msgstr "Geselecteerde vormen verwijderen"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Keep polygon inside region Rect."
@@ -8795,9 +8789,8 @@ msgid "Add Node to Visual Shader"
 msgstr "VisualShader-knoop toevoegen"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
-#, fuzzy
 msgid "Node(s) Moved"
-msgstr "Knoop verplaatst"
+msgstr "Knoop/knopen verplaatst"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Duplicate Nodes"
@@ -8817,9 +8810,8 @@ msgid "Visual Shader Input Type Changed"
 msgstr "Visuele Shader Invoertype Gewijzigd"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
-#, fuzzy
 msgid "UniformRef Name Changed"
-msgstr "Uniforme naam instellen"
+msgstr "UniformRef naam veranderd"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Vertex"
@@ -9547,7 +9539,7 @@ msgstr ""
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "A reference to an existing uniform."
-msgstr ""
+msgstr "Een verwijzing naar een bestaande uniform."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "(Fragment/Light mode only) Scalar derivative function."
@@ -9914,7 +9906,7 @@ msgstr "OpenGL ES 3.0"
 
 #: editor/project_manager.cpp
 msgid "Not supported by your GPU drivers."
-msgstr ""
+msgstr "Niet ondersteund door de GPU drivers op dit systeem."
 
 #: editor/project_manager.cpp
 msgid ""
@@ -10524,19 +10516,16 @@ msgid "Batch Rename"
 msgstr "Bulk hernoemen"
 
 #: editor/rename_dialog.cpp
-#, fuzzy
 msgid "Replace:"
-msgstr "Vervangen: "
+msgstr "Vervangen:"
 
 #: editor/rename_dialog.cpp
-#, fuzzy
 msgid "Prefix:"
-msgstr "Voorvoegsel"
+msgstr "Voorvoegsel:"
 
 #: editor/rename_dialog.cpp
-#, fuzzy
 msgid "Suffix:"
-msgstr "Achtervoegsel"
+msgstr "Achtervoegsel:"
 
 #: editor/rename_dialog.cpp
 msgid "Use Regular Expressions"
@@ -10583,11 +10572,10 @@ msgid "Per-level Counter"
 msgstr "Per niveau teller"
 
 #: editor/rename_dialog.cpp
-#, fuzzy
 msgid "If set, the counter restarts for each group of child nodes."
 msgstr ""
-"Indien ingesteld: herstart de teller voor iedere groep van onderliggende "
-"knopen"
+"Indien ingesteld, zal de teller voor iedere groep van onderliggende knopen "
+"opnieuw starten."
 
 #: editor/rename_dialog.cpp
 msgid "Initial value for the counter"
@@ -10646,9 +10634,8 @@ msgid "Reset"
 msgstr "Resetten"
 
 #: editor/rename_dialog.cpp
-#, fuzzy
 msgid "Regular Expression Error:"
-msgstr "Fout in reguliere expressie"
+msgstr "Fout in reguliere expressie:"
 
 #: editor/rename_dialog.cpp
 msgid "At character %s"
@@ -11653,36 +11640,31 @@ msgstr "Voeg een MeshLibrary aan deze GridMap toe om meshes te gebruiken."
 
 #: modules/lightmapper_cpu/lightmapper_cpu.cpp
 msgid "Begin Bake"
-msgstr ""
+msgstr "Begin lichtberekening"
 
 #: modules/lightmapper_cpu/lightmapper_cpu.cpp
 msgid "Preparing data structures"
-msgstr ""
+msgstr "Datastructuren worden voorbereid"
 
 #: modules/lightmapper_cpu/lightmapper_cpu.cpp
-#, fuzzy
 msgid "Generate buffers"
-msgstr "Genereer AABB"
+msgstr "Genereer buffers"
 
 #: modules/lightmapper_cpu/lightmapper_cpu.cpp
-#, fuzzy
 msgid "Direct lighting"
-msgstr "Richtingen"
+msgstr "Directe verlichting"
 
 #: modules/lightmapper_cpu/lightmapper_cpu.cpp
-#, fuzzy
 msgid "Indirect lighting"
-msgstr "Rechts Inspringen"
+msgstr "Indirecte verlichting"
 
 #: modules/lightmapper_cpu/lightmapper_cpu.cpp
-#, fuzzy
 msgid "Post processing"
-msgstr "Post-Process"
+msgstr "Nabewerking"
 
 #: modules/lightmapper_cpu/lightmapper_cpu.cpp
-#, fuzzy
 msgid "Plotting lightmaps"
-msgstr "Plotten Light:"
+msgstr "Lightmaps plotten"
 
 #: modules/mono/csharp_script.cpp
 msgid "Class name can't be a reserved keyword"
@@ -12202,7 +12184,7 @@ msgstr "Selecteer apparaat uit de lijst"
 
 #: platform/android/export/export.cpp
 msgid "Unable to find the 'apksigner' tool."
-msgstr ""
+msgstr "Het hulpmiddel 'apksigner' kon niet gevonden worden."
 
 #: platform/android/export/export.cpp
 msgid ""
@@ -12221,18 +12203,17 @@ msgid "Release keystore incorrectly configured in the export preset."
 msgstr "Release-Keystore is verkeerd ingesteld in de exportinstelingen."
 
 #: platform/android/export/export.cpp
-#, fuzzy
 msgid "A valid Android SDK path is required in Editor Settings."
-msgstr "Ongeldig Android SDK pad voor custom build in Editor Settings."
+msgstr ""
+"Een geldig Android SDK-pad moet in de Editorinstellingen ingesteld zijn."
 
 #: platform/android/export/export.cpp
-#, fuzzy
 msgid "Invalid Android SDK path in Editor Settings."
-msgstr "Ongeldig Android SDK pad voor custom build in Editor Settings."
+msgstr "Ongeldig Android SDK-pad in Editorinstellingen."
 
 #: platform/android/export/export.cpp
 msgid "Missing 'platform-tools' directory!"
-msgstr ""
+msgstr "'platform-tools' map ontbreekt!"
 
 #: platform/android/export/export.cpp
 msgid "Unable to find Android SDK platform-tools' adb command."

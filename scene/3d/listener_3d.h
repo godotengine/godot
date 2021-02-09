@@ -38,8 +38,8 @@ class Listener3D : public Node3D {
 	GDCLASS(Listener3D, Node3D);
 
 private:
-	bool force_change;
-	bool current;
+	bool force_change = false;
+	bool current = false;
 
 	RID scenario_id;
 

@@ -48,29 +48,17 @@ class WSLPeer : public WebSocketPeer {
 
 public:
 	struct PeerData {
-		bool polling;
-		bool destroy;
-		bool valid;
-		bool is_server;
-		bool closing;
-		void *obj;
-		void *peer;
+		bool polling = false;
+		bool destroy = false;
+		bool valid = false;
+		bool is_server = false;
+		bool closing = false;
+		void *obj = nullptr;
+		void *peer = nullptr;
 		Ref<StreamPeer> conn;
 		Ref<StreamPeerTCP> tcp;
-		int id;
-		wslay_event_context_ptr ctx;
-
-		PeerData() {
-			polling = false;
-			destroy = false;
-			valid = false;
-			is_server = false;
-			id = 1;
-			ctx = nullptr;
-			obj = nullptr;
-			closing = false;
-			peer = nullptr;
-		}
+		int id = 1;
+		wslay_event_context_ptr ctx = nullptr;
 	};
 
 	static String compute_key_response(String p_key);
@@ -80,17 +68,17 @@ private:
 	static bool _wsl_poll(struct PeerData *p_data);
 	static void _wsl_destroy(struct PeerData **p_data);
 
-	struct PeerData *_data;
-	uint8_t _is_string;
+	struct PeerData *_data = nullptr;
+	uint8_t _is_string = 0;
 	// Our packet info is just a boolean (is_string), using uint8_t for it.
 	PacketBuffer<uint8_t> _in_buffer;
 
 	Vector<uint8_t> _packet_buffer;
 
-	WriteMode write_mode;
+	WriteMode write_mode = WRITE_MODE_BINARY;
 
 public:
-	int close_code;
+	int close_code = -1;
 	String close_reason;
 	void poll(); // Used by client and server.
 

@@ -91,7 +91,7 @@ public:
 
 		int32_t render_index_cache = -1;
 
-		Light() {	}
+		Light() {}
 	};
 
 	//easier wrap to avoid mistakes
@@ -157,7 +157,7 @@ public:
 			};
 
 			Command *next = nullptr;
-			Type type;
+			Type type = TYPE_CLIP_IGNORE;
 			virtual ~Command() {}
 		};
 
@@ -489,7 +489,7 @@ public:
 		RS::CanvasItemTextureFilter texture_filter = RS::CANVAS_ITEM_TEXTURE_FILTER_DEFAULT;
 		RS::CanvasItemTextureRepeat texture_repeat = RS::CANVAS_ITEM_TEXTURE_REPEAT_DEFAULT;
 
-		Item() { }
+		Item() {}
 		virtual ~Item() {
 			clear();
 			for (int i = 0; i < blocks.size(); i++) {
@@ -518,7 +518,7 @@ public:
 
 		LightOccluderInstance *next = nullptr;
 
-		LightOccluderInstance() {	}
+		LightOccluderInstance() {}
 	};
 
 	virtual RID light_create() = 0;

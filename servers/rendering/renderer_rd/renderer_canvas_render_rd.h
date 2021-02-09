@@ -134,7 +134,7 @@ class RendererCanvasRenderRD : public RendererCanvasRender {
 	};
 
 	struct PipelineVariants {
-		PipelineCacheRD variants[PIPELINE_LIGHT_MODE_MAX][PIPELINE_VARIANT_MAX] = {};
+		PipelineCacheRD variants[PIPELINE_LIGHT_MODE_MAX][PIPELINE_VARIANT_MAX];
 	};
 
 	struct {
@@ -201,7 +201,7 @@ class RendererCanvasRenderRD : public RendererCanvasRender {
 
 	struct MaterialData : public RendererStorageRD::MaterialData {
 		uint64_t last_frame = 0;
-		ShaderData *shader_data = nulltpr;
+		ShaderData *shader_data = nullptr;
 		RID uniform_buffer;
 		RID uniform_set;
 		Vector<RID> texture_cache;
@@ -391,17 +391,17 @@ class RendererCanvasRenderRD : public RendererCanvasRender {
 		union {
 			//rect
 			struct {
-				float modulation[4] = {};
-				float ninepatch_margins[4] = {};
-				float dst_rect[4] = {};
-				float src_rect[4] = {};
-				float pad[2] = {};
+				float modulation[4];
+				float ninepatch_margins[4];
+				float dst_rect[4];
+				float src_rect[4];
+				float pad[2];
 			};
 			//primitive
 			struct {
-				float points[6] = {}; // vec2 points[3]
-				float uvs[6] = {}; // vec2 points[3]
-				uint32_t colors[6] = {}; // colors encoded as half
+				float points[6]; // vec2 points[3]
+				float uvs[6]; // vec2 points[3]
+				uint32_t colors[6]; // colors encoded as half
 			};
 		};
 		float color_texture_pixel_size[2] = {};

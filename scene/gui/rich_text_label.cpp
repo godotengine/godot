@@ -618,7 +618,7 @@ void RichTextLabel::_shape_line(ItemFrame *p_frame, int p_line, const Ref<Font> 
 	}
 }
 
-int RichTextLabel::_draw_line(ItemFrame *p_frame, int p_line, const Vector2 &p_ofs, int p_width, const Color &p_base_color, int p_outline_size, const Color &p_outline_color, const Color &p_font_color_shadow, bool p_shadow_as_outline, const Point2 &p_shadow_ofs) {
+int RichTextLabel::_draw_line(ItemFrame *p_frame, int p_line, const Vector2 &p_ofs, int p_width, const Color &p_base_color, int p_outline_size, const Color &p_outline_color, const Color &p_font_shadow_color, bool p_shadow_as_outline, const Point2 &p_shadow_ofs) {
 	Vector2 off;
 
 	ERR_FAIL_COND_V(p_frame == nullptr, 0);
@@ -800,7 +800,7 @@ int RichTextLabel::_draw_line(ItemFrame *p_frame, int p_line, const Vector2 &p_o
 							}
 
 							for (int j = 0; j < frame->lines.size(); j++) {
-								_draw_line(frame, j, p_ofs + rect.position + off + Vector2(0, frame->lines[j].offset.y), rect.size.x, p_base_color, p_outline_size, p_outline_color, p_font_color_shadow, p_shadow_as_outline, p_shadow_ofs);
+								_draw_line(frame, j, p_ofs + rect.position + off + Vector2(0, frame->lines[j].offset.y), rect.size.x, p_base_color, p_outline_size, p_outline_color, p_font_shadow_color, p_shadow_as_outline, p_shadow_ofs);
 							}
 							idx++;
 						}
@@ -920,9 +920,9 @@ int RichTextLabel::_draw_line(ItemFrame *p_frame, int p_line, const Vector2 &p_o
 				if (visible) {
 					if (frid != RID()) {
 						if (p_shadow_as_outline) {
-							TS->font_draw_glyph_outline(frid, ci, glyphs[i].font_size, size, p_ofs + fx_offset + gloff + Vector2(-shadow_ofs.x, shadow_ofs.y), gl, p_font_color_shadow);
-							TS->font_draw_glyph_outline(frid, ci, glyphs[i].font_size, size, p_ofs + fx_offset + gloff + Vector2(shadow_ofs.x, -shadow_ofs.y), gl, p_font_color_shadow);
-							TS->font_draw_glyph_outline(frid, ci, glyphs[i].font_size, size, p_ofs + fx_offset + gloff + Vector2(-shadow_ofs.x, -shadow_ofs.y), gl, p_font_color_shadow);
+							TS->font_draw_glyph_outline(frid, ci, glyphs[i].font_size, size, p_ofs + fx_offset + gloff + Vector2(-shadow_ofs.x, shadow_ofs.y), gl, p_font_shadow_color);
+							TS->font_draw_glyph_outline(frid, ci, glyphs[i].font_size, size, p_ofs + fx_offset + gloff + Vector2(shadow_ofs.x, -shadow_ofs.y), gl, p_font_shadow_color);
+							TS->font_draw_glyph_outline(frid, ci, glyphs[i].font_size, size, p_ofs + fx_offset + gloff + Vector2(-shadow_ofs.x, -shadow_ofs.y), gl, p_font_shadow_color);
 						}
 						TS->font_draw_glyph_outline(frid, ci, glyphs[i].font_size, size, p_ofs + fx_offset + gloff, gl, font_color);
 					}
@@ -932,7 +932,7 @@ int RichTextLabel::_draw_line(ItemFrame *p_frame, int p_line, const Vector2 &p_o
 		}
 
 		// Draw main text.
-		Color selection_fg = get_theme_color("font_color_selected");
+		Color selection_fg = get_theme_color("font_selected_color");
 		Color selection_bg = get_theme_color("selection_color");
 
 		int sel_start = -1;
@@ -1400,7 +1400,7 @@ void RichTextLabel::_notification(int p_what) {
 			Color base_color = get_theme_color("default_color");
 			Color outline_color = get_theme_color("outline_color");
 			int outline_size = get_theme_constant("outline_size");
-			Color font_color_shadow = get_theme_color("font_color_shadow");
+			Color font_shadow_color = get_theme_color("font_shadow_color");
 			bool use_outline = get_theme_constant("shadow_as_outline");
 			Point2 shadow_ofs(get_theme_constant("shadow_offset_x"), get_theme_constant("shadow_offset_y"));
 
@@ -1411,7 +1411,7 @@ void RichTextLabel::_notification(int p_what) {
 			Point2 ofs = text_rect.get_position() + Vector2(0, main->lines[from_line].offset.y - vofs);
 			while (ofs.y < size.height && from_line < main->lines.size()) {
 				visible_paragraph_count++;
-				visible_line_count += _draw_line(main, from_line, ofs, text_rect.size.x, base_color, outline_size, outline_color, font_color_shadow, use_outline, shadow_ofs);
+				visible_line_count += _draw_line(main, from_line, ofs, text_rect.size.x, base_color, outline_size, outline_color, font_shadow_color, use_outline, shadow_ofs);
 				ofs.y += main->lines[from_line].text_buf->get_size().y;
 				from_line++;
 			}

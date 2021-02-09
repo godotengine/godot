@@ -64,17 +64,11 @@ protected:
 		Map<DependencyTracker *, uint32_t> instances;
 	};
 
-<<<<<<< HEAD
-	struct InstanceBaseDependency {
-		uint32_t instance_version = 0;
-		Set<InstanceDependency *> dependencies;
-=======
 public:
 	struct DependencyTracker {
 		void *userdata = nullptr;
 		typedef void (*ChangedCallback)(DependencyChangedNotification, DependencyTracker *);
 		typedef void (*DeletedCallback)(const RID &, DependencyTracker *);
->>>>>>> b72ad9d97b7d47fef925f48118ffbc4eb110f276
 
 		ChangedCallback changed_callback = nullptr;
 		DeletedCallback deleted_callback = nullptr;
@@ -104,6 +98,7 @@ public:
 
 			while (to_clean_up.size()) {
 				to_clean_up.front()->get().first->instances.erase(to_clean_up.front()->get().second);
+				dependencies.erase(to_clean_up.front()->get().first);
 				to_clean_up.pop_front();
 			}
 		}
@@ -239,6 +234,8 @@ public:
 	virtual AABB mesh_get_custom_aabb(RID p_mesh) const = 0;
 
 	virtual AABB mesh_get_aabb(RID p_mesh, RID p_skeleton = RID()) = 0;
+
+	virtual void mesh_set_shadow_mesh(RID p_mesh, RID p_shadow_mesh) = 0;
 
 	virtual void mesh_clear(RID p_mesh) = 0;
 

@@ -94,20 +94,6 @@ static inline Vector2 interpolate(const Rect2 &r, const Vector2 &v) {
 //----------------------------------------------------------------------------
 
 LineBuilder::LineBuilder() {
-	joint_mode = Line2D::LINE_JOINT_SHARP;
-	width = 10;
-	curve = nullptr;
-	default_color = Color(0.4, 0.5, 1);
-	gradient = nullptr;
-	sharp_limit = 2.f;
-	round_precision = 8;
-	begin_cap_mode = Line2D::LINE_CAP_NONE;
-	end_cap_mode = Line2D::LINE_CAP_NONE;
-	tile_aspect = 1.f;
-
-	_interpolate_color = false;
-	_last_index[0] = 0;
-	_last_index[1] = 0;
 }
 
 void LineBuilder::clear_output() {
@@ -554,7 +540,7 @@ void LineBuilder::new_arc(Vector2 center, Vector2 vbegin, float angle_delta, Col
 	float t = Vector2(1, 0).angle_to(vbegin);
 	float end_angle = t + angle_delta;
 	Vector2 rpos(0, 0);
-	float tt_begin = -Math_PI / 2.f;
+	float tt_begin = -Math_PI / 2.0f;
 	float tt = tt_begin;
 
 	// Center vertice

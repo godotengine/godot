@@ -33,32 +33,6 @@
 #include "core/math/basis.h"
 #include "core/string/print_string.h"
 
-// set_euler_xyz expects a vector containing the Euler angles in the format
-// (ax,ay,az), where ax is the angle of rotation around x axis,
-// and similar for other axes.
-// This implementation uses XYZ convention (Z is the first rotation).
-void Quat::set_euler_xyz(const Vector3 &p_euler) {
-	real_t half_a1 = p_euler.x * 0.5;
-	real_t half_a2 = p_euler.y * 0.5;
-	real_t half_a3 = p_euler.z * 0.5;
-
-	// R = X(a1).Y(a2).Z(a3) convention for Euler angles.
-	// Conversion to quaternion as listed in https://ntrs.nasa.gov/archive/nasa/casi.ntrs.nasa.gov/19770024290.pdf (page A-2)
-	// a3 is the angle of the first rotation, following the notation in this reference.
-
-	real_t cos_a1 = Math::cos(half_a1);
-	real_t sin_a1 = Math::sin(half_a1);
-	real_t cos_a2 = Math::cos(half_a2);
-	real_t sin_a2 = Math::sin(half_a2);
-	real_t cos_a3 = Math::cos(half_a3);
-	real_t sin_a3 = Math::sin(half_a3);
-
-	set(sin_a1 * cos_a2 * cos_a3 + sin_a2 * sin_a3 * cos_a1,
-			-sin_a1 * sin_a3 * cos_a2 + sin_a2 * cos_a1 * cos_a3,
-			sin_a1 * sin_a2 * cos_a3 + sin_a3 * cos_a1 * cos_a2,
-			-sin_a1 * sin_a2 * sin_a3 + cos_a1 * cos_a2 * cos_a3);
-}
-
 // get_euler_xyz returns a vector containing the Euler angles in the format
 // (ax,ay,az), where ax is the angle of rotation around x axis,
 // and similar for other axes.
@@ -66,32 +40,6 @@ void Quat::set_euler_xyz(const Vector3 &p_euler) {
 Vector3 Quat::get_euler_xyz() const {
 	Basis m(*this);
 	return m.get_euler_xyz();
-}
-
-// set_euler_yxz expects a vector containing the Euler angles in the format
-// (ax,ay,az), where ax is the angle of rotation around x axis,
-// and similar for other axes.
-// This implementation uses YXZ convention (Z is the first rotation).
-void Quat::set_euler_yxz(const Vector3 &p_euler) {
-	real_t half_a1 = p_euler.y * 0.5;
-	real_t half_a2 = p_euler.x * 0.5;
-	real_t half_a3 = p_euler.z * 0.5;
-
-	// R = Y(a1).X(a2).Z(a3) convention for Euler angles.
-	// Conversion to quaternion as listed in https://ntrs.nasa.gov/archive/nasa/casi.ntrs.nasa.gov/19770024290.pdf (page A-6)
-	// a3 is the angle of the first rotation, following the notation in this reference.
-
-	real_t cos_a1 = Math::cos(half_a1);
-	real_t sin_a1 = Math::sin(half_a1);
-	real_t cos_a2 = Math::cos(half_a2);
-	real_t sin_a2 = Math::sin(half_a2);
-	real_t cos_a3 = Math::cos(half_a3);
-	real_t sin_a3 = Math::sin(half_a3);
-
-	set(sin_a1 * cos_a2 * sin_a3 + cos_a1 * sin_a2 * cos_a3,
-			sin_a1 * cos_a2 * cos_a3 - cos_a1 * sin_a2 * sin_a3,
-			-sin_a1 * sin_a2 * cos_a3 + cos_a1 * cos_a2 * sin_a3,
-			sin_a1 * sin_a2 * sin_a3 + cos_a1 * cos_a2 * cos_a3);
 }
 
 // get_euler_yxz returns a vector containing the Euler angles in the format
@@ -107,10 +55,10 @@ Vector3 Quat::get_euler_yxz() const {
 }
 
 void Quat::operator*=(const Quat &p_q) {
-	set(w * p_q.x + x * p_q.w + y * p_q.z - z * p_q.y,
-			w * p_q.y + y * p_q.w + z * p_q.x - x * p_q.z,
-			w * p_q.z + z * p_q.w + x * p_q.y - y * p_q.x,
-			w * p_q.w - x * p_q.x - y * p_q.y - z * p_q.z);
+	x = w * p_q.x + x * p_q.w + y * p_q.z - z * p_q.y;
+	y = w * p_q.y + y * p_q.w + z * p_q.x - x * p_q.z;
+	z = w * p_q.z + z * p_q.w + x * p_q.y - y * p_q.x;
+	w = w * p_q.w - x * p_q.x - y * p_q.y - z * p_q.z;
 }
 
 Quat Quat::operator*(const Quat &p_q) const {
@@ -233,18 +181,49 @@ Quat::operator String() const {
 	return String::num(x) + ", " + String::num(y) + ", " + String::num(z) + ", " + String::num(w);
 }
 
-void Quat::set_axis_angle(const Vector3 &axis, const real_t &angle) {
+Quat::Quat(const Vector3 &p_axis, real_t p_angle) {
 #ifdef MATH_CHECKS
-	ERR_FAIL_COND_MSG(!axis.is_normalized(), "The axis Vector3 must be normalized.");
+	ERR_FAIL_COND_MSG(!p_axis.is_normalized(), "The axis Vector3 must be normalized.");
 #endif
-	real_t d = axis.length();
+	real_t d = p_axis.length();
 	if (d == 0) {
-		set(0, 0, 0, 0);
+		x = 0;
+		y = 0;
+		z = 0;
+		w = 0;
 	} else {
-		real_t sin_angle = Math::sin(angle * 0.5);
-		real_t cos_angle = Math::cos(angle * 0.5);
+		real_t sin_angle = Math::sin(p_angle * 0.5);
+		real_t cos_angle = Math::cos(p_angle * 0.5);
 		real_t s = sin_angle / d;
-		set(axis.x * s, axis.y * s, axis.z * s,
-				cos_angle);
+		x = p_axis.x * s;
+		y = p_axis.y * s;
+		z = p_axis.z * s;
+		w = cos_angle;
 	}
+}
+
+// Euler constructor expects a vector containing the Euler angles in the format
+// (ax, ay, az), where ax is the angle of rotation around x axis,
+// and similar for other axes.
+// This implementation uses YXZ convention (Z is the first rotation).
+Quat::Quat(const Vector3 &p_euler) {
+	real_t half_a1 = p_euler.y * 0.5;
+	real_t half_a2 = p_euler.x * 0.5;
+	real_t half_a3 = p_euler.z * 0.5;
+
+	// R = Y(a1).X(a2).Z(a3) convention for Euler angles.
+	// Conversion to quaternion as listed in https://ntrs.nasa.gov/archive/nasa/casi.ntrs.nasa.gov/19770024290.pdf (page A-6)
+	// a3 is the angle of the first rotation, following the notation in this reference.
+
+	real_t cos_a1 = Math::cos(half_a1);
+	real_t sin_a1 = Math::sin(half_a1);
+	real_t cos_a2 = Math::cos(half_a2);
+	real_t sin_a2 = Math::sin(half_a2);
+	real_t cos_a3 = Math::cos(half_a3);
+	real_t sin_a3 = Math::sin(half_a3);
+
+	x = sin_a1 * cos_a2 * sin_a3 + cos_a1 * sin_a2 * cos_a3;
+	y = sin_a1 * cos_a2 * cos_a3 - cos_a1 * sin_a2 * sin_a3;
+	z = -sin_a1 * sin_a2 * cos_a3 + cos_a1 * cos_a2 * sin_a3;
+	w = sin_a1 * sin_a2 * sin_a3 + cos_a1 * cos_a2 * cos_a3;
 }

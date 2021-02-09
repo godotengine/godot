@@ -93,6 +93,7 @@ void CollisionShape3D::_notification(int p_what) {
 				if (shape.is_valid()) {
 					parent->shape_owner_add_shape(owner_id, shape);
 				}
+				_update_in_shape_owner();
 			}
 		} break;
 		case NOTIFICATION_ENTER_TREE: {
@@ -213,10 +214,6 @@ bool CollisionShape3D::is_disabled() const {
 
 CollisionShape3D::CollisionShape3D() {
 	//indicator = RenderingServer::get_singleton()->mesh_create();
-	disabled = false;
-	debug_shape = nullptr;
-	parent = nullptr;
-	owner_id = 0;
 	set_notify_local_transform(true);
 }
 

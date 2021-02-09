@@ -57,8 +57,12 @@
 #include "core/version_hash.gen.h"
 #include "drivers/png/png_driver_common.h"
 #include "editor/import/resource_importer_scene.h"
+#ifdef MODULE_CSG_ENABLED
 #include "modules/csg/csg_shape.h"
+#endif // MODULE_CSG_ENABLED
+#ifdef MODULE_GRIDMAP_ENABLED
 #include "modules/gridmap/grid_map.h"
+#endif // MODULE_GRIDMAP_ENABLED
 #include "modules/regex/regex.h"
 #include "scene/2d/node_2d.h"
 #include "scene/3d/bone_attachment_3d.h"
@@ -2387,7 +2391,7 @@ Error GLTFDocument::_serialize_meshes(Ref<GLTFState> state) {
 		e["targetNames"] = target_names;
 
 		for (int j = 0; j < target_names.size(); j++) {
-			real_t weight = 0;
+			real_t weight = 0.0;
 			if (j < state->meshes.write[gltf_mesh_i]->get_blend_weights().size()) {
 				weight = state->meshes.write[gltf_mesh_i]->get_blend_weights()[j];
 			}
@@ -5101,7 +5105,6 @@ Node3D *GLTFDocument::_generate_spatial(Ref<GLTFState> state, Node *scene_parent
 }
 void GLTFDocument::_convert_scene_node(Ref<GLTFState> state, Node *p_current, Node *p_root, const GLTFNodeIndex p_gltf_parent, const GLTFNodeIndex p_gltf_root) {
 	bool retflag = true;
-	Node3D *spatial = cast_to<Node3D>(p_current);
 	_check_visibility(p_current, retflag);
 	if (retflag) {
 		return;
@@ -5110,9 +5113,11 @@ void GLTFDocument::_convert_scene_node(Ref<GLTFState> state, Node *p_current, No
 	gltf_node.instance();
 	gltf_node->set_name(_gen_unique_name(state, p_current->get_name()));
 	if (cast_to<Node3D>(p_current)) {
+		Node3D *spatial = cast_to<Node3D>(p_current);
 		_convert_spatial(state, spatial, gltf_node);
 	}
 	if (cast_to<MeshInstance3D>(p_current)) {
+		Node3D *spatial = cast_to<Node3D>(p_current);
 		_convert_mesh_to_gltf(p_current, state, spatial, gltf_node);
 	} else if (cast_to<BoneAttachment3D>(p_current)) {
 		_convert_bone_attachment_to_gltf(p_current, state, gltf_node, retflag);
@@ -5124,18 +5129,22 @@ void GLTFDocument::_convert_scene_node(Ref<GLTFState> state, Node *p_current, No
 		return;
 	} else if (cast_to<MultiMeshInstance3D>(p_current)) {
 		_convert_mult_mesh_instance_to_gltf(p_current, p_gltf_parent, p_gltf_root, gltf_node, state, p_root);
+#ifdef MODULE_CSG_ENABLED
 	} else if (cast_to<CSGShape3D>(p_current)) {
 		if (p_current->get_parent() && cast_to<CSGShape3D>(p_current)->is_root_shape()) {
 			_convert_csg_shape_to_gltf(p_current, p_gltf_parent, gltf_node, state);
 		}
+#endif // MODULE_CSG_ENABLED
+#ifdef MODULE_GRIDMAP_ENABLED
 	} else if (cast_to<GridMap>(p_current)) {
 		_convert_grid_map_to_gltf(p_current, p_gltf_parent, p_gltf_root, gltf_node, state, p_root);
+#endif // MODULE_GRIDMAP_ENABLED
 	} else if (cast_to<Camera3D>(p_current)) {
 		Camera3D *camera = Object::cast_to<Camera3D>(p_current);
-		_convert_camera_to_gltf(camera, state, spatial, gltf_node);
+		_convert_camera_to_gltf(camera, state, camera, gltf_node);
 	} else if (cast_to<Light3D>(p_current)) {
 		Light3D *light = Object::cast_to<Light3D>(p_current);
-		_convert_light_to_gltf(light, state, spatial, gltf_node);
+		_convert_light_to_gltf(light, state, light, gltf_node);
 	} else if (cast_to<AnimationPlayer>(p_current)) {
 		AnimationPlayer *animation_player = Object::cast_to<AnimationPlayer>(p_current);
 		_convert_animation_player_to_gltf(animation_player, state, p_gltf_parent, p_gltf_root, gltf_node, p_current, p_root);
@@ -5154,6 +5163,7 @@ void GLTFDocument::_convert_scene_node(Ref<GLTFState> state, Node *p_current, No
 	}
 }
 
+#ifdef MODULE_CSG_ENABLED
 void GLTFDocument::_convert_csg_shape_to_gltf(Node *p_current, GLTFNodeIndex p_gltf_parent, Ref<GLTFNode> gltf_node, Ref<GLTFState> state) {
 	CSGShape3D *csg = Object::cast_to<CSGShape3D>(p_current);
 	csg->call("_update_shape");
@@ -5180,6 +5190,7 @@ void GLTFDocument::_convert_csg_shape_to_gltf(Node *p_current, GLTFNodeIndex p_g
 	gltf_node->xform = csg->get_meshes()[0];
 	gltf_node->set_name(_gen_unique_name(state, csg->get_name()));
 }
+#endif // MODULE_CSG_ENABLED
 
 void GLTFDocument::_create_gltf_node(Ref<GLTFState> state, Node *p_scene_parent, GLTFNodeIndex current_node_i,
 		GLTFNodeIndex p_parent_node_index, GLTFNodeIndex p_root_gltf_node, Ref<GLTFNode> gltf_node) {
@@ -5229,6 +5240,7 @@ void GLTFDocument::_convert_light_to_gltf(Light3D *light, Ref<GLTFState> state, 
 	}
 }
 
+#ifdef MODULE_GRIDMAP_ENABLED
 void GLTFDocument::_convert_grid_map_to_gltf(Node *p_scene_parent, const GLTFNodeIndex &p_parent_node_index, const GLTFNodeIndex &p_root_node_index, Ref<GLTFNode> gltf_node, Ref<GLTFState> state, Node *p_root_node) {
 	GridMap *grid_map = Object::cast_to<GridMap>(p_scene_parent);
 	ERR_FAIL_COND(!grid_map);
@@ -5260,6 +5272,7 @@ void GLTFDocument::_convert_grid_map_to_gltf(Node *p_scene_parent, const GLTFNod
 		new_gltf_node->set_name(_gen_unique_name(state, grid_map->get_mesh_library()->get_item_name(cell)));
 	}
 }
+#endif // MODULE_GRIDMAP_ENABLED
 
 void GLTFDocument::_convert_mult_mesh_instance_to_gltf(Node *p_scene_parent, const GLTFNodeIndex &p_parent_node_index, const GLTFNodeIndex &p_root_node_index, Ref<GLTFNode> gltf_node, Ref<GLTFState> state, Node *p_root_node) {
 	MultiMeshInstance3D *multi_mesh_instance = Object::cast_to<MultiMeshInstance3D>(p_scene_parent);
@@ -5275,8 +5288,7 @@ void GLTFDocument::_convert_mult_mesh_instance_to_gltf(Node *p_scene_parent, con
 				transform.origin =
 						Vector3(xform_2d.get_origin().x, 0, xform_2d.get_origin().y);
 				real_t rotation = xform_2d.get_rotation();
-				Quat quat;
-				quat.set_axis_angle(Vector3(0, 1, 0), rotation);
+				Quat quat(Vector3(0, 1, 0), rotation);
 				Size2 scale = xform_2d.get_scale();
 				transform.basis.set_quat_scale(quat,
 						Vector3(scale.x, 0, scale.y));
@@ -5557,7 +5569,7 @@ void GLTFDocument::_import_animation(Ref<GLTFState> state, AnimationPlayer *ap, 
 		animation->set_loop(true);
 	}
 
-	float length = 0;
+	float length = 0.0;
 
 	for (Map<int, GLTFAnimation::Track>::Element *track_i = anim->get_tracks().front(); track_i; track_i = track_i->next()) {
 		const GLTFAnimation::Track &track = track_i->get();
@@ -6028,14 +6040,12 @@ GLTFAnimation::Track GLTFDocument::_convert_animation_track(Ref<GLTFState> state
 			p_track.rotation_track.interpolation = gltf_interpolation;
 
 			for (int32_t key_i = 0; key_i < key_count; key_i++) {
-				Quat rotation;
 				Vector3 rotation_degrees = p_animation->track_get_key_value(p_track_i, key_i);
 				Vector3 rotation_radian;
 				rotation_radian.x = Math::deg2rad(rotation_degrees.x);
 				rotation_radian.y = Math::deg2rad(rotation_degrees.y);
 				rotation_radian.z = Math::deg2rad(rotation_degrees.z);
-				rotation.set_euler(rotation_radian);
-				p_track.rotation_track.values.write[key_i] = rotation;
+				p_track.rotation_track.values.write[key_i] = Quat(rotation_radian);
 			}
 		} else if (path.find(":scale") != -1) {
 			p_track.scale_track.times = times;
@@ -6287,18 +6297,22 @@ void GLTFDocument::_convert_animation(Ref<GLTFState> state, AnimationPlayer *ap,
 				}
 			}
 		} else if (String(orig_track_path).find(":") == -1) {
-			const Node *node = ap->get_parent()->get_node_or_null(orig_track_path);
-			for (Map<GLTFNodeIndex, Node *>::Element *scene_node_i = state->scene_nodes.front(); scene_node_i; scene_node_i = scene_node_i->next()) {
-				if (scene_node_i->get() == node) {
-					GLTFNodeIndex node_index = scene_node_i->key();
-					Map<int, GLTFAnimation::Track>::Element *node_track_i = gltf_animation->get_tracks().find(node_index);
-					GLTFAnimation::Track track;
-					if (node_track_i) {
-						track = node_track_i->get();
+			ERR_CONTINUE(!ap->get_parent());
+			for (int32_t node_i = 0; node_i < ap->get_parent()->get_child_count(); node_i++) {
+				const Node *child = ap->get_parent()->get_child(node_i);
+				const Node *node = child->get_node_or_null(orig_track_path);
+				for (Map<GLTFNodeIndex, Node *>::Element *scene_node_i = state->scene_nodes.front(); scene_node_i; scene_node_i = scene_node_i->next()) {
+					if (scene_node_i->get() == node) {
+						GLTFNodeIndex node_index = scene_node_i->key();
+						Map<int, GLTFAnimation::Track>::Element *node_track_i = gltf_animation->get_tracks().find(node_index);
+						GLTFAnimation::Track track;
+						if (node_track_i) {
+							track = node_track_i->get();
+						}
+						track = _convert_animation_track(state, track, animation, Transform(), track_i, node_index);
+						gltf_animation->get_tracks().insert(node_index, track);
+						break;
 					}
-					track = _convert_animation_track(state, track, animation, Transform(), track_i, node_index);
-					gltf_animation->get_tracks().insert(node_index, track);
-					break;
 				}
 			}
 		}

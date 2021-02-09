@@ -39,7 +39,7 @@ class BroadPhase2DHashGrid : public BroadPhase2DSW {
 		bool colliding = false;
 		int rc = 1;
 		void *ud = nullptr;
-		PairData() { }
+		PairData() {}
 	};
 
 	struct Element {
@@ -64,7 +64,7 @@ class BroadPhase2DHashGrid : public BroadPhase2DSW {
 			return ref;
 		}
 
-		_FORCE_INLINE_ RC() {	}
+		_FORCE_INLINE_ RC() {}
 	};
 
 	Map<ID, Element> element_map;
@@ -77,8 +77,8 @@ class BroadPhase2DHashGrid : public BroadPhase2DSW {
 	struct PairKey {
 		union {
 			struct {
-				ID a = 0;
-				ID b = 0;
+				ID a;
+				ID b;
 			};
 			uint64_t key = 0;
 		};
@@ -117,8 +117,8 @@ class BroadPhase2DHashGrid : public BroadPhase2DSW {
 	struct PosKey {
 		union {
 			struct {
-				int32_t x = 0;
-				int32_t y = 0;
+				int32_t x;
+				int32_t y;
 			};
 			uint64_t key = 0;
 		};

@@ -265,18 +265,18 @@ struct Vector2i {
 	};
 
 	union {
-		int x = 0;
-		int width;
+		int32_t x = 0;
+		int32_t width;
 	};
 	union {
-		int y = 0;
-		int height;
+		int32_t y = 0;
+		int32_t height;
 	};
 
-	_FORCE_INLINE_ int &operator[](int p_idx) {
+	_FORCE_INLINE_ int32_t &operator[](int p_idx) {
 		return p_idx ? y : x;
 	}
-	_FORCE_INLINE_ const int &operator[](int p_idx) const {
+	_FORCE_INLINE_ const int32_t &operator[](int p_idx) const {
 		return p_idx ? y : x;
 	}
 
@@ -286,16 +286,16 @@ struct Vector2i {
 	void operator-=(const Vector2i &p_v);
 	Vector2i operator*(const Vector2i &p_v1) const;
 
-	Vector2i operator*(const int &rvalue) const;
-	void operator*=(const int &rvalue);
+	Vector2i operator*(const int32_t &rvalue) const;
+	void operator*=(const int32_t &rvalue);
 
 	Vector2i operator/(const Vector2i &p_v1) const;
-	Vector2i operator/(const int &rvalue) const;
-	void operator/=(const int &rvalue);
+	Vector2i operator/(const int32_t &rvalue) const;
+	void operator/=(const int32_t &rvalue);
 
 	Vector2i operator%(const Vector2i &p_v1) const;
-	Vector2i operator%(const int &rvalue) const;
-	void operator%=(const int &rvalue);
+	Vector2i operator%(const int32_t &rvalue) const;
+	void operator%=(const int32_t &rvalue);
 
 	Vector2i operator-() const;
 	bool operator<(const Vector2i &p_vec2) const { return (x == p_vec2.x) ? (y < p_vec2.y) : (x < p_vec2.x); }
@@ -317,10 +317,10 @@ struct Vector2i {
 
 	inline Vector2i() {}
 	inline Vector2i(const Vector2 &p_vec2) {
-		x = (int)p_vec2.x;
-		y = (int)p_vec2.y;
+		x = (int32_t)p_vec2.x;
+		y = (int32_t)p_vec2.y;
 	}
-	inline Vector2i(int p_x, int p_y) {
+	inline Vector2i(int32_t p_x, int32_t p_y) {
 		x = p_x;
 		y = p_y;
 	}

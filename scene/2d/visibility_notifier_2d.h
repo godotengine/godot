@@ -85,7 +85,7 @@ protected:
 	virtual void _screen_enter() override;
 	virtual void _screen_exit() override;
 
-	bool visible;
+	bool visible = false;
 
 	void _find_nodes(Node *p_node);
 

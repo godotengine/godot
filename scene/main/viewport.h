@@ -143,6 +143,10 @@ public:
 		DEBUG_DRAW_SDFGI_PROBES,
 		DEBUG_DRAW_GI_BUFFER,
 		DEBUG_DRAW_DISABLE_LOD,
+		DEBUG_DRAW_CLUSTER_OMNI_LIGHTS,
+		DEBUG_DRAW_CLUSTER_SPOT_LIGHTS,
+		DEBUG_DRAW_CLUSTER_DECALS,
+		DEBUG_DRAW_CLUSTER_REFLECTION_PROBES,
 	};
 
 	enum DefaultCanvasItemTextureFilter {
@@ -293,6 +297,7 @@ private:
 	DebugDraw debug_draw;
 
 	int shadow_atlas_size;
+	bool shadow_atlas_16_bits = true;
 	ShadowAtlasQuadrantSubdiv shadow_atlas_quadrant_subdiv[4];
 
 	MSAA msaa;
@@ -445,7 +450,7 @@ private:
 	void _canvas_layer_remove(CanvasLayer *p_canvas_layer);
 
 	void _drop_mouse_focus();
-	void _drop_physics_mouseover();
+	void _drop_physics_mouseover(bool p_paused_only = false);
 
 	void _update_canvas_items(Node *p_node);
 
@@ -474,6 +479,7 @@ protected:
 	bool _is_size_allocated() const;
 
 	void _notification(int p_what);
+	void _process_picking();
 	static void _bind_methods();
 	virtual void _validate_property(PropertyInfo &property) const override;
 
@@ -532,6 +538,9 @@ public:
 
 	void set_shadow_atlas_size(int p_size);
 	int get_shadow_atlas_size() const;
+
+	void set_shadow_atlas_16_bits(bool p_16_bits);
+	bool get_shadow_atlas_16_bits() const;
 
 	void set_shadow_atlas_quadrant_subdiv(int p_quadrant, ShadowAtlasQuadrantSubdiv p_subdiv);
 	ShadowAtlasQuadrantSubdiv get_shadow_atlas_quadrant_subdiv(int p_quadrant) const;

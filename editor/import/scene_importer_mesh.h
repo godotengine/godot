@@ -61,6 +61,8 @@ class EditorSceneImporterMesh : public Resource {
 
 	Ref<ArrayMesh> mesh;
 
+	Ref<EditorSceneImporterMesh> shadow_mesh;
+
 protected:
 	void _set_data(const Dictionary &p_data);
 	Dictionary _get_data() const;
@@ -88,6 +90,9 @@ public:
 	Ref<Material> get_surface_material(int p_surface) const;
 
 	void generate_lods();
+
+	void create_shadow_mesh();
+	Ref<EditorSceneImporterMesh> get_shadow_mesh() const;
 
 	bool has_mesh() const;
 	Ref<ArrayMesh> get_mesh();

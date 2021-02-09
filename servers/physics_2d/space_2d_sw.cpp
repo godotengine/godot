@@ -644,7 +644,7 @@ int Space2DSW::test_body_ray_separation(Body2DSW *p_body, const Transform2D &p_t
 
 								recover_motion += (b - a) / cbk.amount;
 
-								float depth = a.distance_to(b);
+								real_t depth = a.distance_to(b);
 								if (depth > result.collision_depth) {
 									result.collision_depth = depth;
 									result.collision_point = b;
@@ -739,7 +739,7 @@ bool Space2DSW::test_body_motion(Body2DSW *p_body, const Transform2D &p_from, co
 	ExcludedShapeSW excluded_shape_pairs[max_excluded_shape_pairs];
 	int excluded_shape_pair_count = 0;
 
-	float separation_margin = MIN(p_margin, MAX(0.0, p_motion.length() - CMP_EPSILON)); //don't separate by more than the intended motion
+	real_t separation_margin = MIN(p_margin, MAX(0.0, p_motion.length() - CMP_EPSILON)); //don't separate by more than the intended motion
 
 	Transform2D body_transform = p_from;
 
@@ -793,7 +793,7 @@ bool Space2DSW::test_body_motion(Body2DSW *p_body, const Transform2D &p_from, co
 					if (col_obj->is_shape_set_as_one_way_collision(shape_idx)) {
 						cbk.valid_dir = col_obj_shape_xform.get_axis(1).normalized();
 
-						float owc_margin = col_obj->get_shape_one_way_collision_margin(shape_idx);
+						real_t owc_margin = col_obj->get_shape_one_way_collision_margin(shape_idx);
 						cbk.valid_depth = MAX(owc_margin, p_margin); //user specified, but never less than actual margin or it won't work
 						cbk.invalid_by_dir = 0;
 
@@ -804,7 +804,7 @@ bool Space2DSW::test_body_motion(Body2DSW *p_body, const Transform2D &p_from, co
 								Vector2 lv = b->get_linear_velocity();
 								//compute displacement from linear velocity
 								Vector2 motion = lv * PhysicsDirectBodyState2DSW::singleton->step;
-								float motion_len = motion.length();
+								real_t motion_len = motion.length();
 								motion.normalize();
 								cbk.valid_depth += motion_len * MAX(motion.dot(-cbk.valid_dir), 0.0);
 							}
@@ -1328,7 +1328,7 @@ Space2DSW::Space2DSW() {
 
 	constraint_bias = 0.2;
 	body_linear_velocity_sleep_threshold = GLOBAL_DEF("physics/2d/sleep_threshold_linear", 2.0);
-	body_angular_velocity_sleep_threshold = GLOBAL_DEF("physics/2d/sleep_threshold_angular", (8.0 / 180.0 * Math_PI));
+	body_angular_velocity_sleep_threshold = GLOBAL_DEF("physics/2d/sleep_threshold_angular", Math::deg2rad(8.0));
 	body_time_to_sleep = GLOBAL_DEF("physics/2d/time_before_sleep", 0.5);
 	ProjectSettings::get_singleton()->set_custom_property_info("physics/2d/time_before_sleep", PropertyInfo(Variant::FLOAT, "physics/2d/time_before_sleep", PROPERTY_HINT_RANGE, "0,5,0.01,or_greater"));
 

@@ -51,6 +51,7 @@ private:
 	Set<ObjectID> unfold_cache;
 	PopupMenu *item_menu = nullptr;
 	EditorFileDialog *file_dialog = nullptr;
+	String last_filter;
 
 	String _get_path(TreeItem *p_item);
 	void _scene_tree_folded(Object *p_obj);

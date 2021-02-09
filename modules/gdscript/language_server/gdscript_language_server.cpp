@@ -36,12 +36,6 @@
 #include "editor/editor_node.h"
 
 GDScriptLanguageServer::GDScriptLanguageServer() {
-	thread = nullptr;
-	thread_running = false;
-	started = false;
-
-	use_thread = false;
-	port = 6008;
 	_EDITOR_DEF("network/language_server/remote_port", port);
 	_EDITOR_DEF("network/language_server/enable_smart_resolve", true);
 	_EDITOR_DEF("network/language_server/show_native_symbols_in_editor", false);
@@ -87,9 +81,8 @@ void GDScriptLanguageServer::start() {
 	if (protocol.start(port, IP_Address("127.0.0.1")) == OK) {
 		EditorNode::get_log()->add_message("--- GDScript language server started ---", EditorLog::MSG_TYPE_EDITOR);
 		if (use_thread) {
-			ERR_FAIL_COND(thread != nullptr);
 			thread_running = true;
-			thread = Thread::create(GDScriptLanguageServer::thread_main, this);
+			thread.start(GDScriptLanguageServer::thread_main, this);
 		}
 		set_process_internal(!use_thread);
 		started = true;
@@ -98,11 +91,9 @@ void GDScriptLanguageServer::start() {
 
 void GDScriptLanguageServer::stop() {
 	if (use_thread) {
-		ERR_FAIL_COND(nullptr == thread);
+		ERR_FAIL_COND(!thread.is_started());
 		thread_running = false;
-		Thread::wait_to_finish(thread);
-		memdelete(thread);
-		thread = nullptr;
+		thread.wait_to_finish();
 	}
 	protocol.stop();
 	started = false;

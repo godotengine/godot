@@ -56,12 +56,12 @@ class EMWSPeer : public WebSocketPeer {
 	GDCIIMPL(EMWSPeer, WebSocketPeer);
 
 private:
-	int peer_sock;
-	WriteMode write_mode;
+	int peer_sock = -1;
+	WriteMode write_mode = WRITE_MODE_BINARY;
 
 	Vector<uint8_t> _packet_buffer;
 	PacketBuffer<uint8_t> _in_buffer;
-	uint8_t _is_string;
+	uint8_t _is_string = 0;
 
 public:
 	Error read_msg(const uint8_t *p_data, uint32_t p_size, bool p_is_string);

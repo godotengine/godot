@@ -48,7 +48,7 @@
 class NavigationServer3D : public Object {
 	GDCLASS(NavigationServer3D, Object);
 
-	static NavigationServer3D *singleton = nullptr;
+	static NavigationServer3D *singleton;
 
 protected:
 	static void _bind_methods();

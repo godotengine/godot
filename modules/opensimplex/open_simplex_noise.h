@@ -48,11 +48,11 @@ class OpenSimplexNoise : public Resource {
 
 	osn_context contexts[MAX_OCTAVES];
 
-	int seed;
-	float persistence; // Controls details, value in [0,1]. Higher increases grain, lower increases smoothness.
-	int octaves; // Number of noise layers
-	float period; // Distance above which we start to see similarities. The higher, the longer "hills" will be on a terrain.
-	float lacunarity; // Controls period change across octaves. 2 is usually a good value to address all detail levels.
+	int seed = 0;
+	float persistence = 0.5; // Controls details, value in [0,1]. Higher increases grain, lower increases smoothness.
+	int octaves = 3; // Number of noise layers
+	float period = 64.0; // Distance above which we start to see similarities. The higher, the longer "hills" will be on a terrain.
+	float lacunarity = 2.0; // Controls period change across octaves. 2 is usually a good value to address all detail levels.
 
 public:
 	OpenSimplexNoise();

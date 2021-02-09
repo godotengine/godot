@@ -41,9 +41,9 @@ class Texture2D;
 class DisplayServer : public Object {
 	GDCLASS(DisplayServer, Object)
 
-	static DisplayServer *singleton = nullptr;
+	static DisplayServer *singleton;
 	bool vsync_enabled = true;
-	static bool hidpi_allowed = false;
+	static bool hidpi_allowed;
 
 public:
 	_FORCE_INLINE_ static DisplayServer *get_singleton() {
@@ -80,8 +80,8 @@ protected:
 		GetRenderingDriversFunction get_rendering_drivers_function;
 	};
 
-	static DisplayServerCreate server_create_functions[MAX_SERVERS] = {};
-	static int server_create_count = 0;
+	static DisplayServerCreate server_create_functions[MAX_SERVERS];
+	static int server_create_count;
 
 	friend class RenderingServerDefault;
 	virtual void _set_use_vsync(bool p_enable);

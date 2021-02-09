@@ -33,12 +33,6 @@
 #include "core/core_string_names.h"
 
 OpenSimplexNoise::OpenSimplexNoise() {
-	seed = 0;
-	persistence = 0.5;
-	octaves = 3;
-	period = 64;
-	lacunarity = 2.0;
-
 	_init_seeds();
 }
 
@@ -131,10 +125,10 @@ Ref<Image> OpenSimplexNoise::get_seamless_image(int p_size) const {
 			float ii = (float)i / (float)p_size;
 			float jj = (float)j / (float)p_size;
 
-			ii *= 2.0 * Math_PI;
-			jj *= 2.0 * Math_PI;
+			ii *= Math_TAU;
+			jj *= Math_TAU;
 
-			float radius = p_size / (2.0 * Math_PI);
+			float radius = p_size / Math_TAU;
 
 			float x = radius * Math::sin(jj);
 			float y = radius * Math::cos(jj);

@@ -49,8 +49,8 @@ class BroadPhase3DBasic : public BroadPhase3DSW {
 	struct PairKey {
 		union {
 			struct {
-				ID a = 0;
-				ID b = 0;
+				ID a;
+				ID b;
 			};
 			uint64_t key = 0;
 		};
@@ -59,7 +59,7 @@ class BroadPhase3DBasic : public BroadPhase3DSW {
 			return key < p_key.key;
 		}
 
-		PairKey() { }
+		PairKey() {}
 		PairKey(ID p_a, ID p_b) {
 			if (p_a > p_b) {
 				a = p_b;
