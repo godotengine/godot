@@ -162,6 +162,51 @@ void RenderingServerDefault::draw(bool p_swap_buffers, double frame_step) {
 	}
 
 	frame_profile_frame = RSG::storage->get_captured_timestamps_frame();
+
+	if (print_gpu_profile) {
+		if (print_frame_profile_ticks_from == 0) {
+			print_frame_profile_ticks_from = OS::get_singleton()->get_ticks_usec();
+		}
+		float total_time = 0.0;
+
+		for (int i = 0; i < frame_profile.size() - 1; i++) {
+			String name = frame_profile[i].name;
+			if (name[0] == '<' || name[0] == '>') {
+				continue;
+			}
+
+			float time = frame_profile[i + 1].gpu_msec - frame_profile[i].gpu_msec;
+
+			if (name[0] != '<' && name[0] != '>') {
+				if (print_gpu_profile_task_time.has(name)) {
+					print_gpu_profile_task_time[name] += time;
+				} else {
+					print_gpu_profile_task_time[name] = time;
+				}
+			}
+		}
+
+		if (frame_profile.size()) {
+			total_time = frame_profile[frame_profile.size() - 1].gpu_msec;
+		}
+
+		uint64_t ticks_elapsed = OS::get_singleton()->get_ticks_usec() - print_frame_profile_ticks_from;
+		print_frame_profile_frame_count++;
+		if (ticks_elapsed > 1000000) {
+			print_line("GPU PROFILE (total " + rtos(total_time) + "ms): ");
+
+			float print_threshold = 0.01;
+			for (OrderedHashMap<String, float>::Element E = print_gpu_profile_task_time.front(); E; E = E.next()) {
+				float time = E.value() / float(print_frame_profile_frame_count);
+				if (time > print_threshold) {
+					print_line("\t-" + E.key() + ": " + rtos(time) + "ms");
+				}
+			}
+			print_gpu_profile_task_time.clear();
+			print_frame_profile_ticks_from = OS::get_singleton()->get_ticks_usec();
+			print_frame_profile_frame_count = 0;
+		}
+	}
 }
 
 float RenderingServerDefault::get_frame_setup_time_cpu() const {
@@ -230,6 +275,11 @@ bool RenderingServerDefault::has_feature(Features p_feature) const {
 
 void RenderingServerDefault::sdfgi_set_debug_probe_select(const Vector3 &p_position, const Vector3 &p_dir) {
 	RSG::scene->sdfgi_set_debug_probe_select(p_position, p_dir);
+}
+
+void RenderingServerDefault::set_print_gpu_profile(bool p_enable) {
+	RSG::storage->capturing_timestamps = p_enable;
+	print_gpu_profile = p_enable;
 }
 
 RID RenderingServerDefault::get_test_cube() {

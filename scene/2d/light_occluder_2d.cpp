@@ -145,9 +145,6 @@ void OccluderPolygon2D::_bind_methods() {
 
 OccluderPolygon2D::OccluderPolygon2D() {
 	occ_polygon = RS::get_singleton()->canvas_occluder_polygon_create();
-	closed = true;
-	cull = CULL_DISABLED;
-	rect_cache_dirty = true;
 }
 
 OccluderPolygon2D::~OccluderPolygon2D() {

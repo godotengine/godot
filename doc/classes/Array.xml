@@ -191,11 +191,9 @@
 			</return>
 			<argument index="0" name="value" type="Variant">
 			</argument>
-			<argument index="1" name="obj" type="Object">
+			<argument index="1" name="func" type="Callable">
 			</argument>
-			<argument index="2" name="func" type="StringName">
-			</argument>
-			<argument index="3" name="before" type="bool" default="true">
+			<argument index="2" name="before" type="bool" default="true">
 			</argument>
 			<description>
 				Finds the index of an existing value (or the insertion index that maintains sorting order, if the value is not yet present in the array) using binary search and a custom comparison method. Optionally, a [code]before[/code] specifier can be passed. If [code]false[/code], the returned index comes after all existing entries of the value in the array. The custom method receives two arguments (an element from the array and the value searched for) and must return [code]true[/code] if the first argument is less than the second, and return [code]false[/code] otherwise.
@@ -234,7 +232,9 @@
 			<argument index="0" name="value" type="Variant">
 			</argument>
 			<description>
-				Removes the first occurrence of a value from the array.
+				Removes the first occurrence of a value from the array. To remove an element by index, use [method remove] instead.
+				[b]Note:[/b] This method acts in-place and doesn't return a value.
+				[b]Note:[/b] On large arrays, this method will be slower if the removed element is close to the beginning of the array (index 0). This is because all elements placed after the removed element have to be reindexed.
 			</description>
 		</method>
 		<method name="find">
@@ -311,7 +311,8 @@
 			<return type="int">
 			</return>
 			<description>
-				Returns a hashed integer value representing the array contents.
+				Returns a hashed integer value representing the array and its contents.
+				[b]Note:[/b] Arrays with equal contents can still produce different hashes. Only the exact same arrays will produce the same hashed integer value.
 			</description>
 		</method>
 		<method name="insert">
@@ -323,6 +324,8 @@
 			</argument>
 			<description>
 				Inserts a new element at a given position in the array. The position must be valid, or at the end of the array ([code]pos == size()[/code]).
+				[b]Note:[/b] This method acts in-place and doesn't return a value.
+				[b]Note:[/b] On large arrays, this method will be slower if the inserted element is close to the beginning of the array (index 0). This is because all elements placed after the newly inserted element have to be reindexed.
 			</description>
 		</method>
 		<method name="invert">
@@ -421,14 +424,15 @@
 			<return type="Variant">
 			</return>
 			<description>
-				Removes and returns the last element of the array. Returns [code]null[/code] if the array is empty, without printing an error message.
+				Removes and returns the last element of the array. Returns [code]null[/code] if the array is empty, without printing an error message. See also [method pop_front].
 			</description>
 		</method>
 		<method name="pop_front">
 			<return type="Variant">
 			</return>
 			<description>
-				Removes and returns the first element of the array. Returns [code]null[/code] if the array is empty, without printing an error message.
+				Removes and returns the first element of the array. Returns [code]null[/code] if the array is empty, without printing an error message. See also [method pop_back].
+				[b]Note:[/b] On large arrays, this method is much slower than [method pop_back] as it will reindex all the array's elements every time it's called. The larger the array, the slower [method pop_front] will be.
 			</description>
 		</method>
 		<method name="push_back">
@@ -437,7 +441,7 @@
 			<argument index="0" name="value" type="Variant">
 			</argument>
 			<description>
-				Appends an element at the end of the array.
+				Appends an element at the end of the array. See also [method push_front].
 			</description>
 		</method>
 		<method name="push_front">
@@ -446,7 +450,8 @@
 			<argument index="0" name="value" type="Variant">
 			</argument>
 			<description>
-				Adds an element at the beginning of the array.
+				Adds an element at the beginning of the array. See also [method push_back].
+				[b]Note:[/b] On large arrays, this method is much slower than [method push_back] as it will reindex all the array's elements every time it's called. The larger the array, the slower [method push_front] will be.
 			</description>
 		</method>
 		<method name="remove">
@@ -455,7 +460,9 @@
 			<argument index="0" name="position" type="int">
 			</argument>
 			<description>
-				Removes an element from the array by index. If the index does not exist in the array, nothing happens.
+				Removes an element from the array by index. If the index does not exist in the array, nothing happens. To remove an element by searching for its value, use [method erase] instead.
+				[b]Note:[/b] This method acts in-place and doesn't return a value.
+				[b]Note:[/b] On large arrays, this method will be slower if the removed element is close to the beginning of the array (index 0). This is because all elements placed after the removed element have to be reindexed.
 			</description>
 		</method>
 		<method name="resize">
@@ -528,12 +535,10 @@
 		<method name="sort_custom">
 			<return type="void">
 			</return>
-			<argument index="0" name="obj" type="Object">
-			</argument>
-			<argument index="1" name="func" type="StringName">
+			<argument index="0" name="func" type="Callable">
 			</argument>
 			<description>
-				Sorts the array using a custom method. The arguments are an object that holds the method and the name of such method. The custom method receives two arguments (a pair of elements from the array) and must return either [code]true[/code] or [code]false[/code].
+				Sorts the array using a custom method. The custom method receives two arguments (a pair of elements from the array) and must return either [code]true[/code] or [code]false[/code].
 				[b]Note:[/b] you cannot randomize the return value as the heapsort algorithm expects a deterministic result. Doing so will result in unexpected behavior.
 				[codeblocks]
 				[gdscript]
@@ -544,7 +549,7 @@
 				        return false
 
 				var my_items = [[5, "Potato"], [9, "Rice"], [4, "Tomato"]]
-				my_items.sort_custom(MyCustomSorter, "sort_ascending")
+				my_items.sort_custom(MyCustomSorter.sort_ascending)
 				print(my_items) # Prints [[4, Tomato], [5, Potato], [9, Rice]].
 				[/gdscript]
 				[csharp]

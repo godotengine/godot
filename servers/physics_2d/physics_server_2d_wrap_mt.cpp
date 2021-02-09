@@ -76,7 +76,7 @@ void PhysicsServer2DWrapMT::step(real_t p_step) {
 }
 
 void PhysicsServer2DWrapMT::sync() {
-	if (thread) {
+	if (create_thread) {
 		if (first_frame) {
 			first_frame = false;
 		} else {
@@ -97,7 +97,7 @@ void PhysicsServer2DWrapMT::end_sync() {
 void PhysicsServer2DWrapMT::init() {
 	if (create_thread) {
 		//OS::get_singleton()->release_rendering_thread();
-		thread = Thread::create(_thread_callback, this);
+		thread.start(_thread_callback, this);
 		while (!step_thread_up) {
 			OS::get_singleton()->delay_usec(1000);
 		}
@@ -107,12 +107,9 @@ void PhysicsServer2DWrapMT::init() {
 }
 
 void PhysicsServer2DWrapMT::finish() {
-	if (thread) {
+	if (thread.is_started()) {
 		command_queue.push(this, &PhysicsServer2DWrapMT::thread_exit);
-		Thread::wait_to_finish(thread);
-		memdelete(thread);
-
-		thread = nullptr;
+		thread.wait_to_finish();
 	} else {
 		physics_2d_server->finish();
 	}
@@ -135,7 +132,6 @@ PhysicsServer2DWrapMT::PhysicsServer2DWrapMT(PhysicsServer2D *p_contained, bool 
 		command_queue(p_create_thread) {
 	physics_2d_server = p_contained;
 	create_thread = p_create_thread;
-	thread = nullptr;
 	step_pending = 0;
 	step_thread_up = false;
 

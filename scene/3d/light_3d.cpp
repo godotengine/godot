@@ -324,10 +324,6 @@ Light3D::Light3D(RenderingServer::LightType p_type) {
 
 	RS::get_singleton()->instance_set_base(get_instance(), light);
 
-	reverse_cull = false;
-	bake_mode = BAKE_DYNAMIC;
-
-	editor_only = false;
 	set_color(Color(1, 1, 1, 1));
 	set_shadow(false);
 	set_negative(false);
@@ -351,13 +347,12 @@ Light3D::Light3D(RenderingServer::LightType p_type) {
 	set_param(PARAM_SHADOW_BIAS, 0.02);
 	set_param(PARAM_SHADOW_NORMAL_BIAS, 1.0);
 	set_param(PARAM_TRANSMITTANCE_BIAS, 0.05);
-	set_param(PARAM_SHADOW_VOLUMETRIC_FOG_FADE, 1.0);
+	set_param(PARAM_SHADOW_VOLUMETRIC_FOG_FADE, 0.1);
 	set_param(PARAM_SHADOW_FADE_START, 1);
 	set_disable_scale(true);
 }
 
 Light3D::Light3D() {
-	type = RenderingServer::LIGHT_DIRECTIONAL;
 	ERR_PRINT("Light3D should not be instanced directly; use the DirectionalLight3D, OmniLight3D or SpotLight3D subtypes instead.");
 }
 

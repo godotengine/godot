@@ -207,7 +207,7 @@ ResourceFormatPVR::ResourceFormatPVR() {
 
 struct PVRTCBlock {
 	//blocks are 64 bits
-	uint32_t data[2];
+	uint32_t data[2] = {};
 };
 
 _FORCE_INLINE_ bool is_po2(uint32_t p_input) {

@@ -182,16 +182,9 @@ bool WebRTCDataChannelJS::is_negotiated() const {
 }
 
 WebRTCDataChannelJS::WebRTCDataChannelJS() {
-	queue_count = 0;
-	_was_string = false;
-	_write_mode = WRITE_MODE_BINARY;
-	_js_id = 0;
 }
 
 WebRTCDataChannelJS::WebRTCDataChannelJS(int js_id) {
-	queue_count = 0;
-	_was_string = false;
-	_write_mode = WRITE_MODE_BINARY;
 	_js_id = js_id;
 
 	godot_js_rtc_datachannel_connect(js_id, this, &_on_open, &_on_message, &_on_error, &_on_close);

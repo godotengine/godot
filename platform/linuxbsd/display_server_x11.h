@@ -252,7 +252,7 @@ class DisplayServerX11 : public DisplayServer {
 	void _dispatch_input_event(const Ref<InputEvent> &p_event);
 
 	mutable Mutex events_mutex;
-	Thread *events_thread = nullptr;
+	Thread events_thread;
 	bool events_thread_done = false;
 	LocalVector<XEvent> polled_events;
 	static void _poll_events_thread(void *ud);

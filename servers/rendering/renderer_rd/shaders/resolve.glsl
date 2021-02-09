@@ -58,6 +58,116 @@ void main() {
 
 #else
 
+#if 1
+
+	vec4 group1;
+	vec4 group2;
+	vec4 group3;
+	vec4 group4;
+	int best_index = 0;
+
+	//2X
+	group1.x = texelFetch(source_depth, pos, 0).r;
+	group1.y = texelFetch(source_depth, pos, 1).r;
+
+	//4X
+	if (params.sample_count >= 4) {
+		group1.z = texelFetch(source_depth, pos, 2).r;
+		group1.w = texelFetch(source_depth, pos, 3).r;
+	}
+	//8X
+	if (params.sample_count >= 8) {
+		group2.x = texelFetch(source_depth, pos, 4).r;
+		group2.y = texelFetch(source_depth, pos, 5).r;
+		group2.z = texelFetch(source_depth, pos, 6).r;
+		group2.w = texelFetch(source_depth, pos, 7).r;
+	}
+	//16X
+	if (params.sample_count >= 16) {
+		group3.x = texelFetch(source_depth, pos, 8).r;
+		group3.y = texelFetch(source_depth, pos, 9).r;
+		group3.z = texelFetch(source_depth, pos, 10).r;
+		group3.w = texelFetch(source_depth, pos, 11).r;
+
+		group4.x = texelFetch(source_depth, pos, 12).r;
+		group4.y = texelFetch(source_depth, pos, 13).r;
+		group4.z = texelFetch(source_depth, pos, 14).r;
+		group4.w = texelFetch(source_depth, pos, 15).r;
+	}
+
+	if (params.sample_count == 2) {
+		best_index = (pos.x & 1) ^ ((pos.y >> 1) & 1); //not much can be done here
+	} else if (params.sample_count == 4) {
+		vec4 freq = vec4(equal(group1, vec4(group1.x)));
+		freq += vec4(equal(group1, vec4(group1.y)));
+		freq += vec4(equal(group1, vec4(group1.z)));
+		freq += vec4(equal(group1, vec4(group1.w)));
+
+		float min_f = freq.x;
+		best_index = 0;
+		if (freq.y < min_f) {
+			best_index = 1;
+			min_f = freq.y;
+		}
+		if (freq.z < min_f) {
+			best_index = 2;
+			min_f = freq.z;
+		}
+		if (freq.w < min_f) {
+			best_index = 3;
+		}
+	} else if (params.sample_count == 8) {
+		vec4 freq0 = vec4(equal(group1, vec4(group1.x)));
+		vec4 freq1 = vec4(equal(group2, vec4(group1.x)));
+		freq0 += vec4(equal(group1, vec4(group1.y)));
+		freq1 += vec4(equal(group2, vec4(group1.y)));
+		freq0 += vec4(equal(group1, vec4(group1.z)));
+		freq1 += vec4(equal(group2, vec4(group1.z)));
+		freq0 += vec4(equal(group1, vec4(group1.w)));
+		freq1 += vec4(equal(group2, vec4(group1.w)));
+		freq0 += vec4(equal(group1, vec4(group2.x)));
+		freq1 += vec4(equal(group2, vec4(group2.x)));
+		freq0 += vec4(equal(group1, vec4(group2.y)));
+		freq1 += vec4(equal(group2, vec4(group2.y)));
+		freq0 += vec4(equal(group1, vec4(group2.z)));
+		freq1 += vec4(equal(group2, vec4(group2.z)));
+		freq0 += vec4(equal(group1, vec4(group2.w)));
+		freq1 += vec4(equal(group2, vec4(group2.w)));
+
+		float min_f0 = freq0.x;
+		int best_index0 = 0;
+		if (freq0.y < min_f0) {
+			best_index0 = 1;
+			min_f0 = freq0.y;
+		}
+		if (freq0.z < min_f0) {
+			best_index0 = 2;
+			min_f0 = freq0.z;
+		}
+		if (freq0.w < min_f0) {
+			best_index0 = 3;
+			min_f0 = freq0.w;
+		}
+
+		float min_f1 = freq1.x;
+		int best_index1 = 4;
+		if (freq1.y < min_f1) {
+			best_index1 = 5;
+			min_f1 = freq1.y;
+		}
+		if (freq1.z < min_f1) {
+			best_index1 = 6;
+			min_f1 = freq1.z;
+		}
+		if (freq1.w < min_f1) {
+			best_index1 = 7;
+			min_f1 = freq1.w;
+		}
+
+		best_index = mix(best_index0, best_index1, min_f0 < min_f1);
+	}
+
+#else
 	float depths[16];
 	int depth_indices[16];
 	int depth_amount[16];
@@ -91,7 +201,7 @@ void main() {
 			depth_least = depth_amount[j];
 		}
 	}
-
+#endif
 	best_depth = texelFetch(source_depth, pos, best_index).r;
 	best_normal_roughness = texelFetch(source_normal_roughness, pos, best_index);
 #ifdef GIPROBE_RESOLVE

@@ -665,18 +665,6 @@ AnimationNodeBlendSpace2D::AnimationNodeBlendSpace2D() {
 	for (int i = 0; i < MAX_BLEND_POINTS; i++) {
 		blend_points[i].name = itos(i);
 	}
-	auto_triangles = true;
-	blend_points_used = 0;
-	max_space = Vector2(1, 1);
-	min_space = Vector2(-1, -1);
-	snap = Vector2(0.1, 0.1);
-	x_label = "x";
-	y_label = "y";
-	trianges_dirty = false;
-	blend_position = "blend_position";
-	closest = "closest";
-	length_internal = "length_internal";
-	blend_mode = BLEND_MODE_INTERPOLATED;
 }
 
 AnimationNodeBlendSpace2D::~AnimationNodeBlendSpace2D() {

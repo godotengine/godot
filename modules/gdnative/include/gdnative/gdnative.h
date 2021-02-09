@@ -118,21 +118,6 @@ typedef enum {
 	GODOT_ERR_PRINTER_ON_FIRE, /// the parallel port printer is engulfed in flames
 } godot_error;
 
-////// bool
-
-typedef bool godot_bool;
-
-#define GODOT_TRUE 1
-#define GODOT_FALSE 0
-
-/////// int
-
-typedef int64_t godot_int;
-
-/////// real
-
-typedef float godot_real;
-
 /////// Object (forward declared)
 typedef void godot_object;
 
@@ -215,7 +200,7 @@ void GDAPI godot_object_destroy(godot_object *p_o);
 
 ////// Singleton API
 
-godot_object GDAPI *godot_global_get_singleton(char *p_name); // result shouldn't be freed
+godot_object GDAPI *godot_global_get_singleton(char *p_name); // Result shouldn't be freed.
 
 ////// MethodBind API
 
@@ -281,13 +266,6 @@ void GDAPI *godot_alloc(int p_bytes);
 void GDAPI *godot_realloc(void *p_ptr, int p_bytes);
 void GDAPI godot_free(void *p_ptr);
 
-//print using Godot's error handler list
-void GDAPI godot_print_error(const char *p_description, const char *p_function, const char *p_file, int p_line);
-void GDAPI godot_print_warning(const char *p_description, const char *p_function, const char *p_file, int p_line);
-void GDAPI godot_print(const godot_string *p_message);
-
-// GDNATIVE CORE 1.0.2?
-
 //tags used for safe dynamic casting
 void GDAPI *godot_get_class_tag(const godot_string_name *p_class);
 godot_object GDAPI *godot_object_cast_to(const godot_object *p_object, void *p_class_tag);
@@ -301,4 +279,4 @@ uint64_t GDAPI godot_object_get_instance_id(const godot_object *p_object);
 }
 #endif
 
-#endif // GODOT_C_H
+#endif // GODOT_GDNATIVE_H

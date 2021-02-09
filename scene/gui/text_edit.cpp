@@ -637,7 +637,7 @@ void TextEdit::_notification(int p_what) {
 
 			int visible_rows = get_visible_rows() + 1;
 
-			Color color = readonly ? cache.font_color_readonly : cache.font_color;
+			Color color = readonly ? cache.font_readonly_color : cache.font_color;
 
 			if (cache.background_color.a > 0.01) {
 				RenderingServer::get_singleton()->canvas_item_add_rect(ci, Rect2(Point2i(), get_size()), cache.background_color);
@@ -810,8 +810,8 @@ void TextEdit::_notification(int p_what) {
 				}
 			}
 
+			bool is_cursor_line_visible = false;
 			Point2 cursor_pos;
-			int cursor_insert_offset_y = 0;
 
 			// Get the highlighted words.
 			String highlighted_text = get_selection_text();
@@ -877,7 +877,7 @@ void TextEdit::_notification(int p_what) {
 
 					Color current_color = cache.font_color;
 					if (readonly) {
-						current_color = cache.font_color_readonly;
+						current_color = cache.font_readonly_color;
 					}
 
 					Vector<String> wrap_rows = get_wrap_rows_text(minimap_line);
@@ -918,7 +918,7 @@ void TextEdit::_notification(int p_what) {
 							if (color_map.has(last_wrap_column + j)) {
 								current_color = color_map[last_wrap_column + j].get("color");
 								if (readonly) {
-									current_color.a = cache.font_color_readonly.a;
+									current_color.a = cache.font_readonly_color.a;
 								}
 							}
 							color = current_color;
@@ -1001,7 +1001,7 @@ void TextEdit::_notification(int p_what) {
 				Dictionary color_map = _get_line_syntax_highlighting(line);
 
 				// Ensure we at least use the font color.
-				Color current_color = readonly ? cache.font_color_readonly : cache.font_color;
+				Color current_color = readonly ? cache.font_readonly_color : cache.font_color;
 
 				const Ref<TextParagraph> ldata = text.get_line_data(line);
 
@@ -1230,7 +1230,7 @@ void TextEdit::_notification(int p_what) {
 									}
 									rect.position.y = TS->shaped_text_get_ascent(rid) + cache.font->get_underline_position(cache.font_size);
 									rect.size.y = cache.font->get_underline_thickness(cache.font_size);
-									draw_rect(rect, cache.font_color_selected);
+									draw_rect(rect, cache.font_selected_color);
 								}
 
 								highlighted_word_col = _get_column_pos_of_word(highlighted_word, str, SEARCH_MATCH_CASE | SEARCH_WHOLE_WORDS, highlighted_word_col + 1);
@@ -1238,6 +1238,7 @@ void TextEdit::_notification(int p_what) {
 						}
 					}
 
+					const int line_top_offset_y = ofs_y;
 					ofs_y += (row_height - text_height) / 2;
 
 					const Vector<TextServer::Glyph> visual = TS->shaped_text_get_glyphs(rid);
@@ -1249,8 +1250,8 @@ void TextEdit::_notification(int p_what) {
 					for (int j = 0; j < gl_size; j++) {
 						if (color_map.has(glyphs[j].start)) {
 							current_color = color_map[glyphs[j].start].get("color");
-							if (readonly && current_color.a > cache.font_color_readonly.a) {
-								current_color.a = cache.font_color_readonly.a;
+							if (readonly && current_color.a > cache.font_readonly_color.a) {
+								current_color.a = cache.font_readonly_color.a;
 							}
 						}
 
@@ -1259,7 +1260,7 @@ void TextEdit::_notification(int p_what) {
 							int sel_to = (line < selection.to_line) ? TS->shaped_text_get_range(rid).y : selection.to_column;
 
 							if (glyphs[j].start >= sel_from && glyphs[j].end <= sel_to && override_selected_font_color) {
-								current_color = cache.font_color_selected;
+								current_color = cache.font_selected_color;
 							}
 						}
 
@@ -1327,7 +1328,9 @@ void TextEdit::_notification(int p_what) {
 					int caret_width = 1;
 #endif
 					if (cursor.line == line && ((line_wrap_index == line_wrap_amount) || (cursor.column != TS->shaped_text_get_range(rid).y))) {
-						cursor_pos.y = ofs_y + ldata->get_line_descent(line_wrap_index);
+						is_cursor_line_visible = true;
+						cursor_pos.y = line_top_offset_y;
+
 						if (ime_text.length() == 0) {
 							Rect2 l_caret, t_caret;
 							TextServer::Direction l_dir, t_dir;
@@ -1446,78 +1449,97 @@ void TextEdit::_notification(int p_what) {
 			}
 
 			bool completion_below = false;
-			if (completion_active && completion_options.size() > 0) {
-				// Code completion box.
-				Ref<StyleBox> csb = get_theme_stylebox("completion");
-				int maxlines = get_theme_constant("completion_lines");
-				int cmax_width = get_theme_constant("completion_max_width") * cache.font->get_char_size('x', 0, cache.font_size).x;
-				int scrollw = get_theme_constant("completion_scroll_width");
-				Color scrollc = get_theme_color("completion_scroll_color");
+			if (completion_active && is_cursor_line_visible && completion_options.size() > 0) {
+				// Completion panel
+
+				const Ref<StyleBox> csb = get_theme_stylebox("completion");
+				const int maxlines = get_theme_constant("completion_lines");
+				const int cmax_width = get_theme_constant("completion_max_width") * cache.font->get_char_size('x', 0, cache.font_size).x;
+				const Color scrollc = get_theme_color("completion_scroll_color");
 
 				const int completion_options_size = completion_options.size();
-				int lines = MIN(completion_options_size, maxlines);
-				int w = 0;
-				int h = lines * row_height;
-				int nofs = cache.font->get_string_size(completion_base, cache.font_size).width;
+				const int row_count = MIN(completion_options_size, maxlines);
+				const int completion_rows_height = row_count * row_height;
+				const int completion_base_width = cache.font->get_string_size(completion_base, cache.font_size).width;
 
+				int scroll_rectangle_width = get_theme_constant("completion_scroll_width");
+				int width = 0;
+
+				// Compute max width of the panel based on the longest completion option
 				if (completion_options_size < 50) {
 					for (int i = 0; i < completion_options_size; i++) {
-						int w2 = MIN(cache.font->get_string_size(completion_options[i].display, cache.font_size).x, cmax_width);
-						if (w2 > w) {
-							w = w2;
+						int line_width = MIN(cache.font->get_string_size(completion_options[i].display, cache.font_size).x, cmax_width);
+						if (line_width > width) {
+							width = line_width;
 						}
 					}
 				} else {
-					w = cmax_width;
+					width = cmax_width;
 				}
 
 				// Add space for completion icons.
 				const int icon_hsep = get_theme_constant("hseparation", "ItemList");
-				Size2 icon_area_size(row_height, row_height);
-				w += icon_area_size.width + icon_hsep;
+				const Size2 icon_area_size(row_height, row_height);
+				const int icon_area_width = icon_area_size.width + icon_hsep;
+				width += icon_area_width;
 
-				int line_from = CLAMP(completion_index - lines / 2, 0, completion_options_size - lines);
+				const int line_from = CLAMP(completion_index - row_count / 2, 0, completion_options_size - row_count);
 
-				for (int i = 0; i < lines; i++) {
+				for (int i = 0; i < row_count; i++) {
 					int l = line_from + i;
 					ERR_CONTINUE(l < 0 || l >= completion_options_size);
 					if (completion_options[l].default_value.get_type() == Variant::COLOR) {
-						w += icon_area_size.width;
+						width += icon_area_size.width;
 						break;
 					}
 				}
 
-				int th = h + csb->get_minimum_size().y;
+				// Position completion panel
+				completion_rect.size.width = width + 2;
+				completion_rect.size.height = completion_rows_height;
 
-				if (cursor_pos.y + row_height + th > get_size().height) {
-					completion_rect.position.y = cursor_pos.y - th - (cache.line_spacing / 2.0f) - cursor_insert_offset_y;
+				if (completion_options_size <= maxlines) {
+					scroll_rectangle_width = 0;
+				}
+
+				const Point2 csb_offset = csb->get_offset();
+
+				const int total_width = completion_rect.size.width + csb->get_minimum_size().x + scroll_rectangle_width;
+				const int total_height = completion_rect.size.height + csb->get_minimum_size().y;
+
+				const int rect_left_border_x = cursor_pos.x - completion_base_width - icon_area_width - csb_offset.x;
+				const int rect_right_border_x = rect_left_border_x + total_width;
+
+				if (rect_left_border_x < 0) {
+					// Anchor the completion panel to the left
+					completion_rect.position.x = 0;
+				} else if (rect_right_border_x > get_size().width) {
+					// Anchor the completion panel to the right
+					completion_rect.position.x = get_size().width - total_width;
 				} else {
-					completion_rect.position.y = cursor_pos.y + cache.font->get_height(cache.font_size) + (cache.line_spacing / 2.0f) + csb->get_offset().y - cursor_insert_offset_y;
+					// Let the completion panel float with the cursor
+					completion_rect.position.x = rect_left_border_x;
+				}
+
+				if (cursor_pos.y + row_height + total_height > get_size().height) {
+					// Completion panel above the cursor line
+					completion_rect.position.y = cursor_pos.y - total_height;
+				} else {
+					// Completion panel below the cursor line
+					completion_rect.position.y = cursor_pos.y + row_height;
 					completion_below = true;
 				}
 
-				if (cursor_pos.x - nofs + w + scrollw > get_size().width) {
-					completion_rect.position.x = get_size().width - w - scrollw;
-				} else {
-					completion_rect.position.x = cursor_pos.x - nofs;
-				}
-
-				completion_rect.size.width = w + 2;
-				completion_rect.size.height = h;
-				if (completion_options_size <= maxlines) {
-					scrollw = 0;
-				}
-
-				draw_style_box(csb, Rect2(completion_rect.position - csb->get_offset(), completion_rect.size + csb->get_minimum_size() + Size2(scrollw, 0)));
+				draw_style_box(csb, Rect2(completion_rect.position - csb_offset, completion_rect.size + csb->get_minimum_size() + Size2(scroll_rectangle_width, 0)));
 
 				if (cache.completion_background_color.a > 0.01) {
-					RenderingServer::get_singleton()->canvas_item_add_rect(ci, Rect2(completion_rect.position, completion_rect.size + Size2(scrollw, 0)), cache.completion_background_color);
+					RenderingServer::get_singleton()->canvas_item_add_rect(ci, Rect2(completion_rect.position, completion_rect.size + Size2(scroll_rectangle_width, 0)), cache.completion_background_color);
 				}
 				RenderingServer::get_singleton()->canvas_item_add_rect(ci, Rect2(Point2(completion_rect.position.x, completion_rect.position.y + (completion_index - line_from) * get_row_height()), Size2(completion_rect.size.width, get_row_height())), cache.completion_selected_color);
 
-				draw_rect(Rect2(completion_rect.position + Vector2(icon_area_size.x + icon_hsep, 0), Size2(MIN(nofs, completion_rect.size.width - (icon_area_size.x + icon_hsep)), completion_rect.size.height)), cache.completion_existing_color);
+				draw_rect(Rect2(completion_rect.position + Vector2(icon_area_size.x + icon_hsep, 0), Size2(MIN(completion_base_width, completion_rect.size.width - (icon_area_size.x + icon_hsep)), completion_rect.size.height)), cache.completion_existing_color);
 
-				for (int i = 0; i < lines; i++) {
+				for (int i = 0; i < row_count; i++) {
 					int l = line_from + i;
 					ERR_CONTINUE(l < 0 || l >= completion_options_size);
 
@@ -1557,11 +1579,11 @@ void TextEdit::_notification(int p_what) {
 					tl->draw(ci, title_pos, completion_options[l].font_color);
 				}
 
-				if (scrollw) {
+				if (scroll_rectangle_width) {
 					// Draw a small scroll rectangle to show a position in the options.
 					float r = (float)maxlines / completion_options_size;
 					float o = (float)line_from / completion_options_size;
-					draw_rect(Rect2(completion_rect.position.x + completion_rect.size.width, completion_rect.position.y + o * completion_rect.size.y, scrollw, completion_rect.size.y * r), scrollc);
+					draw_rect(Rect2(completion_rect.position.x + completion_rect.size.width, completion_rect.position.y + o * completion_rect.size.y, scroll_rectangle_width, completion_rect.size.y * r), scrollc);
 				}
 
 				completion_line_ofs = line_from;
@@ -1569,7 +1591,7 @@ void TextEdit::_notification(int p_what) {
 
 			// Check to see if the hint should be drawn.
 			bool show_hint = false;
-			if (completion_hint != "") {
+			if (is_cursor_line_visible && completion_hint != "") {
 				if (completion_active) {
 					if (completion_below && !callhint_below) {
 						show_hint = true;
@@ -2274,7 +2296,7 @@ void TextEdit::_gui_input(const Ref<InputEvent> &p_gui_input) {
 				int prev_col = cursor.column;
 				int prev_line = cursor.line;
 
-				cursor_set_line(row, true, false);
+				cursor_set_line(row, false, false);
 				cursor_set_column(col);
 
 				if (mb->get_shift() && (cursor.column != prev_col || cursor.line != prev_line)) {
@@ -4900,8 +4922,8 @@ void TextEdit::_update_caches() {
 	cache.caret_color = get_theme_color("caret_color");
 	cache.caret_background_color = get_theme_color("caret_background_color");
 	cache.font_color = get_theme_color("font_color");
-	cache.font_color_selected = get_theme_color("font_color_selected");
-	cache.font_color_readonly = get_theme_color("font_color_readonly");
+	cache.font_selected_color = get_theme_color("font_selected_color");
+	cache.font_readonly_color = get_theme_color("font_readonly_color");
 	cache.selection_color = get_theme_color("selection_color");
 	cache.mark_color = get_theme_color("mark_color");
 	cache.current_line_color = get_theme_color("current_line_color");

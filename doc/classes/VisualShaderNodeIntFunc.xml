@@ -11,7 +11,7 @@
 	<methods>
 	</methods>
 	<members>
-		<member name="function" type="int" setter="set_function" getter="get_function" enum="VisualShaderNodeIntFunc.Function" default="3">
+		<member name="function" type="int" setter="set_function" getter="get_function" enum="VisualShaderNodeIntFunc.Function" default="2">
 			A function to be applied to the scalar. See [enum Function] for options.
 		</member>
 	</members>
@@ -19,13 +19,10 @@
 		<constant name="FUNC_ABS" value="0" enum="Function">
 			Returns the absolute value of the parameter. Translates to [code]abs(x)[/code] in the Godot Shader Language.
 		</constant>
-		<constant name="FUNC_CLAMP" value="1" enum="Function">
-			Constrains a parameter between [code]min[/code] and [code]max[/code]. Translates to [code]clamp(x, min, max)[/code] in the Godot Shader Language.
-		</constant>
-		<constant name="FUNC_NEGATE" value="2" enum="Function">
+		<constant name="FUNC_NEGATE" value="1" enum="Function">
 			Negates the [code]x[/code] using [code]-(x)[/code].
 		</constant>
-		<constant name="FUNC_SIGN" value="3" enum="Function">
+		<constant name="FUNC_SIGN" value="2" enum="Function">
 			Extracts the sign of the parameter. Translates to [code]sign(x)[/code] in the Godot Shader Language.
 		</constant>
 	</constants>

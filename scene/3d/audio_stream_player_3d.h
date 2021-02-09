@@ -71,46 +71,39 @@ private:
 		AudioFilterSW filter;
 		AudioFilterSW::Processor filter_process[8];
 		AudioFrame vol[4];
-		float filter_gain;
-		float pitch_scale;
-		int bus_index;
-		int reverb_bus_index;
+		float filter_gain = 0.0;
+		float pitch_scale = 0.0;
+		int bus_index = -1;
+		int reverb_bus_index = -1;
 		AudioFrame reverb_vol[4];
-		Viewport *viewport; //pointer only used for reference to previous mix
-
-		Output() {
-			filter_gain = 0;
-			viewport = nullptr;
-			reverb_bus_index = -1;
-			bus_index = -1;
-		}
+		Viewport *viewport = nullptr; //pointer only used for reference to previous mix
 	};
 
 	Output outputs[MAX_OUTPUTS];
-	volatile int output_count;
-	volatile bool output_ready;
+	volatile int output_count = 0;
+	volatile bool output_ready = false;
 
 	//these are used by audio thread to have a reference of previous volumes (for ramping volume and avoiding clicks)
 	Output prev_outputs[MAX_OUTPUTS];
-	int prev_output_count;
+	int prev_output_count = 0;
 
 	Ref<AudioStreamPlayback> stream_playback;
 	Ref<AudioStream> stream;
 	Vector<AudioFrame> mix_buffer;
 
-	volatile float setseek;
-	volatile bool active;
-	volatile float setplay;
+	volatile float setseek = -1.0;
+	volatile bool active = false;
+	volatile float setplay = -1.0;
 
-	AttenuationModel attenuation_model;
-	float unit_db;
-	float unit_size;
-	float max_db;
-	float pitch_scale;
-	bool autoplay;
-	bool stream_paused;
-	bool stream_paused_fade_in;
-	bool stream_paused_fade_out;
+	AttenuationModel attenuation_model = ATTENUATION_INVERSE_DISTANCE;
+	float unit_db = 0.0;
+	float unit_size = 1.0;
+	float max_db = 3.0;
+	float pitch_scale = 1.0;
+	bool autoplay = false;
+	bool stream_paused = false;
+	bool stream_paused_fade_in = false;
+	bool stream_paused_fade_out = false;
 	StringName bus;
 
 	static void _calc_output_vol(const Vector3 &source_dir, real_t tightness, Output &output);
@@ -122,21 +115,21 @@ private:
 
 	void _bus_layout_changed();
 
-	uint32_t area_mask;
+	uint32_t area_mask = 1;
 
-	bool emission_angle_enabled;
-	float emission_angle;
-	float emission_angle_filter_attenuation_db;
-	float attenuation_filter_cutoff_hz;
-	float attenuation_filter_db;
+	bool emission_angle_enabled = false;
+	float emission_angle = 45.0;
+	float emission_angle_filter_attenuation_db = -12.0;
+	float attenuation_filter_cutoff_hz = 5000.0;
+	float attenuation_filter_db = -24.0;
 
-	float max_distance;
+	float max_distance = 0.0;
 
 	Ref<VelocityTracker3D> velocity_tracker;
 
-	DopplerTracking doppler_tracking;
+	DopplerTracking doppler_tracking = DOPPLER_TRACKING_DISABLED;
 
-	OutOfRangeMode out_of_range_mode;
+	OutOfRangeMode out_of_range_mode = OUT_OF_RANGE_MIX;
 
 	float _get_attenuation_db(float p_distance) const;
 

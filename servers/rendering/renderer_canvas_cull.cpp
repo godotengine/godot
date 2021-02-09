@@ -721,8 +721,10 @@ void RendererCanvasCull::canvas_item_add_circle(RID p_item, const Point2 &p_pos,
 	static const int circle_points = 64;
 
 	points.resize(circle_points);
+	const real_t circle_point_step = Math_TAU / circle_points;
+
 	for (int i = 0; i < circle_points; i++) {
-		float angle = (i / float(circle_points)) * 2 * Math_PI;
+		float angle = i * circle_point_step;
 		points.write[i].x = Math::cos(angle) * p_radius;
 		points.write[i].y = Math::sin(angle) * p_radius;
 		points.write[i] += p_pos;

@@ -48,7 +48,7 @@ class AudioEffectRecordInstance : public AudioEffectInstance {
 	Ref<AudioEffectRecord> base;
 
 	bool is_recording = false;
-	Thread *io_thread = nullptr;
+	Thread io_thread;
 	bool thread_active = false;
 
 	Vector<AudioFrame> ring_buffer;

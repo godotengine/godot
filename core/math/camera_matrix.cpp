@@ -89,7 +89,7 @@ void CameraMatrix::set_perspective(real_t p_fovy_degrees, real_t p_aspect, real_
 	}
 
 	real_t sine, cotangent, deltaZ;
-	real_t radians = p_fovy_degrees / 2.0 * Math_PI / 180.0;
+	real_t radians = Math::deg2rad(p_fovy_degrees / 2.0);
 
 	deltaZ = p_z_far - p_z_near;
 	sine = Math::sin(radians);
@@ -116,7 +116,7 @@ void CameraMatrix::set_perspective(real_t p_fovy_degrees, real_t p_aspect, real_
 
 	real_t left, right, modeltranslation, ymax, xmax, frustumshift;
 
-	ymax = p_z_near * tan(p_fovy_degrees * Math_PI / 360.0f);
+	ymax = p_z_near * tan(Math::deg2rad(p_fovy_degrees / 2.0));
 	xmax = ymax * p_aspect;
 	frustumshift = (p_intraocular_dist / 2.0) * p_z_near / p_convergence_dist;
 

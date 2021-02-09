@@ -43,12 +43,12 @@ class Bone2D : public Node2D {
 	friend class AnimatedValuesBackup;
 #endif
 
-	Bone2D *parent_bone;
-	Skeleton2D *skeleton;
+	Bone2D *parent_bone = nullptr;
+	Skeleton2D *skeleton = nullptr;
 	Transform2D rest;
-	float default_length;
+	float default_length = 16.0;
 
-	int skeleton_index;
+	int skeleton_index = -1;
 
 protected:
 	void _notification(int p_what);
@@ -82,19 +82,19 @@ class Skeleton2D : public Node2D {
 		bool operator<(const Bone &p_bone) const {
 			return p_bone.bone->is_greater_than(bone);
 		}
-		Bone2D *bone;
-		int parent_index;
+		Bone2D *bone = nullptr;
+		int parent_index = 0;
 		Transform2D accum_transform;
 		Transform2D rest_inverse;
 	};
 
 	Vector<Bone> bones;
 
-	bool bone_setup_dirty;
+	bool bone_setup_dirty = true;
 	void _make_bone_setup_dirty();
 	void _update_bone_setup();
 
-	bool transform_dirty;
+	bool transform_dirty = true;
 	void _make_transform_dirty();
 	void _update_transform();
 

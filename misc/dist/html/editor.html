@@ -4,7 +4,7 @@
 	<meta charset='utf-8' />
 	<meta name='viewport' content='width=device-width, user-scalable=no' />
 	<link id='-gd-engine-icon' rel='icon' type='image/png' href='favicon.png' />
-	<title></title>
+	<title>Godot Engine Web Editor ($GODOT_VERSION)</title>
 	<style type='text/css'>
 
 		*:focus {
@@ -189,7 +189,16 @@
 				<br />
 				<img src="logo.svg" width="1024" height="414" style="width: auto; height: auto; max-width: 85%; max-height: 250px" />
 				<br />
+				$GODOT_VERSION
+				<br />
+				<a href="releases/">Need an old version?</a>
+				<br />
+				<br />
+				<br />
 				<label for="zip-file" style="margin-right: 1rem">Preload project ZIP:</label> <input id="zip-file" type="file" id="files" name="files" style="margin-bottom: 1rem"/>
+				<br />
+<a href="demo.zip">(Try this for example)</a>
+				<br />
 				<br />
 				<button id="startButton" class="btn" style="margin-bottom: 4rem">Start Godot editor</button>
 				<br />
@@ -317,7 +326,7 @@
 
 		function startEditor(zip) {
 			const INDETERMINATE_STATUS_STEP_MS = 100;
-			const persistentPaths = ['/home/web_user/.config', '/home/web_user/.cache', '/home/web_user/projects'];
+			const persistentPaths = ['/home/web_user/'];
 
 			var editorCanvas = document.getElementById('editor-canvas');
 			var gameCanvas = document.getElementById('game-canvas');
@@ -484,11 +493,11 @@
 				engine.setUnloadAfterInit(false); // Don't want to reload when starting game.
 				engine.init('godot.tools').then(function() {
 					if (zip) {
-						engine.copyToFS("/home/web_user/preload.zip", zip);
+						engine.copyToFS("/tmp/preload.zip", zip);
 					}
 					try {
 						// Avoid user creating project in the persistent root folder.
-						engine.copyToFS("/home/web_user/projects/keep", new Uint8Array());
+						engine.copyToFS("/home/web_user/keep", new Uint8Array());
 					} catch(e) {
 						// File exists
 					}

@@ -49,11 +49,11 @@ typedef struct
 	const char *(*get_plugin_name)();
 	const char **(*get_supported_extensions)(int *count);
 	godot_bool (*open_file)(void *, void *); // data struct, and a FileAccess pointer
-	godot_real (*get_length)(const void *);
-	godot_real (*get_playback_position)(const void *);
-	void (*seek)(void *, godot_real);
+	godot_float (*get_length)(const void *);
+	godot_float (*get_playback_position)(const void *);
+	void (*seek)(void *, godot_float);
 	void (*set_audio_track)(void *, godot_int);
-	void (*update)(void *, godot_real);
+	void (*update)(void *, godot_float);
 	godot_packed_byte_array *(*get_videoframe)(void *);
 	godot_int (*get_audioframe)(void *, float *, int);
 	godot_int (*get_channels)(const void *);

@@ -306,6 +306,9 @@ public:
 	Ref<Texture2D> get_right_icon();
 
 	virtual bool is_text_field() const override;
+
+	void show_virtual_keyboard();
+
 	LineEdit();
 	~LineEdit();
 };

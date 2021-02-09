@@ -8,14 +8,14 @@
 # Tawhid H. <Tawhidk757@yahoo.com>, 2019.
 # Hasibul Hasan <hasibeng78@gmail.com>, 2019.
 # Oymate <dhruboadittya96@gmail.com>, 2020.
-# Mokarrom Hossain <mhb2016.bzs@gmail.com>, 2020.
+# Mokarrom Hossain <mhb2016.bzs@gmail.com>, 2020, 2021.
 # Sagen Soren <sagensoren03@gmail.com>, 2020.
 # Hasibul Hasan <d1hasib@yahoo.com>, 2020.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2020-12-27 02:25+0000\n"
+"PO-Revision-Date: 2021-02-01 20:53+0000\n"
 "Last-Translator: Mokarrom Hossain <mhb2016.bzs@gmail.com>\n"
 "Language-Team: Bengali <https://hosted.weblate.org/projects/godot-engine/"
 "godot/bn/>\n"
@@ -24,7 +24,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
-"X-Generator: Weblate 4.4.1-dev\n"
+"X-Generator: Weblate 4.5-dev\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -268,7 +268,6 @@ msgid "Loop Wrap Mode (Interpolate end with beginning on loop)"
 msgstr "লুপ Wrap মোড (লুপ দিয়ে শুরু দিয়ে ইন্টারপোলেট শেষ)"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Remove this track."
 msgstr "নির্বাচিত ট্র্যাক/পথ অপসারণ করুন।"
 
@@ -451,17 +450,15 @@ msgstr "অ্যানিমেশন (Anim) ট্র্যাক যোগ �
 
 #: editor/animation_track_editor.cpp
 msgid "Track path is invalid, so can't add a method key."
-msgstr ""
+msgstr "ট্র্যাক পাথটি অবৈধ, সুতরাং কোনও পদ্ধতি key যুক্ত করতে পারে না।"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Add Method Track Key"
-msgstr "অ্যানিমেশনে (Anim) ট্র্যাক/পথ এবং চাবি যোগ করুন"
+msgstr "Method Track Key যুক্ত করুন"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Method not found in object: "
-msgstr "স্ক্রিপ্টে চলক-প্রাপক (VariableGet) পাওয়া যায়নি: "
+msgstr "Object এ Method পাওয়া যায় নি: "
 
 #: editor/animation_track_editor.cpp
 msgid "Anim Move Keys"
@@ -472,7 +469,6 @@ msgid "Clipboard is empty"
 msgstr "ক্লীপবোর্ড খালি"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Paste Tracks"
 msgstr "মানসমূহ প্রতিলেপন/পেস্ট করুন"
 
@@ -484,6 +480,7 @@ msgstr "অ্যানিমেশনের (Anim) চাবিসমূহে�
 msgid ""
 "This option does not work for Bezier editing, as it's only a single track."
 msgstr ""
+"এই বিকল্পটি বেজিয়ার সম্পাদনার জন্য কাজ করে না, কারণ এটি কেবলমাত্র Single ট্র্যাক।"
 
 #: editor/animation_track_editor.cpp
 msgid ""
@@ -497,16 +494,23 @@ msgid ""
 "Alternatively, use an import preset that imports animations to separate "
 "files."
 msgstr ""
+"এই অ্যানিমেশনটি আমদানি করা দৃশ্যের সাথে সম্পর্কিত, তাই আমদানি করা ট্র্যাকগুলিতে "
+"পরিবর্তনগুলি সংরক্ষণ করা হবে না।\n"
+"\n"
+"কাস্টম ট্র্যাক যুক্ত করার ক্ষমতা সক্ষম করতে, দৃশ্যের আমদানি সেটিংসে নেভিগেট করুন এবং "
+"সেট করুন\n"
+"\"ফাইলগুলি\" এ \"অ্যানিমেশন> সঞ্চয়স্থান\", \"অ্যানিমেশন> কাস্টম ট্র্যাক রাখুন\" সক্ষম "
+"করুন, তারপরে পুনরায় আমদানি করুন।\n"
+"বিকল্পভাবে, একটি আমদানি প্রিসেট ব্যবহার করুন যা পৃথক ফাইলগুলিতে অ্যানিমেশনগুলি "
+"আমদানি করে।"
 
 #: editor/animation_track_editor.cpp
 msgid "Warning: Editing imported animation"
-msgstr ""
+msgstr "সতর্কতা: Imported অ্যানিমেশন সম্পাদনা করা হচ্ছে"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Select an AnimationPlayer node to create and edit animations."
-msgstr ""
-"অ্যানিমেশনসমূহ সম্পাদন করতে দৃশ্যের তালিকা থেকে একটি AnimationPlayer নির্বাচন করুন।"
+msgstr "অ্যানিমেশন তৈরি এবং সম্পাদনা করতে একটি অ্যানিমেশনপ্লেয়ার নোড নির্বাচন করুন।"
 
 #: editor/animation_track_editor.cpp
 msgid "Only show tracks from nodes selected in tree."
@@ -569,9 +573,8 @@ msgid "Duplicate Transposed"
 msgstr "পক্ষান্তরিত (Transposed) সমূহ অনুলিপি করুন"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Delete Selection"
-msgstr "নির্বাচিত সমূহ অপসারণ করুন"
+msgstr "নির্বাচিত সমূহ Delete করুন"
 
 #: editor/animation_track_editor.cpp
 msgid "Go to Next Step"
@@ -1487,14 +1490,12 @@ msgstr ""
 "পারবে না।"
 
 #: editor/editor_autoload_settings.cpp
-#, fuzzy
 msgid "Must not collide with an existing built-in type name."
 msgstr ""
 "অগ্রহনযোগ্য নাম। নামটি অবশ্যই বিদ্যমান পূর্বনির্মিত ধরণের নামের সাথে পরম্পরবিরোধী "
 "হতে পারবে না।"
 
 #: editor/editor_autoload_settings.cpp
-#, fuzzy
 msgid "Must not collide with an existing global constant name."
 msgstr ""
 "অগ্রহনযোগ্য নাম। নামটি অবশ্যই বিদ্যমান সার্বজনীন ধ্রুবকের নামের সাথে পরম্পরবিরোধী "
@@ -1774,14 +1775,12 @@ msgid "Enabled Properties:"
 msgstr "প্রোপার্টি-সমূহ:"
 
 #: editor/editor_feature_profile.cpp
-#, fuzzy
 msgid "Enabled Features:"
-msgstr "গঠনবিন্যাস"
+msgstr "গঠনবিন্যাস :"
 
 #: editor/editor_feature_profile.cpp
-#, fuzzy
 msgid "Enabled Classes:"
-msgstr "ক্লাসের অনুসন্ধান করুন"
+msgstr "Enabled ক্লাস:"
 
 #: editor/editor_feature_profile.cpp
 msgid "File '%s' format is invalid, import aborted."
@@ -7821,6 +7820,11 @@ msgstr "পিচ্‌"
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Yaw"
 msgstr ""
+
+#: editor/plugins/spatial_editor_plugin.cpp
+#, fuzzy
+msgid "Size"
+msgstr "সেল (Cell)-এর আকার:"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Objects Drawn"

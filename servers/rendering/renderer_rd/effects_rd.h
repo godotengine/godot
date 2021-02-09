@@ -46,7 +46,6 @@
 #include "servers/rendering/renderer_rd/shaders/screen_space_reflection.glsl.gen.h"
 #include "servers/rendering/renderer_rd/shaders/screen_space_reflection_filter.glsl.gen.h"
 #include "servers/rendering/renderer_rd/shaders/screen_space_reflection_scale.glsl.gen.h"
-#include "servers/rendering/renderer_rd/shaders/shadow_reduce.glsl.gen.h"
 #include "servers/rendering/renderer_rd/shaders/sort.glsl.gen.h"
 #include "servers/rendering/renderer_rd/shaders/specular_merge.glsl.gen.h"
 #include "servers/rendering/renderer_rd/shaders/ssao.glsl.gen.h"
@@ -234,18 +233,17 @@ class EffectsRD {
 	} luminance_reduce;
 
 	struct CopyToDPPushConstant {
-		int32_t screen_size[2] = {};
-		int32_t dest_offset[2] = {};
-		float bias = 0.0;
 		float z_far = 0.0;
 		float z_near = 0.0;
 		uint32_t z_flip = 0;
+		uint32_t pad = 0;
+		float screen_rect[4] = {;
 	};
 
 	struct CoptToDP {
 		CubeToDpShaderRD shader;
 		RID shader_version;
-		RID pipeline;
+		PipelineCacheRD pipeline;
 	} cube_to_dp;
 
 	struct BokehPushConstant {
@@ -598,18 +596,6 @@ class EffectsRD {
 		RID pipelines[RESOLVE_MODE_MAX] = {}; //3 quality levels
 	} resolve;
 
-	enum ShadowReduceMode {
-		SHADOW_REDUCE_REDUCE,
-		SHADOW_REDUCE_FILTER,
-		SHADOW_REDUCE_MAX
-	};
-
-	struct ShadowReduce {
-		ShadowReduceShaderRD shader;
-		RID shader_version;
-		RID pipelines[SHADOW_REDUCE_MAX] = {};
-	} shadow_reduce;
-
 	enum SortMode {
 		SORT_MODE_BLOCK,
 		SORT_MODE_STEP,
@@ -687,7 +673,7 @@ public:
 
 	void cubemap_roughness(RID p_source_rd_texture, RID p_dest_framebuffer, uint32_t p_face_id, uint32_t p_sample_count, float p_roughness, float p_size);
 	void make_mipmap(RID p_source_rd_texture, RID p_dest_texture, const Size2i &p_size);
-	void copy_cubemap_to_dp(RID p_source_rd_texture, RID p_dest_texture, const Rect2i &p_rect, float p_z_near, float p_z_far, float p_bias, bool p_dp_flip);
+	void copy_cubemap_to_dp(RID p_source_rd_texture, RID p_dest_texture, const Rect2 &p_rect, float p_z_near, float p_z_far, bool p_dp_flip);
 	void luminance_reduction(RID p_source_texture, const Size2i p_source_size, const Vector<RID> p_reduce, RID p_prev_luminance, float p_min_luminance, float p_max_luminance, float p_adjust, bool p_set = false);
 	void bokeh_dof(RID p_base_texture, RID p_depth_texture, const Size2i &p_base_texture_size, RID p_secondary_texture, RID p_bokeh_texture1, RID p_bokeh_texture2, bool p_dof_far, float p_dof_far_begin, float p_dof_far_size, bool p_dof_near, float p_dof_near_begin, float p_dof_near_size, float p_bokeh_size, RS::DOFBokehShape p_bokeh_shape, RS::DOFBlurQuality p_quality, bool p_use_jitter, float p_cam_znear, float p_cam_zfar, bool p_cam_orthogonal);
 
@@ -764,10 +750,7 @@ public:
 	void merge_specular(RID p_dest_framebuffer, RID p_specular, RID p_base, RID p_reflection);
 	void sub_surface_scattering(RID p_diffuse, RID p_diffuse2, RID p_depth, const CameraMatrix &p_camera, const Size2i &p_screen_size, float p_scale, float p_depth_scale, RS::SubSurfaceScatteringQuality p_quality);
 
-	void resolve_gi(RID p_source_depth, RID p_source_normal_roughness, RID p_source_giprobe, RID p_dest_depth, RID p_dest_normal_roughness, RID p_dest_giprobe, Vector2i p_screen_size, int p_samples);
-
-	void reduce_shadow(RID p_source_shadow, RID p_dest_shadow, const Size2i &p_source_size, const Rect2i &p_source_rect, int p_shrink_limit, RenderingDevice::ComputeListID compute_list);
-	void filter_shadow(RID p_shadow, RID p_backing_shadow, const Size2i &p_source_size, const Rect2i &p_source_rect, RS::EnvVolumetricFogShadowFilter p_filter, RenderingDevice::ComputeListID compute_list, bool p_vertical = true, bool p_horizontal = true);
+	void resolve_gi(RID p_source_depth, RID p_source_normal_roughness, RID p_source_giprobe, RID p_dest_depth, RID p_dest_normal_roughness, RID p_dest_giprobe, Vector2i p_screen_size, int p_samples, uint32_t p_barrier = RD::BARRIER_MASK_ALL);
 
 	void sort_buffer(RID p_uniform_set, int p_size);
 

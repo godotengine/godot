@@ -32,6 +32,7 @@
 #define RENDERING_SERVER_DEFAULT_H
 
 #include "core/math/octree.h"
+#include "core/templates/ordered_hash_map.h"
 #include "renderer_canvas_cull.h"
 #include "renderer_scene_cull.h"
 #include "renderer_viewport.h"
@@ -73,6 +74,12 @@ class RenderingServerDefault : public RenderingServer {
 	Vector<FrameProfileArea> frame_profile;
 
 	float frame_setup_time = 0.0;
+
+	//for printing
+	bool print_gpu_profile = false;
+	OrderedHashMap<String, float> print_gpu_profile_task_time;
+	uint64_t print_frame_profile_ticks_from = 0;
+	uint32_t print_frame_profile_frame_count = 0;
 
 public:
 	//if editor is redrawing when it shouldn't, enable this and put a breakpoint in _changes_changed()
@@ -266,6 +273,8 @@ public:
 
 	BIND2(mesh_set_custom_aabb, RID, const AABB &)
 	BIND1RC(AABB, mesh_get_custom_aabb, RID)
+
+	BIND2(mesh_set_shadow_mesh, RID, RID)
 
 	BIND1(mesh_clear, RID)
 
@@ -544,7 +553,7 @@ public:
 
 	BIND2(viewport_set_global_canvas_transform, RID, const Transform2D &)
 	BIND4(viewport_set_canvas_stacking, RID, RID, int, int)
-	BIND2(viewport_set_shadow_atlas_size, RID, int)
+	BIND3(viewport_set_shadow_atlas_size, RID, int, bool)
 	BIND3(viewport_set_sdf_oversize_and_scale, RID, ViewportSDFOversize, ViewportSDFScale)
 	BIND3(viewport_set_shadow_atlas_quadrant_subdivision, RID, int, int)
 	BIND2(viewport_set_msaa, RID, ViewportMSAA)
@@ -565,7 +574,7 @@ public:
 //from now on, calls forwarded to this singleton
 #define BINDBASE RSG::scene
 
-	BIND1(directional_shadow_atlas_set_size, int)
+	BIND2(directional_shadow_atlas_set_size, int, bool)
 	BIND1(gi_probe_set_quality, GIProbeQuality)
 
 	/* SKY API */
@@ -606,16 +615,15 @@ public:
 	BIND7(environment_set_adjustment, RID, bool, float, float, float, bool, RID)
 
 	BIND9(environment_set_fog, RID, bool, const Color &, float, float, float, float, float, float)
-	BIND9(environment_set_volumetric_fog, RID, bool, float, const Color &, float, float, float, float, EnvVolumetricFogShadowFilter)
+	BIND10(environment_set_volumetric_fog, RID, bool, float, const Color &, float, float, float, float, bool, float)
 
 	BIND2(environment_set_volumetric_fog_volume_size, int, int)
 	BIND1(environment_set_volumetric_fog_filter_active, bool)
-	BIND1(environment_set_volumetric_fog_directional_shadow_shrink_size, int)
-	BIND1(environment_set_volumetric_fog_positional_shadow_shrink_size, int)
 
 	BIND11(environment_set_sdfgi, RID, bool, EnvironmentSDFGICascades, float, EnvironmentSDFGIYScale, bool, bool, bool, float, float, float)
 	BIND1(environment_set_sdfgi_ray_count, EnvironmentSDFGIRayCount)
 	BIND1(environment_set_sdfgi_frames_to_converge, EnvironmentSDFGIFramesToConverge)
+	BIND1(environment_set_sdfgi_frames_to_update_light, EnvironmentSDFGIFramesToUpdateLight)
 
 	BIND3R(Ref<Image>, environment_bake_panorama, RID, bool, const Size2i &)
 
@@ -687,6 +695,8 @@ public:
 	BIND2C(instance_geometry_get_shader_parameter_list, RID, List<PropertyInfo> *)
 
 	BIND3R(TypedArray<Image>, bake_render_uv2, RID, const Vector<RID> &, const Size2i &)
+
+	BIND1(gi_set_use_half_resolution, bool)
 
 #undef BINDBASE
 //from now on, calls forwarded to this singleton
@@ -864,6 +874,8 @@ public:
 	virtual bool is_low_end() const;
 
 	virtual void sdfgi_set_debug_probe_select(const Vector3 &p_position, const Vector3 &p_dir);
+
+	virtual void set_print_gpu_profile(bool p_enable);
 
 	RenderingServerDefault();
 	~RenderingServerDefault();

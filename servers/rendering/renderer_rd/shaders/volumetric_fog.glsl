@@ -168,12 +168,17 @@ layout(set = 0, binding = 14, std140) uniform Params {
 	uint cluster_shift;
 	uint cluster_width;
 
-	uvec3 cluster_pad;
 	uint max_cluster_element_count_div_32;
+	bool use_temporal_reprojection;
+	uint temporal_frame;
+	float temporal_blend;
 
 	mat3x4 cam_rotation;
+	mat4 to_prev_view;
 }
 params;
+
+layout(set = 0, binding = 15) uniform texture3D prev_density_texture;
 
 float get_depth_at_pos(float cell_depth_size, int z) {
 	float d = float(z) * cell_depth_size + cell_depth_size * 0.5; //center of voxels
@@ -213,6 +218,26 @@ uint cluster_get_range_clip_mask(uint i, uint z_min, uint z_max) {
 	return bitfieldInsert(uint(0), uint(0xFFFFFFFF), local_min, mask_width);
 }
 
+#define TEMPORAL_FRAMES 16
+
+const vec3 halton_map[TEMPORAL_FRAMES] = vec3[](
+		vec3(0.5, 0.33333333, 0.2),
+		vec3(0.25, 0.66666667, 0.4),
+		vec3(0.75, 0.11111111, 0.6),
+		vec3(0.125, 0.44444444, 0.8),
+		vec3(0.625, 0.77777778, 0.04),
+		vec3(0.375, 0.22222222, 0.24),
+		vec3(0.875, 0.55555556, 0.44),
+		vec3(0.0625, 0.88888889, 0.64),
+		vec3(0.5625, 0.03703704, 0.84),
+		vec3(0.3125, 0.37037037, 0.08),
+		vec3(0.8125, 0.7037037, 0.28),
+		vec3(0.1875, 0.14814815, 0.48),
+		vec3(0.6875, 0.48148148, 0.68),
+		vec3(0.4375, 0.81481481, 0.88),
+		vec3(0.9375, 0.25925926, 0.12),
+		vec3(0.03125, 0.59259259, 0.32));
+
 void main() {
 	vec3 fog_cell_size = 1.0 / vec3(params.fog_volume_size);
 
@@ -240,6 +265,45 @@ void main() {
 	view_pos.xy = (fog_unit_pos.xy * 2.0 - 1.0) * mix(params.fog_frustum_size_begin, params.fog_frustum_size_end, vec2(fog_unit_pos.z));
 	view_pos.z = -params.fog_frustum_end * fog_unit_pos.z;
 	view_pos.y = -view_pos.y;
+
+	vec4 reprojected_density = vec4(0.0);
+	float reproject_amount = 0.0;
+
+	if (params.use_temporal_reprojection) {
+		vec3 prev_view = (params.to_prev_view * vec4(view_pos, 1.0)).xyz;
+		//undo transform into prev view
+		prev_view.y = -prev_view.y;
+		//z back to unit size
+		prev_view.z /= -params.fog_frustum_end;
+		//xy back to unit size
+		prev_view.xy /= mix(params.fog_frustum_size_begin, params.fog_frustum_size_end, vec2(prev_view.z));
+		prev_view.xy = prev_view.xy * 0.5 + 0.5;
+		//z back to unspread value
+		prev_view.z = pow(prev_view.z, 1.0 / params.detail_spread);
+
+		if (all(greaterThan(prev_view, vec3(0.0))) && all(lessThan(prev_view, vec3(1.0)))) {
+			//reprojectinon fits
+
+			reprojected_density = textureLod(sampler3D(prev_density_texture, linear_sampler), prev_view, 0.0);
+			reproject_amount = params.temporal_blend;
+
+			// Since we can reproject, now we must jitter the current view pos.
+			// This is done here because cells that can't reproject should not jitter.
+
+			fog_unit_pos = posf * fog_cell_size + fog_cell_size * halton_map[params.temporal_frame]; //center of voxels, offset by halton table
+
+			screen_pos = uvec2(fog_unit_pos.xy * params.screen_size);
+			cluster_pos = screen_pos >> params.cluster_shift;
+			cluster_offset = (params.cluster_width * cluster_pos.y + cluster_pos.x) * (params.max_cluster_element_count_div_32 + 32);
+			//positions in screen are too spread apart, no hopes for optimizing with subgroups
+
+			fog_unit_pos.z = pow(fog_unit_pos.z, params.detail_spread);
+
+			view_pos.xy = (fog_unit_pos.xy * 2.0 - 1.0) * mix(params.fog_frustum_size_begin, params.fog_frustum_size_end, vec2(fog_unit_pos.z));
+			view_pos.z = -params.fog_frustum_end * fog_unit_pos.z;
+			view_pos.y = -view_pos.y;
+		}
+	}
 
 	uint cluster_z = uint(clamp((abs(view_pos.z) / params.z_far) * 32.0, 0.0, 31.0));
 
@@ -433,31 +497,31 @@ void main() {
 
 				uint light_index = 32 * i + bit;
 
-				vec3 light_pos = omni_lights.data[light_index].position;
-				vec3 light_rel_vec = omni_lights.data[light_index].position - view_pos;
+				vec3 light_pos = spot_lights.data[light_index].position;
+				vec3 light_rel_vec = spot_lights.data[light_index].position - view_pos;
 				float d = length(light_rel_vec);
 				float shadow_attenuation = 1.0;
 
-				if (d * omni_lights.data[light_index].inv_radius < 1.0) {
-					float attenuation = get_omni_attenuation(d, omni_lights.data[light_index].inv_radius, omni_lights.data[light_index].attenuation);
+				if (d * spot_lights.data[light_index].inv_radius < 1.0) {
+					float attenuation = get_omni_attenuation(d, spot_lights.data[light_index].inv_radius, spot_lights.data[light_index].attenuation);
 
-					vec3 spot_dir = omni_lights.data[light_index].direction;
-					float scos = max(dot(-normalize(light_rel_vec), spot_dir), omni_lights.data[light_index].cone_angle);
-					float spot_rim = max(0.0001, (1.0 - scos) / (1.0 - omni_lights.data[light_index].cone_angle));
-					attenuation *= 1.0 - pow(spot_rim, omni_lights.data[light_index].cone_attenuation);
+					vec3 spot_dir = spot_lights.data[light_index].direction;
+					float scos = max(dot(-normalize(light_rel_vec), spot_dir), spot_lights.data[light_index].cone_angle);
+					float spot_rim = max(0.0001, (1.0 - scos) / (1.0 - spot_lights.data[light_index].cone_angle));
+					attenuation *= 1.0 - pow(spot_rim, spot_lights.data[light_index].cone_attenuation);
 
-					vec3 light = omni_lights.data[light_index].color / M_PI;
+					vec3 light = spot_lights.data[light_index].color / M_PI;
 
-					if (omni_lights.data[light_index].shadow_enabled) {
+					if (spot_lights.data[light_index].shadow_enabled) {
 						//has shadow
 						vec4 v = vec4(view_pos, 1.0);
 
-						vec4 splane = (omni_lights.data[light_index].shadow_matrix * v);
+						vec4 splane = (spot_lights.data[light_index].shadow_matrix * v);
 						splane /= splane.w;
 
 						float depth = texture(sampler2D(shadow_atlas, linear_sampler), splane.xy).r;
 
-						shadow_attenuation = exp(min(0.0, (depth - splane.z)) / omni_lights.data[light_index].inv_radius * omni_lights.data[light_index].shadow_volumetric_fog_fade);
+						shadow_attenuation = exp(min(0.0, (depth - splane.z)) / spot_lights.data[light_index].inv_radius * spot_lights.data[light_index].shadow_volumetric_fog_fade);
 					}
 
 					total_light += light * attenuation * shadow_attenuation;
@@ -565,7 +629,11 @@ void main() {
 
 #endif
 
-	imageStore(density_map, pos, vec4(total_light, total_density));
+	vec4 final_density = vec4(total_light, total_density);
+
+	final_density = mix(final_density, reprojected_density, reproject_amount);
+
+	imageStore(density_map, pos, final_density);
 #endif
 
 #ifdef MODE_FOG

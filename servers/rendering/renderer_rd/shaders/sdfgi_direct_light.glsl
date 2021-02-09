@@ -67,8 +67,8 @@ struct Light {
 	float attenuation;
 
 	uint type;
-	float spot_angle;
-	float spot_attenuation;
+	float cos_spot_angle;
+	float inv_spot_attenuation;
 	float radius;
 
 	vec4 shadow_color;
@@ -125,7 +125,10 @@ void main() {
 	uint voxel_index = uint(gl_GlobalInvocationID.x);
 
 	//used for skipping voxels every N frames
-	voxel_index = params.process_offset + voxel_index * params.process_increment;
+	if (params.process_increment > 1) {
+		voxel_index *= params.process_increment;
+		voxel_index += params.process_offset;
+	}
 
 	if (voxel_index >= dispatch_data.total_count) {
 		return;
@@ -263,13 +266,16 @@ void main() {
 				rel_vec.y /= params.y_mult;
 				attenuation = get_omni_attenuation(light_distance, 1.0 / lights.data[i].radius, lights.data[i].attenuation);
 
-				float angle = acos(dot(normalize(rel_vec), -lights.data[i].direction));
-				if (angle > lights.data[i].spot_angle) {
-					attenuation = 0.0;
-				} else {
-					float d = clamp(angle / lights.data[i].spot_angle, 0, 1);
-					attenuation *= pow(1.0 - d, lights.data[i].spot_attenuation);
+				float cos_spot_angle = lights.data[i].cos_spot_angle;
+				float cos_angle = dot(-direction, lights.data[i].direction);
+
+				if (cos_angle < cos_spot_angle) {
+					continue;
 				}
+
+				float scos = max(cos_angle, cos_spot_angle);
+				float spot_rim = max(0.0001, (1.0 - scos) / (1.0 - cos_spot_angle));
+				attenuation *= 1.0 - pow(spot_rim, lights.data[i].inv_spot_attenuation);
 			} break;
 		}
 

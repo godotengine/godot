@@ -56,8 +56,8 @@ struct Light {
 
 	float range;
 	float attenuation;
-	float spot_angle;
-	float spot_attenuation;
+	float cos_spot_angle;
+	float inv_spot_attenuation;
 
 	bool static_bake;
 	uint pad[3];

@@ -399,11 +399,6 @@ void TouchScreenButton::_bind_methods() {
 }
 
 TouchScreenButton::TouchScreenButton() {
-	finger_pressed = -1;
-	passby_press = false;
-	visibility = VISIBILITY_ALWAYS;
-	shape_centered = true;
-	shape_visible = true;
 	unit_rect = Ref<RectangleShape2D>(memnew(RectangleShape2D));
 	unit_rect->set_size(Vector2(1, 1));
 }

@@ -71,16 +71,16 @@ public:
 
 private:
 	Color color;
-	float param[PARAM_MAX];
+	float param[PARAM_MAX] = {};
 	Color shadow_color;
-	bool shadow;
-	bool negative;
-	bool reverse_cull;
-	uint32_t cull_mask;
-	RS::LightType type;
-	bool editor_only;
+	bool shadow = false;
+	bool negative = false;
+	bool reverse_cull = false;
+	uint32_t cull_mask = 0;
+	RS::LightType type = RenderingServer::LIGHT_DIRECTIONAL;
+	bool editor_only = false;
 	void _update_visibility();
-	BakeMode bake_mode;
+	BakeMode bake_mode = BAKE_DYNAMIC;
 	Ref<Texture2D> projector;
 
 	// bind helpers

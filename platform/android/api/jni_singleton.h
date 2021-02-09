@@ -83,7 +83,7 @@ public:
 			v = (jvalue *)alloca(sizeof(jvalue) * p_argcount);
 		}
 
-		JNIEnv *env = ThreadAndroid::get_env();
+		JNIEnv *env = get_jni_env();
 
 		int res = env->PushLocalFrame(16);
 

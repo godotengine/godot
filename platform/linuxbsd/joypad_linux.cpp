@@ -32,6 +32,7 @@
 
 #include "joypad_linux.h"
 
+#include <dirent.h>
 #include <errno.h>
 #include <fcntl.h>
 #include <linux/input.h>
@@ -73,13 +74,12 @@ void JoypadLinux::Joypad::reset() {
 JoypadLinux::JoypadLinux(Input *in) {
 	exit_udev = false;
 	input = in;
-	joy_thread = Thread::create(joy_thread_func, this);
+	joy_thread.start(joy_thread_func, this);
 }
 
 JoypadLinux::~JoypadLinux() {
 	exit_udev = true;
-	Thread::wait_to_finish(joy_thread);
-	memdelete(joy_thread);
+	joy_thread.wait_to_finish();
 	close_joypad();
 }
 
@@ -183,13 +183,23 @@ void JoypadLinux::monitor_joypads() {
 		{
 			MutexLock lock(joy_mutex);
 
-			for (int i = 0; i < 32; i++) {
+			DIR *input_directory;
+			input_directory = opendir("/dev/input");
+			if (input_directory) {
+				struct dirent *current;
 				char fname[64];
-				sprintf(fname, "/dev/input/event%d", i);
-				if (attached_devices.find(fname) == -1) {
-					open_joypad(fname);
+
+				while ((current = readdir(input_directory)) != NULL) {
+					if (strncmp(current->d_name, "event", 5) != 0) {
+						continue;
+					}
+					sprintf(fname, "/dev/input/%.*s", 16, current->d_name);
+					if (attached_devices.find(fname) == -1) {
+						open_joypad(fname);
+					}
 				}
 			}
+			closedir(input_directory);
 		}
 		usleep(1000000); // 1s
 	}

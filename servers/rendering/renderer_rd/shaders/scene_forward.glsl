@@ -89,12 +89,6 @@ MATERIAL_UNIFORMS
 } material;
 #endif
 
-/* clang-format off */
-
-VERTEX_SHADER_GLOBALS
-
-/* clang-format on */
-
 invariant gl_Position;
 
 #ifdef MODE_DUAL_PARABOLOID
@@ -103,28 +97,43 @@ layout(location = 8) out float dp_clip;
 
 #endif
 
+layout(location = 9) out flat uint instance_index;
+
+/* clang-format off */
+
+VERTEX_SHADER_GLOBALS
+
+/* clang-format on */
+
 void main() {
 	vec4 instance_custom = vec4(0.0);
 #if defined(COLOR_USED)
 	color_interp = color_attrib;
 #endif
 
-	mat4 world_matrix = draw_call.transform;
+	instance_index = draw_call.instance_index;
+
+	bool is_multimesh = bool(instances.data[instance_index].flags & INSTANCE_FLAGS_MULTIMESH);
+	if (!is_multimesh) {
+		instance_index += gl_InstanceIndex;
+	}
+
+	mat4 world_matrix = instances.data[instance_index].transform;
 
 	mat3 world_normal_matrix;
-	if (bool(draw_call.flags & INSTANCE_FLAGS_NON_UNIFORM_SCALE)) {
+	if (bool(instances.data[instance_index].flags & INSTANCE_FLAGS_NON_UNIFORM_SCALE)) {
 		world_normal_matrix = inverse(mat3(world_matrix));
 	} else {
 		world_normal_matrix = mat3(world_matrix);
 	}
 
-	if (bool(draw_call.flags & INSTANCE_FLAGS_MULTIMESH)) {
+	if (is_multimesh) {
 		//multimesh, instances are for it
-		uint offset = (draw_call.flags >> INSTANCE_FLAGS_MULTIMESH_STRIDE_SHIFT) & INSTANCE_FLAGS_MULTIMESH_STRIDE_MASK;
+		uint offset = (instances.data[instance_index].flags >> INSTANCE_FLAGS_MULTIMESH_STRIDE_SHIFT) & INSTANCE_FLAGS_MULTIMESH_STRIDE_MASK;
 		offset *= gl_InstanceIndex;
 
 		mat4 matrix;
-		if (bool(draw_call.flags & INSTANCE_FLAGS_MULTIMESH_FORMAT_2D)) {
+		if (bool(instances.data[instance_index].flags & INSTANCE_FLAGS_MULTIMESH_FORMAT_2D)) {
 			matrix = mat4(transforms.data[offset + 0], transforms.data[offset + 1], vec4(0.0, 0.0, 1.0, 0.0), vec4(0.0, 0.0, 0.0, 1.0));
 			offset += 2;
 		} else {
@@ -132,14 +141,14 @@ void main() {
 			offset += 3;
 		}
 
-		if (bool(draw_call.flags & INSTANCE_FLAGS_MULTIMESH_HAS_COLOR)) {
+		if (bool(instances.data[instance_index].flags & INSTANCE_FLAGS_MULTIMESH_HAS_COLOR)) {
 #ifdef COLOR_USED
 			color_interp *= transforms.data[offset];
 #endif
 			offset += 1;
 		}
 
-		if (bool(draw_call.flags & INSTANCE_FLAGS_MULTIMESH_HAS_CUSTOM_DATA)) {
+		if (bool(instances.data[instance_index].flags & INSTANCE_FLAGS_MULTIMESH_HAS_CUSTOM_DATA)) {
 			instance_custom = transforms.data[offset];
 		}
 
@@ -161,7 +170,7 @@ void main() {
 #endif
 
 #if 0
-	if (bool(draw_call.flags & INSTANCE_FLAGS_SKELETON)) {
+	if (bool(instances.data[instance_index].flags & INSTANCE_FLAGS_SKELETON)) {
 		//multimesh, instances are for it
 
 		uvec2 bones_01 = uvec2(bone_attrib.x & 0xFFFF, bone_attrib.x >> 16) * 3;
@@ -194,7 +203,7 @@ void main() {
 	uv2_interp = uv2_attrib;
 #endif
 
-#ifdef USE_OVERRIDE_POSITION
+#ifdef OVERRIDE_POSITION
 	vec4 position;
 #endif
 
@@ -289,7 +298,7 @@ VERTEX_SHADER_CODE
 
 #endif //MODE_RENDER_DEPTH
 
-#ifdef USE_OVERRIDE_POSITION
+#ifdef OVERRIDE_POSITION
 	gl_Position = position;
 #else
 	gl_Position = projection_matrix * vec4(vertex_interp, 1.0);
@@ -304,7 +313,8 @@ VERTEX_SHADER_CODE
 #endif
 #ifdef MODE_RENDER_MATERIAL
 	if (scene_data.material_uv2_mode) {
-		gl_Position.xy = (uv2_attrib.xy + draw_call.lightmap_uv_scale.xy) * 2.0 - 1.0;
+		vec2 uv_offset = unpackHalf2x16(draw_call.uv_offset);
+		gl_Position.xy = (uv2_attrib.xy + uv_offset) * 2.0 - 1.0;
 		gl_Position.z = 0.00001;
 		gl_Position.w = 1.0;
 	}
@@ -350,9 +360,11 @@ layout(location = 8) in float dp_clip;
 
 #endif
 
+layout(location = 9) in flat uint instance_index;
+
 //defines to keep compatibility with vertex
 
-#define world_matrix draw_call.transform
+#define world_matrix instances.data[instance_index].transform
 #define projection_matrix scene_data.projection_matrix
 
 #if defined(ENABLE_SSS) && defined(ENABLE_TRANSMITTANCE)
@@ -1282,7 +1294,7 @@ float light_process_spot_shadow(uint idx, vec3 vertex, vec3 normal) {
 		} else {
 #endif
 			//hard shadow
-			vec4 shadow_uv = vec4(splane.xy * spot_lights.data[idx].atlas_rect.zw + spot_lights.data[idx].atlas_rect.xy, z_norm, 1.0);
+			vec4 shadow_uv = vec4(splane.xy * spot_lights.data[idx].atlas_rect.zw + spot_lights.data[idx].atlas_rect.xy, splane.z, 1.0);
 
 			shadow = sample_pcf_shadow(shadow_atlas, spot_lights.data[idx].soft_shadow_scale * scene_data.shadow_atlas_pixel_size, shadow_uv);
 #ifdef USE_SOFT_SHADOWS
@@ -1770,7 +1782,7 @@ vec4 fog_process(vec3 vertex) {
 		}
 	}
 
-	float fog_amount = 1.0 - exp(vertex.z * scene_data.fog_density);
+	float fog_amount = 1.0 - exp(min(0.0, vertex.z * scene_data.fog_density));
 
 	if (abs(scene_data.fog_height_density) > 0.001) {
 		float y = (scene_data.camera_matrix * vec4(vertex, 1.0)).y;
@@ -2083,7 +2095,7 @@ FRAGMENT_SHADER_CODE
 #endif
 				uint decal_index = 32 * i + bit;
 
-				if (!bool(decals.data[decal_index].mask & draw_call.layer_mask)) {
+				if (!bool(decals.data[decal_index].mask & instances.data[instance_index].layer_mask)) {
 					continue; //not masked
 				}
 
@@ -2210,8 +2222,8 @@ FRAGMENT_SHADER_CODE
 #ifdef USE_LIGHTMAP
 
 	//lightmap
-	if (bool(draw_call.flags & INSTANCE_FLAGS_USE_LIGHTMAP_CAPTURE)) { //has lightmap capture
-		uint index = draw_call.gi_offset;
+	if (bool(instances.data[instance_index].flags & INSTANCE_FLAGS_USE_LIGHTMAP_CAPTURE)) { //has lightmap capture
+		uint index = instances.data[instance_index].gi_offset;
 
 		vec3 wnormal = mat3(scene_data.camera_matrix) * normal;
 		const float c1 = 0.429043;
@@ -2230,12 +2242,12 @@ FRAGMENT_SHADER_CODE
 						  2.0 * c2 * lightmap_captures.data[index].sh[1].rgb * wnormal.y +
 						  2.0 * c2 * lightmap_captures.data[index].sh[2].rgb * wnormal.z);
 
-	} else if (bool(draw_call.flags & INSTANCE_FLAGS_USE_LIGHTMAP)) { // has actual lightmap
-		bool uses_sh = bool(draw_call.flags & INSTANCE_FLAGS_USE_SH_LIGHTMAP);
-		uint ofs = draw_call.gi_offset & 0xFFFF;
+	} else if (bool(instances.data[instance_index].flags & INSTANCE_FLAGS_USE_LIGHTMAP)) { // has actual lightmap
+		bool uses_sh = bool(instances.data[instance_index].flags & INSTANCE_FLAGS_USE_SH_LIGHTMAP);
+		uint ofs = instances.data[instance_index].gi_offset & 0xFFFF;
 		vec3 uvw;
-		uvw.xy = uv2 * draw_call.lightmap_uv_scale.zw + draw_call.lightmap_uv_scale.xy;
-		uvw.z = float((draw_call.gi_offset >> 16) & 0xFFFF);
+		uvw.xy = uv2 * instances.data[instance_index].lightmap_uv_scale.zw + instances.data[instance_index].lightmap_uv_scale.xy;
+		uvw.z = float((instances.data[instance_index].gi_offset >> 16) & 0xFFFF);
 
 		if (uses_sh) {
 			uvw.z *= 4.0; //SH textures use 4 times more data
@@ -2244,7 +2256,7 @@ FRAGMENT_SHADER_CODE
 			vec3 lm_light_l1_0 = textureLod(sampler2DArray(lightmap_textures[ofs], material_samplers[SAMPLER_LINEAR_CLAMP]), uvw + vec3(0.0, 0.0, 2.0), 0.0).rgb;
 			vec3 lm_light_l1p1 = textureLod(sampler2DArray(lightmap_textures[ofs], material_samplers[SAMPLER_LINEAR_CLAMP]), uvw + vec3(0.0, 0.0, 3.0), 0.0).rgb;
 
-			uint idx = draw_call.gi_offset >> 20;
+			uint idx = instances.data[instance_index].gi_offset >> 20;
 			vec3 n = normalize(lightmaps.data[idx].normal_xform * normal);
 
 			ambient_light += lm_light_l0 * 0.282095f;
@@ -2264,7 +2276,7 @@ FRAGMENT_SHADER_CODE
 	}
 #elif defined(USE_FORWARD_GI)
 
-	if (bool(draw_call.flags & INSTANCE_FLAGS_USE_SDFGI)) { //has lightmap capture
+	if (bool(instances.data[instance_index].flags & INSTANCE_FLAGS_USE_SDFGI)) { //has lightmap capture
 
 		//make vertex orientation the world one, but still align to camera
 		vec3 cam_pos = mat3(scene_data.camera_matrix) * vertex;
@@ -2336,9 +2348,9 @@ FRAGMENT_SHADER_CODE
 		}
 	}
 
-	if (bool(draw_call.flags & INSTANCE_FLAGS_USE_GIPROBE)) { // process giprobes
+	if (bool(instances.data[instance_index].flags & INSTANCE_FLAGS_USE_GIPROBE)) { // process giprobes
 
-		uint index1 = draw_call.gi_offset & 0xFFFF;
+		uint index1 = instances.data[instance_index].gi_offset & 0xFFFF;
 		vec3 ref_vec = normalize(reflect(normalize(vertex), normal));
 		//find arbitrary tangent and bitangent, then build a matrix
 		vec3 v0 = abs(normal.z) < 0.999 ? vec3(0.0, 0.0, 1.0) : vec3(0.0, 1.0, 0.0);
@@ -2350,7 +2362,7 @@ FRAGMENT_SHADER_CODE
 		vec4 spec_accum = vec4(0.0);
 		gi_probe_compute(index1, vertex, normal, ref_vec, normal_mat, roughness * roughness, ambient_light, specular_light, spec_accum, amb_accum);
 
-		uint index2 = draw_call.gi_offset >> 16;
+		uint index2 = instances.data[instance_index].gi_offset >> 16;
 
 		if (index2 != 0xFFFF) {
 			gi_probe_compute(index2, vertex, normal, ref_vec, normal_mat, roughness * roughness, ambient_light, specular_light, spec_accum, amb_accum);
@@ -2369,19 +2381,19 @@ FRAGMENT_SHADER_CODE
 	}
 #elif !defined(LOW_END_MODE)
 
-	if (bool(draw_call.flags & INSTANCE_FLAGS_USE_GI_BUFFERS)) { //use GI buffers
+	if (bool(instances.data[instance_index].flags & INSTANCE_FLAGS_USE_GI_BUFFERS)) { //use GI buffers
 
-		ivec2 coord;
+		vec2 coord;
 
 		if (scene_data.gi_upscale_for_msaa) {
-			ivec2 base_coord = ivec2(gl_FragCoord.xy);
-			ivec2 closest_coord = base_coord;
-			float closest_ang = dot(normal, texelFetch(sampler2D(normal_roughness_buffer, material_samplers[SAMPLER_LINEAR_CLAMP]), base_coord, 0).xyz * 2.0 - 1.0);
+			vec2 base_coord = screen_uv;
+			vec2 closest_coord = base_coord;
+			float closest_ang = dot(normal, textureLod(sampler2D(normal_roughness_buffer, material_samplers[SAMPLER_LINEAR_CLAMP]), base_coord, 0.0).xyz * 2.0 - 1.0);
 
 			for (int i = 0; i < 4; i++) {
-				const ivec2 neighbours[4] = ivec2[](ivec2(-1, 0), ivec2(1, 0), ivec2(0, -1), ivec2(0, 1));
-				ivec2 neighbour_coord = base_coord + neighbours[i];
-				float neighbour_ang = dot(normal, texelFetch(sampler2D(normal_roughness_buffer, material_samplers[SAMPLER_LINEAR_CLAMP]), neighbour_coord, 0).xyz * 2.0 - 1.0);
+				const vec2 neighbours[4] = vec2[](vec2(-1, 0), vec2(1, 0), vec2(0, -1), vec2(0, 1));
+				vec2 neighbour_coord = base_coord + neighbours[i] * scene_data.screen_pixel_size;
+				float neighbour_ang = dot(normal, textureLod(sampler2D(normal_roughness_buffer, material_samplers[SAMPLER_LINEAR_CLAMP]), neighbour_coord, 0.0).xyz * 2.0 - 1.0);
 				if (neighbour_ang > closest_ang) {
 					closest_ang = neighbour_ang;
 					closest_coord = neighbour_coord;
@@ -2391,11 +2403,11 @@ FRAGMENT_SHADER_CODE
 			coord = closest_coord;
 
 		} else {
-			coord = ivec2(gl_FragCoord.xy);
+			coord = screen_uv;
 		}
 
-		vec4 buffer_ambient = texelFetch(sampler2D(ambient_buffer, material_samplers[SAMPLER_LINEAR_CLAMP]), coord, 0);
-		vec4 buffer_reflection = texelFetch(sampler2D(reflection_buffer, material_samplers[SAMPLER_LINEAR_CLAMP]), coord, 0);
+		vec4 buffer_ambient = textureLod(sampler2D(ambient_buffer, material_samplers[SAMPLER_LINEAR_CLAMP]), coord, 0.0);
+		vec4 buffer_reflection = textureLod(sampler2D(reflection_buffer, material_samplers[SAMPLER_LINEAR_CLAMP]), coord, 0.0);
 
 		ambient_light = mix(ambient_light, buffer_ambient.rgb, buffer_ambient.a);
 		specular_light = mix(specular_light, buffer_reflection.rgb, buffer_reflection.a);
@@ -2448,7 +2460,7 @@ FRAGMENT_SHADER_CODE
 #endif
 				uint reflection_index = 32 * i + bit;
 
-				if (!bool(reflections.data[reflection_index].mask & draw_call.layer_mask)) {
+				if (!bool(reflections.data[reflection_index].mask & instances.data[instance_index].layer_mask)) {
 					continue; //not masked
 				}
 
@@ -2519,7 +2531,7 @@ FRAGMENT_SHADER_CODE
 				break;
 			}
 
-			if (!bool(directional_lights.data[i].mask & draw_call.layer_mask)) {
+			if (!bool(directional_lights.data[i].mask & instances.data[instance_index].layer_mask)) {
 				continue; //not masked
 			}
 
@@ -2838,7 +2850,7 @@ FRAGMENT_SHADER_CODE
 				break;
 			}
 
-			if (!bool(directional_lights.data[i].mask & draw_call.layer_mask)) {
+			if (!bool(directional_lights.data[i].mask & instances.data[instance_index].layer_mask)) {
 				continue; //not masked
 			}
 
@@ -2968,7 +2980,7 @@ FRAGMENT_SHADER_CODE
 #endif
 					uint light_index = 32 * i + bit;
 
-					if (!bool(omni_lights.data[light_index].mask & draw_call.layer_mask)) {
+					if (!bool(omni_lights.data[light_index].mask & instances.data[instance_index].layer_mask)) {
 						continue; //not masked
 					}
 
@@ -3041,7 +3053,7 @@ FRAGMENT_SHADER_CODE
 
 					uint light_index = 32 * i + bit;
 
-					if (!bool(spot_lights.data[light_index].mask & draw_call.layer_mask)) {
+					if (!bool(spot_lights.data[light_index].mask & instances.data[instance_index].layer_mask)) {
 						continue; //not masked
 					}
 
@@ -3214,9 +3226,9 @@ FRAGMENT_SHADER_CODE
 		normal_roughness_output_buffer = vec4(normal * 0.5 + 0.5, roughness);
 
 #ifdef MODE_RENDER_GIPROBE
-		if (bool(draw_call.flags & INSTANCE_FLAGS_USE_GIPROBE)) { // process giprobes
-			uint index1 = draw_call.gi_offset & 0xFFFF;
-			uint index2 = draw_call.gi_offset >> 16;
+		if (bool(instances.data[instance_index].flags & INSTANCE_FLAGS_USE_GIPROBE)) { // process giprobes
+			uint index1 = instances.data[instance_index].gi_offset & 0xFFFF;
+			uint index2 = instances.data[instance_index].gi_offset >> 16;
 			giprobe_buffer.x = index1 & 0xFF;
 			giprobe_buffer.y = index2 & 0xFF;
 		} else {
@@ -3275,6 +3287,7 @@ FRAGMENT_SHADER_CODE
 
 	// Draw "fixed" fog before volumetric fog to ensure volumetric fog can appear in front of the sky.
 	frag_color.rgb = mix(frag_color.rgb, fog.rgb, fog.a);
+	;
 
 #endif //MODE_MULTIPLE_RENDER_TARGETS
 

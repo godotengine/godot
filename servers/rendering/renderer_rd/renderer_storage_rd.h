@@ -478,6 +478,9 @@ private:
 
 		List<MeshInstance *> instances;
 
+		RID shadow_mesh;
+		Set<Mesh *> shadow_owners;
+
 		Dependency dependency;
 	};
 
@@ -1400,6 +1403,7 @@ public:
 	virtual AABB mesh_get_custom_aabb(RID p_mesh) const;
 
 	virtual AABB mesh_get_aabb(RID p_mesh, RID p_skeleton = RID());
+	virtual void mesh_set_shadow_mesh(RID p_mesh, RID p_shadow_mesh);
 
 	virtual void mesh_clear(RID p_mesh);
 
@@ -1438,6 +1442,13 @@ public:
 		return mesh->surfaces[p_surface_index];
 	}
 
+	_FORCE_INLINE_ RID mesh_get_shadow_mesh(RID p_mesh) {
+		Mesh *mesh = mesh_owner.getornull(p_mesh);
+		ERR_FAIL_COND_V(!mesh, RID());
+
+		return mesh->shadow_mesh;
+	}
+
 	_FORCE_INLINE_ RS::PrimitiveType mesh_surface_get_primitive(void *p_surface) {
 		Mesh::Surface *surface = reinterpret_cast<Mesh::Surface *>(p_surface);
 		return surface->primitive;
@@ -1448,13 +1459,7 @@ public:
 		return s->lod_count > 0;
 	}
 
-	_FORCE_INLINE_ RID mesh_surface_get_index_array(void *p_surface) const {
-		Mesh::Surface *s = reinterpret_cast<Mesh::Surface *>(p_surface);
-
-		return s->index_array;
-	}
-
-	_FORCE_INLINE_ RID mesh_surface_get_index_array_with_lod(void *p_surface, float p_model_scale, float p_distance_threshold, float p_lod_threshold) const {
+	_FORCE_INLINE_ uint32_t mesh_surface_get_lod(void *p_surface, float p_model_scale, float p_distance_threshold, float p_lod_threshold) const {
 		Mesh::Surface *s = reinterpret_cast<Mesh::Surface *>(p_surface);
 
 		int32_t current_lod = -1;
@@ -1466,9 +1471,19 @@ public:
 			current_lod = i;
 		}
 		if (current_lod == -1) {
+			return 0;
+		} else {
+			return current_lod + 1;
+		}
+	}
+
+	_FORCE_INLINE_ RID mesh_surface_get_index_array(void *p_surface, uint32_t p_lod) const {
+		Mesh::Surface *s = reinterpret_cast<Mesh::Surface *>(p_surface);
+
+		if (p_lod == 0) {
 			return s->index_array;
 		} else {
-			return s->lods[current_lod].index_array;
+			return s->lods[p_lod - 1].index_array;
 		}
 	}
 

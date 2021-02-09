@@ -1409,8 +1409,9 @@ String String::num(double p_num, int p_decimals) {
 				if (digit == MAX_DIGITS) //no point in going to infinite
 					break;
 
-				if ((dec - (double)((int)dec)) < 1e-6)
+				if (dec - (double)((int)dec) < 1e-6) {
 					break;
+				}
 			}
 
 			if (digit == p_decimals)
@@ -2096,8 +2097,9 @@ String::String(const StrRange &p_range) {
 	copy_from(p_range.c_str, p_range.len);
 }
 
-int64_t String::hex_to_int(bool p_with_prefix) const {
-	if (p_with_prefix && length() < 3) {
+int64_t String::hex_to_int() const {
+	int len = length();
+	if (len == 0) {
 		return 0;
 	}
 
@@ -2109,10 +2111,7 @@ int64_t String::hex_to_int(bool p_with_prefix) const {
 		s++;
 	}
 
-	if (p_with_prefix) {
-		if (s[0] != '0' || s[1] != 'x') {
-			return 0;
-		}
+	if (len > 2 && s[0] == '0' && s[1] == 'x') {
 		s += 2;
 	}
 
@@ -2139,8 +2138,9 @@ int64_t String::hex_to_int(bool p_with_prefix) const {
 	return hex * sign;
 }
 
-int64_t String::bin_to_int(bool p_with_prefix) const {
-	if (p_with_prefix && length() < 3) {
+int64_t String::bin_to_int() const {
+	int len = length();
+	if (len == 0) {
 		return 0;
 	}
 
@@ -2152,10 +2152,7 @@ int64_t String::bin_to_int(bool p_with_prefix) const {
 		s++;
 	}
 
-	if (p_with_prefix) {
-		if (s[0] != '0' || s[1] != 'b') {
-			return 0;
-		}
+	if (len > 2 && s[0] == '0' && s[1] == 'b') {
 		s += 2;
 	}
 
@@ -3074,11 +3071,16 @@ int String::rfindn(const String &p_str, int p_from) const {
 }
 
 bool String::ends_with(const String &p_string) const {
+	int l = p_string.length();
+	if (l == 0) {
+		return true;
+	}
+
 	int pos = rfind(p_string);
 	if (pos == -1) {
 		return false;
 	}
-	return pos + p_string.length() == length();
+	return pos + l == length();
 }
 
 bool String::begins_with(const String &p_string) const {
@@ -3250,8 +3252,8 @@ float String::similarity(const String &p_string) const {
 	int src_size = src_bigrams.size();
 	int tgt_size = tgt_bigrams.size();
 
-	double sum = src_size + tgt_size;
-	double inter = 0;
+	int sum = src_size + tgt_size;
+	int inter = 0;
 	for (int i = 0; i < src_size; i++) {
 		for (int j = 0; j < tgt_size; j++) {
 			if (src_bigrams[i] == tgt_bigrams[j]) {
@@ -3478,7 +3480,7 @@ String String::right(int p_pos) const {
 	return substr(p_pos, (length() - p_pos));
 }
 
-char32_t String::ord_at(int p_idx) const {
+char32_t String::unicode_at(int p_idx) const {
 	ERR_FAIL_INDEX_V(p_idx, length(), 0);
 	return operator[](p_idx);
 }
@@ -3750,7 +3752,7 @@ bool String::is_valid_string() const {
 	return valid;
 }
 
-String String::http_escape() const {
+String String::uri_encode() const {
 	const CharString temp = utf8();
 	String res;
 	for (int i = 0; i < temp.length(); ++i) {
@@ -3774,23 +3776,25 @@ String String::http_escape() const {
 	return res;
 }
 
-String String::http_unescape() const {
+String String::uri_decode() const {
 	String res;
 	for (int i = 0; i < length(); ++i) {
-		if (ord_at(i) == '%' && i + 2 < length()) {
-			char32_t ord1 = ord_at(i + 1);
+		if (unicode_at(i) == '%' && i + 2 < length()) {
+			char32_t ord1 = unicode_at(i + 1);
 			if ((ord1 >= '0' && ord1 <= '9') || (ord1 >= 'A' && ord1 <= 'Z')) {
-				char32_t ord2 = ord_at(i + 2);
+				char32_t ord2 = unicode_at(i + 2);
 				if ((ord2 >= '0' && ord2 <= '9') || (ord2 >= 'A' && ord2 <= 'Z')) {
 					char bytes[3] = { (char)ord1, (char)ord2, 0 };
 					res += (char)strtol(bytes, nullptr, 16);
 					i += 2;
 				}
 			} else {
-				res += ord_at(i);
+				res += unicode_at(i);
 			}
+		} else if (unicode_at(i) == '+') {
+			res += ' ';
 		} else {
-			res += ord_at(i);
+			res += unicode_at(i);
 		}
 	}
 	return String::utf8(res.ascii());
@@ -4245,7 +4249,7 @@ bool String::is_valid_ip_address() const {
 				continue;
 			}
 			if (n.is_valid_hex_number(false)) {
-				int64_t nint = n.hex_to_int(false);
+				int64_t nint = n.hex_to_int();
 				if (nint < 0 || nint > 0xffff) {
 					return false;
 				}
@@ -4338,63 +4342,6 @@ String String::plus_file(const String &p_file) const {
 		return *this + p_file;
 	}
 	return *this + "/" + p_file;
-}
-
-String String::percent_encode() const {
-	CharString cs = utf8();
-	String encoded;
-	for (int i = 0; i < cs.length(); i++) {
-		uint8_t c = cs[i];
-		if ((c >= 'A' && c <= 'Z') || (c >= 'a' && c <= 'z') || (c >= '0' && c <= '9') || c == '-' || c == '_' || c == '~' || c == '.') {
-			char p[2] = { (char)c, 0 };
-			encoded += p;
-		} else {
-			char p[4] = { '%', 0, 0, 0 };
-			static const char hex[16] = { '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd', 'e', 'f' };
-
-			p[1] = hex[c >> 4];
-			p[2] = hex[c & 0xF];
-			encoded += p;
-		}
-	}
-
-	return encoded;
-}
-
-String String::percent_decode() const {
-	CharString pe;
-
-	CharString cs = utf8();
-	for (int i = 0; i < cs.length(); i++) {
-		uint8_t c = cs[i];
-		if (c == '%' && i < length() - 2) {
-			uint8_t a = LOWERCASE(cs[i + 1]);
-			uint8_t b = LOWERCASE(cs[i + 2]);
-
-			if (a >= '0' && a <= '9') {
-				c = (a - '0') << 4;
-			} else if (a >= 'a' && a <= 'f') {
-				c = (a - 'a' + 10) << 4;
-			} else {
-				continue;
-			}
-
-			uint8_t d = 0;
-
-			if (b >= '0' && b <= '9') {
-				d = (b - '0');
-			} else if (b >= 'a' && b <= 'f') {
-				d = (b - 'a' + 10);
-			} else {
-				continue;
-			}
-			c += d;
-			i += 2;
-		}
-		pe += c;
-	}
-
-	return String::utf8(pe.ptr());
 }
 
 String String::property_name_encode() const {

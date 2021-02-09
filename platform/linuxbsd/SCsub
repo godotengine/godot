@@ -18,5 +18,5 @@ common_x11 = [
 
 prog = env.add_program("#bin/godot", ["godot_linuxbsd.cpp"] + common_x11)
 
-if env["debug_symbols"] == "yes" and env["separate_debug_symbols"]:
+if env["debug_symbols"] and env["separate_debug_symbols"]:
     env.AddPostAction(prog, run_in_subprocess(platform_linuxbsd_builders.make_debug_linuxbsd))

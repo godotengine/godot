@@ -175,8 +175,8 @@ void GDAPI godot_glyph_set_flags(godot_glyph *p_self, godot_int p_flags);
 godot_vector2 GDAPI godot_glyph_get_offset(const godot_glyph *p_self);
 void GDAPI godot_glyph_set_offset(godot_glyph *p_self, const godot_vector2 *p_offset);
 
-godot_real GDAPI godot_glyph_get_advance(const godot_glyph *p_self);
-void GDAPI godot_glyph_set_advance(godot_glyph *p_self, godot_real p_advance);
+godot_float GDAPI godot_glyph_get_advance(const godot_glyph *p_self);
+void GDAPI godot_glyph_set_advance(godot_glyph *p_self, godot_float p_advance);
 
 godot_rid GDAPI godot_glyph_get_font(const godot_glyph *p_self);
 void GDAPI godot_glyph_set_font(godot_glyph *p_self, godot_rid *p_font);

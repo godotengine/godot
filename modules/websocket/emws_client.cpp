@@ -140,11 +140,7 @@ Error EMWSClient::set_buffers(int p_in_buffer, int p_in_packets, int p_out_buffe
 }
 
 EMWSClient::EMWSClient() {
-	_in_buf_size = DEF_BUF_SHIFT;
-	_in_pkt_size = DEF_PKT_SHIFT;
-	_is_connecting = false;
 	_peer = Ref<EMWSPeer>(memnew(EMWSPeer));
-	_js_id = 0;
 }
 
 EMWSClient::~EMWSClient() {

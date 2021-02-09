@@ -110,10 +110,11 @@ void AudioEffectSpectrumAnalyzerInstance::process(const AudioFrame *p_src_frames
 	while (p_frame_count) {
 		int to_fill = fft_size * 2 - temporal_fft_pos;
 		to_fill = MIN(to_fill, p_frame_count);
+		const double to_fill_step = Math_TAU / (double)fft_size;
 
 		float *fftw = temporal_fft.ptrw();
 		for (int i = 0; i < to_fill; i++) { //left and right buffers
-			float window = -0.5 * Math::cos(2.0 * Math_PI * (double)temporal_fft_pos / (double)fft_size) + 0.5;
+			float window = -0.5 * Math::cos(to_fill_step * (double)temporal_fft_pos) + 0.5;
 			fftw[temporal_fft_pos * 2] = window * p_src_frames->l;
 			fftw[temporal_fft_pos * 2 + 1] = 0;
 			fftw[(temporal_fft_pos + fft_size * 2) * 2] = window * p_src_frames->r;

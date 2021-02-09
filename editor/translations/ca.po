@@ -7466,6 +7466,11 @@ msgid "Yaw"
 msgstr "Guinyada"
 
 #: editor/plugins/spatial_editor_plugin.cpp
+#, fuzzy
+msgid "Size"
+msgstr "Mida: "
+
+#: editor/plugins/spatial_editor_plugin.cpp
 msgid "Objects Drawn"
 msgstr "Objectes Dibuixats"
 

@@ -55,32 +55,32 @@ public:
 	};
 
 private:
-	bool color_dirty;
+	bool color_dirty = true;
 	Color color_accum;
 
-	SpriteBase3D *parent_sprite;
+	SpriteBase3D *parent_sprite = nullptr;
 	List<SpriteBase3D *> children;
-	List<SpriteBase3D *>::Element *pI;
+	List<SpriteBase3D *>::Element *pI = nullptr;
 
-	bool centered;
+	bool centered = true;
 	Point2 offset;
 
-	bool hflip;
-	bool vflip;
+	bool hflip = false;
+	bool vflip = false;
 
-	Color modulate;
-	float opacity;
+	Color modulate = Color(1, 1, 1, 1);
+	float opacity = 1.0;
 
-	Vector3::Axis axis;
-	float pixel_size;
+	Vector3::Axis axis = Vector3::AXIS_Z;
+	float pixel_size = 0.01;
 	AABB aabb;
 
 	RID immediate;
 
 	bool flags[FLAG_MAX];
-	AlphaCutMode alpha_cut;
-	StandardMaterial3D::BillboardMode billboard_mode;
-	bool pending_update;
+	AlphaCutMode alpha_cut = ALPHA_CUT_DISABLED;
+	StandardMaterial3D::BillboardMode billboard_mode = StandardMaterial3D::BILLBOARD_DISABLED;
+	bool pending_update = false;
 	void _im_update();
 
 	void _propagate_color_changed();
@@ -195,16 +195,16 @@ class AnimatedSprite3D : public SpriteBase3D {
 	GDCLASS(AnimatedSprite3D, SpriteBase3D);
 
 	Ref<SpriteFrames> frames;
-	bool playing;
-	StringName animation;
-	int frame;
+	bool playing = false;
+	StringName animation = "default";
+	int frame = 0;
 
-	bool centered;
+	bool centered = true;
 
-	float timeout;
+	float timeout = 0.0;
 
-	bool hflip;
-	bool vflip;
+	bool hflip = 1;
+	bool vflip = 1;
 
 	Color modulate;
 

@@ -2332,12 +2332,7 @@ static void find_owned_by(Node *p_by, Node *p_node, List<Node *> *p_owned) {
 	}
 }
 
-struct _NodeReplaceByPair {
-	String name;
-	Variant value;
-};
-
-void Node::replace_by(Node *p_node, bool p_keep_data) {
+void Node::replace_by(Node *p_node, bool p_keep_groups) {
 	ERR_FAIL_NULL(p_node);
 	ERR_FAIL_COND(p_node->data.parent);
 
@@ -2345,21 +2340,7 @@ void Node::replace_by(Node *p_node, bool p_keep_data) {
 	List<Node *> owned_by_owner;
 	Node *owner = (data.owner == this) ? p_node : data.owner;
 
-	List<_NodeReplaceByPair> replace_data;
-
-	if (p_keep_data) {
-		List<PropertyInfo> plist;
-		get_property_list(&plist);
-
-		for (List<PropertyInfo>::Element *E = plist.front(); E; E = E->next()) {
-			_NodeReplaceByPair rd;
-			if (!(E->get().usage & PROPERTY_USAGE_STORAGE)) {
-				continue;
-			}
-			rd.name = E->get().name;
-			rd.value = get(rd.name);
-		}
-
+	if (p_keep_groups) {
 		List<GroupInfo> groups;
 		get_groups(&groups);
 
@@ -2404,10 +2385,6 @@ void Node::replace_by(Node *p_node, bool p_keep_data) {
 	}
 
 	p_node->set_filename(get_filename());
-
-	for (List<_NodeReplaceByPair>::Element *E = replace_data.front(); E; E = E->next()) {
-		p_node->set(E->get().name, E->get().value);
-	}
 }
 
 void Node::_replace_connections_target(Node *p_new_target) {
@@ -2774,7 +2751,7 @@ void Node::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_tree"), &Node::get_tree);
 
 	ClassDB::bind_method(D_METHOD("duplicate", "flags"), &Node::duplicate, DEFVAL(DUPLICATE_USE_INSTANCING | DUPLICATE_SIGNALS | DUPLICATE_GROUPS | DUPLICATE_SCRIPTS));
-	ClassDB::bind_method(D_METHOD("replace_by", "node", "keep_data"), &Node::replace_by, DEFVAL(false));
+	ClassDB::bind_method(D_METHOD("replace_by", "node", "keep_groups"), &Node::replace_by, DEFVAL(false));
 
 	ClassDB::bind_method(D_METHOD("set_scene_instance_load_placeholder", "load_placeholder"), &Node::set_scene_instance_load_placeholder);
 	ClassDB::bind_method(D_METHOD("get_scene_instance_load_placeholder"), &Node::get_scene_instance_load_placeholder);

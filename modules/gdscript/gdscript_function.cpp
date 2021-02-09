@@ -77,14 +77,14 @@ int GDScriptFunction::get_max_stack_size() const {
 }
 
 struct _GDFKC {
-	int order;
+	int order = 0;
 	List<int> pos;
 };
 
 struct _GDFKCS {
-	int order;
+	int order = 0;
 	StringName id;
-	int pos;
+	int pos = 0;
 
 	bool operator<(const _GDFKCS &p_r) const {
 		return order < p_r.order;
@@ -294,7 +294,6 @@ void GDScriptFunctionState::_bind_methods() {
 GDScriptFunctionState::GDScriptFunctionState() :
 		scripts_list(this),
 		instances_list(this) {
-	function = nullptr;
 }
 
 GDScriptFunctionState::~GDScriptFunctionState() {

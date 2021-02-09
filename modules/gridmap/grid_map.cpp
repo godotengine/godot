@@ -1046,26 +1046,7 @@ RID GridMap::get_bake_mesh_instance(int p_idx) {
 }
 
 GridMap::GridMap() {
-	collision_layer = 1;
-	collision_mask = 1;
-
-	cell_size = Vector3(2, 2, 2);
-	octant_size = 8;
-	awaiting_update = false;
-	_in_tree = false;
-	center_x = true;
-	center_y = true;
-	center_z = true;
-
-	clip = false;
-	clip_floor = 0;
-	clip_axis = Vector3::AXIS_Z;
-	clip_above = true;
-	cell_scale = 1.0;
-
-	navigation = nullptr;
 	set_notify_transform(true);
-	recreating_octants = false;
 }
 
 GridMap::~GridMap() {

@@ -163,5 +163,4 @@ void ParallaxLayer::_bind_methods() {
 }
 
 ParallaxLayer::ParallaxLayer() {
-	motion_scale = Size2(1, 1);
 }

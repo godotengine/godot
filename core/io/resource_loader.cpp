@@ -362,7 +362,8 @@ Error ResourceLoader::load_threaded_request(const String &p_path, const String &
 
 		print_lt("REQUEST: load count: " + itos(thread_loading_count) + " / wait count: " + itos(thread_waiting_count) + " / suspended count: " + itos(thread_suspended_count) + " / active: " + itos(thread_loading_count - thread_suspended_count));
 
-		load_task.thread = Thread::create(_thread_load_function, &thread_load_tasks[local_path]);
+		load_task.thread = memnew(Thread);
+		load_task.thread->start(_thread_load_function, &thread_load_tasks[local_path]);
 		load_task.loader_id = load_task.thread->get_id();
 	}
 
@@ -489,7 +490,7 @@ RES ResourceLoader::load_threaded_get(const String &p_path, Error *r_error) {
 
 	if (load_task.requests == 0) {
 		if (load_task.thread) { //thread may not have been used
-			Thread::wait_to_finish(load_task.thread);
+			load_task.thread->wait_to_finish();
 			memdelete(load_task.thread);
 		}
 		thread_load_tasks.erase(local_path);
