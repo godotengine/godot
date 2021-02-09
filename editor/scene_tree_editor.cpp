@@ -161,7 +161,7 @@ void SceneTreeEditor::_toggle_visible(Node *p_node) {
 	}
 }
 
-bool SceneTreeEditor::_add_nodes(Node *p_node, TreeItem *p_parent) {
+bool SceneTreeEditor::_add_nodes(Node *p_node, TreeItem *p_parent, bool p_scroll_to_selected) {
 
 	if (!p_node)
 		return false;
@@ -393,16 +393,21 @@ bool SceneTreeEditor::_add_nodes(Node *p_node, TreeItem *p_parent) {
 		}
 	}
 
+	bool scroll = false;
+
 	if (editor_selection) {
 		if (editor_selection->is_selected(p_node)) {
 
 			item->select(0);
+			scroll = p_scroll_to_selected;
 		}
 	}
 
 	if (selected == p_node) {
-		if (!editor_selection)
+		if (!editor_selection) {
 			item->select(0);
+			scroll = p_scroll_to_selected;
+		}
 		item->set_as_cursor(0);
 	}
 
@@ -410,7 +415,7 @@ bool SceneTreeEditor::_add_nodes(Node *p_node, TreeItem *p_parent) {
 
 	for (int i = 0; i < p_node->get_child_count(); i++) {
 
-		bool child_keep = _add_nodes(p_node->get_child(i), item);
+		bool child_keep = _add_nodes(p_node->get_child(i), item, p_scroll_to_selected);
 
 		keep = keep || child_keep;
 	}
@@ -441,6 +446,9 @@ bool SceneTreeEditor::_add_nodes(Node *p_node, TreeItem *p_parent) {
 		memdelete(item);
 		return false;
 	} else {
+		if (scroll) {
+			tree->scroll_to_item(item);
+		}
 		return true;
 	}
 }
@@ -543,7 +551,7 @@ void SceneTreeEditor::_node_renamed(Node *p_node) {
 	}
 }
 
-void SceneTreeEditor::_update_tree() {
+void SceneTreeEditor::_update_tree(bool p_scroll_to_selected) {
 
 	if (!is_inside_tree()) {
 		tree_dirty = false;
@@ -553,7 +561,7 @@ void SceneTreeEditor::_update_tree() {
 	updating_tree = true;
 	tree->clear();
 	if (get_scene_node()) {
-		_add_nodes(get_scene_node(), NULL);
+		_add_nodes(get_scene_node(), NULL, p_scroll_to_selected);
 		last_hash = hash_djb2_one_64(0);
 		_compute_hash(get_scene_node(), last_hash);
 	}
@@ -836,7 +844,7 @@ void SceneTreeEditor::set_marked(Node *p_marked, bool p_selectable, bool p_child
 void SceneTreeEditor::set_filter(const String &p_filter) {
 
 	filter = p_filter;
-	_update_tree();
+	_update_tree(true);
 }
 
 String SceneTreeEditor::get_filter() const {

@@ -529,6 +529,10 @@ protected:
 		return get_item_rect(Object::cast_to<TreeItem>(p_item), p_column);
 	}
 
+	void _scroll_to_item(Object *p_item) {
+		scroll_to_item(Object::cast_to<TreeItem>(p_item));
+	}
+
 public:
 	virtual String get_tooltip(const Point2 &p_pos) const;
 

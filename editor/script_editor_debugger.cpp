@@ -472,6 +472,7 @@ int ScriptEditorDebugger::_update_scene_tree(TreeItem *parent, const Array &node
 	}
 	item->set_metadata(0, id);
 
+	bool scroll = false;
 	if (id == inspected_object_id) {
 		TreeItem *cti = item->get_parent();
 		while (cti) {
@@ -479,6 +480,7 @@ int ScriptEditorDebugger::_update_scene_tree(TreeItem *parent, const Array &node
 			cti = cti->get_parent();
 		}
 		item->select(0);
+		scroll = filter != last_filter;
 	}
 
 	// Set current item as collapsed if necessary
@@ -509,6 +511,12 @@ int ScriptEditorDebugger::_update_scene_tree(TreeItem *parent, const Array &node
 	if (!keep && !item->get_children() && parent) {
 		parent->remove_child(item);
 		memdelete(item);
+	} else if (scroll) {
+		inspect_scene_tree->call_deferred("scroll_to_item", item);
+	}
+
+	if (!parent) {
+		last_filter = filter;
 	}
 
 	return items_count;
