@@ -74,7 +74,7 @@ class PinJoint3DSW : public Joint3DSW {
 	Vector3 m_pivotInB;
 
 public:
-	virtual PhysicsServer3D::JointType get_type() const { return PhysicsServer3D::JOINT_PIN; }
+	virtual PhysicsServer3D::JointType get_type() const { return PhysicsServer3D::JOINT_TYPE_PIN; }
 
 	virtual bool setup(real_t p_step);
 	virtual void solve(real_t p_step);

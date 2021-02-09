@@ -259,10 +259,10 @@ void SoftBodyBullet::set_linear_stiffness(real_t p_val) {
 	}
 }
 
-void SoftBodyBullet::set_areaAngular_stiffness(real_t p_val) {
-	areaAngular_stiffness = p_val;
+void SoftBodyBullet::set_angular_stiffness(real_t p_val) {
+	angular_stiffness = p_val;
 	if (bt_soft_body) {
-		mat0->m_kAST = areaAngular_stiffness;
+		mat0->m_kAST = angular_stiffness;
 	}
 }
 
@@ -409,7 +409,7 @@ void SoftBodyBullet::setup_soft_body() {
 	bt_soft_body->generateBendingConstraints(2, mat0);
 
 	mat0->m_kLST = linear_stiffness;
-	mat0->m_kAST = areaAngular_stiffness;
+	mat0->m_kAST = angular_stiffness;
 	mat0->m_kVST = volume_stiffness;
 
 	// Clusters allow to have Soft vs Soft collision but doesn't work well right now

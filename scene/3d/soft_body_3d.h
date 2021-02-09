@@ -149,8 +149,8 @@ public:
 	void set_linear_stiffness(real_t p_linear_stiffness);
 	real_t get_linear_stiffness();
 
-	void set_areaAngular_stiffness(real_t p_areaAngular_stiffness);
-	real_t get_areaAngular_stiffness();
+	void set_angular_stiffness(real_t p_angular_stiffness);
+	real_t get_angular_stiffness();
 
 	void set_volume_stiffness(real_t p_volume_stiffness);
 	real_t get_volume_stiffness();

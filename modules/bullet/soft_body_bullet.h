@@ -67,7 +67,7 @@ private:
 	int simulation_precision = 5;
 	real_t total_mass = 1.;
 	real_t linear_stiffness = 0.5; // [0,1]
-	real_t areaAngular_stiffness = 0.5; // [0,1]
+	real_t angular_stiffness = 0.5; // [0,1]
 	real_t volume_stiffness = 0.5; // [0,1]
 	real_t pressure_coefficient = 0.; // [-inf,+inf]
 	real_t pose_matching_coefficient = 0.; // [0,1]
@@ -129,8 +129,8 @@ public:
 	void set_linear_stiffness(real_t p_val);
 	_FORCE_INLINE_ real_t get_linear_stiffness() const { return linear_stiffness; }
 
-	void set_areaAngular_stiffness(real_t p_val);
-	_FORCE_INLINE_ real_t get_areaAngular_stiffness() const { return areaAngular_stiffness; }
+	void set_angular_stiffness(real_t p_val);
+	_FORCE_INLINE_ real_t get_angular_stiffness() const { return angular_stiffness; }
 
 	void set_volume_stiffness(real_t p_val);
 	_FORCE_INLINE_ real_t get_volume_stiffness() const { return volume_stiffness; }

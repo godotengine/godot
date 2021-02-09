@@ -1881,8 +1881,11 @@ void RendererSceneRenderRD::_process_gi(RID p_render_buffers, RID p_normal_rough
 	RD::get_singleton()->draw_command_end_label();
 }
 
-RID RendererSceneRenderRD::sky_create() {
-	return sky_owner.make_rid(Sky());
+RID RendererSceneRenderRD::sky_allocate() {
+	return sky_owner.allocate_rid();
+}
+void RendererSceneRenderRD::sky_initialize(RID p_rid) {
+	sky_owner.initialize_rid(p_rid, Sky());
 }
 
 void RendererSceneRenderRD::_sky_invalidate(Sky *p_sky) {
@@ -2906,8 +2909,11 @@ RendererStorageRD::MaterialData *RendererSceneRenderRD::_create_sky_material_fun
 	return material_data;
 }
 
-RID RendererSceneRenderRD::environment_create() {
-	return environment_owner.make_rid(Environment());
+RID RendererSceneRenderRD::environment_allocate() {
+	return environment_owner.allocate_rid();
+}
+void RendererSceneRenderRD::environment_initialize(RID p_rid) {
+	environment_owner.initialize_rid(p_rid, Environment());
 }
 
 void RendererSceneRenderRD::environment_set_background(RID p_env, RS::EnvironmentBG p_bg) {
@@ -3991,8 +3997,11 @@ int RendererSceneRenderRD::get_directional_light_shadow_size(RID p_light_intance
 
 //////////////////////////////////////////////////
 
-RID RendererSceneRenderRD::camera_effects_create() {
-	return camera_effects_owner.make_rid(CameraEffects());
+RID RendererSceneRenderRD::camera_effects_allocate() {
+	return camera_effects_owner.allocate_rid();
+}
+void RendererSceneRenderRD::camera_effects_initialize(RID p_rid) {
+	camera_effects_owner.initialize_rid(p_rid, CameraEffects());
 }
 
 void RendererSceneRenderRD::camera_effects_set_dof_blur_quality(RS::DOFBlurQuality p_quality, bool p_use_jitter) {
@@ -8589,9 +8598,14 @@ RendererSceneRenderRD::RendererSceneRenderRD(RendererStorageRD *p_storage) {
 
 	{
 		// default material and shader for sky shader
-		sky_shader.default_shader = storage->shader_create();
+		sky_shader.default_shader = storage->shader_allocate();
+		storage->shader_initialize(sky_shader.default_shader);
+
 		storage->shader_set_code(sky_shader.default_shader, "shader_type sky; void fragment() { COLOR = vec3(0.0); } \n");
-		sky_shader.default_material = storage->material_create();
+
+		sky_shader.default_material = storage->material_allocate();
+		storage->material_initialize(sky_shader.default_material);
+
 		storage->material_set_shader(sky_shader.default_material, sky_shader.default_shader);
 
 		SkyMaterialData *md = (SkyMaterialData *)storage->material_get_data(sky_shader.default_material, RendererStorageRD::SHADER_TYPE_SKY);
@@ -8665,9 +8679,13 @@ RendererSceneRenderRD::RendererSceneRenderRD(RendererStorageRD *p_storage) {
 
 	{
 		// Need defaults for using fog with clear color
-		sky_scene_state.fog_shader = storage->shader_create();
+		sky_scene_state.fog_shader = storage->shader_allocate();
+		storage->shader_initialize(sky_scene_state.fog_shader);
+
 		storage->shader_set_code(sky_scene_state.fog_shader, "shader_type sky; uniform vec4 clear_color; void fragment() { COLOR = clear_color.rgb; } \n");
-		sky_scene_state.fog_material = storage->material_create();
+		sky_scene_state.fog_material = storage->material_allocate();
+		storage->material_initialize(sky_scene_state.fog_material);
+
 		storage->material_set_shader(sky_scene_state.fog_material, sky_scene_state.fog_shader);
 
 		Vector<RD::Uniform> uniforms;

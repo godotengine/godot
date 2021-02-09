@@ -3574,9 +3574,11 @@ RendererSceneRenderForward::RendererSceneRenderForward(RendererStorageRD *p_stor
 
 	{
 		//default material and shader
-		default_shader = storage->shader_create();
+		default_shader = storage->shader_allocate();
+		storage->shader_initialize(default_shader);
 		storage->shader_set_code(default_shader, "shader_type spatial; void vertex() { ROUGHNESS = 0.8; } void fragment() { ALBEDO=vec3(0.6); ROUGHNESS=0.8; METALLIC=0.2; } \n");
-		default_material = storage->material_create();
+		default_material = storage->material_allocate();
+		storage->material_initialize(default_material);
 		storage->material_set_shader(default_material, default_shader);
 
 		MaterialData *md = (MaterialData *)storage->material_get_data(default_material, RendererStorageRD::SHADER_TYPE_3D);
@@ -3587,14 +3589,18 @@ RendererSceneRenderForward::RendererSceneRenderForward(RendererStorageRD *p_stor
 	}
 
 	{
-		overdraw_material_shader = storage->shader_create();
+		overdraw_material_shader = storage->shader_allocate();
+		storage->shader_initialize(overdraw_material_shader);
 		storage->shader_set_code(overdraw_material_shader, "shader_type spatial;\nrender_mode blend_add,unshaded;\n void fragment() { ALBEDO=vec3(0.4,0.8,0.8); ALPHA=0.2; }");
-		overdraw_material = storage->material_create();
+		overdraw_material = storage->material_allocate();
+		storage->material_initialize(overdraw_material);
 		storage->material_set_shader(overdraw_material, overdraw_material_shader);
 
-		wireframe_material_shader = storage->shader_create();
+		wireframe_material_shader = storage->shader_allocate();
+		storage->shader_initialize(wireframe_material_shader);
 		storage->shader_set_code(wireframe_material_shader, "shader_type spatial;\nrender_mode wireframe,unshaded;\n void fragment() { ALBEDO=vec3(0.0,0.0,0.0); }");
-		wireframe_material = storage->material_create();
+		wireframe_material = storage->material_allocate();
+		storage->material_initialize(wireframe_material);
 		storage->material_set_shader(wireframe_material, wireframe_material_shader);
 	}
 

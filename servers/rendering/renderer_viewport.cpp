@@ -608,19 +608,20 @@ void RendererViewport::draw_viewports() {
 	}
 }
 
-RID RendererViewport::viewport_create() {
+RID RendererViewport::viewport_allocate() {
+	return viewport_owner.allocate_rid();
+}
+
+void RendererViewport::viewport_initialize(RID p_rid) {
 	Viewport *viewport = memnew(Viewport);
-
-	RID rid = viewport_owner.make_rid(viewport);
-
-	viewport->self = rid;
+	viewport->self = p_rid;
 	viewport->hide_scenario = false;
 	viewport->hide_canvas = false;
 	viewport->render_target = RSG::storage->render_target_create();
 	viewport->shadow_atlas = RSG::scene->shadow_atlas_create();
 	viewport->viewport_render_direct_to_screen = false;
 
-	return rid;
+	viewport_owner.initialize_rid(p_rid, viewport);
 }
 
 void RendererViewport::viewport_set_use_xr(RID p_viewport, bool p_use_xr) {
@@ -1017,6 +1018,11 @@ void RendererViewport::handle_timestamp(String p_timestamp, uint64_t p_cpu_time,
 
 void RendererViewport::set_default_clear_color(const Color &p_color) {
 	RSG::storage->set_default_clear_color(p_color);
+}
+
+//workaround for setting this on thread
+void RendererViewport::call_set_use_vsync(bool p_enable) {
+	DisplayServer::get_singleton()->_set_use_vsync(p_enable);
 }
 
 RendererViewport::RendererViewport() {
