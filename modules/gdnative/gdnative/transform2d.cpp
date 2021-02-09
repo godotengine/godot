@@ -42,6 +42,16 @@ void GDAPI godot_transform2d_new(godot_transform2d *p_self) {
 	memnew_placement(p_self, Transform2D);
 }
 
+godot_vector2 GDAPI *godot_transform2d_operator_index(godot_transform2d *p_self, godot_int p_index) {
+	Transform2D *self = (Transform2D *)p_self;
+	return (godot_vector2 *)&self->operator[](p_index);
+}
+
+const godot_vector2 GDAPI *godot_transform2d_operator_index_const(const godot_transform2d *p_self, godot_int p_index) {
+	const Transform2D *self = (const Transform2D *)p_self;
+	return (const godot_vector2 *)&self->operator[](p_index);
+}
+
 #ifdef __cplusplus
 }
 #endif

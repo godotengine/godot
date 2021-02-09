@@ -164,54 +164,81 @@ typedef struct {
 
 void GDAPI godot_packed_byte_array_new(godot_packed_byte_array *p_self);
 void GDAPI godot_packed_byte_array_destroy(godot_packed_byte_array *p_self);
+uint8_t GDAPI *godot_packed_byte_array_operator_index(godot_packed_byte_array *p_self, godot_int p_index);
+const uint8_t GDAPI *godot_packed_byte_array_operator_index_const(const godot_packed_byte_array *p_self, godot_int p_index);
 
 // Int32.
 
 void GDAPI godot_packed_int32_array_new(godot_packed_int32_array *p_self);
 void GDAPI godot_packed_int32_array_destroy(godot_packed_int32_array *p_self);
+int32_t GDAPI *godot_packed_int32_array_operator_index(godot_packed_int32_array *p_self, godot_int p_index);
+const int32_t GDAPI *godot_packed_int32_array_operator_index_const(const godot_packed_int32_array *p_self, godot_int p_index);
 
 // Int64.
 
 void GDAPI godot_packed_int64_array_new(godot_packed_int64_array *p_self);
 void GDAPI godot_packed_int64_array_destroy(godot_packed_int64_array *p_self);
+int64_t GDAPI *godot_packed_int64_array_operator_index(godot_packed_int64_array *p_self, godot_int p_index);
+const int64_t GDAPI *godot_packed_int64_array_operator_index_const(const godot_packed_int64_array *p_self, godot_int p_index);
 
 // Float32.
 
 void GDAPI godot_packed_float32_array_new(godot_packed_float32_array *p_self);
 void GDAPI godot_packed_float32_array_destroy(godot_packed_float32_array *p_self);
+float GDAPI *godot_packed_float32_array_operator_index(godot_packed_float32_array *p_self, godot_int p_index);
+const float GDAPI *godot_packed_float32_array_operator_index_const(const godot_packed_float32_array *p_self, godot_int p_index);
 
 // Float64.
 
 void GDAPI godot_packed_float64_array_new(godot_packed_float64_array *p_self);
 void GDAPI godot_packed_float64_array_destroy(godot_packed_float64_array *p_self);
+double GDAPI *godot_packed_float64_array_operator_index(godot_packed_float64_array *p_self, godot_int p_index);
+const double GDAPI *godot_packed_float64_array_operator_index_const(const godot_packed_float64_array *p_self, godot_int p_index);
 
 // String.
 
 void GDAPI godot_packed_string_array_new(godot_packed_string_array *p_self);
 void GDAPI godot_packed_string_array_destroy(godot_packed_string_array *p_self);
+godot_string GDAPI *godot_packed_string_array_operator_index(godot_packed_string_array *p_self, godot_int p_index);
+const godot_string GDAPI *godot_packed_string_array_operator_index_const(const godot_packed_string_array *p_self, godot_int p_index);
 
 // Vector2.
 
 void GDAPI godot_packed_vector2_array_new(godot_packed_vector2_array *p_self);
 void GDAPI godot_packed_vector2_array_destroy(godot_packed_vector2_array *p_self);
+godot_vector2 GDAPI *godot_packed_vector2_array_operator_index(godot_packed_vector2_array *p_self, godot_int p_index);
+const godot_vector2 GDAPI *godot_packed_vector2_array_operator_index_const(const godot_packed_vector2_array *p_self, godot_int p_index);
 
 // Vector2i.
 
 void GDAPI godot_packed_vector2i_array_new(godot_packed_vector2i_array *p_self);
 void GDAPI godot_packed_vector2i_array_destroy(godot_packed_vector2i_array *p_self);
+godot_vector2i GDAPI *godot_packed_vector2i_array_operator_index(godot_packed_vector2i_array *p_self, godot_int p_index);
+const godot_vector2i GDAPI *godot_packed_vector2i_array_operator_index_const(const godot_packed_vector2i_array *p_self, godot_int p_index);
 
 // Vector3.
 
 void GDAPI godot_packed_vector3_array_new(godot_packed_vector3_array *p_self);
 void GDAPI godot_packed_vector3_array_destroy(godot_packed_vector3_array *p_self);
+godot_vector3 GDAPI *godot_packed_vector3_array_operator_index(godot_packed_vector3_array *p_self, godot_int p_index);
+const godot_vector3 GDAPI *godot_packed_vector3_array_operator_index_const(const godot_packed_vector3_array *p_self, godot_int p_index);
+
+// Vector3i.
+
+void GDAPI godot_packed_vector3i_array_new(godot_packed_vector3i_array *p_self);
+void GDAPI godot_packed_vector3i_array_destroy(godot_packed_vector3i_array *p_self);
+godot_vector3i GDAPI *godot_packed_vector3i_array_operator_index(godot_packed_vector3i_array *p_self, godot_int p_index);
+const godot_vector3i GDAPI *godot_packed_vector3i_array_operator_index_const(const godot_packed_vector3i_array *p_self, godot_int p_index);
 
 // Color.
 
 void GDAPI godot_packed_color_array_new(godot_packed_color_array *p_self);
 void GDAPI godot_packed_color_array_destroy(godot_packed_color_array *p_self);
+godot_color GDAPI *godot_packed_color_array_operator_index(godot_packed_color_array *p_self, godot_int p_index);
+const godot_color GDAPI *godot_packed_color_array_operator_index_const(const godot_packed_color_array *p_self, godot_int p_index);
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif // GODOT_POOL_ARRAYS_H
+#endif // GODOT_PACKED_ARRAYS_H
