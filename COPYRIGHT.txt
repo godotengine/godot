@@ -72,6 +72,11 @@ Copyright: 2008-2016, The Android Open Source Project
  2002, Google, Inc.
 License: Apache-2.0
 
+Files: ./servers/physics_3d/collision_solver_3d_sat.cpp
+Comment: Open Dynamics Engine
+Copyright: 2001-2003, Russell L. Smith, Alen Ladavac, Nguyen Binh
+License: BSD-3-clause
+
 Files: ./servers/physics_3d/gjk_epa.cpp
  ./servers/physics_3d/joints/generic_6dof_joint_3d_sw.cpp
  ./servers/physics_3d/joints/generic_6dof_joint_3d_sw.h

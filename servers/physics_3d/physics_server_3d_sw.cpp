@@ -74,7 +74,10 @@ RID PhysicsServer3DSW::capsule_shape_create() {
 	return rid;
 }
 RID PhysicsServer3DSW::cylinder_shape_create() {
-	ERR_FAIL_V(RID());
+	Shape3DSW *shape = memnew(CylinderShape3DSW);
+	RID rid = shape_owner.make_rid(shape);
+	shape->set_self(rid);
+	return rid;
 }
 RID PhysicsServer3DSW::convex_polygon_shape_create() {
 	Shape3DSW *shape = memnew(ConvexPolygonShape3DSW);
