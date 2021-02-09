@@ -215,7 +215,7 @@ private:
 
 	void _animation_process_animation(AnimationData *p_anim, float p_time, float p_delta, float p_interp, bool p_is_current = true, bool p_seeked = false, bool p_started = false);
 
-	void _ensure_node_caches(AnimationData *p_anim);
+	void _ensure_node_caches(AnimationData *p_anim, Node *p_root_override = nullptr);
 	void _animation_process_data(PlaybackData &cd, float p_delta, float p_blend, bool p_seeked, bool p_started);
 	void _animation_process2(float p_delta, bool p_started);
 	void _animation_update_transforms();
@@ -319,7 +319,7 @@ public:
 	void get_argument_options(const StringName &p_function, int p_idx, List<String> *r_options) const override;
 
 #ifdef TOOLS_ENABLED
-	Ref<AnimatedValuesBackup> backup_animated_values();
+	Ref<AnimatedValuesBackup> backup_animated_values(Node *p_root_override = nullptr);
 	Ref<AnimatedValuesBackup> apply_reset(bool p_user_initiated = false);
 	bool can_apply_reset() const;
 #endif

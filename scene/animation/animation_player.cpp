@@ -229,13 +229,13 @@ void AnimationPlayer::_notification(int p_what) {
 	}
 }
 
-void AnimationPlayer::_ensure_node_caches(AnimationData *p_anim) {
+void AnimationPlayer::_ensure_node_caches(AnimationData *p_anim, Node *p_root_override) {
 	// Already cached?
 	if (p_anim->node_cache.size() == p_anim->animation->get_track_count()) {
 		return;
 	}
 
-	Node *parent = get_node(root);
+	Node *parent = p_root_override ? p_root_override : get_node(root);
 
 	ERR_FAIL_COND(!parent);
 
@@ -1497,13 +1497,13 @@ void AnimationPlayer::get_argument_options(const StringName &p_function, int p_i
 }
 
 #ifdef TOOLS_ENABLED
-Ref<AnimatedValuesBackup> AnimationPlayer::backup_animated_values() {
+Ref<AnimatedValuesBackup> AnimationPlayer::backup_animated_values(Node *p_root_override) {
 	Ref<AnimatedValuesBackup> backup;
 	if (!playback.current.from) {
 		return backup;
 	}
 
-	_ensure_node_caches(playback.current.from);
+	_ensure_node_caches(playback.current.from, p_root_override);
 
 	backup.instance();
 	for (int i = 0; i < playback.current.from->node_cache.size(); i++) {
@@ -1560,10 +1560,11 @@ Ref<AnimatedValuesBackup> AnimationPlayer::apply_reset(bool p_user_initiated) {
 
 	AnimationPlayer *aux_player = memnew(AnimationPlayer);
 	EditorNode::get_singleton()->add_child(aux_player);
-	aux_player->set_root(aux_player->get_path_to(root_node));
 	aux_player->add_animation("RESET", reset_anim);
 	aux_player->set_assigned_animation("RESET");
-	Ref<AnimatedValuesBackup> old_values = aux_player->backup_animated_values();
+	// Forcing the use of the original root because the scene where original player belongs may be not the active one
+	Node *root = get_node(get_root());
+	Ref<AnimatedValuesBackup> old_values = aux_player->backup_animated_values(root);
 	aux_player->seek(0.0f, true);
 	aux_player->queue_delete();
 
