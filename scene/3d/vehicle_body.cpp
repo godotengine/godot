@@ -389,6 +389,7 @@ VehicleWheel::VehicleWheel() {
 	m_suspensionRelativeVelocity = 0;
 	m_clippedInvContactDotSuspension = 1.0;
 	m_raycastInfo.m_isInContact = false;
+	m_raycastInfo.m_suspensionLength = 0.0;
 
 	body = NULL;
 }
