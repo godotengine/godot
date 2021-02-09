@@ -44,8 +44,8 @@ class Skin : public Resource {
 
 	Vector<Bind> binds;
 
-	Bind *binds_ptr;
-	int bind_count;
+	Bind *binds_ptr = nullptr;
+	int bind_count = 0;
 
 protected:
 	bool _set(const StringName &p_name, const Variant &p_value);

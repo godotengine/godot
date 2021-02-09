@@ -86,14 +86,14 @@ public:
 	};
 
 private:
-	float expand_margin[4];
-	float margin[4];
+	float expand_margin[4] = {};
+	float margin[4] = {};
 	Rect2 region_rect;
 	Ref<Texture2D> texture;
-	bool draw_center;
-	Color modulate;
-	AxisStretchMode axis_h;
-	AxisStretchMode axis_v;
+	bool draw_center = true;
+	Color modulate = Color(1, 1, 1, 1);
+	AxisStretchMode axis_h = AXIS_STRETCH_MODE_STRETCH;
+	AxisStretchMode axis_v = AXIS_STRETCH_MODE_STRETCH;
 
 protected:
 	virtual float get_style_margin(Side p_side) const override;
@@ -139,22 +139,22 @@ VARIANT_ENUM_CAST(StyleBoxTexture::AxisStretchMode)
 class StyleBoxFlat : public StyleBox {
 	GDCLASS(StyleBoxFlat, StyleBox);
 
-	Color bg_color;
-	Color shadow_color;
-	Color border_color;
+	Color bg_color = Color(0.6, 0.6, 0.6);
+	Color shadow_color = Color(0, 0, 0, 0.6);
+	Color border_color = Color(0.8, 0.8, 0.8);
 
-	int border_width[4];
-	int expand_margin[4];
-	int corner_radius[4];
+	int border_width[4] = {};
+	int expand_margin[4] = {};
+	int corner_radius[4] = {};
 
-	bool draw_center;
-	bool blend_border;
-	bool anti_aliased;
+	bool draw_center = true;
+	bool blend_border = false;
+	bool anti_aliased = true;
 
-	int corner_detail;
-	int shadow_size;
+	int corner_detail = 8;
+	int shadow_size = 0;
 	Point2 shadow_offset;
-	int aa_size;
+	int aa_size = 1;
 
 protected:
 	virtual float get_style_margin(Side p_side) const override;
@@ -231,10 +231,10 @@ public:
 class StyleBoxLine : public StyleBox {
 	GDCLASS(StyleBoxLine, StyleBox);
 	Color color;
-	int thickness;
-	bool vertical;
-	float grow_begin;
-	float grow_end;
+	int thickness = 1;
+	bool vertical = false;
+	float grow_begin = 1.0;
+	float grow_end = 1.0;
 
 protected:
 	virtual float get_style_margin(Side p_side) const override;

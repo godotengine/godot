@@ -39,7 +39,7 @@ class Gradient : public Resource {
 
 public:
 	struct Point {
-		float offset;
+		float offset = 0.0;
 		Color color;
 		bool operator<(const Point &p_ponit) const {
 			return offset < p_ponit.offset;
@@ -48,7 +48,7 @@ public:
 
 private:
 	Vector<Point> points;
-	bool is_sorted;
+	bool is_sorted = true;
 	_FORCE_INLINE_ void _update_sorting() {
 		if (!is_sorted) {
 			points.sort();

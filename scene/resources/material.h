@@ -330,7 +330,7 @@ private:
 
 	struct ShaderData {
 		RID shader;
-		int users;
+		int users = 0;
 	};
 
 	static Map<MaterialKey, ShaderData> shader_map;
@@ -468,16 +468,16 @@ private:
 	float alpha_scissor_threshold;
 	float alpha_hash_scale;
 	float alpha_antialiasing_edge;
-	bool grow_enabled;
+	bool grow_enabled = false;
 	float ao_light_affect;
 	float grow;
 	int particles_anim_h_frames;
 	int particles_anim_v_frames;
 	bool particles_anim_loop;
-	Transparency transparency;
-	ShadingMode shading_mode;
+	Transparency transparency = TRANSPARENCY_DISABLED;
+	ShadingMode shading_mode = SHADING_MODE_PER_PIXEL;
 
-	TextureFilter texture_filter;
+	TextureFilter texture_filter = TEXTURE_FILTER_LINEAR_WITH_MIPMAPS;
 
 	Vector3 uv1_scale;
 	Vector3 uv1_offset;
@@ -487,37 +487,37 @@ private:
 	Vector3 uv2_offset;
 	float uv2_triplanar_sharpness;
 
-	DetailUV detail_uv;
+	DetailUV detail_uv = DETAIL_UV_1;
 
-	bool deep_parallax;
+	bool deep_parallax = false;
 	int deep_parallax_min_layers;
 	int deep_parallax_max_layers;
-	bool heightmap_parallax_flip_tangent;
-	bool heightmap_parallax_flip_binormal;
+	bool heightmap_parallax_flip_tangent = false;
+	bool heightmap_parallax_flip_binormal = false;
 
-	bool proximity_fade_enabled;
+	bool proximity_fade_enabled = false;
 	float proximity_fade_distance;
 
-	DistanceFadeMode distance_fade;
+	DistanceFadeMode distance_fade = DISTANCE_FADE_DISABLED;
 	float distance_fade_max_distance;
 	float distance_fade_min_distance;
 
-	BlendMode blend_mode;
-	BlendMode detail_blend_mode;
-	DepthDrawMode depth_draw_mode;
-	CullMode cull_mode;
-	bool flags[FLAG_MAX];
-	SpecularMode specular_mode;
-	DiffuseMode diffuse_mode;
+	BlendMode blend_mode = BLEND_MODE_MIX;
+	BlendMode detail_blend_mode = BLEND_MODE_MIX;
+	DepthDrawMode depth_draw_mode = DEPTH_DRAW_OPAQUE_ONLY;
+	CullMode cull_mode = CULL_BACK;
+	bool flags[FLAG_MAX] = {};
+	SpecularMode specular_mode = SPECULAR_SCHLICK_GGX;
+	DiffuseMode diffuse_mode = DIFFUSE_BURLEY;
 	BillboardMode billboard_mode;
-	EmissionOperator emission_op;
+	EmissionOperator emission_op = EMISSION_OP_ADD;
 
 	TextureChannel metallic_texture_channel;
 	TextureChannel roughness_texture_channel;
 	TextureChannel ao_texture_channel;
 	TextureChannel refraction_texture_channel;
 
-	AlphaAntiAliasing alpha_antialiasing_mode;
+	AlphaAntiAliasing alpha_antialiasing_mode = ALPHA_ANTIALIASING_OFF;
 
 	bool features[FEATURE_MAX];
 

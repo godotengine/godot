@@ -1243,20 +1243,5 @@ void TabContainer::_bind_methods() {
 }
 
 TabContainer::TabContainer() {
-	first_tab_cache = 0;
-	last_tab_cache = 0;
-	buttons_visible_cache = false;
-	menu_hovered = false;
-	highlight_arrow = -1;
-	tabs_ofs_cache = 0;
-	current = 0;
-	previous = 0;
-	align = ALIGN_CENTER;
-	tabs_visible = true;
-	all_tabs_in_front = false;
-	drag_to_rearrange_enabled = false;
-	tabs_rearrange_group = -1;
-	use_hidden_tabs_for_min_size = false;
-
 	connect("mouse_exited", callable_mp(this, &TabContainer::_on_mouse_exited));
 }

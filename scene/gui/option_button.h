@@ -38,7 +38,7 @@ class OptionButton : public Button {
 	GDCLASS(OptionButton, Button);
 
 	PopupMenu *popup;
-	int current;
+	int current = -1;
 
 	void _focused(int p_which);
 	void _selected(int p_which);

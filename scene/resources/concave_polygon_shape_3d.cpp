@@ -63,7 +63,7 @@ Vector<Vector3> ConcavePolygonShape3D::get_debug_mesh_lines() const {
 real_t ConcavePolygonShape3D::get_enclosing_radius() const {
 	Vector<Vector3> data = get_faces();
 	const Vector3 *read = data.ptr();
-	real_t r = 0;
+	real_t r = 0.0;
 	for (int i(0); i < data.size(); i++) {
 		r = MAX(read[i].length_squared(), r);
 	}

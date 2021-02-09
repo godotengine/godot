@@ -52,8 +52,8 @@ Size2 PopupMenu::_get_contents_minimum_size() const {
 	Size2 minsize = get_theme_stylebox("panel")->get_minimum_size(); // Accounts for margin in the margin container
 	minsize.x += scroll_container->get_v_scrollbar()->get_size().width * 2; // Adds a buffer so that the scrollbar does not render over the top of content
 
-	float max_w = 0;
-	float icon_w = 0;
+	float max_w = 0.0;
+	float icon_w = 0.0;
 	int check_w = MAX(get_theme_icon("checked")->get_width(), get_theme_icon("radio_checked")->get_width()) + hseparation;
 	int accel_max_w = 0;
 	bool has_check = false;
@@ -1655,19 +1655,6 @@ PopupMenu::PopupMenu() {
 	control->connect("draw", callable_mp(this, &PopupMenu::_draw_items));
 
 	connect("window_input", callable_mp(this, &PopupMenu::_gui_input));
-
-	mouse_over = -1;
-	submenu_over = -1;
-	initial_button_mask = 0;
-	during_grabbed_click = false;
-
-	allow_search = true;
-	search_time_msec = 0;
-	search_string = "";
-
-	set_hide_on_item_selection(true);
-	set_hide_on_checkable_item_selection(true);
-	set_hide_on_multistate_item_selection(false);
 
 	submenu_timer = memnew(Timer);
 	submenu_timer->set_wait_time(0.3);

@@ -47,11 +47,11 @@ public:
 private:
 	Ref<Mesh> mesh;
 	RID multimesh;
-	TransformFormat transform_format;
-	bool use_colors;
-	bool use_custom_data;
-	int instance_count;
-	int visible_instance_count;
+	TransformFormat transform_format = TRANSFORM_2D;
+	bool use_colors = false;
+	bool use_custom_data = false;
+	int instance_count = 0;
+	int visible_instance_count = -1;
 
 protected:
 	static void _bind_methods();

@@ -303,17 +303,7 @@ void CanvasLayer::_bind_methods() {
 }
 
 CanvasLayer::CanvasLayer() {
-	vp = nullptr;
-	scale = Vector2(1, 1);
-	rot = 0;
-	locrotscale_dirty = false;
-	layer = 1;
 	canvas = RS::get_singleton()->canvas_create();
-	custom_viewport = nullptr;
-
-	sort_index = 0;
-	follow_viewport = false;
-	follow_viewport_scale = 1.0;
 }
 
 CanvasLayer::~CanvasLayer() {

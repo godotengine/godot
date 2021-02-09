@@ -87,7 +87,7 @@ class VehicleWheel3D : public Node3D {
 		Vector3 m_wheelDirectionWS; //direction in worldspace
 		Vector3 m_wheelAxleWS; // axle in worldspace
 		bool m_isInContact = false;
-		PhysicsBody3D *m_groundObject; //could be general void* ptr
+		PhysicsBody3D *m_groundObject = nullptr; //could be general void* ptr
 	} m_raycastInfo;
 
 	void _update(PhysicsDirectBodyState3D *s);

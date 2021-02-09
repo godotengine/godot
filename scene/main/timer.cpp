@@ -217,12 +217,4 @@ void Timer::_bind_methods() {
 	BIND_ENUM_CONSTANT(TIMER_PROCESS_IDLE);
 }
 
-Timer::Timer() {
-	timer_process_mode = TIMER_PROCESS_IDLE;
-	autostart = false;
-	wait_time = 1;
-	one_shot = false;
-	time_left = -1;
-	processing = false;
-	paused = false;
-}
+Timer::Timer() {}

@@ -44,8 +44,8 @@ public:
 	};
 
 private:
-	bool vertical;
-	AlignMode align;
+	bool vertical = false;
+	AlignMode align = ALIGN_BEGIN;
 
 	void _resort();
 

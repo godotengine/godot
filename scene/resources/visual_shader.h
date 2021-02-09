@@ -57,10 +57,10 @@ public:
 	};
 
 	struct Connection {
-		int from_node;
-		int from_port;
-		int to_node;
-		int to_port;
+		int from_node = 0;
+		int from_port = 0;
+		int to_node = 0;
+		int to_port = 0;
 	};
 
 	struct DefaultTextureParam {
@@ -90,7 +90,7 @@ private:
 	Vector2 graph_offset;
 
 	struct RenderModeEnums {
-		Shader::Mode mode;
+		Shader::Mode mode = Shader::Mode::MODE_MAX;
 		const char *string;
 	};
 
@@ -107,7 +107,7 @@ private:
 			uint64_t node : 32;
 			uint64_t port : 32;
 		};
-		uint64_t key;
+		uint64_t key = 0;
 		bool operator<(const ConnectionKey &p_key) const {
 			return key < p_key.key;
 		}
@@ -265,7 +265,7 @@ class VisualShaderNodeCustom : public VisualShaderNode {
 
 	struct Port {
 		String name;
-		int type;
+		int type = 0;
 	};
 
 	List<Port> input_ports;
@@ -305,9 +305,9 @@ class VisualShaderNodeInput : public VisualShaderNode {
 	Shader::Mode shader_mode = Shader::MODE_MAX;
 
 	struct Port {
-		Shader::Mode mode;
-		VisualShader::Type shader_type;
-		PortType type;
+		Shader::Mode mode = Shader::Mode::MODE_MAX;
+		VisualShader::Type shader_type = VisualShader::Type::TYPE_MAX;
+		PortType type = PortType::PORT_TYPE_MAX;
 		const char *name;
 		const char *string;
 	};
@@ -356,13 +356,13 @@ class VisualShaderNodeOutput : public VisualShaderNode {
 
 public:
 	friend class VisualShader;
-	VisualShader::Type shader_type;
-	Shader::Mode shader_mode;
+	VisualShader::Type shader_type = VisualShader::Type::TYPE_MAX;
+	Shader::Mode shader_mode = Shader::Mode::MODE_MAX;
 
 	struct Port {
-		Shader::Mode mode;
-		VisualShader::Type shader_type;
-		PortType type;
+		Shader::Mode mode = Shader::Mode::MODE_MAX;
+		VisualShader::Type shader_type = VisualShader::Type::TYPE_MAX;
+		PortType type = PortType::PORT_TYPE_MAX;
 		const char *name;
 		const char *string;
 	};
@@ -519,7 +519,7 @@ protected:
 	bool editable = false;
 
 	struct Port {
-		PortType type;
+		PortType type = PortType::PORT_TYPE_MAX;
 		String name;
 	};
 

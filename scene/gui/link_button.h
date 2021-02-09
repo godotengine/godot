@@ -48,7 +48,7 @@ public:
 private:
 	String text;
 	Ref<TextLine> text_buf;
-	UnderlineMode underline_mode;
+	UnderlineMode underline_mode = UNDERLINE_MODE_ALWAYS;
 
 	Dictionary opentype_features;
 	String language;

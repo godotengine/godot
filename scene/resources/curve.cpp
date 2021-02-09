@@ -47,11 +47,6 @@ static _FORCE_INLINE_ T _bezier_interp(real_t t, T start, T control_1, T control
 const char *Curve::SIGNAL_RANGE_CHANGED = "range_changed";
 
 Curve::Curve() {
-	_bake_resolution = 100;
-	_baked_cache_dirty = false;
-	_min_value = 0;
-	_max_value = 1;
-	_minmax_set_once = 0b00;
 }
 
 int Curve::add_point(Vector2 p_pos, real_t left_tangent, real_t right_tangent, TangentMode left_mode, TangentMode right_mode) {
@@ -683,7 +678,7 @@ void Curve2D::_bake() const {
 
 	for (int i = 0; i < points.size() - 1; i++) {
 		float step = 0.1; // at least 10 substeps ought to be enough?
-		float p = 0;
+		float p = 0.0;
 
 		while (p < 1.0) {
 			float np = p + step;
@@ -993,12 +988,9 @@ void Curve2D::_bind_methods() {
 }
 
 Curve2D::Curve2D() {
-	baked_cache_dirty = false;
-	baked_max_ofs = 0;
 	/*	add_point(Vector2(-1,0,0));
 	add_point(Vector2(0,2,0));
 	add_point(Vector2(0,3,5));*/
-	bake_interval = 5;
 }
 
 /***********************************************************************************/
@@ -1178,7 +1170,7 @@ void Curve3D::_bake() const {
 
 	for (int i = 0; i < points.size() - 1; i++) {
 		float step = 0.1; // at least 10 substeps ought to be enough?
-		float p = 0;
+		float p = 0.0;
 
 		while (p < 1.0) {
 			float np = p + step;
@@ -1669,11 +1661,7 @@ void Curve3D::_bind_methods() {
 }
 
 Curve3D::Curve3D() {
-	baked_cache_dirty = false;
-	baked_max_ofs = 0;
 	/*	add_point(Vector3(-1,0,0));
 	add_point(Vector3(0,2,0));
 	add_point(Vector3(0,3,5));*/
-	bake_interval = 0.2;
-	up_vector_enabled = true;
 }

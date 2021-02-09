@@ -99,9 +99,9 @@ public:
 	struct Connection {
 		StringName from;
 		StringName to;
-		int from_port;
-		int to_port;
-		float activity;
+		int from_port = 0;
+		int to_port = 0;
+		float activity = 0.0;
 	};
 
 private:
@@ -121,41 +121,41 @@ private:
 	HScrollBar *h_scroll;
 	VScrollBar *v_scroll;
 
-	float port_grab_distance_horizontal;
+	float port_grab_distance_horizontal = 0.0;
 	float port_grab_distance_vertical;
 
-	bool connecting;
+	bool connecting = false;
 	String connecting_from;
-	bool connecting_out;
-	int connecting_index;
-	int connecting_type;
+	bool connecting_out = false;
+	int connecting_index = 0;
+	int connecting_type = 0;
 	Color connecting_color;
-	bool connecting_target;
+	bool connecting_target = false;
 	Vector2 connecting_to;
 	String connecting_target_to;
 	int connecting_target_index;
-	bool just_disconnected;
-	bool connecting_valid;
+	bool just_disconnected = false;
+	bool connecting_valid = false;
 	Vector2 click_pos;
 
-	bool dragging;
-	bool just_selected;
-	bool moving_selection;
+	bool dragging = false;
+	bool just_selected = false;
+	bool moving_selection = false;
 	Vector2 drag_accum;
 
-	float zoom;
+	float zoom = 1.0;
 
-	bool box_selecting;
-	bool box_selection_mode_additive;
+	bool box_selecting = false;
+	bool box_selection_mode_additive = false;
 	Point2 box_selecting_from;
 	Point2 box_selecting_to;
 	Rect2 box_selecting_rect;
 	List<GraphNode *> previus_selected;
 
-	bool setting_scroll_ofs;
-	bool right_disconnects;
-	bool updating;
-	bool awaiting_scroll_offset_update;
+	bool setting_scroll_ofs = false;
+	bool right_disconnects = false;
+	bool updating = false;
+	bool awaiting_scroll_offset_update = false;
 	List<Connection> connections;
 
 	float lines_thickness = 2.0f;
@@ -194,7 +194,7 @@ private:
 				uint32_t type_a;
 				uint32_t type_b;
 			};
-			uint64_t key;
+			uint64_t key = 0;
 		};
 
 		bool operator<(const ConnType &p_type) const {

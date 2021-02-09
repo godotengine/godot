@@ -39,7 +39,7 @@
 
 struct SpatialIndexer2D {
 	struct CellRef {
-		int ref;
+		int ref = 0;
 
 		_FORCE_INLINE_ int inc() {
 			ref++;
@@ -49,10 +49,6 @@ struct SpatialIndexer2D {
 			ref--;
 			return ref;
 		}
-
-		_FORCE_INLINE_ CellRef() {
-			ref = 0;
-		}
 	};
 
 	struct CellKey {
@@ -61,7 +57,7 @@ struct SpatialIndexer2D {
 				int32_t x;
 				int32_t y;
 			};
-			uint64_t key;
+			uint64_t key = 0;
 		};
 
 		bool operator==(const CellKey &p_key) const { return key == p_key.key; }
@@ -86,9 +82,9 @@ struct SpatialIndexer2D {
 
 	Map<Viewport *, ViewportData> viewports;
 
-	bool changed;
+	bool changed = false;
 
-	uint64_t pass;
+	uint64_t pass = 0;
 
 	void _notifier_update_cells(VisibilityNotifier2D *p_notifier, const Rect2 &p_rect, bool p_add) {
 		Point2i begin = p_rect.position;
@@ -287,8 +283,6 @@ struct SpatialIndexer2D {
 	}
 
 	SpatialIndexer2D() {
-		pass = 0;
-		changed = false;
 		cell_size = GLOBAL_DEF("world/2d/cell_size", 100);
 	}
 };

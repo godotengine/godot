@@ -42,8 +42,6 @@
 #endif
 
 GradientEdit::GradientEdit() {
-	grabbed = -1;
-	grabbing = false;
 	set_focus_mode(FOCUS_ALL);
 
 	popup = memnew(PopupPanel);

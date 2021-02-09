@@ -75,7 +75,7 @@ private:
 		Color color;
 		String start_key;
 		String end_key;
-		bool line_only;
+		bool line_only = false;
 	};
 	Vector<ColorRegion> color_regions;
 	Map<int, int> color_region_cache;

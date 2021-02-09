@@ -1657,8 +1657,6 @@ void GraphEdit::_bind_methods() {
 GraphEdit::GraphEdit() {
 	set_focus_mode(FOCUS_ALL);
 
-	awaiting_scroll_offset_update = false;
-	top_layer = nullptr;
 	top_layer = memnew(GraphEditFilter(this));
 	add_child(top_layer);
 	top_layer->set_mouse_filter(MOUSE_FILTER_PASS);
@@ -1681,13 +1679,6 @@ GraphEdit::GraphEdit() {
 	v_scroll->set_name("_v_scroll");
 	top_layer->add_child(v_scroll);
 
-	updating = false;
-	connecting = false;
-	right_disconnects = false;
-
-	box_selecting = false;
-	dragging = false;
-
 	//set large minmax so it can scroll even if not resized yet
 	h_scroll->set_min(-10000);
 	h_scroll->set_max(10000);
@@ -1697,8 +1688,6 @@ GraphEdit::GraphEdit() {
 
 	h_scroll->connect("value_changed", callable_mp(this, &GraphEdit::_scroll_moved));
 	v_scroll->connect("value_changed", callable_mp(this, &GraphEdit::_scroll_moved));
-
-	zoom = 1;
 
 	zoom_hb = memnew(HBoxContainer);
 	top_layer->add_child(zoom_hb);
@@ -1768,7 +1757,5 @@ GraphEdit::GraphEdit() {
 	minimap->set_offset(Side::SIDE_BOTTOM, -MINIMAP_OFFSET);
 	minimap->connect("draw", callable_mp(this, &GraphEdit::_minimap_draw));
 
-	setting_scroll_ofs = false;
-	just_disconnected = false;
 	set_clip_contents(true);
 }

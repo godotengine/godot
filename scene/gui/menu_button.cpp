@@ -118,7 +118,6 @@ void MenuButton::set_disable_shortcuts(bool p_disabled) {
 }
 
 MenuButton::MenuButton() {
-	switch_on_hover = false;
 	set_flat(true);
 	set_toggle_mode(true);
 	set_disable_shortcuts(false);

@@ -41,8 +41,8 @@ class VideoPlayer : public Control {
 
 	struct Output {
 		AudioFrame vol;
-		int bus_index;
-		Viewport *viewport; //pointer only used for reference to previous mix
+		int bus_index = 0;
+		Viewport *viewport = nullptr; //pointer only used for reference to previous mix
 	};
 	Ref<VideoStreamPlayback> playback;
 	Ref<VideoStream> stream;
@@ -56,17 +56,18 @@ class VideoPlayer : public Control {
 
 	AudioRBResampler resampler;
 	Vector<AudioFrame> mix_buffer;
-	int wait_resampler, wait_resampler_limit;
+	int wait_resampler = 0;
+	int wait_resampler_limit = 2;
 
-	bool paused;
-	bool autoplay;
-	float volume;
-	double last_audio_time;
-	bool expand;
-	bool loops;
-	int buffering_ms;
-	int audio_track;
-	int bus_index;
+	bool paused = false;
+	bool autoplay = false;
+	float volume = 1.0;
+	double last_audio_time = 0.0;
+	bool expand = true;
+	bool loops = false;
+	int buffering_ms = 500;
+	int audio_track = 0;
+	int bus_index = 0;
 
 	StringName bus;
 

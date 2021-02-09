@@ -112,7 +112,5 @@ void CapsuleShape2D::_bind_methods() {
 
 CapsuleShape2D::CapsuleShape2D() :
 		Shape2D(PhysicsServer2D::get_singleton()->capsule_shape_create()) {
-	radius = 10;
-	height = 20;
 	_update_shape();
 }

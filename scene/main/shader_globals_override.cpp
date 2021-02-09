@@ -277,6 +277,4 @@ void ShaderGlobalsOverride::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_activate"), &ShaderGlobalsOverride::_activate);
 }
 
-ShaderGlobalsOverride::ShaderGlobalsOverride() {
-	active = false;
-}
+ShaderGlobalsOverride::ShaderGlobalsOverride() {}

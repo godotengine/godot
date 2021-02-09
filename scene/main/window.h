@@ -90,7 +90,7 @@ private:
 	mutable Size2i min_size;
 	mutable Size2i max_size;
 	mutable Mode mode = MODE_WINDOWED;
-	mutable bool flags[FLAG_MAX];
+	mutable bool flags[FLAG_MAX] = {};
 	bool visible = true;
 	bool focused = false;
 
@@ -106,8 +106,8 @@ private:
 	void _update_child_controls();
 
 	Size2i content_scale_size;
-	ContentScaleMode content_scale_mode;
-	ContentScaleAspect content_scale_aspect;
+	ContentScaleMode content_scale_mode = CONTENT_SCALE_MODE_DISABLED;
+	ContentScaleAspect content_scale_aspect = CONTENT_SCALE_ASPECT_IGNORE;
 
 	void _make_window();
 	void _clear_window();

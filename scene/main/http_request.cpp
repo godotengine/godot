@@ -638,29 +638,11 @@ void HTTPRequest::_bind_methods() {
 }
 
 HTTPRequest::HTTPRequest() {
-	port = 80;
-	redirections = 0;
-	max_redirects = 8;
-	body_len = -1;
-	got_response = false;
-	validate_ssl = false;
-	use_ssl = false;
-	accept_gzip = true;
-	response_code = 0;
-	request_sent = false;
-	requesting = false;
 	client.instance();
-	use_threads = false;
-	thread_done = false;
-	downloaded = 0;
-	body_size_limit = -1;
-	file = nullptr;
-
 	timer = memnew(Timer);
 	timer->set_one_shot(true);
 	timer->connect("timeout", callable_mp(this, &HTTPRequest::_timeout));
 	add_child(timer);
-	timeout = 0;
 }
 
 HTTPRequest::~HTTPRequest() {

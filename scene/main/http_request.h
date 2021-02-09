@@ -60,42 +60,42 @@ public:
 	};
 
 private:
-	bool requesting;
+	bool requesting = false;
 
 	String request_string;
 	String url;
-	int port;
+	int port = 80;
 	Vector<String> headers;
-	bool validate_ssl;
-	bool use_ssl;
+	bool validate_ssl = false;
+	bool use_ssl = false;
 	HTTPClient::Method method;
 	Vector<uint8_t> request_data;
 
-	bool request_sent;
+	bool request_sent = false;
 	Ref<HTTPClient> client;
 	PackedByteArray body;
-	volatile bool use_threads;
-	bool accept_gzip;
+	volatile bool use_threads = false;
+	bool accept_gzip = true;
 
-	bool got_response;
-	int response_code;
+	bool got_response = false;
+	int response_code = 0;
 	Vector<String> response_headers;
 
 	String download_to_file;
 
-	FileAccess *file;
+	FileAccess *file = nullptr;
 
-	int body_len;
-	volatile int downloaded;
-	int body_size_limit;
+	int body_len = -1;
+	volatile int downloaded = 0;
+	int body_size_limit = -1;
 
-	int redirections;
+	int redirections = 0;
 
 	bool _update_connection();
 
-	int max_redirects;
+	int max_redirects = 8;
 
-	int timeout;
+	int timeout = 0;
 
 	void _redirect_request(const String &p_new_url);
 
@@ -107,8 +107,8 @@ private:
 	bool has_header(const PackedStringArray &p_headers, const String &p_header_name);
 	String get_header_value(const PackedStringArray &p_headers, const String &header_name);
 
-	volatile bool thread_done;
-	volatile bool thread_request_quit;
+	volatile bool thread_done = false;
+	volatile bool thread_request_quit = false;
 
 	Thread thread;
 

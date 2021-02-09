@@ -103,7 +103,7 @@ private:
 	// Background
 	BGMode bg_mode = BG_CLEAR_COLOR;
 	Ref<Sky> bg_sky;
-	float bg_sky_custom_fov = 0;
+	float bg_sky_custom_fov = 0.0;
 	Vector3 bg_sky_rotation;
 	Color bg_color;
 	float bg_energy = 1.0;
@@ -125,7 +125,7 @@ private:
 	float tonemap_white = 1.0;
 	bool tonemap_auto_exposure_enabled = false;
 	float tonemap_auto_exposure_min = 0.05;
-	float tonemap_auto_exposure_max = 8;
+	float tonemap_auto_exposure_max = 8.0;
 	float tonemap_auto_exposure_speed = 0.5;
 	float tonemap_auto_exposure_grey = 0.4;
 	void _update_tonemap();

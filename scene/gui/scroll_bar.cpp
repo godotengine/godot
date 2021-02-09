@@ -434,7 +434,7 @@ double ScrollBar::get_area_size() const {
 }
 
 double ScrollBar::get_area_offset() const {
-	double ofs = 0;
+	double ofs = 0.0;
 
 	if (orientation == VERTICAL) {
 		ofs += get_theme_stylebox("hscroll")->get_margin(SIDE_TOP);

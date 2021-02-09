@@ -1098,7 +1098,7 @@ void Tween::seek(real_t p_time) {
 real_t Tween::tell() const {
 	// We want to grab the position of the furthest along tween
 	pending_update++;
-	real_t pos = 0;
+	real_t pos = 0.0;
 
 	// For each interpolation...
 	for (const List<InterpolateData>::Element *E = interpolates.front(); E; E = E->next()) {
@@ -1122,7 +1122,7 @@ real_t Tween::get_runtime() const {
 	pending_update++;
 
 	// For each interpolation...
-	real_t runtime = 0;
+	real_t runtime = 0.0;
 	for (const List<InterpolateData>::Element *E = interpolates.front(); E; E = E->next()) {
 		// Get the tween data and see if it's runtime is greater than the previous tweens
 		const InterpolateData &data = E->get();

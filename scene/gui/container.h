@@ -36,7 +36,7 @@
 class Container : public Control {
 	GDCLASS(Container, Control);
 
-	bool pending_sort;
+	bool pending_sort = false;
 	void _sort_children();
 	void _child_minsize_changed();
 

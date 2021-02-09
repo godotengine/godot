@@ -699,18 +699,7 @@ void ResourceLoaderText::set_translation_remapped(bool p_remapped) {
 	translation_remapped = p_remapped;
 }
 
-ResourceLoaderText::ResourceLoaderText() {
-	use_nocache = false;
-
-	resources_total = 0;
-	resource_current = 0;
-
-	progress = nullptr;
-	lines = false;
-	translation_remapped = false;
-	use_sub_threads = false;
-	error = OK;
-}
+ResourceLoaderText::ResourceLoaderText() {}
 
 ResourceLoaderText::~ResourceLoaderText() {
 	memdelete(f);

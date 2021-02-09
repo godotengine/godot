@@ -100,7 +100,7 @@ private:
 			uint32_t collision_scale : 1;
 		};
 
-		uint32_t key;
+		uint32_t key = 0;
 
 		bool operator<(const MaterialKey &p_key) const {
 			return key < p_key.key;
@@ -109,7 +109,7 @@ private:
 
 	struct ShaderData {
 		RID shader;
-		int users;
+		int users = 0;
 	};
 
 	static Map<MaterialKey, ShaderData> shader_map;
@@ -235,7 +235,7 @@ private:
 	Ref<Texture2D> emission_point_texture;
 	Ref<Texture2D> emission_normal_texture;
 	Ref<Texture2D> emission_color_texture;
-	int emission_point_count;
+	int emission_point_count = 1;
 
 	bool anim_loop;
 

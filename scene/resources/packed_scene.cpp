@@ -1589,8 +1589,6 @@ void SceneState::_bind_methods() {
 }
 
 SceneState::SceneState() {
-	base_scene_idx = -1;
-	last_modified_time = 0;
 }
 
 ////////////////

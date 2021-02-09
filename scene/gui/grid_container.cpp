@@ -261,6 +261,4 @@ Size2 GridContainer::get_minimum_size() const {
 	return ms;
 }
 
-GridContainer::GridContainer() {
-	columns = 1;
-}
+GridContainer::GridContainer() {}

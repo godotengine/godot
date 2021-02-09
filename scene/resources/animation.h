@@ -65,28 +65,19 @@ public:
 
 private:
 	struct Track {
-		TrackType type;
-		InterpolationType interpolation;
-		bool loop_wrap;
+		TrackType type = TrackType::TYPE_ANIMATION;
+		InterpolationType interpolation = INTERPOLATION_LINEAR;
+		bool loop_wrap = true;
 		NodePath path; // path to something
-		bool imported;
-		bool enabled;
-		Track() {
-			interpolation = INTERPOLATION_LINEAR;
-			imported = false;
-			loop_wrap = true;
-			enabled = true;
-		}
+		bool imported = false;
+		bool enabled = false;
+		Track() {}
 		virtual ~Track() {}
 	};
 
 	struct Key {
-		float transition;
-		float time; // time in secs
-		Key() {
-			transition = 1;
-			time = 0;
-		}
+		float transition = 1.0;
+		float time = 0.0; // time in secs
 	};
 
 	// transform key holds either Vector3 or Quaternion
@@ -112,13 +103,12 @@ private:
 	/* PROPERTY VALUE TRACK */
 
 	struct ValueTrack : public Track {
-		UpdateMode update_mode;
-		bool update_on_seek;
+		UpdateMode update_mode = UPDATE_CONTINUOUS;
+		bool update_on_seek = false;
 		Vector<TKey<Variant>> values;
 
 		ValueTrack() {
 			type = TYPE_VALUE;
-			update_mode = UPDATE_CONTINUOUS;
 		}
 	};
 
@@ -139,7 +129,7 @@ private:
 	struct BezierKey {
 		Vector2 in_handle; //relative (x always <0)
 		Vector2 out_handle; //relative (x always >0)
-		float value;
+		float value = 0.0;
 	};
 
 	struct BezierTrack : public Track {
@@ -154,11 +144,9 @@ private:
 
 	struct AudioKey {
 		RES stream;
-		float start_offset; //offset from start
-		float end_offset; //offset from end, if 0 then full length or infinite
+		float start_offset = 0.0; //offset from start
+		float end_offset = 0.0; //offset from end, if 0 then full length or infinite
 		AudioKey() {
-			start_offset = 0;
-			end_offset = 0;
 		}
 	};
 
@@ -217,9 +205,9 @@ private:
 	_FORCE_INLINE_ void _value_track_get_key_indices_in_range(const ValueTrack *vt, float from_time, float to_time, List<int> *p_indices) const;
 	_FORCE_INLINE_ void _method_track_get_key_indices_in_range(const MethodTrack *mt, float from_time, float to_time, List<int> *p_indices) const;
 
-	float length;
-	float step;
-	bool loop;
+	float length = 1.0;
+	float step = 0.1;
+	bool loop = false;
 
 	// bind helpers
 private:

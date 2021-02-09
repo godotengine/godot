@@ -145,9 +145,9 @@ Point2 TextureProgressBar::unit_val_to_uv(float val) {
 	float angle = (val * Math_TAU) - Math_PI * 0.5;
 	Point2 dir = Vector2(Math::cos(angle), Math::sin(angle));
 	float t1 = 1.0;
-	float cp = 0;
-	float cq = 0;
-	float cr = 0;
+	float cp = 0.0;
+	float cq = 0.0;
+	float cr = 0.0;
 	float edgeLeft = 0.0;
 	float edgeRight = 1.0;
 	float edgeBottom = 0.0;
@@ -540,17 +540,5 @@ void TextureProgressBar::_bind_methods() {
 }
 
 TextureProgressBar::TextureProgressBar() {
-	mode = FILL_LEFT_TO_RIGHT;
-	rad_init_angle = 0;
-	rad_center_off = Point2();
-	rad_max_degrees = 360;
 	set_mouse_filter(MOUSE_FILTER_PASS);
-
-	nine_patch_stretch = false;
-	stretch_margin[SIDE_LEFT] = 0;
-	stretch_margin[SIDE_RIGHT] = 0;
-	stretch_margin[SIDE_BOTTOM] = 0;
-	stretch_margin[SIDE_TOP] = 0;
-
-	tint_under = tint_progress = tint_over = Color(1, 1, 1);
 }

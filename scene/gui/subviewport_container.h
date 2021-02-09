@@ -36,8 +36,8 @@
 class SubViewportContainer : public Container {
 	GDCLASS(SubViewportContainer, Container);
 
-	bool stretch;
-	int shrink;
+	bool stretch = false;
+	int shrink = 1;
 
 protected:
 	void _notification(int p_what);

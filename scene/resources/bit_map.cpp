@@ -346,7 +346,7 @@ static Vector<Vector2> rdp(const Vector<Vector2> &v, float optimization) {
 	}
 
 	int index = -1;
-	float dist = 0;
+	float dist = 0.0;
 	//not looping first and last point
 	for (size_t i = 1, size = v.size(); i < size - 1; ++i) {
 		float cdist = perpendicular_distance(v[i], v[0], v[v.size() - 1]);
@@ -406,8 +406,8 @@ static Vector<Vector2> reduce(const Vector<Vector2> &points, const Rect2i &rect,
 
 struct FillBitsStackEntry {
 	Point2i pos;
-	int i;
-	int j;
+	int i = 0;
+	int j = 0;
 };
 
 static void fill_bits(const BitMap *p_src, Ref<BitMap> &p_map, const Point2i &p_pos, const Rect2i &rect) {
@@ -677,9 +677,6 @@ void BitMap::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::DICTIONARY, "data", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR | PROPERTY_USAGE_INTERNAL), "_set_data", "_get_data");
 }
 
-BitMap::BitMap() {
-	width = 0;
-	height = 0;
-}
+BitMap::BitMap() {}
 
 //////////////////////////////////////

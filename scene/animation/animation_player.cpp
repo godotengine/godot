@@ -1132,7 +1132,7 @@ void AnimationPlayer::play(const StringName &p_name, float p_custom_blend, float
 	Playback &c = playback;
 
 	if (c.current.from) {
-		float blend_time = 0;
+		float blend_time = 0.0;
 		// find if it can blend
 		BlendKey bk;
 		bk.from = c.current.from->name;

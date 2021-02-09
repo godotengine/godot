@@ -174,16 +174,7 @@ NinePatchRect::AxisStretchMode NinePatchRect::get_v_axis_stretch_mode() const {
 }
 
 NinePatchRect::NinePatchRect() {
-	margin[SIDE_LEFT] = 0;
-	margin[SIDE_RIGHT] = 0;
-	margin[SIDE_BOTTOM] = 0;
-	margin[SIDE_TOP] = 0;
-
 	set_mouse_filter(MOUSE_FILTER_IGNORE);
-	draw_center = true;
-
-	axis_h = AXIS_STRETCH_MODE_STRETCH;
-	axis_v = AXIS_STRETCH_MODE_STRETCH;
 }
 
 NinePatchRect::~NinePatchRect() {

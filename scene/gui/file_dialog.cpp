@@ -852,8 +852,6 @@ void FileDialog::set_default_show_hidden_files(bool p_show) {
 FileDialog::FileDialog() {
 	show_hidden_files = default_show_hidden_files;
 
-	mode_overrides_title = true;
-
 	vbox = memnew(VBoxContainer);
 	add_child(vbox);
 	vbox->connect("theme_changed", callable_mp(this, &FileDialog::_theme_changed));
@@ -925,7 +923,6 @@ FileDialog::FileDialog() {
 	vbox->add_child(file_box);
 
 	dir_access = DirAccess::create(DirAccess::ACCESS_RESOURCES);
-	access = ACCESS_RESOURCES;
 	_update_drives();
 
 	connect("confirmed", callable_mp(this, &FileDialog::_action_pressed));
@@ -967,7 +964,6 @@ FileDialog::FileDialog() {
 
 	set_hide_on_ok(false);
 
-	invalidated = true;
 	if (register_func) {
 		register_func(this);
 	}

@@ -277,11 +277,7 @@ void EditorFeatureProfile::_bind_methods() {
 	BIND_ENUM_CONSTANT(FEATURE_MAX);
 }
 
-EditorFeatureProfile::EditorFeatureProfile() {
-	for (int i = 0; i < FEATURE_MAX; i++) {
-		features_disabled[i] = false;
-	}
-}
+EditorFeatureProfile::EditorFeatureProfile() {}
 
 //////////////////////////
 

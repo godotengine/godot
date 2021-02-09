@@ -44,8 +44,8 @@ class GradientEdit : public Control {
 
 	Ref<ImageTexture> checker;
 
-	bool grabbing;
-	int grabbed;
+	bool grabbing = false;
+	int grabbed = -1;
 	Vector<Gradient::Point> points;
 
 	void _draw_checker(int x, int y, int w, int h);
