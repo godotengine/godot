@@ -80,8 +80,8 @@ class BroadPhase2DHashGrid : public BroadPhase2DSW {
 	struct PairKey {
 		union {
 			struct {
-				ID a;
-				ID b;
+				ID a = 0;
+				ID b = 0;
 			};
 			uint64_t key = 0;
 		};
@@ -124,8 +124,8 @@ class BroadPhase2DHashGrid : public BroadPhase2DSW {
 	struct PosKey {
 		union {
 			struct {
-				int32_t x;
-				int32_t y;
+				int32_t x = 0;
+				int32_t y = 0;
 			};
 			uint64_t key = 0;
 		};

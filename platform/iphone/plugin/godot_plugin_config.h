@@ -66,7 +66,10 @@ struct PluginConfigIOS {
 	inline static const char *DEPENDENCIES_SYSTEM_KEY = "system";
 	inline static const char *DEPENDENCIES_CAPABILITIES_KEY = "capabilities";
 	inline static const char *DEPENDENCIES_FILES_KEY = "files";
+<<<<<<< HEAD
 	inline static const char *DEPENDENCIES_LINKER_FLAGS = "linker_flags";
+=======
+>>>>>>> refs/remotes/origin/master
 
 	inline static const char *PLIST_SECTION = "plist";
 
@@ -197,6 +200,7 @@ static inline bool validate_plugin(PluginConfigIOS &plugin_config) {
 	return plugin_config.valid_config;
 }
 
+<<<<<<< HEAD
 static inline String get_plugin_main_binary(PluginConfigIOS &plugin_config, bool p_debug) {
 	if (!plugin_config.supports_targets) {
 		return plugin_config.binary;
@@ -210,6 +214,8 @@ static inline String get_plugin_main_binary(PluginConfigIOS &plugin_config, bool
 	return plugin_binary_dir.plus_file(plugin_file);
 }
 
+=======
+>>>>>>> refs/remotes/origin/master
 static inline uint64_t get_plugin_modification_time(const PluginConfigIOS &plugin_config, const String &config_path) {
 	uint64_t last_updated = FileAccess::get_modified_time(config_path);
 
@@ -264,8 +270,11 @@ static inline PluginConfigIOS load_plugin_config(Ref<ConfigFile> config_file, co
 		plugin_config.files_to_copy = resolve_local_dependencies(config_base_dir, files);
 
 		plugin_config.capabilities = config_file->get_value(PluginConfigIOS::DEPENDENCIES_SECTION, PluginConfigIOS::DEPENDENCIES_CAPABILITIES_KEY, Vector<String>());
+<<<<<<< HEAD
 
 		plugin_config.linker_flags = config_file->get_value(PluginConfigIOS::DEPENDENCIES_SECTION, PluginConfigIOS::DEPENDENCIES_LINKER_FLAGS, Vector<String>());
+=======
+>>>>>>> refs/remotes/origin/master
 	}
 
 	if (config_file->has_section(PluginConfigIOS::PLIST_SECTION)) {

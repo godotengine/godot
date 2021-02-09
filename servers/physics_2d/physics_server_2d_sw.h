@@ -67,7 +67,7 @@ class PhysicsServer2DSW : public PhysicsServer2D {
 	mutable RID_PtrOwner<Body2DSW, true> body_owner;
 	mutable RID_PtrOwner<Joint2DSW, true> joint_owner;
 
-	static PhysicsServer2DSW *singletonsw;
+	static PhysicsServer2DSW *singletonsw = nullptr;
 
 	//void _clear_query(Query2DSW *p_query);
 	friend class CollisionObject2DSW;

@@ -79,8 +79,8 @@ public:
 class PinJoint2DSW : public Joint2DSW {
 	union {
 		struct {
-			Body2DSW *A;
-			Body2DSW *B;
+			Body2DSW *A = nullptr;
+			Body2DSW *B = nullptr;
 		};
 
 		Body2DSW *_arr[2] = {};
@@ -110,8 +110,8 @@ public:
 class GrooveJoint2DSW : public Joint2DSW {
 	union {
 		struct {
-			Body2DSW *A;
-			Body2DSW *B;
+			Body2DSW *A = nullptr;
+			Body2DSW *B = nullptr;
 		};
 
 		Body2DSW *_arr[2] = {};
@@ -144,8 +144,8 @@ public:
 class DampedSpringJoint2DSW : public Joint2DSW {
 	union {
 		struct {
-			Body2DSW *A;
-			Body2DSW *B;
+			Body2DSW *A = nullptr;
+			Body2DSW *B = nullptr;
 		};
 
 		Body2DSW *_arr[2] = {};

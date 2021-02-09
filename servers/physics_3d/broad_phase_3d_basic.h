@@ -49,8 +49,8 @@ class BroadPhase3DBasic : public BroadPhase3DSW {
 	struct PairKey {
 		union {
 			struct {
-				ID a;
-				ID b;
+				ID a = 0;
+				ID b = 0;
 			};
 			uint64_t key = 0;
 		};

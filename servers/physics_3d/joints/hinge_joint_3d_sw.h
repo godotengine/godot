@@ -56,8 +56,8 @@ subject to the following restrictions:
 class HingeJoint3DSW : public Joint3DSW {
 	union {
 		struct {
-			Body3DSW *A;
-			Body3DSW *B;
+			Body3DSW *A = nullptr;
+			Body3DSW *B = nullptr;
 		};
 
 		Body3DSW *_arr[2] = {};
