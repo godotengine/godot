@@ -3072,39 +3072,46 @@ int String::rfindn(const String &p_str, int p_from) const {
 
 bool String::ends_with(const String &p_string) const {
 	int l = p_string.length();
+	if (l > length()) {
+		return false;
+	}
+
 	if (l == 0) {
 		return true;
 	}
 
-	int pos = rfind(p_string);
-	if (pos == -1) {
-		return false;
-	}
-	return pos + l == length();
-}
+	const char32_t *p = &p_string[0];
+	const char32_t *s = &operator[](length() - l);
 
-bool String::begins_with(const String &p_string) const {
-	if (p_string.length() > length()) {
-		return false;
-	}
-
-	int l = p_string.length();
-	if (l == 0) {
-		return true;
-	}
-
-	const char32_t *src = &p_string[0];
-	const char32_t *str = &operator[](0);
-
-	int i = 0;
-	for (; i < l; i++) {
-		if (src[i] != str[i]) {
+	for (int i = 0; i < l; i++) {
+		if (p[i] != s[i]) {
 			return false;
 		}
 	}
 
-	// only if i == l the p_string matches the beginning
-	return i == l;
+	return true;
+}
+
+bool String::begins_with(const String &p_string) const {
+	int l = p_string.length();
+	if (l > length()) {
+		return false;
+	}
+
+	if (l == 0) {
+		return true;
+	}
+
+	const char32_t *p = &p_string[0];
+	const char32_t *s = &operator[](0);
+
+	for (int i = 0; i < l; i++) {
+		if (p[i] != s[i]) {
+			return false;
+		}
+	}
+
+	return true;
 }
 
 bool String::begins_with(const char *p_string) const {
