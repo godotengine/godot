@@ -676,8 +676,6 @@ void FBXMeshData::reorganize_vertices(
 			}
 		}
 
-		need_duplication = false;
-
 		if (need_duplication) {
 			const Vertex old_index = index;
 			const Vertex new_index = r_vertices.size();
