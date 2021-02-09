@@ -95,7 +95,7 @@ void MeshInstance3D::_get_property_list(List<PropertyInfo> *p_list) const {
 	ls.sort();
 
 	for (List<String>::Element *E = ls.front(); E; E = E->next()) {
-		p_list->push_back(PropertyInfo(Variant::FLOAT, E->get(), PROPERTY_HINT_RANGE, "0,1,0.00001"));
+		p_list->push_back(PropertyInfo(Variant::FLOAT, E->get(), PROPERTY_HINT_RANGE, "-1,1,0.00001"));
 	}
 
 	if (mesh.is_valid()) {
