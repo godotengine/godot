@@ -131,7 +131,7 @@ void GDNativeLibraryEditor::_on_item_button(Object *item, int column, int id) {
 		EditorFileDialog::FileMode mode = EditorFileDialog::FILE_MODE_OPEN_FILE;
 		if (id == BUTTON_SELECT_DEPENDENCES) {
 			mode = EditorFileDialog::FILE_MODE_OPEN_FILES;
-		} else if (treeItem->get_text(0) == "iOS") {
+		} else if (treeItem->get_text(0) == "iOS" || treeItem->get_text(0) == "tvOS") {
 			mode = EditorFileDialog::FILE_MODE_OPEN_ANY;
 		}
 
@@ -323,6 +323,15 @@ GDNativeLibraryEditor::GDNativeLibraryEditor() {
 		// Frameworks is actually a folder with files.
 		platform_ios.library_extension = "*.framework; Framework, *.xcframework; Binary Framework, *.a; Static Library, *.dylib; Dynamic Library";
 		platforms["iOS"] = platform_ios;
+
+		NativePlatformConfig platform_tvos;
+		platform_tvos.name = "tvOS";
+		platform_tvos.entries.push_back("arm64");
+		platform_tvos.entries.push_back("x86_64");
+		// tvOS can use both Static and Dynamic libraries.
+		// Frameworks is actually a folder with files.
+		platform_tvos.library_extension = "*.framework; Framework, *.xcframework; Binary Framework, *.a; Static Library, *.dylib; Dynamic Library";
+		platforms["tvOS"] = platform_tvos;
 	}
 
 	VBoxContainer *container = memnew(VBoxContainer);
