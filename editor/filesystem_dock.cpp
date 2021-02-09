@@ -1294,14 +1294,26 @@ void FileSystemDock::_make_scene_confirm() {
 void FileSystemDock::_file_removed(String p_file) {
 	emit_signal("file_removed", p_file);
 
-	path = "res://";
+	// Find the closest parent directory available, in case multiple items were deleted along the same path.
+	path = p_file.get_base_dir();
+	DirAccessRef da = DirAccess::create(DirAccess::ACCESS_RESOURCES);
+	while (!da->dir_exists(path)) {
+		path = path.get_base_dir();
+	}
+
 	current_path->set_text(path);
 }
 
 void FileSystemDock::_folder_removed(String p_folder) {
 	emit_signal("folder_removed", p_folder);
 
-	path = "res://";
+	// Find the closest parent directory available, in case multiple items were deleted along the same path.
+	path = p_folder.get_base_dir();
+	DirAccessRef da = DirAccess::create(DirAccess::ACCESS_RESOURCES);
+	while (!da->dir_exists(path)) {
+		path = path.get_base_dir();
+	}
+
 	current_path->set_text(path);
 }
 
@@ -1469,7 +1481,7 @@ void FileSystemDock::_move_operation_confirm(const String &p_to_path, bool overw
 		print_verbose("FileSystem: saving moved scenes.");
 		_save_scenes_after_move(file_renames);
 
-		path = "res://";
+		path = p_to_path;
 		current_path->set_text(path);
 	}
 }
