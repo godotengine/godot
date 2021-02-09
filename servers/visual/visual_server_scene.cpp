@@ -3672,6 +3672,14 @@ bool VisualServerScene::free(RID p_rid) {
 VisualServerScene *VisualServerScene::singleton = NULL;
 
 VisualServerScene::VisualServerScene() {
+	instance_cull_count = 0;
+	light_cull_count = 0;
+	directional_light_count = 0;
+	reflection_probe_cull_count = 0;
+	probe_bake_mutex = NULL;
+	probe_bake_sem = NULL;
+	probe_bake_thread = NULL;
+	probe_bake_thread_exit = false;
 
 #ifndef NO_THREADS
 	probe_bake_sem = Semaphore::create();

@@ -117,6 +117,7 @@ void SignalAwaiterHandle::_bind_methods() {
 
 SignalAwaiterHandle::SignalAwaiterHandle(MonoObject *p_managed) :
 		MonoGCHandle(MonoGCHandle::new_strong_handle(p_managed), STRONG_HANDLE) {
+	completed = false;
 
 #ifdef DEBUG_ENABLED
 	conn_target_id = 0;

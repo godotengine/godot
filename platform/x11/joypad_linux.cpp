@@ -54,6 +54,9 @@ JoypadLinux::Joypad::Joypad() {
 	fd = -1;
 	dpad = 0;
 	devpath = "";
+	force_feedback = false;
+	ff_effect_id = 0;
+	ff_effect_timestamp = 0;
 	for (int i = 0; i < MAX_ABS; i++) {
 		abs_info[i] = NULL;
 	}

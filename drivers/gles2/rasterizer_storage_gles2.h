@@ -172,6 +172,7 @@ public:
 				vertex_mem(0) {
 			render.reset();
 			render_final.reset();
+			snap.reset();
 		}
 
 	} info;
@@ -229,6 +230,7 @@ public:
 		virtual void material_changed_notify() {}
 
 		Geometry() {
+			type = GEOMETRY_INVALID;
 			last_pass = 0;
 			index = 0;
 		}
@@ -296,6 +298,7 @@ public:
 				flags(0),
 				width(0),
 				height(0),
+				depth(0),
 				alloc_width(0),
 				alloc_height(0),
 				format(Image::FORMAT_L8),
@@ -305,6 +308,7 @@ public:
 				total_data_size(0),
 				ignore_mipmaps(false),
 				compressed(false),
+				srgb(false),
 				mipmaps(0),
 				resize_to_po2(false),
 				active(false),
@@ -532,6 +536,10 @@ public:
 			custom_code_id = 0;
 			version = 1;
 			last_pass = 0;
+			texture_count = 0;
+			index = 0;
+			uses_vertex_time = false;
+			uses_fragment_time = false;
 		}
 	};
 
@@ -588,6 +596,7 @@ public:
 			line_width = 1.0;
 			last_pass = 0;
 			render_priority = 0;
+			index = 0;
 		}
 	};
 
@@ -688,6 +697,8 @@ public:
 				primitive(VS::PRIMITIVE_POINTS),
 				active(false),
 				total_data_size(0) {
+			format = 0;
+			max_bone = 0;
 		}
 	};
 
@@ -720,6 +731,8 @@ public:
 		Mesh() :
 				blend_shape_count(0),
 				blend_shape_mode(VS::BLEND_SHAPE_MODE_NORMALIZED) {
+			active = false;
+			last_pass = 0;
 		}
 	};
 
@@ -859,6 +872,7 @@ public:
 		Immediate() {
 			type = GEOMETRY_IMMEDIATE;
 			building = false;
+			mask = 0;
 		}
 	};
 

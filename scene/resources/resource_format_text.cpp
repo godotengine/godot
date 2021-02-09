@@ -665,6 +665,12 @@ void ResourceInteractiveLoaderText::set_translation_remapped(bool p_remapped) {
 }
 
 ResourceInteractiveLoaderText::ResourceInteractiveLoaderText() {
+	f = NULL;
+	is_scene = false;
+	ignore_resource_parsing = false;
+	resources_total = 0;
+	resource_current = 0;
+	lines = 0;
 	translation_remapped = false;
 }
 

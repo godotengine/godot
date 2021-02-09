@@ -149,6 +149,7 @@ JNIEnv *ThreadAndroid::get_env() {
 
 ThreadAndroid::ThreadAndroid() {
 
+	user = NULL;
 	pthread = 0;
 }
 

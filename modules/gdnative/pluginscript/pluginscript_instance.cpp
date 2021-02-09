@@ -118,6 +118,9 @@ bool PluginScriptInstance::refcount_decremented() {
 }
 
 PluginScriptInstance::PluginScriptInstance() {
+	_owner = NULL;
+	_data = NULL;
+	_desc = NULL;
 }
 
 bool PluginScriptInstance::init(PluginScript *p_script, Object *p_owner) {

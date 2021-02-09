@@ -234,6 +234,7 @@ Engine::Engine() {
 	_in_physics = false;
 	_frame_ticks = 0;
 	_frame_step = 0;
+	_snap_2d_viewports = false;
 	editor_hint = false;
 }
 

@@ -72,7 +72,13 @@ public:
 	virtual bool process_silence() const;
 
 	AudioEffectRecordInstance() :
-			thread_active(false) {}
+			thread_active(false) {
+		is_recording = false;
+		io_thread = NULL;
+		ring_buffer_pos = 0;
+		ring_buffer_mask = 0;
+		ring_buffer_read_pos = 0;
+	}
 	~AudioEffectRecordInstance();
 };
 

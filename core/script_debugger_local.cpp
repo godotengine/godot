@@ -418,6 +418,10 @@ void ScriptDebuggerLocal::send_error(const String &p_func, const String &p_file,
 
 ScriptDebuggerLocal::ScriptDebuggerLocal() {
 
+	frame_time = 0;
+	idle_time = 0;
+	physics_time = 0;
+	physics_frame_time = 0;
 	profiling = false;
 	idle_accum = OS::get_singleton()->get_ticks_usec();
 	options["variable_prefix"] = "";

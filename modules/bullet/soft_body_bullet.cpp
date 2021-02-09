@@ -47,7 +47,9 @@ SoftBodyBullet::SoftBodyBullet() :
 		pressure_coefficient(0.),
 		pose_matching_coefficient(0.),
 		damping_coefficient(0.01),
-		drag_coefficient(0.) {}
+		drag_coefficient(0.) {
+	mat0 = NULL;
+}
 
 SoftBodyBullet::~SoftBodyBullet() {
 }

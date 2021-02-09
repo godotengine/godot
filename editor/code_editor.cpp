@@ -66,6 +66,8 @@ void GotoLineDialog::ok_pressed() {
 
 GotoLineDialog::GotoLineDialog() {
 
+	line_label = NULL;
+
 	set_title(TTR("Go to Line"));
 
 	VBoxContainer *vbc = memnew(VBoxContainer);

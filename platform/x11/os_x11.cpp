@@ -3966,6 +3966,34 @@ void OS_X11::update_real_mouse_position() {
 
 OS_X11::OS_X11() {
 
+	xdnd_version = 0;
+	visual_server = NULL;
+	main_loop = NULL;
+	x11_display = NULL;
+	xmbstring = NULL;
+	xmblen = 0;
+	last_timestamp = 0;
+	im_active = false;
+	last_mouse_pos_valid = false;
+	last_click_ms = 0;
+	last_click_button_index = 0;
+	last_button_state = 0;
+	events_mutex = NULL;
+	force_quit = false;
+	window_has_focus = false;
+	do_mouse_warp = false;
+	cursor_theme = NULL;
+	cursor_size = 0;
+	input = NULL;
+	power_manager = NULL;
+	video_driver_index = 0;
+	maximized = false;
+	xrr_free_monitors = NULL;
+	xrr_get_monitors = NULL;
+	xrandr_handle = NULL;
+	joypad = NULL;
+	context_gl = NULL;
+
 #ifdef PULSEAUDIO_ENABLED
 	AudioDriverManager::add_driver(&driver_pulseaudio);
 #endif

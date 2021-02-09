@@ -173,7 +173,7 @@ private:
 			navpoly_ids = q.navpoly_ids;
 		}
 		Quadrant() :
-				dirty_list(this) {}
+				dirty_list(this) { shape_owner_id = 0; }
 	};
 
 	Map<PosKey, Quadrant> quadrant_map;

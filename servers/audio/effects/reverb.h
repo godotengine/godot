@@ -67,6 +67,8 @@ private:
 		int extra_spread_frames;
 
 		Comb() {
+			damp = 0;
+			extra_spread_frames = 0;
 			size = 0;
 			buffer = 0;
 			feedback = 0;
@@ -85,6 +87,7 @@ private:
 			size = 0;
 			buffer = 0;
 			pos = 0;
+			extra_spread_frames = 0;
 		}
 	};
 

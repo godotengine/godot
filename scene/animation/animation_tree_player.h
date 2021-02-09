@@ -138,7 +138,10 @@ private:
 
 		Vector<Input> inputs;
 
-		NodeBase() { cycletest = false; };
+		NodeBase() {
+			type = NODE_MAX;
+			cycletest = false;
+		};
 		virtual ~NodeBase() { cycletest = false; }
 	};
 
@@ -171,6 +174,8 @@ private:
 		HashMap<NodePath, bool> filter;
 
 		AnimationNode() {
+			time = 0;
+			step = 0;
 			type = NODE_ANIMATION;
 			next = NULL;
 			last_version = 0;
@@ -197,6 +202,9 @@ private:
 		HashMap<NodePath, bool> filter;
 
 		OneShotNode() {
+			autorestart_random_delay = 0;
+			time = 0;
+			remaining = 0;
 			type = NODE_ONESHOT;
 			fade_in = 0;
 			fade_out = 0;
@@ -214,6 +222,7 @@ private:
 
 		float amount;
 		MixNode() {
+			amount = 0;
 			type = NODE_MIX;
 			inputs.resize(2);
 		}
@@ -291,6 +300,7 @@ private:
 		float xfade;
 
 		TransitionNode() {
+			time = 0;
 			type = NODE_TRANSITION;
 			xfade = 0;
 			inputs.resize(1);

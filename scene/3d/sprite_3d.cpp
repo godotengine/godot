@@ -1255,6 +1255,9 @@ void AnimatedSprite3D::_bind_methods() {
 
 AnimatedSprite3D::AnimatedSprite3D() {
 
+	centered = false;
+	hflip = false;
+	vflip = false;
 	frame = 0;
 	playing = false;
 	animation = "default";

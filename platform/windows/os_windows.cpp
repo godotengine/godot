@@ -3737,6 +3737,32 @@ void OS_Windows::set_current_tablet_driver(const String &p_driver) {
 
 OS_Windows::OS_Windows(HINSTANCE _hInstance) {
 
+	min_pressure = 0;
+	max_pressure = 0;
+	tilt_supported = false;
+	last_pressure_update = 0;
+	last_pressure = 0;
+	ticks_per_second = 0;
+	ticks_start = 0;
+	outside = false;
+	old_x = 0;
+	old_y = 0;
+	visual_server = NULL;
+	move_timer_id = 0;
+	main_loop = NULL;
+	window_has_focus = false;
+	last_button_state = 0;
+	use_raw_input = false;
+	input = NULL;
+	joypad = NULL;
+	power_manager = NULL;
+	video_driver_index = 0;
+	process_map = NULL;
+	pre_fs_valid = false;
+	maximized = false;
+	borderless = false;
+	gl_context = NULL;
+
 	drop_events = false;
 	key_event_pos = 0;
 	layered_window = false;

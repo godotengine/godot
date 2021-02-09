@@ -90,6 +90,7 @@ FindInFiles::FindInFiles() {
 	_searching = false;
 	_whole_words = true;
 	_match_case = true;
+	_initial_files_count = 0;
 }
 
 void FindInFiles::set_search_text(String p_pattern) {

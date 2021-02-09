@@ -64,6 +64,7 @@ class EditorAutoloadSettings : public VBoxContainer {
 			is_singleton = false;
 			in_editor = false;
 			node = NULL;
+			order = 0;
 		}
 	};
 

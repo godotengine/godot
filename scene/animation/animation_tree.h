@@ -202,6 +202,7 @@ private:
 		Vector3 scale;
 
 		TrackCacheTransform() {
+			rot_blend_accum = 0;
 			type = Animation::TYPE_TRANSFORM;
 			spatial = NULL;
 			bone_idx = -1;

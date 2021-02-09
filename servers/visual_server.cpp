@@ -2389,6 +2389,8 @@ void VisualServer::set_render_loop_enabled(bool p_enabled) {
 
 VisualServer::VisualServer() {
 
+	mm_policy = 0;
+
 	//ERR_FAIL_COND(singleton);
 	singleton = this;
 

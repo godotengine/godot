@@ -92,6 +92,7 @@ void ThreadWindows::make_default() {
 
 ThreadWindows::ThreadWindows() :
 		handle(NULL) {
+	user = NULL;
 }
 
 ThreadWindows::~ThreadWindows() {

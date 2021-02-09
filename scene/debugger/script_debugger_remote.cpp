@@ -1270,6 +1270,12 @@ ScriptDebuggerRemote::ScriptDebuggerRemote() :
 		locking(false),
 		poll_every(0),
 		scene_tree(NULL) {
+	frame_time = 0;
+	idle_time = 0;
+	physics_time = 0;
+	physics_frame_time = 0;
+	n_warnings_dropped = 0;
+	skip_breakpoints = false;
 
 	packet_peer_stream->set_stream_peer(tcp_client);
 	packet_peer_stream->set_output_buffer_max_size((1024 * 1024 * 8) - 4); // 8 MiB should be way more than enough, minus 4 bytes for separator.

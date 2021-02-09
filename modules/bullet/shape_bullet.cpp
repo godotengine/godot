@@ -445,7 +445,10 @@ btCollisionShape *ConcavePolygonShapeBullet::create_bt_shape(const btVector3 &p_
 /* Height map shape */
 
 HeightMapShapeBullet::HeightMapShapeBullet() :
-		ShapeBullet() {}
+		ShapeBullet() {
+	width = 0;
+	depth = 0;
+}
 
 void HeightMapShapeBullet::set_data(const Variant &p_data) {
 	ERR_FAIL_COND(p_data.get_type() != Variant::DICTIONARY);

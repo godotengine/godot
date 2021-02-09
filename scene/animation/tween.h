@@ -102,6 +102,10 @@ private:
 		Variant arg[5];
 		int uid;
 		InterpolateData() {
+			type = InterpolateType::FOLLOW_METHOD;
+			trans_type = TransitionType::TRANS_BACK;
+			ease_type = EaseType::EASE_COUNT;
+			args = 0;
 			active = false;
 			finish = false;
 			call_deferred = false;

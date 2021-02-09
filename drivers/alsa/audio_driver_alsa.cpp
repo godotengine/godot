@@ -343,6 +343,11 @@ AudioDriverALSA::AudioDriverALSA() :
 		pcm_handle(NULL),
 		device_name("Default"),
 		new_device("Default") {
+	mix_rate = 0;
+	channels = 0;
+	active = 0;
+	thread_exited = false;
+	exit_thread = false;
 }
 
 AudioDriverALSA::~AudioDriverALSA() {

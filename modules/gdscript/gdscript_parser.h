@@ -202,6 +202,8 @@ public:
 			classname_used = false;
 			end_line = -1;
 			owner = NULL;
+			initializer = NULL;
+			ready = NULL;
 		}
 	};
 
@@ -226,6 +228,7 @@ public:
 		int get_required_argument_count() { return arguments.size() - default_values.size(); }
 
 		FunctionNode() {
+			body = NULL;
 			type = TYPE_FUNCTION;
 			_static = false;
 			rpc_mode = MultiplayerAPI::RPC_MODE_DISABLED;
@@ -265,7 +268,10 @@ public:
 	};
 	struct BuiltInFunctionNode : public Node {
 		GDScriptFunctions::Function function;
-		BuiltInFunctionNode() { type = TYPE_BUILT_IN_FUNCTION; }
+		BuiltInFunctionNode() {
+			function = GDScriptFunctions::Function::MATH_SIN;
+			type = TYPE_BUILT_IN_FUNCTION;
+		}
 	};
 
 	struct IdentifierNode : public Node {
@@ -276,6 +282,7 @@ public:
 		virtual DataType get_datatype() const { return datatype; }
 		virtual void set_datatype(const DataType &p_datatype) { datatype = p_datatype; }
 		IdentifierNode() {
+
 			type = TYPE_IDENTIFIER;
 			declared_block = NULL;
 		}
@@ -405,7 +412,10 @@ public:
 		DataType datatype;
 		virtual DataType get_datatype() const { return datatype; }
 		virtual void set_datatype(const DataType &p_datatype) { datatype = p_datatype; }
-		OperatorNode() { type = TYPE_OPERATOR; }
+		OperatorNode() {
+			op = OP_CALL;
+			type = TYPE_OPERATOR;
+		}
 	};
 
 	struct PatternNode : public Node {
@@ -468,6 +478,8 @@ public:
 			cf_type = CF_IF;
 			body = NULL;
 			body_else = NULL;
+			match = NULL;
+			_else = NULL;
 		}
 	};
 
@@ -477,7 +489,10 @@ public:
 		DataType return_type;
 		virtual DataType get_datatype() const { return return_type; }
 		virtual void set_datatype(const DataType &p_datatype) { return_type = p_datatype; }
-		CastNode() { type = TYPE_CAST; }
+		CastNode() {
+			type = TYPE_CAST;
+			source_node = NULL;
+		}
 	};
 
 	struct AssertNode : public Node {

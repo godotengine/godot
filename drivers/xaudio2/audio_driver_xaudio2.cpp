@@ -203,6 +203,16 @@ AudioDriverXAudio2::AudioDriverXAudio2() :
 		thread(NULL),
 		mutex(NULL),
 		current_buffer(0) {
+	samples_in = NULL;
+	buffer_size = 0;
+	mix_rate = 0;
+	channels = 0;
+	active = false;
+	thread_exited = false;
+	exit_thread = false;
+	pcm_open = false;
+	mastering_voice = NULL;
+	source_voice = NULL;
 	wave_format = { 0 };
 	for (int i = 0; i < AUDIO_BUFFERS; i++) {
 		xaudio_buffer[i] = { 0 };

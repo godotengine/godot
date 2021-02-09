@@ -107,6 +107,8 @@ struct ColladaImport {
 		force_make_tangents = false;
 		apply_mesh_xform_to_vertices = true;
 		bake_fps = 15;
+		scene = NULL;
+		use_mesh_builtin_materials = false;
 	}
 };
 

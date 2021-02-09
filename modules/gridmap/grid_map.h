@@ -93,6 +93,9 @@ class GridMap : public Spatial {
 		struct NavMesh {
 			int id;
 			Transform xform;
+			NavMesh() {
+				id = 0;
+			}
 		};
 
 		struct MultimeshInstance {

@@ -638,6 +638,8 @@ void DependencyErrorDialog::custom_action(const String &) {
 
 DependencyErrorDialog::DependencyErrorDialog() {
 
+	mode = Mode::MODE_RESOURCE;
+
 	VBoxContainer *vb = memnew(VBoxContainer);
 	add_child(vb);
 

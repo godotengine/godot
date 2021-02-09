@@ -93,6 +93,7 @@ static inline Vector2 interpolate(const Rect2 &r, const Vector2 &v) {
 //----------------------------------------------------------------------------
 
 LineBuilder::LineBuilder() {
+	texture_mode = Line2D::LineTextureMode::LINE_TEXTURE_NONE;
 	joint_mode = Line2D::LINE_JOINT_SHARP;
 	width = 10;
 	curve = NULL;

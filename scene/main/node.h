@@ -82,7 +82,10 @@ private:
 
 		bool persistent;
 		SceneTree::Group *group;
-		GroupData() { persistent = false; }
+		GroupData() {
+			persistent = false;
+			group = NULL;
+		}
 	};
 
 	struct Data {

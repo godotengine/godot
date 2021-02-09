@@ -788,6 +788,8 @@ void Camera2D::_bind_methods() {
 
 Camera2D::Camera2D() {
 
+	viewport = NULL;
+
 	anchor_mode = ANCHOR_MODE_DRAG_CENTER;
 	rotating = false;
 	current = false;

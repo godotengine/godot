@@ -68,7 +68,11 @@ private:
 		ShapeSW *shape;
 		bool disabled;
 
-		Shape() { disabled = false; }
+		Shape() {
+			disabled = false;
+			bpid = 0;
+			shape = NULL;
+		}
 	};
 
 	Vector<Shape> shapes;

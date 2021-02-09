@@ -220,7 +220,10 @@ private:
 
 		Type type;
 
-		ENode() { next = NULL; }
+		ENode() {
+			type = TYPE_INPUT;
+			next = NULL;
+		}
 		virtual ~ENode() {
 			if (next) {
 				memdelete(next);
@@ -243,6 +246,7 @@ private:
 
 		int index;
 		InputNode() {
+			index = 0;
 			type = TYPE_INPUT;
 		}
 	};
@@ -262,6 +266,8 @@ private:
 		ENode *nodes[2];
 
 		OperatorNode() {
+			nodes[0] = nullptr;
+			nodes[1] = nullptr;
 			type = TYPE_OPERATOR;
 		}
 	};
@@ -278,6 +284,8 @@ private:
 		ENode *index;
 
 		IndexNode() {
+			base = nullptr;
+			index = nullptr;
 			type = TYPE_INDEX;
 		}
 	};
@@ -287,6 +295,7 @@ private:
 		StringName name;
 
 		NamedIndexNode() {
+			base = nullptr;
 			type = TYPE_NAMED_INDEX;
 		}
 	};
@@ -306,6 +315,7 @@ private:
 		Vector<ENode *> arguments;
 
 		CallNode() {
+			base = nullptr;
 			type = TYPE_CALL;
 		}
 	};
@@ -328,6 +338,7 @@ private:
 		BuiltinFunc func;
 		Vector<ENode *> arguments;
 		BuiltinFuncNode() {
+			func = BuiltinFunc::BYTES_TO_VAR;
 			type = TYPE_BUILTIN_FUNC;
 		}
 	};

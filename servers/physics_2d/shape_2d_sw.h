@@ -227,8 +227,14 @@ public:
 
 	DEFAULT_PROJECT_RANGE_CAST
 
-	_FORCE_INLINE_ RayShape2DSW() {}
-	_FORCE_INLINE_ RayShape2DSW(real_t p_length) { length = p_length; }
+	_FORCE_INLINE_ RayShape2DSW() {
+		slips_on_slope = false;
+		length = 0;
+	}
+	_FORCE_INLINE_ RayShape2DSW(real_t p_length) {
+		length = p_length;
+		slips_on_slope = false;
+	}
 };
 
 class SegmentShape2DSW : public Shape2DSW {

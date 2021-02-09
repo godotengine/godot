@@ -1610,6 +1610,17 @@ Transform VoxelLightBaker::get_to_cell_space_xform() const {
 	return to_cell_space;
 }
 VoxelLightBaker::VoxelLightBaker() {
+	cell_subdiv = 0;
+	first_leaf = 0;
+	leaf_voxel_count = 0;
+	direct_lights_baked = false;
+	axis_cell_size[0] = 0;
+	axis_cell_size[1] = 0;
+	axis_cell_size[2] = 0;
+	cell_size = 0;
+	bake_quality = BakeQuality::BAKE_QUALITY_HIGH;
+	max_original_cells = 0;
+
 	color_scan_cell_width = 4;
 	bake_texture_size = 128;
 	propagation = 0.85;

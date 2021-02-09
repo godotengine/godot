@@ -156,6 +156,16 @@ VisualScriptNode::VisualScriptNode() {
 
 VisualScriptNodeInstance::VisualScriptNodeInstance() {
 
+	id = 0;
+	sequence_index = 0;
+	sequence_output_count = 0;
+	input_port_count = 0;
+	output_port_count = 0;
+	output_ports = NULL;
+	working_mem_idx = 0;
+	pass_idx = 0;
+	base = NULL;
+
 	sequence_outputs = NULL;
 	input_ports = NULL;
 }
@@ -2294,6 +2304,9 @@ ScriptLanguage *VisualScriptInstance::get_language() {
 }
 
 VisualScriptInstance::VisualScriptInstance() {
+	owner = NULL;
+	max_input_args = 0;
+	max_output_args = 0;
 }
 
 VisualScriptInstance::~VisualScriptInstance() {
@@ -2409,6 +2422,12 @@ void VisualScriptFunctionState::_bind_methods() {
 }
 
 VisualScriptFunctionState::VisualScriptFunctionState() {
+	instance = NULL;
+	working_mem_index = 0;
+	variant_stack_size = 0;
+	node = NULL;
+	flow_stack_pos = 0;
+	pass = 0;
 }
 
 VisualScriptFunctionState::~VisualScriptFunctionState() {

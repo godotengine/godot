@@ -194,6 +194,15 @@ public:
 
 Viewport::GUI::GUI() {
 
+	key_event_accepted = false;
+	last_mouse_focus = NULL;
+	drag_attempted = false;
+	drag_preview = NULL;
+	tooltip_timer = 0;
+	tooltip_delay = 0;
+	roots_order_dirty = false;
+	canvas_sort_index = 0;
+
 	dragging = false;
 	mouse_focus = NULL;
 	mouse_click_grabber = NULL;

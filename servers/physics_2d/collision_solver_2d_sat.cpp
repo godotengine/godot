@@ -189,8 +189,10 @@ class SeparatorAxisTest2D {
 	const Transform2D *transform_B;
 	real_t best_depth;
 	Vector2 best_axis;
+#ifdef DEBUG_ENABLED
 	int best_axis_count;
 	int best_axis_index;
+#endif
 	Vector2 motion_A;
 	Vector2 motion_B;
 	real_t margin_A;

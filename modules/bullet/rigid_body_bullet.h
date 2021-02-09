@@ -85,7 +85,7 @@ public:
 	real_t deltaTime;
 
 private:
-	BulletPhysicsDirectBodyState() {}
+	BulletPhysicsDirectBodyState() { body = NULL; }
 
 public:
 	virtual Vector3 get_total_gravity() const;

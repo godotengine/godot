@@ -129,6 +129,7 @@ void HashingContext::_bind_methods() {
 }
 
 HashingContext::HashingContext() {
+	type = HASH_MD5;
 	ctx = NULL;
 }
 

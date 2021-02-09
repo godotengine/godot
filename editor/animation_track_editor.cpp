@@ -694,6 +694,7 @@ public:
 		track = -1;
 		setting = false;
 		root_path = NULL;
+		undo_redo = NULL;
 	}
 };
 
@@ -1393,6 +1394,7 @@ public:
 		use_fps = false;
 		setting = false;
 		root_path = NULL;
+		undo_redo = NULL;
 	}
 };
 
@@ -3242,6 +3244,8 @@ void AnimationTrackEditGroup::_bind_methods() {
 
 AnimationTrackEditGroup::AnimationTrackEditGroup() {
 	set_mouse_filter(MOUSE_FILTER_PASS);
+	root = NULL;
+	timeline = NULL;
 }
 
 //////////////////////////////////////

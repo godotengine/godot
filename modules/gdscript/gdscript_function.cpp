@@ -1769,6 +1769,18 @@ void GDScriptFunction::debug_get_stack_member_state(int p_line, List<Pair<String
 GDScriptFunction::GDScriptFunction() :
 		function_list(this) {
 
+	_constants_ptr = NULL;
+	_constant_count = 0;
+	_global_names_ptr = NULL;
+	_global_names_count = 0;
+	_default_arg_ptr = NULL;
+	_default_arg_count = 0;
+	_code_ptr = NULL;
+	_code_size = 0;
+	_argument_count = 0;
+	_initial_line = 0;
+	_static = false;
+	_script = NULL;
 	_stack_size = 0;
 	_call_size = 0;
 	rpc_mode = MultiplayerAPI::RPC_MODE_DISABLED;

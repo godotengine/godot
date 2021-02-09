@@ -66,7 +66,12 @@ public:
 	virtual float get_playback_position() const;
 	virtual void seek(float p_time);
 
-	AudioStreamPlaybackOGGVorbis() {}
+	AudioStreamPlaybackOGGVorbis() {
+		ogg_stream = NULL;
+		frames_mixed = 0;
+		active = false;
+		loops = 0;
+	}
 	~AudioStreamPlaybackOGGVorbis();
 };
 

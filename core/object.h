@@ -465,7 +465,10 @@ private:
 			int reference_count;
 			Connection conn;
 			List<Connection>::Element *cE;
-			Slot() { reference_count = 0; }
+			Slot() {
+				cE = nullptr;
+				reference_count = 0;
+			}
 		};
 
 		MethodInfo user;

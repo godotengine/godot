@@ -2296,6 +2296,7 @@ String VisualShaderNodeOutput::generate_code(Shader::Mode p_mode, VisualShader::
 }
 
 VisualShaderNodeOutput::VisualShaderNodeOutput() {
+	shader_type = VisualShader::Type::TYPE_MAX;
 }
 
 ///////////////////////////

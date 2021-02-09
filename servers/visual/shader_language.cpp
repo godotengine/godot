@@ -5926,6 +5926,16 @@ ShaderLanguage::ShaderNode *ShaderLanguage::get_shader() {
 
 ShaderLanguage::ShaderLanguage() {
 
+	error_set = false;
+	error_line = 0;
+	char_idx = 0;
+	tk_line = 0;
+	shader = NULL;
+	completion_type = CompletionType::COMPLETION_CALL_ARGUMENTS;
+	completion_line = 0;
+	completion_block = NULL;
+	completion_base = DataType::TYPE_BOOL;
+	completion_argument = 0;
 	nodes = NULL;
 	completion_class = TAG_GLOBAL;
 }

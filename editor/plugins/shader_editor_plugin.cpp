@@ -760,6 +760,7 @@ void ShaderEditorPlugin::apply_changes() {
 
 ShaderEditorPlugin::ShaderEditorPlugin(EditorNode *p_node) {
 
+	_2d = false;
 	editor = p_node;
 	shader_editor = memnew(ShaderEditor(p_node));
 

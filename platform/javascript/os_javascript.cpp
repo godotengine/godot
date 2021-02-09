@@ -1218,6 +1218,9 @@ OS_JavaScript *OS_JavaScript::get_singleton() {
 }
 
 OS_JavaScript::OS_JavaScript() {
+	input = NULL;
+	video_driver_index = 0;
+
 	// Expose method for requesting quit.
 	godot_js_os_request_quit_cb(&request_quit_callback);
 	// Set canvas ID

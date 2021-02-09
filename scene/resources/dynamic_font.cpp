@@ -1042,6 +1042,7 @@ SelfList<DynamicFont>::List *DynamicFont::dynamic_fonts = NULL;
 DynamicFont::DynamicFont() :
 		font_list(this) {
 
+	valid = false;
 	cache_id.size = 16;
 	outline_cache_id.size = 16;
 	spacing_top = 0;
