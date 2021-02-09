@@ -50,6 +50,8 @@ class PhysicsServer3DSW : public PhysicsServer3D {
 	int active_objects;
 	int collision_pairs;
 
+	bool using_threads;
+	bool doing_sync;
 	bool flushing_queries;
 
 	Step3DSW *stepper;
@@ -57,20 +59,20 @@ class PhysicsServer3DSW : public PhysicsServer3D {
 
 	PhysicsDirectBodyState3DSW *direct_state;
 
-	mutable RID_PtrOwner<Shape3DSW> shape_owner;
-	mutable RID_PtrOwner<Space3DSW> space_owner;
-	mutable RID_PtrOwner<Area3DSW> area_owner;
-	mutable RID_PtrOwner<Body3DSW> body_owner;
-	mutable RID_PtrOwner<Joint3DSW> joint_owner;
+	mutable RID_PtrOwner<Shape3DSW, true> shape_owner;
+	mutable RID_PtrOwner<Space3DSW, true> space_owner;
+	mutable RID_PtrOwner<Area3DSW, true> area_owner;
+	mutable RID_PtrOwner<Body3DSW, true> body_owner;
+	mutable RID_PtrOwner<Joint3DSW, true> joint_owner;
 
 	//void _clear_query(QuerySW *p_query);
 	friend class CollisionObject3DSW;
 	SelfList<CollisionObject3DSW>::List pending_shape_update_list;
 	void _update_shapes();
 
-public:
-	static PhysicsServer3DSW *singleton;
+	static PhysicsServer3DSW *singletonsw;
 
+public:
 	struct CollCbkData {
 		int max;
 		int amount;
@@ -79,7 +81,17 @@ public:
 
 	static void _shape_col_cbk(const Vector3 &p_point_A, const Vector3 &p_point_B, void *p_userdata);
 
-	virtual RID shape_create(ShapeType p_shape) override;
+	virtual RID plane_shape_create() override;
+	virtual RID ray_shape_create() override;
+	virtual RID sphere_shape_create() override;
+	virtual RID box_shape_create() override;
+	virtual RID capsule_shape_create() override;
+	virtual RID cylinder_shape_create() override;
+	virtual RID convex_polygon_shape_create() override;
+	virtual RID concave_polygon_shape_create() override;
+	virtual RID heightmap_shape_create() override;
+	virtual RID custom_shape_create() override;
+
 	virtual void shape_set_data(RID p_shape, const Variant &p_data) override;
 	virtual void shape_set_custom_solver_bias(RID p_shape, real_t p_bias) override;
 
@@ -140,7 +152,6 @@ public:
 	virtual Transform area_get_transform(RID p_area) const override;
 
 	virtual void area_set_ray_pickable(RID p_area, bool p_enable) override;
-	virtual bool area_is_ray_pickable(RID p_area) const override;
 
 	virtual void area_set_collision_mask(RID p_area, uint32_t p_mask) override;
 	virtual void area_set_collision_layer(RID p_area, uint32_t p_layer) override;
@@ -153,7 +164,7 @@ public:
 	/* BODY API */
 
 	// create a body of a given type
-	virtual RID body_create(BodyMode p_mode = BODY_MODE_RIGID, bool p_init_sleeping = false) override;
+	virtual RID body_create() override;
 
 	virtual void body_set_space(RID p_body, RID p_space) override;
 	virtual RID body_get_space(RID p_body) const override;
@@ -232,7 +243,6 @@ public:
 	virtual void body_set_force_integration_callback(RID p_body, Object *p_receiver, const StringName &p_method, const Variant &p_udata = Variant()) override;
 
 	virtual void body_set_ray_pickable(RID p_body, bool p_enable) override;
-	virtual bool body_is_ray_pickable(RID p_body) const override;
 
 	virtual bool body_test_motion(RID p_body, const Transform &p_from, const Vector3 &p_motion, bool p_infinite_inertia, MotionResult *r_result = nullptr, bool p_exclude_raycast_shapes = true) override;
 	virtual int body_test_ray_separation(RID p_body, const Transform &p_transform, bool p_infinite_inertia, Vector3 &r_recover_motion, SeparationResult *r_results, int p_result_max, real_t p_margin = 0.001) override;
@@ -242,7 +252,7 @@ public:
 
 	/* SOFT BODY */
 
-	virtual RID soft_body_create(bool p_init_sleeping = false) override { return RID(); }
+	virtual RID soft_body_create() override { return RID(); }
 
 	virtual void soft_body_update_rendering_server(RID p_body, class SoftBodyRenderingServerHandler *p_rendering_server_handler) override {}
 
@@ -266,49 +276,52 @@ public:
 	virtual Vector3 soft_body_get_vertex_position(RID p_body, int vertex_index) const override { return Vector3(); }
 
 	virtual void soft_body_set_ray_pickable(RID p_body, bool p_enable) override {}
-	virtual bool soft_body_is_ray_pickable(RID p_body) const override { return false; }
 
 	virtual void soft_body_set_simulation_precision(RID p_body, int p_simulation_precision) override {}
-	virtual int soft_body_get_simulation_precision(RID p_body) override { return 0; }
+	virtual int soft_body_get_simulation_precision(RID p_body) const override { return 0; }
 
 	virtual void soft_body_set_total_mass(RID p_body, real_t p_total_mass) override {}
-	virtual real_t soft_body_get_total_mass(RID p_body) override { return 0.; }
+	virtual real_t soft_body_get_total_mass(RID p_body) const override { return 0.; }
 
 	virtual void soft_body_set_linear_stiffness(RID p_body, real_t p_stiffness) override {}
-	virtual real_t soft_body_get_linear_stiffness(RID p_body) override { return 0.; }
+	virtual real_t soft_body_get_linear_stiffness(RID p_body) const override { return 0.; }
 
-	virtual void soft_body_set_areaAngular_stiffness(RID p_body, real_t p_stiffness) override {}
-	virtual real_t soft_body_get_areaAngular_stiffness(RID p_body) override { return 0.; }
+	virtual void soft_body_set_angular_stiffness(RID p_body, real_t p_stiffness) override {}
+	virtual real_t soft_body_get_angular_stiffness(RID p_body) const override { return 0.; }
 
 	virtual void soft_body_set_volume_stiffness(RID p_body, real_t p_stiffness) override {}
-	virtual real_t soft_body_get_volume_stiffness(RID p_body) override { return 0.; }
+	virtual real_t soft_body_get_volume_stiffness(RID p_body) const override { return 0.; }
 
 	virtual void soft_body_set_pressure_coefficient(RID p_body, real_t p_pressure_coefficient) override {}
-	virtual real_t soft_body_get_pressure_coefficient(RID p_body) override { return 0.; }
+	virtual real_t soft_body_get_pressure_coefficient(RID p_body) const override { return 0.; }
 
 	virtual void soft_body_set_pose_matching_coefficient(RID p_body, real_t p_pose_matching_coefficient) override {}
-	virtual real_t soft_body_get_pose_matching_coefficient(RID p_body) override { return 0.; }
+	virtual real_t soft_body_get_pose_matching_coefficient(RID p_body) const override { return 0.; }
 
 	virtual void soft_body_set_damping_coefficient(RID p_body, real_t p_damping_coefficient) override {}
-	virtual real_t soft_body_get_damping_coefficient(RID p_body) override { return 0.; }
+	virtual real_t soft_body_get_damping_coefficient(RID p_body) const override { return 0.; }
 
 	virtual void soft_body_set_drag_coefficient(RID p_body, real_t p_drag_coefficient) override {}
-	virtual real_t soft_body_get_drag_coefficient(RID p_body) override { return 0.; }
+	virtual real_t soft_body_get_drag_coefficient(RID p_body) const override { return 0.; }
 
 	virtual void soft_body_set_mesh(RID p_body, const REF &p_mesh) override {}
 
 	virtual void soft_body_move_point(RID p_body, int p_point_index, const Vector3 &p_global_position) override {}
-	virtual Vector3 soft_body_get_point_global_position(RID p_body, int p_point_index) override { return Vector3(); }
+	virtual Vector3 soft_body_get_point_global_position(RID p_body, int p_point_index) const override { return Vector3(); }
 
 	virtual Vector3 soft_body_get_point_offset(RID p_body, int p_point_index) const override { return Vector3(); }
 
 	virtual void soft_body_remove_all_pinned_points(RID p_body) override {}
 	virtual void soft_body_pin_point(RID p_body, int p_point_index, bool p_pin) override {}
-	virtual bool soft_body_is_point_pinned(RID p_body, int p_point_index) override { return false; }
+	virtual bool soft_body_is_point_pinned(RID p_body, int p_point_index) const override { return false; }
 
 	/* JOINT API */
 
-	virtual RID joint_create_pin(RID p_body_A, const Vector3 &p_local_A, RID p_body_B, const Vector3 &p_local_B) override;
+	virtual RID joint_create() override;
+
+	virtual void joint_clear(RID p_joint) override; //resets type
+
+	virtual void joint_make_pin(RID p_joint, RID p_body_A, const Vector3 &p_local_A, RID p_body_B, const Vector3 &p_local_B) override;
 
 	virtual void pin_joint_set_param(RID p_joint, PinJointParam p_param, real_t p_value) override;
 	virtual real_t pin_joint_get_param(RID p_joint, PinJointParam p_param) const override;
@@ -319,8 +332,8 @@ public:
 	virtual void pin_joint_set_local_b(RID p_joint, const Vector3 &p_B) override;
 	virtual Vector3 pin_joint_get_local_b(RID p_joint) const override;
 
-	virtual RID joint_create_hinge(RID p_body_A, const Transform &p_frame_A, RID p_body_B, const Transform &p_frame_B) override;
-	virtual RID joint_create_hinge_simple(RID p_body_A, const Vector3 &p_pivot_A, const Vector3 &p_axis_A, RID p_body_B, const Vector3 &p_pivot_B, const Vector3 &p_axis_B) override;
+	virtual void joint_make_hinge(RID p_joint, RID p_body_A, const Transform &p_frame_A, RID p_body_B, const Transform &p_frame_B) override;
+	virtual void joint_make_hinge_simple(RID p_joint, RID p_body_A, const Vector3 &p_pivot_A, const Vector3 &p_axis_A, RID p_body_B, const Vector3 &p_pivot_B, const Vector3 &p_axis_B) override;
 
 	virtual void hinge_joint_set_param(RID p_joint, HingeJointParam p_param, real_t p_value) override;
 	virtual real_t hinge_joint_get_param(RID p_joint, HingeJointParam p_param) const override;
@@ -328,23 +341,23 @@ public:
 	virtual void hinge_joint_set_flag(RID p_joint, HingeJointFlag p_flag, bool p_value) override;
 	virtual bool hinge_joint_get_flag(RID p_joint, HingeJointFlag p_flag) const override;
 
-	virtual RID joint_create_slider(RID p_body_A, const Transform &p_local_frame_A, RID p_body_B, const Transform &p_local_frame_B) override; //reference frame is A
+	virtual void joint_make_slider(RID p_joint, RID p_body_A, const Transform &p_local_frame_A, RID p_body_B, const Transform &p_local_frame_B) override; //reference frame is A
 
 	virtual void slider_joint_set_param(RID p_joint, SliderJointParam p_param, real_t p_value) override;
 	virtual real_t slider_joint_get_param(RID p_joint, SliderJointParam p_param) const override;
 
-	virtual RID joint_create_cone_twist(RID p_body_A, const Transform &p_local_frame_A, RID p_body_B, const Transform &p_local_frame_B) override; //reference frame is A
+	virtual void joint_make_cone_twist(RID p_joint, RID p_body_A, const Transform &p_local_frame_A, RID p_body_B, const Transform &p_local_frame_B) override; //reference frame is A
 
 	virtual void cone_twist_joint_set_param(RID p_joint, ConeTwistJointParam p_param, real_t p_value) override;
 	virtual real_t cone_twist_joint_get_param(RID p_joint, ConeTwistJointParam p_param) const override;
 
-	virtual RID joint_create_generic_6dof(RID p_body_A, const Transform &p_local_frame_A, RID p_body_B, const Transform &p_local_frame_B) override; //reference frame is A
+	virtual void joint_make_generic_6dof(RID p_joint, RID p_body_A, const Transform &p_local_frame_A, RID p_body_B, const Transform &p_local_frame_B) override; //reference frame is A
 
 	virtual void generic_6dof_joint_set_param(RID p_joint, Vector3::Axis, G6DOFJointAxisParam p_param, real_t p_value) override;
-	virtual real_t generic_6dof_joint_get_param(RID p_joint, Vector3::Axis, G6DOFJointAxisParam p_param) override;
+	virtual real_t generic_6dof_joint_get_param(RID p_joint, Vector3::Axis, G6DOFJointAxisParam p_param) const override;
 
 	virtual void generic_6dof_joint_set_flag(RID p_joint, Vector3::Axis, G6DOFJointAxisFlag p_flag, bool p_enable) override;
-	virtual bool generic_6dof_joint_get_flag(RID p_joint, Vector3::Axis, G6DOFJointAxisFlag p_flag) override;
+	virtual bool generic_6dof_joint_get_flag(RID p_joint, Vector3::Axis, G6DOFJointAxisFlag p_flag) const override;
 
 	virtual JointType joint_get_type(RID p_joint) const override;
 
@@ -361,14 +374,16 @@ public:
 	virtual void set_active(bool p_active) override;
 	virtual void init() override;
 	virtual void step(real_t p_step) override;
+	virtual void sync() override;
 	virtual void flush_queries() override;
+	virtual void end_sync() override;
 	virtual void finish() override;
 
 	virtual bool is_flushing_queries() const override { return flushing_queries; }
 
 	int get_process_info(ProcessInfo p_info) override;
 
-	PhysicsServer3DSW();
+	PhysicsServer3DSW(bool p_using_threads = false);
 	~PhysicsServer3DSW() {}
 };
 

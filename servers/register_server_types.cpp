@@ -61,6 +61,7 @@
 #include "physics_2d/physics_server_2d_sw.h"
 #include "physics_2d/physics_server_2d_wrap_mt.h"
 #include "physics_3d/physics_server_3d_sw.h"
+#include "physics_3d/physics_server_3d_wrap_mt.h"
 #include "physics_server_2d.h"
 #include "physics_server_3d.h"
 #include "rendering/renderer_compositor.h"
@@ -76,11 +77,19 @@
 ShaderTypes *shader_types = nullptr;
 
 PhysicsServer3D *_createGodotPhysics3DCallback() {
-	return memnew(PhysicsServer3DSW);
+	bool using_threads = GLOBAL_GET("physics/3d/run_on_thread");
+
+	PhysicsServer3D *physics_server = memnew(PhysicsServer3DSW(using_threads));
+
+	return memnew(PhysicsServer3DWrapMT(physics_server, using_threads));
 }
 
 PhysicsServer2D *_createGodotPhysics2DCallback() {
-	return PhysicsServer2DWrapMT::init_server<PhysicsServer2DSW>();
+	bool using_threads = GLOBAL_GET("physics/2d/run_on_thread");
+
+	PhysicsServer2D *physics_server = memnew(PhysicsServer2DSW(using_threads));
+
+	return memnew(PhysicsServer2DWrapMT(physics_server, using_threads));
 }
 
 static bool has_server_feature_callback(const String &p_feature) {

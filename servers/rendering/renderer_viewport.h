@@ -165,7 +165,7 @@ public:
 
 	uint64_t draw_viewports_pass = 0;
 
-	mutable RID_PtrOwner<Viewport> viewport_owner;
+	mutable RID_PtrOwner<Viewport, true> viewport_owner;
 
 	struct ViewportSort {
 		_FORCE_INLINE_ bool operator()(const Viewport *p_left, const Viewport *p_right) const {
@@ -186,7 +186,8 @@ private:
 	void _draw_viewport(Viewport *p_viewport, XRInterface::Eyes p_eye = XRInterface::EYE_MONO);
 
 public:
-	RID viewport_create();
+	RID viewport_allocate();
+	void viewport_initialize(RID p_rid);
 
 	void viewport_set_use_xr(RID p_viewport, bool p_use_xr);
 
@@ -248,6 +249,9 @@ public:
 	void draw_viewports();
 
 	bool free(RID p_rid);
+
+	//workaround for setting this on thread
+	void call_set_use_vsync(bool p_enable);
 
 	RendererViewport();
 	virtual ~RendererViewport() {}

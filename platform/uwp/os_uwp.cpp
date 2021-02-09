@@ -44,7 +44,6 @@
 #include "platform/windows/windows_terminal_logger.h"
 #include "servers/audio_server.h"
 #include "servers/rendering/rendering_server_default.h"
-#include "servers/rendering/rendering_server_wrap_mt.h"
 
 #include <ppltasks.h>
 #include <wrl.h>

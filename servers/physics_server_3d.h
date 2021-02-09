@@ -240,7 +240,19 @@ public:
 		SHAPE_CUSTOM, ///< Server-Implementation based custom shape, calling shape_create() with this value will result in an error
 	};
 
-	virtual RID shape_create(ShapeType p_shape) = 0;
+	RID shape_create(ShapeType p_shape);
+
+	virtual RID plane_shape_create() = 0;
+	virtual RID ray_shape_create() = 0;
+	virtual RID sphere_shape_create() = 0;
+	virtual RID box_shape_create() = 0;
+	virtual RID capsule_shape_create() = 0;
+	virtual RID cylinder_shape_create() = 0;
+	virtual RID convex_polygon_shape_create() = 0;
+	virtual RID concave_polygon_shape_create() = 0;
+	virtual RID heightmap_shape_create() = 0;
+	virtual RID custom_shape_create() = 0;
+
 	virtual void shape_set_data(RID p_shape, const Variant &p_data) = 0;
 	virtual void shape_set_custom_solver_bias(RID p_shape, real_t p_bias) = 0;
 
@@ -344,7 +356,6 @@ public:
 	virtual void area_set_area_monitor_callback(RID p_area, Object *p_receiver, const StringName &p_method) = 0;
 
 	virtual void area_set_ray_pickable(RID p_area, bool p_enable) = 0;
-	virtual bool area_is_ray_pickable(RID p_area) const = 0;
 
 	/* BODY API */
 
@@ -357,7 +368,7 @@ public:
 		BODY_MODE_CHARACTER
 	};
 
-	virtual RID body_create(BodyMode p_mode = BODY_MODE_RIGID, bool p_init_sleeping = false) = 0;
+	virtual RID body_create() = 0;
 
 	virtual void body_set_space(RID p_body, RID p_space) = 0;
 	virtual RID body_get_space(RID p_body) const = 0;
@@ -468,7 +479,6 @@ public:
 	virtual void body_set_force_integration_callback(RID p_body, Object *p_receiver, const StringName &p_method, const Variant &p_udata = Variant()) = 0;
 
 	virtual void body_set_ray_pickable(RID p_body, bool p_enable) = 0;
-	virtual bool body_is_ray_pickable(RID p_body) const = 0;
 
 	// this function only works on physics process, errors and returns null otherwise
 	virtual PhysicsDirectBodyState3D *body_get_direct_state(RID p_body) = 0;
@@ -510,7 +520,7 @@ public:
 
 	/* SOFT BODY */
 
-	virtual RID soft_body_create(bool p_init_sleeping = false) = 0;
+	virtual RID soft_body_create() = 0;
 
 	virtual void soft_body_update_rendering_server(RID p_body, class SoftBodyRenderingServerHandler *p_rendering_server_handler) = 0;
 
@@ -536,54 +546,58 @@ public:
 	virtual Vector3 soft_body_get_vertex_position(RID p_body, int vertex_index) const = 0;
 
 	virtual void soft_body_set_ray_pickable(RID p_body, bool p_enable) = 0;
-	virtual bool soft_body_is_ray_pickable(RID p_body) const = 0;
 
 	virtual void soft_body_set_simulation_precision(RID p_body, int p_simulation_precision) = 0;
-	virtual int soft_body_get_simulation_precision(RID p_body) = 0;
+	virtual int soft_body_get_simulation_precision(RID p_body) const = 0;
 
 	virtual void soft_body_set_total_mass(RID p_body, real_t p_total_mass) = 0;
-	virtual real_t soft_body_get_total_mass(RID p_body) = 0;
+	virtual real_t soft_body_get_total_mass(RID p_body) const = 0;
 
 	virtual void soft_body_set_linear_stiffness(RID p_body, real_t p_stiffness) = 0;
-	virtual real_t soft_body_get_linear_stiffness(RID p_body) = 0;
+	virtual real_t soft_body_get_linear_stiffness(RID p_body) const = 0;
 
-	virtual void soft_body_set_areaAngular_stiffness(RID p_body, real_t p_stiffness) = 0;
-	virtual real_t soft_body_get_areaAngular_stiffness(RID p_body) = 0;
+	virtual void soft_body_set_angular_stiffness(RID p_body, real_t p_stiffness) = 0;
+	virtual real_t soft_body_get_angular_stiffness(RID p_body) const = 0;
 
 	virtual void soft_body_set_volume_stiffness(RID p_body, real_t p_stiffness) = 0;
-	virtual real_t soft_body_get_volume_stiffness(RID p_body) = 0;
+	virtual real_t soft_body_get_volume_stiffness(RID p_body) const = 0;
 
 	virtual void soft_body_set_pressure_coefficient(RID p_body, real_t p_pressure_coefficient) = 0;
-	virtual real_t soft_body_get_pressure_coefficient(RID p_body) = 0;
+	virtual real_t soft_body_get_pressure_coefficient(RID p_body) const = 0;
 
 	virtual void soft_body_set_pose_matching_coefficient(RID p_body, real_t p_pose_matching_coefficient) = 0;
-	virtual real_t soft_body_get_pose_matching_coefficient(RID p_body) = 0;
+	virtual real_t soft_body_get_pose_matching_coefficient(RID p_body) const = 0;
 
 	virtual void soft_body_set_damping_coefficient(RID p_body, real_t p_damping_coefficient) = 0;
-	virtual real_t soft_body_get_damping_coefficient(RID p_body) = 0;
+	virtual real_t soft_body_get_damping_coefficient(RID p_body) const = 0;
 
 	virtual void soft_body_set_drag_coefficient(RID p_body, real_t p_drag_coefficient) = 0;
-	virtual real_t soft_body_get_drag_coefficient(RID p_body) = 0;
+	virtual real_t soft_body_get_drag_coefficient(RID p_body) const = 0;
 
 	virtual void soft_body_move_point(RID p_body, int p_point_index, const Vector3 &p_global_position) = 0;
-	virtual Vector3 soft_body_get_point_global_position(RID p_body, int p_point_index) = 0;
+	virtual Vector3 soft_body_get_point_global_position(RID p_body, int p_point_index) const = 0;
 
 	virtual Vector3 soft_body_get_point_offset(RID p_body, int p_point_index) const = 0;
 
 	virtual void soft_body_remove_all_pinned_points(RID p_body) = 0;
 	virtual void soft_body_pin_point(RID p_body, int p_point_index, bool p_pin) = 0;
-	virtual bool soft_body_is_point_pinned(RID p_body, int p_point_index) = 0;
+	virtual bool soft_body_is_point_pinned(RID p_body, int p_point_index) const = 0;
 
 	/* JOINT API */
 
 	enum JointType {
-		JOINT_PIN,
-		JOINT_HINGE,
-		JOINT_SLIDER,
-		JOINT_CONE_TWIST,
-		JOINT_6DOF
+		JOINT_TYPE_PIN,
+		JOINT_TYPE_HINGE,
+		JOINT_TYPE_SLIDER,
+		JOINT_TYPE_CONE_TWIST,
+		JOINT_TYPE_6DOF,
+		JOINT_TYPE_MAX,
 
 	};
+
+	virtual RID joint_create() = 0;
+
+	virtual void joint_clear(RID p_joint) = 0;
 
 	virtual JointType joint_get_type(RID p_joint) const = 0;
 
@@ -593,7 +607,7 @@ public:
 	virtual void joint_disable_collisions_between_bodies(RID p_joint, const bool p_disable) = 0;
 	virtual bool joint_is_disabled_collisions_between_bodies(RID p_joint) const = 0;
 
-	virtual RID joint_create_pin(RID p_body_A, const Vector3 &p_local_A, RID p_body_B, const Vector3 &p_local_B) = 0;
+	virtual void joint_make_pin(RID p_joint, RID p_body_A, const Vector3 &p_local_A, RID p_body_B, const Vector3 &p_local_B) = 0;
 
 	enum PinJointParam {
 		PIN_JOINT_BIAS,
@@ -628,8 +642,8 @@ public:
 		HINGE_JOINT_FLAG_MAX
 	};
 
-	virtual RID joint_create_hinge(RID p_body_A, const Transform &p_hinge_A, RID p_body_B, const Transform &p_hinge_B) = 0;
-	virtual RID joint_create_hinge_simple(RID p_body_A, const Vector3 &p_pivot_A, const Vector3 &p_axis_A, RID p_body_B, const Vector3 &p_pivot_B, const Vector3 &p_axis_B) = 0;
+	virtual void joint_make_hinge(RID p_joint, RID p_body_A, const Transform &p_hinge_A, RID p_body_B, const Transform &p_hinge_B) = 0;
+	virtual void joint_make_hinge_simple(RID p_joint, RID p_body_A, const Vector3 &p_pivot_A, const Vector3 &p_axis_A, RID p_body_B, const Vector3 &p_pivot_B, const Vector3 &p_axis_B) = 0;
 
 	virtual void hinge_joint_set_param(RID p_joint, HingeJointParam p_param, real_t p_value) = 0;
 	virtual real_t hinge_joint_get_param(RID p_joint, HingeJointParam p_param) const = 0;
@@ -665,7 +679,7 @@ public:
 
 	};
 
-	virtual RID joint_create_slider(RID p_body_A, const Transform &p_local_frame_A, RID p_body_B, const Transform &p_local_frame_B) = 0; //reference frame is A
+	virtual void joint_make_slider(RID p_joint, RID p_body_A, const Transform &p_local_frame_A, RID p_body_B, const Transform &p_local_frame_B) = 0; //reference frame is A
 
 	virtual void slider_joint_set_param(RID p_joint, SliderJointParam p_param, real_t p_value) = 0;
 	virtual real_t slider_joint_get_param(RID p_joint, SliderJointParam p_param) const = 0;
@@ -679,7 +693,7 @@ public:
 		CONE_TWIST_MAX
 	};
 
-	virtual RID joint_create_cone_twist(RID p_body_A, const Transform &p_local_frame_A, RID p_body_B, const Transform &p_local_frame_B) = 0; //reference frame is A
+	virtual void joint_make_cone_twist(RID p_joint, RID p_body_A, const Transform &p_local_frame_A, RID p_body_B, const Transform &p_local_frame_B) = 0; //reference frame is A
 
 	virtual void cone_twist_joint_set_param(RID p_joint, ConeTwistJointParam p_param, real_t p_value) = 0;
 	virtual real_t cone_twist_joint_get_param(RID p_joint, ConeTwistJointParam p_param) const = 0;
@@ -720,13 +734,13 @@ public:
 		G6DOF_JOINT_FLAG_MAX
 	};
 
-	virtual RID joint_create_generic_6dof(RID p_body_A, const Transform &p_local_frame_A, RID p_body_B, const Transform &p_local_frame_B) = 0; //reference frame is A
+	virtual void joint_make_generic_6dof(RID p_joint, RID p_body_A, const Transform &p_local_frame_A, RID p_body_B, const Transform &p_local_frame_B) = 0; //reference frame is A
 
 	virtual void generic_6dof_joint_set_param(RID p_joint, Vector3::Axis, G6DOFJointAxisParam p_param, real_t p_value) = 0;
-	virtual real_t generic_6dof_joint_get_param(RID p_joint, Vector3::Axis, G6DOFJointAxisParam p_param) = 0;
+	virtual real_t generic_6dof_joint_get_param(RID p_joint, Vector3::Axis, G6DOFJointAxisParam p_param) const = 0;
 
 	virtual void generic_6dof_joint_set_flag(RID p_joint, Vector3::Axis, G6DOFJointAxisFlag p_flag, bool p_enable) = 0;
-	virtual bool generic_6dof_joint_get_flag(RID p_joint, Vector3::Axis, G6DOFJointAxisFlag p_flag) = 0;
+	virtual bool generic_6dof_joint_get_flag(RID p_joint, Vector3::Axis, G6DOFJointAxisFlag p_flag) const = 0;
 
 	/* QUERY API */
 
@@ -742,7 +756,9 @@ public:
 	virtual void set_active(bool p_active) = 0;
 	virtual void init() = 0;
 	virtual void step(real_t p_step) = 0;
+	virtual void sync() = 0;
 	virtual void flush_queries() = 0;
+	virtual void end_sync() = 0;
 	virtual void finish() = 0;
 
 	virtual bool is_flushing_queries() const = 0;

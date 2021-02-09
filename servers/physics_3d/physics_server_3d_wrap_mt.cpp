@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  physics_server_2d_wrap_mt.cpp                                        */
+/*  physics_server_3d_wrap_mt.cpp                                        */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,29 +28,29 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#include "physics_server_2d_wrap_mt.h"
+#include "physics_server_3d_wrap_mt.h"
 
 #include "core/os/os.h"
 
-void PhysicsServer2DWrapMT::thread_exit() {
+void PhysicsServer3DWrapMT::thread_exit() {
 	exit = true;
 }
 
-void PhysicsServer2DWrapMT::thread_step(real_t p_delta) {
-	physics_2d_server->step(p_delta);
+void PhysicsServer3DWrapMT::thread_step(real_t p_delta) {
+	physics_3d_server->step(p_delta);
 	step_sem.post();
 }
 
-void PhysicsServer2DWrapMT::_thread_callback(void *_instance) {
-	PhysicsServer2DWrapMT *vsmt = reinterpret_cast<PhysicsServer2DWrapMT *>(_instance);
+void PhysicsServer3DWrapMT::_thread_callback(void *_instance) {
+	PhysicsServer3DWrapMT *vsmt = reinterpret_cast<PhysicsServer3DWrapMT *>(_instance);
 
 	vsmt->thread_loop();
 }
 
-void PhysicsServer2DWrapMT::thread_loop() {
+void PhysicsServer3DWrapMT::thread_loop() {
 	server_thread = Thread::get_caller_id();
 
-	physics_2d_server->init();
+	physics_3d_server->init();
 
 	exit = false;
 	step_thread_up = true;
@@ -61,21 +61,21 @@ void PhysicsServer2DWrapMT::thread_loop() {
 
 	command_queue.flush_all(); // flush all
 
-	physics_2d_server->finish();
+	physics_3d_server->finish();
 }
 
 /* EVENT QUEUING */
 
-void PhysicsServer2DWrapMT::step(real_t p_step) {
+void PhysicsServer3DWrapMT::step(real_t p_step) {
 	if (create_thread) {
-		command_queue.push(this, &PhysicsServer2DWrapMT::thread_step, p_step);
+		command_queue.push(this, &PhysicsServer3DWrapMT::thread_step, p_step);
 	} else {
 		command_queue.flush_all(); //flush all pending from other threads
-		physics_2d_server->step(p_step);
+		physics_3d_server->step(p_step);
 	}
 }
 
-void PhysicsServer2DWrapMT::sync() {
+void PhysicsServer3DWrapMT::sync() {
 	if (create_thread) {
 		if (first_frame) {
 			first_frame = false;
@@ -83,18 +83,18 @@ void PhysicsServer2DWrapMT::sync() {
 			step_sem.wait(); //must not wait if a step was not issued
 		}
 	}
-	physics_2d_server->sync();
+	physics_3d_server->sync();
 }
 
-void PhysicsServer2DWrapMT::flush_queries() {
-	physics_2d_server->flush_queries();
+void PhysicsServer3DWrapMT::flush_queries() {
+	physics_3d_server->flush_queries();
 }
 
-void PhysicsServer2DWrapMT::end_sync() {
-	physics_2d_server->end_sync();
+void PhysicsServer3DWrapMT::end_sync() {
+	physics_3d_server->end_sync();
 }
 
-void PhysicsServer2DWrapMT::init() {
+void PhysicsServer3DWrapMT::init() {
 	if (create_thread) {
 		//OS::get_singleton()->release_rendering_thread();
 		thread.start(_thread_callback, this);
@@ -102,22 +102,22 @@ void PhysicsServer2DWrapMT::init() {
 			OS::get_singleton()->delay_usec(1000);
 		}
 	} else {
-		physics_2d_server->init();
+		physics_3d_server->init();
 	}
 }
 
-void PhysicsServer2DWrapMT::finish() {
+void PhysicsServer3DWrapMT::finish() {
 	if (thread.is_started()) {
-		command_queue.push(this, &PhysicsServer2DWrapMT::thread_exit);
+		command_queue.push(this, &PhysicsServer3DWrapMT::thread_exit);
 		thread.wait_to_finish();
 	} else {
-		physics_2d_server->finish();
+		physics_3d_server->finish();
 	}
 }
 
-PhysicsServer2DWrapMT::PhysicsServer2DWrapMT(PhysicsServer2D *p_contained, bool p_create_thread) :
+PhysicsServer3DWrapMT::PhysicsServer3DWrapMT(PhysicsServer3D *p_contained, bool p_create_thread) :
 		command_queue(p_create_thread) {
-	physics_2d_server = p_contained;
+	physics_3d_server = p_contained;
 	create_thread = p_create_thread;
 	step_pending = 0;
 	step_thread_up = false;
@@ -134,7 +134,7 @@ PhysicsServer2DWrapMT::PhysicsServer2DWrapMT(PhysicsServer2D *p_contained, bool 
 	first_frame = true;
 }
 
-PhysicsServer2DWrapMT::~PhysicsServer2DWrapMT() {
-	memdelete(physics_2d_server);
+PhysicsServer3DWrapMT::~PhysicsServer3DWrapMT() {
+	memdelete(physics_3d_server);
 	//finish();
 }

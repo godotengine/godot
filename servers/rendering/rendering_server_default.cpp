@@ -64,7 +64,7 @@ void RenderingServerDefault::_draw_margins() {
 
 /* FREE */
 
-void RenderingServerDefault::free(RID p_rid) {
+void RenderingServerDefault::_free(RID p_rid) {
 	if (RSG::storage->free(p_rid)) {
 		return;
 	}
@@ -91,7 +91,7 @@ void RenderingServerDefault::request_frame_drawn_callback(Object *p_where, const
 	frame_drawn_callbacks.push_back(fdc);
 }
 
-void RenderingServerDefault::draw(bool p_swap_buffers, double frame_step) {
+void RenderingServerDefault::_draw(bool p_swap_buffers, double frame_step) {
 	//needs to be done before changes is reset to 0, to not force the editor to redraw
 	RS::get_singleton()->emit_signal("frame_pre_draw");
 
@@ -213,23 +213,46 @@ float RenderingServerDefault::get_frame_setup_time_cpu() const {
 	return frame_setup_time;
 }
 
-void RenderingServerDefault::sync() {
-}
-
 bool RenderingServerDefault::has_changed() const {
 	return changes > 0;
 }
 
-void RenderingServerDefault::init() {
+void RenderingServerDefault::_init() {
 	RSG::rasterizer->initialize();
 }
 
-void RenderingServerDefault::finish() {
+void RenderingServerDefault::_finish() {
 	if (test_cube.is_valid()) {
 		free(test_cube);
 	}
 
 	RSG::rasterizer->finalize();
+}
+
+void RenderingServerDefault::init() {
+	if (create_thread) {
+		print_verbose("RenderingServerWrapMT: Creating render thread");
+		DisplayServer::get_singleton()->release_rendering_thread();
+		if (create_thread) {
+			thread.start(_thread_callback, this);
+			print_verbose("RenderingServerWrapMT: Starting render thread");
+		}
+		while (!draw_thread_up) {
+			OS::get_singleton()->delay_usec(1000);
+		}
+		print_verbose("RenderingServerWrapMT: Finished render thread");
+	} else {
+		_init();
+	}
+}
+
+void RenderingServerDefault::finish() {
+	if (create_thread) {
+		command_queue.push(this, &RenderingServerDefault::_thread_exit);
+		thread.wait_to_finish();
+	} else {
+		_finish();
+	}
 }
 
 /* STATUS INFORMATION */
@@ -297,10 +320,6 @@ void RenderingServerDefault::set_debug_generate_wireframes(bool p_generate) {
 	RSG::storage->set_debug_generate_wireframes(p_generate);
 }
 
-void RenderingServerDefault::call_set_use_vsync(bool p_enable) {
-	DisplayServer::get_singleton()->_set_use_vsync(p_enable);
-}
-
 bool RenderingServerDefault::is_low_end() const {
 	// FIXME: Commented out when rebasing vulkan branch on master,
 	// causes a crash, it seems rasterizer is not initialized yet the
@@ -309,7 +328,77 @@ bool RenderingServerDefault::is_low_end() const {
 	return false;
 }
 
-RenderingServerDefault::RenderingServerDefault() {
+void RenderingServerDefault::_thread_exit() {
+	exit = true;
+}
+
+void RenderingServerDefault::_thread_draw(bool p_swap_buffers, double frame_step) {
+	if (!atomic_decrement(&draw_pending)) {
+		_draw(p_swap_buffers, frame_step);
+	}
+}
+
+void RenderingServerDefault::_thread_flush() {
+	atomic_decrement(&draw_pending);
+}
+
+void RenderingServerDefault::_thread_callback(void *_instance) {
+	RenderingServerDefault *vsmt = reinterpret_cast<RenderingServerDefault *>(_instance);
+
+	vsmt->_thread_loop();
+}
+
+void RenderingServerDefault::_thread_loop() {
+	server_thread = Thread::get_caller_id();
+
+	DisplayServer::get_singleton()->make_rendering_thread();
+
+	_init();
+
+	exit = false;
+	draw_thread_up = true;
+	while (!exit) {
+		// flush commands one by one, until exit is requested
+		command_queue.wait_and_flush_one();
+	}
+
+	command_queue.flush_all(); // flush all
+
+	_finish();
+}
+
+/* EVENT QUEUING */
+
+void RenderingServerDefault::sync() {
+	if (create_thread) {
+		atomic_increment(&draw_pending);
+		command_queue.push_and_sync(this, &RenderingServerDefault::_thread_flush);
+	} else {
+		command_queue.flush_all(); //flush all pending from other threads
+	}
+}
+
+void RenderingServerDefault::draw(bool p_swap_buffers, double frame_step) {
+	if (create_thread) {
+		atomic_increment(&draw_pending);
+		command_queue.push(this, &RenderingServerDefault::_thread_draw, p_swap_buffers, frame_step);
+	} else {
+		_draw(p_swap_buffers, frame_step);
+	}
+}
+
+RenderingServerDefault::RenderingServerDefault(bool p_create_thread) :
+		command_queue(p_create_thread) {
+	create_thread = p_create_thread;
+	draw_pending = 0;
+	draw_thread_up = false;
+
+	if (!p_create_thread) {
+		server_thread = Thread::get_caller_id();
+	} else {
+		server_thread = 0;
+	}
+
 	RSG::canvas = memnew(RendererCanvasCull);
 	RSG::viewport = memnew(RendererViewport);
 	RendererSceneCull *sr = memnew(RendererSceneCull);

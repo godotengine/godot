@@ -61,11 +61,11 @@ class PhysicsServer2DSW : public PhysicsServer2D {
 
 	PhysicsDirectBodyState2DSW *direct_state;
 
-	mutable RID_PtrOwner<Shape2DSW> shape_owner;
-	mutable RID_PtrOwner<Space2DSW> space_owner;
-	mutable RID_PtrOwner<Area2DSW> area_owner;
-	mutable RID_PtrOwner<Body2DSW> body_owner;
-	mutable RID_PtrOwner<Joint2DSW> joint_owner;
+	mutable RID_PtrOwner<Shape2DSW, true> shape_owner;
+	mutable RID_PtrOwner<Space2DSW, true> space_owner;
+	mutable RID_PtrOwner<Area2DSW, true> area_owner;
+	mutable RID_PtrOwner<Body2DSW, true> body_owner;
+	mutable RID_PtrOwner<Joint2DSW, true> joint_owner;
 
 	static PhysicsServer2DSW *singletonsw;
 
@@ -255,15 +255,20 @@ public:
 
 	/* JOINT API */
 
+	virtual RID joint_create() override;
+
+	virtual void joint_clear(RID p_joint) override;
+
 	virtual void joint_set_param(RID p_joint, JointParam p_param, real_t p_value) override;
 	virtual real_t joint_get_param(RID p_joint, JointParam p_param) const override;
 
 	virtual void joint_disable_collisions_between_bodies(RID p_joint, const bool p_disabled) override;
 	virtual bool joint_is_disabled_collisions_between_bodies(RID p_joint) const override;
 
-	virtual RID pin_joint_create(const Vector2 &p_pos, RID p_body_a, RID p_body_b = RID()) override;
-	virtual RID groove_joint_create(const Vector2 &p_a_groove1, const Vector2 &p_a_groove2, const Vector2 &p_b_anchor, RID p_body_a, RID p_body_b) override;
-	virtual RID damped_spring_joint_create(const Vector2 &p_anchor_a, const Vector2 &p_anchor_b, RID p_body_a, RID p_body_b = RID()) override;
+	virtual void joint_make_pin(RID p_joint, const Vector2 &p_anchor, RID p_body_a, RID p_body_b = RID()) override;
+	virtual void joint_make_groove(RID p_joint, const Vector2 &p_a_groove1, const Vector2 &p_a_groove2, const Vector2 &p_b_anchor, RID p_body_a, RID p_body_b) override;
+	virtual void joint_make_damped_spring(RID p_joint, const Vector2 &p_anchor_a, const Vector2 &p_anchor_b, RID p_body_a, RID p_body_b = RID()) override;
+
 	virtual void pin_joint_set_param(RID p_joint, PinJointParam p_param, real_t p_value) override;
 	virtual real_t pin_joint_get_param(RID p_joint, PinJointParam p_param) const override;
 	virtual void damped_spring_joint_set_param(RID p_joint, DampedSpringParam p_param, real_t p_value) override;
@@ -287,7 +292,7 @@ public:
 
 	int get_process_info(ProcessInfo p_info) override;
 
-	PhysicsServer2DSW();
+	PhysicsServer2DSW(bool p_using_threads = false);
 	~PhysicsServer2DSW() {}
 };
 

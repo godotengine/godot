@@ -36,7 +36,16 @@
 
 class Joint3DSW : public Constraint3DSW {
 public:
-	virtual PhysicsServer3D::JointType get_type() const = 0;
+	virtual bool setup(real_t p_step) { return false; }
+	virtual void solve(real_t p_step) {}
+
+	void copy_settings_from(Joint3DSW *p_joint) {
+		set_self(p_joint->get_self());
+		set_priority(p_joint->get_priority());
+		disable_collisions_between_bodies(p_joint->is_disabled_collisions_between_bodies());
+	}
+
+	virtual PhysicsServer3D::JointType get_type() const { return PhysicsServer3D::JOINT_TYPE_MAX; }
 	_FORCE_INLINE_ Joint3DSW(Body3DSW **p_body_ptr = nullptr, int p_body_count = 0) :
 			Constraint3DSW(p_body_ptr, p_body_count) {
 	}

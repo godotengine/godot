@@ -47,6 +47,7 @@ class Joint3D : public Node3D {
 	int solver_priority = 1;
 	bool exclude_from_collision = true;
 	String warning;
+	bool configured = false;
 
 protected:
 	void _disconnect_signals();
@@ -55,9 +56,11 @@ protected:
 
 	void _notification(int p_what);
 
-	virtual RID _configure_joint(PhysicsBody3D *body_a, PhysicsBody3D *body_b) = 0;
+	virtual void _configure_joint(RID p_joint, PhysicsBody3D *body_a, PhysicsBody3D *body_b) = 0;
 
 	static void _bind_methods();
+
+	_FORCE_INLINE_ bool is_configured() const { return configured; }
 
 public:
 	virtual String get_configuration_warning() const override;
@@ -76,6 +79,7 @@ public:
 
 	RID get_joint() const { return joint; }
 	Joint3D();
+	~Joint3D();
 };
 
 ///////////////////////////////////////////
@@ -92,7 +96,7 @@ public:
 
 protected:
 	real_t params[3];
-	virtual RID _configure_joint(PhysicsBody3D *body_a, PhysicsBody3D *body_b) override;
+	virtual void _configure_joint(RID p_joint, PhysicsBody3D *body_a, PhysicsBody3D *body_b) override;
 	static void _bind_methods();
 
 public:
@@ -129,7 +133,7 @@ public:
 protected:
 	real_t params[PARAM_MAX];
 	bool flags[FLAG_MAX];
-	virtual RID _configure_joint(PhysicsBody3D *body_a, PhysicsBody3D *body_b) override;
+	virtual void _configure_joint(RID p_joint, PhysicsBody3D *body_a, PhysicsBody3D *body_b) override;
 	static void _bind_methods();
 
 	void _set_upper_limit(real_t p_limit);
@@ -191,7 +195,7 @@ protected:
 	real_t _get_lower_limit_angular() const;
 
 	real_t params[PARAM_MAX];
-	virtual RID _configure_joint(PhysicsBody3D *body_a, PhysicsBody3D *body_b) override;
+	virtual void _configure_joint(RID p_joint, PhysicsBody3D *body_a, PhysicsBody3D *body_b) override;
 	static void _bind_methods();
 
 public:
@@ -224,7 +228,7 @@ protected:
 	real_t _get_twist_span() const;
 
 	real_t params[PARAM_MAX];
-	virtual RID _configure_joint(PhysicsBody3D *body_a, PhysicsBody3D *body_b) override;
+	virtual void _configure_joint(RID p_joint, PhysicsBody3D *body_a, PhysicsBody3D *body_b) override;
 	static void _bind_methods();
 
 public:
@@ -302,7 +306,7 @@ protected:
 	real_t params_z[PARAM_MAX];
 	bool flags_z[FLAG_MAX];
 
-	virtual RID _configure_joint(PhysicsBody3D *body_a, PhysicsBody3D *body_b) override;
+	virtual void _configure_joint(RID p_joint, PhysicsBody3D *body_a, PhysicsBody3D *body_b) override;
 	static void _bind_methods();
 
 public:

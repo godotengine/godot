@@ -1059,16 +1059,16 @@ real_t BulletPhysicsServer3D::soft_body_get_linear_stiffness(RID p_body) {
 	return body->get_linear_stiffness();
 }
 
-void BulletPhysicsServer3D::soft_body_set_areaAngular_stiffness(RID p_body, real_t p_stiffness) {
+void BulletPhysicsServer3D::soft_body_set_angular_stiffness(RID p_body, real_t p_stiffness) {
 	SoftBodyBullet *body = soft_body_owner.getornull(p_body);
 	ERR_FAIL_COND(!body);
-	body->set_areaAngular_stiffness(p_stiffness);
+	body->set_angular_stiffness(p_stiffness);
 }
 
-real_t BulletPhysicsServer3D::soft_body_get_areaAngular_stiffness(RID p_body) {
+real_t BulletPhysicsServer3D::soft_body_get_angular_stiffness(RID p_body) {
 	SoftBodyBullet *body = soft_body_owner.getornull(p_body);
 	ERR_FAIL_COND_V(!body, 0.f);
-	return body->get_areaAngular_stiffness();
+	return body->get_angular_stiffness();
 }
 
 void BulletPhysicsServer3D::soft_body_set_volume_stiffness(RID p_body, real_t p_stiffness) {

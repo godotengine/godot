@@ -298,8 +298,8 @@ public:
 	virtual void soft_body_set_linear_stiffness(RID p_body, real_t p_stiffness) override;
 	virtual real_t soft_body_get_linear_stiffness(RID p_body) override;
 
-	virtual void soft_body_set_areaAngular_stiffness(RID p_body, real_t p_stiffness) override;
-	virtual real_t soft_body_get_areaAngular_stiffness(RID p_body) override;
+	virtual void soft_body_set_angular_stiffness(RID p_body, real_t p_stiffness) override;
+	virtual real_t soft_body_get_angular_stiffness(RID p_body) override;
 
 	virtual void soft_body_set_volume_stiffness(RID p_body, real_t p_stiffness) override;
 	virtual real_t soft_body_get_volume_stiffness(RID p_body) override;

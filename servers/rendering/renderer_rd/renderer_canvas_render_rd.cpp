@@ -2695,7 +2695,8 @@ RendererCanvasRenderRD::RendererCanvasRenderRD(RendererStorageRD *p_storage) {
 		state.default_transforms_uniform_set = RD::get_singleton()->uniform_set_create(uniforms, shader.default_version_rd_shader, TRANSFORMS_UNIFORM_SET);
 	}
 
-	default_canvas_texture = storage->canvas_texture_create();
+	default_canvas_texture = storage->canvas_texture_allocate();
+	storage->canvas_texture_initialize(default_canvas_texture);
 
 	state.shadow_texture_size = GLOBAL_GET("rendering/quality/2d_shadow_atlas/size");
 
@@ -2706,9 +2707,14 @@ RendererCanvasRenderRD::RendererCanvasRenderRD(RendererStorageRD *p_storage) {
 	state.time = 0;
 
 	{
-		default_canvas_group_shader = storage->shader_create();
+		default_canvas_group_shader = storage->shader_allocate();
+		storage->shader_initialize(default_canvas_group_shader);
+
 		storage->shader_set_code(default_canvas_group_shader, "shader_type canvas_item; \nvoid fragment() {\n\tvec4 c = textureLod(SCREEN_TEXTURE,SCREEN_UV,0.0); if (c.a > 0.0001) c.rgb/=c.a; COLOR *= c; \n}\n");
-		default_canvas_group_material = storage->material_create();
+
+		default_canvas_group_material = storage->material_allocate();
+		storage->material_initialize(default_canvas_group_material);
+
 		storage->material_set_shader(default_canvas_group_material, default_canvas_group_shader);
 	}
 

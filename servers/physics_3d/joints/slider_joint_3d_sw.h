@@ -243,7 +243,7 @@ public:
 	bool setup(real_t p_step);
 	void solve(real_t p_step);
 
-	virtual PhysicsServer3D::JointType get_type() const { return PhysicsServer3D::JOINT_SLIDER; }
+	virtual PhysicsServer3D::JointType get_type() const { return PhysicsServer3D::JOINT_TYPE_SLIDER; }
 };
 
 #endif // SLIDER_JOINT_SW_H

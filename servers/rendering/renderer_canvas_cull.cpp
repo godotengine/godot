@@ -97,7 +97,7 @@ void _collect_ysort_children(RendererCanvasCull::Item *p_canvas_item, Transform2
 	}
 }
 
-void _mark_ysort_dirty(RendererCanvasCull::Item *ysort_owner, RID_PtrOwner<RendererCanvasCull::Item> &canvas_item_owner) {
+void _mark_ysort_dirty(RendererCanvasCull::Item *ysort_owner, RID_PtrOwner<RendererCanvasCull::Item, true> &canvas_item_owner) {
 	do {
 		ysort_owner->ysort_children_count = -1;
 		ysort_owner = canvas_item_owner.owns(ysort_owner->parent) ? canvas_item_owner.getornull(ysort_owner->parent) : nullptr;
@@ -356,12 +356,12 @@ bool RendererCanvasCull::was_sdf_used() {
 	return sdf_used;
 }
 
-RID RendererCanvasCull::canvas_create() {
+RID RendererCanvasCull::canvas_allocate() {
+	return canvas_owner.allocate_rid();
+}
+void RendererCanvasCull::canvas_initialize(RID p_rid) {
 	Canvas *canvas = memnew(Canvas);
-	ERR_FAIL_COND_V(!canvas, RID());
-	RID rid = canvas_owner.make_rid(canvas);
-
-	return rid;
+	canvas_owner.initialize_rid(p_rid, canvas);
 }
 
 void RendererCanvasCull::canvas_set_item_mirroring(RID p_canvas, RID p_item, const Point2 &p_mirroring) {
@@ -393,11 +393,12 @@ void RendererCanvasCull::canvas_set_parent(RID p_canvas, RID p_parent, float p_s
 	canvas->parent_scale = p_scale;
 }
 
-RID RendererCanvasCull::canvas_item_create() {
+RID RendererCanvasCull::canvas_item_allocate() {
+	return canvas_item_owner.allocate_rid();
+}
+void RendererCanvasCull::canvas_item_initialize(RID p_rid) {
 	Item *canvas_item = memnew(Item);
-	ERR_FAIL_COND_V(!canvas_item, RID());
-
-	return canvas_item_owner.make_rid(canvas_item);
+	canvas_item_owner.initialize_rid(p_rid, canvas_item);
 }
 
 void RendererCanvasCull::canvas_item_set_parent(RID p_item, RID p_parent) {
@@ -1075,10 +1076,13 @@ void RendererCanvasCull::canvas_item_set_canvas_group_mode(RID p_item, RS::Canva
 	}
 }
 
-RID RendererCanvasCull::canvas_light_create() {
+RID RendererCanvasCull::canvas_light_allocate() {
+	return canvas_light_owner.allocate_rid();
+}
+void RendererCanvasCull::canvas_light_initialize(RID p_rid) {
 	RendererCanvasRender::Light *clight = memnew(RendererCanvasRender::Light);
 	clight->light_internal = RSG::canvas_render->light_create();
-	return canvas_light_owner.make_rid(clight);
+	return canvas_light_owner.initialize_rid(p_rid, clight);
 }
 
 void RendererCanvasCull::canvas_light_set_mode(RID p_light, RS::CanvasLightMode p_mode) {
@@ -1268,10 +1272,13 @@ void RendererCanvasCull::canvas_light_set_shadow_smooth(RID p_light, float p_smo
 	clight->shadow_smooth = p_smooth;
 }
 
-RID RendererCanvasCull::canvas_light_occluder_create() {
+RID RendererCanvasCull::canvas_light_occluder_allocate() {
+	return canvas_light_occluder_owner.allocate_rid();
+}
+void RendererCanvasCull::canvas_light_occluder_initialize(RID p_rid) {
 	RendererCanvasRender::LightOccluderInstance *occluder = memnew(RendererCanvasRender::LightOccluderInstance);
 
-	return canvas_light_occluder_owner.make_rid(occluder);
+	return canvas_light_occluder_owner.initialize_rid(p_rid, occluder);
 }
 
 void RendererCanvasCull::canvas_light_occluder_attach_to_canvas(RID p_occluder, RID p_canvas) {
@@ -1349,10 +1356,13 @@ void RendererCanvasCull::canvas_light_occluder_set_light_mask(RID p_occluder, in
 	occluder->light_mask = p_mask;
 }
 
-RID RendererCanvasCull::canvas_occluder_polygon_create() {
+RID RendererCanvasCull::canvas_occluder_polygon_allocate() {
+	return canvas_light_occluder_polygon_owner.allocate_rid();
+}
+void RendererCanvasCull::canvas_occluder_polygon_initialize(RID p_rid) {
 	LightOccluderPolygon *occluder_poly = memnew(LightOccluderPolygon);
 	occluder_poly->occluder = RSG::canvas_render->occluder_polygon_create();
-	return canvas_light_occluder_polygon_owner.make_rid(occluder_poly);
+	return canvas_light_occluder_polygon_owner.initialize_rid(p_rid, occluder_poly);
 }
 
 void RendererCanvasCull::canvas_occluder_polygon_set_shape(RID p_occluder_polygon, const Vector<Vector2> &p_shape, bool p_closed) {
@@ -1393,8 +1403,11 @@ void RendererCanvasCull::canvas_set_shadow_texture_size(int p_size) {
 	RSG::canvas_render->set_shadow_texture_size(p_size);
 }
 
-RID RendererCanvasCull::canvas_texture_create() {
-	return RSG::storage->canvas_texture_create();
+RID RendererCanvasCull::canvas_texture_allocate() {
+	return RSG::storage->canvas_texture_allocate();
+}
+void RendererCanvasCull::canvas_texture_initialize(RID p_rid) {
+	RSG::storage->canvas_texture_initialize(p_rid);
 }
 
 void RendererCanvasCull::canvas_texture_set_channel(RID p_canvas_texture, RS::CanvasTextureChannel p_channel, RID p_texture) {

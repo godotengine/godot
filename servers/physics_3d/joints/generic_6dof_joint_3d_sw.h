@@ -234,7 +234,7 @@ protected:
 public:
 	Generic6DOFJoint3DSW(Body3DSW *rbA, Body3DSW *rbB, const Transform &frameInA, const Transform &frameInB, bool useLinearReferenceFrameA);
 
-	virtual PhysicsServer3D::JointType get_type() const { return PhysicsServer3D::JOINT_6DOF; }
+	virtual PhysicsServer3D::JointType get_type() const { return PhysicsServer3D::JOINT_TYPE_6DOF; }
 
 	virtual bool setup(real_t p_timestep);
 	virtual void solve(real_t p_timestep);

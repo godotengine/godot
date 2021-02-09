@@ -101,9 +101,9 @@ public:
 		}
 	};
 
-	RID_PtrOwner<LightOccluderPolygon> canvas_light_occluder_polygon_owner;
+	RID_PtrOwner<LightOccluderPolygon, true> canvas_light_occluder_polygon_owner;
 
-	RID_PtrOwner<RendererCanvasRender::LightOccluderInstance> canvas_light_occluder_owner;
+	RID_PtrOwner<RendererCanvasRender::LightOccluderInstance, true> canvas_light_occluder_owner;
 
 	struct Canvas : public RendererViewport::CanvasBase {
 		Set<RID> viewports;
@@ -148,9 +148,9 @@ public:
 		}
 	};
 
-	mutable RID_PtrOwner<Canvas> canvas_owner;
-	RID_PtrOwner<Item> canvas_item_owner;
-	RID_PtrOwner<RendererCanvasRender::Light> canvas_light_owner;
+	mutable RID_PtrOwner<Canvas, true> canvas_owner;
+	RID_PtrOwner<Item, true> canvas_item_owner;
+	RID_PtrOwner<RendererCanvasRender::Light, true> canvas_light_owner;
 
 	bool disable_scale;
 	bool sdf_used = false;
@@ -168,13 +168,17 @@ public:
 
 	bool was_sdf_used();
 
-	RID canvas_create();
+	RID canvas_allocate();
+	void canvas_initialize(RID p_rid);
+
 	void canvas_set_item_mirroring(RID p_canvas, RID p_item, const Point2 &p_mirroring);
 	void canvas_set_modulate(RID p_canvas, const Color &p_color);
 	void canvas_set_parent(RID p_canvas, RID p_parent, float p_scale);
 	void canvas_set_disable_scale(bool p_disable);
 
-	RID canvas_item_create();
+	RID canvas_item_allocate();
+	void canvas_item_initialize(RID p_rid);
+
 	void canvas_item_set_parent(RID p_item, RID p_parent);
 
 	void canvas_item_set_visible(RID p_item, bool p_visible);
@@ -222,7 +226,9 @@ public:
 
 	void canvas_item_set_canvas_group_mode(RID p_item, RS::CanvasGroupMode p_mode, float p_clear_margin = 5.0, bool p_fit_empty = false, float p_fit_margin = 0.0, bool p_blur_mipmaps = false);
 
-	RID canvas_light_create();
+	RID canvas_light_allocate();
+	void canvas_light_initialize(RID p_rid);
+
 	void canvas_light_set_mode(RID p_light, RS::CanvasLightMode p_mode);
 	void canvas_light_attach_to_canvas(RID p_light, RID p_canvas);
 	void canvas_light_set_enabled(RID p_light, bool p_enabled);
@@ -246,7 +252,9 @@ public:
 	void canvas_light_set_shadow_color(RID p_light, const Color &p_color);
 	void canvas_light_set_shadow_smooth(RID p_light, float p_smooth);
 
-	RID canvas_light_occluder_create();
+	RID canvas_light_occluder_allocate();
+	void canvas_light_occluder_initialize(RID p_rid);
+
 	void canvas_light_occluder_attach_to_canvas(RID p_occluder, RID p_canvas);
 	void canvas_light_occluder_set_enabled(RID p_occluder, bool p_enabled);
 	void canvas_light_occluder_set_polygon(RID p_occluder, RID p_polygon);
@@ -254,14 +262,18 @@ public:
 	void canvas_light_occluder_set_transform(RID p_occluder, const Transform2D &p_xform);
 	void canvas_light_occluder_set_light_mask(RID p_occluder, int p_mask);
 
-	RID canvas_occluder_polygon_create();
+	RID canvas_occluder_polygon_allocate();
+	void canvas_occluder_polygon_initialize(RID p_rid);
+
 	void canvas_occluder_polygon_set_shape(RID p_occluder_polygon, const Vector<Vector2> &p_shape, bool p_closed);
 
 	void canvas_occluder_polygon_set_cull_mode(RID p_occluder_polygon, RS::CanvasOccluderPolygonCullMode p_mode);
 
 	void canvas_set_shadow_texture_size(int p_size);
 
-	RID canvas_texture_create();
+	RID canvas_texture_allocate();
+	void canvas_texture_initialize(RID p_rid);
+
 	void canvas_texture_set_channel(RID p_canvas_texture, RS::CanvasTextureChannel p_channel, RID p_texture);
 	void canvas_texture_set_shading_parameters(RID p_canvas_texture, const Color &p_base_color, float p_shininess);
 

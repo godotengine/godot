@@ -182,7 +182,7 @@ void Skeleton2D::_update_bone_setup() {
 	}
 
 	bone_setup_dirty = false;
-	RS::get_singleton()->skeleton_allocate(skeleton, bones.size(), true);
+	RS::get_singleton()->skeleton_allocate_data(skeleton, bones.size(), true);
 
 	bones.sort(); //sorty so they are always in the same order/index
 

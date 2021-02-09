@@ -49,7 +49,12 @@ public:
 	_FORCE_INLINE_ void set_max_bias(real_t p_bias) { max_bias = p_bias; }
 	_FORCE_INLINE_ real_t get_max_bias() const { return max_bias; }
 
-	virtual PhysicsServer2D::JointType get_type() const = 0;
+	virtual bool setup(real_t p_step) { return false; }
+	virtual void solve(real_t p_step) {}
+
+	void copy_settings_from(Joint2DSW *p_joint);
+
+	virtual PhysicsServer2D::JointType get_type() const { return PhysicsServer2D::JOINT_TYPE_MAX; }
 	Joint2DSW(Body2DSW **p_body_ptr = nullptr, int p_body_count = 0) :
 			Constraint2DSW(p_body_ptr, p_body_count) {
 		bias = 0;
@@ -76,7 +81,7 @@ class PinJoint2DSW : public Joint2DSW {
 	real_t softness;
 
 public:
-	virtual PhysicsServer2D::JointType get_type() const { return PhysicsServer2D::JOINT_PIN; }
+	virtual PhysicsServer2D::JointType get_type() const { return PhysicsServer2D::JOINT_TYPE_PIN; }
 
 	virtual bool setup(real_t p_step);
 	virtual void solve(real_t p_step);
@@ -113,7 +118,7 @@ class GrooveJoint2DSW : public Joint2DSW {
 	bool correct;
 
 public:
-	virtual PhysicsServer2D::JointType get_type() const { return PhysicsServer2D::JOINT_GROOVE; }
+	virtual PhysicsServer2D::JointType get_type() const { return PhysicsServer2D::JOINT_TYPE_GROOVE; }
 
 	virtual bool setup(real_t p_step);
 	virtual void solve(real_t p_step);
@@ -146,7 +151,7 @@ class DampedSpringJoint2DSW : public Joint2DSW {
 	real_t v_coef;
 
 public:
-	virtual PhysicsServer2D::JointType get_type() const { return PhysicsServer2D::JOINT_DAMPED_SPRING; }
+	virtual PhysicsServer2D::JointType get_type() const { return PhysicsServer2D::JOINT_TYPE_DAMPED_SPRING; }
 
 	virtual bool setup(real_t p_step);
 	virtual void solve(real_t p_step);

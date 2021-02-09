@@ -655,12 +655,16 @@ void PhysicsServer2D::_bind_methods() {
 
 	/* JOINT API */
 
+	ClassDB::bind_method(D_METHOD("joint_create"), &PhysicsServer2D::joint_create);
+
+	ClassDB::bind_method(D_METHOD("joint_clear", "joint"), &PhysicsServer2D::joint_clear);
+
 	ClassDB::bind_method(D_METHOD("joint_set_param", "joint", "param", "value"), &PhysicsServer2D::joint_set_param);
 	ClassDB::bind_method(D_METHOD("joint_get_param", "joint", "param"), &PhysicsServer2D::joint_get_param);
 
-	ClassDB::bind_method(D_METHOD("pin_joint_create", "anchor", "body_a", "body_b"), &PhysicsServer2D::pin_joint_create, DEFVAL(RID()));
-	ClassDB::bind_method(D_METHOD("groove_joint_create", "groove1_a", "groove2_a", "anchor_b", "body_a", "body_b"), &PhysicsServer2D::groove_joint_create, DEFVAL(RID()), DEFVAL(RID()));
-	ClassDB::bind_method(D_METHOD("damped_spring_joint_create", "anchor_a", "anchor_b", "body_a", "body_b"), &PhysicsServer2D::damped_spring_joint_create, DEFVAL(RID()));
+	ClassDB::bind_method(D_METHOD("joint_make_pin", "joint", "anchor", "body_a", "body_b"), &PhysicsServer2D::joint_make_pin, DEFVAL(RID()));
+	ClassDB::bind_method(D_METHOD("joint_make_groove", "joint", "groove1_a", "groove2_a", "anchor_b", "body_a", "body_b"), &PhysicsServer2D::joint_make_groove, DEFVAL(RID()), DEFVAL(RID()));
+	ClassDB::bind_method(D_METHOD("joint_make_damped_spring", "joint", "anchor_a", "anchor_b", "body_a", "body_b"), &PhysicsServer2D::joint_make_damped_spring, DEFVAL(RID()));
 
 	ClassDB::bind_method(D_METHOD("damped_spring_joint_set_param", "joint", "param", "value"), &PhysicsServer2D::damped_spring_joint_set_param);
 	ClassDB::bind_method(D_METHOD("damped_spring_joint_get_param", "joint", "param"), &PhysicsServer2D::damped_spring_joint_get_param);
@@ -727,9 +731,10 @@ void PhysicsServer2D::_bind_methods() {
 	BIND_ENUM_CONSTANT(BODY_STATE_SLEEPING);
 	BIND_ENUM_CONSTANT(BODY_STATE_CAN_SLEEP);
 
-	BIND_ENUM_CONSTANT(JOINT_PIN);
-	BIND_ENUM_CONSTANT(JOINT_GROOVE);
-	BIND_ENUM_CONSTANT(JOINT_DAMPED_SPRING);
+	BIND_ENUM_CONSTANT(JOINT_TYPE_PIN);
+	BIND_ENUM_CONSTANT(JOINT_TYPE_GROOVE);
+	BIND_ENUM_CONSTANT(JOINT_TYPE_DAMPED_SPRING);
+	BIND_ENUM_CONSTANT(JOINT_TYPE_MAX);
 
 	BIND_ENUM_CONSTANT(JOINT_PARAM_BIAS);
 	BIND_ENUM_CONSTANT(JOINT_PARAM_MAX_BIAS);

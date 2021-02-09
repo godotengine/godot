@@ -86,7 +86,9 @@ protected:
 		PhysicsServer3D *ps = PhysicsServer3D::get_singleton();
 
 		RID mesh_instance = vs->instance_create2(type_mesh_map[p_shape], scenario);
-		RID body = ps->body_create(p_body, !p_active_default);
+		RID body = ps->body_create();
+		ps->body_set_mode(body, p_body);
+		ps->body_set_state(body, PhysicsServer3D::BODY_STATE_SLEEPING, !p_active_default);
 		ps->body_set_space(body, space);
 		ps->body_set_param(body, PhysicsServer3D::BODY_PARAM_BOUNCE, 0.0);
 		//todo set space
@@ -108,7 +110,9 @@ protected:
 		RID world_margin_shape = ps->shape_create(PhysicsServer3D::SHAPE_PLANE);
 		ps->shape_set_data(world_margin_shape, p_plane);
 
-		RID b = ps->body_create(PhysicsServer3D::BODY_MODE_STATIC);
+		RID b = ps->body_create();
+		ps->body_set_mode(b, PhysicsServer3D::BODY_MODE_STATIC);
+
 		ps->body_set_space(b, space);
 		//todo set space
 		ps->body_add_shape(b, world_margin_shape);
@@ -202,7 +206,8 @@ protected:
 
 		RID triins = vs->instance_create2(trimesh_mesh, scenario);
 
-		RID tribody = ps->body_create(PhysicsServer3D::BODY_MODE_STATIC);
+		RID tribody = ps->body_create();
+		ps->body_set_mode(tribody, PhysicsServer3D::BODY_MODE_STATIC);
 		ps->body_set_space(tribody, space);
 		//todo set space
 		ps->body_add_shape(tribody, trimesh_shape);
@@ -358,7 +363,8 @@ public:
 		ps->shape_set_data(capsule_shape, capsule_params);
 
 		RID mesh_instance = vs->instance_create2(capsule_mesh, scenario);
-		character = ps->body_create(PhysicsServer3D::BODY_MODE_CHARACTER);
+		character = ps->body_create();
+		ps->body_set_mode(character, PhysicsServer3D::BODY_MODE_CHARACTER);
 		ps->body_set_space(character, space);
 		//todo add space
 		ps->body_add_shape(character, capsule_shape);

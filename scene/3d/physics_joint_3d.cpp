@@ -62,18 +62,17 @@ void Joint3D::_body_exit_tree(const ObjectID &p_body_id) {
 }
 
 void Joint3D::_update_joint(bool p_only_free) {
-	if (joint.is_valid()) {
-		if (ba.is_valid() && bb.is_valid()) {
-			PhysicsServer3D::get_singleton()->body_remove_collision_exception(ba, bb);
-		}
-
-		PhysicsServer3D::get_singleton()->free(joint);
-		joint = RID();
-		ba = RID();
-		bb = RID();
+	if (ba.is_valid() && bb.is_valid()) {
+		PhysicsServer3D::get_singleton()->body_remove_collision_exception(ba, bb);
 	}
 
+	ba = RID();
+	bb = RID();
+
+	configured = false;
+
 	if (p_only_free || !is_inside_tree()) {
+		PhysicsServer3D::get_singleton()->joint_clear(joint);
 		warning = String();
 		return;
 	}
@@ -85,30 +84,35 @@ void Joint3D::_update_joint(bool p_only_free) {
 	PhysicsBody3D *body_b = Object::cast_to<PhysicsBody3D>(node_b);
 
 	if (node_a && !body_a && node_b && !body_b) {
+		PhysicsServer3D::get_singleton()->joint_clear(joint);
 		warning = TTR("Node A and Node B must be PhysicsBody3Ds");
 		update_configuration_warning();
 		return;
 	}
 
 	if (node_a && !body_a) {
+		PhysicsServer3D::get_singleton()->joint_clear(joint);
 		warning = TTR("Node A must be a PhysicsBody3D");
 		update_configuration_warning();
 		return;
 	}
 
 	if (node_b && !body_b) {
+		PhysicsServer3D::get_singleton()->joint_clear(joint);
 		warning = TTR("Node B must be a PhysicsBody3D");
 		update_configuration_warning();
 		return;
 	}
 
 	if (!body_a && !body_b) {
+		PhysicsServer3D::get_singleton()->joint_clear(joint);
 		warning = TTR("Joint is not connected to any PhysicsBody3Ds");
 		update_configuration_warning();
 		return;
 	}
 
 	if (body_a == body_b) {
+		PhysicsServer3D::get_singleton()->joint_clear(joint);
 		warning = TTR("Node A and Node B must be different PhysicsBody3Ds");
 		update_configuration_warning();
 		return;
@@ -117,13 +121,13 @@ void Joint3D::_update_joint(bool p_only_free) {
 	warning = String();
 	update_configuration_warning();
 
-	if (body_a) {
-		joint = _configure_joint(body_a, body_b);
-	} else if (body_b) {
-		joint = _configure_joint(body_b, nullptr);
-	}
+	configured = true;
 
-	ERR_FAIL_COND_MSG(!joint.is_valid(), "Failed to configure the joint.");
+	if (body_a) {
+		_configure_joint(joint, body_a, body_b);
+	} else if (body_b) {
+		_configure_joint(joint, body_b, nullptr);
+	}
 
 	PhysicsServer3D::get_singleton()->joint_set_solver_priority(joint, solver_priority);
 
@@ -246,6 +250,11 @@ void Joint3D::_bind_methods() {
 
 Joint3D::Joint3D() {
 	set_notify_transform(true);
+	joint = PhysicsServer3D::get_singleton()->joint_create();
+}
+
+Joint3D::~Joint3D() {
+	PhysicsServer3D::get_singleton()->free(joint);
 }
 
 ///////////////////////////////////
@@ -266,7 +275,7 @@ void PinJoint3D::_bind_methods() {
 void PinJoint3D::set_param(Param p_param, real_t p_value) {
 	ERR_FAIL_INDEX(p_param, 3);
 	params[p_param] = p_value;
-	if (get_joint().is_valid()) {
+	if (is_configured()) {
 		PhysicsServer3D::get_singleton()->pin_joint_set_param(get_joint(), PhysicsServer3D::PinJointParam(p_param), p_value);
 	}
 }
@@ -276,7 +285,7 @@ real_t PinJoint3D::get_param(Param p_param) const {
 	return params[p_param];
 }
 
-RID PinJoint3D::_configure_joint(PhysicsBody3D *body_a, PhysicsBody3D *body_b) {
+void PinJoint3D::_configure_joint(RID p_joint, PhysicsBody3D *body_a, PhysicsBody3D *body_b) {
 	Vector3 pinpos = get_global_transform().origin;
 	Vector3 local_a = body_a->get_global_transform().affine_inverse().xform(pinpos);
 	Vector3 local_b;
@@ -287,11 +296,10 @@ RID PinJoint3D::_configure_joint(PhysicsBody3D *body_a, PhysicsBody3D *body_b) {
 		local_b = pinpos;
 	}
 
-	RID j = PhysicsServer3D::get_singleton()->joint_create_pin(body_a->get_rid(), local_a, body_b ? body_b->get_rid() : RID(), local_b);
+	PhysicsServer3D::get_singleton()->joint_make_pin(p_joint, body_a->get_rid(), local_a, body_b ? body_b->get_rid() : RID(), local_b);
 	for (int i = 0; i < 3; i++) {
-		PhysicsServer3D::get_singleton()->pin_joint_set_param(j, PhysicsServer3D::PinJointParam(i), params[i]);
+		PhysicsServer3D::get_singleton()->pin_joint_set_param(p_joint, PhysicsServer3D::PinJointParam(i), params[i]);
 	}
-	return j;
 }
 
 PinJoint3D::PinJoint3D() {
@@ -364,7 +372,7 @@ void HingeJoint3D::_bind_methods() {
 void HingeJoint3D::set_param(Param p_param, real_t p_value) {
 	ERR_FAIL_INDEX(p_param, PARAM_MAX);
 	params[p_param] = p_value;
-	if (get_joint().is_valid()) {
+	if (is_configured()) {
 		PhysicsServer3D::get_singleton()->hinge_joint_set_param(get_joint(), PhysicsServer3D::HingeJointParam(p_param), p_value);
 	}
 
@@ -379,7 +387,7 @@ real_t HingeJoint3D::get_param(Param p_param) const {
 void HingeJoint3D::set_flag(Flag p_flag, bool p_value) {
 	ERR_FAIL_INDEX(p_flag, FLAG_MAX);
 	flags[p_flag] = p_value;
-	if (get_joint().is_valid()) {
+	if (is_configured()) {
 		PhysicsServer3D::get_singleton()->hinge_joint_set_flag(get_joint(), PhysicsServer3D::HingeJointFlag(p_flag), p_value);
 	}
 
@@ -391,7 +399,7 @@ bool HingeJoint3D::get_flag(Flag p_flag) const {
 	return flags[p_flag];
 }
 
-RID HingeJoint3D::_configure_joint(PhysicsBody3D *body_a, PhysicsBody3D *body_b) {
+void HingeJoint3D::_configure_joint(RID p_joint, PhysicsBody3D *body_a, PhysicsBody3D *body_b) {
 	Transform gt = get_global_transform();
 	Transform ainv = body_a->get_global_transform().affine_inverse();
 
@@ -406,15 +414,14 @@ RID HingeJoint3D::_configure_joint(PhysicsBody3D *body_a, PhysicsBody3D *body_b)
 
 	local_b.orthonormalize();
 
-	RID j = PhysicsServer3D::get_singleton()->joint_create_hinge(body_a->get_rid(), local_a, body_b ? body_b->get_rid() : RID(), local_b);
+	PhysicsServer3D::get_singleton()->joint_make_hinge(p_joint, body_a->get_rid(), local_a, body_b ? body_b->get_rid() : RID(), local_b);
 	for (int i = 0; i < PARAM_MAX; i++) {
-		PhysicsServer3D::get_singleton()->hinge_joint_set_param(j, PhysicsServer3D::HingeJointParam(i), params[i]);
+		PhysicsServer3D::get_singleton()->hinge_joint_set_param(p_joint, PhysicsServer3D::HingeJointParam(i), params[i]);
 	}
 	for (int i = 0; i < FLAG_MAX; i++) {
 		set_flag(Flag(i), flags[i]);
-		PhysicsServer3D::get_singleton()->hinge_joint_set_flag(j, PhysicsServer3D::HingeJointFlag(i), flags[i]);
+		PhysicsServer3D::get_singleton()->hinge_joint_set_flag(p_joint, PhysicsServer3D::HingeJointFlag(i), flags[i]);
 	}
-	return j;
 }
 
 HingeJoint3D::HingeJoint3D() {
@@ -515,7 +522,7 @@ void SliderJoint3D::_bind_methods() {
 void SliderJoint3D::set_param(Param p_param, real_t p_value) {
 	ERR_FAIL_INDEX(p_param, PARAM_MAX);
 	params[p_param] = p_value;
-	if (get_joint().is_valid()) {
+	if (is_configured()) {
 		PhysicsServer3D::get_singleton()->slider_joint_set_param(get_joint(), PhysicsServer3D::SliderJointParam(p_param), p_value);
 	}
 	update_gizmo();
@@ -526,7 +533,7 @@ real_t SliderJoint3D::get_param(Param p_param) const {
 	return params[p_param];
 }
 
-RID SliderJoint3D::_configure_joint(PhysicsBody3D *body_a, PhysicsBody3D *body_b) {
+void SliderJoint3D::_configure_joint(RID p_joint, PhysicsBody3D *body_a, PhysicsBody3D *body_b) {
 	Transform gt = get_global_transform();
 	Transform ainv = body_a->get_global_transform().affine_inverse();
 
@@ -541,12 +548,10 @@ RID SliderJoint3D::_configure_joint(PhysicsBody3D *body_a, PhysicsBody3D *body_b
 
 	local_b.orthonormalize();
 
-	RID j = PhysicsServer3D::get_singleton()->joint_create_slider(body_a->get_rid(), local_a, body_b ? body_b->get_rid() : RID(), local_b);
+	PhysicsServer3D::get_singleton()->joint_make_slider(p_joint, body_a->get_rid(), local_a, body_b ? body_b->get_rid() : RID(), local_b);
 	for (int i = 0; i < PARAM_MAX; i++) {
-		PhysicsServer3D::get_singleton()->slider_joint_set_param(j, PhysicsServer3D::SliderJointParam(i), params[i]);
+		PhysicsServer3D::get_singleton()->slider_joint_set_param(p_joint, PhysicsServer3D::SliderJointParam(i), params[i]);
 	}
-
-	return j;
 }
 
 SliderJoint3D::SliderJoint3D() {
@@ -621,7 +626,7 @@ void ConeTwistJoint3D::_bind_methods() {
 void ConeTwistJoint3D::set_param(Param p_param, real_t p_value) {
 	ERR_FAIL_INDEX(p_param, PARAM_MAX);
 	params[p_param] = p_value;
-	if (get_joint().is_valid()) {
+	if (is_configured()) {
 		PhysicsServer3D::get_singleton()->cone_twist_joint_set_param(get_joint(), PhysicsServer3D::ConeTwistJointParam(p_param), p_value);
 	}
 
@@ -633,7 +638,7 @@ real_t ConeTwistJoint3D::get_param(Param p_param) const {
 	return params[p_param];
 }
 
-RID ConeTwistJoint3D::_configure_joint(PhysicsBody3D *body_a, PhysicsBody3D *body_b) {
+void ConeTwistJoint3D::_configure_joint(RID p_joint, PhysicsBody3D *body_a, PhysicsBody3D *body_b) {
 	Transform gt = get_global_transform();
 	//Vector3 cone_twistpos = gt.origin;
 	//Vector3 cone_twistdir = gt.basis.get_axis(2);
@@ -651,12 +656,10 @@ RID ConeTwistJoint3D::_configure_joint(PhysicsBody3D *body_a, PhysicsBody3D *bod
 
 	local_b.orthonormalize();
 
-	RID j = PhysicsServer3D::get_singleton()->joint_create_cone_twist(body_a->get_rid(), local_a, body_b ? body_b->get_rid() : RID(), local_b);
+	PhysicsServer3D::get_singleton()->joint_make_cone_twist(p_joint, body_a->get_rid(), local_a, body_b ? body_b->get_rid() : RID(), local_b);
 	for (int i = 0; i < PARAM_MAX; i++) {
-		PhysicsServer3D::get_singleton()->cone_twist_joint_set_param(j, PhysicsServer3D::ConeTwistJointParam(i), params[i]);
+		PhysicsServer3D::get_singleton()->cone_twist_joint_set_param(p_joint, PhysicsServer3D::ConeTwistJointParam(i), params[i]);
 	}
-
-	return j;
 }
 
 ConeTwistJoint3D::ConeTwistJoint3D() {
@@ -878,7 +881,7 @@ void Generic6DOFJoint3D::_bind_methods() {
 void Generic6DOFJoint3D::set_param_x(Param p_param, real_t p_value) {
 	ERR_FAIL_INDEX(p_param, PARAM_MAX);
 	params_x[p_param] = p_value;
-	if (get_joint().is_valid()) {
+	if (is_configured()) {
 		PhysicsServer3D::get_singleton()->generic_6dof_joint_set_param(get_joint(), Vector3::AXIS_X, PhysicsServer3D::G6DOFJointAxisParam(p_param), p_value);
 	}
 
@@ -893,7 +896,7 @@ real_t Generic6DOFJoint3D::get_param_x(Param p_param) const {
 void Generic6DOFJoint3D::set_param_y(Param p_param, real_t p_value) {
 	ERR_FAIL_INDEX(p_param, PARAM_MAX);
 	params_y[p_param] = p_value;
-	if (get_joint().is_valid()) {
+	if (is_configured()) {
 		PhysicsServer3D::get_singleton()->generic_6dof_joint_set_param(get_joint(), Vector3::AXIS_Y, PhysicsServer3D::G6DOFJointAxisParam(p_param), p_value);
 	}
 	update_gizmo();
@@ -907,7 +910,7 @@ real_t Generic6DOFJoint3D::get_param_y(Param p_param) const {
 void Generic6DOFJoint3D::set_param_z(Param p_param, real_t p_value) {
 	ERR_FAIL_INDEX(p_param, PARAM_MAX);
 	params_z[p_param] = p_value;
-	if (get_joint().is_valid()) {
+	if (is_configured()) {
 		PhysicsServer3D::get_singleton()->generic_6dof_joint_set_param(get_joint(), Vector3::AXIS_Z, PhysicsServer3D::G6DOFJointAxisParam(p_param), p_value);
 	}
 	update_gizmo();
@@ -921,7 +924,7 @@ real_t Generic6DOFJoint3D::get_param_z(Param p_param) const {
 void Generic6DOFJoint3D::set_flag_x(Flag p_flag, bool p_enabled) {
 	ERR_FAIL_INDEX(p_flag, FLAG_MAX);
 	flags_x[p_flag] = p_enabled;
-	if (get_joint().is_valid()) {
+	if (is_configured()) {
 		PhysicsServer3D::get_singleton()->generic_6dof_joint_set_flag(get_joint(), Vector3::AXIS_X, PhysicsServer3D::G6DOFJointAxisFlag(p_flag), p_enabled);
 	}
 	update_gizmo();
@@ -935,7 +938,7 @@ bool Generic6DOFJoint3D::get_flag_x(Flag p_flag) const {
 void Generic6DOFJoint3D::set_flag_y(Flag p_flag, bool p_enabled) {
 	ERR_FAIL_INDEX(p_flag, FLAG_MAX);
 	flags_y[p_flag] = p_enabled;
-	if (get_joint().is_valid()) {
+	if (is_configured()) {
 		PhysicsServer3D::get_singleton()->generic_6dof_joint_set_flag(get_joint(), Vector3::AXIS_Y, PhysicsServer3D::G6DOFJointAxisFlag(p_flag), p_enabled);
 	}
 	update_gizmo();
@@ -949,7 +952,7 @@ bool Generic6DOFJoint3D::get_flag_y(Flag p_flag) const {
 void Generic6DOFJoint3D::set_flag_z(Flag p_flag, bool p_enabled) {
 	ERR_FAIL_INDEX(p_flag, FLAG_MAX);
 	flags_z[p_flag] = p_enabled;
-	if (get_joint().is_valid()) {
+	if (is_configured()) {
 		PhysicsServer3D::get_singleton()->generic_6dof_joint_set_flag(get_joint(), Vector3::AXIS_Z, PhysicsServer3D::G6DOFJointAxisFlag(p_flag), p_enabled);
 	}
 	update_gizmo();
@@ -960,7 +963,7 @@ bool Generic6DOFJoint3D::get_flag_z(Flag p_flag) const {
 	return flags_z[p_flag];
 }
 
-RID Generic6DOFJoint3D::_configure_joint(PhysicsBody3D *body_a, PhysicsBody3D *body_b) {
+void Generic6DOFJoint3D::_configure_joint(RID p_joint, PhysicsBody3D *body_a, PhysicsBody3D *body_b) {
 	Transform gt = get_global_transform();
 	//Vector3 cone_twistpos = gt.origin;
 	//Vector3 cone_twistdir = gt.basis.get_axis(2);
@@ -978,19 +981,17 @@ RID Generic6DOFJoint3D::_configure_joint(PhysicsBody3D *body_a, PhysicsBody3D *b
 
 	local_b.orthonormalize();
 
-	RID j = PhysicsServer3D::get_singleton()->joint_create_generic_6dof(body_a->get_rid(), local_a, body_b ? body_b->get_rid() : RID(), local_b);
+	PhysicsServer3D::get_singleton()->joint_make_generic_6dof(p_joint, body_a->get_rid(), local_a, body_b ? body_b->get_rid() : RID(), local_b);
 	for (int i = 0; i < PARAM_MAX; i++) {
-		PhysicsServer3D::get_singleton()->generic_6dof_joint_set_param(j, Vector3::AXIS_X, PhysicsServer3D::G6DOFJointAxisParam(i), params_x[i]);
-		PhysicsServer3D::get_singleton()->generic_6dof_joint_set_param(j, Vector3::AXIS_Y, PhysicsServer3D::G6DOFJointAxisParam(i), params_y[i]);
-		PhysicsServer3D::get_singleton()->generic_6dof_joint_set_param(j, Vector3::AXIS_Z, PhysicsServer3D::G6DOFJointAxisParam(i), params_z[i]);
+		PhysicsServer3D::get_singleton()->generic_6dof_joint_set_param(p_joint, Vector3::AXIS_X, PhysicsServer3D::G6DOFJointAxisParam(i), params_x[i]);
+		PhysicsServer3D::get_singleton()->generic_6dof_joint_set_param(p_joint, Vector3::AXIS_Y, PhysicsServer3D::G6DOFJointAxisParam(i), params_y[i]);
+		PhysicsServer3D::get_singleton()->generic_6dof_joint_set_param(p_joint, Vector3::AXIS_Z, PhysicsServer3D::G6DOFJointAxisParam(i), params_z[i]);
 	}
 	for (int i = 0; i < FLAG_MAX; i++) {
-		PhysicsServer3D::get_singleton()->generic_6dof_joint_set_flag(j, Vector3::AXIS_X, PhysicsServer3D::G6DOFJointAxisFlag(i), flags_x[i]);
-		PhysicsServer3D::get_singleton()->generic_6dof_joint_set_flag(j, Vector3::AXIS_Y, PhysicsServer3D::G6DOFJointAxisFlag(i), flags_y[i]);
-		PhysicsServer3D::get_singleton()->generic_6dof_joint_set_flag(j, Vector3::AXIS_Z, PhysicsServer3D::G6DOFJointAxisFlag(i), flags_z[i]);
+		PhysicsServer3D::get_singleton()->generic_6dof_joint_set_flag(p_joint, Vector3::AXIS_X, PhysicsServer3D::G6DOFJointAxisFlag(i), flags_x[i]);
+		PhysicsServer3D::get_singleton()->generic_6dof_joint_set_flag(p_joint, Vector3::AXIS_Y, PhysicsServer3D::G6DOFJointAxisFlag(i), flags_y[i]);
+		PhysicsServer3D::get_singleton()->generic_6dof_joint_set_flag(p_joint, Vector3::AXIS_Z, PhysicsServer3D::G6DOFJointAxisFlag(i), flags_z[i]);
 	}
-
-	return j;
 }
 
 Generic6DOFJoint3D::Generic6DOFJoint3D() {

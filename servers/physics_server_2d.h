@@ -524,10 +524,15 @@ public:
 
 	/* JOINT API */
 
+	virtual RID joint_create() = 0;
+
+	virtual void joint_clear(RID p_joint) = 0;
+
 	enum JointType {
-		JOINT_PIN,
-		JOINT_GROOVE,
-		JOINT_DAMPED_SPRING
+		JOINT_TYPE_PIN,
+		JOINT_TYPE_GROOVE,
+		JOINT_TYPE_DAMPED_SPRING,
+		JOINT_TYPE_MAX
 	};
 
 	enum JointParam {
@@ -542,9 +547,9 @@ public:
 	virtual void joint_disable_collisions_between_bodies(RID p_joint, const bool p_disable) = 0;
 	virtual bool joint_is_disabled_collisions_between_bodies(RID p_joint) const = 0;
 
-	virtual RID pin_joint_create(const Vector2 &p_anchor, RID p_body_a, RID p_body_b = RID()) = 0;
-	virtual RID groove_joint_create(const Vector2 &p_a_groove1, const Vector2 &p_a_groove2, const Vector2 &p_b_anchor, RID p_body_a, RID p_body_b) = 0;
-	virtual RID damped_spring_joint_create(const Vector2 &p_anchor_a, const Vector2 &p_anchor_b, RID p_body_a, RID p_body_b = RID()) = 0;
+	virtual void joint_make_pin(RID p_joint, const Vector2 &p_anchor, RID p_body_a, RID p_body_b = RID()) = 0;
+	virtual void joint_make_groove(RID p_joint, const Vector2 &p_a_groove1, const Vector2 &p_a_groove2, const Vector2 &p_b_anchor, RID p_body_a, RID p_body_b) = 0;
+	virtual void joint_make_damped_spring(RID p_joint, const Vector2 &p_anchor_a, const Vector2 &p_anchor_b, RID p_body_a, RID p_body_b = RID()) = 0;
 
 	enum PinJointParam {
 		PIN_JOINT_SOFTNESS

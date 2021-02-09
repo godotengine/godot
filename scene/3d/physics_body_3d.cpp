@@ -148,7 +148,8 @@ void PhysicsBody3D::_bind_methods() {
 }
 
 PhysicsBody3D::PhysicsBody3D(PhysicsServer3D::BodyMode p_mode) :
-		CollisionObject3D(PhysicsServer3D::get_singleton()->body_create(p_mode), false) {
+		CollisionObject3D(PhysicsServer3D::get_singleton()->body_create(), false) {
+	PhysicsServer3D::get_singleton()->body_set_mode(get_rid(), p_mode);
 	collision_layer = 1;
 	collision_mask = 1;
 }
@@ -2011,7 +2012,7 @@ void PhysicalBone3D::_notification(int p_what) {
 			update_bone_id();
 			reset_to_rest_position();
 			reset_physics_simulation_state();
-			if (!joint.is_valid() && joint_data) {
+			if (joint_data) {
 				_reload_joint();
 			}
 			break;
@@ -2022,10 +2023,7 @@ void PhysicalBone3D::_notification(int p_what) {
 				}
 			}
 			parent_skeleton = nullptr;
-			if (joint.is_valid()) {
-				PhysicsServer3D::get_singleton()->free(joint);
-				joint = RID();
-			}
+			PhysicsServer3D::get_singleton()->joint_clear(joint);
 			break;
 		case NOTIFICATION_TRANSFORM_CHANGED:
 			if (Engine::get_singleton()->is_editor_hint()) {
@@ -2175,17 +2173,14 @@ void PhysicalBone3D::_fix_joint_offset() {
 }
 
 void PhysicalBone3D::_reload_joint() {
-	if (joint.is_valid()) {
-		PhysicsServer3D::get_singleton()->free(joint);
-		joint = RID();
-	}
-
 	if (!parent_skeleton) {
+		PhysicsServer3D::get_singleton()->joint_clear(joint);
 		return;
 	}
 
 	PhysicalBone3D *body_a = parent_skeleton->get_physical_bone_parent(bone_id);
 	if (!body_a) {
+		PhysicsServer3D::get_singleton()->joint_clear(joint);
 		return;
 	}
 
@@ -2195,7 +2190,7 @@ void PhysicalBone3D::_reload_joint() {
 
 	switch (get_joint_type()) {
 		case JOINT_TYPE_PIN: {
-			joint = PhysicsServer3D::get_singleton()->joint_create_pin(body_a->get_rid(), local_a.origin, get_rid(), joint_offset.origin);
+			PhysicsServer3D::get_singleton()->joint_make_pin(joint, body_a->get_rid(), local_a.origin, get_rid(), joint_offset.origin);
 			const PinJointData *pjd(static_cast<const PinJointData *>(joint_data));
 			PhysicsServer3D::get_singleton()->pin_joint_set_param(joint, PhysicsServer3D::PIN_JOINT_BIAS, pjd->bias);
 			PhysicsServer3D::get_singleton()->pin_joint_set_param(joint, PhysicsServer3D::PIN_JOINT_DAMPING, pjd->damping);
@@ -2203,7 +2198,7 @@ void PhysicalBone3D::_reload_joint() {
 
 		} break;
 		case JOINT_TYPE_CONE: {
-			joint = PhysicsServer3D::get_singleton()->joint_create_cone_twist(body_a->get_rid(), local_a, get_rid(), joint_offset);
+			PhysicsServer3D::get_singleton()->joint_make_cone_twist(joint, body_a->get_rid(), local_a, get_rid(), joint_offset);
 			const ConeJointData *cjd(static_cast<const ConeJointData *>(joint_data));
 			PhysicsServer3D::get_singleton()->cone_twist_joint_set_param(joint, PhysicsServer3D::CONE_TWIST_JOINT_SWING_SPAN, cjd->swing_span);
 			PhysicsServer3D::get_singleton()->cone_twist_joint_set_param(joint, PhysicsServer3D::CONE_TWIST_JOINT_TWIST_SPAN, cjd->twist_span);
@@ -2213,7 +2208,7 @@ void PhysicalBone3D::_reload_joint() {
 
 		} break;
 		case JOINT_TYPE_HINGE: {
-			joint = PhysicsServer3D::get_singleton()->joint_create_hinge(body_a->get_rid(), local_a, get_rid(), joint_offset);
+			PhysicsServer3D::get_singleton()->joint_make_hinge(joint, body_a->get_rid(), local_a, get_rid(), joint_offset);
 			const HingeJointData *hjd(static_cast<const HingeJointData *>(joint_data));
 			PhysicsServer3D::get_singleton()->hinge_joint_set_flag(joint, PhysicsServer3D::HINGE_JOINT_FLAG_USE_LIMIT, hjd->angular_limit_enabled);
 			PhysicsServer3D::get_singleton()->hinge_joint_set_param(joint, PhysicsServer3D::HINGE_JOINT_LIMIT_UPPER, hjd->angular_limit_upper);
@@ -2224,7 +2219,7 @@ void PhysicalBone3D::_reload_joint() {
 
 		} break;
 		case JOINT_TYPE_SLIDER: {
-			joint = PhysicsServer3D::get_singleton()->joint_create_slider(body_a->get_rid(), local_a, get_rid(), joint_offset);
+			PhysicsServer3D::get_singleton()->joint_make_slider(joint, body_a->get_rid(), local_a, get_rid(), joint_offset);
 			const SliderJointData *sjd(static_cast<const SliderJointData *>(joint_data));
 			PhysicsServer3D::get_singleton()->slider_joint_set_param(joint, PhysicsServer3D::SLIDER_JOINT_LINEAR_LIMIT_UPPER, sjd->linear_limit_upper);
 			PhysicsServer3D::get_singleton()->slider_joint_set_param(joint, PhysicsServer3D::SLIDER_JOINT_LINEAR_LIMIT_LOWER, sjd->linear_limit_lower);
@@ -2239,7 +2234,7 @@ void PhysicalBone3D::_reload_joint() {
 
 		} break;
 		case JOINT_TYPE_6DOF: {
-			joint = PhysicsServer3D::get_singleton()->joint_create_generic_6dof(body_a->get_rid(), local_a, get_rid(), joint_offset);
+			PhysicsServer3D::get_singleton()->joint_make_generic_6dof(joint, body_a->get_rid(), local_a, get_rid(), joint_offset);
 			const SixDOFJointData *g6dofjd(static_cast<const SixDOFJointData *>(joint_data));
 			for (int axis = 0; axis < 3; ++axis) {
 				PhysicsServer3D::get_singleton()->generic_6dof_joint_set_flag(joint, static_cast<Vector3::Axis>(axis), PhysicsServer3D::G6DOF_JOINT_FLAG_ENABLE_LINEAR_LIMIT, g6dofjd->axis_data[axis].linear_limit_enabled);
@@ -2493,6 +2488,7 @@ bool PhysicalBone3D::get_axis_lock(PhysicsServer3D::BodyAxis p_axis) const {
 
 PhysicalBone3D::PhysicalBone3D() :
 		PhysicsBody3D(PhysicsServer3D::BODY_MODE_STATIC) {
+	joint = PhysicsServer3D::get_singleton()->joint_create();
 	reset_physics_simulation_state();
 }
 
@@ -2500,6 +2496,7 @@ PhysicalBone3D::~PhysicalBone3D() {
 	if (joint_data) {
 		memdelete(joint_data);
 	}
+	PhysicsServer3D::get_singleton()->free(joint);
 }
 
 void PhysicalBone3D::update_bone_id() {

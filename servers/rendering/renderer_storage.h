@@ -119,12 +119,15 @@ public:
 		Set<Dependency *> dependencies;
 	};
 
+	virtual bool can_create_resources_async() const = 0;
 	/* TEXTURE API */
 
-	virtual RID texture_2d_create(const Ref<Image> &p_image) = 0;
-	virtual RID texture_2d_layered_create(const Vector<Ref<Image>> &p_layers, RS::TextureLayeredType p_layered_type) = 0;
-	virtual RID texture_3d_create(Image::Format, int p_width, int p_height, int p_depth, bool p_mipmaps, const Vector<Ref<Image>> &p_data) = 0;
-	virtual RID texture_proxy_create(RID p_base) = 0; //all slices, then all the mipmaps, must be coherent
+	virtual RID texture_allocate() = 0;
+
+	virtual void texture_2d_initialize(RID p_texture, const Ref<Image> &p_image) = 0;
+	virtual void texture_2d_layered_initialize(RID p_texture, const Vector<Ref<Image>> &p_layers, RS::TextureLayeredType p_layered_type) = 0;
+	virtual void texture_3d_initialize(RID p_texture, Image::Format, int p_width, int p_height, int p_depth, bool p_mipmaps, const Vector<Ref<Image>> &p_data) = 0;
+	virtual void texture_proxy_initialize(RID p_texture, RID p_base) = 0; //all slices, then all the mipmaps, must be coherent
 
 	virtual void texture_2d_update_immediate(RID p_texture, const Ref<Image> &p_image, int p_layer = 0) = 0; //mostly used for video and streaming
 	virtual void texture_2d_update(RID p_texture, const Ref<Image> &p_image, int p_layer = 0) = 0;
@@ -132,9 +135,9 @@ public:
 	virtual void texture_proxy_update(RID p_proxy, RID p_base) = 0;
 
 	//these two APIs can be used together or in combination with the others.
-	virtual RID texture_2d_placeholder_create() = 0;
-	virtual RID texture_2d_layered_placeholder_create(RenderingServer::TextureLayeredType p_layered_type) = 0;
-	virtual RID texture_3d_placeholder_create() = 0;
+	virtual void texture_2d_placeholder_initialize(RID p_texture) = 0;
+	virtual void texture_2d_layered_placeholder_initialize(RID p_texture, RenderingServer::TextureLayeredType p_layered_type) = 0;
+	virtual void texture_3d_placeholder_initialize(RID p_texture) = 0;
 
 	virtual Ref<Image> texture_2d_get(RID p_texture) const = 0;
 	virtual Ref<Image> texture_2d_layer_get(RID p_texture, int p_layer) const = 0;
@@ -161,7 +164,9 @@ public:
 
 	/* CANVAS TEXTURE API */
 
-	virtual RID canvas_texture_create() = 0;
+	virtual RID canvas_texture_allocate() = 0;
+	virtual void canvas_texture_initialize(RID p_rid) = 0;
+
 	virtual void canvas_texture_set_channel(RID p_canvas_texture, RS::CanvasTextureChannel p_channel, RID p_texture) = 0;
 	virtual void canvas_texture_set_shading_parameters(RID p_canvas_texture, const Color &p_base_color, float p_shininess) = 0;
 
@@ -170,7 +175,8 @@ public:
 
 	/* SHADER API */
 
-	virtual RID shader_create() = 0;
+	virtual RID shader_allocate() = 0;
+	virtual void shader_initialize(RID p_rid) = 0;
 
 	virtual void shader_set_code(RID p_shader, const String &p_code) = 0;
 	virtual String shader_get_code(RID p_shader) const = 0;
@@ -184,7 +190,8 @@ public:
 
 	/* COMMON MATERIAL API */
 
-	virtual RID material_create() = 0;
+	virtual RID material_allocate() = 0;
+	virtual void material_initialize(RID p_rid) = 0;
 
 	virtual void material_set_render_priority(RID p_material, int priority) = 0;
 	virtual void material_set_shader(RID p_shader_material, RID p_shader) = 0;
@@ -209,7 +216,8 @@ public:
 
 	/* MESH API */
 
-	virtual RID mesh_create() = 0;
+	virtual RID mesh_allocate() = 0;
+	virtual void mesh_initialize(RID p_rid) = 0;
 
 	virtual void mesh_set_blend_shape_count(RID p_mesh, int p_blend_shape_count) = 0;
 
@@ -251,9 +259,10 @@ public:
 
 	/* MULTIMESH API */
 
-	virtual RID multimesh_create() = 0;
+	virtual RID multimesh_allocate() = 0;
+	virtual void multimesh_initialize(RID p_rid) = 0;
 
-	virtual void multimesh_allocate(RID p_multimesh, int p_instances, RS::MultimeshTransformFormat p_transform_format, bool p_use_colors = false, bool p_use_custom_data = false) = 0;
+	virtual void multimesh_allocate_data(RID p_multimesh, int p_instances, RS::MultimeshTransformFormat p_transform_format, bool p_use_colors = false, bool p_use_custom_data = false) = 0;
 
 	virtual int multimesh_get_instance_count(RID p_multimesh) const = 0;
 
@@ -280,7 +289,9 @@ public:
 
 	/* IMMEDIATE API */
 
-	virtual RID immediate_create() = 0;
+	virtual RID immediate_allocate() = 0;
+	virtual void immediate_initialize(RID p_rid) = 0;
+
 	virtual void immediate_begin(RID p_immediate, RS::PrimitiveType p_rimitive, RID p_texture = RID()) = 0;
 	virtual void immediate_vertex(RID p_immediate, const Vector3 &p_vertex) = 0;
 	virtual void immediate_normal(RID p_immediate, const Vector3 &p_normal) = 0;
@@ -296,8 +307,10 @@ public:
 
 	/* SKELETON API */
 
-	virtual RID skeleton_create() = 0;
-	virtual void skeleton_allocate(RID p_skeleton, int p_bones, bool p_2d_skeleton = false) = 0;
+	virtual RID skeleton_allocate() = 0;
+	virtual void skeleton_initialize(RID p_rid) = 0;
+
+	virtual void skeleton_allocate_data(RID p_skeleton, int p_bones, bool p_2d_skeleton = false) = 0;
 	virtual int skeleton_get_bone_count(RID p_skeleton) const = 0;
 	virtual void skeleton_bone_set_transform(RID p_skeleton, int p_bone, const Transform &p_transform) = 0;
 	virtual Transform skeleton_bone_get_transform(RID p_skeleton, int p_bone) const = 0;
@@ -307,11 +320,14 @@ public:
 
 	/* Light API */
 
-	virtual RID light_create(RS::LightType p_type) = 0;
+	virtual RID directional_light_allocate() = 0;
+	virtual void directional_light_initialize(RID p_rid) = 0;
 
-	RID directional_light_create() { return light_create(RS::LIGHT_DIRECTIONAL); }
-	RID omni_light_create() { return light_create(RS::LIGHT_OMNI); }
-	RID spot_light_create() { return light_create(RS::LIGHT_SPOT); }
+	virtual RID omni_light_allocate() = 0;
+	virtual void omni_light_initialize(RID p_rid) = 0;
+
+	virtual RID spot_light_allocate() = 0;
+	virtual void spot_light_initialize(RID p_rid) = 0;
 
 	virtual void light_set_color(RID p_light, const Color &p_color) = 0;
 	virtual void light_set_param(RID p_light, RS::LightParam p_param, float p_value) = 0;
@@ -349,7 +365,8 @@ public:
 
 	/* PROBE API */
 
-	virtual RID reflection_probe_create() = 0;
+	virtual RID reflection_probe_allocate() = 0;
+	virtual void reflection_probe_initialize(RID p_rid) = 0;
 
 	virtual void reflection_probe_set_update_mode(RID p_probe, RS::ReflectionProbeUpdateMode p_mode) = 0;
 	virtual void reflection_probe_set_resolution(RID p_probe, int p_resolution) = 0;
@@ -380,7 +397,9 @@ public:
 
 	/* DECAL API */
 
-	virtual RID decal_create() = 0;
+	virtual RID decal_allocate() = 0;
+	virtual void decal_initialize(RID p_rid) = 0;
+
 	virtual void decal_set_extents(RID p_decal, const Vector3 &p_extents) = 0;
 	virtual void decal_set_texture(RID p_decal, RS::DecalTexture p_type, RID p_texture) = 0;
 	virtual void decal_set_emission_energy(RID p_decal, float p_energy) = 0;
@@ -395,9 +414,10 @@ public:
 
 	/* GI PROBE API */
 
-	virtual RID gi_probe_create() = 0;
+	virtual RID gi_probe_allocate() = 0;
+	virtual void gi_probe_initialize(RID p_rid) = 0;
 
-	virtual void gi_probe_allocate(RID p_gi_probe, const Transform &p_to_cell_xform, const AABB &p_aabb, const Vector3i &p_octree_size, const Vector<uint8_t> &p_octree_cells, const Vector<uint8_t> &p_data_cells, const Vector<uint8_t> &p_distance_field, const Vector<int> &p_level_counts) = 0;
+	virtual void gi_probe_allocate_data(RID p_gi_probe, const Transform &p_to_cell_xform, const AABB &p_aabb, const Vector3i &p_octree_size, const Vector<uint8_t> &p_octree_cells, const Vector<uint8_t> &p_data_cells, const Vector<uint8_t> &p_distance_field, const Vector<int> &p_level_counts) = 0;
 
 	virtual AABB gi_probe_get_bounds(RID p_gi_probe) const = 0;
 	virtual Vector3i gi_probe_get_octree_size(RID p_gi_probe) const = 0;
@@ -440,9 +460,10 @@ public:
 
 	virtual uint32_t gi_probe_get_version(RID p_probe) = 0;
 
-	/* LIGHTMAP CAPTURE */
+	/* LIGHTMAP  */
 
-	virtual RID lightmap_create() = 0;
+	virtual RID lightmap_allocate() = 0;
+	virtual void lightmap_initialize(RID p_rid) = 0;
 
 	virtual void lightmap_set_textures(RID p_lightmap, RID p_light, bool p_uses_spherical_haromics) = 0;
 	virtual void lightmap_set_probe_bounds(RID p_lightmap, const AABB &p_bounds) = 0;
@@ -460,7 +481,8 @@ public:
 
 	/* PARTICLES */
 
-	virtual RID particles_create() = 0;
+	virtual RID particles_allocate() = 0;
+	virtual void particles_initialize(RID p_rid) = 0;
 
 	virtual void particles_set_emitting(RID p_particles, bool p_emitting) = 0;
 	virtual bool particles_get_emitting(RID p_particles) = 0;
@@ -507,7 +529,9 @@ public:
 
 	/* PARTICLES COLLISION */
 
-	virtual RID particles_collision_create() = 0;
+	virtual RID particles_collision_allocate() = 0;
+	virtual void particles_collision_initialize(RID p_rid) = 0;
+
 	virtual void particles_collision_set_collision_type(RID p_particles_collision, RS::ParticlesCollisionType p_type) = 0;
 	virtual void particles_collision_set_cull_mask(RID p_particles_collision, uint32_t p_cull_mask) = 0;
 	virtual void particles_collision_set_sphere_radius(RID p_particles_collision, float p_radius) = 0; //for spheres

@@ -71,7 +71,6 @@
 #include "servers/physics_server_3d.h"
 #include "servers/register_server_types.h"
 #include "servers/rendering/rendering_server_default.h"
-#include "servers/rendering/rendering_server_wrap_mt.h"
 #include "servers/text_server.h"
 #include "servers/xr_server.h"
 
@@ -1570,12 +1569,7 @@ Error Main::setup2(Thread::ID p_main_tid_override) {
 
 	/* Initialize Visual Server */
 
-	rendering_server = memnew(RenderingServerDefault);
-	if (OS::get_singleton()->get_render_thread_mode() != OS::RENDER_THREAD_UNSAFE) {
-		rendering_server = memnew(RenderingServerWrapMT(rendering_server,
-				OS::get_singleton()->get_render_thread_mode() ==
-						OS::RENDER_SEPARATE_THREAD));
-	}
+	rendering_server = memnew(RenderingServerDefault(OS::get_singleton()->get_render_thread_mode() == OS::RENDER_SEPARATE_THREAD));
 
 	rendering_server->init();
 	rendering_server->set_render_loop_enabled(!disable_render_loop);
@@ -2451,6 +2445,7 @@ bool Main::iteration() {
 	for (int iters = 0; iters < advance.physics_steps; ++iters) {
 		uint64_t physics_begin = OS::get_singleton()->get_ticks_usec();
 
+		PhysicsServer3D::get_singleton()->sync();
 		PhysicsServer3D::get_singleton()->flush_queries();
 
 		PhysicsServer2D::get_singleton()->sync();
@@ -2465,6 +2460,7 @@ bool Main::iteration() {
 
 		message_queue->flush();
 
+		PhysicsServer3D::get_singleton()->end_sync();
 		PhysicsServer3D::get_singleton()->step(physics_step * time_scale);
 
 		PhysicsServer2D::get_singleton()->end_sync();
