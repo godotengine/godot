@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  vector3.cpp                                                          */
+/*  variant_struct.h                                                     */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,45 +28,26 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#include "gdnative/vector3.h"
-
-#include "core/math/vector3.h"
-
-static_assert(sizeof(godot_vector3) == sizeof(Vector3), "Vector3 size mismatch");
-static_assert(sizeof(godot_vector3i) == sizeof(Vector3i), "Vector3i size mismatch");
+#ifndef GODOT_VARIANT_STRUCT_H
+#define GODOT_VARIANT_STRUCT_H
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-void GDAPI godot_vector3_new(godot_vector3 *p_self) {
-	memnew_placement(p_self, Vector3);
-}
+#include <gdnative/math_defs.h>
 
-void GDAPI godot_vector3i_new(godot_vector3i *p_self) {
-	memnew_placement(p_self, Vector3i);
-}
+#define GODOT_VARIANT_SIZE (sizeof(godot_real_t) * 4 + sizeof(int64_t))
 
-godot_real_t GDAPI *godot_vector3_operator_index(godot_vector3 *p_self, godot_int p_index) {
-	Vector3 *self = (Vector3 *)p_self;
-	return (godot_real_t *)&self->operator[](p_index);
-}
-
-const godot_real_t GDAPI *godot_vector3_operator_index_const(const godot_vector3 *p_self, godot_int p_index) {
-	const Vector3 *self = (const Vector3 *)p_self;
-	return (const godot_real_t *)&self->operator[](p_index);
-}
-
-int32_t GDAPI *godot_vector3i_operator_index(godot_vector3i *p_self, godot_int p_index) {
-	Vector3i *self = (Vector3i *)p_self;
-	return (int32_t *)&self->operator[](p_index);
-}
-
-const int32_t GDAPI *godot_vector3i_operator_index_const(const godot_vector3i *p_self, godot_int p_index) {
-	const Vector3i *self = (const Vector3i *)p_self;
-	return (const int32_t *)&self->operator[](p_index);
-}
+#ifndef GODOT_CORE_API_GODOT_VARIANT_TYPE_DEFINED
+#define GODOT_CORE_API_GODOT_VARIANT_TYPE_DEFINED
+typedef struct {
+	uint8_t _dont_touch_that[GODOT_VARIANT_SIZE];
+} godot_variant;
+#endif
 
 #ifdef __cplusplus
 }
+#endif
+
 #endif

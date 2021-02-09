@@ -62,8 +62,6 @@ extern "C" {
 #include <stdbool.h>
 #include <stdint.h>
 
-#define GODOT_API_VERSION 1
-
 ////// Error
 
 typedef enum {
@@ -265,6 +263,11 @@ void GDAPI godot_register_native_call_type(const char *p_call_type, native_call_
 void GDAPI *godot_alloc(int p_bytes);
 void GDAPI *godot_realloc(void *p_ptr, int p_bytes);
 void GDAPI godot_free(void *p_ptr);
+
+// Helper print functions.
+void GDAPI godot_print_error(const char *p_description, const char *p_function, const char *p_file, int p_line);
+void GDAPI godot_print_warning(const char *p_description, const char *p_function, const char *p_file, int p_line);
+void GDAPI godot_print_script_error(const char *p_description, const char *p_function, const char *p_file, int p_line);
 
 //tags used for safe dynamic casting
 void GDAPI *godot_get_class_tag(const godot_string_name *p_class);

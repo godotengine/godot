@@ -42,6 +42,16 @@ void GDAPI godot_color_new(godot_color *p_self) {
 	memnew_placement(p_self, Color);
 }
 
+float GDAPI *godot_color_operator_index(godot_color *p_self, godot_int p_index) {
+	Color *self = (Color *)p_self;
+	return (float *)&self->operator[](p_index);
+}
+
+const float GDAPI *godot_color_operator_index_const(const godot_color *p_self, godot_int p_index) {
+	const Color *self = (const Color *)p_self;
+	return (const float *)&self->operator[](p_index);
+}
+
 #ifdef __cplusplus
 }
 #endif
