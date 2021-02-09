@@ -398,7 +398,6 @@ class AnimationTrackEditor : public VBoxContainer {
 	void _insert_key_from_track(float p_ofs, int p_track);
 	void _add_method_key(const String &p_method);
 
-	void _clear_selection(bool p_update = false);
 	void _clear_selection_for_anim(const Ref<Animation> &p_anim);
 	void _select_at_anim(const Ref<Animation> &p_anim, int p_track, float p_pos);
 
@@ -415,9 +414,6 @@ class AnimationTrackEditor : public VBoxContainer {
 	};
 
 	Map<SelectedKey, KeyInfo> selection;
-
-	void _key_selected(int p_key, bool p_single, int p_track);
-	void _key_deselected(int p_key, int p_track);
 
 	bool moving_selection;
 	float moving_selection_offset;
@@ -504,6 +500,10 @@ protected:
 	void _notification(int p_what);
 
 public:
+	void _clear_selection(bool p_update = false);
+	void _key_selected(int p_key, bool p_single, int p_track);
+	void _key_deselected(int p_key, int p_track);
+
 	void add_track_edit_plugin(const Ref<AnimationTrackEditPlugin> &p_plugin);
 	void remove_track_edit_plugin(const Ref<AnimationTrackEditPlugin> &p_plugin);
 

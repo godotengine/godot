@@ -451,8 +451,6 @@ private:
 	void _update_file_menu_opened();
 	void _update_file_menu_closed();
 
-	void _on_plugin_ready(Object *p_script, const String &p_activate_name);
-
 	void _fs_changed();
 	void _resources_reimported(const Vector<String> &p_resources);
 	void _sources_changed(bool p_exist);
@@ -658,6 +656,8 @@ protected:
 	void set_current_tab(int p_tab);
 
 public:
+	void _on_plugin_ready(Object *p_script, const String &p_activate_name);
+
 	bool call_build();
 
 	static void add_plugin_init_callback(EditorPluginInitializeCallback p_callback);
