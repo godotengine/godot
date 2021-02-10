@@ -567,6 +567,12 @@ void Viewport::_notification(int p_what) {
 				int point_count = PhysicsServer3D::get_singleton()->space_get_contact_count(find_world_3d()->get_space());
 
 				RS::get_singleton()->multimesh_set_visible_instances(contact_3d_debug_multimesh, point_count);
+
+				for (int i = 0; i < point_count; i++) {
+					Transform point_transform;
+					point_transform.origin = points[i];
+					RS::get_singleton()->multimesh_instance_set_transform(contact_3d_debug_multimesh, i, point_transform);
+				}
 			}
 		} break;
 		case NOTIFICATION_WM_MOUSE_EXIT: {
