@@ -260,6 +260,13 @@
 				Emitted when the GraphNode is moved.
 			</description>
 		</signal>
+		<signal name="slot_updated">
+			<argument index="0" name="idx" type="int">
+			</argument>
+			<description>
+				Emitted when any GraphNode's slot is updated.
+			</description>
+		</signal>
 		<signal name="raise_request">
 			<description>
 				Emitted when the GraphNode is requested to be displayed over other ones. Happens on focusing (clicking into) the GraphNode.
