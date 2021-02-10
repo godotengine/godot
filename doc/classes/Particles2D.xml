@@ -8,6 +8,7 @@
 		Use the [code]process_material[/code] property to add a [ParticlesMaterial] to configure particle appearance and behavior. Alternatively, you can add a [ShaderMaterial] which will be applied to all particles.
 		[b]Note:[/b] [Particles2D] only work when using the GLES3 renderer. If using the GLES2 renderer, use [CPUParticles2D] instead. You can convert [Particles2D] to [CPUParticles2D] by selecting the node, clicking the [b]Particles[/b] menu at the top of the 2D editor viewport then choosing [b]Convert to CPUParticles2D[/b].
 		[b]Note:[/b] After working on a Particles node, remember to update its [member visibility_rect] by selecting it, clicking the [b]Particles[/b] menu at the top of the 2D editor viewport then choose [b]Generate Visibility Rect[/b]. Otherwise, particles may suddenly disappear depending on the camera position and angle.
+		[b]Note:[/b] Unlike [CPUParticles2D], [Particles2D] currently ignore the texture region defined in [AtlasTexture]s.
 	</description>
 	<tutorials>
 		<link title="Particle systems (2D)">https://docs.godotengine.org/en/3.2/tutorials/2d/particle_systems_2d.html</link>
