@@ -287,11 +287,7 @@ void TileMap::set_tileset(const Ref<TileSet> &p_tileset) {
 		tile_set->disconnect("changed", callable_mp(this, &TileMap::_tile_set_changed));
 	}
 
-	if (p_tileset.is_valid()) {
-		Ref<TileSet> old_tileset = p_tileset;
-		old_tileset->connect("changed", callable_mp(this, &TileMap::_make_all_quadrants_dirty), varray(true));
-		old_tileset->connect("changed", callable_mp(this, &TileMap::_tile_set_changed));
-	} else {
+	if (!p_tileset.is_valid()) {
 		_clear_quadrants();
 	}
 

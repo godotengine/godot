@@ -76,49 +76,20 @@ private:
 		TileSetAtlasSource *tile_set_atlas_source = nullptr;
 		int source_id;
 		Vector2i coords;
-
-	protected:
-		static void _bind_methods();
-
-	public:
-		// Accessors.
-		Vector2i get_atlas_coords() const;
-		void set_atlas_coords(Vector2i p_atlas_coords);
-		Vector2i get_size_in_atlas() const;
-		void set_size_in_atlas(Vector2i p_size_in_atlas);
-
-		// Update the proxyed object.
-		void edit(TileSetAtlasSource *p_tile_set_atlas_source, int p_source_id = -1, Vector2i p_coords = TileSetAtlasSource::INVALID_ATLAS_COORDS);
-
-		TileProxyObject(TileSetAtlasSourceEditor *p_tiles_editor_source_tab) {
-			tiles_editor_source_tab = p_tiles_editor_source_tab;
-		}
-	};
-
-	// -- Proxy object for a tile, needed by the inspector --
-	class AlternativeTileProxyObject : public Object {
-		GDCLASS(AlternativeTileProxyObject, Object);
-
-	private:
-		TileSetAtlasSourceEditor *tiles_editor_source_tab;
-
-		TileSetAtlasSource *tile_set_atlas_source = nullptr;
-		int source_id;
-		Vector2i coords;
 		int alternative_tile;
 
 	protected:
+		bool _set(const StringName &p_name, const Variant &p_value);
+		bool _get(const StringName &p_name, Variant &r_ret) const;
+		void _get_property_list(List<PropertyInfo> *p_list) const;
+
 		static void _bind_methods();
 
 	public:
-		// Accessors.
-		void set_id(int p_id);
-		int get_id();
-
 		// Update the proxyed object.
 		void edit(TileSetAtlasSource *p_tile_set_atlas_source, int p_source_id = -1, Vector2i p_coords = TileSetAtlasSource::INVALID_ATLAS_COORDS, int p_alternative_tile = TileSetAtlasSource::INVALID_TILE_ALTERNATIVE);
 
-		AlternativeTileProxyObject(TileSetAtlasSourceEditor *p_tiles_editor_source_tab) {
+		TileProxyObject(TileSetAtlasSourceEditor *p_tiles_editor_source_tab) {
 			tiles_editor_source_tab = p_tiles_editor_source_tab;
 		}
 	};
@@ -135,10 +106,7 @@ private:
 	TileProxyObject *tile_proxy_object;
 	Label *atlas_tile_inspector_label;
 	EditorInspector *atlas_tile_inspector;
-
-	AlternativeTileProxyObject *alternative_tile_proxy_object;
-	Label *alternative_tile_inspector_label;
-	EditorInspector *alternative_tile_inspector;
+	Button *manage_tiles_properties_button;
 
 	TileSetAtlasSourceProxyObject *atlas_source_proxy_object;
 	Label *atlas_source_inspector_label;
@@ -211,6 +179,7 @@ private:
 	// Selection.
 	Vector2i selected_tile = TileSetAtlasSource::INVALID_ATLAS_COORDS;
 	int selected_alternative = TileSetAtlasSource::INVALID_TILE_ALTERNATIVE;
+	void _set_selected_tile(Vector2i p_selected_tile, int p_selected_alternative);
 
 	// A control on the tile atlas to draw and handle input events.
 	Vector2i hovered_base_tile_coords = TileSetAtlasSource::INVALID_ATLAS_COORDS;
@@ -239,7 +208,7 @@ private:
 	void _update_source_inspector();
 	void _update_fix_selected_and_hovered_tiles();
 	void _update_tile_inspector();
-	void _update_alternative_tile_inspector();
+	void _update_manage_tile_properties_button();
 	void _update_atlas_view();
 	void _update_toolbar();
 

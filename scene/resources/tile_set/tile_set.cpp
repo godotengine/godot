@@ -32,55 +32,7 @@
 
 #include "scene/gui/control.h"
 
-bool TileData::_set(const StringName &p_name, const Variant &p_value) {
-	Vector<String> components = String(p_name).split("/", true, 1);
-
-	if (components[0] == TileSetAtlasPluginRendering::ID) {
-		if (components.size() < 2) {
-			return false;
-		}
-		return rendering.set(components[1], p_value);
-		// TODO: handle other plugins.
-	} else {
-		return false;
-	}
-	return true;
-}
-
-bool TileData::_get(const StringName &p_name, Variant &r_ret) const {
-	Vector<String> components = String(p_name).split("/", true, 1);
-
-	if (components[0] == TileSetAtlasPluginRendering::ID) {
-		if (components.size() < 2) {
-			return false;
-		}
-		return rendering.get(components[1], r_ret);
-		// TODO: handle other plugins.
-	} else {
-		return false;
-	}
-	return true;
-}
-
-void TileData::_get_property_list(List<PropertyInfo> *p_list) const {
-	// Atlases data.
-	List<PropertyInfo> plugin_property_list;
-	rendering.get_property_list(&plugin_property_list);
-	TileSet::_append_property_list_with_prefix(TileSetAtlasPluginRendering::ID, &plugin_property_list, p_list);
-
-	// TODO: handle other plugins, like this:
-	/*
-	plugin_property_list.clear();
-	rendering.get_property_list(&plugin_property_list);
-	for (List<PropertyInfo>::Element * E_property = plugin_property_list.front(); E_property; E_property = E_property->next()) {
-		E_property->get().name = vformat("%s/%s", TileSetAtlasPluginRendering::ID, E_property->get().name);
-		p_list->push_back(E_property->get());
-	}
-*/
-}
-
 // Base properties
-
 void TileData::tile_set_flip_h(bool p_flip_h) {
 	flip_h = p_flip_h;
 	emit_signal("changed");
@@ -166,6 +118,53 @@ Ref<OccluderPolygon2D> TileData::tile_get_occluder(int p_layer_id) const {
 	return Ref<OccluderPolygon2D>();
 }
 
+bool TileData::_set(const StringName &p_name, const Variant &p_value) {
+	Vector<String> components = String(p_name).split("/", true, 1);
+
+	if (components[0] == TileSetAtlasPluginRendering::ID) {
+		if (components.size() < 2) {
+			return false;
+		}
+		return rendering.set(components[1], p_value);
+		// TODO: handle other plugins.
+	} else {
+		return false;
+	}
+	return true;
+}
+
+bool TileData::_get(const StringName &p_name, Variant &r_ret) const {
+	Vector<String> components = String(p_name).split("/", true, 1);
+
+	if (components[0] == TileSetAtlasPluginRendering::ID) {
+		if (components.size() < 2) {
+			return false;
+		}
+		return rendering.get(components[1], r_ret);
+		// TODO: handle other plugins.
+	} else {
+		return false;
+	}
+	return true;
+}
+
+void TileData::_get_property_list(List<PropertyInfo> *p_list) const {
+	// Atlases data.
+	/*List<PropertyInfo> plugin_property_list;
+	rendering.get_property_list(&plugin_property_list);
+	TileSet::_append_property_list_with_prefix(TileSetAtlasPluginRendering::ID, &plugin_property_list, p_list);
+	*/
+	// TODO: handle other plugins, like this:
+	/*
+	plugin_property_list.clear();
+	rendering.get_property_list(&plugin_property_list);
+	for (List<PropertyInfo>::Element * E_property = plugin_property_list.front(); E_property; E_property = E_property->next()) {
+		E_property->get().name = vformat("%s/%s", TileSetAtlasPluginRendering::ID, E_property->get().name);
+		p_list->push_back(E_property->get());
+	}
+	*/
+}
+
 void TileData::_bind_methods() {
 	// -- Tile properties --
 	// Base properties
@@ -175,23 +174,30 @@ void TileData::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("tile_get_flip_v"), &TileData::tile_get_flip_v);
 	ClassDB::bind_method(D_METHOD("tile_set_transpose", "transpose"), &TileData::tile_set_transpose);
 	ClassDB::bind_method(D_METHOD("tile_get_transpose"), &TileData::tile_get_transpose);
+	ClassDB::bind_method(D_METHOD("tile_set_texture_offset", "texture_offset"), &TileData::tile_set_texture_offset);
+	ClassDB::bind_method(D_METHOD("tile_get_texture_offset"), &TileData::tile_get_texture_offset);
+	ClassDB::bind_method(D_METHOD("tile_set_modulate", "modulate"), &TileData::tile_set_modulate);
+	ClassDB::bind_method(D_METHOD("tile_get_modulate"), &TileData::tile_get_modulate);
+	ClassDB::bind_method(D_METHOD("tile_set_z_index", "z_index"), &TileData::tile_set_z_index);
+	ClassDB::bind_method(D_METHOD("tile_get_z_index"), &TileData::tile_get_z_index);
+	ClassDB::bind_method(D_METHOD("tile_set_y_sort_origin", "y_sort_origin"), &TileData::tile_set_y_sort_origin);
+	ClassDB::bind_method(D_METHOD("tile_get_y_sort_origin"), &TileData::tile_get_y_sort_origin);
 
+	ADD_GROUP("Rendering", "");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "flip_h"), "tile_set_flip_h", "tile_get_flip_h");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "flip_v"), "tile_set_flip_v", "tile_get_flip_v");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "transpose"), "tile_set_transpose", "tile_get_transpose");
-
-	// Rendering.
-	ClassDB::bind_method(D_METHOD("tile_set_texture_offset", "source_id", "atlas_coords", "texture_offset"), &TileData::tile_set_texture_offset);
-	ClassDB::bind_method(D_METHOD("tile_get_texture_offset", "source_id", "atlas_coords"), &TileData::tile_get_texture_offset);
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2I, "texture_offset"), "tile_set_texture_offset", "tile_get_texture_offset");
 
-	ADD_SIGNAL(MethodInfo("changed", PropertyInfo(Variant::STRING, "what")));
+	ADD_PROPERTY(PropertyInfo(Variant::COLOR, "modulate"), "tile_set_modulate", "tile_get_modulate");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "z_index"), "tile_set_z_index", "tile_get_z_index");
+	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2I, "y_sort_origin"), "tile_set_y_sort_origin", "tile_get_y_sort_origin");
 }
 
 void TileSetAtlasSource::set_texture(Ref<Texture2D> p_texture) {
 	texture = p_texture;
 
-	emit_signal("changed", "texture");
+	emit_changed();
 }
 
 Ref<Texture2D> TileSetAtlasSource::get_texture() const {
@@ -206,7 +212,7 @@ void TileSetAtlasSource::set_margins(Vector2i p_margins) {
 		margins = p_margins;
 	}
 
-	emit_signal("changed", "margins");
+	emit_changed();
 }
 Vector2i TileSetAtlasSource::get_margins() const {
 	return margins;
@@ -220,7 +226,7 @@ void TileSetAtlasSource::set_separation(Vector2i p_separation) {
 		separation = p_separation;
 	}
 
-	emit_signal("changed", "separation");
+	emit_changed();
 }
 Vector2i TileSetAtlasSource::get_separation() const {
 	return separation;
@@ -234,7 +240,7 @@ void TileSetAtlasSource::set_texture_region_size(Vector2i p_tile_size) {
 		texture_region_size = p_tile_size;
 	}
 
-	emit_signal("changed", "texture_region_size");
+	emit_changed();
 }
 Vector2i TileSetAtlasSource::get_texture_region_size() const {
 	return texture_region_size;
@@ -243,7 +249,7 @@ Vector2i TileSetAtlasSource::get_texture_region_size() const {
 void TileSetAtlasSource::set_base_texture_offset(Vector2i p_base_texture_offset) {
 	base_texture_offset = p_base_texture_offset;
 
-	emit_signal("changed", "base_texture_offset");
+	emit_changed();
 }
 Vector2i TileSetAtlasSource::get_base_texture_offset() const {
 	return base_texture_offset;
@@ -624,8 +630,6 @@ void TileSetAtlasSource::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("has_tiles_outside_texture"), &TileSetAtlasSource::has_tiles_outside_texture);
 	ClassDB::bind_method(D_METHOD("clear_tiles_outside_texture"), &TileSetAtlasSource::clear_tiles_outside_texture);
 	ClassDB::bind_method(D_METHOD("get_tile_texture_region", "atlas_coords"), &TileSetAtlasSource::get_tile_texture_region);
-
-	ADD_SIGNAL(MethodInfo("changed"));
 }
 
 TileSetAtlasSource::~TileSetAtlasSource() {
@@ -1281,6 +1285,7 @@ Vector2i TileSet::get_tile_effective_texture_offset(int p_atlas_source_id, Vecto
 
 void TileSet::_source_changed() {
 	emit_changed();
+	notify_property_list_changed();
 }
 
 void TileSet::_bind_methods() {

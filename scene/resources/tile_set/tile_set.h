@@ -53,6 +53,9 @@ class TileMap;
 #endif
 
 class TileData : public Object {
+	GDCLASS(TileData, Object);
+
+private:
 	// --- Base properties ---
 	bool flip_h = false;
 	bool flip_v = false;
@@ -69,13 +72,12 @@ class TileData : public Object {
 	double probability = 1.0;
 
 protected:
-	static void _bind_methods();
-
-public:
 	bool _set(const StringName &p_name, const Variant &p_value);
 	bool _get(const StringName &p_name, Variant &r_ret) const;
 	void _get_property_list(List<PropertyInfo> *p_list) const;
+	static void _bind_methods();
 
+public:
 	// --- Accessors for TileData ---
 	// Base properties
 	void tile_set_texture_offset(Vector2i p_texture_offset);

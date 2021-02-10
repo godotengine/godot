@@ -66,55 +66,16 @@ void RenderingTileSetData::get_property_list(List<PropertyInfo> *p_list) const {
 	p_list->push_back(PropertyInfo(Variant::BOOL, "uv_clipping", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR));
 };
 
-// --- TileData ---
 bool RenderingTileData::set(const StringName &p_name, const Variant &p_value) {
-	if (p_name == "tex_offset") {
-		tex_offset = p_value;
-	} else if (p_name == "material") {
-		material = p_value;
-	} else if (p_name == "modulate") {
-		modulate = p_value;
-	} else if (p_name == "z_index") {
-		z_index = p_value;
-	} else if (p_name == "y_sort_origin") {
-		y_sort_origin = p_value;
-	} /*else if (p_name == "occluders") {
-			occluders = p_value;
-		} */
-	else {
-		return false;
-	}
-	return true;
+	return false;
 }
 
 bool RenderingTileData::get(const StringName &p_name, Variant &r_ret) const {
-	if (p_name == "tex_offset") {
-		r_ret = tex_offset;
-	} else if (p_name == "material") {
-		r_ret = material;
-	} else if (p_name == "modulate") {
-		r_ret = modulate;
-	} else if (p_name == "z_index") {
-		r_ret = z_index;
-	} else if (p_name == "y_sort_origin") {
-		r_ret = y_sort_origin;
-	} /*else if (p_name == "occluders") {
-			r_ret = occluders;
-		} */
-	else {
-		return false;
-	}
-	return true;
-};
+	return false;
+}
 
 void RenderingTileData::get_property_list(List<PropertyInfo> *p_list) const {
-	p_list->push_back(PropertyInfo(Variant::VECTOR2I, "tex_offset", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR));
-	p_list->push_back(PropertyInfo(Variant::OBJECT, "material", PROPERTY_HINT_RESOURCE_TYPE, "ShaderMaterial", PROPERTY_USAGE_NOEDITOR));
-	p_list->push_back(PropertyInfo(Variant::COLOR, "modulate", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR));
-	p_list->push_back(PropertyInfo(Variant::INT, "z_index", PROPERTY_HINT_RANGE, itos(RS::CANVAS_ITEM_Z_MIN) + "," + itos(RS::CANVAS_ITEM_Z_MAX) + ",1", PROPERTY_USAGE_NOEDITOR));
-	p_list->push_back(PropertyInfo(Variant::VECTOR2I, "y_sort_origin", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR));
-	//p_list->push_back(PropertyInfo(Variant::OBJECT, "occluders", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR));
-};
+}
 
 // -----
 const String TileSetAtlasPluginRendering::NAME = "Rendering";

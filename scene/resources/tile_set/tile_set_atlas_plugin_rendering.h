@@ -43,9 +43,9 @@ struct RenderingTileSetData : public TileSetAtlasPluginTileSetData {
 
 	Vector<int> occluder_light_masks;
 
-	virtual bool set(const StringName &p_name, const Variant &p_value);
-	virtual bool get(const StringName &p_name, Variant &r_ret) const;
-	virtual void get_property_list(List<PropertyInfo> *p_list) const;
+	virtual bool set(const StringName &p_name, const Variant &p_value) override;
+	virtual bool get(const StringName &p_name, Variant &r_ret) const override;
+	virtual void get_property_list(List<PropertyInfo> *p_list) const override;
 };
 
 // Tile data.
@@ -57,9 +57,9 @@ struct RenderingTileData : public TileSetAtlasPluginTileData {
 	Vector2i y_sort_origin = Vector2i();
 	Vector<Ref<OccluderPolygon2D>> occluders;
 
-	virtual bool set(const StringName &p_name, const Variant &p_value);
-	virtual bool get(const StringName &p_name, Variant &r_ret) const;
-	virtual void get_property_list(List<PropertyInfo> *p_list) const;
+	virtual bool set(const StringName &p_name, const Variant &p_value) override;
+	virtual bool get(const StringName &p_name, Variant &r_ret) const override;
+	virtual void get_property_list(List<PropertyInfo> *p_list) const override;
 };
 
 class TileSetAtlasPluginRendering : public TileSetAtlasPlugin {

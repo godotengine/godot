@@ -483,6 +483,7 @@ void TileAtlasView::update() {
 	base_tiles_texture_grid->update();
 	base_tiles_shape_grid->update();
 	base_tiles_dark->update();
+	alternatives_draw->update();
 	background_left->update();
 	background_right->update();
 }
