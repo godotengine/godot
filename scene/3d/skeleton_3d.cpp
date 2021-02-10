@@ -304,7 +304,7 @@ void Skeleton3D::_notification(int p_what) {
 				uint32_t bind_count = skin->get_bind_count();
 
 				if (E->get()->bind_count != bind_count) {
-					RS::get_singleton()->skeleton_allocate(skeleton, bind_count);
+					RS::get_singleton()->skeleton_allocate_data(skeleton, bind_count);
 					E->get()->bind_count = bind_count;
 					E->get()->skin_bone_indices.resize(bind_count);
 					E->get()->skin_bone_indices_ptrs = E->get()->skin_bone_indices.ptrw();

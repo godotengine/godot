@@ -333,7 +333,7 @@ private:
 	uint32_t sky_ggx_samples_quality;
 	bool sky_use_cubemap_array;
 
-	mutable RID_Owner<Sky> sky_owner;
+	mutable RID_Owner<Sky, true> sky_owner;
 
 	/* REFLECTION ATLAS */
 
@@ -809,7 +809,7 @@ private:
 
 	static uint64_t auto_exposure_counter;
 
-	mutable RID_Owner<Environment> environment_owner;
+	mutable RID_Owner<Environment, true> environment_owner;
 
 	/* CAMERA EFFECTS */
 
@@ -835,7 +835,7 @@ private:
 	float sss_scale = 0.05;
 	float sss_depth_scale = 0.01;
 
-	mutable RID_Owner<CameraEffects> camera_effects_owner;
+	mutable RID_Owner<CameraEffects, true> camera_effects_owner;
 
 	/* RENDER BUFFERS */
 
@@ -1654,7 +1654,9 @@ public:
 	RID sdfgi_get_ubo() const { return gi.sdfgi_ubo; }
 	/* SKY API */
 
-	RID sky_create();
+	virtual RID sky_allocate();
+	virtual void sky_initialize(RID p_rid);
+
 	void sky_set_radiance_size(RID p_sky, int p_radiance_size);
 	void sky_set_mode(RID p_sky, RS::SkyMode p_mode);
 	void sky_set_material(RID p_sky, RID p_material);
@@ -1666,7 +1668,8 @@ public:
 
 	/* ENVIRONMENT API */
 
-	RID environment_create();
+	virtual RID environment_allocate();
+	virtual void environment_initialize(RID p_rid);
 
 	void environment_set_background(RID p_env, RS::EnvironmentBG p_bg);
 	void environment_set_sky(RID p_env, RID p_sky);
@@ -1734,7 +1737,8 @@ public:
 
 	virtual Ref<Image> environment_bake_panorama(RID p_env, bool p_bake_irradiance, const Size2i &p_size);
 
-	virtual RID camera_effects_create();
+	virtual RID camera_effects_allocate();
+	virtual void camera_effects_initialize(RID p_rid);
 
 	virtual void camera_effects_set_dof_blur_quality(RS::DOFBlurQuality p_quality, bool p_use_jitter);
 	virtual void camera_effects_set_dof_blur_bokeh_shape(RS::DOFBokehShape p_shape);

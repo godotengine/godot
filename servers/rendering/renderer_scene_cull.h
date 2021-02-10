@@ -94,9 +94,11 @@ public:
 		}
 	};
 
-	mutable RID_PtrOwner<Camera> camera_owner;
+	mutable RID_PtrOwner<Camera, true> camera_owner;
 
-	virtual RID camera_create();
+	virtual RID camera_allocate();
+	virtual void camera_initialize(RID p_rid);
+
 	virtual void camera_set_perspective(RID p_camera, float p_fovy_degrees, float p_z_near, float p_z_far);
 	virtual void camera_set_orthogonal(RID p_camera, float p_size, float p_z_near, float p_z_far);
 	virtual void camera_set_frustum(RID p_camera, float p_size, Vector2 p_offset, float p_z_near, float p_z_far);
@@ -296,14 +298,15 @@ public:
 
 	int indexer_update_iterations = 0;
 
-	mutable RID_PtrOwner<Scenario> scenario_owner;
+	mutable RID_PtrOwner<Scenario, true> scenario_owner;
 
 	static void _instance_pair(Instance *p_A, Instance *p_B);
 	static void _instance_unpair(Instance *p_A, Instance *p_B);
 
 	void _instance_update_mesh_instance(Instance *p_instance);
 
-	virtual RID scenario_create();
+	virtual RID scenario_allocate();
+	virtual void scenario_initialize(RID p_rid);
 
 	virtual void scenario_set_debug(RID p_scenario, RS::ScenarioDebugMode p_debug_mode);
 	virtual void scenario_set_environment(RID p_scenario, RID p_environment);
@@ -824,11 +827,12 @@ public:
 
 	uint32_t thread_cull_threshold = 200;
 
-	RID_PtrOwner<Instance> instance_owner;
+	RID_PtrOwner<Instance, true> instance_owner;
 
 	uint32_t geometry_instance_pair_mask; // used in traditional forward, unnecesary on clustered
 
-	virtual RID instance_create();
+	virtual RID instance_allocate();
+	virtual void instance_initialize(RID p_rid);
 
 	virtual void instance_set_base(RID p_instance, RID p_base);
 	virtual void instance_set_scenario(RID p_instance, RID p_scenario);
@@ -957,13 +961,16 @@ public:
 
 	/* SKY API */
 
-	PASS0R(RID, sky_create)
+	PASS0R(RID, sky_allocate)
+	PASS1(sky_initialize, RID)
+
 	PASS2(sky_set_radiance_size, RID, int)
 	PASS2(sky_set_mode, RID, RS::SkyMode)
 	PASS2(sky_set_material, RID, RID)
 	PASS4R(Ref<Image>, sky_bake_panorama, RID, float, bool, const Size2i &)
 
-	PASS0R(RID, environment_create)
+	PASS0R(RID, environment_allocate)
+	PASS1(environment_initialize, RID)
 
 	PASS1RC(bool, is_environment, RID)
 
@@ -1012,7 +1019,8 @@ public:
 
 	/* CAMERA EFFECTS */
 
-	PASS0R(RID, camera_effects_create)
+	PASS0R(RID, camera_effects_allocate)
+	PASS1(camera_effects_initialize, RID)
 
 	PASS2(camera_effects_set_dof_blur_quality, RS::DOFBlurQuality, bool)
 	PASS1(camera_effects_set_dof_blur_bokeh_shape, RS::DOFBokehShape)
