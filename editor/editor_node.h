@@ -31,6 +31,7 @@
 #ifndef EDITOR_NODE_H
 #define EDITOR_NODE_H
 
+#include "core/templates/safe_refcount.h"
 #include "editor/editor_data.h"
 #include "editor/editor_export.h"
 #include "editor/editor_folding.h"
@@ -111,7 +112,7 @@ public:
 		Thread execute_output_thread;
 		Mutex execute_output_mutex;
 		int exitcode = 0;
-		volatile bool done = false;
+		SafeFlag done;
 	};
 
 private:

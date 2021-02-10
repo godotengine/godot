@@ -34,13 +34,15 @@
 
 #if !defined(NO_THREADS)
 
+#include "core/templates/safe_refcount.h"
+
 Error (*Thread::set_name_func)(const String &) = nullptr;
 void (*Thread::set_priority_func)(Thread::Priority) = nullptr;
 void (*Thread::init_func)() = nullptr;
 void (*Thread::term_func)() = nullptr;
 
 Thread::ID Thread::main_thread_id = 1;
-Thread::ID Thread::last_thread_id = 1;
+SafeNumeric<Thread::ID> Thread::last_thread_id{ 1 };
 thread_local Thread::ID Thread::caller_id = 1;
 
 void Thread::_set_platform_funcs(
@@ -79,7 +81,7 @@ void Thread::start(Thread::Callback p_callback, void *p_user, const Settings &p_
 		std::thread empty_thread;
 		thread.swap(empty_thread);
 	}
-	id = atomic_increment(&last_thread_id);
+	id = last_thread_id.increment();
 	std::thread new_thread(&Thread::callback, this, p_settings, p_callback, p_user);
 	thread.swap(new_thread);
 }

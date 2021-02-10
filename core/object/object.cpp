@@ -1727,7 +1727,7 @@ void *Object::get_script_instance_binding(int p_script_language_index) {
 	if (!_script_instance_bindings[p_script_language_index]) {
 		void *script_data = ScriptServer::get_language(p_script_language_index)->alloc_instance_binding_data(this);
 		if (script_data) {
-			atomic_increment(&instance_binding_count);
+			instance_binding_count.increment();
 			_script_instance_bindings[p_script_language_index] = script_data;
 		}
 	}

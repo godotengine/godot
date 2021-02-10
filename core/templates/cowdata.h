@@ -45,6 +45,9 @@ class CharString;
 template <class T, class V>
 class VMap;
 
+// CowData is relying on this to be true
+static_assert(sizeof(SafeNumeric<uint32_t>) == sizeof(uint32_t));
+
 template <class T>
 class CowData {
 	template <class TV>
@@ -60,12 +63,12 @@ private:
 
 	// internal helpers
 
-	_FORCE_INLINE_ uint32_t *_get_refcount() const {
+	_FORCE_INLINE_ SafeNumeric<uint32_t> *_get_refcount() const {
 		if (!_ptr) {
 			return nullptr;
 		}
 
-		return reinterpret_cast<uint32_t *>(_ptr) - 2;
+		return reinterpret_cast<SafeNumeric<uint32_t> *>(_ptr) - 2;
 	}
 
 	_FORCE_INLINE_ uint32_t *_get_size() const {
@@ -192,9 +195,9 @@ void CowData<T>::_unref(void *p_data) {
 		return;
 	}
 
-	uint32_t *refc = _get_refcount();
+	SafeNumeric<uint32_t> *refc = _get_refcount();
 
-	if (atomic_decrement(refc) > 0) {
+	if (refc->decrement() > 0) {
 		return; // still in use
 	}
 	// clean up
@@ -219,15 +222,15 @@ void CowData<T>::_copy_on_write() {
 		return;
 	}
 
-	uint32_t *refc = _get_refcount();
+	SafeNumeric<uint32_t> *refc = _get_refcount();
 
-	if (unlikely(*refc > 1)) {
+	if (unlikely(refc->get() > 1)) {
 		/* in use by more than me */
 		uint32_t current_size = *_get_size();
 
 		uint32_t *mem_new = (uint32_t *)Memory::alloc_static(_get_alloc_size(current_size), true);
 
-		*(mem_new - 2) = 1; //refcount
+		reinterpret_cast<SafeNumeric<uint32_t> *>(mem_new - 2)->set(1); //refcount
 		*(mem_new - 1) = current_size; //size
 
 		T *_data = (T *)(mem_new);
@@ -278,7 +281,7 @@ Error CowData<T>::resize(int p_size) {
 				uint32_t *ptr = (uint32_t *)Memory::alloc_static(alloc_size, true);
 				ERR_FAIL_COND_V(!ptr, ERR_OUT_OF_MEMORY);
 				*(ptr - 1) = 0; //size, currently none
-				*(ptr - 2) = 1; //refcount
+				reinterpret_cast<SafeNumeric<uint32_t> *>(ptr - 2)->set(1); //refcount
 
 				_ptr = (T *)ptr;
 
@@ -359,7 +362,7 @@ void CowData<T>::_ref(const CowData &p_from) {
 		return; //nothing to do
 	}
 
-	if (atomic_conditional_increment(p_from._get_refcount()) > 0) { // could reference
+	if (p_from._get_refcount()->increment() > 0) { // could reference
 		_ptr = p_from._ptr;
 	}
 }

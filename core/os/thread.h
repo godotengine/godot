@@ -34,6 +34,7 @@
 #include "core/typedefs.h"
 
 #if !defined(NO_THREADS)
+#include "core/templates/safe_refcount.h"
 #include <thread>
 #endif
 
@@ -61,7 +62,7 @@ private:
 	friend class Main;
 
 	static ID main_thread_id;
-	static ID last_thread_id;
+	static SafeNumeric<Thread::ID> last_thread_id;
 
 	ID id = 0;
 	static thread_local ID caller_id;

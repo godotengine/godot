@@ -206,8 +206,8 @@ void EditorResourcePreview::_generate_preview(Ref<ImageTexture> &r_texture, Ref<
 }
 
 void EditorResourcePreview::_thread() {
-	exited = false;
-	while (!exit) {
+	exited.clear();
+	while (!exit.is_set()) {
 		preview_sem.wait();
 		preview_mutex.lock();
 
@@ -326,7 +326,7 @@ void EditorResourcePreview::_thread() {
 			preview_mutex.unlock();
 		}
 	}
-	exited = true;
+	exited.set();
 }
 
 void EditorResourcePreview::queue_edited_resource_preview(const Ref<Resource> &p_res, Object *p_receiver, const StringName &p_receiver_func, const Variant &p_userdata) {
@@ -430,9 +430,9 @@ void EditorResourcePreview::start() {
 
 void EditorResourcePreview::stop() {
 	if (thread.is_started()) {
-		exit = true;
+		exit.set();
 		preview_sem.post();
-		while (!exited) {
+		while (!exited.is_set()) {
 			OS::get_singleton()->delay_usec(10000);
 			RenderingServer::get_singleton()->sync(); //sync pending stuff, as thread may be blocked on visual server
 		}
@@ -443,8 +443,6 @@ void EditorResourcePreview::stop() {
 EditorResourcePreview::EditorResourcePreview() {
 	singleton = this;
 	order = 0;
-	exit = false;
-	exited = false;
 }
 
 EditorResourcePreview::~EditorResourcePreview() {

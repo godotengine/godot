@@ -32,6 +32,7 @@
 #define CPU_PARTICLES_H
 
 #include "core/templates/rid.h"
+#include "core/templates/safe_refcount.h"
 #include "scene/3d/visual_instance_3d.h"
 
 class CPUParticles3D : public GeometryInstance3D {
@@ -142,7 +143,7 @@ private:
 
 	Transform inv_emission_transform;
 
-	volatile bool can_update = false;
+	SafeFlag can_update;
 
 	DrawOrder draw_order = DRAW_ORDER_INDEX;
 

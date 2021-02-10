@@ -138,15 +138,15 @@ void AudioStreamPlayer3D::_calc_output_vol(const Vector3 &source_dir, real_t tig
 }
 
 void AudioStreamPlayer3D::_mix_audio() {
-	if (!stream_playback.is_valid() || !active ||
+	if (!stream_playback.is_valid() || !active.is_set() ||
 			(stream_paused && !stream_paused_fade_out)) {
 		return;
 	}
 
 	bool started = false;
-	if (setseek >= 0.0) {
-		stream_playback->start(setseek);
-		setseek = -1.0; //reset seek
+	if (setseek.get() >= 0.0) {
+		stream_playback->start(setseek.get());
+		setseek.set(-1.0); //reset seek
 		started = true;
 	}
 
@@ -160,14 +160,14 @@ void AudioStreamPlayer3D::_mix_audio() {
 	}
 
 	// Mix if we're not paused or we're fading out
-	if ((output_count > 0 || out_of_range_mode == OUT_OF_RANGE_MIX)) {
+	if ((output_count.get() > 0 || out_of_range_mode == OUT_OF_RANGE_MIX)) {
 		float output_pitch_scale = 0.0;
-		if (output_count) {
+		if (output_count.get()) {
 			//used for doppler, not realistic but good enough
-			for (int i = 0; i < output_count; i++) {
+			for (int i = 0; i < output_count.get(); i++) {
 				output_pitch_scale += outputs[i].pitch_scale;
 			}
-			output_pitch_scale /= float(output_count);
+			output_pitch_scale /= float(output_count.get());
 		} else {
 			output_pitch_scale = 1.0;
 		}
@@ -176,7 +176,7 @@ void AudioStreamPlayer3D::_mix_audio() {
 	}
 
 	//write all outputs
-	for (int i = 0; i < output_count; i++) {
+	for (int i = 0; i < output_count.get(); i++) {
 		Output current = outputs[i];
 
 		//see if current output exists, to keep volume ramp
@@ -285,14 +285,14 @@ void AudioStreamPlayer3D::_mix_audio() {
 		prev_outputs[i] = current;
 	}
 
-	prev_output_count = output_count;
+	prev_output_count = output_count.get();
 
 	//stream is no longer active, disable this.
 	if (!stream_playback->is_playing()) {
-		active = false;
+		active.clear();
 	}
 
-	output_ready = false;
+	output_ready.clear();
 	stream_paused_fade_in = false;
 	stream_paused_fade_out = false;
 }
@@ -360,7 +360,7 @@ void AudioStreamPlayer3D::_notification(int p_what) {
 	if (p_what == NOTIFICATION_INTERNAL_PHYSICS_PROCESS) {
 		//update anything related to position first, if possible of course
 
-		if (!output_ready) {
+		if (!output_ready.is_set()) {
 			Vector3 linear_velocity;
 
 			//compute linear velocity for doppler
@@ -596,19 +596,19 @@ void AudioStreamPlayer3D::_notification(int p_what) {
 				}
 			}
 
-			output_count = new_output_count;
-			output_ready = true;
+			output_count.set(new_output_count);
+			output_ready.set();
 		}
 
 		//start playing if requested
-		if (setplay >= 0.0) {
-			setseek = setplay;
-			active = true;
-			setplay = -1;
+		if (setplay.get() >= 0.0) {
+			setseek.set(setplay.get());
+			active.set();
+			setplay.set(-1);
 		}
 
 		//stop playing if no longer active
-		if (!active) {
+		if (!active.is_set()) {
 			set_physics_process_internal(false);
 			emit_signal("finished");
 		}
@@ -623,8 +623,8 @@ void AudioStreamPlayer3D::set_stream(Ref<AudioStream> p_stream) {
 	if (stream_playback.is_valid()) {
 		stream_playback.unref();
 		stream.unref();
-		active = false;
-		setseek = -1;
+		active.clear();
+		setseek.set(-1);
 	}
 
 	if (p_stream.is_valid()) {
@@ -683,29 +683,29 @@ void AudioStreamPlayer3D::play(float p_from_pos) {
 	}
 
 	if (stream_playback.is_valid()) {
-		setplay = p_from_pos;
-		output_ready = false;
+		setplay.set(p_from_pos);
+		output_ready.clear();
 		set_physics_process_internal(true);
 	}
 }
 
 void AudioStreamPlayer3D::seek(float p_seconds) {
 	if (stream_playback.is_valid()) {
-		setseek = p_seconds;
+		setseek.set(p_seconds);
 	}
 }
 
 void AudioStreamPlayer3D::stop() {
 	if (stream_playback.is_valid()) {
-		active = false;
+		active.clear();
 		set_physics_process_internal(false);
-		setplay = -1;
+		setplay.set(-1);
 	}
 }
 
 bool AudioStreamPlayer3D::is_playing() const {
 	if (stream_playback.is_valid()) {
-		return active || setplay >= 0;
+		return active.is_set() || setplay.get() >= 0;
 	}
 
 	return false;
@@ -713,8 +713,9 @@ bool AudioStreamPlayer3D::is_playing() const {
 
 float AudioStreamPlayer3D::get_playback_position() {
 	if (stream_playback.is_valid()) {
-		if (setseek >= 0.0) {
-			return setseek;
+		float ss = setseek.get();
+		if (ss >= 0.0) {
+			return ss;
 		}
 		return stream_playback->get_playback_position();
 	}
@@ -755,7 +756,7 @@ void AudioStreamPlayer3D::_set_playing(bool p_enable) {
 }
 
 bool AudioStreamPlayer3D::_is_active() const {
-	return active;
+	return active.is_set();
 }
 
 void AudioStreamPlayer3D::_validate_property(PropertyInfo &property) const {

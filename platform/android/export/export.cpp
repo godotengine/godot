@@ -37,6 +37,7 @@
 #include "core/os/dir_access.h"
 #include "core/os/file_access.h"
 #include "core/os/os.h"
+#include "core/templates/safe_refcount.h"
 #include "core/version.h"
 #include "drivers/png/png_driver_common.h"
 #include "editor/editor_export.h"
@@ -264,38 +265,38 @@ class EditorExportPlatformAndroid : public EditorExportPlatform {
 	Vector<PluginConfigAndroid> plugins;
 	String last_plugin_names;
 	uint64_t last_custom_build_time = 0;
-	volatile bool plugins_changed;
+	SafeFlag plugins_changed;
 	Mutex plugins_lock;
 	Vector<Device> devices;
-	volatile bool devices_changed;
+	SafeFlag devices_changed;
 	Mutex device_lock;
 	Thread check_for_changes_thread;
-	volatile bool quit_request;
+	SafeFlag quit_request;
 
 	static void _check_for_changes_poll_thread(void *ud) {
 		EditorExportPlatformAndroid *ea = (EditorExportPlatformAndroid *)ud;
 
-		while (!ea->quit_request) {
+		while (!ea->quit_request.is_set()) {
 			// Check for plugins updates
 			{
 				// Nothing to do if we already know the plugins have changed.
-				if (!ea->plugins_changed) {
+				if (!ea->plugins_changed.is_set()) {
 					Vector<PluginConfigAndroid> loaded_plugins = get_plugins();
 
 					MutexLock lock(ea->plugins_lock);
 
 					if (ea->plugins.size() != loaded_plugins.size()) {
-						ea->plugins_changed = true;
+						ea->plugins_changed.set();
 					} else {
 						for (int i = 0; i < ea->plugins.size(); i++) {
 							if (ea->plugins[i].name != loaded_plugins[i].name) {
-								ea->plugins_changed = true;
+								ea->plugins_changed.set();
 								break;
 							}
 						}
 					}
 
-					if (ea->plugins_changed) {
+					if (ea->plugins_changed.is_set()) {
 						ea->plugins = loaded_plugins;
 					}
 				}
@@ -409,7 +410,7 @@ class EditorExportPlatformAndroid : public EditorExportPlatform {
 					}
 
 					ea->devices = ndevices;
-					ea->devices_changed = true;
+					ea->devices_changed.set();
 				}
 			}
 
@@ -418,7 +419,7 @@ class EditorExportPlatformAndroid : public EditorExportPlatform {
 			uint64_t time = OS::get_singleton()->get_ticks_usec();
 			while (OS::get_singleton()->get_ticks_usec() - time < wait) {
 				OS::get_singleton()->delay_usec(1000 * sleep);
-				if (ea->quit_request) {
+				if (ea->quit_request.is_set()) {
 					break;
 				}
 			}
@@ -1642,7 +1643,7 @@ public:
 			print_verbose("Found Android plugin " + plugins_configs[i].name);
 			r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "plugins/" + plugins_configs[i].name), false));
 		}
-		plugins_changed = false;
+		plugins_changed.clear();
 
 		Vector<String> abis = get_abis();
 		for (int i = 0; i < abis.size(); ++i) {
@@ -1712,19 +1713,19 @@ public:
 	}
 
 	virtual bool should_update_export_options() override {
-		bool export_options_changed = plugins_changed;
+		bool export_options_changed = plugins_changed.is_set();
 		if (export_options_changed) {
 			// don't clear unless we're reporting true, to avoid race
-			plugins_changed = false;
+			plugins_changed.clear();
 		}
 		return export_options_changed;
 	}
 
 	virtual bool poll_export() override {
-		bool dc = devices_changed;
+		bool dc = devices_changed.is_set();
 		if (dc) {
 			// don't clear unless we're reporting true, to avoid race
-			devices_changed = false;
+			devices_changed.clear();
 		}
 		return dc;
 	}
@@ -2913,14 +2914,13 @@ public:
 		run_icon.instance();
 		run_icon->create_from_image(img);
 
-		devices_changed = true;
-		plugins_changed = true;
-		quit_request = false;
+		devices_changed.set();
+		plugins_changed.set();
 		check_for_changes_thread.start(_check_for_changes_poll_thread, this);
 	}
 
 	~EditorExportPlatformAndroid() {
-		quit_request = true;
+		quit_request.set();
 		check_for_changes_thread.wait_to_finish();
 	}
 };

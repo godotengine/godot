@@ -187,14 +187,14 @@ String GodotIOJavaWrapper::get_system_dir(int p_dir) {
 	}
 }
 
-// volatile because it can be changed from non-main thread and we need to
+// SafeNumeric because it can be changed from non-main thread and we need to
 // ensure the change is immediately visible to other threads.
-static volatile int virtual_keyboard_height;
+static SafeNumeric<int> virtual_keyboard_height;
 
 int GodotIOJavaWrapper::get_vk_height() {
-	return virtual_keyboard_height;
+	return virtual_keyboard_height.get();
 }
 
 void GodotIOJavaWrapper::set_vk_height(int p_height) {
-	virtual_keyboard_height = p_height;
+	virtual_keyboard_height.set(p_height);
 }

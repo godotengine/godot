@@ -37,6 +37,7 @@
 #include "core/templates/hash_map.h"
 #include "core/templates/list.h"
 #include "core/templates/map.h"
+#include "core/templates/safe_refcount.h"
 #include "core/templates/set.h"
 #include "core/templates/vmap.h"
 #include "core/variant/callable_bind.h"
@@ -485,7 +486,7 @@ private:
 
 	friend class Reference;
 	bool type_is_reference = false;
-	uint32_t instance_binding_count = 0;
+	SafeNumeric<uint32_t> instance_binding_count;
 	void *_script_instance_bindings[MAX_SCRIPT_INSTANCE_BINDINGS];
 
 	Object(bool p_reference);

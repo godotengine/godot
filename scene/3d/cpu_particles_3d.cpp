@@ -1074,7 +1074,7 @@ void CPUParticles3D::_update_particle_data_buffer() {
 		ptr += 20;
 	}
 
-	can_update = true;
+	can_update.set();
 }
 
 void CPUParticles3D::_set_redraw(bool p_redraw) {
@@ -1103,9 +1103,9 @@ void CPUParticles3D::_set_redraw(bool p_redraw) {
 void CPUParticles3D::_update_render_thread() {
 	MutexLock lock(update_mutex);
 
-	if (can_update) {
+	if (can_update.is_set()) {
 		RS::get_singleton()->multimesh_set_buffer(multimesh, particle_data);
-		can_update = false; //wait for next time
+		can_update.clear(); //wait for next time
 	}
 }
 
@@ -1167,7 +1167,7 @@ void CPUParticles3D::_notification(int p_what) {
 				ptr += 20;
 			}
 
-			can_update = true;
+			can_update.set();
 		}
 	}
 }
@@ -1468,6 +1468,21 @@ CPUParticles3D::CPUParticles3D() {
 	set_param(PARAM_HUE_VARIATION, 0);
 	set_param(PARAM_ANIM_SPEED, 0);
 	set_param(PARAM_ANIM_OFFSET, 0);
+	set_emission_shape(EMISSION_SHAPE_POINT);
+	set_emission_sphere_radius(1);
+	set_emission_box_extents(Vector3(1, 1, 1));
+
+	set_gravity(Vector3(0, -9.8, 0));
+
+	for (int i = 0; i < PARAM_MAX; i++) {
+		set_param_randomness(Parameter(i), 0);
+	}
+
+	for (int i = 0; i < PARTICLE_FLAG_MAX; i++) {
+		particle_flags[i] = false;
+	}
+
+	set_color(Color(1, 1, 1, 1));
 }
 
 CPUParticles3D::~CPUParticles3D() {

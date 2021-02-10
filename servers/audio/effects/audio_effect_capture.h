@@ -55,8 +55,8 @@ class AudioEffectCapture : public AudioEffect {
 	friend class AudioEffectCaptureInstance;
 
 	RingBuffer<AudioFrame> buffer;
-	uint64_t discarded_frames = 0;
-	uint64_t pushed_frames = 0;
+	SafeNumeric<uint64_t> discarded_frames;
+	SafeNumeric<uint64_t> pushed_frames;
 	float buffer_length_seconds = 0.1f;
 	bool buffer_initialized = false;
 
