@@ -1396,6 +1396,7 @@ void TextEdit::_notification(int p_what) {
 
 						if (cursor.column == last_wrap_column + j && cursor.line == line && cursor_wrap_index == line_wrap_index) {
 
+							is_cursor_visible = true;
 							cursor_pos = Point2i(char_ofs + char_margin + ofs_x, ofs_y);
 							cursor_pos.y += (get_row_height() - cache.font->get_height()) / 2;
 
