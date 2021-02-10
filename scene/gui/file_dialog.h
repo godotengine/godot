@@ -69,7 +69,7 @@ private:
 	LineEdit *makedirname;
 
 	Button *makedir;
-	Access access;
+	Access access = ACCESS_RESOURCES;
 	//Button *action;
 	VBoxContainer *vbox;
 	FileMode mode;
@@ -93,12 +93,12 @@ private:
 
 	Vector<String> filters;
 
-	bool mode_overrides_title;
+	bool mode_overrides_title = true;
 
 	static bool default_show_hidden_files;
-	bool show_hidden_files;
+	bool show_hidden_files = false;
 
-	bool invalidated;
+	bool invalidated = true;
 
 	void update_dir();
 	void update_file_name();

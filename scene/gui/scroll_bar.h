@@ -47,14 +47,14 @@ class ScrollBar : public Range {
 
 	Orientation orientation;
 	Size2 size;
-	float custom_step = -1;
+	float custom_step = -1.0;
 
 	HighlightStatus highlight = HIGHLIGHT_NONE;
 
 	struct Drag {
 		bool active = false;
-		float pos_at_click = 0;
-		float value_at_click = 0;
+		float pos_at_click = 0.0;
+		float value_at_click = 0.0;
 	} drag;
 
 	double get_grabber_size() const;
@@ -73,14 +73,14 @@ class ScrollBar : public Range {
 	Vector2 drag_node_accum;
 	Vector2 drag_node_from;
 	Vector2 last_drag_node_accum;
-	float last_drag_node_time;
-	float time_since_motion;
+	float last_drag_node_time = 0.0;
+	float time_since_motion = 0.0;
 	bool drag_node_touching = false;
 	bool drag_node_touching_deaccel = false;
-	bool click_handled;
+	bool click_handled = false;
 
 	bool scrolling = false;
-	double target_scroll = 0;
+	double target_scroll = 0.0;
 	bool smooth_scroll_enabled = false;
 
 	void _drag_node_exit();

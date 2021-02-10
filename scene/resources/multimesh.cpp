@@ -361,11 +361,6 @@ void MultiMesh::_bind_methods() {
 
 MultiMesh::MultiMesh() {
 	multimesh = RenderingServer::get_singleton()->multimesh_create();
-	use_colors = false;
-	use_custom_data = false;
-	transform_format = TRANSFORM_2D;
-	visible_instance_count = -1;
-	instance_count = 0;
 }
 
 MultiMesh::~MultiMesh() {

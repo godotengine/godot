@@ -292,8 +292,6 @@ void AcceptDialog::set_swap_cancel_ok(bool p_swap) {
 }
 
 AcceptDialog::AcceptDialog() {
-	parent_visible = nullptr;
-
 	set_wrap_controls(true);
 	set_visible(false);
 	set_transient(true);
@@ -325,7 +323,6 @@ AcceptDialog::AcceptDialog() {
 
 	ok->connect("pressed", callable_mp(this, &AcceptDialog::_ok_pressed));
 
-	hide_on_ok = true;
 	set_title(RTR("Alert!"));
 
 	connect("window_input", callable_mp(this, &AcceptDialog::_input_from_window));

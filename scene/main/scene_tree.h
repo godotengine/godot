@@ -51,8 +51,8 @@ class SceneDebugger;
 class SceneTreeTimer : public Reference {
 	GDCLASS(SceneTreeTimer, Reference);
 
-	float time_left;
-	bool process_pause;
+	float time_left = 0.0;
+	bool process_pause = true;
 
 protected:
 	static void _bind_methods();
@@ -80,8 +80,7 @@ public:
 private:
 	struct Group {
 		Vector<Node *> nodes;
-		bool changed;
-		Group() { changed = false; };
+		bool changed = false;
 	};
 
 	Window *root = nullptr;

@@ -36,13 +36,13 @@
 class Timer : public Node {
 	GDCLASS(Timer, Node);
 
-	float wait_time;
-	bool one_shot;
-	bool autostart;
-	bool processing;
-	bool paused;
+	float wait_time = 1.0;
+	bool one_shot = false;
+	bool autostart = false;
+	bool processing = false;
+	bool paused = false;
 
-	double time_left;
+	double time_left = -1.0;
 
 protected:
 	void _notification(int p_what);
@@ -78,7 +78,7 @@ public:
 	Timer();
 
 private:
-	TimerProcessMode timer_process_mode;
+	TimerProcessMode timer_process_mode = TIMER_PROCESS_IDLE;
 	void _set_process(bool p_process, bool p_force = false);
 };
 

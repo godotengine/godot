@@ -850,12 +850,5 @@ void GraphNode::_bind_methods() {
 
 GraphNode::GraphNode() {
 	title_buf.instance();
-	overlay = OVERLAY_DISABLED;
-	show_close = false;
-	connpos_dirty = true;
 	set_mouse_filter(MOUSE_FILTER_STOP);
-	comment = false;
-	resizable = false;
-	resizing = false;
-	selected = false;
 }

@@ -702,7 +702,7 @@ float AnimationNodeTransition::process(float p_time, bool p_seek) {
 		return 0;
 	}
 
-	float rem = 0;
+	float rem = 0.0;
 
 	if (prev < 0) { // process current animation, check for transition
 

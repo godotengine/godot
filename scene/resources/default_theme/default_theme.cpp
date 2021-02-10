@@ -43,7 +43,7 @@
 typedef Map<const void *, Ref<ImageTexture>> TexCacheMap;
 
 static TexCacheMap *tex_cache;
-static float scale = 1;
+static float scale = 1.0;
 
 template <class T>
 static Ref<StyleBoxTexture> make_stylebox(T p_src, float p_left, float p_top, float p_right, float p_bottom, float p_margin_left = -1, float p_margin_top = -1, float p_margin_right = -1, float p_margin_bottom = -1, bool p_draw_center = true) {

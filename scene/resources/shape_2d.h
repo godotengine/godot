@@ -38,7 +38,7 @@ class Shape2D : public Resource {
 	OBJ_SAVE_TYPE(Shape2D);
 
 	RID shape;
-	real_t custom_bias;
+	real_t custom_bias = 0.0;
 
 protected:
 	static void _bind_methods();

@@ -80,7 +80,7 @@ private:
 
 	struct NetData {
 		StringName name;
-		MultiplayerAPI::RPCMode mode;
+		MultiplayerAPI::RPCMode mode = MultiplayerAPI::RPCMode::RPC_MODE_DISABLED;
 	};
 
 	struct Data {
@@ -297,7 +297,7 @@ public:
 
 	struct GroupInfo {
 		StringName name;
-		bool persistent;
+		bool persistent = false;
 	};
 
 	void get_groups(List<GroupInfo> *p_groups) const;

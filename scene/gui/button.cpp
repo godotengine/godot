@@ -203,7 +203,7 @@ void Button::_notification(int p_what) {
 					color_icon.a = 0.4;
 				}
 
-				float icon_ofs_region = 0;
+				float icon_ofs_region = 0.0;
 				if (rtl) {
 					if (_internal_margin[SIDE_RIGHT] > 0) {
 						icon_ofs_region = _internal_margin[SIDE_RIGHT] + get_theme_constant("hseparation");
@@ -544,16 +544,8 @@ Button::Button(const String &p_text) {
 	text_buf.instance();
 	text_buf->set_flags(TextServer::BREAK_MANDATORY);
 
-	flat = false;
-	clip_text = false;
-	expand_icon = false;
 	set_mouse_filter(MOUSE_FILTER_STOP);
 	set_text(p_text);
-	align = ALIGN_CENTER;
-
-	for (int i = 0; i < 4; i++) {
-		_internal_margin[i] = 0;
-	}
 }
 
 Button::~Button() {

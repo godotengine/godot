@@ -6128,7 +6128,7 @@ double TextEdit::get_scroll_pos_for_line(int p_line, int p_wrap_index) const {
 	}
 
 	// Count the number of visible lines up to this line.
-	double new_line_scroll_pos = 0;
+	double new_line_scroll_pos = 0.0;
 	int to = CLAMP(p_line, 0, text.size() - 1);
 	for (int i = 0; i < to; i++) {
 		if (!text.is_hidden(i)) {
@@ -7205,23 +7205,11 @@ void TextEdit::_bind_methods() {
 }
 
 TextEdit::TextEdit() {
-	setting_row = false;
-	draw_tabs = false;
-	draw_spaces = false;
-	override_selected_font_color = false;
-	draw_caret = true;
-	max_chars = 0;
 	clear();
-	wrap_enabled = false;
-	wrap_at = 0;
-	wrap_right_offset = 10;
 	set_focus_mode(FOCUS_ALL);
 	_update_caches();
-	cache.line_spacing = 1;
-	cache.font_size = 16;
 	set_default_cursor_shape(CURSOR_IBEAM);
 
-	indent_size = 4;
 	text.set_indent_size(indent_size);
 	text.clear();
 
@@ -7231,31 +7219,16 @@ TextEdit::TextEdit() {
 	add_child(h_scroll);
 	add_child(v_scroll);
 
-	updating_scrolls = false;
-	selection.active = false;
-
 	h_scroll->connect("value_changed", callable_mp(this, &TextEdit::_scroll_moved));
 	v_scroll->connect("value_changed", callable_mp(this, &TextEdit::_scroll_moved));
 
 	v_scroll->connect("scrolling", callable_mp(this, &TextEdit::_v_scroll_input));
 
-	cursor_changed_dirty = false;
-	text_changed_dirty = false;
-
-	selection.selecting_mode = SelectionMode::SELECTION_MODE_NONE;
-	selection.selecting_line = 0;
-	selection.selecting_column = 0;
-	selection.selecting_text = false;
-	selection.active = false;
-
-	block_caret = false;
-	caret_blink_enabled = false;
 	caret_blink_timer = memnew(Timer);
 	add_child(caret_blink_timer);
 	caret_blink_timer->set_wait_time(0.65);
 	caret_blink_timer->connect("timeout", callable_mp(this, &TextEdit::_toggle_draw_caret));
 	cursor_set_blink_enabled(false);
-	right_click_moves_caret = true;
 
 	idle_detect = memnew(Timer);
 	add_child(idle_detect);
@@ -7268,54 +7241,8 @@ TextEdit::TextEdit() {
 	click_select_held->set_wait_time(0.05);
 	click_select_held->connect("timeout", callable_mp(this, &TextEdit::_click_selection_held));
 
-	current_op.type = TextOperation::TYPE_NONE;
-	undo_enabled = true;
 	undo_stack_max_size = GLOBAL_GET("gui/common/text_edit_undo_stack_max_size");
-	undo_stack_pos = nullptr;
-	setting_text = false;
-	last_dblclk = 0;
-	current_op.version = 0;
-	version = 0;
-	saved_version = 0;
 
-	completion_enabled = false;
-	completion_active = false;
-	completion_line_ofs = 0;
-	tooltip_obj = nullptr;
-	line_length_guidelines = false;
-	line_length_guideline_soft_col = 80;
-	line_length_guideline_hard_col = 100;
-	hiding_enabled = false;
-	next_operation_is_complex = false;
-	scroll_past_end_of_file_enabled = false;
-	auto_brace_completion_enabled = false;
-	brace_matching_enabled = false;
-	highlight_all_occurrences = false;
-	highlight_current_line = false;
-	indent_using_spaces = false;
-	space_indent = "    ";
-	auto_indent = false;
-	insert_mode = false;
-	window_has_focus = true;
-	select_identifiers_enabled = false;
-	smooth_scroll_enabled = false;
-	scrolling = false;
-	minimap_clicked = false;
-	dragging_minimap = false;
-	can_drag_minimap = false;
-	minimap_scroll_ratio = 0;
-	minimap_scroll_click_pos = 0;
-	dragging_selection = false;
-	target_v_scroll = 0;
-	v_scroll_speed = 80;
-	draw_minimap = false;
-	minimap_width = 80;
-	minimap_char_size = Point2(1, 2);
-	minimap_line_spacing = 1;
-
-	selecting_enabled = true;
-	context_menu_enabled = true;
-	shortcut_keys_enabled = true;
 	menu = memnew(PopupMenu);
 	add_child(menu);
 
@@ -7350,12 +7277,10 @@ TextEdit::TextEdit() {
 	menu_ctl->add_item(RTR("Soft hyphen (SHY)"), MENU_INSERT_SHY);
 	menu->add_child(menu_ctl);
 
-	readonly = true; // Initialise to opposite first, so we get past the early-out in set_readonly.
 	set_readonly(false);
 	menu->connect("id_pressed", callable_mp(this, &TextEdit::menu_option));
 	menu_dir->connect("id_pressed", callable_mp(this, &TextEdit::menu_option));
 	menu_ctl->connect("id_pressed", callable_mp(this, &TextEdit::menu_option));
-	first_draw = true;
 }
 
 TextEdit::~TextEdit() {

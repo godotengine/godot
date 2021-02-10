@@ -36,8 +36,8 @@
 class RayShape2D : public Shape2D {
 	GDCLASS(RayShape2D, Shape2D);
 
-	real_t length;
-	bool slips_on_slope;
+	real_t length = 20.0;
+	bool slips_on_slope = false;
 
 	void _update_shape();
 

@@ -45,7 +45,7 @@ class TextLine : public Reference {
 
 	bool dirty = true;
 
-	float width = -1;
+	float width = -1.0;
 	uint8_t flags = TextServer::JUSTIFICATION_WORD_BOUND | TextServer::JUSTIFICATION_KASHIDA;
 	HAlign align = HALIGN_LEFT;
 

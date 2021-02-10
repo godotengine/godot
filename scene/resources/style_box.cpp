@@ -320,20 +320,9 @@ void StyleBoxTexture::_bind_methods() {
 	BIND_ENUM_CONSTANT(AXIS_STRETCH_MODE_TILE_FIT);
 }
 
-StyleBoxTexture::StyleBoxTexture() {
-	for (int i = 0; i < 4; i++) {
-		margin[i] = 0;
-		expand_margin[i] = 0;
-	}
-	draw_center = true;
-	modulate = Color(1, 1, 1, 1);
+StyleBoxTexture::StyleBoxTexture() {}
 
-	axis_h = AXIS_STRETCH_MODE_STRETCH;
-	axis_v = AXIS_STRETCH_MODE_STRETCH;
-}
-
-StyleBoxTexture::~StyleBoxTexture() {
-}
+StyleBoxTexture::~StyleBoxTexture() {}
 
 ////////////////
 
@@ -888,38 +877,9 @@ void StyleBoxFlat::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "anti_aliasing_size", PROPERTY_HINT_RANGE, "1,5,1"), "set_aa_size", "get_aa_size");
 }
 
-StyleBoxFlat::StyleBoxFlat() {
-	bg_color = Color(0.6, 0.6, 0.6);
-	shadow_color = Color(0, 0, 0, 0.6);
-	border_color = Color(0.8, 0.8, 0.8);
+StyleBoxFlat::StyleBoxFlat() {}
 
-	blend_border = false;
-	draw_center = true;
-	anti_aliased = true;
-
-	shadow_size = 0;
-	shadow_offset = Point2(0, 0);
-	corner_detail = 8;
-	aa_size = 1;
-
-	border_width[0] = 0;
-	border_width[1] = 0;
-	border_width[2] = 0;
-	border_width[3] = 0;
-
-	expand_margin[0] = 0;
-	expand_margin[1] = 0;
-	expand_margin[2] = 0;
-	expand_margin[3] = 0;
-
-	corner_radius[0] = 0;
-	corner_radius[1] = 0;
-	corner_radius[2] = 0;
-	corner_radius[3] = 0;
-}
-
-StyleBoxFlat::~StyleBoxFlat() {
-}
+StyleBoxFlat::~StyleBoxFlat() {}
 
 void StyleBoxLine::set_color(const Color &p_color) {
 	color = p_color;
@@ -1011,12 +971,6 @@ void StyleBoxLine::draw(RID p_canvas_item, const Rect2 &p_rect) const {
 	vs->canvas_item_add_rect(p_canvas_item, r, color);
 }
 
-StyleBoxLine::StyleBoxLine() {
-	grow_begin = 1.0;
-	grow_end = 1.0;
-	thickness = 1;
-	color = Color(0.0, 0.0, 0.0);
-	vertical = false;
-}
+StyleBoxLine::StyleBoxLine() {}
 
 StyleBoxLine::~StyleBoxLine() {}

@@ -144,7 +144,6 @@ void ViewportTexture::_bind_methods() {
 }
 
 ViewportTexture::ViewportTexture() {
-	vp = nullptr;
 	set_local_to_scene(true);
 }
 
@@ -181,26 +180,6 @@ class TooltipLabel : public Label {
 public:
 	TooltipLabel() {}
 };
-
-/////////////////////////////////////
-
-Viewport::GUI::GUI() {
-	embed_subwindows_hint = false;
-	embedding_subwindows = false;
-
-	dragging = false;
-	mouse_focus = nullptr;
-	forced_mouse_focus = false;
-	mouse_click_grabber = nullptr;
-	mouse_focus_mask = 0;
-	key_focus = nullptr;
-	mouse_over = nullptr;
-	drag_mouse_over = nullptr;
-
-	tooltip_control = nullptr;
-	tooltip_popup = nullptr;
-	tooltip_label = nullptr;
-}
 
 /////////////////////////////////////
 
@@ -3688,26 +3667,10 @@ Viewport::Viewport() {
 	viewport_textures.insert(default_texture.ptr());
 	default_texture->proxy = RS::get_singleton()->texture_proxy_create(texture_rid);
 
-	audio_listener = false;
 	//internal_listener_2d = SpatialSound2DServer::get_singleton()->listener_create();
-	audio_listener_2d = false;
-	transparent_bg = false;
-	parent = nullptr;
-	listener = nullptr;
-	camera = nullptr;
-	override_canvas_transform = false;
 	canvas_layers.insert(nullptr); // This eases picking code (interpreted as the canvas of the Viewport)
 
-	gen_mipmaps = false;
-
 	//clear=true;
-
-	physics_object_picking = false;
-	physics_has_last_mousepos = false;
-	physics_last_mousepos = Vector2(Math_INF, Math_INF);
-
-	shadow_atlas_16_bits = true;
-	shadow_atlas_size = 2048;
 	set_shadow_atlas_size(shadow_atlas_size);
 
 	for (int i = 0; i < 4; i++) {
@@ -3726,50 +3689,11 @@ Viewport::Viewport() {
 	unhandled_input_group = "_vp_unhandled_input" + id;
 	unhandled_key_input_group = "_vp_unhandled_key_input" + id;
 
-	disable_input = false;
-
 	// Window tooltip.
-	gui.tooltip_timer = -1;
-
 	gui.tooltip_delay = GLOBAL_DEF("gui/timers/tooltip_delay_sec", 0.5);
 	ProjectSettings::get_singleton()->set_custom_property_info("gui/timers/tooltip_delay_sec", PropertyInfo(Variant::FLOAT, "gui/timers/tooltip_delay_sec", PROPERTY_HINT_RANGE, "0,5,0.01,or_greater")); // No negative numbers
 
-	gui.tooltip_control = nullptr;
-	gui.tooltip_label = nullptr;
-	gui.drag_preview = nullptr;
-	gui.drag_attempted = false;
-	gui.canvas_sort_index = 0;
-	gui.roots_order_dirty = false;
-	gui.mouse_focus = nullptr;
-	gui.forced_mouse_focus = false;
-	gui.last_mouse_focus = nullptr;
-	gui.subwindow_focused = nullptr;
-	gui.subwindow_drag = SUB_WINDOW_DRAG_DISABLED;
-
-	msaa = MSAA_DISABLED;
-	screen_space_aa = SCREEN_SPACE_AA_DISABLED;
-	debug_draw = DEBUG_DRAW_DISABLED;
-
-	snap_controls_to_pixels = true;
-	snap_2d_transforms_to_pixel = false;
-	snap_2d_vertices_to_pixel = false;
-
-	physics_last_mouse_state.alt = false;
-	physics_last_mouse_state.control = false;
-	physics_last_mouse_state.shift = false;
-	physics_last_mouse_state.meta = false;
-	physics_last_mouse_state.mouse_mask = 0;
-	local_input_handled = false;
-	handle_input_locally = true;
-
-	size_allocated = false;
-
-	default_canvas_item_texture_filter = DEFAULT_CANVAS_ITEM_TEXTURE_FILTER_LINEAR;
-	default_canvas_item_texture_repeat = DEFAULT_CANVAS_ITEM_TEXTURE_REPEAT_DISABLED;
-
-	sdf_oversize = SDF_OVERSIZE_120_PERCENT;
-	sdf_scale = SDF_SCALE_50_PERCENT;
-	set_sdf_oversize(SDF_OVERSIZE_120_PERCENT); //set to server
+	set_sdf_oversize(sdf_oversize); //set to server
 }
 
 Viewport::~Viewport() {
@@ -3901,12 +3825,6 @@ void SubViewport::_bind_methods() {
 	BIND_ENUM_CONSTANT(UPDATE_ALWAYS);
 }
 
-SubViewport::SubViewport() {
-	xr = false;
-	size_2d_override_stretch = false;
-	update_mode = UPDATE_WHEN_VISIBLE;
-	clear_mode = CLEAR_MODE_ALWAYS;
-}
+SubViewport::SubViewport() {}
 
-SubViewport::~SubViewport() {
-}
+SubViewport::~SubViewport() {}

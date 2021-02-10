@@ -50,18 +50,18 @@ class ScrollContainer : public Container {
 	Vector2 drag_accum;
 	Vector2 drag_from;
 	Vector2 last_drag_accum;
-	float last_drag_time;
-	float time_since_motion;
-	bool drag_touching;
-	bool drag_touching_deaccel;
-	bool click_handled;
-	bool beyond_deadzone;
+	float last_drag_time = 0.0;
+	float time_since_motion = 0.0;
+	bool drag_touching = false;
+	bool drag_touching_deaccel = false;
+	bool click_handled = false;
+	bool beyond_deadzone = false;
 
-	bool scroll_h;
-	bool scroll_v;
+	bool scroll_h = true;
+	bool scroll_v = true;
 
-	int deadzone;
-	bool follow_focus;
+	int deadzone = 0;
+	bool follow_focus = false;
 
 	void _cancel_drag();
 

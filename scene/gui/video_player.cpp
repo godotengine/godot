@@ -462,25 +462,7 @@ void VideoPlayer::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::STRING_NAME, "bus", PROPERTY_HINT_ENUM, ""), "set_bus", "get_bus");
 }
 
-VideoPlayer::VideoPlayer() {
-	volume = 1;
-	loops = false;
-	paused = false;
-	autoplay = false;
-	expand = true;
-
-	audio_track = 0;
-	bus_index = 0;
-
-	buffering_ms = 500;
-
-	//	internal_stream.player=this;
-	//	stream_rid=AudioServer::get_singleton()->audio_stream_create(&internal_stream);
-	last_audio_time = 0;
-
-	wait_resampler = 0;
-	wait_resampler_limit = 2;
-};
+VideoPlayer::VideoPlayer() {}
 
 VideoPlayer::~VideoPlayer() {
 	//	if (stream_rid.is_valid())

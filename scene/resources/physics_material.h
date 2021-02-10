@@ -39,9 +39,9 @@ class PhysicsMaterial : public Resource {
 	OBJ_SAVE_TYPE(PhysicsMaterial);
 	RES_BASE_EXTENSION("phymat");
 
-	real_t friction = 1;
+	real_t friction = 1.0;
 	bool rough = false;
-	real_t bounce = 0;
+	real_t bounce = 0.0;
 	bool absorbent = false;
 
 protected:

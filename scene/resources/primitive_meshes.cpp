@@ -247,18 +247,7 @@ bool PrimitiveMesh::get_flip_faces() const {
 }
 
 PrimitiveMesh::PrimitiveMesh() {
-	flip_faces = false;
-	// defaults
 	mesh = RenderingServer::get_singleton()->mesh_create();
-
-	// assume primitive triangles as the type, correct for all but one and it will change this :)
-	primitive_type = Mesh::PRIMITIVE_TRIANGLES;
-
-	// make sure we do an update after we've finished constructing our object
-	pending_request = true;
-
-	array_len = 0;
-	index_array_len = 0;
 }
 
 PrimitiveMesh::~PrimitiveMesh() {
@@ -468,13 +457,7 @@ int CapsuleMesh::get_rings() const {
 	return rings;
 }
 
-CapsuleMesh::CapsuleMesh() {
-	// defaults
-	radius = 1.0;
-	mid_height = 1.0;
-	radial_segments = 64;
-	rings = 8;
-}
+CapsuleMesh::CapsuleMesh() {}
 
 /**
   BoxMesh
@@ -725,13 +708,7 @@ int BoxMesh::get_subdivide_depth() const {
 	return subdivide_d;
 }
 
-BoxMesh::BoxMesh() {
-	// defaults
-	size = Vector3(2.0, 2.0, 2.0);
-	subdivide_w = 0;
-	subdivide_h = 0;
-	subdivide_d = 0;
-}
+BoxMesh::BoxMesh() {}
 
 /**
   CylinderMesh
@@ -938,14 +915,7 @@ int CylinderMesh::get_rings() const {
 	return rings;
 }
 
-CylinderMesh::CylinderMesh() {
-	// defaults
-	top_radius = 1.0;
-	bottom_radius = 1.0;
-	height = 2.0;
-	radial_segments = 64;
-	rings = 4;
-}
+CylinderMesh::CylinderMesh() {}
 
 /**
   PlaneMesh
@@ -1053,12 +1023,7 @@ int PlaneMesh::get_subdivide_depth() const {
 	return subdivide_d;
 }
 
-PlaneMesh::PlaneMesh() {
-	// defaults
-	size = Size2(2.0, 2.0);
-	subdivide_w = 0;
-	subdivide_d = 0;
-}
+PlaneMesh::PlaneMesh() {}
 
 /**
   PrismMesh
@@ -1338,14 +1303,7 @@ int PrismMesh::get_subdivide_depth() const {
 	return subdivide_d;
 }
 
-PrismMesh::PrismMesh() {
-	// defaults
-	left_to_right = 0.5;
-	size = Vector3(2.0, 2.0, 2.0);
-	subdivide_w = 0;
-	subdivide_h = 0;
-	subdivide_d = 0;
-}
+PrismMesh::PrismMesh() {}
 
 /**
   QuadMesh
@@ -1409,7 +1367,6 @@ void QuadMesh::_bind_methods() {
 
 QuadMesh::QuadMesh() {
 	primitive_type = PRIMITIVE_TRIANGLES;
-	size = Size2(1.0, 1.0);
 }
 
 void QuadMesh::set_size(const Size2 &p_size) {
@@ -1561,14 +1518,7 @@ bool SphereMesh::get_is_hemisphere() const {
 	return is_hemisphere;
 }
 
-SphereMesh::SphereMesh() {
-	// defaults
-	radius = 1.0;
-	height = 2.0;
-	radial_segments = 64;
-	rings = 32;
-	is_hemisphere = false;
-}
+SphereMesh::SphereMesh() {}
 
 /**
   PointMesh

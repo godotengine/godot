@@ -107,7 +107,6 @@ void Shape2D::_bind_methods() {
 
 Shape2D::Shape2D(const RID &p_rid) {
 	shape = p_rid;
-	custom_bias = 0;
 }
 
 Shape2D::~Shape2D() {

@@ -158,7 +158,7 @@ float AnimationNode::blend_input(int p_input, float p_time, bool p_seek, float p
 	Ref<AnimationNode> node = blend_tree->get_node(node_name);
 
 	//inputs.write[p_input].last_pass = state->last_pass;
-	float activity = 0;
+	float activity = 0.0;
 	float ret = _blend_node(node_name, blend_tree->get_node_connection_array(node_name), nullptr, node, p_time, p_seek, p_blend, p_filter, p_optimize, &activity);
 
 	Vector<AnimationTree::Activity> *activity_ptr = state->tree->input_activity_map.getptr(base_path);

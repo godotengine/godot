@@ -180,20 +180,20 @@ class ArrayMesh : public Mesh {
 
 private:
 	struct Surface {
-		uint32_t format;
-		int array_length;
-		int index_array_length;
-		PrimitiveType primitive;
+		uint32_t format = 0;
+		int array_length = 0;
+		int index_array_length = 0;
+		PrimitiveType primitive = PrimitiveType::PRIMITIVE_MAX;
 
 		String name;
 		AABB aabb;
 		Ref<Material> material;
-		bool is_2d;
+		bool is_2d = false;
 	};
 	Vector<Surface> surfaces;
 	mutable RID mesh;
 	AABB aabb;
-	BlendShapeMode blend_shape_mode;
+	BlendShapeMode blend_shape_mode = BLEND_SHAPE_MODE_RELATIVE;
 	Vector<StringName> blend_shapes;
 	AABB custom_aabb;
 

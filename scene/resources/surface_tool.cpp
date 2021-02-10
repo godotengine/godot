@@ -160,7 +160,7 @@ void SurfaceTool::add_vertex(const Vector3 &p_vertex) {
 			//cap
 			weights.resize(expected_vertices);
 			//renormalize
-			float total = 0;
+			float total = 0.0;
 			for (int i = 0; i < expected_vertices; i++) {
 				total += weights[i].weight;
 			}
@@ -1196,12 +1196,7 @@ void SurfaceTool::_bind_methods() {
 }
 
 SurfaceTool::SurfaceTool() {
-	first = false;
-	begun = false;
 	for (int i = 0; i < RS::ARRAY_CUSTOM_COUNT; i++) {
 		last_custom_format[i] = CUSTOM_MAX;
 	}
-	primitive = Mesh::PRIMITIVE_LINES;
-	skin_weights = SKIN_4_WEIGHTS;
-	format = 0;
 }
