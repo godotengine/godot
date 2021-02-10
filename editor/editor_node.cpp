@@ -594,6 +594,7 @@ void EditorNode::_notification(int p_what) {
 			OS::get_singleton()->set_low_processor_usage_mode_sleep_usec(int(EDITOR_GET("interface/editor/low_processor_mode_sleep_usec")));
 
 			EditorFileSystem::get_singleton()->scan_changes();
+			_scan_external_changes();
 		} break;
 
 		case NOTIFICATION_APPLICATION_FOCUS_OUT: {
@@ -884,6 +885,81 @@ void EditorNode::_sources_changed(bool p_exist) {
 			defer_load_scene = "";
 		}
 	}
+}
+
+void EditorNode::_scan_external_changes() {
+	disk_changed_list->clear();
+	TreeItem *r = disk_changed_list->create_item();
+	disk_changed_list->set_hide_root(true);
+	bool need_reload = false;
+
+	// Check if any edited scene has changed.
+
+	for (int i = 0; i < editor_data.get_edited_scene_count(); i++) {
+		if (editor_data.get_scene_path(i) == "") {
+			continue;
+		}
+
+		uint64_t last_date = editor_data.get_scene_modified_time(i);
+		uint64_t date = FileAccess::get_modified_time(editor_data.get_scene_path(i));
+
+		if (date > last_date) {
+			TreeItem *ti = disk_changed_list->create_item(r);
+			ti->set_text(0, editor_data.get_scene_path(i).get_file());
+			need_reload = true;
+		}
+	}
+
+	String project_settings_path = ProjectSettings::get_singleton()->get_resource_path().plus_file("project.godot");
+	if (FileAccess::get_modified_time(project_settings_path) > ProjectSettings::get_singleton()->get_last_saved_time()) {
+		TreeItem *ti = disk_changed_list->create_item(r);
+		ti->set_text(0, "project.godot");
+		need_reload = true;
+	}
+
+	if (need_reload) {
+		disk_changed->call_deferred("popup_centered_ratio", 0.5);
+	}
+}
+
+void EditorNode::_resave_scenes(String p_str) {
+	save_all_scenes();
+	ProjectSettings::get_singleton()->save();
+	disk_changed->hide();
+}
+
+void EditorNode::_reload_modified_scenes() {
+	int current_idx = editor_data.get_edited_scene();
+
+	for (int i = 0; i < editor_data.get_edited_scene_count(); i++) {
+		if (editor_data.get_scene_path(i) == "") {
+			continue;
+		}
+
+		uint64_t last_date = editor_data.get_scene_modified_time(i);
+		uint64_t date = FileAccess::get_modified_time(editor_data.get_scene_path(i));
+
+		if (date > last_date) {
+			String filename = editor_data.get_scene_path(i);
+			editor_data.set_edited_scene(i);
+			_remove_edited_scene(false);
+
+			Error err = load_scene(filename, false, false, true, false, true);
+			if (err != OK) {
+				ERR_PRINT(vformat("Failed to load scene: %s", filename));
+			}
+			editor_data.move_edited_scene_to_index(i);
+		}
+	}
+
+	get_undo_redo()->clear_history(false);
+	set_current_scene(current_idx);
+	_update_scene_tabs();
+	disk_changed->hide();
+}
+
+void EditorNode::_reload_project_settings() {
+	ProjectSettings::get_singleton()->setup(ProjectSettings::get_singleton()->get_resource_path(), String(), true);
 }
 
 void EditorNode::_vp_resized() {
@@ -1511,6 +1587,7 @@ void EditorNode::_save_scene(String p_file, int idx) {
 		} else {
 			editor_data.set_edited_scene_version(0, idx);
 		}
+		editor_data.set_scene_modified_time(idx, FileAccess::get_modified_time(p_file));
 
 		editor_folding.save_scene_folding(scene, p_file);
 
@@ -3326,7 +3403,7 @@ int EditorNode::new_scene() {
 	return idx;
 }
 
-Error EditorNode::load_scene(const String &p_scene, bool p_ignore_broken_deps, bool p_set_inherited, bool p_clear_errors, bool p_force_open_imported) {
+Error EditorNode::load_scene(const String &p_scene, bool p_ignore_broken_deps, bool p_set_inherited, bool p_clear_errors, bool p_force_open_imported, bool p_silent_change_tab) {
 	if (!is_inside_tree()) {
 		defer_load_scene = p_scene;
 		return OK;
@@ -3366,8 +3443,10 @@ Error EditorNode::load_scene(const String &p_scene, bool p_ignore_broken_deps, b
 
 	if (!editor_data.get_edited_scene_root() && editor_data.get_edited_scene_count() == 2) {
 		_remove_edited_scene();
-	} else {
+	} else if (!p_silent_change_tab) {
 		_scene_tab_changed(idx);
+	} else {
+		set_current_scene(idx);
 	}
 
 	dependency_errors.clear();
@@ -6601,6 +6680,30 @@ EditorNode::EditorNode() {
 	//plugin stuff
 
 	add_editor_plugin(memnew(DebuggerEditorPlugin(this, debug_menu)));
+
+	disk_changed = memnew(ConfirmationDialog);
+	{
+		VBoxContainer *vbc = memnew(VBoxContainer);
+		disk_changed->add_child(vbc);
+
+		Label *dl = memnew(Label);
+		dl->set_text(TTR("The following files are newer on disk.\nWhat action should be taken?"));
+		vbc->add_child(dl);
+
+		disk_changed_list = memnew(Tree);
+		vbc->add_child(disk_changed_list);
+		disk_changed_list->set_v_size_flags(Control::SIZE_EXPAND_FILL);
+
+		disk_changed->connect("confirmed", callable_mp(this, &EditorNode::_reload_modified_scenes));
+		disk_changed->connect("confirmed", callable_mp(this, &EditorNode::_reload_project_settings));
+		disk_changed->get_ok_button()->set_text(TTR("Reload"));
+
+		disk_changed->add_button(TTR("Resave"), !DisplayServer::get_singleton()->get_swap_cancel_ok(), "resave");
+		disk_changed->connect("custom_action", callable_mp(this, &EditorNode::_resave_scenes));
+	}
+
+	gui_base->add_child(disk_changed);
+
 	add_editor_plugin(memnew(AnimationPlayerEditorPlugin(this)));
 	add_editor_plugin(memnew(CanvasItemEditorPlugin(this)));
 	add_editor_plugin(memnew(Node3DEditorPlugin(this)));
