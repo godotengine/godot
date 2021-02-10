@@ -84,6 +84,10 @@ int PhysicsDirectSpaceState2DSW::_intersect_point_impl(const Vector2 &p_point, S
 
 		int shape_idx = space->intersection_query_subindex_results[i];
 
+		if (col_obj->is_shape_set_as_disabled(shape_idx)) {
+			continue;
+		}
+
 		Shape2DSW *shape = col_obj->get_shape(shape_idx);
 
 		Vector2 local_point = (col_obj->get_transform() * col_obj->get_shape_transform(shape_idx)).affine_inverse().xform(p_point);
@@ -229,6 +233,10 @@ int PhysicsDirectSpaceState2DSW::intersect_shape(const RID &p_shape, const Trans
 		const CollisionObject2DSW *col_obj = space->intersection_query_results[i];
 		int shape_idx = space->intersection_query_subindex_results[i];
 
+		if (col_obj->is_shape_set_as_disabled(shape_idx)) {
+			continue;
+		}
+
 		if (!CollisionSolver2DSW::solve(shape, p_xform, p_motion, col_obj->get_shape(shape_idx), col_obj->get_transform() * col_obj->get_shape_transform(shape_idx), Vector2(), nullptr, nullptr, nullptr, p_margin)) {
 			continue;
 		}
@@ -271,6 +279,10 @@ bool PhysicsDirectSpaceState2DSW::cast_motion(const RID &p_shape, const Transfor
 
 		const CollisionObject2DSW *col_obj = space->intersection_query_results[i];
 		int shape_idx = space->intersection_query_subindex_results[i];
+
+		if (col_obj->is_shape_set_as_disabled(shape_idx)) {
+			continue;
+		}
 
 		Transform2D col_obj_xform = col_obj->get_transform() * col_obj->get_shape_transform(shape_idx);
 		//test initial overlap, does it collide if going all the way?
@@ -346,9 +358,14 @@ bool PhysicsDirectSpaceState2DSW::collide_shape(RID p_shape, const Transform2D &
 		}
 
 		const CollisionObject2DSW *col_obj = space->intersection_query_results[i];
-		int shape_idx = space->intersection_query_subindex_results[i];
 
 		if (p_exclude.has(col_obj->get_self())) {
+			continue;
+		}
+
+		int shape_idx = space->intersection_query_subindex_results[i];
+
+		if (col_obj->is_shape_set_as_disabled(shape_idx)) {
 			continue;
 		}
 
@@ -436,9 +453,14 @@ bool PhysicsDirectSpaceState2DSW::rest_info(RID p_shape, const Transform2D &p_sh
 		}
 
 		const CollisionObject2DSW *col_obj = space->intersection_query_results[i];
-		int shape_idx = space->intersection_query_subindex_results[i];
 
 		if (p_exclude.has(col_obj->get_self())) {
+			continue;
+		}
+
+		int shape_idx = space->intersection_query_subindex_results[i];
+
+		if (col_obj->is_shape_set_as_disabled(shape_idx)) {
 			continue;
 		}
 
