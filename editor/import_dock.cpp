@@ -48,7 +48,7 @@ public:
 			values[p_name] = p_value;
 			if (checking) {
 				checked.insert(p_name);
-				_change_notify();
+				notify_property_list_changed();
 			}
 			return true;
 		}
@@ -81,7 +81,7 @@ public:
 	}
 
 	void update() {
-		_change_notify();
+		notify_property_list_changed();
 	}
 
 	ImportDockParameters() {

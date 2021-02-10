@@ -98,7 +98,7 @@ public:
 	}
 
 	void notify_changed() {
-		_change_notify();
+		notify_property_list_changed();
 	}
 
 	ConnectDialogBinds() {

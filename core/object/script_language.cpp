@@ -515,7 +515,7 @@ void PlaceHolderScriptInstance::update(const List<PropertyInfo> &p_properties, c
 	}
 
 	if (owner && owner->get_script_instance() == this) {
-		owner->_change_notify();
+		owner->notify_property_list_changed();
 	}
 	//change notify
 

@@ -59,7 +59,7 @@ void CSGShape3D::set_use_collision(bool p_enable) {
 		root_collision_instance = RID();
 		root_collision_shape.unref();
 	}
-	_change_notify();
+	notify_property_list_changed();
 }
 
 bool CSGShape3D::is_using_collision() const {
@@ -1033,7 +1033,6 @@ void CSGSphere3D::set_radius(const float p_radius) {
 	radius = p_radius;
 	_make_dirty();
 	update_gizmo();
-	_change_notify("radius");
 }
 
 float CSGSphere3D::get_radius() const {
@@ -1203,7 +1202,6 @@ void CSGBox3D::set_size(const Vector3 &p_size) {
 	size = p_size;
 	_make_dirty();
 	update_gizmo();
-	_change_notify("size");
 }
 
 Vector3 CSGBox3D::get_size() const {
@@ -1385,7 +1383,6 @@ void CSGCylinder3D::set_radius(const float p_radius) {
 	radius = p_radius;
 	_make_dirty();
 	update_gizmo();
-	_change_notify("radius");
 }
 
 float CSGCylinder3D::get_radius() const {
@@ -1396,7 +1393,6 @@ void CSGCylinder3D::set_height(const float p_height) {
 	height = p_height;
 	_make_dirty();
 	update_gizmo();
-	_change_notify("height");
 }
 
 float CSGCylinder3D::get_height() const {
@@ -1606,7 +1602,6 @@ void CSGTorus3D::set_inner_radius(const float p_inner_radius) {
 	inner_radius = p_inner_radius;
 	_make_dirty();
 	update_gizmo();
-	_change_notify("inner_radius");
 }
 
 float CSGTorus3D::get_inner_radius() const {
@@ -1617,7 +1612,6 @@ void CSGTorus3D::set_outer_radius(const float p_outer_radius) {
 	outer_radius = p_outer_radius;
 	_make_dirty();
 	update_gizmo();
-	_change_notify("outer_radius");
 }
 
 float CSGTorus3D::get_outer_radius() const {
@@ -2264,7 +2258,7 @@ void CSGPolygon3D::set_mode(Mode p_mode) {
 	mode = p_mode;
 	_make_dirty();
 	update_gizmo();
-	_change_notify();
+	notify_property_list_changed();
 }
 
 CSGPolygon3D::Mode CSGPolygon3D::get_mode() const {

@@ -145,7 +145,7 @@ int ItemListOptionButtonPlugin::get_flags() const {
 
 void ItemListOptionButtonPlugin::add_item() {
 	ob->add_item(vformat(TTR("Item %d"), ob->get_item_count()));
-	_change_notify();
+	notify_property_list_changed();
 }
 
 int ItemListOptionButtonPlugin::get_item_count() const {
@@ -154,7 +154,7 @@ int ItemListOptionButtonPlugin::get_item_count() const {
 
 void ItemListOptionButtonPlugin::erase(int p_idx) {
 	ob->remove_item(p_idx);
-	_change_notify();
+	notify_property_list_changed();
 }
 
 ItemListOptionButtonPlugin::ItemListOptionButtonPlugin() {
@@ -181,7 +181,7 @@ int ItemListPopupMenuPlugin::get_flags() const {
 
 void ItemListPopupMenuPlugin::add_item() {
 	pp->add_item(vformat(TTR("Item %d"), pp->get_item_count()));
-	_change_notify();
+	notify_property_list_changed();
 }
 
 int ItemListPopupMenuPlugin::get_item_count() const {
@@ -190,7 +190,7 @@ int ItemListPopupMenuPlugin::get_item_count() const {
 
 void ItemListPopupMenuPlugin::erase(int p_idx) {
 	pp->remove_item(p_idx);
-	_change_notify();
+	notify_property_list_changed();
 }
 
 ItemListPopupMenuPlugin::ItemListPopupMenuPlugin() {
@@ -213,7 +213,7 @@ int ItemListItemListPlugin::get_flags() const {
 
 void ItemListItemListPlugin::add_item() {
 	pp->add_item(vformat(TTR("Item %d"), pp->get_item_count()));
-	_change_notify();
+	notify_property_list_changed();
 }
 
 int ItemListItemListPlugin::get_item_count() const {
@@ -222,7 +222,7 @@ int ItemListItemListPlugin::get_item_count() const {
 
 void ItemListItemListPlugin::erase(int p_idx) {
 	pp->remove_item(p_idx);
-	_change_notify();
+	notify_property_list_changed();
 }
 
 ItemListItemListPlugin::ItemListItemListPlugin() {

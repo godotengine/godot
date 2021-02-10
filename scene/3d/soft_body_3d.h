@@ -98,6 +98,8 @@ private:
 
 	void _update_pickable();
 
+	void _softbody_changed();
+
 protected:
 	bool _set(const StringName &p_name, const Variant &p_value);
 	bool _get(const StringName &p_name, Variant &r_ret) const;
@@ -106,8 +108,6 @@ protected:
 	bool _set_property_pinned_points_indices(const Array &p_indices);
 	bool _set_property_pinned_points_attachment(int p_item, const String &p_what, const Variant &p_value);
 	bool _get_property_pinned_points(int p_item, const String &p_what, Variant &r_ret) const;
-
-	virtual void _changed_callback(Object *p_changed, const char *p_prop) override;
 
 	void _notification(int p_what);
 	static void _bind_methods();

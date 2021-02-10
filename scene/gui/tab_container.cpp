@@ -747,8 +747,6 @@ void TabContainer::set_current_tab(int p_current) {
 
 	_repaint();
 
-	_change_notify("current_tab");
-
 	if (pending_previous == current) {
 		emit_signal("tab_selected", current);
 	} else {
@@ -967,8 +965,6 @@ void TabContainer::set_tab_align(TabAlign p_align) {
 	ERR_FAIL_INDEX(p_align, 3);
 	align = p_align;
 	update();
-
-	_change_notify("tab_align");
 }
 
 TabContainer::TabAlign TabContainer::get_tab_align() const {

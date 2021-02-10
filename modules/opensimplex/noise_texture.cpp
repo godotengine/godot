@@ -216,7 +216,7 @@ void NoiseTexture::set_as_normal_map(bool p_as_normal_map) {
 	}
 	as_normal_map = p_as_normal_map;
 	_queue_update();
-	_change_notify();
+	notify_property_list_changed();
 }
 
 bool NoiseTexture::is_normal_map() {

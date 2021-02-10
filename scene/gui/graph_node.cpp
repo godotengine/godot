@@ -51,7 +51,7 @@ bool GraphNode::_set(const StringName &p_name, const Variant &p_value) {
 				update();
 			}
 		}
-		_change_notify();
+		notify_property_list_changed();
 		return true;
 	}
 
@@ -484,7 +484,6 @@ void GraphNode::set_title(const String &p_title) {
 	_shape();
 
 	update();
-	_change_notify("title");
 	minimum_size_changed();
 }
 

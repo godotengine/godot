@@ -44,7 +44,7 @@ RID Environment::get_rid() const {
 void Environment::set_background(BGMode p_bg) {
 	bg_mode = p_bg;
 	RS::get_singleton()->environment_set_background(environment, RS::EnvironmentBG(p_bg));
-	_change_notify();
+	notify_property_list_changed();
 	if (bg_mode != BG_SKY) {
 		set_fog_aerial_perspective(0.0);
 	}
@@ -138,7 +138,7 @@ Color Environment::get_ambient_light_color() const {
 void Environment::set_ambient_source(AmbientSource p_source) {
 	ambient_source = p_source;
 	_update_ambient_light();
-	_change_notify();
+	notify_property_list_changed();
 }
 
 Environment::AmbientSource Environment::get_ambient_source() const {
@@ -166,7 +166,7 @@ float Environment::get_ambient_light_sky_contribution() const {
 void Environment::set_reflection_source(ReflectionSource p_source) {
 	reflection_source = p_source;
 	_update_ambient_light();
-	_change_notify();
+	notify_property_list_changed();
 }
 
 Environment::ReflectionSource Environment::get_reflection_source() const {
@@ -224,7 +224,7 @@ float Environment::get_tonemap_white() const {
 void Environment::set_tonemap_auto_exposure_enabled(bool p_enabled) {
 	tonemap_auto_exposure_enabled = p_enabled;
 	_update_tonemap();
-	_change_notify();
+	notify_property_list_changed();
 }
 
 bool Environment::is_tonemap_auto_exposure_enabled() const {
@@ -285,7 +285,7 @@ void Environment::_update_tonemap() {
 void Environment::set_ssr_enabled(bool p_enabled) {
 	ssr_enabled = p_enabled;
 	_update_ssr();
-	_change_notify();
+	notify_property_list_changed();
 }
 
 bool Environment::is_ssr_enabled() const {
@@ -343,7 +343,7 @@ void Environment::_update_ssr() {
 void Environment::set_ssao_enabled(bool p_enabled) {
 	ssao_enabled = p_enabled;
 	_update_ssao();
-	_change_notify();
+	notify_property_list_changed();
 }
 
 bool Environment::is_ssao_enabled() const {
@@ -458,8 +458,6 @@ Environment::SDFGICascades Environment::get_sdfgi_cascades() const {
 
 void Environment::set_sdfgi_min_cell_size(float p_size) {
 	sdfgi_min_cell_size = p_size;
-	_change_notify("sdfgi_max_distance");
-	_change_notify("sdfgi_cascade0_distance");
 	_update_sdfgi();
 }
 
@@ -475,8 +473,6 @@ void Environment::set_sdfgi_max_distance(float p_distance) {
 		p_distance *= 0.5; //halve for each cascade
 	}
 	sdfgi_min_cell_size = p_distance;
-	_change_notify("sdfgi_min_cell_size");
-	_change_notify("sdfgi_cascade0_distance");
 	_update_sdfgi();
 }
 
@@ -493,8 +489,6 @@ float Environment::get_sdfgi_max_distance() const {
 
 void Environment::set_sdfgi_cascade0_distance(float p_distance) {
 	sdfgi_min_cell_size = p_distance / 64.0;
-	_change_notify("sdfgi_min_cell_size");
-	_change_notify("sdfgi_max_distance");
 	_update_sdfgi();
 }
 
@@ -584,7 +578,7 @@ void Environment::_update_sdfgi() {
 void Environment::set_glow_enabled(bool p_enabled) {
 	glow_enabled = p_enabled;
 	_update_glow();
-	_change_notify();
+	notify_property_list_changed();
 }
 
 bool Environment::is_glow_enabled() const {
@@ -654,7 +648,7 @@ float Environment::get_glow_bloom() const {
 void Environment::set_glow_blend_mode(GlowBlendMode p_mode) {
 	glow_blend_mode = p_mode;
 	_update_glow();
-	_change_notify();
+	notify_property_list_changed();
 }
 
 Environment::GlowBlendMode Environment::get_glow_blend_mode() const {
@@ -722,7 +716,7 @@ void Environment::_update_glow() {
 void Environment::set_fog_enabled(bool p_enabled) {
 	fog_enabled = p_enabled;
 	_update_fog();
-	_change_notify();
+	notify_property_list_changed();
 }
 
 bool Environment::is_fog_enabled() const {
@@ -802,7 +796,7 @@ void Environment::_update_volumetric_fog() {
 void Environment::set_volumetric_fog_enabled(bool p_enable) {
 	volumetric_fog_enabled = p_enable;
 	_update_volumetric_fog();
-	_change_notify();
+	notify_property_list_changed();
 }
 
 bool Environment::is_volumetric_fog_enabled() const {
@@ -874,7 +868,7 @@ float Environment::get_volumetric_fog_temporal_reprojection_amount() const {
 void Environment::set_adjustment_enabled(bool p_enabled) {
 	adjustment_enabled = p_enabled;
 	_update_adjustment();
-	_change_notify();
+	notify_property_list_changed();
 }
 
 bool Environment::is_adjustment_enabled() const {
@@ -1427,7 +1421,7 @@ Environment::Environment() {
 	_update_fog();
 	_update_adjustment();
 	_update_volumetric_fog();
-	_change_notify();
+	notify_property_list_changed();
 }
 
 Environment::~Environment() {

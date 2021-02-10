@@ -123,7 +123,6 @@ void StyleBoxTexture::set_texture(Ref<Texture2D> p_texture) {
 	}
 	emit_signal("texture_changed");
 	emit_changed();
-	_change_notify("texture");
 }
 
 Ref<Texture2D> StyleBoxTexture::get_texture() const {
@@ -135,13 +134,6 @@ void StyleBoxTexture::set_margin_size(Side p_side, float p_size) {
 
 	margin[p_side] = p_size;
 	emit_changed();
-	static const char *margin_prop[4] = {
-		"content_margin_left",
-		"content_margin_top",
-		"content_margin_right",
-		"content_margin_bottom",
-	};
-	_change_notify(margin_prop[p_side]);
 }
 
 float StyleBoxTexture::get_margin_size(Side p_side) const {
@@ -228,7 +220,6 @@ void StyleBoxTexture::set_region_rect(const Rect2 &p_region_rect) {
 
 	region_rect = p_region_rect;
 	emit_changed();
-	_change_notify("region");
 }
 
 Rect2 StyleBoxTexture::get_region_rect() const {

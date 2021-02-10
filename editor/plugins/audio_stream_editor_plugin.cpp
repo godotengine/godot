@@ -96,7 +96,7 @@ void AudioStreamEditor::_preview_changed(ObjectID p_which) {
 	}
 }
 
-void AudioStreamEditor::_changed_callback(Object *p_changed, const char *p_prop) {
+void AudioStreamEditor::_audio_changed() {
 	if (!is_visible()) {
 		return;
 	}
@@ -172,7 +172,7 @@ void AudioStreamEditor::_seek_to(real_t p_x) {
 
 void AudioStreamEditor::edit(Ref<AudioStream> p_stream) {
 	if (!stream.is_null()) {
-		stream->remove_change_receptor(this);
+		stream->disconnect("changed", callable_mp(this, &AudioStreamEditor::_audio_changed));
 	}
 
 	stream = p_stream;
@@ -182,7 +182,7 @@ void AudioStreamEditor::edit(Ref<AudioStream> p_stream) {
 	_duration_label->set_text(text);
 
 	if (!stream.is_null()) {
-		stream->add_change_receptor(this);
+		stream->connect("changed", callable_mp(this, &AudioStreamEditor::_audio_changed));
 		update();
 	} else {
 		hide();

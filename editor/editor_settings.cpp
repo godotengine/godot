@@ -441,7 +441,7 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 	_initial_set("docks/filesystem/always_show_folders", true);
 
 	// Property editor
-	_initial_set("docks/property_editor/auto_refresh_interval", 0.3);
+	_initial_set("docks/property_editor/auto_refresh_interval", 0.2); //update 5 times per second by default
 
 	/* Text editor */
 

@@ -199,7 +199,6 @@ void BaseButton::set_disabled(bool p_disabled) {
 		status.pressing_inside = false;
 	}
 	update();
-	_change_notify("disabled");
 }
 
 bool BaseButton::is_disabled() const {
@@ -213,7 +212,6 @@ void BaseButton::set_pressed(bool p_pressed) {
 	if (status.pressed == p_pressed) {
 		return;
 	}
-	_change_notify("pressed");
 	status.pressed = p_pressed;
 
 	if (p_pressed) {

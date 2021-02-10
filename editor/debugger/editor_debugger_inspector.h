@@ -58,7 +58,7 @@ public:
 		prop_values.clear();
 	}
 
-	void update() { _change_notify(); }
+	void update() { notify_property_list_changed(); }
 
 	EditorDebuggerRemoteObject() {}
 };

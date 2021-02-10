@@ -323,7 +323,6 @@ GIProbe::Subdiv GIProbe::get_subdiv() const {
 void GIProbe::set_extents(const Vector3 &p_extents) {
 	extents = p_extents;
 	update_gizmo();
-	_change_notify("extents");
 }
 
 Vector3 GIProbe::get_extents() const {
@@ -486,7 +485,7 @@ void GIProbe::bake(Node *p_from_node, bool p_create_visual_debug) {
 		bake_end_function();
 	}
 
-	_change_notify(); //bake property may have changed
+	notify_property_list_changed(); //bake property may have changed
 }
 
 void GIProbe::_debug_bake() {

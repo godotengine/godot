@@ -60,7 +60,6 @@ void BoxShape3D::set_size(const Vector3 &p_size) {
 	size = p_size;
 	_update_shape();
 	notify_change_to_owners();
-	_change_notify("size");
 }
 
 Vector3 BoxShape3D::get_size() const {

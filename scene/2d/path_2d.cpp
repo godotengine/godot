@@ -319,8 +319,6 @@ void PathFollow2D::set_offset(float p_offset) {
 
 		_update_transform();
 	}
-	_change_notify("offset");
-	_change_notify("unit_offset");
 }
 
 void PathFollow2D::set_h_offset(float p_h_offset) {

@@ -75,7 +75,6 @@ void CylinderShape3D::set_radius(float p_radius) {
 	radius = p_radius;
 	_update_shape();
 	notify_change_to_owners();
-	_change_notify("radius");
 }
 
 float CylinderShape3D::get_radius() const {
@@ -86,7 +85,6 @@ void CylinderShape3D::set_height(float p_height) {
 	height = p_height;
 	_update_shape();
 	notify_change_to_owners();
-	_change_notify("height");
 }
 
 float CylinderShape3D::get_height() const {

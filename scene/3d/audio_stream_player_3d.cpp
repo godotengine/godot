@@ -605,15 +605,11 @@ void AudioStreamPlayer3D::_notification(int p_what) {
 			setseek = setplay;
 			active = true;
 			setplay = -1;
-			//do not update, this makes it easier to animate (will shut off otherwise)
-			///_change_notify("playing"); //update property in editor
 		}
 
 		//stop playing if no longer active
 		if (!active) {
 			set_physics_process_internal(false);
-			//do not update, this makes it easier to animate (will shut off otherwise)
-			//_change_notify("playing"); //update property in editor
 			emit_signal("finished");
 		}
 	}
@@ -776,7 +772,7 @@ void AudioStreamPlayer3D::_validate_property(PropertyInfo &property) const {
 }
 
 void AudioStreamPlayer3D::_bus_layout_changed() {
-	_change_notify();
+	notify_property_list_changed();
 }
 
 void AudioStreamPlayer3D::set_max_distance(float p_metres) {
@@ -809,7 +805,6 @@ void AudioStreamPlayer3D::set_emission_angle(float p_angle) {
 	ERR_FAIL_COND(p_angle < 0 || p_angle > 90);
 	emission_angle = p_angle;
 	update_gizmo();
-	_change_notify("emission_angle");
 }
 
 float AudioStreamPlayer3D::get_emission_angle() const {

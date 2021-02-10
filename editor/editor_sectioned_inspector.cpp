@@ -116,12 +116,12 @@ public:
 	void set_section(const String &p_section, bool p_allow_sub) {
 		section = p_section;
 		allow_sub = p_allow_sub;
-		_change_notify();
+		notify_property_list_changed();
 	}
 
 	void set_edited(Object *p_edited) {
 		edited = p_edited;
-		_change_notify();
+		notify_property_list_changed();
 	}
 };
 

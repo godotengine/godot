@@ -71,7 +71,6 @@ void MeshInstance2D::set_texture(const Ref<Texture2D> &p_texture) {
 	texture = p_texture;
 	update();
 	emit_signal("texture_changed");
-	_change_notify("texture");
 }
 
 void MeshInstance2D::set_normal_map(const Ref<Texture2D> &p_texture) {

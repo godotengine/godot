@@ -53,6 +53,8 @@ class AudioStreamEditor : public ColorRect {
 	float _current;
 	bool _dragging;
 
+	void _audio_changed();
+
 protected:
 	void _notification(int p_what);
 	void _preview_changed(ObjectID p_which);
@@ -63,7 +65,6 @@ protected:
 	void _draw_indicator();
 	void _on_input_indicator(Ref<InputEvent> p_event);
 	void _seek_to(real_t p_x);
-	void _changed_callback(Object *p_changed, const char *p_prop) override;
 	static void _bind_methods();
 
 public:

@@ -63,7 +63,7 @@ void TextureLayeredEditor::_notification(int p_what) {
 	}
 }
 
-void TextureLayeredEditor::_changed_callback(Object *p_changed, const char *p_prop) {
+void TextureLayeredEditor::_texture_changed() {
 	if (!is_visible()) {
 		return;
 	}
@@ -173,7 +173,7 @@ void TextureLayeredEditor::_texture_rect_update_area() {
 
 void TextureLayeredEditor::edit(Ref<TextureLayered> p_texture) {
 	if (!texture.is_null()) {
-		texture->remove_change_receptor(this);
+		texture->disconnect("changed", callable_mp(this, &TextureLayeredEditor::_texture_changed));
 	}
 
 	texture = p_texture;
@@ -183,7 +183,7 @@ void TextureLayeredEditor::edit(Ref<TextureLayered> p_texture) {
 			_make_shaders();
 		}
 
-		texture->add_change_receptor(this);
+		texture->connect("changed", callable_mp(this, &TextureLayeredEditor::_texture_changed));
 		update();
 		texture_rect->set_material(materials[texture->get_layered_type()]);
 		setting = true;
@@ -248,9 +248,6 @@ TextureLayeredEditor::TextureLayeredEditor() {
 }
 
 TextureLayeredEditor::~TextureLayeredEditor() {
-	if (!texture.is_null()) {
-		texture->remove_change_receptor(this);
-	}
 }
 
 //

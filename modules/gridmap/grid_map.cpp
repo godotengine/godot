@@ -189,7 +189,6 @@ void GridMap::set_mesh_library(const Ref<MeshLibrary> &p_mesh_library) {
 	}
 
 	_recreate_octant_data();
-	_change_notify("mesh_library");
 }
 
 Ref<MeshLibrary> GridMap::get_mesh_library() const {
@@ -700,8 +699,6 @@ void GridMap::_update_visibility() {
 	if (!is_inside_tree()) {
 		return;
 	}
-
-	_change_notify("visible");
 
 	for (Map<OctantKey, Octant *>::Element *e = octant_map.front(); e; e = e->next()) {
 		Octant *octant = e->value();

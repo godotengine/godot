@@ -409,7 +409,7 @@ void AnimatedSprite2D::_notification(int p_what) {
 					}
 
 					update();
-					_change_notify("frame");
+
 					emit_signal(SceneStringNames::get_singleton()->frame_changed);
 				}
 
@@ -477,7 +477,7 @@ void AnimatedSprite2D::set_sprite_frames(const Ref<SpriteFrames> &p_frames) {
 		set_frame(frame);
 	}
 
-	_change_notify();
+	notify_property_list_changed();
 	_reset_timeout();
 	update();
 	update_configuration_warning();
@@ -510,7 +510,7 @@ void AnimatedSprite2D::set_frame(int p_frame) {
 	frame = p_frame;
 	_reset_timeout();
 	update();
-	_change_notify("frame");
+
 	emit_signal(SceneStringNames::get_singleton()->frame_changed);
 }
 
@@ -546,7 +546,6 @@ void AnimatedSprite2D::set_offset(const Point2 &p_offset) {
 	offset = p_offset;
 	update();
 	item_rect_changed();
-	_change_notify("offset");
 }
 
 Point2 AnimatedSprite2D::get_offset() const {
@@ -573,8 +572,7 @@ bool AnimatedSprite2D::is_flipped_v() const {
 
 void AnimatedSprite2D::_res_changed() {
 	set_frame(frame);
-	_change_notify("frame");
-	_change_notify("animation");
+
 	update();
 }
 
@@ -642,7 +640,7 @@ void AnimatedSprite2D::set_animation(const StringName &p_animation) {
 	animation = p_animation;
 	_reset_timeout();
 	set_frame(0);
-	_change_notify();
+	notify_property_list_changed();
 	update();
 }
 

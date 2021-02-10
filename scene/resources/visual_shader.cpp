@@ -730,7 +730,7 @@ void VisualShader::set_mode(Mode p_mode) {
 	}
 
 	_queue_update();
-	_change_notify();
+	notify_property_list_changed();
 }
 
 void VisualShader::set_graph_offset(const Vector2 &p_offset) {

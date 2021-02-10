@@ -454,7 +454,6 @@ private:
 #endif
 	bool _block_signals = false;
 	int _predelete_ok = 0;
-	Set<Object *> change_receptors;
 	ObjectID _instance_id;
 	bool _predelete();
 	void _postinitialize();
@@ -523,9 +522,6 @@ protected:
 	static void get_valid_parents_static(List<String> *p_parents);
 	static void _get_valid_parents_static(List<String> *p_parents);
 
-	void property_list_changed_notify();
-	virtual void _changed_callback(Object *p_changed, const char *p_prop);
-
 	//Variant _call_bind(const StringName& p_name, const Variant& p_arg1 = Variant(), const Variant& p_arg2 = Variant(), const Variant& p_arg3 = Variant(), const Variant& p_arg4 = Variant());
 	//void _call_deferred_bind(const StringName& p_name, const Variant& p_arg1 = Variant(), const Variant& p_arg2 = Variant(), const Variant& p_arg3 = Variant(), const Variant& p_arg4 = Variant());
 
@@ -555,16 +551,8 @@ public: //should be protected, but bug in clang++
 	_FORCE_INLINE_ static void register_custom_data_to_otdb() {}
 
 public:
-#ifdef TOOLS_ENABLED
-	_FORCE_INLINE_ void _change_notify(const char *p_property = "") {
-		_edited = true;
-		for (Set<Object *>::Element *E = change_receptors.front(); E; E = E->next()) {
-			((Object *)(E->get()))->_changed_callback(this, p_property);
-		}
-	}
-#else
-	_FORCE_INLINE_ void _change_notify(const char *p_what = "") {}
-#endif
+	void notify_property_list_changed();
+
 	static void *get_class_ptr_static() {
 		static int ptr;
 		return &ptr;
@@ -573,10 +561,6 @@ public:
 	bool _is_gpl_reversed() const { return false; }
 
 	_FORCE_INLINE_ ObjectID get_instance_id() const { return _instance_id; }
-
-	// this is used for editors
-	void add_change_receptor(Object *p_receptor);
-	void remove_change_receptor(Object *p_receptor);
 
 	template <class T>
 	static T *cast_to(Object *p_object) {

@@ -969,7 +969,7 @@ Error AnimationPlayer::add_animation(const StringName &p_name, const Ref<Animati
 	}
 
 	_ref_anim(p_animation);
-	_change_notify();
+	notify_property_list_changed();
 	return OK;
 }
 
@@ -981,7 +981,7 @@ void AnimationPlayer::remove_animation(const StringName &p_name) {
 	animation_set.erase(p_name);
 
 	clear_caches();
-	_change_notify();
+	notify_property_list_changed();
 }
 
 void AnimationPlayer::_ref_anim(const Ref<Animation> &p_anim) {
@@ -1039,7 +1039,7 @@ void AnimationPlayer::rename_animation(const StringName &p_name, const StringNam
 	}
 
 	clear_caches();
-	_change_notify();
+	notify_property_list_changed();
 }
 
 bool AnimationPlayer::has_animation(const StringName &p_name) const {

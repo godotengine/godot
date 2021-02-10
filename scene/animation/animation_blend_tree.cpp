@@ -34,7 +34,6 @@
 
 void AnimationNodeAnimation::set_animation(const StringName &p_name) {
 	animation = p_name;
-	_change_notify("animation");
 }
 
 StringName AnimationNodeAnimation::get_animation() const {
@@ -583,7 +582,6 @@ float AnimationNodeTimeSeek::process(float p_time, bool p_seek) {
 	} else if (seek_pos >= 0) {
 		float ret = blend_input(0, seek_pos, true, 1.0, FILTER_IGNORE, false);
 		set_parameter(this->seek_pos, -1.0); //reset
-		_change_notify("seek_pos");
 		return ret;
 	} else {
 		return blend_input(0, p_time, false, 1.0, FILTER_IGNORE, false);

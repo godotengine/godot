@@ -6906,7 +6906,7 @@ bool TextEdit::_set(const StringName &p_name, const Variant &p_value) {
 				update();
 			}
 		}
-		_change_notify();
+		notify_property_list_changed();
 		return true;
 	}
 

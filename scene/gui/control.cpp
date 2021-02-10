@@ -1275,7 +1275,6 @@ void Control::_size_changed() {
 		}
 		if (pos_changed || size_changed) {
 			item_rect_changed(size_changed);
-			_change_notify_offsets();
 			_notify_transform();
 		}
 
@@ -1315,10 +1314,6 @@ void Control::set_anchor(Side p_side, float p_anchor, bool p_keep_offset, bool p
 	}
 
 	update();
-	_change_notify("anchor_left");
-	_change_notify("anchor_right");
-	_change_notify("anchor_top");
-	_change_notify("anchor_bottom");
 }
 
 void Control::_set_anchor(Side p_side, float p_anchor) {
@@ -1592,16 +1587,6 @@ float Control::get_anchor(Side p_side) const {
 	return data.anchor[p_side];
 }
 
-void Control::_change_notify_offsets() {
-	// this avoids sending the whole object data again on a change
-	_change_notify("offset_left");
-	_change_notify("offset_top");
-	_change_notify("offset_right");
-	_change_notify("offset_bottom");
-	_change_notify("rect_position");
-	_change_notify("rect_size");
-}
-
 void Control::set_offset(Side p_side, float p_value) {
 	ERR_FAIL_INDEX((int)p_side, 4);
 
@@ -1699,10 +1684,6 @@ void Control::_set_position(const Size2 &p_point) {
 void Control::set_position(const Size2 &p_point, bool p_keep_offsets) {
 	if (p_keep_offsets) {
 		_compute_anchors(Rect2(p_point, data.size_cache), data.offset, data.anchor);
-		_change_notify("anchor_left");
-		_change_notify("anchor_right");
-		_change_notify("anchor_top");
-		_change_notify("anchor_bottom");
 	} else {
 		_compute_offsets(Rect2(p_point, data.size_cache), data.anchor, data.offset);
 	}
@@ -1736,10 +1717,6 @@ void Control::set_size(const Size2 &p_size, bool p_keep_offsets) {
 
 	if (p_keep_offsets) {
 		_compute_anchors(Rect2(data.pos_cache, new_size), data.offset, data.anchor);
-		_change_notify("anchor_left");
-		_change_notify("anchor_right");
-		_change_notify("anchor_top");
-		_change_notify("anchor_bottom");
 	} else {
 		_compute_offsets(Rect2(data.pos_cache, new_size), data.anchor, data.offset);
 	}
@@ -2577,7 +2554,6 @@ void Control::set_rotation(float p_radians) {
 	data.rotation = p_radians;
 	update();
 	_notify_transform();
-	_change_notify("rect_rotation");
 }
 
 float Control::get_rotation() const {
@@ -2602,7 +2578,6 @@ void Control::set_pivot_offset(const Vector2 &p_pivot) {
 	data.pivot_offset = p_pivot;
 	update();
 	_notify_transform();
-	_change_notify("rect_pivot_offset");
 }
 
 Vector2 Control::get_pivot_offset() const {

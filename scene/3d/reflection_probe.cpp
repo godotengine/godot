@@ -42,7 +42,7 @@ float ReflectionProbe::get_intensity() const {
 void ReflectionProbe::set_ambient_mode(AmbientMode p_mode) {
 	ambient_mode = p_mode;
 	RS::get_singleton()->reflection_probe_set_ambient_mode(probe, RS::ReflectionProbeAmbientMode(p_mode));
-	_change_notify();
+	notify_property_list_changed();
 }
 
 ReflectionProbe::AmbientMode ReflectionProbe::get_ambient_mode() const {
@@ -95,13 +95,12 @@ void ReflectionProbe::set_extents(const Vector3 &p_extents) {
 
 		if (extents[i] - 0.01 < ABS(origin_offset[i])) {
 			origin_offset[i] = SGN(origin_offset[i]) * (extents[i] - 0.01);
-			_change_notify("origin_offset");
 		}
 	}
 
 	RS::get_singleton()->reflection_probe_set_extents(probe, extents);
 	RS::get_singleton()->reflection_probe_set_origin_offset(probe, origin_offset);
-	_change_notify("extents");
+
 	update_gizmo();
 }
 
@@ -120,7 +119,6 @@ void ReflectionProbe::set_origin_offset(const Vector3 &p_extents) {
 	RS::get_singleton()->reflection_probe_set_extents(probe, extents);
 	RS::get_singleton()->reflection_probe_set_origin_offset(probe, origin_offset);
 
-	_change_notify("origin_offset");
 	update_gizmo();
 }
 

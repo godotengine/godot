@@ -192,7 +192,7 @@ Variant ShaderMaterial::property_get_revert(const String &p_name) {
 
 void ShaderMaterial::set_shader(const Ref<Shader> &p_shader) {
 	// Only connect/disconnect the signal when running in the editor.
-	// This can be a slow operation, and `_change_notify()` (which is called by `_shader_changed()`)
+	// This can be a slow operation, and `notify_property_list_changed()` (which is called by `_shader_changed()`)
 	// does nothing in non-editor builds anyway. See GH-34741 for details.
 	if (shader.is_valid() && Engine::get_singleton()->is_editor_hint()) {
 		shader->disconnect("changed", callable_mp(this, &ShaderMaterial::_shader_changed));
@@ -210,7 +210,7 @@ void ShaderMaterial::set_shader(const Ref<Shader> &p_shader) {
 	}
 
 	RS::get_singleton()->material_set_shader(_get_material(), rid);
-	_change_notify(); //properties for shader exposed
+	notify_property_list_changed(); //properties for shader exposed
 	emit_changed();
 }
 
@@ -227,7 +227,7 @@ Variant ShaderMaterial::get_shader_param(const StringName &p_param) const {
 }
 
 void ShaderMaterial::_shader_changed() {
-	_change_notify(); //update all properties
+	notify_property_list_changed(); //update all properties
 }
 
 void ShaderMaterial::_bind_methods() {
@@ -1489,7 +1489,7 @@ void BaseMaterial3D::set_transparency(Transparency p_transparency) {
 
 	transparency = p_transparency;
 	_queue_shader_change();
-	_change_notify();
+	notify_property_list_changed();
 }
 
 BaseMaterial3D::Transparency BaseMaterial3D::get_transparency() const {
@@ -1503,7 +1503,7 @@ void BaseMaterial3D::set_alpha_antialiasing(AlphaAntiAliasing p_alpha_aa) {
 
 	alpha_antialiasing_mode = p_alpha_aa;
 	_queue_shader_change();
-	_change_notify();
+	notify_property_list_changed();
 }
 
 BaseMaterial3D::AlphaAntiAliasing BaseMaterial3D::get_alpha_antialiasing() const {
@@ -1517,7 +1517,7 @@ void BaseMaterial3D::set_shading_mode(ShadingMode p_shading_mode) {
 
 	shading_mode = p_shading_mode;
 	_queue_shader_change();
-	_change_notify();
+	notify_property_list_changed();
 }
 
 BaseMaterial3D::ShadingMode BaseMaterial3D::get_shading_mode() const {
@@ -1585,7 +1585,7 @@ void BaseMaterial3D::set_flag(Flags p_flag, bool p_enabled) {
 
 	flags[p_flag] = p_enabled;
 	if (p_flag == FLAG_USE_SHADOW_TO_OPACITY || p_flag == FLAG_USE_TEXTURE_REPEAT || p_flag == FLAG_SUBSURFACE_MODE_SKIN) {
-		_change_notify();
+		notify_property_list_changed();
 	}
 	_queue_shader_change();
 }
@@ -1602,7 +1602,7 @@ void BaseMaterial3D::set_feature(Feature p_feature, bool p_enabled) {
 	}
 
 	features[p_feature] = p_enabled;
-	_change_notify();
+	notify_property_list_changed();
 	_queue_shader_change();
 }
 
@@ -1620,7 +1620,7 @@ void BaseMaterial3D::set_texture(TextureParam p_param, const Ref<Texture2D> &p_t
 		RS::get_singleton()->material_set_param(_get_material(), shader_names->albedo_texture_size,
 				Vector2i(p_texture->get_width(), p_texture->get_height()));
 	}
-	_change_notify();
+	notify_property_list_changed();
 	_queue_shader_change();
 }
 
@@ -1860,7 +1860,7 @@ float BaseMaterial3D::get_uv2_triplanar_blend_sharpness() const {
 void BaseMaterial3D::set_billboard_mode(BillboardMode p_mode) {
 	billboard_mode = p_mode;
 	_queue_shader_change();
-	_change_notify();
+	notify_property_list_changed();
 }
 
 BaseMaterial3D::BillboardMode BaseMaterial3D::get_billboard_mode() const {
@@ -1897,7 +1897,7 @@ bool BaseMaterial3D::get_particles_anim_loop() const {
 void BaseMaterial3D::set_heightmap_deep_parallax(bool p_enable) {
 	deep_parallax = p_enable;
 	_queue_shader_change();
-	_change_notify();
+	notify_property_list_changed();
 }
 
 bool BaseMaterial3D::is_heightmap_deep_parallax_enabled() const {
@@ -1943,7 +1943,7 @@ bool BaseMaterial3D::get_heightmap_deep_parallax_flip_binormal() const {
 void BaseMaterial3D::set_grow_enabled(bool p_enable) {
 	grow_enabled = p_enable;
 	_queue_shader_change();
-	_change_notify();
+	notify_property_list_changed();
 }
 
 bool BaseMaterial3D::is_grow_enabled() const {
@@ -2093,7 +2093,7 @@ void BaseMaterial3D::set_on_top_of_alpha() {
 void BaseMaterial3D::set_proximity_fade(bool p_enable) {
 	proximity_fade_enabled = p_enable;
 	_queue_shader_change();
-	_change_notify();
+	notify_property_list_changed();
 }
 
 bool BaseMaterial3D::is_proximity_fade_enabled() const {
@@ -2112,7 +2112,7 @@ float BaseMaterial3D::get_proximity_fade_distance() const {
 void BaseMaterial3D::set_distance_fade(DistanceFadeMode p_mode) {
 	distance_fade = p_mode;
 	_queue_shader_change();
-	_change_notify();
+	notify_property_list_changed();
 }
 
 BaseMaterial3D::DistanceFadeMode BaseMaterial3D::get_distance_fade() const {

@@ -481,7 +481,6 @@ void Tabs::set_current_tab(int p_current) {
 	previous = current;
 	current = p_current;
 
-	_change_notify("current_tab");
 	_update_cache();
 	update();
 

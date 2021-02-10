@@ -101,7 +101,6 @@ void GPUParticles2D::set_visibility_rect(const Rect2 &p_visibility_rect) {
 
 	RS::get_singleton()->particles_set_custom_aabb(particles, aabb);
 
-	_change_notify("visibility_rect");
 	update();
 }
 
@@ -305,7 +304,7 @@ void GPUParticles2D::_notification(int p_what) {
 
 	if (p_what == NOTIFICATION_INTERNAL_PROCESS) {
 		if (one_shot && !is_emitting()) {
-			_change_notify();
+			notify_property_list_changed();
 			set_process_internal(false);
 		}
 	}

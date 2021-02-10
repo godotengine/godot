@@ -233,7 +233,6 @@ private:
 
 	void _theme_changed();
 
-	void _change_notify_offsets();
 	void _update_minimum_size();
 
 	void _update_scroll();

@@ -358,7 +358,7 @@ void Theme::set_default_theme_font(const Ref<Font> &p_default_font) {
 		default_theme_font->connect("changed", callable_mp(this, &Theme::_emit_theme_changed), varray(), CONNECT_REFERENCE_COUNTED);
 	}
 
-	_change_notify();
+	notify_property_list_changed();
 	emit_changed();
 }
 
@@ -373,7 +373,7 @@ void Theme::set_default_theme_font_size(int p_font_size) {
 
 	default_theme_font_size = p_font_size;
 
-	_change_notify();
+	notify_property_list_changed();
 	emit_changed();
 }
 
@@ -436,7 +436,7 @@ void Theme::set_icon(const StringName &p_name, const StringName &p_node_type, co
 	}
 
 	if (new_value) {
-		_change_notify();
+		notify_property_list_changed();
 		emit_changed();
 	}
 }
@@ -463,7 +463,7 @@ void Theme::clear_icon(const StringName &p_name, const StringName &p_node_type) 
 
 	icon_map[p_node_type].erase(p_name);
 
-	_change_notify();
+	notify_property_list_changed();
 	emit_changed();
 }
 
@@ -506,7 +506,7 @@ void Theme::set_stylebox(const StringName &p_name, const StringName &p_node_type
 	}
 
 	if (new_value) {
-		_change_notify();
+		notify_property_list_changed();
 	}
 	emit_changed();
 }
@@ -533,7 +533,7 @@ void Theme::clear_stylebox(const StringName &p_name, const StringName &p_node_ty
 
 	style_map[p_node_type].erase(p_name);
 
-	_change_notify();
+	notify_property_list_changed();
 	emit_changed();
 }
 
@@ -576,7 +576,7 @@ void Theme::set_font(const StringName &p_name, const StringName &p_node_type, co
 	}
 
 	if (new_value) {
-		_change_notify();
+		notify_property_list_changed();
 		emit_changed();
 	}
 }
@@ -604,7 +604,7 @@ void Theme::clear_font(const StringName &p_name, const StringName &p_node_type) 
 	}
 
 	font_map[p_node_type].erase(p_name);
-	_change_notify();
+	notify_property_list_changed();
 	emit_changed();
 }
 
@@ -637,7 +637,7 @@ void Theme::set_font_size(const StringName &p_name, const StringName &p_node_typ
 	font_size_map[p_node_type][p_name] = p_font_size;
 
 	if (new_value) {
-		_change_notify();
+		notify_property_list_changed();
 		emit_changed();
 	}
 }
@@ -661,7 +661,7 @@ void Theme::clear_font_size(const StringName &p_name, const StringName &p_node_t
 	ERR_FAIL_COND(!font_size_map[p_node_type].has(p_name));
 
 	font_size_map[p_node_type].erase(p_name);
-	_change_notify();
+	notify_property_list_changed();
 	emit_changed();
 }
 
@@ -685,7 +685,7 @@ void Theme::set_color(const StringName &p_name, const StringName &p_node_type, c
 	color_map[p_node_type][p_name] = p_color;
 
 	if (new_value) {
-		_change_notify();
+		notify_property_list_changed();
 		emit_changed();
 	}
 }
@@ -707,7 +707,7 @@ void Theme::clear_color(const StringName &p_name, const StringName &p_node_type)
 	ERR_FAIL_COND(!color_map[p_node_type].has(p_name));
 
 	color_map[p_node_type].erase(p_name);
-	_change_notify();
+	notify_property_list_changed();
 	emit_changed();
 }
 
@@ -739,7 +739,7 @@ void Theme::set_constant(const StringName &p_name, const StringName &p_node_type
 	constant_map[p_node_type][p_name] = p_constant;
 
 	if (new_value) {
-		_change_notify();
+		notify_property_list_changed();
 		emit_changed();
 	}
 }
@@ -761,7 +761,7 @@ void Theme::clear_constant(const StringName &p_name, const StringName &p_node_ty
 	ERR_FAIL_COND(!constant_map[p_node_type].has(p_name));
 
 	constant_map[p_node_type].erase(p_name);
-	_change_notify();
+	notify_property_list_changed();
 	emit_changed();
 }
 
@@ -835,7 +835,7 @@ void Theme::clear() {
 	color_map.clear();
 	constant_map.clear();
 
-	_change_notify();
+	notify_property_list_changed();
 	emit_changed();
 }
 
@@ -887,7 +887,7 @@ void Theme::copy_theme(const Ref<Theme> &p_other) {
 	color_map = p_other->color_map;
 	constant_map = p_other->constant_map;
 
-	_change_notify();
+	notify_property_list_changed();
 	emit_changed();
 }
 

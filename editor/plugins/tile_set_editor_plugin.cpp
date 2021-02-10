@@ -39,7 +39,6 @@
 
 void TileSetEditor::edit(const Ref<TileSet> &p_tileset) {
 	tileset = p_tileset;
-	tileset->add_change_receptor(this);
 
 	texture_list->clear();
 	texture_map.clear();
@@ -1859,7 +1858,7 @@ void TileSetEditor::_on_tool_clicked(int p_tool) {
 			_update_toggle_shape_button();
 			workspace->update();
 			workspace_container->update();
-			helper->_change_notify("");
+			helper->notify_property_list_changed();
 		}
 	} else if (p_tool == SELECT_NEXT) {
 		_select_next_shape();
@@ -2287,7 +2286,7 @@ void TileSetEditor::_select_next_shape() {
 		}
 		workspace->update();
 		workspace_container->update();
-		helper->_change_notify("");
+		helper->notify_property_list_changed();
 	}
 }
 
@@ -2349,7 +2348,7 @@ void TileSetEditor::_select_previous_shape() {
 		}
 		workspace->update();
 		workspace_container->update();
-		helper->_change_notify("");
+		helper->notify_property_list_changed();
 	}
 }
 
@@ -3012,7 +3011,7 @@ void TileSetEditor::close_shape(const Vector2 &shape_anchor) {
 		undo_redo->add_undo_method(this, "_select_edited_shape_coord");
 		undo_redo->commit_action();
 	}
-	tileset->_change_notify("");
+	tileset->notify_property_list_changed();
 }
 
 void TileSetEditor::select_coord(const Vector2 &coord) {
@@ -3115,7 +3114,7 @@ void TileSetEditor::select_coord(const Vector2 &coord) {
 	}
 	workspace->update();
 	workspace_container->update();
-	helper->_change_notify("");
+	helper->notify_property_list_changed();
 }
 
 Vector2 TileSetEditor::snap_point(const Vector2 &point) {
@@ -3225,7 +3224,7 @@ void TileSetEditor::update_texture_list() {
 		workspace_overlay->update();
 	}
 	update_texture_list_icon();
-	helper->_change_notify("");
+	helper->notify_property_list_changed();
 }
 
 void TileSetEditor::update_texture_list_icon() {
@@ -3389,7 +3388,7 @@ int TileSetEditor::get_current_tile() const {
 void TileSetEditor::set_current_tile(int p_id) {
 	if (current_tile != p_id) {
 		current_tile = p_id;
-		helper->_change_notify("");
+		helper->notify_property_list_changed();
 		select_coord(Vector2(0, 0));
 		update_workspace_tile_mode();
 		if (p_id == -1) {
@@ -3414,7 +3413,7 @@ void TilesetEditorContext::set_tileset(const Ref<TileSet> &p_tileset) {
 
 void TilesetEditorContext::set_snap_options_visible(bool p_visible) {
 	snap_options_visible = p_visible;
-	_change_notify("");
+	notify_property_list_changed();
 }
 
 bool TilesetEditorContext::_set(const StringName &p_name, const Variant &p_value) {
@@ -3450,7 +3449,7 @@ bool TilesetEditorContext::_set(const StringName &p_name, const Variant &p_value
 			tileset->set(String::num(tileset_editor->get_current_tile(), 0) + "/" + name2, p_value, &v);
 		}
 		if (v) {
-			tileset->_change_notify("");
+			tileset->notify_property_list_changed();
 			tileset_editor->workspace->update();
 			tileset_editor->workspace_overlay->update();
 		}

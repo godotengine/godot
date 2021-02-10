@@ -49,11 +49,7 @@ Variant ArrayPropertyEdit::get_array() const {
 }
 
 void ArrayPropertyEdit::_notif_change() {
-	_change_notify();
-}
-
-void ArrayPropertyEdit::_notif_changev(const String &p_v) {
-	_change_notify(p_v.utf8().get_data());
+	notify_property_list_changed();
 }
 
 void ArrayPropertyEdit::_set_size(int p_size) {
@@ -120,7 +116,7 @@ bool ArrayPropertyEdit::_set(const StringName &p_name, const Variant &p_value) {
 		}
 		if (pn == "array/page") {
 			page = p_value;
-			_change_notify();
+			notify_property_list_changed();
 			return true;
 		}
 
@@ -159,8 +155,6 @@ bool ArrayPropertyEdit::_set(const StringName &p_name, const Variant &p_value) {
 			ur->create_action(TTR("Change Array Value"));
 			ur->add_do_method(this, "_set_value", idx, p_value);
 			ur->add_undo_method(this, "_set_value", idx, value);
-			ur->add_do_method(this, "_notif_changev", p_name);
-			ur->add_undo_method(this, "_notif_changev", p_name);
 			ur->commit_action();
 			return true;
 		}
@@ -288,7 +282,6 @@ void ArrayPropertyEdit::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_set_size"), &ArrayPropertyEdit::_set_size);
 	ClassDB::bind_method(D_METHOD("_set_value"), &ArrayPropertyEdit::_set_value);
 	ClassDB::bind_method(D_METHOD("_notif_change"), &ArrayPropertyEdit::_notif_change);
-	ClassDB::bind_method(D_METHOD("_notif_changev"), &ArrayPropertyEdit::_notif_changev);
 	ClassDB::bind_method(D_METHOD("_dont_undo_redo"), &ArrayPropertyEdit::_dont_undo_redo);
 }
 

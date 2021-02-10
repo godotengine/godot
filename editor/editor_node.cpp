@@ -1791,7 +1791,7 @@ void EditorNode::_dialog_action(String p_file) {
 			ObjectID current = editor_history.get_current();
 			Object *current_obj = current.is_valid() ? ObjectDB::get_instance(current) : nullptr;
 			ERR_FAIL_COND(!current_obj);
-			current_obj->_change_notify();
+			current_obj->notify_property_list_changed();
 		} break;
 		case SETTINGS_LAYOUT_SAVE: {
 			if (p_file.is_empty()) {
