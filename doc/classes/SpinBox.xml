@@ -47,6 +47,9 @@
 		<member name="suffix" type="String" setter="set_suffix" getter="get_suffix" default="&quot;&quot;">
 			Adds the specified [code]suffix[/code] string after the numerical value of the [SpinBox].
 		</member>
+		<member name="arrow_step" type="float" setter="set_arrow_step" getter="get_arrow_step" default="0.0">
+			If greater than 0, [code]value[/code] will always be rounded to a multiple of [code]arrow_step[/code] when interacting with the arrow buttons of the [SpinBox].
+		</member>
 	</members>
 	<constants>
 	</constants>
