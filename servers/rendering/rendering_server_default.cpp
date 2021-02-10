@@ -237,7 +237,7 @@ void RenderingServerDefault::init() {
 			thread.start(_thread_callback, this);
 			print_verbose("RenderingServerWrapMT: Starting render thread");
 		}
-		while (!draw_thread_up) {
+		while (!draw_thread_up.is_set()) {
 			OS::get_singleton()->delay_usec(1000);
 		}
 		print_verbose("RenderingServerWrapMT: Finished render thread");
@@ -329,17 +329,17 @@ bool RenderingServerDefault::is_low_end() const {
 }
 
 void RenderingServerDefault::_thread_exit() {
-	exit = true;
+	exit.set();
 }
 
 void RenderingServerDefault::_thread_draw(bool p_swap_buffers, double frame_step) {
-	if (!atomic_decrement(&draw_pending)) {
+	if (!draw_pending.decrement()) {
 		_draw(p_swap_buffers, frame_step);
 	}
 }
 
 void RenderingServerDefault::_thread_flush() {
-	atomic_decrement(&draw_pending);
+	draw_pending.decrement();
 }
 
 void RenderingServerDefault::_thread_callback(void *_instance) {
@@ -355,9 +355,8 @@ void RenderingServerDefault::_thread_loop() {
 
 	_init();
 
-	exit = false;
-	draw_thread_up = true;
-	while (!exit) {
+	draw_thread_up.set();
+	while (!exit.is_set()) {
 		// flush commands one by one, until exit is requested
 		command_queue.wait_and_flush_one();
 	}
@@ -371,7 +370,7 @@ void RenderingServerDefault::_thread_loop() {
 
 void RenderingServerDefault::sync() {
 	if (create_thread) {
-		atomic_increment(&draw_pending);
+		draw_pending.increment();
 		command_queue.push_and_sync(this, &RenderingServerDefault::_thread_flush);
 	} else {
 		command_queue.flush_all(); //flush all pending from other threads
@@ -380,7 +379,7 @@ void RenderingServerDefault::sync() {
 
 void RenderingServerDefault::draw(bool p_swap_buffers, double frame_step) {
 	if (create_thread) {
-		atomic_increment(&draw_pending);
+		draw_pending.increment();
 		command_queue.push(this, &RenderingServerDefault::_thread_draw, p_swap_buffers, frame_step);
 	} else {
 		_draw(p_swap_buffers, frame_step);
@@ -390,8 +389,6 @@ void RenderingServerDefault::draw(bool p_swap_buffers, double frame_step) {
 RenderingServerDefault::RenderingServerDefault(bool p_create_thread) :
 		command_queue(p_create_thread) {
 	create_thread = p_create_thread;
-	draw_pending = 0;
-	draw_thread_up = false;
 
 	if (!p_create_thread) {
 		server_thread = Thread::get_caller_id();

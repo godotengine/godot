@@ -31,6 +31,7 @@
 #ifndef AUDIO_STREAM_PLAYER_3D_H
 #define AUDIO_STREAM_PLAYER_3D_H
 
+#include "core/templates/safe_refcount.h"
 #include "scene/3d/node_3d.h"
 #include "scene/3d/velocity_tracker_3d.h"
 #include "servers/audio/audio_filter_sw.h"
@@ -80,8 +81,8 @@ private:
 	};
 
 	Output outputs[MAX_OUTPUTS];
-	volatile int output_count = 0;
-	volatile bool output_ready = false;
+	SafeNumeric<int> output_count;
+	SafeFlag output_ready;
 
 	//these are used by audio thread to have a reference of previous volumes (for ramping volume and avoiding clicks)
 	Output prev_outputs[MAX_OUTPUTS];
@@ -91,9 +92,9 @@ private:
 	Ref<AudioStream> stream;
 	Vector<AudioFrame> mix_buffer;
 
-	volatile float setseek = -1.0;
-	volatile bool active = false;
-	volatile float setplay = -1.0;
+	SafeNumeric<float> setseek{ -1.0 };
+	SafeFlag active;
+	SafeNumeric<float> setplay{ -1.0 };
 
 	AttenuationModel attenuation_model = ATTENUATION_INVERSE_DISTANCE;
 	float unit_db = 0.0;

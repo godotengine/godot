@@ -155,7 +155,7 @@ void AudioStreamPreviewGenerator::_preview_thread(void *p_preview) {
 
 	preview->playback->stop();
 
-	preview->generating = false;
+	preview->generating.clear();
 }
 
 Ref<AudioStreamPreview> AudioStreamPreviewGenerator::generate_preview(const Ref<AudioStream> &p_stream) {
@@ -172,7 +172,7 @@ Ref<AudioStreamPreview> AudioStreamPreviewGenerator::generate_preview(const Ref<
 	Preview *preview = &previews[p_stream->get_instance_id()];
 	preview->base_stream = p_stream;
 	preview->playback = preview->base_stream->instance_playback();
-	preview->generating = true;
+	preview->generating.set();
 	preview->id = p_stream->get_instance_id();
 
 	float len_s = preview->base_stream->get_length();
@@ -217,7 +217,7 @@ void AudioStreamPreviewGenerator::_notification(int p_what) {
 	if (p_what == NOTIFICATION_PROCESS) {
 		List<ObjectID> to_erase;
 		for (Map<ObjectID, Preview>::Element *E = previews.front(); E; E = E->next()) {
-			if (!E->get().generating) {
+			if (!E->get().generating.is_set()) {
 				if (E->get().thread) {
 					E->get().thread->wait_to_finish();
 					memdelete(E->get().thread);

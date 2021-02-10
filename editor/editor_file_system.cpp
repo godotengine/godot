@@ -1413,11 +1413,11 @@ void EditorFileSystem::_scan_script_classes(EditorFileSystemDirectory *p_dir) {
 }
 
 void EditorFileSystem::update_script_classes() {
-	if (!update_script_classes_queued) {
+	if (!update_script_classes_queued.is_set()) {
 		return;
 	}
 
-	update_script_classes_queued = false;
+	update_script_classes_queued.clear();
 	ScriptServer::global_classes_clear();
 	if (get_filesystem()) {
 		_scan_script_classes(get_filesystem());
@@ -1436,11 +1436,11 @@ void EditorFileSystem::update_script_classes() {
 }
 
 void EditorFileSystem::_queue_update_script_classes() {
-	if (update_script_classes_queued) {
+	if (update_script_classes_queued.is_set()) {
 		return;
 	}
 
-	update_script_classes_queued = true;
+	update_script_classes_queued.set();
 	call_deferred("update_script_classes");
 }
 
@@ -2091,7 +2091,7 @@ EditorFileSystem::EditorFileSystem() {
 	memdelete(da);
 
 	scan_total = 0;
-	update_script_classes_queued = false;
+	update_script_classes_queued.clear();
 	first_scan = true;
 	scan_changes_pending = false;
 	revalidate_import_files = false;

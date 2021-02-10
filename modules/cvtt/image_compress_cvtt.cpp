@@ -33,6 +33,7 @@
 #include "core/os/os.h"
 #include "core/os/thread.h"
 #include "core/string/print_string.h"
+#include "core/templates/safe_refcount.h"
 
 #include <ConvectionKernels.h>
 
@@ -56,7 +57,7 @@ struct CVTTCompressionJobQueue {
 	CVTTCompressionJobParams job_params;
 	const CVTTCompressionRowTask *job_tasks;
 	uint32_t num_tasks = 0;
-	uint32_t current_task = 0;
+	SafeNumeric<uint32_t> current_task;
 };
 
 static void _digest_row_task(const CVTTCompressionJobParams &p_job_params, const CVTTCompressionRowTask &p_row_task) {
@@ -131,7 +132,7 @@ static void _digest_row_task(const CVTTCompressionJobParams &p_job_params, const
 static void _digest_job_queue(void *p_job_queue) {
 	CVTTCompressionJobQueue *job_queue = static_cast<CVTTCompressionJobQueue *>(p_job_queue);
 
-	for (uint32_t next_task = atomic_increment(&job_queue->current_task); next_task <= job_queue->num_tasks; next_task = atomic_increment(&job_queue->current_task)) {
+	for (uint32_t next_task = job_queue->current_task.increment(); next_task <= job_queue->num_tasks; next_task = job_queue->current_task.increment()) {
 		_digest_row_task(job_queue->job_params, job_queue->job_tasks[next_task - 1]);
 	}
 }
@@ -263,7 +264,7 @@ void image_compress_cvtt(Image *p_image, float p_lossy_quality, Image::UsedChann
 		const CVTTCompressionRowTask *tasks_rb = tasks.ptr();
 
 		job_queue.job_tasks = &tasks_rb[0];
-		job_queue.current_task = 0;
+		job_queue.current_task.set(0);
 		job_queue.num_tasks = static_cast<uint32_t>(tasks.size());
 
 		for (int i = 0; i < num_job_threads; i++) {

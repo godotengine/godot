@@ -33,6 +33,8 @@
 
 #include "core/typedefs.h"
 
+#include "core/templates/safe_refcount.h"
+
 class String;
 
 enum ErrorHandlerType {
@@ -577,10 +579,10 @@ void _err_print_index_error(const char *p_function, const char *p_file, int p_li
  */
 #define WARN_DEPRECATED                                                                                                                                    \
 	if (true) {                                                                                                                                            \
-		static volatile bool warning_shown = false;                                                                                                        \
-		if (!warning_shown) {                                                                                                                              \
+		static SafeFlag warning_shown;                                                                                                                     \
+		if (!warning_shown.is_set()) {                                                                                                                     \
 			_err_print_error(FUNCTION_STR, __FILE__, __LINE__, "This method has been deprecated and will be removed in the future.", ERR_HANDLER_WARNING); \
-			warning_shown = true;                                                                                                                          \
+			warning_shown.set();                                                                                                                           \
 		}                                                                                                                                                  \
 	} else                                                                                                                                                 \
 		((void)0)
@@ -590,10 +592,10 @@ void _err_print_index_error(const char *p_function, const char *p_file, int p_li
  */
 #define WARN_DEPRECATED_MSG(m_msg)                                                                                                                                           \
 	if (true) {                                                                                                                                                              \
-		static volatile bool warning_shown = false;                                                                                                                          \
-		if (!warning_shown) {                                                                                                                                                \
+		static SafeFlag warning_shown;                                                                                                                                       \
+		if (!warning_shown.is_set()) {                                                                                                                                       \
 			_err_print_error(FUNCTION_STR, __FILE__, __LINE__, "This method has been deprecated and will be removed in the future.", DEBUG_STR(m_msg), ERR_HANDLER_WARNING); \
-			warning_shown = true;                                                                                                                                            \
+			warning_shown.set();                                                                                                                                             \
 		}                                                                                                                                                                    \
 	} else                                                                                                                                                                   \
 		((void)0)

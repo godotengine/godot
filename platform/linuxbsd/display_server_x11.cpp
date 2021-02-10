@@ -2697,7 +2697,7 @@ bool DisplayServerX11::_wait_for_events() const {
 }
 
 void DisplayServerX11::_poll_events() {
-	while (!events_thread_done) {
+	while (!events_thread_done.is_set()) {
 		_wait_for_events();
 
 		// Process events from the queue.
@@ -4279,7 +4279,7 @@ DisplayServerX11::~DisplayServerX11() {
 	_clipboard_transfer_ownership(XA_PRIMARY, x11_main_window);
 	_clipboard_transfer_ownership(XInternAtom(x11_display, "CLIPBOARD", 0), x11_main_window);
 
-	events_thread_done = true;
+	events_thread_done.set();
 	events_thread.wait_to_finish();
 
 	//destroy all windows

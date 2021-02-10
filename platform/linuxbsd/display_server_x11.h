@@ -253,7 +253,7 @@ class DisplayServerX11 : public DisplayServer {
 
 	mutable Mutex events_mutex;
 	Thread events_thread;
-	bool events_thread_done = false;
+	SafeFlag events_thread_done;
 	LocalVector<XEvent> polled_events;
 	static void _poll_events_thread(void *ud);
 	bool _wait_for_events() const;

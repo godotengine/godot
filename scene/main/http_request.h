@@ -34,6 +34,7 @@
 #include "core/io/http_client.h"
 #include "core/os/file_access.h"
 #include "core/os/thread.h"
+#include "core/templates/safe_refcount.h"
 #include "node.h"
 #include "scene/main/timer.h"
 
@@ -74,7 +75,7 @@ private:
 	bool request_sent = false;
 	Ref<HTTPClient> client;
 	PackedByteArray body;
-	volatile bool use_threads = false;
+	SafeFlag use_threads;
 	bool accept_gzip = true;
 
 	bool got_response = false;
@@ -86,7 +87,7 @@ private:
 	FileAccess *file = nullptr;
 
 	int body_len = -1;
-	volatile int downloaded = 0;
+	SafeNumeric<int> downloaded;
 	int body_size_limit = -1;
 
 	int redirections = 0;
@@ -107,8 +108,8 @@ private:
 	bool has_header(const PackedStringArray &p_headers, const String &p_header_name);
 	String get_header_value(const PackedStringArray &p_headers, const String &header_name);
 
-	volatile bool thread_done = false;
-	volatile bool thread_request_quit = false;
+	SafeFlag thread_done;
+	SafeFlag thread_request_quit;
 
 	Thread thread;
 

@@ -87,7 +87,7 @@ JoypadLinux::JoypadLinux(Input *in) {
 }
 
 JoypadLinux::~JoypadLinux() {
-	exit_monitor = true;
+	exit_monitor.set();
 	joy_thread.wait_to_finish();
 	close_joypad();
 }
@@ -155,7 +155,7 @@ void JoypadLinux::monitor_joypads(udev *p_udev) {
 	udev_monitor_enable_receiving(mon);
 	int fd = udev_monitor_get_fd(mon);
 
-	while (!exit_monitor) {
+	while (!exit_monitor.is_set()) {
 		fd_set fds;
 		struct timeval tv;
 		int ret;
@@ -197,7 +197,7 @@ void JoypadLinux::monitor_joypads(udev *p_udev) {
 #endif
 
 void JoypadLinux::monitor_joypads() {
-	while (!exit_monitor) {
+	while (!exit_monitor.is_set()) {
 		{
 			MutexLock lock(joy_mutex);
 

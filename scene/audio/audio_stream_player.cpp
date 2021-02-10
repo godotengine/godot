@@ -99,7 +99,7 @@ void AudioStreamPlayer::_mix_audio() {
 		use_fadeout = false;
 	}
 
-	if (!stream_playback.is_valid() || !active ||
+	if (!stream_playback.is_valid() || !active.is_set() ||
 			(stream_paused && !stream_paused_fade)) {
 		return;
 	}
@@ -112,24 +112,24 @@ void AudioStreamPlayer::_mix_audio() {
 		return;
 	}
 
-	if (setstop) {
+	if (setstop.is_set()) {
 		_mix_internal(true);
 		stream_playback->stop();
-		setstop = false;
+		setstop.clear();
 	}
 
-	if (setseek >= 0.0 && !stop_has_priority) {
+	if (setseek.get() >= 0.0 && !stop_has_priority.is_set()) {
 		if (stream_playback->is_playing()) {
 			//fade out to avoid pops
 			_mix_internal(true);
 		}
 
-		stream_playback->start(setseek);
-		setseek = -1.0; //reset seek
+		stream_playback->start(setseek.get());
+		setseek.set(-1.0); //reset seek
 		mix_volume_db = volume_db; //reset ramp
 	}
 
-	stop_has_priority = false;
+	stop_has_priority.clear();
 
 	_mix_internal(false);
 }
@@ -143,8 +143,8 @@ void AudioStreamPlayer::_notification(int p_what) {
 	}
 
 	if (p_what == NOTIFICATION_INTERNAL_PROCESS) {
-		if (!active || (setseek < 0 && !stream_playback->is_playing())) {
-			active = false;
+		if (!active.is_set() || (setseek.get() < 0 && !stream_playback->is_playing())) {
+			active.clear();
 			set_process_internal(false);
 			emit_signal("finished");
 		}
@@ -169,7 +169,7 @@ void AudioStreamPlayer::_notification(int p_what) {
 void AudioStreamPlayer::set_stream(Ref<AudioStream> p_stream) {
 	AudioServer::get_singleton()->lock();
 
-	if (active && stream_playback.is_valid() && !stream_paused) {
+	if (active.is_set() && stream_playback.is_valid() && !stream_paused) {
 		//changing streams out of the blue is not a great idea, but at least
 		//lets try to somehow avoid a click
 
@@ -196,9 +196,9 @@ void AudioStreamPlayer::set_stream(Ref<AudioStream> p_stream) {
 	if (stream_playback.is_valid()) {
 		stream_playback.unref();
 		stream.unref();
-		active = false;
-		setseek = -1;
-		setstop = false;
+		active.clear();
+		setseek.set(-1);
+		setstop.clear();
 	}
 
 	if (p_stream.is_valid()) {
@@ -237,29 +237,29 @@ float AudioStreamPlayer::get_pitch_scale() const {
 void AudioStreamPlayer::play(float p_from_pos) {
 	if (stream_playback.is_valid()) {
 		//mix_volume_db = volume_db; do not reset volume ramp here, can cause clicks
-		setseek = p_from_pos;
-		stop_has_priority = false;
-		active = true;
+		setseek.set(p_from_pos);
+		stop_has_priority.clear();
+		active.set();
 		set_process_internal(true);
 	}
 }
 
 void AudioStreamPlayer::seek(float p_seconds) {
 	if (stream_playback.is_valid()) {
-		setseek = p_seconds;
+		setseek.set(p_seconds);
 	}
 }
 
 void AudioStreamPlayer::stop() {
-	if (stream_playback.is_valid() && active) {
-		setstop = true;
-		stop_has_priority = true;
+	if (stream_playback.is_valid() && active.is_set()) {
+		setstop.set();
+		stop_has_priority.set();
 	}
 }
 
 bool AudioStreamPlayer::is_playing() const {
 	if (stream_playback.is_valid()) {
-		return active && !setstop; //&& stream_playback->is_playing();
+		return active.is_set() && !setstop.is_set(); //&& stream_playback->is_playing();
 	}
 
 	return false;
@@ -267,8 +267,9 @@ bool AudioStreamPlayer::is_playing() const {
 
 float AudioStreamPlayer::get_playback_position() {
 	if (stream_playback.is_valid()) {
-		if (setseek >= 0.0) {
-			return setseek;
+		float ss = setseek.get();
+		if (ss >= 0.0) {
+			return ss;
 		}
 		return stream_playback->get_playback_position();
 	}
@@ -317,7 +318,7 @@ void AudioStreamPlayer::_set_playing(bool p_enable) {
 }
 
 bool AudioStreamPlayer::_is_active() const {
-	return active;
+	return active.is_set();
 }
 
 void AudioStreamPlayer::set_stream_paused(bool p_pause) {

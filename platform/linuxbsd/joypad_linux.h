@@ -73,7 +73,7 @@ private:
 #ifdef UDEV_ENABLED
 	bool use_udev = false;
 #endif
-	bool exit_monitor = false;
+	SafeFlag exit_monitor;
 	Mutex joy_mutex;
 	Thread joy_thread;
 	Input *input = nullptr;

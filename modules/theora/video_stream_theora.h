@@ -36,6 +36,7 @@
 #include "core/os/semaphore.h"
 #include "core/os/thread.h"
 #include "core/templates/ring_buffer.h"
+#include "core/templates/safe_refcount.h"
 #include "scene/resources/video_stream.h"
 #include "servers/audio_server.h"
 
@@ -113,7 +114,7 @@ class VideoStreamPlaybackTheora : public VideoStreamPlayback {
 	bool thread_eof = false;
 	Semaphore *thread_sem;
 	Thread thread;
-	volatile bool thread_exit = false;
+	SafeFlag thread_exit;
 
 	static void _streaming_thread(void *ud);
 
