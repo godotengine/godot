@@ -41,7 +41,7 @@ RID CameraEffects::get_rid() const {
 void CameraEffects::set_dof_blur_far_enabled(bool p_enabled) {
 	dof_blur_far_enabled = p_enabled;
 	_update_dof_blur();
-	_change_notify();
+	notify_property_list_changed();
 }
 
 bool CameraEffects::is_dof_blur_far_enabled() const {
@@ -69,7 +69,7 @@ float CameraEffects::get_dof_blur_far_transition() const {
 void CameraEffects::set_dof_blur_near_enabled(bool p_enabled) {
 	dof_blur_near_enabled = p_enabled;
 	_update_dof_blur();
-	_change_notify();
+	notify_property_list_changed();
 }
 
 bool CameraEffects::is_dof_blur_near_enabled() const {

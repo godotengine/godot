@@ -43,7 +43,6 @@ void VisualInstance3D::_update_visibility() {
 		return;
 	}
 
-	_change_notify("visible");
 	RS::get_singleton()->instance_set_visible(get_instance(), is_visible_in_tree());
 }
 

@@ -87,7 +87,6 @@ void Resource::set_path(const String &p_path, bool p_take_over) {
 		ResourceCache::lock.write_unlock();
 	}
 
-	_change_notify("resource_path");
 	_resource_path_changed();
 }
 
@@ -105,7 +104,6 @@ int Resource::get_subindex() const {
 
 void Resource::set_name(const String &p_name) {
 	name = p_name;
-	_change_notify("resource_name");
 }
 
 String Resource::get_name() const {

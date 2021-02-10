@@ -483,7 +483,6 @@ void Polygon2D::set_offset(const Vector2 &p_offset) {
 	offset = p_offset;
 	rect_cache_dirty = true;
 	update();
-	_change_notify("offset");
 }
 
 Vector2 Polygon2D::get_offset() const {

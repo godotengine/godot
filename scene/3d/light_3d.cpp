@@ -48,11 +48,7 @@ void Light3D::set_param(Param p_param, float p_value) {
 		update_gizmo();
 
 		if (p_param == PARAM_SPOT_ANGLE) {
-			_change_notify("spot_angle");
 			update_configuration_warning();
-		} else if (p_param == PARAM_RANGE) {
-			_change_notify("omni_range");
-			_change_notify("spot_range");
 		}
 	}
 }
@@ -184,8 +180,6 @@ void Light3D::_update_visibility() {
 #endif
 
 	RS::get_singleton()->instance_set_visible(get_instance(), is_visible_in_tree() && editor_ok);
-
-	_change_notify("geometry/visible");
 }
 
 void Light3D::_notification(int p_what) {

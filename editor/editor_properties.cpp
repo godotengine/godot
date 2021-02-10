@@ -2913,7 +2913,6 @@ void EditorPropertyResource::update_property() {
 				sub_inspector->edit(res.ptr());
 			}
 
-			sub_inspector->refresh();
 		} else {
 			if (sub_inspector) {
 				set_bottom_editor(nullptr);

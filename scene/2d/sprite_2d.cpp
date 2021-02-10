@@ -155,7 +155,6 @@ void Sprite2D::set_texture(const Ref<Texture2D> &p_texture) {
 	update();
 	emit_signal("texture_changed");
 	item_rect_changed();
-	_change_notify("texture");
 }
 
 Ref<Texture2D> Sprite2D::get_texture() const {
@@ -176,7 +175,6 @@ void Sprite2D::set_offset(const Point2 &p_offset) {
 	offset = p_offset;
 	update();
 	item_rect_changed();
-	_change_notify("offset");
 }
 
 Point2 Sprite2D::get_offset() const {
@@ -224,8 +222,6 @@ void Sprite2D::set_region_rect(const Rect2 &p_region_rect) {
 	if (region) {
 		item_rect_changed();
 	}
-
-	_change_notify("region_rect");
 }
 
 Rect2 Sprite2D::get_region_rect() const {
@@ -250,8 +246,6 @@ void Sprite2D::set_frame(int p_frame) {
 
 	frame = p_frame;
 
-	_change_notify("frame");
-	_change_notify("frame_coords");
 	emit_signal(SceneStringNames::get_singleton()->frame_changed);
 }
 
@@ -275,7 +269,7 @@ void Sprite2D::set_vframes(int p_amount) {
 	vframes = p_amount;
 	update();
 	item_rect_changed();
-	_change_notify();
+	notify_property_list_changed();
 }
 
 int Sprite2D::get_vframes() const {
@@ -287,7 +281,7 @@ void Sprite2D::set_hframes(int p_amount) {
 	hframes = p_amount;
 	update();
 	item_rect_changed();
-	_change_notify();
+	notify_property_list_changed();
 }
 
 int Sprite2D::get_hframes() const {

@@ -481,7 +481,6 @@ void NavigationRegion2D::set_navigation_polygon(const Ref<NavigationPolygon> &p_
 	}
 	_navpoly_changed();
 
-	_change_notify("navpoly");
 	update_configuration_warning();
 }
 

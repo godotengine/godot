@@ -203,7 +203,7 @@ CanvasItemMaterial::LightMode CanvasItemMaterial::get_light_mode() const {
 void CanvasItemMaterial::set_particles_animation(bool p_particles_anim) {
 	particles_animation = p_particles_anim;
 	_queue_shader_change();
-	_change_notify();
+	notify_property_list_changed();
 }
 
 bool CanvasItemMaterial::get_particles_animation() const {
@@ -387,7 +387,6 @@ void CanvasItem::show() {
 	}
 
 	_propagate_visibility_changed(true);
-	_change_notify("visible");
 }
 
 void CanvasItem::hide() {
@@ -403,7 +402,6 @@ void CanvasItem::hide() {
 	}
 
 	_propagate_visibility_changed(false);
-	_change_notify("visible");
 }
 
 CanvasItem *CanvasItem::current_item_drawn = nullptr;
@@ -1035,7 +1033,7 @@ void CanvasItem::set_material(const Ref<Material> &p_material) {
 		rid = material->get_rid();
 	}
 	RS::get_singleton()->canvas_item_set_material(canvas_item, rid);
-	_change_notify(); //properties for material exposed
+	notify_property_list_changed(); //properties for material exposed
 }
 
 void CanvasItem::set_use_parent_material(bool p_use_parent_material) {
@@ -1341,7 +1339,7 @@ void CanvasItem::set_texture_filter(TextureFilter p_texture_filter) {
 	}
 	texture_filter = p_texture_filter;
 	_update_texture_filter_changed(true);
-	_change_notify();
+	notify_property_list_changed();
 }
 
 CanvasItem::TextureFilter CanvasItem::get_texture_filter() const {
@@ -1381,7 +1379,7 @@ void CanvasItem::set_texture_repeat(TextureRepeat p_texture_repeat) {
 	}
 	texture_repeat = p_texture_repeat;
 	_update_texture_repeat_changed(true);
-	_change_notify();
+	notify_property_list_changed();
 }
 
 void CanvasItem::set_clip_children(bool p_enabled) {

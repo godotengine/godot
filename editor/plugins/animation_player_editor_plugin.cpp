@@ -78,7 +78,6 @@ void AnimationPlayerEditor::_notification(int p_what) {
 				}
 				frame->set_value(player->get_current_animation_position());
 				track_editor->set_anim_pos(player->get_current_animation_position());
-				EditorNode::get_singleton()->get_inspector()->refresh();
 
 			} else if (!player->is_valid()) {
 				// Reset timeline when the player has been stopped externally
@@ -1072,8 +1071,6 @@ void AnimationPlayerEditor::_animation_key_editor_seek(float p_pos, bool p_drag)
 	frame->set_value(Math::snapped(p_pos, _get_editor_step()));
 	updating = false;
 	_seek_value_changed(p_pos, !p_drag);
-
-	EditorNode::get_singleton()->get_inspector()->refresh();
 }
 
 void AnimationPlayerEditor::_animation_tool_menu(int p_option) {

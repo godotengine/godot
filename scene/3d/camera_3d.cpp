@@ -209,7 +209,7 @@ void Camera3D::set_projection(Camera3D::Projection p_mode) {
 	if (p_mode == PROJECTION_PERSPECTIVE || p_mode == PROJECTION_ORTHOGONAL || p_mode == PROJECTION_FRUSTUM) {
 		mode = p_mode;
 		_update_camera_mode();
-		_change_notify();
+		notify_property_list_changed();
 	}
 }
 
@@ -432,7 +432,7 @@ void Camera3D::set_keep_aspect_mode(KeepAspect p_aspect) {
 	keep_aspect = p_aspect;
 	RenderingServer::get_singleton()->camera_set_use_vertical_aspect(camera, p_aspect == KEEP_WIDTH);
 	_update_camera_mode();
-	_change_notify();
+	notify_property_list_changed();
 }
 
 Camera3D::KeepAspect Camera3D::get_keep_aspect_mode() const {
@@ -562,14 +562,12 @@ void Camera3D::set_fov(float p_fov) {
 	ERR_FAIL_COND(p_fov < 1 || p_fov > 179);
 	fov = p_fov;
 	_update_camera_mode();
-	_change_notify("fov");
 }
 
 void Camera3D::set_size(float p_size) {
 	ERR_FAIL_COND(p_size < 0.1 || p_size > 16384);
 	size = p_size;
 	_update_camera_mode();
-	_change_notify("size");
 }
 
 void Camera3D::set_near(float p_near) {

@@ -214,7 +214,7 @@ void PrimitiveMesh::set_material(const Ref<Material> &p_material) {
 	if (!pending_request) {
 		// just apply it, else it'll happen when _update is called.
 		RenderingServer::get_singleton()->mesh_surface_set_material(mesh, 0, material.is_null() ? RID() : material->get_rid());
-		_change_notify();
+		notify_property_list_changed();
 		emit_changed();
 	};
 }

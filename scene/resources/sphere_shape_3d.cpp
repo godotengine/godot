@@ -66,7 +66,6 @@ void SphereShape3D::set_radius(float p_radius) {
 	radius = p_radius;
 	_update_shape();
 	notify_change_to_owners();
-	_change_notify("radius");
 }
 
 float SphereShape3D::get_radius() const {

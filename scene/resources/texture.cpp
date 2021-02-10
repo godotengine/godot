@@ -94,7 +94,7 @@ void ImageTexture::reload_from_file() {
 		create_from_image(img);
 	} else {
 		Resource::reload_from_file();
-		_change_notify();
+		notify_property_list_changed();
 		emit_changed();
 	}
 }
@@ -146,7 +146,7 @@ void ImageTexture::_reload_hook(const RID &p_hook) {
 	RID new_texture = RenderingServer::get_singleton()->texture_2d_create(img);
 	RenderingServer::get_singleton()->texture_replace(texture, new_texture);
 
-	_change_notify();
+	notify_property_list_changed();
 	emit_changed();
 }
 
@@ -163,7 +163,7 @@ void ImageTexture::create_from_image(const Ref<Image> &p_image) {
 		RID new_texture = RenderingServer::get_singleton()->texture_2d_create(p_image);
 		RenderingServer::get_singleton()->texture_replace(texture, new_texture);
 	}
-	_change_notify();
+	notify_property_list_changed();
 	emit_changed();
 
 	image_stored = true;
@@ -189,7 +189,7 @@ void ImageTexture::update(const Ref<Image> &p_image, bool p_immediate) {
 		RenderingServer::get_singleton()->texture_2d_update(texture, p_image);
 	}
 
-	_change_notify();
+	notify_property_list_changed();
 	emit_changed();
 
 	alpha_cache.unref();
@@ -612,7 +612,7 @@ Error StreamTexture2D::load(const String &p_path) {
 	}
 
 #endif
-	_change_notify();
+	notify_property_list_changed();
 	emit_changed();
 	return OK;
 }
@@ -959,7 +959,7 @@ Error StreamTexture3D::load(const String &p_path) {
 		RenderingServer::get_singleton()->texture_set_path(texture, p_path);
 	}
 
-	_change_notify();
+	notify_property_list_changed();
 	emit_changed();
 	return OK;
 }
@@ -1110,7 +1110,6 @@ void AtlasTexture::set_atlas(const Ref<Texture2D> &p_atlas) {
 	}
 	atlas = p_atlas;
 	emit_changed();
-	_change_notify("atlas");
 }
 
 Ref<Texture2D> AtlasTexture::get_atlas() const {
@@ -1123,7 +1122,6 @@ void AtlasTexture::set_region(const Rect2 &p_region) {
 	}
 	region = p_region;
 	emit_changed();
-	_change_notify("region");
 }
 
 Rect2 AtlasTexture::get_region() const {
@@ -1136,7 +1134,6 @@ void AtlasTexture::set_margin(const Rect2 &p_margin) {
 	}
 	margin = p_margin;
 	emit_changed();
-	_change_notify("margin");
 }
 
 Rect2 AtlasTexture::get_margin() const {
@@ -1146,7 +1143,6 @@ Rect2 AtlasTexture::get_margin() const {
 void AtlasTexture::set_filter_clip(const bool p_enable) {
 	filter_clip = p_enable;
 	emit_changed();
-	_change_notify("filter_clip");
 }
 
 bool AtlasTexture::has_filter_clip() const {
@@ -1904,7 +1900,7 @@ void AnimatedTexture::_update_proxy() {
 				}
 			}
 			time -= frame_limit;
-			_change_notify("current_frame");
+
 		} else {
 			break;
 		}
@@ -2355,7 +2351,7 @@ Error StreamTextureLayered::load(const String &p_path) {
 		RenderingServer::get_singleton()->texture_set_path(texture, p_path);
 	}
 
-	_change_notify();
+	notify_property_list_changed();
 	emit_changed();
 	return OK;
 }
@@ -2554,7 +2550,7 @@ Ref<Image> CameraTexture::get_data() const {
 
 void CameraTexture::set_camera_feed_id(int p_new_id) {
 	camera_feed_id = p_new_id;
-	_change_notify();
+	notify_property_list_changed();
 }
 
 int CameraTexture::get_camera_feed_id() const {
@@ -2563,7 +2559,7 @@ int CameraTexture::get_camera_feed_id() const {
 
 void CameraTexture::set_which_feed(CameraServer::FeedImage p_which) {
 	which_feed = p_which;
-	_change_notify();
+	notify_property_list_changed();
 }
 
 CameraServer::FeedImage CameraTexture::get_which_feed() const {
@@ -2574,7 +2570,7 @@ void CameraTexture::set_camera_active(bool p_active) {
 	Ref<CameraFeed> feed = CameraServer::get_singleton()->get_feed_by_id(camera_feed_id);
 	if (feed.is_valid()) {
 		feed->set_active(p_active);
-		_change_notify();
+		notify_property_list_changed();
 	}
 }
 

@@ -245,13 +245,11 @@ bool SoftBody3D::_get_property_pinned_points(int p_item, const String &p_what, V
 	return true;
 }
 
-void SoftBody3D::_changed_callback(Object *p_changed, const char *p_prop) {
+void SoftBody3D::_softbody_changed() {
 	prepare_physics_server();
 	_reset_points_offsets();
 #ifdef TOOLS_ENABLED
-	if (p_changed == this) {
-		update_configuration_warning();
-	}
+	update_configuration_warning();
 #endif
 }
 
@@ -259,7 +257,9 @@ void SoftBody3D::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_ENTER_WORLD: {
 			if (Engine::get_singleton()->is_editor_hint()) {
-				add_change_receptor(this);
+				// I have no idea what this is supposed to do, it's really weird
+				// leaving for upcoming PK work on physics
+				//add_change_receptor(this);
 			}
 
 			RID space = get_world_3d()->get_space();

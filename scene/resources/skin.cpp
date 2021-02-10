@@ -58,7 +58,7 @@ void Skin::set_bind_name(int p_index, const StringName &p_name) {
 	binds_ptr[p_index].name = p_name;
 	emit_changed();
 	if (notify_change) {
-		_change_notify();
+		notify_property_list_changed();
 	}
 }
 

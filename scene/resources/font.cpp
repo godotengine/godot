@@ -509,7 +509,7 @@ void Font::_data_changed() {
 	cache_wrap.clear();
 
 	emit_changed();
-	_change_notify();
+	notify_property_list_changed();
 }
 
 bool Font::_set(const StringName &p_name, const Variant &p_value) {
@@ -600,7 +600,7 @@ void Font::add_data(const Ref<FontData> &p_data) {
 	cache_wrap.clear();
 
 	emit_changed();
-	_change_notify();
+	notify_property_list_changed();
 }
 
 void Font::set_data(int p_idx, const Ref<FontData> &p_data) {
@@ -621,7 +621,7 @@ void Font::set_data(int p_idx, const Ref<FontData> &p_data) {
 	cache_wrap.clear();
 
 	emit_changed();
-	_change_notify();
+	notify_property_list_changed();
 }
 
 int Font::get_data_count() const {
@@ -646,7 +646,7 @@ void Font::remove_data(int p_idx) {
 	cache_wrap.clear();
 
 	emit_changed();
-	_change_notify();
+	notify_property_list_changed();
 }
 
 Dictionary Font::get_feature_list() const {
@@ -718,7 +718,7 @@ void Font::set_spacing(int p_type, int p_value) {
 	}
 
 	emit_changed();
-	_change_notify();
+	notify_property_list_changed();
 }
 
 // Drawing string and string sizes, cached.

@@ -634,7 +634,7 @@ public:
 	bool use_fps = false;
 
 	void notify_change() {
-		_change_notify();
+		notify_property_list_changed();
 	}
 
 	Node *get_root_path() {
@@ -643,7 +643,7 @@ public:
 
 	void set_use_fps(bool p_enable) {
 		use_fps = p_enable;
-		_change_notify();
+		notify_property_list_changed();
 	}
 };
 
@@ -1276,7 +1276,7 @@ public:
 	UndoRedo *undo_redo = nullptr;
 
 	void notify_change() {
-		_change_notify();
+		notify_property_list_changed();
 	}
 
 	Node *get_root_path() {
@@ -1285,7 +1285,7 @@ public:
 
 	void set_use_fps(bool p_enable) {
 		use_fps = p_enable;
-		_change_notify();
+		notify_property_list_changed();
 	}
 };
 
@@ -4283,7 +4283,6 @@ void AnimationTrackEditor::_animation_update() {
 	_update_step_spinbox();
 	emit_signal("animation_step_changed", animation->get_step());
 	emit_signal("animation_len_changed", animation->get_length());
-	EditorNode::get_singleton()->get_inspector()->refresh();
 
 	animation_changing_awaiting_update = false;
 }
