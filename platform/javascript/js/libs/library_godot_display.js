@@ -619,6 +619,18 @@ const GodotDisplay = {
 		GodotDisplayListeners.add(canvas, 'drop', GodotDisplayDragDrop.handler(dropFiles));
 	},
 
+	godot_js_display_setup_canvas__sig: 'v',
+	godot_js_display_setup_canvas: function () {
+		const canvas = GodotConfig.canvas;
+		GodotDisplayListeners.add(canvas, 'contextmenu', function (ev) {
+			ev.preventDefault();
+		}, false);
+		GodotDisplayListeners.add(canvas, 'webglcontextlost', function (ev) {
+			alert('WebGL context lost, please reload the page'); // eslint-disable-line no-alert
+			ev.preventDefault();
+		}, false);
+	},
+
 	/*
 	 * Gamepads
 	 */
