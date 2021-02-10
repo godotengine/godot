@@ -367,6 +367,7 @@ private:
 		bool dragging;
 		bool embed_subwindows_hint;
 		bool embedding_subwindows;
+		Control *menu_button_pressed;
 
 		Window *subwindow_focused;
 		SubWindowDrag subwindow_drag;
