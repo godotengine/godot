@@ -226,6 +226,7 @@ void Node3D::_notification(int p_what) {
 void Node3D::set_transform(const Transform &p_transform) {
 	data.local_transform = p_transform;
 	data.dirty |= DIRTY_VECTORS;
+	data.dirty &= ~DIRTY_LOCAL;
 	_change_notify("translation");
 	_change_notify("rotation");
 	_change_notify("rotation_degrees");
