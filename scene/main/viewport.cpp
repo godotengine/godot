@@ -416,6 +416,12 @@ void Viewport::_notification(int p_what) {
 				int point_count = PhysicsServer::get_singleton()->space_get_contact_count(find_world()->get_space());
 
 				VS::get_singleton()->multimesh_set_visible_instances(contact_3d_debug_multimesh, point_count);
+
+				for (int i = 0; i < point_count; i++) {
+					Transform point_transform;
+					point_transform.origin = points[i];
+					VS::get_singleton()->multimesh_instance_set_transform(contact_3d_debug_multimesh, i, point_transform);
+				}
 			}
 
 			if (!GLOBAL_GET("physics/common/enable_pause_aware_picking")) {
