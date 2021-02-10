@@ -377,7 +377,6 @@ void PointLight2D::set_texture_offset(const Vector2 &p_offset) {
 	texture_offset = p_offset;
 	RS::get_singleton()->canvas_light_set_texture_offset(_get_light(), texture_offset);
 	item_rect_changed();
-	_change_notify("offset");
 }
 
 Vector2 PointLight2D::get_texture_offset() const {

@@ -95,6 +95,7 @@ void EditorProperty::emit_changed(const StringName &p_property, const Variant &p
 	Variant args[4] = { p_property, p_value, p_field, p_changing };
 	const Variant *argptrs[4] = { &args[0], &args[1], &args[2], &args[3] };
 
+	cache[p_property] = p_value;
 	emit_signal("property_changed", (const Variant **)argptrs, 4);
 }
 
@@ -805,6 +806,28 @@ void EditorProperty::set_bottom_editor(Control *p_control) {
 	bottom_editor = p_control;
 }
 
+bool EditorProperty::is_cache_valid() const {
+	if (object) {
+		for (Map<StringName, Variant>::Element *E = cache.front(); E; E = E->next()) {
+			bool valid;
+			Variant value = object->get(E->key(), &valid);
+			if (!valid || value != E->get()) {
+				return false;
+			}
+		}
+	}
+	return true;
+}
+void EditorProperty::update_cache() {
+	cache.clear();
+	if (object && property != StringName()) {
+		bool valid;
+		Variant value = object->get(property, &valid);
+		if (valid) {
+			cache[property] = value;
+		}
+	}
+}
 Variant EditorProperty::get_drag_data(const Point2 &p_point) {
 	if (property == StringName()) {
 		return Variant();
@@ -1524,6 +1547,7 @@ void EditorInspector::_parse_added_editors(VBoxContainer *current_vbox, Ref<Edit
 			ep->update_property();
 			ep->update_reload_status();
 			ep->set_deletable(deletable_properties);
+			ep->update_cache();
 		}
 	}
 	ped->added_editors.clear();
@@ -1982,6 +2006,7 @@ void EditorInspector::update_tree() {
 					}
 					ep->update_property();
 					ep->update_reload_status();
+					ep->update_cache();
 
 					if (current_selected && ep->property == current_selected) {
 						ep->select(current_focusable);
@@ -2012,6 +2037,7 @@ void EditorInspector::update_property(const String &p_prop) {
 	for (List<EditorProperty *>::Element *E = editor_property_map[p_prop].front(); E; E = E->next()) {
 		E->get()->update_property();
 		E->get()->update_reload_status();
+		E->get()->update_cache();
 	}
 }
 
@@ -2027,13 +2053,6 @@ void EditorInspector::_clear() {
 	restart_request_props.clear();
 }
 
-void EditorInspector::refresh() {
-	if (refresh_countdown > 0 || changing) {
-		return;
-	}
-	refresh_countdown = EditorSettings::get_singleton()->get("docks/property_editor/auto_refresh_interval");
-}
-
 Object *EditorInspector::get_edited_object() {
 	return object;
 }
@@ -2044,7 +2063,7 @@ void EditorInspector::edit(Object *p_object) {
 	}
 	if (object) {
 		_clear();
-		object->remove_change_receptor(this);
+		object->disconnect("property_list_changed", callable_mp(this, &EditorInspector::_changed_callback));
 	}
 
 	object = p_object;
@@ -2054,7 +2073,7 @@ void EditorInspector::edit(Object *p_object) {
 		if (scroll_cache.has(object->get_instance_id())) { //if exists, set something else
 			update_scroll_request = scroll_cache[object->get_instance_id()]; //done this way because wait until full size is accommodated
 		}
-		object->add_change_receptor(this);
+		object->connect("property_list_changed", callable_mp(this, &EditorInspector::_changed_callback));
 		update_tree();
 	}
 }
@@ -2351,6 +2370,7 @@ void EditorInspector::_property_checked(const String &p_path, bool p_checked) {
 			for (List<EditorProperty *>::Element *E = editor_property_map[p_path].front(); E; E = E->next()) {
 				E->get()->update_property();
 				E->get()->update_reload_status();
+				E->get()->update_cache();
 			}
 		}
 
@@ -2394,6 +2414,7 @@ void EditorInspector::_node_removed(Node *p_node) {
 void EditorInspector::_notification(int p_what) {
 	if (p_what == NOTIFICATION_READY) {
 		EditorFeatureProfileManager::get_singleton()->connect("current_feature_profile_changed", callable_mp(this, &EditorInspector::_feature_profile_changed));
+		set_process(is_visible_in_tree());
 	}
 
 	if (p_what == NOTIFICATION_ENTER_TREE) {
@@ -2414,6 +2435,10 @@ void EditorInspector::_notification(int p_what) {
 		edit(nullptr);
 	}
 
+	if (p_what == NOTIFICATION_VISIBILITY_CHANGED) {
+		set_process(is_visible_in_tree());
+	}
+
 	if (p_what == NOTIFICATION_PROCESS) {
 		if (update_scroll_request >= 0) {
 			get_v_scrollbar()->call_deferred("set_value", update_scroll_request);
@@ -2424,10 +2449,14 @@ void EditorInspector::_notification(int p_what) {
 			if (refresh_countdown <= 0) {
 				for (Map<StringName, List<EditorProperty *>>::Element *F = editor_property_map.front(); F; F = F->next()) {
 					for (List<EditorProperty *>::Element *E = F->get().front(); E; E = E->next()) {
-						E->get()->update_property();
-						E->get()->update_reload_status();
+						if (!E->get()->is_cache_valid()) {
+							E->get()->update_property();
+							E->get()->update_reload_status();
+							E->get()->update_cache();
+						}
 					}
 				}
+				refresh_countdown = float(EditorSettings::get_singleton()->get("docks/property_editor/auto_refresh_interval"));
 			}
 		}
 
@@ -2445,6 +2474,7 @@ void EditorInspector::_notification(int p_what) {
 					for (List<EditorProperty *>::Element *E = editor_property_map[prop].front(); E; E = E->next()) {
 						E->get()->update_property();
 						E->get()->update_reload_status();
+						E->get()->update_cache();
 					}
 				}
 				pending.erase(pending.front());
@@ -2465,9 +2495,11 @@ void EditorInspector::_notification(int p_what) {
 	}
 }
 
-void EditorInspector::_changed_callback(Object *p_changed, const char *p_prop) {
-	//this is called when property change is notified via _change_notify()
-	_edit_request_change(p_changed, p_prop);
+void EditorInspector::_changed_callback() {
+	//this is called when property change is notified via notify_property_list_changed()
+	if (object != nullptr) {
+		_edit_request_change(object, String());
+	}
 }
 
 void EditorInspector::_vscroll_changed(double p_offset) {
@@ -2580,8 +2612,6 @@ void EditorInspector::_update_script_class_properties(const Object &p_object, Li
 void EditorInspector::_bind_methods() {
 	ClassDB::bind_method("_edit_request_change", &EditorInspector::_edit_request_change);
 
-	ClassDB::bind_method("refresh", &EditorInspector::refresh);
-
 	ADD_SIGNAL(MethodInfo("property_selected", PropertyInfo(Variant::STRING, "property")));
 	ADD_SIGNAL(MethodInfo("property_keyed", PropertyInfo(Variant::STRING, "property")));
 	ADD_SIGNAL(MethodInfo("property_deleted", PropertyInfo(Variant::STRING, "property")));
@@ -2613,16 +2643,21 @@ EditorInspector::EditorInspector() {
 	use_folding = false;
 	update_all_pending = false;
 	update_tree_pending = false;
-	refresh_countdown = 0;
 	read_only = false;
 	search_box = nullptr;
 	keying = false;
 	_prop_edited = "property_edited";
-	set_process(true);
+	set_process(false);
 	property_focusable = -1;
 	sub_inspector = false;
 	deletable_properties = false;
 
 	get_v_scrollbar()->connect("value_changed", callable_mp(this, &EditorInspector::_vscroll_changed));
 	update_scroll_request = -1;
+	if (EditorSettings::get_singleton()) {
+		refresh_countdown = float(EditorSettings::get_singleton()->get("docks/property_editor/auto_refresh_interval"));
+	} else {
+		//used when class is created by the docgen to dump default values of everything bindable, editorsettings may not be created
+		refresh_countdown = 0.33;
+	}
 }

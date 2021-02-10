@@ -104,7 +104,7 @@ void TextureEditor::_notification(int p_what) {
 	}
 }
 
-void TextureEditor::_changed_callback(Object *p_changed, const char *p_prop) {
+void TextureEditor::_texture_changed() {
 	if (!is_visible()) {
 		return;
 	}
@@ -113,13 +113,13 @@ void TextureEditor::_changed_callback(Object *p_changed, const char *p_prop) {
 
 void TextureEditor::edit(Ref<Texture2D> p_texture) {
 	if (!texture.is_null()) {
-		texture->remove_change_receptor(this);
+		texture->disconnect("changed", callable_mp(this, &TextureEditor::_texture_changed));
 	}
 
 	texture = p_texture;
 
 	if (!texture.is_null()) {
-		texture->add_change_receptor(this);
+		texture->connect("changed", callable_mp(this, &TextureEditor::_texture_changed));
 		update();
 	} else {
 		hide();
@@ -137,7 +137,7 @@ TextureEditor::TextureEditor() {
 
 TextureEditor::~TextureEditor() {
 	if (!texture.is_null()) {
-		texture->remove_change_receptor(this);
+		texture->disconnect("changed", callable_mp(this, &TextureEditor::_texture_changed));
 	}
 }
 

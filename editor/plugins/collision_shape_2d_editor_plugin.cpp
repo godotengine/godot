@@ -207,7 +207,7 @@ void CollisionShape2DEditor::set_handle(int idx, Point2 &p_point) {
 
 		} break;
 	}
-	node->get_shape()->_change_notify();
+	node->get_shape()->notify_property_list_changed();
 }
 
 void CollisionShape2DEditor::commit_handle(int idx, Variant &p_org) {

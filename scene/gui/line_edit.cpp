@@ -1958,7 +1958,6 @@ void LineEdit::_text_changed() {
 
 void LineEdit::_emit_text_change() {
 	emit_signal("text_changed", text);
-	_change_notify("text");
 	text_changed_dirty = false;
 }
 
@@ -2091,7 +2090,7 @@ bool LineEdit::_set(const StringName &p_name, const Variant &p_value) {
 				update();
 			}
 		}
-		_change_notify();
+		notify_property_list_changed();
 		return true;
 	}
 

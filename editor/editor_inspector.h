@@ -98,6 +98,8 @@ private:
 
 	mutable String tooltip_text;
 
+	Map<StringName, Variant> cache;
+
 protected:
 	void _notification(int p_what);
 	static void _bind_methods();
@@ -152,6 +154,8 @@ public:
 	virtual void collapse_all_folding();
 
 	virtual Variant get_drag_data(const Point2 &p_point) override;
+	virtual void update_cache();
+	virtual bool is_cache_valid() const;
 
 	void set_selectable(bool p_selectable);
 	bool is_selectable() const;
@@ -326,7 +330,7 @@ class EditorInspector : public ScrollContainer {
 
 	void _node_removed(Node *p_node);
 
-	void _changed_callback(Object *p_changed, const char *p_prop) override;
+	void _changed_callback();
 	void _edit_request_change(Object *p_object, const String &p_prop);
 
 	void _filter_changed(const String &p_text);
@@ -356,9 +360,6 @@ public:
 
 	void update_tree();
 	void update_property(const String &p_prop);
-
-	void refresh();
-
 	void edit(Object *p_object);
 	Object *get_edited_object();
 

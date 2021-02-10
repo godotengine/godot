@@ -647,7 +647,7 @@ String VisualScriptBuiltinFunc::get_caption() const {
 void VisualScriptBuiltinFunc::set_func(BuiltinFunc p_which) {
 	ERR_FAIL_INDEX(p_which, FUNC_MAX);
 	func = p_which;
-	_change_notify();
+	notify_property_list_changed();
 	ports_changed_notify();
 }
 

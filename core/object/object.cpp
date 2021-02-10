@@ -808,21 +808,6 @@ String Object::to_string() {
 	return "[" + get_class() + ":" + itos(get_instance_id()) + "]";
 }
 
-void Object::_changed_callback(Object *p_changed, const char *p_prop) {
-}
-
-void Object::add_change_receptor(Object *p_receptor) {
-	change_receptors.insert(p_receptor);
-}
-
-void Object::remove_change_receptor(Object *p_receptor) {
-	change_receptors.erase(p_receptor);
-}
-
-void Object::property_list_changed_notify() {
-	_change_notify();
-}
-
 void Object::set_script_and_instance(const Variant &p_script, ScriptInstance *p_instance) {
 	//this function is not meant to be used in any of these ways
 	ERR_FAIL_COND(p_script.is_null());
@@ -856,7 +841,7 @@ void Object::set_script(const Variant &p_script) {
 		}
 	}
 
-	_change_notify(); //scripts may add variables, so refresh is desired
+	notify_property_list_changed(); //scripts may add variables, so refresh is desired
 	emit_signal(CoreStringNames::get_singleton()->script_changed);
 }
 
@@ -1496,6 +1481,10 @@ void Object::clear_internal_resource_paths() {
 	}
 }
 
+void Object::notify_property_list_changed() {
+	emit_signal(CoreStringNames::get_singleton()->property_list_changed);
+}
+
 void Object::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_class"), &Object::get_class);
 	ClassDB::bind_method(D_METHOD("is_class", "class"), &Object::is_class);
@@ -1562,7 +1551,7 @@ void Object::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_block_signals", "enable"), &Object::set_block_signals);
 	ClassDB::bind_method(D_METHOD("is_blocking_signals"), &Object::is_blocking_signals);
-	ClassDB::bind_method(D_METHOD("property_list_changed_notify"), &Object::property_list_changed_notify);
+	ClassDB::bind_method(D_METHOD("notify_property_list_changed"), &Object::notify_property_list_changed);
 
 	ClassDB::bind_method(D_METHOD("set_message_translation", "enable"), &Object::set_message_translation);
 	ClassDB::bind_method(D_METHOD("can_translate_messages"), &Object::can_translate_messages);
@@ -1574,6 +1563,7 @@ void Object::_bind_methods() {
 	ClassDB::add_virtual_method("Object", MethodInfo("free"), false);
 
 	ADD_SIGNAL(MethodInfo("script_changed"));
+	ADD_SIGNAL(MethodInfo("property_list_changed"));
 
 	BIND_VMETHOD(MethodInfo("_notification", PropertyInfo(Variant::INT, "what")));
 	BIND_VMETHOD(MethodInfo(Variant::BOOL, "_set", PropertyInfo(Variant::STRING_NAME, "property"), PropertyInfo(Variant::NIL, "value")));

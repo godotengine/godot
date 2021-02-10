@@ -135,7 +135,7 @@ void MeshInstance3D::set_mesh(const Ref<Mesh> &p_mesh) {
 
 	update_gizmo();
 
-	_change_notify();
+	notify_property_list_changed();
 }
 
 Ref<Mesh> MeshInstance3D::get_mesh() const {
@@ -152,7 +152,7 @@ void MeshInstance3D::_resolve_skeleton_path() {
 			if (skin_internal.is_null()) {
 				//a skin was created for us
 				skin_internal = new_skin_reference->get_skin();
-				_change_notify();
+				notify_property_list_changed();
 			}
 		}
 	}

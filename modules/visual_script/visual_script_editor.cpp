@@ -61,7 +61,7 @@ protected:
 	}
 
 	void _sig_changed() {
-		_change_notify();
+		notify_property_list_changed();
 		emit_signal("changed");
 	}
 
@@ -172,7 +172,7 @@ protected:
 public:
 	void edit(const StringName &p_sig) {
 		sig = p_sig;
-		_change_notify();
+		notify_property_list_changed();
 	}
 
 	VisualScriptEditorSignalEdit() { undo_redo = nullptr; }
@@ -195,11 +195,10 @@ protected:
 	}
 
 	void _var_changed() {
-		_change_notify();
+		notify_property_list_changed();
 		emit_signal("changed");
 	}
 	void _var_value_changed() {
-		_change_notify("value"); // So the whole tree is not redrawn, makes editing smoother in general.
 		emit_signal("changed");
 	}
 
@@ -331,7 +330,7 @@ protected:
 public:
 	void edit(const StringName &p_var) {
 		var = p_var;
-		_change_notify();
+		notify_property_list_changed();
 	}
 
 	VisualScriptEditorVariableEdit() { undo_redo = nullptr; }

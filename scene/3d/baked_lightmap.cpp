@@ -1302,7 +1302,7 @@ bool BakedLightmap::is_interior() const {
 
 void BakedLightmap::set_environment_mode(EnvironmentMode p_mode) {
 	environment_mode = p_mode;
-	_change_notify();
+	notify_property_list_changed();
 }
 
 BakedLightmap::EnvironmentMode BakedLightmap::get_environment_mode() const {

@@ -232,7 +232,6 @@ protected:
 	static void _bind_methods();
 
 	virtual void _validate_property(PropertyInfo &property) const override;
-	virtual void _changed_callback(Object *p_changed, const char *p_prop) override;
 
 public:
 	enum {

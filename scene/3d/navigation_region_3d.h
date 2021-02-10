@@ -48,10 +48,11 @@ class NavigationRegion3D : public Node3D {
 	Node *debug_view = nullptr;
 	Thread bake_thread;
 
+	void _navigation_changed();
+
 protected:
 	void _notification(int p_what);
 	static void _bind_methods();
-	void _changed_callback(Object *p_changed, const char *p_prop) override;
 
 public:
 	void set_enabled(bool p_enabled);

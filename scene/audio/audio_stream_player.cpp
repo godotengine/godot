@@ -344,7 +344,7 @@ void AudioStreamPlayer::_validate_property(PropertyInfo &property) const {
 }
 
 void AudioStreamPlayer::_bus_layout_changed() {
-	_change_notify();
+	notify_property_list_changed();
 }
 
 Ref<AudioStreamPlayback> AudioStreamPlayer::get_stream_playback() {

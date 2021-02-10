@@ -56,7 +56,6 @@ void RayShape3D::set_length(float p_length) {
 	length = p_length;
 	_update_shape();
 	notify_change_to_owners();
-	_change_notify("length");
 }
 
 float RayShape3D::get_length() const {
@@ -67,7 +66,6 @@ void RayShape3D::set_slips_on_slope(bool p_active) {
 	slips_on_slope = p_active;
 	_update_shape();
 	notify_change_to_owners();
-	_change_notify("slips_on_slope");
 }
 
 bool RayShape3D::get_slips_on_slope() const {
@@ -90,6 +88,4 @@ RayShape3D::RayShape3D() :
 	/* Code copied from setters to prevent the use of uninitialized variables */
 	_update_shape();
 	notify_change_to_owners();
-	_change_notify("length");
-	_change_notify("slips_on_slope");
 }

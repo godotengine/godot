@@ -53,12 +53,6 @@ void Node2D::_edit_set_state(const Dictionary &p_state) {
 	skew = p_state["skew"];
 
 	_update_transform();
-	_change_notify("rotation");
-	_change_notify("rotation_degrees");
-	_change_notify("scale");
-	_change_notify("skew");
-	_change_notify("skew_degrees");
-	_change_notify("position");
 }
 
 void Node2D::_edit_set_position(const Point2 &p_position) {
@@ -80,8 +74,6 @@ Size2 Node2D::_edit_get_scale() const {
 void Node2D::_edit_set_rotation(float p_rotation) {
 	angle = p_rotation;
 	_update_transform();
-	_change_notify("rotation");
-	_change_notify("rotation_degrees");
 }
 
 float Node2D::_edit_get_rotation() const {
@@ -124,8 +116,6 @@ void Node2D::_edit_set_rect(const Rect2 &p_edit_rect) {
 	_scale *= new_scale;
 
 	_update_transform();
-	_change_notify("scale");
-	_change_notify("position");
 }
 #endif
 
@@ -156,7 +146,6 @@ void Node2D::set_position(const Point2 &p_pos) {
 	}
 	pos = p_pos;
 	_update_transform();
-	_change_notify("position");
 }
 
 void Node2D::set_rotation(float p_radians) {
@@ -165,8 +154,6 @@ void Node2D::set_rotation(float p_radians) {
 	}
 	angle = p_radians;
 	_update_transform();
-	_change_notify("rotation");
-	_change_notify("rotation_degrees");
 }
 
 void Node2D::set_skew(float p_radians) {
@@ -175,8 +162,6 @@ void Node2D::set_skew(float p_radians) {
 	}
 	skew = p_radians;
 	_update_transform();
-	_change_notify("skew");
-	_change_notify("skew_degrees");
 }
 
 void Node2D::set_rotation_degrees(float p_degrees) {
@@ -200,7 +185,6 @@ void Node2D::set_scale(const Size2 &p_scale) {
 		_scale.y = CMP_EPSILON;
 	}
 	_update_transform();
-	_change_notify("scale");
 }
 
 Point2 Node2D::get_position() const {
@@ -358,7 +342,6 @@ void Node2D::set_z_index(int p_z) {
 	ERR_FAIL_COND(p_z > RS::CANVAS_ITEM_Z_MAX);
 	z_index = p_z;
 	RS::get_singleton()->canvas_item_set_z_index(get_canvas_item(), z_index);
-	_change_notify("z_index");
 }
 
 void Node2D::set_z_as_relative(bool p_enabled) {

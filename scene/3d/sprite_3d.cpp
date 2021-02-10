@@ -543,8 +543,6 @@ void Sprite3D::set_frame(int p_frame) {
 
 	_queue_update();
 
-	_change_notify("frame");
-	_change_notify("frame_coords");
 	emit_signal(SceneStringNames::get_singleton()->frame_changed);
 }
 
@@ -567,7 +565,7 @@ void Sprite3D::set_vframes(int p_amount) {
 	ERR_FAIL_COND(p_amount < 1);
 	vframes = p_amount;
 	_queue_update();
-	_change_notify();
+	notify_property_list_changed();
 }
 
 int Sprite3D::get_vframes() const {
@@ -578,7 +576,7 @@ void Sprite3D::set_hframes(int p_amount) {
 	ERR_FAIL_COND(p_amount < 1);
 	hframes = p_amount;
 	_queue_update();
-	_change_notify();
+	notify_property_list_changed();
 }
 
 int Sprite3D::get_hframes() const {
@@ -895,7 +893,6 @@ void AnimatedSprite3D::_notification(int p_what) {
 					}
 
 					_queue_update();
-					_change_notify("frame");
 				}
 
 				float to_process = MIN(timeout, remaining);
@@ -921,7 +918,7 @@ void AnimatedSprite3D::set_sprite_frames(const Ref<SpriteFrames> &p_frames) {
 		set_frame(frame);
 	}
 
-	_change_notify();
+	notify_property_list_changed();
 	_reset_timeout();
 	_queue_update();
 	update_configuration_warning();
@@ -954,7 +951,7 @@ void AnimatedSprite3D::set_frame(int p_frame) {
 	frame = p_frame;
 	_reset_timeout();
 	_queue_update();
-	_change_notify("frame");
+
 	emit_signal(SceneStringNames::get_singleton()->frame_changed);
 }
 
@@ -990,8 +987,6 @@ Rect2 AnimatedSprite3D::get_item_rect() const {
 
 void AnimatedSprite3D::_res_changed() {
 	set_frame(frame);
-	_change_notify("frame");
-	_change_notify("animation");
 	_queue_update();
 }
 
@@ -1048,7 +1043,7 @@ void AnimatedSprite3D::set_animation(const StringName &p_animation) {
 	animation = p_animation;
 	_reset_timeout();
 	set_frame(0);
-	_change_notify();
+	notify_property_list_changed();
 	_queue_update();
 }
 

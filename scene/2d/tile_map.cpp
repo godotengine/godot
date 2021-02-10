@@ -165,7 +165,6 @@ void TileMap::_update_quadrant_transform() {
 void TileMap::set_tileset(const Ref<TileSet> &p_tileset) {
 	if (tile_set.is_valid()) {
 		tile_set->disconnect("changed", callable_mp(this, &TileMap::_recreate_quadrants));
-		tile_set->remove_change_receptor(this);
 	}
 
 	_clear_quadrants();
@@ -173,7 +172,6 @@ void TileMap::set_tileset(const Ref<TileSet> &p_tileset) {
 
 	if (tile_set.is_valid()) {
 		tile_set->connect("changed", callable_mp(this, &TileMap::_recreate_quadrants));
-		tile_set->add_change_receptor(this);
 	} else {
 		clear();
 	}
@@ -1330,7 +1328,7 @@ void TileMap::set_collision_use_parent(bool p_use_parent) {
 	}
 
 	_recreate_quadrants();
-	_change_notify();
+	notify_property_list_changed();
 	update_configuration_warning();
 }
 
@@ -1865,21 +1863,11 @@ void TileMap::_bind_methods() {
 	BIND_ENUM_CONSTANT(TILE_ORIGIN_BOTTOM_LEFT);
 }
 
-void TileMap::_changed_callback(Object *p_changed, const char *p_prop) {
-	if (tile_set.is_valid() && tile_set.ptr() == p_changed) {
-		emit_signal("settings_changed");
-	}
-}
-
 TileMap::TileMap() {
 	set_notify_transform(true);
 	set_notify_local_transform(false);
 }
 
 TileMap::~TileMap() {
-	if (tile_set.is_valid()) {
-		tile_set->remove_change_receptor(this);
-	}
-
 	clear();
 }

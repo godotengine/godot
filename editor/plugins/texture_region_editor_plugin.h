@@ -117,14 +117,14 @@ class TextureRegionEditor : public VBoxContainer {
 	void _update_rect();
 	void _update_autoslice();
 
+	void _texture_changed();
+
 protected:
 	void _notification(int p_what);
 	void _node_removed(Object *p_obj);
 	static void _bind_methods();
 
 	Vector2 snap_point(Vector2 p_target) const;
-
-	virtual void _changed_callback(Object *p_changed, const char *p_prop) override;
 
 public:
 	void _edit_region();

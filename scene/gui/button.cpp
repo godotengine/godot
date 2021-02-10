@@ -338,7 +338,6 @@ void Button::set_text(const String &p_text) {
 		_shape();
 
 		update();
-		_change_notify("text");
 		minimum_size_changed();
 	}
 }
@@ -399,7 +398,6 @@ void Button::set_icon(const Ref<Texture2D> &p_icon) {
 	if (icon != p_icon) {
 		icon = p_icon;
 		update();
-		_change_notify("icon");
 		minimum_size_changed();
 	}
 }
@@ -424,7 +422,6 @@ void Button::set_flat(bool p_flat) {
 	if (flat != p_flat) {
 		flat = p_flat;
 		update();
-		_change_notify("flat");
 	}
 }
 
@@ -474,7 +471,7 @@ bool Button::_set(const StringName &p_name, const Variant &p_value) {
 				update();
 			}
 		}
-		_change_notify();
+		notify_property_list_changed();
 		return true;
 	}
 

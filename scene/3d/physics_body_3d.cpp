@@ -2327,7 +2327,7 @@ void PhysicalBone3D::set_joint_type(JointType p_joint_type) {
 	_reload_joint();
 
 #ifdef TOOLS_ENABLED
-	_change_notify();
+	notify_property_list_changed();
 	if (get_gizmo().is_valid()) {
 		get_gizmo()->redraw();
 	}
@@ -2342,7 +2342,6 @@ void PhysicalBone3D::set_joint_offset(const Transform &p_offset) {
 	joint_offset = p_offset;
 
 	_update_joint_offset();
-	_change_notify("joint_rotation_degrees");
 }
 
 const Transform &PhysicalBone3D::get_joint_offset() const {
@@ -2353,7 +2352,6 @@ void PhysicalBone3D::set_joint_rotation(const Vector3 &p_euler_rad) {
 	joint_offset.basis.set_euler_scale(p_euler_rad, joint_offset.basis.get_scale());
 
 	_update_joint_offset();
-	_change_notify("joint_offset");
 }
 
 Vector3 PhysicalBone3D::get_joint_rotation() const {

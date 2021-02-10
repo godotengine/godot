@@ -107,8 +107,6 @@ void HeightMapShape3D::set_map_width(int p_new) {
 
 		_update_shape();
 		notify_change_to_owners();
-		_change_notify("map_width");
-		_change_notify("map_data");
 	}
 }
 
@@ -133,8 +131,6 @@ void HeightMapShape3D::set_map_depth(int p_new) {
 
 		_update_shape();
 		notify_change_to_owners();
-		_change_notify("map_depth");
-		_change_notify("map_data");
 	}
 }
 
@@ -171,7 +167,6 @@ void HeightMapShape3D::set_map_data(PackedFloat32Array p_new) {
 
 	_update_shape();
 	notify_change_to_owners();
-	_change_notify("map_data");
 }
 
 PackedFloat32Array HeightMapShape3D::get_map_data() const {

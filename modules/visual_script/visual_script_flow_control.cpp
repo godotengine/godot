@@ -628,7 +628,7 @@ VisualScriptNodeInstance *VisualScriptSwitch::instance(VisualScriptInstance *p_i
 bool VisualScriptSwitch::_set(const StringName &p_name, const Variant &p_value) {
 	if (String(p_name) == "case_count") {
 		case_values.resize(p_value);
-		_change_notify();
+		notify_property_list_changed();
 		ports_changed_notify();
 		return true;
 	}
@@ -638,7 +638,7 @@ bool VisualScriptSwitch::_set(const StringName &p_name, const Variant &p_value) 
 		ERR_FAIL_INDEX_V(idx, case_values.size(), false);
 
 		case_values.write[idx].type = Variant::Type(int(p_value));
-		_change_notify();
+		notify_property_list_changed();
 		ports_changed_notify();
 
 		return true;
@@ -733,7 +733,7 @@ void VisualScriptTypeCast::set_base_type(const StringName &p_type) {
 	}
 
 	base_type = p_type;
-	_change_notify();
+	notify_property_list_changed();
 	ports_changed_notify();
 }
 
@@ -747,7 +747,7 @@ void VisualScriptTypeCast::set_base_script(const String &p_path) {
 	}
 
 	script = p_path;
-	_change_notify();
+	notify_property_list_changed();
 	ports_changed_notify();
 }
 

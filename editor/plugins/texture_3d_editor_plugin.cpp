@@ -57,7 +57,7 @@ void Texture3DEditor::_notification(int p_what) {
 	}
 }
 
-void Texture3DEditor::_changed_callback(Object *p_changed, const char *p_prop) {
+void Texture3DEditor::_texture_changed() {
 	if (!is_visible()) {
 		return;
 	}
@@ -118,7 +118,7 @@ void Texture3DEditor::_texture_rect_update_area() {
 
 void Texture3DEditor::edit(Ref<Texture3D> p_texture) {
 	if (!texture.is_null()) {
-		texture->remove_change_receptor(this);
+		texture->disconnect("changed", callable_mp(this, &Texture3DEditor::_texture_changed));
 	}
 
 	texture = p_texture;
@@ -128,7 +128,7 @@ void Texture3DEditor::edit(Ref<Texture3D> p_texture) {
 			_make_shaders();
 		}
 
-		texture->add_change_receptor(this);
+		texture->connect("changed", callable_mp(this, &Texture3DEditor::_texture_changed));
 		update();
 		texture_rect->set_material(material);
 		setting = true;
@@ -184,7 +184,7 @@ Texture3DEditor::Texture3DEditor() {
 
 Texture3DEditor::~Texture3DEditor() {
 	if (!texture.is_null()) {
-		texture->remove_change_receptor(this);
+		texture->disconnect("changed", callable_mp(this, &Texture3DEditor::_texture_changed));
 	}
 }
 
