@@ -396,6 +396,15 @@ void GraphEdit::_graph_node_moved(Node *p_gn) {
 	connections_layer->update();
 }
 
+void GraphEdit::_graph_node_slot_updated(int p_index, Node *p_gn) {
+	GraphNode *gn = Object::cast_to<GraphNode>(p_gn);
+	ERR_FAIL_COND(!gn);
+	top_layer->update();
+	minimap->update();
+	update();
+	connections_layer->update();
+}
+
 void GraphEdit::add_child_notify(Node *p_child) {
 
 	Control::add_child_notify(p_child);
@@ -406,6 +415,7 @@ void GraphEdit::add_child_notify(Node *p_child) {
 	if (gn) {
 		gn->set_scale(Vector2(zoom, zoom));
 		gn->connect("offset_changed", this, "_graph_node_moved", varray(gn));
+		gn->connect("slot_updated", this, "_graph_node_slot_updated", varray(gn));
 		gn->connect("raise_request", this, "_graph_node_raised", varray(gn));
 		gn->connect("item_rect_changed", connections_layer, "update");
 		gn->connect("item_rect_changed", minimap, "update");
@@ -432,6 +442,7 @@ void GraphEdit::remove_child_notify(Node *p_child) {
 	GraphNode *gn = Object::cast_to<GraphNode>(p_child);
 	if (gn) {
 		gn->disconnect("offset_changed", this, "_graph_node_moved");
+		gn->disconnect("slot_updated", this, "_graph_node_slot_updated");
 		gn->disconnect("raise_request", this, "_graph_node_raised");
 
 		// In case of the whole GraphEdit being destroyed these references can already be freed.
@@ -1659,6 +1670,7 @@ void GraphEdit::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("_graph_node_moved"), &GraphEdit::_graph_node_moved);
 	ClassDB::bind_method(D_METHOD("_graph_node_raised"), &GraphEdit::_graph_node_raised);
+	ClassDB::bind_method(D_METHOD("_graph_node_slot_updated"), &GraphEdit::_graph_node_slot_updated);
 
 	ClassDB::bind_method(D_METHOD("_top_layer_input"), &GraphEdit::_top_layer_input);
 	ClassDB::bind_method(D_METHOD("_top_layer_draw"), &GraphEdit::_top_layer_draw);
