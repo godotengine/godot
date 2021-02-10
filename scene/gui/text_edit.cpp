@@ -977,6 +977,16 @@ void TextEdit::_notification(int p_what) {
 				}
 			}
 
+			int top_limit_y = 0;
+			int bottom_limit_y = get_size().height;
+			if (readonly) {
+				top_limit_y += cache.style_readonly->get_margin(SIDE_TOP);
+				bottom_limit_y -= cache.style_readonly->get_margin(SIDE_BOTTOM);
+			} else {
+				top_limit_y += cache.style_normal->get_margin(SIDE_TOP);
+				bottom_limit_y -= cache.style_normal->get_margin(SIDE_BOTTOM);
+			}
+
 			// draw main text
 			int row_height = get_row_height();
 			int line = first_visible_line;
@@ -1019,16 +1029,32 @@ void TextEdit::_notification(int p_what) {
 					const String &str = wrap_rows[line_wrap_index];
 					int char_margin = xmargin_beg - cursor.x_ofs;
 
-					int ofs_readonly = 0;
 					int ofs_x = 0;
+					int ofs_y = 0;
 					if (readonly) {
-						ofs_readonly = cache.style_readonly->get_offset().y / 2;
 						ofs_x = cache.style_readonly->get_offset().x / 2;
+						ofs_x -= cache.style_normal->get_offset().x / 2;
+						ofs_y = cache.style_readonly->get_offset().y / 2;
+					} else {
+						ofs_y = cache.style_normal->get_offset().y / 2;
 					}
 
-					int ofs_y = (i * row_height + cache.line_spacing / 2) + ofs_readonly;
+					ofs_y += i * row_height + cache.line_spacing / 2;
 					ofs_y -= cursor.wrap_ofs * row_height;
 					ofs_y -= get_v_scroll_offset() * row_height;
+
+					bool clipped = false;
+					if (ofs_y + row_height < top_limit_y) {
+						// Line is outside the top margin, clip current line.
+						// Still need to go through the process to prepare color changes for next lines.
+						clipped = true;
+					}
+
+					if (ofs_y > bottom_limit_y) {
+						// Line is outside the bottom margin, clip any remaining text.
+						i = draw_amount;
+						break;
+					}
 
 					if (text.is_marked(line)) {
 						if (rtl) {
@@ -1147,7 +1173,7 @@ void TextEdit::_notification(int p_what) {
 						char_margin = size.width - char_margin - TS->shaped_text_get_size(rid).x;
 					}
 
-					if (selection.active && line >= selection.from_line && line <= selection.to_line) { // Selection
+					if (!clipped && selection.active && line >= selection.from_line && line <= selection.to_line) { // Selection
 						int sel_from = (line > selection.from_line) ? TS->shaped_text_get_range(rid).x : selection.from_column;
 						int sel_to = (line < selection.to_line) ? TS->shaped_text_get_range(rid).y : selection.to_column;
 						Vector<Vector2> sel = TS->shaped_text_get_selection(rid, sel_from, sel_to);
@@ -1167,7 +1193,7 @@ void TextEdit::_notification(int p_what) {
 					}
 
 					int start = TS->shaped_text_get_range(rid).x;
-					if (!search_text.is_empty()) { // Search highhlight
+					if (!clipped && !search_text.is_empty()) { // Search highhlight
 						int search_text_col = _get_column_pos_of_word(search_text, str, search_flags, 0);
 						while (search_text_col != -1) {
 							Vector<Vector2> sel = TS->shaped_text_get_selection(rid, search_text_col + start, search_text_col + search_text.length() + start);
@@ -1190,7 +1216,7 @@ void TextEdit::_notification(int p_what) {
 						}
 					}
 
-					if (highlight_all_occurrences && !only_whitespaces_highlighted && !highlighted_text.is_empty()) { // Highlight
+					if (!clipped && highlight_all_occurrences && !only_whitespaces_highlighted && !highlighted_text.is_empty()) { // Highlight
 						int highlighted_text_col = _get_column_pos_of_word(highlighted_text, str, SEARCH_MATCH_CASE | SEARCH_WHOLE_WORDS, 0);
 						while (highlighted_text_col != -1) {
 							Vector<Vector2> sel = TS->shaped_text_get_selection(rid, highlighted_text_col + start, highlighted_text_col + highlighted_text.length() + start);
@@ -1212,7 +1238,7 @@ void TextEdit::_notification(int p_what) {
 						}
 					}
 
-					if (select_identifiers_enabled && highlighted_word.length() != 0) { // Highlight word
+					if (!clipped && select_identifiers_enabled && highlighted_word.length() != 0) { // Highlight word
 						if (_is_char(highlighted_word[0]) || highlighted_word[0] == '.') {
 							int highlighted_word_col = _get_column_pos_of_word(highlighted_word, str, SEARCH_MATCH_CASE | SEARCH_WHOLE_WORDS, 0);
 							while (highlighted_word_col != -1) {
@@ -1297,7 +1323,7 @@ void TextEdit::_notification(int p_what) {
 						}
 
 						for (int k = 0; k < glyphs[j].repeat; k++) {
-							if ((char_ofs + char_margin) >= xmargin_beg && (char_ofs + glyphs[j].advance + char_margin) <= xmargin_end) {
+							if (!clipped && (char_ofs + char_margin) >= xmargin_beg && (char_ofs + glyphs[j].advance + char_margin) <= xmargin_end) {
 								if (glyphs[j].font_rid != RID()) {
 									TS->font_draw_glyph(glyphs[j].font_rid, ci, glyphs[j].font_size, Vector2(char_margin + char_ofs + ofs_x + glyphs[j].x_off, ofs_y + glyphs[j].y_off), glyphs[j].index, current_color);
 								} else if ((glyphs[j].flags & TextServer::GRAPHEME_IS_VIRTUAL) != TextServer::GRAPHEME_IS_VIRTUAL) {
@@ -1327,7 +1353,7 @@ void TextEdit::_notification(int p_what) {
 #else
 					int caret_width = 1;
 #endif
-					if (cursor.line == line && ((line_wrap_index == line_wrap_amount) || (cursor.column != TS->shaped_text_get_range(rid).y))) {
+					if (!clipped && cursor.line == line && ((line_wrap_index == line_wrap_amount) || (cursor.column != TS->shaped_text_get_range(rid).y))) {
 						is_cursor_line_visible = true;
 						cursor_pos.y = line_top_offset_y;
 
@@ -1444,7 +1470,6 @@ void TextEdit::_notification(int p_what) {
 							}
 						}
 					}
-					ofs_y += ldata->get_line_descent(line_wrap_index);
 				}
 			}
 
