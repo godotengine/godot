@@ -385,6 +385,15 @@ void GraphEdit::_graph_node_moved(Node *p_gn) {
 	connections_layer->update();
 }
 
+void GraphEdit::_graph_node_slot_updated(int p_index, Node *p_gn) {
+	GraphNode *gn = Object::cast_to<GraphNode>(p_gn);
+	ERR_FAIL_COND(!gn);
+	top_layer->update();
+	minimap->update();
+	update();
+	connections_layer->update();
+}
+
 void GraphEdit::add_child_notify(Node *p_child) {
 	Control::add_child_notify(p_child);
 
@@ -394,6 +403,7 @@ void GraphEdit::add_child_notify(Node *p_child) {
 	if (gn) {
 		gn->set_scale(Vector2(zoom, zoom));
 		gn->connect("position_offset_changed", callable_mp(this, &GraphEdit::_graph_node_moved), varray(gn));
+		gn->connect("slot_updated", callable_mp(this, &GraphEdit::_graph_node_slot_updated), varray(gn));
 		gn->connect("raise_request", callable_mp(this, &GraphEdit::_graph_node_raised), varray(gn));
 		gn->connect("item_rect_changed", callable_mp((CanvasItem *)connections_layer, &CanvasItem::update));
 		gn->connect("item_rect_changed", callable_mp((CanvasItem *)minimap, &GraphEditMinimap::update));
@@ -419,6 +429,7 @@ void GraphEdit::remove_child_notify(Node *p_child) {
 	GraphNode *gn = Object::cast_to<GraphNode>(p_child);
 	if (gn) {
 		gn->disconnect("position_offset_changed", callable_mp(this, &GraphEdit::_graph_node_moved));
+		gn->disconnect("slot_updated", callable_mp(this, &GraphEdit::_graph_node_slot_updated));
 		gn->disconnect("raise_request", callable_mp(this, &GraphEdit::_graph_node_raised));
 
 		// In case of the whole GraphEdit being destroyed these references can already be freed.
