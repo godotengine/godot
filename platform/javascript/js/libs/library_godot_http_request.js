@@ -82,31 +82,13 @@ const GodotHTTPRequest = {
 		GodotHTTPRequest.requests[xhrId].setRequestHeader(GodotRuntime.parseString(header), GodotRuntime.parseString(value));
 	},
 
-	godot_xhr_send_null__sig: 'vi',
-	godot_xhr_send_null: function (xhrId) {
-		GodotHTTPRequest.requests[xhrId].send();
-	},
-
-	godot_xhr_send_string__sig: 'vii',
-	godot_xhr_send_string: function (xhrId, strPtr) {
-		if (!strPtr) {
-			GodotRuntime.error('Failed to send string per XHR: null pointer');
-			return;
+	godot_xhr_send__sig: 'viii',
+	godot_xhr_send: function (xhrId, p_ptr, p_len) {
+		let data = null;
+		if (p_ptr && p_len) {
+			data = GodotRuntime.heapCopy(HEAP8, p_ptr, p_len);
 		}
-		GodotHTTPRequest.requests[xhrId].send(GodotRuntime.parseString(strPtr));
-	},
-
-	godot_xhr_send_data__sig: 'viii',
-	godot_xhr_send_data: function (xhrId, ptr, len) {
-		if (!ptr) {
-			GodotRuntime.error('Failed to send data per XHR: null pointer');
-			return;
-		}
-		if (len < 0) {
-			GodotRuntime.error('Failed to send data per XHR: buffer length less than 0');
-			return;
-		}
-		GodotHTTPRequest.requests[xhrId].send(HEAPU8.subarray(ptr, ptr + len));
+		GodotHTTPRequest.requests[xhrId].send(data);
 	},
 
 	godot_xhr_abort__sig: 'vi',
