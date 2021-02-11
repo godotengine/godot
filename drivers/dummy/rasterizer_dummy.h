@@ -80,11 +80,11 @@ public:
 	int sdfgi_get_pending_region_count(RID p_render_buffers) const override { return 0; }
 	AABB sdfgi_get_pending_region_bounds(RID p_render_buffers, int p_region) const override { return AABB(); }
 	uint32_t sdfgi_get_pending_region_cascade(RID p_render_buffers, int p_region) const override { return 0; }
-	void sdfgi_update_probes(RID p_render_buffers, RID p_environment, const Vector<RID> &p_directional_lights, const RID *p_positional_light_instances, uint32_t p_positional_light_count) override {}
 
 	/* SKY API */
 
-	RID sky_create() override { return RID(); }
+	RID sky_allocate() override { return RID(); }
+	void sky_initialize(RID p_rid) override {}
 	void sky_set_radiance_size(RID p_sky, int p_radiance_size) override {}
 	void sky_set_mode(RID p_sky, RS::SkyMode p_samples) override {}
 	void sky_set_material(RID p_sky, RID p_material) override {}
@@ -92,8 +92,8 @@ public:
 
 	/* ENVIRONMENT API */
 
-	RID environment_create() override { return RID(); }
-
+	RID environment_allocate() override { return RID(); }
+	void environment_initialize(RID p_rid) override {}
 	void environment_set_background(RID p_env, RS::EnvironmentBG p_bg) override {}
 	void environment_set_sky(RID p_env, RID p_sky) override {}
 	void environment_set_sky_custom_fov(RID p_env, float p_scale) override {}
@@ -112,7 +112,7 @@ public:
 	void environment_set_ssao(RID p_env, bool p_enable, float p_radius, float p_intensity, float p_power, float p_detail, float p_horizon, float p_sharpness, float p_light_affect, float p_ao_channel_affect) override {}
 	void environment_set_ssao_quality(RS::EnvironmentSSAOQuality p_quality, bool p_half_size, float p_adaptive_target, int p_blur_passes, float p_fadeout_from, float p_fadeout_to) override {}
 
-	void environment_set_sdfgi(RID p_env, bool p_enable, RS::EnvironmentSDFGICascades p_cascades, float p_min_cell_size, RS::EnvironmentSDFGIYScale p_y_scale, bool p_use_occlusion, bool p_use_multibounce, bool p_read_sky, float p_energy, float p_normal_bias, float p_probe_bias) override {}
+	void environment_set_sdfgi(RID p_env, bool p_enable, RS::EnvironmentSDFGICascades p_cascades, float p_min_cell_size, RS::EnvironmentSDFGIYScale p_y_scale, bool p_use_occlusion, float p_bounce_feedback, bool p_read_sky, float p_energy, float p_normal_bias, float p_probe_bias) override {}
 
 	void environment_set_sdfgi_ray_count(RS::EnvironmentSDFGIRayCount p_ray_count) override {}
 	void environment_set_sdfgi_frames_to_converge(RS::EnvironmentSDFGIFramesToConverge p_frames) override {}
@@ -123,7 +123,7 @@ public:
 	void environment_set_adjustment(RID p_env, bool p_enable, float p_brightness, float p_contrast, float p_saturation, bool p_use_1d_color_correction, RID p_color_correction) override {}
 
 	void environment_set_fog(RID p_env, bool p_enable, const Color &p_light_color, float p_light_energy, float p_sun_scatter, float p_density, float p_height, float p_height_density, float p_aerial_perspective) override {}
-	void environment_set_volumetric_fog(RID p_env, bool p_enable, float p_density, const Color &p_light, float p_light_energy, float p_length, float p_detail_spread, float p_gi_inject) override {}
+	void environment_set_volumetric_fog(RID p_env, bool p_enable, float p_density, const Color &p_light, float p_light_energy, float p_length, float p_detail_spread, float p_gi_inject, bool p_temporal_reprojection, float p_temporal_reprojection_amount) override {}
 	void environment_set_volumetric_fog_volume_size(int p_size, int p_depth) override {}
 	void environment_set_volumetric_fog_filter_active(bool p_enable) override {}
 
@@ -133,8 +133,8 @@ public:
 	RS::EnvironmentBG environment_get_background(RID p_env) const override { return RS::ENV_BG_KEEP; }
 	int environment_get_canvas_max_layer(RID p_env) const override { return 0; }
 
-	RID camera_effects_create() override { return RID(); }
-
+	RID camera_effects_allocate() override { return RID(); }
+	void camera_effects_initialize(RID p_rid) override {}
 	void camera_effects_set_dof_blur_quality(RS::DOFBlurQuality p_quality, bool p_use_jitter) override {}
 	void camera_effects_set_dof_blur_bokeh_shape(RS::DOFBokehShape p_shape) override {}
 
@@ -175,11 +175,8 @@ public:
 
 	void gi_probe_set_quality(RS::GIProbeQuality) override {}
 
-	void render_scene(RID p_render_buffers, const Transform &p_cam_transform, const CameraMatrix &p_cam_projection, bool p_cam_ortogonal, const PagedArray<GeometryInstance *> &p_instances, const PagedArray<RID> &p_lights, const PagedArray<RID> &p_reflection_probes, const PagedArray<RID> &p_gi_probes, const PagedArray<RID> &p_decals, const PagedArray<RID> &p_lightmaps, RID p_environment, RID p_camera_effects, RID p_shadow_atlas, RID p_reflection_atlas, RID p_reflection_probe, int p_reflection_probe_pass, float p_screen_lod_threshold) override {}
-	void render_shadow(RID p_light, RID p_shadow_atlas, int p_pass, const PagedArray<GeometryInstance *> &p_instances, const Plane &p_camera_plane = Plane(), float p_lod_distance_multiplier = 0, float p_screen_lod_threshold = 0.0) override {}
+	void render_scene(RID p_render_buffers, const Transform &p_cam_transform, const CameraMatrix &p_cam_projection, bool p_cam_ortogonal, const PagedArray<GeometryInstance *> &p_instances, const PagedArray<RID> &p_lights, const PagedArray<RID> &p_reflection_probes, const PagedArray<RID> &p_gi_probes, const PagedArray<RID> &p_decals, const PagedArray<RID> &p_lightmaps, RID p_environment, RID p_camera_effects, RID p_shadow_atlas, RID p_reflection_atlas, RID p_reflection_probe, int p_reflection_probe_pass, float p_screen_lod_threshold, const RenderShadowData *p_render_shadows, int p_render_shadow_count, const RenderSDFGIData *p_render_sdfgi_regions, int p_render_sdfgi_region_count, const RenderSDFGIUpdateData *p_sdfgi_update_data = nullptr) override {}
 	void render_material(const Transform &p_cam_transform, const CameraMatrix &p_cam_projection, bool p_cam_ortogonal, const PagedArray<GeometryInstance *> &p_instances, RID p_framebuffer, const Rect2i &p_region) override {}
-	void render_sdfgi(RID p_render_buffers, int p_region, const PagedArray<GeometryInstance *> &p_instances) override {}
-	void render_sdfgi_static_lights(RID p_render_buffers, uint32_t p_cascade_count, const uint32_t *p_cascade_indices, const PagedArray<RID> *p_positional_lights) override {}
 	void render_particle_collider_heightfield(RID p_collider, const Transform &p_transform, const PagedArray<GeometryInstance *> &p_instances) override {}
 
 	void set_scene_pass(uint64_t p_pass) override {}
@@ -210,50 +207,22 @@ public:
 
 class RasterizerStorageDummy : public RendererStorage {
 public:
+	bool can_create_resources_async() const override { return false; }
+
 	/* TEXTURE API */
-	struct DummyTexture {
-		int width = 0;
-		int height = 0;
-		uint32_t flags = 0;
-		Image::Format format = Image::Format::FORMAT_MAX;
-		Ref<Image> image;
-		String path;
-	};
-
-	struct DummySurface {
-		uint32_t format = 0;
-		RS::PrimitiveType primitive = RS::PrimitiveType::PRIMITIVE_MAX;
-		Vector<uint8_t> array;
-		int vertex_count = 0;
-		Vector<uint8_t> index_array;
-		int index_count = 0;
-		AABB aabb;
-		Vector<Vector<uint8_t>> blend_shapes;
-		Vector<AABB> bone_aabbs;
-	};
-
-	struct DummyMesh {
-		Vector<DummySurface> surfaces;
-		int blend_shape_count = 0;
-		RS::BlendShapeMode blend_shape_mode = RS::BlendShapeMode::BLEND_SHAPE_MODE_NORMALIZED;
-	};
-
-	mutable RID_PtrOwner<DummyTexture> texture_owner;
-	mutable RID_PtrOwner<DummyMesh> mesh_owner;
-
-	RID texture_2d_create(const Ref<Image> &p_image) override { return RID(); }
-	RID texture_2d_layered_create(const Vector<Ref<Image>> &p_layers, RS::TextureLayeredType p_layered_type) override { return RID(); }
-	RID texture_3d_create(Image::Format, int p_width, int p_height, int p_depth, bool p_mipmaps, const Vector<Ref<Image>> &p_data) override { return RID(); }
-	RID texture_proxy_create(RID p_base) override { return RID(); }
-
+	RID texture_allocate() override { return RID(); }
+	void texture_2d_initialize(RID p_texture, const Ref<Image> &p_image) override {}
+	void texture_2d_layered_initialize(RID p_texture, const Vector<Ref<Image>> &p_layers, RS::TextureLayeredType p_layered_type) override {}
 	void texture_2d_update_immediate(RID p_texture, const Ref<Image> &p_image, int p_layer = 0) override {}
 	void texture_2d_update(RID p_texture, const Ref<Image> &p_image, int p_layer = 0) override {}
+	void texture_3d_initialize(RID p_texture, Image::Format, int p_width, int p_height, int p_depth, bool p_mipmaps, const Vector<Ref<Image>> &p_data) override {}
 	void texture_3d_update(RID p_texture, const Vector<Ref<Image>> &p_data) override {}
+	void texture_proxy_initialize(RID p_texture, RID p_base) override {}
 	void texture_proxy_update(RID p_proxy, RID p_base) override {}
 
-	RID texture_2d_placeholder_create() override { return RID(); }
-	RID texture_2d_layered_placeholder_create(RenderingServer::TextureLayeredType p_layered_type) override { return RID(); }
-	RID texture_3d_placeholder_create() override { return RID(); }
+	void texture_2d_placeholder_initialize(RID p_texture) override {}
+	void texture_2d_layered_placeholder_initialize(RID p_texture, RenderingServer::TextureLayeredType p_layered_type) override {}
+	void texture_3d_placeholder_initialize(RID p_texture) override {}
 
 	Ref<Image> texture_2d_get(RID p_texture) const override { return Ref<Image>(); }
 	Ref<Image> texture_2d_layer_get(RID p_texture, int p_layer) const override { return Ref<Image>(); }
@@ -261,10 +230,6 @@ public:
 
 	void texture_replace(RID p_texture, RID p_by_texture) override {}
 	void texture_set_size_override(RID p_texture, int p_width, int p_height) override {}
-// FIXME: Disabled during Vulkan refactoring, should be ported.
-#if 0
-	void texture_bind(RID p_texture, uint32_t p_texture_no) = 0;
-#endif
 
 	void texture_set_path(RID p_texture, const String &p_path) override {}
 	String texture_get_path(RID p_texture) const override { return String(); }
@@ -282,113 +247,18 @@ public:
 
 	/* CANVAS TEXTURE API */
 
-	RID canvas_texture_create() override { return RID(); }
+	RID canvas_texture_allocate() override { return RID(); }
+	void canvas_texture_initialize(RID p_rid) override {}
 	void canvas_texture_set_channel(RID p_canvas_texture, RS::CanvasTextureChannel p_channel, RID p_texture) override {}
 	void canvas_texture_set_shading_parameters(RID p_canvas_texture, const Color &p_base_color, float p_shininess) override {}
 
 	void canvas_texture_set_texture_filter(RID p_item, RS::CanvasItemTextureFilter p_filter) override {}
 	void canvas_texture_set_texture_repeat(RID p_item, RS::CanvasItemTextureRepeat p_repeat) override {}
 
-#if 0
-	RID texture_create() override {
-		DummyTexture *texture = memnew(DummyTexture);
-		ERR_FAIL_COND_V(!texture, RID());
-		return texture_owner.make_rid(texture);
-	}
-
-	void texture_allocate(RID p_texture, int p_width, int p_height, int p_depth_3d, Image::Format p_format, RenderingServer::TextureType p_type = RS::TEXTURE_TYPE_2D, uint32_t p_flags = RS::TEXTURE_FLAGS_DEFAULT) override {
-		DummyTexture *t = texture_owner.getornull(p_texture);
-		ERR_FAIL_COND(!t);
-		t->width = p_width;
-		t->height = p_height;
-		t->flags = p_flags;
-		t->format = p_format;
-		t->image = Ref<Image>(memnew(Image));
-		t->image->create(p_width, p_height, false, p_format);
-	}
-	void texture_set_data(RID p_texture, const Ref<Image> &p_image, int p_level) override {
-		DummyTexture *t = texture_owner.getornull(p_texture);
-		ERR_FAIL_COND(!t);
-		t->width = p_image->get_width();
-		t->height = p_image->get_height();
-		t->format = p_image->get_format();
-		t->image->create(t->width, t->height, false, t->format, p_image->get_data());
-	}
-
-	void texture_set_data_partial(RID p_texture, const Ref<Image> &p_image, int src_x, int src_y, int src_w, int src_h, int dst_x, int dst_y, int p_dst_mip, int p_level) override {
-		DummyTexture *t = texture_owner.getornull(p_texture);
-
-		ERR_FAIL_COND(!t);
-		ERR_FAIL_COND_MSG(p_image.is_null(), "It's not a reference to a valid Image object.");
-		ERR_FAIL_COND(t->format != p_image->get_format());
-		ERR_FAIL_COND(src_w <= 0 || src_h <= 0);
-		ERR_FAIL_COND(src_x < 0 || src_y < 0 || src_x + src_w > p_image->get_width() || src_y + src_h > p_image->get_height());
-		ERR_FAIL_COND(dst_x < 0 || dst_y < 0 || dst_x + src_w > t->width || dst_y + src_h > t->height);
-
-		t->image->blit_rect(p_image, Rect2(src_x, src_y, src_w, src_h), Vector2(dst_x, dst_y));
-	}
-
-	Ref<Image> texture_get_data(RID p_texture, int p_level) const override {
-		DummyTexture *t = texture_owner.getornull(p_texture);
-		ERR_FAIL_COND_V(!t, Ref<Image>());
-		return t->image;
-	}
-	void texture_set_flags(RID p_texture, uint32_t p_flags) override {
-		DummyTexture *t = texture_owner.getornull(p_texture);
-		ERR_FAIL_COND(!t);
-		t->flags = p_flags;
-	}
-	uint32_t texture_get_flags(RID p_texture) const override {
-		DummyTexture *t = texture_owner.getornull(p_texture);
-		ERR_FAIL_COND_V(!t, 0);
-		return t->flags;
-	}
-	Image::Format texture_get_format(RID p_texture) const override {
-		DummyTexture *t = texture_owner.getornull(p_texture);
-		ERR_FAIL_COND_V(!t, Image::FORMAT_RGB8);
-		return t->format;
-	}
-
-	RenderingServer::TextureType texture_get_type(RID p_texture) const override { return RS::TEXTURE_TYPE_2D; }
-	uint32_t texture_get_texid(RID p_texture) const override { return 0; }
-	uint32_t texture_get_width(RID p_texture) const override { return 0; }
-	uint32_t texture_get_height(RID p_texture) const override { return 0; }
-	uint32_t texture_get_depth(RID p_texture) const override { return 0; }
-	void texture_set_size_override(RID p_texture, int p_width, int p_height, int p_depth_3d) override {}
-	void texture_bind(RID p_texture, uint32_t p_texture_no) override {}
-
-	void texture_set_path(RID p_texture, const String &p_path) override {
-		DummyTexture *t = texture_owner.getornull(p_texture);
-		ERR_FAIL_COND(!t);
-		t->path = p_path;
-	}
-	String texture_get_path(RID p_texture) const override {
-		DummyTexture *t = texture_owner.getornull(p_texture);
-		ERR_FAIL_COND_V(!t, String());
-		return t->path;
-	}
-
-	void texture_set_shrink_all_x2_on_set_data(bool p_enable) override {}
-
-	void texture_debug_usage(List<RS::TextureInfo> *r_info) override {}
-
-	RID texture_create_radiance_cubemap(RID p_source, int p_resolution = -1) const override { return RID(); }
-
-	void texture_set_detect_3d_callback(RID p_texture, RenderingServer::TextureDetectCallback p_callback, void *p_userdata) override {}
-	void texture_set_detect_srgb_callback(RID p_texture, RenderingServer::TextureDetectCallback p_callback, void *p_userdata) override {}
-	void texture_set_detect_normal_callback(RID p_texture, RenderingServer::TextureDetectCallback p_callback, void *p_userdata) override {}
-
-	void textures_keep_original(bool p_enable) override {}
-
-	void texture_set_proxy(RID p_proxy, RID p_base) override {}
-	Size2 texture_size_with_proxy(RID p_texture) const override { return Size2(); }
-	void texture_set_force_redraw_if_visible(RID p_texture, bool p_enable) override {}
-#endif
-
 	/* SHADER API */
 
-	RID shader_create() override { return RID(); }
-
+	RID shader_allocate() override { return RID(); }
+	void shader_initialize(RID p_rid) override {}
 	void shader_set_code(RID p_shader, const String &p_code) override {}
 	String shader_get_code(RID p_shader) const override { return ""; }
 	void shader_get_param_list(RID p_shader, List<PropertyInfo> *p_param_list) const override {}
@@ -401,8 +271,8 @@ public:
 
 	/* COMMON MATERIAL API */
 
-	RID material_create() override { return RID(); }
-
+	RID material_allocate() override { return RID(); }
+	void material_initialize(RID p_rid) override {}
 	void material_set_render_priority(RID p_material, int priority) override {}
 	void material_set_shader(RID p_shader_material, RID p_shader) override {}
 
@@ -418,14 +288,8 @@ public:
 
 	/* MESH API */
 
-	RID mesh_create() override {
-		DummyMesh *mesh = memnew(DummyMesh);
-		ERR_FAIL_COND_V(!mesh, RID());
-		mesh->blend_shape_count = 0;
-		mesh->blend_shape_mode = RS::BLEND_SHAPE_MODE_NORMALIZED;
-		return mesh_owner.make_rid(mesh);
-	}
-
+	RID mesh_allocate() override { return RID(); }
+	void mesh_initialize(RID p_rid) override {}
 	void mesh_set_blend_shape_count(RID p_mesh, int p_blend_shape_count) override {}
 	bool mesh_needs_instance(RID p_mesh, bool p_has_skeleton) override { return false; }
 	RID mesh_instance_create(RID p_base) override { return RID(); }
@@ -438,127 +302,18 @@ public:
 
 	void mesh_add_surface(RID p_mesh, const RS::SurfaceData &p_surface) override {}
 
-#if 0
-	void mesh_add_surface(RID p_mesh, uint32_t p_format, RS::PrimitiveType p_primitive, const Vector<uint8_t> &p_array, int p_vertex_count, const Vector<uint8_t> &p_index_array, int p_index_count, const AABB &p_aabb, const Vector<Vector<uint8_t> > &p_blend_shapes = Vector<Vector<uint8_t> >(), const Vector<AABB> &p_bone_aabbs = Vector<AABB>()) override {
-		DummyMesh *m = mesh_owner.getornull(p_mesh);
-		ERR_FAIL_COND(!m);
+	int mesh_get_blend_shape_count(RID p_mesh) const override { return 0; }
 
-		m->surfaces.push_back(DummySurface());
-		DummySurface *s = &m->surfaces.write[m->surfaces.size() - 1];
-		s->format = p_format;
-		s->primitive = p_primitive;
-		s->array = p_array;
-		s->vertex_count = p_vertex_count;
-		s->index_array = p_index_array;
-		s->index_count = p_index_count;
-		s->aabb = p_aabb;
-		s->blend_shapes = p_blend_shapes;
-		s->bone_aabbs = p_bone_aabbs;
-	}
-
-	void mesh_set_blend_shape_count(RID p_mesh, int p_amount) override {
-		DummyMesh *m = mesh_owner.getornull(p_mesh);
-		ERR_FAIL_COND(!m);
-		m->blend_shape_count = p_amount;
-	}
-#endif
-
-	int mesh_get_blend_shape_count(RID p_mesh) const override {
-		DummyMesh *m = mesh_owner.getornull(p_mesh);
-		ERR_FAIL_COND_V(!m, 0);
-		return m->blend_shape_count;
-	}
-
-	void mesh_set_blend_shape_mode(RID p_mesh, RS::BlendShapeMode p_mode) override {
-		DummyMesh *m = mesh_owner.getornull(p_mesh);
-		ERR_FAIL_COND(!m);
-		m->blend_shape_mode = p_mode;
-	}
-	RS::BlendShapeMode mesh_get_blend_shape_mode(RID p_mesh) const override {
-		DummyMesh *m = mesh_owner.getornull(p_mesh);
-		ERR_FAIL_COND_V(!m, RS::BLEND_SHAPE_MODE_NORMALIZED);
-		return m->blend_shape_mode;
-	}
+	void mesh_set_blend_shape_mode(RID p_mesh, RS::BlendShapeMode p_mode) override {}
+	RS::BlendShapeMode mesh_get_blend_shape_mode(RID p_mesh) const override { return RS::BLEND_SHAPE_MODE_NORMALIZED; }
 
 	void mesh_surface_update_region(RID p_mesh, int p_surface, int p_offset, const Vector<uint8_t> &p_data) override {}
 
 	void mesh_surface_set_material(RID p_mesh, int p_surface, RID p_material) override {}
 	RID mesh_surface_get_material(RID p_mesh, int p_surface) const override { return RID(); }
 
-#if 0
-	int mesh_surface_get_array_len(RID p_mesh, int p_surface) const override {
-		DummyMesh *m = mesh_owner.getornull(p_mesh);
-		ERR_FAIL_COND_V(!m, 0);
-
-		return m->surfaces[p_surface].vertex_count;
-	}
-	int mesh_surface_get_array_index_len(RID p_mesh, int p_surface) const override {
-		DummyMesh *m = mesh_owner.getornull(p_mesh);
-		ERR_FAIL_COND_V(!m, 0);
-
-		return m->surfaces[p_surface].index_count;
-	}
-
-	Vector<uint8_t> mesh_surface_get_array(RID p_mesh, int p_surface) const override {
-		DummyMesh *m = mesh_owner.getornull(p_mesh);
-		ERR_FAIL_COND_V(!m, Vector<uint8_t>());
-
-		return m->surfaces[p_surface].array;
-	}
-	Vector<uint8_t> mesh_surface_get_index_array(RID p_mesh, int p_surface) const override {
-		DummyMesh *m = mesh_owner.getornull(p_mesh);
-		ERR_FAIL_COND_V(!m, Vector<uint8_t>());
-
-		return m->surfaces[p_surface].index_array;
-	}
-
-	uint32_t mesh_surface_get_format(RID p_mesh, int p_surface) const override {
-		DummyMesh *m = mesh_owner.getornull(p_mesh);
-		ERR_FAIL_COND_V(!m, 0);
-
-		return m->surfaces[p_surface].format;
-	}
-	RS::PrimitiveType mesh_surface_get_primitive_type(RID p_mesh, int p_surface) const override {
-		DummyMesh *m = mesh_owner.getornull(p_mesh);
-		ERR_FAIL_COND_V(!m, RS::PRIMITIVE_POINTS);
-
-		return m->surfaces[p_surface].primitive;
-	}
-
-	AABB mesh_surface_get_aabb(RID p_mesh, int p_surface) const override {
-		DummyMesh *m = mesh_owner.getornull(p_mesh);
-		ERR_FAIL_COND_V(!m, AABB());
-
-		return m->surfaces[p_surface].aabb;
-	}
-	Vector<Vector<uint8_t> > mesh_surface_get_blend_shapes(RID p_mesh, int p_surface) const override {
-		DummyMesh *m = mesh_owner.getornull(p_mesh);
-		ERR_FAIL_COND_V(!m, Vector<Vector<uint8_t> >());
-
-		return m->surfaces[p_surface].blend_shapes;
-	}
-	Vector<AABB> mesh_surface_get_skeleton_aabb(RID p_mesh, int p_surface) const override {
-		DummyMesh *m = mesh_owner.getornull(p_mesh);
-		ERR_FAIL_COND_V(!m, Vector<AABB>());
-
-		return m->surfaces[p_surface].bone_aabbs;
-	}
-
-	void mesh_remove_surface(RID p_mesh, int p_index) override {
-		DummyMesh *m = mesh_owner.getornull(p_mesh);
-		ERR_FAIL_COND(!m);
-		ERR_FAIL_COND(p_index >= m->surfaces.size());
-
-		m->surfaces.remove(p_index);
-	}
-#endif
-
 	RS::SurfaceData mesh_get_surface(RID p_mesh, int p_surface) const override { return RS::SurfaceData(); }
-	int mesh_get_surface_count(RID p_mesh) const override {
-		DummyMesh *m = mesh_owner.getornull(p_mesh);
-		ERR_FAIL_COND_V(!m, 0);
-		return m->surfaces.size();
-	}
+	int mesh_get_surface_count(RID p_mesh) const override { return 0; }
 
 	void mesh_set_custom_aabb(RID p_mesh, const AABB &p_aabb) override {}
 	AABB mesh_get_custom_aabb(RID p_mesh) const override { return AABB(); }
@@ -569,9 +324,9 @@ public:
 
 	/* MULTIMESH API */
 
-	RID multimesh_create() override { return RID(); }
-
-	void multimesh_allocate(RID p_multimesh, int p_instances, RS::MultimeshTransformFormat p_transform_format, bool p_use_colors = false, bool p_use_custom_data = false) override {}
+	RID multimesh_allocate() override { return RID(); }
+	void multimesh_initialize(RID p_rid) override {}
+	void multimesh_allocate_data(RID p_multimesh, int p_instances, RS::MultimeshTransformFormat p_transform_format, bool p_use_colors = false, bool p_use_custom_data = false) override {}
 	int multimesh_get_instance_count(RID p_multimesh) const override { return 0; }
 
 	void multimesh_set_mesh(RID p_multimesh, RID p_mesh) override {}
@@ -595,7 +350,8 @@ public:
 
 	/* IMMEDIATE API */
 
-	RID immediate_create() override { return RID(); }
+	RID immediate_allocate() override { return RID(); }
+	void immediate_initialize(RID p_rid) override {}
 	void immediate_begin(RID p_immediate, RS::PrimitiveType p_rimitive, RID p_texture = RID()) override {}
 	void immediate_vertex(RID p_immediate, const Vector3 &p_vertex) override {}
 	void immediate_normal(RID p_immediate, const Vector3 &p_normal) override {}
@@ -611,8 +367,9 @@ public:
 
 	/* SKELETON API */
 
-	RID skeleton_create() override { return RID(); }
-	void skeleton_allocate(RID p_skeleton, int p_bones, bool p_2d_skeleton = false) override {}
+	RID skeleton_allocate() override { return RID(); }
+	void skeleton_initialize(RID p_rid) override {}
+	void skeleton_allocate_data(RID p_skeleton, int p_bones, bool p_2d_skeleton = false) override {}
 	void skeleton_set_base_transform_2d(RID p_skeleton, const Transform2D &p_base_transform) override {}
 	int skeleton_get_bone_count(RID p_skeleton) const override { return 0; }
 	void skeleton_bone_set_transform(RID p_skeleton, int p_bone, const Transform &p_transform) override {}
@@ -622,7 +379,14 @@ public:
 
 	/* Light API */
 
-	RID light_create(RS::LightType p_type) override { return RID(); }
+	RID directional_light_allocate() override { return RID(); }
+	void directional_light_initialize(RID p_rid) override {}
+	RID omni_light_allocate() override { return RID(); }
+	void omni_light_initialize(RID p_rid) override {}
+	RID spot_light_allocate() override { return RID(); }
+	void spot_light_initialize(RID p_rid) override {}
+	RID reflection_probe_allocate() override { return RID(); }
+	void reflection_probe_initialize(RID p_rid) override {}
 
 	void light_set_color(RID p_light, const Color &p_color) override {}
 	void light_set_param(RID p_light, RS::LightParam p_param, float p_value) override {}
@@ -660,8 +424,6 @@ public:
 
 	/* PROBE API */
 
-	RID reflection_probe_create() override { return RID(); }
-
 	void reflection_probe_set_update_mode(RID p_probe, RS::ReflectionProbeUpdateMode p_mode) override {}
 	void reflection_probe_set_intensity(RID p_probe, float p_intensity) override {}
 	void reflection_probe_set_ambient_mode(RID p_probe, RS::ReflectionProbeAmbientMode p_mode) override {}
@@ -689,7 +451,8 @@ public:
 
 	/* DECAL API */
 
-	RID decal_create() override { return RID(); }
+	RID decal_allocate() override { return RID(); }
+	void decal_initialize(RID p_rid) override {}
 	void decal_set_extents(RID p_decal, const Vector3 &p_extents) override {}
 	void decal_set_texture(RID p_decal, RS::DecalTexture p_type, RID p_texture) override {}
 	void decal_set_emission_energy(RID p_decal, float p_energy) override {}
@@ -704,9 +467,9 @@ public:
 
 	/* GI PROBE API */
 
-	RID gi_probe_create() override { return RID(); }
-
-	void gi_probe_allocate(RID p_gi_probe, const Transform &p_to_cell_xform, const AABB &p_aabb, const Vector3i &p_octree_size, const Vector<uint8_t> &p_octree_cells, const Vector<uint8_t> &p_data_cells, const Vector<uint8_t> &p_distance_field, const Vector<int> &p_level_counts) override {}
+	RID gi_probe_allocate() override { return RID(); }
+	void gi_probe_initialize(RID p_rid) override {}
+	void gi_probe_allocate_data(RID p_gi_probe, const Transform &p_to_cell_xform, const AABB &p_aabb, const Vector3i &p_octree_size, const Vector<uint8_t> &p_octree_cells, const Vector<uint8_t> &p_data_cells, const Vector<uint8_t> &p_distance_field, const Vector<int> &p_level_counts) override {}
 
 	AABB gi_probe_get_bounds(RID p_gi_probe) const override { return AABB(); }
 	Vector3i gi_probe_get_octree_size(RID p_gi_probe) const override { return Vector3i(); }
@@ -750,72 +513,8 @@ public:
 	uint32_t gi_probe_get_version(RID p_gi_probe) override { return 0; }
 
 	/* LIGHTMAP CAPTURE */
-#if 0
-	struct Instantiable {
-		SelfList<RendererSceneRender::GeometryInstance>::List instance_list;
-
-		_FORCE_INLINE_ void instance_change_notify(bool p_aabb = true, bool p_materials = true) override {
-			SelfList<RendererSceneRender::GeometryInstance> *instances = instance_list.first();
-			while (instances) override {
-				//instances->self()->base_changed(p_aabb, p_materials);
-				instances = instances->next();
-			}
-		}
-
-		_FORCE_INLINE_ void instance_remove_deps() override {
-			SelfList<RendererSceneRender::GeometryInstance> *instances = instance_list.first();
-			while (instances) override {
-				SelfList<RendererSceneRender::GeometryInstance> *next = instances->next();
-				//instances->self()->base_removed();
-				instances = next;
-			}
-		}
-
-		Instantiable() override {}
-		~Instantiable() override {
-		}
-	};
-
-	struct LightmapCapture : public Instantiable {
-		Vector<LightmapCaptureOctree> octree;
-		AABB bounds;
-		Transform cell_xform;
-		int cell_subdiv;
-		float energy;
-		LightmapCapture() override {
-			energy = 1.0;
-			cell_subdiv = 1;
-		}
-	};
-
-	mutable RID_PtrOwner<LightmapCapture> lightmap_capture_data_owner;
-	void lightmap_capture_set_bounds(RID p_capture, const AABB &p_bounds) override {}
-	AABB lightmap_capture_get_bounds(RID p_capture) const override { return AABB(); }
-	void lightmap_capture_set_octree(RID p_capture, const Vector<uint8_t> &p_octree) override {}
-	RID lightmap_capture_create() override {
-		LightmapCapture *capture = memnew(LightmapCapture);
-		return lightmap_capture_data_owner.make_rid(capture);
-	}
-	Vector<uint8_t> lightmap_capture_get_octree(RID p_capture) const override {
-		const LightmapCapture *capture = lightmap_capture_data_owner.getornull(p_capture);
-		ERR_FAIL_COND_V(!capture, Vector<uint8_t>());
-		return Vector<uint8_t>();
-	}
-	void lightmap_capture_set_octree_cell_transform(RID p_capture, const Transform &p_xform) override {}
-	Transform lightmap_capture_get_octree_cell_transform(RID p_capture) const override { return Transform(); }
-	void lightmap_capture_set_octree_cell_subdiv(RID p_capture, int p_subdiv) override {}
-	int lightmap_capture_get_octree_cell_subdiv(RID p_capture) const override { return 0; }
-	void lightmap_capture_set_energy(RID p_capture, float p_energy) override {}
-	float lightmap_capture_get_energy(RID p_capture) const override { return 0.0; }
-	const Vector<LightmapCaptureOctree> *lightmap_capture_get_octree_ptr(RID p_capture) const override {
-		const LightmapCapture *capture = lightmap_capture_data_owner.getornull(p_capture);
-		ERR_FAIL_COND_V(!capture, nullptr);
-		return &capture->octree;
-	}
-#endif
-
-	RID lightmap_create() override { return RID(); }
-
+	RID lightmap_allocate() override { return RID(); }
+	void lightmap_initialize(RID p_rid) override {}
 	void lightmap_set_textures(RID p_lightmap, RID p_light, bool p_uses_spherical_haromics) override {}
 	void lightmap_set_probe_bounds(RID p_lightmap, const AABB &p_bounds) override {}
 	void lightmap_set_probe_interior(RID p_lightmap, bool p_interior) override {}
@@ -832,8 +531,8 @@ public:
 
 	/* PARTICLES */
 
-	RID particles_create() override { return RID(); }
-
+	RID particles_allocate() override { return RID(); }
+	void particles_initialize(RID p_rid) override {}
 	void particles_emit(RID p_particles, const Transform &p_transform, const Vector3 &p_velocity, const Color &p_color, const Color &p_custom, uint32_t p_emit_flags) override {}
 	void particles_set_emitting(RID p_particles, bool p_emitting) override {}
 	void particles_set_amount(RID p_particles, int p_amount) override {}
@@ -875,7 +574,8 @@ public:
 
 	/* PARTICLES COLLISION */
 
-	RID particles_collision_create() override { return RID(); }
+	RID particles_collision_allocate() override { return RID(); }
+	void particles_collision_initialize(RID p_rid) override {}
 	void particles_collision_set_collision_type(RID p_particles_collision, RS::ParticlesCollisionType p_type) override {}
 	void particles_collision_set_cull_mask(RID p_particles_collision, uint32_t p_cull_mask) override {}
 	void particles_collision_set_sphere_radius(RID p_particles_collision, float p_radius) override {}
@@ -934,30 +634,8 @@ public:
 	void render_target_set_sdf_size_and_scale(RID p_render_target, RS::ViewportSDFOversize p_size, RS::ViewportSDFScale p_scale) override {}
 	Rect2i render_target_get_sdf_rect(RID p_render_target) const override { return Rect2i(); }
 
-	RS::InstanceType get_base_type(RID p_rid) const override {
-		if (mesh_owner.owns(p_rid)) {
-			return RS::INSTANCE_MESH;
-		}
-
-		return RS::INSTANCE_NONE;
-	}
-
-	bool free(RID p_rid) override {
-		if (texture_owner.owns(p_rid)) {
-			// delete the texture
-			DummyTexture *texture = texture_owner.getornull(p_rid);
-			texture_owner.free(p_rid);
-			memdelete(texture);
-		}
-
-		if (mesh_owner.owns(p_rid)) {
-			// delete the mesh
-			DummyMesh *mesh = mesh_owner.getornull(p_rid);
-			mesh_owner.free(p_rid);
-			memdelete(mesh);
-		}
-		return true;
-	}
+	RS::InstanceType get_base_type(RID p_rid) const override { return RS::INSTANCE_NONE; }
+	bool free(RID p_rid) override { return true; }
 
 	bool has_os_feature(const String &p_feature) const override { return false; }
 
