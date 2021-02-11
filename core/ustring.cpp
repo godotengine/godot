@@ -2710,40 +2710,49 @@ int String::rfindn(const String &p_str, int p_from) const {
 }
 
 bool String::ends_with(const String &p_string) const {
-
 	int l = p_string.length();
+	if (l > length()) {
+		return false;
+	}
+
 	if (l == 0) {
 		return true;
 	}
 
-	int pos = find_last(p_string);
-	if (pos == -1)
-		return false;
-	return pos + l == length();
+	const CharType *p = &p_string[0];
+	const CharType *s = &operator[](length() - l);
+
+	for (int i = 0; i < l; i++) {
+		if (p[i] != s[i]) {
+			return false;
+		}
+	}
+
+	return true;
 }
 
 bool String::begins_with(const String &p_string) const {
-
-	if (p_string.length() > length())
-		return false;
-
 	int l = p_string.length();
-	if (l == 0)
-		return true;
-
-	const CharType *src = &p_string[0];
-	const CharType *str = &operator[](0);
-
-	int i = 0;
-	for (; i < l; i++) {
-
-		if (src[i] != str[i])
-			return false;
+	if (l > length()) {
+		return false;
 	}
 
-	// only if i == l the p_string matches the beginning
-	return i == l;
+	if (l == 0) {
+		return true;
+	}
+
+	const CharType *p = &p_string[0];
+	const CharType *s = &operator[](0);
+
+	for (int i = 0; i < l; i++) {
+		if (p[i] != s[i]) {
+			return false;
+		}
+	}
+
+	return true;
 }
+
 bool String::begins_with(const char *p_string) const {
 
 	int l = length();
