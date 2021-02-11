@@ -81,7 +81,7 @@ Size2 EditorProperty::get_minimum_size() const {
 	}
 
 	if (bottom_editor != nullptr && bottom_editor->is_visible()) {
-		ms.height += get_theme_constant("vseparation", "Tree");
+		ms.height += get_theme_constant("vseparation");
 		Size2 bems = bottom_editor->get_combined_minimum_size();
 		//bems.width += get_constant("item_margin", "Tree");
 		ms.height += bems.height;
@@ -149,7 +149,7 @@ void EditorProperty::_notification(int p_what) {
 			if (bottom_editor) {
 				int m = 0; //get_constant("item_margin", "Tree");
 
-				bottom_rect = Rect2(m, rect.size.height + get_theme_constant("vseparation", "Tree"), size.width - m, bottom_editor->get_combined_minimum_size().height);
+				bottom_rect = Rect2(m, rect.size.height + get_theme_constant("vseparation"), size.width - m, bottom_editor->get_combined_minimum_size().height);
 			}
 
 			if (keying) {
@@ -226,10 +226,14 @@ void EditorProperty::_notification(int p_what) {
 			size.height = label_reference->get_size().height;
 		}
 
+		Ref<StyleBox> sb;
 		if (selected) {
-			Ref<StyleBox> sb = get_theme_stylebox("selected", "Tree");
-			draw_style_box(sb, Rect2(Vector2(), size));
+			sb = get_theme_stylebox("bg_selected");
+		} else {
+			sb = get_theme_stylebox("bg");
 		}
+
+		draw_style_box(sb, Rect2(Vector2(), size));
 
 		if (draw_top_bg && right_child_rect != Rect2()) {
 			draw_rect(right_child_rect, dark_color);
@@ -240,15 +244,15 @@ void EditorProperty::_notification(int p_what) {
 
 		Color color;
 		if (draw_red) {
-			color = get_theme_color("error_color", "Editor");
+			color = get_theme_color("error_color");
 		} else {
-			color = get_theme_color("property_color", "Editor");
+			color = get_theme_color("property_color");
 		}
 		if (label.find(".") != -1) {
 			color.a = 0.5; //this should be un-hacked honestly, as it's used for editor overrides
 		}
 
-		int ofs = 0;
+		int ofs = get_theme_constant("font_offset");
 		int text_limit = text_size;
 
 		if (checkable) {
@@ -2180,17 +2184,30 @@ void EditorInspector::set_use_wide_editors(bool p_enable) {
 	wide_editors = p_enable;
 }
 
+void EditorInspector::_update_inspector_bg() {
+	if (sub_inspector) {
+		int count_subinspectors = 0;
+		Node *n = get_parent();
+		while (n) {
+			EditorInspector *ei = Object::cast_to<EditorInspector>(n);
+			if (ei && ei->sub_inspector) {
+				count_subinspectors++;
+			}
+			n = n->get_parent();
+		}
+		count_subinspectors = MIN(15, count_subinspectors);
+		add_theme_style_override("bg", get_theme_stylebox("sub_inspector_bg" + itos(count_subinspectors), "Editor"));
+	} else {
+		add_theme_style_override("bg", get_theme_stylebox("bg", "Tree"));
+	}
+}
 void EditorInspector::set_sub_inspector(bool p_enable) {
 	sub_inspector = p_enable;
 	if (!is_inside_tree()) {
 		return;
 	}
 
-	if (sub_inspector) {
-		add_theme_style_override("bg", get_theme_stylebox("sub_inspector_bg", "Editor"));
-	} else {
-		add_theme_style_override("bg", get_theme_stylebox("bg", "Tree"));
-	}
+	_update_inspector_bg();
 }
 
 void EditorInspector::set_use_deletable_properties(bool p_enabled) {
@@ -2418,10 +2435,8 @@ void EditorInspector::_notification(int p_what) {
 	}
 
 	if (p_what == NOTIFICATION_ENTER_TREE) {
-		if (sub_inspector) {
-			add_theme_style_override("bg", get_theme_stylebox("sub_inspector_bg", "Editor"));
-		} else {
-			add_theme_style_override("bg", get_theme_stylebox("bg", "Tree"));
+		_update_inspector_bg();
+		if (!sub_inspector) {
 			get_tree()->connect("node_removed", callable_mp(this, &EditorInspector::_node_removed));
 		}
 	}
@@ -2485,11 +2500,7 @@ void EditorInspector::_notification(int p_what) {
 	}
 
 	if (p_what == EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED) {
-		if (sub_inspector) {
-			add_theme_style_override("bg", get_theme_stylebox("sub_inspector_bg", "Editor"));
-		} else if (is_inside_tree()) {
-			add_theme_style_override("bg", get_theme_stylebox("bg", "Tree"));
-		}
+		_update_inspector_bg();
 
 		update_tree();
 	}

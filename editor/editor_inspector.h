@@ -343,6 +343,8 @@ class EditorInspector : public ScrollContainer {
 
 	bool _is_property_disabled_by_feature_profile(const StringName &p_property);
 
+	void _update_inspector_bg();
+
 protected:
 	static void _bind_methods();
 	void _notification(int p_what);
@@ -394,6 +396,7 @@ public:
 
 	void set_use_wide_editors(bool p_enable);
 	void set_sub_inspector(bool p_enable);
+	bool is_sub_inspector() const { return sub_inspector; }
 
 	void set_use_deletable_properties(bool p_enabled);
 
