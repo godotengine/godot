@@ -47,9 +47,12 @@ typedef struct {
 #endif
 
 #include <gdnative/gdnative.h>
+#include <gdnative/variant_struct.h>
 
 void GDAPI godot_array_new(godot_array *p_self);
 void GDAPI godot_array_destroy(godot_array *p_self);
+godot_variant GDAPI *godot_array_operator_index(godot_array *p_self, godot_int p_index);
+const godot_variant GDAPI *godot_array_operator_index_const(const godot_array *p_self, godot_int p_index);
 
 #ifdef __cplusplus
 }

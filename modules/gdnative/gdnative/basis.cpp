@@ -42,6 +42,16 @@ void GDAPI godot_basis_new(godot_basis *p_self) {
 	memnew_placement(p_self, Basis);
 }
 
+godot_vector3 GDAPI *godot_basis_operator_index(godot_basis *p_self, godot_int p_index) {
+	Basis *self = (Basis *)p_self;
+	return (godot_vector3 *)&self->operator[](p_index);
+}
+
+const godot_vector3 GDAPI *godot_basis_operator_index_const(const godot_basis *p_self, godot_int p_index) {
+	const Basis *self = (const Basis *)p_self;
+	return (const godot_vector3 *)&self->operator[](p_index);
+}
+
 #ifdef __cplusplus
 }
 #endif

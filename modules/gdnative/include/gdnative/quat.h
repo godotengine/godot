@@ -49,6 +49,8 @@ typedef struct {
 #include <gdnative/gdnative.h>
 
 void GDAPI godot_quat_new(godot_quat *p_self);
+godot_real_t GDAPI *godot_quat_operator_index(godot_quat *p_self, godot_int p_index);
+const godot_real_t GDAPI *godot_quat_operator_index_const(const godot_quat *p_self, godot_int p_index);
 
 #ifdef __cplusplus
 }

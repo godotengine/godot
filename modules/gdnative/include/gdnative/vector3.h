@@ -59,6 +59,10 @@ typedef struct {
 
 void GDAPI godot_vector3_new(godot_vector3 *p_self);
 void GDAPI godot_vector3i_new(godot_vector3i *p_self);
+godot_real_t GDAPI *godot_vector3_operator_index(godot_vector3 *p_self, godot_int p_index);
+const godot_real_t GDAPI *godot_vector3_operator_index_const(const godot_vector3 *p_self, godot_int p_index);
+int32_t GDAPI *godot_vector3i_operator_index(godot_vector3i *p_self, godot_int p_index);
+const int32_t GDAPI *godot_vector3i_operator_index_const(const godot_vector3i *p_self, godot_int p_index);
 
 #ifdef __cplusplus
 }

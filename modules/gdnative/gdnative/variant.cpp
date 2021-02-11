@@ -1065,6 +1065,22 @@ void GDAPI godot_variant_call_utility_function_with_cstring(const char *p_functi
 	}
 }
 
+godot_ptr_utility_function GDAPI godot_variant_get_ptr_utility_function(const godot_string_name *p_function) {
+	return (godot_ptr_utility_function)Variant::get_ptr_utility_function(*((const StringName *)p_function));
+}
+
+godot_ptr_utility_function GDAPI godot_variant_get_ptr_utility_function_with_cstring(const char *p_function) {
+	return (godot_ptr_utility_function)Variant::get_ptr_utility_function(StringName(p_function));
+}
+
+godot_validated_utility_function GDAPI godot_variant_get_validated_utility_function(const godot_string_name *p_function) {
+	return (godot_validated_utility_function)Variant::get_validated_utility_function(*((const StringName *)p_function));
+}
+
+godot_validated_utility_function GDAPI godot_variant_get_validated_utility_function_with_cstring(const char *p_function) {
+	return (godot_validated_utility_function)Variant::get_validated_utility_function(StringName(p_function));
+}
+
 godot_variant_utility_function_type GDAPI godot_variant_get_utility_function_type(const godot_string_name *p_function) {
 	return (godot_variant_utility_function_type)Variant::get_utility_function_type(*((const StringName *)p_function));
 }

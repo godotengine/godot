@@ -47,6 +47,26 @@ void GDAPI godot_vector2i_new(godot_vector2i *p_self) {
 	memnew_placement(p_self, Vector2i);
 }
 
+godot_real_t GDAPI *godot_vector2_operator_index(godot_vector2 *p_self, godot_int p_index) {
+	Vector2 *self = (Vector2 *)p_self;
+	return (godot_real_t *)&self->operator[](p_index);
+}
+
+const godot_real_t GDAPI *godot_vector2_operator_index_const(const godot_vector2 *p_self, godot_int p_index) {
+	const Vector2 *self = (const Vector2 *)p_self;
+	return (const godot_real_t *)&self->operator[](p_index);
+}
+
+int32_t GDAPI *godot_vector2i_operator_index(godot_vector2i *p_self, godot_int p_index) {
+	Vector2i *self = (Vector2i *)p_self;
+	return (int32_t *)&self->operator[](p_index);
+}
+
+const int32_t GDAPI *godot_vector2i_operator_index_const(const godot_vector2i *p_self, godot_int p_index) {
+	const Vector2i *self = (const Vector2i *)p_self;
+	return (const int32_t *)&self->operator[](p_index);
+}
+
 #ifdef __cplusplus
 }
 #endif

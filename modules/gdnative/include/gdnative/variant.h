@@ -36,15 +36,7 @@ extern "C" {
 #endif
 
 #include <gdnative/math_defs.h>
-
-#define GODOT_VARIANT_SIZE (sizeof(godot_real_t) * 4 + sizeof(int64_t))
-
-#ifndef GODOT_CORE_API_GODOT_VARIANT_TYPE_DEFINED
-#define GODOT_CORE_API_GODOT_VARIANT_TYPE_DEFINED
-typedef struct {
-	uint8_t _dont_touch_that[GODOT_VARIANT_SIZE];
-} godot_variant;
-#endif
+#include <gdnative/variant_struct.h>
 
 typedef enum godot_variant_type {
 	GODOT_VARIANT_TYPE_NIL,
@@ -390,6 +382,10 @@ bool GDAPI godot_variant_has_utility_function(const godot_string_name *p_functio
 bool GDAPI godot_variant_has_utility_function_with_cstring(const char *p_function);
 void GDAPI godot_variant_call_utility_function(const godot_string_name *p_function, godot_variant *r_ret, const godot_variant **p_args, int p_argument_count, godot_variant_call_error *r_error);
 void GDAPI godot_variant_call_utility_function_with_cstring(const char *p_function, godot_variant *r_ret, const godot_variant **p_args, int p_argument_count, godot_variant_call_error *r_error);
+godot_ptr_utility_function GDAPI godot_variant_get_ptr_utility_function(const godot_string_name *p_function);
+godot_ptr_utility_function GDAPI godot_variant_get_ptr_utility_function_with_cstring(const char *p_function);
+godot_validated_utility_function GDAPI godot_variant_get_validated_utility_function(const godot_string_name *p_function);
+godot_validated_utility_function GDAPI godot_variant_get_validated_utility_function_with_cstring(const char *p_function);
 godot_variant_utility_function_type GDAPI godot_variant_get_utility_function_type(const godot_string_name *p_function);
 godot_variant_utility_function_type GDAPI godot_variant_get_utility_function_type_with_cstring(const char *p_function);
 int GDAPI godot_variant_get_utility_function_argument_count(const godot_string_name *p_function);

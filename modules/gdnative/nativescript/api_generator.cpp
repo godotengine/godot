@@ -122,6 +122,7 @@ struct ClassAPI {
 	// @Unclear
 	bool is_reference = false;
 	bool has_indexing = false; // For builtin types.
+	String indexed_type; // For builtin types.
 	bool is_keyed = false; // For builtin types.
 
 	List<MethodAPI> methods;
@@ -141,7 +142,7 @@ static String get_type_name(const PropertyInfo &info) {
 		return info.class_name;
 	}
 	if (info.hint == PROPERTY_HINT_RESOURCE_TYPE) {
-		return info.hint_string;
+		return info.class_name;
 	}
 	if (info.type == Variant::NIL && (info.usage & PROPERTY_USAGE_NIL_IS_VARIANT)) {
 		return "Variant";
@@ -196,11 +197,32 @@ List<ClassAPI> generate_c_api_classes() {
 		global_constants_api.singleton_name = "CoreConstants";
 		global_constants_api.is_instantiable = false;
 		const int constants_count = CoreConstants::get_global_constant_count();
+
+		Map<StringName, EnumAPI> enum_api_map;
 		for (int i = 0; i < constants_count; ++i) {
-			ConstantAPI constant_api;
-			constant_api.constant_name = CoreConstants::get_global_constant_name(i);
-			constant_api.constant_value = CoreConstants::get_global_constant_value(i);
-			global_constants_api.constants.push_back(constant_api);
+			StringName enum_name = CoreConstants::get_global_constant_enum(i);
+			String name = String(CoreConstants::get_global_constant_name(i));
+			int value = CoreConstants::get_global_constant_value(i);
+
+			if (enum_name == StringName()) {
+				ConstantAPI constant_api;
+				constant_api.constant_name = name;
+				constant_api.constant_value = value;
+				global_constants_api.constants.push_back(constant_api);
+			} else {
+				EnumAPI enum_api;
+				if (enum_api_map.has(enum_name)) {
+					enum_api = enum_api_map[enum_name];
+				} else {
+					enum_api.name = String(enum_name);
+				}
+				enum_api.values.push_back(Pair(value, name));
+
+				enum_api_map[enum_name] = enum_api;
+			}
+		}
+		for (const Map<StringName, EnumAPI>::Element *E = enum_api_map.front(); E; E = E->next()) {
+			global_constants_api.enums.push_back(E->get());
 		}
 		global_constants_api.constants.sort_custom<ConstantAPIComparator>();
 		api.push_back(global_constants_api);
@@ -308,7 +330,9 @@ List<ClassAPI> generate_c_api_classes() {
 					property_api.type = p->get().name.get_slice(":", 1);
 					property_api.name = p->get().name.get_slice(":", 0);
 				} else {
-					property_api.type = get_type_name(p->get());
+					MethodInfo minfo;
+					ClassDB::get_method_info(class_name, property_api.getter, &minfo, true, false);
+					property_api.type = get_type_name(minfo.return_val);
 				}
 
 				property_api.index = ClassDB::get_property_index(class_name, p->get().name);
@@ -370,7 +394,7 @@ List<ClassAPI> generate_c_api_classes() {
 						arg_type = arg_info.name.get_slice(":", 1);
 						arg_name = arg_info.name.get_slice(":", 0);
 					} else if (arg_info.hint == PROPERTY_HINT_RESOURCE_TYPE) {
-						arg_type = arg_info.hint_string;
+						arg_type = arg_info.class_name;
 					} else if (arg_info.type == Variant::NIL) {
 						arg_type = "Variant";
 					} else if (arg_info.type == Variant::OBJECT) {
@@ -468,6 +492,7 @@ List<ClassAPI> generate_c_builtin_api_types() {
 		class_api.class_name = Variant::get_type_name(type);
 		class_api.is_instantiable = true;
 		class_api.has_indexing = Variant::has_indexing(type);
+		class_api.indexed_type = Variant::get_type_name(Variant::get_indexed_element_type(type));
 		class_api.is_keyed = Variant::is_keyed(type);
 		// Types that are passed by reference.
 		switch (type) {
@@ -768,6 +793,7 @@ static List<String> generate_c_builtin_api_json(const List<ClassAPI> &p_api) {
 		append_indented(source, vformat(R"("is_instantiable": %s,)", class_api.is_instantiable ? "true" : "false"));
 		append_indented(source, vformat(R"("is_reference": %s,)", class_api.is_reference ? "true" : "false"));
 		append_indented(source, vformat(R"("has_indexing": %s,)", class_api.has_indexing ? "true" : "false"));
+		append_indented(source, vformat(R"("indexed_type": "%s",)", class_api.has_indexing && class_api.indexed_type == "Nil" ? "Variant" : class_api.indexed_type));
 		append_indented(source, vformat(R"("is_keyed": %s,)", class_api.is_keyed ? "true" : "false"));
 
 		// Constructors.
