@@ -107,17 +107,6 @@ const Engine = (function () {
 				me.canvas.tabIndex = 0;
 			}
 
-			// Disable right-click context menu.
-			me.canvas.addEventListener('contextmenu', function (ev) {
-				ev.preventDefault();
-			}, false);
-
-			// Until context restoration is implemented warn the user of context loss.
-			me.canvas.addEventListener('webglcontextlost', function (ev) {
-				alert('WebGL context lost, please reload the page'); // eslint-disable-line no-alert
-				ev.preventDefault();
-			}, false);
-
 			// Browser locale, or custom one if defined.
 			let locale = me.customLocale;
 			if (!locale) {
