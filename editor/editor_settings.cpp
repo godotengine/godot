@@ -442,6 +442,8 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 
 	// Property editor
 	_initial_set("docks/property_editor/auto_refresh_interval", 0.2); //update 5 times per second by default
+	_initial_set("docks/property_editor/subresource_hue_tint", 0.75);
+	hints["docks/property_editor/subresource_hue_tint"] = PropertyInfo(Variant::FLOAT, "docks/property_editor/subresource_hue_tint", PROPERTY_HINT_RANGE, "0,1,0.01", PROPERTY_USAGE_DEFAULT);
 
 	/* Text editor */
 
