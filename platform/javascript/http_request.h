@@ -53,9 +53,7 @@ extern int godot_xhr_open(int p_xhr_id, const char *p_method, const char *p_url,
 
 extern void godot_xhr_set_request_header(int p_xhr_id, const char *p_header, const char *p_value);
 
-extern void godot_xhr_send_null(int p_xhr_id);
-extern void godot_xhr_send_string(int p_xhr_id, const char *p_data);
-extern void godot_xhr_send_data(int p_xhr_id, const void *p_data, int p_len);
+extern void godot_xhr_send(int p_xhr_id, const void *p_data, int p_len);
 extern void godot_xhr_abort(int p_xhr_id);
 
 /* this is an HTTPClient::ResponseCode, not ::Status */
