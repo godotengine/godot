@@ -284,6 +284,10 @@
 			tabs.forEach(function (elem) {
 				if (elem.id == 'tab-' + name) {
 					elem.style.display = 'block';
+					if (name == 'editor' || name == 'game') {
+						const canvas = document.getElementById(name + '-canvas');
+						canvas.focus();
+					}
 				} else {
 					elem.style.display = 'none';
 				}
