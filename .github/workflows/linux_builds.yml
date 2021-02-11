@@ -40,12 +40,12 @@ jobs:
             ${{github.job}}-${{env.GODOT_BASE_BRANCH}}-${{github.ref}}
             ${{github.job}}-${{env.GODOT_BASE_BRANCH}}
 
-      # Use python 3.x release (works cross platform; best to keep self contained in it's own step)
-      - name: Set up Python 3.x
+      # Test Python 2.x support for Godot 3.2.
+      - name: Set up Python 2.x
         uses: actions/setup-python@v2
         with:
           # Semantic version range syntax or exact version of a Python version
-          python-version: '3.x'
+          python-version: '2.x'
           # Optional - x64 or x86 architecture, defaults to x64
           architecture: 'x64'
 
