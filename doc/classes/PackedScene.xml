@@ -5,7 +5,7 @@
 	</brief_description>
 	<description>
 		A simplified interface to a scene file. Provides access to operations and checks that can be performed on the scene resource itself.
-		Can be used to save a node to a file. When saving, the node as well as all the node it owns get saved (see [code]owner[/code] property on [Node]).
+		Can be used to save a node to a file. When saving, the node as well as all the nodes it owns get saved (see [code]owner[/code] property on [Node]).
 		[b]Note:[/b] The node doesn't need to own itself.
 		[b]Example of loading a saved scene:[/b]
 		[codeblock]
