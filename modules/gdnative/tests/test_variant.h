@@ -124,6 +124,7 @@ TEST_CASE("[GDNative Variant] Variant evaluate") {
 	godot_variant_new_int(&two, 2);
 
 	godot_variant three;
+	godot_variant_new_nil(&three);
 	bool valid = false;
 
 	godot_variant_evaluate(GODOT_VARIANT_OP_ADD, &one, &two, &three, &valid);
