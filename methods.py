@@ -174,9 +174,7 @@ def detect_modules(search_path, recursive=False):
         version_path = os.path.join(path, "version.py")
         if os.path.exists(version_path):
             with open(version_path) as f:
-                version = {}
-                exec(f.read(), version)
-                if version.get("short_name") == "godot":
+                if 'short_name = "godot"' in f.read():
                     return True
         return False
 
