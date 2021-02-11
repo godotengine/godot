@@ -77,6 +77,7 @@ protected:
 	bool registering_order;
 	int last_order;
 	int last_builtin_order;
+	uint64_t last_save_time = 0;
 	Map<StringName, VariantContainer> props;
 	String resource_path;
 	Map<StringName, PropertyInfo> custom_prop_info;
@@ -110,7 +111,6 @@ protected:
 
 	Error _setup(const String &p_path, const String &p_main_pack, bool p_upwards = false);
 
-protected:
 	static void _bind_methods();
 
 public:
@@ -143,6 +143,7 @@ public:
 	Error save();
 	void set_custom_property_info(const String &p_prop, const PropertyInfo &p_info);
 	const Map<StringName, PropertyInfo> &get_custom_property_info() const;
+	uint64_t get_last_saved_time() { return last_save_time; }
 
 	Vector<String> get_optimizer_presets() const;
 
