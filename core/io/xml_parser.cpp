@@ -36,63 +36,6 @@
 
 VARIANT_ENUM_CAST(XMLParser::NodeType);
 
-static bool _equalsn(const CharType *str1, const CharType *str2, int len) {
-	int i;
-	for (i = 0; i < len && str1[i] && str2[i]; ++i) {
-		if (str1[i] != str2[i]) {
-			return false;
-		}
-	}
-
-	// if one (or both) of the strings was smaller then they
-	// are only equal if they have the same length
-	return (i == len) || (str1[i] == 0 && str2[i] == 0);
-}
-
-String XMLParser::_replace_special_characters(const String &origstr) {
-	int pos = origstr.find("&");
-	int oldPos = 0;
-
-	if (pos == -1) {
-		return origstr;
-	}
-
-	String newstr;
-
-	while (pos != -1 && pos < origstr.length() - 2) {
-		// check if it is one of the special characters
-
-		int specialChar = -1;
-		for (int i = 0; i < (int)special_characters.size(); ++i) {
-			const CharType *p = &origstr[pos] + 1;
-
-			if (_equalsn(&special_characters[i][1], p, special_characters[i].length() - 1)) {
-				specialChar = i;
-				break;
-			}
-		}
-
-		if (specialChar != -1) {
-			newstr += (origstr.substr(oldPos, pos - oldPos));
-			newstr += (special_characters[specialChar][0]);
-			pos += special_characters[specialChar].length();
-		} else {
-			newstr += (origstr.substr(oldPos, pos - oldPos + 1));
-			pos += 1;
-		}
-
-		// find next &
-		oldPos = pos;
-		pos = origstr.find("&", pos);
-	}
-
-	if (oldPos < origstr.length() - 1) {
-		newstr += (origstr.substr(oldPos, origstr.length() - oldPos));
-	}
-
-	return newstr;
-}
-
 static inline bool _is_white_space(char c) {
 	return (c == ' ' || c == '\t' || c == '\n' || c == '\r');
 }
@@ -116,7 +59,7 @@ bool XMLParser::_set_text(char *start, char *end) {
 
 	// set current text to the parsed text, and replace xml special characters
 	String s = String::utf8(start, (int)(end - start));
-	node_name = _replace_special_characters(s);
+	node_name = s.xml_unescape();
 
 	// current XML node type is text
 	node_type = NODE_TEXT;
@@ -321,7 +264,7 @@ void XMLParser::_parse_opening_xml_element() {
 				String s = String::utf8(attributeValueBegin,
 						(int)(attributeValueEnd - attributeValueBegin));
 
-				attr.value = _replace_special_characters(s);
+				attr.value = s.xml_unescape();
 				attributes.push_back(attr);
 			} else {
 				// tag is closed directly
@@ -579,14 +522,8 @@ int XMLParser::get_current_line() const {
 }
 
 XMLParser::XMLParser() {
-	data = nullptr;
-	close();
-	special_characters.push_back("&amp;");
-	special_characters.push_back("<lt;");
-	special_characters.push_back(">gt;");
-	special_characters.push_back("\"quot;");
-	special_characters.push_back("'apos;");
 }
+
 XMLParser::~XMLParser() {
 	if (data) {
 		memdelete_arr(data);

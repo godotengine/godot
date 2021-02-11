@@ -47,6 +47,7 @@
 #include "test_render.h"
 #include "test_shader_lang.h"
 #include "test_string.h"
+#include "test_xml_parser.h"
 
 const char **tests_get_names() {
 	static const char *test_names[] = {
@@ -65,6 +66,7 @@ const char **tests_get_names() {
 		"gd_bytecode",
 		"ordered_hash_map",
 		"astar",
+		"xml_parser",
 		nullptr
 	};
 
@@ -136,6 +138,10 @@ MainLoop *test_main(String p_test, const List<String> &p_args) {
 
 	if (p_test == "astar") {
 		return TestAStar::test();
+	}
+
+	if (p_test == "xml_parser") {
+		return TestXMLParser::test();
 	}
 
 	print_line("Unknown test: " + p_test);
