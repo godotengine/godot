@@ -177,6 +177,14 @@ void FontData::_get_property_list(List<PropertyInfo> *p_list) const {
 	}
 }
 
+void FontData::reset_state() {
+	if (rid != RID()) {
+		TS->free(rid);
+	}
+	base_size = 16;
+	path = String();
+}
+
 RID FontData::get_rid() const {
 	return rid;
 }
@@ -588,6 +596,14 @@ void Font::_get_property_list(List<PropertyInfo> *p_list) const {
 	p_list->push_back(PropertyInfo(Variant::OBJECT, "data/" + itos(data.size()), PROPERTY_HINT_RESOURCE_TYPE, "FontData"));
 }
 
+void Font::reset_state() {
+	spacing_top = 0;
+	spacing_bottom = 0;
+	cache.clear();
+	cache_wrap.clear();
+	data.clear();
+}
+
 void Font::add_data(const Ref<FontData> &p_data) {
 	ERR_FAIL_COND(p_data.is_null());
 	data.push_back(p_data);
@@ -951,7 +967,7 @@ Font::~Font() {
 
 /*************************************************************************/
 
-RES ResourceFormatLoaderFont::load(const String &p_path, const String &p_original_path, Error *r_error, bool p_use_sub_threads, float *r_progress, bool p_no_cache) {
+RES ResourceFormatLoaderFont::load(const String &p_path, const String &p_original_path, Error *r_error, bool p_use_sub_threads, float *r_progress, CacheMode p_cache_mode) {
 	if (r_error) {
 		*r_error = ERR_FILE_CANT_OPEN;
 	}
@@ -1006,7 +1022,7 @@ String ResourceFormatLoaderFont::get_resource_type(const String &p_path) const {
 
 #ifndef DISABLE_DEPRECATED
 
-RES ResourceFormatLoaderCompatFont::load(const String &p_path, const String &p_original_path, Error *r_error, bool p_use_sub_threads, float *r_progress, bool p_no_cache) {
+RES ResourceFormatLoaderCompatFont::load(const String &p_path, const String &p_original_path, Error *r_error, bool p_use_sub_threads, float *r_progress, CacheMode p_cache_mode) {
 	if (r_error) {
 		*r_error = ERR_FILE_CANT_OPEN;
 	}

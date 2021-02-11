@@ -1095,6 +1095,15 @@ bool ArrayMesh::_get(const StringName &p_name, Variant &r_ret) const {
 	return true;
 }
 
+void ArrayMesh::reset_state() {
+	clear_surfaces();
+	clear_blend_shapes();
+
+	aabb = AABB();
+	blend_shape_mode = BLEND_SHAPE_MODE_RELATIVE;
+	custom_aabb = AABB();
+}
+
 void ArrayMesh::_get_property_list(List<PropertyInfo> *p_list) const {
 	if (_is_generated()) {
 		return;

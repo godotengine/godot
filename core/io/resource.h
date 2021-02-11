@@ -90,6 +90,8 @@ public:
 	static Node *(*_get_local_scene_func)(); //used by editor
 
 	virtual bool editor_can_reload_from_file();
+	virtual void reset_state(); //for resources that use variable amount of properties, either via _validate_property or _get_property_list, this function needs to be implemented to correctly clear state
+	virtual Error copy_from(const Ref<Resource> &p_resource);
 	virtual void reload_from_file();
 
 	void register_owner(Object *p_owner);

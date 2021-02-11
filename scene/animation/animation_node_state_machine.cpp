@@ -914,6 +914,18 @@ void AnimationNodeStateMachine::_get_property_list(List<PropertyInfo> *p_list) c
 	p_list->push_back(PropertyInfo(Variant::VECTOR2, "graph_offset", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR));
 }
 
+void AnimationNodeStateMachine::reset_state() {
+	states.clear();
+	transitions.clear();
+	playback = "playback";
+	start_node = StringName();
+	end_node = StringName();
+	graph_offset = Vector2();
+
+	emit_changed();
+	emit_signal("tree_changed");
+}
+
 void AnimationNodeStateMachine::set_node_position(const StringName &p_name, const Vector2 &p_position) {
 	ERR_FAIL_COND(!states.has(p_name));
 	states[p_name].position = p_position;

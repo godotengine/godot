@@ -256,6 +256,8 @@ protected:
 	void _get_property_list(List<PropertyInfo> *p_list) const;
 
 public:
+	virtual void reset_state() override;
+
 	virtual int get_output_sequence_port_count() const override;
 	virtual bool has_input_sequence_port() const override;
 

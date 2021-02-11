@@ -114,23 +114,8 @@ Error ResourceLoaderText::_parse_sub_resource(VariantParser::Stream *p_stream, R
 	}
 
 	int index = token.value;
-
-	if (use_nocache) {
-		r_res = int_resources[index];
-	} else {
-		String path = local_path + "::" + itos(index);
-
-		if (!ignore_resource_parsing) {
-			if (!ResourceCache::has(path)) {
-				r_err_str = "Can't load cached sub-resource: " + path;
-				return ERR_PARSE_ERROR;
-			}
-
-			r_res = RES(ResourceCache::get(path));
-		} else {
-			r_res = RES();
-		}
-	}
+	ERR_FAIL_COND_V(!int_resources.has(index), ERR_INVALID_PARAMETER);
+	r_res = int_resources[index];
 
 	VariantParser::get_token(p_stream, token, line, r_err_str);
 	if (token.type != VariantParser::TK_PARENTHESIS_CLOSE) {
@@ -440,7 +425,7 @@ Error ResourceLoaderText::load() {
 		er.type = type;
 
 		if (use_sub_threads) {
-			Error err = ResourceLoader::load_threaded_request(path, type, use_sub_threads, local_path);
+			Error err = ResourceLoader::load_threaded_request(path, type, use_sub_threads, ResourceFormatLoader::CACHE_MODE_REUSE, local_path);
 
 			if (err != OK) {
 				if (ResourceLoader::get_abort_on_missing_resources()) {
@@ -517,29 +502,44 @@ Error ResourceLoaderText::load() {
 		//bool exists=ResourceCache::has(path);
 
 		Ref<Resource> res;
+		bool do_assign = false;
 
-		if (use_nocache || !ResourceCache::has(path)) { //only if it doesn't exist
-
-			Object *obj = ClassDB::instance(type);
-			if (!obj) {
-				error_text += "Can't create sub resource of type: " + type;
-				_printerr();
-				error = ERR_FILE_CORRUPT;
-				return error;
+		if (cache_mode == ResourceFormatLoader::CACHE_MODE_REPLACE && ResourceCache::has(path)) {
+			//reuse existing
+			Resource *r = ResourceCache::get(path);
+			if (r && r->get_class() == type) {
+				res = Ref<Resource>(r);
+				res->reset_state();
+				do_assign = true;
 			}
+		}
 
-			Resource *r = Object::cast_to<Resource>(obj);
-			if (!r) {
-				error_text += "Can't create sub resource of type, because not a resource: " + type;
-				_printerr();
-				error = ERR_FILE_CORRUPT;
-				return error;
-			}
+		if (res.is_null()) { //not reuse
+			if (cache_mode != ResourceFormatLoader::CACHE_MODE_IGNORE && ResourceCache::has(path)) { //only if it doesn't exist
+				//cached, do not assign
+				Resource *r = ResourceCache::get(path);
+				res = Ref<Resource>(r);
+			} else {
+				//create
 
-			res = Ref<Resource>(r);
-			int_resources[id] = res;
-			if (!use_nocache) {
-				res->set_path(path);
+				Object *obj = ClassDB::instance(type);
+				if (!obj) {
+					error_text += "Can't create sub resource of type: " + type;
+					_printerr();
+					error = ERR_FILE_CORRUPT;
+					return error;
+				}
+
+				Resource *r = Object::cast_to<Resource>(obj);
+				if (!r) {
+					error_text += "Can't create sub resource of type, because not a resource: " + type;
+					_printerr();
+					error = ERR_FILE_CORRUPT;
+					return error;
+				}
+
+				res = Ref<Resource>(r);
+				do_assign = true;
 			}
 		}
 
@@ -557,7 +557,7 @@ Error ResourceLoaderText::load() {
 			}
 
 			if (assign != String()) {
-				if (res.is_valid()) {
+				if (do_assign) {
 					res->set(assign, value);
 				}
 				//it's assignment
@@ -570,6 +570,11 @@ Error ResourceLoaderText::load() {
 				_printerr();
 				return error;
 			}
+		}
+
+		int_resources[id] = res; //always assign int resources
+		if (do_assign && cache_mode != ResourceFormatLoader::CACHE_MODE_IGNORE) {
+			res->set_path(path, cache_mode == ResourceFormatLoader::CACHE_MODE_REPLACE);
 		}
 
 		if (progress && resources_total > 0) {
@@ -589,23 +594,33 @@ Error ResourceLoaderText::load() {
 			return error;
 		}
 
-		Object *obj = ClassDB::instance(res_type);
-		if (!obj) {
-			error_text += "Can't create sub resource of type: " + res_type;
-			_printerr();
-			error = ERR_FILE_CORRUPT;
-			return error;
+		if (cache_mode == ResourceFormatLoader::CACHE_MODE_REPLACE && ResourceCache::has(local_path)) {
+			Resource *r = ResourceCache::get(local_path);
+			if (r->get_class() == res_type) {
+				r->reset_state();
+				resource = Ref<Resource>(r);
+			}
 		}
 
-		Resource *r = Object::cast_to<Resource>(obj);
-		if (!r) {
-			error_text += "Can't create sub resource of type, because not a resource: " + res_type;
-			_printerr();
-			error = ERR_FILE_CORRUPT;
-			return error;
-		}
+		if (!resource.is_valid()) {
+			Object *obj = ClassDB::instance(res_type);
+			if (!obj) {
+				error_text += "Can't create sub resource of type: " + res_type;
+				_printerr();
+				error = ERR_FILE_CORRUPT;
+				return error;
+			}
 
-		resource = Ref<Resource>(r);
+			Resource *r = Object::cast_to<Resource>(obj);
+			if (!r) {
+				error_text += "Can't create sub resource of type, because not a resource: " + res_type;
+				_printerr();
+				error = ERR_FILE_CORRUPT;
+				return error;
+			}
+
+			resource = Ref<Resource>(r);
+		}
 
 		resource_current++;
 
@@ -620,7 +635,7 @@ Error ResourceLoaderText::load() {
 					_printerr();
 				} else {
 					error = OK;
-					if (!use_nocache) {
+					if (cache_mode != ResourceFormatLoader::CACHE_MODE_IGNORE) {
 						if (!ResourceCache::has(res_path)) {
 							resource->set_path(res_path);
 						}
@@ -668,7 +683,7 @@ Error ResourceLoaderText::load() {
 		error = OK;
 		//get it here
 		resource = packed_scene;
-		if (!use_nocache && !ResourceCache::has(res_path)) {
+		if (cache_mode != ResourceFormatLoader::CACHE_MODE_IGNORE && !ResourceCache::has(res_path)) {
 			packed_scene->set_path(res_path);
 		}
 
@@ -1241,7 +1256,7 @@ String ResourceLoaderText::recognize(FileAccess *p_f) {
 
 /////////////////////
 
-RES ResourceFormatLoaderText::load(const String &p_path, const String &p_original_path, Error *r_error, bool p_use_sub_threads, float *r_progress, bool p_no_cache) {
+RES ResourceFormatLoaderText::load(const String &p_path, const String &p_original_path, Error *r_error, bool p_use_sub_threads, float *r_progress, CacheMode p_cache_mode) {
 	if (r_error) {
 		*r_error = ERR_CANT_OPEN;
 	}
@@ -1254,7 +1269,7 @@ RES ResourceFormatLoaderText::load(const String &p_path, const String &p_origina
 
 	ResourceLoaderText loader;
 	String path = p_original_path != "" ? p_original_path : p_path;
-	loader.use_nocache = p_no_cache;
+	loader.cache_mode = p_cache_mode;
 	loader.use_sub_threads = p_use_sub_threads;
 	loader.local_path = ProjectSettings::get_singleton()->localize_path(path);
 	loader.progress = r_progress;

@@ -110,6 +110,16 @@ bool GDNativeLibrary::_get(const StringName &p_name, Variant &r_property) const 
 	return false;
 }
 
+void GDNativeLibrary::reset_state() {
+	config_file.instance();
+	current_library_path = "";
+	current_dependencies.clear();
+	symbol_prefix = default_symbol_prefix;
+	load_once = default_load_once;
+	singleton = default_singleton;
+	reloadable = default_reloadable;
+}
+
 void GDNativeLibrary::_get_property_list(List<PropertyInfo> *p_list) const {
 	// set entries
 	List<String> entry_key_list;
@@ -508,7 +518,7 @@ Error GDNative::get_symbol(StringName p_procedure_name, void *&r_handle, bool p_
 	return result;
 }
 
-RES GDNativeLibraryResourceLoader::load(const String &p_path, const String &p_original_path, Error *r_error, bool p_use_sub_threads, float *r_progress, bool p_no_cache) {
+RES GDNativeLibraryResourceLoader::load(const String &p_path, const String &p_original_path, Error *r_error, bool p_use_sub_threads, float *r_progress, CacheMode p_cache_mode) {
 	Ref<GDNativeLibrary> lib;
 	lib.instance();
 

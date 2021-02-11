@@ -1121,6 +1121,13 @@ void AnimationNodeBlendTree::_get_property_list(List<PropertyInfo> *p_list) cons
 	p_list->push_back(PropertyInfo(Variant::ARRAY, "node_connections", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR));
 }
 
+void AnimationNodeBlendTree::reset_state() {
+	graph_offset = Vector2();
+	nodes.clear();
+	emit_changed();
+	emit_signal("tree_changed");
+}
+
 void AnimationNodeBlendTree::_tree_changed() {
 	emit_signal("tree_changed");
 }

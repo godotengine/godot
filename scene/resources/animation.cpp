@@ -580,6 +580,10 @@ void Animation::_get_property_list(List<PropertyInfo> *p_list) const {
 	}
 }
 
+void Animation::reset_state() {
+	clear();
+}
+
 int Animation::add_track(TrackType p_type, int p_at_pos) {
 	if (p_at_pos < 0 || p_at_pos >= tracks.size()) {
 		p_at_pos = tracks.size();

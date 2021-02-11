@@ -313,17 +313,12 @@ Error ResourceLoaderBinary::parse_variant(Variant &r_v) {
 					uint32_t index = f->get_32();
 					String path = res_path + "::" + itos(index);
 
-					if (use_nocache) {
-						if (!internal_index_cache.has(path)) {
-							WARN_PRINT(String("Couldn't load resource (no cache): " + path).utf8().get_data());
-						}
-						r_v = internal_index_cache[path];
+					//always use internal cache for loading internal resources
+					if (!internal_index_cache.has(path)) {
+						WARN_PRINT(String("Couldn't load resource (no cache): " + path).utf8().get_data());
+						r_v = Variant();
 					} else {
-						RES res = ResourceLoader::load(path);
-						if (res.is_null()) {
-							WARN_PRINT(String("Couldn't load resource: " + path).utf8().get_data());
-						}
-						r_v = res;
+						r_v = internal_index_cache[path];
 					}
 
 				} break;
@@ -645,7 +640,7 @@ Error ResourceLoaderBinary::load() {
 			}
 
 		} else {
-			Error err = ResourceLoader::load_threaded_request(path, external_resources[i].type, use_sub_threads, local_path);
+			Error err = ResourceLoader::load_threaded_request(path, external_resources[i].type, use_sub_threads, ResourceFormatLoader::CACHE_MODE_REUSE, local_path);
 			if (err != OK) {
 				if (!ResourceLoader::get_abort_on_missing_resources()) {
 					ResourceLoader::notify_dependency_error(local_path, path, external_resources[i].type);
@@ -675,7 +670,7 @@ Error ResourceLoaderBinary::load() {
 				path = res_path + "::" + path;
 			}
 
-			if (!use_nocache) {
+			if (cache_mode == ResourceFormatLoader::CACHE_MODE_REUSE) {
 				if (ResourceCache::has(path)) {
 					//already loaded, don't do anything
 					stage++;
@@ -684,7 +679,7 @@ Error ResourceLoaderBinary::load() {
 				}
 			}
 		} else {
-			if (!use_nocache && !ResourceCache::has(res_path)) {
+			if (cache_mode != ResourceFormatLoader::CACHE_MODE_IGNORE && !ResourceCache::has(res_path)) {
 				path = res_path;
 			}
 		}
@@ -695,26 +690,40 @@ Error ResourceLoaderBinary::load() {
 
 		String t = get_unicode_string();
 
-		Object *obj = ClassDB::instance(t);
-		if (!obj) {
-			error = ERR_FILE_CORRUPT;
-			ERR_FAIL_V_MSG(ERR_FILE_CORRUPT, local_path + ":Resource of unrecognized type in file: " + t + ".");
+		RES res;
+
+		if (cache_mode == ResourceFormatLoader::CACHE_MODE_REPLACE && ResourceCache::has(path)) {
+			//use the existing one
+			Resource *r = ResourceCache::get(path);
+			if (r->get_class() == t) {
+				r->reset_state();
+				res = Ref<Resource>(r);
+			}
 		}
 
-		Resource *r = Object::cast_to<Resource>(obj);
-		if (!r) {
-			String obj_class = obj->get_class();
-			error = ERR_FILE_CORRUPT;
-			memdelete(obj); //bye
-			ERR_FAIL_V_MSG(ERR_FILE_CORRUPT, local_path + ":Resource type in resource field not a resource, type is: " + obj_class + ".");
-		}
+		if (res.is_null()) {
+			//did not replace
 
-		RES res = RES(r);
+			Object *obj = ClassDB::instance(t);
+			if (!obj) {
+				error = ERR_FILE_CORRUPT;
+				ERR_FAIL_V_MSG(ERR_FILE_CORRUPT, local_path + ":Resource of unrecognized type in file: " + t + ".");
+			}
 
-		if (path != String()) {
-			r->set_path(path);
+			Resource *r = Object::cast_to<Resource>(obj);
+			if (!r) {
+				String obj_class = obj->get_class();
+				error = ERR_FILE_CORRUPT;
+				memdelete(obj); //bye
+				ERR_FAIL_V_MSG(ERR_FILE_CORRUPT, local_path + ":Resource type in resource field not a resource, type is: " + obj_class + ".");
+			}
+
+			res = RES(r);
+			if (path != String() && cache_mode != ResourceFormatLoader::CACHE_MODE_IGNORE) {
+				r->set_path(path, cache_mode == ResourceFormatLoader::CACHE_MODE_REPLACE); //if got here because the resource with same path has different type, replace it
+			}
+			r->set_subindex(subindex);
 		}
-		r->set_subindex(subindex);
 
 		if (!main) {
 			internal_index_cache[path] = res;
@@ -961,7 +970,7 @@ ResourceLoaderBinary::~ResourceLoaderBinary() {
 	}
 }
 
-RES ResourceFormatLoaderBinary::load(const String &p_path, const String &p_original_path, Error *r_error, bool p_use_sub_threads, float *r_progress, bool p_no_cache) {
+RES ResourceFormatLoaderBinary::load(const String &p_path, const String &p_original_path, Error *r_error, bool p_use_sub_threads, float *r_progress, CacheMode p_cache_mode) {
 	if (r_error) {
 		*r_error = ERR_FILE_CANT_OPEN;
 	}
@@ -972,7 +981,7 @@ RES ResourceFormatLoaderBinary::load(const String &p_path, const String &p_origi
 	ERR_FAIL_COND_V_MSG(err != OK, RES(), "Cannot open file '" + p_path + "'.");
 
 	ResourceLoaderBinary loader;
-	loader.use_nocache = p_no_cache;
+	loader.cache_mode = p_cache_mode;
 	loader.use_sub_threads = p_use_sub_threads;
 	loader.progress = r_progress;
 	String path = p_original_path != "" ? p_original_path : p_path;

@@ -1661,6 +1661,9 @@ void PackedScene::set_path(const String &p_path, bool p_take_over) {
 	Resource::set_path(p_path, p_take_over);
 }
 
+void PackedScene::reset_state() {
+	clear();
+}
 void PackedScene::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("pack", "path"), &PackedScene::pack);
 	ClassDB::bind_method(D_METHOD("instance", "edit_state"), &PackedScene::instance, DEFVAL(GEN_EDIT_STATE_DISABLED));

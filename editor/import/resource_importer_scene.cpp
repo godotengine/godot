@@ -964,7 +964,7 @@ void ResourceImporterScene::_make_external_resources(Node *p_node, const String 
 
 					if (FileAccess::exists(ext_name) && p_keep_animations) {
 						// Copy custom animation tracks from previously imported files.
-						Ref<Animation> old_anim = ResourceLoader::load(ext_name, "Animation", true);
+						Ref<Animation> old_anim = ResourceLoader::load(ext_name, "Animation", ResourceFormatLoader::CACHE_MODE_IGNORE);
 						if (old_anim.is_valid()) {
 							for (int i = 0; i < old_anim->get_track_count(); i++) {
 								if (!old_anim->track_is_imported(i)) {
@@ -1004,7 +1004,7 @@ void ResourceImporterScene::_make_external_resources(Node *p_node, const String 
 						p_materials[mat] = ResourceLoader::load(ext_name);
 					} else {
 						ResourceSaver::save(ext_name, mat, ResourceSaver::FLAG_CHANGE_PATH);
-						p_materials[mat] = ResourceLoader::load(ext_name, "", true); // disable loading from the cache.
+						p_materials[mat] = ResourceLoader::load(ext_name, "", ResourceFormatLoader::CACHE_MODE_IGNORE); // disable loading from the cache.
 					}
 				}
 
@@ -1061,7 +1061,7 @@ void ResourceImporterScene::_make_external_resources(Node *p_node, const String 
 										p_materials[mat] = ResourceLoader::load(ext_name);
 									} else {
 										ResourceSaver::save(ext_name, mat, ResourceSaver::FLAG_CHANGE_PATH);
-										p_materials[mat] = ResourceLoader::load(ext_name, "", true); // disable loading from the cache.
+										p_materials[mat] = ResourceLoader::load(ext_name, "", ResourceFormatLoader::CACHE_MODE_IGNORE); // disable loading from the cache.
 									}
 								}
 

@@ -113,9 +113,9 @@ void ResourceFormatLoader::get_recognized_extensions(List<String> *p_extensions)
 	}
 }
 
-RES ResourceFormatLoader::load(const String &p_path, const String &p_original_path, Error *r_error, bool p_use_sub_threads, float *r_progress, bool p_no_cache) {
+RES ResourceFormatLoader::load(const String &p_path, const String &p_original_path, Error *r_error, bool p_use_sub_threads, float *r_progress, CacheMode p_cache_mode) {
 	if (get_script_instance() && get_script_instance()->has_method("load")) {
-		Variant res = get_script_instance()->call("load", p_path, p_original_path, p_use_sub_threads);
+		Variant res = get_script_instance()->call("load", p_path, p_original_path, p_use_sub_threads, p_cache_mode);
 
 		if (res.get_type() == Variant::INT) {
 			if (r_error) {
@@ -164,7 +164,7 @@ Error ResourceFormatLoader::rename_dependencies(const String &p_path, const Map<
 
 void ResourceFormatLoader::_bind_methods() {
 	{
-		MethodInfo info = MethodInfo(Variant::NIL, "load", PropertyInfo(Variant::STRING, "path"), PropertyInfo(Variant::STRING, "original_path"));
+		MethodInfo info = MethodInfo(Variant::NIL, "load", PropertyInfo(Variant::STRING, "path"), PropertyInfo(Variant::STRING, "original_path"), PropertyInfo(Variant::BOOL, "use_sub_threads"), PropertyInfo(Variant::INT, "cache_mode"));
 		info.return_val.usage |= PROPERTY_USAGE_NIL_IS_VARIANT;
 		ClassDB::add_virtual_method(get_class_static(), info);
 	}
@@ -178,7 +178,7 @@ void ResourceFormatLoader::_bind_methods() {
 
 ///////////////////////////////////
 
-RES ResourceLoader::_load(const String &p_path, const String &p_original_path, const String &p_type_hint, bool p_no_cache, Error *r_error, bool p_use_sub_threads, float *r_progress) {
+RES ResourceLoader::_load(const String &p_path, const String &p_original_path, const String &p_type_hint, ResourceFormatLoader::CacheMode p_cache_mode, Error *r_error, bool p_use_sub_threads, float *r_progress) {
 	bool found = false;
 
 	// Try all loaders and pick the first match for the type hint
@@ -187,7 +187,7 @@ RES ResourceLoader::_load(const String &p_path, const String &p_original_path, c
 			continue;
 		}
 		found = true;
-		RES res = loader[i]->load(p_path, p_original_path != String() ? p_original_path : p_path, r_error, p_use_sub_threads, r_progress, p_no_cache);
+		RES res = loader[i]->load(p_path, p_original_path != String() ? p_original_path : p_path, r_error, p_use_sub_threads, r_progress, p_cache_mode);
 		if (res.is_null()) {
 			continue;
 		}
@@ -214,7 +214,7 @@ void ResourceLoader::_thread_load_function(void *p_userdata) {
 		//this is an actual thread, so wait for Ok fom semaphore
 		thread_load_semaphore->wait(); //wait until its ok to start loading
 	}
-	load_task.resource = _load(load_task.remapped_path, load_task.remapped_path != load_task.local_path ? load_task.local_path : String(), load_task.type_hint, false, &load_task.error, load_task.use_sub_threads, &load_task.progress);
+	load_task.resource = _load(load_task.remapped_path, load_task.remapped_path != load_task.local_path ? load_task.local_path : String(), load_task.type_hint, load_task.cache_mode, &load_task.error, load_task.use_sub_threads, &load_task.progress);
 
 	load_task.progress = 1.0; //it was fully loaded at this point, so force progress to 1.0
 
@@ -267,7 +267,7 @@ void ResourceLoader::_thread_load_function(void *p_userdata) {
 	thread_load_mutex->unlock();
 }
 
-Error ResourceLoader::load_threaded_request(const String &p_path, const String &p_type_hint, bool p_use_sub_threads, const String &p_source_resource) {
+Error ResourceLoader::load_threaded_request(const String &p_path, const String &p_type_hint, bool p_use_sub_threads, ResourceFormatLoader::CacheMode p_cache_mode, const String &p_source_resource) {
 	String local_path;
 	if (p_path.is_rel_path()) {
 		local_path = "res://" + p_path;
@@ -314,6 +314,7 @@ Error ResourceLoader::load_threaded_request(const String &p_path, const String &
 		load_task.remapped_path = _path_remap(local_path, &load_task.xl_remapped);
 		load_task.local_path = local_path;
 		load_task.type_hint = p_type_hint;
+		load_task.cache_mode = p_cache_mode;
 		load_task.use_sub_threads = p_use_sub_threads;
 
 		{ //must check if resource is already loaded before attempting to load it in a thread
@@ -501,7 +502,7 @@ RES ResourceLoader::load_threaded_get(const String &p_path, Error *r_error) {
 	return resource;
 }
 
-RES ResourceLoader::load(const String &p_path, const String &p_type_hint, bool p_no_cache, Error *r_error) {
+RES ResourceLoader::load(const String &p_path, const String &p_type_hint, ResourceFormatLoader::CacheMode p_cache_mode, Error *r_error) {
 	if (r_error) {
 		*r_error = ERR_CANT_OPEN;
 	}
@@ -513,7 +514,7 @@ RES ResourceLoader::load(const String &p_path, const String &p_type_hint, bool p
 		local_path = ProjectSettings::get_singleton()->localize_path(p_path);
 	}
 
-	if (!p_no_cache) {
+	if (p_cache_mode == ResourceFormatLoader::CACHE_MODE_IGNORE) {
 		thread_load_mutex->lock();
 
 		//Is it already being loaded? poll until done
@@ -561,6 +562,7 @@ RES ResourceLoader::load(const String &p_path, const String &p_type_hint, bool p
 		load_task.local_path = local_path;
 		load_task.remapped_path = _path_remap(local_path, &load_task.xl_remapped);
 		load_task.type_hint = p_type_hint;
+		load_task.cache_mode = p_cache_mode; //ignore
 		load_task.loader_id = Thread::get_caller_id();
 
 		thread_load_tasks[local_path] = load_task;
@@ -581,7 +583,7 @@ RES ResourceLoader::load(const String &p_path, const String &p_type_hint, bool p
 
 		print_verbose("Loading resource: " + path);
 		float p;
-		RES res = _load(path, local_path, p_type_hint, p_no_cache, r_error, false, &p);
+		RES res = _load(path, local_path, p_type_hint, p_cache_mode, r_error, false, &p);
 
 		if (res.is_null()) {
 			print_verbose("Failed loading resource: " + path);

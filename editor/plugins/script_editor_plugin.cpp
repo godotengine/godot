@@ -894,7 +894,7 @@ void ScriptEditor::_reload_scripts() {
 
 		Ref<Script> script = edited_res;
 		if (script != nullptr) {
-			Ref<Script> rel_script = ResourceLoader::load(script->get_path(), script->get_class(), true);
+			Ref<Script> rel_script = ResourceLoader::load(script->get_path(), script->get_class(), ResourceFormatLoader::CACHE_MODE_IGNORE);
 			ERR_CONTINUE(!rel_script.is_valid());
 			script->set_source_code(rel_script->get_source_code());
 			script->set_last_modified_time(rel_script->get_last_modified_time());

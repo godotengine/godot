@@ -63,6 +63,8 @@ class GDNativeLibrary : public Resource {
 	bool reloadable;
 
 public:
+	virtual void reset_state() override;
+
 	GDNativeLibrary();
 	~GDNativeLibrary();
 
@@ -166,7 +168,7 @@ public:
 
 class GDNativeLibraryResourceLoader : public ResourceFormatLoader {
 public:
-	virtual RES load(const String &p_path, const String &p_original_path, Error *r_error, bool p_use_sub_threads = false, float *r_progress = nullptr, bool p_no_cache = false);
+	virtual RES load(const String &p_path, const String &p_original_path, Error *r_error, bool p_use_sub_threads = false, float *r_progress = nullptr, CacheMode p_cache_mode = CACHE_MODE_REUSE);
 	virtual void get_recognized_extensions(List<String> *p_extensions) const;
 	virtual bool handles_type(const String &p_type) const;
 	virtual String get_resource_type(const String &p_path) const;
