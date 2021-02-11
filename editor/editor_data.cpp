@@ -543,6 +543,7 @@ int EditorData::add_edited_scene(int p_at_pos) {
 	EditedScene es;
 	es.root = NULL;
 	es.path = String();
+	es.file_modified_time = 0;
 	es.history_current = -1;
 	es.version = 0;
 	es.live_edit_root = NodePath(String("/root"));
@@ -698,6 +699,10 @@ void EditorData::set_edited_scene_root(Node *p_root) {
 		else
 			p_root->set_filename(edited_scene[current_edited_scene].path);
 	}
+
+	if (edited_scene[current_edited_scene].path != "") {
+		edited_scene.write[current_edited_scene].file_modified_time = FileAccess::get_modified_time(edited_scene[current_edited_scene].path);
+	}
 }
 
 int EditorData::get_edited_scene_count() const {
@@ -734,6 +739,21 @@ uint64_t EditorData::get_edited_scene_version() const {
 uint64_t EditorData::get_scene_version(int p_idx) const {
 	ERR_FAIL_INDEX_V(p_idx, edited_scene.size(), 0);
 	return edited_scene[p_idx].version;
+}
+
+void EditorData::set_scene_modified_time(int p_idx, uint64_t p_time) {
+	if (p_idx == -1) {
+		p_idx = current_edited_scene;
+	}
+
+	ERR_FAIL_INDEX(p_idx, edited_scene.size());
+
+	edited_scene.write[p_idx].file_modified_time = p_time;
+}
+
+uint64_t EditorData::get_scene_modified_time(int p_idx) const {
+	ERR_FAIL_INDEX_V(p_idx, edited_scene.size(), 0);
+	return edited_scene[p_idx].file_modified_time;
 }
 
 String EditorData::get_scene_type(int p_idx) const {

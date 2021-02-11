@@ -118,6 +118,7 @@ public:
 	struct EditedScene {
 		Node *root;
 		String path;
+		uint64_t file_modified_time = 0;
 		Dictionary editor_states;
 		List<Node *> selection;
 		Vector<EditorHistory::History> history_stored;
@@ -200,6 +201,8 @@ public:
 	void set_edited_scene_version(uint64_t version, int p_scene_idx = -1);
 	uint64_t get_edited_scene_version() const;
 	uint64_t get_scene_version(int p_idx) const;
+	void set_scene_modified_time(int p_idx, uint64_t p_time);
+	uint64_t get_scene_modified_time(int p_idx) const;
 	void clear_edited_scenes();
 	void set_edited_scene_live_edit_root(const NodePath &p_root);
 	NodePath get_edited_scene_live_edit_root();
