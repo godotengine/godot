@@ -1076,6 +1076,10 @@ int TileSet::find_tile_by_name(const String &p_name) const {
 	return -1;
 }
 
+void TileSet::reset_state() {
+	clear();
+}
+
 void TileSet::clear() {
 	tile_map.clear();
 	notify_property_list_changed();

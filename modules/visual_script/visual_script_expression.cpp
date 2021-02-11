@@ -1506,6 +1506,19 @@ VisualScriptNodeInstance *VisualScriptExpression::instance(VisualScriptInstance 
 	return instance;
 }
 
+void VisualScriptExpression::reset_state() {
+	if (nodes) {
+		memdelete(nodes);
+		nodes = nullptr;
+		root = nullptr;
+	}
+
+	error_str = String();
+	error_set = false;
+	str_ofs = 0;
+	inputs.clear();
+}
+
 VisualScriptExpression::VisualScriptExpression() {
 }
 

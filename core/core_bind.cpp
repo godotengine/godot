@@ -86,9 +86,9 @@ RES _ResourceLoader::load_threaded_get(const String &p_path) {
 	return res;
 }
 
-RES _ResourceLoader::load(const String &p_path, const String &p_type_hint, bool p_no_cache) {
+RES _ResourceLoader::load(const String &p_path, const String &p_type_hint, CacheMode p_cache_mode) {
 	Error err = OK;
-	RES ret = ResourceLoader::load(p_path, p_type_hint, p_no_cache, &err);
+	RES ret = ResourceLoader::load(p_path, p_type_hint, ResourceFormatLoader::CacheMode(p_cache_mode), &err);
 
 	ERR_FAIL_COND_V_MSG(err != OK, ret, "Error loading resource: '" + p_path + "'.");
 	return ret;
@@ -135,7 +135,7 @@ void _ResourceLoader::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("load_threaded_get_status", "path", "progress"), &_ResourceLoader::load_threaded_get_status, DEFVAL(Array()));
 	ClassDB::bind_method(D_METHOD("load_threaded_get", "path"), &_ResourceLoader::load_threaded_get);
 
-	ClassDB::bind_method(D_METHOD("load", "path", "type_hint", "no_cache"), &_ResourceLoader::load, DEFVAL(""), DEFVAL(false));
+	ClassDB::bind_method(D_METHOD("load", "path", "type_hint", "no_cache"), &_ResourceLoader::load, DEFVAL(""), DEFVAL(CACHE_MODE_REUSE));
 	ClassDB::bind_method(D_METHOD("get_recognized_extensions_for_type", "type"), &_ResourceLoader::get_recognized_extensions_for_type);
 	ClassDB::bind_method(D_METHOD("set_abort_on_missing_resources", "abort"), &_ResourceLoader::set_abort_on_missing_resources);
 	ClassDB::bind_method(D_METHOD("get_dependencies", "path"), &_ResourceLoader::get_dependencies);
@@ -146,6 +146,10 @@ void _ResourceLoader::_bind_methods() {
 	BIND_ENUM_CONSTANT(THREAD_LOAD_IN_PROGRESS);
 	BIND_ENUM_CONSTANT(THREAD_LOAD_FAILED);
 	BIND_ENUM_CONSTANT(THREAD_LOAD_LOADED);
+
+	BIND_ENUM_CONSTANT(CACHE_MODE_IGNORE);
+	BIND_ENUM_CONSTANT(CACHE_MODE_REUSE);
+	BIND_ENUM_CONSTANT(CACHE_MODE_REPLACE);
 }
 
 ////// _ResourceSaver //////

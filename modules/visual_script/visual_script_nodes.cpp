@@ -303,6 +303,14 @@ VisualScriptNodeInstance *VisualScriptFunction::instance(VisualScriptInstance *p
 	return instance;
 }
 
+void VisualScriptFunction::reset_state() {
+	arguments.clear();
+	stack_size = 256;
+	stack_less = false;
+	sequenced = true;
+	rpc_mode = MultiplayerAPI::RPC_MODE_DISABLED;
+}
+
 VisualScriptFunction::VisualScriptFunction() {
 	stack_size = 256;
 	stack_less = false;
@@ -685,6 +693,13 @@ void VisualScriptLists::set_sequenced(bool p_enable) {
 
 bool VisualScriptLists::is_sequenced() const {
 	return sequenced;
+}
+
+void VisualScriptLists::reset_state() {
+	inputports.clear();
+	outputports.clear();
+	sequenced = false;
+	flags = 0;
 }
 
 VisualScriptLists::VisualScriptLists() {

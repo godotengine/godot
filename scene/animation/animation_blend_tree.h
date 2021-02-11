@@ -351,6 +351,8 @@ protected:
 	bool _get(const StringName &p_name, Variant &r_ret) const;
 	void _get_property_list(List<PropertyInfo> *p_list) const;
 
+	virtual void reset_state() override;
+
 public:
 	enum ConnectionError {
 		CONNECTION_OK,

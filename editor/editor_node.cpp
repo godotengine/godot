@@ -1003,7 +1003,7 @@ Error EditorNode::load_resource(const String &p_resource, bool p_ignore_broken_d
 	dependency_errors.clear();
 
 	Error err;
-	RES res = ResourceLoader::load(p_resource, "", false, &err);
+	RES res = ResourceLoader::load(p_resource, "", ResourceFormatLoader::CACHE_MODE_REUSE, &err);
 	ERR_FAIL_COND_V(!res.is_valid(), ERR_CANT_OPEN);
 
 	if (!p_ignore_broken_deps && dependency_errors.has(p_resource)) {
@@ -3452,7 +3452,7 @@ Error EditorNode::load_scene(const String &p_scene, bool p_ignore_broken_deps, b
 	dependency_errors.clear();
 
 	Error err;
-	Ref<PackedScene> sdata = ResourceLoader::load(lpath, "", true, &err);
+	Ref<PackedScene> sdata = ResourceLoader::load(lpath, "", ResourceFormatLoader::CACHE_MODE_REPLACE, &err);
 	if (!sdata.is_valid()) {
 		_dialog_display_load_error(lpath, err);
 		opening_prev = false;
@@ -5274,6 +5274,8 @@ void EditorNode::_file_access_close_error_notify(const String &p_str) {
 }
 
 void EditorNode::reload_scene(const String &p_path) {
+	/*
+	 * No longer necesary since scenes now reset and reload their internal resource if needed.
 	//first of all, reload internal textures, materials, meshes, etc. as they might have changed on disk
 
 	List<Ref<Resource>> cached;
@@ -5290,6 +5292,8 @@ void EditorNode::reload_scene(const String &p_path) {
 		to_clear.front()->get()->set_path("");
 		to_clear.pop_front();
 	}
+
+	*/
 
 	int scene_idx = -1;
 	for (int i = 0; i < editor_data.get_edited_scene_count(); i++) {

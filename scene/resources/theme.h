@@ -80,6 +80,8 @@ protected:
 
 	static void _bind_methods();
 
+	virtual void reset_state() override;
+
 public:
 	static Ref<Theme> get_default();
 	static void set_default(const Ref<Theme> &p_default);

@@ -677,6 +677,10 @@ void VisualScriptSwitch::_get_property_list(List<PropertyInfo> *p_list) const {
 	}
 }
 
+void VisualScriptSwitch::reset_state() {
+	case_values.clear();
+}
+
 void VisualScriptSwitch::_bind_methods() {
 }
 

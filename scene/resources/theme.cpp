@@ -930,6 +930,9 @@ void Theme::get_type_list(List<StringName> *p_list) const {
 	}
 }
 
+void Theme::reset_state() {
+	clear();
+}
 void Theme::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_icon", "name", "node_type", "texture"), &Theme::set_icon);
 	ClassDB::bind_method(D_METHOD("get_icon", "name", "node_type"), &Theme::get_icon);

@@ -81,6 +81,10 @@ void Skin::clear_binds() {
 	emit_changed();
 }
 
+void Skin::reset_state() {
+	clear_binds();
+}
+
 bool Skin::_set(const StringName &p_name, const Variant &p_value) {
 	String name = p_name;
 	if (name == "bind_count") {
