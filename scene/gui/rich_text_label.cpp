@@ -220,7 +220,7 @@ void RichTextLabel::_resize_line(ItemFrame *p_frame, int p_line, const Ref<Font>
 
 	if (tab_size > 0) { // Align inline tabs.
 		Vector<float> tabs;
-		tabs.push_back(tab_size * p_base_font->get_char_size('m', 0, p_base_font_size).width);
+		tabs.push_back(tab_size * p_base_font->get_char_size(' ', 0, p_base_font_size).width);
 		l.text_buf->tab_align(tabs);
 	}
 
@@ -392,7 +392,7 @@ void RichTextLabel::_shape_line(ItemFrame *p_frame, int p_line, const Ref<Font> 
 
 	if (tab_size > 0) { // Align inline tabs.
 		Vector<float> tabs;
-		tabs.push_back(tab_size * p_base_font->get_char_size('m', 0, p_base_font_size).width);
+		tabs.push_back(tab_size * p_base_font->get_char_size(' ', 0, p_base_font_size).width);
 		l.text_buf->tab_align(tabs);
 	}
 
@@ -1859,7 +1859,7 @@ int RichTextLabel::_find_margin(Item *p_item, const Ref<Font> &p_base_font, int 
 			if (font_size == -1) {
 				font_size = p_base_font_size;
 			}
-			margin += tab_size * font->get_char_size('m', 0, font_size).width;
+			margin += tab_size * font->get_char_size(' ', 0, font_size).width;
 
 		} else if (item->type == ITEM_LIST) {
 			Ref<Font> font = _find_font(item);
@@ -1870,7 +1870,7 @@ int RichTextLabel::_find_margin(Item *p_item, const Ref<Font> &p_base_font, int 
 			if (font_size == -1) {
 				font_size = p_base_font_size;
 			}
-			margin += tab_size * font->get_char_size('m', 0, font_size).width;
+			margin += tab_size * font->get_char_size(' ', 0, font_size).width;
 		}
 
 		item = item->parent;
