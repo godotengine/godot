@@ -142,7 +142,7 @@ void GLTFSkin::set_joint_i_to_name(Dictionary p_joint_i_to_name) {
 	joint_i_to_name = Map<int, StringName>();
 	Array keys = p_joint_i_to_name.keys();
 	for (int i = 0; i < keys.size(); i++) {
-		joint_i_to_name[keys[i]] = joint_i_to_name[keys[i]];
+		joint_i_to_name[keys[i]] = p_joint_i_to_name[keys[i]];
 	}
 }
 
