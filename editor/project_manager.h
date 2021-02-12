@@ -54,6 +54,7 @@ class ProjectManager : public Control {
 	ProjectList *_project_list;
 
 	LineEdit *search_box;
+	Label *loading_label;
 	OptionButton *filter_option;
 
 	Button *run_btn;
@@ -98,7 +99,6 @@ class ProjectManager : public Control {
 	void _update_project_buttons();
 	void _language_selected(int p_id);
 	void _restart_confirm();
-	void _exit_dialog();
 	void _confirm_update_settings();
 	void _nonempty_confirmation_ok_pressed();
 
