@@ -2985,6 +2985,26 @@ void Image::set_pixel(int p_x, int p_y, const Color &p_color) {
 	_set_color_at_ofs(data.ptrw(), ofs, p_color);
 }
 
+void Image::adjust_bcs(float p_brightness, float p_contrast, float p_saturation) {
+	uint8_t *w = data.ptrw();
+	uint32_t pixel_size = get_format_pixel_size(format);
+	uint32_t pixel_count = data.size() / pixel_size;
+
+	for (uint32_t i = 0; i < pixel_count; i++) {
+		Color c = _get_color_at_ofs(w, i);
+		Vector3 rgb(c.r, c.g, c.b);
+
+		rgb *= p_brightness;
+		rgb = Vector3(0.5, 0.5, 0.5).lerp(rgb, p_contrast);
+		float center = (rgb.x + rgb.y + rgb.z) / 3.0;
+		rgb = Vector3(center, center, center).lerp(rgb, p_saturation);
+		c.r = rgb.x;
+		c.g = rgb.y;
+		c.b = rgb.z;
+		_set_color_at_ofs(w, i, c);
+	}
+}
+
 Image::UsedChannels Image::detect_used_channels(CompressSource p_source) {
 	ERR_FAIL_COND_V(data.size() == 0, USED_CHANNELS_RGBA);
 	ERR_FAIL_COND_V(is_compressed(), USED_CHANNELS_RGBA);
@@ -3131,6 +3151,8 @@ void Image::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_pixel", "x", "y"), &Image::get_pixel);
 	ClassDB::bind_method(D_METHOD("set_pixelv", "point", "color"), &Image::set_pixelv);
 	ClassDB::bind_method(D_METHOD("set_pixel", "x", "y", "color"), &Image::set_pixel);
+
+	ClassDB::bind_method(D_METHOD("adjust_bcs", "brightness", "contrast", "saturation"), &Image::adjust_bcs);
 
 	ClassDB::bind_method(D_METHOD("load_png_from_buffer", "buffer"), &Image::load_png_from_buffer);
 	ClassDB::bind_method(D_METHOD("load_jpg_from_buffer", "buffer"), &Image::load_jpg_from_buffer);
