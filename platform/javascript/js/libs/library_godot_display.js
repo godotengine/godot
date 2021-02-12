@@ -405,6 +405,27 @@ const GodotDisplay = {
 	$GodotDisplay__deps: ['$GodotConfig', '$GodotRuntime', '$GodotDisplayCursor', '$GodotDisplayListeners', '$GodotDisplayDragDrop', '$GodotDisplayGamepads'],
 	$GodotDisplay: {
 		window_icon: '',
+		findDPI: function () {
+			function testDPI(dpi) {
+				return window.matchMedia(`(max-resolution: ${dpi}dpi)`).matches;
+			}
+			function bisect(low, high, func) {
+				const mid = parseInt(((high - low) / 2) + low, 10);
+				if (high - low <= 1) {
+					return func(high) ? high : low;
+				}
+				if (func(mid)) {
+					return bisect(low, mid, func);
+				}
+				return bisect(mid, high, func);
+			}
+			try {
+				const dpi = bisect(0, 800, testDPI);
+				return dpi >= 96 ? dpi : 96;
+			} catch (e) {
+				return 96;
+			}
+		},
 	},
 
 	godot_js_display_is_swap_ok_cancel__sig: 'i',
@@ -420,6 +441,11 @@ const GodotDisplay = {
 	godot_js_display_alert__sig: 'vi',
 	godot_js_display_alert: function (p_text) {
 		window.alert(GodotRuntime.parseString(p_text)); // eslint-disable-line no-alert
+	},
+
+	godot_js_display_screen_dpi_get__sig: 'i',
+	godot_js_display_screen_dpi_get: function () {
+		return GodotDisplay.findDPI();
 	},
 
 	godot_js_display_pixel_ratio_get__sig: 'f',

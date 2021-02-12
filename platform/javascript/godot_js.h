@@ -51,6 +51,7 @@ extern int godot_js_os_execute(const char *p_json);
 extern void godot_js_os_shell_open(const char *p_uri);
 
 // Display
+extern int godot_js_display_screen_dpi_get();
 extern double godot_js_display_pixel_ratio_get();
 extern void godot_js_display_alert(const char *p_text);
 extern int godot_js_display_touchscreen_is_available();

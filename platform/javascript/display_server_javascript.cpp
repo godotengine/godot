@@ -845,7 +845,8 @@ Size2i DisplayServerJavaScript::screen_get_size(int p_screen) const {
 	EmscriptenFullscreenChangeEvent ev;
 	EMSCRIPTEN_RESULT result = emscripten_get_fullscreen_status(&ev);
 	ERR_FAIL_COND_V(result != EMSCRIPTEN_RESULT_SUCCESS, Size2i());
-	return Size2i(ev.screenWidth, ev.screenHeight);
+	double scale = godot_js_display_pixel_ratio_get();
+	return Size2i(ev.screenWidth * scale, ev.screenHeight * scale);
 }
 
 Rect2i DisplayServerJavaScript::screen_get_usable_rect(int p_screen) const {
@@ -855,7 +856,11 @@ Rect2i DisplayServerJavaScript::screen_get_usable_rect(int p_screen) const {
 }
 
 int DisplayServerJavaScript::screen_get_dpi(int p_screen) const {
-	return 96; // TODO maybe check pixel ratio via window.devicePixelRatio * 96? Inexact.
+	return godot_js_display_screen_dpi_get();
+}
+
+float DisplayServerJavaScript::screen_get_scale(int p_screen) const {
+	return godot_js_display_pixel_ratio_get();
 }
 
 Vector<DisplayServer::WindowID> DisplayServerJavaScript::get_window_list() const {
