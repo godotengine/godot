@@ -1568,12 +1568,12 @@ Size2 LineEdit::get_minimum_size() const {
 	Size2 min_size;
 
 	// Minimum size of text.
-	int space_size = font->get_char_size(' ', 0, font_size).x;
-	min_size.width = get_theme_constant("minimum_spaces") * space_size;
+	int em_space_size = font->get_char_size('M', 0, font_size).x;
+	min_size.width = get_theme_constant("minimum_character_width'") * em_space_size;
 
 	if (expand_to_text_length) {
 		// Add a space because some fonts are too exact, and because cursor needs a bit more when at the end.
-		min_size.width = MAX(min_size.width, full_width + space_size);
+		min_size.width = MAX(min_size.width, full_width + em_space_size);
 	}
 
 	min_size.height = MAX(TS->shaped_text_get_size(text_rid).y + font->get_spacing(Font::SPACING_TOP) + font->get_spacing(Font::SPACING_BOTTOM), font->get_height(font_size));
