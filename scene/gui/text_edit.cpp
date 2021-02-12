@@ -1380,7 +1380,7 @@ void TextEdit::_notification(int p_what) {
 											l_caret.size.y = h;
 										}
 										l_caret.position += Vector2(char_margin + ofs_x, ofs_y);
-										l_caret.size.x = cache.font->get_char_size('m', 0, cache.font_size).x;
+										l_caret.size.x = cache.font->get_char_size('M', 0, cache.font_size).x;
 
 										draw_rect(l_caret, cache.caret_color, false);
 									}
