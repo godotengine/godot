@@ -1093,7 +1093,7 @@
 			<description>
 				Returns the result of smoothly interpolating the value of [code]s[/code] between [code]0[/code] and [code]1[/code], based on the where [code]s[/code] lies with respect to the edges [code]from[/code] and [code]to[/code].
 				The return value is [code]0[/code] if [code]s &lt;= from[/code], and [code]1[/code] if [code]s &gt;= to[/code]. If [code]s[/code] lies between [code]from[/code] and [code]to[/code], the returned value follows an S-shaped curve that maps [code]s[/code] between [code]0[/code] and [code]1[/code].
-				This S-shaped curve is the cubic Hermite interpolator, given by [code]f(s) = 3*s^2 - 2*s^3[/code].
+				This S-shaped curve is the cubic Hermite interpolator, given by [code]f(y) = 3*y^2 - 2*y^3[/code] where [code]y = (x-from) / (to-from)[/code].
 				[codeblock]
 				smoothstep(0, 2, -5.0) # Returns 0.0
 				smoothstep(0, 2, 0.5) # Returns 0.15625
