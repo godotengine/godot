@@ -144,7 +144,12 @@
 			<argument index="1" name="ignore_half_ofs" type="bool" default="false">
 			</argument>
 			<description>
-				Returns the local position corresponding to the given tilemap (grid-based) coordinates.
+				Returns the local position of the top left corner of the cell corresponding to the given tilemap (grid-based) coordinates.
+				To get the global position, use [method Node2D.to_global]:
+				[codeblock]
+				var local_position = my_tilemap.map_to_world(map_position)
+				var global_position = my_tilemap.to_global(local_position)
+				[/codeblock]
 				Optionally, the tilemap's half offset can be ignored.
 			</description>
 		</method>
@@ -258,6 +263,11 @@
 			</argument>
 			<description>
 				Returns the tilemap (grid-based) coordinates corresponding to the given local position.
+				To use this with a global position, first determine the local position with [method Node2D.to_local]:
+				[codeblock]
+				var local_position = my_tilemap.to_local(global_position)
+				var map_position = my_tilemap.world_to_map(local_position)
+				[/codeblock]
 			</description>
 		</method>
 	</methods>
