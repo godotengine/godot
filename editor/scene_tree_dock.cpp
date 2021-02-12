@@ -417,6 +417,7 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 			if (!node_clipboard.is_empty()) {
 				_clear_clipboard();
 			}
+			clipboard_source_scene = editor->get_edited_scene()->get_filename();
 
 			selection.sort_custom<Node::Comparator>();
 
@@ -470,10 +471,24 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 			editor_data->get_undo_redo().create_action(TTR("Paste Node(s)"));
 			editor_data->get_undo_redo().add_do_method(editor_selection, "clear");
 
+			Map<RES, RES> resource_remap;
+			String target_scene = editor->get_edited_scene()->get_filename();
+			if (target_scene != clipboard_source_scene) {
+				if (!clipboard_resource_remap.has(target_scene)) {
+					Map<RES, RES> remap;
+					for (List<Node *>::Element *E = node_clipboard.front(); E; E = E->next()) {
+						_create_remap_for_node(E->get(), remap);
+					}
+					clipboard_resource_remap[target_scene] = remap;
+				}
+				resource_remap = clipboard_resource_remap[target_scene];
+			}
+
 			for (List<Node *>::Element *E = node_clipboard.front(); E; E = E->next()) {
 				Node *node = E->get();
 				Map<const Node *, Node *> duplimap;
-				Node *dup = node->duplicate_from_editor(duplimap);
+
+				Node *dup = node->duplicate_from_editor(duplimap, resource_remap);
 
 				ERR_CONTINUE(!dup);
 
@@ -2890,6 +2905,55 @@ void SceneTreeDock::_clear_clipboard() {
 		memdelete(E->get());
 	}
 	node_clipboard.clear();
+	clipboard_resource_remap.clear();
+}
+
+void SceneTreeDock::_create_remap_for_node(Node *p_node, Map<RES, RES> &r_remap) {
+	List<PropertyInfo> props;
+	p_node->get_property_list(&props);
+
+	for (List<PropertyInfo>::Element *E = props.front(); E; E = E->next()) {
+		if (!(E->get().usage & PROPERTY_USAGE_STORAGE)) {
+			continue;
+		}
+
+		Variant v = p_node->get(E->get().name);
+		if (v.is_ref()) {
+			RES res = v;
+			if (res.is_valid()) {
+				if (res->get_path() == "" && !r_remap.has(res)) {
+					_create_remap_for_resource(res, r_remap);
+				}
+			}
+		}
+	}
+
+	for (int i = 0; i < p_node->get_child_count(); i++) {
+		_create_remap_for_node(p_node->get_child(i), r_remap);
+	}
+}
+
+void SceneTreeDock::_create_remap_for_resource(RES p_resource, Map<RES, RES> &r_remap) {
+	r_remap[p_resource] = p_resource->duplicate();
+
+	List<PropertyInfo> props;
+	p_resource->get_property_list(&props);
+
+	for (List<PropertyInfo>::Element *E = props.front(); E; E = E->next()) {
+		if (!(E->get().usage & PROPERTY_USAGE_STORAGE)) {
+			continue;
+		}
+
+		Variant v = p_resource->get(E->get().name);
+		if (v.is_ref()) {
+			RES res = v;
+			if (res.is_valid()) {
+				if (res->get_path() == "" && !r_remap.has(res)) {
+					_create_remap_for_resource(res, r_remap);
+				}
+			}
+		}
+	}
 }
 
 void SceneTreeDock::_bind_methods() {
