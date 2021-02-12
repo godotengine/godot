@@ -2649,6 +2649,41 @@ void EditorPropertyResource::_fold_other_editors(Object *p_self) {
 	}
 }
 
+void EditorPropertyResource::_update_property_bg() {
+	if (!is_inside_tree()) {
+		return;
+	}
+
+	updating_theme = true;
+	if (sub_inspector != nullptr) {
+		int count_subinspectors = 0;
+		Node *n = get_parent();
+		while (n) {
+			EditorInspector *ei = Object::cast_to<EditorInspector>(n);
+			if (ei && ei->is_sub_inspector()) {
+				count_subinspectors++;
+			}
+			n = n->get_parent();
+		}
+		count_subinspectors = MIN(15, count_subinspectors);
+
+		add_color_override("property_color", get_color("sub_inspector_property_color", "Editor"));
+		add_style_override("bg_selected", get_stylebox("sub_inspector_property_bg_selected" + itos(count_subinspectors), "Editor"));
+		add_style_override("bg", get_stylebox("sub_inspector_property_bg" + itos(count_subinspectors), "Editor"));
+
+		add_constant_override("font_offset", get_constant("sub_inspector_font_offset", "Editor"));
+		add_constant_override("vseparation", 0);
+	} else {
+		add_color_override("property_color", get_color("property_color", "EditorProperty"));
+		add_style_override("bg_selected", get_stylebox("bg_selected", "EditorProperty"));
+		add_style_override("bg", get_stylebox("bg", "EditorProperty"));
+		add_constant_override("vseparation", get_constant("vseparation", "EditorProperty"));
+		add_constant_override("font_offset", get_constant("font_offset", "EditorProperty"));
+	}
+
+	updating_theme = false;
+	update();
+}
 void EditorPropertyResource::update_property() {
 
 	RES res = get_edited_object()->get(get_edited_property());
@@ -2700,6 +2735,8 @@ void EditorPropertyResource::update_property() {
 					}
 					opened_editor = true;
 				}
+
+				_update_property_bg();
 			}
 
 			if (res.ptr() != sub_inspector->get_edited_object()) {
@@ -2717,6 +2754,7 @@ void EditorPropertyResource::update_property() {
 					EditorNode::get_singleton()->hide_top_editors();
 					opened_editor = false;
 				}
+				_update_property_bg();
 			}
 		}
 	}
@@ -2774,8 +2812,12 @@ void EditorPropertyResource::setup(const String &p_base_type) {
 void EditorPropertyResource::_notification(int p_what) {
 
 	if (p_what == NOTIFICATION_ENTER_TREE || p_what == NOTIFICATION_THEME_CHANGED) {
+		if (updating_theme) {
+			return;
+		}
 		Ref<Texture> t = get_icon("select_arrow", "Tree");
 		edit->set_icon(t);
+		_update_property_bg();
 	}
 
 	if (p_what == NOTIFICATION_DRAG_BEGIN) {

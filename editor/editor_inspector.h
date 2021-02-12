@@ -328,6 +328,8 @@ class EditorInspector : public ScrollContainer {
 
 	bool _is_property_disabled_by_feature_profile(const StringName &p_property);
 
+	void _update_inspector_bg();
+
 protected:
 	static void _bind_methods();
 	void _notification(int p_what);
@@ -381,6 +383,7 @@ public:
 	String get_object_class() const;
 
 	void set_sub_inspector(bool p_enable);
+	bool is_sub_inspector() const { return sub_inspector; }
 
 	EditorInspector();
 };
