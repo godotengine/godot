@@ -63,7 +63,7 @@ jobs:
           SCONS_CACHE: ${{github.workspace}}/.scons_cache/
         run: |
           scons tools=yes target=release_debug module_mono_enabled=yes mono_glue=no
-          xvfb-run ./bin/godot.x11.opt.tools.64.mono --generate-mono-glue modules/mono/glue
+          xvfb-run ./bin/godot.x11.opt.tools.64.mono --generate-mono-glue modules/mono/glue || true
           scons tools=yes target=release_debug module_mono_enabled=yes mono_glue=yes
           ls -l bin/
 
