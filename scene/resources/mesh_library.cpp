@@ -264,6 +264,9 @@ Array MeshLibrary::_get_item_shapes(int p_item) const {
 	return ret;
 }
 
+void MeshLibrary::reset_state() {
+	clear();
+}
 void MeshLibrary::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("create_item", "id"), &MeshLibrary::create_item);
 	ClassDB::bind_method(D_METHOD("set_item_name", "id", "name"), &MeshLibrary::set_item_name);

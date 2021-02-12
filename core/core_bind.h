@@ -56,13 +56,19 @@ public:
 		THREAD_LOAD_LOADED
 	};
 
+	enum CacheMode {
+		CACHE_MODE_IGNORE, //resource and subresources do not use path cache, no path is set into resource.
+		CACHE_MODE_REUSE, //resource and subresources use patch cache, reuse existing loaded resources instead of loading from disk when available
+		CACHE_MODE_REPLACE, //resource and and subresource use path cache, but replace existing loaded resources when available with information from disk
+	};
+
 	static _ResourceLoader *get_singleton() { return singleton; }
 
 	Error load_threaded_request(const String &p_path, const String &p_type_hint = "", bool p_use_sub_threads = false);
 	ThreadLoadStatus load_threaded_get_status(const String &p_path, Array r_progress = Array());
 	RES load_threaded_get(const String &p_path);
 
-	RES load(const String &p_path, const String &p_type_hint = "", bool p_no_cache = false);
+	RES load(const String &p_path, const String &p_type_hint = "", CacheMode p_cache_mode = CACHE_MODE_REUSE);
 	Vector<String> get_recognized_extensions_for_type(const String &p_type);
 	void set_abort_on_missing_resources(bool p_abort);
 	PackedStringArray get_dependencies(const String &p_path);
@@ -73,6 +79,7 @@ public:
 };
 
 VARIANT_ENUM_CAST(_ResourceLoader::ThreadLoadStatus);
+VARIANT_ENUM_CAST(_ResourceLoader::CacheMode);
 
 class _ResourceSaver : public Object {
 	GDCLASS(_ResourceSaver, Object);

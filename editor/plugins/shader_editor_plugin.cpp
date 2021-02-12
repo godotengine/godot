@@ -405,7 +405,7 @@ void ShaderEditor::_check_for_external_edit() {
 }
 
 void ShaderEditor::_reload_shader_from_disk() {
-	Ref<Shader> rel_shader = ResourceLoader::load(shader->get_path(), shader->get_class(), true);
+	Ref<Shader> rel_shader = ResourceLoader::load(shader->get_path(), shader->get_class(), ResourceFormatLoader::CACHE_MODE_IGNORE);
 	ERR_FAIL_COND(!rel_shader.is_valid());
 
 	shader->set_code(rel_shader->get_code());
