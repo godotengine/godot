@@ -222,6 +222,10 @@ ScriptEditor *EditorInterface::get_script_editor() {
 	return ScriptEditor::get_singleton();
 }
 
+Ref<EditorActions> EditorInterface::get_editor_actions() {
+	return EditorNode::get_actions();
+}
+
 void EditorInterface::select_file(const String &p_file) {
 	EditorNode::get_singleton()->get_filesystem_dock()->select_file(p_file);
 }
@@ -320,6 +324,7 @@ void EditorInterface::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_resource_previewer"), &EditorInterface::get_resource_previewer);
 	ClassDB::bind_method(D_METHOD("get_resource_filesystem"), &EditorInterface::get_resource_file_system);
 	ClassDB::bind_method(D_METHOD("get_editor_viewport"), &EditorInterface::get_editor_viewport);
+	ClassDB::bind_method(D_METHOD("get_editor_actions"), &EditorInterface::get_editor_actions);
 	ClassDB::bind_method(D_METHOD("make_mesh_previews", "meshes", "preview_size"), &EditorInterface::_make_mesh_previews);
 	ClassDB::bind_method(D_METHOD("select_file", "file"), &EditorInterface::select_file);
 	ClassDB::bind_method(D_METHOD("get_selected_path"), &EditorInterface::get_selected_path);

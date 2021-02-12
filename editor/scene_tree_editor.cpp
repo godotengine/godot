@@ -1169,11 +1169,19 @@ SceneTreeEditor::SceneTreeEditor(bool p_label, bool p_can_rename, bool p_can_ope
 		tree->connect("empty_tree_rmb_selected", callable_mp(this, &SceneTreeEditor::_rmb_select));
 	}
 
+	//EditorNode::get_actions()->add_action("SceneTreeEditor/_selected_changed", callable_mp(this, &SceneTreeEditor::_selected_changed));
+	//tree->connect("cell_selected", EditorNode::get_actions()->get_execute_callable(), varray("SceneTreeEditor/_selected_changed", Array()));
 	tree->connect("cell_selected", callable_mp(this, &SceneTreeEditor::_selected_changed));
 	tree->connect("item_edited", callable_mp(this, &SceneTreeEditor::_renamed), varray(), CONNECT_DEFERRED);
 	tree->connect("multi_selected", callable_mp(this, &SceneTreeEditor::_cell_multi_selected));
-	tree->connect("button_pressed", callable_mp(this, &SceneTreeEditor::_cell_button_pressed));
-	tree->connect("nothing_selected", callable_mp(this, &SceneTreeEditor::_deselect_items));
+
+	//tree->connect("button_pressed", callable_mp(this, &SceneTreeEditor::_cell_button_pressed));
+	EditorNode::get_actions()->add_action("scene_tree_editor/button_pressed", callable_mp(this, &SceneTreeEditor::_cell_button_pressed));
+	tree->connect("button_pressed", EditorNode::get_actions()->get_execute_callable(), varray(StringName ("scene_tree_editor/button_pressed")));
+
+	EditorNode::get_actions()->add_action("scene_tree_editor/nothing_selected", callable_mp(this, &SceneTreeEditor::_deselect_items));
+	tree->connect("nothing_selected", EditorNode::get_actions()->get_execute_callable(), varray(StringName("scene_tree_editor/nothing_selected")));
+
 	//tree->connect("item_edited", this,"_renamed",Vector<Variant>(),true);
 
 	error = memnew(AcceptDialog);

@@ -68,6 +68,7 @@
 #include "editor/debugger/editor_debugger_node.h"
 #include "editor/dependency_editor.h"
 #include "editor/editor_about.h"
+#include "editor/editor_actions.h"
 #include "editor/editor_audio_buses.h"
 #include "editor/editor_export.h"
 #include "editor/editor_feature_profile.h"
@@ -3623,6 +3624,7 @@ void EditorNode::register_editor_types() {
 	ClassDB::register_class<ScriptCreateDialog>();
 	ClassDB::register_class<EditorFeatureProfile>();
 	ClassDB::register_class<EditorSpinSlider>();
+	ClassDB::register_virtual_class<EditorActions>();
 	ClassDB::register_virtual_class<FileSystemDock>();
 
 	// FIXME: Is this stuff obsolete, or should it be ported to new APIs?
@@ -5515,6 +5517,8 @@ EditorNode::EditorNode() {
 	ResourceLoader::clear_path_remaps();
 
 	Input *id = Input::get_singleton();
+
+	editor_actions.instance();
 
 	if (id) {
 		bool found_touchscreen = false;

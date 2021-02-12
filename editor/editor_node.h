@@ -31,6 +31,7 @@
 #ifndef EDITOR_NODE_H
 #define EDITOR_NODE_H
 
+#include "editor/editor_actions.h"
 #include "editor/editor_data.h"
 #include "editor/editor_export.h"
 #include "editor/editor_folding.h"
@@ -52,6 +53,7 @@ class Control;
 class DependencyEditor;
 class DependencyErrorDialog;
 class EditorAbout;
+class EditorActions;
 class EditorExport;
 class EditorFeatureProfileManager;
 class EditorFileServer;
@@ -432,6 +434,8 @@ private:
 	List<String> previous_scenes;
 	bool opening_prev;
 
+	Ref<EditorActions> editor_actions;
+
 	void _dialog_action(String p_file);
 
 	void _edit_current();
@@ -764,6 +768,8 @@ public:
 	static UndoRedo *get_undo_redo() { return &singleton->editor_data.get_undo_redo(); }
 
 	EditorSelection *get_editor_selection() { return editor_selection; }
+
+	static Ref<EditorActions> &get_actions() { return singleton->editor_actions; }
 
 	void set_convert_old_scene(bool p_old) { convert_old = p_old; }
 
