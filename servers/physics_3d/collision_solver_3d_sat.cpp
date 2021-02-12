@@ -35,7 +35,7 @@
 
 #define fallback_collision_solver gjk_epa_calculate_penetration
 
-// Cylinder SAT analytic methods for Cylinder-trimesh and Cylinder-box are based on ODE colliders.
+// Cylinder SAT analytic methods and face-circle contact points for cylinder-trimesh and cylinder-box collision are based on ODE colliders.
 
 /*
  *	Cylinder-trimesh and Cylinder-box colliders by Alen Ladavac
@@ -119,28 +119,9 @@ static void _generate_contacts_point_circle(const Vector3 *p_points_A, int p_poi
 	ERR_FAIL_COND(p_point_count_B != 3);
 #endif
 
-	const Vector3 &point_A = p_points_A[0];
+	Vector3 closest_B = Plane(p_points_B[0], p_points_B[1], p_points_B[2]).project(*p_points_A);
 
-	const Vector3 &circle_B_pos = p_points_B[0];
-	Vector3 circle_B_line_1 = p_points_B[1] - circle_B_pos;
-	Vector3 circle_B_line_2 = p_points_B[2] - circle_B_pos;
-
-	real_t circle_B_radius = circle_B_line_1.length();
-	Vector3 circle_B_normal = circle_B_line_1.cross(circle_B_line_2).normalized();
-
-	// Project point onto Circle B plane.
-	Plane circle_plane(circle_B_pos, circle_B_normal);
-	Vector3 proj_point_A = circle_plane.project(point_A);
-
-	// Clip point.
-	Vector3 delta_point_1 = proj_point_A - circle_B_pos;
-	real_t dist_point_1 = delta_point_1.length_squared();
-	if (!Math::is_zero_approx(dist_point_1)) {
-		dist_point_1 = Math::sqrt(dist_point_1);
-		proj_point_A = circle_B_pos + delta_point_1 * MIN(dist_point_1, circle_B_radius) / dist_point_1;
-	}
-
-	p_callback->call(point_A, proj_point_A);
+	p_callback->call(*p_points_A, closest_B);
 }
 
 static void _generate_contacts_edge_edge(const Vector3 *p_points_A, int p_point_count_A, const Vector3 *p_points_B, int p_point_count_B, _CollectorCallback *p_callback) {
@@ -187,6 +168,104 @@ static void _generate_contacts_edge_edge(const Vector3 *p_points_A, int p_point_
 	Vector3 closest_A = p_points_A[0] + rel_A * d;
 	Vector3 closest_B = Geometry3D::get_closest_point_to_segment_uncapped(closest_A, p_points_B);
 	p_callback->call(closest_A, closest_B);
+}
+
+static void _generate_contacts_edge_circle(const Vector3 *p_points_A, int p_point_count_A, const Vector3 *p_points_B, int p_point_count_B, _CollectorCallback *p_callback) {
+#ifdef DEBUG_ENABLED
+	ERR_FAIL_COND(p_point_count_A != 2);
+	ERR_FAIL_COND(p_point_count_B != 3);
+#endif
+
+	const Vector3 &circle_B_pos = p_points_B[0];
+	Vector3 circle_B_line_1 = p_points_B[1] - circle_B_pos;
+	Vector3 circle_B_line_2 = p_points_B[2] - circle_B_pos;
+
+	real_t circle_B_radius = circle_B_line_1.length();
+	Vector3 circle_B_normal = circle_B_line_1.cross(circle_B_line_2).normalized();
+
+	Plane circle_plane(circle_B_pos, circle_B_normal);
+
+	static const int max_clip = 2;
+	Vector3 contact_points[max_clip];
+	int num_points = 0;
+
+	// Project edge point in circle plane.
+	const Vector3 &edge_A_1 = p_points_A[0];
+	Vector3 proj_point_1 = circle_plane.project(edge_A_1);
+
+	Vector3 dist_vec = proj_point_1 - circle_B_pos;
+	real_t dist_sq = dist_vec.length_squared();
+
+	// Point 1 is inside disk, add as contact point.
+	if (dist_sq <= circle_B_radius * circle_B_radius) {
+		contact_points[num_points] = edge_A_1;
+		++num_points;
+	}
+
+	const Vector3 &edge_A_2 = p_points_A[1];
+	Vector3 proj_point_2 = circle_plane.project(edge_A_2);
+
+	Vector3 dist_vec_2 = proj_point_2 - circle_B_pos;
+	real_t dist_sq_2 = dist_vec_2.length_squared();
+
+	// Point 2 is inside disk, add as contact point.
+	if (dist_sq_2 <= circle_B_radius * circle_B_radius) {
+		contact_points[num_points] = edge_A_2;
+		++num_points;
+	}
+
+	if (num_points < 2) {
+		Vector3 line_vec = proj_point_2 - proj_point_1;
+		real_t line_length_sq = line_vec.length_squared();
+
+		// Create a quadratic formula of the form ax^2 + bx + c = 0
+		real_t a, b, c;
+
+		a = line_length_sq;
+		b = 2.0 * dist_vec.dot(line_vec);
+		c = dist_sq - circle_B_radius * circle_B_radius;
+
+		// Solve for t.
+		real_t sqrtterm = b * b - 4.0 * a * c;
+
+		// If the term we intend to square root is less than 0 then the answer won't be real,
+		// so the line doesn't intersect.
+		if (sqrtterm >= 0) {
+			sqrtterm = Math::sqrt(sqrtterm);
+
+			Vector3 edge_dir = edge_A_2 - edge_A_1;
+
+			real_t fraction_1 = (-b - sqrtterm) / (2.0 * a);
+			if ((fraction_1 > 0.0) && (fraction_1 < 1.0)) {
+				Vector3 face_point_1 = edge_A_1 + fraction_1 * edge_dir;
+				ERR_FAIL_COND(num_points >= max_clip);
+				contact_points[num_points] = face_point_1;
+				++num_points;
+			}
+
+			real_t fraction_2 = (-b + sqrtterm) / (2.0 * a);
+			if ((fraction_2 > 0.0) && (fraction_2 < 1.0) && !Math::is_equal_approx(fraction_1, fraction_2)) {
+				Vector3 face_point_2 = edge_A_1 + fraction_2 * edge_dir;
+				ERR_FAIL_COND(num_points >= max_clip);
+				contact_points[num_points] = face_point_2;
+				++num_points;
+			}
+		}
+	}
+
+	// Generate contact points.
+	for (int i = 0; i < num_points; i++) {
+		const Vector3 &contact_point_A = contact_points[i];
+
+		real_t d = circle_plane.distance_to(contact_point_A);
+		Vector3 closest_B = contact_point_A - circle_plane.normal * d;
+
+		if (p_callback->normal.dot(contact_point_A) >= p_callback->normal.dot(closest_B)) {
+			continue;
+		}
+
+		p_callback->call(contact_point_A, closest_B);
+	}
 }
 
 static void _generate_contacts_face_face(const Vector3 *p_points_A, int p_point_count_A, const Vector3 *p_points_B, int p_point_count_B, _CollectorCallback *p_callback) {
@@ -280,7 +359,7 @@ static void _generate_contacts_face_face(const Vector3 *p_points_A, int p_point_
 
 static void _generate_contacts_face_circle(const Vector3 *p_points_A, int p_point_count_A, const Vector3 *p_points_B, int p_point_count_B, _CollectorCallback *p_callback) {
 #ifdef DEBUG_ENABLED
-	ERR_FAIL_COND(p_point_count_A < 2);
+	ERR_FAIL_COND(p_point_count_A < 3);
 	ERR_FAIL_COND(p_point_count_B != 3);
 #endif
 
@@ -288,147 +367,57 @@ static void _generate_contacts_face_circle(const Vector3 *p_points_A, int p_poin
 	Vector3 circle_B_line_1 = p_points_B[1] - circle_B_pos;
 	Vector3 circle_B_line_2 = p_points_B[2] - circle_B_pos;
 
-	real_t circle_B_radius = circle_B_line_1.length();
+	// Clip face with circle segments.
+	static const int circle_segments = 8;
+	Vector3 circle_points[circle_segments];
+
+	real_t angle_delta = 2.0 * Math_PI / circle_segments;
+
+	for (int i = 0; i < circle_segments; ++i) {
+		Vector3 point_pos = circle_B_pos;
+		point_pos += circle_B_line_1 * Math::cos(i * angle_delta);
+		point_pos += circle_B_line_2 * Math::sin(i * angle_delta);
+		circle_points[i] = point_pos;
+	}
+
+	_generate_contacts_face_face(p_points_A, p_point_count_A, circle_points, circle_segments, p_callback);
+
+	// Clip face with circle plane.
 	Vector3 circle_B_normal = circle_B_line_1.cross(circle_B_line_2).normalized();
 
 	Plane circle_plane(circle_B_pos, circle_B_normal);
-
-	bool edge = (p_point_count_A == 2);
 
 	static const int max_clip = 32;
 	Vector3 contact_points[max_clip];
 	int num_points = 0;
 
-	// Clip edges with circle.
 	for (int i = 0; i < p_point_count_A; i++) {
 		int i_n = (i + 1) % p_point_count_A;
 
-		// Project edge point in circle plane.
-		const Vector3 &edge_A_1 = p_points_A[i];
-		Vector3 proj_point_1 = circle_plane.project(edge_A_1);
+		const Vector3 &edge0_A = p_points_A[i];
+		const Vector3 &edge1_A = p_points_A[i_n];
 
-		Vector3 dist_vec = proj_point_1 - circle_B_pos;
-		real_t dist_sq = dist_vec.length_squared();
+		real_t dist0 = circle_plane.distance_to(edge0_A);
+		real_t dist1 = circle_plane.distance_to(edge1_A);
 
-		// Point 1 is inside disk, add as contact point.
-		if (dist_sq <= circle_B_radius * circle_B_radius) {
-			//p_callback->call(edge_A_1, proj_point_1);
+		// First point in front of plane, generate contact point.
+		if (dist0 * circle_plane.d >= 0) {
 			ERR_FAIL_COND(num_points >= max_clip);
-			contact_points[num_points] = edge_A_1;
-			++num_points;
-		}
-		// No need to test point 2 now, as it will be part of the next edge.
-
-		if (edge && i > 0) {
-			// Done with testing the only two points.
-			break;
-		}
-
-		// Project edge point in circle plane.
-		const Vector3 &edge_A_2 = p_points_A[i_n];
-		Vector3 proj_point_2 = circle_plane.project(edge_A_2);
-
-		Vector3 line_vec = proj_point_2 - proj_point_1;
-		real_t line_length_sq = line_vec.length_squared();
-
-		// Create a quadratic formula of the form ax^2 + bx + c = 0
-		real_t a, b, c;
-
-		a = line_length_sq;
-		b = 2.0 * dist_vec.dot(line_vec);
-		c = dist_sq - circle_B_radius * circle_B_radius;
-
-		// Solve for t.
-		real_t sqrtterm = b * b - 4.0 * a * c;
-
-		// If the term we intend to square root is less than 0 then the answer won't be real,
-		// so the line doesn't intersect.
-		if (sqrtterm < 0) {
-			continue;
-		}
-
-		sqrtterm = Math::sqrt(sqrtterm);
-
-		Vector3 edge_dir = edge_A_2 - edge_A_1;
-
-		real_t fraction_1 = (-b - sqrtterm) / (2.0 * a);
-		if ((fraction_1 > 0.0) && (fraction_1 < 1.0)) {
-			//Vector3 intersection_1 = proj_point_1 + fraction_1 * line_vec;
-			Vector3 face_point_1 = edge_A_1 + fraction_1 * edge_dir;
-			//p_callback->call(face_point_1, intersection_1);
-			ERR_FAIL_COND(num_points >= max_clip);
-			contact_points[num_points] = face_point_1;
+			contact_points[num_points] = edge0_A;
 			++num_points;
 		}
 
-		real_t fraction_2 = (-b + sqrtterm) / (2.0 * a);
-		if ((fraction_2 > 0.0) && (fraction_2 < 1.0) && !Math::is_equal_approx(fraction_1, fraction_2)) {
-			//Vector3 intersection_2 = proj_point_1 + fraction_2 * line_vec;
-			Vector3 face_point_2 = edge_A_1 + fraction_2 * edge_dir;
-			//p_callback->call(face_point_2, intersection_2);
+		// Points on different sides, generate contact point.
+		if (dist0 * dist1 < 0) {
+			// calculate intersection
+			Vector3 rel = edge1_A - edge0_A;
+			real_t den = circle_plane.normal.dot(rel);
+			real_t dist = -(circle_plane.normal.dot(edge0_A) - circle_plane.d) / den;
+			Vector3 inters = edge0_A + rel * dist;
+
 			ERR_FAIL_COND(num_points >= max_clip);
-			contact_points[num_points] = face_point_2;
+			contact_points[num_points] = inters;
 			++num_points;
-		}
-	}
-
-	// In case of a face, add extra contact points for proper support.
-	if (!edge) {
-		Plane plane_A(p_points_A[0], p_points_A[1], p_points_A[2]);
-
-		if (num_points < 3) {
-			if (num_points == 0) {
-				// Use 3 arbitrary equidistant points from the circle.
-				for (int i = 0; i < 3; ++i) {
-					Vector3 circle_point = circle_B_pos;
-					circle_point += circle_B_line_1 * Math::cos(2.0 * Math_PI * i / 3.0);
-					circle_point += circle_B_line_2 * Math::sin(2.0 * Math_PI * i / 3.0);
-
-					Vector3 face_point = plane_A.project(circle_point);
-
-					contact_points[num_points] = face_point;
-					++num_points;
-				}
-			} else if (num_points == 1) {
-				Vector3 line_center = circle_B_pos - contact_points[0];
-				Vector3 line_tangent = line_center.cross(plane_A.normal);
-
-				Vector3 dir = line_tangent.cross(plane_A.normal).normalized();
-				if (line_center.dot(dir) > 0.0) {
-					// Use 2 equidistant points on the circle inside the face.
-					line_center.normalize();
-					line_tangent.normalize();
-					for (int i = 0; i < 2; ++i) {
-						Vector3 circle_point = circle_B_pos;
-						circle_point -= line_center * circle_B_radius * Math::cos(2.0 * Math_PI * (i + 1) / 3.0);
-						circle_point += line_tangent * circle_B_radius * Math::sin(2.0 * Math_PI * (i + 1) / 3.0);
-
-						Vector3 face_point = plane_A.project(circle_point);
-
-						contact_points[num_points] = face_point;
-						++num_points;
-					}
-				}
-				// Otherwise the circle touches an edge from the outside, no extra contact point.
-			} else { // if (num_points == 2)
-				// Use equidistant 3rd point on the circle inside the face.
-				Vector3 contacts_line = contact_points[1] - contact_points[0];
-				Vector3 dir = contacts_line.cross(plane_A.normal).normalized();
-
-				Vector3 circle_point = contact_points[0] + 0.5 * contacts_line;
-				Vector3 line_center = (circle_B_pos - circle_point);
-
-				if (line_center.dot(dir) > 0.0) {
-					circle_point += dir * (line_center.length() + circle_B_radius);
-				} else {
-					circle_point += dir * (circle_B_radius - line_center.length());
-				}
-
-				Vector3 face_point = plane_A.project(circle_point);
-
-				contact_points[num_points] = face_point;
-				++num_points;
-			}
 		}
 	}
 
@@ -567,7 +556,7 @@ static void _generate_contacts_from_supports(const Vector3 *p_points_A, int p_po
 				nullptr,
 				_generate_contacts_edge_edge,
 				_generate_contacts_face_face,
-				_generate_contacts_face_circle,
+				_generate_contacts_edge_circle,
 		},
 		{
 				nullptr,
