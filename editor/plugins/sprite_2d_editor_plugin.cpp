@@ -173,6 +173,11 @@ void Sprite2DEditor::_update_mesh_data() {
 
 	Ref<Image> image = texture->get_data();
 	ERR_FAIL_COND(image.is_null());
+
+	if (image->is_compressed()) {
+		image->decompress();
+	}
+
 	Rect2 rect;
 	if (node->is_region()) {
 		rect = node->get_region_rect();
