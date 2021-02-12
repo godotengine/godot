@@ -1568,7 +1568,7 @@ Size2 LineEdit::get_minimum_size() const {
 	Size2 min_size;
 
 	// Minimum size of text.
-	int space_size = font->get_char_size('m', 0, font_size).x;
+	int space_size = font->get_char_size(' ', 0, font_size).x;
 	min_size.width = get_theme_constant("minimum_spaces") * space_size;
 
 	if (expand_to_text_length) {

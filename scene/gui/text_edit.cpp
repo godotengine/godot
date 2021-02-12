@@ -202,7 +202,7 @@ void TextEdit::Text::invalidate_cache(int p_line, int p_column, const String &p_
 	// Apply tab align.
 	if (indent_size > 0) {
 		Vector<float> tabs;
-		tabs.push_back(font->get_char_size('m', 0, font_size).width * indent_size);
+		tabs.push_back(font->get_char_size(' ', 0, font_size).width * indent_size);
 		text.write[p_line].data_buf->tab_align(tabs);
 	}
 }
@@ -212,7 +212,7 @@ void TextEdit::Text::invalidate_all_lines() {
 		text.write[i].data_buf->set_width(width);
 		if (indent_size > 0) {
 			Vector<float> tabs;
-			tabs.push_back(font->get_char_size('m', 0, font_size).width * indent_size);
+			tabs.push_back(font->get_char_size(' ', 0, font_size).width * indent_size);
 			text.write[i].data_buf->tab_align(tabs);
 		}
 	}
@@ -1050,7 +1050,7 @@ void TextEdit::_notification(int p_what) {
 
 						// Give visual indication of empty selected line.
 						if (selection.active && line >= selection.from_line && line <= selection.to_line && char_margin >= xmargin_beg) {
-							int char_w = cache.font->get_char_size('m', 0, cache.font_size).width;
+							int char_w = cache.font->get_char_size(' ', 0, cache.font_size).width;
 							if (rtl) {
 								RenderingServer::get_singleton()->canvas_item_add_rect(ci, Rect2(size.width - xmargin_beg - ofs_x - char_w, ofs_y, char_w, row_height), cache.selection_color);
 							} else {
