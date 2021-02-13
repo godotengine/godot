@@ -250,7 +250,7 @@ bool PhysicalBone2D::is_simulating_physics() const {
 
 void PhysicalBone2D::set_bone2d_nodepath(const NodePath &p_nodepath) {
 	bone2d_nodepath = p_nodepath;
-	_change_notify();
+	notify_property_list_changed();
 }
 
 NodePath PhysicalBone2D::get_bone2d_nodepath() const {
@@ -275,7 +275,7 @@ void PhysicalBone2D::set_bone2d_index(int p_bone_idx) {
 		bone2d_index = p_bone_idx;
 	}
 
-	_change_notify();
+	notify_property_list_changed();
 }
 
 int PhysicalBone2D::get_bone2d_index() const {

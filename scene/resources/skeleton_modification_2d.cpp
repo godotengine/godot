@@ -206,7 +206,7 @@ void SkeletonModificationStack2D::set_modification(int p_mod_idx, Ref<SkeletonMo
 
 void SkeletonModificationStack2D::set_modification_count(int p_count) {
 	modifications.resize(p_count);
-	_change_notify();
+	notify_property_list_changed();
 
 #ifdef TOOLS_ENABLED
 	set_editor_gizmos_dirty(true);
@@ -721,7 +721,7 @@ void SkeletonModification2DLookAt::set_bone_index(int p_bone_idx) {
 		bone_idx = p_bone_idx;
 	}
 
-	_change_notify();
+	notify_property_list_changed();
 }
 
 void SkeletonModification2DLookAt::update_target_cache() {
@@ -764,7 +764,7 @@ void SkeletonModification2DLookAt::set_additional_rotation(float p_rotation) {
 
 void SkeletonModification2DLookAt::set_enable_constraint(bool p_constraint) {
 	enable_constraint = p_constraint;
-	_change_notify();
+	notify_property_list_changed();
 #ifdef TOOLS_ENABLED
 	if (stack && is_setup) {
 		stack->set_editor_gizmos_dirty(true);
@@ -1188,7 +1188,7 @@ NodePath SkeletonModification2DCCDIK::get_tip_node() const {
 
 void SkeletonModification2DCCDIK::set_ccdik_data_chain_length(int p_length) {
 	ccdik_data_chain.resize(p_length);
-	_change_notify();
+	notify_property_list_changed();
 }
 
 int SkeletonModification2DCCDIK::get_ccdik_data_chain_length() {
@@ -1200,7 +1200,7 @@ void SkeletonModification2DCCDIK::set_ccdik_joint_bone2d_node(int p_joint_idx, c
 	ccdik_data_chain.write[p_joint_idx].bone2d_node = p_target_node;
 	ccdik_joint_update_bone2d_cache(p_joint_idx);
 
-	_change_notify();
+	notify_property_list_changed();
 }
 
 NodePath SkeletonModification2DCCDIK::get_ccdik_joint_bone2d_node(int p_joint_idx) const {
@@ -1227,7 +1227,7 @@ void SkeletonModification2DCCDIK::set_ccdik_joint_bone_index(int p_joint_idx, in
 		ccdik_data_chain.write[p_joint_idx].bone_idx = p_bone_idx;
 	}
 
-	_change_notify();
+	notify_property_list_changed();
 }
 
 int SkeletonModification2DCCDIK::get_ccdik_joint_bone_index(int p_joint_idx) const {
@@ -1248,7 +1248,7 @@ bool SkeletonModification2DCCDIK::get_ccdik_joint_rotate_from_joint(int p_joint_
 void SkeletonModification2DCCDIK::set_ccdik_joint_enable_constraint(int p_joint_idx, bool p_constraint) {
 	ERR_FAIL_INDEX_MSG(p_joint_idx, ccdik_data_chain.size(), "CCDIK joint out of range!");
 	ccdik_data_chain.write[p_joint_idx].enable_constraint = p_constraint;
-	_change_notify();
+	notify_property_list_changed();
 
 #ifdef TOOLS_ENABLED
 	if (stack && is_setup) {
@@ -1691,7 +1691,7 @@ NodePath SkeletonModification2DFABRIK::get_target_node() const {
 
 void SkeletonModification2DFABRIK::set_fabrik_data_chain_length(int p_length) {
 	fabrik_data_chain.resize(p_length);
-	_change_notify();
+	notify_property_list_changed();
 }
 
 int SkeletonModification2DFABRIK::get_fabrik_data_chain_length() {
@@ -1703,7 +1703,7 @@ void SkeletonModification2DFABRIK::set_fabrik_joint_bone2d_node(int p_joint_idx,
 	fabrik_data_chain.write[p_joint_idx].bone2d_node = p_target_node;
 	fabrik_joint_update_bone2d_cache(p_joint_idx);
 
-	_change_notify();
+	notify_property_list_changed();
 }
 
 NodePath SkeletonModification2DFABRIK::get_fabrik_joint_bone2d_node(int p_joint_idx) const {
@@ -1730,7 +1730,7 @@ void SkeletonModification2DFABRIK::set_fabrik_joint_bone_index(int p_joint_idx, 
 		fabrik_data_chain.write[p_joint_idx].bone_idx = p_bone_idx;
 	}
 
-	_change_notify();
+	notify_property_list_changed();
 }
 
 int SkeletonModification2DFABRIK::get_fabrik_joint_bone_index(int p_joint_idx) const {
@@ -2123,7 +2123,7 @@ Vector2 SkeletonModification2DJiggle::get_gravity() const {
 
 void SkeletonModification2DJiggle::set_use_colliders(bool p_use_colliders) {
 	use_colliders = p_use_colliders;
-	_change_notify();
+	notify_property_list_changed();
 }
 
 bool SkeletonModification2DJiggle::get_use_colliders() const {
@@ -2146,7 +2146,7 @@ int SkeletonModification2DJiggle::get_jiggle_data_chain_length() {
 void SkeletonModification2DJiggle::set_jiggle_data_chain_length(int p_length) {
 	ERR_FAIL_COND(p_length < 0);
 	jiggle_data_chain.resize(p_length);
-	_change_notify();
+	notify_property_list_changed();
 }
 
 void SkeletonModification2DJiggle::set_jiggle_joint_bone2d_node(int p_joint_idx, const NodePath &p_target_node) {
@@ -2154,7 +2154,7 @@ void SkeletonModification2DJiggle::set_jiggle_joint_bone2d_node(int p_joint_idx,
 	jiggle_data_chain.write[p_joint_idx].bone2d_node = p_target_node;
 	jiggle_joint_update_bone2d_cache(p_joint_idx);
 
-	_change_notify();
+	notify_property_list_changed();
 }
 
 NodePath SkeletonModification2DJiggle::get_jiggle_joint_bone2d_node(int p_joint_idx) const {
@@ -2181,7 +2181,7 @@ void SkeletonModification2DJiggle::set_jiggle_joint_bone_index(int p_joint_idx, 
 		jiggle_data_chain.write[p_joint_idx].bone_idx = p_bone_idx;
 	}
 
-	_change_notify();
+	notify_property_list_changed();
 }
 
 int SkeletonModification2DJiggle::get_jiggle_joint_bone_index(int p_joint_idx) const {
@@ -2193,7 +2193,7 @@ void SkeletonModification2DJiggle::set_jiggle_joint_override(int joint_idx, bool
 	ERR_FAIL_INDEX(joint_idx, jiggle_data_chain.size());
 	jiggle_data_chain.write[joint_idx].override_defaults = p_override;
 	_update_jiggle_joint_data();
-	_change_notify();
+	notify_property_list_changed();
 }
 
 bool SkeletonModification2DJiggle::get_jiggle_joint_override(int joint_idx) const {
@@ -2237,7 +2237,7 @@ float SkeletonModification2DJiggle::get_jiggle_joint_damping(int joint_idx) cons
 void SkeletonModification2DJiggle::set_jiggle_joint_use_gravity(int joint_idx, bool p_use_gravity) {
 	ERR_FAIL_INDEX(joint_idx, jiggle_data_chain.size());
 	jiggle_data_chain.write[joint_idx].use_gravity = p_use_gravity;
-	_change_notify();
+	notify_property_list_changed();
 }
 
 bool SkeletonModification2DJiggle::get_jiggle_joint_use_gravity(int joint_idx) const {
@@ -2622,7 +2622,7 @@ NodePath SkeletonModification2DTwoBoneIK::get_target_node() const {
 void SkeletonModification2DTwoBoneIK::set_joint_one_bone2d_node(const NodePath &p_target_node) {
 	joint_one_bone2d_node = p_target_node;
 	update_joint_one_bone2d_cache();
-	_change_notify();
+	notify_property_list_changed();
 }
 
 void SkeletonModification2DTwoBoneIK::set_target_minimum_distance(float p_distance) {
@@ -2664,7 +2664,7 @@ NodePath SkeletonModification2DTwoBoneIK::get_joint_one_bone2d_node() const {
 void SkeletonModification2DTwoBoneIK::set_joint_two_bone2d_node(const NodePath &p_target_node) {
 	joint_two_bone2d_node = p_target_node;
 	update_joint_two_bone2d_cache();
-	_change_notify();
+	notify_property_list_changed();
 }
 
 NodePath SkeletonModification2DTwoBoneIK::get_joint_two_bone2d_node() const {
@@ -2689,7 +2689,7 @@ void SkeletonModification2DTwoBoneIK::set_joint_one_bone_idx(int p_bone_idx) {
 		joint_one_bone_idx = p_bone_idx;
 	}
 
-	_change_notify();
+	notify_property_list_changed();
 }
 
 int SkeletonModification2DTwoBoneIK::get_joint_one_bone_idx() const {
@@ -2714,7 +2714,7 @@ void SkeletonModification2DTwoBoneIK::set_joint_two_bone_idx(int p_bone_idx) {
 		joint_two_bone_idx = p_bone_idx;
 	}
 
-	_change_notify();
+	notify_property_list_changed();
 }
 
 int SkeletonModification2DTwoBoneIK::get_joint_two_bone_idx() const {
@@ -2782,7 +2782,7 @@ bool SkeletonModification2DPhysicalBones::_set(const StringName &p_path, const V
 		if (Engine::get_singleton()->is_editor_hint()) {
 			if (path.begins_with("fetch_bones")) {
 				fetch_physical_bones();
-				_change_notify();
+				notify_property_list_changed();
 				return true;
 			}
 		}
@@ -2919,7 +2919,7 @@ int SkeletonModification2DPhysicalBones::get_physical_bone_chain_length() {
 void SkeletonModification2DPhysicalBones::set_physical_bone_chain_length(int p_length) {
 	ERR_FAIL_COND(p_length < 0);
 	physical_bone_chain.resize(p_length);
-	_change_notify();
+	notify_property_list_changed();
 }
 
 void SkeletonModification2DPhysicalBones::fetch_physical_bones() {
