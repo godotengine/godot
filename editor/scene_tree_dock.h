@@ -34,7 +34,6 @@
 #include "editor/connections_dialog.h"
 #include "editor/create_dialog.h"
 #include "editor/editor_data.h"
-#include "editor/editor_sub_scene.h"
 #include "editor/groups_editor.h"
 #include "editor/quick_open.h"
 #include "editor/rename_dialog.h"
@@ -74,7 +73,6 @@ class SceneTreeDock : public VBoxContainer {
 		TOOL_REPARENT_TO_NEW_NODE,
 		TOOL_MAKE_ROOT,
 		TOOL_NEW_SCENE_FROM,
-		TOOL_MERGE_FROM_SCENE,
 		TOOL_MULTI_EDIT,
 		TOOL_ERASE,
 		TOOL_COPY_NODE_PATH,
@@ -141,7 +139,6 @@ class SceneTreeDock : public VBoxContainer {
 
 	ReparentDialog *reparent_dialog;
 	EditorQuickOpen *quick_open;
-	EditorSubScene *import_subscene_dialog;
 	EditorFileDialog *new_scene_from_dialog;
 
 	LineEdit *filter;

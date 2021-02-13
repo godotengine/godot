@@ -107,8 +107,6 @@ void SceneTreeDock::_unhandled_key_input(Ref<InputEvent> p_event) {
 		_tool_selected(TOOL_MOVE_DOWN);
 	} else if (ED_IS_SHORTCUT("scene_tree/reparent", p_event)) {
 		_tool_selected(TOOL_REPARENT);
-	} else if (ED_IS_SHORTCUT("scene_tree/merge_from_scene", p_event)) {
-		_tool_selected(TOOL_MERGE_FROM_SCENE);
 	} else if (ED_IS_SHORTCUT("scene_tree/save_branch_as_scene", p_event)) {
 		_tool_selected(TOOL_NEW_SCENE_FROM);
 	} else if (ED_IS_SHORTCUT("scene_tree/delete_no_confirm", p_event)) {
@@ -879,13 +877,6 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 				delete_dialog->popup_centered();
 			}
 
-		} break;
-		case TOOL_MERGE_FROM_SCENE: {
-			if (!profile_allow_editing) {
-				break;
-			}
-
-			EditorNode::get_singleton()->merge_from_scene();
 		} break;
 		case TOOL_NEW_SCENE_FROM: {
 			if (!profile_allow_editing) {
@@ -2291,21 +2282,6 @@ void SceneTreeDock::set_selected(Node *p_node, bool p_emit_selected) {
 	scene_tree->set_selected(p_node, p_emit_selected);
 }
 
-void SceneTreeDock::import_subscene() {
-	import_subscene_dialog->popup_centered_clamped(Size2(500, 800) * EDSCALE, 0.8);
-}
-
-void SceneTreeDock::_import_subscene() {
-	Node *parent = scene_tree->get_selected();
-	if (!parent) {
-		parent = editor_data->get_edited_scene_root();
-		ERR_FAIL_COND(!parent);
-	}
-
-	import_subscene_dialog->move(parent, edited_scene);
-	editor_data->get_undo_redo().clear_history(); //no undo for now..
-}
-
 void SceneTreeDock::_new_scene_from(String p_file) {
 	List<Node *> selection = editor_selection->get_selected_node_list();
 
@@ -2622,7 +2598,6 @@ void SceneTreeDock::_tree_rmb(const Vector2 &p_menu_pos) {
 	if (selection.size() == 1) {
 		if (profile_allow_editing) {
 			menu->add_separator();
-			menu->add_icon_shortcut(get_theme_icon("Blend", "EditorIcons"), ED_GET_SHORTCUT("scene_tree/merge_from_scene"), TOOL_MERGE_FROM_SCENE);
 			menu->add_icon_shortcut(get_theme_icon("CreateNewSceneFrom", "EditorIcons"), ED_GET_SHORTCUT("scene_tree/save_branch_as_scene"), TOOL_NEW_SCENE_FROM);
 		}
 		if (full_selection.size() == 1) {
@@ -3000,7 +2975,6 @@ SceneTreeDock::SceneTreeDock(EditorNode *p_editor, Node *p_scene_root, EditorSel
 	ED_SHORTCUT("scene_tree/reparent", TTR("Reparent"));
 	ED_SHORTCUT("scene_tree/reparent_to_new_node", TTR("Reparent to New Node"));
 	ED_SHORTCUT("scene_tree/make_root", TTR("Make Scene Root"));
-	ED_SHORTCUT("scene_tree/merge_from_scene", TTR("Merge From Scene"));
 	ED_SHORTCUT("scene_tree/save_branch_as_scene", TTR("Save Branch as Scene"));
 	ED_SHORTCUT("scene_tree/copy_node_path", TTR("Copy Node Path"), KEY_MASK_CMD | KEY_MASK_SHIFT | KEY_C);
 	ED_SHORTCUT("scene_tree/delete_no_confirm", TTR("Delete (No Confirm)"), KEY_MASK_SHIFT | KEY_DELETE);
@@ -3129,10 +3103,6 @@ SceneTreeDock::SceneTreeDock(EditorNode *p_editor, Node *p_scene_root, EditorSel
 	placeholder_editable_instance_remove_dialog = memnew(ConfirmationDialog);
 	add_child(placeholder_editable_instance_remove_dialog);
 	placeholder_editable_instance_remove_dialog->connect("confirmed", callable_mp(this, &SceneTreeDock::_toggle_placeholder_from_selection));
-
-	import_subscene_dialog = memnew(EditorSubScene);
-	add_child(import_subscene_dialog);
-	import_subscene_dialog->connect("subscene_selected", callable_mp(this, &SceneTreeDock::_import_subscene));
 
 	new_scene_from_dialog = memnew(EditorFileDialog);
 	new_scene_from_dialog->set_file_mode(EditorFileDialog::FILE_MODE_SAVE_FILE);
