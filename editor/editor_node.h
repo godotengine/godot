@@ -128,7 +128,6 @@ private:
 		FILE_SAVE_ALL_SCENES,
 		FILE_SAVE_AND_RUN,
 		FILE_SHOW_IN_FILESYSTEM,
-		FILE_IMPORT_SUBSCENE,
 		FILE_EXPORT_PROJECT,
 		FILE_EXPORT_MESH_LIBRARY,
 		FILE_INSTALL_ANDROID_SOURCE,
@@ -718,8 +717,6 @@ public:
 	void save_resource_in_path(const Ref<Resource> &p_resource, const String &p_path);
 	void save_resource(const Ref<Resource> &p_resource);
 	void save_resource_as(const Ref<Resource> &p_resource, const String &p_at_path = String());
-
-	void merge_from_scene() { _menu_option_confirm(FILE_IMPORT_SUBSCENE, false); }
 
 	void show_about() { _menu_option_confirm(HELP_ABOUT, false); }
 

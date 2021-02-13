@@ -2520,16 +2520,6 @@ void EditorNode::_menu_option_confirm(int p_option, bool p_confirmed) {
 
 		} break;
 
-		case FILE_IMPORT_SUBSCENE: {
-			if (!editor_data.get_edited_scene_root()) {
-				show_accept(TTR("This operation can't be done without a selected node."), TTR("OK"));
-				break;
-			}
-
-			scene_tree_dock->import_subscene();
-
-		} break;
-
 		case FILE_EXTERNAL_OPEN_SCENE: {
 			if (unsaved_cache && !p_confirmed) {
 				confirmation->get_ok_button()->set_text(TTR("Open"));
