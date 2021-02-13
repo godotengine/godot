@@ -1050,7 +1050,7 @@ void AudioServer::update() {
 	}
 
 	if (Engine::get_singleton()->is_editor_hint()) {
-		// Allow the audio driver to sleep in the engine after 15 seconds of inactivity.
+		// Allow the audio driver to sleep in the editor after 15 seconds of inactivity.
 		MutexLock lock(playing_sources_mutex);
 		if (playing_sources_count == 0 && last_playback_time_msec < OS::get_singleton()->get_ticks_msec() - 15000) {
 			AudioDriver::get_singleton()->set_sleep_state(true);

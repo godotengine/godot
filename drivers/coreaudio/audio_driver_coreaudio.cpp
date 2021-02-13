@@ -243,27 +243,35 @@ OSStatus AudioDriverCoreAudio::input_callback(void *inRefCon,
 }
 
 void AudioDriverCoreAudio::start() {
-	if (!active && !sleeping) {
+	if (active) {
+		return;
+	}
+	if (!sleeping) {
 		OSStatus result = AudioOutputUnitStart(audio_unit);
 		if (result != noErr) {
 			ERR_PRINT("AudioOutputUnitStart failed, code: " + itos(result));
 		} else {
 			active = true;
 		}
-	} else if (!active && sleeping) {
+	} else {
+		// Driver is sleeping, so don't call AudioOutputUnitStart yet.
 		active = true;
 	}
 };
 
 void AudioDriverCoreAudio::stop() {
-	if (active && !sleeping) {
+	if (!active) {
+		return;
+	}
+	if (!sleeping) {
 		OSStatus result = AudioOutputUnitStop(audio_unit);
 		if (result != noErr) {
 			ERR_PRINT("AudioOutputUnitStop failed, code: " + itos(result));
 		} else {
 			active = false;
 		}
-	} else if (active && sleeping) {
+	} else {
+		// Driver is sleeping so no need to call AudioOutputUnitStop.
 		active = false;
 	}
 }
