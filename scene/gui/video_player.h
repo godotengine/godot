@@ -71,6 +71,9 @@ class VideoPlayer : public Control {
 
 	StringName bus;
 
+	bool has_playback_lock = false;
+	Mutex playback_lock_mutex;
+
 	void _mix_audio();
 	static int _audio_mix_callback(void *p_udata, const float *p_data, int p_frames);
 	static void _mix_audios(void *p_self);

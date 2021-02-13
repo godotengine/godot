@@ -66,6 +66,9 @@ private:
 
 	MixTarget mix_target = MIX_TARGET_STEREO;
 
+	bool has_playback_lock = false;
+	Mutex playback_lock_mutex;
+
 	void _mix_internal(bool p_fadeout);
 	void _mix_audio();
 	static void _mix_audios(void *self) { reinterpret_cast<AudioStreamPlayer *>(self)->_mix_audio(); }

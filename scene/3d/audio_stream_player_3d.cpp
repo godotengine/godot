@@ -138,6 +138,14 @@ void AudioStreamPlayer3D::_calc_output_vol(const Vector3 &source_dir, real_t tig
 }
 
 void AudioStreamPlayer3D::_mix_audio() {
+	if (!is_playing()) {
+		MutexLock lock(playback_lock_mutex);
+		if (has_playback_lock) {
+			AudioServer::get_singleton()->notify_source_stopped_playing();
+			has_playback_lock = false;
+		}
+	}
+
 	if (!stream_playback.is_valid() || !active ||
 			(stream_paused && !stream_paused_fade_out)) {
 		return;
@@ -338,6 +346,11 @@ void AudioStreamPlayer3D::_notification(int p_what) {
 
 	if (p_what == NOTIFICATION_EXIT_TREE) {
 		AudioServer::get_singleton()->remove_callback(_mix_audios, this);
+		MutexLock lock(playback_lock_mutex);
+		if (has_playback_lock) {
+			AudioServer::get_singleton()->notify_source_stopped_playing();
+			has_playback_lock = false;
+		}
 	}
 
 	if (p_what == NOTIFICATION_PAUSED) {
@@ -687,6 +700,11 @@ void AudioStreamPlayer3D::play(float p_from_pos) {
 		setplay = p_from_pos;
 		output_ready = false;
 		set_physics_process_internal(true);
+		MutexLock lock(playback_lock_mutex);
+		if (!has_playback_lock) {
+			AudioServer::get_singleton()->notify_source_playing();
+			has_playback_lock = true;
+		}
 	}
 }
 

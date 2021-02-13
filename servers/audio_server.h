@@ -111,6 +111,8 @@ public:
 	unsigned int get_input_position() { return input_position; }
 	unsigned int get_input_size() { return input_size; }
 
+	virtual void set_sleep_state(bool p_sleep) {}
+
 #ifdef DEBUG_ENABLED
 	uint64_t get_profiling_time() const { return prof_time; }
 	void reset_profiling_time() { prof_time = 0; }
@@ -243,6 +245,10 @@ private:
 	Set<CallbackItem> callbacks;
 	Set<CallbackItem> update_callbacks;
 
+	Mutex playing_sources_mutex;
+	size_t playing_sources_count;
+	uint64_t last_playback_time_msec;
+
 	friend class AudioDriver;
 	void _driver_process(int p_frames, int32_t *p_buffer);
 
@@ -318,6 +324,9 @@ public:
 
 	void set_global_rate_scale(float p_scale);
 	float get_global_rate_scale() const;
+
+	void notify_source_playing();
+	void notify_source_stopped_playing();
 
 	virtual void init();
 	virtual void finish();

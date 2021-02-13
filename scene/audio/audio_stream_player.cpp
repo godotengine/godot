@@ -94,6 +94,14 @@ void AudioStreamPlayer::_mix_internal(bool p_fadeout) {
 }
 
 void AudioStreamPlayer::_mix_audio() {
+	if (!is_playing()) {
+		MutexLock lock(playback_lock_mutex);
+		if (has_playback_lock) {
+			AudioServer::get_singleton()->notify_source_stopped_playing();
+			has_playback_lock = false;
+		}
+	}
+
 	if (use_fadeout) {
 		_mix_to_bus(fadeout_buffer.ptr(), fadeout_buffer.size());
 		use_fadeout = false;
@@ -152,6 +160,11 @@ void AudioStreamPlayer::_notification(int p_what) {
 
 	if (p_what == NOTIFICATION_EXIT_TREE) {
 		AudioServer::get_singleton()->remove_callback(_mix_audios, this);
+		MutexLock lock(playback_lock_mutex);
+		if (has_playback_lock) {
+			AudioServer::get_singleton()->notify_source_stopped_playing();
+			has_playback_lock = false;
+		}
 	}
 
 	if (p_what == NOTIFICATION_PAUSED) {
@@ -241,6 +254,11 @@ void AudioStreamPlayer::play(float p_from_pos) {
 		stop_has_priority = false;
 		active = true;
 		set_process_internal(true);
+		MutexLock lock(playback_lock_mutex);
+		if (!has_playback_lock) {
+			AudioServer::get_singleton()->notify_source_playing();
+			has_playback_lock = true;
+		}
 	}
 }
 

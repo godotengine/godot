@@ -243,25 +243,47 @@ OSStatus AudioDriverCoreAudio::input_callback(void *inRefCon,
 }
 
 void AudioDriverCoreAudio::start() {
-	if (!active) {
+	if (!active && !sleeping) {
 		OSStatus result = AudioOutputUnitStart(audio_unit);
 		if (result != noErr) {
 			ERR_PRINT("AudioOutputUnitStart failed, code: " + itos(result));
 		} else {
 			active = true;
 		}
+	} else if (!active && sleeping) {
+		active = true;
 	}
 };
 
 void AudioDriverCoreAudio::stop() {
-	if (active) {
+	if (active && !sleeping) {
 		OSStatus result = AudioOutputUnitStop(audio_unit);
 		if (result != noErr) {
 			ERR_PRINT("AudioOutputUnitStop failed, code: " + itos(result));
 		} else {
 			active = false;
 		}
+	} else if (active && sleeping) {
+		active = false;
 	}
+}
+
+void AudioDriverCoreAudio::set_sleep_state(bool p_sleeping) {
+	if (active && !sleeping && p_sleeping) {
+		OSStatus result = AudioOutputUnitStop(audio_unit);
+		if (result != noErr) {
+			ERR_PRINT("AudioOutputUnitStop failed, code: " + itos(result));
+			return;
+		}
+	}
+	if (active && sleeping && !p_sleeping) {
+		OSStatus result = AudioOutputUnitStart(audio_unit);
+		if (result != noErr) {
+			ERR_PRINT("AudioOutputUnitStart failed, code: " + itos(result));
+			return;
+		}
+	}
+	sleeping = p_sleeping;
 }
 
 int AudioDriverCoreAudio::get_mix_rate() const {

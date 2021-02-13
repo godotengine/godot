@@ -88,6 +88,9 @@ private:
 	float max_distance = 2000.0;
 	float attenuation = 1.0;
 
+	bool has_playback_lock = false;
+	Mutex playback_lock_mutex;
+
 protected:
 	void _validate_property(PropertyInfo &property) const override;
 	void _notification(int p_what);

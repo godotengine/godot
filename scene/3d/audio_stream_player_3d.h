@@ -125,6 +125,9 @@ private:
 
 	float max_distance = 0.0;
 
+	bool has_playback_lock = false;
+	Mutex playback_lock_mutex;
+
 	Ref<VelocityTracker3D> velocity_tracker;
 
 	DopplerTracking doppler_tracking = DOPPLER_TRACKING_DISABLED;
