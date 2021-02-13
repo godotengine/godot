@@ -55,6 +55,7 @@ void ProjectSettingsEditor::popup_project_settings() {
 }
 
 void ProjectSettingsEditor::queue_save() {
+	EditorNode::get_singleton()->notify_settings_changed();
 	timer->start();
 }
 

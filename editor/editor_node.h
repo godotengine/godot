@@ -312,6 +312,9 @@ private:
 
 	EditorSettingsDialog *settings_config_dialog;
 	ProjectSettingsEditor *project_settings;
+	bool settings_changed = true; //make it update settings on first frame
+	void _update_from_settings();
+
 	PopupMenu *vcs_actions_menu;
 	EditorFileDialog *file;
 	ExportTemplateManager *export_template_manager;
@@ -846,6 +849,8 @@ public:
 	void save_all_scenes();
 	void save_scene_list(Vector<String> p_scene_filenames);
 	void restart_editor();
+
+	void notify_settings_changed();
 
 	void dim_editor(bool p_dimming, bool p_force_dim = false);
 	bool is_editor_dimmed() const;
