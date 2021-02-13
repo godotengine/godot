@@ -106,7 +106,7 @@ static Ref<Texture2D> flip_icon(Ref<Texture2D> p_texture, bool p_flip_y = false,
 }
 
 #ifdef MODULE_SVG_ENABLED
-static Ref<ImageTexture> editor_generate_icon(int p_index, bool p_convert_color, float p_scale = EDSCALE, bool p_force_filter = false) {
+static Ref<ImageTexture> editor_generate_icon(int p_index, bool p_convert_color, float p_scale = EDSCALE, float p_saturation = 1.0) {
 	Ref<ImageTexture> icon = memnew(ImageTexture);
 	Ref<Image> img = memnew(Image);
 
@@ -116,6 +116,9 @@ static Ref<ImageTexture> editor_generate_icon(int p_index, bool p_convert_color,
 	const bool upsample = !Math::is_equal_approx(Math::round(p_scale), p_scale);
 	ImageLoaderSVG::create_image_from_string(img, editor_icons_sources[p_index], p_scale, upsample, p_convert_color);
 
+	if (p_saturation != 1.0) {
+		img->adjust_bcs(1.0, 1.0, p_saturation);
+	}
 	icon->create_from_image(img); // in this case filter really helps
 
 	return icon;
@@ -126,7 +129,7 @@ static Ref<ImageTexture> editor_generate_icon(int p_index, bool p_convert_color,
 #define ADD_CONVERT_COLOR(dictionary, old_color, new_color) dictionary[Color::html(old_color)] = Color::html(new_color)
 #endif
 
-void editor_register_and_generate_icons(Ref<Theme> p_theme, bool p_dark_theme = true, int p_thumb_size = 32, bool p_only_thumbs = false) {
+void editor_register_and_generate_icons(Ref<Theme> p_theme, bool p_dark_theme = true, int p_thumb_size = 32, bool p_only_thumbs = false, float p_icon_saturation = 1.0) {
 #ifdef MODULE_SVG_ENABLED
 	// The default icon theme is designed to be used for a dark theme.
 	// This dictionary stores color codes to convert to other colors
@@ -239,14 +242,19 @@ void editor_register_and_generate_icons(Ref<Theme> p_theme, bool p_dark_theme = 
 	if (!p_only_thumbs) {
 		for (int i = 0; i < editor_icons_count; i++) {
 			float icon_scale = EDSCALE;
+			float saturation = p_icon_saturation;
 
 			// Always keep the DefaultProjectIcon at the default size
 			if (strcmp(editor_icons_names[i], "DefaultProjectIcon") == 0) {
 				icon_scale = 1.0f;
 			}
 
+			if (strcmp(editor_icons_names[i], "DefaultProjectIcon") == 0 || strcmp(editor_icons_names[i], "Godot") == 0 || strcmp(editor_icons_names[i], "Logo") == 0) {
+				saturation = 1.0;
+			}
+
 			const int is_exception = exceptions.has(editor_icons_names[i]);
-			const Ref<ImageTexture> icon = editor_generate_icon(i, !is_exception, icon_scale);
+			const Ref<ImageTexture> icon = editor_generate_icon(i, !is_exception, icon_scale, saturation);
 
 			p_theme->set_icon(editor_icons_names[i], "EditorIcons", icon);
 		}
@@ -290,6 +298,7 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	Color accent_color = EDITOR_GET("interface/theme/accent_color");
 	Color base_color = EDITOR_GET("interface/theme/base_color");
 	float contrast = EDITOR_GET("interface/theme/contrast");
+	float icon_saturation = EDITOR_GET("interface/theme/icon_saturation");
 	float relationship_line_opacity = EDITOR_GET("interface/theme/relationship_line_opacity");
 
 	String preset = EDITOR_GET("interface/theme/preset");
@@ -393,6 +402,9 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 
 	const Color highlight_color = Color(mono_color.r, mono_color.g, mono_color.b, 0.2);
 
+	float prev_icon_saturation = theme->has_color("icon_saturation", "Editor") ? theme->get_color("icon_saturation", "Editor").r : 1.0;
+
+	theme->set_color("icon_saturation", "Editor", Color(icon_saturation, icon_saturation, icon_saturation)); //can't save single float in theme, so using color
 	theme->set_color("accent_color", "Editor", accent_color);
 	theme->set_color("highlight_color", "Editor", highlight_color);
 	theme->set_color("base_color", "Editor", base_color);
@@ -444,13 +456,13 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	//Register icons + font
 
 	// the resolution and the icon color (dark_theme bool) has not changed, so we do not regenerate the icons
-	if (p_theme != nullptr && fabs(p_theme->get_constant("scale", "Editor") - EDSCALE) < 0.00001 && (bool)p_theme->get_constant("dark_theme", "Editor") == dark_theme) {
+	if (p_theme != nullptr && fabs(p_theme->get_constant("scale", "Editor") - EDSCALE) < 0.00001 && (bool)p_theme->get_constant("dark_theme", "Editor") == dark_theme && prev_icon_saturation == icon_saturation) {
 		// register already generated icons
 		for (int i = 0; i < editor_icons_count; i++) {
 			theme->set_icon(editor_icons_names[i], "EditorIcons", p_theme->get_icon(editor_icons_names[i], "EditorIcons"));
 		}
 	} else {
-		editor_register_and_generate_icons(theme, dark_theme, thumb_size);
+		editor_register_and_generate_icons(theme, dark_theme, thumb_size, false, icon_saturation);
 	}
 	// thumbnail size has changed, so we regenerate the medium sizes
 	if (p_theme != nullptr && fabs((double)p_theme->get_constant("thumb_size", "Editor") - thumb_size) > 0.00001) {

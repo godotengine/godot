@@ -392,6 +392,8 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 	hints["interface/theme/accent_color"] = PropertyInfo(Variant::COLOR, "interface/theme/accent_color", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT);
 	_initial_set("interface/theme/contrast", 0.25);
 	hints["interface/theme/contrast"] = PropertyInfo(Variant::FLOAT, "interface/theme/contrast", PROPERTY_HINT_RANGE, "0.01, 1, 0.01");
+	_initial_set("interface/theme/icon_saturation", 1.0);
+	hints["interface/theme/icon_saturation"] = PropertyInfo(Variant::FLOAT, "interface/theme/icon_saturation", PROPERTY_HINT_RANGE, "0,2,0.01", PROPERTY_USAGE_DEFAULT);
 	_initial_set("interface/theme/relationship_line_opacity", 0.1);
 	hints["interface/theme/relationship_line_opacity"] = PropertyInfo(Variant::FLOAT, "interface/theme/relationship_line_opacity", PROPERTY_HINT_RANGE, "0.00, 1, 0.01");
 	_initial_set("interface/theme/highlight_tabs", false);
