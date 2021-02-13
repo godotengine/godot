@@ -51,6 +51,9 @@ class BroadPhase2DHashGrid : public BroadPhase2DSW {
 		CollisionObject2DSW *owner;
 		bool _static;
 		Rect2 aabb;
+		// Owner's collision_mask/layer, used to detect changes in layers.
+		uint32_t collision_mask;
+		uint32_t collision_layer;
 		int subindex;
 		uint64_t pass;
 		Map<Element *, PairData *> paired;
@@ -115,8 +118,12 @@ class BroadPhase2DHashGrid : public BroadPhase2DSW {
 	UnpairCallback unpair_callback;
 	void *unpair_userdata;
 
-	void _enter_grid(Element *p_elem, const Rect2 &p_rect, bool p_static);
-	void _exit_grid(Element *p_elem, const Rect2 &p_rect, bool p_static);
+	static _FORCE_INLINE_ bool _test_collision_mask(uint32_t p_mask1, uint32_t p_layer1, uint32_t p_mask2, uint32_t p_layer2) {
+		return p_mask1 & p_layer2 || p_mask2 & p_layer1;
+	}
+
+	void _enter_grid(Element *p_elem, const Rect2 &p_rect, bool p_static, bool p_force_enter);
+	void _exit_grid(Element *p_elem, const Rect2 &p_rect, bool p_static, bool p_force_exit);
 	template <bool use_aabb, bool use_segment>
 	_FORCE_INLINE_ void _cull(const Point2i p_cell, const Rect2 &p_aabb, const Point2 &p_from, const Point2 &p_to, CollisionObject2DSW **p_results, int p_max_results, int *p_result_indices, int &index);
 

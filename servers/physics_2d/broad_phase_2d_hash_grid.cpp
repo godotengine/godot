@@ -35,6 +35,12 @@
 #define LARGE_ELEMENT_FI 1.01239812
 
 void BroadPhase2DHashGrid::_pair_attempt(Element *p_elem, Element *p_with) {
+	if (p_elem->owner == p_with->owner) {
+		return;
+	}
+	if (!_test_collision_mask(p_elem->collision_mask, p_elem->collision_layer, p_with->collision_mask, p_with->collision_layer)) {
+		return;
+	}
 	Map<Element *, PairData *>::Element *E = p_elem->paired.find(p_with);
 
 	ERR_FAIL_COND(p_elem->_static && p_with->_static);
@@ -49,6 +55,12 @@ void BroadPhase2DHashGrid::_pair_attempt(Element *p_elem, Element *p_with) {
 }
 
 void BroadPhase2DHashGrid::_unpair_attempt(Element *p_elem, Element *p_with) {
+	if (p_elem->owner == p_with->owner) {
+		return;
+	}
+	if (!_test_collision_mask(p_elem->collision_mask, p_elem->collision_layer, p_with->collision_mask, p_with->collision_layer)) {
+		return;
+	}
 	Map<Element *, PairData *>::Element *E = p_elem->paired.find(p_with);
 
 	ERR_FAIL_COND(!E); //this should really be paired..
@@ -74,33 +86,28 @@ void BroadPhase2DHashGrid::_check_motion(Element *p_elem) {
 		bool physical_collision = p_elem->aabb.intersects(E->key()->aabb);
 		bool logical_collision = p_elem->owner->test_collision_mask(E->key()->owner);
 
-		if (physical_collision) {
-			if (!E->get()->colliding || (logical_collision && !E->get()->ud && pair_callback)) {
+		if (physical_collision && logical_collision) {
+			if (!E->get()->colliding && pair_callback) {
 				E->get()->ud = pair_callback(p_elem->owner, p_elem->subindex, E->key()->owner, E->key()->subindex, pair_userdata);
-			} else if (E->get()->colliding && !logical_collision && E->get()->ud && unpair_callback) {
-				unpair_callback(p_elem->owner, p_elem->subindex, E->key()->owner, E->key()->subindex, E->get()->ud, unpair_userdata);
-				E->get()->ud = nullptr;
 			}
 			E->get()->colliding = true;
-		} else { // No physcial_collision
+		} else { // No collision
 			if (E->get()->colliding && unpair_callback) {
 				unpair_callback(p_elem->owner, p_elem->subindex, E->key()->owner, E->key()->subindex, E->get()->ud, unpair_userdata);
+				E->get()->ud = nullptr;
 			}
 			E->get()->colliding = false;
 		}
 	}
 }
 
-void BroadPhase2DHashGrid::_enter_grid(Element *p_elem, const Rect2 &p_rect, bool p_static) {
+void BroadPhase2DHashGrid::_enter_grid(Element *p_elem, const Rect2 &p_rect, bool p_static, bool p_force_enter) {
 	Vector2 sz = (p_rect.size / cell_size * LARGE_ELEMENT_FI); //use magic number to avoid floating point issues
 	if (sz.width * sz.height > large_object_min_surface) {
 		//large object, do not use grid, must check against all elements
 		for (Map<ID, Element>::Element *E = element_map.front(); E; E = E->next()) {
 			if (E->key() == p_elem->self) {
 				continue; // do not pair against itself
-			}
-			if (E->get().owner == p_elem->owner) {
-				continue;
 			}
 			if (E->get()._static && p_static) {
 				continue;
@@ -133,7 +140,7 @@ void BroadPhase2DHashGrid::_enter_grid(Element *p_elem, const Rect2 &p_rect, boo
 				pb = pb->next;
 			}
 
-			bool entered = false;
+			bool entered = p_force_enter;
 
 			if (!pb) {
 				//does not exist, create!
@@ -155,17 +162,11 @@ void BroadPhase2DHashGrid::_enter_grid(Element *p_elem, const Rect2 &p_rect, boo
 
 			if (entered) {
 				for (Map<Element *, RC>::Element *E = pb->object_set.front(); E; E = E->next()) {
-					if (E->key()->owner == p_elem->owner) {
-						continue;
-					}
 					_pair_attempt(p_elem, E->key());
 				}
 
 				if (!p_static) {
 					for (Map<Element *, RC>::Element *E = pb->static_object_set.front(); E; E = E->next()) {
-						if (E->key()->owner == p_elem->owner) {
-							continue;
-						}
 						_pair_attempt(p_elem, E->key());
 					}
 				}
@@ -179,18 +180,14 @@ void BroadPhase2DHashGrid::_enter_grid(Element *p_elem, const Rect2 &p_rect, boo
 		if (E->key() == p_elem) {
 			continue; // do not pair against itself
 		}
-		if (E->key()->owner == p_elem->owner) {
-			continue;
-		}
 		if (E->key()->_static && p_static) {
 			continue;
 		}
-
 		_pair_attempt(E->key(), p_elem);
 	}
 }
 
-void BroadPhase2DHashGrid::_exit_grid(Element *p_elem, const Rect2 &p_rect, bool p_static) {
+void BroadPhase2DHashGrid::_exit_grid(Element *p_elem, const Rect2 &p_rect, bool p_static, bool p_force_exit) {
 	Vector2 sz = (p_rect.size / cell_size * LARGE_ELEMENT_FI);
 	if (sz.width * sz.height > large_object_min_surface) {
 		//unpair all elements, instead of checking all, just check what is already paired, so we at least save from checking static vs static
@@ -229,7 +226,7 @@ void BroadPhase2DHashGrid::_exit_grid(Element *p_elem, const Rect2 &p_rect, bool
 
 			ERR_CONTINUE(!pb); //should exist!!
 
-			bool exited = false;
+			bool exited = p_force_exit;
 
 			if (p_static) {
 				if (pb->static_object_set[p_elem].dec() == 0) {
@@ -245,17 +242,11 @@ void BroadPhase2DHashGrid::_exit_grid(Element *p_elem, const Rect2 &p_rect, bool
 
 			if (exited) {
 				for (Map<Element *, RC>::Element *E = pb->object_set.front(); E; E = E->next()) {
-					if (E->key()->owner == p_elem->owner) {
-						continue;
-					}
 					_unpair_attempt(p_elem, E->key());
 				}
 
 				if (!p_static) {
 					for (Map<Element *, RC>::Element *E = pb->static_object_set.front(); E; E = E->next()) {
-						if (E->key()->owner == p_elem->owner) {
-							continue;
-						}
 						_unpair_attempt(p_elem, E->key());
 					}
 				}
@@ -288,9 +279,6 @@ void BroadPhase2DHashGrid::_exit_grid(Element *p_elem, const Rect2 &p_rect, bool
 		if (E->key() == p_elem) {
 			continue; // do not pair against itself
 		}
-		if (E->key()->owner == p_elem->owner) {
-			continue;
-		}
 		if (E->key()->_static && p_static) {
 			continue;
 		}
@@ -306,6 +294,8 @@ BroadPhase2DHashGrid::ID BroadPhase2DHashGrid::create(CollisionObject2DSW *p_obj
 	Element e;
 	e.owner = p_object;
 	e._static = false;
+	e.collision_mask = p_object->get_collision_mask();
+	e.collision_layer = p_object->get_collision_layer();
 	e.subindex = p_subindex;
 	e.self = current;
 	e.pass = 0;
@@ -319,13 +309,26 @@ void BroadPhase2DHashGrid::move(ID p_id, const Rect2 &p_aabb) {
 	ERR_FAIL_COND(!E);
 
 	Element &e = E->get();
+	bool layer_changed = e.collision_mask != e.owner->get_collision_mask() || e.collision_layer != e.owner->get_collision_layer();
 
-	if (p_aabb != e.aabb) {
+	if (p_aabb != e.aabb || layer_changed) {
+		uint32_t old_mask = e.collision_mask;
+		uint32_t old_layer = e.collision_layer;
 		if (p_aabb != Rect2()) {
-			_enter_grid(&e, p_aabb, e._static);
+			e.collision_mask = e.owner->get_collision_mask();
+			e.collision_layer = e.owner->get_collision_layer();
+
+			_enter_grid(&e, p_aabb, e._static, layer_changed);
 		}
 		if (e.aabb != Rect2()) {
-			_exit_grid(&e, e.aabb, e._static);
+			// Need _exit_grid to remove from cells based on the old layer values.
+			e.collision_mask = old_mask;
+			e.collision_layer = old_layer;
+
+			_exit_grid(&e, e.aabb, e._static, layer_changed);
+
+			e.collision_mask = e.owner->get_collision_mask();
+			e.collision_layer = e.owner->get_collision_layer();
 		}
 		e.aabb = p_aabb;
 	}
@@ -344,13 +347,13 @@ void BroadPhase2DHashGrid::set_static(ID p_id, bool p_static) {
 	}
 
 	if (e.aabb != Rect2()) {
-		_exit_grid(&e, e.aabb, e._static);
+		_exit_grid(&e, e.aabb, e._static, false);
 	}
 
 	e._static = p_static;
 
 	if (e.aabb != Rect2()) {
-		_enter_grid(&e, e.aabb, e._static);
+		_enter_grid(&e, e.aabb, e._static, false);
 		_check_motion(&e);
 	}
 }
@@ -362,7 +365,7 @@ void BroadPhase2DHashGrid::remove(ID p_id) {
 	Element &e = E->get();
 
 	if (e.aabb != Rect2()) {
-		_exit_grid(&e, e.aabb, e._static);
+		_exit_grid(&e, e.aabb, e._static, false);
 	}
 
 	element_map.erase(p_id);
