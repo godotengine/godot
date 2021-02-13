@@ -942,6 +942,14 @@ void EditorData::script_class_save_icon_paths() {
 		}
 	}
 
+	Dictionary old;
+	if (ProjectSettings::get_singleton()->has_setting("_global_script_class_icons")) {
+		old = ProjectSettings::get_singleton()->get("_global_script_class_icons");
+	}
+	if ((!old.is_empty() || d.is_empty()) && d.hash() == old.hash()) {
+		return;
+	}
+
 	if (d.is_empty()) {
 		if (ProjectSettings::get_singleton()->has_setting("_global_script_class_icons")) {
 			ProjectSettings::get_singleton()->clear("_global_script_class_icons");
