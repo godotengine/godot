@@ -2335,7 +2335,43 @@ void Node3DEditorPlugin::edited_scene_changed() {
 	}
 }
 
+void Node3DEditorViewport::_project_settings_changed() {
+	//update shadow atlas if changed
+	int shadowmap_size = ProjectSettings::get_singleton()->get("rendering/quality/shadow_atlas/size");
+	bool shadowmap_16_bits = ProjectSettings::get_singleton()->get("rendering/quality/shadow_atlas/16_bits");
+	int atlas_q0 = ProjectSettings::get_singleton()->get("rendering/quality/shadow_atlas/quadrant_0_subdiv");
+	int atlas_q1 = ProjectSettings::get_singleton()->get("rendering/quality/shadow_atlas/quadrant_1_subdiv");
+	int atlas_q2 = ProjectSettings::get_singleton()->get("rendering/quality/shadow_atlas/quadrant_2_subdiv");
+	int atlas_q3 = ProjectSettings::get_singleton()->get("rendering/quality/shadow_atlas/quadrant_3_subdiv");
+
+	viewport->set_shadow_atlas_size(shadowmap_size);
+	viewport->set_shadow_atlas_16_bits(shadowmap_16_bits);
+	viewport->set_shadow_atlas_quadrant_subdiv(0, Viewport::ShadowAtlasQuadrantSubdiv(atlas_q0));
+	viewport->set_shadow_atlas_quadrant_subdiv(1, Viewport::ShadowAtlasQuadrantSubdiv(atlas_q1));
+	viewport->set_shadow_atlas_quadrant_subdiv(2, Viewport::ShadowAtlasQuadrantSubdiv(atlas_q2));
+	viewport->set_shadow_atlas_quadrant_subdiv(3, Viewport::ShadowAtlasQuadrantSubdiv(atlas_q3));
+
+	bool shrink = view_menu->get_popup()->is_item_checked(view_menu->get_popup()->get_item_index(VIEW_HALF_RESOLUTION));
+
+	if (shrink != (subviewport_container->get_stretch_shrink() > 1)) {
+		subviewport_container->set_stretch_shrink(shrink ? 2 : 1);
+	}
+
+	// Update MSAA, screen-space AA and debanding if changed
+
+	const int msaa_mode = ProjectSettings::get_singleton()->get("rendering/quality/screen_filters/msaa");
+	viewport->set_msaa(Viewport::MSAA(msaa_mode));
+	const int ssaa_mode = GLOBAL_GET("rendering/quality/screen_filters/screen_space_aa");
+	viewport->set_screen_space_aa(Viewport::ScreenSpaceAA(ssaa_mode));
+	const bool use_debanding = GLOBAL_GET("rendering/quality/screen_filters/use_debanding");
+	viewport->set_use_debanding(use_debanding);
+}
+
 void Node3DEditorViewport::_notification(int p_what) {
+	if (p_what == NOTIFICATION_READY) {
+		EditorNode::get_singleton()->connect("project_settings_changed", callable_mp(this, &Node3DEditorViewport::_project_settings_changed));
+	}
+
 	if (p_what == NOTIFICATION_VISIBILITY_CHANGED) {
 		bool visible = is_visible_in_tree();
 
@@ -2441,37 +2477,6 @@ void Node3DEditorViewport::_notification(int p_what) {
 				surface->update();
 			}
 		}
-
-		//update shadow atlas if changed
-
-		int shadowmap_size = ProjectSettings::get_singleton()->get("rendering/quality/shadow_atlas/size");
-		bool shadowmap_16_bits = ProjectSettings::get_singleton()->get("rendering/quality/shadow_atlas/16_bits");
-		int atlas_q0 = ProjectSettings::get_singleton()->get("rendering/quality/shadow_atlas/quadrant_0_subdiv");
-		int atlas_q1 = ProjectSettings::get_singleton()->get("rendering/quality/shadow_atlas/quadrant_1_subdiv");
-		int atlas_q2 = ProjectSettings::get_singleton()->get("rendering/quality/shadow_atlas/quadrant_2_subdiv");
-		int atlas_q3 = ProjectSettings::get_singleton()->get("rendering/quality/shadow_atlas/quadrant_3_subdiv");
-
-		viewport->set_shadow_atlas_size(shadowmap_size);
-		viewport->set_shadow_atlas_16_bits(shadowmap_16_bits);
-		viewport->set_shadow_atlas_quadrant_subdiv(0, Viewport::ShadowAtlasQuadrantSubdiv(atlas_q0));
-		viewport->set_shadow_atlas_quadrant_subdiv(1, Viewport::ShadowAtlasQuadrantSubdiv(atlas_q1));
-		viewport->set_shadow_atlas_quadrant_subdiv(2, Viewport::ShadowAtlasQuadrantSubdiv(atlas_q2));
-		viewport->set_shadow_atlas_quadrant_subdiv(3, Viewport::ShadowAtlasQuadrantSubdiv(atlas_q3));
-
-		bool shrink = view_menu->get_popup()->is_item_checked(view_menu->get_popup()->get_item_index(VIEW_HALF_RESOLUTION));
-
-		if (shrink != (subviewport_container->get_stretch_shrink() > 1)) {
-			subviewport_container->set_stretch_shrink(shrink ? 2 : 1);
-		}
-
-		// Update MSAA, screen-space AA and debanding if changed
-
-		const int msaa_mode = ProjectSettings::get_singleton()->get("rendering/quality/screen_filters/msaa");
-		viewport->set_msaa(Viewport::MSAA(msaa_mode));
-		const int ssaa_mode = GLOBAL_GET("rendering/quality/screen_filters/screen_space_aa");
-		viewport->set_screen_space_aa(Viewport::ScreenSpaceAA(ssaa_mode));
-		const bool use_debanding = GLOBAL_GET("rendering/quality/screen_filters/use_debanding");
-		viewport->set_use_debanding(use_debanding);
 
 		bool show_info = view_menu->get_popup()->is_item_checked(view_menu->get_popup()->get_item_index(VIEW_INFORMATION));
 		if (show_info != info_label->is_visible()) {

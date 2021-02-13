@@ -463,6 +463,8 @@ private:
 	bool can_drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from) const;
 	void drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from);
 
+	void _project_settings_changed();
+
 protected:
 	void _notification(int p_what);
 	static void _bind_methods();
