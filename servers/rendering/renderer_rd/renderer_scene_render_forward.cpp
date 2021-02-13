@@ -1130,7 +1130,7 @@ void RendererSceneRenderForward::_setup_environment(RID p_environment, RID p_ren
 		//vec2 tex_pixel_size = 1.0 / vec2(ivec2( (OCT_SIZE+2) * params.probe_axis_size * params.probe_axis_size, (OCT_SIZE+2) * params.probe_axis_size ) );
 		//vec3 probe_uv_offset = (ivec3(OCT_SIZE+2,OCT_SIZE+2,(OCT_SIZE+2) * params.probe_axis_size)) * tex_pixel_size.xyx;
 
-		uint32_t oct_size = sdfgi_get_lightprobe_octahedron_size();
+		uint32_t oct_size = gi.sdfgi_get_lightprobe_octahedron_size();
 
 		scene_state.ubo.sdfgi_lightprobe_tex_pixel_size[0] = 1.0 / ((oct_size + 2) * scene_state.ubo.sdfgi_probe_axis_size * scene_state.ubo.sdfgi_probe_axis_size);
 		scene_state.ubo.sdfgi_lightprobe_tex_pixel_size[1] = 1.0 / ((oct_size + 2) * scene_state.ubo.sdfgi_probe_axis_size);
@@ -1583,6 +1583,7 @@ void RendererSceneRenderForward::_render_scene(RID p_render_buffer, const Transf
 	if (p_render_buffer.is_valid()) {
 		render_buffer = (RenderBufferDataForward *)render_buffers_get_data(p_render_buffer);
 	}
+	RendererSceneEnvironmentRD *env = get_environment(p_environment);
 
 	//first of all, make a new render pass
 	//fill up ubo
@@ -1729,7 +1730,7 @@ void RendererSceneRenderForward::_render_scene(RID p_render_buffer, const Transf
 				clear_color.b *= bg_energy;
 				if (render_buffers_has_volumetric_fog(p_render_buffer) || environment_is_fog_enabled(p_environment)) {
 					draw_sky_fog_only = true;
-					storage->material_set_param(sky_scene_state.fog_material, "clear_color", Variant(clear_color.to_linear()));
+					storage->material_set_param(sky.sky_scene_state.fog_material, "clear_color", Variant(clear_color.to_linear()));
 				}
 			} break;
 			case RS::ENV_BG_COLOR: {
@@ -1739,7 +1740,7 @@ void RendererSceneRenderForward::_render_scene(RID p_render_buffer, const Transf
 				clear_color.b *= bg_energy;
 				if (render_buffers_has_volumetric_fog(p_render_buffer) || environment_is_fog_enabled(p_environment)) {
 					draw_sky_fog_only = true;
-					storage->material_set_param(sky_scene_state.fog_material, "clear_color", Variant(clear_color.to_linear()));
+					storage->material_set_param(sky.sky_scene_state.fog_material, "clear_color", Variant(clear_color.to_linear()));
 				}
 			} break;
 			case RS::ENV_BG_SKY: {
@@ -1767,12 +1768,12 @@ void RendererSceneRenderForward::_render_scene(RID p_render_buffer, const Transf
 				projection = correction * p_cam_projection;
 			}
 
-			_setup_sky(p_environment, p_render_buffer, projection, p_cam_transform, screen_size);
+			sky.setup(env, p_render_buffer, projection, p_cam_transform, screen_size, this);
 
-			RID sky = environment_get_sky(p_environment);
-			if (sky.is_valid()) {
-				_update_sky(p_environment, projection, p_cam_transform);
-				radiance_texture = sky_get_radiance_texture_rd(sky);
+			RID sky_rid = env->sky;
+			if (sky_rid.is_valid()) {
+				sky.update(env, projection, p_cam_transform, time);
+				radiance_texture = sky.sky_get_radiance_texture_rd(sky_rid);
 			} else {
 				// do not try to draw sky if invalid
 				draw_sky = false;
@@ -1890,7 +1891,7 @@ void RendererSceneRenderForward::_render_scene(RID p_render_buffer, const Transf
 		RD::DrawListID draw_list = RD::get_singleton()->draw_list_begin(opaque_framebuffer, RD::INITIAL_ACTION_CONTINUE, will_continue_color ? RD::FINAL_ACTION_CONTINUE : RD::FINAL_ACTION_READ, RD::INITIAL_ACTION_CONTINUE, will_continue_depth ? RD::FINAL_ACTION_CONTINUE : RD::FINAL_ACTION_READ);
 		RD::get_singleton()->draw_command_begin_label("Debug GIProbes");
 		for (int i = 0; i < (int)p_gi_probes.size(); i++) {
-			_debug_giprobe(p_gi_probes[i], draw_list, opaque_framebuffer, cm, get_debug_draw_mode() == RS::VIEWPORT_DEBUG_DRAW_GI_PROBE_LIGHTING, get_debug_draw_mode() == RS::VIEWPORT_DEBUG_DRAW_GI_PROBE_EMISSION, 1.0);
+			gi.debug_giprobe(p_gi_probes[i], draw_list, opaque_framebuffer, cm, get_debug_draw_mode() == RS::VIEWPORT_DEBUG_DRAW_GI_PROBE_LIGHTING, get_debug_draw_mode() == RS::VIEWPORT_DEBUG_DRAW_GI_PROBE_EMISSION, 1.0);
 		}
 		RD::get_singleton()->draw_command_end_label();
 		RD::get_singleton()->draw_list_end();
@@ -1921,7 +1922,7 @@ void RendererSceneRenderForward::_render_scene(RID p_render_buffer, const Transf
 			projection = correction * p_cam_projection;
 		}
 		RD::get_singleton()->draw_command_begin_label("Draw Sky");
-		_draw_sky(can_continue_color, can_continue_depth, opaque_framebuffer, p_environment, projection, p_cam_transform);
+		sky.draw(env, can_continue_color, can_continue_depth, opaque_framebuffer, projection, p_cam_transform, time);
 		RD::get_singleton()->draw_command_end_label();
 	}
 
@@ -3346,7 +3347,7 @@ RendererSceneRenderForward::RendererSceneRenderForward(RendererStorageRD *p_stor
 		if (is_using_radiance_cubemap_array()) {
 			defines += "\n#define USE_RADIANCE_CUBEMAP_ARRAY \n";
 		}
-		defines += "\n#define SDFGI_OCT_SIZE " + itos(sdfgi_get_lightprobe_octahedron_size()) + "\n";
+		defines += "\n#define SDFGI_OCT_SIZE " + itos(gi.sdfgi_get_lightprobe_octahedron_size()) + "\n";
 		defines += "\n#define MAX_DIRECTIONAL_LIGHT_DATA_STRUCTS " + itos(get_max_directional_lights()) + "\n";
 
 		{

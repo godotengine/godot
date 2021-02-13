@@ -35,68 +35,21 @@
 #include "core/templates/rid_owner.h"
 #include "servers/rendering/renderer_compositor.h"
 #include "servers/rendering/renderer_rd/cluster_builder_rd.h"
+#include "servers/rendering/renderer_rd/renderer_scene_environment_rd.h"
+#include "servers/rendering/renderer_rd/renderer_scene_gi_rd.h"
+#include "servers/rendering/renderer_rd/renderer_scene_sky_rd.h"
 #include "servers/rendering/renderer_rd/renderer_storage_rd.h"
-#include "servers/rendering/renderer_rd/shaders/gi.glsl.gen.h"
-#include "servers/rendering/renderer_rd/shaders/giprobe.glsl.gen.h"
-#include "servers/rendering/renderer_rd/shaders/giprobe_debug.glsl.gen.h"
-#include "servers/rendering/renderer_rd/shaders/sdfgi_debug.glsl.gen.h"
-#include "servers/rendering/renderer_rd/shaders/sdfgi_debug_probes.glsl.gen.h"
-#include "servers/rendering/renderer_rd/shaders/sdfgi_direct_light.glsl.gen.h"
-#include "servers/rendering/renderer_rd/shaders/sdfgi_integrate.glsl.gen.h"
-#include "servers/rendering/renderer_rd/shaders/sdfgi_preprocess.glsl.gen.h"
-#include "servers/rendering/renderer_rd/shaders/sky.glsl.gen.h"
 #include "servers/rendering/renderer_rd/shaders/volumetric_fog.glsl.gen.h"
 #include "servers/rendering/renderer_scene_render.h"
 #include "servers/rendering/rendering_device.h"
 
 class RendererSceneRenderRD : public RendererSceneRender {
+	friend RendererSceneSkyRD;
+	friend RendererSceneGIRD;
+
 protected:
 	double time;
-
-	// Skys need less info from Directional Lights than the normal shaders
-	struct SkyDirectionalLightData {
-		float direction[3];
-		float energy;
-		float color[3];
-		float size;
-		uint32_t enabled;
-		uint32_t pad[3];
-	};
-
-	struct SkySceneState {
-		struct UBO {
-			uint32_t volumetric_fog_enabled;
-			float volumetric_fog_inv_length;
-			float volumetric_fog_detail_spread;
-
-			float fog_aerial_perspective;
-
-			float fog_light_color[3];
-			float fog_sun_scatter;
-
-			uint32_t fog_enabled;
-			float fog_density;
-
-			float z_far;
-			uint32_t directional_light_count;
-		};
-
-		UBO ubo;
-
-		SkyDirectionalLightData *directional_lights;
-		SkyDirectionalLightData *last_frame_directional_lights;
-		uint32_t max_directional_lights;
-		uint32_t last_frame_directional_light_count;
-		RID directional_light_buffer;
-		RID uniform_set;
-		RID uniform_buffer;
-		RID fog_uniform_set;
-		RID default_fog_uniform_set;
-
-		RID fog_shader;
-		RID fog_material;
-		RID fog_only_texture_uniform_set;
-	} sky_scene_state;
+	double time_step = 0;
 
 	struct RenderBufferData {
 		virtual void configure(RID p_color_buffer, RID p_depth_buffer, int p_width, int p_height, RS::ViewportMSAA p_msaa) = 0;
@@ -107,7 +60,6 @@ protected:
 	void _setup_lights(const PagedArray<RID> &p_lights, const Transform &p_camera_transform, RID p_shadow_atlas, bool p_using_shadows, uint32_t &r_directional_light_count, uint32_t &r_positional_light_count);
 	void _setup_decals(const PagedArray<RID> &p_decals, const Transform &p_camera_inverse_xform);
 	void _setup_reflections(const PagedArray<RID> &p_reflections, const Transform &p_camera_inverse_transform, RID p_environment);
-	void _setup_giprobes(RID p_render_buffers, const Transform &p_transform, const PagedArray<RID> &p_gi_probes, uint32_t &r_gi_probes_used);
 
 	virtual void _render_scene(RID p_render_buffer, const Transform &p_cam_transform, const CameraMatrix &p_cam_projection, bool p_cam_ortogonal, const PagedArray<GeometryInstance *> &p_instances, const PagedArray<RID> &p_gi_probes, const PagedArray<RID> &p_lightmaps, RID p_environment, RID p_cluster_buffer, uint32_t p_cluster_size, uint32_t p_cluster_max_elements, RID p_camera_effects, RID p_shadow_atlas, RID p_reflection_atlas, RID p_reflection_probe, int p_reflection_probe_pass, const Color &p_default_color, float p_screen_lod_threshold) = 0;
 
@@ -121,7 +73,6 @@ protected:
 	virtual void _render_sdfgi(RID p_render_buffers, const Vector3i &p_from, const Vector3i &p_size, const AABB &p_bounds, const PagedArray<GeometryInstance *> &p_instances, const RID &p_albedo_texture, const RID &p_emission_texture, const RID &p_emission_aniso_texture, const RID &p_geom_facing_texture) = 0;
 	virtual void _render_particle_collider_heightfield(RID p_fb, const Transform &p_cam_transform, const CameraMatrix &p_cam_projection, const PagedArray<GeometryInstance *> &p_instances) = 0;
 
-	virtual void _debug_giprobe(RID p_gi_probe, RenderingDevice::DrawListID p_draw_list, RID p_framebuffer, const CameraMatrix &p_camera_with_transform, bool p_lighting, bool p_emission, float p_alpha);
 	void _debug_sdfgi_probes(RID p_render_buffers, RD::DrawListID p_draw_list, RID p_framebuffer, const CameraMatrix &p_camera_with_transform);
 
 	RenderBufferData *render_buffers_get_data(RID p_render_buffers);
@@ -134,12 +85,6 @@ protected:
 	void _process_ssr(RID p_render_buffers, RID p_dest_framebuffer, RID p_normal_buffer, RID p_specular_buffer, RID p_metallic, const Color &p_metallic_mask, RID p_environment, const CameraMatrix &p_projection, bool p_use_additive);
 	void _process_sss(RID p_render_buffers, const CameraMatrix &p_camera);
 
-	void _setup_sky(RID p_environment, RID p_render_buffers, const CameraMatrix &p_projection, const Transform &p_transform, const Size2i p_screen_size);
-	void _update_sky(RID p_environment, const CameraMatrix &p_projection, const Transform &p_transform);
-	void _draw_sky(bool p_can_continue_color, bool p_can_continue_depth, RID p_fb, RID p_environment, const CameraMatrix &p_projection, const Transform &p_transform);
-	void _pre_process_gi(RID p_render_buffers, const Transform &p_transform);
-	void _process_gi(RID p_render_buffers, RID p_normal_roughness_buffer, RID p_gi_probe_buffer, RID p_environment, const CameraMatrix &p_projection, const Transform &p_transform, const PagedArray<RID> &p_gi_probes);
-
 	bool _needs_post_prepass_render(bool p_use_gi);
 	void _post_prepass_render(bool p_use_gi);
 	void _pre_resolve_render(bool p_use_gi);
@@ -150,190 +95,23 @@ protected:
 	// needed for a single argument calls (material and uv2)
 	PagedArrayPool<GeometryInstance *> cull_argument_pool;
 	PagedArray<GeometryInstance *> cull_argument; //need this to exist
+
+	RendererSceneGIRD gi;
+	RendererSceneSkyRD sky;
+
+	RendererSceneEnvironmentRD *get_environment(RID p_environment) {
+		if (p_environment.is_valid()) {
+			return environment_owner.getornull(p_environment);
+		} else {
+			return nullptr;
+		}
+	}
+
 private:
 	RS::ViewportDebugDraw debug_draw = RS::VIEWPORT_DEBUG_DRAW_DISABLED;
-	double time_step = 0;
 	static RendererSceneRenderRD *singleton;
 
-	int roughness_layers;
-
 	RendererStorageRD *storage;
-
-	struct ReflectionData {
-		struct Layer {
-			struct Mipmap {
-				RID framebuffers[6];
-				RID views[6];
-				Size2i size;
-			};
-			Vector<Mipmap> mipmaps; //per-face view
-			Vector<RID> views; // per-cubemap view
-		};
-
-		struct DownsampleLayer {
-			struct Mipmap {
-				RID view;
-				Size2i size;
-			};
-			Vector<Mipmap> mipmaps;
-		};
-
-		RID radiance_base_cubemap; //cubemap for first layer, first cubemap
-		RID downsampled_radiance_cubemap;
-		DownsampleLayer downsampled_layer;
-		RID coefficient_buffer;
-
-		bool dirty = true;
-
-		Vector<Layer> layers;
-	};
-
-	void _clear_reflection_data(ReflectionData &rd);
-	void _update_reflection_data(ReflectionData &rd, int p_size, int p_mipmaps, bool p_use_array, RID p_base_cube, int p_base_layer, bool p_low_quality);
-	void _create_reflection_fast_filter(ReflectionData &rd, bool p_use_arrays);
-	void _create_reflection_importance_sample(ReflectionData &rd, bool p_use_arrays, int p_cube_side, int p_base_layer);
-	void _update_reflection_mipmaps(ReflectionData &rd, int p_start, int p_end);
-
-	/* Sky shader */
-
-	enum SkyVersion {
-		SKY_VERSION_BACKGROUND,
-		SKY_VERSION_HALF_RES,
-		SKY_VERSION_QUARTER_RES,
-		SKY_VERSION_CUBEMAP,
-		SKY_VERSION_CUBEMAP_HALF_RES,
-		SKY_VERSION_CUBEMAP_QUARTER_RES,
-		SKY_VERSION_MAX
-	};
-
-	struct SkyShader {
-		SkyShaderRD shader;
-		ShaderCompilerRD compiler;
-
-		RID default_shader;
-		RID default_material;
-		RID default_shader_rd;
-	} sky_shader;
-
-	struct SkyShaderData : public RendererStorageRD::ShaderData {
-		bool valid;
-		RID version;
-
-		PipelineCacheRD pipelines[SKY_VERSION_MAX];
-		Map<StringName, ShaderLanguage::ShaderNode::Uniform> uniforms;
-		Vector<ShaderCompilerRD::GeneratedCode::Texture> texture_uniforms;
-
-		Vector<uint32_t> ubo_offsets;
-		uint32_t ubo_size;
-
-		String path;
-		String code;
-		Map<StringName, RID> default_texture_params;
-
-		bool uses_time;
-		bool uses_position;
-		bool uses_half_res;
-		bool uses_quarter_res;
-		bool uses_light;
-
-		virtual void set_code(const String &p_Code);
-		virtual void set_default_texture_param(const StringName &p_name, RID p_texture);
-		virtual void get_param_list(List<PropertyInfo> *p_param_list) const;
-		virtual void get_instance_param_list(List<RendererStorage::InstanceShaderParam> *p_param_list) const;
-		virtual bool is_param_texture(const StringName &p_param) const;
-		virtual bool is_animated() const;
-		virtual bool casts_shadows() const;
-		virtual Variant get_default_parameter(const StringName &p_parameter) const;
-		virtual RS::ShaderNativeSourceCode get_native_source_code() const;
-		SkyShaderData();
-		virtual ~SkyShaderData();
-	};
-
-	RendererStorageRD::ShaderData *_create_sky_shader_func();
-	static RendererStorageRD::ShaderData *_create_sky_shader_funcs() {
-		return static_cast<RendererSceneRenderRD *>(singleton)->_create_sky_shader_func();
-	};
-
-	struct SkyMaterialData : public RendererStorageRD::MaterialData {
-		uint64_t last_frame;
-		SkyShaderData *shader_data;
-		RID uniform_buffer;
-		RID uniform_set;
-		Vector<RID> texture_cache;
-		Vector<uint8_t> ubo_data;
-		bool uniform_set_updated;
-
-		virtual void set_render_priority(int p_priority) {}
-		virtual void set_next_pass(RID p_pass) {}
-		virtual void update_parameters(const Map<StringName, Variant> &p_parameters, bool p_uniform_dirty, bool p_textures_dirty);
-		virtual ~SkyMaterialData();
-	};
-
-	RendererStorageRD::MaterialData *_create_sky_material_func(SkyShaderData *p_shader);
-	static RendererStorageRD::MaterialData *_create_sky_material_funcs(RendererStorageRD::ShaderData *p_shader) {
-		return static_cast<RendererSceneRenderRD *>(singleton)->_create_sky_material_func(static_cast<SkyShaderData *>(p_shader));
-	};
-
-	enum SkyTextureSetVersion {
-		SKY_TEXTURE_SET_BACKGROUND,
-		SKY_TEXTURE_SET_HALF_RES,
-		SKY_TEXTURE_SET_QUARTER_RES,
-		SKY_TEXTURE_SET_CUBEMAP,
-		SKY_TEXTURE_SET_CUBEMAP_HALF_RES,
-		SKY_TEXTURE_SET_CUBEMAP_QUARTER_RES,
-		SKY_TEXTURE_SET_MAX
-	};
-
-	enum SkySet {
-		SKY_SET_UNIFORMS,
-		SKY_SET_MATERIAL,
-		SKY_SET_TEXTURES,
-		SKY_SET_FOG,
-		SKY_SET_MAX
-	};
-
-	/* SKY */
-	struct Sky {
-		RID radiance;
-		RID half_res_pass;
-		RID half_res_framebuffer;
-		RID quarter_res_pass;
-		RID quarter_res_framebuffer;
-		Size2i screen_size;
-
-		RID texture_uniform_sets[SKY_TEXTURE_SET_MAX];
-		RID uniform_set;
-
-		RID material;
-		RID uniform_buffer;
-
-		int radiance_size = 256;
-
-		RS::SkyMode mode = RS::SKY_MODE_AUTOMATIC;
-
-		ReflectionData reflection;
-		bool dirty = false;
-		int processing_layer = 0;
-		Sky *dirty_list = nullptr;
-
-		//State to track when radiance cubemap needs updating
-		SkyMaterialData *prev_material;
-		Vector3 prev_position;
-		float prev_time;
-
-		RID sdfgi_integrate_sky_uniform_set;
-	};
-
-	Sky *dirty_sky_list = nullptr;
-
-	void _sky_invalidate(Sky *p_sky);
-	void _update_dirty_skys();
-	RID _get_sky_textures(Sky *p_sky, SkyTextureSetVersion p_version);
-
-	uint32_t sky_ggx_samples_quality;
-	bool sky_use_cubemap_array;
-
-	mutable RID_Owner<Sky, true> sky_owner;
 
 	/* REFLECTION ATLAS */
 
@@ -347,7 +125,7 @@ private:
 
 		struct Reflection {
 			RID owner;
-			ReflectionData data;
+			RendererSceneSkyRD::ReflectionData data;
 			RID fbs[6];
 		};
 
@@ -396,151 +174,6 @@ private:
 	};
 
 	mutable RID_Owner<LightmapInstance> lightmap_instance_owner;
-
-	/* GIPROBE INSTANCE */
-
-	struct GIProbeLight {
-		uint32_t type;
-		float energy;
-		float radius;
-		float attenuation;
-
-		float color[3];
-		float cos_spot_angle;
-
-		float position[3];
-		float inv_spot_attenuation;
-
-		float direction[3];
-		uint32_t has_shadow;
-	};
-
-	struct GIProbePushConstant {
-		int32_t limits[3];
-		uint32_t stack_size;
-
-		float emission_scale;
-		float propagation;
-		float dynamic_range;
-		uint32_t light_count;
-
-		uint32_t cell_offset;
-		uint32_t cell_count;
-		float aniso_strength;
-		uint32_t pad;
-	};
-
-	struct GIProbeDynamicPushConstant {
-		int32_t limits[3];
-		uint32_t light_count;
-		int32_t x_dir[3];
-		float z_base;
-		int32_t y_dir[3];
-		float z_sign;
-		int32_t z_dir[3];
-		float pos_multiplier;
-		uint32_t rect_pos[2];
-		uint32_t rect_size[2];
-		uint32_t prev_rect_ofs[2];
-		uint32_t prev_rect_size[2];
-		uint32_t flip_x;
-		uint32_t flip_y;
-		float dynamic_range;
-		uint32_t on_mipmap;
-		float propagation;
-		float pad[3];
-	};
-
-	struct GIProbeInstance {
-		RID probe;
-		RID texture;
-		RID write_buffer;
-
-		struct Mipmap {
-			RID texture;
-			RID uniform_set;
-			RID second_bounce_uniform_set;
-			RID write_uniform_set;
-			uint32_t level;
-			uint32_t cell_offset;
-			uint32_t cell_count;
-		};
-		Vector<Mipmap> mipmaps;
-
-		struct DynamicMap {
-			RID texture; //color normally, or emission on first pass
-			RID fb_depth; //actual depth buffer for the first pass, float depth for later passes
-			RID depth; //actual depth buffer for the first pass, float depth for later passes
-			RID normal; //normal buffer for the first pass
-			RID albedo; //emission buffer for the first pass
-			RID orm; //orm buffer for the first pass
-			RID fb; //used for rendering, only valid on first map
-			RID uniform_set;
-			uint32_t size;
-			int mipmap; // mipmap to write to, -1 if no mipmap assigned
-		};
-
-		Vector<DynamicMap> dynamic_maps;
-
-		int slot = -1;
-		uint32_t last_probe_version = 0;
-		uint32_t last_probe_data_version = 0;
-
-		//uint64_t last_pass = 0;
-		uint32_t render_index = 0;
-
-		bool has_dynamic_object_data = false;
-
-		Transform transform;
-	};
-
-	GIProbeLight *gi_probe_lights;
-	uint32_t gi_probe_max_lights;
-	RID gi_probe_lights_uniform;
-
-	enum {
-		GI_PROBE_SHADER_VERSION_COMPUTE_LIGHT,
-		GI_PROBE_SHADER_VERSION_COMPUTE_SECOND_BOUNCE,
-		GI_PROBE_SHADER_VERSION_COMPUTE_MIPMAP,
-		GI_PROBE_SHADER_VERSION_WRITE_TEXTURE,
-		GI_PROBE_SHADER_VERSION_DYNAMIC_OBJECT_LIGHTING,
-		GI_PROBE_SHADER_VERSION_DYNAMIC_SHRINK_WRITE,
-		GI_PROBE_SHADER_VERSION_DYNAMIC_SHRINK_PLOT,
-		GI_PROBE_SHADER_VERSION_DYNAMIC_SHRINK_WRITE_PLOT,
-		GI_PROBE_SHADER_VERSION_MAX
-	};
-	GiprobeShaderRD giprobe_shader;
-	RID giprobe_lighting_shader_version;
-	RID giprobe_lighting_shader_version_shaders[GI_PROBE_SHADER_VERSION_MAX];
-	RID giprobe_lighting_shader_version_pipelines[GI_PROBE_SHADER_VERSION_MAX];
-
-	mutable RID_Owner<GIProbeInstance> gi_probe_instance_owner;
-
-	RS::GIProbeQuality gi_probe_quality = RS::GI_PROBE_QUALITY_HIGH;
-
-	enum {
-		GI_PROBE_DEBUG_COLOR,
-		GI_PROBE_DEBUG_LIGHT,
-		GI_PROBE_DEBUG_EMISSION,
-		GI_PROBE_DEBUG_LIGHT_FULL,
-		GI_PROBE_DEBUG_MAX
-	};
-
-	struct GIProbeDebugPushConstant {
-		float projection[16];
-		uint32_t cell_offset;
-		float dynamic_range;
-		float alpha;
-		uint32_t level;
-		int32_t bounds[3];
-		uint32_t pad;
-	};
-
-	GiprobeDebugShaderRD giprobe_debug_shader;
-	RID giprobe_debug_shader_version;
-	RID giprobe_debug_shader_version_shaders[GI_PROBE_DEBUG_MAX];
-	PipelineCacheRD giprobe_debug_shader_version_pipelines[GI_PROBE_DEBUG_MAX];
-	RID giprobe_debug_uniform_set;
 
 	/* SHADOW ATLAS */
 
@@ -690,111 +323,6 @@ private:
 
 	/* ENVIRONMENT */
 
-	struct Environment {
-		// BG
-		RS::EnvironmentBG background = RS::ENV_BG_CLEAR_COLOR;
-		RID sky;
-		float sky_custom_fov = 0.0;
-		Basis sky_orientation;
-		Color bg_color;
-		float bg_energy = 1.0;
-		int canvas_max_layer = 0;
-		RS::EnvironmentAmbientSource ambient_source = RS::ENV_AMBIENT_SOURCE_BG;
-		Color ambient_light;
-		float ambient_light_energy = 1.0;
-		float ambient_sky_contribution = 1.0;
-		RS::EnvironmentReflectionSource reflection_source = RS::ENV_REFLECTION_SOURCE_BG;
-		Color ao_color;
-
-		/// Tonemap
-
-		RS::EnvironmentToneMapper tone_mapper;
-		float exposure = 1.0;
-		float white = 1.0;
-		bool auto_exposure = false;
-		float min_luminance = 0.2;
-		float max_luminance = 8.0;
-		float auto_exp_speed = 0.2;
-		float auto_exp_scale = 0.5;
-		uint64_t auto_exposure_version = 0;
-
-		// Fog
-		bool fog_enabled = false;
-		Color fog_light_color = Color(0.5, 0.6, 0.7);
-		float fog_light_energy = 1.0;
-		float fog_sun_scatter = 0.0;
-		float fog_density = 0.001;
-		float fog_height = 0.0;
-		float fog_height_density = 0.0; //can be negative to invert effect
-		float fog_aerial_perspective = 0.0;
-
-		/// Volumetric Fog
-		///
-		bool volumetric_fog_enabled = false;
-		float volumetric_fog_density = 0.01;
-		Color volumetric_fog_light = Color(0, 0, 0);
-		float volumetric_fog_light_energy = 0.0;
-		float volumetric_fog_length = 64.0;
-		float volumetric_fog_detail_spread = 2.0;
-		float volumetric_fog_gi_inject = 0.0;
-		bool volumetric_fog_temporal_reprojection = true;
-		float volumetric_fog_temporal_reprojection_amount = 0.9;
-
-		/// Glow
-
-		bool glow_enabled = false;
-		Vector<float> glow_levels;
-		float glow_intensity = 0.8;
-		float glow_strength = 1.0;
-		float glow_bloom = 0.0;
-		float glow_mix = 0.01;
-		RS::EnvironmentGlowBlendMode glow_blend_mode = RS::ENV_GLOW_BLEND_MODE_SOFTLIGHT;
-		float glow_hdr_bleed_threshold = 1.0;
-		float glow_hdr_luminance_cap = 12.0;
-		float glow_hdr_bleed_scale = 2.0;
-
-		/// SSAO
-
-		bool ssao_enabled = false;
-		float ssao_radius = 1.0;
-		float ssao_intensity = 2.0;
-		float ssao_power = 1.5;
-		float ssao_detail = 0.5;
-		float ssao_horizon = 0.06;
-		float ssao_sharpness = 0.98;
-		float ssao_direct_light_affect = 0.0;
-		float ssao_ao_channel_affect = 0.0;
-
-		/// SSR
-		///
-		bool ssr_enabled = false;
-		int ssr_max_steps = 64;
-		float ssr_fade_in = 0.15;
-		float ssr_fade_out = 2.0;
-		float ssr_depth_tolerance = 0.2;
-
-		/// SDFGI
-		bool sdfgi_enabled = false;
-		RS::EnvironmentSDFGICascades sdfgi_cascades;
-		float sdfgi_min_cell_size = 0.2;
-		bool sdfgi_use_occlusion = false;
-		float sdfgi_bounce_feedback = 0.0;
-		bool sdfgi_read_sky_light = false;
-		float sdfgi_energy = 1.0;
-		float sdfgi_normal_bias = 1.1;
-		float sdfgi_probe_bias = 1.1;
-		RS::EnvironmentSDFGIYScale sdfgi_y_scale = RS::ENV_SDFGI_Y_SCALE_DISABLED;
-
-		/// Adjustments
-
-		bool adjustments_enabled = false;
-		float adjustments_brightness = 1.0f;
-		float adjustments_contrast = 1.0f;
-		float adjustments_saturation = 1.0f;
-		bool use_1d_color_correction = false;
-		RID color_correction = RID();
-	};
-
 	RS::EnvironmentSSAOQuality ssao_quality = RS::ENV_SSAO_QUALITY_MEDIUM;
 	bool ssao_half_size = false;
 	bool ssao_using_half_size = false;
@@ -807,9 +335,7 @@ private:
 	bool glow_high_quality = false;
 	RS::EnvironmentSSRRoughnessQuality ssr_roughness_quality = RS::ENV_SSR_ROUGNESS_QUALITY_LOW;
 
-	static uint64_t auto_exposure_counter;
-
-	mutable RID_Owner<Environment, true> environment_owner;
+	mutable RID_Owner<RendererSceneEnvironmentRD, true> environment_owner;
 
 	/* CAMERA EFFECTS */
 
@@ -842,14 +368,9 @@ private:
 	ClusterBuilderSharedDataRD cluster_builder_shared;
 	ClusterBuilderRD *current_cluster_builder = nullptr;
 
-	struct SDFGI;
 	struct VolumetricFog;
 
 	struct RenderBuffers {
-		enum {
-			MAX_GIPROBES = 8
-		};
-
 		RenderBufferData *data = nullptr;
 		int width = 0, height = 0;
 		RS::ViewportMSAA msaa = RS::VIEWPORT_MSAA_DISABLED;
@@ -864,7 +385,7 @@ private:
 		RID depth_texture; //main depth texture
 
 		RID gi_uniform_set;
-		SDFGI *sdfgi = nullptr;
+		RendererSceneGIRD::SDFGI *sdfgi = nullptr;
 		VolumetricFog *volumetric_fog = nullptr;
 
 		ClusterBuilderRD *cluster_builder = nullptr;
@@ -906,414 +427,14 @@ private:
 			RID blur_radius[2];
 		} ssr;
 
-		RID giprobe_textures[MAX_GIPROBES];
-		RID giprobe_buffer;
-
 		RID ambient_buffer;
 		RID reflection_buffer;
 		bool using_half_size_gi = false;
 
-		struct GI {
-			RID full_buffer;
-			RID full_dispatch;
-			RID full_mask;
-		} gi;
+		RendererSceneGIRD::RenderBuffersGI gi;
 	};
-
-	RID default_giprobe_buffer;
-
-	/* SDFGI */
-
-	struct SDFGI {
-		enum {
-			MAX_CASCADES = 8,
-			CASCADE_SIZE = 128,
-			PROBE_DIVISOR = 16,
-			ANISOTROPY_SIZE = 6,
-			MAX_DYNAMIC_LIGHTS = 128,
-			MAX_STATIC_LIGHTS = 1024,
-			LIGHTPROBE_OCT_SIZE = 6,
-			SH_SIZE = 16
-		};
-
-		struct Cascade {
-			struct UBO {
-				float offset[3];
-				float to_cell;
-				int32_t probe_offset[3];
-				uint32_t pad;
-			};
-
-			//cascade blocks are full-size for volume (128^3), half size for albedo/emission
-			RID sdf_tex;
-			RID light_tex;
-			RID light_aniso_0_tex;
-			RID light_aniso_1_tex;
-
-			RID light_data;
-			RID light_aniso_0_data;
-			RID light_aniso_1_data;
-
-			struct SolidCell { // this struct is unused, but remains as reference for size
-				uint32_t position;
-				uint32_t albedo;
-				uint32_t static_light;
-				uint32_t static_light_aniso;
-			};
-
-			RID solid_cell_dispatch_buffer; //buffer for indirect compute dispatch
-			RID solid_cell_buffer;
-
-			RID lightprobe_history_tex;
-			RID lightprobe_average_tex;
-
-			float cell_size;
-			Vector3i position;
-
-			static const Vector3i DIRTY_ALL;
-			Vector3i dirty_regions; //(0,0,0 is not dirty, negative is refresh from the end, DIRTY_ALL is refresh all.
-
-			RID sdf_store_uniform_set;
-			RID sdf_direct_light_uniform_set;
-			RID scroll_uniform_set;
-			RID scroll_occlusion_uniform_set;
-			RID integrate_uniform_set;
-			RID lights_buffer;
-
-			bool all_dynamic_lights_dirty = true;
-		};
-
-		//used for rendering (voxelization)
-		RID render_albedo;
-		RID render_emission;
-		RID render_emission_aniso;
-		RID render_occlusion[8];
-		RID render_geom_facing;
-
-		RID render_sdf[2];
-		RID render_sdf_half[2];
-
-		//used for ping pong processing in cascades
-		RID sdf_initialize_uniform_set;
-		RID sdf_initialize_half_uniform_set;
-		RID jump_flood_uniform_set[2];
-		RID jump_flood_half_uniform_set[2];
-		RID sdf_upscale_uniform_set;
-		int upscale_jfa_uniform_set_index;
-		RID occlusion_uniform_set;
-
-		uint32_t cascade_size = 128;
-
-		LocalVector<Cascade> cascades;
-
-		RID lightprobe_texture;
-		RID lightprobe_data;
-		RID occlusion_texture;
-		RID occlusion_data;
-		RID ambient_texture; //integrates with volumetric fog
-
-		RID lightprobe_history_scroll; //used for scrolling lightprobes
-		RID lightprobe_average_scroll; //used for scrolling lightprobes
-
-		uint32_t history_size = 0;
-		float solid_cell_ratio = 0;
-		uint32_t solid_cell_count = 0;
-
-		RS::EnvironmentSDFGICascades cascade_mode;
-		float min_cell_size = 0;
-		uint32_t probe_axis_count = 0; //amount of probes per axis, this is an odd number because it encloses endpoints
-
-		RID debug_uniform_set;
-		RID debug_probes_uniform_set;
-		RID cascades_ubo;
-
-		bool uses_occlusion = false;
-		float bounce_feedback = 0.0;
-		bool reads_sky = false;
-		float energy = 1.0;
-		float normal_bias = 1.1;
-		float probe_bias = 1.1;
-		RS::EnvironmentSDFGIYScale y_scale_mode = RS::ENV_SDFGI_Y_SCALE_DISABLED;
-
-		float y_mult = 1.0;
-
-		uint32_t render_pass = 0;
-
-		int32_t cascade_dynamic_light_count[SDFGI::MAX_CASCADES]; //used dynamically
-	};
-
-	void _sdfgi_update_light(RID p_render_buffers, RID p_environment);
-	void _sdfgi_update_probes(RID p_render_buffers, RID p_environment);
-	void _sdfgi_store_probes(RID p_render_buffers);
-
-	RS::EnvironmentSDFGIRayCount sdfgi_ray_count = RS::ENV_SDFGI_RAY_COUNT_16;
-	RS::EnvironmentSDFGIFramesToConverge sdfgi_frames_to_converge = RS::ENV_SDFGI_CONVERGE_IN_10_FRAMES;
-	RS::EnvironmentSDFGIFramesToUpdateLight sdfgi_frames_to_update_light = RS::ENV_SDFGI_UPDATE_LIGHT_IN_4_FRAMES;
-
-	float sdfgi_solid_cell_ratio = 0.25;
-	Vector3 sdfgi_debug_probe_pos;
-	Vector3 sdfgi_debug_probe_dir;
-	bool sdfgi_debug_probe_enabled = false;
-	Vector3i sdfgi_debug_probe_index;
-
-	struct SDGIShader {
-		enum SDFGIPreprocessShaderVersion {
-			PRE_PROCESS_SCROLL,
-			PRE_PROCESS_SCROLL_OCCLUSION,
-			PRE_PROCESS_JUMP_FLOOD_INITIALIZE,
-			PRE_PROCESS_JUMP_FLOOD_INITIALIZE_HALF,
-			PRE_PROCESS_JUMP_FLOOD,
-			PRE_PROCESS_JUMP_FLOOD_OPTIMIZED,
-			PRE_PROCESS_JUMP_FLOOD_UPSCALE,
-			PRE_PROCESS_OCCLUSION,
-			PRE_PROCESS_STORE,
-			PRE_PROCESS_MAX
-		};
-
-		struct PreprocessPushConstant {
-			int32_t scroll[3];
-			int32_t grid_size;
-
-			int32_t probe_offset[3];
-			int32_t step_size;
-
-			int32_t half_size;
-			uint32_t occlusion_index;
-			int32_t cascade;
-			uint32_t pad;
-		};
-
-		SdfgiPreprocessShaderRD preprocess;
-		RID preprocess_shader;
-		RID preprocess_pipeline[PRE_PROCESS_MAX];
-
-		struct DebugPushConstant {
-			float grid_size[3];
-			uint32_t max_cascades;
-
-			int32_t screen_size[2];
-			uint32_t use_occlusion;
-			float y_mult;
-
-			float cam_extent[3];
-			uint32_t probe_axis_size;
-
-			float cam_transform[16];
-		};
-
-		SdfgiDebugShaderRD debug;
-		RID debug_shader;
-		RID debug_shader_version;
-		RID debug_pipeline;
-
-		enum ProbeDebugMode {
-			PROBE_DEBUG_PROBES,
-			PROBE_DEBUG_VISIBILITY,
-			PROBE_DEBUG_MAX
-		};
-
-		struct DebugProbesPushConstant {
-			float projection[16];
-
-			uint32_t band_power;
-			uint32_t sections_in_band;
-			uint32_t band_mask;
-			float section_arc;
-
-			float grid_size[3];
-			uint32_t cascade;
-
-			uint32_t pad;
-			float y_mult;
-			int32_t probe_debug_index;
-			int32_t probe_axis_size;
-		};
-
-		SdfgiDebugProbesShaderRD debug_probes;
-		RID debug_probes_shader;
-		RID debug_probes_shader_version;
-
-		PipelineCacheRD debug_probes_pipeline[PROBE_DEBUG_MAX];
-
-		struct Light {
-			float color[3];
-			float energy;
-
-			float direction[3];
-			uint32_t has_shadow;
-
-			float position[3];
-			float attenuation;
-
-			uint32_t type;
-			float cos_spot_angle;
-			float inv_spot_attenuation;
-			float radius;
-
-			float shadow_color[4];
-		};
-
-		struct DirectLightPushConstant {
-			float grid_size[3];
-			uint32_t max_cascades;
-
-			uint32_t cascade;
-			uint32_t light_count;
-			uint32_t process_offset;
-			uint32_t process_increment;
-
-			int32_t probe_axis_size;
-			float bounce_feedback;
-			float y_mult;
-			uint32_t use_occlusion;
-		};
-
-		enum {
-			DIRECT_LIGHT_MODE_STATIC,
-			DIRECT_LIGHT_MODE_DYNAMIC,
-			DIRECT_LIGHT_MODE_MAX
-		};
-		SdfgiDirectLightShaderRD direct_light;
-		RID direct_light_shader;
-		RID direct_light_pipeline[DIRECT_LIGHT_MODE_MAX];
-
-		enum {
-			INTEGRATE_MODE_PROCESS,
-			INTEGRATE_MODE_STORE,
-			INTEGRATE_MODE_SCROLL,
-			INTEGRATE_MODE_SCROLL_STORE,
-			INTEGRATE_MODE_MAX
-		};
-		struct IntegratePushConstant {
-			enum {
-				SKY_MODE_DISABLED,
-				SKY_MODE_COLOR,
-				SKY_MODE_SKY,
-			};
-
-			float grid_size[3];
-			uint32_t max_cascades;
-
-			uint32_t probe_axis_size;
-			uint32_t cascade;
-			uint32_t history_index;
-			uint32_t history_size;
-
-			uint32_t ray_count;
-			float ray_bias;
-			int32_t image_size[2];
-
-			int32_t world_offset[3];
-			uint32_t sky_mode;
-
-			int32_t scroll[3];
-			float sky_energy;
-
-			float sky_color[3];
-			float y_mult;
-
-			uint32_t store_ambient_texture;
-			uint32_t pad[3];
-		};
-
-		SdfgiIntegrateShaderRD integrate;
-		RID integrate_shader;
-		RID integrate_pipeline[INTEGRATE_MODE_MAX];
-
-		RID integrate_default_sky_uniform_set;
-
-	} sdfgi_shader;
-
-	void _sdfgi_erase(RenderBuffers *rb);
-	int _sdfgi_get_pending_region_data(RID p_render_buffers, int p_region, Vector3i &r_local_offset, Vector3i &r_local_size, AABB &r_bounds) const;
-	void _sdfgi_update_cascades(RID p_render_buffers);
 
 	/* GI */
-
-	struct GI {
-		struct SDFGIData {
-			float grid_size[3];
-			uint32_t max_cascades;
-
-			uint32_t use_occlusion;
-			int32_t probe_axis_size;
-			float probe_to_uvw;
-			float normal_bias;
-
-			float lightprobe_tex_pixel_size[3];
-			float energy;
-
-			float lightprobe_uv_offset[3];
-			float y_mult;
-
-			float occlusion_clamp[3];
-			uint32_t pad3;
-
-			float occlusion_renormalize[3];
-			uint32_t pad4;
-
-			float cascade_probe_size[3];
-			uint32_t pad5;
-
-			struct ProbeCascadeData {
-				float position[3]; //offset of (0,0,0) in world coordinates
-				float to_probe; // 1/bounds * grid_size
-				int32_t probe_world_offset[3];
-				float to_cell; // 1/bounds * grid_size
-			};
-
-			ProbeCascadeData cascades[SDFGI::MAX_CASCADES];
-		};
-
-		struct GIProbeData {
-			float xform[16];
-			float bounds[3];
-			float dynamic_range;
-
-			float bias;
-			float normal_bias;
-			uint32_t blend_ambient;
-			uint32_t texture_slot;
-
-			float anisotropy_strength;
-			float ao;
-			float ao_size;
-			uint32_t mipmaps;
-		};
-
-		struct PushConstant {
-			int32_t screen_size[2];
-			float z_near;
-			float z_far;
-
-			float proj_info[4];
-			float ao_color[3];
-			uint32_t max_giprobes;
-
-			uint32_t high_quality_vct;
-			uint32_t orthogonal;
-			uint32_t pad[2];
-
-			float cam_rotation[12];
-		};
-
-		RID sdfgi_ubo;
-		enum Mode {
-			MODE_GIPROBE,
-			MODE_SDFGI,
-			MODE_COMBINED,
-			MODE_HALF_RES_GIPROBE,
-			MODE_HALF_RES_SDFGI,
-			MODE_HALF_RES_COMBINED,
-			MODE_MAX
-		};
-
-		bool half_resolution = false;
-		GiShaderRD shader;
-		RID shader_version;
-		RID pipelines[MODE_MAX];
-	} gi;
-
 	bool screen_space_roughness_limiter = false;
 	float screen_space_roughness_limiter_amount = 0.25;
 	float screen_space_roughness_limiter_limit = 0.18;
@@ -1326,7 +447,6 @@ private:
 
 	void _render_buffers_debug_draw(RID p_render_buffers, RID p_shadow_atlas);
 	void _render_buffers_post_process_and_tonemap(RID p_render_buffers, RID p_environment, RID p_camera_effects, const CameraMatrix &p_projection);
-	void _sdfgi_debug_draw(RID p_render_buffers, const CameraMatrix &p_projection, const Transform &p_transform);
 
 	/* Cluster */
 
@@ -1592,17 +712,17 @@ private:
 	uint64_t scene_pass = 0;
 	uint64_t shadow_atlas_realloc_tolerance_msec = 500;
 
+	/* !BAS! is this used anywhere?
 	struct SDFGICosineNeighbour {
 		uint32_t neighbour;
 		float weight;
 	};
+	*/
 
 	uint32_t max_cluster_elements = 512;
 	bool low_end = false;
 
 	void _render_shadow_pass(RID p_light, RID p_shadow_atlas, int p_pass, const PagedArray<GeometryInstance *> &p_instances, const Plane &p_camera_plane = Plane(), float p_lod_distance_multiplier = 0, float p_screen_lod_threshold = 0.0, bool p_open_pass = true, bool p_close_pass = true, bool p_clear_region = true);
-	void _render_sdfgi_region(RID p_render_buffers, int p_region, const PagedArray<GeometryInstance *> &p_instances);
-	void _render_sdfgi_static_lights(RID p_render_buffers, uint32_t p_cascade_count, const uint32_t *p_cascade_indices, const PagedArray<RID> *p_positional_light_cull_result);
 
 public:
 	virtual Transform geometry_instance_get_transform(GeometryInstance *p_instance) = 0;
@@ -1646,12 +766,12 @@ public:
 
 	/* SDFGI UPDATE */
 
-	int sdfgi_get_lightprobe_octahedron_size() const { return SDFGI::LIGHTPROBE_OCT_SIZE; }
 	virtual void sdfgi_update(RID p_render_buffers, RID p_environment, const Vector3 &p_world_position);
 	virtual int sdfgi_get_pending_region_count(RID p_render_buffers) const;
 	virtual AABB sdfgi_get_pending_region_bounds(RID p_render_buffers, int p_region) const;
 	virtual uint32_t sdfgi_get_pending_region_cascade(RID p_render_buffers, int p_region) const;
 	RID sdfgi_get_ubo() const { return gi.sdfgi_ubo; }
+
 	/* SKY API */
 
 	virtual RID sky_allocate();
@@ -1661,10 +781,6 @@ public:
 	void sky_set_mode(RID p_sky, RS::SkyMode p_mode);
 	void sky_set_material(RID p_sky, RID p_material);
 	Ref<Image> sky_bake_panorama(RID p_sky, float p_energy, bool p_bake_irradiance, const Size2i &p_size);
-
-	RID sky_get_radiance_texture_rd(RID p_sky) const;
-	RID sky_get_radiance_uniform_set_rd(RID p_sky, RID p_shader, int p_set) const;
-	RID sky_get_material(RID p_sky) const;
 
 	/* ENVIRONMENT API */
 
@@ -1974,52 +1090,54 @@ public:
 		return li->transform;
 	}
 
+	// !BAS! Need to check which of these we move into RenderSceneGIRD or whether we keep this the way it is now
+
 	RID gi_probe_instance_create(RID p_base);
 	void gi_probe_instance_set_transform_to_data(RID p_probe, const Transform &p_xform);
 	bool gi_probe_needs_update(RID p_probe) const;
 	void gi_probe_update(RID p_probe, bool p_update_light_instances, const Vector<RID> &p_light_instances, const PagedArray<RendererSceneRender::GeometryInstance *> &p_dynamic_objects);
 
-	void gi_probe_set_quality(RS::GIProbeQuality p_quality) { gi_probe_quality = p_quality; }
+	void gi_probe_set_quality(RS::GIProbeQuality p_quality) { gi.gi_probe_quality = p_quality; }
 
 	_FORCE_INLINE_ uint32_t gi_probe_instance_get_slot(RID p_probe) {
-		GIProbeInstance *gi_probe = gi_probe_instance_owner.getornull(p_probe);
+		RendererSceneGIRD::GIProbeInstance *gi_probe = gi.gi_probe_instance_owner.getornull(p_probe);
 		return gi_probe->slot;
 	}
 	_FORCE_INLINE_ RID gi_probe_instance_get_base_probe(RID p_probe) {
-		GIProbeInstance *gi_probe = gi_probe_instance_owner.getornull(p_probe);
+		RendererSceneGIRD::GIProbeInstance *gi_probe = gi.gi_probe_instance_owner.getornull(p_probe);
 		return gi_probe->probe;
 	}
 	_FORCE_INLINE_ Transform gi_probe_instance_get_transform_to_cell(RID p_probe) {
-		GIProbeInstance *gi_probe = gi_probe_instance_owner.getornull(p_probe);
+		RendererSceneGIRD::GIProbeInstance *gi_probe = gi.gi_probe_instance_owner.getornull(p_probe);
 		return storage->gi_probe_get_to_cell_xform(gi_probe->probe) * gi_probe->transform.affine_inverse();
 	}
 
 	_FORCE_INLINE_ RID gi_probe_instance_get_texture(RID p_probe) {
-		GIProbeInstance *gi_probe = gi_probe_instance_owner.getornull(p_probe);
+		RendererSceneGIRD::GIProbeInstance *gi_probe = gi.gi_probe_instance_owner.getornull(p_probe);
 		return gi_probe->texture;
 	}
 
 	_FORCE_INLINE_ void gi_probe_instance_set_render_index(RID p_instance, uint32_t p_render_index) {
-		GIProbeInstance *gi_probe = gi_probe_instance_owner.getornull(p_instance);
+		RendererSceneGIRD::GIProbeInstance *gi_probe = gi.gi_probe_instance_owner.getornull(p_instance);
 		ERR_FAIL_COND(!gi_probe);
 		gi_probe->render_index = p_render_index;
 	}
 
 	_FORCE_INLINE_ uint32_t gi_probe_instance_get_render_index(RID p_instance) {
-		GIProbeInstance *gi_probe = gi_probe_instance_owner.getornull(p_instance);
+		RendererSceneGIRD::GIProbeInstance *gi_probe = gi.gi_probe_instance_owner.getornull(p_instance);
 		ERR_FAIL_COND_V(!gi_probe, 0);
 
 		return gi_probe->render_index;
 	}
 	/*
 	_FORCE_INLINE_ void gi_probe_instance_set_render_pass(RID p_instance, uint32_t p_render_pass) {
-		GIProbeInstance *g_probe = gi_probe_instance_owner.getornull(p_instance);
+		RendererSceneGIRD::GIProbeInstance *g_probe = gi_probe_instance_owner.getornull(p_instance);
 		ERR_FAIL_COND(!g_probe);
 		g_probe->last_pass = p_render_pass;
 	}
 
 	_FORCE_INLINE_ uint32_t gi_probe_instance_get_render_pass(RID p_instance) {
-		GIProbeInstance *g_probe = gi_probe_instance_owner.getornull(p_instance);
+		RendererSceneGIRD::GIProbeInstance *g_probe = gi_probe_instance_owner.getornull(p_instance);
 		ERR_FAIL_COND_V(!g_probe, 0);
 
 		return g_probe->last_pass;
