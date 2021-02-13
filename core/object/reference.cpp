@@ -102,6 +102,21 @@ Reference::Reference() :
 	refcount_init.init();
 }
 
+bool predelete_handler(Reference *p_reference) {
+	// Allow to use p_reference during predelete
+	// The refcount should be incremented twice to prevent crashes
+	p_reference->refcount.force_ref();
+	p_reference->refcount.force_ref();
+	bool ok = predelete_handler(static_cast<Object *>(p_reference));
+
+#ifdef DEBUG_ENABLED
+	if (p_reference->reference_get_count() > 2) {
+		ERR_PRINT("There are references still alive after handling NOTIFICATION_PREDELETE");
+	}
+#endif
+	return ok;
+}
+
 Variant WeakRef::get_ref() const {
 	if (ref.is_null()) {
 		return Variant();

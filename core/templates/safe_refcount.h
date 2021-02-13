@@ -158,6 +158,10 @@ public:
 		return count.conditional_increment() != 0;
 	}
 
+	_ALWAYS_INLINE_ void force_ref() {
+		count.increment();
+	}
+
 	_ALWAYS_INLINE_ uint32_t refval() { // none-zero on success
 		return count.conditional_increment();
 	}
@@ -287,6 +291,10 @@ public:
 		} else {
 			return false;
 		}
+	}
+
+	_ALWAYS_INLINE_ void force_ref() {
+		++count;
 	}
 
 	_ALWAYS_INLINE_ uint32_t refval() { // none-zero on success

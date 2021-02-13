@@ -39,6 +39,8 @@ class Reference : public Object {
 	SafeRefCount refcount;
 	SafeRefCount refcount_init;
 
+	friend bool predelete_handler(Reference *);
+
 protected:
 	static void _bind_methods();
 
