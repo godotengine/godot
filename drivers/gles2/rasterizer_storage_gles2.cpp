@@ -558,6 +558,13 @@ void RasterizerStorageGLES2::texture_allocate(RID p_texture, int p_width, int p_
 	texture->width = p_width;
 	texture->height = p_height;
 	texture->format = p_format;
+
+	if (texture->width > config.max_texture_size || texture->height > config.max_texture_size) {
+		WARN_PRINTS("Cannot create texture larger than maximum hardware supported size of " + itos(config.max_texture_size) + ". Setting size to maximum.");
+		texture->width = MIN(texture->width, config.max_texture_size);
+		texture->height = MIN(texture->height, config.max_texture_size);
+	}
+
 	texture->flags = p_flags;
 	texture->stored_cube_sides = 0;
 	texture->type = p_type;
@@ -4740,6 +4747,12 @@ void RasterizerStorageGLES2::_render_target_allocate(RenderTarget *rt) {
 		return;
 	}
 
+	if (rt->width > config.max_viewport_dimensions[0] || rt->height > config.max_viewport_dimensions[1]) {
+		WARN_PRINTS("Cannot create render target larger than maximum hardware supported size of (" + itos(config.max_viewport_dimensions[0]) + ", " + itos(config.max_viewport_dimensions[1]) + "). Setting size to maximum.");
+		rt->width = MIN(rt->width, config.max_viewport_dimensions[0]);
+		rt->height = MIN(rt->height, config.max_viewport_dimensions[1]);
+	}
+
 	GLuint color_internal_format;
 	GLuint color_format;
 	GLuint color_type = GL_UNSIGNED_BYTE;
@@ -6176,6 +6189,7 @@ void RasterizerStorageGLES2::initialize() {
 	glGetIntegerv(GL_MAX_VERTEX_TEXTURE_IMAGE_UNITS, &config.max_vertex_texture_image_units);
 	glGetIntegerv(GL_MAX_COMBINED_TEXTURE_IMAGE_UNITS, &config.max_texture_image_units);
 	glGetIntegerv(GL_MAX_TEXTURE_SIZE, &config.max_texture_size);
+	glGetIntegerv(GL_MAX_VIEWPORT_DIMS, config.max_viewport_dimensions);
 
 	// the use skeleton software path should be used if either float texture is not supported,
 	// OR max_vertex_texture_image_units is zero

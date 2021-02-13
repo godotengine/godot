@@ -124,6 +124,12 @@ void RasterizerSceneGLES2::shadow_atlas_set_size(RID p_atlas, int p_size) {
 		glGenFramebuffers(1, &shadow_atlas->fbo);
 		glBindFramebuffer(GL_FRAMEBUFFER, shadow_atlas->fbo);
 
+		if (shadow_atlas->size > storage->config.max_viewport_dimensions[0] || shadow_atlas->size > storage->config.max_viewport_dimensions[1]) {
+			WARN_PRINTS("Cannot set shadow atlas size larger than maximum hardware supported size of (" + itos(storage->config.max_viewport_dimensions[0]) + ", " + itos(storage->config.max_viewport_dimensions[1]) + "). Setting size to maximum.");
+			shadow_atlas->size = MIN(shadow_atlas->size, storage->config.max_viewport_dimensions[0]);
+			shadow_atlas->size = MIN(shadow_atlas->size, storage->config.max_viewport_dimensions[1]);
+		}
+
 		// create a depth texture
 		glActiveTexture(GL_TEXTURE0);
 
@@ -540,6 +546,13 @@ bool RasterizerSceneGLES2::reflection_probe_instance_begin_render(RID p_instance
 
 		//update cubemap if resolution changed
 		int size = rpi->probe_ptr->resolution;
+
+		if (size > storage->config.max_viewport_dimensions[0] || size > storage->config.max_viewport_dimensions[1]) {
+			WARN_PRINT_ONCE("Cannot set reflection probe resolution larger than maximum hardware supported size of (" + itos(storage->config.max_viewport_dimensions[0]) + ", " + itos(storage->config.max_viewport_dimensions[1]) + "). Setting size to maximum.");
+			size = MIN(size, storage->config.max_viewport_dimensions[0]);
+			size = MIN(size, storage->config.max_viewport_dimensions[1]);
+		}
+
 		rpi->current_resolution = size;
 
 		GLenum internal_format = GL_RGB;
@@ -4010,6 +4023,12 @@ void RasterizerSceneGLES2::initialize() {
 
 		directional_shadow.light_count = 0;
 		directional_shadow.size = next_power_of_2(GLOBAL_GET("rendering/quality/directional_shadow/size"));
+
+		if (directional_shadow.size > storage->config.max_viewport_dimensions[0] || directional_shadow.size > storage->config.max_viewport_dimensions[1]) {
+			WARN_PRINTS("Cannot set directional shadow size larger than maximum hardware supported size of (" + itos(storage->config.max_viewport_dimensions[0]) + ", " + itos(storage->config.max_viewport_dimensions[1]) + "). Setting size to maximum.");
+			directional_shadow.size = MIN(directional_shadow.size, storage->config.max_viewport_dimensions[0]);
+			directional_shadow.size = MIN(directional_shadow.size, storage->config.max_viewport_dimensions[1]);
+		}
 
 		glGenFramebuffers(1, &directional_shadow.fbo);
 		glBindFramebuffer(GL_FRAMEBUFFER, directional_shadow.fbo);
