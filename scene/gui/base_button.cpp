@@ -198,6 +198,7 @@ void BaseButton::set_disabled(bool p_disabled) {
 		status.press_attempt = false;
 		status.pressing_inside = false;
 	}
+	emit_signal("disabled", p_disabled);
 	update();
 }
 
@@ -423,6 +424,7 @@ void BaseButton::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("pressed"));
 	ADD_SIGNAL(MethodInfo("button_up"));
 	ADD_SIGNAL(MethodInfo("button_down"));
+	ADD_SIGNAL(MethodInfo("disabled", PropertyInfo(Variant::BOOL, "button_disabled")));
 	ADD_SIGNAL(MethodInfo("toggled", PropertyInfo(Variant::BOOL, "button_pressed")));
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "disabled"), "set_disabled", "is_disabled");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "toggle_mode"), "set_toggle_mode", "is_toggle_mode");

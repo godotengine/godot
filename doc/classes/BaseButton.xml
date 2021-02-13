@@ -86,6 +86,13 @@
 				Emitted when the button stops being held down.
 			</description>
 		</signal>
+		<signal name="disabled">
+			<argument index="0" name="button_disabled" type="bool">
+			</argument>
+			<description>
+				Emitted when the button was disabled or enabled using [member disabled]. The new state is contained in the [code]button_disabled[/code] argument.
+			</description>
+		</signal>
 		<signal name="pressed">
 			<description>
 				Emitted when the button is toggled or pressed. This is on [signal button_down] if [member action_mode] is [constant ACTION_MODE_BUTTON_PRESS] and on [signal button_up] otherwise.
