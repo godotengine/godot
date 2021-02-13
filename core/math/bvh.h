@@ -137,6 +137,12 @@ public:
 		erase(h);
 	}
 
+	void force_collision_check(uint32_t p_handle) {
+		BVHHandle h;
+		h.set(p_handle);
+		force_collision_check(h);
+	}
+
 	bool activate(uint32_t p_handle, const AABB &p_aabb, bool p_delay_collision_check = false) {
 		BVHHandle h;
 		h.set(p_handle);
@@ -193,6 +199,23 @@ public:
 		tree.item_remove(p_handle);
 
 		_check_for_collisions(true);
+	}
+
+	// use in conjunction with activate if you have deferred the collision check, and
+	// set pairable has never been called.
+	// (deferred collision checks are a workaround for visual server for historical reasons)
+	void force_collision_check(BVHHandle p_handle) {
+		if (USE_PAIRS) {
+			// the aabb should already be up to date in the BVH
+			AABB aabb;
+			item_get_AABB(p_handle, aabb);
+
+			// add it as changed even if aabb not different
+			_add_changed_item(p_handle, aabb, false);
+
+			// force an immediate full collision check, much like calls to set_pairable
+			_check_for_collisions(true);
+		}
 	}
 
 	// these should be read as set_visible for render trees,

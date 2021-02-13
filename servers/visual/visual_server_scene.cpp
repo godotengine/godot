@@ -132,6 +132,10 @@ void VisualServerScene::SpatialPartitioningScene_BVH::deactivate(SpatialPartitio
 	_bvh.deactivate(p_handle - 1);
 }
 
+void VisualServerScene::SpatialPartitioningScene_BVH::force_collision_check(SpatialPartitionID p_handle) {
+	_bvh.force_collision_check(p_handle - 1);
+}
+
 void VisualServerScene::SpatialPartitioningScene_BVH::update() {
 	_bvh.update();
 }
@@ -782,7 +786,13 @@ void VisualServerScene::instance_set_visible(RID p_instance, bool p_visible) {
 
 	// give the opportunity for the spatial paritioning scene to use a special implementation of visibility
 	// for efficiency (supported in BVH but not octree)
-	if (instance->spatial_partition_id) {
+
+	// slightly bug prone optimization here - we want to avoid doing a collision check twice
+	// once when activating, and once when calling set_pairable. We do this by deferring the collision check.
+	// However, in some cases (notably meshes), set_pairable never gets called. So we want to catch this case
+	// and force a collision check (see later in this function).
+	// This is only done in two stages to maintain compatibility with the octree.
+	if (instance->spatial_partition_id && instance->scenario) {
 		if (p_visible) {
 			instance->scenario->sps->activate(instance->spatial_partition_id, instance->transformed_aabb);
 		} else {
@@ -828,6 +838,11 @@ void VisualServerScene::instance_set_visible(RID p_instance, bool p_visible) {
 
 		} break;
 		default: {
+			// if we haven't called set_pairable, we STILL need to do a collision check
+			// for activated items because we deferred it earlier in the call to activate.
+			if (instance->spatial_partition_id && instance->scenario && p_visible) {
+				instance->scenario->sps->force_collision_check(instance->spatial_partition_id);
+			}
 		}
 	}
 }
