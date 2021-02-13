@@ -298,12 +298,6 @@ private:
 		Vector2 magnet_position = Vector2(0, 0);
 		bool use_target_rotation = false;
 
-		bool enable_constraint = false;
-		float constraint_angle_min = 0;
-		float constraint_angle_max = (2.0 * Math_PI);
-		bool constraint_angle_invert = false;
-		bool constraint_in_localspace = true;
-
 		bool editor_draw_gizmo = true;
 	};
 
@@ -338,7 +332,6 @@ protected:
 public:
 	void _execute(float delta) override;
 	void _setup_modification(SkeletonModificationStack2D *p_stack) override;
-	void _draw_editor_gizmo() override;
 
 	void set_target_node(const NodePath &p_target_node);
 	NodePath get_target_node() const;
@@ -355,18 +348,6 @@ public:
 	Vector2 get_fabrik_joint_magnet_position(int p_joint_idx) const;
 	void set_fabrik_joint_use_target_rotation(int p_joint_idx, bool p_use_target_rotation);
 	bool get_fabrik_joint_use_target_rotation(int p_joint_idx) const;
-	void set_fabrik_joint_enable_constraint(int p_joint_idx, bool p_constraint);
-	bool get_fabrik_joint_enable_constraint(int p_joint_idx) const;
-	void set_fabrik_joint_constraint_angle_min(int p_joint_idx, float p_angle_min);
-	float get_fabrik_joint_constraint_angle_min(int p_joint_idx) const;
-	void set_fabrik_joint_constraint_angle_max(int p_joint_idx, float p_angle_max);
-	float get_fabrik_joint_constraint_angle_max(int p_joint_idx) const;
-	void set_fabrik_joint_constraint_angle_invert(int p_joint_idx, bool p_invert);
-	bool get_fabrik_joint_constraint_angle_invert(int p_joint_idx) const;
-	void set_fabrik_joint_constraint_in_localspace(int p_joint_idx, bool p_constraint_in_localspace);
-	bool get_fabrik_joint_constraint_in_localspace(int p_joint_idx) const;
-	void set_fabrik_joint_editor_draw_gizmo(int p_joint_idx, bool p_draw_gizmo);
-	bool get_fabrik_joint_editor_draw_gizmo(int p_joint_idx) const;
 
 	SkeletonModification2DFABRIK();
 	~SkeletonModification2DFABRIK();

@@ -1401,32 +1401,8 @@ bool SkeletonModification2DFABRIK::_set(const StringName &p_path, const Variant 
 			set_fabrik_joint_magnet_position(which, p_value);
 		} else if (what == "use_target_rotation") {
 			set_fabrik_joint_use_target_rotation(which, p_value);
-		} else if (what == "enable_constraint") {
-			set_fabrik_joint_enable_constraint(which, p_value);
-		} else if (what == "constraint_angle_min") {
-			set_fabrik_joint_constraint_angle_min(which, Math::deg2rad(float(p_value)));
-		} else if (what == "constraint_angle_max") {
-			set_fabrik_joint_constraint_angle_max(which, Math::deg2rad(float(p_value)));
-		} else if (what == "constraint_angle_invert") {
-			set_fabrik_joint_constraint_angle_invert(which, p_value);
-		} else if (what == "constraint_in_localspace") {
-			set_fabrik_joint_constraint_in_localspace(which, p_value);
 		}
-
-#ifdef TOOLS_ENABLED
-		if (what.begins_with("editor_draw_gizmo")) {
-			set_fabrik_joint_editor_draw_gizmo(which, p_value);
-		}
-#endif // TOOLS_ENABLED
-
-		return true;
 	}
-
-#ifdef TOOLS_ENABLED
-	if (path.begins_with("editor/draw_gizmo")) {
-		set_editor_draw_gizmo(p_value);
-	}
-#endif // TOOLS_ENABLED
 
 	return true;
 }
@@ -1447,33 +1423,9 @@ bool SkeletonModification2DFABRIK::_get(const StringName &p_path, Variant &r_ret
 			r_ret = get_fabrik_joint_magnet_position(which);
 		} else if (what == "use_target_rotation") {
 			r_ret = get_fabrik_joint_use_target_rotation(which);
-		} else if (what == "enable_constraint") {
-			r_ret = get_fabrik_joint_enable_constraint(which);
-		} else if (what == "constraint_angle_min") {
-			r_ret = Math::rad2deg(get_fabrik_joint_constraint_angle_min(which));
-		} else if (what == "constraint_angle_max") {
-			r_ret = Math::rad2deg(get_fabrik_joint_constraint_angle_max(which));
-		} else if (what == "constraint_angle_invert") {
-			r_ret = get_fabrik_joint_constraint_angle_invert(which);
-		} else if (what == "constraint_in_localspace") {
-			r_ret = get_fabrik_joint_constraint_in_localspace(which);
 		}
-
-#ifdef TOOLS_ENABLED
-		if (what.begins_with("editor_draw_gizmo")) {
-			r_ret = get_fabrik_joint_editor_draw_gizmo(which);
-		}
-#endif // TOOLS_ENABLED
-
 		return true;
 	}
-
-#ifdef TOOLS_ENABLED
-	if (path.begins_with("editor/draw_gizmo")) {
-		r_ret = get_editor_draw_gizmo();
-	}
-#endif // TOOLS_ENABLED
-
 	return true;
 }
 
@@ -1490,27 +1442,7 @@ void SkeletonModification2DFABRIK::_get_property_list(List<PropertyInfo> *p_list
 		if (i == fabrik_data_chain.size() - 1) {
 			p_list->push_back(PropertyInfo(Variant::BOOL, base_string + "use_target_rotation", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT));
 		}
-
-		p_list->push_back(PropertyInfo(Variant::BOOL, base_string + "enable_constraint", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT));
-		if (fabrik_data_chain[i].enable_constraint) {
-			p_list->push_back(PropertyInfo(Variant::FLOAT, base_string + "constraint_angle_min", PROPERTY_HINT_RANGE, "-360, 360, 0.01", PROPERTY_USAGE_DEFAULT));
-			p_list->push_back(PropertyInfo(Variant::FLOAT, base_string + "constraint_angle_max", PROPERTY_HINT_RANGE, "-360, 360, 0.01", PROPERTY_USAGE_DEFAULT));
-			p_list->push_back(PropertyInfo(Variant::BOOL, base_string + "constraint_angle_invert", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT));
-			p_list->push_back(PropertyInfo(Variant::BOOL, base_string + "constraint_in_localspace", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT));
-		}
-
-#ifdef TOOLS_ENABLED
-		if (Engine::get_singleton()->is_editor_hint()) {
-			p_list->push_back(PropertyInfo(Variant::BOOL, base_string + "editor_draw_gizmo", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT));
-		}
-#endif // TOOLS_ENABLED
 	}
-
-#ifdef TOOLS_ENABLED
-	if (Engine::get_singleton()->is_editor_hint()) {
-		p_list->push_back(PropertyInfo(Variant::BOOL, "editor/draw_gizmo", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT));
-	}
-#endif // TOOLS_ENABLED
 }
 
 void SkeletonModification2DFABRIK::_execute(float delta) {
@@ -1618,12 +1550,6 @@ void SkeletonModification2DFABRIK::_execute(float delta) {
 			} else {
 				chain_trans = chain_trans.looking_at(target_global_pose.get_origin());
 			}
-
-			// Account for constraints
-			if (fabrik_data_chain[i].enable_constraint) {
-				chain_trans.set_rotation(clamp_angle(chain_trans.get_rotation(), fabrik_data_chain[i].constraint_angle_min,
-						fabrik_data_chain[i].constraint_angle_max, fabrik_data_chain[i].constraint_angle_invert));
-			}
 		}
 		// Adjust for the bone angle
 		chain_trans.set_rotation(chain_trans.get_rotation() - joint_bone2d_node->get_bone_angle());
@@ -1650,11 +1576,6 @@ void SkeletonModification2DFABRIK::chain_backwards() {
 	if (fabrik_data_chain[final_joint_index].use_target_rotation) {
 		final_bone2d_angle = target_global_pose.get_rotation();
 	}
-
-	if (fabrik_data_chain[final_joint_index].enable_constraint) {
-		final_bone2d_angle = clamp_angle(final_bone2d_angle, fabrik_data_chain[final_joint_index].constraint_angle_min,
-				fabrik_data_chain[final_joint_index].constraint_angle_max, fabrik_data_chain[final_joint_index].constraint_angle_invert);
-	}
 	Vector2 final_bone2d_direction = Vector2(Math::cos(final_bone2d_angle), Math::sin(final_bone2d_angle));
 	float final_bone2d_length = final_bone2d_node->get_length() * MIN(final_bone2d_node->get_global_scale().x, final_bone2d_node->get_global_scale().y);
 	final_bone2d_trans.set_origin(target_global_pose.get_origin() - (final_bone2d_direction * final_bone2d_length));
@@ -1668,21 +1589,6 @@ void SkeletonModification2DFABRIK::chain_backwards() {
 		i -= 1;
 		Bone2D *current_bone2d_node = Object::cast_to<Bone2D>(ObjectDB::get_instance(fabrik_data_chain[i].bone2d_node_cache));
 		Transform2D current_pose = fabrik_transform_chain[i];
-
-		// Commenting out this chunk of code makes the solves look better, but then it doesn't always find a solution even when one is possible...
-		if (fabrik_data_chain[i].enable_constraint) {
-			float previous_to_current_angle = 0;
-			float previous_to_current_length = previous_pose.get_origin().distance_to(current_pose.get_origin());
-
-			// Calculate the current angle
-			Vector2 previous_to_current_dir = previous_pose.get_origin().direction_to(current_pose.get_origin());
-			previous_to_current_angle = Math::atan2(previous_to_current_dir.y, previous_to_current_dir.x);
-
-			// Clamp the angle
-			previous_to_current_angle = clamp_angle(previous_to_current_angle, fabrik_data_chain[i].constraint_angle_min, fabrik_data_chain[i].constraint_angle_max, fabrik_data_chain[i].constraint_angle_invert);
-
-			current_pose.set_origin(previous_pose.get_origin() + (Vector2(Math::cos(previous_to_current_angle), Math::sin(previous_to_current_angle)) * previous_to_current_length));
-		}
 
 		float current_bone2d_node_length = current_bone2d_node->get_length() * MIN(current_bone2d_node->get_global_scale().x, current_bone2d_node->get_global_scale().y);
 		float length = current_bone2d_node_length / (previous_pose.get_origin() - current_pose.get_origin()).length();
@@ -1704,20 +1610,6 @@ void SkeletonModification2DFABRIK::chain_forwards() {
 		Bone2D *current_bone2d_node = Object::cast_to<Bone2D>(ObjectDB::get_instance(fabrik_data_chain[i].bone2d_node_cache));
 		Transform2D current_pose = fabrik_transform_chain[i];
 		Transform2D next_pose = fabrik_transform_chain[i + 1];
-
-		if (fabrik_data_chain[i].enable_constraint) {
-			float next_to_current_angle = 0;
-			float next_to_current_length = next_pose.get_origin().distance_to(current_pose.get_origin());
-
-			// Calculate the current angle
-			Vector2 next_to_current_dir = current_pose.get_origin().direction_to(next_pose.get_origin());
-			next_to_current_angle = Math::atan2(next_to_current_dir.y, next_to_current_dir.x);
-
-			// Clamp the angle
-			next_to_current_angle = clamp_angle(next_to_current_angle, fabrik_data_chain[i].constraint_angle_min, fabrik_data_chain[i].constraint_angle_max, fabrik_data_chain[i].constraint_angle_invert);
-
-			next_pose.set_origin(current_pose.get_origin() + (Vector2(Math::cos(next_to_current_angle), Math::sin(next_to_current_angle)) * next_to_current_length));
-		}
 
 		float current_bone2d_node_length = current_bone2d_node->get_length() * MIN(current_bone2d_node->get_global_scale().x, current_bone2d_node->get_global_scale().y);
 		float length = current_bone2d_node_length / (current_pose.get_origin() - next_pose.get_origin()).length();
@@ -1756,22 +1648,6 @@ void SkeletonModification2DFABRIK::update_target_cache() {
 				target_node_cache = node->get_instance_id();
 			}
 		}
-	}
-}
-
-void SkeletonModification2DFABRIK::_draw_editor_gizmo() {
-	if (!enabled || !is_setup) {
-		return;
-	}
-
-	for (int i = 0; i < fabrik_data_chain.size(); i++) {
-		if (!fabrik_data_chain[i].editor_draw_gizmo) {
-			continue;
-		}
-
-		Bone2D *operation_bone = stack->skeleton->get_bone(fabrik_data_chain[i].bone_idx);
-		editor_draw_angle_constraints(operation_bone, fabrik_data_chain[i].constraint_angle_min, fabrik_data_chain[i].constraint_angle_max,
-				fabrik_data_chain[i].enable_constraint, fabrik_data_chain[i].constraint_in_localspace, fabrik_data_chain[i].constraint_angle_invert);
 	}
 }
 
@@ -1882,103 +1758,6 @@ bool SkeletonModification2DFABRIK::get_fabrik_joint_use_target_rotation(int p_jo
 	return fabrik_data_chain[p_joint_idx].use_target_rotation;
 }
 
-void SkeletonModification2DFABRIK::set_fabrik_joint_enable_constraint(int p_joint_idx, bool p_constraint) {
-	ERR_FAIL_INDEX_MSG(p_joint_idx, fabrik_data_chain.size(), "FABRIK joint out of range!");
-	fabrik_data_chain.write[p_joint_idx].enable_constraint = p_constraint;
-	_change_notify();
-
-#ifdef TOOLS_ENABLED
-	if (stack && is_setup) {
-		stack->set_editor_gizmos_dirty(true);
-	}
-#endif // TOOLS_ENABLED
-}
-
-bool SkeletonModification2DFABRIK::get_fabrik_joint_enable_constraint(int p_joint_idx) const {
-	ERR_FAIL_INDEX_V_MSG(p_joint_idx, fabrik_data_chain.size(), false, "FABRIK joint out of range!");
-	return fabrik_data_chain[p_joint_idx].enable_constraint;
-}
-
-void SkeletonModification2DFABRIK::set_fabrik_joint_constraint_angle_min(int p_joint_idx, float p_angle_min) {
-	ERR_FAIL_INDEX_MSG(p_joint_idx, fabrik_data_chain.size(), "FABRIK joint out of range!");
-	fabrik_data_chain.write[p_joint_idx].constraint_angle_min = p_angle_min;
-
-#ifdef TOOLS_ENABLED
-	if (stack && is_setup) {
-		stack->set_editor_gizmos_dirty(true);
-	}
-#endif // TOOLS_ENABLED
-}
-
-float SkeletonModification2DFABRIK::get_fabrik_joint_constraint_angle_min(int p_joint_idx) const {
-	ERR_FAIL_INDEX_V_MSG(p_joint_idx, fabrik_data_chain.size(), 0.0, "FABRIK joint out of range!");
-	return fabrik_data_chain[p_joint_idx].constraint_angle_min;
-}
-
-void SkeletonModification2DFABRIK::set_fabrik_joint_constraint_angle_max(int p_joint_idx, float p_angle_max) {
-	ERR_FAIL_INDEX_MSG(p_joint_idx, fabrik_data_chain.size(), "FABRIK joint out of range!");
-	fabrik_data_chain.write[p_joint_idx].constraint_angle_max = p_angle_max;
-
-#ifdef TOOLS_ENABLED
-	if (stack && is_setup) {
-		stack->set_editor_gizmos_dirty(true);
-	}
-#endif // TOOLS_ENABLED
-}
-
-float SkeletonModification2DFABRIK::get_fabrik_joint_constraint_angle_max(int p_joint_idx) const {
-	ERR_FAIL_INDEX_V_MSG(p_joint_idx, fabrik_data_chain.size(), 0.0, "FABRIK joint out of range!");
-	return fabrik_data_chain[p_joint_idx].constraint_angle_max;
-}
-
-void SkeletonModification2DFABRIK::set_fabrik_joint_constraint_angle_invert(int p_joint_idx, bool p_invert) {
-	ERR_FAIL_INDEX_MSG(p_joint_idx, fabrik_data_chain.size(), "FABRIK joint out of range!");
-	fabrik_data_chain.write[p_joint_idx].constraint_angle_invert = p_invert;
-
-#ifdef TOOLS_ENABLED
-	if (stack && is_setup) {
-		stack->set_editor_gizmos_dirty(true);
-	}
-#endif // TOOLS_ENABLED
-}
-
-bool SkeletonModification2DFABRIK::get_fabrik_joint_constraint_angle_invert(int p_joint_idx) const {
-	ERR_FAIL_INDEX_V_MSG(p_joint_idx, fabrik_data_chain.size(), false, "FABRIK joint out of range!");
-	return fabrik_data_chain[p_joint_idx].constraint_angle_invert;
-}
-
-void SkeletonModification2DFABRIK::set_fabrik_joint_constraint_in_localspace(int p_joint_idx, bool p_constraint_in_localspace) {
-	ERR_FAIL_INDEX_MSG(p_joint_idx, fabrik_data_chain.size(), "FABRIK joint out of range!");
-	fabrik_data_chain.write[p_joint_idx].constraint_in_localspace = p_constraint_in_localspace;
-
-#ifdef TOOLS_ENABLED
-	if (stack && is_setup) {
-		stack->set_editor_gizmos_dirty(true);
-	}
-#endif // TOOLS_ENABLED
-}
-
-bool SkeletonModification2DFABRIK::get_fabrik_joint_constraint_in_localspace(int p_joint_idx) const {
-	ERR_FAIL_INDEX_V_MSG(p_joint_idx, fabrik_data_chain.size(), false, "FABRIK joint out of range!");
-	return fabrik_data_chain[p_joint_idx].constraint_in_localspace;
-}
-
-void SkeletonModification2DFABRIK::set_fabrik_joint_editor_draw_gizmo(int p_joint_idx, bool p_draw_gizmo) {
-	ERR_FAIL_INDEX_MSG(p_joint_idx, fabrik_data_chain.size(), "FABRIK joint out of range!");
-	fabrik_data_chain.write[p_joint_idx].editor_draw_gizmo = p_draw_gizmo;
-
-#ifdef TOOLS_ENABLED
-	if (stack && is_setup) {
-		stack->set_editor_gizmos_dirty(true);
-	}
-#endif // TOOLS_ENABLED
-}
-
-bool SkeletonModification2DFABRIK::get_fabrik_joint_editor_draw_gizmo(int p_joint_idx) const {
-	ERR_FAIL_INDEX_V_MSG(p_joint_idx, fabrik_data_chain.size(), false, "FABRIK joint out of range!");
-	return fabrik_data_chain[p_joint_idx].editor_draw_gizmo;
-}
-
 void SkeletonModification2DFABRIK::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_target_node", "target_nodepath"), &SkeletonModification2DFABRIK::set_target_node);
 	ClassDB::bind_method(D_METHOD("get_target_node"), &SkeletonModification2DFABRIK::get_target_node);
@@ -1994,14 +1773,6 @@ void SkeletonModification2DFABRIK::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_fabrik_joint_magnet_position", "joint_idx"), &SkeletonModification2DFABRIK::get_fabrik_joint_magnet_position);
 	ClassDB::bind_method(D_METHOD("set_fabrik_joint_use_target_rotation", "joint_idx", "use_target_rotation"), &SkeletonModification2DFABRIK::set_fabrik_joint_use_target_rotation);
 	ClassDB::bind_method(D_METHOD("get_fabrik_joint_use_target_rotation", "joint_idx"), &SkeletonModification2DFABRIK::get_fabrik_joint_use_target_rotation);
-	ClassDB::bind_method(D_METHOD("set_fabrik_joint_enable_constraint", "joint_idx", "enable_constraint"), &SkeletonModification2DFABRIK::set_fabrik_joint_enable_constraint);
-	ClassDB::bind_method(D_METHOD("get_fabrik_joint_enable_constraint", "joint_idx"), &SkeletonModification2DFABRIK::get_fabrik_joint_enable_constraint);
-	ClassDB::bind_method(D_METHOD("set_fabrik_joint_constraint_angle_min", "joint_idx", "angle_min"), &SkeletonModification2DFABRIK::set_fabrik_joint_constraint_angle_min);
-	ClassDB::bind_method(D_METHOD("get_fabrik_joint_constraint_angle_min", "joint_idx"), &SkeletonModification2DFABRIK::get_fabrik_joint_constraint_angle_min);
-	ClassDB::bind_method(D_METHOD("set_fabrik_joint_constraint_angle_max", "joint_idx", "angle_max"), &SkeletonModification2DFABRIK::set_fabrik_joint_constraint_angle_max);
-	ClassDB::bind_method(D_METHOD("get_fabrik_joint_constraint_angle_max", "joint_idx"), &SkeletonModification2DFABRIK::get_fabrik_joint_constraint_angle_max);
-	ClassDB::bind_method(D_METHOD("set_fabrik_joint_constraint_angle_invert", "joint_idx", "invert"), &SkeletonModification2DFABRIK::set_fabrik_joint_constraint_angle_invert);
-	ClassDB::bind_method(D_METHOD("get_fabrik_joint_constraint_angle_invert", "joint_idx"), &SkeletonModification2DFABRIK::get_fabrik_joint_constraint_angle_invert);
 
 	ADD_PROPERTY(PropertyInfo(Variant::NODE_PATH, "target_nodepath", PROPERTY_HINT_NODE_PATH_VALID_TYPES, "Node2D"), "set_target_node", "get_target_node");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "fabrik_data_chain_length", PROPERTY_HINT_RANGE, "0, 100, 1"), "set_fabrik_data_chain_length", "get_fabrik_data_chain_length");
@@ -2011,7 +1782,7 @@ SkeletonModification2DFABRIK::SkeletonModification2DFABRIK() {
 	stack = nullptr;
 	is_setup = false;
 	enabled = true;
-	editor_draw_gizmo = true;
+	editor_draw_gizmo = false;
 }
 
 SkeletonModification2DFABRIK::~SkeletonModification2DFABRIK() {
