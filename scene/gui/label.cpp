@@ -357,21 +357,25 @@ void Label::_notification(int p_what) {
 }
 
 Size2 Label::get_minimum_size() const {
-	Size2 min_style = get_theme_stylebox("normal")->get_minimum_size();
-
 	// don't want to mutable everything
 	if (dirty || lines_dirty) {
 		const_cast<Label *>(this)->_shape();
 	}
 
+	Size2 min_size = minsize;
+
+	Ref<Font> font = get_theme_font("font");
+	min_size.height = MAX(min_size.height, font->get_height(get_theme_font_size("font_size")) + font->get_spacing(Font::SPACING_TOP) + font->get_spacing(Font::SPACING_BOTTOM));
+
+	Size2 min_style = get_theme_stylebox("normal")->get_minimum_size();
 	if (autowrap) {
-		return Size2(1, clip ? 1 : minsize.height) + min_style;
+		return Size2(1, clip ? 1 : min_size.height) + min_style;
 	} else {
-		Size2 ms = minsize;
 		if (clip) {
-			ms.width = 1;
+			min_size.width = 1;
 		}
-		return ms + min_style;
+
+		return min_size + min_style;
 	}
 }
 
