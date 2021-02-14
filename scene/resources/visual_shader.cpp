@@ -1597,6 +1597,7 @@ void VisualShader::_queue_update() {
 }
 
 void VisualShader::_input_type_changed(Type p_type, int p_id) {
+	ERR_FAIL_INDEX(p_type, TYPE_MAX);
 	//erase connections using this input, as type changed
 	Graph *g = &graph[p_type];
 
