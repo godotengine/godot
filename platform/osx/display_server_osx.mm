@@ -871,6 +871,15 @@ static void _mouseDownEvent(DisplayServer::WindowID window_id, NSEvent *event, i
 	NSPoint delta = NSMakePoint([event deltaX], [event deltaY]);
 	NSPoint mpos = [event locationInWindow];
 
+	if (DS_OSX->ignore_warp) {
+		// Discard late events, before warp
+		if (([event timestamp]) < DS_OSX->last_warp) {
+			return;
+		}
+		DS_OSX->ignore_warp = false;
+		return;
+	}
+
 	if (DS_OSX->mouse_mode == DisplayServer::MOUSE_MODE_CONFINED) {
 		// Discard late events
 		if (([event timestamp]) < DS_OSX->last_warp) {
@@ -2098,6 +2107,8 @@ void DisplayServerOSX::mouse_set_mode(MouseMode p_mode) {
 		CGAssociateMouseAndMouseCursorPosition(true);
 	}
 
+	last_warp = [[NSProcessInfo processInfo] systemUptime];
+	ignore_warp = true;
 	warp_events.clear();
 	mouse_mode = p_mode;
 }
