@@ -2531,6 +2531,7 @@ Variant::Variant(const Object *p_object) {
 	memnew_placement(_data._mem, ObjData);
 
 	if (p_object) {
+		uint64_t ref_bit = 0;
 		if (p_object->is_reference()) {
 			Reference *reference = const_cast<Reference *>(static_cast<const Reference *>(p_object));
 			if (!reference->init_ref()) {
@@ -2538,10 +2539,11 @@ Variant::Variant(const Object *p_object) {
 				_get_obj().id = ObjectID();
 				return;
 			}
+			ref_bit |= ((uint64_t)1) << 63;
 		}
 
 		_get_obj().obj = const_cast<Object *>(p_object);
-		_get_obj().id = p_object->get_instance_id();
+		_get_obj().id = ObjectID((uint64_t)p_object->get_instance_id() | ref_bit);
 	} else {
 		_get_obj().obj = nullptr;
 		_get_obj().id = ObjectID();

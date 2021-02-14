@@ -485,7 +485,6 @@ private:
 	_FORCE_INLINE_ void _construct_object(bool p_reference);
 
 	friend class Reference;
-	bool type_is_reference = false;
 	uint32_t instance_binding_count = 0;
 	void *_script_instance_bindings[MAX_SCRIPT_INSTANCE_BINDINGS];
 
@@ -572,7 +571,7 @@ public:
 
 	bool _is_gpl_reversed() const { return false; }
 
-	_FORCE_INLINE_ ObjectID get_instance_id() const { return _instance_id; }
+	_FORCE_INLINE_ ObjectID get_instance_id() const { return ObjectID(static_cast<uint64_t>(_instance_id) & ~(static_cast<uint64_t>(1) << 63)); }
 
 	// this is used for editors
 	void add_change_receptor(Object *p_receptor);
@@ -735,7 +734,9 @@ public:
 
 	void clear_internal_resource_paths();
 
-	_ALWAYS_INLINE_ bool is_reference() const { return type_is_reference; }
+	_ALWAYS_INLINE_ bool is_reference() const { return _instance_id.is_reference(); }
+
+	void stop_being_reference();
 
 	Object();
 	virtual ~Object();
@@ -769,7 +770,7 @@ class ObjectDB {
 	friend void unregister_core_types();
 	static void cleanup();
 
-	static ObjectID add_instance(Object *p_object);
+	static ObjectID add_instance(Object *p_object, bool p_reference);
 	static void remove_instance(Object *p_object);
 
 	friend void register_core_types();
