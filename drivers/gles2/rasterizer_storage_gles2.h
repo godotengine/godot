@@ -63,6 +63,7 @@ public:
 		int max_vertex_texture_image_units;
 		int max_texture_image_units;
 		int max_texture_size;
+		int max_viewport_dimensions[2];
 
 		// TODO implement wireframe in GLES2
 		// bool generate_wireframes;
