@@ -738,6 +738,15 @@ static void _mouseDownEvent(NSEvent *event, int index, int mask, bool pressed) {
 	NSPoint delta = NSMakePoint([event deltaX], [event deltaY]);
 	NSPoint mpos = [event locationInWindow];
 
+	if (OS_OSX::singleton->ignore_warp) {
+		// Discard late events, before warp
+		if (([event timestamp]) < OS_OSX::singleton->last_warp) {
+			return;
+		}
+		OS_OSX::singleton->ignore_warp = false;
+		return;
+	}
+
 	if (OS_OSX::singleton->mouse_mode == OS::MOUSE_MODE_CONFINED) {
 		// Discard late events
 		if (([event timestamp]) < OS_OSX::singleton->last_warp) {
@@ -3306,6 +3315,8 @@ void OS_OSX::set_mouse_mode(MouseMode p_mode) {
 		CGAssociateMouseAndMouseCursorPosition(true);
 	}
 
+	last_warp = [[NSProcessInfo processInfo] systemUptime];
+	ignore_warp = true;
 	warp_events.clear();
 	mouse_mode = p_mode;
 }
