@@ -245,7 +245,6 @@ private:
 	Set<CallbackItem> callbacks;
 	Set<CallbackItem> update_callbacks;
 
-	Mutex playing_sources_mutex;
 	size_t playing_sources_count;
 	uint64_t last_playback_time_msec;
 

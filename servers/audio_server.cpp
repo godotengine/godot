@@ -923,17 +923,13 @@ float AudioServer::get_global_rate_scale() const {
 }
 
 void AudioServer::notify_source_playing() {
-	MutexLock lock(playing_sources_mutex);
-	if (playing_sources_count == 0) {
+	if (atomic_increment(&playing_sources_count) == 1) {
 		AudioDriver::get_singleton()->set_sleep_state(false);
 	}
-	playing_sources_count++;
 }
 
 void AudioServer::notify_source_stopped_playing() {
-	MutexLock lock(playing_sources_mutex);
-	playing_sources_count--;
-	if (playing_sources_count == 0) {
+	if (atomic_decrement(&playing_sources_count) == 0) {
 		last_playback_time_msec = OS::get_singleton()->get_ticks_msec();
 	}
 }
@@ -1049,12 +1045,8 @@ void AudioServer::update() {
 		E->get().callback(E->get().userdata);
 	}
 
-	if (Engine::get_singleton()->is_editor_hint()) {
-		// Allow the audio driver to sleep in the editor after 15 seconds of inactivity.
-		MutexLock lock(playing_sources_mutex);
-		if (playing_sources_count == 0 && last_playback_time_msec < OS::get_singleton()->get_ticks_msec() - 15000) {
-			AudioDriver::get_singleton()->set_sleep_state(true);
-		}
+	if (Engine::get_singleton()->is_editor_hint() && playing_sources_count == 0 && last_playback_time_msec < OS::get_singleton()->get_ticks_msec() - 15000) {
+		AudioDriver::get_singleton()->set_sleep_state(true);
 	}
 }
 
