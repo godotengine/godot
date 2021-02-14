@@ -56,6 +56,7 @@ class ProjectManager : public Control {
 
 	ProjectListFilter *project_filter;
 	ProjectListFilter *project_order_filter;
+	Label *loading_label;
 
 	FileDialog *scan_dir;
 	ConfirmationDialog *language_restart_ask;
