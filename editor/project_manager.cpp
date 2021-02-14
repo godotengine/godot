@@ -2040,6 +2040,10 @@ void ProjectManager::_global_menu_action(const Variant &p_id, const Variant &p_m
 
 void ProjectManager::_open_selected_projects() {
 
+	// Show loading text to tell the user that the project manager is busy loading.
+	// This is especially important for the HTML5 project manager.
+	loading_label->set_modulate(Color(1, 1, 1));
+
 	const Set<String> &selected_list = _project_list->get_selected_project_keys();
 
 	for (const Set<String>::Element *E = selected_list.front(); E; E = E->next()) {
@@ -2312,12 +2316,6 @@ void ProjectManager::_restart_confirm() {
 	get_tree()->quit();
 }
 
-void ProjectManager::_exit_dialog() {
-
-	_dim_window();
-	get_tree()->quit();
-}
-
 void ProjectManager::_install_project(const String &p_zip_path, const String &p_title) {
 
 	npdialog->set_mode(ProjectDialog::MODE_INSTALL);
@@ -2407,7 +2405,6 @@ void ProjectManager::_bind_methods() {
 	ClassDB::bind_method("_erase_missing_projects_confirm", &ProjectManager::_erase_missing_projects_confirm);
 	ClassDB::bind_method("_language_selected", &ProjectManager::_language_selected);
 	ClassDB::bind_method("_restart_confirm", &ProjectManager::_restart_confirm);
-	ClassDB::bind_method("_exit_dialog", &ProjectManager::_exit_dialog);
 	ClassDB::bind_method("_on_order_option_changed", &ProjectManager::_on_order_option_changed);
 	ClassDB::bind_method("_on_filter_option_changed", &ProjectManager::_on_filter_option_changed);
 	ClassDB::bind_method("_on_projects_updated", &ProjectManager::_on_projects_updated);
@@ -2537,6 +2534,13 @@ ProjectManager::ProjectManager() {
 	search_tree_vb->set_h_size_flags(SIZE_EXPAND_FILL);
 
 	HBoxContainer *sort_filters = memnew(HBoxContainer);
+	loading_label = memnew(Label(TTR("Loading, please wait...")));
+	loading_label->add_font_override("font", get_font("bold", "EditorFonts"));
+	loading_label->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+	sort_filters->add_child(loading_label);
+	// Hide the label but make it still take up space. This prevents reflows when showing the label.
+	loading_label->set_modulate(Color(0, 0, 0, 0));
+
 	Label *sort_label = memnew(Label);
 	sort_label->set_text(TTR("Sort:"));
 	sort_filters->add_child(sort_label);
@@ -2554,8 +2558,6 @@ ProjectManager::ProjectManager() {
 
 	int projects_sorting_order = (int)EditorSettings::get_singleton()->get("project_manager/sorting_order");
 	project_order_filter->set_filter_option((ProjectListFilter::FilterOption)projects_sorting_order);
-
-	sort_filters->add_spacer(true);
 
 	project_filter = memnew(ProjectListFilter);
 	project_filter->add_search_box();
