@@ -687,6 +687,9 @@ void FindInFilesPanel::stop_search() {
 void FindInFilesPanel::_notification(int p_what) {
 	if (p_what == NOTIFICATION_PROCESS) {
 		_progress_bar->set_as_ratio(_finder->get_progress());
+	} else if (p_what == NOTIFICATION_THEME_CHANGED) {
+		_search_text_label->add_theme_font_override("font", get_theme_font("source", "EditorFonts"));
+		_results_display->add_theme_font_override("font", get_theme_font("source", "EditorFonts"));
 	}
 }
 
