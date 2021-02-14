@@ -1728,7 +1728,7 @@ void NativeScriptLanguage::unregister_script(NativeScript *script) {
 			library_script_users.erase(S);
 
 			Map<String, Ref<GDNative>>::Element *G = library_gdnatives.find(script->lib_path);
-			if (G) {
+			if (G && G->get()->get_library()->is_reloadable()) {
 				G->get()->terminate();
 				library_gdnatives.erase(G);
 			}
