@@ -110,6 +110,9 @@ class ClassDef:
         self.theme_items = None  # type: Optional[OrderedDict[str, List[ThemeItemDef]]]
         self.tutorials = []  # type: List[str]
 
+        # Used to match the class with XML source for output filtering purposes.
+        self.filepath = ""  # type: str
+
 
 class State:
     def __init__(self):  # type: () -> None
@@ -118,11 +121,12 @@ class State:
         self.classes = OrderedDict()  # type: OrderedDict[str, ClassDef]
         self.current_class = ""  # type: str
 
-    def parse_class(self, class_root):  # type: (ET.Element) -> None
+    def parse_class(self, class_root, filepath):  # type: (ET.Element, str) -> None
         class_name = class_root.attrib["name"]
 
         class_def = ClassDef(class_name)
         self.classes[class_name] = class_def
+        class_def.filepath = filepath
 
         inherits = class_root.get("inherits")
         if inherits is not None:
@@ -278,6 +282,7 @@ def parse_arguments(root):  # type: (ET.Element) -> List[ParameterDef]
 def main():  # type: () -> None
     parser = argparse.ArgumentParser()
     parser.add_argument("path", nargs="+", help="A path to an XML file or a directory containing XML files to parse.")
+    parser.add_argument("--filter", default="", help="The filepath pattern for XML files to filter.")
     group = parser.add_mutually_exclusive_group()
     group.add_argument("--output", "-o", default=".", help="The directory to save output .rst files in.")
     group.add_argument(
@@ -333,17 +338,21 @@ def main():  # type: () -> None
             print_error("Duplicate class '{}'".format(name), state)
             continue
 
-        classes[name] = doc
+        classes[name] = (doc, cur_file)
 
     for name, data in classes.items():
         try:
-            state.parse_class(data)
+            state.parse_class(data[0], data[1])
         except Exception as e:
             print_error("Exception while parsing class '{}': {}".format(name, e), state)
 
     state.sort_classes()
 
+    pattern = re.compile(args.filter)
+
     for class_name, class_def in state.classes.items():
+        if args.filter and not pattern.search(class_def.filepath):
+            continue
         state.current_class = class_name
         make_rst_class(class_def, state, args.dry_run, args.output)
 
