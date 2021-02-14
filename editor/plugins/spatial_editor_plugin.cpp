@@ -2215,7 +2215,7 @@ void SpatialEditorViewport::set_freelook_active(bool active_now) {
 
 void SpatialEditorViewport::scale_cursor_distance(real_t scale) {
 	real_t min_distance = MAX(camera->get_znear() * 4, ZOOM_FREELOOK_MIN);
-	real_t max_distance = MIN(camera->get_zfar() / 4, ZOOM_FREELOOK_MAX);
+	real_t max_distance = MIN(camera->get_zfar() / 2, ZOOM_FREELOOK_MAX);
 	if (unlikely(min_distance > max_distance)) {
 		cursor.distance = (min_distance + max_distance) / 2;
 	} else {
@@ -2228,7 +2228,7 @@ void SpatialEditorViewport::scale_cursor_distance(real_t scale) {
 
 void SpatialEditorViewport::scale_freelook_speed(real_t scale) {
 	real_t min_speed = MAX(camera->get_znear() * 4, ZOOM_FREELOOK_MIN);
-	real_t max_speed = MIN(camera->get_zfar() / 4, ZOOM_FREELOOK_MAX);
+	real_t max_speed = MIN(camera->get_zfar() / 2, ZOOM_FREELOOK_MAX);
 	if (unlikely(min_speed > max_speed)) {
 		freelook_speed = (min_speed + max_speed) / 2;
 	} else {
@@ -2716,7 +2716,7 @@ void SpatialEditorViewport::_draw() {
 				// Show speed
 
 				real_t min_speed = MAX(camera->get_znear() * 4, ZOOM_FREELOOK_MIN);
-				real_t max_speed = MIN(camera->get_zfar() / 4, ZOOM_FREELOOK_MAX);
+				real_t max_speed = MIN(camera->get_zfar() / 2, ZOOM_FREELOOK_MAX);
 				real_t scale_length = (max_speed - min_speed);
 
 				if (!Math::is_zero_approx(scale_length)) {
@@ -2736,7 +2736,7 @@ void SpatialEditorViewport::_draw() {
 				// Show zoom
 
 				real_t min_distance = MAX(camera->get_znear() * 4, ZOOM_FREELOOK_MIN);
-				real_t max_distance = MIN(camera->get_zfar() / 4, ZOOM_FREELOOK_MAX);
+				real_t max_distance = MIN(camera->get_zfar() / 2, ZOOM_FREELOOK_MAX);
 				real_t scale_length = (max_distance - min_distance);
 
 				if (!Math::is_zero_approx(scale_length)) {
