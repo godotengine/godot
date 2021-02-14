@@ -42,6 +42,9 @@
 		<theme_item name="font_hover_pressed_color" type="Color" default="Color( 1, 1, 1, 1 )">
 			The [CheckButton] text's font color when it's hovered and pressed.
 		</theme_item>
+		<theme_item name="font_outline_color" type="Color" default="Color( 1, 1, 1, 1 )">
+			The tint of text outline of the [CheckButton].
+		</theme_item>
 		<theme_item name="font_pressed_color" type="Color" default="Color( 1, 1, 1, 1 )">
 			The [CheckButton] text's font color when it's pressed.
 		</theme_item>
@@ -83,6 +86,9 @@
 		</theme_item>
 		<theme_item name="on_mirrored" type="Texture2D">
 			The icon to display when the [CheckButton] is checked (for right-to-left layouts).
+		</theme_item>
+		<theme_item name="outline_size" type="int" default="0">
+			The size of the text outline.
 		</theme_item>
 		<theme_item name="pressed" type="StyleBox">
 			The [StyleBox] to display as a background when the [CheckButton] is pressed.

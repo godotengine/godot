@@ -883,6 +883,8 @@ void ItemList::_notification(int p_what) {
 		int vseparation = get_theme_constant("vseparation");
 		int icon_margin = get_theme_constant("icon_margin");
 		int line_separation = get_theme_constant("line_separation");
+		Color font_outline_color = get_theme_color("font_outline_color");
+		int outline_size = get_theme_constant("outline_size");
 
 		Ref<StyleBox> sbsel = has_focus() ? get_theme_stylebox("selected_focus") : get_theme_stylebox("selected");
 		Ref<StyleBox> cursor = has_focus() ? get_theme_stylebox("cursor") : get_theme_stylebox("cursor_unfocused");
@@ -1204,6 +1206,10 @@ void ItemList::_notification(int p_what) {
 					items.write[i].text_buf->set_width(max_len);
 					items.write[i].text_buf->set_align(HALIGN_CENTER);
 
+					if (outline_size > 0 && font_outline_color.a > 0) {
+						items[i].text_buf->draw_outline(get_canvas_item(), text_ofs, outline_size, font_outline_color);
+					}
+
 					items[i].text_buf->draw(get_canvas_item(), text_ofs, modulate);
 				} else {
 					if (fixed_column_width > 0) {
@@ -1230,6 +1236,11 @@ void ItemList::_notification(int p_what) {
 					} else {
 						items.write[i].text_buf->set_align(HALIGN_LEFT);
 					}
+
+					if (outline_size > 0 && font_outline_color.a > 0) {
+						items[i].text_buf->draw_outline(get_canvas_item(), text_ofs, outline_size, font_outline_color);
+					}
+
 					items[i].text_buf->draw(get_canvas_item(), text_ofs, modulate);
 				}
 			}

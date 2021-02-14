@@ -1117,6 +1117,9 @@ void TextEdit::_notification(int p_what) {
 									tl->add_string(text, cache.font, cache.font_size);
 
 									int yofs = ofs_y + (row_height - tl->get_size().y) / 2;
+									if (cache.outline_size > 0 && cache.outline_color.a > 0) {
+										tl->draw_outline(ci, Point2(gutter_offset + ofs_x, yofs), cache.outline_size, cache.outline_color);
+									}
 									tl->draw(ci, Point2(gutter_offset + ofs_x, yofs), get_line_gutter_item_color(line, g));
 								} break;
 								case GUTTER_TPYE_ICON: {
@@ -1273,6 +1276,22 @@ void TextEdit::_notification(int p_what) {
 
 					ofs_y += ldata->get_line_ascent(line_wrap_index);
 					int char_ofs = 0;
+					if (cache.outline_size > 0 && cache.outline_color.a > 0) {
+						for (int j = 0; j < gl_size; j++) {
+							for (int k = 0; k < glyphs[j].repeat; k++) {
+								if ((char_ofs + char_margin) >= xmargin_beg && (char_ofs + glyphs[j].advance + char_margin) <= xmargin_end) {
+									if (glyphs[j].font_rid != RID()) {
+										TS->font_draw_glyph_outline(glyphs[j].font_rid, ci, glyphs[j].font_size, cache.outline_size, Vector2(char_margin + char_ofs + ofs_x + glyphs[j].x_off, ofs_y + glyphs[j].y_off), glyphs[j].index, cache.outline_color);
+									}
+								}
+								char_ofs += glyphs[j].advance;
+							}
+							if ((char_ofs + char_margin) >= xmargin_end) {
+								break;
+							}
+						}
+						char_ofs = 0;
+					}
 					for (int j = 0; j < gl_size; j++) {
 						if (color_map.has(glyphs[j].start)) {
 							current_color = color_map[glyphs[j].start].get("color");
@@ -1600,6 +1619,9 @@ void TextEdit::_notification(int p_what) {
 							draw_rect(Rect2(Point2(completion_rect.position.x + completion_rect.size.width - icon_area_size.x, icon_area.position.y), icon_area_size), (Color)completion_options[l].default_value);
 						}
 						tl->set_align(HALIGN_LEFT);
+					}
+					if (cache.outline_size > 0 && cache.outline_color.a > 0) {
+						tl->draw_outline(ci, title_pos, cache.outline_size, cache.outline_color);
 					}
 					tl->draw(ci, title_pos, completion_options[l].font_color);
 				}
@@ -4944,6 +4966,8 @@ void TextEdit::_update_caches() {
 	cache.completion_font_color = get_theme_color("completion_font_color");
 	cache.font = get_theme_font("font");
 	cache.font_size = get_theme_font_size("font_size");
+	cache.outline_color = get_theme_color("font_outline_color");
+	cache.outline_size = get_theme_constant("outline_size");
 	cache.caret_color = get_theme_color("caret_color");
 	cache.caret_background_color = get_theme_color("caret_background_color");
 	cache.font_color = get_theme_color("font_color");

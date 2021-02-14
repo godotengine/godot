@@ -776,6 +776,7 @@ int RichTextLabel::_draw_line(ItemFrame *p_frame, int p_line, const Vector2 &p_o
 						Color odd_row_bg = get_theme_color("table_odd_row_bg");
 						Color even_row_bg = get_theme_color("table_even_row_bg");
 						Color border = get_theme_color("table_border");
+						int hseparation = get_theme_constant("table_hseparation");
 						int col_count = table->columns.size();
 						int row_count = table->rows.size();
 
@@ -792,11 +793,11 @@ int RichTextLabel::_draw_line(ItemFrame *p_frame, int p_line, const Vector2 &p_o
 									coff.x = rect.size.width - table->columns[col].width - coff.x;
 								}
 								if (row % 2 == 0) {
-									draw_rect(Rect2(p_ofs + rect.position + off + coff - frame->padding.position, Size2(table->columns[col].width, table->rows[row])), (frame->odd_row_bg != Color(0, 0, 0, 0) ? frame->odd_row_bg : odd_row_bg), true);
+									draw_rect(Rect2(p_ofs + rect.position + off + coff - frame->padding.position, Size2(table->columns[col].width + hseparation + frame->padding.position.x + frame->padding.size.x, table->rows[row])), (frame->odd_row_bg != Color(0, 0, 0, 0) ? frame->odd_row_bg : odd_row_bg), true);
 								} else {
-									draw_rect(Rect2(p_ofs + rect.position + off + coff - frame->padding.position, Size2(table->columns[col].width, table->rows[row])), (frame->even_row_bg != Color(0, 0, 0, 0) ? frame->even_row_bg : even_row_bg), true);
+									draw_rect(Rect2(p_ofs + rect.position + off + coff - frame->padding.position, Size2(table->columns[col].width + hseparation + frame->padding.position.x + frame->padding.size.x, table->rows[row])), (frame->even_row_bg != Color(0, 0, 0, 0) ? frame->even_row_bg : even_row_bg), true);
 								}
-								draw_rect(Rect2(p_ofs + rect.position + off + coff - frame->padding.position, Size2(table->columns[col].width, table->rows[row])), (frame->border != Color(0, 0, 0, 0) ? frame->border : border), false);
+								draw_rect(Rect2(p_ofs + rect.position + off + coff - frame->padding.position, Size2(table->columns[col].width + hseparation + frame->padding.position.x + frame->padding.size.x, table->rows[row])), (frame->border != Color(0, 0, 0, 0) ? frame->border : border), false);
 							}
 
 							for (int j = 0; j < frame->lines.size(); j++) {
@@ -819,8 +820,8 @@ int RichTextLabel::_draw_line(ItemFrame *p_frame, int p_line, const Vector2 &p_o
 		// Draw oulines and shadow.
 		for (int i = 0; i < gl_size; i++) {
 			Item *it = _get_item_at_pos(it_from, it_to, glyphs[i].start);
-			int size = _find_outline_size(it);
-			Color font_color = _find_outline_color(it, Color(0, 0, 0, 0));
+			int size = _find_outline_size(it, p_outline_size);
+			Color font_color = _find_outline_color(it, p_outline_color);
 			if (size <= 0) {
 				gloff.x += glyphs[i].advance;
 				continue;
@@ -1398,7 +1399,7 @@ void RichTextLabel::_notification(int p_what) {
 			}
 			Ref<Font> base_font = get_theme_font("normal_font");
 			Color base_color = get_theme_color("default_color");
-			Color outline_color = get_theme_color("outline_color");
+			Color outline_color = get_theme_color("font_outline_color");
 			int outline_size = get_theme_constant("outline_size");
 			Color font_shadow_color = get_theme_color("font_shadow_color");
 			bool use_outline = get_theme_constant("shadow_as_outline");
@@ -1753,7 +1754,7 @@ int RichTextLabel::_find_font_size(Item *p_item) {
 	return -1;
 }
 
-int RichTextLabel::_find_outline_size(Item *p_item) {
+int RichTextLabel::_find_outline_size(Item *p_item, int p_default) {
 	Item *sizeitem = p_item;
 
 	while (sizeitem) {
@@ -1765,7 +1766,7 @@ int RichTextLabel::_find_outline_size(Item *p_item) {
 		sizeitem = sizeitem->parent;
 	}
 
-	return 0;
+	return p_default;
 }
 
 Dictionary RichTextLabel::_find_font_features(Item *p_item) {

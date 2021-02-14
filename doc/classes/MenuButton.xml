@@ -65,6 +65,9 @@
 		<theme_item name="font_hover_color" type="Color" default="Color( 0.94, 0.94, 0.94, 1 )">
 			Text [Color] used when the [MenuButton] is being hovered.
 		</theme_item>
+		<theme_item name="font_outline_color" type="Color" default="Color( 1, 1, 1, 1 )">
+			The tint of text outline of the [MenuButton].
+		</theme_item>
 		<theme_item name="font_pressed_color" type="Color" default="Color( 1, 1, 1, 1 )">
 			Text [Color] used when the [MenuButton] is being pressed.
 		</theme_item>
@@ -79,6 +82,9 @@
 		</theme_item>
 		<theme_item name="normal" type="StyleBox">
 			Default [StyleBox] for the [MenuButton].
+		</theme_item>
+		<theme_item name="outline_size" type="int" default="0">
+			The size of the text outline.
 		</theme_item>
 		<theme_item name="pressed" type="StyleBox">
 			[StyleBox] used when the [MenuButton] is being pressed.
