@@ -78,6 +78,7 @@ bool xatlas_mesh_lightmap_unwrap_callback(float p_texel_size, const float *p_ver
 	float h = *r_size_hint_y;
 
 	if (w == 0 || h == 0) {
+		xatlas::Destroy(atlas);
 		return false; //could not bake because there is no area
 	}
 
