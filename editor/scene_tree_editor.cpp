@@ -167,7 +167,7 @@ bool SceneTreeEditor::_add_nodes(Node *p_node, TreeItem *p_parent, bool p_scroll
 	bool part_of_subscene = false;
 
 	if (!display_foreign && p_node->get_owner() != get_scene_node() && p_node != get_scene_node()) {
-		if ((show_enabled_subscene || can_open_instance) && p_node->get_owner() && (get_scene_node()->is_editable_instance(p_node->get_owner()))) {
+		if ((show_enabled_subscene || can_open_instance) && p_node->get_owner() && p_node->get_owner()->is_editable_instance()) {
 			part_of_subscene = true;
 			//allow
 		} else {

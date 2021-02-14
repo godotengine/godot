@@ -322,8 +322,8 @@ public:
 	void set_editor_description(const String &p_editor_description);
 	String get_editor_description() const;
 
-	void set_editable_instance(Node *p_node, bool p_editable);
-	bool is_editable_instance(const Node *p_node) const;
+	void set_editable_instance(bool p_editable);
+	bool is_editable_instance() const;
 
 	/* NOTIFICATIONS */
 

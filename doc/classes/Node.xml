@@ -855,6 +855,9 @@
 		<member name="custom_multiplayer" type="MultiplayerAPI" setter="set_custom_multiplayer" getter="get_custom_multiplayer">
 			The override to the default [MultiplayerAPI]. Set to [code]null[/code] to use the default [SceneTree] one.
 		</member>
+		<member name="editable_instance" type="bool" setter="set_editable_instance" getter="get_editable_instance" default="false">
+			If the node is an instanced scene, this flag indicates whether it is editable.
+		</member>
 		<member name="filename" type="String" setter="set_filename" getter="get_filename">
 			When a scene is instanced from a file, its topmost node contains the filename from which it was loaded.
 		</member>

@@ -338,7 +338,7 @@ Node *SceneState::instance(GenEditState p_edit_state) const {
 	for (int i = 0; i < editable_instances.size(); i++) {
 		Node *ei = ret_nodes[0]->get_node_or_null(editable_instances[i]);
 		if (ei) {
-			ret_nodes[0]->set_editable_instance(ei, true);
+			ei->set_editable_instance(true);
 		}
 	}
 
@@ -372,13 +372,13 @@ Error SceneState::_parse_node(Node *p_owner, Node *p_node, int p_parent_idx, Map
 	// document it. if you fail to understand something, please ask!
 
 	//discard nodes that do not belong to be processed
-	if (p_node != p_owner && p_node->get_owner() != p_owner && !p_owner->is_editable_instance(p_node->get_owner())) {
+	if (p_node != p_owner && p_node->get_owner() != p_owner && (!p_node->get_owner() || !p_node->get_owner()->is_editable_instance())) {
 		return OK;
 	}
 
 	// save the child instanced scenes that are chosen as editable, so they can be restored
 	// upon load back
-	if (p_node != p_owner && p_node->get_filename() != String() && p_owner->is_editable_instance(p_node)) {
+	if (p_node != p_owner && p_node->get_filename() != String() && p_node->is_editable_instance()) {
 		editable_instances.push_back(p_owner->get_path_to(p_node));
 	}
 
@@ -661,7 +661,7 @@ Error SceneState::_parse_node(Node *p_owner, Node *p_node, int p_parent_idx, Map
 }
 
 Error SceneState::_parse_connections(Node *p_owner, Node *p_node, Map<StringName, int> &name_map, HashMap<Variant, int, VariantHasher, VariantComparator> &variant_map, Map<Node *, int> &node_map, Map<Node *, int> &nodepath_map) {
-	if (p_node != p_owner && p_node->get_owner() && p_node->get_owner() != p_owner && !p_owner->is_editable_instance(p_node->get_owner())) {
+	if (p_node != p_owner && p_node->get_owner() && p_node->get_owner() != p_owner && (!p_node->get_owner() || !p_node->get_owner()->is_editable_instance())) {
 		return OK;
 	}
 

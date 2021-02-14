@@ -64,7 +64,7 @@ void GroupDialog::_load_nodes(Node *p_current) {
 	bool keep = true;
 	Node *root = scene_tree->get_edited_scene_root();
 	Node *owner = p_current->get_owner();
-	if (owner != root && p_current != root && !owner && !root->is_editable_instance(owner)) {
+	if (owner != root && p_current != root && !owner) {
 		keep = false;
 	}
 

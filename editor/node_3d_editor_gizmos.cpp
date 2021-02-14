@@ -80,7 +80,7 @@ bool EditorNode3DGizmo::is_editable() const {
 		return true;
 	}
 
-	if (edited_root->is_editable_instance(spatial_node->get_owner())) {
+	if (spatial_node->get_owner() && spatial_node->get_owner()->is_editable_instance()) {
 		return true;
 	}
 

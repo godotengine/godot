@@ -1909,25 +1909,19 @@ String Node::get_editor_description() const {
 	}
 }
 
-void Node::set_editable_instance(Node *p_node, bool p_editable) {
-	ERR_FAIL_NULL(p_node);
-	ERR_FAIL_COND(!is_a_parent_of(p_node));
+void Node::set_editable_instance(bool p_editable) {
 	if (!p_editable) {
-		p_node->data.editable_instance = false;
+		data.editable_instance = false;
 		// Avoid this flag being needlessly saved;
 		// also give more visual feedback if editable children is re-enabled
 		set_display_folded(false);
 	} else {
-		p_node->data.editable_instance = true;
+		data.editable_instance = true;
 	}
 }
 
-bool Node::is_editable_instance(const Node *p_node) const {
-	if (!p_node) {
-		return false; // Easier, null is never editable. :)
-	}
-	ERR_FAIL_COND_V(!is_a_parent_of(p_node), false);
-	return p_node->data.editable_instance;
+bool Node::is_editable_instance() const {
+	return data.editable_instance;
 }
 
 void Node::set_scene_instance_state(const Ref<SceneState> &p_state) {
@@ -2791,6 +2785,9 @@ void Node::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_display_folded", "fold"), &Node::set_display_folded);
 	ClassDB::bind_method(D_METHOD("is_displayed_folded"), &Node::is_displayed_folded);
 
+	ClassDB::bind_method(D_METHOD("set_editable_instance", "editable_instance"), &Node::set_editable_instance);
+	ClassDB::bind_method(D_METHOD("is_editable_instance"), &Node::is_editable_instance);
+
 	ClassDB::bind_method(D_METHOD("set_process_internal", "enable"), &Node::set_process_internal);
 	ClassDB::bind_method(D_METHOD("is_processing_internal"), &Node::is_processing_internal);
 
@@ -2909,6 +2906,7 @@ void Node::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "pause_mode", PROPERTY_HINT_ENUM, "Inherit,Stop,Process"), "set_pause_mode", "get_pause_mode");
 
 	ADD_PROPERTY(PropertyInfo(Variant::STRING_NAME, "name", PROPERTY_HINT_NONE, "", 0), "set_name", "get_name");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "editable_instance"), "set_editable_instance", "is_editable_instance");
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "filename", PROPERTY_HINT_NONE, "", 0), "set_filename", "get_filename");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "owner", PROPERTY_HINT_RESOURCE_TYPE, "Node", 0), "set_owner", "get_owner");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "multiplayer", PROPERTY_HINT_RESOURCE_TYPE, "MultiplayerAPI", 0), "", "get_multiplayer");

@@ -682,7 +682,7 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 				Map<const Node *, Node *> duplimap;
 				Node *dup = node->duplicate_from_editor(duplimap);
 
-				if (EditorNode::get_singleton()->get_edited_scene()->is_editable_instance(node)) {
+				if (node->is_editable_instance()) {
 					editable_children.push_back(dup);
 				}
 
@@ -971,7 +971,7 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 			if (e) {
 				Node *node = e->get();
 				if (node) {
-					bool editable = EditorNode::get_singleton()->get_edited_scene()->is_editable_instance(node);
+					bool editable = node->is_editable_instance();
 
 					if (editable) {
 						editable_instance_remove_dialog->set_text(TTR("Disabling \"editable_instance\" will cause all properties of the node to be reverted to their default."));
@@ -992,7 +992,7 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 			if (e) {
 				Node *node = e->get();
 				if (node) {
-					bool editable = EditorNode::get_singleton()->get_edited_scene()->is_editable_instance(node);
+					bool editable = node->is_editable_instance();
 					bool placeholder = node->get_scene_instance_load_placeholder();
 
 					// Fire confirmation dialog when children are editable.
@@ -1005,7 +1005,7 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 					placeholder = !placeholder;
 
 					if (placeholder) {
-						EditorNode::get_singleton()->get_edited_scene()->set_editable_instance(node, false);
+						node->set_editable_instance(false);
 					}
 
 					node->set_scene_instance_load_placeholder(placeholder);
@@ -1897,8 +1897,8 @@ void SceneTreeDock::_toggle_placeholder_from_selection() {
 
 void SceneTreeDock::_toggle_editable_children(Node *p_node) {
 	if (p_node) {
-		bool editable = !EditorNode::get_singleton()->get_edited_scene()->is_editable_instance(p_node);
-		EditorNode::get_singleton()->get_edited_scene()->set_editable_instance(p_node, editable);
+		bool editable = !p_node->is_editable_instance();
+		p_node->set_editable_instance(editable);
 		if (editable) {
 			p_node->set_scene_instance_load_placeholder(false);
 		}
@@ -2360,7 +2360,7 @@ static bool _is_node_visible(Node *p_node) {
 	if (!p_node->get_owner()) {
 		return false;
 	}
-	if (p_node->get_owner() != EditorNode::get_singleton()->get_edited_scene() && !EditorNode::get_singleton()->get_edited_scene()->is_editable_instance(p_node->get_owner())) {
+	if (p_node->get_owner() != EditorNode::get_singleton()->get_edited_scene() && (!p_node->get_owner() || !p_node->get_owner()->is_editable_instance())) {
 		return false;
 	}
 
@@ -2642,7 +2642,7 @@ void SceneTreeDock::_tree_rmb(const Vector2 &p_menu_pos) {
 				menu->add_icon_item(get_theme_icon("Load", "EditorIcons"), TTR("Open in Editor"), TOOL_SCENE_OPEN_INHERITED);
 			} else if (!is_top_level) {
 				menu->add_separator();
-				bool editable = EditorNode::get_singleton()->get_edited_scene()->is_editable_instance(selection[0]);
+				bool editable = selection[0]->is_editable_instance();
 				bool placeholder = selection[0]->get_scene_instance_load_placeholder();
 				if (profile_allow_editing) {
 					menu->add_check_item(TTR("Editable Children"), TOOL_SCENE_EDITABLE_CHILDREN);
