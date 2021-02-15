@@ -1059,6 +1059,7 @@ static void _register_variant_builtin_methods() {
 	bind_method(Vector3, min_axis, sarray(), varray());
 	bind_method(Vector3, max_axis, sarray(), varray());
 	bind_method(Vector3, angle_to, sarray("to"), varray());
+	bind_method(Vector3, signed_angle_to, sarray("to", "axis"), varray());
 	bind_method(Vector3, direction_to, sarray("b"), varray());
 	bind_method(Vector3, distance_to, sarray("b"), varray());
 	bind_method(Vector3, distance_squared_to, sarray("b"), varray());
