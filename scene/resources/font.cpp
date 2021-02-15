@@ -828,6 +828,8 @@ Size2 Font::get_multiline_string_size(const String &p_text, float p_width, int p
 }
 
 void Font::draw_string(RID p_canvas_item, const Point2 &p_pos, const String &p_text, HAlign p_align, float p_width, int p_size, const Color &p_modulate, int p_outline_size, const Color &p_outline_modulate, uint8_t p_flags) const {
+	ERR_FAIL_COND(data.is_empty());
+
 	uint64_t hash = p_text.hash64();
 	hash = hash_djb2_one_64(p_size, hash);
 
@@ -858,6 +860,8 @@ void Font::draw_string(RID p_canvas_item, const Point2 &p_pos, const String &p_t
 }
 
 void Font::draw_multiline_string(RID p_canvas_item, const Point2 &p_pos, const String &p_text, HAlign p_align, float p_width, int p_max_lines, int p_size, const Color &p_modulate, int p_outline_size, const Color &p_outline_modulate, uint8_t p_flags) const {
+	ERR_FAIL_COND(data.is_empty());
+
 	uint64_t hash = p_text.hash64();
 	hash = hash_djb2_one_64(p_size, hash);
 
