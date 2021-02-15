@@ -241,6 +241,12 @@ public:
 	virtual float font_get_ascent(RID p_font, int p_size) const = 0;
 	virtual float font_get_descent(RID p_font, int p_size) const = 0;
 
+	virtual int font_get_spacing_space(RID p_font) const = 0;
+	virtual void font_set_spacing_space(RID p_font, int p_value) = 0;
+
+	virtual int font_get_spacing_glyph(RID p_font) const = 0;
+	virtual void font_set_spacing_glyph(RID p_font, int p_value) = 0;
+
 	virtual float font_get_underline_position(RID p_font, int p_size) const = 0;
 	virtual float font_get_underline_thickness(RID p_font, int p_size) const = 0;
 

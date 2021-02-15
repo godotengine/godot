@@ -72,6 +72,12 @@ public:
 	virtual float font_get_underline_position(RID p_font, int p_size) const override;
 	virtual float font_get_underline_thickness(RID p_font, int p_size) const override;
 
+	virtual int font_get_spacing_space(RID p_font) const override;
+	virtual void font_set_spacing_space(RID p_font, int p_value) override;
+
+	virtual int font_get_spacing_glyph(RID p_font) const override;
+	virtual void font_set_spacing_glyph(RID p_font, int p_value) override;
+
 	virtual void font_set_antialiased(RID p_font, bool p_antialiased) override;
 	virtual bool font_get_antialiased(RID p_font) const override;
 
