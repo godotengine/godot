@@ -92,9 +92,9 @@ def configure(env):
         if not env["threads_enabled"]:
             print("Threads must be enabled to build the editor. Please add the 'threads_enabled=yes' option")
             sys.exit(255)
-        if env["initial_memory"] < 32:
-            print("Editor build requires at least 32MiB of initial memory. Forcing it.")
-            env["initial_memory"] = 32
+        if env["initial_memory"] < 64:
+            print("Editor build requires at least 64MiB of initial memory. Forcing it.")
+            env["initial_memory"] = 64
     elif env["builtin_icu"]:
         env.Append(CCFLAGS=["-frtti"])
     else:
@@ -233,3 +233,11 @@ def configure(env):
 
     # Add code that allow exiting runtime.
     env.Append(LINKFLAGS=["-s", "EXIT_RUNTIME=1"])
+
+    # TODO remove once we have GLES support back (temporary fix undefined symbols due to dead code elimination).
+    env.Append(
+        LINKFLAGS=[
+            "-s",
+            "EXPORTED_FUNCTIONS=['_main', '_emscripten_webgl_get_current_context', '_emscripten_webgl_commit_frame', '_emscripten_webgl_create_context']",
+        ]
+    )
