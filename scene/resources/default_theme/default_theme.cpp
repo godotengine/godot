@@ -644,6 +644,8 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	theme->set_constant("hseparation", "PopupMenu", 4 * scale);
 	theme->set_constant("vseparation", "PopupMenu", 4 * scale);
 	theme->set_constant("outline_size", "PopupMenu", 0);
+	theme->set_constant("item_start_padding", "PopupMenu", 2 * scale);
+	theme->set_constant("item_end_padding", "PopupMenu", 2 * scale);
 
 	// GraphNode
 
