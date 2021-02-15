@@ -42,6 +42,13 @@
 class FontData : public Resource {
 	GDCLASS(FontData, Resource);
 
+public:
+	enum SpacingType {
+		SPACING_GLYPH,
+		SPACING_SPACE,
+	};
+
+private:
 	RID rid;
 	int base_size = 16;
 	String path;
@@ -77,6 +84,9 @@ public:
 
 	float get_underline_position(int p_size) const;
 	float get_underline_thickness(int p_size) const;
+
+	int get_spacing(int p_type) const;
+	void set_spacing(int p_type, int p_value);
 
 	void set_antialiased(bool p_antialiased);
 	bool get_antialiased() const;
@@ -134,7 +144,7 @@ class Font : public Resource {
 public:
 	enum SpacingType {
 		SPACING_TOP,
-		SPACING_BOTTOM
+		SPACING_BOTTOM,
 	};
 
 private:
@@ -199,6 +209,7 @@ public:
 	~Font();
 };
 
+VARIANT_ENUM_CAST(FontData::SpacingType);
 VARIANT_ENUM_CAST(Font::SpacingType);
 
 /*************************************************************************/

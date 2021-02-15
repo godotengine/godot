@@ -138,6 +138,26 @@ float TextServerGDNative::font_get_underline_thickness(RID p_font, int p_size) c
 	return interface->font_get_underline_thickness(data, (godot_rid *)&p_font, p_size);
 }
 
+int TextServerGDNative::font_get_spacing_space(RID p_font) const {
+	ERR_FAIL_COND_V(interface == nullptr, 0);
+	return interface->font_get_spacing_space(data, (godot_rid *)&p_font);
+}
+
+void TextServerGDNative::font_set_spacing_space(RID p_font, int p_value) {
+	ERR_FAIL_COND(interface == nullptr);
+	interface->font_set_spacing_space(data, (godot_rid *)&p_font, p_value);
+}
+
+int TextServerGDNative::font_get_spacing_glyph(RID p_font) const {
+	ERR_FAIL_COND_V(interface == nullptr, 0);
+	return interface->font_get_spacing_glyph(data, (godot_rid *)&p_font);
+}
+
+void TextServerGDNative::font_set_spacing_glyph(RID p_font, int p_value) {
+	ERR_FAIL_COND(interface == nullptr);
+	interface->font_set_spacing_glyph(data, (godot_rid *)&p_font, p_value);
+}
+
 void TextServerGDNative::font_set_antialiased(RID p_font, bool p_antialiased) {
 	ERR_FAIL_COND(interface == nullptr);
 	interface->font_set_antialiased(data, (godot_rid *)&p_font, p_antialiased);

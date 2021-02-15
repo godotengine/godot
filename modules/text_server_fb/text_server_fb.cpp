@@ -179,6 +179,34 @@ float TextServerFallback::font_get_underline_thickness(RID p_font, int p_size) c
 	return fd->get_underline_thickness(p_size);
 }
 
+int TextServerFallback::font_get_spacing_space(RID p_font) const {
+	_THREAD_SAFE_METHOD_
+	const FontDataFallback *fd = font_owner.getornull(p_font);
+	ERR_FAIL_COND_V(!fd, 0);
+	return fd->get_spacing_space();
+}
+
+void TextServerFallback::font_set_spacing_space(RID p_font, int p_value) {
+	_THREAD_SAFE_METHOD_
+	FontDataFallback *fd = font_owner.getornull(p_font);
+	ERR_FAIL_COND(!fd);
+	fd->set_spacing_space(p_value);
+}
+
+int TextServerFallback::font_get_spacing_glyph(RID p_font) const {
+	_THREAD_SAFE_METHOD_
+	const FontDataFallback *fd = font_owner.getornull(p_font);
+	ERR_FAIL_COND_V(!fd, 0);
+	return fd->get_spacing_glyph();
+}
+
+void TextServerFallback::font_set_spacing_glyph(RID p_font, int p_value) {
+	_THREAD_SAFE_METHOD_
+	FontDataFallback *fd = font_owner.getornull(p_font);
+	ERR_FAIL_COND(!fd);
+	fd->set_spacing_glyph(p_value);
+}
+
 void TextServerFallback::font_set_antialiased(RID p_font, bool p_antialiased) {
 	_THREAD_SAFE_METHOD_
 	FontDataFallback *fd = font_owner.getornull(p_font);
@@ -1183,6 +1211,11 @@ bool TextServerFallback::shaped_text_shape(RID p_shaped) {
 							sd->ascent = MAX(sd->ascent, Math::round(fd->get_advance(gl.index, gl.font_size).x * 0.5));
 							sd->descent = MAX(sd->descent, Math::round(fd->get_advance(gl.index, gl.font_size).x * 0.5));
 						}
+					}
+					if (fd->get_spacing_space() && is_whitespace(sd->text[j])) {
+						gl.advance += fd->get_spacing_space();
+					} else {
+						gl.advance += fd->get_spacing_glyph();
 					}
 					sd->upos = MAX(sd->upos, fd->get_underline_position(gl.font_size));
 					sd->uthk = MAX(sd->uthk, fd->get_underline_thickness(gl.font_size));

@@ -329,10 +329,10 @@
 	</methods>
 	<members>
 		<member name="extra_spacing_bottom" type="int" setter="set_spacing" getter="get_spacing" default="0">
-			Extra spacing at the bottom in pixels.
+			Extra spacing at the bottom of the line in pixels.
 		</member>
 		<member name="extra_spacing_top" type="int" setter="set_spacing" getter="get_spacing" default="0">
-			Extra character spacing in pixels.
+			Extra spacing at the top of the line in pixels.
 		</member>
 	</members>
 	<constants>
