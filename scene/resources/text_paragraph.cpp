@@ -243,6 +243,7 @@ TextServer::Orientation TextParagraph::get_orientation() const {
 }
 
 bool TextParagraph::set_dropcap(const String &p_text, const Ref<Font> &p_fonts, int p_size, const Rect2 &p_dropcap_margins, const Dictionary &p_opentype_features, const String &p_language) {
+	ERR_FAIL_COND_V(p_fonts.is_null(), false);
 	TS->shaped_text_clear(dropcap_rid);
 	dropcap_margins = p_dropcap_margins;
 	bool res = TS->shaped_text_add_string(dropcap_rid, p_text, p_fonts->get_rids(), p_size, p_opentype_features, p_language);
@@ -257,6 +258,7 @@ void TextParagraph::clear_dropcap() {
 }
 
 bool TextParagraph::add_string(const String &p_text, const Ref<Font> &p_fonts, int p_size, const Dictionary &p_opentype_features, const String &p_language) {
+	ERR_FAIL_COND_V(p_fonts.is_null(), false);
 	bool res = TS->shaped_text_add_string(rid, p_text, p_fonts->get_rids(), p_size, p_opentype_features, p_language);
 	spacing_top = p_fonts->get_spacing(Font::SPACING_TOP);
 	spacing_bottom = p_fonts->get_spacing(Font::SPACING_BOTTOM);
