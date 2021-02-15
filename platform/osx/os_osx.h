@@ -71,6 +71,7 @@ public:
 	};
 	List<WarpEvent> warp_events;
 	NSTimeInterval last_warp = 0;
+	bool ignore_warp = false;
 
 	Vector<KeyEvent> key_event_buffer;
 	int key_event_pos;
