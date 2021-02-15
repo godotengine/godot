@@ -516,6 +516,55 @@ void BakedLightmap::_get_material_images(const MeshesFound &p_found_mesh, Lightm
 	}
 }
 
+void BakedLightmap::_save_image(String &r_base_path, Ref<Image> r_img, bool p_use_srgb) {
+	if (use_hdr) {
+		r_base_path += ".exr";
+	} else {
+		r_base_path += ".png";
+	}
+
+	String relative_path = r_base_path;
+	if (relative_path.begins_with("res://")) {
+		relative_path = relative_path.substr(6, relative_path.length());
+	}
+
+	bool hdr_grayscale = use_hdr && !use_color;
+
+	if (p_use_srgb || hdr_grayscale) {
+		r_img->lock();
+		for (int i = 0; i < r_img->get_height(); i++) {
+			for (int j = 0; j < r_img->get_width(); j++) {
+				Color c = r_img->get_pixel(j, i);
+
+				if (hdr_grayscale) {
+					c = Color(c.get_v(), 0.0f, 0.0f);
+				}
+
+				if (p_use_srgb) {
+					c = c.to_srgb();
+				}
+
+				r_img->set_pixel(j, i, c);
+			}
+		}
+		r_img->unlock();
+	}
+
+	if (!use_color) {
+		if (use_hdr) {
+			r_img->convert(Image::FORMAT_RH);
+		} else {
+			r_img->convert(Image::FORMAT_L8);
+		}
+	}
+
+	if (use_hdr) {
+		r_img->save_exr(relative_path, !use_color);
+	} else {
+		r_img->save_png(relative_path);
+	}
+}
+
 bool BakedLightmap::_lightmap_bake_step_function(float p_completion, const String &p_text, void *ud, bool p_refresh) {
 	BakeStepUD *bsud = (BakeStepUD *)ud;
 	bool ret = false;
@@ -893,6 +942,8 @@ BakedLightmap::BakeError BakedLightmap::bake(Node *p_from_node, String p_data_sa
 		images.push_back(lightmapper->get_bake_texture(i));
 	}
 
+	bool use_srgb = use_color && !use_hdr;
+
 	if (gen_atlas) {
 
 		Ref<Image> large_image;
@@ -906,13 +957,7 @@ BakedLightmap::BakeError BakedLightmap::bake(Node *p_from_node, String p_data_sa
 		String base_path = p_data_save_path.get_basename();
 
 		if (ResourceLoader::import) {
-
-			base_path += ".exr";
-			String relative_path = base_path;
-			if (relative_path.begins_with("res://")) {
-				relative_path = relative_path.substr(6, relative_path.length());
-			}
-			large_image->save_exr(relative_path, false);
+			_save_image(base_path, large_image, use_srgb);
 
 			Ref<ConfigFile> config;
 			config.instance();
@@ -928,7 +973,7 @@ BakedLightmap::BakeError BakedLightmap::bake(Node *p_from_node, String p_data_sa
 			config->set_value("params", "flags/repeat", false);
 			config->set_value("params", "flags/filter", true);
 			config->set_value("params", "flags/mipmaps", false);
-			config->set_value("params", "flags/srgb", false);
+			config->set_value("params", "flags/srgb", use_srgb);
 			config->set_value("params", "slices/horizontal", 1);
 			config->set_value("params", "slices/vertical", images.size());
 			config->save(base_path + ".import");
@@ -987,12 +1032,7 @@ BakedLightmap::BakeError BakedLightmap::bake(Node *p_from_node, String p_data_sa
 
 			if (ResourceLoader::import) {
 
-				base_path += ".exr";
-				String relative_path = base_path;
-				if (relative_path.begins_with("res://")) {
-					relative_path = relative_path.substr(6, relative_path.length());
-				}
-				images[i]->save_exr(relative_path, false);
+				_save_image(base_path, images[i], use_srgb);
 
 				Ref<ConfigFile> config;
 				config.instance();
@@ -1008,7 +1048,7 @@ BakedLightmap::BakeError BakedLightmap::bake(Node *p_from_node, String p_data_sa
 				config->set_value("params", "flags/repeat", false);
 				config->set_value("params", "flags/filter", true);
 				config->set_value("params", "flags/mipmaps", false);
-				config->set_value("params", "flags/srgb", false);
+				config->set_value("params", "flags/srgb", use_srgb);
 
 				config->save(base_path + ".import");
 
@@ -1309,6 +1349,26 @@ bool BakedLightmap::is_using_denoiser() const {
 	return use_denoiser;
 }
 
+void BakedLightmap::set_use_hdr(bool p_enable) {
+
+	use_hdr = p_enable;
+}
+
+bool BakedLightmap::is_using_hdr() const {
+
+	return use_hdr;
+}
+
+void BakedLightmap::set_use_color(bool p_enable) {
+
+	use_color = p_enable;
+}
+
+bool BakedLightmap::is_using_color() const {
+
+	return use_color;
+}
+
 void BakedLightmap::set_environment_mode(EnvironmentMode p_mode) {
 	environment_mode = p_mode;
 	_change_notify();
@@ -1428,6 +1488,12 @@ void BakedLightmap::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_use_denoiser", "use_denoiser"), &BakedLightmap::set_use_denoiser);
 	ClassDB::bind_method(D_METHOD("is_using_denoiser"), &BakedLightmap::is_using_denoiser);
 
+	ClassDB::bind_method(D_METHOD("set_use_hdr", "use_denoiser"), &BakedLightmap::set_use_hdr);
+	ClassDB::bind_method(D_METHOD("is_using_hdr"), &BakedLightmap::is_using_hdr);
+
+	ClassDB::bind_method(D_METHOD("set_use_color", "use_denoiser"), &BakedLightmap::set_use_color);
+	ClassDB::bind_method(D_METHOD("is_using_color"), &BakedLightmap::is_using_color);
+
 	ClassDB::bind_method(D_METHOD("set_generate_atlas", "enabled"), &BakedLightmap::set_generate_atlas);
 	ClassDB::bind_method(D_METHOD("is_generate_atlas_enabled"), &BakedLightmap::is_generate_atlas_enabled);
 
@@ -1463,6 +1529,8 @@ void BakedLightmap::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "quality", PROPERTY_HINT_ENUM, "Low,Medium,High,Ultra"), "set_bake_quality", "get_bake_quality");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "bounces", PROPERTY_HINT_RANGE, "0,16,1"), "set_bounces", "get_bounces");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "use_denoiser"), "set_use_denoiser", "is_using_denoiser");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "use_hdr"), "set_use_hdr", "is_using_hdr");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "use_color"), "set_use_color", "is_using_color");
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "bias", PROPERTY_HINT_RANGE, "0.00001,0.1,0.00001,or_greater"), "set_bias", "get_bias");
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "default_texels_per_unit", PROPERTY_HINT_RANGE, "0.0,64.0,0.01,or_greater"), "set_default_texels_per_unit", "get_default_texels_per_unit");
 
@@ -1528,6 +1596,8 @@ BakedLightmap::BakedLightmap() {
 	environment_custom_energy = 1.0;
 
 	use_denoiser = true;
+	use_hdr = true;
+	use_color = true;
 	bias = 0.005;
 
 	generate_atlas = true;

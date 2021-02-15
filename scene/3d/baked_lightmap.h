@@ -161,6 +161,8 @@ private:
 	bool capture_enabled;
 	int bounces;
 	bool use_denoiser;
+	bool use_hdr;
+	bool use_color;
 
 	EnvironmentMode environment_mode;
 	Ref<Sky> environment_custom_sky;
@@ -186,6 +188,7 @@ private:
 	Vector2i _compute_lightmap_size(const MeshesFound &p_mesh);
 
 	static bool _lightmap_bake_step_function(float p_completion, const String &p_text, void *ud, bool p_refresh);
+	void _save_image(String &r_base_path, Ref<Image> p_img, bool p_use_srgb);
 
 protected:
 	static void _bind_methods();
@@ -246,6 +249,12 @@ public:
 
 	void set_use_denoiser(bool p_enable);
 	bool is_using_denoiser() const;
+
+	void set_use_hdr(bool p_enable);
+	bool is_using_hdr() const;
+
+	void set_use_color(bool p_enable);
+	bool is_using_color() const;
 
 	void set_bounces(int p_bounces);
 	int get_bounces() const;
