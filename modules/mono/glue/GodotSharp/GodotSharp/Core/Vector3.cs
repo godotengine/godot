@@ -111,10 +111,10 @@ namespace Godot
         }
 
         /// <summary>
-        /// Returns the minimum angle to the given vector, in radians.
+        /// Returns the unsigned minimum angle to the given vector, in radians.
         /// </summary>
         /// <param name="to">The other vector to compare this vector to.</param>
-        /// <returns>The angle between the two vectors, in radians.</returns>
+        /// <returns>The unsigned angle between the two vectors, in radians.</returns>
         public real_t AngleTo(Vector3 to)
         {
             return Mathf.Atan2(Cross(to).Length(), Dot(to));
@@ -466,6 +466,23 @@ namespace Godot
             v.y = Mathf.Sign(y);
             v.z = Mathf.Sign(z);
             return v;
+        }
+
+        /// <summary>
+        /// Returns the signed angle to the given vector, in radians.
+        /// The sign of the angle is positive in a counter-clockwise
+        /// direction and negative in a clockwise direction when viewed
+        /// from the side specified by the `axis`.
+        /// </summary>
+        /// <param name="to">The other vector to compare this vector to.</param>
+        /// <param name="axis">The reference axis to use for the angle sign.</param>
+        /// <returns>The signed angle between the two vectors, in radians.</returns>
+        public real_t SignedAngleTo(Vector3 to, Vector3 axis)
+        {
+            Vector3 crossTo = Cross(to);
+            real_t unsignedAngle = Mathf.Atan2(crossTo.Length(), Dot(to));
+            real_t sign = crossTo.Dot(axis);
+            return (sign < 0) ? -unsignedAngle : unsignedAngle;
         }
 
         /// <summary>
