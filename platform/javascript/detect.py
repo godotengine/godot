@@ -90,9 +90,9 @@ def configure(env):
         if not env["threads_enabled"]:
             print("Threads must be enabled to build the editor. Please add the 'threads_enabled=yes' option")
             sys.exit(255)
-        if env["initial_memory"] < 32:
-            print("Editor build requires at least 32MiB of initial memory. Forcing it.")
-            env["initial_memory"] = 32
+        if env["initial_memory"] < 64:
+            print("Editor build requires at least 64MiB of initial memory. Forcing it.")
+            env["initial_memory"] = 64
     else:
         # Disable exceptions and rtti on non-tools (template) builds
         # These flags help keep the file size down.
