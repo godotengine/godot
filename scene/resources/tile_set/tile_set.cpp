@@ -32,8 +32,17 @@
 
 #include "scene/gui/control.h"
 
+void TileData::tile_set_allow_transform(bool p_allow_transform) {
+	allow_transform = p_allow_transform;
+}
+
+bool TileData::tile_is_allowing_transform() const {
+	return allow_transform;
+}
+
 // Base properties
 void TileData::tile_set_flip_h(bool p_flip_h) {
+	ERR_FAIL_COND_MSG(!allow_transform, "Transform is only allowed for alternative tiles (with its alternative_id != 0)");
 	flip_h = p_flip_h;
 	emit_signal("changed");
 }
@@ -42,6 +51,7 @@ bool TileData::tile_get_flip_h() const {
 }
 
 void TileData::tile_set_flip_v(bool p_flip_v) {
+	ERR_FAIL_COND_MSG(!allow_transform, "Transform is only allowed for alternative tiles (with its alternative_id != 0)");
 	flip_v = p_flip_v;
 	emit_signal("changed");
 }
@@ -51,6 +61,7 @@ bool TileData::tile_get_flip_v() const {
 }
 
 void TileData::tile_set_transpose(bool p_transpose) {
+	ERR_FAIL_COND_MSG(!allow_transform, "Transform is only allowed for alternative tiles (with its alternative_id != 0)");
 	transpose = p_transpose;
 	emit_signal("changed");
 }
@@ -305,6 +316,7 @@ bool TileSetAtlasSource::_set(const StringName &p_name, const Variant &p_value) 
 					}
 					if (!tiles[coords].alternatives.has(alternative_id)) {
 						tiles[coords].alternatives[alternative_id] = memnew(TileData);
+						tiles[coords].alternatives[alternative_id]->tile_set_allow_transform(alternative_id > 0);
 						tiles[coords].alternatives_ids.append(alternative_id);
 					}
 					if (components.size() >= 3) {
@@ -405,6 +417,7 @@ void TileSetAtlasSource::create_tile(const Vector2i p_atlas_coords, const Vector
 
 	tiles[p_atlas_coords].size_in_atlas = p_size;
 	tiles[p_atlas_coords].alternatives[0] = memnew(TileData);
+	tiles[p_atlas_coords].alternatives[0]->tile_set_allow_transform(false);
 	tiles[p_atlas_coords].alternatives_ids.append(0);
 
 	// Add all covered positions to the mapping cache
@@ -1107,6 +1120,7 @@ int TileSetAtlasSource::create_alternative_tile(const Vector2i p_atlas_coords, i
 	int new_alternative_id = p_alternative_id_override >= 0 ? p_alternative_id_override : tiles[p_atlas_coords].next_alternative_id;
 
 	tiles[p_atlas_coords].alternatives[new_alternative_id] = memnew(TileData);
+	tiles[p_atlas_coords].alternatives[new_alternative_id]->tile_set_allow_transform(true);
 	tiles[p_atlas_coords].alternatives_ids.append(new_alternative_id);
 	tiles[p_atlas_coords].alternatives_ids.sort();
 	_compute_next_alternative_id(p_atlas_coords);

@@ -210,6 +210,9 @@ void TileSetAtlasSourceEditor::TileProxyObject::_get_property_list(List<Property
 	List<PropertyInfo> list;
 	tile_data->get_property_list(&list);
 	for (List<PropertyInfo>::Element *E = list.front(); E; E = E->next()) {
+		if (!tile_data->tile_is_allowing_transform() && (E->get().name == "flip_h" || E->get().name == "flip_v" || E->get().name == "transpose")) {
+			continue;
+		}
 		p_list->push_back(E->get());
 	}
 }

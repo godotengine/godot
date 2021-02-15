@@ -56,6 +56,8 @@ class TileData : public Object {
 	GDCLASS(TileData, Object);
 
 private:
+	bool allow_transform = true;
+
 	// --- Base properties ---
 	bool flip_h = false;
 	bool flip_v = false;
@@ -78,7 +80,10 @@ protected:
 	static void _bind_methods();
 
 public:
-	// --- Accessors for TileData ---
+	// Not exposed.
+	void tile_set_allow_transform(bool p_allow_transform);
+	bool tile_is_allowing_transform() const;
+
 	// Base properties
 	void tile_set_texture_offset(Vector2i p_texture_offset);
 	Vector2i tile_get_texture_offset() const;
@@ -179,7 +184,7 @@ protected:
 	static void _bind_methods();
 
 public:
-	// Base properties
+	// Base properties.
 	void set_texture(Ref<Texture2D> p_texture);
 	Ref<Texture2D> get_texture() const;
 	void set_margins(Vector2i p_margins);
@@ -191,7 +196,7 @@ public:
 	void set_base_texture_offset(Vector2i p_base_texture_offset);
 	Vector2i get_base_texture_offset() const;
 
-	// Base tiles
+	// Base tiles.
 	void create_tile(const Vector2i p_atlas_coords, const Vector2i p_size = Vector2i(1, 1)); // Create a tile if it does not exists, or add alternative tile if it does.
 	void remove_tile(Vector2i p_atlas_coords); // Remove a tile. If p_tile_key.alternative_tile if different from 0, remove the alternative
 	virtual bool has_tile(Vector2i p_atlas_coords) const override;
@@ -204,7 +209,7 @@ public:
 
 	Vector2i get_tile_at_coords(Vector2i p_atlas_coords) const;
 
-	// Alternative tiles
+	// Alternative tiles.
 	int create_alternative_tile(const Vector2i p_atlas_coords, int p_alternative_id_override = -1);
 	void remove_alternative_tile(const Vector2i p_atlas_coords, int p_alternative_tile);
 	void set_alternative_tile_id(const Vector2i p_atlas_coords, int p_alternative_tile, int p_new_id);
@@ -214,6 +219,7 @@ public:
 	int get_alternative_tiles_count(const Vector2i p_atlas_coords) const;
 	int get_alternative_tile_id(const Vector2i p_atlas_coords, int p_index) const;
 
+	// Get data associated to a tile.
 	TileData *get_tile_data(const Vector2i p_atlas_coords, int p_alternative_tile) const;
 
 	// Helpers.
