@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  godot_plugin_jni.h                                                   */
+/*  GodotPluginInfoProvider.java                                         */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,18 +28,40 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef GODOT_PLUGIN_JNI_H
-#define GODOT_PLUGIN_JNI_H
+package org.godotengine.godot.plugin;
 
-#include <android/log.h>
-#include <jni.h>
+import androidx.annotation.NonNull;
 
-extern "C" {
-JNIEXPORT void JNICALL Java_org_godotengine_godot_plugin_GodotPlugin_nativeRegisterSingleton(JNIEnv *env, jclass clazz, jstring name, jobject obj);
-JNIEXPORT void JNICALL Java_org_godotengine_godot_plugin_GodotPlugin_nativeRegisterMethod(JNIEnv *env, jclass clazz, jstring sname, jstring name, jstring ret, jobjectArray args);
-JNIEXPORT void JNICALL Java_org_godotengine_godot_plugin_GodotPlugin_nativeRegisterSignal(JNIEnv *env, jclass clazz, jstring j_plugin_name, jstring j_signal_name, jobjectArray j_signal_param_types);
-JNIEXPORT void JNICALL Java_org_godotengine_godot_plugin_GodotPlugin_nativeEmitSignal(JNIEnv *env, jclass clazz, jstring j_plugin_name, jstring j_signal_name, jobjectArray j_signal_params);
-JNIEXPORT void JNICALL Java_org_godotengine_godot_plugin_GodotPlugin_nativeRegisterGDNativeLibraries(JNIEnv *env, jclass clazz, jobjectArray gdnlib_paths);
+import java.util.List;
+import java.util.Set;
+
+/**
+ * Provides the set of information expected from a Godot plugin.
+ */
+public interface GodotPluginInfoProvider {
+	/**
+	 * Returns the name of the plugin.
+	 */
+	@NonNull
+	String getPluginName();
+
+	/**
+	 * Returns the list of methods to be exposed to Godot.
+	 */
+	@NonNull
+	List<String> getPluginMethods();
+
+	/**
+	 * Returns the list of signals to be exposed to Godot.
+	 */
+	@NonNull
+	Set<SignalInfo> getPluginSignals();
+
+	/**
+	 * Returns the paths for the plugin's gdnative libraries (if any).
+	 *
+	 * The paths must be relative to the 'assets' directory and point to a '*.gdnlib' file.
+	 */
+	@NonNull
+	Set<String> getPluginGDNativeLibrariesPaths();
 }
-
-#endif // GODOT_PLUGIN_JNI_H
