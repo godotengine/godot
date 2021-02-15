@@ -379,8 +379,25 @@ Error VulkanContext::_create_physical_device() {
 		free(physical_devices);
 		ERR_FAIL_V(ERR_CANT_CREATE);
 	}
-	/* for now, just grab the first physical device */
+
+	// TODO: At least on Linux Laptops integrated GPUs fail with Vulkan in many instances.
+	//   The device should really be a preference, but for now choosing a discrete GPU over the
+	//   integrated one is better than the default.
+
+	// Default to first device
 	uint32_t device_index = 0;
+
+	for (uint32_t i = 0; i < gpu_count; ++i) {
+		VkPhysicalDeviceProperties props;
+		vkGetPhysicalDeviceProperties(physical_devices[i], &props);
+
+		if (props.deviceType == VkPhysicalDeviceType::VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU) {
+			// Prefer discrete GPU.
+			device_index = i;
+			break;
+		}
+	}
+
 	gpu = physical_devices[device_index];
 	free(physical_devices);
 
