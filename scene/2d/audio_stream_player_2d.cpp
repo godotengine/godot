@@ -342,6 +342,9 @@ bool AudioStreamPlayer2D::is_playing() const {
 
 float AudioStreamPlayer2D::get_playback_position() {
 	if (stream_playback.is_valid()) {
+		if (setseek >= 0.0) {
+			return setseek;
+		}
 		return stream_playback->get_playback_position();
 	}
 
