@@ -79,6 +79,10 @@ typedef struct {
 	float (*font_get_descent)(void *, godot_rid *, int);
 	float (*font_get_underline_position)(void *, godot_rid *, int);
 	float (*font_get_underline_thickness)(void *, godot_rid *, int);
+	int (*font_get_spacing_space)(void *, godot_rid *);
+	void (*font_set_spacing_space)(void *, godot_rid *, int);
+	int (*font_get_spacing_glyph)(void *, godot_rid *);
+	void (*font_set_spacing_glyph)(void *, godot_rid *, int);
 	void (*font_set_antialiased)(void *, godot_rid *, bool);
 	bool (*font_get_antialiased)(void *, godot_rid *);
 	godot_dictionary (*font_get_feature_list)(void *, godot_rid *);

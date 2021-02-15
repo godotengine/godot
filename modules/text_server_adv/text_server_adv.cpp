@@ -601,6 +601,34 @@ float TextServerAdvanced::font_get_underline_thickness(RID p_font, int p_size) c
 	return fd->get_underline_thickness(p_size);
 }
 
+int TextServerAdvanced::font_get_spacing_space(RID p_font) const {
+	_THREAD_SAFE_METHOD_
+	const FontDataAdvanced *fd = font_owner.getornull(p_font);
+	ERR_FAIL_COND_V(!fd, 0);
+	return fd->get_spacing_space();
+}
+
+void TextServerAdvanced::font_set_spacing_space(RID p_font, int p_value) {
+	_THREAD_SAFE_METHOD_
+	FontDataAdvanced *fd = font_owner.getornull(p_font);
+	ERR_FAIL_COND(!fd);
+	fd->set_spacing_space(p_value);
+}
+
+int TextServerAdvanced::font_get_spacing_glyph(RID p_font) const {
+	_THREAD_SAFE_METHOD_
+	const FontDataAdvanced *fd = font_owner.getornull(p_font);
+	ERR_FAIL_COND_V(!fd, 0);
+	return fd->get_spacing_glyph();
+}
+
+void TextServerAdvanced::font_set_spacing_glyph(RID p_font, int p_value) {
+	_THREAD_SAFE_METHOD_
+	FontDataAdvanced *fd = font_owner.getornull(p_font);
+	ERR_FAIL_COND(!fd);
+	fd->set_spacing_glyph(p_value);
+}
+
 void TextServerAdvanced::font_set_antialiased(RID p_font, bool p_antialiased) {
 	_THREAD_SAFE_METHOD_
 	FontDataAdvanced *fd = font_owner.getornull(p_font);
@@ -2048,6 +2076,11 @@ void TextServerAdvanced::_shape_run(ShapedTextDataAdvanced *p_sd, int32_t p_star
 				}
 				gl.x_off = Math::round(glyph_pos[i].x_offset / (64.0 / fd->get_font_scale(fs)));
 				gl.y_off = -Math::round(glyph_pos[i].y_offset / (64.0 / fd->get_font_scale(fs)));
+			}
+			if (fd->get_spacing_space() && is_whitespace(p_sd->text[glyph_info[i].cluster])) {
+				gl.advance += fd->get_spacing_space();
+			} else {
+				gl.advance += fd->get_spacing_glyph();
 			}
 
 			if (p_sd->preserve_control) {

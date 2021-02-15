@@ -37,6 +37,8 @@ struct FontDataFallback {
 	Map<String, bool> lang_support_overrides;
 	Map<String, bool> script_support_overrides;
 	bool valid = false;
+	int spacing_space = 0;
+	int spacing_glyph = 0;
 
 	virtual void clear_cache() = 0;
 
@@ -49,6 +51,18 @@ struct FontDataFallback {
 
 	virtual float get_underline_position(int p_size) const = 0;
 	virtual float get_underline_thickness(int p_size) const = 0;
+
+	virtual int get_spacing_space() const { return spacing_space; };
+	virtual void set_spacing_space(int p_value) {
+		spacing_space = p_value;
+		clear_cache();
+	};
+
+	virtual int get_spacing_glyph() const { return spacing_glyph; };
+	virtual void set_spacing_glyph(int p_value) {
+		spacing_glyph = p_value;
+		clear_cache();
+	};
 
 	virtual void set_antialiased(bool p_antialiased) = 0;
 	virtual bool get_antialiased() const = 0;

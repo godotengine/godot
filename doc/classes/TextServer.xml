@@ -295,6 +295,24 @@
 				Returns list of script support overrides.
 			</description>
 		</method>
+		<method name="font_get_spacing_glyph" qualifiers="const">
+			<return type="int">
+			</return>
+			<argument index="0" name="font" type="RID">
+			</argument>
+			<description>
+				Returns extra spacing for each glyphs in pixels.
+			</description>
+		</method>
+		<method name="font_get_spacing_space" qualifiers="const">
+			<return type="int">
+			</return>
+			<argument index="0" name="font" type="RID">
+			</argument>
+			<description>
+				Sets extra spacing for each glyphs in pixels.
+			</description>
+		</method>
 		<method name="font_get_supported_chars" qualifiers="const">
 			<return type="String">
 			</return>
@@ -488,6 +506,28 @@
 			</argument>
 			<description>
 				Adds override for [method font_is_script_supported].
+			</description>
+		</method>
+		<method name="font_set_spacing_glyph">
+			<return type="void">
+			</return>
+			<argument index="0" name="font" type="RID">
+			</argument>
+			<argument index="1" name="value" type="int">
+			</argument>
+			<description>
+				Returns extra spacing for the space character in pixels.
+			</description>
+		</method>
+		<method name="font_set_spacing_space">
+			<return type="void">
+			</return>
+			<argument index="0" name="font" type="RID">
+			</argument>
+			<argument index="1" name="value" type="int">
+			</argument>
+			<description>
+				Sets extra spacing for the space character in pixels.
 			</description>
 		</method>
 		<method name="font_set_variation">

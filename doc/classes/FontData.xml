@@ -154,6 +154,15 @@
 				Returns list of script support overrides.
 			</description>
 		</method>
+		<method name="get_spacing" qualifiers="const">
+			<return type="int">
+			</return>
+			<argument index="0" name="type" type="int">
+			</argument>
+			<description>
+				Returns the spacing for the given [code]type[/code] (see [enum SpacingType]).
+			</description>
+		</method>
 		<method name="get_supported_chars" qualifiers="const">
 			<return type="String">
 			</return>
@@ -296,6 +305,17 @@
 				Adds override for [method is_script_supported].
 			</description>
 		</method>
+		<method name="set_spacing">
+			<return type="void">
+			</return>
+			<argument index="0" name="type" type="int">
+			</argument>
+			<argument index="1" name="value" type="int">
+			</argument>
+			<description>
+				Sets the spacing for [code]type[/code] (see [enum SpacingType]) to [code]value[/code] in pixels (not relative to the font size).
+			</description>
+		</method>
 		<method name="set_variation">
 			<return type="void">
 			</return>
@@ -318,6 +338,14 @@
 		<member name="distance_field_hint" type="bool" setter="set_distance_field_hint" getter="get_distance_field_hint" default="false">
 			If [code]true[/code], distance field hint is enabled.
 		</member>
+		<member name="extra_spacing_glyph" type="int" setter="set_spacing" getter="get_spacing" default="0">
+			Extra spacing for each glyphs in pixels.
+			This can be a negative number to make the distance between glyphs smaller.
+		</member>
+		<member name="extra_spacing_space" type="int" setter="set_spacing" getter="get_spacing" default="0">
+			Extra spacing for the space character in pixels.
+			This can be a negative number to make the distance between words smaller.
+		</member>
 		<member name="force_autohinter" type="bool" setter="set_force_autohinter" getter="get_force_autohinter" default="false">
 			If [code]true[/code], default autohinter is used for font hinting.
 		</member>
@@ -326,5 +354,11 @@
 		</member>
 	</members>
 	<constants>
+		<constant name="SPACING_GLYPH" value="0" enum="SpacingType">
+			Spacing for each glyph.
+		</constant>
+		<constant name="SPACING_SPACE" value="1" enum="SpacingType">
+			Spacing for the space character.
+		</constant>
 	</constants>
 </class>
