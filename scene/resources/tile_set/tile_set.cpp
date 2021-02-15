@@ -42,7 +42,7 @@ bool TileData::tile_is_allowing_transform() const {
 
 // Base properties
 void TileData::tile_set_flip_h(bool p_flip_h) {
-	ERR_FAIL_COND_MSG(!allow_transform, "Transform is only allowed for alternative tiles (with its alternative_id != 0)");
+	ERR_FAIL_COND_MSG(!allow_transform && p_flip_h, "Transform is only allowed for alternative tiles (with its alternative_id != 0)");
 	flip_h = p_flip_h;
 	emit_signal("changed");
 }
@@ -51,7 +51,7 @@ bool TileData::tile_get_flip_h() const {
 }
 
 void TileData::tile_set_flip_v(bool p_flip_v) {
-	ERR_FAIL_COND_MSG(!allow_transform, "Transform is only allowed for alternative tiles (with its alternative_id != 0)");
+	ERR_FAIL_COND_MSG(!allow_transform && p_flip_v, "Transform is only allowed for alternative tiles (with its alternative_id != 0)");
 	flip_v = p_flip_v;
 	emit_signal("changed");
 }
@@ -61,7 +61,7 @@ bool TileData::tile_get_flip_v() const {
 }
 
 void TileData::tile_set_transpose(bool p_transpose) {
-	ERR_FAIL_COND_MSG(!allow_transform, "Transform is only allowed for alternative tiles (with its alternative_id != 0)");
+	ERR_FAIL_COND_MSG(!allow_transform && p_transpose, "Transform is only allowed for alternative tiles (with its alternative_id != 0)");
 	transpose = p_transpose;
 	emit_signal("changed");
 }

@@ -1210,7 +1210,15 @@ void TileSetAtlasSourceEditor::edit(Ref<TileSet> p_tile_set, TileSetAtlasSource 
 		tile_set_atlas_source->connect("changed", callable_mp(this, &TileSetAtlasSourceEditor::_tile_set_changed));
 	}
 
-	_tile_set_changed();
+	// Update everything.
+	_update_source_inspector();
+
+	// Update the selected tile.
+	_update_fix_selected_and_hovered_tiles();
+	_update_tile_id_label();
+	_update_atlas_view();
+	_update_tile_inspector();
+	_update_manage_tile_properties_button();
 }
 
 void TileSetAtlasSourceEditor::init_source() {
@@ -1271,6 +1279,7 @@ void TileSetAtlasSourceEditor::_auto_remove_tiles() {
 		Vector2i margins = tile_set_atlas_source->get_margins();
 		Vector2i separation = tile_set_atlas_source->get_separation();
 		Vector2i texture_region_size = tile_set_atlas_source->get_texture_region_size();
+		Vector2i grid_size = tile_set_atlas_source->get_atlas_grid_size();
 
 		undo_redo->create_action(TTR("Remove tiles in fully transparent texture regions"));
 
@@ -1281,6 +1290,11 @@ void TileSetAtlasSourceEditor::_auto_remove_tiles() {
 		for (int i = 0; i < tile_set_atlas_source->get_tiles_count(); i++) {
 			Vector2i coords = tile_set_atlas_source->get_tile_id(i);
 			Vector2i size_in_atlas = tile_set_atlas_source->get_tile_size_in_atlas(coords);
+
+			// Skip tiles outside texture.
+			if ((coords.x + size_in_atlas.x) > grid_size.x || (coords.y + size_in_atlas.y) > grid_size.y) {
+				continue;
+			}
 
 			// Check if the texture is empty at the given coords.
 			Rect2i region = Rect2i(margins + (coords * (texture_region_size + separation)), texture_region_size * size_in_atlas);

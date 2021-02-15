@@ -954,7 +954,11 @@ void TileMapEditor::forward_canvas_draw_over_viewport(Control *p_overlay) {
 			Vector2i tile_atlas_coords = tile_map->get_cell_atlas_coords(coords);
 			int tile_alternative_tile = tile_map->get_cell_alternative_tile(coords);
 
-			TileSetSource *source = *tile_set->get_source(tile_source_id);
+			TileSetSource *source = nullptr;
+			if (tile_set->has_source(tile_source_id)) {
+				source = *tile_set->get_source(tile_source_id);
+			}
+
 			if (!source || !source->has_tile(tile_atlas_coords) || !source->has_alternative_tile(tile_atlas_coords, tile_alternative_tile)) {
 				// Generate a random color from the hashed values of the tiles.
 				Array to_hash;
@@ -1163,15 +1167,46 @@ void TileMapEditor::forward_canvas_draw_over_viewport(Control *p_overlay) {
 
 					tile_set->draw_tile_shape(p_overlay, cell_region, Color(1.0, 1.0, 1.0, 0.5), true);
 				} else {
-					TileSetSource *source = *tile_set->get_source(E->get().source_id);
-					TileSetAtlasSource *atlas_source = Object::cast_to<TileSetAtlasSource>(source);
-					if (atlas_source) {
-						Rect2 tile_region = atlas_source->get_tile_texture_region(E->get().get_atlas_coords());
-						Vector2i tile_offset = tile_set->get_tile_effective_texture_offset(E->get().source_id, E->get().get_atlas_coords(), 0);
-						Vector2 position = tile_map->map_to_world(E->key()) - tile_region.size / 2 - tile_offset;
-						Rect2 cell_region = xform.xform(Rect2(position, tile_region.size));
+					if (tile_set->has_source(E->get().source_id)) {
+						TileSetSource *source = *tile_set->get_source(E->get().source_id);
+						TileSetAtlasSource *atlas_source = Object::cast_to<TileSetAtlasSource>(source);
+						if (atlas_source) {
+							// Get tile data.
+							TileData *tile_data = atlas_source->get_tile_data(E->get().get_atlas_coords(), E->get().alternative_tile);
 
-						p_overlay->draw_texture_rect_region(atlas_source->get_texture(), cell_region, tile_region, Color(1.0, 1.0, 1.0, 0.5));
+							// Compute the offset
+							Rect2i source_rect = atlas_source->get_tile_texture_region(E->get().get_atlas_coords());
+							Vector2i tile_offset = tile_set->get_tile_effective_texture_offset(E->get().source_id, E->get().get_atlas_coords(), E->get().alternative_tile);
+
+							// Compute the destination rectangle in the CanvasItem.
+							Rect2 dest_rect;
+							dest_rect.size = source_rect.size;
+
+							bool transpose = tile_data->tile_get_transpose();
+							if (transpose) {
+								dest_rect.position = (tile_map->map_to_world(E->key()) - Vector2(dest_rect.size.y, dest_rect.size.x) / 2 - tile_offset);
+							} else {
+								dest_rect.position = (tile_map->map_to_world(E->key()) - dest_rect.size / 2 - tile_offset);
+							}
+
+							dest_rect = xform.xform(dest_rect);
+
+							if (tile_data->tile_get_flip_h()) {
+								dest_rect.size.x = -dest_rect.size.x;
+							}
+
+							if (tile_data->tile_get_flip_v()) {
+								dest_rect.size.y = -dest_rect.size.y;
+							}
+
+							// Get the tile modulation.
+							Color modulate = atlas_source->get_tile_data(E->get().get_atlas_coords(), E->get().alternative_tile)->tile_get_modulate();
+							Color self_modulate = tile_map->get_self_modulate();
+							modulate = Color(modulate.r * self_modulate.r, modulate.g * self_modulate.g, modulate.b * self_modulate.b, modulate.a * self_modulate.a);
+
+							// Draw the tile.
+							p_overlay->draw_texture_rect_region(atlas_source->get_texture(), dest_rect, source_rect, modulate * Color(1.0, 1.0, 1.0, 0.5), transpose, tile_set->is_uv_clipping());
+						}
 					} else {
 						Vector2i size = tile_set->get_tile_size();
 						Vector2 position = tile_map->map_to_world(E->key()) - size / 2;
@@ -1801,7 +1836,7 @@ TileMapEditor::TileMapEditor() {
 	tilemap_scatter_spinbox->set_max(1000);
 	tilemap_scatter_spinbox->set_step(0.001);
 	tilemap_scatter_spinbox->set_tooltip(TTR("Defines the probability of painting nothing instead of a randomly selected tile."));
-	tilemap_scatter_spinbox->get_line_edit()->add_theme_constant_override("minimum_spaces", 3);
+	tilemap_scatter_spinbox->get_line_edit()->add_theme_constant_override("minimum_character_width", 4);
 	tilemap_scatter_spinbox->connect("value_changed", callable_mp(this, &TileMapEditor::_on_scattering_spinbox_changed));
 	tilemap_tools_settings->add_child(tilemap_scatter_spinbox);
 

@@ -43,6 +43,7 @@ private:
 	Ref<TileSet> tile_set;
 	bool tile_set_changed_needs_update = false;
 
+	Label *no_source_selected_label;
 	TileSetAtlasSourceEditor *tile_set_atlas_source_editor;
 
 	UndoRedo *undo_redo = EditorNode::get_undo_redo();

@@ -111,114 +111,100 @@ void TileSetAtlasPluginRendering::update_dirty_quadrants(TileMap *p_tile_map, Se
 		for (Map<Vector2i, Vector2i, TileMapQuadrant::CoordsWorldComparator>::Element *E = q.world_to_map.front(); E; E = E->next()) {
 			TileMapCell c = p_tile_map->get_cell(E->value());
 
-			TileSetSource *source = *tile_set->get_source(c.source_id);
-			TileSetAtlasSource *atlas_source = Object::cast_to<TileSetAtlasSource>(source);
-			if (atlas_source) {
-				// Check if the tileset has a tile with the given ID, otherwise, ignore it.
-				if (!atlas_source->has_tile(c.get_atlas_coords()) || !atlas_source->has_alternative_tile(c.get_atlas_coords(), c.alternative_tile)) {
-					continue;
-				}
-
-				// Get the texture.
-				Ref<Texture2D> tex = atlas_source->get_texture();
-				if (!tex.is_valid()) {
-					continue;
-				}
-
-				// Get the material.
-				Ref<ShaderMaterial> mat = atlas_source->get_tile_data(c.get_atlas_coords(), c.alternative_tile)->tile_get_material();
-
-				// Get the Z-index.
-				int z_index = atlas_source->get_tile_data(c.get_atlas_coords(), c.alternative_tile)->tile_get_z_index();
-
-				// Create two canvas items, for rendering and debug.
-				RID canvas_item;
-				RID debug_canvas_item;
-
-				// Check if the material or the z_index changed.
-				if (prev_canvas_item == RID() || prev_material != mat || prev_z_index != z_index) {
-					canvas_item = vs->canvas_item_create();
-					if (mat.is_valid()) {
-						vs->canvas_item_set_material(canvas_item, mat->get_rid());
+			TileSetSource *source;
+			if (tile_set->has_source(c.source_id)) {
+				source = *tile_set->get_source(c.source_id);
+				TileSetAtlasSource *atlas_source = Object::cast_to<TileSetAtlasSource>(source);
+				if (atlas_source) {
+					// Check if the tileset has a tile with the given ID, otherwise, ignore it.
+					if (!atlas_source->has_tile(c.get_atlas_coords()) || !atlas_source->has_alternative_tile(c.get_atlas_coords(), c.alternative_tile)) {
+						continue;
 					}
-					vs->canvas_item_set_parent(canvas_item, p_tile_map->get_canvas_item());
-					RS::get_singleton()->canvas_item_set_use_parent_material(canvas_item, p_tile_map->get_use_parent_material() || p_tile_map->get_material().is_valid());
-					Transform2D xform;
-					xform.set_origin(q.pos);
-					vs->canvas_item_set_transform(canvas_item, xform);
-					vs->canvas_item_set_light_mask(canvas_item, p_tile_map->get_light_mask());
-					vs->canvas_item_set_z_index(canvas_item, z_index);
 
-					vs->canvas_item_set_default_texture_filter(canvas_item, RS::CanvasItemTextureFilter(p_tile_map->CanvasItem::get_texture_filter()));
-					vs->canvas_item_set_default_texture_repeat(canvas_item, RS::CanvasItemTextureRepeat(p_tile_map->CanvasItem::get_texture_repeat()));
+					// Get the texture.
+					Ref<Texture2D> tex = atlas_source->get_texture();
+					if (!tex.is_valid()) {
+						continue;
+					}
 
-					q.canvas_items.push_back(canvas_item);
+					// Get the material.
+					Ref<ShaderMaterial> mat = atlas_source->get_tile_data(c.get_atlas_coords(), c.alternative_tile)->tile_get_material();
 
-					prev_canvas_item = canvas_item;
-					prev_material = mat;
-					prev_z_index = z_index;
+					// Get the Z-index.
+					int z_index = atlas_source->get_tile_data(c.get_atlas_coords(), c.alternative_tile)->tile_get_z_index();
 
-				} else {
-					// Keep the same canvas_item to draw on.
-					canvas_item = prev_canvas_item;
-				}
+					// Create two canvas items, for rendering and debug.
+					RID canvas_item;
+					RID debug_canvas_item;
 
-				// Get the tile region in the tileset, if it is defined.
-				Rect2 r = atlas_source->get_tile_texture_region(c.get_atlas_coords());
+					// Check if the material or the z_index changed.
+					if (prev_canvas_item == RID() || prev_material != mat || prev_z_index != z_index) {
+						canvas_item = vs->canvas_item_create();
+						if (mat.is_valid()) {
+							vs->canvas_item_set_material(canvas_item, mat->get_rid());
+						}
+						vs->canvas_item_set_parent(canvas_item, p_tile_map->get_canvas_item());
+						RS::get_singleton()->canvas_item_set_use_parent_material(canvas_item, p_tile_map->get_use_parent_material() || p_tile_map->get_material().is_valid());
+						Transform2D xform;
+						xform.set_origin(q.pos);
+						vs->canvas_item_set_transform(canvas_item, xform);
+						vs->canvas_item_set_light_mask(canvas_item, p_tile_map->get_light_mask());
+						vs->canvas_item_set_z_index(canvas_item, z_index);
 
-				// Get the texture size.
-				Size2 s;
-				if (r == Rect2()) {
-					s = tex->get_size(); // No region, use the full texture.
-				} else {
-					s = r.size; // Region, use the region size.
-				}
+						vs->canvas_item_set_default_texture_filter(canvas_item, RS::CanvasItemTextureFilter(p_tile_map->CanvasItem::get_texture_filter()));
+						vs->canvas_item_set_default_texture_repeat(canvas_item, RS::CanvasItemTextureRepeat(p_tile_map->CanvasItem::get_texture_repeat()));
 
-				bool transpose = atlas_source->get_tile_data(c.get_atlas_coords(), c.alternative_tile)->tile_get_transpose();
+						q.canvas_items.push_back(canvas_item);
 
-				// Compute the offset
-				Vector2i source_tile_size = atlas_source->get_tile_texture_region(c.get_atlas_coords()).size;
-				Vector2i tile_offset = tile_set->get_tile_effective_texture_offset(c.source_id, c.get_atlas_coords(), c.alternative_tile);
-				Vector2 offset = E->key() - source_tile_size / 2 - q.pos - tile_offset;
+						prev_canvas_item = canvas_item;
+						prev_material = mat;
+						prev_z_index = z_index;
 
-				// Compute the destination rectangle in the CanvasItem.
-				Rect2 rect;
-				rect.position = offset.floor();
-				rect.size = s;
-				rect.size.x += fp_adjust;
-				rect.size.y += fp_adjust;
-				/*
-                if (transpose) {
-                    SWAP(tile_ofs.x, tile_ofs.y);
-                }
+					} else {
+						// Keep the same canvas_item to draw on.
+						canvas_item = prev_canvas_item;
+					}
 
-                if (tile_set->tile_get_flip_h(c.source_id, c.get_atlas_coords(), c.alternative_tile)) {
-                    rect.size.x = -rect.size.x;
-                    tile_ofs.x = -tile_ofs.x;
-                }
+					// Get tile data.
+					TileData *tile_data = atlas_source->get_tile_data(c.get_atlas_coords(), c.alternative_tile);
 
-                if (tile_set->tile_get_flip_v(c.source_id, c.get_atlas_coords(), c.alternative_tile)) {
-                    rect.size.y = -rect.size.y;
-                    tile_ofs.y = -tile_ofs.y;
-                }
+					// Compute the offset
+					Rect2i source_rect = atlas_source->get_tile_texture_region(c.get_atlas_coords());
+					Vector2i tile_offset = tile_set->get_tile_effective_texture_offset(c.source_id, c.get_atlas_coords(), c.alternative_tile);
 
-                rect.position += tile_ofs;
-                */
-				// Get the tile modulation.
-				Color modulate = atlas_source->get_tile_data(c.get_atlas_coords(), c.alternative_tile)->tile_get_modulate();
-				Color self_modulate = p_tile_map->get_self_modulate();
-				modulate = Color(modulate.r * self_modulate.r, modulate.g * self_modulate.g, modulate.b * self_modulate.b, modulate.a * self_modulate.a);
+					// Compute the destination rectangle in the CanvasItem.
+					Rect2 dest_rect;
+					dest_rect.size = source_rect.size;
+					dest_rect.size.x += fp_adjust;
+					dest_rect.size.y += fp_adjust;
 
-				// Draw the tile.
-				if (r == Rect2()) {
-					tex->draw_rect(canvas_item, rect, false, modulate, transpose);
-				} else {
-					tex->draw_rect_region(canvas_item, rect, r, modulate, transpose, tile_set->is_uv_clipping());
-				}
+					bool transpose = tile_data->tile_get_transpose();
+					if (transpose) {
+						dest_rect.position = (E->key() - Vector2(dest_rect.size.y, dest_rect.size.x) / 2 - q.pos - tile_offset);
+					} else {
+						dest_rect.position = (E->key() - dest_rect.size / 2 - q.pos - tile_offset);
+					}
 
-				// Change the debug_canvas_item transform ?
-				if (debug_canvas_item.is_valid()) {
-					vs->canvas_item_add_set_transform(debug_canvas_item, Transform2D());
+					if (tile_data->tile_get_flip_h()) {
+						dest_rect.size.x = -dest_rect.size.x;
+					}
+
+					if (tile_data->tile_get_flip_v()) {
+						dest_rect.size.y = -dest_rect.size.y;
+					}
+
+					// Get the tile modulation.
+					Color modulate = atlas_source->get_tile_data(c.get_atlas_coords(), c.alternative_tile)->tile_get_modulate();
+					Color self_modulate = p_tile_map->get_self_modulate();
+					modulate = Color(modulate.r * self_modulate.r, modulate.g * self_modulate.g, modulate.b * self_modulate.b, modulate.a * self_modulate.a);
+
+					// Draw the tile.
+					tex->draw_rect_region(canvas_item, dest_rect, source_rect, modulate, transpose, tile_set->is_uv_clipping());
+
+					// Change the debug_canvas_item transform ?
+					if (debug_canvas_item.is_valid()) {
+						vs->canvas_item_add_set_transform(debug_canvas_item, Transform2D());
+					}
 				}
 			}
 		}

@@ -62,6 +62,7 @@ void TileSetEditor::drop_data_fw(const Point2 &p_point, const Variant &p_data, C
 				atlas_source->set_texture(resource);
 				undo_redo->create_action(TTR("Add a new atlas source"));
 				undo_redo->add_do_method(*tile_set, "add_source", atlas_source, source_id);
+				undo_redo->add_do_method(*atlas_source, "set_texture_region_size", tile_set->get_tile_size());
 				undo_redo->add_undo_method(*tile_set, "remove_source", source_id);
 				undo_redo->commit_action();
 				added += 1;
@@ -164,6 +165,9 @@ void TileSetEditor::_update_atlas_sources_list(int force_selected_id) {
 		sources_list->emit_signal("item_selected", sources_list->get_current());
 	}
 
+	// If there is no source left, hide all editors and show the label.
+	_source_selected(sources_list->get_current());
+
 	// Synchronize the lists.
 	TilesEditor::get_singleton()->set_atlas_sources_lists_current(sources_list->get_current());
 }
@@ -174,15 +178,17 @@ void TileSetEditor::_source_selected(int p_source_index) {
 	// Update the selected source.
 	sources_delete_button->set_disabled(p_source_index < 0);
 
+	no_source_selected_label->show();
+	tile_set_atlas_source_editor->hide();
+
 	if (p_source_index >= 0) {
 		int source_id = sources_list->get_item_metadata(p_source_index);
 		TileSetAtlasSource *atlas_source = Object::cast_to<TileSetAtlasSource>(*tile_set->get_source(source_id));
 		if (atlas_source) {
 			tile_set_atlas_source_editor->edit(*tile_set, atlas_source, source_id);
 			tile_set_atlas_source_editor->show();
+			no_source_selected_label->hide();
 		}
-	} else {
-		tile_set_atlas_source_editor->hide();
 	}
 }
 
@@ -191,11 +197,12 @@ void TileSetEditor::_source_add_pressed() {
 
 	int source_id = tile_set->get_next_source_id();
 
-	Ref<TileSetAtlasSource> source = memnew(TileSetAtlasSource);
+	Ref<TileSetAtlasSource> atlas_source = memnew(TileSetAtlasSource);
 
 	// Add a new source.
 	undo_redo->create_action(TTR("Add atlas source"));
-	undo_redo->add_do_method(*tile_set, "add_source", source, source_id);
+	undo_redo->add_do_method(*tile_set, "add_source", atlas_source, source_id);
+	undo_redo->add_do_method(*atlas_source, "set_texture_region_size", tile_set->get_tile_size());
 	undo_redo->add_undo_method(*tile_set, "remove_source", source_id);
 	undo_redo->commit_action();
 
@@ -267,6 +274,7 @@ void TileSetEditor::edit(Ref<TileSet> p_tile_set) {
 	}
 
 	tile_set_atlas_source_editor->hide();
+	no_source_selected_label->show();
 }
 
 TileSetEditor::TileSetEditor() {
@@ -319,13 +327,22 @@ TileSetEditor::TileSetEditor() {
 	sources_add_button->connect("pressed", callable_mp(this, &TileSetEditor::_source_add_pressed));
 	sources_bottom_actions->add_child(sources_add_button);
 
+	// No source selected.
+	no_source_selected_label = memnew(Label);
+	no_source_selected_label->set_text(TTR("No TileSet source selected. Select or create a TileSet source."));
+	no_source_selected_label->set_h_size_flags(SIZE_EXPAND_FILL);
+	no_source_selected_label->set_v_size_flags(SIZE_EXPAND_FILL);
+	no_source_selected_label->set_align(Label::ALIGN_CENTER);
+	no_source_selected_label->set_valign(Label::VALIGN_CENTER);
+	split_container->add_child(no_source_selected_label);
+
 	// Atlases editor.
 	tile_set_atlas_source_editor = memnew(TileSetAtlasSourceEditor);
-	tile_set_atlas_source_editor->set_name("Atlases");
 	tile_set_atlas_source_editor->set_h_size_flags(SIZE_EXPAND_FILL);
 	tile_set_atlas_source_editor->set_v_size_flags(SIZE_EXPAND_FILL);
 	tile_set_atlas_source_editor->connect("source_id_changed", callable_mp(this, &TileSetEditor::_update_atlas_sources_list));
 	split_container->add_child(tile_set_atlas_source_editor);
+	tile_set_atlas_source_editor->hide();
 
 	// Terrains editor.
 	Control *terrains_editor = memnew(Control);
