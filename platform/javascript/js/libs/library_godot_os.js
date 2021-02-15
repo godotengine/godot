@@ -282,6 +282,11 @@ const GodotOS = {
 	godot_js_os_shell_open: function (p_uri) {
 		window.open(GodotRuntime.parseString(p_uri), '_blank');
 	},
+
+	godot_js_os_hw_concurrency_get__sig: 'i',
+	godot_js_os_hw_concurrency_get: function () {
+		return navigator.hardwareConcurrency || 1;
+	},
 };
 
 autoAddDeps(GodotOS, '$GodotOS');

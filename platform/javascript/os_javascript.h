@@ -74,6 +74,7 @@ public:
 	Error create_process(const String &p_path, const List<String> &p_arguments, ProcessID *r_child_id = nullptr) override;
 	Error kill(const ProcessID &p_pid) override;
 	int get_process_id() const override;
+	int get_processor_count() const override;
 
 	String get_executable_path() const override;
 	Error shell_open(String p_uri) override;
