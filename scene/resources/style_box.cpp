@@ -937,8 +937,17 @@ void StyleBoxLine::_bind_methods() {
 }
 
 float StyleBoxLine::get_style_margin(Side p_side) const {
-	ERR_FAIL_INDEX_V((int)p_side, 4, thickness);
-	return thickness;
+	ERR_FAIL_INDEX_V((int)p_side, 4, 0);
+
+	if (vertical) {
+		if (p_side == SIDE_LEFT || p_side == SIDE_RIGHT) {
+			return thickness / 2.0;
+		}
+	} else if (p_side == SIDE_TOP || p_side == SIDE_BOTTOM) {
+		return thickness / 2.0;
+	}
+
+	return 0;
 }
 
 Size2 StyleBoxLine::get_center_size() const {
