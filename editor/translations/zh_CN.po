@@ -71,7 +71,7 @@
 # MintSoda <lionlxh@qq.com>, 2020.
 # Gardner Belgrade <hapenia@sina.com>, 2020.
 # godhidden <z2zz2zz@yahoo.com>, 2020.
-# BinotaLIU <me@binota.org>, 2020.
+# BinotaLIU <me@binota.org>, 2020, 2021.
 # TakWolf <takwolf@foxmail.com>, 2020.
 # twoBornottwoB <305766341@qq.com>, 2021.
 # Magian <magian1127@gmail.com>, 2021.
@@ -79,8 +79,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Chinese (Simplified) (Godot Engine)\n"
 "POT-Creation-Date: 2018-01-20 12:15+0200\n"
-"PO-Revision-Date: 2021-01-27 23:21+0000\n"
-"Last-Translator: Haoyu Qiu <timothyqiu32@gmail.com>\n"
+"PO-Revision-Date: 2021-02-07 05:50+0000\n"
+"Last-Translator: BinotaLIU <me@binota.org>\n"
 "Language-Team: Chinese (Simplified) <https://hosted.weblate.org/projects/"
 "godot-engine/godot/zh_Hans/>\n"
 "Language: zh_CN\n"
@@ -3132,6 +3132,25 @@ msgstr "与现有合并"
 #: editor/editor_node.cpp
 msgid "Open & Run a Script"
 msgstr "打开并运行脚本"
+
+#: editor/editor_node.cpp
+#, fuzzy
+msgid ""
+"The following files are newer on disk.\n"
+"What action should be taken?"
+msgstr ""
+"磁盘中的下列文件已更新。\n"
+"请选择执行哪项操作？："
+
+#: editor/editor_node.cpp editor/plugins/script_editor_plugin.cpp
+#: editor/plugins/shader_editor_plugin.cpp
+msgid "Reload"
+msgstr "重新加载"
+
+#: editor/editor_node.cpp editor/plugins/script_editor_plugin.cpp
+#: editor/plugins/shader_editor_plugin.cpp
+msgid "Resave"
+msgstr "重新保存"
 
 #: editor/editor_node.cpp
 msgid "New Inherited"
@@ -6939,16 +6958,6 @@ msgstr ""
 "磁盘中的下列文件已更新。\n"
 "请选择执行哪项操作？："
 
-#: editor/plugins/script_editor_plugin.cpp
-#: editor/plugins/shader_editor_plugin.cpp
-msgid "Reload"
-msgstr "重新加载"
-
-#: editor/plugins/script_editor_plugin.cpp
-#: editor/plugins/shader_editor_plugin.cpp
-msgid "Resave"
-msgstr "重新保存"
-
 #: editor/plugins/script_editor_plugin.cpp editor/script_editor_debugger.cpp
 msgid "Debugger"
 msgstr "调试器"
@@ -7265,9 +7274,8 @@ msgid "Yaw"
 msgstr "偏航角"
 
 #: editor/plugins/spatial_editor_plugin.cpp
-#, fuzzy
 msgid "Size"
-msgstr "大小： "
+msgstr "大小"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Objects Drawn"
@@ -9893,6 +9901,11 @@ msgstr "项目管理器"
 #: editor/project_manager.cpp
 msgid "Projects"
 msgstr "项目"
+
+#: editor/project_manager.cpp
+#, fuzzy
+msgid "Loading, please wait..."
+msgstr "检索镜像，请等待..."
 
 #: editor/project_manager.cpp
 msgid "Last Modified"

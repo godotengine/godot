@@ -91,12 +91,13 @@
 # Roman Tolkachyov <roman@tolkachyov.name>, 2020.
 # Igor Grachev <igorecha.9999@gmail.com>, 2020.
 # Dmytro Meleshko <dmytro.meleshko@gmail.com>, 2021.
+# narrnika <narr13niki@gmail.com>, 2021.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2021-02-01 20:54+0000\n"
-"Last-Translator: Danil Alexeev <danil@alexeev.xyz>\n"
+"PO-Revision-Date: 2021-02-05 23:44+0000\n"
+"Last-Translator: narrnika <narr13niki@gmail.com>\n"
 "Language-Team: Russian <https://hosted.weblate.org/projects/godot-engine/"
 "godot/ru/>\n"
 "Language: ru\n"
@@ -3217,6 +3218,25 @@ msgstr "Объединить с существующей"
 #: editor/editor_node.cpp
 msgid "Open & Run a Script"
 msgstr "Открыть и запустить скрипт"
+
+#: editor/editor_node.cpp
+#, fuzzy
+msgid ""
+"The following files are newer on disk.\n"
+"What action should be taken?"
+msgstr ""
+"Следующие файлы новее на диске.\n"
+"Какие меры должны быть приняты?:"
+
+#: editor/editor_node.cpp editor/plugins/script_editor_plugin.cpp
+#: editor/plugins/shader_editor_plugin.cpp
+msgid "Reload"
+msgstr "Перезагрузить"
+
+#: editor/editor_node.cpp editor/plugins/script_editor_plugin.cpp
+#: editor/plugins/shader_editor_plugin.cpp
+msgid "Resave"
+msgstr "Пересохранить"
 
 #: editor/editor_node.cpp
 msgid "New Inherited"
@@ -7078,16 +7098,6 @@ msgstr ""
 "Следующие файлы новее на диске.\n"
 "Какие меры должны быть приняты?:"
 
-#: editor/plugins/script_editor_plugin.cpp
-#: editor/plugins/shader_editor_plugin.cpp
-msgid "Reload"
-msgstr "Перезагрузить"
-
-#: editor/plugins/script_editor_plugin.cpp
-#: editor/plugins/shader_editor_plugin.cpp
-msgid "Resave"
-msgstr "Пересохранить"
-
 #: editor/plugins/script_editor_plugin.cpp editor/script_editor_debugger.cpp
 msgid "Debugger"
 msgstr "Отладчик"
@@ -7408,13 +7418,12 @@ msgid "Yaw"
 msgstr "Рыскание"
 
 #: editor/plugins/spatial_editor_plugin.cpp
-#, fuzzy
 msgid "Size"
-msgstr "Размер: "
+msgstr "Размер"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Objects Drawn"
-msgstr "Нарисовано обьектов"
+msgstr "Нарисовано объектов"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Material Changes"
@@ -10094,6 +10103,11 @@ msgstr "Менеджер проектов"
 #: editor/project_manager.cpp
 msgid "Projects"
 msgstr "Проекты"
+
+#: editor/project_manager.cpp
+#, fuzzy
+msgid "Loading, please wait..."
+msgstr "Получение зеркал, пожалуйста подождите..."
 
 #: editor/project_manager.cpp
 msgid "Last Modified"

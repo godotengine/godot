@@ -18,7 +18,7 @@
 # Jose Maria Martinez <josemar1992@hotmail.com>, 2018.
 # Juan Quiroga <juanquiroga9@gmail.com>, 2017.
 # Kiji Pixel <raccoon.fella@gmail.com>, 2017.
-# Lisandro Lorea <lisandrolorea@gmail.com>, 2016-2017, 2019, 2020.
+# Lisandro Lorea <lisandrolorea@gmail.com>, 2016-2017, 2019, 2020, 2021.
 # Lonsfor <lotharw@protonmail.com>, 2017-2018.
 # Mario Nachbaur <manachbaur@gmail.com>, 2018.
 # Oscar Carballal <oscar.carballal@protonmail.com>, 2017-2018.
@@ -58,12 +58,13 @@
 # Ricardo Pérez <ricpelo@gmail.com>, 2021.
 # A <kaieltroll@gmail.com>, 2021.
 # Lucasdelpiero <lucasdelpiero98@gmail.com>, 2021.
+# SteamGoblin <SteamGoblin860@gmail.com>, 2021.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2021-01-16 01:29+0000\n"
-"Last-Translator: Javier Ocampos <xavier.ocampos@gmail.com>\n"
+"PO-Revision-Date: 2021-02-15 10:51+0000\n"
+"Last-Translator: SteamGoblin <SteamGoblin860@gmail.com>\n"
 "Language-Team: Spanish <https://hosted.weblate.org/projects/godot-engine/"
 "godot/es/>\n"
 "Language: es\n"
@@ -3212,6 +3213,25 @@ msgstr "Combinar Con Existentes"
 #: editor/editor_node.cpp
 msgid "Open & Run a Script"
 msgstr "Abrir y Ejecutar un Script"
+
+#: editor/editor_node.cpp
+#, fuzzy
+msgid ""
+"The following files are newer on disk.\n"
+"What action should be taken?"
+msgstr ""
+"Los siguientes archivos son nuevos en disco.\n"
+"¿Qué es lo que quieres hacer?:"
+
+#: editor/editor_node.cpp editor/plugins/script_editor_plugin.cpp
+#: editor/plugins/shader_editor_plugin.cpp
+msgid "Reload"
+msgstr "Recargar"
+
+#: editor/editor_node.cpp editor/plugins/script_editor_plugin.cpp
+#: editor/plugins/shader_editor_plugin.cpp
+msgid "Resave"
+msgstr "Volver a Guardar"
 
 #: editor/editor_node.cpp
 msgid "New Inherited"
@@ -7100,16 +7120,6 @@ msgstr ""
 "Los siguientes archivos son nuevos en disco.\n"
 "¿Qué es lo que quieres hacer?:"
 
-#: editor/plugins/script_editor_plugin.cpp
-#: editor/plugins/shader_editor_plugin.cpp
-msgid "Reload"
-msgstr "Recargar"
-
-#: editor/plugins/script_editor_plugin.cpp
-#: editor/plugins/shader_editor_plugin.cpp
-msgid "Resave"
-msgstr "Volver a Guardar"
-
 #: editor/plugins/script_editor_plugin.cpp editor/script_editor_debugger.cpp
 msgid "Debugger"
 msgstr "Depurador"
@@ -7426,12 +7436,11 @@ msgstr "Altura"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Yaw"
-msgstr "Yaw"
+msgstr "Guiñada"
 
 #: editor/plugins/spatial_editor_plugin.cpp
-#, fuzzy
 msgid "Size"
-msgstr "Tamaño: "
+msgstr "Tamaño"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Objects Drawn"
@@ -10126,6 +10135,11 @@ msgid "Projects"
 msgstr "Proyectos"
 
 #: editor/project_manager.cpp
+#, fuzzy
+msgid "Loading, please wait..."
+msgstr "Obteniendo mirrors, por favor espera..."
+
+#: editor/project_manager.cpp
 msgid "Last Modified"
 msgstr "Ultima Modificación"
 
@@ -12772,7 +12786,7 @@ msgstr "ARVROrigin requiere un nodo hijo ARVRCamera."
 
 #: scene/3d/baked_lightmap.cpp
 msgid "Finding meshes and lights"
-msgstr "Encontrar mallas y luces"
+msgstr "Encontrando mallas y luces"
 
 #: scene/3d/baked_lightmap.cpp
 msgid "Preparing geometry (%d/%d)"

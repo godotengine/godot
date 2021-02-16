@@ -3161,6 +3161,25 @@ msgid "Open & Run a Script"
 msgstr "Buka & Jalankan Skrip"
 
 #: editor/editor_node.cpp
+#, fuzzy
+msgid ""
+"The following files are newer on disk.\n"
+"What action should be taken?"
+msgstr ""
+"Berkas berikut lebih baru dalam diska.\n"
+"Aksi apa yang ingin diambil?:"
+
+#: editor/editor_node.cpp editor/plugins/script_editor_plugin.cpp
+#: editor/plugins/shader_editor_plugin.cpp
+msgid "Reload"
+msgstr "Muat Ulang"
+
+#: editor/editor_node.cpp editor/plugins/script_editor_plugin.cpp
+#: editor/plugins/shader_editor_plugin.cpp
+msgid "Resave"
+msgstr "Simpan Ulang"
+
+#: editor/editor_node.cpp
 msgid "New Inherited"
 msgstr "Turunan Baru"
 
@@ -7028,16 +7047,6 @@ msgstr ""
 "Berkas berikut lebih baru dalam diska.\n"
 "Aksi apa yang ingin diambil?:"
 
-#: editor/plugins/script_editor_plugin.cpp
-#: editor/plugins/shader_editor_plugin.cpp
-msgid "Reload"
-msgstr "Muat Ulang"
-
-#: editor/plugins/script_editor_plugin.cpp
-#: editor/plugins/shader_editor_plugin.cpp
-msgid "Resave"
-msgstr "Simpan Ulang"
-
 #: editor/plugins/script_editor_plugin.cpp editor/script_editor_debugger.cpp
 msgid "Debugger"
 msgstr "Pengawakutu"
@@ -10056,6 +10065,11 @@ msgstr "Manajer Proyek"
 #: editor/project_manager.cpp
 msgid "Projects"
 msgstr "Proyek"
+
+#: editor/project_manager.cpp
+#, fuzzy
+msgid "Loading, please wait..."
+msgstr "Mendapatkan informasi cermin, silakan tunggu..."
 
 #: editor/project_manager.cpp
 msgid "Last Modified"

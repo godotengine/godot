@@ -3127,6 +3127,25 @@ msgid "Open & Run a Script"
 msgstr "스크립트 열기 & 실행"
 
 #: editor/editor_node.cpp
+#, fuzzy
+msgid ""
+"The following files are newer on disk.\n"
+"What action should be taken?"
+msgstr ""
+"해당 파일은 디스크에 있는 게 더 최신입니다.\n"
+"어떻게 할 건가요?:"
+
+#: editor/editor_node.cpp editor/plugins/script_editor_plugin.cpp
+#: editor/plugins/shader_editor_plugin.cpp
+msgid "Reload"
+msgstr "새로고침"
+
+#: editor/editor_node.cpp editor/plugins/script_editor_plugin.cpp
+#: editor/plugins/shader_editor_plugin.cpp
+msgid "Resave"
+msgstr "다시 저장"
+
+#: editor/editor_node.cpp
 msgid "New Inherited"
 msgstr "새 상속 씬"
 
@@ -6974,16 +6993,6 @@ msgstr ""
 "해당 파일은 디스크에 있는 게 더 최신입니다.\n"
 "어떻게 할 건가요?:"
 
-#: editor/plugins/script_editor_plugin.cpp
-#: editor/plugins/shader_editor_plugin.cpp
-msgid "Reload"
-msgstr "새로고침"
-
-#: editor/plugins/script_editor_plugin.cpp
-#: editor/plugins/shader_editor_plugin.cpp
-msgid "Resave"
-msgstr "다시 저장"
-
 #: editor/plugins/script_editor_plugin.cpp editor/script_editor_debugger.cpp
 msgid "Debugger"
 msgstr "디버거"
@@ -9961,6 +9970,11 @@ msgstr "프로젝트 매니저"
 #: editor/project_manager.cpp
 msgid "Projects"
 msgstr "프로젝트"
+
+#: editor/project_manager.cpp
+#, fuzzy
+msgid "Loading, please wait..."
+msgstr "미러를 검색 중입니다. 기다려주세요..."
 
 #: editor/project_manager.cpp
 msgid "Last Modified"

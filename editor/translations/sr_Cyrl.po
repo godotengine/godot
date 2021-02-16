@@ -3400,6 +3400,25 @@ msgid "Open & Run a Script"
 msgstr "Отвори и покрени скриптицу"
 
 #: editor/editor_node.cpp
+#, fuzzy
+msgid ""
+"The following files are newer on disk.\n"
+"What action should be taken?"
+msgstr ""
+"Следеће датотеке су нове на диску.\n"
+"Која акција се треба предузети?:"
+
+#: editor/editor_node.cpp editor/plugins/script_editor_plugin.cpp
+#: editor/plugins/shader_editor_plugin.cpp
+msgid "Reload"
+msgstr "Освежи"
+
+#: editor/editor_node.cpp editor/plugins/script_editor_plugin.cpp
+#: editor/plugins/shader_editor_plugin.cpp
+msgid "Resave"
+msgstr "Поново сачувај"
+
+#: editor/editor_node.cpp
 msgid "New Inherited"
 msgstr "Нова наслеђена"
 
@@ -7674,16 +7693,6 @@ msgstr ""
 "Следеће датотеке су нове на диску.\n"
 "Која акција се треба предузети?:"
 
-#: editor/plugins/script_editor_plugin.cpp
-#: editor/plugins/shader_editor_plugin.cpp
-msgid "Reload"
-msgstr "Освежи"
-
-#: editor/plugins/script_editor_plugin.cpp
-#: editor/plugins/shader_editor_plugin.cpp
-msgid "Resave"
-msgstr "Поново сачувај"
-
 #: editor/plugins/script_editor_plugin.cpp editor/script_editor_debugger.cpp
 msgid "Debugger"
 msgstr "Дебагер"
@@ -11144,6 +11153,11 @@ msgstr "Менаџер пројекта"
 #, fuzzy
 msgid "Projects"
 msgstr "Пројекти"
+
+#: editor/project_manager.cpp
+#, fuzzy
+msgid "Loading, please wait..."
+msgstr "Прихватам одредишта, молим сачекајте..."
 
 #: editor/project_manager.cpp
 #, fuzzy

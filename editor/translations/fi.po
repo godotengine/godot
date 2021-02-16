@@ -15,7 +15,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2021-01-21 11:57+0000\n"
+"PO-Revision-Date: 2021-02-05 23:44+0000\n"
 "Last-Translator: Tapani Niemi <tapani.niemi@kapsi.fi>\n"
 "Language-Team: Finnish <https://hosted.weblate.org/projects/godot-engine/"
 "godot/fi/>\n"
@@ -3127,6 +3127,25 @@ msgstr "Yhdistä olemassaolevaan"
 #: editor/editor_node.cpp
 msgid "Open & Run a Script"
 msgstr "Avaa ja suorita skripti"
+
+#: editor/editor_node.cpp
+#, fuzzy
+msgid ""
+"The following files are newer on disk.\n"
+"What action should be taken?"
+msgstr ""
+"Seuraavat tiedostot ovat uudempia levyllä.\n"
+"Mikä toimenpide tulisi suorittaa?:"
+
+#: editor/editor_node.cpp editor/plugins/script_editor_plugin.cpp
+#: editor/plugins/shader_editor_plugin.cpp
+msgid "Reload"
+msgstr "Lataa uudelleen"
+
+#: editor/editor_node.cpp editor/plugins/script_editor_plugin.cpp
+#: editor/plugins/shader_editor_plugin.cpp
+msgid "Resave"
+msgstr "Tallenna uudelleen"
 
 #: editor/editor_node.cpp
 msgid "New Inherited"
@@ -6999,16 +7018,6 @@ msgstr ""
 "Seuraavat tiedostot ovat uudempia levyllä.\n"
 "Mikä toimenpide tulisi suorittaa?:"
 
-#: editor/plugins/script_editor_plugin.cpp
-#: editor/plugins/shader_editor_plugin.cpp
-msgid "Reload"
-msgstr "Lataa uudelleen"
-
-#: editor/plugins/script_editor_plugin.cpp
-#: editor/plugins/shader_editor_plugin.cpp
-msgid "Resave"
-msgstr "Tallenna uudelleen"
-
 #: editor/plugins/script_editor_plugin.cpp editor/script_editor_debugger.cpp
 msgid "Debugger"
 msgstr "Debuggeri"
@@ -7327,9 +7336,8 @@ msgid "Yaw"
 msgstr "Käännös (yaw)"
 
 #: editor/plugins/spatial_editor_plugin.cpp
-#, fuzzy
 msgid "Size"
-msgstr "Koko: "
+msgstr "Koko"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Objects Drawn"
@@ -10012,6 +10020,11 @@ msgstr "Projektinhallinta"
 #: editor/project_manager.cpp
 msgid "Projects"
 msgstr "Projektit"
+
+#: editor/project_manager.cpp
+#, fuzzy
+msgid "Loading, please wait..."
+msgstr "Noudetaan peilipalvelimia, hetkinen..."
 
 #: editor/project_manager.cpp
 msgid "Last Modified"

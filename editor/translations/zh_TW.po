@@ -29,7 +29,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2021-01-27 23:21+0000\n"
+"PO-Revision-Date: 2021-02-07 05:50+0000\n"
 "Last-Translator: BinotaLIU <me@binota.org>\n"
 "Language-Team: Chinese (Traditional) <https://hosted.weblate.org/projects/"
 "godot-engine/godot/zh_Hant/>\n"
@@ -3084,6 +3084,25 @@ msgstr "與現有的合併"
 #: editor/editor_node.cpp
 msgid "Open & Run a Script"
 msgstr "開啟並執行腳本"
+
+#: editor/editor_node.cpp
+#, fuzzy
+msgid ""
+"The following files are newer on disk.\n"
+"What action should be taken?"
+msgstr ""
+"磁碟中的下列檔案已更新。\n"
+"請選擇於執行之操作："
+
+#: editor/editor_node.cpp editor/plugins/script_editor_plugin.cpp
+#: editor/plugins/shader_editor_plugin.cpp
+msgid "Reload"
+msgstr "重新載入"
+
+#: editor/editor_node.cpp editor/plugins/script_editor_plugin.cpp
+#: editor/plugins/shader_editor_plugin.cpp
+msgid "Resave"
+msgstr "重新保存"
 
 #: editor/editor_node.cpp
 msgid "New Inherited"
@@ -6892,16 +6911,6 @@ msgstr ""
 "磁碟中的下列檔案已更新。\n"
 "請選擇於執行之操作："
 
-#: editor/plugins/script_editor_plugin.cpp
-#: editor/plugins/shader_editor_plugin.cpp
-msgid "Reload"
-msgstr "重新載入"
-
-#: editor/plugins/script_editor_plugin.cpp
-#: editor/plugins/shader_editor_plugin.cpp
-msgid "Resave"
-msgstr "重新保存"
-
 #: editor/plugins/script_editor_plugin.cpp editor/script_editor_debugger.cpp
 msgid "Debugger"
 msgstr "除錯工具"
@@ -7218,9 +7227,8 @@ msgid "Yaw"
 msgstr "偏航"
 
 #: editor/plugins/spatial_editor_plugin.cpp
-#, fuzzy
 msgid "Size"
-msgstr "大小： "
+msgstr "大小"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Objects Drawn"
@@ -9847,6 +9855,11 @@ msgstr "專案管理員"
 #: editor/project_manager.cpp
 msgid "Projects"
 msgstr "專案"
+
+#: editor/project_manager.cpp
+#, fuzzy
+msgid "Loading, please wait..."
+msgstr "正在取得鏡像，請稍後..."
 
 #: editor/project_manager.cpp
 msgid "Last Modified"

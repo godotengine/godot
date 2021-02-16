@@ -3166,6 +3166,25 @@ msgid "Open & Run a Script"
 msgstr "Obre i Executa un Script"
 
 #: editor/editor_node.cpp
+#, fuzzy
+msgid ""
+"The following files are newer on disk.\n"
+"What action should be taken?"
+msgstr ""
+"El disc conté versions més recents dels fitxer següents. \n"
+"Quina acció voleu seguir?:"
+
+#: editor/editor_node.cpp editor/plugins/script_editor_plugin.cpp
+#: editor/plugins/shader_editor_plugin.cpp
+msgid "Reload"
+msgstr "Torna a Carregar"
+
+#: editor/editor_node.cpp editor/plugins/script_editor_plugin.cpp
+#: editor/plugins/shader_editor_plugin.cpp
+msgid "Resave"
+msgstr "Torna a Desar"
+
+#: editor/editor_node.cpp
 msgid "New Inherited"
 msgstr "Nou Heretat"
 
@@ -7124,16 +7143,6 @@ msgstr ""
 "El disc conté versions més recents dels fitxer següents. \n"
 "Quina acció voleu seguir?:"
 
-#: editor/plugins/script_editor_plugin.cpp
-#: editor/plugins/shader_editor_plugin.cpp
-msgid "Reload"
-msgstr "Torna a Carregar"
-
-#: editor/plugins/script_editor_plugin.cpp
-#: editor/plugins/shader_editor_plugin.cpp
-msgid "Resave"
-msgstr "Torna a Desar"
-
 #: editor/plugins/script_editor_plugin.cpp editor/script_editor_debugger.cpp
 msgid "Debugger"
 msgstr "Depurador"
@@ -10294,6 +10303,11 @@ msgstr "Gestor del Projecte"
 #, fuzzy
 msgid "Projects"
 msgstr "Projecte"
+
+#: editor/project_manager.cpp
+#, fuzzy
+msgid "Loading, please wait..."
+msgstr "S'estan buscant rèpliques..."
 
 #: editor/project_manager.cpp
 #, fuzzy

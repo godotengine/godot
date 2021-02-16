@@ -3147,6 +3147,25 @@ msgid "Open & Run a Script"
 msgstr "Abrir & Executar um Script"
 
 #: editor/editor_node.cpp
+#, fuzzy
+msgid ""
+"The following files are newer on disk.\n"
+"What action should be taken?"
+msgstr ""
+"Os seguintes Ficheiros são mais recentes no disco.\n"
+"Que ação deve ser tomada?:"
+
+#: editor/editor_node.cpp editor/plugins/script_editor_plugin.cpp
+#: editor/plugins/shader_editor_plugin.cpp
+msgid "Reload"
+msgstr "Recarregar"
+
+#: editor/editor_node.cpp editor/plugins/script_editor_plugin.cpp
+#: editor/plugins/shader_editor_plugin.cpp
+msgid "Resave"
+msgstr "Guardar novamente"
+
+#: editor/editor_node.cpp
 msgid "New Inherited"
 msgstr "Novo Herdado"
 
@@ -7008,16 +7027,6 @@ msgstr ""
 "Os seguintes Ficheiros são mais recentes no disco.\n"
 "Que ação deve ser tomada?:"
 
-#: editor/plugins/script_editor_plugin.cpp
-#: editor/plugins/shader_editor_plugin.cpp
-msgid "Reload"
-msgstr "Recarregar"
-
-#: editor/plugins/script_editor_plugin.cpp
-#: editor/plugins/shader_editor_plugin.cpp
-msgid "Resave"
-msgstr "Guardar novamente"
-
 #: editor/plugins/script_editor_plugin.cpp editor/script_editor_debugger.cpp
 msgid "Debugger"
 msgstr "Depurador"
@@ -10016,6 +10025,11 @@ msgstr "Gestor de Projetos"
 #: editor/project_manager.cpp
 msgid "Projects"
 msgstr "Projetos"
+
+#: editor/project_manager.cpp
+#, fuzzy
+msgid "Loading, please wait..."
+msgstr "A readquirir servidores, espere por favor..."
 
 #: editor/project_manager.cpp
 msgid "Last Modified"
