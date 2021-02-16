@@ -23,6 +23,12 @@
 			<description>
 			</description>
 		</method>
+		<method name="clear_data">
+			<return type="void">
+			</return>
+			<description>
+			</description>
+		</method>
 		<method name="clear_users">
 			<return type="void">
 			</return>

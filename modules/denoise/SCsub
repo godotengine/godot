@@ -108,6 +108,9 @@ env_thirdparty = env_oidn.Clone()
 env_thirdparty.disable_warnings()
 env_thirdparty.add_source_files(env.modules_sources, thirdparty_sources)
 
+if env["platform"] == "windows" and not env.msvc:
+    env_thirdparty.Append(CPPFLAGS=["-mstackrealign"])
+
 weights_in_path = thirdparty_dir + "weights/rtlightmap_hdr.tza"
 weights_out_path = thirdparty_dir + "weights/rtlightmap_hdr.gen.cpp"
 

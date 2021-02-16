@@ -1369,6 +1369,7 @@ LightmapperCPU::BakeError LightmapperCPU::bake(BakeQuality p_quality, bool p_use
 	if (parameters.environment_panorama.is_valid()) {
 		parameters.environment_panorama->lock();
 	}
+
 	for (unsigned int i = 0; i < mesh_instances.size(); i++) {
 
 		if (!mesh_instances[i].generate_lightmap) {
@@ -1389,6 +1390,7 @@ LightmapperCPU::BakeError LightmapperCPU::bake(BakeQuality p_quality, bool p_use
 			}
 		}
 	}
+
 	if (parameters.environment_panorama.is_valid()) {
 		parameters.environment_panorama->unlock();
 	}

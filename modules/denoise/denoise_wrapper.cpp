@@ -43,9 +43,7 @@ void *oidn_denoiser_init() {
 bool oidn_denoise(void *deviceptr, float *p_floats, int p_width, int p_height) {
 	OIDNDeviceImpl *device = (OIDNDeviceImpl *)deviceptr;
 	OIDNFilter filter = oidnNewFilter(device, "RTLightmap");
-	void *input_buffer = memalloc(p_width * p_height * 3 * sizeof(float));
-	copymem(input_buffer, p_floats, p_width * p_height * 3 * sizeof(float));
-	oidnSetSharedFilterImage(filter, "color", input_buffer, OIDN_FORMAT_FLOAT3, p_width, p_height, 0, 0, 0);
+	oidnSetSharedFilterImage(filter, "color", (void *)p_floats, OIDN_FORMAT_FLOAT3, p_width, p_height, 0, 0, 0);
 	oidnSetSharedFilterImage(filter, "output", (void *)p_floats, OIDN_FORMAT_FLOAT3, p_width, p_height, 0, 0, 0);
 	oidnSetFilter1b(filter, "hdr", true);
 	oidnCommitFilter(filter);
