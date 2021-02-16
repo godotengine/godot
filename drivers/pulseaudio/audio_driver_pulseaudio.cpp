@@ -236,6 +236,9 @@ Error AudioDriverPulseAudio::init_device() {
 }
 
 Error AudioDriverPulseAudio::init() {
+	if (initialize_pulse()) {
+		return ERR_CANT_OPEN;
+	}
 
 	active = false;
 	thread_exited = false;
