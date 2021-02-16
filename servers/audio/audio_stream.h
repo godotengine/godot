@@ -66,6 +66,8 @@ class AudioStreamPlaybackResampled : public AudioStreamPlayback {
 	AudioFrame internal_buffer[INTERNAL_BUFFER_LEN + CUBIC_INTERP_HISTORY];
 	uint64_t mix_offset;
 
+	bool ready = false;
+
 protected:
 	void _begin_resample();
 	virtual void _mix_internal(AudioFrame *p_buffer, int p_frames) = 0;
