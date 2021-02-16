@@ -68,7 +68,7 @@
 			<argument index="0" name="to" type="Vector3">
 			</argument>
 			<description>
-				Returns the minimum angle to the given vector, in radians.
+				Returns the unsigned minimum angle to the given vector, in radians.
 			</description>
 		</method>
 		<method name="bounce">
@@ -463,6 +463,17 @@
 			</return>
 			<description>
 				Returns a vector with each component set to one or negative one, depending on the signs of this vector's components, or zero if the component is zero, by calling [method @GlobalScope.sign] on each component.
+			</description>
+		</method>
+		<method name="signed_angle_to">
+			<return type="float">
+			</return>
+			<argument index="0" name="to" type="Vector3">
+			</argument>
+			<argument index="1" name="axis" type="Vector3">
+			</argument>
+			<description>
+				Returns the signed angle to the given vector, in radians. The sign of the angle is positive in a counter-clockwise direction and negative in a clockwise direction when viewed from the side specified by the [code]axis[/code].
 			</description>
 		</method>
 		<method name="slerp">
