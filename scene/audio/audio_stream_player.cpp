@@ -267,6 +267,9 @@ bool AudioStreamPlayer::is_playing() const {
 
 float AudioStreamPlayer::get_playback_position() {
 	if (stream_playback.is_valid()) {
+		if (setseek >= 0.0) {
+			return setseek;
+		}
 		return stream_playback->get_playback_position();
 	}
 
