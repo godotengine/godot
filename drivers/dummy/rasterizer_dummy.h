@@ -210,8 +210,22 @@ public:
 	bool can_create_resources_async() const override { return false; }
 
 	/* TEXTURE API */
-	RID texture_allocate() override { return RID(); }
-	void texture_2d_initialize(RID p_texture, const Ref<Image> &p_image) override {}
+	struct DummyTexture {
+		Ref<Image> image;
+	};
+	mutable RID_PtrOwner<DummyTexture> texture_owner;
+
+	RID texture_allocate() override {
+		DummyTexture *texture = memnew(DummyTexture);
+		ERR_FAIL_COND_V(!texture, RID());
+		return texture_owner.make_rid(texture);
+	}
+	void texture_2d_initialize(RID p_texture, const Ref<Image> &p_image) override {
+		DummyTexture *t = texture_owner.getornull(p_texture);
+		ERR_FAIL_COND(!t);
+		t->image = p_image->duplicate();
+	}
+
 	void texture_2d_layered_initialize(RID p_texture, const Vector<Ref<Image>> &p_layers, RS::TextureLayeredType p_layered_type) override {}
 	void texture_2d_update_immediate(RID p_texture, const Ref<Image> &p_image, int p_layer = 0) override {}
 	void texture_2d_update(RID p_texture, const Ref<Image> &p_image, int p_layer = 0) override {}
@@ -224,7 +238,12 @@ public:
 	void texture_2d_layered_placeholder_initialize(RID p_texture, RenderingServer::TextureLayeredType p_layered_type) override {}
 	void texture_3d_placeholder_initialize(RID p_texture) override {}
 
-	Ref<Image> texture_2d_get(RID p_texture) const override { return Ref<Image>(); }
+	Ref<Image> texture_2d_get(RID p_texture) const override {
+		DummyTexture *t = texture_owner.getornull(p_texture);
+		ERR_FAIL_COND_V(!t, Ref<Image>());
+		return t->image;
+	}
+
 	Ref<Image> texture_2d_layer_get(RID p_texture, int p_layer) const override { return Ref<Image>(); }
 	Vector<Ref<Image>> texture_3d_get(RID p_texture) const override { return Vector<Ref<Image>>(); }
 
@@ -635,7 +654,15 @@ public:
 	Rect2i render_target_get_sdf_rect(RID p_render_target) const override { return Rect2i(); }
 
 	RS::InstanceType get_base_type(RID p_rid) const override { return RS::INSTANCE_NONE; }
-	bool free(RID p_rid) override { return true; }
+	bool free(RID p_rid) override {
+		if (texture_owner.owns(p_rid)) {
+			// delete the texture
+			DummyTexture *texture = texture_owner.getornull(p_rid);
+			texture_owner.free(p_rid);
+			memdelete(texture);
+		}
+		return true;
+	}
 
 	bool has_os_feature(const String &p_feature) const override { return false; }
 
