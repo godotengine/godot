@@ -2,6 +2,14 @@
 # Each line is a file pattern followed by one or more owners.
 # Owners can be @users, @org/teams or emails
 
+# Buildsystem
+
+.*                                  @godotengine/buildsystem
+.github/                            @godotengine/buildsystem
+*.py                                @godotengine/buildsystem
+SConstruct                          @godotengine/buildsystem
+SCsub                               @godotengine/buildsystem
+
 # Core
 
 /core/                              @godotengine/core
@@ -35,6 +43,9 @@ doc_classes/*                       @godotengine/documentation
 ## OS
 /drivers/unix/                      @godotengine/_platforms
 /drivers/windows/                   @godotengine/windows
+
+## Misc
+/drivers/png/                       @godotengine/import
 
 # Editor
 
@@ -130,9 +141,9 @@ doc_classes/*                       @godotengine/documentation
 # Platform
 
 /platform/android/                  @godotengine/android
-/platform/iphone/                   @godotengine/iphone
+/platform/iphone/                   @godotengine/ios
 /platform/javascript/               @godotengine/html5
-/platform/x11/                      @godotengine/linuxbsd
+/platform/x11/                      @godotengine/linux-bsd
 /platform/osx/                      @godotengine/macos
 /platform/uwp/                      @godotengine/uwp
 /platform/windows/                  @godotengine/windows
@@ -146,7 +157,9 @@ doc_classes/*                       @godotengine/documentation
 /scene/debugger/                    @godotengine/debugger
 /scene/gui/                         @godotengine/gui-nodes
 /scene/main/                        @godotengine/core
+/scene/resources/default_theme/     @godotengine/gui-nodes
 /scene/resources/font.*             @godotengine/gui-nodes
+/scene/resources/visual_shader*.*   @godotengine/shaders
 
 # Servers
 
