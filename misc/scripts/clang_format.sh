@@ -16,6 +16,8 @@ while IFS= read -rd '' f; do
         continue
     elif [[ "$f" == "platform/android/java/lib/src/com/google"* ]]; then
         continue
+    elif [[ "$f" == *"-so_wrap."* ]]; then
+        continue
     fi
 
     for extension in ${CLANG_FORMAT_FILE_EXTS[@]}; do
