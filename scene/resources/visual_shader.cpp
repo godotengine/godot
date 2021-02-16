@@ -675,6 +675,8 @@ void VisualShader::get_node_connections(Type p_type, List<Connection> *r_connect
 }
 
 void VisualShader::set_mode(Mode p_mode) {
+	ERR_FAIL_INDEX_MSG(p_mode, Mode::MODE_MAX, vformat("Invalid shader mode: %d.", p_mode));
+
 	if (shader_mode == p_mode) {
 		return;
 	}
