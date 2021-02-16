@@ -37,6 +37,12 @@
 
 #include <errno.h>
 
+#ifdef PULSEAUDIO_ENABLED
+extern "C" {
+extern int initialize_pulse();
+}
+#endif
+
 Error AudioDriverALSA::init_device() {
 	mix_rate = GLOBAL_GET("audio/mix_rate");
 	speaker_mode = SPEAKER_MODE_STEREO;
@@ -147,6 +153,16 @@ Error AudioDriverALSA::init_device() {
 }
 
 Error AudioDriverALSA::init() {
+#ifdef PULSEAUDIO_ENABLED
+	// On pulse enabled systems Alsa will silently use pulse.
+	// It doesn't matter if this fails as that likely means there is no pulse
+	initialize_pulse();
+#endif
+
+	if (initialize_asound()) {
+		return ERR_CANT_OPEN;
+	}
+
 	active = false;
 	thread_exited = false;
 	exit_thread = false;
