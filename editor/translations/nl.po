@@ -47,7 +47,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2021-02-01 20:53+0000\n"
+"PO-Revision-Date: 2021-02-05 23:44+0000\n"
 "Last-Translator: Stijn Hinlopen <f.a.hinlopen@gmail.com>\n"
 "Language-Team: Dutch <https://hosted.weblate.org/projects/godot-engine/godot/"
 "nl/>\n"
@@ -1703,7 +1703,7 @@ msgstr "Script Editor"
 
 #: editor/editor_feature_profile.cpp
 msgid "Asset Library"
-msgstr "Asset bibliotheek"
+msgstr "Materiaalbibliotheek"
 
 #: editor/editor_feature_profile.cpp
 msgid "Scene Tree Editing"
@@ -2901,7 +2901,7 @@ msgstr ""
 
 #: editor/editor_node.cpp
 msgid "Visible Collision Shapes"
-msgstr "Toon collision shapes"
+msgstr "Botsingsvormen tonen"
 
 #: editor/editor_node.cpp
 #, fuzzy
@@ -3185,6 +3185,25 @@ msgid "Open & Run a Script"
 msgstr "Voer Een Script Uit"
 
 #: editor/editor_node.cpp
+#, fuzzy
+msgid ""
+"The following files are newer on disk.\n"
+"What action should be taken?"
+msgstr ""
+"De volgende bestanden zijn nieuwer op de schijf.\n"
+"Welke aktie moet worden genomen?:"
+
+#: editor/editor_node.cpp editor/plugins/script_editor_plugin.cpp
+#: editor/plugins/shader_editor_plugin.cpp
+msgid "Reload"
+msgstr "Herladen"
+
+#: editor/editor_node.cpp editor/plugins/script_editor_plugin.cpp
+#: editor/plugins/shader_editor_plugin.cpp
+msgid "Resave"
+msgstr "Heropslaan"
+
+#: editor/editor_node.cpp
 msgid "New Inherited"
 msgstr "Nieuw afgeleid type"
 
@@ -3210,7 +3229,7 @@ msgstr "Open Script Bewerker"
 
 #: editor/editor_node.cpp editor/project_manager.cpp
 msgid "Open Asset Library"
-msgstr "Open Asset Bibliotheek"
+msgstr "Open Materiaalbibliotheek"
 
 #: editor/editor_node.cpp
 msgid "Open the next Editor"
@@ -7055,16 +7074,6 @@ msgstr ""
 "De volgende bestanden zijn nieuwer op de schijf.\n"
 "Welke aktie moet worden genomen?:"
 
-#: editor/plugins/script_editor_plugin.cpp
-#: editor/plugins/shader_editor_plugin.cpp
-msgid "Reload"
-msgstr "Herladen"
-
-#: editor/plugins/script_editor_plugin.cpp
-#: editor/plugins/shader_editor_plugin.cpp
-msgid "Resave"
-msgstr "Heropslaan"
-
 #: editor/plugins/script_editor_plugin.cpp editor/script_editor_debugger.cpp
 msgid "Debugger"
 msgstr "Debugger"
@@ -7799,7 +7808,7 @@ msgstr "Polygon2D Voorbeeldweergave"
 
 #: editor/plugins/sprite_editor_plugin.cpp
 msgid "Create CollisionPolygon2D"
-msgstr "Creëer CollisionPolygon2D"
+msgstr "CollisionPolygon2D aanmaken"
 
 #: editor/plugins/sprite_editor_plugin.cpp
 msgid "CollisionPolygon2D Preview"
@@ -7841,11 +7850,11 @@ msgstr "Naar Polygon2D omzetten"
 
 #: editor/plugins/sprite_editor_plugin.cpp
 msgid "Invalid geometry, can't create collision polygon."
-msgstr "Ongeldige geometrie, kan geen collision polygoon creëren."
+msgstr "Ongeldige geometrie, kan geen botsingspolygoon aanmaken."
 
 #: editor/plugins/sprite_editor_plugin.cpp
 msgid "Create CollisionPolygon2D Sibling"
-msgstr "Creëer CollisionPolygon2D Sibling"
+msgstr "CollisionPolygon2D aanmaken"
 
 #: editor/plugins/sprite_editor_plugin.cpp
 msgid "Invalid geometry, can't create light occluder."
@@ -8551,7 +8560,7 @@ msgstr "Tegelbitmasker bewerken"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Edit Collision Polygon"
-msgstr "Bewerk Collision Polygon"
+msgstr "Botsingspolygoon aanpassen"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Edit Occlusion Polygon"
@@ -8583,7 +8592,7 @@ msgstr "Verwijder Tile"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Remove Collision Polygon"
-msgstr "Verwijder Collision Polygon"
+msgstr "Botsingsvorm verwijderen"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Remove Occlusion Polygon"
@@ -8611,7 +8620,7 @@ msgstr "Maak concaaf"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Create Collision Polygon"
-msgstr "Creëer Collision Polygon"
+msgstr "Botsingsvorm aanmaken"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Create Occlusion Polygon"
@@ -10085,6 +10094,11 @@ msgid "Projects"
 msgstr "Projecten"
 
 #: editor/project_manager.cpp
+#, fuzzy
+msgid "Loading, please wait..."
+msgstr "Mirrors ophalen, even wachten a.u.b..."
+
+#: editor/project_manager.cpp
 msgid "Last Modified"
 msgstr "Laatst bewerkt"
 
@@ -10122,7 +10136,7 @@ msgid ""
 "Would you like to explore official example projects in the Asset Library?"
 msgstr ""
 "U heeft momenteel geen projecten.\n"
-"Wilt u de officiële voorbeeldprojecten verkennen in de Asset Library?"
+"Wilt u officiële voorbeeldprojecten verkennen in de Materiaalbibliotheek?"
 
 #: editor/project_manager.cpp
 msgid ""
@@ -12472,10 +12486,10 @@ msgid ""
 "Consider adding a CollisionShape2D or CollisionPolygon2D as a child to "
 "define its shape."
 msgstr ""
-"Deze knoop heeft geen vorm (Shape), dus kan het niet met andere objecten "
-"botsen of interactie hebben.\n"
-"Overweeg om een CollisionShape2D of CollisionPolygon2D als kind toe te "
-"voegen om de vorm ervan vast te leggen."
+"Deze knoop heeft geen botsingsvorm als onderliggende knoop en kan dus niet "
+"met andere objecten botsen of interageren.\n"
+"Plaats hieronder een knoop als CollisionShape2D of CollisionPolygon2D om "
+"deze vorm vast te leggen."
 
 #: scene/2d/collision_polygon_2d.cpp
 msgid ""
@@ -12483,13 +12497,14 @@ msgid ""
 "CollisionObject2D derived node. Please only use it as a child of Area2D, "
 "StaticBody2D, RigidBody2D, KinematicBody2D, etc. to give them a shape."
 msgstr ""
-"CollisionPolygon2D dient enkel om een botsingsvorm te koppelen aan een knoop "
-"afgeleid van CollisionObject2D. Plaats hem onder een Area2D-, StaticBody2D-, "
-"RigidBody2D- of KinematicBody2D-knoop."
+"Een knooppunt van het type CollisionPolygon2D kan alleen een botsingsvorm "
+"keveren aan knopen die zijn afgeleid van CollisionObject2D. Plaats het dus "
+"alleen onder een knoop als Area2D, StaticBody2D, RigidBody2D of "
+"KinematicBody2D."
 
 #: scene/2d/collision_polygon_2d.cpp
 msgid "An empty CollisionPolygon2D has no effect on collision."
-msgstr "Een lege CollisionPolygon2D heeft geen effect op botsingen."
+msgstr "Lege CollisionPolygon2D hebben geen botsingsfunctie."
 
 #: scene/2d/collision_shape_2d.cpp
 msgid ""
@@ -12497,15 +12512,16 @@ msgid ""
 "CollisionObject2D derived node. Please only use it as a child of Area2D, "
 "StaticBody2D, RigidBody2D, KinematicBody2D, etc. to give them a shape."
 msgstr ""
-"CollisionShape2D dient enkel om een botsingsvorm te koppelen aan een knoop "
-"afgeleid van CollisionObject2D. Plaats hem onder een Area2D-, StaticBody2D-, "
-"RigidBody2D- of KinematicBody2D-knoop."
+"Een knooppunt van het type CollisionShape2D kan alleen een botsingsvorm "
+"keveren aan knopen die zijn afgeleid van CollisionObject2D. Plaats het dus "
+"alleen onder een knoop als Area2D, StaticBody2D, RigidBody2D of "
+"KinematicBody2D."
 
 #: scene/2d/collision_shape_2d.cpp
 msgid ""
 "A shape must be provided for CollisionShape2D to function. Please create a "
 "shape resource for it!"
-msgstr "Een CollisionShape2D heeft een vorm nodig in de Shape-eigenschap!"
+msgstr "Een CollisionShape2D heeft een vorm nodig."
 
 #: scene/2d/collision_shape_2d.cpp
 msgid ""
@@ -12621,9 +12637,9 @@ msgid ""
 "by the physics engine when running.\n"
 "Change the size in children collision shapes instead."
 msgstr ""
-"Grootteveranderingen van een RigidBody2D (in Character- of Rigidmodus) zal "
-"overschreven worden door de physics engine als het spel start.\n"
-"Verander in plaats daarvan de grootte van CollisionShapes in de kinderen."
+"De grootte van een RigidBody2D (in Character- of Rigidmodus) wordt "
+"overschreven wanneer het spel start.\n"
+"Verander in plaats daarvan de grootte van de onderliggende botsingsvormen."
 
 #: scene/2d/remote_transform_2d.cpp
 msgid "Path property must point to a valid Node2D node to work."
@@ -12652,10 +12668,9 @@ msgid ""
 "to. Please use it as a child of Area2D, StaticBody2D, RigidBody2D, "
 "KinematicBody2D, etc. to give them a shape."
 msgstr ""
-"TileMap met de optie \"Use Parent\" aan heeft een CollisionShape2D-ouder "
-"nodig om vormen aan te geven. De TileMap hoort een kind van een Area2D, "
-"StaticBody2D, RigidBody2D, KinematicBody2D enz. knoop te zijn om ze een vorm "
-"te geven."
+"Een TileMap met de optie \"Use Parent\" ingeschakeld moet knoop afgeleid van "
+"CollisionObject2D (Area2D, StaticBody2D, RigidBody2D of KinematicBody2D) als "
+"ouder hebben."
 
 #: scene/2d/visibility_notifier_2d.cpp
 msgid ""
@@ -12732,10 +12747,10 @@ msgid ""
 "Consider adding a CollisionShape or CollisionPolygon as a child to define "
 "its shape."
 msgstr ""
-"Deze knoop heeft geen vorm (Shape), dus het kan niet met andere objecten "
-"botsen of interactie hebben.\n"
-"Overweeg om een CollisionShape of CollisionPolygon als kind toe te voegen om "
-"de vorm ervan vast te leggen."
+"Deze knoop heeft geen botsingsvorm als onderliggende knoop en kan dus niet "
+"met andere objecten botsen of interageren.\n"
+"Plaats hieronder een knoop als CollisionShape of CollisionPolygon om deze "
+"vorm vast te leggen."
 
 #: scene/3d/collision_polygon.cpp
 msgid ""
@@ -12743,13 +12758,13 @@ msgid ""
 "CollisionObject derived node. Please only use it as a child of Area, "
 "StaticBody, RigidBody, KinematicBody, etc. to give them a shape."
 msgstr ""
-"CollisionPolygon dient enkel om een botsingsvorm te koppelen aan een knoop "
-"afgeleid van CollisionObject. Plaats hem onder een Area-, StaticBody-, "
-"RigidBody- of KinematicBody-knoop."
+"Een knooppunt van het type CollisionPolygon kan alleen een botsingsvorm "
+"keveren aan knopen die zijn afgeleid van CollisionObject. Plaats het dus "
+"alleen onder een knoop als Area, StaticBody, RigidBody of KinematicBody."
 
 #: scene/3d/collision_polygon.cpp
 msgid "An empty CollisionPolygon has no effect on collision."
-msgstr "Een lege CollisionPolygon heeft geen effect op botsingen."
+msgstr "Lege CollisionPolygon hebben geen botsingsfunctie."
 
 #: scene/3d/collision_shape.cpp
 msgid ""
@@ -12757,17 +12772,15 @@ msgid ""
 "derived node. Please only use it as a child of Area, StaticBody, RigidBody, "
 "KinematicBody, etc. to give them a shape."
 msgstr ""
-"CollisionShape dient enkel om een botsingsvorm te koppelen aan een knoop "
-"afgeleid van CollisionObject. Plaats hem onder een Area-, StaticBody-, "
-"RigidBody- of KinematicBody-knoop."
+"Een knooppunt van het type CollisionShape kan alleen een botsingsvorm "
+"keveren aan knopen die zijn afgeleid van CollisionObject2D. Plaats het dus "
+"alleen onder een knoop als Area, StaticBody, RigidBody of KinematicBody."
 
 #: scene/3d/collision_shape.cpp
 msgid ""
 "A shape must be provided for CollisionShape to function. Please create a "
 "shape resource for it."
-msgstr ""
-"Om CollisionShape te laten werken, hoort het een Shape te hebben. Maak "
-"hiervoor alstublieft een Shape bron aan."
+msgstr "Een CollisionShape heeft een vorm nodig."
 
 #: scene/3d/collision_shape.cpp
 msgid ""
@@ -12876,9 +12889,9 @@ msgid ""
 "by the physics engine when running.\n"
 "Change the size in children collision shapes instead."
 msgstr ""
-"Grootteveranderingen van een RigidBody (in Character- of Rigidmodus) zal "
-"overschreven worden door de physics engine als het spel start.\n"
-"Verander in plaats daarvan de grootte van CollisionShapes in de kinderen."
+"De grootte van een RigidBody (in Character- of Rigidmodus) wordt "
+"overschreven wanneer het spel start.\n"
+"Verander in plaats daarvan de grootte van de onderliggende botsingsvormen."
 
 #: scene/3d/physics_joint.cpp
 msgid "Node A and Node B must be PhysicsBodies"
@@ -12918,9 +12931,8 @@ msgid ""
 "running.\n"
 "Change the size in children collision shapes instead."
 msgstr ""
-"Grootteveranderingen van een SoftBody (in Character- of Rigidmodus) zal "
-"overschreven worden door de physics engine als het spel start.\n"
-"Verander de grootte van CollisionShapes in de kinderen."
+"De grootte van een SoftBody wordt overschreven wanneer het spel start.\n"
+"Verander in plaats daarvan de grootte van de onderliggende botsingsvormen."
 
 #: scene/3d/sprite_3d.cpp
 msgid ""
@@ -13065,9 +13077,8 @@ msgid "Must use a valid extension."
 msgstr "Een geldige extensie moet gebruikt worden."
 
 #: scene/gui/graph_edit.cpp
-#, fuzzy
 msgid "Enable grid minimap."
-msgstr "Aan raster kleven"
+msgstr "Rasteroverzicht inschakelen."
 
 #: scene/gui/popup.cpp
 msgid ""

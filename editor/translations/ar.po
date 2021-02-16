@@ -3154,6 +3154,25 @@ msgid "Open & Run a Script"
 msgstr "فتح و تشغيل كود"
 
 #: editor/editor_node.cpp
+#, fuzzy
+msgid ""
+"The following files are newer on disk.\n"
+"What action should be taken?"
+msgstr ""
+"الملفات التالية أحدث على القرص.\n"
+"ما الإجراء الذي ينبغي اتخاذه؟:"
+
+#: editor/editor_node.cpp editor/plugins/script_editor_plugin.cpp
+#: editor/plugins/shader_editor_plugin.cpp
+msgid "Reload"
+msgstr "إعادة تحميل"
+
+#: editor/editor_node.cpp editor/plugins/script_editor_plugin.cpp
+#: editor/plugins/shader_editor_plugin.cpp
+msgid "Resave"
+msgstr "إعادة حفظ"
+
+#: editor/editor_node.cpp
 msgid "New Inherited"
 msgstr "موروث جديد"
 
@@ -7008,16 +7027,6 @@ msgstr ""
 "الملفات التالية أحدث على القرص.\n"
 "ما الإجراء الذي ينبغي اتخاذه؟:"
 
-#: editor/plugins/script_editor_plugin.cpp
-#: editor/plugins/shader_editor_plugin.cpp
-msgid "Reload"
-msgstr "إعادة تحميل"
-
-#: editor/plugins/script_editor_plugin.cpp
-#: editor/plugins/shader_editor_plugin.cpp
-msgid "Resave"
-msgstr "إعادة حفظ"
-
 #: editor/plugins/script_editor_plugin.cpp editor/script_editor_debugger.cpp
 msgid "Debugger"
 msgstr "مُنقح الأخطاء"
@@ -10026,6 +10035,11 @@ msgstr "مدير المشروع"
 #: editor/project_manager.cpp
 msgid "Projects"
 msgstr "المشاريع"
+
+#: editor/project_manager.cpp
+#, fuzzy
+msgid "Loading, please wait..."
+msgstr "يستقبل المرايا، من فضلك إنتظر..."
 
 #: editor/project_manager.cpp
 msgid "Last Modified"

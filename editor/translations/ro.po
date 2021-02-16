@@ -3148,6 +3148,23 @@ msgid "Open & Run a Script"
 msgstr "Deschide și Execută un Script"
 
 #: editor/editor_node.cpp
+#, fuzzy
+msgid ""
+"The following files are newer on disk.\n"
+"What action should be taken?"
+msgstr "Următoarele file au eșuat extragerea din pachet:"
+
+#: editor/editor_node.cpp editor/plugins/script_editor_plugin.cpp
+#: editor/plugins/shader_editor_plugin.cpp
+msgid "Reload"
+msgstr ""
+
+#: editor/editor_node.cpp editor/plugins/script_editor_plugin.cpp
+#: editor/plugins/shader_editor_plugin.cpp
+msgid "Resave"
+msgstr ""
+
+#: editor/editor_node.cpp
 msgid "New Inherited"
 msgstr "Derivare Nouă"
 
@@ -7083,16 +7100,6 @@ msgid ""
 "What action should be taken?:"
 msgstr ""
 
-#: editor/plugins/script_editor_plugin.cpp
-#: editor/plugins/shader_editor_plugin.cpp
-msgid "Reload"
-msgstr ""
-
-#: editor/plugins/script_editor_plugin.cpp
-#: editor/plugins/shader_editor_plugin.cpp
-msgid "Resave"
-msgstr ""
-
 #: editor/plugins/script_editor_plugin.cpp editor/script_editor_debugger.cpp
 msgid "Debugger"
 msgstr ""
@@ -10067,6 +10074,11 @@ msgstr ""
 #, fuzzy
 msgid "Projects"
 msgstr "Proiect"
+
+#: editor/project_manager.cpp
+#, fuzzy
+msgid "Loading, please wait..."
+msgstr "Se recuperează oglinzile, te rog așteaptă..."
 
 #: editor/project_manager.cpp
 msgid "Last Modified"

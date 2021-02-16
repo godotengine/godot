@@ -3240,6 +3240,23 @@ msgid "Open & Run a Script"
 msgstr "Åben & Kør et Script"
 
 #: editor/editor_node.cpp
+#, fuzzy
+msgid ""
+"The following files are newer on disk.\n"
+"What action should be taken?"
+msgstr "De følgende filer kunne ikke trækkes ud af pakken:"
+
+#: editor/editor_node.cpp editor/plugins/script_editor_plugin.cpp
+#: editor/plugins/shader_editor_plugin.cpp
+msgid "Reload"
+msgstr ""
+
+#: editor/editor_node.cpp editor/plugins/script_editor_plugin.cpp
+#: editor/plugins/shader_editor_plugin.cpp
+msgid "Resave"
+msgstr ""
+
+#: editor/editor_node.cpp
 msgid "New Inherited"
 msgstr "Ny Arved"
 
@@ -7233,16 +7250,6 @@ msgid ""
 "What action should be taken?:"
 msgstr ""
 
-#: editor/plugins/script_editor_plugin.cpp
-#: editor/plugins/shader_editor_plugin.cpp
-msgid "Reload"
-msgstr ""
-
-#: editor/plugins/script_editor_plugin.cpp
-#: editor/plugins/shader_editor_plugin.cpp
-msgid "Resave"
-msgstr ""
-
 #: editor/plugins/script_editor_plugin.cpp editor/script_editor_debugger.cpp
 msgid "Debugger"
 msgstr ""
@@ -10251,6 +10258,11 @@ msgstr "Projekt Manager"
 #, fuzzy
 msgid "Projects"
 msgstr "Projekt"
+
+#: editor/project_manager.cpp
+#, fuzzy
+msgid "Loading, please wait..."
+msgstr "Henter spejle, vent venligst ..."
 
 #: editor/project_manager.cpp
 msgid "Last Modified"

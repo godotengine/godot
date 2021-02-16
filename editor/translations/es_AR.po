@@ -21,7 +21,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2021-01-29 19:32+0000\n"
+"PO-Revision-Date: 2021-02-05 23:44+0000\n"
 "Last-Translator: Lisandro Lorea <lisandrolorea@gmail.com>\n"
 "Language-Team: Spanish (Argentina) <https://hosted.weblate.org/projects/"
 "godot-engine/godot/es_AR/>\n"
@@ -3167,6 +3167,25 @@ msgstr "Mergear Con Existentes"
 #: editor/editor_node.cpp
 msgid "Open & Run a Script"
 msgstr "Abrir y Correr un Script"
+
+#: editor/editor_node.cpp
+#, fuzzy
+msgid ""
+"The following files are newer on disk.\n"
+"What action should be taken?"
+msgstr ""
+"Los siguientes archivos son nuevos en disco.\n"
+"¿Qué acción se debería tomar?:"
+
+#: editor/editor_node.cpp editor/plugins/script_editor_plugin.cpp
+#: editor/plugins/shader_editor_plugin.cpp
+msgid "Reload"
+msgstr "Volver a Cargar"
+
+#: editor/editor_node.cpp editor/plugins/script_editor_plugin.cpp
+#: editor/plugins/shader_editor_plugin.cpp
+msgid "Resave"
+msgstr "Volver a Guardar"
 
 #: editor/editor_node.cpp
 msgid "New Inherited"
@@ -7048,16 +7067,6 @@ msgstr ""
 "Los siguientes archivos son nuevos en disco.\n"
 "¿Qué acción se debería tomar?:"
 
-#: editor/plugins/script_editor_plugin.cpp
-#: editor/plugins/shader_editor_plugin.cpp
-msgid "Reload"
-msgstr "Volver a Cargar"
-
-#: editor/plugins/script_editor_plugin.cpp
-#: editor/plugins/shader_editor_plugin.cpp
-msgid "Resave"
-msgstr "Volver a Guardar"
-
 #: editor/plugins/script_editor_plugin.cpp editor/script_editor_debugger.cpp
 msgid "Debugger"
 msgstr "Depurador"
@@ -7377,9 +7386,8 @@ msgid "Yaw"
 msgstr "Yaw"
 
 #: editor/plugins/spatial_editor_plugin.cpp
-#, fuzzy
 msgid "Size"
-msgstr "Tamaño: "
+msgstr "Tamaño"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Objects Drawn"
@@ -10071,6 +10079,11 @@ msgstr "Gestor de Proyectos"
 #: editor/project_manager.cpp
 msgid "Projects"
 msgstr "Proyectos"
+
+#: editor/project_manager.cpp
+#, fuzzy
+msgid "Loading, please wait..."
+msgstr "Recuperando mirrors, esperá, por favor..."
 
 #: editor/project_manager.cpp
 msgid "Last Modified"
