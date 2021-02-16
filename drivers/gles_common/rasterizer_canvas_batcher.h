@@ -1900,7 +1900,7 @@ bool C_PREAMBLE::_prefill_rect(RasterizerCanvas::Item::CommandRect *rect, FillSt
 
 	// we need to treat color change separately because we need to count these
 	// to decide whether to switch on the fly to colored vertices.
-	if (!r_fill_state.curr_batch->color.equals(col)) {
+	if (!change_batch && !r_fill_state.curr_batch->color.equals(col)) {
 		change_batch = true;
 		bdata.total_color_changes++;
 	}
