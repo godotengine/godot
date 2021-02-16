@@ -33,6 +33,7 @@
 #include "core/os/dir_access.h"
 #include "core/os/os.h"
 #include "core/print_string.h"
+#include "core/project_settings.h"
 
 // va_copy was defined in the C99, but not in C++ standards before C++11.
 // When you compile C++ without --std=c++<XX> option, compilers still define
@@ -204,15 +205,14 @@ void RotatedFileLogger::logv(const char *p_format, va_list p_list, bool p_err) {
 		}
 		va_end(list_copy);
 		file->store_buffer((uint8_t *)buf, len);
+
 		if (len >= static_buf_size) {
 			Memory::free_static(buf);
 		}
-#ifdef DEBUG_ENABLED
-		const bool need_flush = true;
-#else
-		bool need_flush = p_err;
-#endif
-		if (need_flush) {
+
+		if (p_err || !ProjectSettings::get_singleton() || GLOBAL_GET("application/run/flush_stdout_on_print")) {
+			// Don't always flush when printing stdout to avoid performance
+			// issues when `print()` is spammed in release builds.
 			file->flush();
 		}
 	}
@@ -231,9 +231,11 @@ void StdLogger::logv(const char *p_format, va_list p_list, bool p_err) {
 		vfprintf(stderr, p_format, p_list);
 	} else {
 		vprintf(p_format, p_list);
-#ifdef DEBUG_ENABLED
-		fflush(stdout);
-#endif
+		if (!ProjectSettings::get_singleton() || GLOBAL_GET("application/run/flush_stdout_on_print")) {
+			// Don't always flush when printing stdout to avoid performance
+			// issues when `print()` is spammed in release builds.
+			fflush(stdout);
+		}
 	}
 }
 

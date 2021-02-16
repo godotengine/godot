@@ -38,6 +38,7 @@ class CollisionObject;
 class CollisionPolygon : public Spatial {
 
 	GDCLASS(CollisionPolygon, Spatial);
+	real_t margin = 0.04;
 
 protected:
 	float depth;
@@ -70,6 +71,9 @@ public:
 	bool is_disabled() const;
 
 	virtual AABB get_item_rect() const;
+
+	real_t get_margin() const;
+	void set_margin(real_t p_margin);
 
 	String get_configuration_warning() const;
 

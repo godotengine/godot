@@ -46,12 +46,13 @@
 # Dzejkop <jakubtrad@gmail.com>, 2020.
 # Mateusz Grzonka <alpinus4@gmail.com>, 2020.
 # gnu-ewm <gnu.ewm@protonmail.com>, 2021.
+# vrid <patryksoon@live.com>, 2021.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2021-02-01 20:54+0000\n"
-"Last-Translator: Tomek <kobewi4e@gmail.com>\n"
+"PO-Revision-Date: 2021-02-15 10:51+0000\n"
+"Last-Translator: vrid <patryksoon@live.com>\n"
 "Language-Team: Polish <https://hosted.weblate.org/projects/godot-engine/"
 "godot/pl/>\n"
 "Language: pl\n"
@@ -3162,6 +3163,25 @@ msgstr "Połącz z Istniejącym"
 #: editor/editor_node.cpp
 msgid "Open & Run a Script"
 msgstr "Otwórz i Uruchom Skrypt"
+
+#: editor/editor_node.cpp
+#, fuzzy
+msgid ""
+"The following files are newer on disk.\n"
+"What action should be taken?"
+msgstr ""
+"Następujące pliki są nowsze na dysku.\n"
+"Jakie działania powinny zostać podjęte?:"
+
+#: editor/editor_node.cpp editor/plugins/script_editor_plugin.cpp
+#: editor/plugins/shader_editor_plugin.cpp
+msgid "Reload"
+msgstr "Przeładuj"
+
+#: editor/editor_node.cpp editor/plugins/script_editor_plugin.cpp
+#: editor/plugins/shader_editor_plugin.cpp
+msgid "Resave"
+msgstr "Zapisz ponownie"
 
 #: editor/editor_node.cpp
 msgid "New Inherited"
@@ -7032,16 +7052,6 @@ msgstr ""
 "Następujące pliki są nowsze na dysku.\n"
 "Jakie działania powinny zostać podjęte?:"
 
-#: editor/plugins/script_editor_plugin.cpp
-#: editor/plugins/shader_editor_plugin.cpp
-msgid "Reload"
-msgstr "Przeładuj"
-
-#: editor/plugins/script_editor_plugin.cpp
-#: editor/plugins/shader_editor_plugin.cpp
-msgid "Resave"
-msgstr "Zapisz ponownie"
-
 #: editor/plugins/script_editor_plugin.cpp editor/script_editor_debugger.cpp
 msgid "Debugger"
 msgstr "Debugger"
@@ -7361,9 +7371,8 @@ msgid "Yaw"
 msgstr "Odchylenie"
 
 #: editor/plugins/spatial_editor_plugin.cpp
-#, fuzzy
 msgid "Size"
-msgstr "Rozmiar: "
+msgstr "Rozmiar"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Objects Drawn"
@@ -10049,6 +10058,11 @@ msgstr "Menedżer projektów"
 #: editor/project_manager.cpp
 msgid "Projects"
 msgstr "Projekty"
+
+#: editor/project_manager.cpp
+#, fuzzy
+msgid "Loading, please wait..."
+msgstr "Pobieranie informacji o serwerach lustrzanych, proszę czekać..."
 
 #: editor/project_manager.cpp
 msgid "Last Modified"

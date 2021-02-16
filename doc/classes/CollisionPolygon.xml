@@ -17,6 +17,9 @@
 		<member name="disabled" type="bool" setter="set_disabled" getter="is_disabled" default="false">
 			If [code]true[/code], no collision will be produced.
 		</member>
+		<member name="margin" type="float" setter="set_margin" getter="get_margin" default="0.04">
+			The collision margin for the generated [Shape]. See [member Shape.margin] for more details.
+		</member>
 		<member name="polygon" type="PoolVector2Array" setter="set_polygon" getter="get_polygon" default="PoolVector2Array(  )">
 			Array of vertices which define the polygon.
 			[b]Note:[/b] The returned value is a copy of the original. Methods which mutate the size or properties of the return value will not impact the original polygon. To change properties of the polygon, assign it to a temporary variable and make changes before reassigning the [code]polygon[/code] member.

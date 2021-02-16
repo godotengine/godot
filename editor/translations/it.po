@@ -55,12 +55,13 @@
 # Lorenzo Cerqua <lorenzocerqua@tutanota.com>, 2020, 2021.
 # Federico Manzella <ferdiu.manzella@gmail.com>, 2020.
 # Ziv D <wizdavid@gmail.com>, 2020.
+# Riteo Siuga <lorenzocerqua@tutanota.com>, 2021.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2021-02-01 20:53+0000\n"
-"Last-Translator: Lorenzo Cerqua <lorenzocerqua@tutanota.com>\n"
+"PO-Revision-Date: 2021-02-16 13:40+0000\n"
+"Last-Translator: Riteo Siuga <lorenzocerqua@tutanota.com>\n"
 "Language-Team: Italian <https://hosted.weblate.org/projects/godot-engine/"
 "godot/it/>\n"
 "Language: it\n"
@@ -68,7 +69,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 4.5-dev\n"
+"X-Generator: Weblate 4.5\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -781,7 +782,7 @@ msgstr "Rimpiazza tutti"
 
 #: editor/code_editor.cpp
 msgid "Selection Only"
-msgstr "Solo selezione"
+msgstr "Solo nella selezione"
 
 #: editor/code_editor.cpp editor/plugins/script_text_editor.cpp
 #: editor/plugins/text_editor.cpp
@@ -789,6 +790,7 @@ msgid "Standard"
 msgstr "Standard"
 
 #: editor/code_editor.cpp editor/plugins/script_editor_plugin.cpp
+#, fuzzy
 msgid "Toggle Scripts Panel"
 msgstr "Commuta pannello degli script"
 
@@ -806,15 +808,16 @@ msgstr "Rimpicciolisci"
 
 #: editor/code_editor.cpp
 msgid "Reset Zoom"
-msgstr "Resetta ingrandimento"
+msgstr "Reimposta ingrandimento"
 
 #: editor/code_editor.cpp
+#, fuzzy
 msgid "Warnings"
 msgstr "Avvertenze"
 
 #: editor/code_editor.cpp
 msgid "Line and column numbers."
-msgstr "Numeri di riga e colonna."
+msgstr "Numeri di riga e di colonna."
 
 #: editor/connections_dialog.cpp
 msgid "Method in target node must be specified."
@@ -822,7 +825,7 @@ msgstr "Il metodo del nodo designato deve essere specificato."
 
 #: editor/connections_dialog.cpp
 msgid "Method name must be a valid identifier."
-msgstr "Il nome del metodo dev'essere un identificatore valido."
+msgstr "Il nome del metodo deve essere un identificatore valido."
 
 #: editor/connections_dialog.cpp
 msgid ""
@@ -3213,6 +3216,25 @@ msgstr "Unisci con esistente"
 #: editor/editor_node.cpp
 msgid "Open & Run a Script"
 msgstr "Apri ed esegui uno script"
+
+#: editor/editor_node.cpp
+#, fuzzy
+msgid ""
+"The following files are newer on disk.\n"
+"What action should be taken?"
+msgstr ""
+"I file seguenti sono più recenti su disco.\n"
+"Che azione deve essere intrapresa?:"
+
+#: editor/editor_node.cpp editor/plugins/script_editor_plugin.cpp
+#: editor/plugins/shader_editor_plugin.cpp
+msgid "Reload"
+msgstr "Ricarica"
+
+#: editor/editor_node.cpp editor/plugins/script_editor_plugin.cpp
+#: editor/plugins/shader_editor_plugin.cpp
+msgid "Resave"
+msgstr "Risalva"
 
 #: editor/editor_node.cpp
 msgid "New Inherited"
@@ -7101,16 +7123,6 @@ msgstr ""
 "I file seguenti sono più recenti su disco.\n"
 "Che azione deve essere intrapresa?:"
 
-#: editor/plugins/script_editor_plugin.cpp
-#: editor/plugins/shader_editor_plugin.cpp
-msgid "Reload"
-msgstr "Ricarica"
-
-#: editor/plugins/script_editor_plugin.cpp
-#: editor/plugins/shader_editor_plugin.cpp
-msgid "Resave"
-msgstr "Risalva"
-
 #: editor/plugins/script_editor_plugin.cpp editor/script_editor_debugger.cpp
 msgid "Debugger"
 msgstr "Debugger"
@@ -10133,6 +10145,11 @@ msgstr "Gestore dei progetti"
 #: editor/project_manager.cpp
 msgid "Projects"
 msgstr "Progetti"
+
+#: editor/project_manager.cpp
+#, fuzzy
+msgid "Loading, please wait..."
+msgstr "Recupero dei mirror, attendi..."
 
 #: editor/project_manager.cpp
 msgid "Last Modified"

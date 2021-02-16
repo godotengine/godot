@@ -7,13 +7,13 @@
 # Thanachart Monpassorn <nunf_2539@hotmail.com>, 2020.
 # Anonymous <noreply@weblate.org>, 2020.
 # Lon3r <mptube.p@gmail.com>, 2020.
-# Kongfa Warorot <gongpha@hotmail.com>, 2020.
+# Kongfa Warorot <gongpha@hotmail.com>, 2020, 2021.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2020-12-31 07:09+0000\n"
-"Last-Translator: Thanachart Monpassorn <nunf_2539@hotmail.com>\n"
+"PO-Revision-Date: 2021-02-15 10:51+0000\n"
+"Last-Translator: Kongfa Warorot <gongpha@hotmail.com>\n"
 "Language-Team: Thai <https://hosted.weblate.org/projects/godot-engine/godot/"
 "th/>\n"
 "Language: th\n"
@@ -21,7 +21,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Weblate 4.4.1-dev\n"
+"X-Generator: Weblate 4.5-dev\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -2347,7 +2347,7 @@ msgstr "ยังไม่ได้เลือกฉากที่จะเล
 
 #: editor/editor_node.cpp
 msgid "Save scene before running..."
-msgstr ""
+msgstr "บันทึกฉากก่อนที่จะทำงาน..."
 
 #: editor/editor_node.cpp
 msgid "Could not start subprocess!"
@@ -3074,6 +3074,25 @@ msgstr "รวมกับที่มีอยู่เดิม"
 #: editor/editor_node.cpp
 msgid "Open & Run a Script"
 msgstr "เปิดและรันสคริปต์"
+
+#: editor/editor_node.cpp
+#, fuzzy
+msgid ""
+"The following files are newer on disk.\n"
+"What action should be taken?"
+msgstr ""
+"ไฟล์ต่อไปนี้ในดิสก์ใหม่กว่า\n"
+"จะทำอย่างไรต่อไป?:"
+
+#: editor/editor_node.cpp editor/plugins/script_editor_plugin.cpp
+#: editor/plugins/shader_editor_plugin.cpp
+msgid "Reload"
+msgstr "โหลดใหม่"
+
+#: editor/editor_node.cpp editor/plugins/script_editor_plugin.cpp
+#: editor/plugins/shader_editor_plugin.cpp
+msgid "Resave"
+msgstr "บันทึกอีกครั้ง"
 
 #: editor/editor_node.cpp
 msgid "New Inherited"
@@ -6887,16 +6906,6 @@ msgstr ""
 "ไฟล์ต่อไปนี้ในดิสก์ใหม่กว่า\n"
 "จะทำอย่างไรต่อไป?:"
 
-#: editor/plugins/script_editor_plugin.cpp
-#: editor/plugins/shader_editor_plugin.cpp
-msgid "Reload"
-msgstr "โหลดใหม่"
-
-#: editor/plugins/script_editor_plugin.cpp
-#: editor/plugins/shader_editor_plugin.cpp
-msgid "Resave"
-msgstr "บันทึกอีกครั้ง"
-
 #: editor/plugins/script_editor_plugin.cpp editor/script_editor_debugger.cpp
 msgid "Debugger"
 msgstr "ตัวดีบัก"
@@ -9849,6 +9858,11 @@ msgstr "ตัวจัดการโปรเจกต์"
 #: editor/project_manager.cpp
 msgid "Projects"
 msgstr "โปรเจกต์"
+
+#: editor/project_manager.cpp
+#, fuzzy
+msgid "Loading, please wait..."
+msgstr "กำลังเรียกข้อมูล โปรดรอ..."
 
 #: editor/project_manager.cpp
 msgid "Last Modified"

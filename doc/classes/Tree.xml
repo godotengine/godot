@@ -192,6 +192,14 @@
 				To tell whether a column of an item is selected, use [method TreeItem.is_selected].
 			</description>
 		</method>
+		<method name="scroll_to_item">
+			<return type="void">
+			</return>
+			<argument index="0" name="item" type="Object">
+			</argument>
+			<description>
+			</description>
+		</method>
 		<method name="set_column_expand">
 			<return type="void">
 			</return>

@@ -1678,6 +1678,8 @@ void RichTextLabel::add_image(const Ref<Texture> &p_image, const int p_width, co
 		return;
 
 	ERR_FAIL_COND(p_image.is_null());
+	ERR_FAIL_COND(p_image->get_width() == 0);
+	ERR_FAIL_COND(p_image->get_height() == 0);
 	ItemImage *item = memnew(ItemImage);
 
 	item->image = p_image;

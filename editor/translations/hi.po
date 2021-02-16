@@ -3117,6 +3117,23 @@ msgid "Open & Run a Script"
 msgstr "ओपन एंड रन एक स्क्रिप्ट"
 
 #: editor/editor_node.cpp
+#, fuzzy
+msgid ""
+"The following files are newer on disk.\n"
+"What action should be taken?"
+msgstr "निम्न फ़ाइलों का निस्सारण नहीं हो पाया:"
+
+#: editor/editor_node.cpp editor/plugins/script_editor_plugin.cpp
+#: editor/plugins/shader_editor_plugin.cpp
+msgid "Reload"
+msgstr ""
+
+#: editor/editor_node.cpp editor/plugins/script_editor_plugin.cpp
+#: editor/plugins/shader_editor_plugin.cpp
+msgid "Resave"
+msgstr ""
+
+#: editor/editor_node.cpp
 msgid "New Inherited"
 msgstr "नई विरासत में मिली"
 
@@ -6914,16 +6931,6 @@ msgid ""
 "What action should be taken?:"
 msgstr ""
 
-#: editor/plugins/script_editor_plugin.cpp
-#: editor/plugins/shader_editor_plugin.cpp
-msgid "Reload"
-msgstr ""
-
-#: editor/plugins/script_editor_plugin.cpp
-#: editor/plugins/shader_editor_plugin.cpp
-msgid "Resave"
-msgstr ""
-
 #: editor/plugins/script_editor_plugin.cpp editor/script_editor_debugger.cpp
 msgid "Debugger"
 msgstr ""
@@ -9837,6 +9844,11 @@ msgstr "प्रोजेक्ट मैनेजर"
 #, fuzzy
 msgid "Projects"
 msgstr "परियोजना के संस्थापक"
+
+#: editor/project_manager.cpp
+#, fuzzy
+msgid "Loading, please wait..."
+msgstr "दर्पण को पुनः प्राप्त करना, कृपया प्रतीक्षा करें ..."
 
 #: editor/project_manager.cpp
 msgid "Last Modified"

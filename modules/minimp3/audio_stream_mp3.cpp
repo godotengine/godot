@@ -159,7 +159,8 @@ void AudioStreamMP3::set_data(const PoolVector<uint8_t> &p_data) {
 	PoolVector<uint8_t>::Read src_datar = p_data.read();
 
 	mp3dec_ex_t mp3d;
-	mp3dec_ex_open_buf(&mp3d, src_datar.ptr(), src_data_len, MP3D_SEEK_TO_SAMPLE);
+	int err = mp3dec_ex_open_buf(&mp3d, src_datar.ptr(), src_data_len, MP3D_SEEK_TO_SAMPLE);
+	ERR_FAIL_COND(err != 0);
 
 	channels = mp3d.info.channels;
 	sample_rate = mp3d.info.hz;

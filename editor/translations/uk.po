@@ -20,7 +20,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Ukrainian (Godot Engine)\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2021-01-16 01:29+0000\n"
+"PO-Revision-Date: 2021-02-05 23:44+0000\n"
 "Last-Translator: Yuri Chornoivan <yurchor@ukr.net>\n"
 "Language-Team: Ukrainian <https://hosted.weblate.org/projects/godot-engine/"
 "godot/uk/>\n"
@@ -3155,6 +3155,25 @@ msgstr "Об'єднати з існуючим"
 #: editor/editor_node.cpp
 msgid "Open & Run a Script"
 msgstr "Відкрити і запустити скрипт"
+
+#: editor/editor_node.cpp
+#, fuzzy
+msgid ""
+"The following files are newer on disk.\n"
+"What action should be taken?"
+msgstr ""
+"Такі файли на диску новіші.\n"
+"Що робити?:"
+
+#: editor/editor_node.cpp editor/plugins/script_editor_plugin.cpp
+#: editor/plugins/shader_editor_plugin.cpp
+msgid "Reload"
+msgstr "Перезавантажити"
+
+#: editor/editor_node.cpp editor/plugins/script_editor_plugin.cpp
+#: editor/plugins/shader_editor_plugin.cpp
+msgid "Resave"
+msgstr "Перезаписати"
 
 #: editor/editor_node.cpp
 msgid "New Inherited"
@@ -7030,16 +7049,6 @@ msgstr ""
 "Такі файли на диску новіші.\n"
 "Що робити?:"
 
-#: editor/plugins/script_editor_plugin.cpp
-#: editor/plugins/shader_editor_plugin.cpp
-msgid "Reload"
-msgstr "Перезавантажити"
-
-#: editor/plugins/script_editor_plugin.cpp
-#: editor/plugins/shader_editor_plugin.cpp
-msgid "Resave"
-msgstr "Перезаписати"
-
 #: editor/plugins/script_editor_plugin.cpp editor/script_editor_debugger.cpp
 msgid "Debugger"
 msgstr "Зневаджувач"
@@ -7360,9 +7369,8 @@ msgid "Yaw"
 msgstr "Відхилення"
 
 #: editor/plugins/spatial_editor_plugin.cpp
-#, fuzzy
 msgid "Size"
-msgstr "Розмір: "
+msgstr "Розмір"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Objects Drawn"
@@ -10054,6 +10062,11 @@ msgstr "Керівник проекту"
 #: editor/project_manager.cpp
 msgid "Projects"
 msgstr "Проєкти"
+
+#: editor/project_manager.cpp
+#, fuzzy
+msgid "Loading, please wait..."
+msgstr "Отримання дзеркал, будь ласка, зачекайте..."
 
 #: editor/project_manager.cpp
 msgid "Last Modified"
