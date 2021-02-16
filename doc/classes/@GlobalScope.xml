@@ -30,9 +30,6 @@
 		<member name="Geometry" type="Geometry" setter="" getter="">
 			The [Geometry] singleton.
 		</member>
-		<member name="GodotSharp" type="GodotSharp" setter="" getter="">
-			The [GodotSharp] singleton.
-		</member>
 		<member name="IP" type="IP" setter="" getter="">
 			The [IP] singleton.
 		</member>
@@ -1084,22 +1081,22 @@
 		<constant name="JOY_DPAD_RIGHT" value="15" enum="JoystickList">
 			Gamepad DPad right.
 		</constant>
-		<constant name="JOY_MISC1" value="16" enum="JoyButtonList">
+		<constant name="JOY_MISC1" value="16" enum="JoystickList">
 			Gamepad SDL miscellaneous button.
 		</constant>
-		<constant name="JOY_PADDLE1" value="17" enum="JoyButtonList">
+		<constant name="JOY_PADDLE1" value="17" enum="JoystickList">
 			Gamepad SDL paddle 1 button.
 		</constant>
-		<constant name="JOY_PADDLE2" value="18" enum="JoyButtonList">
+		<constant name="JOY_PADDLE2" value="18" enum="JoystickList">
 			Gamepad SDL paddle 2 button.
 		</constant>
-		<constant name="JOY_PADDLE3" value="19" enum="JoyButtonList">
+		<constant name="JOY_PADDLE3" value="19" enum="JoystickList">
 			Gamepad SDL paddle 3 button.
 		</constant>
-		<constant name="JOY_PADDLE4" value="20" enum="JoyButtonList">
+		<constant name="JOY_PADDLE4" value="20" enum="JoystickList">
 			Gamepad SDL paddle 4 button.
 		</constant>
-		<constant name="JOY_TOUCHPAD" value="21" enum="JoyButtonList">
+		<constant name="JOY_TOUCHPAD" value="21" enum="JoystickList">
 			Gamepad SDL touchpad button.
 		</constant>
 		<constant name="JOY_L" value="4" enum="JoystickList">
