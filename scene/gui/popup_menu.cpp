@@ -62,7 +62,7 @@ Size2 PopupMenu::_get_contents_minimum_size() const {
 		Size2 size;
 
 		Size2 icon_size = items[i].get_icon_size();
-		size.height = MAX(icon_size.height, items[i].text_buf->get_size().y);
+		size.height = _get_item_height(i);
 		icon_w = MAX(icon_size.width, icon_w);
 
 		size.width += items[i].h_ofs;
@@ -106,13 +106,35 @@ Size2 PopupMenu::_get_contents_minimum_size() const {
 	return minsize;
 }
 
+int PopupMenu::_get_item_height(int p_item) const {
+	ERR_FAIL_INDEX_V(p_item, items.size(), 0);
+	ERR_FAIL_COND_V(p_item < 0, 0);
+
+	int icon_height = items[p_item].get_icon_size().height;
+	if (items[p_item].checkable_type) {
+		icon_height = MAX(icon_height, MAX(get_theme_icon("checked")->get_height(), get_theme_icon("radio_checked")->get_height()));
+	}
+
+	int text_height = items[p_item].text_buf->get_size().height;
+	if (text_height == 0 && !items[p_item].separator) {
+		text_height = get_theme_font("font")->get_height(get_theme_font_size("font_size"));
+	}
+
+	int separator_height = 0;
+	if (items[p_item].separator) {
+		separator_height = MAX(get_theme_stylebox("separator")->get_minimum_size().height, MAX(get_theme_stylebox("labeled_separator_left")->get_minimum_size().height, get_theme_stylebox("labeled_separator_right")->get_minimum_size().height));
+	}
+
+	return MAX(separator_height, MAX(text_height, icon_height));
+}
+
 int PopupMenu::_get_items_total_height() const {
 	int vsep = get_theme_constant("vseparation");
 
 	// Get total height of all items by taking max of icon height and font height
 	int items_total_height = 0;
 	for (int i = 0; i < items.size(); i++) {
-		items_total_height += MAX(items[i].get_icon_size().height, items[i].text_buf->get_size().y) + vsep;
+		items_total_height += _get_item_height(i) + vsep;
 	}
 
 	// Subtract a separator which is not needed for the last item.
@@ -154,7 +176,7 @@ int PopupMenu::_get_mouse_over(const Point2 &p_over) const {
 	for (int i = 0; i < items.size(); i++) {
 		ofs.y += i > 0 ? vseparation : (float)vseparation / 2;
 
-		ofs.y += MAX(items[i].get_icon_size().height, items[i].text_buf->get_size().y);
+		ofs.y += _get_item_height(i);
 
 		if (p_over.y - control->get_position().y < ofs.y) {
 			return i;
@@ -515,7 +537,7 @@ void PopupMenu::_draw_items() {
 
 		Point2 item_ofs = ofs;
 		Size2 icon_size = items[i].get_icon_size();
-		float h = MAX(icon_size.height, items[i].text_buf->get_size().y);
+		float h = _get_item_height(i);
 
 		if (i == mouse_over) {
 			if (rtl) {
@@ -531,19 +553,20 @@ void PopupMenu::_draw_items() {
 		item_ofs.x += items[i].h_ofs;
 		if (items[i].separator) {
 			int sep_h = separator->get_center_size().height + separator->get_minimum_size().height;
+			int sep_ofs = Math::floor((h - sep_h) / 2.0);
 			if (text != String()) {
 				int text_size = items[i].text_buf->get_size().width;
 				int text_center = display_width / 2;
 				int text_left = text_center - text_size / 2;
 				int text_right = text_center + text_size / 2;
 				if (text_left > item_ofs.x) {
-					labeled_separator_left->draw(ci, Rect2(item_ofs + Point2(0, Math::floor((h - sep_h) / 2.0)), Size2(MAX(0, text_left - item_ofs.x), sep_h)));
+					labeled_separator_left->draw(ci, Rect2(item_ofs + Point2(0, sep_ofs), Size2(MAX(0, text_left - item_ofs.x), sep_h)));
 				}
 				if (text_right < display_width) {
-					labeled_separator_right->draw(ci, Rect2(Point2(text_right, item_ofs.y + Math::floor((h - sep_h) / 2.0)), Size2(MAX(0, display_width - text_right), sep_h)));
+					labeled_separator_right->draw(ci, Rect2(Point2(text_right, item_ofs.y + sep_ofs), Size2(MAX(0, display_width - text_right), sep_h)));
 				}
 			} else {
-				separator->draw(ci, Rect2(item_ofs, Size2(display_width, sep_h)));
+				separator->draw(ci, Rect2(item_ofs + Point2(0, sep_ofs), Size2(display_width, sep_h)));
 			}
 		}
 

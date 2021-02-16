@@ -101,6 +101,7 @@ class PopupMenu : public Popup {
 	int _get_mouse_over(const Point2 &p_over) const;
 	virtual Size2 _get_contents_minimum_size() const override;
 
+	int _get_item_height(int p_item) const;
 	int _get_items_total_height() const;
 	void _scroll_to_item(int p_item);
 
