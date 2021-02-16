@@ -17,7 +17,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2021-02-05 09:20+0000\n"
+"PO-Revision-Date: 2021-02-15 10:51+0000\n"
 "Last-Translator: Любомир Василев <lyubomirv@gmx.com>\n"
 "Language-Team: Bulgarian <https://hosted.weblate.org/projects/godot-engine/"
 "godot/bg/>\n"
@@ -2997,6 +2997,25 @@ msgstr ""
 #: editor/editor_node.cpp
 msgid "Open & Run a Script"
 msgstr ""
+
+#: editor/editor_node.cpp
+#, fuzzy
+msgid ""
+"The following files are newer on disk.\n"
+"What action should be taken?"
+msgstr ""
+"Следните файлове са по-нови на диска.\n"
+"Кое действие трябва да се предприеме?:"
+
+#: editor/editor_node.cpp editor/plugins/script_editor_plugin.cpp
+#: editor/plugins/shader_editor_plugin.cpp
+msgid "Reload"
+msgstr "Презареждане"
+
+#: editor/editor_node.cpp editor/plugins/script_editor_plugin.cpp
+#: editor/plugins/shader_editor_plugin.cpp
+msgid "Resave"
+msgstr "Презаписване"
 
 #: editor/editor_node.cpp
 #, fuzzy
@@ -6797,16 +6816,6 @@ msgstr ""
 "Следните файлове са по-нови на диска.\n"
 "Кое действие трябва да се предприеме?:"
 
-#: editor/plugins/script_editor_plugin.cpp
-#: editor/plugins/shader_editor_plugin.cpp
-msgid "Reload"
-msgstr "Презареждане"
-
-#: editor/plugins/script_editor_plugin.cpp
-#: editor/plugins/shader_editor_plugin.cpp
-msgid "Resave"
-msgstr "Презаписване"
-
 #: editor/plugins/script_editor_plugin.cpp editor/script_editor_debugger.cpp
 msgid "Debugger"
 msgstr "Дебъгер"
@@ -7560,7 +7569,7 @@ msgstr "Преобразуване в Mesh2D"
 
 #: editor/plugins/sprite_editor_plugin.cpp
 msgid "Invalid geometry, can't create polygon."
-msgstr ""
+msgstr "Неправилна геометрия, не може да се създаде полигон."
 
 #: editor/plugins/sprite_editor_plugin.cpp
 msgid "Convert to Polygon2D"
@@ -7568,7 +7577,7 @@ msgstr "Превръщане в Polygon2D"
 
 #: editor/plugins/sprite_editor_plugin.cpp
 msgid "Invalid geometry, can't create collision polygon."
-msgstr ""
+msgstr "Неправилна геометрия, не може да се създаде полигон за колизии."
 
 #: editor/plugins/sprite_editor_plugin.cpp
 msgid "Create CollisionPolygon2D Sibling"
@@ -7580,7 +7589,7 @@ msgstr ""
 
 #: editor/plugins/sprite_editor_plugin.cpp
 msgid "Create LightOccluder2D Sibling"
-msgstr ""
+msgstr "Създаване на съседен LightOccluder2D"
 
 #: editor/plugins/sprite_editor_plugin.cpp
 msgid "Sprite"
@@ -7588,15 +7597,15 @@ msgstr ""
 
 #: editor/plugins/sprite_editor_plugin.cpp
 msgid "Simplification: "
-msgstr ""
+msgstr "Опростяване: "
 
 #: editor/plugins/sprite_editor_plugin.cpp
 msgid "Shrink (Pixels): "
-msgstr ""
+msgstr "Смаляване (пиксели): "
 
 #: editor/plugins/sprite_editor_plugin.cpp
 msgid "Grow (Pixels): "
-msgstr ""
+msgstr "Уголемяване (пиксели): "
 
 #: editor/plugins/sprite_editor_plugin.cpp
 msgid "Update Preview"
@@ -7612,11 +7621,11 @@ msgstr "Няма избрани кадри"
 
 #: editor/plugins/sprite_frames_editor_plugin.cpp
 msgid "Add %d Frame(s)"
-msgstr ""
+msgstr "Добавяне на %d кадър/кадри"
 
 #: editor/plugins/sprite_frames_editor_plugin.cpp
 msgid "Add Frame"
-msgstr ""
+msgstr "Добавяне на кадър"
 
 #: editor/plugins/sprite_frames_editor_plugin.cpp
 msgid "Unable to load images"
@@ -7624,27 +7633,27 @@ msgstr "Изображенията не могат да бъдат зареде�
 
 #: editor/plugins/sprite_frames_editor_plugin.cpp
 msgid "ERROR: Couldn't load frame resource!"
-msgstr ""
+msgstr "ГРЕШКА: Не може да се зареди ресурсът с кадъра!"
 
 #: editor/plugins/sprite_frames_editor_plugin.cpp
 msgid "Resource clipboard is empty or not a texture!"
-msgstr ""
+msgstr "Буферът за обмен на ресурси е празен или не съдържа текстура!"
 
 #: editor/plugins/sprite_frames_editor_plugin.cpp
 msgid "Paste Frame"
-msgstr ""
+msgstr "Поставяне на кадър"
 
 #: editor/plugins/sprite_frames_editor_plugin.cpp
 msgid "Add Empty"
-msgstr ""
+msgstr "Добавяне на празен"
 
 #: editor/plugins/sprite_frames_editor_plugin.cpp
 msgid "Change Animation FPS"
-msgstr ""
+msgstr "Промяна на скоростта (кадри/сек) на анимацията"
 
 #: editor/plugins/sprite_frames_editor_plugin.cpp
 msgid "(empty)"
-msgstr ""
+msgstr "(празно)"
 
 #: editor/plugins/sprite_frames_editor_plugin.cpp
 msgid "Move Frame"
@@ -7664,7 +7673,7 @@ msgstr "Скорост:"
 
 #: editor/plugins/sprite_frames_editor_plugin.cpp
 msgid "Loop"
-msgstr ""
+msgstr "Повтаряне"
 
 #: editor/plugins/sprite_frames_editor_plugin.cpp
 msgid "Animation Frames:"
@@ -7680,11 +7689,11 @@ msgstr ""
 
 #: editor/plugins/sprite_frames_editor_plugin.cpp
 msgid "Insert Empty (Before)"
-msgstr ""
+msgstr "Вмъкване на празен (преди)"
 
 #: editor/plugins/sprite_frames_editor_plugin.cpp
 msgid "Insert Empty (After)"
-msgstr ""
+msgstr "Вмъкване на празен (след)"
 
 #: editor/plugins/sprite_frames_editor_plugin.cpp
 msgid "Move (Before)"
@@ -7692,7 +7701,7 @@ msgstr "Преместване (преди)"
 
 #: editor/plugins/sprite_frames_editor_plugin.cpp
 msgid "Move (After)"
-msgstr ""
+msgstr "Преместване (след)"
 
 #: editor/plugins/sprite_frames_editor_plugin.cpp
 msgid "Select Frames"
@@ -7700,11 +7709,11 @@ msgstr "Избиране на кадри"
 
 #: editor/plugins/sprite_frames_editor_plugin.cpp
 msgid "Horizontal:"
-msgstr ""
+msgstr "Хоризонтала:"
 
 #: editor/plugins/sprite_frames_editor_plugin.cpp
 msgid "Vertical:"
-msgstr ""
+msgstr "Вертикала:"
 
 #: editor/plugins/sprite_frames_editor_plugin.cpp
 msgid "Select/Clear All Frames"
@@ -7724,40 +7733,40 @@ msgstr ""
 
 #: editor/plugins/texture_region_editor_plugin.cpp
 msgid "Set Margin"
-msgstr ""
+msgstr "Задаване на отстъп"
 
 #: editor/plugins/texture_region_editor_plugin.cpp
 msgid "Snap Mode:"
-msgstr ""
+msgstr "Режим на прилепване:"
 
 #: editor/plugins/texture_region_editor_plugin.cpp
 #: scene/resources/visual_shader.cpp
 msgid "None"
-msgstr ""
+msgstr "Няма"
 
 #: editor/plugins/texture_region_editor_plugin.cpp
 msgid "Pixel Snap"
-msgstr ""
+msgstr "Прилепване към пикселите"
 
 #: editor/plugins/texture_region_editor_plugin.cpp
 msgid "Grid Snap"
-msgstr ""
+msgstr "Прилепване към решетката"
 
 #: editor/plugins/texture_region_editor_plugin.cpp
 msgid "Auto Slice"
-msgstr ""
+msgstr "Автоматично отрязване"
 
 #: editor/plugins/texture_region_editor_plugin.cpp
 msgid "Offset:"
-msgstr ""
+msgstr "Отместване:"
 
 #: editor/plugins/texture_region_editor_plugin.cpp
 msgid "Step:"
-msgstr ""
+msgstr "Стъпка:"
 
 #: editor/plugins/texture_region_editor_plugin.cpp
 msgid "Sep.:"
-msgstr ""
+msgstr "Разделител:"
 
 #: editor/plugins/texture_region_editor_plugin.cpp
 msgid "TextureRegion"
@@ -7765,15 +7774,15 @@ msgstr "Текстурна област"
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Add All Items"
-msgstr ""
+msgstr "Добавяне на всички елементи"
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Add All"
-msgstr ""
+msgstr "Добавяне на всичко"
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Remove All Items"
-msgstr ""
+msgstr "Премахване на всички елементи"
 
 #: editor/plugins/theme_editor_plugin.cpp editor/project_manager.cpp
 msgid "Remove All"
@@ -7785,7 +7794,7 @@ msgstr "Редактиране на темата"
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Theme editing menu."
-msgstr ""
+msgstr "Меню за редактиране на темата."
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Add Class Items"
@@ -7817,7 +7826,7 @@ msgstr "Заключен бутон"
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Item"
-msgstr ""
+msgstr "Елемент"
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Disabled Item"
@@ -7825,11 +7834,11 @@ msgstr "Заключен елемент"
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Check Item"
-msgstr ""
+msgstr "Елемент за отметка"
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Checked Item"
-msgstr ""
+msgstr "Отметнат елемент"
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Radio Item"
@@ -7841,27 +7850,27 @@ msgstr ""
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Named Sep."
-msgstr ""
+msgstr "Именуван разд."
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Submenu"
-msgstr ""
+msgstr "Подменю"
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Subitem 1"
-msgstr ""
+msgstr "Поделемент 1"
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Subitem 2"
-msgstr ""
+msgstr "Поделемент 2"
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Has"
-msgstr ""
+msgstr "Има"
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Many"
-msgstr ""
+msgstr "Много"
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Disabled LineEdit"
@@ -7869,15 +7878,15 @@ msgstr "Заключено текстово поле"
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Tab 1"
-msgstr ""
+msgstr "Раздел 1"
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Tab 2"
-msgstr ""
+msgstr "Раздел 2"
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Tab 3"
-msgstr ""
+msgstr "Раздел 3"
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Editable Item"
@@ -7885,32 +7894,32 @@ msgstr "Редактируем елемент"
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Subtree"
-msgstr ""
+msgstr "Поддърво"
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Has,Many,Options"
-msgstr ""
+msgstr "Има,Много,Опции"
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Data Type:"
-msgstr ""
+msgstr "Тип на данните:"
 
 #: editor/plugins/theme_editor_plugin.cpp
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Icon"
-msgstr ""
+msgstr "Иконка"
 
 #: editor/plugins/theme_editor_plugin.cpp editor/rename_dialog.cpp
 msgid "Style"
-msgstr ""
+msgstr "Стил"
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Font"
-msgstr ""
+msgstr "Шрифт"
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Color"
-msgstr ""
+msgstr "Цват"
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Theme File"
@@ -7918,11 +7927,11 @@ msgstr "Файл с тема"
 
 #: editor/plugins/tile_map_editor_plugin.cpp
 msgid "Erase Selection"
-msgstr ""
+msgstr "Изтриване на избраното"
 
 #: editor/plugins/tile_map_editor_plugin.cpp
 msgid "Fix Invalid Tiles"
-msgstr ""
+msgstr "Поправка на неправилните плочки"
 
 #: editor/plugins/tile_map_editor_plugin.cpp
 #: modules/gridmap/grid_map_editor_plugin.cpp
@@ -9659,6 +9668,11 @@ msgstr "Управление на проектите"
 #: editor/project_manager.cpp
 msgid "Projects"
 msgstr "Проекти"
+
+#: editor/project_manager.cpp
+#, fuzzy
+msgid "Loading, please wait..."
+msgstr "Зареждане…"
 
 #: editor/project_manager.cpp
 msgid "Last Modified"

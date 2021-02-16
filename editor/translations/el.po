@@ -10,12 +10,13 @@
 # pandektis <pandektis@gmail.com>, 2020.
 # KostasMSC <kargyris@athtech.gr>, 2020.
 # lawfulRobot <czavantias@gmail.com>, 2020.
+# Michalis <michalisntovas@yahoo.gr>, 2021.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2020-09-30 12:32+0000\n"
-"Last-Translator: lawfulRobot <czavantias@gmail.com>\n"
+"PO-Revision-Date: 2021-02-15 10:51+0000\n"
+"Last-Translator: Michalis <michalisntovas@yahoo.gr>\n"
 "Language-Team: Greek <https://hosted.weblate.org/projects/godot-engine/godot/"
 "el/>\n"
 "Language: el\n"
@@ -23,7 +24,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 4.3-dev\n"
+"X-Generator: Weblate 4.5-dev\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -1878,7 +1879,7 @@ msgstr "Αποθήκευση αρχείου"
 
 #: editor/editor_file_dialog.cpp
 msgid "Go Back"
-msgstr "Πήγαινε πίσω"
+msgstr "Επιστροφή"
 
 #: editor/editor_file_dialog.cpp
 msgid "Go Forward"
@@ -3158,6 +3159,25 @@ msgid "Open & Run a Script"
 msgstr "Άνοιξε & Τρέξε μία δέσμη ενεργειών"
 
 #: editor/editor_node.cpp
+#, fuzzy
+msgid ""
+"The following files are newer on disk.\n"
+"What action should be taken?"
+msgstr ""
+"Τα ακόλουθα αρχεία είναι νεότερα στον δίσκο.\n"
+"Τι δράση να ληφθεί;:"
+
+#: editor/editor_node.cpp editor/plugins/script_editor_plugin.cpp
+#: editor/plugins/shader_editor_plugin.cpp
+msgid "Reload"
+msgstr "Επαναφόρτωση"
+
+#: editor/editor_node.cpp editor/plugins/script_editor_plugin.cpp
+#: editor/plugins/shader_editor_plugin.cpp
+msgid "Resave"
+msgstr "Επαναποθήκευση"
+
+#: editor/editor_node.cpp
 msgid "New Inherited"
 msgstr "Νέα κληρονομημένη"
 
@@ -3905,7 +3925,7 @@ msgstr "Αντικατάσταση..."
 
 #: editor/find_in_files.cpp editor/progress_dialog.cpp scene/gui/dialogs.cpp
 msgid "Cancel"
-msgstr "Ακύρωση"
+msgstr "Άκυρο"
 
 #: editor/find_in_files.cpp
 msgid "Find: "
@@ -7015,7 +7035,7 @@ msgstr "Διακοπή"
 #: editor/plugins/script_editor_plugin.cpp editor/project_manager.cpp
 #: editor/script_editor_debugger.cpp
 msgid "Continue"
-msgstr "Συνέχιση"
+msgstr "Συνέχεια"
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Keep Debugger Open"
@@ -7052,16 +7072,6 @@ msgid ""
 msgstr ""
 "Τα ακόλουθα αρχεία είναι νεότερα στον δίσκο.\n"
 "Τι δράση να ληφθεί;:"
-
-#: editor/plugins/script_editor_plugin.cpp
-#: editor/plugins/shader_editor_plugin.cpp
-msgid "Reload"
-msgstr "Επαναφόρτωση"
-
-#: editor/plugins/script_editor_plugin.cpp
-#: editor/plugins/shader_editor_plugin.cpp
-msgid "Resave"
-msgstr "Επαναποθήκευση"
 
 #: editor/plugins/script_editor_plugin.cpp editor/script_editor_debugger.cpp
 msgid "Debugger"
@@ -10084,6 +10094,11 @@ msgstr "Διαχειριστής"
 #: editor/project_manager.cpp
 msgid "Projects"
 msgstr "Έργα"
+
+#: editor/project_manager.cpp
+#, fuzzy
+msgid "Loading, please wait..."
+msgstr "Ανάκτηση δεδοένων κατοπτρισμού, παρακαλώ περιμένετε..."
 
 #: editor/project_manager.cpp
 msgid "Last Modified"

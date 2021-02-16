@@ -3256,6 +3256,22 @@ msgid "Open & Run a Script"
 msgstr "Odpri & Zaženi Skripto"
 
 #: editor/editor_node.cpp
+msgid ""
+"The following files are newer on disk.\n"
+"What action should be taken?"
+msgstr ""
+
+#: editor/editor_node.cpp editor/plugins/script_editor_plugin.cpp
+#: editor/plugins/shader_editor_plugin.cpp
+msgid "Reload"
+msgstr ""
+
+#: editor/editor_node.cpp editor/plugins/script_editor_plugin.cpp
+#: editor/plugins/shader_editor_plugin.cpp
+msgid "Resave"
+msgstr ""
+
+#: editor/editor_node.cpp
 msgid "New Inherited"
 msgstr "Novo Podedovano"
 
@@ -7281,16 +7297,6 @@ msgid ""
 "What action should be taken?:"
 msgstr ""
 
-#: editor/plugins/script_editor_plugin.cpp
-#: editor/plugins/shader_editor_plugin.cpp
-msgid "Reload"
-msgstr ""
-
-#: editor/plugins/script_editor_plugin.cpp
-#: editor/plugins/shader_editor_plugin.cpp
-msgid "Resave"
-msgstr ""
-
 #: editor/plugins/script_editor_plugin.cpp editor/script_editor_debugger.cpp
 msgid "Debugger"
 msgstr "Razhroščevalnik"
@@ -10304,6 +10310,11 @@ msgstr "Upravljalnik Projekta"
 #, fuzzy
 msgid "Projects"
 msgstr "Projekt"
+
+#: editor/project_manager.cpp
+#, fuzzy
+msgid "Loading, please wait..."
+msgstr "Pridobivanje virov, počakajte..."
 
 #: editor/project_manager.cpp
 msgid "Last Modified"

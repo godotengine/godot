@@ -3239,6 +3239,24 @@ msgid "Open & Run a Script"
 msgstr "Ouvrir et exécuter un script"
 
 #: editor/editor_node.cpp
+msgid ""
+"The following files are newer on disk.\n"
+"What action should be taken?"
+msgstr ""
+"Les fichiers suivants sont plus récents sur le disque.\n"
+"Quelle action doit être prise ?"
+
+#: editor/editor_node.cpp editor/plugins/script_editor_plugin.cpp
+#: editor/plugins/shader_editor_plugin.cpp
+msgid "Reload"
+msgstr "Recharger"
+
+#: editor/editor_node.cpp editor/plugins/script_editor_plugin.cpp
+#: editor/plugins/shader_editor_plugin.cpp
+msgid "Resave"
+msgstr "Ré-enregistrer"
+
+#: editor/editor_node.cpp
 msgid "New Inherited"
 msgstr "Nouveau hérité"
 
@@ -7133,16 +7151,6 @@ msgstr ""
 "Les fichiers suivants sont plus récents sur le disque.\n"
 "Quelle action doit être prise ? :"
 
-#: editor/plugins/script_editor_plugin.cpp
-#: editor/plugins/shader_editor_plugin.cpp
-msgid "Reload"
-msgstr "Recharger"
-
-#: editor/plugins/script_editor_plugin.cpp
-#: editor/plugins/shader_editor_plugin.cpp
-msgid "Resave"
-msgstr "Ré-enregistrer"
-
 #: editor/plugins/script_editor_plugin.cpp editor/script_editor_debugger.cpp
 msgid "Debugger"
 msgstr "Débogueur"
@@ -10168,6 +10176,10 @@ msgstr "Gestionnaire de projets"
 #: editor/project_manager.cpp
 msgid "Projects"
 msgstr "Projets"
+
+#: editor/project_manager.cpp
+msgid "Loading, please wait..."
+msgstr "Chargement en cours, veuillez patienter..."
 
 #: editor/project_manager.cpp
 msgid "Last Modified"

@@ -15,7 +15,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2021-02-01 20:53+0000\n"
+"PO-Revision-Date: 2021-02-15 10:51+0000\n"
 "Last-Translator: Mokarrom Hossain <mhb2016.bzs@gmail.com>\n"
 "Language-Team: Bengali <https://hosted.weblate.org/projects/godot-engine/"
 "godot/bn/>\n"
@@ -439,14 +439,12 @@ msgid "Track is not of type Spatial, can't insert key"
 msgstr "ট্র্যাক Spatial টাইপের নয়, কী সন্নিবেশ করতে পারে না"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Add Transform Track Key"
-msgstr "রুপান্তরের ধরণ"
+msgstr "ট্রান্সফর্ম ট্র্যাক কী যুক্ত করুন"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Add Track Key"
-msgstr "অ্যানিমেশন (Anim) ট্র্যাক যোগ করুন"
+msgstr "ট্র্যাক কী যুক্ত করুন"
 
 #: editor/animation_track_editor.cpp
 msgid "Track path is invalid, so can't add a method key."
@@ -514,11 +512,11 @@ msgstr "অ্যানিমেশন তৈরি এবং সম্পাদ
 
 #: editor/animation_track_editor.cpp
 msgid "Only show tracks from nodes selected in tree."
-msgstr ""
+msgstr "Tree মধ্যে নির্বাচিত নোডগুলি থেকে কেবল ট্র্যাকগুলি দেখান।"
 
 #: editor/animation_track_editor.cpp
 msgid "Group tracks by node or display them as plain list."
-msgstr ""
+msgstr "নোড দ্বারা গ্রুপ ট্র্যাক করুন বা তাদের সরল তালিকা হিসাবে প্রদর্শন করুন।"
 
 #: editor/animation_track_editor.cpp
 msgid "Snap:"
@@ -552,9 +550,8 @@ msgid "Animation properties."
 msgstr "অ্যানিমেশন বৈশিষ্ট্য।"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Copy Tracks"
-msgstr "মানসমূহ প্রতিলিপি/কপি করুন"
+msgstr "ট্র্যাকগুলি অনুলিপি করুন"
 
 #: editor/animation_track_editor.cpp
 msgid "Scale Selection"
@@ -598,7 +595,7 @@ msgstr ""
 
 #: editor/animation_track_editor.cpp
 msgid "Use Bezier Curves"
-msgstr ""
+msgstr "বেজিয়ার কার্ভ ব্যবহার করুন"
 
 #: editor/animation_track_editor.cpp
 msgid "Anim. Optimizer"
@@ -645,9 +642,8 @@ msgid "Scale Ratio:"
 msgstr "স্কেল/মাপের অনুপাত:"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Select Tracks to Copy"
-msgstr "গুণাগুণ/বৈশিষ্ট্য বাছাই করুন"
+msgstr "গুণাগুণ/বৈশিষ্ট্য copy করুন"
 
 #: editor/animation_track_editor.cpp editor/editor_log.cpp
 #: editor/editor_properties.cpp
@@ -3280,6 +3276,25 @@ msgstr "বিদ্যমানের সাথে একত্রিত কর
 #: editor/editor_node.cpp
 msgid "Open & Run a Script"
 msgstr "একটি স্ক্রিপ্ট খুলুন এবং চালান"
+
+#: editor/editor_node.cpp
+#, fuzzy
+msgid ""
+"The following files are newer on disk.\n"
+"What action should be taken?"
+msgstr ""
+"নিম্নোক্ত ফাইলসমূহ ডিস্কে নতুনতর।\n"
+"কোন সিধান্তটি নেয়া উচিত হবে?:"
+
+#: editor/editor_node.cpp editor/plugins/script_editor_plugin.cpp
+#: editor/plugins/shader_editor_plugin.cpp
+msgid "Reload"
+msgstr "রিলোড"
+
+#: editor/editor_node.cpp editor/plugins/script_editor_plugin.cpp
+#: editor/plugins/shader_editor_plugin.cpp
+msgid "Resave"
+msgstr "পুনঃসংরক্ষণ"
 
 #: editor/editor_node.cpp
 #, fuzzy
@@ -7463,16 +7478,6 @@ msgstr ""
 "নিম্নোক্ত ফাইলসমূহ ডিস্কে নতুনতর।\n"
 "কোন সিধান্তটি নেয়া উচিত হবে?:"
 
-#: editor/plugins/script_editor_plugin.cpp
-#: editor/plugins/shader_editor_plugin.cpp
-msgid "Reload"
-msgstr "রিলোড"
-
-#: editor/plugins/script_editor_plugin.cpp
-#: editor/plugins/shader_editor_plugin.cpp
-msgid "Resave"
-msgstr "পুনঃসংরক্ষণ"
-
 #: editor/plugins/script_editor_plugin.cpp editor/script_editor_debugger.cpp
 msgid "Debugger"
 msgstr "ডিবাগার"
@@ -10613,6 +10618,11 @@ msgstr "প্রজেক্ট ম্যানেজার"
 #, fuzzy
 msgid "Projects"
 msgstr "নতুন প্রকল্প"
+
+#: editor/project_manager.cpp
+#, fuzzy
+msgid "Loading, please wait..."
+msgstr "মিরর রিট্রাইভ করা হচ্ছে, দযা করে অপেক্ষা করুন..."
 
 #: editor/project_manager.cpp
 msgid "Last Modified"
