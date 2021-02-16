@@ -104,9 +104,9 @@ private:
 
 	// -- Inspector --
 	TileProxyObject *tile_proxy_object;
-	Label *atlas_tile_inspector_label;
-	EditorInspector *atlas_tile_inspector;
-	Button *manage_tiles_properties_button;
+	Label *tile_inspector_label;
+	EditorInspector *tile_inspector;
+	void _inspector_property_selected(String p_property);
 
 	TileSetAtlasSourceProxyObject *atlas_source_proxy_object;
 	Label *atlas_source_inspector_label;

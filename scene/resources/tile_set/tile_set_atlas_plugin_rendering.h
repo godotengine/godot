@@ -66,7 +66,7 @@ class TileSetAtlasPluginRendering : public TileSetAtlasPlugin {
 	GDCLASS(TileSetAtlasPluginRendering, TileSetAtlasPlugin);
 
 private:
-	float fp_adjust = 0.00001;
+	static constexpr float fp_adjust = 0.00001;
 	bool quadrant_order_dirty = false;
 
 public:
@@ -84,6 +84,9 @@ public:
 	virtual void initialize_quadrant(TileMap *p_tile_map, TileMapQuadrant *p_quadrant) override;
 	virtual void create_quadrant(TileMap *p_tile_map, const Vector2i &p_quadrant_coords, TileMapQuadrant *p_quadrant) override;
 	virtual void cleanup_quadrant(TileMap *p_tile_map, TileMapQuadrant *p_quadrant) override;
+
+	// Other.
+	static void draw_tile(RID p_canvas_item, Vector2i p_position, const Ref<TileSet> p_tile_set, int p_atlas_source_id, Vector2i p_atlas_coords, int p_alternative_tile, Color p_modulation = Color(1.0, 1.0, 1.0, 1.0));
 };
 
 #endif // TILE_SET_ATLAS_PLUGIN_RENDERING_H

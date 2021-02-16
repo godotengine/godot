@@ -237,6 +237,10 @@ void TileSetAtlasSourceEditor::TileProxyObject::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("changed", PropertyInfo(Variant::STRING, "what")));
 }
 
+void TileSetAtlasSourceEditor::_inspector_property_selected(String p_property) {
+	print_line(vformat("selected property: %s", p_property));
+}
+
 void TileSetAtlasSourceEditor::_update_tile_id_label() {
 	if (selected_tile != TileSetAtlasSource::INVALID_ATLAS_COORDS && selected_alternative != TileSetAtlasSource::INVALID_TILE_ALTERNATIVE) {
 		tool_tile_id_label->set_text(vformat("%d, %s, %d", tile_set_atlas_source_id, selected_tile, selected_alternative));
@@ -282,13 +286,8 @@ void TileSetAtlasSourceEditor::_update_tile_inspector() {
 	}
 
 	// Update visibility.
-	atlas_tile_inspector_label->set_visible(has_atlas_tile_selected);
-	atlas_tile_inspector->set_visible(has_atlas_tile_selected);
-}
-
-void TileSetAtlasSourceEditor::_update_manage_tile_properties_button() {
-	bool has_tile_or_alternative_tile_selected = (tools_button_group->get_pressed_button() == tool_select_button) && (selected_tile != TileSetAtlasSource::INVALID_ATLAS_COORDS);
-	manage_tiles_properties_button->set_visible(has_tile_or_alternative_tile_selected);
+	tile_inspector_label->set_visible(has_atlas_tile_selected);
+	tile_inspector->set_visible(has_atlas_tile_selected);
 }
 
 void TileSetAtlasSourceEditor::_update_atlas_view() {
@@ -467,7 +466,6 @@ void TileSetAtlasSourceEditor::_tile_atlas_control_gui_input(const Ref<InputEven
 				// Update only what's needed.
 				tileset_changed_needs_update = false;
 				_update_tile_inspector();
-				_update_manage_tile_properties_button();
 				_update_atlas_view();
 				_update_tile_id_label();
 			}
@@ -503,7 +501,6 @@ void TileSetAtlasSourceEditor::_tile_atlas_control_gui_input(const Ref<InputEven
 				// Update only what's needed.
 				tileset_changed_needs_update = false;
 				_update_tile_inspector();
-				_update_manage_tile_properties_button();
 				_update_atlas_view();
 				_update_tile_id_label();
 			}
@@ -646,7 +643,6 @@ void TileSetAtlasSourceEditor::_tile_atlas_control_gui_input(const Ref<InputEven
 							selected_alternative = 0;
 						}
 						_update_tile_inspector();
-						_update_manage_tile_properties_button();
 						_update_tile_id_label();
 
 						// Start move dragging.
@@ -680,7 +676,6 @@ void TileSetAtlasSourceEditor::_tile_atlas_control_gui_input(const Ref<InputEven
 					selected_alternative = 0;
 				}
 				_update_tile_inspector();
-				_update_manage_tile_properties_button();
 				_update_tile_id_label();
 
 				// Pops up the correct menu, depending on whether we have a tile or not.
@@ -1122,7 +1117,6 @@ void TileSetAtlasSourceEditor::_tile_alternatives_control_gui_input(const Ref<In
 					selected_alternative = tile.z;
 
 					_update_tile_inspector();
-					_update_manage_tile_properties_button();
 					_update_tile_id_label();
 				}
 			}
@@ -1134,7 +1128,6 @@ void TileSetAtlasSourceEditor::_tile_alternatives_control_gui_input(const Ref<In
 				selected_alternative = tile.z;
 
 				_update_tile_inspector();
-				_update_manage_tile_properties_button();
 				_update_tile_id_label();
 
 				if (selected_tile != TileSetAtlasSource::INVALID_ATLAS_COORDS && selected_alternative != TileSetAtlasSource::INVALID_TILE_ALTERNATIVE) {
@@ -1218,7 +1211,6 @@ void TileSetAtlasSourceEditor::edit(Ref<TileSet> p_tile_set, TileSetAtlasSource 
 	_update_tile_id_label();
 	_update_atlas_view();
 	_update_tile_inspector();
-	_update_manage_tile_properties_button();
 }
 
 void TileSetAtlasSourceEditor::init_source() {
@@ -1355,7 +1347,6 @@ void TileSetAtlasSourceEditor::_notification(int p_what) {
 				_update_tile_id_label();
 				_update_atlas_view();
 				_update_tile_inspector();
-				_update_manage_tile_properties_button();
 
 				tileset_changed_needs_update = false;
 			}
@@ -1392,25 +1383,21 @@ TileSetAtlasSourceEditor::TileSetAtlasSourceEditor() {
 	middle_panel->add_child(middle_vbox_container);
 
 	// Tile inspector.
-	atlas_tile_inspector_label = memnew(Label);
-	atlas_tile_inspector_label->set_text(TTR("Tile properties:"));
-	atlas_tile_inspector_label->hide();
-	middle_vbox_container->add_child(atlas_tile_inspector_label);
+	tile_inspector_label = memnew(Label);
+	tile_inspector_label->set_text(TTR("Tile properties:"));
+	tile_inspector_label->hide();
+	middle_vbox_container->add_child(tile_inspector_label);
 
 	tile_proxy_object = memnew(TileProxyObject(this));
 	tile_proxy_object->connect("changed", callable_mp(this, &TileSetAtlasSourceEditor::_update_atlas_view).unbind(1));
 
-	atlas_tile_inspector = memnew(EditorInspector);
-	atlas_tile_inspector->set_undo_redo(undo_redo);
-	atlas_tile_inspector->set_enable_v_scroll(false);
-	atlas_tile_inspector->edit(tile_proxy_object);
-	atlas_tile_inspector->set_use_folding(true);
-	middle_vbox_container->add_child(atlas_tile_inspector);
-
-	manage_tiles_properties_button = memnew(Button);
-	manage_tiles_properties_button->set_text(TTR("Manage tiles properties"));
-	manage_tiles_properties_button->set_h_size_flags(Control::SIZE_EXPAND_FILL);
-	middle_vbox_container->add_child(manage_tiles_properties_button);
+	tile_inspector = memnew(EditorInspector);
+	tile_inspector->set_undo_redo(undo_redo);
+	tile_inspector->set_enable_v_scroll(false);
+	tile_inspector->edit(tile_proxy_object);
+	tile_inspector->set_use_folding(true);
+	tile_inspector->connect("property_selected", callable_mp(this, &TileSetAtlasSourceEditor::_inspector_property_selected));
+	middle_vbox_container->add_child(tile_inspector);
 
 	// Atlas source inspector.
 	atlas_source_inspector_label = memnew(Label);
@@ -1456,7 +1443,6 @@ TileSetAtlasSourceEditor::TileSetAtlasSourceEditor() {
 	tool_select_button->connect("pressed", callable_mp(this, &TileSetAtlasSourceEditor::_update_fix_selected_and_hovered_tiles));
 	tool_select_button->connect("pressed", callable_mp(this, &TileSetAtlasSourceEditor::_update_tile_id_label));
 	tool_select_button->connect("pressed", callable_mp(this, &TileSetAtlasSourceEditor::_update_tile_inspector));
-	tool_select_button->connect("pressed", callable_mp(this, &TileSetAtlasSourceEditor::_update_manage_tile_properties_button));
 	tool_select_button->connect("pressed", callable_mp(this, &TileSetAtlasSourceEditor::_update_atlas_view));
 	tool_select_button->connect("pressed", callable_mp(this, &TileSetAtlasSourceEditor::_update_toolbar));
 	toolbox->add_child(tool_select_button);
@@ -1469,7 +1455,6 @@ TileSetAtlasSourceEditor::TileSetAtlasSourceEditor() {
 	tool_add_remove_button->connect("pressed", callable_mp(this, &TileSetAtlasSourceEditor::_update_fix_selected_and_hovered_tiles));
 	tool_add_remove_button->connect("pressed", callable_mp(this, &TileSetAtlasSourceEditor::_update_tile_id_label));
 	tool_add_remove_button->connect("pressed", callable_mp(this, &TileSetAtlasSourceEditor::_update_tile_inspector));
-	tool_add_remove_button->connect("pressed", callable_mp(this, &TileSetAtlasSourceEditor::_update_manage_tile_properties_button));
 	tool_add_remove_button->connect("pressed", callable_mp(this, &TileSetAtlasSourceEditor::_update_atlas_view));
 	tool_add_remove_button->connect("pressed", callable_mp(this, &TileSetAtlasSourceEditor::_update_toolbar));
 	toolbox->add_child(tool_add_remove_button);
@@ -1482,7 +1467,6 @@ TileSetAtlasSourceEditor::TileSetAtlasSourceEditor() {
 	tool_add_remove_rect_button->connect("pressed", callable_mp(this, &TileSetAtlasSourceEditor::_update_fix_selected_and_hovered_tiles));
 	tool_add_remove_rect_button->connect("pressed", callable_mp(this, &TileSetAtlasSourceEditor::_update_tile_id_label));
 	tool_add_remove_rect_button->connect("pressed", callable_mp(this, &TileSetAtlasSourceEditor::_update_tile_inspector));
-	tool_add_remove_rect_button->connect("pressed", callable_mp(this, &TileSetAtlasSourceEditor::_update_manage_tile_properties_button));
 	tool_add_remove_rect_button->connect("pressed", callable_mp(this, &TileSetAtlasSourceEditor::_update_atlas_view));
 	tool_add_remove_rect_button->connect("pressed", callable_mp(this, &TileSetAtlasSourceEditor::_update_toolbar));
 	toolbox->add_child(tool_add_remove_rect_button);

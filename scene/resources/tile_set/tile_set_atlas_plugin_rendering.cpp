@@ -84,6 +84,58 @@ const String TileSetAtlasPluginRendering::ID = "rendering";
 void TileSetAtlasPluginRendering::tilemap_notification(TileMap *p_tile_map, int p_what) {
 }
 
+void TileSetAtlasPluginRendering::draw_tile(RID p_canvas_item, Vector2i p_position, const Ref<TileSet> p_tile_set, int p_atlas_source_id, Vector2i p_atlas_coords, int p_alternative_tile, Color p_modulation) {
+	ERR_FAIL_COND(!p_tile_set.is_valid());
+	ERR_FAIL_COND(!p_tile_set->has_source(p_atlas_source_id));
+	ERR_FAIL_COND(!p_tile_set->get_source(p_atlas_source_id)->has_tile(p_atlas_coords));
+	ERR_FAIL_COND(!p_tile_set->get_source(p_atlas_source_id)->has_alternative_tile(p_atlas_coords, p_alternative_tile));
+
+	TileSetSource *source = *p_tile_set->get_source(p_atlas_source_id);
+	TileSetAtlasSource *atlas_source = Object::cast_to<TileSetAtlasSource>(source);
+	if (atlas_source) {
+		// Get the texture.
+		Ref<Texture2D> tex = atlas_source->get_texture();
+		if (!tex.is_valid()) {
+			return;
+		}
+
+		// Get tile data.
+		TileData *tile_data = atlas_source->get_tile_data(p_atlas_coords, p_alternative_tile);
+
+		// Compute the offset
+		Rect2i source_rect = atlas_source->get_tile_texture_region(p_atlas_coords);
+		Vector2i tile_offset = p_tile_set->get_tile_effective_texture_offset(p_atlas_source_id, p_atlas_coords, p_alternative_tile);
+
+		// Compute the destination rectangle in the CanvasItem.
+		Rect2 dest_rect;
+		dest_rect.size = source_rect.size;
+		dest_rect.size.x += fp_adjust;
+		dest_rect.size.y += fp_adjust;
+
+		bool transpose = tile_data->tile_get_transpose();
+		if (transpose) {
+			dest_rect.position = (p_position - Vector2(dest_rect.size.y, dest_rect.size.x) / 2 - tile_offset);
+		} else {
+			dest_rect.position = (p_position - dest_rect.size / 2 - tile_offset);
+		}
+
+		if (tile_data->tile_get_flip_h()) {
+			dest_rect.size.x = -dest_rect.size.x;
+		}
+
+		if (tile_data->tile_get_flip_v()) {
+			dest_rect.size.y = -dest_rect.size.y;
+		}
+
+		// Get the tile modulation.
+		Color modulate = tile_data->tile_get_modulate();
+		modulate = Color(modulate.r * p_modulation.r, modulate.g * p_modulation.g, modulate.b * p_modulation.b, modulate.a * p_modulation.a);
+
+		// Draw the tile.
+		tex->draw_rect_region(p_canvas_item, dest_rect, source_rect, modulate, transpose, p_tile_set->is_uv_clipping());
+	}
+}
+
 void TileSetAtlasPluginRendering::update_dirty_quadrants(TileMap *p_tile_map, SelfList<TileMapQuadrant>::List &r_dirty_quadrant_list) {
 	Ref<TileSet> tile_set = p_tile_map->get_tileset();
 	ERR_FAIL_COND(!tile_set.is_valid());
@@ -114,24 +166,17 @@ void TileSetAtlasPluginRendering::update_dirty_quadrants(TileMap *p_tile_map, Se
 			TileSetSource *source;
 			if (tile_set->has_source(c.source_id)) {
 				source = *tile_set->get_source(c.source_id);
+
+				if (!source->has_tile(c.get_atlas_coords()) || !source->has_alternative_tile(c.get_atlas_coords(), c.alternative_tile)) {
+					continue;
+				}
+
 				TileSetAtlasSource *atlas_source = Object::cast_to<TileSetAtlasSource>(source);
 				if (atlas_source) {
-					// Check if the tileset has a tile with the given ID, otherwise, ignore it.
-					if (!atlas_source->has_tile(c.get_atlas_coords()) || !atlas_source->has_alternative_tile(c.get_atlas_coords(), c.alternative_tile)) {
-						continue;
-					}
-
-					// Get the texture.
-					Ref<Texture2D> tex = atlas_source->get_texture();
-					if (!tex.is_valid()) {
-						continue;
-					}
-
-					// Get the material.
-					Ref<ShaderMaterial> mat = atlas_source->get_tile_data(c.get_atlas_coords(), c.alternative_tile)->tile_get_material();
-
-					// Get the Z-index.
-					int z_index = atlas_source->get_tile_data(c.get_atlas_coords(), c.alternative_tile)->tile_get_z_index();
+					// Get the tile data.
+					TileData *tile_data = atlas_source->get_tile_data(c.get_atlas_coords(), c.alternative_tile);
+					Ref<ShaderMaterial> mat = tile_data->tile_get_material();
+					int z_index = tile_data->tile_get_z_index();
 
 					// Create two canvas items, for rendering and debug.
 					RID canvas_item;
@@ -165,41 +210,8 @@ void TileSetAtlasPluginRendering::update_dirty_quadrants(TileMap *p_tile_map, Se
 						canvas_item = prev_canvas_item;
 					}
 
-					// Get tile data.
-					TileData *tile_data = atlas_source->get_tile_data(c.get_atlas_coords(), c.alternative_tile);
-
-					// Compute the offset
-					Rect2i source_rect = atlas_source->get_tile_texture_region(c.get_atlas_coords());
-					Vector2i tile_offset = tile_set->get_tile_effective_texture_offset(c.source_id, c.get_atlas_coords(), c.alternative_tile);
-
-					// Compute the destination rectangle in the CanvasItem.
-					Rect2 dest_rect;
-					dest_rect.size = source_rect.size;
-					dest_rect.size.x += fp_adjust;
-					dest_rect.size.y += fp_adjust;
-
-					bool transpose = tile_data->tile_get_transpose();
-					if (transpose) {
-						dest_rect.position = (E->key() - Vector2(dest_rect.size.y, dest_rect.size.x) / 2 - q.pos - tile_offset);
-					} else {
-						dest_rect.position = (E->key() - dest_rect.size / 2 - q.pos - tile_offset);
-					}
-
-					if (tile_data->tile_get_flip_h()) {
-						dest_rect.size.x = -dest_rect.size.x;
-					}
-
-					if (tile_data->tile_get_flip_v()) {
-						dest_rect.size.y = -dest_rect.size.y;
-					}
-
-					// Get the tile modulation.
-					Color modulate = atlas_source->get_tile_data(c.get_atlas_coords(), c.alternative_tile)->tile_get_modulate();
-					Color self_modulate = p_tile_map->get_self_modulate();
-					modulate = Color(modulate.r * self_modulate.r, modulate.g * self_modulate.g, modulate.b * self_modulate.b, modulate.a * self_modulate.a);
-
-					// Draw the tile.
-					tex->draw_rect_region(canvas_item, dest_rect, source_rect, modulate, transpose, tile_set->is_uv_clipping());
+					// Drawing the tile in the canvas item.
+					draw_tile(canvas_item, E->key() - q.pos, tile_set, c.source_id, c.get_atlas_coords(), c.alternative_tile, p_tile_map->get_self_modulate());
 
 					// Change the debug_canvas_item transform ?
 					if (debug_canvas_item.is_valid()) {

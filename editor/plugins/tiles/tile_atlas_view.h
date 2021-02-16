@@ -77,7 +77,8 @@ private:
 
 	Control *base_tiles_drawing_root;
 
-	TextureRect *base_tiles_texture_rect;
+	Control *base_tiles_draw;
+	void _draw_base_tiles();
 
 	Control *base_tiles_texture_grid;
 	void _draw_base_tiles_texture_grid();
