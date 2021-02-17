@@ -373,7 +373,7 @@ def configure(env):
 # Return the project NDK version.
 # This is kept in sync with the value in 'platform/android/java/app/config.gradle'.
 def get_project_ndk_version():
-    return "21.3.6528147"
+    return "21.4.7075529"
 
 
 # Return NDK version string in source.properties (adapted from the Chromium project).
