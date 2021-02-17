@@ -535,7 +535,7 @@ void DisplayServerWindows::delete_sub_window(WindowID p_window) {
 	}
 #endif
 
-	if ((OS::get_singleton()->get_current_tablet_driver() == "wintab") && wintab_available && windows[p_window].wtctx) {
+	if ((tablet_get_current_driver() == "wintab") && wintab_available && windows[p_window].wtctx) {
 		wintab_WTClose(windows[p_window].wtctx);
 		windows[p_window].wtctx = 0;
 	}
@@ -2021,7 +2021,7 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 		} break;
 		case WT_CSRCHANGE:
 		case WT_PROXIMITY: {
-			if ((OS::get_singleton()->get_current_tablet_driver() == "wintab") && wintab_available && windows[window_id].wtctx) {
+			if ((tablet_get_current_driver() == "wintab") && wintab_available && windows[window_id].wtctx) {
 				AXIS pressure;
 				if (wintab_WTInfo(WTI_DEVICES + windows[window_id].wtlc.lcDevice, DVC_NPRESSURE, &pressure)) {
 					windows[window_id].min_pressure = int(pressure.axMin);
@@ -2035,7 +2035,7 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 			}
 		} break;
 		case WT_PACKET: {
-			if ((OS::get_singleton()->get_current_tablet_driver() == "wintab") && wintab_available && windows[window_id].wtctx) {
+			if ((tablet_get_current_driver() == "wintab") && wintab_available && windows[window_id].wtctx) {
 				PACKET packet;
 				if (wintab_WTPacket(windows[window_id].wtctx, wParam, &packet)) {
 					float pressure = float(packet.pkNormalPressure - windows[window_id].min_pressure) / float(windows[window_id].max_pressure - windows[window_id].min_pressure);
@@ -2114,7 +2114,7 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 				break;
 			}
 
-			if ((OS::get_singleton()->get_current_tablet_driver() != "winink") || !winink_available) {
+			if ((tablet_get_current_driver() != "winink") || !winink_available) {
 				break;
 			}
 
@@ -2140,7 +2140,7 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 				break;
 			}
 
-			if ((OS::get_singleton()->get_current_tablet_driver() != "winink") || !winink_available) {
+			if ((tablet_get_current_driver() != "winink") || !winink_available) {
 				break;
 			}
 
@@ -2304,7 +2304,7 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 			mm->set_shift((wParam & MK_SHIFT) != 0);
 			mm->set_alt(alt_mem);
 
-			if ((OS::get_singleton()->get_current_tablet_driver() == "wintab") && wintab_available && windows[window_id].wtctx) {
+			if ((tablet_get_current_driver() == "wintab") && wintab_available && windows[window_id].wtctx) {
 				// Note: WinTab sends both WT_PACKET and WM_xBUTTONDOWN/UP/MOUSEMOVE events, use mouse 1/0 pressure only when last_pressure was not update recently.
 				if (windows[window_id].last_pressure_update < 10) {
 					windows[window_id].last_pressure_update++;
@@ -2799,7 +2799,7 @@ void DisplayServerWindows::_process_activate_event(WindowID p_window_id, WPARAM 
 		alt_mem = false;
 	}
 
-	if ((OS::get_singleton()->get_current_tablet_driver() == "wintab") && wintab_available && windows[p_window_id].wtctx) {
+	if ((tablet_get_current_driver() == "wintab") && wintab_available && windows[p_window_id].wtctx) {
 		wintab_WTEnable(windows[p_window_id].wtctx, GET_WM_ACTIVATE_STATE(wParam, lParam));
 	}
 }
@@ -3037,7 +3037,7 @@ DisplayServer::WindowID DisplayServerWindows::_create_window(WindowMode p_mode, 
 
 		DragAcceptFiles(wd.hWnd, true);
 
-		if ((OS::get_singleton()->get_current_tablet_driver() == "wintab") && wintab_available) {
+		if ((tablet_get_current_driver() == "wintab") && wintab_available) {
 			wintab_WTInfo(WTI_DEFSYSCTX, 0, &wd.wtlc);
 			wd.wtlc.lcOptions |= CXO_MESSAGES;
 			wd.wtlc.lcPktData = PK_NORMAL_PRESSURE | PK_TANGENT_PRESSURE | PK_ORIENTATION;
@@ -3104,6 +3104,40 @@ typedef enum _SHC_PROCESS_DPI_AWARENESS {
 	SHC_PROCESS_PER_MONITOR_DPI_AWARE = 2
 } SHC_PROCESS_DPI_AWARENESS;
 
+int DisplayServerWindows::tablet_get_driver_count() const {
+	return tablet_drivers.size();
+}
+
+String DisplayServerWindows::tablet_get_driver_name(int p_driver) const {
+	if (p_driver < 0 || p_driver >= tablet_drivers.size()) {
+		return "";
+	} else {
+		return tablet_drivers[p_driver];
+	}
+}
+
+String DisplayServerWindows::tablet_get_current_driver() const {
+	return tablet_driver;
+}
+
+void DisplayServerWindows::tablet_set_current_driver(const String &p_driver) {
+	if (tablet_get_driver_count() == 0) {
+		return;
+	}
+	bool found = false;
+	for (int i = 0; i < tablet_get_driver_count(); i++) {
+		if (p_driver == tablet_get_driver_name(i)) {
+			found = true;
+		}
+	}
+	if (found) {
+		_update_tablet_ctx(tablet_driver, p_driver);
+		tablet_driver = p_driver;
+	} else {
+		ERR_PRINT("Unknown tablet driver " + p_driver + ".");
+	}
+}
+
 DisplayServerWindows::DisplayServerWindows(const String &p_rendering_driver, WindowMode p_mode, uint32_t p_flags, const Vector2i &p_resolution, Error &r_error) {
 	drop_events = false;
 	key_event_pos = 0;
@@ -3121,6 +3155,35 @@ DisplayServerWindows::DisplayServerWindows(const String &p_rendering_driver, Win
 	mouse_mode = MOUSE_MODE_VISIBLE;
 
 	outside = true;
+
+	//Note: Wacom WinTab driver API for pen input, for devices incompatible with Windows Ink.
+	HMODULE wintab_lib = LoadLibraryW(L"wintab32.dll");
+	if (wintab_lib) {
+		wintab_WTOpen = (WTOpenPtr)GetProcAddress(wintab_lib, "WTOpenW");
+		wintab_WTClose = (WTClosePtr)GetProcAddress(wintab_lib, "WTClose");
+		wintab_WTInfo = (WTInfoPtr)GetProcAddress(wintab_lib, "WTInfoW");
+		wintab_WTPacket = (WTPacketPtr)GetProcAddress(wintab_lib, "WTPacket");
+		wintab_WTEnable = (WTEnablePtr)GetProcAddress(wintab_lib, "WTEnable");
+
+		wintab_available = wintab_WTOpen && wintab_WTClose && wintab_WTInfo && wintab_WTPacket && wintab_WTEnable;
+	}
+
+	if (wintab_available) {
+		tablet_drivers.push_back("wintab");
+	}
+
+	//Note: Windows Ink API for pen input, available on Windows 8+ only.
+	HMODULE user32_lib = LoadLibraryW(L"user32.dll");
+	if (user32_lib) {
+		win8p_GetPointerType = (GetPointerTypePtr)GetProcAddress(user32_lib, "GetPointerType");
+		win8p_GetPointerPenInfo = (GetPointerPenInfoPtr)GetProcAddress(user32_lib, "GetPointerPenInfo");
+
+		winink_available = win8p_GetPointerType && win8p_GetPointerPenInfo;
+	}
+
+	if (winink_available) {
+		tablet_drivers.push_back("winink");
+	}
 
 	if (OS::get_singleton()->is_hidpi_allowed()) {
 		HMODULE Shcore = LoadLibraryW(L"Shcore.dll");
