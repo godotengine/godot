@@ -71,7 +71,10 @@ private:
 		void reset();
 	};
 
-	bool exit_udev;
+#ifdef UDEV_ENABLED
+	bool use_udev;
+#endif
+	bool exit_monitor;
 	Mutex *joy_mutex;
 	Thread *joy_thread;
 	InputDefault *input;
