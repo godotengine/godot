@@ -62,7 +62,9 @@ public:
 		TKey key;
 		TData data;
 
-		Pair() {}
+		Pair(const TKey &p_key) :
+				key(p_key),
+				data() {}
 		Pair(const TKey &p_key, const TData &p_data) :
 				key(p_key),
 				data(p_data) {
@@ -90,6 +92,12 @@ public:
 		const TData &value() const {
 			return pair.value();
 		}
+
+		Element(const TKey &p_key) :
+				pair(p_key) {}
+		Element(const Element &p_other) :
+				hash(p_other.hash),
+				pair(p_other.pair.key, p_other.pair.data) {}
 	};
 
 private:
@@ -192,14 +200,12 @@ private:
 
 	Element *create_element(const TKey &p_key) {
 		/* if element doesn't exist, create it */
-		Element *e = memnew(Element);
+		Element *e = memnew(Element(p_key));
 		ERR_FAIL_COND_V_MSG(!e, nullptr, "Out of memory.");
 		uint32_t hash = Hasher::hash(p_key);
 		uint32_t index = hash & ((1 << hash_table_power) - 1);
 		e->next = hash_table[index];
 		e->hash = hash;
-		e->pair.key = p_key;
-		e->pair.data = TData();
 
 		hash_table[index] = e;
 		elements++;
@@ -228,9 +234,7 @@ private:
 			const Element *e = p_t.hash_table[i];
 
 			while (e) {
-				Element *le = memnew(Element); /* local element */
-
-				*le = *e; /* copy data */
+				Element *le = memnew(Element(*e)); /* local element */
 
 				/* add to list and reassign pointers */
 				le->next = hash_table[i];
