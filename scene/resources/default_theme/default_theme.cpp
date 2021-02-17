@@ -884,6 +884,7 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	theme->set_icon("color_sample", "ColorPicker", make_icon(color_picker_sample_png));
 	theme->set_icon("preset_bg", "ColorPicker", make_icon(mini_checkerboard_png));
 	theme->set_icon("overbright_indicator", "ColorPicker", make_icon(overbright_indicator_png));
+	theme->set_icon("bar_arrow", "ColorPicker", make_icon(bar_arrow_png));
 
 	theme->set_icon("bg", "ColorPickerButton", make_icon(mini_checkerboard_png));
 
