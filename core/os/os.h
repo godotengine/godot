@@ -149,11 +149,6 @@ public:
 	bool is_layered_allowed() const { return _allow_layered; }
 	bool is_hidpi_allowed() const { return _allow_hidpi; }
 
-	virtual int get_tablet_driver_count() const { return 0; };
-	virtual String get_tablet_driver_name(int p_driver) const { return ""; };
-	virtual String get_current_tablet_driver() const { return ""; };
-	virtual void set_current_tablet_driver(const String &p_driver){};
-
 	void ensure_user_data_dir();
 
 	virtual MainLoop *get_main_loop() const = 0;

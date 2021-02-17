@@ -73,9 +73,6 @@ class OS_Windows : public OS {
 	HINSTANCE hInstance;
 	MainLoop *main_loop;
 
-	String tablet_driver;
-	Vector<String> tablet_drivers;
-
 #ifdef WASAPI_ENABLED
 	AudioDriverWASAPI driver_wasapi;
 #endif
@@ -118,11 +115,6 @@ public:
 	virtual MainLoop *get_main_loop() const override;
 
 	virtual String get_name() const override;
-
-	virtual int get_tablet_driver_count() const override;
-	virtual String get_tablet_driver_name(int p_driver) const override;
-	virtual String get_current_tablet_driver() const override;
-	virtual void set_current_tablet_driver(const String &p_driver) override;
 
 	virtual void initialize_joypads() override {}
 

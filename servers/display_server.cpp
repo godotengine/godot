@@ -504,6 +504,11 @@ void DisplayServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_native_icon", "filename"), &DisplayServer::set_native_icon);
 	ClassDB::bind_method(D_METHOD("set_icon", "image"), &DisplayServer::set_icon);
 
+	ClassDB::bind_method(D_METHOD("tablet_get_driver_count"), &DisplayServer::tablet_get_driver_count);
+	ClassDB::bind_method(D_METHOD("tablet_get_driver_name", "idx"), &DisplayServer::tablet_get_driver_name);
+	ClassDB::bind_method(D_METHOD("tablet_get_current_driver"), &DisplayServer::tablet_get_current_driver);
+	ClassDB::bind_method(D_METHOD("tablet_set_current_driver", "name"), &DisplayServer::tablet_set_current_driver);
+
 	BIND_ENUM_CONSTANT(FEATURE_GLOBAL_MENU);
 	BIND_ENUM_CONSTANT(FEATURE_SUBWINDOWS);
 	BIND_ENUM_CONSTANT(FEATURE_TOUCHSCREEN);

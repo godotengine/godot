@@ -248,11 +248,6 @@ public:
 	bool request_permissions();
 	Vector<String> get_granted_permissions() const;
 
-	int get_tablet_driver_count() const;
-	String get_tablet_driver_name(int p_driver) const;
-	String get_current_tablet_driver() const;
-	void set_current_tablet_driver(const String &p_driver);
-
 	static _OS *get_singleton() { return singleton; }
 
 	_OS() { singleton = this; }

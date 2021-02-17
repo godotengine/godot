@@ -340,6 +340,11 @@ public:
 	virtual String keyboard_get_layout_language(int p_index) const;
 	virtual String keyboard_get_layout_name(int p_index) const;
 
+	virtual int tablet_get_driver_count() const { return 1; };
+	virtual String tablet_get_driver_name(int p_driver) const { return "default"; };
+	virtual String tablet_get_current_driver() const { return "default"; };
+	virtual void tablet_set_current_driver(const String &p_driver){};
+
 	virtual void process_events() = 0;
 
 	virtual void force_process_and_drop_events();

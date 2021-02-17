@@ -765,76 +765,11 @@ Error OS_Windows::move_to_trash(const String &p_path) {
 	return OK;
 }
 
-int OS_Windows::get_tablet_driver_count() const {
-	return tablet_drivers.size();
-}
-
-String OS_Windows::get_tablet_driver_name(int p_driver) const {
-	if (p_driver < 0 || p_driver >= tablet_drivers.size()) {
-		return "";
-	} else {
-		return tablet_drivers[p_driver];
-	}
-}
-
-String OS_Windows::get_current_tablet_driver() const {
-	return tablet_driver;
-}
-
-void OS_Windows::set_current_tablet_driver(const String &p_driver) {
-	if (get_tablet_driver_count() == 0) {
-		return;
-	}
-	bool found = false;
-	for (int i = 0; i < get_tablet_driver_count(); i++) {
-		if (p_driver == get_tablet_driver_name(i)) {
-			found = true;
-		}
-	}
-	if (found) {
-		if (DisplayServerWindows::get_singleton()) {
-			((DisplayServerWindows *)DisplayServerWindows::get_singleton())->_update_tablet_ctx(tablet_driver, p_driver);
-		}
-		tablet_driver = p_driver;
-	} else {
-		ERR_PRINT("Unknown tablet driver " + p_driver + ".");
-	}
-}
-
 OS_Windows::OS_Windows(HINSTANCE _hInstance) {
 	ticks_per_second = 0;
 	ticks_start = 0;
 	main_loop = nullptr;
 	process_map = nullptr;
-
-	//Note: Wacom WinTab driver API for pen input, for devices incompatible with Windows Ink.
-	HMODULE wintab_lib = LoadLibraryW(L"wintab32.dll");
-	if (wintab_lib) {
-		DisplayServerWindows::wintab_WTOpen = (WTOpenPtr)GetProcAddress(wintab_lib, "WTOpenW");
-		DisplayServerWindows::wintab_WTClose = (WTClosePtr)GetProcAddress(wintab_lib, "WTClose");
-		DisplayServerWindows::wintab_WTInfo = (WTInfoPtr)GetProcAddress(wintab_lib, "WTInfoW");
-		DisplayServerWindows::wintab_WTPacket = (WTPacketPtr)GetProcAddress(wintab_lib, "WTPacket");
-		DisplayServerWindows::wintab_WTEnable = (WTEnablePtr)GetProcAddress(wintab_lib, "WTEnable");
-
-		DisplayServerWindows::wintab_available = DisplayServerWindows::wintab_WTOpen && DisplayServerWindows::wintab_WTClose && DisplayServerWindows::wintab_WTInfo && DisplayServerWindows::wintab_WTPacket && DisplayServerWindows::wintab_WTEnable;
-	}
-
-	if (DisplayServerWindows::wintab_available) {
-		tablet_drivers.push_back("wintab");
-	}
-
-	//Note: Windows Ink API for pen input, available on Windows 8+ only.
-	HMODULE user32_lib = LoadLibraryW(L"user32.dll");
-	if (user32_lib) {
-		DisplayServerWindows::win8p_GetPointerType = (GetPointerTypePtr)GetProcAddress(user32_lib, "GetPointerType");
-		DisplayServerWindows::win8p_GetPointerPenInfo = (GetPointerPenInfoPtr)GetProcAddress(user32_lib, "GetPointerPenInfo");
-
-		DisplayServerWindows::winink_available = DisplayServerWindows::win8p_GetPointerType && DisplayServerWindows::win8p_GetPointerPenInfo;
-	}
-
-	if (DisplayServerWindows::winink_available) {
-		tablet_drivers.push_back("winink");
-	}
 
 	force_quit = false;
 

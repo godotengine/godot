@@ -469,6 +469,12 @@
 		<member name="display/mouse_cursor/tooltip_position_offset" type="Vector2" setter="" getter="" default="Vector2( 10, 10 )">
 			Position offset for tooltips, relative to the mouse cursor's hotspot.
 		</member>
+		<member name="input_devices/pen_tablet/driver" type="String" setter="" getter="">
+			Specifies the tablet driver to use. If left empty, the default driver will be used.
+		</member>
+		<member name="input_devices/pen_tablet/driver.windows" type="String" setter="" getter="">
+			Override for [member input_devices/pen_tablet/driver] on Windows.
+		</member>
 		<member name="display/window/dpi/allow_hidpi" type="bool" setter="" getter="" default="false">
 			If [code]true[/code], allows HiDPI display on Windows and macOS. This setting has no effect on desktop Linux, as DPI-awareness fallbacks are not supported there.
 		</member>
@@ -512,9 +518,6 @@
 		</member>
 		<member name="display/window/size/width" type="int" setter="" getter="" default="1024">
 			Sets the game's main viewport width. On desktop platforms, this is the default window size. Stretch mode settings also use this as a reference when enabled.
-		</member>
-		<member name="display/window/tablet_driver" type="String" setter="" getter="">
-			Specifies the tablet driver to use. If left empty, the default driver will be used.
 		</member>
 		<member name="display/window/text_name" type="String" setter="" getter="" default="&quot;&quot;">
 			Specifies the [TextServer] to use. If left empty, the default will be used.
