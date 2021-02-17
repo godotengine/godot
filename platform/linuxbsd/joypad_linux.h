@@ -70,10 +70,13 @@ private:
 		void reset();
 	};
 
-	bool exit_udev;
+#ifdef UDEV_ENABLED
+	bool use_udev = false;
+#endif
+	bool exit_monitor = false;
 	Mutex joy_mutex;
 	Thread joy_thread;
-	Input *input;
+	Input *input = nullptr;
 	Joypad joypads[JOYPADS_MAX];
 	Vector<String> attached_devices;
 
