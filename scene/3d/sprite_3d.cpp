@@ -888,11 +888,13 @@ void AnimatedSprite3D::_notification(int p_what) {
 						} else {
 							frame = fc - 1;
 						}
+						emit_signal(SceneStringNames::get_singleton()->animation_finished);
 					} else {
 						frame++;
 					}
 
 					_queue_update();
+					emit_signal(SceneStringNames::get_singleton()->frame_changed);
 				}
 
 				float to_process = MIN(timeout, remaining);
@@ -1082,6 +1084,7 @@ void AnimatedSprite3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_frame"), &AnimatedSprite3D::get_frame);
 
 	ADD_SIGNAL(MethodInfo("frame_changed"));
+	ADD_SIGNAL(MethodInfo("animation_finished"));
 
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "frames", PROPERTY_HINT_RESOURCE_TYPE, "SpriteFrames"), "set_sprite_frames", "get_sprite_frames");
 	ADD_PROPERTY(PropertyInfo(Variant::STRING_NAME, "animation"), "set_animation", "get_animation");
