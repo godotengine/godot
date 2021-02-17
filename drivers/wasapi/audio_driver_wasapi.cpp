@@ -387,7 +387,7 @@ Error AudioDriverWASAPI::finish_capture_device() {
 }
 
 Error AudioDriverWASAPI::init() {
-	mix_rate = GLOBAL_GET("audio/mix_rate");
+	mix_rate = GLOBAL_GET("audio/driver/mix_rate");
 
 	Error err = init_render_device();
 	if (err != OK) {

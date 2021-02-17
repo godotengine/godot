@@ -68,14 +68,13 @@ class ProjectSettingsEditor : public AcceptDialog {
 	LineEdit *search_box;
 	CheckButton *advanced;
 
-	VBoxContainer *advanced_bar;
+	HBoxContainer *advanced_bar;
 	LineEdit *category_box;
 	LineEdit *property_box;
 	Button *add_button;
 	Button *del_button;
 	OptionButton *type;
 	OptionButton *feature_override;
-	Label *error_label;
 
 	ConfirmationDialog *del_confirmation;
 

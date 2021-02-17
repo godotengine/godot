@@ -313,6 +313,8 @@ class EditorInspector : public ScrollContainer {
 	String property_prefix; //used for sectioned inspector
 	String object_class;
 
+	bool restrict_to_basic = false;
+
 	void _edit_set(const String &p_name, const Variant &p_value, bool p_refresh_all, const String &p_changed_field);
 
 	void _property_changed(const String &p_path, const Variant &p_value, const String &p_name = "", bool p_changing = false);
@@ -399,6 +401,8 @@ public:
 	bool is_sub_inspector() const { return sub_inspector; }
 
 	void set_use_deletable_properties(bool p_enabled);
+
+	void set_restrict_to_basic_settings(bool p_restrict);
 
 	EditorInspector();
 };

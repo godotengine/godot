@@ -439,14 +439,14 @@ bool Control::is_layout_rtl() const {
 		} else if (parent_window) {
 			return parent_window->is_layout_rtl();
 		} else {
-			if (GLOBAL_GET("display/window/force_right_to_left_layout_direction")) {
+			if (GLOBAL_GET("internationalization/rendering/force_right_to_left_layout_direction")) {
 				return true;
 			}
 			String locale = TranslationServer::get_singleton()->get_tool_locale();
 			return TS->is_locale_right_to_left(locale);
 		}
 	} else if (data.layout_dir == LAYOUT_DIRECTION_LOCALE) {
-		if (GLOBAL_GET("display/window/force_right_to_left_layout_direction")) {
+		if (GLOBAL_GET("internationalization/rendering/force_right_to_left_layout_direction")) {
 			return true;
 		}
 		String locale = TranslationServer::get_singleton()->get_tool_locale();

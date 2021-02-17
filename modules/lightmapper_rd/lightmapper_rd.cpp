@@ -1225,23 +1225,23 @@ LightmapperRD::BakeError LightmapperRD::bake(BakeQuality p_quality, bool p_use_d
 
 		switch (p_quality) {
 			case BAKE_QUALITY_LOW: {
-				push_constant.ray_count = GLOBAL_GET("rendering/gpu_lightmapper/quality/low_quality_ray_count");
+				push_constant.ray_count = GLOBAL_GET("rendering/lightmapping/bake_quality/low_quality_ray_count");
 			} break;
 			case BAKE_QUALITY_MEDIUM: {
-				push_constant.ray_count = GLOBAL_GET("rendering/gpu_lightmapper/quality/medium_quality_ray_count");
+				push_constant.ray_count = GLOBAL_GET("rendering/lightmapping/bake_quality/medium_quality_ray_count");
 			} break;
 			case BAKE_QUALITY_HIGH: {
-				push_constant.ray_count = GLOBAL_GET("rendering/gpu_lightmapper/quality/high_quality_ray_count");
+				push_constant.ray_count = GLOBAL_GET("rendering/lightmapping/bake_quality/high_quality_ray_count");
 			} break;
 			case BAKE_QUALITY_ULTRA: {
-				push_constant.ray_count = GLOBAL_GET("rendering/gpu_lightmapper/quality/ultra_quality_ray_count");
+				push_constant.ray_count = GLOBAL_GET("rendering/lightmapping/bake_quality/ultra_quality_ray_count");
 			} break;
 		}
 
 		push_constant.ray_count = CLAMP(push_constant.ray_count, 16, 8192);
 
-		int max_region_size = nearest_power_of_2_templated(int(GLOBAL_GET("rendering/gpu_lightmapper/performance/region_size")));
-		int max_rays = GLOBAL_GET("rendering/gpu_lightmapper/performance/max_rays_per_pass");
+		int max_region_size = nearest_power_of_2_templated(int(GLOBAL_GET("rendering/lightmapping/bake_performance/region_size")));
+		int max_rays = GLOBAL_GET("rendering/lightmapping/bake_performance/max_rays_per_pass");
 
 		int x_regions = (atlas_size.width - 1) / max_region_size + 1;
 		int y_regions = (atlas_size.height - 1) / max_region_size + 1;
@@ -1347,23 +1347,23 @@ LightmapperRD::BakeError LightmapperRD::bake(BakeQuality p_quality, bool p_use_d
 
 		switch (p_quality) {
 			case BAKE_QUALITY_LOW: {
-				push_constant.ray_count = GLOBAL_GET("rendering/gpu_lightmapper/quality/low_quality_probe_ray_count");
+				push_constant.ray_count = GLOBAL_GET("rendering/lightmapping/bake_quality/low_quality_probe_ray_count");
 			} break;
 			case BAKE_QUALITY_MEDIUM: {
-				push_constant.ray_count = GLOBAL_GET("rendering/gpu_lightmapper/quality/medium_quality_probe_ray_count");
+				push_constant.ray_count = GLOBAL_GET("rendering/lightmapping/bake_quality/medium_quality_probe_ray_count");
 			} break;
 			case BAKE_QUALITY_HIGH: {
-				push_constant.ray_count = GLOBAL_GET("rendering/gpu_lightmapper/quality/high_quality_probe_ray_count");
+				push_constant.ray_count = GLOBAL_GET("rendering/lightmapping/bake_quality/high_quality_probe_ray_count");
 			} break;
 			case BAKE_QUALITY_ULTRA: {
-				push_constant.ray_count = GLOBAL_GET("rendering/gpu_lightmapper/quality/ultra_quality_probe_ray_count");
+				push_constant.ray_count = GLOBAL_GET("rendering/lightmapping/bake_quality/ultra_quality_probe_ray_count");
 			} break;
 		}
 
 		push_constant.atlas_size[0] = probe_positions.size();
 		push_constant.ray_count = CLAMP(push_constant.ray_count, 16, 8192);
 
-		int max_rays = GLOBAL_GET("rendering/gpu_lightmapper/performance/max_rays_per_probe_pass");
+		int max_rays = GLOBAL_GET("rendering/lightmapping/bake_performance/max_rays_per_probe_pass");
 		int ray_iterations = (push_constant.ray_count - 1) / max_rays + 1;
 
 		for (int i = 0; i < ray_iterations; i++) {

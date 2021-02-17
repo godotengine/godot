@@ -73,9 +73,9 @@ Error AudioDriverAndroid::init() {
 	//        __android_log_print(ANDROID_LOG_VERBOSE, "SDL", "SDL audio: opening device");
 
 	JNIEnv *env = get_jni_env();
-	int mix_rate = GLOBAL_GET("audio/mix_rate");
+	int mix_rate = GLOBAL_GET("audio/driver/mix_rate");
 
-	int latency = GLOBAL_GET("audio/output_latency");
+	int latency = GLOBAL_GET("audio/driver/output_latency");
 	unsigned int buffer_size = next_power_of_2(latency * mix_rate / 1000);
 	print_verbose("Audio buffer size: " + itos(buffer_size));
 

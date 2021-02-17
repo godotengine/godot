@@ -484,7 +484,7 @@ bool SceneTree::process(float p_time) {
 
 	if (Engine::get_singleton()->is_editor_hint()) {
 		//simple hack to reload fallback environment if it changed from editor
-		String env_path = ProjectSettings::get_singleton()->get("rendering/environment/default_environment");
+		String env_path = ProjectSettings::get_singleton()->get("rendering/environment/defaults/default_environment");
 		env_path = env_path.strip_edges(); //user may have added a space or two
 		String cpath;
 		Ref<Environment> fallback = get_root()->get_world_3d()->get_fallback_environment();
@@ -496,7 +496,7 @@ bool SceneTree::process(float p_time) {
 				fallback = ResourceLoader::load(env_path);
 				if (fallback.is_null()) {
 					//could not load fallback, set as empty
-					ProjectSettings::get_singleton()->set("rendering/environment/default_environment", "");
+					ProjectSettings::get_singleton()->set("rendering/environment/defaults/default_environment", "");
 				}
 			} else {
 				fallback.unref();
@@ -1349,39 +1349,39 @@ SceneTree::SceneTree() {
 	root->set_as_audio_listener_2d(true);
 	current_scene = nullptr;
 
-	const int msaa_mode = GLOBAL_DEF("rendering/quality/screen_filters/msaa", 0);
-	ProjectSettings::get_singleton()->set_custom_property_info("rendering/quality/screen_filters/msaa", PropertyInfo(Variant::INT, "rendering/quality/screen_filters/msaa", PROPERTY_HINT_ENUM, "Disabled (Fastest),2x (Fast),4x (Average),8x (Slow),16x (Slower)"));
+	const int msaa_mode = GLOBAL_DEF("rendering/anti_aliasing/quality/msaa", 0);
+	ProjectSettings::get_singleton()->set_custom_property_info("rendering/anti_aliasing/quality/msaa", PropertyInfo(Variant::INT, "rendering/anti_aliasing/quality/msaa", PROPERTY_HINT_ENUM, "Disabled (Fastest),2x (Fast),4x (Average),8x (Slow),16x (Slower)"));
 	root->set_msaa(Viewport::MSAA(msaa_mode));
 
-	const int ssaa_mode = GLOBAL_DEF("rendering/quality/screen_filters/screen_space_aa", 0);
-	ProjectSettings::get_singleton()->set_custom_property_info("rendering/quality/screen_filters/screen_space_aa", PropertyInfo(Variant::INT, "rendering/quality/screen_filters/screen_space_aa", PROPERTY_HINT_ENUM, "Disabled (Fastest),FXAA (Fast)"));
+	const int ssaa_mode = GLOBAL_DEF("rendering/anti_aliasing/quality/screen_space_aa", 0);
+	ProjectSettings::get_singleton()->set_custom_property_info("rendering/anti_aliasing/quality/screen_space_aa", PropertyInfo(Variant::INT, "rendering/anti_aliasing/quality/screen_space_aa", PROPERTY_HINT_ENUM, "Disabled (Fastest),FXAA (Fast)"));
 	root->set_screen_space_aa(Viewport::ScreenSpaceAA(ssaa_mode));
 
-	const bool use_debanding = GLOBAL_DEF("rendering/quality/screen_filters/use_debanding", false);
+	const bool use_debanding = GLOBAL_DEF("rendering/anti_aliasing/quality/use_debanding", false);
 	root->set_use_debanding(use_debanding);
 
-	float lod_threshold = GLOBAL_DEF("rendering/quality/mesh_lod/threshold_pixels", 1.0);
-	ProjectSettings::get_singleton()->set_custom_property_info("rendering/quality/mesh_lod/threshold_pixels", PropertyInfo(Variant::FLOAT, "rendering/quality/mesh_lod/threshold_pixels", PROPERTY_HINT_RANGE, "0,1024,0.1"));
+	float lod_threshold = GLOBAL_DEF("rendering/mesh_lod/lod_change/threshold_pixels", 1.0);
+	ProjectSettings::get_singleton()->set_custom_property_info("rendering/mesh_lod/lod_change/threshold_pixels", PropertyInfo(Variant::FLOAT, "rendering/mesh_lod/lod_change/threshold_pixels", PROPERTY_HINT_RANGE, "0,1024,0.1"));
 	root->set_lod_threshold(lod_threshold);
 
-	bool snap_2d_transforms = GLOBAL_DEF("rendering/quality/2d/snap_2d_transforms_to_pixel", false);
+	bool snap_2d_transforms = GLOBAL_DEF("rendering/2d/snap/snap_2d_transforms_to_pixel", false);
 	root->set_snap_2d_transforms_to_pixel(snap_2d_transforms);
 
-	bool snap_2d_vertices = GLOBAL_DEF("rendering/quality/2d/snap_2d_vertices_to_pixel", false);
+	bool snap_2d_vertices = GLOBAL_DEF("rendering/2d/snap/snap_2d_vertices_to_pixel", false);
 	root->set_snap_2d_vertices_to_pixel(snap_2d_vertices);
 
-	int shadowmap_size = GLOBAL_DEF("rendering/quality/shadow_atlas/size", 4096);
-	ProjectSettings::get_singleton()->set_custom_property_info("rendering/quality/shadow_atlas/size", PropertyInfo(Variant::INT, "rendering/quality/shadow_atlas/size", PROPERTY_HINT_RANGE, "256,16384"));
-	GLOBAL_DEF("rendering/quality/shadow_atlas/size.mobile", 2048);
-	bool shadowmap_16_bits = GLOBAL_DEF("rendering/quality/shadow_atlas/16_bits", true);
-	int atlas_q0 = GLOBAL_DEF("rendering/quality/shadow_atlas/quadrant_0_subdiv", 2);
-	int atlas_q1 = GLOBAL_DEF("rendering/quality/shadow_atlas/quadrant_1_subdiv", 2);
-	int atlas_q2 = GLOBAL_DEF("rendering/quality/shadow_atlas/quadrant_2_subdiv", 3);
-	int atlas_q3 = GLOBAL_DEF("rendering/quality/shadow_atlas/quadrant_3_subdiv", 4);
-	ProjectSettings::get_singleton()->set_custom_property_info("rendering/quality/shadow_atlas/quadrant_0_subdiv", PropertyInfo(Variant::INT, "rendering/quality/shadow_atlas/quadrant_0_subdiv", PROPERTY_HINT_ENUM, "Disabled,1 Shadow,4 Shadows,16 Shadows,64 Shadows,256 Shadows,1024 Shadows"));
-	ProjectSettings::get_singleton()->set_custom_property_info("rendering/quality/shadow_atlas/quadrant_1_subdiv", PropertyInfo(Variant::INT, "rendering/quality/shadow_atlas/quadrant_1_subdiv", PROPERTY_HINT_ENUM, "Disabled,1 Shadow,4 Shadows,16 Shadows,64 Shadows,256 Shadows,1024 Shadows"));
-	ProjectSettings::get_singleton()->set_custom_property_info("rendering/quality/shadow_atlas/quadrant_2_subdiv", PropertyInfo(Variant::INT, "rendering/quality/shadow_atlas/quadrant_2_subdiv", PROPERTY_HINT_ENUM, "Disabled,1 Shadow,4 Shadows,16 Shadows,64 Shadows,256 Shadows,1024 Shadows"));
-	ProjectSettings::get_singleton()->set_custom_property_info("rendering/quality/shadow_atlas/quadrant_3_subdiv", PropertyInfo(Variant::INT, "rendering/quality/shadow_atlas/quadrant_3_subdiv", PROPERTY_HINT_ENUM, "Disabled,1 Shadow,4 Shadows,16 Shadows,64 Shadows,256 Shadows,1024 Shadows"));
+	int shadowmap_size = GLOBAL_DEF("rendering/shadows/shadow_atlas/size", 4096);
+	ProjectSettings::get_singleton()->set_custom_property_info("rendering/shadows/shadow_atlas/size", PropertyInfo(Variant::INT, "rendering/shadows/shadow_atlas/size", PROPERTY_HINT_RANGE, "256,16384"));
+	GLOBAL_DEF("rendering/shadows/shadow_atlas/size.mobile", 2048);
+	bool shadowmap_16_bits = GLOBAL_DEF("rendering/shadows/shadow_atlas/16_bits", true);
+	int atlas_q0 = GLOBAL_DEF("rendering/shadows/shadow_atlas/quadrant_0_subdiv", 2);
+	int atlas_q1 = GLOBAL_DEF("rendering/shadows/shadow_atlas/quadrant_1_subdiv", 2);
+	int atlas_q2 = GLOBAL_DEF("rendering/shadows/shadow_atlas/quadrant_2_subdiv", 3);
+	int atlas_q3 = GLOBAL_DEF("rendering/shadows/shadow_atlas/quadrant_3_subdiv", 4);
+	ProjectSettings::get_singleton()->set_custom_property_info("rendering/shadows/shadow_atlas/quadrant_0_subdiv", PropertyInfo(Variant::INT, "rendering/shadows/shadow_atlas/quadrant_0_subdiv", PROPERTY_HINT_ENUM, "Disabled,1 Shadow,4 Shadows,16 Shadows,64 Shadows,256 Shadows,1024 Shadows"));
+	ProjectSettings::get_singleton()->set_custom_property_info("rendering/shadows/shadow_atlas/quadrant_1_subdiv", PropertyInfo(Variant::INT, "rendering/shadows/shadow_atlas/quadrant_1_subdiv", PROPERTY_HINT_ENUM, "Disabled,1 Shadow,4 Shadows,16 Shadows,64 Shadows,256 Shadows,1024 Shadows"));
+	ProjectSettings::get_singleton()->set_custom_property_info("rendering/shadows/shadow_atlas/quadrant_2_subdiv", PropertyInfo(Variant::INT, "rendering/shadows/shadow_atlas/quadrant_2_subdiv", PROPERTY_HINT_ENUM, "Disabled,1 Shadow,4 Shadows,16 Shadows,64 Shadows,256 Shadows,1024 Shadows"));
+	ProjectSettings::get_singleton()->set_custom_property_info("rendering/shadows/shadow_atlas/quadrant_3_subdiv", PropertyInfo(Variant::INT, "rendering/shadows/shadow_atlas/quadrant_3_subdiv", PROPERTY_HINT_ENUM, "Disabled,1 Shadow,4 Shadows,16 Shadows,64 Shadows,256 Shadows,1024 Shadows"));
 
 	root->set_shadow_atlas_size(shadowmap_size);
 	root->set_shadow_atlas_16_bits(shadowmap_16_bits);
@@ -1390,13 +1390,13 @@ SceneTree::SceneTree() {
 	root->set_shadow_atlas_quadrant_subdiv(2, Viewport::ShadowAtlasQuadrantSubdiv(atlas_q2));
 	root->set_shadow_atlas_quadrant_subdiv(3, Viewport::ShadowAtlasQuadrantSubdiv(atlas_q3));
 
-	Viewport::SDFOversize sdf_oversize = Viewport::SDFOversize(int(GLOBAL_DEF("rendering/quality/2d_sdf/oversize", 1)));
+	Viewport::SDFOversize sdf_oversize = Viewport::SDFOversize(int(GLOBAL_DEF("rendering/2d/sdf/oversize", 1)));
 	root->set_sdf_oversize(sdf_oversize);
-	Viewport::SDFScale sdf_scale = Viewport::SDFScale(int(GLOBAL_DEF("rendering/quality/2d_sdf/scale", 1)));
+	Viewport::SDFScale sdf_scale = Viewport::SDFScale(int(GLOBAL_DEF("rendering/2d/sdf/scale", 1)));
 	root->set_sdf_scale(sdf_scale);
 
-	ProjectSettings::get_singleton()->set_custom_property_info("rendering/quality/2d_sdf/oversize", PropertyInfo(Variant::INT, "rendering/quality/2d_sdf/oversize", PROPERTY_HINT_ENUM, "100%,120%,150%,200%"));
-	ProjectSettings::get_singleton()->set_custom_property_info("rendering/quality/2d_sdf/scale", PropertyInfo(Variant::INT, "rendering/quality/2d_sdf/scale", PROPERTY_HINT_ENUM, "100%,50%,25%"));
+	ProjectSettings::get_singleton()->set_custom_property_info("rendering/2d/sdf/oversize", PropertyInfo(Variant::INT, "rendering/2d/sdf/oversize", PROPERTY_HINT_ENUM, "100%,120%,150%,200%"));
+	ProjectSettings::get_singleton()->set_custom_property_info("rendering/2d/sdf/scale", PropertyInfo(Variant::INT, "rendering/2d/sdf/scale", PROPERTY_HINT_ENUM, "100%,50%,25%"));
 
 	{ // Load default fallback environment.
 		// Get possible extensions.
@@ -1410,9 +1410,9 @@ SceneTree::SceneTree() {
 			ext_hint += "*." + E->get();
 		}
 		// Get path.
-		String env_path = GLOBAL_DEF("rendering/environment/default_environment", "");
+		String env_path = GLOBAL_DEF("rendering/environment/defaults/default_environment", "");
 		// Setup property.
-		ProjectSettings::get_singleton()->set_custom_property_info("rendering/environment/default_environment", PropertyInfo(Variant::STRING, "rendering/viewport/default_environment", PROPERTY_HINT_FILE, ext_hint));
+		ProjectSettings::get_singleton()->set_custom_property_info("rendering/environment/defaults/default_environment", PropertyInfo(Variant::STRING, "rendering/viewport/default_environment", PROPERTY_HINT_FILE, ext_hint));
 		env_path = env_path.strip_edges();
 		if (env_path != String()) {
 			Ref<Environment> env = ResourceLoader::load(env_path);
@@ -1421,7 +1421,7 @@ SceneTree::SceneTree() {
 			} else {
 				if (Engine::get_singleton()->is_editor_hint()) {
 					// File was erased, clear the field.
-					ProjectSettings::get_singleton()->set("rendering/environment/default_environment", "");
+					ProjectSettings::get_singleton()->set("rendering/environment/defaults/default_environment", "");
 				} else {
 					// File was erased, notify user.
 					ERR_PRINT(RTR("Default Environment as specified in Project Settings (Rendering -> Environment -> Default Environment) could not be loaded."));

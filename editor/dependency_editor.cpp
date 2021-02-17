@@ -480,8 +480,8 @@ void DependencyRemoveDialog::ok_pressed() {
 		if (files_to_delete[i] == String(ProjectSettings::get_singleton()->get("application/boot_splash/image"))) {
 			ProjectSettings::get_singleton()->set("application/boot_splash/image", "");
 		}
-		if (files_to_delete[i] == String(ProjectSettings::get_singleton()->get("rendering/environment/default_environment"))) {
-			ProjectSettings::get_singleton()->set("rendering/environment/default_environment", "");
+		if (files_to_delete[i] == String(ProjectSettings::get_singleton()->get("rendering/environment/defaults/default_environment"))) {
+			ProjectSettings::get_singleton()->set("rendering/environment/defaults/default_environment", "");
 		}
 		if (files_to_delete[i] == String(ProjectSettings::get_singleton()->get("display/mouse_cursor/custom_image"))) {
 			ProjectSettings::get_singleton()->set("display/mouse_cursor/custom_image", "");
@@ -492,8 +492,8 @@ void DependencyRemoveDialog::ok_pressed() {
 		if (files_to_delete[i] == String(ProjectSettings::get_singleton()->get("gui/theme/custom_font"))) {
 			ProjectSettings::get_singleton()->set("gui/theme/custom_font", "");
 		}
-		if (files_to_delete[i] == String(ProjectSettings::get_singleton()->get("audio/default_bus_layout"))) {
-			ProjectSettings::get_singleton()->set("audio/default_bus_layout", "");
+		if (files_to_delete[i] == String(ProjectSettings::get_singleton()->get("audio/buses/default_bus_layout"))) {
+			ProjectSettings::get_singleton()->set("audio/buses/default_bus_layout", "");
 		}
 
 		String path = OS::get_singleton()->get_resource_dir() + files_to_delete[i].replace_first("res://", "/");

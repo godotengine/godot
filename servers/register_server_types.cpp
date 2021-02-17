@@ -104,6 +104,16 @@ static bool has_server_feature_callback(const String &p_feature) {
 
 void preregister_server_types() {
 	shader_types = memnew(ShaderTypes);
+
+	GLOBAL_DEF("internationalization/rendering/text_driver", "");
+	String text_driver_options;
+	for (int i = 0; i < TextServerManager::get_interface_count(); i++) {
+		if (i > 0) {
+			text_driver_options += ",";
+		}
+		text_driver_options += TextServerManager::get_interface_name(i);
+	}
+	ProjectSettings::get_singleton()->set_custom_property_info("internationalization/rendering/text_driver", PropertyInfo(Variant::STRING, "internationalization/rendering/text_driver", PROPERTY_HINT_ENUM, text_driver_options));
 }
 
 void register_server_types() {

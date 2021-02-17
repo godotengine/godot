@@ -1285,7 +1285,7 @@ String EditorSettings::get_script_templates_dir() const {
 }
 
 String EditorSettings::get_project_script_templates_dir() const {
-	return ProjectSettings::get_singleton()->get("editor/script_templates_search_path");
+	return ProjectSettings::get_singleton()->get("editor/script/templates_search_path");
 }
 
 // Cache directory

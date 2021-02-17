@@ -3529,7 +3529,7 @@ RendererSceneRenderForward::RendererSceneRenderForward(RendererStorageRD *p_stor
 		actions.render_mode_defines["cull_front"] = "#define DO_SIDE_CHECK\n";
 		actions.render_mode_defines["cull_disabled"] = "#define DO_SIDE_CHECK\n";
 
-		bool force_lambert = GLOBAL_GET("rendering/quality/shading/force_lambert_over_burley");
+		bool force_lambert = GLOBAL_GET("rendering/shading/overrides/force_lambert_over_burley");
 
 		if (!force_lambert) {
 			actions.render_mode_defines["diffuse_burley"] = "#define DIFFUSE_BURLEY\n";
@@ -3541,7 +3541,7 @@ RendererSceneRenderForward::RendererSceneRenderForward(RendererStorageRD *p_stor
 
 		actions.render_mode_defines["sss_mode_skin"] = "#define SSS_MODE_SKIN\n";
 
-		bool force_blinn = GLOBAL_GET("rendering/quality/shading/force_blinn_over_ggx");
+		bool force_blinn = GLOBAL_GET("rendering/shading/overrides/force_blinn_over_ggx");
 
 		if (!force_blinn) {
 			actions.render_mode_defines["specular_schlick_ggx"] = "#define SPECULAR_SCHLICK_GGX\n";
@@ -3624,7 +3624,7 @@ RendererSceneRenderForward::RendererSceneRenderForward(RendererStorageRD *p_stor
 		shadow_sampler = RD::get_singleton()->sampler_create(sampler);
 	}
 
-	render_list_thread_threshold = GLOBAL_GET("rendering/forward_renderer/threaded_render_minimum_instances");
+	render_list_thread_threshold = GLOBAL_GET("rendering/limits/forward_renderer/threaded_render_minimum_instances");
 }
 
 RendererSceneRenderForward::~RendererSceneRenderForward() {

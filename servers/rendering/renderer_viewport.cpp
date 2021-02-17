@@ -457,7 +457,7 @@ void RendererViewport::draw_viewports() {
 	}
 
 	if (Engine::get_singleton()->is_editor_hint()) {
-		set_default_clear_color(GLOBAL_GET("rendering/environment/default_clear_color"));
+		set_default_clear_color(GLOBAL_GET("rendering/environment/defaults/default_clear_color"));
 	}
 
 	//sort viewports
