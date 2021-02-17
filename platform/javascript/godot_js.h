@@ -49,6 +49,7 @@ extern int godot_js_os_fs_is_persistent();
 extern void godot_js_os_fs_sync(void (*p_callback)());
 extern int godot_js_os_execute(const char *p_json);
 extern void godot_js_os_shell_open(const char *p_uri);
+extern int godot_js_os_hw_concurrency_get();
 
 // Display
 extern int godot_js_display_screen_dpi_get();

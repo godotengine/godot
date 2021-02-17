@@ -168,6 +168,7 @@ public:
 	virtual Error execute(const String &p_path, const List<String> &p_arguments, bool p_blocking = true, ProcessID *r_child_id = NULL, String *r_pipe = NULL, int *r_exitcode = NULL, bool read_stderr = false, Mutex *p_pipe_mutex = NULL);
 	virtual Error kill(const ProcessID &p_pid);
 	virtual int get_process_id() const;
+	int get_processor_count() const;
 
 	virtual void alert(const String &p_alert, const String &p_title = "ALERT!");
 	virtual void set_window_title(const String &p_title);
