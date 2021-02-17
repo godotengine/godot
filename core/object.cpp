@@ -1004,13 +1004,15 @@ void Object::set_script(const RefPtr &p_script) {
 		return;
 	}
 
+	Ref<Script> s = p_script;
+	ERR_FAIL_COND_MSG(s.is_null() && !p_script.is_null(), "Invalid parameter, it should be a reference to a valid script (or null).");
+
+	script = p_script;
+
 	if (script_instance) {
 		memdelete(script_instance);
 		script_instance = nullptr;
 	}
-
-	script = p_script;
-	Ref<Script> s(script);
 
 	if (!s.is_null()) {
 		if (s->can_instance()) {
