@@ -91,6 +91,7 @@ private:
 	void _text_type_toggled();
 	void _sample_draw();
 	void _hsv_draw(int p_which, Control *c);
+	void _slider_draw(int p_which);
 
 	void _uv_input(const Ref<InputEvent> &p_event);
 	void _w_input(const Ref<InputEvent> &p_event);
