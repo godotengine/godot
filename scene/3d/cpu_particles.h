@@ -43,6 +43,7 @@ public:
 		DRAW_ORDER_INDEX,
 		DRAW_ORDER_LIFETIME,
 		DRAW_ORDER_VIEW_DEPTH,
+		DRAW_ORDER_MAX
 	};
 
 	enum Parameter {

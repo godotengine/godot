@@ -159,7 +159,7 @@ float CPUParticles::get_speed_scale() const {
 }
 
 void CPUParticles::set_draw_order(DrawOrder p_order) {
-
+	ERR_FAIL_INDEX(p_order, DRAW_ORDER_MAX);
 	draw_order = p_order;
 }
 
@@ -1051,6 +1051,7 @@ void CPUParticles::_update_particle_data_buffer() {
 				sorter.compare.particles = r.ptr();
 				sorter.sort(order, pc);
 			} else if (draw_order == DRAW_ORDER_VIEW_DEPTH) {
+				ERR_FAIL_NULL(get_viewport());
 				Camera *c = get_viewport()->get_camera();
 				if (c) {
 					Vector3 dir = c->get_global_transform().basis.get_axis(2); //far away to close
