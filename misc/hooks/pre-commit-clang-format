@@ -125,6 +125,9 @@ do
     if grep -q "platform/android/java/lib/src/com" <<< $file; then
         continue;
     fi
+    if grep -q "\-so_wrap." <<< $file; then
+        continue;
+    fi
 
     # ignore file if we do check for file extensions and the file
     # does not match any of the extensions specified in $FILE_EXTS
