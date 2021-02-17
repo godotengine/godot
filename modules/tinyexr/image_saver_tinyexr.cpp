@@ -33,6 +33,8 @@
 
 #include "thirdparty/tinyexr/tinyexr.h"
 
+#include <cstdlib>
+
 static bool is_supported_format(Image::Format p_format) {
 	// This is checked before anything else.
 	// Mostly uncompressed formats are considered.
