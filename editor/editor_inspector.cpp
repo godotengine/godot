@@ -1689,7 +1689,7 @@ void EditorInspector::update_tree() {
 			bool valid = true;
 			//if no properties in category, skip
 			while (N) {
-				if (N->get().usage & PROPERTY_USAGE_EDITOR) {
+				if (N->get().usage & PROPERTY_USAGE_EDITOR && (!restrict_to_basic || (N->get().usage & PROPERTY_USAGE_EDITOR_BASIC_SETTING))) {
 					break;
 				}
 				if (N->get().usage & PROPERTY_USAGE_CATEGORY) {
@@ -1757,7 +1757,7 @@ void EditorInspector::update_tree() {
 
 			continue;
 
-		} else if (!(p.usage & PROPERTY_USAGE_EDITOR) || _is_property_disabled_by_feature_profile(p.name)) {
+		} else if (!(p.usage & PROPERTY_USAGE_EDITOR) || _is_property_disabled_by_feature_profile(p.name) || (restrict_to_basic && !(p.usage & PROPERTY_USAGE_EDITOR_BASIC_SETTING))) {
 			continue;
 		}
 
@@ -2618,6 +2618,11 @@ void EditorInspector::_update_script_class_properties(const Object &p_object, Li
 		to_delete = bottom->next();
 	}
 	r_list.erase(bottom);
+}
+
+void EditorInspector::set_restrict_to_basic_settings(bool p_restrict) {
+	restrict_to_basic = p_restrict;
+	update_tree();
 }
 
 void EditorInspector::_bind_methods() {

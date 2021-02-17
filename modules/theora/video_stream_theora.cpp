@@ -554,7 +554,7 @@ void VideoStreamPlaybackTheora::play() {
 	}
 
 	playing = true;
-	delay_compensation = ProjectSettings::get_singleton()->get("audio/video_delay_compensation_ms");
+	delay_compensation = ProjectSettings::get_singleton()->get("audio/video/video_delay_compensation_ms");
 	delay_compensation /= 1000.0;
 };
 

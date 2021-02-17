@@ -431,70 +431,70 @@ void EditorNode::_unhandled_input(const Ref<InputEvent> &p_event) {
 }
 
 void EditorNode::_update_from_settings() {
-	int current_filter = GLOBAL_GET("rendering/canvas_textures/default_texture_filter");
+	int current_filter = GLOBAL_GET("rendering/textures/canvas_textures/default_texture_filter");
 	if (current_filter != scene_root->get_default_canvas_item_texture_filter()) {
 		Viewport::DefaultCanvasItemTextureFilter tf = (Viewport::DefaultCanvasItemTextureFilter)current_filter;
 		scene_root->set_default_canvas_item_texture_filter(tf);
 	}
-	int current_repeat = GLOBAL_GET("rendering/canvas_textures/default_texture_repeat");
+	int current_repeat = GLOBAL_GET("rendering/textures/canvas_textures/default_texture_repeat");
 	if (current_repeat != scene_root->get_default_canvas_item_texture_repeat()) {
 		Viewport::DefaultCanvasItemTextureRepeat tr = (Viewport::DefaultCanvasItemTextureRepeat)current_repeat;
 		scene_root->set_default_canvas_item_texture_repeat(tr);
 	}
 
-	RS::DOFBokehShape dof_shape = RS::DOFBokehShape(int(GLOBAL_GET("rendering/quality/depth_of_field/depth_of_field_bokeh_shape")));
+	RS::DOFBokehShape dof_shape = RS::DOFBokehShape(int(GLOBAL_GET("rendering/camera/depth_of_field/depth_of_field_bokeh_shape")));
 	RS::get_singleton()->camera_effects_set_dof_blur_bokeh_shape(dof_shape);
-	RS::DOFBlurQuality dof_quality = RS::DOFBlurQuality(int(GLOBAL_GET("rendering/quality/depth_of_field/depth_of_field_bokeh_quality")));
-	bool dof_jitter = GLOBAL_GET("rendering/quality/depth_of_field/depth_of_field_use_jitter");
+	RS::DOFBlurQuality dof_quality = RS::DOFBlurQuality(int(GLOBAL_GET("rendering/camera/depth_of_field/depth_of_field_bokeh_quality")));
+	bool dof_jitter = GLOBAL_GET("rendering/camera/depth_of_field/depth_of_field_use_jitter");
 	RS::get_singleton()->camera_effects_set_dof_blur_quality(dof_quality, dof_jitter);
-	RS::get_singleton()->environment_set_ssao_quality(RS::EnvironmentSSAOQuality(int(GLOBAL_GET("rendering/quality/ssao/quality"))), GLOBAL_GET("rendering/quality/ssao/half_size"), GLOBAL_GET("rendering/quality/ssao/adaptive_target"), GLOBAL_GET("rendering/quality/ssao/blur_passes"), GLOBAL_GET("rendering/quality/ssao/fadeout_from"), GLOBAL_GET("rendering/quality/ssao/fadeout_to"));
-	RS::get_singleton()->screen_space_roughness_limiter_set_active(GLOBAL_GET("rendering/quality/screen_filters/screen_space_roughness_limiter_enabled"), GLOBAL_GET("rendering/quality/screen_filters/screen_space_roughness_limiter_amount"), GLOBAL_GET("rendering/quality/screen_filters/screen_space_roughness_limiter_limit"));
-	bool glow_bicubic = int(GLOBAL_GET("rendering/quality/glow/upscale_mode")) > 0;
+	RS::get_singleton()->environment_set_ssao_quality(RS::EnvironmentSSAOQuality(int(GLOBAL_GET("rendering/environment/ssao/quality"))), GLOBAL_GET("rendering/environment/ssao/half_size"), GLOBAL_GET("rendering/environment/ssao/adaptive_target"), GLOBAL_GET("rendering/environment/ssao/blur_passes"), GLOBAL_GET("rendering/environment/ssao/fadeout_from"), GLOBAL_GET("rendering/environment/ssao/fadeout_to"));
+	RS::get_singleton()->screen_space_roughness_limiter_set_active(GLOBAL_GET("rendering/anti_aliasing/screen_space_roughness_limiter/enabled"), GLOBAL_GET("rendering/anti_aliasing/screen_space_roughness_limiter/amount"), GLOBAL_GET("rendering/anti_aliasing/screen_space_roughness_limiter/limit"));
+	bool glow_bicubic = int(GLOBAL_GET("rendering/environment/glow/upscale_mode")) > 0;
 	RS::get_singleton()->environment_glow_set_use_bicubic_upscale(glow_bicubic);
-	bool glow_high_quality = GLOBAL_GET("rendering/quality/glow/use_high_quality");
+	bool glow_high_quality = GLOBAL_GET("rendering/environment/glow/use_high_quality");
 	RS::get_singleton()->environment_glow_set_use_high_quality(glow_high_quality);
-	RS::EnvironmentSSRRoughnessQuality ssr_roughness_quality = RS::EnvironmentSSRRoughnessQuality(int(GLOBAL_GET("rendering/quality/screen_space_reflection/roughness_quality")));
+	RS::EnvironmentSSRRoughnessQuality ssr_roughness_quality = RS::EnvironmentSSRRoughnessQuality(int(GLOBAL_GET("rendering/environment/screen_space_reflection/roughness_quality")));
 	RS::get_singleton()->environment_set_ssr_roughness_quality(ssr_roughness_quality);
-	RS::SubSurfaceScatteringQuality sss_quality = RS::SubSurfaceScatteringQuality(int(GLOBAL_GET("rendering/quality/subsurface_scattering/subsurface_scattering_quality")));
+	RS::SubSurfaceScatteringQuality sss_quality = RS::SubSurfaceScatteringQuality(int(GLOBAL_GET("rendering/environment/subsurface_scattering/subsurface_scattering_quality")));
 	RS::get_singleton()->sub_surface_scattering_set_quality(sss_quality);
-	float sss_scale = GLOBAL_GET("rendering/quality/subsurface_scattering/subsurface_scattering_scale");
-	float sss_depth_scale = GLOBAL_GET("rendering/quality/subsurface_scattering/subsurface_scattering_depth_scale");
+	float sss_scale = GLOBAL_GET("rendering/environment/subsurface_scattering/subsurface_scattering_scale");
+	float sss_depth_scale = GLOBAL_GET("rendering/environment/subsurface_scattering/subsurface_scattering_depth_scale");
 	RS::get_singleton()->sub_surface_scattering_set_scale(sss_scale, sss_depth_scale);
 
-	uint32_t directional_shadow_size = GLOBAL_GET("rendering/quality/directional_shadow/size");
-	uint32_t directional_shadow_16_bits = GLOBAL_GET("rendering/quality/directional_shadow/16_bits");
+	uint32_t directional_shadow_size = GLOBAL_GET("rendering/shadows/directional_shadow/size");
+	uint32_t directional_shadow_16_bits = GLOBAL_GET("rendering/shadows/directional_shadow/16_bits");
 	RS::get_singleton()->directional_shadow_atlas_set_size(directional_shadow_size, directional_shadow_16_bits);
 
-	RS::ShadowQuality shadows_quality = RS::ShadowQuality(int(GLOBAL_GET("rendering/quality/shadows/soft_shadow_quality")));
+	RS::ShadowQuality shadows_quality = RS::ShadowQuality(int(GLOBAL_GET("rendering/shadows/shadows/soft_shadow_quality")));
 	RS::get_singleton()->shadows_quality_set(shadows_quality);
-	RS::ShadowQuality directional_shadow_quality = RS::ShadowQuality(int(GLOBAL_GET("rendering/quality/directional_shadow/soft_shadow_quality")));
+	RS::ShadowQuality directional_shadow_quality = RS::ShadowQuality(int(GLOBAL_GET("rendering/shadows/directional_shadow/soft_shadow_quality")));
 	RS::get_singleton()->directional_shadow_quality_set(directional_shadow_quality);
-	float probe_update_speed = GLOBAL_GET("rendering/lightmapper/probe_capture_update_speed");
+	float probe_update_speed = GLOBAL_GET("rendering/lightmapping/probe_capture/update_speed");
 	RS::get_singleton()->lightmap_set_probe_capture_update_speed(probe_update_speed);
-	RS::EnvironmentSDFGIFramesToConverge frames_to_converge = RS::EnvironmentSDFGIFramesToConverge(int(GLOBAL_GET("rendering/sdfgi/frames_to_converge")));
+	RS::EnvironmentSDFGIFramesToConverge frames_to_converge = RS::EnvironmentSDFGIFramesToConverge(int(GLOBAL_GET("rendering/global_illumination/sdfgi/frames_to_converge")));
 	RS::get_singleton()->environment_set_sdfgi_frames_to_converge(frames_to_converge);
-	RS::EnvironmentSDFGIRayCount ray_count = RS::EnvironmentSDFGIRayCount(int(GLOBAL_GET("rendering/sdfgi/probe_ray_count")));
+	RS::EnvironmentSDFGIRayCount ray_count = RS::EnvironmentSDFGIRayCount(int(GLOBAL_GET("rendering/global_illumination/sdfgi/probe_ray_count")));
 	RS::get_singleton()->environment_set_sdfgi_ray_count(ray_count);
-	RS::GIProbeQuality gi_probe_quality = RS::GIProbeQuality(int(GLOBAL_GET("rendering/quality/gi_probes/quality")));
+	RS::GIProbeQuality gi_probe_quality = RS::GIProbeQuality(int(GLOBAL_GET("rendering/global_illumination/gi_probes/quality")));
 	RS::get_singleton()->gi_probe_set_quality(gi_probe_quality);
-	RS::get_singleton()->environment_set_volumetric_fog_volume_size(GLOBAL_GET("rendering/volumetric_fog/volume_size"), GLOBAL_GET("rendering/volumetric_fog/volume_depth"));
-	RS::get_singleton()->environment_set_volumetric_fog_filter_active(bool(GLOBAL_GET("rendering/volumetric_fog/use_filter")));
-	RS::get_singleton()->canvas_set_shadow_texture_size(GLOBAL_GET("rendering/quality/2d_shadow_atlas/size"));
+	RS::get_singleton()->environment_set_volumetric_fog_volume_size(GLOBAL_GET("rendering/environment/volumetric_fog/volume_size"), GLOBAL_GET("rendering/environment/volumetric_fog/volume_depth"));
+	RS::get_singleton()->environment_set_volumetric_fog_filter_active(bool(GLOBAL_GET("rendering/environment/volumetric_fog/use_filter")));
+	RS::get_singleton()->canvas_set_shadow_texture_size(GLOBAL_GET("rendering/2d/shadow_atlas/size"));
 
-	bool use_half_res_gi = GLOBAL_DEF("rendering/quality/gi/use_half_resolution", false);
+	bool use_half_res_gi = GLOBAL_DEF("rendering/global_illumination/gi/use_half_resolution", false);
 	RS::get_singleton()->gi_set_use_half_resolution(use_half_res_gi);
 
-	bool snap_2d_transforms = GLOBAL_GET("rendering/quality/2d/snap_2d_transforms_to_pixel");
+	bool snap_2d_transforms = GLOBAL_GET("rendering/2d/snap/snap_2d_transforms_to_pixel");
 	scene_root->set_snap_2d_transforms_to_pixel(snap_2d_transforms);
-	bool snap_2d_vertices = GLOBAL_GET("rendering/quality/2d/snap_2d_vertices_to_pixel");
+	bool snap_2d_vertices = GLOBAL_GET("rendering/2d/snap/snap_2d_vertices_to_pixel");
 	scene_root->set_snap_2d_vertices_to_pixel(snap_2d_vertices);
 
-	Viewport::SDFOversize sdf_oversize = Viewport::SDFOversize(int(GLOBAL_GET("rendering/quality/2d_sdf/oversize")));
+	Viewport::SDFOversize sdf_oversize = Viewport::SDFOversize(int(GLOBAL_GET("rendering/2d/sdf/oversize")));
 	scene_root->set_sdf_oversize(sdf_oversize);
-	Viewport::SDFScale sdf_scale = Viewport::SDFScale(int(GLOBAL_GET("rendering/quality/2d_sdf/scale")));
+	Viewport::SDFScale sdf_scale = Viewport::SDFScale(int(GLOBAL_GET("rendering/2d/sdf/scale")));
 	scene_root->set_sdf_scale(sdf_scale);
 
-	float lod_threshold = GLOBAL_GET("rendering/quality/mesh_lod/threshold_pixels");
+	float lod_threshold = GLOBAL_GET("rendering/mesh_lod/lod_change/threshold_pixels");
 	scene_root->set_lod_threshold(lod_threshold);
 }
 
@@ -2260,7 +2260,7 @@ void EditorNode::_run(bool p_current, const String &p_custom) {
 	List<String> breakpoints;
 	editor_data.get_editor_breakpoints(&breakpoints);
 
-	args = ProjectSettings::get_singleton()->get("editor/main_run_args");
+	args = ProjectSettings::get_singleton()->get("editor/run/main_run_args");
 	skip_breakpoints = EditorDebuggerNode::get_singleton()->is_skip_breakpoints();
 
 	EditorDebuggerNode::get_singleton()->start();
@@ -2789,7 +2789,7 @@ void EditorNode::_menu_option_confirm(int p_option, bool p_confirmed) {
 		} break;
 
 		case SET_VIDEO_DRIVER_SAVE_AND_RESTART: {
-			ProjectSettings::get_singleton()->set("rendering/quality/driver/driver_name", video_driver_request);
+			ProjectSettings::get_singleton()->set("rendering/driver/driver_name", video_driver_request);
 			ProjectSettings::get_singleton()->save();
 
 			save_all_scenes();
@@ -5839,7 +5839,7 @@ EditorNode::EditorNode() {
 
 	register_exporters();
 
-	GLOBAL_DEF("editor/main_run_args", "");
+	GLOBAL_DEF("editor/run/main_run_args", "");
 
 	ClassDB::set_class_enabled("RootMotionView", true);
 
@@ -6457,7 +6457,7 @@ EditorNode::EditorNode() {
 #warning needs to be reimplemented
 #endif
 #if 0
-	String video_drivers = ProjectSettings::get_singleton()->get_custom_property_info()["rendering/quality/driver/driver_name"].hint_string;
+	String video_drivers = ProjectSettings::get_singleton()->get_custom_property_info()["rendering/driver/driver_name"].hint_string;
 	String current_video_driver = OS::get_singleton()->get_video_driver_name(OS::get_singleton()->get_current_video_driver());
 	video_driver_current = 0;
 	for (int i = 0; i < video_drivers.get_slice_count(","); i++) {

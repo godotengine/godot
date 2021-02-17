@@ -105,8 +105,8 @@ void AudioDriverJavaScript::_audio_driver_capture(int p_from, int p_samples) {
 }
 
 Error AudioDriverJavaScript::init() {
-	mix_rate = GLOBAL_GET("audio/mix_rate");
-	int latency = GLOBAL_GET("audio/output_latency");
+	mix_rate = GLOBAL_GET("audio/driver/mix_rate");
+	int latency = GLOBAL_GET("audio/driver/output_latency");
 
 	channel_count = godot_audio_init(mix_rate, latency, &_state_change_callback, &_latency_update_callback);
 	buffer_length = closest_power_of_2((latency * mix_rate / 1000));

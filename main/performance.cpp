@@ -119,7 +119,7 @@ String Performance::get_monitor_name(Monitor p_monitor) const {
 		"physics_3d/active_objects",
 		"physics_3d/collision_pairs",
 		"physics_3d/islands",
-		"audio/output_latency",
+		"audio/driver/output_latency",
 
 	};
 

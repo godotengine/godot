@@ -39,11 +39,11 @@ Error AudioDriverDummy::init() {
 	exit_thread = false;
 	samples_in = nullptr;
 
-	mix_rate = GLOBAL_GET("audio/mix_rate");
+	mix_rate = GLOBAL_GET("audio/driver/mix_rate");
 	speaker_mode = SPEAKER_MODE_STEREO;
 	channels = 2;
 
-	int latency = GLOBAL_GET("audio/output_latency");
+	int latency = GLOBAL_GET("audio/driver/output_latency");
 	buffer_frames = closest_power_of_2(latency * mix_rate / 1000);
 
 	samples_in = memnew_arr(int32_t, buffer_frames * channels);

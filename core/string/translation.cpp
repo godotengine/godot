@@ -1191,14 +1191,14 @@ bool TranslationServer::_load_translations(const String &p_from) {
 }
 
 void TranslationServer::setup() {
-	String test = GLOBAL_DEF("locale/test", "");
+	String test = GLOBAL_DEF("internationalization/locale/test", "");
 	test = test.strip_edges();
 	if (test != "") {
 		set_locale(test);
 	} else {
 		set_locale(OS::get_singleton()->get_locale());
 	}
-	fallback = GLOBAL_DEF("locale/fallback", "en");
+	fallback = GLOBAL_DEF("internationalization/locale/fallback", "en");
 #ifdef TOOLS_ENABLED
 	{
 		String options = "";
@@ -1210,7 +1210,7 @@ void TranslationServer::setup() {
 			options += locale_list[idx];
 			idx++;
 		}
-		ProjectSettings::get_singleton()->set_custom_property_info("locale/fallback", PropertyInfo(Variant::STRING, "locale/fallback", PROPERTY_HINT_ENUM, options));
+		ProjectSettings::get_singleton()->set_custom_property_info("internationalization/locale/fallback", PropertyInfo(Variant::STRING, "internationalization/locale/fallback", PROPERTY_HINT_ENUM, options));
 	}
 #endif
 }
@@ -1307,11 +1307,11 @@ void TranslationServer::_bind_methods() {
 
 void TranslationServer::load_translations() {
 	String locale = get_locale();
-	_load_translations("locale/translations"); //all
-	_load_translations("locale/translations_" + locale.substr(0, 2));
+	_load_translations("internationalization/locale/translations"); //all
+	_load_translations("internationalization/locale/translations_" + locale.substr(0, 2));
 
 	if (locale.substr(0, 2) != locale) {
-		_load_translations("locale/translations_" + locale);
+		_load_translations("internationalization/locale/translations_" + locale);
 	}
 }
 

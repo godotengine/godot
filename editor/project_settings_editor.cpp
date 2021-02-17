@@ -75,8 +75,12 @@ void ProjectSettingsEditor::_advanced_pressed() {
 	if (advanced->is_pressed()) {
 		_update_advanced_bar();
 		advanced_bar->show();
+		EditorSettings::get_singleton()->set_project_metadata("project_settings", "advanced_mode", true);
+		inspector->set_restrict_to_basic_settings(false);
 	} else {
 		advanced_bar->hide();
+		EditorSettings::get_singleton()->set_project_metadata("project_settings", "advanced_mode", false);
+		inspector->set_restrict_to_basic_settings(true);
 	}
 }
 
@@ -191,9 +195,6 @@ void ProjectSettingsEditor::_update_advanced_bar() {
 
 	add_button->set_disabled(disable_add);
 	del_button->set_disabled(disable_del);
-
-	error_label->set_text(error_msg);
-	error_label->set_visible(error_msg != "");
 }
 
 String ProjectSettingsEditor::_get_setting_name() const {
@@ -273,16 +274,11 @@ void ProjectSettingsEditor::_notification(int p_what) {
 		case NOTIFICATION_VISIBILITY_CHANGED: {
 			if (!is_visible()) {
 				EditorSettings::get_singleton()->set_project_metadata("dialog_bounds", "project_settings", Rect2(get_position(), get_size()));
-				if (advanced->is_pressed()) {
-					advanced->set_pressed(false);
-					advanced_bar->hide();
-				}
 			}
 		} break;
 		case NOTIFICATION_ENTER_TREE: {
 			inspector->edit(ps);
 
-			error_label->add_theme_color_override("font_color", error_label->get_theme_color("error_color", "Editor"));
 			add_button->set_icon(get_theme_icon("Add", "EditorIcons"));
 			del_button->set_icon(get_theme_icon("Remove", "EditorIcons"));
 
@@ -340,23 +336,19 @@ ProjectSettingsEditor::ProjectSettingsEditor(EditorData *p_data) {
 		search_bar->add_child(search_box);
 
 		advanced = memnew(CheckButton);
-		advanced->set_text(TTR("Advanced"));
+		advanced->set_text(TTR("Advanced Settings"));
 		advanced->connect("pressed", callable_mp(this, &ProjectSettingsEditor::_advanced_pressed));
 		search_bar->add_child(advanced);
 	}
 
 	{
 		// Advanced bar.
-		advanced_bar = memnew(VBoxContainer);
-		advanced_bar->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+		advanced_bar = memnew(HBoxContainer);
 		advanced_bar->hide();
 		header->add_child(advanced_bar);
 
-		advanced_bar->add_child(memnew(HSeparator));
-
-		HBoxContainer *hbc = memnew(HBoxContainer);
+		HBoxContainer *hbc = advanced_bar;
 		hbc->set_h_size_flags(Control::SIZE_EXPAND_FILL);
-		advanced_bar->add_margin_child(TTR("Add or Remove Custom Project Settings:"), hbc, true);
 
 		category_box = memnew(LineEdit);
 		category_box->set_h_size_flags(Control::SIZE_EXPAND_FILL);
@@ -365,7 +357,7 @@ ProjectSettingsEditor::ProjectSettingsEditor(EditorData *p_data) {
 		hbc->add_child(category_box);
 
 		Label *l = memnew(Label);
-		l->set_text("/");
+		l->set_text(" / ");
 		hbc->add_child(l);
 
 		property_box = memnew(LineEdit);
@@ -408,9 +400,6 @@ ProjectSettingsEditor::ProjectSettingsEditor(EditorData *p_data) {
 		del_button->set_flat(true);
 		del_button->connect("pressed", callable_mp(this, &ProjectSettingsEditor::_delete_setting), varray(false));
 		hbc->add_child(del_button);
-
-		error_label = memnew(Label);
-		advanced_bar->add_child(error_label);
 	}
 
 	inspector = memnew(SectionedInspector);
@@ -484,4 +473,13 @@ ProjectSettingsEditor::ProjectSettingsEditor(EditorData *p_data) {
 
 	get_ok_button()->set_text(TTR("Close"));
 	set_hide_on_ok(true);
+
+	bool use_advanced = EditorSettings::get_singleton()->get_project_metadata("project_settings", "advanced_mode", false);
+
+	if (use_advanced) {
+		advanced->set_pressed(true);
+		advanced_bar->show();
+	}
+
+	inspector->set_restrict_to_basic_settings(!use_advanced);
 }

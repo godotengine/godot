@@ -291,7 +291,7 @@ public:
 };
 
 void EditorExportPlatformIOS::get_preset_features(const Ref<EditorExportPreset> &p_preset, List<String> *r_features) {
-	String driver = ProjectSettings::get_singleton()->get("rendering/quality/driver/driver_name");
+	String driver = ProjectSettings::get_singleton()->get("rendering/driver/driver_name");
 	r_features->push_back("pvrtc");
 	if (driver == "Vulkan") {
 		// FIXME: Review if this is correct.
