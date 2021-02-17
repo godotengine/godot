@@ -152,6 +152,7 @@ float CPUParticles3D::get_speed_scale() const {
 }
 
 void CPUParticles3D::set_draw_order(DrawOrder p_order) {
+	ERR_FAIL_INDEX(p_order, DRAW_ORDER_MAX);
 	draw_order = p_order;
 }
 
@@ -1011,6 +1012,7 @@ void CPUParticles3D::_update_particle_data_buffer() {
 			sorter.compare.particles = r;
 			sorter.sort(order, pc);
 		} else if (draw_order == DRAW_ORDER_VIEW_DEPTH) {
+			ERR_FAIL_NULL(get_viewport());
 			Camera3D *c = get_viewport()->get_camera();
 			if (c) {
 				Vector3 dir = c->get_global_transform().basis.get_axis(2); //far away to close
