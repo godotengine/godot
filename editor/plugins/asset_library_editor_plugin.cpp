@@ -373,7 +373,7 @@ void EditorAssetLibraryItemDownload::_http_download_completed(int p_status, int 
 				if (sha256 != download_sha256) {
 					error_text = TTR("Bad download hash, assuming file has been tampered with.") + "\n";
 					error_text += TTR("Expected:") + " " + sha256 + "\n" + TTR("Got:") + " " + download_sha256;
-					status->set_text(TTR("Failed sha256 hash check"));
+					status->set_text(TTR("Failed SHA-256 hash check"));
 				}
 			}
 		} break;
@@ -382,6 +382,8 @@ void EditorAssetLibraryItemDownload::_http_download_completed(int p_status, int 
 	if (error_text != String()) {
 		download_error->set_text(TTR("Asset Download Error:") + "\n" + error_text);
 		download_error->popup_centered_minsize();
+		// Let the user retry the download.
+		retry->show();
 		return;
 	}
 
@@ -488,6 +490,9 @@ void EditorAssetLibraryItemDownload::_install() {
 }
 
 void EditorAssetLibraryItemDownload::_make_request() {
+	// Hide the Retry button if we've just pressed it.
+	retry->hide();
+
 	download->cancel_request();
 	download->set_download_file(EditorSettings::get_singleton()->get_cache_dir().plus_file("tmp_asset_" + itos(asset_id)) + ".zip");
 
@@ -552,6 +557,8 @@ EditorAssetLibraryItemDownload::EditorAssetLibraryItemDownload() {
 	retry = memnew(Button);
 	retry->set_text(TTR("Retry"));
 	retry->connect("pressed", this, "_make_request");
+	// Only show the Retry button in case of a failure.
+	retry->hide();
 
 	hb2->add_child(retry);
 	hb2->add_child(install);
