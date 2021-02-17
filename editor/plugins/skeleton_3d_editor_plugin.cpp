@@ -388,7 +388,7 @@ PhysicalBone3D *Skeleton3DEditor::create_physical_bone(int bone_id, int bone_chi
 	bone_shape->set_transform(capsule_transform);
 
 	Transform body_transform;
-	body_transform.set_look_at(Vector3(0, 0, 0), child_rest.origin, Vector3(0, 1, 0));
+	body_transform.set_look_at(Vector3(0, 0, 0), child_rest.origin);
 	body_transform.origin = body_transform.basis.xform(Vector3(0, 0, -half_height));
 
 	Transform joint_transform;
