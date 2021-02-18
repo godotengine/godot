@@ -172,7 +172,7 @@ bool ResourceImporterTexture::get_option_visibility(const String &p_option, cons
 		if (compress_mode < COMPRESS_VRAM_COMPRESSED) {
 			return false;
 		}
-		if (!ProjectSettings::get_singleton()->get("rendering/vram_compression/import_bptc")) {
+		if (!ProjectSettings::get_singleton()->get("rendering/textures/vram_compression/import_bptc")) {
 			return false;
 		}
 	}
@@ -473,8 +473,8 @@ Error ResourceImporterTexture::import(const String &p_source_file, const String 
 		bool ok_on_pc = false;
 		bool is_hdr = (image->get_format() >= Image::FORMAT_RF && image->get_format() <= Image::FORMAT_RGBE9995);
 		bool is_ldr = (image->get_format() >= Image::FORMAT_L8 && image->get_format() <= Image::FORMAT_RGB565);
-		bool can_bptc = ProjectSettings::get_singleton()->get("rendering/vram_compression/import_bptc");
-		bool can_s3tc = ProjectSettings::get_singleton()->get("rendering/vram_compression/import_s3tc");
+		bool can_bptc = ProjectSettings::get_singleton()->get("rendering/textures/vram_compression/import_bptc");
+		bool can_s3tc = ProjectSettings::get_singleton()->get("rendering/textures/vram_compression/import_s3tc");
 
 		if (can_bptc) {
 			//add to the list anyway
@@ -524,19 +524,19 @@ Error ResourceImporterTexture::import(const String &p_source_file, const String 
 			ok_on_pc = true;
 		}
 
-		if (ProjectSettings::get_singleton()->get("rendering/vram_compression/import_etc2")) {
+		if (ProjectSettings::get_singleton()->get("rendering/textures/vram_compression/import_etc2")) {
 			_save_stex(image, p_save_path + ".etc2.stex", compress_mode, lossy, Image::COMPRESS_ETC2, mipmaps, stream, detect_3d, detect_roughness, detect_normal, force_normal, srgb_friendly_pack, true, mipmap_limit, normal_image, roughness_channel);
 			r_platform_variants->push_back("etc2");
 			formats_imported.push_back("etc2");
 		}
 
-		if (ProjectSettings::get_singleton()->get("rendering/vram_compression/import_etc")) {
+		if (ProjectSettings::get_singleton()->get("rendering/textures/vram_compression/import_etc")) {
 			_save_stex(image, p_save_path + ".etc.stex", compress_mode, lossy, Image::COMPRESS_ETC, mipmaps, stream, detect_3d, detect_roughness, detect_normal, force_normal, srgb_friendly_pack, true, mipmap_limit, normal_image, roughness_channel);
 			r_platform_variants->push_back("etc");
 			formats_imported.push_back("etc");
 		}
 
-		if (ProjectSettings::get_singleton()->get("rendering/vram_compression/import_pvrtc")) {
+		if (ProjectSettings::get_singleton()->get("rendering/textures/vram_compression/import_pvrtc")) {
 			_save_stex(image, p_save_path + ".pvrtc.stex", compress_mode, lossy, Image::COMPRESS_PVRTC1_4, mipmaps, stream, detect_3d, detect_roughness, detect_normal, force_normal, srgb_friendly_pack, true, mipmap_limit, normal_image, roughness_channel);
 			r_platform_variants->push_back("pvrtc");
 			formats_imported.push_back("pvrtc");
@@ -574,7 +574,7 @@ String ResourceImporterTexture::get_import_settings_string() const {
 
 	int index = 0;
 	while (compression_formats[index]) {
-		String setting_path = "rendering/vram_compression/import_" + String(compression_formats[index]);
+		String setting_path = "rendering/textures/vram_compression/import_" + String(compression_formats[index]);
 		bool test = ProjectSettings::get_singleton()->get(setting_path);
 		if (test) {
 			s += String(compression_formats[index]);
@@ -606,7 +606,7 @@ bool ResourceImporterTexture::are_import_settings_valid(const String &p_path) co
 	int index = 0;
 	bool valid = true;
 	while (compression_formats[index]) {
-		String setting_path = "rendering/vram_compression/import_" + String(compression_formats[index]);
+		String setting_path = "rendering/textures/vram_compression/import_" + String(compression_formats[index]);
 		bool test = ProjectSettings::get_singleton()->get(setting_path);
 		if (test) {
 			if (formats_imported.find(compression_formats[index]) == -1) {

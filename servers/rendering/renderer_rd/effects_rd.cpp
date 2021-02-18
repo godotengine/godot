@@ -1781,7 +1781,7 @@ EffectsRD::EffectsRD() {
 
 	{
 		// Initialize cubemap filter
-		filter.use_high_quality = GLOBAL_GET("rendering/quality/reflections/fast_filter_high_quality");
+		filter.use_high_quality = GLOBAL_GET("rendering/reflections/sky_reflections/fast_filter_high_quality");
 
 		Vector<String> cubemap_filter_modes;
 		cubemap_filter_modes.push_back("\n#define USE_HIGH_QUALITY\n");

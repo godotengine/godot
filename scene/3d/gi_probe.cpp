@@ -221,7 +221,7 @@ RID GIProbeData::get_rid() const {
 
 void GIProbeData::_validate_property(PropertyInfo &property) const {
 	if (property.name == "anisotropy_strength") {
-		bool anisotropy_enabled = ProjectSettings::get_singleton()->get("rendering/quality/gi_probes/anisotropic");
+		bool anisotropy_enabled = ProjectSettings::get_singleton()->get("rendering/global_illumination/gi_probes/anisotropic");
 		if (!anisotropy_enabled) {
 			property.usage = PROPERTY_USAGE_NOEDITOR;
 		}

@@ -1125,29 +1125,29 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 	}
 #endif
 
-	GLOBAL_DEF("logging/file_logging/enable_file_logging", false);
+	GLOBAL_DEF("debug/file_logging/enable_file_logging", false);
 	// Only file logging by default on desktop platforms as logs can't be
 	// accessed easily on mobile/Web platforms (if at all).
 	// This also prevents logs from being created for the editor instance, as feature tags
 	// are disabled while in the editor (even if they should logically apply).
-	GLOBAL_DEF("logging/file_logging/enable_file_logging.pc", true);
-	GLOBAL_DEF("logging/file_logging/log_path", "user://logs/godot.log");
-	GLOBAL_DEF("logging/file_logging/max_log_files", 5);
-	ProjectSettings::get_singleton()->set_custom_property_info("logging/file_logging/max_log_files",
+	GLOBAL_DEF("debug/file_logging/enable_file_logging.pc", true);
+	GLOBAL_DEF("debug/file_logging/log_path", "user://logs/godot.log");
+	GLOBAL_DEF("debug/file_logging/max_log_files", 5);
+	ProjectSettings::get_singleton()->set_custom_property_info("debug/file_logging/max_log_files",
 			PropertyInfo(Variant::INT,
-					"logging/file_logging/max_log_files",
+					"debug/file_logging/max_log_files",
 					PROPERTY_HINT_RANGE,
 					"0,20,1,or_greater")); //no negative numbers
 	if (!project_manager && !editor && FileAccess::get_create_func(FileAccess::ACCESS_USERDATA) &&
-			GLOBAL_GET("logging/file_logging/enable_file_logging")) {
+			GLOBAL_GET("debug/file_logging/enable_file_logging")) {
 		// Don't create logs for the project manager as they would be written to
 		// the current working directory, which is inconvenient.
-		String base_path = GLOBAL_GET("logging/file_logging/log_path");
-		int max_files = GLOBAL_GET("logging/file_logging/max_log_files");
+		String base_path = GLOBAL_GET("debug/file_logging/log_path");
+		int max_files = GLOBAL_GET("debug/file_logging/max_log_files");
 		OS::get_singleton()->add_logger(memnew(RotatedFileLogger(base_path, max_files)));
 	}
 
-	if (main_args.size() == 0 && String(GLOBAL_DEF("application/run/main_scene", "")) == "") {
+	if (main_args.size() == 0 && String(GLOBAL_GET("application/run/main_scene")) == "") {
 #ifdef TOOLS_ENABLED
 		if (!editor && !project_manager) {
 #endif
@@ -1179,28 +1179,28 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 
 	OS::get_singleton()->set_cmdline(execpath, main_args);
 
-	GLOBAL_DEF("rendering/quality/driver/driver_name", "Vulkan");
-	ProjectSettings::get_singleton()->set_custom_property_info("rendering/quality/driver/driver_name",
+	GLOBAL_DEF("rendering/driver/driver_name", "Vulkan");
+	ProjectSettings::get_singleton()->set_custom_property_info("rendering/driver/driver_name",
 			PropertyInfo(Variant::STRING,
-					"rendering/quality/driver/driver_name",
+					"rendering/driver/driver_name",
 					PROPERTY_HINT_ENUM, "Vulkan"));
 	if (display_driver == "") {
-		display_driver = GLOBAL_GET("rendering/quality/driver/driver_name");
+		display_driver = GLOBAL_GET("rendering/driver/driver_name");
 	}
 
-	GLOBAL_DEF("display/window/size/width", 1024);
+	GLOBAL_DEF_BASIC("display/window/size/width", 1024);
 	ProjectSettings::get_singleton()->set_custom_property_info("display/window/size/width",
 			PropertyInfo(Variant::INT, "display/window/size/width",
 					PROPERTY_HINT_RANGE,
 					"0,7680,or_greater")); // 8K resolution
-	GLOBAL_DEF("display/window/size/height", 600);
+	GLOBAL_DEF_BASIC("display/window/size/height", 600);
 	ProjectSettings::get_singleton()->set_custom_property_info("display/window/size/height",
 			PropertyInfo(Variant::INT, "display/window/size/height",
 					PROPERTY_HINT_RANGE,
 					"0,4320,or_greater")); // 8K resolution
-	GLOBAL_DEF("display/window/size/resizable", true);
-	GLOBAL_DEF("display/window/size/borderless", false);
-	GLOBAL_DEF("display/window/size/fullscreen", false);
+	GLOBAL_DEF_BASIC("display/window/size/resizable", true);
+	GLOBAL_DEF_BASIC("display/window/size/borderless", false);
+	GLOBAL_DEF_BASIC("display/window/size/fullscreen", false);
 	GLOBAL_DEF("display/window/size/always_on_top", false);
 	GLOBAL_DEF("display/window/size/test_width", 0);
 	ProjectSettings::get_singleton()->set_custom_property_info("display/window/size/test_width",
@@ -1248,7 +1248,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 		}
 	}
 
-	GLOBAL_DEF("display/window/force_right_to_left_layout_direction", false);
+	GLOBAL_DEF("internationalization/rendering/force_right_to_left_layout_direction", false);
 
 	if (!force_lowdpi) {
 		OS::get_singleton()->_allow_hidpi = GLOBAL_DEF("display/window/dpi/allow_hidpi", false);
@@ -1267,8 +1267,16 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 
 	OS::get_singleton()->_vsync_via_compositor = window_vsync_via_compositor;
 
+	{
+		GLOBAL_DEF_RST_NOVAL("input_devices/tablet/driver", "");
+		GLOBAL_DEF_RST_NOVAL("input_devices/tablet/driver.windows", "");
+		ProjectSettings::get_singleton()->set_custom_property_info("input_devices/tablet/driver.windows", PropertyInfo(Variant::STRING, "input_devices/tablet/driver.windows", PROPERTY_HINT_ENUM, "wintab,winink"));
+	}
 	if (tablet_driver == "") { // specified in project.godot
-		tablet_driver = GLOBAL_DEF_RST_NOVAL("display/window/tablet_driver", OS::get_singleton()->get_tablet_driver_name(0));
+		tablet_driver = GLOBAL_GET("input_devices/tablet/driver");
+		if (tablet_driver == "") {
+			tablet_driver = OS::get_singleton()->get_tablet_driver_name(0);
+		}
 	}
 
 	for (int i = 0; i < OS::get_singleton()->get_tablet_driver_count(); i++) {
@@ -1286,9 +1294,6 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
     OS::get_singleton()->_allow_layered = GLOBAL_DEF("display/window/per_pixel_transparency/allowed", false);
     video_mode.layered = GLOBAL_DEF("display/window/per_pixel_transparency/enabled", false);
 */
-	GLOBAL_DEF("rendering/quality/intended_usage/framebuffer_allocation", 2);
-	GLOBAL_DEF("rendering/quality/intended_usage/framebuffer_allocation.mobile", 3);
-
 	if (editor || project_manager) {
 		// The editor and project manager always detect and use hiDPI if needed
 		OS::get_singleton()->_allow_hidpi = true;
@@ -1297,7 +1302,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 
 	OS::get_singleton()->_keep_screen_on = GLOBAL_DEF("display/window/energy_saving/keep_screen_on", true);
 	if (rtm == -1) {
-		rtm = GLOBAL_DEF("rendering/threads/thread_model", OS::RENDER_THREAD_SAFE);
+		rtm = GLOBAL_DEF("rendering/driver/threads/thread_model", OS::RENDER_THREAD_SAFE);
 	}
 
 	if (rtm >= 0 && rtm < 3) {
@@ -1325,7 +1330,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 	}
 
 	if (audio_driver == "") { // specified in project.godot
-		audio_driver = GLOBAL_DEF_RST_NOVAL("audio/driver", AudioDriverManager::get_driver(0)->get_name());
+		audio_driver = GLOBAL_DEF_RST_NOVAL("audio/driver/driver", AudioDriverManager::get_driver(0)->get_name());
 	}
 
 	for (int i = 0; i < AudioDriverManager::get_driver_count(); i++) {
@@ -1359,7 +1364,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 		}
 	}
 
-	Engine::get_singleton()->set_iterations_per_second(GLOBAL_DEF("physics/common/physics_fps", 60));
+	Engine::get_singleton()->set_iterations_per_second(GLOBAL_DEF_BASIC("physics/common/physics_fps", 60));
 	ProjectSettings::get_singleton()->set_custom_property_info("physics/common/physics_fps",
 			PropertyInfo(Variant::INT, "physics/common/physics_fps",
 					PROPERTY_HINT_RANGE, "1,120,1,or_greater"));
@@ -1476,9 +1481,8 @@ Error Main::setup2(Thread::ID p_main_tid_override) {
 
 	/* Determine text driver */
 
-	GLOBAL_DEF("display/window/text_name", "");
 	if (text_driver == "") {
-		text_driver = GLOBAL_GET("display/window/text_name");
+		text_driver = GLOBAL_GET("internationalization/rendering/text_driver");
 	}
 
 	if (text_driver != "") {
@@ -1630,7 +1634,7 @@ Error Main::setup2(Thread::ID p_main_tid_override) {
 
 	MAIN_PRINT("Main: Load Boot Image");
 
-	Color clear = GLOBAL_DEF("rendering/environment/default_clear_color", Color(0.3, 0.3, 0.3));
+	Color clear = GLOBAL_DEF("rendering/environment/defaults/default_clear_color", Color(0.3, 0.3, 0.3));
 	RenderingServer::get_singleton()->set_default_clear_color(clear);
 
 	if (show_logo) { //boot logo!
@@ -1683,7 +1687,7 @@ Error Main::setup2(Thread::ID p_main_tid_override) {
 
 	MAIN_PRINT("Main: DCC");
 	RenderingServer::get_singleton()->set_default_clear_color(
-			GLOBAL_DEF("rendering/environment/default_clear_color", Color(0.3, 0.3, 0.3)));
+			GLOBAL_DEF("rendering/environment/defaults/default_clear_color", Color(0.3, 0.3, 0.3)));
 
 	GLOBAL_DEF("application/config/icon", String());
 	ProjectSettings::get_singleton()->set_custom_property_info("application/config/icon",
@@ -1970,8 +1974,8 @@ bool Main::start() {
 
 #endif
 
-	if (script == "" && game_path == "" && String(GLOBAL_DEF("application/run/main_scene", "")) != "") {
-		game_path = GLOBAL_DEF("application/run/main_scene", "");
+	if (script == "" && game_path == "" && String(GLOBAL_GET("application/run/main_scene")) != "") {
+		game_path = GLOBAL_GET("application/run/main_scene");
 	}
 
 	MainLoop *main_loop = nullptr;
@@ -2146,10 +2150,10 @@ bool Main::start() {
 		if (!editor && !project_manager) {
 			//standard helpers that can be changed from main config
 
-			String stretch_mode = GLOBAL_DEF("display/window/stretch/mode", "disabled");
-			String stretch_aspect = GLOBAL_DEF("display/window/stretch/aspect", "ignore");
-			Size2i stretch_size = Size2i(GLOBAL_DEF("display/window/size/width", 0),
-					GLOBAL_DEF("display/window/size/height", 0));
+			String stretch_mode = GLOBAL_DEF_BASIC("display/window/stretch/mode", "disabled");
+			String stretch_aspect = GLOBAL_DEF_BASIC("display/window/stretch/aspect", "ignore");
+			Size2i stretch_size = Size2i(GLOBAL_DEF_BASIC("display/window/size/width", 0),
+					GLOBAL_DEF_BASIC("display/window/size/height", 0));
 
 			Window::ContentScaleMode cs_sm = Window::CONTENT_SCALE_MODE_DISABLED;
 			if (stretch_mode == "canvas_items") {
@@ -2189,30 +2193,30 @@ bool Main::start() {
 			bool snap_controls = GLOBAL_DEF("gui/common/snap_controls_to_pixels", true);
 			sml->get_root()->set_snap_controls_to_pixels(snap_controls);
 
-			bool font_oversampling = GLOBAL_DEF("rendering/quality/dynamic_fonts/use_oversampling", true);
+			bool font_oversampling = GLOBAL_DEF("gui/fonts/dynamic_fonts/use_oversampling", true);
 			sml->get_root()->set_use_font_oversampling(font_oversampling);
 
-			int texture_filter = GLOBAL_DEF("rendering/canvas_textures/default_texture_filter", 1);
-			int texture_repeat = GLOBAL_DEF("rendering/canvas_textures/default_texture_repeat", 0);
+			int texture_filter = GLOBAL_DEF("rendering/textures/canvas_textures/default_texture_filter", 1);
+			int texture_repeat = GLOBAL_DEF("rendering/textures/canvas_textures/default_texture_repeat", 0);
 			sml->get_root()->set_default_canvas_item_texture_filter(
 					Viewport::DefaultCanvasItemTextureFilter(texture_filter));
 			sml->get_root()->set_default_canvas_item_texture_repeat(
 					Viewport::DefaultCanvasItemTextureRepeat(texture_repeat));
 
 		} else {
-			GLOBAL_DEF("display/window/stretch/mode", "disabled");
+			GLOBAL_DEF_BASIC("display/window/stretch/mode", "disabled");
 			ProjectSettings::get_singleton()->set_custom_property_info("display/window/stretch/mode",
 					PropertyInfo(Variant::STRING,
 							"display/window/stretch/mode",
 							PROPERTY_HINT_ENUM,
 							"disabled,canvas_items,viewport"));
-			GLOBAL_DEF("display/window/stretch/aspect", "ignore");
+			GLOBAL_DEF_BASIC("display/window/stretch/aspect", "ignore");
 			ProjectSettings::get_singleton()->set_custom_property_info("display/window/stretch/aspect",
 					PropertyInfo(Variant::STRING,
 							"display/window/stretch/aspect",
 							PROPERTY_HINT_ENUM,
 							"ignore,keep,keep_width,keep_height,expand"));
-			GLOBAL_DEF("display/window/stretch/shrink", 1.0);
+			GLOBAL_DEF_BASIC("display/window/stretch/shrink", 1.0);
 			ProjectSettings::get_singleton()->set_custom_property_info("display/window/stretch/shrink",
 					PropertyInfo(Variant::FLOAT,
 							"display/window/stretch/shrink",
@@ -2220,18 +2224,18 @@ bool Main::start() {
 							"1.0,8.0,0.1"));
 			sml->set_auto_accept_quit(GLOBAL_DEF("application/config/auto_accept_quit", true));
 			sml->set_quit_on_go_back(GLOBAL_DEF("application/config/quit_on_go_back", true));
-			GLOBAL_DEF("gui/common/snap_controls_to_pixels", true);
-			GLOBAL_DEF("rendering/quality/dynamic_fonts/use_oversampling", true);
+			GLOBAL_DEF_BASIC("gui/common/snap_controls_to_pixels", true);
+			GLOBAL_DEF_BASIC("gui/fonts/dynamic_fonts/use_oversampling", true);
 
-			GLOBAL_DEF("rendering/canvas_textures/default_texture_filter", 1);
+			GLOBAL_DEF_BASIC("rendering/textures/canvas_textures/default_texture_filter", 1);
 			ProjectSettings::get_singleton()->set_custom_property_info(
-					"rendering/canvas_textures/default_texture_filter",
-					PropertyInfo(Variant::INT, "rendering/canvas_textures/default_texture_filter", PROPERTY_HINT_ENUM,
+					"rendering/textures/canvas_textures/default_texture_filter",
+					PropertyInfo(Variant::INT, "rendering/textures/canvas_textures/default_texture_filter", PROPERTY_HINT_ENUM,
 							"Nearest,Linear,MipmapLinear,MipmapNearest"));
-			GLOBAL_DEF("rendering/canvas_textures/default_texture_repeat", 0);
+			GLOBAL_DEF_BASIC("rendering/textures/canvas_textures/default_texture_repeat", 0);
 			ProjectSettings::get_singleton()->set_custom_property_info(
-					"rendering/canvas_textures/default_texture_repeat",
-					PropertyInfo(Variant::INT, "rendering/canvas_textures/default_texture_repeat", PROPERTY_HINT_ENUM,
+					"rendering/textures/canvas_textures/default_texture_repeat",
+					PropertyInfo(Variant::INT, "rendering/textures/canvas_textures/default_texture_repeat", PROPERTY_HINT_ENUM,
 							"Disable,Enable,Mirror"));
 		}
 

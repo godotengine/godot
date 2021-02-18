@@ -2067,7 +2067,7 @@ void EditorFileSystem::_update_extensions() {
 
 EditorFileSystem::EditorFileSystem() {
 	ResourceLoader::import = _resource_import;
-	reimport_on_missing_imported_files = GLOBAL_DEF("editor/reimport_missing_imported_files", true);
+	reimport_on_missing_imported_files = GLOBAL_DEF("editor/import/reimport_missing_imported_files", true);
 
 	singleton = this;
 	filesystem = memnew(EditorFileSystemDirectory); //like, empty

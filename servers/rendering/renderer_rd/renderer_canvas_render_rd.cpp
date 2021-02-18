@@ -2698,7 +2698,7 @@ RendererCanvasRenderRD::RendererCanvasRenderRD(RendererStorageRD *p_storage) {
 	default_canvas_texture = storage->canvas_texture_allocate();
 	storage->canvas_texture_initialize(default_canvas_texture);
 
-	state.shadow_texture_size = GLOBAL_GET("rendering/quality/2d_shadow_atlas/size");
+	state.shadow_texture_size = GLOBAL_GET("rendering/2d/shadow_atlas/size");
 
 	//create functions for shader and material
 	storage->shader_set_data_request_function(RendererStorageRD::SHADER_TYPE_2D, _create_shader_funcs);
