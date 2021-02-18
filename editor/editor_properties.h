@@ -601,6 +601,9 @@ class EditorPropertyResource : public EditorProperty {
 
 	bool opened_editor;
 
+	bool updating_theme = false;
+	void _update_property_bg();
+
 protected:
 	static void _bind_methods();
 	void _notification(int p_what);

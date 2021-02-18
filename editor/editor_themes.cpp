@@ -718,14 +718,58 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	theme->set_icon("visibility_xray", "PopupMenu", theme->get_icon("GuiVisibilityXray", "EditorIcons"));
 	theme->set_constant("vseparation", "PopupMenu", (extra_spacing + default_margin_size + 1) * EDSCALE);
 
-	Ref<StyleBoxFlat> sub_inspector_bg = make_flat_stylebox(dark_color_1.linear_interpolate(accent_color, 0.08), 2, 0, 2, 2);
-	sub_inspector_bg->set_border_width(MARGIN_LEFT, 2);
-	sub_inspector_bg->set_border_width(MARGIN_RIGHT, 2);
-	sub_inspector_bg->set_border_width(MARGIN_BOTTOM, 2);
-	sub_inspector_bg->set_border_color(accent_color * Color(1, 1, 1, 0.3));
-	sub_inspector_bg->set_draw_center(true);
+	for (int i = 0; i < 16; i++) {
+		Color si_base_color = accent_color;
 
-	theme->set_stylebox("sub_inspector_bg", "Editor", sub_inspector_bg);
+		float hue_rotate = (i * 2 % 16) / 16.0;
+		si_base_color.set_hsv(Math::fmod(float(si_base_color.get_h() + hue_rotate), float(1.0)), si_base_color.get_s(), si_base_color.get_v());
+		si_base_color = accent_color.linear_interpolate(si_base_color, float(EDITOR_GET("docks/property_editor/subresource_hue_tint")));
+
+		Ref<StyleBoxFlat> sub_inspector_bg;
+
+		sub_inspector_bg = make_flat_stylebox(dark_color_1.linear_interpolate(si_base_color, 0.08), 2, 0, 2, 2);
+
+		sub_inspector_bg->set_border_width(MARGIN_LEFT, 2);
+		sub_inspector_bg->set_border_width(MARGIN_RIGHT, 2);
+		sub_inspector_bg->set_border_width(MARGIN_BOTTOM, 2);
+		sub_inspector_bg->set_border_width(MARGIN_TOP, 2);
+		sub_inspector_bg->set_default_margin(MARGIN_LEFT, 3);
+		sub_inspector_bg->set_default_margin(MARGIN_RIGHT, 3);
+		sub_inspector_bg->set_default_margin(MARGIN_BOTTOM, 10);
+		sub_inspector_bg->set_default_margin(MARGIN_TOP, 5);
+		sub_inspector_bg->set_border_color(si_base_color * Color(0.7, 0.7, 0.7, 0.8));
+		sub_inspector_bg->set_draw_center(true);
+
+		theme->set_stylebox("sub_inspector_bg" + itos(i), "Editor", sub_inspector_bg);
+
+		Ref<StyleBoxFlat> bg_color;
+		bg_color.instance();
+		bg_color->set_bg_color(si_base_color * Color(0.7, 0.7, 0.7, 0.8));
+		bg_color->set_border_width_all(0);
+
+		Ref<StyleBoxFlat> bg_color_selected;
+		bg_color_selected.instance();
+		bg_color_selected->set_border_width_all(0);
+		bg_color_selected->set_bg_color(si_base_color * Color(0.8, 0.8, 0.8, 0.8));
+
+		theme->set_stylebox("sub_inspector_property_bg" + itos(i), "Editor", bg_color);
+		theme->set_stylebox("sub_inspector_property_bg_selected" + itos(i), "Editor", bg_color_selected);
+	}
+
+	theme->set_color("sub_inspector_property_color", "Editor", dark_theme ? Color(1, 1, 1, 1) : Color(0, 0, 0, 1));
+	theme->set_constant("sub_inspector_font_offset", "Editor", 4 * EDSCALE);
+
+	Ref<StyleBoxFlat> style_property_bg = style_default->duplicate();
+	style_property_bg->set_bg_color(highlight_color);
+	style_property_bg->set_border_width_all(0);
+
+	theme->set_constant("font_offset", "EditorProperty", 1 * EDSCALE);
+	theme->set_stylebox("bg_selected", "EditorProperty", style_property_bg);
+	theme->set_stylebox("bg", "EditorProperty", Ref<StyleBoxEmpty>(memnew(StyleBoxEmpty)));
+	theme->set_constant("vseparation", "EditorProperty", (extra_spacing + default_margin_size) * EDSCALE);
+	theme->set_color("error_color", "EditorProperty", error_color);
+	theme->set_color("property_color", "EditorProperty", property_color);
+
 	theme->set_constant("inspector_margin", "Editor", 8 * EDSCALE);
 
 	// Tree & ItemList background
