@@ -58,6 +58,8 @@ public:
 	_ALWAYS_INLINE_ ObjectID() {}
 	_ALWAYS_INLINE_ explicit ObjectID(const uint64_t p_id) { id = p_id; }
 	_ALWAYS_INLINE_ explicit ObjectID(const int64_t p_id) { id = p_id; }
+
+	void stop_being_reference() { id &= ~(static_cast<uint64_t>(1) << 63); }
 };
 
 #endif // OBJECT_ID_H

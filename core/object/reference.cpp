@@ -102,6 +102,12 @@ Reference::Reference() :
 	refcount_init.init();
 }
 
+bool predelete_handler(Reference *p_reference) {
+	p_reference->stop_being_reference();
+	predelete_handler(static_cast<Object *>(p_reference));
+	return true;
+}
+
 Variant WeakRef::get_ref() const {
 	if (ref.is_null()) {
 		return Variant();

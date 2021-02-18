@@ -1747,8 +1747,7 @@ void Object::set_script_instance_binding(int p_script_language_index, void *p_da
 }
 
 void Object::_construct_object(bool p_reference) {
-	type_is_reference = p_reference;
-	_instance_id = ObjectDB::add_instance(this);
+	_instance_id = ObjectDB::add_instance(this, p_reference);
 	memset(_script_instance_bindings, 0, sizeof(void *) * MAX_SCRIPT_INSTANCE_BINDINGS);
 
 #ifdef DEBUG_ENABLED
@@ -1758,6 +1757,10 @@ void Object::_construct_object(bool p_reference) {
 
 Object::Object(bool p_reference) {
 	_construct_object(p_reference);
+}
+
+void Object::stop_being_reference() {
+	_instance_id.stop_being_reference();
 }
 
 Object::Object() {
@@ -1844,7 +1847,7 @@ int ObjectDB::get_object_count() {
 	return slot_count;
 }
 
-ObjectID ObjectDB::add_instance(Object *p_object) {
+ObjectID ObjectDB::add_instance(Object *p_object, bool p_reference) {
 	spin_lock.lock();
 	if (unlikely(slot_count == slot_max)) {
 		CRASH_COND(slot_count == (1 << OBJECTDB_SLOT_MAX_COUNT_BITS));
@@ -1866,7 +1869,7 @@ ObjectID ObjectDB::add_instance(Object *p_object) {
 		ERR_FAIL_COND_V(object_slots[slot].object != nullptr, ObjectID());
 	}
 	object_slots[slot].object = p_object;
-	object_slots[slot].is_reference = p_object->is_reference();
+	object_slots[slot].is_reference = p_reference;
 	validator_counter = (validator_counter + 1) & OBJECTDB_VALIDATOR_MASK;
 	if (unlikely(validator_counter == 0)) {
 		validator_counter = 1;
@@ -1877,7 +1880,7 @@ ObjectID ObjectDB::add_instance(Object *p_object) {
 	id <<= OBJECTDB_SLOT_MAX_COUNT_BITS;
 	id |= uint64_t(slot);
 
-	if (p_object->is_reference()) {
+	if (p_reference) {
 		id |= OBJECTDB_REFERENCE_BIT;
 	}
 
