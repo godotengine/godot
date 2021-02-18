@@ -81,7 +81,7 @@ public:
 
 	/* TEXTURE API */
 
-	enum TextureFlags {
+	enum TextureFlags : unsigned int { // unsigned to stop sanitizer complaining about bit operations on ints
 		TEXTURE_FLAG_MIPMAPS = 1, /// Enable automatic mipmap generation - when available
 		TEXTURE_FLAG_REPEAT = 2, /// Repeat texture (Tiling), otherwise Clamping
 		TEXTURE_FLAG_FILTER = 4, /// Create texture with linear (or available) filter
