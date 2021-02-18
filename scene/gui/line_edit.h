@@ -163,6 +163,7 @@ private:
 	void _clear_redo();
 	void _create_undo_state();
 
+	int _get_menu_action_accelerator(const String &p_action);
 	void _generate_context_menu();
 
 	void _shape();
@@ -187,6 +188,14 @@ private:
 	void changed_internal();
 
 	void _editor_settings_changed();
+
+	void _swap_current_input_direction();
+	void _move_cursor_left(bool p_select, bool p_move_by_word = false);
+	void _move_cursor_right(bool p_select, bool p_move_by_word = false);
+	void _move_cursor_start(bool p_select);
+	void _move_cursor_end(bool p_select);
+	void _backspace(bool p_word = false, bool p_all_to_left = false);
+	void _delete(bool p_word = false, bool p_all_to_right = false);
 
 	void _gui_input(Ref<InputEvent> p_event);
 	void _notification(int p_what);

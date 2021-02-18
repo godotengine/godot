@@ -116,6 +116,9 @@ protected:
 
 	Error _setup(const String &p_path, const String &p_main_pack, bool p_upwards = false);
 
+	void _add_builtin_input_map();
+
+protected:
 	static void _bind_methods();
 
 public:

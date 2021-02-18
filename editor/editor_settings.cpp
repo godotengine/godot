@@ -31,6 +31,7 @@
 #include "editor_settings.h"
 
 #include "core/config/project_settings.h"
+#include "core/input/input_map.h"
 #include "core/io/certs_compressed.gen.h"
 #include "core/io/compression.h"
 #include "core/io/config_file.h"
@@ -70,7 +71,7 @@ bool EditorSettings::_set(const StringName &p_name, const Variant &p_value) {
 bool EditorSettings::_set_only(const StringName &p_name, const Variant &p_value) {
 	_THREAD_SAFE_METHOD_
 
-	if (p_name.operator String() == "shortcuts") {
+	if (p_name == "shortcuts") {
 		Array arr = p_value;
 		ERR_FAIL_COND_V(arr.size() && arr.size() & 1, true);
 		for (int i = 0; i < arr.size(); i += 2) {
@@ -83,6 +84,24 @@ bool EditorSettings::_set_only(const StringName &p_name, const Variant &p_value)
 			add_shortcut(name, sc);
 		}
 
+		return false;
+	} else if (p_name == "builtin_action_overrides") {
+		Array actions_arr = p_value;
+		for (int i = 0; i < actions_arr.size(); i++) {
+			Dictionary action_dict = actions_arr[i];
+
+			String name = action_dict["name"];
+			Array events = action_dict["events"];
+
+			InputMap *im = InputMap::get_singleton();
+			im->action_erase_events(name);
+
+			builtin_action_overrides[name].clear();
+			for (int ev_idx = 0; ev_idx < events.size(); ev_idx++) {
+				im->action_add_event(name, events[ev_idx]);
+				builtin_action_overrides[name].push_back(events[ev_idx]);
+			}
+		}
 		return false;
 	}
 
@@ -118,10 +137,15 @@ bool EditorSettings::_set_only(const StringName &p_name, const Variant &p_value)
 bool EditorSettings::_get(const StringName &p_name, Variant &r_ret) const {
 	_THREAD_SAFE_METHOD_
 
-	if (p_name.operator String() == "shortcuts") {
+	if (p_name == "shortcuts") {
 		Array arr;
 		for (const Map<String, Ref<Shortcut>>::Element *E = shortcuts.front(); E; E = E->next()) {
 			Ref<Shortcut> sc = E->get();
+
+			if (builtin_action_overrides.has(E->key())) {
+				// This shortcut was auto-generated from built in actions: don't save.
+				continue;
+			}
 
 			if (optimize_save) {
 				if (!sc->has_meta("original")) {
@@ -138,6 +162,27 @@ bool EditorSettings::_get(const StringName &p_name, Variant &r_ret) const {
 			arr.push_back(sc->get_shortcut());
 		}
 		r_ret = arr;
+		return true;
+	} else if (p_name == "builtin_action_overrides") {
+		Array actions_arr;
+		for (Map<String, List<Ref<InputEvent>>>::Element *E = builtin_action_overrides.front(); E; E = E->next()) {
+			List<Ref<InputEvent>> events = E->get();
+
+			// TODO: skip actions which are the same as the builtin.
+			Dictionary action_dict;
+			action_dict["name"] = E->key();
+
+			Array events_arr;
+			for (List<Ref<InputEvent>>::Element *I = events.front(); I; I = I->next()) {
+				events_arr.push_back(I->get());
+			}
+
+			action_dict["events"] = events_arr;
+
+			actions_arr.push_back(action_dict);
+		}
+
+		r_ret = actions_arr;
 		return true;
 	}
 
@@ -220,6 +265,7 @@ void EditorSettings::_get_property_list(List<PropertyInfo> *p_list) const {
 	}
 
 	p_list->push_back(PropertyInfo(Variant::ARRAY, "shortcuts", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR | PROPERTY_USAGE_INTERNAL)); //do not edit
+	p_list->push_back(PropertyInfo(Variant::ARRAY, "builtin_action_overrides", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR | PROPERTY_USAGE_INTERNAL));
 }
 
 void EditorSettings::_add_property_info_bind(const Dictionary &p_info) {
@@ -1539,12 +1585,39 @@ bool EditorSettings::is_shortcut(const String &p_name, const Ref<InputEvent> &p_
 }
 
 Ref<Shortcut> EditorSettings::get_shortcut(const String &p_name) const {
-	const Map<String, Ref<Shortcut>>::Element *E = shortcuts.find(p_name);
-	if (!E) {
-		return Ref<Shortcut>();
+	const Map<String, Ref<Shortcut>>::Element *SC = shortcuts.find(p_name);
+	if (SC) {
+		return SC->get();
 	}
 
-	return E->get();
+	// If no shortcut with the provided name is found in the list, check the built-in shortcuts.
+	// Use the first item in the action list for the shortcut event, since a shortcut can only have 1 linked event.
+
+	Ref<Shortcut> sc;
+	const Map<String, List<Ref<InputEvent>>>::Element *builtin_override = builtin_action_overrides.find(p_name);
+	if (builtin_override) {
+		sc.instance();
+		sc->set_shortcut(builtin_override->get().front()->get());
+		sc->set_name(InputMap::get_singleton()->get_builtin_display_name(p_name));
+	}
+
+	// If there was no override, check the default builtins to see if it has an InputEvent for the provided name.
+	if (sc.is_null()) {
+		const OrderedHashMap<String, List<Ref<InputEvent>>>::ConstElement builtin_default = InputMap::get_singleton()->get_builtins().find(p_name);
+		if (builtin_default) {
+			sc.instance();
+			sc->set_shortcut(builtin_default.get().front()->get());
+			sc->set_name(InputMap::get_singleton()->get_builtin_display_name(p_name));
+		}
+	}
+
+	if (sc.is_valid()) {
+		// Add the shortcut to the list.
+		shortcuts[p_name] = sc;
+		return sc;
+	}
+
+	return Ref<Shortcut>();
 }
 
 void EditorSettings::get_shortcut_list(List<String> *r_shortcuts) {
@@ -1610,6 +1683,66 @@ Ref<Shortcut> ED_SHORTCUT(const String &p_path, const String &p_name, uint32_t p
 	return sc;
 }
 
+void EditorSettings::set_builtin_action_override(const String &p_name, const Array &p_events) {
+	List<Ref<InputEvent>> event_list;
+
+	// Override the whole list, since events may have their order changed or be added, removed or edited.
+	InputMap::get_singleton()->action_erase_events(p_name);
+	for (int i = 0; i < p_events.size(); i++) {
+		event_list.push_back(p_events[i]);
+		InputMap::get_singleton()->action_add_event(p_name, p_events[i]);
+	}
+
+	// Check if the provided event array is same as built-in. If it is, it does not need to be added to the overrides.
+	// Note that event order must also be the same.
+	bool same_as_builtin = true;
+	OrderedHashMap<String, List<Ref<InputEvent>>>::ConstElement builtin_default = InputMap::get_singleton()->get_builtins().find(p_name);
+	if (builtin_default) {
+		List<Ref<InputEvent>> builtin_events = builtin_default.get();
+
+		if (p_events.size() == builtin_events.size()) {
+			int event_idx = 0;
+
+			// Check equality of each event.
+			for (List<Ref<InputEvent>>::Element *E = builtin_events.front(); E; E = E->next()) {
+				if (!E->get()->shortcut_match(p_events[event_idx])) {
+					same_as_builtin = false;
+					break;
+				}
+				event_idx++;
+			}
+		} else {
+			same_as_builtin = false;
+		}
+	}
+
+	if (same_as_builtin && builtin_action_overrides.has(p_name)) {
+		builtin_action_overrides.erase(p_name);
+	} else {
+		builtin_action_overrides[p_name] = event_list;
+	}
+
+	// Update the shortcut (if it is used somewhere in the editor) to be the first event of the new list.
+	if (shortcuts.has(p_name)) {
+		shortcuts[p_name]->set_shortcut(event_list.front()->get());
+	}
+}
+
+const Array EditorSettings::get_builtin_action_overrides(const String &p_name) const {
+	const Map<String, List<Ref<InputEvent>>>::Element *AO = builtin_action_overrides.find(p_name);
+	if (AO) {
+		Array event_array;
+
+		List<Ref<InputEvent>> events_list = AO->get();
+		for (List<Ref<InputEvent>>::Element *E = events_list.front(); E; E = E->next()) {
+			event_array.push_back(E->get());
+		}
+		return event_array;
+	}
+
+	return Array();
+}
+
 void EditorSettings::notify_changes() {
 	_THREAD_SAFE_METHOD_
 
@@ -1647,6 +1780,8 @@ void EditorSettings::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_favorites"), &EditorSettings::get_favorites);
 	ClassDB::bind_method(D_METHOD("set_recent_dirs", "dirs"), &EditorSettings::set_recent_dirs);
 	ClassDB::bind_method(D_METHOD("get_recent_dirs"), &EditorSettings::get_recent_dirs);
+
+	ClassDB::bind_method(D_METHOD("set_builtin_action_override", "name", "actions_list"), &EditorSettings::set_builtin_action_override);
 
 	ADD_SIGNAL(MethodInfo("settings_changed"));
 
