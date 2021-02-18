@@ -123,7 +123,9 @@ static bool _start_success = false;
 
 // Drivers
 
+String tablet_driver = "";
 String text_driver = "";
+
 static int text_driver_idx = -1;
 static int display_driver_idx = -1;
 static int audio_driver_idx = -1;
@@ -329,13 +331,7 @@ void Main::print_help(const char *p_binary) {
 	OS::get_singleton()->print("  --enable-vsync-via-compositor                When vsync is enabled, vsync via the OS' window compositor (Windows only).\n");
 	OS::get_singleton()->print("  --disable-vsync-via-compositor               Disable vsync via the OS' window compositor (Windows only).\n");
 	OS::get_singleton()->print("  --single-window                              Use a single window (no separate subwindows).\n");
-	OS::get_singleton()->print("  --tablet-driver                              Tablet input driver (");
-	for (int i = 0; i < OS::get_singleton()->get_tablet_driver_count(); i++) {
-		if (i != 0)
-			OS::get_singleton()->print(", ");
-		OS::get_singleton()->print("'%s'", OS::get_singleton()->get_tablet_driver_name(i).utf8().get_data());
-	}
-	OS::get_singleton()->print(") (Windows only).\n");
+	OS::get_singleton()->print("  --tablet-driver                              Pen tablet input driver.\n");
 	OS::get_singleton()->print("\n");
 #endif
 
@@ -556,7 +552,6 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 
 	String display_driver = "";
 	String audio_driver = "";
-	String tablet_driver = "";
 	String project_path = ".";
 	bool upwards = false;
 	String debug_uri = "";
@@ -725,19 +720,6 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 		} else if (I->get() == "--tablet-driver") {
 			if (I->next()) {
 				tablet_driver = I->next()->get();
-				bool found = false;
-				for (int i = 0; i < OS::get_singleton()->get_tablet_driver_count(); i++) {
-					if (tablet_driver == OS::get_singleton()->get_tablet_driver_name(i)) {
-						found = true;
-					}
-				}
-
-				if (!found) {
-					OS::get_singleton()->print("Unknown tablet driver '%s', aborting.\n",
-							tablet_driver.utf8().get_data());
-					goto error;
-				}
-
 				N = I->next()->next();
 			} else {
 				OS::get_singleton()->print("Missing tablet driver argument, aborting.\n");
@@ -1267,29 +1249,6 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 
 	OS::get_singleton()->_vsync_via_compositor = window_vsync_via_compositor;
 
-	{
-		GLOBAL_DEF_RST_NOVAL("input_devices/tablet/driver", "");
-		GLOBAL_DEF_RST_NOVAL("input_devices/tablet/driver.windows", "");
-		ProjectSettings::get_singleton()->set_custom_property_info("input_devices/tablet/driver.windows", PropertyInfo(Variant::STRING, "input_devices/tablet/driver.windows", PROPERTY_HINT_ENUM, "wintab,winink"));
-	}
-	if (tablet_driver == "") { // specified in project.godot
-		tablet_driver = GLOBAL_GET("input_devices/tablet/driver");
-		if (tablet_driver == "") {
-			tablet_driver = OS::get_singleton()->get_tablet_driver_name(0);
-		}
-	}
-
-	for (int i = 0; i < OS::get_singleton()->get_tablet_driver_count(); i++) {
-		if (tablet_driver == OS::get_singleton()->get_tablet_driver_name(i)) {
-			OS::get_singleton()->set_current_tablet_driver(OS::get_singleton()->get_tablet_driver_name(i));
-			break;
-		}
-	}
-
-	if (tablet_driver == "") {
-		OS::get_singleton()->set_current_tablet_driver(OS::get_singleton()->get_tablet_driver_name(0));
-	}
-
 	/* todo restore
     OS::get_singleton()->_allow_layered = GLOBAL_DEF("display/window/per_pixel_transparency/allowed", false);
     video_mode.layered = GLOBAL_DEF("display/window/per_pixel_transparency/enabled", false);
@@ -1511,7 +1470,7 @@ Error Main::setup2(Thread::ID p_main_tid_override) {
 			}
 		}
 	}
-	printf("Using %s text server...\n", TextServerManager::get_interface_name(text_driver_idx).utf8().get_data());
+	print_verbose("Using \"" + TextServerManager::get_interface_name(text_driver_idx) + "\" text server...");
 
 	/* Initialize Text Server */
 
@@ -1570,6 +1529,34 @@ Error Main::setup2(Thread::ID p_main_tid_override) {
 	if (display_server->has_feature(DisplayServer::FEATURE_ORIENTATION)) {
 		display_server->screen_set_orientation(window_orientation);
 	}
+
+	/* Initialize Pen Table Driver */
+
+	{
+		GLOBAL_DEF_RST_NOVAL("input_devices/pen_tablet/driver", "");
+		GLOBAL_DEF_RST_NOVAL("input_devices/pen_tablet/driver.windows", "");
+		ProjectSettings::get_singleton()->set_custom_property_info("input_devices/pen_tablet/driver.windows", PropertyInfo(Variant::STRING, "input_devices/pen_tablet/driver.windows", PROPERTY_HINT_ENUM, "wintab,winink"));
+	}
+
+	if (tablet_driver == "") { // specified in project.godot
+		tablet_driver = GLOBAL_GET("input_devices/pen_tablet/driver");
+		if (tablet_driver == "") {
+			tablet_driver = DisplayServer::get_singleton()->tablet_get_driver_name(0);
+		}
+	}
+
+	for (int i = 0; i < DisplayServer::get_singleton()->tablet_get_driver_count(); i++) {
+		if (tablet_driver == DisplayServer::get_singleton()->tablet_get_driver_name(i)) {
+			DisplayServer::get_singleton()->tablet_set_current_driver(DisplayServer::get_singleton()->tablet_get_driver_name(i));
+			break;
+		}
+	}
+
+	if (DisplayServer::get_singleton()->tablet_get_current_driver() == "") {
+		DisplayServer::get_singleton()->tablet_set_current_driver(DisplayServer::get_singleton()->tablet_get_driver_name(0));
+	}
+
+	print_verbose("Using \"" + tablet_driver + "\" pen tablet driver...");
 
 	/* Initialize Visual Server */
 

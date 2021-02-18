@@ -264,7 +264,6 @@ class DisplayServerWindows : public DisplayServer {
 
 	_THREAD_SAFE_CLASS_
 
-public:
 	// WinTab API
 	static bool wintab_available;
 	static WTOpenPtr wintab_WTOpen;
@@ -279,8 +278,9 @@ public:
 	static GetPointerPenInfoPtr win8p_GetPointerPenInfo;
 
 	void _update_tablet_ctx(const String &p_old_driver, const String &p_new_driver);
+	String tablet_driver;
+	Vector<String> tablet_drivers;
 
-private:
 	void GetMaskBitmaps(HBITMAP hSourceBitmap, COLORREF clrTransparent, OUT HBITMAP &hAndMaskBitmap, OUT HBITMAP &hXorMaskBitmap);
 
 	enum {
@@ -541,6 +541,11 @@ public:
 	virtual void keyboard_set_current_layout(int p_index);
 	virtual String keyboard_get_layout_language(int p_index) const;
 	virtual String keyboard_get_layout_name(int p_index) const;
+
+	virtual int tablet_get_driver_count() const;
+	virtual String tablet_get_driver_name(int p_driver) const;
+	virtual String tablet_get_current_driver() const;
+	virtual void tablet_set_current_driver(const String &p_driver);
 
 	virtual void process_events();
 
