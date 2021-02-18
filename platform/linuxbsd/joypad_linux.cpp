@@ -105,11 +105,13 @@ void JoypadLinux::run_joypad_thread() {
 		udev *_udev = udev_new();
 		if (!_udev) {
 			use_udev = false;
-			ERR_FAIL_MSG("Failed getting an udev context, falling back to parsing /dev/input.");
+			ERR_PRINT("Failed getting an udev context, falling back to parsing /dev/input.");
+			monitor_joypads();
+		} else {
+			enumerate_joypads(_udev);
+			monitor_joypads(_udev);
+			udev_unref(_udev);
 		}
-		enumerate_joypads(_udev);
-		monitor_joypads(_udev);
-		udev_unref(_udev);
 	} else {
 		monitor_joypads();
 	}
