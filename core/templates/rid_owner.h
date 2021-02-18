@@ -44,7 +44,7 @@
 #include <typeinfo>
 
 class RID_AllocBase {
-	static volatile uint64_t base_id;
+	static SafeNumeric<uint64_t> base_id;
 
 protected:
 	static RID _make_from_id(uint64_t p_id) {
@@ -54,7 +54,7 @@ protected:
 	}
 
 	static uint64_t _gen_id() {
-		return atomic_increment(&base_id);
+		return base_id.increment();
 	}
 
 	static RID _gen_rid() {

@@ -89,12 +89,12 @@ class RenderingServerDefault : public RenderingServer {
 	void _thread_loop();
 
 	Thread::ID server_thread;
-	volatile bool exit;
+	SafeFlag exit;
 	Thread thread;
-	volatile bool draw_thread_up;
+	SafeFlag draw_thread_up;
 	bool create_thread;
 
-	uint64_t draw_pending;
+	SafeNumeric<uint64_t> draw_pending;
 	void _thread_draw(bool p_swap_buffers, double frame_step);
 	void _thread_flush();
 

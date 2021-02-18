@@ -106,7 +106,7 @@ int AudioEffectCapture::get_frames_available() const {
 }
 
 int64_t AudioEffectCapture::get_discarded_frames() const {
-	return discarded_frames;
+	return discarded_frames.get();
 }
 
 int AudioEffectCapture::get_buffer_length_frames() const {
@@ -115,7 +115,7 @@ int AudioEffectCapture::get_buffer_length_frames() const {
 }
 
 int64_t AudioEffectCapture::get_pushed_frames() const {
-	return pushed_frames;
+	return pushed_frames.get();
 }
 
 void AudioEffectCaptureInstance::process(const AudioFrame *p_src_frames, AudioFrame *p_dst_frames, int p_frame_count) {
@@ -129,9 +129,9 @@ void AudioEffectCaptureInstance::process(const AudioFrame *p_src_frames, AudioFr
 		// Add incoming audio frames to the IO ring buffer
 		int32_t ret = buffer.write(p_src_frames, p_frame_count);
 		ERR_FAIL_COND_MSG(ret != p_frame_count, "Failed to add data to effect capture ring buffer despite sufficient space.");
-		atomic_add(&base->pushed_frames, p_frame_count);
+		base->pushed_frames.add(p_frame_count);
 	} else {
-		atomic_add(&base->discarded_frames, p_frame_count);
+		base->discarded_frames.add(p_frame_count);
 	}
 }
 

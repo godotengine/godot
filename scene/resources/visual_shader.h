@@ -32,6 +32,7 @@
 #define VISUAL_SHADER_H
 
 #include "core/string/string_builder.h"
+#include "core/templates/safe_refcount.h"
 #include "scene/gui/control.h"
 #include "scene/resources/shader.h"
 
@@ -99,7 +100,7 @@ private:
 
 	static RenderModeEnums render_mode_enums[];
 
-	volatile mutable bool dirty = true;
+	mutable SafeFlag dirty;
 	void _queue_update();
 
 	union ConnectionKey {
