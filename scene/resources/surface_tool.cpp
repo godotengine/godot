@@ -266,6 +266,7 @@ void SurfaceTool::add_triangle_fan(const Vector<Vector3> &p_vertices, const Vect
 void SurfaceTool::add_index(int p_index) {
 
 	ERR_FAIL_COND(!begun);
+	ERR_FAIL_COND(p_index < 0);
 
 	format |= Mesh::ARRAY_FORMAT_INDEX;
 	index_array.push_back(p_index);
