@@ -1678,7 +1678,12 @@ bool RasterizerCanvasGLES3::try_join_item(Item *p_ci, RenderItemState &r_ris, bo
 	r_batch_break = false;
 	bool join = true;
 
-	// light_masked may possibly need state checking here. Check for regressions!
+	// light_masked objects we just don't currently support for joining
+	// (this could possibly be improved at a later date)
+	if (p_ci->light_masked) {
+		join = false;
+		r_batch_break = true;
+	}
 
 	// we will now allow joining even if final modulate is different
 	// we will instead bake the final modulate into the vertex colors
