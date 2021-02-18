@@ -76,12 +76,12 @@ void RendererCompositorRD::blit_render_targets_to_screen(DisplayServer::WindowID
 	RD::get_singleton()->draw_list_end();
 }
 
-void RendererCompositorRD::begin_frame(double frame_step) {
+void RendererCompositorRD::begin_frame(float frame_step) {
 	frame++;
 	delta = frame_step;
 	time += frame_step;
 
-	double time_roll_over = GLOBAL_GET("rendering/limits/time/time_rollover_secs");
+	float time_roll_over = GLOBAL_GET("rendering/limits/time/time_rollover_secs");
 	time = Math::fmod(time, time_roll_over);
 
 	canvas->set_time(time);

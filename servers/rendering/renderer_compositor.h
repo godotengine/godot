@@ -54,7 +54,7 @@ public:
 	virtual void set_boot_image(const Ref<Image> &p_image, const Color &p_color, bool p_scale, bool p_use_filter = true) = 0;
 
 	virtual void initialize() = 0;
-	virtual void begin_frame(double frame_step) = 0;
+	virtual void begin_frame(float frame_step) = 0;
 
 	struct BlitToScreen {
 		RID render_target;

@@ -51,7 +51,7 @@
 
 class RendererSceneRenderRD : public RendererSceneRender {
 protected:
-	double time;
+	float time;
 
 	// Skys need less info from Directional Lights than the normal shaders
 	struct SkyDirectionalLightData {
@@ -2108,7 +2108,7 @@ public:
 		return debug_draw;
 	}
 
-	virtual void set_time(double p_time, double p_step);
+	virtual void set_time(float p_time, float p_step);
 
 	RID get_reflection_probe_buffer();
 	RID get_omni_light_buffer();

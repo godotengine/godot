@@ -2362,7 +2362,7 @@ RendererStorageRD::MaterialData *RendererCanvasRenderRD::_create_material_func(S
 	return material_data;
 }
 
-void RendererCanvasRenderRD::set_time(double p_time) {
+void RendererCanvasRenderRD::set_time(float p_time) {
 	state.time = p_time;
 }
 

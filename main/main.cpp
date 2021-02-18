@@ -2419,8 +2419,8 @@ bool Main::iteration() {
 	float time_scale = Engine::get_singleton()->get_time_scale();
 
 	MainFrameTime advance = main_timer_sync.advance(physics_step, physics_fps);
-	double process_step = advance.process_step;
-	double scaled_step = process_step * time_scale;
+	float process_step = advance.process_step;
+	float scaled_step = process_step * time_scale;
 
 	Engine::get_singleton()->_process_step = process_step;
 	Engine::get_singleton()->_physics_interpolation_fraction = advance.interpolation_fraction;
