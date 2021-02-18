@@ -302,6 +302,7 @@ void LightOccluder2D::_bind_methods() {
 
 LightOccluder2D::LightOccluder2D() {
 
+	enabled = false;
 	occluder = VS::get_singleton()->canvas_light_occluder_create();
 	mask = 1;
 	set_notify_transform(true);

@@ -324,6 +324,8 @@ FileAccessEncrypted::FileAccessEncrypted() {
 	eofed = false;
 	mode = MODE_MAX;
 	writing = false;
+	base = 0;
+	length = 0;
 }
 
 FileAccessEncrypted::~FileAccessEncrypted() {

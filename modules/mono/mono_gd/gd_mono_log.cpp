@@ -193,6 +193,7 @@ GDMonoLog::GDMonoLog() {
 
 	singleton = this;
 
+	log_file = NULL;
 	log_level_id = -1;
 }
 

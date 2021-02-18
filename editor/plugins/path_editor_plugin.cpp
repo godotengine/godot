@@ -288,6 +288,8 @@ void PathSpatialGizmo::redraw() {
 
 PathSpatialGizmo::PathSpatialGizmo(Path *p_path) {
 
+	orig_in_length = 0;
+	orig_out_length = 0;
 	path = p_path;
 	set_spatial_node(p_path);
 }

@@ -465,7 +465,10 @@ struct MotionShapeSW : public ShapeSW {
 	virtual void set_data(const Variant &p_data) {}
 	virtual Variant get_data() const { return Variant(); }
 
-	MotionShapeSW() { configure(AABB()); }
+	MotionShapeSW() {
+		configure(AABB());
+		shape = NULL;
+	}
 };
 
 struct _ShapeTestConvexBSPSW {

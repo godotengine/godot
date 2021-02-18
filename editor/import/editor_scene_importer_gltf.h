@@ -182,6 +182,7 @@ class EditorSceneImporterGLTF : public EditorSceneImporter {
 			sparse_indices_component_type = 0;
 			sparse_values_buffer_view = 0;
 			sparse_values_byte_offset = 0;
+			type = GLTFType::TYPE_MAT2;
 		}
 	};
 	struct GLTFTexture {

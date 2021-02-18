@@ -193,6 +193,8 @@ void RootMotionView::_bind_methods() {
 }
 
 RootMotionView::RootMotionView() {
+	use_in_game = false;
+	first = false;
 	zero_y = true;
 	radius = 10;
 	cell_size = 1;

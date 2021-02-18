@@ -181,7 +181,7 @@ Error PCKPacker::flush(bool p_verbose) {
 };
 
 PCKPacker::PCKPacker() {
-
+	alignment = 0;
 	file = NULL;
 };
 

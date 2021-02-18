@@ -362,6 +362,8 @@ Ref<Texture> EditorMaterialPreviewPlugin::generate(const RES &p_from, const Size
 
 EditorMaterialPreviewPlugin::EditorMaterialPreviewPlugin() {
 
+	preview_done = false;
+
 	scenario = VS::get_singleton()->scenario_create();
 
 	viewport = VS::get_singleton()->viewport_create();
@@ -769,6 +771,8 @@ Ref<Texture> EditorMeshPreviewPlugin::generate(const RES &p_from, const Size2 &p
 
 EditorMeshPreviewPlugin::EditorMeshPreviewPlugin() {
 
+	preview_done = false;
+
 	scenario = VS::get_singleton()->scenario_create();
 
 	viewport = VS::get_singleton()->viewport_create();
@@ -903,6 +907,8 @@ Ref<Texture> EditorFontPreviewPlugin::generate(const RES &p_from, const Size2 &p
 }
 
 EditorFontPreviewPlugin::EditorFontPreviewPlugin() {
+
+	preview_done = false;
 
 	viewport = VS::get_singleton()->viewport_create();
 	VS::get_singleton()->viewport_set_update_mode(viewport, VS::VIEWPORT_UPDATE_DISABLED);

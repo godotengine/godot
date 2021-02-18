@@ -327,6 +327,13 @@ bool OS_Server::is_disable_crash_handler() const {
 
 OS_Server::OS_Server() {
 
+	visual_server = NULL;
+	main_loop = NULL;
+	force_quit = false;
+	input = NULL;
+	power_manager = NULL;
+	video_driver_index = 0;
+
 	//adriver here
 	grab = false;
 };

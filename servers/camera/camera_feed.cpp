@@ -136,6 +136,8 @@ RID CameraFeed::get_texture(CameraServer::FeedImage p_which) {
 CameraFeed::CameraFeed() {
 	// initialize our feed
 	id = CameraServer::get_singleton()->get_free_id();
+	base_height = 0;
+	base_width = 0;
 	name = "???";
 	active = false;
 	datatype = CameraFeed::FEED_RGB;

@@ -348,6 +348,7 @@ public:
 		InstanceReflectionProbeData() :
 				update_list(this) {
 
+			owner = NULL;
 			reflection_dirty = true;
 			render_step = -1;
 		}
@@ -481,6 +482,7 @@ public:
 
 		InstanceGIProbeData() :
 				update_element(this) {
+			owner = NULL;
 			invalid = true;
 			base_version = 0;
 			dynamic.updating_stage = GI_UPDATE_STAGE_CHECK;

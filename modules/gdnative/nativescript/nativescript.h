@@ -93,6 +93,8 @@ struct NativeScriptDesc {
 			base_native_type(),
 			documentation(),
 			type_tag(NULL) {
+		base_data = NULL;
+		is_tool = false;
 		zeromem(&create_func, sizeof(godot_instance_create_func));
 		zeromem(&destroy_func, sizeof(godot_instance_destroy_func));
 	}

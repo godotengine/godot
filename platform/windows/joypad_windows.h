@@ -108,6 +108,7 @@ private:
 			ff_timestamp = 0;
 			ff_end_timestamp = 0;
 			last_packet = 0;
+			id = 0;
 		}
 	};
 

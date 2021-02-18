@@ -252,6 +252,9 @@ public:
 			Vector<float> sets;
 			Vector<float> indices;
 			int count;
+			Weights() {
+				count = 0;
+			}
 		} weights;
 
 		Map<String, Transform> bone_rest_map;
@@ -440,7 +443,10 @@ public:
 		Map<String, Material> material_map;
 		Vector<String> skeletons;
 
-		NodeGeometry() { type = TYPE_GEOMETRY; }
+		NodeGeometry() {
+			type = TYPE_GEOMETRY;
+			controller = false;
+		}
 	};
 
 	struct NodeCamera : public Node {
@@ -507,7 +513,10 @@ public:
 			Point2 out_tangent;
 			InterpolationType interp_type;
 
-			Key() { interp_type = INTERP_LINEAR; }
+			Key() {
+				interp_type = INTERP_LINEAR;
+				time = 0;
+			}
 		};
 
 		Vector<float> get_value_at_time(float p_time) const;
@@ -580,6 +589,7 @@ public:
 				unit_scale(1.0),
 				up_axis(Vector3::AXIS_Y),
 				animation_length(0) {
+			z_up = false;
 		}
 	} state;
 

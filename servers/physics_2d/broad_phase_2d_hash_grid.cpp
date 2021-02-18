@@ -633,6 +633,9 @@ BroadPhase2DSW *BroadPhase2DHashGrid::_create() {
 
 BroadPhase2DHashGrid::BroadPhase2DHashGrid() {
 
+	pair_userdata = NULL;
+	unpair_userdata = NULL;
+
 	hash_table_size = GLOBAL_DEF("physics/2d/bp_hash_table_size", 4096);
 	ProjectSettings::get_singleton()->set_custom_property_info("physics/2d/bp_hash_table_size", PropertyInfo(Variant::INT, "physics/2d/bp_hash_table_size", PROPERTY_HINT_RANGE, "0,8192,1,or_greater"));
 	hash_table_size = Math::larger_prime(hash_table_size);

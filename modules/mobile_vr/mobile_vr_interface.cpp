@@ -448,6 +448,9 @@ void MobileVRInterface::notification(int p_what){
 
 MobileVRInterface::MobileVRInterface() {
 	initialized = false;
+	mag_count = 0;
+	has_gyro = false;
+	sensor_first = false;
 
 	// Just set some defaults for these. At some point we need to look at adding a lookup table for common device + headset combos and/or support reading cardboard QR codes
 	eye_height = 1.85;

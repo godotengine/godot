@@ -360,6 +360,8 @@ void SplitContainer::_bind_methods() {
 
 SplitContainer::SplitContainer(bool p_vertical) {
 
+	drag_from = 0;
+	drag_ofs = 0;
 	mouse_inside = false;
 	split_offset = 0;
 	should_clamp_split_offset = false;

@@ -672,6 +672,15 @@ void VideoStreamPlaybackTheora::_streaming_thread(void *ud) {
 
 VideoStreamPlaybackTheora::VideoStreamPlaybackTheora() {
 
+	theora_eos = false;
+	vorbis_eos = false;
+	td = NULL;
+	pp_inc = 0;
+	pp_level = 0;
+	pp_level_max = 0;
+	last_update_time = 0;
+	time = 0;
+
 	file = NULL;
 	theora_p = 0;
 	vorbis_p = 0;

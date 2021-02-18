@@ -911,6 +911,8 @@ void NetworkedMultiplayerENet::_bind_methods() {
 
 NetworkedMultiplayerENet::NetworkedMultiplayerENet() {
 
+	peer = NULL;
+	host = NULL;
 	active = false;
 	server = false;
 	refuse_connections = false;

@@ -182,6 +182,7 @@ public:
 			vertex_mem = 0;
 			render.reset();
 			render_final.reset();
+			snap.reset();
 		}
 
 	} info;
@@ -240,6 +241,7 @@ public:
 		virtual void material_changed_notify() {}
 
 		Geometry() {
+			type = GEOMETRY_INVALID;
 			last_pass = 0;
 			index = 0;
 		}
@@ -326,6 +328,11 @@ public:
 				detect_srgb_ud(NULL),
 				detect_normal(NULL),
 				detect_normal_ud(NULL) {
+			depth = 0;
+			alloc_width = 0;
+			alloc_height = 0;
+			alloc_depth = 0;
+			is_npot_repeat_mipmap = false;
 		}
 
 		_ALWAYS_INLINE_ Texture *get_ptr() {
@@ -544,6 +551,9 @@ public:
 			valid = false;
 			custom_code_id = 0;
 			version = 1;
+			texture_count = 0;
+			uses_fragment_time = false;
+			uses_vertex_time = false;
 		}
 	};
 
@@ -606,6 +616,7 @@ public:
 				last_pass(0),
 				can_cast_shadow_cache(false),
 				is_animated_cache(false) {
+			index = 0;
 		}
 	};
 
@@ -724,6 +735,7 @@ public:
 				active(false),
 				total_data_size(0) {
 			type = GEOMETRY_SURFACE;
+			max_bone = 0;
 		}
 
 		~Surface() {
@@ -1129,6 +1141,10 @@ public:
 		GIProbeCompression compression;
 
 		GIProbeData() {
+			width = 0;
+			height = 0;
+			depth = 0;
+			levels = 0;
 		}
 	};
 
@@ -1243,6 +1259,10 @@ public:
 				fractional_delta(false),
 				frame_remainder(0),
 				clear(true) {
+			phase = 0;
+			prev_phase = 0;
+			particle_valid_histories[0] = false;
+			particle_valid_histories[1] = false;
 			particle_buffers[0] = 0;
 			particle_buffers[1] = 0;
 			glGenBuffers(2, particle_buffers);

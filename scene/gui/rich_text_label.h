@@ -98,6 +98,10 @@ private:
 		int maximum_width;
 
 		Line() {
+			height_cache = 0;
+			height_accum_cache = 0;
+			minimum_width = 0;
+			maximum_width = 0;
 			from = NULL;
 			char_count = 0;
 		}
@@ -119,6 +123,8 @@ private:
 		}
 
 		Item() {
+			index = 0;
+			type = ItemType::ITEM_ALIGN;
 			parent = NULL;
 			E = NULL;
 			line = 0;
@@ -134,6 +140,7 @@ private:
 		ItemFrame *parent_frame;
 
 		ItemFrame() {
+			first_invalid_line = 0;
 			type = ITEM_FRAME;
 			parent_frame = NULL;
 			cell = false;
@@ -177,17 +184,26 @@ private:
 
 	struct ItemAlign : public Item {
 		Align align;
-		ItemAlign() { type = ITEM_ALIGN; }
+		ItemAlign() {
+			type = ITEM_ALIGN;
+			align = Align::ALIGN_CENTER;
+		}
 	};
 
 	struct ItemIndent : public Item {
 		int level;
-		ItemIndent() { type = ITEM_INDENT; }
+		ItemIndent() {
+			type = ITEM_INDENT;
+			level = 0;
+		}
 	};
 
 	struct ItemList : public Item {
 		ListType list_type;
-		ItemList() { type = ITEM_LIST; }
+		ItemList() {
+			type = ITEM_LIST;
+			list_type = ListType::LIST_DOTS;
+		}
 	};
 
 	struct ItemNewline : public Item {
@@ -205,14 +221,21 @@ private:
 
 		Vector<Column> columns;
 		int total_width;
-		ItemTable() { type = ITEM_TABLE; }
+		ItemTable() {
+			total_width = 0;
+			type = ITEM_TABLE;
+		}
 	};
 
 	struct ItemFade : public Item {
 		int starting_index;
 		int length;
 
-		ItemFade() { type = ITEM_FADE; }
+		ItemFade() {
+			type = ITEM_FADE;
+			starting_index = 0;
+			length = 0;
+		}
 	};
 
 	struct ItemFX : public Item {
@@ -230,6 +253,7 @@ private:
 		uint64_t _previous_rng;
 
 		ItemShake() {
+			_previous_rng = 0;
 			strength = 0;
 			rate = 0.0f;
 			_current_rng = 0;

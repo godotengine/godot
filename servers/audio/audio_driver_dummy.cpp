@@ -127,6 +127,13 @@ void AudioDriverDummy::finish() {
 
 AudioDriverDummy::AudioDriverDummy() {
 
+	samples_in = NULL;
+	buffer_frames = 0;
+	mix_rate = 0;
+	channels = 0;
+	active = false;
+	thread_exited = false;
+	exit_thread = false;
 	mutex = NULL;
 	thread = NULL;
 };

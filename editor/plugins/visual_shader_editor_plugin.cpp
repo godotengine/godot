@@ -3432,6 +3432,8 @@ void VisualShaderNodePortPreview::_bind_methods() {
 }
 
 VisualShaderNodePortPreview::VisualShaderNodePortPreview() {
+	node = 0;
+	port = 0;
 }
 
 //////////////////////////////////

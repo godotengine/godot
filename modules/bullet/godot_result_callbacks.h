@@ -204,7 +204,9 @@ public:
 			m_collided(false),
 			m_min_distance(0),
 			collide_with_bodies(p_collide_with_bodies),
-			collide_with_areas(p_collide_with_areas) {}
+			collide_with_areas(p_collide_with_areas) {
+		m_rest_info_collision_object = NULL;
+	}
 
 	virtual bool needsCollision(btBroadphaseProxy *proxy0) const;
 

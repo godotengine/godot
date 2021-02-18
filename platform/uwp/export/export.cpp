@@ -644,7 +644,9 @@ void AppxPackager::finish() {
 	package = NULL;
 }
 
-AppxPackager::AppxPackager() {}
+AppxPackager::AppxPackager() {
+	package = NULL;
+}
 
 AppxPackager::~AppxPackager() {}
 

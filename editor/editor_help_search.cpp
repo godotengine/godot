@@ -601,4 +601,8 @@ EditorHelpSearch::Runner::Runner(Control *p_icon_service, Tree *p_results_tree, 
 		search_flags(p_search_flags),
 		empty_icon(ui_service->get_icon("ArrowRight", "EditorIcons")),
 		disabled_color(ui_service->get_color("disabled_font_color", "Editor")) {
+	iterator_doc = NULL;
+	iterator_match = NULL;
+	root_item = NULL;
+	matched_item = NULL;
 }

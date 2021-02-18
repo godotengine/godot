@@ -1580,6 +1580,10 @@ PhysicsServerSW::PhysicsServerSW() {
 	active_objects = 0;
 	collision_pairs = 0;
 
+	iterations = 0;
+	stepper = NULL;
+	direct_state = NULL;
+
 	active = true;
 	flushing_queries = false;
 };

@@ -169,6 +169,7 @@ struct	GJK
 		}
 		void				Initialize()
 		{
+			m_simplex   =   nullptr;
 			m_ray		=	Vector3(0,0,0);
 			m_nfree		=	0;
 			m_status	=	eStatus::Failed;

@@ -151,6 +151,9 @@ class DynamicFontAtSize : public Reference {
 		float advance;
 
 		Character() {
+			found = false;
+			h_align = 0;
+			advance = 0;
 			texture_idx = 0;
 			v_align = 0;
 		}

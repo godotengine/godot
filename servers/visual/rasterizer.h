@@ -128,6 +128,8 @@ public:
 		InstanceBase() :
 				dependency_item(this) {
 
+			mirror = false;
+			depth = 0;
 			base_type = VS::INSTANCE_NONE;
 			cast_shadows = VS::SHADOW_CASTING_SETTING_ON;
 			receive_shadows = true;
@@ -664,6 +666,8 @@ public:
 		RID light_internal;
 
 		Light() {
+			radius_cache = 0;
+			shadows_next_ptr = NULL;
 			enabled = true;
 			color = Color(1, 1, 1);
 			shadow_color = Color(0, 0, 0, 0);
@@ -722,7 +726,11 @@ public:
 			Color color;
 			float width;
 			bool antialiased;
-			CommandLine() { type = TYPE_LINE; }
+			CommandLine() {
+				type = TYPE_LINE;
+				width = 0;
+				antialiased = false;
+			}
 		};
 		struct CommandPolyLine : public Command {
 
@@ -768,6 +776,9 @@ public:
 			CommandNinePatch() {
 				draw_center = true;
 				type = TYPE_NINEPATCH;
+				for (int i = 0; i < 4; i++) {
+					margin[i] = 0;
+				}
 			}
 		};
 
@@ -803,6 +814,8 @@ public:
 			CommandPolygon() {
 				type = TYPE_POLYGON;
 				count = 0;
+				antialiased = false;
+				antialiasing_use_indices = false;
 			}
 		};
 
@@ -837,7 +850,10 @@ public:
 			Point2 pos;
 			float radius;
 			Color color;
-			CommandCircle() { type = TYPE_CIRCLE; }
+			CommandCircle() {
+				type = TYPE_CIRCLE;
+				radius = 0;
+			}
 		};
 
 		struct CommandTransform : public Command {

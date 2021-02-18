@@ -386,6 +386,9 @@ String DirAccessWindows::get_filesystem_type() const {
 
 DirAccessWindows::DirAccessWindows() {
 
+	_cisdir = false;
+	_cishidden = false;
+
 	p = memnew(DirAccessWindowsPrivate);
 	p->h = INVALID_HANDLE_VALUE;
 	current_dir = ".";

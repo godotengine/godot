@@ -38,7 +38,12 @@
 #include "scene/3d/skeleton.h"
 #include "servers/physics_server.h"
 
-SoftBodyVisualServerHandler::SoftBodyVisualServerHandler() {}
+SoftBodyVisualServerHandler::SoftBodyVisualServerHandler() {
+	surface = 0;
+	stride = 0;
+	offset_vertices = 0;
+	offset_normal = 0;
+}
 
 void SoftBodyVisualServerHandler::prepare(RID p_mesh, int p_surface) {
 	clear();
@@ -707,6 +712,8 @@ SoftBody::SoftBody() :
 		pinned_points_cache_dirty(true),
 		ray_pickable(true) {
 
+	debug_mesh = NULL;
+	capture_input_on_drag = false;
 	PhysicsServer::get_singleton()->body_attach_object_instance_id(physics_rid, get_instance_id());
 }
 

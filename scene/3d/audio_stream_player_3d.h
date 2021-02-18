@@ -81,6 +81,7 @@ private:
 		Viewport *viewport; //pointer only used for reference to previous mix
 
 		Output() {
+			pitch_scale = 0;
 			filter_gain = 0;
 			viewport = NULL;
 			reverb_bus_index = -1;

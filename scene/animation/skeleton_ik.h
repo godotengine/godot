@@ -114,7 +114,8 @@ public:
 				skeleton(NULL),
 				min_distance(0.01),
 				max_iterations(10),
-				root_bone(-1) {}
+				root_bone(-1) {
+		}
 	};
 
 private:

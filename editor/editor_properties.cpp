@@ -46,6 +46,7 @@ EditorPropertyNil::EditorPropertyNil() {
 	Label *label = memnew(Label);
 	label->set_text("[null]");
 	add_child(label);
+	text = NULL;
 }
 
 ///////////////////// TEXT /////////////////////////

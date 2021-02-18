@@ -234,6 +234,8 @@ AudioStreamPlaybackMicrophone::~AudioStreamPlaybackMicrophone() {
 }
 
 AudioStreamPlaybackMicrophone::AudioStreamPlaybackMicrophone() {
+	active = false;
+	input_ofs = 0;
 }
 
 ////////////////////////////////

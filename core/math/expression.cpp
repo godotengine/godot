@@ -2230,6 +2230,8 @@ Expression::Expression() :
 		root(NULL),
 		nodes(NULL),
 		execution_error(false) {
+	str_ofs = 0;
+	expression_dirty = false;
 }
 
 Expression::~Expression() {

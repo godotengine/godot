@@ -980,6 +980,8 @@ ResourceInteractiveLoaderBinary::ResourceInteractiveLoaderBinary() :
 		f(NULL),
 		error(OK),
 		stage(0) {
+	ver_format = 0;
+	importmd_ofs = 0;
 }
 
 ResourceInteractiveLoaderBinary::~ResourceInteractiveLoaderBinary() {

@@ -149,7 +149,10 @@ public:
 		void clear_wrap_cache();
 		void clear_info_icons();
 		_FORCE_INLINE_ const String &operator[](int p_line) const { return text[p_line].data; }
-		Text() { indent_size = 4; }
+		Text() {
+			indent_size = 4;
+			color_regions = NULL;
+		}
 	};
 
 private:

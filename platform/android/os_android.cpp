@@ -925,6 +925,11 @@ bool OS_Android::_check_internal_feature_support(const String &p_feature) {
 
 OS_Android::OS_Android(GodotJavaWrapper *p_godot_java, GodotIOJavaWrapper *p_godot_io_java, bool p_use_apk_expansion) {
 
+	use_16bits_fbo = false;
+	visual_server = NULL;
+	input = NULL;
+	video_driver_index = 0;
+
 	use_apk_expansion = p_use_apk_expansion;
 	default_videomode.width = 800;
 	default_videomode.height = 600;
