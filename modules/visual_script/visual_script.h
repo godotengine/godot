@@ -507,7 +507,7 @@ public:
 
 	static VisualScriptLanguage *singleton;
 
-	Mutex *lock;
+	Mutex lock;
 
 	bool debug_break(const String &p_error, bool p_allow_continue = true);
 	bool debug_break_parse(const String &p_file, int p_node, const String &p_error);

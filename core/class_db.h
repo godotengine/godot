@@ -143,7 +143,7 @@ public:
 		return memnew(T);
 	}
 
-	static RWLock *lock;
+	static RWLock lock;
 	static HashMap<StringName, ClassInfo> classes;
 	static HashMap<StringName, StringName> resource_base_extensions;
 	static HashMap<StringName, StringName> compat_classes;
@@ -393,7 +393,6 @@ public:
 	static void get_extensions_for_type(const StringName &p_class, List<String> *p_extensions);
 
 	static void add_compatibility_class(const StringName &p_class, const StringName &p_fallback);
-	static void init();
 
 	static void set_current_api(APIType p_api);
 	static APIType get_current_api();

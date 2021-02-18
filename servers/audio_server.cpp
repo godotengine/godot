@@ -1148,27 +1148,27 @@ void *AudioServer::audio_data_alloc(uint32_t p_data_len, const uint8_t *p_from_d
 		copymem(ad, p_from_data, p_data_len);
 	}
 
-	audio_data_lock->lock();
+	audio_data_lock.lock();
 	audio_data[ad] = p_data_len;
 	audio_data_total_mem += p_data_len;
 	audio_data_max_mem = MAX(audio_data_total_mem, audio_data_max_mem);
-	audio_data_lock->unlock();
+	audio_data_lock.unlock();
 
 	return ad;
 }
 
 void AudioServer::audio_data_free(void *p_data) {
 
-	audio_data_lock->lock();
+	audio_data_lock.lock();
 	if (!audio_data.has(p_data)) {
-		audio_data_lock->unlock();
+		audio_data_lock.unlock();
 		ERR_FAIL();
 	}
 
 	audio_data_total_mem -= audio_data[p_data];
 	audio_data.erase(p_data);
 	memfree(p_data);
-	audio_data_lock->unlock();
+	audio_data_lock.unlock();
 }
 
 size_t AudioServer::audio_data_get_total_memory_usage() const {
@@ -1410,7 +1410,6 @@ AudioServer::AudioServer() {
 	singleton = this;
 	audio_data_total_mem = 0;
 	audio_data_max_mem = 0;
-	audio_data_lock = Mutex::create();
 	mix_frames = 0;
 	channel_count = 0;
 	to_mix = 0;
@@ -1424,7 +1423,6 @@ AudioServer::AudioServer() {
 
 AudioServer::~AudioServer() {
 
-	memdelete(audio_data_lock);
 	singleton = NULL;
 }
 

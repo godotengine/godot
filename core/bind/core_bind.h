@@ -40,6 +40,7 @@
 #include "core/os/os.h"
 #include "core/os/semaphore.h"
 #include "core/os/thread.h"
+#include "core/safe_refcount.h"
 
 class _ResourceLoader : public Object {
 	GDCLASS(_ResourceLoader, Object);
@@ -652,7 +653,7 @@ public:
 class _Mutex : public Reference {
 
 	GDCLASS(_Mutex, Reference);
-	Mutex *mutex;
+	Mutex mutex;
 
 	static void _bind_methods();
 
@@ -660,24 +661,18 @@ public:
 	void lock();
 	Error try_lock();
 	void unlock();
-
-	_Mutex();
-	~_Mutex();
 };
 
 class _Semaphore : public Reference {
 
 	GDCLASS(_Semaphore, Reference);
-	Semaphore *semaphore;
+	Semaphore semaphore;
 
 	static void _bind_methods();
 
 public:
 	Error wait();
 	Error post();
-
-	_Semaphore();
-	~_Semaphore();
 };
 
 class _Thread : public Reference {
@@ -687,10 +682,10 @@ class _Thread : public Reference {
 protected:
 	Variant ret;
 	Variant userdata;
-	volatile bool active;
+	SafeFlag active;
 	Object *target_instance;
 	StringName target_method;
-	Thread *thread;
+	Thread thread;
 	static void _bind_methods();
 	static void _start_func(void *ud);
 

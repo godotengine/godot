@@ -32,49 +32,86 @@
 #define THREAD_H
 
 #include "core/typedefs.h"
-#include "core/ustring.h"
 
-typedef void (*ThreadCreateCallback)(void *p_userdata);
+#if !defined(NO_THREADS)
+#include "core/safe_refcount.h"
+#include <thread>
+#endif
+
+class String;
 
 class Thread {
 public:
-	enum Priority {
+	typedef void (*Callback)(void *p_userdata);
 
+	typedef uint64_t ID;
+
+	enum Priority {
 		PRIORITY_LOW,
 		PRIORITY_NORMAL,
 		PRIORITY_HIGH
 	};
 
 	struct Settings {
-
 		Priority priority;
 		Settings() { priority = PRIORITY_NORMAL; }
 	};
 
-	typedef uint64_t ID;
-
-protected:
-	static Thread *(*create_func)(ThreadCreateCallback p_callback, void *, const Settings &);
-	static ID (*get_thread_id_func)();
-	static void (*wait_to_finish_func)(Thread *);
-	static Error (*set_name_func)(const String &);
-
+private:
+#if !defined(NO_THREADS)
 	friend class Main;
 
-	static ID _main_thread_id;
+	static ID main_thread_id;
+	static SafeNumeric<ID> last_thread_id;
 
-	Thread();
+	ID id;
+	static thread_local ID caller_id;
+	std::thread thread;
+
+	static void callback(Thread *p_self, const Settings &p_settings, Thread::Callback p_callback, void *p_userdata);
+
+	static Error (*set_name_func)(const String &);
+	static void (*set_priority_func)(Thread::Priority);
+	static void (*init_func)();
+	static void (*term_func)();
+#endif
 
 public:
-	virtual ID get_id() const = 0;
+	static void _set_platform_funcs(
+			Error (*p_set_name_func)(const String &),
+			void (*p_set_priority_func)(Thread::Priority),
+			void (*p_init_func)() = nullptr,
+			void (*p_term_func)() = nullptr);
+
+#if !defined(NO_THREADS)
+	_FORCE_INLINE_ ID get_id() const { return id; }
+	// get the ID of the caller thread
+	_FORCE_INLINE_ static ID get_caller_id() { return caller_id; }
+	// get the ID of the main thread
+	_FORCE_INLINE_ static ID get_main_id() { return main_thread_id; }
 
 	static Error set_name(const String &p_name);
-	_FORCE_INLINE_ static ID get_main_id() { return _main_thread_id; } ///< get the ID of the main thread
-	static ID get_caller_id(); ///< get the ID of the caller function ID
-	static void wait_to_finish(Thread *p_thread); ///< waits until thread is finished
-	static Thread *create(ThreadCreateCallback p_callback, void *p_user, const Settings &p_settings = Settings()); ///< Static function to create a thread, will call p_callback
 
-	virtual ~Thread();
+	void start(Thread::Callback p_callback, void *p_user, const Settings &p_settings = Settings());
+	bool is_started() const;
+	///< waits until thread is finished, and deallocates it.
+	void wait_to_finish();
+
+	Thread();
+	~Thread();
+#else
+	_FORCE_INLINE_ ID get_id() const { return 0; }
+	// get the ID of the caller thread
+	_FORCE_INLINE_ static ID get_caller_id() { return 0; }
+	// get the ID of the main thread
+	_FORCE_INLINE_ static ID get_main_id() { return 0; }
+
+	static Error set_name(const String &p_name) { return ERR_UNAVAILABLE; }
+
+	void start(Thread::Callback p_callback, void *p_user, const Settings &p_settings = Settings()) {}
+	bool is_started() const { return false; }
+	void wait_to_finish() {}
+#endif
 };
 
-#endif
+#endif // THREAD_H

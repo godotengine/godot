@@ -44,8 +44,8 @@ void AudioDriverOpenSL::_buffer_callback(
 
 	if (pause) {
 		mix = false;
-	} else if (mutex) {
-		mix = mutex->try_lock() == OK;
+	} else {
+		mix = mutex.try_lock() == OK;
 	}
 
 	if (mix) {
@@ -58,8 +58,8 @@ void AudioDriverOpenSL::_buffer_callback(
 		}
 	}
 
-	if (mutex && mix)
-		mutex->unlock();
+	if (mix)
+		mutex.unlock();
 
 	const int32_t *src_buff = mixdown_buffer;
 
@@ -107,7 +107,6 @@ Error AudioDriverOpenSL::init() {
 
 void AudioDriverOpenSL::start() {
 
-	mutex = Mutex::create();
 	active = false;
 
 	SLresult res;
@@ -329,14 +328,14 @@ AudioDriver::SpeakerMode AudioDriverOpenSL::get_speaker_mode() const {
 
 void AudioDriverOpenSL::lock() {
 
-	if (active && mutex)
-		mutex->lock();
+	if (active)
+		mutex.lock();
 }
 
 void AudioDriverOpenSL::unlock() {
 
-	if (active && mutex)
-		mutex->unlock();
+	if (active)
+		mutex.unlock();
 }
 
 void AudioDriverOpenSL::finish() {
@@ -359,7 +358,6 @@ void AudioDriverOpenSL::set_pause(bool p_pause) {
 
 AudioDriverOpenSL::AudioDriverOpenSL() {
 	s_ad = this;
-	mutex = Mutex::create(); //NULL;
 	pause = false;
 	active = false;
 }

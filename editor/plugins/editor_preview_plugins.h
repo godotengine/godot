@@ -33,6 +33,8 @@
 
 #include "editor/editor_resource_preview.h"
 
+#include "core/safe_refcount.h"
+
 void post_process_preview(Ref<Image> p_image);
 
 class EditorTexturePreviewPlugin : public EditorResourcePreviewGenerator {
@@ -92,7 +94,7 @@ class EditorMaterialPreviewPlugin : public EditorResourcePreviewGenerator {
 	RID light2;
 	RID light_instance2;
 	RID camera;
-	mutable volatile bool preview_done;
+	mutable SafeFlag preview_done;
 
 	void _preview_done(const Variant &p_udata);
 
@@ -137,7 +139,7 @@ class EditorMeshPreviewPlugin : public EditorResourcePreviewGenerator {
 	RID light2;
 	RID light_instance2;
 	RID camera;
-	mutable volatile bool preview_done;
+	mutable SafeFlag preview_done;
 
 	void _preview_done(const Variant &p_udata);
 
@@ -160,7 +162,7 @@ class EditorFontPreviewPlugin : public EditorResourcePreviewGenerator {
 	RID viewport_texture;
 	RID canvas;
 	RID canvas_item;
-	mutable volatile bool preview_done;
+	mutable SafeFlag preview_done;
 
 	void _preview_done(const Variant &p_udata);
 

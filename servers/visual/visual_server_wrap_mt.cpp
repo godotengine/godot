@@ -34,12 +34,12 @@
 
 void VisualServerWrapMT::thread_exit() {
 
-	exit = true;
+	exit.set();
 }
 
 void VisualServerWrapMT::thread_draw(bool p_swap_buffers, double frame_step) {
 
-	if (!atomic_decrement(&draw_pending)) {
+	if (!draw_pending.decrement()) {
 
 		visual_server->draw(p_swap_buffers, frame_step);
 	}
@@ -47,7 +47,7 @@ void VisualServerWrapMT::thread_draw(bool p_swap_buffers, double frame_step) {
 
 void VisualServerWrapMT::thread_flush() {
 
-	atomic_decrement(&draw_pending);
+	draw_pending.decrement();
 }
 
 void VisualServerWrapMT::_thread_callback(void *_instance) {
@@ -65,9 +65,9 @@ void VisualServerWrapMT::thread_loop() {
 
 	visual_server->init();
 
-	exit = false;
-	draw_thread_up = true;
-	while (!exit) {
+	exit.clear();
+	draw_thread_up.set();
+	while (!exit.is_set()) {
 		// flush commands one by one, until exit is requested
 		command_queue.wait_and_flush_one();
 	}
@@ -83,7 +83,7 @@ void VisualServerWrapMT::sync() {
 
 	if (create_thread) {
 
-		atomic_increment(&draw_pending);
+		draw_pending.increment();
 		command_queue.push_and_sync(this, &VisualServerWrapMT::thread_flush);
 	} else {
 
@@ -95,7 +95,7 @@ void VisualServerWrapMT::draw(bool p_swap_buffers, double frame_step) {
 
 	if (create_thread) {
 
-		atomic_increment(&draw_pending);
+		draw_pending.increment();
 		command_queue.push(this, &VisualServerWrapMT::thread_draw, p_swap_buffers, frame_step);
 	} else {
 
@@ -110,10 +110,10 @@ void VisualServerWrapMT::init() {
 		print_verbose("VisualServerWrapMT: Creating render thread");
 		OS::get_singleton()->release_rendering_thread();
 		if (create_thread) {
-			thread = Thread::create(_thread_callback, this);
+			thread.start(_thread_callback, this);
 			print_verbose("VisualServerWrapMT: Starting render thread");
 		}
-		while (!draw_thread_up) {
+		while (!draw_thread_up.is_set()) {
 			OS::get_singleton()->delay_usec(1000);
 		}
 		print_verbose("VisualServerWrapMT: Finished render thread");
@@ -125,13 +125,10 @@ void VisualServerWrapMT::init() {
 
 void VisualServerWrapMT::finish() {
 
-	if (thread) {
+	if (create_thread) {
 
 		command_queue.push(this, &VisualServerWrapMT::thread_exit);
-		Thread::wait_to_finish(thread);
-		memdelete(thread);
-
-		thread = NULL;
+		thread.wait_to_finish();
 	} else {
 		visual_server->finish();
 	}
@@ -177,10 +174,6 @@ VisualServerWrapMT::VisualServerWrapMT(VisualServer *p_contained, bool p_create_
 
 	visual_server = p_contained;
 	create_thread = p_create_thread;
-	thread = NULL;
-	draw_pending = 0;
-	draw_thread_up = false;
-	alloc_mutex = Mutex::create();
 	pool_max_size = GLOBAL_GET("memory/limits/multithreaded_server/rid_pool_prealloc");
 
 	if (!p_create_thread) {
@@ -193,6 +186,5 @@ VisualServerWrapMT::VisualServerWrapMT(VisualServer *p_contained, bool p_create_
 VisualServerWrapMT::~VisualServerWrapMT() {
 
 	memdelete(visual_server);
-	memdelete(alloc_mutex);
 	//finish();
 }

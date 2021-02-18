@@ -65,11 +65,11 @@ void operator delete(void *p_mem, void *p_pointer, size_t check, const char *p_d
 #endif
 
 #ifdef DEBUG_ENABLED
-uint64_t Memory::mem_usage = 0;
-uint64_t Memory::max_usage = 0;
+SafeNumeric<uint64_t> Memory::mem_usage;
+SafeNumeric<uint64_t> Memory::max_usage;
 #endif
 
-uint64_t Memory::alloc_count = 0;
+SafeNumeric<uint64_t> Memory::alloc_count;
 
 void *Memory::alloc_static(size_t p_bytes, bool p_pad_align) {
 
@@ -83,7 +83,7 @@ void *Memory::alloc_static(size_t p_bytes, bool p_pad_align) {
 
 	ERR_FAIL_COND_V(!mem, NULL);
 
-	atomic_increment(&alloc_count);
+	alloc_count.increment();
 
 	if (prepad) {
 		uint64_t *s = (uint64_t *)mem;
@@ -92,8 +92,8 @@ void *Memory::alloc_static(size_t p_bytes, bool p_pad_align) {
 		uint8_t *s8 = (uint8_t *)mem;
 
 #ifdef DEBUG_ENABLED
-		atomic_add(&mem_usage, p_bytes);
-		atomic_exchange_if_greater(&max_usage, mem_usage);
+		uint64_t new_mem_usage = mem_usage.add(p_bytes);
+		max_usage.exchange_if_greater(new_mem_usage);
 #endif
 		return s8 + PAD_ALIGN;
 	} else {
@@ -121,10 +121,10 @@ void *Memory::realloc_static(void *p_memory, size_t p_bytes, bool p_pad_align) {
 
 #ifdef DEBUG_ENABLED
 		if (p_bytes > *s) {
-			atomic_add(&mem_usage, p_bytes - *s);
-			atomic_exchange_if_greater(&max_usage, mem_usage);
+			uint64_t new_mem_usage = mem_usage.add(p_bytes - *s);
+			max_usage.exchange_if_greater(new_mem_usage);
 		} else {
-			atomic_sub(&mem_usage, *s - p_bytes);
+			mem_usage.sub(*s - p_bytes);
 		}
 #endif
 
@@ -165,14 +165,14 @@ void Memory::free_static(void *p_ptr, bool p_pad_align) {
 	bool prepad = p_pad_align;
 #endif
 
-	atomic_decrement(&alloc_count);
+	alloc_count.decrement();
 
 	if (prepad) {
 		mem -= PAD_ALIGN;
 
 #ifdef DEBUG_ENABLED
 		uint64_t *s = (uint64_t *)mem;
-		atomic_sub(&mem_usage, *s);
+		mem_usage.sub(*s);
 #endif
 
 		free(mem);
@@ -189,7 +189,7 @@ uint64_t Memory::get_mem_available() {
 
 uint64_t Memory::get_mem_usage() {
 #ifdef DEBUG_ENABLED
-	return mem_usage;
+	return mem_usage.get();
 #else
 	return 0;
 #endif
@@ -197,7 +197,7 @@ uint64_t Memory::get_mem_usage() {
 
 uint64_t Memory::get_mem_max_usage() {
 #ifdef DEBUG_ENABLED
-	return max_usage;
+	return max_usage.get();
 #else
 	return 0;
 #endif

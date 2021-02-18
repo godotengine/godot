@@ -30,7 +30,7 @@
 
 #include "pool_vector.h"
 
-Mutex *pool_vector_lock = NULL;
+Mutex pool_vector_lock;
 
 PoolAllocator *MemoryPool::memory_pool = NULL;
 uint8_t *MemoryPool::pool_memory = NULL;
@@ -40,7 +40,7 @@ MemoryPool::Alloc *MemoryPool::allocs = NULL;
 MemoryPool::Alloc *MemoryPool::free_list = NULL;
 uint32_t MemoryPool::alloc_count = 0;
 uint32_t MemoryPool::allocs_used = 0;
-Mutex *MemoryPool::alloc_mutex = NULL;
+Mutex MemoryPool::alloc_mutex;
 
 size_t MemoryPool::total_memory = 0;
 size_t MemoryPool::max_memory = 0;
@@ -57,14 +57,11 @@ void MemoryPool::setup(uint32_t p_max_allocs) {
 	}
 
 	free_list = &allocs[0];
-
-	alloc_mutex = Mutex::create();
 }
 
 void MemoryPool::cleanup() {
 
 	memdelete_arr(allocs);
-	memdelete(alloc_mutex);
 
 	ERR_FAIL_COND_MSG(allocs_used > 0, "There are still MemoryPool allocs in use at exit!");
 }

@@ -39,7 +39,7 @@ jmethodID NetSocketAndroid::_multicast_lock_release = 0;
 
 void NetSocketAndroid::setup(jobject p_net_utils) {
 
-	JNIEnv *env = ThreadAndroid::get_env();
+	JNIEnv *env = get_jni_env();
 
 	net_utils = env->NewGlobalRef(p_net_utils);
 
@@ -52,14 +52,14 @@ void NetSocketAndroid::setup(jobject p_net_utils) {
 
 void NetSocketAndroid::multicast_lock_acquire() {
 	if (_multicast_lock_acquire) {
-		JNIEnv *env = ThreadAndroid::get_env();
+		JNIEnv *env = get_jni_env();
 		env->CallVoidMethod(net_utils, _multicast_lock_acquire);
 	}
 }
 
 void NetSocketAndroid::multicast_lock_release() {
 	if (_multicast_lock_release) {
-		JNIEnv *env = ThreadAndroid::get_env();
+		JNIEnv *env = get_jni_env();
 		env->CallVoidMethod(net_utils, _multicast_lock_release);
 	}
 }

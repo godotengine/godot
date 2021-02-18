@@ -44,11 +44,11 @@ class Memory {
 
 	Memory();
 #ifdef DEBUG_ENABLED
-	static uint64_t mem_usage;
-	static uint64_t max_usage;
+	static SafeNumeric<uint64_t> mem_usage;
+	static SafeNumeric<uint64_t> max_usage;
 #endif
 
-	static uint64_t alloc_count;
+	static SafeNumeric<uint64_t> alloc_count;
 
 public:
 	static void *alloc_static(size_t p_bytes, bool p_pad_align = false);

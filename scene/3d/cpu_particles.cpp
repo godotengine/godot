@@ -1024,9 +1024,7 @@ void CPUParticles::_particles_process(float p_delta) {
 }
 
 void CPUParticles::_update_particle_data_buffer() {
-#ifndef NO_THREADS
-	update_mutex->lock();
-#endif
+	update_mutex.lock();
 
 	{
 
@@ -1115,21 +1113,17 @@ void CPUParticles::_update_particle_data_buffer() {
 			ptr += 17;
 		}
 
-		can_update = true;
+		can_update.set();
 	}
 
-#ifndef NO_THREADS
-	update_mutex->unlock();
-#endif
+	update_mutex.unlock();
 }
 
 void CPUParticles::_set_redraw(bool p_redraw) {
 	if (redraw == p_redraw)
 		return;
 	redraw = p_redraw;
-#ifndef NO_THREADS
-	update_mutex->lock();
-#endif
+	update_mutex.lock();
 	if (redraw) {
 		VS::get_singleton()->connect("frame_pre_draw", this, "_update_render_thread");
 		VS::get_singleton()->instance_geometry_set_flag(get_instance(), VS::INSTANCE_FLAG_DRAW_NEXT_FRAME_IF_VISIBLE, true);
@@ -1141,24 +1135,19 @@ void CPUParticles::_set_redraw(bool p_redraw) {
 		VS::get_singleton()->instance_geometry_set_flag(get_instance(), VS::INSTANCE_FLAG_DRAW_NEXT_FRAME_IF_VISIBLE, false);
 		VS::get_singleton()->multimesh_set_visible_instances(multimesh, 0);
 	}
-#ifndef NO_THREADS
-	update_mutex->unlock();
-#endif
+	update_mutex.unlock();
 }
 
 void CPUParticles::_update_render_thread() {
 
-#ifndef NO_THREADS
-	update_mutex->lock();
-#endif
-	if (can_update) {
+	update_mutex.lock();
+
+	if (can_update.is_set()) {
 		VS::get_singleton()->multimesh_set_as_bulk_array(multimesh, particle_data);
-		can_update = false; //wait for next time
+		can_update.clear(); //wait for next time
 	}
 
-#ifndef NO_THREADS
-	update_mutex->unlock();
-#endif
+	update_mutex.unlock();
 }
 
 void CPUParticles::_notification(int p_what) {
@@ -1221,7 +1210,7 @@ void CPUParticles::_notification(int p_what) {
 				ptr += 17;
 			}
 
-			can_update = true;
+			can_update.set();
 		}
 	}
 }
@@ -1561,19 +1550,9 @@ CPUParticles::CPUParticles() {
 		flags[i] = false;
 	}
 
-	can_update = false;
-
 	set_color(Color(1, 1, 1, 1));
-
-#ifndef NO_THREADS
-	update_mutex = Mutex::create();
-#endif
 }
 
 CPUParticles::~CPUParticles() {
 	VS::get_singleton()->free(multimesh);
-
-#ifndef NO_THREADS
-	memdelete(update_mutex);
-#endif
 }

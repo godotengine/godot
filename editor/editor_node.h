@@ -31,6 +31,7 @@
 #ifndef EDITOR_NODE_H
 #define EDITOR_NODE_H
 
+#include "core/safe_refcount.h"
 #include "editor/editor_data.h"
 #include "editor/editor_folding.h"
 #include "editor/editor_run.h"
@@ -106,10 +107,10 @@ public:
 		String path;
 		List<String> args;
 		String output;
-		Thread *execute_output_thread;
-		Mutex *execute_output_mutex;
+		Thread execute_output_thread;
+		Mutex execute_output_mutex;
 		int exitcode;
-		volatile bool done;
+		SafeFlag done;
 	};
 
 private:

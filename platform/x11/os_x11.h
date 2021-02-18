@@ -165,8 +165,8 @@ class OS_X11 : public OS_Unix {
 	String _get_clipboard(Atom p_source, Window x11_window) const;
 	void _clipboard_transfer_ownership(Atom p_source, Window x11_window) const;
 
-	mutable Mutex *events_mutex;
-	Thread *events_thread = nullptr;
+	mutable Mutex events_mutex;
+	Thread events_thread;
 	bool events_thread_done = false;
 	LocalVector<XEvent> polled_events;
 	static void _poll_events_thread(void *ud);

@@ -289,9 +289,7 @@ RES ResourceLoader::_load(const String &p_path, const String &p_original_path, c
 bool ResourceLoader::_add_to_loading_map(const String &p_path) {
 
 	bool success;
-	if (loading_map_mutex) {
-		loading_map_mutex->lock();
-	}
+	loading_map_mutex.lock();
 
 	LoadingMapKey key;
 	key.path = p_path;
@@ -304,17 +302,13 @@ bool ResourceLoader::_add_to_loading_map(const String &p_path) {
 		success = true;
 	}
 
-	if (loading_map_mutex) {
-		loading_map_mutex->unlock();
-	}
+	loading_map_mutex.unlock();
 
 	return success;
 }
 
 void ResourceLoader::_remove_from_loading_map(const String &p_path) {
-	if (loading_map_mutex) {
-		loading_map_mutex->lock();
-	}
+	loading_map_mutex.lock();
 
 	LoadingMapKey key;
 	key.path = p_path;
@@ -322,15 +316,11 @@ void ResourceLoader::_remove_from_loading_map(const String &p_path) {
 
 	loading_map.erase(key);
 
-	if (loading_map_mutex) {
-		loading_map_mutex->unlock();
-	}
+	loading_map_mutex.unlock();
 }
 
 void ResourceLoader::_remove_from_loading_map_and_thread(const String &p_path, Thread::ID p_thread) {
-	if (loading_map_mutex) {
-		loading_map_mutex->lock();
-	}
+	loading_map_mutex.lock();
 
 	LoadingMapKey key;
 	key.path = p_path;
@@ -338,9 +328,7 @@ void ResourceLoader::_remove_from_loading_map_and_thread(const String &p_path, T
 
 	loading_map.erase(key);
 
-	if (loading_map_mutex) {
-		loading_map_mutex->unlock();
-	}
+	loading_map_mutex.unlock();
 }
 
 RES ResourceLoader::load(const String &p_path, const String &p_type_hint, bool p_no_cache, Error *r_error) {
@@ -362,9 +350,7 @@ RES ResourceLoader::load(const String &p_path, const String &p_type_hint, bool p
 		}
 
 		//lock first if possible
-		if (ResourceCache::lock) {
-			ResourceCache::lock->read_lock();
-		}
+		ResourceCache::lock.read_lock();
 
 		//get ptr
 		Resource **rptr = ResourceCache::resources.getptr(local_path);
@@ -376,16 +362,12 @@ RES ResourceLoader::load(const String &p_path, const String &p_type_hint, bool p
 				//referencing is fine
 				if (r_error)
 					*r_error = OK;
-				if (ResourceCache::lock) {
-					ResourceCache::lock->read_unlock();
-				}
+				ResourceCache::lock.read_unlock();
 				_remove_from_loading_map(local_path);
 				return res;
 			}
 		}
-		if (ResourceCache::lock) {
-			ResourceCache::lock->read_unlock();
-		}
+		ResourceCache::lock.read_unlock();
 	}
 
 	bool xl_remapped = false;
@@ -851,9 +833,7 @@ String ResourceLoader::path_remap(const String &p_path) {
 
 void ResourceLoader::reload_translation_remaps() {
 
-	if (ResourceCache::lock) {
-		ResourceCache::lock->read_lock();
-	}
+	ResourceCache::lock.read_lock();
 
 	List<Resource *> to_reload;
 	SelfList<Resource> *E = remapped_list.first();
@@ -863,9 +843,7 @@ void ResourceLoader::reload_translation_remaps() {
 		E = E->next();
 	}
 
-	if (ResourceCache::lock) {
-		ResourceCache::lock->read_unlock();
-	}
+	ResourceCache::lock.read_unlock();
 
 	//now just make sure to not delete any of these resources while changing locale..
 	while (to_reload.front()) {
@@ -1004,14 +982,8 @@ void ResourceLoader::remove_custom_loaders() {
 	}
 }
 
-Mutex *ResourceLoader::loading_map_mutex = NULL;
+Mutex ResourceLoader::loading_map_mutex;
 HashMap<ResourceLoader::LoadingMapKey, int, ResourceLoader::LoadingMapKeyHasher> ResourceLoader::loading_map;
-
-void ResourceLoader::initialize() {
-#ifndef NO_THREADS
-	loading_map_mutex = Mutex::create();
-#endif
-}
 
 void ResourceLoader::finalize() {
 #ifndef NO_THREADS
@@ -1020,8 +992,6 @@ void ResourceLoader::finalize() {
 		ERR_PRINTS("Exited while resource is being loaded: " + K->path);
 	}
 	loading_map.clear();
-	memdelete(loading_map_mutex);
-	loading_map_mutex = NULL;
 #endif
 }
 

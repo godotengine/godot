@@ -84,7 +84,7 @@ static void _initialize_java_modules() {
 
 		// TODO create wrapper for class loader
 
-		JNIEnv *env = ThreadAndroid::get_env();
+		JNIEnv *env = get_jni_env();
 		jclass classLoader = env->FindClass("java/lang/ClassLoader");
 		jmethodID findClass = env->GetMethodID(classLoader, "loadClass", "(Ljava/lang/String;)Ljava/lang/Class;");
 
@@ -132,7 +132,7 @@ JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_initialize(JNIEnv *en
 	godot_java = new GodotJavaWrapper(env, activity, godot_instance);
 	godot_io_java = new GodotIOJavaWrapper(env, godot_java->get_member_object("io", "Lorg/godotengine/godot/GodotIO;", env));
 
-	ThreadAndroid::make_default(jvm);
+	init_thread_jandroid(jvm, env);
 
 	jobject amgr = env->NewGlobalRef(p_asset_manager);
 
@@ -164,7 +164,7 @@ JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_ondestroy(JNIEnv *env
 }
 
 JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_setup(JNIEnv *env, jclass clazz, jobjectArray p_cmdline) {
-	ThreadAndroid::setup_thread();
+	setup_android_thread();
 
 	const char **cmdline = NULL;
 	jstring *j_cmdline = NULL;
@@ -422,7 +422,7 @@ JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_focusout(JNIEnv *env,
 
 JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_audio(JNIEnv *env, jclass clazz) {
 
-	ThreadAndroid::setup_thread();
+	setup_android_thread();
 	AudioDriverAndroid::thread_func(env);
 }
 

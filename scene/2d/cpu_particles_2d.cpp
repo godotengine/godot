@@ -980,9 +980,7 @@ void CPUParticles2D::_particles_process(float p_delta) {
 }
 
 void CPUParticles2D::_update_particle_data_buffer() {
-#ifndef NO_THREADS
-	update_mutex->lock();
-#endif
+	update_mutex.lock();
 
 	{
 
@@ -1050,18 +1048,14 @@ void CPUParticles2D::_update_particle_data_buffer() {
 		}
 	}
 
-#ifndef NO_THREADS
-	update_mutex->unlock();
-#endif
+	update_mutex.unlock();
 }
 
 void CPUParticles2D::_set_redraw(bool p_redraw) {
 	if (redraw == p_redraw)
 		return;
 	redraw = p_redraw;
-#ifndef NO_THREADS
-	update_mutex->lock();
-#endif
+	update_mutex.lock();
 	if (redraw) {
 		VS::get_singleton()->connect("frame_pre_draw", this, "_update_render_thread");
 		VS::get_singleton()->canvas_item_set_update_when_visible(get_canvas_item(), true);
@@ -1075,23 +1069,15 @@ void CPUParticles2D::_set_redraw(bool p_redraw) {
 
 		VS::get_singleton()->multimesh_set_visible_instances(multimesh, 0);
 	}
-#ifndef NO_THREADS
-	update_mutex->unlock();
-#endif
+	update_mutex.unlock();
 	update(); // redraw to update render list
 }
 
 void CPUParticles2D::_update_render_thread() {
 
-#ifndef NO_THREADS
-	update_mutex->lock();
-#endif
-
+	update_mutex.lock();
 	VS::get_singleton()->multimesh_set_as_bulk_array(multimesh, particle_data);
-
-#ifndef NO_THREADS
-	update_mutex->unlock();
-#endif
+	update_mutex.unlock();
 }
 
 void CPUParticles2D::_notification(int p_what) {
@@ -1504,18 +1490,10 @@ CPUParticles2D::CPUParticles2D() {
 
 	set_color(Color(1, 1, 1, 1));
 
-#ifndef NO_THREADS
-	update_mutex = Mutex::create();
-#endif
-
 	_update_mesh_texture();
 }
 
 CPUParticles2D::~CPUParticles2D() {
 	VS::get_singleton()->free(multimesh);
 	VS::get_singleton()->free(mesh);
-
-#ifndef NO_THREADS
-	memdelete(update_mutex);
-#endif
 }

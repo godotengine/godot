@@ -35,6 +35,7 @@
 #include "core/os/file_access.h"
 #include "core/os/os.h"
 #include "core/project_settings.h"
+#include "core/safe_refcount.h"
 #include "core/version.h"
 #include "editor/editor_export.h"
 #include "editor/editor_node.h"
@@ -55,10 +56,10 @@ class EditorExportPlatformIOS : public EditorExportPlatform {
 	Ref<ImageTexture> logo;
 
 	// Plugins
-	volatile bool plugins_changed;
-	Thread *check_for_changes_thread;
-	volatile bool quit_request;
-	Mutex *plugins_lock;
+	SafeFlag plugins_changed;
+	Thread check_for_changes_thread;
+	SafeFlag quit_request;
+	Mutex plugins_lock;
 	Vector<PluginConfigIOS> plugins;
 
 	typedef Error (*FileHandler)(String p_file, void *p_userdata);
@@ -144,26 +145,26 @@ class EditorExportPlatformIOS : public EditorExportPlatform {
 	static void _check_for_changes_poll_thread(void *ud) {
 		EditorExportPlatformIOS *ea = (EditorExportPlatformIOS *)ud;
 
-		while (!ea->quit_request) {
+		while (!ea->quit_request.is_set()) {
 			// Nothing to do if we already know the plugins have changed.
-			if (!ea->plugins_changed) {
+			if (!ea->plugins_changed.is_set()) {
 
-				ea->plugins_lock->lock();
+				ea->plugins_lock.lock();
 
 				Vector<PluginConfigIOS> loaded_plugins = get_plugins();
 
 				if (ea->plugins.size() != loaded_plugins.size()) {
-					ea->plugins_changed = true;
+					ea->plugins_changed.set();
 				} else {
 					for (int i = 0; i < ea->plugins.size(); i++) {
 						if (ea->plugins[i].name != loaded_plugins[i].name || ea->plugins[i].last_updated != loaded_plugins[i].last_updated) {
-							ea->plugins_changed = true;
+							ea->plugins_changed.set();
 							break;
 						}
 					}
 				}
 
-				ea->plugins_lock->unlock();
+				ea->plugins_lock.unlock();
 			}
 
 			uint64_t wait = 3000000;
@@ -171,7 +172,7 @@ class EditorExportPlatformIOS : public EditorExportPlatform {
 			while (OS::get_singleton()->get_ticks_usec() - time < wait) {
 				OS::get_singleton()->delay_usec(300000);
 
-				if (ea->quit_request) {
+				if (ea->quit_request.is_set()) {
 					break;
 				}
 			}
@@ -188,10 +189,10 @@ public:
 	virtual Ref<Texture> get_logo() const { return logo; }
 
 	virtual bool should_update_export_options() {
-		bool export_options_changed = plugins_changed;
+		bool export_options_changed = plugins_changed.is_set();
 		if (export_options_changed) {
 			// don't clear unless we're reporting true, to avoid race
-			plugins_changed = false;
+			plugins_changed.clear();
 		}
 		return export_options_changed;
 	}
@@ -371,7 +372,7 @@ void EditorExportPlatformIOS::get_export_options(List<ExportOption> *r_options) 
 		r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "plugins/" + found_plugins[i].name), false));
 	}
 
-	plugins_changed = false;
+	plugins_changed.clear();
 	plugins = found_plugins;
 
 	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "capabilities/access_wifi"), false));
@@ -1836,18 +1837,14 @@ EditorExportPlatformIOS::EditorExportPlatformIOS() {
 	logo.instance();
 	logo->create_from_image(img);
 
-	plugins_changed = true;
-	quit_request = false;
-	plugins_lock = Mutex::create();
+	plugins_changed.set();
 
-	check_for_changes_thread = Thread::create(_check_for_changes_poll_thread, this);
+	check_for_changes_thread.start(_check_for_changes_poll_thread, this);
 }
 
 EditorExportPlatformIOS::~EditorExportPlatformIOS() {
-	quit_request = true;
-	Thread::wait_to_finish(check_for_changes_thread);
-	memdelete(plugins_lock);
-	memdelete(check_for_changes_thread);
+	quit_request.set();
+	check_for_changes_thread.wait_to_finish();
 }
 
 void register_iphone_exporter() {

@@ -37,14 +37,14 @@
 /**
  * Converts JNI jstring to Godot String.
  * @param source Source JNI string. If null an empty string is returned.
- * @param env JNI environment instance. If null obtained by ThreadAndroid::get_env().
+ * @param env JNI environment instance. If null obtained by get_jni_env().
  * @return Godot string instance.
  */
 static inline String jstring_to_string(jstring source, JNIEnv *env = NULL) {
 	String result;
 	if (source) {
 		if (!env) {
-			env = ThreadAndroid::get_env();
+			env = get_jni_env();
 		}
 		const char *const source_utf8 = env->GetStringUTFChars(source, NULL);
 		if (source_utf8) {

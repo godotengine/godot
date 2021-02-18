@@ -609,7 +609,7 @@ void EditorFileSystem::scan() {
 	if (false /*&& bool(Globals::get_singleton()->get("debug/disable_scan"))*/)
 		return;
 
-	if (scanning || scanning_changes || thread)
+	if (scanning || scanning_changes || thread.is_started())
 		return;
 
 	_update_extensions();
@@ -632,13 +632,13 @@ void EditorFileSystem::scan() {
 		first_scan = false;
 	} else {
 
-		ERR_FAIL_COND(thread);
+		ERR_FAIL_COND(thread.is_started());
 		set_process(true);
 		Thread::Settings s;
 		scanning = true;
 		scan_total = 0;
 		s.priority = Thread::PRIORITY_LOW;
-		thread = Thread::create(_thread_func, this, s);
+		thread.start(_thread_func, this, s);
 		//tree->hide();
 		//progress->show();
 	}
@@ -1067,7 +1067,7 @@ void EditorFileSystem::get_changed_sources(List<String> *r_changed) {
 void EditorFileSystem::scan_changes() {
 
 	if (first_scan || // Prevent a premature changes scan from inhibiting the first full scan
-			scanning || scanning_changes || thread) {
+			scanning || scanning_changes || thread.is_started()) {
 		scan_changes_pending = true;
 		set_process(true);
 		return;
@@ -1097,12 +1097,12 @@ void EditorFileSystem::scan_changes() {
 		emit_signal("sources_changed", sources_changed.size() > 0);
 	} else {
 
-		ERR_FAIL_COND(thread_sources);
+		ERR_FAIL_COND(thread_sources.is_started());
 		set_process(true);
 		scan_total = 0;
 		Thread::Settings s;
 		s.priority = Thread::PRIORITY_LOW;
-		thread_sources = Thread::create(_thread_func_sources, this, s);
+		thread_sources.start(_thread_func_sources, this, s);
 	}
 }
 
@@ -1116,17 +1116,14 @@ void EditorFileSystem::_notification(int p_what) {
 
 		} break;
 		case NOTIFICATION_EXIT_TREE: {
-			Thread *active_thread = thread ? thread : thread_sources;
-			if (use_threads && active_thread) {
+			Thread &active_thread = thread.is_started() ? thread : thread_sources;
+			if (use_threads && active_thread.is_started()) {
 				//abort thread if in progress
 				abort_scan = true;
 				while (scanning) {
 					OS::get_singleton()->delay_usec(1000);
 				}
-				Thread::wait_to_finish(active_thread);
-				memdelete(active_thread);
-				thread = NULL;
-				thread_sources = NULL;
+				active_thread.wait_to_finish();
 				WARN_PRINT("Scan thread aborted...");
 				set_process(false);
 			}
@@ -1151,9 +1148,7 @@ void EditorFileSystem::_notification(int p_what) {
 
 						set_process(false);
 
-						Thread::wait_to_finish(thread_sources);
-						memdelete(thread_sources);
-						thread_sources = NULL;
+						thread_sources.wait_to_finish();
 						if (_update_scan_actions())
 							emit_signal("filesystem_changed");
 						emit_signal("sources_changed", sources_changed.size() > 0);
@@ -1168,9 +1163,7 @@ void EditorFileSystem::_notification(int p_what) {
 						memdelete(filesystem);
 					filesystem = new_filesystem;
 					new_filesystem = NULL;
-					Thread::wait_to_finish(thread);
-					memdelete(thread);
-					thread = NULL;
+					thread.wait_to_finish();
 					_update_scan_actions();
 					emit_signal("filesystem_changed");
 					emit_signal("sources_changed", sources_changed.size() > 0);
@@ -1452,10 +1445,10 @@ void EditorFileSystem::_scan_script_classes(EditorFileSystemDirectory *p_dir) {
 
 void EditorFileSystem::update_script_classes() {
 
-	if (!update_script_classes_queued)
+	if (!update_script_classes_queued.is_set())
 		return;
 
-	update_script_classes_queued = false;
+	update_script_classes_queued.clear();
 	ScriptServer::global_classes_clear();
 	if (get_filesystem()) {
 		_scan_script_classes(get_filesystem());
@@ -1474,11 +1467,11 @@ void EditorFileSystem::update_script_classes() {
 }
 
 void EditorFileSystem::_queue_update_script_classes() {
-	if (update_script_classes_queued) {
+	if (update_script_classes_queued.is_set()) {
 		return;
 	}
 
-	update_script_classes_queued = true;
+	update_script_classes_queued.set();
 	call_deferred("update_script_classes");
 }
 
@@ -2135,11 +2128,9 @@ EditorFileSystem::EditorFileSystem() {
 	filesystem = memnew(EditorFileSystemDirectory); //like, empty
 	filesystem->parent = NULL;
 
-	thread = NULL;
 	scanning = false;
 	importing = false;
 	use_threads = true;
-	thread_sources = NULL;
 	new_filesystem = NULL;
 
 	abort_scan = false;
@@ -2155,7 +2146,7 @@ EditorFileSystem::EditorFileSystem() {
 	memdelete(da);
 
 	scan_total = 0;
-	update_script_classes_queued = false;
+	update_script_classes_queued.clear();
 	first_scan = true;
 	scan_changes_pending = false;
 	revalidate_import_files = false;

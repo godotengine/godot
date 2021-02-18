@@ -2711,20 +2711,20 @@ void VisualServerScene::_gi_probe_bake_thread() {
 
 	while (true) {
 
-		probe_bake_sem->wait();
+		probe_bake_sem.wait();
 		if (probe_bake_thread_exit) {
 			break;
 		}
 
 		Instance *to_bake = NULL;
 
-		probe_bake_mutex->lock();
+		probe_bake_mutex.lock();
 
 		if (!probe_bake_list.empty()) {
 			to_bake = probe_bake_list.front()->get();
 			probe_bake_list.pop_front();
 		}
-		probe_bake_mutex->unlock();
+		probe_bake_mutex.unlock();
 
 		if (!to_bake)
 			continue;
@@ -3263,15 +3263,9 @@ void VisualServerScene::_bake_gi_probe(Instance *p_gi_probe) {
 	}
 
 	//send back to main thread to update un little chunks
-	if (probe_bake_mutex) {
-		probe_bake_mutex->lock();
-	}
-
+	probe_bake_mutex.lock();
 	probe_data->dynamic.updating_stage = GI_UPDATE_STAGE_UPLOADING;
-
-	if (probe_bake_mutex) {
-		probe_bake_mutex->unlock();
-	}
+	probe_bake_mutex.unlock();
 }
 
 bool VisualServerScene::_check_gi_probe(Instance *p_gi_probe) {
@@ -3412,11 +3406,11 @@ void VisualServerScene::render_probes() {
 					if (_check_gi_probe(instance_probe) || force_lighting) { //send to lighting thread
 
 #ifndef NO_THREADS
-						probe_bake_mutex->lock();
+						probe_bake_mutex.lock();
 						probe->dynamic.updating_stage = GI_UPDATE_STAGE_LIGHTING;
 						probe_bake_list.push_back(instance_probe);
-						probe_bake_mutex->unlock();
-						probe_bake_sem->post();
+						probe_bake_mutex.unlock();
+						probe_bake_sem.post();
 
 #else
 
@@ -3688,12 +3682,8 @@ VisualServerScene *VisualServerScene::singleton = NULL;
 
 VisualServerScene::VisualServerScene() {
 
-#ifndef NO_THREADS
-	probe_bake_sem = Semaphore::create();
-	probe_bake_mutex = Mutex::create();
-	probe_bake_thread = Thread::create(_gi_probe_bake_threads, this);
+	probe_bake_thread.start(_gi_probe_bake_threads, this);
 	probe_bake_thread_exit = false;
-#endif
 
 	render_pass = 1;
 	singleton = this;
@@ -3702,13 +3692,7 @@ VisualServerScene::VisualServerScene() {
 
 VisualServerScene::~VisualServerScene() {
 
-#ifndef NO_THREADS
 	probe_bake_thread_exit = true;
-	probe_bake_sem->post();
-	Thread::wait_to_finish(probe_bake_thread);
-	memdelete(probe_bake_thread);
-	memdelete(probe_bake_sem);
-	memdelete(probe_bake_mutex);
-
-#endif
+	probe_bake_sem.post();
+	probe_bake_thread.wait_to_finish();
 }

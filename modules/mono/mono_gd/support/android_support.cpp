@@ -109,7 +109,7 @@ bool jni_exception_check(JNIEnv *p_env) {
 String app_native_lib_dir_cache;
 
 String determine_app_native_lib_dir() {
-	JNIEnv *env = ThreadAndroid::get_env();
+	JNIEnv *env = get_jni_env();
 
 	ScopedLocalRef<jclass> activityThreadClass(env, env->FindClass("android/app/ActivityThread"));
 	jmethodID currentActivityThread = env->GetStaticMethodID(activityThreadClass, "currentActivityThread", "()Landroid/app/ActivityThread;");
@@ -253,7 +253,7 @@ int32_t get_build_version_sdk_int() {
 	// android.os.Build.VERSION.SDK_INT
 
 	if (build_version_sdk_int == 0) {
-		JNIEnv *env = ThreadAndroid::get_env();
+		JNIEnv *env = get_jni_env();
 
 		jclass versionClass = env->FindClass("android/os/Build$VERSION");
 		ERR_FAIL_NULL_V(versionClass, 0);
@@ -281,7 +281,7 @@ MonoBoolean _gd_mono_init_cert_store() {
 	//	return false;
 	// }
 
-	JNIEnv *env = ThreadAndroid::get_env();
+	JNIEnv *env = get_jni_env();
 
 	ScopedLocalRef<jclass> keyStoreClass(env, env->FindClass("java/security/KeyStore"));
 
@@ -322,7 +322,7 @@ MonoArray *_gd_mono_android_cert_store_lookup(MonoString *p_alias) {
 		return NULL;
 	}
 
-	JNIEnv *env = ThreadAndroid::get_env();
+	JNIEnv *env = get_jni_env();
 
 	ScopedLocalRef<jstring> js_alias(env, env->NewStringUTF(alias_utf8));
 	mono_free(alias_utf8);
@@ -380,7 +380,7 @@ void cleanup() {
 	if (godot_dl_handle)
 		gd_mono_android_dlclose(godot_dl_handle, NULL);
 
-	JNIEnv *env = ThreadAndroid::get_env();
+	JNIEnv *env = get_jni_env();
 
 	if (certStore) {
 		env->DeleteGlobalRef(certStore);
@@ -438,7 +438,7 @@ GD_PINVOKE_EXPORT mono_bool _monodroid_get_network_interface_up_state(const char
 
 	*r_is_up = 0;
 
-	JNIEnv *env = ThreadAndroid::get_env();
+	JNIEnv *env = get_jni_env();
 
 	jclass networkInterfaceClass = env->FindClass("java/net/NetworkInterface");
 	ERR_FAIL_NULL_V(networkInterfaceClass, 0);
@@ -470,7 +470,7 @@ GD_PINVOKE_EXPORT mono_bool _monodroid_get_network_interface_supports_multicast(
 
 	*r_supports_multicast = 0;
 
-	JNIEnv *env = ThreadAndroid::get_env();
+	JNIEnv *env = get_jni_env();
 
 	jclass networkInterfaceClass = env->FindClass("java/net/NetworkInterface");
 	ERR_FAIL_NULL_V(networkInterfaceClass, 0);
@@ -508,7 +508,7 @@ static void interop_get_active_network_dns_servers(char **r_dns_servers, int *dn
 	CRASH_COND(get_build_version_sdk_int() < 23);
 #endif
 
-	JNIEnv *env = ThreadAndroid::get_env();
+	JNIEnv *env = get_jni_env();
 
 	GodotJavaWrapper *godot_java = ((OS_Android *)OS::get_singleton())->get_godot_java();
 	jobject activity = godot_java->get_activity();
@@ -649,7 +649,7 @@ GD_PINVOKE_EXPORT const char *_monodroid_timezone_get_default_id() {
 	//
 	// TimeZone.getDefault().getID()
 
-	JNIEnv *env = ThreadAndroid::get_env();
+	JNIEnv *env = get_jni_env();
 
 	ScopedLocalRef<jclass> timeZoneClass(env, env->FindClass("java/util/TimeZone"));
 	ERR_FAIL_NULL_V(timeZoneClass, NULL);

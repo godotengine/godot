@@ -28,47 +28,14 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef THREAD_POSIX_H
-#define THREAD_POSIX_H
+#ifndef THREAD_JANDROID_H
+#define THREAD_JANDROID_H
 
-#include "core/os/thread.h"
 #include <jni.h>
-#include <pthread.h>
-#include <sys/types.h>
 
-class ThreadAndroid : public Thread {
+void init_thread_jandroid(JavaVM *p_jvm, JNIEnv *p_env);
 
-	static pthread_key_t thread_id_key;
-	static ID next_thread_id;
-
-	pthread_t pthread;
-	pthread_attr_t pthread_attr;
-	ThreadCreateCallback callback;
-	void *user;
-	ID id;
-
-	static Thread *create_thread_jandroid();
-
-	static void *thread_callback(void *userdata);
-
-	static Thread *create_func_jandroid(ThreadCreateCallback p_callback, void *, const Settings &);
-	static ID get_thread_id_func_jandroid();
-	static void wait_to_finish_func_jandroid(Thread *p_thread);
-
-	static void _thread_destroyed(void *value);
-	ThreadAndroid();
-
-	static pthread_key_t jvm_key;
-	static JavaVM *java_vm;
-
-public:
-	virtual ID get_id() const;
-
-	static void make_default(JavaVM *p_java_vm);
-	static void setup_thread();
-	static JNIEnv *get_env();
-
-	~ThreadAndroid();
-};
+void setup_android_thread();
+JNIEnv *get_jni_env();
 
 #endif

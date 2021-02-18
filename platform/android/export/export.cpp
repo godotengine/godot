@@ -37,6 +37,7 @@
 #include "core/os/file_access.h"
 #include "core/os/os.h"
 #include "core/project_settings.h"
+#include "core/safe_refcount.h"
 #include "core/version.h"
 #include "drivers/png/png_driver_common.h"
 #include "editor/editor_export.h"
@@ -280,42 +281,42 @@ class EditorExportPlatformAndroid : public EditorExportPlatform {
 	Vector<PluginConfigAndroid> plugins;
 	String last_plugin_names;
 	uint64_t last_custom_build_time = 0;
-	volatile bool plugins_changed;
-	Mutex *plugins_lock;
+	SafeFlag plugins_changed;
+	Mutex plugins_lock;
 	Vector<Device> devices;
-	volatile bool devices_changed;
-	Mutex *device_lock;
-	Thread *check_for_changes_thread;
-	volatile bool quit_request;
+	SafeFlag devices_changed;
+	Mutex device_lock;
+	Thread check_for_changes_thread;
+	SafeFlag quit_request;
 
 	static void _check_for_changes_poll_thread(void *ud) {
 		EditorExportPlatformAndroid *ea = (EditorExportPlatformAndroid *)ud;
 
-		while (!ea->quit_request) {
+		while (!ea->quit_request.is_set()) {
 			// Check for plugins updates
 			{
 				// Nothing to do if we already know the plugins have changed.
-				if (!ea->plugins_changed) {
+				if (!ea->plugins_changed.is_set()) {
 					Vector<PluginConfigAndroid> loaded_plugins = get_plugins();
 
-					ea->plugins_lock->lock();
+					ea->plugins_lock.lock();
 
 					if (ea->plugins.size() != loaded_plugins.size()) {
-						ea->plugins_changed = true;
+						ea->plugins_changed.set();
 					} else {
 						for (int i = 0; i < ea->plugins.size(); i++) {
 							if (ea->plugins[i].name != loaded_plugins[i].name) {
-								ea->plugins_changed = true;
+								ea->plugins_changed.set();
 								break;
 							}
 						}
 					}
 
-					if (ea->plugins_changed) {
+					if (ea->plugins_changed.is_set()) {
 						ea->plugins = loaded_plugins;
 					}
 
-					ea->plugins_lock->unlock();
+					ea->plugins_lock.unlock();
 				}
 			}
 
@@ -341,7 +342,7 @@ class EditorExportPlatformAndroid : public EditorExportPlatform {
 					ldevices.push_back(d);
 				}
 
-				ea->device_lock->lock();
+				ea->device_lock.lock();
 
 				bool different = false;
 
@@ -428,10 +429,10 @@ class EditorExportPlatformAndroid : public EditorExportPlatform {
 					}
 
 					ea->devices = ndevices;
-					ea->devices_changed = true;
+					ea->devices_changed.set();
 				}
 
-				ea->device_lock->unlock();
+				ea->device_lock.unlock();
 			}
 
 			uint64_t sleep = OS::get_singleton()->get_power_state() == OS::POWERSTATE_ON_BATTERY ? 1000 : 100;
@@ -439,7 +440,7 @@ class EditorExportPlatformAndroid : public EditorExportPlatform {
 			uint64_t time = OS::get_singleton()->get_ticks_usec();
 			while (OS::get_singleton()->get_ticks_usec() - time < wait) {
 				OS::get_singleton()->delay_usec(1000 * sleep);
-				if (ea->quit_request)
+				if (ea->quit_request.is_set())
 					break;
 			}
 		}
@@ -1704,7 +1705,7 @@ public:
 			print_verbose("Found Android plugin " + plugins_configs[i].name);
 			r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "plugins/" + plugins_configs[i].name), false));
 		}
-		plugins_changed = false;
+		plugins_changed.clear();
 
 		Vector<String> abis = get_abis();
 		for (int i = 0; i < abis.size(); ++i) {
@@ -1775,29 +1776,29 @@ public:
 	}
 
 	virtual bool should_update_export_options() {
-		bool export_options_changed = plugins_changed;
+		bool export_options_changed = plugins_changed.is_set();
 		if (export_options_changed) {
 			// don't clear unless we're reporting true, to avoid race
-			plugins_changed = false;
+			plugins_changed.clear();
 		}
 		return export_options_changed;
 	}
 
 	virtual bool poll_export() {
 
-		bool dc = devices_changed;
+		bool dc = devices_changed.is_set();
 		if (dc) {
 			// don't clear unless we're reporting true, to avoid race
-			devices_changed = false;
+			devices_changed.clear();
 		}
 		return dc;
 	}
 
 	virtual int get_options_count() const {
 
-		device_lock->lock();
+		device_lock.lock();
 		int dc = devices.size();
-		device_lock->unlock();
+		device_lock.unlock();
 
 		return dc;
 	}
@@ -1810,16 +1811,16 @@ public:
 	virtual String get_option_label(int p_index) const {
 
 		ERR_FAIL_INDEX_V(p_index, devices.size(), "");
-		device_lock->lock();
+		device_lock.lock();
 		String s = devices[p_index].name;
-		device_lock->unlock();
+		device_lock.unlock();
 		return s;
 	}
 
 	virtual String get_option_tooltip(int p_index) const {
 
 		ERR_FAIL_INDEX_V(p_index, devices.size(), "");
-		device_lock->lock();
+		device_lock.lock();
 		String s = devices[p_index].description;
 		if (devices.size() == 1) {
 			// Tooltip will be:
@@ -1827,7 +1828,7 @@ public:
 			// Description
 			s = devices[p_index].name + "\n\n" + s;
 		}
-		device_lock->unlock();
+		device_lock.unlock();
 		return s;
 	}
 
@@ -1842,7 +1843,7 @@ public:
 			return ERR_UNCONFIGURED;
 		}
 
-		device_lock->lock();
+		device_lock.lock();
 
 		EditorProgress ep("run", "Running on " + devices[p_device].name, 3);
 
@@ -1850,7 +1851,7 @@ public:
 
 		// Export_temp APK.
 		if (ep.step("Exporting APK...", 0)) {
-			device_lock->unlock();
+			device_lock.unlock();
 			return ERR_SKIP;
 		}
 
@@ -1865,7 +1866,7 @@ public:
 #define CLEANUP_AND_RETURN(m_err)                         \
 	{                                                     \
 		DirAccess::remove_file_or_error(tmp_export_path); \
-		device_lock->unlock();                            \
+		device_lock.unlock();                             \
 		return m_err;                                     \
 	}
 
@@ -3305,21 +3306,14 @@ public:
 		run_icon.instance();
 		run_icon->create_from_image(img);
 
-		device_lock = Mutex::create();
-		devices_changed = true;
-
-		plugins_lock = Mutex::create();
-		plugins_changed = true;
-		quit_request = false;
-		check_for_changes_thread = Thread::create(_check_for_changes_poll_thread, this);
+		devices_changed.set();
+		plugins_changed.set();
+		check_for_changes_thread.start(_check_for_changes_poll_thread, this);
 	}
 
 	~EditorExportPlatformAndroid() {
-		quit_request = true;
-		Thread::wait_to_finish(check_for_changes_thread);
-		memdelete(plugins_lock);
-		memdelete(device_lock);
-		memdelete(check_for_changes_thread);
+		quit_request.set();
+		check_for_changes_thread.wait_to_finish();
 	}
 };
 

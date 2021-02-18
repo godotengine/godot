@@ -32,6 +32,7 @@
 #define CPU_PARTICLES_H
 
 #include "core/rid.h"
+#include "core/safe_refcount.h"
 #include "scene/3d/visual_instance.h"
 
 class CPUParticles : public GeometryInstance {
@@ -144,7 +145,7 @@ private:
 
 	Transform inv_emission_transform;
 
-	volatile bool can_update;
+	SafeFlag can_update;
 
 	DrawOrder draw_order;
 
@@ -179,7 +180,7 @@ private:
 	void _particles_process(float p_delta);
 	void _update_particle_data_buffer();
 
-	Mutex *update_mutex;
+	Mutex update_mutex;
 
 	void _update_render_thread();
 

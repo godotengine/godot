@@ -37,7 +37,6 @@
 #ifdef __APPLE__
 #include "platform/osx/crash_handler_osx.h"
 #include "platform/osx/power_osx.h"
-#include "platform/osx/semaphore_osx.h"
 #else
 #include "platform/x11/crash_handler_x11.h"
 #include "platform/x11/power_x11.h"

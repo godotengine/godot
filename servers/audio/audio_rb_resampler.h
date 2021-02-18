@@ -32,6 +32,7 @@
 #define AUDIO_RB_RESAMPLER_H
 
 #include "core/os/memory.h"
+#include "core/safe_refcount.h"
 #include "core/typedefs.h"
 #include "servers/audio_server.h"
 
@@ -45,8 +46,8 @@ struct AudioRBResampler {
 	uint32_t src_mix_rate;
 	uint32_t target_mix_rate;
 
-	volatile int rb_read_pos;
-	volatile int rb_write_pos;
+	SafeNumeric<int> rb_read_pos;
+	SafeNumeric<int> rb_write_pos;
 
 	int32_t offset; //contains the fractional remainder of the resampler
 	enum {
@@ -63,8 +64,8 @@ struct AudioRBResampler {
 
 public:
 	_FORCE_INLINE_ void flush() {
-		rb_read_pos = 0;
-		rb_write_pos = 0;
+		rb_read_pos.set(0);
+		rb_write_pos.set(0);
 		offset = 0;
 	}
 
@@ -79,8 +80,8 @@ public:
 	_FORCE_INLINE_ int get_writer_space() const {
 		int space, r, w;
 
-		r = rb_read_pos;
-		w = rb_write_pos;
+		r = rb_read_pos.get();
+		w = rb_write_pos.get();
 
 		if (r == w) {
 			space = rb_len - 1;
@@ -96,8 +97,8 @@ public:
 	_FORCE_INLINE_ int get_reader_space() const {
 		int space, r, w;
 
-		r = rb_read_pos;
-		w = rb_write_pos;
+		r = rb_read_pos.get();
+		w = rb_write_pos.get();
 
 		if (r == w) {
 			space = 0;
@@ -111,7 +112,7 @@ public:
 	}
 
 	_FORCE_INLINE_ bool has_data() const {
-		return rb && rb_read_pos != rb_write_pos;
+		return rb && rb_read_pos.get() != rb_write_pos.get();
 	}
 
 	_FORCE_INLINE_ float *get_write_buffer() { return read_buf; }
@@ -119,49 +120,53 @@ public:
 
 		ERR_FAIL_COND(p_frames >= rb_len);
 
+		int wp = rb_write_pos.get();
+
 		switch (channels) {
 			case 1: {
 
 				for (uint32_t i = 0; i < p_frames; i++) {
 
-					rb[rb_write_pos] = read_buf[i];
-					rb_write_pos = (rb_write_pos + 1) & rb_mask;
+					rb[wp] = read_buf[i];
+					wp = (wp + 1) & rb_mask;
 				}
 			} break;
 			case 2: {
 
 				for (uint32_t i = 0; i < p_frames; i++) {
 
-					rb[(rb_write_pos << 1) + 0] = read_buf[(i << 1) + 0];
-					rb[(rb_write_pos << 1) + 1] = read_buf[(i << 1) + 1];
-					rb_write_pos = (rb_write_pos + 1) & rb_mask;
+					rb[(wp << 1) + 0] = read_buf[(i << 1) + 0];
+					rb[(wp << 1) + 1] = read_buf[(i << 1) + 1];
+					wp = (wp + 1) & rb_mask;
 				}
 			} break;
 			case 4: {
 
 				for (uint32_t i = 0; i < p_frames; i++) {
 
-					rb[(rb_write_pos << 2) + 0] = read_buf[(i << 2) + 0];
-					rb[(rb_write_pos << 2) + 1] = read_buf[(i << 2) + 1];
-					rb[(rb_write_pos << 2) + 2] = read_buf[(i << 2) + 2];
-					rb[(rb_write_pos << 2) + 3] = read_buf[(i << 2) + 3];
-					rb_write_pos = (rb_write_pos + 1) & rb_mask;
+					rb[(wp << 2) + 0] = read_buf[(i << 2) + 0];
+					rb[(wp << 2) + 1] = read_buf[(i << 2) + 1];
+					rb[(wp << 2) + 2] = read_buf[(i << 2) + 2];
+					rb[(wp << 2) + 3] = read_buf[(i << 2) + 3];
+					wp = (wp + 1) & rb_mask;
 				}
 			} break;
 			case 6: {
 
 				for (uint32_t i = 0; i < p_frames; i++) {
 
-					rb[(rb_write_pos * 6) + 0] = read_buf[(i * 6) + 0];
-					rb[(rb_write_pos * 6) + 1] = read_buf[(i * 6) + 1];
-					rb[(rb_write_pos * 6) + 2] = read_buf[(i * 6) + 2];
-					rb[(rb_write_pos * 6) + 3] = read_buf[(i * 6) + 3];
-					rb[(rb_write_pos * 6) + 4] = read_buf[(i * 6) + 4];
-					rb[(rb_write_pos * 6) + 5] = read_buf[(i * 6) + 5];
-					rb_write_pos = (rb_write_pos + 1) & rb_mask;
+					rb[(wp * 6) + 0] = read_buf[(i * 6) + 0];
+					rb[(wp * 6) + 1] = read_buf[(i * 6) + 1];
+					rb[(wp * 6) + 2] = read_buf[(i * 6) + 2];
+					rb[(wp * 6) + 3] = read_buf[(i * 6) + 3];
+					rb[(wp * 6) + 4] = read_buf[(i * 6) + 4];
+					rb[(wp * 6) + 5] = read_buf[(i * 6) + 5];
+					wp = (wp + 1) & rb_mask;
 				}
 			} break;
 		}
+
+		rb_write_pos.set(wp);
 	}
 
 	int get_channel_count() const;

@@ -90,7 +90,7 @@ private:
 
 	static RenderModeEnums render_mode_enums[];
 
-	volatile mutable bool dirty;
+	mutable SafeFlag dirty;
 	void _queue_update();
 
 	union ConnectionKey {

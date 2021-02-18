@@ -290,16 +290,12 @@ ShaderMaterial::~ShaderMaterial() {
 
 /////////////////////////////////
 
-Mutex *SpatialMaterial::material_mutex = NULL;
+Mutex SpatialMaterial::material_mutex;
 SelfList<SpatialMaterial>::List *SpatialMaterial::dirty_materials = NULL;
 Map<SpatialMaterial::MaterialKey, SpatialMaterial::ShaderData> SpatialMaterial::shader_map;
 SpatialMaterial::ShaderNames *SpatialMaterial::shader_names = NULL;
 
 void SpatialMaterial::init_shaders() {
-
-#ifndef NO_THREADS
-	material_mutex = Mutex::create();
-#endif
 
 	dirty_materials = memnew(SelfList<SpatialMaterial>::List);
 
@@ -378,10 +374,6 @@ void SpatialMaterial::finish_shaders() {
 	for (int i = 0; i < MAX_MATERIALS_FOR_2D; i++) {
 		materials_for_2d[i].unref();
 	}
-
-#ifndef NO_THREADS
-	memdelete(material_mutex);
-#endif
 
 	memdelete(dirty_materials);
 	dirty_materials = NULL;
@@ -1062,42 +1054,36 @@ void SpatialMaterial::_update_shader() {
 
 void SpatialMaterial::flush_changes() {
 
-	if (material_mutex)
-		material_mutex->lock();
+	material_mutex.lock();
 
 	while (dirty_materials->first()) {
 
 		dirty_materials->first()->self()->_update_shader();
 	}
 
-	if (material_mutex)
-		material_mutex->unlock();
+	material_mutex.unlock();
 }
 
 void SpatialMaterial::_queue_shader_change() {
 
-	if (material_mutex)
-		material_mutex->lock();
+	material_mutex.lock();
 
 	if (!element.in_list()) {
 		dirty_materials->add(&element);
 	}
 
-	if (material_mutex)
-		material_mutex->unlock();
+	material_mutex.unlock();
 }
 
 bool SpatialMaterial::_is_shader_dirty() const {
 
 	bool dirty = false;
 
-	if (material_mutex)
-		material_mutex->lock();
+	material_mutex.lock();
 
 	dirty = element.in_list();
 
-	if (material_mutex)
-		material_mutex->unlock();
+	material_mutex.unlock();
 
 	return dirty;
 }
@@ -2425,8 +2411,7 @@ SpatialMaterial::SpatialMaterial() :
 
 SpatialMaterial::~SpatialMaterial() {
 
-	if (material_mutex)
-		material_mutex->lock();
+	material_mutex.lock();
 
 	if (shader_map.has(current_key)) {
 		shader_map[current_key].users--;
@@ -2439,6 +2424,5 @@ SpatialMaterial::~SpatialMaterial() {
 		VS::get_singleton()->material_set_shader(_get_material(), RID());
 	}
 
-	if (material_mutex)
-		material_mutex->unlock();
+	material_mutex.unlock();
 }

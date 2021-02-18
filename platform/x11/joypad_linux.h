@@ -74,9 +74,9 @@ private:
 #ifdef UDEV_ENABLED
 	bool use_udev;
 #endif
-	bool exit_monitor;
-	Mutex *joy_mutex;
-	Thread *joy_thread;
+	SafeFlag exit_monitor;
+	Mutex joy_mutex;
+	Thread joy_thread;
 	InputDefault *input;
 	Joypad joypads[JOYPADS_MAX];
 	Vector<String> attached_devices;

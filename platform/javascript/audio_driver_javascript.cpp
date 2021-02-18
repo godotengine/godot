@@ -267,28 +267,19 @@ int AudioDriverJavaScript::WorkletNode::create(int p_buffer_size, int p_channels
 
 void AudioDriverJavaScript::WorkletNode::start(float *p_out_buf, int p_out_buf_size, float *p_in_buf, int p_in_buf_size) {
 	godot_audio_worklet_start(p_in_buf, p_in_buf_size, p_out_buf, p_out_buf_size, state);
-	mutex = Mutex::create();
-	thread = Thread::create(_audio_thread_func, this);
+	thread.start(_audio_thread_func, this);
 }
 
 void AudioDriverJavaScript::WorkletNode::lock() {
-	if (mutex) {
-		mutex->lock();
-	}
+	mutex.lock();
 }
 
 void AudioDriverJavaScript::WorkletNode::unlock() {
-	if (mutex) {
-		mutex->unlock();
-	}
+	mutex.unlock();
 }
 
 void AudioDriverJavaScript::WorkletNode::finish() {
 	quit = true; // Ask thread to quit.
-	Thread::wait_to_finish(thread);
-	memdelete(thread);
-	thread = nullptr;
-	memdelete(mutex);
-	mutex = nullptr;
+	thread.wait_to_finish();
 }
 #endif

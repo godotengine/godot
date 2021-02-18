@@ -42,9 +42,9 @@
 void EditorFileServer::_close_client(ClientData *cd) {
 
 	cd->connection->disconnect_from_host();
-	cd->efs->wait_mutex->lock();
-	cd->efs->to_wait.insert(cd->thread);
-	cd->efs->wait_mutex->unlock();
+	cd->efs->wait_mutex.lock();
+	cd->efs->to_wait.insert(&cd->thread);
+	cd->efs->wait_mutex.unlock();
 	while (cd->files.size()) {
 		memdelete(cd->files.front()->get());
 		cd->files.erase(cd->files.front());
@@ -291,20 +291,19 @@ void EditorFileServer::_thread_start(void *s) {
 				cd->connection = self->server->take_connection();
 				cd->efs = self;
 				cd->quit = false;
-				cd->thread = Thread::create(_subthread_start, cd);
+				cd->thread.start(_subthread_start, cd);
 			}
 		}
 
-		self->wait_mutex->lock();
+		self->wait_mutex.lock();
 		while (self->to_wait.size()) {
 			Thread *w = self->to_wait.front()->get();
 			self->to_wait.erase(w);
-			self->wait_mutex->unlock();
-			Thread::wait_to_finish(w);
-			memdelete(w);
-			self->wait_mutex->lock();
+			self->wait_mutex.unlock();
+			w->wait_to_finish();
+			self->wait_mutex.lock();
 		}
-		self->wait_mutex->unlock();
+		self->wait_mutex.unlock();
 
 		OS::get_singleton()->delay_usec(100000);
 	}
@@ -331,11 +330,10 @@ void EditorFileServer::stop() {
 EditorFileServer::EditorFileServer() {
 
 	server.instance();
-	wait_mutex = Mutex::create();
 	quit = false;
 	active = false;
 	cmd = CMD_NONE;
-	thread = Thread::create(_thread_start, this);
+	thread.start(_thread_start, this);
 
 	EDITOR_DEF("filesystem/file_server/port", 6010);
 	EDITOR_DEF("filesystem/file_server/password", "");
@@ -344,7 +342,5 @@ EditorFileServer::EditorFileServer() {
 EditorFileServer::~EditorFileServer() {
 
 	quit = true;
-	Thread::wait_to_finish(thread);
-	memdelete(thread);
-	memdelete(wait_mutex);
+	thread.wait_to_finish();
 }

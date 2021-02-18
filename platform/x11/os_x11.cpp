@@ -122,8 +122,6 @@ Error OS_X11::initialize(const VideoMode &p_desired, int p_video_driver, int p_a
 
 	XInitThreads();
 
-	events_mutex = Mutex::create();
-
 	/** XLIB INITIALIZATION **/
 	x11_display = XOpenDisplay(NULL);
 
@@ -626,7 +624,7 @@ Error OS_X11::initialize(const VideoMode &p_desired, int p_video_driver, int p_a
 		}
 	}
 
-	events_thread = Thread::create(_poll_events_thread, this);
+	events_thread.start(_poll_events_thread, this);
 
 	update_real_mouse_position();
 
@@ -817,9 +815,7 @@ String OS_X11::get_unique_id() const {
 
 void OS_X11::finalize() {
 	events_thread_done = true;
-	Thread::wait_to_finish(events_thread);
-	memdelete(events_thread);
-	events_thread = NULL;
+	events_thread.wait_to_finish();
 
 	if (main_loop)
 		memdelete(main_loop);
@@ -878,8 +874,6 @@ void OS_X11::finalize() {
 	XCloseDisplay(x11_display);
 	if (xmbstring)
 		memfree(xmbstring);
-
-	memdelete(events_mutex);
 
 	args.clear();
 }

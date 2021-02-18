@@ -3,7 +3,6 @@
 Import("env")
 
 iphone_lib = [
-    "semaphore_iphone.cpp",
     "godot_iphone.mm",
     "os_iphone.mm",
     "main.m",

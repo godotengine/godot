@@ -33,6 +33,7 @@
 
 #include "core/os/copymem.h"
 #include "core/os/memory.h"
+#include "core/os/mutex.h"
 #include "core/os/rw_lock.h"
 #include "core/pool_allocator.h"
 #include "core/safe_refcount.h"
@@ -49,7 +50,7 @@ struct MemoryPool {
 	struct Alloc {
 
 		SafeRefCount refcount;
-		uint32_t lock;
+		SafeNumeric<uint32_t> lock;
 		void *mem;
 		PoolAllocator::ID pool_id;
 		size_t size;
@@ -69,7 +70,7 @@ struct MemoryPool {
 	static Alloc *free_list;
 	static uint32_t alloc_count;
 	static uint32_t allocs_used;
-	static Mutex *alloc_mutex;
+	static Mutex alloc_mutex;
 	static size_t total_memory;
 	static size_t max_memory;
 
@@ -95,9 +96,9 @@ class PoolVector {
 
 		//must allocate something
 
-		MemoryPool::alloc_mutex->lock();
+		MemoryPool::alloc_mutex.lock();
 		if (MemoryPool::allocs_used == MemoryPool::alloc_count) {
-			MemoryPool::alloc_mutex->unlock();
+			MemoryPool::alloc_mutex.unlock();
 			ERR_FAIL_MSG("All memory pool allocations are in use, can't COW.");
 		}
 
@@ -113,7 +114,7 @@ class PoolVector {
 		alloc->size = old_alloc->size;
 		alloc->refcount.init();
 		alloc->pool_id = POOL_ALLOCATOR_INVALID_ID;
-		alloc->lock = 0;
+		alloc->lock.set(0);
 
 #ifdef DEBUG_ENABLED
 		MemoryPool::total_memory += alloc->size;
@@ -122,7 +123,7 @@ class PoolVector {
 		}
 #endif
 
-		MemoryPool::alloc_mutex->unlock();
+		MemoryPool::alloc_mutex.unlock();
 
 		if (MemoryPool::memory_pool) {
 
@@ -148,9 +149,9 @@ class PoolVector {
 			//this should never happen but..
 
 #ifdef DEBUG_ENABLED
-			MemoryPool::alloc_mutex->lock();
+			MemoryPool::alloc_mutex.lock();
 			MemoryPool::total_memory -= old_alloc->size;
-			MemoryPool::alloc_mutex->unlock();
+			MemoryPool::alloc_mutex.unlock();
 #endif
 
 			{
@@ -174,11 +175,11 @@ class PoolVector {
 				old_alloc->mem = NULL;
 				old_alloc->size = 0;
 
-				MemoryPool::alloc_mutex->lock();
+				MemoryPool::alloc_mutex.lock();
 				old_alloc->free_list = MemoryPool::free_list;
 				MemoryPool::free_list = old_alloc;
 				MemoryPool::allocs_used--;
-				MemoryPool::alloc_mutex->unlock();
+				MemoryPool::alloc_mutex.unlock();
 			}
 		}
 	}
@@ -227,9 +228,9 @@ class PoolVector {
 		}
 
 #ifdef DEBUG_ENABLED
-		MemoryPool::alloc_mutex->lock();
+		MemoryPool::alloc_mutex.lock();
 		MemoryPool::total_memory -= alloc->size;
-		MemoryPool::alloc_mutex->unlock();
+		MemoryPool::alloc_mutex.unlock();
 #endif
 
 		if (MemoryPool::memory_pool) {
@@ -242,11 +243,11 @@ class PoolVector {
 			alloc->mem = NULL;
 			alloc->size = 0;
 
-			MemoryPool::alloc_mutex->lock();
+			MemoryPool::alloc_mutex.lock();
 			alloc->free_list = MemoryPool::free_list;
 			MemoryPool::free_list = alloc;
 			MemoryPool::allocs_used--;
-			MemoryPool::alloc_mutex->unlock();
+			MemoryPool::alloc_mutex.unlock();
 		}
 
 		alloc = NULL;
@@ -263,7 +264,7 @@ public:
 		_FORCE_INLINE_ void _ref(MemoryPool::Alloc *p_alloc) {
 			alloc = p_alloc;
 			if (alloc) {
-				if (atomic_increment(&alloc->lock) == 1) {
+				if (alloc->lock.increment() == 1) {
 					if (MemoryPool::memory_pool) {
 						//lock it and get mem
 					}
@@ -276,7 +277,7 @@ public:
 		_FORCE_INLINE_ void _unref() {
 
 			if (alloc) {
-				if (atomic_decrement(&alloc->lock) == 0) {
+				if (alloc->lock.decrement() == 0) {
 					if (MemoryPool::memory_pool) {
 						//put mem back
 					}
@@ -452,7 +453,7 @@ public:
 		return rs;
 	}
 
-	bool is_locked() const { return alloc && alloc->lock > 0; }
+	bool is_locked() const { return alloc && alloc->lock.get() > 0; }
 
 	inline T operator[](int p_index) const;
 
@@ -523,9 +524,9 @@ Error PoolVector<T>::resize(int p_size) {
 			return OK; //nothing to do here
 
 		//must allocate something
-		MemoryPool::alloc_mutex->lock();
+		MemoryPool::alloc_mutex.lock();
 		if (MemoryPool::allocs_used == MemoryPool::alloc_count) {
-			MemoryPool::alloc_mutex->unlock();
+			MemoryPool::alloc_mutex.unlock();
 			ERR_FAIL_V_MSG(ERR_OUT_OF_MEMORY, "All memory pool allocations are in use.");
 		}
 
@@ -539,11 +540,11 @@ Error PoolVector<T>::resize(int p_size) {
 		alloc->size = 0;
 		alloc->refcount.init();
 		alloc->pool_id = POOL_ALLOCATOR_INVALID_ID;
-		MemoryPool::alloc_mutex->unlock();
+		MemoryPool::alloc_mutex.unlock();
 
 	} else {
 
-		ERR_FAIL_COND_V_MSG(alloc->lock > 0, ERR_LOCKED, "Can't resize PoolVector if locked."); //can't resize if locked!
+		ERR_FAIL_COND_V_MSG(alloc->lock.get() > 0, ERR_LOCKED, "Can't resize PoolVector if locked."); //can't resize if locked!
 	}
 
 	size_t new_size = sizeof(T) * p_size;
@@ -559,13 +560,13 @@ Error PoolVector<T>::resize(int p_size) {
 	_copy_on_write(); // make it unique
 
 #ifdef DEBUG_ENABLED
-	MemoryPool::alloc_mutex->lock();
+	MemoryPool::alloc_mutex.lock();
 	MemoryPool::total_memory -= alloc->size;
 	MemoryPool::total_memory += new_size;
 	if (MemoryPool::total_memory > MemoryPool::max_memory) {
 		MemoryPool::max_memory = MemoryPool::total_memory;
 	}
-	MemoryPool::alloc_mutex->unlock();
+	MemoryPool::alloc_mutex.unlock();
 #endif
 
 	int cur_elements = alloc->size / sizeof(T);
@@ -615,11 +616,11 @@ Error PoolVector<T>::resize(int p_size) {
 				alloc->mem = NULL;
 				alloc->size = 0;
 
-				MemoryPool::alloc_mutex->lock();
+				MemoryPool::alloc_mutex.lock();
 				alloc->free_list = MemoryPool::free_list;
 				MemoryPool::free_list = alloc;
 				MemoryPool::allocs_used--;
-				MemoryPool::alloc_mutex->unlock();
+				MemoryPool::alloc_mutex.unlock();
 
 			} else {
 				alloc->mem = memrealloc(alloc->mem, new_size);

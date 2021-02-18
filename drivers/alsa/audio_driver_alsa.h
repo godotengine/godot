@@ -41,8 +41,8 @@
 
 class AudioDriverALSA : public AudioDriver {
 
-	Thread *thread;
-	Mutex *mutex;
+	Thread thread;
+	Mutex mutex;
 
 	snd_pcm_t *pcm_handle;
 

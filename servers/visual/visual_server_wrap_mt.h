@@ -33,6 +33,7 @@
 
 #include "core/command_queue_mt.h"
 #include "core/os/thread.h"
+#include "core/safe_refcount.h"
 #include "servers/visual_server.h"
 
 class VisualServerWrapMT : public VisualServer {
@@ -46,18 +47,18 @@ class VisualServerWrapMT : public VisualServer {
 	void thread_loop();
 
 	Thread::ID server_thread;
-	volatile bool exit;
-	Thread *thread;
-	volatile bool draw_thread_up;
+	SafeFlag exit;
+	Thread thread;
+	SafeFlag draw_thread_up;
 	bool create_thread;
 
-	uint64_t draw_pending;
+	SafeNumeric<uint64_t> draw_pending;
 	void thread_draw(bool p_swap_buffers, double frame_step);
 	void thread_flush();
 
 	void thread_exit();
 
-	Mutex *alloc_mutex;
+	Mutex alloc_mutex;
 
 	int pool_max_size;
 

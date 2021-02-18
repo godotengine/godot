@@ -148,27 +148,16 @@ Error MIDIDriverALSAMidi::open() {
 	}
 	snd_device_name_free_hint(hints);
 
-	mutex = Mutex::create();
 	exit_thread = false;
-	thread = Thread::create(MIDIDriverALSAMidi::thread_func, this);
+	thread.start(MIDIDriverALSAMidi::thread_func, this);
 
 	return OK;
 }
 
 void MIDIDriverALSAMidi::close() {
 
-	if (thread) {
-		exit_thread = true;
-		Thread::wait_to_finish(thread);
-
-		memdelete(thread);
-		thread = NULL;
-	}
-
-	if (mutex) {
-		memdelete(mutex);
-		mutex = NULL;
-	}
+	exit_thread = true;
+	thread.wait_to_finish();
 
 	for (int i = 0; i < connected_inputs.size(); i++) {
 		snd_rawmidi_t *midi_in = connected_inputs[i];
@@ -179,14 +168,12 @@ void MIDIDriverALSAMidi::close() {
 
 void MIDIDriverALSAMidi::lock() const {
 
-	if (mutex)
-		mutex->lock();
+	mutex.lock();
 }
 
 void MIDIDriverALSAMidi::unlock() const {
 
-	if (mutex)
-		mutex->unlock();
+	mutex.unlock();
 }
 
 PoolStringArray MIDIDriverALSAMidi::get_connected_inputs() {
@@ -209,9 +196,6 @@ PoolStringArray MIDIDriverALSAMidi::get_connected_inputs() {
 }
 
 MIDIDriverALSAMidi::MIDIDriverALSAMidi() {
-
-	mutex = NULL;
-	thread = NULL;
 
 	exit_thread = false;
 }

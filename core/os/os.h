@@ -41,8 +41,6 @@
 
 #include <stdarg.h>
 
-class Mutex;
-
 class OS {
 
 	static OS *singleton;

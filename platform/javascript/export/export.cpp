@@ -212,8 +212,8 @@ class EditorExportPlatformJavaScript : public EditorExportPlatform {
 
 	Ref<EditorHTTPServer> server;
 	bool server_quit = false;
-	Mutex *server_lock = NULL;
-	Thread *server_thread = NULL;
+	Mutex server_lock;
+	Thread server_thread;
 
 	enum ExportMode {
 		EXPORT_MODE_NORMAL = 0,
@@ -610,9 +610,9 @@ bool EditorExportPlatformJavaScript::poll_export() {
 	menu_options = preset.is_valid();
 	if (server->is_listening()) {
 		if (menu_options == 0) {
-			server_lock->lock();
+			server_lock.lock();
 			server->stop();
-			server_lock->unlock();
+			server_lock.unlock();
 		} else {
 			menu_options += 1;
 		}
@@ -632,9 +632,9 @@ int EditorExportPlatformJavaScript::get_options_count() const {
 Error EditorExportPlatformJavaScript::run(const Ref<EditorExportPreset> &p_preset, int p_option, int p_debug_flags) {
 
 	if (p_option == 1) {
-		server_lock->lock();
+		server_lock.lock();
 		server->stop();
-		server_lock->unlock();
+		server_lock.unlock();
 		return OK;
 	}
 
@@ -666,10 +666,10 @@ Error EditorExportPlatformJavaScript::run(const Ref<EditorExportPreset> &p_prese
 	ERR_FAIL_COND_V_MSG(!bind_ip.is_valid(), ERR_INVALID_PARAMETER, "Invalid editor setting 'export/web/http_host': '" + bind_host + "'. Try using '127.0.0.1'.");
 
 	// Restart server.
-	server_lock->lock();
+	server_lock.lock();
 	server->stop();
 	err = server->listen(bind_port, bind_ip);
-	server_lock->unlock();
+	server_lock.unlock();
 	ERR_FAIL_COND_V_MSG(err != OK, err, "Unable to start HTTP server.");
 
 	OS::get_singleton()->shell_open(String("http://" + bind_host + ":" + itos(bind_port) + "/tmp_js_export.html"));
@@ -687,17 +687,16 @@ void EditorExportPlatformJavaScript::_server_thread_poll(void *data) {
 	EditorExportPlatformJavaScript *ej = (EditorExportPlatformJavaScript *)data;
 	while (!ej->server_quit) {
 		OS::get_singleton()->delay_usec(1000);
-		ej->server_lock->lock();
+		ej->server_lock.lock();
 		ej->server->poll();
-		ej->server_lock->unlock();
+		ej->server_lock.unlock();
 	}
 }
 
 EditorExportPlatformJavaScript::EditorExportPlatformJavaScript() {
 
 	server.instance();
-	server_lock = Mutex::create();
-	server_thread = Thread::create(_server_thread_poll, this);
+	server_thread.start(_server_thread_poll, this);
 
 	Ref<Image> img = memnew(Image(_javascript_logo));
 	logo.instance();
@@ -717,9 +716,7 @@ EditorExportPlatformJavaScript::EditorExportPlatformJavaScript() {
 EditorExportPlatformJavaScript::~EditorExportPlatformJavaScript() {
 	server->stop();
 	server_quit = true;
-	Thread::wait_to_finish(server_thread);
-	memdelete(server_lock);
-	memdelete(server_thread);
+	server_thread.wait_to_finish();
 }
 
 void register_javascript_exporter() {

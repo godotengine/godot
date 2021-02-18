@@ -2689,12 +2689,14 @@ void _Marshalls::_bind_methods() {
 
 Error _Semaphore::wait() {
 
-	return semaphore->wait();
+	semaphore.wait();
+	return OK; // Can't fail anymore; keep compat
 }
 
 Error _Semaphore::post() {
 
-	return semaphore->post();
+	semaphore.post();
+	return OK; // Can't fail anymore; keep compat
 }
 
 void _Semaphore::_bind_methods() {
@@ -2703,31 +2705,21 @@ void _Semaphore::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("post"), &_Semaphore::post);
 }
 
-_Semaphore::_Semaphore() {
-
-	semaphore = Semaphore::create();
-}
-
-_Semaphore::~_Semaphore() {
-
-	memdelete(semaphore);
-}
-
 ///////////////
 
 void _Mutex::lock() {
 
-	mutex->lock();
+	mutex.lock();
 }
 
 Error _Mutex::try_lock() {
 
-	return mutex->try_lock();
+	return mutex.try_lock();
 }
 
 void _Mutex::unlock() {
 
-	mutex->unlock();
+	mutex.unlock();
 }
 
 void _Mutex::_bind_methods() {
@@ -2735,16 +2727,6 @@ void _Mutex::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("lock"), &_Mutex::lock);
 	ClassDB::bind_method(D_METHOD("try_lock"), &_Mutex::try_lock);
 	ClassDB::bind_method(D_METHOD("unlock"), &_Mutex::unlock);
-}
-
-_Mutex::_Mutex() {
-
-	mutex = Mutex::create();
-}
-
-_Mutex::~_Mutex() {
-
-	memdelete(mutex);
 }
 
 ///////////////
@@ -2790,7 +2772,7 @@ void _Thread::_start_func(void *ud) {
 
 Error _Thread::start(Object *p_instance, const StringName &p_method, const Variant &p_userdata, Priority p_priority) {
 
-	ERR_FAIL_COND_V_MSG(active, ERR_ALREADY_IN_USE, "Thread already started.");
+	ERR_FAIL_COND_V_MSG(active.is_set(), ERR_ALREADY_IN_USE, "Thread already started.");
 	ERR_FAIL_COND_V(!p_instance, ERR_INVALID_PARAMETER);
 	ERR_FAIL_COND_V(p_method == StringName(), ERR_INVALID_PARAMETER);
 	ERR_FAIL_INDEX_V(p_priority, PRIORITY_MAX, ERR_INVALID_PARAMETER);
@@ -2799,49 +2781,35 @@ Error _Thread::start(Object *p_instance, const StringName &p_method, const Varia
 	target_method = p_method;
 	target_instance = p_instance;
 	userdata = p_userdata;
-	active = true;
+	active.set();
 
 	Ref<_Thread> *ud = memnew(Ref<_Thread>(this));
 
 	Thread::Settings s;
 	s.priority = (Thread::Priority)p_priority;
-	thread = Thread::create(_start_func, ud, s);
-	if (!thread) {
-		active = false;
-		target_method = StringName();
-		target_instance = NULL;
-		userdata = Variant();
-		return ERR_CANT_CREATE;
-	}
+	thread.start(_start_func, ud, s);
 
 	return OK;
 }
 
 String _Thread::get_id() const {
 
-	if (!thread)
-		return String();
-
-	return itos(thread->get_id());
+	return itos(thread.get_id());
 }
 
 bool _Thread::is_active() const {
 
-	return active;
+	return active.is_set();
 }
 Variant _Thread::wait_to_finish() {
 
-	ERR_FAIL_COND_V_MSG(!thread, Variant(), "Thread must exist to wait for its completion.");
-	ERR_FAIL_COND_V_MSG(!active, Variant(), "Thread must be active to wait for its completion.");
-	Thread::wait_to_finish(thread);
+	ERR_FAIL_COND_V_MSG(!active.is_set(), Variant(), "Thread must be active to wait for its completion.");
+	thread.wait_to_finish();
 	Variant r = ret;
-	active = false;
 	target_method = StringName();
 	target_instance = NULL;
 	userdata = Variant();
-	if (thread)
-		memdelete(thread);
-	thread = NULL;
+	active.clear();
 
 	return r;
 }
@@ -2859,14 +2827,12 @@ void _Thread::_bind_methods() {
 }
 _Thread::_Thread() {
 
-	active = false;
-	thread = NULL;
 	target_instance = NULL;
 }
 
 _Thread::~_Thread() {
 
-	ERR_FAIL_COND_MSG(active, "Reference to a Thread object was lost while the thread is still running...");
+	ERR_FAIL_COND_MSG(active.is_set(), "Reference to a Thread object was lost while the thread is still running...");
 }
 
 /////////////////////////////////////

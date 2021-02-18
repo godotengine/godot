@@ -32,14 +32,10 @@
 
 #ifdef UNIX_ENABLED
 
-#include "core/os/thread_dummy.h"
 #include "core/project_settings.h"
 #include "drivers/unix/dir_access_unix.h"
 #include "drivers/unix/file_access_unix.h"
-#include "drivers/unix/mutex_posix.h"
 #include "drivers/unix/net_socket_posix.h"
-#include "drivers/unix/rw_lock_posix.h"
-#include "drivers/unix/semaphore_posix.h"
 #include "drivers/unix/thread_posix.h"
 #include "servers/visual_server.h"
 
@@ -64,6 +60,7 @@
 #include <string.h>
 #include <sys/time.h>
 #include <sys/wait.h>
+#include <time.h>
 #include <unistd.h>
 
 /// Clock Setup function (used by get_ticks_usec)
@@ -120,19 +117,10 @@ int OS_Unix::unix_initialize_audio(int p_audio_driver) {
 
 void OS_Unix::initialize_core() {
 
-#ifdef NO_THREADS
-	ThreadDummy::make_default();
-	SemaphoreDummy::make_default();
-	MutexDummy::make_default();
-	RWLockDummy::make_default();
-#else
-	ThreadPosix::make_default();
-#if !defined(OSX_ENABLED) && !defined(IPHONE_ENABLED)
-	SemaphorePosix::make_default();
+#if !defined(NO_THREADS)
+	init_thread_posix();
 #endif
-	MutexPosix::make_default();
-	RWLockPosix::make_default();
-#endif
+
 	FileAccess::make_default<FileAccessUnix>(FileAccess::ACCESS_RESOURCES);
 	FileAccess::make_default<FileAccessUnix>(FileAccess::ACCESS_USERDATA);
 	FileAccess::make_default<FileAccessUnix>(FileAccess::ACCESS_FILESYSTEM);
@@ -310,13 +298,9 @@ Error OS_Unix::execute(const String &p_path, const List<String> &p_arguments, bo
 
 		while (fgets(buf, 65535, f)) {
 
-			if (p_pipe_mutex) {
-				p_pipe_mutex->lock();
-			}
+			p_pipe_mutex->lock();
 			(*r_pipe) += String::utf8(buf);
-			if (p_pipe_mutex) {
-				p_pipe_mutex->unlock();
-			}
+			p_pipe_mutex->unlock();
 		}
 		int rv = pclose(f);
 		if (r_exitcode)

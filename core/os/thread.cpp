@@ -30,45 +30,93 @@
 
 #include "thread.h"
 
-Thread *(*Thread::create_func)(ThreadCreateCallback, void *, const Settings &) = NULL;
-Thread::ID (*Thread::get_thread_id_func)() = NULL;
-void (*Thread::wait_to_finish_func)(Thread *) = NULL;
-Error (*Thread::set_name_func)(const String &) = NULL;
+#include "core/script_language.h"
 
-Thread::ID Thread::_main_thread_id = 0;
+#if !defined(NO_THREADS)
 
-Thread::ID Thread::get_caller_id() {
+#include "core/safe_refcount.h"
 
-	if (get_thread_id_func)
-		return get_thread_id_func();
-	return 0;
+Error (*Thread::set_name_func)(const String &) = nullptr;
+void (*Thread::set_priority_func)(Thread::Priority) = nullptr;
+void (*Thread::init_func)() = nullptr;
+void (*Thread::term_func)() = nullptr;
+
+Thread::ID Thread::main_thread_id = 1;
+SafeNumeric<Thread::ID> Thread::last_thread_id{ 1 };
+thread_local Thread::ID Thread::caller_id = 1;
+
+void Thread::_set_platform_funcs(
+		Error (*p_set_name_func)(const String &),
+		void (*p_set_priority_func)(Thread::Priority),
+		void (*p_init_func)(),
+		void (*p_term_func)()) {
+	Thread::set_name_func = p_set_name_func;
+	Thread::set_priority_func = p_set_priority_func;
+	Thread::init_func = p_init_func;
+	Thread::term_func = p_term_func;
 }
 
-Thread *Thread::create(ThreadCreateCallback p_callback, void *p_user, const Settings &p_settings) {
-
-	if (create_func) {
-
-		return create_func(p_callback, p_user, p_settings);
+void Thread::callback(Thread *p_self, const Settings &p_settings, Callback p_callback, void *p_userdata) {
+	Thread::caller_id = p_self->id;
+	if (set_priority_func) {
+		set_priority_func(p_settings.priority);
 	}
-	return NULL;
+	if (init_func) {
+		init_func();
+	}
+	ScriptServer::thread_enter(); //scripts may need to attach a stack
+	p_callback(p_userdata);
+	ScriptServer::thread_exit();
+	if (term_func) {
+		term_func();
+	}
 }
 
-void Thread::wait_to_finish(Thread *p_thread) {
+void Thread::start(Thread::Callback p_callback, void *p_user, const Settings &p_settings) {
+	if (id != 0) {
+#ifdef DEBUG_ENABLED
+		WARN_PRINT("A Thread object has been re-started without wait_to_finish() having been called on it. Please do so to ensure correct cleanup of the thread.");
+#endif
+		thread.detach();
+		std::thread empty_thread;
+		thread.swap(empty_thread);
+	}
+	id = last_thread_id.increment();
+	std::thread new_thread(&Thread::callback, this, p_settings, p_callback, p_user);
+	thread.swap(new_thread);
+}
 
-	if (wait_to_finish_func)
-		wait_to_finish_func(p_thread);
+bool Thread::is_started() const {
+	return id != 0;
+}
+
+void Thread::wait_to_finish() {
+	if (id != 0) {
+		thread.join();
+		std::thread empty_thread;
+		thread.swap(empty_thread);
+		id = 0;
+	}
 }
 
 Error Thread::set_name(const String &p_name) {
-
-	if (set_name_func)
+	if (set_name_func) {
 		return set_name_func(p_name);
+	}
 
 	return ERR_UNAVAILABLE;
-};
-
-Thread::Thread() {
 }
+
+Thread::Thread() :
+		id(0) {}
 
 Thread::~Thread() {
+	if (id != 0) {
+#ifdef DEBUG_ENABLED
+		WARN_PRINT("A Thread object has been destroyed without wait_to_finish() having been called on it. Please do so to ensure correct cleanup of the thread.");
+#endif
+		thread.detach();
+	}
 }
+
+#endif

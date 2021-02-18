@@ -42,14 +42,14 @@
 
 void FileAccessNetworkClient::lock_mutex() {
 
-	mutex->lock();
+	mutex.lock();
 	lockcount++;
 }
 
 void FileAccessNetworkClient::unlock_mutex() {
 
 	lockcount--;
-	mutex->unlock();
+	mutex.unlock();
 }
 
 void FileAccessNetworkClient::put_32(int p_32) {
@@ -88,16 +88,14 @@ void FileAccessNetworkClient::_thread_func() {
 	while (!quit) {
 
 		DEBUG_PRINT("SEM WAIT - " + itos(sem->get()));
-		Error err = sem->wait();
-		if (err != OK)
-			ERR_PRINT("sem->wait() failed");
+		sem.wait();
 		DEBUG_TIME("sem_unlock");
 		//DEBUG_PRINT("semwait returned "+itos(werr));
 		DEBUG_PRINT("MUTEX LOCK " + itos(lockcount));
 		lock_mutex();
 		DEBUG_PRINT("MUTEX PASS");
 
-		blockrequest_mutex->lock();
+		blockrequest_mutex.lock();
 		while (block_requests.size()) {
 			put_32(block_requests.front()->get().id);
 			put_32(FileAccessNetwork::COMMAND_READ_BLOCK);
@@ -105,7 +103,7 @@ void FileAccessNetworkClient::_thread_func() {
 			put_32(block_requests.front()->get().size);
 			block_requests.pop_front();
 		}
-		blockrequest_mutex->unlock();
+		blockrequest_mutex.unlock();
 
 		DEBUG_PRINT("THREAD ITER");
 
@@ -140,7 +138,7 @@ void FileAccessNetworkClient::_thread_func() {
 					fa->_respond(len, Error(status));
 				}
 
-				fa->sem->post();
+				fa->sem.post();
 
 			} break;
 			case FileAccessNetwork::RESPONSE_DATA: {
@@ -160,14 +158,14 @@ void FileAccessNetworkClient::_thread_func() {
 
 				int status = get_32();
 				fa->exists_modtime = status != 0;
-				fa->sem->post();
+				fa->sem.post();
 
 			} break;
 			case FileAccessNetwork::RESPONSE_GET_MODTIME: {
 
 				uint64_t status = get_64();
 				fa->exists_modtime = status;
-				fa->sem->post();
+				fa->sem.post();
 
 			} break;
 		}
@@ -215,7 +213,7 @@ Error FileAccessNetworkClient::connect(const String &p_host, int p_port, const S
 		return ERR_INVALID_PARAMETER;
 	}
 
-	thread = Thread::create(_thread_func, this);
+	thread.start(_thread_func, this);
 
 	return OK;
 }
@@ -224,29 +222,20 @@ FileAccessNetworkClient *FileAccessNetworkClient::singleton = NULL;
 
 FileAccessNetworkClient::FileAccessNetworkClient() {
 
-	thread = NULL;
-	mutex = Mutex::create();
-	blockrequest_mutex = Mutex::create();
 	quit = false;
 	singleton = this;
 	last_id = 0;
 	client.instance();
-	sem = Semaphore::create();
 	lockcount = 0;
 }
 
 FileAccessNetworkClient::~FileAccessNetworkClient() {
 
-	if (thread) {
+	if (thread.is_started()) {
 		quit = true;
-		sem->post();
-		Thread::wait_to_finish(thread);
-		memdelete(thread);
+		sem.post();
+		thread.wait_to_finish();
 	}
-
-	memdelete(blockrequest_mutex);
-	memdelete(mutex);
-	memdelete(sem);
 }
 
 void FileAccessNetwork::_set_block(int p_offset, const Vector<uint8_t> &p_block) {
@@ -259,14 +248,14 @@ void FileAccessNetwork::_set_block(int p_offset, const Vector<uint8_t> &p_block)
 		ERR_FAIL_COND((p_block.size() != (int)(total_size % page_size)));
 	}
 
-	buffer_mutex->lock();
+	buffer_mutex.lock();
 	pages.write[page].buffer = p_block;
 	pages.write[page].queued = false;
-	buffer_mutex->unlock();
+	buffer_mutex.unlock();
 
 	if (waiting_on_page == page) {
 		waiting_on_page = -1;
-		page_sem->post();
+		page_sem.post();
 	}
 }
 
@@ -308,9 +297,9 @@ Error FileAccessNetwork::_open(const String &p_path, int p_mode_flags) {
 	nc->unlock_mutex();
 	DEBUG_PRINT("OPEN POST");
 	DEBUG_TIME("open_post");
-	nc->sem->post(); //awaiting answer
+	nc->sem.post(); //awaiting answer
 	DEBUG_PRINT("WAIT...");
-	sem->wait();
+	sem.wait();
 	DEBUG_TIME("open_end");
 	DEBUG_PRINT("WAIT ENDED...");
 
@@ -385,16 +374,16 @@ void FileAccessNetwork::_queue_page(int p_page) const {
 
 		FileAccessNetworkClient *nc = FileAccessNetworkClient::singleton;
 
-		nc->blockrequest_mutex->lock();
+		nc->blockrequest_mutex.lock();
 		FileAccessNetworkClient::BlockRequest br;
 		br.id = id;
 		br.offset = size_t(p_page) * page_size;
 		br.size = page_size;
 		nc->block_requests.push_back(br);
 		pages.write[p_page].queued = true;
-		nc->blockrequest_mutex->unlock();
+		nc->blockrequest_mutex.unlock();
 		DEBUG_PRINT("QUEUE PAGE POST");
-		nc->sem->post();
+		nc->sem.post();
 		DEBUG_PRINT("queued " + itos(p_page));
 	}
 }
@@ -418,16 +407,16 @@ int FileAccessNetwork::get_buffer(uint8_t *p_dst, int p_length) const {
 		int page = pos / page_size;
 
 		if (page != last_page) {
-			buffer_mutex->lock();
+			buffer_mutex.lock();
 			if (pages[page].buffer.empty()) {
 				waiting_on_page = page;
 				for (int j = 0; j < read_ahead; j++) {
 
 					_queue_page(page + j);
 				}
-				buffer_mutex->unlock();
+				buffer_mutex.unlock();
 				DEBUG_PRINT("wait");
-				page_sem->wait();
+				page_sem.wait();
 				DEBUG_PRINT("done");
 			} else {
 
@@ -436,7 +425,7 @@ int FileAccessNetwork::get_buffer(uint8_t *p_dst, int p_length) const {
 					_queue_page(page + j);
 				}
 				//queue pages
-				buffer_mutex->unlock();
+				buffer_mutex.unlock();
 			}
 
 			buff = pages.write[page].buffer.ptrw();
@@ -476,8 +465,8 @@ bool FileAccessNetwork::file_exists(const String &p_path) {
 	nc->client->put_data((const uint8_t *)cs.ptr(), cs.length());
 	nc->unlock_mutex();
 	DEBUG_PRINT("FILE EXISTS POST");
-	nc->sem->post();
-	sem->wait();
+	nc->sem.post();
+	sem.wait();
 
 	return exists_modtime != 0;
 }
@@ -493,8 +482,8 @@ uint64_t FileAccessNetwork::_get_modified_time(const String &p_file) {
 	nc->client->put_data((const uint8_t *)cs.ptr(), cs.length());
 	nc->unlock_mutex();
 	DEBUG_PRINT("MODTIME POST");
-	nc->sem->post();
-	sem->wait();
+	nc->sem.post();
+	sem.wait();
 
 	return exists_modtime;
 }
@@ -522,9 +511,6 @@ FileAccessNetwork::FileAccessNetwork() {
 	eof_flag = false;
 	opened = false;
 	pos = 0;
-	sem = Semaphore::create();
-	page_sem = Semaphore::create();
-	buffer_mutex = Mutex::create();
 	FileAccessNetworkClient *nc = FileAccessNetworkClient::singleton;
 	nc->lock_mutex();
 	id = nc->last_id++;
@@ -540,9 +526,6 @@ FileAccessNetwork::FileAccessNetwork() {
 FileAccessNetwork::~FileAccessNetwork() {
 
 	close();
-	memdelete(sem);
-	memdelete(page_sem);
-	memdelete(buffer_mutex);
 
 	FileAccessNetworkClient *nc = FileAccessNetworkClient::singleton;
 	nc->lock_mutex();

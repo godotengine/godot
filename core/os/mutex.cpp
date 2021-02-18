@@ -30,31 +30,19 @@
 
 #include "mutex.h"
 
-#include "core/error_macros.h"
-
-#include <stddef.h>
-
-Mutex *(*Mutex::create_func)(bool) = 0;
-
-Mutex *Mutex::create(bool p_recursive) {
-
-	ERR_FAIL_COND_V(!create_func, 0);
-
-	return create_func(p_recursive);
-}
-
-Mutex::~Mutex() {
-}
-
-Mutex *_global_mutex = NULL;
+static Mutex _global_mutex;
 
 void _global_lock() {
-
-	if (_global_mutex)
-		_global_mutex->lock();
+	_global_mutex.lock();
 }
+
 void _global_unlock() {
-
-	if (_global_mutex)
-		_global_mutex->unlock();
+	_global_mutex.unlock();
 }
+
+#ifndef NO_THREADS
+
+template class MutexImpl<std::recursive_mutex>;
+template class MutexImpl<std::mutex>;
+
+#endif

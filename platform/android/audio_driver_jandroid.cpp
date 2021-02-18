@@ -48,7 +48,7 @@ int AudioDriverAndroid::mix_rate = 44100;
 bool AudioDriverAndroid::quit = false;
 jobject AudioDriverAndroid::audioBuffer = NULL;
 void *AudioDriverAndroid::audioBufferPinned = NULL;
-Mutex *AudioDriverAndroid::mutex = NULL;
+Mutex AudioDriverAndroid::mutex;
 int32_t *AudioDriverAndroid::audioBuffer32 = NULL;
 
 const char *AudioDriverAndroid::get_name() const {
@@ -58,7 +58,6 @@ const char *AudioDriverAndroid::get_name() const {
 
 Error AudioDriverAndroid::init() {
 
-	mutex = Mutex::create();
 	/*
 	// TODO: pass in/return a (Java) device ID, also whether we're opening for input or output
 	   this->spec.samples = Android_JNI_OpenAudioDevice(this->spec.freq, this->spec.format == AUDIO_U8 ? 0 : 1, this->spec.channels, this->spec.samples);
@@ -75,7 +74,7 @@ Error AudioDriverAndroid::init() {
 
 	//        __android_log_print(ANDROID_LOG_VERBOSE, "SDL", "SDL audio: opening device");
 
-	JNIEnv *env = ThreadAndroid::get_env();
+	JNIEnv *env = get_jni_env();
 	int mix_rate = GLOBAL_GET("audio/mix_rate");
 
 	int latency = GLOBAL_GET("audio/output_latency");
@@ -102,7 +101,7 @@ void AudioDriverAndroid::start() {
 
 void AudioDriverAndroid::setup(jobject p_io) {
 
-	JNIEnv *env = ThreadAndroid::get_env();
+	JNIEnv *env = get_jni_env();
 	io = p_io;
 
 	jclass c = env->GetObjectClass(io);
@@ -133,7 +132,7 @@ void AudioDriverAndroid::thread_func(JNIEnv *env) {
 		int16_t *ptr = (int16_t *)audioBufferPinned;
 		int fc = audioBufferFrames;
 
-		if (!s_ad->active || mutex->try_lock() != OK) {
+		if (!s_ad->active || mutex.try_lock() != OK) {
 
 			for (int i = 0; i < fc; i++) {
 				ptr[i] = 0;
@@ -143,7 +142,7 @@ void AudioDriverAndroid::thread_func(JNIEnv *env) {
 
 			s_ad->audio_server_process(fc / 2, audioBuffer32);
 
-			mutex->unlock();
+			mutex.unlock();
 
 			for (int i = 0; i < fc; i++) {
 
@@ -167,19 +166,17 @@ AudioDriver::SpeakerMode AudioDriverAndroid::get_speaker_mode() const {
 
 void AudioDriverAndroid::lock() {
 
-	if (mutex)
-		mutex->lock();
+	mutex.lock();
 }
 
 void AudioDriverAndroid::unlock() {
 
-	if (mutex)
-		mutex->unlock();
+	mutex.unlock();
 }
 
 void AudioDriverAndroid::finish() {
 
-	JNIEnv *env = ThreadAndroid::get_env();
+	JNIEnv *env = get_jni_env();
 	env->CallVoidMethod(io, _quit);
 
 	if (audioBuffer) {
@@ -193,7 +190,7 @@ void AudioDriverAndroid::finish() {
 
 void AudioDriverAndroid::set_pause(bool p_pause) {
 
-	JNIEnv *env = ThreadAndroid::get_env();
+	JNIEnv *env = get_jni_env();
 	env->CallVoidMethod(io, _pause, p_pause);
 }
 

@@ -48,7 +48,7 @@ extern "C" {
 
 JNIEnv *GDAPI godot_android_get_env() {
 #ifdef __ANDROID__
-	return ThreadAndroid::get_env();
+	return get_jni_env();
 #else
 	return NULL;
 #endif

@@ -286,7 +286,7 @@ public:
 
 	SelfList<DynamicFont> font_list;
 
-	static Mutex *dynamic_font_mutex;
+	static Mutex dynamic_font_mutex;
 	static SelfList<DynamicFont>::List *dynamic_fonts;
 
 	static void initialize_dynamic_fonts();
