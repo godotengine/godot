@@ -38,6 +38,8 @@
 #include "scene/gui/control.h"
 #include "scene/gui/tab_container.h"
 
+TileSetEditor *TileSetEditor::singleton = nullptr;
+
 void TileSetEditor::drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from) {
 	ERR_FAIL_COND(!tile_set.is_valid());
 
@@ -115,14 +117,19 @@ void TileSetEditor::_update_atlas_sources_list(int force_selected_id) {
 	ERR_FAIL_COND(!tile_set.is_valid());
 
 	// Get the previously selected id.
+	int old_selected = -1;
+	if (sources_list->get_current() >= 0) {
+		int source_id = sources_list->get_item_metadata(sources_list->get_current());
+		if (tile_set->has_source(source_id)) {
+			old_selected = source_id;
+		}
+	}
+
 	int to_select = -1;
 	if (force_selected_id >= 0) {
 		to_select = force_selected_id;
-	} else if (sources_list->get_current() >= 0) {
-		int source_id = sources_list->get_item_metadata(sources_list->get_current());
-		if (tile_set->has_source(source_id)) {
-			to_select = source_id;
-		}
+	} else if (old_selected >= 0) {
+		to_select = old_selected;
 	}
 
 	// Clear the list.
@@ -153,7 +160,9 @@ void TileSetEditor::_update_atlas_sources_list(int force_selected_id) {
 		for (int i = 0; i < sources_list->get_item_count(); i++) {
 			if ((int)sources_list->get_item_metadata(i) == to_select) {
 				sources_list->set_current(i);
-				sources_list->emit_signal("item_selected", sources_list->get_current());
+				if (old_selected != to_select) {
+					sources_list->emit_signal("item_selected", sources_list->get_current());
+				}
 				break;
 			}
 		}
@@ -162,7 +171,9 @@ void TileSetEditor::_update_atlas_sources_list(int force_selected_id) {
 	// If nothing is selected, select the first entry.
 	if (sources_list->get_current() < 0 && sources_list->get_item_count() > 0) {
 		sources_list->set_current(0);
-		sources_list->emit_signal("item_selected", sources_list->get_current());
+		if (old_selected != int(sources_list->get_item_metadata(0))) {
+			sources_list->emit_signal("item_selected", sources_list->get_current());
+		}
 	}
 
 	// If there is no source left, hide all editors and show the label.
@@ -178,17 +189,20 @@ void TileSetEditor::_source_selected(int p_source_index) {
 	// Update the selected source.
 	sources_delete_button->set_disabled(p_source_index < 0);
 
-	no_source_selected_label->show();
-	tile_set_atlas_source_editor->hide();
-
 	if (p_source_index >= 0) {
 		int source_id = sources_list->get_item_metadata(p_source_index);
 		TileSetAtlasSource *atlas_source = Object::cast_to<TileSetAtlasSource>(*tile_set->get_source(source_id));
 		if (atlas_source) {
 			tile_set_atlas_source_editor->edit(*tile_set, atlas_source, source_id);
-			tile_set_atlas_source_editor->show();
 			no_source_selected_label->hide();
+			tile_set_atlas_source_editor->show();
+		} else {
+			no_source_selected_label->show();
+			tile_set_atlas_source_editor->hide();
 		}
+	} else {
+		no_source_selected_label->show();
+		tile_set_atlas_source_editor->hide();
 	}
 }
 
@@ -278,6 +292,8 @@ void TileSetEditor::edit(Ref<TileSet> p_tile_set) {
 }
 
 TileSetEditor::TileSetEditor() {
+	singleton = this;
+
 	set_process_internal(true);
 
 	// Tab container

@@ -39,6 +39,8 @@
 class TileSetEditor : public VBoxContainer {
 	GDCLASS(TileSetEditor, VBoxContainer);
 
+	static TileSetEditor *singleton;
+
 private:
 	Ref<TileSet> tile_set;
 	bool tile_set_changed_needs_update = false;
@@ -66,6 +68,7 @@ protected:
 	static void _bind_methods();
 
 public:
+	_FORCE_INLINE_ static TileSetEditor *get_singleton() { return singleton; }
 	void edit(Ref<TileSet> p_tile_set);
 	void drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from);
 	bool can_drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from) const;

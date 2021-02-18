@@ -100,7 +100,7 @@ private:
 
 	UndoRedo *undo_redo = EditorNode::get_undo_redo();
 
-	bool tileset_changed_needs_update = false;
+	bool tile_set_atlas_source_changed_needs_update = false;
 
 	// -- Inspector --
 	TileProxyObject *tile_proxy_object;
@@ -220,7 +220,7 @@ private:
 	void _auto_remove_tiles();
 	AcceptDialog *confirm_auto_create_tiles;
 
-	void _tile_set_changed();
+	void _tile_set_atlas_source_changed();
 	void _atlas_source_proxy_object_changed(String p_what);
 
 protected:

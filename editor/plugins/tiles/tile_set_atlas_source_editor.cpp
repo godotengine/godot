@@ -112,7 +112,6 @@ void TileSetAtlasSourceEditor::TileSetAtlasSourceProxyObject::edit(Ref<TileSet> 
 	tile_set_atlas_source = p_tile_set_atlas_source;
 	source_id = p_source_id;
 	notify_property_list_changed();
-	emit_signal("changed", "");
 }
 
 // -- Proxy object used by the tile inspector --
@@ -230,7 +229,6 @@ void TileSetAtlasSourceEditor::TileProxyObject::edit(TileSetAtlasSource *p_tile_
 	coords = p_coords;
 	alternative_tile = p_alternative_tile;
 	notify_property_list_changed();
-	emit_signal("changed", "");
 }
 
 void TileSetAtlasSourceEditor::TileProxyObject::_bind_methods() {
@@ -238,7 +236,8 @@ void TileSetAtlasSourceEditor::TileProxyObject::_bind_methods() {
 }
 
 void TileSetAtlasSourceEditor::_inspector_property_selected(String p_property) {
-	print_line(vformat("selected property: %s", p_property));
+	selected_property = p_property;
+	_update_atlas_view();
 }
 
 void TileSetAtlasSourceEditor::_update_tile_id_label() {
@@ -457,19 +456,18 @@ void TileSetAtlasSourceEditor::_tile_atlas_control_gui_input(const Ref<InputEven
 			Vector2 mouse_offset = (Vector2(tile_set_atlas_source->get_tile_size_in_atlas(drag_current_tile)) / 2.0 - Vector2(0.5, 0.5)) * tile_set->get_tile_size();
 			Vector2i coords = tile_atlas_view->get_atlas_tile_coords_at_pos(tile_atlas_control->get_local_mouse_position() - mouse_offset);
 			coords = coords.max(Vector2i(0, 0)).min(grid_size - Vector2i(1, 1));
-			if (tile_set_atlas_source->can_move_tile_in_atlas(drag_current_tile, coords)) {
+			if (drag_current_tile != coords && tile_set_atlas_source->can_move_tile_in_atlas(drag_current_tile, coords)) {
 				tile_set_atlas_source->move_tile_in_atlas(drag_current_tile, coords);
 				selected_tile = coords;
 				selected_alternative = 0;
 				drag_current_tile = coords;
 
 				// Update only what's needed.
-				tileset_changed_needs_update = false;
+				tile_set_atlas_source_changed_needs_update = false;
 				_update_tile_inspector();
 				_update_atlas_view();
 				_update_tile_id_label();
 			}
-
 		} else if (drag_type >= DRAG_TYPE_RESIZE_TOP_LEFT && drag_type <= DRAG_TYPE_RESIZE_LEFT) {
 			// Resizing a tile.
 			new_base_tiles_coords = new_base_tiles_coords.max(Vector2i(-1, -1)).min(grid_size);
@@ -498,13 +496,15 @@ void TileSetAtlasSourceEditor::_tile_atlas_control_gui_input(const Ref<InputEven
 				selected_tile = new_rect.position;
 				drag_current_tile = selected_tile;
 				selected_alternative = 0;
+
 				// Update only what's needed.
-				tileset_changed_needs_update = false;
+				tile_set_atlas_source_changed_needs_update = false;
 				_update_tile_inspector();
 				_update_atlas_view();
 				_update_tile_id_label();
 			}
 		}
+
 		// Redraw for the hovered tile.
 		tile_atlas_control->update();
 		alternative_tiles_control->update();
@@ -795,7 +795,7 @@ void TileSetAtlasSourceEditor::_end_dragging() {
 			undo_redo->commit_action();
 		} break;
 		case DRAG_TYPE_MOVE_TILE:
-			if (drag_start_tile_shape.position != drag_current_tile) {
+			if (drag_current_tile != drag_start_tile_shape.position) {
 				undo_redo->create_action(TTR("Move a tile"));
 				undo_redo->add_do_method(tile_set_atlas_source, "move_tile_in_atlas", drag_start_tile_shape.position, drag_current_tile, tile_set_atlas_source->get_tile_size_in_atlas(drag_current_tile));
 				undo_redo->add_do_method(this, "_set_selected_tile", selected_tile, 0);
@@ -812,12 +812,14 @@ void TileSetAtlasSourceEditor::_end_dragging() {
 		case DRAG_TYPE_RESIZE_BOTTOM:
 		case DRAG_TYPE_RESIZE_BOTTOM_LEFT:
 		case DRAG_TYPE_RESIZE_LEFT:
-			undo_redo->create_action(TTR("Resize a tile"));
-			undo_redo->add_do_method(tile_set_atlas_source, "move_tile_in_atlas", drag_start_tile_shape.position, drag_current_tile, tile_set_atlas_source->get_tile_size_in_atlas(drag_current_tile));
-			undo_redo->add_do_method(this, "_set_selected_tile", selected_tile, 0);
-			undo_redo->add_undo_method(tile_set_atlas_source, "move_tile_in_atlas", drag_current_tile, drag_start_tile_shape.position, drag_start_tile_shape.size);
-			undo_redo->add_undo_method(this, "_set_selected_tile", drag_start_tile_shape.position, 0);
-			undo_redo->commit_action(false);
+			if (drag_start_tile_shape != Rect2i(drag_current_tile, tile_set_atlas_source->get_tile_size_in_atlas(drag_current_tile))) {
+				undo_redo->create_action(TTR("Resize a tile"));
+				undo_redo->add_do_method(tile_set_atlas_source, "move_tile_in_atlas", drag_start_tile_shape.position, drag_current_tile, tile_set_atlas_source->get_tile_size_in_atlas(drag_current_tile));
+				undo_redo->add_do_method(this, "_set_selected_tile", selected_tile, 0);
+				undo_redo->add_undo_method(tile_set_atlas_source, "move_tile_in_atlas", drag_current_tile, drag_start_tile_shape.position, drag_start_tile_shape.size);
+				undo_redo->add_undo_method(this, "_set_selected_tile", drag_start_tile_shape.position, 0);
+				undo_redo->commit_action(false);
+			}
 			break;
 		default:
 			break;
@@ -1170,8 +1172,8 @@ void TileSetAtlasSourceEditor::_tile_alternatives_control_draw() {
 	}
 }
 
-void TileSetAtlasSourceEditor::_tile_set_changed() {
-	tileset_changed_needs_update = true;
+void TileSetAtlasSourceEditor::_tile_set_atlas_source_changed() {
+	tile_set_atlas_source_changed_needs_update = true;
 }
 
 void TileSetAtlasSourceEditor::_atlas_source_proxy_object_changed(String p_what) {
@@ -1188,9 +1190,13 @@ void TileSetAtlasSourceEditor::edit(Ref<TileSet> p_tile_set, TileSetAtlasSource 
 	ERR_FAIL_COND(p_source_id < 0);
 	ERR_FAIL_COND(p_tile_set->get_source(p_source_id) != p_tile_set_atlas_source);
 
+	if (p_tile_set == tile_set && p_tile_set_atlas_source == tile_set_atlas_source && p_source_id == tile_set_atlas_source_id) {
+		return;
+	}
+
 	// Remove listener for old objects.
 	if (tile_set_atlas_source) {
-		tile_set_atlas_source->disconnect("changed", callable_mp(this, &TileSetAtlasSourceEditor::_tile_set_changed));
+		tile_set_atlas_source->disconnect("changed", callable_mp(this, &TileSetAtlasSourceEditor::_tile_set_atlas_source_changed));
 	}
 
 	// Change the edited object.
@@ -1200,7 +1206,7 @@ void TileSetAtlasSourceEditor::edit(Ref<TileSet> p_tile_set, TileSetAtlasSource 
 
 	// Add the listener again.
 	if (tile_set_atlas_source) {
-		tile_set_atlas_source->connect("changed", callable_mp(this, &TileSetAtlasSourceEditor::_tile_set_changed));
+		tile_set_atlas_source->connect("changed", callable_mp(this, &TileSetAtlasSourceEditor::_tile_set_atlas_source_changed));
 	}
 
 	// Update everything.
@@ -1338,7 +1344,7 @@ void TileSetAtlasSourceEditor::_notification(int p_what) {
 			resize_handle_disabled = get_theme_icon("EditorHandleDisabled", "EditorIcons");
 			break;
 		case NOTIFICATION_INTERNAL_PROCESS:
-			if (tileset_changed_needs_update) {
+			if (tile_set_atlas_source_changed_needs_update) {
 				// Update everything.
 				_update_source_inspector();
 
@@ -1348,7 +1354,7 @@ void TileSetAtlasSourceEditor::_notification(int p_what) {
 				_update_atlas_view();
 				_update_tile_inspector();
 
-				tileset_changed_needs_update = false;
+				tile_set_atlas_source_changed_needs_update = false;
 			}
 			break;
 		default:

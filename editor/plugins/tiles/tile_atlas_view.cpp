@@ -574,37 +574,43 @@ TileAtlasView::TileAtlasView() {
 	left_vbox->add_child(base_tile_label);
 
 	base_tiles_root_control = memnew(Control);
+	base_tiles_root_control->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 	base_tiles_root_control->connect("gui_input", callable_mp(this, &TileAtlasView::_base_tiles_root_control_gui_input));
 	left_vbox->add_child(base_tiles_root_control);
 
 	background_left = memnew(Control);
+	background_left->set_anchors_and_offsets_preset(Control::PRESET_WIDE);
 	background_left->set_texture_repeat(TextureRepeat::TEXTURE_REPEAT_ENABLED);
 	background_left->set_mouse_filter(Control::MOUSE_FILTER_IGNORE);
 	background_left->connect("draw", callable_mp(this, &TileAtlasView::_draw_background_left));
 	base_tiles_root_control->add_child(background_left);
 
 	base_tiles_drawing_root = memnew(Control);
-	base_tiles_drawing_root->set_texture_filter(TEXTURE_FILTER_NEAREST);
 	base_tiles_drawing_root->set_anchors_and_offsets_preset(Control::PRESET_WIDE);
+	base_tiles_drawing_root->set_texture_filter(TEXTURE_FILTER_NEAREST);
 	base_tiles_drawing_root->set_mouse_filter(Control::MOUSE_FILTER_IGNORE);
 	base_tiles_root_control->add_child(base_tiles_drawing_root);
 
 	base_tiles_draw = memnew(Control);
+	base_tiles_draw->set_anchors_and_offsets_preset(Control::PRESET_WIDE);
 	base_tiles_draw->connect("draw", callable_mp(this, &TileAtlasView::_draw_base_tiles));
 	base_tiles_draw->set_mouse_filter(Control::MOUSE_FILTER_IGNORE);
 	base_tiles_drawing_root->add_child(base_tiles_draw);
 
 	base_tiles_texture_grid = memnew(Control);
+	base_tiles_texture_grid->set_anchors_and_offsets_preset(Control::PRESET_WIDE);
 	base_tiles_texture_grid->connect("draw", callable_mp(this, &TileAtlasView::_draw_base_tiles_texture_grid));
 	base_tiles_texture_grid->set_mouse_filter(Control::MOUSE_FILTER_IGNORE);
 	base_tiles_drawing_root->add_child(base_tiles_texture_grid);
 
 	base_tiles_shape_grid = memnew(Control);
+	base_tiles_shape_grid->set_anchors_and_offsets_preset(Control::PRESET_WIDE);
 	base_tiles_shape_grid->connect("draw", callable_mp(this, &TileAtlasView::_draw_base_tiles_shape_grid));
 	base_tiles_shape_grid->set_mouse_filter(Control::MOUSE_FILTER_IGNORE);
 	base_tiles_drawing_root->add_child(base_tiles_shape_grid);
 
 	base_tiles_dark = memnew(Control);
+	base_tiles_dark->set_anchors_and_offsets_preset(Control::PRESET_WIDE);
 	base_tiles_dark->connect("draw", callable_mp(this, &TileAtlasView::_draw_base_tiles_dark));
 	base_tiles_dark->set_mouse_filter(Control::MOUSE_FILTER_IGNORE);
 	base_tiles_drawing_root->add_child(base_tiles_dark);
