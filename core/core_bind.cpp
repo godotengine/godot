@@ -519,11 +519,19 @@ double _OS::get_unix_time() const {
 	return OS::get_singleton()->get_unix_time();
 }
 
-void _OS::delay_usec(uint32_t p_usec) const {
+/** This method uses a signed argument for better error reporting as it's used from the scripting API. */
+void _OS::delay_usec(int p_usec) const {
+	ERR_FAIL_COND_MSG(
+			p_usec < 0,
+			vformat("Can't sleep for %d microseconds. The delay provided must be greater than or equal to 0 microseconds.", p_usec));
 	OS::get_singleton()->delay_usec(p_usec);
 }
 
-void _OS::delay_msec(uint32_t p_msec) const {
+/** This method uses a signed argument for better error reporting as it's used from the scripting API. */
+void _OS::delay_msec(int p_msec) const {
+	ERR_FAIL_COND_MSG(
+			p_msec < 0,
+			vformat("Can't sleep for %d milliseconds. The delay provided must be greater than or equal to 0 milliseconds.", p_msec));
 	OS::get_singleton()->delay_usec(int64_t(p_msec) * 1000);
 }
 
