@@ -33,8 +33,6 @@
 
 #include "gjk_epa.h"
 
-#define fallback_collision_solver gjk_epa_calculate_penetration
-
 // Cylinder SAT analytic methods and face-circle contact points for cylinder-trimesh and cylinder-box collision are based on ODE colliders.
 
 /*
@@ -337,21 +335,10 @@ static void _generate_contacts_face_face(const Vector3 *p_points_A, int p_point_
 		SWAP(clipbuf_src, clipbuf_dst);
 	}
 
-	// generate contacts
-	//Plane plane_A(p_points_A[0],p_points_A[1],p_points_A[2]);
-
 	for (int i = 0; i < clipbuf_len; i++) {
 		real_t d = plane_B.distance_to(clipbuf_src[i]);
-		/*
-		if (d>CMP_EPSILON)
-			continue;
-		*/
 
 		Vector3 closest_B = clipbuf_src[i] - plane_B.normal * d;
-
-		if (p_callback->normal.dot(clipbuf_src[i]) >= p_callback->normal.dot(closest_B)) {
-			continue;
-		}
 
 		p_callback->call(clipbuf_src[i], closest_B);
 	}
@@ -654,7 +641,7 @@ public:
 		min_B -= (min_A + max_A) * 0.5;
 		max_B -= (min_A + max_A) * 0.5;
 
-		if (min_B > 0.0 || max_B < 0.0) {
+		if (min_B >= 0.0 || max_B <= 0.0) {
 			separator_axis = axis;
 			return false; // doesn't contain 0
 		}
@@ -1629,8 +1616,11 @@ static void _collision_capsule_cylinder(const Shape3DSW *p_a, const Transform &p
 
 	CollisionSolver3DSW::CallbackResult callback = SeparatorAxisTest<CapsuleShape3DSW, CylinderShape3DSW, withMargin>::test_contact_points;
 
-	// Fallback to generic algorithm to find the best separating axis.
-	if (!fallback_collision_solver(p_a, p_transform_a, p_b, p_transform_b, callback, &separator)) {
+	// Use GJK-EPA algorithm to find the best separating axis.
+	GjkEpaResult result;
+	if (gjk_epa_calculate_penetration(p_a, p_transform_a, p_b, p_transform_b, result)) {
+		callback(result.witnesses[0], result.witnesses[1], &separator);
+	} else {
 		return;
 	}
 
@@ -1804,8 +1794,11 @@ static void _collision_cylinder_cylinder(const Shape3DSW *p_a, const Transform &
 
 	CollisionSolver3DSW::CallbackResult callback = SeparatorAxisTest<CylinderShape3DSW, CylinderShape3DSW, withMargin>::test_contact_points;
 
-	// Fallback to generic algorithm to find the best separating axis.
-	if (!fallback_collision_solver(p_a, p_transform_a, p_b, p_transform_b, callback, &separator)) {
+	// Use GJK-EPA algorithm to find the best separating axis.
+	GjkEpaResult result;
+	if (gjk_epa_calculate_penetration(p_a, p_transform_a, p_b, p_transform_b, result)) {
+		callback(result.witnesses[0], result.witnesses[1], &separator);
+	} else {
 		return;
 	}
 
@@ -1821,8 +1814,11 @@ static void _collision_cylinder_convex_polygon(const Shape3DSW *p_a, const Trans
 
 	CollisionSolver3DSW::CallbackResult callback = SeparatorAxisTest<CylinderShape3DSW, ConvexPolygonShape3DSW, withMargin>::test_contact_points;
 
-	// Fallback to generic algorithm to find the best separating axis.
-	if (!fallback_collision_solver(p_a, p_transform_a, p_b, p_transform_b, callback, &separator)) {
+	// Use GJK-EPA algorithm to find the best separating axis.
+	GjkEpaResult result;
+	if (gjk_epa_calculate_penetration(p_a, p_transform_a, p_b, p_transform_b, result)) {
+		callback(result.witnesses[0], result.witnesses[1], &separator);
+	} else {
 		return;
 	}
 

@@ -85,20 +85,6 @@ GJK-EPA collision solver by Nathanael Presson, 2008
 
 namespace GjkEpa2 {
 
-
-struct sResults	{
-	enum eStatus {
-		Separated,		/* Shapes doesn't penetrate */
-		Penetrating,	/* Shapes are penetrating */
-		GJK_Failed,		/* GJK phase fail, no big issue, shapes are probably just 'touching'	*/
-		EPA_Failed /* EPA phase fail, bigger problem, need to save parameters, and debug	*/
-	} status;
-
-	Vector3	witnesses[2];
-	Vector3	normal;
-	real_t	distance;
-};
-
 // Shorthands
 typedef unsigned int	U;
 typedef unsigned char	U1;
@@ -830,14 +816,14 @@ struct	GJK
 	//
 	static void	Initialize(	const Shape3DSW* shape0,const Transform& wtrs0,
 		const Shape3DSW* shape1,const Transform& wtrs1,
-		sResults& results,
+		GjkEpaResult& results,
 		tShape& shape,
 		bool withmargins)
 	{
 		/* Results		*/
 		results.witnesses[0]	=
 			results.witnesses[1]	=	Vector3(0,0,0);
-		results.status			=	sResults::Separated;
+		results.status			=	GjkEpaResult::Separated;
 		/* Shape		*/
 		shape.m_shapes[0]		=	shape0;
 		shape.m_shapes[1]		=	shape1;
@@ -860,7 +846,7 @@ bool Distance(	const Shape3DSW*	shape0,
 									  const Shape3DSW*	shape1,
 									  const Transform&		wtrs1,
 									  const Vector3&		guess,
-									  sResults&				results)
+									  GjkEpaResult&				results)
 {
 	tShape			shape;
 	Initialize(shape0,wtrs0,shape1,wtrs1,results,shape,false);
@@ -886,8 +872,8 @@ bool Distance(	const Shape3DSW*	shape0,
 	else
 	{
 		results.status	=	gjk_status==GJK::eStatus::Inside?
-			sResults::Penetrating	:
-		sResults::GJK_Failed	;
+			GjkEpaResult::Penetrating	:
+		GjkEpaResult::GJK_Failed	;
 		return(false);
 	}
 }
@@ -899,7 +885,7 @@ bool Penetration(	const Shape3DSW*	shape0,
 									 const Shape3DSW*	shape1,
 									 const Transform&		wtrs1,
 									 const Vector3&		guess,
-									 sResults&				results
+									 GjkEpaResult&				results
 									)
 {
 	tShape			shape;
@@ -919,18 +905,18 @@ bool Penetration(	const Shape3DSW*	shape0,
 				{
 					w0+=shape.Support(epa.m_result.c[i]->d,0)*epa.m_result.p[i];
 				}
-				results.status			=	sResults::Penetrating;
+				results.status			=	GjkEpaResult::Penetrating;
 				results.witnesses[0]	=	w0;
 				results.witnesses[1]	=	w0-epa.m_normal*epa.m_depth;
 				results.normal			=	-epa.m_normal;
 				results.distance		=	-epa.m_depth;
 				return(true);
-			} else { results.status=sResults::EPA_Failed;
-}
+			} else { results.status=GjkEpaResult::EPA_Failed;
+			}
 		}
 		break;
 	case	GJK::eStatus::Failed:
-		results.status=sResults::GJK_Failed;
+		results.status=GjkEpaResult::GJK_Failed;
 		break;
 	default: {}
 	}
@@ -960,31 +946,10 @@ bool Penetration(	const Shape3DSW*	shape0,
 
 /* clang-format on */
 
-bool gjk_epa_calculate_distance(const Shape3DSW *p_shape_A, const Transform &p_transform_A, const Shape3DSW *p_shape_B, const Transform &p_transform_B, Vector3 &r_result_A, Vector3 &r_result_B) {
-	GjkEpa2::sResults res;
-
-	if (GjkEpa2::Distance(p_shape_A, p_transform_A, p_shape_B, p_transform_B, p_transform_B.origin - p_transform_A.origin, res)) {
-		r_result_A = res.witnesses[0];
-		r_result_B = res.witnesses[1];
-		return true;
-	}
-
-	return false;
+bool gjk_epa_calculate_distance(const Shape3DSW *p_shape_A, const Transform &p_transform_A, const Shape3DSW *p_shape_B, const Transform &p_transform_B, GjkEpaResult &r_result) {
+	return GjkEpa2::Distance(p_shape_A, p_transform_A, p_shape_B, p_transform_B, p_transform_B.origin - p_transform_A.origin, r_result);
 }
 
-bool gjk_epa_calculate_penetration(const Shape3DSW *p_shape_A, const Transform &p_transform_A, const Shape3DSW *p_shape_B, const Transform &p_transform_B, CollisionSolver3DSW::CallbackResult p_result_callback, void *p_userdata, bool p_swap) {
-	GjkEpa2::sResults res;
-
-	if (GjkEpa2::Penetration(p_shape_A, p_transform_A, p_shape_B, p_transform_B, p_transform_B.origin - p_transform_A.origin, res)) {
-		if (p_result_callback) {
-			if (p_swap) {
-				p_result_callback(res.witnesses[1], res.witnesses[0], p_userdata);
-			} else {
-				p_result_callback(res.witnesses[0], res.witnesses[1], p_userdata);
-			}
-		}
-		return true;
-	}
-
-	return false;
+bool gjk_epa_calculate_penetration(const Shape3DSW *p_shape_A, const Transform &p_transform_A, const Shape3DSW *p_shape_B, const Transform &p_transform_B, GjkEpaResult &r_result) {
+	return GjkEpa2::Penetration(p_shape_A, p_transform_A, p_shape_B, p_transform_B, p_transform_B.origin - p_transform_A.origin, r_result);
 }

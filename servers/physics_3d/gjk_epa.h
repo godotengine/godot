@@ -34,7 +34,19 @@
 #include "collision_solver_3d_sw.h"
 #include "shape_3d_sw.h"
 
-bool gjk_epa_calculate_penetration(const Shape3DSW *p_shape_A, const Transform &p_transform_A, const Shape3DSW *p_shape_B, const Transform &p_transform_B, CollisionSolver3DSW::CallbackResult p_result_callback, void *p_userdata, bool p_swap = false);
-bool gjk_epa_calculate_distance(const Shape3DSW *p_shape_A, const Transform &p_transform_A, const Shape3DSW *p_shape_B, const Transform &p_transform_B, Vector3 &r_result_A, Vector3 &r_result_B);
+typedef struct {
+	enum eStatus {
+		Separated, // Shapes doesn't penetrate
+		Penetrating, // Shapes are penetrating
+		GJK_Failed, // GJK phase fail, no big issue, shapes are probably just 'touching'
+		EPA_Failed // EPA phase fail, bigger problem, need to save parameters, and debug
+	} status;
+	Vector3 witnesses[2];
+	Vector3 normal;
+	real_t distance;
+} GjkEpaResult;
+
+bool gjk_epa_calculate_penetration(const Shape3DSW *p_shape_A, const Transform &p_transform_A, const Shape3DSW *p_shape_B, const Transform &p_transform_B, GjkEpaResult &r_result);
+bool gjk_epa_calculate_distance(const Shape3DSW *p_shape_A, const Transform &p_transform_A, const Shape3DSW *p_shape_B, const Transform &p_transform_B, GjkEpaResult &r_result);
 
 #endif

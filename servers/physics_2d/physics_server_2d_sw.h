@@ -78,13 +78,12 @@ class PhysicsServer2DSW : public PhysicsServer2D {
 
 public:
 	struct CollCbkData {
+		int max = 0;
+		int amount = 0;
+		Vector2 *ptr = nullptr;
 		Vector2 valid_dir;
-		real_t valid_depth;
-		int max;
-		int amount;
-		int passed;
-		int invalid_by_dir;
-		Vector2 *ptr;
+		real_t valid_depth = 0;
+		bool invalid_by_dir = false;
 	};
 
 	virtual RID line_shape_create() override;
