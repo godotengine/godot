@@ -374,7 +374,7 @@ void AudioServer::_mix_step() {
 					if (!(buses[i]->channels[k].active || bus->channels[k].effect_instances[j]->process_silence())) {
 						continue;
 					}
-					SWAP(bus->channels.write[k].buffer, temp_buffer.write[k]);
+					SWAP(bus->channels.write[k].buffer.write, temp_buffer.write[k].write);
 				}
 
 #ifdef DEBUG_ENABLED
