@@ -799,13 +799,11 @@ LIGHT_SHADER_CODE
 
 #ifndef USE_NO_SHADOWS
 
-// Produces cheap white noise, optimized for window-space
-// Comes from: https://www.shadertoy.com/view/4djSRW
-// Copyright: Dave Hoskins, MIT License
+// Interleaved Gradient Noise
+// http://www.iryoku.com/next-generation-post-processing-in-call-of-duty-advanced-warfare
 float quick_hash(vec2 pos) {
-	vec3 p3 = fract(vec3(pos.xyx) * .1031);
-	p3 += dot(p3, p3.yzx + 33.33);
-	return fract((p3.x + p3.y) * p3.z);
+	const vec3 magic = vec3(0.06711056f, 0.00583715f, 52.9829189f);
+	return fract(magic.z * fract(dot(pos, magic.xy)));
 }
 
 float sample_directional_pcf_shadow(texture2D shadow, vec2 shadow_pixel_size, vec4 coord) {
