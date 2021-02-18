@@ -378,6 +378,8 @@ struct _RestCallbackData {
 
 	const CollisionObjectSW *object;
 	const CollisionObjectSW *best_object;
+	int local_shape;
+	int best_local_shape;
 	int shape;
 	int best_shape;
 	Vector3 best_contact;
@@ -402,6 +404,7 @@ static void _rest_cbk_result(const Vector3 &p_point_A, const Vector3 &p_point_B,
 	rd->best_normal = contact_rel / len;
 	rd->best_object = rd->object;
 	rd->best_shape = rd->shape;
+	rd->best_local_shape = rd->local_shape;
 }
 bool PhysicsDirectSpaceStateSW::rest_info(RID p_shape, const Transform &p_shape_xform, real_t p_margin, ShapeRestInfo *r_info, const Set<RID> &p_exclude, uint32_t p_collision_mask, bool p_collide_with_bodies, bool p_collide_with_areas) {
 
@@ -737,7 +740,12 @@ bool SpaceSW::test_body_motion(BodySW *p_body, const Transform &p_from, const Ve
 	body_aabb = p_from.xform(p_body->get_inv_transform().xform(body_aabb));
 	body_aabb = body_aabb.grow(p_margin);
 
+	float motion_length = p_motion.length();
+	Vector3 motion_normal = p_motion / motion_length;
+
 	Transform body_transform = p_from;
+
+	bool recovered = false;
 
 	{
 		//STEP 1, FREE BODY IF STUCK
@@ -791,13 +799,25 @@ bool SpaceSW::test_body_motion(BodySW *p_body, const Transform &p_from, const Ve
 
 				Vector3 a = sr[i * 2 + 0];
 				Vector3 b = sr[i * 2 + 1];
-				recover_motion += (b - a) / cbk.amount;
+
+				// Compute plane on b towards a.
+				Vector3 n = (a - b).normalized();
+				float d = n.dot(b);
+
+				// Compute depth on recovered motion.
+				float depth = n.dot(a + recover_motion) - d;
+				if (depth > 0.0) {
+					// Only recover if there is penetration.
+					recover_motion -= n * depth * 0.4;
+				}
 			}
 
 			if (recover_motion == Vector3()) {
 				collided = false;
 				break;
 			}
+
+			recovered = true;
 
 			body_transform.origin += recover_motion;
 			body_aabb.position += recover_motion;
@@ -849,14 +869,14 @@ bool SpaceSW::test_body_motion(BodySW *p_body, const Transform &p_from, const Ve
 
 				//test initial overlap, does it collide if going all the way?
 				Vector3 point_A, point_B;
-				Vector3 sep_axis = p_motion.normalized();
+				Vector3 sep_axis = motion_normal;
 
 				Transform col_obj_xform = col_obj->get_transform() * col_obj->get_shape_transform(shape_idx);
 				//test initial overlap, does it collide if going all the way?
 				if (CollisionSolverSW::solve_distance(&mshape, body_shape_xform, col_obj->get_shape(shape_idx), col_obj_xform, point_A, point_B, motion_aabb, &sep_axis)) {
 					continue;
 				}
-				sep_axis = p_motion.normalized();
+				sep_axis = motion_normal;
 
 				if (!CollisionSolverSW::solve_distance(body_shape, body_shape_xform, col_obj->get_shape(shape_idx), col_obj_xform, point_A, point_B, motion_aabb, &sep_axis)) {
 					stuck = true;
@@ -866,13 +886,12 @@ bool SpaceSW::test_body_motion(BodySW *p_body, const Transform &p_from, const Ve
 				//just do kinematic solving
 				real_t low = 0;
 				real_t hi = 1;
-				Vector3 mnormal = p_motion.normalized();
 
 				for (int k = 0; k < 8; k++) { //steps should be customizable..
 
 					real_t ofs = (low + hi) * 0.5;
 
-					Vector3 sep = mnormal; //important optimization for this to work fast enough
+					Vector3 sep = motion_normal; //important optimization for this to work fast enough
 
 					mshape.motion = body_shape_xform_inv.basis.xform(p_motion * ofs);
 
@@ -917,17 +936,11 @@ bool SpaceSW::test_body_motion(BodySW *p_body, const Transform &p_from, const Ve
 	}
 
 	bool collided = false;
-	if (safe >= 1) {
-		//not collided
-		collided = false;
-		if (r_result) {
 
-			r_result->motion = p_motion;
-			r_result->remainder = Vector3();
-			r_result->motion += (body_transform.get_origin() - p_from.get_origin());
+	if (recovered || (safe < 1)) {
+		if (safe >= 1) {
+			best_shape = -1; //no best shape with cast, reset to -1
 		}
-
-	} else {
 
 		//it collided, let's get the rest info in unsafe advance
 		Transform ugt = body_transform;
@@ -937,25 +950,41 @@ bool SpaceSW::test_body_motion(BodySW *p_body, const Transform &p_from, const Ve
 		rcd.best_len = 0;
 		rcd.best_object = NULL;
 		rcd.best_shape = 0;
-		rcd.min_allowed_depth = test_motion_min_contact_depth;
 
-		Transform body_shape_xform = ugt * p_body->get_shape_transform(best_shape);
-		ShapeSW *body_shape = p_body->get_shape(best_shape);
+		// Allowed depth can't be lower than motion length, in order to handle contacts at low speed.
+		rcd.min_allowed_depth = MIN(motion_length, test_motion_min_contact_depth);
 
-		body_aabb.position += p_motion * unsafe;
+		int from_shape = best_shape != -1 ? best_shape : 0;
+		int to_shape = best_shape != -1 ? best_shape + 1 : p_body->get_shape_count();
 
-		int amount = _cull_aabb_for_body(p_body, body_aabb);
+		for (int j = from_shape; j < to_shape; j++) {
 
-		for (int i = 0; i < amount; i++) {
-
-			const CollisionObjectSW *col_obj = intersection_query_results[i];
-			int shape_idx = intersection_query_subindex_results[i];
-
-			rcd.object = col_obj;
-			rcd.shape = shape_idx;
-			bool sc = CollisionSolverSW::solve_static(body_shape, body_shape_xform, col_obj->get_shape(shape_idx), col_obj->get_transform() * col_obj->get_shape_transform(shape_idx), _rest_cbk_result, &rcd, NULL, p_margin);
-			if (!sc)
+			if (p_body->is_shape_set_as_disabled(j))
 				continue;
+
+			Transform body_shape_xform = ugt * p_body->get_shape_transform(j);
+			ShapeSW *body_shape = p_body->get_shape(j);
+
+			if (p_exclude_raycast_shapes && body_shape->get_type() == PhysicsServer::SHAPE_RAY) {
+				continue;
+			}
+
+			body_aabb.position += p_motion * unsafe;
+
+			int amount = _cull_aabb_for_body(p_body, body_aabb);
+
+			for (int i = 0; i < amount; i++) {
+
+				const CollisionObjectSW *col_obj = intersection_query_results[i];
+				int shape_idx = intersection_query_subindex_results[i];
+
+				rcd.object = col_obj;
+				rcd.shape = shape_idx;
+				rcd.local_shape = j;
+				bool sc = CollisionSolverSW::solve_static(body_shape, body_shape_xform, col_obj->get_shape(shape_idx), col_obj->get_transform() * col_obj->get_shape_transform(shape_idx), _rest_cbk_result, &rcd, NULL, p_margin);
+				if (!sc)
+					continue;
+			}
 		}
 
 		if (rcd.best_len != 0) {
@@ -964,7 +993,7 @@ bool SpaceSW::test_body_motion(BodySW *p_body, const Transform &p_from, const Ve
 				r_result->collider = rcd.best_object->get_self();
 				r_result->collider_id = rcd.best_object->get_instance_id();
 				r_result->collider_shape = rcd.best_shape;
-				r_result->collision_local_shape = best_shape;
+				r_result->collision_local_shape = rcd.best_local_shape;
 				r_result->collision_normal = rcd.best_normal;
 				r_result->collision_point = rcd.best_contact;
 				//r_result->collider_metadata = rcd.best_object->get_shape_metadata(rcd.best_shape);
@@ -980,16 +1009,14 @@ bool SpaceSW::test_body_motion(BodySW *p_body, const Transform &p_from, const Ve
 			}
 
 			collided = true;
-		} else {
-			if (r_result) {
-
-				r_result->motion = p_motion;
-				r_result->remainder = Vector3();
-				r_result->motion += (body_transform.get_origin() - p_from.get_origin());
-			}
-
-			collided = false;
 		}
+	}
+
+	if (!collided && r_result) {
+
+		r_result->motion = p_motion;
+		r_result->remainder = Vector3();
+		r_result->motion += (body_transform.get_origin() - p_from.get_origin());
 	}
 
 	return collided;
