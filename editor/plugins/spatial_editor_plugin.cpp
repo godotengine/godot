@@ -75,6 +75,20 @@
 #define MIN_FOV 0.01
 #define MAX_FOV 179
 
+static Node *get_deepest_visible_node(Node *start_node, Node const *edited_scene) {
+	Node const *iterated_item = start_node;
+	Node *node = start_node;
+
+	while (iterated_item->get_owner() && iterated_item->get_owner() != edited_scene) {
+		if (!edited_scene->is_editable_instance(iterated_item->get_owner()))
+			node = iterated_item->get_owner();
+
+		iterated_item = iterated_item->get_owner();
+	}
+
+	return node;
+}
+
 void ViewportRotationControl::_notification(int p_what) {
 
 	if (p_what == NOTIFICATION_ENTER_TREE) {
@@ -532,11 +546,7 @@ ObjectID SpatialEditorViewport::_select_ray(const Point2 &p_pos, bool p_append, 
 			continue;
 
 		if (dist < closest_dist) {
-
-			item = Object::cast_to<Node>(spat);
-			while (item->get_owner() && item->get_owner() != edited_scene && !edited_scene->is_editable_instance(item->get_owner())) {
-				item = item->get_owner();
-			}
+			item = get_deepest_visible_node(Object::cast_to<Node>(spat), edited_scene);
 
 			closest = item->get_instance_id();
 			closest_dist = dist;
@@ -691,10 +701,7 @@ void SpatialEditorViewport::_select_region() {
 		if (!sp || _is_node_locked(sp))
 			continue;
 
-		Node *item = Object::cast_to<Node>(sp);
-		while (item->get_owner() && item->get_owner() != edited_scene && !edited_scene->is_editable_instance(item->get_owner())) {
-			item = item->get_owner();
-		}
+		Node *item = get_deepest_visible_node(Object::cast_to<Node>(sp), edited_scene);
 
 		// Replace the node by the group if grouped
 		if (item->is_class("Spatial")) {
@@ -1026,7 +1033,7 @@ void SpatialEditorViewport::_list_select(Ref<InputEventMouseButton> b) {
 
 	for (int i = 0; i < selection_results.size(); i++) {
 		Spatial *item = selection_results[i].item;
-		if (item != scene && item->get_owner() != scene && !scene->is_editable_instance(item->get_owner())) {
+		if (item != scene && item->get_owner() != scene && item != get_deepest_visible_node(item, scene)) {
 			//invalid result
 			selection_results.remove(i);
 			i--;
