@@ -701,6 +701,7 @@ bool MeshInstance::is_software_skinning_transform_normals_enabled() const {
 }
 
 void MeshInstance::_mesh_changed() {
+	ERR_FAIL_COND(mesh.is_null());
 	materials.resize(mesh->get_surface_count());
 
 	if (software_skinning) {
