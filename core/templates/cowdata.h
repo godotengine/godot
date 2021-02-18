@@ -45,8 +45,9 @@ class CharString;
 template <class T, class V>
 class VMap;
 
-// CowData is relying on this to be true
-static_assert(sizeof(SafeNumeric<uint32_t>) == sizeof(uint32_t));
+#if !defined(NO_THREADS)
+SAFE_NUMERIC_TYPE_PUN_GUARANTEES(uint32_t)
+#endif
 
 template <class T>
 class CowData {
@@ -114,7 +115,7 @@ private:
 	void _unref(void *p_data);
 	void _ref(const CowData *p_from);
 	void _ref(const CowData &p_from);
-	void _copy_on_write();
+	uint32_t _copy_on_write();
 
 public:
 	void operator=(const CowData<T> &p_from) { _ref(p_from); }
@@ -217,20 +218,21 @@ void CowData<T>::_unref(void *p_data) {
 }
 
 template <class T>
-void CowData<T>::_copy_on_write() {
+uint32_t CowData<T>::_copy_on_write() {
 	if (!_ptr) {
-		return;
+		return 0;
 	}
 
 	SafeNumeric<uint32_t> *refc = _get_refcount();
 
-	if (unlikely(refc->get() > 1)) {
+	uint32_t rc = refc->get();
+	if (unlikely(rc > 1)) {
 		/* in use by more than me */
 		uint32_t current_size = *_get_size();
 
 		uint32_t *mem_new = (uint32_t *)Memory::alloc_static(_get_alloc_size(current_size), true);
 
-		reinterpret_cast<SafeNumeric<uint32_t> *>(mem_new - 2)->set(1); //refcount
+		new (mem_new - 2, sizeof(uint32_t), "") SafeNumeric<uint32_t>(1); //refcount
 		*(mem_new - 1) = current_size; //size
 
 		T *_data = (T *)(mem_new);
@@ -247,7 +249,10 @@ void CowData<T>::_copy_on_write() {
 
 		_unref(_ptr);
 		_ptr = _data;
+
+		rc = 1;
 	}
+	return rc;
 }
 
 template <class T>
@@ -268,7 +273,7 @@ Error CowData<T>::resize(int p_size) {
 	}
 
 	// possibly changing size, copy on write
-	_copy_on_write();
+	uint32_t rc = _copy_on_write();
 
 	size_t current_alloc_size = _get_alloc_size(current_size);
 	size_t alloc_size;
@@ -281,13 +286,15 @@ Error CowData<T>::resize(int p_size) {
 				uint32_t *ptr = (uint32_t *)Memory::alloc_static(alloc_size, true);
 				ERR_FAIL_COND_V(!ptr, ERR_OUT_OF_MEMORY);
 				*(ptr - 1) = 0; //size, currently none
-				reinterpret_cast<SafeNumeric<uint32_t> *>(ptr - 2)->set(1); //refcount
+				new (ptr - 2, sizeof(uint32_t), "") SafeNumeric<uint32_t>(1); //refcount
 
 				_ptr = (T *)ptr;
 
 			} else {
-				void *_ptrnew = (T *)Memory::realloc_static(_ptr, alloc_size, true);
+				uint32_t *_ptrnew = (uint32_t *)Memory::realloc_static(_ptr, alloc_size, true);
 				ERR_FAIL_COND_V(!_ptrnew, ERR_OUT_OF_MEMORY);
+				new (_ptrnew - 2, sizeof(uint32_t), "") SafeNumeric<uint32_t>(rc); //refcount
+
 				_ptr = (T *)(_ptrnew);
 			}
 		}
@@ -314,8 +321,9 @@ Error CowData<T>::resize(int p_size) {
 		}
 
 		if (alloc_size != current_alloc_size) {
-			void *_ptrnew = (T *)Memory::realloc_static(_ptr, alloc_size, true);
+			uint32_t *_ptrnew = (uint32_t *)Memory::realloc_static(_ptr, alloc_size, true);
 			ERR_FAIL_COND_V(!_ptrnew, ERR_OUT_OF_MEMORY);
+			new (_ptrnew - 2, sizeof(uint32_t), "") SafeNumeric<uint32_t>(rc); //refcount
 
 			_ptr = (T *)(_ptrnew);
 		}
@@ -362,7 +370,7 @@ void CowData<T>::_ref(const CowData &p_from) {
 		return; //nothing to do
 	}
 
-	if (p_from._get_refcount()->increment() > 0) { // could reference
+	if (p_from._get_refcount()->conditional_increment() > 0) { // could reference
 		_ptr = p_from._ptr;
 	}
 }
