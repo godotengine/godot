@@ -2167,6 +2167,8 @@ bool Main::start() {
 				cs_aspect = Window::CONTENT_SCALE_ASPECT_KEEP_HEIGHT;
 			} else if (stretch_aspect == "expand") {
 				cs_aspect = Window::CONTENT_SCALE_ASPECT_EXPAND;
+			} else if (stretch_aspect == "pixelperfect") {
+				cs_aspect = Window::CONTENT_SCALE_ASPECT_PIXELPERFECT;
 			}
 
 			sml->get_root()->set_content_scale_mode(cs_sm);
@@ -2211,7 +2213,7 @@ bool Main::start() {
 					PropertyInfo(Variant::STRING,
 							"display/window/stretch/aspect",
 							PROPERTY_HINT_ENUM,
-							"ignore,keep,keep_width,keep_height,expand"));
+							"ignore,keep,keep_width,keep_height,expand,pixelperfect"));
 			GLOBAL_DEF("display/window/stretch/shrink", 1.0);
 			ProjectSettings::get_singleton()->set_custom_property_info("display/window/stretch/shrink",
 					PropertyInfo(Variant::FLOAT,
