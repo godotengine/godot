@@ -13,6 +13,8 @@ android {
     compileSdkVersion versions.compileSdk
     buildToolsVersion versions.buildTools
 
+    ndkVersion versions.ndkVersion
+
     defaultConfig {
         minSdkVersion versions.minSdk
         targetSdkVersion versions.targetSdk
