@@ -75,6 +75,7 @@ class SceneTreeEditor : public Control {
 	void _test_update_tree();
 	void _update_tree(bool p_scroll_to_selected = false);
 	void _tree_changed();
+	void _tree_process_mode_changed();
 	void _node_removed(Node *p_node);
 	void _node_renamed(Node *p_node);
 
