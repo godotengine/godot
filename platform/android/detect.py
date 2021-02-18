@@ -13,7 +13,7 @@ def get_name():
 
 
 def can_build():
-    return ("ANDROID_NDK_ROOT" in os.environ) or ("ANDROID_SDK_ROOT" in os.environ) or ("ANDROID_HOME" in os.environ)
+    return ("ANDROID_SDK_ROOT" in os.environ) or ("ANDROID_HOME" in os.environ)
 
 
 def get_platform(platform):
@@ -43,15 +43,12 @@ def get_android_sdk_root():
 
 
 # Return the ANDROID_NDK_ROOT environment variable.
-# If the env variable is already defined, we use it with the expectation that
-# the user knows what they're doing (e.g: testing a new NDK version).
-# Otherwise, we generate one for this build using the ANDROID_SDK_ROOT env
+# We generate one for this build using the ANDROID_SDK_ROOT env
 # variable and the project ndk version.
+# If the env variable is already defined, we override it with
+# our own to match what the project expects.
 def get_android_ndk_root():
-    if "ANDROID_NDK_ROOT" in os.environ:
-        return os.environ.get("ANDROID_NDK_ROOT", 0)
-    else:
-        return get_android_sdk_root() + "/ndk/" + get_project_ndk_version()
+    return get_android_sdk_root() + "/ndk/" + get_project_ndk_version()
 
 
 def get_flags():
