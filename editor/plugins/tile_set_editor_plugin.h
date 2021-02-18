@@ -114,7 +114,7 @@ class TileSetEditor : public HSplitContainer {
 	int option;
 	ToolButton *tileset_toolbar_buttons[TOOL_TILESET_MAX];
 	MenuButton *tileset_toolbar_tools;
-	Map<RID, Ref<Texture> > texture_map;
+	Map<String, Ref<Texture> > texture_map;
 
 	bool creating_shape;
 	int dragging_point;
