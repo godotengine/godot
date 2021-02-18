@@ -319,6 +319,7 @@ Ref<Material> MeshInstance3D::get_active_material(int p_surface) const {
 }
 
 void MeshInstance3D::_mesh_changed() {
+	ERR_FAIL_COND(mesh.is_null());
 	materials.resize(mesh->get_surface_count());
 }
 
