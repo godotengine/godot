@@ -107,10 +107,12 @@ RID TextServerFallback::create_font_system(const String &p_name, int p_base_size
 RID TextServerFallback::create_font_resource(const String &p_filename, int p_base_size) {
 	_THREAD_SAFE_METHOD_
 	FontDataFallback *fd = nullptr;
-	if (p_filename.get_extension() == "ttf" || p_filename.get_extension() == "otf" || p_filename.get_extension() == "woff") {
-		fd = memnew(DynamicFontDataFallback);
-	} else if (p_filename.get_extension() == "fnt" || p_filename.get_extension() == "font") {
+	if (p_filename.get_extension() == "fnt" || p_filename.get_extension() == "font") {
 		fd = memnew(BitmapFontDataFallback);
+#ifdef MODULE_FREETYPE_ENABLED
+	} else if (p_filename.get_extension() == "ttf" || p_filename.get_extension() == "otf" || p_filename.get_extension() == "woff") {
+		fd = memnew(DynamicFontDataFallback);
+#endif
 	} else {
 		return RID();
 	}
@@ -127,10 +129,12 @@ RID TextServerFallback::create_font_resource(const String &p_filename, int p_bas
 RID TextServerFallback::create_font_memory(const uint8_t *p_data, size_t p_size, const String &p_type, int p_base_size) {
 	_THREAD_SAFE_METHOD_
 	FontDataFallback *fd = nullptr;
-	if (p_type == "ttf" || p_type == "otf" || p_type == "woff") {
-		fd = memnew(DynamicFontDataFallback);
-	} else if (p_type == "fnt" || p_type == "font") {
+	if (p_type == "fnt" || p_type == "font") {
 		fd = memnew(BitmapFontDataFallback);
+#ifdef MODULE_FREETYPE_ENABLED
+	} else if (p_type == "ttf" || p_type == "otf" || p_type == "woff") {
+		fd = memnew(DynamicFontDataFallback);
+#endif
 	} else {
 		return RID();
 	}
