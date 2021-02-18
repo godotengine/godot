@@ -64,7 +64,7 @@ GJK-EPA collision solver by Nathanael Presson, 2008
 
 /* GJK	*/
 #define GJK_MAX_ITERATIONS	128
-#define GJK_ACCURARY		((real_t)0.0001)
+#define GJK_ACCURACY		((real_t)0.0001)
 #define GJK_MIN_DISTANCE	((real_t)0.0001)
 #define GJK_DUPLICATED_EPS	((real_t)0.0001)
 #define GJK_SIMPLEX2_EPS	((real_t)0.0)
@@ -72,10 +72,13 @@ GJK-EPA collision solver by Nathanael Presson, 2008
 #define GJK_SIMPLEX4_EPS	((real_t)0.0)
 
 /* EPA	*/
-#define EPA_MAX_VERTICES	64
+#define EPA_MAX_VERTICES	128
 #define EPA_MAX_FACES		(EPA_MAX_VERTICES*2)
 #define EPA_MAX_ITERATIONS	255
-#define EPA_ACCURACY		((real_t)0.0001)
+// -- GODOT start --
+//#define EPA_ACCURACY		((real_t)0.0001)
+#define EPA_ACCURACY		((real_t)0.00001)
+// -- GODOT end --
 #define EPA_FALLBACK		(10*EPA_ACCURACY)
 #define EPA_PLANE_EPS		((real_t)0.00001)
 #define EPA_INSIDE_EPS		((real_t)0.01)
@@ -237,7 +240,7 @@ struct	GJK
 				/* Check for termination				*/
 				const real_t	omega=vec3_dot(m_ray,w)/rl;
 				alpha=MAX(omega,alpha);
-				if(((rl-alpha)-(GJK_ACCURARY*rl))<=0)
+				if(((rl-alpha)-(GJK_ACCURACY*rl))<=0)
 				{/* Return old simplex				*/
 					removevertice(m_simplices[m_current]);
 					break;
@@ -458,7 +461,7 @@ struct	GJK
 			if(ng&&(Math::abs(vl)>GJK_SIMPLEX4_EPS))
 			{
 				real_t	mindist=-1;
-				real_t	subw[3];
+				real_t	subw[3] = {0.f, 0.f, 0.f};
 				U		subm=0;
 				for(U i=0;i<3;++i)
 				{
@@ -504,7 +507,6 @@ struct	GJK
 		{
 			Vector3	n;
 			real_t	d;
-			real_t	p;
 			sSV*		c[3];
 			sFace*		f[3];
 			sFace*		l[2];
@@ -650,7 +652,7 @@ struct	GJK
 										remove(m_hull,best);
 										append(m_stock,best);
 										best=findbest();
-										if(best->p>=outer.p) outer=*best;
+										outer=*best;
 									} else { m_status=eStatus::InvalidHull;break; }
 								} else { m_status=eStatus::AccuraryReached;break; }
 							} else { m_status=eStatus::OutOfVertices;break; }
@@ -689,6 +691,44 @@ struct	GJK
 				m_result.p[0]=1;
 				return(m_status);
 			}
+
+			bool getedgedist(sFace* face, sSV* a, sSV* b, real_t& dist)
+			{
+				const Vector3 ba = b->w - a->w;
+				const Vector3 n_ab = vec3_cross(ba, face->n);   // Outward facing edge normal direction, on triangle plane
+				const real_t a_dot_nab = vec3_dot(a->w, n_ab);  // Only care about the sign to determine inside/outside, so not normalization required
+
+				if (a_dot_nab < 0)
+				{
+					// Outside of edge a->b
+
+					const real_t ba_l2 = ba.length_squared();
+					const real_t a_dot_ba = vec3_dot(a->w, ba);
+					const real_t b_dot_ba = vec3_dot(b->w, ba);
+
+					if (a_dot_ba > 0)
+					{
+						// Pick distance vertex a
+						dist = a->w.length();
+					}
+					else if (b_dot_ba < 0)
+					{
+						// Pick distance vertex b
+						dist = b->w.length();
+					}
+					else
+					{
+						// Pick distance to edge a->b
+						const real_t a_dot_b = vec3_dot(a->w, b->w);
+						dist = Math::sqrt(MAX((a->w.length_squared() * b->w.length_squared() - a_dot_b * a_dot_b) / ba_l2, 0.0));
+					}
+
+					return true;
+				}
+
+				return false;
+			}
+
 			sFace*				newface(sSV* a,sSV* b,sSV* c,bool forced)
 			{
 				if(m_stock.root)
@@ -703,15 +743,16 @@ struct	GJK
 					face->n		=	vec3_cross(b->w-a->w,c->w-a->w);
 					const real_t	l=face->n.length();
 					const bool		v=l>EPA_ACCURACY;
-					face->p		=	MIN(MIN(
-						vec3_dot(a->w,vec3_cross(face->n,a->w-b->w)),
-						vec3_dot(b->w,vec3_cross(face->n,b->w-c->w))),
-						vec3_dot(c->w,vec3_cross(face->n,c->w-a->w)))	/
-						(v?l:1);
-					face->p		=	face->p>=-EPA_INSIDE_EPS?0:face->p;
 					if(v)
 					{
-						face->d		=	vec3_dot(a->w,face->n)/l;
+						if (!(getedgedist(face, a, b, face->d) ||
+							  getedgedist(face, b, c, face->d) ||
+							  getedgedist(face, c, a, face->d)))
+						{
+							// Origin projects to the interior of the triangle
+							// Use distance to triangle plane
+							face->d = vec3_dot(a->w, face->n) / l;
+						}
 						face->n		/=	l;
 						if(forced||(face->d>=-EPA_PLANE_EPS))
 						{
@@ -732,15 +773,13 @@ struct	GJK
 			{
 				sFace*		minf=m_hull.root;
 				real_t	mind=minf->d*minf->d;
-				real_t	maxp=minf->p;
 				for(sFace* f=minf->l[1];f;f=f->l[1])
 				{
 					const real_t	sqd=f->d*f->d;
-					if((f->p>=maxp)&&(sqd<mind))
+					if(sqd<mind)
 					{
 						minf=f;
 						mind=sqd;
-						maxp=f->p;
 					}
 				}
 				return(minf);

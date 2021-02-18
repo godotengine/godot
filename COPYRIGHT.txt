@@ -88,6 +88,11 @@ Copyright: 1997-2017, Sam Lantinga
  2014-2021, Godot Engine contributors.
 License: Expat and Zlib
 
+Files: ./servers/physics/collision_solver_sat.cpp
+Comment: Open Dynamics Engine
+Copyright: 2001-2003, Russell L. Smith, Alen Ladavac, Nguyen Binh
+License: BSD-3-clause
+
 Files: ./servers/physics/gjk_epa.cpp
  ./servers/physics/joints/generic_6dof_joint_sw.cpp
  ./servers/physics/joints/generic_6dof_joint_sw.h
