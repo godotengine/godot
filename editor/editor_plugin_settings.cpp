@@ -51,47 +51,17 @@ void EditorPluginSettings::_notification(int p_what) {
 void EditorPluginSettings::update_plugins() {
 
 	plugin_list->clear();
-
-	DirAccess *da = DirAccess::create(DirAccess::ACCESS_RESOURCES);
-	Error err = da->change_dir("res://addons");
-	if (err != OK) {
-		memdelete(da);
-		return;
-	}
-
 	updating = true;
-
 	TreeItem *root = plugin_list->create_item();
 
-	da->list_dir_begin();
-
-	String d = da->get_next();
-
-	Vector<String> plugins;
-
-	while (d != String()) {
-
-		bool dir = da->current_is_dir();
-		String path = "res://addons/" + d + "/plugin.cfg";
-
-		if (dir && FileAccess::exists(path)) {
-
-			plugins.push_back(d);
-		}
-
-		d = da->get_next();
-	}
-
-	da->list_dir_end();
-	memdelete(da);
-
+	Vector<String> plugins = _get_plugins("res://addons");
 	plugins.sort();
 
 	for (int i = 0; i < plugins.size(); i++) {
 
 		Ref<ConfigFile> cf;
 		cf.instance();
-		String path = "res://addons/" + plugins[i] + "/plugin.cfg";
+		const String path = plugins[i];
 
 		Error err2 = cf->load(path);
 
@@ -122,7 +92,6 @@ void EditorPluginSettings::update_plugins() {
 			}
 
 			if (!key_missing) {
-				String d2 = plugins[i];
 				String name = cf->get_value("plugin", "name");
 				String author = cf->get_value("plugin", "author");
 				String version = cf->get_value("plugin", "version");
@@ -132,14 +101,14 @@ void EditorPluginSettings::update_plugins() {
 				TreeItem *item = plugin_list->create_item(root);
 				item->set_text(0, name);
 				item->set_tooltip(0, TTR("Name:") + " " + name + "\n" + TTR("Path:") + " " + path + "\n" + TTR("Main Script:") + " " + script + "\n" + TTR("Description:") + " " + description);
-				item->set_metadata(0, d2);
+				item->set_metadata(0, path);
 				item->set_text(1, version);
 				item->set_metadata(1, script);
 				item->set_text(2, author);
 				item->set_metadata(2, description);
 				item->set_cell_mode(3, TreeItem::CELL_MODE_CHECK);
 				item->set_text(3, TTR("Enable"));
-				bool is_active = EditorNode::get_singleton()->is_addon_plugin_enabled(d2);
+				bool is_active = EditorNode::get_singleton()->is_addon_plugin_enabled(path);
 				item->set_checked(3, is_active);
 				item->set_editable(3, true);
 				item->add_button(4, get_icon("Edit", "EditorIcons"), BUTTON_PLUGIN_EDIT, false, TTR("Edit Plugin"));
@@ -183,10 +152,37 @@ void EditorPluginSettings::_cell_button_pressed(Object *p_item, int p_column, in
 	if (p_id == BUTTON_PLUGIN_EDIT) {
 		if (p_column == 4) {
 			String dir = item->get_metadata(0);
-			plugin_config_dialog->config("res://addons/" + dir + "/plugin.cfg");
+			plugin_config_dialog->config(dir);
 			plugin_config_dialog->popup_centered();
 		}
 	}
+}
+
+Vector<String> EditorPluginSettings::_get_plugins(const String &p_dir) {
+	DirAccessRef da = DirAccess::create(DirAccess::ACCESS_RESOURCES);
+	Error err = da->change_dir(p_dir);
+	if (err != OK) {
+		return Vector<String>();
+	}
+
+	Vector<String> plugins;
+	da->list_dir_begin();
+	for (String path = da->get_next(); path != String(); path = da->get_next()) {
+		if (path[0] == '.' || !da->current_is_dir()) {
+			continue;
+		}
+
+		const String full_path = p_dir.plus_file(path);
+		const String plugin_config = full_path.plus_file("plugin.cfg");
+		if (FileAccess::exists(plugin_config)) {
+			plugins.push_back(plugin_config);
+		} else {
+			plugins.append_array(_get_plugins(full_path));
+		}
+	}
+
+	da->list_dir_end();
+	return plugins;
 }
 
 void EditorPluginSettings::_bind_methods() {
