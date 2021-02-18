@@ -53,8 +53,8 @@ public:
 	virtual int intersect_point(const Vector2 &p_point, ShapeResult *r_results, int p_result_max, const Set<RID> &p_exclude = Set<RID>(), uint32_t p_collision_mask = 0xFFFFFFFF, bool p_collide_with_bodies = true, bool p_collide_with_areas = false, bool p_pick_point = false);
 	virtual int intersect_point_on_canvas(const Vector2 &p_point, ObjectID p_canvas_instance_id, ShapeResult *r_results, int p_result_max, const Set<RID> &p_exclude = Set<RID>(), uint32_t p_collision_mask = 0xFFFFFFFF, bool p_collide_with_bodies = true, bool p_collide_with_areas = false, bool p_pick_point = false);
 	virtual bool intersect_ray(const Vector2 &p_from, const Vector2 &p_to, RayResult &r_result, const Set<RID> &p_exclude = Set<RID>(), uint32_t p_collision_mask = 0xFFFFFFFF, bool p_collide_with_bodies = true, bool p_collide_with_areas = false);
-	virtual int intersect_shape(const RID &p_shape, const Transform2D &p_xform, const Vector2 &p_motion, real_t p_margin, ShapeResult *r_results, int p_result_max, const Set<RID> &p_exclude = Set<RID>(), uint32_t p_collision_mask = 0xFFFFFFFF, bool p_collide_with_bodies = true, bool p_collide_with_areas = false);
-	virtual bool cast_motion(const RID &p_shape, const Transform2D &p_xform, const Vector2 &p_motion, real_t p_margin, real_t &p_closest_safe, real_t &p_closest_unsafe, const Set<RID> &p_exclude = Set<RID>(), uint32_t p_collision_mask = 0xFFFFFFFF, bool p_collide_with_bodies = true, bool p_collide_with_areas = false);
+	virtual int intersect_shape(const RID &p_shape, const Transform2D &p_shape_xform, const Vector2 &p_motion, real_t p_margin, ShapeResult *r_results, int p_result_max, const Set<RID> &p_exclude = Set<RID>(), uint32_t p_collision_mask = 0xFFFFFFFF, bool p_collide_with_bodies = true, bool p_collide_with_areas = false);
+	virtual bool cast_motion(const RID &p_shape, const Transform2D &p_shape_xform, const Vector2 &p_motion, real_t p_margin, real_t &r_best_safe, real_t &r_best_unsafe, const Set<RID> &p_exclude = Set<RID>(), uint32_t p_collision_mask = 0xFFFFFFFF, bool p_collide_with_bodies = true, bool p_collide_with_areas = false);
 	virtual bool collide_shape(RID p_shape, const Transform2D &p_shape_xform, const Vector2 &p_motion, real_t p_margin, Vector2 *r_results, int p_result_max, int &r_result_count, const Set<RID> &p_exclude = Set<RID>(), uint32_t p_collision_mask = 0xFFFFFFFF, bool p_collide_with_bodies = true, bool p_collide_with_areas = false);
 	virtual bool rest_info(RID p_shape, const Transform2D &p_shape_xform, const Vector2 &p_motion, real_t p_margin, ShapeRestInfo *r_info, const Set<RID> &p_exclude = Set<RID>(), uint32_t p_collision_mask = 0xFFFFFFFF, bool p_collide_with_bodies = true, bool p_collide_with_areas = false);
 
@@ -75,10 +75,10 @@ public:
 	};
 
 private:
-	struct ExcludedShapeSW {
-		Shape2DSW *local_shape;
-		const CollisionObject2DSW *against_object;
-		int against_shape_index;
+	struct ExcludedShapePairSW {
+		const Shape2DSW *local_shape;
+		const CollisionObject2DSW *other_object;
+		int other_shape_index;
 	};
 
 	uint64_t elapsed_time[ELAPSED_TIME_MAX];
@@ -98,36 +98,34 @@ private:
 
 	Set<CollisionObject2DSW *> objects;
 
-	Area2DSW *area;
+	Area2DSW *area = nullptr;
 
-	real_t contact_recycle_radius;
-	real_t contact_max_separation;
-	real_t contact_max_allowed_penetration;
-	real_t constraint_bias;
-	real_t test_motion_min_contact_depth;
+	real_t contact_recycle_radius = 1.0;
+	real_t contact_max_separation = 1.5;
+	real_t contact_max_allowed_penetration = 0.3;
+	real_t constraint_bias = 0.2;
 
 	enum {
-
 		INTERSECTION_QUERY_MAX = 2048
 	};
 
 	CollisionObject2DSW *intersection_query_results[INTERSECTION_QUERY_MAX];
 	int intersection_query_subindex_results[INTERSECTION_QUERY_MAX];
 
-	real_t body_linear_velocity_sleep_threshold;
-	real_t body_angular_velocity_sleep_threshold;
-	real_t body_time_to_sleep;
+	real_t body_linear_velocity_sleep_threshold = GLOBAL_DEF("physics/2d/sleep_threshold_linear", 2.0);
+	real_t body_angular_velocity_sleep_threshold = GLOBAL_DEF("physics/2d/sleep_threshold_angular", (8.0 / 180.0 * Math_PI));
+	real_t body_time_to_sleep = GLOBAL_DEF("physics/2d/time_before_sleep", 0.5);
 
-	bool locked;
+	bool locked = false;
 
-	int island_count;
-	int active_objects;
-	int collision_pairs;
+	int island_count = 0;
+	int active_objects = 0;
+	int collision_pairs = 0;
 
 	int _cull_aabb_for_body(Body2DSW *p_body, const Rect2 &p_aabb);
 
 	Vector<Vector2> contact_debug;
-	int contact_debug_count;
+	int contact_debug_count = 0;
 
 	friend class Physics2DDirectSpaceStateSW;
 
@@ -186,8 +184,8 @@ public:
 
 	int get_collision_pairs() const { return collision_pairs; }
 
-	bool test_body_motion(Body2DSW *p_body, const Transform2D &p_from, const Vector2 &p_motion, bool p_infinite_inertia, real_t p_margin, Physics2DServer::MotionResult *r_result, bool p_exclude_raycast_shapes = true);
-	int test_body_ray_separation(Body2DSW *p_body, const Transform2D &p_transform, bool p_infinite_inertia, Vector2 &r_recover_motion, Physics2DServer::SeparationResult *r_results, int p_result_max, real_t p_margin);
+	bool test_body_motion(Body2DSW *p_body, const Transform2D &p_xform, const Vector2 &p_motion, bool p_infinite_inertia, real_t p_margin, Physics2DServer::MotionResult *r_result, bool p_exclude_ray_shapes = true);
+	int test_body_ray_separation(Body2DSW *p_body, const Transform2D &p_xform, bool p_infinite_inertia, Vector2 &r_recover_motion, Physics2DServer::SeparationResult *r_results, int p_result_max, real_t p_margin);
 
 	void set_debug_contacts(int p_amount) { contact_debug.resize(p_amount); }
 	_FORCE_INLINE_ bool is_debugging_contacts() const { return !contact_debug.empty(); }

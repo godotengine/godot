@@ -176,8 +176,8 @@ public:
 
 		RID rid;
 		ObjectID collider_id;
-		Object *collider;
-		int shape;
+		Object *collider = nullptr;
+		int shape = 0;
 		Variant metadata;
 	};
 
@@ -288,8 +288,7 @@ public:
 		SPACE_PARAM_BODY_LINEAR_VELOCITY_SLEEP_THRESHOLD,
 		SPACE_PARAM_BODY_ANGULAR_VELOCITY_SLEEP_THRESHOLD,
 		SPACE_PARAM_BODY_TIME_TO_SLEEP,
-		SPACE_PARAM_CONSTRAINT_DEFAULT_BIAS,
-		SPACE_PARAM_TEST_MOTION_MIN_CONTACT_DEPTH,
+		SPACE_PARAM_CONSTRAINT_DEFAULT_BIAS
 	};
 
 	virtual void space_set_param(RID p_space, SpaceParameter p_param, real_t p_value) = 0;
@@ -500,17 +499,11 @@ public:
 		Vector2 collision_point;
 		Vector2 collision_normal;
 		Vector2 collider_velocity;
-		int collision_local_shape;
+		int collision_local_shape = 0;
 		ObjectID collider_id;
 		RID collider;
-		int collider_shape;
+		int collider_shape = 0;
 		Variant collider_metadata;
-
-		MotionResult() {
-			collision_local_shape = 0;
-			collider_shape = 0;
-			collider_id = 0;
-		}
 	};
 
 	virtual bool body_test_motion(RID p_body, const Transform2D &p_from, const Vector2 &p_motion, bool p_infinite_inertia, float p_margin = 0.001, MotionResult *r_result = NULL, bool p_exclude_raycast_shapes = true) = 0;

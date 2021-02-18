@@ -207,21 +207,11 @@ static void _generate_contacts_face_face(const Vector3 *p_points_A, int p_point_
 		SWAP(clipbuf_src, clipbuf_dst);
 	}
 
-	// generate contacts
-	//Plane plane_A(p_points_A[0],p_points_A[1],p_points_A[2]);
-
 	for (int i = 0; i < clipbuf_len; i++) {
 
 		real_t d = plane_B.distance_to(clipbuf_src[i]);
-		/*
-		if (d>CMP_EPSILON)
-			continue;
-		*/
 
 		Vector3 closest_B = clipbuf_src[i] - plane_B.normal * d;
-
-		if (p_callback->normal.dot(clipbuf_src[i]) >= p_callback->normal.dot(closest_B))
-			continue;
 
 		p_callback->call(clipbuf_src[i], closest_B);
 	}
@@ -334,7 +324,7 @@ public:
 		min_B -= (min_A + max_A) * 0.5;
 		max_B -= (min_A + max_A) * 0.5;
 
-		if (min_B > 0.0 || max_B < 0.0) {
+		if (min_B >= 0.0 || max_B <= 0.0) {
 			separator_axis = axis;
 			return false; // doesn't contain 0
 		}

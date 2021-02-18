@@ -33,9 +33,6 @@
 
 #include "gjk_epa.h"
 
-#define collision_solver sat_calculate_penetration
-//#define collision_solver gjk_epa_calculate_penetration
-
 bool CollisionSolverSW::solve_static_plane(const ShapeSW *p_shape_A, const Transform &p_transform_A, const ShapeSW *p_shape_B, const Transform &p_transform_B, CallbackResult p_result_callback, void *p_userdata, bool p_swap_result) {
 
 	const PlaneShapeSW *plane = static_cast<const PlaneShapeSW *>(p_shape_A);
@@ -118,6 +115,7 @@ struct _ConcaveCollisionInfo {
 	real_t margin_A;
 	real_t margin_B;
 	Vector3 close_A, close_B;
+	real_t distance;
 };
 
 void CollisionSolverSW::concave_callback(void *p_userdata, ShapeSW *p_convex) {
@@ -125,7 +123,7 @@ void CollisionSolverSW::concave_callback(void *p_userdata, ShapeSW *p_convex) {
 	_ConcaveCollisionInfo &cinfo = *(_ConcaveCollisionInfo *)(p_userdata);
 	cinfo.aabb_tests++;
 
-	bool collided = collision_solver(cinfo.shape_A, *cinfo.transform_A, p_convex, *cinfo.transform_B, cinfo.result_callback, cinfo.userdata, cinfo.swap_result, NULL, cinfo.margin_A, cinfo.margin_B);
+	bool collided = sat_calculate_penetration(cinfo.shape_A, *cinfo.transform_A, p_convex, *cinfo.transform_B, cinfo.result_callback, cinfo.userdata, cinfo.swap_result, NULL, cinfo.margin_A, cinfo.margin_B);
 	if (!collided)
 		return;
 
@@ -231,7 +229,7 @@ bool CollisionSolverSW::solve_static(const ShapeSW *p_shape_A, const Transform &
 
 	} else {
 
-		return collision_solver(p_shape_A, p_transform_A, p_shape_B, p_transform_B, p_result_callback, p_userdata, false, r_sep_axis, p_margin_A, p_margin_B);
+		return sat_calculate_penetration(p_shape_A, p_transform_A, p_shape_B, p_transform_B, p_result_callback, p_userdata, false, r_sep_axis, p_margin_A, p_margin_B);
 	}
 }
 
@@ -239,25 +237,25 @@ void CollisionSolverSW::concave_distance_callback(void *p_userdata, ShapeSW *p_c
 
 	_ConcaveCollisionInfo &cinfo = *(_ConcaveCollisionInfo *)(p_userdata);
 	cinfo.aabb_tests++;
-	if (cinfo.collided)
-		return;
 
-	Vector3 close_A, close_B;
-	cinfo.collided = !gjk_epa_calculate_distance(cinfo.shape_A, *cinfo.transform_A, p_convex, *cinfo.transform_B, close_A, close_B);
-
-	if (cinfo.collided)
-		return;
-	if (!cinfo.tested || close_A.distance_squared_to(close_B) < cinfo.close_A.distance_squared_to(cinfo.close_B)) {
-
-		cinfo.close_A = close_A;
-		cinfo.close_B = close_B;
-		cinfo.tested = true;
+	GjkEpaResult result;
+	if (!gjk_epa_calculate_distance(cinfo.shape_A, *cinfo.transform_A, p_convex, *cinfo.transform_B, result)) {
+		ERR_FAIL_COND_MSG(result.status != GjkEpaResult::Penetrating, "GJK EPA Algorithm failed.");
+		cinfo.collisions++;
+		cinfo.collided = true;
+		gjk_epa_calculate_penetration(cinfo.shape_A, *cinfo.transform_A, p_convex, *cinfo.transform_B, result);
 	}
 
-	cinfo.collisions++;
+	if (!cinfo.tested || result.distance < cinfo.distance) {
+
+		cinfo.close_A = result.witnesses[0];
+		cinfo.close_B = result.witnesses[1];
+		cinfo.distance = result.distance;
+		cinfo.tested = true;
+	}
 }
 
-bool CollisionSolverSW::solve_distance_plane(const ShapeSW *p_shape_A, const Transform &p_transform_A, const ShapeSW *p_shape_B, const Transform &p_transform_B, Vector3 &r_point_A, Vector3 &r_point_B) {
+real_t CollisionSolverSW::solve_distance_plane(const ShapeSW *p_shape_A, const Transform &p_transform_A, const ShapeSW *p_shape_B, const Transform &p_transform_B, Vector3 &r_point_A, Vector3 &r_point_B) {
 
 	const PlaneShapeSW *plane = static_cast<const PlaneShapeSW *>(p_shape_A);
 	if (p_shape_B->get_type() == PhysicsServer::SHAPE_PLANE)
@@ -270,9 +268,8 @@ bool CollisionSolverSW::solve_distance_plane(const ShapeSW *p_shape_A, const Tra
 
 	p_shape_B->get_supports(p_transform_B.basis.xform_inv(-p.normal).normalized(), max_supports, supports, support_count);
 
-	bool collided = false;
 	Vector3 closest;
-	real_t closest_d = 0;
+	real_t closest_d = 10e20;
 
 	for (int i = 0; i < support_count; i++) {
 
@@ -281,34 +278,25 @@ bool CollisionSolverSW::solve_distance_plane(const ShapeSW *p_shape_A, const Tra
 		if (i == 0 || d < closest_d) {
 			closest = supports[i];
 			closest_d = d;
-			if (d <= 0)
-				collided = true;
 		}
 	}
 
 	r_point_A = p.project(closest);
 	r_point_B = closest;
 
-	return collided;
+	return closest_d;
 }
 
-bool CollisionSolverSW::solve_distance(const ShapeSW *p_shape_A, const Transform &p_transform_A, const ShapeSW *p_shape_B, const Transform &p_transform_B, Vector3 &r_point_A, Vector3 &r_point_B, const AABB &p_concave_hint, Vector3 *r_sep_axis) {
+real_t CollisionSolverSW::solve_distance(const ShapeSW *p_shape_A, const Transform &p_transform_A, const ShapeSW *p_shape_B, const Transform &p_transform_B, Vector3 &r_point_A, Vector3 &r_point_B, const AABB &p_concave_hint) {
 
-	if (p_shape_A->is_concave())
-		return false;
+	ERR_FAIL_COND_V_MSG(p_shape_A->is_concave(), 0, "Cannot test concave shape.");
 
 	if (p_shape_B->get_type() == PhysicsServer::SHAPE_PLANE) {
 
-		Vector3 a, b;
-		bool col = solve_distance_plane(p_shape_B, p_transform_B, p_shape_A, p_transform_A, a, b);
-		r_point_A = b;
-		r_point_B = a;
-		return !col;
+		return solve_distance_plane(p_shape_B, p_transform_B, p_shape_A, p_transform_A, r_point_A, r_point_B);
+	}
 
-	} else if (p_shape_B->is_concave()) {
-
-		if (p_shape_A->is_concave())
-			return false;
+	if (p_shape_B->is_concave()) {
 
 		const ConcaveShapeSW *concave_B = static_cast<const ConcaveShapeSW *>(p_shape_B);
 
@@ -359,14 +347,23 @@ bool CollisionSolverSW::solve_distance(const ShapeSW *p_shape_A, const Transform
 		}
 
 		concave_B->cull(local_aabb, concave_distance_callback, &cinfo);
-		if (!cinfo.collided) {
-			r_point_A = cinfo.close_A;
-			r_point_B = cinfo.close_B;
-		}
 
-		return !cinfo.collided;
-	} else {
+		ERR_FAIL_COND_V_MSG(!cinfo.tested, 0, "Failed to extract ConcaveShape distance information");
 
-		return gjk_epa_calculate_distance(p_shape_A, p_transform_A, p_shape_B, p_transform_B, r_point_A, r_point_B); //should pass sepaxis..
+		r_point_A = cinfo.close_A;
+		r_point_B = cinfo.close_B;
+
+		return cinfo.distance;
 	}
+
+	GjkEpaResult result;
+	if (!gjk_epa_calculate_distance(p_shape_A, p_transform_A, p_shape_B, p_transform_B, result)) {
+		ERR_FAIL_COND_V_MSG(result.status != GjkEpaResult::Penetrating, 0, "GJK EPA Algorithm failed.");
+		gjk_epa_calculate_penetration(p_shape_A, p_transform_A, p_shape_B, p_transform_B, result);
+	}
+
+	r_point_A = result.witnesses[0];
+	r_point_B = result.witnesses[1];
+
+	return result.distance;
 }
