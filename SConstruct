@@ -617,7 +617,7 @@ if selected_platform in platform_list:
     if env["minizip"]:
         env.Append(CPPDEFINES=["MINIZIP_ENABLED"])
 
-    editor_module_list = ["regex"]
+    editor_module_list = ["freetype", "regex"]
     if env["tools"] and not env.module_check_dependencies("tools", editor_module_list):
         print(
             "Build option 'module_"
