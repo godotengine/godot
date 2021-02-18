@@ -1288,7 +1288,8 @@ PREAMBLE(bool)::_prefill_line(RasterizerCanvas::Item::CommandLine *p_line, FillS
 
 		r_fill_state.curr_batch->type = line_batch_type;
 		r_fill_state.curr_batch->color = bcol;
-		r_fill_state.curr_batch->batch_texture_id = -1;
+		// cast is to stop sanitizer benign warning .. watch though in case destination type changes
+		r_fill_state.curr_batch->batch_texture_id = (uint16_t)-1;
 		r_fill_state.curr_batch->first_command = command_num;
 		r_fill_state.curr_batch->num_commands = 1;
 		//r_fill_state.curr_batch->first_quad = bdata.total_quads;
