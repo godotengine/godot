@@ -47,6 +47,16 @@
 //   value and, as an important benefit, you can be sure the value is properly synchronized
 //   even with threads that are already running.
 
+// This is used in very specific areas of the engine where it's critical that these guarantees are held
+#define SAFE_NUMERIC_TYPE_PUN_GUARANTEES(m_type)                        \
+	static_assert(sizeof(SafeNumeric<m_type>) == sizeof(m_type), "");   \
+	static_assert(alignof(SafeNumeric<m_type>) == alignof(m_type), ""); \
+	static_assert(std::is_trivially_destructible<std::atomic<m_type> >::value, "");
+
+#if defined(DEBUG_ENABLED)
+void check_lockless_atomics();
+#endif
+
 template <class T>
 class SafeNumeric {
 	std::atomic<T> value;
