@@ -202,6 +202,19 @@ static const char *android_perms[] = {
 
 static const char *SPLASH_IMAGE_EXPORT_PATH = "res/drawable/splash.png";
 static const char *SPLASH_BG_COLOR_PATH = "res/drawable/splash_bg_color.png";
+static const char *SPLASH_CONFIG_PATH = "res://android/build/res/drawable/splash_drawable.xml";
+
+const String SPLASH_CONFIG_XML_CONTENT = R"SPLASH(<?xml version="1.0" encoding="utf-8"?>
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+	<item android:drawable="@drawable/splash_bg_color" />
+	<item>
+		<bitmap
+				android:gravity="%s"
+				android:filter="%s"
+				android:src="@drawable/splash" />
+	</item>
+</layer-list>
+)SPLASH";
 
 struct LauncherIcon {
 	const char *export_path;
@@ -1473,8 +1486,9 @@ class EditorExportPlatformAndroid : public EditorExportPlatform {
 		}
 	}
 
-	void load_splash_refs(Ref<Image> &splash_image, Ref<Image> &splash_bg_color_image) {
-		// TODO: Figure out how to handle remaining boot splash parameters (e.g: fullsize, filter)
+	String load_splash_refs(Ref<Image> &splash_image, Ref<Image> &splash_bg_color_image) {
+		bool scale_splash = ProjectSettings::get_singleton()->get("application/boot_splash/fullsize");
+		bool apply_filter = ProjectSettings::get_singleton()->get("application/boot_splash/use_filter");
 		String project_splash_path = ProjectSettings::get_singleton()->get("application/boot_splash/image");
 
 		if (!project_splash_path.is_empty()) {
@@ -1506,6 +1520,10 @@ class EditorExportPlatformAndroid : public EditorExportPlatform {
 		splash_bg_color_image.instance();
 		splash_bg_color_image->create(splash_image->get_width(), splash_image->get_height(), false, splash_image->get_format());
 		splash_bg_color_image->fill(bg_color);
+
+		String gravity = scale_splash ? "fill" : "center";
+		String processed_splash_config_xml = vformat(SPLASH_CONFIG_XML_CONTENT, gravity, bool_to_string(apply_filter));
+		return processed_splash_config_xml;
 	}
 
 	void load_icon_refs(const Ref<EditorExportPreset> &p_preset, Ref<Image> &icon, Ref<Image> &foreground, Ref<Image> &background) {
@@ -1549,11 +1567,18 @@ class EditorExportPlatformAndroid : public EditorExportPlatform {
 	}
 
 	void _copy_icons_to_gradle_project(const Ref<EditorExportPreset> &p_preset,
+			const String &processed_splash_config_xml,
 			const Ref<Image> &splash_image,
 			const Ref<Image> &splash_bg_color_image,
 			const Ref<Image> &main_image,
 			const Ref<Image> &foreground,
 			const Ref<Image> &background) {
+		// Store the splash configuration
+		if (!processed_splash_config_xml.is_empty()) {
+			print_verbose("Storing processed splash configuration: " + String("\n") + processed_splash_config_xml);
+			store_string_at_path(SPLASH_CONFIG_PATH, processed_splash_config_xml);
+		}
+
 		// Store the splash image
 		if (splash_image.is_valid() && !splash_image->is_empty()) {
 			print_verbose("Storing splash image in " + String(SPLASH_IMAGE_EXPORT_PATH));
@@ -2391,7 +2416,7 @@ public:
 
 		Ref<Image> splash_image;
 		Ref<Image> splash_bg_color_image;
-		load_splash_refs(splash_image, splash_bg_color_image);
+		String processed_splash_config_xml = load_splash_refs(splash_image, splash_bg_color_image);
 
 		Ref<Image> main_image;
 		Ref<Image> foreground;
@@ -2452,7 +2477,7 @@ public:
 				EditorNode::add_io_error("Unable to overwrite res://android/build/res/*.xml files with project name");
 			}
 			// Copies the project icon files into the appropriate Gradle project directory.
-			_copy_icons_to_gradle_project(p_preset, splash_image, splash_bg_color_image, main_image, foreground, background);
+			_copy_icons_to_gradle_project(p_preset, processed_splash_config_xml, splash_image, splash_bg_color_image, main_image, foreground, background);
 			// Write an AndroidManifest.xml file into the Gradle project directory.
 			_write_tmp_manifest(p_preset, p_give_internet, p_debug);
 
