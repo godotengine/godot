@@ -33,6 +33,10 @@
 
 #include "font_adv.h"
 
+#include "modules/modules_enabled.gen.h"
+
+#ifdef MODULE_FREETYPE_ENABLED
+
 #include <ft2build.h>
 #include FT_FREETYPE_H
 #include FT_TRUETYPE_TABLES_H
@@ -184,5 +188,7 @@ public:
 
 	virtual ~DynamicFontDataAdvanced() override;
 };
+
+#endif // MODULE_FREETYPE_ENABLED
 
 #endif // DYNAMIC_FONT_ADV_H

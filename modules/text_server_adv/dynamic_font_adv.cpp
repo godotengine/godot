@@ -30,6 +30,8 @@
 
 #include "dynamic_font_adv.h"
 
+#ifdef MODULE_FREETYPE_ENABLED
+
 #include FT_STROKER_H
 #include FT_ADVANCES_H
 #include FT_MULTIPLE_MASTERS_H
@@ -1001,3 +1003,5 @@ DynamicFontDataAdvanced::~DynamicFontDataAdvanced() {
 		FT_Done_FreeType(library);
 	}
 }
+
+#endif // MODULE_FREETYPE_ENABLED

@@ -38,6 +38,7 @@ def make_icu_data(target, source, env):
 # Thirdparty source files
 
 thirdparty_obj = []
+freetype_enabled = env.module_check_dependencies("text_server_adv", ["freetype"])
 
 if env["builtin_harfbuzz"]:
     env_harfbuzz = env_modules.Clone()
@@ -57,11 +58,9 @@ if env["builtin_harfbuzz"]:
         "src/hb-face.cc",
         "src/hb-fallback-shape.cc",
         "src/hb-font.cc",
-        "src/hb-ft.cc",
         #'src/hb-gdi.cc',
         #'src/hb-glib.cc',
         #'src/hb-gobject-structs.cc',
-        "src/hb-graphite2.cc",
         "src/hb-icu.cc",
         "src/hb-map.cc",
         "src/hb-number.cc",
@@ -109,16 +108,28 @@ if env["builtin_harfbuzz"]:
         "src/hb-unicode.cc",
         #'src/hb-uniscribe.cc'
     ]
+
+    if freetype_enabled:
+        thirdparty_sources += [
+            "src/hb-ft.cc",
+            "src/hb-graphite2.cc",
+        ]
     thirdparty_sources = [thirdparty_dir + file for file in thirdparty_sources]
 
     env_harfbuzz.Append(
         CPPPATH=[
             "#thirdparty/harfbuzz/src",
-            "#thirdparty/freetype/include",
-            "#thirdparty/graphite/include",
             "#thirdparty/icu4c/common/",
         ]
     )
+
+    if freetype_enabled:
+        env_harfbuzz.Append(
+            CPPPATH=[
+                "#thirdparty/freetype/include",
+                "#thirdparty/graphite/include",
+            ]
+        )
 
     if env["platform"] == "android" or env["platform"] == "linuxbsd" or env["platform"] == "server":
         env_harfbuzz.Append(CCFLAGS=["-DHAVE_PTHREAD"])
@@ -133,11 +144,17 @@ if env["builtin_harfbuzz"]:
         CCFLAGS=[
             "-DHAVE_ICU_BUILTIN",
             "-DHAVE_ICU",
-            "-DHAVE_FREETYPE",
-            "-DHAVE_GRAPHITE2",
-            "-DGRAPHITE2_STATIC",
         ]
     )
+
+    if freetype_enabled:
+        env_harfbuzz.Append(
+            CCFLAGS=[
+                "-DHAVE_FREETYPE",
+                "-DHAVE_GRAPHITE2",
+                "-DGRAPHITE2_STATIC",
+            ]
+        )
 
     lib = env_harfbuzz.add_library("harfbuzz_builtin", thirdparty_sources)
     thirdparty_obj += lib
@@ -156,7 +173,7 @@ if env["builtin_harfbuzz"]:
         env.Append(LIBS=[lib])
 
 
-if env["builtin_graphite"]:
+if env["builtin_graphite"] and freetype_enabled:
     env_graphite = env_modules.Clone()
     env_graphite.disable_warnings()
 
@@ -488,11 +505,17 @@ if env_text_server_adv["tools"]:
 env_text_server_adv.Append(
     CPPPATH=[
         "#thirdparty/harfbuzz/src",
-        "#thirdparty/freetype/include",
-        "#thirdparty/graphite/include",
         "#thirdparty/icu4c/common/",
     ]
 )
+
+if freetype_enabled:
+    env_text_server_adv.Append(
+        CPPPATH=[
+            "#thirdparty/freetype/include",
+            "#thirdparty/graphite/include",
+        ]
+    )
 
 env_text_server_adv.add_source_files(module_obj, "*.cpp")
 env.modules_sources += module_obj
