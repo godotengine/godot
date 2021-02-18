@@ -308,8 +308,8 @@ public:
 	uint64_t get_static_memory_peak_usage() const;
 	uint64_t get_dynamic_memory_usage() const;
 
-	void delay_usec(uint32_t p_usec) const;
-	void delay_msec(uint32_t p_msec) const;
+	void delay_usec(int p_usec) const;
+	void delay_msec(int p_msec) const;
 	uint32_t get_ticks_msec() const;
 	uint64_t get_ticks_usec() const;
 	uint32_t get_splash_tick_msec() const;
