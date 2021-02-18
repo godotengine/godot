@@ -37,6 +37,7 @@
     <Compile Include="Core\GodotSynchronizationContext.cs" />
     <Compile Include="Core\GodotTaskScheduler.cs" />
     <Compile Include="Core\GodotTraceListener.cs" />
+    <Compile Include="Core\GodotUnhandledExceptionEvent.cs" />
     <Compile Include="Core\Interfaces\IAwaitable.cs" />
     <Compile Include="Core\Interfaces\IAwaiter.cs" />
     <Compile Include="Core\Interfaces\ISerializationListener.cs" />
@@ -56,6 +57,7 @@
     <Compile Include="Core\StringName.cs" />
     <Compile Include="Core\Transform.cs" />
     <Compile Include="Core\Transform2D.cs" />
+    <Compile Include="Core\UnhandledExceptionArgs.cs" />
     <Compile Include="Core\Vector2.cs" />
     <Compile Include="Core\Vector2i.cs" />
     <Compile Include="Core\Vector3.cs" />
