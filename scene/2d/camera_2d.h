@@ -43,7 +43,7 @@ public:
 		ANCHOR_MODE_DRAG_CENTER
 	};
 
-	enum Camera2DProcessMode {
+	enum Camera2DProcessCallback {
 		CAMERA2D_PROCESS_PHYSICS,
 		CAMERA2D_PROCESS_IDLE
 	};
@@ -79,7 +79,7 @@ protected:
 	bool drag_vertical_offset_changed = false;
 
 	Point2 camera_screen_center;
-	void _update_process_mode();
+	void _update_process_callback();
 	void _update_scroll();
 
 	void _make_current(Object *p_which);
@@ -91,7 +91,7 @@ protected:
 	bool limit_drawing_enabled = false;
 	bool margin_drawing_enabled = false;
 
-	Camera2DProcessMode process_mode = CAMERA2D_PROCESS_IDLE;
+	Camera2DProcessCallback process_callback = CAMERA2D_PROCESS_IDLE;
 
 	Size2 _get_camera_screen_size() const;
 
@@ -137,8 +137,8 @@ public:
 	void set_follow_smoothing(float p_speed);
 	float get_follow_smoothing() const;
 
-	void set_process_mode(Camera2DProcessMode p_mode);
-	Camera2DProcessMode get_process_mode() const;
+	void set_process_callback(Camera2DProcessCallback p_mode);
+	Camera2DProcessCallback get_process_callback() const;
 
 	void make_current();
 	void clear_current();
@@ -170,6 +170,6 @@ public:
 };
 
 VARIANT_ENUM_CAST(Camera2D::AnchorMode);
-VARIANT_ENUM_CAST(Camera2D::Camera2DProcessMode);
+VARIANT_ENUM_CAST(Camera2D::Camera2DProcessCallback);
 
 #endif // CAMERA_2D_H

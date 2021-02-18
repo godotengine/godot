@@ -1761,6 +1761,10 @@ void EditorInspector::update_tree() {
 			continue;
 		}
 
+		if (p.name == "script") {
+			category_vbox = nullptr; // script should go into its own category
+		}
+
 		if (p.usage & PROPERTY_USAGE_HIGH_END_GFX && RS::get_singleton()->is_low_end()) {
 			continue; //do not show this property in low end gfx
 		}

@@ -46,7 +46,7 @@
 
 #include <stdint.h>
 
-VARIANT_ENUM_CAST(Node::PauseMode);
+VARIANT_ENUM_CAST(Node::ProcessMode);
 
 int Node::orphan_node_count = 0;
 
@@ -69,14 +69,14 @@ void Node::_notification(int p_notification) {
 			ERR_FAIL_COND(!get_viewport());
 			ERR_FAIL_COND(!get_tree());
 
-			if (data.pause_mode == PAUSE_MODE_INHERIT) {
+			if (data.process_mode == PROCESS_MODE_INHERIT) {
 				if (data.parent) {
-					data.pause_owner = data.parent->data.pause_owner;
+					data.process_owner = data.parent->data.process_owner;
 				} else {
-					data.pause_owner = nullptr;
+					data.process_owner = nullptr;
 				}
 			} else {
-				data.pause_owner = this;
+				data.process_owner = this;
 			}
 
 			if (data.input) {
@@ -110,7 +110,7 @@ void Node::_notification(int p_notification) {
 				remove_from_group("_vp_unhandled_key_input" + itos(get_viewport()->get_instance_id()));
 			}
 
-			data.pause_owner = nullptr;
+			data.process_owner = nullptr;
 			if (data.path_cache) {
 				memdelete(data.path_cache);
 				data.path_cache = nullptr;
@@ -391,44 +391,81 @@ bool Node::is_physics_processing_internal() const {
 	return data.physics_process_internal;
 }
 
-void Node::set_pause_mode(PauseMode p_mode) {
-	if (data.pause_mode == p_mode) {
+void Node::set_process_mode(ProcessMode p_mode) {
+	if (data.process_mode == p_mode) {
 		return;
 	}
 
-	bool prev_inherits = data.pause_mode == PAUSE_MODE_INHERIT;
-	data.pause_mode = p_mode;
 	if (!is_inside_tree()) {
-		return; //pointless
-	}
-	if ((data.pause_mode == PAUSE_MODE_INHERIT) == prev_inherits) {
-		return; ///nothing changed
+		data.process_mode = p_mode;
+		return;
 	}
 
-	Node *owner = nullptr;
+	bool prev_can_process = can_process();
 
-	if (data.pause_mode == PAUSE_MODE_INHERIT) {
+	data.process_mode = p_mode;
+
+	if (data.process_mode == PROCESS_MODE_INHERIT) {
 		if (data.parent) {
-			owner = data.parent->data.pause_owner;
+			data.process_owner = data.parent->data.owner;
+		} else {
+			data.process_owner = nullptr;
 		}
 	} else {
-		owner = this;
+		data.process_owner = this;
 	}
 
-	_propagate_pause_owner(owner);
-}
+	bool next_can_process = can_process();
 
-Node::PauseMode Node::get_pause_mode() const {
-	return data.pause_mode;
-}
+	int pause_notification = 0;
 
-void Node::_propagate_pause_owner(Node *p_owner) {
-	if (this != p_owner && data.pause_mode != PAUSE_MODE_INHERIT) {
-		return;
+	if (prev_can_process && !next_can_process) {
+		pause_notification = NOTIFICATION_PAUSED;
+	} else if (!prev_can_process && next_can_process) {
+		pause_notification = NOTIFICATION_UNPAUSED;
 	}
-	data.pause_owner = p_owner;
+
+	_propagate_process_owner(data.process_owner, pause_notification);
+#ifdef TOOLS_ENABLED
+	// This is required for the editor to update the visibility of disabled nodes
+	// Its very expensive during runtime to change, so editor-only
+	if (Engine::get_singleton()->is_editor_hint()) {
+		get_tree()->emit_signal("tree_process_mode_changed");
+	}
+#endif
+}
+
+void Node::_propagate_pause_notification(bool p_enable) {
+	bool prev_can_process = _can_process(!p_enable);
+	bool next_can_process = _can_process(p_enable);
+
+	if (prev_can_process && !next_can_process) {
+		notification(NOTIFICATION_PAUSED);
+	} else if (!prev_can_process && next_can_process) {
+		notification(NOTIFICATION_UNPAUSED);
+	}
+
 	for (int i = 0; i < data.children.size(); i++) {
-		data.children[i]->_propagate_pause_owner(p_owner);
+		data.children[i]->_propagate_pause_notification(p_enable);
+	}
+}
+
+Node::ProcessMode Node::get_process_mode() const {
+	return data.process_mode;
+}
+
+void Node::_propagate_process_owner(Node *p_owner, int p_notification) {
+	data.process_owner = p_owner;
+
+	if (p_notification != 0) {
+		notification(p_notification);
+	}
+
+	for (int i = 0; i < data.children.size(); i++) {
+		Node *c = data.children[i];
+		if (c->data.process_mode == PROCESS_MODE_INHERIT) {
+			c->_propagate_process_owner(p_owner, p_notification);
+		}
 	}
 }
 
@@ -805,30 +842,33 @@ bool Node::can_process_notification(int p_what) const {
 
 bool Node::can_process() const {
 	ERR_FAIL_COND_V(!is_inside_tree(), false);
+	return _can_process(get_tree()->is_paused());
+}
 
-	if (get_tree()->is_paused()) {
-		if (data.pause_mode == PAUSE_MODE_STOP) {
-			return false;
-		}
-		if (data.pause_mode == PAUSE_MODE_PROCESS) {
-			return true;
-		}
-		if (data.pause_mode == PAUSE_MODE_INHERIT) {
-			if (!data.pause_owner) {
-				return false; //clearly no pause owner by default
-			}
+bool Node::_can_process(bool p_paused) const {
+	ProcessMode process_mode;
 
-			if (data.pause_owner->data.pause_mode == PAUSE_MODE_PROCESS) {
-				return true;
-			}
-
-			if (data.pause_owner->data.pause_mode == PAUSE_MODE_STOP) {
-				return false;
-			}
+	if (data.process_mode == PROCESS_MODE_INHERIT) {
+		if (!data.process_owner) {
+			process_mode = PROCESS_MODE_PAUSABLE;
+		} else {
+			process_mode = data.process_owner->data.process_mode;
 		}
+	} else {
+		process_mode = data.process_mode;
 	}
 
-	return true;
+	if (process_mode == PROCESS_MODE_DISABLED) {
+		return false;
+	} else if (process_mode == PROCESS_MODE_ALWAYS) {
+		return true;
+	}
+
+	if (p_paused) {
+		return process_mode == PROCESS_MODE_WHEN_PAUSED;
+	} else {
+		return process_mode == PROCESS_MODE_PAUSABLE;
+	}
 }
 
 float Node::get_physics_process_delta_time() const {
@@ -1898,15 +1938,11 @@ String Node::get_filename() const {
 }
 
 void Node::set_editor_description(const String &p_editor_description) {
-	set_meta("_editor_description_", p_editor_description);
+	data.editor_description = p_editor_description;
 }
 
 String Node::get_editor_description() const {
-	if (has_meta("_editor_description_")) {
-		return get_meta("_editor_description_");
-	} else {
-		return "";
-	}
+	return data.editor_description;
 }
 
 void Node::set_editable_instance(Node *p_node, bool p_editable) {
@@ -2783,8 +2819,8 @@ void Node::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("is_processing_unhandled_input"), &Node::is_processing_unhandled_input);
 	ClassDB::bind_method(D_METHOD("set_process_unhandled_key_input", "enable"), &Node::set_process_unhandled_key_input);
 	ClassDB::bind_method(D_METHOD("is_processing_unhandled_key_input"), &Node::is_processing_unhandled_key_input);
-	ClassDB::bind_method(D_METHOD("set_pause_mode", "mode"), &Node::set_pause_mode);
-	ClassDB::bind_method(D_METHOD("get_pause_mode"), &Node::get_pause_mode);
+	ClassDB::bind_method(D_METHOD("set_process_mode", "mode"), &Node::set_process_mode);
+	ClassDB::bind_method(D_METHOD("get_process_mode"), &Node::get_process_mode);
 	ClassDB::bind_method(D_METHOD("can_process"), &Node::can_process);
 	ClassDB::bind_method(D_METHOD("print_stray_nodes"), &Node::_print_stray_nodes);
 
@@ -2822,12 +2858,12 @@ void Node::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("rpc_config", "method", "mode"), &Node::rpc_config);
 	ClassDB::bind_method(D_METHOD("rset_config", "property", "mode"), &Node::rset_config);
 
-	ClassDB::bind_method(D_METHOD("_set_editor_description", "editor_description"), &Node::set_editor_description);
-	ClassDB::bind_method(D_METHOD("_get_editor_description"), &Node::get_editor_description);
-	ADD_PROPERTY(PropertyInfo(Variant::STRING, "editor_description", PROPERTY_HINT_MULTILINE_TEXT, "", PROPERTY_USAGE_EDITOR | PROPERTY_USAGE_INTERNAL), "_set_editor_description", "_get_editor_description");
+	ClassDB::bind_method(D_METHOD("set_editor_description", "editor_description"), &Node::set_editor_description);
+	ClassDB::bind_method(D_METHOD("get_editor_description"), &Node::get_editor_description);
 
 	ClassDB::bind_method(D_METHOD("_set_import_path", "import_path"), &Node::set_import_path);
 	ClassDB::bind_method(D_METHOD("_get_import_path"), &Node::get_import_path);
+
 	ADD_PROPERTY(PropertyInfo(Variant::NODE_PATH, "_import_path", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR | PROPERTY_USAGE_INTERNAL), "_set_import_path", "_get_import_path");
 
 	{
@@ -2891,9 +2927,11 @@ void Node::_bind_methods() {
 	BIND_CONSTANT(NOTIFICATION_APPLICATION_FOCUS_OUT);
 	BIND_CONSTANT(NOTIFICATION_TEXT_SERVER_CHANGED);
 
-	BIND_ENUM_CONSTANT(PAUSE_MODE_INHERIT);
-	BIND_ENUM_CONSTANT(PAUSE_MODE_STOP);
-	BIND_ENUM_CONSTANT(PAUSE_MODE_PROCESS);
+	BIND_ENUM_CONSTANT(PROCESS_MODE_INHERIT);
+	BIND_ENUM_CONSTANT(PROCESS_MODE_PAUSABLE);
+	BIND_ENUM_CONSTANT(PROCESS_MODE_WHEN_PAUSED);
+	BIND_ENUM_CONSTANT(PROCESS_MODE_ALWAYS);
+	BIND_ENUM_CONSTANT(PROCESS_MODE_DISABLED);
 
 	BIND_ENUM_CONSTANT(DUPLICATE_SIGNALS);
 	BIND_ENUM_CONSTANT(DUPLICATE_GROUPS);
@@ -2906,14 +2944,18 @@ void Node::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("tree_exiting"));
 	ADD_SIGNAL(MethodInfo("tree_exited"));
 
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "pause_mode", PROPERTY_HINT_ENUM, "Inherit,Stop,Process"), "set_pause_mode", "get_pause_mode");
-
 	ADD_PROPERTY(PropertyInfo(Variant::STRING_NAME, "name", PROPERTY_HINT_NONE, "", 0), "set_name", "get_name");
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "filename", PROPERTY_HINT_NONE, "", 0), "set_filename", "get_filename");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "owner", PROPERTY_HINT_RESOURCE_TYPE, "Node", 0), "set_owner", "get_owner");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "multiplayer", PROPERTY_HINT_RESOURCE_TYPE, "MultiplayerAPI", 0), "", "get_multiplayer");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "custom_multiplayer", PROPERTY_HINT_RESOURCE_TYPE, "MultiplayerAPI", 0), "set_custom_multiplayer", "get_custom_multiplayer");
+
+	ADD_GROUP("Process", "process_");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "process_mode", PROPERTY_HINT_ENUM, "Inherit,Pausable,WhenPaused,Always,Disabled"), "set_process_mode", "get_process_mode");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "process_priority"), "set_process_priority", "get_process_priority");
+
+	ADD_GROUP("Editor Description", "editor_");
+	ADD_PROPERTY(PropertyInfo(Variant::STRING, "editor_description", PROPERTY_HINT_MULTILINE_TEXT, "", PROPERTY_USAGE_EDITOR | PROPERTY_USAGE_INTERNAL), "set_editor_description", "get_editor_description");
 
 	BIND_VMETHOD(MethodInfo("_process", PropertyInfo(Variant::FLOAT, "delta")));
 	BIND_VMETHOD(MethodInfo("_physics_process", PropertyInfo(Variant::FLOAT, "delta")));

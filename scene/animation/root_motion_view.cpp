@@ -89,12 +89,12 @@ void RootMotionView::_notification(int p_what) {
 
 			AnimationTree *tree = Object::cast_to<AnimationTree>(node);
 			if (tree && tree->is_active() && tree->get_root_motion_track() != NodePath()) {
-				if (is_processing_internal() && tree->get_process_mode() == AnimationTree::ANIMATION_PROCESS_PHYSICS) {
+				if (is_processing_internal() && tree->get_process_callback() == AnimationTree::ANIMATION_PROCESS_PHYSICS) {
 					set_process_internal(false);
 					set_physics_process_internal(true);
 				}
 
-				if (is_physics_processing_internal() && tree->get_process_mode() == AnimationTree::ANIMATION_PROCESS_IDLE) {
+				if (is_physics_processing_internal() && tree->get_process_callback() == AnimationTree::ANIMATION_PROCESS_IDLE) {
 					set_process_internal(true);
 					set_physics_process_internal(false);
 				}
