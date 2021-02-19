@@ -171,10 +171,13 @@ void ColorPicker::_value_changed(double) {
 		return;
 
 	if (hsv_mode_enabled) {
-		color.set_hsv(scroll[0]->get_value() / 360.0,
-				scroll[1]->get_value() / 100.0,
-				scroll[2]->get_value() / 100.0,
-				scroll[3]->get_value() / 255.0);
+		h = scroll[0]->get_value() / 360.0;
+		s = scroll[1]->get_value() / 100.0;
+		v = scroll[2]->get_value() / 100.0;
+		color.set_hsv(h, s, v, scroll[3]->get_value() / 255.0);
+
+		last_hsv = color;
+
 	} else {
 		for (int i = 0; i < 4; i++) {
 			color.components[i] = scroll[i]->get_value() / (raw_mode_enabled ? 1.0 : 255.0);
