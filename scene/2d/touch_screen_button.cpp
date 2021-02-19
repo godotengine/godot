@@ -129,8 +129,11 @@ void TouchScreenButton::_notification(int p_what) {
 			if (shape.is_valid()) {
 				Color draw_col = get_tree()->get_debug_collisions_color();
 
-				Vector2 size = texture.is_null() ? shape->get_rect().size : texture->get_size();
-				Vector2 pos = shape_centered ? size * 0.5f : Vector2();
+				Vector2 pos;
+				if (shape_centered && texture.is_valid()) {
+					pos = texture->get_size() * 0.5;
+				}
+
 				draw_set_transform_matrix(get_canvas_transform().translated(pos));
 				shape->draw(get_canvas_item(), draw_col);
 			}
@@ -251,9 +254,12 @@ bool TouchScreenButton::_is_point_inside(const Point2 &p_point) {
 	if (shape.is_valid()) {
 		check_rect = false;
 
-		Vector2 size = texture.is_null() ? shape->get_rect().size : texture->get_size();
-		Transform2D xform = shape_centered ? Transform2D().translated(size * 0.5f) : Transform2D();
-		touched = shape->collide(xform, unit_rect, Transform2D(0, coord + Vector2(0.5, 0.5)));
+		Vector2 pos;
+		if (shape_centered && texture.is_valid()) {
+			pos = texture->get_size() * 0.5;
+		}
+
+		touched = shape->collide(Transform2D().translated(pos), unit_rect, Transform2D(0, coord + Vector2(0.5, 0.5)));
 	}
 
 	if (bitmask.is_valid()) {
