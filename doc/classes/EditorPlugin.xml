@@ -155,6 +155,8 @@
 			<return type="bool">
 			</return>
 			<description>
+				This method is called when the editor is about to run the project. The plugin can then perform required operations before the project runs.
+				This method must return a boolean. If this method returns [code]false[/code], the project will not run. The run is aborted immediately, so this also prevents all other plugins' [method build] methods from running.
 			</description>
 		</method>
 		<method name="clear" qualifiers="virtual">
