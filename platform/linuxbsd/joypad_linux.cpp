@@ -73,7 +73,12 @@ void JoypadLinux::Joypad::reset() {
 
 JoypadLinux::JoypadLinux(Input *in) {
 #ifdef UDEV_ENABLED
-	use_udev = initialize_libudev() == 0;
+#ifdef DEBUG_ENABLED
+	int dylibloader_verbose = 1;
+#else
+	int dylibloader_verbose = 0;
+#endif
+	use_udev = initialize_libudev(dylibloader_verbose) == 0;
 	if (use_udev) {
 		print_verbose("JoypadLinux: udev enabled and loaded successfully.");
 	} else {
