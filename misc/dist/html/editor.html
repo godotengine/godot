@@ -236,7 +236,7 @@
 	<script type='text/javascript' src='godot.tools.js'></script>
 	<script type='text/javascript'>//<![CDATA[
 
-		var engine = new Engine;
+		var editor = null;
 		var game = null;
 		var setStatusMode;
 		var setStatusNotice;
@@ -321,8 +321,8 @@
 
 		function closeEditor() {
 			closeGame();
-			if (engine) {
-				engine.requestQuit();
+			if (editor) {
+				editor.requestQuit();
 			}
 		}
 
@@ -336,6 +336,7 @@
 			var statusProgressInner = document.getElementById('status-progress-inner');
 			var statusIndeterminate = document.getElementById('status-indeterminate');
 			var statusNotice = document.getElementById('status-notice');
+			var headerDiv = document.getElementById('tabs-buttons');
 
 			var initializing = true;
 			var statusMode = 'hidden';
@@ -349,16 +350,23 @@
 			}
 			requestAnimationFrame(animate);
 
+			var lastScale = 0;
+			var lastWidth = 0;
+			var lastHeight = 0;
 			function adjustCanvasDimensions() {
 				var scale = window.devicePixelRatio || 1;
-				var header = document.getElementById('tabs-buttons');
-				var headerHeight = header.offsetHeight + 1;
+				var headerHeight = headerDiv.offsetHeight + 1;
 				var width = window.innerWidth;
 				var height = window.innerHeight - headerHeight;
-				editorCanvas.width = width * scale;
-				editorCanvas.height = height * scale;
-				editorCanvas.style.width = width + "px";
-				editorCanvas.style.height = height + "px";
+				if (lastScale !== scale || lastWidth !== width || lastHeight !== height) {
+					editorCanvas.width = width * scale;
+					editorCanvas.height = height * scale;
+					editorCanvas.style.width = width + "px";
+					editorCanvas.style.height = height + "px";
+					lastScale = scale;
+					lastWidth = width;
+					lastHeight = height;
+				}
 			}
 			animationCallbacks.push(adjustCanvasDimensions);
 			adjustCanvasDimensions();
@@ -412,24 +420,23 @@
 				});
 			};
 
-			engine.setProgressFunc((current, total) => {
-				if (total > 0) {
-					statusProgressInner.style.width = current/total * 100 + '%';
-					setStatusMode('progress');
-					if (current === total) {
-						// wait for progress bar animation
-						setTimeout(() => {
-							setStatusMode('indeterminate');
-						}, 100);
-					}
-				} else {
-					setStatusMode('indeterminate');
-				}
-			});
+			const gameConfig = {
+				'persistentPaths': persistentPaths,
+				'unloadAfterInit': false,
+				'canvas': gameCanvas,
+				'canvasResizePolicy': 1,
+				'onExit': function () {
+					setGameTabEnabled(false);
+					showTab('editor');
+					game = null;
+				},
+			};
 
-			engine.setPersistentPaths(persistentPaths);
-
-			engine.setOnExecute(function(args) {
+			var OnEditorExit = function () {
+				showTab('loader');
+				setLoaderEnabled(true);
+			};
+			function Execute(args) {
 				const is_editor = args.filter(function(v) { return v == '--editor' || v == '-e' }).length != 0;
 				const is_project_manager = args.filter(function(v) { return v == '--project-manager' }).length != 0;
 				const is_game = !is_editor && !is_project_manager;
@@ -442,42 +449,60 @@
 						return;
 					}
 					setGameTabEnabled(true);
-					game = new Engine();
-					game.setPersistentPaths(persistentPaths);
-					game.setUnloadAfterInit(false);
-					game.setOnExecute(engine.onExecute);
-					game.setCanvas(gameCanvas);
-					game.setCanvasResizedOnStart(true);
-					game.setOnExit(function() {
-						setGameTabEnabled(false);
-						showTab('editor');
-						game = null;
-					});
+					game = new Engine(gameConfig);
 					showTab('game');
 					game.init().then(function() {
 						requestAnimationFrame(function() {
-							game.start.apply(game, args).then(function() {
+							game.start({'args': args}).then(function() {
 								gameCanvas.focus();
 							});
 						});
 					});
 				} else { // New editor instances will be run in the same canvas. We want to wait for it to exit.
-					engine.setOnExit(function(code) {
+					OnEditorExit = function(code) {
 						setLoaderEnabled(true);
 						setTimeout(function() {
-							engine.init().then(function() {
+							editor.init().then(function() {
 								setLoaderEnabled(false);
-								engine.setOnExit(function() {
+								OnEditorExit = function() {
 									showTab('loader');
 									setLoaderEnabled(true);
-								});
-								engine.start.apply(engine, args);
+								};
+								editor.start({'args': args});
 							});
 						}, 0);
-						engine.setOnExit(null);
-					});
+						OnEditorExit = null;
+					};
 				}
-			});
+			}
+
+			const editorConfig = {
+				'unloadAfterInit': false,
+				'onProgress': function progressFunction (current, total) {
+					if (total > 0) {
+						statusProgressInner.style.width = current/total * 100 + '%';
+						setStatusMode('progress');
+						if (current === total) {
+							// wait for progress bar animation
+							setTimeout(() => {
+								setStatusMode('indeterminate');
+							}, 100);
+						}
+					} else {
+						setStatusMode('indeterminate');
+					}
+				},
+				'canvas': editorCanvas,
+				'canvasResizePolicy': 0,
+				'onExit': function() {
+					if (OnEditorExit) {
+						OnEditorExit();
+					}
+				},
+				'onExecute': Execute,
+				'persistentPaths': persistentPaths,
+			};
+			editor = new Engine(editorConfig);
 
 			function displayFailureNotice(err) {
 				var msg = err.message || err;
@@ -491,26 +516,20 @@
 				displayFailureNotice('WebGL not available');
 			} else {
 				setStatusMode('indeterminate');
-				engine.setCanvas(editorCanvas);
-				engine.setUnloadAfterInit(false); // Don't want to reload when starting game.
-				engine.init('godot.tools').then(function() {
+				editor.init('godot.tools').then(function() {
 					if (zip) {
-						engine.copyToFS("/tmp/preload.zip", zip);
+						editor.copyToFS("/tmp/preload.zip", zip);
 					}
 					try {
 						// Avoid user creating project in the persistent root folder.
-						engine.copyToFS("/home/web_user/keep", new Uint8Array());
+						editor.copyToFS("/home/web_user/keep", new Uint8Array());
 					} catch(e) {
 						// File exists
 					}
 					//selectVideoMode();
 					showTab('editor');
 					setLoaderEnabled(false);
-					engine.setOnExit(function() {
-						showTab('loader');
-						setLoaderEnabled(true);
-					});
-					engine.start('--video-driver', video_driver).then(function() {
+					editor.start({'args': ['--video-driver', video_driver]}).then(function() {
 						setStatusMode('hidden');
 						initializing = false;
 					});

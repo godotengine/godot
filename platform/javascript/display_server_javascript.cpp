@@ -59,34 +59,13 @@ bool DisplayServerJavaScript::is_canvas_focused() {
 }
 
 bool DisplayServerJavaScript::check_size_force_redraw() {
-	int canvas_width;
-	int canvas_height;
-	emscripten_get_canvas_element_size(DisplayServerJavaScript::canvas_id, &canvas_width, &canvas_height);
-	if (last_width != canvas_width || last_height != canvas_height) {
-		last_width = canvas_width;
-		last_height = canvas_height;
-		// Update the framebuffer size for redraw.
-		emscripten_set_canvas_element_size(DisplayServerJavaScript::canvas_id, canvas_width, canvas_height);
-		return true;
-	}
-	return false;
+	return godot_js_display_size_update() != 0;
 }
 
 Point2 DisplayServerJavaScript::compute_position_in_canvas(int p_x, int p_y) {
-	DisplayServerJavaScript *display = get_singleton();
-	int canvas_x;
-	int canvas_y;
-	godot_js_display_canvas_bounding_rect_position_get(&canvas_x, &canvas_y);
-	int canvas_width;
-	int canvas_height;
-	emscripten_get_canvas_element_size(display->canvas_id, &canvas_width, &canvas_height);
-
-	double element_width;
-	double element_height;
-	emscripten_get_element_css_size(display->canvas_id, &element_width, &element_height);
-
-	return Point2((int)(canvas_width / element_width * (p_x - canvas_x)),
-			(int)(canvas_height / element_height * (p_y - canvas_y)));
+	int point[2];
+	godot_js_display_compute_position(p_x, p_y, point, point + 1);
+	return Point2(point[0], point[1]);
 }
 
 EM_BOOL DisplayServerJavaScript::fullscreen_change_callback(int p_event_type, const EmscriptenFullscreenChangeEvent *p_event, void *p_user_data) {
@@ -704,7 +683,7 @@ DisplayServerJavaScript::DisplayServerJavaScript(const String &p_rendering_drive
 	godot_js_config_canvas_id_get(canvas_id, 256);
 
 	// Handle contextmenu, webglcontextlost
-	godot_js_display_setup_canvas();
+	godot_js_display_setup_canvas(p_resolution.x, p_resolution.y, p_mode == WINDOW_MODE_FULLSCREEN);
 
 	// Check if it's windows.
 	swap_cancel_ok = godot_js_display_is_swap_ok_cancel() == 1;
@@ -747,11 +726,6 @@ DisplayServerJavaScript::DisplayServerJavaScript(const String &p_rendering_drive
 
 	video_driver_index = p_video_driver;
 #endif
-
-	window_set_mode(p_mode);
-	if (godot_js_config_is_resize_on_start()) {
-		window_set_size(p_resolution);
-	}
 
 	EMSCRIPTEN_RESULT result;
 #define EM_CHECK(ev)                         \
@@ -842,17 +816,15 @@ Point2i DisplayServerJavaScript::screen_get_position(int p_screen) const {
 }
 
 Size2i DisplayServerJavaScript::screen_get_size(int p_screen) const {
-	EmscriptenFullscreenChangeEvent ev;
-	EMSCRIPTEN_RESULT result = emscripten_get_fullscreen_status(&ev);
-	ERR_FAIL_COND_V(result != EMSCRIPTEN_RESULT_SUCCESS, Size2i());
-	double scale = godot_js_display_pixel_ratio_get();
-	return Size2i(ev.screenWidth * scale, ev.screenHeight * scale);
+	int size[2];
+	godot_js_display_screen_size_get(size, size + 1);
+	return Size2(size[0], size[1]);
 }
 
 Rect2i DisplayServerJavaScript::screen_get_usable_rect(int p_screen) const {
-	int canvas[2];
-	emscripten_get_canvas_element_size(canvas_id, canvas, canvas + 1);
-	return Rect2i(0, 0, canvas[0], canvas[1]);
+	int size[2];
+	godot_js_display_window_size_get(size, size + 1);
+	return Rect2i(0, 0, size[0], size[1]);
 }
 
 int DisplayServerJavaScript::screen_get_dpi(int p_screen) const {
@@ -942,17 +914,13 @@ Size2i DisplayServerJavaScript::window_get_min_size(WindowID p_window) const {
 }
 
 void DisplayServerJavaScript::window_set_size(const Size2i p_size, WindowID p_window) {
-	last_width = p_size.x;
-	last_height = p_size.y;
-	double scale = godot_js_display_pixel_ratio_get();
-	emscripten_set_canvas_element_size(canvas_id, p_size.x, p_size.y);
-	emscripten_set_element_css_size(canvas_id, p_size.x / scale, p_size.y / scale);
+	godot_js_display_desired_size_set(p_size.x, p_size.y);
 }
 
 Size2i DisplayServerJavaScript::window_get_size(WindowID p_window) const {
-	int canvas[2];
-	emscripten_get_canvas_element_size(canvas_id, canvas, canvas + 1);
-	return Size2(canvas[0], canvas[1]);
+	int size[2];
+	godot_js_display_window_size_get(size, size + 1);
+	return Size2i(size[0], size[1]);
 }
 
 Size2i DisplayServerJavaScript::window_get_real_size(WindowID p_window) const {
@@ -966,20 +934,13 @@ void DisplayServerJavaScript::window_set_mode(WindowMode p_mode, WindowID p_wind
 	switch (p_mode) {
 		case WINDOW_MODE_WINDOWED: {
 			if (window_mode == WINDOW_MODE_FULLSCREEN) {
-				emscripten_exit_fullscreen();
+				godot_js_display_fullscreen_exit();
 			}
 			window_mode = WINDOW_MODE_WINDOWED;
-			window_set_size(Size2i(last_width, last_height));
 		} break;
 		case WINDOW_MODE_FULLSCREEN: {
-			EmscriptenFullscreenStrategy strategy;
-			strategy.scaleMode = EMSCRIPTEN_FULLSCREEN_SCALE_STRETCH;
-			strategy.canvasResolutionScaleMode = EMSCRIPTEN_FULLSCREEN_CANVAS_SCALE_STDDEF;
-			strategy.filteringMode = EMSCRIPTEN_FULLSCREEN_FILTERING_DEFAULT;
-			strategy.canvasResizedCallback = nullptr;
-			EMSCRIPTEN_RESULT result = emscripten_request_fullscreen_strategy(canvas_id, false, &strategy);
-			ERR_FAIL_COND_MSG(result == EMSCRIPTEN_RESULT_FAILED_NOT_DEFERRED, "Enabling fullscreen is only possible from an input callback for the HTML5 platform.");
-			ERR_FAIL_COND_MSG(result != EMSCRIPTEN_RESULT_SUCCESS, "Enabling fullscreen is only possible from an input callback for the HTML5 platform.");
+			int result = godot_js_display_fullscreen_request();
+			ERR_FAIL_COND_MSG(result, "The request was denied. Remember that enabling fullscreen is only possible from an input callback for the HTML5 platform.");
 		} break;
 		case WINDOW_MODE_MAXIMIZED:
 		case WINDOW_MODE_MINIMIZED:
