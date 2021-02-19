@@ -1029,6 +1029,18 @@ void AnimationPlayerEditor::_seek_value_changed(float p_value, bool p_set) {
 	updating = true;
 };
 
+void AnimationPlayerEditor::_frame_value_changed(float p_value, bool p_set) {
+	float prev_pos = player->get_current_animation_position();
+	float pos = Math::snapped(p_value, _get_editor_step());
+	if (pos != prev_pos) {
+		undo_redo->create_action(TTR("Seek Current Animation"));
+		undo_redo->add_do_method(this, "_seek_value_changed", p_value, true);
+		undo_redo->add_undo_method(this, "_seek_value_changed", prev_pos, true);
+		undo_redo->add_undo_method(frame, "set_value", prev_pos);
+		undo_redo->commit_action();
+	}
+};
+
 void AnimationPlayerEditor::_animation_player_changed(Object *p_pl) {
 	if (player == p_pl && is_visible_in_tree()) {
 		_update_player();
@@ -1492,6 +1504,7 @@ void AnimationPlayerEditor::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_list_changed"), &AnimationPlayerEditor::_list_changed);
 	ClassDB::bind_method(D_METHOD("_animation_duplicate"), &AnimationPlayerEditor::_animation_duplicate);
 	ClassDB::bind_method(D_METHOD("_unhandled_key_input"), &AnimationPlayerEditor::_unhandled_key_input);
+	ClassDB::bind_method(D_METHOD("_seek_value_changed"), &AnimationPlayerEditor::_seek_value_changed);
 
 	ClassDB::bind_method(D_METHOD("_prepare_onion_layers_1"), &AnimationPlayerEditor::_prepare_onion_layers_1);
 	ClassDB::bind_method(D_METHOD("_prepare_onion_layers_2"), &AnimationPlayerEditor::_prepare_onion_layers_2);
@@ -1691,7 +1704,7 @@ AnimationPlayerEditor::AnimationPlayerEditor(EditorNode *p_editor, AnimationPlay
 	animation->connect("item_selected", callable_mp(this, &AnimationPlayerEditor::_animation_selected));
 
 	file->connect("file_selected", callable_mp(this, &AnimationPlayerEditor::_dialog_action));
-	frame->connect("value_changed", callable_mp(this, &AnimationPlayerEditor::_seek_value_changed), make_binds(true));
+	frame->connect("value_changed", callable_mp(this, &AnimationPlayerEditor::_frame_value_changed), make_binds(true));
 	scale->connect("text_entered", callable_mp(this, &AnimationPlayerEditor::_scale_changed));
 
 	renaming = false;

@@ -188,6 +188,7 @@ class AnimationPlayerEditor : public VBoxContainer {
 	void _dialog_action(String p_file);
 	void _seek_frame_changed(const String &p_frame);
 	void _seek_value_changed(float p_value, bool p_set = false);
+	void _frame_value_changed(float p_value, bool p_set);
 	void _blend_editor_next_changed(const int p_idx);
 
 	void _list_changed();
