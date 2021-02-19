@@ -105,7 +105,7 @@ void AudioStreamPlayer::_mix_audio() {
 	}
 
 	if (stream_paused) {
-		if (stream_paused_fade) {
+		if (stream_paused_fade && stream_playback->is_playing()) {
 			_mix_internal(true);
 			stream_paused_fade = false;
 		}
