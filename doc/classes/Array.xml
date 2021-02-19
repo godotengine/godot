@@ -142,7 +142,29 @@
 			<argument index="3" name="before" type="bool" default="true">
 			</argument>
 			<description>
-				Finds the index of an existing value (or the insertion index that maintains sorting order, if the value is not yet present in the array) using binary search and a custom comparison method. Optionally, a [code]before[/code] specifier can be passed. If [code]false[/code], the returned index comes after all existing entries of the value in the array. The custom method receives two arguments (an element from the array and the value searched for) and must return [code]true[/code] if the first argument is less than the second, and return [code]false[/code] otherwise.
+				Finds the index of an existing value (or the insertion index that maintains sorting order, if the value is not yet present in the array) using binary search and a custom comparison method declared in the [code]obj[/code]. Optionally, a [code]before[/code] specifier can be passed. If [code]false[/code], the returned index comes after all existing entries of the value in the array. The custom method receives two arguments (an element from the array and the value searched for) and must return [code]true[/code] if the first argument is less than the second, and return [code]false[/code] otherwise.
+				[codeblock]
+				func cardinal_to_algebraic(a):
+				    match a:
+				        "one":
+				            return 1
+				        "two":
+				            return 2
+				        "three":
+				            return 3
+				        "four":
+				            return 4
+				        _:
+				            return 0
+
+				func compare(a, b):
+				    return cardinal_to_algebraic(a) &lt; cardinal_to_algebraic(b)
+
+				func _ready():
+				    var a = ["one", "two", "three", "four"]
+				    # `compare` is defined in this object, so we use `self` as the `obj` parameter.
+				    print(a.bsearch_custom("three", self, "compare", true)) # Expected value is 2.
+				[/codeblock]
 				[b]Note:[/b] Calling [method bsearch] on an unsorted array results in unexpected behavior.
 			</description>
 		</method>
