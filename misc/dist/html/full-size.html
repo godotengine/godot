@@ -134,21 +134,14 @@ $GODOT_HEAD_INCLUDE
 		<div id='status-notice' class='godot' style='display: none;'></div>
 	</div>
 
-	<script type='text/javascript' src='$GODOT_BASENAME.js'></script>
+	<script type='text/javascript' src='$GODOT_URL'></script>
 	<script type='text/javascript'>//<![CDATA[
 
-		var engine = new Engine;
-		var setStatusMode;
-		var setStatusNotice;
+		const GODOT_CONFIG = $GODOT_CONFIG;
+		var engine = new Engine(GODOT_CONFIG);
 
 		(function() {
-
-			const EXECUTABLE_NAME = '$GODOT_BASENAME';
-			const MAIN_PACK = '$GODOT_BASENAME.pck';
-			const GDNATIVE_LIBS = [$GODOT_GDNATIVE_LIBS];
 			const INDETERMINATE_STATUS_STEP_MS = 100;
-			const FULL_WINDOW = $GODOT_FULL_WINDOW;
-
 			var canvas = document.getElementById('canvas');
 			var statusProgress = document.getElementById('status-progress');
 			var statusProgressInner = document.getElementById('status-progress-inner');
@@ -168,26 +161,7 @@ $GODOT_HEAD_INCLUDE
 			}
 			requestAnimationFrame(animate);
 
-			function adjustCanvasDimensions() {
-				const scale = window.devicePixelRatio || 1;
-				if (lastWidth != window.innerWidth || lastHeight != window.innerHeight || lastScale != scale) {
-					lastScale = scale;
-					lastWidth = window.innerWidth;
-					lastHeight = window.innerHeight;
-					canvas.width = Math.floor(lastWidth * scale);
-					canvas.height = Math.floor(lastHeight * scale);
-					canvas.style.width = lastWidth + "px";
-					canvas.style.height = lastHeight + "px";
-				}
-			}
-			if (FULL_WINDOW) {
-				animationCallbacks.push(adjustCanvasDimensions);
-				adjustCanvasDimensions();
-			} else {
-				engine.setCanvasResizedOnStart(true);
-			}
-
-			setStatusMode = function setStatusMode(mode) {
+			function setStatusMode(mode) {
 
 				if (statusMode === mode || !initializing)
 					return;
@@ -217,7 +191,6 @@ $GODOT_HEAD_INCLUDE
 			}
 
 			function animateStatusIndeterminate(ms) {
-
 				var i = Math.floor(ms / INDETERMINATE_STATUS_STEP_MS % 8);
 				if (statusIndeterminate.children[i].style.borderTopColor == '') {
 					Array.prototype.slice.call(statusIndeterminate.children).forEach(child => {
@@ -227,8 +200,7 @@ $GODOT_HEAD_INCLUDE
 				}
 			}
 
-			setStatusNotice = function setStatusNotice(text) {
-
+			function setStatusNotice(text) {
 				while (statusNotice.lastChild) {
 					statusNotice.removeChild(statusNotice.lastChild);
 				}
@@ -238,22 +210,6 @@ $GODOT_HEAD_INCLUDE
 					statusNotice.appendChild(document.createElement('br'));
 				});
 			};
-
-			engine.setProgressFunc((current, total) => {
-
-				if (total > 0) {
-					statusProgressInner.style.width = current/total * 100 + '%';
-					setStatusMode('progress');
-					if (current === total) {
-						// wait for progress bar animation
-						setTimeout(() => {
-							setStatusMode('indeterminate');
-						}, 500);
-					}
-				} else {
-					setStatusMode('indeterminate');
-				}
-			});
 
 			function displayFailureNotice(err) {
 				var msg = err.message || err;
@@ -267,9 +223,22 @@ $GODOT_HEAD_INCLUDE
 				displayFailureNotice('WebGL not available');
 			} else {
 				setStatusMode('indeterminate');
-				engine.setCanvas(canvas);
-				engine.setGDNativeLibraries(GDNATIVE_LIBS);
-				engine.startGame(EXECUTABLE_NAME, MAIN_PACK).then(() => {
+				engine.startGame({
+					'onProgress': function (current, total) {
+						if (total > 0) {
+							statusProgressInner.style.width = current/total * 100 + '%';
+							setStatusMode('progress');
+							if (current === total) {
+								// wait for progress bar animation
+								setTimeout(() => {
+									setStatusMode('indeterminate');
+								}, 500);
+							}
+						} else {
+							setStatusMode('indeterminate');
+						}
+					},
+				}).then(() => {
 					setStatusMode('hidden');
 					initializing = false;
 				}, displayFailureNotice);

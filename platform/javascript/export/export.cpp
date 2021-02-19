@@ -28,6 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
+#include "core/io/json.h"
 #include "core/io/tcp_server.h"
 #include "core/io/zip_io.h"
 #include "editor/editor_export.h"
@@ -241,7 +242,7 @@ class EditorExportPlatformJavaScript : public EditorExportPlatform {
 		return name;
 	}
 
-	void _fix_html(Vector<uint8_t> &p_html, const Ref<EditorExportPreset> &p_preset, const String &p_name, bool p_debug, const Vector<SharedObject> p_shared_objects);
+	void _fix_html(Vector<uint8_t> &p_html, const Ref<EditorExportPreset> &p_preset, const String &p_name, bool p_debug, int p_flags, const Vector<SharedObject> p_shared_objects);
 
 	static void _server_thread_poll(void *data);
 
@@ -279,25 +280,35 @@ public:
 	~EditorExportPlatformJavaScript();
 };
 
-void EditorExportPlatformJavaScript::_fix_html(Vector<uint8_t> &p_html, const Ref<EditorExportPreset> &p_preset, const String &p_name, bool p_debug, const Vector<SharedObject> p_shared_objects) {
+void EditorExportPlatformJavaScript::_fix_html(Vector<uint8_t> &p_html, const Ref<EditorExportPreset> &p_preset, const String &p_name, bool p_debug, int p_flags, const Vector<SharedObject> p_shared_objects) {
 
 	String str_template = String::utf8(reinterpret_cast<const char *>(p_html.ptr()), p_html.size());
 	String str_export;
 	Vector<String> lines = str_template.split("\n");
-	String libs;
+	Array libs;
 	for (int i = 0; i < p_shared_objects.size(); i++) {
-		libs += "\"" + p_shared_objects[i].path.get_file() + "\",";
+		libs.push_back(p_shared_objects[i].path.get_file());
 	}
+	Vector<String> flags;
+	gen_export_flags(flags, p_flags & (~DEBUG_FLAG_REMOTE_DEBUG) & (~DEBUG_FLAG_DUMB_CLIENT));
+	Array args;
+	for (int i = 0; i < flags.size(); i++) {
+		args.push_back(flags[i]);
+	}
+	Dictionary config;
+	config["canvasResizePolicy"] = p_preset->get("html/canvas_resize_policy");
+	config["gdnativeLibs"] = libs;
+	config["executable"] = p_name;
+	config["args"] = args;
+	const String str_config = JSON::print(config);
 
 	for (int i = 0; i < lines.size(); i++) {
 
 		String current_line = lines[i];
-		current_line = current_line.replace("$GODOT_BASENAME", p_name);
+		current_line = current_line.replace("$GODOT_URL", p_name + ".js");
 		current_line = current_line.replace("$GODOT_PROJECT_NAME", ProjectSettings::get_singleton()->get_setting("application/config/name"));
 		current_line = current_line.replace("$GODOT_HEAD_INCLUDE", p_preset->get("html/head_include"));
-		current_line = current_line.replace("$GODOT_FULL_WINDOW", p_preset->get("html/full_window_size") ? "true" : "false");
-		current_line = current_line.replace("$GODOT_GDNATIVE_LIBS", libs);
-		current_line = current_line.replace("$GODOT_DEBUG_ENABLED", p_debug ? "true" : "false");
+		current_line = current_line.replace("$GODOT_CONFIG", str_config);
 		str_export += current_line + "\n";
 	}
 
@@ -342,7 +353,7 @@ void EditorExportPlatformJavaScript::get_export_options(List<ExportOption> *r_op
 	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "vram_texture_compression/for_mobile"), false)); // ETC or ETC2, depending on renderer
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "html/custom_html_shell", PROPERTY_HINT_FILE, "*.html"), ""));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "html/head_include", PROPERTY_HINT_MULTILINE_TEXT), ""));
-	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "html/full_window_size"), true));
+	r_options->push_back(ExportOption(PropertyInfo(Variant::INT, "html/canvas_resize_policy", PROPERTY_HINT_ENUM, "None,Project,Adaptive"), 2));
 }
 
 String EditorExportPlatformJavaScript::get_name() const {
@@ -493,7 +504,7 @@ Error EditorExportPlatformJavaScript::export_project(const Ref<EditorExportPrese
 			if (!custom_html.empty()) {
 				continue;
 			}
-			_fix_html(data, p_preset, p_path.get_file().get_basename(), p_debug, shared_objects);
+			_fix_html(data, p_preset, p_path.get_file().get_basename(), p_debug, p_flags, shared_objects);
 			file = p_path.get_file();
 
 		} else if (file == "godot.js") {
@@ -540,7 +551,7 @@ Error EditorExportPlatformJavaScript::export_project(const Ref<EditorExportPrese
 		buf.resize(f->get_len());
 		f->get_buffer(buf.ptrw(), buf.size());
 		memdelete(f);
-		_fix_html(buf, p_preset, p_path.get_file().get_basename(), p_debug, shared_objects);
+		_fix_html(buf, p_preset, p_path.get_file().get_basename(), p_debug, p_flags, shared_objects);
 
 		f = FileAccess::open(p_path, FileAccess::WRITE);
 		if (!f) {
