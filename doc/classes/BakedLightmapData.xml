@@ -12,11 +12,11 @@
 			</return>
 			<argument index="0" name="path" type="NodePath">
 			</argument>
-			<argument index="1" name="lightmap" type="Rect2">
+			<argument index="1" name="uv_scale" type="Rect2">
 			</argument>
-			<argument index="2" name="offset" type="int">
+			<argument index="2" name="slice_index" type="int">
 			</argument>
-			<argument index="3" name="arg3" type="int">
+			<argument index="3" name="sub_instance" type="int">
 			</argument>
 			<description>
 			</description>

@@ -29,7 +29,7 @@
 			</argument>
 			<argument index="4" name="material" type="Material" default="null">
 			</argument>
-			<argument index="5" name="arg5" type="String" default="&quot;&quot;">
+			<argument index="5" name="name" type="String" default="&quot;&quot;">
 			</argument>
 			<description>
 			</description>

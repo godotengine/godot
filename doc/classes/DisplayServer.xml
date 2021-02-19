@@ -492,7 +492,7 @@
 			</argument>
 			<argument index="3" name="subtitle_track" type="String">
 			</argument>
-			<argument index="4" name="arg4" type="int">
+			<argument index="4" name="screen" type="int">
 			</argument>
 			<description>
 			</description>

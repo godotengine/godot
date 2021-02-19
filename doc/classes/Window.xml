@@ -276,7 +276,7 @@
 		<method name="set_ime_active">
 			<return type="void">
 			</return>
-			<argument index="0" name="arg0" type="bool">
+			<argument index="0" name="active" type="bool">
 			</argument>
 			<description>
 			</description>
@@ -284,7 +284,7 @@
 		<method name="set_ime_position">
 			<return type="void">
 			</return>
-			<argument index="0" name="arg0" type="Vector2i">
+			<argument index="0" name="position" type="Vector2i">
 			</argument>
 			<description>
 			</description>

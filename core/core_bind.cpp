@@ -135,7 +135,7 @@ void _ResourceLoader::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("load_threaded_get_status", "path", "progress"), &_ResourceLoader::load_threaded_get_status, DEFVAL(Array()));
 	ClassDB::bind_method(D_METHOD("load_threaded_get", "path"), &_ResourceLoader::load_threaded_get);
 
-	ClassDB::bind_method(D_METHOD("load", "path", "type_hint", "no_cache"), &_ResourceLoader::load, DEFVAL(""), DEFVAL(CACHE_MODE_REUSE));
+	ClassDB::bind_method(D_METHOD("load", "path", "type_hint", "cache_mode"), &_ResourceLoader::load, DEFVAL(""), DEFVAL(CACHE_MODE_REUSE));
 	ClassDB::bind_method(D_METHOD("get_recognized_extensions_for_type", "type"), &_ResourceLoader::get_recognized_extensions_for_type);
 	ClassDB::bind_method(D_METHOD("set_abort_on_missing_resources", "abort"), &_ResourceLoader::set_abort_on_missing_resources);
 	ClassDB::bind_method(D_METHOD("get_dependencies", "path"), &_ResourceLoader::get_dependencies);

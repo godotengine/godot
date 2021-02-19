@@ -103,7 +103,7 @@
 			</return>
 			<argument index="0" name="target" type="Vector3">
 			</argument>
-			<argument index="1" name="up" type="Vector3">
+			<argument index="1" name="up" type="Vector3" default="Vector3( 0, 1, 0 )">
 			</argument>
 			<description>
 				Rotates itself so that the local -Z axis points towards the [code]target[/code] position.
@@ -118,7 +118,7 @@
 			</argument>
 			<argument index="1" name="target" type="Vector3">
 			</argument>
-			<argument index="2" name="up" type="Vector3">
+			<argument index="2" name="up" type="Vector3" default="Vector3( 0, 1, 0 )">
 			</argument>
 			<description>
 				Moves the node to the specified [code]position[/code], and then rotates itself to point toward the [code]target[/code] as per [method look_at]. Operations take place in global space.

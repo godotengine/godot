@@ -850,21 +850,6 @@
 			<description>
 			</description>
 		</method>
-		<method name="damped_spring_joint_create">
-			<return type="RID">
-			</return>
-			<argument index="0" name="anchor_a" type="Vector2">
-			</argument>
-			<argument index="1" name="anchor_b" type="Vector2">
-			</argument>
-			<argument index="2" name="body_a" type="RID">
-			</argument>
-			<argument index="3" name="body_b" type="RID">
-			</argument>
-			<description>
-				Creates a damped spring joint between two bodies. If not specified, the second body is assumed to be the joint itself.
-			</description>
-		</method>
 		<method name="damped_spring_joint_get_param" qualifiers="const">
 			<return type="float">
 			</return>
@@ -907,21 +892,18 @@
 				Returns information about the current state of the 2D physics engine. See [enum ProcessInfo] for a list of available states.
 			</description>
 		</method>
-		<method name="groove_joint_create">
-			<return type="RID">
+		<method name="joint_clear">
+			<return type="void">
 			</return>
-			<argument index="0" name="groove1_a" type="Vector2">
-			</argument>
-			<argument index="1" name="groove2_a" type="Vector2">
-			</argument>
-			<argument index="2" name="anchor_b" type="Vector2">
-			</argument>
-			<argument index="3" name="body_a" type="RID">
-			</argument>
-			<argument index="4" name="body_b" type="RID">
+			<argument index="0" name="joint" type="RID">
 			</argument>
 			<description>
-				Creates a groove joint between two bodies. If not specified, the bodies are assumed to be the joint itself.
+			</description>
+		</method>
+		<method name="joint_create">
+			<return type="RID">
+			</return>
+			<description>
 			</description>
 		</method>
 		<method name="joint_get_param" qualifiers="const">
@@ -944,6 +926,54 @@
 				Returns a joint's type (see [enum JointType]).
 			</description>
 		</method>
+		<method name="joint_make_damped_spring">
+			<return type="void">
+			</return>
+			<argument index="0" name="joint" type="RID">
+			</argument>
+			<argument index="1" name="anchor_a" type="Vector2">
+			</argument>
+			<argument index="2" name="anchor_b" type="Vector2">
+			</argument>
+			<argument index="3" name="body_a" type="RID">
+			</argument>
+			<argument index="4" name="body_b" type="RID">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="joint_make_groove">
+			<return type="void">
+			</return>
+			<argument index="0" name="joint" type="RID">
+			</argument>
+			<argument index="1" name="groove1_a" type="Vector2">
+			</argument>
+			<argument index="2" name="groove2_a" type="Vector2">
+			</argument>
+			<argument index="3" name="anchor_b" type="Vector2">
+			</argument>
+			<argument index="4" name="body_a" type="RID">
+			</argument>
+			<argument index="5" name="body_b" type="RID">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="joint_make_pin">
+			<return type="void">
+			</return>
+			<argument index="0" name="joint" type="RID">
+			</argument>
+			<argument index="1" name="anchor" type="Vector2">
+			</argument>
+			<argument index="2" name="body_a" type="RID">
+			</argument>
+			<argument index="3" name="body_b" type="RID">
+			</argument>
+			<description>
+			</description>
+		</method>
 		<method name="joint_set_param">
 			<return type="void">
 			</return>
@@ -961,19 +991,6 @@
 			<return type="RID">
 			</return>
 			<description>
-			</description>
-		</method>
-		<method name="pin_joint_create">
-			<return type="RID">
-			</return>
-			<argument index="0" name="anchor" type="Vector2">
-			</argument>
-			<argument index="1" name="body_a" type="RID">
-			</argument>
-			<argument index="2" name="body_b" type="RID">
-			</argument>
-			<description>
-				Creates a pin joint between two bodies. If not specified, the second body is assumed to be the joint itself.
 			</description>
 		</method>
 		<method name="ray_shape_create">
@@ -1233,14 +1250,17 @@
 		<constant name="BODY_STATE_CAN_SLEEP" value="4" enum="BodyState">
 			Constant to set/get whether the body can sleep.
 		</constant>
-		<constant name="JOINT_PIN" value="0" enum="JointType">
+		<constant name="JOINT_TYPE_PIN" value="0" enum="JointType">
 			Constant to create pin joints.
 		</constant>
-		<constant name="JOINT_GROOVE" value="1" enum="JointType">
+		<constant name="JOINT_TYPE_GROOVE" value="1" enum="JointType">
 			Constant to create groove joints.
 		</constant>
-		<constant name="JOINT_DAMPED_SPRING" value="2" enum="JointType">
+		<constant name="JOINT_TYPE_DAMPED_SPRING" value="2" enum="JointType">
 			Constant to create damped spring joints.
+		</constant>
+		<constant name="JOINT_TYPE_MAX" value="3" enum="JointType">
+			Represents the size of the [enum JointType] enum.
 		</constant>
 		<constant name="JOINT_PARAM_BIAS" value="0" enum="JointParam">
 		</constant>

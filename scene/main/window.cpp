@@ -1345,8 +1345,8 @@ void Window::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("has_focus"), &Window::has_focus);
 	ClassDB::bind_method(D_METHOD("grab_focus"), &Window::grab_focus);
 
-	ClassDB::bind_method(D_METHOD("set_ime_active"), &Window::set_ime_active);
-	ClassDB::bind_method(D_METHOD("set_ime_position"), &Window::set_ime_position);
+	ClassDB::bind_method(D_METHOD("set_ime_active", "active"), &Window::set_ime_active);
+	ClassDB::bind_method(D_METHOD("set_ime_position", "position"), &Window::set_ime_position);
 
 	ClassDB::bind_method(D_METHOD("is_embedded"), &Window::is_embedded);
 

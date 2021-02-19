@@ -695,7 +695,7 @@
 		<method name="shaped_text_clear">
 			<return type="void">
 			</return>
-			<argument index="0" name="arg0" type="RID">
+			<argument index="0" name="rid" type="RID">
 			</argument>
 			<description>
 				Clears text buffer (removes text and inline objects).

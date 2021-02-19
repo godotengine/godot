@@ -131,7 +131,7 @@
 		<method name="get_action_name">
 			<return type="String">
 			</return>
-			<argument index="0" name="arg0" type="int">
+			<argument index="0" name="id" type="int">
 			</argument>
 			<description>
 				Gets the action name from its index.

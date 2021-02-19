@@ -361,6 +361,10 @@
 				Emitted whenever the [SceneTree] hierarchy changed (children being moved or renamed, etc.).
 			</description>
 		</signal>
+		<signal name="tree_process_mode_changed">
+			<description>
+			</description>
+		</signal>
 	</signals>
 	<constants>
 		<constant name="GROUP_CALL_DEFAULT" value="0" enum="GroupCallFlags">

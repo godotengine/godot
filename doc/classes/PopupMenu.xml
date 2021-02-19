@@ -744,6 +744,10 @@
 		<theme_item name="hseparation" type="int" default="4">
 			The horizontal space between the item's name and the shortcut text/submenu arrow.
 		</theme_item>
+		<theme_item name="item_end_padding" type="int" default="2">
+		</theme_item>
+		<theme_item name="item_start_padding" type="int" default="2">
+		</theme_item>
 		<theme_item name="labeled_separator_left" type="StyleBox">
 			[StyleBox] for the left side of labeled separator. See [method add_separator].
 		</theme_item>

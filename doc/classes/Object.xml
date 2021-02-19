@@ -533,11 +533,11 @@
 				If [code]reversed[/code] is [code]true[/code], [method _notification] is called first on the object's own class, and then up to its successive parent classes. If [code]reversed[/code] is [code]false[/code], [method _notification] is called first on the highest ancestor ([Object] itself), and then down to its successive inheriting classes.
 			</description>
 		</method>
-		<method name="property_list_changed_notify">
+		<method name="notify_property_list_changed">
 			<return type="void">
 			</return>
 			<description>
-				Notify the editor that the property list has changed, so that editor plugins can take the new values into account. Does nothing on export builds.
+				Notify the editor that the property list has changed by emitting the [signal property_list_changed] signal, so that editor plugins can take the new values into account.
 			</description>
 		</method>
 		<method name="remove_meta">
@@ -680,6 +680,10 @@
 		</method>
 	</methods>
 	<signals>
+		<signal name="property_list_changed">
+			<description>
+			</description>
+		</signal>
 		<signal name="script_changed">
 			<description>
 				Emitted whenever the object's script is changed.

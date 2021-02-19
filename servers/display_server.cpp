@@ -477,7 +477,7 @@ void DisplayServer::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("enable_for_stealing_focus", "process_id"), &DisplayServer::enable_for_stealing_focus);
 
-	ClassDB::bind_method(D_METHOD("native_video_play", "path", "volume", "audio_track", "subtitle_track"), &DisplayServer::native_video_play);
+	ClassDB::bind_method(D_METHOD("native_video_play", "path", "volume", "audio_track", "subtitle_track", "screen"), &DisplayServer::native_video_play);
 	ClassDB::bind_method(D_METHOD("native_video_is_playing"), &DisplayServer::native_video_is_playing);
 	ClassDB::bind_method(D_METHOD("native_video_stop"), &DisplayServer::native_video_stop);
 	ClassDB::bind_method(D_METHOD("native_video_pause"), &DisplayServer::native_video_pause);

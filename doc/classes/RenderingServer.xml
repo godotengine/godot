@@ -1802,7 +1802,7 @@
 				Updates a specific region of a vertex buffer for the specified surface. Warning: this function alters the vertex buffer directly with no safety mechanisms, you can easily corrupt your mesh.
 			</description>
 		</method>
-		<method name="multimesh_allocate">
+		<method name="multimesh_allocate_data">
 			<return type="void">
 			</return>
 			<argument index="0" name="multimesh" type="RID">
@@ -2549,7 +2549,7 @@
 				Sets a shader's default texture. Overwrites the texture given by name.
 			</description>
 		</method>
-		<method name="skeleton_allocate">
+		<method name="skeleton_allocate_data">
 			<return type="void">
 			</return>
 			<argument index="0" name="skeleton" type="RID">
@@ -2559,7 +2559,6 @@
 			<argument index="2" name="is_2d_skeleton" type="bool" default="false">
 			</argument>
 			<description>
-				Allocates the GPU buffers for this skeleton.
 			</description>
 		</method>
 		<method name="skeleton_bone_get_transform" qualifiers="const">
@@ -3453,7 +3452,7 @@
 		<constant name="VIEWPORT_DEBUG_DRAW_GI_BUFFER" value="17" enum="ViewportDebugDraw">
 		</constant>
 		<constant name="SKY_MODE_QUALITY" value="1" enum="SkyMode">
-			Uses high quality importance sampling to process the radiance map. In general, this results in much higher quality than [constant Sky.PROCESS_MODE_REALTIME] but takes much longer to generate. This should not be used if you plan on changing the sky at runtime. If you are finding that the reflection is not blurry enough and is showing sparkles or fireflies, try increasing [member ProjectSettings.rendering/quality/reflections/ggx_samples].
+			Uses high quality importance sampling to process the radiance map. In general, this results in much higher quality than [constant Sky.PROCESS_MODE_REALTIME] but takes much longer to generate. This should not be used if you plan on changing the sky at runtime. If you are finding that the reflection is not blurry enough and is showing sparkles or fireflies, try increasing [member ProjectSettings.rendering/reflections/sky_reflections/ggx_samples].
 		</constant>
 		<constant name="SKY_MODE_REALTIME" value="3" enum="SkyMode">
 			Uses the fast filtering algorithm to process the radiance map. In general this results in lower quality, but substantially faster run times.

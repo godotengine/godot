@@ -677,6 +677,10 @@
 				Emitted when user changes the workspace ([b]2D[/b], [b]3D[/b], [b]Script[/b], [b]AssetLib[/b]). Also works with custom screens defined by plugins.
 			</description>
 		</signal>
+		<signal name="project_settings_changed">
+			<description>
+			</description>
+		</signal>
 		<signal name="resource_saved">
 			<argument index="0" name="resource" type="Resource">
 			</argument>

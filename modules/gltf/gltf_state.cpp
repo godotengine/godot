@@ -51,8 +51,8 @@ void GLTFState::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_accessors", "accessors"), &GLTFState::set_accessors);
 	ClassDB::bind_method(D_METHOD("get_meshes"), &GLTFState::get_meshes);
 	ClassDB::bind_method(D_METHOD("set_meshes", "meshes"), &GLTFState::set_meshes);
-	ClassDB::bind_method(D_METHOD("get_animation_players_count"), &GLTFState::get_animation_players_count);
-	ClassDB::bind_method(D_METHOD("get_animation_player"), &GLTFState::get_animation_player);
+	ClassDB::bind_method(D_METHOD("get_animation_players_count", "idx"), &GLTFState::get_animation_players_count);
+	ClassDB::bind_method(D_METHOD("get_animation_player", "idx"), &GLTFState::get_animation_player);
 	ClassDB::bind_method(D_METHOD("get_materials"), &GLTFState::get_materials);
 	ClassDB::bind_method(D_METHOD("set_materials", "materials"), &GLTFState::set_materials);
 	ClassDB::bind_method(D_METHOD("get_scene_name"), &GLTFState::get_scene_name);
@@ -77,7 +77,7 @@ void GLTFState::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_skeleton_to_node", "skeleton_to_node"), &GLTFState::set_skeleton_to_node);
 	ClassDB::bind_method(D_METHOD("get_animations"), &GLTFState::get_animations);
 	ClassDB::bind_method(D_METHOD("set_animations", "animations"), &GLTFState::set_animations);
-	ClassDB::bind_method(D_METHOD("get_scene_node"), &GLTFState::get_scene_node);
+	ClassDB::bind_method(D_METHOD("get_scene_node", "idx"), &GLTFState::get_scene_node);
 
 	ADD_PROPERTY(PropertyInfo(Variant::DICTIONARY, "json"), "set_json", "get_json"); // Dictionary
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "major_version"), "set_major_version", "get_major_version"); // int

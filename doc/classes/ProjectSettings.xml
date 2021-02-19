@@ -289,31 +289,31 @@
 		<member name="application/run/main_scene" type="String" setter="" getter="" default="&quot;&quot;">
 			Path to the main scene file that will be loaded when the project runs.
 		</member>
-		<member name="audio/channel_disable_threshold_db" type="float" setter="" getter="" default="-60.0">
+		<member name="audio/buses/channel_disable_threshold_db" type="float" setter="" getter="" default="-60.0">
 			Audio buses will disable automatically when sound goes below a given dB threshold for a given time. This saves CPU as effects assigned to that bus will no longer do any processing.
 		</member>
-		<member name="audio/channel_disable_time" type="float" setter="" getter="" default="2.0">
+		<member name="audio/buses/channel_disable_time" type="float" setter="" getter="" default="2.0">
 			Audio buses will disable automatically when sound goes below a given dB threshold for a given time. This saves CPU as effects assigned to that bus will no longer do any processing.
 		</member>
-		<member name="audio/default_bus_layout" type="String" setter="" getter="" default="&quot;res://default_bus_layout.tres&quot;">
+		<member name="audio/buses/default_bus_layout" type="String" setter="" getter="" default="&quot;res://default_bus_layout.tres&quot;">
 			Default [AudioBusLayout] resource file to use in the project, unless overridden by the scene.
 		</member>
-		<member name="audio/driver" type="String" setter="" getter="">
+		<member name="audio/driver/driver" type="String" setter="" getter="">
 			Specifies the audio driver to use. This setting is platform-dependent as each platform supports different audio drivers. If left empty, the default audio driver will be used.
 		</member>
-		<member name="audio/enable_audio_input" type="bool" setter="" getter="" default="false">
+		<member name="audio/driver/enable_input" type="bool" setter="" getter="" default="false">
 			If [code]true[/code], microphone input will be allowed. This requires appropriate permissions to be set when exporting to Android or iOS.
 		</member>
-		<member name="audio/mix_rate" type="int" setter="" getter="" default="44100">
+		<member name="audio/driver/mix_rate" type="int" setter="" getter="" default="44100">
 			Mixing rate used for audio. In general, it's better to not touch this and leave it to the host operating system.
 		</member>
-		<member name="audio/output_latency" type="int" setter="" getter="" default="15">
+		<member name="audio/driver/output_latency" type="int" setter="" getter="" default="15">
 			Output latency in milliseconds for audio. Lower values will result in lower audio latency at the cost of increased CPU usage. Low values may result in audible cracking on slower hardware.
 		</member>
-		<member name="audio/output_latency.web" type="int" setter="" getter="" default="50">
-			Safer override for [member audio/output_latency] in the Web platform, to avoid audio issues especially on mobile devices.
+		<member name="audio/driver/output_latency.web" type="int" setter="" getter="" default="50">
+			Safer override for [member audio/driver/output_latency] in the Web platform, to avoid audio issues especially on mobile devices.
 		</member>
-		<member name="audio/video_delay_compensation_ms" type="int" setter="" getter="" default="0">
+		<member name="audio/video/video_delay_compensation_ms" type="int" setter="" getter="" default="0">
 			Setting to hardcode audio delay when playing video. Best to leave this untouched unless you know what you are doing.
 		</member>
 		<member name="compression/formats/gzip/compression_level" type="int" setter="" getter="" default="-1">
@@ -330,6 +330,18 @@
 		</member>
 		<member name="compression/formats/zstd/window_log_size" type="int" setter="" getter="" default="27">
 			Largest size limit (in power of 2) allowed when compressing using long-distance matching with Zstandard. Higher values can result in better compression, but will require more memory when compressing and decompressing.
+		</member>
+		<member name="debug/file_logging/enable_file_logging" type="bool" setter="" getter="" default="false">
+			If [code]true[/code], logs all output to files.
+		</member>
+		<member name="debug/file_logging/enable_file_logging.pc" type="bool" setter="" getter="" default="true">
+			Desktop override for [member debug/file_logging/enable_file_logging], as log files are not readily accessible on mobile/Web platforms.
+		</member>
+		<member name="debug/file_logging/log_path" type="String" setter="" getter="" default="&quot;user://logs/godot.log&quot;">
+			Path to logs within the project. Using an [code]user://[/code] path is recommended.
+		</member>
+		<member name="debug/file_logging/max_log_files" type="int" setter="" getter="" default="5">
+			Specifies the maximum amount of log files allowed (used for rotation).
 		</member>
 		<member name="debug/gdscript/completion/autocomplete_setters_and_getters" type="bool" setter="" getter="" default="false">
 			If [code]true[/code], displays getters and setters in autocompletion results in the script editor. This setting is meant to be used when porting old projects (Godot 2), as using member variables is the preferred style from Godot 3 onwards.
@@ -469,20 +481,11 @@
 		<member name="display/mouse_cursor/tooltip_position_offset" type="Vector2" setter="" getter="" default="Vector2( 10, 10 )">
 			Position offset for tooltips, relative to the mouse cursor's hotspot.
 		</member>
-		<member name="input_devices/pen_tablet/driver" type="String" setter="" getter="">
-			Specifies the tablet driver to use. If left empty, the default driver will be used.
-		</member>
-		<member name="input_devices/pen_tablet/driver.windows" type="String" setter="" getter="">
-			Override for [member input_devices/pen_tablet/driver] on Windows.
-		</member>
 		<member name="display/window/dpi/allow_hidpi" type="bool" setter="" getter="" default="false">
 			If [code]true[/code], allows HiDPI display on Windows and macOS. This setting has no effect on desktop Linux, as DPI-awareness fallbacks are not supported there.
 		</member>
 		<member name="display/window/energy_saving/keep_screen_on" type="bool" setter="" getter="" default="true">
 			If [code]true[/code], keeps the screen on (even in case of inactivity), so the screensaver does not take over. Works on desktop and mobile platforms.
-		</member>
-		<member name="display/window/force_right_to_left_layout_direction" type="bool" setter="" getter="" default="false">
-			Force layout direction and text writing direction to RTL for all locales.
 		</member>
 		<member name="display/window/handheld/orientation" type="String" setter="" getter="" default="&quot;landscape&quot;">
 			Default orientation on mobile devices.
@@ -519,9 +522,6 @@
 		<member name="display/window/size/width" type="int" setter="" getter="" default="1024">
 			Sets the game's main viewport width. On desktop platforms, this is the default window size. Stretch mode settings also use this as a reference when enabled.
 		</member>
-		<member name="display/window/text_name" type="String" setter="" getter="" default="&quot;&quot;">
-			Specifies the [TextServer] to use. If left empty, the default will be used.
-		</member>
 		<member name="display/window/vsync/use_vsync" type="bool" setter="" getter="" default="true">
 			If [code]true[/code], enables vertical synchronization. This eliminates tearing that may appear in moving scenes, at the cost of higher input latency and stuttering at lower framerates. If [code]false[/code], vertical synchronization will be disabled, however, many platforms will enforce it regardless (such as mobile platforms and HTML5).
 		</member>
@@ -529,11 +529,17 @@
 			If [code]Use Vsync[/code] is enabled and this setting is [code]true[/code], enables vertical synchronization via the operating system's window compositor when in windowed mode and the compositor is enabled. This will prevent stutter in certain situations. (Windows only.)
 			[b]Note:[/b] This option is experimental and meant to alleviate stutter experienced by some users. However, some users have experienced a Vsync framerate halving (e.g. from 60 FPS to 30 FPS) when using it.
 		</member>
-		<member name="editor/script_templates_search_path" type="String" setter="" getter="" default="&quot;res://script_templates&quot;">
-			Search path for project-specific script templates. Godot will search for script templates both in the editor-specific path and in this project-specific path.
+		<member name="editor/node_naming/name_casing" type="int" setter="" getter="" default="0">
+			When creating node names automatically, set the type of casing in this project. This is mostly an editor setting.
 		</member>
-		<member name="editor/search_in_file_extensions" type="PackedStringArray" setter="" getter="" default="PackedStringArray( &quot;gd&quot;, &quot;shader&quot; )">
+		<member name="editor/node_naming/name_num_separator" type="int" setter="" getter="" default="0">
+			What to use to separate node name from number. This is mostly an editor setting.
+		</member>
+		<member name="editor/script/search_in_file_extensions" type="PackedStringArray" setter="" getter="" default="PackedStringArray( &quot;gd&quot;, &quot;shader&quot; )">
 			Text-based file extensions to include in the script editor's "Find in Files" feature. You can add e.g. [code]tscn[/code] if you wish to also parse your scene files, especially if you use built-in scripts which are serialized in the scene files.
+		</member>
+		<member name="editor/script/templates_search_path" type="String" setter="" getter="" default="&quot;res://script_templates&quot;">
+			Search path for project-specific script templates. Godot will search for script templates both in the editor-specific path and in this project-specific path.
 		</member>
 		<member name="gui/common/default_scroll_deadzone" type="int" setter="" getter="" default="0">
 			Default value for [member ScrollContainer.scroll_deadzone], which will be used for all [ScrollContainer]s unless overridden.
@@ -569,6 +575,10 @@
 			Default [InputEventAction] to discard a modal or pending input.
 			[b]Note:[/b] Default [code]ui_*[/code] actions cannot be removed as they are necessary for the internal logic of several [Control]s. The events assigned to the action can however be modified.
 		</member>
+		<member name="input/ui_copy" type="Dictionary" setter="" getter="">
+		</member>
+		<member name="input/ui_cut" type="Dictionary" setter="" getter="">
+		</member>
 		<member name="input/ui_down" type="Dictionary" setter="" getter="">
 			Default [InputEventAction] to move down in the UI.
 			[b]Note:[/b] Default [code]ui_*[/code] actions cannot be removed as they are necessary for the internal logic of several [Control]s. The events assigned to the action can however be modified.
@@ -576,6 +586,12 @@
 		<member name="input/ui_end" type="Dictionary" setter="" getter="">
 			Default [InputEventAction] to go to the end position of a [Control] (e.g. last item in an [ItemList] or a [Tree]), matching the behavior of [constant KEY_END] on typical desktop UI systems.
 			[b]Note:[/b] Default [code]ui_*[/code] actions cannot be removed as they are necessary for the internal logic of several [Control]s. The events assigned to the action can however be modified.
+		</member>
+		<member name="input/ui_filedialog_refresh" type="Dictionary" setter="" getter="">
+		</member>
+		<member name="input/ui_filedialog_show_hidden" type="Dictionary" setter="" getter="">
+		</member>
+		<member name="input/ui_filedialog_up_one_level" type="Dictionary" setter="" getter="">
 		</member>
 		<member name="input/ui_focus_next" type="Dictionary" setter="" getter="">
 			Default [InputEventAction] to focus the next [Control] in the scene. The focus behavior can be configured via [member Control.focus_next].
@@ -585,6 +601,10 @@
 			Default [InputEventAction] to focus the previous [Control] in the scene. The focus behavior can be configured via [member Control.focus_previous].
 			[b]Note:[/b] Default [code]ui_*[/code] actions cannot be removed as they are necessary for the internal logic of several [Control]s. The events assigned to the action can however be modified.
 		</member>
+		<member name="input/ui_graph_delete" type="Dictionary" setter="" getter="">
+		</member>
+		<member name="input/ui_graph_duplicate" type="Dictionary" setter="" getter="">
+		</member>
 		<member name="input/ui_home" type="Dictionary" setter="" getter="">
 			Default [InputEventAction] to go to the start position of a [Control] (e.g. first item in an [ItemList] or a [Tree]), matching the behavior of [constant KEY_HOME] on typical desktop UI systems.
 			[b]Note:[/b] Default [code]ui_*[/code] actions cannot be removed as they are necessary for the internal logic of several [Control]s. The events assigned to the action can however be modified.
@@ -592,6 +612,8 @@
 		<member name="input/ui_left" type="Dictionary" setter="" getter="">
 			Default [InputEventAction] to move left in the UI.
 			[b]Note:[/b] Default [code]ui_*[/code] actions cannot be removed as they are necessary for the internal logic of several [Control]s. The events assigned to the action can however be modified.
+		</member>
+		<member name="input/ui_menu" type="Dictionary" setter="" getter="">
 		</member>
 		<member name="input/ui_page_down" type="Dictionary" setter="" getter="">
 			Default [InputEventAction] to go down a page in a [Control] (e.g. in an [ItemList] or a [Tree]), matching the behavior of [constant KEY_PAGEDOWN] on typical desktop UI systems.
@@ -601,6 +623,10 @@
 			Default [InputEventAction] to go up a page in a [Control] (e.g. in an [ItemList] or a [Tree]), matching the behavior of [constant KEY_PAGEUP] on typical desktop UI systems.
 			[b]Note:[/b] Default [code]ui_*[/code] actions cannot be removed as they are necessary for the internal logic of several [Control]s. The events assigned to the action can however be modified.
 		</member>
+		<member name="input/ui_paste" type="Dictionary" setter="" getter="">
+		</member>
+		<member name="input/ui_redo" type="Dictionary" setter="" getter="">
+		</member>
 		<member name="input/ui_right" type="Dictionary" setter="" getter="">
 			Default [InputEventAction] to move right in the UI.
 			[b]Note:[/b] Default [code]ui_*[/code] actions cannot be removed as they are necessary for the internal logic of several [Control]s. The events assigned to the action can however be modified.
@@ -609,9 +635,101 @@
 			Default [InputEventAction] to select an item in a [Control] (e.g. in an [ItemList] or a [Tree]).
 			[b]Note:[/b] Default [code]ui_*[/code] actions cannot be removed as they are necessary for the internal logic of several [Control]s. The events assigned to the action can however be modified.
 		</member>
+		<member name="input/ui_swap_input_direction" type="Dictionary" setter="" getter="">
+		</member>
+		<member name="input/ui_text_backspace" type="Dictionary" setter="" getter="">
+		</member>
+		<member name="input/ui_text_backspace_all_to_left" type="Dictionary" setter="" getter="">
+		</member>
+		<member name="input/ui_text_backspace_all_to_left.OSX" type="Dictionary" setter="" getter="">
+		</member>
+		<member name="input/ui_text_backspace_word" type="Dictionary" setter="" getter="">
+		</member>
+		<member name="input/ui_text_backspace_word.OSX" type="Dictionary" setter="" getter="">
+		</member>
+		<member name="input/ui_text_caret_document_end" type="Dictionary" setter="" getter="">
+		</member>
+		<member name="input/ui_text_caret_document_end.OSX" type="Dictionary" setter="" getter="">
+		</member>
+		<member name="input/ui_text_caret_document_start" type="Dictionary" setter="" getter="">
+		</member>
+		<member name="input/ui_text_caret_document_start.OSX" type="Dictionary" setter="" getter="">
+		</member>
+		<member name="input/ui_text_caret_down" type="Dictionary" setter="" getter="">
+		</member>
+		<member name="input/ui_text_caret_left" type="Dictionary" setter="" getter="">
+		</member>
+		<member name="input/ui_text_caret_line_end" type="Dictionary" setter="" getter="">
+		</member>
+		<member name="input/ui_text_caret_line_end.OSX" type="Dictionary" setter="" getter="">
+		</member>
+		<member name="input/ui_text_caret_line_start" type="Dictionary" setter="" getter="">
+		</member>
+		<member name="input/ui_text_caret_line_start.OSX" type="Dictionary" setter="" getter="">
+		</member>
+		<member name="input/ui_text_caret_page_down" type="Dictionary" setter="" getter="">
+		</member>
+		<member name="input/ui_text_caret_page_up" type="Dictionary" setter="" getter="">
+		</member>
+		<member name="input/ui_text_caret_right" type="Dictionary" setter="" getter="">
+		</member>
+		<member name="input/ui_text_caret_up" type="Dictionary" setter="" getter="">
+		</member>
+		<member name="input/ui_text_caret_word_left" type="Dictionary" setter="" getter="">
+		</member>
+		<member name="input/ui_text_caret_word_left.OSX" type="Dictionary" setter="" getter="">
+		</member>
+		<member name="input/ui_text_caret_word_right" type="Dictionary" setter="" getter="">
+		</member>
+		<member name="input/ui_text_caret_word_right.OSX" type="Dictionary" setter="" getter="">
+		</member>
+		<member name="input/ui_text_completion_accept" type="Dictionary" setter="" getter="">
+		</member>
+		<member name="input/ui_text_completion_query" type="Dictionary" setter="" getter="">
+		</member>
+		<member name="input/ui_text_dedent" type="Dictionary" setter="" getter="">
+		</member>
+		<member name="input/ui_text_delete" type="Dictionary" setter="" getter="">
+		</member>
+		<member name="input/ui_text_delete_all_to_right" type="Dictionary" setter="" getter="">
+		</member>
+		<member name="input/ui_text_delete_all_to_right.OSX" type="Dictionary" setter="" getter="">
+		</member>
+		<member name="input/ui_text_delete_word" type="Dictionary" setter="" getter="">
+		</member>
+		<member name="input/ui_text_delete_word.OSX" type="Dictionary" setter="" getter="">
+		</member>
+		<member name="input/ui_text_indent" type="Dictionary" setter="" getter="">
+		</member>
+		<member name="input/ui_text_newline" type="Dictionary" setter="" getter="">
+		</member>
+		<member name="input/ui_text_newline_above" type="Dictionary" setter="" getter="">
+		</member>
+		<member name="input/ui_text_newline_blank" type="Dictionary" setter="" getter="">
+		</member>
+		<member name="input/ui_text_scroll_down" type="Dictionary" setter="" getter="">
+		</member>
+		<member name="input/ui_text_scroll_down.OSX" type="Dictionary" setter="" getter="">
+		</member>
+		<member name="input/ui_text_scroll_up" type="Dictionary" setter="" getter="">
+		</member>
+		<member name="input/ui_text_scroll_up.OSX" type="Dictionary" setter="" getter="">
+		</member>
+		<member name="input/ui_text_select_all" type="Dictionary" setter="" getter="">
+		</member>
+		<member name="input/ui_text_toggle_insert_mode" type="Dictionary" setter="" getter="">
+		</member>
+		<member name="input/ui_undo" type="Dictionary" setter="" getter="">
+		</member>
 		<member name="input/ui_up" type="Dictionary" setter="" getter="">
 			Default [InputEventAction] to move up in the UI.
 			[b]Note:[/b] Default [code]ui_*[/code] actions cannot be removed as they are necessary for the internal logic of several [Control]s. The events assigned to the action can however be modified.
+		</member>
+		<member name="input_devices/pen_tablet/driver" type="String" setter="" getter="">
+			Specifies the tablet driver to use. If left empty, the default driver will be used.
+		</member>
+		<member name="input_devices/pen_tablet/driver.windows" type="String" setter="" getter="">
+			Override for [member input_devices/pen_tablet/driver] on Windows.
 		</member>
 		<member name="input_devices/pointing/emulate_mouse_from_touch" type="bool" setter="" getter="" default="true">
 			If [code]true[/code], sends mouse input events when tapping or swiping on the touchscreen.
@@ -621,6 +739,18 @@
 		</member>
 		<member name="input_devices/pointing/ios/touch_delay" type="float" setter="" getter="" default="0.15">
 			Default delay for touch events. This only affects iOS devices.
+		</member>
+		<member name="internationalization/locale/fallback" type="String" setter="" getter="" default="&quot;en&quot;">
+			The locale to fall back to if a translation isn't available in a given language. If left empty, [code]en[/code] (English) will be used.
+		</member>
+		<member name="internationalization/locale/test" type="String" setter="" getter="" default="&quot;&quot;">
+			If non-empty, this locale will be used when running the project from the editor.
+		</member>
+		<member name="internationalization/rendering/force_right_to_left_layout_direction" type="bool" setter="" getter="" default="false">
+			Force layout direction and text writing direction to RTL for all locales.
+		</member>
+		<member name="internationalization/rendering/text_driver" type="String" setter="" getter="" default="&quot;&quot;">
+			Specifies the [TextServer] to use. If left empty, the default will be used.
 		</member>
 		<member name="layer_names/2d_physics/layer_0" type="String" setter="" getter="" default="&quot;&quot;">
 			Optional name for the 2D physics layer 0. If left empty, the layer will display as "Layer 0".
@@ -862,24 +992,6 @@
 		<member name="layer_names/3d_render/layer_9" type="String" setter="" getter="" default="&quot;&quot;">
 			Optional name for the 3D render layer 9. If left empty, the layer will display as "Layer 9".
 		</member>
-		<member name="locale/fallback" type="String" setter="" getter="" default="&quot;en&quot;">
-			The locale to fall back to if a translation isn't available in a given language. If left empty, [code]en[/code] (English) will be used.
-		</member>
-		<member name="locale/test" type="String" setter="" getter="" default="&quot;&quot;">
-			If non-empty, this locale will be used when running the project from the editor.
-		</member>
-		<member name="logging/file_logging/enable_file_logging" type="bool" setter="" getter="" default="false">
-			If [code]true[/code], logs all output to files.
-		</member>
-		<member name="logging/file_logging/enable_file_logging.pc" type="bool" setter="" getter="" default="true">
-			Desktop override for [member logging/file_logging/enable_file_logging], as log files are not readily accessible on mobile/Web platforms.
-		</member>
-		<member name="logging/file_logging/log_path" type="String" setter="" getter="" default="&quot;user://logs/godot.log&quot;">
-			Path to logs within the project. Using an [code]user://[/code] path is recommended.
-		</member>
-		<member name="logging/file_logging/max_log_files" type="int" setter="" getter="" default="5">
-			Specifies the maximum amount of log files allowed (used for rotation).
-		</member>
 		<member name="memory/limits/command_queue/multithreading_queue_size_kb" type="int" setter="" getter="" default="256">
 		</member>
 		<member name="memory/limits/message_queue/max_size_kb" type="int" setter="" getter="" default="4096">
@@ -933,12 +1045,6 @@
 			The CA certificates bundle to use for SSL connections. If this is set to a non-empty value, this will [i]override[/i] Godot's default [url=https://github.com/godotengine/godot/blob/master/thirdparty/certs/ca-certificates.crt]Mozilla certificate bundle[/url]. If left empty, the default certificate bundle will be used.
 			If in doubt, leave this setting empty.
 		</member>
-		<member name="node/name_casing" type="int" setter="" getter="" default="0">
-			When creating node names automatically, set the type of casing in this project. This is mostly an editor setting.
-		</member>
-		<member name="node/name_num_separator" type="int" setter="" getter="" default="0">
-			What to use to separate node name from number. This is mostly an editor setting.
-		</member>
 		<member name="physics/2d/bp_hash_table_size" type="int" setter="" getter="" default="4096">
 			Size of the hash table used for the broad-phase 2D hash grid algorithm.
 		</member>
@@ -988,21 +1094,17 @@
 			Sets which physics engine to use for 2D physics.
 			"DEFAULT" and "GodotPhysics2D" are the same, as there is currently no alternative 2D physics server implemented.
 		</member>
+		<member name="physics/2d/run_on_thread" type="bool" setter="" getter="" default="false">
+			Sets whether 2D physics is run on the main thread or a separate one. Running the server on a thread increases performance, but restricts API access to only physics process.
+		</member>
 		<member name="physics/2d/sleep_threshold_angular" type="float" setter="" getter="" default="0.139626">
 			Threshold angular velocity under which a 2D physics body will be considered inactive. See [constant PhysicsServer2D.SPACE_PARAM_BODY_ANGULAR_VELOCITY_SLEEP_THRESHOLD].
 		</member>
 		<member name="physics/2d/sleep_threshold_linear" type="float" setter="" getter="" default="2.0">
 			Threshold linear velocity under which a 2D physics body will be considered inactive. See [constant PhysicsServer2D.SPACE_PARAM_BODY_LINEAR_VELOCITY_SLEEP_THRESHOLD].
 		</member>
-		<member name="physics/2d/thread_model" type="int" setter="" getter="" default="1">
-			Sets whether physics is run on the main thread or a separate one. Running the server on a thread increases performance, but restricts API access to only physics process.
-			[b]Warning:[/b] As of Godot 3.2, there are mixed reports about the use of a Multi-Threaded thread model for physics. Be sure to assess whether it does give you extra performance and no regressions when using it.
-		</member>
 		<member name="physics/2d/time_before_sleep" type="float" setter="" getter="" default="0.5">
 			Time (in seconds) of inactivity before which a 2D physics body will put to sleep. See [constant PhysicsServer2D.SPACE_PARAM_BODY_TIME_TO_SLEEP].
-		</member>
-		<member name="physics/3d/active_soft_world" type="bool" setter="" getter="" default="true">
-			Sets whether the 3D physics world will be created with support for [SoftBody3D] physics. Only applies to the Bullet physics engine.
 		</member>
 		<member name="physics/3d/default_angular_damp" type="float" setter="" getter="" default="0.1">
 			The default angular damp in 3D.
@@ -1044,6 +1146,15 @@
 			Sets which physics engine to use for 3D physics.
 			"DEFAULT" is currently the [url=https://bulletphysics.org]Bullet[/url] physics engine. The "GodotPhysics3D" engine is still supported as an alternative.
 		</member>
+		<member name="physics/3d/run_on_thread" type="bool" setter="" getter="" default="false">
+			Sets whether 3D physics is run on the main thread or a separate one. Running the server on a thread increases performance, but restricts API access to only physics process.
+		</member>
+		<member name="physics/3d/sleep_threshold_angular" type="float" setter="" getter="" default="0.139626">
+		</member>
+		<member name="physics/3d/sleep_threshold_linear" type="float" setter="" getter="" default="0.1">
+		</member>
+		<member name="physics/3d/time_before_sleep" type="float" setter="" getter="" default="0.5">
+		</member>
 		<member name="physics/common/enable_object_picking" type="bool" setter="" getter="" default="true">
 			Enables [member Viewport.physics_object_picking] on the root viewport.
 		</member>
@@ -1055,276 +1166,269 @@
 			Fix to improve physics jitter, specially on monitors where refresh rate is different than the physics FPS.
 			[b]Note:[/b] This property is only read when the project starts. To change the physics FPS at runtime, set [member Engine.physics_jitter_fix] instead.
 		</member>
-		<member name="rendering/cluster_builder/max_clustered_elements" type="float" setter="" getter="" default="512">
+		<member name="rendering/2d/sdf/oversize" type="int" setter="" getter="" default="1">
 		</member>
-		<member name="rendering/environment/default_clear_color" type="Color" setter="" getter="" default="Color( 0.3, 0.3, 0.3, 1 )">
-			Default background clear color. Overridable per [Viewport] using its [Environment]. See [member Environment.background_mode] and [member Environment.background_color] in particular. To change this default color programmatically, use [method RenderingServer.set_default_clear_color].
+		<member name="rendering/2d/sdf/scale" type="int" setter="" getter="" default="1">
 		</member>
-		<member name="rendering/environment/default_environment" type="String" setter="" getter="" default="&quot;&quot;">
-			[Environment] that will be used as a fallback environment in case a scene does not specify its own environment. The default environment is loaded in at scene load time regardless of whether you have set an environment or not. If you do not rely on the fallback environment, it is best to delete [code]default_env.tres[/code], or to specify a different default environment here.
+		<member name="rendering/2d/shadow_atlas/size" type="int" setter="" getter="" default="2048">
 		</member>
-		<member name="rendering/forward_renderer/threaded_render_minimum_instances" type="int" setter="" getter="" default="500">
+		<member name="rendering/2d/snap/snap_2d_transforms_to_pixel" type="bool" setter="" getter="" default="false">
 		</member>
-		<member name="rendering/gpu_lightmapper/performance/max_rays_per_pass" type="int" setter="" getter="" default="32">
+		<member name="rendering/2d/snap/snap_2d_vertices_to_pixel" type="bool" setter="" getter="" default="false">
 		</member>
-		<member name="rendering/gpu_lightmapper/performance/max_rays_per_probe_pass" type="int" setter="" getter="" default="64">
+		<member name="rendering/anti_aliasing/quality/msaa" type="int" setter="" getter="" default="0">
+			Sets the number of MSAA samples to use (as a power of two). MSAA is used to reduce aliasing around the edges of polygons. A higher MSAA value results in smoother edges but can be significantly slower on some hardware.
 		</member>
-		<member name="rendering/gpu_lightmapper/performance/region_size" type="int" setter="" getter="" default="512">
+		<member name="rendering/anti_aliasing/quality/screen_space_aa" type="int" setter="" getter="" default="0">
+			Sets the screen-space antialiasing mode for the default screen [Viewport]. Screen-space antialiasing works by selectively blurring edges in a post-process shader. It differs from MSAA which takes multiple coverage samples while rendering objects. Screen-space AA methods are typically faster than MSAA and will smooth out specular aliasing, but tend to make scenes appear blurry.
+			Another way to combat specular aliasing is to enable [member rendering/anti_aliasing/screen_space_roughness_limiter/enabled].
 		</member>
-		<member name="rendering/gpu_lightmapper/quality/high_quality_probe_ray_count" type="int" setter="" getter="" default="512">
+		<member name="rendering/anti_aliasing/quality/use_debanding" type="bool" setter="" getter="" default="false">
 		</member>
-		<member name="rendering/gpu_lightmapper/quality/high_quality_ray_count" type="int" setter="" getter="" default="256">
+		<member name="rendering/anti_aliasing/screen_space_roughness_limiter/amount" type="float" setter="" getter="" default="0.25">
 		</member>
-		<member name="rendering/gpu_lightmapper/quality/low_quality_probe_ray_count" type="int" setter="" getter="" default="64">
+		<member name="rendering/anti_aliasing/screen_space_roughness_limiter/enabled" type="bool" setter="" getter="" default="true">
 		</member>
-		<member name="rendering/gpu_lightmapper/quality/low_quality_ray_count" type="int" setter="" getter="" default="16">
+		<member name="rendering/anti_aliasing/screen_space_roughness_limiter/limit" type="float" setter="" getter="" default="0.18">
 		</member>
-		<member name="rendering/gpu_lightmapper/quality/medium_quality_probe_ray_count" type="int" setter="" getter="" default="256">
-		</member>
-		<member name="rendering/gpu_lightmapper/quality/medium_quality_ray_count" type="int" setter="" getter="" default="64">
-		</member>
-		<member name="rendering/gpu_lightmapper/quality/ultra_quality_probe_ray_count" type="int" setter="" getter="" default="2048">
-		</member>
-		<member name="rendering/gpu_lightmapper/quality/ultra_quality_ray_count" type="int" setter="" getter="" default="1024">
-		</member>
-		<member name="rendering/high_end/global_shader_variables_buffer_size" type="int" setter="" getter="" default="65536">
-		</member>
-		<member name="rendering/lightmapper/probe_capture_update_speed" type="float" setter="" getter="" default="15">
-		</member>
-		<member name="rendering/limits/time/time_rollover_secs" type="float" setter="" getter="" default="3600">
-		</member>
-		<member name="rendering/quality/2d/snap_2d_transforms_to_pixel" type="bool" setter="" getter="" default="false">
-		</member>
-		<member name="rendering/quality/2d/snap_2d_vertices_to_pixel" type="bool" setter="" getter="" default="false">
-		</member>
-		<member name="rendering/quality/2d_sdf/oversize" type="int" setter="" getter="" default="1">
-		</member>
-		<member name="rendering/quality/2d_sdf/scale" type="int" setter="" getter="" default="1">
-		</member>
-		<member name="rendering/quality/2d_shadow_atlas/size" type="int" setter="" getter="" default="2048">
-		</member>
-		<member name="rendering/quality/depth_of_field/depth_of_field_bokeh_quality" type="int" setter="" getter="" default="2">
+		<member name="rendering/camera/depth_of_field/depth_of_field_bokeh_quality" type="int" setter="" getter="" default="2">
 			Sets the quality of the depth of field effect. Higher quality takes more samples, which is slower but looks smoother.
 		</member>
-		<member name="rendering/quality/depth_of_field/depth_of_field_bokeh_shape" type="int" setter="" getter="" default="1">
+		<member name="rendering/camera/depth_of_field/depth_of_field_bokeh_shape" type="int" setter="" getter="" default="1">
 			Sets the depth of field shape. Can be Box, Hexagon, or Circle. Box is the fastest. Circle is the most realistic, but also the most expensive to compute.
 		</member>
-		<member name="rendering/quality/depth_of_field/depth_of_field_use_jitter" type="bool" setter="" getter="" default="false">
+		<member name="rendering/camera/depth_of_field/depth_of_field_use_jitter" type="bool" setter="" getter="" default="false">
 			If [code]true[/code], jitters DOF samples to make effect slightly blurrier and hide lines created from low sample rates. This can result in a slightly grainy appearance when used with a low number of samples.
 		</member>
-		<member name="rendering/quality/depth_prepass/disable_for_vendors" type="String" setter="" getter="" default="&quot;PowerVR,Mali,Adreno,Apple&quot;">
+		<member name="rendering/driver/depth_prepass/disable_for_vendors" type="String" setter="" getter="" default="&quot;PowerVR,Mali,Adreno,Apple&quot;">
 			Disables depth pre-pass for some GPU vendors (usually mobile), as their architecture already does this.
 		</member>
-		<member name="rendering/quality/depth_prepass/enable" type="bool" setter="" getter="" default="true">
+		<member name="rendering/driver/depth_prepass/enable" type="bool" setter="" getter="" default="true">
 			If [code]true[/code], performs a previous depth pass before rendering materials. This increases performance in scenes with high overdraw, when complex materials and lighting are used.
 		</member>
-		<member name="rendering/quality/directional_shadow/16_bits" type="bool" setter="" getter="" default="true">
-		</member>
-		<member name="rendering/quality/directional_shadow/size" type="int" setter="" getter="" default="4096">
-			The directional shadow's size in pixels. Higher values will result in sharper shadows, at the cost of performance. The value will be rounded up to the nearest power of 2.
-		</member>
-		<member name="rendering/quality/directional_shadow/size.mobile" type="int" setter="" getter="" default="2048">
-			Lower-end override for [member rendering/quality/directional_shadow/size] on mobile devices, due to performance concerns or driver support.
-		</member>
-		<member name="rendering/quality/directional_shadow/soft_shadow_quality" type="int" setter="" getter="" default="2">
-			Quality setting for shadows cast by [DirectionalLight3D]s. Higher quality settings use more samples when reading from shadow maps and are thus slower. Low quality settings may result in shadows looking grainy.
-		</member>
-		<member name="rendering/quality/directional_shadow/soft_shadow_quality.mobile" type="int" setter="" getter="" default="0">
-			Lower-end override for [member rendering/quality/directional_shadow/soft_shadow_quality] on mobile devices, due to performance concerns or driver support.
-		</member>
-		<member name="rendering/quality/driver/driver_name" type="String" setter="" getter="" default="&quot;Vulkan&quot;">
-			The video driver to use ("GLES2" or "Vulkan").
+		<member name="rendering/driver/driver_name" type="String" setter="" getter="" default="&quot;Vulkan&quot;">
+			The video driver to use (currently only "Vulkan" is implemented).
 			[b]Note:[/b] The backend in use can be overridden at runtime via the [code]--rendering-driver[/code] command line argument.
 			[b]FIXME:[/b] No longer valid after DisplayServer split:
 			In such cases, this property is not updated, so use [code]OS.get_current_video_driver[/code] to query it at run-time.
 		</member>
-		<member name="rendering/quality/gi/use_half_resolution" type="bool" setter="" getter="" default="false">
+		<member name="rendering/driver/rd_renderer/use_low_end_renderer" type="bool" setter="" getter="" default="false">
 		</member>
-		<member name="rendering/quality/gi_probes/anisotropic" type="bool" setter="" getter="" default="false">
-			If [code]true[/code], take additional samples when rendering objects affected by a [GIProbe] to reduce artifacts from only sampling in one direction.
+		<member name="rendering/driver/rd_renderer/use_low_end_renderer.mobile" type="bool" setter="" getter="" default="true">
 		</member>
-		<member name="rendering/quality/gi_probes/quality" type="int" setter="" getter="" default="1">
-			Sets the number of cone samples taken when rendering objects affected by [GIProbe]s.
-		</member>
-		<member name="rendering/quality/glow/upscale_mode" type="int" setter="" getter="" default="1">
-			Sets how the glow effect is upscaled before being copied onto the screen. Linear is faster, but looks blocky. Bicubic is slower but looks smooth.
-		</member>
-		<member name="rendering/quality/glow/upscale_mode.mobile" type="int" setter="" getter="" default="0">
-			Lower-end override for [member rendering/quality/glow/upscale_mode] on mobile devices, due to performance concerns or driver support.
-		</member>
-		<member name="rendering/quality/glow/use_high_quality" type="bool" setter="" getter="" default="false">
-			Takes more samples during downsample pass of glow. This ensures that single pixels are captured by glow which makes the glow look smoother and more stable during movement. However, it is very expensive and makes the glow post process take twice as long.
-		</member>
-		<member name="rendering/quality/intended_usage/framebuffer_allocation" type="int" setter="" getter="" default="2">
-			Strategy used for framebuffer allocation. The simpler it is, the less resources it uses (but the less features it supports). If set to "2D Without Sampling" or "3D Without Effects", sample buffers will not be allocated. This means [code]SCREEN_TEXTURE[/code] and [code]DEPTH_TEXTURE[/code] will not be available in shaders and post-processing effects will not be available in the [Environment].
-		</member>
-		<member name="rendering/quality/intended_usage/framebuffer_allocation.mobile" type="int" setter="" getter="" default="3">
-			Lower-end override for [member rendering/quality/intended_usage/framebuffer_allocation] on mobile devices, due to performance concerns or driver support.
-		</member>
-		<member name="rendering/quality/mesh_lod/threshold_pixels" type="float" setter="" getter="" default="1.0">
-		</member>
-		<member name="rendering/quality/rd_renderer/use_low_end_renderer" type="bool" setter="" getter="" default="false">
-		</member>
-		<member name="rendering/quality/rd_renderer/use_low_end_renderer.mobile" type="bool" setter="" getter="" default="true">
-		</member>
-		<member name="rendering/quality/reflection_atlas/reflection_count" type="int" setter="" getter="" default="64">
-			Number of cubemaps to store in the reflection atlas. The number of [ReflectionProbe]s in a scene will be limited by this amount. A higher number requires more VRAM.
-		</member>
-		<member name="rendering/quality/reflection_atlas/reflection_size" type="int" setter="" getter="" default="256">
-			Size of cubemap faces for [ReflectionProbe]s. A higher number requires more VRAM and may make reflection probe updating slower.
-		</member>
-		<member name="rendering/quality/reflection_atlas/reflection_size.mobile" type="int" setter="" getter="" default="128">
-			Lower-end override for [member rendering/quality/reflection_atlas/reflection_size] on mobile devices, due to performance concerns or driver support.
-		</member>
-		<member name="rendering/quality/reflections/fast_filter_high_quality" type="bool" setter="" getter="" default="false">
-			Use a higher quality variant of the fast filtering algorithm. Significantly slower than using default quality, but results in smoother reflections. Should only be used when the scene is especially detailed.
-		</member>
-		<member name="rendering/quality/reflections/ggx_samples" type="int" setter="" getter="" default="1024">
-			Sets the number of samples to take when using importance sampling for [Sky]s and [ReflectionProbe]s. A higher value will result in smoother, higher quality reflections, but increases time to calculate radiance maps. In general, fewer samples are needed for simpler, low dynamic range environments while more samples are needed for HDR environments and environments with a high level of detail.
-		</member>
-		<member name="rendering/quality/reflections/ggx_samples.mobile" type="int" setter="" getter="" default="128">
-			Lower-end override for [member rendering/quality/reflections/ggx_samples] on mobile devices, due to performance concerns or driver support.
-		</member>
-		<member name="rendering/quality/reflections/roughness_layers" type="int" setter="" getter="" default="8">
-			Limits the number of layers to use in radiance maps when using importance sampling. A lower number will be slightly faster and take up less VRAM.
-		</member>
-		<member name="rendering/quality/reflections/texture_array_reflections" type="bool" setter="" getter="" default="true">
-			If [code]true[/code], uses texture arrays instead of mipmaps for reflection probes and panorama backgrounds (sky). This reduces jitter noise and upscaling artifacts on reflections, but is significantly slower to compute and uses [member rendering/quality/reflections/roughness_layers] times more memory.
-		</member>
-		<member name="rendering/quality/reflections/texture_array_reflections.mobile" type="bool" setter="" getter="" default="false">
-			Lower-end override for [member rendering/quality/reflections/texture_array_reflections] on mobile devices, due to performance concerns or driver support.
-		</member>
-		<member name="rendering/quality/screen_filters/msaa" type="int" setter="" getter="" default="0">
-			Sets the number of MSAA samples to use (as a power of two). MSAA is used to reduce aliasing around the edges of polygons. A higher MSAA value results in smoother edges but can be significantly slower on some hardware.
-			[b]Note:[/b] MSAA is not available on HTML5 export using the GLES2 backend.
-		</member>
-		<member name="rendering/quality/screen_filters/screen_space_aa" type="int" setter="" getter="" default="0">
-			Sets the screen-space antialiasing mode for the default screen [Viewport]. Screen-space antialiasing works by selectively blurring edges in a post-process shader. It differs from MSAA which takes multiple coverage samples while rendering objects. Screen-space AA methods are typically faster than MSAA and will smooth out specular aliasing, but tend to make scenes appear blurry.
-			Another way to combat specular aliasing is to enable [member rendering/quality/screen_filters/screen_space_roughness_limiter_enabled].
-		</member>
-		<member name="rendering/quality/screen_filters/screen_space_roughness_limiter_amount" type="float" setter="" getter="" default="0.25">
-		</member>
-		<member name="rendering/quality/screen_filters/screen_space_roughness_limiter_enabled" type="bool" setter="" getter="" default="true">
-		</member>
-		<member name="rendering/quality/screen_filters/screen_space_roughness_limiter_limit" type="float" setter="" getter="" default="0.18">
-		</member>
-		<member name="rendering/quality/screen_filters/use_debanding" type="bool" setter="" getter="" default="false">
-		</member>
-		<member name="rendering/quality/screen_space_reflection/roughness_quality" type="int" setter="" getter="" default="1">
-			Sets the quality for rough screen-space reflections. Turning off will make all screen space reflections sharp, while higher values make rough reflections look better.
-		</member>
-		<member name="rendering/quality/shading/force_blinn_over_ggx" type="bool" setter="" getter="" default="false">
-			If [code]true[/code], uses faster but lower-quality Blinn model to generate blurred reflections instead of the GGX model.
-		</member>
-		<member name="rendering/quality/shading/force_blinn_over_ggx.mobile" type="bool" setter="" getter="" default="true">
-			Lower-end override for [member rendering/quality/shading/force_blinn_over_ggx] on mobile devices, due to performance concerns or driver support.
-		</member>
-		<member name="rendering/quality/shading/force_lambert_over_burley" type="bool" setter="" getter="" default="false">
-			If [code]true[/code], uses faster but lower-quality Lambert material lighting model instead of Burley.
-		</member>
-		<member name="rendering/quality/shading/force_lambert_over_burley.mobile" type="bool" setter="" getter="" default="true">
-			Lower-end override for [member rendering/quality/shading/force_lambert_over_burley] on mobile devices, due to performance concerns or driver support.
-		</member>
-		<member name="rendering/quality/shading/force_vertex_shading" type="bool" setter="" getter="" default="false">
-			If [code]true[/code], forces vertex shading for all rendering. This can increase performance a lot, but also reduces quality immensely. Can be used to optimize performance on low-end mobile devices.
-		</member>
-		<member name="rendering/quality/shading/force_vertex_shading.mobile" type="bool" setter="" getter="" default="true">
-			Lower-end override for [member rendering/quality/shading/force_vertex_shading] on mobile devices, due to performance concerns or driver support.
-		</member>
-		<member name="rendering/quality/shadow_atlas/16_bits" type="bool" setter="" getter="" default="true">
-		</member>
-		<member name="rendering/quality/shadow_atlas/quadrant_0_subdiv" type="int" setter="" getter="" default="2">
-			Subdivision quadrant size for shadow mapping. See shadow mapping documentation.
-		</member>
-		<member name="rendering/quality/shadow_atlas/quadrant_1_subdiv" type="int" setter="" getter="" default="2">
-			Subdivision quadrant size for shadow mapping. See shadow mapping documentation.
-		</member>
-		<member name="rendering/quality/shadow_atlas/quadrant_2_subdiv" type="int" setter="" getter="" default="3">
-			Subdivision quadrant size for shadow mapping. See shadow mapping documentation.
-		</member>
-		<member name="rendering/quality/shadow_atlas/quadrant_3_subdiv" type="int" setter="" getter="" default="4">
-			Subdivision quadrant size for shadow mapping. See shadow mapping documentation.
-		</member>
-		<member name="rendering/quality/shadow_atlas/size" type="int" setter="" getter="" default="4096">
-			Size for shadow atlas (used for OmniLights and SpotLights). See documentation.
-		</member>
-		<member name="rendering/quality/shadow_atlas/size.mobile" type="int" setter="" getter="" default="2048">
-			Lower-end override for [member rendering/quality/shadow_atlas/size] on mobile devices, due to performance concerns or driver support.
-		</member>
-		<member name="rendering/quality/shadows/soft_shadow_quality" type="int" setter="" getter="" default="2">
-			Quality setting for shadows cast by [OmniLight3D]s and [SpotLight3D]s. Higher quality settings use more samples when reading from shadow maps and are thus slower. Low quality settings may result in shadows looking grainy.
-		</member>
-		<member name="rendering/quality/shadows/soft_shadow_quality.mobile" type="int" setter="" getter="" default="0">
-			Lower-end override for [member rendering/quality/shadows/soft_shadow_quality] on mobile devices, due to performance concerns or driver support.
-		</member>
-		<member name="rendering/quality/ssao/adaptive_target" type="float" setter="" getter="" default="0.5">
-			Quality target to use when [member rendering/quality/ssao/quality] is set to [code]ULTRA[/code]. A value of [code]0.0[/code] provides a quality and speed similar to [code]MEDIUM[/code] while a value of [code]1.0[/code] provides much higher quality than any of the other settings at the cost of performance.
-		</member>
-		<member name="rendering/quality/ssao/blur_passes" type="int" setter="" getter="" default="2">
-			Number of blur passes to use when computing screen-space ambient occlusion. A higher number will result in a smoother look, but will be slower to compute and will have less high-frequency detail.
-		</member>
-		<member name="rendering/quality/ssao/fadeout_from" type="float" setter="" getter="" default="50.0">
-			Distance at which the screen-space ambient occlusion effect starts to fade out. Use this hide ambient occlusion at great distances.
-		</member>
-		<member name="rendering/quality/ssao/fadeout_to" type="float" setter="" getter="" default="300.0">
-			Distance at which the screen-space ambient occlusion is fully faded out. Use this hide ambient occlusion at great distances.
-		</member>
-		<member name="rendering/quality/ssao/half_size" type="bool" setter="" getter="" default="false">
-			If [code]true[/code], screen-space ambient occlusion will be rendered at half size and then upscaled before being added to the scene. This is significantly faster but may miss small details.
-		</member>
-		<member name="rendering/quality/ssao/half_size.mobile" type="bool" setter="" getter="" default="true">
-			Lower-end override for [member rendering/quality/ssao/half_size] on mobile devices, due to performance concerns.
-		</member>
-		<member name="rendering/quality/ssao/quality" type="int" setter="" getter="" default="2">
-			Sets the quality of the screen-space ambient occlusion effect. Higher values take more samples and so will result in better quality, at the cost of performance. Setting to [code]ULTRA[/code] will use the [member rendering/quality/ssao/adaptive_target] setting.
-		</member>
-		<member name="rendering/quality/subsurface_scattering/subsurface_scattering_depth_scale" type="float" setter="" getter="" default="0.01">
-			Scales the depth over which the subsurface scattering effect is applied. A high value may allow light to scatter into a part of the mesh or another mesh that is close in screen space but far in depth.
-		</member>
-		<member name="rendering/quality/subsurface_scattering/subsurface_scattering_quality" type="int" setter="" getter="" default="1">
-			Sets the quality of the subsurface scattering effect. Higher values are slower but look nicer.
-		</member>
-		<member name="rendering/quality/subsurface_scattering/subsurface_scattering_scale" type="float" setter="" getter="" default="0.05">
-			Scales the distance over which samples are taken for subsurface scattering effect. Changing this does not impact performance, but higher values will result in significant artifacts as the samples will become obviously spread out. A lower value results in a smaller spread of scattered light.
-		</member>
-		<member name="rendering/quality/texture_filters/anisotropic_filtering_level" type="int" setter="" getter="" default="2">
-			Sets the maximum number of samples to take when using anisotropic filtering on textures (as a power of two). A higher sample count will result in sharper textures at oblique angles, but is more expensive to compute. A value of [code]0[/code] forcibly disables anisotropic filtering, even on materials where it is enabled.
-		</member>
-		<member name="rendering/quality/texture_filters/use_nearest_mipmap_filter" type="bool" setter="" getter="" default="false">
-			If [code]true[/code], uses nearest-neighbor mipmap filtering when using mipmaps (also called "bilinear filtering"), which will result in visible seams appearing between mipmap stages. This may increase performance in mobile as less memory bandwidth is used. If [code]false[/code], linear mipmap filtering (also called "trilinear filtering") is used.
-		</member>
-		<member name="rendering/sdfgi/frames_to_converge" type="int" setter="" getter="" default="4">
-		</member>
-		<member name="rendering/sdfgi/frames_to_update_lights" type="int" setter="" getter="" default="2">
-		</member>
-		<member name="rendering/sdfgi/probe_ray_count" type="int" setter="" getter="" default="1">
-		</member>
-		<member name="rendering/spatial_indexer/threaded_cull_minimum_instances" type="int" setter="" getter="" default="1000">
-		</member>
-		<member name="rendering/spatial_indexer/update_iterations_per_frame" type="int" setter="" getter="" default="10">
-		</member>
-		<member name="rendering/threads/thread_model" type="int" setter="" getter="" default="1">
+		<member name="rendering/driver/threads/thread_model" type="int" setter="" getter="" default="1">
 			Thread model for rendering. Rendering on a thread can vastly improve performance, but synchronizing to the main thread can cause a bit more jitter.
 		</member>
-		<member name="rendering/volumetric_fog/use_filter" type="int" setter="" getter="" default="1">
+		<member name="rendering/environment/defaults/default_clear_color" type="Color" setter="" getter="" default="Color( 0.3, 0.3, 0.3, 1 )">
+			Default background clear color. Overridable per [Viewport] using its [Environment]. See [member Environment.background_mode] and [member Environment.background_color] in particular. To change this default color programmatically, use [method RenderingServer.set_default_clear_color].
 		</member>
-		<member name="rendering/volumetric_fog/volume_depth" type="int" setter="" getter="" default="128">
+		<member name="rendering/environment/defaults/default_environment" type="String" setter="" getter="" default="&quot;&quot;">
+			[Environment] that will be used as a fallback environment in case a scene does not specify its own environment. The default environment is loaded in at scene load time regardless of whether you have set an environment or not. If you do not rely on the fallback environment, it is best to delete [code]default_env.tres[/code], or to specify a different default environment here.
 		</member>
-		<member name="rendering/volumetric_fog/volume_size" type="int" setter="" getter="" default="64">
+		<member name="rendering/environment/glow/upscale_mode" type="int" setter="" getter="" default="1">
+			Sets how the glow effect is upscaled before being copied onto the screen. Linear is faster, but looks blocky. Bicubic is slower but looks smooth.
 		</member>
-		<member name="rendering/vram_compression/import_bptc" type="bool" setter="" getter="" default="false">
+		<member name="rendering/environment/glow/upscale_mode.mobile" type="int" setter="" getter="" default="0">
+			Lower-end override for [member rendering/environment/glow/upscale_mode] on mobile devices, due to performance concerns or driver support.
+		</member>
+		<member name="rendering/environment/glow/use_high_quality" type="bool" setter="" getter="" default="false">
+			Takes more samples during downsample pass of glow. This ensures that single pixels are captured by glow which makes the glow look smoother and more stable during movement. However, it is very expensive and makes the glow post process take twice as long.
+		</member>
+		<member name="rendering/environment/screen_space_reflection/roughness_quality" type="int" setter="" getter="" default="1">
+			Sets the quality for rough screen-space reflections. Turning off will make all screen space reflections sharp, while higher values make rough reflections look better.
+		</member>
+		<member name="rendering/environment/ssao/adaptive_target" type="float" setter="" getter="" default="0.5">
+			Quality target to use when [member rendering/environment/ssao/quality] is set to [code]ULTRA[/code]. A value of [code]0.0[/code] provides a quality and speed similar to [code]MEDIUM[/code] while a value of [code]1.0[/code] provides much higher quality than any of the other settings at the cost of performance.
+		</member>
+		<member name="rendering/environment/ssao/blur_passes" type="int" setter="" getter="" default="2">
+			Number of blur passes to use when computing screen-space ambient occlusion. A higher number will result in a smoother look, but will be slower to compute and will have less high-frequency detail.
+		</member>
+		<member name="rendering/environment/ssao/fadeout_from" type="float" setter="" getter="" default="50.0">
+			Distance at which the screen-space ambient occlusion effect starts to fade out. Use this hide ambient occlusion at great distances.
+		</member>
+		<member name="rendering/environment/ssao/fadeout_to" type="float" setter="" getter="" default="300.0">
+			Distance at which the screen-space ambient occlusion is fully faded out. Use this hide ambient occlusion at great distances.
+		</member>
+		<member name="rendering/environment/ssao/half_size" type="bool" setter="" getter="" default="false">
+			If [code]true[/code], screen-space ambient occlusion will be rendered at half size and then upscaled before being added to the scene. This is significantly faster but may miss small details.
+		</member>
+		<member name="rendering/environment/ssao/half_size.mobile" type="bool" setter="" getter="" default="true">
+			Lower-end override for [member rendering/environment/ssao/half_size] on mobile devices, due to performance concerns.
+		</member>
+		<member name="rendering/environment/ssao/quality" type="int" setter="" getter="" default="2">
+			Sets the quality of the screen-space ambient occlusion effect. Higher values take more samples and so will result in better quality, at the cost of performance. Setting to [code]ULTRA[/code] will use the [member rendering/environment/ssao/adaptive_target] setting.
+		</member>
+		<member name="rendering/environment/subsurface_scattering/subsurface_scattering_depth_scale" type="float" setter="" getter="" default="0.01">
+			Scales the depth over which the subsurface scattering effect is applied. A high value may allow light to scatter into a part of the mesh or another mesh that is close in screen space but far in depth.
+		</member>
+		<member name="rendering/environment/subsurface_scattering/subsurface_scattering_quality" type="int" setter="" getter="" default="1">
+			Sets the quality of the subsurface scattering effect. Higher values are slower but look nicer.
+		</member>
+		<member name="rendering/environment/subsurface_scattering/subsurface_scattering_scale" type="float" setter="" getter="" default="0.05">
+			Scales the distance over which samples are taken for subsurface scattering effect. Changing this does not impact performance, but higher values will result in significant artifacts as the samples will become obviously spread out. A lower value results in a smaller spread of scattered light.
+		</member>
+		<member name="rendering/environment/volumetric_fog/use_filter" type="int" setter="" getter="" default="1">
+		</member>
+		<member name="rendering/environment/volumetric_fog/volume_depth" type="int" setter="" getter="" default="128">
+		</member>
+		<member name="rendering/environment/volumetric_fog/volume_size" type="int" setter="" getter="" default="64">
+		</member>
+		<member name="rendering/global_illumination/gi/use_half_resolution" type="bool" setter="" getter="" default="false">
+		</member>
+		<member name="rendering/global_illumination/gi_probes/anisotropic" type="bool" setter="" getter="" default="false">
+			If [code]true[/code], take additional samples when rendering objects affected by a [GIProbe] to reduce artifacts from only sampling in one direction.
+		</member>
+		<member name="rendering/global_illumination/gi_probes/quality" type="int" setter="" getter="" default="1">
+			Sets the number of cone samples taken when rendering objects affected by [GIProbe]s.
+		</member>
+		<member name="rendering/global_illumination/sdfgi/frames_to_converge" type="int" setter="" getter="" default="4">
+		</member>
+		<member name="rendering/global_illumination/sdfgi/frames_to_update_lights" type="int" setter="" getter="" default="2">
+		</member>
+		<member name="rendering/global_illumination/sdfgi/probe_ray_count" type="int" setter="" getter="" default="1">
+		</member>
+		<member name="rendering/lightmapping/bake_performance/max_rays_per_pass" type="int" setter="" getter="" default="32">
+		</member>
+		<member name="rendering/lightmapping/bake_performance/max_rays_per_probe_pass" type="int" setter="" getter="" default="64">
+		</member>
+		<member name="rendering/lightmapping/bake_performance/region_size" type="int" setter="" getter="" default="512">
+		</member>
+		<member name="rendering/lightmapping/bake_quality/high_quality_probe_ray_count" type="int" setter="" getter="" default="512">
+		</member>
+		<member name="rendering/lightmapping/bake_quality/high_quality_ray_count" type="int" setter="" getter="" default="256">
+		</member>
+		<member name="rendering/lightmapping/bake_quality/low_quality_probe_ray_count" type="int" setter="" getter="" default="64">
+		</member>
+		<member name="rendering/lightmapping/bake_quality/low_quality_ray_count" type="int" setter="" getter="" default="16">
+		</member>
+		<member name="rendering/lightmapping/bake_quality/medium_quality_probe_ray_count" type="int" setter="" getter="" default="256">
+		</member>
+		<member name="rendering/lightmapping/bake_quality/medium_quality_ray_count" type="int" setter="" getter="" default="64">
+		</member>
+		<member name="rendering/lightmapping/bake_quality/ultra_quality_probe_ray_count" type="int" setter="" getter="" default="2048">
+		</member>
+		<member name="rendering/lightmapping/bake_quality/ultra_quality_ray_count" type="int" setter="" getter="" default="1024">
+		</member>
+		<member name="rendering/lightmapping/probe_capture/update_speed" type="float" setter="" getter="" default="15">
+		</member>
+		<member name="rendering/limits/cluster_builder/max_clustered_elements" type="float" setter="" getter="" default="512">
+		</member>
+		<member name="rendering/limits/forward_renderer/threaded_render_minimum_instances" type="int" setter="" getter="" default="500">
+		</member>
+		<member name="rendering/limits/global_shader_variables/buffer_size" type="int" setter="" getter="" default="65536">
+		</member>
+		<member name="rendering/limits/spatial_indexer/threaded_cull_minimum_instances" type="int" setter="" getter="" default="1000">
+		</member>
+		<member name="rendering/limits/spatial_indexer/update_iterations_per_frame" type="int" setter="" getter="" default="10">
+		</member>
+		<member name="rendering/limits/time/time_rollover_secs" type="float" setter="" getter="" default="3600">
+		</member>
+		<member name="rendering/mesh_lod/lod_change/threshold_pixels" type="float" setter="" getter="" default="1.0">
+		</member>
+		<member name="rendering/reflections/reflection_atlas/reflection_count" type="int" setter="" getter="" default="64">
+			Number of cubemaps to store in the reflection atlas. The number of [ReflectionProbe]s in a scene will be limited by this amount. A higher number requires more VRAM.
+		</member>
+		<member name="rendering/reflections/reflection_atlas/reflection_size" type="int" setter="" getter="" default="256">
+			Size of cubemap faces for [ReflectionProbe]s. A higher number requires more VRAM and may make reflection probe updating slower.
+		</member>
+		<member name="rendering/reflections/reflection_atlas/reflection_size.mobile" type="int" setter="" getter="" default="128">
+			Lower-end override for [member rendering/reflections/reflection_atlas/reflection_size] on mobile devices, due to performance concerns or driver support.
+		</member>
+		<member name="rendering/reflections/sky_reflections/fast_filter_high_quality" type="bool" setter="" getter="" default="false">
+			Use a higher quality variant of the fast filtering algorithm. Significantly slower than using default quality, but results in smoother reflections. Should only be used when the scene is especially detailed.
+		</member>
+		<member name="rendering/reflections/sky_reflections/ggx_samples" type="int" setter="" getter="" default="1024">
+			Sets the number of samples to take when using importance sampling for [Sky]s and [ReflectionProbe]s. A higher value will result in smoother, higher quality reflections, but increases time to calculate radiance maps. In general, fewer samples are needed for simpler, low dynamic range environments while more samples are needed for HDR environments and environments with a high level of detail.
+		</member>
+		<member name="rendering/reflections/sky_reflections/ggx_samples.mobile" type="int" setter="" getter="" default="128">
+			Lower-end override for [member rendering/reflections/sky_reflections/ggx_samples] on mobile devices, due to performance concerns or driver support.
+		</member>
+		<member name="rendering/reflections/sky_reflections/roughness_layers" type="int" setter="" getter="" default="8">
+			Limits the number of layers to use in radiance maps when using importance sampling. A lower number will be slightly faster and take up less VRAM.
+		</member>
+		<member name="rendering/reflections/sky_reflections/texture_array_reflections" type="bool" setter="" getter="" default="true">
+			If [code]true[/code], uses texture arrays instead of mipmaps for reflection probes and panorama backgrounds (sky). This reduces jitter noise and upscaling artifacts on reflections, but is significantly slower to compute and uses [member rendering/reflections/sky_reflections/roughness_layers] times more memory.
+		</member>
+		<member name="rendering/reflections/sky_reflections/texture_array_reflections.mobile" type="bool" setter="" getter="" default="false">
+			Lower-end override for [member rendering/reflections/sky_reflections/texture_array_reflections] on mobile devices, due to performance concerns or driver support.
+		</member>
+		<member name="rendering/shading/overrides/force_blinn_over_ggx" type="bool" setter="" getter="" default="false">
+			If [code]true[/code], uses faster but lower-quality Blinn model to generate blurred reflections instead of the GGX model.
+		</member>
+		<member name="rendering/shading/overrides/force_blinn_over_ggx.mobile" type="bool" setter="" getter="" default="true">
+			Lower-end override for [member rendering/shading/overrides/force_blinn_over_ggx] on mobile devices, due to performance concerns or driver support.
+		</member>
+		<member name="rendering/shading/overrides/force_lambert_over_burley" type="bool" setter="" getter="" default="false">
+			If [code]true[/code], uses faster but lower-quality Lambert material lighting model instead of Burley.
+		</member>
+		<member name="rendering/shading/overrides/force_lambert_over_burley.mobile" type="bool" setter="" getter="" default="true">
+			Lower-end override for [member rendering/shading/overrides/force_lambert_over_burley] on mobile devices, due to performance concerns or driver support.
+		</member>
+		<member name="rendering/shading/overrides/force_vertex_shading" type="bool" setter="" getter="" default="false">
+			If [code]true[/code], forces vertex shading for all rendering. This can increase performance a lot, but also reduces quality immensely. Can be used to optimize performance on low-end mobile devices.
+		</member>
+		<member name="rendering/shading/overrides/force_vertex_shading.mobile" type="bool" setter="" getter="" default="true">
+			Lower-end override for [member rendering/shading/overrides/force_vertex_shading] on mobile devices, due to performance concerns or driver support.
+		</member>
+		<member name="rendering/shadows/directional_shadow/16_bits" type="bool" setter="" getter="" default="true">
+		</member>
+		<member name="rendering/shadows/directional_shadow/size" type="int" setter="" getter="" default="4096">
+			The directional shadow's size in pixels. Higher values will result in sharper shadows, at the cost of performance. The value will be rounded up to the nearest power of 2.
+		</member>
+		<member name="rendering/shadows/directional_shadow/size.mobile" type="int" setter="" getter="" default="2048">
+			Lower-end override for [member rendering/shadows/directional_shadow/size] on mobile devices, due to performance concerns or driver support.
+		</member>
+		<member name="rendering/shadows/directional_shadow/soft_shadow_quality" type="int" setter="" getter="" default="2">
+			Quality setting for shadows cast by [DirectionalLight3D]s. Higher quality settings use more samples when reading from shadow maps and are thus slower. Low quality settings may result in shadows looking grainy.
+		</member>
+		<member name="rendering/shadows/directional_shadow/soft_shadow_quality.mobile" type="int" setter="" getter="" default="0">
+			Lower-end override for [member rendering/shadows/directional_shadow/soft_shadow_quality] on mobile devices, due to performance concerns or driver support.
+		</member>
+		<member name="rendering/shadows/shadow_atlas/16_bits" type="bool" setter="" getter="" default="true">
+		</member>
+		<member name="rendering/shadows/shadow_atlas/quadrant_0_subdiv" type="int" setter="" getter="" default="2">
+			Subdivision quadrant size for shadow mapping. See shadow mapping documentation.
+		</member>
+		<member name="rendering/shadows/shadow_atlas/quadrant_1_subdiv" type="int" setter="" getter="" default="2">
+			Subdivision quadrant size for shadow mapping. See shadow mapping documentation.
+		</member>
+		<member name="rendering/shadows/shadow_atlas/quadrant_2_subdiv" type="int" setter="" getter="" default="3">
+			Subdivision quadrant size for shadow mapping. See shadow mapping documentation.
+		</member>
+		<member name="rendering/shadows/shadow_atlas/quadrant_3_subdiv" type="int" setter="" getter="" default="4">
+			Subdivision quadrant size for shadow mapping. See shadow mapping documentation.
+		</member>
+		<member name="rendering/shadows/shadow_atlas/size" type="int" setter="" getter="" default="4096">
+			Size for shadow atlas (used for OmniLights and SpotLights). See documentation.
+		</member>
+		<member name="rendering/shadows/shadow_atlas/size.mobile" type="int" setter="" getter="" default="2048">
+			Lower-end override for [member rendering/shadows/shadow_atlas/size] on mobile devices, due to performance concerns or driver support.
+		</member>
+		<member name="rendering/shadows/shadows/soft_shadow_quality" type="int" setter="" getter="" default="2">
+			Quality setting for shadows cast by [OmniLight3D]s and [SpotLight3D]s. Higher quality settings use more samples when reading from shadow maps and are thus slower. Low quality settings may result in shadows looking grainy.
+		</member>
+		<member name="rendering/shadows/shadows/soft_shadow_quality.mobile" type="int" setter="" getter="" default="0">
+			Lower-end override for [member rendering/shadows/shadows/soft_shadow_quality] on mobile devices, due to performance concerns or driver support.
+		</member>
+		<member name="rendering/textures/default_filters/anisotropic_filtering_level" type="int" setter="" getter="" default="2">
+			Sets the maximum number of samples to take when using anisotropic filtering on textures (as a power of two). A higher sample count will result in sharper textures at oblique angles, but is more expensive to compute. A value of [code]0[/code] forcibly disables anisotropic filtering, even on materials where it is enabled.
+		</member>
+		<member name="rendering/textures/default_filters/use_nearest_mipmap_filter" type="bool" setter="" getter="" default="false">
+			If [code]true[/code], uses nearest-neighbor mipmap filtering when using mipmaps (also called "bilinear filtering"), which will result in visible seams appearing between mipmap stages. This may increase performance in mobile as less memory bandwidth is used. If [code]false[/code], linear mipmap filtering (also called "trilinear filtering") is used.
+		</member>
+		<member name="rendering/textures/vram_compression/import_bptc" type="bool" setter="" getter="" default="false">
 			If [code]true[/code], the texture importer will import VRAM-compressed textures using the BPTC algorithm. This texture compression algorithm is only supported on desktop platforms, and only when using the Vulkan renderer.
 		</member>
-		<member name="rendering/vram_compression/import_etc" type="bool" setter="" getter="" default="false">
+		<member name="rendering/textures/vram_compression/import_etc" type="bool" setter="" getter="" default="false">
 			If [code]true[/code], the texture importer will import VRAM-compressed textures using the Ericsson Texture Compression algorithm. This algorithm doesn't support alpha channels in textures.
 		</member>
-		<member name="rendering/vram_compression/import_etc2" type="bool" setter="" getter="" default="true">
+		<member name="rendering/textures/vram_compression/import_etc2" type="bool" setter="" getter="" default="true">
 			If [code]true[/code], the texture importer will import VRAM-compressed textures using the Ericsson Texture Compression 2 algorithm. This texture compression algorithm is only supported when using the Vulkan renderer.
 		</member>
-		<member name="rendering/vram_compression/import_pvrtc" type="bool" setter="" getter="" default="false">
+		<member name="rendering/textures/vram_compression/import_pvrtc" type="bool" setter="" getter="" default="false">
 			If [code]true[/code], the texture importer will import VRAM-compressed textures using the PowerVR Texture Compression algorithm. This texture compression algorithm is only supported on iOS.
 		</member>
-		<member name="rendering/vram_compression/import_s3tc" type="bool" setter="" getter="" default="true">
+		<member name="rendering/textures/vram_compression/import_s3tc" type="bool" setter="" getter="" default="true">
 			If [code]true[/code], the texture importer will import VRAM-compressed textures using the S3 Texture Compression algorithm. This algorithm is only supported on desktop platforms and consoles.
 		</member>
 		<member name="rendering/vulkan/descriptor_pools/max_descriptors_per_pool" type="int" setter="" getter="" default="64">
