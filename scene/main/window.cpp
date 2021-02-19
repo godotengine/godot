@@ -890,15 +890,18 @@ void Window::_window_input(const Ref<InputEvent> &p_ev) {
 	}
 
 	if (exclusive_child != nullptr) {
-		Window *focus_target = exclusive_child;
-		focus_target->grab_focus();
-		while (focus_target->exclusive_child != nullptr) {
-			focus_target = focus_target->exclusive_child;
+		Ref<InputEventMouseButton> b = p_ev;
+		if (b.is_valid() && b->is_pressed() && b->get_button_index() == 0) {
+			Window *focus_target = exclusive_child;
 			focus_target->grab_focus();
-		}
+			while (focus_target->exclusive_child != nullptr) {
+				focus_target = focus_target->exclusive_child;
+				focus_target->grab_focus();
+			}
 
-		if (!is_embedding_subwindows()) { //not embedding, no need for event
-			return;
+			if (!is_embedding_subwindows()) { //not embedding, no need for event
+				return;
+			}
 		}
 	}
 
