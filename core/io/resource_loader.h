@@ -66,6 +66,8 @@ public:
 	virtual ~ResourceFormatLoader() {}
 };
 
+VARIANT_ENUM_CAST(ResourceFormatLoader::CacheMode)
+
 typedef void (*ResourceLoadErrorNotify)(void *p_ud, const String &p_text);
 typedef void (*DependencyErrorNotify)(void *p_ud, const String &p_loading, const String &p_which, const String &p_type);
 

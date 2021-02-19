@@ -57,8 +57,13 @@
 			</argument>
 			<argument index="1" name="original_path" type="String">
 			</argument>
+			<argument index="2" name="use_sub_threads" type="bool">
+			</argument>
+			<argument index="3" name="cache_mode" type="int">
+			</argument>
 			<description>
 				Loads a resource when the engine finds this loader to be compatible. If the loaded resource is the result of an import, [code]original_path[/code] will target the source file. Returns a [Resource] object on success, or an [enum Error] constant in case of failure.
+				The [code]cache_mode[/code] property defines whether and how the cache should be used or updated when loading the resource. See [enum CacheMode] for details.
 			</description>
 		</method>
 		<method name="rename_dependencies" qualifiers="virtual">
@@ -75,5 +80,11 @@
 		</method>
 	</methods>
 	<constants>
+		<constant name="CACHE_MODE_IGNORE" value="0" enum="CacheMode">
+		</constant>
+		<constant name="CACHE_MODE_REUSE" value="1" enum="CacheMode">
+		</constant>
+		<constant name="CACHE_MODE_REPLACE" value="2" enum="CacheMode">
+		</constant>
 	</constants>
 </class>

@@ -195,7 +195,7 @@ void BakedLightmapData::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_uses_spherical_harmonics", "uses_spherical_harmonics"), &BakedLightmapData::set_uses_spherical_harmonics);
 	ClassDB::bind_method(D_METHOD("is_using_spherical_harmonics"), &BakedLightmapData::is_using_spherical_harmonics);
 
-	ClassDB::bind_method(D_METHOD("add_user", "path", "lightmap", "offset"), &BakedLightmapData::add_user);
+	ClassDB::bind_method(D_METHOD("add_user", "path", "uv_scale", "slice_index", "sub_instance"), &BakedLightmapData::add_user);
 	ClassDB::bind_method(D_METHOD("get_user_count"), &BakedLightmapData::get_user_count);
 	ClassDB::bind_method(D_METHOD("get_user_path", "user_idx"), &BakedLightmapData::get_user_path);
 	ClassDB::bind_method(D_METHOD("clear_users"), &BakedLightmapData::clear_users);

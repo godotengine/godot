@@ -16,7 +16,7 @@
 		<method name="get_animation_player">
 			<return type="AnimationPlayer">
 			</return>
-			<argument index="0" name="arg0" type="int">
+			<argument index="0" name="idx" type="int">
 			</argument>
 			<description>
 			</description>
@@ -24,7 +24,7 @@
 		<method name="get_animation_players_count">
 			<return type="int">
 			</return>
-			<argument index="0" name="arg0" type="int">
+			<argument index="0" name="idx" type="int">
 			</argument>
 			<description>
 			</description>
@@ -80,7 +80,7 @@
 		<method name="get_scene_node">
 			<return type="Node">
 			</return>
-			<argument index="0" name="arg0" type="int">
+			<argument index="0" name="idx" type="int">
 			</argument>
 			<description>
 			</description>
