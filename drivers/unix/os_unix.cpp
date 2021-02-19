@@ -298,9 +298,13 @@ Error OS_Unix::execute(const String &p_path, const List<String> &p_arguments, bo
 
 		while (fgets(buf, 65535, f)) {
 
-			p_pipe_mutex->lock();
+			if (p_pipe_mutex) {
+				p_pipe_mutex->lock();
+			}
 			(*r_pipe) += String::utf8(buf);
-			p_pipe_mutex->unlock();
+			if (p_pipe_mutex) {
+				p_pipe_mutex->unlock();
+			}
 		}
 		int rv = pclose(f);
 		if (r_exitcode)
