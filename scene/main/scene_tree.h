@@ -52,7 +52,7 @@ class SceneTreeTimer : public Reference {
 	GDCLASS(SceneTreeTimer, Reference);
 
 	float time_left = 0.0;
-	bool process_pause = true;
+	bool process_always = true;
 
 protected:
 	static void _bind_methods();
@@ -61,8 +61,8 @@ public:
 	void set_time_left(float p_time);
 	float get_time_left() const;
 
-	void set_pause_mode_process(bool p_pause_mode_process);
-	bool is_pause_mode_process();
+	void set_process_always(bool p_process_always);
+	bool is_process_always();
 
 	void release_connections();
 
@@ -95,7 +95,7 @@ private:
 	bool debug_collisions_hint = false;
 	bool debug_navigation_hint = false;
 #endif
-	bool pause = false;
+	bool paused = false;
 	int root_lock = 0;
 
 	Map<StringName, Group> group_map;
@@ -316,7 +316,7 @@ public:
 	Error change_scene_to(const Ref<PackedScene> &p_scene);
 	Error reload_current_scene();
 
-	Ref<SceneTreeTimer> create_timer(float p_delay_sec, bool p_process_pause = true);
+	Ref<SceneTreeTimer> create_timer(float p_delay_sec, bool p_process_always = true);
 
 	//used by Main::start, don't use otherwise
 	void add_current_scene(Node *p_current);
