@@ -64,7 +64,7 @@ class AnimationPlayer : public Node {
 	OBJ_CATEGORY("Animation Nodes");
 
 public:
-	enum AnimationProcessMode {
+	enum AnimationProcessCallback {
 		ANIMATION_PROCESS_PHYSICS,
 		ANIMATION_PROCESS_IDLE,
 		ANIMATION_PROCESS_MANUAL,
@@ -206,7 +206,7 @@ private:
 
 	String autoplay;
 	bool reset_on_save = true;
-	AnimationProcessMode animation_process_mode = ANIMATION_PROCESS_IDLE;
+	AnimationProcessCallback process_callback = ANIMATION_PROCESS_IDLE;
 	AnimationMethodCallMode method_call_mode = ANIMATION_METHOD_CALL_DEFERRED;
 	bool processing = false;
 	bool active = true;
@@ -298,8 +298,8 @@ public:
 	void set_reset_on_save_enabled(bool p_enabled);
 	bool is_reset_on_save_enabled() const;
 
-	void set_animation_process_mode(AnimationProcessMode p_mode);
-	AnimationProcessMode get_animation_process_mode() const;
+	void set_process_callback(AnimationProcessCallback p_mode);
+	AnimationProcessCallback get_process_callback() const;
 
 	void set_method_call_mode(AnimationMethodCallMode p_mode);
 	AnimationMethodCallMode get_method_call_mode() const;
@@ -328,7 +328,7 @@ public:
 	~AnimationPlayer();
 };
 
-VARIANT_ENUM_CAST(AnimationPlayer::AnimationProcessMode);
+VARIANT_ENUM_CAST(AnimationPlayer::AnimationProcessCallback);
 VARIANT_ENUM_CAST(AnimationPlayer::AnimationMethodCallMode);
 
 #endif

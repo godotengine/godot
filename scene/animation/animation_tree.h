@@ -163,7 +163,7 @@ class AnimationTree : public Node {
 	GDCLASS(AnimationTree, Node);
 
 public:
-	enum AnimationProcessMode {
+	enum AnimationProcessCallback {
 		ANIMATION_PROCESS_PHYSICS,
 		ANIMATION_PROCESS_IDLE,
 		ANIMATION_PROCESS_MANUAL,
@@ -238,7 +238,7 @@ private:
 
 	Ref<AnimationNode> root;
 
-	AnimationProcessMode process_mode = ANIMATION_PROCESS_IDLE;
+	AnimationProcessCallback process_callback = ANIMATION_PROCESS_IDLE;
 	bool active = false;
 	NodePath animation_player;
 
@@ -294,8 +294,8 @@ public:
 	void set_active(bool p_active);
 	bool is_active() const;
 
-	void set_process_mode(AnimationProcessMode p_mode);
-	AnimationProcessMode get_process_mode() const;
+	void set_process_callback(AnimationProcessCallback p_mode);
+	AnimationProcessCallback get_process_callback() const;
 
 	void set_animation_player(const NodePath &p_player);
 	NodePath get_animation_player() const;
@@ -320,6 +320,6 @@ public:
 	~AnimationTree();
 };
 
-VARIANT_ENUM_CAST(AnimationTree::AnimationProcessMode)
+VARIANT_ENUM_CAST(AnimationTree::AnimationProcessCallback)
 
 #endif // ANIMATION_GRAPH_PLAYER_H

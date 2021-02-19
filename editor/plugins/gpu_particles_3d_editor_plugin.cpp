@@ -263,7 +263,7 @@ void GPUParticles3DEditor::_menu_option(int p_option) {
 			cpu_particles->set_name(node->get_name());
 			cpu_particles->set_transform(node->get_transform());
 			cpu_particles->set_visible(node->is_visible());
-			cpu_particles->set_pause_mode(node->get_pause_mode());
+			cpu_particles->set_process_mode(node->get_process_mode());
 
 			UndoRedo *ur = EditorNode::get_singleton()->get_undo_redo();
 			ur->create_action(TTR("Convert to CPUParticles3D"));
