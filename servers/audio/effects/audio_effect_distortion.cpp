@@ -61,8 +61,8 @@ void AudioEffectDistortionInstance::process(const AudioFrame *p_src_frames, Audi
 		switch (base->mode) {
 
 			case AudioEffectDistortion::MODE_CLIP: {
-
-				a = powf(a, 1.0001 - drive_f);
+				float a_sign = a < 0 ? -1.0f : 1.0f;
+				a = powf(abs(a), 1.0001 - drive_f) * a_sign;
 				if (a > 1.0)
 					a = 1.0;
 				else if (a < (-1.0))
