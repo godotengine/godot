@@ -881,10 +881,6 @@ bool Window::_can_consume_input_events() const {
 }
 
 void Window::_window_input(const Ref<InputEvent> &p_ev) {
-	if (Engine::get_singleton()->is_editor_hint() && (Object::cast_to<InputEventJoypadButton>(p_ev.ptr()) || Object::cast_to<InputEventJoypadMotion>(*p_ev))) {
-		return; //avoid joy input on editor
-	}
-
 	if (EngineDebugger::is_active()) {
 		//quit from game window using F8
 		Ref<InputEventKey> k = p_ev;
