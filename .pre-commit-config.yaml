@@ -1,0 +1,43 @@
+# Exclude files which shouldn't be modified by pre-commit hooks.
+exclude: |
+  (?x)^(
+    .*\.sln| # Expected to contain a BOM
+    .*\.csproj| # Expected to contain a BOM
+    .*\.patch| # Expected to contrain trailing whitespace
+    .*\.pot|
+    .*\.po|
+    thirdparty/.*| # Third-party files
+    platform/android/java/lib/src/com/google.*| # Third-party files
+    .*-so_wrap\..* # Generated code
+  )
+
+repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v3.4.0
+    hooks:
+      - id: fix-byte-order-marker
+      - id: end-of-file-fixer
+      - id: trailing-whitespace
+
+      - id: mixed-line-ending
+        args: [--fix=lf]
+
+  - repo: https://github.com/pocc/pre-commit-hooks
+    rev: v1.1.1
+    hooks:
+      - id: clang-format
+
+  - repo: https://github.com/psf/black
+    rev: 20.8b1
+    hooks:
+      - id: black
+        args: [-l 120]
+
+  - repo: local
+    hooks:
+    - id: makerst
+      name: Check XML class reference syntax and validity
+      language: system
+      pass_filenames: false
+      entry: python doc/tools/makerst.py doc/classes modules --dry-run
+      files: ^(modules/.*/doc_classes/*.xml|doc/classes/.*.xml)$
