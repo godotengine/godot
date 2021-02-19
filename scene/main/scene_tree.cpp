@@ -72,12 +72,12 @@ float SceneTreeTimer::get_time_left() const {
 	return time_left;
 }
 
-void SceneTreeTimer::set_pause_mode_process(bool p_pause_mode_process) {
-	process_pause = p_pause_mode_process;
+void SceneTreeTimer::set_process_always(bool p_process_always) {
+	process_always = p_process_always;
 }
 
-bool SceneTreeTimer::is_pause_mode_process() {
-	return process_pause;
+bool SceneTreeTimer::is_process_always() {
+	return process_always;
 }
 
 void SceneTreeTimer::release_connections() {
@@ -455,7 +455,7 @@ bool SceneTree::process(float p_time) {
 
 	for (List<Ref<SceneTreeTimer>>::Element *E = timers.front(); E;) {
 		List<Ref<SceneTreeTimer>>::Element *N = E->next();
-		if (pause && !E->get()->is_pause_mode_process()) {
+		if (paused && !E->get()->is_process_always()) {
 			if (E == L) {
 				break; //break on last, so if new timers were added during list traversal, ignore them.
 			}
@@ -759,10 +759,10 @@ Ref<ArrayMesh> SceneTree::get_debug_contact_mesh() {
 }
 
 void SceneTree::set_pause(bool p_enabled) {
-	if (p_enabled == pause) {
+	if (p_enabled == paused) {
 		return;
 	}
-	pause = p_enabled;
+	paused = p_enabled;
 	NavigationServer3D::get_singleton()->set_active(!p_enabled);
 	PhysicsServer3D::get_singleton()->set_active(!p_enabled);
 	PhysicsServer2D::get_singleton()->set_active(!p_enabled);
@@ -772,7 +772,7 @@ void SceneTree::set_pause(bool p_enabled) {
 }
 
 bool SceneTree::is_paused() const {
-	return pause;
+	return paused;
 }
 
 void SceneTree::_notify_group_pause(const StringName &p_group, int p_notification) {
@@ -1070,10 +1070,10 @@ void SceneTree::add_current_scene(Node *p_current) {
 	root->add_child(p_current);
 }
 
-Ref<SceneTreeTimer> SceneTree::create_timer(float p_delay_sec, bool p_process_pause) {
+Ref<SceneTreeTimer> SceneTree::create_timer(float p_delay_sec, bool p_process_always) {
 	Ref<SceneTreeTimer> stt;
 	stt.instance();
-	stt->set_pause_mode_process(p_process_pause);
+	stt->set_process_always(p_process_always);
 	stt->set_time_left(p_delay_sec);
 	timers.push_back(stt);
 	return stt;
@@ -1186,7 +1186,7 @@ void SceneTree::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_pause", "enable"), &SceneTree::set_pause);
 	ClassDB::bind_method(D_METHOD("is_paused"), &SceneTree::is_paused);
 
-	ClassDB::bind_method(D_METHOD("create_timer", "time_sec", "pause_mode_process"), &SceneTree::create_timer, DEFVAL(true));
+	ClassDB::bind_method(D_METHOD("create_timer", "time_sec", "process_always"), &SceneTree::create_timer, DEFVAL(true));
 
 	ClassDB::bind_method(D_METHOD("get_node_count"), &SceneTree::get_node_count);
 	ClassDB::bind_method(D_METHOD("get_frame"), &SceneTree::get_frame);
