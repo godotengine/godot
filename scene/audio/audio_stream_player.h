@@ -51,7 +51,7 @@ private:
 	Ref<AudioStream> stream;
 	Vector<AudioFrame> mix_buffer;
 	Vector<AudioFrame> fadeout_buffer;
-	bool use_fadeout;
+	bool use_fadeout = false;
 
 	SafeNumeric<float> setseek;
 	SafeFlag active;
