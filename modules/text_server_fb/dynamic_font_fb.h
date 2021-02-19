@@ -33,6 +33,10 @@
 
 #include "font_fb.h"
 
+#include "modules/modules_enabled.gen.h"
+
+#ifdef MODULE_FREETYPE_ENABLED
+
 #include <ft2build.h>
 #include FT_FREETYPE_H
 
@@ -162,5 +166,7 @@ public:
 
 	virtual ~DynamicFontDataFallback() override;
 };
+
+#endif // MODULE_FREETYPE_ENABLED
 
 #endif // DYNAMIC_FONT_FALLBACK_H
