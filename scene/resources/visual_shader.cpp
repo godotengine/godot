@@ -585,6 +585,12 @@ bool VisualShader::is_port_types_compatible(int p_a, int p_b) const {
 void VisualShader::connect_nodes_forced(Type p_type, int p_from_node, int p_from_port, int p_to_node, int p_to_port) {
 	ERR_FAIL_INDEX(p_type, TYPE_MAX);
 	Graph *g = &graph[p_type];
+
+	ERR_FAIL_COND(!g->nodes.has(p_from_node));
+	ERR_FAIL_INDEX(p_from_port, g->nodes[p_from_node].node->get_output_port_count());
+	ERR_FAIL_COND(!g->nodes.has(p_to_node));
+	ERR_FAIL_INDEX(p_to_port, g->nodes[p_to_node].node->get_input_port_count());
+
 	Connection c;
 	c.from_node = p_from_node;
 	c.from_port = p_from_port;
