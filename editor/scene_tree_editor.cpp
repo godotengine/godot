@@ -1194,7 +1194,7 @@ SceneTreeEditor::SceneTreeEditor(bool p_label, bool p_can_rename, bool p_can_ope
 	blocked = 0;
 
 	update_timer = memnew(Timer);
-	update_timer->connect("timeout", callable_mp(this, &SceneTreeEditor::_update_tree));
+	update_timer->connect("timeout", callable_mp(this, &SceneTreeEditor::_update_tree), varray(false));
 	update_timer->set_one_shot(true);
 	update_timer->set_wait_time(0.5);
 	add_child(update_timer);
