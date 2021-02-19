@@ -44,6 +44,8 @@ class AStar : public Reference {
 	GDCLASS(AStar, Reference);
 	friend class AStar2D;
 
+	bool point_disabling_mode = true;
+
 	struct Point {
 		Point() {}
 
@@ -138,6 +140,9 @@ public:
 	void set_point_disabled(int p_id, bool p_disabled = true);
 	bool is_point_disabled(int p_id) const;
 
+	void set_point_disabling_mode(bool p_enabled);
+	bool is_in_point_disabling_mode() const;
+
 	void connect_points(int p_id, int p_with_id, bool bidirectional = true);
 	void disconnect_points(int p_id, int p_with_id, bool bidirectional = true);
 	bool are_points_connected(int p_id, int p_with_id, bool bidirectional = true) const;
@@ -184,6 +189,9 @@ public:
 
 	void set_point_disabled(int p_id, bool p_disabled = true);
 	bool is_point_disabled(int p_id) const;
+
+	void set_point_disabling_mode(bool p_enabled);
+	bool is_in_point_disabling_mode() const;
 
 	void connect_points(int p_id, int p_with_id, bool p_bidirectional = true);
 	void disconnect_points(int p_id, int p_with_id);

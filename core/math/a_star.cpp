@@ -276,7 +276,7 @@ int AStar::get_closest_point(const Vector3 &p_point, bool p_include_disabled) co
 	real_t closest_dist = 1e20;
 
 	for (OAHashMap<int, Point *>::Iterator it = points.iter(); it.valid; it = points.next_iter(it)) {
-		if (!p_include_disabled && !(*it.value)->enabled) {
+		if (point_disabling_mode && !p_include_disabled && !(*it.value)->enabled) {
 			continue; // Disabled points should not be considered.
 		}
 
@@ -305,7 +305,7 @@ Vector3 AStar::get_closest_position_in_segment(const Vector3 &p_point) const {
 		points.lookup(E->get().u, from_point);
 		points.lookup(E->get().v, to_point);
 
-		if (!(from_point->enabled && to_point->enabled)) {
+		if (point_disabling_mode && !(from_point->enabled && to_point->enabled)) {
 			continue;
 		}
 
@@ -328,7 +328,7 @@ Vector3 AStar::get_closest_position_in_segment(const Vector3 &p_point) const {
 bool AStar::_solve(Point *begin_point, Point *end_point) {
 	pass++;
 
-	if (!end_point->enabled) {
+	if (point_disabling_mode && !end_point->enabled) {
 		return false;
 	}
 
@@ -356,7 +356,7 @@ bool AStar::_solve(Point *begin_point, Point *end_point) {
 		for (OAHashMap<int, Point *>::Iterator it = p->neighbours.iter(); it.valid; it = p->neighbours.next_iter(it)) {
 			Point *e = *(it.value); // The neighbour point
 
-			if (!e->enabled || e->closed_pass == pass) {
+			if ((point_disabling_mode && !e->enabled) || e->closed_pass == pass) {
 				continue;
 			}
 
@@ -533,6 +533,14 @@ bool AStar::is_point_disabled(int p_id) const {
 	return !p->enabled;
 }
 
+void AStar::set_point_disabling_mode(bool p_enabled) {
+	point_disabling_mode = p_enabled;
+}
+
+bool AStar::is_in_point_disabling_mode() const {
+	return point_disabling_mode;
+}
+
 void AStar::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_available_point_id"), &AStar::get_available_point_id);
 	ClassDB::bind_method(D_METHOD("add_point", "id", "position", "weight_scale"), &AStar::add_point, DEFVAL(1.0));
@@ -547,6 +555,9 @@ void AStar::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_point_disabled", "id", "disabled"), &AStar::set_point_disabled, DEFVAL(true));
 	ClassDB::bind_method(D_METHOD("is_point_disabled", "id"), &AStar::is_point_disabled);
+
+	ClassDB::bind_method(D_METHOD("set_point_disabling_mode", "enabled"), &AStar::set_point_disabling_mode);
+	ClassDB::bind_method(D_METHOD("is_in_point_disabling_mode"), &AStar::is_in_point_disabling_mode);
 
 	ClassDB::bind_method(D_METHOD("connect_points", "id", "to_id", "bidirectional"), &AStar::connect_points, DEFVAL(true));
 	ClassDB::bind_method(D_METHOD("disconnect_points", "id", "to_id", "bidirectional"), &AStar::disconnect_points, DEFVAL(true));
@@ -565,6 +576,8 @@ void AStar::_bind_methods() {
 
 	BIND_VMETHOD(MethodInfo(Variant::FLOAT, "_estimate_cost", PropertyInfo(Variant::INT, "from_id"), PropertyInfo(Variant::INT, "to_id")));
 	BIND_VMETHOD(MethodInfo(Variant::FLOAT, "_compute_cost", PropertyInfo(Variant::INT, "from_id"), PropertyInfo(Variant::INT, "to_id")));
+
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "point_disabling_mode"), "set_point_disabling_mode", "is_in_point_disabling_mode");
 }
 
 AStar::~AStar() {
@@ -792,7 +805,7 @@ Vector<int> AStar2D::get_id_path(int p_from_id, int p_to_id) {
 bool AStar2D::_solve(AStar::Point *begin_point, AStar::Point *end_point) {
 	astar.pass++;
 
-	if (!end_point->enabled) {
+	if (astar.point_disabling_mode && !end_point->enabled) {
 		return false;
 	}
 
@@ -820,7 +833,7 @@ bool AStar2D::_solve(AStar::Point *begin_point, AStar::Point *end_point) {
 		for (OAHashMap<int, AStar::Point *>::Iterator it = p->neighbours.iter(); it.valid; it = p->neighbours.next_iter(it)) {
 			AStar::Point *e = *(it.value); // The neighbour point
 
-			if (!e->enabled || e->closed_pass == astar.pass) {
+			if ((astar.point_disabling_mode && !e->enabled) || e->closed_pass == astar.pass) {
 				continue;
 			}
 
@@ -851,6 +864,14 @@ bool AStar2D::_solve(AStar::Point *begin_point, AStar::Point *end_point) {
 	return found_route;
 }
 
+void AStar2D::set_point_disabling_mode(bool p_enabled) {
+	astar.set_point_disabling_mode(p_enabled);
+}
+
+bool AStar2D::is_in_point_disabling_mode() const {
+	return astar.is_in_point_disabling_mode();
+}
+
 void AStar2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_available_point_id"), &AStar2D::get_available_point_id);
 	ClassDB::bind_method(D_METHOD("add_point", "id", "position", "weight_scale"), &AStar2D::add_point, DEFVAL(1.0));
@@ -865,6 +886,9 @@ void AStar2D::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_point_disabled", "id", "disabled"), &AStar2D::set_point_disabled, DEFVAL(true));
 	ClassDB::bind_method(D_METHOD("is_point_disabled", "id"), &AStar2D::is_point_disabled);
+
+	ClassDB::bind_method(D_METHOD("set_point_disabling_mode", "enabled"), &AStar2D::set_point_disabling_mode);
+	ClassDB::bind_method(D_METHOD("is_in_point_disabling_mode"), &AStar2D::is_in_point_disabling_mode);
 
 	ClassDB::bind_method(D_METHOD("connect_points", "id", "to_id", "bidirectional"), &AStar2D::connect_points, DEFVAL(true));
 	ClassDB::bind_method(D_METHOD("disconnect_points", "id", "to_id"), &AStar2D::disconnect_points);
@@ -883,4 +907,6 @@ void AStar2D::_bind_methods() {
 
 	BIND_VMETHOD(MethodInfo(Variant::FLOAT, "_estimate_cost", PropertyInfo(Variant::INT, "from_id"), PropertyInfo(Variant::INT, "to_id")));
 	BIND_VMETHOD(MethodInfo(Variant::FLOAT, "_compute_cost", PropertyInfo(Variant::INT, "from_id"), PropertyInfo(Variant::INT, "to_id")));
+
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "point_disabling_mode"), "set_point_disabling_mode", "is_in_point_disabling_mode");
 }

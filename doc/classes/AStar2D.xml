@@ -355,6 +355,11 @@
 			</description>
 		</method>
 	</methods>
+	<members>
+		<member name="point_disabling_mode" type="bool" setter="set_point_disabling_mode" getter="is_in_point_disabling_mode" default="true">
+			If [code]true[/code], disabled points are proceeded, as usual, otherwise, they are ignored.
+		</member>
+	</members>
 	<constants>
 	</constants>
 </class>
