@@ -169,6 +169,15 @@
 			<return type="bool">
 			</return>
 			<description>
+				Called by the engine when running the project from the editor. Must return true to continue building the project.
+				Example:
+				[codeblocks]
+				[gdscript]
+				func build():
+   				    # Do stuff here before running the project.
+   				    return true
+				[/gdscript]
+				[/codeblocks]
 			</description>
 		</method>
 		<method name="clear" qualifiers="virtual">
