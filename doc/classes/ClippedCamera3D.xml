@@ -95,15 +95,15 @@
 		<member name="margin" type="float" setter="set_margin" getter="get_margin" default="0.0">
 			The camera's collision margin. The camera can't get closer than this distance to a colliding object.
 		</member>
-		<member name="process_mode" type="int" setter="set_process_mode" getter="get_process_mode" enum="ClippedCamera3D.ProcessMode" default="0">
-			The camera's process callback. See [enum ProcessMode].
+		<member name="process_callback" type="int" setter="set_process_callback" getter="get_process_callback" enum="ClippedCamera3D.ClipProcessCallback" default="0">
+			The camera's process callback. See [enum ClipProcessCallback].
 		</member>
 	</members>
 	<constants>
-		<constant name="CLIP_PROCESS_PHYSICS" value="0" enum="ProcessMode">
+		<constant name="CLIP_PROCESS_PHYSICS" value="0" enum="ClipProcessCallback">
 			The camera updates with the [code]_physics_process[/code] callback.
 		</constant>
-		<constant name="CLIP_PROCESS_IDLE" value="1" enum="ProcessMode">
+		<constant name="CLIP_PROCESS_IDLE" value="1" enum="ClipProcessCallback">
 			The camera updates with the [code]_process[/code] callback.
 		</constant>
 	</constants>

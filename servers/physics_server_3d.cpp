@@ -602,7 +602,7 @@ void PhysicsServer3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("hinge_joint_set_flag", "joint", "flag", "enabled"), &PhysicsServer3D::hinge_joint_set_flag);
 	ClassDB::bind_method(D_METHOD("hinge_joint_get_flag", "joint", "flag"), &PhysicsServer3D::hinge_joint_get_flag);
 
-	ClassDB::bind_method(D_METHOD("joint_make_slider", "body_A", "local_ref_A", "body_B", "local_ref_B"), &PhysicsServer3D::joint_make_slider);
+	ClassDB::bind_method(D_METHOD("joint_make_slider", "joint", "body_A", "local_ref_A", "body_B", "local_ref_B"), &PhysicsServer3D::joint_make_slider);
 
 	ClassDB::bind_method(D_METHOD("slider_joint_set_param", "joint", "param", "value"), &PhysicsServer3D::slider_joint_set_param);
 	ClassDB::bind_method(D_METHOD("slider_joint_get_param", "joint", "param"), &PhysicsServer3D::slider_joint_get_param);

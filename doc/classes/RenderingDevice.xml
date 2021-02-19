@@ -490,7 +490,7 @@
 			</argument>
 			<argument index="2" name="data" type="PackedByteArray" default="PackedByteArray(  )">
 			</argument>
-			<argument index="3" name="arg3" type="bool" default="false">
+			<argument index="3" name="use_restart_indices" type="bool" default="false">
 			</argument>
 			<description>
 			</description>

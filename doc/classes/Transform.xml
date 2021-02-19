@@ -97,7 +97,7 @@
 			</return>
 			<argument index="0" name="target" type="Vector3">
 			</argument>
-			<argument index="1" name="up" type="Vector3">
+			<argument index="1" name="up" type="Vector3" default="Vector3( 0, 1, 0 )">
 			</argument>
 			<description>
 				Returns a copy of the transform rotated such that its -Z axis points towards the [code]target[/code] position.

@@ -49,7 +49,7 @@ protected:
 	static void _bind_methods();
 
 public:
-	enum TimerProcessMode {
+	enum TimerProcessCallback {
 		TIMER_PROCESS_PHYSICS,
 		TIMER_PROCESS_IDLE,
 	};
@@ -73,15 +73,15 @@ public:
 
 	float get_time_left() const;
 
-	void set_timer_process_mode(TimerProcessMode p_mode);
-	TimerProcessMode get_timer_process_mode() const;
+	void set_timer_process_callback(TimerProcessCallback p_callback);
+	TimerProcessCallback get_timer_process_callback() const;
 	Timer();
 
 private:
-	TimerProcessMode timer_process_mode = TIMER_PROCESS_IDLE;
+	TimerProcessCallback timer_process_callback = TIMER_PROCESS_IDLE;
 	void _set_process(bool p_process, bool p_force = false);
 };
 
-VARIANT_ENUM_CAST(Timer::TimerProcessMode);
+VARIANT_ENUM_CAST(Timer::TimerProcessCallback);
 
 #endif // TIMER_H
