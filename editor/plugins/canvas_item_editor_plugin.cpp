@@ -619,9 +619,9 @@ void CanvasItemEditor::_get_canvas_items_at_pos(const Point2 &p_pos, Vector<_Sel
 		Node *node = r_items[i].item;
 
 		// Make sure the selected node is in the current scene, or editable
-		while (node && node != get_tree()->get_edited_scene_root() && node->get_owner() != scene && !scene->is_editable_instance(node->get_owner())) {
-			node = node->get_parent();
-		};
+		if (node && node != get_tree()->get_edited_scene_root()) {
+			node = scene->get_deepest_editable_node(node);
+		}
 
 		// Replace the node by the group if grouped
 		CanvasItem *canvas_item = Object::cast_to<CanvasItem>(node);
@@ -742,7 +742,7 @@ void CanvasItemEditor::_find_canvas_items_in_rect(const Rect2 &p_rect, Node *p_n
 	CanvasItem *canvas_item = Object::cast_to<CanvasItem>(p_node);
 	Node *scene = editor->get_edited_scene();
 
-	bool editable = p_node == scene || p_node->get_owner() == scene || scene->is_editable_instance(p_node->get_owner());
+	bool editable = p_node == scene || p_node->get_owner() == scene || p_node == scene->get_deepest_editable_node(p_node);
 	bool lock_children = p_node->has_meta("_edit_group_") && p_node->get_meta("_edit_group_");
 	bool locked = _is_node_locked(p_node);
 
@@ -3590,6 +3590,7 @@ void CanvasItemEditor::_draw_invisible_nodes_positions(Node *p_node, const Trans
 	Node *scene = editor->get_edited_scene();
 	if (p_node != scene && p_node->get_owner() != scene && !scene->is_editable_instance(p_node->get_owner()))
 		return;
+
 	CanvasItem *canvas_item = Object::cast_to<CanvasItem>(p_node);
 	if (canvas_item && !canvas_item->is_visible())
 		return;
@@ -3708,7 +3709,7 @@ bool CanvasItemEditor::_build_bones_list(Node *p_node) {
 
 	CanvasItem *canvas_item = Object::cast_to<CanvasItem>(p_node);
 	Node *scene = editor->get_edited_scene();
-	if (!canvas_item || !canvas_item->is_visible() || (canvas_item != scene && canvas_item->get_owner() != scene && !scene->is_editable_instance(canvas_item->get_owner()))) {
+	if (!canvas_item || !canvas_item->is_visible() || (canvas_item != scene && canvas_item->get_owner() != scene && canvas_item != scene->get_deepest_editable_node(canvas_item))) {
 		return false;
 	}
 

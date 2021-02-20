@@ -1920,6 +1920,23 @@ bool Node::is_editable_instance(const Node *p_node) const {
 	return p_node->data.editable_instance;
 }
 
+Node *Node::get_deepest_editable_node(Node *p_start_node) const {
+	ERR_FAIL_NULL_V(p_start_node, nullptr);
+	ERR_FAIL_COND_V(!is_a_parent_of(p_start_node), nullptr);
+
+	Node const *iterated_item = p_start_node;
+	Node *node = p_start_node;
+
+	while (iterated_item->get_owner() && iterated_item->get_owner() != this) {
+		if (!is_editable_instance(iterated_item->get_owner()))
+			node = iterated_item->get_owner();
+
+		iterated_item = iterated_item->get_owner();
+	}
+
+	return node;
+}
+
 void Node::set_scene_instance_state(const Ref<SceneState> &p_state) {
 
 	data.instance_state = p_state;
