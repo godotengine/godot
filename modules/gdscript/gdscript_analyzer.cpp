@@ -2186,7 +2186,7 @@ void GDScriptAnalyzer::reduce_identifier_from_base(GDScriptParser::IdentifierNod
 		} else {
 			switch (base.builtin_type) {
 				case Variant::NIL: {
-					push_error(vformat(R"(Invalid get index "%s" on base Nil)", name), p_identifier);
+					push_error(vformat(R"(Value of type Nil does not have the attribute "%s".)", name), p_identifier);
 					return;
 				}
 				case Variant::DICTIONARY: {

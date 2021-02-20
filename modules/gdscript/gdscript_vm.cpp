@@ -808,7 +808,11 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 					} else {
 						v = "of type '" + _get_var_type(index) + "'";
 					}
-					err_text = "Invalid get index " + v + " (on base: '" + _get_var_type(src) + "').";
+					if (!src->is_null()) {
+						err_text = "Tried to access attribute " + v + " on a value that is null.";
+					} else {
+						err_text = "Value of type '" + _get_var_type(src) + "' does not have the attribute " + v + ".";
+					}
 					OPCODE_BREAK;
 				}
 				*dst = ret;
@@ -844,7 +848,11 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 					} else {
 						v = "of type '" + _get_var_type(key) + "'";
 					}
-					err_text = "Invalid get index " + v + " (on base: '" + _get_var_type(src) + "').";
+					if (!src->is_null()) {
+						err_text = "Tried to access attribute " + v + " on a value that is null.";
+					} else {
+						err_text = "Value of type '" + _get_var_type(src) + "' does not have the attribute " + v + ".";
+					}
 					OPCODE_BREAK;
 				}
 				*dst = ret;
@@ -947,9 +955,17 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 #ifdef DEBUG_ENABLED
 				if (!valid) {
 					if (src->has_method(*index)) {
-						err_text = "Invalid get index '" + index->operator String() + "' (on base: '" + _get_var_type(src) + "'). Did you mean '." + index->operator String() + "()' or funcref(obj, \"" + index->operator String() + "\") ?";
+						if (!src->is_null()) {
+							err_text = "Tried to access attribute '" + index->operator String() + "' on a value that is null. Did you mean '." + index->operator String() + "()' or funcref(obj, \"" + index->operator String() + "\") ?";
+						} else {
+							err_text = "Value of type '" + _get_var_type(src) + "' does not have the attribute '" + index->operator String() + "'. Did you mean '." + index->operator String() + "()' or funcref(obj, \"" + index->operator String() + "\") ?";
+						}
 					} else {
-						err_text = "Invalid get index '" + index->operator String() + "' (on base: '" + _get_var_type(src) + "').";
+						if (!src->is_null()) {
+							err_text = "Tried to access attribute '" + index->operator String() + "' on a value that is null.";
+						} else {
+							err_text = "Value of type '" + _get_var_type(src) + "' does not have the attribute '" + index->operator String() + "'.";
+						}
 					}
 					OPCODE_BREAK;
 				}
