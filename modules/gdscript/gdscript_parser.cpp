@@ -1258,10 +1258,17 @@ GDScriptParser::Node *GDScriptParser::_parse_expression(Node *p_parent, bool p_s
 				op->op = OperatorNode::OP_INDEX;
 
 				tokenizer->advance(1);
+				while (tokenizer->get_token() == GDScriptTokenizer::TK_NEWLINE) {
+					tokenizer->advance(); //ignore newline
+				}
 
 				Node *subexpr = _parse_expression(op, p_static, p_allow_assign, p_parsing_constant);
 				if (!subexpr) {
 					return NULL;
+				}
+
+				while (tokenizer->get_token() == GDScriptTokenizer::TK_NEWLINE) {
+					tokenizer->advance(); //ignore newline
 				}
 
 				if (tokenizer->get_token() != GDScriptTokenizer::TK_BRACKET_CLOSE) {
