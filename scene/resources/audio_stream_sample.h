@@ -100,7 +100,7 @@ private:
 	friend class AudioStreamPlaybackSample;
 
 	enum {
-		DATA_PAD = 16 //padding for interpolation
+		DATA_PAD = sizeof(float) * 6 //padding for interpolation
 	};
 
 	Format format = FORMAT_8_BITS;

@@ -90,7 +90,7 @@ template <class Depth, bool is_stereo, bool is_ima_adpcm>
 void AudioStreamPlaybackSample::do_resample(const Depth *p_src, AudioFrame *p_dst, int64_t &offset, int32_t &increment, uint32_t amount, IMA_ADPCM_State *ima_adpcm) {
 	// this function will be compiled branchless by any decent compiler
 
-	int32_t final, final_r, next, next_r;
+	int32_t final, final_r;
 	while (amount) {
 		amount--;
 		int64_t pos = offset >> MIX_FRAC_BITS;
@@ -172,49 +172,43 @@ void AudioStreamPlaybackSample::do_resample(const Depth *p_src, AudioFrame *p_ds
 			final = ima_adpcm[0].predictor;
 			if (is_stereo) {
 				final_r = ima_adpcm[1].predictor;
+			} else {
+				final_r = final; //copy to right channel if stereo
 			}
+
+			p_dst->l = final / 32767.0;
+			p_dst->r = final_r / 32767.0;
 
 		} else {
-			final = p_src[pos];
+			// 4 point, 4th order optimal resampling algorithm from: http://yehar.com/blog/wp-content/uploads/2009/08/deip.pdf
+			float mu = (offset & MIX_FRAC_MASK) / float(MIX_FRAC_LEN);
+			AudioFrame y0, y1, y2, y3;
 			if (is_stereo) {
-				final_r = p_src[pos + 1];
+				y0 = AudioFrame(p_src[pos - 6], p_src[pos - 5]);
+				y1 = AudioFrame(p_src[pos - 4], p_src[pos - 3]);
+				y2 = AudioFrame(p_src[pos - 2], p_src[pos - 1]);
+				y3 = AudioFrame(p_src[pos - 0], p_src[pos + 1]);
+			} else {
+				y0 = AudioFrame(p_src[pos - 3], p_src[pos - 3]);
+				y1 = AudioFrame(p_src[pos - 2], p_src[pos - 2]);
+				y2 = AudioFrame(p_src[pos - 1], p_src[pos - 1]);
+				y3 = AudioFrame(p_src[pos - 0], p_src[pos - 0]);
 			}
+
+			AudioFrame even1 = y2 + y1, odd1 = y2 - y1;
+			AudioFrame even2 = y3 + y0, odd2 = y3 - y0;
+			AudioFrame c0 = even1 * 0.46835497211269561 + even2 * 0.03164502784253309;
+			AudioFrame c1 = odd1 * 0.56001293337091440 + odd2 * 0.14666238593949288;
+			AudioFrame c2 = even1 * -0.250038759826233691 + even2 * 0.25003876124297131;
+			AudioFrame c3 = odd1 * -0.49949850957839148 + odd2 * 0.16649935475113800;
+			AudioFrame c4 = even1 * 0.00016095224137360 + even2 * -0.00016095810460478;
+			*p_dst = ((((c4 * mu + c3) * mu + c2) * mu + c1) * mu + c0) / 32767.0;
 
 			if (sizeof(Depth) == 1) { /* conditions will not exist anymore when compiled! */
-				final <<= 8;
-				if (is_stereo) {
-					final_r <<= 8;
-				}
-			}
-
-			if (is_stereo) {
-				next = p_src[pos + 2];
-				next_r = p_src[pos + 3];
-			} else {
-				next = p_src[pos + 1];
-			}
-
-			if (sizeof(Depth) == 1) {
-				next <<= 8;
-				if (is_stereo) {
-					next_r <<= 8;
-				}
-			}
-
-			int32_t frac = int64_t(offset & MIX_FRAC_MASK);
-
-			final = final + ((next - final) * frac >> MIX_FRAC_BITS);
-			if (is_stereo) {
-				final_r = final_r + ((next_r - final_r) * frac >> MIX_FRAC_BITS);
+				*p_dst *= 8;
 			}
 		}
 
-		if (!is_stereo) {
-			final_r = final; //copy to right channel if stereo
-		}
-
-		p_dst->l = final / 32767.0;
-		p_dst->r = final_r / 32767.0;
 		p_dst++;
 
 		offset += increment;
