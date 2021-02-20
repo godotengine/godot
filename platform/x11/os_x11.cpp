@@ -3572,15 +3572,17 @@ void OS_X11::set_icon(const Ref<Image> &p_icon) {
 
 			PoolVector<uint8_t>::Read r = img->get_data().read();
 
-			long *wr = &pd.write[2];
-			uint8_t const *pr = r.ptr();
+			if (w > 0 && h > 0) {
+				long *wr = &pd.write[2];
+				uint8_t const *pr = r.ptr();
 
-			for (int i = 0; i < w * h; i++) {
-				long v = 0;
-				//    A             R             G            B
-				v |= pr[3] << 24 | pr[0] << 16 | pr[1] << 8 | pr[2];
-				*wr++ = v;
-				pr += 4;
+				for (int i = 0; i < w * h; i++) {
+					long v = 0;
+					//    A             R             G            B
+					v |= pr[3] << 24 | pr[0] << 16 | pr[1] << 8 | pr[2];
+					*wr++ = v;
+					pr += 4;
+				}
 			}
 
 			if (net_wm_icon != None) {
