@@ -877,6 +877,7 @@ PoolVector<Plane> Geometry::build_box_planes(const Vector3 &p_extents) {
 }
 
 PoolVector<Plane> Geometry::build_cylinder_planes(real_t p_radius, real_t p_height, int p_sides, Vector3::Axis p_axis) {
+	ERR_FAIL_INDEX_V(p_axis, 3, PoolVector<Plane>());
 
 	PoolVector<Plane> planes;
 
@@ -899,6 +900,7 @@ PoolVector<Plane> Geometry::build_cylinder_planes(real_t p_radius, real_t p_heig
 }
 
 PoolVector<Plane> Geometry::build_sphere_planes(real_t p_radius, int p_lats, int p_lons, Vector3::Axis p_axis) {
+	ERR_FAIL_INDEX_V(p_axis, 3, PoolVector<Plane>());
 
 	PoolVector<Plane> planes;
 
@@ -932,6 +934,7 @@ PoolVector<Plane> Geometry::build_sphere_planes(real_t p_radius, int p_lats, int
 }
 
 PoolVector<Plane> Geometry::build_capsule_planes(real_t p_radius, real_t p_height, int p_sides, int p_lats, Vector3::Axis p_axis) {
+	ERR_FAIL_INDEX_V(p_axis, 3, PoolVector<Plane>());
 
 	PoolVector<Plane> planes;
 
