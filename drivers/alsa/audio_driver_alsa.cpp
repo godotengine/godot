@@ -39,7 +39,7 @@
 
 #ifdef PULSEAUDIO_ENABLED
 extern "C" {
-extern int initialize_pulse();
+extern int initialize_pulse(int verbose);
 }
 #endif
 
@@ -153,13 +153,18 @@ Error AudioDriverALSA::init_device() {
 }
 
 Error AudioDriverALSA::init() {
+#ifdef DEBUG_ENABLED
+	int dylibloader_verbose = 1;
+#else
+	int dylibloader_verbose = 0;
+#endif
 #ifdef PULSEAUDIO_ENABLED
 	// On pulse enabled systems Alsa will silently use pulse.
 	// It doesn't matter if this fails as that likely means there is no pulse
-	initialize_pulse();
+	initialize_pulse(dylibloader_verbose);
 #endif
 
-	if (initialize_asound()) {
+	if (initialize_asound(dylibloader_verbose)) {
 		return ERR_CANT_OPEN;
 	}
 

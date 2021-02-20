@@ -233,7 +233,12 @@ Error AudioDriverPulseAudio::init_device() {
 }
 
 Error AudioDriverPulseAudio::init() {
-	if (initialize_pulse()) {
+#ifdef DEBUG_ENABLED
+	int dylibloader_verbose = 1;
+#else
+	int dylibloader_verbose = 0;
+#endif
+	if (initialize_pulse(dylibloader_verbose)) {
 		return ERR_CANT_OPEN;
 	}
 
