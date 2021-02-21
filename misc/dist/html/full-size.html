@@ -142,7 +142,6 @@ $GODOT_HEAD_INCLUDE
 
 		(function() {
 			const INDETERMINATE_STATUS_STEP_MS = 100;
-			var canvas = document.getElementById('canvas');
 			var statusProgress = document.getElementById('status-progress');
 			var statusProgressInner = document.getElementById('status-progress-inner');
 			var statusIndeterminate = document.getElementById('status-indeterminate');
@@ -150,9 +149,6 @@ $GODOT_HEAD_INCLUDE
 
 			var initializing = true;
 			var statusMode = 'hidden';
-			var lastWidth = 0;
-			var lastHeight = 0;
-			var lastScale = 0;
 
 			var animationCallbacks = [];
 			function animate(time) {
