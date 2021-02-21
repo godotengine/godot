@@ -55,18 +55,25 @@ public:
 
 template <class T>
 class Ref {
-	T *reference = nullptr;
+	std::atomic<T *> reference = nullptr;
+	// Fail loudly rather than silently introduce locks at every Ref assingment. Passes on most architectures.
+	static_assert(std::atomic<T *>::is_always_lock_free);
 
 	void ref(const Ref &p_from) {
-		if (p_from.reference == reference) {
+		// Copy new reference to method-local variable immediately.
+		T *new_reference_ptr = p_from.reference.load(std::memory_order_relaxed);
+
+		// Increment the reference count before exchanging to prevent exchange of a deleted reference.
+		if (new_reference_ptr && !new_reference_ptr->reference()) {
+			// Reference count was at zero and cannot be incremented. p_from will be imminently deleted by another thread.
 			return;
 		}
 
-		unref();
+		T *old_reference_ptr = reference.exchange(new_reference_ptr, std::memory_order_relaxed);
 
-		reference = p_from.reference;
-		if (reference) {
-			reference->reference();
+		// old_reference_ptr now contains the previous value of this->reference
+		if (old_reference_ptr && old_reference_ptr->unreference()) {
+			memdelete(old_reference_ptr);
 		}
 	}
 
@@ -74,7 +81,7 @@ class Ref {
 		ERR_FAIL_COND(!p_ref);
 
 		if (p_ref->init_ref()) {
-			reference = p_ref;
+			reference.store(p_ref);
 		}
 	}
 
@@ -144,20 +151,17 @@ public:
 	void operator=(const Variant &p_variant) {
 		Object *object = p_variant.get_validated_object();
 
-		if (object == reference) {
-			return;
-		}
-
-		unref();
-
 		if (!object) {
+			unref();
 			return;
 		}
 
 		T *r = Object::cast_to<T>(object);
-		if (r && r->reference()) {
-			reference = r;
+		if (!r) {
+			unref();
+			return;
 		}
+		ref(r);
 	}
 
 	template <class T_Other>
@@ -205,7 +209,7 @@ public:
 
 		T *r = Object::cast_to<T>(object);
 		if (r && r->reference()) {
-			reference = r;
+			reference.store(r, std::memory_order_relaxed);
 		}
 	}
 
@@ -213,14 +217,10 @@ public:
 	inline bool is_null() const { return reference == nullptr; }
 
 	void unref() {
-		//TODO this should be moved to mutexes, since this engine does not really
-		// do a lot of referencing on references and stuff
-		// mutexes will avoid more crashes?
-
-		if (reference && reference->unreference()) {
-			memdelete(reference);
+		T *old_reference_ptr = reference.exchange(nullptr, std::memory_order_relaxed);
+		if (old_reference_ptr && old_reference_ptr->unreference()) {
+			memdelete(old_reference_ptr);
 		}
-		reference = nullptr;
 	}
 
 	void instance() {
