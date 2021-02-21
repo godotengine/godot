@@ -517,48 +517,52 @@ bool EditorPropertyRevert::is_node_property_different(Node *p_node, const Varian
 }
 
 bool EditorPropertyRevert::can_property_revert(Object *p_object, const StringName &p_property) {
-	bool has_revert = false;
-
-	Node *node = Object::cast_to<Node>(p_object);
-
-	if (node && EditorPropertyRevert::may_node_be_in_instance(node)) {
-		//check for difference including instantiation
-		Variant vorig;
-		if (EditorPropertyRevert::get_instanced_node_original_property(node, p_property, vorig)) {
-			Variant v = p_object->get(p_property);
-
-			if (EditorPropertyRevert::is_node_property_different(node, v, vorig)) {
-				has_revert = true;
-			}
-		}
-	} else {
-		//check for difference against default class value instead
-		Variant default_value = ClassDB::class_get_default_property_value(p_object->get_class_name(), p_property);
-		if (default_value != Variant() && default_value != p_object->get(p_property)) {
-			has_revert = true;
-		}
-	}
-
 	// If the object implements property_can_revert, rely on that completely
 	// (i.e. don't then try to revert to default value - the property_get_revert implementation
 	// can do that if so desired)
-	if (p_object->has_method("property_can_revert")) {
-		has_revert = p_object->call("property_can_revert", p_property).operator bool();
-	} else {
-		if (!has_revert && !p_object->get_script().is_null()) {
-			Ref<Script> scr = p_object->get_script();
-			if (scr.is_valid()) {
-				Variant orig_value;
-				if (scr->get_property_default_value(p_property, orig_value)) {
-					if (orig_value != p_object->get(p_property)) {
-						has_revert = true;
-					}
+	if (p_object->has_method("property_can_revert") && p_object->call("property_can_revert", p_property)) {
+		return true;
+	}
+
+	Ref<Script> scr = p_object->get_script();
+	Node *node = Object::cast_to<Node>(p_object);
+	if (node && EditorPropertyRevert::may_node_be_in_instance(node)) {
+		//if this node is an instance or inherits, but it has a script attached which is unrelated
+		//to the one set for the parent and also has a default value for the property, consider that
+		//has precedence over the value from the parent, because that is an explicit source of defaults
+		//closer in the tree to the current node
+		bool ignore_parent = false;
+		if (scr.is_valid()) {
+			Variant sorig;
+			if (EditorPropertyRevert::get_instanced_node_original_property(node, "script", sorig) && !scr->inherits_script(sorig)) {
+				Variant dummy;
+				if (scr->get_property_default_value(p_property, dummy)) {
+					ignore_parent = true;
 				}
+			}
+		}
+
+		if (!ignore_parent) {
+			//check for difference including instantiation
+			Variant vorig;
+			if (EditorPropertyRevert::get_instanced_node_original_property(node, p_property, vorig)) {
+				Variant v = p_object->get(p_property);
+
+				return EditorPropertyRevert::is_node_property_different(node, v, vorig);
 			}
 		}
 	}
 
-	return has_revert;
+	if (scr.is_valid()) {
+		Variant orig_value;
+		if (scr->get_property_default_value(p_property, orig_value)) {
+			return p_object->get(p_property) != orig_value;
+		}
+	}
+
+	//check for difference against default class value instead
+	Variant default_value = ClassDB::class_get_default_property_value(p_object->get_class_name(), p_property);
+	return default_value != Variant() && default_value != p_object->get(p_property);
 }
 
 void EditorProperty::update_reload_status() {
