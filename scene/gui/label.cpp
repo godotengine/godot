@@ -566,6 +566,7 @@ float Label::get_percent_visible() const {
 }
 
 void Label::set_lines_skipped(int p_lines) {
+	ERR_FAIL_COND(p_lines < 0);
 	lines_skipped = p_lines;
 	_update_visible();
 	update();
