@@ -33,7 +33,7 @@ XR.prototype.ondevicechanged;
  *
  * @return {!Promise<boolean>}
  */
-XR.prototype.isSessionSupported = function(mode) {}
+XR.prototype.isSessionSupported = function(mode) {};
 
 /**
  * @param {string} mode
@@ -41,7 +41,7 @@ XR.prototype.isSessionSupported = function(mode) {}
  *
  * @return {!Promise<XRSession>}
  */
-XR.prototype.requestSession = function(mode, options) {}
+XR.prototype.requestSession = function(mode, options) {};
 
 /**
  * @constructor
