@@ -6135,6 +6135,10 @@ Error ShaderLanguage::_parse_shader(const Map<StringName, FunctionInfo> &p_funct
 				tk = _get_token();
 				if (tk.type == TK_IDENTIFIER) {
 					st.name = tk.text;
+					if (shader->structs.has(st.name)) {
+						_set_error("Redefinition of '" + String(st.name) + "'");
+						return ERR_PARSE_ERROR;
+					}
 					tk = _get_token();
 					if (tk.type != TK_CURLY_BRACKET_OPEN) {
 						_set_error("Expected '{'");
