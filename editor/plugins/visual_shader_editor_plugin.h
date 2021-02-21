@@ -161,6 +161,12 @@ class VisualShaderEditor : public VBoxContainer {
 	PopupMenu *popup_menu;
 	MenuButton *tools;
 
+	PopupPanel *comment_title_change_popup = nullptr;
+	LineEdit *comment_title_change_edit = nullptr;
+
+	PopupPanel *comment_desc_change_popup = nullptr;
+	TextEdit *comment_desc_change_edit = nullptr;
+
 	bool preview_first = true;
 	bool preview_showed = false;
 	bool particles_mode;
@@ -192,6 +198,8 @@ class VisualShaderEditor : public VBoxContainer {
 		SEPARATOR2, // ignore
 		CONVERT_CONSTANTS_TO_UNIFORMS,
 		CONVERT_UNIFORMS_TO_CONSTANTS,
+		SET_COMMENT_TITLE,
+		SET_COMMENT_DESCRIPTION,
 	};
 
 	Tree *members;
@@ -325,6 +333,7 @@ class VisualShaderEditor : public VBoxContainer {
 
 	Set<int> selected_constants;
 	Set<int> selected_uniforms;
+	int selected_comment = -1;
 
 	void _convert_constants_to_uniforms(bool p_vice_versa);
 	void _replace_node(VisualShader::Type p_type_id, int p_node_id, const StringName &p_from, const StringName &p_to);
@@ -333,6 +342,17 @@ class VisualShaderEditor : public VBoxContainer {
 
 	void _connection_to_empty(const String &p_from, int p_from_slot, const Vector2 &p_release_position);
 	void _connection_from_empty(const String &p_to, int p_to_slot, const Vector2 &p_release_position);
+
+	void _comment_title_popup_show(const Point2 &p_position, int p_node_id);
+	void _comment_title_popup_hide();
+	void _comment_title_popup_focus_out();
+	void _comment_title_text_changed(const String &p_new_text);
+	void _comment_title_text_entered(const String &p_new_text);
+
+	void _comment_desc_popup_show(const Point2 &p_position, int p_node_id);
+	void _comment_desc_popup_hide();
+	void _comment_desc_confirm();
+	void _comment_desc_text_changed();
 
 	void _uniform_line_edit_changed(const String &p_text, int p_node_id);
 	void _uniform_line_edit_focus_out(Object *line_edit, int p_node_id);

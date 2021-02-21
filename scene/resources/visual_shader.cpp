@@ -2667,6 +2667,70 @@ VisualShaderNodeResizableBase::VisualShaderNodeResizableBase() {
 	set_allow_v_resize(true);
 }
 
+////////////// Comment
+
+String VisualShaderNodeComment::get_caption() const {
+	return title;
+}
+
+int VisualShaderNodeComment::get_input_port_count() const {
+	return 0;
+}
+
+VisualShaderNodeComment::PortType VisualShaderNodeComment::get_input_port_type(int p_port) const {
+	return PortType::PORT_TYPE_SCALAR;
+}
+
+String VisualShaderNodeComment::get_input_port_name(int p_port) const {
+	return String();
+}
+
+int VisualShaderNodeComment::get_output_port_count() const {
+	return 0;
+}
+
+VisualShaderNodeComment::PortType VisualShaderNodeComment::get_output_port_type(int p_port) const {
+	return PortType::PORT_TYPE_SCALAR;
+}
+
+String VisualShaderNodeComment::get_output_port_name(int p_port) const {
+	return String();
+}
+
+void VisualShaderNodeComment::set_title(const String &p_title) {
+	title = p_title;
+}
+
+String VisualShaderNodeComment::get_title() const {
+	return title;
+}
+
+void VisualShaderNodeComment::set_description(const String &p_description) {
+	description = p_description;
+}
+
+String VisualShaderNodeComment::get_description() const {
+	return description;
+}
+
+String VisualShaderNodeComment::generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars, bool p_for_preview) const {
+	return String();
+}
+
+void VisualShaderNodeComment::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("set_title", "title"), &VisualShaderNodeComment::set_title);
+	ClassDB::bind_method(D_METHOD("get_title"), &VisualShaderNodeComment::get_title);
+
+	ClassDB::bind_method(D_METHOD("set_description", "description"), &VisualShaderNodeComment::set_description);
+	ClassDB::bind_method(D_METHOD("get_description"), &VisualShaderNodeComment::get_description);
+
+	ADD_PROPERTY(PropertyInfo(Variant::STRING, "title"), "set_title", "get_title");
+	ADD_PROPERTY(PropertyInfo(Variant::STRING, "description"), "set_description", "get_description");
+}
+
+VisualShaderNodeComment::VisualShaderNodeComment() {
+}
+
 ////////////// GroupBase
 
 void VisualShaderNodeGroupBase::set_inputs(const String &p_inputs) {

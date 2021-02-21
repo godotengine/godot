@@ -510,6 +510,38 @@ public:
 	VisualShaderNodeResizableBase();
 };
 
+class VisualShaderNodeComment : public VisualShaderNodeResizableBase {
+	GDCLASS(VisualShaderNodeComment, VisualShaderNodeResizableBase);
+
+protected:
+	String title = "Comment";
+	String description = "";
+
+protected:
+	static void _bind_methods();
+
+public:
+	virtual String get_caption() const override;
+
+	virtual int get_input_port_count() const override;
+	virtual PortType get_input_port_type(int p_port) const override;
+	virtual String get_input_port_name(int p_port) const override;
+
+	virtual int get_output_port_count() const override;
+	virtual PortType get_output_port_type(int p_port) const override;
+	virtual String get_output_port_name(int p_port) const override;
+
+	virtual String generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars, bool p_for_preview = false) const override;
+
+	void set_title(const String &p_title);
+	String get_title() const;
+
+	void set_description(const String &p_description);
+	String get_description() const;
+
+	VisualShaderNodeComment();
+};
+
 class VisualShaderNodeGroupBase : public VisualShaderNodeResizableBase {
 	GDCLASS(VisualShaderNodeGroupBase, VisualShaderNodeResizableBase);
 
