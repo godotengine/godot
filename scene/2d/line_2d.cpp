@@ -123,6 +123,7 @@ PoolVector<Vector2> Line2D::get_points() const {
 }
 
 void Line2D::set_point_position(int i, Vector2 p_pos) {
+	ERR_FAIL_INDEX(i, _points.size());
 	_points.set(i, p_pos);
 	update();
 }
