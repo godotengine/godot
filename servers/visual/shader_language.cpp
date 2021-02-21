@@ -5335,6 +5335,8 @@ Error ShaderLanguage::_parse_block(BlockNode *p_block, const Map<StringName, Bui
 				return ERR_BUG;
 			}
 
+			String return_struct_name = String(b->parent_function->return_struct_name);
+
 			ControlFlowNode *flow = alloc_node<ControlFlowNode>();
 			flow->flow_op = FLOW_OP_RETURN;
 
@@ -5343,7 +5345,7 @@ Error ShaderLanguage::_parse_block(BlockNode *p_block, const Map<StringName, Bui
 			if (tk.type == TK_SEMICOLON) {
 				//all is good
 				if (b->parent_function->return_type != TYPE_VOID) {
-					_set_error("Expected return with expression of type '" + get_datatype_name(b->parent_function->return_type) + "'");
+					_set_error("Expected return with an expression of type '" + (return_struct_name != "" ? return_struct_name : get_datatype_name(b->parent_function->return_type)) + "'");
 					return ERR_PARSE_ERROR;
 				}
 			} else {
@@ -5353,8 +5355,8 @@ Error ShaderLanguage::_parse_block(BlockNode *p_block, const Map<StringName, Bui
 					return ERR_PARSE_ERROR;
 				}
 
-				if (b->parent_function->return_type != expr->get_datatype()) {
-					_set_error("Expected return expression of type '" + get_datatype_name(b->parent_function->return_type) + "'");
+				if (b->parent_function->return_type != expr->get_datatype() || return_struct_name != expr->get_datatype_name()) {
+					_set_error("Expected return with an expression of type '" + (return_struct_name != "" ? return_struct_name : get_datatype_name(b->parent_function->return_type)) + "'");
 					return ERR_PARSE_ERROR;
 				}
 
