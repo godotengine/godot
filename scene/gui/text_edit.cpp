@@ -1643,7 +1643,7 @@ void TextEdit::_notification(int p_what) {
 
 				completion_rect.position.x = cursor_pos.x - completion_base_width - icon_area_width - csb_offset.x;
 
-				if (ajdusted_cursor_y + row_height + total_height > get_size().height) {
+				if (ajdusted_cursor_y + row_height + total_height > get_size().height && ajdusted_cursor_y > total_height) {
 					// Completion panel above the cursor line
 					completion_rect.position.y = ajdusted_cursor_y - total_height;
 				} else {
