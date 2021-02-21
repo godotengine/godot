@@ -15,6 +15,7 @@
 		[/codeblock]
 		The above code will create a [SpinBox], disable context menu on it and set the text alignment to right.
 		See [Range] class for more options over the [SpinBox].
+		[b]Note:[/b] [SpinBox] relies on an underlying [LineEdit] node. To theme a [SpinBox]'s background, add theme items for [LineEdit] and customize them.
 	</description>
 	<tutorials>
 	</tutorials>
