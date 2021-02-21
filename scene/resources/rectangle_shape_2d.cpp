@@ -51,7 +51,23 @@ Vector2 RectangleShape2D::get_extents() const {
 
 void RectangleShape2D::draw(const RID &p_to_rid, const Color &p_color) {
 
+	// Draw an outlined rectangle to make individual shapes easier to distinguish.
+	Vector<Vector2> stroke_points;
+	stroke_points.resize(5);
+	stroke_points.write[0] = -extents;
+	stroke_points.write[1] = Vector2(extents.x, -extents.y);
+	stroke_points.write[2] = extents;
+	stroke_points.write[3] = Vector2(-extents.x, extents.y);
+	stroke_points.write[4] = -extents;
+
+	Vector<Color> stroke_colors;
+	stroke_colors.resize(5);
+	for (int i = 0; i < 5; i++) {
+		stroke_colors.write[i] = p_color;
+	}
+
 	VisualServer::get_singleton()->canvas_item_add_rect(p_to_rid, Rect2(-extents, extents * 2.0), p_color);
+	VisualServer::get_singleton()->canvas_item_add_polyline(p_to_rid, stroke_points, stroke_colors, 1.0, true);
 }
 
 Rect2 RectangleShape2D::get_rect() const {
