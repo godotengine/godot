@@ -324,6 +324,7 @@ public:
 
 	void set_editable_instance(Node *p_node, bool p_editable);
 	bool is_editable_instance(const Node *p_node) const;
+	Node *get_deepest_editable_node(Node *start_node) const;
 
 	/* NOTIFICATIONS */
 
