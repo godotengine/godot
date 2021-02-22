@@ -37,7 +37,10 @@
 #include "scene/3d/immediate_geometry_3d.h"
 #include "scene/3d/light_3d.h"
 #include "scene/3d/visual_instance_3d.h"
+#include "scene/3d/world_environment.h"
 #include "scene/gui/panel_container.h"
+#include "scene/resources/environment.h"
+#include "scene/resources/sky_material.h"
 
 class Camera3D;
 class Node3DEditor;
@@ -732,6 +735,7 @@ private:
 
 	static Node3DEditor *singleton;
 
+	void _node_added(Node *p_node);
 	void _node_removed(Node *p_node);
 	Vector<Ref<EditorNode3DGizmoPlugin>> gizmo_plugins_by_priority;
 	Vector<Ref<EditorNode3DGizmoPlugin>> gizmo_plugins_by_name;
@@ -743,6 +747,61 @@ private:
 	bool is_any_freelook_active() const;
 
 	void _refresh_menu_icons();
+
+	// Preview Sun and Environment
+
+	uint32_t world_env_count = 0;
+	uint32_t directional_light_count = 0;
+
+	Button *sun_button;
+	Label *sun_state;
+	Label *sun_title;
+	VBoxContainer *sun_vb;
+	Popup *sun_environ_popup;
+	Control *sun_direction;
+	ColorPickerButton *sun_color;
+	EditorSpinSlider *sun_energy;
+	EditorSpinSlider *sun_max_distance;
+	Button *sun_add_to_scene;
+
+	void _sun_direction_draw();
+	void _sun_direction_input(const Ref<InputEvent> &p_event);
+
+	Basis sun_rotation;
+
+	Ref<Shader> sun_direction_shader;
+	Ref<ShaderMaterial> sun_direction_material;
+
+	Button *environ_button;
+	Label *environ_state;
+	Label *environ_title;
+	VBoxContainer *environ_vb;
+	ColorPickerButton *environ_sky_color;
+	ColorPickerButton *environ_ground_color;
+	EditorSpinSlider *environ_energy;
+	Button *environ_ao_button;
+	Button *environ_glow_button;
+	Button *environ_tonemap_button;
+	Button *environ_gi_button;
+	Button *environ_add_to_scene;
+
+	Button *sun_environ_settings;
+
+	DirectionalLight3D *preview_sun;
+	WorldEnvironment *preview_environment;
+	Ref<Environment> environment;
+	Ref<ProceduralSkyMaterial> sky_material;
+
+	bool sun_environ_updating = false;
+
+	void _load_default_preview_settings();
+	void _update_preview_environment();
+
+	void _preview_settings_changed();
+	void _sun_environ_settings_pressed();
+
+	void _add_sun_to_scene();
+	void _add_environment_to_scene();
 
 protected:
 	void _notification(int p_what);

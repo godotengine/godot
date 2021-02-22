@@ -41,6 +41,9 @@ class WorldEnvironment : public Node {
 	Ref<Environment> environment;
 	Ref<CameraEffects> camera_effects;
 
+	void _update_current_environment();
+	void _update_current_camera_effects();
+
 protected:
 	void _notification(int p_what);
 	static void _bind_methods();
