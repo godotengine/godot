@@ -672,7 +672,6 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 			editor_data->get_undo_redo().add_do_method(editor_selection, "clear");
 
 			Node *dupsingle = nullptr;
-			List<Node *> editable_children;
 
 			selection.sort_custom<Node::Comparator>();
 
@@ -687,10 +686,6 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 
 				Map<const Node *, Node *> duplimap;
 				Node *dup = node->duplicate_from_editor(duplimap);
-
-				if (EditorNode::get_singleton()->get_edited_scene()->is_editable_instance(node)) {
-					editable_children.push_back(dup);
-				}
 
 				ERR_CONTINUE(!dup);
 
@@ -726,11 +721,6 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 			if (dupsingle) {
 				editor->push_item(dupsingle);
 			}
-
-			for (List<Node *>::Element *E = editable_children.back(); E; E = E->prev()) {
-				_toggle_editable_children(E->get());
-			}
-
 		} break;
 		case TOOL_REPARENT: {
 			if (!profile_allow_editing) {
