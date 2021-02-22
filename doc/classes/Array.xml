@@ -216,7 +216,7 @@
 
 				func _ready():
 				    var a = ["one", "two", "three", "four"]
-				    print(a.bsearch_custom("three", compare, true)) #Expected value is 2
+				    print(a.bsearch_custom("three", compare, true)) # Expected value is 2.
 				[/codeblock]
 				[b]Note:[/b] Calling [method bsearch] on an unsorted array results in unexpected behavior.
 			</description>
