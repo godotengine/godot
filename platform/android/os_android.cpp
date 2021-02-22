@@ -802,6 +802,28 @@ int OS_Android::get_screen_dpi(int p_screen) const {
 	return godot_io_java->get_screen_dpi();
 }
 
+static String _get_real_dir(const String &p_dir) {
+	//store current dir
+	char real_current_dir_name[2048];
+	getcwd(real_current_dir_name, 2048);
+
+	//go to data dir
+	chdir(p_dir.utf8().get_data());
+
+	//get actual data dir, so we resolve potential symlink (Android 6.0+ seems to use symlink)
+	char real_dir_name[2048];
+	getcwd(real_dir_name, 2048);
+
+	//cache by parsing utf8
+	String real_dir;
+	real_dir.parse_utf8(real_dir_name);
+
+	//restore original dir so we don't mess things up
+	chdir(real_current_dir_name);
+
+	return real_dir;
+}
+
 String OS_Android::get_user_data_dir() const {
 
 	if (data_dir_cache != String())
@@ -809,25 +831,22 @@ String OS_Android::get_user_data_dir() const {
 
 	String data_dir = godot_io_java->get_user_data_dir();
 	if (data_dir != "") {
-
-		//store current dir
-		char real_current_dir_name[2048];
-		getcwd(real_current_dir_name, 2048);
-
-		//go to data dir
-		chdir(data_dir.utf8().get_data());
-
-		//get actual data dir, so we resolve potential symlink (Android 6.0+ seems to use symlink)
-		char data_current_dir_name[2048];
-		getcwd(data_current_dir_name, 2048);
-
-		//cache by parsing utf8
-		data_dir_cache.parse_utf8(data_current_dir_name);
-
-		//restore original dir so we don't mess things up
-		chdir(real_current_dir_name);
-
+		data_dir_cache = _get_real_dir(data_dir);
 		return data_dir_cache;
+	}
+
+	return ".";
+}
+
+String OS_Android::get_cache_path() const {
+
+	if (cache_dir_cache != String())
+		return cache_dir_cache;
+
+	String cache_dir = godot_io_java->get_cache_dir();
+	if (cache_dir != "") {
+		cache_dir_cache = _get_real_dir(cache_dir);
+		return cache_dir_cache;
 	}
 
 	return ".";

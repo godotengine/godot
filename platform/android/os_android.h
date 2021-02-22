@@ -80,6 +80,7 @@ private:
 	VisualServer *visual_server;
 
 	mutable String data_dir_cache;
+	mutable String cache_dir_cache;
 
 	//AudioDriverAndroid audio_driver_android;
 	AudioDriverOpenSL audio_driver_android;
@@ -188,6 +189,7 @@ public:
 
 	virtual Error shell_open(String p_uri);
 	virtual String get_user_data_dir() const;
+	virtual String get_cache_path() const;
 	virtual String get_resource_dir() const;
 	virtual String get_locale() const;
 	virtual void set_clipboard(const String &p_text);

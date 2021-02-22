@@ -3473,8 +3473,8 @@ String OS_Windows::get_cache_path() const {
 
 	if (has_environment("XDG_CACHE_HOME")) {
 		return get_environment("XDG_CACHE_HOME");
-	} else if (has_environment("TEMP")) {
-		return get_environment("TEMP");
+	} else if (has_environment("LOCALAPPDATA")) {
+		return get_environment("LOCALAPPDATA").plus_file("cache");
 	} else {
 		return get_config_path();
 	}
