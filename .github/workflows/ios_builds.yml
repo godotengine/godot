@@ -4,7 +4,7 @@ on: [push, pull_request]
 # Global Settings
 env:
   GODOT_BASE_BRANCH: 3.2
-  SCONSFLAGS: platform=iphone verbose=yes warnings=all werror=yes --jobs=2
+  SCONSFLAGS: platform=iphone verbose=yes warnings=all werror=yes debug_symbols=no --jobs=2
   SCONS_CACHE_LIMIT: 4096
 
 jobs:

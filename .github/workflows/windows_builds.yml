@@ -5,7 +5,7 @@ on: [push, pull_request]
 # SCONS_CACHE for windows must be set in the build environment
 env:
   GODOT_BASE_BRANCH: 3.2
-  SCONSFLAGS: platform=windows verbose=yes warnings=all werror=yes --jobs=2
+  SCONSFLAGS: platform=windows verbose=yes warnings=all werror=yes debug_symbols=no --jobs=2
   SCONS_CACHE_MSVC_CONFIG: true
   SCONS_CACHE_LIMIT: 4096
 
@@ -105,7 +105,7 @@ jobs:
       env:
         SCONS_CACHE: /.scons_cache/
       run: |
-        scons target=release tools=no debug_symbols=no
+        scons target=release tools=no
         ls -l bin/
 
     - uses: actions/upload-artifact@v2

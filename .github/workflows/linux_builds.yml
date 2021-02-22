@@ -4,7 +4,7 @@ on: [push, pull_request]
 # Global Settings
 env:
   GODOT_BASE_BRANCH: 3.2
-  SCONSFLAGS: platform=linuxbsd verbose=yes warnings=all werror=yes --jobs=2
+  SCONSFLAGS: platform=linuxbsd verbose=yes warnings=all werror=yes debug_symbols=no --jobs=2
   SCONS_CACHE_LIMIT: 4096
 
 jobs:
@@ -126,7 +126,7 @@ jobs:
         env:
           SCONS_CACHE: ${{github.workspace}}/.scons_cache/
         run: |
-          scons target=release tools=no module_mono_enabled=yes mono_glue=no debug_symbols=no
+          scons target=release tools=no module_mono_enabled=yes mono_glue=no
           ls -l bin/
 
       - uses: actions/upload-artifact@v2
@@ -137,7 +137,7 @@ jobs:
 
   linux-editor-sanitizers:
     runs-on: "ubuntu-20.04"
-    name: Editor and exported project with sanitizers (target=debug/release, tools=yes/no, debug_symbols=yes/full, use_ubsan=yes, use_asan=yes)
+    name: Editor and exported project with sanitizers (target=debug/release, tools=yes/no, use_ubsan=yes, use_asan=yes)
 
     steps:
       - uses: actions/checkout@v2
