@@ -491,7 +491,11 @@ void EditorNode::_notification(int p_what) {
 				}
 
 				for (int i = 0; i < addons.size(); i++) {
-					set_addon_plugin_enabled(addons[i], true);
+					if (addons[i].begins_with("res://")) {
+						set_addon_plugin_enabled(addons[i], true);
+					} else {
+						set_addon_plugin_enabled("res://addons/" + addons[i] + "/plugin.cfg", true);
+					}
 				}
 				_initializing_addons = false;
 			}
