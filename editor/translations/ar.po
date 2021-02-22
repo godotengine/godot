@@ -684,7 +684,7 @@ msgstr "إختر المقاطع المراد نسخها"
 #: editor/plugins/animation_player_editor_plugin.cpp
 #: editor/plugins/script_text_editor.cpp
 #: editor/plugins/sprite_frames_editor_plugin.cpp editor/property_editor.cpp
-#: scene/gui/line_edit.cpp scene/gui/text_edit.cpp
+#: editor/scene_tree_dock.cpp scene/gui/line_edit.cpp scene/gui/text_edit.cpp
 msgid "Copy"
 msgstr "نسخ"
 
@@ -2551,7 +2551,8 @@ msgid "Unable to enable addon plugin at: '%s' parsing of config failed."
 msgstr "غير قادر علي تفعيل إضافة البرنامج المُساعد في: '%s' تحميل الظبط فشل."
 
 #: editor/editor_node.cpp
-msgid "Unable to find script field for addon plugin at: 'res://addons/%s'."
+#, fuzzy
+msgid "Unable to find script field for addon plugin at: '%s'."
 msgstr ""
 "غير قادر علي إيجاد منطقة النص البرمجي من أجل إضافة البرنامج في: 'res://"
 "addons/%s'."
@@ -2983,14 +2984,6 @@ msgid "Help"
 msgstr "مساعدة"
 
 #: editor/editor_node.cpp editor/plugins/script_editor_plugin.cpp
-#: editor/plugins/script_text_editor.cpp
-#: editor/plugins/shader_editor_plugin.cpp editor/plugins/text_editor.cpp
-#: editor/plugins/visual_shader_editor_plugin.cpp editor/project_manager.cpp
-#: editor/project_settings_editor.cpp editor/settings_config_dialog.cpp
-msgid "Search"
-msgstr "بحث"
-
-#: editor/editor_node.cpp editor/plugins/script_editor_plugin.cpp
 #: editor/plugins/shader_editor_plugin.cpp
 msgid "Online Docs"
 msgstr "مستندات الإنترنت"
@@ -3382,7 +3375,7 @@ msgstr "إجعلة مميزاً"
 #: editor/plugins/script_text_editor.cpp
 #: editor/plugins/sprite_frames_editor_plugin.cpp
 #: editor/plugins/tile_map_editor_plugin.cpp editor/property_editor.cpp
-#: scene/gui/line_edit.cpp scene/gui/text_edit.cpp
+#: editor/scene_tree_dock.cpp scene/gui/line_edit.cpp scene/gui/text_edit.cpp
 msgid "Paste"
 msgstr "لصق"
 
@@ -5047,7 +5040,8 @@ msgid "Got:"
 msgstr "ما تم الحصول عليه:"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
-msgid "Failed sha256 hash check"
+#, fuzzy
+msgid "Failed SHA-256 hash check"
 msgstr "فشل التاكد من ترميز sha256"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
@@ -6974,6 +6968,14 @@ msgstr "إغلاق المستندات"
 msgid "Run"
 msgstr "تشغيل"
 
+#: editor/plugins/script_editor_plugin.cpp
+#: editor/plugins/script_text_editor.cpp
+#: editor/plugins/shader_editor_plugin.cpp editor/plugins/text_editor.cpp
+#: editor/plugins/visual_shader_editor_plugin.cpp editor/project_manager.cpp
+#: editor/project_settings_editor.cpp editor/settings_config_dialog.cpp
+msgid "Search"
+msgstr "بحث"
+
 #: editor/plugins/script_editor_plugin.cpp editor/script_editor_debugger.cpp
 msgid "Step Into"
 msgstr "اخط خطوة ضمن"
@@ -7120,8 +7122,8 @@ msgstr "نقاط التكسّر"
 msgid "Go To"
 msgstr "التوجه إلى"
 
-#: editor/plugins/script_text_editor.cpp scene/gui/line_edit.cpp
-#: scene/gui/text_edit.cpp
+#: editor/plugins/script_text_editor.cpp editor/scene_tree_dock.cpp
+#: scene/gui/line_edit.cpp scene/gui/text_edit.cpp
 msgid "Cut"
 msgstr "قص"
 
@@ -10663,6 +10665,16 @@ msgid "Instance Child Scene"
 msgstr "نمذجة المشهد الابن"
 
 #: editor/scene_tree_dock.cpp
+#, fuzzy
+msgid "Can't paste root node into the same scene."
+msgstr "لا يمكن تنفيذ الإجراء على عُقدة من مشهد أجنبي!"
+
+#: editor/scene_tree_dock.cpp
+#, fuzzy
+msgid "Paste Node(s)"
+msgstr "لصق العُقد"
+
+#: editor/scene_tree_dock.cpp
 msgid "Detach Script"
 msgstr "فصل النص البرمجي"
 
@@ -10788,6 +10800,11 @@ msgstr "لا يمكن تنفيذ الإجراء على عُقد يرثها ال�
 #: editor/scene_tree_dock.cpp
 msgid "Attach Script"
 msgstr "إلحاق نص برمجي"
+
+#: editor/scene_tree_dock.cpp
+#, fuzzy
+msgid "Cut Node(s)"
+msgstr "قص العُقد"
 
 #: editor/scene_tree_dock.cpp
 msgid "Remove Node(s)"

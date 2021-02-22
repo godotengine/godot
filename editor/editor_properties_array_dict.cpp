@@ -504,8 +504,7 @@ void EditorPropertyArray::_bind_methods() {
 EditorPropertyArray::EditorPropertyArray() {
 
 	object.instance();
-	page_idx = 0;
-	page_len = 10;
+	page_len = int(EDITOR_GET("interface/inspector/max_array_dictionary_items_per_page"));
 	edit = memnew(Button);
 	edit->set_flat(true);
 	edit->set_h_size_flags(SIZE_EXPAND_FILL);
@@ -1000,8 +999,7 @@ void EditorPropertyDictionary::_bind_methods() {
 EditorPropertyDictionary::EditorPropertyDictionary() {
 
 	object.instance();
-	page_idx = 0;
-	page_len = 10;
+	page_len = int(EDITOR_GET("interface/inspector/max_array_dictionary_items_per_page"));
 	edit = memnew(Button);
 	edit->set_flat(true);
 	edit->set_h_size_flags(SIZE_EXPAND_FILL);

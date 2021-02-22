@@ -686,7 +686,7 @@ msgstr "Selecteer sporen om te kopieren"
 #: editor/plugins/animation_player_editor_plugin.cpp
 #: editor/plugins/script_text_editor.cpp
 #: editor/plugins/sprite_frames_editor_plugin.cpp editor/property_editor.cpp
-#: scene/gui/line_edit.cpp scene/gui/text_edit.cpp
+#: editor/scene_tree_dock.cpp scene/gui/line_edit.cpp scene/gui/text_edit.cpp
 msgid "Copy"
 msgstr "Kopiëren"
 
@@ -2577,7 +2577,8 @@ msgstr ""
 "mislukt."
 
 #: editor/editor_node.cpp
-msgid "Unable to find script field for addon plugin at: 'res://addons/%s'."
+#, fuzzy
+msgid "Unable to find script field for addon plugin at: '%s'."
 msgstr ""
 "Onmogelijk om scriptveld te vinden voor de plugin op: 'res://addons/%s'."
 
@@ -3011,14 +3012,6 @@ msgid "Help"
 msgstr "Help"
 
 #: editor/editor_node.cpp editor/plugins/script_editor_plugin.cpp
-#: editor/plugins/script_text_editor.cpp
-#: editor/plugins/shader_editor_plugin.cpp editor/plugins/text_editor.cpp
-#: editor/plugins/visual_shader_editor_plugin.cpp editor/project_manager.cpp
-#: editor/project_settings_editor.cpp editor/settings_config_dialog.cpp
-msgid "Search"
-msgstr "Zoeken"
-
-#: editor/editor_node.cpp editor/plugins/script_editor_plugin.cpp
 #: editor/plugins/shader_editor_plugin.cpp
 msgid "Online Docs"
 msgstr "Online Documentatie"
@@ -3415,7 +3408,7 @@ msgstr "Maak Uniek"
 #: editor/plugins/script_text_editor.cpp
 #: editor/plugins/sprite_frames_editor_plugin.cpp
 #: editor/plugins/tile_map_editor_plugin.cpp editor/property_editor.cpp
-#: scene/gui/line_edit.cpp scene/gui/text_edit.cpp
+#: editor/scene_tree_dock.cpp scene/gui/line_edit.cpp scene/gui/text_edit.cpp
 msgid "Paste"
 msgstr "Plakken"
 
@@ -5087,7 +5080,8 @@ msgid "Got:"
 msgstr "Gekregen:"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
-msgid "Failed sha256 hash check"
+#, fuzzy
+msgid "Failed SHA-256 hash check"
 msgstr "SHA256-proef mislukt"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
@@ -7021,6 +7015,14 @@ msgstr "Sluit Docs"
 msgid "Run"
 msgstr "Uitvoeren"
 
+#: editor/plugins/script_editor_plugin.cpp
+#: editor/plugins/script_text_editor.cpp
+#: editor/plugins/shader_editor_plugin.cpp editor/plugins/text_editor.cpp
+#: editor/plugins/visual_shader_editor_plugin.cpp editor/project_manager.cpp
+#: editor/project_settings_editor.cpp editor/settings_config_dialog.cpp
+msgid "Search"
+msgstr "Zoeken"
+
 #: editor/plugins/script_editor_plugin.cpp editor/script_editor_debugger.cpp
 msgid "Step Into"
 msgstr "Stap In"
@@ -7167,8 +7169,8 @@ msgstr "Breekpunten"
 msgid "Go To"
 msgstr "Ga Naar"
 
-#: editor/plugins/script_text_editor.cpp scene/gui/line_edit.cpp
-#: scene/gui/text_edit.cpp
+#: editor/plugins/script_text_editor.cpp editor/scene_tree_dock.cpp
+#: scene/gui/line_edit.cpp scene/gui/text_edit.cpp
 msgid "Cut"
 msgstr "Knippen"
 
@@ -10720,6 +10722,16 @@ msgid "Instance Child Scene"
 msgstr "Scène instantiëren"
 
 #: editor/scene_tree_dock.cpp
+#, fuzzy
+msgid "Can't paste root node into the same scene."
+msgstr "Kan deze operatie niet uitvoeren op knopen uit een vreemde scène!"
+
+#: editor/scene_tree_dock.cpp
+#, fuzzy
+msgid "Paste Node(s)"
+msgstr "Knopen plakken"
+
+#: editor/scene_tree_dock.cpp
 msgid "Detach Script"
 msgstr "Script losmaken"
 
@@ -10845,6 +10857,11 @@ msgstr "Kan niet werken aan knopen waar de huidige scène van erft!"
 #: editor/scene_tree_dock.cpp
 msgid "Attach Script"
 msgstr "Script toevoegen"
+
+#: editor/scene_tree_dock.cpp
+#, fuzzy
+msgid "Cut Node(s)"
+msgstr "Knopen knippen"
 
 #: editor/scene_tree_dock.cpp
 msgid "Remove Node(s)"
