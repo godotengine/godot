@@ -33,6 +33,7 @@
 #include "core/config/project_settings.h"
 #include "core/input/input.h"
 #include "core/math/camera_matrix.h"
+#include "core/math/math_funcs.h"
 #include "core/os/keyboard.h"
 #include "core/string/print_string.h"
 #include "core/templates/sort_array.h"
@@ -6547,9 +6548,11 @@ void Node3DEditor::clear() {
 
 void Node3DEditor::_sun_direction_draw() {
 	sun_direction->draw_rect(Rect2(Vector2(), sun_direction->get_size()), Color(1, 1, 1, 1));
-	sun_direction_material->set_shader_param("sun_direction", -preview_sun->get_transform().basis.get_axis(Vector3::AXIS_Z));
-	float nrg = sun_energy->get_value();
-	sun_direction_material->set_shader_param("sun_color", Vector3(sun_color->get_pick_color().r * nrg, sun_color->get_pick_color().g * nrg, sun_color->get_pick_color().b * nrg));
+	Vector3 z_axis = preview_sun->get_transform().basis.get_axis(Vector3::AXIS_Z);
+	z_axis = get_editor_viewport(0)->camera->get_camera_transform().basis.xform_inv(z_axis);
+	sun_direction_material->set_shader_param("sun_direction", Vector3(z_axis.x, -z_axis.y, z_axis.z));
+	Color color = sun_color->get_pick_color() * sun_energy->get_value();
+	sun_direction_material->set_shader_param("sun_color", Vector3(color.r, color.g, color.b));
 }
 
 void Node3DEditor::_preview_settings_changed() {
@@ -6559,7 +6562,7 @@ void Node3DEditor::_preview_settings_changed() {
 
 	{ // preview sun
 		Transform3D t;
-		t.basis = sun_rotation;
+		t.basis = Basis(Vector3(sun_rotation.x, sun_rotation.y, 0));
 		preview_sun->set_transform(t);
 		sun_direction->update();
 		preview_sun->set_param(Light3D::PARAM_ENERGY, sun_energy->get_value());
@@ -6581,11 +6584,20 @@ void Node3DEditor::_preview_settings_changed() {
 		environment->set_tonemapper(environ_tonemap_button->is_pressed() ? Environment::TONE_MAPPER_FILMIC : Environment::TONE_MAPPER_LINEAR);
 	}
 }
+
 void Node3DEditor::_load_default_preview_settings() {
 	sun_environ_updating = true;
 
-	sun_rotation = Basis(Vector3(0, 1, 0), Math_PI * 3.0 / 4) * Basis(Vector3(1, 0, 0), -Math_PI / 4);
+	// These default rotations place the preview sun at an angular altitude
+	// of 60 degrees (must be negative) and an azimuth of 30 degrees clockwise
+	// from north (or 150 CCW from south), from north east, facing south west.
+	// On any not-tidally-locked planet, a sun would have an angular altitude
+	// of 60 degrees as the average of all points on the sphere at noon.
+	// The azimuth choice is arbitrary, but ideally shouldn't be on an axis.
+	sun_rotation = Vector2(-Math::deg2rad(60.0), Math::deg2rad(150.0));
 
+	sun_angle_altitude->set_value(-Math::rad2deg(sun_rotation.x));
+	sun_angle_azimuth->set_value(180.0 - Math::rad2deg(sun_rotation.y));
 	sun_direction->update();
 	environ_sky_color->set_pick_color(Color::hex(0x91b2ceff));
 	environ_ground_color->set_pick_color(Color::hex(0x1f1f21ff));
@@ -6628,6 +6640,9 @@ void Node3DEditor::_update_preview_environment() {
 		}
 	}
 
+	sun_angle_altitude->set_value(-Math::rad2deg(sun_rotation.x));
+	sun_angle_azimuth->set_value(180.0 - Math::rad2deg(sun_rotation.y));
+
 	bool disable_env = world_env_count > 0 || environ_button->is_pressed();
 
 	environ_button->set_disabled(world_env_count > 0);
@@ -6656,15 +6671,19 @@ void Node3DEditor::_update_preview_environment() {
 void Node3DEditor::_sun_direction_input(const Ref<InputEvent> &p_event) {
 	Ref<InputEventMouseMotion> mm = p_event;
 	if (mm.is_valid() && mm->get_button_mask() & MOUSE_BUTTON_MASK_LEFT) {
-		float x = -mm->get_relative().y * 0.02 * EDSCALE;
-		float y = mm->get_relative().x * 0.02 * EDSCALE;
-
-		Basis rot = Basis(Vector3(0, 1, 0), y) * Basis(Vector3(1, 0, 0), x);
-
-		sun_rotation = rot * sun_rotation;
-		sun_rotation.orthonormalize();
+		sun_rotation.x += mm->get_relative().y * (0.02 * EDSCALE);
+		sun_rotation.y -= mm->get_relative().x * (0.02 * EDSCALE);
+		sun_rotation.x = CLAMP(sun_rotation.x, -Math_TAU / 4, Math_TAU / 4);
+		sun_angle_altitude->set_value(-Math::rad2deg(sun_rotation.x));
+		sun_angle_azimuth->set_value(180.0 - Math::rad2deg(sun_rotation.y));
 		_preview_settings_changed();
 	}
+}
+
+void Node3DEditor::_sun_direction_angle_set() {
+	sun_rotation.x = Math::deg2rad(-sun_angle_altitude->get_value());
+	sun_rotation.y = Math::deg2rad(180.0 - sun_angle_azimuth->get_value());
+	_preview_settings_changed();
 }
 
 Node3DEditor::Node3DEditor(EditorNode *p_editor) {
@@ -7103,6 +7122,35 @@ Node3DEditor::Node3DEditor(EditorNode *p_editor) {
 		sun_direction_material->set_shader_param("sun_direction", Vector3(0, 0, 1));
 		sun_direction_material->set_shader_param("sun_color", Vector3(1, 1, 1));
 		sun_direction->set_material(sun_direction_material);
+
+		HBoxContainer *sun_angle_hbox = memnew(HBoxContainer);
+		VBoxContainer *sun_angle_altitude_vbox = memnew(VBoxContainer);
+		Label *sun_angle_altitude_label = memnew(Label);
+		sun_angle_altitude_label->set_text(TTR("Angular Altitude"));
+		sun_angle_altitude_vbox->add_child(sun_angle_altitude_label);
+		sun_angle_altitude = memnew(EditorSpinSlider);
+		sun_angle_altitude->set_max(90);
+		sun_angle_altitude->set_min(-90);
+		sun_angle_altitude->set_step(0.1);
+		sun_angle_altitude->connect("value_changed", callable_mp(this, &Node3DEditor::_sun_direction_angle_set).unbind(1));
+		sun_angle_altitude_vbox->add_child(sun_angle_altitude);
+		sun_angle_hbox->add_child(sun_angle_altitude_vbox);
+		VBoxContainer *sun_angle_azimuth_vbox = memnew(VBoxContainer);
+		sun_angle_azimuth_vbox->set_custom_minimum_size(Vector2(100, 0));
+		Label *sun_angle_azimuth_label = memnew(Label);
+		sun_angle_azimuth_label->set_text(TTR("Azimuth"));
+		sun_angle_azimuth_vbox->add_child(sun_angle_azimuth_label);
+		sun_angle_azimuth = memnew(EditorSpinSlider);
+		sun_angle_azimuth->set_max(180);
+		sun_angle_azimuth->set_min(-180);
+		sun_angle_azimuth->set_step(0.1);
+		sun_angle_azimuth->set_allow_greater(true);
+		sun_angle_azimuth->set_allow_lesser(true);
+		sun_angle_azimuth->connect("value_changed", callable_mp(this, &Node3DEditor::_sun_direction_angle_set).unbind(1));
+		sun_angle_azimuth_vbox->add_child(sun_angle_azimuth);
+		sun_angle_hbox->add_child(sun_angle_azimuth_vbox);
+		sun_angle_hbox->add_theme_constant_override("separation", 10);
+		sun_vb->add_child(sun_angle_hbox);
 
 		sun_color = memnew(ColorPickerButton);
 		sun_color->set_edit_alpha(false);
