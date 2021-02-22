@@ -237,6 +237,12 @@ public:
 		DISTANCE_FADE_OBJECT_DITHER,
 	};
 
+	enum FallbackMode {
+		FALLBACK_MODE_NONE,
+		FALLBACK_MODE_NO_RENDER,
+		FALLBACK_MODE_SIMPLE,
+	};
+
 private:
 	union MaterialKey {
 		struct {
@@ -425,6 +431,7 @@ private:
 	DiffuseMode diffuse_mode;
 	BillboardMode billboard_mode;
 	EmissionOperator emission_op;
+	FallbackMode fallback_mode;
 
 	TextureChannel metallic_texture_channel;
 	TextureChannel roughness_texture_channel;
@@ -622,6 +629,9 @@ public:
 	void set_refraction_texture_channel(TextureChannel p_channel);
 	TextureChannel get_refraction_texture_channel() const;
 
+	void set_fallback_mode(FallbackMode p_mode);
+	FallbackMode get_fallback_mode() const;
+
 	static void init_shaders();
 	static void finish_shaders();
 	static void flush_changes();
@@ -649,6 +659,7 @@ VARIANT_ENUM_CAST(SpatialMaterial::BillboardMode)
 VARIANT_ENUM_CAST(SpatialMaterial::TextureChannel)
 VARIANT_ENUM_CAST(SpatialMaterial::EmissionOperator)
 VARIANT_ENUM_CAST(SpatialMaterial::DistanceFadeMode)
+VARIANT_ENUM_CAST(SpatialMaterial::FallbackMode)
 
 //////////////////////
 

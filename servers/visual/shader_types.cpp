@@ -197,6 +197,10 @@ ShaderTypes::ShaderTypes() {
 
 	shader_modes[VS::SHADER_SPATIAL].modes.push_back("vertex_lighting");
 
+	shader_modes[VS::SHADER_SPATIAL].modes.push_back("fallback_simple");
+	shader_modes[VS::SHADER_SPATIAL].modes.push_back("fallback_no_render");
+	shader_modes[VS::SHADER_SPATIAL].modes.push_back("fallback_none");
+
 	/************ CANVAS ITEM **************************/
 
 	shader_modes[VS::SHADER_CANVAS_ITEM].functions["global"].built_ins["TIME"] = constt(ShaderLanguage::TYPE_FLOAT);

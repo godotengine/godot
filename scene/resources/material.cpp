@@ -390,6 +390,8 @@ void SpatialMaterial::_update_shader() {
 	// Add a comment to describe the shader origin (useful when converting to ShaderMaterial).
 	String code = "// NOTE: Shader automatically converted from " VERSION_NAME " " VERSION_FULL_CONFIG "'s SpatialMaterial.\n\n";
 
+	bool can_fall_back_to_simple = true;
+
 	code += "shader_type spatial;\nrender_mode ";
 	switch (blend_mode) {
 		case BLEND_MODE_MIX:
@@ -504,6 +506,7 @@ void SpatialMaterial::_update_shader() {
 	code += "uniform float metallic;\n";
 	if (grow_enabled) {
 		code += "uniform float grow;\n";
+		can_fall_back_to_simple = false;
 	}
 
 	if (proximity_fade_enabled) {
@@ -645,6 +648,8 @@ void SpatialMaterial::_update_shader() {
 			if (flags[FLAG_BILLBOARD_KEEP_SCALE]) {
 				code += "\tMODELVIEW_MATRIX = MODELVIEW_MATRIX * mat4(vec4(length(WORLD_MATRIX[0].xyz), 0.0, 0.0, 0.0),vec4(0.0, length(WORLD_MATRIX[1].xyz), 0.0, 0.0),vec4(0.0, 0.0, length(WORLD_MATRIX[2].xyz), 0.0),vec4(0.0, 0.0, 0.0, 1.0));\n";
 			}
+
+			can_fall_back_to_simple = false;
 		} break;
 		case BILLBOARD_FIXED_Y: {
 			code += "\tMODELVIEW_MATRIX = INV_CAMERA_MATRIX * mat4(vec4(normalize(cross(vec3(0.0, 1.0, 0.0), CAMERA_MATRIX[2].xyz)),0.0),vec4(0.0, 1.0, 0.0, 0.0),vec4(normalize(cross(CAMERA_MATRIX[0].xyz, vec3(0.0, 1.0, 0.0))),0.0),WORLD_MATRIX[3]);\n";
@@ -652,6 +657,8 @@ void SpatialMaterial::_update_shader() {
 			if (flags[FLAG_BILLBOARD_KEEP_SCALE]) {
 				code += "\tMODELVIEW_MATRIX = MODELVIEW_MATRIX * mat4(vec4(length(WORLD_MATRIX[0].xyz), 0.0, 0.0, 0.0),vec4(0.0, length(WORLD_MATRIX[1].xyz), 0.0, 0.0),vec4(0.0, 0.0, length(WORLD_MATRIX[2].xyz), 0.0),vec4(0.0, 0.0, 0.0, 1.0));\n";
 			}
+
+			can_fall_back_to_simple = false;
 		} break;
 		case BILLBOARD_PARTICLES: {
 			//make billboard
@@ -673,6 +680,8 @@ void SpatialMaterial::_update_shader() {
 			code += "\t}";
 			code += "\tUV /= vec2(h_frames, v_frames);\n";
 			code += "\tUV += vec2(mod(particle_frame, h_frames) / h_frames, floor(particle_frame / h_frames) / v_frames);\n";
+
+			can_fall_back_to_simple = false;
 		} break;
 	}
 
@@ -692,6 +701,8 @@ void SpatialMaterial::_update_shader() {
 		code += "\t\tMODELVIEW_MATRIX[1]*=sc;\n";
 		code += "\t\tMODELVIEW_MATRIX[2]*=sc;\n";
 		code += "\t}\n";
+
+		can_fall_back_to_simple = false;
 	}
 
 	if (detail_uv == DETAIL_UV_2 && !flags[FLAG_UV2_USE_TRIPLANAR]) {
@@ -803,6 +814,7 @@ void SpatialMaterial::_update_shader() {
 
 	if (flags[FLAG_ALBEDO_FROM_VERTEX_COLOR]) {
 		code += "\talbedo_tex *= COLOR;\n";
+		can_fall_back_to_simple = false;
 	}
 	code += "\tALBEDO = albedo.rgb * albedo_tex.rgb;\n";
 
@@ -1046,6 +1058,20 @@ void SpatialMaterial::_update_shader() {
 	}
 
 	code += "}\n";
+
+	String fallback_mode_str;
+	switch (fallback_mode) {
+		case FALLBACK_MODE_NONE: {
+			fallback_mode_str = "fallback_none";
+		} break;
+		case FALLBACK_MODE_NO_RENDER: {
+			fallback_mode_str = "fallback_no_render";
+		} break;
+		case FALLBACK_MODE_SIMPLE: {
+			fallback_mode_str = can_fall_back_to_simple ? "fallback_simple" : "fallback_none";
+		} break;
+	}
+	code = code.replace_first("render_mode ", "render_mode " + fallback_mode_str + ",");
 
 	ShaderData shader_data;
 	shader_data.shader = VS::get_singleton()->shader_create();
@@ -1822,6 +1848,18 @@ Shader::Mode SpatialMaterial::get_shader_mode() const {
 	return Shader::MODE_SPATIAL;
 }
 
+void SpatialMaterial::set_fallback_mode(FallbackMode p_mode) {
+
+	fallback_mode = p_mode;
+	_queue_shader_change();
+	_change_notify();
+}
+
+SpatialMaterial::FallbackMode SpatialMaterial::get_fallback_mode() const {
+
+	return fallback_mode;
+}
+
 void SpatialMaterial::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_albedo", "albedo"), &SpatialMaterial::set_albedo);
 	ClassDB::bind_method(D_METHOD("get_albedo"), &SpatialMaterial::get_albedo);
@@ -1994,6 +2032,9 @@ void SpatialMaterial::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_distance_fade_min_distance", "distance"), &SpatialMaterial::set_distance_fade_min_distance);
 	ClassDB::bind_method(D_METHOD("get_distance_fade_min_distance"), &SpatialMaterial::get_distance_fade_min_distance);
 
+	ClassDB::bind_method(D_METHOD("set_fallback_mode", "mode"), &SpatialMaterial::set_fallback_mode);
+	ClassDB::bind_method(D_METHOD("get_fallback_mode"), &SpatialMaterial::get_fallback_mode);
+
 	ADD_GROUP("Flags", "flags_");
 	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "flags_transparent"), "set_feature", "get_feature", FEATURE_TRANSPARENT);
 	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "flags_use_shadow_to_opacity"), "set_flag", "get_flag", FLAG_USE_SHADOW_TO_OPACITY);
@@ -2136,6 +2177,8 @@ void SpatialMaterial::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "distance_fade_min_distance", PROPERTY_HINT_RANGE, "0,4096,0.01"), "set_distance_fade_min_distance", "get_distance_fade_min_distance");
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "distance_fade_max_distance", PROPERTY_HINT_RANGE, "0,4096,0.01"), "set_distance_fade_max_distance", "get_distance_fade_max_distance");
 
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "fallback_mode", PROPERTY_HINT_ENUM, "None,No render,Simple"), "set_fallback_mode", "get_fallback_mode");
+
 	BIND_ENUM_CONSTANT(TEXTURE_ALBEDO);
 	BIND_ENUM_CONSTANT(TEXTURE_METALLIC);
 	BIND_ENUM_CONSTANT(TEXTURE_ROUGHNESS);
@@ -2236,6 +2279,10 @@ void SpatialMaterial::_bind_methods() {
 	BIND_ENUM_CONSTANT(DISTANCE_FADE_PIXEL_ALPHA);
 	BIND_ENUM_CONSTANT(DISTANCE_FADE_PIXEL_DITHER);
 	BIND_ENUM_CONSTANT(DISTANCE_FADE_OBJECT_DITHER);
+
+	BIND_ENUM_CONSTANT(FALLBACK_MODE_NONE);
+	BIND_ENUM_CONSTANT(FALLBACK_MODE_NO_RENDER);
+	BIND_ENUM_CONSTANT(FALLBACK_MODE_SIMPLE);
 }
 
 SpatialMaterial::SpatialMaterial() :
@@ -2308,6 +2355,8 @@ SpatialMaterial::SpatialMaterial() :
 
 	diffuse_mode = DIFFUSE_BURLEY;
 	specular_mode = SPECULAR_SCHLICK_GGX;
+
+	fallback_mode = FALLBACK_MODE_SIMPLE;
 
 	for (int i = 0; i < FEATURE_MAX; i++) {
 		features[i] = false;

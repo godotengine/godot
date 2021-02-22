@@ -61,6 +61,8 @@ private:
 
 	VideoMode video_mode;
 
+	EAGLContext *offscreen_gl_context;
+
 	virtual int get_video_driver_count() const;
 	virtual const char *get_video_driver_name(int p_driver) const;
 
@@ -161,6 +163,10 @@ public:
 	virtual VideoMode get_video_mode(int p_screen = 0) const;
 
 	virtual void get_fullscreen_mode_list(List<VideoMode> *p_list, int p_screen = 0) const;
+
+	void set_offscreen_gl_context(EAGLContext *p_context);
+	virtual bool is_offscreen_gl_available() const;
+	virtual void set_offscreen_gl_current(bool p_current);
 
 	virtual void set_keep_screen_on(bool p_enabled);
 

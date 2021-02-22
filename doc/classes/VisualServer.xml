@@ -2523,6 +2523,16 @@
 				Sets the default clear color which is used when a specific clear color has not been selected.
 			</description>
 		</method>
+		<method name="set_forced_sync_shader_compile_enabled">
+			<return type="void">
+			</return>
+			<argument index="0" name="enabled" type="bool">
+			</argument>
+			<description>
+				In case asynchronous shader compilation is enabled, this disables or re-enabled it.
+				A project may want to disable it temporarily, for instance, if it wants to ensure shaders are "warmed up" by just rendering a frame of the whole view of a level beneath a loading screen.
+			</description>
+		</method>
 		<method name="set_shader_time_scale">
 			<return type="void" />
 			<argument index="0" name="scale" type="float" />

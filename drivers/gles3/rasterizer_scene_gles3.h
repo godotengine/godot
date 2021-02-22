@@ -34,6 +34,8 @@
 /* Must come before shaders or the Windows build fails... */
 #include "rasterizer_storage_gles3.h"
 
+#include "core/local_vector.h"
+
 #include "drivers/gles3/shaders/cube_to_dp.glsl.gen.h"
 #include "drivers/gles3/shaders/effect_blur.glsl.gen.h"
 #include "drivers/gles3/shaders/exposure.glsl.gen.h"
@@ -86,6 +88,17 @@ public:
 
 	RID default_overdraw_material;
 	RID default_overdraw_shader;
+
+	RID simple_shader;
+	RasterizerStorageGLES3::Shader *simple_shader_ptr;
+	RID simple_material;
+	RasterizerStorageGLES3::Material *simple_material_ptr;
+	struct {
+		StringName albedo;
+		StringName albedo_color;
+		StringName uv1_scale;
+		StringName uv1_offset;
+	} simple_shader_param_names;
 
 	RasterizerStorageGLES3 *storage;
 
@@ -820,7 +833,8 @@ public:
 
 	_FORCE_INLINE_ void _set_cull(bool p_front, bool p_disabled, bool p_reverse_cull);
 
-	_FORCE_INLINE_ bool _setup_material(RasterizerStorageGLES3::Material *p_material, bool p_depth_pass, bool p_alpha_pass);
+	_FORCE_INLINE_ bool _setup_material(RasterizerStorageGLES3::Material *p_material, bool p_depth_pass, bool p_alpha_pass, bool *r_shader_fallen_back);
+	_FORCE_INLINE_ void _transfer_material_to_simple(RasterizerStorageGLES3::Material *p_material);
 	_FORCE_INLINE_ void _setup_geometry(RenderList::Element *e, const Transform &p_view_transform);
 	_FORCE_INLINE_ void _render_geometry(RenderList::Element *e);
 	void _setup_light(RenderList::Element *e, const Transform &p_view_transform);
@@ -857,6 +871,9 @@ public:
 
 	virtual void set_scene_pass(uint64_t p_pass);
 	virtual void set_debug_draw_mode(VS::ViewportDebugDraw p_debug_draw);
+
+	static void _decide_shader_fallback_mode(uint32_t p_conditionals, int p_fallback_mode_hint, int *r_fallback_mode, uint32_t *r_simple_fallback_version);
+	void _compile_simple_shader_versions();
 
 	void iteration();
 	void initialize();

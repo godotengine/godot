@@ -302,6 +302,11 @@ MATERIAL_UNIFORMS
 
 #endif
 
+#ifdef IS_SIMPLE_FALLBACK
+uniform vec3 simple_fallback_uv1_scale;
+uniform vec3 simple_fallback_uv1_offset;
+#endif
+
 /* clang-format off */
 
 VERTEX_SHADER_GLOBALS
@@ -462,6 +467,12 @@ void main() {
 	float point_size = 1.0;
 
 	highp mat4 modelview = camera_inverse_matrix * world_matrix;
+
+#if defined(IS_SIMPLE_FALLBACK)
+	{
+		uv_interp = ((uv_interp * simple_fallback_uv1_scale.xy) + simple_fallback_uv1_offset.xy);
+	}
+#endif
 	{
 		/* clang-format off */
 
@@ -715,6 +726,10 @@ MATERIAL_UNIFORMS
 };
 /* clang-format on */
 
+#endif
+
+#ifdef IS_SIMPLE_FALLBACK
+uniform vec4 simple_fallback_albedo_color;
 #endif
 
 layout(std140) uniform SceneData {
@@ -1796,6 +1811,13 @@ void main() {
 	float sss_strength = 0.0;
 #endif
 
+#if defined(IS_SIMPLE_FALLBACK)
+	{
+		vec4 albedo_sample = texture(m_simple_fallback_albedo_tex, uv_interp);
+		albedo = simple_fallback_albedo_color.rgb * albedo_sample.rgb;
+		alpha = simple_fallback_albedo_color.a * albedo_sample.a;
+	}
+#endif
 	{
 		/* clang-format off */
 

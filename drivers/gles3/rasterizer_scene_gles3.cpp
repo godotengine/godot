@@ -1051,7 +1051,7 @@ void RasterizerSceneGLES3::gi_probe_instance_set_bounds(RID p_probe, const Vecto
 ////////////////////////////
 ////////////////////////////
 
-bool RasterizerSceneGLES3::_setup_material(RasterizerStorageGLES3::Material *p_material, bool p_depth_pass, bool p_alpha_pass) {
+bool RasterizerSceneGLES3::_setup_material(RasterizerStorageGLES3::Material *p_material, bool p_depth_pass, bool p_alpha_pass, bool *r_shader_fallen_back) {
 	/* this is handled outside
 	if (p_material->shader->spatial.cull_mode == RasterizerStorageGLES3::Shader::Spatial::CULL_MODE_DISABLED) {
 		glDisable(GL_CULL_FACE);
@@ -1105,7 +1105,17 @@ bool RasterizerSceneGLES3::_setup_material(RasterizerStorageGLES3::Material *p_m
 	//material parameters
 
 	state.scene_shader.set_custom_shader(p_material->shader->custom_code_id);
-	bool rebind = state.scene_shader.bind();
+	bool rebind = state.scene_shader.bind(r_shader_fallen_back);
+	if (rebind) {
+		if (*r_shader_fallen_back) {
+			_transfer_material_to_simple(p_material);
+			p_material = simple_material_ptr;
+		}
+	} else {
+		if (!state.scene_shader.is_version_valid()) {
+			return false;
+		}
+	}
 
 	if (p_material->ubo_id) {
 		glBindBufferBase(GL_UNIFORM_BUFFER, 1, p_material->ubo_id);
@@ -1241,6 +1251,58 @@ bool RasterizerSceneGLES3::_setup_material(RasterizerStorageGLES3::Material *p_m
 	}
 
 	return rebind;
+}
+
+void RasterizerSceneGLES3::_transfer_material_to_simple(RasterizerStorageGLES3::Material *p_material) {
+	// The simple shader can handle these
+
+	Map<StringName, Variant>::Element *param;
+	param = p_material->params.find(simple_shader_param_names.albedo);
+	if (!param) {
+		param = p_material->params.find(simple_shader_param_names.albedo_color);
+	}
+	if (param && param->get().get_type() == Variant::COLOR) {
+		state.scene_shader.set_uniform(SceneShaderGLES3::SIMPLE_FALLBACK_ALBEDO_COLOR, static_cast<Color>(param->get()));
+	} else {
+		state.scene_shader.set_uniform(SceneShaderGLES3::SIMPLE_FALLBACK_ALBEDO_COLOR, Color(1, 1, 1, 1));
+	}
+	param = p_material->params.find(simple_shader_param_names.uv1_scale);
+	if (param && param->get().get_type() == Variant::VECTOR3) {
+		state.scene_shader.set_uniform(SceneShaderGLES3::SIMPLE_FALLBACK_UV1_SCALE, static_cast<Vector3>(param->get()));
+	} else {
+		state.scene_shader.set_uniform(SceneShaderGLES3::SIMPLE_FALLBACK_UV1_SCALE, Vector3(1, 1, 1));
+	}
+	param = p_material->params.find(simple_shader_param_names.uv1_offset);
+	if (param && param->get().get_type() == Variant::VECTOR3) {
+		state.scene_shader.set_uniform(SceneShaderGLES3::SIMPLE_FALLBACK_UV1_OFFSET, static_cast<Vector3>(param->get()));
+	} else {
+		state.scene_shader.set_uniform(SceneShaderGLES3::SIMPLE_FALLBACK_UV1_OFFSET, Vector3());
+	}
+
+	// Let's see if we can find the texture that works as albedo in the original material
+
+	int albedo_tex_id = -1;
+	for (uint32_t i = 0; i < p_material->shader->texture_count; i++) {
+		if (p_material->shader->texture_hints[i] == ShaderLanguage::ShaderNode::Uniform::HINT_ALBEDO || p_material->shader->texture_hints[i] == ShaderLanguage::ShaderNode::Uniform::HINT_BLACK_ALBEDO) {
+			albedo_tex_id = i;
+			break;
+		}
+	}
+	// If we didn't find any albedo texture, pick the first one that is a sampler 2D, since maybe the original shader didn't mark the texture as albedo
+	if (albedo_tex_id == -1) {
+		for (uint32_t i = 0; i < p_material->shader->texture_count; i++) {
+			if (p_material->shader->texture_types[i] == ShaderLanguage::DataType::TYPE_SAMPLER2D) {
+				albedo_tex_id = i;
+				break;
+			}
+		}
+	}
+
+	RID albedo_texture;
+	if (albedo_tex_id != -1) {
+		albedo_texture = p_material->textures[albedo_tex_id];
+	}
+	simple_material_ptr->textures.ptrw()[0] = albedo_texture;
 }
 
 struct RasterizerGLES3Particle {
@@ -2115,17 +2177,26 @@ void RasterizerSceneGLES3::_render_list(RenderList::Element **p_elements, int p_
 			rebind = true;
 		}
 
+		bool shader_fallen_back = false;
+		uint32_t original_conditional_version = state.scene_shader.get_version();
 		if (material != prev_material || rebind) {
 			storage->info.render.material_switch_count++;
 
-			rebind = _setup_material(material, use_opaque_prepass, p_alpha_pass);
+			rebind = _setup_material(material, use_opaque_prepass, p_alpha_pass, &shader_fallen_back);
 
 			if (rebind) {
 				storage->info.render.shader_rebind_count++;
+				if (shader_fallen_back) {
+					material = simple_material_ptr;
+				}
+			} else {
+				if (!state.scene_shader.is_version_valid()) {
+					continue;
+				}
 			}
 		}
 
-		if (!(e->sort_key & SORT_KEY_UNSHADED_FLAG) && !p_directional_add && !p_shadow) {
+		if (!shader_fallen_back && !(e->sort_key & SORT_KEY_UNSHADED_FLAG) && !p_directional_add && !p_shadow) {
 			_setup_light(e, p_view_transform);
 		}
 
@@ -2139,6 +2210,10 @@ void RasterizerSceneGLES3::_render_list(RenderList::Element **p_elements, int p_
 		state.scene_shader.set_uniform(SceneShaderGLES3::WORLD_TRANSFORM, e->instance->transform);
 
 		_render_geometry(e);
+
+		if (shader_fallen_back) {
+			state.scene_shader.set_version(original_conditional_version);
+		}
 
 		prev_material = material;
 		prev_base_type = e->instance->base_type;
@@ -5229,6 +5304,50 @@ void RasterizerSceneGLES3::initialize() {
 	state.debug_draw = VS::VIEWPORT_DEBUG_DRAW_DISABLED;
 
 	glFrontFace(GL_CW);
+
+	if (storage->config.async_compilation_enabled && (storage->shaders.compile_queue || storage->config.parallel_shader_compile_supported)) {
+		simple_shader = storage->shader_create();
+		simple_shader_ptr = storage->shader_owner.get(simple_shader);
+		Color global_modulate = ProjectSettings::get_singleton()->get("rendering/gles3/shaders/simple_fallback_modulate");
+		String global_modulate_str =
+				"vec3(" +
+				rtos(global_modulate.r) + ", " +
+				rtos(global_modulate.g) + ", " +
+				rtos(global_modulate.b) + ")";
+		storage->shader_set_code(simple_shader,
+				"shader_type spatial;\n"
+				"\n"
+				"render_mode unshaded;\n"
+				"\n"
+				// Other parameters are passed with better performance as uniforms, instead of via the UBO; texture is more convenient this way
+				"uniform sampler2D simple_fallback_albedo_tex : hint_albedo;\n"
+				"\n"
+				// The actual bodies are in scene.glsl;
+				// these dummy assignments enable necessary flags; ugly, but more mainteanable
+				"void vertex() {\n"
+				"	UV = UV;\n"
+				"}\n"
+				"\n"
+				"void fragment() {\n"
+				"	ALBEDO = ALBEDO * " +
+						global_modulate_str + ";\n"
+											  "	ALPHA = ALPHA;\n"
+											  "}\n");
+		simple_material = storage->material_create();
+		simple_material_ptr = storage->material_owner.get(simple_material);
+		storage->material_set_shader(simple_material, simple_shader);
+
+		uint32_t simple_code_id = storage->shader_owner.get(simple_shader)->custom_code_id;
+		state.scene_shader.setup_async_compilation(storage->shaders.compile_queue, storage->config.parallel_shader_compile_supported, simple_code_id, &_decide_shader_fallback_mode);
+
+		simple_shader_param_names.albedo = StringName("albedo");
+		simple_shader_param_names.albedo_color = StringName("albedo_color");
+		simple_shader_param_names.uv1_scale = StringName("uv1_scale");
+		simple_shader_param_names.uv1_offset = StringName("uv1_offset");
+	} else {
+		simple_shader_ptr = nullptr;
+		simple_material_ptr = nullptr;
+	}
 }
 
 void RasterizerSceneGLES3::iteration() {
@@ -5241,15 +5360,85 @@ void RasterizerSceneGLES3::iteration() {
 	storage->config.use_lightmap_filter_bicubic = GLOBAL_GET("rendering/quality/lightmapping/use_bicubic_sampling");
 	state.scene_shader.set_conditional(SceneShaderGLES3::USE_LIGHTMAP_FILTER_BICUBIC, storage->config.use_lightmap_filter_bicubic);
 	state.scene_shader.set_conditional(SceneShaderGLES3::VCT_QUALITY_HIGH, GLOBAL_GET("rendering/quality/voxel_cone_tracing/high_quality"));
+
+	static bool first = true;
+	if (simple_shader_ptr && first) {
+		first = false;
+		bool forced_sync_backup = storage->is_forced_sync_shader_compile_enabled();
+		storage->set_forced_sync_shader_compile_enabled(true);
+		_compile_simple_shader_versions();
+		storage->set_forced_sync_shader_compile_enabled(forced_sync_backup);
+	}
 }
 
 void RasterizerSceneGLES3::finalize() {
+}
+
+static const uint32_t SHADER_FLAGS_FORBID_SIMPLE = (1 << SceneShaderGLES3::OVERRIDE_POSITION); // Others can be ORed
+static const uint32_t SHADER_FLAGS_KEPT_FOR_SIMPLE = (1 << SceneShaderGLES3::USE_SKELETON) | (1 << SceneShaderGLES3::USE_INSTANCING) | (1 << SceneShaderGLES3::USE_MULTIPLE_RENDER_TARGETS);
+static const uint32_t SHADER_FLAG_COMBOS_FOR_SIMPLE[] = {
+	0,
+	(1 << SceneShaderGLES3::USE_SKELETON),
+	(1 << SceneShaderGLES3::USE_INSTANCING),
+	(1 << SceneShaderGLES3::USE_SKELETON) | (1 << SceneShaderGLES3::USE_INSTANCING),
+	(1 << SceneShaderGLES3::USE_MULTIPLE_RENDER_TARGETS),
+	(1 << SceneShaderGLES3::USE_SKELETON) | (1 << SceneShaderGLES3::USE_MULTIPLE_RENDER_TARGETS),
+	(1 << SceneShaderGLES3::USE_INSTANCING) | (1 << SceneShaderGLES3::USE_MULTIPLE_RENDER_TARGETS),
+	(1 << SceneShaderGLES3::USE_SKELETON) | (1 << SceneShaderGLES3::USE_INSTANCING) | (1 << SceneShaderGLES3::USE_MULTIPLE_RENDER_TARGETS),
+	UINT32_MAX,
+};
+static const uint32_t SHADER_FLAGS_FORCED_FOR_SIMPLE = (1 << SceneShaderGLES3::IS_SIMPLE_FALLBACK) | (1 << SceneShaderGLES3::SHADELESS);
+
+void RasterizerSceneGLES3::_compile_simple_shader_versions() {
+	storage->update_dirty_shaders();
+
+	const uint32_t *combo = SHADER_FLAG_COMBOS_FOR_SIMPLE;
+	while (*combo != UINT32_MAX) {
+		uint32_t version = (*combo) | SHADER_FLAGS_FORCED_FOR_SIMPLE;
+
+		state.scene_shader.set_version(version);
+		state.scene_shader.set_custom_shader(simple_material_ptr->shader->custom_code_id);
+		state.scene_shader.bind();
+		combo++;
+	}
+
+	state.scene_shader.set_version(0);
+	state.scene_shader.set_custom_shader(0);
+}
+
+void RasterizerSceneGLES3::_decide_shader_fallback_mode(uint32_t p_conditionals, int p_fallback_mode_hint, int *r_fallback_mode, uint32_t *r_simple_fallback_version) {
+	switch (p_fallback_mode_hint) {
+		case ShaderGLES3::FALLBACK_MODE_NONE: {
+			*r_fallback_mode = ShaderGLES3::FALLBACK_MODE_NONE;
+			*r_simple_fallback_version = 0;
+		} break;
+		case ShaderGLES3::FALLBACK_MODE_NO_RENDER: {
+			*r_fallback_mode = ShaderGLES3::FALLBACK_MODE_NO_RENDER;
+			*r_simple_fallback_version = 0;
+		} break;
+		case ShaderGLES3::FALLBACK_MODE_SIMPLE: {
+			if (!(p_conditionals & SHADER_FLAGS_FORBID_SIMPLE)) {
+				*r_fallback_mode = ShaderGLES3::FALLBACK_MODE_SIMPLE;
+				*r_simple_fallback_version = (p_conditionals & SHADER_FLAGS_KEPT_FOR_SIMPLE) | SHADER_FLAGS_FORCED_FOR_SIMPLE;
+			} else {
+				*r_fallback_mode = ShaderGLES3::FALLBACK_MODE_NONE;
+				*r_simple_fallback_version = 0;
+			}
+		} break;
+	}
 }
 
 RasterizerSceneGLES3::RasterizerSceneGLES3() {
 }
 
 RasterizerSceneGLES3::~RasterizerSceneGLES3() {
+	if (simple_material.is_valid()) {
+		memdelete(simple_material.get_data());
+	}
+	if (simple_shader.is_valid()) {
+		memdelete(simple_shader.get_data());
+	}
+
 	memdelete(default_material.get_data());
 	memdelete(default_material_twosided.get_data());
 	memdelete(default_shader.get_data());

@@ -29,10 +29,17 @@
 /*************************************************************************/
 
 #include "rasterizer_storage_gles3.h"
+
 #include "core/engine.h"
+#include "core/os/os.h"
 #include "core/project_settings.h"
+#include "core/threaded_callable_queue.h"
 #include "rasterizer_canvas_gles3.h"
 #include "rasterizer_scene_gles3.h"
+
+#if defined(IPHONE_ENABLED) || defined(ANDROID_ENABLED)
+#include <dlfcn.h>
+#endif
 
 /* TEXTURE API */
 
@@ -2169,6 +2176,8 @@ void RasterizerStorageGLES3::_update_shader(Shader *p_shader) const {
 	ShaderCompilerGLES3::GeneratedCode gen_code;
 	ShaderCompilerGLES3::IdentifierActions *actions = nullptr;
 
+	int fallback_mode_hint = ShaderGLES3::FALLBACK_MODE_SIMPLE;
+
 	switch (p_shader->mode) {
 		case VS::SHADER_CANVAS_ITEM: {
 			p_shader->canvas_item.light_mode = Shader::CanvasItem::LIGHT_MODE_NORMAL;
@@ -2249,6 +2258,10 @@ void RasterizerStorageGLES3::_update_shader(Shader *p_shader) const {
 			shaders.actions_scene.render_mode_values["cull_back"] = Pair<int *, int>(&p_shader->spatial.cull_mode, Shader::Spatial::CULL_MODE_BACK);
 			shaders.actions_scene.render_mode_values["cull_disabled"] = Pair<int *, int>(&p_shader->spatial.cull_mode, Shader::Spatial::CULL_MODE_DISABLED);
 
+			shaders.actions_scene.render_mode_values["fallback_simple"] = Pair<int *, int>(&fallback_mode_hint, ShaderGLES3::FALLBACK_MODE_SIMPLE);
+			shaders.actions_scene.render_mode_values["fallback_no_render"] = Pair<int *, int>(&fallback_mode_hint, ShaderGLES3::FALLBACK_MODE_NO_RENDER);
+			shaders.actions_scene.render_mode_values["fallback_none"] = Pair<int *, int>(&fallback_mode_hint, ShaderGLES3::FALLBACK_MODE_NONE);
+
 			shaders.actions_scene.render_mode_flags["unshaded"] = &p_shader->spatial.unshaded;
 			shaders.actions_scene.render_mode_flags["depth_test_disable"] = &p_shader->spatial.no_depth_test;
 
@@ -2293,7 +2306,7 @@ void RasterizerStorageGLES3::_update_shader(Shader *p_shader) const {
 		return;
 	}
 
-	p_shader->shader->set_custom_shader_code(p_shader->custom_code_id, gen_code.vertex, gen_code.vertex_global, gen_code.fragment, gen_code.light, gen_code.fragment_global, gen_code.uniforms, gen_code.texture_uniforms, gen_code.defines);
+	p_shader->shader->set_custom_shader_code(p_shader->custom_code_id, gen_code.vertex, gen_code.vertex_global, gen_code.fragment, gen_code.light, gen_code.fragment_global, gen_code.uniforms, gen_code.texture_uniforms, gen_code.defines, fallback_mode_hint);
 
 	p_shader->ubo_size = gen_code.uniform_total_size;
 	p_shader->ubo_offsets = gen_code.uniform_offsets;
@@ -2507,6 +2520,16 @@ void RasterizerStorageGLES3::shader_remove_custom_define(RID p_shader, const Str
 	shader->shader->remove_custom_define(p_define);
 
 	_shader_make_dirty(shader);
+}
+
+void RasterizerStorageGLES3::set_forced_sync_shader_compile_enabled(bool p_enabled) {
+
+	ShaderGLES3::force_sync_compile = p_enabled;
+}
+
+bool RasterizerStorageGLES3::is_forced_sync_shader_compile_enabled() {
+
+	return ShaderGLES3::force_sync_compile;
 }
 
 /* COMMON MATERIAL API */
@@ -8084,7 +8107,87 @@ void RasterizerStorageGLES3::initialize() {
 		config.anisotropic_level = MIN(int(ProjectSettings::get_singleton()->get("rendering/quality/filters/anisotropic_filter_level")), config.anisotropic_level);
 	}
 
+#ifdef GLES_OVER_GL
+	config.program_binary_supported = GLAD_GL_ARB_get_program_binary;
+	config.parallel_shader_compile_supported = GLAD_GL_ARB_parallel_shader_compile || GLAD_GL_KHR_parallel_shader_compile;
+#else
+	config.program_binary_supported = true;
+	config.parallel_shader_compile_supported = config.extensions.has("GL_KHR_parallel_shader_compile") || config.extensions.has("GL_ARB_parallel_shader_compile");
+#endif
+	config.async_compilation_enabled = !Engine::get_singleton()->is_editor_hint() && (bool)ProjectSettings::get_singleton()->get("rendering/gles3/shaders/async_compile_enabled");
+	config.shader_cache_enabled = (bool)ProjectSettings::get_singleton()->get("rendering/gles3/shaders/cache_enabled");
+	int max_concurrent_compiles = config.async_compilation_enabled ? MAX(1, (int)ProjectSettings::get_singleton()->get("rendering/gles3/shaders/max_concurrent_compiles")) : 0;
+#ifdef GLES_OVER_GL
+	if (GLAD_GL_ARB_parallel_shader_compile) {
+		glMaxShaderCompilerThreadsARB(max_concurrent_compiles);
+	} else if (GLAD_GL_KHR_parallel_shader_compile) {
+		glMaxShaderCompilerThreadsKHR(max_concurrent_compiles);
+	}
+#else
+#if defined(IPHONE_ENABLED) || defined(ANDROID_ENABLED) // TODO: Consider more platforms
+	void *gles2_lib = NULL;
+	void (*MaxShaderCompilerThreads)(GLuint) = NULL;
+#if defined(IPHONE_ENABLED)
+	gles2_lib = dlopen(NULL, RTLD_LAZY);
+#elif defined(ANDROID_ENABLED)
+	gles2_lib = dlopen("libGLESv2.so", RTLD_LAZY);
+#endif
+	if (gles2_lib) {
+		MaxShaderCompilerThreads = (void (*)(GLuint))dlsym(gles2_lib, "glMaxShaderCompilerThreadsARB");
+		if (!MaxShaderCompilerThreads) {
+			MaxShaderCompilerThreads = (void (*)(GLuint))dlsym(gles2_lib, "glMaxShaderCompilerThreadsKHR");
+		}
+	}
+	if (MaxShaderCompilerThreads) {
+		MaxShaderCompilerThreads(max_concurrent_compiles);
+	} else {
+#ifdef DEBUG_ENABLED
+		print_line("Async. shader compilation: No MaxShaderCompilerThreads function found.");
+#endif
+	}
+#endif
+#endif
+	ShaderGLES3::max_shaders_compiling = MAX(1, max_concurrent_compiles);
+
+	if (!Engine::get_singleton()->is_editor_hint()) {
+		ShaderGLES3::force_no_render_fallback = (bool)ProjectSettings::get_singleton()->get("rendering/gles3/shaders/force_no_render_fallback");
+#ifdef DEBUG_ENABLED
+		ShaderGLES3::force_use_fallbacks = (bool)ProjectSettings::get_singleton()->get("debug_force_use_fallbacks");
+#endif
+	}
+
 	frame.clear_request = false;
+
+	shaders.cache = nullptr;
+	shaders.cache_write_queue = nullptr;
+	if (config.shader_cache_enabled) {
+		if (config.program_binary_supported) {
+			shaders.cache = memnew(ShaderCacheGLES3);
+			shaders.cache_write_queue = memnew(ThreadedCallableQueue<GLuint>());
+			print_line("Shader cache: ON");
+		} else {
+			print_line("Shader cache: OFF (enabled for project, but not supported)");
+		}
+	} else {
+		print_line("Shader cache: OFF");
+	}
+	ShaderGLES3::shader_cache = shaders.cache;
+	ShaderGLES3::cache_write_queue = shaders.cache_write_queue;
+
+	shaders.compile_queue = nullptr;
+	if (config.async_compilation_enabled) {
+		if (config.parallel_shader_compile_supported) {
+			print_line("Async. shader compilation: ON (full native support)");
+		} else if (config.program_binary_supported && OS::get_singleton()->is_offscreen_gl_available()) {
+			shaders.compile_queue = memnew(ThreadedCallableQueue<GLuint>());
+			shaders.compile_queue->enqueue(0, []() { OS::get_singleton()->set_offscreen_gl_current(true); });
+			print_line("Async. shader compilation: ON (via secondary context)");
+		} else {
+			print_line("Async. shader compilation: OFF (enabled for project, but not supported)");
+		}
+	} else {
+		print_line("Async. shader compilation: OFF");
+	}
 
 	shaders.copy.init();
 
@@ -8299,4 +8402,18 @@ void RasterizerStorageGLES3::update_dirty_resources() {
 
 RasterizerStorageGLES3::RasterizerStorageGLES3() {
 	config.should_orphan = true;
+}
+
+RasterizerStorageGLES3::~RasterizerStorageGLES3() {
+
+	if (shaders.cache) {
+		memdelete(shaders.cache);
+	}
+	if (shaders.cache_write_queue) {
+		memdelete(shaders.cache_write_queue);
+	}
+	if (shaders.compile_queue) {
+		shaders.compile_queue->enqueue(0, []() { OS::get_singleton()->set_offscreen_gl_current(false); });
+		memdelete(shaders.compile_queue);
+	}
 }

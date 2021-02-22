@@ -1213,6 +1213,43 @@
 			If [code]true[/code] and available on the target device, enables high floating point precision for all shader computations in GLES2.
 			[b]Warning:[/b] High floating point precision can be extremely slow on older devices and is often not available at all. Use with caution.
 		</member>
+		<member name="rendering/gles3/shaders/async_compile_enabled" type="bool" setter="" getter="" default="false">
+			If [code]true[/code] and available on the target device, enables asynchronous compilation of shaders.
+			That means that when a shader is first used under some new rendering situation, if it's configured to have a fallback, the game won't stall while it is being compiled. Instead, the fallback will be used and the real shader will be compiled in the background. Once the actual shader is compiled, it will be used the next times it's used to draw a frame.
+			This setting also enabled asynchronous reconstruction of shaders from cache. This means that if [code]rendering/gles3/shaders/cache_enabled[/code]) is enabled as well, the reconstruction of a cached shader will also be done in the background.
+			[b]Warning:[/b] Async. compilation is currently only supported for spatial shaders.
+		</member>
+		<member name="rendering/gles3/shaders/cache_enabled" type="bool" setter="" getter="" default="false">
+			If [code]true[/code] and available on the target device, a binary representation of shaders under the rendering situations they are used will be written to a cache directory.
+			This helps, at the cost of some storage space, getting shaders ready the next time they are used after having been unloaded from memory (namely, next startup of the game or next switch to a specific game scene).
+		</member>
+		<member name="rendering/gles3/shaders/debug_force_use_fallbacks" type="bool" setter="" getter="" default="false">
+			Only meaningful if [code]rendering/gles3/shaders/async_compile_enabled[/code] is [code]true[/code].
+			If [code]true[/code], for every shader that has a fallback, such fallback is used to render instead of the real shader, even it it's already compiled.
+			This is useful to see how well the fallbacks look in a scene, because normally they may be switching to the real ones too fast to be assessed.
+		</member>
+		<member name="rendering/gles3/shaders/force_no_render_fallback" type="bool" setter="" getter="" default="false">
+			Only meaningful if [code]rendering/gles3/shaders/async_compile_enabled[/code] is [code]true[/code].
+			If [code]true[/code], shaders of every kind for which asynchronous compilation is supported will be forced to use a 'no render' fallback.
+			On one hand, this is a quick way to enable async. shader compilation for a project, instead of deciding the proper fallback mode for each shader.
+			On the other hand, this helps informing that decision process by letting you run the project and noticing where you can't aesthetically afford to have certain shaders totally absent while they are getting ready.
+		</member>
+		<member name="rendering/gles3/shaders/max_concurrent_compiles" type="int" setter="" getter="" default="4">
+			Only meaningful if [code]rendering/gles3/shaders/async_compile_enabled[/code] is [code]true[/code].
+			This is the maximum number of shaders that can be compiled (or reconstructed from cache) at the same time.
+			At runtime, while that count is reached, other shaders that can be asynchronously compiled will just use their fallback, without their setup being started until the count gets lower.
+			This is a way to balance the CPU work between running the game and compiling the shaders. The goal is to have as many asynchronous compiles in flight as possible without impacting the responsiveness of the game, which beyond some point would destroy the benefits of asynchronous compilation. In other words, you may be able to afford that the FPS lowers a bit, and that will already be better than the stalling that synchronous compilation could cause.
+			The default value is meant to be a reasonable one for desktop platforms, but you are advised to tweak it according to the hardware you are targeting.
+		</member>
+		<member name="rendering/gles3/shaders/max_concurrent_compiles.mobile" type="int" setter="" getter="" default="1">
+			A very conservative override for [code]rendering/gles3/shaders/max_concurrent_compiles[/code] on mobile.
+			Depending on the specific devices you are targeting, you may want to raise it.
+		</member>
+		<member name="rendering/gles3/shaders/simple_fallback_modulate" type="Color" setter="" getter="" default="Color( 1, 1, 1, 1 )">
+			Only meaningful if [code]rendering/gles3/shaders/async_compile_enabled[/code] is [code]true[/code].
+			This is for shaders whose fallback mode is set to 'simple'. While they are being set up, the simple shader used to replace them will be modulated by these RGB values.
+			This is useful to tweak their appearance to the overall lighting of a game. For instance, the albedo-only look of the simple shader may be too bright so you can use this setting to make the simple fallbacks darker so they don't stand out too much.
+		</member>
 		<member name="rendering/limits/buffers/blend_shape_max_buffer_size_kb" type="int" setter="" getter="" default="4096">
 			Max buffer size for blend shapes. Any blend shape bigger than this will not work.
 		</member>

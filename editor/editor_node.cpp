@@ -2737,6 +2737,14 @@ void EditorNode::_menu_option_confirm(int p_option, bool p_confirmed) {
 			EditorSettings::get_singleton()->set_project_metadata("debug_options", "run_debug_navigation", !ischecked);
 
 		} break;
+		case RUN_DEBUG_SHADER_FALLBACKS: {
+			bool ischecked = debug_menu->get_popup()->is_item_checked(debug_menu->get_popup()->get_item_index(RUN_DEBUG_SHADER_FALLBACKS));
+			debug_menu->get_popup()->set_item_checked(debug_menu->get_popup()->get_item_index(RUN_DEBUG_SHADER_FALLBACKS), !ischecked);
+			run_native->set_debug_async_shaders(!ischecked);
+			editor_run.set_debug_async_shaders(!ischecked);
+			EditorSettings::get_singleton()->set_project_metadata("debug_options", "run_debug_shader_fallbacks", !ischecked);
+
+		} break;
 		case RUN_RELOAD_SCRIPTS: {
 			bool ischecked = debug_menu->get_popup()->is_item_checked(debug_menu->get_popup()->get_item_index(RUN_RELOAD_SCRIPTS));
 			debug_menu->get_popup()->set_item_checked(debug_menu->get_popup()->get_item_index(RUN_RELOAD_SCRIPTS), !ischecked);
@@ -2993,6 +3001,7 @@ void EditorNode::_update_debug_options() {
 	bool check_file_server = EditorSettings::get_singleton()->get_project_metadata("debug_options", "run_file_server", false);
 	bool check_debug_collisons = EditorSettings::get_singleton()->get_project_metadata("debug_options", "run_debug_collisons", false);
 	bool check_debug_navigation = EditorSettings::get_singleton()->get_project_metadata("debug_options", "run_debug_navigation", false);
+	bool check_debug_shader_fallbacks = EditorSettings::get_singleton()->get_project_metadata("debug_options", "run_debug_shader_fallbacks", false);
 	bool check_live_debug = EditorSettings::get_singleton()->get_project_metadata("debug_options", "run_live_debug", true);
 	bool check_reload_scripts = EditorSettings::get_singleton()->get_project_metadata("debug_options", "run_reload_scripts", true);
 
@@ -3007,6 +3016,9 @@ void EditorNode::_update_debug_options() {
 	}
 	if (check_debug_navigation) {
 		_menu_option_confirm(RUN_DEBUG_NAVIGATION, true);
+	}
+	if (check_debug_shader_fallbacks) {
+		_menu_option_confirm(RUN_DEBUG_SHADER_FALLBACKS, true);
 	}
 	if (check_live_debug) {
 		_menu_option_confirm(RUN_LIVE_DEBUG, true);
@@ -6334,6 +6346,10 @@ EditorNode::EditorNode() {
 			p->get_item_count() - 1,
 			TTR("When this option is enabled, collision shapes and raycast nodes (for 2D and 3D) will be visible in the running project."));
 	p->add_check_shortcut(ED_SHORTCUT("editor/visible_navigation", TTR("Visible Navigation")), RUN_DEBUG_NAVIGATION);
+	p->set_item_tooltip(
+			p->get_item_count() - 1,
+			TTR("When this option is enabled, shaders that have degradation enabled will be displayed in their fallback form all the time."));
+	p->add_check_shortcut(ED_SHORTCUT("editor/use_shader_fallbacks", TTR("Force Shader Fallbacks")), RUN_DEBUG_SHADER_FALLBACKS);
 	p->set_item_tooltip(
 			p->get_item_count() - 1,
 			TTR("When this option is enabled, navigation meshes and polygons will be visible in the running project."));

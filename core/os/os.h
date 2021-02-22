@@ -191,6 +191,9 @@ public:
 	virtual const char *get_video_driver_name(int p_driver) const;
 	virtual int get_current_video_driver() const = 0;
 
+	virtual bool is_offscreen_gl_available() const;
+	virtual void set_offscreen_gl_current(bool p_current);
+
 	virtual int get_audio_driver_count() const;
 	virtual const char *get_audio_driver_name(int p_driver) const;
 

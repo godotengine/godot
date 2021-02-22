@@ -543,6 +543,9 @@ public:
 	virtual void shader_get_custom_defines(RID p_shader, Vector<String> *p_defines) const;
 	virtual void shader_remove_custom_define(RID p_shader, const String &p_define);
 
+	void set_forced_sync_shader_compile_enabled(bool p_enabled) {}
+	bool is_forced_sync_shader_compile_enabled() { return false; }
+
 	void _update_shader(Shader *p_shader) const;
 	void update_dirty_shaders();
 

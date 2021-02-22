@@ -69,6 +69,10 @@ public:
 	int get_window_height();
 	void *get_glx_context();
 
+	bool is_offscreen_available() const;
+	void make_offscreen_current();
+	void release_offscreen_current();
+
 	Error initialize();
 
 	void set_use_vsync(bool p_use);

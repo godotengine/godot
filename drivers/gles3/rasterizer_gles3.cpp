@@ -207,12 +207,15 @@ void RasterizerGLES3::begin_frame(double frame_step) {
 	storage->frame.time[2] = Math::fmod(time_total, 900);
 	storage->frame.time[3] = Math::fmod(time_total, 60);
 	storage->frame.count++;
+	storage->frame.shade_compiles_started = 0;
 	storage->frame.delta = frame_step;
 
 	storage->update_dirty_resources();
 
 	storage->info.render_final = storage->info.render;
 	storage->info.render.reset();
+
+	ShaderGLES3::current_frame = storage->frame.count;
 
 	scene->iteration();
 }
@@ -410,6 +413,8 @@ void RasterizerGLES3::end_frame(bool p_swap_buffers) {
 		}
 	}
 
+	ShaderGLES3::advance_async_shaders_compilation();
+
 	if (p_swap_buffers) {
 		OS::get_singleton()->swap_buffers();
 	} else {
@@ -431,6 +436,13 @@ void RasterizerGLES3::make_current() {
 }
 
 void RasterizerGLES3::register_config() {
+	GLOBAL_DEF("rendering/gles3/shaders/cache_enabled", false);
+	GLOBAL_DEF("rendering/gles3/shaders/async_compile_enabled", false);
+	GLOBAL_DEF("rendering/gles3/shaders/max_concurrent_compiles", 4);
+	GLOBAL_DEF("rendering/gles3/shaders/max_concurrent_compiles.mobile", 1);
+	GLOBAL_DEF("rendering/gles3/shaders/simple_fallback_modulate", Color(1, 1, 1));
+	GLOBAL_DEF("rendering/gles3/shaders/force_no_render_fallback", false);
+	GLOBAL_DEF("rendering/gles3/shaders/debug_force_use_fallbacks", false);
 }
 
 bool RasterizerGLES3::gl_check_errors() {
@@ -484,13 +496,14 @@ RasterizerGLES3::RasterizerGLES3() {
 	storage->canvas = canvas;
 	scene->storage = storage;
 	storage->scene = scene;
+	ShaderGLES3::shader_compiles_started_this_frame = &storage->frame.shade_compiles_started;
 
 	time_total = 0;
 	time_scale = 1;
 }
 
 RasterizerGLES3::~RasterizerGLES3() {
-	memdelete(storage);
 	memdelete(canvas);
 	memdelete(scene);
+	memdelete(storage);
 }

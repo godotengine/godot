@@ -32,8 +32,11 @@
 #define SHADER_GLES3_H
 
 #include "core/hash_map.h"
+#include "core/local_vector.h"
 #include "core/map.h"
 #include "core/math/camera_matrix.h"
+#include "core/safe_refcount.h"
+#include "core/self_list.h"
 #include "core/variant.h"
 
 #include "platform_config.h"
@@ -44,6 +47,10 @@
 #endif
 
 #include <stdio.h>
+
+template <class K>
+class ThreadedCallableQueue;
+class ShaderCacheGLES3;
 
 class ShaderGLES3 {
 protected:
@@ -103,28 +110,103 @@ private:
 		String fragment_globals;
 		String light;
 		String uniforms;
+		int fallback_mode_hint;
 		uint32_t version;
 		Vector<StringName> texture_uniforms;
 		Vector<CharString> custom_defines;
 		Set<uint32_t> versions;
 	};
 
+public:
+	static ShaderCacheGLES3 *shader_cache;
+	static ThreadedCallableQueue<GLuint> *cache_write_queue;
+
+	enum FallbackMode {
+		FALLBACK_MODE_NONE,
+		FALLBACK_MODE_NO_RENDER,
+		FALLBACK_MODE_SIMPLE,
+	};
+
+	using DecideFallbackModeFunc = void (*)(uint32_t p_conditionals, int p_fallback_mode_hint, int *r_fallback_mode, uint32_t *r_simple_fallback_version);
+
+	static bool force_no_render_fallback;
+#ifdef DEBUG_ENABLED
+	static bool force_use_fallbacks;
+#endif
+	static bool force_sync_compile;
+	static int *shader_compiles_started_this_frame;
+	static int max_shaders_compiling;
+	static uint64_t current_frame;
+
+	static void advance_async_shaders_compilation();
+
+private:
+	static int versions_compiling_count;
+
 	struct Version {
-		GLuint id;
-		GLuint vert_id;
-		GLuint frag_id;
+		uint64_t version_key;
+
+		// Set by the render thread upfront; the compile thread (for queued async.) reads them
+		struct Ids {
+			GLuint main;
+			GLuint vert;
+			GLuint frag;
+		} ids;
+
+		ShaderGLES3 *shader;
+		uint32_t code_version;
+
+		int fallback_mode;
+		uint32_t simple_fallback_version; // Conditionals for the simple fallback version if fallback mode is simple
 		GLint *uniform_location;
 		Vector<GLint> texture_uniform_locations;
-		uint32_t code_version;
-		bool ok;
+		bool uniforms_ready;
+		uint64_t last_frame_processed;
+
+		enum CompileStatus {
+			COMPILE_STATUS_PENDING,
+			COMPILE_STATUS_SOURCE_PROVIDED,
+			COMPILE_STATUS_COMPILING,
+			COMPILE_STATUS_PROCESSING_AT_QUEUE,
+			COMPILE_STATUS_BINARY_READY,
+			COMPILE_STATUS_BINARY_READY_FROM_CACHE,
+			COMPILE_STATUS_LINKING,
+			COMPILE_STATUS_ERROR,
+			COMPILE_STATUS_RESTART_NEEDED,
+			COMPILE_STATUS_OK,
+		};
+		CompileStatus compile_status;
+		SelfList<Version> compiling_list;
+
+		struct ProgramBinary {
+			String cache_hash;
+			enum Source {
+				SOURCE_NONE,
+				SOURCE_LOCAL, // Binary data will only be available if cache enabled
+				SOURCE_QUEUE,
+				SOURCE_CACHE,
+			} source;
+			// Shared with the compile thread (for queued async.); otherwise render thread only
+			GLenum format;
+			PoolByteArray data;
+			SafeNumeric<int> result_from_queue;
+		} program_binary;
+
 		Version() :
-				id(0),
-				vert_id(0),
-				frag_id(0),
-				uniform_location(nullptr),
+				version_key(0),
+				ids(),
+				shader(nullptr),
 				code_version(0),
-				ok(false) {}
+				fallback_mode(FALLBACK_MODE_NONE),
+				simple_fallback_version(0),
+				uniform_location(nullptr),
+				uniforms_ready(false),
+				last_frame_processed(UINT64_MAX),
+				compile_status(COMPILE_STATUS_PENDING),
+				compiling_list(this),
+				program_binary() {}
 	};
+	static SelfList<Version>::List versions_compiling;
 
 	Version *version;
 
@@ -176,7 +258,21 @@ private:
 
 	int base_material_tex_index;
 
+	ThreadedCallableQueue<GLuint> *compile_queue; // Non-null if using queued asynchronous compilation (via seconday context)
+	bool parallel_compile_supported; // True if using natively supported asyncrhonous compilation
+	uint32_t fallback_code_id;
+	DecideFallbackModeFunc decide_fallback_mode_func;
+
 	Version *get_current_version();
+	// These will run on the shader compile thread if using que compile queue approach to async.
+	void _set_source(Version::Ids p_ids, const LocalVector<const char *> &p_vertex_strings, const LocalVector<const char *> &p_fragment_strings) const;
+	void _compile(Version::Ids p_ids) const;
+	bool _complete_compile(Version::Ids p_ids, bool p_retrievable) const;
+	bool _complete_link(Version::Ids p_ids, GLenum *r_program_format = nullptr, PoolByteArray *r_program_binary = nullptr) const;
+	// ---
+	bool _process_program_state();
+	void _setup_uniforms(CustomCode *p_cc) const;
+	void _dispose_program(Version *p_version);
 
 	static ShaderGLES3 *active;
 
@@ -274,6 +370,8 @@ private:
 	Map<uint32_t, Variant> uniform_defaults;
 	Map<uint32_t, CameraMatrix> uniform_cameras;
 
+	bool _bind(bool p_fallback_forbidden, bool *r_fallen_back = nullptr);
+
 protected:
 	_FORCE_INLINE_ int _get_uniform(int p_which) const;
 	_FORCE_INLINE_ void _set_conditional(int p_which, bool p_value);
@@ -291,16 +389,14 @@ public:
 	GLint get_uniform_location(int p_index) const;
 
 	static _FORCE_INLINE_ ShaderGLES3 *get_active() { return active; };
-	bool bind();
+	bool bind(bool *r_fallen_back = nullptr);
 	void unbind();
 	void bind_uniforms();
-
-	inline GLuint get_program() const { return version ? version->id : 0; }
 
 	void clear_caches();
 
 	uint32_t create_custom_shader();
-	void set_custom_shader_code(uint32_t p_code_id, const String &p_vertex, const String &p_vertex_globals, const String &p_fragment, const String &p_light, const String &p_fragment_globals, const String &p_uniforms, const Vector<StringName> &p_texture_uniforms, const Vector<CharString> &p_custom_defines);
+	void set_custom_shader_code(uint32_t p_code_id, const String &p_vertex, const String &p_vertex_globals, const String &p_fragment, const String &p_light, const String &p_fragment_globals, const String &p_uniforms, const Vector<StringName> &p_texture_uniforms, const Vector<CharString> &p_custom_defines, int p_fallback_mode_hint);
 	void set_custom_shader(uint32_t p_code_id);
 	void free_custom_shader(uint32_t p_code_id);
 
@@ -314,7 +410,8 @@ public:
 	}
 
 	uint32_t get_version() const { return new_conditional_version.version; }
-	_FORCE_INLINE_ bool is_version_valid() const { return version && version->ok; }
+	void set_version(uint32_t p_version) { new_conditional_version.version = p_version; }
+	_FORCE_INLINE_ bool is_version_valid() const { return version && version->compile_status == Version::COMPILE_STATUS_OK; }
 
 	void set_uniform_camera(int p_idx, const CameraMatrix &p_mat) {
 		uniform_cameras[p_idx] = p_mat;
@@ -334,6 +431,7 @@ public:
 	}
 
 	virtual void init() = 0;
+	void setup_async_compilation(ThreadedCallableQueue<GLuint> *p_compile_queue, bool p_parallel_compile_supported, uint32_t p_code_id, DecideFallbackModeFunc p_decide_fallback_mode_func);
 	void finish();
 
 	void set_base_material_tex_index(int p_idx);
