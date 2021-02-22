@@ -56,6 +56,11 @@ Size2 Button::get_minimum_size() const {
 		}
 	}
 
+	Ref<Font> font = get_theme_font("font");
+	float font_height = font->get_height(get_theme_font_size("font_size"));
+
+	minsize.height = MAX(font_height, minsize.height);
+
 	return get_theme_stylebox("normal")->get_minimum_size() + minsize;
 }
 
