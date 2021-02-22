@@ -92,6 +92,7 @@ def configure(env):
             env["CC"] = "clang"
             env["CXX"] = "clang++"
         env.extra_suffix = ".llvm" + env.extra_suffix
+        env.Append(LIBS=["atomic"])
 
     if env["use_ubsan"] or env["use_asan"] or env["use_lsan"] or env["use_tsan"]:
         env.extra_suffix += "s"
