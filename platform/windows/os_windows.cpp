@@ -3387,8 +3387,11 @@ String OS_Windows::get_cache_path() const {
 		if (get_environment("XDG_CACHE_HOME").is_abs_path()) {
 			return get_environment("XDG_CACHE_HOME").replace("\\", "/");
 		} else {
-			WARN_PRINT_ONCE("`XDG_CACHE_HOME` is a relative path. Ignoring its value and falling back to `%TEMP%` or `get_config_path()` per the XDG Base Directory specification.");
+			WARN_PRINT_ONCE("`XDG_CACHE_HOME` is a relative path. Ignoring its value and falling back to `%LOCALAPPDATA%\\cache`, `%TEMP%` or `get_config_path()` per the XDG Base Directory specification.");
 		}
+	}
+	if (has_environment("LOCALAPPDATA")) {
+		return get_environment("LOCALAPPDATA").replace("\\", "/").plus_file("cache");
 	}
 	if (has_environment("TEMP")) {
 		return get_environment("TEMP").replace("\\", "/");
