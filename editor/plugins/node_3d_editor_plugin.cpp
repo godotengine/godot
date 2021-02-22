@@ -48,6 +48,7 @@
 #include "scene/3d/mesh_instance_3d.h"
 #include "scene/3d/physics_body_3d.h"
 #include "scene/3d/visual_instance_3d.h"
+#include "scene/gui/center_container.h"
 #include "scene/gui/subviewport_container.h"
 #include "scene/resources/packed_scene.h"
 #include "scene/resources/surface_tool.h"
@@ -4711,6 +4712,28 @@ Dictionary Node3DEditor::get_state() const {
 	}
 
 	d["gizmos_status"] = gizmos_status;
+	{
+		Dictionary pd;
+
+		pd["sun_rotation"] = sun_rotation;
+
+		pd["environ_sky_color"] = environ_sky_color->get_pick_color();
+		pd["environ_ground_color"] = environ_ground_color->get_pick_color();
+		pd["environ_energy"] = environ_energy->get_value();
+		pd["environ_glow_enabled"] = environ_glow_button->is_pressed();
+		pd["environ_tonemap_enabled"] = environ_tonemap_button->is_pressed();
+		pd["environ_ao_enabled"] = environ_ao_button->is_pressed();
+		pd["environ_gi_enabled"] = environ_gi_button->is_pressed();
+		pd["sun_max_distance"] = sun_max_distance->get_value();
+
+		pd["sun_color"] = sun_color->get_pick_color();
+		pd["sun_energy"] = sun_energy->get_value();
+
+		pd["sun_disabled"] = sun_button->is_pressed();
+		pd["environ_disabled"] = environ_button->is_pressed();
+
+		d["preview_sun_env"] = pd;
+	}
 
 	return d;
 }
@@ -4819,6 +4842,38 @@ void Node3DEditor::set_state(const Dictionary &p_state) {
 			gizmo_plugins_by_name.write[j]->set_state(state);
 		}
 		_update_gizmos_menu();
+	}
+
+	if (d.has("preview_sun_env")) {
+		sun_environ_updating = true;
+		Dictionary pd = d["preview_sun_env"];
+		sun_rotation = pd["sun_rotation"];
+
+		environ_sky_color->set_pick_color(pd["environ_sky_color"]);
+		environ_ground_color->set_pick_color(pd["environ_ground_color"]);
+		environ_energy->set_value(pd["environ_energy"]);
+		environ_glow_button->set_pressed(pd["environ_glow_enabled"]);
+		environ_tonemap_button->set_pressed(pd["environ_tonemap_enabled"]);
+		environ_ao_button->set_pressed(pd["environ_ao_enabled"]);
+		environ_gi_button->set_pressed(pd["environ_gi_enabled"]);
+		sun_max_distance->set_value(pd["sun_max_distance"]);
+
+		sun_color->set_pick_color(pd["sun_color"]);
+		sun_energy->set_value(pd["sun_energy"]);
+
+		sun_button->set_pressed(pd["sun_disabled"]);
+		environ_button->set_pressed(pd["environ_disabled"]);
+
+		sun_environ_updating = false;
+
+		_preview_settings_changed();
+		_update_preview_environment();
+	} else {
+		_load_default_preview_settings();
+		sun_button->set_pressed(false);
+		environ_button->set_pressed(false);
+		_preview_settings_changed();
+		_update_preview_environment();
 	}
 }
 
@@ -6106,6 +6161,51 @@ void Node3DEditor::_unhandled_key_input(Ref<InputEvent> p_event) {
 	snap_key_enabled = Input::get_singleton()->is_key_pressed(KEY_CONTROL);
 }
 
+void Node3DEditor::_sun_environ_settings_pressed() {
+	Vector2 pos = sun_environ_settings->get_screen_position() + sun_environ_settings->get_size();
+	sun_environ_popup->set_position(pos - Vector2(sun_environ_popup->get_contents_minimum_size().width / 2, 0));
+	sun_environ_popup->popup();
+}
+
+void Node3DEditor::_add_sun_to_scene() {
+	sun_environ_popup->hide();
+
+	Node *base = get_tree()->get_edited_scene_root();
+	if (!base) {
+		EditorNode::get_singleton()->show_warning(TTR("A root node is needed for this operation"));
+		return;
+	}
+	ERR_FAIL_COND(!base);
+	Node *new_sun = preview_sun->duplicate();
+
+	undo_redo->create_action("Add Preview Sun to Scene");
+	undo_redo->add_do_method(base, "add_child", new_sun);
+	undo_redo->add_do_method(new_sun, "set_owner", base);
+	undo_redo->add_undo_method(base, "remove_child", new_sun);
+	undo_redo->add_do_reference(new_sun);
+	undo_redo->commit_action();
+}
+void Node3DEditor::_add_environment_to_scene() {
+	sun_environ_popup->hide();
+
+	Node *base = get_tree()->get_edited_scene_root();
+	if (!base) {
+		EditorNode::get_singleton()->show_warning(TTR("A root node is needed for this operation"));
+		return;
+	}
+	ERR_FAIL_COND(!base);
+
+	WorldEnvironment *new_env = memnew(WorldEnvironment);
+	new_env->set_environment(preview_environment->get_environment()->duplicate(true));
+
+	undo_redo->create_action("Add Preview Environment to Scene");
+	undo_redo->add_do_method(base, "add_child", new_env);
+	undo_redo->add_do_method(new_env, "set_owner", base);
+	undo_redo->add_undo_method(base, "remove_child", new_env);
+	undo_redo->add_do_reference(new_env);
+	undo_redo->commit_action();
+}
+
 void Node3DEditor::_notification(int p_what) {
 	if (p_what == NOTIFICATION_READY) {
 		tool_button[Node3DEditor::TOOL_MODE_SELECT]->set_icon(get_theme_icon("ToolSelect", "EditorIcons"));
@@ -6134,17 +6234,29 @@ void Node3DEditor::_notification(int p_what) {
 		_refresh_menu_icons();
 
 		get_tree()->connect("node_removed", callable_mp(this, &Node3DEditor::_node_removed));
+		get_tree()->connect("node_added", callable_mp(this, &Node3DEditor::_node_added));
 		EditorNode::get_singleton()->get_scene_tree_dock()->get_tree_editor()->connect("node_changed", callable_mp(this, &Node3DEditor::_refresh_menu_icons));
 		editor_selection->connect("selection_changed", callable_mp(this, &Node3DEditor::_refresh_menu_icons));
 
 		editor->connect("stop_pressed", callable_mp(this, &Node3DEditor::_update_camera_override_button), make_binds(false));
 		editor->connect("play_pressed", callable_mp(this, &Node3DEditor::_update_camera_override_button), make_binds(true));
+
+		sun_button->set_icon(get_theme_icon("DirectionalLight3D", "EditorIcons"));
+		environ_button->set_icon(get_theme_icon("WorldEnvironment", "EditorIcons"));
+		sun_environ_settings->set_icon(get_theme_icon("GuiTabMenu", "EditorIcons"));
+
+		_update_preview_environment();
+		sun_title->add_theme_font_override("font", get_theme_font("title_font", "Window"));
+		environ_title->add_theme_font_override("font", get_theme_font("title_font", "Window"));
+
 	} else if (p_what == NOTIFICATION_ENTER_TREE) {
 		_register_all_gizmos();
 		_update_gizmos_menu();
 		_init_indicators();
 	} else if (p_what == NOTIFICATION_THEME_CHANGED) {
 		_update_gizmos_menu_theme();
+		sun_title->add_theme_font_override("font", get_theme_font("title_font", "Window"));
+		environ_title->add_theme_font_override("font", get_theme_font("title_font", "Window"));
 	} else if (p_what == NOTIFICATION_EXIT_TREE) {
 		_finish_indicators();
 	} else if (p_what == EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED) {
@@ -6281,7 +6393,37 @@ void Node3DEditor::_toggle_maximize_view(Object *p_viewport) {
 	}
 }
 
+void Node3DEditor::_node_added(Node *p_node) {
+	if (EditorNode::get_singleton()->get_scene_root()->is_a_parent_of(p_node)) {
+		if (Object::cast_to<WorldEnvironment>(p_node)) {
+			world_env_count++;
+			if (world_env_count == 1) {
+				_update_preview_environment();
+			}
+		} else if (Object::cast_to<DirectionalLight3D>(p_node)) {
+			directional_light_count++;
+			if (directional_light_count == 1) {
+				_update_preview_environment();
+			}
+		}
+	}
+}
+
 void Node3DEditor::_node_removed(Node *p_node) {
+	if (EditorNode::get_singleton()->get_scene_root()->is_a_parent_of(p_node)) {
+		if (Object::cast_to<WorldEnvironment>(p_node)) {
+			world_env_count--;
+			if (world_env_count == 0) {
+				_update_preview_environment();
+			}
+		} else if (Object::cast_to<DirectionalLight3D>(p_node)) {
+			directional_light_count--;
+			if (directional_light_count == 0) {
+				_update_preview_environment();
+			}
+		}
+	}
+
 	if (p_node == selected) {
 		selected = nullptr;
 	}
@@ -6349,6 +6491,128 @@ void Node3DEditor::clear() {
 	}
 
 	view_menu->get_popup()->set_item_checked(view_menu->get_popup()->get_item_index(MENU_VIEW_GRID), true);
+}
+
+void Node3DEditor::_sun_direction_draw() {
+	sun_direction->draw_rect(Rect2(Vector2(), sun_direction->get_size()), Color(1, 1, 1, 1));
+	sun_direction_material->set_shader_param("sun_direction", -preview_sun->get_transform().basis.get_axis(Vector3::AXIS_Z));
+	float nrg = sun_energy->get_value();
+	sun_direction_material->set_shader_param("sun_color", Vector3(sun_color->get_pick_color().r * nrg, sun_color->get_pick_color().g * nrg, sun_color->get_pick_color().b * nrg));
+}
+
+void Node3DEditor::_preview_settings_changed() {
+	if (sun_environ_updating) {
+		return;
+	}
+
+	{ // preview sun
+		Transform t;
+		t.basis = sun_rotation;
+		preview_sun->set_transform(t);
+		sun_direction->update();
+		preview_sun->set_param(Light3D::PARAM_ENERGY, sun_energy->get_value());
+		preview_sun->set_param(Light3D::PARAM_SHADOW_MAX_DISTANCE, sun_max_distance->get_value());
+		preview_sun->set_color(sun_color->get_pick_color());
+	}
+
+	{ //preview env
+		sky_material->set_sky_energy(environ_energy->get_value());
+		Color hz_color = environ_sky_color->get_pick_color().lerp(environ_ground_color->get_pick_color(), 0.5).lerp(Color(1, 1, 1), 0.5);
+		sky_material->set_sky_top_color(environ_sky_color->get_pick_color());
+		sky_material->set_sky_horizon_color(hz_color);
+		sky_material->set_ground_bottom_color(environ_ground_color->get_pick_color());
+		sky_material->set_ground_horizon_color(hz_color);
+
+		environment->set_ssao_enabled(environ_ao_button->is_pressed());
+		environment->set_glow_enabled(environ_glow_button->is_pressed());
+		environment->set_sdfgi_enabled(environ_gi_button->is_pressed());
+		environment->set_tonemapper(environ_tonemap_button->is_pressed() ? Environment::TONE_MAPPER_FILMIC : Environment::TONE_MAPPER_LINEAR);
+	}
+}
+void Node3DEditor::_load_default_preview_settings() {
+	sun_environ_updating = true;
+
+	sun_rotation = Basis(Vector3(0, 1, 0), Math_PI * 3.0 / 4) * Basis(Vector3(1, 0, 0), -Math_PI / 4);
+
+	sun_direction->update();
+	environ_sky_color->set_pick_color(Color::hex(0x91b2ceff));
+	environ_ground_color->set_pick_color(Color::hex(0x1f1f21ff));
+	environ_energy->set_value(1.0);
+	environ_glow_button->set_pressed(true);
+	environ_tonemap_button->set_pressed(true);
+	environ_ao_button->set_pressed(false);
+	environ_gi_button->set_pressed(false);
+	sun_max_distance->set_value(250);
+
+	sun_color->set_pick_color(Color(1, 1, 1));
+	sun_energy->set_value(1.0);
+
+	sun_environ_updating = false;
+}
+
+void Node3DEditor::_update_preview_environment() {
+	bool disable_light = directional_light_count > 0 || sun_button->is_pressed();
+
+	sun_button->set_disabled(directional_light_count > 0);
+
+	if (disable_light) {
+		if (preview_sun->get_parent()) {
+			preview_sun->get_parent()->remove_child(preview_sun);
+			sun_state->show();
+			sun_vb->hide();
+		}
+
+		if (directional_light_count > 0) {
+			sun_state->set_text(TTR("Scene contains\nDirectionalLight3D.\nPreview Disabled."));
+		} else {
+			sun_state->set_text(TTR("Preview Disabled."));
+		}
+
+	} else {
+		if (!preview_sun->get_parent()) {
+			add_child(preview_sun);
+			sun_state->hide();
+			sun_vb->show();
+		}
+	}
+
+	bool disable_env = world_env_count > 0 || environ_button->is_pressed();
+
+	environ_button->set_disabled(world_env_count > 0);
+
+	if (disable_env) {
+		if (preview_environment->get_parent()) {
+			preview_environment->get_parent()->remove_child(preview_environment);
+			environ_state->show();
+			environ_vb->hide();
+		}
+		if (world_env_count > 0) {
+			environ_state->set_text(TTR("Scene contains\nWorldEnvironment.\nPreview Disabled."));
+		} else {
+			environ_state->set_text(TTR("Preview Disabled."));
+		}
+
+	} else {
+		if (!preview_environment->get_parent()) {
+			add_child(preview_environment);
+			environ_state->hide();
+			environ_vb->show();
+		}
+	}
+}
+
+void Node3DEditor::_sun_direction_input(const Ref<InputEvent> &p_event) {
+	Ref<InputEventMouseMotion> mm = p_event;
+	if (mm.is_valid() && mm->get_button_mask() & BUTTON_MASK_LEFT) {
+		float x = -mm->get_relative().y * 0.02 * EDSCALE;
+		float y = mm->get_relative().x * 0.02 * EDSCALE;
+
+		Basis rot = Basis(Vector3(0, 1, 0), y) * Basis(Vector3(1, 0, 0), x);
+
+		sun_rotation = rot * sun_rotation;
+		sun_rotation.orthonormalize();
+		_preview_settings_changed();
+	}
 }
 
 Node3DEditor::Node3DEditor(EditorNode *p_editor) {
@@ -6486,6 +6750,32 @@ Node3DEditor::Node3DEditor(EditorNode *p_editor) {
 	button_binds.write[0] = MENU_TOOL_OVERRIDE_CAMERA;
 	tool_option_button[TOOL_OPT_OVERRIDE_CAMERA]->connect("toggled", callable_mp(this, &Node3DEditor::_menu_item_toggled), button_binds);
 	_update_camera_override_button(false);
+
+	hbc_menu->add_child(memnew(VSeparator));
+	sun_button = memnew(Button);
+	sun_button->set_tooltip(TTR("Toggle preview sunlight.\nIf a DirectionalLight3D node is added to the scene, preview sunlight is disabled."));
+	sun_button->set_toggle_mode(true);
+	sun_button->set_flat(true);
+	sun_button->connect("pressed", callable_mp(this, &Node3DEditor::_update_preview_environment), varray(), CONNECT_DEFERRED);
+	sun_button->set_disabled(true);
+
+	hbc_menu->add_child(sun_button);
+
+	environ_button = memnew(Button);
+	environ_button->set_tooltip(TTR("Toggle preview environment.\nIf a WorldEnvironment node is added to the scene, preview environment is disabled."));
+	environ_button->set_toggle_mode(true);
+	environ_button->set_flat(true);
+	environ_button->connect("pressed", callable_mp(this, &Node3DEditor::_update_preview_environment), varray(), CONNECT_DEFERRED);
+	environ_button->set_disabled(true);
+
+	hbc_menu->add_child(environ_button);
+
+	sun_environ_settings = memnew(Button);
+	sun_environ_settings->set_tooltip(TTR("Edit Sun and Environment settings."));
+	sun_environ_settings->set_flat(true);
+	sun_environ_settings->connect("pressed", callable_mp(this, &Node3DEditor::_sun_environ_settings_pressed));
+
+	hbc_menu->add_child(sun_environ_settings);
 
 	hbc_menu->add_child(memnew(VSeparator));
 
@@ -6717,6 +7007,149 @@ Node3DEditor::Node3DEditor(EditorNode *p_editor) {
 	EDITOR_DEF("editors/3d/navigation/show_viewport_rotation_gizmo", true);
 
 	over_gizmo_handle = -1;
+	{
+		//sun popup
+
+		sun_environ_popup = memnew(PopupPanel);
+		add_child(sun_environ_popup);
+
+		HBoxContainer *sun_environ_hb = memnew(HBoxContainer);
+
+		sun_environ_popup->add_child(sun_environ_hb);
+
+		sun_vb = memnew(VBoxContainer);
+		sun_environ_hb->add_child(sun_vb);
+		sun_vb->set_custom_minimum_size(Size2(200 * EDSCALE, 0));
+		sun_vb->hide();
+
+		sun_title = memnew(Label);
+		sun_vb->add_child(sun_title);
+		sun_title->set_text(TTR("Preview Sun"));
+		sun_title->set_align(Label::ALIGN_CENTER);
+
+		sun_state = memnew(Label);
+		sun_environ_hb->add_child(sun_state);
+		sun_state->show();
+
+		CenterContainer *sun_direction_center = memnew(CenterContainer);
+		sun_direction = memnew(Control);
+		sun_direction->set_custom_minimum_size(Size2i(128, 128) * EDSCALE);
+		sun_direction_center->add_child(sun_direction);
+		sun_vb->add_margin_child(TTR("Sun Direction"), sun_direction_center);
+		sun_direction->connect("gui_input", callable_mp(this, &Node3DEditor::_sun_direction_input));
+		sun_direction->connect("draw", callable_mp(this, &Node3DEditor::_sun_direction_draw));
+		sun_direction->set_default_cursor_shape(CURSOR_MOVE);
+
+		String sun_dir_shader_code = "shader_type canvas_item; uniform vec3 sun_direction; uniform vec3 sun_color; void fragment() { vec3 n; n.xy = UV * 2.0 - 1.0; n.z = sqrt(max(0.0, 1.0 - dot(n.xy, n.xy))); COLOR.rgb = dot(n,sun_direction) * sun_color; COLOR.a = 1.0 - smoothstep(0.99,1.0,length(n.xy)); }";
+		sun_direction_shader.instance();
+		sun_direction_shader->set_code(sun_dir_shader_code);
+		sun_direction_material.instance();
+		sun_direction_material->set_shader(sun_direction_shader);
+		sun_direction_material->set_shader_param("sun_direction", Vector3(0, 0, 1));
+		sun_direction_material->set_shader_param("sun_color", Vector3(1, 1, 1));
+		sun_direction->set_material(sun_direction_material);
+
+		sun_color = memnew(ColorPickerButton);
+		sun_color->set_edit_alpha(false);
+		sun_vb->add_margin_child(TTR("Sun Color"), sun_color);
+		sun_color->connect("color_changed", callable_mp(this, &Node3DEditor::_preview_settings_changed).unbind(1));
+
+		sun_energy = memnew(EditorSpinSlider);
+		sun_vb->add_margin_child(TTR("Sun Energy"), sun_energy);
+		sun_energy->connect("value_changed", callable_mp(this, &Node3DEditor::_preview_settings_changed).unbind(1));
+		sun_energy->set_max(64.0);
+
+		sun_max_distance = memnew(EditorSpinSlider);
+		sun_vb->add_margin_child(TTR("Shadow Max Distance"), sun_max_distance);
+		sun_max_distance->connect("value_changed", callable_mp(this, &Node3DEditor::_preview_settings_changed).unbind(1));
+		sun_max_distance->set_min(1);
+		sun_max_distance->set_max(4096);
+
+		sun_add_to_scene = memnew(Button);
+		sun_add_to_scene->set_text(TTR("Add Sun to Scene"));
+		sun_add_to_scene->connect("pressed", callable_mp(this, &Node3DEditor::_add_sun_to_scene));
+		sun_vb->add_spacer();
+		sun_vb->add_child(sun_add_to_scene);
+
+		VSeparator *sc = memnew(VSeparator);
+		sc->set_custom_minimum_size(Size2(50 * EDSCALE, 0));
+		sc->set_v_size_flags(SIZE_EXPAND_FILL);
+		sun_environ_hb->add_child(sc);
+
+		environ_vb = memnew(VBoxContainer);
+		sun_environ_hb->add_child(environ_vb);
+		environ_vb->hide();
+
+		environ_vb->set_custom_minimum_size(Size2(200 * EDSCALE, 0));
+
+		environ_state = memnew(Label);
+		sun_environ_hb->add_child(environ_state);
+		environ_state->show();
+
+		environ_title = memnew(Label);
+		environ_vb->add_child(environ_title);
+		environ_title->set_text(TTR("Preview Environment"));
+		environ_title->set_align(Label::ALIGN_CENTER);
+
+		environ_sky_color = memnew(ColorPickerButton);
+		environ_sky_color->set_edit_alpha(false);
+		environ_sky_color->connect("color_changed", callable_mp(this, &Node3DEditor::_preview_settings_changed).unbind(1));
+		environ_vb->add_margin_child(TTR("Sky Color"), environ_sky_color);
+		environ_ground_color = memnew(ColorPickerButton);
+		environ_ground_color->connect("color_changed", callable_mp(this, &Node3DEditor::_preview_settings_changed).unbind(1));
+		environ_ground_color->set_edit_alpha(false);
+		environ_vb->add_margin_child(TTR("Ground Color"), environ_ground_color);
+		environ_energy = memnew(EditorSpinSlider);
+		environ_energy->connect("value_changed", callable_mp(this, &Node3DEditor::_preview_settings_changed).unbind(1));
+		environ_energy->set_max(8.0);
+		environ_vb->add_margin_child(TTR("Sky Energy"), environ_energy);
+		HBoxContainer *fx_vb = memnew(HBoxContainer);
+		fx_vb->set_h_size_flags(SIZE_EXPAND_FILL);
+
+		environ_ao_button = memnew(Button);
+		environ_ao_button->set_text(TTR("AO"));
+		environ_ao_button->set_toggle_mode(true);
+		environ_ao_button->connect("pressed", callable_mp(this, &Node3DEditor::_preview_settings_changed), varray(), CONNECT_DEFERRED);
+		fx_vb->add_child(environ_ao_button);
+		environ_glow_button = memnew(Button);
+		environ_glow_button->set_text(TTR("Glow"));
+		environ_glow_button->set_toggle_mode(true);
+		environ_glow_button->connect("pressed", callable_mp(this, &Node3DEditor::_preview_settings_changed), varray(), CONNECT_DEFERRED);
+		fx_vb->add_child(environ_glow_button);
+		environ_tonemap_button = memnew(Button);
+		environ_tonemap_button->set_text(TTR("Tonemap"));
+		environ_tonemap_button->set_toggle_mode(true);
+		environ_tonemap_button->connect("pressed", callable_mp(this, &Node3DEditor::_preview_settings_changed), varray(), CONNECT_DEFERRED);
+		fx_vb->add_child(environ_tonemap_button);
+		environ_gi_button = memnew(Button);
+		environ_gi_button->set_text(TTR("GI"));
+		environ_gi_button->set_toggle_mode(true);
+		environ_gi_button->connect("pressed", callable_mp(this, &Node3DEditor::_preview_settings_changed), varray(), CONNECT_DEFERRED);
+		fx_vb->add_child(environ_gi_button);
+		environ_vb->add_margin_child(TTR("Post Process"), fx_vb);
+
+		environ_add_to_scene = memnew(Button);
+		environ_add_to_scene->set_text(TTR("Add Environment to Scene"));
+		environ_add_to_scene->connect("pressed", callable_mp(this, &Node3DEditor::_add_environment_to_scene));
+		environ_vb->add_spacer();
+		environ_vb->add_child(environ_add_to_scene);
+
+		preview_sun = memnew(DirectionalLight3D);
+		preview_sun->set_shadow(true);
+		preview_sun->set_shadow_mode(DirectionalLight3D::SHADOW_PARALLEL_4_SPLITS);
+		preview_environment = memnew(WorldEnvironment);
+		environment.instance();
+		preview_environment->set_environment(environment);
+		Ref<Sky> sky;
+		sky.instance();
+		sky_material.instance();
+		sky->set_material(sky_material);
+		environment->set_sky(sky);
+		environment->set_background(Environment::BG_SKY);
+
+		_load_default_preview_settings();
+		_preview_settings_changed();
+	}
 }
 
 Node3DEditor::~Node3DEditor() {

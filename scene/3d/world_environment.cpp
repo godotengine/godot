@@ -35,51 +35,69 @@
 void WorldEnvironment::_notification(int p_what) {
 	if (p_what == Node3D::NOTIFICATION_ENTER_WORLD || p_what == Node3D::NOTIFICATION_ENTER_TREE) {
 		if (environment.is_valid()) {
-			if (get_viewport()->find_world_3d()->get_environment().is_valid()) {
-				WARN_PRINT("World already has an environment (Another WorldEnvironment?), overriding.");
-			}
-			get_viewport()->find_world_3d()->set_environment(environment);
 			add_to_group("_world_environment_" + itos(get_viewport()->find_world_3d()->get_scenario().get_id()));
+			_update_current_environment();
 		}
 
 		if (camera_effects.is_valid()) {
-			if (get_viewport()->find_world_3d()->get_camera_effects().is_valid()) {
-				WARN_PRINT("World already has a camera effects (Another WorldEnvironment?), overriding.");
-			}
-			get_viewport()->find_world_3d()->set_camera_effects(camera_effects);
 			add_to_group("_world_camera_effects_" + itos(get_viewport()->find_world_3d()->get_scenario().get_id()));
+			_update_current_camera_effects();
 		}
 
 	} else if (p_what == Node3D::NOTIFICATION_EXIT_WORLD || p_what == Node3D::NOTIFICATION_EXIT_TREE) {
-		if (environment.is_valid() && get_viewport()->find_world_3d()->get_environment() == environment) {
-			get_viewport()->find_world_3d()->set_environment(Ref<Environment>());
+		if (environment.is_valid()) {
 			remove_from_group("_world_environment_" + itos(get_viewport()->find_world_3d()->get_scenario().get_id()));
+			_update_current_environment();
 		}
 
-		if (camera_effects.is_valid() && get_viewport()->find_world_3d()->get_camera_effects() == camera_effects) {
-			get_viewport()->find_world_3d()->set_camera_effects(Ref<CameraEffects>());
+		if (camera_effects.is_valid()) {
 			remove_from_group("_world_camera_effects_" + itos(get_viewport()->find_world_3d()->get_scenario().get_id()));
+			_update_current_camera_effects();
 		}
 	}
 }
 
-void WorldEnvironment::set_environment(const Ref<Environment> &p_environment) {
-	if (is_inside_tree() && environment.is_valid() && get_viewport()->find_world_3d()->get_environment() == environment) {
+void WorldEnvironment::_update_current_environment() {
+	WorldEnvironment *first = Object::cast_to<WorldEnvironment>(get_tree()->get_first_node_in_group("_world_environment_" + itos(get_viewport()->find_world_3d()->get_scenario().get_id())));
+
+	if (first) {
+		get_viewport()->find_world_3d()->set_environment(first->environment);
+	} else {
 		get_viewport()->find_world_3d()->set_environment(Ref<Environment>());
+	}
+	get_tree()->call_group("_world_environment_" + itos(get_viewport()->find_world_3d()->get_scenario().get_id()), "update_configuration_warning");
+}
+
+void WorldEnvironment::_update_current_camera_effects() {
+	WorldEnvironment *first = Object::cast_to<WorldEnvironment>(get_tree()->get_first_node_in_group("_world_camera_effects_" + itos(get_viewport()->find_world_3d()->get_scenario().get_id())));
+	if (first) {
+		get_viewport()->find_world_3d()->set_camera_effects(first->camera_effects);
+	} else {
+		get_viewport()->find_world_3d()->set_camera_effects(Ref<CameraEffects>());
+	}
+
+	get_tree()->call_group("_world_camera_effects_" + itos(get_viewport()->find_world_3d()->get_scenario().get_id()), "update_configuration_warning");
+}
+
+void WorldEnvironment::set_environment(const Ref<Environment> &p_environment) {
+	if (environment == p_environment) {
+		return;
+	}
+	if (is_inside_tree() && environment.is_valid()) {
 		remove_from_group("_world_environment_" + itos(get_viewport()->find_world_3d()->get_scenario().get_id()));
-		//clean up
 	}
 
 	environment = p_environment;
+
 	if (is_inside_tree() && environment.is_valid()) {
-		if (get_viewport()->find_world_3d()->get_environment().is_valid()) {
-			WARN_PRINT("World already has an environment (Another WorldEnvironment?), overriding.");
-		}
-		get_viewport()->find_world_3d()->set_environment(environment);
 		add_to_group("_world_environment_" + itos(get_viewport()->find_world_3d()->get_scenario().get_id()));
 	}
 
-	update_configuration_warning();
+	if (is_inside_tree()) {
+		_update_current_environment();
+	} else {
+		update_configuration_warning();
+	}
 }
 
 Ref<Environment> WorldEnvironment::get_environment() const {
@@ -87,22 +105,24 @@ Ref<Environment> WorldEnvironment::get_environment() const {
 }
 
 void WorldEnvironment::set_camera_effects(const Ref<CameraEffects> &p_camera_effects) {
+	if (camera_effects == p_camera_effects) {
+		return;
+	}
+
 	if (is_inside_tree() && camera_effects.is_valid() && get_viewport()->find_world_3d()->get_camera_effects() == camera_effects) {
-		get_viewport()->find_world_3d()->set_camera_effects(Ref<CameraEffects>());
 		remove_from_group("_world_camera_effects_" + itos(get_viewport()->find_world_3d()->get_scenario().get_id()));
-		//clean up
 	}
 
 	camera_effects = p_camera_effects;
 	if (is_inside_tree() && camera_effects.is_valid()) {
-		if (get_viewport()->find_world_3d()->get_camera_effects().is_valid()) {
-			WARN_PRINT("World already has an camera_effects (Another WorldEnvironment?), overriding.");
-		}
-		get_viewport()->find_world_3d()->set_camera_effects(camera_effects);
 		add_to_group("_world_camera_effects_" + itos(get_viewport()->find_world_3d()->get_scenario().get_id()));
 	}
 
-	update_configuration_warning();
+	if (is_inside_tree()) {
+		_update_current_camera_effects();
+	} else {
+		update_configuration_warning();
+	}
 }
 
 Ref<CameraEffects> WorldEnvironment::get_camera_effects() const {
@@ -123,14 +143,18 @@ String WorldEnvironment::get_configuration_warning() const {
 		return warning;
 	}
 
-	List<Node *> nodes;
-	get_tree()->get_nodes_in_group("_world_environment_" + itos(get_viewport()->find_world_3d()->get_scenario().get_id()), &nodes);
-
-	if (nodes.size() > 1) {
+	if (environment.is_valid() && get_viewport()->find_world_3d()->get_environment() != environment) {
 		if (!warning.is_empty()) {
 			warning += "\n\n";
 		}
-		warning += TTR("Only one WorldEnvironment is allowed per scene (or set of instanced scenes).");
+		warning += TTR("Only the first Environment has an effect in a scene (or set of instantiated scenes).");
+	}
+
+	if (camera_effects.is_valid() && get_viewport()->find_world_3d()->get_camera_effects() != camera_effects) {
+		if (!warning.is_empty()) {
+			warning += "\n\n";
+		}
+		warning += TTR("Only the first CameraEffects has an effect in a scene (or set of instantiated scenes).");
 	}
 
 	return warning;
