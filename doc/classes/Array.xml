@@ -208,6 +208,8 @@
 				            return 3
 				        "four":
 				            return 4
+				        _:
+				            return 0
 
 				func compare(a,b):
 				    return cardinal_to_algebraic(a) &lt; cardinal_to_algebraic(b)
