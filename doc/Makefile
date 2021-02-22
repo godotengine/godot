@@ -2,6 +2,7 @@ BASEDIR = $(CURDIR)
 CLASSES = $(BASEDIR)/classes/ $(BASEDIR)/../modules/
 OUTPUTDIR = $(BASEDIR)/_build
 TOOLSDIR = $(BASEDIR)/tools
+JSDIR = $(BASEDIR)/../platform/javascript
 
 .ONESHELL:
 
@@ -16,6 +17,10 @@ doxygen:
 rst:
 	rm -rf $(OUTPUTDIR)/rst
 	mkdir -p $(OUTPUTDIR)/rst
-	pushd $(OUTPUTDIR)/rst
-	python3 $(TOOLSDIR)/makerst.py $(CLASSES)
-	popd
+	python3 $(TOOLSDIR)/makerst.py -o $(OUTPUTDIR)/rst $(CLASSES)
+
+rstjs:
+	rm -rf $(OUTPUTDIR)/rstjs
+	mkdir -p $(OUTPUTDIR)/rstjs
+	npm --prefix $(JSDIR) ci
+	npm --prefix $(JSDIR) run docs -- --destination $(OUTPUTDIR)/rstjs/html5_shell_classref.rst
