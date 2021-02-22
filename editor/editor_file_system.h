@@ -275,6 +275,8 @@ public:
 	bool is_group_file(const String &p_path) const;
 	void move_group_file(const String &p_path, const String &p_new_path);
 
+	static bool _should_skip_directory(const String &p_path);
+
 	EditorFileSystem();
 	~EditorFileSystem();
 };
