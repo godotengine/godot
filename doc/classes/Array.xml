@@ -208,10 +208,10 @@
 				            return 3
 				        "four":
 				            return 4
-				
+
 				func compare(a,b):
 				    return cardinal_to_algebraic(a) &lt; cardinal_to_algebraic(b)
-				
+
 				func _ready():
 				    var a = ["one", "two", "three", "four"]
 				    print(a.bsearch_custom("three", compare, true)) #Expected value is 2
