@@ -720,7 +720,7 @@ msgstr "Постави прелаз на:"
 #: editor/plugins/animation_player_editor_plugin.cpp
 #: editor/plugins/script_text_editor.cpp
 #: editor/plugins/sprite_frames_editor_plugin.cpp editor/property_editor.cpp
-#: scene/gui/line_edit.cpp scene/gui/text_edit.cpp
+#: editor/scene_tree_dock.cpp scene/gui/line_edit.cpp scene/gui/text_edit.cpp
 msgid "Copy"
 msgstr "Копирај"
 
@@ -2752,7 +2752,8 @@ msgid "Unable to enable addon plugin at: '%s' parsing of config failed."
 msgstr "Неуспех при прикључивању додатка због конфигурационе датотеке: '%s'."
 
 #: editor/editor_node.cpp
-msgid "Unable to find script field for addon plugin at: 'res://addons/%s'."
+#, fuzzy
+msgid "Unable to find script field for addon plugin at: '%s'."
 msgstr "Неуспех при налажењу поља за скриптицу у додатку „res://addons/%s“."
 
 #: editor/editor_node.cpp
@@ -3213,14 +3214,6 @@ msgid "Help"
 msgstr "Помоћ"
 
 #: editor/editor_node.cpp editor/plugins/script_editor_plugin.cpp
-#: editor/plugins/script_text_editor.cpp
-#: editor/plugins/shader_editor_plugin.cpp editor/plugins/text_editor.cpp
-#: editor/plugins/visual_shader_editor_plugin.cpp editor/project_manager.cpp
-#: editor/project_settings_editor.cpp editor/settings_config_dialog.cpp
-msgid "Search"
-msgstr "Тражи"
-
-#: editor/editor_node.cpp editor/plugins/script_editor_plugin.cpp
 #: editor/plugins/shader_editor_plugin.cpp
 msgid "Online Docs"
 msgstr "Онлајн документација"
@@ -3650,7 +3643,7 @@ msgstr "Учини Јединственим"
 #: editor/plugins/script_text_editor.cpp
 #: editor/plugins/sprite_frames_editor_plugin.cpp
 #: editor/plugins/tile_map_editor_plugin.cpp editor/property_editor.cpp
-#: scene/gui/line_edit.cpp scene/gui/text_edit.cpp
+#: editor/scene_tree_dock.cpp scene/gui/line_edit.cpp scene/gui/text_edit.cpp
 msgid "Paste"
 msgstr "Налепи"
 
@@ -5499,7 +5492,8 @@ msgid "Got:"
 msgstr "Добијено:"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
-msgid "Failed sha256 hash check"
+#, fuzzy
+msgid "Failed SHA-256 hash check"
 msgstr "Неуспела провера sha256 суме"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
@@ -7638,6 +7632,14 @@ msgstr "Затвори документацију"
 msgid "Run"
 msgstr "Покрени"
 
+#: editor/plugins/script_editor_plugin.cpp
+#: editor/plugins/script_text_editor.cpp
+#: editor/plugins/shader_editor_plugin.cpp editor/plugins/text_editor.cpp
+#: editor/plugins/visual_shader_editor_plugin.cpp editor/project_manager.cpp
+#: editor/project_settings_editor.cpp editor/settings_config_dialog.cpp
+msgid "Search"
+msgstr "Тражи"
+
 #: editor/plugins/script_editor_plugin.cpp editor/script_editor_debugger.cpp
 msgid "Step Into"
 msgstr "Корак у"
@@ -7800,8 +7802,8 @@ msgstr "Тачке прекида"
 msgid "Go To"
 msgstr "Иди На"
 
-#: editor/plugins/script_text_editor.cpp scene/gui/line_edit.cpp
-#: scene/gui/text_edit.cpp
+#: editor/plugins/script_text_editor.cpp editor/scene_tree_dock.cpp
+#: scene/gui/line_edit.cpp scene/gui/text_edit.cpp
 msgid "Cut"
 msgstr "Исеци"
 
@@ -11921,6 +11923,16 @@ msgstr "Инстанца Сцена Дете"
 
 #: editor/scene_tree_dock.cpp
 #, fuzzy
+msgid "Can't paste root node into the same scene."
+msgstr "Немогуће оперисати на чвору из стране сцене!"
+
+#: editor/scene_tree_dock.cpp
+#, fuzzy
+msgid "Paste Node(s)"
+msgstr "Налепи Чворове"
+
+#: editor/scene_tree_dock.cpp
+#, fuzzy
 msgid "Detach Script"
 msgstr "Припој Скрипту"
 
@@ -12073,6 +12085,11 @@ msgstr "Немогуће оперисати на чворовима од кој�
 #, fuzzy
 msgid "Attach Script"
 msgstr "Припој Скрипту"
+
+#: editor/scene_tree_dock.cpp
+#, fuzzy
+msgid "Cut Node(s)"
+msgstr "Направи чвор"
 
 #: editor/scene_tree_dock.cpp
 #, fuzzy
@@ -15104,10 +15121,6 @@ msgstr "Константе није могуће мењати."
 #, fuzzy
 #~ msgid "CheckBox Radio2"
 #~ msgstr "CheckBox Radio2"
-
-#, fuzzy
-#~ msgid "Custom Node"
-#~ msgstr "Направи чвор"
 
 #, fuzzy
 #~ msgid "Snap (s): "
