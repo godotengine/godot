@@ -400,6 +400,8 @@ Error Main::test_setup() {
 	GLOBAL_DEF("debug/settings/crash_handler/message",
 			String("Please include this when reporting the bug on https://github.com/godotengine/godot/issues"));
 
+	translation_server = memnew(TranslationServer);
+
 	// From `Main::setup2()`.
 	preregister_module_types();
 	preregister_server_types();
@@ -407,6 +409,16 @@ Error Main::test_setup() {
 	register_core_singletons();
 
 	register_server_types();
+
+	translation_server->setup(); //register translations, load them, etc.
+	if (locale != "") {
+		translation_server->set_locale(locale);
+	}
+	translation_server->load_translations();
+	ResourceLoader::load_translation_remaps(); //load remaps for resources
+
+	ResourceLoader::load_path_remaps();
+
 	register_scene_types();
 
 #ifdef TOOLS_ENABLED
@@ -446,6 +458,9 @@ void Main::test_cleanup() {
 
 	OS::get_singleton()->finalize();
 
+	if (translation_server) {
+		memdelete(translation_server);
+	}
 	if (globals) {
 		memdelete(globals);
 	}
