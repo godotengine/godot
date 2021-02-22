@@ -78,9 +78,9 @@ namespace GodotUWP
 		void OnMouseMoved(Windows::Devices::Input::MouseDevice^ mouse_device, Windows::Devices::Input::MouseEventArgs^ args);
 		void OnPointerWheelChanged(Windows::UI::Core::CoreWindow^ sender, Windows::UI::Core::PointerEventArgs^ args);
 
-		Windows::System::Thread ing::Core::SignalNotifier^ mouseChangedNotifier;
+		Windows::System::Threading::Core::SignalNotifier^ mouseChangedNotifier;
 		Windows::Foundation::EventRegistrationToken mouseMovedToken;
-		void OnMouseModeChanged(Windows::System::Thread ing::Core::SignalNotifier^ signalNotifier, bool timedOut);
+		void OnMouseModeChanged(Windows::System::Threading::Core::SignalNotifier^ signalNotifier, bool timedOut);
 
 		void key_event(Windows::UI::Core::CoreWindow^ sender, bool p_pressed, Windows::UI::Core::KeyEventArgs^ key_args = nullptr, Windows::UI::Core::CharacterReceivedEventArgs^ char_args = nullptr);
 		void OnKeyDown(Windows::UI::Core::CoreWindow^ sender, Windows::UI::Core::KeyEventArgs^ args);
