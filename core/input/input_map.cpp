@@ -434,8 +434,8 @@ const OrderedHashMap<String, List<Ref<InputEvent>>> &InputMap::get_builtins() {
 	default_builtin_cache.insert("ui_undo", inputs);
 
 	inputs = List<Ref<InputEvent>>();
-	inputs.push_back(InputEventKey::create_reference(KEY_Y | KEY_MASK_CMD));
 	inputs.push_back(InputEventKey::create_reference(KEY_Z | KEY_MASK_CMD | KEY_MASK_SHIFT));
+	inputs.push_back(InputEventKey::create_reference(KEY_Y | KEY_MASK_CMD));
 	default_builtin_cache.insert("ui_redo", inputs);
 
 	// ///// UI Text Input Shortcuts /////
