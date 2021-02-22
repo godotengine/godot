@@ -764,6 +764,8 @@ private:
 	VBoxContainer *sun_vb;
 	Popup *sun_environ_popup;
 	Control *sun_direction;
+	EditorSpinSlider *sun_angle_altitude;
+	EditorSpinSlider *sun_angle_azimuth;
 	ColorPickerButton *sun_color;
 	EditorSpinSlider *sun_energy;
 	EditorSpinSlider *sun_max_distance;
@@ -771,8 +773,9 @@ private:
 
 	void _sun_direction_draw();
 	void _sun_direction_input(const Ref<InputEvent> &p_event);
+	void _sun_direction_angle_set();
 
-	Basis sun_rotation;
+	Vector2 sun_rotation;
 
 	Ref<Shader> sun_direction_shader;
 	Ref<ShaderMaterial> sun_direction_material;
