@@ -4,7 +4,7 @@ on: [push, pull_request]
 # Global Settings
 env:
   GODOT_BASE_BRANCH: master
-  SCONSFLAGS: platform=osx verbose=yes warnings=extra werror=yes --jobs=2 module_text_server_fb_enabled=yes
+  SCONSFLAGS: platform=osx verbose=yes warnings=extra werror=yes debug_symbols=no --jobs=2 module_text_server_fb_enabled=yes
   SCONS_CACHE_LIMIT: 4096
 
 jobs:
@@ -104,7 +104,7 @@ jobs:
         env:
           SCONS_CACHE: ${{github.workspace}}/.scons_cache/
         run: |
-          scons target=release tools=no debug_symbols=no
+          scons target=release tools=no
           ls -l bin/
 
       - uses: actions/upload-artifact@v2
