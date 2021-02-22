@@ -81,6 +81,7 @@ private:
 	void set_data_dir(String p_dir);
 
 	String data_dir;
+	String cache_dir;
 
 	InputDefault *input;
 
@@ -93,7 +94,7 @@ private:
 public:
 	static OSIPhone *get_singleton();
 
-	OSIPhone(String p_data_dir);
+	OSIPhone(String p_data_dir, String p_cache_dir);
 	~OSIPhone();
 
 	bool iterate();
@@ -115,6 +116,7 @@ public:
 	Error shell_open(String p_uri);
 
 	String get_user_data_dir() const;
+	String get_cache_path() const;
 
 	String get_locale() const;
 

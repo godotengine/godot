@@ -50,6 +50,7 @@ class OS_Android : public OS_Unix {
 	VisualServer *visual_server;
 
 	mutable String data_dir_cache;
+	mutable String cache_dir_cache;
 
 	AudioDriverOpenSL audio_driver_android;
 

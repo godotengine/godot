@@ -70,7 +70,7 @@ int add_cmdline(int p_argc, char **p_args) {
 	return p_argc;
 }
 
-int iphone_main(int argc, char **argv, String data_dir) {
+int iphone_main(int argc, char **argv, String data_dir, String cache_dir) {
 	size_t len = strlen(argv[0]);
 
 	while (len--) {
@@ -90,7 +90,7 @@ int iphone_main(int argc, char **argv, String data_dir) {
 	char cwd[512];
 	getcwd(cwd, sizeof(cwd));
 	printf("cwd %s\n", cwd);
-	os = new OSIPhone(data_dir);
+	os = new OSIPhone(data_dir, cache_dir);
 
 	char *fargv[64];
 	for (int i = 0; i < argc; i++) {
