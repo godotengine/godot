@@ -56,7 +56,7 @@ public:
 
 	static bool is_iterating();
 
-	static void cleanup();
+	static void cleanup(bool p_force = false);
 };
 
 #endif // MAIN_H
