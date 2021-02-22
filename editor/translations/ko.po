@@ -662,7 +662,7 @@ msgstr "복사할 트랙 선택"
 #: editor/plugins/animation_player_editor_plugin.cpp
 #: editor/plugins/script_text_editor.cpp
 #: editor/plugins/sprite_frames_editor_plugin.cpp editor/property_editor.cpp
-#: scene/gui/line_edit.cpp scene/gui/text_edit.cpp
+#: editor/scene_tree_dock.cpp scene/gui/line_edit.cpp scene/gui/text_edit.cpp
 msgid "Copy"
 msgstr "복사"
 
@@ -2529,7 +2529,8 @@ msgstr ""
 "실패했습니다."
 
 #: editor/editor_node.cpp
-msgid "Unable to find script field for addon plugin at: 'res://addons/%s'."
+#, fuzzy
+msgid "Unable to find script field for addon plugin at: '%s'."
 msgstr "다음 경로에서 애드온 플러그인을 찾을 수 없음: 'res://addons/%s'."
 
 #: editor/editor_node.cpp
@@ -2958,14 +2959,6 @@ msgid "Help"
 msgstr "도움말"
 
 #: editor/editor_node.cpp editor/plugins/script_editor_plugin.cpp
-#: editor/plugins/script_text_editor.cpp
-#: editor/plugins/shader_editor_plugin.cpp editor/plugins/text_editor.cpp
-#: editor/plugins/visual_shader_editor_plugin.cpp editor/project_manager.cpp
-#: editor/project_settings_editor.cpp editor/settings_config_dialog.cpp
-msgid "Search"
-msgstr "검색"
-
-#: editor/editor_node.cpp editor/plugins/script_editor_plugin.cpp
 #: editor/plugins/shader_editor_plugin.cpp
 msgid "Online Docs"
 msgstr "온라인 문서"
@@ -3354,7 +3347,7 @@ msgstr "유일하게 만들기"
 #: editor/plugins/script_text_editor.cpp
 #: editor/plugins/sprite_frames_editor_plugin.cpp
 #: editor/plugins/tile_map_editor_plugin.cpp editor/property_editor.cpp
-#: scene/gui/line_edit.cpp scene/gui/text_edit.cpp
+#: editor/scene_tree_dock.cpp scene/gui/line_edit.cpp scene/gui/text_edit.cpp
 msgid "Paste"
 msgstr "붙여넣기"
 
@@ -5016,7 +5009,8 @@ msgid "Got:"
 msgstr "받음:"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
-msgid "Failed sha256 hash check"
+#, fuzzy
+msgid "Failed SHA-256 hash check"
 msgstr "sha256 해시 확인 실패"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
@@ -6940,6 +6934,14 @@ msgstr "문서 닫기"
 msgid "Run"
 msgstr "실행"
 
+#: editor/plugins/script_editor_plugin.cpp
+#: editor/plugins/script_text_editor.cpp
+#: editor/plugins/shader_editor_plugin.cpp editor/plugins/text_editor.cpp
+#: editor/plugins/visual_shader_editor_plugin.cpp editor/project_manager.cpp
+#: editor/project_settings_editor.cpp editor/settings_config_dialog.cpp
+msgid "Search"
+msgstr "검색"
+
 #: editor/plugins/script_editor_plugin.cpp editor/script_editor_debugger.cpp
 msgid "Step Into"
 msgstr "프로시저 단위 실행"
@@ -7088,8 +7090,8 @@ msgstr "중단점"
 msgid "Go To"
 msgstr "이동"
 
-#: editor/plugins/script_text_editor.cpp scene/gui/line_edit.cpp
-#: scene/gui/text_edit.cpp
+#: editor/plugins/script_text_editor.cpp editor/scene_tree_dock.cpp
+#: scene/gui/line_edit.cpp scene/gui/text_edit.cpp
 msgid "Cut"
 msgstr "잘라내기"
 
@@ -10593,6 +10595,16 @@ msgid "Instance Child Scene"
 msgstr "자식 씬 인스턴스화"
 
 #: editor/scene_tree_dock.cpp
+#, fuzzy
+msgid "Can't paste root node into the same scene."
+msgstr "다른 씬에서 수행할 수 없는 작업입니다!"
+
+#: editor/scene_tree_dock.cpp
+#, fuzzy
+msgid "Paste Node(s)"
+msgstr "노드 붙여넣기"
+
+#: editor/scene_tree_dock.cpp
 msgid "Detach Script"
 msgstr "스크립트 떼기"
 
@@ -10716,6 +10728,11 @@ msgstr "상속 씬 내에서 수행할 수 없는 작업입니다!"
 #: editor/scene_tree_dock.cpp
 msgid "Attach Script"
 msgstr "스크립트 붙이기"
+
+#: editor/scene_tree_dock.cpp
+#, fuzzy
+msgid "Cut Node(s)"
+msgstr "노드 잘라내기"
 
 #: editor/scene_tree_dock.cpp
 msgid "Remove Node(s)"

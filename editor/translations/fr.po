@@ -728,7 +728,7 @@ msgstr "Sélectionner les pistes à copier"
 #: editor/plugins/animation_player_editor_plugin.cpp
 #: editor/plugins/script_text_editor.cpp
 #: editor/plugins/sprite_frames_editor_plugin.cpp editor/property_editor.cpp
-#: scene/gui/line_edit.cpp scene/gui/text_edit.cpp
+#: editor/scene_tree_dock.cpp scene/gui/line_edit.cpp scene/gui/text_edit.cpp
 msgid "Copy"
 msgstr "Copier"
 
@@ -2619,14 +2619,13 @@ msgstr "Réouvrir la scène fermée"
 #: editor/editor_node.cpp
 msgid "Unable to enable addon plugin at: '%s' parsing of config failed."
 msgstr ""
-"Impossible d'activer le greffon depuis : « %s », l’analyse syntaxique de la "
+"Impossible d'activer le plugin depuis : « %s », l’analyse syntaxique de la "
 "configuration a échoué."
 
 #: editor/editor_node.cpp
-msgid "Unable to find script field for addon plugin at: 'res://addons/%s'."
+msgid "Unable to find script field for addon plugin at: '%s'."
 msgstr ""
-"Impossible de trouver le champ de script pour le plugin dans : « res://"
-"addons/%s »."
+"Impossible de trouver le champ de script pour le plugin dans : « %s »."
 
 #: editor/editor_node.cpp
 msgid "Unable to load addon script from path: '%s'."
@@ -3065,14 +3064,6 @@ msgid "Help"
 msgstr "Aide"
 
 #: editor/editor_node.cpp editor/plugins/script_editor_plugin.cpp
-#: editor/plugins/script_text_editor.cpp
-#: editor/plugins/shader_editor_plugin.cpp editor/plugins/text_editor.cpp
-#: editor/plugins/visual_shader_editor_plugin.cpp editor/project_manager.cpp
-#: editor/project_settings_editor.cpp editor/settings_config_dialog.cpp
-msgid "Search"
-msgstr "Rechercher"
-
-#: editor/editor_node.cpp editor/plugins/script_editor_plugin.cpp
 #: editor/plugins/shader_editor_plugin.cpp
 msgid "Online Docs"
 msgstr "Documentation en ligne"
@@ -3468,7 +3459,7 @@ msgstr "Rendre unique"
 #: editor/plugins/script_text_editor.cpp
 #: editor/plugins/sprite_frames_editor_plugin.cpp
 #: editor/plugins/tile_map_editor_plugin.cpp editor/property_editor.cpp
-#: scene/gui/line_edit.cpp scene/gui/text_edit.cpp
+#: editor/scene_tree_dock.cpp scene/gui/line_edit.cpp scene/gui/text_edit.cpp
 msgid "Paste"
 msgstr "Coller"
 
@@ -4308,7 +4299,7 @@ msgstr "Modifier un plugin"
 
 #: editor/plugin_config_dialog.cpp
 msgid "Create a Plugin"
-msgstr "Créer un Plugin"
+msgstr "Créer un plugin"
 
 #: editor/plugin_config_dialog.cpp
 msgid "Plugin Name:"
@@ -5152,8 +5143,8 @@ msgid "Got:"
 msgstr "A :"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
-msgid "Failed sha256 hash check"
-msgstr "Vérification de brouillage sha256 échouée"
+msgid "Failed SHA-256 hash check"
+msgstr "Vérification du hachage SHA-256 échouée"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Asset Download Error:"
@@ -7098,6 +7089,14 @@ msgstr "Fermer les documentations"
 msgid "Run"
 msgstr "Lancer"
 
+#: editor/plugins/script_editor_plugin.cpp
+#: editor/plugins/script_text_editor.cpp
+#: editor/plugins/shader_editor_plugin.cpp editor/plugins/text_editor.cpp
+#: editor/plugins/visual_shader_editor_plugin.cpp editor/project_manager.cpp
+#: editor/project_settings_editor.cpp editor/settings_config_dialog.cpp
+msgid "Search"
+msgstr "Rechercher"
+
 #: editor/plugins/script_editor_plugin.cpp editor/script_editor_debugger.cpp
 msgid "Step Into"
 msgstr "Rentrer"
@@ -7247,8 +7246,8 @@ msgstr "Point d'arrêts"
 msgid "Go To"
 msgstr "Atteindre"
 
-#: editor/plugins/script_text_editor.cpp scene/gui/line_edit.cpp
-#: scene/gui/text_edit.cpp
+#: editor/plugins/script_text_editor.cpp editor/scene_tree_dock.cpp
+#: scene/gui/line_edit.cpp scene/gui/text_edit.cpp
 msgid "Cut"
 msgstr "Couper"
 
@@ -10801,6 +10800,14 @@ msgid "Instance Child Scene"
 msgstr "Instancier une scène enfant"
 
 #: editor/scene_tree_dock.cpp
+msgid "Can't paste root node into the same scene."
+msgstr "Impossible de copier le nœud racine dans la même scène."
+
+#: editor/scene_tree_dock.cpp
+msgid "Paste Node(s)"
+msgstr "Coller le(s) nœud(s)"
+
+#: editor/scene_tree_dock.cpp
 msgid "Detach Script"
 msgstr "Détacher le script"
 
@@ -10925,6 +10932,10 @@ msgstr "Impossible d'opérer sur des nœuds dont la scène actuelle hérite !"
 #: editor/scene_tree_dock.cpp
 msgid "Attach Script"
 msgstr "Attacher un script"
+
+#: editor/scene_tree_dock.cpp
+msgid "Cut Node(s)"
+msgstr "Couper le(s) nœud(s)"
 
 #: editor/scene_tree_dock.cpp
 msgid "Remove Node(s)"

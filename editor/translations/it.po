@@ -60,8 +60,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2021-02-16 13:40+0000\n"
-"Last-Translator: Riteo Siuga <lorenzocerqua@tutanota.com>\n"
+"PO-Revision-Date: 2021-02-21 10:50+0000\n"
+"Last-Translator: Micila Micillotto <micillotto@gmail.com>\n"
 "Language-Team: Italian <https://hosted.weblate.org/projects/godot-engine/"
 "godot/it/>\n"
 "Language: it\n"
@@ -473,10 +473,8 @@ msgid "Not possible to add a new track without a root"
 msgstr "Non è possibile aggiungere una nuova traccia senza un nodo radice"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Invalid track for Bezier (no suitable sub-properties)"
-msgstr ""
-"Traccia non valida per una curva di Bézier (nessuna sotto-proprietà adatta)"
+msgstr "Traccia non valida per Bezier (nessuna sotto-proprietà valida)"
 
 #: editor/animation_track_editor.cpp
 msgid "Add Bezier Track"
@@ -499,11 +497,10 @@ msgid "Add Track Key"
 msgstr "Aggiungi una chiave a una traccia"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Track path is invalid, so can't add a method key."
 msgstr ""
-"La traccia non è valida, quindi non è possibile aggiungere una chiave di "
-"chiamata di metodo."
+"La traccia non è valida, quindi, non è stato possibile aggiungere una chiave "
+"chiamata metodo."
 
 #: editor/animation_track_editor.cpp
 msgid "Add Method Track Key"
@@ -537,7 +534,6 @@ msgstr ""
 "si tratta di una singola traccia."
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid ""
 "This animation belongs to an imported scene, so changes to imported tracks "
 "will not be saved.\n"
@@ -549,14 +545,14 @@ msgid ""
 "Alternatively, use an import preset that imports animations to separate "
 "files."
 msgstr ""
-"Quest'animazione appartiene a una scena importata, eventuali modifiche fatte "
-"alle tracce importate non verranno salvate.\n"
+"Questa animazione appartiene ad una scena importata, quindi i cambiamenti "
+"alle tracce importate non saranno salvate.\n"
 "\n"
-"Per abilitare la possibilità di aggiungere ulteriori tracce, andare nelle "
-"impostazioni d'importazione della scena, impostare\n"
-"\"Animation > Storage\" su \"Files\", attivare \"Animation > Keep Custom "
-"Tracks\" e infine reimportare la scena.\n"
-"Altrimenti, usare una preimpostazione che importi le animazioni in file "
+"Per abilitare l'aggiunta di tracce personalizzate, naviga alle impostazioni "
+"d'importazione della scena ed imposta\n"
+"\"Animation > Storage\" a \"Files\", abilita \"Animation > Keep Custom Tracks"
+"\", e poi re-importa.\n"
+"In alternativa, usa un preset d'importo che importa le animazioni da file "
 "separati."
 
 #: editor/animation_track_editor.cpp
@@ -623,23 +619,20 @@ msgid "Duplicate Selection"
 msgstr "Duplica la selezione"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Duplicate Transposed"
-msgstr "Duplica trasposto"
+msgstr "Duplica Trasposto"
 
 #: editor/animation_track_editor.cpp
 msgid "Delete Selection"
 msgstr "Elimina la selezione"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Go to Next Step"
-msgstr "Va' al passo successivo"
+msgstr "Vai allo Step Successivo"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Go to Previous Step"
-msgstr "Va' al passo precedente"
+msgstr "Vai allo Step Precedente"
 
 #: editor/animation_track_editor.cpp
 msgid "Optimize Animation"
@@ -710,7 +703,7 @@ msgstr "Seleziona le tracce da copiare"
 #: editor/plugins/animation_player_editor_plugin.cpp
 #: editor/plugins/script_text_editor.cpp
 #: editor/plugins/sprite_frames_editor_plugin.cpp editor/property_editor.cpp
-#: scene/gui/line_edit.cpp scene/gui/text_edit.cpp
+#: editor/scene_tree_dock.cpp scene/gui/line_edit.cpp scene/gui/text_edit.cpp
 msgid "Copy"
 msgstr "Copia"
 
@@ -723,14 +716,12 @@ msgid "Add Audio Track Clip"
 msgstr "Aggiungi audio in una traccia di riproduzione audio"
 
 #: editor/animation_track_editor_plugins.cpp
-#, fuzzy
 msgid "Change Audio Track Clip Start Offset"
-msgstr "Cambia lo scostamento dell'inizio della traccia audio"
+msgstr "Cambia Offset Inizio Clip Traccia Audio"
 
 #: editor/animation_track_editor_plugins.cpp
-#, fuzzy
 msgid "Change Audio Track Clip End Offset"
-msgstr "Cambia lo scostamento della fine della traccia audio"
+msgstr "Cambia Offset Fine Clip Traccia Audio"
 
 #: editor/array_property_edit.cpp
 msgid "Resize Array"
@@ -790,9 +781,8 @@ msgid "Standard"
 msgstr "Standard"
 
 #: editor/code_editor.cpp editor/plugins/script_editor_plugin.cpp
-#, fuzzy
 msgid "Toggle Scripts Panel"
-msgstr "Commuta pannello degli script"
+msgstr "Toggle Pannello Script"
 
 #: editor/code_editor.cpp editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/texture_region_editor_plugin.cpp
@@ -811,9 +801,8 @@ msgid "Reset Zoom"
 msgstr "Reimposta ingrandimento"
 
 #: editor/code_editor.cpp
-#, fuzzy
 msgid "Warnings"
-msgstr "Avvertenze"
+msgstr "Avvisi"
 
 #: editor/code_editor.cpp
 msgid "Line and column numbers."
@@ -2604,7 +2593,8 @@ msgstr ""
 "configurazione fallita."
 
 #: editor/editor_node.cpp
-msgid "Unable to find script field for addon plugin at: 'res://addons/%s'."
+#, fuzzy
+msgid "Unable to find script field for addon plugin at: '%s'."
 msgstr ""
 "Impossibile trovare il campo dello script per il componente aggiuntivo in: "
 "'res://addons/%s'."
@@ -3043,14 +3033,6 @@ msgid "Help"
 msgstr "Aiuto"
 
 #: editor/editor_node.cpp editor/plugins/script_editor_plugin.cpp
-#: editor/plugins/script_text_editor.cpp
-#: editor/plugins/shader_editor_plugin.cpp editor/plugins/text_editor.cpp
-#: editor/plugins/visual_shader_editor_plugin.cpp editor/project_manager.cpp
-#: editor/project_settings_editor.cpp editor/settings_config_dialog.cpp
-msgid "Search"
-msgstr "Cerca"
-
-#: editor/editor_node.cpp editor/plugins/script_editor_plugin.cpp
 #: editor/plugins/shader_editor_plugin.cpp
 msgid "Online Docs"
 msgstr "Documentazione online"
@@ -3218,13 +3200,12 @@ msgid "Open & Run a Script"
 msgstr "Apri ed esegui uno script"
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid ""
 "The following files are newer on disk.\n"
 "What action should be taken?"
 msgstr ""
-"I file seguenti sono più recenti su disco.\n"
-"Che azione deve essere intrapresa?:"
+"I seguenti file sono più recenti sul disco.\n"
+"Quale azione dovrebbe essere presa?"
 
 #: editor/editor_node.cpp editor/plugins/script_editor_plugin.cpp
 #: editor/plugins/shader_editor_plugin.cpp
@@ -3447,7 +3428,7 @@ msgstr "Rendi Unico"
 #: editor/plugins/script_text_editor.cpp
 #: editor/plugins/sprite_frames_editor_plugin.cpp
 #: editor/plugins/tile_map_editor_plugin.cpp editor/property_editor.cpp
-#: scene/gui/line_edit.cpp scene/gui/text_edit.cpp
+#: editor/scene_tree_dock.cpp scene/gui/line_edit.cpp scene/gui/text_edit.cpp
 msgid "Paste"
 msgstr "Incolla"
 
@@ -5126,7 +5107,8 @@ msgid "Got:"
 msgstr "Ottenuto:"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
-msgid "Failed sha256 hash check"
+#, fuzzy
+msgid "Failed SHA-256 hash check"
 msgstr "Check hash sha256 fallito"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
@@ -7070,6 +7052,14 @@ msgstr "Chiudi la documentazione"
 msgid "Run"
 msgstr "Esegui"
 
+#: editor/plugins/script_editor_plugin.cpp
+#: editor/plugins/script_text_editor.cpp
+#: editor/plugins/shader_editor_plugin.cpp editor/plugins/text_editor.cpp
+#: editor/plugins/visual_shader_editor_plugin.cpp editor/project_manager.cpp
+#: editor/project_settings_editor.cpp editor/settings_config_dialog.cpp
+msgid "Search"
+msgstr "Cerca"
+
 #: editor/plugins/script_editor_plugin.cpp editor/script_editor_debugger.cpp
 msgid "Step Into"
 msgstr "Passo dentro all'istruzione"
@@ -7218,8 +7208,8 @@ msgstr "Punti di interruzione"
 msgid "Go To"
 msgstr "Vai a"
 
-#: editor/plugins/script_text_editor.cpp scene/gui/line_edit.cpp
-#: scene/gui/text_edit.cpp
+#: editor/plugins/script_text_editor.cpp editor/scene_tree_dock.cpp
+#: scene/gui/line_edit.cpp scene/gui/text_edit.cpp
 msgid "Cut"
 msgstr "Taglia"
 
@@ -7442,9 +7432,8 @@ msgid "Yaw"
 msgstr "Imbardata"
 
 #: editor/plugins/spatial_editor_plugin.cpp
-#, fuzzy
 msgid "Size"
-msgstr "Dimensione: "
+msgstr "Dimensione"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Objects Drawn"
@@ -10147,9 +10136,8 @@ msgid "Projects"
 msgstr "Progetti"
 
 #: editor/project_manager.cpp
-#, fuzzy
 msgid "Loading, please wait..."
-msgstr "Recupero dei mirror, attendi..."
+msgstr "Caricamento, per favore attendere..."
 
 #: editor/project_manager.cpp
 msgid "Last Modified"
@@ -10772,6 +10760,16 @@ msgid "Instance Child Scene"
 msgstr "Istanzia Scena Figlia"
 
 #: editor/scene_tree_dock.cpp
+#, fuzzy
+msgid "Can't paste root node into the same scene."
+msgstr "Impossibile operare su nodi da scena esterna!"
+
+#: editor/scene_tree_dock.cpp
+#, fuzzy
+msgid "Paste Node(s)"
+msgstr "Incolla nodi"
+
+#: editor/scene_tree_dock.cpp
 msgid "Detach Script"
 msgstr "Rimuovi Script"
 
@@ -10896,6 +10894,11 @@ msgstr "Impossibile operare su nodi da cui la scena corrente eredita!"
 #: editor/scene_tree_dock.cpp
 msgid "Attach Script"
 msgstr "Allega Script"
+
+#: editor/scene_tree_dock.cpp
+#, fuzzy
+msgid "Cut Node(s)"
+msgstr "Taglia nodi"
 
 #: editor/scene_tree_dock.cpp
 msgid "Remove Node(s)"
