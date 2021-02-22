@@ -507,6 +507,11 @@ void EditorExportPlatform::_edit_files_with_filter(DirAccess *da, const Vector<S
 		if (dir.begins_with(".")) {
 			continue;
 		}
+
+		if (EditorFileSystem::_should_skip_directory(cur_dir + dir)) {
+			continue;
+		}
+
 		da->change_dir(dir);
 		_edit_files_with_filter(da, p_filters, r_list, exclude);
 		da->change_dir("..");

@@ -2414,6 +2414,9 @@ public:
 		print_verbose("- custom build enabled: " + bool_to_string(use_custom_build));
 		print_verbose("- apk expansion enabled: " + bool_to_string(apk_expansion));
 		print_verbose("- enabled abis: " + String(",").join(enabled_abis));
+		print_verbose("- export filter: " + itos(p_preset->get_export_filter()));
+		print_verbose("- include filter: " + p_preset->get_include_filter());
+		print_verbose("- exclude filter: " + p_preset->get_exclude_filter());
 
 		Ref<Image> splash_image;
 		Ref<Image> splash_bg_color_image;
