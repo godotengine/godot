@@ -1434,24 +1434,47 @@ float sample_shadow(highp sampler2D shadow, highp vec4 spos) {
 
 #ifdef SHADOW_MODE_PCF_13
 
+	// Soft PCF filter adapted from three.js:
+	// https://github.com/mrdoob/three.js/blob/0c815022849389cbe6de14a93e1c2fc7e4b21c18/src/renderers/shaders/ShaderChunk/shadowmap_pars_fragment.glsl.js#L148-L182
+	// This method actually uses 16 shadow samples. This soft filter isn't needed in GLES3
+	// as we can use hardware-based linear filtering instead of emulating it in the shader
+	// like we're doing here.
 	spos.xyz /= spos.w;
 	vec2 pos = spos.xy;
 	float depth = spos.z;
+	vec2 f = fract(pos * (1.0 / shadow_pixel_size) + 0.5);
+	pos -= f * shadow_pixel_size;
 
-	float avg = SAMPLE_SHADOW_TEXEL(shadow, pos, depth);
-	avg += SAMPLE_SHADOW_TEXEL(shadow, pos + vec2(shadow_pixel_size.x, 0.0), depth);
-	avg += SAMPLE_SHADOW_TEXEL(shadow, pos + vec2(-shadow_pixel_size.x, 0.0), depth);
-	avg += SAMPLE_SHADOW_TEXEL(shadow, pos + vec2(0.0, shadow_pixel_size.y), depth);
-	avg += SAMPLE_SHADOW_TEXEL(shadow, pos + vec2(0.0, -shadow_pixel_size.y), depth);
-	avg += SAMPLE_SHADOW_TEXEL(shadow, pos + vec2(shadow_pixel_size.x, shadow_pixel_size.y), depth);
-	avg += SAMPLE_SHADOW_TEXEL(shadow, pos + vec2(-shadow_pixel_size.x, shadow_pixel_size.y), depth);
-	avg += SAMPLE_SHADOW_TEXEL(shadow, pos + vec2(shadow_pixel_size.x, -shadow_pixel_size.y), depth);
-	avg += SAMPLE_SHADOW_TEXEL(shadow, pos + vec2(-shadow_pixel_size.x, -shadow_pixel_size.y), depth);
-	avg += SAMPLE_SHADOW_TEXEL(shadow, pos + vec2(shadow_pixel_size.x * 2.0, 0.0), depth);
-	avg += SAMPLE_SHADOW_TEXEL(shadow, pos + vec2(-shadow_pixel_size.x * 2.0, 0.0), depth);
-	avg += SAMPLE_SHADOW_TEXEL(shadow, pos + vec2(0.0, shadow_pixel_size.y * 2.0), depth);
-	avg += SAMPLE_SHADOW_TEXEL(shadow, pos + vec2(0.0, -shadow_pixel_size.y * 2.0), depth);
-	return avg * (1.0 / 13.0);
+	return (
+				   SAMPLE_SHADOW_TEXEL(shadow, pos, depth) +
+				   SAMPLE_SHADOW_TEXEL(shadow, pos + vec2(shadow_pixel_size.x, 0.0), depth) +
+				   SAMPLE_SHADOW_TEXEL(shadow, pos + vec2(0.0, shadow_pixel_size.y), depth) +
+				   SAMPLE_SHADOW_TEXEL(shadow, pos + shadow_pixel_size, depth) +
+				   mix(
+						   SAMPLE_SHADOW_TEXEL(shadow, pos + vec2(-shadow_pixel_size.x, 0.0), depth),
+						   SAMPLE_SHADOW_TEXEL(shadow, pos + vec2(2.0 * shadow_pixel_size.x, 0.0), depth),
+						   f.x) +
+				   mix(
+						   SAMPLE_SHADOW_TEXEL(shadow, pos + vec2(-shadow_pixel_size.x, shadow_pixel_size.y), depth),
+						   SAMPLE_SHADOW_TEXEL(shadow, pos + vec2(2.0 * shadow_pixel_size.x, shadow_pixel_size.y), depth),
+						   f.x) +
+				   mix(
+						   SAMPLE_SHADOW_TEXEL(shadow, pos + vec2(0.0, -shadow_pixel_size.y), depth),
+						   SAMPLE_SHADOW_TEXEL(shadow, pos + vec2(0.0, 2.0 * shadow_pixel_size.y), depth),
+						   f.y) +
+				   mix(
+						   SAMPLE_SHADOW_TEXEL(shadow, pos + vec2(shadow_pixel_size.x, -shadow_pixel_size.y), depth),
+						   SAMPLE_SHADOW_TEXEL(shadow, pos + vec2(shadow_pixel_size.x, 2.0 * shadow_pixel_size.y), depth),
+						   f.y) +
+				   mix(
+						   mix(SAMPLE_SHADOW_TEXEL(shadow, pos + vec2(-shadow_pixel_size.x, -shadow_pixel_size.y), depth),
+								   SAMPLE_SHADOW_TEXEL(shadow, pos + vec2(2.0 * shadow_pixel_size.x, -shadow_pixel_size.y), depth),
+								   f.x),
+						   mix(SAMPLE_SHADOW_TEXEL(shadow, pos + vec2(-shadow_pixel_size.x, 2.0 * shadow_pixel_size.y), depth),
+								   SAMPLE_SHADOW_TEXEL(shadow, pos + vec2(2.0 * shadow_pixel_size.x, 2.0 * shadow_pixel_size.y), depth),
+								   f.x),
+						   f.y)) *
+		   (1.0 / 9.0);
 #endif
 
 #ifdef SHADOW_MODE_PCF_5
