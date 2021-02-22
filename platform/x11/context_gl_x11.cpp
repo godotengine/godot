@@ -48,6 +48,7 @@ typedef GLXContext (*GLXCREATECONTEXTATTRIBSARBPROC)(Display *, GLXFBConfig, GLX
 struct ContextGL_X11_Private {
 
 	::GLXContext glx_context;
+	::GLXContext glx_context_offscreen;
 };
 
 void ContextGL_X11::release_current() {
@@ -58,6 +59,21 @@ void ContextGL_X11::release_current() {
 void ContextGL_X11::make_current() {
 
 	glXMakeCurrent(x11_display, x11_window, p->glx_context);
+}
+
+bool ContextGL_X11::is_offscreen_available() const {
+
+	return p->glx_context_offscreen;
+}
+
+void ContextGL_X11::make_offscreen_current() {
+
+	glXMakeCurrent(x11_display, x11_window, p->glx_context_offscreen);
+}
+
+void ContextGL_X11::release_offscreen_current() {
+
+	glXMakeCurrent(x11_display, None, NULL);
 }
 
 void ContextGL_X11::swap_buffers() {
@@ -188,6 +204,7 @@ Error ContextGL_X11::initialize() {
 
 			p->glx_context = glXCreateContextAttribsARB(x11_display, fbconfig, NULL, true, context_attribs);
 			ERR_FAIL_COND_V(ctxErrorOccurred || !p->glx_context, ERR_UNCONFIGURED);
+			p->glx_context_offscreen = glXCreateContextAttribsARB(x11_display, fbconfig, NULL, true, context_attribs);
 		} break;
 	}
 
@@ -281,12 +298,16 @@ ContextGL_X11::ContextGL_X11(::Display *p_x11_display, ::Window &p_x11_window, c
 	glx_minor = glx_major = 0;
 	p = memnew(ContextGL_X11_Private);
 	p->glx_context = 0;
+	p->glx_context_offscreen = 0;
 	use_vsync = false;
 }
 
 ContextGL_X11::~ContextGL_X11() {
 	release_current();
 	glXDestroyContext(x11_display, p->glx_context);
+	if (p->glx_context_offscreen) {
+		glXDestroyContext(x11_display, p->glx_context_offscreen);
+	}
 	memdelete(p);
 }
 

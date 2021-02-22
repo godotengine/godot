@@ -2430,7 +2430,11 @@ bool VisualServerScene::_render_reflection_probe_step(Instance *p_instance, int 
 		}
 
 		_prepare_scene(xform, cm, false, RID(), VSG::storage->reflection_probe_get_cull_mask(p_instance->base), p_instance->scenario->self, shadow_atlas, reflection_probe->instance);
+
+		bool forced_sync_backup = VSG::storage->is_forced_sync_shader_compile_enabled();
+		VSG::storage->set_forced_sync_shader_compile_enabled(true);
 		_render_scene(xform, cm, false, RID(), p_instance->scenario->self, shadow_atlas, reflection_probe->instance, p_step);
+		VSG::storage->set_forced_sync_shader_compile_enabled(forced_sync_backup);
 
 	} else {
 		//do roughness postprocess step until it believes it's done

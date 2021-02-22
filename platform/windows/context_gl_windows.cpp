@@ -60,6 +60,21 @@ void ContextGL_Windows::make_current() {
 	wglMakeCurrent(hDC, hRC);
 }
 
+bool ContextGL_Windows::is_offscreen_available() const {
+
+	return hRC_offscreen != NULL;
+}
+
+void ContextGL_Windows::make_offscreen_current() {
+
+	ERR_FAIL_COND(!wglMakeCurrent(hDC, hRC_offscreen));
+}
+
+void ContextGL_Windows::release_offscreen_current() {
+
+	ERR_FAIL_COND(!wglMakeCurrent(hDC, NULL));
+}
+
 HDC ContextGL_Windows::get_hdc() {
 	return hDC;
 }
@@ -215,6 +230,8 @@ Error ContextGL_Windows::initialize() {
 		{
 			return ERR_CANT_CREATE; // Return FALSE
 		}
+
+		hRC_offscreen = wglCreateContextAttribsARB(hDC, 0, attribs);
 	}
 
 	wglSwapIntervalEXT = (PFNWGLSWAPINTERVALEXTPROC)wglGetProcAddress("wglSwapIntervalEXT");
@@ -228,6 +245,7 @@ ContextGL_Windows::ContextGL_Windows(HWND hwnd, bool p_opengl_3_context) {
 
 	opengl_3_context = p_opengl_3_context;
 	hWnd = hwnd;
+	hRC_offscreen = NULL;
 	use_vsync = false;
 	vsync_via_compositor = false;
 }
