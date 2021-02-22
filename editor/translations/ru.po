@@ -96,8 +96,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2021-02-05 23:44+0000\n"
-"Last-Translator: narrnika <narr13niki@gmail.com>\n"
+"PO-Revision-Date: 2021-02-21 10:51+0000\n"
+"Last-Translator: Danil Alexeev <danil@alexeev.xyz>\n"
 "Language-Team: Russian <https://hosted.weblate.org/projects/godot-engine/"
 "godot/ru/>\n"
 "Language: ru\n"
@@ -106,7 +106,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=3; plural=n%10==1 && n%100!=11 ? 0 : n%10>=2 && n"
 "%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2;\n"
-"X-Generator: Weblate 4.5-dev\n"
+"X-Generator: Weblate 4.5\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -734,7 +734,7 @@ msgstr "Выбрать треки для копирования"
 #: editor/plugins/animation_player_editor_plugin.cpp
 #: editor/plugins/script_text_editor.cpp
 #: editor/plugins/sprite_frames_editor_plugin.cpp editor/property_editor.cpp
-#: scene/gui/line_edit.cpp scene/gui/text_edit.cpp
+#: editor/scene_tree_dock.cpp scene/gui/line_edit.cpp scene/gui/text_edit.cpp
 msgid "Copy"
 msgstr "Копировать"
 
@@ -2615,7 +2615,8 @@ msgstr ""
 "конфигурации."
 
 #: editor/editor_node.cpp
-msgid "Unable to find script field for addon plugin at: 'res://addons/%s'."
+#, fuzzy
+msgid "Unable to find script field for addon plugin at: '%s'."
 msgstr "Не удаётся найти поле script для плагина: «res://addons/%s»."
 
 #: editor/editor_node.cpp
@@ -3046,14 +3047,6 @@ msgid "Help"
 msgstr "Справка"
 
 #: editor/editor_node.cpp editor/plugins/script_editor_plugin.cpp
-#: editor/plugins/script_text_editor.cpp
-#: editor/plugins/shader_editor_plugin.cpp editor/plugins/text_editor.cpp
-#: editor/plugins/visual_shader_editor_plugin.cpp editor/project_manager.cpp
-#: editor/project_settings_editor.cpp editor/settings_config_dialog.cpp
-msgid "Search"
-msgstr "Поиск"
-
-#: editor/editor_node.cpp editor/plugins/script_editor_plugin.cpp
 #: editor/plugins/shader_editor_plugin.cpp
 msgid "Online Docs"
 msgstr "Онлайн документация"
@@ -3220,13 +3213,12 @@ msgid "Open & Run a Script"
 msgstr "Открыть и запустить скрипт"
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid ""
 "The following files are newer on disk.\n"
 "What action should be taken?"
 msgstr ""
-"Следующие файлы новее на диске.\n"
-"Какие меры должны быть приняты?:"
+"Следующие файлы изменены на диске.\n"
+"Какое действие следует выполнить?"
 
 #: editor/editor_node.cpp editor/plugins/script_editor_plugin.cpp
 #: editor/plugins/shader_editor_plugin.cpp
@@ -3449,7 +3441,7 @@ msgstr "Сделать уникальным"
 #: editor/plugins/script_text_editor.cpp
 #: editor/plugins/sprite_frames_editor_plugin.cpp
 #: editor/plugins/tile_map_editor_plugin.cpp editor/property_editor.cpp
-#: scene/gui/line_edit.cpp scene/gui/text_edit.cpp
+#: editor/scene_tree_dock.cpp scene/gui/line_edit.cpp scene/gui/text_edit.cpp
 msgid "Paste"
 msgstr "Вставить"
 
@@ -3573,7 +3565,7 @@ msgstr "(Текущий)"
 
 #: editor/export_template_manager.cpp
 msgid "Retrieving mirrors, please wait..."
-msgstr "Получение зеркал, пожалуйста подождите..."
+msgstr "Получение зеркал, пожалуйста, подождите..."
 
 #: editor/export_template_manager.cpp
 msgid "Remove template version '%s'?"
@@ -5119,7 +5111,8 @@ msgid "Got:"
 msgstr "Получено:"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
-msgid "Failed sha256 hash check"
+#, fuzzy
+msgid "Failed SHA-256 hash check"
 msgstr "Не удалось проверить sha256 хэш"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
@@ -7045,6 +7038,14 @@ msgstr "Закрыть документацию"
 msgid "Run"
 msgstr "Запустить"
 
+#: editor/plugins/script_editor_plugin.cpp
+#: editor/plugins/script_text_editor.cpp
+#: editor/plugins/shader_editor_plugin.cpp editor/plugins/text_editor.cpp
+#: editor/plugins/visual_shader_editor_plugin.cpp editor/project_manager.cpp
+#: editor/project_settings_editor.cpp editor/settings_config_dialog.cpp
+msgid "Search"
+msgstr "Поиск"
+
 #: editor/plugins/script_editor_plugin.cpp editor/script_editor_debugger.cpp
 msgid "Step Into"
 msgstr "Шаг в"
@@ -7194,8 +7195,8 @@ msgstr "Точки останова"
 msgid "Go To"
 msgstr "Перейти к"
 
-#: editor/plugins/script_text_editor.cpp scene/gui/line_edit.cpp
-#: scene/gui/text_edit.cpp
+#: editor/plugins/script_text_editor.cpp editor/scene_tree_dock.cpp
+#: scene/gui/line_edit.cpp scene/gui/text_edit.cpp
 msgid "Cut"
 msgstr "Вырезать"
 
@@ -10105,9 +10106,8 @@ msgid "Projects"
 msgstr "Проекты"
 
 #: editor/project_manager.cpp
-#, fuzzy
 msgid "Loading, please wait..."
-msgstr "Получение зеркал, пожалуйста подождите..."
+msgstr "Загрузка, пожалуйста, ждите..."
 
 #: editor/project_manager.cpp
 msgid "Last Modified"
@@ -10730,6 +10730,16 @@ msgid "Instance Child Scene"
 msgstr "Добавить дочернюю сцену"
 
 #: editor/scene_tree_dock.cpp
+#, fuzzy
+msgid "Can't paste root node into the same scene."
+msgstr "Не могу работать с узлами из внешней сцены!"
+
+#: editor/scene_tree_dock.cpp
+#, fuzzy
+msgid "Paste Node(s)"
+msgstr "Вставить узлы"
+
+#: editor/scene_tree_dock.cpp
 msgid "Detach Script"
 msgstr "Открепить скрипт"
 
@@ -10855,6 +10865,11 @@ msgstr "Невозможно работать с узлами, от которы
 #: editor/scene_tree_dock.cpp
 msgid "Attach Script"
 msgstr "Прикрепить скрипт"
+
+#: editor/scene_tree_dock.cpp
+#, fuzzy
+msgid "Cut Node(s)"
+msgstr "Вырезать узлы"
 
 #: editor/scene_tree_dock.cpp
 msgid "Remove Node(s)"

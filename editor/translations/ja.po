@@ -36,8 +36,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2021-02-07 05:50+0000\n"
-"Last-Translator: BinotaLIU <me@binota.org>\n"
+"PO-Revision-Date: 2021-02-21 10:50+0000\n"
+"Last-Translator: nitenook <admin@alterbaum.net>\n"
 "Language-Team: Japanese <https://hosted.weblate.org/projects/godot-engine/"
 "godot/ja/>\n"
 "Language: ja\n"
@@ -45,12 +45,12 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Weblate 4.5-dev\n"
+"X-Generator: Weblate 4.5\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
 msgid "Invalid type argument to convert(), use TYPE_* constants."
-msgstr "convert() の引数の型が無効です。TYPE_* 定数を使ってください。"
+msgstr "convert() の引数の型が無効です。TYPE_* 定数を使用してください。"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 msgid "Expected a string of length 1 (a character)."
@@ -676,7 +676,7 @@ msgstr "コピーするトラックを選択"
 #: editor/plugins/animation_player_editor_plugin.cpp
 #: editor/plugins/script_text_editor.cpp
 #: editor/plugins/sprite_frames_editor_plugin.cpp editor/property_editor.cpp
-#: scene/gui/line_edit.cpp scene/gui/text_edit.cpp
+#: editor/scene_tree_dock.cpp scene/gui/line_edit.cpp scene/gui/text_edit.cpp
 msgid "Copy"
 msgstr "コピー"
 
@@ -1590,7 +1590,7 @@ msgstr "ファイルの保存:"
 
 #: editor/editor_export.cpp
 msgid "No export template found at the expected path:"
-msgstr "エクスポート テンプレートが予想されたパスに見つかりません:"
+msgstr "エクスポート テンプレートが予期されたパスに見つかりません:"
 
 #: editor/editor_export.cpp
 msgid "Packing"
@@ -2554,7 +2554,8 @@ msgid "Unable to enable addon plugin at: '%s' parsing of config failed."
 msgstr "アドオンプラグインを有効にできません: '%s' 設定の解析に失敗しました。"
 
 #: editor/editor_node.cpp
-msgid "Unable to find script field for addon plugin at: 'res://addons/%s'."
+#, fuzzy
+msgid "Unable to find script field for addon plugin at: '%s'."
 msgstr ""
 "アドオンプラグインのスクリプトフィールドが 'res://addons/%s' から見つかりませ"
 "ん。"
@@ -2988,14 +2989,6 @@ msgid "Help"
 msgstr "ヘルプ"
 
 #: editor/editor_node.cpp editor/plugins/script_editor_plugin.cpp
-#: editor/plugins/script_text_editor.cpp
-#: editor/plugins/shader_editor_plugin.cpp editor/plugins/text_editor.cpp
-#: editor/plugins/visual_shader_editor_plugin.cpp editor/project_manager.cpp
-#: editor/project_settings_editor.cpp editor/settings_config_dialog.cpp
-msgid "Search"
-msgstr "検索"
-
-#: editor/editor_node.cpp editor/plugins/script_editor_plugin.cpp
 #: editor/plugins/shader_editor_plugin.cpp
 msgid "Online Docs"
 msgstr "オンラインドキュメント"
@@ -3161,13 +3154,12 @@ msgid "Open & Run a Script"
 msgstr "スクリプトを開いて実行"
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid ""
 "The following files are newer on disk.\n"
 "What action should be taken?"
 msgstr ""
 "以下のファイルより新しいものがディスク上に存在します。\n"
-"どうしますか?:"
+"どうしますか?"
 
 #: editor/editor_node.cpp editor/plugins/script_editor_plugin.cpp
 #: editor/plugins/shader_editor_plugin.cpp
@@ -3390,7 +3382,7 @@ msgstr "ユニーク化"
 #: editor/plugins/script_text_editor.cpp
 #: editor/plugins/sprite_frames_editor_plugin.cpp
 #: editor/plugins/tile_map_editor_plugin.cpp editor/property_editor.cpp
-#: scene/gui/line_edit.cpp scene/gui/text_edit.cpp
+#: editor/scene_tree_dock.cpp scene/gui/line_edit.cpp scene/gui/text_edit.cpp
 msgid "Paste"
 msgstr "貼り付け"
 
@@ -5054,7 +5046,8 @@ msgid "Got:"
 msgstr "取得:"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
-msgid "Failed sha256 hash check"
+#, fuzzy
+msgid "Failed SHA-256 hash check"
 msgstr "sha256 ハッシュチェック失敗"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
@@ -6981,6 +6974,14 @@ msgstr "ドキュメントを閉じる"
 msgid "Run"
 msgstr "実行"
 
+#: editor/plugins/script_editor_plugin.cpp
+#: editor/plugins/script_text_editor.cpp
+#: editor/plugins/shader_editor_plugin.cpp editor/plugins/text_editor.cpp
+#: editor/plugins/visual_shader_editor_plugin.cpp editor/project_manager.cpp
+#: editor/project_settings_editor.cpp editor/settings_config_dialog.cpp
+msgid "Search"
+msgstr "検索"
+
 #: editor/plugins/script_editor_plugin.cpp editor/script_editor_debugger.cpp
 msgid "Step Into"
 msgstr "ステップイン"
@@ -7130,8 +7131,8 @@ msgstr "ブレークポイント"
 msgid "Go To"
 msgstr "参照"
 
-#: editor/plugins/script_text_editor.cpp scene/gui/line_edit.cpp
-#: scene/gui/text_edit.cpp
+#: editor/plugins/script_text_editor.cpp editor/scene_tree_dock.cpp
+#: scene/gui/line_edit.cpp scene/gui/text_edit.cpp
 msgid "Cut"
 msgstr "切り取り"
 
@@ -10034,9 +10035,8 @@ msgid "Projects"
 msgstr "プロジェクト"
 
 #: editor/project_manager.cpp
-#, fuzzy
 msgid "Loading, please wait..."
-msgstr "ミラーを取得しています。しばらくお待ちください..."
+msgstr "読み込み中、しばらくお待ちください..."
 
 #: editor/project_manager.cpp
 msgid "Last Modified"
@@ -10658,6 +10658,16 @@ msgid "Instance Child Scene"
 msgstr "子シーンをインスタンス化"
 
 #: editor/scene_tree_dock.cpp
+#, fuzzy
+msgid "Can't paste root node into the same scene."
+msgstr "別のシーンからノードを操作することはできません!"
+
+#: editor/scene_tree_dock.cpp
+#, fuzzy
+msgid "Paste Node(s)"
+msgstr "ノードを貼り付け"
+
+#: editor/scene_tree_dock.cpp
 msgid "Detach Script"
 msgstr "スクリプトをデタッチ"
 
@@ -10783,6 +10793,11 @@ msgid "Attach Script"
 msgstr "スクリプトをアタッチ"
 
 #: editor/scene_tree_dock.cpp
+#, fuzzy
+msgid "Cut Node(s)"
+msgstr "ノードを切り取る"
+
+#: editor/scene_tree_dock.cpp
 msgid "Remove Node(s)"
 msgstr "ノードを除去"
 
@@ -10854,7 +10869,7 @@ msgstr "親ノードを新規ノードに変更"
 
 #: editor/scene_tree_dock.cpp
 msgid "Make Scene Root"
-msgstr "シーンをルートにする"
+msgstr "シーンのルートにする"
 
 #: editor/scene_tree_dock.cpp
 msgid "Merge From Scene"
@@ -12136,9 +12151,8 @@ msgid "Select device from the list"
 msgstr "一覧からデバイスを選択"
 
 #: platform/android/export/export.cpp
-#, fuzzy
 msgid "Unable to find the 'apksigner' tool."
-msgstr "zipalign ツールが見つかりません。"
+msgstr "'apksigner' ツールが見つかりません。"
 
 #: platform/android/export/export.cpp
 msgid ""
@@ -12157,14 +12171,12 @@ msgid "Release keystore incorrectly configured in the export preset."
 msgstr "エクスポート設定にてリリース キーストアが誤って設定されています。"
 
 #: platform/android/export/export.cpp
-#, fuzzy
 msgid "A valid Android SDK path is required in Editor Settings."
-msgstr "エディタ設定のカスタムビルドのAndroid SDKパスが無効です。"
+msgstr "エディタ設定でAndroid SDKパスの指定が必要です。"
 
 #: platform/android/export/export.cpp
-#, fuzzy
 msgid "Invalid Android SDK path in Editor Settings."
-msgstr "エディタ設定のカスタムビルドのAndroid SDKパスが無効です。"
+msgstr "エディタ設定のAndroid SDKパスが無効です。"
 
 #: platform/android/export/export.cpp
 msgid "Missing 'platform-tools' directory!"
@@ -12172,12 +12184,11 @@ msgstr "'platform-tools' ディレクトリがありません！"
 
 #: platform/android/export/export.cpp
 msgid "Unable to find Android SDK platform-tools' adb command."
-msgstr ""
+msgstr "Android SDK platform-toolsのadbコマンドが見つかりません。"
 
 #: platform/android/export/export.cpp
-#, fuzzy
 msgid "Please check in the Android SDK directory specified in Editor Settings."
-msgstr "エディタ設定のカスタムビルドのAndroid SDKパスが無効です。"
+msgstr "エディタ設定で指定されたAndroid SDKのディレクトリを確認してください。"
 
 #: platform/android/export/export.cpp
 msgid "Missing 'build-tools' directory!"
@@ -12185,7 +12196,7 @@ msgstr "'build-tools' ディレクトリがありません！"
 
 #: platform/android/export/export.cpp
 msgid "Unable to find Android SDK build-tools' apksigner command."
-msgstr ""
+msgstr "Android SDK build-toolsのapksignerコマンドが見つかりません。"
 
 #: platform/android/export/export.cpp
 msgid "Invalid public key for APK expansion."
@@ -12662,9 +12673,8 @@ msgid "Finding meshes and lights"
 msgstr ""
 
 #: scene/3d/baked_lightmap.cpp
-#, fuzzy
 msgid "Preparing geometry (%d/%d)"
-msgstr "ジオメトリを解析しています..."
+msgstr "ジオメトリを解析しています (%d/%d)"
 
 #: scene/3d/baked_lightmap.cpp
 #, fuzzy

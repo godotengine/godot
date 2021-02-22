@@ -56,12 +56,13 @@
 # furkan atalar <fatalar55@gmail.com>, 2020.
 # Suleyman Poyraz <zaryob.dev@gmail.com>, 2020.
 # Çağlar KOPARIR <ckoparir@gmail.com>, 2021.
+# Cem Eren Fukara <cefukara@hotmail.com>, 2021.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2021-02-05 23:44+0000\n"
-"Last-Translator: Oğuz Ersen <oguzersen@protonmail.com>\n"
+"PO-Revision-Date: 2021-02-21 10:51+0000\n"
+"Last-Translator: Cem Eren Fukara <cefukara@hotmail.com>\n"
 "Language-Team: Turkish <https://hosted.weblate.org/projects/godot-engine/"
 "godot/tr/>\n"
 "Language: tr\n"
@@ -69,7 +70,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 4.5-dev\n"
+"X-Generator: Weblate 4.5\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -698,7 +699,7 @@ msgstr "Kopyalanacak izleri seç"
 #: editor/plugins/animation_player_editor_plugin.cpp
 #: editor/plugins/script_text_editor.cpp
 #: editor/plugins/sprite_frames_editor_plugin.cpp editor/property_editor.cpp
-#: scene/gui/line_edit.cpp scene/gui/text_edit.cpp
+#: editor/scene_tree_dock.cpp scene/gui/line_edit.cpp scene/gui/text_edit.cpp
 msgid "Copy"
 msgstr "Kopyala"
 
@@ -2038,7 +2039,7 @@ msgstr "Çevrimiçi Rehberler"
 
 #: editor/editor_help.cpp
 msgid "Properties"
-msgstr "Özellikler"
+msgstr "Özellikleri"
 
 #: editor/editor_help.cpp
 msgid "override:"
@@ -2050,7 +2051,7 @@ msgstr "varsayılan:"
 
 #: editor/editor_help.cpp
 msgid "Methods"
-msgstr "Yöntemler"
+msgstr "Metotlar"
 
 #: editor/editor_help.cpp
 msgid "Theme Properties"
@@ -2578,7 +2579,8 @@ msgstr ""
 "başarısız oldu."
 
 #: editor/editor_node.cpp
-msgid "Unable to find script field for addon plugin at: 'res://addons/%s'."
+#, fuzzy
+msgid "Unable to find script field for addon plugin at: '%s'."
 msgstr "Eklentideki betik alanı bulunamıyor: 'res://addons/%s'."
 
 #: editor/editor_node.cpp
@@ -3009,14 +3011,6 @@ msgid "Help"
 msgstr "Yardım"
 
 #: editor/editor_node.cpp editor/plugins/script_editor_plugin.cpp
-#: editor/plugins/script_text_editor.cpp
-#: editor/plugins/shader_editor_plugin.cpp editor/plugins/text_editor.cpp
-#: editor/plugins/visual_shader_editor_plugin.cpp editor/project_manager.cpp
-#: editor/project_settings_editor.cpp editor/settings_config_dialog.cpp
-msgid "Search"
-msgstr "Ara"
-
-#: editor/editor_node.cpp editor/plugins/script_editor_plugin.cpp
 #: editor/plugins/shader_editor_plugin.cpp
 msgid "Online Docs"
 msgstr "Çevrimiçi Belgeler"
@@ -3182,13 +3176,12 @@ msgid "Open & Run a Script"
 msgstr "Aç & Bir Betik Çalıştır"
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid ""
 "The following files are newer on disk.\n"
 "What action should be taken?"
 msgstr ""
 "Aşağıdaki dosyalar diskte daha yeni.\n"
-"Hangi eylem yapılsın?:"
+"Hangi eylem yapılsın?"
 
 #: editor/editor_node.cpp editor/plugins/script_editor_plugin.cpp
 #: editor/plugins/shader_editor_plugin.cpp
@@ -3412,7 +3405,7 @@ msgstr "Benzersiz Yap"
 #: editor/plugins/script_text_editor.cpp
 #: editor/plugins/sprite_frames_editor_plugin.cpp
 #: editor/plugins/tile_map_editor_plugin.cpp editor/property_editor.cpp
-#: scene/gui/line_edit.cpp scene/gui/text_edit.cpp
+#: editor/scene_tree_dock.cpp scene/gui/line_edit.cpp scene/gui/text_edit.cpp
 msgid "Paste"
 msgstr "Yapıştır"
 
@@ -5085,7 +5078,8 @@ msgid "Got:"
 msgstr "Alınan:"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
-msgid "Failed sha256 hash check"
+#, fuzzy
+msgid "Failed SHA-256 hash check"
 msgstr "Başarısız sha256 hash sınaması"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
@@ -7009,6 +7003,14 @@ msgstr "Belgeleri Kapat"
 msgid "Run"
 msgstr "Çalıştır"
 
+#: editor/plugins/script_editor_plugin.cpp
+#: editor/plugins/script_text_editor.cpp
+#: editor/plugins/shader_editor_plugin.cpp editor/plugins/text_editor.cpp
+#: editor/plugins/visual_shader_editor_plugin.cpp editor/project_manager.cpp
+#: editor/project_settings_editor.cpp editor/settings_config_dialog.cpp
+msgid "Search"
+msgstr "Ara"
+
 #: editor/plugins/script_editor_plugin.cpp editor/script_editor_debugger.cpp
 msgid "Step Into"
 msgstr "İçeri Adımla"
@@ -7156,8 +7158,8 @@ msgstr "Hata ayıklama noktaları"
 msgid "Go To"
 msgstr "Şuna Git"
 
-#: editor/plugins/script_text_editor.cpp scene/gui/line_edit.cpp
-#: scene/gui/text_edit.cpp
+#: editor/plugins/script_text_editor.cpp editor/scene_tree_dock.cpp
+#: scene/gui/line_edit.cpp scene/gui/text_edit.cpp
 msgid "Cut"
 msgstr "Kes"
 
@@ -10064,9 +10066,8 @@ msgid "Projects"
 msgstr "Projeler"
 
 #: editor/project_manager.cpp
-#, fuzzy
 msgid "Loading, please wait..."
-msgstr "Aynalar alınıyor, lütfen bekleyin..."
+msgstr "Yükleniyor, lütfen bekleyin..."
 
 #: editor/project_manager.cpp
 msgid "Last Modified"
@@ -10687,6 +10688,16 @@ msgid "Instance Child Scene"
 msgstr "Çocuk Sahnesini Örnekle"
 
 #: editor/scene_tree_dock.cpp
+#, fuzzy
+msgid "Can't paste root node into the same scene."
+msgstr "Yad bir sahnedeki düğümler üzerinde çalışamaz!"
+
+#: editor/scene_tree_dock.cpp
+#, fuzzy
+msgid "Paste Node(s)"
+msgstr "Düğümleri Yapıştır"
+
+#: editor/scene_tree_dock.cpp
 msgid "Detach Script"
 msgstr "Betiği Ayır"
 
@@ -10812,6 +10823,11 @@ msgstr "Geçerli sahneden miras alınan düğümler üzerinde işlem yapılamaz!
 #: editor/scene_tree_dock.cpp
 msgid "Attach Script"
 msgstr "Betik İliştir"
+
+#: editor/scene_tree_dock.cpp
+#, fuzzy
+msgid "Cut Node(s)"
+msgstr "Düğümleri Kes"
 
 #: editor/scene_tree_dock.cpp
 msgid "Remove Node(s)"
