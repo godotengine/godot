@@ -84,6 +84,7 @@ const char *VisualScriptBuiltinFunc::func_name[VisualScriptBuiltinFunc::FUNC_MAX
 	"cartesian2polar",
 	"wrapi",
 	"wrapf",
+	"pingpong",
 	"max",
 	"min",
 	"clamp",
@@ -196,6 +197,7 @@ int VisualScriptBuiltinFunc::get_func_argument_count(BuiltinFunc p_func) {
 		case MATH_RANDI_RANGE:
 		case MATH_POLAR2CARTESIAN:
 		case MATH_CARTESIAN2POLAR:
+		case MATH_PINGPONG:
 		case LOGIC_MAX:
 		case LOGIC_MIN:
 		case TYPE_CONVERT:
@@ -405,6 +407,13 @@ PropertyInfo VisualScriptBuiltinFunc::get_input_value_port_info(int p_idx) const
 				return PropertyInfo(Variant::FLOAT, "y");
 			}
 		} break;
+		case MATH_PINGPONG: {
+			if (p_idx == 0) {
+				return PropertyInfo(Variant::FLOAT, "value");
+			} else {
+				return PropertyInfo(Variant::FLOAT, "length");
+			}
+		} break;
 		case MATH_WRAP: {
 			if (p_idx == 0) {
 				return PropertyInfo(Variant::INT, "value");
@@ -564,6 +573,7 @@ PropertyInfo VisualScriptBuiltinFunc::get_output_value_port_info(int p_idx) cons
 		case MATH_RAD2DEG:
 		case MATH_LINEAR2DB:
 		case MATH_WRAPF:
+		case MATH_PINGPONG:
 		case MATH_DB2LINEAR: {
 			t = Variant::FLOAT;
 		} break;
@@ -907,6 +917,11 @@ void VisualScriptBuiltinFunc::exec_func(BuiltinFunc p_func, const Variant **p_in
 			double x = *p_inputs[0];
 			double y = *p_inputs[1];
 			*r_return = Vector2(Math::sqrt(x * x + y * y), Math::atan2(y, x));
+		} break;
+		case VisualScriptBuiltinFunc::MATH_PINGPONG: {
+			VALIDATE_ARG_NUM(0);
+			VALIDATE_ARG_NUM(1);
+			*r_return = Math::pingpong((double)*p_inputs[0], (double)*p_inputs[1]);
 		} break;
 		case VisualScriptBuiltinFunc::MATH_WRAP: {
 			VALIDATE_ARG_NUM(0);
@@ -1254,6 +1269,7 @@ void VisualScriptBuiltinFunc::_bind_methods() {
 	BIND_ENUM_CONSTANT(MATH_CARTESIAN2POLAR);
 	BIND_ENUM_CONSTANT(MATH_WRAP);
 	BIND_ENUM_CONSTANT(MATH_WRAPF);
+	BIND_ENUM_CONSTANT(MATH_PINGPONG);
 	BIND_ENUM_CONSTANT(LOGIC_MAX);
 	BIND_ENUM_CONSTANT(LOGIC_MIN);
 	BIND_ENUM_CONSTANT(LOGIC_CLAMP);
@@ -1346,6 +1362,7 @@ void register_visual_script_builtin_func_node() {
 	VisualScriptLanguage::singleton->add_register_func("functions/built_in/cartesian2polar", create_builtin_func_node<VisualScriptBuiltinFunc::MATH_CARTESIAN2POLAR>);
 	VisualScriptLanguage::singleton->add_register_func("functions/built_in/wrapi", create_builtin_func_node<VisualScriptBuiltinFunc::MATH_WRAP>);
 	VisualScriptLanguage::singleton->add_register_func("functions/built_in/wrapf", create_builtin_func_node<VisualScriptBuiltinFunc::MATH_WRAPF>);
+	VisualScriptLanguage::singleton->add_register_func("functions/built_in/pingpong", create_builtin_func_node<VisualScriptBuiltinFunc::MATH_PINGPONG>);
 
 	VisualScriptLanguage::singleton->add_register_func("functions/built_in/max", create_builtin_func_node<VisualScriptBuiltinFunc::LOGIC_MAX>);
 	VisualScriptLanguage::singleton->add_register_func("functions/built_in/min", create_builtin_func_node<VisualScriptBuiltinFunc::LOGIC_MIN>);
