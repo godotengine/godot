@@ -1044,12 +1044,10 @@
 			Enabling this setting uses the legacy method to draw batches containing only one rect. The legacy method is faster (approx twice as fast), but can cause flicker on some systems. In order to directly compare performance with the non-batching renderer you can set this to true, but it is recommended to turn this off unless you can guarantee your target hardware will work with this method.
 		</member>
 		<member name="rendering/batching/options/use_batching" type="bool" setter="" getter="" default="true">
-			Turns batching on and off. Batching increases performance by reducing the amount of graphics API drawcalls.
-			[b]Note:[/b] Currently only effective when using the GLES2 renderer.
+			Turns 2D batching on and off. Batching increases performance by reducing the amount of graphics API drawcalls.
 		</member>
 		<member name="rendering/batching/options/use_batching_in_editor" type="bool" setter="" getter="" default="true">
-			Switches on batching within the editor.
-			[b]Note:[/b] Currently only effective when using the GLES2 renderer.
+			Switches on 2D batching within the editor.
 		</member>
 		<member name="rendering/batching/parameters/batch_buffer_size" type="int" setter="" getter="" default="16384">
 			Size of buffer reserved for batched vertices. Larger size enables larger batches, but there are diminishing returns for the memory used. This should only have a minor effect on performance.
@@ -1128,6 +1126,8 @@
 			Not available in GLES3 when [member rendering/batching/options/use_batching] is off.
 		</member>
 		<member name="rendering/quality/2d/use_camera_snap" type="bool" setter="" getter="" default="false">
+			If [code]true[/code], forces snapping of 2D viewports to the nearest whole coordinate.
+			Can reduce unwanted camera relative movement in pixel art styles.
 		</member>
 		<member name="rendering/quality/2d/use_nvidia_rect_flicker_workaround" type="bool" setter="" getter="" default="false">
 			Some NVIDIA GPU drivers have a bug which produces flickering issues for the [code]draw_rect[/code] method, especially as used in [TileMap]. Refer to [url=https://github.com/godotengine/godot/issues/9913]GitHub issue 9913[/url] for details.
