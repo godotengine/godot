@@ -52,6 +52,7 @@ void ProjectSettingsEditor::popup_project_settings() {
 	localization_editor->update_translations();
 	autoload_settings->update_autoload();
 	plugin_settings->update_plugins();
+	import_defaults_editor->clear();
 }
 
 void ProjectSettingsEditor::queue_save() {
@@ -692,4 +693,9 @@ ProjectSettingsEditor::ProjectSettingsEditor(EditorData *p_data) {
 	}
 
 	inspector->set_restrict_to_basic_settings(!use_advanced);
+
+	import_defaults_editor = memnew(ImportDefaultsEditor);
+	import_defaults_editor->set_name(TTR("Import Defaults"));
+	tab_container->add_child(import_defaults_editor);
+	import_defaults_editor->connect("project_settings_changed", callable_mp(this, &ProjectSettingsEditor::queue_save));
 }
