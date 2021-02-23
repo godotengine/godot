@@ -6243,12 +6243,14 @@ void Node3DEditor::_notification(int p_what) {
 
 		sun_button->set_icon(get_theme_icon("DirectionalLight3D", "EditorIcons"));
 		environ_button->set_icon(get_theme_icon("WorldEnvironment", "EditorIcons"));
-		sun_environ_settings->set_icon(get_theme_icon("GuiTabMenu", "EditorIcons"));
+		sun_environ_settings->set_icon(get_theme_icon("GuiTabMenuHl", "EditorIcons"));
 
 		_update_preview_environment();
 		sun_title->add_theme_font_override("font", get_theme_font("title_font", "Window"));
 		environ_title->add_theme_font_override("font", get_theme_font("title_font", "Window"));
 
+		sun_state->set_custom_minimum_size(sun_vb->get_combined_minimum_size());
+		environ_state->set_custom_minimum_size(environ_vb->get_combined_minimum_size());
 	} else if (p_what == NOTIFICATION_ENTER_TREE) {
 		_register_all_gizmos();
 		_update_gizmos_menu();
@@ -6563,9 +6565,9 @@ void Node3DEditor::_update_preview_environment() {
 		}
 
 		if (directional_light_count > 0) {
-			sun_state->set_text(TTR("Scene contains\nDirectionalLight3D.\nPreview Disabled."));
+			sun_state->set_text(TTR("Scene contains\nDirectionalLight3D.\nPreview disabled."));
 		} else {
-			sun_state->set_text(TTR("Preview Disabled."));
+			sun_state->set_text(TTR("Preview disabled."));
 		}
 
 	} else {
@@ -6587,9 +6589,9 @@ void Node3DEditor::_update_preview_environment() {
 			environ_vb->hide();
 		}
 		if (world_env_count > 0) {
-			environ_state->set_text(TTR("Scene contains\nWorldEnvironment.\nPreview Disabled."));
+			environ_state->set_text(TTR("Scene contains\nWorldEnvironment.\nPreview disabled."));
 		} else {
-			environ_state->set_text(TTR("Preview Disabled."));
+			environ_state->set_text(TTR("Preview disabled."));
 		}
 
 	} else {
@@ -7027,10 +7029,6 @@ Node3DEditor::Node3DEditor(EditorNode *p_editor) {
 		sun_title->set_text(TTR("Preview Sun"));
 		sun_title->set_align(Label::ALIGN_CENTER);
 
-		sun_state = memnew(Label);
-		sun_environ_hb->add_child(sun_state);
-		sun_state->show();
-
 		CenterContainer *sun_direction_center = memnew(CenterContainer);
 		sun_direction = memnew(Control);
 		sun_direction->set_custom_minimum_size(Size2i(128, 128) * EDSCALE);
@@ -7071,6 +7069,12 @@ Node3DEditor::Node3DEditor(EditorNode *p_editor) {
 		sun_vb->add_spacer();
 		sun_vb->add_child(sun_add_to_scene);
 
+		sun_state = memnew(Label);
+		sun_environ_hb->add_child(sun_state);
+		sun_state->set_align(Label::ALIGN_CENTER);
+		sun_state->set_valign(Label::VALIGN_CENTER);
+		sun_state->set_h_size_flags(SIZE_EXPAND_FILL);
+
 		VSeparator *sc = memnew(VSeparator);
 		sc->set_custom_minimum_size(Size2(50 * EDSCALE, 0));
 		sc->set_v_size_flags(SIZE_EXPAND_FILL);
@@ -7078,13 +7082,8 @@ Node3DEditor::Node3DEditor(EditorNode *p_editor) {
 
 		environ_vb = memnew(VBoxContainer);
 		sun_environ_hb->add_child(environ_vb);
-		environ_vb->hide();
-
 		environ_vb->set_custom_minimum_size(Size2(200 * EDSCALE, 0));
-
-		environ_state = memnew(Label);
-		sun_environ_hb->add_child(environ_state);
-		environ_state->show();
+		environ_vb->hide();
 
 		environ_title = memnew(Label);
 		environ_vb->add_child(environ_title);
@@ -7133,6 +7132,12 @@ Node3DEditor::Node3DEditor(EditorNode *p_editor) {
 		environ_add_to_scene->connect("pressed", callable_mp(this, &Node3DEditor::_add_environment_to_scene));
 		environ_vb->add_spacer();
 		environ_vb->add_child(environ_add_to_scene);
+
+		environ_state = memnew(Label);
+		sun_environ_hb->add_child(environ_state);
+		environ_state->set_align(Label::ALIGN_CENTER);
+		environ_state->set_valign(Label::VALIGN_CENTER);
+		environ_state->set_h_size_flags(SIZE_EXPAND_FILL);
 
 		preview_sun = memnew(DirectionalLight3D);
 		preview_sun->set_shadow(true);
