@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  project_settings_editor.h                                            */
+/*  import_defaults_editor.h                                             */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,100 +28,47 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef PROJECT_SETTINGS_EDITOR_H
-#define PROJECT_SETTINGS_EDITOR_H
+#ifndef IMPORT_DEFAULTS_EDITOR_H
+#define IMPORT_DEFAULTS_EDITOR_H
 
 #include "core/object/undo_redo.h"
 #include "editor/action_map_editor.h"
 #include "editor/editor_data.h"
 #include "editor/editor_plugin_settings.h"
 #include "editor/editor_sectioned_inspector.h"
-#include "editor/import_defaults_editor.h"
 #include "editor/localization_editor.h"
 #include "editor/shader_globals_editor.h"
 #include "editor_autoload_settings.h"
-#include "scene/gui/tab_container.h"
+#include "scene/gui/center_container.h"
+#include "scene/gui/option_button.h"
 
-class ProjectSettingsEditor : public AcceptDialog {
-	GDCLASS(ProjectSettingsEditor, AcceptDialog);
+class ImportDefaultsEditorSettings;
 
-	static ProjectSettingsEditor *singleton;
-	ProjectSettings *ps;
-	Timer *timer;
+class ImportDefaultsEditor : public VBoxContainer {
+	GDCLASS(ImportDefaultsEditor, VBoxContainer)
 
-	TabContainer *tab_container;
-	SectionedInspector *inspector;
-	LocalizationEditor *localization_editor;
-	EditorAutoloadSettings *autoload_settings;
-	ShaderGlobalsEditor *shaders_global_variables_editor;
-	EditorPluginSettings *plugin_settings;
+	OptionButton *importers;
+	Button *save_defaults;
+	Button *reset_defaults;
 
-	ActionMapEditor *action_map;
-	HBoxContainer *search_bar;
-	LineEdit *search_box;
-	CheckButton *advanced;
+	EditorInspector *inspector;
 
-	HBoxContainer *advanced_bar;
-	LineEdit *category_box;
-	LineEdit *property_box;
-	Button *add_button;
-	Button *del_button;
-	OptionButton *type;
-	OptionButton *feature_override;
+	ImportDefaultsEditorSettings *settings;
 
-	ConfirmationDialog *del_confirmation;
+	void _update_importer();
+	void _importer_selected(int p_index);
 
-	Label *restart_label;
-	TextureRect *restart_icon;
-	PanelContainer *restart_container;
-	Button *restart_close_button;
-
-	ImportDefaultsEditor *import_defaults_editor;
-	EditorData *data;
-	UndoRedo *undo_redo;
-
-	void _advanced_pressed();
-	void _update_advanced_bar();
-	void _text_field_changed(const String &p_text);
-	void _feature_selected(int p_index);
-
-	String _get_setting_name() const;
-	void _setting_edited(const String &p_name);
-	void _setting_selected(const String &p_path);
-	void _add_setting();
-	void _delete_setting(bool p_confirmed);
-
-	void _editor_restart_request();
-	void _editor_restart();
-	void _editor_restart_close();
-
-	void _add_feature_overrides();
-
-	void _action_added(const String &p_name);
-	void _action_edited(const String &p_name, const Dictionary &p_action);
-	void _action_removed(const String &p_name);
-	void _action_renamed(const String &p_old_name, const String &p_new_name);
-	void _action_reordered(const String &p_action_name, const String &p_relative_to, bool p_before);
-	void _update_action_map_editor();
-
-	ProjectSettingsEditor();
+	void _reset();
+	void _save();
 
 protected:
-	void _notification(int p_what);
 	static void _bind_methods();
 
 public:
-	static ProjectSettingsEditor *get_singleton() { return singleton; }
-	void popup_project_settings();
-	void set_plugins_page();
-	void update_plugins();
+	void clear();
 
-	EditorAutoloadSettings *get_autoload_settings() { return autoload_settings; }
-	TabContainer *get_tabs() { return tab_container; }
-
-	void queue_save();
-
-	ProjectSettingsEditor(EditorData *p_data);
+	ImportDefaultsEditor();
+	~ImportDefaultsEditor();
 };
 
-#endif // PROJECT_SETTINGS_EDITOR_H
+#endif // IMPORT_DEFAULTS_EDITOR_H
