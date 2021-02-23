@@ -143,6 +143,30 @@ void ColorPicker::_update_controls() {
 		scroll[3]->hide();
 		labels[3]->hide();
 	}
+
+	switch (picker_type) {
+		case SHAPE_HSV_RECTANGLE:
+			wheel_edit->hide();
+			w_edit->show();
+			uv_edit->show();
+			break;
+		case SHAPE_HSV_WHEEL:
+			wheel_edit->show();
+			w_edit->hide();
+			uv_edit->hide();
+
+			wheel->set_material(wheel_mat);
+			break;
+		case SHAPE_VHS_CIRCLE:
+			wheel_edit->show();
+			w_edit->show();
+			uv_edit->hide();
+
+			wheel->set_material(circle_mat);
+			break;
+		default: {
+		}
+	}
 }
 
 void ColorPicker::_set_pick_color(const Color &p_color, bool p_update_sliders) {
@@ -267,6 +291,8 @@ void ColorPicker::_update_color(bool p_update_sliders) {
 	for (int i = 0; i < 4; i++) {
 		scroll[i]->update();
 	}
+	wheel->update();
+	wheel_uv->update();
 	updating = false;
 }
 
@@ -307,6 +333,18 @@ void ColorPicker::_text_type_toggled() {
 
 Color ColorPicker::get_pick_color() const {
 	return color;
+}
+
+void ColorPicker::set_picker_shape(PickerShapeType p_picker_type) {
+	ERR_FAIL_INDEX(p_picker_type, SHAPE_MAX);
+	picker_type = p_picker_type;
+
+	_update_controls();
+	_update_color();
+}
+
+ColorPicker::PickerShapeType ColorPicker::get_picker_shape() const {
+	return picker_type;
 }
 
 void ColorPicker::add_preset(const Color &p_color) {
@@ -421,7 +459,7 @@ void ColorPicker::_update_text_value() {
 }
 
 void ColorPicker::_sample_draw() {
-	const Rect2 r = Rect2(Point2(), Size2(uv_edit->get_size().width, sample->get_size().height * 0.95));
+	const Rect2 r = Rect2(Point2(), Size2(sample->get_size().width, sample->get_size().height * 0.95));
 
 	if (color.a < 1.0) {
 		sample->draw_texture_rect(get_theme_icon("preset_bg", "ColorPicker"), r, true);
@@ -441,42 +479,131 @@ void ColorPicker::_hsv_draw(int p_which, Control *c) {
 	}
 	if (p_which == 0) {
 		Vector<Point2> points;
-		points.push_back(Vector2());
-		points.push_back(Vector2(c->get_size().x, 0));
-		points.push_back(c->get_size());
-		points.push_back(Vector2(0, c->get_size().y));
 		Vector<Color> colors;
-		colors.push_back(Color(1, 1, 1, 1));
-		colors.push_back(Color(1, 1, 1, 1));
-		colors.push_back(Color(0, 0, 0, 1));
-		colors.push_back(Color(0, 0, 0, 1));
-		c->draw_polygon(points, colors);
 		Vector<Color> colors2;
 		Color col = color;
+		Vector2 center = c->get_size() / 2.0;
+
+		switch (picker_type) {
+			case SHAPE_HSV_WHEEL: {
+				points.resize(4);
+				colors.resize(4);
+				colors2.resize(4);
+				real_t ring_radius_x = Math_SQRT12 * c->get_size().width * 0.42;
+				real_t ring_radius_y = Math_SQRT12 * c->get_size().height * 0.42;
+
+				points.set(0, center - Vector2(ring_radius_x, ring_radius_y));
+				points.set(1, center + Vector2(ring_radius_x, -ring_radius_y));
+				points.set(2, center + Vector2(ring_radius_x, ring_radius_y));
+				points.set(3, center + Vector2(-ring_radius_x, ring_radius_y));
+				colors.set(0, Color(1, 1, 1, 1));
+				colors.set(1, Color(1, 1, 1, 1));
+				colors.set(2, Color(0, 0, 0, 1));
+				colors.set(3, Color(0, 0, 0, 1));
+				c->draw_polygon(points, colors);
+
+				col.set_hsv(h, 1, 1);
+				col.a = 0;
+				colors2.set(0, col);
+				col.a = 1;
+				colors2.set(1, col);
+				col.set_hsv(h, 1, 0);
+				colors2.set(2, col);
+				col.a = 0;
+				colors2.set(3, col);
+				c->draw_polygon(points, colors2);
+				break;
+			}
+			case SHAPE_HSV_RECTANGLE: {
+				points.resize(4);
+				colors.resize(4);
+				colors2.resize(4);
+				points.set(0, Vector2());
+				points.set(1, Vector2(c->get_size().x, 0));
+				points.set(2, c->get_size());
+				points.set(3, Vector2(0, c->get_size().y));
+				colors.set(0, Color(1, 1, 1, 1));
+				colors.set(1, Color(1, 1, 1, 1));
+				colors.set(2, Color(0, 0, 0, 1));
+				colors.set(3, Color(0, 0, 0, 1));
+				c->draw_polygon(points, colors);
+				col = color;
+				col.set_hsv(h, 1, 1);
+				col.a = 0;
+				colors2.set(0, col);
+				col.a = 1;
+				colors2.set(1, col);
+				col.set_hsv(h, 1, 0);
+				colors2.set(2, col);
+				col.a = 0;
+				colors2.set(3, col);
+				c->draw_polygon(points, colors2);
+				break;
+			}
+			default: {
+			}
+		}
+		Ref<Texture2D> cursor = get_theme_icon("picker_cursor", "ColorPicker");
+		int x;
+		int y;
+		if (picker_type == SHAPE_VHS_CIRCLE) {
+			x = center.x + (center.x * Math::cos(h * Math_TAU) * s) - (cursor->get_width() / 2);
+			y = center.y + (center.y * Math::sin(h * Math_TAU) * s) - (cursor->get_height() / 2);
+		} else {
+			real_t corner_x = (c == wheel_uv) ? center.x - Math_SQRT12 * c->get_size().width * 0.42 : 0;
+			real_t corner_y = (c == wheel_uv) ? center.y - Math_SQRT12 * c->get_size().height * 0.42 : 0;
+
+			Size2 real_size(c->get_size().x - corner_x * 2, c->get_size().y - corner_y * 2);
+			x = CLAMP(real_size.x * s, 0, real_size.x) + corner_x - (cursor->get_width() / 2);
+			y = CLAMP(real_size.y - real_size.y * v, 0, real_size.y) + corner_y - (cursor->get_height() / 2);
+		}
+		c->draw_texture(cursor, Point2(x, y));
+
 		col.set_hsv(h, 1, 1);
-		col.a = 0;
-		colors2.push_back(col);
-		col.a = 1;
-		colors2.push_back(col);
-		col.set_hsv(h, 1, 0);
-		colors2.push_back(col);
-		col.a = 0;
-		colors2.push_back(col);
-		c->draw_polygon(points, colors2);
-		int x = CLAMP(c->get_size().x * s, 0, c->get_size().x);
-		int y = CLAMP(c->get_size().y - c->get_size().y * v, 0, c->get_size().y);
-		col = color;
-		col.a = 1;
-		c->draw_line(Point2(x, 0), Point2(x, c->get_size().y), col.inverted());
-		c->draw_line(Point2(0, y), Point2(c->get_size().x, y), col.inverted());
-		c->draw_line(Point2(x, y), Point2(x, y), Color(1, 1, 1), 2);
+		if (picker_type == SHAPE_HSV_WHEEL) {
+			points.resize(4);
+			double h1 = h - (0.5 / 360);
+			double h2 = h + (0.5 / 360);
+			points.set(0, Point2(center.x + (center.x * Math::cos(h1 * Math_TAU)), center.y + (center.y * Math::sin(h1 * Math_TAU))));
+			points.set(1, Point2(center.x + (center.x * Math::cos(h1 * Math_TAU) * 0.84), center.y + (center.y * Math::sin(h1 * Math_TAU) * 0.84)));
+			points.set(2, Point2(center.x + (center.x * Math::cos(h2 * Math_TAU)), center.y + (center.y * Math::sin(h2 * Math_TAU))));
+			points.set(3, Point2(center.x + (center.x * Math::cos(h2 * Math_TAU) * 0.84), center.y + (center.y * Math::sin(h2 * Math_TAU) * 0.84)));
+			c->draw_multiline(points, col.inverted());
+		}
+
 	} else if (p_which == 1) {
-		Ref<Texture2D> hue = get_theme_icon("color_hue", "ColorPicker");
-		c->draw_texture_rect(hue, Rect2(Point2(), c->get_size()));
-		int y = c->get_size().y - c->get_size().y * (1.0 - h);
-		Color col = Color();
-		col.set_hsv(h, 1, 1);
-		c->draw_line(Point2(0, y), Point2(c->get_size().x, y), col.inverted());
+		if (picker_type == SHAPE_HSV_RECTANGLE) {
+			Ref<Texture2D> hue = get_theme_icon("color_hue", "ColorPicker");
+			c->draw_texture_rect(hue, Rect2(Point2(), c->get_size()));
+			int y = c->get_size().y - c->get_size().y * (1.0 - h);
+			Color col;
+			col.set_hsv(h, 1, 1);
+			c->draw_line(Point2(0, y), Point2(c->get_size().x, y), col.inverted());
+		} else if (picker_type == SHAPE_VHS_CIRCLE) {
+			Vector<Point2> points;
+			Vector<Color> colors;
+			Color col;
+			col.set_hsv(h, s, 1);
+			points.resize(4);
+			colors.resize(4);
+			points.set(0, Vector2());
+			points.set(1, Vector2(c->get_size().x, 0));
+			points.set(2, c->get_size());
+			points.set(3, Vector2(0, c->get_size().y));
+			colors.set(0, col);
+			colors.set(1, col);
+			colors.set(2, Color(0, 0, 0));
+			colors.set(3, Color(0, 0, 0));
+			c->draw_polygon(points, colors);
+			int y = c->get_size().y - c->get_size().y * CLAMP(v, 0, 1);
+			col.set_hsv(h, 1, v);
+			c->draw_line(Point2(0, y), Point2(c->get_size().x, y), col.inverted());
+		}
+	} else if (p_which == 2) {
+		c->draw_rect(Rect2(Point2(), c->get_size()), Color(1, 1, 1));
+		if (picker_type == SHAPE_VHS_CIRCLE) {
+			circle_mat->set_shader_param("v", v);
+		}
 	}
 }
 
@@ -543,16 +670,51 @@ void ColorPicker::_slider_draw(int p_which) {
 	scroll[p_which]->draw_polygon(pos, col);
 }
 
-void ColorPicker::_uv_input(const Ref<InputEvent> &p_event) {
+void ColorPicker::_uv_input(const Ref<InputEvent> &p_event, Control *c) {
 	Ref<InputEventMouseButton> bev = p_event;
 
 	if (bev.is_valid()) {
 		if (bev->is_pressed() && bev->get_button_index() == MOUSE_BUTTON_LEFT) {
+			Vector2 center = c->get_size() / 2.0;
+			if (picker_type == SHAPE_VHS_CIRCLE) {
+				real_t dist = center.distance_to(bev->get_position());
+
+				if (dist <= center.x) {
+					real_t rad = Math::atan2(bev->get_position().y - center.y, bev->get_position().x - center.x);
+					h = ((rad >= 0) ? rad : (Math_TAU + rad)) / Math_TAU;
+					s = CLAMP(dist / center.x, 0, 1);
+				} else {
+					return;
+				}
+			} else {
+				real_t corner_x = (c == wheel_uv) ? center.x - Math_SQRT12 * c->get_size().width * 0.42 : 0;
+				real_t corner_y = (c == wheel_uv) ? center.y - Math_SQRT12 * c->get_size().height * 0.42 : 0;
+				Size2 real_size(c->get_size().x - corner_x * 2, c->get_size().y - corner_y * 2);
+
+				if (bev->get_position().x < corner_x || bev->get_position().x > c->get_size().x - corner_x ||
+						bev->get_position().y < corner_y || bev->get_position().y > c->get_size().y - corner_y) {
+					{
+						real_t dist = center.distance_to(bev->get_position());
+
+						if (dist >= center.x * 0.84 && dist <= center.x) {
+							real_t rad = Math::atan2(bev->get_position().y - center.y, bev->get_position().x - center.x);
+							h = ((rad >= 0) ? rad : (Math_TAU + rad)) / Math_TAU;
+							spinning = true;
+						} else {
+							return;
+						}
+					}
+				}
+
+				if (!spinning) {
+					real_t x = CLAMP(bev->get_position().x, corner_x, c->get_size().x - corner_x);
+					real_t y = CLAMP(bev->get_position().y, corner_x, c->get_size().y - corner_y);
+
+					s = (x - c->get_position().x - corner_x) / real_size.x;
+					v = 1.0 - (y - c->get_position().y - corner_y) / real_size.y;
+				}
+			}
 			changing_color = true;
-			float x = CLAMP((float)bev->get_position().x, 0, uv_edit->get_size().width);
-			float y = CLAMP((float)bev->get_position().y, 0, uv_edit->get_size().height);
-			s = x / uv_edit->get_size().width;
-			v = 1.0 - y / uv_edit->get_size().height;
 			color.set_hsv(h, s, v, color.a);
 			last_hsv = color;
 			set_pick_color(color);
@@ -563,8 +725,10 @@ void ColorPicker::_uv_input(const Ref<InputEvent> &p_event) {
 		} else if (deferred_mode_enabled && !bev->is_pressed() && bev->get_button_index() == MOUSE_BUTTON_LEFT) {
 			emit_signal("color_changed", color);
 			changing_color = false;
+			spinning = false;
 		} else {
 			changing_color = false;
+			spinning = false;
 		}
 	}
 
@@ -574,10 +738,30 @@ void ColorPicker::_uv_input(const Ref<InputEvent> &p_event) {
 		if (!changing_color) {
 			return;
 		}
-		float x = CLAMP((float)mev->get_position().x, 0, uv_edit->get_size().width);
-		float y = CLAMP((float)mev->get_position().y, 0, uv_edit->get_size().height);
-		s = x / uv_edit->get_size().width;
-		v = 1.0 - y / uv_edit->get_size().height;
+
+		Vector2 center = c->get_size() / 2.0;
+		if (picker_type == SHAPE_VHS_CIRCLE) {
+			real_t dist = center.distance_to(mev->get_position());
+			real_t rad = Math::atan2(mev->get_position().y - center.y, mev->get_position().x - center.x);
+			h = ((rad >= 0) ? rad : (Math_TAU + rad)) / Math_TAU;
+			s = CLAMP(dist / center.x, 0, 1);
+		} else {
+			if (spinning) {
+				real_t rad = Math::atan2(mev->get_position().y - center.y, mev->get_position().x - center.x);
+				h = ((rad >= 0) ? rad : (Math_TAU + rad)) / Math_TAU;
+			} else {
+				real_t corner_x = (c == wheel_uv) ? center.x - Math_SQRT12 * c->get_size().width * 0.42 : 0;
+				real_t corner_y = (c == wheel_uv) ? center.y - Math_SQRT12 * c->get_size().height * 0.42 : 0;
+				Size2 real_size(c->get_size().x - corner_x * 2, c->get_size().y - corner_y * 2);
+
+				real_t x = CLAMP(mev->get_position().x, corner_x, c->get_size().x - corner_x);
+				real_t y = CLAMP(mev->get_position().y, corner_x, c->get_size().y - corner_y);
+
+				s = (x - corner_x) / real_size.x;
+				v = 1.0 - (y - corner_y) / real_size.y;
+			}
+		}
+
 		color.set_hsv(h, s, v, color.a);
 		last_hsv = color;
 		set_pick_color(color);
@@ -595,7 +779,11 @@ void ColorPicker::_w_input(const Ref<InputEvent> &p_event) {
 		if (bev->is_pressed() && bev->get_button_index() == MOUSE_BUTTON_LEFT) {
 			changing_color = true;
 			float y = CLAMP((float)bev->get_position().y, 0, w_edit->get_size().height);
-			h = y / w_edit->get_size().height;
+			if (picker_type == SHAPE_VHS_CIRCLE) {
+				v = 1.0 - (y / w_edit->get_size().height);
+			} else {
+				h = y / w_edit->get_size().height;
+			}
 		} else {
 			changing_color = false;
 		}
@@ -617,7 +805,11 @@ void ColorPicker::_w_input(const Ref<InputEvent> &p_event) {
 			return;
 		}
 		float y = CLAMP((float)mev->get_position().y, 0, w_edit->get_size().height);
-		h = y / w_edit->get_size().height;
+		if (picker_type == SHAPE_VHS_CIRCLE) {
+			v = 1.0 - (y / w_edit->get_size().height);
+		} else {
+			h = y / w_edit->get_size().height;
+		}
 		color.set_hsv(h, s, v, color.a);
 		last_hsv = color;
 		set_pick_color(color);
@@ -801,18 +993,25 @@ void ColorPicker::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("add_preset", "color"), &ColorPicker::add_preset);
 	ClassDB::bind_method(D_METHOD("erase_preset", "color"), &ColorPicker::erase_preset);
 	ClassDB::bind_method(D_METHOD("get_presets"), &ColorPicker::get_presets);
+	ClassDB::bind_method(D_METHOD("set_picker_shape", "picker"), &ColorPicker::set_picker_shape);
+	ClassDB::bind_method(D_METHOD("get_picker_shape"), &ColorPicker::get_picker_shape);
 
 	ADD_PROPERTY(PropertyInfo(Variant::COLOR, "color"), "set_pick_color", "get_pick_color");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "edit_alpha"), "set_edit_alpha", "is_editing_alpha");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "hsv_mode"), "set_hsv_mode", "is_hsv_mode");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "raw_mode"), "set_raw_mode", "is_raw_mode");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "deferred_mode"), "set_deferred_mode", "is_deferred_mode");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "picker_shape", PROPERTY_HINT_ENUM, "HSV Rectangle,HSV Rectangle Wheel,VHS Circle"), "set_picker_shape", "get_picker_shape");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "presets_enabled"), "set_presets_enabled", "are_presets_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "presets_visible"), "set_presets_visible", "are_presets_visible");
 
 	ADD_SIGNAL(MethodInfo("color_changed", PropertyInfo(Variant::COLOR, "color")));
 	ADD_SIGNAL(MethodInfo("preset_added", PropertyInfo(Variant::COLOR, "color")));
 	ADD_SIGNAL(MethodInfo("preset_removed", PropertyInfo(Variant::COLOR, "color")));
+
+	BIND_ENUM_CONSTANT(SHAPE_HSV_RECTANGLE);
+	BIND_ENUM_CONSTANT(SHAPE_HSV_WHEEL);
+	BIND_ENUM_CONSTANT(SHAPE_VHS_CIRCLE);
 }
 
 ColorPicker::ColorPicker() :
@@ -821,32 +1020,21 @@ ColorPicker::ColorPicker() :
 	add_child(hb_edit);
 	hb_edit->set_v_size_flags(SIZE_EXPAND_FILL);
 
-	uv_edit = memnew(Control);
 	hb_edit->add_child(uv_edit);
-	uv_edit->connect("gui_input", callable_mp(this, &ColorPicker::_uv_input));
+	uv_edit->connect("gui_input", callable_mp(this, &ColorPicker::_uv_input), make_binds(uv_edit));
 	uv_edit->set_mouse_filter(MOUSE_FILTER_PASS);
 	uv_edit->set_h_size_flags(SIZE_EXPAND_FILL);
 	uv_edit->set_v_size_flags(SIZE_EXPAND_FILL);
 	uv_edit->set_custom_minimum_size(Size2(get_theme_constant("sv_width"), get_theme_constant("sv_height")));
 	uv_edit->connect("draw", callable_mp(this, &ColorPicker::_hsv_draw), make_binds(0, uv_edit));
 
-	w_edit = memnew(Control);
-	hb_edit->add_child(w_edit);
-	w_edit->set_custom_minimum_size(Size2(get_theme_constant("h_width"), 0));
-	w_edit->set_h_size_flags(SIZE_FILL);
-	w_edit->set_v_size_flags(SIZE_EXPAND_FILL);
-	w_edit->connect("gui_input", callable_mp(this, &ColorPicker::_w_input));
-	w_edit->connect("draw", callable_mp(this, &ColorPicker::_hsv_draw), make_binds(1, w_edit));
-
 	HBoxContainer *hb_smpl = memnew(HBoxContainer);
 	add_child(hb_smpl);
 
-	sample = memnew(TextureRect);
 	hb_smpl->add_child(sample);
 	sample->set_h_size_flags(SIZE_EXPAND_FILL);
 	sample->connect("draw", callable_mp(this, &ColorPicker::_sample_draw));
 
-	btn_pick = memnew(Button);
 	btn_pick->set_flat(true);
 	hb_smpl->add_child(btn_pick);
 	btn_pick->set_toggle_mode(true);
@@ -896,17 +1084,14 @@ ColorPicker::ColorPicker() :
 	HBoxContainer *hhb = memnew(HBoxContainer);
 	vbr->add_child(hhb);
 
-	btn_hsv = memnew(CheckButton);
 	hhb->add_child(btn_hsv);
 	btn_hsv->set_text(RTR("HSV"));
 	btn_hsv->connect("toggled", callable_mp(this, &ColorPicker::set_hsv_mode));
 
-	btn_raw = memnew(CheckButton);
 	hhb->add_child(btn_raw);
 	btn_raw->set_text(RTR("Raw"));
 	btn_raw->connect("toggled", callable_mp(this, &ColorPicker::set_raw_mode));
 
-	text_type = memnew(Button);
 	hhb->add_child(text_type);
 	text_type->set_text("#");
 	text_type->set_tooltip(TTR("Switch between hexadecimal and code values."));
@@ -920,34 +1105,68 @@ ColorPicker::ColorPicker() :
 		text_type->set_mouse_filter(MOUSE_FILTER_IGNORE);
 	}
 
-	c_text = memnew(LineEdit);
 	hhb->add_child(c_text);
 	c_text->set_h_size_flags(SIZE_EXPAND_FILL);
 	c_text->connect("text_entered", callable_mp(this, &ColorPicker::_html_entered));
 	c_text->connect("focus_entered", callable_mp(this, &ColorPicker::_focus_enter));
 	c_text->connect("focus_exited", callable_mp(this, &ColorPicker::_html_focus_exit));
 
+	wheel_edit->set_h_size_flags(SIZE_EXPAND_FILL);
+	wheel_edit->set_v_size_flags(SIZE_EXPAND_FILL);
+	wheel_edit->set_custom_minimum_size(Size2(get_theme_constant("sv_width"), get_theme_constant("sv_height")));
+	hb_edit->add_child(wheel_edit);
+
+	wheel_mat.instance();
+	circle_mat.instance();
+
+	Ref<Shader> wheel_shader(memnew(Shader));
+	wheel_shader->set_code("shader_type canvas_item;const float TAU=6.28318530718;void fragment(){float x=UV.x-0.5;float y=UV.y-0.5;float a=atan(y,x);x+=0.001;y+=0.001;float b=float(sqrt(x*x+y*y)<0.5)*float(sqrt(x*x+y*y)>0.42);x-=0.002;float b2=float(sqrt(x*x+y*y)<0.5)*float(sqrt(x*x+y*y)>0.42);y-=0.002;float b3=float(sqrt(x*x+y*y)<0.5)*float(sqrt(x*x+y*y)>0.42);x+=0.002;float b4=float(sqrt(x*x+y*y)<0.5)*float(sqrt(x*x+y*y)>0.42);COLOR=vec4(clamp((abs(fract(((a-TAU)/TAU)+vec3(3.0,2.0,1.0)/3.0)*6.0-3.0)-1.0),0.0,1.0),(b+b2+b3+b4)/4.00);}");
+	wheel_mat->set_shader(wheel_shader);
+
+	Ref<Shader> circle_shader(memnew(Shader));
+	circle_shader->set_code("shader_type canvas_item;const float TAU=6.28318530718;uniform float v=1.0;void fragment(){float x=UV.x-0.5;float y=UV.y-0.5;float a=atan(y,x);x+=0.001;y+=0.001;float b=float(sqrt(x*x+y*y)<0.5);x-=0.002;float b2=float(sqrt(x*x+y*y)<0.5);y-=0.002;float b3=float(sqrt(x*x+y*y)<0.5);x+=0.002;float b4=float(sqrt(x*x+y*y)<0.5);COLOR=vec4(mix(vec3(1.0),clamp(abs(fract(vec3((a-TAU)/TAU)+vec3(1.0,2.0/3.0,1.0/3.0))*6.0-vec3(3.0))-vec3(1.0),0.0,1.0),((float(sqrt(x*x+y*y))*2.0))/1.0)*vec3(v),(b+b2+b3+b4)/4.00);}");
+	circle_mat->set_shader(circle_shader);
+
+	MarginContainer *wheel_margin(memnew(MarginContainer));
+#ifdef TOOLS_ENABLED
+	wheel_margin->add_theme_constant_override("margin_bottom", 8 * EDSCALE);
+#else
+	wheel_margin->add_theme_constant_override("margin_bottom", 8);
+#endif
+	wheel_edit->add_child(wheel_margin);
+
+	wheel_margin->add_child(wheel);
+	wheel->set_mouse_filter(MOUSE_FILTER_PASS);
+	wheel->connect("draw", callable_mp(this, &ColorPicker::_hsv_draw), make_binds(2, wheel));
+
+	wheel_margin->add_child(wheel_uv);
+	wheel_uv->connect("gui_input", callable_mp(this, &ColorPicker::_uv_input), make_binds(wheel_uv));
+	wheel_uv->connect("draw", callable_mp(this, &ColorPicker::_hsv_draw), make_binds(0, wheel_uv));
+
+	hb_edit->add_child(w_edit);
+	w_edit->set_custom_minimum_size(Size2(get_theme_constant("h_width"), 0));
+	w_edit->set_h_size_flags(SIZE_FILL);
+	w_edit->set_v_size_flags(SIZE_EXPAND_FILL);
+	w_edit->connect("gui_input", callable_mp(this, &ColorPicker::_w_input));
+	w_edit->connect("draw", callable_mp(this, &ColorPicker::_hsv_draw), make_binds(1, w_edit));
+
+	picker_type = SHAPE_HSV_RECTANGLE;
 	_update_controls();
 	updating = false;
 
 	set_pick_color(Color(1, 1, 1));
 
-	preset_separator = memnew(HSeparator);
 	add_child(preset_separator);
 
-	preset_container = memnew(HBoxContainer);
 	preset_container->set_h_size_flags(SIZE_EXPAND_FILL);
 	add_child(preset_container);
 
-	preset = memnew(TextureRect);
 	preset_container->add_child(preset);
 	preset->connect("gui_input", callable_mp(this, &ColorPicker::_preset_input));
 	preset->connect("draw", callable_mp(this, &ColorPicker::_update_presets));
 
-	preset_container2 = memnew(HBoxContainer);
 	preset_container2->set_h_size_flags(SIZE_EXPAND_FILL);
 	add_child(preset_container2);
-	bt_add_preset = memnew(Button);
 	preset_container2->add_child(bt_add_preset);
 	bt_add_preset->set_tooltip(RTR("Add current color as a preset."));
 	bt_add_preset->connect("pressed", callable_mp(this, &ColorPicker::_add_preset_pressed));

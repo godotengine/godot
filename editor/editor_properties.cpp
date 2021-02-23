@@ -2190,6 +2190,9 @@ void EditorPropertyColor::_picker_created() {
 	} else if (default_color_mode == 2) {
 		picker->get_picker()->set_raw_mode(true);
 	}
+
+	int picker_shape = EDITOR_GET("interface/inspector/default_color_picker_shape");
+	picker->get_picker()->set_picker_shape((ColorPicker::PickerShapeType)picker_shape);
 }
 
 void EditorPropertyColor::_picker_opening() {
