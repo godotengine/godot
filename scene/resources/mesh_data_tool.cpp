@@ -50,6 +50,28 @@ Error MeshDataTool::create_from_surface(const Ref<ArrayMesh> &p_mesh, int p_surf
 	int vcount = varray.size();
 	ERR_FAIL_COND_V(vcount == 0, ERR_INVALID_PARAMETER);
 
+	Vector<int> indices;
+
+	if (arrays[Mesh::ARRAY_INDEX].get_type() != Variant::NIL) {
+		indices = arrays[Mesh::ARRAY_INDEX];
+	} else {
+		//make code simpler
+		indices.resize(vcount);
+		int *iw = indices.ptrw();
+		for (int i = 0; i < vcount; i++) {
+			iw[i] = i;
+		}
+	}
+
+	int icount = indices.size();
+	const int *r = indices.ptr();
+
+	ERR_FAIL_COND_V(icount == 0, ERR_INVALID_PARAMETER);
+	ERR_FAIL_COND_V(icount % 3, ERR_INVALID_PARAMETER);
+	for (int i = 0; i < icount; i++) {
+		ERR_FAIL_INDEX_V(r[i], vcount, ERR_INVALID_PARAMETER);
+	}
+
 	clear();
 	format = p_mesh->surface_get_format(p_surface);
 	material = p_mesh->surface_get_material(p_surface);
@@ -127,22 +149,6 @@ Error MeshDataTool::create_from_surface(const Ref<ArrayMesh> &p_mesh, int p_surf
 
 		vertices.write[i] = v;
 	}
-
-	Vector<int> indices;
-
-	if (arrays[Mesh::ARRAY_INDEX].get_type() != Variant::NIL) {
-		indices = arrays[Mesh::ARRAY_INDEX];
-	} else {
-		//make code simpler
-		indices.resize(vcount);
-		int *iw = indices.ptrw();
-		for (int i = 0; i < vcount; i++) {
-			iw[i] = i;
-		}
-	}
-
-	int icount = indices.size();
-	const int *r = indices.ptr();
 
 	Map<Point2i, int> edge_indices;
 
