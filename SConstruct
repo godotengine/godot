@@ -55,7 +55,7 @@ custom_tools = ["default"]
 
 platform_arg = ARGUMENTS.get("platform", ARGUMENTS.get("p", False))
 
-if os.name == "nt" and (platform_arg == "android" or ARGUMENTS.get("use_mingw", False)):
+if os.name == "nt" and (platform_arg == "android" or methods.get_cmdline_bool("use_mingw", False)):
     custom_tools = ["mingw"]
 elif platform_arg == "javascript":
     # Use generic POSIX build toolchain for Emscripten.
@@ -95,7 +95,7 @@ env_base.SConsignFile(".sconsign{0}.dblite".format(pickle.HIGHEST_PROTOCOL))
 
 customs = ["custom.py"]
 
-profile = ARGUMENTS.get("profile", False)
+profile = methods.get_cmdline_bool("profile", False)
 if profile:
     if os.path.isfile(profile):
         customs.append(profile)
@@ -325,17 +325,17 @@ if selected_platform in platform_list:
         env.Alias("compiledb", env.CompilationDatabase())
 
     # 'dev' and 'production' are aliases to set default options if they haven't been set
-    # manually by the user. We use `ARGUMENTS.get()` to check if they were manually set.
+    # manually by the user.
     if env["dev"]:
-        env["verbose"] = ARGUMENTS.get("verbose", True)
+        env["verbose"] = methods.get_cmdline_bool("verbose", True)
         env["warnings"] = ARGUMENTS.get("warnings", "extra")
-        env["werror"] = ARGUMENTS.get("werror", True)
+        env["werror"] = methods.get_cmdline_bool("werror", True)
         if env["tools"]:
-            env["tests"] = ARGUMENTS.get("tests", True)
+            env["tests"] = methods.get_cmdline_bool("tests", True)
     if env["production"]:
-        env["use_static_cpp"] = ARGUMENTS.get("use_static_cpp", True)
-        env["use_lto"] = ARGUMENTS.get("use_lto", True)
-        env["debug_symbols"] = ARGUMENTS.get("debug_symbols", False)
+        env["use_static_cpp"] = methods.get_cmdline_bool("use_static_cpp", True)
+        env["use_lto"] = methods.get_cmdline_bool("use_lto", True)
+        env["debug_symbols"] = methods.get_cmdline_bool("debug_symbols", False)
         if not env["tools"] and env["target"] == "debug":
             print(
                 "WARNING: Requested `production` build with `tools=no target=debug`, "
