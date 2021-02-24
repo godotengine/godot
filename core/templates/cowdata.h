@@ -142,7 +142,7 @@ public:
 	_FORCE_INLINE_ bool is_empty() const { return _ptr == nullptr; }
 
 	_FORCE_INLINE_ void set(int p_index, const T &p_elem) {
-		CRASH_BAD_INDEX(p_index, size());
+		ERR_FAIL_INDEX(p_index, size());
 		_copy_on_write();
 		_get_data()[p_index] = p_elem;
 	}
