@@ -36,6 +36,7 @@
 #include "editor/editor_data.h"
 #include "editor/editor_plugin_settings.h"
 #include "editor/editor_sectioned_inspector.h"
+#include "editor/import_defaults_editor.h"
 #include "scene/gui/dialogs.h"
 #include "scene/gui/tab_container.h"
 
@@ -172,6 +173,8 @@ class ProjectSettingsEditor : public AcceptDialog {
 	TextureRect *restart_icon;
 	PanelContainer *restart_container;
 	ToolButton *restart_close_button;
+
+	ImportDefaultsEditor *import_defaults_editor;
 
 	void _editor_restart_request();
 	void _editor_restart();
