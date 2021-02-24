@@ -197,7 +197,7 @@
 			</description>
 		</signal>
 		<signal name="body_entered">
-			<argument index="0" name="body" type="Node">
+			<argument index="0" name="body" type="Node3D">
 			</argument>
 			<description>
 				Emitted when a [PhysicsBody3D] or [GridMap] enters this Area3D. Requires [member monitoring] to be set to [code]true[/code]. [GridMap]s are detected if the [MeshLibrary] has Collision [Shape3D]s.
@@ -205,7 +205,7 @@
 			</description>
 		</signal>
 		<signal name="body_exited">
-			<argument index="0" name="body" type="Node">
+			<argument index="0" name="body" type="Node3D">
 			</argument>
 			<description>
 				Emitted when a [PhysicsBody3D] or [GridMap] exits this Area3D. Requires [member monitoring] to be set to [code]true[/code]. [GridMap]s are detected if the [MeshLibrary] has Collision [Shape3D]s.
@@ -215,7 +215,7 @@
 		<signal name="body_shape_entered">
 			<argument index="0" name="body_id" type="int">
 			</argument>
-			<argument index="1" name="body" type="Node">
+			<argument index="1" name="body" type="Node3D">
 			</argument>
 			<argument index="2" name="body_shape" type="int">
 			</argument>
@@ -232,7 +232,7 @@
 		<signal name="body_shape_exited">
 			<argument index="0" name="body_id" type="int">
 			</argument>
-			<argument index="1" name="body" type="Node">
+			<argument index="1" name="body" type="Node3D">
 			</argument>
 			<argument index="2" name="body_shape" type="int">
 			</argument>
