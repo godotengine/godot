@@ -88,6 +88,10 @@ public:
 	uint32_t current_refprobe_index;
 	uint32_t current_shader_index;
 
+private:
+	uint32_t _light_counter;
+
+public:
 	RasterizerStorageGLES2 *storage;
 	struct State {
 
@@ -527,6 +531,10 @@ public:
 		uint16_t light_directional_index;
 
 		Rect2 directional_rect;
+
+		// an ever increasing counter for each light added,
+		// used for sorting lights for a consistent render
+		uint32_t light_counter;
 
 		Set<RID> shadow_atlases; // atlases where this light is registered
 	};

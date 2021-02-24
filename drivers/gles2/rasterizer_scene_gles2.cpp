@@ -899,6 +899,10 @@ RID RasterizerSceneGLES2::light_instance_create(RID p_light) {
 
 	light_instance->light_index = 0xFFFF;
 
+	// an ever increasing counter for each light added,
+	// used for sorting lights for a consistent render
+	light_instance->light_counter = _light_counter++;
+
 	if (!light_instance->light_ptr) {
 		memdelete(light_instance);
 		ERR_FAIL_V_MSG(RID(), "Condition ' !light_instance->light_ptr ' is true.");
@@ -3285,6 +3289,30 @@ void RasterizerSceneGLES2::render_scene(const Transform &p_cam_transform, const 
 			index++;
 		}
 
+		// for fog transmission, we want some kind of consistent ordering of lights
+		// add any more conditions here in which we need consistent light ordering
+		// (perhaps we always should have it, but don't know yet)
+		if (env && env->fog_transmit_enabled) {
+
+			struct _LightSort {
+
+				bool operator()(LightInstance *A, LightInstance *B) const {
+					return A->light_counter > B->light_counter;
+				}
+			};
+
+			int num_lights_to_sort = render_light_instance_count - render_directional_lights;
+
+			if (num_lights_to_sort) {
+				SortArray<LightInstance *, _LightSort> sorter;
+				sorter.sort(&render_light_instances[render_directional_lights], num_lights_to_sort);
+				// rejig indices
+				for (int i = render_directional_lights; i < render_light_instance_count; i++) {
+					render_light_instances[i]->light_index = i;
+				}
+			}
+		}
+
 	} else {
 		render_light_instances = NULL;
 		render_directional_lights = 0;
@@ -4086,4 +4114,5 @@ void RasterizerSceneGLES2::finalize() {
 }
 
 RasterizerSceneGLES2::RasterizerSceneGLES2() {
+	_light_counter = 0;
 }
