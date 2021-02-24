@@ -41,6 +41,7 @@
 			<return type="Array">
 			</return>
 			<description>
+				Returns an array of [ArrayMesh]es and [Transform] references of all bake meshes that exist within the current GridMap.
 			</description>
 		</method>
 		<method name="get_cell_item" qualifiers="const">
