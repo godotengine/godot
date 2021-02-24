@@ -59,8 +59,8 @@ public:
 	virtual ~TileSetAtlasPluginTileData(){};
 };
 
-class TileSetAtlasPlugin : public Object {
-	GDCLASS(TileSetAtlasPlugin, Object);
+class TileSetPlugin : public Object {
+	GDCLASS(TileSetPlugin, Object);
 
 public:
 	/*
@@ -70,10 +70,6 @@ public:
     virtual String get_layer_type_icon(int p_id) { return ""; };
     virtual bool get_layer_type_multiple_mode(int p_id) { return true; };
 */
-
-	// Name.
-	virtual String get_name() const = 0;
-	virtual String get_id() const = 0;
 
 	// Tilemap updates.
 	virtual void tilemap_notification(TileMap *p_tile_map, int p_what){};

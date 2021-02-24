@@ -34,6 +34,7 @@
 #include "core/io/resource.h"
 #include "core/object/object.h"
 
+#include "scene/main/canvas_item.h"
 #include "scene/resources/packed_scene.h"
 
 #include "tile_set_atlas_plugin.h"
@@ -56,16 +57,20 @@ class TileData : public Object {
 	GDCLASS(TileData, Object);
 
 private:
+	const TileSet *tile_set = nullptr;
 	bool allow_transform = true;
 
-	// --- Base properties ---
+	// Rendering
 	bool flip_h = false;
 	bool flip_v = false;
 	bool transpose = false;
+	Vector2i tex_offset = Vector2i();
+	Ref<ShaderMaterial> material = Ref<ShaderMaterial>();
+	Color modulate = Color(1.0, 1.0, 1.0, 1.0);
+	int z_index = 0;
+	Vector2i y_sort_origin = Vector2i();
+	Vector<Ref<OccluderPolygon2D>> occluders;
 
-	// --- Extended properties --
-	// Data from plugins
-	RenderingTileData rendering;
 	//TerrainTileData terrains;
 	//PhysicsTileData physics;
 	//NavigationData navigation;
@@ -81,38 +86,33 @@ protected:
 
 public:
 	// Not exposed.
+	void set_tile_set(const TileSet *p_tile_set);
+	void notify_tile_data_properties_should_change();
+	void reset_state();
 	void tile_set_allow_transform(bool p_allow_transform);
 	bool tile_is_allowing_transform() const;
 
-	// Base properties
-	void tile_set_texture_offset(Vector2i p_texture_offset);
-	Vector2i tile_get_texture_offset() const;
-	void tile_set_flip_h(bool p_flip_h);
-	bool tile_get_flip_h() const;
-	void tile_set_flip_v(bool p_flip_v);
-	bool tile_get_flip_v() const;
-	void tile_set_transpose(bool p_transpose);
-	bool tile_get_transpose() const;
-
-	// Misc
-	void tile_set_probability(float p_probability);
-	float tile_get_probability() const;
-
 	// Rendering
+	void set_flip_h(bool p_flip_h);
+	bool get_flip_h() const;
+	void set_flip_v(bool p_flip_v);
+	bool get_flip_v() const;
+	void set_transpose(bool p_transpose);
+	bool get_transpose() const;
+
+	void set_texture_offset(Vector2i p_texture_offset);
+	Vector2i get_texture_offset() const;
 	void tile_set_material(Ref<ShaderMaterial> p_material);
 	Ref<ShaderMaterial> tile_get_material() const;
+	void set_modulate(Color p_modulate);
+	Color get_modulate() const;
+	void set_z_index(int p_z_index);
+	int get_z_index() const;
+	void set_y_sort_origin(Vector2i p_y_sort_origin);
+	Vector2i get_y_sort_origin() const;
 
-	void tile_set_modulate(Color p_modulate);
-	Color tile_get_modulate() const;
-
-	void tile_set_z_index(int p_z_index);
-	int tile_get_z_index() const;
-
-	void tile_set_y_sort_origin(Vector2i p_y_sort_origin);
-	Vector2i tile_get_y_sort_origin() const;
-
-	void tile_set_occluder(int p_layer_id, Ref<OccluderPolygon2D> p_occluder_polygon);
-	Ref<OccluderPolygon2D> tile_get_occluder(int p_layer_id) const;
+	void set_occluder(int p_layer_id, Ref<OccluderPolygon2D> p_occluder_polygon);
+	Ref<OccluderPolygon2D> get_occluder(int p_layer_id) const;
 
 	// Terrain
 	/*
@@ -133,12 +133,25 @@ public:
 	/*
 	Ref<NavigationPolygon> tile_get_navigation(int p_layer_id) const;
 	*/
+
+	// Misc
+	void tile_set_probability(float p_probability);
+	float tile_get_probability() const;
 };
 
 class TileSetSource : public Resource {
 	GDCLASS(TileSetSource, Resource);
 
+protected:
+	const TileSet *tile_set = nullptr;
+
 public:
+	// Not exposed.
+	virtual void set_tile_set(const TileSet *p_tile_set);
+	virtual void notify_tile_data_properties_should_change(){};
+	virtual void reset_state() override{};
+
+	// Tiles checks.
 	virtual bool has_tile(Vector2i p_atlas_coords) const = 0;
 	virtual bool has_alternative_tile(const Vector2i p_atlas_coords, int p_alternative_tile) const = 0;
 };
@@ -184,6 +197,11 @@ protected:
 	static void _bind_methods();
 
 public:
+	// Not exposed.
+	virtual void set_tile_set(const TileSet *p_tile_set) override;
+	virtual void notify_tile_data_properties_should_change() override;
+	virtual void reset_state() override;
+
 	// Base properties.
 	void set_texture(Ref<Texture2D> p_texture);
 	Ref<Texture2D> get_texture() const;
@@ -328,8 +346,15 @@ private:
 	Size2i tile_size = Size2i(16, 16); //Size2(64, 64);
 	Vector2 tile_skew = Vector2(0, 0);
 
-	// Plugins data.
-	RenderingTileSetData rendering;
+	// Rendering.
+	bool y_sorting = false;
+	bool uv_clipping = false;
+	struct OcclusionLayer {
+		int light_mask = 0;
+		bool sdf_collision = false;
+	};
+	Vector<OcclusionLayer> occlusion_layers;
+
 	//TerrainsTileSetData terrains;
 	//PhysicsTileSetData physics;
 	//NavigationTileSetData navigation;
@@ -346,8 +371,7 @@ private:
 	//TileSetAtlasPluginPhysics tile_set_plugin_physics;
 	//TileSetAtlasPluginNavigation tile_set_plugin_navigation;
 
-	Map<String, TileSetAtlasPlugin *> tile_set_plugins;
-	Vector<TileSetAtlasPlugin *> tile_set_plugins_vector;
+	Vector<TileSetPlugin *> tile_set_plugins_vector;
 
 	void _compute_next_source_id();
 	void _source_changed();
@@ -357,7 +381,7 @@ protected:
 
 public:
 	// --- Plugins ---
-	Vector<TileSetAtlasPlugin *> get_tile_set_atlas_plugins() const;
+	Vector<TileSetPlugin *> get_tile_set_atlas_plugins() const;
 
 	// --- Accessors for TileSet data ---
 
@@ -383,13 +407,6 @@ public:
 	bool has_source(int p_source_id) const;
 	Ref<TileSetSource> get_source(int p_source_id) const;
 
-	// Atlases
-	/*int add_atlas_source(int p_atlas_source_id_override = -1);
-	void remove_atlas_source(int p_source_id);
-	void set_atlas_source_id(int p_source_id, int p_new_id);
-	bool has_atlas_source(int p_source_id) const;
-	TileSetAtlasSource *get_atlas_source(int p_source_id) const;
-*/
 	/*
 	// -- Plugins data accessors --
 	// Terrain
@@ -398,15 +415,21 @@ public:
 	String get_terrain_type_name(int p_layer_id, int p_terrain_type) const;
 	Ref<Texture2D> get_terrain_type_icon(int p_layer_id, int p_terrain_type) const;
 	Rect2i get_terrain_type_icon_region(int p_layer_id, int p_terrain_type) const;
-
-	// Rendering
 	*/
 
+	// Rendering
 	void set_y_sorting(bool p_y_sort);
 	bool is_y_sorting() const;
 
 	void set_uv_clipping(bool p_uv_clipping);
 	bool is_uv_clipping() const;
+
+	void set_occlusion_layers_count(int p_occlusion_layers_count);
+	int get_occlusion_layers_count() const;
+	void set_occlusion_layer_light_mask(int p_layer_index, int p_light_mask);
+	int get_occlusion_layer_light_mask(int p_layer_index) const;
+	void set_occlusion_layer_sdf_collision(int p_layer_index, int p_sdf_collision);
+	bool get_occlusion_layer_sdf_collision(int p_layer_index) const;
 
 	/*
 	// Physics
@@ -422,8 +445,10 @@ public:
 	*/
 
 	// Helpers
-	void draw_tile_shape(Control *p_control, Rect2 p_region, Color p_color, bool p_filled = false, Ref<Texture2D> p_texture = Ref<Texture2D>());
+	void draw_tile_shape(CanvasItem *p_canvas_item, Rect2 p_region, Color p_color, bool p_filled = false, Ref<Texture2D> p_texture = Ref<Texture2D>());
 	Vector2i get_tile_effective_texture_offset(int p_atlas_source_id, Vector2i p_atlas_coords, int p_alternative_tile) const;
+
+	virtual void reset_state();
 
 	TileSet();
 	~TileSet();

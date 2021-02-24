@@ -106,6 +106,7 @@ private:
 	TileProxyObject *tile_proxy_object;
 	Label *tile_inspector_label;
 	EditorInspector *tile_inspector;
+	String selected_property = "";
 	void _inspector_property_selected(String p_property);
 
 	TileSetAtlasSourceProxyObject *atlas_source_proxy_object;
@@ -189,7 +190,9 @@ private:
 	Ref<Texture2D> resize_handle;
 	Ref<Texture2D> resize_handle_disabled;
 	Control *tile_atlas_control;
+	Control *tile_atlas_control_unscaled;
 	void _tile_atlas_control_draw();
+	void _tile_atlas_control_unscaled_draw();
 	void _tile_atlas_control_mouse_exited();
 	void _tile_atlas_control_gui_input(const Ref<InputEvent> &p_event);
 	void _tile_atlas_view_transform_changed();
@@ -199,7 +202,9 @@ private:
 
 	PopupMenu *alternative_tile_popup_menu;
 	Control *alternative_tiles_control;
+	Control *alternative_tiles_control_unscaled;
 	void _tile_alternatives_control_draw();
+	void _tile_alternatives_control_unscaled_draw();
 	void _tile_alternatives_control_mouse_exited();
 	void _tile_alternatives_control_gui_input(const Ref<InputEvent> &p_event);
 

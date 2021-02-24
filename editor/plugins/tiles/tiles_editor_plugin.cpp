@@ -54,6 +54,7 @@ void TilesEditor::_notification(int p_what) {
 		} break;
 		case NOTIFICATION_INTERNAL_PROCESS: {
 			if (tile_map_changed_needs_update) {
+				TileMap *tile_map = Object::cast_to<TileMap>(ObjectDB::get_instance(tile_map_id));
 				if (tile_map) {
 					tile_set = tile_map->get_tileset();
 				}
@@ -70,6 +71,7 @@ void TilesEditor::_tile_map_changed() {
 
 void TilesEditor::_update_switch_button() {
 	// Force the buttons status if needed.
+	TileMap *tile_map = Object::cast_to<TileMap>(ObjectDB::get_instance(tile_map_id));
 	if (tile_map && !tile_set.is_valid()) {
 		tileset_tilemap_switch_button->set_pressed(false);
 	} else if (!tile_map && tile_set.is_valid()) {
@@ -93,6 +95,7 @@ void TilesEditor::_update_editors() {
 			tileset_tilemap_switch_button->set_tooltip(TTR("Switch between TileSet/TileMap editor."));
 		}
 	} else {
+		TileMap *tile_map = Object::cast_to<TileMap>(ObjectDB::get_instance(tile_map_id));
 		if (!tile_map) {
 			tileset_tilemap_switch_button->set_disabled(true);
 			tileset_tilemap_switch_button->set_tooltip(TTR("You are editing a TileSet resource. Select a TileMap node to paint."));
@@ -103,7 +106,12 @@ void TilesEditor::_update_editors() {
 	}
 
 	// If tile_map is not edited, we change the edited only if we are not editing a tile_set.
-	tilemap_editor->edit(tile_map);
+	TileMap *tile_map = Object::cast_to<TileMap>(ObjectDB::get_instance(tile_map_id));
+	if (tile_map) {
+		tilemap_editor->edit(tile_map);
+	} else {
+		tilemap_editor->edit(nullptr);
+	}
 	tileset_editor->edit(tile_set);
 
 	// Update the viewport
@@ -142,11 +150,9 @@ void TilesEditor::synchronize_atlas_view(Object *p_current) {
 	}
 }
 
-void TilesEditor::clear() {
-	tile_map = nullptr;
-}
-
 void TilesEditor::edit(Object *p_object) {
+	// Disconnect to changes.
+	TileMap *tile_map = Object::cast_to<TileMap>(ObjectDB::get_instance(tile_map_id));
 	if (tile_map) {
 		tile_map->disconnect("changed", callable_mp(this, &TilesEditor::_tile_map_changed));
 	}
@@ -155,12 +161,15 @@ void TilesEditor::edit(Object *p_object) {
 	tile_set = Ref<TileSet>();
 	if (p_object) {
 		if (p_object->is_class("TileMap")) {
-			tile_map = (TileMap *)p_object;
+			tile_map_id = p_object->get_instance_id();
+			tile_map = Object::cast_to<TileMap>(ObjectDB::get_instance(tile_map_id));
 			tile_set = tile_map->get_tileset();
 		} else if (p_object->is_class("TileSet")) {
 			tile_set = Ref<TileSet>(p_object);
-			if (tile_map && tile_map->get_tileset() != tile_set) {
-				tile_map = nullptr;
+			if (tile_map) {
+				if (tile_map->get_tileset() != tile_set) {
+					tile_map = nullptr;
+				}
 			}
 		}
 
@@ -179,9 +188,6 @@ void TilesEditor::edit(Object *p_object) {
 	// Add change listener.
 	if (tile_map) {
 		tile_map->connect("changed", callable_mp(this, &TilesEditor::_tile_map_changed));
-		if (!tile_map->is_connected("tree_exiting", callable_mp(this, &TilesEditor::clear))) {
-			tile_map->connect("tree_exiting", callable_mp(this, &TilesEditor::clear));
-		}
 	}
 }
 

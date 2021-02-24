@@ -123,8 +123,12 @@ public:
 
 	Vector2i get_atlas_tile_coords_at_pos(const Vector2 p_pos) const;
 
-	void add_control_over_atlas_tiles(Control *p_control) {
-		base_tiles_drawing_root->add_child(p_control);
+	void add_control_over_atlas_tiles(Control *p_control, bool scaled = true) {
+		if (scaled) {
+			base_tiles_drawing_root->add_child(p_control);
+		} else {
+			base_tiles_root_control->add_child(p_control);
+		}
 		p_control->set_mouse_filter(Control::MOUSE_FILTER_PASS);
 	};
 
@@ -132,8 +136,12 @@ public:
 	Vector3i get_alternative_tile_at_pos(const Vector2 p_pos) const;
 	Rect2i get_alternative_tile_rect(const Vector2i p_coords, int p_alternative_tile);
 
-	void add_control_over_alternative_tiles(Control *p_control) {
-		alternative_tiles_drawing_root->add_child(p_control);
+	void add_control_over_alternative_tiles(Control *p_control, bool scaled = true) {
+		if (scaled) {
+			alternative_tiles_drawing_root->add_child(p_control);
+		} else {
+			alternative_tiles_root_control->add_child(p_control);
+		}
 		p_control->set_mouse_filter(Control::MOUSE_FILTER_PASS);
 	};
 

@@ -106,6 +106,7 @@ struct TileMapQuadrant {
 	// Rendering
 	Vector2 pos;
 	List<RID> canvas_items;
+	List<RID> occluders;
 
 	void operator=(const TileMapQuadrant &q) {
 		pos = q.pos;
@@ -153,7 +154,7 @@ class TileMap : public Node2D {
 
 public:
 private:
-	friend class TileSetAtlasPlugin;
+	friend class TileSetPlugin;
 
 	enum DataFormat {
 		FORMAT_1 = 0,

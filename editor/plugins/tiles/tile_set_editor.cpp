@@ -30,6 +30,7 @@
 
 #include "tile_set_editor.h"
 
+#include "tile_data_editors.h"
 #include "tiles_editor_plugin.h"
 
 #include "editor/editor_scale.h"
@@ -268,6 +269,14 @@ void TileSetEditor::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("drop_data_fw"), &TileSetEditor::drop_data_fw);
 }
 
+TileDataEditor *TileSetEditor::get_tile_data_editor(String p_property) {
+	if (tile_data_editors.has(p_property)) {
+		return tile_data_editors[p_property];
+	} else {
+		return nullptr;
+	}
+}
+
 void TileSetEditor::edit(Ref<TileSet> p_tile_set) {
 	if (p_tile_set == tile_set) {
 		return;
@@ -295,6 +304,13 @@ TileSetEditor::TileSetEditor() {
 	singleton = this;
 
 	set_process_internal(true);
+
+	// TileData editors setup.
+	tile_data_editors["texture_offset"] = memnew(TileDataTextureOffsetEditor);
+	tile_data_editors["z_index"] = memnew(TileDataIntegerEditor);
+	tile_data_editors["y_sort_origin"] = memnew(TileDataPositionEditor);
+
+	tile_data_editors["probability"] = memnew(TileDataFloatEditor);
 
 	// Tab container
 	TabContainer *tab_container = memnew(TabContainer);
@@ -401,5 +417,8 @@ TileSetEditor::TileSetEditor() {
 TileSetEditor::~TileSetEditor() {
 	if (tile_set.is_valid()) {
 		tile_set->disconnect("changed", callable_mp(this, &TileSetEditor::_tile_set_changed));
+	}
+	for (Map<String, TileDataEditor *>::Element *E = tile_data_editors.front(); E; E = E->next()) {
+		memdelete(E->get());
 	}
 }

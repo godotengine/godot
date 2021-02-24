@@ -36,48 +36,14 @@
 #include "core/variant/variant.h"
 #include "scene/2d/light_occluder_2d.h"
 
-// TileSet data.
-struct RenderingTileSetData : public TileSetAtlasPluginTileSetData {
-	bool y_sorting = false;
-	bool uv_clipping = false;
-
-	Vector<int> occluder_light_masks;
-
-	virtual bool set(const StringName &p_name, const Variant &p_value) override;
-	virtual bool get(const StringName &p_name, Variant &r_ret) const override;
-	virtual void get_property_list(List<PropertyInfo> *p_list) const override;
-};
-
-// Tile data.
-struct RenderingTileData : public TileSetAtlasPluginTileData {
-	Vector2i tex_offset = Vector2i();
-	Ref<ShaderMaterial> material = Ref<ShaderMaterial>();
-	Color modulate = Color(1.0, 1.0, 1.0, 1.0);
-	int z_index = 0;
-	Vector2i y_sort_origin = Vector2i();
-	Vector<Ref<OccluderPolygon2D>> occluders;
-
-	virtual bool set(const StringName &p_name, const Variant &p_value) override;
-	virtual bool get(const StringName &p_name, Variant &r_ret) const override;
-	virtual void get_property_list(List<PropertyInfo> *p_list) const override;
-};
-
-class TileSetAtlasPluginRendering : public TileSetAtlasPlugin {
-	GDCLASS(TileSetAtlasPluginRendering, TileSetAtlasPlugin);
+class TileSetAtlasPluginRendering : public TileSetPlugin {
+	GDCLASS(TileSetAtlasPluginRendering, TileSetPlugin);
 
 private:
 	static constexpr float fp_adjust = 0.00001;
 	bool quadrant_order_dirty = false;
 
 public:
-	// Static functions.
-	static const String NAME;
-	static const String ID;
-
-	// Name and id.
-	virtual String get_name() const override { return NAME; };
-	virtual String get_id() const override { return ID; };
-
 	// Tilemap updates
 	virtual void tilemap_notification(TileMap *p_tile_map, int p_what) override;
 	virtual void update_dirty_quadrants(TileMap *p_tile_map, SelfList<TileMapQuadrant>::List &r_dirty_quadrant_list) override;

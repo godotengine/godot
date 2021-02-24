@@ -86,7 +86,7 @@ private:
 	void _tile_alternatives_control_gui_input(const Ref<InputEvent> &p_event);
 
 	// --- TileMap ---
-	TileMap *tile_map = nullptr;
+	ObjectID tile_map_id;
 
 	HBoxContainer *tilemap_toolbar;
 

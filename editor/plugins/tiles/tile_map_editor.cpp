@@ -74,6 +74,7 @@ void TileMapEditor::_notification(int p_what) {
 }
 
 void TileMapEditor::_update_bottom_panel() {
+	TileMap *tile_map = Object::cast_to<TileMap>(ObjectDB::get_instance(tile_map_id));
 	if (!tile_map) {
 		return;
 	}
@@ -95,6 +96,7 @@ void TileMapEditor::_update_tile_set_atlas_sources_list() {
 	int old_current = sources_list->get_current();
 	sources_list->clear();
 
+	TileMap *tile_map = Object::cast_to<TileMap>(ObjectDB::get_instance(tile_map_id));
 	if (!tile_map) {
 		return;
 	}
@@ -139,6 +141,7 @@ void TileMapEditor::_update_tile_set_atlas_sources_list() {
 
 void TileMapEditor::_update_atlas_view() {
 	// Update the atlas display.
+	TileMap *tile_map = Object::cast_to<TileMap>(ObjectDB::get_instance(tile_map_id));
 	if (!tile_map) {
 		return;
 	}
@@ -222,6 +225,10 @@ void TileMapEditor::_mouse_exited_viewport() {
 }
 
 Vector<Vector2i> TileMapEditor::_get_line(Vector2i p_from_cell, Vector2i p_to_cell) {
+	TileMap *tile_map = Object::cast_to<TileMap>(ObjectDB::get_instance(tile_map_id));
+	if (!tile_map) {
+		return Vector<Vector2i>();
+	}
 	ERR_FAIL_COND_V(!tile_map, Vector<Vector2i>());
 
 	Ref<TileSet> tile_set = tile_map->get_tileset();
@@ -295,6 +302,7 @@ Vector<Vector2i> TileMapEditor::_get_line(Vector2i p_from_cell, Vector2i p_to_ce
 }
 
 TileMapCell TileMapEditor::_pick_random_tile(const TileMapPattern *p_pattern) {
+	TileMap *tile_map = Object::cast_to<TileMap>(ObjectDB::get_instance(tile_map_id));
 	if (!tile_map) {
 		return TileMapCell();
 	}
@@ -344,6 +352,7 @@ TileMapCell TileMapEditor::_pick_random_tile(const TileMapPattern *p_pattern) {
 }
 
 Map<Vector2i, TileMapCell> TileMapEditor::_draw_line(Vector2 p_start_drag_mouse_pos, Vector2 p_from_mouse_pos, Vector2i p_to_mouse_pos) {
+	TileMap *tile_map = Object::cast_to<TileMap>(ObjectDB::get_instance(tile_map_id));
 	if (!tile_map) {
 		return Map<Vector2i, TileMapCell>();
 	}
@@ -391,6 +400,7 @@ Map<Vector2i, TileMapCell> TileMapEditor::_draw_line(Vector2 p_start_drag_mouse_
 }
 
 Map<Vector2i, TileMapCell> TileMapEditor::_draw_rect(Vector2i p_start_cell, Vector2i p_end_cell) {
+	TileMap *tile_map = Object::cast_to<TileMap>(ObjectDB::get_instance(tile_map_id));
 	if (!tile_map) {
 		return Map<Vector2i, TileMapCell>();
 	}
@@ -445,6 +455,7 @@ Map<Vector2i, TileMapCell> TileMapEditor::_draw_rect(Vector2i p_start_cell, Vect
 }
 
 Map<Vector2i, TileMapCell> TileMapEditor::_draw_bucket_fill(Vector2i p_coords, bool p_contiguous) {
+	TileMap *tile_map = Object::cast_to<TileMap>(ObjectDB::get_instance(tile_map_id));
 	if (!tile_map) {
 		return Map<Vector2i, TileMapCell>();
 	}
@@ -559,6 +570,7 @@ bool TileMapEditor::forward_canvas_gui_input(const Ref<InputEvent> &p_event) {
 		return false;
 	}
 
+	TileMap *tile_map = Object::cast_to<TileMap>(ObjectDB::get_instance(tile_map_id));
 	if (!tile_map) {
 		return false;
 	}
@@ -927,6 +939,7 @@ bool TileMapEditor::forward_canvas_gui_input(const Ref<InputEvent> &p_event) {
 }
 
 void TileMapEditor::forward_canvas_draw_over_viewport(Control *p_overlay) {
+	TileMap *tile_map = Object::cast_to<TileMap>(ObjectDB::get_instance(tile_map_id));
 	if (!tile_map) {
 		return;
 	}
@@ -1182,7 +1195,7 @@ void TileMapEditor::forward_canvas_draw_over_viewport(Control *p_overlay) {
 							Rect2 dest_rect;
 							dest_rect.size = source_rect.size;
 
-							bool transpose = tile_data->tile_get_transpose();
+							bool transpose = tile_data->get_transpose();
 							if (transpose) {
 								dest_rect.position = (tile_map->map_to_world(E->key()) - Vector2(dest_rect.size.y, dest_rect.size.x) / 2 - tile_offset);
 							} else {
@@ -1191,16 +1204,16 @@ void TileMapEditor::forward_canvas_draw_over_viewport(Control *p_overlay) {
 
 							dest_rect = xform.xform(dest_rect);
 
-							if (tile_data->tile_get_flip_h()) {
+							if (tile_data->get_flip_h()) {
 								dest_rect.size.x = -dest_rect.size.x;
 							}
 
-							if (tile_data->tile_get_flip_v()) {
+							if (tile_data->get_flip_v()) {
 								dest_rect.size.y = -dest_rect.size.y;
 							}
 
 							// Get the tile modulation.
-							Color modulate = atlas_source->get_tile_data(E->get().get_atlas_coords(), E->get().alternative_tile)->tile_get_modulate();
+							Color modulate = atlas_source->get_tile_data(E->get().get_atlas_coords(), E->get().alternative_tile)->get_modulate();
 							Color self_modulate = tile_map->get_self_modulate();
 							modulate = Color(modulate.r * self_modulate.r, modulate.g * self_modulate.g, modulate.b * self_modulate.b, modulate.a * self_modulate.a);
 
@@ -1221,16 +1234,26 @@ void TileMapEditor::forward_canvas_draw_over_viewport(Control *p_overlay) {
 }
 
 void TileMapEditor::edit(TileMap *p_tile_map) {
-	if (p_tile_map == tile_map) {
+	if (p_tile_map && p_tile_map->get_instance_id() == tile_map_id) {
 		return;
 	}
 
-	// Change the edited object.
-	tile_map = p_tile_map;
-
-	// Add the listener again.
+	// Disconnect to changes.
+	TileMap *tile_map = Object::cast_to<TileMap>(ObjectDB::get_instance(tile_map_id));
 	if (tile_map) {
-		tile_map->connect("changed", callable_mp(this, &TileMapEditor::_tile_map_changed));
+		tile_map->disconnect("changed", callable_mp(this, &TileMapEditor::_tile_map_changed));
+	}
+
+	// Change the edited object.
+	if (p_tile_map) {
+		tile_map_id = p_tile_map->get_instance_id();
+		tile_map = Object::cast_to<TileMap>(ObjectDB::get_instance(tile_map_id));
+		// Connect to changes.
+		if (!tile_map->is_connected("changed", callable_mp(this, &TileMapEditor::_tile_map_changed))) {
+			tile_map->connect("changed", callable_mp(this, &TileMapEditor::_tile_map_changed));
+		}
+	} else {
+		tile_map_id = ObjectID();
 	}
 
 	// Clean the selection.
@@ -1242,6 +1265,7 @@ void TileMapEditor::edit(TileMap *p_tile_map) {
 }
 
 void TileMapEditor::_update_fix_selected_and_hovered() {
+	TileMap *tile_map = Object::cast_to<TileMap>(ObjectDB::get_instance(tile_map_id));
 	if (!tile_map) {
 		hovered_tile.source_id = -1;
 		hovered_tile.set_atlas_coords(TileSetAtlasSource::INVALID_ATLAS_COORDS);
@@ -1304,6 +1328,7 @@ void TileMapEditor::_update_fix_selected_and_hovered() {
 }
 
 void TileMapEditor::_update_selection_pattern_from_tilemap_selection() {
+	TileMap *tile_map = Object::cast_to<TileMap>(ObjectDB::get_instance(tile_map_id));
 	if (!tile_map) {
 		return;
 	}
@@ -1318,6 +1343,7 @@ void TileMapEditor::_update_selection_pattern_from_tilemap_selection() {
 }
 
 void TileMapEditor::_update_selection_pattern_from_tileset_selection() {
+	TileMap *tile_map = Object::cast_to<TileMap>(ObjectDB::get_instance(tile_map_id));
 	if (!tile_map) {
 		return;
 	}
@@ -1402,6 +1428,7 @@ void TileMapEditor::_update_tileset_selection_from_selection_pattern() {
 }
 
 void TileMapEditor::_tile_atlas_control_draw() {
+	TileMap *tile_map = Object::cast_to<TileMap>(ObjectDB::get_instance(tile_map_id));
 	if (!tile_map) {
 		return;
 	}
@@ -1471,6 +1498,7 @@ void TileMapEditor::_tile_atlas_control_mouse_exited() {
 }
 
 void TileMapEditor::_tile_atlas_control_gui_input(const Ref<InputEvent> &p_event) {
+	TileMap *tile_map = Object::cast_to<TileMap>(ObjectDB::get_instance(tile_map_id));
 	if (!tile_map) {
 		return;
 	}
@@ -1576,6 +1604,7 @@ void TileMapEditor::_tile_atlas_control_gui_input(const Ref<InputEvent> &p_event
 }
 
 void TileMapEditor::_tile_alternatives_control_draw() {
+	TileMap *tile_map = Object::cast_to<TileMap>(ObjectDB::get_instance(tile_map_id));
 	if (!tile_map) {
 		return;
 	}
@@ -1628,6 +1657,7 @@ void TileMapEditor::_tile_alternatives_control_mouse_exited() {
 }
 
 void TileMapEditor::_tile_alternatives_control_gui_input(const Ref<InputEvent> &p_event) {
+	TileMap *tile_map = Object::cast_to<TileMap>(ObjectDB::get_instance(tile_map_id));
 	if (!tile_map) {
 		return;
 	}

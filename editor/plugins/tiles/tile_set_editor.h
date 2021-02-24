@@ -31,6 +31,7 @@
 #ifndef TILE_SET_EDITOR_H
 #define TILE_SET_EDITOR_H
 
+#include "tile_data_editors.h"
 #include "tile_set_atlas_source_editor.h"
 
 #include "scene/gui/box_container.h"
@@ -52,6 +53,9 @@ private:
 
 	void _update_atlas_sources_list(int force_selected_id = -1);
 
+	// TileData editors.
+	Map<String, TileDataEditor *> tile_data_editors;
+
 	// -- Sources management --
 	Button *sources_delete_button;
 	Button *sources_add_button;
@@ -69,6 +73,8 @@ protected:
 
 public:
 	_FORCE_INLINE_ static TileSetEditor *get_singleton() { return singleton; }
+
+	TileDataEditor *get_tile_data_editor(String property);
 	void edit(Ref<TileSet> p_tile_set);
 	void drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from);
 	bool can_drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from) const;

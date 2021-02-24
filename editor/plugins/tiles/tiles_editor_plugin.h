@@ -45,7 +45,7 @@ class TilesEditor : public VBoxContainer {
 
 private:
 	bool tile_map_changed_needs_update = false;
-	TileMap *tile_map = nullptr;
+	ObjectID tile_map_id;
 	Ref<TileSet> tile_set;
 
 	Button *tileset_tilemap_switch_button;
@@ -82,7 +82,6 @@ public:
 	void set_atlas_view_transform(float p_zoom, Vector2 p_scroll);
 	void synchronize_atlas_view(Object *p_current);
 
-	void clear();
 	void edit(Object *p_object);
 
 	TilesEditor(EditorNode *p_editor);

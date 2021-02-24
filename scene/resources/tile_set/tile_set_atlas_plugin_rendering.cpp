@@ -32,56 +32,47 @@
 
 #include "scene/2d/tile_map.h"
 
-// --- TileSet data ---
-bool RenderingTileSetData::set(const StringName &p_name, const Variant &p_value) {
-	if (p_name == "y_sorting") {
-		y_sorting = p_value;
-	} else if (p_name == "uv_clipping") {
-		uv_clipping = p_value;
-	} /*else if (p_name == "occluder_light_masks") {
-			occluder_light_masks = p_value;
-	} */
-	else {
-		return false;
-	}
-	return true;
-};
-
-bool RenderingTileSetData::get(const StringName &p_name, Variant &r_ret) const {
-	if (p_name == "y_sorting") {
-		r_ret = y_sorting;
-	} else if (p_name == "uv_clipping") {
-		r_ret = uv_clipping;
-	} /*else if (p_name == "occluder_light_masks") {
-			r_ret = occluder_light_masks;
-	} */
-	else {
-		return false;
-	}
-	return true;
-};
-
-void RenderingTileSetData::get_property_list(List<PropertyInfo> *p_list) const {
-	p_list->push_back(PropertyInfo(Variant::BOOL, "y_sorting", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR));
-	p_list->push_back(PropertyInfo(Variant::BOOL, "uv_clipping", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR));
-};
-
-bool RenderingTileData::set(const StringName &p_name, const Variant &p_value) {
-	return false;
-}
-
-bool RenderingTileData::get(const StringName &p_name, Variant &r_ret) const {
-	return false;
-}
-
-void RenderingTileData::get_property_list(List<PropertyInfo> *p_list) const {
-}
-
 // -----
-const String TileSetAtlasPluginRendering::NAME = "Rendering";
-const String TileSetAtlasPluginRendering::ID = "rendering";
-
 void TileSetAtlasPluginRendering::tilemap_notification(TileMap *p_tile_map, int p_what) {
+	switch (p_what) {
+		case CanvasItem::NOTIFICATION_VISIBILITY_CHANGED: {
+			bool visible = p_tile_map->is_visible_in_tree();
+			for (Map<Vector2i, TileMapQuadrant>::Element *E_quadrant = p_tile_map->get_quadrant_map().front(); E_quadrant; E_quadrant = E_quadrant->next()) {
+				TileMapQuadrant &q = E_quadrant->get();
+
+				// Update occluders transform.
+				for (Map<Vector2i, Vector2i, TileMapQuadrant::CoordsWorldComparator>::Element *E_cell = q.world_to_map.front(); E_cell; E_cell = E_cell->next()) {
+					Transform2D xform;
+					xform.set_origin(E_cell->key());
+					for (List<RID>::Element *E_occluder_id = q.occluders.front(); E_occluder_id; E_occluder_id = E_occluder_id->next()) {
+						RS::get_singleton()->canvas_light_occluder_set_enabled(E_occluder_id->get(), visible);
+					}
+				}
+			}
+		} break;
+		case Node::NOTIFICATION_ENTER_TREE: {
+		} break;
+		case Node::NOTIFICATION_EXIT_TREE: {
+		} break;
+		case CanvasItem::NOTIFICATION_TRANSFORM_CHANGED: {
+			if (!p_tile_map->is_inside_tree()) {
+				return;
+			}
+
+			for (Map<Vector2i, TileMapQuadrant>::Element *E_quadrant = p_tile_map->get_quadrant_map().front(); E_quadrant; E_quadrant = E_quadrant->next()) {
+				TileMapQuadrant &q = E_quadrant->get();
+
+				// Update occluders transform.
+				for (Map<Vector2i, Vector2i, TileMapQuadrant::CoordsWorldComparator>::Element *E_cell = q.world_to_map.front(); E_cell; E_cell = E_cell->next()) {
+					Transform2D xform;
+					xform.set_origin(E_cell->key());
+					for (List<RID>::Element *E_occluder_id = q.occluders.front(); E_occluder_id; E_occluder_id = E_occluder_id->next()) {
+						RS::get_singleton()->canvas_light_occluder_set_transform(E_occluder_id->get(), p_tile_map->get_global_transform() * xform);
+					}
+				}
+			}
+		} break;
+	}
 }
 
 void TileSetAtlasPluginRendering::draw_tile(RID p_canvas_item, Vector2i p_position, const Ref<TileSet> p_tile_set, int p_atlas_source_id, Vector2i p_atlas_coords, int p_alternative_tile, Color p_modulation) {
@@ -112,23 +103,23 @@ void TileSetAtlasPluginRendering::draw_tile(RID p_canvas_item, Vector2i p_positi
 		dest_rect.size.x += fp_adjust;
 		dest_rect.size.y += fp_adjust;
 
-		bool transpose = tile_data->tile_get_transpose();
+		bool transpose = tile_data->get_transpose();
 		if (transpose) {
 			dest_rect.position = (p_position - Vector2(dest_rect.size.y, dest_rect.size.x) / 2 - tile_offset);
 		} else {
 			dest_rect.position = (p_position - dest_rect.size / 2 - tile_offset);
 		}
 
-		if (tile_data->tile_get_flip_h()) {
+		if (tile_data->get_flip_h()) {
 			dest_rect.size.x = -dest_rect.size.x;
 		}
 
-		if (tile_data->tile_get_flip_v()) {
+		if (tile_data->get_flip_v()) {
 			dest_rect.size.y = -dest_rect.size.y;
 		}
 
 		// Get the tile modulation.
-		Color modulate = tile_data->tile_get_modulate();
+		Color modulate = tile_data->get_modulate();
 		modulate = Color(modulate.r * p_modulation.r, modulate.g * p_modulation.g, modulate.b * p_modulation.b, modulate.a * p_modulation.a);
 
 		// Draw the tile.
@@ -140,28 +131,35 @@ void TileSetAtlasPluginRendering::update_dirty_quadrants(TileMap *p_tile_map, Se
 	Ref<TileSet> tile_set = p_tile_map->get_tileset();
 	ERR_FAIL_COND(!tile_set.is_valid());
 
+	bool visible = p_tile_map->is_visible_in_tree();
+
 	SelfList<TileMapQuadrant> *q_list_element = r_dirty_quadrant_list.first();
 	while (q_list_element) {
 		TileMapQuadrant &q = *q_list_element->self();
 
-		// Draw offset.
-		RenderingServer *vs = RenderingServer::get_singleton();
+		RenderingServer *rs = RenderingServer::get_singleton();
 
-		// Free all canvas items in the quadrant.
+		// Free the canvas items.
 		for (List<RID>::Element *E = q.canvas_items.front(); E; E = E->next()) {
-			vs->free(E->get());
+			rs->free(E->get());
 		}
-
 		q.canvas_items.clear();
 
+		// Free the occluders.
+		for (List<RID>::Element *E = q.occluders.front(); E; E = E->next()) {
+			rs->free(E->get());
+		}
+		q.occluders.clear();
+
+		// Those allow to group cell per material or z-index.
 		Ref<ShaderMaterial> prev_material;
 		int prev_z_index = 0;
 		RID prev_canvas_item;
 		RID prev_debug_canvas_item;
 
 		// Iterate over the cells of the quadrant.
-		for (Map<Vector2i, Vector2i, TileMapQuadrant::CoordsWorldComparator>::Element *E = q.world_to_map.front(); E; E = E->next()) {
-			TileMapCell c = p_tile_map->get_cell(E->value());
+		for (Map<Vector2i, Vector2i, TileMapQuadrant::CoordsWorldComparator>::Element *E_cell = q.world_to_map.front(); E_cell; E_cell = E_cell->next()) {
+			TileMapCell c = p_tile_map->get_cell(E_cell->value());
 
 			TileSetSource *source;
 			if (tile_set->has_source(c.source_id)) {
@@ -176,28 +174,29 @@ void TileSetAtlasPluginRendering::update_dirty_quadrants(TileMap *p_tile_map, Se
 					// Get the tile data.
 					TileData *tile_data = atlas_source->get_tile_data(c.get_atlas_coords(), c.alternative_tile);
 					Ref<ShaderMaterial> mat = tile_data->tile_get_material();
-					int z_index = tile_data->tile_get_z_index();
+					int z_index = tile_data->get_z_index();
 
+					// --- CanvasItems ---
 					// Create two canvas items, for rendering and debug.
 					RID canvas_item;
 					RID debug_canvas_item;
 
 					// Check if the material or the z_index changed.
 					if (prev_canvas_item == RID() || prev_material != mat || prev_z_index != z_index) {
-						canvas_item = vs->canvas_item_create();
+						canvas_item = rs->canvas_item_create();
 						if (mat.is_valid()) {
-							vs->canvas_item_set_material(canvas_item, mat->get_rid());
+							rs->canvas_item_set_material(canvas_item, mat->get_rid());
 						}
-						vs->canvas_item_set_parent(canvas_item, p_tile_map->get_canvas_item());
-						RS::get_singleton()->canvas_item_set_use_parent_material(canvas_item, p_tile_map->get_use_parent_material() || p_tile_map->get_material().is_valid());
+						rs->canvas_item_set_parent(canvas_item, p_tile_map->get_canvas_item());
+						rs->canvas_item_set_use_parent_material(canvas_item, p_tile_map->get_use_parent_material() || p_tile_map->get_material().is_valid());
 						Transform2D xform;
 						xform.set_origin(q.pos);
-						vs->canvas_item_set_transform(canvas_item, xform);
-						vs->canvas_item_set_light_mask(canvas_item, p_tile_map->get_light_mask());
-						vs->canvas_item_set_z_index(canvas_item, z_index);
+						rs->canvas_item_set_transform(canvas_item, xform);
+						rs->canvas_item_set_light_mask(canvas_item, p_tile_map->get_light_mask());
+						rs->canvas_item_set_z_index(canvas_item, z_index);
 
-						vs->canvas_item_set_default_texture_filter(canvas_item, RS::CanvasItemTextureFilter(p_tile_map->CanvasItem::get_texture_filter()));
-						vs->canvas_item_set_default_texture_repeat(canvas_item, RS::CanvasItemTextureRepeat(p_tile_map->CanvasItem::get_texture_repeat()));
+						rs->canvas_item_set_default_texture_filter(canvas_item, RS::CanvasItemTextureFilter(p_tile_map->CanvasItem::get_texture_filter()));
+						rs->canvas_item_set_default_texture_repeat(canvas_item, RS::CanvasItemTextureRepeat(p_tile_map->CanvasItem::get_texture_repeat()));
 
 						q.canvas_items.push_back(canvas_item);
 
@@ -211,11 +210,26 @@ void TileSetAtlasPluginRendering::update_dirty_quadrants(TileMap *p_tile_map, Se
 					}
 
 					// Drawing the tile in the canvas item.
-					draw_tile(canvas_item, E->key() - q.pos, tile_set, c.source_id, c.get_atlas_coords(), c.alternative_tile, p_tile_map->get_self_modulate());
+					draw_tile(canvas_item, E_cell->key() - q.pos, tile_set, c.source_id, c.get_atlas_coords(), c.alternative_tile, p_tile_map->get_self_modulate());
 
 					// Change the debug_canvas_item transform ?
 					if (debug_canvas_item.is_valid()) {
-						vs->canvas_item_add_set_transform(debug_canvas_item, Transform2D());
+						rs->canvas_item_add_set_transform(debug_canvas_item, Transform2D());
+					}
+
+					// --- Occluders ---
+					for (int i = 0; i < tile_set->get_occlusion_layers_count(); i++) {
+						Transform2D xform;
+						xform.set_origin(E_cell->key());
+						if (tile_data->get_occluder(i).is_valid()) {
+							RID occluder_id = rs->canvas_light_occluder_create();
+							rs->canvas_light_occluder_set_enabled(occluder_id, visible);
+							rs->canvas_light_occluder_set_transform(occluder_id, p_tile_map->get_global_transform() * xform);
+							rs->canvas_light_occluder_set_polygon(occluder_id, tile_data->get_occluder(i)->get_rid());
+							rs->canvas_light_occluder_attach_to_canvas(occluder_id, p_tile_map->get_canvas());
+							rs->canvas_light_occluder_set_light_mask(occluder_id, tile_set->get_occlusion_layer_light_mask(i));
+							q.occluders.push_back(occluder_id);
+						}
 					}
 				}
 			}
@@ -260,117 +274,15 @@ void TileSetAtlasPluginRendering::create_quadrant(TileMap *p_tile_map, const Vec
 }
 
 void TileSetAtlasPluginRendering::cleanup_quadrant(TileMap *p_tile_map, TileMapQuadrant *p_quadrant) {
-	// Free the canvas item..
+	// Free the canvas items.
 	for (List<RID>::Element *E = p_quadrant->canvas_items.front(); E; E = E->next()) {
 		RenderingServer::get_singleton()->free(E->get());
 	}
 	p_quadrant->canvas_items.clear();
-}
 
-/*
-void TileSetPluginOccluders::tilemap_notification(TileMap * p_tile_map, int p_what) {
-	switch (p_what) {
-		case NOTIFICATION_ENTER_TREE: {
-		} break;
-
-		case NOTIFICATION_EXIT_TREE: {
-            for (Map<Vector2i, Quadrant>::Element *E = quadrant_map.front(); E; E = E->next()) {
-                Quadrant &q = E->get();
-
-                for (Map<Vector2i, Quadrant::Occluder>::Element *F = q.occluder_instances.front(); F; F = F->next()) {
-                    RS::get_singleton()->free(F->get().id);
-                }
-                q.occluder_instances.clear();
-            }
-		} break;
-
-		case NOTIFICATION_TRANSFORM_CHANGED: {
-		} break;
+	// Free the occluders.
+	for (List<RID>::Element *E = p_quadrant->occluders.front(); E; E = E->next()) {
+		RenderingServer::get_singleton()->free(E->get());
 	}
+	p_quadrant->occluders.clear();
 }
-
-void TileSetPluginOccluders::_update_transform(const TileMap * p_tile_map) {
-    if (!is_inside_tree()) {
-		return;
-	}
-
-	Transform2D global_transform = get_global_transform();
-
-    for (Map<Vector2i, Quadrant>::Element *E = quadrant_map.front(); E; E = E->next()) {
-        Quadrant &q = E->get();
-
-        // Occlusion
-        for (Map<Vector2i, Quadrant::Occluder>::Element *F = q.occluder_instances.front(); F; F = F->next()) {
-            RS::get_singleton()->canvas_light_occluder_set_transform(F->get().id, global_transform * F->get().xform);
-        }
-    }
-}
-
-
-
-
-
-
-// --- Called in update_dirty_quadrants ---
-// Occlusion: Clear occlusion shapes in the quadrant.
-for (Map<Vector2i, Quadrant::Occluder>::Element *E = q.occluder_instances.front(); E; E = E->next()) {
-    RS::get_singleton()->free(E->get().id);
-}
-q.occluder_instances.clear();
-
-while (dirty_quadrant_list.first()) {
-    Quadrant &q = *dirty_quadrant_list.first()->self();
-
-    for (int i = 0; i < q.cells.size(); i++) {
-        // Occlusion: handle occluder shape.
-        Ref<OccluderPolygon2D> occluder;
-        if (tile_set->tile_get_tile_mode(c.source_id) == TileSet::AUTO_TILE || tile_set->tile_get_tile_mode(c.source_id) == TileSet::ATLAS_TILE) {
-            occluder = tile_set->autotile_get_light_occluder(c.source_id, c.get_tileset_coords());
-        } else {
-            occluder = tile_set->tile_get_light_occluder(c.source_id);
-        }
-        if (occluder.is_valid()) {
-            Vector2 occluder_ofs = tile_set->tile_get_occluder_offset(c.source_id);
-            Transform2D xform;
-            xform.set_origin(offset.floor() + q.pos);
-            _fix_cell_transform(xform, c, occluder_ofs, s);
-
-            RID orid = RS::get_singleton()->canvas_light_occluder_create();
-            RS::get_singleton()->canvas_light_occluder_set_transform(orid, get_global_transform() * xform);
-            RS::get_singleton()->canvas_light_occluder_set_polygon(orid, occluder->get_rid());
-            RS::get_singleton()->canvas_light_occluder_attach_to_canvas(orid, get_canvas());
-            RS::get_singleton()->canvas_light_occluder_set_light_mask(orid, occluder_light_mask);
-            Quadrant::Occluder oc;
-            oc.xform = xform;
-            oc.id = orid;
-            q.occluder_instances[E->key()] = oc;
-        }
-    }
-}
-
-
-
-// --- Called in _erase_quadrant ---
-// Occlusion: remove occluders
-for (Map<Vector2i, Quadrant::Occluder>::Element *E = q.occluder_instances.front(); E; E = E->next()) {
-    RS::get_singleton()->free(E->get().id);
-}
-q.occluder_instances.clear();
-
-
-// --- Accessors ---
-int TileMap::get_occluder_light_mask() const {
-	// Occlusion: set light mask.
-	return occluder_light_mask;
-}
-
-void TileMap::set_occluder_light_mask(int p_mask) {
-	// Occlusion: set occluder light mask.
-	occluder_light_mask = p_mask;
-	for (Map<Vector2i, Quadrant>::Element *E = quadrant_map.front(); E; E = E->next()) {
-		for (Map<Vector2i, Quadrant::Occluder>::Element *F = E->get().occluder_instances.front(); F; F = F->next()) {
-			RenderingServer::get_singleton()->canvas_light_occluder_set_light_mask(F->get().id, occluder_light_mask);
-		}
-	}
-}
-*/

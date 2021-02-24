@@ -44,6 +44,7 @@
 #include "scene/gui/split_container.h"
 #include "scene/gui/tab_container.h"
 
+#include "core/core_string_names.h"
 #include "core/math/geometry_2d.h"
 #include "core/os/keyboard.h"
 
@@ -105,12 +106,23 @@ void TileSetAtlasSourceEditor::TileSetAtlasSourceProxyObject::edit(Ref<TileSet> 
 	ERR_FAIL_COND(!p_tile_set_atlas_source);
 	ERR_FAIL_COND(p_source_id < 0);
 	ERR_FAIL_COND(p_tile_set->get_source(p_source_id) != p_tile_set_atlas_source);
-	if (tile_set == p_tile_set && p_tile_set_atlas_source == tile_set_atlas_source && p_source_id == source_id) {
-		return;
+
+	// Disconnect to changes.
+	if (tile_set_atlas_source) {
+		tile_set_atlas_source->disconnect(CoreStringNames::get_singleton()->property_list_changed, callable_mp((Object *)this, &Object::notify_property_list_changed));
 	}
+
 	tile_set = p_tile_set;
 	tile_set_atlas_source = p_tile_set_atlas_source;
 	source_id = p_source_id;
+
+	// Connect to changes.
+	if (tile_set_atlas_source) {
+		if (!tile_set_atlas_source->is_connected(CoreStringNames::get_singleton()->property_list_changed, callable_mp((Object *)this, &Object::notify_property_list_changed))) {
+			tile_set_atlas_source->connect(CoreStringNames::get_singleton()->property_list_changed, callable_mp((Object *)this, &Object::notify_property_list_changed));
+		}
+	}
+
 	notify_property_list_changed();
 }
 
@@ -221,13 +233,25 @@ void TileSetAtlasSourceEditor::TileProxyObject::edit(TileSetAtlasSource *p_tile_
 	ERR_FAIL_COND(p_source_id < 0);
 	ERR_FAIL_COND(p_coords == TileSetAtlasSource::INVALID_ATLAS_COORDS);
 	ERR_FAIL_COND(p_alternative_tile < 0);
-	if (tile_set_atlas_source == p_tile_set_atlas_source && p_source_id == source_id && coords == p_coords && alternative_tile == p_alternative_tile) {
-		return;
+
+	// Disconnect to changes.
+	if (tile_set_atlas_source && tile_set_atlas_source->has_tile(coords) && tile_set_atlas_source->has_alternative_tile(coords, alternative_tile)) {
+		tile_set_atlas_source->get_tile_data(coords, alternative_tile)->disconnect(CoreStringNames::get_singleton()->property_list_changed, callable_mp((Object *)this, &Object::notify_property_list_changed));
 	}
+
 	tile_set_atlas_source = p_tile_set_atlas_source;
 	source_id = p_source_id;
 	coords = p_coords;
 	alternative_tile = p_alternative_tile;
+
+	// Connect to changes.
+	if (tile_set_atlas_source->has_tile(coords) && tile_set_atlas_source->has_alternative_tile(coords, alternative_tile)) {
+		TileData *tile_data = tile_set_atlas_source->get_tile_data(coords, alternative_tile);
+		if (!tile_data->is_connected(CoreStringNames::get_singleton()->property_list_changed, callable_mp((Object *)this, &Object::notify_property_list_changed))) {
+			tile_data->connect(CoreStringNames::get_singleton()->property_list_changed, callable_mp((Object *)this, &Object::notify_property_list_changed));
+		}
+	}
+
 	notify_property_list_changed();
 }
 
@@ -335,7 +359,9 @@ void TileSetAtlasSourceEditor::_update_atlas_view() {
 
 	// Redraw everything.
 	tile_atlas_control->update();
+	tile_atlas_control_unscaled->update();
 	alternative_tiles_control->update();
+	alternative_tiles_control_unscaled->update();
 	tile_atlas_view->update();
 
 	// Synchronize atlas view.
@@ -362,11 +388,13 @@ void TileSetAtlasSourceEditor::_update_toolbar() {
 void TileSetAtlasSourceEditor::_tile_atlas_control_mouse_exited() {
 	hovered_base_tile_coords = TileSetAtlasSource::INVALID_ATLAS_COORDS;
 	tile_atlas_control->update();
+	tile_atlas_control_unscaled->update();
 	tile_atlas_view->update();
 }
 
 void TileSetAtlasSourceEditor::_tile_atlas_view_transform_changed() {
 	tile_atlas_control->update();
+	tile_atlas_control_unscaled->update();
 }
 
 void TileSetAtlasSourceEditor::_tile_atlas_control_gui_input(const Ref<InputEvent> &p_event) {
@@ -507,7 +535,9 @@ void TileSetAtlasSourceEditor::_tile_atlas_control_gui_input(const Ref<InputEven
 
 		// Redraw for the hovered tile.
 		tile_atlas_control->update();
+		tile_atlas_control_unscaled->update();
 		alternative_tiles_control->update();
+		alternative_tiles_control_unscaled->update();
 		tile_atlas_view->update();
 		return;
 	}
@@ -661,7 +691,9 @@ void TileSetAtlasSourceEditor::_tile_atlas_control_gui_input(const Ref<InputEven
 				_end_dragging();
 			}
 			tile_atlas_control->update();
+			tile_atlas_control_unscaled->update();
 			alternative_tiles_control->update();
+			alternative_tiles_control_unscaled->update();
 			tile_atlas_view->update();
 			return;
 		} else if (mb->get_button_index() == BUTTON_RIGHT) {
@@ -695,7 +727,9 @@ void TileSetAtlasSourceEditor::_tile_atlas_control_gui_input(const Ref<InputEven
 				_end_dragging();
 			}
 			tile_atlas_control->update();
+			tile_atlas_control_unscaled->update();
 			alternative_tiles_control->update();
+			alternative_tiles_control_unscaled->update();
 			tile_atlas_view->update();
 			return;
 		}
@@ -1095,6 +1129,23 @@ void TileSetAtlasSourceEditor::_tile_atlas_control_draw() {
 	}
 }
 
+void TileSetAtlasSourceEditor::_tile_atlas_control_unscaled_draw() {
+	// Draw the preview of the selected property.
+	TileDataEditor *tile_data_editor = TileSetEditor::get_singleton()->get_tile_data_editor(selected_property);
+	if (tile_inspector->is_visible_in_tree() && tile_data_editor) {
+		for (int i = 0; i < tile_set_atlas_source->get_tiles_count(); i++) {
+			Vector2i coords = tile_set_atlas_source->get_tile_id(i);
+			Rect2i texture_region = tile_set_atlas_source->get_tile_texture_region(coords);
+			Vector2i position = (texture_region.position + texture_region.get_end()) / 2 + tile_set->get_tile_effective_texture_offset(tile_set_atlas_source_id, coords, 0);
+
+			Transform2D xform = tile_atlas_control->get_parent_control()->get_transform();
+			xform.translate(position);
+
+			tile_data_editor->draw_over_tile(tile_atlas_control_unscaled, xform, *tile_set, tile_set_atlas_source_id, coords, 0, selected_property);
+		}
+	}
+}
+
 void TileSetAtlasSourceEditor::_tile_alternatives_control_gui_input(const Ref<InputEvent> &p_event) {
 	// Update the hovered alternative tile.
 	hovered_alternative_tile_coords = tile_atlas_view->get_alternative_tile_at_pos(alternative_tiles_control->get_local_mouse_position());
@@ -1102,7 +1153,9 @@ void TileSetAtlasSourceEditor::_tile_alternatives_control_gui_input(const Ref<In
 	Ref<InputEventMouseMotion> mm = p_event;
 	if (mm.is_valid()) {
 		tile_atlas_control->update();
+		tile_atlas_control_unscaled->update();
 		alternative_tiles_control->update();
+		alternative_tiles_control_unscaled->update();
 	}
 
 	Ref<InputEventMouseButton> mb = p_event;
@@ -1140,14 +1193,18 @@ void TileSetAtlasSourceEditor::_tile_alternatives_control_gui_input(const Ref<In
 			}
 		}
 		tile_atlas_control->update();
+		tile_atlas_control_unscaled->update();
 		alternative_tiles_control->update();
+		alternative_tiles_control_unscaled->update();
 	}
 }
 
 void TileSetAtlasSourceEditor::_tile_alternatives_control_mouse_exited() {
 	hovered_alternative_tile_coords = Vector3i(TileSetAtlasSource::INVALID_ATLAS_COORDS.x, TileSetAtlasSource::INVALID_ATLAS_COORDS.y, TileSetAtlasSource::INVALID_TILE_ALTERNATIVE);
 	tile_atlas_control->update();
+	tile_atlas_control_unscaled->update();
 	alternative_tiles_control->update();
+	alternative_tiles_control_unscaled->update();
 }
 
 void TileSetAtlasSourceEditor::_tile_alternatives_control_draw() {
@@ -1170,6 +1227,10 @@ void TileSetAtlasSourceEditor::_tile_alternatives_control_draw() {
 			}
 		}
 	}
+}
+
+void TileSetAtlasSourceEditor::_tile_alternatives_control_unscaled_draw() {
+	//TODO
 }
 
 void TileSetAtlasSourceEditor::_tile_set_atlas_source_changed() {
@@ -1540,6 +1601,12 @@ TileSetAtlasSourceEditor::TileSetAtlasSourceEditor() {
 	tile_atlas_control->connect("gui_input", callable_mp(this, &TileSetAtlasSourceEditor::_tile_atlas_control_gui_input));
 	tile_atlas_view->add_control_over_atlas_tiles(tile_atlas_control);
 
+	tile_atlas_control_unscaled = memnew(Control);
+	tile_atlas_control_unscaled->set_anchors_and_offsets_preset(Control::PRESET_WIDE);
+	tile_atlas_control_unscaled->connect("draw", callable_mp(this, &TileSetAtlasSourceEditor::_tile_atlas_control_unscaled_draw));
+	tile_atlas_view->add_control_over_atlas_tiles(tile_atlas_control_unscaled, false);
+	tile_atlas_control_unscaled->set_mouse_filter(Control::MOUSE_FILTER_IGNORE);
+
 	alternative_tile_popup_menu = memnew(PopupMenu);
 	alternative_tile_popup_menu->add_shortcut(ED_SHORTCUT("tiles_editor/delete_tile", TTR("Delete"), KEY_DELETE), TILE_DELETE);
 	alternative_tile_popup_menu->connect("id_pressed", callable_mp(this, &TileSetAtlasSourceEditor::_menu_option));
@@ -1550,6 +1617,12 @@ TileSetAtlasSourceEditor::TileSetAtlasSourceEditor() {
 	alternative_tiles_control->connect("mouse_exited", callable_mp(this, &TileSetAtlasSourceEditor::_tile_alternatives_control_mouse_exited));
 	alternative_tiles_control->connect("gui_input", callable_mp(this, &TileSetAtlasSourceEditor::_tile_alternatives_control_gui_input));
 	tile_atlas_view->add_control_over_alternative_tiles(alternative_tiles_control);
+
+	alternative_tiles_control_unscaled = memnew(Control);
+	alternative_tiles_control_unscaled->set_anchors_and_offsets_preset(Control::PRESET_WIDE);
+	alternative_tiles_control_unscaled->connect("draw", callable_mp(this, &TileSetAtlasSourceEditor::_tile_alternatives_control_unscaled_draw));
+	tile_atlas_view->add_control_over_atlas_tiles(alternative_tiles_control_unscaled, false);
+	alternative_tiles_control_unscaled->set_mouse_filter(Control::MOUSE_FILTER_IGNORE);
 
 	tile_atlas_view_missing_source_label = memnew(Label);
 	tile_atlas_view_missing_source_label->set_text(TTR("Add or select an atlas texture to the left panel."));

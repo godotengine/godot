@@ -260,7 +260,9 @@ void TileMap::_notification(int p_what) {
 		case NOTIFICATION_ENTER_TREE: {
 			pending_update = true;
 			_recreate_quadrants();
-			update_dirty_quadrants();
+		} break;
+		case NOTIFICATION_EXIT_TREE: {
+			_clear_quadrants();
 		} break;
 	}
 
@@ -325,20 +327,20 @@ void TileMap::_fix_cell_transform(Transform2D &xform, const TileMapCell &p_cell,
 		return;
 	}
 	TileData *tile_data = atlas_source->get_tile_data(p_cell.get_atlas_coords(), p_cell.alternative_tile);
-	if (tile_data->tile_get_transpose()) {
+	if (tile_data->get_transpose()) {
 		SWAP(xform.elements[0].x, xform.elements[0].y);
 		SWAP(xform.elements[1].x, xform.elements[1].y);
 		SWAP(offset.x, offset.y);
 		SWAP(s.x, s.y);
 	}
 
-	if (tile_data->tile_get_flip_h()) {
+	if (tile_data->get_flip_h()) {
 		xform.elements[0].x = -xform.elements[0].x;
 		xform.elements[1].x = -xform.elements[1].x;
 		offset.x = s.x - offset.x;
 	}
 
-	if (tile_data->tile_get_flip_v()) {
+	if (tile_data->get_flip_v()) {
 		xform.elements[0].y = -xform.elements[0].y;
 		xform.elements[1].y = -xform.elements[1].y;
 		offset.y = s.y - offset.y;
@@ -414,15 +416,15 @@ void TileMap::_recompute_rect_cache() {
 }
 
 Map<Vector2i, TileMapQuadrant>::Element *TileMap::_create_quadrant(const Vector2i &p_qk) {
-	ERR_FAIL_COND_V(!tile_set.is_valid(), nullptr);
-
 	TileMapQuadrant q;
 
 	rect_cache_dirty = true;
 
 	// Call the update_dirty_quadrant method on plugins
-	for (int i = 0; i < tile_set->get_tile_set_atlas_plugins().size(); i++) {
-		tile_set->get_tile_set_atlas_plugins()[i]->create_quadrant(this, p_qk, &q);
+	if (tile_set.is_valid()) {
+		for (int i = 0; i < tile_set->get_tile_set_atlas_plugins().size(); i++) {
+			tile_set->get_tile_set_atlas_plugins()[i]->create_quadrant(this, p_qk, &q);
+		}
 	}
 
 	return quadrant_map.insert(p_qk, q);
@@ -433,8 +435,10 @@ void TileMap::_erase_quadrant(Map<Vector2i, TileMapQuadrant>::Element *Q) {
 	TileMapQuadrant *q = &(Q->get());
 
 	// Call the cleanup_quadrant method on plugins.
-	for (int i = 0; i < tile_set->get_tile_set_atlas_plugins().size(); i++) {
-		tile_set->get_tile_set_atlas_plugins()[i]->cleanup_quadrant(this, q);
+	if (tile_set.is_valid()) {
+		for (int i = 0; i < tile_set->get_tile_set_atlas_plugins().size(); i++) {
+			tile_set->get_tile_set_atlas_plugins()[i]->cleanup_quadrant(this, q);
+		}
 	}
 
 	// Remove the quadrant from the dirty_list if it is there.
@@ -1426,4 +1430,5 @@ TileMap::~TileMap() {
 	if (tile_set.is_valid()) {
 		tile_set->disconnect("changed", callable_mp(this, &TileMap::_tile_set_changed));
 	}
+	_clear_quadrants();
 }
