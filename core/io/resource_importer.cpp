@@ -352,6 +352,12 @@ void ResourceFormatImporter::get_importers_for_extension(const String &p_extensi
 	}
 }
 
+void ResourceFormatImporter::get_importers(List<Ref<ResourceImporter>> *r_importers) {
+	for (int i = 0; i < importers.size(); i++) {
+		r_importers->push_back(importers[i]);
+	}
+}
+
 Ref<ResourceImporter> ResourceFormatImporter::get_importer_by_extension(const String &p_extension) const {
 	Ref<ResourceImporter> importer;
 	float priority = 0;
