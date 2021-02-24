@@ -570,6 +570,39 @@ RID TextServerAdvanced::create_font_memory(const uint8_t *p_data, size_t p_size,
 	return font_owner.make_rid(fd);
 }
 
+RID TextServerAdvanced::create_font_bitmap(float p_height, float p_ascent, int p_base_size) {
+	_THREAD_SAFE_METHOD_
+	FontDataAdvanced *fd = memnew(BitmapFontDataAdvanced);
+	Error err = fd->bitmap_new(p_height, p_ascent, p_base_size);
+	if (err != OK) {
+		memdelete(fd);
+		return RID();
+	}
+
+	return font_owner.make_rid(fd);
+}
+
+void TextServerAdvanced::font_bitmap_add_texture(RID p_font, const Ref<Texture> &p_texture) {
+	_THREAD_SAFE_METHOD_
+	FontDataAdvanced *fd = font_owner.getornull(p_font);
+	ERR_FAIL_COND(!fd);
+	fd->bitmap_add_texture(p_texture);
+}
+
+void TextServerAdvanced::font_bitmap_add_char(RID p_font, char32_t p_char, int p_texture_idx, const Rect2 &p_rect, const Size2 &p_align, float p_advance) {
+	_THREAD_SAFE_METHOD_
+	FontDataAdvanced *fd = font_owner.getornull(p_font);
+	ERR_FAIL_COND(!fd);
+	fd->bitmap_add_char(p_char, p_texture_idx, p_rect, p_align, p_advance);
+}
+
+void TextServerAdvanced::font_bitmap_add_kerning_pair(RID p_font, char32_t p_A, char32_t p_B, int p_kerning) {
+	_THREAD_SAFE_METHOD_
+	FontDataAdvanced *fd = font_owner.getornull(p_font);
+	ERR_FAIL_COND(!fd);
+	fd->bitmap_add_kerning_pair(p_A, p_B, p_kerning);
+}
+
 float TextServerAdvanced::font_get_height(RID p_font, int p_size) const {
 	_THREAD_SAFE_METHOD_
 	const FontDataAdvanced *fd = font_owner.getornull(p_font);

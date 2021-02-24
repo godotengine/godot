@@ -69,6 +69,12 @@ public:
 	void load_memory(const uint8_t *p_data, size_t p_size, const String &p_type, int p_base_size = 16);
 	void _load_memory(const PackedByteArray &p_data, const String &p_type, int p_base_size = 16);
 
+	void new_bitmap(float p_height, float p_ascent, int p_base_size = 16);
+
+	void bitmap_add_texture(const Ref<Texture> &p_texture);
+	void bitmap_add_char(char32_t p_char, int p_texture_idx, const Rect2 &p_rect, const Size2 &p_align, float p_advance);
+	void bitmap_add_kerning_pair(char32_t p_A, char32_t p_B, int p_kerning);
+
 	void set_data_path(const String &p_path);
 	String get_data_path() const;
 

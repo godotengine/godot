@@ -42,8 +42,13 @@ struct FontDataFallback {
 
 	virtual void clear_cache() = 0;
 
-	virtual Error load_from_file(const String &p_filename, int p_base_size) = 0;
-	virtual Error load_from_memory(const uint8_t *p_data, size_t p_size, int p_base_size) = 0;
+	virtual Error load_from_file(const String &p_filename, int p_base_size) { return ERR_CANT_CREATE; };
+	virtual Error load_from_memory(const uint8_t *p_data, size_t p_size, int p_base_size) { return ERR_CANT_CREATE; };
+	virtual Error bitmap_new(float p_height, float p_ascent, int p_base_size) { return ERR_CANT_CREATE; };
+
+	virtual void bitmap_add_texture(const Ref<Texture> &p_texture) { ERR_FAIL_MSG("Not supported."); };
+	virtual void bitmap_add_char(char32_t p_char, int p_texture_idx, const Rect2 &p_rect, const Size2 &p_align, float p_advance) { ERR_FAIL_MSG("Not supported."); };
+	virtual void bitmap_add_kerning_pair(char32_t p_A, char32_t p_B, int p_kerning) { ERR_FAIL_MSG("Not supported."); };
 
 	virtual float get_height(int p_size) const = 0;
 	virtual float get_ascent(int p_size) const = 0;

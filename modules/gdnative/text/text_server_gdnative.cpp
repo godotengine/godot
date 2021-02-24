@@ -113,6 +113,28 @@ RID TextServerGDNative::create_font_memory(const uint8_t *p_data, size_t p_size,
 	return rid;
 }
 
+RID TextServerGDNative::create_font_bitmap(float p_height, float p_ascent, int p_base_size) {
+	ERR_FAIL_COND_V(interface == nullptr, RID());
+	godot_rid result = interface->create_font_bitmap(data, p_height, p_ascent, p_base_size);
+	RID rid = *(RID *)&result;
+	return rid;
+}
+
+void TextServerGDNative::font_bitmap_add_texture(RID p_font, const Ref<Texture> &p_texture) {
+	ERR_FAIL_COND(interface == nullptr);
+	interface->font_bitmap_add_texture(data, (godot_rid *)&p_font, (const godot_object *)p_texture.ptr());
+}
+
+void TextServerGDNative::font_bitmap_add_char(RID p_font, char32_t p_char, int p_texture_idx, const Rect2 &p_rect, const Size2 &p_align, float p_advance) {
+	ERR_FAIL_COND(interface == nullptr);
+	interface->font_bitmap_add_char(data, (godot_rid *)&p_font, p_char, p_texture_idx, (const godot_rect2 *)&p_rect, (const godot_vector2 *)&p_align, p_advance);
+}
+
+void TextServerGDNative::font_bitmap_add_kerning_pair(RID p_font, char32_t p_A, char32_t p_B, int p_kerning) {
+	ERR_FAIL_COND(interface == nullptr);
+	interface->font_bitmap_add_kerning_pair(data, (godot_rid *)&p_font, p_A, p_B, p_kerning);
+}
+
 float TextServerGDNative::font_get_height(RID p_font, int p_size) const {
 	ERR_FAIL_COND_V(interface == nullptr, 0.f);
 	return interface->font_get_height(data, (godot_rid *)&p_font, p_size);
