@@ -7,6 +7,11 @@
     <!-- TODO: Remove the 'requestLegacyExternalStorage' attribute when https://github.com/godotengine/godot/issues/38913 is resolved -->
     <application android:requestLegacyExternalStorage="true">
 
+        <!-- Records the version of the Godot library -->
+        <meta-data
+            android:name="org.godotengine.library.version"
+            android:value="${godotLibraryVersion}" />
+
         <service android:name=".GodotDownloaderService" />
 
     </application>
