@@ -491,11 +491,7 @@ void EditorNode::_notification(int p_what) {
 				}
 
 				for (int i = 0; i < addons.size(); i++) {
-					if (addons[i].begins_with("res://")) {
-						set_addon_plugin_enabled(addons[i], true);
-					} else {
-						set_addon_plugin_enabled("res://addons/" + addons[i] + "/plugin.cfg", true);
-					}
+					set_addon_plugin_enabled(addons[i], true);
 				}
 				_initializing_addons = false;
 			}
@@ -3210,7 +3206,11 @@ void EditorNode::_update_addon_config() {
 	project_settings->queue_save();
 }
 
-void EditorNode::set_addon_plugin_enabled(const String &p_addon, bool p_enabled, bool p_config_changed) {
+void EditorNode::set_addon_plugin_enabled(String p_addon, bool p_enabled, bool p_config_changed) {
+
+	if (!p_addon.begins_with("res://")) {
+		p_addon = _to_absolute_plugin_path(p_addon);
+	}
 
 	ERR_FAIL_COND(p_enabled && plugin_addons.has(p_addon));
 	ERR_FAIL_COND(!p_enabled && !plugin_addons.has(p_addon));
@@ -3293,7 +3293,11 @@ void EditorNode::set_addon_plugin_enabled(const String &p_addon, bool p_enabled,
 
 bool EditorNode::is_addon_plugin_enabled(const String &p_addon) const {
 
-	return plugin_addons.has(p_addon);
+	if (p_addon.begins_with("res://")) {
+		return plugin_addons.has(p_addon);
+	}
+
+	return plugin_addons.has(_to_absolute_plugin_path(p_addon));
 }
 
 void EditorNode::_remove_edited_scene(bool p_change_tab) {
@@ -3966,6 +3970,10 @@ Ref<ImageTexture> EditorNode::_load_custom_class_icon(const String &p_path) cons
 		}
 	}
 	return NULL;
+}
+
+String EditorNode::_to_absolute_plugin_path(const String &p_plugin_name) {
+	return "res://addons/" + p_plugin_name + "/plugin.cfg";
 }
 
 Ref<Texture> EditorNode::get_object_icon(const Object *p_object, const String &p_fallback) const {

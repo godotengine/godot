@@ -653,6 +653,8 @@ private:
 	bool _is_class_editor_disabled_by_feature_profile(const StringName &p_class);
 	Ref<ImageTexture> _load_custom_class_icon(const String &p_path) const;
 
+	static String _to_absolute_plugin_path(const String &p_path);
+
 protected:
 	void _notification(int p_what);
 
@@ -705,7 +707,7 @@ public:
 	void add_control_to_dock(DockSlot p_slot, Control *p_control);
 	void remove_control_from_dock(Control *p_control);
 
-	void set_addon_plugin_enabled(const String &p_addon, bool p_enabled, bool p_config_changed = false);
+	void set_addon_plugin_enabled(String p_addon, bool p_enabled, bool p_config_changed = false);
 	bool is_addon_plugin_enabled(const String &p_addon) const;
 
 	void edit_node(Node *p_node);
