@@ -909,7 +909,7 @@ Error ProjectSettings::save_custom(const String &p_path, const CustomMap &p_cust
 		custom_features += f;
 	}
 
-	if (p_path.ends_with(".godot")) {
+	if (p_path.ends_with(".godot") || p_path.ends_with("override.cfg")) {
 		return _save_settings_text(p_path, props, p_custom, custom_features);
 	} else if (p_path.ends_with(".binary")) {
 		return _save_settings_binary(p_path, props, p_custom, custom_features);
