@@ -828,8 +828,7 @@ void ProjectSettingsEditor::_item_selected(const String &p_path) {
 	const String &selected_path = p_path;
 	if (selected_path == String())
 		return;
-	category->set_text(globals_editor->get_current_section());
-	property->set_text(selected_path);
+	property->set_text(globals_editor->get_current_section().plus_file(selected_path));
 	popup_copy_to_feature->set_disabled(false);
 }
 
@@ -845,18 +844,15 @@ void ProjectSettingsEditor::_item_add() {
 	Variant::CallError ce;
 	const Variant value = Variant::construct(Variant::Type(type->get_selected() + 1), NULL, 0, ce);
 
-	String catname = category->get_text().strip_edges();
-	String propname = property->get_text().strip_edges();
+	String name = property->get_text().strip_edges();
 
-	if (propname.empty()) {
+	if (name.empty()) {
 		return;
 	}
 
-	if (catname.empty()) {
-		catname = "global";
+	if (name.find("/") == -1) {
+		name = "global/" + name;
 	}
-
-	String name = catname + "/" + propname;
 
 	undo_redo->create_action(TTR("Add Global Property"));
 
@@ -876,7 +872,7 @@ void ProjectSettingsEditor::_item_add() {
 
 	undo_redo->commit_action();
 
-	globals_editor->set_current_section(catname);
+	globals_editor->set_current_section(name.get_slice("/", 1));
 
 	_settings_changed();
 }
@@ -1811,15 +1807,6 @@ ProjectSettingsEditor::ProjectSettingsEditor(EditorData *p_data) {
 
 	Label *l = memnew(Label);
 	add_prop_bar->add_child(l);
-	l->set_text(TTR("Category:"));
-
-	category = memnew(LineEdit);
-	category->set_h_size_flags(Control::SIZE_EXPAND_FILL);
-	add_prop_bar->add_child(category);
-	category->connect("text_entered", this, "_item_adds");
-
-	l = memnew(Label);
-	add_prop_bar->add_child(l);
 	l->set_text(TTR("Property:"));
 
 	property = memnew(LineEdit);
@@ -1832,7 +1819,7 @@ ProjectSettingsEditor::ProjectSettingsEditor(EditorData *p_data) {
 	l->set_text(TTR("Type:"));
 
 	type = memnew(OptionButton);
-	type->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+	type->set_custom_minimum_size(Size2(100, 0) * EDSCALE);
 	add_prop_bar->add_child(type);
 
 	for (int i = 0; i < Variant::VARIANT_MAX; i++) {
