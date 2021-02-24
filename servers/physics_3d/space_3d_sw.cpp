@@ -210,6 +210,10 @@ int PhysicsDirectSpaceState3DSW::intersect_shape(const RID &p_shape, const Trans
 		const CollisionObject3DSW *col_obj = space->intersection_query_results[i];
 		int shape_idx = space->intersection_query_subindex_results[i];
 
+		if (col_obj->is_shape_set_as_disabled(shape_idx)) {
+			continue;
+		}
+
 		if (!CollisionSolver3DSW::solve_static(shape, p_xform, col_obj->get_shape(shape_idx), col_obj->get_transform() * col_obj->get_shape_transform(shape_idx), nullptr, nullptr, nullptr, p_margin, 0)) {
 			continue;
 		}
@@ -264,6 +268,10 @@ bool PhysicsDirectSpaceState3DSW::cast_motion(const RID &p_shape, const Transfor
 
 		const CollisionObject3DSW *col_obj = space->intersection_query_results[i];
 		int shape_idx = space->intersection_query_subindex_results[i];
+
+		if (col_obj->is_shape_set_as_disabled(shape_idx)) {
+			continue;
+		}
 
 		Vector3 point_A, point_B;
 		Vector3 sep_axis = p_motion.normalized();
@@ -365,9 +373,14 @@ bool PhysicsDirectSpaceState3DSW::collide_shape(RID p_shape, const Transform &p_
 		}
 
 		const CollisionObject3DSW *col_obj = space->intersection_query_results[i];
-		int shape_idx = space->intersection_query_subindex_results[i];
 
 		if (p_exclude.has(col_obj->get_self())) {
+			continue;
+		}
+
+		int shape_idx = space->intersection_query_subindex_results[i];
+
+		if (col_obj->is_shape_set_as_disabled(shape_idx)) {
 			continue;
 		}
 
@@ -435,9 +448,14 @@ bool PhysicsDirectSpaceState3DSW::rest_info(RID p_shape, const Transform &p_shap
 		}
 
 		const CollisionObject3DSW *col_obj = space->intersection_query_results[i];
-		int shape_idx = space->intersection_query_subindex_results[i];
 
 		if (p_exclude.has(col_obj->get_self())) {
+			continue;
+		}
+
+		int shape_idx = space->intersection_query_subindex_results[i];
+
+		if (col_obj->is_shape_set_as_disabled(shape_idx)) {
 			continue;
 		}
 
