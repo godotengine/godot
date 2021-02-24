@@ -6,7 +6,9 @@ from collections import OrderedDict
 from compat import iteritems, isbasestring, open_utf8, decode_utf8, qualname
 
 from SCons import Node
+from SCons.Script import ARGUMENTS
 from SCons.Script import Glob
+from SCons.Variables.BoolVariable import _text2bool
 
 
 def add_source_files(self, sources, files, warn_duplicates=True):
@@ -132,6 +134,17 @@ def parse_cg_file(fname, uniforms, sizes, conditionals):
         line = fs.readline()
 
     fs.close()
+
+
+def get_cmdline_bool(option, default):
+    """We use `ARGUMENTS.get()` to check if options were manually overridden on the command line,
+    and SCons' _text2bool helper to convert them to booleans, otherwise they're handled as strings.
+    """
+    cmdline_val = ARGUMENTS.get(option)
+    if cmdline_val is not None:
+        return _text2bool(cmdline_val)
+    else:
+        return default
 
 
 def detect_modules(search_path, recursive=False):
