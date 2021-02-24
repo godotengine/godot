@@ -132,24 +132,28 @@ void CollisionPolygon2D::_notification(int p_what) {
 				break;
 			}
 
-			for (int i = 0; i < polygon.size(); i++) {
-				Vector2 p = polygon[i];
-				Vector2 n = polygon[(i + 1) % polygon.size()];
-				// draw line with width <= 1, so it does not scale with zoom and break pixel exact editing
-				draw_line(p, n, Color(0.9, 0.2, 0.0, 0.8), 1);
-			}
+			Color color = get_tree()->get_debug_collisions_color();
+
+			draw_polyline(polygon, color);
+			// Draw the last segment as it's not drawn by `canvas_item_add_polyline()`.
+			draw_line(polygon[polygon.size() - 1], polygon[0], color);
+
 #define DEBUG_DECOMPOSE
 #if defined(TOOLS_ENABLED) && defined(DEBUG_DECOMPOSE)
-
 			Vector<Vector<Vector2>> decomp = _decompose_in_convex();
 
-			Color c(0.4, 0.9, 0.1);
+			Color c = color;
+			float min_value = 0.2;
 			for (int i = 0; i < decomp.size(); i++) {
-				c.set_hsv(Math::fmod(c.get_h() + 0.738, 1), c.get_s(), c.get_v(), 0.5);
 				draw_colored_polygon(decomp[i], c);
+				float new_value = Math::fmod(c.get_v() + 0.738, 1.0);
+				if (new_value < min_value) {
+					new_value += min_value;
+				}
+				c.set_hsv(c.get_h(), c.get_s(), new_value, c.a);
 			}
 #else
-			draw_colored_polygon(polygon, get_tree()->get_debug_collisions_color());
+			draw_colored_polygon(polygon, color);
 #endif
 
 			if (one_way_collision) {
