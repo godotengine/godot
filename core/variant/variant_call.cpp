@@ -42,6 +42,16 @@
 typedef void (*VariantFunc)(Variant &r_ret, Variant &p_self, const Variant **p_args);
 typedef void (*VariantConstructFunc)(Variant &r_ret, const Variant **p_args);
 
+template <class R, class... P>
+static _FORCE_INLINE_ void vc_static_method_call(R (*method)(P...), const Variant **p_args, int p_argcount, Variant &r_ret, const Vector<Variant> &p_defvals, Callable::CallError &r_error) {
+	call_with_variant_args_static_ret_dv(method, p_args, p_argcount, r_ret, r_error, p_defvals);
+}
+
+template <class... P>
+static _FORCE_INLINE_ void vc_static_method_call(void (*method)(P...), const Variant **p_args, int p_argcount, Variant &r_ret, const Vector<Variant> &p_defvals, Callable::CallError &r_error) {
+	call_with_variant_args_static_dv(method, p_args, p_argcount, r_error, p_defvals);
+}
+
 template <class R, class T, class... P>
 static _FORCE_INLINE_ void vc_method_call(R (T::*method)(P...), Variant *base, const Variant **p_args, int p_argcount, Variant &r_ret, const Vector<Variant> &p_defvals, Callable::CallError &r_error) {
 	call_with_variant_args_ret_dv(VariantGetInternalPtr<T>::get_ptr(base), method, p_args, p_argcount, r_ret, r_error, p_defvals);
@@ -79,6 +89,16 @@ static _FORCE_INLINE_ void vc_validated_call(void (T::*method)(P...), Variant *b
 template <class T, class... P>
 static _FORCE_INLINE_ void vc_validated_call(void (T::*method)(P...) const, Variant *base, const Variant **p_args, Variant *r_ret) {
 	call_with_validated_variant_argsc(base, method, p_args);
+}
+
+template <class R, class... P>
+static _FORCE_INLINE_ void vc_validated_static_call(R (*method)(P...), const Variant **p_args, Variant *r_ret) {
+	call_with_validated_variant_args_static_method_ret(method, p_args, r_ret);
+}
+
+template <class... P>
+static _FORCE_INLINE_ void vc_validated_static_call(void (*method)(P...), const Variant **p_args, Variant *r_ret) {
+	call_with_validated_variant_args_static_method(method, p_args);
 }
 
 template <class R, class T, class... P>
@@ -150,6 +170,11 @@ static _FORCE_INLINE_ int vc_get_argument_count(R (*method)(T *, P...)) {
 	return sizeof...(P);
 }
 
+template <class R, class... P>
+static _FORCE_INLINE_ int vc_get_argument_count_static(R (*method)(P...)) {
+	return sizeof...(P);
+}
+
 template <class R, class T, class... P>
 static _FORCE_INLINE_ Variant::Type vc_get_argument_type(R (T::*method)(P...), int p_arg) {
 	return call_get_argument_type<P...>(p_arg);
@@ -171,6 +196,11 @@ static _FORCE_INLINE_ Variant::Type vc_get_argument_type(void (T::*method)(P...)
 
 template <class R, class T, class... P>
 static _FORCE_INLINE_ Variant::Type vc_get_argument_type(R (*method)(T *, P...), int p_arg) {
+	return call_get_argument_type<P...>(p_arg);
+}
+
+template <class R, class... P>
+static _FORCE_INLINE_ Variant::Type vc_get_argument_type_static(R (*method)(P...), int p_arg) {
 	return call_get_argument_type<P...>(p_arg);
 }
 
@@ -216,6 +246,16 @@ static _FORCE_INLINE_ bool vc_has_return_type(void (T::*method)(P...)) {
 template <class T, class... P>
 static _FORCE_INLINE_ bool vc_has_return_type(void (T::*method)(P...) const) {
 	return false;
+}
+
+template <class... P>
+static _FORCE_INLINE_ bool vc_has_return_type_static(void (*method)(P...)) {
+	return false;
+}
+
+template <class R, class... P>
+static _FORCE_INLINE_ bool vc_has_return_type_static(R (*method)(P...)) {
+	return true;
 }
 
 template <class R, class T, class... P>
@@ -283,11 +323,65 @@ static _FORCE_INLINE_ Variant::Type vc_get_base_type(void (T::*method)(P...) con
 		static bool is_const() {                                                                                                                                  \
 			return vc_is_const(m_method_ptr);                                                                                                                     \
 		}                                                                                                                                                         \
+		static bool is_static() {                                                                                                                                 \
+			return false;                                                                                                                                         \
+		}                                                                                                                                                         \
 		static bool is_vararg() {                                                                                                                                 \
 			return false;                                                                                                                                         \
 		}                                                                                                                                                         \
 		static Variant::Type get_base_type() {                                                                                                                    \
 			return vc_get_base_type(m_method_ptr);                                                                                                                \
+		}                                                                                                                                                         \
+		static StringName get_name() {                                                                                                                            \
+			return #m_method_name;                                                                                                                                \
+		}                                                                                                                                                         \
+	};
+
+template <class R, class... P>
+static _FORCE_INLINE_ void vc_static_ptrcall(R (*method)(P...), const void **p_args, void *r_ret) {
+	call_with_ptr_args_static_method_ret<R, P...>(method, p_args, r_ret);
+}
+
+template <class... P>
+static _FORCE_INLINE_ void vc_static_ptrcall(void (*method)(P...), const void **p_args, void *r_ret) {
+	call_with_ptr_args_static_method<P...>(method, p_args);
+}
+
+#define STATIC_METHOD_CLASS(m_class, m_method_name, m_method_ptr)                                                                                                 \
+	struct Method_##m_class##_##m_method_name {                                                                                                                   \
+		static void call(Variant *base, const Variant **p_args, int p_argcount, Variant &r_ret, const Vector<Variant> &p_defvals, Callable::CallError &r_error) { \
+			vc_static_method_call(m_method_ptr, p_args, p_argcount, r_ret, p_defvals, r_error);                                                                   \
+		}                                                                                                                                                         \
+		static void validated_call(Variant *base, const Variant **p_args, int p_argcount, Variant *r_ret) {                                                       \
+			vc_change_return_type(m_method_ptr, r_ret);                                                                                                           \
+			vc_validated_static_call(m_method_ptr, p_args, r_ret);                                                                                                \
+		}                                                                                                                                                         \
+		static void ptrcall(void *p_base, const void **p_args, void *r_ret, int p_argcount) {                                                                     \
+			vc_static_ptrcall(m_method_ptr, p_args, r_ret);                                                                                                       \
+		}                                                                                                                                                         \
+		static int get_argument_count() {                                                                                                                         \
+			return vc_get_argument_count_static(m_method_ptr);                                                                                                    \
+		}                                                                                                                                                         \
+		static Variant::Type get_argument_type(int p_arg) {                                                                                                       \
+			return vc_get_argument_type_static(m_method_ptr, p_arg);                                                                                              \
+		}                                                                                                                                                         \
+		static Variant::Type get_return_type() {                                                                                                                  \
+			return vc_get_return_type(m_method_ptr);                                                                                                              \
+		}                                                                                                                                                         \
+		static bool has_return_type() {                                                                                                                           \
+			return vc_has_return_type_static(m_method_ptr);                                                                                                       \
+		}                                                                                                                                                         \
+		static bool is_const() {                                                                                                                                  \
+			return false;                                                                                                                                         \
+		}                                                                                                                                                         \
+		static bool is_static() {                                                                                                                                 \
+			return true;                                                                                                                                          \
+		}                                                                                                                                                         \
+		static bool is_vararg() {                                                                                                                                 \
+			return false;                                                                                                                                         \
+		}                                                                                                                                                         \
+		static Variant::Type get_base_type() {                                                                                                                    \
+			return GetTypeInfo<m_class>::VARIANT_TYPE;                                                                                                            \
 		}                                                                                                                                                         \
 		static StringName get_name() {                                                                                                                            \
 			return #m_method_name;                                                                                                                                \
@@ -325,6 +419,9 @@ static _FORCE_INLINE_ void vc_ptrcall(R (*method)(T *, P...), void *p_base, cons
 		}                                                                                                                                                             \
 		static bool is_const() {                                                                                                                                      \
 			return true;                                                                                                                                              \
+		}                                                                                                                                                             \
+		static bool is_static() {                                                                                                                                     \
+			return false;                                                                                                                                             \
 		}                                                                                                                                                             \
 		static bool is_vararg() {                                                                                                                                     \
 			return false;                                                                                                                                             \
@@ -378,6 +475,9 @@ static _FORCE_INLINE_ void vc_ptrcall(R (*method)(T *, P...), void *p_base, cons
 		}                                                                                                                                                         \
 		static bool is_const() {                                                                                                                                  \
 			return true;                                                                                                                                          \
+		}                                                                                                                                                         \
+		static bool is_static() {                                                                                                                                 \
+			return false;                                                                                                                                         \
 		}                                                                                                                                                         \
 		static bool is_vararg() {                                                                                                                                 \
 			return true;                                                                                                                                          \
@@ -549,6 +649,7 @@ struct VariantBuiltInMethodInfo {
 	Vector<String> argument_names;
 
 	bool is_const;
+	bool is_static;
 	bool has_return_type;
 	bool is_vararg;
 	Variant::Type return_type;
@@ -580,6 +681,7 @@ static void register_builtin_method(const Vector<String> &p_argnames, const Vect
 	imi.argument_names = p_argnames;
 
 	imi.is_const = T::is_const();
+	imi.is_static = T::is_static();
 	imi.is_vararg = T::is_vararg();
 	imi.has_return_type = T::has_return_type();
 	imi.return_type = T::get_return_type();
@@ -623,6 +725,24 @@ void Variant::call(const StringName &p_method, const Variant **p_args, int p_arg
 
 		imf->call(this, p_args, p_argcount, r_ret, imf->default_arguments, r_error);
 	}
+}
+
+void Variant::call_static(Variant::Type p_type, const StringName &p_method, const Variant **p_args, int p_argcount, Variant &r_ret, Callable::CallError &r_error) {
+	r_error.error = Callable::CallError::CALL_OK;
+
+	const VariantBuiltInMethodInfo *imf = builtin_method_info[p_type].lookup_ptr(p_method);
+
+	if (!imf) {
+		r_error.error = Callable::CallError::CALL_ERROR_INVALID_METHOD;
+		return;
+	}
+
+	if (!imf->is_static) {
+		r_error.error = Callable::CallError::CALL_ERROR_INSTANCE_IS_NULL;
+		return;
+	}
+
+	imf->call(nullptr, p_args, p_argcount, r_ret, imf->default_arguments, r_error);
 }
 
 bool Variant::has_method(const StringName &p_method) const {
@@ -724,6 +844,13 @@ bool Variant::is_builtin_method_const(Variant::Type p_type, const StringName &p_
 	return method->is_const;
 }
 
+bool Variant::is_builtin_method_static(Variant::Type p_type, const StringName &p_method) {
+	ERR_FAIL_INDEX_V(p_type, Variant::VARIANT_MAX, false);
+	const VariantBuiltInMethodInfo *method = builtin_method_info[p_type].lookup_ptr(p_method);
+	ERR_FAIL_COND_V(!method, false);
+	return method->is_static;
+}
+
 bool Variant::is_builtin_method_vararg(Variant::Type p_type, const StringName &p_method) {
 	ERR_FAIL_INDEX_V(p_type, Variant::VARIANT_MAX, false);
 	const VariantBuiltInMethodInfo *method = builtin_method_info[p_type].lookup_ptr(p_method);
@@ -759,7 +886,9 @@ void Variant::get_method_list(List<MethodInfo> *p_list) const {
 			if (method->is_vararg) {
 				mi.flags |= METHOD_FLAG_VARARG;
 			}
-
+			if (method->is_static) {
+				mi.flags |= METHOD_FLAG_STATIC;
+			}
 			for (int i = 0; i < method->argument_count; i++) {
 				PropertyInfo pi;
 #ifdef DEBUG_METHODS_ENABLED
@@ -851,6 +980,16 @@ Variant Variant::get_constant_value(Variant::Type p_type, const StringName &p_va
 #else
 #define bind_method(m_type, m_method, m_arg_names, m_default_args) \
 	METHOD_CLASS(m_type, m_method, &m_type ::m_method);            \
+	register_builtin_method<Method_##m_type##_##m_method>(sarray(), m_default_args);
+#endif
+
+#ifdef DEBUG_METHODS_ENABLED
+#define bind_static_method(m_type, m_method, m_arg_names, m_default_args) \
+	STATIC_METHOD_CLASS(m_type, m_method, m_type::m_method);              \
+	register_builtin_method<Method_##m_type##_##m_method>(m_arg_names, m_default_args);
+#else
+#define bind_static_method(m_type, m_method, m_arg_names, m_default_args) \
+	STATIC_METHOD_CLASS(m_type, m_method, m_type ::m_method);             \
 	register_builtin_method<Method_##m_type##_##m_method>(sarray(), m_default_args);
 #endif
 
@@ -982,6 +1121,11 @@ static void _register_variant_builtin_methods() {
 	bind_method(String, to_utf8_buffer, sarray(), varray());
 	bind_method(String, to_utf16_buffer, sarray(), varray());
 	bind_method(String, to_utf32_buffer, sarray(), varray());
+
+	bind_static_method(String, num_scientific, sarray("number"), varray());
+	bind_static_method(String, num, sarray("number", "decimals"), varray(-1));
+	bind_static_method(String, chr, sarray("char"), varray());
+	bind_static_method(String, humanize_size, sarray("size"), varray());
 
 	/* Vector2 */
 
@@ -1146,6 +1290,17 @@ static void _register_variant_builtin_methods() {
 	// FIXME: Color is immutable, need to probably find a way to do this via constructor
 	//ADDFUNC4R(COLOR, COLOR, Color, from_hsv, FLOAT, "h", FLOAT, "s", FLOAT, "v", FLOAT, "a", varray(1.0));
 	bind_method(Color, is_equal_approx, sarray("to"), varray());
+
+	bind_static_method(Color, hex, sarray("hex"), varray());
+	bind_static_method(Color, hex64, sarray("hex"), varray());
+	bind_static_method(Color, html, sarray("rgba"), varray());
+	bind_static_method(Color, html_is_valid, sarray("color"), varray());
+	bind_static_method(Color, find_named_color, sarray("name"), varray());
+	bind_static_method(Color, get_named_color_count, sarray(), varray());
+	bind_static_method(Color, get_named_color_name, sarray("idx"), varray());
+	bind_static_method(Color, get_named_color, sarray("idx"), varray());
+	bind_static_method(Color, from_string, sarray("str", "default"), varray());
+	bind_static_method(Color, from_rgbe9995, sarray("rgbe"), varray());
 
 	/* RID */
 

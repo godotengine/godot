@@ -238,6 +238,16 @@ void call_with_ptr_args_static_retc_helper(T *p_instance, R (*p_method)(T *, P..
 	PtrToArg<R>::encode(p_method(p_instance, PtrToArg<P>::convert(p_args[Is])...), r_ret);
 }
 
+template <class R, class... P, size_t... Is>
+void call_with_ptr_args_static_method_ret_helper(R (*p_method)(P...), const void **p_args, void *r_ret, IndexSequence<Is...>) {
+	PtrToArg<R>::encode(p_method(PtrToArg<P>::convert(p_args[Is])...), r_ret);
+}
+
+template <class... P, size_t... Is>
+void call_with_ptr_args_static_method_helper(void (*p_method)(P...), const void **p_args, IndexSequence<Is...>) {
+	p_method(PtrToArg<P>::convert(p_args[Is])...);
+}
+
 template <class T, class... P, size_t... Is>
 void call_with_validated_variant_args_helper(T *p_instance, void (T::*p_method)(P...), const Variant **p_args, IndexSequence<Is...>) {
 	(p_instance->*p_method)((VariantInternalAccessor<typename GetSimpleTypeT<P>::type_t>::get(p_args[Is]))...);
@@ -261,6 +271,16 @@ void call_with_validated_variant_args_retc_helper(T *p_instance, R (T::*p_method
 template <class T, class R, class... P, size_t... Is>
 void call_with_validated_variant_args_static_retc_helper(T *p_instance, R (*p_method)(T *, P...), const Variant **p_args, Variant *r_ret, IndexSequence<Is...>) {
 	VariantInternalAccessor<typename GetSimpleTypeT<R>::type_t>::set(r_ret, p_method(p_instance, (VariantInternalAccessor<typename GetSimpleTypeT<P>::type_t>::get(p_args[Is]))...));
+}
+
+template <class R, class... P, size_t... Is>
+void call_with_validated_variant_args_static_method_ret_helper(R (*p_method)(P...), const Variant **p_args, Variant *r_ret, IndexSequence<Is...>) {
+	VariantInternalAccessor<typename GetSimpleTypeT<R>::type_t>::set(r_ret, p_method((VariantInternalAccessor<typename GetSimpleTypeT<P>::type_t>::get(p_args[Is]))...));
+}
+
+template <class... P, size_t... Is>
+void call_with_validated_variant_args_static_method_helper(void (*p_method)(P...), const Variant **p_args, IndexSequence<Is...>) {
+	p_method((VariantInternalAccessor<typename GetSimpleTypeT<P>::type_t>::get(p_args[Is]))...);
 }
 
 template <class T, class... P>
@@ -456,6 +476,16 @@ void call_with_ptr_args_static_retc(T *p_instance, R (*p_method)(T *, P...), con
 	call_with_ptr_args_static_retc_helper<T, R, P...>(p_instance, p_method, p_args, r_ret, BuildIndexSequence<sizeof...(P)>{});
 }
 
+template <class R, class... P>
+void call_with_ptr_args_static_method_ret(R (*p_method)(P...), const void **p_args, void *r_ret) {
+	call_with_ptr_args_static_method_ret_helper<R, P...>(p_method, p_args, r_ret, BuildIndexSequence<sizeof...(P)>{});
+}
+
+template <class... P>
+void call_with_ptr_args_static_method(void (*p_method)(P...), const void **p_args) {
+	call_with_ptr_args_static_method_helper<P...>(p_method, p_args, BuildIndexSequence<sizeof...(P)>{});
+}
+
 template <class T, class... P>
 void call_with_validated_variant_args(Variant *base, void (T::*p_method)(P...), const Variant **p_args) {
 	call_with_validated_variant_args_helper<T, P...>(VariantGetInternalPtr<T>::get_ptr(base), p_method, p_args, BuildIndexSequence<sizeof...(P)>{});
@@ -474,6 +504,16 @@ void call_with_validated_variant_args_retc(Variant *base, R (T::*p_method)(P...)
 template <class T, class R, class... P>
 void call_with_validated_variant_args_static_retc(Variant *base, R (*p_method)(T *, P...), const Variant **p_args, Variant *r_ret) {
 	call_with_validated_variant_args_static_retc_helper<T, R, P...>(VariantGetInternalPtr<T>::get_ptr(base), p_method, p_args, r_ret, BuildIndexSequence<sizeof...(P)>{});
+}
+
+template <class... P>
+void call_with_validated_variant_args_static_method(void (*p_method)(P...), const Variant **p_args) {
+	call_with_validated_variant_args_static_method_helper<P...>(p_method, p_args, BuildIndexSequence<sizeof...(P)>{});
+}
+
+template <class R, class... P>
+void call_with_validated_variant_args_static_method_ret(R (*p_method)(P...), const Variant **p_args, Variant *r_ret) {
+	call_with_validated_variant_args_static_method_ret_helper<R, P...>(p_method, p_args, r_ret, BuildIndexSequence<sizeof...(P)>{});
 }
 
 // GCC raises "parameter 'p_args' set but not used" when P = {},
@@ -566,6 +606,28 @@ void call_with_variant_args_ret_helper(T *p_instance, R (T::*p_method)(P...), co
 #endif
 }
 
+template <class R, class... P, size_t... Is>
+void call_with_variant_args_static_ret(R (*p_method)(P...), const Variant **p_args, Variant &r_ret, Callable::CallError &r_error, IndexSequence<Is...>) {
+	r_error.error = Callable::CallError::CALL_OK;
+
+#ifdef DEBUG_METHODS_ENABLED
+	r_ret = (p_method)(VariantCasterAndValidate<P>::cast(p_args, Is, r_error)...);
+#else
+	r_ret = (p_method)(VariantCaster<P>::cast(*p_args[Is])...);
+#endif
+}
+
+template <class... P, size_t... Is>
+void call_with_variant_args_static(void (*p_method)(P...), const Variant **p_args, Callable::CallError &r_error, IndexSequence<Is...>) {
+	r_error.error = Callable::CallError::CALL_OK;
+
+#ifdef DEBUG_METHODS_ENABLED
+	(p_method)(VariantCasterAndValidate<P>::cast(p_args, Is, r_error)...);
+#else
+	(p_method)(VariantCaster<P>::cast(*p_args[Is])...);
+#endif
+}
+
 template <class T, class R, class... P>
 void call_with_variant_args_ret(T *p_instance, R (T::*p_method)(P...), const Variant **p_args, int p_argcount, Variant &r_ret, Callable::CallError &r_error) {
 #ifdef DEBUG_METHODS_ENABLED
@@ -594,6 +656,42 @@ void call_with_variant_args_retc_helper(T *p_instance, R (T::*p_method)(P...) co
 	r_ret = (p_instance->*p_method)(VariantCaster<P>::cast(*p_args[Is])...);
 #endif
 	(void)p_args;
+}
+
+template <class R, class... P>
+void call_with_variant_args_static_ret(R (*p_method)(P...), const Variant **p_args, int p_argcount, Variant &r_ret, Callable::CallError &r_error) {
+#ifdef DEBUG_METHODS_ENABLED
+	if ((size_t)p_argcount > sizeof...(P)) {
+		r_error.error = Callable::CallError::CALL_ERROR_TOO_MANY_ARGUMENTS;
+		r_error.argument = sizeof...(P);
+		return;
+	}
+
+	if ((size_t)p_argcount < sizeof...(P)) {
+		r_error.error = Callable::CallError::CALL_ERROR_TOO_FEW_ARGUMENTS;
+		r_error.argument = sizeof...(P);
+		return;
+	}
+#endif
+	call_with_variant_args_static_ret<R, P...>(p_method, p_args, r_ret, r_error, BuildIndexSequence<sizeof...(P)>{});
+}
+
+template <class... P>
+void call_with_variant_args_static_ret(void (*p_method)(P...), const Variant **p_args, int p_argcount, Variant &r_ret, Callable::CallError &r_error) {
+#ifdef DEBUG_METHODS_ENABLED
+	if ((size_t)p_argcount > sizeof...(P)) {
+		r_error.error = Callable::CallError::CALL_ERROR_TOO_MANY_ARGUMENTS;
+		r_error.argument = sizeof...(P);
+		return;
+	}
+
+	if ((size_t)p_argcount < sizeof...(P)) {
+		r_error.error = Callable::CallError::CALL_ERROR_TOO_FEW_ARGUMENTS;
+		r_error.argument = sizeof...(P);
+		return;
+	}
+#endif
+	call_with_variant_args_static<P...>(p_method, p_args, r_error, BuildIndexSequence<sizeof...(P)>{});
 }
 
 template <class T, class R, class... P>
@@ -658,6 +756,72 @@ void call_with_variant_args_retc_static_helper_dv(T *p_instance, R (*p_method)(T
 	}
 
 	call_with_variant_args_retc_static_helper(p_instance, p_method, args, r_ret, r_error, BuildIndexSequence<sizeof...(P)>{});
+}
+
+template <class R, class... P>
+void call_with_variant_args_static_ret_dv(R (*p_method)(P...), const Variant **p_args, int p_argcount, Variant &r_ret, Callable::CallError &r_error, const Vector<Variant> &default_values) {
+#ifdef DEBUG_ENABLED
+	if ((size_t)p_argcount > sizeof...(P)) {
+		r_error.error = Callable::CallError::CALL_ERROR_TOO_MANY_ARGUMENTS;
+		r_error.argument = sizeof...(P);
+		return;
+	}
+#endif
+
+	int32_t missing = (int32_t)sizeof...(P) - (int32_t)p_argcount;
+
+	int32_t dvs = default_values.size();
+#ifdef DEBUG_ENABLED
+	if (missing > dvs) {
+		r_error.error = Callable::CallError::CALL_ERROR_TOO_FEW_ARGUMENTS;
+		r_error.argument = sizeof...(P);
+		return;
+	}
+#endif
+
+	const Variant *args[sizeof...(P) == 0 ? 1 : sizeof...(P)]; //avoid zero sized array
+	for (int32_t i = 0; i < (int32_t)sizeof...(P); i++) {
+		if (i < p_argcount) {
+			args[i] = p_args[i];
+		} else {
+			args[i] = &default_values[i - p_argcount + (dvs - missing)];
+		}
+	}
+
+	call_with_variant_args_static_ret(p_method, args, r_ret, r_error, BuildIndexSequence<sizeof...(P)>{});
+}
+
+template <class... P>
+void call_with_variant_args_static_dv(void (*p_method)(P...), const Variant **p_args, int p_argcount, Callable::CallError &r_error, const Vector<Variant> &default_values) {
+#ifdef DEBUG_ENABLED
+	if ((size_t)p_argcount > sizeof...(P)) {
+		r_error.error = Callable::CallError::CALL_ERROR_TOO_MANY_ARGUMENTS;
+		r_error.argument = sizeof...(P);
+		return;
+	}
+#endif
+
+	int32_t missing = (int32_t)sizeof...(P) - (int32_t)p_argcount;
+
+	int32_t dvs = default_values.size();
+#ifdef DEBUG_ENABLED
+	if (missing > dvs) {
+		r_error.error = Callable::CallError::CALL_ERROR_TOO_FEW_ARGUMENTS;
+		r_error.argument = sizeof...(P);
+		return;
+	}
+#endif
+
+	const Variant *args[sizeof...(P) == 0 ? 1 : sizeof...(P)]; //avoid zero sized array
+	for (int32_t i = 0; i < (int32_t)sizeof...(P); i++) {
+		if (i < p_argcount) {
+			args[i] = p_args[i];
+		} else {
+			args[i] = &default_values[i - p_argcount + (dvs - missing)];
+		}
+	}
+
+	call_with_variant_args_static(p_method, args, r_error, BuildIndexSequence<sizeof...(P)>{});
 }
 
 #if defined(DEBUG_METHODS_ENABLED) && defined(__GNUC__) && !defined(__clang__)
