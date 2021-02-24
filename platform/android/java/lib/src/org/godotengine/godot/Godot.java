@@ -464,7 +464,9 @@ public class Godot extends Fragment implements SensorEventListener, IDownloaderC
 	}
 
 	@Override
-	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle icicle) {
+	public void onCreate(Bundle icicle) {
+		super.onCreate(icicle);
+
 		final Activity activity = getActivity();
 		Window window = activity.getWindow();
 		window.addFlags(WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON);
@@ -572,24 +574,11 @@ public class Godot extends Fragment implements SensorEventListener, IDownloaderC
 
 					if (startResult != DownloaderClientMarshaller.NO_DOWNLOAD_REQUIRED) {
 						// This is where you do set up to display the download
-						// progress (next step)
+						// progress (next step in onCreateView)
 						mDownloaderClientStub = DownloaderClientMarshaller.CreateStub(this,
 								GodotDownloaderService.class);
 
-						View downloadingExpansionView =
-								inflater.inflate(R.layout.downloading_expansion, container, false);
-						mPB = (ProgressBar)downloadingExpansionView.findViewById(R.id.progressBar);
-						mStatusText = (TextView)downloadingExpansionView.findViewById(R.id.statusText);
-						mProgressFraction = (TextView)downloadingExpansionView.findViewById(R.id.progressAsFraction);
-						mProgressPercent = (TextView)downloadingExpansionView.findViewById(R.id.progressAsPercentage);
-						mAverageSpeed = (TextView)downloadingExpansionView.findViewById(R.id.progressAverageSpeed);
-						mTimeRemaining = (TextView)downloadingExpansionView.findViewById(R.id.progressTimeRemaining);
-						mDashboard = downloadingExpansionView.findViewById(R.id.downloaderDashboard);
-						mCellMessage = downloadingExpansionView.findViewById(R.id.approveCellular);
-						mPauseButton = (Button)downloadingExpansionView.findViewById(R.id.pauseButton);
-						mWiFiSettingsButton = (Button)downloadingExpansionView.findViewById(R.id.wifiSettingsButton);
-
-						return downloadingExpansionView;
+						return;
 					}
 				} catch (NameNotFoundException e) {
 					// TODO Auto-generated catch block
@@ -600,6 +589,27 @@ public class Godot extends Fragment implements SensorEventListener, IDownloaderC
 		mCurrentIntent = activity.getIntent();
 
 		initializeGodot();
+	}
+
+	@Override
+	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle icicle) {
+		if (mDownloaderClientStub != null) {
+			View downloadingExpansionView =
+					inflater.inflate(R.layout.downloading_expansion, container, false);
+			mPB = (ProgressBar)downloadingExpansionView.findViewById(R.id.progressBar);
+			mStatusText = (TextView)downloadingExpansionView.findViewById(R.id.statusText);
+			mProgressFraction = (TextView)downloadingExpansionView.findViewById(R.id.progressAsFraction);
+			mProgressPercent = (TextView)downloadingExpansionView.findViewById(R.id.progressAsPercentage);
+			mAverageSpeed = (TextView)downloadingExpansionView.findViewById(R.id.progressAverageSpeed);
+			mTimeRemaining = (TextView)downloadingExpansionView.findViewById(R.id.progressTimeRemaining);
+			mDashboard = downloadingExpansionView.findViewById(R.id.downloaderDashboard);
+			mCellMessage = downloadingExpansionView.findViewById(R.id.approveCellular);
+			mPauseButton = (Button)downloadingExpansionView.findViewById(R.id.pauseButton);
+			mWiFiSettingsButton = (Button)downloadingExpansionView.findViewById(R.id.wifiSettingsButton);
+
+			return downloadingExpansionView;
+		}
+
 		return containerLayout;
 	}
 
