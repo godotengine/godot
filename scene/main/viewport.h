@@ -357,7 +357,7 @@ private:
 		Point2 drag_accum;
 		bool drag_attempted = false;
 		Variant drag_data;
-		Control *drag_preview = nullptr;
+		ObjectID drag_preview_id;
 		float tooltip_timer = -1.0;
 		float tooltip_delay = 0.0;
 		Transform2D focus_inv_xform;
@@ -415,6 +415,7 @@ private:
 
 	void _gui_force_drag(Control *p_base, const Variant &p_data, Control *p_control);
 	void _gui_set_drag_preview(Control *p_base, Control *p_control);
+	Control *_gui_get_drag_preview();
 
 	void _gui_remove_focus_for_window(Node *p_window);
 	void _gui_remove_focus();
