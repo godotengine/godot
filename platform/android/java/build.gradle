@@ -165,12 +165,6 @@ task cleanGodotTemplates(type: Delete) {
     // Delete the library generated AAR files
     delete("lib/build/outputs/aar")
 
-    // Delete the godotpayment libs directory contents
-    delete("plugins/godotpayment/libs")
-
-    // Delete the generated godotpayment aar
-    delete("plugins/godotpayment/build/outputs/aar")
-
     // Delete the app libs directory contents
     delete("app/libs")
 

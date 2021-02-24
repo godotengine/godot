@@ -2553,6 +2553,7 @@ public:
 			cmdline.push_back("-Pplugins_maven_repos=" + custom_maven_repos); // argument to specify the list of custom maven repos for the plugins dependencies.
 			cmdline.push_back("-Pperform_zipalign=" + zipalign_flag); // argument to specify whether the build should be zipaligned.
 			cmdline.push_back("-Pperform_signing=" + sign_flag); // argument to specify whether the build should be signed.
+			cmdline.push_back("-Pgodot_editor_version=" + String(VERSION_FULL_CONFIG));
 
 			// NOTE: The release keystore is not included in the verbose logging
 			// to avoid accidentally leaking sensitive information when sharing verbose logs for troubleshooting.
