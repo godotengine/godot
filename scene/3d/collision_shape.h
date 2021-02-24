@@ -44,14 +44,10 @@ class CollisionShape : public Spatial {
 	uint32_t owner_id;
 	CollisionObject *parent;
 
-	Node *debug_shape;
-	bool debug_shape_dirty;
-
 	void resource_changed(RES res);
 	bool disabled;
 
 protected:
-	void _update_debug_shape();
 	void _shape_changed();
 
 	void _update_in_shape_owner(bool p_xform_only = false);

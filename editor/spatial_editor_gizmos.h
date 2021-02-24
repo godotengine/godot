@@ -321,6 +321,19 @@ public:
 	BakedIndirectLightGizmoPlugin();
 };
 
+class CollisionObjectGizmoPlugin : public EditorSpatialGizmoPlugin {
+
+	GDCLASS(CollisionObjectGizmoPlugin, EditorSpatialGizmoPlugin);
+
+public:
+	bool has_gizmo(Spatial *p_spatial);
+	String get_name() const;
+	int get_priority() const;
+	void redraw(EditorSpatialGizmo *p_gizmo);
+
+	CollisionObjectGizmoPlugin();
+};
+
 class CollisionShapeSpatialGizmoPlugin : public EditorSpatialGizmoPlugin {
 
 	GDCLASS(CollisionShapeSpatialGizmoPlugin, EditorSpatialGizmoPlugin);
