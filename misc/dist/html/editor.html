@@ -5,8 +5,7 @@
 	<meta name='viewport' content='width=device-width, user-scalable=no' />
 	<link id='-gd-engine-icon' rel='icon' type='image/png' href='favicon.png' />
 	<title>Godot Engine Web Editor ($GODOT_VERSION)</title>
-	<style type='text/css'>
-
+	<style>
 		*:focus {
 			/* More visible outline for better keyboard navigation. */
 			outline: 0.125rem solid hsl(220, 100%, 62.5%);
@@ -40,13 +39,30 @@
 			filter: brightness(82.5%);
 		}
 
+		#tabs-buttons {
+			/* Match the default background color of the editor window for a seamless appearance. */
+			background-color: #202531;
+		}
+
+		#tab-game {
+			/* Use a pure black background to better distinguish the running project */
+			/* from the editor window, and to use a more neutral background color (no tint). */
+			background-color: black;
+			/* Make the background span the entire page height. */
+			min-height: 100vh;
+		}
+
 		#canvas, #gameCanvas {
 			display: block;
 			margin: 0;
 			color: white;
 		}
 
-		#canvas:focus, #gameCanvas:focus {
+		/* Don't show distracting focus outlines for the main tabs' contents. */
+		#tab-editor canvas:focus,
+		#tab-game canvas:focus,
+		#canvas:focus,
+		#gameCanvas:focus {
 			outline: none;
 		}
 
@@ -200,9 +216,11 @@
 <a href="demo.zip">(Try this for example)</a>
 				<br />
 				<br />
-				<button id="startButton" class="btn" style="margin-bottom: 4rem">Start Godot editor</button>
+				<button id="startButton" class="btn" style="margin-bottom: 4rem; font-weight: 700">Start Godot editor</button>
 				<br />
-				<button class="btn" onclick="clearPersistence()">Clear persistent data</button>
+				<button class="btn" onclick="clearPersistence()" style="margin-bottom: 1.5rem">Clear persistent data</button>
+				<br />
+				<a href="https://docs.godotengine.org/en/latest/tutorials/editor/using_the_web_editor.html">Web editor documentation</a>
 			</div>
 		</div>
 		<div id='tab-editor' style="display: none;">
@@ -233,8 +251,8 @@
 		</div>
 	</div>
 
-	<script type='text/javascript' src='godot.tools.js'></script>
-	<script type='text/javascript'>//<![CDATA[
+	<script src='godot.tools.js'></script>
+	<script>//<![CDATA[
 
 		var editor = null;
 		var game = null;
@@ -258,7 +276,7 @@
 
 				});
 			}
-			if (!window.confirm("Are you sure you want to delete all the locally stored files?")) {
+			if (!window.confirm("Are you sure you want to delete all the locally stored files?\nClicking \"OK\" will permanently remove your projects and editor settings!")) {
 				return;
 			}
 			Promise.all([
