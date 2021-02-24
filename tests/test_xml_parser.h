@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  xml_parser.h                                                         */
+/*  test_xml_parser.h                                                    */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,94 +28,47 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef XML_PARSER_H
-#define XML_PARSER_H
+#ifndef TEST_XML_PARSER_H
+#define TEST_XML_PARSER_H
 
-#include "core/object/reference.h"
-#include "core/os/file_access.h"
+#include <inttypes.h>
+
+#include "core/io/xml_parser.h"
 #include "core/string/ustring.h"
-#include "core/templates/vector.h"
 
-/*
-  Based on irrXML (see their zlib license). Added mainly for compatibility with their Collada loader.
-*/
+#include "tests/test_macros.h"
 
-class XMLParser : public Reference {
-	GDCLASS(XMLParser, Reference);
+namespace TestXMLParser {
+TEST_CASE("[XMLParser] End-to-end") {
+	String source = "<?xml version = \"1.0\" encoding=\"UTF-8\" ?>\
+<top attr=\"attr value\">\
+  Text&lt;&#65;&#x42;&gt;\
+</top>";
+	Vector<uint8_t> buff = source.to_utf8_buffer();
 
-public:
-	//! Enumeration of all supported source text file formats
-	enum SourceFormat {
-		SOURCE_ASCII,
-		SOURCE_UTF8,
-		SOURCE_UTF16_BE,
-		SOURCE_UTF16_LE,
-		SOURCE_UTF32_BE,
-		SOURCE_UTF32_LE
-	};
+	XMLParser parser;
+	parser.open_buffer(buff);
 
-	enum NodeType {
-		NODE_NONE,
-		NODE_ELEMENT,
-		NODE_ELEMENT_END,
-		NODE_TEXT,
-		NODE_COMMENT,
-		NODE_CDATA,
-		NODE_UNKNOWN
-	};
+	// <?xml ...?> gets parsed as NODE_UNKNOWN
+	CHECK(parser.read() == OK);
+	CHECK(parser.get_node_type() == XMLParser::NodeType::NODE_UNKNOWN);
 
-private:
-	char *data = nullptr;
-	char *P = nullptr;
-	uint64_t length = 0;
-	String node_name;
-	bool node_empty = false;
-	NodeType node_type = NODE_NONE;
-	uint64_t node_offset = 0;
+	CHECK(parser.read() == OK);
+	CHECK(parser.get_node_type() == XMLParser::NodeType::NODE_ELEMENT);
+	CHECK(parser.get_node_name() == "top");
+	CHECK(parser.has_attribute("attr"));
+	CHECK(parser.get_attribute_value("attr") == "attr value");
 
-	struct Attribute {
-		String name;
-		String value;
-	};
+	CHECK(parser.read() == OK);
+	CHECK(parser.get_node_type() == XMLParser::NodeType::NODE_TEXT);
+	CHECK(parser.get_node_data().lstrip(" \t") == "Text<AB>");
 
-	Vector<Attribute> attributes;
+	CHECK(parser.read() == OK);
+	CHECK(parser.get_node_type() == XMLParser::NodeType::NODE_ELEMENT_END);
+	CHECK(parser.get_node_name() == "top");
 
-	String _replace_special_characters(const String &origstr);
-	bool _set_text(char *start, char *end);
-	void _parse_closing_xml_element();
-	void _ignore_definition();
-	bool _parse_cdata();
-	void _parse_comment();
-	void _parse_opening_xml_element();
-	void _parse_current_node();
+	parser.close();
+}
+} // namespace TestXMLParser
 
-	static void _bind_methods();
-
-public:
-	Error read();
-	NodeType get_node_type();
-	String get_node_name() const;
-	String get_node_data() const;
-	uint64_t get_node_offset() const;
-	int get_attribute_count() const;
-	String get_attribute_name(int p_idx) const;
-	String get_attribute_value(int p_idx) const;
-	bool has_attribute(const String &p_name) const;
-	String get_attribute_value(const String &p_name) const;
-	String get_attribute_value_safe(const String &p_name) const; // do not print error if doesn't exist
-	bool is_empty() const;
-	int get_current_line() const;
-
-	void skip_section();
-	Error seek(uint64_t p_pos);
-
-	Error open(const String &p_path);
-	Error open_buffer(const Vector<uint8_t> &p_buffer);
-
-	void close();
-
-	XMLParser();
-	~XMLParser();
-};
-
-#endif // XML_PARSER_H
+#endif // TEST_XML_PARSER_H
