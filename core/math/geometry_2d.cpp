@@ -94,6 +94,10 @@ void Geometry2D::make_atlas(const Vector<Size2i> &p_rects, Vector<Point2i> &r_re
 	// 256x8192 atlas (won't work anywhere).
 
 	ERR_FAIL_COND(p_rects.size() == 0);
+	for (int i = 0; i < p_rects.size(); i++) {
+		ERR_FAIL_COND(p_rects[i].width <= 0);
+		ERR_FAIL_COND(p_rects[i].height <= 0);
+	}
 
 	Vector<_AtlasWorkRect> wrects;
 	wrects.resize(p_rects.size());
