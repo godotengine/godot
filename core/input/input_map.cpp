@@ -694,7 +694,7 @@ void InputMap::load_default() {
 
 			// For the editor, only add keyboard actions.
 			if (iek.is_valid()) {
-				action_add_event(fullname, I->get());
+				action_add_event(name, I->get());
 			}
 		}
 	}

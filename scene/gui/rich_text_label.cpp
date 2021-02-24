@@ -1578,11 +1578,11 @@ void RichTextLabel::_gui_input(Ref<InputEvent> p_event) {
 		if (k->is_pressed()) {
 			bool handled = false;
 
-			if (k->is_action("ui_pageup") && vscroll->is_visible_in_tree()) {
+			if (k->is_action("ui_page_up") && vscroll->is_visible_in_tree()) {
 				vscroll->set_value(vscroll->get_value() - vscroll->get_page());
 				handled = true;
 			}
-			if (k->is_action("ui_pagedown") && vscroll->is_visible_in_tree()) {
+			if (k->is_action("ui_page_down") && vscroll->is_visible_in_tree()) {
 				vscroll->set_value(vscroll->get_value() + vscroll->get_page());
 				handled = true;
 			}
