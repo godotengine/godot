@@ -272,6 +272,8 @@ void GDAPI godot_variant_destroy(godot_variant *p_self);
 
 void GDAPI godot_variant_call(godot_variant *p_self, const godot_string_name *p_method, const godot_variant **p_args, const godot_int p_argument_count, godot_variant *r_return, godot_variant_call_error *r_error);
 void GDAPI godot_variant_call_with_cstring(godot_variant *p_self, const char *p_method, const godot_variant **p_args, const godot_int p_argument_count, godot_variant *r_return, godot_variant_call_error *r_error);
+void GDAPI godot_variant_call_static(godot_variant_type p_type, const godot_string_name *p_method, const godot_variant **p_args, const godot_int p_argument_count, godot_variant *r_return, godot_variant_call_error *r_error);
+void GDAPI godot_variant_call_static_with_cstring(godot_variant_type p_type, const char *p_method, const godot_variant **p_args, const godot_int p_argument_count, godot_variant *r_return, godot_variant_call_error *r_error);
 void GDAPI godot_variant_evaluate(godot_variant_operator p_op, const godot_variant *p_a, const godot_variant *p_b, godot_variant *r_return, bool *r_valid);
 void GDAPI godot_variant_set(godot_variant *p_self, const godot_variant *p_key, const godot_variant *p_value, bool *r_valid);
 void GDAPI godot_variant_set_named(godot_variant *p_self, const godot_string_name *p_name, const godot_variant *p_value, bool *r_valid);
@@ -323,6 +325,8 @@ godot_variant_type GDAPI godot_variant_get_builtin_method_return_type(godot_vari
 godot_variant_type GDAPI godot_variant_get_builtin_method_return_type_with_cstring(godot_variant_type p_type, const char *p_method);
 bool GDAPI godot_variant_is_builtin_method_const(godot_variant_type p_type, const godot_string_name *p_method);
 bool GDAPI godot_variant_is_builtin_method_const_with_cstring(godot_variant_type p_type, const char *p_method);
+bool GDAPI godot_variant_is_builtin_method_static(godot_variant_type p_type, const godot_string_name *p_method);
+bool GDAPI godot_variant_is_builtin_method_static_with_cstring(godot_variant_type p_type, const char *p_method);
 bool GDAPI godot_variant_is_builtin_method_vararg(godot_variant_type p_type, const godot_string_name *p_method);
 bool GDAPI godot_variant_is_builtin_method_vararg_with_cstring(godot_variant_type p_type, const char *p_method);
 int GDAPI godot_variant_get_builtin_method_count(godot_variant_type p_type);

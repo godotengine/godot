@@ -58,7 +58,9 @@ typedef struct godot_rect2i {
 #include <gdnative/gdnative.h>
 
 void GDAPI godot_rect2_new(godot_rect2 *p_self);
+void GDAPI godot_rect2_new_copy(godot_rect2 *r_dest, const godot_rect2 *p_src);
 void GDAPI godot_rect2i_new(godot_rect2i *p_self);
+void GDAPI godot_rect2i_new_copy(godot_rect2i *r_dest, const godot_rect2i *p_src);
 
 #ifdef __cplusplus
 }

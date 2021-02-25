@@ -49,6 +49,7 @@ typedef struct {
 #include <gdnative/gdnative.h>
 
 void GDAPI godot_transform_new(godot_transform *p_self);
+void GDAPI godot_transform_new_copy(godot_transform *r_dest, const godot_transform *p_src);
 
 #ifdef __cplusplus
 }

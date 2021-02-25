@@ -49,6 +49,7 @@ typedef struct {
 #include <gdnative/gdnative.h>
 
 void GDAPI godot_basis_new(godot_basis *p_self);
+void GDAPI godot_basis_new_copy(godot_basis *r_dest, const godot_basis *p_src);
 godot_vector3 GDAPI *godot_basis_operator_index(godot_basis *p_self, godot_int p_index);
 const godot_vector3 GDAPI *godot_basis_operator_index_const(const godot_basis *p_self, godot_int p_index);
 

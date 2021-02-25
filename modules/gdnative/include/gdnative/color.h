@@ -50,6 +50,7 @@ typedef struct {
 #include <gdnative/gdnative.h>
 
 void GDAPI godot_color_new(godot_color *p_self);
+void GDAPI godot_color_new_copy(godot_color *r_dest, const godot_color *p_src);
 float GDAPI *godot_color_operator_index(godot_color *p_self, godot_int p_index);
 const float GDAPI *godot_color_operator_index_const(const godot_color *p_self, godot_int p_index);
 

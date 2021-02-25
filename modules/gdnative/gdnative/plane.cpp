@@ -42,6 +42,10 @@ void GDAPI godot_plane_new(godot_plane *p_self) {
 	memnew_placement(p_self, Plane);
 }
 
+void GDAPI godot_plane_new_copy(godot_plane *r_dest, const godot_plane *p_src) {
+	memnew_placement(r_dest, Plane(*(Plane *)p_src));
+}
+
 #ifdef __cplusplus
 }
 #endif

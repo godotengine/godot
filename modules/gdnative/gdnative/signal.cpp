@@ -43,6 +43,10 @@ void GDAPI godot_signal_new(godot_signal *p_self) {
 	memnew_placement(p_self, Signal);
 }
 
+void GDAPI godot_signal_new_copy(godot_signal *r_dest, const godot_signal *p_src) {
+	memnew_placement(r_dest, Signal(*(Signal *)p_src));
+}
+
 void GDAPI godot_signal_destroy(godot_signal *p_self) {
 	Signal *self = (Signal *)p_self;
 	self->~Signal();

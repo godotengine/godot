@@ -49,6 +49,7 @@ typedef struct {
 #include <gdnative/gdnative.h>
 
 void GDAPI godot_node_path_new(godot_node_path *p_self);
+void GDAPI godot_node_path_new_copy(godot_node_path *r_dest, const godot_node_path *p_src);
 void GDAPI godot_node_path_destroy(godot_node_path *p_self);
 
 #ifdef __cplusplus

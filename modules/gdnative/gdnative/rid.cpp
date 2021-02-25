@@ -43,6 +43,10 @@ void GDAPI godot_rid_new(godot_rid *p_self) {
 	memnew_placement(p_self, RID);
 }
 
+void GDAPI godot_rid_new_copy(godot_rid *r_dest, const godot_rid *p_src) {
+	memnew_placement(r_dest, RID(*(RID *)p_src));
+}
+
 #ifdef __cplusplus
 }
 #endif

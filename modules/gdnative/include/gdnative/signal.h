@@ -49,6 +49,7 @@ typedef struct {
 #include <gdnative/gdnative.h>
 
 void GDAPI godot_signal_new(godot_signal *p_self);
+void GDAPI godot_signal_new_copy(godot_signal *r_dest, const godot_signal *p_src);
 void GDAPI godot_signal_destroy(godot_signal *p_self);
 
 #ifdef __cplusplus

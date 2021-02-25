@@ -42,6 +42,10 @@ void GDAPI godot_node_path_new(godot_node_path *p_self) {
 	memnew_placement(p_self, NodePath);
 }
 
+void GDAPI godot_node_path_new_copy(godot_node_path *r_dest, const godot_node_path *p_src) {
+	memnew_placement(r_dest, NodePath(*(NodePath *)p_src));
+}
+
 void GDAPI godot_node_path_destroy(godot_node_path *p_self) {
 	NodePath *self = (NodePath *)p_self;
 	self->~NodePath();

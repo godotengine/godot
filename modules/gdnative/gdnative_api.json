@@ -1143,6 +1143,36 @@
 				]
 			},
 			{
+				"name": "godot_variant_call_with_cstring",
+				"return_type": "void",
+				"arguments": [
+					[
+						"godot_variant *",
+						"p_self"
+					],
+					[
+						"const char *",
+						"p_method"
+					],
+					[
+						"const godot_variant **",
+						"p_args"
+					],
+					[
+						"const godot_int",
+						"p_argument_count"
+					],
+					[
+						"godot_variant *",
+						"r_return"
+					],
+					[
+						"godot_variant_call_error *",
+						"r_error"
+					]
+				]
+			},
+			{
 				"name": "godot_variant_evaluate",
 				"return_type": "void",
 				"arguments": [
@@ -1200,7 +1230,29 @@
 					],
 					[
 						"const godot_string_name *",
-						"p_name"
+						"p_key"
+					],
+					[
+						"const godot_variant *",
+						"p_value"
+					],
+					[
+						"bool *",
+						"r_valid"
+					]
+				]
+			},
+			{
+				"name": "godot_variant_set_named_with_cstring",
+				"return_type": "void",
+				"arguments": [
+					[
+						"godot_variant *",
+						"p_self"
+					],
+					[
+						"const char *",
+						"p_key"
 					],
 					[
 						"const godot_variant *",
@@ -1288,6 +1340,24 @@
 					],
 					[
 						"const godot_string_name *",
+						"p_key"
+					],
+					[
+						"bool *",
+						"r_valid"
+					]
+				]
+			},
+			{
+				"name": "godot_variant_get_named_with_cstring",
+				"return_type": "godot_variant",
+				"arguments": [
+					[
+						"const godot_variant *",
+						"p_self"
+					],
+					[
+						"const char *",
 						"p_key"
 					],
 					[
@@ -1802,6 +1872,34 @@
 			},
 			{
 				"name": "godot_variant_is_builtin_method_const_with_cstring",
+				"return_type": "bool",
+				"arguments": [
+					[
+						"godot_variant_type",
+						"p_type"
+					],
+					[
+						"const char *",
+						"p_method"
+					]
+				]
+			},
+			{
+				"name": "godot_variant_is_builtin_method_static",
+				"return_type": "bool",
+				"arguments": [
+					[
+						"godot_variant_type",
+						"p_type"
+					],
+					[
+						"const godot_string_name *",
+						"p_method"
+					]
+				]
+			},
+			{
+				"name": "godot_variant_is_builtin_method_static_with_cstring",
 				"return_type": "bool",
 				"arguments": [
 					[
@@ -2752,12 +2850,40 @@
 				]
 			},
 			{
+				"name": "godot_aabb_new_copy",
+				"return_type": "void",
+				"arguments": [
+					[
+						"godot_aabb *",
+						"r_dest"
+					],
+					[
+						"const godot_aabb *",
+						"p_src"
+					]
+				]
+			},
+			{
 				"name": "godot_array_new",
 				"return_type": "void",
 				"arguments": [
 					[
 						"godot_array *",
 						"p_self"
+					]
+				]
+			},
+			{
+				"name": "godot_array_new_copy",
+				"return_type": "void",
+				"arguments": [
+					[
+						"godot_array *",
+						"r_dest"
+					],
+					[
+						"const godot_array *",
+						"p_src"
 					]
 				]
 			},
@@ -2810,6 +2936,20 @@
 				]
 			},
 			{
+				"name": "godot_basis_new_copy",
+				"return_type": "void",
+				"arguments": [
+					[
+						"godot_basis *",
+						"r_dest"
+					],
+					[
+						"const godot_basis *",
+						"p_src"
+					]
+				]
+			},
+			{
 				"name": "godot_basis_operator_index",
 				"return_type": "godot_vector3 *",
 				"arguments": [
@@ -2848,6 +2988,20 @@
 				]
 			},
 			{
+				"name": "godot_callable_new_copy",
+				"return_type": "void",
+				"arguments": [
+					[
+						"godot_callable *",
+						"r_dest"
+					],
+					[
+						"const godot_callable *",
+						"p_src"
+					]
+				]
+			},
+			{
 				"name": "godot_callable_destroy",
 				"return_type": "void",
 				"arguments": [
@@ -2864,6 +3018,20 @@
 					[
 						"godot_color *",
 						"p_self"
+					]
+				]
+			},
+			{
+				"name": "godot_color_new_copy",
+				"return_type": "void",
+				"arguments": [
+					[
+						"godot_color *",
+						"r_dest"
+					],
+					[
+						"const godot_color *",
+						"p_src"
 					]
 				]
 			},
@@ -2902,6 +3070,20 @@
 					[
 						"godot_dictionary *",
 						"p_self"
+					]
+				]
+			},
+			{
+				"name": "godot_dictionary_new_copy",
+				"return_type": "void",
+				"arguments": [
+					[
+						"godot_dictionary *",
+						"r_dest"
+					],
+					[
+						"const godot_dictionary *",
+						"p_src"
 					]
 				]
 			},
@@ -2954,6 +3136,20 @@
 				]
 			},
 			{
+				"name": "godot_node_path_new_copy",
+				"return_type": "void",
+				"arguments": [
+					[
+						"godot_node_path *",
+						"r_dest"
+					],
+					[
+						"const godot_node_path *",
+						"p_src"
+					]
+				]
+			},
+			{
 				"name": "godot_node_path_destroy",
 				"return_type": "void",
 				"arguments": [
@@ -2970,6 +3166,20 @@
 					[
 						"godot_packed_byte_array *",
 						"p_self"
+					]
+				]
+			},
+			{
+				"name": "godot_packed_byte_array_new_copy",
+				"return_type": "void",
+				"arguments": [
+					[
+						"godot_packed_byte_array *",
+						"r_dest"
+					],
+					[
+						"const godot_packed_byte_array *",
+						"p_src"
 					]
 				]
 			},
@@ -3022,6 +3232,20 @@
 				]
 			},
 			{
+				"name": "godot_packed_int32_array_new_copy",
+				"return_type": "void",
+				"arguments": [
+					[
+						"godot_packed_int32_array *",
+						"r_dest"
+					],
+					[
+						"const godot_packed_int32_array *",
+						"p_src"
+					]
+				]
+			},
+			{
 				"name": "godot_packed_int32_array_destroy",
 				"return_type": "void",
 				"arguments": [
@@ -3066,6 +3290,20 @@
 					[
 						"godot_packed_int64_array *",
 						"p_self"
+					]
+				]
+			},
+			{
+				"name": "godot_packed_int64_array_new_copy",
+				"return_type": "void",
+				"arguments": [
+					[
+						"godot_packed_int64_array *",
+						"r_dest"
+					],
+					[
+						"const godot_packed_int64_array *",
+						"p_src"
 					]
 				]
 			},
@@ -3118,6 +3356,20 @@
 				]
 			},
 			{
+				"name": "godot_packed_float32_array_new_copy",
+				"return_type": "void",
+				"arguments": [
+					[
+						"godot_packed_float32_array *",
+						"r_dest"
+					],
+					[
+						"const godot_packed_float32_array *",
+						"p_src"
+					]
+				]
+			},
+			{
 				"name": "godot_packed_float32_array_destroy",
 				"return_type": "void",
 				"arguments": [
@@ -3162,6 +3414,20 @@
 					[
 						"godot_packed_float64_array *",
 						"p_self"
+					]
+				]
+			},
+			{
+				"name": "godot_packed_float64_array_new_copy",
+				"return_type": "void",
+				"arguments": [
+					[
+						"godot_packed_float64_array *",
+						"r_dest"
+					],
+					[
+						"const godot_packed_float64_array *",
+						"p_src"
 					]
 				]
 			},
@@ -3214,6 +3480,20 @@
 				]
 			},
 			{
+				"name": "godot_packed_string_array_new_copy",
+				"return_type": "void",
+				"arguments": [
+					[
+						"godot_packed_string_array *",
+						"r_dest"
+					],
+					[
+						"const godot_packed_string_array *",
+						"p_src"
+					]
+				]
+			},
+			{
 				"name": "godot_packed_string_array_destroy",
 				"return_type": "void",
 				"arguments": [
@@ -3258,6 +3538,20 @@
 					[
 						"godot_packed_vector2_array *",
 						"p_self"
+					]
+				]
+			},
+			{
+				"name": "godot_packed_vector2_array_new_copy",
+				"return_type": "void",
+				"arguments": [
+					[
+						"godot_packed_vector2_array *",
+						"r_dest"
+					],
+					[
+						"const godot_packed_vector2_array *",
+						"p_src"
 					]
 				]
 			},
@@ -3310,6 +3604,20 @@
 				]
 			},
 			{
+				"name": "godot_packed_vector2i_array_new_copy",
+				"return_type": "void",
+				"arguments": [
+					[
+						"godot_packed_vector2i_array *",
+						"r_dest"
+					],
+					[
+						"const godot_packed_vector2i_array *",
+						"p_src"
+					]
+				]
+			},
+			{
 				"name": "godot_packed_vector2i_array_destroy",
 				"return_type": "void",
 				"arguments": [
@@ -3354,6 +3662,20 @@
 					[
 						"godot_packed_vector3_array *",
 						"p_self"
+					]
+				]
+			},
+			{
+				"name": "godot_packed_vector3_array_new_copy",
+				"return_type": "void",
+				"arguments": [
+					[
+						"godot_packed_vector3_array *",
+						"r_dest"
+					],
+					[
+						"const godot_packed_vector3_array *",
+						"p_src"
 					]
 				]
 			},
@@ -3406,6 +3728,20 @@
 				]
 			},
 			{
+				"name": "godot_packed_vector3i_array_new_copy",
+				"return_type": "void",
+				"arguments": [
+					[
+						"godot_packed_vector3i_array *",
+						"r_dest"
+					],
+					[
+						"const godot_packed_vector3i_array *",
+						"p_src"
+					]
+				]
+			},
+			{
 				"name": "godot_packed_vector3i_array_destroy",
 				"return_type": "void",
 				"arguments": [
@@ -3450,6 +3786,20 @@
 					[
 						"godot_packed_color_array *",
 						"p_self"
+					]
+				]
+			},
+			{
+				"name": "godot_packed_color_array_new_copy",
+				"return_type": "void",
+				"arguments": [
+					[
+						"godot_packed_color_array *",
+						"r_dest"
+					],
+					[
+						"const godot_packed_color_array *",
+						"p_src"
 					]
 				]
 			},
@@ -3502,12 +3852,40 @@
 				]
 			},
 			{
+				"name": "godot_plane_new_copy",
+				"return_type": "void",
+				"arguments": [
+					[
+						"godot_plane *",
+						"r_dest"
+					],
+					[
+						"const godot_plane *",
+						"p_src"
+					]
+				]
+			},
+			{
 				"name": "godot_quat_new",
 				"return_type": "void",
 				"arguments": [
 					[
 						"godot_quat *",
 						"p_self"
+					]
+				]
+			},
+			{
+				"name": "godot_quat_new_copy",
+				"return_type": "void",
+				"arguments": [
+					[
+						"godot_quat *",
+						"r_dest"
+					],
+					[
+						"const godot_quat *",
+						"p_src"
 					]
 				]
 			},
@@ -3550,12 +3928,40 @@
 				]
 			},
 			{
+				"name": "godot_rect2_new_copy",
+				"return_type": "void",
+				"arguments": [
+					[
+						"godot_rect2 *",
+						"r_dest"
+					],
+					[
+						"const godot_rect2 *",
+						"p_src"
+					]
+				]
+			},
+			{
 				"name": "godot_rect2i_new",
 				"return_type": "void",
 				"arguments": [
 					[
 						"godot_rect2i *",
 						"p_self"
+					]
+				]
+			},
+			{
+				"name": "godot_rect2i_new_copy",
+				"return_type": "void",
+				"arguments": [
+					[
+						"godot_rect2i *",
+						"r_dest"
+					],
+					[
+						"const godot_rect2i *",
+						"p_src"
 					]
 				]
 			},
@@ -3570,12 +3976,40 @@
 				]
 			},
 			{
+				"name": "godot_rid_new_copy",
+				"return_type": "void",
+				"arguments": [
+					[
+						"godot_rid *",
+						"r_dest"
+					],
+					[
+						"const godot_rid *",
+						"p_src"
+					]
+				]
+			},
+			{
 				"name": "godot_signal_new",
 				"return_type": "void",
 				"arguments": [
 					[
 						"godot_signal *",
 						"p_self"
+					]
+				]
+			},
+			{
+				"name": "godot_signal_new_copy",
+				"return_type": "void",
+				"arguments": [
+					[
+						"godot_signal *",
+						"r_dest"
+					],
+					[
+						"const godot_signal *",
+						"p_src"
 					]
 				]
 			},
@@ -3784,6 +4218,84 @@
 				]
 			},
 			{
+				"name": "godot_string_to_latin1_chars",
+				"return_type": "const char *",
+				"arguments": [
+					[
+						"const godot_string *",
+						"p_self"
+					]
+				]
+			},
+			{
+				"name": "godot_string_to_utf8_chars",
+				"return_type": "const char *",
+				"arguments": [
+					[
+						"const godot_string *",
+						"p_self"
+					]
+				]
+			},
+			{
+				"name": "godot_string_to_utf16_chars",
+				"return_type": "const char16_t *",
+				"arguments": [
+					[
+						"const godot_string *",
+						"p_self"
+					]
+				]
+			},
+			{
+				"name": "godot_string_to_utf32_chars",
+				"return_type": "const char32_t *",
+				"arguments": [
+					[
+						"const godot_string *",
+						"p_self"
+					]
+				]
+			},
+			{
+				"name": "godot_string_to_wide_chars",
+				"return_type": "const wchar_t *",
+				"arguments": [
+					[
+						"const godot_string *",
+						"p_self"
+					]
+				]
+			},
+			{
+				"name": "godot_string_operator_index",
+				"return_type": "char32_t *",
+				"arguments": [
+					[
+						"godot_string *",
+						"p_self"
+					],
+					[
+						"godot_int",
+						"p_index"
+					]
+				]
+			},
+			{
+				"name": "godot_string_operator_index_const",
+				"return_type": "const char32_t *",
+				"arguments": [
+					[
+						"const godot_string *",
+						"p_self"
+					],
+					[
+						"godot_int",
+						"p_index"
+					]
+				]
+			},
+			{
 				"name": "godot_string_name_new",
 				"return_type": "void",
 				"arguments": [
@@ -3842,12 +4354,40 @@
 				]
 			},
 			{
+				"name": "godot_transform_new_copy",
+				"return_type": "void",
+				"arguments": [
+					[
+						"godot_transform *",
+						"r_dest"
+					],
+					[
+						"const godot_transform *",
+						"p_src"
+					]
+				]
+			},
+			{
 				"name": "godot_transform2d_new",
 				"return_type": "void",
 				"arguments": [
 					[
 						"godot_transform2d *",
 						"r_dest"
+					]
+				]
+			},
+			{
+				"name": "godot_transform2d_new_copy",
+				"return_type": "void",
+				"arguments": [
+					[
+						"godot_transform2d *",
+						"r_dest"
+					],
+					[
+						"const godot_transform2d *",
+						"p_src"
 					]
 				]
 			},
@@ -3890,6 +4430,20 @@
 				]
 			},
 			{
+				"name": "godot_vector2_new_copy",
+				"return_type": "void",
+				"arguments": [
+					[
+						"godot_vector2 *",
+						"r_dest"
+					],
+					[
+						"const godot_vector2 *",
+						"p_src"
+					]
+				]
+			},
+			{
 				"name": "godot_vector2_operator_index",
 				"return_type": "godot_real_t *",
 				"arguments": [
@@ -3924,6 +4478,20 @@
 					[
 						"godot_vector2i *",
 						"r_dest"
+					]
+				]
+			},
+			{
+				"name": "godot_vector2i_new_copy",
+				"return_type": "void",
+				"arguments": [
+					[
+						"godot_vector2i *",
+						"r_dest"
+					],
+					[
+						"const godot_vector2i *",
+						"p_src"
 					]
 				]
 			},
@@ -3966,6 +4534,20 @@
 				]
 			},
 			{
+				"name": "godot_vector3_new_copy",
+				"return_type": "void",
+				"arguments": [
+					[
+						"godot_vector3 *",
+						"r_dest"
+					],
+					[
+						"const godot_vector3 *",
+						"p_src"
+					]
+				]
+			},
+			{
 				"name": "godot_vector3_operator_index",
 				"return_type": "godot_real_t *",
 				"arguments": [
@@ -4000,6 +4582,20 @@
 					[
 						"godot_vector3i *",
 						"r_dest"
+					]
+				]
+			},
+			{
+				"name": "godot_vector3i_new_copy",
+				"return_type": "void",
+				"arguments": [
+					[
+						"godot_vector3i *",
+						"r_dest"
+					],
+					[
+						"const godot_vector3i *",
+						"p_src"
 					]
 				]
 			},

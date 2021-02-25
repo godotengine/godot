@@ -43,8 +43,16 @@ void GDAPI godot_vector3_new(godot_vector3 *p_self) {
 	memnew_placement(p_self, Vector3);
 }
 
+void GDAPI godot_vector3_new_copy(godot_vector3 *r_dest, const godot_vector3 *p_src) {
+	memnew_placement(r_dest, Vector3(*(Vector3 *)p_src));
+}
+
 void GDAPI godot_vector3i_new(godot_vector3i *p_self) {
 	memnew_placement(p_self, Vector3i);
+}
+
+void GDAPI godot_vector3i_new_copy(godot_vector3i *r_dest, const godot_vector3i *p_src) {
+	memnew_placement(r_dest, Vector3i(*(Vector3i *)p_src));
 }
 
 godot_real_t GDAPI *godot_vector3_operator_index(godot_vector3 *p_self, godot_int p_index) {

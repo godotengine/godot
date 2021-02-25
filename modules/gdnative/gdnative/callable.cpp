@@ -43,6 +43,10 @@ void GDAPI godot_callable_new(godot_callable *p_self) {
 	memnew_placement(p_self, Callable);
 }
 
+void GDAPI godot_callable_new_copy(godot_callable *r_dest, const godot_callable *p_src) {
+	memnew_placement(r_dest, Callable(*(Callable *)p_src));
+}
+
 void GDAPI godot_callable_destroy(godot_callable *p_self) {
 	Callable *self = (Callable *)p_self;
 	self->~Callable();

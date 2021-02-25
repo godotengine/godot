@@ -50,6 +50,7 @@ typedef struct {
 #include <gdnative/variant_struct.h>
 
 void GDAPI godot_dictionary_new(godot_dictionary *p_self);
+void GDAPI godot_dictionary_new_copy(godot_dictionary *r_dest, const godot_dictionary *p_src);
 void GDAPI godot_dictionary_destroy(godot_dictionary *p_self);
 godot_variant GDAPI *godot_dictionary_operator_index(godot_dictionary *p_self, const godot_variant *p_key);
 const godot_variant GDAPI *godot_dictionary_operator_index_const(const godot_dictionary *p_self, const godot_variant *p_key);

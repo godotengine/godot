@@ -59,6 +59,10 @@ void GDAPI godot_packed_byte_array_new(godot_packed_byte_array *p_self) {
 	memnew_placement(p_self, PackedByteArray);
 }
 
+void GDAPI godot_packed_byte_array_new_copy(godot_packed_byte_array *r_dest, const godot_packed_byte_array *p_src) {
+	memnew_placement(r_dest, PackedByteArray(*(PackedByteArray *)p_src));
+}
+
 void GDAPI godot_packed_byte_array_destroy(godot_packed_byte_array *p_self) {
 	((PackedByteArray *)p_self)->~PackedByteArray();
 }
@@ -77,6 +81,10 @@ const uint8_t GDAPI *godot_packed_byte_array_operator_index_const(const godot_pa
 
 void GDAPI godot_packed_int32_array_new(godot_packed_int32_array *p_self) {
 	memnew_placement(p_self, PackedInt32Array);
+}
+
+void GDAPI godot_packed_int32_array_new_copy(godot_packed_int32_array *r_dest, const godot_packed_int32_array *p_src) {
+	memnew_placement(r_dest, PackedInt32Array(*(PackedInt32Array *)p_src));
 }
 
 void GDAPI godot_packed_int32_array_destroy(godot_packed_int32_array *p_self) {
@@ -99,6 +107,10 @@ void GDAPI godot_packed_int64_array_new(godot_packed_int64_array *p_self) {
 	memnew_placement(p_self, PackedInt64Array);
 }
 
+void GDAPI godot_packed_int64_array_new_copy(godot_packed_int64_array *r_dest, const godot_packed_int64_array *p_src) {
+	memnew_placement(r_dest, PackedInt64Array(*(PackedInt64Array *)p_src));
+}
+
 void GDAPI godot_packed_int64_array_destroy(godot_packed_int64_array *p_self) {
 	((PackedInt64Array *)p_self)->~PackedInt64Array();
 }
@@ -117,6 +129,10 @@ const int64_t GDAPI *godot_packed_int64_array_operator_index_const(const godot_p
 
 void GDAPI godot_packed_float32_array_new(godot_packed_float32_array *p_self) {
 	memnew_placement(p_self, PackedFloat32Array);
+}
+
+void GDAPI godot_packed_float32_array_new_copy(godot_packed_float32_array *r_dest, const godot_packed_float32_array *p_src) {
+	memnew_placement(r_dest, PackedFloat32Array(*(PackedFloat32Array *)p_src));
 }
 
 void GDAPI godot_packed_float32_array_destroy(godot_packed_float32_array *p_self) {
@@ -139,6 +155,10 @@ void GDAPI godot_packed_float64_array_new(godot_packed_float64_array *p_self) {
 	memnew_placement(p_self, PackedFloat64Array);
 }
 
+void GDAPI godot_packed_float64_array_new_copy(godot_packed_float64_array *r_dest, const godot_packed_float64_array *p_src) {
+	memnew_placement(r_dest, PackedFloat64Array(*(PackedFloat64Array *)p_src));
+}
+
 void GDAPI godot_packed_float64_array_destroy(godot_packed_float64_array *p_self) {
 	((PackedFloat64Array *)p_self)->~PackedFloat64Array();
 }
@@ -157,6 +177,10 @@ const double GDAPI *godot_packed_float64_array_operator_index_const(const godot_
 
 void GDAPI godot_packed_string_array_new(godot_packed_string_array *p_self) {
 	memnew_placement(p_self, PackedStringArray);
+}
+
+void GDAPI godot_packed_string_array_new_copy(godot_packed_string_array *r_dest, const godot_packed_string_array *p_src) {
+	memnew_placement(r_dest, PackedStringArray(*(PackedStringArray *)p_src));
 }
 
 void GDAPI godot_packed_string_array_destroy(godot_packed_string_array *p_self) {
@@ -179,6 +203,10 @@ void GDAPI godot_packed_vector2_array_new(godot_packed_vector2_array *p_self) {
 	memnew_placement(p_self, PackedVector2Array);
 }
 
+void GDAPI godot_packed_vector2_array_new_copy(godot_packed_vector2_array *r_dest, const godot_packed_vector2_array *p_src) {
+	memnew_placement(r_dest, PackedVector2Array(*(PackedVector2Array *)p_src));
+}
+
 void GDAPI godot_packed_vector2_array_destroy(godot_packed_vector2_array *p_self) {
 	((PackedVector2Array *)p_self)->~PackedVector2Array();
 }
@@ -197,6 +225,10 @@ const godot_vector2 GDAPI *godot_packed_vector2_array_operator_index_const(const
 
 void GDAPI godot_packed_vector2i_array_new(godot_packed_vector2i_array *p_self) {
 	memnew_placement(p_self, Vector<Vector2i>);
+}
+
+void GDAPI godot_packed_vector2i_array_new_copy(godot_packed_vector2i_array *r_dest, const godot_packed_vector2i_array *p_src) {
+	memnew_placement(r_dest, Vector<Vector2i>(*(Vector<Vector2i> *)p_src));
 }
 
 void GDAPI godot_packed_vector2i_array_destroy(godot_packed_vector2i_array *p_self) {
@@ -219,6 +251,10 @@ void GDAPI godot_packed_vector3_array_new(godot_packed_vector3_array *p_self) {
 	memnew_placement(p_self, PackedVector3Array);
 }
 
+void GDAPI godot_packed_vector3_array_new_copy(godot_packed_vector3_array *r_dest, const godot_packed_vector3_array *p_src) {
+	memnew_placement(r_dest, PackedVector3Array(*(PackedVector3Array *)p_src));
+}
+
 void GDAPI godot_packed_vector3_array_destroy(godot_packed_vector3_array *p_self) {
 	((PackedVector3Array *)p_self)->~PackedVector3Array();
 }
@@ -239,6 +275,10 @@ void GDAPI godot_packed_vector3i_array_new(godot_packed_vector3i_array *p_self) 
 	memnew_placement(p_self, Vector<Vector3i>);
 }
 
+void GDAPI godot_packed_vector3i_array_new_copy(godot_packed_vector3i_array *r_dest, const godot_packed_vector3i_array *p_src) {
+	memnew_placement(r_dest, Vector<Vector3i>(*(Vector<Vector3i> *)p_src));
+}
+
 void GDAPI godot_packed_vector3i_array_destroy(godot_packed_vector3i_array *p_self) {
 	((Vector<Vector3i> *)p_self)->~Vector();
 }
@@ -257,6 +297,10 @@ const godot_vector3i GDAPI *godot_packed_vector3i_array_operator_index_const(con
 
 void GDAPI godot_packed_color_array_new(godot_packed_color_array *p_self) {
 	memnew_placement(p_self, PackedColorArray);
+}
+
+void GDAPI godot_packed_color_array_new_copy(godot_packed_color_array *r_dest, const godot_packed_color_array *p_src) {
+	memnew_placement(r_dest, PackedColorArray(*(PackedColorArray *)p_src));
 }
 
 void GDAPI godot_packed_color_array_destroy(godot_packed_color_array *p_self) {
