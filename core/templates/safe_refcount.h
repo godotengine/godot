@@ -249,7 +249,7 @@ public:
 	}
 
 	_ALWAYS_INLINE_ T conditional_increment() {
-		if (value != 0) {
+		if (value == 0) {
 			return 0;
 		} else {
 			return ++value;
