@@ -10,6 +10,16 @@
 		</Expand>
 	</Type>
 
+	<Type Name="LocalVector&lt;*&gt;">
+		<Expand>
+			<Item Name="[size]">count</Item>
+			<ArrayItems>
+				<Size>count</Size>
+				<ValuePointer>data</ValuePointer>
+			</ArrayItems>
+		</Expand>
+	</Type>
+
 	<Type Name="List&lt;*&gt;">
 		<Expand>
 			<Item Name="[size]">_data ? (_data->size_cache) : 0</Item>
