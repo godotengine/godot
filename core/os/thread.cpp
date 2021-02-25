@@ -92,6 +92,7 @@ bool Thread::is_started() const {
 
 void Thread::wait_to_finish() {
 	if (id != 0) {
+		ERR_FAIL_COND_MSG(id == get_caller_id(), "A Thread can't wait for itself to finish.");
 		thread.join();
 		std::thread empty_thread;
 		thread.swap(empty_thread);
