@@ -152,15 +152,20 @@ Node *SceneState::instance(GenEditState p_edit_state) const {
 				}
 #endif
 			}
-		} else if (ClassDB::is_class_enabled(snames[n.type])) {
-			//node belongs to this scene and must be created
-			Object *obj = ClassDB::instance(snames[n.type]);
+		} else {
+			Object *obj = nullptr;
+
+			if (ClassDB::is_class_enabled(snames[n.type])) {
+				//node belongs to this scene and must be created
+				obj = ClassDB::instance(snames[n.type]);
+			}
+
 			if (!Object::cast_to<Node>(obj)) {
 				if (obj) {
 					memdelete(obj);
 					obj = NULL;
 				}
-				WARN_PRINT(String("Warning node of type " + snames[n.type].operator String() + " does not exist.").ascii().get_data());
+				WARN_PRINT(vformat("Node %s of type %s cannot be created. A placeholder will be created instead.", snames[n.name], snames[n.type]).ascii().get_data());
 				if (n.parent >= 0 && n.parent < nc && ret_nodes[n.parent]) {
 					if (Object::cast_to<Spatial>(ret_nodes[n.parent])) {
 						obj = memnew(Spatial);
@@ -177,10 +182,6 @@ Node *SceneState::instance(GenEditState p_edit_state) const {
 			}
 
 			node = Object::cast_to<Node>(obj);
-
-		} else {
-			//print_line("Class is disabled for: " + itos(n.type));
-			//print_line("name: " + String(snames[n.type]));
 		}
 
 		if (node) {
