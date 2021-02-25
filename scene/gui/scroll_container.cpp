@@ -315,6 +315,7 @@ void ScrollContainer::_notification(int p_what) {
 					r.size.height = minsize.height;
 			}
 			r.position += ofs;
+			r.position = r.position.floor();
 			fit_child_in_rect(c, r);
 		}
 
