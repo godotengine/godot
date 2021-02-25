@@ -181,10 +181,12 @@
 		<method name="quit">
 			<return type="void">
 			</return>
-			<argument index="0" name="exit_code" type="int" default="-1">
+			<argument index="0" name="exit_code" type="int" default="0">
 			</argument>
 			<description>
-				Quits the application at the end of the current iteration. A process [code]exit_code[/code] can optionally be passed as an argument. If this argument is [code]0[/code] or greater, it will override the [member OS.exit_code] defined before quitting the application.
+				Quits the application at the end of the current iteration. Argument [code]exit_code[/code] can optionally be given (defaulting to 0) to customize the exit status code.
+				By convention, an exit code of [code]0[/code] indicates success whereas a non-zero exit code indicates an error.
+				For portability reasons, the exit code should be set between 0 and 125 (inclusive).
 			</description>
 		</method>
 		<method name="reload_current_scene">

@@ -40,6 +40,7 @@
 #include "core/templates/vector.h"
 
 #include <stdarg.h>
+#include <stdlib.h>
 
 class OS {
 	static OS *singleton;
@@ -53,7 +54,7 @@ class OS {
 	bool _debug_stdout = false;
 	String _local_clipboard;
 	bool _no_window = false;
-	int _exit_code = 0;
+	int _exit_code = EXIT_FAILURE; // unexpected exit is marked as failure
 	int _orientation;
 	bool _allow_hidpi = false;
 	bool _allow_layered = false;
