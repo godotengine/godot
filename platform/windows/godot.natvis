@@ -10,6 +10,16 @@
 		</Expand>
 	</Type>
 
+	<Type Name="LocalVector&lt;*&gt;">
+		<Expand>
+			<Item Name="[size]">count</Item>
+			<ArrayItems>
+				<Size>count</Size>
+				<ValuePointer>data</ValuePointer>
+			</ArrayItems>
+		</Expand>
+	</Type>
+
 	<Type Name="PoolVector&lt;*&gt;">
 		<Expand>
 			<Item Name="[size]">alloc ? (alloc-&gt;size / sizeof($T1)) : 0</Item>

@@ -50,6 +50,55 @@ ext.getExportVersionName = { ->
     return versionName
 }
 
+ext.getGodotEditorVersion = { ->
+    String editorVersion = project.hasProperty("godot_editor_version") ? project.property("godot_editor_version") : ""
+    if (editorVersion == null || editorVersion.isEmpty()) {
+        // Try the library version first
+        editorVersion = getGodotLibraryVersion()
+
+        if (editorVersion.isEmpty()) {
+            // Fallback value.
+            editorVersion = "custom_build"
+        }
+    }
+    return editorVersion
+}
+
+ext.getGodotLibraryVersion = { ->
+    // Attempt to read the version from the `version.py` file.
+    String libraryVersion = ""
+
+    File versionFile = new File("../../../version.py")
+    if (versionFile.isFile()) {
+        List<String> requiredKeys = ["major", "minor", "patch", "status", "module_config"]
+        def map = [:]
+
+        List<String> lines = versionFile.readLines()
+        for (String line in lines) {
+            String[] keyValue = line.split("=")
+            String key = keyValue[0].trim()
+            String value = keyValue[1].trim().replaceAll("\"", "")
+
+            if (requiredKeys.contains(key)) {
+                if (!value.isEmpty()) {
+                    map[key] = value
+                }
+                requiredKeys.remove(key)
+            }
+        }
+
+        if (requiredKeys.empty) {
+            libraryVersion = map.values().join(".")
+        }
+    }
+
+    if (libraryVersion.isEmpty()) {
+        // Fallback value in case we're unable to read the file.
+        libraryVersion = "custom_build"
+    }
+    return libraryVersion
+}
+
 final String PLUGIN_VALUE_SEPARATOR_REGEX = "\\|"
 
 // get the list of ABIs the project should be exported to
