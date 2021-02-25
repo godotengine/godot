@@ -277,5 +277,7 @@ Transform2D Transform2D::interpolate_with(const Transform2D &p_transform, real_t
 }
 
 Transform2D::operator String() const {
-	return String(String() + elements[0] + ", " + elements[1] + ", " + elements[2]);
+	return "[X: " + elements[0].operator String() +
+		   ", Y: " + elements[1].operator String() +
+		   ", O: " + elements[2].operator String() + "]";
 }

@@ -3053,28 +3053,25 @@ bool BindingsGenerator::_arg_default_value_from_variant(const Variant &p_val, Ar
 			break;
 		case Variant::PLANE: {
 			Plane plane = p_val.operator Plane();
-			r_iarg.default_argument = "new Plane(new Vector3(" + plane.normal.operator String() + "), " + rtos(plane.d) + ")";
+			r_iarg.default_argument = "new Plane(new Vector3" + plane.normal.operator String() + ", " + rtos(plane.d) + ")";
 			r_iarg.def_param_mode = ArgumentInterface::NULLABLE_VAL;
 		} break;
 		case Variant::AABB: {
 			AABB aabb = p_val.operator ::AABB();
-			r_iarg.default_argument = "new AABB(new Vector3(" + aabb.position.operator String() + "), new Vector3(" + aabb.position.operator String() + "))";
+			r_iarg.default_argument = "new AABB(new Vector3" + aabb.position.operator String() + ", new Vector3" + aabb.position.operator String() + ")";
 			r_iarg.def_param_mode = ArgumentInterface::NULLABLE_VAL;
 		} break;
 		case Variant::RECT2: {
 			Rect2 rect = p_val.operator Rect2();
-			r_iarg.default_argument = "new Rect2(new Vector2(" + rect.position.operator String() + "), new Vector2(" + rect.position.operator String() + "))";
+			r_iarg.default_argument = "new Rect2(new Vector2" + rect.position.operator String() + ", new Vector2" + rect.position.operator String() + ")";
 			r_iarg.def_param_mode = ArgumentInterface::NULLABLE_VAL;
 		} break;
 		case Variant::RECT2I: {
 			Rect2i rect = p_val.operator Rect2i();
-			r_iarg.default_argument = "new Rect2i(new Vector2i(" + rect.position.operator String() + "), new Vector2i(" + rect.position.operator String() + "))";
+			r_iarg.default_argument = "new Rect2i(new Vector2i" + rect.position.operator String() + ", new Vector2i" + rect.position.operator String() + ")";
 			r_iarg.def_param_mode = ArgumentInterface::NULLABLE_VAL;
 		} break;
 		case Variant::COLOR:
-			r_iarg.default_argument = "new %s(" + r_iarg.default_argument + ")";
-			r_iarg.def_param_mode = ArgumentInterface::NULLABLE_VAL;
-			break;
 		case Variant::VECTOR2:
 		case Variant::VECTOR2I:
 		case Variant::VECTOR3:

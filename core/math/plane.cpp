@@ -175,5 +175,5 @@ bool Plane::is_equal_approx(const Plane &p_plane) const {
 }
 
 Plane::operator String() const {
-	return normal.operator String() + ", " + rtos(d);
+	return "[N: " + normal.operator String() + ", D: " + String::num_real(d, false) + "]";
 }

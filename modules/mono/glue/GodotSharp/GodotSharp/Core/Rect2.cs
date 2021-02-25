@@ -405,7 +405,7 @@ namespace Godot
 
         public override string ToString()
         {
-            return String.Format("({0}, {1})", new object[]
+            return String.Format("{0}, {1}", new object[]
             {
                 _position.ToString(),
                 _size.ToString()
@@ -414,7 +414,7 @@ namespace Godot
 
         public string ToString(string format)
         {
-            return String.Format("({0}, {1})", new object[]
+            return String.Format("{0}, {1}", new object[]
             {
                 _position.ToString(format),
                 _size.ToString(format)

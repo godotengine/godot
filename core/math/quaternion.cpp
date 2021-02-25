@@ -181,7 +181,7 @@ Quaternion Quaternion::cubic_slerp(const Quaternion &p_b, const Quaternion &p_pr
 }
 
 Quaternion::operator String() const {
-	return String::num(x) + ", " + String::num(y) + ", " + String::num(z) + ", " + String::num(w);
+	return "(" + String::num_real(x, false) + ", " + String::num_real(y, false) + ", " + String::num_real(z, false) + ", " + String::num_real(w, false) + ")";
 }
 
 Quaternion::Quaternion(const Vector3 &p_axis, real_t p_angle) {
