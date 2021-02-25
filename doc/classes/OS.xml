@@ -207,10 +207,11 @@
 		<method name="get_environment" qualifiers="const">
 			<return type="String">
 			</return>
-			<argument index="0" name="environment" type="String">
+			<argument index="0" name="variable" type="String">
 			</argument>
 			<description>
-				Returns an environment variable.
+				Returns the value of an environment variable. Returns an empty string if the environment variable doesn't exist.
+				[b]Note:[/b] Double-check the casing of [code]variable[/code]. Environment variable names are case-sensitive on all platforms except Windows.
 			</description>
 		</method>
 		<method name="get_executable_path" qualifiers="const">
@@ -383,10 +384,11 @@
 		<method name="has_environment" qualifiers="const">
 			<return type="bool">
 			</return>
-			<argument index="0" name="environment" type="String">
+			<argument index="0" name="variable" type="String">
 			</argument>
 			<description>
-				Returns [code]true[/code] if an environment variable exists.
+				Returns [code]true[/code] if the environment variable with the name [code]variable[/code] exists.
+				[b]Note:[/b] Double-check the casing of [code]variable[/code]. Environment variable names are case-sensitive on all platforms except Windows.
 			</description>
 		</method>
 		<method name="has_feature" qualifiers="const">
@@ -504,12 +506,13 @@
 		<method name="set_environment" qualifiers="const">
 			<return type="bool">
 			</return>
-			<argument index="0" name="environment" type="String">
+			<argument index="0" name="variable" type="String">
 			</argument>
 			<argument index="1" name="value" type="String">
 			</argument>
 			<description>
-				Change the value of an environment variable.
+				Sets the value of the environment variable [code]variable[/code] to [code]value[/code]. The environment variable will be set for the Godot process and any process executed with [method execute] after running [method set_environment]. The environment variable will [i]not[/i] persist to processes run after the Godot process was terminated.
+				[b]Note:[/b] Double-check the casing of [code]variable[/code]. Environment variable names are case-sensitive on all platforms except Windows.
 			</description>
 		</method>
 		<method name="set_thread_name">
