@@ -65,6 +65,7 @@ private:
 public:
 	bool push_back(T p_elem);
 	_FORCE_INLINE_ bool append(const T &p_elem) { return push_back(p_elem); } //alias
+	void fill(T p_elem);
 
 	void remove(int p_index) { _cowdata.remove(p_index); }
 	void erase(const T &p_val) {
@@ -220,6 +221,14 @@ bool Vector<T>::push_back(T p_elem) {
 	set(size() - 1, p_elem);
 
 	return false;
+}
+
+template <class T>
+void Vector<T>::fill(T p_elem) {
+	T *p = ptrw();
+	for (int i = 0; i < size(); i++) {
+		p[i] = p_elem;
+	}
 }
 
 #endif // VECTOR_H
