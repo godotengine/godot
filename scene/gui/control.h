@@ -160,7 +160,6 @@ private:
 		float rotation;
 		Vector2 scale;
 		Vector2 pivot_offset;
-		bool size_warning = true;
 
 		bool pending_resize;
 
@@ -225,7 +224,6 @@ private:
 	void _change_notify_margins();
 	void _update_minimum_size();
 
-	void _clear_size_warning();
 	void _update_scroll();
 	void _resize(const Size2 &p_size);
 
