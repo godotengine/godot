@@ -996,6 +996,7 @@ Array ScriptEditor::_get_open_scripts() const {
 
 bool ScriptEditor::toggle_scripts_panel() {
 	list_split->set_visible(!list_split->is_visible());
+	EditorSettings::get_singleton()->set_project_metadata("scripts_panel", "show_scripts_panel", list_split->is_visible());
 	return list_split->is_visible();
 }
 
@@ -3288,6 +3289,7 @@ ScriptEditor::ScriptEditor(EditorNode *p_editor) {
 	overview_vbox->set_v_size_flags(SIZE_EXPAND_FILL);
 
 	list_split->add_child(overview_vbox);
+	list_split->set_visible(EditorSettings::get_singleton()->get_project_metadata("scripts_panel", "show_scripts_panel", true));
 	buttons_hbox = memnew(HBoxContainer);
 	overview_vbox->add_child(buttons_hbox);
 
