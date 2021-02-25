@@ -255,36 +255,59 @@ GDScriptCodeGenerator::Address GDScriptCompiler::_parse_expression(CodeGen &code
 			}
 
 			// Try class constants.
-			GDScript *owner = codegen.script;
-			while (owner) {
-				GDScript *scr = owner;
+			{
+				GDScript *owner = codegen.script;
+				while (owner) {
+					GDScript *scr = owner;
+					GDScriptNativeClass *nc = nullptr;
+					while (scr) {
+						if (scr->constants.has(identifier)) {
+							return GDScriptCodeGenerator::Address(GDScriptCodeGenerator::Address::CLASS_CONSTANT, gen->add_or_get_name(identifier)); // TODO: Get type here.
+						}
+						if (scr->native.is_valid()) {
+							nc = scr->native.ptr();
+						}
+						scr = scr->_base;
+					}
+
+					// Class C++ integer constant.
+					if (nc) {
+						bool success = false;
+						int constant = ClassDB::get_integer_constant(nc->get_name(), identifier, &success);
+						if (success) {
+							return codegen.add_constant(constant);
+						}
+					}
+
+					owner = owner->_owner;
+				}
+			}
+
+			// Try signals and methods (can be made callables).
+			{
+				if (codegen.class_node->members_indices.has(identifier)) {
+					const GDScriptParser::ClassNode::Member &member = codegen.class_node->members[codegen.class_node->members_indices[identifier]];
+					if (member.type == GDScriptParser::ClassNode::Member::FUNCTION || member.type == GDScriptParser::ClassNode::Member::SIGNAL) {
+						// Get like it was a property.
+						GDScriptCodeGenerator::Address temp = codegen.add_temporary(); // TODO: Get type here.
+						GDScriptCodeGenerator::Address self(GDScriptCodeGenerator::Address::SELF);
+
+						gen->write_get_named(temp, identifier, self);
+						return temp;
+					}
+				}
+
+				// Try in native base.
+				GDScript *scr = codegen.script;
 				GDScriptNativeClass *nc = nullptr;
 				while (scr) {
-					if (scr->constants.has(identifier)) {
-						return GDScriptCodeGenerator::Address(GDScriptCodeGenerator::Address::CLASS_CONSTANT, gen->add_or_get_name(identifier)); // TODO: Get type here.
-					}
 					if (scr->native.is_valid()) {
 						nc = scr->native.ptr();
 					}
 					scr = scr->_base;
 				}
 
-				// Class C++ integer constant.
-				if (nc) {
-					bool success = false;
-					int constant = ClassDB::get_integer_constant(nc->get_name(), identifier, &success);
-					if (success) {
-						return codegen.add_constant(constant);
-					}
-				}
-
-				owner = owner->_owner;
-			}
-
-			// Try signals and methods (can be made callables);
-			if (codegen.class_node->members_indices.has(identifier)) {
-				const GDScriptParser::ClassNode::Member &member = codegen.class_node->members[codegen.class_node->members_indices[identifier]];
-				if (member.type == GDScriptParser::ClassNode::Member::FUNCTION || member.type == GDScriptParser::ClassNode::Member::SIGNAL) {
+				if (nc && (ClassDB::has_signal(nc->get_name(), identifier) || ClassDB::has_method(nc->get_name(), identifier))) {
 					// Get like it was a property.
 					GDScriptCodeGenerator::Address temp = codegen.add_temporary(); // TODO: Get type here.
 					GDScriptCodeGenerator::Address self(GDScriptCodeGenerator::Address::SELF);
