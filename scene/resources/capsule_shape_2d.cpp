@@ -85,9 +85,11 @@ void CapsuleShape2D::draw(const RID &p_to_rid, const Color &p_color) {
 	Vector<Color> col;
 	col.push_back(p_color);
 	RenderingServer::get_singleton()->canvas_item_add_polygon(p_to_rid, points, col);
-	RenderingServer::get_singleton()->canvas_item_add_polyline(p_to_rid, points, col);
-	// Draw the last segment as it's not drawn by `canvas_item_add_polyline()`.
-	RenderingServer::get_singleton()->canvas_item_add_line(p_to_rid, points[points.size() - 1], points[0], p_color);
+	if (is_collision_outline_enabled()) {
+		RenderingServer::get_singleton()->canvas_item_add_polyline(p_to_rid, points, col);
+		// Draw the last segment as it's not drawn by `canvas_item_add_polyline()`.
+		RenderingServer::get_singleton()->canvas_item_add_line(p_to_rid, points[points.size() - 1], points[0], p_color);
+	}
 }
 
 Rect2 CapsuleShape2D::get_rect() const {

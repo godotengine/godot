@@ -460,6 +460,9 @@
 		<member name="debug/shapes/collision/contact_color" type="Color" setter="" getter="" default="Color( 1, 0.2, 0.1, 0.8 )">
 			Color of the contact points between collision shapes, visible when "Visible Collision Shapes" is enabled in the Debug menu.
 		</member>
+		<member name="debug/shapes/collision/draw_2d_outlines" type="bool" setter="" getter="" default="true">
+			Sets whether 2D physics will display collision outlines in game when "Visible Collision Shapes" is enabled in the Debug menu.
+		</member>
 		<member name="debug/shapes/collision/max_contacts_displayed" type="int" setter="" getter="" default="10000">
 			Maximum number of contact points between collision shapes to display when "Visible Collision Shapes" is enabled in the Debug menu.
 		</member>
