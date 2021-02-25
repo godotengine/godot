@@ -69,6 +69,12 @@ protected:
 	}
 };
 
+void ImportDefaultsEditor::_notification(int p_what) {
+	if (p_what == NOTIFICATION_PREDELETE) {
+		inspector->edit(nullptr);
+	}
+}
+
 void ImportDefaultsEditor::_reset() {
 	if (settings->importer.is_valid()) {
 		settings->values = settings->default_values;
@@ -206,6 +212,5 @@ ImportDefaultsEditor::ImportDefaultsEditor() {
 }
 
 ImportDefaultsEditor::~ImportDefaultsEditor() {
-	inspector->edit(nullptr);
 	memdelete(settings);
 }
