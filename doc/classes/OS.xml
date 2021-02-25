@@ -501,6 +501,17 @@
 				[b]Note:[/b] This method is implemented on Android.
 			</description>
 		</method>
+		<method name="set_environment" qualifiers="const">
+			<return type="bool">
+			</return>
+			<argument index="0" name="environment" type="String">
+			</argument>
+			<argument index="1" name="value" type="String">
+			</argument>
+			<description>
+				Change the value of an environment variable.
+			</description>
+		</method>
 		<method name="set_thread_name">
 			<return type="int" enum="Error">
 			</return>
