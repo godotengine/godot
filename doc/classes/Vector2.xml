@@ -66,6 +66,8 @@
 			<description>
 				Returns this vector's angle with respect to the positive X axis, or [code](1, 0)[/code] vector, in radians.
 				For example, [code]Vector2.RIGHT.angle()[/code] will return zero, [code]Vector2.DOWN.angle()[/code] will return [code]PI / 2[/code] (a quarter turn, or 90 degrees), and [code]Vector2(1, -1).angle()[/code] will return [code]-PI / 4[/code] (a negative eighth turn, or -45 degrees).
+				The following graph illustrates what angle is returned:
+				[img]https://raw.githubusercontent.com/godotengine/godot-docs/master/img/vector2_angle.png[/img]
 				Equivalent to the result of [method @GlobalScope.atan2] when called with the vector's [member y] and [member x] as parameters: [code]atan2(y, x)[/code].
 			</description>
 		</method>
@@ -76,6 +78,8 @@
 			</argument>
 			<description>
 				Returns the angle to the given vector, in radians.
+				The following graph illustrates what angle is returned:
+				[img]https://raw.githubusercontent.com/godotengine/godot-docs/master/img/vector2_angle_to.png[/img]
 			</description>
 		</method>
 		<method name="angle_to_point">
@@ -85,6 +89,8 @@
 			</argument>
 			<description>
 				Returns the angle between the line connecting the two points and the X axis, in radians.
+				The following graph illustrates what angle is returned:
+				[img]https://raw.githubusercontent.com/godotengine/godot-docs/master/img/vector2_angle_to_point.png[/img]
 			</description>
 		</method>
 		<method name="aspect">
