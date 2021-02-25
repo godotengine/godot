@@ -40,6 +40,7 @@
 #include "core/vector.h"
 
 #include <stdarg.h>
+#include <stdlib.h>
 
 class OS {
 
@@ -55,7 +56,8 @@ class OS {
 	String _local_clipboard;
 	uint64_t _msec_splash;
 	bool _no_window;
-	int _exit_code;
+	int _exit_code = EXIT_FAILURE; // unexpected exit is marked as failure
+	bool _is_custom_exit_code = false;
 	int _orientation;
 	bool _allow_hidpi;
 	bool _allow_layered;
@@ -488,6 +490,7 @@ public:
 
 	virtual int get_exit_code() const;
 	virtual void set_exit_code(int p_code);
+	virtual bool is_custom_exit_code();
 
 	virtual int get_processor_count() const;
 
