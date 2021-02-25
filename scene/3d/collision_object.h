@@ -47,6 +47,7 @@ class CollisionObject : public Spatial {
 		Object *owner;
 		Transform xform;
 		struct ShapeBase {
+			Node *debug_shape = nullptr;
 			Ref<Shape> shape;
 			int index;
 		};
@@ -67,7 +68,11 @@ class CollisionObject : public Spatial {
 	bool capture_input_on_drag;
 	bool ray_pickable;
 
+	Set<uint32_t> debug_shapes_to_update;
+
 	void _update_pickable();
+
+	void _update_shape_data(uint32_t p_owner);
 
 protected:
 	CollisionObject(RID p_rid, bool p_area);
@@ -78,6 +83,8 @@ protected:
 	virtual void _input_event(Node *p_camera, const Ref<InputEvent> &p_input_event, const Vector3 &p_pos, const Vector3 &p_normal, int p_shape);
 	virtual void _mouse_enter();
 	virtual void _mouse_exit();
+
+	void _update_debug_shapes();
 
 public:
 	uint32_t create_shape_owner(Object *p_owner);
