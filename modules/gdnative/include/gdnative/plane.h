@@ -49,6 +49,7 @@ typedef struct {
 #include <gdnative/gdnative.h>
 
 void GDAPI godot_plane_new(godot_plane *p_self);
+void GDAPI godot_plane_new_copy(godot_plane *r_dest, const godot_plane *p_src);
 
 #ifdef __cplusplus
 }

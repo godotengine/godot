@@ -49,6 +49,7 @@ typedef struct {
 #include <gdnative/gdnative.h>
 
 void GDAPI godot_transform2d_new(godot_transform2d *p_self);
+void GDAPI godot_transform2d_new_copy(godot_transform2d *r_dest, const godot_transform2d *p_src);
 godot_vector2 GDAPI *godot_transform2d_operator_index(godot_transform2d *p_self, godot_int p_index);
 const godot_vector2 GDAPI *godot_transform2d_operator_index_const(const godot_transform2d *p_self, godot_int p_index);
 
