@@ -1594,7 +1594,7 @@ String String::num_uint64(uint64_t p_num, int base, bool capitalize_hex) {
 	return s;
 }
 
-String String::num_real(double p_num) {
+String String::num_real(double p_num, bool p_trailing) {
 	if (Math::is_nan(p_num)) {
 		return "nan";
 	}
@@ -1669,8 +1669,10 @@ String String::num_real(double p_num) {
 			dec_int /= 10;
 		}
 		sd = '.' + decimal;
-	} else {
+	} else if (p_trailing) {
 		sd = ".0";
+	} else {
+		sd = "";
 	}
 
 	if (intn == 0) {

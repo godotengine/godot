@@ -56,5 +56,5 @@ Vector3i Vector3i::clamp(const Vector3i &p_min, const Vector3i &p_max) const {
 }
 
 Vector3i::operator String() const {
-	return (itos(x) + ", " + itos(y) + ", " + itos(z));
+	return "(" + itos(x) + ", " + itos(y) + ", " + itos(z) + ")";
 }

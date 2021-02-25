@@ -756,18 +756,9 @@ bool Basis::operator!=(const Basis &p_matrix) const {
 }
 
 Basis::operator String() const {
-	String mtx;
-	for (int i = 0; i < 3; i++) {
-		for (int j = 0; j < 3; j++) {
-			if (i != 0 || j != 0) {
-				mtx += ", ";
-			}
-
-			mtx += rtos(elements[j][i]); //matrix is stored transposed for performance, so print it transposed
-		}
-	}
-
-	return mtx;
+	return "[X: " + get_axis(0).operator String() +
+		   ", Y: " + get_axis(1).operator String() +
+		   ", Z: " + get_axis(2).operator String() + "]";
 }
 
 Quaternion Basis::get_quaternion() const {

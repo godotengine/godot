@@ -1636,51 +1636,27 @@ String Variant::stringify(List<const void *> &stack) const {
 		case STRING:
 			return *reinterpret_cast<const String *>(_data._mem);
 		case VECTOR2:
-			return "(" + operator Vector2() + ")";
+			return operator Vector2();
 		case VECTOR2I:
-			return "(" + operator Vector2i() + ")";
+			return operator Vector2i();
 		case RECT2:
-			return "(" + operator Rect2() + ")";
+			return operator Rect2();
 		case RECT2I:
-			return "(" + operator Rect2i() + ")";
-		case TRANSFORM2D: {
-			Transform2D mat32 = operator Transform2D();
-			return "(" + Variant(mat32.elements[0]).operator String() + ", " + Variant(mat32.elements[1]).operator String() + ", " + Variant(mat32.elements[2]).operator String() + ")";
-		} break;
+			return operator Rect2i();
+		case TRANSFORM2D:
+			return operator Transform2D();
 		case VECTOR3:
-			return "(" + operator Vector3() + ")";
+			return operator Vector3();
 		case VECTOR3I:
-			return "(" + operator Vector3i() + ")";
+			return operator Vector3i();
 		case PLANE:
 			return operator Plane();
 		case AABB:
 			return operator ::AABB();
 		case QUATERNION:
-			return "(" + operator Quaternion() + ")";
-		case BASIS: {
-			Basis mat3 = operator Basis();
-
-			String mtx("(");
-			for (int i = 0; i < 3; i++) {
-				if (i != 0) {
-					mtx += ", ";
-				}
-
-				mtx += "(";
-
-				for (int j = 0; j < 3; j++) {
-					if (j != 0) {
-						mtx += ", ";
-					}
-
-					mtx += Variant(mat3.elements[i][j]).operator String();
-				}
-
-				mtx += ")";
-			}
-
-			return mtx + ")";
-		} break;
+			return operator Quaternion();
+		case BASIS:
+			return operator Basis();
 		case TRANSFORM3D:
 			return operator Transform3D();
 		case STRING_NAME:
@@ -1688,7 +1664,7 @@ String Variant::stringify(List<const void *> &stack) const {
 		case NODE_PATH:
 			return operator NodePath();
 		case COLOR:
-			return String::num(operator Color().r) + "," + String::num(operator Color().g) + "," + String::num(operator Color().b) + "," + String::num(operator Color().a);
+			return operator Color();
 		case DICTIONARY: {
 			const Dictionary &d = *reinterpret_cast<const Dictionary *>(_data._mem);
 			if (stack.find(d.id())) {
