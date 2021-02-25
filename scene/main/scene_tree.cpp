@@ -1350,6 +1350,8 @@ SceneTree::SceneTree() {
 	collision_debug_contacts = GLOBAL_DEF("debug/shapes/collision/max_contacts_displayed", 10000);
 	ProjectSettings::get_singleton()->set_custom_property_info("debug/shapes/collision/max_contacts_displayed", PropertyInfo(Variant::INT, "debug/shapes/collision/max_contacts_displayed", PROPERTY_HINT_RANGE, "0,20000,1")); // No negative
 
+	GLOBAL_DEF("debug/shapes/collision/draw_2d_outlines", true);
+
 	// Create with mainloop.
 
 	root = memnew(Window);

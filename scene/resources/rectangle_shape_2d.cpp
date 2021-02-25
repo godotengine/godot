@@ -47,23 +47,25 @@ Vector2 RectangleShape2D::get_size() const {
 }
 
 void RectangleShape2D::draw(const RID &p_to_rid, const Color &p_color) {
-	// Draw an outlined rectangle to make individual shapes easier to distinguish.
-	Vector<Vector2> stroke_points;
-	stroke_points.resize(5);
-	stroke_points.write[0] = -size * 0.5;
-	stroke_points.write[1] = Vector2(size.x, -size.y) * 0.5;
-	stroke_points.write[2] = size * 0.5;
-	stroke_points.write[3] = Vector2(-size.x, size.y) * 0.5;
-	stroke_points.write[4] = -size * 0.5;
-
-	Vector<Color> stroke_colors;
-	stroke_colors.resize(5);
-	for (int i = 0; i < 5; i++) {
-		stroke_colors.write[i] = (p_color);
-	}
-
 	RenderingServer::get_singleton()->canvas_item_add_rect(p_to_rid, Rect2(-size * 0.5, size), p_color);
-	RenderingServer::get_singleton()->canvas_item_add_polyline(p_to_rid, stroke_points, stroke_colors);
+	if (is_collision_outline_enabled()) {
+		// Draw an outlined rectangle to make individual shapes easier to distinguish.
+		Vector<Vector2> stroke_points;
+		stroke_points.resize(5);
+		stroke_points.write[0] = -size * 0.5;
+		stroke_points.write[1] = Vector2(size.x, -size.y) * 0.5;
+		stroke_points.write[2] = size * 0.5;
+		stroke_points.write[3] = Vector2(-size.x, size.y) * 0.5;
+		stroke_points.write[4] = -size * 0.5;
+
+		Vector<Color> stroke_colors;
+		stroke_colors.resize(5);
+		for (int i = 0; i < 5; i++) {
+			stroke_colors.write[i] = (p_color);
+		}
+
+		RenderingServer::get_singleton()->canvas_item_add_polyline(p_to_rid, stroke_points, stroke_colors);
+	}
 }
 
 Rect2 RectangleShape2D::get_rect() const {
