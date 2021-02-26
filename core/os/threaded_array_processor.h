@@ -95,7 +95,7 @@ void thread_process_array(uint32_t p_elements, C *p_instance, M p_method, U p_us
 	data.method = p_method;
 	data.instance = p_instance;
 	data.userdata = p_userdata;
-	data.index = 0;
+	data.index.set(0);
 	data.elements = p_elements;
 	for (uint32_t i = 0; i < p_elements; i++) {
 		data.process(i);
