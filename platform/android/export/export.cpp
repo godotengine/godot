@@ -2003,6 +2003,7 @@ public:
 			String template_err;
 			bool dvalid = false;
 			bool rvalid = false;
+			bool has_export_templates = false;
 
 			if (p_preset->get("custom_template/debug") != "") {
 				dvalid = FileAccess::exists(p_preset->get("custom_template/debug"));
@@ -2010,7 +2011,7 @@ public:
 					template_err += TTR("Custom debug template not found.") + "\n";
 				}
 			} else {
-				dvalid = exists_export_template("android_debug.apk", &template_err);
+				has_export_templates |= exists_export_template("android_debug.apk", &template_err);
 			}
 
 			if (p_preset->get("custom_template/release") != "") {
@@ -2019,22 +2020,24 @@ public:
 					template_err += TTR("Custom release template not found.") + "\n";
 				}
 			} else {
-				rvalid = exists_export_template("android_release.apk", &template_err);
+				has_export_templates |= exists_export_template("android_release.apk", &template_err);
 			}
 
-			valid = dvalid || rvalid;
+			r_missing_templates = !has_export_templates;
+			valid = dvalid || rvalid || has_export_templates;
 			if (!valid) {
 				err += template_err;
 			}
 		} else {
-			valid = exists_export_template("android_source.zip", &err);
+			r_missing_templates = !exists_export_template("android_source.zip", &err);
 
-			if (!FileAccess::exists("res://android/build/build.gradle")) {
+			bool installed_android_build_template = FileAccess::exists("res://android/build/build.gradle");
+			if (!installed_android_build_template) {
 				err += TTR("Android build template not installed in the project. Install it from the Project menu.") + "\n";
-				valid = false;
 			}
+
+			valid = installed_android_build_template && !r_missing_templates;
 		}
-		r_missing_templates = !valid;
 
 		// Validate the rest of the configuration.
 
