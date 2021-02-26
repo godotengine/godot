@@ -82,6 +82,14 @@ bool SceneTreeTimer::is_process_always() {
 	return process_always;
 }
 
+void SceneTreeTimer::set_ignore_time_scale(bool p_ignore) {
+	ignore_time_scale = p_ignore;
+}
+
+bool SceneTreeTimer::is_ignore_time_scale() {
+	return ignore_time_scale;
+}
+
 void SceneTreeTimer::release_connections() {
 	List<Connection> connections;
 	get_all_signal_connections(&connections);
@@ -466,8 +474,13 @@ bool SceneTree::process(float p_time) {
 			E = N;
 			continue;
 		}
+
 		float time_left = E->get()->get_time_left();
-		time_left -= p_time;
+		if (E->get()->is_ignore_time_scale()) {
+			time_left -= Engine::get_singleton()->get_process_step();
+		} else {
+			time_left -= p_time;
+		}
 		E->get()->set_time_left(time_left);
 
 		if (time_left < 0) {
