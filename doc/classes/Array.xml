@@ -197,7 +197,7 @@
 			</argument>
 			<description>
 				Finds the index of an existing value (or the insertion index that maintains sorting order, if the value is not yet present in the array) using binary search and a custom comparison method. Optionally, a [code]before[/code] specifier can be passed. If [code]false[/code], the returned index comes after all existing entries of the value in the array. The custom method receives two arguments (an element from the array and the value searched for) and must return [code]true[/code] if the first argument is less than the second, and return [code]false[/code] otherwise.
-				[b]Note:[/b] Calling [method bsearch] on an unsorted array results in unexpected behavior.
+				[b]Note:[/b] Calling [method bsearch_custom] on an unsorted array results in unexpected behavior.
 			</description>
 		</method>
 		<method name="clear">
