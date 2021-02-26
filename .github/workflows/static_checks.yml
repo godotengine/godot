@@ -35,11 +35,12 @@ jobs:
         run: |
           bash ./misc/scripts/black_format.sh
 
-      - name: JavaScript style checks via ESLint
+      - name: JavaScript style and documentation checks via ESLint and JSDoc
         run: |
           cd platform/javascript
           npm ci
           npm run lint
+          npm run docs -- -d dry-run
 
       - name: Documentation checks
         run: |
