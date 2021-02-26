@@ -21,26 +21,15 @@ jobs:
           sudo apt-get install -qq dos2unix recode clang-format-11
           sudo update-alternatives --remove-all clang-format
           sudo update-alternatives --install /usr/bin/clang-format clang-format /usr/bin/clang-format-11 100
-          sudo pip3 install black==20.8b1 pygments
+          sudo pip3 install black==20.8b1 pygments pre-commit
+          pre-commit install
 
-      - name: File formatting checks (file_format.sh)
+      - name: Run pre-commit hooks on all files
         run: |
-          bash ./misc/scripts/file_format.sh
-
-      - name: Style checks via clang-format (clang_format.sh)
-        run: |
-          bash ./misc/scripts/clang_format.sh
-
-      - name: Python style checks via black (black_format.sh)
-        run: |
-          bash ./misc/scripts/black_format.sh
+          pre-commit run --all-files
 
       - name: JavaScript style checks via ESLint
         run: |
           cd platform/javascript
           npm ci
           npm run lint
-
-      - name: Documentation checks
-        run: |
-          doc/tools/makerst.py --dry-run doc/classes modules
