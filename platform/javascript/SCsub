@@ -97,7 +97,7 @@ out_files = [
 ]
 html_file = "#misc/dist/html/full-size.html"
 if env["tools"]:
-    subst_dict = {"\$GODOT_VERSION": env.GetBuildVersion()}
+    subst_dict = {"@GODOT_VERSION@": env.GetBuildVersion()}
     html_file = env.Substfile(
         target="#bin/godot${PROGSUFFIX}.html", source="#misc/dist/html/editor.html", SUBST_DICT=subst_dict
     )
