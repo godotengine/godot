@@ -99,7 +99,7 @@ ext.getGodotLibraryVersion = { ->
     return libraryVersion
 }
 
-final String PLUGIN_VALUE_SEPARATOR_REGEX = "\\|"
+final String VALUE_SEPARATOR_REGEX = "\\|"
 
 // get the list of ABIs the project should be exported to
 ext.getExportEnabledABIs = { ->
@@ -108,7 +108,7 @@ ext.getExportEnabledABIs = { ->
         enabledABIs = "armeabi-v7a|arm64-v8a|x86|x86_64|"
     }
     Set<String> exportAbiFilter = [];
-    for (String abi_name : enabledABIs.split(PLUGIN_VALUE_SEPARATOR_REGEX)) {
+    for (String abi_name : enabledABIs.split(VALUE_SEPARATOR_REGEX)) {
         if (!abi_name.trim().isEmpty()){
             exportAbiFilter.add(abi_name);
         }
@@ -143,7 +143,7 @@ ext.getGodotPluginsMavenRepos = { ->
     if (project.hasProperty("plugins_maven_repos")) {
         String mavenReposProperty = project.property("plugins_maven_repos")
         if (mavenReposProperty != null && !mavenReposProperty.trim().isEmpty()) {
-            for (String mavenRepoUrl : mavenReposProperty.split(PLUGIN_VALUE_SEPARATOR_REGEX)) {
+            for (String mavenRepoUrl : mavenReposProperty.split(VALUE_SEPARATOR_REGEX)) {
                 mavenRepos += mavenRepoUrl.trim()
             }
         }
@@ -163,7 +163,7 @@ ext.getGodotPluginsRemoteBinaries = { ->
     if (project.hasProperty("plugins_remote_binaries")) {
         String remoteDepsList = project.property("plugins_remote_binaries")
         if (remoteDepsList != null && !remoteDepsList.trim().isEmpty()) {
-            for (String dep: remoteDepsList.split(PLUGIN_VALUE_SEPARATOR_REGEX)) {
+            for (String dep: remoteDepsList.split(VALUE_SEPARATOR_REGEX)) {
                 remoteDeps += dep.trim()
             }
         }
@@ -182,7 +182,7 @@ ext.getGodotPluginsLocalBinaries = { ->
     if (project.hasProperty("plugins_local_binaries")) {
         String pluginsList = project.property("plugins_local_binaries")
         if (pluginsList != null && !pluginsList.trim().isEmpty()) {
-            for (String plugin : pluginsList.split(PLUGIN_VALUE_SEPARATOR_REGEX)) {
+            for (String plugin : pluginsList.split(VALUE_SEPARATOR_REGEX)) {
                 binDeps += plugin.trim()
             }
         }

@@ -35,11 +35,6 @@
             android:name="xr_mode_metadata_name"
             android:value="xr_mode_metadata_value" />
 
-        <!-- Metadata populated at export time and used by Godot to figure out which plugins must be enabled. -->
-        <meta-data
-            android:name="plugins"
-            android:value="plugins_value"/>
-
         <activity
             android:name=".GodotApp"
             android:label="@string/godot_project_name_string"
