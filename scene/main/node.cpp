@@ -1976,7 +1976,7 @@ bool Node::is_editable_instance(const Node *p_node) const {
 
 Node *Node::get_deepest_editable_node(Node *p_start_node) const {
 	ERR_FAIL_NULL_V(p_start_node, nullptr);
-	ERR_FAIL_COND_V(!is_a_parent_of(p_start_node), nullptr);
+	ERR_FAIL_COND_V(!is_a_parent_of(p_start_node), p_start_node);
 
 	Node const *iterated_item = p_start_node;
 	Node *node = p_start_node;

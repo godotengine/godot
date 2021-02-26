@@ -535,7 +535,10 @@ ObjectID Node3DEditorViewport::_select_ray(const Point2 &p_pos, bool p_append, b
 		}
 
 		if (dist < closest_dist) {
-			item = edited_scene->get_deepest_editable_node(Object::cast_to<Node>(spat));
+			item = Object::cast_to<Node>(spat);
+			if (item != edited_scene) {
+				item = edited_scene->get_deepest_editable_node(item);
+			}
 
 			closest = item->get_instance_id();
 			closest_dist = dist;
@@ -694,7 +697,10 @@ void Node3DEditorViewport::_select_region() {
 			continue;
 		}
 
-		Node *item = edited_scene->get_deepest_editable_node(Object::cast_to<Node>(sp));
+		Node *item = Object::cast_to<Node>(sp);
+		if (item != edited_scene) {
+			item = edited_scene->get_deepest_editable_node(item);
+		}
 
 		// Replace the node by the group if grouped
 		if (item->is_class("Node3D")) {
