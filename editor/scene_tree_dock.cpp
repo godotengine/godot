@@ -514,6 +514,14 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 				break;
 			}
 
+			if (!_validate_no_foreign()) {
+				break;
+			}
+
+			if (!_validate_no_instance()) {
+				break;
+			}
+
 			Node *selected = scene_tree->get_selected();
 			if (!selected && !editor_selection->get_selected_node_list().is_empty()) {
 				selected = editor_selection->get_selected_node_list().front()->get();
@@ -1615,6 +1623,20 @@ bool SceneTreeDock::_validate_no_foreign() {
 	return true;
 }
 
+bool SceneTreeDock::_validate_no_instance() {
+	List<Node *> selection = editor_selection->get_selected_node_list();
+
+	for (List<Node *>::Element *E = selection.front(); E; E = E->next()) {
+		if (E->get() != edited_scene && E->get()->get_filename() != "") {
+			accept->set_text(TTR("This operation can't be done on instanced scenes."));
+			accept->popup_centered();
+			return false;
+		}
+	}
+
+	return true;
+}
+
 void SceneTreeDock::_node_reparent(NodePath p_path, bool p_keep_global_xform) {
 	Node *new_parent = scene_root->get_node(p_path);
 	ERR_FAIL_COND(!new_parent);
@@ -2581,7 +2603,18 @@ void SceneTreeDock::_tree_rmb(const Vector2 &p_menu_pos) {
 		if (full_selection.size() == 1) {
 			menu->add_icon_shortcut(get_theme_icon("Rename", "EditorIcons"), ED_GET_SHORTCUT("scene_tree/rename"), TOOL_RENAME);
 		}
-		menu->add_icon_shortcut(get_theme_icon("Reload", "EditorIcons"), ED_GET_SHORTCUT("scene_tree/change_node_type"), TOOL_REPLACE);
+
+		bool can_replace = true;
+		for (List<Node *>::Element *E = selection.front(); E; E = E->next()) {
+			if (E->get() != edited_scene && (E->get()->get_owner() != edited_scene || E->get()->get_filename() != "")) {
+				can_replace = false;
+				break;
+			}
+		}
+
+		if (can_replace) {
+			menu->add_icon_shortcut(get_theme_icon("Reload", "EditorIcons"), ED_GET_SHORTCUT("scene_tree/change_node_type"), TOOL_REPLACE);
+		}
 
 		if (scene_tree->get_selected() != edited_scene) {
 			menu->add_separator();
