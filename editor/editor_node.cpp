@@ -902,7 +902,8 @@ void EditorNode::_scan_external_changes() {
 	// Check if any edited scene has changed.
 
 	for (int i = 0; i < editor_data.get_edited_scene_count(); i++) {
-		if (editor_data.get_scene_path(i) == "") {
+		DirAccessRef da = DirAccess::create(DirAccess::ACCESS_RESOURCES);
+		if (editor_data.get_scene_path(i) == "" || !da->file_exists(editor_data.get_scene_path(i))) {
 			continue;
 		}
 
