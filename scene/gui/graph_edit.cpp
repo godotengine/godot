@@ -547,14 +547,15 @@ bool GraphEdit::_filter_input(const Point2 &p_point) {
 		for (int j = 0; j < gn->get_connection_output_count(); j++) {
 
 			Vector2 pos = gn->get_connection_output_position(j) + gn->get_position();
-			if (is_in_hot_zone(pos, p_point))
+			if (is_in_hot_zone(pos / zoom, p_point / zoom)) {
 				return true;
+			}
 		}
 
 		for (int j = 0; j < gn->get_connection_input_count(); j++) {
 
 			Vector2 pos = gn->get_connection_input_position(j) + gn->get_position();
-			if (is_in_hot_zone(pos, p_point)) {
+			if (is_in_hot_zone(pos / zoom, p_point / zoom)) {
 				return true;
 			}
 		}
@@ -569,7 +570,7 @@ void GraphEdit::_top_layer_input(const Ref<InputEvent> &p_ev) {
 	if (mb.is_valid() && mb->get_button_index() == BUTTON_LEFT && mb->is_pressed()) {
 		connecting_valid = false;
 		Ref<Texture> port = get_icon("port", "GraphNode");
-		click_pos = mb->get_position();
+		click_pos = mb->get_position() / zoom;
 		for (int i = get_child_count() - 1; i >= 0; i--) {
 
 			GraphNode *gn = Object::cast_to<GraphNode>(get_child(i));
@@ -579,7 +580,7 @@ void GraphEdit::_top_layer_input(const Ref<InputEvent> &p_ev) {
 			for (int j = 0; j < gn->get_connection_output_count(); j++) {
 
 				Vector2 pos = gn->get_connection_output_position(j) + gn->get_position();
-				if (is_in_hot_zone(pos, click_pos)) {
+				if (is_in_hot_zone(pos / zoom, click_pos)) {
 					if (valid_left_disconnect_types.has(gn->get_connection_output_type(j))) {
 						//check disconnect
 						for (List<Connection>::Element *E = connections.front(); E; E = E->next()) {
@@ -625,7 +626,7 @@ void GraphEdit::_top_layer_input(const Ref<InputEvent> &p_ev) {
 			for (int j = 0; j < gn->get_connection_input_count(); j++) {
 
 				Vector2 pos = gn->get_connection_input_position(j) + gn->get_position();
-				if (is_in_hot_zone(pos, click_pos)) {
+				if (is_in_hot_zone(pos / zoom, click_pos)) {
 					if (right_disconnects || valid_right_disconnect_types.has(gn->get_connection_input_type(j))) {
 						//check disconnect
 						for (List<Connection>::Element *E = connections.front(); E; E = E->next()) {
@@ -677,11 +678,12 @@ void GraphEdit::_top_layer_input(const Ref<InputEvent> &p_ev) {
 		connecting_to = mm->get_position();
 		connecting_target = false;
 		top_layer->update();
-		connecting_valid = just_disconnected || click_pos.distance_to(connecting_to) > 20.0 * zoom;
+		minimap->update();
+		connecting_valid = just_disconnected || click_pos.distance_to(connecting_to / zoom) > 20.0 * zoom;
 
 		if (connecting_valid) {
 			Ref<Texture> port = get_icon("port", "GraphNode");
-			Vector2 mpos = mm->get_position();
+			Vector2 mpos = mm->get_position() / zoom;
 			for (int i = get_child_count() - 1; i >= 0; i--) {
 				GraphNode *gn = Object::cast_to<GraphNode>(get_child(i));
 				if (!gn) {
@@ -692,7 +694,7 @@ void GraphEdit::_top_layer_input(const Ref<InputEvent> &p_ev) {
 					for (int j = 0; j < gn->get_connection_output_count(); j++) {
 						Vector2 pos = gn->get_connection_output_position(j) + gn->get_position();
 						int type = gn->get_connection_output_type(j);
-						if ((type == connecting_type || valid_connection_types.has(ConnType(type, connecting_type))) && is_in_hot_zone(pos, mpos)) {
+						if ((type == connecting_type || valid_connection_types.has(ConnType(type, connecting_type))) && is_in_hot_zone(pos / zoom, mpos)) {
 							connecting_target = true;
 							connecting_to = pos;
 							connecting_target_to = gn->get_name();
@@ -704,7 +706,7 @@ void GraphEdit::_top_layer_input(const Ref<InputEvent> &p_ev) {
 					for (int j = 0; j < gn->get_connection_input_count(); j++) {
 						Vector2 pos = gn->get_connection_input_position(j) + gn->get_position();
 						int type = gn->get_connection_input_type(j);
-						if ((type == connecting_type || valid_connection_types.has(ConnType(type, connecting_type))) && is_in_hot_zone(pos, mpos)) {
+						if ((type == connecting_type || valid_connection_types.has(ConnType(type, connecting_type))) && is_in_hot_zone(pos / zoom, mpos)) {
 							connecting_target = true;
 							connecting_to = pos;
 							connecting_target_to = gn->get_name();
@@ -783,6 +785,11 @@ bool GraphEdit::is_in_hot_zone(const Vector2 &pos, const Vector2 &p_mouse_pos) {
 		if (!child)
 			continue;
 		Rect2 rect = child->get_rect();
+
+		// To prevent intersections with other nodes.
+		rect.position *= zoom;
+		rect.size *= zoom;
+
 		if (rect.has_point(p_mouse_pos)) {
 
 			//check sub-controls
@@ -1242,7 +1249,7 @@ void GraphEdit::_gui_input(const Ref<InputEvent> &p_ev) {
 					if (gn_selected->is_resizing())
 						continue;
 
-					if (gn_selected->has_point(b->get_position() - gn_selected->get_position())) {
+					if (gn_selected->has_point((b->get_position() - gn_selected->get_position()) / zoom)) {
 						gn = gn_selected;
 						break;
 					}
