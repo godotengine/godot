@@ -806,8 +806,7 @@ class EditorExportPlatformAndroid : public EditorExportPlatform {
 
 		manifest_text += _get_xr_features_tag(p_preset);
 		manifest_text += _get_instrumentation_tag(p_preset);
-		String plugins_names = get_plugins_names(get_enabled_plugins(p_preset));
-		manifest_text += _get_application_tag(p_preset, plugins_names);
+		manifest_text += _get_application_tag(p_preset);
 		manifest_text += "</manifest>\n";
 		String manifest_path = vformat("res://android/build/src/%s/AndroidManifest.xml", (p_debug ? "debug" : "release"));
 
@@ -855,8 +854,6 @@ class EditorExportPlatformAndroid : public EditorExportPlatform {
 
 		int xr_mode_index = p_preset->get("xr_features/xr_mode");
 		bool focus_awareness = p_preset->get("xr_features/focus_awareness");
-
-		String plugins_names = get_plugins_names(get_enabled_plugins(p_preset));
 
 		Vector<String> perms;
 		// Write permissions into the perms variable.
@@ -993,11 +990,6 @@ class EditorExportPlatformAndroid : public EditorExportPlatform {
 						if (tname == "meta-data" && attrname == "value" && is_focus_aware_metadata) {
 							// Update the focus awareness meta-data value
 							encode_uint32(xr_mode_index == /* XRMode.OVR */ 1 && focus_awareness ? 0xFFFFFFFF : 0, &p_manifest.write[iofs + 16]);
-						}
-
-						if (tname == "meta-data" && attrname == "value" && value == "plugins_value" && !plugins_names.is_empty()) {
-							// Update the meta-data 'android:value' attribute with the list of enabled plugins.
-							string_table.write[attr_value] = plugins_names;
 						}
 
 						is_focus_aware_metadata = tname == "meta-data" && attrname == "name" && value == "com.oculus.vr.focusaware";
