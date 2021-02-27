@@ -64,6 +64,7 @@ void Joint3D::_body_exit_tree(const ObjectID &p_body_id) {
 void Joint3D::_update_joint(bool p_only_free) {
 	if (ba.is_valid() && bb.is_valid()) {
 		PhysicsServer3D::get_singleton()->body_remove_collision_exception(ba, bb);
+		PhysicsServer3D::get_singleton()->body_remove_collision_exception(bb, ba);
 	}
 
 	ba = RID();
