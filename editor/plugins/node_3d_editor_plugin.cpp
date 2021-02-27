@@ -3530,8 +3530,10 @@ Dictionary Node3DEditorViewport::get_state() const {
 
 void Node3DEditorViewport::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("update_transform_gizmo_view"), &Node3DEditorViewport::update_transform_gizmo_view); // Used by call_deferred.
-	ClassDB::bind_method(D_METHOD("can_drop_data_fw"), &Node3DEditorViewport::can_drop_data_fw);
-	ClassDB::bind_method(D_METHOD("drop_data_fw"), &Node3DEditorViewport::drop_data_fw);
+	ClassDB::bind_method(D_METHOD("can_drop_data_fw", "point", "data", "from"), &Node3DEditorViewport::can_drop_data_fw);
+	ClassDB::bind_method(D_METHOD("drop_data_fw", "point", "data", "from"), &Node3DEditorViewport::drop_data_fw);
+	ClassDB::bind_method(D_METHOD("set_message", "message", "time"), &Node3DEditorViewport::set_message, DEFVAL(5.0));
+	ClassDB::bind_method(D_METHOD("get_camera"), &Node3DEditorViewport::get_camera);
 
 	ADD_SIGNAL(MethodInfo("toggle_maximize_view", PropertyInfo(Variant::OBJECT, "viewport")));
 	ADD_SIGNAL(MethodInfo("clicked", PropertyInfo(Variant::OBJECT, "viewport")));

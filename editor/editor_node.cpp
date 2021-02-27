@@ -3734,6 +3734,7 @@ void EditorNode::register_editor_types() {
 	ClassDB::register_virtual_class<ScriptEditorBase>();
 	ClassDB::register_class<EditorSyntaxHighlighter>();
 	ClassDB::register_virtual_class<EditorInterface>();
+	ClassDB::register_virtual_class<Node3DEditorViewport>();
 	ClassDB::register_class<EditorExportPlugin>();
 	ClassDB::register_class<EditorResourceConversionPlugin>();
 	ClassDB::register_class<EditorSceneImporter>();
