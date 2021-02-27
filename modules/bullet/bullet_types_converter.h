@@ -32,7 +32,7 @@
 #define BULLET_TYPES_CONVERTER_H
 
 #include "core/math/basis.h"
-#include "core/math/transform.h"
+#include "core/math/transform_3d.h"
 #include "core/math/vector3.h"
 #include "core/typedefs.h"
 

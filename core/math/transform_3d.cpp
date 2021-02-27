@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  transform.cpp                                                        */
+/*  transform_3d.cpp                                                     */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,7 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#include "transform.h"
+#include "transform_3d.h"
 
 #include "core/math/math_funcs.h"
 #include "core/string/print_string.h"

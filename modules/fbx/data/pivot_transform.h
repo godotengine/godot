@@ -31,7 +31,7 @@
 #ifndef PIVOT_TRANSFORM_H
 #define PIVOT_TRANSFORM_H
 
-#include "core/math/transform.h"
+#include "core/math/transform_3d.h"
 #include "core/object/reference.h"
 
 #include "model_abstraction.h"

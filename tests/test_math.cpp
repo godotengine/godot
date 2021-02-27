@@ -35,7 +35,7 @@
 #include "core/math/delaunay_3d.h"
 #include "core/math/geometry_2d.h"
 #include "core/math/math_funcs.h"
-#include "core/math/transform.h"
+#include "core/math/transform_3d.h"
 #include "core/os/file_access.h"
 #include "core/os/keyboard.h"
 #include "core/os/os.h"

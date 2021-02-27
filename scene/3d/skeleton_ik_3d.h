@@ -37,7 +37,7 @@
  * @author AndreaCatania
  */
 
-#include "core/math/transform.h"
+#include "core/math/transform_3d.h"
 #include "scene/3d/skeleton_3d.h"
 
 class FabrikInverseKinematic {
