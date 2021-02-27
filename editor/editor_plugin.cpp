@@ -160,6 +160,11 @@ VBoxContainer *EditorInterface::get_editor_main_screen() {
 	return EditorNode::get_singleton()->get_main_screen_control();
 }
 
+Node3DEditorViewport *EditorInterface::get_node_3d_editor_viewport(int p_idx) const {
+	ERR_FAIL_INDEX_V(p_idx, (int)Node3DEditor::VIEWPORTS_COUNT, Node3DEditor::get_singleton()->get_editor_viewport(Node3DEditor::VIEWPORTS_COUNT - 1));
+	return Node3DEditor::get_singleton()->get_editor_viewport(p_idx);
+}
+
 void EditorInterface::edit_resource(const Ref<Resource> &p_resource) {
 	EditorNode::get_singleton()->edit_resource(p_resource);
 }
@@ -353,6 +358,7 @@ void EditorInterface::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_resource_previewer"), &EditorInterface::get_resource_previewer);
 	ClassDB::bind_method(D_METHOD("get_resource_filesystem"), &EditorInterface::get_resource_file_system);
 	ClassDB::bind_method(D_METHOD("get_editor_main_screen"), &EditorInterface::get_editor_main_screen);
+	ClassDB::bind_method(D_METHOD("get_node_3d_editor_viewport", "index"), &EditorInterface::get_node_3d_editor_viewport);
 	ClassDB::bind_method(D_METHOD("make_mesh_previews", "meshes", "preview_size"), &EditorInterface::_make_mesh_previews);
 	ClassDB::bind_method(D_METHOD("select_file", "file"), &EditorInterface::select_file);
 	ClassDB::bind_method(D_METHOD("get_selected_path"), &EditorInterface::get_selected_path);
@@ -375,6 +381,8 @@ void EditorInterface::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("is_distraction_free_mode_enabled"), &EditorInterface::is_distraction_free_mode_enabled);
 
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "distraction_free_mode"), "set_distraction_free_mode", "is_distraction_free_mode_enabled");
+
+	ClassDB::bind_integer_constant(get_class_static(), StringName(), "VIEWPORTS_COUNT", (int)Node3DEditor::VIEWPORTS_COUNT);
 }
 
 EditorInterface::EditorInterface() {

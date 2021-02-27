@@ -99,6 +99,15 @@
 				[b]Warning:[/b] Removing and freeing this node will render a part of the editor useless and may cause a crash.
 			</description>
 		</method>
+		<method name="get_node_3d_editor_viewport" qualifiers="const">
+			<return type="Node3DEditorViewport">
+			</return>
+			<param index="0" name="index" type="int">
+			</param>
+			<description>
+				Returns the specified Node3DEditorViewport.
+			</description>
+		</method>
 		<method name="get_open_scenes" qualifiers="const">
 			<return type="PackedStringArray" />
 			<description>
@@ -260,4 +269,9 @@
 			If [code]true[/code], enables distraction-free mode which hides side docks to increase the space available for the main view.
 		</member>
 	</members>
+	<constants>
+		<constant name="VIEWPORTS_COUNT" value="4">
+			The maximum number of viewports that can be displayed at the same time in the 3D editor.
+		</constant>
+	</constants>
 </class>

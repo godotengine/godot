@@ -59,6 +59,7 @@ class EditorToolAddons;
 class EditorPaths;
 class FileSystemDock;
 class ScriptEditor;
+class Node3DEditorViewport;
 
 class EditorInterface : public Node {
 	GDCLASS(EditorInterface, Node);
@@ -73,6 +74,7 @@ public:
 	static EditorInterface *get_singleton() { return singleton; }
 
 	VBoxContainer *get_editor_main_screen();
+	Node3DEditorViewport *get_node_3d_editor_viewport(int p_idx) const;
 	void edit_resource(const Ref<Resource> &p_resource);
 	void edit_node(Node *p_node);
 	void edit_script(const Ref<Script> &p_script, int p_line = -1, int p_col = 0, bool p_grab_focus = true);

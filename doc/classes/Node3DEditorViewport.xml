@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="Node3DEditorViewport" inherits="Control" version="4.0">
+	<brief_description>
+		Control used by the 3D editor to display 3D scenes.
+	</brief_description>
+	<description>
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="can_drop_data_fw" qualifiers="const">
+			<return type="bool">
+			</return>
+			<argument index="0" name="point" type="Vector2">
+			</argument>
+			<argument index="1" name="data" type="Variant">
+			</argument>
+			<argument index="2" name="from" type="Control">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="drop_data_fw">
+			<return type="void">
+			</return>
+			<argument index="0" name="point" type="Vector2">
+			</argument>
+			<argument index="1" name="data" type="Variant">
+			</argument>
+			<argument index="2" name="from" type="Control">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_camera_3d">
+			<return type="Camera3D">
+			</return>
+			<description>
+				Gets the camera used by the viewport.
+			</description>
+		</method>
+		<method name="set_message">
+			<return type="void">
+			</return>
+			<argument index="0" name="message" type="String">
+			</argument>
+			<argument index="1" name="time" type="float" default="5.0">
+			</argument>
+			<description>
+				Displays a message in the bottom corner of the viewport for a limited duration.
+			</description>
+		</method>
+		<method name="update_transform_gizmo_view">
+			<return type="void">
+			</return>
+			<description>
+				Updates the transform gizmo belonging to the viewport.
+			</description>
+		</method>
+	</methods>
+	<signals>
+		<signal name="clicked">
+			<argument index="0" name="viewport" type="Object">
+			</argument>
+			<description>
+				Emitted when any mouse button is clicked inside the viewport.
+			</description>
+		</signal>
+		<signal name="toggle_maximize_view">
+			<argument index="0" name="viewport" type="Object">
+			</argument>
+			<description>
+				Emitted when the viewport is maximized.
+			</description>
+		</signal>
+	</signals>
+	<constants>
+	</constants>
+</class>
