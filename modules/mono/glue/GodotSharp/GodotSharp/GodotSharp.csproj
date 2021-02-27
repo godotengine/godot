@@ -58,8 +58,8 @@
     <Compile Include="Core\SignalAwaiter.cs" />
     <Compile Include="Core\StringExtensions.cs" />
     <Compile Include="Core\StringName.cs" />
-    <Compile Include="Core\Transform.cs" />
     <Compile Include="Core\Transform2D.cs" />
+    <Compile Include="Core\Transform3D.cs" />
     <Compile Include="Core\UnhandledExceptionArgs.cs" />
     <Compile Include="Core\Vector2.cs" />
     <Compile Include="Core\Vector2i.cs" />

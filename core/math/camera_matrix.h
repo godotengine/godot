@@ -32,7 +32,7 @@
 #define CAMERA_MATRIX_H
 
 #include "core/math/rect2.h"
-#include "core/math/transform.h"
+#include "core/math/transform_3d.h"
 
 struct CameraMatrix {
 	enum Planes {
