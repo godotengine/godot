@@ -39,6 +39,21 @@ void Popup::_input_from_window(const Ref<InputEvent> &p_event) {
 	if (key.is_valid() && key->is_pressed() && key->get_keycode() == KEY_ESCAPE) {
 		_close_pressed();
 	}
+
+	if (is_embedded()) {
+		return;
+	}
+
+	Ref<InputEventMouseButton> button = p_event;
+	if (button.is_valid() && (button->get_button_index() == BUTTON_LEFT || button->get_button_index() == BUTTON_RIGHT) && !button->is_pressed() && button->get_window_id() != get_window_id()) {
+		// Disable clicks under a time threshold to avoid selection right when opening the popup.
+		uint64_t now = OS::get_singleton()->get_ticks_msec();
+		uint64_t diff = now - popup_time_msec;
+		if (diff < 250) {
+			return;
+		}
+		_close_pressed();
+	}
 }
 
 void Popup::_initialize_visible_parents() {
@@ -81,6 +96,12 @@ void Popup::_notification(int p_what) {
 				popped_up = true;
 			}
 		} break;
+		case NOTIFICATION_WM_WINDOW_FOCUS_OUT: {
+			print_line("Ich bin ein Popup und habe Ahnung!");
+			if (has_focus()) {
+				_close_pressed();
+			}
+		} break;
 		case NOTIFICATION_EXIT_TREE: {
 			_deinitialize_visible_parents();
 		} break;
@@ -119,6 +140,11 @@ void Popup::set_close_on_parent_focus(bool p_close) {
 
 bool Popup::get_close_on_parent_focus() {
 	return close_on_parent_focus;
+}
+
+void Popup::popup(const Rect2i &p_bounds) {
+	popup_time_msec = OS::get_singleton()->get_ticks_msec();
+	Window::popup(p_bounds);
 }
 
 void Popup::_bind_methods() {
@@ -186,6 +212,8 @@ Popup::Popup() {
 	set_transient(true);
 	set_flag(FLAG_BORDERLESS, true);
 	set_flag(FLAG_RESIZE_DISABLED, true);
+	//set_flag(FLAG_NO_FOCUS, true);
+	set_flag(FLAG_INPUT_WITHOUT_FOCUS, true);
 
 	connect("window_input", callable_mp(this, &Popup::_input_from_window));
 }

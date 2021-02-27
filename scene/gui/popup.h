@@ -50,6 +50,8 @@ class Popup : public Window {
 	void _parent_focused();
 
 protected:
+	uint64_t popup_time_msec;
+
 	void _close_pressed();
 	virtual Rect2i _popup_adjust_rect() const override;
 
@@ -61,6 +63,8 @@ public:
 
 	void set_close_on_parent_focus(bool p_close);
 	bool get_close_on_parent_focus();
+
+	virtual void popup(const Rect2i &p_bounds = Rect2i());
 
 	Popup();
 	~Popup();

@@ -1665,6 +1665,12 @@ void DisplayServerX11::window_set_flag(WindowFlags p_flag, bool p_enabled, Windo
 		case WINDOW_FLAG_TRANSPARENT: {
 			//todo reimplement
 		} break;
+		case WINDOW_FLAG_INPUT_WITHOUT_FOCUS: {
+			wd.input_without_focus = p_enabled;
+		} break;
+		case WINDOW_FLAG_NO_FOCUS: {
+			wd.no_focus = p_enabled;
+		} break;
 		default: {
 		}
 	}
@@ -1706,6 +1712,12 @@ bool DisplayServerX11::window_get_flag(WindowFlags p_flag, WindowID p_window) co
 		case WINDOW_FLAG_TRANSPARENT: {
 			//todo reimplement
 		} break;
+		case WINDOW_FLAG_INPUT_WITHOUT_FOCUS: {
+			return wd.input_without_focus;
+		} break;
+		case WINDOW_FLAG_NO_FOCUS: {
+			return wd.no_focus;
+		} break;
 		default: {
 		}
 	}
@@ -1744,6 +1756,9 @@ void DisplayServerX11::window_move_to_foreground(WindowID p_window) {
 
 	ERR_FAIL_COND(!windows.has(p_window));
 	WindowData &wd = windows[p_window];
+	if (wd.no_focus) {
+		return;
+	}
 
 	XEvent xev;
 	Atom net_active_window = XInternAtom(x11_display, "_NET_ACTIVE_WINDOW", False);
@@ -2593,13 +2608,26 @@ void DisplayServerX11::_dispatch_input_event(const Ref<InputEvent> &p_event) {
 
 	Ref<InputEventFromWindow> event_from_window = p_event;
 	if (event_from_window.is_valid() && event_from_window->get_window_id() != INVALID_WINDOW_ID) {
-		//send to a window
-		ERR_FAIL_COND(!windows.has(event_from_window->get_window_id()));
-		Callable callable = windows[event_from_window->get_window_id()].input_event_callback;
-		if (callable.is_null()) {
-			return;
+		{
+			//send to a window
+			ERR_FAIL_COND(!windows.has(event_from_window->get_window_id()));
+			Callable callable = windows[event_from_window->get_window_id()].input_event_callback;
+			if (callable.is_null()) {
+				return;
+			}
+			callable.call((const Variant **)&evp, 1, ret, ce);
 		}
-		callable.call((const Variant **)&evp, 1, ret, ce);
+		//send to all windows, that request to always get input and have no focus
+		for (Map<WindowID, WindowData>::Element *E = windows.front(); E; E = E->next()) {
+			if (E->key() == event_from_window->get_window_id() || E->key() == MAIN_WINDOW_ID || (!E->get().input_without_focus && E->get().no_focus)) {
+				continue;
+			}
+			Callable callable = E->get().input_event_callback;
+			if (callable.is_null()) {
+				continue;
+			}
+			callable.call((const Variant **)&evp, 1, ret, ce);
+		}
 	} else {
 		//send to all windows
 		for (Map<WindowID, WindowData>::Element *E = windows.front(); E; E = E->next()) {
@@ -3138,7 +3166,7 @@ void DisplayServerX11::process_events() {
 				} else {
 					DEBUG_LOG_X11("[%u] ButtonRelease window=%lu (%u), button_index=%u \n", frame, event.xbutton.window, window_id, mb->get_button_index());
 
-					if (!wd.focused) {
+					if (!wd.focused && !wd.input_without_focus) {
 						// Propagate the event to the focused window,
 						// because it's received only on the topmost window.
 						// Note: This is needed for drag & drop to work between windows,
@@ -3279,7 +3307,7 @@ void DisplayServerX11::process_events() {
 				// Don't propagate the motion event unless we have focus
 				// this is so that the relative motion doesn't get messed up
 				// after we regain focus.
-				if (focused) {
+				if (focused || wd.input_without_focus) {
 					Input::get_singleton()->accumulate_input_event(mm);
 				} else {
 					// Propagate the event to the focused window,
@@ -3649,6 +3677,10 @@ DisplayServerX11::WindowID DisplayServerX11::_create_window(WindowMode p_mode, V
 	if (p_flags & WINDOW_FLAG_NO_FOCUS_BIT) {
 		wd.menu_type = true;
 		wd.no_focus = true;
+	}
+
+	if (p_flags & WINDOW_FLAG_INPUT_WITHOUT_FOCUS_BIT) {
+		wd.input_without_focus = true;
 	}
 
 	// Setup for menu subwindows:

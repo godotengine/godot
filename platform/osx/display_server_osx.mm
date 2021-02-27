@@ -2765,6 +2765,9 @@ void DisplayServerOSX::window_set_flag(WindowFlags p_flag, bool p_enabled, Windo
 		case WINDOW_FLAG_NO_FOCUS: {
 			wd.no_focus = p_enabled;
 		} break;
+		case WINDOW_FLAG_INPUT_WITHOUT_FOCUS: {
+			wd.input_without_focus = p_enabled;
+		} break;
 		default: {
 		}
 	}
@@ -2795,6 +2798,9 @@ bool DisplayServerOSX::window_get_flag(WindowFlags p_flag, WindowID p_window) co
 		} break;
 		case WINDOW_FLAG_NO_FOCUS: {
 			return wd.no_focus;
+		} break;
+		case WINDOW_FLAG_INPUT_WITHOUT_FOCUS: {
+			return wd.input_without_focus;
 		} break;
 		default: {
 		}
@@ -3598,14 +3604,29 @@ void DisplayServerOSX::_dispatch_input_event(const Ref<InputEvent> &p_event) {
 
 		Ref<InputEventFromWindow> event_from_window = p_event;
 		if (event_from_window.is_valid() && event_from_window->get_window_id() != INVALID_WINDOW_ID) {
-			//send to a window
 			if (windows.has(event_from_window->get_window_id())) {
-				Callable callable = windows[event_from_window->get_window_id()].input_event_callback;
-				if (callable.is_null()) {
-					return;
+				{
+					//send to a window
+					Callable callable = windows[event_from_window->get_window_id()].input_event_callback;
+					if (callable.is_null()) {
+						return;
+					}
+					callable.call((const Variant **)&evp, 1, ret, ce);
 				}
-				callable.call((const Variant **)&evp, 1, ret, ce);
+
+				//send to all windows, that request to always get input and have no focus
+				for (Map<WindowID, WindowData>::Element *E = windows.front(); E; E = E->next()) {
+					if (E->key() == event_from_window->get_window_id() || E->key() == MAIN_WINDOW_ID || (!E->get().input_without_focus && E->get().no_focus)) {
+						continue;
+					}
+					Callable callable = E->get().input_event_callback;
+					if (callable.is_null()) {
+						continue;
+					}
+					callable.call((const Variant **)&evp, 1, ret, ce);
+				}
 			}
+
 		} else {
 			//send to all windows
 			for (Map<WindowID, WindowData>::Element *E = windows.front(); E; E = E->next()) {

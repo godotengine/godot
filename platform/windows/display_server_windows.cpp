@@ -493,6 +493,9 @@ DisplayServer::WindowID DisplayServerWindows::create_sub_window(WindowMode p_mod
 	if (p_flags & WINDOW_FLAG_NO_FOCUS_BIT) {
 		wd.no_focus = true;
 	}
+	if (p_flags & WINDOW_FLAG_INPUT_WITHOUT_FOCUS_BIT) {
+		wd.input_without_focus = true;
+	}
 
 	return window_id;
 }
@@ -643,6 +646,9 @@ void DisplayServerWindows::window_set_current_screen(int p_screen, WindowID p_wi
 	ERR_FAIL_COND(!windows.has(p_window));
 	ERR_FAIL_INDEX(p_screen, get_screen_count());
 
+	if (windows[p_window].borderless) {
+		return; // We have a child window, that doesn't care about screens
+	}
 	Vector2 ofs = window_get_position(p_window) - screen_get_position(window_get_current_screen(p_window));
 	window_set_position(ofs + screen_get_position(p_screen), p_window);
 }
@@ -693,25 +699,26 @@ void DisplayServerWindows::window_set_position(const Point2i &p_position, Window
 
 	if (wd.fullscreen)
 		return;
-#if 0
-	//wrong needs to account properly for decorations
-	RECT r;
-	GetWindowRect(wd.hWnd, &r);
-	MoveWindow(wd.hWnd, p_position.x, p_position.y, r.right - r.left, r.bottom - r.top, TRUE);
-#else
 
-	RECT rc;
-	rc.left = p_position.x;
-	rc.right = p_position.x + wd.width;
-	rc.bottom = p_position.y + wd.height;
-	rc.top = p_position.y;
+	RECT rect;
+	rect.left = p_position.x;
+	rect.right = p_position.x + wd.width;
+	rect.bottom = p_position.y + wd.height;
+	rect.top = p_position.y;
 
 	const DWORD style = GetWindowLongPtr(wd.hWnd, GWL_STYLE);
 	const DWORD exStyle = GetWindowLongPtr(wd.hWnd, GWL_EXSTYLE);
 
-	AdjustWindowRectEx(&rc, style, false, exStyle);
-	MoveWindow(wd.hWnd, rc.left, rc.top, rc.right - rc.left, rc.bottom - rc.top, TRUE);
-#endif
+	AdjustWindowRectEx(&rect, style, false, exStyle);
+
+	HWND parent = GetParent(wd.hWnd);
+	if (parent) {
+		ScreenToClient(parent, (POINT *)&rect.left);
+		ScreenToClient(parent, (POINT *)&rect.right);
+	}
+
+	MoveWindow(wd.hWnd, rect.left, rect.top, rect.right - rect.left, rect.bottom - rect.top, TRUE);
+
 	// Don't let the mouse leave the window when moved
 	if (mouse_mode == MOUSE_MODE_CONFINED || mouse_mode == MOUSE_MODE_CONFINED_HIDDEN) {
 		RECT rect;
@@ -827,7 +834,11 @@ void DisplayServerWindows::window_set_size(const Size2i p_size, WindowID p_windo
 
 	RECT rect;
 	GetWindowRect(wd.hWnd, &rect);
-
+	HWND parent = GetParent(wd.hWnd);
+	if (parent) {
+		ScreenToClient(parent, (POINT *)&rect.left);
+		ScreenToClient(parent, (POINT *)&rect.right);
+	}
 	if (!wd.borderless) {
 		RECT crect;
 		GetClientRect(wd.hWnd, &crect);
@@ -883,14 +894,16 @@ void DisplayServerWindows::_get_window_style(bool p_main_window, bool p_fullscre
 	r_style_ex = WS_EX_WINDOWEDGE;
 	if (p_main_window) {
 		r_style_ex |= WS_EX_APPWINDOW;
+	} else {
+		if (p_borderless) {
+			r_style |= WS_CHILD;
+		} else {
+			r_style |= WS_POPUP;
+			r_style_ex |= WS_EX_TOOLWINDOW;
+		}
 	}
 
-	if (p_fullscreen || p_borderless) {
-		r_style |= WS_POPUP;
-		//if (p_borderless) {
-		//	r_style_ex |= WS_EX_TOOLWINDOW;
-		//}
-	} else {
+	if (!p_fullscreen && !p_borderless) {
 		if (p_resizable) {
 			if (p_maximized) {
 				r_style = WS_OVERLAPPEDWINDOW | WS_MAXIMIZE;
@@ -900,9 +913,6 @@ void DisplayServerWindows::_get_window_style(bool p_main_window, bool p_fullscre
 		} else {
 			r_style = WS_OVERLAPPED | WS_CAPTION | WS_SYSMENU;
 		}
-	}
-	if (!p_borderless) {
-		r_style |= WS_VISIBLE;
 	}
 
 	if (p_no_activate_focus) {
@@ -930,6 +940,11 @@ void DisplayServerWindows::_update_window_style(WindowID p_window, bool p_repain
 	if (p_repaint) {
 		RECT rect;
 		GetWindowRect(wd.hWnd, &rect);
+		HWND parent = GetParent(wd.hWnd);
+		if (parent) {
+			ScreenToClient(parent, (POINT *)&rect.left);
+			ScreenToClient(parent, (POINT *)&rect.right);
+		}
 		MoveWindow(wd.hWnd, rect.left, rect.top, rect.right - rect.left, rect.bottom - rect.top, TRUE);
 	}
 }
@@ -1055,6 +1070,10 @@ void DisplayServerWindows::window_set_flag(WindowFlags p_flag, bool p_enabled, W
 			wd.no_focus = p_enabled;
 			_update_window_style(p_window);
 		} break;
+		case WINDOW_FLAG_INPUT_WITHOUT_FOCUS: {
+			wd.input_without_focus = p_enabled;
+			_update_window_style(p_window);
+		} break;
 		case WINDOW_FLAG_MAX:
 			break;
 	}
@@ -1080,6 +1099,9 @@ bool DisplayServerWindows::window_get_flag(WindowFlags p_flag, WindowID p_window
 		} break;
 		case WINDOW_FLAG_NO_FOCUS: {
 			return wd.no_focus;
+		} break;
+		case WINDOW_FLAG_INPUT_WITHOUT_FOCUS: {
+			return wd.input_without_focus;
 		} break;
 		case WINDOW_FLAG_MAX:
 			break;
@@ -1108,6 +1130,11 @@ void DisplayServerWindows::window_move_to_foreground(WindowID p_window) {
 
 	ERR_FAIL_COND(!windows.has(p_window));
 	WindowData &wd = windows[p_window];
+
+	if (wd.no_focus) {
+		ShowWindow(wd.hWnd, SW_SHOWNOACTIVATE);
+		return;
+	}
 
 	SetForegroundWindow(wd.hWnd);
 }
@@ -1790,17 +1817,30 @@ void DisplayServerWindows::_dispatch_input_event(const Ref<InputEvent> &p_event)
 
 	Ref<InputEventFromWindow> event_from_window = p_event;
 	if (event_from_window.is_valid() && event_from_window->get_window_id() != INVALID_WINDOW_ID) {
-		//send to a window
-		if (!windows.has(event_from_window->get_window_id())) {
-			in_dispatch_input_event = false;
-			ERR_FAIL_MSG("DisplayServerWindows: Invalid window id in input event.");
+		{
+			//send to a window
+			if (!windows.has(event_from_window->get_window_id())) {
+				in_dispatch_input_event = false;
+				ERR_FAIL_MSG(vformat("DisplayServerWindows: Invalid window id in input event. ID: %d", event_from_window->get_window_id()));
+			}
+			Callable callable = windows[event_from_window->get_window_id()].input_event_callback;
+			if (callable.is_null()) {
+				in_dispatch_input_event = false;
+				return;
+			}
+			callable.call((const Variant **)&evp, 1, ret, ce);
 		}
-		Callable callable = windows[event_from_window->get_window_id()].input_event_callback;
-		if (callable.is_null()) {
-			in_dispatch_input_event = false;
-			return;
+		//send to all windows, that request to always get input and have no focus
+		for (Map<WindowID, WindowData>::Element *E = windows.front(); E; E = E->next()) {
+			if (E->key() == event_from_window->get_window_id() || E->key() == MAIN_WINDOW_ID || (!E->get().input_without_focus)) {
+				continue;
+			}
+			Callable callable = E->get().input_event_callback;
+			if (callable.is_null()) {
+				continue;
+			}
+			callable.call((const Variant **)&evp, 1, ret, ce);
 		}
-		callable.call((const Variant **)&evp, 1, ret, ce);
 	} else {
 		//send to all windows
 		for (Map<WindowID, WindowData>::Element *E = windows.front(); E; E = E->next()) {
@@ -1846,6 +1886,7 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 		case WM_SETFOCUS: {
 			windows[window_id].window_has_focus = true;
 			last_focused_window = window_id;
+			_send_window_event(windows[window_id], WINDOW_EVENT_FOCUS_IN);
 
 			// Restore mouse mode
 			_set_mouse_mode_impl(mouse_mode);
@@ -1861,6 +1902,7 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 		case WM_KILLFOCUS: {
 			windows[window_id].window_has_focus = false;
 			last_focused_window = window_id;
+			_send_window_event(windows[window_id], WINDOW_EVENT_FOCUS_OUT);
 
 			// Release capture unconditionally because it can be set due to dragging, in addition to captured mode
 			ReleaseCapture();
@@ -1943,6 +1985,12 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 
 			return 0; // Jump Back
 		}
+		case WM_MOUSEACTIVATE: {
+			// We don't want unfocusable windows to get activated.
+			if (windows[window_id].no_focus) {
+				return MA_NOACTIVATE;
+			}
+		} break;
 		case WM_MOUSELEAVE: {
 			old_invalid = true;
 			outside = true;
@@ -2021,8 +2069,9 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 					*/
 				}
 
-				if (windows[window_id].window_has_focus && mm->get_relative() != Vector2())
+				if ((windows[window_id].window_has_focus || windows[window_id].input_without_focus) && mm->get_relative() != Vector2()) {
 					Input::get_singleton()->accumulate_input_event(mm);
+				}
 			}
 			delete[] lpb;
 		} break;
@@ -2110,8 +2159,9 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 					mm->set_relative(Vector2(mm->get_position() - Vector2(old_x, old_y)));
 					old_x = mm->get_position().x;
 					old_y = mm->get_position().y;
-					if (windows[window_id].window_has_focus)
+					if (windows[window_id].window_has_focus || windows[window_id].input_without_focus) {
 						Input::get_singleton()->accumulate_input_event(mm);
+					}
 				}
 				return 0;
 			}
@@ -2257,7 +2307,7 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 			mm->set_relative(Vector2(mm->get_position() - Vector2(old_x, old_y)));
 			old_x = mm->get_position().x;
 			old_y = mm->get_position().y;
-			if (windows[window_id].window_has_focus) {
+			if (windows[window_id].window_has_focus || windows[window_id].input_without_focus) {
 				Input::get_singleton()->accumulate_input_event(mm);
 			}
 
@@ -2363,9 +2413,9 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 			mm->set_relative(Vector2(mm->get_position() - Vector2(old_x, old_y)));
 			old_x = mm->get_position().x;
 			old_y = mm->get_position().y;
-			if (windows[window_id].window_has_focus)
+			if (windows[window_id].window_has_focus || windows[window_id].input_without_focus) {
 				Input::get_singleton()->accumulate_input_event(mm);
-
+			}
 		} break;
 		case WM_LBUTTONDOWN:
 		case WM_LBUTTONUP:
@@ -3010,6 +3060,12 @@ DisplayServer::WindowID DisplayServerWindows::_create_window(WindowMode p_mode, 
 	AdjustWindowRectEx(&WindowRect, dwStyle, FALSE, dwExStyle);
 
 	WindowID id = window_id_counter;
+	if (id != MAIN_WINDOW_ID && (p_flags & WINDOW_FLAG_BORDERLESS_BIT)) {
+		// We have child windows here, so we need to ensure they use local coordinates
+		HWND main_window = windows[MAIN_WINDOW_ID].hWnd;
+		ScreenToClient(main_window, (POINT *)&WindowRect.left);
+		ScreenToClient(main_window, (POINT *)&WindowRect.right);
+	}
 	{
 		WindowData &wd = windows[id];
 
@@ -3023,7 +3079,7 @@ DisplayServer::WindowID DisplayServerWindows::_create_window(WindowMode p_mode, 
 				WindowRect.top,
 				WindowRect.right - WindowRect.left,
 				WindowRect.bottom - WindowRect.top,
-				nullptr, nullptr, hInstance, nullptr);
+				id == MAIN_WINDOW_ID ? nullptr : windows[MAIN_WINDOW_ID].hWnd, nullptr, hInstance, nullptr);
 		if (!wd.hWnd) {
 			MessageBoxW(nullptr, L"Window Creation Error.", L"ERROR", MB_OK | MB_ICONEXCLAMATION);
 			windows.erase(id);

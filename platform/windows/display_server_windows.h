@@ -338,6 +338,7 @@ class DisplayServerWindows : public DisplayServer {
 		bool always_on_top = false;
 		bool no_focus = false;
 		bool window_has_focus = false;
+		bool input_without_focus = false;
 
 		// Used to transfer data between events using timer.
 		WPARAM saved_wparam;

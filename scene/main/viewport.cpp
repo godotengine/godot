@@ -308,7 +308,7 @@ void Viewport::_sub_window_grab_focus(Window *p_window) {
 
 	ERR_FAIL_COND(index == -1);
 
-	if (p_window->get_flag(Window::FLAG_NO_FOCUS)) {
+	if (p_window->get_flag(Window::FLAG_NO_FOCUS) && !p_window->get_flag(Window::FLAG_INPUT_WITHOUT_FOCUS)) {
 		//can only move to foreground, but no focus granted
 		SubWindow sw = gui.sub_windows[index];
 		gui.sub_windows.remove(index);

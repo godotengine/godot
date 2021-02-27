@@ -140,6 +140,7 @@ public:
 		bool borderless = false;
 		bool resize_disabled = false;
 		bool no_focus = false;
+		bool input_without_focus = false;
 	};
 
 	Point2i im_selection;
