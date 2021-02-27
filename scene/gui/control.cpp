@@ -515,7 +515,9 @@ void Control::_notification(int p_notification) {
 			get_viewport()->_gui_remove_control(this);
 		} break;
 		case NOTIFICATION_READY: {
+#ifdef DEBUG_ENABLED
 			connect("ready", callable_mp(this, &Control::_clear_size_warning), varray(), CONNECT_DEFERRED | CONNECT_ONESHOT);
+#endif
 		} break;
 
 		case NOTIFICATION_ENTER_CANVAS: {
@@ -1579,8 +1581,8 @@ void Control::set_rect(const Rect2 &p_rect) {
 
 void Control::_set_size(const Size2 &p_size) {
 #ifdef DEBUG_ENABLED
-	if (data.size_warning) {
-		WARN_PRINT("Adjusting the size of Control nodes before they are fully initialized is unreliable. Consider deferring it with set_deferred().");
+	if (data.size_warning && (data.anchor[SIDE_LEFT] != data.anchor[SIDE_RIGHT] || data.anchor[SIDE_TOP] != data.anchor[SIDE_BOTTOM])) {
+		WARN_PRINT("Nodes with non-equal opposite anchors will have their size overriden after _ready(). \nIf you want to set size, change the anchors or consider using set_deferred().");
 	}
 #endif
 	set_size(p_size);
