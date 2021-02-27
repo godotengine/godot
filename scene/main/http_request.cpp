@@ -349,8 +349,9 @@ bool HTTPRequest::_update_connection() {
 			}
 
 			client->poll();
-			if (client->get_status() != HTTPClient::STATUS_BODY)
-				break; // State changed after this poll, will check at next iteration.
+			if (client->get_status() != HTTPClient::STATUS_BODY) {
+				return false;
+			}
 
 			PoolByteArray chunk = client->read_response_body_chunk();
 			downloaded += chunk.size();
