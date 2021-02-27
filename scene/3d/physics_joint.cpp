@@ -62,8 +62,10 @@ void Joint::_body_exit_tree(const ObjectID &p_body_id) {
 void Joint::_update_joint(bool p_only_free) {
 
 	if (joint.is_valid()) {
-		if (ba.is_valid() && bb.is_valid())
+		if (ba.is_valid() && bb.is_valid()) {
 			PhysicsServer::get_singleton()->body_remove_collision_exception(ba, bb);
+			PhysicsServer::get_singleton()->body_remove_collision_exception(bb, ba);
+		}
 
 		PhysicsServer::get_singleton()->free(joint);
 		joint = RID();
