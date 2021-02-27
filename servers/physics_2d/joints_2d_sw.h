@@ -60,6 +60,15 @@ public:
 		bias = 0;
 		max_force = max_bias = 3.40282e+38;
 	};
+
+	virtual ~Joint2DSW() {
+		for (int i = 0; i < get_body_count(); i++) {
+			Body2DSW *body = get_body_ptr()[i];
+			if (body) {
+				body->remove_constraint(this, i);
+			}
+		}
+	};
 };
 
 class PinJoint2DSW : public Joint2DSW {
@@ -90,7 +99,6 @@ public:
 	real_t get_param(PhysicsServer2D::PinJointParam p_param) const;
 
 	PinJoint2DSW(const Vector2 &p_pos, Body2DSW *p_body_a, Body2DSW *p_body_b = nullptr);
-	~PinJoint2DSW();
 };
 
 class GrooveJoint2DSW : public Joint2DSW {
@@ -124,7 +132,6 @@ public:
 	virtual void solve(real_t p_step);
 
 	GrooveJoint2DSW(const Vector2 &p_a_groove1, const Vector2 &p_a_groove2, const Vector2 &p_b_anchor, Body2DSW *p_body_a, Body2DSW *p_body_b);
-	~GrooveJoint2DSW();
 };
 
 class DampedSpringJoint2DSW : public Joint2DSW {
@@ -160,7 +167,6 @@ public:
 	real_t get_param(PhysicsServer2D::DampedSpringParam p_param) const;
 
 	DampedSpringJoint2DSW(const Vector2 &p_anchor_a, const Vector2 &p_anchor_b, Body2DSW *p_body_a, Body2DSW *p_body_b);
-	~DampedSpringJoint2DSW();
 };
 
 #endif // JOINTS_2D_SW_H
