@@ -1913,6 +1913,14 @@ void NativeReloadNode::_notification(int p_what) {
 				}
 
 				for (Map<String, Set<NativeScript *>>::Element *U = NSL->library_script_users.front(); U; U = U->next()) {
+					// multiple gdnative libraries may be reloaded
+					// the gdnative library and script path should match
+					// to prevent failing NSL->library_classes lookup from get_script_desc()
+					// in script->_update_placeholder below
+					if (L->key() != U->key()) {
+						continue;
+					}
+
 					for (Set<NativeScript *>::Element *S = U->get().front(); S; S = S->next()) {
 						NativeScript *script = S->get();
 
