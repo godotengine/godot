@@ -78,7 +78,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "FBXMeshGeometry.h"
 #include "FBXParser.h"
 #include "core/math/math_funcs.h"
-#include "core/math/transform.h"
+#include "core/math/transform_3d.h"
 
 #include <iostream>
 

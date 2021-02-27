@@ -33,7 +33,7 @@
 
 #include "core/math/aabb.h"
 #include "core/math/plane.h"
-#include "core/math/transform.h"
+#include "core/math/transform_3d.h"
 #include "core/math/vector3.h"
 
 class Face3 {

@@ -37,7 +37,7 @@
 #include "FBXCommon.h"
 #include "FBXParser.h"
 #include "FBXProperties.h"
-#include "core/math/transform.h"
+#include "core/math/transform_3d.h"
 #include "core/math/vector2.h"
 #include "core/math/vector3.h"
 #include "core/string/print_string.h"

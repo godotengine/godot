@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  transform.cpp                                                        */
+/*  transform_3d.cpp                                                     */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -30,7 +30,7 @@
 
 #include "gdnative/transform.h"
 
-#include "core/math/transform.h"
+#include "core/math/transform_3d.h"
 
 static_assert(sizeof(godot_transform) == sizeof(Transform3D), "Transform3D size mismatch");
 
