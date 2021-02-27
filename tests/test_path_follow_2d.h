@@ -45,9 +45,9 @@ TEST_CASE("[PathFollow2D] Sampling with unit offset") {
 	curve->add_point(Vector2(100, 100));
 	curve->add_point(Vector2(0, 100));
 	curve->add_point(Vector2(0, 0));
-	const Ref<Path2D> &path = memnew(Path2D());
+	const Path2D *path = memnew(Path2D);
 	path->set_curve(curve);
-	const Ref<PathFollow2D> &path_follow_2d = memnew(PathFollow2D());
+	const PathFollow2D *path_follow_2d = memnew(PathFollow2D);
 	path->add_child(path_follow_2d);
 
 	path_follow_2d->set_unit_offset(0);
@@ -76,6 +76,8 @@ TEST_CASE("[PathFollow2D] Sampling with unit offset") {
 
 	path_follow_2d->set_unit_offset(1);
 	CHECK(path_follow_2d->get_transform().get_origin().is_equal_approx(Vector2(0, 0)));
+
+	memdelete(path);
 }
 
 TEST_CASE("[PathFollow2D] Sampling with offset") {
@@ -85,9 +87,9 @@ TEST_CASE("[PathFollow2D] Sampling with offset") {
 	curve->add_point(Vector2(100, 100));
 	curve->add_point(Vector2(0, 100));
 	curve->add_point(Vector2(0, 0));
-	const Ref<Path2D> &path = memnew(Path2D());
+	const Path2D *path = memnew(Path2D);
 	path->set_curve(curve);
-	const Ref<PathFollow2D> &path_follow_2d = memnew(PathFollow2D());
+	const PathFollow2D *path_follow_2d = memnew(PathFollow2D);
 	path->add_child(path_follow_2d);
 
 	path_follow_2d->set_offset(0);
@@ -116,6 +118,8 @@ TEST_CASE("[PathFollow2D] Sampling with offset") {
 
 	path_follow_2d->set_offset(400);
 	CHECK(path_follow_2d->get_transform().get_origin().is_equal_approx(Vector2(0, 0)));
+
+	memdelete(path);
 }
 
 TEST_CASE("[PathFollow2D] Removal of a point in curve") {
@@ -123,9 +127,9 @@ TEST_CASE("[PathFollow2D] Removal of a point in curve") {
 	curve->add_point(Vector2(0, 0));
 	curve->add_point(Vector2(100, 0));
 	curve->add_point(Vector2(100, 100));
-	const Ref<Path2D> &path = memnew(Path2D());
+	const Path2D *path = memnew(Path2D);
 	path->set_curve(curve);
-	const Ref<PathFollow2D> &path_follow_2d = memnew(PathFollow2D());
+	const PathFollow2D *path_follow_2d = memnew(PathFollow2D);
 	path->add_child(path_follow_2d);
 
 	path_follow_2d->set_unit_offset(0.5);
@@ -136,15 +140,17 @@ TEST_CASE("[PathFollow2D] Removal of a point in curve") {
 	CHECK_MESSAGE(
 			path_follow_2d->get_transform().get_origin().is_equal_approx(Vector2(50, 50)),
 			"Path follow's position should be updated after removing a point from the curve");
+
+	memdelete(path);
 }
 
 TEST_CASE("[PathFollow2D] Setting h_offset and v_offset") {
 	const Ref<Curve2D> &curve = memnew(Curve2D());
 	curve->add_point(Vector2(0, 0));
 	curve->add_point(Vector2(100, 0));
-	const Ref<Path2D> &path = memnew(Path2D());
+	const Path2D *path = memnew(Path2D);
 	path->set_curve(curve);
-	const Ref<PathFollow2D> &path_follow_2d = memnew(PathFollow2D());
+	const PathFollow2D *path_follow_2d = memnew(PathFollow2D);
 	path->add_child(path_follow_2d);
 
 	path_follow_2d->set_unit_offset(0.5);
@@ -155,15 +161,17 @@ TEST_CASE("[PathFollow2D] Setting h_offset and v_offset") {
 
 	path_follow_2d->set_v_offset(25);
 	CHECK(path_follow_2d->get_transform().get_origin().is_equal_approx(Vector2(75, 25)));
+
+	memdelete(path);
 }
 
 TEST_CASE("[PathFollow2D] Unit offset out of range") {
 	const Ref<Curve2D> &curve = memnew(Curve2D());
 	curve->add_point(Vector2(0, 0));
 	curve->add_point(Vector2(100, 0));
-	const Ref<Path2D> &path = memnew(Path2D());
+	const Path2D *path = memnew(Path2D);
 	path->set_curve(curve);
-	const Ref<PathFollow2D> &path_follow_2d = memnew(PathFollow2D());
+	const PathFollow2D *path_follow_2d = memnew(PathFollow2D);
 	path->add_child(path_follow_2d);
 
 	path_follow_2d->set_loop(true);
@@ -189,15 +197,17 @@ TEST_CASE("[PathFollow2D] Unit offset out of range") {
 	CHECK_MESSAGE(
 			path_follow_2d->get_unit_offset() == 1,
 			"Unit Offset should be clamped at 1");
+
+	memdelete(path);
 }
 
 TEST_CASE("[PathFollow2D] Offset out of range") {
 	const Ref<Curve2D> &curve = memnew(Curve2D());
 	curve->add_point(Vector2(0, 0));
 	curve->add_point(Vector2(100, 0));
-	const Ref<Path2D> &path = memnew(Path2D());
+	const Path2D *path = memnew(Path2D);
 	path->set_curve(curve);
-	const Ref<PathFollow2D> &path_follow_2d = memnew(PathFollow2D());
+	const PathFollow2D *path_follow_2d = memnew(PathFollow2D);
 	path->add_child(path_follow_2d);
 
 	path_follow_2d->set_loop(true);
@@ -223,6 +233,8 @@ TEST_CASE("[PathFollow2D] Offset out of range") {
 	CHECK_MESSAGE(
 			path_follow_2d->get_offset() == 100,
 			"Offset should be clamped at 1");
+
+	memdelete(path);
 }
 } // namespace TestPathFollow2D
 
