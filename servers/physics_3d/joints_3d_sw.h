@@ -49,6 +49,15 @@ public:
 	_FORCE_INLINE_ Joint3DSW(Body3DSW **p_body_ptr = nullptr, int p_body_count = 0) :
 			Constraint3DSW(p_body_ptr, p_body_count) {
 	}
+
+	virtual ~Joint3DSW() {
+		for (int i = 0; i < get_body_count(); i++) {
+			Body3DSW *body = get_body_ptr()[i];
+			if (body) {
+				body->remove_constraint(this);
+			}
+		}
+	}
 };
 
 #endif // JOINTS_SW_H

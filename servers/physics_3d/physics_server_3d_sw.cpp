@@ -1312,9 +1312,6 @@ void PhysicsServer3DSW::free(RID p_rid) {
 	} else if (joint_owner.owns(p_rid)) {
 		Joint3DSW *joint = joint_owner.getornull(p_rid);
 
-		for (int i = 0; i < joint->get_body_count(); i++) {
-			joint->get_body_ptr()[i]->remove_constraint(joint);
-		}
 		joint_owner.free(p_rid);
 		memdelete(joint);
 
