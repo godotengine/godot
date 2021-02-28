@@ -737,7 +737,6 @@ Node3D *EditorSceneImporterFBX::_generate_scene(
 				// reparent to armature
 				skeleton_node->godot_node->add_child(mesh->godot_mesh_instance);
 				mesh->godot_mesh_instance->set_owner(state.root_owner);
-				mesh->godot_mesh_instance->set_transform(Transform());
 
 				reparented = true;
 			}
