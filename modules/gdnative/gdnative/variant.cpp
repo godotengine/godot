@@ -599,7 +599,7 @@ void GDAPI godot_variant_call_static(godot_variant_type p_type, const godot_stri
 	const Variant **args = (const Variant **)p_args;
 	Variant ret;
 	Callable::CallError error;
-	Variant().call_static(type, *method, args, p_argcount, ret, error);
+	Variant::call_static(type, *method, args, p_argcount, ret, error);
 	memnew_placement_custom(r_return, Variant, Variant(ret));
 
 	if (r_error) {
@@ -615,7 +615,7 @@ void GDAPI godot_variant_call_static_with_cstring(godot_variant_type p_type, con
 	const Variant **args = (const Variant **)p_args;
 	Variant ret;
 	Callable::CallError error;
-	Variant().call_static(type, method, args, p_argcount, ret, error);
+	Variant::call_static(type, method, args, p_argcount, ret, error);
 	memnew_placement_custom(r_return, Variant, Variant(ret));
 
 	if (r_error) {
