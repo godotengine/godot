@@ -5926,15 +5926,15 @@ Error ShaderLanguage::_parse_block(BlockNode *p_block, const FunctionInfo &p_fun
 			pos = _get_tkpos();
 			tk = _get_token();
 			if (tk.type != TK_SEMICOLON) {
-				//all is good
 				_set_error("Expected ';' after discard");
+				return ERR_PARSE_ERROR;
 			}
 
 			p_block->statements.push_back(flow);
 		} else if (tk.type == TK_CF_BREAK) {
 			if (!p_can_break) {
-				//all is good
-				_set_error("Breaking is not allowed here");
+				_set_error("'break' is not allowed outside of a loop or 'switch' statement");
+				return ERR_PARSE_ERROR;
 			}
 
 			ControlFlowNode *flow = alloc_node<ControlFlowNode>();
@@ -5943,8 +5943,8 @@ Error ShaderLanguage::_parse_block(BlockNode *p_block, const FunctionInfo &p_fun
 			pos = _get_tkpos();
 			tk = _get_token();
 			if (tk.type != TK_SEMICOLON) {
-				//all is good
 				_set_error("Expected ';' after break");
+				return ERR_PARSE_ERROR;
 			}
 
 			p_block->statements.push_back(flow);
@@ -5959,8 +5959,8 @@ Error ShaderLanguage::_parse_block(BlockNode *p_block, const FunctionInfo &p_fun
 
 		} else if (tk.type == TK_CF_CONTINUE) {
 			if (!p_can_continue) {
-				//all is good
-				_set_error("Continuing is not allowed here");
+				_set_error("'continue' is not allowed outside of a loop");
+				return ERR_PARSE_ERROR;
 			}
 
 			ControlFlowNode *flow = alloc_node<ControlFlowNode>();
@@ -5971,6 +5971,7 @@ Error ShaderLanguage::_parse_block(BlockNode *p_block, const FunctionInfo &p_fun
 			if (tk.type != TK_SEMICOLON) {
 				//all is good
 				_set_error("Expected ';' after continue");
+				return ERR_PARSE_ERROR;
 			}
 
 			p_block->statements.push_back(flow);
