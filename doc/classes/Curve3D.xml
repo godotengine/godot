@@ -78,7 +78,7 @@
 			<argument index="0" name="to_point" type="Vector3">
 			</argument>
 			<description>
-				Returns the closest point (in curve's local space) to [code]to_point[/code].
+				Returns the closest baked point (in curve's local space) to [code]to_point[/code].
 				[code]to_point[/code] must be in this curve's local space.
 			</description>
 		</method>
