@@ -1171,8 +1171,12 @@ int OS_X11::get_current_screen() const {
 }
 
 void OS_X11::set_current_screen(int p_screen) {
-	int count = get_screen_count();
-	if (p_screen >= count) return;
+	if (p_screen == -1) {
+		p_screen = get_current_screen();
+	}
+
+	// Check if screen is valid
+	ERR_FAIL_INDEX(p_screen, get_screen_count());
 
 	if (current_videomode.fullscreen) {
 		Point2i position = get_screen_position(p_screen);
@@ -1201,9 +1205,9 @@ Point2 OS_X11::get_screen_position(int p_screen) const {
 
 	int count;
 	XineramaScreenInfo *xsi = XineramaQueryScreens(x11_display, &count);
-	if (p_screen >= count) {
-		return Point2i(0, 0);
-	}
+
+	// Check if screen is valid
+	ERR_FAIL_INDEX_V(p_screen, count, Point2i(0, 0));
 
 	Point2i position = Point2i(xsi[p_screen].x_org, xsi[p_screen].y_org);
 
@@ -1224,7 +1228,9 @@ Size2 OS_X11::get_screen_size(int p_screen) const {
 
 	int count;
 	XineramaScreenInfo *xsi = XineramaQueryScreens(x11_display, &count);
-	if (p_screen >= count) return Size2i(0, 0);
+
+	// Check if screen is valid
+	ERR_FAIL_INDEX_V(p_screen, count, Size2i(0, 0));
 
 	Size2i size = Point2i(xsi[p_screen].width, xsi[p_screen].height);
 	XFree(xsi);
