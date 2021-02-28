@@ -711,8 +711,8 @@ int DisplayServerX11::get_screen_count() const {
 	return count;
 }
 
-Point2i DisplayServerX11::screen_get_position(int p_screen) const {
-	_THREAD_SAFE_METHOD_
+Rect2i DisplayServerX11::_screen_get_rect(int p_screen) const {
+	Rect2i rect(0, 0, 0, 0);
 
 	if (p_screen == SCREEN_OF_MAIN_WINDOW) {
 		p_screen = window_get_current_screen();
@@ -720,26 +720,34 @@ Point2i DisplayServerX11::screen_get_position(int p_screen) const {
 
 	// Using Xinerama Extension
 	int event_base, error_base;
-	const Bool ext_okay = XineramaQueryExtension(x11_display, &event_base, &error_base);
-	if (!ext_okay) {
-		return Point2i(0, 0);
+	if (XineramaQueryExtension(x11_display, &event_base, &error_base)) {
+		int count;
+		XineramaScreenInfo *xsi = XineramaQueryScreens(x11_display, &count);
+		if (p_screen < count) {
+			rect.position.x = xsi[p_screen].x_org;
+			rect.position.y = xsi[p_screen].y_org;
+			rect.size.width = xsi[p_screen].width;
+			rect.size.height = xsi[p_screen].height;
+		}
+
+		if (xsi) {
+			XFree(xsi);
+		}
 	}
 
-	int count;
-	XineramaScreenInfo *xsi = XineramaQueryScreens(x11_display, &count);
-	if (p_screen >= count) {
-		return Point2i(0, 0);
-	}
+	return rect;
+}
 
-	Point2i position = Point2i(xsi[p_screen].x_org, xsi[p_screen].y_org);
+Point2i DisplayServerX11::screen_get_position(int p_screen) const {
+	_THREAD_SAFE_METHOD_
 
-	XFree(xsi);
-
-	return position;
+	return _screen_get_rect(p_screen).position;
 }
 
 Size2i DisplayServerX11::screen_get_size(int p_screen) const {
-	return screen_get_usable_rect(p_screen).size;
+	_THREAD_SAFE_METHOD_
+
+	return _screen_get_rect(p_screen).size;
 }
 
 Rect2i DisplayServerX11::screen_get_usable_rect(int p_screen) const {
@@ -749,21 +757,97 @@ Rect2i DisplayServerX11::screen_get_usable_rect(int p_screen) const {
 		p_screen = window_get_current_screen();
 	}
 
-	// Using Xinerama Extension
-	int event_base, error_base;
-	const Bool ext_okay = XineramaQueryExtension(x11_display, &event_base, &error_base);
-	if (!ext_okay) {
-		return Rect2i(0, 0, 0, 0);
+	bool is_multiscreen = get_screen_count() > 0;
+
+	// Use full monitor size as fallback.
+	Rect2i rect = _screen_get_rect(p_screen);
+
+	// There's generally only one screen reported by xlib even in multi-screen setup,
+	// in this case it's just one virtual screen composed of all physical monitors.
+	int x11_screen_count = ScreenCount(x11_display);
+	Window x11_window = RootWindow(x11_display, p_screen < x11_screen_count ? p_screen : 0);
+
+	Atom type;
+	int format = 0;
+	unsigned long len = 0;
+	unsigned long remaining = 0;
+	unsigned char *data = nullptr;
+
+	// Find active desktop for the root window.
+	unsigned int desktop_index = 0;
+	Atom desktop_prop = XInternAtom(x11_display, "_NET_CURRENT_DESKTOP", True);
+	if (desktop_prop != None) {
+		if (XGetWindowProperty(x11_display, x11_window, desktop_prop, 0, LONG_MAX, False, XA_CARDINAL, &type, &format, &len, &remaining, &data) == Success) {
+			if ((format == 32) && (len > 0) && data) {
+				desktop_index = (unsigned int)data[0];
+			}
+			if (data) {
+				XFree(data);
+			}
+		}
 	}
 
-	int count;
-	XineramaScreenInfo *xsi = XineramaQueryScreens(x11_display, &count);
-	if (p_screen >= count) {
-		return Rect2i(0, 0, 0, 0);
+	// First check for GTK work area, which is more accurate for multi-screen setup.
+	if (is_multiscreen) {
+		Atom gtk_workareas_prop = XInternAtom(x11_display, "_GTK_WORKAREAS", False);
+		if (gtk_workareas_prop != None) {
+			char gtk_workarea_prop_name[32];
+			snprintf(gtk_workarea_prop_name, 32, "_GTK_WORKAREAS_D%d", desktop_index);
+			Atom gtk_workarea_prop = XInternAtom(x11_display, gtk_workarea_prop_name, True);
+			if (gtk_workarea_prop != None) {
+				if (XGetWindowProperty(x11_display, x11_window, gtk_workarea_prop, 0, LONG_MAX, False, XA_CARDINAL, &type, &format, &len, &remaining, &data) == Success) {
+					if ((format == 32) && (len % 4 == 0) && data) {
+						long *rect_data = (long *)data;
+						for (uint32_t data_offset = 0; data_offset < len; data_offset += 4) {
+							Rect2i workarea_rect;
+							workarea_rect.position.x = rect_data[data_offset];
+							workarea_rect.position.y = rect_data[data_offset + 1];
+							workarea_rect.size.x = rect_data[data_offset + 2];
+							workarea_rect.size.y = rect_data[data_offset + 3];
+
+							// Intersect with actual monitor size to find the correct area,
+							// because areas are not in the same order as screens from Xinerama.
+							if (rect.grow(-1).intersects(workarea_rect)) {
+								rect = rect.clip(workarea_rect);
+								XFree(data);
+								return rect;
+							}
+						}
+					}
+				}
+				if (data) {
+					XFree(data);
+				}
+			}
+		}
 	}
 
-	Rect2i rect = Rect2i(xsi[p_screen].x_org, xsi[p_screen].y_org, xsi[p_screen].width, xsi[p_screen].height);
-	XFree(xsi);
+	// Get desktop available size from the global work area.
+	Atom workarea_prop = XInternAtom(x11_display, "_NET_WORKAREA", True);
+	if (workarea_prop != None) {
+		if (XGetWindowProperty(x11_display, x11_window, workarea_prop, 0, LONG_MAX, False, XA_CARDINAL, &type, &format, &len, &remaining, &data) == Success) {
+			if ((format == 32) && (len >= ((desktop_index + 1) * 4)) && data) {
+				long *rect_data = (long *)data;
+				int data_offset = desktop_index * 4;
+				Rect2i workarea_rect;
+				workarea_rect.position.x = rect_data[data_offset];
+				workarea_rect.position.y = rect_data[data_offset + 1];
+				workarea_rect.size.x = rect_data[data_offset + 2];
+				workarea_rect.size.y = rect_data[data_offset + 3];
+
+				// Intersect with actual monitor size to get a proper approximation in multi-screen setup.
+				if (!is_multiscreen) {
+					rect = workarea_rect;
+				} else if (rect.intersects(workarea_rect)) {
+					rect = rect.clip(workarea_rect);
+				}
+			}
+			if (data) {
+				XFree(data);
+			}
+		}
+	}
+
 	return rect;
 }
 
