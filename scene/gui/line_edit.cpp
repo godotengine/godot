@@ -88,12 +88,34 @@ void LineEdit::_gui_input(Ref<InputEvent> p_event) {
 
 			} else {
 
-				if (b->is_doubleclick() && selecting_enabled) {
-
-					selection.enabled = true;
-					selection.begin = 0;
-					selection.end = text.length();
-					selection.doubleclick = true;
+				if (selecting_enabled) {
+					if (!b->is_doubleclick() && (OS::get_singleton()->get_ticks_msec() - selection.last_dblclk) < 600) {
+						// Triple-click select all.
+						selection.enabled = true;
+						selection.begin = 0;
+						selection.end = text.length();
+						selection.doubleclick = true;
+						selection.last_dblclk = 0;
+					} else if (b->is_doubleclick()) {
+						// Double-click select word.
+						selection.enabled = true;
+						int beg = cursor_pos;
+						int end = beg;
+						bool symbol = beg < text.length() && is_symbol(text[beg]);
+						while (beg > 0 && text[beg - 1] > 32 && (symbol == is_symbol(text[beg - 1]))) {
+							beg--;
+						}
+						while (end < text.length() && text[end + 1] > 32 && (symbol == is_symbol(text[end + 1]))) {
+							end++;
+						}
+						if (end < text.length()) {
+							end += 1;
+						}
+						selection.begin = beg;
+						selection.end = end;
+						selection.doubleclick = true;
+						selection.last_dblclk = OS::get_singleton()->get_ticks_msec();
+					}
 				}
 
 				selection.drag_attempt = false;
