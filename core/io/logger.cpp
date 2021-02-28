@@ -43,6 +43,12 @@ bool Logger::should_log(bool p_err) {
 	return (!p_err || _print_error_enabled) && (p_err || _print_line_enabled);
 }
 
+bool Logger::_flush_stdout_on_print = true;
+
+void Logger::set_flush_stdout_on_print(bool value) {
+	_flush_stdout_on_print = value;
+}
+
 void Logger::log_error(const char *p_function, const char *p_file, int p_line, const char *p_code, const char *p_rationale, ErrorType p_type) {
 	if (!should_log(true)) {
 		return;
@@ -207,7 +213,7 @@ void RotatedFileLogger::logv(const char *p_format, va_list p_list, bool p_err) {
 			Memory::free_static(buf);
 		}
 
-		if (p_err || !ProjectSettings::get_singleton() || GLOBAL_GET("application/run/flush_stdout_on_print")) {
+		if (p_err || _flush_stdout_on_print) {
 			// Don't always flush when printing stdout to avoid performance
 			// issues when `print()` is spammed in release builds.
 			file->flush();
@@ -228,7 +234,7 @@ void StdLogger::logv(const char *p_format, va_list p_list, bool p_err) {
 		vfprintf(stderr, p_format, p_list);
 	} else {
 		vprintf(p_format, p_list);
-		if (!ProjectSettings::get_singleton() || GLOBAL_GET("application/run/flush_stdout_on_print")) {
+		if (_flush_stdout_on_print) {
 			// Don't always flush when printing stdout to avoid performance
 			// issues when `print()` is spammed in release builds.
 			fflush(stdout);
