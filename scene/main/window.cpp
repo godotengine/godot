@@ -826,6 +826,9 @@ bool Window::is_using_font_oversampling() const {
 }
 
 DisplayServer::WindowID Window::get_window_id() const {
+	if (embedder) {
+		return parent->get_window_id();
+	}
 	return window_id;
 }
 
