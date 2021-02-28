@@ -415,13 +415,16 @@ Vector3i GIProbe::get_estimated_cell_size() const {
 void GIProbe::bake(Node *p_from_node, bool p_create_visual_debug) {
 	static const int subdiv_value[SUBDIV_MAX] = { 6, 7, 8, 9 };
 
+	p_from_node = p_from_node ? p_from_node : get_parent();
+	ERR_FAIL_NULL(p_from_node);
+
 	Voxelizer baker;
 
 	baker.begin_bake(subdiv_value[subdiv], AABB(-extents, extents * 2.0));
 
 	List<PlotMesh> mesh_list;
 
-	_find_meshes(p_from_node ? p_from_node : get_parent(), mesh_list);
+	_find_meshes(p_from_node, mesh_list);
 
 	if (bake_begin_function) {
 		bake_begin_function(mesh_list.size() + 1);
