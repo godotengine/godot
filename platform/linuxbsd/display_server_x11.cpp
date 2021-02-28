@@ -727,9 +727,9 @@ Point2i DisplayServerX11::screen_get_position(int p_screen) const {
 
 	int count;
 	XineramaScreenInfo *xsi = XineramaQueryScreens(x11_display, &count);
-	if (p_screen >= count) {
-		return Point2i(0, 0);
-	}
+
+	// Check if screen is valid
+	ERR_FAIL_INDEX_V(p_screen, count, Point2i(0, 0));
 
 	Point2i position = Point2i(xsi[p_screen].x_org, xsi[p_screen].y_org);
 
@@ -758,9 +758,9 @@ Rect2i DisplayServerX11::screen_get_usable_rect(int p_screen) const {
 
 	int count;
 	XineramaScreenInfo *xsi = XineramaQueryScreens(x11_display, &count);
-	if (p_screen >= count) {
-		return Rect2i(0, 0, 0, 0);
-	}
+
+	// Check if screen is valid
+	ERR_FAIL_INDEX_V(p_screen, count, Rect2i(0, 0, 0, 0));
 
 	Rect2i rect = Rect2i(xsi[p_screen].x_org, xsi[p_screen].y_org, xsi[p_screen].width, xsi[p_screen].height);
 	XFree(xsi);
@@ -1041,10 +1041,12 @@ void DisplayServerX11::window_set_current_screen(int p_screen, WindowID p_window
 	ERR_FAIL_COND(!windows.has(p_window));
 	WindowData &wd = windows[p_window];
 
-	int count = get_screen_count();
-	if (p_screen >= count) {
-		return;
+	if (p_screen == SCREEN_OF_MAIN_WINDOW) {
+		p_screen = window_get_current_screen();
 	}
+
+	// Check if screen is valid
+	ERR_FAIL_INDEX(p_screen, get_screen_count());
 
 	if (window_get_mode(p_window) == WINDOW_MODE_FULLSCREEN) {
 		Point2i position = screen_get_position(p_screen);
