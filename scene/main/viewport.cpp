@@ -425,14 +425,15 @@ void Viewport::_own_world_3d_changed() {
 void Viewport::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE: {
-			gui.embedding_subwindows = gui.embed_subwindows_hint;
-
 			if (get_parent()) {
 				parent = get_parent()->get_viewport();
 				RenderingServer::get_singleton()->viewport_set_parent_viewport(viewport, parent->get_viewport_rid());
+				gui.embed_subwindows_hint |= parent->get_embed_subwindows_hint(); // If parent is embedding, we are embedded and embed too, but if the parent is not, we may embed.
 			} else {
 				parent = nullptr;
 			}
+
+			gui.embedding_subwindows = gui.embed_subwindows_hint;
 
 			current_canvas = find_world_2d()->get_canvas();
 			RenderingServer::get_singleton()->viewport_set_scenario(viewport, find_world_3d()->get_scenario());
