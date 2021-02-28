@@ -2321,10 +2321,14 @@ void SceneTreeDock::_new_scene_from(String p_file) {
 
 	Node *base = selection.front()->get();
 
-	Map<Node *, Node *> reown;
-	reown[editor_data->get_edited_scene_root()] = base;
-	Node *copy = base->duplicate_and_reown(reown);
+	Map<const Node *, Node *> duplimap;
+	Node *copy = base->duplicate_from_editor(duplimap);
+
 	if (copy) {
+		for (int i = 0; i < copy->get_child_count(); i++) {
+			_set_node_owner_recursive(copy->get_child(i), copy);
+		}
+
 		Ref<PackedScene> sdata = memnew(PackedScene);
 		Error err = sdata->pack(copy);
 		memdelete(copy);
@@ -2351,6 +2355,16 @@ void SceneTreeDock::_new_scene_from(String p_file) {
 		accept->set_text(TTR("Error duplicating scene to save it."));
 		accept->popup_centered();
 		return;
+	}
+}
+
+void SceneTreeDock::_set_node_owner_recursive(Node *p_node, Node *p_owner) {
+	if (!p_node->get_owner()) {
+		p_node->set_owner(p_owner);
+	}
+
+	for (int i = 0; i < p_node->get_child_count(); i++) {
+		_set_node_owner_recursive(p_node->get_child(i), p_owner);
 	}
 }
 
