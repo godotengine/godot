@@ -713,6 +713,8 @@ Node3D *EditorSceneImporterFBX::_generate_scene(
 			skin = state.MeshSkins[mesh_id];
 		}
 
+		bool reparented = false;
+
 		for (const FBXDocParser::Cluster *cluster : mesh_skin->Clusters()) {
 			// node or bone this cluster targets (in theory will only be a bone target)
 			uint64_t skin_target_id = cluster->TargetNode()->ID();
@@ -725,9 +727,20 @@ Node3D *EditorSceneImporterFBX::_generate_scene(
 			const Ref<FBXNode> skeleton_node = skeleton->fbx_node;
 
 			skin->add_named_bind(
-					bone->bone_name,
-					get_unscaled_transform(
-							skeleton_node->pivot_transform->GlobalTransform.affine_inverse() * cluster->TransformLink().affine_inverse(), state.scale));
+					bone->bone_name, get_unscaled_transform(cluster->TransformLink().affine_inverse(), state.scale));
+
+			if (!reparented) {
+				// remove
+				Node *mesh_parent = mesh->godot_mesh_instance->get_parent();
+				mesh_parent->remove_child(mesh->godot_mesh_instance);
+
+				// reparent to armature
+				skeleton_node->godot_node->add_child(mesh->godot_mesh_instance);
+				mesh->godot_mesh_instance->set_owner(state.root_owner);
+				mesh->godot_mesh_instance->set_transform(Transform());
+
+				reparented = true;
+			}
 		}
 
 		print_verbose("cluster name / id: " + String(mesh_skin->Name().c_str()) + " [" + itos(mesh_skin->ID()) + "]");
@@ -1385,7 +1398,7 @@ void EditorSceneImporterFBX::BuildDocumentNodes(
 			fbx_transform->set_parent(parent_transform);
 			fbx_transform->set_model(model);
 			fbx_transform->debug_pivot_xform("name: " + new_node->node_name);
-			fbx_transform->Execute();
+			fbx_transform->Execute(state);
 
 			new_node->set_pivot_transform(fbx_transform);
 

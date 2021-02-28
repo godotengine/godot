@@ -289,9 +289,43 @@ void PivotTransform::ComputePivotTransform() {
 	print_verbose("---------------------------------------------------------------");
 }
 
-void PivotTransform::Execute() {
+void PivotTransform::ComputeBlenderTransform() {
+	Transform T, S;
+
+	// Here I assume this is the operation which needs done.
+	// Its WorldTransform * V
+
+	// Origin pivots
+	T.set_origin(translation);
+
+	// Scaling node
+	if (!scaling.is_equal_approx(Vector3())) {
+		S.scale(scaling);
+	} else {
+		S.scale(Vector3(1, 1, 1));
+	}
+	Local_Scaling_Matrix = S; // copy for when node / child is looking for the value of this.
+
+	// Rotation pivots
+	Transform R = Transform(rotation);
+
+	LocalTransform = Transform();
+	LocalTransform = T * R * S;
+	if (parent_transform.is_valid()) {
+		GlobalTransform = parent_transform->GlobalTransform * LocalTransform;
+	} else {
+		GlobalTransform = LocalTransform;
+	}
+}
+
+void PivotTransform::Execute(ImportState &state) {
 	ReadTransformChain();
-	ComputePivotTransform();
+
+	if (state.is_blender_fbx) {
+		ComputeBlenderTransform();
+	} else {
+		ComputePivotTransform();
+	}
 
 	ImportUtils::debug_xform("global xform: ", GlobalTransform);
 

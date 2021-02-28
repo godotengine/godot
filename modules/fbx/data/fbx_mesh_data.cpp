@@ -351,9 +351,6 @@ EditorSceneImporterMeshNode3D *FBXMeshData::create_fbx_mesh(const ImportState &s
 						normals_ptr[vertex]);
 			}
 
-			if (state.is_blender_fbx) {
-				morph_st->generate_normals();
-			}
 			morph_st->generate_tangents();
 			surface->morphs.push_back(morph_st->commit_to_arrays());
 		}
@@ -376,9 +373,6 @@ EditorSceneImporterMeshNode3D *FBXMeshData::create_fbx_mesh(const ImportState &s
 	for (const SurfaceId *surface_id = surfaces.next(nullptr); surface_id != nullptr; surface_id = surfaces.next(surface_id)) {
 		SurfaceData *surface = surfaces.getptr(*surface_id);
 
-		if (state.is_blender_fbx) {
-			surface->surface_tool->generate_normals();
-		}
 		// you can't generate them without a valid uv map.
 		if (uvs_0_raw.size() > 0) {
 			surface->surface_tool->generate_tangents();
@@ -771,7 +765,7 @@ void FBXMeshData::add_vertex(
 		const Vector3 &p_morph_normal) {
 	ERR_FAIL_INDEX_MSG(p_vertex, (Vertex)p_vertices_position.size(), "FBX file is corrupted, the position of the vertex can't be retrieved.");
 
-	if (p_normals.has(p_vertex) && !state.is_blender_fbx) {
+	if (p_normals.has(p_vertex)) {
 		p_surface_tool->set_normal(p_normals[p_vertex] + p_morph_normal);
 	}
 
