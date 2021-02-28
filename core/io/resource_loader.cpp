@@ -518,7 +518,7 @@ RES ResourceLoader::load(const String &p_path, const String &p_type_hint, Resour
 		local_path = ProjectSettings::get_singleton()->localize_path(p_path);
 	}
 
-	if (p_cache_mode == ResourceFormatLoader::CACHE_MODE_IGNORE) {
+	if (p_cache_mode != ResourceFormatLoader::CACHE_MODE_IGNORE) {
 		thread_load_mutex->lock();
 
 		//Is it already being loaded? poll until done
