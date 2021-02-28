@@ -136,6 +136,7 @@ private:
 		bool creating = false;
 		bool doubleclick = false;
 		bool drag_attempt = false;
+		uint64_t last_dblclk = 0;
 	} selection;
 
 	struct TextOperation {

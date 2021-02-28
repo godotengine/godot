@@ -255,11 +255,30 @@ void LineEdit::_gui_input(Ref<InputEvent> p_event) {
 				selection.creating = true;
 
 			} else {
-				if (b->is_doubleclick() && selecting_enabled) {
-					selection.enabled = true;
-					selection.begin = 0;
-					selection.end = text.length();
-					selection.doubleclick = true;
+				if (selecting_enabled) {
+					if (!b->is_doubleclick() && (OS::get_singleton()->get_ticks_msec() - selection.last_dblclk) < 600) {
+						// Triple-click select all.
+						selection.enabled = true;
+						selection.begin = 0;
+						selection.end = text.length();
+						selection.doubleclick = true;
+						selection.last_dblclk = 0;
+						cursor_pos = selection.begin;
+					} else if (b->is_doubleclick()) {
+						// Double-click select word.
+						Vector<Vector2i> words = TS->shaped_text_get_word_breaks(text_rid);
+						for (int i = 0; i < words.size(); i++) {
+							if (words[i].x < cursor_pos && words[i].y > cursor_pos) {
+								selection.enabled = true;
+								selection.begin = words[i].x;
+								selection.end = words[i].y;
+								selection.doubleclick = true;
+								selection.last_dblclk = OS::get_singleton()->get_ticks_msec();
+								cursor_pos = selection.end;
+								break;
+							}
+						}
+					}
 				}
 
 				selection.drag_attempt = false;
