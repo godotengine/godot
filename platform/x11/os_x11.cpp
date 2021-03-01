@@ -1421,15 +1421,19 @@ void OS_X11::set_window_size(const Size2 p_size) {
 	int old_w = xwa.width;
 	int old_h = xwa.height;
 
+	Size2 size = p_size;
+	size.x = MAX(1, size.x);
+	size.y = MAX(1, size.y);
+
 	// If window resizable is disabled we need to update the attributes first
 	XSizeHints *xsh;
 	xsh = XAllocSizeHints();
 	if (!is_window_resizable()) {
 		xsh->flags = PMinSize | PMaxSize;
-		xsh->min_width = p_size.x;
-		xsh->max_width = p_size.x;
-		xsh->min_height = p_size.y;
-		xsh->max_height = p_size.y;
+		xsh->min_width = size.x;
+		xsh->max_width = size.x;
+		xsh->min_height = size.y;
+		xsh->max_height = size.y;
 	} else {
 		xsh->flags = 0L;
 		if (min_size != Size2()) {
@@ -1447,11 +1451,11 @@ void OS_X11::set_window_size(const Size2 p_size) {
 	XFree(xsh);
 
 	// Resize the window
-	XResizeWindow(x11_display, x11_window, p_size.x, p_size.y);
+	XResizeWindow(x11_display, x11_window, size.x, size.y);
 
 	// Update our videomode width and height
-	current_videomode.width = p_size.x;
-	current_videomode.height = p_size.y;
+	current_videomode.width = size.x;
+	current_videomode.height = size.y;
 
 	for (int timeout = 0; timeout < 50; ++timeout) {
 		XSync(x11_display, False);
