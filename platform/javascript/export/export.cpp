@@ -242,7 +242,7 @@ class EditorExportPlatformJavaScript : public EditorExportPlatform {
 		return name;
 	}
 
-	void _fix_html(Vector<uint8_t> &p_html, const Ref<EditorExportPreset> &p_preset, const String &p_name, bool p_debug, int p_flags, const Vector<SharedObject> p_shared_objects);
+	void _fix_html(Vector<uint8_t> &p_html, const Ref<EditorExportPreset> &p_preset, const String &p_name, bool p_debug, int p_flags, const Vector<SharedObject> p_shared_objects, const Dictionary &p_file_sizes);
 
 	static void _server_thread_poll(void *data);
 
@@ -281,7 +281,7 @@ public:
 	~EditorExportPlatformJavaScript();
 };
 
-void EditorExportPlatformJavaScript::_fix_html(Vector<uint8_t> &p_html, const Ref<EditorExportPreset> &p_preset, const String &p_name, bool p_debug, int p_flags, const Vector<SharedObject> p_shared_objects) {
+void EditorExportPlatformJavaScript::_fix_html(Vector<uint8_t> &p_html, const Ref<EditorExportPreset> &p_preset, const String &p_name, bool p_debug, int p_flags, const Vector<SharedObject> p_shared_objects, const Dictionary &p_file_sizes) {
 	String str_template = String::utf8(reinterpret_cast<const char *>(p_html.ptr()), p_html.size());
 	String str_export;
 	Vector<String> lines = str_template.split("\n");
@@ -300,6 +300,7 @@ void EditorExportPlatformJavaScript::_fix_html(Vector<uint8_t> &p_html, const Re
 	config["gdnativeLibs"] = libs;
 	config["executable"] = p_name;
 	config["args"] = args;
+	config["fileSizes"] = p_file_sizes;
 	const String str_config = JSON::print(config);
 
 	for (int i = 0; i < lines.size(); i++) {
@@ -472,6 +473,8 @@ Error EditorExportPlatformJavaScript::export_project(const Ref<EditorExportPrese
 		return ERR_FILE_CORRUPT;
 	}
 
+	Vector<uint8_t> html;
+	Dictionary file_sizes;
 	do {
 		//get filename
 		unz_file_info info;
@@ -480,6 +483,16 @@ Error EditorExportPlatformJavaScript::export_project(const Ref<EditorExportPrese
 
 		String file = fname;
 
+		// HTML is handled later
+		if (file == "godot.html") {
+			if (custom_html.is_empty()) {
+				html.resize(info.uncompressed_size);
+				unzOpenCurrentFile(pkg);
+				unzReadCurrentFile(pkg, html.ptrw(), html.size());
+				unzCloseCurrentFile(pkg);
+			}
+			continue;
+		}
 		Vector<uint8_t> data;
 		data.resize(info.uncompressed_size);
 
@@ -490,14 +503,7 @@ Error EditorExportPlatformJavaScript::export_project(const Ref<EditorExportPrese
 
 		//write
 
-		if (file == "godot.html") {
-			if (!custom_html.is_empty()) {
-				continue;
-			}
-			_fix_html(data, p_preset, p_path.get_file().get_basename(), p_debug, p_flags, shared_objects);
-			file = p_path.get_file();
-
-		} else if (file == "godot.js") {
+		if (file == "godot.js") {
 			file = p_path.get_file().get_basename() + ".js";
 
 		} else if (file == "godot.worker.js") {
@@ -511,6 +517,7 @@ Error EditorExportPlatformJavaScript::export_project(const Ref<EditorExportPrese
 
 		} else if (file == "godot.wasm") {
 			file = p_path.get_file().get_basename() + ".wasm";
+			file_sizes[file.get_file()] = (uint64_t)info.uncompressed_size;
 		}
 
 		String dst = p_path.get_base_dir().plus_file(file);
@@ -532,19 +539,26 @@ Error EditorExportPlatformJavaScript::export_project(const Ref<EditorExportPrese
 			EditorNode::get_singleton()->show_warning(TTR("Could not read custom HTML shell:") + "\n" + custom_html);
 			return ERR_FILE_CANT_READ;
 		}
-		Vector<uint8_t> buf;
-		buf.resize(f->get_len());
-		f->get_buffer(buf.ptrw(), buf.size());
+		html.resize(f->get_len());
+		f->get_buffer(html.ptrw(), html.size());
 		memdelete(f);
-		_fix_html(buf, p_preset, p_path.get_file().get_basename(), p_debug, p_flags, shared_objects);
-
+	}
+	{
+		FileAccess *f = FileAccess::open(pck_path, FileAccess::READ);
+		if (f) {
+			file_sizes[pck_path.get_file()] = (uint64_t)f->get_len();
+			memdelete(f);
+			f = NULL;
+		}
+		_fix_html(html, p_preset, p_path.get_file().get_basename(), p_debug, p_flags, shared_objects, file_sizes);
 		f = FileAccess::open(p_path, FileAccess::WRITE);
 		if (!f) {
 			EditorNode::get_singleton()->show_warning(TTR("Could not write file:") + "\n" + p_path);
 			return ERR_FILE_CANT_WRITE;
 		}
-		f->store_buffer(buf.ptr(), buf.size());
+		f->store_buffer(html.ptr(), html.size());
 		memdelete(f);
+		html.resize(0);
 	}
 
 	Ref<Image> splash;
