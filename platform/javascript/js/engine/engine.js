@@ -42,7 +42,7 @@ const Engine = (function () {
 	Engine.load = function (basePath) {
 		if (loadPromise == null) {
 			loadPath = basePath;
-			loadPromise = preloader.loadPromise(`${loadPath}.wasm`);
+			loadPromise = preloader.loadPromise(`${loadPath}.wasm`, true);
 			requestAnimationFrame(preloader.animateProgress);
 		}
 		return loadPromise;
@@ -98,21 +98,25 @@ const Engine = (function () {
 					}
 					Engine.load(basePath);
 				}
-				preloader.setProgressFunc(this.config.onProgress);
-				let config = this.config.getModuleConfig(loadPath, loadPromise);
 				const me = this;
-				initPromise = new Promise(function (resolve, reject) {
-					Godot(config).then(function (module) {
-						module['initFS'](me.config.persistentPaths).then(function (fs_err) {
-							me.rtenv = module;
-							if (me.config.unloadAfterInit) {
-								Engine.unload();
-							}
-							resolve();
-							config = null;
+				function doInit(promise) {
+					return promise.then(function (response) {
+						return Godot(me.config.getModuleConfig(loadPath, response.clone()));
+					}).then(function (module) {
+						const paths = me.config.persistentPaths;
+						return module['initFS'](paths).then(function (err) {
+							return Promise.resolve(module);
 						});
+					}).then(function (module) {
+						me.rtenv = module;
+						if (me.config.unloadAfterInit) {
+							Engine.unload();
+						}
+						return Promise.resolve();
 					});
-				});
+				}
+				preloader.setProgressFunc(this.config.onProgress);
+				initPromise = doInit(loadPromise);
 				return initPromise;
 			},
 
