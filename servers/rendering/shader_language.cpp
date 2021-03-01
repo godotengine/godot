@@ -558,13 +558,13 @@ ShaderLanguage::Token ShaderLanguage::_get_token() {
 								return _make_token(TK_ERROR, "Invalid numeric constant");
 							}
 							hexa_found = true;
-						} else if (GETCHAR(i) == 'e') {
-							if (hexa_found || exponent_found || float_suffix_found) {
+						} else if (GETCHAR(i) == 'e' && !hexa_found) {
+							if (exponent_found || float_suffix_found) {
 								return _make_token(TK_ERROR, "Invalid numeric constant");
 							}
 							exponent_found = true;
-						} else if (GETCHAR(i) == 'f') {
-							if (hexa_found || exponent_found) {
+						} else if (GETCHAR(i) == 'f' && !hexa_found) {
+							if (exponent_found) {
 								return _make_token(TK_ERROR, "Invalid numeric constant");
 							}
 							float_suffix_found = true;
