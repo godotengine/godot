@@ -41,6 +41,77 @@
 
 #include "editor/editor_node.h"
 
+class ThemeItemEditorDialog : public AcceptDialog {
+	GDCLASS(ThemeItemEditorDialog, AcceptDialog);
+
+	Ref<Theme> edited_theme;
+
+	ItemList *edit_type_list;
+	OptionButton *edit_add_class_options;
+	LineEdit *edit_add_custom_value;
+	String edited_item_type;
+
+	Button *edit_items_add_color;
+	Button *edit_items_add_constant;
+	Button *edit_items_add_font;
+	Button *edit_items_add_font_size;
+	Button *edit_items_add_icon;
+	Button *edit_items_add_stylebox;
+	Button *edit_items_remove_class;
+	Button *edit_items_remove_custom;
+	Button *edit_items_remove_all;
+	Tree *edit_items_tree;
+
+	enum ItemsTreeAction {
+		ITEMS_TREE_RENAME_ITEM,
+		ITEMS_TREE_REMOVE_ITEM,
+		ITEMS_TREE_REMOVE_DATA_TYPE,
+	};
+
+	ConfirmationDialog *edit_theme_item_dialog;
+	VBoxContainer *edit_theme_item_old_vb;
+	Label *theme_item_old_name;
+	LineEdit *theme_item_name;
+
+	enum ItemPopupMode {
+		CREATE_THEME_ITEM,
+		RENAME_THEME_ITEM,
+		ITEM_POPUP_MODE_MAX
+	};
+
+	ItemPopupMode item_popup_mode = ITEM_POPUP_MODE_MAX;
+	String edit_item_old_name;
+	Theme::DataType edit_item_data_type = Theme::DATA_TYPE_MAX;
+
+	void _dialog_about_to_show();
+	void _update_edit_types();
+	void _edited_type_selected(int p_item_idx);
+
+	void _update_edit_item_tree(String p_item_type);
+	void _item_tree_button_pressed(Object *p_item, int p_column, int p_id);
+
+	void _add_class_type_items();
+	void _add_custom_type();
+	void _add_theme_item(Theme::DataType p_data_type, String p_item_name, String p_item_type);
+	void _remove_data_type_items(Theme::DataType p_data_type, String p_item_type);
+	void _remove_class_items();
+	void _remove_custom_items();
+	void _remove_all_items();
+
+	void _open_add_theme_item_dialog(int p_data_type);
+	void _open_rename_theme_item_dialog(Theme::DataType p_data_type, String p_item_name);
+	void _confirm_edit_theme_item();
+	void _edit_theme_item_gui_input(const Ref<InputEvent> &p_event);
+
+protected:
+	void _notification(int p_what);
+
+public:
+	void set_edited_theme(const Ref<Theme> &p_theme);
+
+	ThemeItemEditorDialog();
+};
+
 class ThemeEditor : public VBoxContainer {
 	GDCLASS(ThemeEditor, VBoxContainer);
 
@@ -50,40 +121,23 @@ class ThemeEditor : public VBoxContainer {
 
 	EditorFileDialog *file_dialog;
 
-	double time_left;
+	double time_left = 0;
 
-	MenuButton *theme_menu;
-	ConfirmationDialog *add_del_dialog;
-	HBoxContainer *type_hbc;
-	MenuButton *type_menu;
-	LineEdit *type_edit;
-	HBoxContainer *name_hbc;
-	MenuButton *name_menu;
-	LineEdit *name_edit;
-	OptionButton *type_select;
-	Label *type_select_label;
-	Label *name_select_label;
+	Button *theme_edit_button;
+	MenuButton *theme_create_menu;
+	ThemeItemEditorDialog *theme_edit_dialog;
 
-	enum PopupMode {
-		POPUP_ADD,
-		POPUP_CLASS_ADD,
-		POPUP_REMOVE,
-		POPUP_CLASS_REMOVE,
+	enum CreatePopupMode {
 		POPUP_CREATE_EMPTY,
 		POPUP_CREATE_EDITOR_EMPTY,
-		POPUP_IMPORT_EDITOR_THEME
+		POPUP_IMPORT_EDITOR_THEME,
 	};
-
-	int popup_mode;
 
 	Tree *test_tree;
 
 	void _save_template_cbk(String fname);
-	void _dialog_cbk();
-	void _type_menu_cbk(int p_option);
-	void _name_menu_about_to_show();
-	void _name_menu_cbk(int p_option);
-	void _theme_menu_cbk(int p_option);
+	void _theme_edit_button_cbk();
+	void _theme_create_menu_cbk(int p_option);
 	void _propagate_redraw(Control *p_at);
 	void _refresh_interval();
 

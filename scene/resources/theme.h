@@ -119,6 +119,7 @@ public:
 	void set_icon(const StringName &p_name, const StringName &p_node_type, const Ref<Texture2D> &p_icon);
 	Ref<Texture2D> get_icon(const StringName &p_name, const StringName &p_node_type) const;
 	bool has_icon(const StringName &p_name, const StringName &p_node_type) const;
+	bool has_icon_nocheck(const StringName &p_name, const StringName &p_node_type) const;
 	void rename_icon(const StringName &p_old_name, const StringName &p_name, const StringName &p_node_type);
 	void clear_icon(const StringName &p_name, const StringName &p_node_type);
 	void get_icon_list(StringName p_node_type, List<StringName> *p_list) const;
@@ -128,6 +129,7 @@ public:
 	void set_stylebox(const StringName &p_name, const StringName &p_node_type, const Ref<StyleBox> &p_style);
 	Ref<StyleBox> get_stylebox(const StringName &p_name, const StringName &p_node_type) const;
 	bool has_stylebox(const StringName &p_name, const StringName &p_node_type) const;
+	bool has_stylebox_nocheck(const StringName &p_name, const StringName &p_node_type) const;
 	void rename_stylebox(const StringName &p_old_name, const StringName &p_name, const StringName &p_node_type);
 	void clear_stylebox(const StringName &p_name, const StringName &p_node_type);
 	void get_stylebox_list(StringName p_node_type, List<StringName> *p_list) const;
@@ -137,6 +139,7 @@ public:
 	void set_font(const StringName &p_name, const StringName &p_node_type, const Ref<Font> &p_font);
 	Ref<Font> get_font(const StringName &p_name, const StringName &p_node_type) const;
 	bool has_font(const StringName &p_name, const StringName &p_node_type) const;
+	bool has_font_nocheck(const StringName &p_name, const StringName &p_node_type) const;
 	void rename_font(const StringName &p_old_name, const StringName &p_name, const StringName &p_node_type);
 	void clear_font(const StringName &p_name, const StringName &p_node_type);
 	void get_font_list(StringName p_node_type, List<StringName> *p_list) const;
@@ -146,6 +149,7 @@ public:
 	void set_font_size(const StringName &p_name, const StringName &p_node_type, int p_font_size);
 	int get_font_size(const StringName &p_name, const StringName &p_node_type) const;
 	bool has_font_size(const StringName &p_name, const StringName &p_node_type) const;
+	bool has_font_size_nocheck(const StringName &p_name, const StringName &p_node_type) const;
 	void rename_font_size(const StringName &p_old_name, const StringName &p_name, const StringName &p_node_type);
 	void clear_font_size(const StringName &p_name, const StringName &p_node_type);
 	void get_font_size_list(StringName p_node_type, List<StringName> *p_list) const;
@@ -155,6 +159,7 @@ public:
 	void set_color(const StringName &p_name, const StringName &p_node_type, const Color &p_color);
 	Color get_color(const StringName &p_name, const StringName &p_node_type) const;
 	bool has_color(const StringName &p_name, const StringName &p_node_type) const;
+	bool has_color_nocheck(const StringName &p_name, const StringName &p_node_type) const;
 	void rename_color(const StringName &p_old_name, const StringName &p_name, const StringName &p_node_type);
 	void clear_color(const StringName &p_name, const StringName &p_node_type);
 	void get_color_list(StringName p_node_type, List<StringName> *p_list) const;
@@ -164,6 +169,7 @@ public:
 	void set_constant(const StringName &p_name, const StringName &p_node_type, int p_constant);
 	int get_constant(const StringName &p_name, const StringName &p_node_type) const;
 	bool has_constant(const StringName &p_name, const StringName &p_node_type) const;
+	bool has_constant_nocheck(const StringName &p_name, const StringName &p_node_type) const;
 	void rename_constant(const StringName &p_old_name, const StringName &p_name, const StringName &p_node_type);
 	void clear_constant(const StringName &p_name, const StringName &p_node_type);
 	void get_constant_list(StringName p_node_type, List<StringName> *p_list) const;
@@ -173,6 +179,7 @@ public:
 	void set_theme_item(DataType p_data_type, const StringName &p_name, const StringName &p_node_type, const Variant &p_value);
 	Variant get_theme_item(DataType p_data_type, const StringName &p_name, const StringName &p_node_type) const;
 	bool has_theme_item(DataType p_data_type, const StringName &p_name, const StringName &p_node_type) const;
+	bool has_theme_item_nocheck(DataType p_data_type, const StringName &p_name, const StringName &p_node_type) const;
 	void rename_theme_item(DataType p_data_type, const StringName &p_old_name, const StringName &p_name, const StringName &p_node_type);
 	void clear_theme_item(DataType p_data_type, const StringName &p_name, const StringName &p_node_type);
 	void get_theme_item_list(DataType p_data_type, StringName p_node_type, List<StringName> *p_list) const;

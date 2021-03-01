@@ -508,6 +508,10 @@ bool Theme::has_icon(const StringName &p_name, const StringName &p_node_type) co
 	return (icon_map.has(p_node_type) && icon_map[p_node_type].has(p_name) && icon_map[p_node_type][p_name].is_valid());
 }
 
+bool Theme::has_icon_nocheck(const StringName &p_name, const StringName &p_node_type) const {
+	return (icon_map.has(p_node_type) && icon_map[p_node_type].has(p_name));
+}
+
 void Theme::rename_icon(const StringName &p_old_name, const StringName &p_name, const StringName &p_node_type) {
 	ERR_FAIL_COND_MSG(!icon_map.has(p_node_type), "Cannot rename the icon '" + String(p_old_name) + "' because the node type '" + String(p_node_type) + "' does not exist.");
 	ERR_FAIL_COND_MSG(icon_map[p_node_type].has(p_name), "Cannot rename the icon '" + String(p_old_name) + "' because the new name '" + String(p_name) + "' already exists.");
@@ -590,6 +594,10 @@ Ref<StyleBox> Theme::get_stylebox(const StringName &p_name, const StringName &p_
 
 bool Theme::has_stylebox(const StringName &p_name, const StringName &p_node_type) const {
 	return (style_map.has(p_node_type) && style_map[p_node_type].has(p_name) && style_map[p_node_type][p_name].is_valid());
+}
+
+bool Theme::has_stylebox_nocheck(const StringName &p_name, const StringName &p_node_type) const {
+	return (style_map.has(p_node_type) && style_map[p_node_type].has(p_name));
 }
 
 void Theme::rename_stylebox(const StringName &p_old_name, const StringName &p_name, const StringName &p_node_type) {
@@ -678,6 +686,10 @@ bool Theme::has_font(const StringName &p_name, const StringName &p_node_type) co
 	return ((font_map.has(p_node_type) && font_map[p_node_type].has(p_name) && font_map[p_node_type][p_name].is_valid()) || default_theme_font.is_valid());
 }
 
+bool Theme::has_font_nocheck(const StringName &p_name, const StringName &p_node_type) const {
+	return (font_map.has(p_node_type) && font_map[p_node_type].has(p_name));
+}
+
 void Theme::rename_font(const StringName &p_old_name, const StringName &p_name, const StringName &p_node_type) {
 	ERR_FAIL_COND_MSG(!font_map.has(p_node_type), "Cannot rename the font '" + String(p_old_name) + "' because the node type '" + String(p_node_type) + "' does not exist.");
 	ERR_FAIL_COND_MSG(font_map[p_node_type].has(p_name), "Cannot rename the font '" + String(p_old_name) + "' because the new name '" + String(p_name) + "' already exists.");
@@ -755,6 +767,10 @@ bool Theme::has_font_size(const StringName &p_name, const StringName &p_node_typ
 	return ((font_size_map.has(p_node_type) && font_size_map[p_node_type].has(p_name) && (font_size_map[p_node_type][p_name] > 0)) || (default_theme_font_size > 0));
 }
 
+bool Theme::has_font_size_nocheck(const StringName &p_name, const StringName &p_node_type) const {
+	return (font_size_map.has(p_node_type) && font_size_map[p_node_type].has(p_name));
+}
+
 void Theme::rename_font_size(const StringName &p_old_name, const StringName &p_name, const StringName &p_node_type) {
 	ERR_FAIL_COND_MSG(!font_size_map.has(p_node_type), "Cannot rename the font size '" + String(p_old_name) + "' because the node type '" + String(p_node_type) + "' does not exist.");
 	ERR_FAIL_COND_MSG(font_size_map[p_node_type].has(p_name), "Cannot rename the font size '" + String(p_old_name) + "' because the new name '" + String(p_name) + "' already exists.");
@@ -826,6 +842,10 @@ bool Theme::has_color(const StringName &p_name, const StringName &p_node_type) c
 	return (color_map.has(p_node_type) && color_map[p_node_type].has(p_name));
 }
 
+bool Theme::has_color_nocheck(const StringName &p_name, const StringName &p_node_type) const {
+	return (color_map.has(p_node_type) && color_map[p_node_type].has(p_name));
+}
+
 void Theme::rename_color(const StringName &p_old_name, const StringName &p_name, const StringName &p_node_type) {
 	ERR_FAIL_COND_MSG(!color_map.has(p_node_type), "Cannot rename the color '" + String(p_old_name) + "' because the node type '" + String(p_node_type) + "' does not exist.");
 	ERR_FAIL_COND_MSG(color_map[p_node_type].has(p_name), "Cannot rename the color '" + String(p_old_name) + "' because the new name '" + String(p_name) + "' already exists.");
@@ -893,6 +913,10 @@ int Theme::get_constant(const StringName &p_name, const StringName &p_node_type)
 }
 
 bool Theme::has_constant(const StringName &p_name, const StringName &p_node_type) const {
+	return (constant_map.has(p_node_type) && constant_map[p_node_type].has(p_name));
+}
+
+bool Theme::has_constant_nocheck(const StringName &p_name, const StringName &p_node_type) const {
 	return (constant_map.has(p_node_type) && constant_map[p_node_type].has(p_name));
 }
 
@@ -1022,6 +1046,27 @@ bool Theme::has_theme_item(DataType p_data_type, const StringName &p_name, const
 			return has_icon(p_name, p_node_type);
 		case DATA_TYPE_STYLEBOX:
 			return has_stylebox(p_name, p_node_type);
+		case DATA_TYPE_MAX:
+			break; // Can't happen, but silences warning.
+	}
+
+	return false;
+}
+
+bool Theme::has_theme_item_nocheck(DataType p_data_type, const StringName &p_name, const StringName &p_node_type) const {
+	switch (p_data_type) {
+		case DATA_TYPE_COLOR:
+			return has_color_nocheck(p_name, p_node_type);
+		case DATA_TYPE_CONSTANT:
+			return has_constant_nocheck(p_name, p_node_type);
+		case DATA_TYPE_FONT:
+			return has_font_nocheck(p_name, p_node_type);
+		case DATA_TYPE_FONT_SIZE:
+			return has_font_size_nocheck(p_name, p_node_type);
+		case DATA_TYPE_ICON:
+			return has_icon_nocheck(p_name, p_node_type);
+		case DATA_TYPE_STYLEBOX:
+			return has_stylebox_nocheck(p_name, p_node_type);
 		case DATA_TYPE_MAX:
 			break; // Can't happen, but silences warning.
 	}
