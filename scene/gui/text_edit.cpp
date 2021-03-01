@@ -2989,8 +2989,6 @@ void TextEdit::_gui_input(const Ref<InputEvent> &p_gui_input) {
 					} else {
 						if (cursor.line < selection.selecting_line || (cursor.line == selection.selecting_line && cursor.column < selection.selecting_column)) {
 							if (selection.shiftclick_left) {
-								SWAP(selection.from_column, selection.to_column);
-								SWAP(selection.from_line, selection.to_line);
 								selection.shiftclick_left = !selection.shiftclick_left;
 							}
 							selection.from_column = cursor.column;
