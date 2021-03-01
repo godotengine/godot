@@ -742,19 +742,11 @@ void RenderingServer::mesh_surface_make_offsets_from_format(uint32_t p_format, i
 					elem_size = 3;
 				}
 
-				{
-					elem_size *= sizeof(float);
-				}
-
-				if (elem_size == 6) {
-					elem_size = 8;
-				}
-
+				elem_size *= sizeof(float);
 			} break;
 			case RS::ARRAY_NORMAL: {
 				elem_size = 4;
 			} break;
-
 			case RS::ARRAY_TANGENT: {
 				elem_size = 4;
 			} break;
@@ -763,12 +755,9 @@ void RenderingServer::mesh_surface_make_offsets_from_format(uint32_t p_format, i
 			} break;
 			case RS::ARRAY_TEX_UV: {
 				elem_size = 8;
-
 			} break;
-
 			case RS::ARRAY_TEX_UV2: {
 				elem_size = 8;
-
 			} break;
 			case RS::ARRAY_CUSTOM0:
 			case RS::ARRAY_CUSTOM1:
