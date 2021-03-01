@@ -2282,7 +2282,16 @@ PREAMBLE(bool)::prefill_joined_item(FillState &r_fill_state, int &r_command_star
 #ifdef GLES_OVER_GL
 				// anti aliasing not accelerated .. it is problematic because it requires a 2nd line drawn around the outside of each
 				// poly, which would require either a second list of indices or a second list of vertices for this step
+				bool use_legacy_path = false;
+
 				if (polygon->antialiased) {
+					// anti aliasing is also not supported for software skinned meshes.
+					// we can't easily revert, so we force software skinned meshes to run through
+					// batching path with no AA.
+					use_legacy_path = !bdata.settings_use_software_skinning || p_item->skeleton == RID();
+				}
+
+				if (use_legacy_path) {
 					// not accelerated
 					_prefill_default_batch(r_fill_state, command_num, *p_item);
 				} else {
@@ -2298,9 +2307,9 @@ PREAMBLE(bool)::prefill_joined_item(FillState &r_fill_state, int &r_command_star
 						bool buffer_full = false;
 
 						if (send_light_angles) {
-							// NYI
+							// polygon with light angles is not yet implemented
+							// for batching .. this means software skinned with light angles won't work
 							_prefill_default_batch(r_fill_state, command_num, *p_item);
-							//buffer_full = prefill_polygon<true>(polygon, r_fill_state, r_command_start, command_num, command_count, p_item, multiply_final_modulate);
 						} else
 							buffer_full = _prefill_polygon<false>(polygon, r_fill_state, r_command_start, command_num, command_count, p_item, multiply_final_modulate);
 

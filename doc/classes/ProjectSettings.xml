@@ -1143,6 +1143,7 @@
 		<member name="rendering/quality/2d/use_software_skinning" type="bool" setter="" getter="" default="true">
 			If [code]true[/code], performs 2D skinning on the CPU rather than the GPU. This provides greater compatibility with a wide range of hardware, and also may be faster in some circumstances.
 			Currently only available when [member rendering/batching/options/use_batching] is active.
+			[b]Note:[/b] Antialiased software skinned polys are not supported, and will be rendered without antialiasing.
 		</member>
 		<member name="rendering/quality/2d/use_transform_snap" type="bool" setter="" getter="" default="false">
 			If [code]true[/code], forces snapping of 2D object transforms to the nearest whole coordinate.
