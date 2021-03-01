@@ -4713,7 +4713,7 @@ Dictionary Node3DEditor::get_state() const {
 			continue;
 		}
 		int state = gizmos_menu->get_item_state(gizmos_menu->get_item_index(i));
-		String name = gizmo_plugins_by_name[i]->get_name();
+		String name = gizmo_plugins_by_name[i]->get_gizmo_name();
 		gizmos_status[name] = state;
 	}
 
@@ -4839,7 +4839,7 @@ void Node3DEditor::set_state(const Dictionary &p_state) {
 			}
 			int state = EditorNode3DGizmoPlugin::VISIBLE;
 			for (int i = 0; i < keys.size(); i++) {
-				if (gizmo_plugins_by_name.write[j]->get_name() == String(keys[i])) {
+				if (gizmo_plugins_by_name.write[j]->get_gizmo_name() == String(keys[i])) {
 					state = gizmos_status[keys[i]];
 					break;
 				}
@@ -5750,7 +5750,7 @@ void Node3DEditor::_update_gizmos_menu() {
 		if (!gizmo_plugins_by_name[i]->can_be_hidden()) {
 			continue;
 		}
-		String plugin_name = gizmo_plugins_by_name[i]->get_name();
+		String plugin_name = gizmo_plugins_by_name[i]->get_gizmo_name();
 		const int plugin_state = gizmo_plugins_by_name[i]->get_state();
 		gizmos_menu->add_multistate_item(plugin_name, 3, plugin_state, i);
 		const int idx = gizmos_menu->get_item_index(i);
@@ -7252,7 +7252,7 @@ void Node3DEditorPlugin::snap_cursor_to_plane(const Plane &p_plane) {
 struct _GizmoPluginPriorityComparator {
 	bool operator()(const Ref<EditorNode3DGizmoPlugin> &p_a, const Ref<EditorNode3DGizmoPlugin> &p_b) const {
 		if (p_a->get_priority() == p_b->get_priority()) {
-			return p_a->get_name() < p_b->get_name();
+			return p_a->get_gizmo_name() < p_b->get_gizmo_name();
 		}
 		return p_a->get_priority() > p_b->get_priority();
 	}
@@ -7260,7 +7260,7 @@ struct _GizmoPluginPriorityComparator {
 
 struct _GizmoPluginNameComparator {
 	bool operator()(const Ref<EditorNode3DGizmoPlugin> &p_a, const Ref<EditorNode3DGizmoPlugin> &p_b) const {
-		return p_a->get_name() < p_b->get_name();
+		return p_a->get_gizmo_name() < p_b->get_gizmo_name();
 	}
 };
 
@@ -7471,7 +7471,7 @@ void EditorNode3DGizmoPlugin::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("get_material", "name", "gizmo"), &EditorNode3DGizmoPlugin::get_material, DEFVAL(Ref<EditorNode3DGizmo>()));
 
-	BIND_VMETHOD(MethodInfo(Variant::STRING, "get_name"));
+	BIND_VMETHOD(MethodInfo(Variant::STRING, "get_gizmo_name"));
 	BIND_VMETHOD(MethodInfo(Variant::INT, "get_priority"));
 	BIND_VMETHOD(MethodInfo(Variant::BOOL, "can_be_hidden"));
 	BIND_VMETHOD(MethodInfo(Variant::BOOL, "is_selectable_when_hidden"));
