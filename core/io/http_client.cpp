@@ -100,6 +100,11 @@ void HTTPClient::set_connection(const Ref<StreamPeer> &p_connection) {
 
 	ERR_FAIL_COND_MSG(p_connection.is_null(), "Connection is not a reference to a valid StreamPeer object.");
 
+	if (ssl) {
+		ERR_FAIL_NULL_MSG(Object::cast_to<StreamPeerSSL>(p_connection.ptr()),
+				"Connection is not a reference to a valid StreamPeerSSL object.");
+	}
+
 	if (connection == p_connection) {
 		return;
 	}
