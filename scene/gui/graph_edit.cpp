@@ -1558,7 +1558,12 @@ bool GraphEdit::is_minimap_enabled() const {
 }
 
 void GraphEdit::_minimap_toggled() {
-	minimap->update();
+	if (is_minimap_enabled()) {
+		minimap->set_visible(true);
+		minimap->update();
+	} else {
+		minimap->set_visible(false);
+	}
 }
 
 void GraphEdit::set_connection_lines_thickness(float p_thickness) {
