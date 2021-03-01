@@ -40,9 +40,12 @@
 
 void TileMapEditor::_node_removed(Node *p_node) {
 	if (p_node == node && node) {
-		// Fixes #44824, which describes a situation where you can reselect a TileMap node without first de-selecting it when switching scenes.
-		node->disconnect("settings_changed", callable_mp(this, &TileMapEditor::_tileset_settings_changed));
+		Callable callable_tileset_settings_changed = callable_mp(this, &TileMapEditor::_tileset_settings_changed);
 
+		if (node->is_connected("settings_changed", callable_tileset_settings_changed)) {
+			// Fixes #44824, which describes a situation where you can reselect a TileMap node without first de-selecting it when switching scenes.
+			node->disconnect("settings_changed", callable_tileset_settings_changed);
+		}
 		node = nullptr;
 	}
 }
@@ -1870,7 +1873,11 @@ void TileMapEditor::edit(Node *p_tile_map) {
 	}
 
 	if (node) {
-		node->disconnect("settings_changed", callable_mp(this, &TileMapEditor::_tileset_settings_changed));
+		Callable callable_tileset_settings_changed = callable_mp(this, &TileMapEditor::_tileset_settings_changed);
+
+		if (node->is_connected("settings_changed", callable_tileset_settings_changed)) {
+			node->disconnect("settings_changed", callable_tileset_settings_changed);
+		}
 	}
 	if (p_tile_map) {
 		node = Object::cast_to<TileMap>(p_tile_map);
@@ -1897,7 +1904,11 @@ void TileMapEditor::edit(Node *p_tile_map) {
 	}
 
 	if (node) {
-		node->connect("settings_changed", callable_mp(this, &TileMapEditor::_tileset_settings_changed));
+		Callable callable_tileset_settings_changed = callable_mp(this, &TileMapEditor::_tileset_settings_changed);
+
+		if (!node->is_connected("settings_changed", callable_tileset_settings_changed)) {
+			node->connect("settings_changed", callable_tileset_settings_changed);
+		}
 	}
 
 	_clear_bucket_cache();
