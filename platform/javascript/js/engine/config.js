@@ -101,6 +101,11 @@ const InternalConfig = function (initConfig) { // eslint-disable-line no-unused-
 		 */
 		gdnativeLibs: [],
 		/**
+		 * @ignore
+		 * @type {Array.<string>}
+		 */
+		fileSizes: [],
+		/**
 		 * A callback function for handling Godot's ``OS.execute`` calls.
 		 *
 		 * This is for example used in the Web Editor template to switch between project manager and editor, and for running the game.
@@ -219,6 +224,7 @@ const InternalConfig = function (initConfig) { // eslint-disable-line no-unused-
 		this.canvasResizePolicy = parse('canvasResizePolicy', this.canvasResizePolicy);
 		this.persistentPaths = parse('persistentPaths', this.persistentPaths);
 		this.gdnativeLibs = parse('gdnativeLibs', this.gdnativeLibs);
+		this.fileSizes = parse('fileSizes', this.fileSizes);
 		this.args = parse('args', this.args);
 		this.onExecute = parse('onExecute', this.onExecute);
 		this.onExit = parse('onExit', this.onExit);
