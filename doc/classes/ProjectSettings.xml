@@ -1045,7 +1045,7 @@
 			[b]Note:[/b] Antialiased software skinned polys are not supported, and will be rendered without antialiasing.
 		</member>
 		<member name="rendering/2d/snapping/use_camera_snap" type="bool" setter="" getter="" default="false">
-			If [code]true[/code], forces snapping of 2D viewports to the nearest whole coordinate.
+			[b]Experimental[/b] If [code]true[/code], forces snapping of 2D viewports to the nearest whole coordinate.
 			Can reduce unwanted camera relative movement in pixel art styles.
 		</member>
 		<member name="rendering/2d/snapping/use_gpu_pixel_snap" type="bool" setter="" getter="" default="false">
@@ -1054,8 +1054,44 @@
 			Consider using the project setting [member rendering/batching/precision/uv_contract] to prevent artifacts.
 		</member>
 		<member name="rendering/2d/snapping/use_transform_snap" type="bool" setter="" getter="" default="false">
-			If [code]true[/code], forces snapping of 2D object transforms to the nearest whole coordinate.
+			[b]Experimental[/b] If [code]true[/code], forces snapping of 2D object transforms to the nearest whole coordinate.
 			Can help prevent unwanted relative movement in pixel art styles.
+		</member>
+		<member name="rendering/2d/snapping_modes/camera_parent_pre_x" type="int" setter="" getter="" default="0">
+			[b]Experimental[/b] Canvas parent position x snapping mode.
+		</member>
+		<member name="rendering/2d/snapping_modes/camera_parent_pre_y" type="int" setter="" getter="" default="0">
+			[b]Experimental[/b] Canvas parent position y snapping mode.
+		</member>
+		<member name="rendering/2d/snapping_modes/camera_post_x" type="int" setter="" getter="" default="0">
+			[b]Experimental[/b] Canvas position x snapping mode (after applying global transform).
+		</member>
+		<member name="rendering/2d/snapping_modes/camera_post_y" type="int" setter="" getter="" default="0">
+			[b]Experimental[/b] Canvas position y snapping mode (after applying global transform).
+		</member>
+		<member name="rendering/2d/snapping_modes/camera_pre_x" type="int" setter="" getter="" default="0">
+			[b]Experimental[/b] Canvas local position x snapping mode.
+		</member>
+		<member name="rendering/2d/snapping_modes/camera_pre_y" type="int" setter="" getter="" default="0">
+			[b]Experimental[/b] Canvas local position y snapping mode.
+		</member>
+		<member name="rendering/2d/snapping_modes/item_post_x" type="int" setter="" getter="" default="0">
+			[b]Experimental[/b] Item position x snapping mode when drawing (after applying parent transform).
+		</member>
+		<member name="rendering/2d/snapping_modes/item_post_y" type="int" setter="" getter="" default="0">
+			[b]Experimental[/b] Item position y snapping mode when drawing (after applying parent transform).
+		</member>
+		<member name="rendering/2d/snapping_modes/item_pre_x" type="int" setter="" getter="" default="0">
+			[b]Experimental[/b] Item local position x snapping mode when drawing.
+		</member>
+		<member name="rendering/2d/snapping_modes/item_pre_y" type="int" setter="" getter="" default="0">
+			[b]Experimental[/b] Item local position y snapping mode when drawing.
+		</member>
+		<member name="rendering/2d/snapping_modes/item_read_x" type="int" setter="" getter="" default="0">
+			[b]Experimental[/b] Item local position x snapping mode when reading.
+		</member>
+		<member name="rendering/2d/snapping_modes/item_read_y" type="int" setter="" getter="" default="0">
+			[b]Experimental[/b] Item local position y snapping mode when reading.
 		</member>
 		<member name="rendering/batching/debug/diagnose_frame" type="bool" setter="" getter="" default="false">
 			When batching is on, this regularly prints a frame diagnosis log. Note that this will degrade performance.

@@ -452,11 +452,8 @@ void AnimatedSprite::_notification(int p_what) {
 			if (centered)
 				ofs -= s / 2;
 
-			if (Engine::get_singleton()->get_snap_2d_transforms()) {
-				ofs = ofs.round();
-			} else if (Engine::get_singleton()->get_use_gpu_pixel_snap()) {
-				ofs = ofs.floor();
-			}
+			Engine::get_singleton()->get_snappers().snap_read_item(ofs);
+
 			Rect2 dst_rect(ofs, s);
 
 			if (hflip)

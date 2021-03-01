@@ -41,23 +41,25 @@ static Transform2D _canvas_get_transform(VisualServerViewport::Viewport *p_viewp
 
 	float scale = 1.0;
 
-	bool snap = Engine::get_singleton()->get_snap_2d_viewports();
+	const Snappers &snappers = Engine::get_singleton()->get_snappers();
 
 	if (p_viewport->canvas_map.has(p_canvas->parent)) {
 
 		Transform2D c_xform = p_viewport->canvas_map[p_canvas->parent].transform;
-		if (snap) {
-			c_xform.elements[2] = c_xform.elements[2].round();
-		}
+
+		snappers.snapper_viewport_parent_pre.snap(c_xform.elements[2]);
+
 		xf = xf * c_xform;
 		scale = p_canvas->parent_scale;
 	}
 
 	Transform2D c_xform = p_canvas_data->transform;
-	if (snap) {
-		c_xform.elements[2] = c_xform.elements[2].round();
-	}
+
+	// opportunity to snap pre and post the transform being applied..
+	// pre may be better for stretch_mode viewport, post better for stretch_mode 2D
+	snappers.snapper_viewport_pre.snap(c_xform.elements[2]);
 	xf = xf * c_xform;
+	snappers.snapper_viewport_post.snap(xf.elements[2]);
 
 	if (scale != 1.0 && !VSG::canvas->disable_scale) {
 		Vector2 pivot = p_vp_size * 0.5;

@@ -1127,6 +1127,8 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 	Engine::get_singleton()->_gpu_pixel_snap = GLOBAL_DEF("rendering/2d/snapping/use_gpu_pixel_snap", false);
 	Engine::get_singleton()->_snap_2d_transforms = GLOBAL_DEF("rendering/2d/snapping/use_transform_snap", false);
 	Engine::get_singleton()->_snap_2d_viewports = GLOBAL_DEF("rendering/2d/snapping/use_camera_snap", false);
+	Engine::get_singleton()->_snappers.initialize(Engine::get_singleton()->get_use_gpu_pixel_snap(), Engine::get_singleton()->get_snap_2d_transforms(), Engine::get_singleton()->get_snap_2d_viewports(), false);
+
 	OS::get_singleton()->_keep_screen_on = GLOBAL_DEF("display/window/energy_saving/keep_screen_on", true);
 	if (rtm == -1) {
 		rtm = GLOBAL_DEF("rendering/threads/thread_model", OS::RENDER_THREAD_SAFE);
@@ -1826,8 +1828,12 @@ bool Main::start() {
 			SceneTree::StretchMode sml_sm = SceneTree::STRETCH_MODE_DISABLED;
 			if (stretch_mode == "2d")
 				sml_sm = SceneTree::STRETCH_MODE_2D;
-			else if (stretch_mode == "viewport")
+			else if (stretch_mode == "viewport") {
 				sml_sm = SceneTree::STRETCH_MODE_VIEWPORT;
+
+				// reset the snappers in viewport mode
+				Engine::get_singleton()->_snappers.initialize(Engine::get_singleton()->get_use_gpu_pixel_snap(), Engine::get_singleton()->get_snap_2d_transforms(), Engine::get_singleton()->get_snap_2d_viewports(), true);
+			}
 
 			SceneTree::StretchAspect sml_aspect = SceneTree::STRETCH_ASPECT_IGNORE;
 			if (stretch_aspect == "keep")

@@ -33,6 +33,7 @@
 
 #include "core/list.h"
 #include "core/os/main_loop.h"
+#include "core/snappers.h"
 #include "core/ustring.h"
 #include "core/vector.h"
 
@@ -58,14 +59,16 @@ private:
 	float _fps;
 	int _target_fps;
 	float _time_scale;
-	bool _gpu_pixel_snap;
-	bool _snap_2d_transforms;
-	bool _snap_2d_viewports;
 	uint64_t _physics_frames;
 	float _physics_interpolation_fraction;
 
 	uint64_t _idle_frames;
 	bool _in_physics;
+
+	bool _gpu_pixel_snap;
+	bool _snap_2d_transforms;
+	bool _snap_2d_viewports;
+	Snappers _snappers;
 
 	List<Singleton> singletons;
 	Map<StringName, Object *> singleton_ptrs;
@@ -111,6 +114,7 @@ public:
 	_FORCE_INLINE_ bool get_use_gpu_pixel_snap() const { return _gpu_pixel_snap; }
 	bool get_snap_2d_transforms() const { return _snap_2d_transforms; }
 	bool get_snap_2d_viewports() const { return _snap_2d_viewports; }
+	const Snappers &get_snappers() const { return _snappers; }
 
 #ifdef TOOLS_ENABLED
 	_FORCE_INLINE_ void set_editor_hint(bool p_enabled) { editor_hint = p_enabled; }
