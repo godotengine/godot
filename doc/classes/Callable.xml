@@ -8,26 +8,26 @@
 		[b]Example:[/b]
 		[codeblocks]
 		[gdscript]
-		var callable = Callable(self, "print_args")
 		func print_args(arg1, arg2, arg3 = ""):
 		    prints(arg1, arg2, arg3)
 
 		func test():
-		    callable.call("hello", "world")  # Prints "hello world".
+		    var callable = Callable(self, "print_args")
+		    callable.call("hello", "world")  # Prints "hello world ".
 		    callable.call(Vector2.UP, 42, callable)  # Prints "(0, -1) 42 Node(Node.gd)::print_args".
 		    callable.call("invalid")  # Invalid call, should have at least 2 arguments.
 		[/gdscript]
 		[csharp]
-		Callable callable = new Callable(this, nameof("printArgs"));
-		public void PrintArgs(object arg1, object arg2, object arg3 = "")
+		public void PrintArgs(object arg1, object arg2, object arg3 = null)
 		{
 		    GD.PrintS(arg1, arg2, arg3);
 		}
 
 		public void Test()
 		{
-		    callable.Call("hello", "world"); // Prints "hello world".
-		    callable.Call(Vector2.Up, 42, callable); // Prints "(0, -1) 42 Node(Node.gd)::print_args".
+		    Callable callable = new Callable(this, nameof(PrintArgs));
+		    callable.Call("hello", "world"); // Prints "hello world null".
+		    callable.Call(Vector2.Up, 42, callable); // Prints "(0, -1) 42 Node(Node.cs)::PrintArgs".
 		    callable.Call("invalid"); // Invalid call, should have at least 2 arguments.
 		}
 		[/csharp]
