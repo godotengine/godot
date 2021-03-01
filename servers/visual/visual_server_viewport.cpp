@@ -47,7 +47,7 @@ static Transform2D _canvas_get_transform(VisualServerViewport::Viewport *p_viewp
 
 		Transform2D c_xform = p_viewport->canvas_map[p_canvas->parent].transform;
 		if (snap) {
-			c_xform.elements[2] = c_xform.elements[2].floor();
+			c_xform.elements[2] = c_xform.elements[2].round();
 		}
 		xf = xf * c_xform;
 		scale = p_canvas->parent_scale;
@@ -55,7 +55,7 @@ static Transform2D _canvas_get_transform(VisualServerViewport::Viewport *p_viewp
 
 	Transform2D c_xform = p_canvas_data->transform;
 	if (snap) {
-		c_xform.elements[2] = c_xform.elements[2].floor();
+		c_xform.elements[2] = c_xform.elements[2].round();
 	}
 	xf = xf * c_xform;
 
