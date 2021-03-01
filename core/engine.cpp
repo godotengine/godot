@@ -33,6 +33,7 @@
 #include "core/authors.gen.h"
 #include "core/donors.gen.h"
 #include "core/license.gen.h"
+#include "core/snappers.h"
 #include "core/version.h"
 #include "core/version_hash.gen.h"
 
@@ -228,13 +229,21 @@ Engine::Engine() {
 	_target_fps = 0;
 	_time_scale = 1.0;
 	_gpu_pixel_snap = false;
-	_snap_2d_transforms = false;
 	_physics_frames = 0;
 	_idle_frames = 0;
 	_in_physics = false;
 	_frame_ticks = 0;
 	_frame_step = 0;
 	editor_hint = false;
+
+	_snappers = memnew(Snappers);
+}
+
+Engine::~Engine() {
+	if (_snappers) {
+		memdelete(_snappers);
+		_snappers = nullptr;
+	}
 }
 
 Engine::Singleton::Singleton(const StringName &p_name, Object *p_ptr) :

@@ -45,6 +45,7 @@
 #include "core/register_core_types.h"
 #include "core/script_debugger_local.h"
 #include "core/script_language.h"
+#include "core/snappers.h"
 #include "core/translation.h"
 #include "core/version.h"
 #include "core/version_hash.gen.h"
@@ -1125,8 +1126,8 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 	}
 
 	Engine::get_singleton()->_gpu_pixel_snap = GLOBAL_DEF("rendering/2d/snapping/use_gpu_pixel_snap", false);
-	Engine::get_singleton()->_snap_2d_transforms = GLOBAL_DEF("rendering/2d/snapping/use_transform_snap", false);
-	Engine::get_singleton()->_snap_2d_viewports = GLOBAL_DEF("rendering/2d/snapping/use_camera_snap", false);
+	Engine::get_singleton()->_snappers->initialize(Engine::get_singleton()->get_use_gpu_pixel_snap());
+
 	OS::get_singleton()->_keep_screen_on = GLOBAL_DEF("display/window/energy_saving/keep_screen_on", true);
 	if (rtm == -1) {
 		rtm = GLOBAL_DEF("rendering/threads/thread_model", OS::RENDER_THREAD_SAFE);
@@ -1823,11 +1824,15 @@ bool Main::start() {
 			Size2i stretch_size = Size2(GLOBAL_DEF("display/window/size/width", 0), GLOBAL_DEF("display/window/size/height", 0));
 			real_t stretch_shrink = GLOBAL_DEF("display/window/stretch/shrink", 1.0);
 
+			// the snappers need to know the stretch_mode
+			Engine::get_singleton()->_snappers->set_stretch_mode(stretch_mode);
+
 			SceneTree::StretchMode sml_sm = SceneTree::STRETCH_MODE_DISABLED;
 			if (stretch_mode == "2d")
 				sml_sm = SceneTree::STRETCH_MODE_2D;
-			else if (stretch_mode == "viewport")
+			else if (stretch_mode == "viewport") {
 				sml_sm = SceneTree::STRETCH_MODE_VIEWPORT;
+			}
 
 			SceneTree::StretchAspect sml_aspect = SceneTree::STRETCH_ASPECT_IGNORE;
 			if (stretch_aspect == "keep")

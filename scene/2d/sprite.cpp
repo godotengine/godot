@@ -31,6 +31,7 @@
 #include "sprite.h"
 #include "core/core_string_names.h"
 #include "core/os/os.h"
+#include "core/snappers.h"
 #include "scene/main/viewport.h"
 #include "scene/scene_string_names.h"
 
@@ -100,11 +101,7 @@ void Sprite::_get_rects(Rect2 &r_src_rect, Rect2 &r_dst_rect, bool &r_filter_cli
 	if (centered)
 		dest_offset -= frame_size / 2;
 
-	if (Engine::get_singleton()->get_snap_2d_transforms()) {
-		dest_offset = dest_offset.round();
-	} else if (Engine::get_singleton()->get_use_gpu_pixel_snap()) {
-		dest_offset = dest_offset.floor();
-	}
+	Engine::get_singleton()->get_snappers().snap_read_item(dest_offset);
 
 	r_dst_rect = Rect2(dest_offset, frame_size);
 
@@ -381,11 +378,8 @@ Rect2 Sprite::get_rect() const {
 	Point2 ofs = offset;
 	if (centered)
 		ofs -= Size2(s) / 2;
-	if (Engine::get_singleton()->get_snap_2d_transforms()) {
-		ofs = ofs.round();
-	} else if (Engine::get_singleton()->get_use_gpu_pixel_snap()) {
-		ofs = ofs.floor();
-	}
+
+	Engine::get_singleton()->get_snappers().snap_read_item(ofs);
 
 	if (s == Size2(0, 0))
 		s = Size2(1, 1);

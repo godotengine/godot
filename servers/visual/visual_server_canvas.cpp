@@ -29,6 +29,7 @@
 /*************************************************************************/
 
 #include "visual_server_canvas.h"
+#include "core/snappers.h"
 #include "visual_server_globals.h"
 #include "visual_server_raster.h"
 #include "visual_server_viewport.h"
@@ -99,10 +100,17 @@ void VisualServerCanvas::_render_canvas_item(Item *p_canvas_item, const Transfor
 
 	Rect2 rect = ci->get_rect();
 	Transform2D xform = ci->xform;
-	if (snap_2d_transforms) {
-		xform.elements[2] = xform.elements[2].round();
-	}
+
+	// opportunity to snap before AND after the p_transform is applied.
+	// for stretch_mode viewport, snapping before makes sense,
+	const Snappers &snappers = Engine::get_singleton()->get_snappers();
+	snappers.snapper_canvas_item_pre.snap(xform.elements[2]);
+
 	xform = p_transform * xform;
+
+	// for stretch_mode 2d, we can snap after the scaling / zoom is applied,
+	// so we get sub-texel level snapping, which looks much better.
+	snappers.snapper_canvas_item_post.snap(xform.elements[2]);
 
 	Rect2 global_rect = xform.xform(rect);
 	global_rect.position += p_clip_rect.position;
@@ -1482,7 +1490,6 @@ VisualServerCanvas::VisualServerCanvas() {
 	z_last_list = (RasterizerCanvas::Item **)memalloc(z_range * sizeof(RasterizerCanvas::Item *));
 
 	disable_scale = false;
-	snap_2d_transforms = Engine::get_singleton()->get_snap_2d_transforms();
 }
 
 VisualServerCanvas::~VisualServerCanvas() {

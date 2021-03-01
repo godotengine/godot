@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="AdvancedSettings" inherits="Reference" version="3.2">
+	<brief_description>
+		Access to engine advanced settings.
+	</brief_description>
+	<description>
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="set_transform_snap_2d">
+			<return type="void">
+			</return>
+			<argument index="0" name="snap_type" type="int" enum="AdvancedSettings.Snap2DType">
+			</argument>
+			<argument index="1" name="mode_x" type="int" enum="AdvancedSettings.RoundMode">
+				Round mode applied to x coordinate.
+			</argument>
+			<argument index="2" name="mode_y" type="int" enum="AdvancedSettings.RoundMode">
+				Round mode applied to y coordinate.
+				Note that in Godot 2D, y increases down the screen, so using ceiling mode may give a better result than floor.
+			</argument>
+			<description>
+				Gives total control over CPU transform snapping.
+				The engine defaults to all transform snapping disabled, but you can specify rounding modes for each part of the 2d pipeline. Items are items to be drawn, and viewports normally equate to cameras.
+				In general, for [code]viewport[/code] window stretch mode, pre transform snapping is most relevant, and for [code]2d[/code] window stretch mode, post transform snapping is most relevant.
+			</description>
+		</method>
+	</methods>
+	<constants>
+		<constant name="SNAP2D_TYPE_ITEM_PRE" value="0" enum="Snap2DType">
+			Snap the item local position when drawing.
+		</constant>
+		<constant name="SNAP2D_TYPE_ITEM_POST" value="1" enum="Snap2DType">
+			Snap the item position after applying parent transform when drawing.
+		</constant>
+		<constant name="SNAP2D_TYPE_ITEM_READ" value="2" enum="Snap2DType">
+			Snap the item local position when reading.
+		</constant>
+		<constant name="SNAP2D_TYPE_VIEWPORT_PRE" value="3" enum="Snap2DType">
+			Snap canvas position.
+		</constant>
+		<constant name="SNAP2D_TYPE_VIEWPORT_POST" value="4" enum="Snap2DType">
+			Snap canvas position after applying global transform.
+		</constant>
+		<constant name="SNAP2D_TYPE_VIEWPORT_PARENT_PRE" value="5" enum="Snap2DType">
+			Snap canvas parent transform.
+		</constant>
+		<constant name="ROUND_MODE_DISABLED" value="0" enum="RoundMode">
+			No snapping applied.
+		</constant>
+		<constant name="ROUND_MODE_FLOOR" value="1" enum="RoundMode">
+			Snapping uses floor function (rounds down to the nearest whole number).
+		</constant>
+		<constant name="ROUND_MODE_CEILING" value="2" enum="RoundMode">
+			Snapping uses ceiling function (rounds up to the nearest whole number).
+		</constant>
+		<constant name="ROUND_MODE_ROUND" value="3" enum="RoundMode">
+			Snapping uses round function (rounds to the nearest whole number).
+		</constant>
+	</constants>
+</class>
