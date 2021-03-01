@@ -203,6 +203,7 @@ class SceneTreeDock : public VBoxContainer {
 	void _import_subscene();
 
 	void _new_scene_from(String p_file);
+	void _set_node_owner_recursive(Node *p_node, Node *p_owner);
 
 	bool _validate_no_foreign();
 	bool _validate_no_instance();

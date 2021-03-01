@@ -2052,6 +2052,7 @@ Node *Node::_duplicate(int p_flags, Map<const Node *, Node *> *r_duplimap) const
 
 	if (get_filename() != "") { //an instance
 		node->set_filename(get_filename());
+		node->data.editable_instance = data.editable_instance;
 	}
 
 	StringName script_property_name = CoreStringNames::get_singleton()->_script;
@@ -2267,74 +2268,6 @@ void Node::remap_nested_resources(RES p_resource, const Map<RES, RES> &p_resourc
 }
 #endif
 
-void Node::_duplicate_and_reown(Node *p_new_parent, const Map<Node *, Node *> &p_reown_map) const {
-	if (get_owner() != get_parent()->get_owner()) {
-		return;
-	}
-
-	Node *node = nullptr;
-
-	if (get_filename() != "") {
-		Ref<PackedScene> res = ResourceLoader::load(get_filename());
-		ERR_FAIL_COND_MSG(res.is_null(), "Cannot load scene: " + get_filename());
-		node = res->instance();
-		ERR_FAIL_COND(!node);
-	} else {
-		Object *obj = ClassDB::instance(get_class());
-		ERR_FAIL_COND_MSG(!obj, "Node: Could not duplicate: " + String(get_class()) + ".");
-		node = Object::cast_to<Node>(obj);
-		if (!node) {
-			memdelete(obj);
-			ERR_FAIL_MSG("Node: Could not duplicate: " + String(get_class()) + ".");
-		}
-	}
-
-	List<PropertyInfo> plist;
-
-	get_property_list(&plist);
-
-	for (List<PropertyInfo>::Element *E = plist.front(); E; E = E->next()) {
-		if (!(E->get().usage & PROPERTY_USAGE_STORAGE)) {
-			continue;
-		}
-		String name = E->get().name;
-
-		Variant value = get(name).duplicate(true);
-
-		node->set(name, value);
-	}
-
-	List<GroupInfo> groups;
-	get_groups(&groups);
-
-	for (List<GroupInfo>::Element *E = groups.front(); E; E = E->next()) {
-		node->add_to_group(E->get().name, E->get().persistent);
-	}
-
-	node->set_name(get_name());
-	p_new_parent->add_child(node);
-
-	Node *owner = get_owner();
-
-	if (p_reown_map.has(owner)) {
-		owner = p_reown_map[owner];
-	}
-
-	if (owner) {
-		NodePath p = get_path_to(owner);
-		if (owner != this) {
-			Node *new_owner = node->get_node(p);
-			if (new_owner) {
-				node->set_owner(new_owner);
-			}
-		}
-	}
-
-	for (int i = 0; i < get_child_count(); i++) {
-		get_child(i)->_duplicate_and_reown(node, p_reown_map);
-	}
-}
-
 // Duplication of signals must happen after all the node descendants have been copied,
 // because re-targeting of connections from some descendant to another is not possible
 // if the emitter node comes later in tree order than the receiver
@@ -2387,49 +2320,6 @@ void Node::_duplicate_signals(const Node *p_original, Node *p_copy) const {
 			process_list.push_back(n->get_child(i));
 		}
 	}
-}
-
-Node *Node::duplicate_and_reown(const Map<Node *, Node *> &p_reown_map) const {
-	ERR_FAIL_COND_V(get_filename() != "", nullptr);
-
-	Object *obj = ClassDB::instance(get_class());
-	ERR_FAIL_COND_V_MSG(!obj, nullptr, "Node: Could not duplicate: " + String(get_class()) + ".");
-
-	Node *node = Object::cast_to<Node>(obj);
-	if (!node) {
-		memdelete(obj);
-		ERR_FAIL_V_MSG(nullptr, "Node: Could not duplicate: " + String(get_class()) + ".");
-	}
-	node->set_name(get_name());
-
-	List<PropertyInfo> plist;
-
-	get_property_list(&plist);
-
-	for (List<PropertyInfo>::Element *E = plist.front(); E; E = E->next()) {
-		if (!(E->get().usage & PROPERTY_USAGE_STORAGE)) {
-			continue;
-		}
-		String name = E->get().name;
-		node->set(name, get(name));
-	}
-
-	List<GroupInfo> groups;
-	get_groups(&groups);
-
-	for (List<GroupInfo>::Element *E = groups.front(); E; E = E->next()) {
-		node->add_to_group(E->get().name, E->get().persistent);
-	}
-
-	for (int i = 0; i < get_child_count(); i++) {
-		get_child(i)->_duplicate_and_reown(node, p_reown_map);
-	}
-
-	// Duplication of signals must happen after all the node descendants have been copied,
-	// because re-targeting of connections from some descendant to another is not possible
-	// if the emitter node comes later in tree order than the receiver
-	_duplicate_signals(this, node);
-	return node;
 }
 
 static void find_owned_by(Node *p_by, Node *p_node, List<Node *> *p_owned) {
