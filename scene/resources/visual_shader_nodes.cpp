@@ -3032,7 +3032,7 @@ void VisualShaderNodeStep::set_op_type(OpType p_op_type) {
 				set_input_port_default_value(0, 0.0); // edge
 			}
 			if (op_type == OP_TYPE_SCALAR) {
-				set_input_port_default_value(1, 0.0); // x
+				set_input_port_default_value(1, Vector3(0.0, 0.0, 0.0)); // x
 			}
 			break;
 		default:
