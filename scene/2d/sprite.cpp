@@ -102,7 +102,7 @@ void Sprite::_get_rects(Rect2 &r_src_rect, Rect2 &r_dst_rect, bool &r_filter_cli
 
 	if (Engine::get_singleton()->get_snap_2d_transforms()) {
 		dest_offset = dest_offset.round();
-	} else if (Engine::get_singleton()->get_use_pixel_snap()) {
+	} else if (Engine::get_singleton()->get_use_gpu_pixel_snap()) {
 		dest_offset = dest_offset.floor();
 	}
 
@@ -383,7 +383,7 @@ Rect2 Sprite::get_rect() const {
 		ofs -= Size2(s) / 2;
 	if (Engine::get_singleton()->get_snap_2d_transforms()) {
 		ofs = ofs.round();
-	} else if (Engine::get_singleton()->get_use_pixel_snap()) {
+	} else if (Engine::get_singleton()->get_use_gpu_pixel_snap()) {
 		ofs = ofs.floor();
 	}
 

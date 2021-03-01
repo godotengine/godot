@@ -969,7 +969,7 @@ PREAMBLE(void)::batch_constructor() {
 	bdata.settings_use_batching = false;
 
 #ifdef GLES_OVER_GL
-	use_nvidia_rect_workaround = GLOBAL_GET("rendering/quality/2d/use_nvidia_rect_flicker_workaround");
+	use_nvidia_rect_workaround = GLOBAL_GET("rendering/2d/options/use_nvidia_rect_flicker_workaround");
 #else
 	// Not needed (a priori) on GLES devices
 	use_nvidia_rect_workaround = false;
@@ -983,8 +983,8 @@ PREAMBLE(void)::batch_initialize() {
 	bdata.settings_item_reordering_lookahead = GLOBAL_GET("rendering/batching/parameters/item_reordering_lookahead");
 	bdata.settings_light_max_join_items = GLOBAL_GET("rendering/batching/lights/max_join_items");
 	bdata.settings_use_single_rect_fallback = GLOBAL_GET("rendering/batching/options/single_rect_fallback");
-	bdata.settings_use_software_skinning = GLOBAL_GET("rendering/quality/2d/use_software_skinning");
-	bdata.settings_ninepatch_mode = GLOBAL_GET("rendering/quality/2d/ninepatch_mode");
+	bdata.settings_use_software_skinning = GLOBAL_GET("rendering/2d/options/use_software_skinning");
+	bdata.settings_ninepatch_mode = GLOBAL_GET("rendering/2d/options/ninepatch_mode");
 
 	// alternatively only enable uv contract if pixel snap in use,
 	// but with this enable bool, it should not be necessary
