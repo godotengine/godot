@@ -30,7 +30,38 @@
 
 #include "core/io/http_client.h"
 
-#include "http_request.h"
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+#include "stddef.h"
+
+typedef enum {
+	GODOT_JS_FETCH_STATE_REQUESTING = 0,
+	GODOT_JS_FETCH_STATE_BODY = 1,
+	GODOT_JS_FETCH_STATE_DONE = 2,
+	GODOT_JS_FETCH_STATE_ERROR = -1,
+} godot_js_fetch_state_t;
+
+extern int godot_js_fetch_create(const char *p_method, const char *p_url, const char **p_headers, int p_headers_len, const uint8_t *p_body, int p_body_len);
+extern int godot_js_fetch_read_headers(int p_id, void (*parse_callback)(int p_size, const char **p_headers, void *p_ref), void *p_ref);
+extern int godot_js_fetch_read_chunk(int p_id, uint8_t *p_buf, int p_buf_size);
+extern void godot_js_fetch_free(int p_id);
+extern godot_js_fetch_state_t godot_js_fetch_state_get(int p_id);
+extern int godot_js_fetch_body_length_get(int p_id);
+extern int godot_js_fetch_http_status_get(int p_id);
+extern int godot_js_fetch_is_chunked(int p_id);
+
+#ifdef __cplusplus
+}
+#endif
+
+void HTTPClient::_parse_headers(int p_len, const char **p_headers, void *p_ref) {
+	HTTPClient *client = static_cast<HTTPClient *>(p_ref);
+	for (int i = 0; i < p_len; i++) {
+		client->response_headers.push_back(String::utf8(p_headers[i]));
+	}
+}
 
 Error HTTPClient::connect_to_host(const String &p_host, int p_port, bool p_ssl, bool p_verify_host) {
 	close();
@@ -74,7 +105,7 @@ Ref<StreamPeer> HTTPClient::get_connection() const {
 	ERR_FAIL_V_MSG(REF(), "Accessing an HTTPClient's StreamPeer is not supported for the HTML5 platform.");
 }
 
-Error HTTPClient::prepare_request(Method p_method, const String &p_url, const Vector<String> &p_headers) {
+Error HTTPClient::make_request(Method p_method, const String &p_url, const Vector<String> &p_headers, const uint8_t *p_body, int p_body_len) {
 	ERR_FAIL_INDEX_V(p_method, METHOD_MAX, ERR_INVALID_PARAMETER);
 	ERR_FAIL_COND_V_MSG(p_method == METHOD_TRACE || p_method == METHOD_CONNECT, ERR_UNAVAILABLE, "HTTP methods TRACE and CONNECT are not supported for the HTML5 platform.");
 	ERR_FAIL_COND_V(status != STATUS_CONNECTED, ERR_INVALID_PARAMETER);
@@ -83,46 +114,33 @@ Error HTTPClient::prepare_request(Method p_method, const String &p_url, const Ve
 	ERR_FAIL_COND_V(!p_url.begins_with("/"), ERR_INVALID_PARAMETER);
 
 	String url = (use_tls ? "https://" : "http://") + host + ":" + itos(port) + p_url;
-	godot_xhr_reset(xhr_id);
-	godot_xhr_open(xhr_id, _methods[p_method], url.utf8().get_data(),
-			username.is_empty() ? nullptr : username.utf8().get_data(),
-			password.is_empty() ? nullptr : password.utf8().get_data());
-
+	Vector<CharString> keeper;
+	Vector<const char *> c_strings;
 	for (int i = 0; i < p_headers.size(); i++) {
-		int header_separator = p_headers[i].find(": ");
-		ERR_FAIL_COND_V(header_separator < 0, ERR_INVALID_PARAMETER);
-		godot_xhr_set_request_header(xhr_id,
-				p_headers[i].left(header_separator).utf8().get_data(),
-				p_headers[i].right(header_separator + 2).utf8().get_data());
+		keeper.push_back(p_headers[i].utf8());
+		c_strings.push_back(keeper[i].get_data());
 	}
-	response_read_offset = 0;
+	if (js_id) {
+		godot_js_fetch_free(js_id);
+	}
+	js_id = godot_js_fetch_create(_methods[p_method], url.utf8().get_data(), c_strings.ptrw(), c_strings.size(), p_body, p_body_len);
 	status = STATUS_REQUESTING;
 	return OK;
 }
 
 Error HTTPClient::request_raw(Method p_method, const String &p_url, const Vector<String> &p_headers, const Vector<uint8_t> &p_body) {
-	Error err = prepare_request(p_method, p_url, p_headers);
-	if (err != OK)
-		return err;
 	if (p_body.is_empty()) {
-		godot_xhr_send(xhr_id, nullptr, 0);
-	} else {
-		godot_xhr_send(xhr_id, p_body.ptr(), p_body.size());
+		return make_request(p_method, p_url, p_headers, nullptr, 0);
 	}
-	return OK;
+	return make_request(p_method, p_url, p_headers, p_body.ptr(), p_body.size());
 }
 
 Error HTTPClient::request(Method p_method, const String &p_url, const Vector<String> &p_headers, const String &p_body) {
-	Error err = prepare_request(p_method, p_url, p_headers);
-	if (err != OK)
-		return err;
 	if (p_body.is_empty()) {
-		godot_xhr_send(xhr_id, nullptr, 0);
-	} else {
-		const CharString cs = p_body.utf8();
-		godot_xhr_send(xhr_id, cs.get_data(), cs.length());
+		return make_request(p_method, p_url, p_headers, nullptr, 0);
 	}
-	return OK;
+	const CharString cs = p_body.utf8();
+	return make_request(p_method, p_url, p_headers, (const uint8_t *)cs.get_data(), cs.size() - 1);
 }
 
 void HTTPClient::close() {
@@ -130,10 +148,13 @@ void HTTPClient::close() {
 	port = -1;
 	use_tls = false;
 	status = STATUS_DISCONNECTED;
-	polled_response.resize(0);
 	polled_response_code = 0;
-	polled_response_header = String();
-	godot_xhr_reset(xhr_id);
+	response_headers.resize(0);
+	response_buffer.resize(0);
+	if (js_id) {
+		godot_js_fetch_free(js_id);
+		js_id = 0;
+	}
 }
 
 HTTPClient::Status HTTPClient::get_status() const {
@@ -141,12 +162,11 @@ HTTPClient::Status HTTPClient::get_status() const {
 }
 
 bool HTTPClient::has_response() const {
-	return !polled_response_header.is_empty();
+	return response_headers.size() > 0;
 }
 
 bool HTTPClient::is_response_chunked() const {
-	// TODO evaluate using moz-chunked-arraybuffer, fetch & ReadableStream
-	return false;
+	return godot_js_fetch_is_chunked(js_id);
 }
 
 int HTTPClient::get_response_code() const {
@@ -154,36 +174,42 @@ int HTTPClient::get_response_code() const {
 }
 
 Error HTTPClient::get_response_headers(List<String> *r_response) {
-	if (polled_response_header.is_empty())
+	if (!response_headers.size()) {
 		return ERR_INVALID_PARAMETER;
-
-	Vector<String> header_lines = polled_response_header.split("\r\n", false);
-	for (int i = 0; i < header_lines.size(); ++i) {
-		r_response->push_back(header_lines[i]);
 	}
-	polled_response_header = String();
+	for (int i = 0; i < response_headers.size(); i++) {
+		r_response->push_back(response_headers[i]);
+	}
+	response_headers.clear();
 	return OK;
 }
 
 int HTTPClient::get_response_body_length() const {
-	return polled_response.size();
+	return godot_js_fetch_body_length_get(js_id);
 }
 
 PackedByteArray HTTPClient::read_response_body_chunk() {
 	ERR_FAIL_COND_V(status != STATUS_BODY, PackedByteArray());
 
-	int to_read = MIN(read_limit, polled_response.size() - response_read_offset);
-	PackedByteArray chunk;
-	chunk.resize(to_read);
-	memcpy(chunk.ptrw(), polled_response.ptr() + response_read_offset, to_read);
-	response_read_offset += to_read;
+	if (response_buffer.size() != read_limit) {
+		response_buffer.resize(read_limit);
+	}
+	int read = godot_js_fetch_read_chunk(js_id, response_buffer.ptrw(), read_limit);
 
-	if (response_read_offset == polled_response.size()) {
-		status = STATUS_CONNECTED;
-		polled_response.resize(0);
-		godot_xhr_reset(xhr_id);
+	// Check if the stream is over.
+	godot_js_fetch_state_t state = godot_js_fetch_state_get(js_id);
+	if (state == GODOT_JS_FETCH_STATE_DONE) {
+		status = STATUS_DISCONNECTED;
+	} else if (state != GODOT_JS_FETCH_STATE_BODY) {
+		status = STATUS_CONNECTION_ERROR;
 	}
 
+	PackedByteArray chunk;
+	if (!read) {
+		return chunk;
+	}
+	chunk.resize(read);
+	copymem(chunk.ptrw(), response_buffer.ptr(), read);
 	return chunk;
 }
 
@@ -217,48 +243,48 @@ Error HTTPClient::poll() {
 			return OK;
 
 		case STATUS_CONNECTED:
-		case STATUS_BODY:
 			return OK;
+
+		case STATUS_BODY: {
+			godot_js_fetch_state_t state = godot_js_fetch_state_get(js_id);
+			if (state == GODOT_JS_FETCH_STATE_DONE) {
+				status = STATUS_DISCONNECTED;
+			} else if (state != GODOT_JS_FETCH_STATE_BODY) {
+				status = STATUS_CONNECTION_ERROR;
+				return ERR_CONNECTION_ERROR;
+			}
+			return OK;
+		}
 
 		case STATUS_CONNECTION_ERROR:
 			return ERR_CONNECTION_ERROR;
 
 		case STATUS_REQUESTING: {
 #ifdef DEBUG_ENABLED
-			if (!has_polled) {
-				has_polled = true;
-			} else {
-				// forcing synchronous requests is not possible on the web
-				if (last_polling_frame == Engine::get_singleton()->get_process_frames()) {
-					WARN_PRINT("HTTPClient polled multiple times in one frame, "
-							   "but request cannot progress more than once per "
-							   "frame on the HTML5 platform.");
-				}
+			// forcing synchronous requests is not possible on the web
+			if (last_polling_frame == Engine::get_singleton()->get_process_frames()) {
+				WARN_PRINT("HTTPClient polled multiple times in one frame, "
+						   "but request cannot progress more than once per "
+						   "frame on the HTML5 platform.");
 			}
 			last_polling_frame = Engine::get_singleton()->get_process_frames();
 #endif
 
-			polled_response_code = godot_xhr_get_status(xhr_id);
-			if (godot_xhr_get_ready_state(xhr_id) != XHR_READY_STATE_DONE) {
+			polled_response_code = godot_js_fetch_http_status_get(js_id);
+			godot_js_fetch_state_t js_state = godot_js_fetch_state_get(js_id);
+			if (js_state == GODOT_JS_FETCH_STATE_REQUESTING) {
 				return OK;
-			} else if (!polled_response_code) {
+			} else if (js_state == GODOT_JS_FETCH_STATE_ERROR) {
+				// Fetch is in error state.
 				status = STATUS_CONNECTION_ERROR;
 				return ERR_CONNECTION_ERROR;
 			}
-
+			if (godot_js_fetch_read_headers(js_id, &_parse_headers, this)) {
+				// Failed to parse headers.
+				status = STATUS_CONNECTION_ERROR;
+				return ERR_CONNECTION_ERROR;
+			}
 			status = STATUS_BODY;
-
-			PackedByteArray bytes;
-			int len = godot_xhr_get_response_headers_length(xhr_id);
-			bytes.resize(len + 1);
-
-			godot_xhr_get_response_headers(xhr_id, reinterpret_cast<char *>(bytes.ptrw()), len);
-			bytes.ptrw()[len] = 0;
-
-			polled_response_header = String::utf8(reinterpret_cast<const char *>(bytes.ptr()));
-
-			polled_response.resize(godot_xhr_get_response_length(xhr_id));
-			godot_xhr_get_response(xhr_id, polled_response.ptrw(), polled_response.size());
 			break;
 		}
 
@@ -269,9 +295,8 @@ Error HTTPClient::poll() {
 }
 
 HTTPClient::HTTPClient() {
-	xhr_id = godot_xhr_new();
 }
 
 HTTPClient::~HTTPClient() {
-	godot_xhr_free(xhr_id);
+	close();
 }
