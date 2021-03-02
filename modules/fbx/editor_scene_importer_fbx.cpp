@@ -1135,8 +1135,15 @@ Node3D *EditorSceneImporterFBX::_generate_scene(
 								rot_key_value.z = -rot_key_value.z;
 								rot_key_value.w = -rot_key_value.w;
 							}
+
 							// pre_post rotation possibly could fix orientation
-							Quat final_rotation = pre_rotation * rot_key_value * post_rotation;
+							Quat final_rotation;
+
+							if (state.is_blender_fbx) {
+								final_rotation = rot_key_value;
+							} else {
+								final_rotation = pre_rotation * rot_key_value * post_rotation;
+							}
 
 							lastQuat = final_rotation;
 
@@ -1211,10 +1218,9 @@ Node3D *EditorSceneImporterFBX::_generate_scene(
 							}
 
 							time += increment;
-							if (time > anim_length) {
+							if (time >= anim_length) {
 								last = true;
 								time = anim_length;
-								break;
 							}
 						}
 					}
