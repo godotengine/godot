@@ -139,6 +139,8 @@ class PopupMenu : public Popup {
 	void _minimum_lifetime_timeout();
 	void _close_pressed();
 
+	int height_limit = -1;
+
 protected:
 	friend class MenuButton;
 	void _notification(int p_what);
@@ -248,6 +250,11 @@ public:
 	virtual void popup(const Rect2 &p_bounds = Rect2());
 
 	void take_mouse_focus();
+
+	void set_height_limit(int p_height_limit);
+	int get_height_limit() const;
+
+	Size2 get_contents_size() const;
 
 	PopupMenu();
 	~PopupMenu();
