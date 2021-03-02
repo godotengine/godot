@@ -53,8 +53,13 @@ private:
 
 	void _update_atlas_sources_list(int force_selected_id = -1);
 
-	// TileData editors.
-	Map<String, TileDataEditor *> tile_data_editors;
+	// List of tile data editors.
+	TileDataTextureOffsetEditor *tile_data_texture_offset_editor = memnew(TileDataTextureOffsetEditor);
+	TileDataPositionEditor *tile_data_position_editor = memnew(TileDataPositionEditor);
+	TileDataIntegerEditor *tile_data_integer_editor = memnew(TileDataIntegerEditor);
+	TileDataFloatEditor *tile_data_float_editor = memnew(TileDataFloatEditor);
+	TileDataOcclusionShapeEditor *tile_data_occlusion_shape_editor = memnew(TileDataOcclusionShapeEditor);
+	TileDataCollisionShapeEditor *tile_data_collision_shape_editor = memnew(TileDataCollisionShapeEditor);
 
 	// -- Sources management --
 	Button *sources_delete_button;

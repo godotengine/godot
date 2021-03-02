@@ -57,7 +57,9 @@ void TileDataTextureOffsetEditor::draw_over_tile(CanvasItem *p_canvas_item, Tran
 
 	bool valid;
 	Variant value = tile_data->get(p_property, &valid);
-	ERR_FAIL_COND(!valid);
+	if (!valid) {
+		return;
+	}
 	ERR_FAIL_COND(value.get_type() != Variant::VECTOR2I);
 
 	Vector2i tile_set_tile_size = p_tile_set->get_tile_size();
@@ -71,7 +73,9 @@ void TileDataIntegerEditor::draw_over_tile(CanvasItem *p_canvas_item, Transform2
 
 	bool valid;
 	Variant value = tile_data->get(p_property, &valid);
-	ERR_FAIL_COND(!valid);
+	if (!valid) {
+		return;
+	}
 	ERR_FAIL_COND(value.get_type() != Variant::INT);
 
 	Ref<Font> font = TileSetEditor::get_singleton()->get_theme_font("bold", "EditorFonts");
@@ -86,7 +90,9 @@ void TileDataFloatEditor::draw_over_tile(CanvasItem *p_canvas_item, Transform2D 
 
 	bool valid;
 	Variant value = tile_data->get(p_property, &valid);
-	ERR_FAIL_COND(!valid);
+	if (!valid) {
+		return;
+	}
 	ERR_FAIL_COND(value.get_type() != Variant::FLOAT);
 
 	Ref<Font> font = TileSetEditor::get_singleton()->get_theme_font("bold", "EditorFonts");
@@ -101,9 +107,55 @@ void TileDataPositionEditor::draw_over_tile(CanvasItem *p_canvas_item, Transform
 
 	bool valid;
 	Variant value = tile_data->get(p_property, &valid);
-	ERR_FAIL_COND(!valid);
+	if (!valid) {
+		return;
+	}
 	ERR_FAIL_COND(value.get_type() != Variant::VECTOR2I && value.get_type() != Variant::VECTOR2);
 
 	Ref<Texture2D> position_icon = TileSetEditor::get_singleton()->get_theme_icon("EditorPosition", "EditorIcons");
 	p_canvas_item->draw_texture(position_icon, p_transform.get_origin() + Vector2(value) - position_icon->get_size() / 2);
+}
+
+void TileDataOcclusionShapeEditor::draw_over_tile(CanvasItem *p_canvas_item, Transform2D p_transform, TileSet *p_tile_set, int p_atlas_source_id, Vector2i p_atlas_coords, int p_alternative_tile, String p_property) {
+	TileData *tile_data = _get_tile_data(p_tile_set, p_atlas_source_id, p_atlas_coords, p_alternative_tile);
+	ERR_FAIL_COND(!tile_data);
+
+	Vector<String> components = String(p_property).split("/", true);
+	if (components[0].begins_with("occlusion_layer_") && components[0].trim_prefix("occlusion_layer_").is_valid_integer()) {
+		int occlusion_layer = components[0].trim_prefix("occlusion_layer_").to_int();
+		if (occlusion_layer >= 0 && occlusion_layer < p_tile_set->get_occlusion_layers_count()) {
+			// Draw all shapes.
+			Vector<Color> debug_occlusion_color;
+			debug_occlusion_color.push_back(Color(0.5, 0, 0, 0.6));
+
+			RenderingServer::get_singleton()->canvas_item_add_set_transform(p_canvas_item->get_canvas_item(), p_transform);
+			Ref<OccluderPolygon2D> occluder = tile_data->get_occluder(occlusion_layer);
+			if (occluder.is_valid() && occluder->get_polygon().size() >= 3) {
+				p_canvas_item->draw_polygon(Variant(occluder->get_polygon()), debug_occlusion_color);
+			}
+			RenderingServer::get_singleton()->canvas_item_add_set_transform(p_canvas_item->get_canvas_item(), Transform2D());
+		}
+	}
+}
+
+void TileDataCollisionShapeEditor::draw_over_tile(CanvasItem *p_canvas_item, Transform2D p_transform, TileSet *p_tile_set, int p_atlas_source_id, Vector2i p_atlas_coords, int p_alternative_tile, String p_property) {
+	TileData *tile_data = _get_tile_data(p_tile_set, p_atlas_source_id, p_atlas_coords, p_alternative_tile);
+	ERR_FAIL_COND(!tile_data);
+
+	Vector<String> components = String(p_property).split("/", true);
+	if (components[0].begins_with("physics_layer_") && components[0].trim_prefix("physics_layer_").is_valid_integer()) {
+		int physics_layer = components[0].trim_prefix("physics_layer_").to_int();
+		if (physics_layer >= 0 && physics_layer < p_tile_set->get_physics_layers_count()) {
+			// Draw all shapes.
+			Color debug_collision_color = p_canvas_item->get_tree()->get_debug_collisions_color();
+			RenderingServer::get_singleton()->canvas_item_add_set_transform(p_canvas_item->get_canvas_item(), p_transform);
+			for (int i = 0; i < tile_data->get_collision_shapes_count(physics_layer); i++) {
+				Ref<Shape2D> shape = tile_data->get_collision_shape_shape(physics_layer, i);
+				if (shape.is_valid()) {
+					shape->draw(p_canvas_item->get_canvas_item(), debug_collision_color);
+				}
+			}
+			RenderingServer::get_singleton()->canvas_item_add_set_transform(p_canvas_item->get_canvas_item(), Transform2D());
+		}
+	}
 }

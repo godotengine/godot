@@ -270,11 +270,23 @@ void TileSetEditor::_bind_methods() {
 }
 
 TileDataEditor *TileSetEditor::get_tile_data_editor(String p_property) {
-	if (tile_data_editors.has(p_property)) {
-		return tile_data_editors[p_property];
-	} else {
-		return nullptr;
+	Vector<String> components = String(p_property).split("/", true);
+
+	if (p_property == "z_index") {
+		return tile_data_integer_editor;
+	} else if (p_property == "probability") {
+		return tile_data_float_editor;
+	} else if (p_property == "y_sort_origin") {
+		return tile_data_position_editor;
+	} else if (p_property == "texture_offset") {
+		return tile_data_texture_offset_editor;
+	} else if (components.size() >= 1 && components[0].begins_with("occlusion_layer_")) {
+		return tile_data_occlusion_shape_editor;
+	} else if (components.size() >= 1 && components[0].begins_with("physics_layer_")) {
+		return tile_data_collision_shape_editor;
 	}
+
+	return nullptr;
 }
 
 void TileSetEditor::edit(Ref<TileSet> p_tile_set) {
@@ -306,11 +318,6 @@ TileSetEditor::TileSetEditor() {
 	set_process_internal(true);
 
 	// TileData editors setup.
-	tile_data_editors["texture_offset"] = memnew(TileDataTextureOffsetEditor);
-	tile_data_editors["z_index"] = memnew(TileDataIntegerEditor);
-	tile_data_editors["y_sort_origin"] = memnew(TileDataPositionEditor);
-
-	tile_data_editors["probability"] = memnew(TileDataFloatEditor);
 
 	// Tab container
 	TabContainer *tab_container = memnew(TabContainer);
@@ -418,7 +425,11 @@ TileSetEditor::~TileSetEditor() {
 	if (tile_set.is_valid()) {
 		tile_set->disconnect("changed", callable_mp(this, &TileSetEditor::_tile_set_changed));
 	}
-	for (Map<String, TileDataEditor *>::Element *E = tile_data_editors.front(); E; E = E->next()) {
-		memdelete(E->get());
-	}
+
+	// Delete tile data editors.
+	memdelete(tile_data_texture_offset_editor);
+	memdelete(tile_data_position_editor);
+	memdelete(tile_data_integer_editor);
+	memdelete(tile_data_float_editor);
+	memdelete(tile_data_collision_shape_editor);
 }

@@ -1132,7 +1132,7 @@ void TileSetAtlasSourceEditor::_tile_atlas_control_draw() {
 void TileSetAtlasSourceEditor::_tile_atlas_control_unscaled_draw() {
 	// Draw the preview of the selected property.
 	TileDataEditor *tile_data_editor = TileSetEditor::get_singleton()->get_tile_data_editor(selected_property);
-	if (tile_inspector->is_visible_in_tree() && tile_data_editor) {
+	if (tile_data_editor && tile_inspector->is_visible_in_tree()) {
 		for (int i = 0; i < tile_set_atlas_source->get_tiles_count(); i++) {
 			Vector2i coords = tile_set_atlas_source->get_tile_id(i);
 			Rect2i texture_region = tile_set_atlas_source->get_tile_texture_region(coords);

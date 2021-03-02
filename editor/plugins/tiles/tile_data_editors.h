@@ -88,4 +88,18 @@ public:
 	virtual void draw_over_tile(CanvasItem *p_canvas_item, Transform2D p_transform, TileSet *p_tile_set, int p_atlas_source_id, Vector2i p_atlas_coords, int p_alternative_tile, String p_property) override;
 };
 
+class TileDataOcclusionShapeEditor : public TileDataEditor {
+	GDCLASS(TileDataOcclusionShapeEditor, TileDataEditor);
+
+public:
+	virtual void draw_over_tile(CanvasItem *p_canvas_item, Transform2D p_transform, TileSet *p_tile_set, int p_atlas_source_id, Vector2i p_atlas_coords, int p_alternative_tile, String p_property) override;
+};
+
+class TileDataCollisionShapeEditor : public TileDataEditor {
+	GDCLASS(TileDataCollisionShapeEditor, TileDataEditor);
+
+public:
+	virtual void draw_over_tile(CanvasItem *p_canvas_item, Transform2D p_transform, TileSet *p_tile_set, int p_atlas_source_id, Vector2i p_atlas_coords, int p_alternative_tile, String p_property) override;
+};
+
 #endif // TILE_DATA_EDITORS_H
