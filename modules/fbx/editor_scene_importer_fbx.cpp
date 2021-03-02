@@ -681,25 +681,11 @@ Node3D *EditorSceneImporterFBX::_generate_scene(
 		const FBXDocParser::Skin *mesh_skin = mesh_geometry->DeformerSkin();
 
 		if (!mesh_skin) {
-			continue; // safe to continue
-		}
-
-		//
-		// Skin bone configuration
-		//
-
-		//
-		// Get Mesh Node Xform only
-		//
-		//ERR_CONTINUE_MSG(!state.fbx_target_map.has(mesh_id), "invalid xform for the skin pose: " + itos(mesh_id));
-		//Ref<FBXNode> mesh_node_xform_data = state.fbx_target_map[mesh_id];
-
-		if (!mesh_skin) {
-			continue; // not a deformer.
+			continue; // mesh which has no armature
 		}
 
 		if (mesh_skin->Clusters().size() == 0) {
-			continue; // possibly buggy mesh
+			continue; // armature without a skin.
 		}
 
 		// Lookup skin or create it if it's not found.
@@ -726,17 +712,24 @@ Node3D *EditorSceneImporterFBX::_generate_scene(
 			const Ref<FBXSkeleton> skeleton = bone->fbx_skeleton;
 			const Ref<FBXNode> skeleton_node = skeleton->fbx_node;
 
-			skin->add_named_bind(
-					bone->bone_name, get_unscaled_transform(cluster->TransformLink().affine_inverse(), state.scale));
+			const bool has_bind = skin->has_named_bind(bone->bone_name);
+
+			if (has_bind) {
+				ERR_CONTINUE_MSG(has_bind, "duplicate bind, this is often a bug caused by an artist");
+			} else {
+				skin->add_named_bind(
+						bone->bone_name, get_unscaled_transform(cluster->TransformLink().affine_inverse(), state.scale));
+			}
 
 			if (!reparented) {
 				// remove
 				Node *mesh_parent = mesh->godot_mesh_instance->get_parent();
 				mesh_parent->remove_child(mesh->godot_mesh_instance);
 
-				// reparent to armature
+				// re-parent to armature
 				skeleton_node->godot_node->add_child(mesh->godot_mesh_instance);
 				mesh->godot_mesh_instance->set_owner(state.root_owner);
+				//mesh->godot_mesh_instance->set_transform(Transform());
 
 				reparented = true;
 			}
@@ -812,10 +805,16 @@ Node3D *EditorSceneImporterFBX::_generate_scene(
 				print_verbose("Valid animation stack has been found: " + animation_name);
 				// ReferenceTime is the same for some animations?
 				// LocalStop time is the start and end time
-				float r_start = CONVERT_FBX_TIME(stack->ReferenceStart());
-				float r_stop = CONVERT_FBX_TIME(stack->ReferenceStop());
-				float start_time = CONVERT_FBX_TIME(stack->LocalStart());
-				float end_time = CONVERT_FBX_TIME(stack->LocalStop());
+
+				const int64_t r_start_time = stack->ReferenceStart();
+				const int64_t r_end_time = stack->ReferenceStop();
+				const int64_t l_start_time = stack->LocalStart();
+				const int64_t l_end_time = stack->LocalStop();
+
+				const float r_start = CONVERT_FBX_TIME(r_start_time);
+				const float r_stop = CONVERT_FBX_TIME(r_end_time);
+				const float start_time = CONVERT_FBX_TIME(l_start_time);
+				const float end_time = CONVERT_FBX_TIME(l_end_time);
 				float duration = end_time - start_time;
 
 				print_verbose("r_start " + rtos(r_start) + ", r_stop " + rtos(r_stop));
@@ -995,6 +994,7 @@ Node3D *EditorSceneImporterFBX::_generate_scene(
 						// next track id is 5.
 						const uint64_t target_id = track->key();
 						int track_idx = animation->add_track(Animation::TYPE_TRANSFORM);
+						animation->track_set_imported(track_idx, true);
 
 						// animation->track_set_path(track_idx, node_path);
 						// animation->track_set_path(track_idx, node_path);
@@ -1144,7 +1144,7 @@ Node3D *EditorSceneImporterFBX::_generate_scene(
 								max_duration = animation_track_time;
 							}
 
-							rot_values.push_back(final_rotation);
+							rot_values.push_back(final_rotation.normalized());
 							rot_times.push_back(animation_track_time);
 						}
 
