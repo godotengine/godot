@@ -855,12 +855,14 @@ void VisualServerScene::instance_set_use_lightmap(RID p_instance, RID p_lightmap
 	Instance *instance = instance_owner.get(p_instance);
 	ERR_FAIL_COND(!instance);
 
+	instance->lightmap = RID();
+	instance->lightmap_slice = -1;
+	instance->lightmap_uv_rect = Rect2(0, 0, 1, 1);
+	instance->baked_light = false;
+
 	if (instance->lightmap_capture) {
 		InstanceLightmapCaptureData *lightmap_capture = static_cast<InstanceLightmapCaptureData *>(((Instance *)instance->lightmap_capture)->base_data);
 		lightmap_capture->users.erase(instance);
-		instance->lightmap = RID();
-		instance->lightmap_slice = -1;
-		instance->lightmap_uv_rect = Rect2(0, 0, 1, 1);
 		instance->lightmap_capture = NULL;
 	}
 
@@ -875,6 +877,7 @@ void VisualServerScene::instance_set_use_lightmap(RID p_instance, RID p_lightmap
 		instance->lightmap = p_lightmap;
 		instance->lightmap_slice = p_lightmap_slice;
 		instance->lightmap_uv_rect = p_lightmap_uv_rect;
+		instance->baked_light = true;
 	}
 }
 
