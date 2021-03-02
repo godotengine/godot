@@ -103,8 +103,8 @@ public:
 	void set_tile_set(const TileSet *p_tile_set);
 	void notify_tile_data_properties_should_change();
 	void reset_state();
-	void tile_set_allow_transform(bool p_allow_transform);
-	bool tile_is_allowing_transform() const;
+	void set_allow_transform(bool p_allow_transform);
+	bool is_allowing_transform() const;
 
 	// Rendering
 	void set_flip_h(bool p_flip_h);
@@ -146,23 +146,16 @@ public:
 	float tile_get_terrain( int p_layer_id) const;
 	*/
 
-	// Collision
-	/*
-	int tile_get_collision_shape_count(int p_layer_id) const;
-	float tile_get_collision_shape(int p_layer_id, int p_shape_id) const;
-	bool tile_get_collision_shape_one_way(int p_layer_id, int p_shape_id) const;
-	float tile_get_collision_shape_one_way_margin(int p_layer_id, int p_shape_id) const;
-	Transform2D tile_get_collision_shape_transform(int p_layer_id, int p_shape_id) const;
-	*/
-
 	// Navigation
 	/*
 	Ref<NavigationPolygon> tile_get_navigation(int p_layer_id) const;
 	*/
 
 	// Misc
-	void tile_set_probability(float p_probability);
-	float tile_get_probability() const;
+	void set_probability(float p_probability);
+	float get_probability() const;
+
+	// Metadata
 };
 
 class TileSetSource : public Resource {

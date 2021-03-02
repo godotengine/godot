@@ -55,11 +55,11 @@ void TileData::reset_state() {
 	physics.clear();
 }
 
-void TileData::tile_set_allow_transform(bool p_allow_transform) {
+void TileData::set_allow_transform(bool p_allow_transform) {
 	allow_transform = p_allow_transform;
 }
 
-bool TileData::tile_is_allowing_transform() const {
+bool TileData::is_allowing_transform() const {
 	return allow_transform;
 }
 
@@ -210,12 +210,12 @@ float TileData::get_collision_shape_one_way_margin(int p_layer_id, int p_shape_i
 }
 
 // Misc
-void TileData::tile_set_probability(float p_probability) {
+void TileData::set_probability(float p_probability) {
 	ERR_FAIL_COND(p_probability <= 0.0);
 	probability = p_probability;
 	emit_signal("changed");
 }
-float TileData::tile_get_probability() const {
+float TileData::get_probability() const {
 	return probability;
 }
 
@@ -382,8 +382,8 @@ void TileData::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_z_index"), &TileData::get_z_index);
 	ClassDB::bind_method(D_METHOD("set_y_sort_origin", "y_sort_origin"), &TileData::set_y_sort_origin);
 	ClassDB::bind_method(D_METHOD("get_y_sort_origin"), &TileData::get_y_sort_origin);
-	ClassDB::bind_method(D_METHOD("set_probability", "probability"), &TileData::tile_set_probability);
-	ClassDB::bind_method(D_METHOD("get_probability"), &TileData::tile_get_probability);
+	ClassDB::bind_method(D_METHOD("set_probability", "probability"), &TileData::set_probability);
+	ClassDB::bind_method(D_METHOD("get_probability"), &TileData::get_probability);
 
 	ADD_GROUP("Rendering", "");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "flip_h"), "set_flip_h", "get_flip_h");
@@ -545,7 +545,7 @@ bool TileSetAtlasSource::_set(const StringName &p_name, const Variant &p_value) 
 					if (!tiles[coords].alternatives.has(alternative_id)) {
 						tiles[coords].alternatives[alternative_id] = memnew(TileData);
 						tiles[coords].alternatives[alternative_id]->set_tile_set(tile_set);
-						tiles[coords].alternatives[alternative_id]->tile_set_allow_transform(alternative_id > 0);
+						tiles[coords].alternatives[alternative_id]->set_allow_transform(alternative_id > 0);
 						tiles[coords].alternatives_ids.append(alternative_id);
 					}
 					if (components.size() >= 3) {
@@ -648,7 +648,7 @@ void TileSetAtlasSource::create_tile(const Vector2i p_atlas_coords, const Vector
 	tiles[p_atlas_coords].size_in_atlas = p_size;
 	tiles[p_atlas_coords].alternatives[0] = memnew(TileData);
 	tiles[p_atlas_coords].alternatives[0]->set_tile_set(tile_set);
-	tiles[p_atlas_coords].alternatives[0]->tile_set_allow_transform(false);
+	tiles[p_atlas_coords].alternatives[0]->set_allow_transform(false);
 	tiles[p_atlas_coords].alternatives[0]->connect("changed", callable_mp((Resource *)this, &TileSetAtlasSource::emit_changed));
 	tiles[p_atlas_coords].alternatives_ids.append(0);
 
@@ -837,7 +837,7 @@ int TileSetAtlasSource::create_alternative_tile(const Vector2i p_atlas_coords, i
 
 	tiles[p_atlas_coords].alternatives[new_alternative_id] = memnew(TileData);
 	tiles[p_atlas_coords].alternatives[new_alternative_id]->set_tile_set(tile_set);
-	tiles[p_atlas_coords].alternatives[new_alternative_id]->tile_set_allow_transform(true);
+	tiles[p_atlas_coords].alternatives[new_alternative_id]->set_allow_transform(true);
 	tiles[p_atlas_coords].alternatives_ids.append(new_alternative_id);
 	tiles[p_atlas_coords].alternatives_ids.sort();
 	_compute_next_alternative_id(p_atlas_coords);
@@ -1018,7 +1018,7 @@ void TileSet::compatibility_conversion() {
 								tile_data->set_z_index(ctd->autotile_z_index_map[coords]);
 							}
 							if (ctd->autotile_priority_map.has(coords)) {
-								tile_data->tile_set_probability(ctd->autotile_priority_map[coords]);
+								tile_data->set_probability(ctd->autotile_priority_map[coords]);
 							}
 
 							// -- TODO: handle --

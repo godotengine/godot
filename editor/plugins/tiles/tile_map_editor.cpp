@@ -322,7 +322,7 @@ TileMapCell TileMapEditor::_pick_random_tile(const TileMapPattern *p_pattern) {
 		TileSetSource *source = *tile_set->get_source(source_id);
 		TileSetAtlasSource *atlas_source = Object::cast_to<TileSetAtlasSource>(source);
 		if (atlas_source) {
-			sum += atlas_source->get_tile_data(atlas_coords, alternative_tile)->tile_get_probability();
+			sum += atlas_source->get_tile_data(atlas_coords, alternative_tile)->get_probability();
 		} else {
 			sum += 1.0;
 		}
@@ -339,7 +339,7 @@ TileMapCell TileMapEditor::_pick_random_tile(const TileMapPattern *p_pattern) {
 		TileSetSource *source = *tile_set->get_source(source_id);
 		TileSetAtlasSource *atlas_source = Object::cast_to<TileSetAtlasSource>(source);
 		if (atlas_source) {
-			current += atlas_source->get_tile_data(atlas_coords, alternative_tile)->tile_get_probability();
+			current += atlas_source->get_tile_data(atlas_coords, alternative_tile)->get_probability();
 		} else {
 			current += 1.0;
 		}
