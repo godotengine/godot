@@ -845,7 +845,7 @@ static void _collision_sphere_capsule(const Shape3DSW *p_a, const Transform &p_t
 
 	//capsule sphere 1, sphere
 
-	Vector3 capsule_axis = p_transform_b.basis.get_axis(2) * (capsule_B->get_height() * 0.5);
+	Vector3 capsule_axis = p_transform_b.basis.get_axis(1) * (capsule_B->get_height() * 0.5);
 
 	Vector3 capsule_ball_1 = p_transform_b.origin + capsule_axis;
 
@@ -1148,7 +1148,7 @@ static void _collision_box_capsule(const Shape3DSW *p_a, const Transform &p_tran
 		}
 	}
 
-	Vector3 cyl_axis = p_transform_b.basis.get_axis(2).normalized();
+	Vector3 cyl_axis = p_transform_b.basis.get_axis(1).normalized();
 
 	// edges of A, capsule cylinder
 
@@ -1193,7 +1193,7 @@ static void _collision_box_capsule(const Shape3DSW *p_a, const Transform &p_tran
 	// capsule balls, edges of A
 
 	for (int i = 0; i < 2; i++) {
-		Vector3 capsule_axis = p_transform_b.basis.get_axis(2) * (capsule_B->get_height() * 0.5);
+		Vector3 capsule_axis = p_transform_b.basis.get_axis(1) * (capsule_B->get_height() * 0.5);
 
 		Vector3 sphere_pos = p_transform_b.origin + ((i == 0) ? capsule_axis : -capsule_axis);
 
@@ -1569,8 +1569,8 @@ static void _collision_capsule_capsule(const Shape3DSW *p_a, const Transform &p_
 
 	// some values
 
-	Vector3 capsule_A_axis = p_transform_a.basis.get_axis(2) * (capsule_A->get_height() * 0.5);
-	Vector3 capsule_B_axis = p_transform_b.basis.get_axis(2) * (capsule_B->get_height() * 0.5);
+	Vector3 capsule_A_axis = p_transform_a.basis.get_axis(1) * (capsule_A->get_height() * 0.5);
+	Vector3 capsule_B_axis = p_transform_b.basis.get_axis(1) * (capsule_B->get_height() * 0.5);
 
 	Vector3 capsule_A_ball_1 = p_transform_a.origin + capsule_A_axis;
 	Vector3 capsule_A_ball_2 = p_transform_a.origin - capsule_A_axis;
@@ -1670,7 +1670,7 @@ static void _collision_capsule_convex_polygon(const Shape3DSW *p_a, const Transf
 	for (int i = 0; i < edge_count; i++) {
 		// cylinder
 		Vector3 edge_axis = p_transform_b.basis.xform(vertices[edges[i].a]) - p_transform_b.basis.xform(vertices[edges[i].b]);
-		Vector3 axis = edge_axis.cross(p_transform_a.basis.get_axis(2)).normalized();
+		Vector3 axis = edge_axis.cross(p_transform_a.basis.get_axis(1)).normalized();
 
 		if (!separator.test_axis(axis)) {
 			return;
@@ -1682,7 +1682,7 @@ static void _collision_capsule_convex_polygon(const Shape3DSW *p_a, const Transf
 	for (int i = 0; i < 2; i++) {
 		// edges of B, capsule cylinder
 
-		Vector3 capsule_axis = p_transform_a.basis.get_axis(2) * (capsule_A->get_height() * 0.5);
+		Vector3 capsule_axis = p_transform_a.basis.get_axis(1) * (capsule_A->get_height() * 0.5);
 
 		Vector3 sphere_pos = p_transform_a.origin + ((i == 0) ? capsule_axis : -capsule_axis);
 
@@ -1720,7 +1720,7 @@ static void _collision_capsule_face(const Shape3DSW *p_a, const Transform &p_tra
 
 	// edges of B, capsule cylinder
 
-	Vector3 capsule_axis = p_transform_a.basis.get_axis(2) * (capsule_A->get_height() * 0.5);
+	Vector3 capsule_axis = p_transform_a.basis.get_axis(1) * (capsule_A->get_height() * 0.5);
 
 	for (int i = 0; i < 3; i++) {
 		// edge-cylinder

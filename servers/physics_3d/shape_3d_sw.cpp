@@ -491,10 +491,10 @@ BoxShape3DSW::BoxShape3DSW() {
 
 void CapsuleShape3DSW::project_range(const Vector3 &p_normal, const Transform &p_transform, real_t &r_min, real_t &r_max) const {
 	Vector3 n = p_transform.basis.xform_inv(p_normal).normalized();
-	real_t h = (n.z > 0) ? height : -height;
+	real_t h = (n.y > 0) ? height : -height;
 
 	n *= radius;
-	n.z += h * 0.5;
+	n.y += h * 0.5;
 
 	r_max = p_normal.dot(p_transform.xform(n));
 	r_min = p_normal.dot(p_transform.xform(-n));
@@ -503,36 +503,36 @@ void CapsuleShape3DSW::project_range(const Vector3 &p_normal, const Transform &p
 Vector3 CapsuleShape3DSW::get_support(const Vector3 &p_normal) const {
 	Vector3 n = p_normal;
 
-	real_t h = (n.z > 0) ? height : -height;
+	real_t h = (n.y > 0) ? height : -height;
 
 	n *= radius;
-	n.z += h * 0.5;
+	n.y += h * 0.5;
 	return n;
 }
 
 void CapsuleShape3DSW::get_supports(const Vector3 &p_normal, int p_max, Vector3 *r_supports, int &r_amount, FeatureType &r_type) const {
 	Vector3 n = p_normal;
 
-	real_t d = n.z;
+	real_t d = n.y;
 
 	if (Math::abs(d) < _EDGE_IS_VALID_SUPPORT_THRESHOLD) {
 		// make it flat
-		n.z = 0.0;
+		n.y = 0.0;
 		n.normalize();
 		n *= radius;
 
 		r_amount = 2;
 		r_type = FEATURE_EDGE;
 		r_supports[0] = n;
-		r_supports[0].z += height * 0.5;
+		r_supports[0].y += height * 0.5;
 		r_supports[1] = n;
-		r_supports[1].z -= height * 0.5;
+		r_supports[1].y -= height * 0.5;
 
 	} else {
 		real_t h = (d > 0) ? height : -height;
 
 		n *= radius;
-		n.z += h * 0.5;
+		n.y += h * 0.5;
 		r_amount = 1;
 		r_type = FEATURE_POINT;
 		*r_supports = n;
@@ -551,7 +551,7 @@ bool CapsuleShape3DSW::intersect_segment(const Vector3 &p_begin, const Vector3 &
 
 	// test against cylinder and spheres :-|
 
-	collided = Geometry3D::segment_intersects_cylinder(p_begin, p_end, height, radius, &auxres, &auxn);
+	collided = Geometry3D::segment_intersects_cylinder(p_begin, p_end, height, radius, &auxres, &auxn, 1);
 
 	if (collided) {
 		real_t d = norm.dot(auxres);
@@ -563,7 +563,7 @@ bool CapsuleShape3DSW::intersect_segment(const Vector3 &p_begin, const Vector3 &
 		}
 	}
 
-	collided = Geometry3D::segment_intersects_sphere(p_begin, p_end, Vector3(0, 0, height * 0.5), radius, &auxres, &auxn);
+	collided = Geometry3D::segment_intersects_sphere(p_begin, p_end, Vector3(0, height * 0.5, 0), radius, &auxres, &auxn);
 
 	if (collided) {
 		real_t d = norm.dot(auxres);
@@ -575,7 +575,7 @@ bool CapsuleShape3DSW::intersect_segment(const Vector3 &p_begin, const Vector3 &
 		}
 	}
 
-	collided = Geometry3D::segment_intersects_sphere(p_begin, p_end, Vector3(0, 0, height * -0.5), radius, &auxres, &auxn);
+	collided = Geometry3D::segment_intersects_sphere(p_begin, p_end, Vector3(0, height * -0.5, 0), radius, &auxres, &auxn);
 
 	if (collided) {
 		real_t d = norm.dot(auxres);
@@ -596,19 +596,19 @@ bool CapsuleShape3DSW::intersect_segment(const Vector3 &p_begin, const Vector3 &
 }
 
 bool CapsuleShape3DSW::intersect_point(const Vector3 &p_point) const {
-	if (Math::abs(p_point.z) < height * 0.5) {
-		return Vector3(p_point.x, p_point.y, 0).length() < radius;
+	if (Math::abs(p_point.y) < height * 0.5) {
+		return Vector3(p_point.x, 0, p_point.z).length() < radius;
 	} else {
 		Vector3 p = p_point;
-		p.z = Math::abs(p.z) - height * 0.5;
+		p.y = Math::abs(p.y) - height * 0.5;
 		return p.length() < radius;
 	}
 }
 
 Vector3 CapsuleShape3DSW::get_closest_point_to(const Vector3 &p_point) const {
 	Vector3 s[2] = {
-		Vector3(0, 0, -height * 0.5),
-		Vector3(0, 0, height * 0.5),
+		Vector3(0, -height * 0.5, 0),
+		Vector3(0, height * 0.5, 0),
 	};
 
 	Vector3 p = Geometry3D::get_closest_point_to_segment(p_point, s);
@@ -633,7 +633,7 @@ Vector3 CapsuleShape3DSW::get_moment_of_inertia(real_t p_mass) const {
 void CapsuleShape3DSW::_setup(real_t p_height, real_t p_radius) {
 	height = p_height;
 	radius = p_radius;
-	configure(AABB(Vector3(-radius, -radius, -height * 0.5 - radius), Vector3(radius * 2, radius * 2, height + radius * 2.0)));
+	configure(AABB(Vector3(-radius, -height * 0.5 - radius, -radius), Vector3(radius * 2, height + radius * 2.0, radius * 2)));
 }
 
 void CapsuleShape3DSW::set_data(const Variant &p_data) {
