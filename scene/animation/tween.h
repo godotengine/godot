@@ -107,6 +107,7 @@ private:
 	float speed_scale = 1.0;
 	mutable int pending_update = 0;
 	int uid = 0;
+	bool was_stopped = false;
 
 	List<InterpolateData> interpolates;
 
