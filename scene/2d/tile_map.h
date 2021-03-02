@@ -96,6 +96,9 @@ struct TileMapQuadrant {
 	// Dirty list element
 	SelfList<TileMapQuadrant> dirty_list_element;
 
+	// Quadrant coords.
+	Vector2i coords;
+
 	// TileMapCells
 	Set<Vector2i> cells;
 	// We need those two maps to sort by world position for rendering
@@ -103,24 +106,36 @@ struct TileMapQuadrant {
 	Map<Vector2i, Vector2i> map_to_world;
 	Map<Vector2i, Vector2i, CoordsWorldComparator> world_to_map;
 
+	// Debug.
+	RID debug_canvas_item;
+
 	// Rendering
-	Vector2 pos;
 	List<RID> canvas_items;
 	List<RID> occluders;
 
+	// Physics.
+	List<RID> bodies;
+
 	void operator=(const TileMapQuadrant &q) {
-		pos = q.pos;
+		coords = q.coords;
+		debug_canvas_item = q.debug_canvas_item;
 		canvas_items = q.canvas_items;
+		occluders = q.occluders;
+		bodies = q.bodies;
 	}
 
 	TileMapQuadrant(const TileMapQuadrant &q) :
 			dirty_list_element(this) {
-		pos = q.pos;
+		coords = q.coords;
+		debug_canvas_item = q.debug_canvas_item;
 		canvas_items = q.canvas_items;
+		occluders = q.occluders;
+		bodies = q.bodies;
 	}
 
 	TileMapQuadrant() :
-			dirty_list_element(this) {}
+			dirty_list_element(this) {
+	}
 };
 
 class TileMapPattern : public Object {

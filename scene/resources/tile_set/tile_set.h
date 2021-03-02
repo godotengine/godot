@@ -35,7 +35,9 @@
 #include "core/object/object.h"
 
 #include "scene/main/canvas_item.h"
+#include "scene/resources/convex_polygon_shape_2d.h"
 #include "scene/resources/packed_scene.h"
+#include "scene/resources/physics_material.h"
 
 #include "tile_set_atlas_plugin.h"
 #include "tile_set_atlas_plugin_navigation.h"
@@ -71,8 +73,20 @@ private:
 	Vector2i y_sort_origin = Vector2i();
 	Vector<Ref<OccluderPolygon2D>> occluders;
 
+	// Physics
+	struct PhysicsLayerTileData {
+		struct ShapeTileData {
+			Ref<Shape2D> shape = Ref<Shape2D>();
+			bool one_way = false;
+			float one_way_margin = 1.0;
+		};
+
+		Vector<ShapeTileData> shapes;
+	};
+	Vector<PhysicsLayerTileData> physics;
+	// TODO add support for areas.
+
 	//TerrainTileData terrains;
-	//PhysicsTileData physics;
 	//NavigationData navigation;
 
 	// Misc
@@ -113,6 +127,18 @@ public:
 
 	void set_occluder(int p_layer_id, Ref<OccluderPolygon2D> p_occluder_polygon);
 	Ref<OccluderPolygon2D> get_occluder(int p_layer_id) const;
+
+	// Physics
+	int get_collision_shapes_count(int p_layer_id) const;
+	void set_collision_shapes_count(int p_layer_id, int p_shapes_count);
+	void add_collision_shape(int p_layer_id);
+	void remove_collision_shape(int p_layer_id, int p_shape_index);
+	void set_collision_shape_shape(int p_layer_id, int p_shape_index, Ref<Shape2D> p_shape);
+	Ref<Shape2D> get_collision_shape_shape(int p_layer_id, int p_shape_index) const;
+	void set_collision_shape_one_way(int p_layer_id, int p_shape_index, bool p_one_way);
+	bool is_collision_shape_one_way(int p_layer_id, int p_shape_index) const;
+	void set_collision_shape_one_way_margin(int p_layer_id, int p_shape_index, float p_one_way_margin);
+	float get_collision_shape_one_way_margin(int p_layer_id, int p_shape_index) const;
 
 	// Terrain
 	/*
@@ -275,7 +301,7 @@ private:
 		int autotile_bitmask_mode;
 		Vector2 autotile_icon_coordinate;
 		Size2i autotile_tile_size = Size2i(16, 16);
-		;
+
 		int autotile_spacing;
 		Map<Vector2i, int> autotile_bitmask_flags;
 		Map<Vector2i, Ref<OccluderPolygon2D>> autotile_occluder_map;
@@ -350,13 +376,20 @@ private:
 	bool y_sorting = false;
 	bool uv_clipping = false;
 	struct OcclusionLayer {
-		int light_mask = 0;
+		uint32_t light_mask = 1;
 		bool sdf_collision = false;
 	};
 	Vector<OcclusionLayer> occlusion_layers;
 
+	// Physics
+	struct PhysicsLayer {
+		uint32_t collision_layer = 1;
+		uint32_t collision_mask = 1;
+		Ref<PhysicsMaterial> physics_material;
+	};
+	Vector<PhysicsLayer> physics_layers;
+
 	//TerrainsTileSetData terrains;
-	//PhysicsTileSetData physics;
 	//NavigationTileSetData navigation;
 
 	// Per Atlas source data.
@@ -368,7 +401,7 @@ private:
 	// Plugins themselves.
 	TileSetAtlasPluginRendering tile_set_plugin_rendering;
 	//TileSetAtlasPluginTerrain tile_set_plugin_terrain;
-	//TileSetAtlasPluginPhysics tile_set_plugin_physics;
+	TileSetAtlasPluginPhysics tile_set_plugin_physics;
 	//TileSetAtlasPluginNavigation tile_set_plugin_navigation;
 
 	Vector<TileSetPlugin *> tile_set_plugins_vector;
@@ -431,18 +464,19 @@ public:
 	void set_occlusion_layer_sdf_collision(int p_layer_index, int p_sdf_collision);
 	bool get_occlusion_layer_sdf_collision(int p_layer_index) const;
 
-	/*
 	// Physics
-	int get_physics_layers_count();
-	uint32_t get_physics_layer_collision_layer(int p_collision_layer) const;
-	uint32_t get_physics_layer_collision_mask(int p_collision_layer) const;
-	bool get_physics_layer_use_kinematic(int p_collision_layer) const;
-	float get_physics_layer_friction(int p_collision_layer) const;
-	float get_physics_layer_bounce(int p_collision_layer) const;
+	void set_physics_layers_count(int p_physics_layers_count);
+	int get_physics_layers_count() const;
+	void set_physics_layer_collision_layer(int p_layer_index, uint32_t p_layer);
+	uint32_t get_physics_layer_collision_layer(int p_layer_index) const;
+	void set_physics_layer_collision_mask(int p_layer_index, uint32_t p_mask);
+	uint32_t get_physics_layer_collision_mask(int p_layer_index) const;
+	void set_physics_layer_physics_material(int p_layer_index, Ref<PhysicsMaterial> p_physics_material);
+	Ref<PhysicsMaterial> get_physics_layer_physics_material(int p_layer_index) const;
 
 	// Navigation
-	// Nothing for now
-	*/
+
+	// Terrains
 
 	// Helpers
 	void draw_tile_shape(CanvasItem *p_canvas_item, Rect2 p_region, Color p_color, bool p_filled = false, Ref<Texture2D> p_texture = Ref<Texture2D>());

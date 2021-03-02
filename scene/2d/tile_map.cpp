@@ -370,9 +370,21 @@ void TileMap::update_dirty_quadrants() {
 		}
 	}
 
-	// Call the update_dirty_quadrant method on plugins
+	// Call the update_dirty_quadrant method on plugins.
 	for (int i = 0; i < tile_set->get_tile_set_atlas_plugins().size(); i++) {
 		tile_set->get_tile_set_atlas_plugins()[i]->update_dirty_quadrants(this, dirty_quadrant_list);
+	}
+
+	// Redraw the debug canvas_items.
+	RenderingServer *rs = RenderingServer::get_singleton();
+	for (SelfList<TileMapQuadrant> *q = dirty_quadrant_list.first(); q; q = q->next()) {
+		rs->canvas_item_clear(q->self()->debug_canvas_item);
+		Transform2D xform;
+		xform.set_origin(map_to_world(q->self()->coords * get_effective_quadrant_size()));
+		rs->canvas_item_set_transform(q->self()->debug_canvas_item, xform);
+		for (int i = 0; i < tile_set->get_tile_set_atlas_plugins().size(); i++) {
+			tile_set->get_tile_set_atlas_plugins()[i]->draw_quadrant_debug(this, q->self());
+		}
 	}
 
 	// Clear the list
@@ -417,13 +429,20 @@ void TileMap::_recompute_rect_cache() {
 
 Map<Vector2i, TileMapQuadrant>::Element *TileMap::_create_quadrant(const Vector2i &p_qk) {
 	TileMapQuadrant q;
+	q.coords = p_qk;
 
 	rect_cache_dirty = true;
 
-	// Call the update_dirty_quadrant method on plugins
+	// Create the debug canvas item.
+	RenderingServer *rs = RenderingServer::get_singleton();
+	q.debug_canvas_item = rs->canvas_item_create();
+	rs->canvas_item_set_z_index(q.debug_canvas_item, RS::CANVAS_ITEM_Z_MAX - 1);
+	rs->canvas_item_set_parent(q.debug_canvas_item, get_canvas_item());
+
+	// Call the create_quadrant method on plugins
 	if (tile_set.is_valid()) {
 		for (int i = 0; i < tile_set->get_tile_set_atlas_plugins().size(); i++) {
-			tile_set->get_tile_set_atlas_plugins()[i]->create_quadrant(this, p_qk, &q);
+			tile_set->get_tile_set_atlas_plugins()[i]->create_quadrant(this, &q);
 		}
 	}
 
@@ -445,6 +464,10 @@ void TileMap::_erase_quadrant(Map<Vector2i, TileMapQuadrant>::Element *Q) {
 	if (q->dirty_list_element.in_list()) {
 		dirty_quadrant_list.remove(&(q->dirty_list_element));
 	}
+
+	// Free the debug canvas item.
+	RenderingServer *rs = RenderingServer::get_singleton();
+	rs->free(q->debug_canvas_item);
 
 	quadrant_map.erase(Q);
 	rect_cache_dirty = true;

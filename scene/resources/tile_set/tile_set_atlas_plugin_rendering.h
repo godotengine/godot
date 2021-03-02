@@ -47,8 +47,7 @@ public:
 	// Tilemap updates
 	virtual void tilemap_notification(TileMap *p_tile_map, int p_what) override;
 	virtual void update_dirty_quadrants(TileMap *p_tile_map, SelfList<TileMapQuadrant>::List &r_dirty_quadrant_list) override;
-	virtual void initialize_quadrant(TileMap *p_tile_map, TileMapQuadrant *p_quadrant) override;
-	virtual void create_quadrant(TileMap *p_tile_map, const Vector2i &p_quadrant_coords, TileMapQuadrant *p_quadrant) override;
+	virtual void create_quadrant(TileMap *p_tile_map, TileMapQuadrant *p_quadrant) override;
 	virtual void cleanup_quadrant(TileMap *p_tile_map, TileMapQuadrant *p_quadrant) override;
 
 	// Other.

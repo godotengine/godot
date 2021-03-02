@@ -31,59 +31,20 @@
 #ifndef TILE_SET_ATLAS_PLUGIN_PHYSICS_H
 #define TILE_SET_ATLAS_PLUGIN_PHYSICS_H
 
+#include "tile_set_atlas_plugin.h"
+
 #include "scene/resources/shape_2d.h"
 
-class TileMap;
-
-// Tile data
-struct ShapeTileData {
-	bool one_way;
-	float one_way_margin;
-	Ref<Shape2D> shape;
-	Transform2D transform;
-};
-
-struct PhysicsLayerTileData {
-	Vector<ShapeTileData> shapes;
-};
-
-struct PhysicsTileData {
-	Vector<PhysicsLayerTileData> collisions;
-};
-
-// TileSet data
-struct PhysicsLayerTileSetData {
-	uint32_t collision_layer;
-	uint32_t collision_mask;
-	bool use_kinematic;
-	float friction;
-	float bounce;
-};
-
-struct PhysicsTileSetData {
-	Vector<PhysicsLayerTileSetData> layers;
-};
-
-/*
-class TileSetAtlasPluginPhysics : public Resource {
-	GDCLASS(TileSetAtlasPluginPhysics, Resource);
-
-private:
-    void _update_state(const TileMap * p_tile_map);
-    void _add_shape(int &shape_idx, const Quadrant &p_q, const Ref<Shape2D> &p_shape, const TileSet::ShapeData &p_shape_data, const Transform2D &p_xform, const Vector2 &p_metadata);
+class TileSetAtlasPluginPhysics : public TileSetPlugin {
+	GDCLASS(TileSetAtlasPluginPhysics, TileSetPlugin);
 
 public:
-    // Get the list of tileset layers supported by a tileset plugin
-    virtual int get_layer_type_count() { return 0; };
-    virtual String get_layer_type_name(int p_id) { return ""; };
-    virtual String get_layer_type_icon(int p_id) { return ""; };
-    virtual bool get_layer_type_multiple_mode(int p_id) { return true; };
-
-    // Tilemap updates
-    virtual void tilemap_notification(TileMap * p_tile_map, int p_what);
-    virtual void update_dirty_quadrants(TileMap * p_tile_map);
-    virtual void initialize_quadrant(TileMap * p_tile_map, Quadrant * p_quadrant);
-    virtual void cleanup_quadrant(TileMap * p_tile_map, Quadrant * p_quadrant);
+	// Tilemap updates
+	virtual void tilemap_notification(TileMap *p_tile_map, int p_what) override;
+	virtual void update_dirty_quadrants(TileMap *p_tile_map, SelfList<TileMapQuadrant>::List &r_dirty_quadrant_list) override;
+	virtual void create_quadrant(TileMap *p_tile_map, TileMapQuadrant *p_quadrant) override;
+	virtual void cleanup_quadrant(TileMap *p_tile_map, TileMapQuadrant *p_quadrant) override;
+	virtual void draw_quadrant_debug(TileMap *p_tile_map, TileMapQuadrant *p_quadrant) override;
 };
-*/
+
 #endif // TILE_SET_ATLAS_PLUGIN_PHYSICS_H

@@ -74,9 +74,10 @@ public:
 	// Tilemap updates.
 	virtual void tilemap_notification(TileMap *p_tile_map, int p_what){};
 	virtual void update_dirty_quadrants(TileMap *p_tile_map, SelfList<TileMapQuadrant>::List &r_dirty_quadrant_list){};
-	virtual void initialize_quadrant(TileMap *p_tile_map, TileMapQuadrant *p_quadrant){};
-	virtual void create_quadrant(TileMap *p_tile_map, const Vector2i &p_quadrant_coords, TileMapQuadrant *p_quadrant){};
+	virtual void create_quadrant(TileMap *p_tile_map, TileMapQuadrant *p_quadrant){};
 	virtual void cleanup_quadrant(TileMap *p_tile_map, TileMapQuadrant *p_quadrant){};
+
+	virtual void draw_quadrant_debug(TileMap *p_tile_map, TileMapQuadrant *p_quadrant){};
 };
 
 #endif // TILE_SET_PLUGIN_H

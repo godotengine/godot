@@ -50,10 +50,6 @@ void TileSetAtlasPluginRendering::tilemap_notification(TileMap *p_tile_map, int 
 				}
 			}
 		} break;
-		case Node::NOTIFICATION_ENTER_TREE: {
-		} break;
-		case Node::NOTIFICATION_EXIT_TREE: {
-		} break;
 		case CanvasItem::NOTIFICATION_TRANSFORM_CHANGED: {
 			if (!p_tile_map->is_inside_tree()) {
 				return;
@@ -128,6 +124,8 @@ void TileSetAtlasPluginRendering::draw_tile(RID p_canvas_item, Vector2i p_positi
 }
 
 void TileSetAtlasPluginRendering::update_dirty_quadrants(TileMap *p_tile_map, SelfList<TileMapQuadrant>::List &r_dirty_quadrant_list) {
+	ERR_FAIL_COND(!p_tile_map);
+	ERR_FAIL_COND(!p_tile_map->is_inside_tree());
 	Ref<TileSet> tile_set = p_tile_map->get_tileset();
 	ERR_FAIL_COND(!tile_set.is_valid());
 
@@ -155,7 +153,6 @@ void TileSetAtlasPluginRendering::update_dirty_quadrants(TileMap *p_tile_map, Se
 		Ref<ShaderMaterial> prev_material;
 		int prev_z_index = 0;
 		RID prev_canvas_item;
-		RID prev_debug_canvas_item;
 
 		// Iterate over the cells of the quadrant.
 		for (Map<Vector2i, Vector2i, TileMapQuadrant::CoordsWorldComparator>::Element *E_cell = q.world_to_map.front(); E_cell; E_cell = E_cell->next()) {
@@ -176,10 +173,12 @@ void TileSetAtlasPluginRendering::update_dirty_quadrants(TileMap *p_tile_map, Se
 					Ref<ShaderMaterial> mat = tile_data->tile_get_material();
 					int z_index = tile_data->get_z_index();
 
+					// Quandrant pos.
+					Vector2 position = p_tile_map->map_to_world(q.coords * p_tile_map->get_effective_quadrant_size()) - tile_set->get_tile_size() / 2;
+
 					// --- CanvasItems ---
 					// Create two canvas items, for rendering and debug.
 					RID canvas_item;
-					RID debug_canvas_item;
 
 					// Check if the material or the z_index changed.
 					if (prev_canvas_item == RID() || prev_material != mat || prev_z_index != z_index) {
@@ -190,7 +189,8 @@ void TileSetAtlasPluginRendering::update_dirty_quadrants(TileMap *p_tile_map, Se
 						rs->canvas_item_set_parent(canvas_item, p_tile_map->get_canvas_item());
 						rs->canvas_item_set_use_parent_material(canvas_item, p_tile_map->get_use_parent_material() || p_tile_map->get_material().is_valid());
 						Transform2D xform;
-						xform.set_origin(q.pos);
+						xform.set_origin(position);
+
 						rs->canvas_item_set_transform(canvas_item, xform);
 						rs->canvas_item_set_light_mask(canvas_item, p_tile_map->get_light_mask());
 						rs->canvas_item_set_z_index(canvas_item, z_index);
@@ -210,12 +210,7 @@ void TileSetAtlasPluginRendering::update_dirty_quadrants(TileMap *p_tile_map, Se
 					}
 
 					// Drawing the tile in the canvas item.
-					draw_tile(canvas_item, E_cell->key() - q.pos, tile_set, c.source_id, c.get_atlas_coords(), c.alternative_tile, p_tile_map->get_self_modulate());
-
-					// Change the debug_canvas_item transform ?
-					if (debug_canvas_item.is_valid()) {
-						rs->canvas_item_add_set_transform(debug_canvas_item, Transform2D());
-					}
+					draw_tile(canvas_item, E_cell->key() - position, tile_set, c.source_id, c.get_atlas_coords(), c.alternative_tile, p_tile_map->get_self_modulate());
 
 					// --- Occluders ---
 					for (int i = 0; i < tile_set->get_occlusion_layers_count(); i++) {
@@ -262,14 +257,10 @@ void TileSetAtlasPluginRendering::update_dirty_quadrants(TileMap *p_tile_map, Se
 	}
 }
 
-void TileSetAtlasPluginRendering::initialize_quadrant(TileMap *p_tile_map, TileMapQuadrant *p_quadrant) {
-}
-
-void TileSetAtlasPluginRendering::create_quadrant(TileMap *p_tile_map, const Vector2i &p_quadrant_coords, TileMapQuadrant *p_quadrant) {
+void TileSetAtlasPluginRendering::create_quadrant(TileMap *p_tile_map, TileMapQuadrant *p_quadrant) {
 	Ref<TileSet> tile_set = p_tile_map->get_tileset();
 	ERR_FAIL_COND(!tile_set.is_valid());
 
-	p_quadrant->pos = p_tile_map->map_to_world(p_quadrant_coords * p_tile_map->get_effective_quadrant_size()) - tile_set->get_tile_size() / 2; // Quadrant's position in the TileMap's local coords
 	quadrant_order_dirty = true;
 }
 

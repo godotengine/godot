@@ -32,22 +32,27 @@
 
 #include "scene/gui/control.h"
 
+#include "core/math/geometry_2d.h"
+
 void TileData::set_tile_set(const TileSet *p_tile_set) {
 	tile_set = p_tile_set;
 	if (tile_set) {
 		occluders.resize(tile_set->get_occlusion_layers_count());
+		physics.resize(tile_set->get_physics_layers_count());
 	}
 	notify_property_list_changed();
 }
 
 void TileData::notify_tile_data_properties_should_change() {
 	occluders.resize(tile_set->get_occlusion_layers_count());
+	physics.resize(tile_set->get_physics_layers_count());
 	notify_property_list_changed();
 	emit_signal("changed");
 }
 
 void TileData::reset_state() {
 	occluders.clear();
+	physics.clear();
 }
 
 void TileData::tile_set_allow_transform(bool p_allow_transform) {
@@ -138,6 +143,72 @@ Ref<OccluderPolygon2D> TileData::get_occluder(int p_layer_id) const {
 	return occluders[p_layer_id];
 }
 
+// Physics
+int TileData::get_collision_shapes_count(int p_layer_id) const {
+	ERR_FAIL_INDEX_V(p_layer_id, physics.size(), 0);
+	return physics[p_layer_id].shapes.size();
+}
+
+void TileData::set_collision_shapes_count(int p_layer_id, int p_shapes_count) {
+	ERR_FAIL_INDEX(p_layer_id, physics.size());
+	ERR_FAIL_COND(p_shapes_count < 0);
+	physics.write[p_layer_id].shapes.resize(p_shapes_count);
+	notify_property_list_changed();
+	emit_signal("changed");
+}
+
+void TileData::add_collision_shape(int p_layer_id) {
+	ERR_FAIL_INDEX(p_layer_id, physics.size());
+	physics.write[p_layer_id].shapes.push_back(PhysicsLayerTileData::ShapeTileData());
+	emit_signal("changed");
+}
+
+void TileData::remove_collision_shape(int p_layer_id, int p_shape_index) {
+	ERR_FAIL_INDEX(p_layer_id, physics.size());
+	ERR_FAIL_INDEX(p_shape_index, physics[p_layer_id].shapes.size());
+	physics.write[p_layer_id].shapes.remove(p_shape_index);
+	emit_signal("changed");
+}
+
+void TileData::set_collision_shape_shape(int p_layer_id, int p_shape_index, Ref<Shape2D> p_shape) {
+	ERR_FAIL_INDEX(p_layer_id, physics.size());
+	ERR_FAIL_INDEX(p_shape_index, physics[p_layer_id].shapes.size());
+	physics.write[p_layer_id].shapes.write[p_shape_index].shape = p_shape;
+	emit_signal("changed");
+}
+
+Ref<Shape2D> TileData::get_collision_shape_shape(int p_layer_id, int p_shape_index) const {
+	ERR_FAIL_INDEX_V(p_layer_id, physics.size(), Ref<Shape2D>());
+	ERR_FAIL_INDEX_V(p_shape_index, physics[p_layer_id].shapes.size(), Ref<Shape2D>());
+	return physics[p_layer_id].shapes[p_shape_index].shape;
+}
+
+void TileData::set_collision_shape_one_way(int p_layer_id, int p_shape_index, bool p_one_way) {
+	ERR_FAIL_INDEX(p_layer_id, physics.size());
+	ERR_FAIL_INDEX(p_shape_index, physics[p_layer_id].shapes.size());
+	physics.write[p_layer_id].shapes.write[p_shape_index].one_way = p_one_way;
+	emit_signal("changed");
+}
+
+bool TileData::is_collision_shape_one_way(int p_layer_id, int p_shape_index) const {
+	ERR_FAIL_INDEX_V(p_layer_id, physics.size(), false);
+	ERR_FAIL_INDEX_V(p_shape_index, physics[p_layer_id].shapes.size(), false);
+	return physics[p_layer_id].shapes[p_shape_index].one_way;
+}
+
+void TileData::set_collision_shape_one_way_margin(int p_layer_id, int p_shape_index, float p_one_way_margin) {
+	ERR_FAIL_INDEX(p_layer_id, physics.size());
+	ERR_FAIL_INDEX(p_shape_index, physics[p_layer_id].shapes.size());
+	physics.write[p_layer_id].shapes.write[p_shape_index].one_way_margin = p_one_way_margin;
+	emit_signal("changed");
+}
+
+float TileData::get_collision_shape_one_way_margin(int p_layer_id, int p_shape_index) const {
+	ERR_FAIL_INDEX_V(p_layer_id, physics.size(), 0.0);
+	ERR_FAIL_INDEX_V(p_shape_index, physics[p_layer_id].shapes.size(), 0.0);
+	return physics[p_layer_id].shapes[p_shape_index].one_way_margin;
+}
+
 // Misc
 void TileData::tile_set_probability(float p_probability) {
 	ERR_FAIL_COND(p_probability <= 0.0);
@@ -151,25 +222,72 @@ float TileData::tile_get_probability() const {
 bool TileData::_set(const StringName &p_name, const Variant &p_value) {
 	Vector<String> components = String(p_name).split("/", true, 2);
 
-	// Occlusion layers.
-	if (components.size() == 3 && components[0] == "occlusion_layers" && components[1].is_valid_integer()) {
-		int index = components[1].to_int();
-		ERR_FAIL_COND_V(index < 0, false);
-		if (components[2] == "polygon") {
+	if (components.size() == 2 && components[0].begins_with("occlusion_layer_") && components[0].trim_prefix("occlusion_layer_").is_valid_integer()) {
+		// Occlusion layers.
+		int layer_index = components[0].trim_prefix("occlusion_layer_").to_int();
+		ERR_FAIL_COND_V(layer_index < 0, false);
+		if (components[1] == "polygon") {
 			Ref<OccluderPolygon2D> polygon = p_value;
 			if (!polygon.is_valid()) {
 				return false;
 			}
 
-			if (index >= occluders.size()) {
+			if (layer_index >= occluders.size()) {
 				if (tile_set) {
 					return false;
 				} else {
-					occluders.resize(index + 1);
+					occluders.resize(layer_index + 1);
 				}
 			}
-			set_occluder(index, polygon);
+			set_occluder(layer_index, polygon);
 			return true;
+		}
+	} else if (components.size() >= 2 && components[0].begins_with("physics_layer_") && components[0].trim_prefix("physics_layer_").is_valid_integer()) {
+		// Physics layers.
+		int layer_index = components[0].trim_prefix("physics_layer_").to_int();
+		ERR_FAIL_COND_V(layer_index < 0, false);
+		if (components.size() == 2 && components[1] == "shapes_count") {
+			if (p_value.get_type() != Variant::INT) {
+				return false;
+			}
+
+			if (layer_index >= physics.size()) {
+				if (tile_set) {
+					return false;
+				} else {
+					physics.resize(layer_index + 1);
+				}
+			}
+			set_collision_shapes_count(layer_index, p_value);
+			return true;
+		} else if (components.size() == 3 && components[1].begins_with("shape_") && components[1].trim_prefix("shape_").is_valid_integer()) {
+			int shape_index = components[1].trim_prefix("shape_").to_int();
+			ERR_FAIL_COND_V(shape_index < 0, false);
+
+			if (components[2] == "shape" || components[2] == "one_way" || components[2] == "one_way_margin") {
+				if (layer_index >= physics.size()) {
+					if (tile_set) {
+						return false;
+					} else {
+						physics.resize(layer_index + 1);
+					}
+				}
+
+				if (shape_index >= physics[layer_index].shapes.size()) {
+					physics.write[layer_index].shapes.resize(shape_index + 1);
+				}
+			}
+			if (components[2] == "shape") {
+				Ref<Shape2D> shape = p_value;
+				set_collision_shape_shape(layer_index, shape_index, shape);
+				return true;
+			} else if (components[2] == "one_way") {
+				set_collision_shape_one_way(layer_index, shape_index, p_value);
+				return true;
+			} else if (components[2] == "one_way_margin") {
+				set_collision_shape_one_way_margin(layer_index, shape_index, p_value);
+				return true;
+			}
 		}
 	}
 
@@ -180,16 +298,43 @@ bool TileData::_get(const StringName &p_name, Variant &r_ret) const {
 	Vector<String> components = String(p_name).split("/", true, 2);
 
 	if (tile_set) {
-		// Occlusion layers.
-		if (components.size() == 3 && components[0] == "occlusion_layers" && components[1].is_valid_integer()) {
-			int index = components[1].to_int();
-			ERR_FAIL_COND_V(index < 0, false);
-			if (components[2] == "polygon") {
-				if (index >= occluders.size()) {
+		if (components.size() == 2 && components[0].begins_with("occlusion_layer") && components[0].trim_prefix("occlusion_layer_").is_valid_integer()) {
+			// Occlusion layers.
+			int layer_index = components[0].trim_prefix("occlusion_layer_").to_int();
+			ERR_FAIL_COND_V(layer_index < 0, false);
+			if (layer_index >= occluders.size()) {
+				return false;
+			}
+			if (components[1] == "polygon") {
+				r_ret = get_occluder(layer_index);
+				return true;
+			}
+		} else if (components.size() >= 2 && components[0].begins_with("physics_layer_") && components[0].trim_prefix("physics_layer_").is_valid_integer()) {
+			// Physics layers.
+			int layer_index = components[0].trim_prefix("physics_layer_").to_int();
+			ERR_FAIL_COND_V(layer_index < 0, false);
+			if (layer_index >= physics.size()) {
+				return false;
+			}
+			if (components.size() == 2 && components[1] == "shapes_count") {
+				r_ret = get_collision_shapes_count(layer_index);
+				return true;
+			} else if (components.size() == 3 && components[1].begins_with("shape_") && components[1].trim_prefix("shape_").is_valid_integer()) {
+				int shape_index = components[1].trim_prefix("shape_").to_int();
+				ERR_FAIL_COND_V(shape_index < 0, false);
+				if (shape_index >= physics[layer_index].shapes.size()) {
 					return false;
 				}
-				r_ret = get_occluder(index);
-				return true;
+				if (components[2] == "shape") {
+					r_ret = get_collision_shape_shape(layer_index, shape_index);
+					return true;
+				} else if (components[2] == "one_way") {
+					r_ret = is_collision_shape_one_way(layer_index, shape_index);
+					return true;
+				} else if (components[2] == "one_way_margin") {
+					r_ret = get_collision_shape_one_way_margin(layer_index, shape_index);
+					return true;
+				}
 			}
 		}
 	}
@@ -204,7 +349,18 @@ void TileData::_get_property_list(List<PropertyInfo> *p_list) const {
 		// Occlusion layers.
 		p_list->push_back(PropertyInfo(Variant::NIL, "Rendering", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_GROUP));
 		for (int i = 0; i < occluders.size(); i++) {
-			p_list->push_back(PropertyInfo(Variant::OBJECT, vformat("occlusion_layers/%d/polygon", i), PROPERTY_HINT_RESOURCE_TYPE, "OccluderPolygon2D", PROPERTY_USAGE_DEFAULT));
+			p_list->push_back(PropertyInfo(Variant::OBJECT, vformat("occlusion_layer_%d/polygon", i), PROPERTY_HINT_RESOURCE_TYPE, "OccluderPolygon2D", PROPERTY_USAGE_DEFAULT));
+		}
+
+		// Physics layers
+		p_list->push_back(PropertyInfo(Variant::NIL, "Physics", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_GROUP));
+		for (int i = 0; i < physics.size(); i++) {
+			p_list->push_back(PropertyInfo(Variant::INT, vformat("physics_layer_%d/shapes_count", i), PROPERTY_HINT_NONE, "", PROPERTY_USAGE_EDITOR));
+			for (int j = 0; j < physics[i].shapes.size(); j++) {
+				p_list->push_back(PropertyInfo(Variant::OBJECT, vformat("physics_layer_%d/shape_%d/shape", i, j), PROPERTY_HINT_RESOURCE_TYPE, "Shape2D", PROPERTY_USAGE_DEFAULT));
+				p_list->push_back(PropertyInfo(Variant::BOOL, vformat("physics_layer_%d/shape_%d/one_way", i, j)));
+				p_list->push_back(PropertyInfo(Variant::FLOAT, vformat("physics_layer_%d/shape_%d/one_way_margin", i, j)));
+			}
 		}
 	}
 }
@@ -236,10 +392,12 @@ void TileData::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2I, "texture_offset"), "set_texture_offset", "get_texture_offset");
 	ADD_PROPERTY(PropertyInfo(Variant::COLOR, "modulate"), "set_modulate", "get_modulate");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "z_index"), "set_z_index", "get_z_index");
-	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2I, "ry_sort_origin"), "set_y_sort_origin", "get_y_sort_origin");
+	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2I, "y_sort_origin"), "set_y_sort_origin", "get_y_sort_origin");
 
 	ADD_GROUP("Miscellaneous", "");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "misc_probability"), "set_probability", "get_probability");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "probability"), "set_probability", "get_probability");
+
+	ADD_SIGNAL(MethodInfo("changed"));
 }
 
 void TileSetSource::set_tile_set(const TileSet *p_tile_set) {
@@ -444,6 +602,8 @@ bool TileSetAtlasSource::_get(const StringName &p_name, Variant &r_ret) const {
 }
 
 void TileSetAtlasSource::_get_property_list(List<PropertyInfo> *p_list) const {
+	const TileData default_tile_data;
+
 	// Atlases data.
 	for (Map<Vector2i, TileAlternativesData>::Element *E_tile = tiles.front(); E_tile; E_tile = E_tile->next()) {
 		List<PropertyInfo> tile_property_list;
@@ -489,6 +649,7 @@ void TileSetAtlasSource::create_tile(const Vector2i p_atlas_coords, const Vector
 	tiles[p_atlas_coords].alternatives[0] = memnew(TileData);
 	tiles[p_atlas_coords].alternatives[0]->set_tile_set(tile_set);
 	tiles[p_atlas_coords].alternatives[0]->tile_set_allow_transform(false);
+	tiles[p_atlas_coords].alternatives[0]->connect("changed", callable_mp((Resource *)this, &TileSetAtlasSource::emit_changed));
 	tiles[p_atlas_coords].alternatives_ids.append(0);
 
 	// Add all covered positions to the mapping cache
@@ -1034,22 +1195,50 @@ bool TileSet::_set(const StringName &p_name, const Variant &p_value) {
 #endif // DISABLE_DEPRECATED
 
 		// This is now a new property.
-		if (components.size() == 3 && components[0] == "occlusion_layers" && components[1].is_valid_integer()) {
-			int index = components[1].to_int();
+		if (components.size() == 2 && components[0].begins_with("occlusion_layer_") && components[0].trim_prefix("occlusion_layer_").is_valid_integer()) {
+			// Occlusion layers.
+			int index = components[0].trim_prefix("occlusion_layer_").to_int();
 			ERR_FAIL_COND_V(index < 0, false);
-			if (components[2] == "light_mask") {
+			if (components[1] == "light_mask") {
 				ERR_FAIL_COND_V(p_value.get_type() != Variant::INT, false);
 				if (index >= occlusion_layers.size()) {
 					set_occlusion_layers_count(index + 1);
 				}
 				set_occlusion_layer_light_mask(index, p_value);
 				return true;
-			} else if (components[2] == "sdf_collision") {
+			} else if (components[1] == "sdf_collision") {
 				ERR_FAIL_COND_V(p_value.get_type() != Variant::BOOL, false);
 				if (index >= occlusion_layers.size()) {
 					set_occlusion_layers_count(index + 1);
 				}
 				set_occlusion_layer_sdf_collision(index, p_value);
+				return true;
+			}
+		} else if (components.size() == 2 && components[0].begins_with("physics_layer_") && components[0].trim_prefix("physics_layer_").is_valid_integer()) {
+			// Physics layers.
+			int index = components[0].trim_prefix("physics_layer_").to_int();
+			ERR_FAIL_COND_V(index < 0, false);
+			if (components[1] == "collision_layer") {
+				ERR_FAIL_COND_V(p_value.get_type() != Variant::INT, false);
+				if (index >= physics_layers.size()) {
+					set_physics_layers_count(index + 1);
+				}
+				set_physics_layer_collision_layer(index, p_value);
+				return true;
+			} else if (components[1] == "collision_mask") {
+				ERR_FAIL_COND_V(p_value.get_type() != Variant::INT, false);
+				if (index >= physics_layers.size()) {
+					set_physics_layers_count(index + 1);
+				}
+				set_physics_layer_collision_mask(index, p_value);
+				return true;
+			} else if (components[1] == "physics_material") {
+				Ref<PhysicsMaterial> physics_material = p_value;
+				ERR_FAIL_COND_V(!physics_material.is_valid(), false);
+				if (index >= physics_layers.size()) {
+					set_physics_layers_count(index + 1);
+				}
+				set_physics_layer_physics_material(index, physics_material);
 				return true;
 			}
 		} else if (components.size() == 2 && components[0] == "sources" && components[1].is_valid_integer()) {
@@ -1072,16 +1261,33 @@ bool TileSet::_set(const StringName &p_name, const Variant &p_value) {
 bool TileSet::_get(const StringName &p_name, Variant &r_ret) const {
 	Vector<String> components = String(p_name).split("/", true, 2);
 
-	if (components.size() == 3 && components[0] == "occlusion_layers" && components[1].is_valid_integer()) {
-		int index = components[1].to_int();
+	if (components.size() == 2 && components[0].begins_with("occlusion_layer_") && components[0].trim_prefix("occlusion_layer_").is_valid_integer()) {
+		// Occlusion layers.
+		int index = components[0].trim_prefix("occlusion_layer_").to_int();
 		if (index < 0 || index >= occlusion_layers.size()) {
 			return false;
 		}
-		if (components[2] == "light_mask") {
+		if (components[1] == "light_mask") {
 			r_ret = get_occlusion_layer_light_mask(index);
 			return true;
-		} else if (components[2] == "sdf_collision") {
+		} else if (components[1] == "sdf_collision") {
 			r_ret = get_occlusion_layer_sdf_collision(index);
+			return true;
+		}
+	} else if (components.size() == 2 && components[0].begins_with("physics_layer_") && components[0].trim_prefix("physics_layer_").is_valid_integer()) {
+		// Physics layers.
+		int index = components[0].trim_prefix("physics_layer_").to_int();
+		if (index < 0 || index >= physics_layers.size()) {
+			return false;
+		}
+		if (components[1] == "collision_layer") {
+			r_ret = get_physics_layer_collision_layer(index);
+			return true;
+		} else if (components[1] == "collision_mask") {
+			r_ret = get_physics_layer_collision_mask(index);
+			return true;
+		} else if (components[1] == "physics_material") {
+			r_ret = get_physics_layer_physics_material(index);
 			return true;
 		}
 	} else if (components.size() == 2 && components[0] == "sources" && components[1].is_valid_integer()) {
@@ -1103,8 +1309,15 @@ void TileSet::_get_property_list(List<PropertyInfo> *p_list) const {
 	// Rendering.
 	p_list->push_back(PropertyInfo(Variant::NIL, "Rendering", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_GROUP));
 	for (int i = 0; i < occlusion_layers.size(); i++) {
-		p_list->push_back(PropertyInfo(Variant::INT, vformat("occlusion_layers/%d/light_mask", i), PROPERTY_HINT_LAYERS_2D_RENDER));
-		p_list->push_back(PropertyInfo(Variant::BOOL, vformat("occlusion_layers/%d/sdf_collision", i)));
+		p_list->push_back(PropertyInfo(Variant::INT, vformat("occlusion_layer_%d/light_mask", i), PROPERTY_HINT_LAYERS_2D_RENDER));
+		p_list->push_back(PropertyInfo(Variant::BOOL, vformat("occlusion_layer_%d/sdf_collision", i)));
+	}
+
+	p_list->push_back(PropertyInfo(Variant::NIL, "Physics", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_GROUP));
+	for (int i = 0; i < physics_layers.size(); i++) {
+		p_list->push_back(PropertyInfo(Variant::INT, vformat("physics_layer_%d/collision_layer", i), PROPERTY_HINT_LAYERS_2D_PHYSICS));
+		p_list->push_back(PropertyInfo(Variant::INT, vformat("physics_layer_%d/collision_mask", i), PROPERTY_HINT_LAYERS_2D_PHYSICS));
+		p_list->push_back(PropertyInfo(Variant::OBJECT, vformat("physics_layer_%d/physics_material", i), PROPERTY_HINT_RESOURCE_TYPE, "PhysicsMaterial"));
 	}
 
 	// Sources.
@@ -1428,6 +1641,60 @@ Vector2i TileSet::get_tile_effective_texture_offset(int p_atlas_source_id, Vecto
 	return effective_texture_offset;
 }
 
+// Physics
+void TileSet::set_physics_layers_count(int p_physics_layers_count) {
+	ERR_FAIL_COND(p_physics_layers_count < 0);
+	if (physics_layers.size() == p_physics_layers_count) {
+		return;
+	}
+
+	physics_layers.resize(p_physics_layers_count);
+
+	for (Map<int, Ref<TileSetSource>>::Element *E_source = sources.front(); E_source; E_source = E_source->next()) {
+		E_source->get()->notify_tile_data_properties_should_change();
+	}
+
+	notify_property_list_changed();
+	emit_changed();
+}
+
+int TileSet::get_physics_layers_count() const {
+	return physics_layers.size();
+}
+
+void TileSet::set_physics_layer_collision_layer(int p_layer_index, uint32_t p_layer) {
+	ERR_FAIL_INDEX(p_layer_index, physics_layers.size());
+	physics_layers.write[p_layer_index].collision_layer = p_layer;
+	emit_changed();
+}
+
+uint32_t TileSet::get_physics_layer_collision_layer(int p_layer_index) const {
+	ERR_FAIL_INDEX_V(p_layer_index, physics_layers.size(), 0);
+	return physics_layers[p_layer_index].collision_layer;
+}
+
+void TileSet::set_physics_layer_collision_mask(int p_layer_index, uint32_t p_mask) {
+	ERR_FAIL_INDEX(p_layer_index, physics_layers.size());
+	physics_layers.write[p_layer_index].collision_mask = p_mask;
+	emit_changed();
+}
+
+uint32_t TileSet::get_physics_layer_collision_mask(int p_layer_index) const {
+	ERR_FAIL_INDEX_V(p_layer_index, physics_layers.size(), 0);
+	return physics_layers[p_layer_index].collision_mask;
+}
+
+void TileSet::set_physics_layer_physics_material(int p_layer_index, Ref<PhysicsMaterial> p_physics_material) {
+	ERR_FAIL_INDEX(p_layer_index, physics_layers.size());
+	physics_layers.write[p_layer_index].physics_material = p_physics_material;
+	emit_changed();
+}
+
+Ref<PhysicsMaterial> TileSet::get_physics_layer_physics_material(int p_layer_index) const {
+	ERR_FAIL_INDEX_V(p_layer_index, physics_layers.size(), Ref<PhysicsMaterial>());
+	return physics_layers[p_layer_index].physics_material;
+}
+
 void TileSet::_source_changed() {
 	emit_changed();
 	notify_property_list_changed();
@@ -1435,6 +1702,7 @@ void TileSet::_source_changed() {
 
 void TileSet::reset_state() {
 	occlusion_layers.clear();
+	physics_layers.clear();
 }
 
 void TileSet::_bind_methods() {
@@ -1477,10 +1745,23 @@ void TileSet::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_occlusion_layer_sdf_collision", "layer_index", "sdf_collision"), &TileSet::set_occlusion_layer_sdf_collision);
 	ClassDB::bind_method(D_METHOD("get_occlusion_layer_sdf_collision"), &TileSet::get_occlusion_layer_sdf_collision);
 
+	// Physics
+	ClassDB::bind_method(D_METHOD("set_physics_layers_count", "physics_layers_count"), &TileSet::set_physics_layers_count);
+	ClassDB::bind_method(D_METHOD("get_physics_layers_count"), &TileSet::get_physics_layers_count);
+	ClassDB::bind_method(D_METHOD("set_physics_layer_collision_layer", "layer_index", "layer"), &TileSet::set_physics_layer_collision_layer);
+	ClassDB::bind_method(D_METHOD("get_physics_layer_collision_layer", "layer_index"), &TileSet::get_physics_layer_collision_layer);
+	ClassDB::bind_method(D_METHOD("set_physics_layer_collision_mask", "layer_index", "mask"), &TileSet::set_physics_layer_collision_mask);
+	ClassDB::bind_method(D_METHOD("get_physics_layer_collision_mask", "layer_index"), &TileSet::get_physics_layer_collision_mask);
+	ClassDB::bind_method(D_METHOD("set_physics_layer_physics_material", "layer_index", "physics_material"), &TileSet::set_physics_layer_physics_material);
+	ClassDB::bind_method(D_METHOD("get_physics_layer_physics_material", "layer_index"), &TileSet::get_physics_layer_physics_material);
+
 	ADD_GROUP("Rendering", "");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "uv_clipping"), "set_uv_clipping", "is_uv_clipping");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "y_sorting"), "set_y_sorting", "is_y_sorting");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "occlusion_layers/count", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_EDITOR), "set_occlusion_layers_count", "get_occlusion_layers_count");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "occlusion_layers_count", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_EDITOR), "set_occlusion_layers_count", "get_occlusion_layers_count");
+
+	ADD_GROUP("Physics", "");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "physics_layers_count", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_EDITOR), "set_physics_layers_count", "get_physics_layers_count");
 
 	// -- Enum binding --
 	BIND_ENUM_CONSTANT(TILE_SHAPE_SQUARE);
@@ -1502,6 +1783,7 @@ void TileSet::_bind_methods() {
 TileSet::TileSet() {
 	// List all plugins.
 	tile_set_plugins_vector.append(&tile_set_plugin_rendering);
+	tile_set_plugins_vector.append(&tile_set_plugin_physics);
 }
 
 TileSet::~TileSet() {
