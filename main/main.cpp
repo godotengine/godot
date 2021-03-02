@@ -980,8 +980,8 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 
 	// Only flush stdout in debug builds by default, as spamming `print()` will
 	// decrease performance if this is enabled.
-	GLOBAL_DEF("application/run/flush_stdout_on_print", false);
-	GLOBAL_DEF("application/run/flush_stdout_on_print.debug", true);
+	GLOBAL_DEF_RST("application/run/flush_stdout_on_print", false);
+	GLOBAL_DEF_RST("application/run/flush_stdout_on_print.debug", true);
 
 	GLOBAL_DEF("logging/file_logging/enable_file_logging", false);
 	// Only file logging by default on desktop platforms as logs can't be
@@ -1028,6 +1028,8 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 
 	if (quiet_stdout)
 		_print_line_enabled = false;
+
+	Logger::set_flush_stdout_on_print(ProjectSettings::get_singleton()->get("application/run/flush_stdout_on_print"));
 
 	OS::get_singleton()->set_cmdline(execpath, main_args);
 

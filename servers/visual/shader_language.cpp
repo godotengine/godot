@@ -546,12 +546,12 @@ ShaderLanguage::Token ShaderLanguage::_get_token() {
 							if (hexa_found || str.length() != 1 || str[0] != '0')
 								return _make_token(TK_ERROR, "Invalid numeric constant");
 							hexa_found = true;
-						} else if (GETCHAR(i) == 'e') {
-							if (hexa_found || exponent_found || float_suffix_found)
+						} else if (GETCHAR(i) == 'e' && !hexa_found) {
+							if (exponent_found || float_suffix_found)
 								return _make_token(TK_ERROR, "Invalid numeric constant");
 							exponent_found = true;
-						} else if (GETCHAR(i) == 'f') {
-							if (hexa_found || exponent_found)
+						} else if (GETCHAR(i) == 'f' && !hexa_found) {
+							if (exponent_found)
 								return _make_token(TK_ERROR, "Invalid numeric constant");
 							float_suffix_found = true;
 						} else if (_is_number(GETCHAR(i))) {
@@ -4698,16 +4698,16 @@ Error ShaderLanguage::_parse_block(BlockNode *p_block, const Map<StringName, Bui
 			pos = _get_tkpos();
 			tk = _get_token();
 			if (tk.type != TK_SEMICOLON) {
-				//all is good
 				_set_error("Expected ';' after discard");
+				return ERR_PARSE_ERROR;
 			}
 
 			p_block->statements.push_back(flow);
 		} else if (tk.type == TK_CF_BREAK) {
 
 			if (!p_can_break) {
-				//all is good
-				_set_error("Breaking is not allowed here");
+				_set_error("'break' is not allowed outside of a loop or 'switch' statement");
+				return ERR_PARSE_ERROR;
 			}
 
 			ControlFlowNode *flow = alloc_node<ControlFlowNode>();
@@ -4716,8 +4716,8 @@ Error ShaderLanguage::_parse_block(BlockNode *p_block, const Map<StringName, Bui
 			pos = _get_tkpos();
 			tk = _get_token();
 			if (tk.type != TK_SEMICOLON) {
-				//all is good
 				_set_error("Expected ';' after break");
+				return ERR_PARSE_ERROR;
 			}
 
 			p_block->statements.push_back(flow);
@@ -4733,8 +4733,8 @@ Error ShaderLanguage::_parse_block(BlockNode *p_block, const Map<StringName, Bui
 		} else if (tk.type == TK_CF_CONTINUE) {
 
 			if (!p_can_continue) {
-				//all is good
-				_set_error("Continuing is not allowed here");
+				_set_error("'continue' is not allowed outside of a loop");
+				return ERR_PARSE_ERROR;
 			}
 
 			ControlFlowNode *flow = alloc_node<ControlFlowNode>();
@@ -4745,6 +4745,7 @@ Error ShaderLanguage::_parse_block(BlockNode *p_block, const Map<StringName, Bui
 			if (tk.type != TK_SEMICOLON) {
 				//all is good
 				_set_error("Expected ';' after continue");
+				return ERR_PARSE_ERROR;
 			}
 
 			p_block->statements.push_back(flow);

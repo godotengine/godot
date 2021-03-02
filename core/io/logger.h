@@ -41,6 +41,8 @@ class Logger {
 protected:
 	bool should_log(bool p_err);
 
+	static bool _flush_stdout_on_print;
+
 public:
 	enum ErrorType {
 		ERR_ERROR,
@@ -48,6 +50,8 @@ public:
 		ERR_SCRIPT,
 		ERR_SHADER
 	};
+
+	static void set_flush_stdout_on_print(bool value);
 
 	virtual void logv(const char *p_format, va_list p_list, bool p_err) _PRINTF_FORMAT_ATTRIBUTE_2_0 = 0;
 	virtual void log_error(const char *p_function, const char *p_file, int p_line, const char *p_code, const char *p_rationale, ErrorType p_type = ERR_ERROR);
