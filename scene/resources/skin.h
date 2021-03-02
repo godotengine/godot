@@ -66,6 +66,8 @@ public:
 	void set_bind_pose(int p_index, const Transform &p_pose);
 	void set_bind_name(int p_index, const StringName &p_name);
 
+	bool has_named_bind(const String &p_name);
+
 	inline int get_bind_bone(int p_index) const {
 #ifdef DEBUG_ENABLED
 		ERR_FAIL_INDEX_V(p_index, bind_count, -1);

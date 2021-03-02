@@ -68,6 +68,16 @@ void Skin::set_bind_bone(int p_index, int p_bone) {
 	emit_changed();
 }
 
+bool Skin::has_named_bind(const String &p_name) {
+	for (int x = 0; x < get_bind_count(); x++) {
+		if (get_bind_name(x) == p_name) {
+			return true;
+		}
+	}
+
+	return false;
+}
+
 void Skin::set_bind_pose(int p_index, const Transform &p_pose) {
 	ERR_FAIL_INDEX(p_index, bind_count);
 	binds_ptr[p_index].pose = p_pose;
