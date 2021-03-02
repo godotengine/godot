@@ -35,6 +35,7 @@ def get_opts():
         BoolVariable("separate_debug_symbols", "Create a separate file containing debugging symbols", False),
         BoolVariable("use_ubsan", "Use LLVM/GCC compiler undefined behavior sanitizer (UBSAN)", False),
         BoolVariable("use_asan", "Use LLVM/GCC compiler address sanitizer (ASAN))", False),
+        BoolVariable("use_lsan", "Use LLVM/GCC compiler leak sanitizer (LSAN))", False),
         BoolVariable("use_tsan", "Use LLVM/GCC compiler thread sanitizer (TSAN))", False),
     ]
 
@@ -131,7 +132,7 @@ def configure(env):
         env["AS"] = basecmd + "as"
         env.Append(CPPDEFINES=["__MACPORTS__"])  # hack to fix libvpx MM256_BROADCASTSI128_SI256 define
 
-    if env["use_ubsan"] or env["use_asan"] or env["use_tsan"]:
+    if env["use_ubsan"] or env["use_asan"] or env["use_lsan"] or env["use_tsan"]:
         env.extra_suffix += "s"
 
         if env["use_ubsan"]:
@@ -141,6 +142,10 @@ def configure(env):
         if env["use_asan"]:
             env.Append(CCFLAGS=["-fsanitize=address"])
             env.Append(LINKFLAGS=["-fsanitize=address"])
+
+        if env["use_lsan"]:
+            env.Append(CCFLAGS=["-fsanitize=leak"])
+            env.Append(LINKFLAGS=["-fsanitize=leak"])
 
         if env["use_tsan"]:
             env.Append(CCFLAGS=["-fsanitize=thread"])
