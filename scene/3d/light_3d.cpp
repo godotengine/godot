@@ -65,6 +65,8 @@ void Light3D::set_shadow(bool p_enable) {
 	if (type == RenderingServer::LIGHT_SPOT || type == RenderingServer::LIGHT_OMNI) {
 		update_configuration_warning();
 	}
+
+	notify_property_list_changed();
 }
 
 bool Light3D::has_shadow() const {
@@ -202,6 +204,10 @@ bool Light3D::is_editor_only() const {
 }
 
 void Light3D::_validate_property(PropertyInfo &property) const {
+	if (!shadow && (property.name == "shadow_color" || property.name == "shadow_color" || property.name == "shadow_bias" || property.name == "shadow_normal_bias" || property.name == "shadow_reverse_cull_face" || property.name == "shadow_transmittance_bias" || property.name == "shadow_blur")) {
+		property.usage = PROPERTY_USAGE_NOEDITOR;
+	}
+
 	if (get_light_type() == RS::LIGHT_DIRECTIONAL && property.name == "light_size") {
 		property.usage = 0;
 	}
