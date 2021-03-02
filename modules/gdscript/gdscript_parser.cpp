@@ -3168,11 +3168,16 @@ bool GDScriptParser::export_annotations(const AnnotationNode *p_annotation, Node
 				push_error(R"(Cannot use "@export" annotation with variable without type or initializer, since type can't be inferred.)", p_annotation);
 				return false;
 			}
-			if (variable->initializer->type != Node::LITERAL) {
+			if (variable->initializer->type == Node::LITERAL) {
+				variable->export_info.type = static_cast<LiteralNode *>(variable->initializer)->value.get_type();
+			} else if (variable->initializer->type == Node::ARRAY) {
+				variable->export_info.type = Variant::ARRAY;
+			} else if (variable->initializer->type == Node::DICTIONARY) {
+				variable->export_info.type = Variant::DICTIONARY;
+			} else {
 				push_error(R"(To use "@export" annotation with type-less variable, the default value must be a literal.)", p_annotation);
 				return false;
 			}
-			variable->export_info.type = static_cast<LiteralNode *>(variable->initializer)->value.get_type();
 		} // else: Actual type will be set by the analyzer, which can infer the proper type.
 	}
 
