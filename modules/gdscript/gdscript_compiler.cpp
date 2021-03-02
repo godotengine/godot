@@ -1176,7 +1176,7 @@ GDScriptCodeGenerator::Address GDScriptCompiler::_parse_match_pattern(CodeGen &c
 			codegen.generator->write_and_left_operand(result_addr);
 
 			// Check value equality.
-			codegen.generator->write_binary_operator(result_addr, Variant::OP_EQUAL, p_value_addr, expr_addr);
+			codegen.generator->write_binary_operator(equality_test_addr, Variant::OP_EQUAL, p_value_addr, expr_addr);
 			codegen.generator->write_and_right_operand(equality_test_addr);
 
 			// AND both type and value equality.
