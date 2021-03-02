@@ -869,8 +869,21 @@ void Tween::start() {
 		return;
 	}
 
+	pending_update++;
+	for (List<InterpolateData>::Element *E = interpolates.front(); E; E = E->next()) {
+		InterpolateData &data = E->get();
+		data.active = true;
+	}
+	pending_update--;
+
 	// We want to be activated
 	set_active(true);
+
+	// Don't resume from current position if stop_all() function has been used
+	if (was_stopped) {
+		seek(0);
+	}
+	was_stopped = false;
 }
 
 void Tween::reset(Object *p_object, StringName p_key) {
@@ -939,7 +952,7 @@ void Tween::stop(Object *p_object, StringName p_key) {
 void Tween::stop_all() {
 	// We no longer need to be active since all tweens have been stopped
 	set_active(false);
-
+	was_stopped = true;
 	// For each interpolation...
 	pending_update++;
 	for (List<InterpolateData>::Element *E = interpolates.front(); E; E = E->next()) {
