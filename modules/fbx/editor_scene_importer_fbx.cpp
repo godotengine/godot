@@ -1177,6 +1177,10 @@ Node3D *EditorSceneImporterFBX::_generate_scene(
 						const Vector3 def_scale = scale_keys.has_default ? scale_keys.default_value : bone_rest.basis.get_scale();
 						print_verbose("track defaults: p(" + def_pos + ") s(" + def_scale + ") r(" + def_rot + ")");
 
+						Vector3 last_pos;
+						Quat last_rot;
+						Quat last_scale;
+
 						while (true) {
 							Vector3 pos = def_pos;
 							Quat rot = def_rot;
@@ -1211,7 +1215,13 @@ Node3D *EditorSceneImporterFBX::_generate_scene(
 								pos = t.origin;
 							}
 
-							animation->transform_track_insert_key(track_idx, time, pos, rot, scale);
+							if (!last_pos.is_equal_approx(pos) || !last_rot.is_equal_approx(rot) || !last_scale.is_equal_approx(scale)) {
+								animation->transform_track_insert_key(track_idx, time, pos, rot, scale);
+
+								last_pos = pos;
+								last_scale = scale;
+								last_rot = rot;
+							}
 
 							if (last) {
 								break;
