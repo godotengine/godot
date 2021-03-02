@@ -70,7 +70,7 @@ private:
 		bool loop_wrap = true;
 		NodePath path; // path to something
 		bool imported = false;
-		bool enabled = false;
+		bool enabled = true;
 		Track() {}
 		virtual ~Track() {}
 	};
