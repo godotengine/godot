@@ -45,18 +45,10 @@ void Joint::_disconnect_signals() {
 		body_b->disconnect(SceneStringNames::get_singleton()->tree_exiting, this, SceneStringNames::get_singleton()->_body_exit_tree);
 }
 
-void Joint::_body_exit_tree(const ObjectID &p_body_id) {
+void Joint::_body_exit_tree() {
 
 	_disconnect_signals();
-	Object *object = ObjectDB::get_instance(p_body_id);
-	PhysicsBody *body = Object::cast_to<PhysicsBody>(object);
-	ERR_FAIL_NULL(body);
-	RID body_rid = body->get_rid();
-	if (ba == body_rid)
-		a = NodePath();
-	if (bb == body_rid)
-		b = NodePath();
-	_update_joint();
+	_update_joint(true);
 }
 
 void Joint::_update_joint(bool p_only_free) {
@@ -128,12 +120,12 @@ void Joint::_update_joint(bool p_only_free) {
 
 	if (body_a) {
 		ba = body_a->get_rid();
-		body_a->connect(SceneStringNames::get_singleton()->tree_exiting, this, SceneStringNames::get_singleton()->_body_exit_tree, make_binds(body_a->get_instance_id()));
+		body_a->connect(SceneStringNames::get_singleton()->tree_exiting, this, SceneStringNames::get_singleton()->_body_exit_tree);
 	}
 
 	if (body_b) {
 		bb = body_b->get_rid();
-		body_b->connect(SceneStringNames::get_singleton()->tree_exiting, this, SceneStringNames::get_singleton()->_body_exit_tree, make_binds(body_b->get_instance_id()));
+		body_b->connect(SceneStringNames::get_singleton()->tree_exiting, this, SceneStringNames::get_singleton()->_body_exit_tree);
 	}
 
 	PhysicsServer::get_singleton()->joint_disable_collisions_between_bodies(joint, exclude_from_collision);
@@ -230,7 +222,7 @@ String Joint::get_configuration_warning() const {
 
 void Joint::_bind_methods() {
 
-	ClassDB::bind_method(D_METHOD("_body_exit_tree", "body_rid"), &Joint::_body_exit_tree);
+	ClassDB::bind_method(D_METHOD("_body_exit_tree"), &Joint::_body_exit_tree);
 
 	ClassDB::bind_method(D_METHOD("set_node_a", "node"), &Joint::set_node_a);
 	ClassDB::bind_method(D_METHOD("get_node_a"), &Joint::get_node_a);
