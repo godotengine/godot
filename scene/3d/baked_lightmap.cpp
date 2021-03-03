@@ -78,6 +78,7 @@ void BakedLightmapData::clear_users() {
 }
 
 void BakedLightmapData::_set_user_data(const Array &p_data) {
+	ERR_FAIL_COND(p_data.size() <= 0);
 	ERR_FAIL_COND((p_data.size() % 4) != 0);
 
 	for (int i = 0; i < p_data.size(); i += 4) {
