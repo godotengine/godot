@@ -35,7 +35,23 @@
 #include "scene/scene_string_names.h"
 #include "servers/visual_server.h"
 
+LocalVector<ObjectID> Camera2D::_pending_scroll_cameras;
+
+void Camera2D::flush_pending_scrolls() {
+	for (unsigned int n = 0; n < _pending_scroll_cameras.size(); n++) {
+		Camera2D *cam = Object::cast_to<Camera2D>(ObjectDB::get_instance(_pending_scroll_cameras[n]));
+
+		if (cam && cam->scroll_dirty) {
+			cam->_update_scroll();
+		}
+	}
+
+	_pending_scroll_cameras.clear();
+}
+
 void Camera2D::_update_scroll() {
+
+	scroll_dirty = false;
 
 	if (!is_inside_tree())
 		return;
@@ -226,13 +242,23 @@ void Camera2D::_notification(int p_what) {
 		case NOTIFICATION_INTERNAL_PROCESS:
 		case NOTIFICATION_INTERNAL_PHYSICS_PROCESS: {
 
-			_update_scroll();
+			// we can potentially switch off internal process if deferring scroll update? NYI
+			if (!delay_fix) {
+				_update_scroll();
+			}
 
 		} break;
 		case NOTIFICATION_TRANSFORM_CHANGED: {
 
-			if (!is_processing_internal() && !is_physics_processing_internal())
-				_update_scroll();
+			if (delay_fix) {
+				if (!scroll_dirty) {
+					scroll_dirty = true;
+					_pending_scroll_cameras.push_back(get_instance_id());
+				}
+			} else {
+				if (!is_processing_internal() && !is_physics_processing_internal())
+					_update_scroll();
+			}
 
 		} break;
 		case NOTIFICATION_ENTER_TREE: {
@@ -399,6 +425,14 @@ void Camera2D::set_process_mode(Camera2DProcessMode p_mode) {
 Camera2D::Camera2DProcessMode Camera2D::get_process_mode() const {
 
 	return process_mode;
+}
+
+void Camera2D::set_delay_fix_enabled(bool p_enable) {
+	delay_fix = p_enable;
+}
+
+bool Camera2D::get_delay_fix_enabled() const {
+	return delay_fix;
 }
 
 void Camera2D::_make_current(Object *p_which) {
@@ -689,6 +723,9 @@ void Camera2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_process_mode", "mode"), &Camera2D::set_process_mode);
 	ClassDB::bind_method(D_METHOD("get_process_mode"), &Camera2D::get_process_mode);
 
+	ClassDB::bind_method(D_METHOD("set_delay_fix_enabled", "enabled"), &Camera2D::set_delay_fix_enabled);
+	ClassDB::bind_method(D_METHOD("get_delay_fix_enabled"), &Camera2D::get_delay_fix_enabled);
+
 	ClassDB::bind_method(D_METHOD("_set_current", "current"), &Camera2D::_set_current);
 	ClassDB::bind_method(D_METHOD("is_current"), &Camera2D::is_current);
 
@@ -750,6 +787,7 @@ void Camera2D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "zoom"), "set_zoom", "get_zoom");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "custom_viewport", PROPERTY_HINT_RESOURCE_TYPE, "Viewport", 0), "set_custom_viewport", "get_custom_viewport");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "process_mode", PROPERTY_HINT_ENUM, "Physics,Idle"), "set_process_mode", "get_process_mode");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "delay_fix"), "set_delay_fix_enabled", "get_delay_fix_enabled");
 
 	ADD_GROUP("Limit", "limit_");
 	ADD_PROPERTYI(PropertyInfo(Variant::INT, "limit_left"), "set_limit", "get_limit", MARGIN_LEFT);
@@ -808,6 +846,8 @@ Camera2D::Camera2D() {
 	custom_viewport = NULL;
 	custom_viewport_id = 0;
 	process_mode = CAMERA2D_PROCESS_IDLE;
+	delay_fix = false;
+	scroll_dirty = true;
 
 	smoothing = 5.0;
 	zoom = Vector2(1, 1);

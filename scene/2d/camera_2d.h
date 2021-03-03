@@ -31,6 +31,7 @@
 #ifndef CAMERA_2D_H
 #define CAMERA_2D_H
 
+#include "core/local_vector.h"
 #include "scene/2d/node_2d.h"
 #include "scene/main/viewport.h"
 
@@ -94,6 +95,9 @@ protected:
 	bool margin_drawing_enabled;
 
 	Camera2DProcessMode process_mode;
+	bool delay_fix;
+
+	bool scroll_dirty;
 
 protected:
 	virtual Transform2D get_camera_transform();
@@ -140,6 +144,9 @@ public:
 	void set_process_mode(Camera2DProcessMode p_mode);
 	Camera2DProcessMode get_process_mode() const;
 
+	void set_delay_fix_enabled(bool p_enable);
+	bool get_delay_fix_enabled() const;
+
 	void make_current();
 	void clear_current();
 	bool is_current() const;
@@ -167,6 +174,11 @@ public:
 	bool is_margin_drawing_enabled() const;
 
 	Camera2D();
+
+	static void flush_pending_scrolls();
+
+private:
+	static LocalVector<ObjectID> _pending_scroll_cameras;
 };
 
 VARIANT_ENUM_CAST(Camera2D::AnchorMode);

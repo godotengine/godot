@@ -115,6 +115,9 @@
 		<member name="custom_viewport" type="Node" setter="set_custom_viewport" getter="get_custom_viewport">
 			The custom [Viewport] node attached to the [Camera2D]. If [code]null[/code] or not a [Viewport], uses the default viewport instead.
 		</member>
+		<member name="delay_fix" type="bool" setter="set_delay_fix_enabled" getter="get_delay_fix_enabled" default="false">
+			If [code]true[/code], the update of the camera to take pending scrolling into account is done at the end of the [SceneTree]'s iteration. This should help solve potential delays experienced in some projects.
+		</member>
 		<member name="drag_margin_bottom" type="float" setter="set_drag_margin" getter="get_drag_margin" default="0.2">
 			Bottom margin needed to drag the camera. A value of [code]1[/code] makes the camera move only when reaching the edge of the screen.
 		</member>

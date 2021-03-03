@@ -40,6 +40,7 @@
 #include "core/project_settings.h"
 #include "main/input_default.h"
 #include "node.h"
+#include "scene/2d/camera_2d.h"
 #include "scene/debugger/script_debugger_remote.h"
 #include "scene/resources/dynamic_font.h"
 #include "scene/resources/material.h"
@@ -575,6 +576,12 @@ bool SceneTree::idle(float p_time) {
 	}
 
 	flush_transform_notifications(); //additional transforms after timers update
+
+	// flush pending camera scrolls
+	Camera2D::flush_pending_scrolls();
+
+	// any further transform notifications
+	flush_transform_notifications();
 
 	_call_idle_callbacks();
 
