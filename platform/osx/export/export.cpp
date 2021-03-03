@@ -56,7 +56,7 @@ class EditorExportPlatformOSX : public EditorExportPlatform {
 	void _make_icon(const Ref<Image> &p_icon, Vector<uint8_t> &p_data);
 
 	Error _notarize(const Ref<EditorExportPreset> &p_preset, const String &p_path);
-	Error _code_sign(const Ref<EditorExportPreset> &p_preset, const String &p_path);
+	Error _code_sign(const Ref<EditorExportPreset> &p_preset, const String &p_path, const String &p_ent_path);
 	Error _create_dmg(const String &p_dmg_path, const String &p_pkg_name, const String &p_app_path_name);
 	void _zip_folder_recursive(zipFile &p_zip, const String &p_root_path, const String &p_folder, const String &p_pkg_name);
 
@@ -159,7 +159,30 @@ void EditorExportPlatformOSX::get_export_options(List<ExportOption> *r_options) 
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "codesign/identity", PROPERTY_HINT_PLACEHOLDER_TEXT, "Type: Name (ID)"), ""));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "codesign/timestamp"), true));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "codesign/hardened_runtime"), true));
-	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "codesign/entitlements", PROPERTY_HINT_GLOBAL_FILE, "*.plist"), ""));
+	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "codesign/entitlements/custom_file", PROPERTY_HINT_GLOBAL_FILE, "*.plist"), ""));
+
+	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "codesign/entitlements/allow_jit_code_execution"), false));
+	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "codesign/entitlements/allow_unsigned_executable_memory"), false));
+	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "codesign/entitlements/allow_dyld_environment_variables"), false));
+	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "codesign/entitlements/disable_library_validation"), false));
+	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "codesign/entitlements/audio_input"), false));
+	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "codesign/entitlements/camera"), false));
+	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "codesign/entitlements/location"), false));
+	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "codesign/entitlements/address_book"), false));
+	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "codesign/entitlements/calendars"), false));
+	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "codesign/entitlements/photos_library"), false));
+	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "codesign/entitlements/apple_events"), false));
+
+	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "codesign/entitlements/app_sandbox/enabled"), false));
+	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "codesign/entitlements/app_sandbox/network_server"), false));
+	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "codesign/entitlements/app_sandbox/network_client"), false));
+	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "codesign/entitlements/app_sandbox/device_usb"), false));
+	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "codesign/entitlements/app_sandbox/device_bluetooth"), false));
+	r_options->push_back(ExportOption(PropertyInfo(Variant::INT, "codesign/entitlements/app_sandbox/files_downloads", PROPERTY_HINT_ENUM, "No,Read-only,Read-write"), 0));
+	r_options->push_back(ExportOption(PropertyInfo(Variant::INT, "codesign/entitlements/app_sandbox/files_pictures", PROPERTY_HINT_ENUM, "No,Read-only,Read-write"), 0));
+	r_options->push_back(ExportOption(PropertyInfo(Variant::INT, "codesign/entitlements/app_sandbox/files_music", PROPERTY_HINT_ENUM, "No,Read-only,Read-write"), 0));
+	r_options->push_back(ExportOption(PropertyInfo(Variant::INT, "codesign/entitlements/app_sandbox/files_movies", PROPERTY_HINT_ENUM, "No,Read-only,Read-write"), 0));
+
 	r_options->push_back(ExportOption(PropertyInfo(Variant::PACKED_STRING_ARRAY, "codesign/custom_options"), PackedStringArray()));
 
 	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "notarization/enable"), false));
@@ -437,7 +460,7 @@ Error EditorExportPlatformOSX::_notarize(const Ref<EditorExportPreset> &p_preset
 	return OK;
 }
 
-Error EditorExportPlatformOSX::_code_sign(const Ref<EditorExportPreset> &p_preset, const String &p_path) {
+Error EditorExportPlatformOSX::_code_sign(const Ref<EditorExportPreset> &p_preset, const String &p_path, const String &p_ent_path) {
 #ifdef OSX_ENABLED
 	List<String> args;
 
@@ -449,9 +472,9 @@ Error EditorExportPlatformOSX::_code_sign(const Ref<EditorExportPreset> &p_prese
 		args.push_back("runtime");
 	}
 
-	if ((p_preset->get("codesign/entitlements") != "") && (p_path.get_extension() != "dmg")) {
+	if (p_path.get_extension() != "dmg") {
 		args.push_back("--entitlements");
-		args.push_back(p_preset->get("codesign/entitlements"));
+		args.push_back(p_ent_path);
 	}
 
 	PackedStringArray user_args = p_preset->get("codesign/custom_options");
@@ -607,6 +630,7 @@ Error EditorExportPlatformOSX::export_project(const Ref<EditorExportPreset> &p_p
 	// Now process our template.
 	bool found_binary = false;
 	int total_size = 0;
+	Vector<String> dylibs_found;
 
 	while (ret == UNZ_OK && err == OK) {
 		bool is_execute = false;
@@ -688,6 +712,10 @@ Error EditorExportPlatformOSX::export_project(const Ref<EditorExportPreset> &p_p
 				file = file.replace("/data.mono.osx.64.release/", "/data_" + pkg_name + "/");
 			}
 
+			if (file.ends_with(".dylib")) {
+				dylibs_found.push_back(file);
+			}
+
 			print_line("ADDING: " + file + " size: " + itos(data.size()));
 			total_size += data.size();
 
@@ -735,22 +763,149 @@ Error EditorExportPlatformOSX::export_project(const Ref<EditorExportPreset> &p_p
 		// See if we can code sign our new package.
 		bool sign_enabled = p_preset->get("codesign/enable");
 
+		String ent_path = p_preset->get("codesign/entitlements/custom_file");
+		if (sign_enabled && (ent_path == "")) {
+			ent_path = EditorSettings::get_singleton()->get_cache_dir().plus_file(pkg_name + ".entitlements");
+
+			FileAccess *ent_f = FileAccess::open(ent_path, FileAccess::WRITE);
+			if (ent_f) {
+				ent_f->store_line("<?xml version=\"1.0\" encoding=\"UTF-8\"?>");
+				ent_f->store_line("<!DOCTYPE plist PUBLIC \"-//Apple//DTD PLIST 1.0//EN\" \"http://www.apple.com/DTDs/PropertyList-1.0.dtd\">");
+				ent_f->store_line("<plist version=\"1.0\">");
+				ent_f->store_line("<dict>");
+				if ((bool)p_preset->get("codesign/entitlements/allow_jit_code_execution")) {
+					ent_f->store_line("<key>com.apple.security.cs.allow-jit</key>");
+					ent_f->store_line("<true/>");
+				}
+				if ((bool)p_preset->get("codesign/entitlements/allow_unsigned_executable_memory")) {
+					ent_f->store_line("<key>com.apple.security.cs.allow-unsigned-executable-memory</key>");
+					ent_f->store_line("<true/>");
+				}
+				if ((bool)p_preset->get("codesign/entitlements/allow_dyld_environment_variables")) {
+					ent_f->store_line("<key>com.apple.security.cs.allow-dyld-environment-variables</key>");
+					ent_f->store_line("<true/>");
+				}
+				if ((bool)p_preset->get("codesign/entitlements/disable_library_validation")) {
+					ent_f->store_line("<key>com.apple.security.cs.disable-library-validation</key>");
+					ent_f->store_line("<true/>");
+				}
+				if ((bool)p_preset->get("codesign/entitlements/audio_input")) {
+					ent_f->store_line("<key>com.apple.security.device.audio-input</key>");
+					ent_f->store_line("<true/>");
+				}
+				if ((bool)p_preset->get("codesign/entitlements/camera")) {
+					ent_f->store_line("<key>com.apple.security.device.camera</key>");
+					ent_f->store_line("<true/>");
+				}
+				if ((bool)p_preset->get("codesign/entitlements/location")) {
+					ent_f->store_line("<key>com.apple.security.personal-information.location</key>");
+					ent_f->store_line("<true/>");
+				}
+				if ((bool)p_preset->get("codesign/entitlements/address_book")) {
+					ent_f->store_line("<key>com.apple.security.personal-information.addressbook</key>");
+					ent_f->store_line("<true/>");
+				}
+				if ((bool)p_preset->get("codesign/entitlements/calendars")) {
+					ent_f->store_line("<key>com.apple.security.personal-information.calendars</key>");
+					ent_f->store_line("<true/>");
+				}
+				if ((bool)p_preset->get("codesign/entitlements/photos_library")) {
+					ent_f->store_line("<key>com.apple.security.personal-information.photos-library</key>");
+					ent_f->store_line("<true/>");
+				}
+				if ((bool)p_preset->get("codesign/entitlements/apple_events")) {
+					ent_f->store_line("<key>com.apple.security.automation.apple-events</key>");
+					ent_f->store_line("<true/>");
+				}
+
+				if ((bool)p_preset->get("codesign/entitlements/app_sandbox/enabled")) {
+					ent_f->store_line("<key>com.apple.security.app-sandbox</key>");
+					ent_f->store_line("<true/>");
+
+					if ((bool)p_preset->get("codesign/entitlements/app_sandbox/network_server")) {
+						ent_f->store_line("<key>com.apple.security.network.server</key>");
+						ent_f->store_line("<true/>");
+					}
+					if ((bool)p_preset->get("codesign/entitlements/app_sandbox/network_client")) {
+						ent_f->store_line("<key>com.apple.security.network.client</key>");
+						ent_f->store_line("<true/>");
+					}
+					if ((bool)p_preset->get("codesign/entitlements/app_sandbox/device_usb")) {
+						ent_f->store_line("<key>com.apple.security.device.usb</key>");
+						ent_f->store_line("<true/>");
+					}
+					if ((bool)p_preset->get("codesign/entitlements/app_sandbox/device_bluetooth")) {
+						ent_f->store_line("<key>com.apple.security.device.bluetooth</key>");
+						ent_f->store_line("<true/>");
+					}
+					if ((int)p_preset->get("codesign/entitlements/app_sandbox/files_downloads") == 1) {
+						ent_f->store_line("<key>com.apple.security.files.downloads.read-only</key>");
+						ent_f->store_line("<true/>");
+					}
+					if ((int)p_preset->get("codesign/entitlements/app_sandbox/files_downloads") == 2) {
+						ent_f->store_line("<key>com.apple.security.files.downloads.read-write</key>");
+						ent_f->store_line("<true/>");
+					}
+					if ((int)p_preset->get("codesign/entitlements/app_sandbox/files_pictures") == 1) {
+						ent_f->store_line("<key>com.apple.security.files.pictures.read-only</key>");
+						ent_f->store_line("<true/>");
+					}
+					if ((int)p_preset->get("codesign/entitlements/app_sandbox/files_pictures") == 2) {
+						ent_f->store_line("<key>com.apple.security.files.pictures.read-write</key>");
+						ent_f->store_line("<true/>");
+					}
+					if ((int)p_preset->get("codesign/entitlements/app_sandbox/files_music") == 1) {
+						ent_f->store_line("<key>com.apple.security.files.music.read-only</key>");
+						ent_f->store_line("<true/>");
+					}
+					if ((int)p_preset->get("codesign/entitlements/app_sandbox/files_music") == 2) {
+						ent_f->store_line("<key>com.apple.security.files.music.read-write</key>");
+						ent_f->store_line("<true/>");
+					}
+					if ((int)p_preset->get("codesign/entitlements/app_sandbox/files_movies") == 1) {
+						ent_f->store_line("<key>com.apple.security.files.movies.read-only</key>");
+						ent_f->store_line("<true/>");
+					}
+					if ((int)p_preset->get("codesign/entitlements/app_sandbox/files_movies") == 2) {
+						ent_f->store_line("<key>com.apple.security.files.movies.read-write</key>");
+						ent_f->store_line("<true/>");
+					}
+				}
+
+				ent_f->store_line("</dict>");
+				ent_f->store_line("</plist>");
+
+				ent_f->close();
+				memdelete(ent_f);
+			} else {
+				err = ERR_CANT_CREATE;
+			}
+		}
+
 		if (err == OK) {
 			DirAccess *da = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
 			for (int i = 0; i < shared_objects.size(); i++) {
 				err = da->copy(shared_objects[i].path, tmp_app_path_name + "/Contents/Frameworks/" + shared_objects[i].path.get_file());
 				if (err == OK && sign_enabled) {
-					err = _code_sign(p_preset, tmp_app_path_name + "/Contents/Frameworks/" + shared_objects[i].path.get_file());
+					err = _code_sign(p_preset, tmp_app_path_name + "/Contents/Frameworks/" + shared_objects[i].path.get_file(), ent_path);
 				}
 			}
 			memdelete(da);
+		}
+
+		if (sign_enabled) {
+			for (int i = 0; i < dylibs_found.size(); i++) {
+				if (err == OK) {
+					err = _code_sign(p_preset, tmp_app_path_name + "/" + dylibs_found[i], ent_path);
+				}
+			}
 		}
 
 		if (err == OK && sign_enabled) {
 			if (ep.step("Code signing bundle", 2)) {
 				return ERR_SKIP;
 			}
-			err = _code_sign(p_preset, tmp_app_path_name + "/Contents/MacOS/" + pkg_name);
+			err = _code_sign(p_preset, tmp_app_path_name + "/Contents/MacOS/" + pkg_name, ent_path);
 		}
 
 		if (export_format == "dmg") {
@@ -766,7 +921,7 @@ Error EditorExportPlatformOSX::export_project(const Ref<EditorExportPreset> &p_p
 				if (ep.step("Code signing DMG", 3)) {
 					return ERR_SKIP;
 				}
-				err = _code_sign(p_preset, p_path);
+				err = _code_sign(p_preset, p_path, ent_path);
 			}
 		} else {
 			// Create ZIP.
