@@ -151,7 +151,7 @@ void ImageTexture::_reload_hook(const RID &p_hook) {
 }
 
 void ImageTexture::create_from_image(const Ref<Image> &p_image) {
-	ERR_FAIL_COND_MSG(p_image.is_null(), "Invalid image");
+	ERR_FAIL_COND_MSG(p_image.is_null() || p_image->is_empty(), "Invalid image");
 	w = p_image->get_width();
 	h = p_image->get_height();
 	format = p_image->get_format();
