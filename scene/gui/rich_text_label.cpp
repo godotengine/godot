@@ -3634,6 +3634,7 @@ void RichTextLabel::set_use_bbcode(bool p_enable) {
 	}
 	use_bbcode = p_enable;
 	set_bbcode(bbcode);
+	notify_property_list_changed();
 }
 
 bool RichTextLabel::is_using_bbcode() const {
@@ -3769,6 +3770,12 @@ int RichTextLabel::get_content_height() const {
 		total_height = main->lines[main->lines.size() - 1].offset.y + main->lines[main->lines.size() - 1].text_buf->get_size().y;
 	}
 	return total_height;
+}
+
+void RichTextLabel::_validate_property(PropertyInfo &property) const {
+	if (!use_bbcode && property.name == "bbcode_text") {
+		property.usage = PROPERTY_USAGE_NOEDITOR;
+	}
 }
 
 void RichTextLabel::_bind_methods() {

@@ -569,6 +569,7 @@ void Camera2D::_set_old_smoothing(float p_enable) {
 
 void Camera2D::set_enable_follow_smoothing(bool p_enabled) {
 	smoothing_enabled = p_enabled;
+	notify_property_list_changed();
 }
 
 bool Camera2D::is_follow_smoothing_enabled() const {
@@ -640,6 +641,12 @@ void Camera2D::set_margin_drawing_enabled(bool enable) {
 
 bool Camera2D::is_margin_drawing_enabled() const {
 	return margin_drawing_enabled;
+}
+
+void Camera2D::_validate_property(PropertyInfo &property) const {
+	if (!smoothing_enabled && property.name == "smoothing_speed") {
+		property.usage = PROPERTY_USAGE_NOEDITOR;
+	}
 }
 
 void Camera2D::_bind_methods() {
