@@ -86,7 +86,7 @@ const GodotHTTPRequest = {
 	godot_xhr_send: function (xhrId, p_ptr, p_len) {
 		let data = null;
 		if (p_ptr && p_len) {
-			data = GodotRuntime.heapCopy(HEAP8, p_ptr, p_len);
+			data = GodotRuntime.heapSlice(HEAP8, p_ptr, p_len);
 		}
 		GodotHTTPRequest.requests[xhrId].send(data);
 	},
