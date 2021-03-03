@@ -114,7 +114,7 @@ public:
 	virtual void get_platform_features(List<String> *r_features) override {
 		r_features->push_back("pc");
 		r_features->push_back("s3tc");
-		r_features->push_back("OSX");
+		r_features->push_back("macOS");
 	}
 
 	virtual void resolve_platform_feature_priorities(const Ref<EditorExportPreset> &p_preset, Set<String> &p_features) override {
@@ -702,14 +702,14 @@ Error EditorExportPlatformOSX::export_project(const Ref<EditorExportPreset> &p_p
 					ret = unzGoToNextFile(src_pkg_zip);
 					continue; // skip
 				}
-				file = file.replace("/data.mono.osx.64.release_debug/", "/data_" + pkg_name + "/");
+				file = file.replace("/data.mono.osx.64.release_debug/", "/GodotSharp/");
 			}
 			if (file.find("/data.mono.osx.64.release/") != -1) {
 				if (p_debug) {
 					ret = unzGoToNextFile(src_pkg_zip);
 					continue; // skip
 				}
-				file = file.replace("/data.mono.osx.64.release/", "/data_" + pkg_name + "/");
+				file = file.replace("/data.mono.osx.64.release/", "/GodotSharp/");
 			}
 
 			if (file.ends_with(".dylib")) {
