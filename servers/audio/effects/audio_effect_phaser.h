@@ -40,11 +40,11 @@ class AudioEffectPhaserInstance : public AudioEffectInstance {
 	friend class AudioEffectPhaser;
 	Ref<AudioEffectPhaser> base;
 
-	float phase;
+	float phase = 0.0;
 	AudioFrame h;
 
 	class AllpassDelay {
-		float a, h;
+		float a = 0.0, h = 0.0;
 
 	public:
 		_ALWAYS_INLINE_ void delay(float d) {
@@ -55,11 +55,6 @@ class AudioEffectPhaserInstance : public AudioEffectInstance {
 			float y = s * -a + h;
 			h = y * a + s;
 			return y;
-		}
-
-		AllpassDelay() {
-			a = 0;
-			h = 0;
 		}
 	};
 
@@ -73,11 +68,11 @@ class AudioEffectPhaser : public AudioEffect {
 	GDCLASS(AudioEffectPhaser, AudioEffect);
 
 	friend class AudioEffectPhaserInstance;
-	float range_min;
-	float range_max;
-	float rate;
-	float feedback;
-	float depth;
+	float range_min = 440.0;
+	float range_max = 1600.0;
+	float rate = 0.5;
+	float feedback = 0.7;
+	float depth = 1.0;
 
 protected:
 	static void _bind_methods();

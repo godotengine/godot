@@ -165,10 +165,4 @@ BroadPhase2DSW *BroadPhase2DBasic::_create() {
 	return memnew(BroadPhase2DBasic);
 }
 
-BroadPhase2DBasic::BroadPhase2DBasic() {
-	current = 1;
-	unpair_callback = nullptr;
-	unpair_userdata = nullptr;
-	pair_callback = nullptr;
-	pair_userdata = nullptr;
-}
+BroadPhase2DBasic::BroadPhase2DBasic() {}

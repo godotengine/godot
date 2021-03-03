@@ -50,12 +50,12 @@ private:
 
 	Vector<Vector<AudioFrame>> fft_history;
 	Vector<float> temporal_fft;
-	int temporal_fft_pos;
-	int fft_size;
-	int fft_count;
-	int fft_pos;
-	float mix_rate;
-	uint64_t last_fft_time;
+	int temporal_fft_pos = 0;
+	int fft_size = 0;
+	int fft_count = 0;
+	int fft_pos = 0;
+	float mix_rate = 0.0;
+	uint64_t last_fft_time = 0;
 
 protected:
 	static void _bind_methods();
@@ -82,9 +82,9 @@ public:
 
 public:
 	friend class AudioEffectSpectrumAnalyzerInstance;
-	float buffer_length;
-	float tapback_pos;
-	FFT_Size fft_size;
+	float buffer_length = 2.0;
+	float tapback_pos = 0.01;
+	FFT_Size fft_size = FFT_SIZE_1024;
 
 protected:
 	static void _bind_methods();

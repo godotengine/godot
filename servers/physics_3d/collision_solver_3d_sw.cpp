@@ -122,18 +122,18 @@ bool CollisionSolver3DSW::solve_ray(const Shape3DSW *p_shape_A, const Transform 
 }
 
 struct _ConcaveCollisionInfo {
-	const Transform *transform_A;
-	const Shape3DSW *shape_A;
-	const Transform *transform_B;
+	const Transform *transform_A = nullptr;
+	const Shape3DSW *shape_A = nullptr;
+	const Transform *transform_B = nullptr;
 	CollisionSolver3DSW::CallbackResult result_callback;
-	void *userdata;
-	bool swap_result;
-	bool collided;
-	int aabb_tests;
-	int collisions;
-	bool tested;
-	real_t margin_A;
-	real_t margin_B;
+	void *userdata = nullptr;
+	bool swap_result = false;
+	bool collided = false;
+	int aabb_tests = 0;
+	int collisions = 0;
+	bool tested = false;
+	real_t margin_A = 0.0;
+	real_t margin_B = 0.0;
 	Vector3 close_A, close_B;
 };
 
@@ -303,7 +303,7 @@ bool CollisionSolver3DSW::solve_distance_plane(const Shape3DSW *p_shape_A, const
 
 	bool collided = false;
 	Vector3 closest;
-	real_t closest_d = 0;
+	real_t closest_d = 0.0;
 
 	for (int i = 0; i < support_count; i++) {
 		supports[i] = p_transform_B.xform(supports[i]);

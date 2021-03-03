@@ -40,47 +40,47 @@
 class Constraint2DSW;
 
 class Body2DSW : public CollisionObject2DSW {
-	PhysicsServer2D::BodyMode mode;
+	PhysicsServer2D::BodyMode mode = PhysicsServer2D::BODY_MODE_RIGID;
 
 	Vector2 biased_linear_velocity;
-	real_t biased_angular_velocity;
+	real_t biased_angular_velocity = 0.0;
 
 	Vector2 linear_velocity;
-	real_t angular_velocity;
+	real_t angular_velocity = 0.0;
 
-	real_t linear_damp;
-	real_t angular_damp;
-	real_t gravity_scale;
+	real_t linear_damp = -1.0;
+	real_t angular_damp = -1.0;
+	real_t gravity_scale = 1.0;
 
-	real_t mass;
-	real_t inertia;
-	real_t bounce;
-	real_t friction;
+	real_t mass = 1.0;
+	real_t inertia = 0.0;
+	real_t bounce = 0.0;
+	real_t friction = 1.0;
 
-	real_t _inv_mass;
-	real_t _inv_inertia;
-	bool user_inertia;
+	real_t _inv_mass = 1.0;
+	real_t _inv_inertia = 0.0;
+	bool user_inertia = false;
 
 	Vector2 gravity;
-	real_t area_linear_damp;
-	real_t area_angular_damp;
+	real_t area_linear_damp = 0.0;
+	real_t area_angular_damp = 0.0;
 
-	real_t still_time;
+	real_t still_time = 0.0;
 
 	Vector2 applied_force;
-	real_t applied_torque;
+	real_t applied_torque = 0.0;
 
 	SelfList<Body2DSW> active_list;
 	SelfList<Body2DSW> inertia_update_list;
 	SelfList<Body2DSW> direct_state_query_list;
 
 	VSet<RID> exceptions;
-	PhysicsServer2D::CCDMode continuous_cd_mode;
-	bool omit_force_integration;
-	bool active;
-	bool can_sleep;
-	bool first_time_kinematic;
-	bool first_integration;
+	PhysicsServer2D::CCDMode continuous_cd_mode = PhysicsServer2D::CCD_MODE_DISABLED;
+	bool omit_force_integration = false;
+	bool active = true;
+	bool can_sleep = true;
+	bool first_time_kinematic = false;
+	bool first_integration = false;
 	void _update_inertia();
 	virtual void _shapes_changed();
 	Transform2D new_transform;
@@ -88,14 +88,13 @@ class Body2DSW : public CollisionObject2DSW {
 	List<Pair<Constraint2DSW *, int>> constraint_list;
 
 	struct AreaCMP {
-		Area2DSW *area;
-		int refCount;
+		Area2DSW *area = nullptr;
+		int refCount = 1;
 		_FORCE_INLINE_ bool operator==(const AreaCMP &p_cmp) const { return area->get_self() == p_cmp.area->get_self(); }
 		_FORCE_INLINE_ bool operator<(const AreaCMP &p_cmp) const { return area->get_priority() < p_cmp.area->get_priority(); }
 		_FORCE_INLINE_ AreaCMP() {}
 		_FORCE_INLINE_ AreaCMP(Area2DSW *p_area) {
 			area = p_area;
-			refCount = 1;
 		}
 	};
 
@@ -104,17 +103,17 @@ class Body2DSW : public CollisionObject2DSW {
 	struct Contact {
 		Vector2 local_pos;
 		Vector2 local_normal;
-		real_t depth;
-		int local_shape;
+		real_t depth = 0.0;
+		int local_shape = 0;
 		Vector2 collider_pos;
-		int collider_shape;
+		int collider_shape = 0;
 		ObjectID collider_instance_id;
 		RID collider;
 		Vector2 collider_velocity_at_pos;
 	};
 
 	Vector<Contact> contacts; //no contacts by default
-	int contact_count;
+	int contact_count = 0;
 
 	struct ForceIntegrationCallback {
 		ObjectID id;
@@ -122,11 +121,11 @@ class Body2DSW : public CollisionObject2DSW {
 		Variant callback_udata;
 	};
 
-	ForceIntegrationCallback *fi_callback;
+	ForceIntegrationCallback *fi_callback = nullptr;
 
-	uint64_t island_step;
-	Body2DSW *island_next;
-	Body2DSW *island_list_next;
+	uint64_t island_step = 0;
+	Body2DSW *island_next = nullptr;
+	Body2DSW *island_list_next = nullptr;
 
 	_FORCE_INLINE_ void _compute_area_gravity_and_dampenings(const Area2DSW *p_area);
 

@@ -49,7 +49,7 @@ void Body2DSW::update_inertias() {
 				break;
 			}
 			//update tensor for allshapes, not the best way but should be somehow OK. (inspired from bullet)
-			real_t total_area = 0;
+			real_t total_area = 0.0;
 
 			for (int i = 0; i < get_shape_count(); i++) {
 				total_area += get_shape_aabb(i).get_area();
@@ -644,36 +644,7 @@ Body2DSW::Body2DSW() :
 		active_list(this),
 		inertia_update_list(this),
 		direct_state_query_list(this) {
-	mode = PhysicsServer2D::BODY_MODE_RIGID;
-	active = true;
-	angular_velocity = 0;
-	biased_angular_velocity = 0;
-	mass = 1;
-	inertia = 0;
-	user_inertia = false;
-	_inv_inertia = 0;
-	_inv_mass = 1;
-	bounce = 0;
-	friction = 1;
-	omit_force_integration = false;
-	applied_torque = 0;
-	island_step = 0;
-	island_next = nullptr;
-	island_list_next = nullptr;
 	_set_static(false);
-	first_time_kinematic = false;
-	linear_damp = -1;
-	angular_damp = -1;
-	area_angular_damp = 0;
-	area_linear_damp = 0;
-	contact_count = 0;
-	gravity_scale = 1.0;
-	first_integration = false;
-
-	still_time = 0;
-	continuous_cd_mode = PhysicsServer2D::CCD_MODE_DISABLED;
-	can_sleep = true;
-	fi_callback = nullptr;
 }
 
 Body2DSW::~Body2DSW() {

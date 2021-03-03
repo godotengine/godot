@@ -62,6 +62,4 @@ void AudioEffectPanner::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "pan", PROPERTY_HINT_RANGE, "-1,1,0.01"), "set_pan", "get_pan");
 }
 
-AudioEffectPanner::AudioEffectPanner() {
-	pan = 0;
-}
+AudioEffectPanner::AudioEffectPanner() {}

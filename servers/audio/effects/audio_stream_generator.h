@@ -37,8 +37,8 @@
 class AudioStreamGenerator : public AudioStream {
 	GDCLASS(AudioStreamGenerator, AudioStream);
 
-	float mix_rate;
-	float buffer_len;
+	float mix_rate = 44100.0;
+	float buffer_len = 0.5;
 
 protected:
 	static void _bind_methods();
@@ -61,10 +61,10 @@ class AudioStreamGeneratorPlayback : public AudioStreamPlaybackResampled {
 	GDCLASS(AudioStreamGeneratorPlayback, AudioStreamPlaybackResampled);
 	friend class AudioStreamGenerator;
 	RingBuffer<AudioFrame> buffer;
-	int skips;
-	bool active;
-	float mixed;
-	AudioStreamGenerator *generator;
+	int skips = 0;
+	bool active = false;
+	float mixed = 0.0;
+	AudioStreamGenerator *generator = nullptr;
 
 protected:
 	virtual void _mix_internal(AudioFrame *p_buffer, int p_frames) override;

@@ -75,10 +75,7 @@ void AudioStreamGenerator::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "buffer_length", PROPERTY_HINT_RANGE, "0.01,10,0.01"), "set_buffer_length", "get_buffer_length");
 }
 
-AudioStreamGenerator::AudioStreamGenerator() {
-	mix_rate = 44100;
-	buffer_len = 0.5;
-}
+AudioStreamGenerator::AudioStreamGenerator() {}
 
 ////////////////
 
@@ -200,9 +197,4 @@ void AudioStreamGeneratorPlayback::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("clear_buffer"), &AudioStreamGeneratorPlayback::clear_buffer);
 }
 
-AudioStreamGeneratorPlayback::AudioStreamGeneratorPlayback() {
-	generator = nullptr;
-	skips = 0;
-	active = false;
-	mixed = 0;
-}
+AudioStreamGeneratorPlayback::AudioStreamGeneratorPlayback() {}

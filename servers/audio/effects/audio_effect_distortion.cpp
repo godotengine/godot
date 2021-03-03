@@ -172,10 +172,4 @@ void AudioEffectDistortion::_bind_methods() {
 	BIND_ENUM_CONSTANT(MODE_WAVESHAPE);
 }
 
-AudioEffectDistortion::AudioEffectDistortion() {
-	mode = MODE_CLIP;
-	pre_gain = 0;
-	post_gain = 0;
-	keep_hf_hz = 16000;
-	drive = 0;
-}
+AudioEffectDistortion::AudioEffectDistortion() {}

@@ -135,21 +135,6 @@ HingeJoint3DSW::HingeJoint3DSW(Body3DSW *rbA, Body3DSW *rbB, const Vector3 &pivo
 			rbAxisB1.y, rbAxisB2.y, -axisInB.y,
 			rbAxisB1.z, rbAxisB2.z, -axisInB.z);
 
-	//start with free
-	m_lowerLimit = Math_PI;
-	m_upperLimit = -Math_PI;
-
-	m_useLimit = false;
-	m_biasFactor = 0.3f;
-	m_relaxationFactor = 1.0f;
-	m_limitSoftness = 0.9f;
-	m_solveLimit = false;
-
-	tau = 0.3;
-
-	m_angularOnly = false;
-	m_enableAngularMotor = false;
-
 	A->add_constraint(this, 0);
 	B->add_constraint(this, 1);
 }

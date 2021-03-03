@@ -187,13 +187,4 @@ void AudioEffectReverb::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "wet", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_wet", "get_wet");
 }
 
-AudioEffectReverb::AudioEffectReverb() {
-	predelay = 150;
-	predelay_fb = 0.4;
-	hpf = 0;
-	room_size = 0.8;
-	damping = 0.5;
-	spread = 1.0;
-	dry = 1.0;
-	wet = 0.5;
-}
+AudioEffectReverb::AudioEffectReverb() {}

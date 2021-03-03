@@ -42,22 +42,22 @@ class PhysicsServer3DSW : public PhysicsServer3D {
 	GDCLASS(PhysicsServer3DSW, PhysicsServer3D);
 
 	friend class PhysicsDirectSpaceState3DSW;
-	bool active;
-	int iterations;
-	real_t last_step;
+	bool active = true;
+	int iterations = 0;
+	real_t last_step = 0.0;
 
-	int island_count;
-	int active_objects;
-	int collision_pairs;
+	int island_count = 0;
+	int active_objects = 0;
+	int collision_pairs = 0;
 
 	bool using_threads;
-	bool doing_sync;
-	bool flushing_queries;
+	bool doing_sync = false;
+	bool flushing_queries = false;
 
-	Step3DSW *stepper;
+	Step3DSW *stepper = nullptr;
 	Set<const Space3DSW *> active_spaces;
 
-	PhysicsDirectBodyState3DSW *direct_state;
+	PhysicsDirectBodyState3DSW *direct_state = nullptr;
 
 	mutable RID_PtrOwner<Shape3DSW, true> shape_owner;
 	mutable RID_PtrOwner<Space3DSW, true> space_owner;
@@ -74,9 +74,9 @@ class PhysicsServer3DSW : public PhysicsServer3D {
 
 public:
 	struct CollCbkData {
-		int max;
-		int amount;
-		Vector3 *ptr;
+		int max = 0;
+		int amount = 0;
+		Vector3 *ptr = nullptr;
 	};
 
 	static void _shape_col_cbk(const Vector3 &p_point_A, const Vector3 &p_point_B, void *p_userdata);

@@ -36,11 +36,11 @@
 class Constraint3DSW {
 	Body3DSW **_body_ptr;
 	int _body_count;
-	uint64_t island_step;
-	Constraint3DSW *island_next;
-	Constraint3DSW *island_list_next;
-	int priority;
-	bool disabled_collisions_between_bodies;
+	uint64_t island_step = 0;
+	Constraint3DSW *island_next = nullptr;
+	Constraint3DSW *island_list_next = nullptr;
+	int priority = 1;
+	bool disabled_collisions_between_bodies = true;
 
 	RID self;
 
@@ -48,9 +48,6 @@ protected:
 	Constraint3DSW(Body3DSW **p_body_ptr = nullptr, int p_body_count = 0) {
 		_body_ptr = p_body_ptr;
 		_body_count = p_body_count;
-		island_step = 0;
-		priority = 1;
-		disabled_collisions_between_bodies = true;
 	}
 
 public:

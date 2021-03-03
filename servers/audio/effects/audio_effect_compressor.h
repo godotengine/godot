@@ -40,8 +40,8 @@ class AudioEffectCompressorInstance : public AudioEffectInstance {
 	friend class AudioEffectCompressor;
 	Ref<AudioEffectCompressor> base;
 
-	float rundb, averatio, runratio, runmax, maxover, gr_meter;
-	int current_channel;
+	float rundb = 0.0, averatio = 0.0, runratio = 0.0, runmax = 0.0, maxover = 0.0, gr_meter = 0.0;
+	int current_channel = 0;
 
 public:
 	void set_current_channel(int p_channel) { current_channel = p_channel; }
@@ -52,12 +52,12 @@ class AudioEffectCompressor : public AudioEffect {
 	GDCLASS(AudioEffectCompressor, AudioEffect);
 
 	friend class AudioEffectCompressorInstance;
-	float threshold;
-	float ratio;
-	float gain;
-	float attack_us;
-	float release_ms;
-	float mix;
+	float threshold = 0.0;
+	float ratio = 4.0;
+	float gain = 0.0;
+	float attack_us = 20.0;
+	float release_ms = 250.0;
+	float mix = 1.0;
 	StringName sidechain;
 
 protected:

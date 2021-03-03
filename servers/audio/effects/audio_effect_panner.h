@@ -48,7 +48,7 @@ class AudioEffectPanner : public AudioEffect {
 	GDCLASS(AudioEffectPanner, AudioEffect);
 
 	friend class AudioEffectPannerInstance;
-	float pan;
+	float pan = 0.0;
 
 protected:
 	static void _bind_methods();

@@ -47,7 +47,7 @@ class PhysicsDirectSpaceState2DSW : public PhysicsDirectSpaceState2D {
 	int _intersect_point_impl(const Vector2 &p_point, ShapeResult *r_results, int p_result_max, const Set<RID> &p_exclude, uint32_t p_collision_mask, bool p_collide_with_bodies, bool p_collide_with_areas, bool p_pick_point, bool p_filter_by_canvas = false, ObjectID p_canvas_instance_id = ObjectID());
 
 public:
-	Space2DSW *space;
+	Space2DSW *space = nullptr;
 
 	virtual int intersect_point(const Vector2 &p_point, ShapeResult *r_results, int p_result_max, const Set<RID> &p_exclude = Set<RID>(), uint32_t p_collision_mask = 0xFFFFFFFF, bool p_collide_with_bodies = true, bool p_collide_with_areas = false, bool p_pick_point = false) override;
 	virtual int intersect_point_on_canvas(const Vector2 &p_point, ObjectID p_canvas_instance_id, ShapeResult *r_results, int p_result_max, const Set<RID> &p_exclude = Set<RID>(), uint32_t p_collision_mask = 0xFFFFFFFF, bool p_collide_with_bodies = true, bool p_collide_with_areas = false, bool p_pick_point = false) override;
@@ -74,9 +74,9 @@ public:
 
 private:
 	struct ExcludedShapeSW {
-		Shape2DSW *local_shape;
-		const CollisionObject2DSW *against_object;
-		int against_shape_index;
+		Shape2DSW *local_shape = nullptr;
+		const CollisionObject2DSW *against_object = nullptr;
+		int against_shape_index = 0;
 	};
 
 	uint64_t elapsed_time[ELAPSED_TIME_MAX];
@@ -96,13 +96,13 @@ private:
 
 	Set<CollisionObject2DSW *> objects;
 
-	Area2DSW *area;
+	Area2DSW *area = nullptr;
 
-	real_t contact_recycle_radius;
-	real_t contact_max_separation;
-	real_t contact_max_allowed_penetration;
-	real_t constraint_bias;
-	real_t test_motion_min_contact_depth;
+	real_t contact_recycle_radius = 1.0;
+	real_t contact_max_separation = 1.5;
+	real_t contact_max_allowed_penetration = 0.3;
+	real_t constraint_bias = 0.2;
+	real_t test_motion_min_contact_depth = 0.005;
 
 	enum {
 		INTERSECTION_QUERY_MAX = 2048
@@ -115,16 +115,16 @@ private:
 	real_t body_angular_velocity_sleep_threshold;
 	real_t body_time_to_sleep;
 
-	bool locked;
+	bool locked = false;
 
-	int island_count;
-	int active_objects;
-	int collision_pairs;
+	int island_count = 0;
+	int active_objects = 0;
+	int collision_pairs = 0;
 
 	int _cull_aabb_for_body(Body2DSW *p_body, const Rect2 &p_aabb);
 
 	Vector<Vector2> contact_debug;
-	int contact_debug_count;
+	int contact_debug_count = 0;
 
 	friend class PhysicsDirectSpaceState2DSW;
 

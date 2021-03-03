@@ -743,35 +743,7 @@ Body3DSW::Body3DSW() :
 		active_list(this),
 		inertia_update_list(this),
 		direct_state_query_list(this) {
-	mode = PhysicsServer3D::BODY_MODE_RIGID;
-	active = true;
-
-	mass = 1;
-	kinematic_safe_margin = 0.001;
-	//_inv_inertia=Transform();
-	_inv_mass = 1;
-	bounce = 0;
-	friction = 1;
-	omit_force_integration = false;
-	//applied_torque=0;
-	island_step = 0;
-	island_next = nullptr;
-	island_list_next = nullptr;
-	first_time_kinematic = false;
-	first_integration = false;
 	_set_static(false);
-
-	contact_count = 0;
-	gravity_scale = 1.0;
-	linear_damp = -1;
-	angular_damp = -1;
-	area_angular_damp = 0;
-	area_linear_damp = 0;
-
-	still_time = 0;
-	continuous_cd = false;
-	can_sleep = true;
-	fi_callback = nullptr;
 }
 
 Body3DSW::~Body3DSW() {

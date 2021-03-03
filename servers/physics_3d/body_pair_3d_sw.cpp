@@ -464,8 +464,6 @@ BodyPair3DSW::BodyPair3DSW(Body3DSW *p_A, int p_shape_A, Body3DSW *p_B, int p_sh
 	space = A->get_space();
 	A->add_constraint(this, 0);
 	B->add_constraint(this, 1);
-	contact_count = 0;
-	collided = false;
 }
 
 BodyPair3DSW::~BodyPair3DSW() {

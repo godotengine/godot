@@ -34,14 +34,7 @@
 #include "core/os/os.h"
 
 Error AudioDriverDummy::init() {
-	active = false;
-	thread_exited = false;
-	exit_thread = false;
-	samples_in = nullptr;
-
 	mix_rate = GLOBAL_GET("audio/driver/mix_rate");
-	speaker_mode = SPEAKER_MODE_STEREO;
-	channels = 2;
 
 	int latency = GLOBAL_GET("audio/driver/output_latency");
 	buffer_frames = closest_power_of_2(latency * mix_rate / 1000);

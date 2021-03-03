@@ -148,8 +148,8 @@ public:
 		uint32_t width;
 		uint32_t height;
 		uint32_t depth;
-		Image::Format format;
-		int bytes;
+		Image::Format format = Image::Format::FORMAT_L8;
+		int bytes = 0;
 		String path;
 	};
 
@@ -300,7 +300,7 @@ public:
 
 		AABB aabb;
 		struct LOD {
-			float edge_length;
+			float edge_length = 0.0;
 			Vector<uint8_t> index_data;
 		};
 		Vector<LOD> lods;

@@ -628,9 +628,6 @@ BroadPhase2DHashGrid::BroadPhase2DHashGrid() {
 	for (uint32_t i = 0; i < hash_table_size; i++) {
 		hash_table[i] = nullptr;
 	}
-	pass = 1;
-
-	current = 0;
 }
 
 BroadPhase2DHashGrid::~BroadPhase2DHashGrid() {

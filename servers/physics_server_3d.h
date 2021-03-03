@@ -103,12 +103,12 @@ class PhysicsShapeQueryParameters3D : public Reference {
 	RES shape_ref;
 	RID shape;
 	Transform transform;
-	real_t margin;
+	real_t margin = 0.0;
 	Set<RID> exclude;
-	uint32_t collision_mask;
+	uint32_t collision_mask = 0x7FFFFFFF;
 
-	bool collide_with_bodies;
-	bool collide_with_areas;
+	bool collide_with_bodies = true;
+	bool collide_with_areas = false;
 
 protected:
 	static void _bind_methods();
@@ -157,8 +157,8 @@ public:
 	struct ShapeResult {
 		RID rid;
 		ObjectID collider_id;
-		Object *collider;
-		int shape;
+		Object *collider = nullptr;
+		int shape = 0;
 	};
 
 	virtual int intersect_point(const Vector3 &p_point, ShapeResult *r_results, int p_result_max, const Set<RID> &p_exclude = Set<RID>(), uint32_t p_collision_mask = 0xFFFFFFFF, bool p_collide_with_bodies = true, bool p_collide_with_areas = false) = 0;
@@ -168,8 +168,8 @@ public:
 		Vector3 normal;
 		RID rid;
 		ObjectID collider_id;
-		Object *collider;
-		int shape;
+		Object *collider = nullptr;
+		int shape = 0;
 	};
 
 	virtual bool intersect_ray(const Vector3 &p_from, const Vector3 &p_to, RayResult &r_result, const Set<RID> &p_exclude = Set<RID>(), uint32_t p_collision_mask = 0xFFFFFFFF, bool p_collide_with_bodies = true, bool p_collide_with_areas = false, bool p_pick_ray = false) = 0;
@@ -181,7 +181,7 @@ public:
 		Vector3 normal;
 		RID rid;
 		ObjectID collider_id;
-		int shape;
+		int shape = 0;
 		Vector3 linear_velocity; //velocity at contact point
 	};
 
@@ -490,16 +490,11 @@ public:
 		Vector3 collision_point;
 		Vector3 collision_normal;
 		Vector3 collider_velocity;
-		int collision_local_shape;
+		int collision_local_shape = 0;
 		ObjectID collider_id;
 		RID collider;
-		int collider_shape;
+		int collider_shape = 0;
 		Variant collider_metadata;
-		MotionResult() {
-			collision_local_shape = 0;
-			collider_id = ObjectID();
-			collider_shape = 0;
-		}
 	};
 
 	virtual bool body_test_motion(RID p_body, const Transform &p_from, const Vector3 &p_motion, bool p_infinite_inertia, MotionResult *r_result = nullptr, bool p_exclude_raycast_shapes = true) = 0;
@@ -509,10 +504,10 @@ public:
 		Vector3 collision_point;
 		Vector3 collision_normal;
 		Vector3 collider_velocity;
-		int collision_local_shape;
+		int collision_local_shape = 0;
 		ObjectID collider_id;
 		RID collider;
-		int collider_shape;
+		int collider_shape = 0;
 		Variant collider_metadata;
 	};
 

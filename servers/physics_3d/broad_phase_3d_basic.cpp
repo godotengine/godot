@@ -203,10 +203,4 @@ BroadPhase3DSW *BroadPhase3DBasic::_create() {
 	return memnew(BroadPhase3DBasic);
 }
 
-BroadPhase3DBasic::BroadPhase3DBasic() {
-	current = 1;
-	unpair_callback = nullptr;
-	unpair_userdata = nullptr;
-	pair_callback = nullptr;
-	pair_userdata = nullptr;
-}
+BroadPhase3DBasic::BroadPhase3DBasic() {}

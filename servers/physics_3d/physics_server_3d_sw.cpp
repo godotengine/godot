@@ -1481,11 +1481,5 @@ PhysicsServer3DSW *PhysicsServer3DSW::singletonsw = nullptr;
 PhysicsServer3DSW::PhysicsServer3DSW(bool p_using_threads) {
 	singletonsw = this;
 	BroadPhase3DSW::create_func = BroadPhaseOctree::_create;
-	island_count = 0;
-	active_objects = 0;
-	collision_pairs = 0;
 	using_threads = p_using_threads;
-	active = true;
-	flushing_queries = false;
-	doing_sync = false;
 };

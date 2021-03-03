@@ -299,6 +299,4 @@ void Step2DSW::step(Space2DSW *p_space, real_t p_delta, int p_iterations) {
 	_step++;
 }
 
-Step2DSW::Step2DSW() {
-	_step = 1;
-}
+Step2DSW::Step2DSW() {}
