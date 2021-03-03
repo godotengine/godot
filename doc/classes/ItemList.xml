@@ -302,16 +302,7 @@
 			<argument index="1" name="custom_bg_color" type="Color">
 			</argument>
 			<description>
-				[codeblocks]
-				[gdscript]
-				var itemList = ItemList.new()
-				some_string.set_item_custom_bg_color(0, Color.red) # This will set the background color of the first item of the control to red.
-				[/gdscript]
-				[csharp]
-				var itemList = new ItemList();
-				itemList.SetItemCustomBgColor(0, Colors.Red); // This will set the background color of the first item of the control to red.
-				[/csharp]
-				[/codeblocks]
+				Sets the background color of the item specified by [code]idx[/code] index to the specified [Color].
 			</description>
 		</method>
 		<method name="set_item_custom_fg_color">
@@ -323,16 +314,6 @@
 			</argument>
 			<description>
 				Sets the foreground color of the item specified by [code]idx[/code] index to the specified [Color].
-				[codeblocks]
-				[gdscript]
-				var item_list = ItemList.new()
-				item_list.set_item_custom_fg_color(0, Color.red) # This will set the foreground color of the first item of the control to red.
-				[/gdscript]
-				[csharp]
-				var itemList = new ItemList();
-				itemList.SetItemCustomFgColor(0, Colors.Red); // This will set the foreground color of the first item of the control to red.
-				[/csharp]
-				[/codeblocks]
 			</description>
 		</method>
 		<method name="set_item_disabled">
