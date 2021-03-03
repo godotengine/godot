@@ -54,6 +54,9 @@
 			The timer's remaining time in seconds. Returns 0 if the timer is inactive.
 			[b]Note:[/b] You cannot set this value. To change the timer's remaining time, use [method start].
 		</member>
+		<member name="time_scale" type="float" setter="set_time_scale" getter="get_time_scale">
+			Controls how fast or slow the timer ticks. Defaults to 1.0. A value of 2.0 means the timer ticks twice as fast, whilst a value of 0.5 means the timer ticks half the regular speed.
+		</member>
 		<member name="wait_time" type="float" setter="set_wait_time" getter="get_wait_time" default="1.0">
 			Wait time in seconds.
 		</member>

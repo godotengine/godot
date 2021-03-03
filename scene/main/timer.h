@@ -41,6 +41,7 @@ class Timer : public Node {
 	bool autostart = false;
 	bool processing = false;
 	bool paused = false;
+	float time_scale = 1.0;
 
 	double time_left = -1.0;
 
@@ -68,6 +69,9 @@ public:
 
 	void set_paused(bool p_paused);
 	bool is_paused() const;
+
+	void set_time_scale(float p_time_scale);
+	float get_time_scale() const;
 
 	bool is_stopped() const;
 

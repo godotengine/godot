@@ -49,7 +49,7 @@ void Timer::_notification(int p_what) {
 			if (!processing || timer_process_callback == TIMER_PROCESS_PHYSICS || !is_processing_internal()) {
 				return;
 			}
-			time_left -= get_process_delta_time();
+			time_left -= get_process_delta_time() * time_scale;
 
 			if (time_left < 0) {
 				if (!one_shot) {
@@ -66,7 +66,7 @@ void Timer::_notification(int p_what) {
 			if (!processing || timer_process_callback == TIMER_PROCESS_IDLE || !is_physics_processing_internal()) {
 				return;
 			}
-			time_left -= get_physics_process_delta_time();
+			time_left -= get_physics_process_delta_time() * time_scale;
 
 			if (time_left < 0) {
 				if (!one_shot) {
@@ -135,6 +135,15 @@ bool Timer::is_paused() const {
 	return paused;
 }
 
+void Timer::set_time_scale(float p_time_scale) {
+	ERR_FAIL_COND_MSG(p_time_scale < 0, "Time scale should be greater than or equal to zero.");
+	time_scale = p_time_scale;
+}
+
+float Timer::get_time_scale() const {
+	return time_scale;
+}
+
 bool Timer::is_stopped() const {
 	return get_time_left() <= 0;
 }
@@ -197,6 +206,9 @@ void Timer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_paused", "paused"), &Timer::set_paused);
 	ClassDB::bind_method(D_METHOD("is_paused"), &Timer::is_paused);
 
+	ClassDB::bind_method(D_METHOD("set_time_scale", "time_scale"), &Timer::set_time_scale);
+	ClassDB::bind_method(D_METHOD("get_time_scale"), &Timer::get_time_scale);
+
 	ClassDB::bind_method(D_METHOD("is_stopped"), &Timer::is_stopped);
 
 	ClassDB::bind_method(D_METHOD("get_time_left"), &Timer::get_time_left);
@@ -211,6 +223,7 @@ void Timer::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "one_shot"), "set_one_shot", "is_one_shot");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "autostart"), "set_autostart", "has_autostart");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "paused", PROPERTY_HINT_NONE, "", 0), "set_paused", "is_paused");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "time_scale", PROPERTY_HINT_EXP_RANGE, "0, 100, 0.001, or_greater"), "set_time_scale", "get_time_scale");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "time_left", PROPERTY_HINT_NONE, "", 0), "", "get_time_left");
 
 	BIND_ENUM_CONSTANT(TIMER_PROCESS_PHYSICS);
