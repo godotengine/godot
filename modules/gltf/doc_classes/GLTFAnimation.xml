@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="GLTFAnimation" inherits="Resource" version="3.4">
+	<brief_description>
+	</brief_description>
+	<description>
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+	</methods>
+	<members>
+		<member name="loop" type="bool" setter="set_loop" getter="get_loop" default="false">
+		</member>
+	</members>
+	<constants>
+	</constants>
+</class>
