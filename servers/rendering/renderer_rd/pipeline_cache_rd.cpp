@@ -88,11 +88,7 @@ void PipelineCacheRD::clear() {
 	input_mask = 0;
 }
 
-PipelineCacheRD::PipelineCacheRD() {
-	version_count = 0;
-	versions = nullptr;
-	input_mask = 0;
-}
+PipelineCacheRD::PipelineCacheRD() {}
 
 PipelineCacheRD::~PipelineCacheRD() {
 	_clear();

@@ -7813,10 +7813,7 @@ ShaderLanguage::ShaderNode *ShaderLanguage::get_shader() {
 	return shader;
 }
 
-ShaderLanguage::ShaderLanguage() {
-	nodes = nullptr;
-	completion_class = TAG_GLOBAL;
-}
+ShaderLanguage::ShaderLanguage() {}
 
 ShaderLanguage::~ShaderLanguage() {
 	clear();

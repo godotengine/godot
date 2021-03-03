@@ -53,7 +53,7 @@ class RendererSceneGIRD {
 private:
 	// !BAS! need to see which things become internal..
 
-	RendererStorageRD *storage;
+	RendererStorageRD *storage = nullptr;
 
 public:
 	/* GIPROBE INSTANCE */
@@ -112,8 +112,8 @@ public:
 
 	struct GIProbeInstance {
 		// access to our containers
-		RendererStorageRD *storage;
-		RendererSceneGIRD *gi;
+		RendererStorageRD *storage = nullptr;
+		RendererSceneGIRD *gi = nullptr;
 
 		RID probe;
 		RID texture;
@@ -124,9 +124,9 @@ public:
 			RID uniform_set;
 			RID second_bounce_uniform_set;
 			RID write_uniform_set;
-			uint32_t level;
-			uint32_t cell_offset;
-			uint32_t cell_count;
+			uint32_t level = 0;
+			uint32_t cell_offset = 0;
+			uint32_t cell_count = 0;
 		};
 		Vector<Mipmap> mipmaps;
 
@@ -139,8 +139,8 @@ public:
 			RID orm; //orm buffer for the first pass
 			RID fb; //used for rendering, only valid on first map
 			RID uniform_set;
-			uint32_t size;
-			int mipmap; // mipmap to write to, -1 if no mipmap assigned
+			uint32_t size = 0;
+			int mipmap = 0; // mipmap to write to, -1 if no mipmap assigned
 		};
 
 		Vector<DynamicMap> dynamic_maps;
@@ -160,8 +160,8 @@ public:
 		void debug(RD::DrawListID p_draw_list, RID p_framebuffer, const CameraMatrix &p_camera_with_transform, bool p_lighting, bool p_emission, float p_alpha);
 	};
 
-	GIProbeLight *gi_probe_lights;
-	uint32_t gi_probe_max_lights;
+	GIProbeLight *gi_probe_lights = nullptr;
+	uint32_t gi_probe_max_lights = 0;
 	RID gi_probe_lights_uniform;
 
 	enum {
@@ -225,10 +225,10 @@ public:
 
 		struct Cascade {
 			struct UBO {
-				float offset[3];
-				float to_cell;
-				int32_t probe_offset[3];
-				uint32_t pad;
+				float offset[3] = {};
+				float to_cell = 0.0;
+				int32_t probe_offset[3] = {};
+				uint32_t pad = 0;
 			};
 
 			//cascade blocks are full-size for volume (128^3), half size for albedo/emission
@@ -242,10 +242,10 @@ public:
 			RID light_aniso_1_data;
 
 			struct SolidCell { // this struct is unused, but remains as reference for size
-				uint32_t position;
-				uint32_t albedo;
-				uint32_t static_light;
-				uint32_t static_light_aniso;
+				uint32_t position = 0;
+				uint32_t albedo = 0;
+				uint32_t static_light = 0;
+				uint32_t static_light_aniso = 0;
 			};
 
 			RID solid_cell_dispatch_buffer; //buffer for indirect compute dispatch
@@ -254,7 +254,7 @@ public:
 			RID lightprobe_history_tex;
 			RID lightprobe_average_tex;
 
-			float cell_size;
+			float cell_size = 0.0;
 			Vector3i position;
 
 			static const Vector3i DIRTY_ALL;

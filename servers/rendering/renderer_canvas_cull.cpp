@@ -1560,8 +1560,6 @@ bool RendererCanvasCull::free(RID p_rid) {
 RendererCanvasCull::RendererCanvasCull() {
 	z_list = (RendererCanvasRender::Item **)memalloc(z_range * sizeof(RendererCanvasRender::Item *));
 	z_last_list = (RendererCanvasRender::Item **)memalloc(z_range * sizeof(RendererCanvasRender::Item *));
-
-	disable_scale = false;
 }
 
 RendererCanvasCull::~RendererCanvasCull() {

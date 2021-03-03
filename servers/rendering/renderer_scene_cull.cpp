@@ -2013,7 +2013,7 @@ bool RendererSceneCull::_light_instance_update_shadow(Instance *p_instance, cons
 					Vector<Vector3> points = Geometry3D::compute_convex_mesh_points(&planes[0], planes.size());
 
 					struct CullConvex {
-						PagedArray<Instance *> *result;
+						PagedArray<Instance *> *result = nullptr;
 						_FORCE_INLINE_ bool operator()(void *p_data) {
 							Instance *p_instance = (Instance *)p_data;
 							result->push_back(p_instance);
@@ -2076,7 +2076,7 @@ bool RendererSceneCull::_light_instance_update_shadow(Instance *p_instance, cons
 			Vector<Vector3> points = Geometry3D::compute_convex_mesh_points(&planes[0], planes.size());
 
 			struct CullConvex {
-				PagedArray<Instance *> *result;
+				PagedArray<Instance *> *result = nullptr;
 				_FORCE_INLINE_ bool operator()(void *p_data) {
 					Instance *p_instance = (Instance *)p_data;
 					result->push_back(p_instance);
@@ -3151,7 +3151,7 @@ void RendererSceneCull::render_particle_colliders() {
 			frustum_cull_result.geometry_instances.clear();
 
 			struct CullAABB {
-				PagedArray<Instance *> *result;
+				PagedArray<Instance *> *result = nullptr;
 				_FORCE_INLINE_ bool operator()(void *p_data) {
 					Instance *p_instance = (Instance *)p_data;
 					result->push_back(p_instance);
@@ -3514,7 +3514,6 @@ void RendererSceneCull::set_scene_render(RendererSceneRender *p_scene_render) {
 }
 
 RendererSceneCull::RendererSceneCull() {
-	render_pass = 1;
 	singleton = this;
 
 	instance_cull_result.set_page_pool(&instance_cull_page_pool);

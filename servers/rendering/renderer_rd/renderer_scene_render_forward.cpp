@@ -400,10 +400,7 @@ RS::ShaderNativeSourceCode RendererSceneRenderForward::ShaderData::get_native_so
 	return scene_singleton->shader.scene_shader.version_get_native_source_code(version);
 }
 
-RendererSceneRenderForward::ShaderData::ShaderData() {
-	valid = false;
-	uses_screen_texture = false;
-}
+RendererSceneRenderForward::ShaderData::ShaderData() {}
 
 RendererSceneRenderForward::ShaderData::~ShaderData() {
 	RendererSceneRenderForward *scene_singleton = (RendererSceneRenderForward *)RendererSceneRenderForward::singleton;

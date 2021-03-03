@@ -58,7 +58,7 @@ class RenderingServerDefault : public RenderingServer {
 	static int changes;
 	RID test_cube;
 
-	int black_margin[4];
+	int black_margin[4] = {};
 	RID black_image[4];
 
 	struct FrameDrawnCallbacks {
@@ -72,7 +72,7 @@ class RenderingServerDefault : public RenderingServer {
 	void _draw_margins();
 	static void _changes_changed() {}
 
-	uint64_t frame_profile_frame;
+	uint64_t frame_profile_frame = 0;
 	Vector<FrameProfileArea> frame_profile;
 
 	float frame_setup_time = 0;

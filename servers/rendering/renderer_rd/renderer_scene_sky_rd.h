@@ -77,38 +77,38 @@ public:
 
 	// Skys need less info from Directional Lights than the normal shaders
 	struct SkyDirectionalLightData {
-		float direction[3];
-		float energy;
-		float color[3];
-		float size;
-		uint32_t enabled;
-		uint32_t pad[3];
+		float direction[3] = {};
+		float energy = 0.0;
+		float color[3] = {};
+		float size = 0.0;
+		uint32_t enabled = 0;
+		uint32_t pad[3] = {};
 	};
 
 	struct SkySceneState {
 		struct UBO {
-			uint32_t volumetric_fog_enabled;
-			float volumetric_fog_inv_length;
-			float volumetric_fog_detail_spread;
+			uint32_t volumetric_fog_enabled = 0;
+			float volumetric_fog_inv_length = 0.0;
+			float volumetric_fog_detail_spread = 0.0;
 
-			float fog_aerial_perspective;
+			float fog_aerial_perspective = 0.0;
 
-			float fog_light_color[3];
-			float fog_sun_scatter;
+			float fog_light_color[3] = {};
+			float fog_sun_scatter = 0.0;
 
-			uint32_t fog_enabled;
-			float fog_density;
+			uint32_t fog_enabled = 0;
+			float fog_density = 0.0;
 
-			float z_far;
-			uint32_t directional_light_count;
+			float z_far = 0.0;
+			uint32_t directional_light_count = 0;
 		};
 
 		UBO ubo;
 
-		SkyDirectionalLightData *directional_lights;
-		SkyDirectionalLightData *last_frame_directional_lights;
-		uint32_t max_directional_lights;
-		uint32_t last_frame_directional_light_count;
+		SkyDirectionalLightData *directional_lights = nullptr;
+		SkyDirectionalLightData *last_frame_directional_lights = nullptr;
+		uint32_t max_directional_lights = 0;
+		uint32_t last_frame_directional_light_count = 0;
 		RID directional_light_buffer;
 		RID uniform_set;
 		RID uniform_buffer;
@@ -156,7 +156,7 @@ public:
 	};
 
 	struct SkyShaderData : public RendererStorageRD::ShaderData {
-		bool valid;
+		bool valid = false;
 		RID version;
 
 		PipelineCacheRD pipelines[SKY_VERSION_MAX];
@@ -164,17 +164,17 @@ public:
 		Vector<ShaderCompilerRD::GeneratedCode::Texture> texture_uniforms;
 
 		Vector<uint32_t> ubo_offsets;
-		uint32_t ubo_size;
+		uint32_t ubo_size = 0;
 
 		String path;
 		String code;
 		Map<StringName, RID> default_texture_params;
 
-		bool uses_time;
-		bool uses_position;
-		bool uses_half_res;
-		bool uses_quarter_res;
-		bool uses_light;
+		bool uses_time = false;
+		bool uses_position = false;
+		bool uses_half_res = false;
+		bool uses_quarter_res = false;
+		bool uses_light = false;
 
 		virtual void set_code(const String &p_Code);
 		virtual void set_default_texture_param(const StringName &p_name, RID p_texture);
@@ -201,13 +201,13 @@ public:
 	} sky_shader;
 
 	struct SkyMaterialData : public RendererStorageRD::MaterialData {
-		uint64_t last_frame;
+		uint64_t last_frame = 0;
 		SkyShaderData *shader_data;
 		RID uniform_buffer;
 		RID uniform_set;
 		Vector<RID> texture_cache;
 		Vector<uint8_t> ubo_data;
-		bool uniform_set_updated;
+		bool uniform_set_updated = false;
 
 		virtual void set_render_priority(int p_priority) {}
 		virtual void set_next_pass(RID p_pass) {}
@@ -241,7 +241,7 @@ public:
 		//State to track when radiance cubemap needs updating
 		SkyMaterialData *prev_material;
 		Vector3 prev_position;
-		float prev_time;
+		float prev_time = 0.0;
 
 		void free(RendererStorageRD *p_storage);
 

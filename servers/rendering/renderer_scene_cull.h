@@ -49,7 +49,7 @@
 #include "servers/xr/xr_interface.h"
 class RendererSceneCull : public RendererScene {
 public:
-	RendererSceneRender *scene_render;
+	RendererSceneRender *scene_render = nullptr;
 
 	enum {
 		SDFGI_MAX_CASCADES = 8,
@@ -58,7 +58,7 @@ public:
 		MAX_UPDATE_SHADOWS = 512
 	};
 
-	uint64_t render_pass;
+	uint64_t render_pass = 1;
 
 	static RendererSceneCull *singleton;
 
@@ -70,28 +70,18 @@ public:
 			ORTHOGONAL,
 			FRUSTUM
 		};
-		Type type;
-		float fov;
-		float znear, zfar;
-		float size;
+		Type type = PERSPECTIVE;
+		float fov = 75;
+		float znear = 0.05;
+		float zfar = 4000;
+		float size = 1.0;
 		Vector2 offset;
-		uint32_t visible_layers;
-		bool vaspect;
+		uint32_t visible_layers = 0xFFFFFFFF;
+		bool vaspect = false;
 		RID env;
 		RID effects;
 
 		Transform transform;
-
-		Camera() {
-			visible_layers = 0xFFFFFFFF;
-			fov = 75;
-			type = PERSPECTIVE;
-			znear = 0.05;
-			zfar = 4000;
-			size = 1.0;
-			offset = Vector2();
-			vaspect = false;
-		}
 	};
 
 	mutable RID_PtrOwner<Camera, true> camera_owner;
@@ -133,15 +123,15 @@ public:
 			}
 		}
 
-		uint32_t signs[3];
+		uint32_t signs[3] = {};
 	};
 
 	struct Frustum {
 		Vector<Plane> planes;
 		Vector<PlaneSign> plane_signs;
-		const Plane *planes_ptr;
-		const PlaneSign *plane_signs_ptr;
-		uint32_t plane_count;
+		const Plane *planes_ptr = nullptr;
+		const PlaneSign *plane_signs_ptr = nullptr;
+		uint32_t plane_count = 0;
 
 		_ALWAYS_INLINE_ Frustum() {}
 		_ALWAYS_INLINE_ Frustum(const Frustum &p_frustum) {
@@ -178,7 +168,7 @@ public:
 		// Because bounds checking is performed first,
 		// keep it separated from data.
 
-		real_t bounds[6];
+		real_t bounds[6] = {};
 		_ALWAYS_INLINE_ InstanceBounds() {}
 
 		_ALWAYS_INLINE_ InstanceBounds(const AABB &p_aabb) {
@@ -254,7 +244,7 @@ public:
 		uint32_t layer_mask = 0; //for fast layer-mask discard
 		RID base_rid;
 		union {
-			uint64_t instance_data_rid;
+			uint64_t instance_data_rid = 0;
 			RendererSceneRender::GeometryInstance *instance_geometry;
 		};
 		Instance *instance = nullptr;
@@ -272,7 +262,7 @@ public:
 
 		DynamicBVH indexers[INDEXER_MAX];
 
-		RS::ScenarioDebugMode debug;
+		RS::ScenarioDebugMode debug = RS::SCENARIO_DEBUG_DISABLED;
 		RID self;
 
 		List<Instance *> directional_lights;
@@ -292,7 +282,6 @@ public:
 		Scenario() {
 			indexers[INDEXER_GEOMETRY].set_index(INDEXER_GEOMETRY);
 			indexers[INDEXER_VOLUMES].set_index(INDEXER_VOLUMES);
-			debug = RS::SCENARIO_DEBUG_DISABLED;
 		}
 	};
 
@@ -324,7 +313,8 @@ public:
 		SelfList<InstancePair> list_a;
 		SelfList<InstancePair> list_b;
 		InstancePair() :
-				list_a(this), list_b(this) {}
+				list_a(this),
+				list_b(this) {}
 	};
 
 	PagedAllocator<InstancePair> pair_allocator;
@@ -334,7 +324,7 @@ public:
 	};
 
 	struct Instance {
-		RS::InstanceType base_type;
+		RS::InstanceType base_type = RS::INSTANCE_NONE;
 		RID base;
 
 		RID skeleton;
@@ -344,13 +334,13 @@ public:
 
 		Transform transform;
 
-		float lod_bias;
+		float lod_bias = 1.0;
 
 		Vector<RID> materials;
 
-		RS::ShadowCastingSetting cast_shadows;
+		RS::ShadowCastingSetting cast_shadows = RS::SHADOW_CASTING_SETTING_ON;
 
-		uint32_t layer_mask;
+		uint32_t layer_mask = 1;
 		//fit in 32 bits
 		bool mirror : 8;
 		bool receive_shadows : 8;
@@ -359,10 +349,10 @@ public:
 		bool dynamic_gi : 2; //same above for dynamic objects
 		bool redraw_if_visible : 4;
 
-		Instance *lightmap;
+		Instance *lightmap = nullptr;
 		Rect2 lightmap_uv_scale;
-		int lightmap_slice_index;
-		uint32_t lightmap_cull_index;
+		int lightmap_slice_index = 0;
+		uint32_t lightmap_cull_index = 0;
 		Vector<Color> lightmap_sh; //spherical harmonic
 
 		AABB aabb;
@@ -385,36 +375,36 @@ public:
 		RID self;
 		//scenario stuff
 		DynamicBVH::ID indexer_id;
-		int32_t array_index;
-		Scenario *scenario;
+		int32_t array_index = -1;
+		Scenario *scenario = nullptr;
 		SelfList<Instance> scenario_item;
 
 		//aabb stuff
-		bool update_aabb;
-		bool update_dependencies;
+		bool update_aabb = false;
+		bool update_dependencies = false;
 
 		SelfList<Instance> update_item;
 
-		AABB *custom_aabb; // <Zylann> would using aabb directly with a bool be better?
-		float extra_margin;
+		AABB *custom_aabb = nullptr; // <Zylann> would using aabb directly with a bool be better?
+		float extra_margin = 0;
 		ObjectID object_id;
 
-		float lod_begin;
-		float lod_end;
-		float lod_begin_hysteresis;
-		float lod_end_hysteresis;
+		float lod_begin = 0;
+		float lod_end = 0;
+		float lod_begin_hysteresis = 0;
+		float lod_end_hysteresis = 0;
 		RID lod_instance;
 
 		Vector<Color> lightmap_target_sh; //target is used for incrementally changing the SH over time, this avoids pops in some corner cases and when going interior <-> exterior
 
-		uint64_t last_frame_pass;
+		uint64_t last_frame_pass = 0;
 
-		uint64_t version; // changes to this, and changes to base increase version
+		uint64_t version = 1; // changes to this, and changes to base increase version
 
-		InstanceBaseData *base_data;
+		InstanceBaseData *base_data = nullptr;
 
 		SelfList<InstancePair>::List pairs;
-		uint64_t pair_check;
+		uint64_t pair_check = 0;
 
 		RendererStorage::DependencyTracker dependency_tracker;
 
@@ -458,41 +448,12 @@ public:
 		Instance() :
 				scenario_item(this),
 				update_item(this) {
-			base_type = RS::INSTANCE_NONE;
-			cast_shadows = RS::SHADOW_CASTING_SETTING_ON;
 			receive_shadows = true;
 			visible = true;
-			layer_mask = 1;
 			baked_light = false;
 			dynamic_gi = false;
 			redraw_if_visible = false;
-			lightmap_slice_index = 0;
-			lightmap = nullptr;
-			lightmap_cull_index = 0;
-			lod_bias = 1.0;
-
-			scenario = nullptr;
-
-			update_aabb = false;
-			update_dependencies = false;
-
-			extra_margin = 0;
-
 			visible = true;
-
-			lod_begin = 0;
-			lod_end = 0;
-			lod_begin_hysteresis = 0;
-			lod_end_hysteresis = 0;
-
-			last_frame_pass = 0;
-			version = 1;
-			base_data = nullptr;
-
-			custom_aabb = nullptr;
-
-			pair_check = 0;
-			array_index = -1;
 
 			dependency_tracker.userdata = this;
 			dependency_tracker.changed_callback = dependency_changed;
@@ -515,44 +476,35 @@ public:
 	struct InstanceGeometryData : public InstanceBaseData {
 		RendererSceneRender::GeometryInstance *geometry_instance = nullptr;
 		Set<Instance *> lights;
-		bool can_cast_shadows;
-		bool material_is_animated;
+		bool can_cast_shadows = true;
+		bool material_is_animated = true;
 
 		Set<Instance *> decals;
 		Set<Instance *> reflection_probes;
 		Set<Instance *> gi_probes;
 		Set<Instance *> lightmap_captures;
-
-		InstanceGeometryData() {
-			can_cast_shadows = true;
-			material_is_animated = true;
-		}
 	};
 
 	struct InstanceReflectionProbeData : public InstanceBaseData {
-		Instance *owner;
+		Instance *owner = nullptr;
 
 		Set<Instance *> geometries;
 
 		RID instance;
 		SelfList<InstanceReflectionProbeData> update_list;
 
-		int render_step;
+		int render_step = -1;
 
 		InstanceReflectionProbeData() :
 				update_list(this) {
-			render_step = -1;
 		}
 	};
 
 	struct InstanceDecalData : public InstanceBaseData {
-		Instance *owner;
+		Instance *owner = nullptr;
 		RID instance;
 
 		Set<Instance *> geometries;
-
-		InstanceDecalData() {
-		}
 	};
 
 	SelfList<InstanceReflectionProbeData>::List reflection_probe_render_list;
@@ -563,29 +515,21 @@ public:
 
 	struct InstanceLightData : public InstanceBaseData {
 		RID instance;
-		uint64_t last_version;
-		List<Instance *>::Element *D; // directional light in scenario
+		uint64_t last_version = 0;
+		List<Instance *>::Element *D = nullptr; // directional light in scenario
 
-		bool shadow_dirty;
+		bool shadow_dirty = true;
 
 		Set<Instance *> geometries;
 
-		Instance *baked_light;
+		Instance *baked_light = nullptr;
 
-		RS::LightBakeMode bake_mode;
+		RS::LightBakeMode bake_mode = RS::LIGHT_BAKE_DISABLED;
 		uint32_t max_sdfgi_cascade = 2;
-
-		InstanceLightData() {
-			bake_mode = RS::LIGHT_BAKE_DISABLED;
-			shadow_dirty = true;
-			D = nullptr;
-			last_version = 0;
-			baked_light = nullptr;
-		}
 	};
 
 	struct InstanceGIProbeData : public InstanceBaseData {
-		Instance *owner;
+		Instance *owner = nullptr;
 
 		Set<Instance *> geometries;
 		Set<Instance *> dynamic_geometries;
@@ -593,17 +537,17 @@ public:
 		Set<Instance *> lights;
 
 		struct LightCache {
-			RS::LightType type;
+			RS::LightType type = RS::LightType::LIGHT_DIRECTIONAL;
 			Transform transform;
 			Color color;
-			float energy;
-			float bake_energy;
-			float radius;
-			float attenuation;
-			float spot_angle;
-			float spot_attenuation;
-			bool has_shadow;
-			bool sky_only;
+			float energy = 0.0;
+			float bake_energy = 0.0;
+			float radius = 0.0;
+			float attenuation = 0.0;
+			float spot_angle = 0.0;
+			float spot_attenuation = 0.0;
+			bool has_shadow = false;
+			bool sky_only = false;
 		};
 
 		Vector<LightCache> light_cache;
@@ -611,15 +555,13 @@ public:
 
 		RID probe_instance;
 
-		bool invalid;
-		uint32_t base_version;
+		bool invalid = true;
+		uint32_t base_version = 0;
 
 		SelfList<InstanceGIProbeData> update_element;
 
 		InstanceGIProbeData() :
 				update_element(this) {
-			invalid = true;
-			base_version = 0;
 		}
 	};
 
@@ -629,9 +571,6 @@ public:
 		RID instance;
 		Set<Instance *> geometries;
 		Set<Instance *> users;
-
-		InstanceLightmapData() {
-		}
 	};
 
 	uint64_t pair_pass = 1;
@@ -642,8 +581,8 @@ public:
 		SelfList<InstancePair>::List pairs_found;
 		DynamicBVH *bvh = nullptr;
 		DynamicBVH *bvh2 = nullptr; //some may need to cull in two
-		uint32_t pair_mask;
-		uint64_t pair_pass;
+		uint32_t pair_mask = 0;
+		uint64_t pair_pass = 0;
 
 		_FORCE_INLINE_ bool operator()(void *p_data) {
 			Instance *p_instance = (Instance *)p_data;
@@ -891,27 +830,27 @@ public:
 
 				CameraMatrix projection;
 				Transform transform;
-				real_t zfar;
-				real_t split;
-				real_t shadow_texel_size;
-				real_t bias_scale;
-				real_t range_begin;
+				real_t zfar = 0.0;
+				real_t split = 0.0;
+				real_t shadow_texel_size = 0.0;
+				real_t bias_scale = 0.0;
+				real_t range_begin = 0.0;
 				Vector2 uv_scale;
 
 			} cascades[RendererSceneRender::MAX_DIRECTIONAL_LIGHT_CASCADES]; //max 4 cascades
-			uint32_t cascade_count;
+			uint32_t cascade_count = 0;
 
 		} shadows[RendererSceneRender::MAX_DIRECTIONAL_LIGHTS];
 
-		uint32_t shadow_count;
+		uint32_t shadow_count = 0;
 
 		struct SDFGI {
 			//have arrays here because SDFGI functions expects this, plus regions can have areas
-			AABB region_aabb[SDFGI_MAX_CASCADES * SDFGI_MAX_REGIONS_PER_CASCADE]; //max 3 regions per cascade
-			uint32_t region_cascade[SDFGI_MAX_CASCADES * SDFGI_MAX_REGIONS_PER_CASCADE]; //max 3 regions per cascade
+			AABB region_aabb[SDFGI_MAX_CASCADES * SDFGI_MAX_REGIONS_PER_CASCADE] = {}; //max 3 regions per cascade
+			uint32_t region_cascade[SDFGI_MAX_CASCADES * SDFGI_MAX_REGIONS_PER_CASCADE] = {}; //max 3 regions per cascade
 			uint32_t region_count = 0;
 
-			uint32_t cascade_light_index[SDFGI_MAX_CASCADES];
+			uint32_t cascade_light_index[SDFGI_MAX_CASCADES] = {};
 			uint32_t cascade_light_count = 0;
 
 		} sdfgi;
@@ -922,12 +861,12 @@ public:
 	} cull;
 
 	struct FrustumCullData {
-		Cull *cull;
-		Scenario *scenario;
+		Cull *cull = nullptr;
+		Scenario *scenario = nullptr;
 		RID shadow_atlas;
 		Transform cam_transform;
-		uint32_t visible_layers;
-		Instance *render_reflection_probe;
+		uint32_t visible_layers = 0;
+		Instance *render_reflection_probe = nullptr;
 	};
 
 	void _frustum_cull_threaded(uint32_t p_thread, FrustumCullData *cull_data);

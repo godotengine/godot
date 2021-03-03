@@ -357,21 +357,21 @@ class EffectsRD {
 	};
 
 	struct SSAOImportanceMapPushConstant {
-		float half_screen_pixel_size[2];
-		float intensity;
-		float power;
+		float half_screen_pixel_size[2] = {};
+		float intensity = 0;
+		float power = 0;
 	};
 
 	struct SSAOBlurPushConstant {
-		float edge_sharpness;
-		float pad;
-		float half_screen_pixel_size[2];
+		float edge_sharpness = 0;
+		float pad = 0;
+		float half_screen_pixel_size[2] = {};
 	};
 
 	struct SSAOInterleavePushConstant {
-		float inv_sharpness;
-		uint32_t size_modifier;
-		float pixel_size[2];
+		float inv_sharpness = 0;
+		uint32_t size_modifier = 0;
+		float pixel_size[2] = {};
 	};
 
 	struct SSAO {
@@ -407,9 +407,9 @@ class EffectsRD {
 	} ssao;
 
 	struct RoughnessLimiterPushConstant {
-		int32_t screen_size[2];
-		float curve;
-		uint32_t pad;
+		int32_t screen_size[2] = {};
+		float curve = 0.0;
+		uint32_t pad = 0;
 	};
 
 	struct RoughnessLimiter {
@@ -421,8 +421,8 @@ class EffectsRD {
 	} roughness_limiter;
 
 	struct CubemapDownsamplerPushConstant {
-		uint32_t face_size;
-		float pad[3];
+		uint32_t face_size = 0;
+		float pad[3] = {};
 	};
 
 	struct CubemapDownsampler {
@@ -448,7 +448,7 @@ class EffectsRD {
 		RID uniform_set;
 		RID image_uniform_set;
 		RID coefficient_buffer;
-		bool use_high_quality;
+		bool use_high_quality = false;
 
 	} filter;
 
@@ -578,9 +578,9 @@ class EffectsRD {
 	} sss;
 
 	struct ResolvePushConstant {
-		int32_t screen_size[2];
-		int32_t samples;
-		uint32_t pad;
+		int32_t screen_size[2] = {};
+		int32_t samples = 0;
+		uint32_t pad = 0;
 	};
 
 	enum ResolveMode {
@@ -605,9 +605,9 @@ class EffectsRD {
 
 	struct Sort {
 		struct PushConstant {
-			uint32_t total_elements;
-			uint32_t pad[3];
-			int32_t job_params[4];
+			uint32_t total_elements = 0;
+			uint32_t pad[3] = {};
+			int32_t job_params[4] = {};
 		};
 
 		SortShaderRD shader;

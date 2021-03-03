@@ -64,10 +64,10 @@ class ClusterBuilderSharedDataRD {
 
 	struct ClusterRender {
 		struct PushConstant {
-			uint32_t base_index;
-			uint32_t pad0;
-			uint32_t pad1;
-			uint32_t pad2;
+			uint32_t base_index = 0;
+			uint32_t pad0 = 0;
+			uint32_t pad1 = 0;
+			uint32_t pad2 = 0;
 		};
 
 		ClusterRenderShaderRD cluster_render_shader;
@@ -84,13 +84,13 @@ class ClusterBuilderSharedDataRD {
 
 	struct ClusterStore {
 		struct PushConstant {
-			uint32_t cluster_render_data_size; // how much data for a single cluster takes
-			uint32_t max_render_element_count_div_32; //divided by 32
-			uint32_t cluster_screen_size[2];
-			uint32_t render_element_count_div_32; //divided by 32
-			uint32_t max_cluster_element_count_div_32; //divided by 32
-			uint32_t pad1;
-			uint32_t pad2;
+			uint32_t cluster_render_data_size = 0; // how much data for a single cluster takes
+			uint32_t max_render_element_count_div_32 = 0; //divided by 32
+			uint32_t cluster_screen_size[2] = {};
+			uint32_t render_element_count_div_32 = 0; //divided by 32
+			uint32_t max_cluster_element_count_div_32 = 0; //divided by 32
+			uint32_t pad1 = 0;
+			uint32_t pad2 = 0;
 		};
 
 		ClusterStoreShaderRD cluster_store_shader;
@@ -101,18 +101,18 @@ class ClusterBuilderSharedDataRD {
 
 	struct ClusterDebug {
 		struct PushConstant {
-			uint32_t screen_size[2];
-			uint32_t cluster_screen_size[2];
+			uint32_t screen_size[2] = {};
+			uint32_t cluster_screen_size[2] = {};
 
-			uint32_t cluster_shift;
-			uint32_t cluster_type;
-			float z_near;
-			float z_far;
+			uint32_t cluster_shift = 0;
+			uint32_t cluster_type = 0;
+			float z_near = 0;
+			float z_far = 0;
 
-			uint32_t orthogonal;
-			uint32_t max_cluster_element_count_div_32;
-			uint32_t pad1;
-			uint32_t pad2;
+			uint32_t orthogonal = 0;
+			uint32_t max_cluster_element_count_div_32 = 0;
+			uint32_t pad1 = 0;
+			uint32_t pad2 = 0;
 		};
 
 		ClusterDebugShaderRD cluster_debug_shader;
@@ -151,13 +151,13 @@ private:
 	ClusterBuilderSharedDataRD *shared = nullptr;
 
 	struct RenderElementData {
-		uint32_t type; //0-4
-		uint32_t touches_near;
-		uint32_t touches_far;
-		uint32_t original_index;
-		float transform_inv[12]; //transposed transform for less space
-		float scale[3];
-		uint32_t pad;
+		uint32_t type = 0; //0-4
+		uint32_t touches_near = 0;
+		uint32_t touches_far = 0;
+		uint32_t original_index = 0;
+		float transform_inv[12] = {}; //transposed transform for less space
+		float scale[3] = {};
+		uint32_t pad = 0;
 	};
 
 	uint32_t cluster_count_by_type[ELEMENT_TYPE_MAX] = {};
@@ -202,15 +202,15 @@ private:
 	void _clear();
 
 	struct StateUniform {
-		float projection[16];
-		float inv_z_far;
-		uint32_t screen_to_clusters_shift; // shift to obtain coordinates in block indices
-		uint32_t cluster_screen_width; //
-		uint32_t cluster_data_size; // how much data for a single cluster takes
-		uint32_t cluster_depth_offset;
-		uint32_t pad0;
-		uint32_t pad1;
-		uint32_t pad2;
+		float projection[16] = {};
+		float inv_z_far = 0;
+		uint32_t screen_to_clusters_shift = 0; // shift to obtain coordinates in block indices
+		uint32_t cluster_screen_width = 0; //
+		uint32_t cluster_data_size = 0; // how much data for a single cluster takes
+		uint32_t cluster_depth_offset = 0;
+		uint32_t pad0 = 0;
+		uint32_t pad1 = 0;
+		uint32_t pad2 = 0;
 	};
 
 	RID state_uniform;

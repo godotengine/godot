@@ -48,8 +48,8 @@ class RendererSceneRenderRD : public RendererSceneRender {
 	friend RendererSceneGIRD;
 
 protected:
-	double time;
-	double time_step = 0;
+	double time = 0.0;
+	double time_step = 0.0;
 
 	struct RenderBufferData {
 		virtual void configure(RID p_color_buffer, RID p_depth_buffer, int p_width, int p_height, RS::ViewportMSAA p_msaa) = 0;
@@ -180,7 +180,7 @@ private:
 	struct ShadowShrinkStage {
 		RID texture;
 		RID filter_texture;
-		uint32_t size;
+		uint32_t size = 0;
 	};
 
 	struct ShadowAtlas {
@@ -191,27 +191,16 @@ private:
 		};
 
 		struct Quadrant {
-			uint32_t subdivision;
+			uint32_t subdivision = 0; //not in use
 
 			struct Shadow {
 				RID owner;
-				uint64_t version;
-				uint64_t fog_version; // used for fog
-				uint64_t alloc_tick;
-
-				Shadow() {
-					version = 0;
-					fog_version = 0;
-					alloc_tick = 0;
-				}
+				uint64_t version = 0;
+				uint64_t fog_version = 0; // used for fog
+				uint64_t alloc_tick = 0;
 			};
 
 			Vector<Shadow> shadows;
-
-			Quadrant() {
-				subdivision = 0; //not in use
-			}
-
 		} quadrants[4];
 
 		int size_order[4] = { 0, 1, 2, 3 };
@@ -279,11 +268,11 @@ private:
 		struct ShadowTransform {
 			CameraMatrix camera;
 			Transform transform;
-			float farplane;
-			float split;
-			float bias_scale;
-			float shadow_texel_size;
-			float range_begin;
+			float farplane = 0.0;
+			float split = 0.0;
+			float bias_scale = 0.0;
+			float shadow_texel_size = 0.0;
+			float range_begin = 0.0;
 			Rect2 atlas_rect;
 			Vector2 uv_scale;
 		};
@@ -396,8 +385,8 @@ private:
 
 			struct Mipmap {
 				RID texture;
-				int width;
-				int height;
+				int width = 0;
+				int height = 0;
 			};
 
 			Vector<Mipmap> mipmaps;
@@ -552,39 +541,39 @@ private:
 
 		template <class T>
 		struct InstanceSort {
-			float depth;
+			float depth = 0.0;
 			T *instance;
 			bool operator<(const InstanceSort &p_sort) const {
 				return depth < p_sort.depth;
 			}
 		};
 
-		ReflectionData *reflections;
-		InstanceSort<ReflectionProbeInstance> *reflection_sort;
-		uint32_t max_reflections;
+		ReflectionData *reflections = nullptr;
+		InstanceSort<ReflectionProbeInstance> *reflection_sort = nullptr;
+		uint32_t max_reflections = 0;
 		RID reflection_buffer;
-		uint32_t max_reflection_probes_per_instance;
+		uint32_t max_reflection_probes_per_instance = 0;
 		uint32_t reflection_count = 0;
 
-		DecalData *decals;
-		InstanceSort<DecalInstance> *decal_sort;
-		uint32_t max_decals;
+		DecalData *decals = nullptr;
+		InstanceSort<DecalInstance> *decal_sort = nullptr;
+		uint32_t max_decals = 0;
 		RID decal_buffer;
-		uint32_t decal_count;
+		uint32_t decal_count = 0;
 
-		LightData *omni_lights;
-		LightData *spot_lights;
+		LightData *omni_lights = nullptr;
+		LightData *spot_lights = nullptr;
 
-		InstanceSort<LightInstance> *omni_light_sort;
-		InstanceSort<LightInstance> *spot_light_sort;
-		uint32_t max_lights;
+		InstanceSort<LightInstance> *omni_light_sort = nullptr;
+		InstanceSort<LightInstance> *spot_light_sort = nullptr;
+		uint32_t max_lights = 0;
 		RID omni_light_buffer;
 		RID spot_light_buffer;
 		uint32_t omni_light_count = 0;
 		uint32_t spot_light_count = 0;
 
-		DirectionalLightData *directional_lights;
-		uint32_t max_directional_lights;
+		DirectionalLightData *directional_lights = nullptr;
+		uint32_t max_directional_lights = 0;
 		RID directional_light_buffer;
 
 	} cluster;
@@ -621,7 +610,7 @@ private:
 		LocalVector<int> shadows;
 		LocalVector<int> directional_shadows;
 
-		bool depth_prepass_used;
+		bool depth_prepass_used = false;
 	} render_state;
 
 	struct VolumetricFog {
@@ -633,8 +622,8 @@ private:
 		uint32_t height = 0;
 		uint32_t depth = 0;
 
-		float length;
-		float spread;
+		float length = 0.0;
+		float spread = 0.0;
 
 		RID light_density_map;
 		RID prev_light_density_map;
@@ -714,8 +703,8 @@ private:
 
 	/* !BAS! is this used anywhere?
 	struct SDFGICosineNeighbour {
-		uint32_t neighbour;
-		float weight;
+		uint32_t neighbour = 0;
+		float weight = 0.0;
 	};
 	*/
 

@@ -52,8 +52,8 @@ protected:
 
 	Map<RID, RID> render_target_descriptors;
 
-	double time;
-	float delta;
+	double time = 0.0;
+	float delta = 0.0;
 
 	static uint64_t frame;
 
