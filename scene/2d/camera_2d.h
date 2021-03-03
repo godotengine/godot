@@ -97,8 +97,10 @@ protected:
 
 protected:
 	virtual Transform2D get_camera_transform();
+
 	void _notification(int p_what);
 	static void _bind_methods();
+	void _validate_property(PropertyInfo &property) const override;
 
 public:
 	void set_offset(const Vector2 &p_offset);

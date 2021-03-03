@@ -72,13 +72,10 @@ class Polygon2D : public Node2D {
 
 	void _skeleton_bone_setup_changed();
 
-#ifdef TOOLS_ENABLED
-	void _validate_property(PropertyInfo &property) const override;
-#endif
-
 protected:
 	void _notification(int p_what);
 	static void _bind_methods();
+	void _validate_property(PropertyInfo &property) const override;
 
 public:
 #ifdef TOOLS_ENABLED

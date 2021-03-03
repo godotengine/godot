@@ -145,7 +145,6 @@ void CameraEffects::_update_override_exposure() {
 
 // Private methods, constructor and destructor
 
-#ifdef TOOLS_ENABLED
 void CameraEffects::_validate_property(PropertyInfo &property) const {
 	if ((!dof_blur_far_enabled && (property.name == "dof_blur_far_distance" || property.name == "dof_blur_far_transition")) ||
 			(!dof_blur_near_enabled && (property.name == "dof_blur_near_distance" || property.name == "dof_blur_near_transition")) ||
@@ -153,7 +152,6 @@ void CameraEffects::_validate_property(PropertyInfo &property) const {
 		property.usage = PROPERTY_USAGE_NOEDITOR;
 	}
 }
-#endif
 
 void CameraEffects::_bind_methods() {
 	// DOF blur

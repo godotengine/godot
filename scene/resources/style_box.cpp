@@ -460,6 +460,7 @@ Point2 StyleBoxFlat::get_shadow_offset() const {
 void StyleBoxFlat::set_anti_aliased(const bool &p_anti_aliased) {
 	anti_aliased = p_anti_aliased;
 	emit_changed();
+	notify_property_list_changed();
 }
 
 bool StyleBoxFlat::is_anti_aliased() const {
@@ -779,6 +780,12 @@ void StyleBoxFlat::draw(RID p_canvas_item, const Rect2 &p_rect) const {
 float StyleBoxFlat::get_style_margin(Side p_side) const {
 	ERR_FAIL_INDEX_V((int)p_side, 4, 0.0);
 	return border_width[p_side];
+}
+
+void StyleBoxFlat::_validate_property(PropertyInfo &property) const {
+	if (!anti_aliased && property.name == "anti_aliasing_size") {
+		property.usage = PROPERTY_USAGE_NOEDITOR;
+	}
 }
 
 void StyleBoxFlat::_bind_methods() {
