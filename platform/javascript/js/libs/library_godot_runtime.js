@@ -72,9 +72,14 @@ const GodotRuntime = {
 			return p_heap.subarray(p_ptr / bytes, p_ptr / bytes + p_len);
 		},
 
-		heapCopy: function (p_heap, p_ptr, p_len) {
+		heapSlice: function (p_heap, p_ptr, p_len) {
 			const bytes = p_heap.BYTES_PER_ELEMENT;
 			return p_heap.slice(p_ptr / bytes, p_ptr / bytes + p_len);
+		},
+
+		heapCopy: function (p_dst, p_src, p_ptr) {
+			const bytes = p_src.BYTES_PER_ELEMENT;
+			return p_dst.set(p_src, p_ptr / bytes);
 		},
 
 		/*
@@ -82,6 +87,15 @@ const GodotRuntime = {
 		 */
 		parseString: function (p_ptr) {
 			return UTF8ToString(p_ptr); // eslint-disable-line no-undef
+		},
+
+		parseStringArray: function (p_ptr, p_size) {
+			const strings = [];
+			const ptrs = GodotRuntime.heapSub(HEAP32, p_ptr, p_size); // TODO wasm64
+			ptrs.forEach(function (ptr) {
+				strings.push(GodotRuntime.parseString(ptr));
+			});
+			return strings;
 		},
 
 		strlen: function (p_str) {
