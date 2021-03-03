@@ -248,10 +248,6 @@
 			</argument>
 			<description>
 				Sets the background color of the item specified by [code]idx[/code] index to the specified [Color].
-				[codeblock]
-				var some_string = "Some text"
-				some_string.set_item_custom_bg_color(0,Color(1, 0, 0, 1) # This will set the background color of the first item of the control to red.
-				[/codeblock]
 			</description>
 		</method>
 		<method name="set_item_custom_fg_color">
@@ -263,10 +259,6 @@
 			</argument>
 			<description>
 				Sets the foreground color of the item specified by [code]idx[/code] index to the specified [Color].
-				[codeblock]
-				var some_string = "Some text"
-				some_string.set_item_custom_fg_color(0,Color(1, 0, 0, 1) # This will set the foreground color of the first item of the control to red.
-				[/codeblock]
 			</description>
 		</method>
 		<method name="set_item_disabled">
