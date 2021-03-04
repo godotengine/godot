@@ -41,22 +41,14 @@ static Transform2D _canvas_get_transform(VisualServerViewport::Viewport *p_viewp
 
 	float scale = 1.0;
 
-	bool snap = Engine::get_singleton()->get_snap_2d_viewports();
-
 	if (p_viewport->canvas_map.has(p_canvas->parent)) {
 
 		Transform2D c_xform = p_viewport->canvas_map[p_canvas->parent].transform;
-		if (snap) {
-			c_xform.elements[2] = c_xform.elements[2].round();
-		}
 		xf = xf * c_xform;
 		scale = p_canvas->parent_scale;
 	}
 
 	Transform2D c_xform = p_canvas_data->transform;
-	if (snap) {
-		c_xform.elements[2] = c_xform.elements[2].round();
-	}
 	xf = xf * c_xform;
 
 	if (scale != 1.0 && !VSG::canvas->disable_scale) {
