@@ -112,7 +112,7 @@ void PluginConfigDialog::_on_confirmed() {
 		}
 #endif
 
-		emit_signal("plugin_ready", script.operator->(), active_edit->is_pressed() ? subfolder_edit->get_text() : "");
+		emit_signal("plugin_ready", script.operator->(), active_edit->is_pressed() ? _to_absolute_plugin_path(subfolder_edit->get_text()) : "");
 	} else {
 		EditorNode::get_singleton()->get_project_settings()->update_plugins();
 	}
@@ -127,6 +127,10 @@ void PluginConfigDialog::_on_required_text_changed(const String &) {
 	int lang_idx = script_option_edit->get_selected();
 	String ext = ScriptServer::get_language(lang_idx)->get_extension();
 	get_ok_button()->set_disabled(script_edit->get_text().get_basename().is_empty() || script_edit->get_text().get_extension() != ext || name_edit->get_text().is_empty());
+}
+
+String PluginConfigDialog::_to_absolute_plugin_path(const String &p_plugin_name) {
+	return "res://addons/" + p_plugin_name + "/plugin.cfg";
 }
 
 void PluginConfigDialog::_notification(int p_what) {

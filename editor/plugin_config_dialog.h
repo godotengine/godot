@@ -56,6 +56,8 @@ class PluginConfigDialog : public ConfirmationDialog {
 	void _on_cancelled();
 	void _on_required_text_changed(const String &p_text);
 
+	static String _to_absolute_plugin_path(const String &p_plugin_name);
+
 protected:
 	virtual void _notification(int p_what);
 	static void _bind_methods();
