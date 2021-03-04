@@ -159,30 +159,7 @@ void RayCast2D::_notification(int p_what) {
 			if (!Engine::get_singleton()->is_editor_hint() && !get_tree()->is_debugging_collisions_hint()) {
 				break;
 			}
-			Transform2D xf;
-			xf.rotate(target_position.angle());
-			xf.translate(Vector2(target_position.length(), 0));
-
-			// Draw an arrow indicating where the RayCast is pointing to
-			Color draw_col = get_tree()->get_debug_collisions_color();
-			if (!enabled) {
-				float g = draw_col.get_v();
-				draw_col.r = g;
-				draw_col.g = g;
-				draw_col.b = g;
-			}
-			draw_line(Vector2(), target_position, draw_col, 2);
-			Vector<Vector2> pts;
-			float tsize = 8.0;
-			pts.push_back(xf.xform(Vector2(tsize, 0)));
-			pts.push_back(xf.xform(Vector2(0, Math_SQRT12 * tsize)));
-			pts.push_back(xf.xform(Vector2(0, -Math_SQRT12 * tsize)));
-			Vector<Color> cols;
-			for (int i = 0; i < 3; i++) {
-				cols.push_back(draw_col);
-			}
-
-			draw_primitive(pts, cols, Vector<Vector2>());
+			_draw_debug_shape();
 
 		} break;
 
@@ -212,7 +189,7 @@ void RayCast2D::_update_raycast_state() {
 	}
 
 	PhysicsDirectSpaceState2D::RayResult rr;
-
+	bool prev_collision_state = collided;
 	if (dss->intersect_ray(gt.get_origin(), gt.xform(to), rr, exclude, collision_mask, collide_with_bodies, collide_with_areas)) {
 		collided = true;
 		against = rr.collider_id;
@@ -223,6 +200,43 @@ void RayCast2D::_update_raycast_state() {
 		collided = false;
 		against = ObjectID();
 		against_shape = 0;
+	}
+
+	if (prev_collision_state != collided) {
+		update();
+	}
+}
+
+void RayCast2D::_draw_debug_shape() {
+	float tsize = 6.0;
+	bool draw_arrow = target_position.length() >= tsize;
+	Color draw_col = collided ? Color(1.0, 0.01, 0) : get_tree()->get_debug_collisions_color();
+	if (!enabled) {
+		float g = draw_col.get_v();
+		draw_col.r = g;
+		draw_col.g = g;
+		draw_col.b = g;
+	}
+
+	draw_line(Vector2(), target_position - Vector2(0, tsize * draw_arrow), draw_col, 1.4);
+
+	// Draw an arrow indicating where the RayCast is pointing to
+	if (draw_arrow) {
+		Transform2D xf;
+		xf.rotate(target_position.angle());
+		xf.translate(Vector2(target_position.length() - tsize, 0));
+
+		Vector<Vector2> pts;
+		pts.push_back(xf.xform(Vector2(tsize, 0)));
+		pts.push_back(xf.xform(Vector2(0, 0.5 * tsize)));
+		pts.push_back(xf.xform(Vector2(0, -0.5 * tsize)));
+
+		Vector<Color> cols;
+		for (int i = 0; i < 3; i++) {
+			cols.push_back(draw_col);
+		}
+
+		draw_primitive(pts, cols, Vector<Vector2>());
 	}
 }
 
