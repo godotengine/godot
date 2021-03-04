@@ -76,6 +76,7 @@ public:
 	NetworkProfiler() {}
 
 	int bandwidth_usage(const Vector<BandwidthFrame> &p_buffer, int p_pointer) {
+		ERR_FAIL_COND_V(p_buffer.size() == 0, 0);
 		int total_bandwidth = 0;
 
 		uint32_t timestamp = OS::get_singleton()->get_ticks_msec();
