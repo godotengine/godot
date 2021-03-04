@@ -1127,8 +1127,8 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 	}
 
 	Engine::get_singleton()->_gpu_pixel_snap = GLOBAL_DEF("rendering/2d/snapping/use_gpu_pixel_snap", false);
-	Engine::get_singleton()->_snap_2d_transforms = GLOBAL_DEF("rendering/2d/snapping/use_transform_snap", false);
-	Engine::get_singleton()->_snap_2d_viewports = GLOBAL_DEF("rendering/2d/snapping/use_camera_snap", false);
+	Engine::get_singleton()->_snap_2d_transforms = GLOBAL_DEF("rendering/2d/snapping/experimental_use_transform_snap", false);
+	Engine::get_singleton()->_snap_2d_viewports = GLOBAL_DEF("rendering/2d/snapping/experimental_use_camera_snap", false);
 	OS::get_singleton()->_keep_screen_on = GLOBAL_DEF("display/window/energy_saving/keep_screen_on", true);
 	if (rtm == -1) {
 		rtm = GLOBAL_DEF("rendering/threads/thread_model", OS::RENDER_THREAD_SAFE);

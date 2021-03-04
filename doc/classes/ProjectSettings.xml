@@ -1046,24 +1046,24 @@
 			Currently only available when [member rendering/batching/options/use_batching] is active.
 			[b]Note:[/b] Antialiased software skinned polys are not supported, and will be rendered without antialiasing.
 		</member>
-		<member name="rendering/2d/snapping/use_camera_snap" type="bool" setter="" getter="" default="false">
-			If [code]true[/code], forces snapping of 2D viewports to the nearest whole coordinate.
+		<member name="rendering/2d/snapping/experimental_use_camera_snap" type="bool" setter="" getter="" default="false">
+			[b]Experimental:[/b] If [code]true[/code], forces snapping of 2D viewports to the nearest whole coordinate.
 			Can reduce unwanted camera relative movement in pixel art styles.
+		</member>
+		<member name="rendering/2d/snapping/experimental_use_transform_snap" type="bool" setter="" getter="" default="false">
+			[b]Experimental:[/b] If [code]true[/code], forces snapping of 2D object transforms to the nearest whole coordinate.
+			Can help prevent unwanted relative movement in pixel art styles.
 		</member>
 		<member name="rendering/2d/snapping/use_gpu_pixel_snap" type="bool" setter="" getter="" default="false">
 			If [code]true[/code], forces snapping of vertices to pixels in 2D rendering. May help in some pixel art styles.
 			This snapping is performed on the GPU in the vertex shader.
 			Consider using the project setting [member rendering/batching/precision/uv_contract] to prevent artifacts.
 		</member>
-		<member name="rendering/2d/snapping/use_transform_snap" type="bool" setter="" getter="" default="false">
-			If [code]true[/code], forces snapping of 2D object transforms to the nearest whole coordinate.
-			Can help prevent unwanted relative movement in pixel art styles.
-		</member>
 		<member name="rendering/batching/debug/diagnose_frame" type="bool" setter="" getter="" default="false">
 			When batching is on, this regularly prints a frame diagnosis log. Note that this will degrade performance.
 		</member>
 		<member name="rendering/batching/debug/flash_batching" type="bool" setter="" getter="" default="false">
-			[b]Experimental[/b] For regression testing against the old renderer. If this is switched on, and [code]use_batching[/code] is set, the renderer will swap alternately between using the old renderer, and the batched renderer, on each frame. This makes it easy to identify visual differences. Performance will be degraded.
+			[b]Experimental:[/b] For regression testing against the old renderer. If this is switched on, and [code]use_batching[/code] is set, the renderer will swap alternately between using the old renderer, and the batched renderer, on each frame. This makes it easy to identify visual differences. Performance will be degraded.
 		</member>
 		<member name="rendering/batching/lights/max_join_items" type="int" setter="" getter="" default="32">
 			Lights have the potential to prevent joining items, and break many of the performance benefits of batching. This setting enables some complex logic to allow joining items if their lighting is similar, and overlap tests pass. This can significantly improve performance in some games. Set to 0 to switch off. With large values the cost of overlap tests may lead to diminishing returns.
