@@ -322,7 +322,7 @@ TileMapCell TileMapEditor::_pick_random_tile(const TileMapPattern *p_pattern) {
 		TileSetSource *source = *tile_set->get_source(source_id);
 		TileSetAtlasSource *atlas_source = Object::cast_to<TileSetAtlasSource>(source);
 		if (atlas_source) {
-			sum += atlas_source->get_tile_data(atlas_coords, alternative_tile)->get_probability();
+			sum += Object::cast_to<TileData>(atlas_source->get_tile_data(atlas_coords, alternative_tile))->get_probability();
 		} else {
 			sum += 1.0;
 		}
@@ -339,7 +339,7 @@ TileMapCell TileMapEditor::_pick_random_tile(const TileMapPattern *p_pattern) {
 		TileSetSource *source = *tile_set->get_source(source_id);
 		TileSetAtlasSource *atlas_source = Object::cast_to<TileSetAtlasSource>(source);
 		if (atlas_source) {
-			current += atlas_source->get_tile_data(atlas_coords, alternative_tile)->get_probability();
+			current += Object::cast_to<TileData>(atlas_source->get_tile_data(atlas_coords, alternative_tile))->get_probability();
 		} else {
 			current += 1.0;
 		}
@@ -1185,7 +1185,7 @@ void TileMapEditor::forward_canvas_draw_over_viewport(Control *p_overlay) {
 						TileSetAtlasSource *atlas_source = Object::cast_to<TileSetAtlasSource>(source);
 						if (atlas_source) {
 							// Get tile data.
-							TileData *tile_data = atlas_source->get_tile_data(E->get().get_atlas_coords(), E->get().alternative_tile);
+							TileData *tile_data = Object::cast_to<TileData>(atlas_source->get_tile_data(E->get().get_atlas_coords(), E->get().alternative_tile));
 
 							// Compute the offset
 							Rect2i source_rect = atlas_source->get_tile_texture_region(E->get().get_atlas_coords());
@@ -1213,7 +1213,7 @@ void TileMapEditor::forward_canvas_draw_over_viewport(Control *p_overlay) {
 							}
 
 							// Get the tile modulation.
-							Color modulate = atlas_source->get_tile_data(E->get().get_atlas_coords(), E->get().alternative_tile)->get_modulate();
+							Color modulate = tile_data->get_modulate();
 							Color self_modulate = tile_map->get_self_modulate();
 							modulate = Color(modulate.r * self_modulate.r, modulate.g * self_modulate.g, modulate.b * self_modulate.b, modulate.a * self_modulate.a);
 

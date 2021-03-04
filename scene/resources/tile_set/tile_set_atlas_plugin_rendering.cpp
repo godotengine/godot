@@ -87,7 +87,7 @@ void TileSetAtlasPluginRendering::draw_tile(RID p_canvas_item, Vector2i p_positi
 		}
 
 		// Get tile data.
-		TileData *tile_data = atlas_source->get_tile_data(p_atlas_coords, p_alternative_tile);
+		TileData *tile_data = Object::cast_to<TileData>(atlas_source->get_tile_data(p_atlas_coords, p_alternative_tile));
 
 		// Compute the offset
 		Rect2i source_rect = atlas_source->get_tile_texture_region(p_atlas_coords);
@@ -169,7 +169,7 @@ void TileSetAtlasPluginRendering::update_dirty_quadrants(TileMap *p_tile_map, Se
 				TileSetAtlasSource *atlas_source = Object::cast_to<TileSetAtlasSource>(source);
 				if (atlas_source) {
 					// Get the tile data.
-					TileData *tile_data = atlas_source->get_tile_data(c.get_atlas_coords(), c.alternative_tile);
+					TileData *tile_data = Object::cast_to<TileData>(atlas_source->get_tile_data(c.get_atlas_coords(), c.alternative_tile));
 					Ref<ShaderMaterial> mat = tile_data->tile_get_material();
 					int z_index = tile_data->get_z_index();
 

@@ -1004,7 +1004,7 @@ int TileSetAtlasSource::get_alternative_tile_id(const Vector2i p_atlas_coords, i
 	return tiles[p_atlas_coords].alternatives_ids[p_index];
 }
 
-TileData *TileSetAtlasSource::get_tile_data(const Vector2i p_atlas_coords, int p_alternative_tile) const {
+Object *TileSetAtlasSource::get_tile_data(const Vector2i p_atlas_coords, int p_alternative_tile) const {
 	ERR_FAIL_COND_V_MSG(!tiles.has(p_atlas_coords), nullptr, vformat("The TileSetAtlasSource atlas has no tile at %s.", String(p_atlas_coords)));
 	ERR_FAIL_COND_V_MSG(!tiles[p_atlas_coords].alternatives.has(p_alternative_tile), nullptr, vformat("TileSetAtlasSource has no alternative with id %d for tile coords %s.", p_alternative_tile, String(p_atlas_coords)));
 
@@ -1367,7 +1367,7 @@ Vector2i TileSet::get_tile_effective_texture_offset(int p_atlas_source_id, Vecto
 
 	Vector2 margin = (atlas_source->get_tile_texture_region(p_atlas_coords).size - get_tile_size()) / 2;
 	margin = Vector2i(MAX(0, margin.x), MAX(0, margin.y));
-	Vector2i effective_texture_offset = atlas_source->get_base_texture_offset() + atlas_source->get_tile_data(p_atlas_coords, p_alternative_tile)->get_texture_offset();
+	Vector2i effective_texture_offset = atlas_source->get_base_texture_offset() + Object::cast_to<TileData>(atlas_source->get_tile_data(p_atlas_coords, p_alternative_tile))->get_texture_offset();
 	if (ABS(effective_texture_offset.x) > margin.x || ABS(effective_texture_offset.y) > margin.y) {
 		effective_texture_offset.x = CLAMP(effective_texture_offset.x, -margin.x, margin.x);
 		effective_texture_offset.y = CLAMP(effective_texture_offset.y, -margin.y, margin.y);
@@ -1562,7 +1562,7 @@ void TileSet::compatibility_conversion() {
 							} else {
 								alternative_tile = atlas_source->create_alternative_tile(coords);
 							}
-							TileData *tile_data = atlas_source->get_tile_data(coords, alternative_tile);
+							TileData *tile_data = Object::cast_to<TileData>(atlas_source->get_tile_data(coords, alternative_tile));
 
 							tile_data->set_flip_h(flip_h);
 							tile_data->set_flip_v(flip_v);

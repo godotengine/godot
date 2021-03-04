@@ -42,7 +42,7 @@ TileData *TileDataEditor::_get_tile_data(TileSet *p_tile_set, int p_atlas_source
 	if (atlas_source) {
 		ERR_FAIL_COND_V(!atlas_source->has_tile(p_atlas_coords), nullptr);
 		ERR_FAIL_COND_V(!atlas_source->has_alternative_tile(p_atlas_coords, p_alternative_tile), nullptr);
-		td = atlas_source->get_tile_data(p_atlas_coords, p_alternative_tile);
+		td = Object::cast_to<TileData>(atlas_source->get_tile_data(p_atlas_coords, p_alternative_tile));
 	}
 
 	return td;

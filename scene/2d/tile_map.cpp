@@ -326,7 +326,7 @@ void TileMap::_fix_cell_transform(Transform2D &xform, const TileMapCell &p_cell,
 	if (!atlas_source) {
 		return;
 	}
-	TileData *tile_data = atlas_source->get_tile_data(p_cell.get_atlas_coords(), p_cell.alternative_tile);
+	TileData *tile_data = Object::cast_to<TileData>(atlas_source->get_tile_data(p_cell.get_atlas_coords(), p_cell.alternative_tile));
 	if (tile_data->get_transpose()) {
 		SWAP(xform.elements[0].x, xform.elements[0].y);
 		SWAP(xform.elements[1].x, xform.elements[1].y);

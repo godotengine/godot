@@ -168,7 +168,7 @@ bool TileSetAtlasSourceEditor::TileProxyObject::_set(const StringName &p_name, c
 		return true;
 	} else {
 		bool valid = false;
-		TileData *tile_data = tile_set_atlas_source->get_tile_data(coords, alternative_tile);
+		TileData *tile_data = Object::cast_to<TileData>(tile_set_atlas_source->get_tile_data(coords, alternative_tile));
 		ERR_FAIL_COND_V(!tile_data, false);
 		tile_data->set(p_name, p_value, &valid);
 		if (valid) {
@@ -195,7 +195,7 @@ bool TileSetAtlasSourceEditor::TileProxyObject::_get(const StringName &p_name, V
 		return true;
 	} else {
 		bool valid = false;
-		TileData *tile_data = tile_set_atlas_source->get_tile_data(coords, alternative_tile);
+		TileData *tile_data = Object::cast_to<TileData>(tile_set_atlas_source->get_tile_data(coords, alternative_tile));
 		ERR_FAIL_COND_V(!tile_data, false);
 		r_ret = tile_data->get(p_name, &valid);
 		return valid;
@@ -215,7 +215,7 @@ void TileSetAtlasSourceEditor::TileProxyObject::_get_property_list(List<Property
 		p_list->push_back(PropertyInfo(Variant::INT, "alternative_id", PROPERTY_HINT_NONE, ""));
 	}
 
-	TileData *tile_data = tile_set_atlas_source->get_tile_data(coords, alternative_tile);
+	TileData *tile_data = Object::cast_to<TileData>(tile_set_atlas_source->get_tile_data(coords, alternative_tile));
 	ERR_FAIL_COND(!tile_data);
 
 	List<PropertyInfo> list;
@@ -246,7 +246,7 @@ void TileSetAtlasSourceEditor::TileProxyObject::edit(TileSetAtlasSource *p_tile_
 
 	// Connect to changes.
 	if (tile_set_atlas_source->has_tile(coords) && tile_set_atlas_source->has_alternative_tile(coords, alternative_tile)) {
-		TileData *tile_data = tile_set_atlas_source->get_tile_data(coords, alternative_tile);
+		TileData *tile_data = Object::cast_to<TileData>(tile_set_atlas_source->get_tile_data(coords, alternative_tile));
 		if (!tile_data->is_connected(CoreStringNames::get_singleton()->property_list_changed, callable_mp((Object *)this, &Object::notify_property_list_changed))) {
 			tile_data->connect(CoreStringNames::get_singleton()->property_list_changed, callable_mp((Object *)this, &Object::notify_property_list_changed));
 		}

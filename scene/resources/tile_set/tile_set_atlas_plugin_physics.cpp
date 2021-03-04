@@ -96,7 +96,7 @@ void TileSetAtlasPluginPhysics::update_dirty_quadrants(TileMap *p_tile_map, Self
 
 				TileSetAtlasSource *atlas_source = Object::cast_to<TileSetAtlasSource>(source);
 				if (atlas_source) {
-					TileData *tile_data = atlas_source->get_tile_data(c.get_atlas_coords(), c.alternative_tile);
+					TileData *tile_data = Object::cast_to<TileData>(atlas_source->get_tile_data(c.get_atlas_coords(), c.alternative_tile));
 
 					for (int body_index = 0; body_index < q.bodies.size(); body_index++) {
 						// Add the shapes again.
@@ -204,7 +204,7 @@ void TileSetAtlasPluginPhysics::draw_quadrant_debug(TileMap *p_tile_map, TileMap
 
 			TileSetAtlasSource *atlas_source = Object::cast_to<TileSetAtlasSource>(source);
 			if (atlas_source) {
-				TileData *tile_data = atlas_source->get_tile_data(c.get_atlas_coords(), c.alternative_tile);
+				TileData *tile_data = Object::cast_to<TileData>(atlas_source->get_tile_data(c.get_atlas_coords(), c.alternative_tile));
 
 				for (int body_index = 0; body_index < p_quadrant->bodies.size(); body_index++) {
 					for (int shape_index = 0; shape_index < tile_data->get_collision_shapes_count(body_index); shape_index++) {
