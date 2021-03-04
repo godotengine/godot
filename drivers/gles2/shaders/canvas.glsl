@@ -480,10 +480,10 @@ FRAGMENT_SHADER_CODE
 #endif
 	}
 
+#if !defined(MODULATE_USED)
 #ifdef USE_ATTRIB_MODULATE
 	color *= modulate_interp;
 #else
-#if !defined(MODULATE_USED)
 	color *= final_modulate;
 #endif
 #endif
