@@ -33,6 +33,7 @@
 #include "navigation.h"
 
 void NavigationMesh::create_from_mesh(const Ref<Mesh> &p_mesh) {
+	ERR_FAIL_COND(p_mesh.is_null());
 
 	vertices = PoolVector<Vector3>();
 	clear_polygons();
