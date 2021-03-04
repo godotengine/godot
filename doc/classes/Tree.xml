@@ -361,6 +361,17 @@
 				Emitted when a button on the tree was pressed (see [method TreeItem.add_button]).
 			</description>
 		</signal>
+		<signal name="button_rmb_pressed">
+			<argument index="0" name="item" type="TreeItem">
+			</argument>
+			<argument index="1" name="column" type="int">
+			</argument>
+			<argument index="2" name="id" type="int">
+			</argument>
+			<description>
+				Emitted when a button on the tree was pressed with the right mouse button (see [method TreeItem.add_button]).
+			</description>
+		</signal>
 		<signal name="cell_selected">
 			<description>
 				Emitted when a cell is selected.

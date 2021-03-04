@@ -2782,6 +2782,19 @@ void Tree::_gui_input(Ref<InputEvent> p_event) {
 					}
 				}
 				update();
+
+			} else if (b->get_button_index() == BUTTON_RIGHT) {
+				if (cache.click_type == Cache::CLICK_BUTTON && cache.click_item != nullptr) {
+					// make sure in case of wrong reference after reconstructing whole TreeItems
+					cache.click_item = get_item_at_position(cache.click_pos);
+					emit_signal("button_rmb_pressed", cache.click_item, cache.click_column, cache.click_id);
+				}
+				cache.click_type = Cache::CLICK_NONE;
+				cache.click_index = -1;
+				cache.click_id = -1;
+				cache.click_item = nullptr;
+				cache.click_column = 0;
+				update();
 			}
 			return;
 		}
@@ -4248,6 +4261,7 @@ void Tree::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("item_collapsed", PropertyInfo(Variant::OBJECT, "item", PROPERTY_HINT_RESOURCE_TYPE, "TreeItem")));
 	//ADD_SIGNAL( MethodInfo("item_doubleclicked" ) );
 	ADD_SIGNAL(MethodInfo("button_pressed", PropertyInfo(Variant::OBJECT, "item", PROPERTY_HINT_RESOURCE_TYPE, "TreeItem"), PropertyInfo(Variant::INT, "column"), PropertyInfo(Variant::INT, "id")));
+	ADD_SIGNAL(MethodInfo("button_rmb_pressed", PropertyInfo(Variant::OBJECT, "item", PROPERTY_HINT_RESOURCE_TYPE, "TreeItem"), PropertyInfo(Variant::INT, "column"), PropertyInfo(Variant::INT, "id")));
 	ADD_SIGNAL(MethodInfo("custom_popup_edited", PropertyInfo(Variant::BOOL, "arrow_clicked")));
 	ADD_SIGNAL(MethodInfo("item_activated"));
 	ADD_SIGNAL(MethodInfo("column_title_pressed", PropertyInfo(Variant::INT, "column")));
