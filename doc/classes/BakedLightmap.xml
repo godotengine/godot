@@ -85,7 +85,8 @@
 			When enabled, a lightmap denoiser will be used to reduce the noise inherent to Monte Carlo based global illumination.
 		</member>
 		<member name="use_hdr" type="bool" setter="set_use_hdr" getter="is_using_hdr" default="true">
-			Store the lightmap textures in a Hight Dynamic Range format (EXR). Can be disabled to reduce disk usage, but light values over 1.0 will be clamped and you may see banding caused by the reduced precision.
+			If [code]true[/code], stores the lightmap textures in a high dynamic range format (EXR). If [code]false[/code], stores the lightmap texture in a low dynamic range PNG image. This can be set to [code]false[/code] to reduce disk usage, but light values over 1.0 will be clamped and you may see banding caused by the reduced precision.
+			[b]Note:[/b] Setting [member use_hdr] to [code]true[/code] will decrease lightmap banding even when using the GLES2 backend or if [member ProjectSettings.rendering/quality/depth/hdr] is [code]false[/code].
 		</member>
 	</members>
 	<constants>
