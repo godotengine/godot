@@ -831,6 +831,7 @@ public:
 
 	LightInstance *directional_light;
 	LightInstance *directional_lights[RenderList::MAX_DIRECTIONAL_LIGHTS];
+	RID first_directional_light;
 
 	RenderList render_list;
 
