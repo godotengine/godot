@@ -73,10 +73,6 @@ Dictionary Control::_edit_get_state() const {
 }
 
 void Control::_edit_set_state(const Dictionary &p_state) {
-	ERR_FAIL_COND((p_state.size() <= 0) ||
-				  p_state["rotation"].is_null() || p_state["scale"].is_null() ||
-				  p_state["pivot"].is_null() || p_state["anchors"].is_null() || p_state["offsets"].is_null());
-
 	Dictionary state = p_state;
 
 	set_rotation(state["rotation"]);
