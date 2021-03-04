@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  register_types.cpp                                                   */
+/*  msdf_loader.h                                                        */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,12 +28,59 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#include "register_types.h"
+#ifndef MSDF_LOADER_H
+#define MSDF_LOADER_H
 
-#include "msdf_loader.h"
+#include "core/object/ref_counted.h"
+#include "core/variant/variant.h"
+#include "scene/resources/texture.h"
 
-void register_msdfgen_types() {
-	ClassDB::register_class<MSDFLoader>();
-}
+#include "msdfgen.h"
 
-void unregister_msdfgen_types() {}
+class MSDFLoader : public Object {
+	GDCLASS(MSDFLoader, Object);
+
+public:
+	enum SDFType {
+		SDF_TRUE,
+		SDF_PSEUDO,
+		SDF_MULTICHANNEL,
+		SDF_COMBINED
+	};
+
+private:
+	bool dirty = true;
+
+	float px_range = 4;
+	SDFType sdf_type = SDF_COMBINED;
+
+	msdfgen::Point2 position;
+	msdfgen::Contour *contour = nullptr;
+	msdfgen::Shape shape;
+
+	Ref<Image> data;
+
+protected:
+	static void _bind_methods();
+
+public:
+	Error load_svg(const String &p_path, float p_scale = 1.0);
+
+	void set_px_range(float p_range);
+	float get_px_range() const;
+
+	void set_sdf_type(int p_type);
+	int get_sdf_type() const;
+
+	void clear_shape();
+	void move_to(const Vector2 &p_to);
+	void line_to(const Vector2 &p_to);
+	void conic_to(const Vector2 &p_ctrl, const Vector2 &p_to);
+	void cubic_to(const Vector2 &p_ctrl1, const Vector2 &p_ctrl2, const Vector2 &p_to);
+
+	Ref<Image> get_data();
+};
+
+VARIANT_ENUM_CAST(MSDFLoader::SDFType);
+
+#endif
