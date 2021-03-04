@@ -73,7 +73,6 @@ class ProjectSettingsEditor : public AcceptDialog {
 
 	HBoxContainer *add_prop_bar;
 	AcceptDialog *message;
-	LineEdit *category;
 	LineEdit *property;
 	OptionButton *type;
 	PopupMenu *popup_add;
