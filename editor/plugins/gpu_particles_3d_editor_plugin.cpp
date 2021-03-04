@@ -328,7 +328,6 @@ void GPUParticles3DEditor::edit(GPUParticles3D *p_particles) {
 }
 
 void GPUParticles3DEditor::_generate_emission_points() {
-	/// hacer codigo aca
 	Vector<Vector3> points;
 	Vector<Vector3> normals;
 
@@ -360,6 +359,7 @@ void GPUParticles3DEditor::_generate_emission_points() {
 
 	Ref<ImageTexture> tex;
 	tex.instance();
+	tex->create_from_image(image);
 
 	Ref<ParticlesMaterial> material = node->get_process_material();
 	ERR_FAIL_COND(material.is_null());
@@ -388,6 +388,7 @@ void GPUParticles3DEditor::_generate_emission_points() {
 
 		Ref<ImageTexture> tex2;
 		tex2.instance();
+		tex2->create_from_image(image2);
 
 		material->set_emission_normal_texture(tex2);
 	} else {
