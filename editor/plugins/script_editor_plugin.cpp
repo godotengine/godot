@@ -755,8 +755,8 @@ void ScriptEditor::_close_tab(int p_idx, bool p_save, bool p_history_back) {
 	_save_layout();
 }
 
-void ScriptEditor::_close_current_tab() {
-	_close_tab(tab_container->get_current_tab());
+void ScriptEditor::_close_current_tab(bool p_save) {
+	_close_tab(tab_container->get_current_tab(), p_save);
 }
 
 void ScriptEditor::_close_discard_current_tab(const String &p_str) {
@@ -802,7 +802,7 @@ void ScriptEditor::_close_other_tabs() {
 			}
 		}
 
-		_close_current_tab();
+		_close_current_tab(false);
 	}
 }
 
@@ -820,7 +820,7 @@ void ScriptEditor::_close_all_tabs() {
 			}
 		}
 
-		_close_current_tab();
+		_close_current_tab(false);
 	}
 }
 
@@ -1372,7 +1372,7 @@ void ScriptEditor::_menu_option(int p_option) {
 				if (current->is_unsaved()) {
 					_ask_close_current_unsaved_tab(current);
 				} else {
-					_close_current_tab();
+					_close_current_tab(false);
 				}
 			} break;
 			case FILE_COPY_PATH: {
@@ -3497,7 +3497,7 @@ ScriptEditor::ScriptEditor(EditorNode *p_editor) {
 	erase_tab_confirm = memnew(ConfirmationDialog);
 	erase_tab_confirm->get_ok_button()->set_text(TTR("Save"));
 	erase_tab_confirm->add_button(TTR("Discard"), DisplayServer::get_singleton()->get_swap_cancel_ok(), "discard");
-	erase_tab_confirm->connect("confirmed", callable_mp(this, &ScriptEditor::_close_current_tab));
+	erase_tab_confirm->connect("confirmed", callable_mp(this, &ScriptEditor::_close_current_tab), varray(true));
 	erase_tab_confirm->connect("custom_action", callable_mp(this, &ScriptEditor::_close_discard_current_tab));
 	add_child(erase_tab_confirm);
 
