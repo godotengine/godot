@@ -51,6 +51,8 @@ class RayCast2D : public Node2D {
 	bool collide_with_areas = false;
 	bool collide_with_bodies = true;
 
+	void _draw_debug_shape();
+
 protected:
 	void _notification(int p_what);
 	void _update_raycast_state();
