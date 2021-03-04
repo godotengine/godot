@@ -1336,33 +1336,23 @@ RID RendererSceneRenderRD::gi_probe_instance_create(RID p_base) {
 }
 
 void RendererSceneRenderRD::gi_probe_instance_set_transform_to_data(RID p_probe, const Transform &p_xform) {
-	RendererSceneGIRD::GIProbeInstance *gi_probe = gi.gi_probe_instance_owner.getornull(p_probe);
-	ERR_FAIL_COND(!gi_probe);
-
-	gi_probe->transform = p_xform;
+	gi.gi_probe_instance_set_transform_to_data(p_probe, p_xform);
 }
 
 bool RendererSceneRenderRD::gi_probe_needs_update(RID p_probe) const {
-	RendererSceneGIRD::GIProbeInstance *gi_probe = gi.gi_probe_instance_owner.getornull(p_probe);
-	ERR_FAIL_COND_V(!gi_probe, false);
-
 	if (low_end) {
 		return false;
 	}
 
-	//return true;
-	return gi_probe->last_probe_version != storage->gi_probe_get_version(gi_probe->probe);
+	return gi.gi_probe_needs_update(p_probe);
 }
 
 void RendererSceneRenderRD::gi_probe_update(RID p_probe, bool p_update_light_instances, const Vector<RID> &p_light_instances, const PagedArray<GeometryInstance *> &p_dynamic_objects) {
-	RendererSceneGIRD::GIProbeInstance *gi_probe = gi.gi_probe_instance_owner.getornull(p_probe);
-	ERR_FAIL_COND(!gi_probe);
-
 	if (low_end) {
 		return;
 	}
 
-	gi_probe->update(p_update_light_instances, p_light_instances, p_dynamic_objects, this);
+	gi.gi_probe_update(p_probe, p_update_light_instances, p_light_instances, p_dynamic_objects, this);
 }
 
 void RendererSceneRenderRD::_debug_sdfgi_probes(RID p_render_buffers, RD::DrawListID p_draw_list, RID p_framebuffer, const CameraMatrix &p_camera_with_transform) {
