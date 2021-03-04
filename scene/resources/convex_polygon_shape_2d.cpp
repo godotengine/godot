@@ -72,6 +72,10 @@ void ConvexPolygonShape2D::_bind_methods() {
 }
 
 void ConvexPolygonShape2D::draw(const RID &p_to_rid, const Color &p_color) {
+	if (points.size() < 3) {
+		return;
+	}
+
 	Vector<Color> col;
 	col.push_back(p_color);
 	RenderingServer::get_singleton()->canvas_item_add_polygon(p_to_rid, points, col);
