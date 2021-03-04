@@ -1224,7 +1224,7 @@ void TileSet::set_uv_clipping(bool p_uv_clipping) {
 	if (uv_clipping == p_uv_clipping) {
 		return;
 	}
-	uv_clipping = uv_clipping;
+	uv_clipping = p_uv_clipping;
 	emit_changed();
 }
 bool TileSet::is_uv_clipping() const {

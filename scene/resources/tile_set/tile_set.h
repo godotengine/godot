@@ -499,7 +499,7 @@ public:
 	void draw_tile_shape(CanvasItem *p_canvas_item, Rect2 p_region, Color p_color, bool p_filled = false, Ref<Texture2D> p_texture = Ref<Texture2D>());
 	Vector2i get_tile_effective_texture_offset(int p_atlas_source_id, Vector2i p_atlas_coords, int p_alternative_tile) const;
 
-	virtual void reset_state();
+	virtual void reset_state() override;
 
 	TileSet();
 	~TileSet();
