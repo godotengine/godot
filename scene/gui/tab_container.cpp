@@ -645,7 +645,7 @@ int TabContainer::_get_tab_width(int p_index) const {
 	// Get the width of the text displayed on the tab.
 	Ref<Font> font = get_theme_font("font");
 	int font_size = get_theme_font_size("font_size");
-	String text = control->has_meta("_tab_name") ? String(tr(String(control->get_meta("_tab_name")))) : String(control->get_name());
+	String text = control->has_meta("_tab_name") ? String(tr(String(control->get_meta("_tab_name")))) : String(tr(control->get_name()));
 	int width = font->get_string_size(text, font_size).width;
 
 	// Add space for a tab icon.
