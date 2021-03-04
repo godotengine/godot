@@ -2515,7 +2515,7 @@ RID RendererSceneRenderForward::_setup_render_pass_uniform_set(RenderListType p_
 		RID default_tex = storage->texture_rd_get_default(RendererStorageRD::DEFAULT_RD_TEXTURE_3D_WHITE);
 		for (int i = 0; i < MAX_GI_PROBES; i++) {
 			if (i < (int)p_gi_probes.size()) {
-				RID tex = gi_probe_instance_get_texture(p_gi_probes[i]);
+				RID tex = gi.gi_probe_instance_get_texture(p_gi_probes[i]);
 				if (!tex.is_valid()) {
 					tex = default_tex;
 				}
