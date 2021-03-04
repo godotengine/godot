@@ -412,25 +412,16 @@ void TextEdit::_update_selection_mode_word() {
 	_get_mouse_pos(Point2i(mp.x, mp.y), row, col);
 
 	String line = text[row];
-	int beg = CLAMP(col, 0, line.length());
-	// If its the first selection and on whitespace make sure we grab the word instead.
-	if (!selection.active) {
-		while (beg > 0 && line[beg] <= 32) {
-			beg--;
-		}
-	}
+	int cursor_pos = CLAMP(col, 0, line.length());
+	int beg = cursor_pos;
 	int end = beg;
-	bool symbol = beg < line.length() && _is_symbol(line[beg]);
-
-	// Get the word end and begin points.
-	while (beg > 0 && line[beg - 1] > 32 && (symbol == _is_symbol(line[beg - 1]))) {
-		beg--;
-	}
-	while (end < line.length() && line[end + 1] > 32 && (symbol == _is_symbol(line[end + 1]))) {
-		end++;
-	}
-	if (end < line.length()) {
-		end += 1;
+	Vector<Vector2i> words = TS->shaped_text_get_word_breaks(text.get_line_data(row)->get_rid());
+	for (int i = 0; i < words.size(); i++) {
+		if (words[i].x < cursor_pos && words[i].y > cursor_pos) {
+			beg = words[i].x;
+			end = words[i].y;
+			break;
+		}
 	}
 
 	// Initial selection.
