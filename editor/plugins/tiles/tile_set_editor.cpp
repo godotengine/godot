@@ -431,5 +431,6 @@ TileSetEditor::~TileSetEditor() {
 	memdelete(tile_data_position_editor);
 	memdelete(tile_data_integer_editor);
 	memdelete(tile_data_float_editor);
+	memdelete(tile_data_occlusion_shape_editor);
 	memdelete(tile_data_collision_shape_editor);
 }

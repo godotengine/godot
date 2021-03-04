@@ -92,6 +92,9 @@ private:
 	// Misc
 	double probability = 1.0;
 
+	// Custom data
+	Vector<Variant> custom_data;
+
 protected:
 	bool _set(const StringName &p_name, const Variant &p_value);
 	bool _get(const StringName &p_name, Variant &r_ret) const;
@@ -155,7 +158,11 @@ public:
 	void set_probability(float p_probability);
 	float get_probability() const;
 
-	// Metadata
+	// Custom data.
+	void set_custom_data(String p_layer_name, Variant p_value);
+	Variant get_custom_data(String p_layer_name) const;
+	void set_custom_data_by_layer_id(int p_layer_id, Variant p_value);
+	Variant get_custom_data_by_layer_id(int p_layer_id) const;
 };
 
 class TileSetSource : public Resource {
@@ -385,6 +392,14 @@ private:
 	//TerrainsTileSetData terrains;
 	//NavigationTileSetData navigation;
 
+	// CustomData
+	struct CustomDataLayer {
+		String name;
+		Variant::Type type;
+	};
+	Vector<CustomDataLayer> custom_data_layers;
+	Map<String, int> custom_data_layers_by_name;
+
 	// Per Atlas source data.
 	Map<int, Ref<TileSetSource>> sources;
 	Vector<int> source_ids;
@@ -470,6 +485,15 @@ public:
 	// Navigation
 
 	// Terrains
+
+	// Custom data
+	void set_custom_data_layers_count(int p_custom_data_layers_count);
+	int get_custom_data_layers_count() const;
+	int get_custom_data_layer_by_name(String p_value) const;
+	void set_custom_data_name(int p_layer_id, String p_value);
+	String get_custom_data_name(int p_layer_id) const;
+	void set_custom_data_type(int p_layer_id, Variant::Type p_value);
+	Variant::Type get_custom_data_type(int p_layer_id) const;
 
 	// Helpers
 	void draw_tile_shape(CanvasItem *p_canvas_item, Rect2 p_region, Color p_color, bool p_filled = false, Ref<Texture2D> p_texture = Ref<Texture2D>());

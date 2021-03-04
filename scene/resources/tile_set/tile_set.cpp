@@ -39,6 +39,7 @@ void TileData::set_tile_set(const TileSet *p_tile_set) {
 	if (tile_set) {
 		occluders.resize(tile_set->get_occlusion_layers_count());
 		physics.resize(tile_set->get_physics_layers_count());
+		custom_data.resize(tile_set->get_custom_data_layers_count());
 	}
 	notify_property_list_changed();
 }
@@ -46,6 +47,23 @@ void TileData::set_tile_set(const TileSet *p_tile_set) {
 void TileData::notify_tile_data_properties_should_change() {
 	occluders.resize(tile_set->get_occlusion_layers_count());
 	physics.resize(tile_set->get_physics_layers_count());
+	custom_data.resize(tile_set->get_custom_data_layers_count());
+
+	// Convert custom data to the new type.
+	for (int i = 0; i < custom_data.size(); i++) {
+		if (custom_data[i].get_type() != tile_set->get_custom_data_type(i)) {
+			Variant new_val;
+			Callable::CallError error;
+			if (Variant::can_convert(custom_data[i].get_type(), tile_set->get_custom_data_type(i))) {
+				const Variant *args[] = { &custom_data[i] };
+				Variant::construct(tile_set->get_custom_data_type(i), new_val, args, 1, error);
+			} else {
+				Variant::construct(tile_set->get_custom_data_type(i), new_val, nullptr, 0, error);
+			}
+			custom_data.write[i] = new_val;
+		}
+	}
+
 	notify_property_list_changed();
 	emit_signal("changed");
 }
@@ -53,6 +71,7 @@ void TileData::notify_tile_data_properties_should_change() {
 void TileData::reset_state() {
 	occluders.clear();
 	physics.clear();
+	custom_data.clear();
 }
 
 void TileData::set_allow_transform(bool p_allow_transform) {
@@ -219,6 +238,32 @@ float TileData::get_probability() const {
 	return probability;
 }
 
+// Custom data
+void TileData::set_custom_data(String p_layer_name, Variant p_value) {
+	ERR_FAIL_COND(!tile_set);
+	int p_layer_id = tile_set->get_custom_data_layer_by_name(p_layer_name);
+	ERR_FAIL_COND_MSG(p_layer_id < 0, vformat("TileSet has no layer with name: %s", p_layer_name));
+	set_custom_data_by_layer_id(p_layer_id, p_value);
+}
+
+Variant TileData::get_custom_data(String p_layer_name) const {
+	ERR_FAIL_COND_V(!tile_set, Variant());
+	int p_layer_id = tile_set->get_custom_data_layer_by_name(p_layer_name);
+	ERR_FAIL_COND_V_MSG(p_layer_id < 0, Variant(), vformat("TileSet has no layer with name: %s", p_layer_name));
+	return get_custom_data_by_layer_id(p_layer_id);
+}
+
+void TileData::set_custom_data_by_layer_id(int p_layer_id, Variant p_value) {
+	ERR_FAIL_INDEX(p_layer_id, custom_data.size());
+	custom_data.write[p_layer_id] = p_value;
+	emit_signal("changed");
+}
+
+Variant TileData::get_custom_data_by_layer_id(int p_layer_id) const {
+	ERR_FAIL_INDEX_V(p_layer_id, custom_data.size(), Variant());
+	return custom_data[p_layer_id];
+}
+
 bool TileData::_set(const StringName &p_name, const Variant &p_value) {
 	Vector<String> components = String(p_name).split("/", true, 2);
 
@@ -289,6 +334,21 @@ bool TileData::_set(const StringName &p_name, const Variant &p_value) {
 				return true;
 			}
 		}
+	} else if (components.size() == 1 && components[0].begins_with("custom_data_") && components[0].trim_prefix("custom_data_").is_valid_integer()) {
+		// Custom data layers.
+		int layer_index = components[0].trim_prefix("custom_data_layer_").to_int();
+		ERR_FAIL_COND_V(layer_index < 0, false);
+
+		if (layer_index >= custom_data.size()) {
+			if (tile_set) {
+				return false;
+			} else {
+				custom_data.resize(layer_index + 1);
+			}
+		}
+		set_custom_data_by_layer_id(layer_index, p_value);
+
+		return true;
 	}
 
 	return false;
@@ -336,6 +396,15 @@ bool TileData::_get(const StringName &p_name, Variant &r_ret) const {
 					return true;
 				}
 			}
+		} else if (components.size() == 1 && components[0].begins_with("custom_data_") && components[0].trim_prefix("custom_data_").is_valid_integer()) {
+			// Custom data layers.
+			int layer_index = components[0].trim_prefix("custom_data_").to_int();
+			ERR_FAIL_COND_V(layer_index < 0, false);
+			if (layer_index >= custom_data.size()) {
+				return false;
+			}
+			r_ret = get_custom_data_by_layer_id(layer_index);
+			return true;
 		}
 	}
 
@@ -352,7 +421,7 @@ void TileData::_get_property_list(List<PropertyInfo> *p_list) const {
 			p_list->push_back(PropertyInfo(Variant::OBJECT, vformat("occlusion_layer_%d/polygon", i), PROPERTY_HINT_RESOURCE_TYPE, "OccluderPolygon2D", PROPERTY_USAGE_DEFAULT));
 		}
 
-		// Physics layers
+		// Physics layers.
 		p_list->push_back(PropertyInfo(Variant::NIL, "Physics", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_GROUP));
 		for (int i = 0; i < physics.size(); i++) {
 			p_list->push_back(PropertyInfo(Variant::INT, vformat("physics_layer_%d/shapes_count", i), PROPERTY_HINT_NONE, "", PROPERTY_USAGE_EDITOR));
@@ -362,18 +431,25 @@ void TileData::_get_property_list(List<PropertyInfo> *p_list) const {
 				p_list->push_back(PropertyInfo(Variant::FLOAT, vformat("physics_layer_%d/shape_%d/one_way_margin", i, j)));
 			}
 		}
+
+		// Custom data layers.
+		p_list->push_back(PropertyInfo(Variant::NIL, "Custom data", PROPERTY_HINT_NONE, "custom_data_", PROPERTY_USAGE_GROUP));
+		for (int i = 0; i < custom_data.size(); i++) {
+			p_list->push_back(PropertyInfo(tile_set->get_custom_data_type(i), vformat("custom_data_%d", i), PROPERTY_HINT_NONE, String(), PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_NIL_IS_VARIANT));
+		}
 	}
 }
 
 void TileData::_bind_methods() {
-	// -- Tile properties --
-	// Base properties
+	// Rendering.
 	ClassDB::bind_method(D_METHOD("set_flip_h", "flip_h"), &TileData::set_flip_h);
 	ClassDB::bind_method(D_METHOD("get_flip_h"), &TileData::get_flip_h);
 	ClassDB::bind_method(D_METHOD("set_flip_v", "flip_v"), &TileData::set_flip_v);
 	ClassDB::bind_method(D_METHOD("get_flip_v"), &TileData::get_flip_v);
 	ClassDB::bind_method(D_METHOD("set_transpose", "transpose"), &TileData::set_transpose);
 	ClassDB::bind_method(D_METHOD("get_transpose"), &TileData::get_transpose);
+	ClassDB::bind_method(D_METHOD("tile_set_material", "material"), &TileData::tile_set_material);
+	ClassDB::bind_method(D_METHOD("tile_get_material"), &TileData::tile_get_material);
 	ClassDB::bind_method(D_METHOD("set_texture_offset", "texture_offset"), &TileData::set_texture_offset);
 	ClassDB::bind_method(D_METHOD("get_texture_offset"), &TileData::get_texture_offset);
 	ClassDB::bind_method(D_METHOD("set_modulate", "modulate"), &TileData::set_modulate);
@@ -382,8 +458,35 @@ void TileData::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_z_index"), &TileData::get_z_index);
 	ClassDB::bind_method(D_METHOD("set_y_sort_origin", "y_sort_origin"), &TileData::set_y_sort_origin);
 	ClassDB::bind_method(D_METHOD("get_y_sort_origin"), &TileData::get_y_sort_origin);
+
+	ClassDB::bind_method(D_METHOD("set_occluder", "layer_id", "occluder_polygon"), &TileData::set_occluder);
+	ClassDB::bind_method(D_METHOD("get_occluder", "layer_id"), &TileData::get_occluder);
+
+	// Physics.
+	ClassDB::bind_method(D_METHOD("get_collision_shapes_count", "layer_id"), &TileData::get_collision_shapes_count);
+	ClassDB::bind_method(D_METHOD("set_collision_shapes_count", "layer_id", "shapes_count"), &TileData::set_collision_shapes_count);
+	ClassDB::bind_method(D_METHOD("add_collision_shape", "layer_id"), &TileData::add_collision_shape);
+	ClassDB::bind_method(D_METHOD("remove_collision_shape", "layer_id", "shape_index"), &TileData::remove_collision_shape);
+	ClassDB::bind_method(D_METHOD("set_collision_shape_shape", "layer_id", "shape_index", "shape"), &TileData::set_collision_shape_shape);
+	ClassDB::bind_method(D_METHOD("get_collision_shape_shape", "layer_id", "shape_index"), &TileData::get_collision_shape_shape);
+	ClassDB::bind_method(D_METHOD("set_collision_shape_one_way", "layer_id", "shape_index", "one_way"), &TileData::set_collision_shape_one_way);
+	ClassDB::bind_method(D_METHOD("is_collision_shape_one_way", "layer_id", "shape_index"), &TileData::is_collision_shape_one_way);
+	ClassDB::bind_method(D_METHOD("set_collision_shape_one_way_margin", "layer_id", "shape_index", "one_way_margin"), &TileData::set_collision_shape_one_way_margin);
+	ClassDB::bind_method(D_METHOD("get_collision_shape_one_way_margin", "layer_id", "shape_index"), &TileData::get_collision_shape_one_way_margin);
+
+	// Terrain
+
+	// Navigation
+
+	// Misc.
 	ClassDB::bind_method(D_METHOD("set_probability", "probability"), &TileData::set_probability);
 	ClassDB::bind_method(D_METHOD("get_probability"), &TileData::get_probability);
+
+	// Custom data.
+	ClassDB::bind_method(D_METHOD("set_custom_data", "layer_name", "value"), &TileData::set_custom_data);
+	ClassDB::bind_method(D_METHOD("get_custom_data", "layer_name"), &TileData::get_custom_data);
+	ClassDB::bind_method(D_METHOD("set_custom_data_by_layer_id", "layer_id", "value"), &TileData::set_custom_data_by_layer_id);
+	ClassDB::bind_method(D_METHOD("get_custom_data_by_layer_id", "layer_id"), &TileData::get_custom_data_by_layer_id);
 
 	ADD_GROUP("Rendering", "");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "flip_h"), "set_flip_h", "get_flip_h");
@@ -650,6 +753,7 @@ void TileSetAtlasSource::create_tile(const Vector2i p_atlas_coords, const Vector
 	tiles[p_atlas_coords].alternatives[0]->set_tile_set(tile_set);
 	tiles[p_atlas_coords].alternatives[0]->set_allow_transform(false);
 	tiles[p_atlas_coords].alternatives[0]->connect("changed", callable_mp((Resource *)this, &TileSetAtlasSource::emit_changed));
+	tiles[p_atlas_coords].alternatives[0]->notify_property_list_changed();
 	tiles[p_atlas_coords].alternatives_ids.append(0);
 
 	// Add all covered positions to the mapping cache
@@ -838,6 +942,7 @@ int TileSetAtlasSource::create_alternative_tile(const Vector2i p_atlas_coords, i
 	tiles[p_atlas_coords].alternatives[new_alternative_id] = memnew(TileData);
 	tiles[p_atlas_coords].alternatives[new_alternative_id]->set_tile_set(tile_set);
 	tiles[p_atlas_coords].alternatives[new_alternative_id]->set_allow_transform(true);
+	tiles[p_atlas_coords].alternatives[new_alternative_id]->notify_property_list_changed();
 	tiles[p_atlas_coords].alternatives_ids.append(new_alternative_id);
 	tiles[p_atlas_coords].alternatives_ids.sort();
 	_compute_next_alternative_id(p_atlas_coords);
@@ -947,6 +1052,8 @@ void TileSetAtlasSource::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_alternative_tiles_count", "atlas_coords"), &TileSetAtlasSource::get_alternative_tiles_count);
 	ClassDB::bind_method(D_METHOD("get_alternative_tile_id", "atlas_coords", "index"), &TileSetAtlasSource::get_alternative_tile_id);
 
+	ClassDB::bind_method(D_METHOD("get_tile_data", "atlas_coords", "index"), &TileSetAtlasSource::get_tile_data);
+
 	// Helpers.
 	ClassDB::bind_method(D_METHOD("get_atlas_grid_size"), &TileSetAtlasSource::get_atlas_grid_size);
 	ClassDB::bind_method(D_METHOD("has_tiles_outside_texture"), &TileSetAtlasSource::has_tiles_outside_texture);
@@ -960,378 +1067,6 @@ TileSetAtlasSource::~TileSetAtlasSource() {
 		for (Map<int, TileData *>::Element *E_tile_data = E_alternatives->get().alternatives.front(); E_tile_data; E_tile_data = E_tile_data->next()) {
 			memdelete(E_tile_data->get());
 		}
-	}
-}
-
-const Vector2i TileSetAtlasSource::INVALID_ATLAS_COORDS = Vector2i(-1, -1);
-const int TileSetAtlasSource::INVALID_TILE_ALTERNATIVE = -1;
-
-#ifndef DISABLE_DEPRECATED
-void TileSet::compatibility_conversion() {
-	for (Map<int, CompatibilityTileData *>::Element *E = compatibility_data.front(); E; E = E->next()) {
-		CompatibilityTileData *ctd = E->value();
-
-		// Add the texture
-		TileSetAtlasSource *atlas_source = memnew(TileSetAtlasSource);
-		int source_id = add_source(Ref<TileSetSource>(atlas_source));
-
-		atlas_source->set_texture(ctd->texture);
-
-		// Handle each tile as a new source. Not optimal but at least it should stay compatible.
-		switch (ctd->tile_mode) {
-			case 0: // SINGLE_TILE
-				// TODO
-				break;
-			case 1: // AUTO_TILE
-				// TODO
-				break;
-			case 2: // ATLAS_TILE
-				atlas_source->set_margins(ctd->region.get_position());
-				atlas_source->set_separation(Vector2i(ctd->autotile_spacing, ctd->autotile_spacing));
-				atlas_source->set_texture_region_size(ctd->autotile_tile_size);
-
-				Size2i atlas_size = ctd->region.get_size() / (ctd->autotile_tile_size + atlas_source->get_separation());
-				for (int i = 0; i < atlas_size.x; i++) {
-					for (int j = 0; j < atlas_size.y; j++) {
-						Vector2i coords = Vector2i(i, j);
-
-						for (int flags = 0; flags < 8; flags++) {
-							bool flip_h = flags & 1;
-							bool flip_v = flags & 2;
-							bool transpose = flags & 4;
-
-							int alternative_tile = 0;
-							if (!atlas_source->has_tile(coords)) {
-								atlas_source->create_tile(coords);
-							} else {
-								alternative_tile = atlas_source->create_alternative_tile(coords);
-							}
-							TileData *tile_data = atlas_source->get_tile_data(coords, alternative_tile);
-
-							tile_data->set_flip_h(flip_h);
-							tile_data->set_flip_v(flip_v);
-							tile_data->set_transpose(transpose);
-							tile_data->tile_set_material(ctd->material);
-							tile_data->set_modulate(ctd->modulate);
-							tile_data->set_z_index(ctd->z_index);
-							if (ctd->autotile_z_index_map.has(coords)) {
-								tile_data->set_z_index(ctd->autotile_z_index_map[coords]);
-							}
-							if (ctd->autotile_priority_map.has(coords)) {
-								tile_data->set_probability(ctd->autotile_priority_map[coords]);
-							}
-
-							// -- TODO: handle --
-							// texture offset
-							// bitmask_mode
-							// bitmask_flags
-							// occluder_map
-							// navpoly_map
-							// "occluder"
-							// "occluder_offset"
-							// "navigation"
-							// "navigation_offset"
-
-							print_line(vformat("Created compatibility tile: source id=%d, coords=(%s), alternative=%d", source_id, String(coords), alternative_tile));
-						}
-					}
-				}
-				break;
-		}
-
-		// Add the mapping to the map
-		compatibility_source_mapping.insert(E->key(), source_id);
-	}
-
-	// Reset compatibility data
-	compatibility_data = Map<int, CompatibilityTileData *>();
-}
-#endif // DISABLE_DEPRECATED
-
-bool TileSet::_set(const StringName &p_name, const Variant &p_value) {
-	Vector<String> components = String(p_name).split("/", true, 2);
-
-#ifndef DISABLE_DEPRECATED
-	// TODO: THIS IS HOW WE CHECK IF WE HAVE A DEPRECATED RESOURCE
-	// This should be moved to a dedicated conversion system
-	if (components[0].is_valid_integer()) {
-		int id = components[0].to_int();
-
-		// Get or create the compatibility object
-		CompatibilityTileData *ctd;
-		Map<int, CompatibilityTileData *>::Element *E = compatibility_data.find(id);
-		if (!E) {
-			ctd = memnew(CompatibilityTileData);
-			compatibility_data.insert(id, ctd);
-		} else {
-			ctd = E->get();
-		}
-
-		String what = components[1];
-
-		if (what == "name") {
-			ctd->name = p_value;
-		} else if (what == "texture") {
-			ctd->texture = p_value;
-		} else if (what == "tex_offset") {
-			ctd->tex_offset = p_value;
-		} else if (what == "material") {
-			ctd->material = p_value;
-		} else if (what == "modulate") {
-			ctd->modulate = p_value;
-		} else if (what == "region") {
-			ctd->region = p_value;
-		} else if (what == "tile_mode") {
-			ctd->tile_mode = p_value;
-		} else if (what.left(9) == "autotile") {
-			what = what.right(9);
-			if (what == "bitmask_mode") {
-				ctd->autotile_bitmask_mode = p_value;
-			} else if (what == "icon_coordinate") {
-				ctd->autotile_icon_coordinate = p_value;
-			} else if (what == "tile_size") {
-				ctd->autotile_tile_size = p_value;
-			} else if (what == "spacing") {
-				ctd->autotile_spacing = p_value;
-			} else if (what == "bitmask_flags") {
-				if (p_value.is_array()) {
-					Array p = p_value;
-					Vector2i last_coord;
-					while (p.size() > 0) {
-						if (p[0].get_type() == Variant::VECTOR2) {
-							last_coord = p[0];
-						} else if (p[0].get_type() == Variant::INT) {
-							ctd->autotile_bitmask_flags.insert(last_coord, p[0]);
-						}
-						p.pop_front();
-					}
-				}
-			} else if (what == "occluder_map") {
-				Array p = p_value;
-				Vector2 last_coord;
-				while (p.size() > 0) {
-					if (p[0].get_type() == Variant::VECTOR2) {
-						last_coord = p[0];
-					} else if (p[0].get_type() == Variant::OBJECT) {
-						ctd->autotile_occluder_map.insert(last_coord, p[0]);
-					}
-					p.pop_front();
-				}
-			} else if (what == "navpoly_map") {
-				Array p = p_value;
-				Vector2 last_coord;
-				while (p.size() > 0) {
-					if (p[0].get_type() == Variant::VECTOR2) {
-						last_coord = p[0];
-					} else if (p[0].get_type() == Variant::OBJECT) {
-						ctd->autotile_navpoly_map.insert(last_coord, p[0]);
-					}
-					p.pop_front();
-				}
-			} else if (what == "priority_map") {
-				Array p = p_value;
-				Vector3 val;
-				Vector2 v;
-				int priority;
-				while (p.size() > 0) {
-					val = p[0];
-					if (val.z > 1) {
-						v.x = val.x;
-						v.y = val.y;
-						priority = (int)val.z;
-						ctd->autotile_priority_map.insert(v, priority);
-					}
-					p.pop_front();
-				}
-			} else if (what == "z_index_map") {
-				Array p = p_value;
-				Vector3 val;
-				Vector2 v;
-				int z_index;
-				while (p.size() > 0) {
-					val = p[0];
-					if (val.z != 0) {
-						v.x = val.x;
-						v.y = val.y;
-						z_index = (int)val.z;
-						ctd->autotile_z_index_map.insert(v, z_index);
-					}
-					p.pop_front();
-				}
-			}
-			/*
-		// INGORED FOR NOW, they seem duplicated data compared to the shapes array
-		else if (what == "shape") {
-			// TODO
-		} else if (what == "shape_offset") {
-			// TODO
-		} else if (what == "shape_transform") {
-			// TODO
-		} else if (what == "shape_one_way") {
-			// TODO
-		} else if (what == "shape_one_way_margin") {
-			// TODO
-		}
-		*/
-		} else if (what == "shapes") {
-			// TODO
-		} else if (what == "occluder") {
-			// TODO
-		} else if (what == "occluder_offset") {
-			// TODO
-		} else if (what == "navigation") {
-			// TODO
-		} else if (what == "navigation_offset") {
-			// TODO
-		} else if (what == "z_index") {
-			ctd->z_index = p_value;
-
-			// TODO: remove the consersion from here, it's not where it should be done
-			compatibility_conversion();
-		} else {
-			return false;
-		}
-	} else {
-#endif // DISABLE_DEPRECATED
-
-		// This is now a new property.
-		if (components.size() == 2 && components[0].begins_with("occlusion_layer_") && components[0].trim_prefix("occlusion_layer_").is_valid_integer()) {
-			// Occlusion layers.
-			int index = components[0].trim_prefix("occlusion_layer_").to_int();
-			ERR_FAIL_COND_V(index < 0, false);
-			if (components[1] == "light_mask") {
-				ERR_FAIL_COND_V(p_value.get_type() != Variant::INT, false);
-				if (index >= occlusion_layers.size()) {
-					set_occlusion_layers_count(index + 1);
-				}
-				set_occlusion_layer_light_mask(index, p_value);
-				return true;
-			} else if (components[1] == "sdf_collision") {
-				ERR_FAIL_COND_V(p_value.get_type() != Variant::BOOL, false);
-				if (index >= occlusion_layers.size()) {
-					set_occlusion_layers_count(index + 1);
-				}
-				set_occlusion_layer_sdf_collision(index, p_value);
-				return true;
-			}
-		} else if (components.size() == 2 && components[0].begins_with("physics_layer_") && components[0].trim_prefix("physics_layer_").is_valid_integer()) {
-			// Physics layers.
-			int index = components[0].trim_prefix("physics_layer_").to_int();
-			ERR_FAIL_COND_V(index < 0, false);
-			if (components[1] == "collision_layer") {
-				ERR_FAIL_COND_V(p_value.get_type() != Variant::INT, false);
-				if (index >= physics_layers.size()) {
-					set_physics_layers_count(index + 1);
-				}
-				set_physics_layer_collision_layer(index, p_value);
-				return true;
-			} else if (components[1] == "collision_mask") {
-				ERR_FAIL_COND_V(p_value.get_type() != Variant::INT, false);
-				if (index >= physics_layers.size()) {
-					set_physics_layers_count(index + 1);
-				}
-				set_physics_layer_collision_mask(index, p_value);
-				return true;
-			} else if (components[1] == "physics_material") {
-				Ref<PhysicsMaterial> physics_material = p_value;
-				ERR_FAIL_COND_V(!physics_material.is_valid(), false);
-				if (index >= physics_layers.size()) {
-					set_physics_layers_count(index + 1);
-				}
-				set_physics_layer_physics_material(index, physics_material);
-				return true;
-			}
-		} else if (components.size() == 2 && components[0] == "sources" && components[1].is_valid_integer()) {
-			// Create atlas if it does not exists.
-			int source_id = components[1].to_int();
-
-			if (!has_source(source_id)) {
-				add_source(p_value, source_id);
-			}
-			return true;
-		}
-
-#ifndef DISABLE_DEPRECATED
-	}
-#endif // DISABLE_DEPRECATED
-
-	return false;
-}
-
-bool TileSet::_get(const StringName &p_name, Variant &r_ret) const {
-	Vector<String> components = String(p_name).split("/", true, 2);
-
-	if (components.size() == 2 && components[0].begins_with("occlusion_layer_") && components[0].trim_prefix("occlusion_layer_").is_valid_integer()) {
-		// Occlusion layers.
-		int index = components[0].trim_prefix("occlusion_layer_").to_int();
-		if (index < 0 || index >= occlusion_layers.size()) {
-			return false;
-		}
-		if (components[1] == "light_mask") {
-			r_ret = get_occlusion_layer_light_mask(index);
-			return true;
-		} else if (components[1] == "sdf_collision") {
-			r_ret = get_occlusion_layer_sdf_collision(index);
-			return true;
-		}
-	} else if (components.size() == 2 && components[0].begins_with("physics_layer_") && components[0].trim_prefix("physics_layer_").is_valid_integer()) {
-		// Physics layers.
-		int index = components[0].trim_prefix("physics_layer_").to_int();
-		if (index < 0 || index >= physics_layers.size()) {
-			return false;
-		}
-		if (components[1] == "collision_layer") {
-			r_ret = get_physics_layer_collision_layer(index);
-			return true;
-		} else if (components[1] == "collision_mask") {
-			r_ret = get_physics_layer_collision_mask(index);
-			return true;
-		} else if (components[1] == "physics_material") {
-			r_ret = get_physics_layer_physics_material(index);
-			return true;
-		}
-	} else if (components.size() == 2 && components[0] == "sources" && components[1].is_valid_integer()) {
-		// Atlases data.
-		int source_id = components[1].to_int();
-
-		if (has_source(source_id)) {
-			r_ret = get_source(source_id);
-			return true;
-		} else {
-			return false;
-		}
-	}
-
-	return false;
-}
-
-void TileSet::_get_property_list(List<PropertyInfo> *p_list) const {
-	// Rendering.
-	p_list->push_back(PropertyInfo(Variant::NIL, "Rendering", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_GROUP));
-	for (int i = 0; i < occlusion_layers.size(); i++) {
-		p_list->push_back(PropertyInfo(Variant::INT, vformat("occlusion_layer_%d/light_mask", i), PROPERTY_HINT_LAYERS_2D_RENDER));
-		p_list->push_back(PropertyInfo(Variant::BOOL, vformat("occlusion_layer_%d/sdf_collision", i)));
-	}
-
-	p_list->push_back(PropertyInfo(Variant::NIL, "Physics", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_GROUP));
-	for (int i = 0; i < physics_layers.size(); i++) {
-		p_list->push_back(PropertyInfo(Variant::INT, vformat("physics_layer_%d/collision_layer", i), PROPERTY_HINT_LAYERS_2D_PHYSICS));
-		p_list->push_back(PropertyInfo(Variant::INT, vformat("physics_layer_%d/collision_mask", i), PROPERTY_HINT_LAYERS_2D_PHYSICS));
-		p_list->push_back(PropertyInfo(Variant::OBJECT, vformat("physics_layer_%d/physics_material", i), PROPERTY_HINT_RESOURCE_TYPE, "PhysicsMaterial"));
-	}
-
-	// Sources.
-	// Note: sources have to be listed in at the end as some TileData rely on the TileSet properties being initialized first.
-	for (Map<int, Ref<TileSetSource>>::Element *E_source = sources.front(); E_source; E_source = E_source->next()) {
-		// Add a dummy property to show the tile exists.
-		p_list->push_back(PropertyInfo(Variant::INT, vformat("sources/%d", E_source->key()), PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR));
-	}
-}
-
-void TileSet::_append_property_list_with_prefix(const StringName &p_name, List<PropertyInfo> *p_to_prepend, List<PropertyInfo> *p_list) {
-	for (List<PropertyInfo>::Element *E_property = p_to_prepend->front(); E_property; E_property = E_property->next()) {
-		E_property->get().name = vformat("%s/%s", p_name, E_property->get().name);
-		p_list->push_back(E_property->get());
 	}
 }
 
@@ -1695,6 +1430,84 @@ Ref<PhysicsMaterial> TileSet::get_physics_layer_physics_material(int p_layer_ind
 	return physics_layers[p_layer_index].physics_material;
 }
 
+// Custom data.
+void TileSet::set_custom_data_layers_count(int p_custom_data_layers_count) {
+	ERR_FAIL_COND(p_custom_data_layers_count < 0);
+	if (custom_data_layers.size() == p_custom_data_layers_count) {
+		return;
+	}
+
+	custom_data_layers.resize(p_custom_data_layers_count);
+
+	for (Map<String, int>::Element *E = custom_data_layers_by_name.front(); E; E = E->next()) {
+		if (E->get() >= custom_data_layers.size()) {
+			custom_data_layers_by_name.erase(E);
+		}
+	}
+
+	for (Map<int, Ref<TileSetSource>>::Element *E_source = sources.front(); E_source; E_source = E_source->next()) {
+		E_source->get()->notify_tile_data_properties_should_change();
+	}
+
+	notify_property_list_changed();
+	emit_changed();
+}
+
+int TileSet::get_custom_data_layers_count() const {
+	return custom_data_layers.size();
+}
+
+int TileSet::get_custom_data_layer_by_name(String p_value) const {
+	if (custom_data_layers_by_name.has(p_value)) {
+		return custom_data_layers_by_name[p_value];
+	} else {
+		return -1;
+	}
+}
+
+void TileSet::set_custom_data_name(int p_layer_id, String p_value) {
+	ERR_FAIL_INDEX(p_layer_id, custom_data_layers.size());
+
+	// Exit if another property has the same name.
+	if (!p_value.is_empty()) {
+		for (int other_layer_id = 0; other_layer_id < get_custom_data_layers_count(); other_layer_id++) {
+			if (other_layer_id != p_layer_id && get_custom_data_name(other_layer_id) == p_value) {
+				ERR_FAIL_MSG(vformat("There is already a custom property named %s", p_value));
+			}
+		}
+	}
+
+	if (p_value.is_empty() && custom_data_layers_by_name.has(p_value)) {
+		custom_data_layers_by_name.erase(p_value);
+	} else {
+		custom_data_layers_by_name[p_value] = p_layer_id;
+	}
+
+	custom_data_layers.write[p_layer_id].name = p_value;
+	emit_changed();
+}
+
+String TileSet::get_custom_data_name(int p_layer_id) const {
+	ERR_FAIL_INDEX_V(p_layer_id, custom_data_layers.size(), "");
+	return custom_data_layers[p_layer_id].name;
+}
+
+void TileSet::set_custom_data_type(int p_layer_id, Variant::Type p_value) {
+	ERR_FAIL_INDEX(p_layer_id, custom_data_layers.size());
+	custom_data_layers.write[p_layer_id].type = p_value;
+
+	for (Map<int, Ref<TileSetSource>>::Element *E_source = sources.front(); E_source; E_source = E_source->next()) {
+		E_source->get()->notify_tile_data_properties_should_change();
+	}
+
+	emit_changed();
+}
+
+Variant::Type TileSet::get_custom_data_type(int p_layer_id) const {
+	ERR_FAIL_INDEX_V(p_layer_id, custom_data_layers.size(), Variant::NIL);
+	return custom_data_layers[p_layer_id].type;
+}
+
 void TileSet::_source_changed() {
 	emit_changed();
 	notify_property_list_changed();
@@ -1703,6 +1516,423 @@ void TileSet::_source_changed() {
 void TileSet::reset_state() {
 	occlusion_layers.clear();
 	physics_layers.clear();
+	custom_data_layers.clear();
+}
+
+const Vector2i TileSetAtlasSource::INVALID_ATLAS_COORDS = Vector2i(-1, -1);
+const int TileSetAtlasSource::INVALID_TILE_ALTERNATIVE = -1;
+
+#ifndef DISABLE_DEPRECATED
+void TileSet::compatibility_conversion() {
+	for (Map<int, CompatibilityTileData *>::Element *E = compatibility_data.front(); E; E = E->next()) {
+		CompatibilityTileData *ctd = E->value();
+
+		// Add the texture
+		TileSetAtlasSource *atlas_source = memnew(TileSetAtlasSource);
+		int source_id = add_source(Ref<TileSetSource>(atlas_source));
+
+		atlas_source->set_texture(ctd->texture);
+
+		// Handle each tile as a new source. Not optimal but at least it should stay compatible.
+		switch (ctd->tile_mode) {
+			case 0: // SINGLE_TILE
+				// TODO
+				break;
+			case 1: // AUTO_TILE
+				// TODO
+				break;
+			case 2: // ATLAS_TILE
+				atlas_source->set_margins(ctd->region.get_position());
+				atlas_source->set_separation(Vector2i(ctd->autotile_spacing, ctd->autotile_spacing));
+				atlas_source->set_texture_region_size(ctd->autotile_tile_size);
+
+				Size2i atlas_size = ctd->region.get_size() / (ctd->autotile_tile_size + atlas_source->get_separation());
+				for (int i = 0; i < atlas_size.x; i++) {
+					for (int j = 0; j < atlas_size.y; j++) {
+						Vector2i coords = Vector2i(i, j);
+
+						for (int flags = 0; flags < 8; flags++) {
+							bool flip_h = flags & 1;
+							bool flip_v = flags & 2;
+							bool transpose = flags & 4;
+
+							int alternative_tile = 0;
+							if (!atlas_source->has_tile(coords)) {
+								atlas_source->create_tile(coords);
+							} else {
+								alternative_tile = atlas_source->create_alternative_tile(coords);
+							}
+							TileData *tile_data = atlas_source->get_tile_data(coords, alternative_tile);
+
+							tile_data->set_flip_h(flip_h);
+							tile_data->set_flip_v(flip_v);
+							tile_data->set_transpose(transpose);
+							tile_data->tile_set_material(ctd->material);
+							tile_data->set_modulate(ctd->modulate);
+							tile_data->set_z_index(ctd->z_index);
+							if (ctd->autotile_z_index_map.has(coords)) {
+								tile_data->set_z_index(ctd->autotile_z_index_map[coords]);
+							}
+							if (ctd->autotile_priority_map.has(coords)) {
+								tile_data->set_probability(ctd->autotile_priority_map[coords]);
+							}
+
+							// -- TODO: handle --
+							// texture offset
+							// bitmask_mode
+							// bitmask_flags
+							// occluder_map
+							// navpoly_map
+							// "occluder"
+							// "occluder_offset"
+							// "navigation"
+							// "navigation_offset"
+
+							print_line(vformat("Created compatibility tile: source id=%d, coords=(%s), alternative=%d", source_id, String(coords), alternative_tile));
+						}
+					}
+				}
+				break;
+		}
+
+		// Add the mapping to the map
+		compatibility_source_mapping.insert(E->key(), source_id);
+	}
+
+	// Reset compatibility data
+	compatibility_data = Map<int, CompatibilityTileData *>();
+}
+#endif // DISABLE_DEPRECATED
+
+bool TileSet::_set(const StringName &p_name, const Variant &p_value) {
+	Vector<String> components = String(p_name).split("/", true, 2);
+
+#ifndef DISABLE_DEPRECATED
+	// TODO: THIS IS HOW WE CHECK IF WE HAVE A DEPRECATED RESOURCE
+	// This should be moved to a dedicated conversion system
+	if (components[0].is_valid_integer()) {
+		int id = components[0].to_int();
+
+		// Get or create the compatibility object
+		CompatibilityTileData *ctd;
+		Map<int, CompatibilityTileData *>::Element *E = compatibility_data.find(id);
+		if (!E) {
+			ctd = memnew(CompatibilityTileData);
+			compatibility_data.insert(id, ctd);
+		} else {
+			ctd = E->get();
+		}
+
+		String what = components[1];
+
+		if (what == "name") {
+			ctd->name = p_value;
+		} else if (what == "texture") {
+			ctd->texture = p_value;
+		} else if (what == "tex_offset") {
+			ctd->tex_offset = p_value;
+		} else if (what == "material") {
+			ctd->material = p_value;
+		} else if (what == "modulate") {
+			ctd->modulate = p_value;
+		} else if (what == "region") {
+			ctd->region = p_value;
+		} else if (what == "tile_mode") {
+			ctd->tile_mode = p_value;
+		} else if (what.left(9) == "autotile") {
+			what = what.right(9);
+			if (what == "bitmask_mode") {
+				ctd->autotile_bitmask_mode = p_value;
+			} else if (what == "icon_coordinate") {
+				ctd->autotile_icon_coordinate = p_value;
+			} else if (what == "tile_size") {
+				ctd->autotile_tile_size = p_value;
+			} else if (what == "spacing") {
+				ctd->autotile_spacing = p_value;
+			} else if (what == "bitmask_flags") {
+				if (p_value.is_array()) {
+					Array p = p_value;
+					Vector2i last_coord;
+					while (p.size() > 0) {
+						if (p[0].get_type() == Variant::VECTOR2) {
+							last_coord = p[0];
+						} else if (p[0].get_type() == Variant::INT) {
+							ctd->autotile_bitmask_flags.insert(last_coord, p[0]);
+						}
+						p.pop_front();
+					}
+				}
+			} else if (what == "occluder_map") {
+				Array p = p_value;
+				Vector2 last_coord;
+				while (p.size() > 0) {
+					if (p[0].get_type() == Variant::VECTOR2) {
+						last_coord = p[0];
+					} else if (p[0].get_type() == Variant::OBJECT) {
+						ctd->autotile_occluder_map.insert(last_coord, p[0]);
+					}
+					p.pop_front();
+				}
+			} else if (what == "navpoly_map") {
+				Array p = p_value;
+				Vector2 last_coord;
+				while (p.size() > 0) {
+					if (p[0].get_type() == Variant::VECTOR2) {
+						last_coord = p[0];
+					} else if (p[0].get_type() == Variant::OBJECT) {
+						ctd->autotile_navpoly_map.insert(last_coord, p[0]);
+					}
+					p.pop_front();
+				}
+			} else if (what == "priority_map") {
+				Array p = p_value;
+				Vector3 val;
+				Vector2 v;
+				int priority;
+				while (p.size() > 0) {
+					val = p[0];
+					if (val.z > 1) {
+						v.x = val.x;
+						v.y = val.y;
+						priority = (int)val.z;
+						ctd->autotile_priority_map.insert(v, priority);
+					}
+					p.pop_front();
+				}
+			} else if (what == "z_index_map") {
+				Array p = p_value;
+				Vector3 val;
+				Vector2 v;
+				int z_index;
+				while (p.size() > 0) {
+					val = p[0];
+					if (val.z != 0) {
+						v.x = val.x;
+						v.y = val.y;
+						z_index = (int)val.z;
+						ctd->autotile_z_index_map.insert(v, z_index);
+					}
+					p.pop_front();
+				}
+			}
+			/*
+		// INGORED FOR NOW, they seem duplicated data compared to the shapes array
+		else if (what == "shape") {
+			// TODO
+		} else if (what == "shape_offset") {
+			// TODO
+		} else if (what == "shape_transform") {
+			// TODO
+		} else if (what == "shape_one_way") {
+			// TODO
+		} else if (what == "shape_one_way_margin") {
+			// TODO
+		}
+		*/
+		} else if (what == "shapes") {
+			// TODO
+		} else if (what == "occluder") {
+			// TODO
+		} else if (what == "occluder_offset") {
+			// TODO
+		} else if (what == "navigation") {
+			// TODO
+		} else if (what == "navigation_offset") {
+			// TODO
+		} else if (what == "z_index") {
+			ctd->z_index = p_value;
+
+			// TODO: remove the consersion from here, it's not where it should be done
+			compatibility_conversion();
+		} else {
+			return false;
+		}
+	} else {
+#endif // DISABLE_DEPRECATED
+
+		// This is now a new property.
+		if (components.size() == 2 && components[0].begins_with("occlusion_layer_") && components[0].trim_prefix("occlusion_layer_").is_valid_integer()) {
+			// Occlusion layers.
+			int index = components[0].trim_prefix("occlusion_layer_").to_int();
+			ERR_FAIL_COND_V(index < 0, false);
+			if (components[1] == "light_mask") {
+				ERR_FAIL_COND_V(p_value.get_type() != Variant::INT, false);
+				if (index >= occlusion_layers.size()) {
+					set_occlusion_layers_count(index + 1);
+				}
+				set_occlusion_layer_light_mask(index, p_value);
+				return true;
+			} else if (components[1] == "sdf_collision") {
+				ERR_FAIL_COND_V(p_value.get_type() != Variant::BOOL, false);
+				if (index >= occlusion_layers.size()) {
+					set_occlusion_layers_count(index + 1);
+				}
+				set_occlusion_layer_sdf_collision(index, p_value);
+				return true;
+			}
+		} else if (components.size() == 2 && components[0].begins_with("physics_layer_") && components[0].trim_prefix("physics_layer_").is_valid_integer()) {
+			// Physics layers.
+			int index = components[0].trim_prefix("physics_layer_").to_int();
+			ERR_FAIL_COND_V(index < 0, false);
+			if (components[1] == "collision_layer") {
+				ERR_FAIL_COND_V(p_value.get_type() != Variant::INT, false);
+				if (index >= physics_layers.size()) {
+					set_physics_layers_count(index + 1);
+				}
+				set_physics_layer_collision_layer(index, p_value);
+				return true;
+			} else if (components[1] == "collision_mask") {
+				ERR_FAIL_COND_V(p_value.get_type() != Variant::INT, false);
+				if (index >= physics_layers.size()) {
+					set_physics_layers_count(index + 1);
+				}
+				set_physics_layer_collision_mask(index, p_value);
+				return true;
+			} else if (components[1] == "physics_material") {
+				Ref<PhysicsMaterial> physics_material = p_value;
+				ERR_FAIL_COND_V(!physics_material.is_valid(), false);
+				if (index >= physics_layers.size()) {
+					set_physics_layers_count(index + 1);
+				}
+				set_physics_layer_physics_material(index, physics_material);
+				return true;
+			}
+		} else if (components.size() == 2 && components[0].begins_with("custom_data_layer_") && components[0].trim_prefix("custom_data_layer_").is_valid_integer()) {
+			// Custom data layers.
+			int index = components[0].trim_prefix("custom_data_layer_").to_int();
+			ERR_FAIL_COND_V(index < 0, false);
+			if (components[1] == "name") {
+				ERR_FAIL_COND_V(p_value.get_type() != Variant::STRING, false);
+				if (index >= custom_data_layers.size()) {
+					set_custom_data_layers_count(index + 1);
+				}
+				set_custom_data_name(index, p_value);
+				return true;
+			} else if (components[1] == "type") {
+				ERR_FAIL_COND_V(p_value.get_type() != Variant::INT, false);
+				if (index >= custom_data_layers.size()) {
+					set_custom_data_layers_count(index + 1);
+				}
+				set_custom_data_type(index, Variant::Type(int(p_value)));
+				return true;
+			}
+		} else if (components.size() == 2 && components[0] == "sources" && components[1].is_valid_integer()) {
+			// Create atlas if it does not exists.
+			int source_id = components[1].to_int();
+
+			if (!has_source(source_id)) {
+				add_source(p_value, source_id);
+			}
+			return true;
+		}
+
+#ifndef DISABLE_DEPRECATED
+	}
+#endif // DISABLE_DEPRECATED
+
+	return false;
+}
+
+bool TileSet::_get(const StringName &p_name, Variant &r_ret) const {
+	Vector<String> components = String(p_name).split("/", true, 2);
+
+	if (components.size() == 2 && components[0].begins_with("occlusion_layer_") && components[0].trim_prefix("occlusion_layer_").is_valid_integer()) {
+		// Occlusion layers.
+		int index = components[0].trim_prefix("occlusion_layer_").to_int();
+		if (index < 0 || index >= occlusion_layers.size()) {
+			return false;
+		}
+		if (components[1] == "light_mask") {
+			r_ret = get_occlusion_layer_light_mask(index);
+			return true;
+		} else if (components[1] == "sdf_collision") {
+			r_ret = get_occlusion_layer_sdf_collision(index);
+			return true;
+		}
+	} else if (components.size() == 2 && components[0].begins_with("physics_layer_") && components[0].trim_prefix("physics_layer_").is_valid_integer()) {
+		// Physics layers.
+		int index = components[0].trim_prefix("physics_layer_").to_int();
+		if (index < 0 || index >= physics_layers.size()) {
+			return false;
+		}
+		if (components[1] == "collision_layer") {
+			r_ret = get_physics_layer_collision_layer(index);
+			return true;
+		} else if (components[1] == "collision_mask") {
+			r_ret = get_physics_layer_collision_mask(index);
+			return true;
+		} else if (components[1] == "physics_material") {
+			r_ret = get_physics_layer_physics_material(index);
+			return true;
+		}
+	} else if (components.size() == 2 && components[0].begins_with("custom_data_layer_") && components[0].trim_prefix("custom_data_layer_").is_valid_integer()) {
+		// Custom data layers.
+		int index = components[0].trim_prefix("custom_data_layer_").to_int();
+		if (index < 0 || index >= custom_data_layers.size()) {
+			return false;
+		}
+		if (components[1] == "name") {
+			r_ret = get_custom_data_name(index);
+			return true;
+		} else if (components[1] == "type") {
+			r_ret = get_custom_data_type(index);
+			return true;
+		}
+	} else if (components.size() == 2 && components[0] == "sources" && components[1].is_valid_integer()) {
+		// Atlases data.
+		int source_id = components[1].to_int();
+
+		if (has_source(source_id)) {
+			r_ret = get_source(source_id);
+			return true;
+		} else {
+			return false;
+		}
+	}
+
+	return false;
+}
+
+void TileSet::_append_property_list_with_prefix(const StringName &p_name, List<PropertyInfo> *p_to_prepend, List<PropertyInfo> *p_list) {
+	for (List<PropertyInfo>::Element *E_property = p_to_prepend->front(); E_property; E_property = E_property->next()) {
+		E_property->get().name = vformat("%s/%s", p_name, E_property->get().name);
+		p_list->push_back(E_property->get());
+	}
+}
+
+void TileSet::_get_property_list(List<PropertyInfo> *p_list) const {
+	// Rendering.
+	p_list->push_back(PropertyInfo(Variant::NIL, "Rendering", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_GROUP));
+	for (int i = 0; i < occlusion_layers.size(); i++) {
+		p_list->push_back(PropertyInfo(Variant::INT, vformat("occlusion_layer_%d/light_mask", i), PROPERTY_HINT_LAYERS_2D_RENDER));
+		p_list->push_back(PropertyInfo(Variant::BOOL, vformat("occlusion_layer_%d/sdf_collision", i)));
+	}
+
+	// Physics.
+	p_list->push_back(PropertyInfo(Variant::NIL, "Physics", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_GROUP));
+	for (int i = 0; i < physics_layers.size(); i++) {
+		p_list->push_back(PropertyInfo(Variant::INT, vformat("physics_layer_%d/collision_layer", i), PROPERTY_HINT_LAYERS_2D_PHYSICS));
+		p_list->push_back(PropertyInfo(Variant::INT, vformat("physics_layer_%d/collision_mask", i), PROPERTY_HINT_LAYERS_2D_PHYSICS));
+		p_list->push_back(PropertyInfo(Variant::OBJECT, vformat("physics_layer_%d/physics_material", i), PROPERTY_HINT_RESOURCE_TYPE, "PhysicsMaterial"));
+	}
+
+	// Custom data.
+	String argt = "Any";
+	for (int i = 1; i < Variant::VARIANT_MAX; i++) {
+		argt += "," + Variant::get_type_name(Variant::Type(i));
+	}
+	p_list->push_back(PropertyInfo(Variant::NIL, "Custom data", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_GROUP));
+	for (int i = 0; i < custom_data_layers.size(); i++) {
+		p_list->push_back(PropertyInfo(Variant::STRING, vformat("custom_data_layer_%d/name", i)));
+		p_list->push_back(PropertyInfo(Variant::INT, vformat("custom_data_layer_%d/type", i), PROPERTY_HINT_ENUM, argt));
+	}
+
+	// Sources.
+	// Note: sources have to be listed in at the end as some TileData rely on the TileSet properties being initialized first.
+	for (Map<int, Ref<TileSetSource>>::Element *E_source = sources.front(); E_source; E_source = E_source->next()) {
+		// Add a dummy property to show the tile exists.
+		p_list->push_back(PropertyInfo(Variant::INT, vformat("sources/%d", E_source->key()), PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR));
+	}
 }
 
 void TileSet::_bind_methods() {
@@ -1713,6 +1943,8 @@ void TileSet::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_source_id", "source_id"), &TileSet::set_source_id);
 	ClassDB::bind_method(D_METHOD("get_source_count"), &TileSet::get_source_count);
 	ClassDB::bind_method(D_METHOD("get_source_id", "index"), &TileSet::get_source_id);
+	ClassDB::bind_method(D_METHOD("has_source", "index"), &TileSet::has_source);
+	ClassDB::bind_method(D_METHOD("get_source", "index"), &TileSet::get_source);
 
 	// Shape and layout.
 	ClassDB::bind_method(D_METHOD("set_tile_shape", "shape"), &TileSet::set_tile_shape);
@@ -1755,6 +1987,10 @@ void TileSet::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_physics_layer_physics_material", "layer_index", "physics_material"), &TileSet::set_physics_layer_physics_material);
 	ClassDB::bind_method(D_METHOD("get_physics_layer_physics_material", "layer_index"), &TileSet::get_physics_layer_physics_material);
 
+	// Custom data
+	ClassDB::bind_method(D_METHOD("set_custom_data_layers_count", "custom_data_layers_count"), &TileSet::set_custom_data_layers_count);
+	ClassDB::bind_method(D_METHOD("get_custom_data_layers_count"), &TileSet::get_custom_data_layers_count);
+
 	ADD_GROUP("Rendering", "");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "uv_clipping"), "set_uv_clipping", "is_uv_clipping");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "y_sorting"), "set_y_sorting", "is_y_sorting");
@@ -1762,6 +1998,9 @@ void TileSet::_bind_methods() {
 
 	ADD_GROUP("Physics", "");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "physics_layers_count", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_EDITOR), "set_physics_layers_count", "get_physics_layers_count");
+
+	ADD_GROUP("Custom data", "");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "custom_data_layers_count", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_EDITOR), "set_custom_data_layers_count", "get_custom_data_layers_count");
 
 	// -- Enum binding --
 	BIND_ENUM_CONSTANT(TILE_SHAPE_SQUARE);
