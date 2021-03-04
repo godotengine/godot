@@ -41,13 +41,13 @@
 void CollisionPolygon2D::_build_polygon() {
 	parent->shape_owner_clear_shapes(owner_id);
 
-	if (polygon.size() == 0) {
-		return;
-	}
-
 	bool solids = build_mode == BUILD_SOLIDS;
 
 	if (solids) {
+		if (polygon.size() < 3) {
+			return;
+		}
+
 		//here comes the sun, lalalala
 		//decompose concave into multiple convex polygons and add them
 		Vector<Vector<Vector2>> decomp = _decompose_in_convex();
@@ -58,6 +58,10 @@ void CollisionPolygon2D::_build_polygon() {
 		}
 
 	} else {
+		if (polygon.size() < 2) {
+			return;
+		}
+
 		Ref<ConcavePolygonShape2D> concave = memnew(ConcavePolygonShape2D);
 
 		Vector<Vector2> segments;
@@ -132,25 +136,28 @@ void CollisionPolygon2D::_notification(int p_what) {
 				break;
 			}
 
-			for (int i = 0; i < polygon.size(); i++) {
+			int polygon_count = polygon.size();
+			for (int i = 0; i < polygon_count; i++) {
 				Vector2 p = polygon[i];
-				Vector2 n = polygon[(i + 1) % polygon.size()];
+				Vector2 n = polygon[(i + 1) % polygon_count];
 				// draw line with width <= 1, so it does not scale with zoom and break pixel exact editing
 				draw_line(p, n, Color(0.9, 0.2, 0.0, 0.8), 1);
 			}
+
+			if (polygon_count > 2) {
 #define DEBUG_DECOMPOSE
 #if defined(TOOLS_ENABLED) && defined(DEBUG_DECOMPOSE)
+				Vector<Vector<Vector2>> decomp = _decompose_in_convex();
 
-			Vector<Vector<Vector2>> decomp = _decompose_in_convex();
-
-			Color c(0.4, 0.9, 0.1);
-			for (int i = 0; i < decomp.size(); i++) {
-				c.set_hsv(Math::fmod(c.get_h() + 0.738, 1), c.get_s(), c.get_v(), 0.5);
-				draw_colored_polygon(decomp[i], c);
-			}
+				Color c(0.4, 0.9, 0.1);
+				for (int i = 0; i < decomp.size(); i++) {
+					c.set_hsv(Math::fmod(c.get_h() + 0.738, 1), c.get_s(), c.get_v(), 0.5);
+					draw_colored_polygon(decomp[i], c);
+				}
 #else
-			draw_colored_polygon(polygon, get_tree()->get_debug_collisions_color());
+				draw_colored_polygon(polygon, get_tree()->get_debug_collisions_color());
 #endif
+			}
 
 			if (one_way_collision) {
 				Color dcol = get_tree()->get_debug_collisions_color(); //0.9,0.2,0.2,0.4);
@@ -211,6 +218,8 @@ void CollisionPolygon2D::set_build_mode(BuildMode p_mode) {
 		_build_polygon();
 		_update_in_shape_owner();
 	}
+	update();
+	update_configuration_warning();
 }
 
 CollisionPolygon2D::BuildMode CollisionPolygon2D::get_build_mode() const {
@@ -241,11 +250,27 @@ String CollisionPolygon2D::get_configuration_warning() const {
 		warning += TTR("CollisionPolygon2D only serves to provide a collision shape to a CollisionObject2D derived node. Please only use it as a child of Area2D, StaticBody2D, RigidBody2D, KinematicBody2D, etc. to give them a shape.");
 	}
 
-	if (polygon.is_empty()) {
+	int polygon_count = polygon.size();
+	if (polygon_count == 0) {
 		if (!warning.is_empty()) {
 			warning += "\n\n";
 		}
 		warning += TTR("An empty CollisionPolygon2D has no effect on collision.");
+	} else {
+		bool solids = build_mode == BUILD_SOLIDS;
+		if (solids) {
+			if (polygon_count < 3) {
+				if (!warning.is_empty()) {
+					warning += "\n\n";
+				}
+				warning += TTR("Invalid polygon. At least 3 points are needed in 'Solids' build mode.");
+			}
+		} else if (polygon_count < 2) {
+			if (!warning.is_empty()) {
+				warning += "\n\n";
+			}
+			warning += TTR("Invalid polygon. At least 2 points are needed in 'Segments' build mode.");
+		}
 	}
 
 	return warning;
