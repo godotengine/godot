@@ -198,7 +198,11 @@ void EditorNode3DGizmo::add_mesh(const Ref<ArrayMesh> &p_mesh, bool p_billboard,
 }
 
 void EditorNode3DGizmo::add_lines(const Vector<Vector3> &p_lines, const Ref<Material> &p_material, bool p_billboard, const Color &p_modulate) {
-	if (p_lines.is_empty()) {
+	add_vertices(p_lines, p_material, Mesh::PRIMITIVE_LINES, p_billboard, p_modulate);
+}
+
+void EditorNode3DGizmo::add_vertices(const Vector<Vector3> &p_vertices, const Ref<Material> &p_material, Mesh::PrimitiveType p_primitive_type, bool p_billboard, const Color &p_modulate) {
+	if (p_vertices.is_empty()) {
 		return;
 	}
 
@@ -209,13 +213,13 @@ void EditorNode3DGizmo::add_lines(const Vector<Vector3> &p_lines, const Ref<Mate
 	Array a;
 	a.resize(Mesh::ARRAY_MAX);
 
-	a[Mesh::ARRAY_VERTEX] = p_lines;
+	a[Mesh::ARRAY_VERTEX] = p_vertices;
 
 	Vector<Color> color;
-	color.resize(p_lines.size());
+	color.resize(p_vertices.size());
 	{
 		Color *w = color.ptrw();
-		for (int i = 0; i < p_lines.size(); i++) {
+		for (int i = 0; i < p_vertices.size(); i++) {
 			if (is_selected()) {
 				w[i] = Color(1, 1, 1, 0.8) * p_modulate;
 			} else {
@@ -226,13 +230,13 @@ void EditorNode3DGizmo::add_lines(const Vector<Vector3> &p_lines, const Ref<Mate
 
 	a[Mesh::ARRAY_COLOR] = color;
 
-	mesh->add_surface_from_arrays(Mesh::PRIMITIVE_LINES, a);
+	mesh->add_surface_from_arrays(p_primitive_type, a);
 	mesh->surface_set_material(0, p_material);
 
 	if (p_billboard) {
 		float md = 0;
-		for (int i = 0; i < p_lines.size(); i++) {
-			md = MAX(0, p_lines[i].length());
+		for (int i = 0; i < p_vertices.size(); i++) {
+			md = MAX(0, p_vertices[i].length());
 		}
 		if (md) {
 			mesh->set_custom_aabb(AABB(Vector3(-md, -md, -md), Vector3(md, md, md) * 2.0));
@@ -1906,16 +1910,15 @@ void RayCast3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 
 	p_gizmo->clear();
 
-	Vector<Vector3> lines;
+	const Ref<StandardMaterial3D> material = raycast->is_enabled() ? raycast->get_debug_material() : get_material("shape_material_disabled");
 
-	lines.push_back(Vector3());
-	lines.push_back(raycast->get_target_position());
+	p_gizmo->add_lines(raycast->get_debug_line_vertices(), material);
 
-	const Ref<StandardMaterial3D> material =
-			get_material(raycast->is_enabled() ? "shape_material" : "shape_material_disabled", p_gizmo);
+	if (raycast->get_debug_shape_thickness() > 1) {
+		p_gizmo->add_vertices(raycast->get_debug_shape_vertices(), material, Mesh::PRIMITIVE_TRIANGLE_STRIP);
+	}
 
-	p_gizmo->add_lines(lines, material);
-	p_gizmo->add_collision_segments(lines);
+	p_gizmo->add_collision_segments(raycast->get_debug_line_vertices());
 }
 
 /////
