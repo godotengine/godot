@@ -1721,7 +1721,7 @@ bool TextServerAdvanced::shaped_text_update_breaks(RID p_shaped) {
 			if (is_whitespace(c)) {
 				sd_glyphs[i].flags |= GRAPHEME_IS_SPACE;
 			}
-			if (u_ispunct(c)) {
+			if (u_ispunct(c) && c != '_') {
 				sd_glyphs[i].flags |= GRAPHEME_IS_PUNCTUATION;
 			}
 			if (breaks.has(sd->glyphs[i].start)) {
