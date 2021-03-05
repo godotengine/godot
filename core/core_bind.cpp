@@ -566,7 +566,7 @@ struct _OSCoreBindImg {
 
 void _OS::print_all_textures_by_size() {
 	List<_OSCoreBindImg> imgs;
-	int total = 0;
+	uint64_t total = 0;
 	{
 		List<Ref<Resource>> rsrc;
 		ResourceCache::get_cached_resources(&rsrc);
