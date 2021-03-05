@@ -11,6 +11,7 @@
 		DEADBEEF2F582BE20003B888 /* $binary.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = DEADBEEF1F582BE20003B888 /* $binary.xcframework */; };
 		$modules_buildfile
 		1FF8DBB11FBA9DE1009DE660 /* dummy.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1FF8DBB01FBA9DE1009DE660 /* dummy.cpp */; };
+		519CD56B24DA849A001E45F0 /* BridgeHeader.swift in Sources */ = {isa = PBXBuildFile; fileRef = 519CD56A24DA849A001E45F0 /* BridgeHeader.swift */; };
 		D07CD44E1C5D589C00B7FB28 /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = D07CD44D1C5D589C00B7FB28 /* Images.xcassets */; };
 		9039D3BE24C093AC0020482C /* MoltenVK.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = 9039D3BD24C093AC0020482C /* MoltenVK.xcframework */; };
 		9073252C24BF980B0063BCD4 /* vulkan in Resources */ = {isa = PBXBuildFile; fileRef = 905036DC24BF932E00301046 /* vulkan */; };
@@ -41,6 +42,7 @@
 		1FF8DBB01FBA9DE1009DE660 /* dummy.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = dummy.cpp; sourceTree = "<group>"; };
 		9039D3BD24C093AC0020482C /* MoltenVK.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; name = MoltenVK; path = MoltenVK.xcframework; sourceTree = "<group>"; };
 		905036DC24BF932E00301046 /* vulkan */ = {isa = PBXFileReference; lastKnownFileType = folder; name = vulkan; path = "$binary/vulkan"; sourceTree = "<group>"; };
+		519CD56A24DA849A001E45F0 /* BridgeHeader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BridgeHeader.swift; sourceTree = "<group>"; };
 		D07CD44D1C5D589C00B7FB28 /* Images.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Images.xcassets; sourceTree = "<group>"; };
 		D0BCFE3418AEBDA2004A7AAE /* $binary.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "$binary.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		D0BCFE4318AEBDA2004A7AAE /* $binary-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "$binary-Info.plist"; sourceTree = "<group>"; };
@@ -106,6 +108,7 @@
 				D07CD44D1C5D589C00B7FB28 /* Images.xcassets */,
 				D0BCFE4218AEBDA2004A7AAE /* Supporting Files */,
 				1FF8DBB01FBA9DE1009DE660 /* dummy.cpp */,
+				519CD56A24DA849A001E45F0 /* BridgeHeader.swift */,
 			);
 			path = "$binary";
 			sourceTree = "<group>";
@@ -151,6 +154,7 @@
 				TargetAttributes = {
 					D0BCFE3318AEBDA2004A7AAE = {
 						DevelopmentTeam = $team_id;
+						LastSwiftMigration = 1150;
 						ProvisioningStyle = Automatic;
 						SystemCapabilities = {
 						};
@@ -197,6 +201,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				1FF8DBB11FBA9DE1009DE660 /* dummy.cpp in Sources */,
+				519CD56B24DA849A001E45F0 /* BridgeHeader.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -305,6 +310,7 @@
 				ARCHS = "$godot_archs";
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				$pbx_launch_image_usage_setting
+				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_ENTITLEMENTS = "$binary/$binary.entitlements";
 				CODE_SIGN_IDENTITY = "$code_sign_identity_debug";
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "$code_sign_identity_debug";
@@ -323,6 +329,8 @@
 				PRODUCT_BUNDLE_IDENTIFIER = $bundle_identifier;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE = "$provisioning_profile_uuid_debug";
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 				VALID_ARCHS = "armv7 armv7s arm64 i386 x86_64";
 				WRAPPER_EXTENSION = app;
@@ -335,6 +343,7 @@
 				ARCHS = "$godot_archs";
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				$pbx_launch_image_usage_setting
+				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_ENTITLEMENTS = "$binary/$binary.entitlements";
 				CODE_SIGN_IDENTITY = "$code_sign_identity_release";
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "$code_sign_identity_release";
@@ -353,6 +362,8 @@
 				PRODUCT_BUNDLE_IDENTIFIER = $bundle_identifier;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE = "$provisioning_profile_uuid_release";
+				SWIFT_OBJC_BRIDGING_HEADER = "godot_ios/godot_ios-Bridging-Header.h";
+				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 				VALID_ARCHS = "armv7 armv7s arm64 i386 x86_64";
 				WRAPPER_EXTENSION = app;
