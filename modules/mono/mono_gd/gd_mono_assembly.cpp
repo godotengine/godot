@@ -100,7 +100,7 @@ void GDMonoAssembly::fill_search_dirs(Vector<String> &r_search_dirs, const Strin
 // - The 'load' hook is called after the assembly has been loaded. Its job is to add the
 //   assembly to the list of loaded assemblies so that the 'search' hook can look it up.
 
-void GDMonoAssembly::assembly_load_hook(MonoAssembly *assembly, [[maybe_unused]] void *user_data) {
+void GDMonoAssembly::assembly_load_hook(MonoAssembly *assembly, void *user_data) {
 
 	String name = String::utf8(mono_assembly_name_get_name(mono_assembly_get_name(assembly)));
 
@@ -134,7 +134,7 @@ MonoAssembly *GDMonoAssembly::assembly_refonly_preload_hook(MonoAssemblyName *an
 	return GDMonoAssembly::_preload_hook(aname, assemblies_path, user_data, true);
 }
 
-MonoAssembly *GDMonoAssembly::_search_hook(MonoAssemblyName *aname, [[maybe_unused]] void *user_data, bool refonly) {
+MonoAssembly *GDMonoAssembly::_search_hook(MonoAssemblyName *aname, void *user_data, bool refonly) {
 
 	String name = String::utf8(mono_assembly_name_get_name(aname));
 	bool has_extension = name.ends_with(".dll") || name.ends_with(".exe");
@@ -146,7 +146,7 @@ MonoAssembly *GDMonoAssembly::_search_hook(MonoAssemblyName *aname, [[maybe_unus
 	return NULL;
 }
 
-MonoAssembly *GDMonoAssembly::_preload_hook(MonoAssemblyName *aname, char **, [[maybe_unused]] void *user_data, bool refonly) {
+MonoAssembly *GDMonoAssembly::_preload_hook(MonoAssemblyName *aname, char **, void *user_data, bool refonly) {
 
 	String name = String::utf8(mono_assembly_name_get_name(aname));
 	return _load_assembly_search(name, aname, refonly, search_dirs);

@@ -959,7 +959,7 @@ MonoObject *Dictionary_to_system_generic_dict(const Dictionary &p_dict, GDMonoCl
 	return mono_object;
 }
 
-Dictionary system_generic_dict_to_Dictionary(MonoObject *p_obj, [[maybe_unused]] GDMonoClass *p_class, MonoReflectionType *p_key_reftype, MonoReflectionType *p_value_reftype) {
+Dictionary system_generic_dict_to_Dictionary(MonoObject *p_obj, GDMonoClass *p_class, MonoReflectionType *p_key_reftype, MonoReflectionType *p_value_reftype) {
 	GDMonoClass *godot_dict_class = GDMonoUtils::Marshal::make_generic_dictionary_type(p_key_reftype, p_value_reftype);
 	String ctor_desc = ":.ctor(System.Collections.Generic.IDictionary`2<" + GDMonoUtils::get_type_desc(p_key_reftype) +
 					   ", " + GDMonoUtils::get_type_desc(p_value_reftype) + ">)";
@@ -1001,7 +1001,7 @@ MonoObject *Array_to_system_generic_list(const Array &p_array, GDMonoClass *p_cl
 	return mono_object;
 }
 
-Variant system_generic_list_to_Array_variant(MonoObject *p_obj, GDMonoClass *p_class, [[maybe_unused]] MonoReflectionType *p_elem_reftype) {
+Variant system_generic_list_to_Array_variant(MonoObject *p_obj, GDMonoClass *p_class, MonoReflectionType *p_elem_reftype) {
 	GDMonoMethod *to_array = p_class->get_method("ToArray", 0);
 	CRASH_COND(to_array == nullptr);
 
