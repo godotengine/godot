@@ -608,7 +608,7 @@ public:
 	virtual void render_info_end_capture() = 0;
 	virtual int get_captured_render_info(RS::RenderInfo p_info) = 0;
 
-	virtual int get_render_info(RS::RenderInfo p_info) = 0;
+	virtual uint64_t get_render_info(RS::RenderInfo p_info) = 0;
 	virtual String get_video_adapter_name() const = 0;
 	virtual String get_video_adapter_vendor() const = 0;
 

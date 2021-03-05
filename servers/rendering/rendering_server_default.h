@@ -901,7 +901,7 @@ public:
 
 	/* STATUS INFORMATION */
 
-	virtual int get_render_info(RenderInfo p_info) override;
+	virtual uint64_t get_render_info(RenderInfo p_info) override;
 	virtual String get_video_adapter_name() const override;
 	virtual String get_video_adapter_vendor() const override;
 

@@ -343,7 +343,7 @@ void ScriptEditorDebugger::_parse_message(const String &p_msg, const Array &p_da
 		DebuggerMarshalls::ResourceUsage usage;
 		usage.deserialize(p_data);
 
-		int total = 0;
+		uint64_t total = 0;
 
 		for (List<DebuggerMarshalls::ResourceInfo>::Element *E = usage.infos.front(); E; E = E->next()) {
 			TreeItem *it = vmem_tree->create_item(root);

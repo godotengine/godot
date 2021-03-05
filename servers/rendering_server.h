@@ -1419,7 +1419,7 @@ public:
 		INFO_VERTEX_MEM_USED,
 	};
 
-	virtual int get_render_info(RenderInfo p_info) = 0;
+	virtual uint64_t get_render_info(RenderInfo p_info) = 0;
 	virtual String get_video_adapter_name() const = 0;
 	virtual String get_video_adapter_vendor() const = 0;
 
