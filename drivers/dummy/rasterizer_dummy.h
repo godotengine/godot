@@ -674,7 +674,7 @@ public:
 	void render_info_end_capture() override {}
 	int get_captured_render_info(RS::RenderInfo p_info) override { return 0; }
 
-	int get_render_info(RS::RenderInfo p_info) override { return 0; }
+	uint64_t get_render_info(RS::RenderInfo p_info) override { return 0; }
 	String get_video_adapter_name() const override { return String(); }
 	String get_video_adapter_vendor() const override { return String(); }
 

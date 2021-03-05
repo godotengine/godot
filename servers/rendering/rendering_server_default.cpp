@@ -257,7 +257,7 @@ void RenderingServerDefault::finish() {
 
 /* STATUS INFORMATION */
 
-int RenderingServerDefault::get_render_info(RenderInfo p_info) {
+uint64_t RenderingServerDefault::get_render_info(RenderInfo p_info) {
 	return RSG::storage->get_render_info(p_info);
 }
 
