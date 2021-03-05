@@ -119,6 +119,11 @@ struct CachedData {
 	GDMonoClass *class_PuppetSyncAttribute;
 	GDMonoClass *class_GodotMethodAttribute;
 	GDMonoField *field_GodotMethodAttribute_methodName;
+	GDMonoClass *class_ScriptPathAttribute;
+	GDMonoField *field_ScriptPathAttribute_path;
+	GDMonoClass *class_AssemblyHasScriptsAttribute;
+	GDMonoField *field_AssemblyHasScriptsAttribute_requiresLookup;
+	GDMonoField *field_AssemblyHasScriptsAttribute_scriptTypes;
 
 	GDMonoField *field_GodotObject_ptr;
 	GDMonoField *field_StringName_ptr;

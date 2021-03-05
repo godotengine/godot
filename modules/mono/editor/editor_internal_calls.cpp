@@ -49,7 +49,6 @@
 #include "../utils/osx_utils.h"
 #include "code_completion.h"
 #include "godotsharp_export.h"
-#include "script_class_parser.h"
 
 MonoString *godot_icall_GodotSharpDirs_ResDataDir() {
 	return GDMonoMarshal::mono_string_from_godot(GodotSharpDirs::get_res_data_dir());
@@ -172,36 +171,6 @@ MonoBoolean godot_icall_EditorProgress_Step(MonoString *p_task, MonoString *p_st
 	return EditorNode::progress_task_step(task, state, p_step, (bool)p_force_refresh);
 }
 
-int32_t godot_icall_ScriptClassParser_ParseFile(MonoString *p_filepath, MonoObject *p_classes, MonoString **r_error_str) {
-	*r_error_str = nullptr;
-
-	String filepath = GDMonoMarshal::mono_string_to_godot(p_filepath);
-
-	ScriptClassParser scp;
-	Error err = scp.parse_file(filepath);
-	if (err == OK) {
-		Array classes = GDMonoMarshal::mono_object_to_variant(p_classes);
-		const Vector<ScriptClassParser::ClassDecl> &class_decls = scp.get_classes();
-
-		for (int i = 0; i < class_decls.size(); i++) {
-			const ScriptClassParser::ClassDecl &classDecl = class_decls[i];
-
-			Dictionary classDeclDict;
-			classDeclDict["name"] = classDecl.name;
-			classDeclDict["namespace"] = classDecl.namespace_;
-			classDeclDict["nested"] = classDecl.nested;
-			classDeclDict["base_count"] = classDecl.base.size();
-			classes.push_back(classDeclDict);
-		}
-	} else {
-		String error_str = scp.get_error();
-		if (!error_str.is_empty()) {
-			*r_error_str = GDMonoMarshal::mono_string_from_godot(error_str);
-		}
-	}
-	return err;
-}
-
 uint32_t godot_icall_ExportPlugin_GetExportedAssemblyDependencies(MonoObject *p_initial_assemblies,
 		MonoString *p_build_config, MonoString *p_custom_bcl_dir, MonoObject *r_assembly_dependencies) {
 	Dictionary initial_dependencies = GDMonoMarshal::mono_object_to_variant(p_initial_assemblies);
@@ -287,18 +256,6 @@ MonoBoolean godot_icall_Internal_ScriptEditorEdit(MonoObject *p_resource, int32_
 
 void godot_icall_Internal_EditorNodeShowScriptScreen() {
 	EditorNode::get_singleton()->call("_editor_select", EditorNode::EDITOR_SCRIPT);
-}
-
-MonoObject *godot_icall_Internal_GetScriptsMetadataOrNothing(MonoReflectionType *p_dict_reftype) {
-	Dictionary maybe_metadata = CSharpLanguage::get_singleton()->get_scripts_metadata_or_nothing();
-
-	MonoType *dict_type = mono_reflection_type_get_type(p_dict_reftype);
-
-	int type_encoding = mono_type_get_type(dict_type);
-	MonoClass *type_class_raw = mono_class_from_mono_type(dict_type);
-	GDMonoClass *type_class = GDMono::get_singleton()->get_class(type_class_raw);
-
-	return GDMonoMarshal::variant_to_mono_object(maybe_metadata, ManagedType(type_encoding, type_class));
 }
 
 MonoString *godot_icall_Internal_MonoWindowsInstallRoot() {
@@ -395,9 +352,6 @@ void register_editor_internal_calls() {
 	GDMonoUtils::add_internal_call("GodotTools.Internals.EditorProgress::internal_Dispose", godot_icall_EditorProgress_Dispose);
 	GDMonoUtils::add_internal_call("GodotTools.Internals.EditorProgress::internal_Step", godot_icall_EditorProgress_Step);
 
-	// ScriptClassParser
-	GDMonoUtils::add_internal_call("GodotTools.Internals.ScriptClassParser::internal_ParseFile", godot_icall_ScriptClassParser_ParseFile);
-
 	// ExportPlugin
 	GDMonoUtils::add_internal_call("GodotTools.Export.ExportPlugin::internal_GetExportedAssemblyDependencies", godot_icall_ExportPlugin_GetExportedAssemblyDependencies);
 
@@ -416,7 +370,6 @@ void register_editor_internal_calls() {
 	GDMonoUtils::add_internal_call("GodotTools.Internals.Internal::internal_EditorDebuggerNodeReloadScripts", godot_icall_Internal_EditorDebuggerNodeReloadScripts);
 	GDMonoUtils::add_internal_call("GodotTools.Internals.Internal::internal_ScriptEditorEdit", godot_icall_Internal_ScriptEditorEdit);
 	GDMonoUtils::add_internal_call("GodotTools.Internals.Internal::internal_EditorNodeShowScriptScreen", godot_icall_Internal_EditorNodeShowScriptScreen);
-	GDMonoUtils::add_internal_call("GodotTools.Internals.Internal::internal_GetScriptsMetadataOrNothing", godot_icall_Internal_GetScriptsMetadataOrNothing);
 	GDMonoUtils::add_internal_call("GodotTools.Internals.Internal::internal_MonoWindowsInstallRoot", godot_icall_Internal_MonoWindowsInstallRoot);
 	GDMonoUtils::add_internal_call("GodotTools.Internals.Internal::internal_EditorRunPlay", godot_icall_Internal_EditorRunPlay);
 	GDMonoUtils::add_internal_call("GodotTools.Internals.Internal::internal_EditorRunStop", godot_icall_Internal_EditorRunStop);

@@ -2,6 +2,12 @@
 Microsoft Visual Studio Solution File, Format Version 12.00
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Godot.NET.Sdk", "Godot.NET.Sdk\Godot.NET.Sdk.csproj", "{31B00BFA-DEA1-42FA-A472-9E54A92A8A5F}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Godot.SourceGenerators", "Godot.SourceGenerators\Godot.SourceGenerators.csproj", "{32D31B23-2A45-4099-B4F5-95B4C8FF7D9F}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Godot.SourceGenerators.Sample", "Godot.SourceGenerators.Sample\Godot.SourceGenerators.Sample.csproj", "{7297A614-8DF5-43DE-9EAD-99671B26BD1F}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GodotSharp", "..\..\glue\GodotSharp\GodotSharp\GodotSharp.csproj", "{AEBF0036-DA76-4341-B651-A3F2856AB2FA}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -12,5 +18,17 @@ Global
 		{31B00BFA-DEA1-42FA-A472-9E54A92A8A5F}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{31B00BFA-DEA1-42FA-A472-9E54A92A8A5F}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{31B00BFA-DEA1-42FA-A472-9E54A92A8A5F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{32D31B23-2A45-4099-B4F5-95B4C8FF7D9F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{32D31B23-2A45-4099-B4F5-95B4C8FF7D9F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{32D31B23-2A45-4099-B4F5-95B4C8FF7D9F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{32D31B23-2A45-4099-B4F5-95B4C8FF7D9F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7297A614-8DF5-43DE-9EAD-99671B26BD1F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7297A614-8DF5-43DE-9EAD-99671B26BD1F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7297A614-8DF5-43DE-9EAD-99671B26BD1F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7297A614-8DF5-43DE-9EAD-99671B26BD1F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{AEBF0036-DA76-4341-B651-A3F2856AB2FA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{AEBF0036-DA76-4341-B651-A3F2856AB2FA}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{AEBF0036-DA76-4341-B651-A3F2856AB2FA}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{AEBF0036-DA76-4341-B651-A3F2856AB2FA}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal

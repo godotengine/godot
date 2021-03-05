@@ -218,41 +218,10 @@ namespace GodotTools.Build
                 Godot.GD.PushError("Failed to setup Godot NuGet Offline Packages: " + e.Message);
             }
 
-            GenerateEditorScriptMetadata();
-
             if (GodotSharpEditor.Instance.SkipBuildBeforePlaying)
                 return true; // Requested play from an external editor/IDE which already built the project
 
             return BuildProjectBlocking("Debug");
-        }
-
-        // NOTE: This will be replaced with C# source generators in 4.0
-        public static void GenerateEditorScriptMetadata()
-        {
-            string editorScriptsMetadataPath = Path.Combine(GodotSharpDirs.ResMetadataDir, "scripts_metadata.editor");
-            string playerScriptsMetadataPath = Path.Combine(GodotSharpDirs.ResMetadataDir, "scripts_metadata.editor_player");
-
-            CsProjOperations.GenerateScriptsMetadata(GodotSharpDirs.ProjectCsProjPath, editorScriptsMetadataPath);
-
-            if (!File.Exists(editorScriptsMetadataPath))
-                return;
-
-            try
-            {
-                File.Copy(editorScriptsMetadataPath, playerScriptsMetadataPath);
-            }
-            catch (IOException e)
-            {
-                throw new IOException("Failed to copy scripts metadata file.", innerException: e);
-            }
-        }
-
-        // NOTE: This will be replaced with C# source generators in 4.0
-        public static string GenerateExportedGameScriptMetadata(bool isDebug)
-        {
-            string scriptsMetadataPath = Path.Combine(GodotSharpDirs.ResMetadataDir, $"scripts_metadata.{(isDebug ? "debug" : "release")}");
-            CsProjOperations.GenerateScriptsMetadata(GodotSharpDirs.ProjectCsProjPath, scriptsMetadataPath);
-            return scriptsMetadataPath;
         }
 
         public static void Initialize()

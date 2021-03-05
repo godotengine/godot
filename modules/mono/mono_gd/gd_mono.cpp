@@ -1006,6 +1006,7 @@ bool GDMono::_load_project_assembly() {
 
 	if (success) {
 		mono_assembly_set_main(project_assembly->get_assembly());
+		CSharpLanguage::get_singleton()->lookup_scripts_in_assembly(project_assembly);
 	}
 
 	return success;

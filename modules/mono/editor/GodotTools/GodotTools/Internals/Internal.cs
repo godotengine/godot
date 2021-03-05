@@ -1,7 +1,5 @@
-using System;
 using System.Runtime.CompilerServices;
 using Godot;
-using Godot.Collections;
 using GodotTools.IdeMessaging.Requests;
 
 namespace GodotTools.Internals
@@ -41,9 +39,6 @@ namespace GodotTools.Internals
             internal_ScriptEditorEdit(resource, line, col, grabFocus);
 
         public static void EditorNodeShowScriptScreen() => internal_EditorNodeShowScriptScreen();
-
-        public static Dictionary<string, object> GetScriptsMetadataOrNothing() =>
-            internal_GetScriptsMetadataOrNothing(typeof(Dictionary<string, object>));
 
         public static string MonoWindowsInstallRoot => internal_MonoWindowsInstallRoot();
 
@@ -99,9 +94,6 @@ namespace GodotTools.Internals
 
         [MethodImpl(MethodImplOptions.InternalCall)]
         private static extern void internal_EditorNodeShowScriptScreen();
-
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        private static extern Dictionary<string, object> internal_GetScriptsMetadataOrNothing(Type dictType);
 
         [MethodImpl(MethodImplOptions.InternalCall)]
         private static extern string internal_MonoWindowsInstallRoot();
