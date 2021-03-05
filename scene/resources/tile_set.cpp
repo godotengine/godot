@@ -657,7 +657,7 @@ Vector2 TileSet::atlastile_get_subtile_by_priority(int p_id, const Node *p_tilem
 	if (coords.size() == 0) {
 		return autotile_get_icon_coordinate(p_id);
 	} else {
-		return coords[Math::random(0, (int)coords.size())];
+		return coords[Math::random(0, (int)coords.size() - 1)];
 	}
 }
 
