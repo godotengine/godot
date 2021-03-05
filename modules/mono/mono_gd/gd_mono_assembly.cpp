@@ -345,6 +345,45 @@ String GDMonoAssembly::get_path() const {
 	return String::utf8(mono_image_get_filename(image));
 }
 
+bool GDMonoAssembly::has_attribute(GDMonoClass *p_attr_class) {
+#ifdef DEBUG_ENABLED
+	ERR_FAIL_NULL_V(p_attr_class, false);
+#endif
+
+	if (!attrs_fetched) {
+		fetch_attributes();
+	}
+
+	if (!attributes) {
+		return false;
+	}
+
+	return mono_custom_attrs_has_attr(attributes, p_attr_class->get_mono_ptr());
+}
+
+MonoObject *GDMonoAssembly::get_attribute(GDMonoClass *p_attr_class) {
+#ifdef DEBUG_ENABLED
+	ERR_FAIL_NULL_V(p_attr_class, nullptr);
+#endif
+
+	if (!attrs_fetched) {
+		fetch_attributes();
+	}
+
+	if (!attributes) {
+		return nullptr;
+	}
+
+	return mono_custom_attrs_get_attr(attributes, p_attr_class->get_mono_ptr());
+}
+
+void GDMonoAssembly::fetch_attributes() {
+	ERR_FAIL_COND(attributes != nullptr);
+
+	attributes = mono_custom_attrs_from_assembly(assembly);
+	attrs_fetched = true;
+}
+
 GDMonoClass *GDMonoAssembly::get_class(const StringName &p_namespace, const StringName &p_name) {
 	ERR_FAIL_NULL_V(image, nullptr);
 
@@ -388,70 +427,6 @@ GDMonoClass *GDMonoAssembly::get_class(MonoClass *p_mono_class) {
 	cached_raw[p_mono_class] = wrapped_class;
 
 	return wrapped_class;
-}
-
-GDMonoClass *GDMonoAssembly::get_object_derived_class(const StringName &p_class) {
-	GDMonoClass *match = nullptr;
-
-	if (gdobject_class_cache_updated) {
-		Map<StringName, GDMonoClass *>::Element *result = gdobject_class_cache.find(p_class);
-
-		if (result) {
-			match = result->get();
-		}
-	} else {
-		List<GDMonoClass *> nested_classes;
-
-		int rows = mono_image_get_table_rows(image, MONO_TABLE_TYPEDEF);
-
-		for (int i = 1; i < rows; i++) {
-			MonoClass *mono_class = mono_class_get(image, (i + 1) | MONO_TOKEN_TYPE_DEF);
-
-			if (!mono_class_is_assignable_from(CACHED_CLASS_RAW(GodotObject), mono_class)) {
-				continue;
-			}
-
-			GDMonoClass *current = get_class(mono_class);
-
-			if (!current) {
-				continue;
-			}
-
-			nested_classes.push_back(current);
-
-			if (!match && current->get_name() == p_class) {
-				match = current;
-			}
-
-			while (!nested_classes.is_empty()) {
-				GDMonoClass *current_nested = nested_classes.front()->get();
-				nested_classes.pop_front();
-
-				void *iter = nullptr;
-
-				while (true) {
-					MonoClass *raw_nested = mono_class_get_nested_types(current_nested->get_mono_ptr(), &iter);
-
-					if (!raw_nested) {
-						break;
-					}
-
-					GDMonoClass *nested_class = get_class(raw_nested);
-
-					if (nested_class) {
-						gdobject_class_cache.insert(nested_class->get_name(), nested_class);
-						nested_classes.push_back(nested_class);
-					}
-				}
-			}
-
-			gdobject_class_cache.insert(current->get_name(), current);
-		}
-
-		gdobject_class_cache_updated = true;
-	}
-
-	return match;
 }
 
 GDMonoAssembly *GDMonoAssembly::load(const String &p_name, MonoAssemblyName *p_aname, bool p_refonly, const Vector<String> &p_search_dirs) {

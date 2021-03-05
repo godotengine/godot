@@ -71,12 +71,12 @@ class GDMonoAssembly {
 	MonoImage *image;
 	MonoAssembly *assembly;
 
+	bool attrs_fetched = false;
+	MonoCustomAttrInfo *attributes = nullptr;
+
 #ifdef GD_MONO_HOT_RELOAD
 	uint64_t modified_time = 0;
 #endif
-
-	bool gdobject_class_cache_updated = false;
-	Map<StringName, GDMonoClass *> gdobject_class_cache;
 
 	HashMap<ClassKey, GDMonoClass *, ClassKey::Hasher> cached_classes;
 	Map<MonoClass *, GDMonoClass *> cached_raw;
@@ -111,10 +111,13 @@ public:
 
 	String get_path() const;
 
+	bool has_attribute(GDMonoClass *p_attr_class);
+	MonoObject *get_attribute(GDMonoClass *p_attr_class);
+
+	void fetch_attributes();
+
 	GDMonoClass *get_class(const StringName &p_namespace, const StringName &p_name);
 	GDMonoClass *get_class(MonoClass *p_mono_class);
-
-	GDMonoClass *get_object_derived_class(const StringName &p_class);
 
 	static String find_assembly(const String &p_name);
 
