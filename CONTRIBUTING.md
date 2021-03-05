@@ -241,25 +241,21 @@ discussions and support, others more for development discussions.
 To communicate with developers (e.g. to discuss a feature you want to implement
 or a bug you want to fix), the following channels can be used:
 
-- [GitHub issues](https://github.com/godotengine/godot/issues): If there is an
-  existing issue about a topic you want to discuss, just add a comment to it -
-  all developers watch the repository and will get an email notification. You
-  can also create a new issue - please keep in mind to create issues only to
-  discuss quite specific points about the development, and not general user
-  feedback or support requests.
-- [#godotengine-devel IRC channel on
-  Freenode](https://webchat.freenode.net/?channels=godotengine-devel): You will
-  find most core developers there, so it's the go-to channel for direct chat
+- [Godot Contributors Chat](https://chat.godotengine.org): You will
+  find most core developers there, so it's the go-to platform for direct chat
   about Godot Engine development. Feel free to start discussing something there
   to get some early feedback before writing up a detailed proposal in a GitHub
   issue.
-- [devel@godotengine.org mailing
-  list](https://listengine.tuxfamily.org/godotengine.org/devel/): Mailing list
-  for Godot developers, used primarily to announce developer meetings on IRC
-  and other important discussions that need to reach people directly in their
-  mailbox. See the [index
-  page](https://listengine.tuxfamily.org/godotengine.org/devel/) for
-  subscription instructions.
+- [Bug tracker](https://github.com/godotengine/godot/issues): If there is an
+  existing issue about a topic you want to discuss, just add a comment to it -
+  many developers watch the repository and will get a notification. You can
+  also create a new issue - please keep in mind to create issues only to
+  discuss quite specific points about the development, and not general user
+  feedback or support requests.
+- [Feature proposals](https://github.com/godotengine/godot-proposals/issues):
+  To propose a new feature, we have a dedicated issue tracker for that. Don't
+  hesitate to start by talking about your idea on the Godot Contributors Chat
+  to make sure that it makes sense in Godot's context.
 
 Thanks for your interest in contributing!
 
