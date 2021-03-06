@@ -41,9 +41,13 @@ void (*Thread::set_priority_func)(Thread::Priority) = nullptr;
 void (*Thread::init_func)() = nullptr;
 void (*Thread::term_func)() = nullptr;
 
-Thread::ID Thread::main_thread_id = 1;
-SafeNumeric<Thread::ID> Thread::last_thread_id{ 1 };
-thread_local Thread::ID Thread::caller_id = 1;
+uint64_t Thread::_thread_id_hash(const std::thread::id &p_t) {
+	static std::hash<std::thread::id> hasher;
+	return hasher(p_t);
+}
+
+Thread::ID Thread::main_thread_id = _thread_id_hash(std::this_thread::get_id());
+thread_local Thread::ID Thread::caller_id = _thread_id_hash(std::this_thread::get_id());
 
 void Thread::_set_platform_funcs(
 		Error (*p_set_name_func)(const String &),
@@ -57,7 +61,7 @@ void Thread::_set_platform_funcs(
 }
 
 void Thread::callback(Thread *p_self, const Settings &p_settings, Callback p_callback, void *p_userdata) {
-	Thread::caller_id = p_self->id;
+	Thread::caller_id = _thread_id_hash(p_self->thread.get_id());
 	if (set_priority_func) {
 		set_priority_func(p_settings.priority);
 	}
@@ -73,7 +77,7 @@ void Thread::callback(Thread *p_self, const Settings &p_settings, Callback p_cal
 }
 
 void Thread::start(Thread::Callback p_callback, void *p_user, const Settings &p_settings) {
-	if (id != 0) {
+	if (id != _thread_id_hash(std::thread::id())) {
 #ifdef DEBUG_ENABLED
 		WARN_PRINT("A Thread object has been re-started without wait_to_finish() having been called on it. Please do so to ensure correct cleanup of the thread.");
 #endif
@@ -81,22 +85,22 @@ void Thread::start(Thread::Callback p_callback, void *p_user, const Settings &p_
 		std::thread empty_thread;
 		thread.swap(empty_thread);
 	}
-	id = last_thread_id.increment();
 	std::thread new_thread(&Thread::callback, this, p_settings, p_callback, p_user);
 	thread.swap(new_thread);
+	id = _thread_id_hash(thread.get_id());
 }
 
 bool Thread::is_started() const {
-	return id != 0;
+	return id != _thread_id_hash(std::thread::id());
 }
 
 void Thread::wait_to_finish() {
-	if (id != 0) {
+	if (id != _thread_id_hash(std::thread::id())) {
 		ERR_FAIL_COND_MSG(id == get_caller_id(), "A Thread can't wait for itself to finish.");
 		thread.join();
 		std::thread empty_thread;
 		thread.swap(empty_thread);
-		id = 0;
+		id = _thread_id_hash(std::thread::id());
 	}
 }
 
@@ -109,7 +113,7 @@ Error Thread::set_name(const String &p_name) {
 }
 
 Thread::~Thread() {
-	if (id != 0) {
+	if (id != _thread_id_hash(std::thread::id())) {
 #ifdef DEBUG_ENABLED
 		WARN_PRINT("A Thread object has been destroyed without wait_to_finish() having been called on it. Please do so to ensure correct cleanup of the thread.");
 #endif
