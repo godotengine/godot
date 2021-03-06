@@ -92,6 +92,14 @@ void SpinBox::_range_click_timeout() {
 	}
 }
 
+void SpinBox::_release_mouse() {
+	if (drag.enabled) {
+		drag.enabled = false;
+		Input::get_singleton()->set_mouse_mode(Input::MOUSE_MODE_VISIBLE);
+		warp_mouse(drag.capture_pos);
+	}
+}
+
 void SpinBox::_gui_input(const Ref<InputEvent> &p_event) {
 
 	if (!is_editable()) {
@@ -145,12 +153,7 @@ void SpinBox::_gui_input(const Ref<InputEvent> &p_event) {
 
 		//set_default_cursor_shape(CURSOR_ARROW);
 		range_click_timer->stop();
-
-		if (drag.enabled) {
-			drag.enabled = false;
-			Input::get_singleton()->set_mouse_mode(Input::MOUSE_MODE_VISIBLE);
-			warp_mouse(drag.capture_pos);
-		}
+		_release_mouse();
 		drag.allowed = false;
 	}
 
@@ -211,6 +214,8 @@ void SpinBox::_notification(int p_what) {
 
 		_adjust_width_for_icon(get_icon("updown"));
 		_value_changed(0);
+	} else if (p_what == NOTIFICATION_EXIT_TREE) {
+		_release_mouse();
 	} else if (p_what == NOTIFICATION_THEME_CHANGED) {
 
 		call_deferred("minimum_size_changed");
