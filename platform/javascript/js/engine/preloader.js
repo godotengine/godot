@@ -1,54 +1,79 @@
 const Preloader = /** @constructor */ function () { // eslint-disable-line no-unused-vars
-	const loadXHR = function (resolve, reject, file, tracker, attempts) {
-		const xhr = new XMLHttpRequest();
-		tracker[file] = {
-			total: 0,
-			loaded: 0,
-			final: false,
-		};
-		xhr.onerror = function () {
-			if (attempts <= 1) {
-				reject(new Error(`Failed loading file '${file}'`));
-			} else {
-				setTimeout(function () {
-					loadXHR(resolve, reject, file, tracker, attempts - 1);
-				}, 1000);
-			}
-		};
-		xhr.onabort = function () {
-			tracker[file].final = true;
-			reject(new Error(`Loading file '${file}' was aborted.`));
-		};
-		xhr.onloadstart = function (ev) {
-			tracker[file].total = ev.total;
-			tracker[file].loaded = ev.loaded;
-		};
-		xhr.onprogress = function (ev) {
-			tracker[file].loaded = ev.loaded;
-			tracker[file].total = ev.total;
-		};
-		xhr.onload = function () {
-			if (xhr.status >= 400) {
-				if (xhr.status < 500 || attempts <= 1) {
-					reject(new Error(`Failed loading file '${file}': ${xhr.statusText}`));
-					xhr.abort();
-				} else {
-					setTimeout(function () {
-						loadXHR(resolve, reject, file, tracker, attempts - 1);
-					}, 1000);
+	function getTrackedResponse(response, load_status) {
+		let clen = 0;
+		let compressed = false;
+		response.headers.forEach(function (value, header) {
+			const h = header.toLowerCase().trim();
+			// We can't accurately compute compressed stream length.
+			if (h === 'content-encoding') {
+				compressed = true;
+			} else if (h === 'content-length') {
+				const length = parseInt(value, 10);
+				if (!Number.isNaN(length) && length > 0) {
+					clen = length;
 				}
-			} else {
-				tracker[file].final = true;
-				resolve(xhr);
 			}
-		};
-		// Make request.
-		xhr.open('GET', file);
-		if (!file.endsWith('.js')) {
-			xhr.responseType = 'arraybuffer';
+		});
+		if (!compressed && clen) {
+			load_status.total = clen;
 		}
-		xhr.send();
-	};
+		function onloadprogress(reader, controller) {
+			return reader.read().then(function (result) {
+				if (load_status.done) {
+					return Promise.resolve();
+				}
+				if (result.value) {
+					controller.enqueue(result.value);
+					load_status.loaded += result.value.length;
+				}
+				if (!result.done) {
+					return onloadprogress(reader, controller);
+				}
+				load_status.done = true;
+				return Promise.resolve();
+			});
+		}
+		const reader = response.body.getReader();
+		return new Response(new ReadableStream({
+			start: function (controller) {
+				onloadprogress(reader, controller).then(function () {
+					controller.close();
+				});
+			},
+		}), { headers: response.headers });
+	}
+
+	function loadFetch(file, tracker, fileSize, raw) {
+		tracker[file] = {
+			total: fileSize || 0,
+			loaded: 0,
+			done: false,
+		};
+		return fetch(file).then(function (response) {
+			if (!response.ok) {
+				return Promise.reject(new Error(`Failed loading file '${file}'`));
+			}
+			const tr = getTrackedResponse(response, tracker[file]);
+			if (raw) {
+				return Promise.resolve(tr);
+			}
+			return tr.arrayBuffer();
+		});
+	}
+
+	function retry(func, attempts = 1) {
+		function onerror(err) {
+			if (attempts <= 1) {
+				return Promise.reject(err);
+			}
+			return new Promise(function (resolve, reject) {
+				setTimeout(function () {
+					retry(func, attempts - 1).then(resolve).catch(reject);
+				}, 1000);
+			});
+		}
+		return func().catch(onerror);
+	}
 
 	const DOWNLOAD_ATTEMPTS_MAX = 4;
 	const loadingFiles = {};
@@ -63,7 +88,7 @@ const Preloader = /** @constructor */ function () { // eslint-disable-line no-un
 
 		Object.keys(loadingFiles).forEach(function (file) {
 			const stat = loadingFiles[file];
-			if (!stat.final) {
+			if (!stat.done) {
 				progressIsFinal = false;
 			}
 			if (!totalIsValid || stat.total === 0) {
@@ -92,21 +117,19 @@ const Preloader = /** @constructor */ function () { // eslint-disable-line no-un
 		progressFunc = callback;
 	};
 
-	this.loadPromise = function (file) {
-		return new Promise(function (resolve, reject) {
-			loadXHR(resolve, reject, file, loadingFiles, DOWNLOAD_ATTEMPTS_MAX);
-		});
+	this.loadPromise = function (file, fileSize, raw = false) {
+		return retry(loadFetch.bind(null, file, loadingFiles, fileSize, raw), DOWNLOAD_ATTEMPTS_MAX);
 	};
 
 	this.preloadedFiles = [];
-	this.preload = function (pathOrBuffer, destPath) {
+	this.preload = function (pathOrBuffer, destPath, fileSize) {
 		let buffer = null;
 		if (typeof pathOrBuffer === 'string') {
 			const me = this;
-			return this.loadPromise(pathOrBuffer).then(function (xhr) {
+			return this.loadPromise(pathOrBuffer, fileSize).then(function (buf) {
 				me.preloadedFiles.push({
 					path: destPath || pathOrBuffer,
-					buffer: xhr.response,
+					buffer: buf,
 				});
 				return Promise.resolve();
 			});

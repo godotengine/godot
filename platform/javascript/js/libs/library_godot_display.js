@@ -671,7 +671,7 @@ const GodotDisplay = {
 			document.head.appendChild(link);
 		}
 		const old_icon = GodotDisplay.window_icon;
-		const png = new Blob([GodotRuntime.heapCopy(HEAPU8, p_ptr, p_len)], { type: 'image/png' });
+		const png = new Blob([GodotRuntime.heapSlice(HEAPU8, p_ptr, p_len)], { type: 'image/png' });
 		GodotDisplay.window_icon = URL.createObjectURL(png);
 		link.href = GodotDisplay.window_icon;
 		if (old_icon) {
@@ -711,7 +711,7 @@ const GodotDisplay = {
 		const shape = GodotRuntime.parseString(p_shape);
 		const old_shape = GodotDisplayCursor.cursors[shape];
 		if (p_len > 0) {
-			const png = new Blob([GodotRuntime.heapCopy(HEAPU8, p_ptr, p_len)], { type: 'image/png' });
+			const png = new Blob([GodotRuntime.heapSlice(HEAPU8, p_ptr, p_len)], { type: 'image/png' });
 			const url = URL.createObjectURL(png);
 			GodotDisplayCursor.cursors[shape] = {
 				url: url,

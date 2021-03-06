@@ -35,14 +35,15 @@ const Engine = (function () {
 	 * Load the engine from the specified base path.
 	 *
 	 * @param {string} basePath Base path of the engine to load.
+	 * @param {number=} [size=0] The file size if known.
 	 * @returns {Promise} A Promise that resolves once the engine is loaded.
 	 *
 	 * @function Engine.load
 	 */
-	Engine.load = function (basePath) {
+	Engine.load = function (basePath, size) {
 		if (loadPromise == null) {
 			loadPath = basePath;
-			loadPromise = preloader.loadPromise(`${loadPath}.wasm`);
+			loadPromise = preloader.loadPromise(`${loadPath}.wasm`, size, true);
 			requestAnimationFrame(preloader.animateProgress);
 		}
 		return loadPromise;
@@ -96,23 +97,27 @@ const Engine = (function () {
 						initPromise = Promise.reject(new Error('A base path must be provided when calling `init` and the engine is not loaded.'));
 						return initPromise;
 					}
-					Engine.load(basePath);
+					Engine.load(basePath, this.config.fileSizes[`${basePath}.wasm`]);
+				}
+				const me = this;
+				function doInit(promise) {
+					return promise.then(function (response) {
+						return Godot(me.config.getModuleConfig(loadPath, response.clone()));
+					}).then(function (module) {
+						const paths = me.config.persistentPaths;
+						return module['initFS'](paths).then(function (err) {
+							return Promise.resolve(module);
+						});
+					}).then(function (module) {
+						me.rtenv = module;
+						if (me.config.unloadAfterInit) {
+							Engine.unload();
+						}
+						return Promise.resolve();
+					});
 				}
 				preloader.setProgressFunc(this.config.onProgress);
-				let config = this.config.getModuleConfig(loadPath, loadPromise);
-				const me = this;
-				initPromise = new Promise(function (resolve, reject) {
-					Godot(config).then(function (module) {
-						module['initFS'](me.config.persistentPaths).then(function (fs_err) {
-							me.rtenv = module;
-							if (me.config.unloadAfterInit) {
-								Engine.unload();
-							}
-							resolve();
-							config = null;
-						});
-					});
-				});
+				initPromise = doInit(loadPromise);
 				return initPromise;
 			},
 
@@ -133,7 +138,7 @@ const Engine = (function () {
 			 * @returns {Promise} A Promise that resolves once the file is loaded.
 			 */
 			preloadFile: function (file, path) {
-				return preloader.preload(file, path);
+				return preloader.preload(file, path, this.config.fileSizes[file]);
 			},
 
 			/**
