@@ -105,6 +105,8 @@ void AudioStreamEditor::_audio_changed() {
 
 void AudioStreamEditor::_play() {
 	if (_player->is_playing()) {
+		// '_pausing' variable indicates that we want to pause the audio player, not stop it. See '_on_finished()'.
+		_pausing = true;
 		_player->stop();
 		_play_button->set_icon(get_theme_icon("MainPlay", "EditorIcons"));
 		set_process(false);
@@ -125,10 +127,13 @@ void AudioStreamEditor::_stop() {
 
 void AudioStreamEditor::_on_finished() {
 	_play_button->set_icon(get_theme_icon("MainPlay", "EditorIcons"));
-	if (_current == _player->get_stream()->get_length()) {
+	if (!_pausing) {
 		_current = 0;
 		_indicator->update();
+	} else {
+		_pausing = false;
 	}
+	set_process(false);
 }
 
 void AudioStreamEditor::_draw_indicator() {
@@ -194,8 +199,6 @@ void AudioStreamEditor::_bind_methods() {
 
 AudioStreamEditor::AudioStreamEditor() {
 	set_custom_minimum_size(Size2(1, 100) * EDSCALE);
-	_current = 0;
-	_dragging = false;
 
 	_player = memnew(AudioStreamPlayer);
 	_player->connect("finished", callable_mp(this, &AudioStreamEditor::_on_finished));
