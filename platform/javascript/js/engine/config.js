@@ -101,6 +101,11 @@ const InternalConfig = function (initConfig) { // eslint-disable-line no-unused-
 		 */
 		gdnativeLibs: [],
 		/**
+		 * @ignore
+		 * @type {Array.<string>}
+		 */
+		fileSizes: [],
+		/**
 		 * A callback function for handling Godot's ``OS.execute`` calls.
 		 *
 		 * This is for example used in the Web Editor template to switch between project manager and editor, and for running the game.
@@ -219,6 +224,7 @@ const InternalConfig = function (initConfig) { // eslint-disable-line no-unused-
 		this.canvasResizePolicy = parse('canvasResizePolicy', this.canvasResizePolicy);
 		this.persistentPaths = parse('persistentPaths', this.persistentPaths);
 		this.gdnativeLibs = parse('gdnativeLibs', this.gdnativeLibs);
+		this.fileSizes = parse('fileSizes', this.fileSizes);
 		this.args = parse('args', this.args);
 		this.onExecute = parse('onExecute', this.onExecute);
 		this.onExit = parse('onExit', this.onExit);
@@ -227,10 +233,10 @@ const InternalConfig = function (initConfig) { // eslint-disable-line no-unused-
 	/**
 	 * @ignore
 	 * @param {string} loadPath
-	 * @param {Promise} loadPromise
+	 * @param {Response} response
 	 */
-	Config.prototype.getModuleConfig = function (loadPath, loadPromise) {
-		let loader = loadPromise;
+	Config.prototype.getModuleConfig = function (loadPath, response) {
+		let r = response;
 		return {
 			'print': this.onPrint,
 			'printErr': this.onPrintError,
@@ -238,12 +244,17 @@ const InternalConfig = function (initConfig) { // eslint-disable-line no-unused-
 			'noExitRuntime': true,
 			'dynamicLibraries': [`${loadPath}.side.wasm`],
 			'instantiateWasm': function (imports, onSuccess) {
-				loader.then(function (xhr) {
-					WebAssembly.instantiate(xhr.response, imports).then(function (result) {
-						onSuccess(result['instance'], result['module']);
+				function done(result) {
+					onSuccess(result['instance'], result['module']);
+				}
+				if (typeof (WebAssembly.instantiateStreaming) !== 'undefined') {
+					WebAssembly.instantiateStreaming(Promise.resolve(r), imports).then(done);
+				} else {
+					r.arrayBuffer().then(function (buffer) {
+						WebAssembly.instantiate(buffer, imports).then(done);
 					});
-				});
-				loader = null;
+				}
+				r = null;
 				return {};
 			},
 			'locateFile': function (path) {
