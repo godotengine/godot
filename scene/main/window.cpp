@@ -232,7 +232,7 @@ void Window::_make_window() {
 	DisplayServer::get_singleton()->window_set_current_screen(current_screen, window_id);
 	DisplayServer::get_singleton()->window_set_max_size(max_size, window_id);
 	DisplayServer::get_singleton()->window_set_min_size(min_size, window_id);
-	DisplayServer::get_singleton()->window_set_title(title, window_id);
+	DisplayServer::get_singleton()->window_set_title(tr(title), window_id);
 	DisplayServer::get_singleton()->window_attach_instance_id(get_instance_id(), window_id);
 
 	_update_window_size();
@@ -757,6 +757,10 @@ void Window::_notification(int p_what) {
 		if (wrap_controls) {
 			_update_child_controls();
 		}
+	}
+
+	if (p_what == NOTIFICATION_TRANSLATION_CHANGED) {
+		child_controls_changed();
 	}
 
 	if (p_what == NOTIFICATION_EXIT_TREE) {
