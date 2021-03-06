@@ -62,9 +62,10 @@ private:
 	friend class Main;
 
 	static ID main_thread_id;
-	static SafeNumeric<Thread::ID> last_thread_id;
 
-	ID id = 0;
+	static uint64_t _thread_id_hash(const std::thread::id &p_t);
+
+	ID id = _thread_id_hash(std::thread::id());
 	static thread_local ID caller_id;
 	std::thread thread;
 
