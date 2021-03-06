@@ -43,7 +43,7 @@ void EditorFileServer::_close_client(ClientData *cd) {
 	cd->connection->disconnect_from_host();
 	{
 		MutexLock lock(cd->efs->wait_mutex);
-		cd->efs->to_wait.insert(&cd->thread);
+		cd->efs->to_wait.insert(cd->thread);
 	}
 	while (cd->files.size()) {
 		memdelete(cd->files.front()->get());
@@ -278,7 +278,8 @@ void EditorFileServer::_thread_start(void *s) {
 				cd->connection = self->server->take_connection();
 				cd->efs = self;
 				cd->quit = false;
-				cd->thread.start(_subthread_start, cd);
+				cd->thread = memnew(Thread);
+				cd->thread->start(_subthread_start, cd);
 			}
 		}
 
