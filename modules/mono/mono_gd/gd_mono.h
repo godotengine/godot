@@ -228,6 +228,8 @@ public:
 
 	GDMonoClass *get_class(MonoClass *p_raw_class);
 	GDMonoClass *get_class(const StringName &p_namespace, const StringName &p_name);
+	
+	GDMonoClass *find_object_derived_class(const StringName &p_name);
 
 #ifdef GD_MONO_HOT_RELOAD
 	Error reload_scripts_domain();
