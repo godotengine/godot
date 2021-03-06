@@ -626,4 +626,12 @@ void OSAppleTV::on_focus_in() {
 	}
 }
 
+bool OSAppleTV::get_overrides_menu_button() const {
+	return overrides_menu_button;
+}
+
+void OSAppleTV::set_overrides_menu_button(bool p_flag) {
+	overrides_menu_button = p_flag;
+}
+
 #endif

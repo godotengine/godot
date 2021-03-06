@@ -38,6 +38,7 @@
 #import <QuartzCore/QuartzCore.h>
 
 #import "display_layer.h"
+#import "godot_view_gesture_recognizer.h"
 #import "godot_view_renderer.h"
 
 @interface GodotView ()
@@ -53,6 +54,7 @@
 
 @property(strong, nonatomic) CALayer<DisplayLayer> *renderingLayer;
 
+@property(strong, nonatomic) GodotViewGestureRecognizer *delayGestureRecognizer;
 @end
 
 @implementation GodotView
@@ -118,10 +120,19 @@
 		[self.animationTimer invalidate];
 		self.animationTimer = nil;
 	}
+
+	if (self.delayGestureRecognizer) {
+		self.delayGestureRecognizer = nil;
+	}
 }
 
 - (void)godot_commonInit {
 	self.contentScaleFactor = [UIScreen mainScreen].nativeScale;
+
+	// Initialize delay gesture recognizer
+	GodotViewGestureRecognizer *gestureRecognizer = [[GodotViewGestureRecognizer alloc] init];
+	self.delayGestureRecognizer = gestureRecognizer;
+	[self addGestureRecognizer:self.delayGestureRecognizer];
 }
 
 - (void)startRendering {
@@ -244,55 +255,52 @@
 // MARK: Menu Button
 
 - (void)pressesBegan:(NSSet<UIPress *> *)presses withEvent:(UIPressesEvent *)event {
+	if (!self.delayGestureRecognizer.overridesRemoteButtons) {
+		return [super pressesEnded:presses withEvent:event];
+	}
+
 	NSArray *tlist = [event.allPresses allObjects];
 
-	for (unsigned int i = 0; i < [tlist count]; i++) {
-		UIPress *press = [tlist objectAtIndex:i];
-		switch (press.type) {
-			case UIPressTypeMenu: {
-				int joy_id = OSAppleTV::get_singleton()->joy_id_for_name("Remote");
-
-				OSAppleTV::get_singleton()->joy_button(joy_id, JOY_START, true);
-			} break;
-			default:
-				[super pressesBegan:presses withEvent:event];
-				break;
+	for (UIPress *press in tlist) {
+		if ([presses containsObject:press] && press.type == UIPressTypeMenu) {
+			int joy_id = OSAppleTV::get_singleton()->joy_id_for_name("Remote");
+			OSAppleTV::get_singleton()->joy_button(joy_id, JOY_START, true);
+		} else {
+			[super pressesBegan:presses withEvent:event];
 		}
 	}
 }
 
 - (void)pressesEnded:(NSSet<UIPress *> *)presses withEvent:(UIPressesEvent *)event {
-	NSArray *tlist = [event.allPresses allObjects];
+	if (!self.delayGestureRecognizer.overridesRemoteButtons) {
+		return [super pressesEnded:presses withEvent:event];
+	}
 
-	for (unsigned int i = 0; i < [tlist count]; i++) {
-		UIPress *press = [tlist objectAtIndex:i];
-		switch (press.type) {
-			case UIPressTypeMenu: {
-				int joy_id = OSAppleTV::get_singleton()->joy_id_for_name("Remote");
+	NSArray *tlist = [presses allObjects];
 
-				OSAppleTV::get_singleton()->joy_button(joy_id, JOY_START, false);
-			} break;
-			default:
-				[super pressesEnded:presses withEvent:event];
-				break;
+	for (UIPress *press in tlist) {
+		if ([presses containsObject:press] && press.type == UIPressTypeMenu) {
+			int joy_id = OSAppleTV::get_singleton()->joy_id_for_name("Remote");
+			OSAppleTV::get_singleton()->joy_button(joy_id, JOY_START, false);
+		} else {
+			[super pressesEnded:presses withEvent:event];
 		}
 	}
 }
 
 - (void)pressesCancelled:(NSSet<UIPress *> *)presses withEvent:(UIPressesEvent *)event {
+	if (!self.delayGestureRecognizer.overridesRemoteButtons) {
+		return [super pressesEnded:presses withEvent:event];
+	}
+
 	NSArray *tlist = [event.allPresses allObjects];
 
-	for (unsigned int i = 0; i < [tlist count]; i++) {
-		UIPress *press = [tlist objectAtIndex:i];
-		switch (press.type) {
-			case UIPressTypeMenu: {
-				int joy_id = OSAppleTV::get_singleton()->joy_id_for_name("Remote");
-
-				OSAppleTV::get_singleton()->joy_button(joy_id, JOY_START, false);
-			} break;
-			default:
-				[super pressesCancelled:presses withEvent:event];
-				break;
+	for (UIPress *press in tlist) {
+		if ([presses containsObject:press] && press.type == UIPressTypeMenu) {
+			int joy_id = OSAppleTV::get_singleton()->joy_id_for_name("Remote");
+			OSAppleTV::get_singleton()->joy_button(joy_id, JOY_START, false);
+		} else {
+			[super pressesCancelled:presses withEvent:event];
 		}
 	}
 }

@@ -606,6 +606,9 @@
 		<member name="input_devices/pointing/ios/touch_delay" type="float" setter="" getter="" default="0.15">
 			Default delay for touch events. This only affects iOS devices.
 		</member>
+		<member name="input_devices/pointing/tvos/press_end_delay" type="float" setter="" getter="" default="0.15">
+			Default delay for end press events. This only affects tvOS devices.
+		</member>
 		<member name="layer_names/2d_physics/layer_1" type="String" setter="" getter="" default="&quot;&quot;">
 			Optional name for the 2D physics layer 1.
 		</member>
