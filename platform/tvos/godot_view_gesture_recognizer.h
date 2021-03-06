@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  tvos.h                                                               */
+/*  godot_view_gesture_recognizer.h                                      */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,26 +28,20 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef TVOS_H
-#define TVOS_H
+// GodotViewGestureRecognizer allows iOS gestures to work currectly by
+// emulating UIScrollView's UIScrollViewDelayedTouchesBeganGestureRecognizer.
+// It catches all gestures incoming to UIView and delays them for 150ms
+// (the same value used by UIScrollViewDelayedTouchesBeganGestureRecognizer)
+// If touch cancellation or end message is fired it fires delayed
+// begin touch immediately as well as last touch signal
 
-#include "core/object/class_db.h"
+#import <UIKit/UIKit.h>
 
-class tvOS : public Object {
-	GDCLASS(tvOS, Object);
+@interface GodotViewGestureRecognizer : UIGestureRecognizer
 
-	static void _bind_methods();
+@property(nonatomic, readonly, assign) NSTimeInterval delayTimeInterval;
+@property(nonatomic, readonly, assign) BOOL overridesRemoteButtons;
 
-public:
-	static void alert(const char *p_alert, const char *p_title);
+- (instancetype)init;
 
-	String get_model() const;
-	String get_rate_url(int p_app_id) const;
-
-	bool get_overrides_menu_button() const;
-	void set_overrides_menu_button(bool p_flag);
-
-	tvOS();
-};
-
-#endif
+@end

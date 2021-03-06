@@ -31,6 +31,7 @@
 #include "tvos.h"
 
 #import "app_delegate.h"
+#include "os_appletv.h"
 #import "view_controller.h"
 
 #import <UIKit/UIKit.h>
@@ -38,6 +39,10 @@
 
 void tvOS::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_rate_url", "app_id"), &tvOS::get_rate_url);
+
+	ClassDB::bind_method(D_METHOD("get_overrides_menu_button"), &tvOS::get_overrides_menu_button);
+	ClassDB::bind_method(D_METHOD("set_overrides_menu_button", "p_flag"), &tvOS::set_overrides_menu_button);
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "overrides_menu_button"), "set_overrides_menu_button", "get_overrides_menu_button");
 };
 
 void tvOS::alert(const char *p_alert, const char *p_title) {
@@ -78,5 +83,21 @@ String tvOS::get_rate_url(int p_app_id) const {
 
 	return ret;
 };
+
+bool tvOS::get_overrides_menu_button() const {
+	if (!OSAppleTV::get_singleton()) {
+		return false;
+	}
+
+	return OSAppleTV::get_singleton()->get_overrides_menu_button();
+}
+
+void tvOS::set_overrides_menu_button(bool p_flag) {
+	if (!OSAppleTV::get_singleton()) {
+		return;
+	}
+
+	OSAppleTV::get_singleton()->set_overrides_menu_button(p_flag);
+}
 
 tvOS::tvOS(){};

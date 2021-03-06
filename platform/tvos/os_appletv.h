@@ -77,6 +77,7 @@ private:
 	String user_data_dir;
 
 	bool is_focused = false;
+	bool overrides_menu_button = true;
 
 	void deinitialize_modules();
 
@@ -117,6 +118,9 @@ public:
 
 	void on_focus_out();
 	void on_focus_in();
+
+	bool get_overrides_menu_button() const;
+	void set_overrides_menu_button(bool p_flag);
 };
 
 #endif // OS_IPHONE_H
