@@ -157,9 +157,6 @@ namespace GodotTools.Export
 
             string buildConfig = isDebug ? "ExportDebug" : "ExportRelease";
 
-            string scriptsMetadataPath = BuildManager.GenerateExportedGameScriptMetadata(isDebug);
-            AddFile(scriptsMetadataPath, scriptsMetadataPath);
-
             if (!BuildManager.BuildProjectBlocking(buildConfig, platform: platform))
                 throw new Exception("Failed to build project");
 

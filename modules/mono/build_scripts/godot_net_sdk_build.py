@@ -21,6 +21,18 @@ def build_godot_net_sdk(source, target, env):
     # No need to copy targets. The Godot.NET.Sdk csproj takes care of copying them.
 
 
+def get_nupkgs_versions(props_file):
+    import xml.etree.ElementTree as ET
+
+    tree = ET.parse(props_file)
+    root = tree.getroot()
+
+    return {
+        "Godot.NET.Sdk": root.find("./PropertyGroup/PackageVersion_Godot_NET_Sdk").text.strip(),
+        "Godot.SourceGenerators": root.find("./PropertyGroup/PackageVersion_Godot_SourceGenerators").text.strip(),
+    }
+
+
 def build(env_mono):
     assert env_mono["tools"]
 
@@ -30,14 +42,12 @@ def build(env_mono):
 
     module_dir = os.getcwd()
 
-    package_version_file = os.path.join(
-        module_dir, "editor", "Godot.NET.Sdk", "Godot.NET.Sdk", "Godot.NET.Sdk_PackageVersion.txt"
-    )
+    nupkgs_versions = get_nupkgs_versions(os.path.join(module_dir, "SdkPackageVersions.props"))
 
-    with open(package_version_file, mode="r") as f:
-        version = f.read().strip()
-
-    target_filenames = ["Godot.NET.Sdk.%s.nupkg" % version]
+    target_filenames = [
+        "Godot.NET.Sdk.%s.nupkg" % nupkgs_versions["Godot.NET.Sdk"],
+        "Godot.SourceGenerators.%s.nupkg" % nupkgs_versions["Godot.SourceGenerators"],
+    ]
 
     targets = [os.path.join(nupkgs_dir, filename) for filename in target_filenames]
 

@@ -31,6 +31,7 @@
 #include "csharp_script.h"
 
 #include <mono/metadata/threads.h>
+#include <mono/metadata/tokentype.h>
 #include <stdint.h>
 
 #include "core/config/project_settings.h"
@@ -1182,46 +1183,56 @@ void CSharpLanguage::reload_assemblies(bool p_soft_reload) {
 }
 #endif
 
-void CSharpLanguage::_load_scripts_metadata() {
-	scripts_metadata.clear();
+void CSharpLanguage::lookup_script_for_class(GDMonoClass *p_class) {
+	if (!p_class->has_attribute(CACHED_CLASS(ScriptPathAttribute))) {
+		return;
+	}
 
-	String scripts_metadata_filename = "scripts_metadata.";
+	MonoObject *attr = p_class->get_attribute(CACHED_CLASS(ScriptPathAttribute));
+	String path = CACHED_FIELD(ScriptPathAttribute, path)->get_string_value(attr);
 
-#ifdef TOOLS_ENABLED
-	scripts_metadata_filename += Engine::get_singleton()->is_editor_hint() ? "editor" : "editor_player";
-#else
-#ifdef DEBUG_ENABLED
-	scripts_metadata_filename += "debug";
-#else
-	scripts_metadata_filename += "release";
-#endif
-#endif
+	dotnet_script_lookup_map[path] = DotNetScriptLookupInfo(
+			p_class->get_namespace(), p_class->get_name(), p_class);
+}
 
-	String scripts_metadata_path = GodotSharpDirs::get_res_metadata_dir().plus_file(scripts_metadata_filename);
+void CSharpLanguage::lookup_scripts_in_assembly(GDMonoAssembly *p_assembly) {
+	if (p_assembly->has_attribute(CACHED_CLASS(AssemblyHasScriptsAttribute))) {
+		MonoObject *attr = p_assembly->get_attribute(CACHED_CLASS(AssemblyHasScriptsAttribute));
+		bool requires_lookup = CACHED_FIELD(AssemblyHasScriptsAttribute, requiresLookup)->get_bool_value(attr);
 
-	if (FileAccess::exists(scripts_metadata_path)) {
-		String old_json;
+		if (requires_lookup) {
+			// This is supported for scenarios where specifying all types would be cumbersome,
+			// such as when disabling C# source generators (for whatever reason) or when using a
+			// language other than C# that has nothing similar to source generators to automate it.
+			MonoImage *image = p_assembly->get_image();
 
-		Error ferr = read_all_file_utf8(scripts_metadata_path, old_json);
+			int rows = mono_image_get_table_rows(image, MONO_TABLE_TYPEDEF);
 
-		ERR_FAIL_COND(ferr != OK);
+			for (int i = 1; i < rows; i++) {
+				// We don't search inner classes, only top-level.
+				MonoClass *mono_class = mono_class_get(image, (i + 1) | MONO_TOKEN_TYPE_DEF);
 
-		Variant old_dict_var;
-		String err_str;
-		int err_line;
-		Error json_err = JSON::parse(old_json, old_dict_var, err_str, err_line);
-		if (json_err != OK) {
-			ERR_PRINT("Failed to parse metadata file: '" + err_str + "' (" + String::num_int64(err_line) + ").");
-			return;
-		}
+				if (!mono_class_is_assignable_from(CACHED_CLASS_RAW(GodotObject), mono_class)) {
+					continue;
+				}
 
-		scripts_metadata = old_dict_var.operator Dictionary();
-		scripts_metadata_invalidated = false;
+				GDMonoClass *current = p_assembly->get_class(mono_class);
+				if (current) {
+					lookup_script_for_class(current);
+				}
+			}
+		} else {
+			// This is the most likely scenario as we use C# source generators
+			MonoArray *script_types = (MonoArray *)CACHED_FIELD(AssemblyHasScriptsAttribute, scriptTypes)->get_value(attr);
 
-		print_verbose("Successfully loaded scripts metadata");
-	} else {
-		if (!Engine::get_singleton()->is_editor_hint()) {
-			ERR_PRINT("Missing scripts metadata file.");
+			int length = mono_array_length(script_types);
+
+			for (int i = 0; i < length; i++) {
+				MonoReflectionType *reftype = mono_array_get(script_types, MonoReflectionType *, i);
+				ManagedType type = ManagedType::from_reftype(reftype);
+				ERR_CONTINUE(!type.type_class);
+				lookup_script_for_class(type.type_class);
+			}
 		}
 	}
 }
@@ -1300,7 +1311,7 @@ void CSharpLanguage::_on_scripts_domain_unloaded() {
 	}
 #endif
 
-	scripts_metadata_invalidated = true;
+	dotnet_script_lookup_map.clear();
 }
 
 #ifdef TOOLS_ENABLED
@@ -3356,45 +3367,34 @@ Error CSharpScript::reload(bool p_keep_state) {
 
 	GD_MONO_SCOPE_THREAD_ATTACH;
 
-	GDMonoAssembly *project_assembly = GDMono::get_singleton()->get_project_assembly();
+	const DotNetScriptLookupInfo *lookup_info =
+			CSharpLanguage::get_singleton()->lookup_dotnet_script(get_path());
 
-	if (project_assembly) {
-		const Variant *script_metadata_var = CSharpLanguage::get_singleton()->get_scripts_metadata().getptr(get_path());
-		if (script_metadata_var) {
-			Dictionary script_metadata = script_metadata_var->operator Dictionary()["class"];
-			const Variant *namespace_ = script_metadata.getptr("namespace");
-			const Variant *class_name = script_metadata.getptr("class_name");
-			ERR_FAIL_NULL_V(namespace_, ERR_BUG);
-			ERR_FAIL_NULL_V(class_name, ERR_BUG);
-			GDMonoClass *klass = project_assembly->get_class(namespace_->operator String(), class_name->operator String());
-			if (klass && CACHED_CLASS(GodotObject)->is_assignable_from(klass)) {
-				script_class = klass;
-			}
-		} else {
-			// Missing script metadata. Fallback to legacy method
-			script_class = project_assembly->get_object_derived_class(name);
+	if (lookup_info) {
+		GDMonoClass *klass = lookup_info->script_class;
+		if (klass) {
+			ERR_FAIL_COND_V(!CACHED_CLASS(GodotObject)->is_assignable_from(klass), FAILED);
+			script_class = klass;
 		}
-
-		valid = script_class != nullptr;
-
-		if (script_class) {
-#ifdef DEBUG_ENABLED
-			print_verbose("Found class " + script_class->get_full_name() + " for script " + get_path());
-#endif
-
-			native = GDMonoUtils::get_class_native_base(script_class);
-
-			CRASH_COND(native == nullptr);
-
-			update_script_class_info(this);
-
-			_update_exports();
-		}
-
-		return OK;
 	}
 
-	return ERR_FILE_MISSING_DEPENDENCIES;
+	valid = script_class != nullptr;
+
+	if (script_class) {
+#ifdef DEBUG_ENABLED
+		print_verbose("Found class " + script_class->get_full_name() + " for script " + get_path());
+#endif
+
+		native = GDMonoUtils::get_class_native_base(script_class);
+
+		CRASH_COND(native == nullptr);
+
+		update_script_class_info(this);
+
+		_update_exports();
+	}
+
+	return OK;
 }
 
 ScriptLanguage *CSharpScript::get_language() const {
