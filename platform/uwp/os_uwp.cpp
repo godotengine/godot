@@ -607,6 +607,7 @@ void OS_UWP::process_key_events() {
 		key_event->set_control(kev.control);
 		key_event->set_echo(kev.echo);
 		key_event->set_scancode(kev.scancode);
+		key_event->set_physical_scancode(kev.physical_scancode);
 		key_event->set_unicode(kev.unicode);
 		key_event->set_pressed(kev.pressed);
 

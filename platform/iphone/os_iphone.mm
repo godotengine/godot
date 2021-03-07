@@ -213,6 +213,7 @@ void OSIPhone::key(uint32_t p_key, bool p_pressed) {
 	ev->set_echo(false);
 	ev->set_pressed(p_pressed);
 	ev->set_scancode(p_key);
+	ev->set_physical_scancode(p_key);
 	ev->set_unicode(p_key);
 	perform_event(ev);
 };
