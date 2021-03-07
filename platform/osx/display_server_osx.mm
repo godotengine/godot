@@ -2765,9 +2765,6 @@ void DisplayServerOSX::window_set_flag(WindowFlags p_flag, bool p_enabled, Windo
 		case WINDOW_FLAG_NO_FOCUS: {
 			wd.no_focus = p_enabled;
 		} break;
-		case WINDOW_FLAG_INPUT_WITHOUT_FOCUS: {
-			wd.input_without_focus = p_enabled;
-		} break;
 		default: {
 		}
 	}
@@ -2798,9 +2795,6 @@ bool DisplayServerOSX::window_get_flag(WindowFlags p_flag, WindowID p_window) co
 		} break;
 		case WINDOW_FLAG_NO_FOCUS: {
 			return wd.no_focus;
-		} break;
-		case WINDOW_FLAG_INPUT_WITHOUT_FOCUS: {
-			return wd.input_without_focus;
 		} break;
 		default: {
 		}
@@ -3528,7 +3522,8 @@ DisplayServerOSX::WindowID DisplayServerOSX::_create_window(WindowMode p_mode, V
 		if (window_id_counter != MAIN_WINDOW_ID && (p_flags & WINDOW_FLAG_BORDERLESS)) {
 			// We want to create child windows whenever possible.
 			// Here are likely different flags needed and we have to fix positioning, I guess.
-			[windows[MAIN_WINDOW_ID].window_object addChildWindow:wd.window_object ordered:NSWindowAbove]
+			[windows[MAIN_WINDOW_ID].window_object addChildWindow:wd.window_object ordered:NSWindowAbove];
+			wd.input_without_focus = true;
 		}
 
 		wd.window_view = [[GodotContentView alloc] init];

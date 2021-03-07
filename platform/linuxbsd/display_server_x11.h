@@ -135,7 +135,6 @@ class DisplayServerX11 : public DisplayServer {
 
 		bool menu_type = false;
 		bool no_focus = false;
-		bool input_without_focus = false;
 
 		//better to guess on the fly, given WM can change it
 		//WindowMode mode;

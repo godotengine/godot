@@ -493,9 +493,6 @@ DisplayServer::WindowID DisplayServerWindows::create_sub_window(WindowMode p_mod
 	if (p_flags & WINDOW_FLAG_NO_FOCUS_BIT) {
 		wd.no_focus = true;
 	}
-	if (p_flags & WINDOW_FLAG_INPUT_WITHOUT_FOCUS_BIT) {
-		wd.input_without_focus = true;
-	}
 
 	return window_id;
 }
@@ -1070,10 +1067,6 @@ void DisplayServerWindows::window_set_flag(WindowFlags p_flag, bool p_enabled, W
 			wd.no_focus = p_enabled;
 			_update_window_style(p_window);
 		} break;
-		case WINDOW_FLAG_INPUT_WITHOUT_FOCUS: {
-			wd.input_without_focus = p_enabled;
-			_update_window_style(p_window);
-		} break;
 		case WINDOW_FLAG_MAX:
 			break;
 	}
@@ -1099,9 +1092,6 @@ bool DisplayServerWindows::window_get_flag(WindowFlags p_flag, WindowID p_window
 		} break;
 		case WINDOW_FLAG_NO_FOCUS: {
 			return wd.no_focus;
-		} break;
-		case WINDOW_FLAG_INPUT_WITHOUT_FOCUS: {
-			return wd.input_without_focus;
 		} break;
 		case WINDOW_FLAG_MAX:
 			break;
@@ -3060,15 +3050,16 @@ DisplayServer::WindowID DisplayServerWindows::_create_window(WindowMode p_mode, 
 	AdjustWindowRectEx(&WindowRect, dwStyle, FALSE, dwExStyle);
 
 	WindowID id = window_id_counter;
+	WindowData &wd = windows[id];
 	if (id != MAIN_WINDOW_ID && (p_flags & WINDOW_FLAG_BORDERLESS_BIT)) {
 		// We have child windows here, so we need to ensure they use local coordinates
 		HWND main_window = windows[MAIN_WINDOW_ID].hWnd;
 		ScreenToClient(main_window, (POINT *)&WindowRect.left);
 		ScreenToClient(main_window, (POINT *)&WindowRect.right);
+		wd.input_without_focus = true; // This is perhaps only a workaround (works (only) without in X11). On X11 Input is propagated to the receiving child window and every parent.
 	}
-	{
-		WindowData &wd = windows[id];
 
+	{
 		wd.hWnd = CreateWindowExW(
 				dwExStyle,
 				L"Engine", L"",
