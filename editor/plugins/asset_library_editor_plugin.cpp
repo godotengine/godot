@@ -1010,7 +1010,8 @@ HBoxContainer *EditorAssetLibrary::_make_pages(int p_page, int p_page_count, int
 		if (i == p_page) {
 
 			Button *current = memnew(Button);
-			current->set_text(itos(i + 1));
+			// Keep the extended padding for the currently active page (see below).
+			current->set_text(vformat(" %d ", i + 1));
 			current->set_disabled(true);
 			current->set_focus_mode(Control::FOCUS_NONE);
 
@@ -1018,7 +1019,8 @@ HBoxContainer *EditorAssetLibrary::_make_pages(int p_page, int p_page_count, int
 		} else {
 
 			Button *current = memnew(Button);
-			current->set_text(itos(i + 1));
+			// Add padding to make page number buttons easier to click.
+			current->set_text(vformat(" %d ", i + 1));
 			current->connect("pressed", this, "_search", varray(i));
 
 			hbc->add_child(current);
