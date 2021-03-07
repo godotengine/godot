@@ -2190,9 +2190,14 @@ void TextEdit::_new_line(bool p_split_current_line, bool p_above) {
 
 				// No need to move the brace below if we are not taking the text with us.
 				char32_t closing_char = _get_right_pair_symbol(indent_char);
-				if ((closing_char != 0) && (closing_char == text[cursor.line][cursor.column]) && !p_split_current_line) {
-					brace_indent = true;
-					ins += "\n" + ins.substr(1, ins.length() - 2);
+				if ((closing_char != 0) && (closing_char == text[cursor.line][cursor.column])) {
+					if (p_split_current_line) {
+						brace_indent = true;
+						ins += "\n" + ins.substr(1, ins.length() - 2);
+					} else {
+						brace_indent = false;
+						ins = "\n" + ins.substr(1, ins.length() - 2);
+					}
 				}
 			}
 		}
