@@ -87,6 +87,7 @@
 	<members>
 		<member name="antialiased" type="bool" setter="set_antialiased" getter="get_antialiased" default="false">
 			If [code]true[/code], polygon edges will be anti-aliased.
+			[b]Note:[/b] Doing this doesn't enable anti-aliasing automatically. HDR must be turned off in GLES3. Also doesn't work for HTML5.
 		</member>
 		<member name="bones" type="Array" setter="_set_bones" getter="_get_bones" default="[  ]">
 		</member>
