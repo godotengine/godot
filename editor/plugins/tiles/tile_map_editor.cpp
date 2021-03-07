@@ -2587,7 +2587,7 @@ bool TileMapEditorTerrainsPlugin::forward_canvas_gui_input(const Ref<InputEvent>
 							}
 
 							if (need_tree_item_switch) {
-								for (tree_item = terrains_tree->get_root()->get_children(); tree_item; tree_item = tree_item->get_next_visible()) {
+								for (tree_item = terrains_tree->get_root()->get_first_child(); tree_item; tree_item = tree_item->get_next_visible()) {
 									Dictionary metadata_dict = tree_item->get_metadata(0);
 									if (metadata_dict.has("terrain_set") && metadata_dict.has("terrain_id")) {
 										int terrain_set = metadata_dict["terrain_set"];

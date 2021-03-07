@@ -2762,10 +2762,10 @@ void VisualShaderEditor::_notification(int p_what) {
 
 		// collapse tree by default
 
-		TreeItem *category = members->get_root()->get_children();
+		TreeItem *category = members->get_root()->get_first_child();
 		while (category) {
 			category->set_collapsed(true);
-			TreeItem *sub_category = category->get_children();
+			TreeItem *sub_category = category->get_first_child();
 			while (sub_category) {
 				sub_category->set_collapsed(true);
 				sub_category = sub_category->get_next();
@@ -3210,14 +3210,14 @@ void VisualShaderEditor::_member_cancel() {
 }
 
 void VisualShaderEditor::_tools_menu_option(int p_idx) {
-	TreeItem *category = members->get_root()->get_children();
+	TreeItem *category = members->get_root()->get_first_child();
 
 	switch (p_idx) {
 		case EXPAND_ALL:
 
 			while (category) {
 				category->set_collapsed(false);
-				TreeItem *sub_category = category->get_children();
+				TreeItem *sub_category = category->get_first_child();
 				while (sub_category) {
 					sub_category->set_collapsed(false);
 					sub_category = sub_category->get_next();
@@ -3231,7 +3231,7 @@ void VisualShaderEditor::_tools_menu_option(int p_idx) {
 
 			while (category) {
 				category->set_collapsed(true);
-				TreeItem *sub_category = category->get_children();
+				TreeItem *sub_category = category->get_first_child();
 				while (sub_category) {
 					sub_category->set_collapsed(true);
 					sub_category = sub_category->get_next();

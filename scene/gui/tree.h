@@ -122,14 +122,18 @@ private:
 
 	Vector<Cell> cells;
 
-	bool collapsed; // won't show children
-	bool disable_folding;
-	int custom_min_height;
+	bool collapsed = false; // won't show children
+	bool disable_folding = false;
+	int custom_min_height = 0;
 
-	TreeItem *parent; // parent item
-	TreeItem *next; // next in list
-	TreeItem *children; //child items
-	Tree *tree; //tree (for reference)
+	TreeItem *parent = nullptr; // parent item
+	TreeItem *prev = nullptr; // previous in list
+	TreeItem *next = nullptr; // next in list
+	TreeItem *first_child = nullptr;
+
+	Vector<TreeItem *> children_cache;
+	bool is_root = false; // for tree root
+	Tree *tree; // tree (for reference)
 
 	TreeItem(Tree *p_tree);
 
@@ -138,9 +142,40 @@ private:
 	void _cell_selected(int p_cell);
 	void _cell_deselected(int p_cell);
 
+	void _change_tree(Tree *p_tree);
+
+	_FORCE_INLINE_ void _create_children_cache() {
+		if (children_cache.is_empty()) {
+			TreeItem *c = first_child;
+			while (c) {
+				children_cache.append(c);
+				c = c->next;
+			}
+		}
+	}
+
+	_FORCE_INLINE_ void _unlink_from_tree() {
+		TreeItem *p = get_prev();
+		if (p) {
+			p->next = next;
+		}
+		if (next) {
+			next->prev = p;
+		}
+		if (parent) {
+			if (!parent->children_cache.is_empty()) {
+				parent->children_cache.remove(get_index());
+			}
+			if (parent->first_child == this) {
+				parent->first_child = next;
+			}
+		}
+	}
+
 protected:
 	static void _bind_methods();
-	//bind helpers
+
+	// Bind helpers
 	Dictionary _get_range_config(int p_column) {
 		Dictionary d;
 		double min = 0.0, max = 0.0, step = 0.0;
@@ -154,6 +189,13 @@ protected:
 	}
 	void _remove_child(Object *p_child) {
 		remove_child(Object::cast_to<TreeItem>(p_child));
+	}
+
+	void _move_before(Object *p_item) {
+		move_before(Object::cast_to<TreeItem>(p_item));
+	}
+	void _move_after(Object *p_item) {
+		move_after(Object::cast_to<TreeItem>(p_item));
 	}
 
 	Variant _call_recursive_bind(const Variant **p_args, int p_argcount, Callable::CallError &r_error);
@@ -234,16 +276,6 @@ public:
 	void set_custom_minimum_height(int p_height);
 	int get_custom_minimum_height() const;
 
-	TreeItem *get_prev();
-	TreeItem *get_next();
-	TreeItem *get_parent();
-	TreeItem *get_children();
-
-	TreeItem *get_prev_visible(bool p_wrap = false);
-	TreeItem *get_next_visible(bool p_wrap = false);
-
-	void remove_child(TreeItem *p_item);
-
 	void set_selectable(int p_column, bool p_selectable);
 	bool is_selectable(int p_column) const;
 
@@ -269,21 +301,42 @@ public:
 	void set_tooltip(int p_column, const String &p_tooltip);
 	String get_tooltip(int p_column) const;
 
-	void clear_children();
-
 	void set_text_align(int p_column, TextAlign p_align);
 	TextAlign get_text_align(int p_column) const;
 
 	void set_expand_right(int p_column, bool p_enable);
 	bool get_expand_right(int p_column) const;
 
-	void move_to_top();
-	void move_to_bottom();
-
 	void set_disable_folding(bool p_disable);
 	bool is_folding_disabled() const;
 
+	/* Item manipulation */
+
+	TreeItem *create_child(int p_idx = -1);
+
+	Tree *get_tree();
+
+	TreeItem *get_prev();
+	TreeItem *get_next();
+	TreeItem *get_parent();
+	TreeItem *get_first_child();
+
+	TreeItem *get_prev_visible(bool p_wrap = false);
+	TreeItem *get_next_visible(bool p_wrap = false);
+
+	TreeItem *get_child(int p_idx);
+	int get_child_count();
+	Array get_children();
+	int get_index();
+
+	void move_before(TreeItem *p_item);
+	void move_after(TreeItem *p_item);
+
+	void remove_child(TreeItem *p_item);
+
 	void call_recursive(const StringName &p_method, const Variant **p_args, int p_argcount, Callable::CallError &r_error);
+
+	void clear_children();
 
 	~TreeItem();
 };

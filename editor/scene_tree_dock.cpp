@@ -1833,7 +1833,7 @@ bool SceneTreeDock::_is_collapsed_recursive(TreeItem *p_item) const {
 		TreeItem *item = needs_check.back()->get();
 		needs_check.pop_back();
 
-		TreeItem *child = item->get_children();
+		TreeItem *child = item->get_first_child();
 		is_branch_collapsed = item->is_collapsed() && child;
 
 		if (is_branch_collapsed) {
@@ -1857,7 +1857,7 @@ void SceneTreeDock::_set_collapsed_recursive(TreeItem *p_item, bool p_collapsed)
 
 		item->set_collapsed(p_collapsed);
 
-		TreeItem *child = item->get_children();
+		TreeItem *child = item->get_first_child();
 		while (child) {
 			to_collapse.push_back(child);
 			child = child->get_next();

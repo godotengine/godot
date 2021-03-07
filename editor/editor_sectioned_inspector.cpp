@@ -135,7 +135,7 @@ void SectionedInspector::_section_selected() {
 	}
 
 	selected_category = sections->get_selected()->get_metadata(0);
-	filter->set_section(selected_category, sections->get_selected()->get_children() == nullptr);
+	filter->set_section(selected_category, sections->get_selected()->get_first_child() == nullptr);
 	inspector->set_property_prefix(selected_category + "/");
 }
 
@@ -187,8 +187,8 @@ void SectionedInspector::edit(Object *p_object) {
 
 		TreeItem *first_item = sections->get_root();
 		if (first_item) {
-			while (first_item->get_children()) {
-				first_item = first_item->get_children();
+			while (first_item->get_first_child()) {
+				first_item = first_item->get_first_child();
 			}
 
 			first_item->select(0);

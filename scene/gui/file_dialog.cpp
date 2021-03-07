@@ -589,8 +589,8 @@ void FileDialog::update_file_list() {
 		files.pop_front();
 	}
 
-	if (tree->get_root() && tree->get_root()->get_children() && tree->get_selected() == nullptr) {
-		tree->get_root()->get_children()->select(0);
+	if (tree->get_root() && tree->get_root()->get_first_child() && tree->get_selected() == nullptr) {
+		tree->get_root()->get_first_child()->select(0);
 	}
 }
 

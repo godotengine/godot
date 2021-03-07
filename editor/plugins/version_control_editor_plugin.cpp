@@ -180,7 +180,7 @@ void VersionControlEditorPlugin::_stage_selected() {
 	staged_files_count = 0;
 	TreeItem *root = stage_files->get_root();
 	if (root) {
-		TreeItem *file_entry = root->get_children();
+		TreeItem *file_entry = root->get_first_child();
 		while (file_entry) {
 			if (file_entry->is_checked(0)) {
 				EditorVCSInterface::get_singleton()->stage_file(file_entry->get_metadata(0));
@@ -207,7 +207,7 @@ void VersionControlEditorPlugin::_stage_all() {
 	staged_files_count = 0;
 	TreeItem *root = stage_files->get_root();
 	if (root) {
-		TreeItem *file_entry = root->get_children();
+		TreeItem *file_entry = root->get_first_child();
 		while (file_entry) {
 			EditorVCSInterface::get_singleton()->stage_file(file_entry->get_metadata(0));
 			file_entry->set_icon_modulate(0, EditorNode::get_singleton()->get_gui_base()->get_theme_color("success_color", "Editor"));

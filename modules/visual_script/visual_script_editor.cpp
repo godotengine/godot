@@ -1168,7 +1168,7 @@ void VisualScriptEditor::_member_selected() {
 
 	selected = ti->get_metadata(0);
 
-	if (ti->get_parent() == members->get_root()->get_children()) {
+	if (ti->get_parent() == members->get_root()->get_first_child()) {
 #ifdef OSX_ENABLED
 		bool held_ctrl = Input::get_singleton()->is_key_pressed(KEY_META);
 #else
@@ -1214,7 +1214,7 @@ void VisualScriptEditor::_member_edited() {
 
 	TreeItem *root = members->get_root();
 
-	if (ti->get_parent() == root->get_children()) {
+	if (ti->get_parent() == root->get_first_child()) {
 		selected = new_name;
 
 		int node_id = script->get_function_node_id(name);
@@ -1255,7 +1255,7 @@ void VisualScriptEditor::_member_edited() {
 		return; // Or crash because it will become invalid.
 	}
 
-	if (ti->get_parent() == root->get_children()->get_next()) {
+	if (ti->get_parent() == root->get_first_child()->get_next()) {
 		selected = new_name;
 		undo_redo->create_action(TTR("Rename Variable"));
 		undo_redo->add_do_method(script.ptr(), "rename_variable", name, new_name);
@@ -1271,7 +1271,7 @@ void VisualScriptEditor::_member_edited() {
 		return; // Or crash because it will become invalid.
 	}
 
-	if (ti->get_parent() == root->get_children()->get_next()->get_next()) {
+	if (ti->get_parent() == root->get_first_child()->get_next()->get_next()) {
 		selected = new_name;
 		undo_redo->create_action(TTR("Rename Signal"));
 		undo_redo->add_do_method(script.ptr(), "rename_custom_signal", name, new_name);
@@ -1405,7 +1405,7 @@ void VisualScriptEditor::_member_button(Object *p_item, int p_column, int p_butt
 
 	if (ti->get_parent() == root) {
 		//main buttons
-		if (ti == root->get_children()) {
+		if (ti == root->get_first_child()) {
 			// Add function, this one uses menu.
 
 			if (p_button == 1) {
@@ -1442,7 +1442,7 @@ void VisualScriptEditor::_member_button(Object *p_item, int p_column, int p_butt
 			return; // Or crash because it will become invalid.
 		}
 
-		if (ti == root->get_children()->get_next()) {
+		if (ti == root->get_first_child()->get_next()) {
 			// Add variable.
 			String name = _validate_name("new_variable");
 			selected = name;
@@ -1458,7 +1458,7 @@ void VisualScriptEditor::_member_button(Object *p_item, int p_column, int p_butt
 			return; // Or crash because it will become invalid.
 		}
 
-		if (ti == root->get_children()->get_next()->get_next()) {
+		if (ti == root->get_first_child()->get_next()->get_next()) {
 			// Add variable.
 			String name = _validate_name("new_signal");
 			selected = name;
@@ -1473,7 +1473,7 @@ void VisualScriptEditor::_member_button(Object *p_item, int p_column, int p_butt
 			undo_redo->commit_action();
 			return; // Or crash because it will become invalid.
 		}
-	} else if (ti->get_parent() == root->get_children()) {
+	} else if (ti->get_parent() == root->get_first_child()) {
 		selected = ti->get_text(0);
 		function_name_edit->set_position(Input::get_singleton()->get_mouse_position() - Vector2(60, -10));
 		function_name_edit->popup();
@@ -1841,13 +1841,13 @@ void VisualScriptEditor::_members_gui_input(const Ref<InputEvent> &p_event) {
 			TreeItem *ti = members->get_selected();
 			if (ti) {
 				TreeItem *root = members->get_root();
-				if (ti->get_parent() == root->get_children()) {
+				if (ti->get_parent() == root->get_first_child()) {
 					member_type = MEMBER_FUNCTION;
 				}
-				if (ti->get_parent() == root->get_children()->get_next()) {
+				if (ti->get_parent() == root->get_first_child()->get_next()) {
 					member_type = MEMBER_VARIABLE;
 				}
-				if (ti->get_parent() == root->get_children()->get_next()->get_next()) {
+				if (ti->get_parent() == root->get_first_child()->get_next()->get_next()) {
 					member_type = MEMBER_SIGNAL;
 				}
 				member_name = ti->get_text(0);
@@ -1864,7 +1864,7 @@ void VisualScriptEditor::_members_gui_input(const Ref<InputEvent> &p_event) {
 	Ref<InputEventMouseButton> btn = p_event;
 	if (btn.is_valid() && btn->is_double_click()) {
 		TreeItem *ti = members->get_selected();
-		if (ti && ti->get_parent() == members->get_root()->get_children()) { // to check if it's a function
+		if (ti && ti->get_parent() == members->get_root()->get_first_child()) { // to check if it's a function
 			_center_on_node(script->get_function_node_id(ti->get_metadata(0)));
 		}
 	}
@@ -1946,13 +1946,13 @@ Variant VisualScriptEditor::get_drag_data_fw(const Point2 &p_point, Control *p_f
 		Dictionary dd;
 		TreeItem *root = members->get_root();
 
-		if (it->get_parent() == root->get_children()) {
+		if (it->get_parent() == root->get_first_child()) {
 			dd["type"] = "visual_script_function_drag";
 			dd["function"] = type;
-		} else if (it->get_parent() == root->get_children()->get_next()) {
+		} else if (it->get_parent() == root->get_first_child()->get_next()) {
 			dd["type"] = "visual_script_variable_drag";
 			dd["variable"] = type;
-		} else if (it->get_parent() == root->get_children()->get_next()->get_next()) {
+		} else if (it->get_parent() == root->get_first_child()->get_next()->get_next()) {
 			dd["type"] = "visual_script_signal_drag";
 			dd["signal"] = type;
 
@@ -4115,7 +4115,7 @@ void VisualScriptEditor::_member_rmb_selected(const Vector2 &p_pos) {
 
 	Ref<Texture2D> edit_icon = Control::get_theme_icon("Edit", "EditorIcons");
 
-	if (ti->get_parent() == root->get_children()) {
+	if (ti->get_parent() == root->get_first_child()) {
 		member_type = MEMBER_FUNCTION;
 		member_name = ti->get_text(0);
 		member_popup->add_icon_shortcut(edit_icon, ED_GET_SHORTCUT("visual_script_editor/edit_member"), MEMBER_EDIT);
@@ -4125,7 +4125,7 @@ void VisualScriptEditor::_member_rmb_selected(const Vector2 &p_pos) {
 		return;
 	}
 
-	if (ti->get_parent() == root->get_children()->get_next()) {
+	if (ti->get_parent() == root->get_first_child()->get_next()) {
 		member_type = MEMBER_VARIABLE;
 		member_name = ti->get_text(0);
 		member_popup->add_icon_shortcut(edit_icon, ED_GET_SHORTCUT("visual_script_editor/edit_member"), MEMBER_EDIT);
@@ -4135,7 +4135,7 @@ void VisualScriptEditor::_member_rmb_selected(const Vector2 &p_pos) {
 		return;
 	}
 
-	if (ti->get_parent() == root->get_children()->get_next()->get_next()) {
+	if (ti->get_parent() == root->get_first_child()->get_next()->get_next()) {
 		member_type = MEMBER_SIGNAL;
 		member_name = ti->get_text(0);
 		member_popup->add_icon_shortcut(edit_icon, ED_GET_SHORTCUT("visual_script_editor/edit_member"), MEMBER_EDIT);

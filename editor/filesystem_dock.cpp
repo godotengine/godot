@@ -180,12 +180,12 @@ Vector<String> FileSystemDock::_compute_uncollapsed_paths() {
 	Vector<String> uncollapsed_paths;
 	TreeItem *root = tree->get_root();
 	if (root) {
-		TreeItem *favorites_item = root->get_children();
+		TreeItem *favorites_item = root->get_first_child();
 		if (!favorites_item->is_collapsed()) {
 			uncollapsed_paths.push_back(favorites_item->get_metadata(0));
 		}
 
-		TreeItem *resTree = root->get_children()->get_next();
+		TreeItem *resTree = root->get_first_child()->get_next();
 		if (resTree) {
 			Vector<TreeItem *> needs_check;
 			needs_check.push_back(resTree);
@@ -193,7 +193,7 @@ Vector<String> FileSystemDock::_compute_uncollapsed_paths() {
 			while (needs_check.size()) {
 				if (!needs_check[0]->is_collapsed()) {
 					uncollapsed_paths.push_back(needs_check[0]->get_metadata(0));
-					TreeItem *child = needs_check[0]->get_children();
+					TreeItem *child = needs_check[0]->get_first_child();
 					while (child) {
 						needs_check.push_back(child);
 						child = child->get_next();
@@ -464,7 +464,7 @@ void FileSystemDock::_tree_multi_selected(Object *p_item, int p_column, bool p_s
 		return;
 	}
 
-	TreeItem *favorites_item = tree->get_root()->get_children();
+	TreeItem *favorites_item = tree->get_root()->get_first_child();
 	if (selected->get_parent() == favorites_item && !String(selected->get_metadata(0)).ends_with("/")) {
 		// Go to the favorites if we click in the favorites and the path has changed.
 		path = "Favorites";
@@ -1644,7 +1644,7 @@ Vector<String> FileSystemDock::_tree_get_selected(bool remove_self_inclusion) {
 	// Build a list of selected items with the active one at the first position.
 	Vector<String> selected_strings;
 
-	TreeItem *favorites_item = tree->get_root()->get_children();
+	TreeItem *favorites_item = tree->get_root()->get_first_child();
 	TreeItem *active_selected = tree->get_selected();
 	if (active_selected && active_selected != favorites_item) {
 		selected_strings.push_back(active_selected->get_metadata(0));
@@ -1700,7 +1700,7 @@ void FileSystemDock::_tree_rmb_option(int p_option) {
 				while (needs_check.size()) {
 					needs_check[0]->set_collapsed(is_collapsed);
 
-					TreeItem *child = needs_check[0]->get_children();
+					TreeItem *child = needs_check[0]->get_first_child();
 					while (child) {
 						needs_check.push_back(child);
 						child = child->get_next();
@@ -2062,13 +2062,13 @@ Variant FileSystemDock::get_drag_data_fw(const Point2 &p_point, Control *p_from)
 		// Check if the first selected is in favorite.
 		TreeItem *selected = tree->get_next_selected(tree->get_root());
 		while (selected) {
-			TreeItem *favorites_item = tree->get_root()->get_children();
+			TreeItem *favorites_item = tree->get_root()->get_first_child();
 			if (selected == favorites_item) {
 				// The "Favorites" item is not draggable.
 				return Variant();
 			}
 
-			bool is_favorite = selected->get_parent() != nullptr && tree->get_root()->get_children() == selected->get_parent();
+			bool is_favorite = selected->get_parent() != nullptr && tree->get_root()->get_first_child() == selected->get_parent();
 			all_favorites &= is_favorite;
 			all_not_favorites &= !is_favorite;
 			selected = tree->get_next_selected(selected);
@@ -2114,7 +2114,7 @@ bool FileSystemDock::can_drop_data_fw(const Point2 &p_point, const Variant &p_da
 		}
 
 		int drop_section = tree->get_drop_section_at_position(p_point);
-		TreeItem *favorites_item = tree->get_root()->get_children();
+		TreeItem *favorites_item = tree->get_root()->get_first_child();
 
 		TreeItem *resources_item = favorites_item->get_next();
 
@@ -2190,7 +2190,7 @@ void FileSystemDock::drop_data_fw(const Point2 &p_point, const Variant &p_data, 
 
 		int drop_position;
 		Vector<String> files = drag_data["files"];
-		TreeItem *favorites_item = tree->get_root()->get_children();
+		TreeItem *favorites_item = tree->get_root()->get_first_child();
 		TreeItem *resources_item = favorites_item->get_next();
 
 		if (ti == favorites_item) {
@@ -2328,10 +2328,10 @@ void FileSystemDock::_get_drag_target_folder(String &target, bool &target_favori
 		int section = tree->get_drop_section_at_position(p_point);
 		if (ti) {
 			// Check the favorites first.
-			if (ti == tree->get_root()->get_children() && section >= 0) {
+			if (ti == tree->get_root()->get_first_child() && section >= 0) {
 				target_favorites = true;
 				return;
-			} else if (ti->get_parent() == tree->get_root()->get_children()) {
+			} else if (ti->get_parent() == tree->get_root()->get_first_child()) {
 				target_favorites = true;
 				return;
 			} else {
@@ -2347,7 +2347,7 @@ void FileSystemDock::_get_drag_target_folder(String &target, bool &target_favori
 						return;
 					}
 				} else {
-					if (ti->get_parent() != tree->get_root()->get_children()) {
+					if (ti->get_parent() != tree->get_root()->get_first_child()) {
 						// Not in the favorite section.
 						if (fpath != "res://") {
 							// We drop between two files

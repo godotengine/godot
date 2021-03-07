@@ -725,8 +725,8 @@ void OrphanResourcesDialog::_find_to_delete(TreeItem *p_item, List<String> &path
 			paths.push_back(p_item->get_metadata(0));
 		}
 
-		if (p_item->get_children()) {
-			_find_to_delete(p_item->get_children(), paths);
+		if (p_item->get_first_child()) {
+			_find_to_delete(p_item->get_first_child(), paths);
 		}
 
 		p_item = p_item->get_next();

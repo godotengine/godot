@@ -339,13 +339,13 @@ void ScriptEditorQuickOpen::_update_search() {
 		if ((search_box->get_text() == "" || file.findn(search_box->get_text()) != -1)) {
 			TreeItem *ti = search_options->create_item(root);
 			ti->set_text(0, file);
-			if (root->get_children() == ti) {
+			if (root->get_first_child() == ti) {
 				ti->select(0);
 			}
 		}
 	}
 
-	get_ok_button()->set_disabled(root->get_children() == nullptr);
+	get_ok_button()->set_disabled(root->get_first_child() == nullptr);
 }
 
 void ScriptEditorQuickOpen::_confirmed() {

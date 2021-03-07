@@ -122,9 +122,9 @@ void InputEventConfigurationDialog::_set_event(const Ref<InputEvent> &p_event) {
 
 		// Update selected item in input list for keys, joybuttons and joyaxis only (since the mouse cannot be "listened" for).
 		if (k.is_valid() || joyb.is_valid() || joym.is_valid()) {
-			TreeItem *category = input_list_tree->get_root()->get_children();
+			TreeItem *category = input_list_tree->get_root()->get_first_child();
 			while (category) {
-				TreeItem *input_item = category->get_children();
+				TreeItem *input_item = category->get_first_child();
 
 				// has_type this should be always true, unless the tree structure has been misconfigured.
 				bool has_type = input_item->get_parent()->has_meta("__type");

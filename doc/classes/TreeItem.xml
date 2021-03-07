@@ -63,6 +63,16 @@
 				Removes all OpenType features.
 			</description>
 		</method>
+		<method name="create_child">
+			<return type="TreeItem">
+			</return>
+			<argument index="0" name="idx" type="int" default="-1">
+			</argument>
+			<description>
+				Creates an item and adds it as a child.
+				The new item will be inserted as position [code]idx[/code] (the default value [code]-1[/code] means the last position), or it will be the last child if [code]idx[/code] is higher than the child count.
+			</description>
+		</method>
 		<method name="deselect">
 			<return type="void">
 			</return>
@@ -123,11 +133,28 @@
 				Returns the column's cell mode.
 			</description>
 		</method>
-		<method name="get_children">
+		<method name="get_child">
 			<return type="TreeItem">
 			</return>
+			<argument index="0" name="idx" type="int">
+			</argument>
 			<description>
-				Returns the TreeItem's first child item or a null object if there is none.
+				Returns a child item by its index (see [method get_child_count]). This method is often used for iterating all children of an item.
+				Negative indices access the children from the last one.
+			</description>
+		</method>
+		<method name="get_child_count">
+			<return type="int">
+			</return>
+			<description>
+				Returns the number of child items.
+			</description>
+		</method>
+		<method name="get_children">
+			<return type="Array">
+			</return>
+			<description>
+				Returns an array of references to the item's children.
 			</description>
 		</method>
 		<method name="get_custom_bg_color" qualifiers="const">
@@ -155,6 +182,13 @@
 			</argument>
 			<description>
 				Returns [code]true[/code] if [code]expand_right[/code] is set.
+			</description>
+		</method>
+		<method name="get_first_child">
+			<return type="TreeItem">
+			</return>
+			<description>
+				Returns the TreeItem's first child.
 			</description>
 		</method>
 		<method name="get_icon" qualifiers="const">
@@ -191,6 +225,13 @@
 			</argument>
 			<description>
 				Returns the icon [Texture2D] region as [Rect2].
+			</description>
+		</method>
+		<method name="get_index">
+			<return type="int">
+			</return>
+			<description>
+				Returns the node's order in the tree. For example, if called on the first child item the position is [code]0[/code].
 			</description>
 		</method>
 		<method name="get_language" qualifiers="const">
@@ -342,6 +383,13 @@
 				Returns the given column's tooltip.
 			</description>
 		</method>
+		<method name="get_tree">
+			<return type="Tree">
+			</return>
+			<description>
+				Returns the [Tree] that owns this TreeItem.
+			</description>
+		</method>
 		<method name="is_button_disabled" qualifiers="const">
 			<return type="bool">
 			</return>
@@ -397,18 +445,24 @@
 				Returns [code]true[/code] if column [code]column[/code] is selected.
 			</description>
 		</method>
-		<method name="move_to_bottom">
+		<method name="move_after">
 			<return type="void">
 			</return>
+			<argument index="0" name="item" type="Object">
+			</argument>
 			<description>
-				Moves this TreeItem to the bottom in the [Tree] hierarchy.
+				Moves this TreeItem right after the given [code]item[/code].
+				[b]Note:[/b] You can't move to the root or move the root.
 			</description>
 		</method>
-		<method name="move_to_top">
+		<method name="move_before">
 			<return type="void">
 			</return>
+			<argument index="0" name="item" type="Object">
+			</argument>
 			<description>
-				Moves this TreeItem to the top in the [Tree] hierarchy.
+				Moves this TreeItem right before the given [code]item[/code].
+				[b]Note:[/b] You can't move to the root or move the root.
 			</description>
 		</method>
 		<method name="remove_child">
