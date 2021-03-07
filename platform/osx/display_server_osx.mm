@@ -3525,6 +3525,12 @@ DisplayServerOSX::WindowID DisplayServerOSX::_create_window(WindowMode p_mode, V
 							  defer:NO];
 		ERR_FAIL_COND_V_MSG(wd.window_object == nil, INVALID_WINDOW_ID, "Can't create a window");
 
+		if (window_id_counter != MAIN_WINDOW_ID && (p_flags & WINDOW_FLAG_BORDERLESS)) {
+			// We want to create child windows whenever possible.
+			// Here are likely different flags needed and we have to fix positioning, I guess.
+			[windows[MAIN_WINDOW_ID].window_object addChildWindow:wd.window_object ordered:NSWindowAbove]
+		}
+
 		wd.window_view = [[GodotContentView alloc] init];
 		ERR_FAIL_COND_V_MSG(wd.window_view == nil, INVALID_WINDOW_ID, "Can't create a window view");
 		[wd.window_view setWindowID:window_id_counter];
