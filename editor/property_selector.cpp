@@ -52,7 +52,7 @@ void PropertySelector::_sbox_input(const Ref<InputEvent> &p_ie) {
 				search_box->accept_event();
 
 				TreeItem *root = search_options->get_root();
-				if (!root->get_children()) {
+				if (!root->get_first_child()) {
 					break;
 				}
 
@@ -150,7 +150,7 @@ void PropertySelector::_update_search() {
 
 		for (List<PropertyInfo>::Element *E = props.front(); E; E = E->next()) {
 			if (E->get().usage == PROPERTY_USAGE_CATEGORY) {
-				if (category && category->get_children() == nullptr) {
+				if (category && category->get_first_child() == nullptr) {
 					memdelete(category); //old category was unused
 				}
 				category = search_options->create_item(root);
@@ -192,7 +192,7 @@ void PropertySelector::_update_search() {
 			item->set_selectable(0, true);
 		}
 
-		if (category && category->get_children() == nullptr) {
+		if (category && category->get_first_child() == nullptr) {
 			memdelete(category); //old category was unused
 		}
 	} else {
@@ -225,7 +225,7 @@ void PropertySelector::_update_search() {
 
 		for (List<MethodInfo>::Element *E = methods.front(); E; E = E->next()) {
 			if (E->get().name.begins_with("*")) {
-				if (category && category->get_children() == nullptr) {
+				if (category && category->get_first_child() == nullptr) {
 					memdelete(category); //old category was unused
 				}
 				category = search_options->create_item(root);
@@ -316,12 +316,12 @@ void PropertySelector::_update_search() {
 			}
 		}
 
-		if (category && category->get_children() == nullptr) {
+		if (category && category->get_first_child() == nullptr) {
 			memdelete(category); //old category was unused
 		}
 	}
 
-	get_ok_button()->set_disabled(root->get_children() == nullptr);
+	get_ok_button()->set_disabled(root->get_first_child() == nullptr);
 }
 
 void PropertySelector::_confirmed() {

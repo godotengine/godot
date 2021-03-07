@@ -838,7 +838,7 @@ void FindInFilesPanel::_on_replace_all_clicked() {
 		String fpath = file_item->get_metadata(0);
 
 		Vector<Result> locations;
-		for (TreeItem *item = file_item->get_children(); item; item = item->get_next()) {
+		for (TreeItem *item = file_item->get_first_child(); item; item = item->get_next()) {
 			if (!item->is_checked(0)) {
 				continue;
 			}

@@ -795,7 +795,7 @@ void ProjectExportDialog::_tree_changed() {
 }
 
 void ProjectExportDialog::_check_dir_recursive(TreeItem *p_dir, bool p_checked) {
-	for (TreeItem *child = p_dir->get_children(); child; child = child->get_next()) {
+	for (TreeItem *child = p_dir->get_first_child(); child; child = child->get_next()) {
 		String path = child->get_metadata(0);
 
 		child->set_checked(0, p_checked);
@@ -818,7 +818,7 @@ void ProjectExportDialog::_refresh_parent_checks(TreeItem *p_item) {
 	}
 
 	bool checked = true;
-	for (TreeItem *child = parent->get_children(); child; child = child->get_next()) {
+	for (TreeItem *child = parent->get_first_child(); child; child = child->get_next()) {
 		checked = checked && child->is_checked(0);
 		if (!checked) {
 			break;

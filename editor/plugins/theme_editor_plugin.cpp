@@ -321,7 +321,7 @@ void ThemeItemImportTree::_toggle_type_items(bool p_collapse) {
 		return;
 	}
 
-	TreeItem *type_node = root->get_children();
+	TreeItem *type_node = root->get_first_child();
 	while (type_node) {
 		type_node->set_collapsed(p_collapse);
 		type_node = type_node->get_next();
@@ -491,7 +491,7 @@ void ThemeItemImportTree::_tree_item_edited() {
 }
 
 void ThemeItemImportTree::_select_all_subitems(TreeItem *p_root_item, bool p_select_with_data) {
-	TreeItem *child_item = p_root_item->get_children();
+	TreeItem *child_item = p_root_item->get_first_child();
 	while (child_item) {
 		child_item->set_checked(IMPORT_ITEM, true);
 		if (p_select_with_data) {
@@ -505,7 +505,7 @@ void ThemeItemImportTree::_select_all_subitems(TreeItem *p_root_item, bool p_sel
 }
 
 void ThemeItemImportTree::_deselect_all_subitems(TreeItem *p_root_item, bool p_deselect_completely) {
-	TreeItem *child_item = p_root_item->get_children();
+	TreeItem *child_item = p_root_item->get_first_child();
 	while (child_item) {
 		child_item->set_checked(IMPORT_ITEM_DATA, false);
 		if (p_deselect_completely) {
@@ -527,7 +527,7 @@ void ThemeItemImportTree::_update_parent_items(TreeItem *p_root_item) {
 	bool any_checked = false;
 	bool any_checked_with_data = false;
 
-	TreeItem *child_item = parent_item->get_children();
+	TreeItem *child_item = parent_item->get_first_child();
 	while (child_item) {
 		if (child_item->is_checked(IMPORT_ITEM)) {
 			any_checked = true;

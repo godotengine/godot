@@ -5216,7 +5216,7 @@ void AnimationTrackEditor::_edit_menu_pressed(int p_option) {
 			track_clipboard.clear();
 			TreeItem *root = track_copy_select->get_root();
 			if (root) {
-				TreeItem *it = root->get_children();
+				TreeItem *it = root->get_first_child();
 				while (it) {
 					Dictionary md = it->get_metadata(0);
 					int idx = md["track_idx"];
@@ -5602,7 +5602,7 @@ void AnimationTrackEditor::_show_imported_anim_warning() {
 }
 
 void AnimationTrackEditor::_select_all_tracks_for_copy() {
-	TreeItem *track = track_copy_select->get_root()->get_children();
+	TreeItem *track = track_copy_select->get_root()->get_first_child();
 	if (!track) {
 		return;
 	}
@@ -5616,7 +5616,7 @@ void AnimationTrackEditor::_select_all_tracks_for_copy() {
 		track = track->get_next();
 	}
 
-	track = track_copy_select->get_root()->get_children();
+	track = track_copy_select->get_root()->get_first_child();
 	while (track) {
 		track->set_checked(0, !all_selected);
 		track = track->get_next();
@@ -5681,7 +5681,7 @@ void AnimationTrackEditor::_pick_track_select_recursive(TreeItem *p_item, const 
 		p_select_candidates.push_back(node);
 	}
 
-	TreeItem *c = p_item->get_children();
+	TreeItem *c = p_item->get_first_child();
 
 	while (c) {
 		_pick_track_select_recursive(c, p_filter, p_select_candidates);
