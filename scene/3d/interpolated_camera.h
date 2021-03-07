@@ -57,8 +57,6 @@ public:
 	void set_interpolation_enabled(bool p_enable);
 	bool is_interpolation_enabled() const;
 
-	String get_configuration_warning() const;
-
 	InterpolatedCamera();
 };
 
