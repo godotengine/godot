@@ -65,11 +65,15 @@ elif (os.name == "nt"):
     if (os.getenv("VCINSTALLDIR") == None or platform_arg == "android" or platform_arg == "javascript"):
         custom_tools = ['mingw']
 
+# We let SCons build its default ENV as it includes OS-specific things which we don't
+# want to have to pull in manually.
+# Then we prepend PATH to make it take precedence, while preserving SCons' own entries.
 env_base = Environment(tools=custom_tools)
-if 'TERM' in os.environ:
-    env_base['ENV']['TERM'] = os.environ['TERM']
-env_base.AppendENVPath('PATH', os.getenv('PATH'))
-env_base.AppendENVPath('PKG_CONFIG_PATH', os.getenv('PKG_CONFIG_PATH'))
+env_base.PrependENVPath("PATH", os.getenv("PATH"))
+env_base.PrependENVPath("PKG_CONFIG_PATH", os.getenv("PKG_CONFIG_PATH"))
+if "TERM" in os.environ:  # Used for colored output.
+    env_base["ENV"]["TERM"] = os.environ["TERM"]
+
 env_base.global_defaults = global_defaults
 env_base.android_maven_repos = []
 env_base.android_flat_dirs = []
