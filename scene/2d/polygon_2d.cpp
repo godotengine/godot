@@ -88,13 +88,13 @@ bool Polygon2D::_edit_is_selected_on_click(const Point2 &p_point, double p_toler
 	}
 	return Geometry2D::is_point_in_polygon(p_point - get_offset(), polygon2d);
 }
+#endif
 
 void Polygon2D::_validate_property(PropertyInfo &property) const {
 	if (!invert && property.name == "invert_border") {
 		property.usage = PROPERTY_USAGE_NOEDITOR;
 	}
 }
-#endif
 
 void Polygon2D::_skeleton_bone_setup_changed() {
 	update();

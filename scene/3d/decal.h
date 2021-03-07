@@ -62,12 +62,9 @@ private:
 	float distance_fade_begin = 10.0;
 	float distance_fade_length = 1.0;
 
-#ifdef TOOLS_ENABLED
-	void _validate_property(PropertyInfo &property) const override;
-#endif
-
 protected:
 	static void _bind_methods();
+	void _validate_property(PropertyInfo &property) const override;
 
 public:
 	void set_extents(const Vector3 &p_extents);

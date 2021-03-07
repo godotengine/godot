@@ -625,11 +625,9 @@ void Sprite3D::_validate_property(PropertyInfo &property) const {
 		property.usage |= PROPERTY_USAGE_KEYING_INCREMENTS;
 	}
 
-#ifdef TOOLS_ENABLED
 	if (!region && property.name == "region_rect") {
 		property.usage = PROPERTY_USAGE_NOEDITOR;
 	}
-#endif
 }
 
 void Sprite3D::_bind_methods() {

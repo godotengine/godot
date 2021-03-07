@@ -154,13 +154,11 @@ Vector<Face3> Decal::get_faces(uint32_t p_usage_flags) const {
 	return Vector<Face3>();
 }
 
-#ifdef TOOLS_ENABLED
 void Decal::_validate_property(PropertyInfo &property) const {
 	if (!distance_fade_enabled && (property.name == "distance_fade_begin" || property.name == "distance_fade_length")) {
 		property.usage = PROPERTY_USAGE_NOEDITOR;
 	}
 }
-#endif
 
 void Decal::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_extents", "extents"), &Decal::set_extents);

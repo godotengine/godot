@@ -258,13 +258,11 @@ void CanvasLayer::_update_follow_viewport(bool p_force_exit) {
 	}
 }
 
-#ifdef TOOLS_ENABLED
 void CanvasLayer::_validate_property(PropertyInfo &property) const {
 	if (!follow_viewport && property.name == "follow_viewport_scale") {
 		property.usage = PROPERTY_USAGE_NOEDITOR;
 	}
 }
-#endif
 
 void CanvasLayer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_layer", "layer"), &CanvasLayer::set_layer);

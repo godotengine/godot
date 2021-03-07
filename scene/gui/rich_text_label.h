@@ -81,7 +81,9 @@ public:
 	};
 
 protected:
+	void _notification(int p_what);
 	static void _bind_methods();
+	void _validate_property(PropertyInfo &property) const override;
 
 private:
 	struct Item;
@@ -440,9 +442,6 @@ private:
 	int fixed_width = -1;
 
 	bool fit_content_height = false;
-
-protected:
-	void _notification(int p_what);
 
 public:
 	String get_text();

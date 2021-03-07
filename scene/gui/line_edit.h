@@ -198,15 +198,15 @@ private:
 	void _backspace(bool p_word = false, bool p_all_to_left = false);
 	void _delete(bool p_word = false, bool p_all_to_right = false);
 
-	void _gui_input(Ref<InputEvent> p_event);
-	void _notification(int p_what);
-
 protected:
+	void _notification(int p_what);
 	static void _bind_methods();
+	void _gui_input(Ref<InputEvent> p_event);
 
 	bool _set(const StringName &p_name, const Variant &p_value);
 	bool _get(const StringName &p_name, Variant &r_ret) const;
 	void _get_property_list(List<PropertyInfo> *p_list) const;
+	void _validate_property(PropertyInfo &property) const override;
 
 public:
 	void set_align(Align p_align);

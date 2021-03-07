@@ -1154,6 +1154,8 @@ void LineEdit::cursor_set_blink_enabled(const bool p_enabled) {
 	}
 
 	draw_caret = true;
+
+	notify_property_list_changed();
 }
 
 bool LineEdit::cursor_get_force_displayed() const {
@@ -2073,6 +2075,12 @@ void LineEdit::_get_property_list(List<PropertyInfo> *p_list) const {
 		p_list->push_back(PropertyInfo(Variant::FLOAT, "opentype_features/" + name));
 	}
 	p_list->push_back(PropertyInfo(Variant::NIL, "opentype_features/_new", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_EDITOR));
+}
+
+void LineEdit::_validate_property(PropertyInfo &property) const {
+	if (!caret_blink_enabled && property.name == "caret_blink_speed") {
+		property.usage = PROPERTY_USAGE_NOEDITOR;
+	}
 }
 
 void LineEdit::_bind_methods() {
