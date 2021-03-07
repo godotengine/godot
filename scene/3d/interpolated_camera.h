@@ -41,10 +41,18 @@ class InterpolatedCamera : public Camera {
 	real_t speed;
 	NodePath target;
 
+public:
+	enum InterpolatedCameraProcessMode {
+		INTERPOLATED_CAMERA_PROCESS_PHYSICS,
+		INTERPOLATED_CAMERA_PROCESS_IDLE
+	};
+
 protected:
 	void _notification(int p_what);
 	static void _bind_methods();
 	void _set_target(const Object *p_target);
+	InterpolatedCameraProcessMode process_mode;
+	void _update_process_mode();
 
 public:
 	void set_target(const Spatial *p_target);
@@ -57,9 +65,12 @@ public:
 	void set_interpolation_enabled(bool p_enable);
 	bool is_interpolation_enabled() const;
 
+	void set_process_mode(InterpolatedCameraProcessMode p_mode);
+	InterpolatedCameraProcessMode get_process_mode() const;
 	String get_configuration_warning() const;
 
 	InterpolatedCamera();
 };
 
+VARIANT_ENUM_CAST(InterpolatedCamera::InterpolatedCameraProcessMode);
 #endif // INTERPOLATED_CAMERA_H
