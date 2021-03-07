@@ -1,10 +1,31 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="ProximityGroup3D" inherits="Node3D" version="4.0">
 	<brief_description>
-		General-purpose proximity detection node.
+		Auto-grouping of [ProximityGroup3D] nodes (with same group name) in 3D space, which intersect with each other. The user can then broadcasts messages to all currently intersecting members (the physics system is not used).
 	</brief_description>
 	<description>
-		General-purpose proximity detection node.
+		[ProximityGroup3D] nodes are automatically grouped together, as long as they share the same [code]group_name[/code] and intersect with each other. By calling the [method broadcast], you can invoke a specified method with various parameters to all intersecting members.
+		This node is cuboid-shaped and consists of a cluster of [Vector3] coordinates. The coordinates are automatically calculated by calling [member grid_radius]. To enable this object to find its peers (and do the auto-grouping), you need to define its group name via setter method of [member group_name]. As soon as this object's shape intersects with another [ProximityGroup3D] object' shape, and both share the same [code]group_name[/code], they will belong together for as long as they intersect.
+		As this class does not use the physics system, you don't need to add any other node as a child (unlike for the [PhysicsBody3D] node).
+		The [ProximityGroup3D] uses the [SceneTree] Groups in the background by calling the method [method Node.add_to_group] internally. How to find them: The [SceneTree] Group names are constructed by combining the [code]group_name[/code] with its coordinates, which are calculated using the [code]grid_radius[/code] you defined beforehand.
+		[b]Example:[/b] A [ProximityGroup3D] node called [code]"PlanetEarth"[/code] at position [code]Vector3(6, 6, 6)[/code] with a group name "planets" and a [code]grid_radius[/code] of [code]Vector3(1, 2, 3)[/code] will create the following [SceneTree] Group names:
+		[codeblock]
+		- "planets|5|4|3"
+		- "planets|5|4|4"
+		- "planets|5|4|5"
+		- "planets|5|4|6"
+		- "planets|5|4|7"
+		- "planets|5|4|8"
+		- "planets|5|4|9"
+		- + more
+		[/codeblock]
+		If there is another [ProximityGroup3D] [code]"PlanetMars"[/code] with group name "planets", and one of its coordinates is [code]Vector3(5, 4, 7)[/code], it would normally create the [SceneTree] group called [code]"planets|5|4|7"[/code]. But as this group name already exists, this [ProximityGroup3D] object will be added to the existing one. [code]"PlanetEarth"[/code] is already in this group. For as long as both nodes don't change their transform and stop intersecting (or exit the scene tree), they are grouped together. For as long as this intersection exists, any call of [method broadcast] will affect both [ProximityGroup3D] nodes.
+		There are 3 things to consider:
+		[codeblock]
+		- the bigger the grid radius, the more coordinates, the more [SceneTree] Groups.
+		- any ProximityGroup3D transform (or exiting the scene tree), will require the groupings to be recalculated.
+		- if your grid radius is smaller than Vector3(1, 1, 1), will be rounded up to Vector3(1, 1, 1). Therefore, small vectors may lead to unwanted groupings.
+		[/codeblock]
 	</description>
 	<tutorials>
 	</tutorials>
@@ -17,15 +38,24 @@
 			<argument index="1" name="parameters" type="Variant">
 			</argument>
 			<description>
+				Calls on all intersecting [ProximityGroup3D] the given method and parameters
+				If the [code]dispatch_mode[/code] is set to [code]MODE_PROXY[/code] (default), then all calls are delegated to their respective parent [Node].
 			</description>
 		</method>
 	</methods>
 	<members>
-		<member name="dispatch_mode" type="int" setter="set_dispatch_mode" getter="get_dispatch_mode" enum="ProximityGroup3D.DispatchMode" default="0">
+		<member name="dispatch_mode" type="int" setter="set_dispatch_mode" getter="get_dispatch_mode" enum="ProximityGroup3D.DispatchMode" default="MODE_PROXY">
+			Specify who gets contacted on a call of method [method broadcast].
+			For [code]MODE_PROXY[/code] (default), this node's parent will be the target.
+			For [code]MODE_SIGNAL[/code], this node will emit the "broadcast" signal.
 		</member>
 		<member name="grid_radius" type="Vector3" setter="set_grid_radius" getter="get_grid_radius" default="Vector3( 1, 1, 1 )">
+			Defines the size of the space and the amount of coordinates required to calculate whether two [ProximityGroup3D] nodes are intersecting or not.
 		</member>
 		<member name="group_name" type="String" setter="set_group_name" getter="get_group_name" default="&quot;&quot;">
+			Specify the common group name, to let other [ProximityGroup3D] nodes know, if they should be auto-grouped with this node in case they intersect with each other.
+			For Example: If you have a [ProximityGroup3D] node called "Earth" and another called "Mars", set for both "planet" as their [code]group_name[/code].
+			Give both planets a way bigger [code]grid_radius[/code] than their actual radius, position them close enough and they'll be automatically grouped.
 		</member>
 	</members>
 	<signals>
@@ -35,6 +65,9 @@
 			<argument index="1" name="parameters" type="Array">
 			</argument>
 			<description>
+				This signal is emitted when the user calls [method broadcast] and has set [member dispatch_mode] to [code]MODE_SIGNAL[/code].
+				The given method and its parameters are passed on to the listeners who connected to this signal of this object, as well as any [ProximityGroup3D] object this object is grouped together with.
+				The default [code]dispatch_mode[/code] is [code]MODE_PROXY[/code].
 			</description>
 		</signal>
 	</signals>
