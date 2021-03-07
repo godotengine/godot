@@ -180,9 +180,11 @@ void CachedData::clear_godot_api_cache() {
 	methodthunk_MarshalUtils_TypeIsGenericIEnumerable.nullify();
 	methodthunk_MarshalUtils_TypeIsGenericICollection.nullify();
 	methodthunk_MarshalUtils_TypeIsGenericIDictionary.nullify();
+	methodthunk_MarshalUtils_TypeIsGenericNullable.nullify();
 
 	methodthunk_MarshalUtils_ArrayGetElementType.nullify();
 	methodthunk_MarshalUtils_DictionaryGetKeyValueTypes.nullify();
+	methodthunk_MarshalUtils_NullableGetUnderlyingType.nullify();
 
 	methodthunk_MarshalUtils_MakeGenericArrayType.nullify();
 	methodthunk_MarshalUtils_MakeGenericDictionaryType.nullify();
@@ -306,9 +308,11 @@ void update_godot_api_cache() {
 	CACHE_METHOD_THUNK_AND_CHECK(MarshalUtils, TypeIsGenericIEnumerable, GODOT_API_CLASS(MarshalUtils)->get_method("TypeIsGenericIEnumerable", 1));
 	CACHE_METHOD_THUNK_AND_CHECK(MarshalUtils, TypeIsGenericICollection, GODOT_API_CLASS(MarshalUtils)->get_method("TypeIsGenericICollection", 1));
 	CACHE_METHOD_THUNK_AND_CHECK(MarshalUtils, TypeIsGenericIDictionary, GODOT_API_CLASS(MarshalUtils)->get_method("TypeIsGenericIDictionary", 1));
+	CACHE_METHOD_THUNK_AND_CHECK(MarshalUtils, TypeIsGenericNullable, GODOT_API_CLASS(MarshalUtils)->get_method("TypeIsGenericNullable", 1));
 
 	CACHE_METHOD_THUNK_AND_CHECK(MarshalUtils, ArrayGetElementType, GODOT_API_CLASS(MarshalUtils)->get_method("ArrayGetElementType", 2));
 	CACHE_METHOD_THUNK_AND_CHECK(MarshalUtils, DictionaryGetKeyValueTypes, GODOT_API_CLASS(MarshalUtils)->get_method("DictionaryGetKeyValueTypes", 3));
+	CACHE_METHOD_THUNK_AND_CHECK(MarshalUtils, NullableGetUnderlyingType, GODOT_API_CLASS(MarshalUtils)->get_method("NullableGetUnderlyingType", 2));
 
 	CACHE_METHOD_THUNK_AND_CHECK(MarshalUtils, MakeGenericArrayType, GODOT_API_CLASS(MarshalUtils)->get_method("MakeGenericArrayType", 1));
 	CACHE_METHOD_THUNK_AND_CHECK(MarshalUtils, MakeGenericDictionaryType, GODOT_API_CLASS(MarshalUtils)->get_method("MakeGenericDictionaryType", 2));

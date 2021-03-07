@@ -450,6 +450,19 @@ MonoObject *variant_to_mono_object_of_genericinst(const Variant &p_var, GDMonoCl
 		return GDMonoUtils::create_managed_from(p_var.operator Array(), godot_array_class);
 	}
 
+	if (GDMonoUtils::Marshal::type_is_generic_nullable(reftype)) {
+		if (p_var.get_type() == Variant::Type::NIL) {
+			return nullptr;
+		}
+
+		MonoReflectionType *underlying_reftype;
+		GDMonoUtils::Marshal::nullable_get_underlying_type(reftype, &underlying_reftype);
+		MonoType *underlying_monotype = mono_reflection_type_get_type(underlying_reftype);
+		GDMonoClass *underlying_class = GDMono::get_singleton()->get_class(mono_class_from_mono_type(underlying_monotype));
+
+		return variant_to_mono_object(p_var, ManagedType(mono_type_get_type(underlying_monotype), underlying_class));
+	}
+
 	ERR_FAIL_V_MSG(nullptr, "Attempted to convert Variant to unsupported generic type: '" +
 									p_type_class->get_full_name() + "'.");
 }

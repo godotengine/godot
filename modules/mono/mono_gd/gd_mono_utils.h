@@ -61,9 +61,11 @@ bool type_is_system_generic_dictionary(MonoReflectionType *p_reftype);
 bool type_is_generic_ienumerable(MonoReflectionType *p_reftype);
 bool type_is_generic_icollection(MonoReflectionType *p_reftype);
 bool type_is_generic_idictionary(MonoReflectionType *p_reftype);
+bool type_is_generic_nullable(MonoReflectionType *p_reftype);
 
 void array_get_element_type(MonoReflectionType *p_array_reftype, MonoReflectionType **r_elem_reftype);
 void dictionary_get_key_value_types(MonoReflectionType *p_dict_reftype, MonoReflectionType **r_key_reftype, MonoReflectionType **r_value_reftype);
+void nullable_get_underlying_type(MonoReflectionType *p_nullable_reftype, MonoReflectionType **r_underlying_reftype);
 
 GDMonoClass *make_generic_array_type(MonoReflectionType *p_elem_reftype);
 GDMonoClass *make_generic_dictionary_type(MonoReflectionType *p_key_reftype, MonoReflectionType *p_value_reftype);

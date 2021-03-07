@@ -626,6 +626,14 @@ bool type_is_generic_idictionary(MonoReflectionType *p_reftype) {
 	return (bool)res;
 }
 
+bool type_is_generic_nullable(MonoReflectionType *p_reftype) {
+	NO_GLUE_RET(false);
+	MonoException *exc = NULL;
+	MonoBoolean res = CACHED_METHOD_THUNK(MarshalUtils, TypeIsGenericNullable).invoke(p_reftype, &exc);
+	UNHANDLED_EXCEPTION(exc);
+	return (bool)res;
+}
+
 void array_get_element_type(MonoReflectionType *p_array_reftype, MonoReflectionType **r_elem_reftype) {
 	MonoException *exc = nullptr;
 	CACHED_METHOD_THUNK(MarshalUtils, ArrayGetElementType).invoke(p_array_reftype, r_elem_reftype, &exc);
@@ -635,6 +643,12 @@ void array_get_element_type(MonoReflectionType *p_array_reftype, MonoReflectionT
 void dictionary_get_key_value_types(MonoReflectionType *p_dict_reftype, MonoReflectionType **r_key_reftype, MonoReflectionType **r_value_reftype) {
 	MonoException *exc = nullptr;
 	CACHED_METHOD_THUNK(MarshalUtils, DictionaryGetKeyValueTypes).invoke(p_dict_reftype, r_key_reftype, r_value_reftype, &exc);
+	UNHANDLED_EXCEPTION(exc);
+}
+
+void nullable_get_underlying_type(MonoReflectionType *p_nullable_reftype, MonoReflectionType **r_underlying_reftype) {
+	MonoException *exc = NULL;
+	CACHED_METHOD_THUNK(MarshalUtils, NullableGetUnderlyingType).invoke(p_nullable_reftype, r_underlying_reftype, &exc);
 	UNHANDLED_EXCEPTION(exc);
 }
 
