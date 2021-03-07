@@ -280,7 +280,7 @@
 			<return type="Vector2">
 			</return>
 			<description>
-				Returns the vector with each component set to one or negative one, depending on the signs of the components, or zero if the component is zero, by calling [method @GDScript.sign] on each component.
+				Returns the vector with each component set to one or negative one, depending on the signs of the components. If a component is zero, it returns positive one.
 			</description>
 		</method>
 		<method name="slerp">
