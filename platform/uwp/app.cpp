@@ -393,12 +393,14 @@ void App::key_event(Windows::UI::Core::CoreWindow ^ sender, bool p_pressed, Wind
 		ke.type = OS_UWP::KeyEvent::MessageType::KEY_EVENT_MESSAGE;
 		ke.unicode = 0;
 		ke.scancode = KeyMappingWindows::get_keysym((unsigned int)key_args->VirtualKey);
+		ke.physical_scancode = KeyMappingWindows::get_scansym((unsigned int)key_args->KeyStatus.ScanCode);
 		ke.echo = (!p_pressed && !key_args->KeyStatus.IsKeyReleased) || (p_pressed && key_args->KeyStatus.WasKeyDown);
 
 	} else {
 		ke.type = OS_UWP::KeyEvent::MessageType::CHAR_EVENT_MESSAGE;
 		ke.unicode = char_args->KeyCode;
 		ke.scancode = 0;
+		ke.physical_scancode = 0;
 		ke.echo = (!p_pressed && !char_args->KeyStatus.IsKeyReleased) || (p_pressed && char_args->KeyStatus.WasKeyDown);
 	}
 

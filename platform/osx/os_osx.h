@@ -62,6 +62,7 @@ public:
 		bool echo;
 		bool raw;
 		uint32_t scancode;
+		uint32_t physical_scancode;
 		uint32_t unicode;
 	};
 

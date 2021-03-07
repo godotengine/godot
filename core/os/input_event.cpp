@@ -216,6 +216,13 @@ uint32_t InputEventKey::get_scancode() const {
 	return scancode;
 }
 
+void InputEventKey::set_physical_scancode(uint32_t p_scancode) {
+	physical_scancode = p_scancode;
+}
+uint32_t InputEventKey::get_physical_scancode() const {
+	return physical_scancode;
+}
+
 void InputEventKey::set_unicode(uint32_t p_unicode) {
 	unicode = p_unicode;
 }
@@ -248,6 +255,20 @@ uint32_t InputEventKey::get_scancode_with_modifiers() const {
 	return sc;
 }
 
+uint32_t InputEventKey::get_physical_scancode_with_modifiers() const {
+	uint32_t sc = physical_scancode;
+	if (get_control())
+		sc |= KEY_MASK_CTRL;
+	if (get_alt())
+		sc |= KEY_MASK_ALT;
+	if (get_shift())
+		sc |= KEY_MASK_SHIFT;
+	if (get_metakey())
+		sc |= KEY_MASK_META;
+
+	return sc;
+}
+
 String InputEventKey::as_text() const {
 	String kc = keycode_get_string(scancode);
 	if (kc == String()) {
@@ -275,10 +296,19 @@ bool InputEventKey::action_match(const Ref<InputEvent> &p_event, bool *p_pressed
 		return false;
 	}
 
-	uint32_t code = get_scancode_with_modifiers();
-	uint32_t event_code = key->get_scancode_with_modifiers();
+	bool match = false;
+	if (get_scancode() == 0) {
+		uint32_t code = get_physical_scancode_with_modifiers();
+		uint32_t event_code = key->get_physical_scancode_with_modifiers();
 
-	bool match = get_scancode() == key->get_scancode() && (!key->is_pressed() || (code & event_code) == code);
+		match = get_physical_scancode() == key->get_physical_scancode() && (!key->is_pressed() || (code & event_code) == code);
+	} else {
+		uint32_t code = get_scancode_with_modifiers();
+		uint32_t event_code = key->get_scancode_with_modifiers();
+
+		match = get_scancode() == key->get_scancode() && (!key->is_pressed() || (code & event_code) == code);
+	}
+
 	if (match) {
 		if (p_pressed != nullptr) {
 			*p_pressed = key->is_pressed();
@@ -308,15 +338,20 @@ void InputEventKey::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_scancode", "scancode"), &InputEventKey::set_scancode);
 	ClassDB::bind_method(D_METHOD("get_scancode"), &InputEventKey::get_scancode);
 
+	ClassDB::bind_method(D_METHOD("set_physical_scancode", "scancode"), &InputEventKey::set_physical_scancode);
+	ClassDB::bind_method(D_METHOD("get_physical_scancode"), &InputEventKey::get_physical_scancode);
+
 	ClassDB::bind_method(D_METHOD("set_unicode", "unicode"), &InputEventKey::set_unicode);
 	ClassDB::bind_method(D_METHOD("get_unicode"), &InputEventKey::get_unicode);
 
 	ClassDB::bind_method(D_METHOD("set_echo", "echo"), &InputEventKey::set_echo);
 
 	ClassDB::bind_method(D_METHOD("get_scancode_with_modifiers"), &InputEventKey::get_scancode_with_modifiers);
+	ClassDB::bind_method(D_METHOD("get_physical_scancode_with_modifiers"), &InputEventKey::get_physical_scancode_with_modifiers);
 
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "pressed"), "set_pressed", "is_pressed");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "scancode"), "set_scancode", "get_scancode");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "physical_scancode"), "set_physical_scancode", "get_physical_scancode");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "unicode"), "set_unicode", "get_unicode");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "echo"), "set_echo", "is_echo");
 }
@@ -324,6 +359,7 @@ void InputEventKey::_bind_methods() {
 InputEventKey::InputEventKey() {
 	pressed = false;
 	scancode = 0;
+	physical_scancode = 0;
 	unicode = 0; ///unicode
 	echo = false;
 }

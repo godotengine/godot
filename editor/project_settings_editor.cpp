@@ -114,6 +114,7 @@ void ProjectSettingsEditor::_notification(int p_what) {
 			translation_list->connect("button_pressed", this, "_translation_delete");
 			_update_actions();
 			popup_add->add_icon_item(get_icon("Keyboard", "EditorIcons"), TTR("Key "), INPUT_KEY); //"Key " - because the word 'key' has already been used as a key animation
+			popup_add->add_icon_item(get_icon("KeyboardPhysical", "EditorIcons"), TTR("Physical Key"), INPUT_KEY_PHYSICAL);
 			popup_add->add_icon_item(get_icon("JoyButton", "EditorIcons"), TTR("Joy Button"), INPUT_JOY_BUTTON);
 			popup_add->add_icon_item(get_icon("JoyAxis", "EditorIcons"), TTR("Joy Axis"), INPUT_JOY_MOTION);
 			popup_add->add_icon_item(get_icon("Mouse", "EditorIcons"), TTR("Mouse Button"), INPUT_MOUSE_BUTTON);
@@ -147,6 +148,7 @@ void ProjectSettingsEditor::_notification(int p_what) {
 			search_box->set_clear_button_enabled(true);
 			action_add_error->add_color_override("font_color", get_color("error_color", "Editor"));
 			popup_add->set_item_icon(popup_add->get_item_index(INPUT_KEY), get_icon("Keyboard", "EditorIcons"));
+			popup_add->set_item_icon(popup_add->get_item_index(INPUT_KEY_PHYSICAL), get_icon("KeyboardPhysical", "EditorIcons"));
 			popup_add->set_item_icon(popup_add->get_item_index(INPUT_JOY_BUTTON), get_icon("JoyButton", "EditorIcons"));
 			popup_add->set_item_icon(popup_add->get_item_index(INPUT_JOY_MOTION), get_icon("JoyAxis", "EditorIcons"));
 			popup_add->set_item_icon(popup_add->get_item_index(INPUT_MOUSE_BUTTON), get_icon("Mouse", "EditorIcons"));
@@ -357,7 +359,14 @@ void ProjectSettingsEditor::_press_a_key_confirm() {
 
 	Ref<InputEventKey> ie;
 	ie.instance();
-	ie->set_scancode(last_wait_for_key->get_scancode());
+	if (press_a_key_physical) {
+		ie->set_physical_scancode(last_wait_for_key->get_physical_scancode());
+		ie->set_scancode(0);
+	} else {
+		ie->set_physical_scancode(0);
+		ie->set_scancode(last_wait_for_key->get_scancode());
+	}
+
 	ie->set_shift(last_wait_for_key->get_shift());
 	ie->set_alt(last_wait_for_key->get_alt());
 	ie->set_control(last_wait_for_key->get_control());
@@ -375,8 +384,14 @@ void ProjectSettingsEditor::_press_a_key_confirm() {
 		if (aie.is_null()) {
 			continue;
 		}
-		if (aie->get_scancode_with_modifiers() == ie->get_scancode_with_modifiers()) {
-			return;
+		if (!press_a_key_physical) {
+			if (aie->get_scancode_with_modifiers() == ie->get_scancode_with_modifiers()) {
+				return;
+			}
+		} else {
+			if (aie->get_physical_scancode_with_modifiers() == ie->get_physical_scancode_with_modifiers()) {
+				return;
+			}
 		}
 	}
 
@@ -444,7 +459,7 @@ void ProjectSettingsEditor::_wait_for_key(const Ref<InputEvent> &p_event) {
 
 	if (k.is_valid() && k->is_pressed() && k->get_scancode() != 0) {
 		last_wait_for_key = p_event;
-		const String str = keycode_get_string(k->get_scancode_with_modifiers());
+		const String str = (press_a_key_physical) ? keycode_get_string(k->get_physical_scancode_with_modifiers()) + TTR(" (Physical)") : keycode_get_string(k->get_scancode_with_modifiers());
 
 		press_a_key_label->set_text(str);
 		press_a_key->get_ok()->set_disabled(false);
@@ -457,12 +472,20 @@ void ProjectSettingsEditor::_add_item(int p_item, Ref<InputEvent> p_exiting_even
 
 	switch (add_type) {
 		case INPUT_KEY: {
+			press_a_key_physical = false;
 			press_a_key_label->set_text(TTR("Press a Key..."));
 			press_a_key->get_ok()->set_disabled(true);
 			last_wait_for_key = Ref<InputEvent>();
 			press_a_key->popup_centered(Size2(250, 80) * EDSCALE);
 			press_a_key->grab_focus();
-
+		} break;
+		case INPUT_KEY_PHYSICAL: {
+			press_a_key_physical = true;
+			press_a_key_label->set_text(TTR("Press a Key..."));
+			press_a_key->get_ok()->set_disabled(true);
+			last_wait_for_key = Ref<InputEvent>();
+			press_a_key->popup_centered(Size2(250, 80) * EDSCALE);
+			press_a_key->grab_focus();
 		} break;
 		case INPUT_MOUSE_BUTTON: {
 			device_index_label->set_text(TTR("Mouse Button Index:"));
@@ -538,7 +561,11 @@ void ProjectSettingsEditor::_edit_item(Ref<InputEvent> p_exiting_event) {
 	InputType ie_type;
 
 	if ((Ref<InputEventKey>(p_exiting_event)).is_valid()) {
-		ie_type = INPUT_KEY;
+		if ((Ref<InputEventKey>(p_exiting_event))->get_scancode() != 0) {
+			ie_type = INPUT_KEY;
+		} else {
+			ie_type = INPUT_KEY_PHYSICAL;
+		}
 
 	} else if ((Ref<InputEventJoypadButton>(p_exiting_event)).is_valid()) {
 		ie_type = INPUT_JOY_BUTTON;
@@ -729,10 +756,13 @@ void ProjectSettingsEditor::_update_actions() {
 
 			Ref<InputEventKey> k = event;
 			if (k.is_valid()) {
-				const String str = keycode_get_string(k->get_scancode_with_modifiers());
-
+				const String str = (k->get_scancode() == 0) ? keycode_get_string(k->get_physical_scancode_with_modifiers()) + TTR(" (Physical)") : keycode_get_string(k->get_scancode_with_modifiers());
 				action2->set_text(0, str);
-				action2->set_icon(0, get_icon("Keyboard", "EditorIcons"));
+				if ((k->get_scancode() != 0)) {
+					action2->set_icon(0, get_icon("Keyboard", "EditorIcons"));
+				} else {
+					action2->set_icon(0, get_icon("KeyboardPhysical", "EditorIcons"));
+				}
 			}
 
 			Ref<InputEventJoypadButton> jb = event;
@@ -1924,6 +1954,8 @@ ProjectSettingsEditor::ProjectSettingsEditor(EditorData *p_data) {
 	popup_add = memnew(PopupMenu);
 	add_child(popup_add);
 	popup_add->connect("id_pressed", this, "_add_item");
+
+	press_a_key_physical = false;
 
 	press_a_key = memnew(ConfirmationDialog);
 	press_a_key->set_focus_mode(FOCUS_ALL);

@@ -208,7 +208,7 @@ public:
 	void process_double_tap(int event_android_button_mask, Point2 p_pos);
 	void process_scroll(Point2 p_pos);
 	void process_joy_event(JoypadEvent p_event);
-	void process_key_event(int p_scancode, int p_unicode_char, bool p_pressed);
+	void process_key_event(int p_keycode, int p_scancode, int p_unicode_char, bool p_pressed);
 	void process_event(Ref<InputEvent> p_event);
 	void init_video_mode(int p_video_width, int p_video_height);
 

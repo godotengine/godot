@@ -1890,6 +1890,7 @@ void OS_X11::_handle_key_event(XKeyEvent *p_event, LocalVector<XEvent> &p_events
 		if (status == XLookupChars) {
 			bool keypress = xkeyevent->type == KeyPress;
 			unsigned int keycode = KeyMappingX11::get_keycode(keysym_keycode);
+			unsigned int physical_keycode = KeyMappingX11::get_scancode(xkeyevent->keycode);
 			if (keycode >= 'a' && keycode <= 'z') {
 				keycode -= 'a' - 'A';
 			}
@@ -1899,8 +1900,12 @@ void OS_X11::_handle_key_event(XKeyEvent *p_event, LocalVector<XEvent> &p_events
 			for (int i = 0; i < tmp.length(); i++) {
 				Ref<InputEventKey> k;
 				k.instance();
-				if (keycode == 0 && tmp[i] == 0) {
+				if (physical_keycode == 0 && keycode == 0 && tmp[i] == 0) {
 					continue;
+				}
+
+				if (keycode == 0) {
+					keycode = physical_keycode;
 				}
 
 				get_key_modifier_state(xkeyevent->state, k);
@@ -1910,12 +1915,14 @@ void OS_X11::_handle_key_event(XKeyEvent *p_event, LocalVector<XEvent> &p_events
 				k->set_pressed(keypress);
 
 				k->set_scancode(keycode);
+				k->set_physical_scancode(physical_keycode);
 
 				k->set_echo(false);
 
 				if (k->get_scancode() == KEY_BACKTAB) {
 					//make it consistent across platforms.
 					k->set_scancode(KEY_TAB);
+					k->set_physical_scancode(KEY_TAB);
 					k->set_shift(true);
 				}
 
@@ -1944,6 +1951,7 @@ void OS_X11::_handle_key_event(XKeyEvent *p_event, LocalVector<XEvent> &p_events
 	// keysym, so it works in all platforms the same.
 
 	unsigned int keycode = KeyMappingX11::get_keycode(keysym_keycode);
+	unsigned int physical_keycode = KeyMappingX11::get_scancode(xkeyevent->keycode);
 
 	/* Phase 3, obtain a unicode character from the keysym */
 
@@ -1963,8 +1971,12 @@ void OS_X11::_handle_key_event(XKeyEvent *p_event, LocalVector<XEvent> &p_events
 
 	bool keypress = xkeyevent->type == KeyPress;
 
-	if (keycode == 0 && unicode == 0) {
+	if (physical_keycode == 0 && keycode == 0 && unicode == 0) {
 		return;
+	}
+
+	if (keycode == 0) {
+		keycode = physical_keycode;
 	}
 
 	/* Phase 5, determine modifier mask */
@@ -2028,12 +2040,14 @@ void OS_X11::_handle_key_event(XKeyEvent *p_event, LocalVector<XEvent> &p_events
 	}
 
 	k->set_scancode(keycode);
+	k->set_physical_scancode(physical_keycode);
 	k->set_unicode(unicode);
 	k->set_echo(p_echo);
 
 	if (k->get_scancode() == KEY_BACKTAB) {
 		//make it consistent across platforms.
 		k->set_scancode(KEY_TAB);
+		k->set_physical_scancode(KEY_TAB);
 		k->set_shift(true);
 	}
 

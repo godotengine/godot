@@ -241,6 +241,7 @@ static Ref<InputEventKey> setup_key_event(const EmscriptenKeyboardEvent *emscrip
 	ev->set_echo(emscripten_event->repeat);
 	dom2godot_mod(emscripten_event, ev);
 	ev->set_scancode(dom_code2godot_scancode(emscripten_event->code, emscripten_event->key));
+	ev->set_physical_scancode(dom_code2godot_scancode(emscripten_event->code, emscripten_event->key));
 
 	String unicode = String::utf8(emscripten_event->key);
 	// Check if empty or multi-character (e.g. `CapsLock`).

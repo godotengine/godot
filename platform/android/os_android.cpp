@@ -340,11 +340,12 @@ void OS_Android::process_event(Ref<InputEvent> p_event) {
 	input->parse_input_event(p_event);
 }
 
-void OS_Android::process_key_event(int p_scancode, int p_unicode_char, bool p_pressed) {
+void OS_Android::process_key_event(int p_keycode, int p_scancode, int p_unicode_char, bool p_pressed) {
 	Ref<InputEventKey> ev;
 	ev.instance();
 	int val = p_unicode_char;
-	unsigned int scancode = android_get_keysym(p_scancode);
+	unsigned int scancode = android_get_keysym(p_keycode);
+	unsigned int phy_scancode = android_get_keysym(p_scancode);
 
 	switch (scancode) {
 		case KEY_SHIFT: {
@@ -362,6 +363,8 @@ void OS_Android::process_key_event(int p_scancode, int p_unicode_char, bool p_pr
 	}
 
 	ev->set_scancode(scancode);
+	ev->set_physical_scancode(phy_scancode);
+
 	ev->set_unicode(val);
 	ev->set_pressed(p_pressed);
 

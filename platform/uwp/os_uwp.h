@@ -61,6 +61,7 @@ public:
 		MessageType type;
 		bool pressed;
 		unsigned int scancode;
+		unsigned int physical_scancode;
 		unsigned int unicode;
 		bool echo;
 		CorePhysicalKeyStatus status;
