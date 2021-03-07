@@ -1705,7 +1705,7 @@ VulkanContext::~VulkanContext() {
 				vkDestroySemaphore(device, image_ownership_semaphores[i], nullptr);
 			}
 		}
-		if (inst_initialized && use_validation_layers) {
+		if (inst_initialized && enabled_debug_utils) {
 			DestroyDebugUtilsMessengerEXT(inst, dbg_messenger, nullptr);
 		}
 		vkDestroyDevice(device, nullptr);
