@@ -955,9 +955,11 @@ void CanvasItemEditor::_restore_canvas_item_state(List<CanvasItem *> p_canvas_it
 	for (List<CanvasItem *>::Element *E = drag_selection.front(); E; E = E->next()) {
 		CanvasItem *canvas_item = E->get();
 		CanvasItemEditorSelectedItem *se = editor_selection->get_node_editor_data<CanvasItemEditorSelectedItem>(canvas_item);
-		canvas_item->_edit_set_state(se->undo_state);
-		if (restore_bones) {
-			_restore_canvas_item_ik_chain(canvas_item, &(se->pre_drag_bones_undo_state));
+		if (se) {
+			canvas_item->_edit_set_state(se->undo_state);
+			if (restore_bones) {
+				_restore_canvas_item_ik_chain(canvas_item, &(se->pre_drag_bones_undo_state));
+			}
 		}
 	}
 }
@@ -982,13 +984,15 @@ void CanvasItemEditor::_commit_canvas_item_state(List<CanvasItem *> p_canvas_ite
 	for (List<CanvasItem *>::Element *E = modified_canvas_items.front(); E; E = E->next()) {
 		CanvasItem *canvas_item = E->get();
 		CanvasItemEditorSelectedItem *se = editor_selection->get_node_editor_data<CanvasItemEditorSelectedItem>(canvas_item);
-		undo_redo->add_do_method(canvas_item, "_edit_set_state", canvas_item->_edit_get_state());
-		undo_redo->add_undo_method(canvas_item, "_edit_set_state", se->undo_state);
-		if (commit_bones) {
-			for (List<Dictionary>::Element *F = se->pre_drag_bones_undo_state.front(); F; F = F->next()) {
-				canvas_item = Object::cast_to<CanvasItem>(canvas_item->get_parent());
-				undo_redo->add_do_method(canvas_item, "_edit_set_state", canvas_item->_edit_get_state());
-				undo_redo->add_undo_method(canvas_item, "_edit_set_state", F->get());
+		if (se) {
+			undo_redo->add_do_method(canvas_item, "_edit_set_state", canvas_item->_edit_get_state());
+			undo_redo->add_undo_method(canvas_item, "_edit_set_state", se->undo_state);
+			if (commit_bones) {
+				for (List<Dictionary>::Element *F = se->pre_drag_bones_undo_state.front(); F; F = F->next()) {
+					canvas_item = Object::cast_to<CanvasItem>(canvas_item->get_parent());
+					undo_redo->add_do_method(canvas_item, "_edit_set_state", canvas_item->_edit_get_state());
+					undo_redo->add_undo_method(canvas_item, "_edit_set_state", F->get());
+				}
 			}
 		}
 	}
@@ -2238,17 +2242,19 @@ bool CanvasItemEditor::_gui_input_move(const Ref<InputEvent> &p_event) {
 			for (List<CanvasItem *>::Element *E = drag_selection.front(); E; E = E->next()) {
 				CanvasItem *canvas_item = E->get();
 				CanvasItemEditorSelectedItem *se = editor_selection->get_node_editor_data<CanvasItemEditorSelectedItem>(canvas_item);
-				Transform2D xform = canvas_item->get_global_transform_with_canvas().affine_inverse() * canvas_item->get_transform();
+				if (se) {
+					Transform2D xform = canvas_item->get_global_transform_with_canvas().affine_inverse() * canvas_item->get_transform();
 
-				Node2D *node2d = Object::cast_to<Node2D>(canvas_item);
-				if (node2d && se->pre_drag_bones_undo_state.size() > 0 && !force_no_IK) {
-					real_t initial_leaf_node_rotation = node2d->get_global_transform_with_canvas().get_rotation();
-					_restore_canvas_item_ik_chain(node2d, &(all_bones_ik_states[index]));
-					real_t final_leaf_node_rotation = node2d->get_global_transform_with_canvas().get_rotation();
-					node2d->rotate(initial_leaf_node_rotation - final_leaf_node_rotation);
-					_solve_IK(node2d, new_pos);
-				} else {
-					canvas_item->_edit_set_position(canvas_item->_edit_get_position() + xform.xform(new_pos) - xform.xform(previous_pos));
+					Node2D *node2d = Object::cast_to<Node2D>(canvas_item);
+					if (node2d && se->pre_drag_bones_undo_state.size() > 0 && !force_no_IK) {
+						real_t initial_leaf_node_rotation = node2d->get_global_transform_with_canvas().get_rotation();
+						_restore_canvas_item_ik_chain(node2d, &(all_bones_ik_states[index]));
+						real_t final_leaf_node_rotation = node2d->get_global_transform_with_canvas().get_rotation();
+						node2d->rotate(initial_leaf_node_rotation - final_leaf_node_rotation);
+						_solve_IK(node2d, new_pos);
+					} else {
+						canvas_item->_edit_set_position(canvas_item->_edit_get_position() + xform.xform(new_pos) - xform.xform(previous_pos));
+					}
 				}
 				index++;
 			}
@@ -2372,17 +2378,19 @@ bool CanvasItemEditor::_gui_input_move(const Ref<InputEvent> &p_event) {
 			for (List<CanvasItem *>::Element *E = drag_selection.front(); E; E = E->next()) {
 				CanvasItem *canvas_item = E->get();
 				CanvasItemEditorSelectedItem *se = editor_selection->get_node_editor_data<CanvasItemEditorSelectedItem>(canvas_item);
-				Transform2D xform = canvas_item->get_global_transform_with_canvas().affine_inverse() * canvas_item->get_transform();
+				if (se) {
+					Transform2D xform = canvas_item->get_global_transform_with_canvas().affine_inverse() * canvas_item->get_transform();
 
-				Node2D *node2d = Object::cast_to<Node2D>(canvas_item);
-				if (node2d && se->pre_drag_bones_undo_state.size() > 0) {
-					real_t initial_leaf_node_rotation = node2d->get_global_transform_with_canvas().get_rotation();
-					_restore_canvas_item_ik_chain(node2d, &(all_bones_ik_states[index]));
-					real_t final_leaf_node_rotation = node2d->get_global_transform_with_canvas().get_rotation();
-					node2d->rotate(initial_leaf_node_rotation - final_leaf_node_rotation);
-					_solve_IK(node2d, new_pos);
-				} else {
-					canvas_item->_edit_set_position(canvas_item->_edit_get_position() + xform.xform(new_pos) - xform.xform(previous_pos));
+					Node2D *node2d = Object::cast_to<Node2D>(canvas_item);
+					if (node2d && se->pre_drag_bones_undo_state.size() > 0) {
+						real_t initial_leaf_node_rotation = node2d->get_global_transform_with_canvas().get_rotation();
+						_restore_canvas_item_ik_chain(node2d, &(all_bones_ik_states[index]));
+						real_t final_leaf_node_rotation = node2d->get_global_transform_with_canvas().get_rotation();
+						node2d->rotate(initial_leaf_node_rotation - final_leaf_node_rotation);
+						_solve_IK(node2d, new_pos);
+					} else {
+						canvas_item->_edit_set_position(canvas_item->_edit_get_position() + xform.xform(new_pos) - xform.xform(previous_pos));
+					}
 				}
 				index++;
 			}
