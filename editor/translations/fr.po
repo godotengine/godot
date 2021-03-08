@@ -1938,8 +1938,8 @@ msgid "Open a File or Directory"
 msgstr "Ouvrir un fichier ou un répertoire"
 
 #: editor/editor_file_dialog.cpp editor/editor_node.cpp
-#: editor/editor_properties.cpp editor/inspector_dock.cpp
-#: editor/plugins/animation_player_editor_plugin.cpp
+#: editor/editor_properties.cpp editor/import_defaults_editor.cpp
+#: editor/inspector_dock.cpp editor/plugins/animation_player_editor_plugin.cpp
 #: editor/plugins/script_editor_plugin.cpp scene/gui/file_dialog.cpp
 msgid "Save"
 msgstr "Enregistrer"
@@ -2624,8 +2624,7 @@ msgstr ""
 
 #: editor/editor_node.cpp
 msgid "Unable to find script field for addon plugin at: '%s'."
-msgstr ""
-"Impossible de trouver le champ de script pour le plugin dans : « %s »."
+msgstr "Impossible de trouver le champ de script pour le plugin dans : « %s »."
 
 #: editor/editor_node.cpp
 msgid "Unable to load addon script from path: '%s'."
@@ -4168,17 +4167,29 @@ msgstr ""
 msgid "Saving..."
 msgstr "Enregistrement…"
 
+#: editor/import_defaults_editor.cpp
+msgid "Select Importer"
+msgstr "Sélectionnez un importeur"
+
+#: editor/import_defaults_editor.cpp
+msgid "Importer:"
+msgstr "Importeur :"
+
+#: editor/import_defaults_editor.cpp
+msgid "Reset to Defaults"
+msgstr "Réinitialiser"
+
 #: editor/import_dock.cpp
 msgid "%d Files"
 msgstr "%d fichiers"
 
 #: editor/import_dock.cpp
 msgid "Set as Default for '%s'"
-msgstr "Définir comme défaut pour « %s »"
+msgstr "Définir comme préréglage pour « %s »"
 
 #: editor/import_dock.cpp
 msgid "Clear Default for '%s'"
-msgstr "Effacer le préréglage par défaut pour « %s »"
+msgstr "Effacer le préréglage pour « %s »"
 
 #: editor/import_dock.cpp
 msgid "Import As:"
@@ -4186,7 +4197,7 @@ msgstr "Importer comme :"
 
 #: editor/import_dock.cpp
 msgid "Preset"
-msgstr "Pré-réglage"
+msgstr "Préréglage"
 
 #: editor/import_dock.cpp
 msgid "Reimport"
@@ -5247,7 +5258,6 @@ msgid "Sort:"
 msgstr "Trier :"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
-#: editor/project_settings_editor.cpp
 msgid "Category:"
 msgstr "Catégorie :"
 
@@ -6030,7 +6040,7 @@ msgstr "Modifier la tangente de courbes"
 
 #: editor/plugins/curve_editor_plugin.cpp
 msgid "Load Curve Preset"
-msgstr "Charger un pré-réglage de courbe"
+msgstr "Charger un préréglage de courbe"
 
 #: editor/plugins/curve_editor_plugin.cpp
 msgid "Add Point"
@@ -9700,7 +9710,7 @@ msgstr "Exécutable"
 
 #: editor/project_export.cpp
 msgid "Delete preset '%s'?"
-msgstr "Supprimer le pré-réglage « %s » ?"
+msgstr "Supprimer le préréglage « %s » ?"
 
 #: editor/project_export.cpp
 msgid ""
@@ -9738,7 +9748,7 @@ msgstr "Modèles d'exportation manquants ou corrompus pour cette plateforme :"
 
 #: editor/project_export.cpp
 msgid "Presets"
-msgstr "Pré-réglages"
+msgstr "Préréglages"
 
 #: editor/project_export.cpp editor/project_settings_editor.cpp
 msgid "Add..."
@@ -9749,9 +9759,9 @@ msgid ""
 "If checked, the preset will be available for use in one-click deploy.\n"
 "Only one preset per platform may be marked as runnable."
 msgstr ""
-"Si cette option est activée, le pré-réglage sera disponible pour le "
+"Si cette option est activée, le préréglage sera disponible pour le "
 "déploiement en un clic.\n"
-"Un seul pré-réglage par plateforme peut être marqué comme exécutable."
+"Un seul préréglage par plateforme peut être marqué comme exécutable."
 
 #: editor/project_export.cpp
 msgid "Export Path"
@@ -10551,9 +10561,13 @@ msgstr "AutoLoad"
 msgid "Plugins"
 msgstr "Extensions"
 
+#: editor/project_settings_editor.cpp
+msgid "Import Defaults"
+msgstr "Préréglage des importeurs"
+
 #: editor/property_editor.cpp
 msgid "Preset..."
-msgstr "Pré-réglage…"
+msgstr "Préréglage…"
 
 #: editor/property_editor.cpp
 msgid "Zero"
@@ -12631,6 +12645,14 @@ msgstr ""
 msgid "An empty CollisionPolygon2D has no effect on collision."
 msgstr "Un CollisionPolygon2D vide n'a pas d'effet sur les collisions."
 
+#: scene/2d/collision_polygon_2d.cpp
+msgid "Invalid polygon. At least 3 points are needed in 'Solids' build mode."
+msgstr ""
+
+#: scene/2d/collision_polygon_2d.cpp
+msgid "Invalid polygon. At least 2 points are needed in 'Segments' build mode."
+msgstr ""
+
 #: scene/2d/collision_shape_2d.cpp
 msgid ""
 "CollisionShape2D only serves to provide a collision shape to a "
@@ -12955,11 +12977,6 @@ msgstr ""
 "Les GIProps ne sont pas supporter par le pilote de vidéos GLES2.\n"
 "A la place utilisez une BakedLightMap."
 
-#: scene/3d/interpolated_camera.cpp
-msgid ""
-"InterpolatedCamera has been deprecated and will be removed in Godot 4.0."
-msgstr "InterpolatedCamera a été déprécié et sera supprimé dans Godot 4.0."
-
 #: scene/3d/light.cpp
 msgid "A SpotLight with an angle wider than 90 degrees cannot cast shadows."
 msgstr ""
@@ -13163,7 +13180,7 @@ msgid ""
 msgstr ""
 "Couleur : #%s\n"
 "Clic gauche : Définir la couleur\n"
-"Clic droit : Supprimer le pré-réglage"
+"Clic droit : Supprimer le préréglage"
 
 #: scene/gui/color_picker.cpp
 msgid "Pick a color from the editor window."
@@ -13183,7 +13200,7 @@ msgstr "Alterner entre les valeurs hexadécimales ou brutes."
 
 #: scene/gui/color_picker.cpp
 msgid "Add current color as a preset."
-msgstr "Ajouter la couleur courante comme pré-réglage."
+msgstr "Ajouter la couleur courante comme préréglage."
 
 #: scene/gui/container.cpp
 msgid ""
@@ -13312,6 +13329,10 @@ msgstr "Les variations ne peuvent être affectées que dans la fonction vertex."
 #: servers/visual/shader_language.cpp
 msgid "Constants cannot be modified."
 msgstr "Les constantes ne peuvent être modifiées."
+
+#~ msgid ""
+#~ "InterpolatedCamera has been deprecated and will be removed in Godot 4.0."
+#~ msgstr "InterpolatedCamera a été déprécié et sera supprimé dans Godot 4.0."
 
 #~ msgid "No"
 #~ msgstr "Non"

@@ -1959,8 +1959,8 @@ msgid "Open a File or Directory"
 msgstr "Abrir Arquivo ou Diretório"
 
 #: editor/editor_file_dialog.cpp editor/editor_node.cpp
-#: editor/editor_properties.cpp editor/inspector_dock.cpp
-#: editor/plugins/animation_player_editor_plugin.cpp
+#: editor/editor_properties.cpp editor/import_defaults_editor.cpp
+#: editor/inspector_dock.cpp editor/plugins/animation_player_editor_plugin.cpp
 #: editor/plugins/script_editor_plugin.cpp scene/gui/file_dialog.cpp
 msgid "Save"
 msgstr "Salvar"
@@ -4173,6 +4173,21 @@ msgstr "Você retornou um objeto derivado de Nó no método `post_import()`?"
 msgid "Saving..."
 msgstr "Salvando..."
 
+#: editor/import_defaults_editor.cpp
+#, fuzzy
+msgid "Select Importer"
+msgstr "Modo de Seleção"
+
+#: editor/import_defaults_editor.cpp
+#, fuzzy
+msgid "Importer:"
+msgstr "Importar"
+
+#: editor/import_defaults_editor.cpp
+#, fuzzy
+msgid "Reset to Defaults"
+msgstr "Usar sRGB Padrão"
+
 #: editor/import_dock.cpp
 msgid "%d Files"
 msgstr "%d Arquivos"
@@ -5250,7 +5265,6 @@ msgid "Sort:"
 msgstr "Ordenar:"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
-#: editor/project_settings_editor.cpp
 msgid "Category:"
 msgstr "Categoria:"
 
@@ -10519,6 +10533,11 @@ msgstr "O AutoLoad"
 msgid "Plugins"
 msgstr "Plugins"
 
+#: editor/project_settings_editor.cpp
+#, fuzzy
+msgid "Import Defaults"
+msgstr "Carregar Padrão"
+
 #: editor/property_editor.cpp
 msgid "Preset..."
 msgstr "Predefinição..."
@@ -12576,6 +12595,14 @@ msgstr ""
 msgid "An empty CollisionPolygon2D has no effect on collision."
 msgstr "Um nó CollisionPolygon2D vazio não é efetivo para colisão."
 
+#: scene/2d/collision_polygon_2d.cpp
+msgid "Invalid polygon. At least 3 points are needed in 'Solids' build mode."
+msgstr ""
+
+#: scene/2d/collision_polygon_2d.cpp
+msgid "Invalid polygon. At least 2 points are needed in 'Segments' build mode."
+msgstr ""
+
 #: scene/2d/collision_shape_2d.cpp
 msgid ""
 "CollisionShape2D only serves to provide a collision shape to a "
@@ -12894,11 +12921,6 @@ msgid ""
 msgstr ""
 "GIProbes não são suportados pelo driver de vídeo GLES2.\n"
 "Use um BakedLightmap em vez disso."
-
-#: scene/3d/interpolated_camera.cpp
-msgid ""
-"InterpolatedCamera has been deprecated and will be removed in Godot 4.0."
-msgstr "IntepolatedCamera foi depreciada e será removida no Godot 4.0."
 
 #: scene/3d/light.cpp
 msgid "A SpotLight with an angle wider than 90 degrees cannot cast shadows."
@@ -13242,6 +13264,10 @@ msgstr "Variáveis só podem ser atribuídas na função de vértice."
 #: servers/visual/shader_language.cpp
 msgid "Constants cannot be modified."
 msgstr "Constantes não podem serem modificadas."
+
+#~ msgid ""
+#~ "InterpolatedCamera has been deprecated and will be removed in Godot 4.0."
+#~ msgstr "IntepolatedCamera foi depreciada e será removida no Godot 4.0."
 
 #~ msgid "No"
 #~ msgstr "Não"
@@ -14901,9 +14927,6 @@ msgstr "Constantes não podem serem modificadas."
 
 #~ msgid "Use Default Light"
 #~ msgstr "Usar Luz Padrão"
-
-#~ msgid "Use Default sRGB"
-#~ msgstr "Usar sRGB Padrão"
 
 #~ msgid "Default Light Normal:"
 #~ msgstr "Luz Normal Padrão:"

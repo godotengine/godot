@@ -1899,8 +1899,8 @@ msgid "Open a File or Directory"
 msgstr "Bestand of map openen"
 
 #: editor/editor_file_dialog.cpp editor/editor_node.cpp
-#: editor/editor_properties.cpp editor/inspector_dock.cpp
-#: editor/plugins/animation_player_editor_plugin.cpp
+#: editor/editor_properties.cpp editor/import_defaults_editor.cpp
+#: editor/inspector_dock.cpp editor/plugins/animation_player_editor_plugin.cpp
 #: editor/plugins/script_editor_plugin.cpp scene/gui/file_dialog.cpp
 msgid "Save"
 msgstr "Opslaan"
@@ -4113,6 +4113,21 @@ msgstr ""
 msgid "Saving..."
 msgstr "Opslaan..."
 
+#: editor/import_defaults_editor.cpp
+#, fuzzy
+msgid "Select Importer"
+msgstr "Selecteermodus"
+
+#: editor/import_defaults_editor.cpp
+#, fuzzy
+msgid "Importer:"
+msgstr "Importeren"
+
+#: editor/import_defaults_editor.cpp
+#, fuzzy
+msgid "Reset to Defaults"
+msgstr "Laad standaard"
+
 #: editor/import_dock.cpp
 msgid "%d Files"
 msgstr "%d Bestanden"
@@ -5185,7 +5200,6 @@ msgid "Sort:"
 msgstr "Sorteren op:"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
-#: editor/project_settings_editor.cpp
 msgid "Category:"
 msgstr "Categorie:"
 
@@ -10471,6 +10485,11 @@ msgstr "Automatisch Laden"
 msgid "Plugins"
 msgstr "Plugins"
 
+#: editor/project_settings_editor.cpp
+#, fuzzy
+msgid "Import Defaults"
+msgstr "Laad standaard"
+
 #: editor/property_editor.cpp
 msgid "Preset..."
 msgstr "Voorinstelling..."
@@ -12523,6 +12542,14 @@ msgstr ""
 msgid "An empty CollisionPolygon2D has no effect on collision."
 msgstr "Lege CollisionPolygon2D hebben geen botsingsfunctie."
 
+#: scene/2d/collision_polygon_2d.cpp
+msgid "Invalid polygon. At least 3 points are needed in 'Solids' build mode."
+msgstr ""
+
+#: scene/2d/collision_polygon_2d.cpp
+msgid "Invalid polygon. At least 2 points are needed in 'Segments' build mode."
+msgstr ""
+
 #: scene/2d/collision_shape_2d.cpp
 msgid ""
 "CollisionShape2D only serves to provide a collision shape to a "
@@ -12839,11 +12866,6 @@ msgid ""
 msgstr ""
 "GIProbes worden niet ondersteund door het GLES2 grafische stuurprogramma.\n"
 "Gebruik in plaats daarvan een BakedLightmap."
-
-#: scene/3d/interpolated_camera.cpp
-msgid ""
-"InterpolatedCamera has been deprecated and will be removed in Godot 4.0."
-msgstr ""
 
 #: scene/3d/light.cpp
 msgid "A SpotLight with an angle wider than 90 degrees cannot cast shadows."

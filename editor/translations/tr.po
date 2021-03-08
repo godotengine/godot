@@ -61,8 +61,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2021-02-21 10:51+0000\n"
-"Last-Translator: Cem Eren Fukara <cefukara@hotmail.com>\n"
+"PO-Revision-Date: 2021-03-03 15:50+0000\n"
+"Last-Translator: Oğuz Ersen <oguzersen@protonmail.com>\n"
 "Language-Team: Turkish <https://hosted.weblate.org/projects/godot-engine/"
 "godot/tr/>\n"
 "Language: tr\n"
@@ -70,7 +70,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 4.5\n"
+"X-Generator: Weblate 4.5.1-dev\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -1721,7 +1721,7 @@ msgstr "Dock Nod"
 
 #: editor/editor_feature_profile.cpp
 msgid "FileSystem Dock"
-msgstr "Dosya sistemi"
+msgstr "Dosya Sistemi"
 
 #: editor/editor_feature_profile.cpp
 msgid "Import Dock"
@@ -1904,8 +1904,8 @@ msgid "Open a File or Directory"
 msgstr "Bir Dosya ya da Dizin Aç"
 
 #: editor/editor_file_dialog.cpp editor/editor_node.cpp
-#: editor/editor_properties.cpp editor/inspector_dock.cpp
-#: editor/plugins/animation_player_editor_plugin.cpp
+#: editor/editor_properties.cpp editor/import_defaults_editor.cpp
+#: editor/inspector_dock.cpp editor/plugins/animation_player_editor_plugin.cpp
 #: editor/plugins/script_editor_plugin.cpp scene/gui/file_dialog.cpp
 msgid "Save"
 msgstr "Kaydet"
@@ -4111,6 +4111,21 @@ msgstr "`Post_import ()` yönteminde Node türevi bir nesne döndürdünüz mü?
 msgid "Saving..."
 msgstr "Kaydediliyor..."
 
+#: editor/import_defaults_editor.cpp
+#, fuzzy
+msgid "Select Importer"
+msgstr "Kip Seç"
+
+#: editor/import_defaults_editor.cpp
+#, fuzzy
+msgid "Importer:"
+msgstr "İçe Aktar"
+
+#: editor/import_defaults_editor.cpp
+#, fuzzy
+msgid "Reset to Defaults"
+msgstr "Önyüklü sRGB'yi Kullan"
+
 #: editor/import_dock.cpp
 msgid "%d Files"
 msgstr "%d Dosya"
@@ -5183,7 +5198,6 @@ msgid "Sort:"
 msgstr "Sırala:"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
-#: editor/project_settings_editor.cpp
 msgid "Category:"
 msgstr "Kategori:"
 
@@ -10439,6 +10453,11 @@ msgstr "Otomatik Yükle"
 msgid "Plugins"
 msgstr "Eklentiler"
 
+#: editor/project_settings_editor.cpp
+#, fuzzy
+msgid "Import Defaults"
+msgstr "Varsayılanı Yükle"
+
 #: editor/property_editor.cpp
 msgid "Preset..."
 msgstr "Ön ayar..."
@@ -12480,6 +12499,14 @@ msgstr ""
 msgid "An empty CollisionPolygon2D has no effect on collision."
 msgstr "Boş bir CollisionPolygon2D'nin çarpışmaya hiçbir etkisi yoktur."
 
+#: scene/2d/collision_polygon_2d.cpp
+msgid "Invalid polygon. At least 3 points are needed in 'Solids' build mode."
+msgstr ""
+
+#: scene/2d/collision_polygon_2d.cpp
+msgid "Invalid polygon. At least 2 points are needed in 'Segments' build mode."
+msgstr ""
+
 #: scene/2d/collision_shape_2d.cpp
 msgid ""
 "CollisionShape2D only serves to provide a collision shape to a "
@@ -12798,13 +12825,6 @@ msgid ""
 msgstr ""
 "GIProbes GLES2 video sürücüsü tarafından desteklenmez.\n"
 "Bunun yerine bir BakedLightmap kullanın."
-
-#: scene/3d/interpolated_camera.cpp
-msgid ""
-"InterpolatedCamera has been deprecated and will be removed in Godot 4.0."
-msgstr ""
-"InterpolatedCamera kullanımdan kaldırılmıştır ve Godot 4.0'da "
-"kaldırılacaktır."
 
 #: scene/3d/light.cpp
 msgid "A SpotLight with an angle wider than 90 degrees cannot cast shadows."
@@ -13148,6 +13168,12 @@ msgstr "varyings yalnızca vertex işlevinde atanabilir."
 #: servers/visual/shader_language.cpp
 msgid "Constants cannot be modified."
 msgstr "Sabit değerler değiştirilemez."
+
+#~ msgid ""
+#~ "InterpolatedCamera has been deprecated and will be removed in Godot 4.0."
+#~ msgstr ""
+#~ "InterpolatedCamera kullanımdan kaldırılmıştır ve Godot 4.0'da "
+#~ "kaldırılacaktır."
 
 #~ msgid "No"
 #~ msgstr "Hayır"
@@ -14781,9 +14807,6 @@ msgstr "Sabit değerler değiştirilemez."
 
 #~ msgid "Use Default Light"
 #~ msgstr "Önyüklü Işık Kullan"
-
-#~ msgid "Use Default sRGB"
-#~ msgstr "Önyüklü sRGB'yi Kullan"
 
 #~ msgid "Default Light Normal:"
 #~ msgstr "Önyüklü Işığın Olağanı:"

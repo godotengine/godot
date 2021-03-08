@@ -21,7 +21,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2021-02-21 10:50+0000\n"
+"PO-Revision-Date: 2021-02-27 00:47+0000\n"
 "Last-Translator: Lisandro Lorea <lisandrolorea@gmail.com>\n"
 "Language-Team: Spanish (Argentina) <https://hosted.weblate.org/projects/"
 "godot-engine/godot/es_AR/>\n"
@@ -1876,8 +1876,8 @@ msgid "Open a File or Directory"
 msgstr "Abrir un Archivo o Directorio"
 
 #: editor/editor_file_dialog.cpp editor/editor_node.cpp
-#: editor/editor_properties.cpp editor/inspector_dock.cpp
-#: editor/plugins/animation_player_editor_plugin.cpp
+#: editor/editor_properties.cpp editor/import_defaults_editor.cpp
+#: editor/inspector_dock.cpp editor/plugins/animation_player_editor_plugin.cpp
 #: editor/plugins/script_editor_plugin.cpp scene/gui/file_dialog.cpp
 msgid "Save"
 msgstr "Guardar"
@@ -2556,11 +2556,8 @@ msgstr ""
 "configuración."
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Unable to find script field for addon plugin at: '%s'."
-msgstr ""
-"No se pudo encontrar el campo script para el plugin de addon en: 'res://"
-"addons/%s'."
+msgstr "No se pudo encontrar el campo script para el plugin de addon en: '%s'."
 
 #: editor/editor_node.cpp
 msgid "Unable to load addon script from path: '%s'."
@@ -4098,6 +4095,21 @@ msgstr "¿Devolviste un objeto derivado de Node en el método `post_import()`?"
 msgid "Saving..."
 msgstr "Guardando..."
 
+#: editor/import_defaults_editor.cpp
+#, fuzzy
+msgid "Select Importer"
+msgstr "Modo Seleccionar"
+
+#: editor/import_defaults_editor.cpp
+#, fuzzy
+msgid "Importer:"
+msgstr "Importar"
+
+#: editor/import_defaults_editor.cpp
+#, fuzzy
+msgid "Reset to Defaults"
+msgstr "Usar sRGB por Defecto"
+
 #: editor/import_dock.cpp
 msgid "%d Files"
 msgstr "%d Archivos"
@@ -5071,9 +5083,8 @@ msgid "Got:"
 msgstr "Recibido:"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
-#, fuzzy
 msgid "Failed SHA-256 hash check"
-msgstr "Fallo el chequeo del hash sha256"
+msgstr "Fallo el chequeo del hash SHA-256"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Asset Download Error:"
@@ -5176,7 +5187,6 @@ msgid "Sort:"
 msgstr "Ordenar:"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
-#: editor/project_settings_editor.cpp
 msgid "Category:"
 msgstr "Categoría:"
 
@@ -10456,6 +10466,11 @@ msgstr "AutoLoad"
 msgid "Plugins"
 msgstr "Plugins"
 
+#: editor/project_settings_editor.cpp
+#, fuzzy
+msgid "Import Defaults"
+msgstr "Cargar Valores por Defecto"
+
 #: editor/property_editor.cpp
 msgid "Preset..."
 msgstr "Preseteo..."
@@ -10706,14 +10721,12 @@ msgid "Instance Child Scene"
 msgstr "Instanciar Escena Hija"
 
 #: editor/scene_tree_dock.cpp
-#, fuzzy
 msgid "Can't paste root node into the same scene."
-msgstr "No se puede operar sobre los nodos de una escena externa!"
+msgstr "No se puede pegar el nodo raiz en la misma escena."
 
 #: editor/scene_tree_dock.cpp
-#, fuzzy
 msgid "Paste Node(s)"
-msgstr "Pegar Nodos"
+msgstr "Pegar Nodo(s)"
 
 #: editor/scene_tree_dock.cpp
 msgid "Detach Script"
@@ -10844,9 +10857,8 @@ msgid "Attach Script"
 msgstr "Adjuntar Script"
 
 #: editor/scene_tree_dock.cpp
-#, fuzzy
 msgid "Cut Node(s)"
-msgstr "Cortar Nodos"
+msgstr "Cortar Nodo(s)"
 
 #: editor/scene_tree_dock.cpp
 msgid "Remove Node(s)"
@@ -12525,6 +12537,14 @@ msgstr ""
 msgid "An empty CollisionPolygon2D has no effect on collision."
 msgstr "Un CollisionPolygon2D vacío no tiene efecto en la colisión."
 
+#: scene/2d/collision_polygon_2d.cpp
+msgid "Invalid polygon. At least 3 points are needed in 'Solids' build mode."
+msgstr ""
+
+#: scene/2d/collision_polygon_2d.cpp
+msgid "Invalid polygon. At least 2 points are needed in 'Segments' build mode."
+msgstr ""
+
 #: scene/2d/collision_shape_2d.cpp
 msgid ""
 "CollisionShape2D only serves to provide a collision shape to a "
@@ -12844,11 +12864,6 @@ msgid ""
 msgstr ""
 "Las GIProbes no están soportadas por el controlador de video GLES2.\n"
 "Usá un BakedLightmap en su lugar."
-
-#: scene/3d/interpolated_camera.cpp
-msgid ""
-"InterpolatedCamera has been deprecated and will be removed in Godot 4.0."
-msgstr "InterpolatedCamera ha sido deprecado y será eliminado en Godot 4.0."
 
 #: scene/3d/light.cpp
 msgid "A SpotLight with an angle wider than 90 degrees cannot cast shadows."
@@ -13193,6 +13208,10 @@ msgstr "Solo se pueden asignar variaciones en funciones de vértice."
 #: servers/visual/shader_language.cpp
 msgid "Constants cannot be modified."
 msgstr "Las constantes no pueden modificarse."
+
+#~ msgid ""
+#~ "InterpolatedCamera has been deprecated and will be removed in Godot 4.0."
+#~ msgstr "InterpolatedCamera ha sido deprecado y será eliminado en Godot 4.0."
 
 #~ msgid "No"
 #~ msgstr "No"
@@ -14861,9 +14880,6 @@ msgstr "Las constantes no pueden modificarse."
 
 #~ msgid "Use Default Light"
 #~ msgstr "Usar Luz por Defecto"
-
-#~ msgid "Use Default sRGB"
-#~ msgstr "Usar sRGB por Defecto"
 
 #~ msgid "Default Light Normal:"
 #~ msgstr "Normales de Luces por Defecto:"

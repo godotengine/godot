@@ -60,8 +60,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2021-02-21 10:50+0000\n"
-"Last-Translator: Micila Micillotto <micillotto@gmail.com>\n"
+"PO-Revision-Date: 2021-03-07 06:04+0000\n"
+"Last-Translator: Riteo Siuga <lorenzocerqua@tutanota.com>\n"
 "Language-Team: Italian <https://hosted.weblate.org/projects/godot-engine/"
 "godot/it/>\n"
 "Language: it\n"
@@ -69,7 +69,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 4.5\n"
+"X-Generator: Weblate 4.5.1\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -192,7 +192,7 @@ msgstr "Elimina delle chiavi d'animazione"
 
 #: editor/animation_track_editor.cpp
 msgid "Anim Change Keyframe Time"
-msgstr "Cambia Intervallo Fotogramma Principale Animazione"
+msgstr "Cambia il tempo di un fotogramma chiave"
 
 #: editor/animation_track_editor.cpp
 msgid "Anim Change Transition"
@@ -204,7 +204,7 @@ msgstr "Cambia la trasformazione di un'animazione"
 
 #: editor/animation_track_editor.cpp
 msgid "Anim Change Keyframe Value"
-msgstr "Cambia Valore Fotogramma Principale Animazione"
+msgstr "Cambia il valore del fotogramma chiave di un'animazione"
 
 #: editor/animation_track_editor.cpp
 msgid "Anim Change Call"
@@ -212,32 +212,32 @@ msgstr "Cambia la chiamata di un'animazione"
 
 #: editor/animation_track_editor.cpp
 msgid "Anim Multi Change Keyframe Time"
-msgstr "Cambia Multipli Intervalli Fotogramma Principale Animazione"
+msgstr "Cambia il tempo di più fotogrammi chiave"
 
 #: editor/animation_track_editor.cpp
 msgid "Anim Multi Change Transition"
-msgstr "Cambi Multipli Transizione Animazione"
+msgstr "Cambia la transizione di più animazioni"
 
 #: editor/animation_track_editor.cpp
 msgid "Anim Multi Change Transform"
-msgstr "Cambi Multipli Trasformazione Animazione"
+msgstr "Cambia le trasformazioni di più animazioni"
 
 #: editor/animation_track_editor.cpp
 msgid "Anim Multi Change Keyframe Value"
-msgstr "Cambia Multipli Valori Fotogramma Principale Animazione"
+msgstr "Cambia il valore di più fotogrammi chiave di un'Animazione"
 
 #: editor/animation_track_editor.cpp
 msgid "Anim Multi Change Call"
-msgstr "Cambi Multipli Chiamata Animazione"
+msgstr "Cambia la chiamata di metodo di più animazioni"
 
 #: editor/animation_track_editor.cpp
 msgid "Change Animation Length"
-msgstr "Cambia Lunghezza Animazione"
+msgstr "Cambia la durata dell'animazione"
 
 #: editor/animation_track_editor.cpp
 #: editor/plugins/sprite_frames_editor_plugin.cpp
 msgid "Change Animation Loop"
-msgstr "Cambia Loop Animazione"
+msgstr "Commuta ciclicità animazione"
 
 #: editor/animation_track_editor.cpp
 msgid "Property Track"
@@ -253,7 +253,7 @@ msgstr "Traccia di chiamate di metodo"
 
 #: editor/animation_track_editor.cpp
 msgid "Bezier Curve Track"
-msgstr "Traccia di curve di Bézier"
+msgstr "Traccia curva di Bézier"
 
 #: editor/animation_track_editor.cpp
 msgid "Audio Playback Track"
@@ -273,11 +273,11 @@ msgstr "Durata dell'animazione (secondi)"
 
 #: editor/animation_track_editor.cpp
 msgid "Add Track"
-msgstr "Aggiungi una traccia"
+msgstr "Aggiungi Traccia"
 
 #: editor/animation_track_editor.cpp
 msgid "Animation Looping"
-msgstr "Ciclicità animazione"
+msgstr "Ciclicità Animazione"
 
 #: editor/animation_track_editor.cpp
 #: modules/visual_script/visual_script_editor.cpp
@@ -286,15 +286,15 @@ msgstr "Funzioni:"
 
 #: editor/animation_track_editor.cpp
 msgid "Audio Clips:"
-msgstr "Clip audio:"
+msgstr "Clip Audio:"
 
 #: editor/animation_track_editor.cpp
 msgid "Anim Clips:"
-msgstr "Clip animazione:"
+msgstr "Clip Animazione:"
 
 #: editor/animation_track_editor.cpp
 msgid "Change Track Path"
-msgstr "Cambia il percorso della traccia"
+msgstr "Cambia Percorso Traccia"
 
 #: editor/animation_track_editor.cpp
 msgid "Toggle this track on/off."
@@ -302,11 +302,11 @@ msgstr "Attiva/Disattiva questa traccia."
 
 #: editor/animation_track_editor.cpp
 msgid "Update Mode (How this property is set)"
-msgstr "Modalità di aggiornamento (come viene impostata questa proprietà)"
+msgstr "Modalità Aggiornamento (come viene impostata questa proprietà)"
 
 #: editor/animation_track_editor.cpp
 msgid "Interpolation Mode"
-msgstr "Modalità d'interpolazione"
+msgstr "Modalità Interpolazione"
 
 #: editor/animation_track_editor.cpp
 msgid "Loop Wrap Mode (Interpolate end with beginning on loop)"
@@ -322,7 +322,7 @@ msgstr "Tempo (s): "
 
 #: editor/animation_track_editor.cpp
 msgid "Toggle Track Enabled"
-msgstr "Abilita/Disabilita una traccia"
+msgstr "Abilita/DisabilitaTraccia"
 
 #: editor/animation_track_editor.cpp
 msgid "Continuous"
@@ -376,23 +376,24 @@ msgstr "Elimina Fotogrammi Chiave Selezionati"
 
 #: editor/animation_track_editor.cpp
 msgid "Change Animation Update Mode"
-msgstr "Cambia la modalità d'aggiornamento di un'animazione"
+msgstr "Cambia Modalità Aggiornamento Animazione"
 
 #: editor/animation_track_editor.cpp
 msgid "Change Animation Interpolation Mode"
-msgstr "Cambia la modalità d'interpolazione di un'animazione"
+msgstr "Cambia Modalità Interpolazione Animazione"
 
 #: editor/animation_track_editor.cpp
 msgid "Change Animation Loop Mode"
-msgstr "Cambia la modalità del ciclo di un'animazione"
+msgstr "Cambia Modalità Loop Animazione"
 
 #: editor/animation_track_editor.cpp
 msgid "Remove Anim Track"
-msgstr "Rimuovi la traccia di un'animazione"
+msgstr "Rimuovi una traccia d'animazione"
 
 #: editor/animation_track_editor.cpp
+#, fuzzy
 msgid "Create NEW track for %s and insert key?"
-msgstr "Crea NUOVA traccia per %s ed inserire fotogramma chiave?"
+msgstr "Creare una NUOVA traccia per %s e inserirci la chiave?"
 
 #: editor/animation_track_editor.cpp
 msgid "Create %d NEW tracks and insert keys?"
@@ -520,11 +521,11 @@ msgstr "Gli appunti sono vuoti"
 
 #: editor/animation_track_editor.cpp
 msgid "Paste Tracks"
-msgstr "Incolla delle tracce"
+msgstr "Incolla Tracce"
 
 #: editor/animation_track_editor.cpp
 msgid "Anim Scale Keys"
-msgstr "Scala delle chiavi d'animazione"
+msgstr "Scala Chiavi Animazione"
 
 #: editor/animation_track_editor.cpp
 msgid ""
@@ -656,15 +657,15 @@ msgstr "Ottimizzatore anim."
 
 #: editor/animation_track_editor.cpp
 msgid "Max. Linear Error:"
-msgstr "Max errore lineare:"
+msgstr "Max Errore Lineare:"
 
 #: editor/animation_track_editor.cpp
 msgid "Max. Angular Error:"
-msgstr "Max errore angolare:"
+msgstr "Max Errore Angolare:"
 
 #: editor/animation_track_editor.cpp
 msgid "Max Optimizable Angle:"
-msgstr "Max angolo ottimizzabile:"
+msgstr "Max Angolo Ottimizzabile:"
 
 #: editor/animation_track_editor.cpp
 msgid "Optimize"
@@ -709,7 +710,7 @@ msgstr "Copia"
 
 #: editor/animation_track_editor.cpp
 msgid "Select All/None"
-msgstr "Seleziona tutto/nulla"
+msgstr "De/Seleziona Tutto"
 
 #: editor/animation_track_editor_plugins.cpp
 msgid "Add Audio Track Clip"
@@ -725,23 +726,23 @@ msgstr "Cambia Offset Fine Clip Traccia Audio"
 
 #: editor/array_property_edit.cpp
 msgid "Resize Array"
-msgstr "Ridimensiona lista"
+msgstr "Ridimensiona Array"
 
 #: editor/array_property_edit.cpp
 msgid "Change Array Value Type"
-msgstr "Cambia il tipo del valore della lista"
+msgstr "Cambia Tipo Valore Array"
 
 #: editor/array_property_edit.cpp
 msgid "Change Array Value"
-msgstr "Cambia il valore della lista"
+msgstr "Cambia Valore Array"
 
 #: editor/code_editor.cpp
 msgid "Go to Line"
-msgstr "Vai alla linea"
+msgstr "Vai alla Linea"
 
 #: editor/code_editor.cpp
 msgid "Line Number:"
-msgstr "Numero della linea:"
+msgstr "Numero Linea:"
 
 #: editor/code_editor.cpp
 msgid "%d replaced."
@@ -757,11 +758,11 @@ msgstr "%d corrispondenze."
 
 #: editor/code_editor.cpp editor/find_in_files.cpp
 msgid "Match Case"
-msgstr "Distingui le maiuscole"
+msgstr "Distingui Maiuscole"
 
 #: editor/code_editor.cpp editor/find_in_files.cpp
 msgid "Whole Words"
-msgstr "Parole intere"
+msgstr "Parole Intere"
 
 #: editor/code_editor.cpp
 msgid "Replace"
@@ -769,11 +770,11 @@ msgstr "Sostituisci"
 
 #: editor/code_editor.cpp
 msgid "Replace All"
-msgstr "Rimpiazza tutti"
+msgstr "Rimpiazza Tutti"
 
 #: editor/code_editor.cpp
 msgid "Selection Only"
-msgstr "Solo nella selezione"
+msgstr "Solo Selezione"
 
 #: editor/code_editor.cpp editor/plugins/script_text_editor.cpp
 #: editor/plugins/text_editor.cpp
@@ -810,7 +811,7 @@ msgstr "Numeri di riga e di colonna."
 
 #: editor/connections_dialog.cpp
 msgid "Method in target node must be specified."
-msgstr "Il metodo del nodo designato deve essere specificato."
+msgstr "Il metodo del nodo selezionato deve essere specificato."
 
 #: editor/connections_dialog.cpp
 msgid "Method name must be a valid identifier."
@@ -1912,8 +1913,8 @@ msgid "Open a File or Directory"
 msgstr "Apri un file o una cartella"
 
 #: editor/editor_file_dialog.cpp editor/editor_node.cpp
-#: editor/editor_properties.cpp editor/inspector_dock.cpp
-#: editor/plugins/animation_player_editor_plugin.cpp
+#: editor/editor_properties.cpp editor/import_defaults_editor.cpp
+#: editor/inspector_dock.cpp editor/plugins/animation_player_editor_plugin.cpp
 #: editor/plugins/script_editor_plugin.cpp scene/gui/file_dialog.cpp
 msgid "Save"
 msgstr "Salva"
@@ -2593,11 +2594,9 @@ msgstr ""
 "configurazione fallita."
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Unable to find script field for addon plugin at: '%s'."
 msgstr ""
-"Impossibile trovare il campo dello script per il componente aggiuntivo in: "
-"'res://addons/%s'."
+"Impossibile trovare il campo script per il plugin addon in posizione: '%s'."
 
 #: editor/editor_node.cpp
 msgid "Unable to load addon script from path: '%s'."
@@ -3158,13 +3157,13 @@ msgid ""
 "the \"Use Custom Build\" option should be enabled in the Android export "
 "preset."
 msgstr ""
-"Questo imposterà il tuo progetto per le build custom per Android, "
-"installando i source templates in \"res://android/build\".\n"
-"Puoi, allora, applicare le modifiche e costruire il tuo APK custom durante "
-"l'esportazione (aggiungere moduli, cambiare il AndroidManifest.xml, ed "
-"altro).\n"
-"Nota che, in ordine per creare le build custom invece di usare gli APK pre-"
-"costruiti, l'opzione \"Use Custom Build\" sarà abilitata nel preset "
+"Questo predisporrà il progetto per le build personalizzate per Android "
+"installando i template sorgente in \"res://android/build\".\n"
+"Potrai allora applicare le modifiche e costruire il tuo APK personalizzato "
+"durante l'esportazione (aggiungere moduli, cambiare l'AndroidManifest.xml, "
+"eccetera).\n"
+"Nota che per creare delle build personalizzate, invece di usare gli APK pre-"
+"costruiti, l'opzione \"Use Custom Build\" va attivata nella preimpostazione "
 "d'esportazione per Android."
 
 #: editor/editor_node.cpp
@@ -3174,30 +3173,30 @@ msgid ""
 "Remove the \"res://android/build\" directory manually before attempting this "
 "operation again."
 msgstr ""
-"Il modello della build Android è già installato in questo progetto e non "
-"sarà sovrascritto.\n"
-"Rimuovi la cartella \"res://android/build\" manualmente prima di ritentare "
+"Il template della build Android è già installato in questo progetto e non "
+"verrà sovrascritto.\n"
+"Rimuovi manualmente la cartella \"res://android/build\" prima di ritentare "
 "questa operazione."
 
 #: editor/editor_node.cpp
 msgid "Import Templates From ZIP File"
-msgstr "Importa template da un file ZIP"
+msgstr "Importa Template Da File ZIP"
 
 #: editor/editor_node.cpp
 msgid "Template Package"
-msgstr "Pacchetto Modello"
+msgstr "Pacchetto Template"
 
 #: editor/editor_node.cpp
 msgid "Export Library"
-msgstr "Esporta libreria"
+msgstr "Esporta Libreria"
 
 #: editor/editor_node.cpp
 msgid "Merge With Existing"
-msgstr "Unisci con esistente"
+msgstr "Unisci Con Esistente"
 
 #: editor/editor_node.cpp
 msgid "Open & Run a Script"
-msgstr "Apri ed esegui uno script"
+msgstr "Apri ed Esegui uno Script"
 
 #: editor/editor_node.cpp
 msgid ""
@@ -4134,6 +4133,21 @@ msgstr ""
 #: editor/import/resource_importer_scene.cpp
 msgid "Saving..."
 msgstr "Salvataggio..."
+
+#: editor/import_defaults_editor.cpp
+#, fuzzy
+msgid "Select Importer"
+msgstr "Modalità di selezione"
+
+#: editor/import_defaults_editor.cpp
+#, fuzzy
+msgid "Importer:"
+msgstr "Importare"
+
+#: editor/import_defaults_editor.cpp
+#, fuzzy
+msgid "Reset to Defaults"
+msgstr "Usa sRGB Default"
 
 #: editor/import_dock.cpp
 msgid "%d Files"
@@ -5107,9 +5121,8 @@ msgid "Got:"
 msgstr "Ottenuto:"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
-#, fuzzy
 msgid "Failed SHA-256 hash check"
-msgstr "Check hash sha256 fallito"
+msgstr "Check has SHA-256 fallito"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Asset Download Error:"
@@ -5212,7 +5225,6 @@ msgid "Sort:"
 msgstr "Ordina:"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
-#: editor/project_settings_editor.cpp
 msgid "Category:"
 msgstr "Categoria:"
 
@@ -10510,6 +10522,11 @@ msgstr "AutoLoad"
 msgid "Plugins"
 msgstr "Plugins"
 
+#: editor/project_settings_editor.cpp
+#, fuzzy
+msgid "Import Defaults"
+msgstr "Carica Predefiniti"
+
 #: editor/property_editor.cpp
 msgid "Preset..."
 msgstr "Preset…"
@@ -10760,14 +10777,12 @@ msgid "Instance Child Scene"
 msgstr "Istanzia Scena Figlia"
 
 #: editor/scene_tree_dock.cpp
-#, fuzzy
 msgid "Can't paste root node into the same scene."
-msgstr "Impossibile operare su nodi da scena esterna!"
+msgstr "Non si può incollare il noto root nella stessa scena."
 
 #: editor/scene_tree_dock.cpp
-#, fuzzy
 msgid "Paste Node(s)"
-msgstr "Incolla nodi"
+msgstr "Incolla Nodo(i)"
 
 #: editor/scene_tree_dock.cpp
 msgid "Detach Script"
@@ -10896,9 +10911,8 @@ msgid "Attach Script"
 msgstr "Allega Script"
 
 #: editor/scene_tree_dock.cpp
-#, fuzzy
 msgid "Cut Node(s)"
-msgstr "Taglia nodi"
+msgstr "Taglia Nodo(i)"
 
 #: editor/scene_tree_dock.cpp
 msgid "Remove Node(s)"
@@ -12579,6 +12593,14 @@ msgstr ""
 msgid "An empty CollisionPolygon2D has no effect on collision."
 msgstr "Un CollisionPolygon2D vuoto non ha effetti sulla collisione."
 
+#: scene/2d/collision_polygon_2d.cpp
+msgid "Invalid polygon. At least 3 points are needed in 'Solids' build mode."
+msgstr ""
+
+#: scene/2d/collision_polygon_2d.cpp
+msgid "Invalid polygon. At least 2 points are needed in 'Segments' build mode."
+msgstr ""
+
 #: scene/2d/collision_shape_2d.cpp
 msgid ""
 "CollisionShape2D only serves to provide a collision shape to a "
@@ -12903,11 +12925,6 @@ msgstr ""
 "Le GIProbes non sono supportate dal driver video GLES2.\n"
 "In alternativa, usa una BakedLightmap."
 
-#: scene/3d/interpolated_camera.cpp
-msgid ""
-"InterpolatedCamera has been deprecated and will be removed in Godot 4.0."
-msgstr "\"InterpolatedCamera\" è stata deprecata e sarà rimossa in Godot 4.0."
-
 #: scene/3d/light.cpp
 msgid "A SpotLight with an angle wider than 90 degrees cannot cast shadows."
 msgstr ""
@@ -13166,9 +13183,9 @@ msgid ""
 "functions. Making them visible for editing is fine, but they will hide upon "
 "running."
 msgstr ""
-"I popup saranno nascosti di predefinita finchè non chiami popup() o una "
-"delle qualsiasi funzioni popup*(). Farli diventare visibili per modificarli "
-"va bene, ma scompariranno all'esecuzione."
+"I popup saranno nascosti di default finchè non chiami popup(), o una delle "
+"qualsiasi funzioni popup*(). Farli diventare visibili per modificarli va "
+"bene, ma scompariranno durante l'esecuzione."
 
 #: scene/gui/range.cpp
 msgid "If \"Exp Edit\" is enabled, \"Min Value\" must be greater than 0."
@@ -13250,6 +13267,11 @@ msgstr ""
 #: servers/visual/shader_language.cpp
 msgid "Constants cannot be modified."
 msgstr "Le constanti non possono essere modificate."
+
+#~ msgid ""
+#~ "InterpolatedCamera has been deprecated and will be removed in Godot 4.0."
+#~ msgstr ""
+#~ "\"InterpolatedCamera\" è stata deprecata e sarà rimossa in Godot 4.0."
 
 #~ msgid "No"
 #~ msgstr "No"
@@ -14913,9 +14935,6 @@ msgstr "Le constanti non possono essere modificate."
 
 #~ msgid "Use Default Light"
 #~ msgstr "Usa Luce Default"
-
-#~ msgid "Use Default sRGB"
-#~ msgstr "Usa sRGB Default"
 
 #~ msgid "Default Light Normal:"
 #~ msgstr "Normale Luce di Default:"
