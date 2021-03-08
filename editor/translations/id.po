@@ -28,12 +28,13 @@
 # Richard Urban <redasuio1@gmail.com>, 2020.
 # yusuf afandi <afandi.yusuf.04@gmail.com>, 2020.
 # Habib Rohman <revolusi147id@gmail.com>, 2020.
+# Hanz <hanzhaxors@gmail.com>, 2021.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2020-11-13 22:59+0000\n"
-"Last-Translator: Habib Rohman <revolusi147id@gmail.com>\n"
+"PO-Revision-Date: 2021-03-08 15:33+0000\n"
+"Last-Translator: Hanz <hanzhaxors@gmail.com>\n"
 "Language-Team: Indonesian <https://hosted.weblate.org/projects/godot-engine/"
 "godot/id/>\n"
 "Language: id\n"
@@ -41,7 +42,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Weblate 4.4-dev\n"
+"X-Generator: Weblate 4.5.1\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -57,7 +58,8 @@ msgstr "String dengan panjang 1 (karakter) yang diharapkan."
 #: modules/mono/glue/gd_glue.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
 msgid "Not enough bytes for decoding bytes, or invalid format."
-msgstr "Tidak cukup bytes untuk mendekode bytes, atau format tidak valid."
+msgstr ""
+"Tidak cukup bytes untuk merubah bytes ke nilai asal, atau format tidak valid."
 
 #: core/math/expression.cpp
 msgid "Invalid input %i (not passed) in expression"
@@ -65,8 +67,7 @@ msgstr "Masukkan tidak sah %i (tidak diberikan) dalam ekspresi"
 
 #: core/math/expression.cpp
 msgid "self can't be used because instance is null (not passed)"
-msgstr ""
-"self tidak dapat digunakan karena tidak memiliki instance (tidak lolos)"
+msgstr "self tidak dapat digunakan karena instance adalah null"
 
 #: core/math/expression.cpp
 msgid "Invalid operands to operator %s, %s and %s."
@@ -74,7 +75,7 @@ msgstr "operan salah untuk operator %s, %s dan %s."
 
 #: core/math/expression.cpp
 msgid "Invalid index of type %s for base type %s"
-msgstr "Tipe index %s tidak valid untuk tipe dasar %s"
+msgstr "Tipe indeks %s tidak valid untuk tipe dasar %s"
 
 #: core/math/expression.cpp
 msgid "Invalid named index '%s' for base type %s"
@@ -1052,14 +1053,14 @@ msgid "Owners Of:"
 msgstr "Pemilik Dari:"
 
 #: editor/dependency_editor.cpp
-#, fuzzy
 msgid ""
 "Remove selected files from the project? (no undo)\n"
 "You can find the removed files in the system trash to restore them."
-msgstr "Hapus berkas yang dipilih dari proyek? (tidak bisa dibatalkan)"
+msgstr ""
+"Hapus berkas yang dipilih dari proyek? (tidak bisa dibatalkan)\n"
+"Anda bisa menemukan berkas yang telah dihapus di tong sampah."
 
 #: editor/dependency_editor.cpp
-#, fuzzy
 msgid ""
 "The files being removed are required by other resources in order for them to "
 "work.\n"
@@ -1068,7 +1069,8 @@ msgid ""
 msgstr ""
 "File-file yang telah dihapus diperlukan oleh resource lain agar mereka dapat "
 "bekerja.\n"
-"Hapus saja? (tidak bisa dibatalkan/undo)"
+"Hapus saja? (tidak bisa dibatalkan)\n"
+"Anda bisa menemukan berkas yang telah dihapus di tong sampah."
 
 #: editor/dependency_editor.cpp
 msgid "Cannot remove:"
@@ -1621,34 +1623,31 @@ msgstr ""
 "Enabled'."
 
 #: editor/editor_export.cpp
-#, fuzzy
 msgid ""
 "Target platform requires 'PVRTC' texture compression for GLES2. Enable "
 "'Import Pvrtc' in Project Settings."
 msgstr ""
-"Platform target membutuhkan kompresi tekstur 'ETC' untuk GLES2. Aktifkan "
-"'Impor Lainnya' di Pengaturan Proyek."
+"Platform target membutuhkan kompresi tekstur 'PVRTC' untuk GLES2. Aktifkan "
+"'Impor Pvrtc' di Pengaturan Proyek."
 
 #: editor/editor_export.cpp
-#, fuzzy
 msgid ""
 "Target platform requires 'ETC2' or 'PVRTC' texture compression for GLES3. "
 "Enable 'Import Etc 2' or 'Import Pvrtc' in Project Settings."
 msgstr ""
-"Platform target membutuhkan kompresi tekstur 'ETC2' untuk GLES3. Aktifkan "
-"'Impor Lainnya 2' di Pengaturan Proyek."
+"Platform target membutuhkan kompresi tekstur 'ETC2' atau 'PVRTC' untuk "
+"GLES3. Aktifkan 'Impor Lainnya 2' atau 'Import Pvrtc' di Pengaturan Proyek."
 
 #: editor/editor_export.cpp
-#, fuzzy
 msgid ""
 "Target platform requires 'PVRTC' texture compression for the driver fallback "
 "to GLES2.\n"
 "Enable 'Import Pvrtc' in Project Settings, or disable 'Driver Fallback "
 "Enabled'."
 msgstr ""
-"Platform target membutuhkan kompressi tekstur 'ETC' untuk mengembalikan "
+"Platform target membutuhkan kompressi tekstur 'PVRTC' untuk mengembalikan "
 "driver ke GLES2. \n"
-"Aktifkan 'Impor Lainnya' di Pengaturan Proyek, atau matikan 'Driver Fallback "
+"Aktifkan 'Impor Pvrtc' di Pengaturan Proyek, atau matikan 'Driver Fallback "
 "Enabled'."
 
 #: editor/editor_export.cpp platform/android/export/export.cpp
@@ -1877,8 +1876,8 @@ msgid "Open a File or Directory"
 msgstr "Buka sebuah File atau Direktori"
 
 #: editor/editor_file_dialog.cpp editor/editor_node.cpp
-#: editor/editor_properties.cpp editor/inspector_dock.cpp
-#: editor/plugins/animation_player_editor_plugin.cpp
+#: editor/editor_properties.cpp editor/import_defaults_editor.cpp
+#: editor/inspector_dock.cpp editor/plugins/animation_player_editor_plugin.cpp
 #: editor/plugins/script_editor_plugin.cpp scene/gui/file_dialog.cpp
 msgid "Save"
 msgstr "Simpan"
@@ -2330,6 +2329,8 @@ msgid ""
 "An error occurred while trying to save the editor layout.\n"
 "Make sure the editor's user data path is writable."
 msgstr ""
+"Terjadi kesalahan ketika mencoba menyimpan layout editor.\n"
+"Pastikan jalur data pengguna editor dapat ditulis."
 
 #: editor/editor_node.cpp
 msgid ""
@@ -2337,13 +2338,15 @@ msgid ""
 "To restore the Default layout to its base settings, use the Delete Layout "
 "option and delete the Default layout."
 msgstr ""
+"Penataan editor default telah dirubah.\n"
+"Untuk mengembalikan penataan editor default ke asalnya, gunakan opsi Hapus "
+"Penataan dan hapus Penataan Default."
 
 #: editor/editor_node.cpp
 msgid "Layout name not found!"
 msgstr "Nama layout tidak ditemukan!"
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Restored the Default layout to its base settings."
 msgstr "Mengembalikan semula layout default ke pengaturan-pengaturan awal."
 
@@ -2402,7 +2405,7 @@ msgstr "Tidak ada skena yang didefinisikan untuk dijalankan."
 
 #: editor/editor_node.cpp
 msgid "Save scene before running..."
-msgstr ""
+msgstr "Simpan skena sebelum menjalankan..."
 
 #: editor/editor_node.cpp
 msgid "Could not start subprocess!"
@@ -2481,7 +2484,6 @@ msgid "Reload Saved Scene"
 msgstr "Muat ulang scene yang sudah disimpan"
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid ""
 "The current scene has unsaved changes.\n"
 "Reload the saved scene anyway? This action cannot be undone."
@@ -2548,10 +2550,9 @@ msgstr ""
 "gagal."
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Unable to find script field for addon plugin at: '%s'."
 msgstr ""
-"Tidak dapat mencari bidang script untuk addon plugin pada: 'res://addons/%s'."
+"Tidak dapat mencari bidang skrip untuk addon plugin pada: 'res://addons/%s'."
 
 #: editor/editor_node.cpp
 msgid "Unable to load addon script from path: '%s'."
@@ -2855,12 +2856,10 @@ msgstr ""
 "lokal."
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Small Deploy with Network Filesystem"
-msgstr "Deploy Kecil dengan Jaringan FS"
+msgstr "Deploy Kecil dengan Jaringan Berkas"
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid ""
 "When this option is enabled, using one-click deploy for Android will only "
 "export an executable without the project data.\n"
@@ -2869,9 +2868,9 @@ msgid ""
 "On Android, deploying will use the USB cable for faster performance. This "
 "option speeds up testing for projects with large assets."
 msgstr ""
-"Ketika opsi ini aktif, ekspor atau deploy akan menghasilkan minimal "
-"executable.\n"
-"Berkas sistem akan tersedia dari proyek dari editor melalui jaringan.\n"
+"Ketika opsi ini aktif, menggunakan 'one-click deploy' hanya akan mengekspor "
+"executable tanpa data proyek.\n"
+"Berkas sistem akan tersedia dari proyek oleh editor melalui jaringan.\n"
 "Pada Android, deploy akan menggunakan kabel USB untuk performa yang lebih "
 "cepat. Opsi ini mempercepat pengujian dengan jejak kaki yang besar."
 
@@ -2880,34 +2879,29 @@ msgid "Visible Collision Shapes"
 msgstr "Collision Shapes Terlihat"
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid ""
 "When this option is enabled, collision shapes and raycast nodes (for 2D and "
 "3D) will be visible in the running project."
 msgstr ""
 "Collision shapes dan raycast nodes (untuk 2D dan 3D) akan terlihat pada saat "
-"permainan berjalan jika opsi ini aktif."
+"proyek berjalan jika opsi ini aktif."
 
 #: editor/editor_node.cpp
 msgid "Visible Navigation"
 msgstr "Navigasi Terlihat"
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid ""
 "When this option is enabled, navigation meshes and polygons will be visible "
 "in the running project."
 msgstr ""
-"Navigasi meshes dan poligon akan terlihat saat game berjalan jika opsi ini "
-"aktif."
+"Navigasi dan poligon akan terlihat saat game berjalan jika opsi ini aktif."
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Synchronize Scene Changes"
 msgstr "Sinkronkan Perubahan Skena"
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid ""
 "When this option is enabled, any changes made to the scene in the editor "
 "will be replicated in the running project.\n"
@@ -2915,17 +2909,15 @@ msgid ""
 "filesystem option is enabled."
 msgstr ""
 "Ketika opsi ini aktif, perubahan yang dibuat pada skena melalui editor akan "
-"direplika pada gim yang sedang berjalan.\n"
+"direplika pada proyek yang sedang berjalan.\n"
 "Ketika penggunaan remote pada sebuah perangkat, akan lebih efisien dengan "
-"berkas sistem jaringan."
+"opsi berkas sistem jaringan."
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Synchronize Script Changes"
-msgstr "Sinkronkan Perubahan Script"
+msgstr "Sinkronkan Perubahan skrip"
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid ""
 "When this option is enabled, any script that is saved will be reloaded in "
 "the running project.\n"
@@ -2934,8 +2926,8 @@ msgid ""
 msgstr ""
 "Ketika opsi ini aktif, perubahan script yang tersimpan akan di muat kembali "
 "pada permainan yang sedang berjalan.\n"
-"Ketika penggunaan remote pada sebuah perngakat, akan lebih efisien jika "
-"jaringan filesystem."
+"Ketika penggunaan remote pada sebuah perangakat, akan lebih efisien dengan "
+"opsi jaringan berkas-berkas."
 
 #: editor/editor_node.cpp editor/script_create_dialog.cpp
 msgid "Editor"
@@ -3154,13 +3146,12 @@ msgid "Open & Run a Script"
 msgstr "Buka & Jalankan Skrip"
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid ""
 "The following files are newer on disk.\n"
 "What action should be taken?"
 msgstr ""
-"Berkas berikut lebih baru dalam diska.\n"
-"Aksi apa yang ingin diambil?:"
+"Berkas berikut lebih baru dalam disk.\n"
+"Aksi apa yang ingin diambil?"
 
 #: editor/editor_node.cpp editor/plugins/script_editor_plugin.cpp
 #: editor/plugins/shader_editor_plugin.cpp
@@ -3422,7 +3413,6 @@ msgid "Add Key/Value Pair"
 msgstr "Tambahkan pasangan Key/Value"
 
 #: editor/editor_run_native.cpp
-#, fuzzy
 msgid ""
 "No runnable export preset found for this platform.\n"
 "Please add a runnable preset in the Export menu or define an existing preset "
@@ -3456,11 +3446,10 @@ msgid "Did you forget the '_run' method?"
 msgstr "Apakah anda lupa dengan fungsi '_run' ?"
 
 #: editor/editor_spin_slider.cpp
-#, fuzzy
 msgid "Hold Ctrl to round to integers. Hold Shift for more precise changes."
 msgstr ""
-"Tahan Ctrl untuk meletakkan Getter. Tahan Shift untuk meletakkan generic "
-"signature."
+"Tahan Ctrl untuk membulatkan bilangan. Tahan Shift untuk meletakkan bilangan "
+"yang lebih presisi."
 
 #: editor/editor_sub_scene.cpp
 msgid "Select Node(s) to Import"
@@ -3744,6 +3733,11 @@ msgid ""
 "\n"
 "Do you wish to overwrite them?"
 msgstr ""
+"file dan/atau berkas-berkas berikut mempunyai konflik di '%s':\n"
+"\n"
+"%s\n"
+"\n"
+"Apakah Anda ingin melanjutkan (overwrite)?"
 
 #: editor/filesystem_dock.cpp
 msgid "Renaming file:"
@@ -3775,7 +3769,7 @@ msgstr "Buka Skena"
 
 #: editor/filesystem_dock.cpp
 msgid "Instance"
-msgstr "Instansi"
+msgstr "hal"
 
 #: editor/filesystem_dock.cpp
 msgid "Add to Favorites"
@@ -3824,9 +3818,8 @@ msgid "Duplicate..."
 msgstr "Gandakan..."
 
 #: editor/filesystem_dock.cpp
-#, fuzzy
 msgid "Move to Trash"
-msgstr "Pindahkan Autoload"
+msgstr "Pindahkan ke tong sampah"
 
 #: editor/filesystem_dock.cpp editor/plugins/animation_player_editor_plugin.cpp
 msgid "Rename..."
@@ -3937,12 +3930,10 @@ msgid "Searching..."
 msgstr "Mencari..."
 
 #: editor/find_in_files.cpp
-#, fuzzy
 msgid "%d match in %d file."
 msgstr "Ditemukan %d kecocokan."
 
 #: editor/find_in_files.cpp
-#, fuzzy
 msgid "%d matches in %d file."
 msgstr "Ditemukan %d kecocokan."
 
@@ -4084,6 +4075,21 @@ msgstr ""
 #: editor/import/resource_importer_scene.cpp
 msgid "Saving..."
 msgstr "Menyimpan..."
+
+#: editor/import_defaults_editor.cpp
+#, fuzzy
+msgid "Select Importer"
+msgstr "Mode Seleksi"
+
+#: editor/import_defaults_editor.cpp
+#, fuzzy
+msgid "Importer:"
+msgstr "Impor"
+
+#: editor/import_defaults_editor.cpp
+#, fuzzy
+msgid "Reset to Defaults"
+msgstr "Muat Default"
 
 #: editor/import_dock.cpp
 msgid "%d Files"
@@ -5153,7 +5159,6 @@ msgid "Sort:"
 msgstr "Sortir:"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
-#: editor/project_settings_editor.cpp
 msgid "Category:"
 msgstr "Kategori:"
 
@@ -10444,6 +10449,11 @@ msgstr "Muat Otomatis"
 msgid "Plugins"
 msgstr "Pengaya"
 
+#: editor/project_settings_editor.cpp
+#, fuzzy
+msgid "Import Defaults"
+msgstr "Muat Default"
+
 #: editor/property_editor.cpp
 msgid "Preset..."
 msgstr "Prasetel..."
@@ -12504,6 +12514,14 @@ msgid "An empty CollisionPolygon2D has no effect on collision."
 msgstr ""
 "Sebuah CollisionPolygon2D yang kosong tidak memiliki efek pada collision."
 
+#: scene/2d/collision_polygon_2d.cpp
+msgid "Invalid polygon. At least 3 points are needed in 'Solids' build mode."
+msgstr ""
+
+#: scene/2d/collision_polygon_2d.cpp
+msgid "Invalid polygon. At least 2 points are needed in 'Segments' build mode."
+msgstr ""
+
 #: scene/2d/collision_shape_2d.cpp
 msgid ""
 "CollisionShape2D only serves to provide a collision shape to a "
@@ -12823,11 +12841,6 @@ msgid ""
 msgstr ""
 "GIProbes tidak didukung oleh driver video GLES2.\n"
 "Gunakan BakedLightmap sebagai gantinya."
-
-#: scene/3d/interpolated_camera.cpp
-msgid ""
-"InterpolatedCamera has been deprecated and will be removed in Godot 4.0."
-msgstr ""
 
 #: scene/3d/light.cpp
 msgid "A SpotLight with an angle wider than 90 degrees cannot cast shadows."

@@ -63,12 +63,16 @@
 # Jonathan Hassel <jonathan.hassel@icloud.com>, 2020.
 # Artur Schönfeld <schoenfeld.artur@ymail.com>, 2020.
 # kidinashell <kidinashell@protonmail.com>, 2021.
+# Daniel Glocker <mystboy666@gmail.com>, 2021.
+# Raphipod <podraphi@googlemail.com>, 2021.
+# Daniel Plaster <danimineiromc@googlemail.com>, 2021.
+# El Captian <elcaptian@posteo.me>, 2021.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2021-02-21 10:50+0000\n"
-"Last-Translator: So Wieso <sowieso@dukun.de>\n"
+"PO-Revision-Date: 2021-03-07 06:04+0000\n"
+"Last-Translator: El Captian <elcaptian@posteo.me>\n"
 "Language-Team: German <https://hosted.weblate.org/projects/godot-engine/"
 "godot/de/>\n"
 "Language: de\n"
@@ -76,7 +80,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 4.5\n"
+"X-Generator: Weblate 4.5.1\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -1921,8 +1925,8 @@ msgid "Open a File or Directory"
 msgstr "Datei oder Verzeichnis öffnen"
 
 #: editor/editor_file_dialog.cpp editor/editor_node.cpp
-#: editor/editor_properties.cpp editor/inspector_dock.cpp
-#: editor/plugins/animation_player_editor_plugin.cpp
+#: editor/editor_properties.cpp editor/import_defaults_editor.cpp
+#: editor/inspector_dock.cpp editor/plugins/animation_player_editor_plugin.cpp
 #: editor/plugins/script_editor_plugin.cpp scene/gui/file_dialog.cpp
 msgid "Save"
 msgstr "Speichern"
@@ -2443,7 +2447,7 @@ msgid ""
 "Please read the documentation relevant to debugging to better understand "
 "this workflow."
 msgstr ""
-"Dies ist ein nicht-lokales Objekt, Änderungen an ihm werden nicht "
+"Dies ist ein Laufzeit-Objekt Objekt, Änderungen an ihm werden nicht "
 "gespeichert.\n"
 "Die Dokumentation zum Debugging beschreibt den nötigen Arbeitsablauf."
 
@@ -2602,7 +2606,6 @@ msgstr ""
 "fehlgeschlagen."
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Unable to find script field for addon plugin at: '%s'."
 msgstr ""
 "Skript-Feld für Erweiterung in ‚res://addons/%s‘ konnte nicht gefunden "
@@ -3062,7 +3065,7 @@ msgstr "Dokumentationsvorschläge senden"
 
 #: editor/editor_node.cpp editor/plugins/asset_library_editor_plugin.cpp
 msgid "Community"
-msgstr "Community"
+msgstr "Gemeinschaft"
 
 #: editor/editor_node.cpp
 msgid "About"
@@ -4144,6 +4147,21 @@ msgstr ""
 msgid "Saving..."
 msgstr "Speichere..."
 
+#: editor/import_defaults_editor.cpp
+#, fuzzy
+msgid "Select Importer"
+msgstr "Auswahlmodus"
+
+#: editor/import_defaults_editor.cpp
+#, fuzzy
+msgid "Importer:"
+msgstr "Import"
+
+#: editor/import_defaults_editor.cpp
+#, fuzzy
+msgid "Reset to Defaults"
+msgstr "Nutze Standard-sRGB"
+
 #: editor/import_dock.cpp
 msgid "%d Files"
 msgstr "%d Dateien"
@@ -4907,7 +4925,7 @@ msgstr "Abspielmodus:"
 #: editor/plugins/animation_tree_editor_plugin.cpp
 #: editor/plugins/animation_tree_player_editor_plugin.cpp
 msgid "AnimationTree"
-msgstr "AnimationTree"
+msgstr "AnimationsBaum"
 
 #: editor/plugins/animation_tree_player_editor_plugin.cpp
 msgid "New name:"
@@ -5114,9 +5132,8 @@ msgid "Got:"
 msgstr "Erhalten:"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
-#, fuzzy
 msgid "Failed SHA-256 hash check"
-msgstr "Sha256-Prüfung fehlgeschlagen"
+msgstr "Sha256 Checksummen prüfung fehlgeschlagen"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Asset Download Error:"
@@ -5219,7 +5236,6 @@ msgid "Sort:"
 msgstr "Sortiere:"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
-#: editor/project_settings_editor.cpp
 msgid "Category:"
 msgstr "Kategorie:"
 
@@ -5274,7 +5290,7 @@ msgstr ""
 msgid "Failed determining lightmap size. Maximum lightmap size too small?"
 msgstr ""
 "Die Größe des Lightmaps kann nicht bestimmt werden. Möglicherweise ist die "
-"maximale Lightmap-Größe zu klein."
+"maximale Lightmap-Größe zu klein?"
 
 #: editor/plugins/baked_lightmap_editor_plugin.cpp
 msgid ""
@@ -7354,7 +7370,7 @@ msgstr "Knochen in Ruhe-Pose setzen"
 
 #: editor/plugins/skeleton_2d_editor_plugin.cpp
 msgid "Skeleton2D"
-msgstr "Skeleton2D"
+msgstr "Skelett2D"
 
 #: editor/plugins/skeleton_2d_editor_plugin.cpp
 msgid "Make Rest Pose (From Bones)"
@@ -7462,7 +7478,7 @@ msgstr "Zeichenaufrufe"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Vertices"
-msgstr "Vertices"
+msgstr "Eckpunkte"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Top View."
@@ -8515,7 +8531,7 @@ msgstr "Keine Textur zum Entfernen ausgewählt."
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Create from scene? This will overwrite all current tiles."
-msgstr "Aus Szene erstellen? Alle aktuellen Kacheln werden überschrieben!"
+msgstr "Aus Szene erstellen? Alle aktuellen Kacheln werden überschrieben."
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Merge from scene?"
@@ -9649,7 +9665,7 @@ msgstr ""
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "VisualShader"
-msgstr "VisualShader"
+msgstr "VisuellerShader"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Edit Visual Property"
@@ -10514,6 +10530,11 @@ msgstr "Autoload"
 msgid "Plugins"
 msgstr "Erweiterungen"
 
+#: editor/project_settings_editor.cpp
+#, fuzzy
+msgid "Import Defaults"
+msgstr "Standard laden"
+
 #: editor/property_editor.cpp
 msgid "Preset..."
 msgstr "Voreinstellungen..."
@@ -10765,14 +10786,12 @@ msgid "Instance Child Scene"
 msgstr "Szene hier instantiieren"
 
 #: editor/scene_tree_dock.cpp
-#, fuzzy
 msgid "Can't paste root node into the same scene."
-msgstr "Bearbeiten von Nodes einer fremden Szene ist nicht möglich!"
+msgstr "Einfügen der Wurzelnode in dieselbe Szene nicht möglich."
 
 #: editor/scene_tree_dock.cpp
-#, fuzzy
 msgid "Paste Node(s)"
-msgstr "Nodes einfügen"
+msgstr "Node(s) einfügen"
 
 #: editor/scene_tree_dock.cpp
 msgid "Detach Script"
@@ -10902,9 +10921,8 @@ msgid "Attach Script"
 msgstr "Skript hinzufügen"
 
 #: editor/scene_tree_dock.cpp
-#, fuzzy
 msgid "Cut Node(s)"
-msgstr "Nodes trennen"
+msgstr "Node(s) trennen"
 
 #: editor/scene_tree_dock.cpp
 msgid "Remove Node(s)"
@@ -11546,7 +11564,7 @@ msgstr "Bibliotheken: "
 
 #: modules/gdnative/register_types.cpp
 msgid "GDNative"
-msgstr "GDNative"
+msgstr "GDNativ"
 
 #: modules/gdscript/gdscript_functions.cpp
 msgid "Step argument is zero!"
@@ -12577,6 +12595,14 @@ msgstr ""
 msgid "An empty CollisionPolygon2D has no effect on collision."
 msgstr "Ein leeres CollisionPolygon2D hat keinen Effekt auf Kollisionen."
 
+#: scene/2d/collision_polygon_2d.cpp
+msgid "Invalid polygon. At least 3 points are needed in 'Solids' build mode."
+msgstr ""
+
+#: scene/2d/collision_polygon_2d.cpp
+msgid "Invalid polygon. At least 2 points are needed in 'Segments' build mode."
+msgstr ""
+
 #: scene/2d/collision_shape_2d.cpp
 msgid ""
 "CollisionShape2D only serves to provide a collision shape to a "
@@ -12905,11 +12931,6 @@ msgid ""
 msgstr ""
 "GIProbes werden vom GLES2-Videotreiber nicht unterstützt.\n"
 "BakedLightmaps können als Alternative verwendet werden."
-
-#: scene/3d/interpolated_camera.cpp
-msgid ""
-"InterpolatedCamera has been deprecated and will be removed in Godot 4.0."
-msgstr "InterpolatedCamera ist veraltet und wird in Godot 4.0 entfernt werden."
 
 #: scene/3d/light.cpp
 msgid "A SpotLight with an angle wider than 90 degrees cannot cast shadows."
@@ -13268,6 +13289,11 @@ msgstr "Varyings können nur in Vertex-Funktion zugewiesen werden."
 #: servers/visual/shader_language.cpp
 msgid "Constants cannot be modified."
 msgstr "Konstanten können nicht verändert werden."
+
+#~ msgid ""
+#~ "InterpolatedCamera has been deprecated and will be removed in Godot 4.0."
+#~ msgstr ""
+#~ "InterpolatedCamera ist veraltet und wird in Godot 4.0 entfernt werden."
 
 #~ msgid "No"
 #~ msgstr "Nein"
@@ -15111,9 +15137,6 @@ msgstr "Konstanten können nicht verändert werden."
 
 #~ msgid "Use Default Light"
 #~ msgstr "Nutze Standardlicht"
-
-#~ msgid "Use Default sRGB"
-#~ msgstr "Nutze Standard-sRGB"
 
 #~ msgid "Default Light Normal:"
 #~ msgstr "Standardlichtnormale:"

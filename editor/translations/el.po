@@ -15,7 +15,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2021-02-15 10:51+0000\n"
+"PO-Revision-Date: 2021-03-03 15:50+0000\n"
 "Last-Translator: Michalis <michalisntovas@yahoo.gr>\n"
 "Language-Team: Greek <https://hosted.weblate.org/projects/godot-engine/godot/"
 "el/>\n"
@@ -24,7 +24,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 4.5-dev\n"
+"X-Generator: Weblate 4.5.1-dev\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -1867,8 +1867,8 @@ msgid "Open a File or Directory"
 msgstr "Άνοιγμα αρχείου ή φακέλου"
 
 #: editor/editor_file_dialog.cpp editor/editor_node.cpp
-#: editor/editor_properties.cpp editor/inspector_dock.cpp
-#: editor/plugins/animation_player_editor_plugin.cpp
+#: editor/editor_properties.cpp editor/import_defaults_editor.cpp
+#: editor/inspector_dock.cpp editor/plugins/animation_player_editor_plugin.cpp
 #: editor/plugins/script_editor_plugin.cpp scene/gui/file_dialog.cpp
 msgid "Save"
 msgstr "Αποθήκευση"
@@ -4088,6 +4088,21 @@ msgstr ""
 msgid "Saving..."
 msgstr "Αποθήκευση..."
 
+#: editor/import_defaults_editor.cpp
+#, fuzzy
+msgid "Select Importer"
+msgstr "Επιλογή Λειτουργίας"
+
+#: editor/import_defaults_editor.cpp
+#, fuzzy
+msgid "Importer:"
+msgstr "Εισαγωγή"
+
+#: editor/import_defaults_editor.cpp
+#, fuzzy
+msgid "Reset to Defaults"
+msgstr "Χρήση προεπιλεγμένου sRGB"
+
 #: editor/import_dock.cpp
 msgid "%d Files"
 msgstr "%d αρχεία"
@@ -5163,7 +5178,6 @@ msgid "Sort:"
 msgstr "Ταξινόμηση:"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
-#: editor/project_settings_editor.cpp
 msgid "Category:"
 msgstr "Κατηγορία:"
 
@@ -8662,7 +8676,7 @@ msgstr "Κανένα αρχείο δεν προστέθηκε στο στάδι�
 
 #: editor/plugins/version_control_editor_plugin.cpp
 msgid "Commit"
-msgstr "Δέσμευση"
+msgstr "Υποβολή"
 
 #: editor/plugins/version_control_editor_plugin.cpp
 msgid "VCS Addon is not initialized"
@@ -10472,6 +10486,11 @@ msgstr "Αυτόματη φόρτωση"
 #: editor/project_settings_editor.cpp
 msgid "Plugins"
 msgstr "Πρόσθετα"
+
+#: editor/project_settings_editor.cpp
+#, fuzzy
+msgid "Import Defaults"
+msgstr "Φόρτωση προεπιλογής"
 
 #: editor/property_editor.cpp
 msgid "Preset..."
@@ -12547,6 +12566,14 @@ msgstr ""
 msgid "An empty CollisionPolygon2D has no effect on collision."
 msgstr "Ένα άδειο ColisionPollygon2D δεν επηρεάζει τη σύγκρουση."
 
+#: scene/2d/collision_polygon_2d.cpp
+msgid "Invalid polygon. At least 3 points are needed in 'Solids' build mode."
+msgstr ""
+
+#: scene/2d/collision_polygon_2d.cpp
+msgid "Invalid polygon. At least 2 points are needed in 'Segments' build mode."
+msgstr ""
+
 #: scene/2d/collision_shape_2d.cpp
 msgid ""
 "CollisionShape2D only serves to provide a collision shape to a "
@@ -12873,11 +12900,6 @@ msgid ""
 msgstr ""
 "Τα GIProbes δεν υποστηρίζονται από το πρόγραμμα οδήγησης οθόνης GLES2.\n"
 "Εναλλακτικά, χρησιμοποιήστε ένα BakedLightmap."
-
-#: scene/3d/interpolated_camera.cpp
-msgid ""
-"InterpolatedCamera has been deprecated and will be removed in Godot 4.0."
-msgstr "Η InterpolatedCamera έχει καταργηθεί και θα αφαιρεθεί στο Godot 4.0."
 
 #: scene/3d/light.cpp
 msgid "A SpotLight with an angle wider than 90 degrees cannot cast shadows."
@@ -13225,6 +13247,11 @@ msgstr "Τα «varying» μπορούν να ανατεθούν μόνο στη�
 #: servers/visual/shader_language.cpp
 msgid "Constants cannot be modified."
 msgstr "Οι σταθερές δεν μπορούν να τροποποιηθούν."
+
+#~ msgid ""
+#~ "InterpolatedCamera has been deprecated and will be removed in Godot 4.0."
+#~ msgstr ""
+#~ "Η InterpolatedCamera έχει καταργηθεί και θα αφαιρεθεί στο Godot 4.0."
 
 #~ msgid "No"
 #~ msgstr "Όχι"
@@ -15053,9 +15080,6 @@ msgstr "Οι σταθερές δεν μπορούν να τροποποιηθο�
 
 #~ msgid "Use Default Light"
 #~ msgstr "Χρήση προεπιλεγμέου φωτός"
-
-#~ msgid "Use Default sRGB"
-#~ msgstr "Χρήση προεπιλεγμένου sRGB"
 
 #~ msgid "Default Light Normal:"
 #~ msgstr "Προεπιλεγμένο διάνυσμα κανονικής ανάκλασης φωτός:"

@@ -15,7 +15,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2021-02-21 10:51+0000\n"
+"PO-Revision-Date: 2021-02-27 00:47+0000\n"
 "Last-Translator: Tapani Niemi <tapani.niemi@kapsi.fi>\n"
 "Language-Team: Finnish <https://hosted.weblate.org/projects/godot-engine/"
 "godot/fi/>\n"
@@ -1857,8 +1857,8 @@ msgid "Open a File or Directory"
 msgstr "Avaa tiedosto tai hakemisto"
 
 #: editor/editor_file_dialog.cpp editor/editor_node.cpp
-#: editor/editor_properties.cpp editor/inspector_dock.cpp
-#: editor/plugins/animation_player_editor_plugin.cpp
+#: editor/editor_properties.cpp editor/import_defaults_editor.cpp
+#: editor/inspector_dock.cpp editor/plugins/animation_player_editor_plugin.cpp
 #: editor/plugins/script_editor_plugin.cpp scene/gui/file_dialog.cpp
 msgid "Save"
 msgstr "Tallenna"
@@ -2530,9 +2530,8 @@ msgid "Unable to enable addon plugin at: '%s' parsing of config failed."
 msgstr "Lisäosan '%s' aktivointi epäonnistui, virheellinen asetustiedosto."
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Unable to find script field for addon plugin at: '%s'."
-msgstr "Skriptikenttää ei löytynyt lisäosan tiedostosta: 'res://addons/%s'."
+msgstr "Skriptikenttää ei löytynyt lisäosan tiedostosta: '%s'."
 
 #: editor/editor_node.cpp
 msgid "Unable to load addon script from path: '%s'."
@@ -4056,6 +4055,21 @@ msgstr ""
 msgid "Saving..."
 msgstr "Tallennetaan..."
 
+#: editor/import_defaults_editor.cpp
+#, fuzzy
+msgid "Select Importer"
+msgstr "Valintatila"
+
+#: editor/import_defaults_editor.cpp
+#, fuzzy
+msgid "Importer:"
+msgstr "Tuonti"
+
+#: editor/import_defaults_editor.cpp
+#, fuzzy
+msgid "Reset to Defaults"
+msgstr "Lataa oletus"
+
 #: editor/import_dock.cpp
 msgid "%d Files"
 msgstr "%d tiedostoa"
@@ -5025,9 +5039,8 @@ msgid "Got:"
 msgstr "Saatiin:"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
-#, fuzzy
 msgid "Failed SHA-256 hash check"
-msgstr "sha256-hajautusarvon tarkistus epäonnistui"
+msgstr "SHA-256 hajautusarvon tarkistus epäonnistui"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Asset Download Error:"
@@ -5130,7 +5143,6 @@ msgid "Sort:"
 msgstr "Lajittele:"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
-#: editor/project_settings_editor.cpp
 msgid "Category:"
 msgstr "Kategoria:"
 
@@ -10396,6 +10408,11 @@ msgstr "Automaattilataus"
 msgid "Plugins"
 msgstr "Liitännäiset"
 
+#: editor/project_settings_editor.cpp
+#, fuzzy
+msgid "Import Defaults"
+msgstr "Lataa oletus"
+
 #: editor/property_editor.cpp
 msgid "Preset..."
 msgstr "Esiasetus..."
@@ -10645,14 +10662,12 @@ msgid "Instance Child Scene"
 msgstr "Luo aliskenen ilmentymä"
 
 #: editor/scene_tree_dock.cpp
-#, fuzzy
 msgid "Can't paste root node into the same scene."
-msgstr "Ei voida suorittaa ulkopuolisen skenen solmuille!"
+msgstr "Juurisolmua ei voida liittää samaan skeneen."
 
 #: editor/scene_tree_dock.cpp
-#, fuzzy
 msgid "Paste Node(s)"
-msgstr "Liitä solmut"
+msgstr "Liitä solmu(t)"
 
 #: editor/scene_tree_dock.cpp
 msgid "Detach Script"
@@ -10784,9 +10799,8 @@ msgid "Attach Script"
 msgstr "Liitä skripti"
 
 #: editor/scene_tree_dock.cpp
-#, fuzzy
 msgid "Cut Node(s)"
-msgstr "Leikkaa solmut"
+msgstr "Leikkaa solmu(t)"
 
 #: editor/scene_tree_dock.cpp
 msgid "Remove Node(s)"
@@ -12449,6 +12463,14 @@ msgstr ""
 msgid "An empty CollisionPolygon2D has no effect on collision."
 msgstr "Tyhjällä CollisionPolygon2D solmulla ei ole vaikutusta törmäyksessä."
 
+#: scene/2d/collision_polygon_2d.cpp
+msgid "Invalid polygon. At least 3 points are needed in 'Solids' build mode."
+msgstr ""
+
+#: scene/2d/collision_polygon_2d.cpp
+msgid "Invalid polygon. At least 2 points are needed in 'Segments' build mode."
+msgstr ""
+
 #: scene/2d/collision_shape_2d.cpp
 msgid ""
 "CollisionShape2D only serves to provide a collision shape to a "
@@ -12766,11 +12788,6 @@ msgid ""
 msgstr ""
 "GIProbe ei ole tuettu GLES2 näyttöajurissa.\n"
 "Käytä sen sijaan BakedLightmap resurssia."
-
-#: scene/3d/interpolated_camera.cpp
-msgid ""
-"InterpolatedCamera has been deprecated and will be removed in Godot 4.0."
-msgstr "InterpolatedCamera on vanhentunut ja poistetaan Godot 4.0 versiossa."
 
 #: scene/3d/light.cpp
 msgid "A SpotLight with an angle wider than 90 degrees cannot cast shadows."
@@ -13114,6 +13131,11 @@ msgstr "Varying tyypin voi sijoittaa vain vertex-funktiossa."
 #: servers/visual/shader_language.cpp
 msgid "Constants cannot be modified."
 msgstr "Vakioita ei voi muokata."
+
+#~ msgid ""
+#~ "InterpolatedCamera has been deprecated and will be removed in Godot 4.0."
+#~ msgstr ""
+#~ "InterpolatedCamera on vanhentunut ja poistetaan Godot 4.0 versiossa."
 
 #~ msgid "No"
 #~ msgstr "Ei"
