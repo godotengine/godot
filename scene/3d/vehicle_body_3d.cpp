@@ -407,7 +407,7 @@ real_t VehicleBody3D::_ray_cast(int p_idx, PhysicsDirectBodyState3D *s) {
 
 	PhysicsDirectSpaceState3D *ss = s->get_space_state();
 
-	bool col = ss->intersect_ray(source, target, rr, exclude);
+	bool col = ss->intersect_ray(source, target, rr, exclude, get_collision_mask());
 
 	wheel.m_raycastInfo.m_groundObject = nullptr;
 
