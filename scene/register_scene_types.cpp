@@ -50,7 +50,6 @@
 #include "scene/2d/line_2d.h"
 #include "scene/2d/mesh_instance_2d.h"
 #include "scene/2d/multimesh_instance_2d.h"
-#include "scene/2d/navigation_2d.h"
 #include "scene/2d/navigation_agent_2d.h"
 #include "scene/2d/navigation_obstacle_2d.h"
 #include "scene/2d/parallax_background.h"
@@ -206,7 +205,6 @@
 #include "scene/3d/listener_3d.h"
 #include "scene/3d/mesh_instance_3d.h"
 #include "scene/3d/multimesh_instance_3d.h"
-#include "scene/3d/navigation_3d.h"
 #include "scene/3d/navigation_agent_3d.h"
 #include "scene/3d/navigation_obstacle_3d.h"
 #include "scene/3d/navigation_region_3d.h"
@@ -516,7 +514,6 @@ void register_scene_types() {
 	ClassDB::register_class<ConeTwistJoint3D>();
 	ClassDB::register_class<Generic6DOFJoint3D>();
 
-	ClassDB::register_class<Navigation3D>();
 	ClassDB::register_class<NavigationRegion3D>();
 	ClassDB::register_class<NavigationAgent3D>();
 	ClassDB::register_class<NavigationObstacle3D>();
@@ -793,7 +790,6 @@ void register_scene_types() {
 	ClassDB::register_class<PathFollow2D>();
 
 	ClassDB::register_class<NavigationMesh>();
-	ClassDB::register_class<Navigation2D>();
 	ClassDB::register_class<NavigationPolygon>();
 	ClassDB::register_class<NavigationRegion2D>();
 	ClassDB::register_class<NavigationAgent2D>();
@@ -814,6 +810,8 @@ void register_scene_types() {
 	ClassDB::add_compatibility_class("DynamicFont", "Font");
 	ClassDB::add_compatibility_class("DynamicFontData", "FontData");
 	ClassDB::add_compatibility_class("ToolButton", "Button");
+	ClassDB::add_compatibility_class("Navigation3D", "Node3D");
+	ClassDB::add_compatibility_class("Navigation2D", "Node2D");
 
 	// Renamed in 4.0.
 	// Keep alphabetical ordering to easily locate classes and avoid duplicates.
@@ -865,7 +863,6 @@ void register_scene_types() {
 	ClassDB::add_compatibility_class("Listener", "Listener3D");
 	ClassDB::add_compatibility_class("MeshInstance", "MeshInstance3D");
 	ClassDB::add_compatibility_class("MultiMeshInstance", "MultiMeshInstance3D");
-	ClassDB::add_compatibility_class("Navigation", "Navigation3D");
 	ClassDB::add_compatibility_class("NavigationAgent", "NavigationAgent3D");
 	ClassDB::add_compatibility_class("NavigationMeshInstance", "NavigationRegion3D");
 	ClassDB::add_compatibility_class("NavigationObstacle", "NavigationObstacle3D");

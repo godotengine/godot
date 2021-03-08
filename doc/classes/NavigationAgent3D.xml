@@ -4,7 +4,7 @@
 		3D Agent used in navigation for collision avoidance.
 	</brief_description>
 	<description>
-		3D Agent that is used in navigation to reach a location while avoiding static and dynamic obstacles. The dynamic obstacles are avoided using RVO collision avoidance. The agent needs navigation data to work correctly. This can be done by having the agent as a child of a [Navigation3D] node, or using [method set_navigation]. [NavigationAgent3D] is physics safe.
+		3D Agent that is used in navigation to reach a location while avoiding static and dynamic obstacles. The dynamic obstacles are avoided using RVO collision avoidance. The agent needs navigation data to work correctly. [NavigationAgent3D] is physics safe.
 	</description>
 	<tutorials>
 	</tutorials>
@@ -35,13 +35,6 @@
 			</return>
 			<description>
 				Returns which index the agent is currently on in the navigation path's [PackedVector3Array].
-			</description>
-		</method>
-		<method name="get_navigation" qualifiers="const">
-			<return type="Node">
-			</return>
-			<description>
-				Returns the [Navigation3D] node that the agent is using for its navigation system.
 			</description>
 		</method>
 		<method name="get_next_location">
@@ -77,15 +70,6 @@
 			</return>
 			<description>
 				Returns true if the target location is reached. The target location is set using [method set_target_location]. It may not always be possible to reach the target location. It should always be possible to reach the final location though. See [method get_final_location].
-			</description>
-		</method>
-		<method name="set_navigation">
-			<return type="void">
-			</return>
-			<argument index="0" name="navigation" type="Node">
-			</argument>
-			<description>
-				Sets the [Navigation3D] node used by the agent. Useful when you don't want to make the agent a child of a [Navigation3D] node.
 			</description>
 		</method>
 		<method name="set_target_location">

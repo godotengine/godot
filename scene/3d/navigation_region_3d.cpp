@@ -32,7 +32,6 @@
 
 #include "core/os/thread.h"
 #include "mesh_instance_3d.h"
-#include "navigation_3d.h"
 #include "servers/navigation_server_3d.h"
 
 void NavigationRegion3D::set_enabled(bool p_enabled) {
@@ -48,9 +47,7 @@ void NavigationRegion3D::set_enabled(bool p_enabled) {
 	if (!enabled) {
 		NavigationServer3D::get_singleton()->region_set_map(region, RID());
 	} else {
-		if (navigation) {
-			NavigationServer3D::get_singleton()->region_set_map(region, navigation->get_rid());
-		}
+		NavigationServer3D::get_singleton()->region_set_map(region, get_world_3d()->get_navigation_map());
 	}
 
 	if (debug_view) {
@@ -74,17 +71,8 @@ bool NavigationRegion3D::is_enabled() const {
 void NavigationRegion3D::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE: {
-			Node3D *c = this;
-			while (c) {
-				navigation = Object::cast_to<Navigation3D>(c);
-				if (navigation) {
-					if (enabled) {
-						NavigationServer3D::get_singleton()->region_set_map(region, navigation->get_rid());
-					}
-					break;
-				}
-
-				c = c->get_parent_spatial();
+			if (enabled) {
+				NavigationServer3D::get_singleton()->region_set_map(region, get_world_3d()->get_navigation_map());
 			}
 
 			if (navmesh.is_valid() && get_tree()->is_debugging_navigation_hint()) {
@@ -105,15 +93,12 @@ void NavigationRegion3D::_notification(int p_what) {
 
 		} break;
 		case NOTIFICATION_EXIT_TREE: {
-			if (navigation) {
-				NavigationServer3D::get_singleton()->region_set_map(region, RID());
-			}
+			NavigationServer3D::get_singleton()->region_set_map(region, RID());
 
 			if (debug_view) {
 				debug_view->queue_delete();
 				debug_view = nullptr;
 			}
-			navigation = nullptr;
 		} break;
 	}
 }
@@ -198,19 +183,7 @@ String NavigationRegion3D::get_configuration_warning() const {
 		warning += TTR("A NavigationMesh resource must be set or created for this node to work.");
 	}
 
-	const Node3D *c = this;
-	while (c) {
-		if (Object::cast_to<Navigation3D>(c)) {
-			return warning;
-		}
-
-		c = Object::cast_to<Node3D>(c->get_parent());
-	}
-
-	if (!warning.is_empty()) {
-		warning += "\n\n";
-	}
-	return warning + TTR("NavigationRegion3D must be a child or grandchild to a Navigation3D node. It only provides navigation data.");
+	return warning;
 }
 
 void NavigationRegion3D::_bind_methods() {

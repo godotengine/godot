@@ -31,7 +31,6 @@
 #ifndef GRID_MAP_H
 #define GRID_MAP_H
 
-#include "scene/3d/navigation_3d.h"
 #include "scene/3d/node_3d.h"
 #include "scene/resources/mesh_library.h"
 #include "scene/resources/multimesh.h"
@@ -135,6 +134,7 @@ class GridMap : public Node3D {
 
 	uint32_t collision_layer = 1;
 	uint32_t collision_mask = 1;
+	bool bake_navigation = false;
 
 	Transform last_transform;
 
@@ -145,7 +145,6 @@ class GridMap : public Node3D {
 	bool center_y = true;
 	bool center_z = true;
 	float cell_scale = 1.0;
-	Navigation3D *navigation = nullptr;
 
 	bool clip = false;
 	bool clip_above = true;
@@ -222,6 +221,9 @@ public:
 
 	void set_collision_mask_bit(int p_bit, bool p_value);
 	bool get_collision_mask_bit(int p_bit) const;
+
+	void set_bake_navigation(bool p_bake_navigation);
+	bool is_baking_navigation();
 
 	void set_mesh_library(const Ref<MeshLibrary> &p_mesh_library);
 	Ref<MeshLibrary> get_mesh_library() const;

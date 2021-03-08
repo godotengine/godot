@@ -91,14 +91,11 @@ public:
 	~NavigationPolygon() {}
 };
 
-class Navigation2D;
-
 class NavigationRegion2D : public Node2D {
 	GDCLASS(NavigationRegion2D, Node2D);
 
 	bool enabled = true;
 	RID region;
-	Navigation2D *navigation = nullptr;
 	Ref<NavigationPolygon> navpoly;
 
 	void _navpoly_changed();
