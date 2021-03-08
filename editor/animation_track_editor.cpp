@@ -5885,7 +5885,7 @@ AnimationTrackEditor::AnimationTrackEditor() {
 	optimize_max_angle->set_value(22);
 
 	optimize_dialog->get_ok_button()->set_text(TTR("Optimize"));
-	optimize_dialog->connect("confirmed", callable_mp(this, &AnimationTrackEditor::_edit_menu_pressed), varray(EDIT_CLEAN_UP_ANIMATION_CONFIRM));
+	optimize_dialog->connect("confirmed", callable_mp(this, &AnimationTrackEditor::_edit_menu_pressed), varray(EDIT_OPTIMIZE_ANIMATION_CONFIRM));
 
 	//
 
