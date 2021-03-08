@@ -7,7 +7,7 @@ from emscripten_helpers import (
     add_js_libraries,
     add_js_pre,
     add_js_externs,
-    get_build_version,
+    create_template_zip,
 )
 from methods import get_compiler_version
 from SCons.Util import WhereIs
@@ -147,11 +147,11 @@ def configure(env):
     env.AddMethod(add_js_pre, "AddJSPre")
     env.AddMethod(add_js_externs, "AddJSExterns")
 
-    # Add method for getting build version string.
-    env.AddMethod(get_build_version, "GetBuildVersion")
-
     # Add method that joins/compiles our Engine files.
     env.AddMethod(create_engine_file, "CreateEngineFile")
+
+    # Add method for creating the final zip file
+    env.AddMethod(create_template_zip, "CreateTemplateZip")
 
     # Closure compiler extern and support for ecmascript specs (const, let, etc).
     env["ENV"]["EMCC_CLOSURE_ARGS"] = "--language_in ECMASCRIPT6"

@@ -2,8 +2,18 @@
 <html xmlns='http://www.w3.org/1999/xhtml' lang='' xml:lang=''>
 <head>
 	<meta charset='utf-8' />
-	<meta name='viewport' content='width=device-width, user-scalable=no' />
+	<meta name='viewport' content='width=device-width, initial-scale=1, minimum-scale=1, maximum-scale=1, user-scalable=no' />
+	<meta name="mobile-web-app-capable" content="yes" />
+	<meta name="apple-mobile-web-app-capable" content="yes" />
+	<meta name="application-name" content="Godot" />
+	<meta name="apple-mobile-web-app-title" content="Godot" />
+	<meta name="theme-color" content="#478cbf" />
+	<meta name="msapplication-navbutton-color" content="#478cbf" />
+	<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+	<meta name="msapplication-starturl" content="/latest" />
 	<link id='-gd-engine-icon' rel='icon' type='image/png' href='favicon.png' />
+	<link rel="apple-touch-icon" type="image/png" href="favicon.png" />
+	<link rel="manifest" href="manifest.json" />
 	<title>Godot Engine Web Editor (@GODOT_VERSION@)</title>
 	<style>
 		*:focus {
@@ -250,7 +260,13 @@
 			<div id='status-notice' class='godot' style='display: none;'></div>
 		</div>
 	</div>
-
+	<script>
+		window.addEventListener("load", () => {
+			if ("serviceWorker" in navigator) {
+				navigator.serviceWorker.register("service.worker.js");
+			}
+		});
+	</script>
 	<script src='godot.tools.js'></script>
 	<script>//<![CDATA[
 
