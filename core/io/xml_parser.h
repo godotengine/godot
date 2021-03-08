@@ -65,8 +65,55 @@ public:
 	};
 
 private:
+	class SafeCursor {
+	public:
+		void set(char *new_first, char *new_last) {
+			first = new_first;
+			last = new_last;
+			cur = new_first;
+		}
+
+		void seek(char *pos) {
+			cur = pos;
+		}
+
+		void reset() {
+			first = nullptr;
+			last = nullptr;
+			cur = nullptr;
+		}
+
+		bool valid() const { return first <= cur && cur <= last; }
+
+		operator char *() const {
+			ERR_FAIL_COND_V(cur < first || cur > last, last);
+			return cur;
+		}
+
+		char operator*() const {
+			ERR_FAIL_COND_V(cur < first || cur > last, '\0');
+			return *cur;
+		}
+
+		char *operator+(int offset) const {
+			ERR_FAIL_COND_V(cur + offset < first || cur + offset > last, last);
+			return cur + offset;
+		}
+
+		char *operator-(int offset) const { return operator+(-offset); }
+
+		void operator++() { cur += 1; }
+		void operator+=(int offset) { cur += offset; }
+		void operator-=(int offset) { cur -= offset; }
+
+	private:
+		char *first = nullptr;
+		char *last = nullptr;
+		char *cur = nullptr;
+	};
+
 	char *data = nullptr;
-	char *P = nullptr;
+	SafeCursor P;
 	uint64_t length = 0;
 	String node_name;
 	bool node_empty = false;
