@@ -86,40 +86,6 @@ wrap_list = [
 ]
 js_wrapped = env.Textfile("#bin/godot", [env.File(f) for f in wrap_list], TEXTFILESUFFIX="${PROGSUFFIX}.wrapped.js")
 
-zip_dir = env.Dir("#bin/.javascript_zip")
-binary_name = "godot.tools" if env["tools"] else "godot"
-out_files = [
-    zip_dir.File(binary_name + ".js"),
-    zip_dir.File(binary_name + ".wasm"),
-    zip_dir.File(binary_name + ".html"),
-    zip_dir.File(binary_name + ".audio.worklet.js"),
-]
-html_file = "#misc/dist/html/full-size.html"
-if env["tools"]:
-    subst_dict = {"@GODOT_VERSION@": env.GetBuildVersion()}
-    html_file = env.Substfile(
-        target="#bin/godot${PROGSUFFIX}.html", source="#misc/dist/html/editor.html", SUBST_DICT=subst_dict
-    )
-
-in_files = [js_wrapped, build[1], html_file, "#platform/javascript/js/libs/audio.worklet.js"]
-if env["gdnative_enabled"]:
-    in_files.append(build[2])  # Runtime
-    out_files.append(zip_dir.File(binary_name + ".side.wasm"))
-elif env["threads_enabled"]:
-    in_files.append(build[2])  # Worker
-    out_files.append(zip_dir.File(binary_name + ".worker.js"))
-
-if env["tools"]:
-    in_files.append("#misc/dist/html/logo.svg")
-    out_files.append(zip_dir.File("logo.svg"))
-    in_files.append("#icon.png")
-    out_files.append(zip_dir.File("favicon.png"))
-
-zip_files = env.InstallAs(out_files, in_files)
-env.Zip(
-    "#bin/godot",
-    zip_files,
-    ZIPROOT=zip_dir,
-    ZIPSUFFIX="${PROGSUFFIX}${ZIPSUFFIX}",
-    ZIPCOMSTR="Archiving $SOURCES as $TARGET",
-)
+# Extra will be the thread worker, or the GDNative side, or None
+extra = build[2] if len(build) > 2 else None
+env.CreateTemplateZip(js_wrapped, build[1], extra)
