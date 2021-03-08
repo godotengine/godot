@@ -1588,6 +1588,13 @@ void TileSetEditor::_on_workspace_input(const Ref<InputEvent> &p_ie) {
 					const real_t grab_threshold = EDITOR_GET("editors/poly_editor/point_grab_radius");
 					shape_anchor += current_tile_region.position;
 					if (tools[TOOL_SELECT]->is_pressed()) {
+						if (current_shape.size() > 0) {
+							for (int i = 0; i < current_shape.size(); i++) {
+								current_shape.set(i, snap_point(current_shape[i]));
+							}
+							workspace->update();
+						}
+
 						if (mb.is_valid()) {
 							if (mb->is_pressed() && mb->get_button_index() == BUTTON_LEFT) {
 								if (edit_mode != EDITMODE_PRIORITY && current_shape.size() > 0) {
