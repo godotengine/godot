@@ -1836,8 +1836,8 @@ msgid "Open a File or Directory"
 msgstr "เปิดไฟล์หรือโฟลเดอร์"
 
 #: editor/editor_file_dialog.cpp editor/editor_node.cpp
-#: editor/editor_properties.cpp editor/inspector_dock.cpp
-#: editor/plugins/animation_player_editor_plugin.cpp
+#: editor/editor_properties.cpp editor/import_defaults_editor.cpp
+#: editor/inspector_dock.cpp editor/plugins/animation_player_editor_plugin.cpp
 #: editor/plugins/script_editor_plugin.cpp scene/gui/file_dialog.cpp
 msgid "Save"
 msgstr "บันทึก"
@@ -3987,6 +3987,21 @@ msgstr "คุณส่งคืนออบเจกต์โหนดย่อ
 msgid "Saving..."
 msgstr "กำลังบันทึก..."
 
+#: editor/import_defaults_editor.cpp
+#, fuzzy
+msgid "Select Importer"
+msgstr "โหมดเลือก"
+
+#: editor/import_defaults_editor.cpp
+#, fuzzy
+msgid "Importer:"
+msgstr "นำเข้า"
+
+#: editor/import_defaults_editor.cpp
+#, fuzzy
+msgid "Reset to Defaults"
+msgstr "โหลดค่าเริ่มต้น"
+
 #: editor/import_dock.cpp
 msgid "%d Files"
 msgstr "ไฟล์ %d"
@@ -5047,7 +5062,6 @@ msgid "Sort:"
 msgstr "เรียงตาม:"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
-#: editor/project_settings_editor.cpp
 msgid "Category:"
 msgstr "หมวดหมู่:"
 
@@ -10231,6 +10245,11 @@ msgstr "ออโต้โหลด"
 msgid "Plugins"
 msgstr "ปลั๊กอิน"
 
+#: editor/project_settings_editor.cpp
+#, fuzzy
+msgid "Import Defaults"
+msgstr "โหลดค่าเริ่มต้น"
+
 #: editor/property_editor.cpp
 msgid "Preset..."
 msgstr "พรีเซ็ต..."
@@ -12240,6 +12259,14 @@ msgstr ""
 msgid "An empty CollisionPolygon2D has no effect on collision."
 msgstr "CollisionPolygon2D ที่ว่างเปล่าจะไม่มีผลทางกายภาพ"
 
+#: scene/2d/collision_polygon_2d.cpp
+msgid "Invalid polygon. At least 3 points are needed in 'Solids' build mode."
+msgstr ""
+
+#: scene/2d/collision_polygon_2d.cpp
+msgid "Invalid polygon. At least 2 points are needed in 'Segments' build mode."
+msgstr ""
+
 #: scene/2d/collision_shape_2d.cpp
 msgid ""
 "CollisionShape2D only serves to provide a collision shape to a "
@@ -12528,11 +12555,6 @@ msgid ""
 msgstr ""
 "ไดรเวอร์วีดีโอ GLES2 ไม่สนับสนุน GIProbe\n"
 "ใช้ BakedLightmap แทน"
-
-#: scene/3d/interpolated_camera.cpp
-msgid ""
-"InterpolatedCamera has been deprecated and will be removed in Godot 4.0."
-msgstr "InterpolatedCamera เลิกใช้งานแล้วและจะถูกลบออกใน Godot 4.0"
 
 #: scene/3d/light.cpp
 msgid "A SpotLight with an angle wider than 90 degrees cannot cast shadows."
@@ -12853,6 +12875,10 @@ msgstr "Varyings สามารถกำหนดในังก์ชันเ
 #: servers/visual/shader_language.cpp
 msgid "Constants cannot be modified."
 msgstr "ค่าคงที่ไม่สามารถแก้ไขได้"
+
+#~ msgid ""
+#~ "InterpolatedCamera has been deprecated and will be removed in Godot 4.0."
+#~ msgstr "InterpolatedCamera เลิกใช้งานแล้วและจะถูกลบออกใน Godot 4.0"
 
 #~ msgid "No"
 #~ msgstr "ไม่"

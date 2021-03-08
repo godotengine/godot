@@ -36,8 +36,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2021-02-21 10:50+0000\n"
-"Last-Translator: nitenook <admin@alterbaum.net>\n"
+"PO-Revision-Date: 2021-03-08 15:33+0000\n"
+"Last-Translator: Wataru Onuki <bettawat@yahoo.co.jp>\n"
 "Language-Team: Japanese <https://hosted.weblate.org/projects/godot-engine/"
 "godot/ja/>\n"
 "Language: ja\n"
@@ -45,7 +45,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Weblate 4.5\n"
+"X-Generator: Weblate 4.5.1\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -1881,8 +1881,8 @@ msgid "Open a File or Directory"
 msgstr "ファイルまたはディレクトリを開く"
 
 #: editor/editor_file_dialog.cpp editor/editor_node.cpp
-#: editor/editor_properties.cpp editor/inspector_dock.cpp
-#: editor/plugins/animation_player_editor_plugin.cpp
+#: editor/editor_properties.cpp editor/import_defaults_editor.cpp
+#: editor/inspector_dock.cpp editor/plugins/animation_player_editor_plugin.cpp
 #: editor/plugins/script_editor_plugin.cpp scene/gui/file_dialog.cpp
 msgid "Save"
 msgstr "保存"
@@ -2554,11 +2554,8 @@ msgid "Unable to enable addon plugin at: '%s' parsing of config failed."
 msgstr "アドオンプラグインを有効にできません: '%s' 設定の解析に失敗しました。"
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Unable to find script field for addon plugin at: '%s'."
-msgstr ""
-"アドオンプラグインのスクリプトフィールドが 'res://addons/%s' から見つかりませ"
-"ん。"
+msgstr "アドオンプラグインのスクリプトフィールドが '%s' で見つかりません。"
 
 #: editor/editor_node.cpp
 msgid "Unable to load addon script from path: '%s'."
@@ -4082,6 +4079,21 @@ msgstr ""
 msgid "Saving..."
 msgstr "保存中..."
 
+#: editor/import_defaults_editor.cpp
+#, fuzzy
+msgid "Select Importer"
+msgstr "選択モード"
+
+#: editor/import_defaults_editor.cpp
+#, fuzzy
+msgid "Importer:"
+msgstr "インポート"
+
+#: editor/import_defaults_editor.cpp
+#, fuzzy
+msgid "Reset to Defaults"
+msgstr "デフォルトを読込む"
+
 #: editor/import_dock.cpp
 msgid "%d Files"
 msgstr "%d ファイル"
@@ -5046,9 +5058,8 @@ msgid "Got:"
 msgstr "取得:"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
-#, fuzzy
 msgid "Failed SHA-256 hash check"
-msgstr "sha256 ハッシュチェック失敗"
+msgstr "SHA-256 ハッシュチェック失敗"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Asset Download Error:"
@@ -5151,7 +5162,6 @@ msgid "Sort:"
 msgstr "ソート:"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
-#: editor/project_settings_editor.cpp
 msgid "Category:"
 msgstr "カテゴリー:"
 
@@ -10409,6 +10419,11 @@ msgstr "自動読み込み"
 msgid "Plugins"
 msgstr "プラグイン"
 
+#: editor/project_settings_editor.cpp
+#, fuzzy
+msgid "Import Defaults"
+msgstr "デフォルトを読込む"
+
 #: editor/property_editor.cpp
 msgid "Preset..."
 msgstr "プリセット..."
@@ -10658,12 +10673,10 @@ msgid "Instance Child Scene"
 msgstr "子シーンをインスタンス化"
 
 #: editor/scene_tree_dock.cpp
-#, fuzzy
 msgid "Can't paste root node into the same scene."
-msgstr "別のシーンからノードを操作することはできません!"
+msgstr "ルートノードは同じシーンに貼り付けできません。"
 
 #: editor/scene_tree_dock.cpp
-#, fuzzy
 msgid "Paste Node(s)"
 msgstr "ノードを貼り付け"
 
@@ -10793,9 +10806,8 @@ msgid "Attach Script"
 msgstr "スクリプトをアタッチ"
 
 #: editor/scene_tree_dock.cpp
-#, fuzzy
 msgid "Cut Node(s)"
-msgstr "ノードを切り取る"
+msgstr "ノードを切り取り"
 
 #: editor/scene_tree_dock.cpp
 msgid "Remove Node(s)"
@@ -11618,19 +11630,16 @@ msgid "Generate buffers"
 msgstr "バッファを生成"
 
 #: modules/lightmapper_cpu/lightmapper_cpu.cpp
-#, fuzzy
 msgid "Direct lighting"
-msgstr "方向"
+msgstr "直接光"
 
 #: modules/lightmapper_cpu/lightmapper_cpu.cpp
-#, fuzzy
 msgid "Indirect lighting"
-msgstr "右インデント"
+msgstr "間接光"
 
 #: modules/lightmapper_cpu/lightmapper_cpu.cpp
-#, fuzzy
 msgid "Post processing"
-msgstr "ポストプロセス"
+msgstr "後処理"
 
 #: modules/lightmapper_cpu/lightmapper_cpu.cpp
 #, fuzzy
@@ -12460,6 +12469,14 @@ msgstr ""
 msgid "An empty CollisionPolygon2D has no effect on collision."
 msgstr "空の CollisionPolygon2D は、衝突判定を持ちません。"
 
+#: scene/2d/collision_polygon_2d.cpp
+msgid "Invalid polygon. At least 3 points are needed in 'Solids' build mode."
+msgstr ""
+
+#: scene/2d/collision_polygon_2d.cpp
+msgid "Invalid polygon. At least 2 points are needed in 'Segments' build mode."
+msgstr ""
+
 #: scene/2d/collision_shape_2d.cpp
 msgid ""
 "CollisionShape2D only serves to provide a collision shape to a "
@@ -12780,11 +12797,6 @@ msgid ""
 msgstr ""
 "GIProbesはGLES2ビデオドライバではサポートされていません。\n"
 "代わりにBakedLightmapを使用してください。"
-
-#: scene/3d/interpolated_camera.cpp
-msgid ""
-"InterpolatedCamera has been deprecated and will be removed in Godot 4.0."
-msgstr "InterpolatedCamera は廃止予定であり、Godot 4.0で除去されます。"
 
 #: scene/3d/light.cpp
 msgid "A SpotLight with an angle wider than 90 degrees cannot cast shadows."
@@ -13123,6 +13135,10 @@ msgstr "Varying変数は頂点関数にのみ割り当てることができま�
 #: servers/visual/shader_language.cpp
 msgid "Constants cannot be modified."
 msgstr "定数は変更できません。"
+
+#~ msgid ""
+#~ "InterpolatedCamera has been deprecated and will be removed in Godot 4.0."
+#~ msgstr "InterpolatedCamera は廃止予定であり、Godot 4.0で除去されます。"
 
 #~ msgid "No"
 #~ msgstr "いいえ"

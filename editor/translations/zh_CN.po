@@ -43,7 +43,7 @@
 # Song DongHui <14729626293@163.com>, 2019.
 # simano clio <sim2cle@gmail.com>, 2019.
 # ByonkoGalilei <byonko@qq.com>, 2019.
-# qjyqjyqjyqjy <qjyqjyqjyqjy@sina.com.cn>, 2019.
+# qjyqjyqjyqjy <qjyqjyqjyqjy@sina.com.cn>, 2019, 2021.
 # liushuyu011 <liushuyu011@gmail.com>, 2019.
 # DS <dseqrasd@126.com>, 2019.
 # ZeroAurora <zeroaurora@qq.com>, 2019.
@@ -76,11 +76,12 @@
 # twoBornottwoB <305766341@qq.com>, 2021.
 # Magian <magian1127@gmail.com>, 2021.
 # Weiduo Xie <xwditfr@gmail.com>, 2021.
+# suplife <2634557184@qq.com>, 2021.
 msgid ""
 msgstr ""
 "Project-Id-Version: Chinese (Simplified) (Godot Engine)\n"
 "POT-Creation-Date: 2018-01-20 12:15+0200\n"
-"PO-Revision-Date: 2021-02-21 10:51+0000\n"
+"PO-Revision-Date: 2021-03-08 15:33+0000\n"
 "Last-Translator: Haoyu Qiu <timothyqiu32@gmail.com>\n"
 "Language-Team: Chinese (Simplified) <https://hosted.weblate.org/projects/"
 "godot-engine/godot/zh_Hans/>\n"
@@ -89,7 +90,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Weblate 4.5\n"
+"X-Generator: Weblate 4.5.1\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -98,13 +99,13 @@ msgstr "convert() 的参数类型无效，请使用 TYPE_* 常量。"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 msgid "Expected a string of length 1 (a character)."
-msgstr "应为长度 1 的字符串（1 字符）。"
+msgstr "应为长度为 1 的字符串（1 字符）。"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/mono/glue/gd_glue.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
 msgid "Not enough bytes for decoding bytes, or invalid format."
-msgstr "没有足够的字节可解码或格式无效。"
+msgstr "解码字节数不够，或格式无效。"
 
 #: core/math/expression.cpp
 msgid "Invalid input %i (not passed) in expression"
@@ -1898,8 +1899,8 @@ msgid "Open a File or Directory"
 msgstr "打开文件或目录"
 
 #: editor/editor_file_dialog.cpp editor/editor_node.cpp
-#: editor/editor_properties.cpp editor/inspector_dock.cpp
-#: editor/plugins/animation_player_editor_plugin.cpp
+#: editor/editor_properties.cpp editor/import_defaults_editor.cpp
+#: editor/inspector_dock.cpp editor/plugins/animation_player_editor_plugin.cpp
 #: editor/plugins/script_editor_plugin.cpp scene/gui/file_dialog.cpp
 msgid "Save"
 msgstr "保存"
@@ -2554,9 +2555,8 @@ msgid "Unable to enable addon plugin at: '%s' parsing of config failed."
 msgstr "无法在 “%s” 上启用加载项插件：配置解析失败。"
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Unable to find script field for addon plugin at: '%s'."
-msgstr "无法在 “res://addons/%s” 中找到加载项插件的脚本字段。"
+msgstr "无法在 “%s” 上找到加载项的 script 字段。"
 
 #: editor/editor_node.cpp
 msgid "Unable to load addon script from path: '%s'."
@@ -4044,6 +4044,21 @@ msgstr "有在 `post_import()` 方法中返回继承了 Node 的对象吗？"
 msgid "Saving..."
 msgstr "保存中..."
 
+#: editor/import_defaults_editor.cpp
+#, fuzzy
+msgid "Select Importer"
+msgstr "选择模式"
+
+#: editor/import_defaults_editor.cpp
+#, fuzzy
+msgid "Importer:"
+msgstr "导入"
+
+#: editor/import_defaults_editor.cpp
+#, fuzzy
+msgid "Reset to Defaults"
+msgstr "使用默认sRGB"
+
 #: editor/import_dock.cpp
 msgid "%d Files"
 msgstr "%d 个文件"
@@ -4704,7 +4719,7 @@ msgstr "过渡已存在！"
 
 #: editor/plugins/animation_state_machine_editor.cpp
 msgid "Add Transition"
-msgstr "添加转换"
+msgstr "添加过渡"
 
 #: editor/plugins/animation_state_machine_editor.cpp
 #: modules/visual_script/visual_script_editor.cpp
@@ -4745,7 +4760,7 @@ msgstr "节点已移除"
 
 #: editor/plugins/animation_state_machine_editor.cpp
 msgid "Transition Removed"
-msgstr "转换已移除"
+msgstr "过渡已移除"
 
 #: editor/plugins/animation_state_machine_editor.cpp
 msgid "Set Start Node (Autoplay)"
@@ -4968,7 +4983,7 @@ msgstr "无法将响应保存到："
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Write error."
-msgstr "写错误。"
+msgstr "写入错误。"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Request failed, too many redirects"
@@ -4999,7 +5014,6 @@ msgid "Got:"
 msgstr "获得:"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
-#, fuzzy
 msgid "Failed SHA-256 hash check"
 msgstr "SHA-256 哈希值校验失败"
 
@@ -5104,7 +5118,6 @@ msgid "Sort:"
 msgstr "排序："
 
 #: editor/plugins/asset_library_editor_plugin.cpp
-#: editor/project_settings_editor.cpp
 msgid "Category:"
 msgstr "分类："
 
@@ -10274,6 +10287,11 @@ msgstr "自动加载"
 msgid "Plugins"
 msgstr "插件"
 
+#: editor/project_settings_editor.cpp
+#, fuzzy
+msgid "Import Defaults"
+msgstr "加载默认"
+
 #: editor/property_editor.cpp
 msgid "Preset..."
 msgstr "预设..."
@@ -10521,12 +10539,10 @@ msgid "Instance Child Scene"
 msgstr "实例化子场景"
 
 #: editor/scene_tree_dock.cpp
-#, fuzzy
 msgid "Can't paste root node into the same scene."
-msgstr "无法操作外部场景的节点！"
+msgstr "不能将根节点粘贴进相同场景。"
 
 #: editor/scene_tree_dock.cpp
-#, fuzzy
 msgid "Paste Node(s)"
 msgstr "粘贴节点"
 
@@ -10653,7 +10669,6 @@ msgid "Attach Script"
 msgstr "添加脚本"
 
 #: editor/scene_tree_dock.cpp
-#, fuzzy
 msgid "Cut Node(s)"
 msgstr "剪切节点"
 
@@ -12269,6 +12284,14 @@ msgstr ""
 msgid "An empty CollisionPolygon2D has no effect on collision."
 msgstr "空的 CollisionPolygon2D 不起任何碰撞检测作用。"
 
+#: scene/2d/collision_polygon_2d.cpp
+msgid "Invalid polygon. At least 3 points are needed in 'Solids' build mode."
+msgstr ""
+
+#: scene/2d/collision_polygon_2d.cpp
+msgid "Invalid polygon. At least 2 points are needed in 'Segments' build mode."
+msgstr ""
+
 #: scene/2d/collision_shape_2d.cpp
 msgid ""
 "CollisionShape2D only serves to provide a collision shape to a "
@@ -12554,11 +12577,6 @@ msgid ""
 msgstr ""
 "GLES2 视频驱动程序不支持 GIProbes。\n"
 "请改用 BakedLightmap。"
-
-#: scene/3d/interpolated_camera.cpp
-msgid ""
-"InterpolatedCamera has been deprecated and will be removed in Godot 4.0."
-msgstr "InterpolatedCamera 已废弃，将在 Godot 4.0 中删除。"
 
 #: scene/3d/light.cpp
 msgid "A SpotLight with an angle wider than 90 degrees cannot cast shadows."
@@ -12883,6 +12901,10 @@ msgstr "变量只能在顶点函数中指定。"
 #: servers/visual/shader_language.cpp
 msgid "Constants cannot be modified."
 msgstr "不允许修改常量。"
+
+#~ msgid ""
+#~ "InterpolatedCamera has been deprecated and will be removed in Godot 4.0."
+#~ msgstr "InterpolatedCamera 已废弃，将在 Godot 4.0 中删除。"
 
 #~ msgid "No"
 #~ msgstr "否"
@@ -14530,9 +14552,6 @@ msgstr "不允许修改常量。"
 
 #~ msgid "Use Default Light"
 #~ msgstr "使用默认光照"
-
-#~ msgid "Use Default sRGB"
-#~ msgstr "使用默认sRGB"
 
 #~ msgid "Default Light Normal:"
 #~ msgstr "默认光照法线:"

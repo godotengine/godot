@@ -96,7 +96,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2021-02-21 10:51+0000\n"
+"PO-Revision-Date: 2021-02-27 00:47+0000\n"
 "Last-Translator: Danil Alexeev <danil@alexeev.xyz>\n"
 "Language-Team: Russian <https://hosted.weblate.org/projects/godot-engine/"
 "godot/ru/>\n"
@@ -1939,8 +1939,8 @@ msgid "Open a File or Directory"
 msgstr "Открыть каталог или файл"
 
 #: editor/editor_file_dialog.cpp editor/editor_node.cpp
-#: editor/editor_properties.cpp editor/inspector_dock.cpp
-#: editor/plugins/animation_player_editor_plugin.cpp
+#: editor/editor_properties.cpp editor/import_defaults_editor.cpp
+#: editor/inspector_dock.cpp editor/plugins/animation_player_editor_plugin.cpp
 #: editor/plugins/script_editor_plugin.cpp scene/gui/file_dialog.cpp
 msgid "Save"
 msgstr "Сохранить"
@@ -2615,9 +2615,8 @@ msgstr ""
 "конфигурации."
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Unable to find script field for addon plugin at: '%s'."
-msgstr "Не удаётся найти поле script для плагина: «res://addons/%s»."
+msgstr "Не удаётся найти поле script для плагина: «%s»."
 
 #: editor/editor_node.cpp
 msgid "Unable to load addon script from path: '%s'."
@@ -4144,6 +4143,21 @@ msgstr "Вы вернули производный от Node объект в м�
 msgid "Saving..."
 msgstr "Сохранение..."
 
+#: editor/import_defaults_editor.cpp
+#, fuzzy
+msgid "Select Importer"
+msgstr "Режим выделения"
+
+#: editor/import_defaults_editor.cpp
+#, fuzzy
+msgid "Importer:"
+msgstr "Импорт"
+
+#: editor/import_defaults_editor.cpp
+#, fuzzy
+msgid "Reset to Defaults"
+msgstr "Использовать sRGB"
+
 #: editor/import_dock.cpp
 msgid "%d Files"
 msgstr "%d файлов"
@@ -5100,7 +5114,7 @@ msgstr "Время ожидания."
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Bad download hash, assuming file has been tampered with."
-msgstr "Несовпадение хэша загрузки, возможно файл был изменён."
+msgstr "Несовпадение хеша загрузки, возможно файл был изменён."
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Expected:"
@@ -5111,9 +5125,8 @@ msgid "Got:"
 msgstr "Получено:"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
-#, fuzzy
 msgid "Failed SHA-256 hash check"
-msgstr "Не удалось проверить sha256 хэш"
+msgstr "Не удалось проверить хеш SHA-256"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Asset Download Error:"
@@ -5216,7 +5229,6 @@ msgid "Sort:"
 msgstr "Сортировка:"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
-#: editor/project_settings_editor.cpp
 msgid "Category:"
 msgstr "Категория:"
 
@@ -10479,6 +10491,11 @@ msgstr "Автозагрузка"
 msgid "Plugins"
 msgstr "Плагины"
 
+#: editor/project_settings_editor.cpp
+#, fuzzy
+msgid "Import Defaults"
+msgstr "Загрузить по умолчанию"
+
 #: editor/property_editor.cpp
 msgid "Preset..."
 msgstr "Предустановка..."
@@ -10730,14 +10747,12 @@ msgid "Instance Child Scene"
 msgstr "Добавить дочернюю сцену"
 
 #: editor/scene_tree_dock.cpp
-#, fuzzy
 msgid "Can't paste root node into the same scene."
-msgstr "Не могу работать с узлами из внешней сцены!"
+msgstr "Невозможно вставить корневой узел в ту же сцену."
 
 #: editor/scene_tree_dock.cpp
-#, fuzzy
 msgid "Paste Node(s)"
-msgstr "Вставить узлы"
+msgstr "Вставить узел(узлы)"
 
 #: editor/scene_tree_dock.cpp
 msgid "Detach Script"
@@ -10867,9 +10882,8 @@ msgid "Attach Script"
 msgstr "Прикрепить скрипт"
 
 #: editor/scene_tree_dock.cpp
-#, fuzzy
 msgid "Cut Node(s)"
-msgstr "Вырезать узлы"
+msgstr "Вырезать узел(узлы)"
 
 #: editor/scene_tree_dock.cpp
 msgid "Remove Node(s)"
@@ -12526,6 +12540,14 @@ msgstr ""
 msgid "An empty CollisionPolygon2D has no effect on collision."
 msgstr "Пустой CollisionPolygon2D не влияет на столкновения."
 
+#: scene/2d/collision_polygon_2d.cpp
+msgid "Invalid polygon. At least 3 points are needed in 'Solids' build mode."
+msgstr ""
+
+#: scene/2d/collision_polygon_2d.cpp
+msgid "Invalid polygon. At least 2 points are needed in 'Segments' build mode."
+msgstr ""
+
 #: scene/2d/collision_shape_2d.cpp
 msgid ""
 "CollisionShape2D only serves to provide a collision shape to a "
@@ -12847,11 +12869,6 @@ msgid ""
 msgstr ""
 "GIProbes не поддерживаются видеодрайвером GLES2.\n"
 "Вместо этого используйте BakedLightmap."
-
-#: scene/3d/interpolated_camera.cpp
-msgid ""
-"InterpolatedCamera has been deprecated and will be removed in Godot 4.0."
-msgstr "InterpolatedCamera устарела и будет удалена в Godot 4.0."
 
 #: scene/3d/light.cpp
 msgid "A SpotLight with an angle wider than 90 degrees cannot cast shadows."
@@ -13192,6 +13209,10 @@ msgstr "Изменения могут быть назначены только �
 #: servers/visual/shader_language.cpp
 msgid "Constants cannot be modified."
 msgstr "Константы не могут быть изменены."
+
+#~ msgid ""
+#~ "InterpolatedCamera has been deprecated and will be removed in Godot 4.0."
+#~ msgstr "InterpolatedCamera устарела и будет удалена в Godot 4.0."
 
 #~ msgid "No"
 #~ msgstr "Нет"
@@ -14855,9 +14876,6 @@ msgstr "Константы не могут быть изменены."
 
 #~ msgid "Use Default Light"
 #~ msgstr "Использовать стандартный свет"
-
-#~ msgid "Use Default sRGB"
-#~ msgstr "Использовать sRGB"
 
 #~ msgid "Default Light Normal:"
 #~ msgstr "Образец стандартного освещения:"

@@ -1855,8 +1855,8 @@ msgid "Open a File or Directory"
 msgstr "Fájl vagy Könyvtár Megnyitása"
 
 #: editor/editor_file_dialog.cpp editor/editor_node.cpp
-#: editor/editor_properties.cpp editor/inspector_dock.cpp
-#: editor/plugins/animation_player_editor_plugin.cpp
+#: editor/editor_properties.cpp editor/import_defaults_editor.cpp
+#: editor/inspector_dock.cpp editor/plugins/animation_player_editor_plugin.cpp
 #: editor/plugins/script_editor_plugin.cpp scene/gui/file_dialog.cpp
 msgid "Save"
 msgstr "Mentés"
@@ -4047,6 +4047,21 @@ msgstr ""
 msgid "Saving..."
 msgstr "Mentés..."
 
+#: editor/import_defaults_editor.cpp
+#, fuzzy
+msgid "Select Importer"
+msgstr "Kiválasztó Mód"
+
+#: editor/import_defaults_editor.cpp
+#, fuzzy
+msgid "Importer:"
+msgstr "Importálás"
+
+#: editor/import_defaults_editor.cpp
+#, fuzzy
+msgid "Reset to Defaults"
+msgstr "Alapértelmezett Betöltése"
+
 #: editor/import_dock.cpp
 msgid "%d Files"
 msgstr "%d fájl"
@@ -5110,7 +5125,6 @@ msgid "Sort:"
 msgstr "Rendezés:"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
-#: editor/project_settings_editor.cpp
 msgid "Category:"
 msgstr "Kategória:"
 
@@ -10215,6 +10229,11 @@ msgstr ""
 msgid "Plugins"
 msgstr "Bővítmények"
 
+#: editor/project_settings_editor.cpp
+#, fuzzy
+msgid "Import Defaults"
+msgstr "Alapértelmezett Betöltése"
+
 #: editor/property_editor.cpp
 msgid "Preset..."
 msgstr "Beépített Beállítások..."
@@ -12187,6 +12206,14 @@ msgstr ""
 msgid "An empty CollisionPolygon2D has no effect on collision."
 msgstr ""
 
+#: scene/2d/collision_polygon_2d.cpp
+msgid "Invalid polygon. At least 3 points are needed in 'Solids' build mode."
+msgstr ""
+
+#: scene/2d/collision_polygon_2d.cpp
+msgid "Invalid polygon. At least 2 points are needed in 'Segments' build mode."
+msgstr ""
+
 #: scene/2d/collision_shape_2d.cpp
 msgid ""
 "CollisionShape2D only serves to provide a collision shape to a "
@@ -12445,11 +12472,6 @@ msgstr ""
 msgid ""
 "GIProbes are not supported by the GLES2 video driver.\n"
 "Use a BakedLightmap instead."
-msgstr ""
-
-#: scene/3d/interpolated_camera.cpp
-msgid ""
-"InterpolatedCamera has been deprecated and will be removed in Godot 4.0."
 msgstr ""
 
 #: scene/3d/light.cpp

@@ -15,13 +15,15 @@
 # Steve Dang <bynguu@outlook.com>, 2020.
 # Harry Mitchell <minhyh0987@gmail.com>, 2020.
 # HSGamer <huynhqtienvtag@gmail.com>, 2020.
-# LetterC67 <hoangdeptoong@gmail.com>, 2020.
+# LetterC67 <hoangdeptoong@gmail.com>, 2020, 2021.
+# Rev <revolnoom7801@gmail.com>, 2021.
+# SyliawDeV <thanhlongstranger@gmail.com>, 2021.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2020-08-11 14:04+0000\n"
-"Last-Translator: LetterC67 <hoangdeptoong@gmail.com>\n"
+"PO-Revision-Date: 2021-03-08 15:33+0000\n"
+"Last-Translator: Rev <revolnoom7801@gmail.com>\n"
 "Language-Team: Vietnamese <https://hosted.weblate.org/projects/godot-engine/"
 "godot/vi/>\n"
 "Language: vi\n"
@@ -29,12 +31,13 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Weblate 4.2-dev\n"
+"X-Generator: Weblate 4.5.1\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
 msgid "Invalid type argument to convert(), use TYPE_* constants."
-msgstr "Hàm convert() có loại đối số không hợp lệ, sử dụng các hằng TYPE_*."
+msgstr ""
+"Hàm convert() có loại đối số không hợp lệ, hãy sử dụng các hằng TYPE_*."
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 msgid "Expected a string of length 1 (a character)."
@@ -171,9 +174,8 @@ msgid "Anim Change Call"
 msgstr "Đổi Function Gọi Animation"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Anim Multi Change Keyframe Time"
-msgstr "Đổi thời gian khung hình"
+msgstr "Đổi nhiều thời gian khung hình"
 
 #: editor/animation_track_editor.cpp
 #, fuzzy
@@ -206,26 +208,25 @@ msgstr "Chỉnh Vòng Lặp Hoạt Ảnh"
 
 #: editor/animation_track_editor.cpp
 msgid "Property Track"
-msgstr ""
+msgstr "Theo dõi đặc tính"
 
 #: editor/animation_track_editor.cpp
 msgid "3D Transform Track"
-msgstr ""
+msgstr "Theo dõi chuyển đổi 3D"
 
 #: editor/animation_track_editor.cpp
 msgid "Call Method Track"
-msgstr ""
+msgstr "Gọi phương thức theo dõi"
 
 #: editor/animation_track_editor.cpp
 msgid "Bezier Curve Track"
-msgstr ""
+msgstr "Theo dõi đường cong Bezier"
 
 #: editor/animation_track_editor.cpp
 msgid "Audio Playback Track"
-msgstr ""
+msgstr "Bản nhạc phát lại âm thanh"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Animation Playback Track"
 msgstr "Ngưng chạy animation. (S)"
 
@@ -238,7 +239,6 @@ msgid "Animation length (seconds)"
 msgstr "Độ dài hoạt ảnh (giây)"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Add Track"
 msgstr "Thêm Track Animation"
 
@@ -257,7 +257,7 @@ msgstr "Âm thanh:"
 
 #: editor/animation_track_editor.cpp
 msgid "Anim Clips:"
-msgstr ""
+msgstr "Hoạt ảnh:"
 
 #: editor/animation_track_editor.cpp
 msgid "Change Track Path"
@@ -265,7 +265,7 @@ msgstr "Thay đổi đường dẫn Track"
 
 #: editor/animation_track_editor.cpp
 msgid "Toggle this track on/off."
-msgstr "Bật tắt track này on/off."
+msgstr "Bật hoặc tắt track này, on/off"
 
 #: editor/animation_track_editor.cpp
 msgid "Update Mode (How this property is set)"
@@ -383,7 +383,7 @@ msgstr "Chèn Anim"
 
 #: editor/animation_track_editor.cpp
 msgid "AnimationPlayer can't animate itself, only other players."
-msgstr "AnimationPlayer không thể tự tạo hoạt ảnh, chỉ các player khác."
+msgstr "AnimationPlayer không thể tự tạo hoạt ảnh, phải nhờ các Player khác."
 
 #: editor/animation_track_editor.cpp
 msgid "Anim Create & Insert"
@@ -407,7 +407,7 @@ msgstr "Sắp xếp lại Tracks"
 
 #: editor/animation_track_editor.cpp
 msgid "Transform tracks only apply to Spatial-based nodes."
-msgstr ""
+msgstr "Các chuyển đổi chỉ có thể áp dụng cho các node Spatial"
 
 #: editor/animation_track_editor.cpp
 msgid ""
@@ -416,7 +416,7 @@ msgid ""
 "-AudioStreamPlayer2D\n"
 "-AudioStreamPlayer3D"
 msgstr ""
-"Các bản âm thanh chỉ có thể trỏ đến các nút:\n"
+"Các bản âm thanh chỉ có thể trỏ đến các loại:\n"
 "-AudioStreamPlayer\n"
 "-AudioStreamPlayer2D\n"
 "-AudioStreamPlayer3D"
@@ -428,10 +428,11 @@ msgstr "Các bản hoạt ảnh chỉ có thể trỏ tới các nút AnimationP
 #: editor/animation_track_editor.cpp
 msgid "An animation player can't animate itself, only other players."
 msgstr ""
+"Animation player không tự tạo hoạt ảnh được, phải thông qua các player khác."
 
 #: editor/animation_track_editor.cpp
 msgid "Not possible to add a new track without a root"
-msgstr ""
+msgstr "Không thể thêm track mới mà không có root."
 
 #: editor/animation_track_editor.cpp
 msgid "Invalid track for Bezier (no suitable sub-properties)"
@@ -482,14 +483,13 @@ msgid "Paste Tracks"
 msgstr "Dán Tracks"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Anim Scale Keys"
-msgstr "Anim Scale Keys"
+msgstr "Key để scale hoạt ảnh"
 
 #: editor/animation_track_editor.cpp
 msgid ""
 "This option does not work for Bezier editing, as it's only a single track."
-msgstr ""
+msgstr "Tùy chọn này không áp lên Bezier được, vì nó chỉ là một track."
 
 #: editor/animation_track_editor.cpp
 msgid ""
@@ -503,6 +503,16 @@ msgid ""
 "Alternatively, use an import preset that imports animations to separate "
 "files."
 msgstr ""
+"Cáianimation này thuộc về một cảnh đã nhập, vì vậy những thay đổi đối với "
+"các bản nhạc đã nhập sẽ không được lưu.\n"
+"\n"
+"Để bật khả năng thêm các bản nhạc tùy chỉnh, hãy điều hướng đến cài đặt nhập "
+"của cảnh và đặt\n"
+"\"animation > Lưu trữ\" thành \"Tệp\", bật \"Hoạt hình> Giữ các bản nhạc tùy "
+"chỉnh\", sau đó nhập lại.(vn)\n"
+"\"Animation > Storage\" to \"Files\", enable \"Animation > Keep Custom Tracks"
+"\", sau đó nhập lại (english).\n"
+"Hoặc, sử dụng cài đặt trước nhập khẩu nhập hình ảnh động để tách các tệp."
 
 #: editor/animation_track_editor.cpp
 msgid "Warning: Editing imported animation"
@@ -536,7 +546,7 @@ msgstr "Giây"
 #: editor/animation_track_editor.cpp
 #: editor/plugins/sprite_frames_editor_plugin.cpp
 msgid "FPS"
-msgstr ""
+msgstr "Khung hình(FPS)"
 
 #: editor/animation_track_editor.cpp editor/editor_properties.cpp
 #: editor/plugins/polygon_2d_editor_plugin.cpp
@@ -554,7 +564,7 @@ msgstr "Thuộc tính hoạt cảnh."
 
 #: editor/animation_track_editor.cpp
 msgid "Copy Tracks"
-msgstr ""
+msgstr "Sao Chép Tracks"
 
 #: editor/animation_track_editor.cpp
 msgid "Scale Selection"
@@ -570,7 +580,7 @@ msgstr "Nhân đôi lựa chọn"
 
 #: editor/animation_track_editor.cpp
 msgid "Duplicate Transposed"
-msgstr ""
+msgstr "Chuyển đổi trùng lặp"
 
 #: editor/animation_track_editor.cpp
 msgid "Delete Selection"
@@ -598,7 +608,7 @@ msgstr "Chọn node để được làm diễn hoạt:"
 
 #: editor/animation_track_editor.cpp
 msgid "Use Bezier Curves"
-msgstr ""
+msgstr "Sử dụng đường cong Bezier"
 
 #: editor/animation_track_editor.cpp
 msgid "Anim. Optimizer"
@@ -606,15 +616,15 @@ msgstr "Tối ưu hóa Animation"
 
 #: editor/animation_track_editor.cpp
 msgid "Max. Linear Error:"
-msgstr ""
+msgstr "Sai lệch tuyến tính lớn nhất:"
 
 #: editor/animation_track_editor.cpp
 msgid "Max. Angular Error:"
-msgstr ""
+msgstr "Sai lệch góc lớn nhất:"
 
 #: editor/animation_track_editor.cpp
 msgid "Max Optimizable Angle:"
-msgstr ""
+msgstr "Góc lớn nhất có thể tối ưu:"
 
 #: editor/animation_track_editor.cpp
 msgid "Optimize"
@@ -622,7 +632,7 @@ msgstr "Tối ưu"
 
 #: editor/animation_track_editor.cpp
 msgid "Remove invalid keys"
-msgstr "Gỡ bỏ các khoá không hợp lệ"
+msgstr "Xóa các khoá không hợp lệ"
 
 #: editor/animation_track_editor.cpp
 msgid "Remove unresolved and empty tracks"
@@ -659,9 +669,8 @@ msgid "Copy"
 msgstr "Sao chép"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Select All/None"
-msgstr "Chọn Không có"
+msgstr "Chọn tất cả/ hoặc không"
 
 #: editor/animation_track_editor_plugins.cpp
 msgid "Add Audio Track Clip"
@@ -669,19 +678,19 @@ msgstr "Thêm Track Âm thanh"
 
 #: editor/animation_track_editor_plugins.cpp
 msgid "Change Audio Track Clip Start Offset"
-msgstr ""
+msgstr "Thay đổi thời điểm bắt đầu phát track âm thanh."
 
 #: editor/animation_track_editor_plugins.cpp
 msgid "Change Audio Track Clip End Offset"
-msgstr ""
+msgstr "Thay đổi thời điểm kết thúc track âm thanh"
 
 #: editor/array_property_edit.cpp
 msgid "Resize Array"
-msgstr "Đổi lại size Array"
+msgstr "Thay đổi kích thước mảng"
 
 #: editor/array_property_edit.cpp
 msgid "Change Array Value Type"
-msgstr "Đổi loại giá trị Array"
+msgstr "Đổi kiểu giá trị Array"
 
 #: editor/array_property_edit.cpp
 msgid "Change Array Value"
@@ -768,9 +777,8 @@ msgid "Method in target node must be specified."
 msgstr "Phương thức trong nút đích phải được chỉ định."
 
 #: editor/connections_dialog.cpp
-#, fuzzy
 msgid "Method name must be a valid identifier."
-msgstr "Phương thức trong nút đích phải được chỉ định."
+msgstr "Tên phương thức phải được chỉ định."
 
 #: editor/connections_dialog.cpp
 msgid ""
@@ -822,9 +830,8 @@ msgid "Extra Call Arguments:"
 msgstr "Mở rộng Đối số được gọi:"
 
 #: editor/connections_dialog.cpp
-#, fuzzy
 msgid "Receiver Method:"
-msgstr "Lọc các nút"
+msgstr "Hàm nhận:"
 
 #: editor/connections_dialog.cpp
 msgid "Advanced"
@@ -846,7 +853,7 @@ msgstr "Một lần"
 
 #: editor/connections_dialog.cpp
 msgid "Disconnects the signal after its first emission."
-msgstr "Ngắt kết nối tín hiệu sau lần phát xạ đầu tiên."
+msgstr "Ngắt kết nối tín hiệu sau lần phát đầu tiên."
 
 #: editor/connections_dialog.cpp
 msgid "Cannot connect signal"
@@ -864,7 +871,7 @@ msgstr "Không thể kết nối tín hiệu"
 #: editor/run_settings_dialog.cpp editor/settings_config_dialog.cpp
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Close"
-msgstr "Tắt"
+msgstr "Đóng"
 
 #: editor/connections_dialog.cpp
 msgid "Connect"
@@ -912,9 +919,8 @@ msgid "Signals"
 msgstr "Tín hiệu (Signal)"
 
 #: editor/connections_dialog.cpp
-#, fuzzy
 msgid "Filter signals"
-msgstr "Lọc tệp tin ..."
+msgstr "Lọc tín hiệu"
 
 #: editor/connections_dialog.cpp
 msgid "Are you sure you want to remove all connections from this signal?"
@@ -978,7 +984,6 @@ msgid "Search Replacement For:"
 msgstr "Tìm kiếm thay thế cho:"
 
 #: editor/dependency_editor.cpp
-#, fuzzy
 msgid "Dependencies For:"
 msgstr "Phần phụ thuộc cho:"
 
@@ -1026,7 +1031,7 @@ msgstr "Trình chỉnh sửa Phụ thuộc"
 
 #: editor/dependency_editor.cpp
 msgid "Search Replacement Resource:"
-msgstr ""
+msgstr "Tìm kiếm tài nguyên thay thế:"
 
 #: editor/dependency_editor.cpp editor/editor_file_dialog.cpp
 #: editor/editor_help_search.cpp editor/editor_node.cpp
@@ -1090,13 +1095,12 @@ msgid "Permanently delete %d item(s)? (No undo!)"
 msgstr "Xoá vĩnh viễn các đối tượng %d? (Không thể hoàn lại!)"
 
 #: editor/dependency_editor.cpp
-#, fuzzy
 msgid "Show Dependencies"
-msgstr "Phần phụ thuộc cho:"
+msgstr "Hiện các phần phụ thuộc"
 
 #: editor/dependency_editor.cpp
 msgid "Orphan Resource Explorer"
-msgstr ""
+msgstr "Tìm tài nguyên mất gốc"
 
 #: editor/dependency_editor.cpp editor/editor_audio_buses.cpp
 #: editor/editor_file_dialog.cpp editor/editor_node.cpp
@@ -1464,15 +1468,15 @@ msgstr ""
 
 #: editor/editor_autoload_settings.cpp
 msgid "Keyword cannot be used as an autoload name."
-msgstr ""
+msgstr "Từ khóa không thể dùng làm tên một nạp tự động."
 
 #: editor/editor_autoload_settings.cpp
 msgid "Autoload '%s' already exists!"
-msgstr ""
+msgstr "Nạp tự động '%s' đã tồn tại!"
 
 #: editor/editor_autoload_settings.cpp
 msgid "Rename Autoload"
-msgstr ""
+msgstr "Đổi tên"
 
 #: editor/editor_autoload_settings.cpp
 msgid "Toggle AutoLoad Globals"
@@ -1875,8 +1879,8 @@ msgid "Open a File or Directory"
 msgstr "Mở một tệp tin hoặc thư mục"
 
 #: editor/editor_file_dialog.cpp editor/editor_node.cpp
-#: editor/editor_properties.cpp editor/inspector_dock.cpp
-#: editor/plugins/animation_player_editor_plugin.cpp
+#: editor/editor_properties.cpp editor/import_defaults_editor.cpp
+#: editor/inspector_dock.cpp editor/plugins/animation_player_editor_plugin.cpp
 #: editor/plugins/script_editor_plugin.cpp scene/gui/file_dialog.cpp
 msgid "Save"
 msgstr "Lưu"
@@ -2787,9 +2791,8 @@ msgid "Project Settings..."
 msgstr "Cài đặt Dự Án"
 
 #: editor/editor_node.cpp editor/plugins/version_control_editor_plugin.cpp
-#, fuzzy
 msgid "Version Control"
-msgstr "Phiên bản:"
+msgstr "Theo dõi phiên bản"
 
 #: editor/editor_node.cpp editor/plugins/version_control_editor_plugin.cpp
 msgid "Set Up Version Control"
@@ -2975,9 +2978,8 @@ msgid "Q&A"
 msgstr "Hỏi và Đáp"
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Report a Bug"
-msgstr "Nhập vào lại"
+msgstr "Báo lỗi"
 
 #: editor/editor_node.cpp
 msgid "Send Docs Feedback"
@@ -2989,7 +2991,7 @@ msgstr "Cộng đồng"
 
 #: editor/editor_node.cpp
 msgid "About"
-msgstr "Thông tin chúng tôi"
+msgstr "Về chúng tôi"
 
 #: editor/editor_node.cpp
 msgid "Play the project."
@@ -3001,7 +3003,7 @@ msgstr "Chạy"
 
 #: editor/editor_node.cpp
 msgid "Pause the scene execution for debugging."
-msgstr ""
+msgstr "Dừng chạy Cảnh để gỡ lỗi."
 
 #: editor/editor_node.cpp
 msgid "Pause Scene"
@@ -3029,7 +3031,7 @@ msgstr "Chạy Cảnh Tuỳ Chọn"
 
 #: editor/editor_node.cpp
 msgid "Changing the video driver requires restarting the editor."
-msgstr "Thay đổi trình điều kiển Video, yêu cầu khởi động lại Trình biên tập."
+msgstr "Thay đổi trình điều khiển Video cần phải khởi động lại Trình biên tập."
 
 #: editor/editor_node.cpp editor/project_settings_editor.cpp
 #: editor/settings_config_dialog.cpp
@@ -3041,14 +3043,12 @@ msgid "Spins when the editor window redraws."
 msgstr ""
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Update Continuously"
-msgstr "Liên tục"
+msgstr "Cập nhật Liên tục"
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Update When Changed"
-msgstr "Đối số đã thay đổi"
+msgstr "Cập nhật khi có thay đổi"
 
 #: editor/editor_node.cpp
 msgid "Hide Update Spinner"
@@ -3064,7 +3064,7 @@ msgstr "Quan Sát Viên"
 
 #: editor/editor_node.cpp
 msgid "Expand Bottom Panel"
-msgstr "Mở rộng bảng điều khiển phía dưới"
+msgstr "Mở rộng bảng điều khiển dưới"
 
 #: editor/editor_node.cpp
 msgid "Output"
@@ -3093,7 +3093,7 @@ msgid ""
 "the \"Use Custom Build\" option should be enabled in the Android export "
 "preset."
 msgstr ""
-"Điều này sẽ thiết lập dự án của bạn cho các bản dựng Android tùy chỉnh bằng "
+"Việc này sẽ thiết lập dự án của bạn cho các bản dựng Android tùy chỉnh bằng "
 "cách cài đặt nguồn mẫu thành \"res://android/build\".\n"
 "Bạn có thể áp dụng các sửa đổi và xây dựng APK tùy chỉnh khi xuất (thêm các "
 "mô-đun, thay đổi AndroidManifest.xml, ...).\n"
@@ -3136,16 +3136,18 @@ msgid ""
 "The following files are newer on disk.\n"
 "What action should be taken?"
 msgstr ""
+"Các tệp sau xuất hiện trên ổ cứng gần đây hơn.\n"
+"Bạn muốn làm gì đây?"
 
 #: editor/editor_node.cpp editor/plugins/script_editor_plugin.cpp
 #: editor/plugins/shader_editor_plugin.cpp
 msgid "Reload"
-msgstr ""
+msgstr "Tải lại"
 
 #: editor/editor_node.cpp editor/plugins/script_editor_plugin.cpp
 #: editor/plugins/shader_editor_plugin.cpp
 msgid "Resave"
-msgstr ""
+msgstr "Lưu lại"
 
 #: editor/editor_node.cpp
 msgid "New Inherited"
@@ -3184,9 +3186,8 @@ msgid "Open the previous Editor"
 msgstr ""
 
 #: editor/editor_node.h
-#, fuzzy
 msgid "Warning!"
-msgstr "Cảnh báo"
+msgstr "Cảnh báo!"
 
 #: editor/editor_path.cpp
 msgid "No sub-resources found."
@@ -3201,9 +3202,8 @@ msgid "Thumbnail..."
 msgstr ""
 
 #: editor/editor_plugin_settings.cpp
-#, fuzzy
 msgid "Main Script:"
-msgstr "Tạo Script"
+msgstr "Mã lệnh chính:"
 
 #: editor/editor_plugin_settings.cpp
 msgid "Edit Plugin"
@@ -3244,7 +3244,7 @@ msgstr ""
 
 #: editor/editor_profiler.cpp
 msgid "Average Time (sec)"
-msgstr ""
+msgstr "Thời gian trung bình (giây)"
 
 #: editor/editor_profiler.cpp
 msgid "Frame %"
@@ -3289,7 +3289,7 @@ msgstr ""
 
 #: editor/editor_properties.cpp
 msgid "Bit %d, value %d"
-msgstr ""
+msgstr "Bit %d, giá trị %d"
 
 #: editor/editor_properties.cpp
 msgid "[Empty]"
@@ -4056,6 +4056,21 @@ msgstr ""
 #: editor/import/resource_importer_scene.cpp
 msgid "Saving..."
 msgstr "Đang lưu ..."
+
+#: editor/import_defaults_editor.cpp
+#, fuzzy
+msgid "Select Importer"
+msgstr "Chế độ chọn"
+
+#: editor/import_defaults_editor.cpp
+#, fuzzy
+msgid "Importer:"
+msgstr "Nhập vào"
+
+#: editor/import_defaults_editor.cpp
+#, fuzzy
+msgid "Reset to Defaults"
+msgstr "Nạp mặc định"
 
 #: editor/import_dock.cpp
 #, fuzzy
@@ -5143,7 +5158,6 @@ msgid "Sort:"
 msgstr "Sắp xếp:"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
-#: editor/project_settings_editor.cpp
 msgid "Category:"
 msgstr "Danh mục:"
 
@@ -10414,6 +10428,11 @@ msgstr ""
 msgid "Plugins"
 msgstr ""
 
+#: editor/project_settings_editor.cpp
+#, fuzzy
+msgid "Import Defaults"
+msgstr "Nạp mặc định"
+
 #: editor/property_editor.cpp
 msgid "Preset..."
 msgstr "Cài sẵn ..."
@@ -12465,6 +12484,14 @@ msgstr ""
 msgid "An empty CollisionPolygon2D has no effect on collision."
 msgstr ""
 
+#: scene/2d/collision_polygon_2d.cpp
+msgid "Invalid polygon. At least 3 points are needed in 'Solids' build mode."
+msgstr ""
+
+#: scene/2d/collision_polygon_2d.cpp
+msgid "Invalid polygon. At least 2 points are needed in 'Segments' build mode."
+msgstr ""
+
 #: scene/2d/collision_shape_2d.cpp
 msgid ""
 "CollisionShape2D only serves to provide a collision shape to a "
@@ -12718,11 +12745,6 @@ msgstr ""
 msgid ""
 "GIProbes are not supported by the GLES2 video driver.\n"
 "Use a BakedLightmap instead."
-msgstr ""
-
-#: scene/3d/interpolated_camera.cpp
-msgid ""
-"InterpolatedCamera has been deprecated and will be removed in Godot 4.0."
 msgstr ""
 
 #: scene/3d/light.cpp
