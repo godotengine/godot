@@ -4030,7 +4030,10 @@ DisplayServerX11::DisplayServerX11(const String &p_rendering_driver, WindowMode 
 				use_prime = 0;
 			}
 
-			if (getenv("LD_LIBRARY_PATH")) {
+			// Some tools use fake libGL libraries and have them override the real one using
+			// LD_LIBRARY_PATH, so we skip them. *But* Steam also sets LD_LIBRARY_PATH for its
+			// runtime and includes system `/lib` and `/lib64`... so ignore Steam.
+			if (use_prime == -1 && getenv("LD_LIBRARY_PATH") && !getenv("STEAM_RUNTIME_LIBRARY_PATH")) {
 				String ld_library_path(getenv("LD_LIBRARY_PATH"));
 				Vector<String> libraries = ld_library_path.split(":");
 
