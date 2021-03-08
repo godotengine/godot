@@ -84,7 +84,12 @@ void SoftBodyVisualServerHandler::set_vertex(int p_vertex_id, const void *p_vect
 }
 
 void SoftBodyVisualServerHandler::set_normal(int p_vertex_id, const void *p_vector3) {
-	memcpy(&write_buffer[p_vertex_id * stride + offset_normal], p_vector3, sizeof(float) * 3);
+	Vector2 normal_oct = VisualServer::get_singleton()->norm_to_oct(*(Vector3 *)p_vector3);
+	int16_t v_normal[2] = {
+		(int16_t)CLAMP(normal_oct.x * 32767, -32768, 32767),
+		(int16_t)CLAMP(normal_oct.y * 32767, -32768, 32767),
+	};
+	memcpy(&write_buffer[p_vertex_id * stride + offset_normal], v_normal, sizeof(uint16_t) * 2);
 }
 
 void SoftBodyVisualServerHandler::set_aabb(const AABB &p_aabb) {
