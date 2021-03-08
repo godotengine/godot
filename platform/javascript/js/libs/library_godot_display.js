@@ -400,6 +400,10 @@ const GodotDisplayScreen = {
 	$GodotDisplayScreen__deps: ['$GodotConfig', '$GodotOS', '$GL', 'emscripten_webgl_get_current_context'],
 	$GodotDisplayScreen: {
 		desired_size: [0, 0],
+		hidpi: true,
+		getPixelRatio: function () {
+			return GodotDisplayScreen.hidpi ? window.devicePixelRatio || 1 : 1;
+		},
 		isFullscreen: function () {
 			const elem = document.fullscreenElement || document.mozFullscreenElement
 				|| document.webkitFullscreenElement || document.msFullscreenElement;
@@ -477,7 +481,7 @@ const GodotDisplayScreen = {
 				}
 				return 0;
 			}
-			const scale = window.devicePixelRatio || 1;
+			const scale = GodotDisplayScreen.getPixelRatio();
 			if (isFullscreen || wantsFullWindow) {
 				// We need to match screen size.
 				width = window.innerWidth * scale;
@@ -555,7 +559,7 @@ const GodotDisplay = {
 
 	godot_js_display_pixel_ratio_get__sig: 'f',
 	godot_js_display_pixel_ratio_get: function () {
-		return window.devicePixelRatio || 1;
+		return GodotDisplayScreen.getPixelRatio();
 	},
 
 	godot_js_display_fullscreen_request__sig: 'i',
@@ -581,7 +585,7 @@ const GodotDisplay = {
 
 	godot_js_display_screen_size_get__sig: 'vii',
 	godot_js_display_screen_size_get: function (width, height) {
-		const scale = window.devicePixelRatio || 1;
+		const scale = GodotDisplayScreen.getPixelRatio();
 		GodotRuntime.setHeapValue(width, window.screen.width * scale, 'i32');
 		GodotRuntime.setHeapValue(height, window.screen.height * scale, 'i32');
 	},
@@ -776,8 +780,8 @@ const GodotDisplay = {
 		GodotDisplayListeners.add(canvas, 'drop', GodotDisplayDragDrop.handler(dropFiles));
 	},
 
-	godot_js_display_setup_canvas__sig: 'viii',
-	godot_js_display_setup_canvas: function (p_width, p_height, p_fullscreen) {
+	godot_js_display_setup_canvas__sig: 'viiii',
+	godot_js_display_setup_canvas: function (p_width, p_height, p_fullscreen, p_hidpi) {
 		const canvas = GodotConfig.canvas;
 		GodotDisplayListeners.add(canvas, 'contextmenu', function (ev) {
 			ev.preventDefault();
@@ -786,6 +790,7 @@ const GodotDisplay = {
 			alert('WebGL context lost, please reload the page'); // eslint-disable-line no-alert
 			ev.preventDefault();
 		}, false);
+		GodotDisplayScreen.hidpi = !!p_hidpi;
 		switch (GodotConfig.canvas_resize_policy) {
 		case 0: // None
 			GodotDisplayScreen.desired_size = [canvas.width, canvas.height];
