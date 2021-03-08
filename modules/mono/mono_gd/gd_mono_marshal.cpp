@@ -266,6 +266,14 @@ Variant::Type managed_to_variant_type(const ManagedType &p_type, bool *r_nil_is_
 			if (GDMonoUtils::Marshal::type_is_generic_icollection(reftype) || GDMonoUtils::Marshal::type_is_generic_ienumerable(reftype)) {
 				return Variant::ARRAY;
 			}
+
+			// INullable
+			if (GDMonoUtils::Marshal::type_is_generic_nullable(reftype)) {
+				MonoReflectionType *underlying_reftype;
+				GDMonoUtils::Marshal::nullable_get_underlying_type(reftype, &underlying_reftype);
+
+				return managed_to_variant_type(ManagedType::from_reftype(underlying_reftype), r_nil_is_variant);
+			}
 		} break;
 
 		default: {
@@ -457,10 +465,7 @@ MonoObject *variant_to_mono_object_of_genericinst(const Variant &p_var, GDMonoCl
 
 		MonoReflectionType *underlying_reftype;
 		GDMonoUtils::Marshal::nullable_get_underlying_type(reftype, &underlying_reftype);
-		MonoType *underlying_monotype = mono_reflection_type_get_type(underlying_reftype);
-		GDMonoClass *underlying_class = GDMono::get_singleton()->get_class(mono_class_from_mono_type(underlying_monotype));
-
-		return variant_to_mono_object(p_var, ManagedType(mono_type_get_type(underlying_monotype), underlying_class));
+		return variant_to_mono_object(p_var, ManagedType::from_reftype(underlying_reftype));
 	}
 
 	ERR_FAIL_V_MSG(nullptr, "Attempted to convert Variant to unsupported generic type: '" +
