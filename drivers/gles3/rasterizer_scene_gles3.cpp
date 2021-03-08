@@ -2038,7 +2038,7 @@ void RasterizerSceneGLES3::_render_list(RenderList::Element **p_elements, int p_
 
 	int current_blend_mode = -1;
 
-	int prev_shading = -1;
+	uint32_t prev_shading = 0xFFFFFFFF;
 	RasterizerStorageGLES3::Skeleton *prev_skeleton = NULL;
 
 	state.scene_shader.set_conditional(SceneShaderGLES3::SHADELESS, true); //by default unshaded (easier to set)
@@ -2060,16 +2060,20 @@ void RasterizerSceneGLES3::_render_list(RenderList::Element **p_elements, int p_
 
 		bool rebind = first;
 
-		int shading = (e->sort_key >> RenderList::SORT_KEY_SHADING_SHIFT) & RenderList::SORT_KEY_SHADING_MASK;
+		uint32_t shading = (e->sort_key >> RenderList::SORT_KEY_SHADING_SHIFT) & RenderList::SORT_KEY_SHADING_MASK;
 
 		if (!p_shadow) {
 
+			bool use_directional = directional_light != NULL;
 			if (p_directional_add) {
-				if (e->sort_key & SORT_KEY_UNSHADED_FLAG || !(e->instance->layer_mask & directional_light->light_ptr->cull_mask)) {
-					continue;
+				use_directional = use_directional && !(e->instance->baked_light && directional_light->light_ptr->bake_mode == VS::LightBakeMode::LIGHT_BAKE_ALL);
+				use_directional = use_directional && ((e->instance->layer_mask & directional_light->light_ptr->cull_mask) != 0);
+				use_directional = use_directional && ((e->sort_key & SORT_KEY_UNSHADED_FLAG) == 0);
+				if (!use_directional) {
+					continue; // It's a directional-only pass and the directional light is disabled
 				}
-
-				shading &= ~1; //ignore the ignore directional for base pass
+			} else {
+				use_directional = use_directional && (e->sort_key & SORT_KEY_NO_DIRECTIONAL_FLAG) == 0;
 			}
 
 			if (shading != prev_shading) {
@@ -2107,7 +2111,7 @@ void RasterizerSceneGLES3::_render_list(RenderList::Element **p_elements, int p_
 					state.scene_shader.set_conditional(SceneShaderGLES3::USE_FORWARD_LIGHTING, !p_directional_add);
 					state.scene_shader.set_conditional(SceneShaderGLES3::USE_VERTEX_LIGHTING, (e->sort_key & SORT_KEY_VERTEX_LIT_FLAG));
 
-					state.scene_shader.set_conditional(SceneShaderGLES3::USE_LIGHT_DIRECTIONAL, false);
+					state.scene_shader.set_conditional(SceneShaderGLES3::USE_LIGHT_DIRECTIONAL, use_directional);
 					state.scene_shader.set_conditional(SceneShaderGLES3::LIGHT_DIRECTIONAL_SHADOW, false);
 					state.scene_shader.set_conditional(SceneShaderGLES3::LIGHT_USE_PSSM4, false);
 					state.scene_shader.set_conditional(SceneShaderGLES3::LIGHT_USE_PSSM2, false);
@@ -2117,9 +2121,7 @@ void RasterizerSceneGLES3::_render_list(RenderList::Element **p_elements, int p_
 					state.scene_shader.set_conditional(SceneShaderGLES3::USE_RADIANCE_MAP, use_radiance_map);
 					state.scene_shader.set_conditional(SceneShaderGLES3::USE_CONTACT_SHADOWS, state.used_contact_shadows);
 
-					if (p_directional_add || (directional_light && (e->sort_key & SORT_KEY_NO_DIRECTIONAL_FLAG) == 0)) {
-						state.scene_shader.set_conditional(SceneShaderGLES3::USE_LIGHT_DIRECTIONAL, true);
-
+					if (use_directional) {
 						if (p_directional_shadows && directional_light->light_ptr->shadow) {
 							state.scene_shader.set_conditional(SceneShaderGLES3::LIGHT_DIRECTIONAL_SHADOW, true);
 
@@ -2382,8 +2384,12 @@ void RasterizerSceneGLES3::_add_geometry_with_material(RasterizerStorageGLES3::G
 		e->geometry->index = current_geometry_index++;
 	}
 
-	if (!p_depth_pass && directional_light && (directional_light->light_ptr->cull_mask & e->instance->layer_mask) == 0) {
-		e->sort_key |= SORT_KEY_NO_DIRECTIONAL_FLAG;
+	// We sort only by the first directional light. The rest of directional lights will be drawn in additive passes that are skipped if disabled.
+	if (first_directional_light.is_valid() && light_instance_owner.owns(first_directional_light)) {
+		RasterizerStorageGLES3::Light *directional = light_instance_owner.getptr(first_directional_light)->light_ptr;
+		if ((e->instance->layer_mask & directional->cull_mask) == 0 || (e->instance->baked_light && directional->bake_mode == VS::LightBakeMode::LIGHT_BAKE_ALL)) {
+			e->sort_key |= SORT_KEY_NO_DIRECTIONAL_FLAG;
+		}
 	}
 
 	e->sort_key |= uint64_t(e->geometry->index) << RenderList::SORT_KEY_GEOMETRY_INDEX_SHIFT;
@@ -2806,6 +2812,7 @@ void RasterizerSceneGLES3::_setup_lights(RID *p_light_cull_result, int p_light_c
 	state.directional_light_count = 0;
 
 	directional_light = NULL;
+	first_directional_light = RID();
 
 	ShadowAtlas *shadow_atlas = shadow_atlas_owner.getornull(p_shadow_atlas);
 
@@ -2820,6 +2827,10 @@ void RasterizerSceneGLES3::_setup_lights(RID *p_light_cull_result, int p_light_c
 		switch (li->light_ptr->type) {
 
 			case VS::LIGHT_DIRECTIONAL: {
+
+				if (state.directional_light_count == 0) {
+					first_directional_light = p_light_cull_result[i];
+				}
 
 				if (state.directional_light_count < RenderList::MAX_DIRECTIONAL_LIGHTS) {
 					directional_lights[state.directional_light_count++] = li;
