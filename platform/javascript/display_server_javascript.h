@@ -75,6 +75,8 @@ private:
 	static EM_BOOL keypress_callback(int p_event_type, const EmscriptenKeyboardEvent *p_event, void *p_user_data);
 	static EM_BOOL keyup_callback(int p_event_type, const EmscriptenKeyboardEvent *p_event, void *p_user_data);
 
+	static void vk_input_text_callback(const char *p_text, int p_cursor);
+
 	static EM_BOOL mousemove_callback(int p_event_type, const EmscriptenMouseEvent *p_event, void *p_user_data);
 	static EM_BOOL mouse_button_callback(int p_event_type, const EmscriptenMouseEvent *p_event, void *p_user_data);
 
@@ -134,6 +136,9 @@ public:
 	Rect2i screen_get_usable_rect(int p_screen = SCREEN_OF_MAIN_WINDOW) const override;
 	int screen_get_dpi(int p_screen = SCREEN_OF_MAIN_WINDOW) const override;
 	float screen_get_scale(int p_screen = SCREEN_OF_MAIN_WINDOW) const override;
+
+	void virtual_keyboard_show(const String &p_existing_text, const Rect2 &p_screen_rect = Rect2(), bool p_multiline = false, int p_max_input_length = -1, int p_cursor_start = -1, int p_cursor_end = -1) override;
+	void virtual_keyboard_hide() override;
 
 	// windows
 	Vector<DisplayServer::WindowID> get_window_list() const override;

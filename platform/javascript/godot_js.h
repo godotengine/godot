@@ -93,6 +93,13 @@ extern void godot_js_display_notification_cb(void (*p_callback)(int p_notificati
 extern void godot_js_display_paste_cb(void (*p_callback)(const char *p_text));
 extern void godot_js_display_drop_files_cb(void (*p_callback)(char **p_filev, int p_filec));
 extern void godot_js_display_setup_canvas(int p_width, int p_height, int p_fullscreen, int p_hidpi);
+
+// Display Virtual Keyboard
+extern int godot_js_display_vk_available();
+extern void godot_js_display_vk_cb(void (*p_input)(const char *p_text, int p_cursor));
+extern void godot_js_display_vk_show(const char *p_text, int p_multiline, int p_start, int p_end);
+extern void godot_js_display_vk_hide();
+
 #ifdef __cplusplus
 }
 #endif
