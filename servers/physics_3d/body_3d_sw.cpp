@@ -51,18 +51,18 @@ void Body3DSW::_update_transform_dependant() {
 }
 
 void Body3DSW::update_inertias() {
-	//update shapes and motions
+	// Update shapes and motions.
 
 	switch (mode) {
 		case PhysicsServer3D::BODY_MODE_RIGID: {
-			//update tensor for all shapes, not the best way but should be somehow OK. (inspired from bullet)
+			// Update tensor for all shapes, not the best way but should be somehow OK. (inspired from bullet)
 			real_t total_area = 0;
 
 			for (int i = 0; i < get_shape_count(); i++) {
 				total_area += get_shape_area(i);
 			}
 
-			// We have to recompute the center of mass
+			// We have to recompute the center of mass.
 			center_of_mass_local.zero();
 
 			for (int i = 0; i < get_shape_count(); i++) {
@@ -70,20 +70,23 @@ void Body3DSW::update_inertias() {
 
 				real_t mass = area * this->mass / total_area;
 
-				// NOTE: we assume that the shape origin is also its center of mass
+				// NOTE: we assume that the shape origin is also its center of mass.
 				center_of_mass_local += mass * get_shape_transform(i).origin;
 			}
 
 			center_of_mass_local /= mass;
 
-			// Recompute the inertia tensor
+			// Recompute the inertia tensor.
 			Basis inertia_tensor;
 			inertia_tensor.set_zero();
+			bool inertia_set = false;
 
 			for (int i = 0; i < get_shape_count(); i++) {
 				if (is_shape_disabled(i)) {
 					continue;
 				}
+
+				inertia_set = true;
 
 				const Shape3DSW *shape = get_shape(i);
 
@@ -102,7 +105,12 @@ void Body3DSW::update_inertias() {
 				inertia_tensor += shape_inertia_tensor + (Basis() * shape_origin.dot(shape_origin) - shape_origin.outer(shape_origin)) * mass;
 			}
 
-			// Compute the principal axes of inertia
+			// Set the inertia to a valid value when there are no valid shapes.
+			if (!inertia_set) {
+				inertia_tensor.set_diagonal(Vector3(1.0, 1.0, 1.0));
+			}
+
+			// Compute the principal axes of inertia.
 			principal_inertia_axes_local = inertia_tensor.diagonalize().transposed();
 			_inv_inertia = inertia_tensor.get_main_diagonal().inverse();
 
