@@ -48,76 +48,48 @@ public:
 	};
 
 	struct Light {
-		bool enabled;
-		Color color;
+		bool enabled = true;
+		Color color = Color(1, 1, 1);
 		Transform2D xform;
-		float height;
-		float energy;
-		float scale;
-		int z_min;
-		int z_max;
-		int layer_min;
-		int layer_max;
-		int item_mask;
-		int item_shadow_mask;
-		float directional_distance;
-		RS::CanvasLightMode mode;
-		RS::CanvasLightBlendMode blend_mode;
+		float height = 0;
+		float energy = 1.0;
+		float scale = 1.0;
+		int z_min = -1024;
+		int z_max = 1024;
+		int layer_min = 0;
+		int layer_max = 0;
+		int item_mask = 1;
+		int item_shadow_mask = 1;
+		float directional_distance = 10000.0;
+		RS::CanvasLightMode mode = RS::CANVAS_LIGHT_MODE_POINT;
+		RS::CanvasLightBlendMode blend_mode = RS::CANVAS_LIGHT_BLEND_MODE_ADD;
 		RID texture;
 		Vector2 texture_offset;
 		RID canvas;
-		bool use_shadow;
-		int shadow_buffer_size;
-		RS::CanvasLightShadowFilter shadow_filter;
-		Color shadow_color;
-		float shadow_smooth;
+		bool use_shadow = false;
+		int shadow_buffer_size = 2048;
+		RS::CanvasLightShadowFilter shadow_filter = RS::CANVAS_LIGHT_FILTER_NONE;
+		Color shadow_color = Color(0, 0, 0, 0);
+		float shadow_smooth = 0.0;
 
 		//void *texture_cache; // implementation dependent
 		Rect2 rect_cache;
 		Transform2D xform_cache;
-		float radius_cache; //used for shadow far plane
+		float radius_cache = 0.0; //used for shadow far plane
 		//CameraMatrix shadow_matrix_cache;
 
 		Transform2D light_shader_xform;
 		//Vector2 light_shader_pos;
 
-		Light *shadows_next_ptr;
-		Light *filter_next_ptr;
-		Light *next_ptr;
-		Light *directional_next_ptr;
+		Light *shadows_next_ptr = nullptr;
+		Light *filter_next_ptr = nullptr;
+		Light *next_ptr = nullptr;
+		Light *directional_next_ptr = nullptr;
 
 		RID light_internal;
-		uint64_t version;
+		uint64_t version = 0;
 
-		int32_t render_index_cache;
-
-		Light() {
-			version = 0;
-			enabled = true;
-			color = Color(1, 1, 1);
-			shadow_color = Color(0, 0, 0, 0);
-			height = 0;
-			z_min = -1024;
-			z_max = 1024;
-			layer_min = 0;
-			layer_max = 0;
-			item_mask = 1;
-			scale = 1.0;
-			energy = 1.0;
-			item_shadow_mask = 1;
-			mode = RS::CANVAS_LIGHT_MODE_POINT;
-			blend_mode = RS::CANVAS_LIGHT_BLEND_MODE_ADD;
-			//			texture_cache = nullptr;
-			next_ptr = nullptr;
-			directional_next_ptr = nullptr;
-			filter_next_ptr = nullptr;
-			use_shadow = false;
-			shadow_buffer_size = 2048;
-			shadow_filter = RS::CANVAS_LIGHT_FILTER_NONE;
-			shadow_smooth = 0.0;
-			render_index_cache = -1;
-			directional_distance = 10000.0;
-		}
+		int32_t render_index_cache = -1;
 	};
 
 	//easier wrap to avoid mistakes
@@ -130,7 +102,7 @@ public:
 
 	//also easier to wrap to avoid mistakes
 	struct Polygon {
-		PolygonID polygon_id;
+		PolygonID polygon_id = 0;
 		Rect2 rect_cache;
 
 		_FORCE_INLINE_ void create(const Vector<int> &p_indices, const Vector<Point2> &p_points, const Vector<Color> &p_colors, const Vector<Point2> &p_uvs = Vector<Point2>(), const Vector<int> &p_bones = Vector<int>(), const Vector<float> &p_weights = Vector<float>()) {
@@ -146,7 +118,7 @@ public:
 			polygon_id = singleton->request_polygon(p_indices, p_points, p_colors, p_uvs, p_bones, p_weights);
 		}
 
-		_FORCE_INLINE_ Polygon() { polygon_id = 0; }
+		_FORCE_INLINE_ Polygon() {}
 		_FORCE_INLINE_ ~Polygon() {
 			if (polygon_id) {
 				singleton->free_polygon(polygon_id);
@@ -165,8 +137,8 @@ public:
 			enum {
 				MAX_SIZE = 4096
 			};
-			uint32_t usage;
-			uint8_t *memory;
+			uint32_t usage = 0;
+			uint8_t *memory = nullptr;
 		};
 
 		struct Command {
@@ -182,8 +154,8 @@ public:
 				TYPE_CLIP_IGNORE,
 			};
 
-			Command *next;
-			Type type;
+			Command *next = nullptr;
+			Type type = TYPE_RECT;
 			virtual ~Command() {}
 		};
 
@@ -191,12 +163,11 @@ public:
 			Rect2 rect;
 			Color modulate;
 			Rect2 source;
-			uint8_t flags;
+			uint8_t flags = 0;
 
 			RID texture;
 
 			CommandRect() {
-				flags = 0;
 				type = TYPE_RECT;
 			}
 		};
@@ -204,22 +175,21 @@ public:
 		struct CommandNinePatch : public Command {
 			Rect2 rect;
 			Rect2 source;
-			float margin[4];
-			bool draw_center;
+			float margin[4] = {};
+			bool draw_center = true;
 			Color color;
-			RS::NinePatchAxisMode axis_x;
-			RS::NinePatchAxisMode axis_y;
+			RS::NinePatchAxisMode axis_x = RS::NinePatchAxisMode::NINE_PATCH_STRETCH;
+			RS::NinePatchAxisMode axis_y = RS::NinePatchAxisMode::NINE_PATCH_STRETCH;
 
 			RID texture;
 
 			CommandNinePatch() {
-				draw_center = true;
 				type = TYPE_NINEPATCH;
 			}
 		};
 
 		struct CommandPolygon : public Command {
-			RS::PrimitiveType primitive;
+			RS::PrimitiveType primitive = RS::PrimitiveType::PRIMITIVE_MAX;
 			Polygon polygon;
 
 			RID texture;
@@ -230,7 +200,7 @@ public:
 		};
 
 		struct CommandPrimitive : public Command {
-			uint32_t point_count;
+			uint32_t point_count = 0;
 			Vector2 points[4];
 			Vector2 uvs[4];
 			Color colors[4];
@@ -274,61 +244,60 @@ public:
 		};
 
 		struct CommandClipIgnore : public Command {
-			bool ignore;
+			bool ignore = false;
 			CommandClipIgnore() {
 				type = TYPE_CLIP_IGNORE;
-				ignore = false;
 			}
 		};
 
 		struct ViewportRender {
-			RenderingServer *owner;
-			void *udata;
+			RenderingServer *owner = nullptr;
+			void *udata = nullptr;
 			Rect2 rect;
 		};
 
 		Transform2D xform;
-		bool clip;
-		bool visible;
-		bool behind;
-		bool update_when_visible;
+		bool clip = false;
+		bool visible = true;
+		bool behind = false;
+		bool update_when_visible = false;
 
 		struct CanvasGroup {
-			RS::CanvasGroupMode mode;
-			bool fit_empty;
-			float fit_margin;
-			bool blur_mipmaps;
-			float clear_margin;
+			RS::CanvasGroupMode mode = RS::CanvasGroupMode::CANVAS_GROUP_MODE_DISABLED;
+			bool fit_empty = false;
+			float fit_margin = 0.0;
+			bool blur_mipmaps = false;
+			float clear_margin = 0.0;
 		};
 
 		CanvasGroup *canvas_group = nullptr;
-		int light_mask;
-		int z_final;
+		int light_mask = 1;
+		int z_final = 0;
 
-		mutable bool custom_rect;
-		mutable bool rect_dirty;
+		mutable bool custom_rect = false;
+		mutable bool rect_dirty = true;
 		mutable Rect2 rect;
 		RID material;
 		RID skeleton;
 
-		Item *next;
+		Item *next = nullptr;
 
 		struct CopyBackBuffer {
 			Rect2 rect;
 			Rect2 screen_rect;
-			bool full;
+			bool full = false;
 		};
-		CopyBackBuffer *copy_back_buffer;
+		CopyBackBuffer *copy_back_buffer = nullptr;
 
-		Color final_modulate;
+		Color final_modulate = Color(1, 1, 1, 1);
 		Transform2D final_transform;
 		Rect2 final_clip_rect;
-		Item *final_clip_owner;
-		Item *material_owner;
-		Item *canvas_group_owner;
-		ViewportRender *vp_render;
-		bool distance_field;
-		bool light_masked;
+		Item *final_clip_owner = nullptr;
+		Item *material_owner = nullptr;
+		Item *canvas_group_owner = nullptr;
+		ViewportRender *vp_render = nullptr;
+		bool distance_field = false;
+		bool light_masked = false;
 
 		Rect2 global_rect_cache;
 
@@ -431,10 +400,10 @@ public:
 			return rect;
 		}
 
-		Command *commands;
-		Command *last_command;
+		Command *commands = nullptr;
+		Command *last_command = nullptr;
 		Vector<CommandBlock> blocks;
-		uint32_t current_block;
+		uint32_t current_block = 0;
 
 		template <class T>
 		T *alloc_command() {
@@ -515,33 +484,10 @@ public:
 			light_masked = false;
 		}
 
-		RS::CanvasItemTextureFilter texture_filter;
-		RS::CanvasItemTextureRepeat texture_repeat;
+		RS::CanvasItemTextureFilter texture_filter = RS::CANVAS_ITEM_TEXTURE_FILTER_DEFAULT;
+		RS::CanvasItemTextureRepeat texture_repeat = RS::CANVAS_ITEM_TEXTURE_REPEAT_DEFAULT;
 
-		Item() {
-			commands = nullptr;
-			last_command = nullptr;
-			current_block = 0;
-			light_mask = 1;
-			vp_render = nullptr;
-			next = nullptr;
-			final_clip_owner = nullptr;
-			canvas_group_owner = nullptr;
-			clip = false;
-			final_modulate = Color(1, 1, 1, 1);
-			visible = true;
-			rect_dirty = true;
-			custom_rect = false;
-			behind = false;
-			material_owner = nullptr;
-			copy_back_buffer = nullptr;
-			distance_field = false;
-			light_masked = false;
-			update_when_visible = false;
-			z_final = 0;
-			texture_filter = RS::CANVAS_ITEM_TEXTURE_FILTER_DEFAULT;
-			texture_repeat = RS::CANVAS_ITEM_TEXTURE_REPEAT_DEFAULT;
-		}
+		Item() {}
 		virtual ~Item() {
 			clear();
 			for (int i = 0; i < blocks.size(); i++) {
@@ -557,26 +503,18 @@ public:
 	virtual void canvas_debug_viewport_shadows(Light *p_lights_with_shadow) = 0;
 
 	struct LightOccluderInstance {
-		bool enabled;
+		bool enabled = true;
 		RID canvas;
 		RID polygon;
 		RID occluder;
 		Rect2 aabb_cache;
 		Transform2D xform;
 		Transform2D xform_cache;
-		int light_mask;
-		bool sdf_collision;
-		RS::CanvasOccluderPolygonCullMode cull_cache;
+		int light_mask = 1;
+		bool sdf_collision = false;
+		RS::CanvasOccluderPolygonCullMode cull_cache = RS::CANVAS_OCCLUDER_POLYGON_CULL_DISABLED;
 
-		LightOccluderInstance *next;
-
-		LightOccluderInstance() {
-			enabled = true;
-			sdf_collision = false;
-			next = nullptr;
-			light_mask = 1;
-			cull_cache = RS::CANVAS_OCCLUDER_POLYGON_CULL_DISABLED;
-		}
+		LightOccluderInstance *next = nullptr;
 	};
 
 	virtual RID light_create() = 0;

@@ -60,11 +60,11 @@ class ShaderRD {
 		CharString fragment_code;
 		Vector<CharString> custom_defines;
 
-		RID *variants; //same size as version defines
+		RID *variants = nullptr; //same size as version defines
 
-		bool valid;
-		bool dirty;
-		bool initialize_needed;
+		bool valid = false;
+		bool dirty = false;
+		bool initialize_needed = false;
 	};
 
 	Mutex variant_set_mutex;
@@ -97,7 +97,7 @@ class ShaderRD {
 	CharString compute_code2;
 	CharString compute_code3;
 
-	const char *name;
+	const char *name = nullptr;
 
 	CharString base_compute_defines;
 

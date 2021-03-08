@@ -4887,9 +4887,7 @@ RS::ShaderNativeSourceCode RendererStorageRD::ParticlesShaderData::get_native_so
 	return base_singleton->particles_shader.shader.version_get_native_source_code(version);
 }
 
-RendererStorageRD::ParticlesShaderData::ParticlesShaderData() {
-	valid = false;
-}
+RendererStorageRD::ParticlesShaderData::ParticlesShaderData() {}
 
 RendererStorageRD::ParticlesShaderData::~ParticlesShaderData() {
 	//pipeline variants will clear themselves if shader is gone

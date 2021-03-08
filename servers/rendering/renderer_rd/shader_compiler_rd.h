@@ -44,24 +44,24 @@ public:
 		Map<StringName, bool *> usage_flag_pointers;
 		Map<StringName, bool *> write_flag_pointers;
 
-		Map<StringName, ShaderLanguage::ShaderNode::Uniform> *uniforms;
+		Map<StringName, ShaderLanguage::ShaderNode::Uniform> *uniforms = nullptr;
 	};
 
 	struct GeneratedCode {
 		Vector<String> defines;
 		struct Texture {
 			StringName name;
-			ShaderLanguage::DataType type;
-			ShaderLanguage::ShaderNode::Uniform::Hint hint;
-			ShaderLanguage::TextureFilter filter;
-			ShaderLanguage::TextureRepeat repeat;
-			bool global;
+			ShaderLanguage::DataType type = ShaderLanguage::DataType::TYPE_VOID;
+			ShaderLanguage::ShaderNode::Uniform::Hint hint = ShaderLanguage::ShaderNode::Uniform::Hint::HINT_NONE;
+			ShaderLanguage::TextureFilter filter = ShaderLanguage::TextureFilter::FILTER_DEFAULT;
+			ShaderLanguage::TextureRepeat repeat = ShaderLanguage::TextureRepeat::REPEAT_DEFAULT;
+			bool global = false;
 		};
 
 		Vector<Texture> texture_uniforms;
 
 		Vector<uint32_t> uniform_offsets;
-		uint32_t uniform_total_size;
+		uint32_t uniform_total_size = 0;
 		String uniforms;
 		String vertex_global;
 		String vertex;
@@ -71,9 +71,9 @@ public:
 		String compute_global;
 		String compute;
 
-		bool uses_global_textures;
-		bool uses_fragment_time;
-		bool uses_vertex_time;
+		bool uses_global_textures = false;
+		bool uses_fragment_time = false;
+		bool uses_vertex_time = false;
 	};
 
 	struct DefaultIdentifierActions {
@@ -81,8 +81,8 @@ public:
 		Map<StringName, String> render_mode_defines;
 		Map<StringName, String> usage_defines;
 		Map<StringName, String> custom_samplers;
-		ShaderLanguage::TextureFilter default_filter;
-		ShaderLanguage::TextureRepeat default_repeat;
+		ShaderLanguage::TextureFilter default_filter = ShaderLanguage::TextureFilter::FILTER_DEFAULT;
+		ShaderLanguage::TextureRepeat default_repeat = ShaderLanguage::TextureRepeat::REPEAT_DEFAULT;
 		String sampler_array_name;
 		int base_texture_binding_index = 0;
 		int texture_layout_set = 0;

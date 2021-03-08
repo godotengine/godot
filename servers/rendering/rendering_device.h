@@ -398,44 +398,24 @@ public:
 	};
 
 	struct TextureFormat {
-		DataFormat format;
-		uint32_t width;
-		uint32_t height;
-		uint32_t depth;
-		uint32_t array_layers;
-		uint32_t mipmaps;
-		TextureType texture_type;
-		TextureSamples samples;
-		uint32_t usage_bits;
+		DataFormat format = DATA_FORMAT_R8_UNORM;
+		uint32_t width = 1;
+		uint32_t height = 1;
+		uint32_t depth = 1;
+		uint32_t array_layers = 1;
+		uint32_t mipmaps = 1;
+		TextureType texture_type = TEXTURE_TYPE_2D;
+		TextureSamples samples = TEXTURE_SAMPLES_1;
+		uint32_t usage_bits = 0;
 		Vector<DataFormat> shareable_formats;
-
-		TextureFormat() {
-			format = DATA_FORMAT_R8_UNORM;
-			width = 1;
-			height = 1;
-			depth = 1;
-			array_layers = 1;
-			mipmaps = 1;
-			texture_type = TEXTURE_TYPE_2D;
-			samples = TEXTURE_SAMPLES_1;
-			usage_bits = 0;
-		}
 	};
 
 	struct TextureView {
-		DataFormat format_override;
-		TextureSwizzle swizzle_r;
-		TextureSwizzle swizzle_g;
-		TextureSwizzle swizzle_b;
-		TextureSwizzle swizzle_a;
-
-		TextureView() {
-			format_override = DATA_FORMAT_MAX; //means, use same as format
-			swizzle_r = TEXTURE_SWIZZLE_R;
-			swizzle_g = TEXTURE_SWIZZLE_G;
-			swizzle_b = TEXTURE_SWIZZLE_B;
-			swizzle_a = TEXTURE_SWIZZLE_A;
-		}
+		DataFormat format_override = DATA_FORMAT_MAX; //means, use same as format
+		TextureSwizzle swizzle_r = TEXTURE_SWIZZLE_R;
+		TextureSwizzle swizzle_g = TEXTURE_SWIZZLE_G;
+		TextureSwizzle swizzle_b = TEXTURE_SWIZZLE_B;
+		TextureSwizzle swizzle_a = TEXTURE_SWIZZLE_A;
 	};
 
 	virtual RID texture_create(const TextureFormat &p_format, const TextureView &p_view, const Vector<Vector<uint8_t>> &p_data = Vector<Vector<uint8_t>>()) = 0;
@@ -466,14 +446,9 @@ public:
 	/*********************/
 
 	struct AttachmentFormat {
-		DataFormat format;
-		TextureSamples samples;
-		uint32_t usage_flags;
-		AttachmentFormat() {
-			format = DATA_FORMAT_R8G8B8A8_UNORM;
-			samples = TEXTURE_SAMPLES_1;
-			usage_flags = 0;
-		}
+		DataFormat format = DATA_FORMAT_R8G8B8A8_UNORM;
+		TextureSamples samples = TEXTURE_SAMPLES_1;
+		uint32_t usage_flags = 0;
 	};
 
 	typedef int64_t FramebufferFormatID;
@@ -517,39 +492,21 @@ public:
 	};
 
 	struct SamplerState {
-		SamplerFilter mag_filter;
-		SamplerFilter min_filter;
-		SamplerFilter mip_filter;
-		SamplerRepeatMode repeat_u;
-		SamplerRepeatMode repeat_v;
-		SamplerRepeatMode repeat_w;
-		float lod_bias;
-		bool use_anisotropy;
-		float anisotropy_max;
-		bool enable_compare;
-		CompareOperator compare_op;
-		float min_lod;
-		float max_lod;
-		SamplerBorderColor border_color;
-		bool unnormalized_uvw;
-
-		SamplerState() {
-			mag_filter = SAMPLER_FILTER_NEAREST;
-			min_filter = SAMPLER_FILTER_NEAREST;
-			mip_filter = SAMPLER_FILTER_NEAREST;
-			repeat_u = SAMPLER_REPEAT_MODE_CLAMP_TO_EDGE;
-			repeat_v = SAMPLER_REPEAT_MODE_CLAMP_TO_EDGE;
-			repeat_w = SAMPLER_REPEAT_MODE_CLAMP_TO_EDGE;
-			lod_bias = 0;
-			use_anisotropy = false;
-			anisotropy_max = 1.0;
-			enable_compare = false;
-			compare_op = COMPARE_OP_ALWAYS;
-			min_lod = 0;
-			max_lod = 1e20; //something very large should do
-			border_color = SAMPLER_BORDER_COLOR_FLOAT_OPAQUE_BLACK;
-			unnormalized_uvw = false;
-		}
+		SamplerFilter mag_filter = SAMPLER_FILTER_NEAREST;
+		SamplerFilter min_filter = SAMPLER_FILTER_NEAREST;
+		SamplerFilter mip_filter = SAMPLER_FILTER_NEAREST;
+		SamplerRepeatMode repeat_u = SAMPLER_REPEAT_MODE_CLAMP_TO_EDGE;
+		SamplerRepeatMode repeat_v = SAMPLER_REPEAT_MODE_CLAMP_TO_EDGE;
+		SamplerRepeatMode repeat_w = SAMPLER_REPEAT_MODE_CLAMP_TO_EDGE;
+		float lod_bias = 0;
+		bool use_anisotropy = false;
+		float anisotropy_max = 1.0;
+		bool enable_compare = false;
+		CompareOperator compare_op = COMPARE_OP_ALWAYS;
+		float min_lod = 0;
+		float max_lod = 1e20; //something very large should do
+		SamplerBorderColor border_color = SAMPLER_BORDER_COLOR_FLOAT_OPAQUE_BLACK;
+		bool unnormalized_uvw = false;
 	};
 
 	virtual RID sampler_create(const SamplerState &p_state) = 0;
@@ -564,18 +521,11 @@ public:
 	};
 
 	struct VertexAttribute {
-		uint32_t location; //shader location
-		uint32_t offset;
-		DataFormat format;
-		uint32_t stride;
-		VertexFrequency frequency;
-		VertexAttribute() {
-			location = 0;
-			offset = 0;
-			stride = 0;
-			format = DATA_FORMAT_MAX;
-			frequency = VERTEX_FREQUENCY_VERTEX;
-		}
+		uint32_t location = 0; //shader location
+		uint32_t offset = 0;
+		DataFormat format = DATA_FORMAT_MAX;
+		uint32_t stride = 0;
+		VertexFrequency frequency = VERTEX_FREQUENCY_VERTEX;
 	};
 	virtual RID vertex_buffer_create(uint32_t p_size_bytes, const Vector<uint8_t> &p_data = Vector<uint8_t>(), bool p_use_as_storage = false) = 0;
 
@@ -603,12 +553,8 @@ public:
 	static void shader_set_cache_function(ShaderCacheFunction p_function);
 
 	struct ShaderStageData {
-		ShaderStage shader_stage;
+		ShaderStage shader_stage = SHADER_STAGE_VERTEX;
 		Vector<uint8_t> spir_v;
-
-		ShaderStageData() {
-			shader_stage = SHADER_STAGE_VERTEX;
-		}
 	};
 
 	RID shader_create_from_bytecode(const Ref<RDShaderBytecode> &p_bytecode);
@@ -642,8 +588,8 @@ public:
 	virtual RID texture_buffer_create(uint32_t p_size_elements, DataFormat p_format, const Vector<uint8_t> &p_data = Vector<uint8_t>()) = 0;
 
 	struct Uniform {
-		UniformType uniform_type;
-		int binding; //binding index as specified in shader
+		UniformType uniform_type = UNIFORM_TYPE_IMAGE;
+		int binding = 0; //binding index as specified in shader
 
 		//for single items, provide one ID, for
 		//multiple items (declared as arrays in shader),
@@ -651,11 +597,6 @@ public:
 		//for sampler with texture, supply two IDs for each.
 		//accepted IDs are: Sampler, Texture, Uniform Buffer and Texture Buffer
 		Vector<RID> ids;
-
-		Uniform() {
-			uniform_type = UNIFORM_TYPE_IMAGE;
-			binding = 0;
-		}
 	};
 
 	virtual RID uniform_set_create(const Vector<Uniform> &p_uniforms, RID p_shader, uint32_t p_shader_set) = 0;
@@ -762,120 +703,66 @@ public:
 	};
 
 	struct PipelineRasterizationState {
-		bool enable_depth_clamp;
-		bool discard_primitives;
-		bool wireframe;
-		PolygonCullMode cull_mode;
-		PolygonFrontFace front_face;
-		bool depth_bias_enable;
-		float depth_bias_constant_factor;
-		float depth_bias_clamp;
-		float depth_bias_slope_factor;
-		float line_width;
-		uint32_t patch_control_points;
-		PipelineRasterizationState() {
-			enable_depth_clamp = false;
-			discard_primitives = false;
-			wireframe = false;
-			cull_mode = POLYGON_CULL_DISABLED;
-			front_face = POLYGON_FRONT_FACE_CLOCKWISE;
-			depth_bias_enable = false;
-			depth_bias_constant_factor = 0;
-			depth_bias_clamp = 0;
-			depth_bias_slope_factor = 0;
-			line_width = 1.0;
-			patch_control_points = 1;
-		}
+		bool enable_depth_clamp = false;
+		bool discard_primitives = false;
+		bool wireframe = false;
+		PolygonCullMode cull_mode = POLYGON_CULL_DISABLED;
+		PolygonFrontFace front_face = POLYGON_FRONT_FACE_CLOCKWISE;
+		bool depth_bias_enable = false;
+		float depth_bias_constant_factor = 0;
+		float depth_bias_clamp = 0;
+		float depth_bias_slope_factor = 0;
+		float line_width = 1.0;
+		uint32_t patch_control_points = 1;
 	};
 
 	struct PipelineMultisampleState {
-		TextureSamples sample_count;
-		bool enable_sample_shading;
-		float min_sample_shading;
+		TextureSamples sample_count = TEXTURE_SAMPLES_1;
+		bool enable_sample_shading = false;
+		float min_sample_shading = 0;
 		Vector<uint32_t> sample_mask;
-		bool enable_alpha_to_coverage;
-		bool enable_alpha_to_one;
-
-		PipelineMultisampleState() {
-			sample_count = TEXTURE_SAMPLES_1;
-			enable_sample_shading = false;
-			min_sample_shading = 0;
-			enable_alpha_to_coverage = false;
-			enable_alpha_to_one = false;
-		}
+		bool enable_alpha_to_coverage = false;
+		bool enable_alpha_to_one = false;
 	};
 
 	struct PipelineDepthStencilState {
-		bool enable_depth_test;
-		bool enable_depth_write;
-		CompareOperator depth_compare_operator;
-		bool enable_depth_range;
-		float depth_range_min;
-		float depth_range_max;
-		bool enable_stencil;
+		bool enable_depth_test = false;
+		bool enable_depth_write = false;
+		CompareOperator depth_compare_operator = COMPARE_OP_ALWAYS;
+		bool enable_depth_range = false;
+		float depth_range_min = 0;
+		float depth_range_max = 0;
+		bool enable_stencil = false;
 
 		struct StencilOperationState {
-			StencilOperation fail;
-			StencilOperation pass;
-			StencilOperation depth_fail;
-			CompareOperator compare;
-			uint32_t compare_mask;
-			uint32_t write_mask;
-			uint32_t reference;
-
-			StencilOperationState() {
-				fail = STENCIL_OP_ZERO;
-				pass = STENCIL_OP_ZERO;
-				depth_fail = STENCIL_OP_ZERO;
-				compare = COMPARE_OP_ALWAYS;
-				compare_mask = 0;
-				write_mask = 0;
-				reference = 0;
-			}
+			StencilOperation fail = STENCIL_OP_ZERO;
+			StencilOperation pass = STENCIL_OP_ZERO;
+			StencilOperation depth_fail = STENCIL_OP_ZERO;
+			CompareOperator compare = COMPARE_OP_ALWAYS;
+			uint32_t compare_mask = 0;
+			uint32_t write_mask = 0;
+			uint32_t reference = 0;
 		};
 
 		StencilOperationState front_op;
 		StencilOperationState back_op;
-
-		PipelineDepthStencilState() {
-			enable_depth_test = false;
-			enable_depth_write = false;
-			depth_compare_operator = COMPARE_OP_ALWAYS;
-			enable_depth_range = false;
-			depth_range_min = 0;
-			depth_range_max = 0;
-			enable_stencil = false;
-		}
 	};
 
 	struct PipelineColorBlendState {
-		bool enable_logic_op;
-		LogicOperation logic_op;
+		bool enable_logic_op = false;
+		LogicOperation logic_op = LOGIC_OP_CLEAR;
 		struct Attachment {
-			bool enable_blend;
-			BlendFactor src_color_blend_factor;
-			BlendFactor dst_color_blend_factor;
-			BlendOperation color_blend_op;
-			BlendFactor src_alpha_blend_factor;
-			BlendFactor dst_alpha_blend_factor;
-			BlendOperation alpha_blend_op;
-			bool write_r;
-			bool write_g;
-			bool write_b;
-			bool write_a;
-			Attachment() {
-				enable_blend = false;
-				src_color_blend_factor = BLEND_FACTOR_ZERO;
-				dst_color_blend_factor = BLEND_FACTOR_ZERO;
-				color_blend_op = BLEND_OP_ADD;
-				src_alpha_blend_factor = BLEND_FACTOR_ZERO;
-				dst_alpha_blend_factor = BLEND_FACTOR_ZERO;
-				alpha_blend_op = BLEND_OP_ADD;
-				write_r = true;
-				write_g = true;
-				write_b = true;
-				write_a = true;
-			}
+			bool enable_blend = false;
+			BlendFactor src_color_blend_factor = BLEND_FACTOR_ZERO;
+			BlendFactor dst_color_blend_factor = BLEND_FACTOR_ZERO;
+			BlendOperation color_blend_op = BLEND_OP_ADD;
+			BlendFactor src_alpha_blend_factor = BLEND_FACTOR_ZERO;
+			BlendFactor dst_alpha_blend_factor = BLEND_FACTOR_ZERO;
+			BlendOperation alpha_blend_op = BLEND_OP_ADD;
+			bool write_r = true;
+			bool write_g = true;
+			bool write_b = true;
+			bool write_a = true;
 		};
 
 		static PipelineColorBlendState create_disabled(int p_attachments = 1) {
@@ -903,11 +790,6 @@ public:
 
 		Vector<Attachment> attachments; //one per render target texture
 		Color blend_constant;
-
-		PipelineColorBlendState() {
-			enable_logic_op = false;
-			logic_op = LOGIC_OP_CLEAR;
-		}
 	};
 
 	enum PipelineDynamicStateFlags {

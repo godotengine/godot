@@ -207,13 +207,13 @@ public:
 
 	struct RenderSDFGIUpdateData {
 		bool update_static = false;
-		uint32_t static_cascade_count;
-		uint32_t *static_cascade_indices;
-		PagedArray<RID> *static_positional_lights;
+		uint32_t static_cascade_count = 0;
+		uint32_t *static_cascade_indices = nullptr;
+		PagedArray<RID> *static_positional_lights = nullptr;
 
-		const Vector<RID> *directional_lights;
-		const RID *positional_light_instances;
-		uint32_t positional_light_count;
+		const Vector<RID> *directional_lights = nullptr;
+		const RID *positional_light_instances = nullptr;
+		uint32_t positional_light_count = 0;
 	};
 
 	virtual void render_scene(RID p_render_buffers, const Transform &p_cam_transform, const CameraMatrix &p_cam_projection, bool p_cam_ortogonal, const PagedArray<GeometryInstance *> &p_instances, const PagedArray<RID> &p_lights, const PagedArray<RID> &p_reflection_probes, const PagedArray<RID> &p_gi_probes, const PagedArray<RID> &p_decals, const PagedArray<RID> &p_lightmaps, RID p_environment, RID p_camera_effects, RID p_shadow_atlas, RID p_reflection_atlas, RID p_reflection_probe, int p_reflection_probe_pass, float p_screen_lod_threshold, const RenderShadowData *p_render_shadows, int p_render_shadow_count, const RenderSDFGIData *p_render_sdfgi_regions, int p_render_sdfgi_region_count, const RenderSDFGIUpdateData *p_sdfgi_update_data = nullptr) = 0;

@@ -2244,11 +2244,7 @@ RS::ShaderNativeSourceCode RendererCanvasRenderRD::ShaderData::get_native_source
 	return canvas_singleton->shader.canvas_shader.version_get_native_source_code(version);
 }
 
-RendererCanvasRenderRD::ShaderData::ShaderData() {
-	valid = false;
-	uses_screen_texture = false;
-	uses_sdf = false;
-}
+RendererCanvasRenderRD::ShaderData::ShaderData() {}
 
 RendererCanvasRenderRD::ShaderData::~ShaderData() {
 	RendererCanvasRenderRD *canvas_singleton = (RendererCanvasRenderRD *)RendererCanvasRender::singleton;

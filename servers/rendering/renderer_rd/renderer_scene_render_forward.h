@@ -127,9 +127,9 @@ class RendererSceneRenderForward : public RendererSceneRenderRD {
 			ALPHA_ANTIALIASING_ALPHA_TO_COVERAGE_AND_TO_ONE
 		};
 
-		bool valid;
+		bool valid = false;
 		RID version;
-		uint32_t vertex_input_mask;
+		uint32_t vertex_input_mask = 0;
 		PipelineCacheRD pipelines[CULL_VARIANT_MAX][RS::PRIMITIVE_MAX][SHADER_VERSION_MAX];
 
 		String path;
@@ -138,33 +138,33 @@ class RendererSceneRenderForward : public RendererSceneRenderRD {
 		Vector<ShaderCompilerRD::GeneratedCode::Texture> texture_uniforms;
 
 		Vector<uint32_t> ubo_offsets;
-		uint32_t ubo_size;
+		uint32_t ubo_size = 0;
 
 		String code;
 		Map<StringName, RID> default_texture_params;
 
-		DepthDraw depth_draw;
-		DepthTest depth_test;
+		DepthDraw depth_draw = DEPTH_DRAW_ALWAYS;
+		DepthTest depth_test = DEPTH_TEST_DISABLED;
 
-		bool uses_point_size;
-		bool uses_alpha;
-		bool uses_blend_alpha;
-		bool uses_alpha_clip;
-		bool uses_depth_pre_pass;
-		bool uses_discard;
-		bool uses_roughness;
-		bool uses_normal;
+		bool uses_point_size = false;
+		bool uses_alpha = false;
+		bool uses_blend_alpha = false;
+		bool uses_alpha_clip = false;
+		bool uses_depth_pre_pass = false;
+		bool uses_discard = false;
+		bool uses_roughness = false;
+		bool uses_normal = false;
 
-		bool unshaded;
-		bool uses_vertex;
-		bool uses_sss;
-		bool uses_transmittance;
-		bool uses_screen_texture;
-		bool uses_depth_texture;
-		bool uses_normal_texture;
-		bool uses_time;
-		bool writes_modelview_or_projection;
-		bool uses_world_coordinates;
+		bool unshaded = false;
+		bool uses_vertex = false;
+		bool uses_sss = false;
+		bool uses_transmittance = false;
+		bool uses_screen_texture = false;
+		bool uses_depth_texture = false;
+		bool uses_normal_texture = false;
+		bool uses_time = false;
+		bool writes_modelview_or_projection = false;
+		bool uses_world_coordinates = false;
 
 		uint64_t last_pass = 0;
 		uint32_t index = 0;
@@ -190,8 +190,8 @@ class RendererSceneRenderForward : public RendererSceneRenderRD {
 	}
 
 	struct MaterialData : public RendererStorageRD::MaterialData {
-		uint64_t last_frame;
-		ShaderData *shader_data;
+		uint64_t last_frame = 0;
+		ShaderData *shader_data = nullptr;
 		RID uniform_buffer;
 		RID uniform_set;
 		Vector<RID> texture_cache;
@@ -199,7 +199,7 @@ class RendererSceneRenderForward : public RendererSceneRenderRD {
 		uint64_t last_pass = 0;
 		uint32_t index = 0;
 		RID next_pass;
-		uint8_t priority;
+		uint8_t priority = 0;
 		virtual void set_render_priority(int p_priority);
 		virtual void set_next_pass(RID p_pass);
 		virtual void update_parameters(const Map<StringName, Variant> &p_parameters, bool p_uniform_dirty, bool p_textures_dirty);
@@ -222,8 +222,8 @@ class RendererSceneRenderForward : public RendererSceneRenderRD {
 		RID normal_roughness_buffer;
 		RID giprobe_buffer;
 
-		RS::ViewportMSAA msaa;
-		RD::TextureSamples texture_samples;
+		RS::ViewportMSAA msaa = RS::ViewportMSAA::VIEWPORT_MSAA_DISABLED;
+		RD::TextureSamples texture_samples = RD::TextureSamples::TEXTURE_SAMPLES_MAX;
 
 		RID color_msaa;
 		RID depth_msaa;
@@ -238,7 +238,7 @@ class RendererSceneRenderForward : public RendererSceneRenderRD {
 		RID color_fb;
 		RID color_specular_fb;
 		RID specular_only_fb;
-		int width, height;
+		int width = 0, height = 0;
 
 		RID render_sdfgi_uniform_set;
 		void ensure_specular();
@@ -320,11 +320,11 @@ class RendererSceneRenderForward : public RendererSceneRenderRD {
 	};
 
 	struct LightmapData {
-		float normal_xform[12];
+		float normal_xform[12] = {};
 	};
 
 	struct LightmapCaptureData {
-		float sh[9 * 4];
+		float sh[9 * 4] = {};
 	};
 
 	enum {
@@ -428,18 +428,18 @@ class RendererSceneRenderForward : public RendererSceneRenderRD {
 		};
 
 		struct PushConstant {
-			uint32_t base_index; //
-			uint32_t uv_offset; //packed
-			uint32_t pad[2];
+			uint32_t base_index = 0; //
+			uint32_t uv_offset = 0; //packed
+			uint32_t pad[2] = {};
 		};
 
 		struct InstanceData {
-			float transform[16];
-			uint32_t flags;
-			uint32_t instance_uniforms_ofs; //base offset in global buffer for instance variables
-			uint32_t gi_offset; //GI information when using lightmapping (VCT or lightmap index)
-			uint32_t layer_mask;
-			float lightmap_uv_scale[4];
+			float transform[16] = {};
+			uint32_t flags = 0;
+			uint32_t instance_uniforms_ofs = 0; //base offset in global buffer for instance variables
+			uint32_t gi_offset = 0; //GI information when using lightmapping (VCT or lightmap index)
+			uint32_t layer_mask = 0;
+			float lightmap_uv_scale[4] = {};
 		};
 
 		UBO ubo;
@@ -450,15 +450,15 @@ class RendererSceneRenderForward : public RendererSceneRenderRD {
 		RID lightmap_ids[MAX_LIGHTMAPS];
 		bool lightmap_has_sh[MAX_LIGHTMAPS];
 		uint32_t lightmaps_used = 0;
-		uint32_t max_lightmaps;
+		uint32_t max_lightmaps = 0;
 		RID lightmap_buffer;
 
 		RID instance_buffer[RENDER_LIST_MAX];
 		uint32_t instance_buffer_size[RENDER_LIST_MAX] = { 0, 0, 0 };
 		LocalVector<InstanceData> instance_data[RENDER_LIST_MAX];
 
-		LightmapCaptureData *lightmap_captures;
-		uint32_t max_lightmap_captures;
+		LightmapCaptureData *lightmap_captures = nullptr;
+		uint32_t max_lightmap_captures = 0;
 		RID lightmap_capture_buffer;
 
 		RID giprobe_ids[MAX_GI_PROBES];
@@ -470,19 +470,19 @@ class RendererSceneRenderForward : public RendererSceneRenderRD {
 		bool used_sss = false;
 
 		struct ShadowPass {
-			uint32_t element_from;
-			uint32_t element_count;
-			bool flip_cull;
-			PassMode pass_mode;
+			uint32_t element_from = 0;
+			uint32_t element_count = 0;
+			bool flip_cull = false;
+			PassMode pass_mode = PassMode::PASS_MODE_COLOR;
 
 			RID rp_uniform_set;
 			Plane camera_plane;
-			float lod_distance_multiplier;
-			float screen_lod_threshold;
+			float lod_distance_multiplier = 0.0;
+			float screen_lod_threshold = 0.0;
 
 			RID framebuffer;
-			RD::InitialAction initial_depth_action;
-			RD::FinalAction final_depth_action;
+			RD::InitialAction initial_depth_action = RD::InitialAction::INITIAL_ACTION_MAX;
+			RD::FinalAction final_depth_action = RD::FinalAction::FINAL_ACTION_MAX;
 			Rect2i rect;
 		};
 
@@ -492,7 +492,7 @@ class RendererSceneRenderForward : public RendererSceneRenderRD {
 
 	static RendererSceneRenderForward *singleton;
 
-	double time;
+	double time = 0.0;
 	RID default_shader;
 	RID default_material;
 	RID overdraw_material_shader;
@@ -603,7 +603,7 @@ class RendererSceneRenderForward : public RendererSceneRenderRD {
 		uint32_t flags_cache = 0;
 		bool store_transform_cache = true;
 		int32_t shader_parameters_offset = -1;
-		uint32_t lightmap_slice_index;
+		uint32_t lightmap_slice_index = 0;
 		Rect2 lightmap_uv_scale;
 		uint32_t layer_mask = 1;
 		RID transforms_uniform_set;
@@ -622,7 +622,7 @@ class RendererSceneRenderForward : public RendererSceneRenderRD {
 		struct Data {
 			//data used less often goes into regular heap
 			RID base;
-			RS::InstanceType base_type;
+			RS::InstanceType base_type = RS::InstanceType::INSTANCE_NONE;
 
 			RID skeleton;
 			Vector<RID> surface_materials;

@@ -38,38 +38,22 @@ class RendererCanvasCull {
 public:
 	struct Item : public RendererCanvasRender::Item {
 		RID parent; // canvas it belongs to
-		List<Item *>::Element *E;
-		int z_index;
-		bool z_relative;
-		bool sort_y;
-		Color modulate;
-		Color self_modulate;
-		bool use_parent_material;
-		int index;
-		bool children_order_dirty;
-		int ysort_children_count;
+		List<Item *>::Element *E = nullptr;
+		int z_index = 0;
+		bool z_relative = true;
+		bool sort_y = false;
+		Color modulate = Color(1, 1, 1, 1);
+		Color self_modulate = Color(1, 1, 1, 1);
+		bool use_parent_material = false;
+		int index = 0;
+		bool children_order_dirty = true;
+		int ysort_children_count = -1;
 		Color ysort_modulate;
 		Transform2D ysort_xform;
 		Vector2 ysort_pos;
-		int ysort_index;
+		int ysort_index = 0;
 
 		Vector<Item *> child_items;
-
-		Item() {
-			children_order_dirty = true;
-			E = nullptr;
-			z_index = 0;
-			modulate = Color(1, 1, 1, 1);
-			self_modulate = Color(1, 1, 1, 1);
-			sort_y = false;
-			use_parent_material = false;
-			z_relative = true;
-			index = 0;
-			ysort_children_count = -1;
-			ysort_xform = Transform2D();
-			ysort_pos = Vector2();
-			ysort_index = 0;
-		}
 	};
 
 	struct ItemIndexSort {
@@ -89,16 +73,11 @@ public:
 	};
 
 	struct LightOccluderPolygon {
-		bool active;
+		bool active = false;
 		Rect2 aabb;
-		RS::CanvasOccluderPolygonCullMode cull_mode;
+		RS::CanvasOccluderPolygonCullMode cull_mode = RS::CANVAS_OCCLUDER_POLYGON_CULL_DISABLED;
 		RID occluder;
 		Set<RendererCanvasRender::LightOccluderInstance *> owners;
-
-		LightOccluderPolygon() {
-			active = false;
-			cull_mode = RS::CANVAS_OCCLUDER_POLYGON_CULL_DISABLED;
-		}
 	};
 
 	RID_PtrOwner<LightOccluderPolygon, true> canvas_light_occluder_polygon_owner;
@@ -109,7 +88,7 @@ public:
 		Set<RID> viewports;
 		struct ChildItem {
 			Point2 mirror;
-			Item *item;
+			Item *item = nullptr;
 			bool operator<(const ChildItem &p_item) const {
 				return item->index < p_item.item->index;
 			}
@@ -120,11 +99,11 @@ public:
 
 		Set<RendererCanvasRender::LightOccluderInstance *> occluders;
 
-		bool children_order_dirty;
+		bool children_order_dirty = true;
 		Vector<ChildItem> child_items;
-		Color modulate;
+		Color modulate = Color(1, 1, 1, 1);
 		RID parent;
-		float parent_scale;
+		float parent_scale = 1.0;
 
 		int find_item(Item *p_item) {
 			for (int i = 0; i < child_items.size(); i++) {
@@ -140,19 +119,13 @@ public:
 				child_items.remove(idx);
 			}
 		}
-
-		Canvas() {
-			modulate = Color(1, 1, 1, 1);
-			children_order_dirty = true;
-			parent_scale = 1.0;
-		}
 	};
 
 	mutable RID_PtrOwner<Canvas, true> canvas_owner;
 	RID_PtrOwner<Item, true> canvas_item_owner;
 	RID_PtrOwner<RendererCanvasRender::Light, true> canvas_light_owner;
 
-	bool disable_scale;
+	bool disable_scale = false;
 	bool sdf_used = false;
 	bool snapping_2d_transforms_to_pixel = false;
 

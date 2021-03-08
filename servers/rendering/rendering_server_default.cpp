@@ -404,13 +404,6 @@ RenderingServerDefault::RenderingServerDefault(bool p_create_thread) :
 	RSG::storage = RSG::rasterizer->get_storage();
 	RSG::canvas_render = RSG::rasterizer->get_canvas();
 	sr->set_scene_render(RSG::rasterizer->get_scene());
-
-	frame_profile_frame = 0;
-
-	for (int i = 0; i < 4; i++) {
-		black_margin[i] = 0;
-		black_image[i] = RID();
-	}
 }
 
 RenderingServerDefault::~RenderingServerDefault() {

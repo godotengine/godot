@@ -231,28 +231,28 @@ private:
 			TYPE_3D
 		};
 
-		Type type;
+		Type type = TYPE_2D;
 		RS::TextureLayeredType layered_type = RS::TEXTURE_LAYERED_2D_ARRAY;
 
-		RenderingDevice::TextureType rd_type;
+		RenderingDevice::TextureType rd_type = RenderingDevice::TextureType::TEXTURE_TYPE_MAX;
 		RID rd_texture;
 		RID rd_texture_srgb;
-		RenderingDevice::DataFormat rd_format;
-		RenderingDevice::DataFormat rd_format_srgb;
+		RenderingDevice::DataFormat rd_format = RenderingDevice::DataFormat::DATA_FORMAT_MAX;
+		RenderingDevice::DataFormat rd_format_srgb = RenderingDevice::DataFormat::DATA_FORMAT_MAX;
 
 		RD::TextureView rd_view;
 
-		Image::Format format;
-		Image::Format validated_format;
+		Image::Format format = Image::Format::FORMAT_L8;
+		Image::Format validated_format = Image::Format::FORMAT_L8;
 
-		int width;
-		int height;
-		int depth;
-		int layers;
-		int mipmaps;
+		int width = 0;
+		int height = 0;
+		int depth = 0;
+		int layers = 0;
+		int mipmaps = 0;
 
-		int height_2d;
-		int width_2d;
+		int height_2d = 0;
+		int width_2d = 0;
 
 		struct BufferSlice3D {
 			Size2i size;
@@ -262,8 +262,8 @@ private:
 		Vector<BufferSlice3D> buffer_slices_3d;
 		uint32_t buffer_size_3d = 0;
 
-		bool is_render_target;
-		bool is_proxy;
+		bool is_render_target = false;
+		bool is_proxy = false;
 
 		Ref<Image> image_cache_2d;
 		String path;
@@ -285,20 +285,12 @@ private:
 	};
 
 	struct TextureToRDFormat {
-		RD::DataFormat format;
-		RD::DataFormat format_srgb;
-		RD::TextureSwizzle swizzle_r;
-		RD::TextureSwizzle swizzle_g;
-		RD::TextureSwizzle swizzle_b;
-		RD::TextureSwizzle swizzle_a;
-		TextureToRDFormat() {
-			format = RD::DATA_FORMAT_MAX;
-			format_srgb = RD::DATA_FORMAT_MAX;
-			swizzle_r = RD::TEXTURE_SWIZZLE_R;
-			swizzle_g = RD::TEXTURE_SWIZZLE_G;
-			swizzle_b = RD::TEXTURE_SWIZZLE_B;
-			swizzle_a = RD::TEXTURE_SWIZZLE_A;
-		}
+		RD::DataFormat format = RD::DATA_FORMAT_MAX;
+		RD::DataFormat format_srgb = RD::DATA_FORMAT_MAX;
+		RD::TextureSwizzle swizzle_r = RD::TEXTURE_SWIZZLE_R;
+		RD::TextureSwizzle swizzle_g = RD::TEXTURE_SWIZZLE_G;
+		RD::TextureSwizzle swizzle_b = RD::TEXTURE_SWIZZLE_B;
+		RD::TextureSwizzle swizzle_a = RD::TEXTURE_SWIZZLE_A;
 	};
 
 	//textures can be created from threads, so this RID_Owner is thread safe
@@ -314,8 +306,8 @@ private:
 
 	struct DecalAtlas {
 		struct Texture {
-			int panorama_to_dp_users;
-			int users;
+			int panorama_to_dp_users = 0;
+			int users = 0;
 			Rect2 uv_rect;
 		};
 
@@ -359,7 +351,7 @@ private:
 	struct Material;
 
 	struct Shader {
-		ShaderData *data;
+		ShaderData *data = nullptr;
 		String code;
 		ShaderType type;
 		Map<StringName, RID> default_texture_parameter;
@@ -373,17 +365,17 @@ private:
 
 	struct Material {
 		RID self;
-		MaterialData *data;
-		Shader *shader;
+		MaterialData *data = nullptr;
+		Shader *shader = nullptr;
 		//shortcut to shader data and type
 		ShaderType shader_type;
 		uint32_t shader_id = 0;
-		bool update_requested;
-		bool uniform_dirty;
-		bool texture_dirty;
-		Material *update_next;
+		bool update_requested = false;
+		bool uniform_dirty = false;
+		bool texture_dirty = false;
+		Material *update_next = nullptr;
 		Map<StringName, Variant> params;
-		int32_t priority;
+		int32_t priority = 0;
 		RID next_pass;
 		Dependency dependency;
 	};
@@ -487,7 +479,7 @@ private:
 	mutable RID_Owner<Mesh, true> mesh_owner;
 
 	struct MeshInstance {
-		Mesh *mesh;
+		Mesh *mesh = nullptr;
 		RID skeleton;
 		struct Surface {
 			RID vertex_buffer;
@@ -507,7 +499,8 @@ private:
 		SelfList<MeshInstance> weight_update_list;
 		SelfList<MeshInstance> array_update_list;
 		MeshInstance() :
-				weight_update_list(this), array_update_list(this) {}
+				weight_update_list(this),
+				array_update_list(this) {}
 	};
 
 	void _mesh_instance_clear(MeshInstance *mi);
@@ -520,20 +513,20 @@ private:
 
 	struct SkeletonShader {
 		struct PushConstant {
-			uint32_t has_normal;
-			uint32_t has_tangent;
-			uint32_t has_skeleton;
-			uint32_t has_blend_shape;
+			uint32_t has_normal = 0;
+			uint32_t has_tangent = 0;
+			uint32_t has_skeleton = 0;
+			uint32_t has_blend_shape = 0;
 
-			uint32_t vertex_count;
-			uint32_t vertex_stride;
-			uint32_t skin_stride;
-			uint32_t skin_weight_offset;
+			uint32_t vertex_count = 0;
+			uint32_t vertex_stride = 0;
+			uint32_t skin_stride = 0;
+			uint32_t skin_weight_offset = 0;
 
-			uint32_t blend_shape_count;
-			uint32_t normalized_blend_shapes;
-			uint32_t pad0;
-			uint32_t pad1;
+			uint32_t blend_shape_count = 0;
+			uint32_t normalized_blend_shapes = 0;
+			uint32_t pad0 = 0;
+			uint32_t pad1 = 0;
 		};
 
 		enum {
@@ -600,13 +593,13 @@ private:
 	/* PARTICLES */
 
 	struct ParticleData {
-		float xform[16];
-		float velocity[3];
-		uint32_t active;
-		float color[4];
-		float custom[3];
-		float lifetime;
-		uint32_t pad[3];
+		float xform[16] = {};
+		float velocity[3] = {};
+		uint32_t active = 0;
+		float color[4] = {};
+		float custom[3] = {};
+		float lifetime = 0.0;
+		uint32_t pad[3] = {};
 	};
 
 	struct ParticlesFrameParams {
@@ -623,14 +616,14 @@ private:
 		};
 
 		struct Attractor {
-			float transform[16];
-			float extents[3]; //exents or radius
-			uint32_t type;
+			float transform[16] = {};
+			float extents[3] = {}; //exents or radius
+			uint32_t type = 0;
 
-			uint32_t texture_index; //texture index for vector field
-			float strength;
-			float attenuation;
-			float directionality;
+			uint32_t texture_index = 0; //texture index for vector field
+			float strength = 0.0;
+			float attenuation = 0.0;
+			float directionality = 0.0;
 		};
 
 		enum CollisionType {
@@ -641,31 +634,31 @@ private:
 		};
 
 		struct Collider {
-			float transform[16];
-			float extents[3]; //exents or radius
-			uint32_t type;
+			float transform[16] = {};
+			float extents[3] = {}; //exents or radius
+			uint32_t type = 0;
 
-			uint32_t texture_index; //texture index for vector field
-			float scale;
-			uint32_t pad[2];
+			uint32_t texture_index = 0; //texture index for vector field
+			float scale = 0.0;
+			uint32_t pad[2] = {};
 		};
 
-		uint32_t emitting;
-		float system_phase;
-		float prev_system_phase;
-		uint32_t cycle;
+		uint32_t emitting = 0;
+		float system_phase = 0.0;
+		float prev_system_phase = 0.0;
+		uint32_t cycle = 0;
 
-		float explosiveness;
-		float randomness;
-		float time;
-		float delta;
+		float explosiveness = 0.0;
+		float randomness = 0.0;
+		float time = 0.0;
+		float delta = 0.0;
 
-		uint32_t random_seed;
-		uint32_t attractor_count;
-		uint32_t collider_count;
-		float particle_size;
+		uint32_t random_seed = 0;
+		uint32_t attractor_count = 0;
+		uint32_t collider_count = 0;
+		float particle_size = {};
 
-		float emission_transform[16];
+		float emission_transform[16] = {};
 
 		Attractor attractors[MAX_ATTRACTORS];
 		Collider colliders[MAX_COLLIDERS];
@@ -676,36 +669,36 @@ private:
 
 	struct ParticleEmissionBuffer {
 		struct Data {
-			float xform[16];
-			float velocity[3];
-			uint32_t flags;
-			float color[4];
-			float custom[4];
+			float xform[16] = {};
+			float velocity[3] = {};
+			uint32_t flags = 0;
+			float color[4] = {};
+			float custom[4] = {};
 		};
 
-		int32_t particle_count;
-		int32_t particle_max;
-		uint32_t pad1;
-		uint32_t pad2;
+		int32_t particle_count = 0;
+		int32_t particle_max = 0;
+		uint32_t pad1 = 0;
+		uint32_t pad2 = 0;
 		Data data[1]; //its 2020 and empty arrays are still non standard in C++
 	};
 
 	struct Particles {
-		bool inactive;
-		float inactive_time;
-		bool emitting;
-		bool one_shot;
-		int amount;
-		float lifetime;
-		float pre_process_time;
-		float explosiveness;
-		float randomness;
-		bool restart_request;
-		AABB custom_aabb;
-		bool use_local_coords;
+		bool inactive = true;
+		float inactive_time = 0.0;
+		bool emitting = false;
+		bool one_shot = false;
+		int amount = 0;
+		float lifetime = 1.0;
+		float pre_process_time = 0.0;
+		float explosiveness = 0.0;
+		float randomness = 0.0;
+		bool restart_request = false;
+		AABB custom_aabb = AABB(Vector3(-4, -4, -4), Vector3(8, 8, 8));
+		bool use_local_coords = true;
 		RID process_material;
 
-		RS::ParticlesDrawOrder draw_order;
+		RS::ParticlesDrawOrder draw_order = RS::ParticlesDrawOrder::PARTICLES_DRAW_ORDER_INDEX;
 
 		Vector<RID> draw_passes;
 
@@ -730,21 +723,21 @@ private:
 
 		RID sub_emitter;
 
-		float phase;
-		float prev_phase;
-		uint64_t prev_ticks;
-		uint32_t random_seed;
+		float phase = 0.0;
+		float prev_phase = 0.0;
+		uint64_t prev_ticks = 0;
+		uint32_t random_seed = 0;
 
-		uint32_t cycle_number;
+		uint32_t cycle_number = 0;
 
-		float speed_scale;
+		float speed_scale = 1.0;
 
-		int fixed_fps;
-		bool fractional_delta;
-		float frame_remainder;
-		float collision_base_size;
+		int fixed_fps = 0;
+		bool fractional_delta = false;
+		float frame_remainder = 0.0;
+		float collision_base_size = 0.01;
 
-		bool clear;
+		bool clear = true;
 
 		bool force_sub_emit = false;
 
@@ -757,31 +750,6 @@ private:
 
 		Set<RID> collisions;
 
-		Particles() :
-				inactive(true),
-				inactive_time(0.0),
-				emitting(false),
-				one_shot(false),
-				amount(0),
-				lifetime(1.0),
-				pre_process_time(0.0),
-				explosiveness(0.0),
-				randomness(0.0),
-				restart_request(false),
-				custom_aabb(AABB(Vector3(-4, -4, -4), Vector3(8, 8, 8))),
-				use_local_coords(true),
-				draw_order(RS::PARTICLES_DRAW_ORDER_INDEX),
-				prev_ticks(0),
-				random_seed(0),
-				cycle_number(0),
-				speed_scale(1.0),
-				fixed_fps(0),
-				fractional_delta(false),
-				frame_remainder(0),
-				collision_base_size(0.01),
-				clear(true) {
-		}
-
 		Dependency dependency;
 
 		ParticlesFrameParams frame_params;
@@ -793,15 +761,15 @@ private:
 
 	struct ParticlesShader {
 		struct PushConstant {
-			float lifetime;
-			uint32_t clear;
-			uint32_t total_particles;
-			uint32_t trail_size;
+			float lifetime = 0.0;
+			uint32_t clear = 0;
+			uint32_t total_particles = 0;
+			uint32_t trail_size = 0;
 
-			uint32_t use_fractional_delta;
-			uint32_t sub_emitter_mode;
-			uint32_t can_emit;
-			uint32_t pad;
+			uint32_t use_fractional_delta = 0;
+			uint32_t sub_emitter_mode = 0;
+			uint32_t can_emit = 0;
+			uint32_t pad = 0;
 		};
 
 		ParticlesShaderRD shader;
@@ -814,8 +782,8 @@ private:
 		RID base_uniform_set;
 
 		struct CopyPushConstant {
-			float sort_direction[3];
-			uint32_t total_particles;
+			float sort_direction[3] = {};
+			uint32_t total_particles = 0;
 		};
 
 		enum {
@@ -834,7 +802,7 @@ private:
 	Particles *particle_update_list = nullptr;
 
 	struct ParticlesShaderData : public ShaderData {
-		bool valid;
+		bool valid = false;
 		RID version;
 
 		//PipelineCacheRD pipelines[SKY_VERSION_MAX];
@@ -842,7 +810,7 @@ private:
 		Vector<ShaderCompilerRD::GeneratedCode::Texture> texture_uniforms;
 
 		Vector<uint32_t> ubo_offsets;
-		uint32_t ubo_size;
+		uint32_t ubo_size = 0;
 
 		String path;
 		String code;
@@ -850,7 +818,7 @@ private:
 
 		RID pipeline;
 
-		bool uses_time;
+		bool uses_time = 0;
 
 		virtual void set_code(const String &p_Code);
 		virtual void set_default_texture_param(const StringName &p_name, RID p_texture);
@@ -872,13 +840,13 @@ private:
 	}
 
 	struct ParticlesMaterialData : public MaterialData {
-		uint64_t last_frame;
-		ParticlesShaderData *shader_data;
+		uint64_t last_frame = 0;
+		ParticlesShaderData *shader_data = nullptr;
 		RID uniform_buffer;
 		RID uniform_set;
 		Vector<RID> texture_cache;
 		Vector<uint8_t> ubo_data;
-		bool uniform_set_updated;
+		bool uniform_set_updated = false;
 
 		virtual void set_render_priority(int p_priority) {}
 		virtual void set_next_pass(RID p_pass) {}
@@ -1081,14 +1049,14 @@ private:
 
 		struct BSP {
 			static const int32_t EMPTY_LEAF = INT32_MIN;
-			float plane[4];
+			float plane[4] = {};
 			int32_t over = EMPTY_LEAF, under = EMPTY_LEAF;
 		};
 
 		Dependency dependency;
 	};
 
-	bool using_lightmap_array; //high end uses this
+	bool using_lightmap_array = false; //high end uses this
 	/* for high end */
 
 	Vector<RID> lightmap_textures;
@@ -1111,7 +1079,7 @@ private:
 		RD::DataFormat color_format_srgb = RD::DATA_FORMAT_R4G4_UNORM_PACK8;
 		Image::Format image_format = Image::FORMAT_L8;
 
-		bool flags[RENDER_TARGET_FLAG_MAX];
+		bool flags[RENDER_TARGET_FLAG_MAX] = {};
 
 		RID backbuffer; //used for effects
 		RID backbuffer_fb;
@@ -1138,10 +1106,10 @@ private:
 
 		//texture generated for this owner (nor RD).
 		RID texture;
-		bool was_used;
+		bool was_used = false;
 
 		//clear request
-		bool clear_requested;
+		bool clear_requested = false;
 		Color clear_color;
 	};
 
@@ -1166,11 +1134,11 @@ private:
 		};
 
 		struct PushConstant {
-			int32_t size[2];
-			int32_t stride;
-			int32_t shift;
-			int32_t base_size[2];
-			int32_t pad[2];
+			int32_t size[2] = {};
+			int32_t stride = 0;
+			int32_t shift = 0;
+			int32_t base_size[2] = {};
+			int32_t pad[2] = {};
 		};
 
 		CanvasSdfShaderRD shader;
@@ -1187,11 +1155,11 @@ private:
 		struct Variable {
 			Set<RID> texture_materials; // materials using this
 
-			RS::GlobalVariableType type;
+			RS::GlobalVariableType type = RS::GlobalVariableType::GLOBAL_VAR_TYPE_MAX;
 			Variant value;
 			Variant override;
-			int32_t buffer_index; //for vectors
-			int32_t buffer_elements; //for vectors
+			int32_t buffer_index = 0; //for vectors
+			int32_t buffer_elements = 0; //for vectors
 		};
 
 		HashMap<StringName, Variable> variables;
@@ -1204,17 +1172,17 @@ private:
 		};
 
 		struct ValueInt {
-			int32_t x;
-			int32_t y;
-			int32_t z;
-			int32_t w;
+			int32_t x = 0;
+			int32_t y = 0;
+			int32_t z = 0;
+			int32_t w = 0;
 		};
 
 		struct ValueUInt {
-			uint32_t x;
-			uint32_t y;
-			uint32_t z;
-			uint32_t w;
+			uint32_t x = 0;
+			uint32_t y = 0;
+			uint32_t z = 0;
+			uint32_t w = 0;
 		};
 
 		struct ValueUsage {
@@ -1225,12 +1193,12 @@ private:
 		List<RID> materials_using_texture;
 
 		RID buffer;
-		Value *buffer_values;
-		ValueUsage *buffer_usage;
-		bool *buffer_dirty_regions;
+		Value *buffer_values = nullptr;
+		ValueUsage *buffer_usage = nullptr;
+		bool *buffer_dirty_regions = nullptr;
 		uint32_t buffer_dirty_region_count = 0;
 
-		uint32_t buffer_size;
+		uint32_t buffer_size = 0;
 
 		bool must_update_texture_materials = false;
 		bool must_update_buffer_materials = false;
