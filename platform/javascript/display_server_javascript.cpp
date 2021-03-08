@@ -536,6 +536,43 @@ bool DisplayServerJavaScript::screen_is_touchscreen(int p_screen) const {
 	return godot_js_display_touchscreen_is_available();
 }
 
+// Virtual Keybaord
+void DisplayServerJavaScript::vk_input_text_callback(const char *p_text, int p_cursor) {
+	DisplayServerJavaScript *ds = DisplayServerJavaScript::get_singleton();
+	if (!ds || ds->input_text_callback.is_null()) {
+		return;
+	}
+	// Call input_text
+	Variant event = String(p_text);
+	Variant *eventp = &event;
+	Variant ret;
+	Callable::CallError ce;
+	ds->input_text_callback.call((const Variant **)&eventp, 1, ret, ce);
+	// Insert key right to reach position.
+	Input *input = Input::get_singleton();
+	Ref<InputEventKey> k;
+	for (int i = 0; i < p_cursor; i++) {
+		k.instance();
+		k->set_pressed(true);
+		k->set_echo(false);
+		k->set_keycode(KEY_RIGHT);
+		input->parse_input_event(k);
+		k.instance();
+		k->set_pressed(false);
+		k->set_echo(false);
+		k->set_keycode(KEY_RIGHT);
+		input->parse_input_event(k);
+	}
+}
+
+void DisplayServerJavaScript::virtual_keyboard_show(const String &p_existing_text, const Rect2 &p_screen_rect, bool p_multiline, int p_max_input_length, int p_cursor_start, int p_cursor_end) {
+	godot_js_display_vk_show(p_existing_text.utf8().get_data(), p_multiline, p_cursor_start, p_cursor_end);
+}
+
+void DisplayServerJavaScript::virtual_keyboard_hide() {
+	godot_js_display_vk_hide();
+}
+
 // Gamepad
 void DisplayServerJavaScript::gamepad_callback(int p_index, int p_connected, const char *p_id, const char *p_guid) {
 	Input *input = Input::get_singleton();
@@ -764,6 +801,7 @@ DisplayServerJavaScript::DisplayServerJavaScript(const String &p_rendering_drive
 	godot_js_display_paste_cb(update_clipboard_callback);
 	godot_js_display_drop_files_cb(drop_files_js_callback);
 	godot_js_display_gamepad_cb(&DisplayServerJavaScript::gamepad_callback);
+	godot_js_display_vk_cb(&vk_input_text_callback);
 
 	Input::get_singleton()->set_event_dispatch_function(_dispatch_input_event);
 }
@@ -793,7 +831,8 @@ bool DisplayServerJavaScript::has_feature(Feature p_feature) const {
 		//case FEATURE_WINDOW_TRANSPARENCY:
 		//case FEATURE_KEEP_SCREEN_ON:
 		//case FEATURE_ORIENTATION:
-		//case FEATURE_VIRTUAL_KEYBOARD:
+		case FEATURE_VIRTUAL_KEYBOARD:
+			return godot_js_display_vk_available() != 0;
 		default:
 			return false;
 	}
@@ -866,7 +905,7 @@ void DisplayServerJavaScript::window_set_input_event_callback(const Callable &p_
 }
 
 void DisplayServerJavaScript::window_set_input_text_callback(const Callable &p_callable, WindowID p_window) {
-	input_text_callback = p_callable; // TODO unused... do I need this?
+	input_text_callback = p_callable;
 }
 
 void DisplayServerJavaScript::window_set_drop_files_callback(const Callable &p_callable, WindowID p_window) {

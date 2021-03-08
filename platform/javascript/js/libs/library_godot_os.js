@@ -59,6 +59,7 @@ const GodotConfig = {
 		canvas: null,
 		locale: 'en',
 		canvas_resize_policy: 2, // Adaptive
+		virtual_keyboard: false,
 		on_execute: null,
 		on_exit: null,
 
@@ -66,6 +67,7 @@ const GodotConfig = {
 			GodotConfig.canvas_resize_policy = p_opts['canvasResizePolicy'];
 			GodotConfig.canvas = p_opts['canvas'];
 			GodotConfig.locale = p_opts['locale'] || GodotConfig.locale;
+			GodotConfig.virtual_keyboard = p_opts['virtualKeyboard'];
 			GodotConfig.on_execute = p_opts['onExecute'];
 			GodotConfig.on_exit = p_opts['onExit'];
 		},
@@ -77,6 +79,7 @@ const GodotConfig = {
 			GodotConfig.canvas = null;
 			GodotConfig.locale = 'en';
 			GodotConfig.canvas_resize_policy = 2;
+			GodotConfig.virtual_keyboard = false;
 			GodotConfig.on_execute = null;
 			GodotConfig.on_exit = null;
 		},
