@@ -319,14 +319,13 @@ Vector2 BitmapFontDataFallback::draw_glyph(RID p_canvas, int p_size, const Vecto
 	ERR_FAIL_COND_V(c->texture_idx < -1 || c->texture_idx >= textures.size(), Vector2());
 	if (c->texture_idx != -1) {
 		Point2i cpos = p_pos;
-		cpos += c->align * (float(p_size) / float(base_size));
-		cpos.y -= ascent * (float(p_size) / float(base_size));
-
+		cpos += (c->align + Vector2(0, -ascent)) * (float(p_size) / float(base_size));
+		Size2i csize = c->rect.size * (float(p_size) / float(base_size));
 		if (RenderingServer::get_singleton() != nullptr) {
 			//if (distance_field_hint) { // Not implemented.
 			//	RenderingServer::get_singleton()->canvas_item_set_distance_field_mode(p_canvas, true);
 			//}
-			RenderingServer::get_singleton()->canvas_item_add_texture_rect_region(p_canvas, Rect2(cpos, c->rect.size * (float(p_size) / float(base_size))), textures[c->texture_idx]->get_rid(), c->rect, p_color, false, false);
+			RenderingServer::get_singleton()->canvas_item_add_texture_rect_region(p_canvas, Rect2(cpos, csize), textures[c->texture_idx]->get_rid(), c->rect, p_color, false, false);
 			//if (distance_field_hint) {
 			//	RenderingServer::get_singleton()->canvas_item_set_distance_field_mode(p_canvas, false);
 			//}

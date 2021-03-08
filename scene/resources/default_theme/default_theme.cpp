@@ -1017,7 +1017,7 @@ void make_default_theme(bool p_hidpi, Ref<Font> p_font) {
 	Ref<StyleBox> default_style;
 	Ref<Texture2D> default_icon;
 	Ref<Font> default_font;
-	int default_font_size = 16;
+	int default_font_size = 14;
 	if (p_font.is_valid()) {
 		default_font = p_font;
 	} else if (p_hidpi) {
