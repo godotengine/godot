@@ -35,13 +35,11 @@
 #include "scene/main/node.h"
 
 class Node2D;
-class Navigation2D;
 
 class NavigationAgent2D : public Node {
 	GDCLASS(NavigationAgent2D, Node);
 
 	Node2D *agent_parent = nullptr;
-	Navigation2D *navigation = nullptr;
 
 	RID agent;
 
@@ -73,14 +71,6 @@ protected:
 public:
 	NavigationAgent2D();
 	virtual ~NavigationAgent2D();
-
-	void set_navigation(Navigation2D *p_nav);
-	const Navigation2D *get_navigation() const {
-		return navigation;
-	}
-
-	void set_navigation_node(Node *p_nav);
-	Node *get_navigation_node() const;
 
 	RID get_rid() const {
 		return agent;

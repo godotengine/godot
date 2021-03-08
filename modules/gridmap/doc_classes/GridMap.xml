@@ -184,6 +184,9 @@
 		</method>
 	</methods>
 	<members>
+		<member name="bake_navigation" type="bool" setter="set_bake_navigation" getter="is_baking_navigation" default="false">
+			If [code]true[/code], this GridMap bakes a navigation region.
+		</member>
 		<member name="cell_center_x" type="bool" setter="set_center_x" getter="get_center_x" default="true">
 			If [code]true[/code], grid items are centered on the X axis.
 		</member>

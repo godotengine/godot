@@ -31,15 +31,13 @@
 #ifndef NAVIGATION_OBSTACLE_2D_H
 #define NAVIGATION_OBSTACLE_2D_H
 
+#include "scene/2d/node_2d.h"
 #include "scene/main/node.h"
-
-class Navigation2D;
 
 class NavigationObstacle2D : public Node {
 	GDCLASS(NavigationObstacle2D, Node);
 
-	Navigation2D *navigation = nullptr;
-
+	Node2D *parent_node2d = nullptr;
 	RID agent;
 
 protected:
@@ -49,14 +47,6 @@ protected:
 public:
 	NavigationObstacle2D();
 	virtual ~NavigationObstacle2D();
-
-	void set_navigation(Navigation2D *p_nav);
-	const Navigation2D *get_navigation() const {
-		return navigation;
-	}
-
-	void set_navigation_node(Node *p_nav);
-	Node *get_navigation_node() const;
 
 	RID get_rid() const {
 		return agent;

@@ -272,6 +272,9 @@
 		</method>
 	</methods>
 	<members>
+		<member name="bake_navigation" type="bool" setter="set_bake_navigation" getter="is_baking_navigation" default="false">
+			If [code]true[/code], this TileMap bakes a navigation region.
+		</member>
 		<member name="cell_clip_uv" type="bool" setter="set_clip_uv" getter="get_clip_uv" default="false">
 			If [code]true[/code], the cell's UVs will be clipped.
 		</member>

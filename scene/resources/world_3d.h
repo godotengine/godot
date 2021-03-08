@@ -46,6 +46,7 @@ class World3D : public Resource {
 
 private:
 	RID space;
+	RID navigation_map;
 	RID scenario;
 	SpatialIndexer *indexer;
 	Ref<Environment> environment;
@@ -70,6 +71,7 @@ protected:
 
 public:
 	RID get_space() const;
+	RID get_navigation_map() const;
 	RID get_scenario() const;
 
 	void set_environment(const Ref<Environment> &p_environment);

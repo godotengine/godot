@@ -4,7 +4,7 @@
 		A region of the navigation map.
 	</brief_description>
 	<description>
-		A region of the navigation map. It tells the [Navigation3D] node what can be navigated and what cannot, based on the [NavigationMesh] resource. This should be a child of a [Navigation3D] node (even not a direct child).
+		A region of the navigation map. It tells the [NavigationServer3D] what can be navigated and what cannot, based on its [NavigationMesh] resource.
 	</description>
 	<tutorials>
 	</tutorials>

@@ -33,7 +33,6 @@
 
 #include "core/templates/self_list.h"
 #include "core/templates/vset.h"
-#include "scene/2d/navigation_2d.h"
 #include "scene/2d/node_2d.h"
 #include "scene/resources/tile_set.h"
 
@@ -78,7 +77,7 @@ private:
 	bool use_parent = false;
 	CollisionObject2D *collision_parent = nullptr;
 	bool use_kinematic = false;
-	Navigation2D *navigation = nullptr;
+	bool bake_navigation = false;
 
 	union PosKey {
 		struct {
@@ -294,6 +293,9 @@ public:
 
 	void set_collision_bounce(float p_bounce);
 	float get_collision_bounce() const;
+
+	void set_bake_navigation(bool p_bake_navigation);
+	bool is_baking_navigation();
 
 	void set_mode(Mode p_mode);
 	Mode get_mode() const;

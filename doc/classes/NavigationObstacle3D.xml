@@ -4,27 +4,11 @@
 		3D Obstacle used in navigation for collision avoidance.
 	</brief_description>
 	<description>
-		3D Obstacle used in navigation for collision avoidance. The obstacle needs navigation data to work correctly. This can be done by having the obstacle as a child of a [Navigation3D] node, or using [method set_navigation]. [NavigationObstacle3D] is physics safe.
+		3D Obstacle used in navigation for collision avoidance. The obstacle needs navigation data to work correctly. [NavigationObstacle3D] is physics safe.
 	</description>
 	<tutorials>
 	</tutorials>
 	<methods>
-		<method name="get_navigation" qualifiers="const">
-			<return type="Node">
-			</return>
-			<description>
-				Returns the [Navigation3D] node that the obstacle is using for its navigation system.
-			</description>
-		</method>
-		<method name="set_navigation">
-			<return type="void">
-			</return>
-			<argument index="0" name="navigation" type="Node">
-			</argument>
-			<description>
-				Sets the [Navigation3D] node used by the obstacle. Useful when you don't want to make the obstacle a child of a [Navigation3D] node.
-			</description>
-		</method>
 	</methods>
 	<constants>
 	</constants>

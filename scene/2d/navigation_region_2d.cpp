@@ -34,7 +34,6 @@
 #include "core/core_string_names.h"
 #include "core/math/geometry_2d.h"
 #include "core/os/mutex.h"
-#include "navigation_2d.h"
 #include "servers/navigation_server_2d.h"
 
 #include "thirdparty/misc/polypartition.h"
@@ -366,9 +365,7 @@ void NavigationRegion2D::set_enabled(bool p_enabled) {
 	if (!enabled) {
 		NavigationServer2D::get_singleton()->region_set_map(region, RID());
 	} else {
-		if (navigation) {
-			NavigationServer2D::get_singleton()->region_set_map(region, navigation->get_rid());
-		}
+		NavigationServer2D::get_singleton()->region_set_map(region, get_world_2d()->get_navigation_map());
 	}
 
 	if (Engine::get_singleton()->is_editor_hint() || get_tree()->is_debugging_navigation_hint()) {
@@ -394,29 +391,15 @@ bool NavigationRegion2D::_edit_is_selected_on_click(const Point2 &p_point, doubl
 void NavigationRegion2D::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE: {
-			Node2D *c = this;
-			while (c) {
-				navigation = Object::cast_to<Navigation2D>(c);
-				if (navigation) {
-					if (enabled) {
-						NavigationServer2D::get_singleton()->region_set_map(region, navigation->get_rid());
-					}
-					break;
-				}
-
-				c = Object::cast_to<Node2D>(c->get_parent());
+			if (enabled) {
+				NavigationServer2D::get_singleton()->region_set_map(region, get_world_2d()->get_navigation_map());
 			}
-
 		} break;
 		case NOTIFICATION_TRANSFORM_CHANGED: {
 			NavigationServer2D::get_singleton()->region_set_transform(region, get_global_transform());
-
 		} break;
 		case NOTIFICATION_EXIT_TREE: {
-			if (navigation) {
-				NavigationServer2D::get_singleton()->region_set_map(region, RID());
-			}
-			navigation = nullptr;
+			NavigationServer2D::get_singleton()->region_set_map(region, RID());
 		} break;
 		case NOTIFICATION_DRAW: {
 			if (is_inside_tree() && (Engine::get_singleton()->is_editor_hint() || get_tree()->is_debugging_navigation_hint()) && navpoly.is_valid()) {
@@ -507,18 +490,8 @@ String NavigationRegion2D::get_configuration_warning() const {
 		}
 		warning += TTR("A NavigationPolygon resource must be set or created for this node to work. Please set a property or draw a polygon.");
 	}
-	const Node2D *c = this;
-	while (c) {
-		if (Object::cast_to<Navigation2D>(c)) {
-			return warning;
-		}
 
-		c = Object::cast_to<Node2D>(c->get_parent());
-	}
-	if (!warning.is_empty()) {
-		warning += "\n\n";
-	}
-	return warning + TTR("NavigationRegion2D must be a child or grandchild to a Navigation2D node. It only provides navigation data.");
+	return warning;
 }
 
 void NavigationRegion2D::_bind_methods() {

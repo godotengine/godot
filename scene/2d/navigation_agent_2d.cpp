@@ -32,7 +32,6 @@
 
 #include "core/config/engine.h"
 #include "core/math/geometry_2d.h"
-#include "scene/2d/navigation_2d.h"
 #include "servers/navigation_server_2d.h"
 
 void NavigationAgent2D::_bind_methods() {
@@ -41,9 +40,6 @@ void NavigationAgent2D::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_radius", "radius"), &NavigationAgent2D::set_radius);
 	ClassDB::bind_method(D_METHOD("get_radius"), &NavigationAgent2D::get_radius);
-
-	ClassDB::bind_method(D_METHOD("set_navigation", "navigation"), &NavigationAgent2D::set_navigation_node);
-	ClassDB::bind_method(D_METHOD("get_navigation"), &NavigationAgent2D::get_navigation_node);
 
 	ClassDB::bind_method(D_METHOD("set_neighbor_dist", "neighbor_dist"), &NavigationAgent2D::set_neighbor_dist);
 	ClassDB::bind_method(D_METHOD("get_neighbor_dist"), &NavigationAgent2D::get_neighbor_dist);
@@ -95,27 +91,10 @@ void NavigationAgent2D::_notification(int p_what) {
 
 			NavigationServer2D::get_singleton()->agent_set_callback(agent, this, "_avoidance_done");
 
-			// Search the navigation node and set it
-			{
-				Navigation2D *nav = nullptr;
-				Node *p = get_parent();
-				while (p != nullptr) {
-					nav = Object::cast_to<Navigation2D>(p);
-					if (nav != nullptr) {
-						p = nullptr;
-					} else {
-						p = p->get_parent();
-					}
-				}
-
-				set_navigation(nav);
-			}
-
 			set_physics_process_internal(true);
 		} break;
 		case NOTIFICATION_EXIT_TREE: {
 			agent_parent = nullptr;
-			set_navigation(nullptr);
 			set_physics_process_internal(false);
 		} break;
 		case NOTIFICATION_INTERNAL_PHYSICS_PROCESS: {
@@ -144,25 +123,6 @@ NavigationAgent2D::NavigationAgent2D() {
 NavigationAgent2D::~NavigationAgent2D() {
 	NavigationServer2D::get_singleton()->free(agent);
 	agent = RID(); // Pointless
-}
-
-void NavigationAgent2D::set_navigation(Navigation2D *p_nav) {
-	if (navigation == p_nav) {
-		return; // Pointless
-	}
-
-	navigation = p_nav;
-	NavigationServer2D::get_singleton()->agent_set_map(agent, navigation == nullptr ? RID() : navigation->get_rid());
-}
-
-void NavigationAgent2D::set_navigation_node(Node *p_nav) {
-	Navigation2D *nav = Object::cast_to<Navigation2D>(p_nav);
-	ERR_FAIL_COND(nav == nullptr);
-	set_navigation(nav);
-}
-
-Node *NavigationAgent2D::get_navigation_node() const {
-	return Object::cast_to<Node>(navigation);
 }
 
 void NavigationAgent2D::set_target_desired_distance(real_t p_dd) {
@@ -287,7 +247,7 @@ void NavigationAgent2D::update_navigation() {
 	if (agent_parent == nullptr) {
 		return;
 	}
-	if (navigation == nullptr) {
+	if (!agent_parent->is_inside_tree()) {
 		return;
 	}
 	if (update_frame_id == Engine::get_singleton()->get_physics_frames()) {
@@ -319,7 +279,7 @@ void NavigationAgent2D::update_navigation() {
 	}
 
 	if (reload_path) {
-		navigation_path = NavigationServer2D::get_singleton()->map_get_path(navigation->get_rid(), o, target_location, true);
+		navigation_path = NavigationServer2D::get_singleton()->map_get_path(agent_parent->get_world_2d()->get_navigation_map(), o, target_location, true);
 		navigation_finished = false;
 		nav_path_index = 0;
 		emit_signal("path_changed");

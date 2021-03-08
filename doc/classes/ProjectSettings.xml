@@ -1020,6 +1020,14 @@
 		</member>
 		<member name="mono/unhandled_exception_policy" type="int" setter="" getter="" default="0">
 		</member>
+		<member name="navigation/2d/default_cell_size" type="int" setter="" getter="" default="10">
+		</member>
+		<member name="navigation/2d/default_edge_connection_margin" type="int" setter="" getter="" default="100">
+		</member>
+		<member name="navigation/3d/default_cell_size" type="float" setter="" getter="" default="0.3">
+		</member>
+		<member name="navigation/3d/default_edge_connection_margin" type="float" setter="" getter="" default="5.0">
+		</member>
 		<member name="network/limits/debugger/max_chars_per_second" type="int" setter="" getter="" default="32768">
 			Maximum amount of characters allowed to send as output from the debugger. Over this value, content is dropped. This helps not to stall the debugger connection.
 		</member>

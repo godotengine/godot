@@ -35,8 +35,6 @@
 #include "scene/resources/mesh.h"
 #include "scene/resources/navigation_mesh.h"
 
-class Navigation3D;
-
 class NavigationRegion3D : public Node3D {
 	GDCLASS(NavigationRegion3D, Node3D);
 
@@ -44,7 +42,6 @@ class NavigationRegion3D : public Node3D {
 	RID region;
 	Ref<NavigationMesh> navmesh;
 
-	Navigation3D *navigation = nullptr;
 	Node *debug_view = nullptr;
 	Thread bake_thread;
 
