@@ -68,6 +68,7 @@ protected:
 	bool current;
 	float smoothing;
 	bool smoothing_enabled;
+	bool smoothing_active; // smoothing can be enabled but not active in the editor
 	int limit[4];
 	bool limit_smoothing_enabled;
 	float drag_margin[4];
@@ -86,8 +87,6 @@ protected:
 
 	void _make_current(Object *p_which);
 	void _set_current(bool p_current);
-
-	void _set_old_smoothing(float p_enable);
 
 	bool screen_drawing_enabled;
 	bool limit_drawing_enabled;
