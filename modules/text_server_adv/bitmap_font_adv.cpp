@@ -361,6 +361,10 @@ Error BitmapFontDataAdvanced::load_from_file(const String &p_filename, int p_bas
 		base_size = height;
 	}
 
+	if (hb_handle) {
+		hb_font_destroy(hb_handle);
+	}
+	hb_handle = hb_bmp_font_create(this, base_size, nullptr);
 	valid = true;
 
 	memdelete(f);
@@ -379,12 +383,10 @@ Error BitmapFontDataAdvanced::bitmap_new(float p_height, float p_ascent, int p_b
 	char_map.clear();
 	textures.clear();
 	kerning_map.clear();
-
-	for (Map<float, hb_font_t *>::Element *E = cache.front(); E; E = E->next()) {
-		hb_font_destroy(E->get());
+	if (hb_handle) {
+		hb_font_destroy(hb_handle);
 	}
-	cache.clear();
-
+	hb_handle = hb_bmp_font_create(this, base_size, nullptr);
 	valid = true;
 
 	return OK;
@@ -466,10 +468,7 @@ float BitmapFontDataAdvanced::get_base_size() const {
 hb_font_t *BitmapFontDataAdvanced::get_hb_handle(int p_size) {
 	_THREAD_SAFE_METHOD_
 	ERR_FAIL_COND_V(!valid, nullptr);
-	if (!cache.has(p_size)) {
-		cache[p_size] = hb_bmp_font_create(this, p_size, nullptr);
-	}
-	return cache[p_size];
+	return hb_handle;
 }
 
 bool BitmapFontDataAdvanced::has_char(char32_t p_char) const {
@@ -516,6 +515,10 @@ Vector2 BitmapFontDataAdvanced::get_size(uint32_t p_char, int p_size) const {
 	return c->rect.size * (float(p_size) / float(base_size));
 }
 
+float BitmapFontDataAdvanced::get_font_scale(int p_size) const {
+	return float(p_size) / float(base_size);
+}
+
 Vector2 BitmapFontDataAdvanced::get_kerning(uint32_t p_char, uint32_t p_next, int p_size) const {
 	_THREAD_SAFE_METHOD_
 	ERR_FAIL_COND_V(!valid, Vector2());
@@ -543,13 +546,13 @@ Vector2 BitmapFontDataAdvanced::draw_glyph(RID p_canvas, int p_size, const Vecto
 	ERR_FAIL_COND_V(c->texture_idx < -1 || c->texture_idx >= textures.size(), Vector2());
 	if (c->texture_idx != -1) {
 		Point2i cpos = p_pos;
-		cpos += c->align * (float(p_size) / float(base_size));
-		cpos.y -= ascent * (float(p_size) / float(base_size));
+		cpos += (c->align + Vector2(0, -ascent)) * (float(p_size) / float(base_size));
+		Size2i csize = c->rect.size * (float(p_size) / float(base_size));
 		if (RenderingServer::get_singleton() != nullptr) {
 			//if (distance_field_hint) { // Not implemented.
 			//	RenderingServer::get_singleton()->canvas_item_set_distance_field_mode(p_canvas, true);
 			//}
-			RenderingServer::get_singleton()->canvas_item_add_texture_rect_region(p_canvas, Rect2(cpos, c->rect.size * (float(p_size) / float(base_size))), textures[c->texture_idx]->get_rid(), c->rect, p_color, false, false);
+			RenderingServer::get_singleton()->canvas_item_add_texture_rect_region(p_canvas, Rect2(cpos, csize), textures[c->texture_idx]->get_rid(), c->rect, p_color, false, false);
 			//if (distance_field_hint) {
 			//	RenderingServer::get_singleton()->canvas_item_set_distance_field_mode(p_canvas, false);
 			//}
@@ -576,7 +579,7 @@ Vector2 BitmapFontDataAdvanced::draw_glyph_outline(RID p_canvas, int p_size, int
 }
 
 BitmapFontDataAdvanced::~BitmapFontDataAdvanced() {
-	for (Map<float, hb_font_t *>::Element *E = cache.front(); E; E = E->next()) {
-		hb_font_destroy(E->get());
+	if (hb_handle) {
+		hb_font_destroy(hb_handle);
 	}
 }

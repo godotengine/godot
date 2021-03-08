@@ -63,11 +63,11 @@ private:
 
 	HashMap<uint32_t, Character> char_map;
 	Map<KerningPairKey, int> kerning_map;
-	Map<float, hb_font_t *> cache;
+	hb_font_t *hb_handle = nullptr;
 
 	float height = 0.f;
 	float ascent = 0.f;
-	float base_size = 0.f;
+	int base_size = 0;
 	bool distance_field_hint = false;
 
 public:
@@ -101,6 +101,7 @@ public:
 
 	virtual bool has_outline() const override { return false; };
 	virtual float get_base_size() const override;
+	virtual float get_font_scale(int p_size) const override;
 
 	virtual hb_font_t *get_hb_handle(int p_size) override;
 
