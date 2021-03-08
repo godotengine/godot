@@ -386,7 +386,7 @@ MeshInstance *FBXMeshData::create_fbx_mesh(const ImportState &state, const FBXDo
 				Mesh::PRIMITIVE_TRIANGLES,
 				surface->surface_tool->commit_to_arrays(),
 				surface->morphs,
-				use_compression ? Mesh::ARRAY_COMPRESS_DEFAULT : 0);
+				use_compression ? Mesh::ARRAY_COMPRESS_DEFAULT : Mesh::ARRAY_FLAG_USE_OCTAHEDRAL_COMPRESSION);
 
 		if (surface->material.is_valid()) {
 			mesh->surface_set_name(in_mesh_surface_id, surface->material->get_name());

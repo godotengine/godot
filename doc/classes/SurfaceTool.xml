@@ -167,11 +167,11 @@
 			</return>
 			<argument index="0" name="existing" type="ArrayMesh" default="null">
 			</argument>
-			<argument index="1" name="flags" type="int" default="97280">
+			<argument index="1" name="flags" type="int" default="2194432">
 			</argument>
 			<description>
 				Returns a constructed [ArrayMesh] from current information passed in. If an existing [ArrayMesh] is passed in as an argument, will add an extra surface to the existing [ArrayMesh].
-				Default flag is [constant Mesh.ARRAY_COMPRESS_DEFAULT]. See [code]ARRAY_COMPRESS_*[/code] constants in [enum Mesh.ArrayFormat] for other flags.
+				Default flag is [constant Mesh.ARRAY_COMPRESS_DEFAULT] if compression is enabled. If compression is disabled the default flag is [constant Mesh.ARRAY_FLAG_USE_OCTAHEDRAL_COMPRESSION]. See [code]ARRAY_COMPRESS_*[/code] constants in [enum Mesh.ArrayFormat] for other flags.
 			</description>
 		</method>
 		<method name="commit_to_arrays">

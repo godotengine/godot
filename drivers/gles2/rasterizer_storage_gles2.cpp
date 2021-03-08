@@ -2098,22 +2098,42 @@ static PoolVector<uint8_t> _unpack_half_floats(const PoolVector<uint8_t> &array,
 
 			} break;
 			case VS::ARRAY_NORMAL: {
-				if (p_format & VS::ARRAY_COMPRESS_NORMAL) {
-					src_size[i] = 4;
-					dst_size[i] = 4;
+				if (p_format & VS::ARRAY_FLAG_USE_OCTAHEDRAL_COMPRESSION) {
+					if (p_format & VS::ARRAY_COMPRESS_NORMAL) {
+						src_size[i] = 2;
+						dst_size[i] = 2;
+					} else {
+						src_size[i] = 4;
+						dst_size[i] = 4;
+					}
 				} else {
-					src_size[i] = 12;
-					dst_size[i] = 12;
+					if (p_format & VS::ARRAY_COMPRESS_NORMAL) {
+						src_size[i] = 4;
+						dst_size[i] = 4;
+					} else {
+						src_size[i] = 12;
+						dst_size[i] = 12;
+					}
 				}
 
 			} break;
 			case VS::ARRAY_TANGENT: {
-				if (p_format & VS::ARRAY_COMPRESS_TANGENT) {
-					src_size[i] = 4;
-					dst_size[i] = 4;
+				if (p_format & VS::ARRAY_FLAG_USE_OCTAHEDRAL_COMPRESSION) {
+					if (p_format & VS::ARRAY_COMPRESS_TANGENT) {
+						src_size[i] = 2;
+						dst_size[i] = 2;
+					} else {
+						src_size[i] = 4;
+						dst_size[i] = 4;
+					}
 				} else {
-					src_size[i] = 16;
-					dst_size[i] = 16;
+					if (p_format & VS::ARRAY_COMPRESS_TANGENT) {
+						src_size[i] = 4;
+						dst_size[i] = 4;
+					} else {
+						src_size[i] = 16;
+						dst_size[i] = 16;
+					}
 				}
 
 			} break;
@@ -2288,30 +2308,54 @@ void RasterizerStorageGLES2::mesh_add_surface(RID p_mesh, uint32_t p_format, VS:
 
 			} break;
 			case VS::ARRAY_NORMAL: {
-				attribs[i].size = 3;
-
-				if (p_format & VS::ARRAY_COMPRESS_NORMAL) {
-					attribs[i].type = GL_BYTE;
-					attributes_stride += 4; //pad extra byte
+				if (p_format & VS::ARRAY_FLAG_USE_OCTAHEDRAL_COMPRESSION) {
 					attribs[i].normalized = GL_TRUE;
+					attribs[i].size = 2;
+					if (p_format & VS::ARRAY_COMPRESS_NORMAL) {
+						attribs[i].type = GL_BYTE;
+						attributes_stride += 2;
+					} else {
+						attribs[i].type = GL_SHORT;
+						attributes_stride += 4;
+					}
 				} else {
-					attribs[i].type = GL_FLOAT;
-					attributes_stride += 12;
-					attribs[i].normalized = GL_FALSE;
+					attribs[i].size = 3;
+
+					if (p_format & VS::ARRAY_COMPRESS_NORMAL) {
+						attribs[i].type = GL_BYTE;
+						attributes_stride += 4; //pad extra byte
+						attribs[i].normalized = GL_TRUE;
+					} else {
+						attribs[i].type = GL_FLOAT;
+						attributes_stride += 12;
+						attribs[i].normalized = GL_FALSE;
+					}
 				}
 
 			} break;
 			case VS::ARRAY_TANGENT: {
-				attribs[i].size = 4;
-
-				if (p_format & VS::ARRAY_COMPRESS_TANGENT) {
-					attribs[i].type = GL_BYTE;
-					attributes_stride += 4;
+				if (p_format & VS::ARRAY_FLAG_USE_OCTAHEDRAL_COMPRESSION) {
 					attribs[i].normalized = GL_TRUE;
+					attribs[i].size = 2;
+					if (p_format & VS::ARRAY_COMPRESS_TANGENT) {
+						attribs[i].type = GL_BYTE;
+						attributes_stride += 2;
+					} else {
+						attribs[i].type = GL_SHORT;
+						attributes_stride += 4;
+					}
 				} else {
-					attribs[i].type = GL_FLOAT;
-					attributes_stride += 16;
-					attribs[i].normalized = GL_FALSE;
+					attribs[i].size = 4;
+
+					if (p_format & VS::ARRAY_COMPRESS_TANGENT) {
+						attribs[i].type = GL_BYTE;
+						attributes_stride += 4;
+						attribs[i].normalized = GL_TRUE;
+					} else {
+						attribs[i].type = GL_FLOAT;
+						attributes_stride += 16;
+						attribs[i].normalized = GL_FALSE;
+					}
 				}
 
 			} break;

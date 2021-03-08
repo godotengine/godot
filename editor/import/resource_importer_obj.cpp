@@ -210,7 +210,7 @@ static Error _parse_obj(const String &p_path, List<Ref<Mesh>> &r_meshes, bool p_
 	bool generate_tangents = p_generate_tangents;
 	Vector3 scale_mesh = p_scale_mesh;
 	Vector3 offset_mesh = p_offset_mesh;
-	int mesh_flags = p_optimize ? Mesh::ARRAY_COMPRESS_DEFAULT : 0;
+	int mesh_flags = p_optimize ? Mesh::ARRAY_COMPRESS_DEFAULT : Mesh::ARRAY_FLAG_USE_OCTAHEDRAL_COMPRESSION;
 
 	Vector<Vector3> vertices;
 	Vector<Vector3> normals;

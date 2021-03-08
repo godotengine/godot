@@ -99,7 +99,7 @@ private:
 		Vector<StringName> texture_uniforms;
 		Vector<StringName> custom_uniforms;
 		Vector<CharString> custom_defines;
-		Set<uint32_t> versions;
+		Set<uint64_t> versions;
 	};
 
 	struct Version {
@@ -125,16 +125,16 @@ private:
 
 	union VersionKey {
 		struct {
-			uint32_t version;
+			uint64_t version;
 			uint32_t code_version;
 		};
-		uint64_t key;
-		bool operator==(const VersionKey &p_key) const { return key == p_key.key; }
-		bool operator<(const VersionKey &p_key) const { return key < p_key.key; }
+		unsigned char key[12];
+		bool operator==(const VersionKey &p_key) const { return version == p_key.version && code_version == p_key.code_version; }
+		bool operator<(const VersionKey &p_key) const { return version < p_key.version || (version == p_key.version && code_version < p_key.code_version); }
 	};
 
 	struct VersionKeyHash {
-		static _FORCE_INLINE_ uint32_t hash(const VersionKey &p_key) { return HashMapHasherDefault::hash(p_key.key); }
+		static _FORCE_INLINE_ uint32_t hash(const VersionKey &p_key) { return hash_djb2_buffer(p_key.key, sizeof(p_key.key)); }
 	};
 
 	//this should use a way more cachefriendly version..
@@ -222,13 +222,13 @@ public:
 	void set_custom_shader(uint32_t p_code_id);
 	void free_custom_shader(uint32_t p_code_id);
 
-	uint32_t get_version_key() const { return conditional_version.version; }
+	uint64_t get_version_key() const { return conditional_version.version; }
 
 	// this void* is actually a RasterizerStorageGLES2::Material, but C++ doesn't
 	// like forward declared nested classes.
 	void use_material(void *p_material);
 
-	_FORCE_INLINE_ uint32_t get_version() const { return new_conditional_version.version; }
+	_FORCE_INLINE_ uint64_t get_version() const { return new_conditional_version.version; }
 	_FORCE_INLINE_ bool is_version_valid() const { return version && version->ok; }
 
 	virtual void init() = 0;
@@ -261,10 +261,12 @@ int ShaderGLES2::_get_uniform(int p_which) const {
 
 void ShaderGLES2::_set_conditional(int p_which, bool p_value) {
 	ERR_FAIL_INDEX(p_which, conditional_count);
+	ERR_FAIL_INDEX(static_cast<unsigned int>(p_which), sizeof(new_conditional_version.version) * 8)
+
 	if (p_value) {
-		new_conditional_version.version |= (1 << p_which);
+		new_conditional_version.version |= (uint64_t(1) << p_which);
 	} else {
-		new_conditional_version.version &= ~(1 << p_which);
+		new_conditional_version.version &= ~(uint64_t(1) << p_which);
 	}
 }
 
