@@ -1090,59 +1090,16 @@ public:
 		return li->transform;
 	}
 
-	// !BAS! Need to check which of these we move into RenderSceneGIRD or whether we keep this the way it is now
+	/* gi light probes */
 
 	RID gi_probe_instance_create(RID p_base);
 	void gi_probe_instance_set_transform_to_data(RID p_probe, const Transform &p_xform);
 	bool gi_probe_needs_update(RID p_probe) const;
 	void gi_probe_update(RID p_probe, bool p_update_light_instances, const Vector<RID> &p_light_instances, const PagedArray<RendererSceneRender::GeometryInstance *> &p_dynamic_objects);
-
 	void gi_probe_set_quality(RS::GIProbeQuality p_quality) { gi.gi_probe_quality = p_quality; }
 
-	_FORCE_INLINE_ uint32_t gi_probe_instance_get_slot(RID p_probe) {
-		RendererSceneGIRD::GIProbeInstance *gi_probe = gi.gi_probe_instance_owner.getornull(p_probe);
-		return gi_probe->slot;
-	}
-	_FORCE_INLINE_ RID gi_probe_instance_get_base_probe(RID p_probe) {
-		RendererSceneGIRD::GIProbeInstance *gi_probe = gi.gi_probe_instance_owner.getornull(p_probe);
-		return gi_probe->probe;
-	}
-	_FORCE_INLINE_ Transform gi_probe_instance_get_transform_to_cell(RID p_probe) {
-		RendererSceneGIRD::GIProbeInstance *gi_probe = gi.gi_probe_instance_owner.getornull(p_probe);
-		return storage->gi_probe_get_to_cell_xform(gi_probe->probe) * gi_probe->transform.affine_inverse();
-	}
+	/* render buffers */
 
-	_FORCE_INLINE_ RID gi_probe_instance_get_texture(RID p_probe) {
-		RendererSceneGIRD::GIProbeInstance *gi_probe = gi.gi_probe_instance_owner.getornull(p_probe);
-		return gi_probe->texture;
-	}
-
-	_FORCE_INLINE_ void gi_probe_instance_set_render_index(RID p_instance, uint32_t p_render_index) {
-		RendererSceneGIRD::GIProbeInstance *gi_probe = gi.gi_probe_instance_owner.getornull(p_instance);
-		ERR_FAIL_COND(!gi_probe);
-		gi_probe->render_index = p_render_index;
-	}
-
-	_FORCE_INLINE_ uint32_t gi_probe_instance_get_render_index(RID p_instance) {
-		RendererSceneGIRD::GIProbeInstance *gi_probe = gi.gi_probe_instance_owner.getornull(p_instance);
-		ERR_FAIL_COND_V(!gi_probe, 0);
-
-		return gi_probe->render_index;
-	}
-	/*
-	_FORCE_INLINE_ void gi_probe_instance_set_render_pass(RID p_instance, uint32_t p_render_pass) {
-		RendererSceneGIRD::GIProbeInstance *g_probe = gi_probe_instance_owner.getornull(p_instance);
-		ERR_FAIL_COND(!g_probe);
-		g_probe->last_pass = p_render_pass;
-	}
-
-	_FORCE_INLINE_ uint32_t gi_probe_instance_get_render_pass(RID p_instance) {
-		RendererSceneGIRD::GIProbeInstance *g_probe = gi_probe_instance_owner.getornull(p_instance);
-		ERR_FAIL_COND_V(!g_probe, 0);
-
-		return g_probe->last_pass;
-	}
-*/
 	RID render_buffers_create();
 	void render_buffers_configure(RID p_render_buffers, RID p_render_target, int p_width, int p_height, RS::ViewportMSAA p_msaa, RS::ViewportScreenSpaceAA p_screen_space_aa, bool p_use_debanding);
 	void gi_set_use_half_resolution(bool p_enable);
