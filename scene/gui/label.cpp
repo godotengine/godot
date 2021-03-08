@@ -260,7 +260,8 @@ void Label::_notification(int p_what) {
 					}
 				}
 			}
-			visible_glyphs = total_glyphs * percent_visible;
+
+			visible_glyphs = MIN(total_glyphs, visible_chars);
 		}
 
 		Vector2 ofs;
@@ -541,6 +542,8 @@ void Label::set_visible_characters(int p_amount) {
 	visible_chars = p_amount;
 	if (get_total_character_count() > 0) {
 		percent_visible = (float)p_amount / (float)get_total_character_count();
+	} else {
+		percent_visible = 1.0;
 	}
 	update();
 }
