@@ -48,6 +48,7 @@ class NavRegion : public NavRid {
 	NavMap *map = nullptr;
 	Transform transform;
 	Ref<NavigationMesh> mesh;
+	uint32_t layers = 1;
 
 	bool polygons_dirty = true;
 
@@ -65,6 +66,9 @@ public:
 	NavMap *get_map() const {
 		return map;
 	}
+
+	void set_layers(uint32_t p_layers);
+	uint32_t get_layers() const;
 
 	void set_transform(Transform transform);
 	const Transform &get_transform() const {

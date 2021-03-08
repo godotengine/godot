@@ -188,6 +188,15 @@ bool GridMap::is_baking_navigation() {
 	return bake_navigation;
 }
 
+void GridMap::set_navigation_layers(uint32_t p_layers) {
+	navigation_layers = p_layers;
+	_recreate_octant_data();
+}
+
+uint32_t GridMap::get_navigation_layers() {
+	return navigation_layers;
+}
+
 void GridMap::set_mesh_library(const Ref<MeshLibrary> &p_mesh_library) {
 	if (!mesh_library.is_null()) {
 		mesh_library->unregister_owner(this);
@@ -485,6 +494,7 @@ bool GridMap::_octant_update(const OctantKey &p_key) {
 
 			if (bake_navigation) {
 				RID region = NavigationServer3D::get_singleton()->region_create();
+				NavigationServer3D::get_singleton()->region_set_layers(region, navigation_layers);
 				NavigationServer3D::get_singleton()->region_set_navmesh(region, navmesh);
 				NavigationServer3D::get_singleton()->region_set_transform(region, get_global_transform() * mesh_library->get_item_navmesh_transform(c.item));
 				NavigationServer3D::get_singleton()->region_set_map(region, get_world_3d()->get_navigation_map());
@@ -580,6 +590,7 @@ void GridMap::_octant_enter_world(const OctantKey &p_key) {
 				Ref<NavigationMesh> nm = mesh_library->get_item_navmesh(cell_map[F->key()].item);
 				if (nm.is_valid()) {
 					RID region = NavigationServer3D::get_singleton()->region_create();
+					NavigationServer3D::get_singleton()->region_set_layers(region, navigation_layers);
 					NavigationServer3D::get_singleton()->region_set_navmesh(region, nm);
 					NavigationServer3D::get_singleton()->region_set_transform(region, get_global_transform() * F->get().xform);
 					NavigationServer3D::get_singleton()->region_set_map(region, get_world_3d()->get_navigation_map());
@@ -785,6 +796,9 @@ void GridMap::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_bake_navigation", "bake_navigation"), &GridMap::set_bake_navigation);
 	ClassDB::bind_method(D_METHOD("is_baking_navigation"), &GridMap::is_baking_navigation);
 
+	ClassDB::bind_method(D_METHOD("set_navigation_layers", "layers"), &GridMap::set_navigation_layers);
+	ClassDB::bind_method(D_METHOD("get_navigation_layers"), &GridMap::get_navigation_layers);
+
 	ClassDB::bind_method(D_METHOD("set_mesh_library", "mesh_library"), &GridMap::set_mesh_library);
 	ClassDB::bind_method(D_METHOD("get_mesh_library"), &GridMap::get_mesh_library);
 
@@ -840,6 +854,7 @@ void GridMap::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "collision_mask", PROPERTY_HINT_LAYERS_3D_PHYSICS), "set_collision_mask", "get_collision_mask");
 	ADD_GROUP("Navigation", "");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "bake_navigation"), "set_bake_navigation", "is_baking_navigation");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "navigation_layers", PROPERTY_HINT_LAYERS_3D_NAVIGATION), "set_navigation_layers", "get_navigation_layers");
 
 	BIND_CONSTANT(INVALID_CELL_ITEM);
 

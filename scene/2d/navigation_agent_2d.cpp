@@ -125,6 +125,15 @@ NavigationAgent2D::~NavigationAgent2D() {
 	agent = RID(); // Pointless
 }
 
+void NavigationAgent2D::set_navigable_layers(uint32_t p_layers) {
+	navigable_layers = p_layers;
+	update_navigation();
+}
+
+uint32_t NavigationAgent2D::get_navigable_layers() const {
+	return navigable_layers;
+}
+
 void NavigationAgent2D::set_target_desired_distance(real_t p_dd) {
 	target_desired_distance = p_dd;
 }
@@ -279,7 +288,7 @@ void NavigationAgent2D::update_navigation() {
 	}
 
 	if (reload_path) {
-		navigation_path = NavigationServer2D::get_singleton()->map_get_path(agent_parent->get_world_2d()->get_navigation_map(), o, target_location, true);
+		navigation_path = NavigationServer2D::get_singleton()->map_get_path(agent_parent->get_world_2d()->get_navigation_map(), o, target_location, true, navigable_layers);
 		navigation_finished = false;
 		nav_path_index = 0;
 		emit_signal("path_changed");

@@ -377,6 +377,14 @@ bool NavigationRegion2D::is_enabled() const {
 	return enabled;
 }
 
+void NavigationRegion2D::set_layers(uint32_t p_layers) {
+	NavigationServer2D::get_singleton()->region_set_layers(region, p_layers);
+}
+
+uint32_t NavigationRegion2D::get_layers() const {
+	return NavigationServer2D::get_singleton()->region_get_layers(region);
+}
+
 /////////////////////////////
 #ifdef TOOLS_ENABLED
 Rect2 NavigationRegion2D::_edit_get_rect() const {
@@ -501,10 +509,14 @@ void NavigationRegion2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_enabled", "enabled"), &NavigationRegion2D::set_enabled);
 	ClassDB::bind_method(D_METHOD("is_enabled"), &NavigationRegion2D::is_enabled);
 
+	ClassDB::bind_method(D_METHOD("set_layers", "layers"), &NavigationRegion2D::set_layers);
+	ClassDB::bind_method(D_METHOD("get_layers"), &NavigationRegion2D::get_layers);
+
 	ClassDB::bind_method(D_METHOD("_navpoly_changed"), &NavigationRegion2D::_navpoly_changed);
 
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "navpoly", PROPERTY_HINT_RESOURCE_TYPE, "NavigationPolygon"), "set_navigation_polygon", "get_navigation_polygon");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "enabled"), "set_enabled", "is_enabled");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "layers", PROPERTY_HINT_LAYERS_2D_NAVIGATION), "set_layers", "get_layers");
 }
 
 NavigationRegion2D::NavigationRegion2D() {
