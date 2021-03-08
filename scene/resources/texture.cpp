@@ -823,6 +823,10 @@ void ImageTexture3D::_update(const TypedArray<Image> &p_data) {
 }
 
 Error ImageTexture3D::create(Image::Format p_format, int p_width, int p_height, int p_depth, bool p_mipmaps, const Vector<Ref<Image>> &p_data) {
+#ifdef DEBUG_ENABLED
+	Image::Image3DValidateError verr = Image::validate_3d_image(p_format, p_width, p_height, p_depth, p_mipmaps, p_data);
+	ERR_FAIL_COND_V(verr != Image::VALIDATE_3D_OK, ERR_CANT_CREATE);
+#endif
 	RID tex = RenderingServer::get_singleton()->texture_3d_create(p_format, p_width, p_height, p_depth, p_mipmaps, p_data);
 	ERR_FAIL_COND_V(tex.is_null(), ERR_CANT_CREATE);
 
