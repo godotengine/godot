@@ -70,7 +70,7 @@ gd::PointKey NavMap::get_point_key(const Vector3 &p_pos) const {
 	return p;
 }
 
-Vector<Vector3> NavMap::get_path(Vector3 p_origin, Vector3 p_destination, bool p_optimize) const {
+Vector<Vector3> NavMap::get_path(Vector3 p_origin, Vector3 p_destination, bool p_optimize, uint32_t p_layers) const {
 	const gd::Polygon *begin_poly = nullptr;
 	const gd::Polygon *end_poly = nullptr;
 	Vector3 begin_point;
@@ -81,6 +81,11 @@ Vector<Vector3> NavMap::get_path(Vector3 p_origin, Vector3 p_destination, bool p
 	// Find the initial poly and the end poly on this map.
 	for (size_t i(0); i < polygons.size(); i++) {
 		const gd::Polygon &p = polygons[i];
+
+		// Only consider the polygon if it in a region with compatible layers.
+		if ((p_layers & p.owner->get_layers()) == 0) {
+			continue;
+		}
 
 		// For each point cast a face and check the distance between the origin/destination
 		for (size_t point_id = 2; point_id < p.points.size(); point_id++) {
@@ -143,6 +148,11 @@ Vector<Vector3> NavMap::get_path(Vector3 p_origin, Vector3 p_destination, bool p
 			// Takes the current least_cost_poly neighbors and compute the traveled_distance of each
 			for (size_t i = 0; i < navigation_polys[least_cost_id].poly->edges.size(); i++) {
 				gd::NavigationPoly *least_cost_poly = &navigation_polys[least_cost_id];
+
+				// Only consider the polygon if it in a region with compatible layers.
+				if ((p_layers & least_cost_poly->poly->owner->get_layers()) == 0) {
+					continue;
+				}
 
 				const gd::Edge &edge = least_cost_poly->poly->edges[i];
 				if (!edge.other_polygon) {
@@ -629,7 +639,7 @@ void NavMap::sync() {
 					connection->get().B->edges[connection->get().B_edge].other_edge = connection->get().A_edge;
 				} else {
 					// The edge is already connected with another edge, skip.
-					ERR_PRINT("Attempted to merge a navigation mesh triangle edge with another already-merged edge. This happens when the Navigation3D's `cell_size` is different from the one used to generate the navigation mesh. This will cause navigation problem.");
+					ERR_PRINT("Attempted to merge a navigation mesh triangle edge with another already-merged edge. This happens when the current `cell_size` is different from the one used to generate the navigation mesh. This will cause navigation problem.");
 				}
 			}
 		}

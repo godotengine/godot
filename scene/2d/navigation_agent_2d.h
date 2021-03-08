@@ -43,6 +43,8 @@ class NavigationAgent2D : public Node {
 
 	RID agent;
 
+	uint32_t navigable_layers = 1;
+
 	real_t target_desired_distance = 1.0;
 	real_t radius;
 	real_t neighbor_dist;
@@ -75,6 +77,9 @@ public:
 	RID get_rid() const {
 		return agent;
 	}
+
+	void set_navigable_layers(uint32_t p_layers);
+	uint32_t get_navigable_layers() const;
 
 	void set_target_desired_distance(real_t p_dd);
 	real_t get_target_desired_distance() const {
