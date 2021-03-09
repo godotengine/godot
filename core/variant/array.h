@@ -113,6 +113,10 @@ public:
 
 	bool typed_assign(const Array &p_other);
 	void set_typed(uint32_t p_type, const StringName &p_class_name, const Variant &p_script);
+	bool is_typed() const;
+	uint32_t get_typed_builtin() const;
+	StringName get_typed_class_name() const;
+	Variant get_typed_script() const;
 	Array(const Array &p_from);
 	Array();
 	~Array();
