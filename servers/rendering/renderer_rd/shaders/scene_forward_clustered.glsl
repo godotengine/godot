@@ -4,7 +4,7 @@
 
 VERSION_DEFINES
 
-#include "scene_forward_inc.glsl"
+#include "scene_forward_clustered_inc.glsl"
 
 /* INPUT ATTRIBS */
 
@@ -327,7 +327,7 @@ VERTEX_SHADER_CODE
 
 VERSION_DEFINES
 
-#include "scene_forward_inc.glsl"
+#include "scene_forward_clustered_inc.glsl"
 
 /* Varyings */
 

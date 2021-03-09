@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  renderer_scene_render_forward.h                                      */
+/*  renderer_scene_render_forward_clustered.h                            */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,16 +28,16 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef RENDERING_SERVER_SCENE_RENDER_FORWARD_H
-#define RENDERING_SERVER_SCENE_RENDER_FORWARD_H
+#ifndef RENDERING_SERVER_SCENE_RENDER_FORWARD_CLUSTERED_H
+#define RENDERING_SERVER_SCENE_RENDER_FORWARD_CLUSTERED_H
 
 #include "core/templates/paged_allocator.h"
 #include "servers/rendering/renderer_rd/pipeline_cache_rd.h"
 #include "servers/rendering/renderer_rd/renderer_scene_render_rd.h"
 #include "servers/rendering/renderer_rd/renderer_storage_rd.h"
-#include "servers/rendering/renderer_rd/shaders/scene_forward.glsl.gen.h"
+#include "servers/rendering/renderer_rd/shaders/scene_forward_clustered.glsl.gen.h"
 
-class RendererSceneRenderForward : public RendererSceneRenderRD {
+class RendererSceneRenderForwardClustered : public RendererSceneRenderRD {
 	enum {
 		SCENE_UNIFORM_SET = 0,
 		RENDER_PASS_UNIFORM_SET = 1,
@@ -79,7 +79,7 @@ class RendererSceneRenderForward : public RendererSceneRenderRD {
 	};
 
 	struct {
-		SceneForwardShaderRD scene_shader;
+		SceneForwardClusteredShaderRD scene_shader;
 		ShaderCompilerRD compiler;
 	} shader;
 
@@ -186,7 +186,7 @@ class RendererSceneRenderForward : public RendererSceneRenderRD {
 
 	RendererStorageRD::ShaderData *_create_shader_func();
 	static RendererStorageRD::ShaderData *_create_shader_funcs() {
-		return static_cast<RendererSceneRenderForward *>(singleton)->_create_shader_func();
+		return static_cast<RendererSceneRenderForwardClustered *>(singleton)->_create_shader_func();
 	}
 
 	struct MaterialData : public RendererStorageRD::MaterialData {
@@ -208,7 +208,7 @@ class RendererSceneRenderForward : public RendererSceneRenderRD {
 
 	RendererStorageRD::MaterialData *_create_material_func(ShaderData *p_shader);
 	static RendererStorageRD::MaterialData *_create_material_funcs(RendererStorageRD::ShaderData *p_shader) {
-		return static_cast<RendererSceneRenderForward *>(singleton)->_create_material_func(static_cast<ShaderData *>(p_shader));
+		return static_cast<RendererSceneRenderForwardClustered *>(singleton)->_create_material_func(static_cast<ShaderData *>(p_shader));
 	}
 
 	/* Framebuffer */
@@ -490,7 +490,7 @@ class RendererSceneRenderForward : public RendererSceneRenderRD {
 
 	} scene_state;
 
-	static RendererSceneRenderForward *singleton;
+	static RendererSceneRenderForwardClustered *singleton;
 
 	double time;
 	RID default_shader;
@@ -765,7 +765,7 @@ public:
 
 	virtual bool free(RID p_rid);
 
-	RendererSceneRenderForward(RendererStorageRD *p_storage);
-	~RendererSceneRenderForward();
+	RendererSceneRenderForwardClustered(RendererStorageRD *p_storage);
+	~RendererSceneRenderForwardClustered();
 };
-#endif // RASTERIZER_SCENE_HIGHEND_RD_H
+#endif // !RENDERING_SERVER_SCENE_RENDER_FORWARD_CLUSTERED_H
