@@ -47,7 +47,7 @@ uint64_t Thread::_thread_id_hash(const std::thread::id &p_t) {
 }
 
 Thread::ID Thread::main_thread_id = _thread_id_hash(std::this_thread::get_id());
-thread_local Thread::ID Thread::caller_id = _thread_id_hash(std::this_thread::get_id());
+thread_local Thread::ID Thread::caller_id = 0;
 
 void Thread::_set_platform_funcs(
 		Error (*p_set_name_func)(const String &),
@@ -110,6 +110,10 @@ Error Thread::set_name(const String &p_name) {
 	}
 
 	return ERR_UNAVAILABLE;
+}
+
+Thread::Thread() {
+	caller_id = _thread_id_hash(std::this_thread::get_id());
 }
 
 Thread::~Thread() {
