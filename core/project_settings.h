@@ -163,8 +163,11 @@ public:
 
 //not a macro any longer
 Variant _GLOBAL_DEF(const String &p_var, const Variant &p_default, bool p_restart_if_changed = false);
+Variant _GLOBAL_DEF_ALIAS(const String &p_var, const String &p_old_name, const Variant &p_default, bool p_restart_if_changed = false);
 #define GLOBAL_DEF(m_var, m_value) _GLOBAL_DEF(m_var, m_value)
 #define GLOBAL_DEF_RST(m_var, m_value) _GLOBAL_DEF(m_var, m_value, true)
+#define GLOBAL_DEF_ALIAS(m_var, m_old_name, m_value) _GLOBAL_DEF_ALIAS(m_var, m_old_name, m_value)
+#define GLOBAL_DEF_ALIAS_RST(m_var, m_old_name, m_value) _GLOBAL_DEF(m_var, m_old_name, m_value, true)
 #define GLOBAL_GET(m_var) ProjectSettings::get_singleton()->get(m_var)
 
 #endif

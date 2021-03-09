@@ -894,6 +894,21 @@ Error ProjectSettings::save_custom(const String &p_path, const CustomMap &p_cust
 	}
 }
 
+Variant _GLOBAL_DEF_ALIAS(const String &p_var, const String &p_old_name, const Variant &p_default, bool p_restart_if_changed) {
+	// if the new name setting isn't present, try the old one
+	if (!ProjectSettings::get_singleton()->has_setting(p_var)) {
+
+		if (ProjectSettings::get_singleton()->has_setting(p_old_name)) {
+
+			// if the old setting is present, get the value and set it in the new setting
+			Variant value = ProjectSettings::get_singleton()->get(p_old_name);
+			ProjectSettings::get_singleton()->set(p_var, value);
+		}
+	}
+
+	return _GLOBAL_DEF(p_var, p_default, p_restart_if_changed);
+}
+
 Variant _GLOBAL_DEF(const String &p_var, const Variant &p_default, bool p_restart_if_changed) {
 
 	Variant ret;
