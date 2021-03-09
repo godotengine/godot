@@ -8294,7 +8294,7 @@ int RasterizerStorageGLES3::get_captured_render_info(VS::RenderInfo p_info) {
 	}
 }
 
-int RasterizerStorageGLES3::get_render_info(VS::RenderInfo p_info) {
+uint64_t RasterizerStorageGLES3::get_render_info(VS::RenderInfo p_info) {
 
 	switch (p_info) {
 		case VS::INFO_OBJECTS_IN_FRAME:
