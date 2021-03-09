@@ -100,6 +100,15 @@ Ref<Texture2D> TextureProgressBar::get_progress_texture() const {
 	return progress;
 }
 
+void TextureProgressBar::set_progress_offset(Point2 p_offset) {
+	progress_offset = p_offset;
+	update();
+}
+
+Point2 TextureProgressBar::get_progress_offset() const {
+	return progress_offset;
+}
+
 void TextureProgressBar::set_tint_under(const Color &p_tint) {
 	tint_under = p_tint;
 	update();
@@ -360,6 +369,9 @@ void TextureProgressBar::draw_nine_patch_stretched(const Ref<Texture2D> &p_textu
 		}
 	}
 
+	if (p_texture == progress) {
+		dst_rect.position += progress_offset;
+	}
 	p_texture->get_rect_region(dst_rect, src_rect, dst_rect, src_rect);
 
 	RID ci = get_canvas_item();
@@ -403,20 +415,24 @@ void TextureProgressBar::_notification(int p_what) {
 					Size2 s = progress->get_size();
 					switch (mode) {
 						case FILL_LEFT_TO_RIGHT: {
-							Rect2 region = Rect2(Point2(), Size2(s.x * get_as_ratio(), s.y));
-							draw_texture_rect_region(progress, region, region, tint_progress);
+							Rect2 region = Rect2(progress_offset, Size2(s.x * get_as_ratio(), s.y));
+							Rect2 source = Rect2(Point2(), Size2(s.x * get_as_ratio(), s.y));
+							draw_texture_rect_region(progress, region, source, tint_progress);
 						} break;
 						case FILL_RIGHT_TO_LEFT: {
-							Rect2 region = Rect2(Point2(s.x - s.x * get_as_ratio(), 0), Size2(s.x * get_as_ratio(), s.y));
-							draw_texture_rect_region(progress, region, region, tint_progress);
+							Rect2 region = Rect2(progress_offset + Point2(s.x - s.x * get_as_ratio(), 0), Size2(s.x * get_as_ratio(), s.y));
+							Rect2 source = Rect2(Point2(s.x - s.x * get_as_ratio(), 0), Size2(s.x * get_as_ratio(), s.y));
+							draw_texture_rect_region(progress, region, source, tint_progress);
 						} break;
 						case FILL_TOP_TO_BOTTOM: {
-							Rect2 region = Rect2(Point2(), Size2(s.x, s.y * get_as_ratio()));
-							draw_texture_rect_region(progress, region, region, tint_progress);
+							Rect2 region = Rect2(progress_offset + Point2(), Size2(s.x, s.y * get_as_ratio()));
+							Rect2 source = Rect2(Point2(), Size2(s.x, s.y * get_as_ratio()));
+							draw_texture_rect_region(progress, region, source, tint_progress);
 						} break;
 						case FILL_BOTTOM_TO_TOP: {
-							Rect2 region = Rect2(Point2(0, s.y - s.y * get_as_ratio()), Size2(s.x, s.y * get_as_ratio()));
-							draw_texture_rect_region(progress, region, region, tint_progress);
+							Rect2 region = Rect2(progress_offset + Point2(0, s.y - s.y * get_as_ratio()), Size2(s.x, s.y * get_as_ratio()));
+							Rect2 source = Rect2(Point2(0, s.y - s.y * get_as_ratio()), Size2(s.x, s.y * get_as_ratio()));
+							draw_texture_rect_region(progress, region, source, tint_progress);
 						} break;
 						case FILL_CLOCKWISE:
 						case FILL_COUNTER_CLOCKWISE:
@@ -427,8 +443,9 @@ void TextureProgressBar::_notification(int p_what) {
 
 							float val = get_as_ratio() * rad_max_degrees / 360;
 							if (val == 1) {
-								Rect2 region = Rect2(Point2(), s);
-								draw_texture_rect(progress, region, false, tint_progress);
+								Rect2 region = Rect2(progress_offset, s);
+								Rect2 source = Rect2(Point2(), s);
+								draw_texture_rect_region(progress, region, source, tint_progress);
 							} else if (val != 0) {
 								Array pts;
 								float direction = mode == FILL_COUNTER_CLOCKWISE ? -1 : 1;
@@ -454,14 +471,14 @@ void TextureProgressBar::_notification(int p_what) {
 								Vector<Point2> uvs;
 								Vector<Point2> points;
 								uvs.push_back(get_relative_center());
-								points.push_back(Point2(s.x * get_relative_center().x, s.y * get_relative_center().y));
+								points.push_back(progress_offset + Point2(s.x * get_relative_center().x, s.y * get_relative_center().y));
 								for (int i = 0; i < pts.size(); i++) {
 									Point2 uv = unit_val_to_uv(pts[i]);
 									if (uvs.find(uv) >= 0) {
 										continue;
 									}
 									uvs.push_back(uv);
-									points.push_back(Point2(uv.x * s.x, uv.y * s.y));
+									points.push_back(progress_offset + Point2(uv.x * s.x, uv.y * s.y));
 								}
 								Vector<Color> colors;
 								colors.push_back(tint_progress);
@@ -484,17 +501,19 @@ void TextureProgressBar::_notification(int p_what) {
 							}
 						} break;
 						case FILL_BILINEAR_LEFT_AND_RIGHT: {
-							Rect2 region = Rect2(Point2(s.x / 2 - s.x * get_as_ratio() / 2, 0), Size2(s.x * get_as_ratio(), s.y));
-							draw_texture_rect_region(progress, region, region, tint_progress);
+							Rect2 region = Rect2(progress_offset + Point2(s.x / 2 - s.x * get_as_ratio() / 2, 0), Size2(s.x * get_as_ratio(), s.y));
+							Rect2 source = Rect2(Point2(s.x / 2 - s.x * get_as_ratio() / 2, 0), Size2(s.x * get_as_ratio(), s.y));
+							draw_texture_rect_region(progress, region, source, tint_progress);
 						} break;
 						case FILL_BILINEAR_TOP_AND_BOTTOM: {
-							Rect2 region = Rect2(Point2(0, s.y / 2 - s.y * get_as_ratio() / 2), Size2(s.x, s.y * get_as_ratio()));
-							draw_texture_rect_region(progress, region, region, tint_progress);
+							Rect2 region = Rect2(progress_offset + Point2(0, s.y / 2 - s.y * get_as_ratio() / 2), Size2(s.x, s.y * get_as_ratio()));
+							Rect2 source = Rect2(Point2(0, s.y / 2 - s.y * get_as_ratio() / 2), Size2(s.x, s.y * get_as_ratio()));
+							draw_texture_rect_region(progress, region, source, tint_progress);
 						} break;
 						case FILL_MODE_MAX:
 							break;
 						default:
-							draw_texture_rect_region(progress, Rect2(Point2(), Size2(s.x * get_as_ratio(), s.y)), Rect2(Point2(), Size2(s.x * get_as_ratio(), s.y)), tint_progress);
+							draw_texture_rect_region(progress, Rect2(progress_offset, Size2(s.x * get_as_ratio(), s.y)), Rect2(Point2(), Size2(s.x * get_as_ratio(), s.y)), tint_progress);
 					}
 				}
 				if (over.is_valid()) {
@@ -585,6 +604,9 @@ void TextureProgressBar::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_tint_over", "tint"), &TextureProgressBar::set_tint_over);
 	ClassDB::bind_method(D_METHOD("get_tint_over"), &TextureProgressBar::get_tint_over);
 
+	ClassDB::bind_method(D_METHOD("set_texture_progress_offset", "offset"), &TextureProgressBar::set_progress_offset);
+	ClassDB::bind_method(D_METHOD("get_texture_progress_offset"), &TextureProgressBar::get_progress_offset);
+
 	ClassDB::bind_method(D_METHOD("set_radial_initial_angle", "mode"), &TextureProgressBar::set_radial_initial_angle);
 	ClassDB::bind_method(D_METHOD("get_radial_initial_angle"), &TextureProgressBar::get_radial_initial_angle);
 
@@ -604,6 +626,7 @@ void TextureProgressBar::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "texture_under", PROPERTY_HINT_RESOURCE_TYPE, "Texture2D"), "set_under_texture", "get_under_texture");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "texture_over", PROPERTY_HINT_RESOURCE_TYPE, "Texture2D"), "set_over_texture", "get_over_texture");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "texture_progress", PROPERTY_HINT_RESOURCE_TYPE, "Texture2D"), "set_progress_texture", "get_progress_texture");
+	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "texture_progress_offset"), "set_texture_progress_offset", "get_texture_progress_offset");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "fill_mode", PROPERTY_HINT_ENUM, "Left to Right,Right to Left,Top to Bottom,Bottom to Top,Clockwise,Counter Clockwise,Bilinear (Left and Right),Bilinear (Top and Bottom),Clockwise and Counter Clockwise"), "set_fill_mode", "get_fill_mode");
 	ADD_GROUP("Tint", "tint_");
 	ADD_PROPERTY(PropertyInfo(Variant::COLOR, "tint_under"), "set_tint_under", "get_tint_under");
