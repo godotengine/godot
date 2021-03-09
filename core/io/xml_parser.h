@@ -83,23 +83,25 @@ private:
 			cur = nullptr;
 		}
 
-		bool valid() const { return first <= cur && cur <= last; }
+		bool valid() const { return cur && first <= cur && cur <= last; }
 
 		operator char *() const {
+			ERR_FAIL_NULL_V_MSG(cur, nullptr, "XML parser cursor not initialized.");
 			ERR_FAIL_COND_V(cur < first || cur > last, last);
 			return cur;
 		}
 
 		char operator*() const {
+			ERR_FAIL_NULL_V_MSG(cur, '\0', "XML parser cursor not initialized.");
 			ERR_FAIL_COND_V(cur < first || cur > last, '\0');
 			return *cur;
 		}
 
 		char *operator+(int offset) const {
+			ERR_FAIL_NULL_V_MSG(cur, nullptr, "XML parser cursor not initialized.");
 			ERR_FAIL_COND_V(cur + offset < first || cur + offset > last, last);
 			return cur + offset;
 		}
-
 		char *operator-(int offset) const { return operator+(-offset); }
 
 		void operator++() { cur += 1; }
