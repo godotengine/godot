@@ -98,6 +98,7 @@ public:
 	///< waits until thread is finished, and deallocates it.
 	void wait_to_finish();
 
+	Thread();
 	~Thread();
 #else
 	_FORCE_INLINE_ ID get_id() const { return 0; }
