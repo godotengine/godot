@@ -84,6 +84,7 @@ protected:
 	Point2 camera_screen_center;
 	void _update_process_mode();
 	void _update_scroll();
+	void _setup_viewport();
 
 	void _make_current(Object *p_which);
 	void _set_current(bool p_current);
