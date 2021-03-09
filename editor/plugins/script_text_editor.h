@@ -147,6 +147,7 @@ class ScriptTextEditor : public ScriptEditorBase {
 		DEBUG_GOTO_PREV_BREAKPOINT,
 		HELP_CONTEXTUAL,
 		LOOKUP_SYMBOL,
+		APPEARANCE_TOGGLE_WORD_WRAP,
 	};
 
 	void _enable_code_editor();

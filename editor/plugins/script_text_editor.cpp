@@ -1284,6 +1284,10 @@ void ScriptTextEditor::_edit_option(int p_op) {
 				_lookup_symbol(text, tx->get_caret_line(), tx->get_caret_column());
 			}
 		} break;
+		case APPEARANCE_TOGGLE_WORD_WRAP: {
+			bool word_wrap = EditorSettings::get_singleton()->get("text_editor/appearance/word_wrap");
+			EditorSettings::get_singleton()->set("text_editor/appearance/word_wrap", !word_wrap);
+		} break;
 	}
 }
 
@@ -1814,6 +1818,7 @@ void ScriptTextEditor::_enable_code_editor() {
 	edit_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("script_text_editor/auto_indent"), EDIT_AUTO_INDENT);
 	edit_menu->get_popup()->connect("id_pressed", callable_mp(this, &ScriptTextEditor::_edit_option));
 	edit_menu->get_popup()->add_separator();
+	edit_menu->get_popup()->add_shortcut(ED_SHORTCUT("script_editor/word_wrap", TTR("Toggle Word Wrap"), KeyModifierMask::CTRL | Key::E), APPEARANCE_TOGGLE_WORD_WRAP);
 
 	edit_menu->get_popup()->add_child(convert_case);
 	edit_menu->get_popup()->add_submenu_item(TTR("Convert Case"), "convert_case");
