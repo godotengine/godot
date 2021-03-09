@@ -956,6 +956,8 @@ static void _register_variant_builtin_methods() {
 	bind_method(String, c_unescape, sarray(), varray());
 	bind_method(String, json_escape, sarray(), varray());
 
+	bind_method(String, validate_node_name, sarray(), varray());
+
 	bind_method(String, is_valid_identifier, sarray(), varray());
 	bind_method(String, is_valid_integer, sarray(), varray());
 	bind_method(String, is_valid_float, sarray(), varray());

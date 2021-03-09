@@ -162,8 +162,9 @@ private:
 	Error _parse_nodes(Ref<GLTFState> state);
 	String _get_type_name(const GLTFType p_component);
 	String _get_accessor_type_name(const GLTFDocument::GLTFType p_type);
-	String _sanitize_scene_name(const String &name);
 	String _gen_unique_name(Ref<GLTFState> state, const String &p_name);
+	String _sanitize_animation_name(const String &name);
+	String _gen_unique_animation_name(Ref<GLTFState> state, const String &p_name);
 	String _sanitize_bone_name(const String &name);
 	String _gen_unique_bone_name(Ref<GLTFState> state,
 			const GLTFSkeletonIndex skel_i,

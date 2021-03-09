@@ -1318,6 +1318,20 @@ TEST_CASE("[String] humanize_size") {
 	CHECK(String::humanize_size(100523550) == "95.86 MiB");
 	CHECK(String::humanize_size(5345555000) == "4.97 GiB");
 }
+
+TEST_CASE("[String] validate_node_name") {
+	String numeric_only = "12345";
+	CHECK(numeric_only.validate_node_name() == "12345");
+
+	String name_with_spaces = "Name with spaces";
+	CHECK(name_with_spaces.validate_node_name() == "Name with spaces");
+
+	String name_with_kana = "Name with kana ゴドツ";
+	CHECK(name_with_kana.validate_node_name() == "Name with kana ゴドツ");
+
+	String name_with_invalid_chars = "Name with invalid characters :.@removed!";
+	CHECK(name_with_invalid_chars.validate_node_name() == "Name with invalid characters removed!");
+}
 } // namespace TestString
 
 #endif // TEST_STRING_H
