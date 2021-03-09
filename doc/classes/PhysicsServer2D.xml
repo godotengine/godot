@@ -58,7 +58,7 @@
 			<return type="RID">
 			</return>
 			<description>
-				Creates an [Area2D].
+				Creates an [Area2D]. After creating an [Area2D] with this method, assign it to a space using [method area_set_space] to use the created [Area2D] in the physics world.
 			</description>
 		</method>
 		<method name="area_get_canvas_instance_id" qualifiers="const">
