@@ -547,6 +547,22 @@ void Array::set_typed(uint32_t p_type, const StringName &p_class_name, const Var
 	_p->typed.where = "TypedArray";
 }
 
+bool Array::is_typed() const {
+	return _p->typed.type != Variant::NIL;
+}
+
+uint32_t Array::get_typed_builtin() const {
+	return _p->typed.type;
+}
+
+StringName Array::get_typed_class_name() const {
+	return _p->typed.class_name;
+}
+
+Variant Array::get_typed_script() const {
+	return _p->typed.script;
+}
+
 Array::Array(const Array &p_from) {
 	_p = nullptr;
 	_ref(p_from);
