@@ -1310,21 +1310,29 @@ bool GDScriptInstance::set(const StringName &p_name, const Variant &p_value) {
 					return true; //function exists, call was successful
 				}
 			} else {
-				if (!member->data_type.is_type(p_value)) {
-					// Try conversion
-					Callable::CallError ce;
-					const Variant *value = &p_value;
-					Variant converted;
-					Variant::construct(member->data_type.builtin_type, converted, &value, 1, ce);
-					if (ce.error == Callable::CallError::CALL_OK) {
-						members.write[member->index] = converted;
-						return true;
-					} else {
-						return false;
+				if (member->data_type.has_type) {
+					if (member->data_type.builtin_type == Variant::ARRAY && member->data_type.has_container_element_type()) {
+						// Typed array.
+						if (p_value.get_type() == Variant::ARRAY) {
+							return VariantInternal::get_array(&members.write[member->index])->typed_assign(p_value);
+						} else {
+							return false;
+						}
+					} else if (!member->data_type.is_type(p_value)) {
+						// Try conversion
+						Callable::CallError ce;
+						const Variant *value = &p_value;
+						Variant converted;
+						Variant::construct(member->data_type.builtin_type, converted, &value, 1, ce);
+						if (ce.error == Callable::CallError::CALL_OK) {
+							members.write[member->index] = converted;
+							return true;
+						} else {
+							return false;
+						}
 					}
-				} else {
-					members.write[member->index] = p_value;
 				}
+				members.write[member->index] = p_value;
 			}
 			return true;
 		}

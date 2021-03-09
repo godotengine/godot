@@ -322,6 +322,14 @@ void GDScriptFunction::disassemble(const Vector<String> &p_code_lines) const {
 
 				incr += 4;
 			} break;
+			case OPCODE_ASSIGN_TYPED_ARRAY: {
+				text += "assign typed array ";
+				text += DADDR(1);
+				text += " = ";
+				text += DADDR(2);
+
+				incr += 3;
+			} break;
 			case OPCODE_ASSIGN_TYPED_NATIVE: {
 				text += "assign typed native (";
 				text += DADDR(3);
@@ -413,6 +421,39 @@ void GDScriptFunction::disassemble(const Vector<String> &p_code_lines) const {
 			case OPCODE_CONSTRUCT_ARRAY: {
 				int argc = _code_ptr[ip + 1 + instr_var_args];
 				text += " make_array ";
+				text += DADDR(1 + argc);
+				text += " = [";
+
+				for (int i = 0; i < argc; i++) {
+					if (i > 0)
+						text += ", ";
+					text += DADDR(1 + i);
+				}
+
+				text += "]";
+
+				incr += 3 + argc;
+			} break;
+			case OPCODE_CONSTRUCT_TYPED_ARRAY: {
+				int argc = _code_ptr[ip + 1 + instr_var_args];
+
+				Ref<Script> script_type = get_constant(_code_ptr[ip + argc + 2]);
+				Variant::Type builtin_type = (Variant::Type)_code_ptr[ip + argc + 4];
+				StringName native_type = get_global_name(_code_ptr[ip + argc + 5]);
+
+				String type_name;
+				if (script_type.is_valid() && script_type->is_valid()) {
+					type_name = script_type->get_path();
+				} else if (native_type != StringName()) {
+					type_name = native_type;
+				} else {
+					type_name = Variant::get_type_name(builtin_type);
+				}
+
+				text += " make_typed_array (";
+				text += type_name;
+				text += ") ";
+
 				text += DADDR(1 + argc);
 				text += " = [";
 

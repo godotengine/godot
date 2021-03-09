@@ -43,7 +43,11 @@
 class GDScriptInstance;
 class GDScript;
 
-struct GDScriptDataType {
+class GDScriptDataType {
+private:
+	GDScriptDataType *container_element_type = nullptr;
+
+public:
 	enum Kind {
 		UNINITIALIZED,
 		BUILTIN,
@@ -71,7 +75,24 @@ struct GDScriptDataType {
 			case BUILTIN: {
 				Variant::Type var_type = p_variant.get_type();
 				bool valid = builtin_type == var_type;
-				if (!valid && p_allow_implicit_conversion) {
+				if (valid && builtin_type == Variant::ARRAY && has_container_element_type()) {
+					Array array = p_variant;
+					if (array.is_typed()) {
+						Variant::Type array_builtin_type = (Variant::Type)array.get_typed_builtin();
+						StringName array_native_type = array.get_typed_class_name();
+						Ref<Script> array_script_type_ref = array.get_typed_script();
+
+						if (array_script_type_ref.is_valid()) {
+							valid = (container_element_type->kind == SCRIPT || container_element_type->kind == GDSCRIPT) && container_element_type->script_type == array_script_type_ref.ptr();
+						} else if (array_native_type != StringName()) {
+							valid = container_element_type->kind == NATIVE && container_element_type->native_type == array_native_type;
+						} else {
+							valid = container_element_type->kind == BUILTIN && container_element_type->builtin_type == array_builtin_type;
+						}
+					} else {
+						valid = false;
+					}
+				} else if (!valid && p_allow_implicit_conversion) {
 					valid = Variant::can_convert_strict(var_type, builtin_type);
 				}
 				return valid;
@@ -153,7 +174,49 @@ struct GDScriptDataType {
 		return info;
 	}
 
-	GDScriptDataType() {}
+	void set_container_element_type(const GDScriptDataType &p_element_type) {
+		container_element_type = memnew(GDScriptDataType(p_element_type));
+	}
+
+	GDScriptDataType get_container_element_type() const {
+		ERR_FAIL_COND_V(container_element_type == nullptr, GDScriptDataType());
+		return *container_element_type;
+	}
+
+	bool has_container_element_type() const {
+		return container_element_type != nullptr;
+	}
+
+	void unset_container_element_type() {
+		if (container_element_type) {
+			memdelete(container_element_type);
+		}
+		container_element_type = nullptr;
+	}
+
+	GDScriptDataType() = default;
+
+	GDScriptDataType &operator=(const GDScriptDataType &p_other) {
+		kind = p_other.kind;
+		has_type = p_other.has_type;
+		builtin_type = p_other.builtin_type;
+		native_type = p_other.native_type;
+		script_type = p_other.script_type;
+		script_type_ref = p_other.script_type_ref;
+		unset_container_element_type();
+		if (p_other.has_container_element_type()) {
+			set_container_element_type(p_other.get_container_element_type());
+		}
+		return *this;
+	}
+
+	GDScriptDataType(const GDScriptDataType &p_other) {
+		*this = p_other;
+	}
+
+	~GDScriptDataType() {
+		unset_container_element_type();
+	}
 };
 
 class GDScriptFunction {
@@ -179,6 +242,7 @@ public:
 		OPCODE_ASSIGN_TRUE,
 		OPCODE_ASSIGN_FALSE,
 		OPCODE_ASSIGN_TYPED_BUILTIN,
+		OPCODE_ASSIGN_TYPED_ARRAY,
 		OPCODE_ASSIGN_TYPED_NATIVE,
 		OPCODE_ASSIGN_TYPED_SCRIPT,
 		OPCODE_CAST_TO_BUILTIN,
@@ -187,6 +251,7 @@ public:
 		OPCODE_CONSTRUCT, // Only for basic types!
 		OPCODE_CONSTRUCT_VALIDATED, // Only for basic types!
 		OPCODE_CONSTRUCT_ARRAY,
+		OPCODE_CONSTRUCT_TYPED_ARRAY,
 		OPCODE_CONSTRUCT_DICTIONARY,
 		OPCODE_CALL,
 		OPCODE_CALL_RETURN,
