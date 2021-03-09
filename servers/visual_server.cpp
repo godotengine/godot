@@ -2449,7 +2449,7 @@ VisualServer::VisualServer() {
 	ProjectSettings::get_singleton()->set_custom_property_info(sz_balance_render_tree, PropertyInfo(Variant::REAL, sz_balance_render_tree, PROPERTY_HINT_RANGE, "0.0,1.0,0.01"));
 
 	GLOBAL_DEF("rendering/2d/options/use_software_skinning", true);
-	GLOBAL_DEF("rendering/2d/options/ninepatch_mode", 0);
+	GLOBAL_DEF("rendering/2d/options/ninepatch_mode", 1);
 	ProjectSettings::get_singleton()->set_custom_property_info("rendering/2d/options/ninepatch_mode", PropertyInfo(Variant::INT, "rendering/2d/options/ninepatch_mode", PROPERTY_HINT_ENUM, "Default,Scaling"));
 
 	GLOBAL_DEF("rendering/batching/options/use_batching", true);
