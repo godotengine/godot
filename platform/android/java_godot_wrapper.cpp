@@ -94,6 +94,8 @@ jobject GodotJavaWrapper::get_member_object(const char *p_name, const char *p_cl
 		if (p_env == NULL)
 			p_env = get_jni_env();
 
+		ERR_FAIL_COND_V(p_env == nullptr, nullptr);
+
 		jfieldID fid = p_env->GetStaticFieldID(godot_class, p_name, p_class);
 		return p_env->GetStaticObjectField(godot_class, fid);
 	} else {
@@ -104,6 +106,8 @@ jobject GodotJavaWrapper::get_member_object(const char *p_name, const char *p_cl
 jobject GodotJavaWrapper::get_class_loader() {
 	if (_get_class_loader) {
 		JNIEnv *env = get_jni_env();
+		ERR_FAIL_COND_V(env == nullptr, nullptr);
+
 		return env->CallObjectMethod(activity, _get_class_loader);
 	} else {
 		return NULL;
@@ -121,6 +125,7 @@ void GodotJavaWrapper::on_video_init(JNIEnv *p_env) {
 	if (_on_video_init) {
 		if (p_env == NULL)
 			p_env = get_jni_env();
+		ERR_FAIL_COND(p_env == nullptr);
 
 		p_env->CallVoidMethod(godot_instance, _on_video_init);
 	}
@@ -131,6 +136,7 @@ void GodotJavaWrapper::on_godot_setup_completed(JNIEnv *p_env) {
 		if (p_env == NULL) {
 			p_env = get_jni_env();
 		}
+		ERR_FAIL_COND(p_env == nullptr);
 		p_env->CallVoidMethod(godot_instance, _on_godot_setup_completed);
 	}
 }
@@ -140,6 +146,7 @@ void GodotJavaWrapper::on_godot_main_loop_started(JNIEnv *p_env) {
 		if (p_env == NULL) {
 			p_env = get_jni_env();
 		}
+		ERR_FAIL_COND(p_env == nullptr);
 		p_env->CallVoidMethod(godot_instance, _on_godot_main_loop_started);
 	}
 }
@@ -148,6 +155,7 @@ void GodotJavaWrapper::restart(JNIEnv *p_env) {
 	if (_restart) {
 		if (p_env == NULL)
 			p_env = get_jni_env();
+		ERR_FAIL_COND(p_env == nullptr);
 
 		p_env->CallVoidMethod(godot_instance, _restart);
 	}
@@ -157,6 +165,7 @@ void GodotJavaWrapper::force_quit(JNIEnv *p_env) {
 	if (_finish) {
 		if (p_env == NULL)
 			p_env = get_jni_env();
+		ERR_FAIL_COND(p_env == nullptr);
 
 		p_env->CallVoidMethod(godot_instance, _finish);
 	}
@@ -165,6 +174,8 @@ void GodotJavaWrapper::force_quit(JNIEnv *p_env) {
 void GodotJavaWrapper::set_keep_screen_on(bool p_enabled) {
 	if (_set_keep_screen_on) {
 		JNIEnv *env = get_jni_env();
+		ERR_FAIL_COND(env == nullptr);
+
 		env->CallVoidMethod(godot_instance, _set_keep_screen_on, p_enabled);
 	}
 }
@@ -172,6 +183,8 @@ void GodotJavaWrapper::set_keep_screen_on(bool p_enabled) {
 void GodotJavaWrapper::alert(const String &p_message, const String &p_title) {
 	if (_alert) {
 		JNIEnv *env = get_jni_env();
+		ERR_FAIL_COND(env == nullptr);
+
 		jstring jStrMessage = env->NewStringUTF(p_message.utf8().get_data());
 		jstring jStrTitle = env->NewStringUTF(p_title.utf8().get_data());
 		env->CallVoidMethod(godot_instance, _alert, jStrMessage, jStrTitle);
@@ -180,6 +193,8 @@ void GodotJavaWrapper::alert(const String &p_message, const String &p_title) {
 
 int GodotJavaWrapper::get_gles_version_code() {
 	JNIEnv *env = get_jni_env();
+	ERR_FAIL_COND_V(env == nullptr, 0);
+
 	if (_get_GLES_version_code) {
 		return env->CallIntMethod(godot_instance, _get_GLES_version_code);
 	}
@@ -194,6 +209,8 @@ bool GodotJavaWrapper::has_get_clipboard() {
 String GodotJavaWrapper::get_clipboard() {
 	if (_get_clipboard) {
 		JNIEnv *env = get_jni_env();
+		ERR_FAIL_COND_V(env == nullptr, String());
+
 		jstring s = (jstring)env->CallObjectMethod(godot_instance, _get_clipboard);
 		return jstring_to_string(s, env);
 	} else {
@@ -204,6 +221,8 @@ String GodotJavaWrapper::get_clipboard() {
 String GodotJavaWrapper::get_input_fallback_mapping() {
 	if (_get_input_fallback_mapping) {
 		JNIEnv *env = get_jni_env();
+		ERR_FAIL_COND_V(env == nullptr, String());
+
 		jstring fallback_mapping = (jstring)env->CallObjectMethod(godot_instance, _get_input_fallback_mapping);
 		return jstring_to_string(fallback_mapping, env);
 	} else {
@@ -218,6 +237,8 @@ bool GodotJavaWrapper::has_set_clipboard() {
 void GodotJavaWrapper::set_clipboard(const String &p_text) {
 	if (_set_clipboard) {
 		JNIEnv *env = get_jni_env();
+		ERR_FAIL_COND(env == nullptr);
+
 		jstring jStr = env->NewStringUTF(p_text.utf8().get_data());
 		env->CallVoidMethod(godot_instance, _set_clipboard, jStr);
 	}
@@ -226,6 +247,8 @@ void GodotJavaWrapper::set_clipboard(const String &p_text) {
 bool GodotJavaWrapper::request_permission(const String &p_name) {
 	if (_request_permission) {
 		JNIEnv *env = get_jni_env();
+		ERR_FAIL_COND_V(env == nullptr, false);
+
 		jstring jStrName = env->NewStringUTF(p_name.utf8().get_data());
 		return env->CallBooleanMethod(godot_instance, _request_permission, jStrName);
 	} else {
@@ -236,6 +259,8 @@ bool GodotJavaWrapper::request_permission(const String &p_name) {
 bool GodotJavaWrapper::request_permissions() {
 	if (_request_permissions) {
 		JNIEnv *env = get_jni_env();
+		ERR_FAIL_COND_V(env == nullptr, false);
+
 		return env->CallBooleanMethod(godot_instance, _request_permissions);
 	} else {
 		return false;
@@ -246,6 +271,8 @@ Vector<String> GodotJavaWrapper::get_granted_permissions() const {
 	Vector<String> permissions_list;
 	if (_get_granted_permissions) {
 		JNIEnv *env = get_jni_env();
+		ERR_FAIL_COND_V(env == nullptr, permissions_list);
+
 		jobject permissions_object = env->CallObjectMethod(godot_instance, _get_granted_permissions);
 		jobjectArray *arr = reinterpret_cast<jobjectArray *>(&permissions_object);
 
@@ -264,6 +291,8 @@ Vector<String> GodotJavaWrapper::get_granted_permissions() const {
 void GodotJavaWrapper::init_input_devices() {
 	if (_init_input_devices) {
 		JNIEnv *env = get_jni_env();
+		ERR_FAIL_COND(env == nullptr);
+
 		env->CallVoidMethod(godot_instance, _init_input_devices);
 	}
 }
@@ -271,6 +300,8 @@ void GodotJavaWrapper::init_input_devices() {
 jobject GodotJavaWrapper::get_surface() {
 	if (_get_surface) {
 		JNIEnv *env = get_jni_env();
+		ERR_FAIL_COND_V(env == nullptr, nullptr);
+
 		return env->CallObjectMethod(godot_instance, _get_surface);
 	} else {
 		return NULL;
@@ -280,6 +311,8 @@ jobject GodotJavaWrapper::get_surface() {
 bool GodotJavaWrapper::is_activity_resumed() {
 	if (_is_activity_resumed) {
 		JNIEnv *env = get_jni_env();
+		ERR_FAIL_COND_V(env == nullptr, false);
+
 		return env->CallBooleanMethod(godot_instance, _is_activity_resumed);
 	} else {
 		return false;
@@ -289,6 +322,8 @@ bool GodotJavaWrapper::is_activity_resumed() {
 void GodotJavaWrapper::vibrate(int p_duration_ms) {
 	if (_vibrate) {
 		JNIEnv *env = get_jni_env();
+		ERR_FAIL_COND(env == nullptr);
+
 		env->CallVoidMethod(godot_instance, _vibrate, p_duration_ms);
 	}
 }
