@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  renderer_scene_render_forward.cpp                                    */
+/*  renderer_scene_render_forward_clustered.cpp                          */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,13 +28,13 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#include "renderer_scene_render_forward.h"
+#include "renderer_scene_render_forward_clustered.h"
 #include "core/config/project_settings.h"
 #include "servers/rendering/rendering_device.h"
 #include "servers/rendering/rendering_server_default.h"
 
 /* SCENE SHADER */
-void RendererSceneRenderForward::ShaderData::set_code(const String &p_code) {
+void RendererSceneRenderForwardClustered::ShaderData::set_code(const String &p_code) {
 	//compile
 
 	code = p_code;
@@ -123,7 +123,7 @@ void RendererSceneRenderForward::ShaderData::set_code(const String &p_code) {
 
 	actions.uniforms = &uniforms;
 
-	RendererSceneRenderForward *scene_singleton = (RendererSceneRenderForward *)RendererSceneRenderForward::singleton;
+	RendererSceneRenderForwardClustered *scene_singleton = (RendererSceneRenderForwardClustered *)RendererSceneRenderForwardClustered::singleton;
 
 	Error err = scene_singleton->shader.compiler.compile(RS::SHADER_SPATIAL, code, &actions, path, gen_code);
 
@@ -257,7 +257,7 @@ void RendererSceneRenderForward::ShaderData::set_code(const String &p_code) {
 			RD::RenderPrimitive primitive_rd = uses_point_size ? RD::RENDER_PRIMITIVE_POINTS : primitive_rd_table[j];
 
 			for (int k = 0; k < SHADER_VERSION_MAX; k++) {
-				if (!static_cast<RendererSceneRenderForward *>(singleton)->shader.scene_shader.is_variant_enabled(k)) {
+				if (!static_cast<RendererSceneRenderForwardClustered *>(singleton)->shader.scene_shader.is_variant_enabled(k)) {
 					continue;
 				}
 				RD::PipelineRasterizationState raster_state;
@@ -324,7 +324,7 @@ void RendererSceneRenderForward::ShaderData::set_code(const String &p_code) {
 	valid = true;
 }
 
-void RendererSceneRenderForward::ShaderData::set_default_texture_param(const StringName &p_name, RID p_texture) {
+void RendererSceneRenderForwardClustered::ShaderData::set_default_texture_param(const StringName &p_name, RID p_texture) {
 	if (!p_texture.is_valid()) {
 		default_texture_params.erase(p_name);
 	} else {
@@ -332,7 +332,7 @@ void RendererSceneRenderForward::ShaderData::set_default_texture_param(const Str
 	}
 }
 
-void RendererSceneRenderForward::ShaderData::get_param_list(List<PropertyInfo> *p_param_list) const {
+void RendererSceneRenderForwardClustered::ShaderData::get_param_list(List<PropertyInfo> *p_param_list) const {
 	Map<int, StringName> order;
 
 	for (Map<StringName, ShaderLanguage::ShaderNode::Uniform>::Element *E = uniforms.front(); E; E = E->next()) {
@@ -354,7 +354,7 @@ void RendererSceneRenderForward::ShaderData::get_param_list(List<PropertyInfo> *
 	}
 }
 
-void RendererSceneRenderForward::ShaderData::get_instance_param_list(List<RendererStorage::InstanceShaderParam> *p_param_list) const {
+void RendererSceneRenderForwardClustered::ShaderData::get_instance_param_list(List<RendererStorage::InstanceShaderParam> *p_param_list) const {
 	for (Map<StringName, ShaderLanguage::ShaderNode::Uniform>::Element *E = uniforms.front(); E; E = E->next()) {
 		if (E->get().scope != ShaderLanguage::ShaderNode::Uniform::SCOPE_INSTANCE) {
 			continue;
@@ -369,7 +369,7 @@ void RendererSceneRenderForward::ShaderData::get_instance_param_list(List<Render
 	}
 }
 
-bool RendererSceneRenderForward::ShaderData::is_param_texture(const StringName &p_param) const {
+bool RendererSceneRenderForwardClustered::ShaderData::is_param_texture(const StringName &p_param) const {
 	if (!uniforms.has(p_param)) {
 		return false;
 	}
@@ -377,15 +377,15 @@ bool RendererSceneRenderForward::ShaderData::is_param_texture(const StringName &
 	return uniforms[p_param].texture_order >= 0;
 }
 
-bool RendererSceneRenderForward::ShaderData::is_animated() const {
+bool RendererSceneRenderForwardClustered::ShaderData::is_animated() const {
 	return false;
 }
 
-bool RendererSceneRenderForward::ShaderData::casts_shadows() const {
+bool RendererSceneRenderForwardClustered::ShaderData::casts_shadows() const {
 	return false;
 }
 
-Variant RendererSceneRenderForward::ShaderData::get_default_parameter(const StringName &p_parameter) const {
+Variant RendererSceneRenderForwardClustered::ShaderData::get_default_parameter(const StringName &p_parameter) const {
 	if (uniforms.has(p_parameter)) {
 		ShaderLanguage::ShaderNode::Uniform uniform = uniforms[p_parameter];
 		Vector<ShaderLanguage::ConstantNode::Value> default_value = uniform.default_value;
@@ -394,19 +394,19 @@ Variant RendererSceneRenderForward::ShaderData::get_default_parameter(const Stri
 	return Variant();
 }
 
-RS::ShaderNativeSourceCode RendererSceneRenderForward::ShaderData::get_native_source_code() const {
-	RendererSceneRenderForward *scene_singleton = (RendererSceneRenderForward *)RendererSceneRenderForward::singleton;
+RS::ShaderNativeSourceCode RendererSceneRenderForwardClustered::ShaderData::get_native_source_code() const {
+	RendererSceneRenderForwardClustered *scene_singleton = (RendererSceneRenderForwardClustered *)RendererSceneRenderForwardClustered::singleton;
 
 	return scene_singleton->shader.scene_shader.version_get_native_source_code(version);
 }
 
-RendererSceneRenderForward::ShaderData::ShaderData() {
+RendererSceneRenderForwardClustered::ShaderData::ShaderData() {
 	valid = false;
 	uses_screen_texture = false;
 }
 
-RendererSceneRenderForward::ShaderData::~ShaderData() {
-	RendererSceneRenderForward *scene_singleton = (RendererSceneRenderForward *)RendererSceneRenderForward::singleton;
+RendererSceneRenderForwardClustered::ShaderData::~ShaderData() {
+	RendererSceneRenderForwardClustered *scene_singleton = (RendererSceneRenderForwardClustered *)RendererSceneRenderForwardClustered::singleton;
 	ERR_FAIL_COND(!scene_singleton);
 	//pipeline variants will clear themselves if shader is gone
 	if (version.is_valid()) {
@@ -414,21 +414,21 @@ RendererSceneRenderForward::ShaderData::~ShaderData() {
 	}
 }
 
-RendererStorageRD::ShaderData *RendererSceneRenderForward::_create_shader_func() {
+RendererStorageRD::ShaderData *RendererSceneRenderForwardClustered::_create_shader_func() {
 	ShaderData *shader_data = memnew(ShaderData);
 	return shader_data;
 }
 
-void RendererSceneRenderForward::MaterialData::set_render_priority(int p_priority) {
+void RendererSceneRenderForwardClustered::MaterialData::set_render_priority(int p_priority) {
 	priority = p_priority - RS::MATERIAL_RENDER_PRIORITY_MIN; //8 bits
 }
 
-void RendererSceneRenderForward::MaterialData::set_next_pass(RID p_pass) {
+void RendererSceneRenderForwardClustered::MaterialData::set_next_pass(RID p_pass) {
 	next_pass = p_pass;
 }
 
-void RendererSceneRenderForward::MaterialData::update_parameters(const Map<StringName, Variant> &p_parameters, bool p_uniform_dirty, bool p_textures_dirty) {
-	RendererSceneRenderForward *scene_singleton = (RendererSceneRenderForward *)RendererSceneRenderForward::singleton;
+void RendererSceneRenderForwardClustered::MaterialData::update_parameters(const Map<StringName, Variant> &p_parameters, bool p_uniform_dirty, bool p_textures_dirty) {
+	RendererSceneRenderForwardClustered *scene_singleton = (RendererSceneRenderForwardClustered *)RendererSceneRenderForwardClustered::singleton;
 
 	if ((uint32_t)ubo_data.size() != shader_data->ubo_size) {
 		p_uniform_dirty = true;
@@ -507,7 +507,7 @@ void RendererSceneRenderForward::MaterialData::update_parameters(const Map<Strin
 	uniform_set = RD::get_singleton()->uniform_set_create(uniforms, scene_singleton->shader.scene_shader.version_get_shader(shader_data->version, 0), MATERIAL_UNIFORM_SET);
 }
 
-RendererSceneRenderForward::MaterialData::~MaterialData() {
+RendererSceneRenderForwardClustered::MaterialData::~MaterialData() {
 	if (uniform_set.is_valid() && RD::get_singleton()->uniform_set_is_valid(uniform_set)) {
 		RD::get_singleton()->free(uniform_set);
 	}
@@ -517,7 +517,7 @@ RendererSceneRenderForward::MaterialData::~MaterialData() {
 	}
 }
 
-RendererStorageRD::MaterialData *RendererSceneRenderForward::_create_material_func(ShaderData *p_shader) {
+RendererStorageRD::MaterialData *RendererSceneRenderForwardClustered::_create_material_func(ShaderData *p_shader) {
 	MaterialData *material_data = memnew(MaterialData);
 	material_data->shader_data = p_shader;
 	material_data->last_frame = false;
@@ -525,11 +525,11 @@ RendererStorageRD::MaterialData *RendererSceneRenderForward::_create_material_fu
 	return material_data;
 }
 
-RendererSceneRenderForward::RenderBufferDataForward::~RenderBufferDataForward() {
+RendererSceneRenderForwardClustered::RenderBufferDataForward::~RenderBufferDataForward() {
 	clear();
 }
 
-void RendererSceneRenderForward::RenderBufferDataForward::ensure_specular() {
+void RendererSceneRenderForwardClustered::RenderBufferDataForward::ensure_specular() {
 	if (!specular.is_valid()) {
 		RD::TextureFormat tf;
 		tf.format = RD::DATA_FORMAT_R16G16B16A16_SFLOAT;
@@ -583,7 +583,7 @@ void RendererSceneRenderForward::RenderBufferDataForward::ensure_specular() {
 	}
 }
 
-void RendererSceneRenderForward::RenderBufferDataForward::ensure_giprobe() {
+void RendererSceneRenderForwardClustered::RenderBufferDataForward::ensure_giprobe() {
 	if (!giprobe_buffer.is_valid()) {
 		RD::TextureFormat tf;
 		tf.format = RD::DATA_FORMAT_R8G8_UINT;
@@ -619,7 +619,7 @@ void RendererSceneRenderForward::RenderBufferDataForward::ensure_giprobe() {
 	}
 }
 
-void RendererSceneRenderForward::RenderBufferDataForward::clear() {
+void RendererSceneRenderForwardClustered::RenderBufferDataForward::clear() {
 	if (giprobe_buffer != RID()) {
 		RD::get_singleton()->free(giprobe_buffer);
 		giprobe_buffer = RID();
@@ -673,7 +673,7 @@ void RendererSceneRenderForward::RenderBufferDataForward::clear() {
 	}
 }
 
-void RendererSceneRenderForward::RenderBufferDataForward::configure(RID p_color_buffer, RID p_depth_buffer, int p_width, int p_height, RS::ViewportMSAA p_msaa) {
+void RendererSceneRenderForwardClustered::RenderBufferDataForward::configure(RID p_color_buffer, RID p_depth_buffer, int p_width, int p_height, RS::ViewportMSAA p_msaa) {
 	clear();
 
 	msaa = p_msaa;
@@ -740,7 +740,7 @@ void RendererSceneRenderForward::RenderBufferDataForward::configure(RID p_color_
 	}
 }
 
-void RendererSceneRenderForward::_allocate_normal_roughness_texture(RenderBufferDataForward *rb) {
+void RendererSceneRenderForwardClustered::_allocate_normal_roughness_texture(RenderBufferDataForward *rb) {
 	if (rb->normal_roughness_buffer.is_valid()) {
 		return;
 	}
@@ -778,11 +778,11 @@ void RendererSceneRenderForward::_allocate_normal_roughness_texture(RenderBuffer
 	_render_buffers_clear_uniform_set(rb);
 }
 
-RendererSceneRenderRD::RenderBufferData *RendererSceneRenderForward::_create_render_buffer_data() {
+RendererSceneRenderRD::RenderBufferData *RendererSceneRenderForwardClustered::_create_render_buffer_data() {
 	return memnew(RenderBufferDataForward);
 }
 
-bool RendererSceneRenderForward::free(RID p_rid) {
+bool RendererSceneRenderForwardClustered::free(RID p_rid) {
 	if (RendererSceneRenderRD::free(p_rid)) {
 		return true;
 	}
@@ -791,8 +791,8 @@ bool RendererSceneRenderForward::free(RID p_rid) {
 
 /// RENDERING ///
 
-template <RendererSceneRenderForward::PassMode p_pass_mode>
-void RendererSceneRenderForward::_render_list_template(RenderingDevice::DrawListID p_draw_list, RenderingDevice::FramebufferFormatID p_framebuffer_Format, RenderListParameters *p_params, uint32_t p_from_element, uint32_t p_to_element) {
+template <RendererSceneRenderForwardClustered::PassMode p_pass_mode>
+void RendererSceneRenderForwardClustered::_render_list_template(RenderingDevice::DrawListID p_draw_list, RenderingDevice::FramebufferFormatID p_framebuffer_Format, RenderListParameters *p_params, uint32_t p_from_element, uint32_t p_to_element) {
 	RD::DrawListID draw_list = p_draw_list;
 	RD::FramebufferFormatID framebuffer_format = p_framebuffer_Format;
 
@@ -961,7 +961,7 @@ void RendererSceneRenderForward::_render_list_template(RenderingDevice::DrawList
 	}
 }
 
-void RendererSceneRenderForward::_render_list(RenderingDevice::DrawListID p_draw_list, RenderingDevice::FramebufferFormatID p_framebuffer_Format, RenderListParameters *p_params, uint32_t p_from_element, uint32_t p_to_element) {
+void RendererSceneRenderForwardClustered::_render_list(RenderingDevice::DrawListID p_draw_list, RenderingDevice::FramebufferFormatID p_framebuffer_Format, RenderListParameters *p_params, uint32_t p_from_element, uint32_t p_to_element) {
 	//use template for faster performance (pass mode comparisons are inlined)
 
 	switch (p_params->pass_mode) {
@@ -998,7 +998,7 @@ void RendererSceneRenderForward::_render_list(RenderingDevice::DrawListID p_draw
 	}
 }
 
-void RendererSceneRenderForward::_render_list_thread_function(uint32_t p_thread, RenderListParameters *p_params) {
+void RendererSceneRenderForwardClustered::_render_list_thread_function(uint32_t p_thread, RenderListParameters *p_params) {
 	uint32_t render_total = p_params->element_count;
 	uint32_t total_threads = RendererThreadPool::singleton->thread_work_pool.get_thread_count();
 	uint32_t render_from = p_thread * render_total / total_threads;
@@ -1006,7 +1006,7 @@ void RendererSceneRenderForward::_render_list_thread_function(uint32_t p_thread,
 	_render_list(thread_draw_lists[p_thread], p_params->framebuffer_format, p_params, render_from, render_to);
 }
 
-void RendererSceneRenderForward::_render_list_with_threads(RenderListParameters *p_params, RID p_framebuffer, RD::InitialAction p_initial_color_action, RD::FinalAction p_final_color_action, RD::InitialAction p_initial_depth_action, RD::FinalAction p_final_depth_action, const Vector<Color> &p_clear_color_values, float p_clear_depth, uint32_t p_clear_stencil, const Rect2 &p_region, const Vector<RID> &p_storage_textures) {
+void RendererSceneRenderForwardClustered::_render_list_with_threads(RenderListParameters *p_params, RID p_framebuffer, RD::InitialAction p_initial_color_action, RD::FinalAction p_final_color_action, RD::InitialAction p_initial_depth_action, RD::FinalAction p_final_depth_action, const Vector<Color> &p_clear_color_values, float p_clear_depth, uint32_t p_clear_stencil, const Rect2 &p_region, const Vector<RID> &p_storage_textures) {
 	RD::FramebufferFormatID fb_format = RD::get_singleton()->framebuffer_get_format(p_framebuffer);
 	p_params->framebuffer_format = fb_format;
 
@@ -1014,7 +1014,7 @@ void RendererSceneRenderForward::_render_list_with_threads(RenderListParameters 
 		//multi threaded
 		thread_draw_lists.resize(RendererThreadPool::singleton->thread_work_pool.get_thread_count());
 		RD::get_singleton()->draw_list_begin_split(p_framebuffer, thread_draw_lists.size(), thread_draw_lists.ptr(), p_initial_color_action, p_final_color_action, p_initial_depth_action, p_final_depth_action, p_clear_color_values, p_clear_depth, p_clear_stencil, p_region, p_storage_textures);
-		RendererThreadPool::singleton->thread_work_pool.do_work(thread_draw_lists.size(), this, &RendererSceneRenderForward::_render_list_thread_function, p_params);
+		RendererThreadPool::singleton->thread_work_pool.do_work(thread_draw_lists.size(), this, &RendererSceneRenderForwardClustered::_render_list_thread_function, p_params);
 		RD::get_singleton()->draw_list_end(p_params->barrier);
 	} else {
 		//single threaded
@@ -1024,7 +1024,7 @@ void RendererSceneRenderForward::_render_list_with_threads(RenderListParameters 
 	}
 }
 
-void RendererSceneRenderForward::_setup_environment(RID p_environment, RID p_render_buffers, const CameraMatrix &p_cam_projection, const Transform &p_cam_transform, RID p_reflection_probe, bool p_no_fog, const Size2i &p_screen_size, uint32_t p_cluster_size, uint32_t p_max_cluster_elements, RID p_shadow_atlas, bool p_flip_y, const Color &p_default_bg_color, float p_znear, float p_zfar, bool p_opaque_render_buffers, bool p_pancake_shadows, int p_index) {
+void RendererSceneRenderForwardClustered::_setup_environment(RID p_environment, RID p_render_buffers, const CameraMatrix &p_cam_projection, const Transform &p_cam_transform, RID p_reflection_probe, bool p_no_fog, const Size2i &p_screen_size, uint32_t p_cluster_size, uint32_t p_max_cluster_elements, RID p_shadow_atlas, bool p_flip_y, const Color &p_default_bg_color, float p_znear, float p_zfar, bool p_opaque_render_buffers, bool p_pancake_shadows, int p_index) {
 	//CameraMatrix projection = p_cam_projection;
 	//projection.flip_y(); // Vulkan and modern APIs use Y-Down
 	CameraMatrix correction;
@@ -1274,7 +1274,7 @@ void RendererSceneRenderForward::_setup_environment(RID p_environment, RID p_ren
 	RD::get_singleton()->buffer_update(scene_state.uniform_buffers[p_index], 0, sizeof(SceneState::UBO), &scene_state.ubo, RD::BARRIER_MASK_RASTER);
 }
 
-void RendererSceneRenderForward::_update_instance_data_buffer(RenderListType p_render_list) {
+void RendererSceneRenderForwardClustered::_update_instance_data_buffer(RenderListType p_render_list) {
 	if (scene_state.instance_data[p_render_list].size() > 0) {
 		if (scene_state.instance_buffer[p_render_list] == RID() || scene_state.instance_buffer_size[p_render_list] < scene_state.instance_data[p_render_list].size()) {
 			if (scene_state.instance_buffer[p_render_list] != RID()) {
@@ -1287,7 +1287,7 @@ void RendererSceneRenderForward::_update_instance_data_buffer(RenderListType p_r
 		RD::get_singleton()->buffer_update(scene_state.instance_buffer[p_render_list], 0, sizeof(SceneState::InstanceData) * scene_state.instance_data[p_render_list].size(), scene_state.instance_data[p_render_list].ptr(), RD::BARRIER_MASK_RASTER);
 	}
 }
-void RendererSceneRenderForward::_fill_instance_data(RenderListType p_render_list, uint32_t p_offset, int32_t p_max_elements, bool p_update_buffer) {
+void RendererSceneRenderForwardClustered::_fill_instance_data(RenderListType p_render_list, uint32_t p_offset, int32_t p_max_elements, bool p_update_buffer) {
 	RenderList *rl = &render_list[p_render_list];
 	uint32_t element_total = p_max_elements >= 0 ? uint32_t(p_max_elements) : rl->elements.size();
 
@@ -1355,7 +1355,7 @@ void RendererSceneRenderForward::_fill_instance_data(RenderListType p_render_lis
 	}
 }
 
-void RendererSceneRenderForward::_fill_render_list(RenderListType p_render_list, const PagedArray<GeometryInstance *> &p_instances, PassMode p_pass_mode, const CameraMatrix &p_cam_projection, const Transform &p_cam_transform, bool p_using_sdfgi, bool p_using_opaque_gi, const Plane &p_lod_plane, float p_lod_distance_multiplier, float p_screen_lod_threshold, bool p_append) {
+void RendererSceneRenderForwardClustered::_fill_render_list(RenderListType p_render_list, const PagedArray<GeometryInstance *> &p_instances, PassMode p_pass_mode, const CameraMatrix &p_cam_projection, const Transform &p_cam_transform, bool p_using_sdfgi, bool p_using_opaque_gi, const Plane &p_lod_plane, float p_lod_distance_multiplier, float p_screen_lod_threshold, bool p_append) {
 	if (p_render_list == RENDER_LIST_OPAQUE) {
 		scene_state.used_sss = false;
 		scene_state.used_screen_texture = false;
@@ -1549,14 +1549,14 @@ void RendererSceneRenderForward::_fill_render_list(RenderListType p_render_list,
 	}
 }
 
-void RendererSceneRenderForward::_setup_giprobes(const PagedArray<RID> &p_giprobes) {
+void RendererSceneRenderForwardClustered::_setup_giprobes(const PagedArray<RID> &p_giprobes) {
 	scene_state.giprobes_used = MIN(p_giprobes.size(), uint32_t(MAX_GI_PROBES));
 	for (uint32_t i = 0; i < scene_state.giprobes_used; i++) {
 		scene_state.giprobe_ids[i] = p_giprobes[i];
 	}
 }
 
-void RendererSceneRenderForward::_setup_lightmaps(const PagedArray<RID> &p_lightmaps, const Transform &p_cam_transform) {
+void RendererSceneRenderForwardClustered::_setup_lightmaps(const PagedArray<RID> &p_lightmaps, const Transform &p_cam_transform) {
 	scene_state.lightmaps_used = 0;
 	for (int i = 0; i < (int)p_lightmaps.size(); i++) {
 		if (i >= (int)scene_state.max_lightmaps) {
@@ -1578,7 +1578,7 @@ void RendererSceneRenderForward::_setup_lightmaps(const PagedArray<RID> &p_light
 	}
 }
 
-void RendererSceneRenderForward::_render_scene(RID p_render_buffer, const Transform &p_cam_transform, const CameraMatrix &p_cam_projection, bool p_cam_ortogonal, const PagedArray<GeometryInstance *> &p_instances, const PagedArray<RID> &p_gi_probes, const PagedArray<RID> &p_lightmaps, RID p_environment, RID p_cluster_buffer, uint32_t p_cluster_size, uint32_t p_max_cluster_elements, RID p_camera_effects, RID p_shadow_atlas, RID p_reflection_atlas, RID p_reflection_probe, int p_reflection_probe_pass, const Color &p_default_bg_color, float p_screen_lod_threshold) {
+void RendererSceneRenderForwardClustered::_render_scene(RID p_render_buffer, const Transform &p_cam_transform, const CameraMatrix &p_cam_projection, bool p_cam_ortogonal, const PagedArray<GeometryInstance *> &p_instances, const PagedArray<RID> &p_gi_probes, const PagedArray<RID> &p_lightmaps, RID p_environment, RID p_cluster_buffer, uint32_t p_cluster_size, uint32_t p_max_cluster_elements, RID p_camera_effects, RID p_shadow_atlas, RID p_reflection_atlas, RID p_reflection_probe, int p_reflection_probe_pass, const Color &p_default_bg_color, float p_screen_lod_threshold) {
 	RenderBufferDataForward *render_buffer = nullptr;
 	if (p_render_buffer.is_valid()) {
 		render_buffer = (RenderBufferDataForward *)render_buffers_get_data(p_render_buffer);
@@ -1981,7 +1981,7 @@ void RendererSceneRenderForward::_render_scene(RID p_render_buffer, const Transf
 	RD::get_singleton()->draw_command_end_label();
 }
 
-void RendererSceneRenderForward::_render_shadow_begin() {
+void RendererSceneRenderForwardClustered::_render_shadow_begin() {
 	scene_state.shadow_passes.clear();
 	RD::get_singleton()->draw_command_begin_label("Shadow Setup");
 	_update_render_base_uniform_set();
@@ -1989,7 +1989,7 @@ void RendererSceneRenderForward::_render_shadow_begin() {
 	render_list[RENDER_LIST_SECONDARY].clear();
 	scene_state.instance_data[RENDER_LIST_SECONDARY].clear();
 }
-void RendererSceneRenderForward::_render_shadow_append(RID p_framebuffer, const PagedArray<GeometryInstance *> &p_instances, const CameraMatrix &p_projection, const Transform &p_transform, float p_zfar, float p_bias, float p_normal_bias, bool p_use_dp, bool p_use_dp_flip, bool p_use_pancake, const Plane &p_camera_plane, float p_lod_distance_multiplier, float p_screen_lod_threshold, const Rect2i &p_rect, bool p_flip_y, bool p_clear_region, bool p_begin, bool p_end) {
+void RendererSceneRenderForwardClustered::_render_shadow_append(RID p_framebuffer, const PagedArray<GeometryInstance *> &p_instances, const CameraMatrix &p_projection, const Transform &p_transform, float p_zfar, float p_bias, float p_normal_bias, bool p_use_dp, bool p_use_dp_flip, bool p_use_pancake, const Plane &p_camera_plane, float p_lod_distance_multiplier, float p_screen_lod_threshold, const Rect2i &p_rect, bool p_flip_y, bool p_clear_region, bool p_begin, bool p_end) {
 	uint32_t shadow_pass_index = scene_state.shadow_passes.size();
 
 	SceneState::ShadowPass shadow_pass;
@@ -2036,7 +2036,7 @@ void RendererSceneRenderForward::_render_shadow_append(RID p_framebuffer, const 
 	}
 }
 
-void RendererSceneRenderForward::_render_shadow_process() {
+void RendererSceneRenderForwardClustered::_render_shadow_process() {
 	_update_instance_data_buffer(RENDER_LIST_SECONDARY);
 	//render shadows one after the other, so this can be done un-barriered and the driver can optimize (as well as allow us to run compute at the same time)
 
@@ -2048,7 +2048,7 @@ void RendererSceneRenderForward::_render_shadow_process() {
 
 	RD::get_singleton()->draw_command_end_label();
 }
-void RendererSceneRenderForward::_render_shadow_end(uint32_t p_barrier) {
+void RendererSceneRenderForwardClustered::_render_shadow_end(uint32_t p_barrier) {
 	RD::get_singleton()->draw_command_begin_label("Shadow Render");
 
 	for (uint32_t i = 0; i < scene_state.shadow_passes.size(); i++) {
@@ -2063,7 +2063,7 @@ void RendererSceneRenderForward::_render_shadow_end(uint32_t p_barrier) {
 	RD::get_singleton()->draw_command_end_label();
 }
 
-void RendererSceneRenderForward::_render_particle_collider_heightfield(RID p_fb, const Transform &p_cam_transform, const CameraMatrix &p_cam_projection, const PagedArray<GeometryInstance *> &p_instances) {
+void RendererSceneRenderForwardClustered::_render_particle_collider_heightfield(RID p_fb, const Transform &p_cam_transform, const CameraMatrix &p_cam_projection, const PagedArray<GeometryInstance *> &p_instances) {
 	RENDER_TIMESTAMP("Setup Render Collider Heightfield");
 
 	RD::get_singleton()->draw_command_begin_label("Render Collider Heightfield");
@@ -2091,7 +2091,7 @@ void RendererSceneRenderForward::_render_particle_collider_heightfield(RID p_fb,
 	RD::get_singleton()->draw_command_end_label();
 }
 
-void RendererSceneRenderForward::_render_material(const Transform &p_cam_transform, const CameraMatrix &p_cam_projection, bool p_cam_ortogonal, const PagedArray<GeometryInstance *> &p_instances, RID p_framebuffer, const Rect2i &p_region) {
+void RendererSceneRenderForwardClustered::_render_material(const Transform &p_cam_transform, const CameraMatrix &p_cam_projection, bool p_cam_ortogonal, const PagedArray<GeometryInstance *> &p_instances, RID p_framebuffer, const Rect2i &p_region) {
 	RENDER_TIMESTAMP("Setup Rendering Material");
 
 	RD::get_singleton()->draw_command_begin_label("Render Material");
@@ -2129,7 +2129,7 @@ void RendererSceneRenderForward::_render_material(const Transform &p_cam_transfo
 	RD::get_singleton()->draw_command_end_label();
 }
 
-void RendererSceneRenderForward::_render_uv2(const PagedArray<GeometryInstance *> &p_instances, RID p_framebuffer, const Rect2i &p_region) {
+void RendererSceneRenderForwardClustered::_render_uv2(const PagedArray<GeometryInstance *> &p_instances, RID p_framebuffer, const Rect2i &p_region) {
 	RENDER_TIMESTAMP("Setup Rendering UV2");
 
 	RD::get_singleton()->draw_command_begin_label("Render UV2");
@@ -2191,7 +2191,7 @@ void RendererSceneRenderForward::_render_uv2(const PagedArray<GeometryInstance *
 	RD::get_singleton()->draw_command_end_label();
 }
 
-void RendererSceneRenderForward::_render_sdfgi(RID p_render_buffers, const Vector3i &p_from, const Vector3i &p_size, const AABB &p_bounds, const PagedArray<GeometryInstance *> &p_instances, const RID &p_albedo_texture, const RID &p_emission_texture, const RID &p_emission_aniso_texture, const RID &p_geom_facing_texture) {
+void RendererSceneRenderForwardClustered::_render_sdfgi(RID p_render_buffers, const Vector3i &p_from, const Vector3i &p_size, const AABB &p_bounds, const PagedArray<GeometryInstance *> &p_instances, const RID &p_albedo_texture, const RID &p_emission_texture, const RID &p_emission_aniso_texture, const RID &p_geom_facing_texture) {
 	RENDER_TIMESTAMP("Render SDFGI");
 
 	RD::get_singleton()->draw_command_begin_label("Render SDFGI Voxel");
@@ -2272,14 +2272,14 @@ void RendererSceneRenderForward::_render_sdfgi(RID p_render_buffers, const Vecto
 	RD::get_singleton()->draw_command_end_label();
 }
 
-void RendererSceneRenderForward::_base_uniforms_changed() {
+void RendererSceneRenderForwardClustered::_base_uniforms_changed() {
 	if (!render_base_uniform_set.is_null() && RD::get_singleton()->uniform_set_is_valid(render_base_uniform_set)) {
 		RD::get_singleton()->free(render_base_uniform_set);
 	}
 	render_base_uniform_set = RID();
 }
 
-void RendererSceneRenderForward::_update_render_base_uniform_set() {
+void RendererSceneRenderForwardClustered::_update_render_base_uniform_set() {
 	if (render_base_uniform_set.is_null() || !RD::get_singleton()->uniform_set_is_valid(render_base_uniform_set) || (lightmap_texture_array_version != storage->lightmap_array_get_version())) {
 		if (render_base_uniform_set.is_valid() && RD::get_singleton()->uniform_set_is_valid(render_base_uniform_set)) {
 			RD::get_singleton()->free(render_base_uniform_set);
@@ -2405,7 +2405,7 @@ void RendererSceneRenderForward::_update_render_base_uniform_set() {
 	}
 }
 
-RID RendererSceneRenderForward::_setup_render_pass_uniform_set(RenderListType p_render_list, RID p_render_buffers, RID p_radiance_texture, RID p_shadow_atlas, RID p_reflection_atlas, RID p_cluster_buffer, const PagedArray<RID> &p_gi_probes, const PagedArray<RID> &p_lightmaps, bool p_use_directional_shadow_atlas, int p_index) {
+RID RendererSceneRenderForwardClustered::_setup_render_pass_uniform_set(RenderListType p_render_list, RID p_render_buffers, RID p_radiance_texture, RID p_shadow_atlas, RID p_reflection_atlas, RID p_cluster_buffer, const PagedArray<RID> &p_gi_probes, const PagedArray<RID> &p_lightmaps, bool p_use_directional_shadow_atlas, int p_index) {
 	//there should always be enough uniform buffers for render passes, otherwise bugs
 	ERR_FAIL_INDEX_V(p_index, (int)scene_state.uniform_buffers.size(), RID());
 
@@ -2655,7 +2655,7 @@ RID RendererSceneRenderForward::_setup_render_pass_uniform_set(RenderListType p_
 	return render_pass_uniform_sets[p_index];
 }
 
-RID RendererSceneRenderForward::_setup_sdfgi_render_pass_uniform_set(RID p_albedo_texture, RID p_emission_texture, RID p_emission_aniso_texture, RID p_geom_facing_texture) {
+RID RendererSceneRenderForwardClustered::_setup_sdfgi_render_pass_uniform_set(RID p_albedo_texture, RID p_emission_texture, RID p_emission_aniso_texture, RID p_geom_facing_texture) {
 	if (sdfgi_pass_uniform_set.is_valid() && RD::get_singleton()->uniform_set_is_valid(sdfgi_pass_uniform_set)) {
 		RD::get_singleton()->free(sdfgi_pass_uniform_set);
 	}
@@ -2788,29 +2788,29 @@ RID RendererSceneRenderForward::_setup_sdfgi_render_pass_uniform_set(RID p_albed
 	return sdfgi_pass_uniform_set;
 }
 
-void RendererSceneRenderForward::_render_buffers_clear_uniform_set(RenderBufferDataForward *rb) {
+void RendererSceneRenderForwardClustered::_render_buffers_clear_uniform_set(RenderBufferDataForward *rb) {
 }
 
-void RendererSceneRenderForward::_render_buffers_uniform_set_changed(RID p_render_buffers) {
+void RendererSceneRenderForwardClustered::_render_buffers_uniform_set_changed(RID p_render_buffers) {
 	RenderBufferDataForward *rb = (RenderBufferDataForward *)render_buffers_get_data(p_render_buffers);
 
 	_render_buffers_clear_uniform_set(rb);
 }
 
-RID RendererSceneRenderForward::_render_buffers_get_normal_texture(RID p_render_buffers) {
+RID RendererSceneRenderForwardClustered::_render_buffers_get_normal_texture(RID p_render_buffers) {
 	RenderBufferDataForward *rb = (RenderBufferDataForward *)render_buffers_get_data(p_render_buffers);
 
 	return rb->normal_roughness_buffer;
 }
 
-RendererSceneRenderForward *RendererSceneRenderForward::singleton = nullptr;
+RendererSceneRenderForwardClustered *RendererSceneRenderForwardClustered::singleton = nullptr;
 
-void RendererSceneRenderForward::set_time(double p_time, double p_step) {
+void RendererSceneRenderForwardClustered::set_time(double p_time, double p_step) {
 	time = p_time;
 	RendererSceneRenderRD::set_time(p_time, p_step);
 }
 
-void RendererSceneRenderForward::_geometry_instance_mark_dirty(GeometryInstance *p_geometry_instance) {
+void RendererSceneRenderForwardClustered::_geometry_instance_mark_dirty(GeometryInstance *p_geometry_instance) {
 	GeometryInstanceForward *ginstance = static_cast<GeometryInstanceForward *>(p_geometry_instance);
 	if (ginstance->dirty_list_element.in_list()) {
 		return;
@@ -2830,7 +2830,7 @@ void RendererSceneRenderForward::_geometry_instance_mark_dirty(GeometryInstance 
 	geometry_instance_dirty_list.add(&ginstance->dirty_list_element);
 }
 
-void RendererSceneRenderForward::_geometry_instance_add_surface_with_material(GeometryInstanceForward *ginstance, uint32_t p_surface, MaterialData *p_material, uint32_t p_material_id, uint32_t p_shader_id, RID p_mesh) {
+void RendererSceneRenderForwardClustered::_geometry_instance_add_surface_with_material(GeometryInstanceForward *ginstance, uint32_t p_surface, MaterialData *p_material, uint32_t p_material_id, uint32_t p_shader_id, RID p_mesh) {
 	bool has_read_screen_alpha = p_material->shader_data->uses_screen_texture || p_material->shader_data->uses_depth_texture || p_material->shader_data->uses_normal_texture;
 	bool has_base_alpha = (p_material->shader_data->uses_alpha || has_read_screen_alpha);
 	bool has_blend_alpha = p_material->shader_data->uses_blend_alpha;
@@ -2926,7 +2926,7 @@ void RendererSceneRenderForward::_geometry_instance_add_surface_with_material(Ge
 	sdcache->sort.priority = p_material->priority;
 }
 
-void RendererSceneRenderForward::_geometry_instance_add_surface(GeometryInstanceForward *ginstance, uint32_t p_surface, RID p_material, RID p_mesh) {
+void RendererSceneRenderForwardClustered::_geometry_instance_add_surface(GeometryInstanceForward *ginstance, uint32_t p_surface, RID p_material, RID p_mesh) {
 	RID m_src;
 
 	m_src = ginstance->data->material_override.is_valid() ? ginstance->data->material_override : p_material;
@@ -2966,7 +2966,7 @@ void RendererSceneRenderForward::_geometry_instance_add_surface(GeometryInstance
 	}
 }
 
-void RendererSceneRenderForward::_geometry_instance_update(GeometryInstance *p_geometry_instance) {
+void RendererSceneRenderForwardClustered::_geometry_instance_update(GeometryInstance *p_geometry_instance) {
 	GeometryInstanceForward *ginstance = static_cast<GeometryInstanceForward *>(p_geometry_instance);
 
 	if (ginstance->data->dirty_dependencies) {
@@ -3124,24 +3124,24 @@ void RendererSceneRenderForward::_geometry_instance_update(GeometryInstance *p_g
 	ginstance->dirty_list_element.remove_from_list();
 }
 
-void RendererSceneRenderForward::_update_dirty_geometry_instances() {
+void RendererSceneRenderForwardClustered::_update_dirty_geometry_instances() {
 	while (geometry_instance_dirty_list.first()) {
 		_geometry_instance_update(geometry_instance_dirty_list.first()->self());
 	}
 }
 
-void RendererSceneRenderForward::_geometry_instance_dependency_changed(RendererStorage::DependencyChangedNotification p_notification, RendererStorage::DependencyTracker *p_tracker) {
+void RendererSceneRenderForwardClustered::_geometry_instance_dependency_changed(RendererStorage::DependencyChangedNotification p_notification, RendererStorage::DependencyTracker *p_tracker) {
 	switch (p_notification) {
 		case RendererStorage::DEPENDENCY_CHANGED_MATERIAL:
 		case RendererStorage::DEPENDENCY_CHANGED_MESH:
 		case RendererStorage::DEPENDENCY_CHANGED_MULTIMESH:
 		case RendererStorage::DEPENDENCY_CHANGED_SKELETON_DATA: {
-			static_cast<RendererSceneRenderForward *>(singleton)->_geometry_instance_mark_dirty(static_cast<GeometryInstance *>(p_tracker->userdata));
+			static_cast<RendererSceneRenderForwardClustered *>(singleton)->_geometry_instance_mark_dirty(static_cast<GeometryInstance *>(p_tracker->userdata));
 		} break;
 		case RendererStorage::DEPENDENCY_CHANGED_MULTIMESH_VISIBLE_INSTANCES: {
 			GeometryInstanceForward *ginstance = static_cast<GeometryInstanceForward *>(p_tracker->userdata);
 			if (ginstance->data->base_type == RS::INSTANCE_MULTIMESH) {
-				ginstance->instance_count = static_cast<RendererSceneRenderForward *>(singleton)->storage->multimesh_get_instances_to_draw(ginstance->data->base);
+				ginstance->instance_count = static_cast<RendererSceneRenderForwardClustered *>(singleton)->storage->multimesh_get_instances_to_draw(ginstance->data->base);
 			}
 		} break;
 		default: {
@@ -3149,11 +3149,11 @@ void RendererSceneRenderForward::_geometry_instance_dependency_changed(RendererS
 		} break;
 	}
 }
-void RendererSceneRenderForward::_geometry_instance_dependency_deleted(const RID &p_dependency, RendererStorage::DependencyTracker *p_tracker) {
-	static_cast<RendererSceneRenderForward *>(singleton)->_geometry_instance_mark_dirty(static_cast<GeometryInstance *>(p_tracker->userdata));
+void RendererSceneRenderForwardClustered::_geometry_instance_dependency_deleted(const RID &p_dependency, RendererStorage::DependencyTracker *p_tracker) {
+	static_cast<RendererSceneRenderForwardClustered *>(singleton)->_geometry_instance_mark_dirty(static_cast<GeometryInstance *>(p_tracker->userdata));
 }
 
-RendererSceneRender::GeometryInstance *RendererSceneRenderForward::geometry_instance_create(RID p_base) {
+RendererSceneRender::GeometryInstance *RendererSceneRenderForwardClustered::geometry_instance_create(RID p_base) {
 	RS::InstanceType type = storage->get_base_type(p_base);
 	ERR_FAIL_COND_V(!((1 << type) & RS::INSTANCE_GEOMETRY_MASK), nullptr);
 
@@ -3170,34 +3170,34 @@ RendererSceneRender::GeometryInstance *RendererSceneRenderForward::geometry_inst
 
 	return ginstance;
 }
-void RendererSceneRenderForward::geometry_instance_set_skeleton(GeometryInstance *p_geometry_instance, RID p_skeleton) {
+void RendererSceneRenderForwardClustered::geometry_instance_set_skeleton(GeometryInstance *p_geometry_instance, RID p_skeleton) {
 	GeometryInstanceForward *ginstance = static_cast<GeometryInstanceForward *>(p_geometry_instance);
 	ERR_FAIL_COND(!ginstance);
 	ginstance->data->skeleton = p_skeleton;
 	_geometry_instance_mark_dirty(ginstance);
 	ginstance->data->dirty_dependencies = true;
 }
-void RendererSceneRenderForward::geometry_instance_set_material_override(GeometryInstance *p_geometry_instance, RID p_override) {
+void RendererSceneRenderForwardClustered::geometry_instance_set_material_override(GeometryInstance *p_geometry_instance, RID p_override) {
 	GeometryInstanceForward *ginstance = static_cast<GeometryInstanceForward *>(p_geometry_instance);
 	ERR_FAIL_COND(!ginstance);
 	ginstance->data->material_override = p_override;
 	_geometry_instance_mark_dirty(ginstance);
 	ginstance->data->dirty_dependencies = true;
 }
-void RendererSceneRenderForward::geometry_instance_set_surface_materials(GeometryInstance *p_geometry_instance, const Vector<RID> &p_materials) {
+void RendererSceneRenderForwardClustered::geometry_instance_set_surface_materials(GeometryInstance *p_geometry_instance, const Vector<RID> &p_materials) {
 	GeometryInstanceForward *ginstance = static_cast<GeometryInstanceForward *>(p_geometry_instance);
 	ERR_FAIL_COND(!ginstance);
 	ginstance->data->surface_materials = p_materials;
 	_geometry_instance_mark_dirty(ginstance);
 	ginstance->data->dirty_dependencies = true;
 }
-void RendererSceneRenderForward::geometry_instance_set_mesh_instance(GeometryInstance *p_geometry_instance, RID p_mesh_instance) {
+void RendererSceneRenderForwardClustered::geometry_instance_set_mesh_instance(GeometryInstance *p_geometry_instance, RID p_mesh_instance) {
 	GeometryInstanceForward *ginstance = static_cast<GeometryInstanceForward *>(p_geometry_instance);
 	ERR_FAIL_COND(!ginstance);
 	ginstance->mesh_instance = p_mesh_instance;
 	_geometry_instance_mark_dirty(ginstance);
 }
-void RendererSceneRenderForward::geometry_instance_set_transform(GeometryInstance *p_geometry_instance, const Transform &p_transform, const AABB &p_aabb, const AABB &p_transformed_aabb) {
+void RendererSceneRenderForwardClustered::geometry_instance_set_transform(GeometryInstance *p_geometry_instance, const Transform &p_transform, const AABB &p_aabb, const AABB &p_transformed_aabb) {
 	GeometryInstanceForward *ginstance = static_cast<GeometryInstanceForward *>(p_geometry_instance);
 	ERR_FAIL_COND(!ginstance);
 	ginstance->transform = p_transform;
@@ -3214,24 +3214,24 @@ void RendererSceneRenderForward::geometry_instance_set_transform(GeometryInstanc
 
 	ginstance->lod_model_scale = max_scale;
 }
-void RendererSceneRenderForward::geometry_instance_set_lod_bias(GeometryInstance *p_geometry_instance, float p_lod_bias) {
+void RendererSceneRenderForwardClustered::geometry_instance_set_lod_bias(GeometryInstance *p_geometry_instance, float p_lod_bias) {
 	GeometryInstanceForward *ginstance = static_cast<GeometryInstanceForward *>(p_geometry_instance);
 	ERR_FAIL_COND(!ginstance);
 	ginstance->lod_bias = p_lod_bias;
 }
-void RendererSceneRenderForward::geometry_instance_set_use_baked_light(GeometryInstance *p_geometry_instance, bool p_enable) {
+void RendererSceneRenderForwardClustered::geometry_instance_set_use_baked_light(GeometryInstance *p_geometry_instance, bool p_enable) {
 	GeometryInstanceForward *ginstance = static_cast<GeometryInstanceForward *>(p_geometry_instance);
 	ERR_FAIL_COND(!ginstance);
 	ginstance->data->use_baked_light = p_enable;
 	_geometry_instance_mark_dirty(ginstance);
 }
-void RendererSceneRenderForward::geometry_instance_set_use_dynamic_gi(GeometryInstance *p_geometry_instance, bool p_enable) {
+void RendererSceneRenderForwardClustered::geometry_instance_set_use_dynamic_gi(GeometryInstance *p_geometry_instance, bool p_enable) {
 	GeometryInstanceForward *ginstance = static_cast<GeometryInstanceForward *>(p_geometry_instance);
 	ERR_FAIL_COND(!ginstance);
 	ginstance->data->use_dynamic_gi = p_enable;
 	_geometry_instance_mark_dirty(ginstance);
 }
-void RendererSceneRenderForward::geometry_instance_set_use_lightmap(GeometryInstance *p_geometry_instance, RID p_lightmap_instance, const Rect2 &p_lightmap_uv_scale, int p_lightmap_slice_index) {
+void RendererSceneRenderForwardClustered::geometry_instance_set_use_lightmap(GeometryInstance *p_geometry_instance, RID p_lightmap_instance, const Rect2 &p_lightmap_uv_scale, int p_lightmap_slice_index) {
 	GeometryInstanceForward *ginstance = static_cast<GeometryInstanceForward *>(p_geometry_instance);
 	ERR_FAIL_COND(!ginstance);
 	ginstance->lightmap_instance = p_lightmap_instance;
@@ -3239,7 +3239,7 @@ void RendererSceneRenderForward::geometry_instance_set_use_lightmap(GeometryInst
 	ginstance->lightmap_slice_index = p_lightmap_slice_index;
 	_geometry_instance_mark_dirty(ginstance);
 }
-void RendererSceneRenderForward::geometry_instance_set_lightmap_capture(GeometryInstance *p_geometry_instance, const Color *p_sh9) {
+void RendererSceneRenderForwardClustered::geometry_instance_set_lightmap_capture(GeometryInstance *p_geometry_instance, const Color *p_sh9) {
 	GeometryInstanceForward *ginstance = static_cast<GeometryInstanceForward *>(p_geometry_instance);
 	ERR_FAIL_COND(!ginstance);
 	if (p_sh9) {
@@ -3256,13 +3256,13 @@ void RendererSceneRenderForward::geometry_instance_set_lightmap_capture(Geometry
 	}
 	_geometry_instance_mark_dirty(ginstance);
 }
-void RendererSceneRenderForward::geometry_instance_set_instance_shader_parameters_offset(GeometryInstance *p_geometry_instance, int32_t p_offset) {
+void RendererSceneRenderForwardClustered::geometry_instance_set_instance_shader_parameters_offset(GeometryInstance *p_geometry_instance, int32_t p_offset) {
 	GeometryInstanceForward *ginstance = static_cast<GeometryInstanceForward *>(p_geometry_instance);
 	ERR_FAIL_COND(!ginstance);
 	ginstance->shader_parameters_offset = p_offset;
 	_geometry_instance_mark_dirty(ginstance);
 }
-void RendererSceneRenderForward::geometry_instance_set_cast_double_sided_shadows(GeometryInstance *p_geometry_instance, bool p_enable) {
+void RendererSceneRenderForwardClustered::geometry_instance_set_cast_double_sided_shadows(GeometryInstance *p_geometry_instance, bool p_enable) {
 	GeometryInstanceForward *ginstance = static_cast<GeometryInstanceForward *>(p_geometry_instance);
 	ERR_FAIL_COND(!ginstance);
 
@@ -3270,13 +3270,13 @@ void RendererSceneRenderForward::geometry_instance_set_cast_double_sided_shadows
 	_geometry_instance_mark_dirty(ginstance);
 }
 
-void RendererSceneRenderForward::geometry_instance_set_layer_mask(GeometryInstance *p_geometry_instance, uint32_t p_layer_mask) {
+void RendererSceneRenderForwardClustered::geometry_instance_set_layer_mask(GeometryInstance *p_geometry_instance, uint32_t p_layer_mask) {
 	GeometryInstanceForward *ginstance = static_cast<GeometryInstanceForward *>(p_geometry_instance);
 	ERR_FAIL_COND(!ginstance);
 	ginstance->layer_mask = p_layer_mask;
 }
 
-void RendererSceneRenderForward::geometry_instance_free(GeometryInstance *p_geometry_instance) {
+void RendererSceneRenderForwardClustered::geometry_instance_free(GeometryInstance *p_geometry_instance) {
 	GeometryInstanceForward *ginstance = static_cast<GeometryInstanceForward *>(p_geometry_instance);
 	ERR_FAIL_COND(!ginstance);
 	if (ginstance->lightmap_sh != nullptr) {
@@ -3292,28 +3292,28 @@ void RendererSceneRenderForward::geometry_instance_free(GeometryInstance *p_geom
 	geometry_instance_alloc.free(ginstance);
 }
 
-uint32_t RendererSceneRenderForward::geometry_instance_get_pair_mask() {
+uint32_t RendererSceneRenderForwardClustered::geometry_instance_get_pair_mask() {
 	return (1 << RS::INSTANCE_GI_PROBE);
 }
-void RendererSceneRenderForward::geometry_instance_pair_light_instances(GeometryInstance *p_geometry_instance, const RID *p_light_instances, uint32_t p_light_instance_count) {
+void RendererSceneRenderForwardClustered::geometry_instance_pair_light_instances(GeometryInstance *p_geometry_instance, const RID *p_light_instances, uint32_t p_light_instance_count) {
 }
-void RendererSceneRenderForward::geometry_instance_pair_reflection_probe_instances(GeometryInstance *p_geometry_instance, const RID *p_reflection_probe_instances, uint32_t p_reflection_probe_instance_count) {
+void RendererSceneRenderForwardClustered::geometry_instance_pair_reflection_probe_instances(GeometryInstance *p_geometry_instance, const RID *p_reflection_probe_instances, uint32_t p_reflection_probe_instance_count) {
 }
-void RendererSceneRenderForward::geometry_instance_pair_decal_instances(GeometryInstance *p_geometry_instance, const RID *p_decal_instances, uint32_t p_decal_instance_count) {
+void RendererSceneRenderForwardClustered::geometry_instance_pair_decal_instances(GeometryInstance *p_geometry_instance, const RID *p_decal_instances, uint32_t p_decal_instance_count) {
 }
 
-Transform RendererSceneRenderForward::geometry_instance_get_transform(GeometryInstance *p_instance) {
+Transform RendererSceneRenderForwardClustered::geometry_instance_get_transform(GeometryInstance *p_instance) {
 	GeometryInstanceForward *ginstance = static_cast<GeometryInstanceForward *>(p_instance);
 	ERR_FAIL_COND_V(!ginstance, Transform());
 	return ginstance->transform;
 }
-AABB RendererSceneRenderForward::geometry_instance_get_aabb(GeometryInstance *p_instance) {
+AABB RendererSceneRenderForwardClustered::geometry_instance_get_aabb(GeometryInstance *p_instance) {
 	GeometryInstanceForward *ginstance = static_cast<GeometryInstanceForward *>(p_instance);
 	ERR_FAIL_COND_V(!ginstance, AABB());
 	return ginstance->data->aabb;
 }
 
-void RendererSceneRenderForward::geometry_instance_pair_gi_probe_instances(GeometryInstance *p_geometry_instance, const RID *p_gi_probe_instances, uint32_t p_gi_probe_instance_count) {
+void RendererSceneRenderForwardClustered::geometry_instance_pair_gi_probe_instances(GeometryInstance *p_geometry_instance, const RID *p_gi_probe_instances, uint32_t p_gi_probe_instance_count) {
 	GeometryInstanceForward *ginstance = static_cast<GeometryInstanceForward *>(p_geometry_instance);
 	ERR_FAIL_COND(!ginstance);
 	if (p_gi_probe_instance_count > 0) {
@@ -3329,7 +3329,7 @@ void RendererSceneRenderForward::geometry_instance_pair_gi_probe_instances(Geome
 	}
 }
 
-RendererSceneRenderForward::RendererSceneRenderForward(RendererStorageRD *p_storage) :
+RendererSceneRenderForwardClustered::RendererSceneRenderForwardClustered(RendererStorageRD *p_storage) :
 		RendererSceneRenderRD(p_storage) {
 	singleton = this;
 	low_end = is_low_end();
@@ -3628,7 +3628,7 @@ RendererSceneRenderForward::RendererSceneRenderForward(RendererStorageRD *p_stor
 	render_list_thread_threshold = GLOBAL_GET("rendering/limits/forward_renderer/threaded_render_minimum_instances");
 }
 
-RendererSceneRenderForward::~RendererSceneRenderForward() {
+RendererSceneRenderForwardClustered::~RendererSceneRenderForwardClustered() {
 	directional_shadow_atlas_set_size(0);
 
 	//clear base uniform set if still valid
