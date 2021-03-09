@@ -34,6 +34,8 @@
 #include <android/log.h>
 #include <jni.h>
 
+#include "string_android.h"
+
 // Class that makes functions in java/src/org/godotengine/godot/GodotView.java callable from C++
 class GodotJavaViewWrapper {
 private:
