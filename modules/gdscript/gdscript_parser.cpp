@@ -2674,6 +2674,19 @@ GDScriptParser::TypeNode *GDScriptParser::parse_type(bool p_allow_void) {
 
 	type->type_chain.push_back(type_element);
 
+	if (match(GDScriptTokenizer::Token::BRACKET_OPEN)) {
+		// Typed collection (like Array[int]).
+		type->container_type = parse_type(false); // Don't allow void for array element type.
+		if (type->container_type == nullptr) {
+			push_error(R"(Expected type for collection after "[".)");
+			type = nullptr;
+		} else if (type->container_type->container_type != nullptr) {
+			push_error("Nested typed collections are not supported.");
+		}
+		consume(GDScriptTokenizer::Token::BRACKET_CLOSE, R"(Expected closing "]" after collection type.)");
+		return type;
+	}
+
 	int chain_index = 1;
 	while (match(GDScriptTokenizer::Token::PERIOD)) {
 		make_completion_context(COMPLETION_TYPE_ATTRIBUTE, type, chain_index++);
@@ -3277,6 +3290,9 @@ String GDScriptParser::DataType::to_string() const {
 		case BUILTIN:
 			if (builtin_type == Variant::NIL) {
 				return "null";
+			}
+			if (builtin_type == Variant::ARRAY && has_container_element_type()) {
+				return vformat("Array[%s]", container_element_type->to_string());
 			}
 			return Variant::get_type_name(builtin_type);
 		case NATIVE:
