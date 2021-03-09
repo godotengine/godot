@@ -782,7 +782,8 @@ Error OS_JavaScript::initialize(const VideoMode &p_desired, int p_video_driver, 
 	video_mode = p_desired;
 	// fullscreen_change_callback will correct this if the request is successful.
 	video_mode.fullscreen = false;
-	godot_js_display_setup_canvas(video_mode.width, video_mode.height, video_mode.fullscreen); // Handle contextmenu, webglcontextlost
+	// Handle contextmenu, webglcontextlost, initial canvas setup.
+	godot_js_display_setup_canvas(video_mode.width, video_mode.height, video_mode.fullscreen, is_hidpi_allowed() ? 1 : 0);
 
 	swap_ok_cancel = godot_js_display_is_swap_ok_cancel() == 1;
 
