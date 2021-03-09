@@ -908,6 +908,7 @@ const GodotDisplay = {
 			canvas.style.left = 0;
 			break;
 		}
+		GodotDisplayScreen.updateSize();
 		if (p_fullscreen) {
 			GodotDisplayScreen.requestFullscreen();
 		}
