@@ -2088,7 +2088,7 @@ const ShaderLanguage::BuiltinFuncOutArgs ShaderLanguage::builtin_func_out_args[]
 	{ NULL, 0 }
 };
 
-bool ShaderLanguage::_validate_function_call(BlockNode *p_block, OperatorNode *p_func, DataType *r_ret_type) {
+bool ShaderLanguage::_validate_function_call(BlockNode *p_block, OperatorNode *p_func, DataType *r_ret_type, bool p_is_constructor) {
 
 	ERR_FAIL_COND_V(p_func->op != OP_CALL && p_func->op != OP_CONSTRUCT, false);
 
@@ -2106,6 +2106,7 @@ bool ShaderLanguage::_validate_function_call(BlockNode *p_block, OperatorNode *p
 
 	bool failed_builtin = false;
 	bool unsupported_builtin = false;
+	bool low_end_function_matches = false;
 	int builtin_idx = 0;
 
 	if (argcount <= 4) {
@@ -2120,11 +2121,9 @@ bool ShaderLanguage::_validate_function_call(BlockNode *p_block, OperatorNode *p
 			}
 
 			if (name == builtin_func_defs[idx].name) {
-
 				failed_builtin = true;
 				bool fail = false;
 				for (int i = 0; i < argcount; i++) {
-
 					if (get_scalar_type(args[i]) == args[i] && p_func->arguments[i + 1]->type == Node::TYPE_CONSTANT && convert_constant(static_cast<ConstantNode *>(p_func->arguments[i + 1]), builtin_func_defs[idx].args[i])) {
 						//all good, but needs implicit conversion later
 					} else if (args[i] != builtin_func_defs[idx].args[i]) {
@@ -2139,6 +2138,8 @@ bool ShaderLanguage::_validate_function_call(BlockNode *p_block, OperatorNode *p
 							fail = true;
 							unsupported_builtin = true;
 							builtin_idx = idx;
+						} else {
+							low_end_function_matches = true; // we found a low end function that matches ours
 						}
 					}
 				}
@@ -2220,8 +2221,7 @@ bool ShaderLanguage::_validate_function_call(BlockNode *p_block, OperatorNode *p
 		}
 	}
 
-	if (unsupported_builtin) {
-
+	if (unsupported_builtin && !low_end_function_matches) {
 		String arglist = "";
 		for (int i = 0; i < argcount; i++) {
 			if (i > 0) {
@@ -2236,18 +2236,20 @@ bool ShaderLanguage::_validate_function_call(BlockNode *p_block, OperatorNode *p
 	}
 
 	if (failed_builtin) {
-		String err = "Invalid arguments for built-in function: " + String(name) + "(";
-		for (int i = 0; i < argcount; i++) {
-			if (i > 0)
-				err += ",";
+		if (!p_is_constructor) {
+			String err = "Invalid arguments for built-in function: " + String(name) + "(";
+			for (int i = 0; i < argcount; i++) {
+				if (i > 0)
+					err += ",";
 
-			if (p_func->arguments[i + 1]->type == Node::TYPE_CONSTANT && p_func->arguments[i + 1]->get_datatype() == TYPE_INT && static_cast<ConstantNode *>(p_func->arguments[i + 1])->values[0].sint < 0) {
-				err += "-";
+				if (p_func->arguments[i + 1]->type == Node::TYPE_CONSTANT && p_func->arguments[i + 1]->get_datatype() == TYPE_INT && static_cast<ConstantNode *>(p_func->arguments[i + 1])->values[0].sint < 0) {
+					err += "-";
+				}
+				err += get_datatype_name(args[i]);
 			}
-			err += get_datatype_name(args[i]);
+			err += ")";
+			_set_error(err);
 		}
-		err += ")";
-		_set_error(err);
 		return false;
 	}
 
@@ -2926,7 +2928,7 @@ ShaderLanguage::Node *ShaderLanguage::_parse_expression(BlockNode *p_block, cons
 			if (!ok)
 				return NULL;
 
-			if (!_validate_function_call(p_block, func, &func->return_cache)) {
+			if (!_validate_function_call(p_block, func, &func->return_cache, true)) {
 				_set_error("No matching constructor found for: '" + String(funcname->name) + "'");
 				return NULL;
 			}
@@ -2992,7 +2994,7 @@ ShaderLanguage::Node *ShaderLanguage::_parse_expression(BlockNode *p_block, cons
 				if (!ok)
 					return NULL;
 
-				if (!_validate_function_call(p_block, func, &func->return_cache)) {
+				if (!_validate_function_call(p_block, func, &func->return_cache, false)) {
 					_set_error("No matching function found for: '" + String(funcname->name) + "'");
 					return NULL;
 				}
