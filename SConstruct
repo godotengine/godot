@@ -61,14 +61,9 @@ elif platform_arg == "javascript":
     # Use generic POSIX build toolchain for Emscripten.
     custom_tools = ["cc", "c++", "ar", "link", "textfile", "zip"]
 
-env_base = Environment(
-    ENV={
-        "PATH": os.getenv("PATH"),
-        "PKG_CONFIG_PATH": os.getenv("PKG_CONFIG_PATH"),
-        "TERM": os.getenv("TERM"),
-    },
-    tools=custom_tools,
-)
+# Construct the environment using the user's host env variables.
+env_base = Environment(ENV=os.environ, tools=custom_tools)
+
 env_base.disabled_modules = []
 env_base.module_version_string = ""
 env_base.msvc = False
