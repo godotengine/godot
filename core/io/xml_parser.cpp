@@ -344,13 +344,11 @@ void XMLParser::_bind_methods() {
 }
 
 Error XMLParser::read() {
-	// if not end reached, parse the node
-	if (P && (P - data) < (int64_t)length - 1 && *P != 0) {
-		_parse_current_node();
-		return OK;
+	if (*P == '\0') {
+		return ERR_FILE_EOF;
 	}
-
-	return ERR_FILE_EOF;
+	_parse_current_node();
+	return P.valid() ? OK : ERR_INVALID_DATA;
 }
 
 XMLParser::NodeType XMLParser::get_node_type() {
