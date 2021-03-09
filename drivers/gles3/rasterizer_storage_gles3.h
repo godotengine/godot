@@ -1507,7 +1507,7 @@ public:
 	virtual void render_info_end_capture();
 	virtual int get_captured_render_info(VS::RenderInfo p_info);
 
-	virtual int get_render_info(VS::RenderInfo p_info);
+	virtual uint64_t get_render_info(VS::RenderInfo p_info);
 	virtual String get_video_adapter_name() const;
 	virtual String get_video_adapter_vendor() const;
 

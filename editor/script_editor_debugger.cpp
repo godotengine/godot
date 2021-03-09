@@ -717,7 +717,7 @@ void ScriptEditorDebugger::_parse_message(const String &p_msg, const Array &p_da
 		vmem_tree->clear();
 		TreeItem *root = vmem_tree->create_item();
 
-		int total = 0;
+		uint64_t total = 0;
 
 		for (int i = 0; i < p_data.size(); i += 4) {
 

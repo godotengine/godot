@@ -5946,7 +5946,7 @@ int RasterizerStorageGLES2::get_captured_render_info(VS::RenderInfo p_info) {
 	}
 }
 
-int RasterizerStorageGLES2::get_render_info(VS::RenderInfo p_info) {
+uint64_t RasterizerStorageGLES2::get_render_info(VS::RenderInfo p_info) {
 	switch (p_info) {
 		case VS::INFO_OBJECTS_IN_FRAME:
 			return info.render_final.object_count;

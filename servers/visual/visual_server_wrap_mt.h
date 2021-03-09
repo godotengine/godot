@@ -605,7 +605,7 @@ public:
 	/* RENDER INFO */
 
 	//this passes directly to avoid stalling
-	virtual int get_render_info(RenderInfo p_info) {
+	virtual uint64_t get_render_info(RenderInfo p_info) {
 		return visual_server->get_render_info(p_info);
 	}
 
