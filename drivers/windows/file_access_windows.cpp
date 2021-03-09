@@ -253,6 +253,8 @@ uint8_t FileAccessWindows::get_8() const {
 }
 
 int FileAccessWindows::get_buffer(uint8_t *p_dst, int p_length) const {
+	ERR_FAIL_COND_V(!p_dst, -1);
+	ERR_FAIL_COND_V(p_length < 0, -1);
 	ERR_FAIL_COND_V(!f, -1);
 	if (flags == READ_WRITE || flags == WRITE_READ) {
 		if (prev_op == WRITE) {
