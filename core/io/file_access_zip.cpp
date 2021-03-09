@@ -303,6 +303,8 @@ uint8_t FileAccessZip::get_8() const {
 }
 
 int FileAccessZip::get_buffer(uint8_t *p_dst, int p_length) const {
+	ERR_FAIL_COND_V(!p_dst, -1);
+	ERR_FAIL_COND_V(p_length < 0, -1);
 	ERR_FAIL_COND_V(!zfile, -1);
 	at_eof = unzeof(zfile);
 	if (at_eof) {

@@ -286,8 +286,10 @@ uint8_t FileAccessCompressed::get_8() const {
 }
 
 int FileAccessCompressed::get_buffer(uint8_t *p_dst, int p_length) const {
-	ERR_FAIL_COND_V_MSG(!f, 0, "File must be opened before use.");
-	ERR_FAIL_COND_V_MSG(writing, 0, "File has not been opened in read mode.");
+	ERR_FAIL_COND_V(!p_dst, -1);
+	ERR_FAIL_COND_V(p_length < 0, -1);
+	ERR_FAIL_COND_V_MSG(!f, -1, "File must be opened before use.");
+	ERR_FAIL_COND_V_MSG(writing, -1, "File has not been opened in read mode.");
 
 	if (at_end) {
 		read_eof = true;
