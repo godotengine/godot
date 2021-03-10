@@ -469,7 +469,7 @@
 		<member name="debug/shapes/collision/max_contacts_displayed" type="int" setter="" getter="" default="10000">
 			Maximum number of contact points between collision shapes to display when "Visible Collision Shapes" is enabled in the Debug menu.
 		</member>
-		<member name="debug/shapes/collision/shape_color" type="Color" setter="" getter="" default="Color( 0, 0.6, 0.7, 0.5 )">
+		<member name="debug/shapes/collision/shape_color" type="Color" setter="" getter="" default="Color( 0, 0.6, 0.7, 0.42 )">
 			Color of the collision shapes, visible when "Visible Collision Shapes" is enabled in the Debug menu.
 		</member>
 		<member name="debug/shapes/navigation/disabled_geometry_color" type="Color" setter="" getter="" default="Color( 1, 0.7, 0.1, 0.4 )">

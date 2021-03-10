@@ -109,6 +109,12 @@
 			<description>
 			</description>
 		</method>
+		<method name="get_unique_animation_names">
+			<return type="Array">
+			</return>
+			<description>
+			</description>
+		</method>
 		<method name="get_unique_names">
 			<return type="Array">
 			</return>
@@ -215,6 +221,14 @@
 			<return type="void">
 			</return>
 			<argument index="0" name="textures" type="Array">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_unique_animation_names">
+			<return type="void">
+			</return>
+			<argument index="0" name="unique_animation_names" type="Array">
 			</argument>
 			<description>
 			</description>

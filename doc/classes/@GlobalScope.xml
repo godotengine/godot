@@ -1280,6 +1280,10 @@
 		<constant name="HORIZONTAL" value="0" enum="Orientation">
 			General horizontal alignment, usually used for [Separator], [ScrollBar], [Slider], etc.
 		</constant>
+		<constant name="CLOCKWISE" value="0" enum="ClockDirection">
+		</constant>
+		<constant name="COUNTERCLOCKWISE" value="1" enum="ClockDirection">
+		</constant>
 		<constant name="HALIGN_LEFT" value="0" enum="HAlign">
 			Horizontal left alignment, usually for text-derived classes.
 		</constant>

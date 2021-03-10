@@ -98,6 +98,13 @@
 				Creates an unshaded material with its variants (selected and/or editable) and adds them to the internal material list. They can then be accessed with [method get_material] and used in [method EditorNode3DGizmo.add_mesh] and [method EditorNode3DGizmo.add_lines]. Should not be overridden.
 			</description>
 		</method>
+		<method name="get_gizmo_name" qualifiers="virtual">
+			<return type="String">
+			</return>
+			<description>
+				Override this method to provide the name that will appear in the gizmo visibility menu.
+			</description>
+		</method>
 		<method name="get_handle_name" qualifiers="virtual">
 			<return type="String">
 			</return>
@@ -129,13 +136,6 @@
 			</argument>
 			<description>
 				Gets material from the internal list of materials. If an [EditorNode3DGizmo] is provided, it will try to get the corresponding variant (selected and/or editable).
-			</description>
-		</method>
-		<method name="get_name" qualifiers="virtual">
-			<return type="String">
-			</return>
-			<description>
-				Override this method to provide the name that will appear in the gizmo visibility menu.
 			</description>
 		</method>
 		<method name="get_priority" qualifiers="virtual">
