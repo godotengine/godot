@@ -32,7 +32,6 @@
 
 #include "core/os/thread.h"
 #include "mesh_instance_3d.h"
-#include "navigation_3d.h"
 #include "servers/navigation_server_3d.h"
 
 void NavigationRegion3D::set_enabled(bool p_enabled) {
@@ -48,9 +47,7 @@ void NavigationRegion3D::set_enabled(bool p_enabled) {
 	if (!enabled) {
 		NavigationServer3D::get_singleton()->region_set_map(region, RID());
 	} else {
-		if (navigation) {
-			NavigationServer3D::get_singleton()->region_set_map(region, navigation->get_rid());
-		}
+		NavigationServer3D::get_singleton()->region_set_map(region, get_world_3d()->get_navigation_map());
 	}
 
 	if (debug_view) {
@@ -69,22 +66,21 @@ bool NavigationRegion3D::is_enabled() const {
 	return enabled;
 }
 
+void NavigationRegion3D::set_layers(uint32_t p_layers) {
+	NavigationServer3D::get_singleton()->region_set_layers(region, p_layers);
+}
+
+uint32_t NavigationRegion3D::get_layers() const {
+	return NavigationServer3D::get_singleton()->region_get_layers(region);
+}
+
 /////////////////////////////
 
 void NavigationRegion3D::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE: {
-			Node3D *c = this;
-			while (c) {
-				navigation = Object::cast_to<Navigation3D>(c);
-				if (navigation) {
-					if (enabled) {
-						NavigationServer3D::get_singleton()->region_set_map(region, navigation->get_rid());
-					}
-					break;
-				}
-
-				c = c->get_parent_spatial();
+			if (enabled) {
+				NavigationServer3D::get_singleton()->region_set_map(region, get_world_3d()->get_navigation_map());
 			}
 
 			if (navmesh.is_valid() && get_tree()->is_debugging_navigation_hint()) {
@@ -105,15 +101,12 @@ void NavigationRegion3D::_notification(int p_what) {
 
 		} break;
 		case NOTIFICATION_EXIT_TREE: {
-			if (navigation) {
-				NavigationServer3D::get_singleton()->region_set_map(region, RID());
-			}
+			NavigationServer3D::get_singleton()->region_set_map(region, RID());
 
 			if (debug_view) {
 				debug_view->queue_delete();
 				debug_view = nullptr;
 			}
-			navigation = nullptr;
 		} break;
 	}
 }
@@ -198,19 +191,7 @@ String NavigationRegion3D::get_configuration_warning() const {
 		warning += TTR("A NavigationMesh resource must be set or created for this node to work.");
 	}
 
-	const Node3D *c = this;
-	while (c) {
-		if (Object::cast_to<Navigation3D>(c)) {
-			return warning;
-		}
-
-		c = Object::cast_to<Node3D>(c->get_parent());
-	}
-
-	if (!warning.is_empty()) {
-		warning += "\n\n";
-	}
-	return warning + TTR("NavigationRegion3D must be a child or grandchild to a Navigation3D node. It only provides navigation data.");
+	return warning;
 }
 
 void NavigationRegion3D::_bind_methods() {
@@ -220,11 +201,15 @@ void NavigationRegion3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_enabled", "enabled"), &NavigationRegion3D::set_enabled);
 	ClassDB::bind_method(D_METHOD("is_enabled"), &NavigationRegion3D::is_enabled);
 
+	ClassDB::bind_method(D_METHOD("set_layers", "layers"), &NavigationRegion3D::set_layers);
+	ClassDB::bind_method(D_METHOD("get_layers"), &NavigationRegion3D::get_layers);
+
 	ClassDB::bind_method(D_METHOD("bake_navigation_mesh"), &NavigationRegion3D::bake_navigation_mesh);
 	ClassDB::bind_method(D_METHOD("_bake_finished", "nav_mesh"), &NavigationRegion3D::_bake_finished);
 
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "navmesh", PROPERTY_HINT_RESOURCE_TYPE, "NavigationMesh"), "set_navigation_mesh", "get_navigation_mesh");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "enabled"), "set_enabled", "is_enabled");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "layers", PROPERTY_HINT_LAYERS_3D_NAVIGATION), "set_layers", "get_layers");
 
 	ADD_SIGNAL(MethodInfo("navigation_mesh_changed"));
 	ADD_SIGNAL(MethodInfo("bake_finished"));
