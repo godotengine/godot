@@ -284,8 +284,6 @@ void RenderForwardClustered::_allocate_normal_roughness_texture(RenderBufferData
 		fb.push_back(rb->normal_roughness_buffer_msaa);
 		rb->depth_normal_roughness_fb = RD::get_singleton()->framebuffer_create(fb);
 	}
-
-	_render_buffers_clear_uniform_set(rb);
 }
 
 RendererSceneRenderRD::RenderBufferData *RenderForwardClustered::_create_render_buffer_data() {
@@ -2303,15 +2301,6 @@ RID RenderForwardClustered::_setup_sdfgi_render_pass_uniform_set(RID p_albedo_te
 
 	sdfgi_pass_uniform_set = RD::get_singleton()->uniform_set_create(uniforms, scene_shader.default_shader_sdfgi_rd, RENDER_PASS_UNIFORM_SET);
 	return sdfgi_pass_uniform_set;
-}
-
-void RenderForwardClustered::_render_buffers_clear_uniform_set(RenderBufferDataForwardClustered *rb) {
-}
-
-void RenderForwardClustered::_render_buffers_uniform_set_changed(RID p_render_buffers) {
-	RenderBufferDataForwardClustered *rb = (RenderBufferDataForwardClustered *)render_buffers_get_data(p_render_buffers);
-
-	_render_buffers_clear_uniform_set(rb);
 }
 
 RID RenderForwardClustered::_render_buffers_get_normal_texture(RID p_render_buffers) {

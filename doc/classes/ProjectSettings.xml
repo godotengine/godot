@@ -1356,10 +1356,6 @@
 			[b]FIXME:[/b] No longer valid after DisplayServer split:
 			In such cases, this property is not updated, so use [code]OS.get_current_video_driver[/code] to query it at run-time.
 		</member>
-		<member name="rendering/driver/rd_renderer/use_low_end_renderer" type="bool" setter="" getter="" default="false">
-		</member>
-		<member name="rendering/driver/rd_renderer/use_low_end_renderer.mobile" type="bool" setter="" getter="" default="true">
-		</member>
 		<member name="rendering/driver/threads/thread_model" type="int" setter="" getter="" default="1">
 			Thread model for rendering. Rendering on a thread can vastly improve performance, but synchronizing to the main thread can cause a bit more jitter.
 		</member>

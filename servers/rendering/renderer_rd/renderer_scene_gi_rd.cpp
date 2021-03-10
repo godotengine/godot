@@ -3144,8 +3144,6 @@ void RendererSceneGIRD::process_gi(RID p_render_buffers, RID p_normal_roughness_
 		rb->reflection_buffer = RD::get_singleton()->texture_create(tf, RD::TextureView());
 		rb->ambient_buffer = RD::get_singleton()->texture_create(tf, RD::TextureView());
 		rb->gi.using_half_size_gi = half_resolution;
-
-		p_scene_render->_render_buffers_uniform_set_changed(p_render_buffers);
 	}
 
 	PushConstant push_constant;

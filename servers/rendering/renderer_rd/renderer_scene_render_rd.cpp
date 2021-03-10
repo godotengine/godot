@@ -58,8 +58,6 @@ void RendererSceneRenderRD::sdfgi_update(RID p_render_buffers, RID p_environment
 			rb->sdfgi->erase();
 			memdelete(rb->sdfgi);
 			rb->sdfgi = nullptr;
-
-			_render_buffers_uniform_set_changed(p_render_buffers);
 		}
 		return;
 	}
@@ -78,8 +76,6 @@ void RendererSceneRenderRD::sdfgi_update(RID p_render_buffers, RID p_environment
 	if (sdfgi == nullptr) {
 		// re-create
 		rb->sdfgi = gi.create_sdfgi(env, p_world_position, requested_history_size);
-
-		_render_buffers_uniform_set_changed(p_render_buffers);
 	} else {
 		//check for updates
 		rb->sdfgi->update(env, p_world_position);
@@ -1533,7 +1529,6 @@ void RendererSceneRenderRD::_process_sss(RID p_render_buffers, const CameraMatri
 
 	if (rb->blur[0].texture.is_null()) {
 		_allocate_blur_textures(rb);
-		_render_buffers_uniform_set_changed(p_render_buffers);
 	}
 
 	storage->get_effects()->sub_surface_scattering(rb->texture, rb->blur[0].mipmaps[0].texture, rb->depth_texture, p_camera, Size2i(rb->width, rb->height), sss_scale, sss_depth_scale, sss_quality);
@@ -1585,7 +1580,6 @@ void RendererSceneRenderRD::_process_ssr(RID p_render_buffers, RID p_dest_frameb
 
 	if (rb->blur[0].texture.is_null()) {
 		_allocate_blur_textures(rb);
-		_render_buffers_uniform_set_changed(p_render_buffers);
 	}
 
 	storage->get_effects()->screen_space_reflection(rb->texture, p_normal_buffer, ssr_roughness_quality, rb->ssr.blur_radius[0], rb->ssr.blur_radius[1], p_metallic, p_metallic_mask, rb->depth_texture, rb->ssr.depth_scaled, rb->ssr.normal_scaled, rb->blur[0].mipmaps[1].texture, rb->blur[1].mipmaps[0].texture, Size2i(rb->width / 2, rb->height / 2), env->ssr_max_steps, env->ssr_fade_in, env->ssr_fade_out, env->ssr_depth_tolerance, p_projection);
@@ -1711,7 +1705,6 @@ void RendererSceneRenderRD::_process_ssao(RID p_render_buffers, RID p_environmen
 			tf.usage_bits = RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_STORAGE_BIT;
 			rb->ssao.ao_final = RD::get_singleton()->texture_create(tf, RD::TextureView());
 			RD::get_singleton()->set_resource_name(rb->ssao.ao_final, "SSAO Final");
-			_render_buffers_uniform_set_changed(p_render_buffers);
 		}
 		ssao_using_half_size = ssao_half_size;
 		uniform_sets_are_invalid = true;
@@ -1751,7 +1744,6 @@ void RendererSceneRenderRD::_render_buffers_post_process_and_tonemap(RID p_rende
 	if (can_use_effects && camfx && (camfx->dof_blur_near_enabled || camfx->dof_blur_far_enabled) && camfx->dof_blur_amount > 0.0) {
 		if (rb->blur[0].texture.is_null()) {
 			_allocate_blur_textures(rb);
-			_render_buffers_uniform_set_changed(p_render_buffers);
 		}
 
 		float bokeh_size = camfx->dof_blur_amount * 64.0;
@@ -1761,7 +1753,6 @@ void RendererSceneRenderRD::_render_buffers_post_process_and_tonemap(RID p_rende
 	if (can_use_effects && env && env->auto_exposure) {
 		if (rb->luminance.current.is_null()) {
 			_allocate_luminance_textures(rb);
-			_render_buffers_uniform_set_changed(p_render_buffers);
 		}
 
 		bool set_immediate = env->auto_exposure_version != rb->auto_exposure_version;
@@ -1782,7 +1773,6 @@ void RendererSceneRenderRD::_render_buffers_post_process_and_tonemap(RID p_rende
 
 		if (rb->blur[1].texture.is_null()) {
 			_allocate_blur_textures(rb);
-			_render_buffers_uniform_set_changed(p_render_buffers);
 		}
 
 		for (int i = 0; i < RS::MAX_GLOW_LEVELS; i++) {
@@ -2177,7 +2167,6 @@ void RendererSceneRenderRD::render_buffers_configure(RID p_render_buffers, RID p
 	}
 
 	rb->data->configure(rb->texture, rb->depth_texture, p_width, p_height, p_msaa);
-	_render_buffers_uniform_set_changed(p_render_buffers);
 
 	if (is_clustered_enabled()) {
 		rb->cluster_builder->setup(Size2i(p_width, p_height), max_cluster_elements, rb->depth_texture, storage->sampler_rd_get_default(RS::CANVAS_ITEM_TEXTURE_FILTER_NEAREST, RS::CANVAS_ITEM_TEXTURE_REPEAT_DISABLED), rb->texture);
@@ -2329,6 +2318,8 @@ void RendererSceneRenderRD::_setup_reflections(const PagedArray<RID> &p_reflecti
 
 		Vector3 extents = storage->reflection_probe_get_extents(base_probe);
 
+		rpi->cull_mask = storage->reflection_probe_get_cull_mask(base_probe);
+
 		reflection_ubo.box_extents[0] = extents.x;
 		reflection_ubo.box_extents[1] = extents.y;
 		reflection_ubo.box_extents[2] = extents.z;
@@ -2357,7 +2348,9 @@ void RendererSceneRenderRD::_setup_reflections(const PagedArray<RID> &p_reflecti
 		Transform proj = (p_camera_inverse_transform * transform).inverse();
 		RendererStorageRD::store_transform(proj, reflection_ubo.local_matrix);
 
-		current_cluster_builder->add_box(ClusterBuilderRD::BOX_TYPE_REFLECTION_PROBE, transform, extents);
+		if (current_cluster_builder != nullptr) {
+			current_cluster_builder->add_box(ClusterBuilderRD::BOX_TYPE_REFLECTION_PROBE, transform, extents);
+		}
 
 		rpi->last_pass = RSG::rasterizer->get_frame_number();
 	}
@@ -2747,8 +2740,11 @@ void RendererSceneRenderRD::_setup_lights(const PagedArray<RID> &p_lights, const
 		}
 
 		li->light_index = index;
+		li->cull_mask = storage->light_get_cull_mask(base);
 
-		current_cluster_builder->add_light(type == RS::LIGHT_SPOT ? ClusterBuilderRD::LIGHT_TYPE_SPOT : ClusterBuilderRD::LIGHT_TYPE_OMNI, light_transform, radius, spot_angle);
+		if (current_cluster_builder != nullptr) {
+			current_cluster_builder->add_light(type == RS::LIGHT_SPOT ? ClusterBuilderRD::LIGHT_TYPE_SPOT : ClusterBuilderRD::LIGHT_TYPE_OMNI, light_transform, radius, spot_angle);
+		}
 
 		r_positional_light_count++;
 	}
@@ -2815,6 +2811,9 @@ void RendererSceneRenderRD::_setup_decals(const PagedArray<RID> &p_decals, const
 	for (uint32_t i = 0; i < cluster.decal_count; i++) {
 		DecalInstance *di = cluster.decal_sort[i].instance;
 		RID decal = di->decal;
+
+		di->render_index = i;
+		di->cull_mask = storage->decal_get_cull_mask(decal);
 
 		Transform xform = di->transform;
 		float fade = 1.0;
@@ -2920,11 +2919,123 @@ void RendererSceneRenderRD::_setup_decals(const PagedArray<RID> &p_decals, const
 		dd.upper_fade = storage->decal_get_upper_fade(decal);
 		dd.lower_fade = storage->decal_get_lower_fade(decal);
 
-		current_cluster_builder->add_box(ClusterBuilderRD::BOX_TYPE_DECAL, xform, decal_extents);
+		if (current_cluster_builder != nullptr) {
+			current_cluster_builder->add_box(ClusterBuilderRD::BOX_TYPE_DECAL, xform, decal_extents);
+		}
 	}
 
 	if (cluster.decal_count > 0) {
 		RD::get_singleton()->buffer_update(cluster.decal_buffer, 0, sizeof(Cluster::DecalData) * cluster.decal_count, cluster.decals, RD::BARRIER_MASK_RASTER | RD::BARRIER_MASK_COMPUTE);
+	}
+}
+
+void RendererSceneRenderRD::_fill_instance_indices(const RID *p_omni_light_instances, uint32_t p_omni_light_instance_count, uint32_t *p_omni_light_indices, const RID *p_spot_light_instances, uint32_t p_spot_light_instance_count, uint32_t *p_spot_light_indices, const RID *p_reflection_probe_instances, uint32_t p_reflection_probe_instance_count, uint32_t *p_reflection_probe_indices, const RID *p_decal_instances, uint32_t p_decal_instance_count, uint32_t *p_decal_instance_indices, uint32_t p_layer_mask, uint32_t p_max_dst_words) {
+	// first zero out our indices
+	for (uint32_t i = 0; i < p_max_dst_words; i++) {
+		p_omni_light_indices[i] = 0;
+		p_spot_light_indices[i] = 0;
+		p_reflection_probe_indices[i] = 0;
+		p_decal_instance_indices[i] = 0;
+	}
+
+	{
+		// process omni lights
+		uint32_t dword = 0;
+		uint32_t shift = 0;
+
+		for (uint32_t i = 0; i < p_omni_light_instance_count && dword < p_max_dst_words; i++) {
+			LightInstance *li = light_instance_owner.getornull(p_omni_light_instances[i]);
+
+			if ((li->cull_mask & p_layer_mask) && (li->light_index < 255)) {
+				p_omni_light_indices[dword] += li->light_index << shift;
+				if (shift == 24) {
+					dword++;
+					shift = 0;
+				} else {
+					shift += 8;
+				}
+			}
+		}
+
+		if (dword < 2) {
+			// put in ending mark
+			p_omni_light_indices[dword] += 0xFF << shift;
+		}
+	}
+
+	{
+		// process spot lights
+		uint32_t dword = 0;
+		uint32_t shift = 0;
+
+		for (uint32_t i = 0; i < p_spot_light_instance_count && dword < p_max_dst_words; i++) {
+			LightInstance *li = light_instance_owner.getornull(p_spot_light_instances[i]);
+
+			if ((li->cull_mask & p_layer_mask) && (li->light_index < 255)) {
+				p_spot_light_indices[dword] += li->light_index << shift;
+				if (shift == 24) {
+					dword++;
+					shift = 0;
+				} else {
+					shift += 8;
+				}
+			}
+		}
+
+		if (dword < 2) {
+			// put in ending mark
+			p_spot_light_indices[dword] += 0xFF << shift;
+		}
+	}
+
+	{
+		// process reflection probes
+		uint32_t dword = 0;
+		uint32_t shift = 0;
+
+		for (uint32_t i = 0; i < p_reflection_probe_instance_count && dword < p_max_dst_words; i++) {
+			ReflectionProbeInstance *rpi = reflection_probe_instance_owner.getornull(p_reflection_probe_instances[i]);
+
+			if ((rpi->cull_mask & p_layer_mask) && (rpi->render_index < 255)) {
+				p_reflection_probe_indices[dword] += rpi->render_index << shift;
+				if (shift == 24) {
+					dword++;
+					shift = 0;
+				} else {
+					shift += 8;
+				}
+			}
+		}
+
+		if (dword < 2) {
+			// put in ending mark
+			p_reflection_probe_indices[dword] += 0xFF << shift;
+		}
+	}
+
+	{
+		// process decals
+		uint32_t dword = 0;
+		uint32_t shift = 0;
+
+		for (uint32_t i = 0; i < p_decal_instance_count && dword < p_max_dst_words; i++) {
+			DecalInstance *decal = decal_instance_owner.getornull(p_decal_instances[i]);
+
+			if ((decal->cull_mask & p_layer_mask) && (decal->render_index < 255)) {
+				p_decal_instance_indices[dword] += decal->render_index << shift;
+				if (shift == 24) {
+					dword++;
+					shift = 0;
+				} else {
+					shift += 8;
+				}
+			}
+		}
+
+		if (dword < 2) {
+			// put in ending mark
+			p_decal_instance_indices[dword] += 0xFF << shift;
+		}
 	}
 }
 
@@ -2967,7 +3078,6 @@ void RendererSceneRenderRD::_update_volumetric_fog(RID p_render_buffers, RID p_e
 		//validate
 		if (!env || !env->volumetric_fog_enabled || rb->volumetric_fog->width != target_width || rb->volumetric_fog->height != target_height || rb->volumetric_fog->depth != volumetric_fog_depth) {
 			_volumetric_fog_erase(rb);
-			_render_buffers_uniform_set_changed(p_render_buffers);
 		}
 	}
 
@@ -3003,7 +3113,6 @@ void RendererSceneRenderRD::_update_volumetric_fog(RID p_render_buffers, RID p_e
 		tf.usage_bits = RD::TEXTURE_USAGE_STORAGE_BIT | RD::TEXTURE_USAGE_SAMPLING_BIT;
 
 		rb->volumetric_fog->fog_map = RD::get_singleton()->texture_create(tf, RD::TextureView());
-		_render_buffers_uniform_set_changed(p_render_buffers);
 
 		Vector<RD::Uniform> uniforms;
 		{
@@ -3528,7 +3637,7 @@ void RendererSceneRenderRD::render_scene(RID p_render_buffers, const Transform &
 	RenderBuffers *rb = nullptr;
 	if (p_render_buffers.is_valid()) {
 		rb = render_buffers_owner.getornull(p_render_buffers);
-		ERR_FAIL_COND(!rb); // !BAS! Do we fail here or skip the parts that won't work. can't really see a case why we would be rendering without buffers....
+		ERR_FAIL_COND(!rb);
 	}
 
 	//assign render data
@@ -3584,10 +3693,12 @@ void RendererSceneRenderRD::render_scene(RID p_render_buffers, const Transform &
 	}
 
 	//assign render indices to giprobes
-	for (uint32_t i = 0; i < (uint32_t)p_gi_probes.size(); i++) {
-		RendererSceneGIRD::GIProbeInstance *giprobe_inst = gi.gi_probe_instance_owner.getornull(p_gi_probes[i]);
-		if (giprobe_inst) {
-			giprobe_inst->render_index = i;
+	if (is_dynamic_gi_supported()) {
+		for (uint32_t i = 0; i < (uint32_t)p_gi_probes.size(); i++) {
+			RendererSceneGIRD::GIProbeInstance *giprobe_inst = gi.gi_probe_instance_owner.getornull(p_gi_probes[i]);
+			if (giprobe_inst) {
+				giprobe_inst->render_index = i;
+			}
 		}
 	}
 
@@ -3623,7 +3734,11 @@ void RendererSceneRenderRD::render_scene(RID p_render_buffers, const Transform &
 
 	render_state.depth_prepass_used = false;
 	//calls _pre_opaque_render between depth pre-pass and opaque pass
-	_render_scene(p_render_buffers, p_cam_transform, p_cam_projection, p_cam_ortogonal, p_instances, *render_state.gi_probes, p_lightmaps, p_environment, current_cluster_builder->get_cluster_buffer(), current_cluster_builder->get_cluster_size(), current_cluster_builder->get_max_cluster_elements(), p_camera_effects, p_shadow_atlas, p_reflection_atlas, p_reflection_probe, p_reflection_probe_pass, clear_color, p_screen_lod_threshold);
+	if (current_cluster_builder != nullptr) {
+		_render_scene(p_render_buffers, p_cam_transform, p_cam_projection, p_cam_ortogonal, p_instances, *render_state.gi_probes, p_lightmaps, p_environment, current_cluster_builder->get_cluster_buffer(), current_cluster_builder->get_cluster_size(), current_cluster_builder->get_max_cluster_elements(), p_camera_effects, p_shadow_atlas, p_reflection_atlas, p_reflection_probe, p_reflection_probe_pass, clear_color, p_screen_lod_threshold);
+	} else {
+		_render_scene(p_render_buffers, p_cam_transform, p_cam_projection, p_cam_ortogonal, p_instances, *render_state.gi_probes, p_lightmaps, p_environment, RID(), 0, 0, p_camera_effects, p_shadow_atlas, p_reflection_atlas, p_reflection_probe, p_reflection_probe_pass, clear_color, p_screen_lod_threshold);
+	}
 
 	if (p_render_buffers.is_valid()) {
 		if (debug_draw == RS::VIEWPORT_DEBUG_DRAW_CLUSTER_OMNI_LIGHTS || debug_draw == RS::VIEWPORT_DEBUG_DRAW_CLUSTER_SPOT_LIGHTS || debug_draw == RS::VIEWPORT_DEBUG_DRAW_CLUSTER_DECALS || debug_draw == RS::VIEWPORT_DEBUG_DRAW_CLUSTER_REFLECTION_PROBES) {
@@ -3644,7 +3759,9 @@ void RendererSceneRenderRD::render_scene(RID p_render_buffers, const Transform &
 				default: {
 				}
 			}
-			current_cluster_builder->debug(elem_type);
+			if (current_cluster_builder != nullptr) {
+				current_cluster_builder->debug(elem_type);
+			}
 		}
 
 		RENDER_TIMESTAMP("Tonemap");
@@ -4105,8 +4222,12 @@ bool RendererSceneRenderRD::is_volumetric_supported() const {
 	return true;
 }
 
+uint32_t RendererSceneRenderRD::get_max_elements() const {
+	return GLOBAL_GET("rendering/limits/cluster_builder/max_clustered_elements");
+}
+
 RendererSceneRenderRD::RendererSceneRenderRD(RendererStorageRD *p_storage) {
-	max_cluster_elements = GLOBAL_GET("rendering/limits/cluster_builder/max_clustered_elements");
+	max_cluster_elements = get_max_elements();
 
 	storage = p_storage;
 	singleton = this;

@@ -2453,18 +2453,19 @@ void RendererSceneCull::_frustum_cull(CullData &cull_data, FrustumCullResult &cu
 				}
 
 				if (geometry_instance_pair_mask & (1 << RS::INSTANCE_DECAL) && (idata.flags & InstanceData::FLAG_GEOM_DECAL_DIRTY)) {
-					//InstanceGeometryData *geom = static_cast<InstanceGeometryData *>(idata.instance->base_data);
-					//todo for GLES3
-					idata.flags &= ~uint32_t(InstanceData::FLAG_GEOM_DECAL_DIRTY);
-					/*for (Set<Instance *>::Element *E = geom->dec.front(); E; E = E->next()) {
-					InstanceReflectionProbeData *reflection_probe = static_cast<InstanceReflectionProbeData *>(E->get()->base_data);
+					InstanceGeometryData *geom = static_cast<InstanceGeometryData *>(idata.instance->base_data);
+					uint32_t idx = 0;
 
-					instance_pair_buffer[idx++] = reflection_probe->instance;
-					if (idx==MAX_INSTANCE_PAIRS) {
-						break;
+					for (Set<Instance *>::Element *E = geom->decals.front(); E; E = E->next()) {
+						InstanceDecalData *decal = static_cast<InstanceDecalData *>(E->get()->base_data);
+
+						instance_pair_buffer[idx++] = decal->instance;
+						if (idx == MAX_INSTANCE_PAIRS) {
+							break;
+						}
 					}
-				}*/
-					//scene_render->geometry_instance_pair_decal_instances(geom->geometry_instance, light_instances, idx);
+					scene_render->geometry_instance_pair_decal_instances(geom->geometry_instance, instance_pair_buffer, idx);
+					idata.flags &= ~uint32_t(InstanceData::FLAG_GEOM_DECAL_DIRTY);
 				}
 
 				if (idata.flags & InstanceData::FLAG_GEOM_GI_PROBE_DIRTY) {

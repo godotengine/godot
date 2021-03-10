@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  scene_shader_forward_clustered.cpp                                   */
+/*  scene_shader_forward_mobile.cpp                                      */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,13 +28,15 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#include "scene_shader_forward_clustered.h"
+#include "scene_shader_forward_mobile.h"
 #include "core/config/project_settings.h"
-#include "render_forward_clustered.h"
+#include "render_forward_mobile.h"
 
 using namespace RendererSceneRenderImplementation;
 
-void SceneShaderForwardClustered::ShaderData::set_code(const String &p_code) {
+/* ShaderData */
+
+void SceneShaderForwardMobile::ShaderData::set_code(const String &p_code) {
 	//compile
 
 	code = p_code;
@@ -107,8 +109,8 @@ void SceneShaderForwardClustered::ShaderData::set_code(const String &p_code) {
 	actions.usage_flag_pointers["ALPHA"] = &uses_alpha;
 	actions.render_mode_flags["depth_prepass_alpha"] = &uses_depth_pre_pass;
 
-	actions.usage_flag_pointers["SSS_STRENGTH"] = &uses_sss;
-	actions.usage_flag_pointers["SSS_TRANSMITTANCE_DEPTH"] = &uses_transmittance;
+	// actions.usage_flag_pointers["SSS_STRENGTH"] = &uses_sss;
+	// actions.usage_flag_pointers["SSS_TRANSMITTANCE_DEPTH"] = &uses_transmittance;
 
 	actions.usage_flag_pointers["SCREEN_TEXTURE"] = &uses_screen_texture;
 	actions.usage_flag_pointers["DEPTH_TEXTURE"] = &uses_depth_texture;
@@ -128,7 +130,8 @@ void SceneShaderForwardClustered::ShaderData::set_code(const String &p_code) {
 
 	actions.uniforms = &uniforms;
 
-	SceneShaderForwardClustered *shader_singleton = (SceneShaderForwardClustered *)SceneShaderForwardClustered::singleton;
+	SceneShaderForwardMobile *shader_singleton = (SceneShaderForwardMobile *)SceneShaderForwardMobile::singleton;
+
 	Error err = shader_singleton->compiler.compile(RS::SHADER_SPATIAL, code, &actions, path, gen_code);
 
 	ERR_FAIL_COND(err != OK);
@@ -158,6 +161,7 @@ void SceneShaderForwardClustered::ShaderData::set_code(const String &p_code) {
 	print_line("\n**vertex_globals:\n" + gen_code.stage_globals[ShaderCompilerRD::STAGE_VERTEX]);
 	print_line("\n**fragment_globals:\n" + gen_code.stage_globals[ShaderCompilerRD::STAGE_FRAGMENT]);
 #endif
+
 	shader_singleton->shader.version_set_code(version, gen_code.code, gen_code.uniforms, gen_code.stage_globals[ShaderCompilerRD::STAGE_VERTEX], gen_code.stage_globals[ShaderCompilerRD::STAGE_FRAGMENT], gen_code.defines);
 	ERR_FAIL_COND(!shader_singleton->shader.version_is_valid(version));
 
@@ -266,7 +270,7 @@ void SceneShaderForwardClustered::ShaderData::set_code(const String &p_code) {
 			RD::RenderPrimitive primitive_rd = uses_point_size ? RD::RENDER_PRIMITIVE_POINTS : primitive_rd_table[j];
 
 			for (int k = 0; k < SHADER_VERSION_MAX; k++) {
-				if (!static_cast<SceneShaderForwardClustered *>(singleton)->shader.is_variant_enabled(k)) {
+				if (!static_cast<SceneShaderForwardMobile *>(singleton)->shader.is_variant_enabled(k)) {
 					continue;
 				}
 				RD::PipelineRasterizationState raster_state;
@@ -286,6 +290,21 @@ void SceneShaderForwardClustered::ShaderData::set_code(const String &p_code) {
 						multisample_state.enable_alpha_to_one = true;
 					}
 
+					if (k == SHADER_VERSION_COLOR_PASS || k == SHADER_VERSION_LIGHTMAP_COLOR_PASS) {
+						blend_state = blend_state_blend;
+						if (depth_draw == DEPTH_DRAW_OPAQUE) {
+							depth_stencil.enable_depth_write = false; //alpha does not draw depth
+						}
+					} else if (k == SHADER_VERSION_SHADOW_PASS || k == SHADER_VERSION_DEPTH_PASS_DP) {
+						//none, blend state contains nothing
+					} else if (k == SHADER_VERSION_DEPTH_PASS_WITH_MATERIAL) {
+						blend_state = RD::PipelineColorBlendState::create_disabled(5); //writes to normal and roughness in opaque way
+					} else {
+						pipelines[i][j][k].clear();
+						continue; // do not use this version (will error if using it is attempted)
+					}
+
+					/*
 					if (k == SHADER_VERSION_COLOR_PASS || k == SHADER_VERSION_COLOR_PASS_WITH_FORWARD_GI || k == SHADER_VERSION_LIGHTMAP_COLOR_PASS) {
 						blend_state = blend_state_blend;
 						if (depth_draw == DEPTH_DRAW_OPAQUE) {
@@ -303,7 +322,19 @@ void SceneShaderForwardClustered::ShaderData::set_code(const String &p_code) {
 						pipelines[i][j][k].clear();
 						continue; // do not use this version (will error if using it is attempted)
 					}
+					*/
 				} else {
+					if (k == SHADER_VERSION_COLOR_PASS || k == SHADER_VERSION_LIGHTMAP_COLOR_PASS) {
+						blend_state = blend_state_opaque;
+					} else if (k == SHADER_VERSION_SHADOW_PASS || k == SHADER_VERSION_DEPTH_PASS_DP) {
+						//none, leave empty
+					} else if (k == SHADER_VERSION_DEPTH_PASS_WITH_MATERIAL) {
+						blend_state = RD::PipelineColorBlendState::create_disabled(5); //writes to normal and roughness in opaque way
+					} else {
+						// ???
+					}
+
+					/*
 					if (k == SHADER_VERSION_COLOR_PASS || k == SHADER_VERSION_COLOR_PASS_WITH_FORWARD_GI || k == SHADER_VERSION_LIGHTMAP_COLOR_PASS) {
 						blend_state = blend_state_opaque;
 					} else if (k == SHADER_VERSION_DEPTH_PASS || k == SHADER_VERSION_DEPTH_PASS_DP) {
@@ -322,6 +353,7 @@ void SceneShaderForwardClustered::ShaderData::set_code(const String &p_code) {
 						depth_stencil.enable_depth_test = false;
 						depth_stencil.enable_depth_write = false;
 					}
+					*/
 				}
 
 				RID shader_variant = shader_singleton->shader.version_get_shader(version, k);
@@ -333,7 +365,7 @@ void SceneShaderForwardClustered::ShaderData::set_code(const String &p_code) {
 	valid = true;
 }
 
-void SceneShaderForwardClustered::ShaderData::set_default_texture_param(const StringName &p_name, RID p_texture) {
+void SceneShaderForwardMobile::ShaderData::set_default_texture_param(const StringName &p_name, RID p_texture) {
 	if (!p_texture.is_valid()) {
 		default_texture_params.erase(p_name);
 	} else {
@@ -341,7 +373,7 @@ void SceneShaderForwardClustered::ShaderData::set_default_texture_param(const St
 	}
 }
 
-void SceneShaderForwardClustered::ShaderData::get_param_list(List<PropertyInfo> *p_param_list) const {
+void SceneShaderForwardMobile::ShaderData::get_param_list(List<PropertyInfo> *p_param_list) const {
 	Map<int, StringName> order;
 
 	for (Map<StringName, ShaderLanguage::ShaderNode::Uniform>::Element *E = uniforms.front(); E; E = E->next()) {
@@ -363,7 +395,7 @@ void SceneShaderForwardClustered::ShaderData::get_param_list(List<PropertyInfo> 
 	}
 }
 
-void SceneShaderForwardClustered::ShaderData::get_instance_param_list(List<RendererStorage::InstanceShaderParam> *p_param_list) const {
+void SceneShaderForwardMobile::ShaderData::get_instance_param_list(List<RendererStorage::InstanceShaderParam> *p_param_list) const {
 	for (Map<StringName, ShaderLanguage::ShaderNode::Uniform>::Element *E = uniforms.front(); E; E = E->next()) {
 		if (E->get().scope != ShaderLanguage::ShaderNode::Uniform::SCOPE_INSTANCE) {
 			continue;
@@ -378,7 +410,7 @@ void SceneShaderForwardClustered::ShaderData::get_instance_param_list(List<Rende
 	}
 }
 
-bool SceneShaderForwardClustered::ShaderData::is_param_texture(const StringName &p_param) const {
+bool SceneShaderForwardMobile::ShaderData::is_param_texture(const StringName &p_param) const {
 	if (!uniforms.has(p_param)) {
 		return false;
 	}
@@ -386,15 +418,15 @@ bool SceneShaderForwardClustered::ShaderData::is_param_texture(const StringName 
 	return uniforms[p_param].texture_order >= 0;
 }
 
-bool SceneShaderForwardClustered::ShaderData::is_animated() const {
+bool SceneShaderForwardMobile::ShaderData::is_animated() const {
 	return false;
 }
 
-bool SceneShaderForwardClustered::ShaderData::casts_shadows() const {
+bool SceneShaderForwardMobile::ShaderData::casts_shadows() const {
 	return false;
 }
 
-Variant SceneShaderForwardClustered::ShaderData::get_default_parameter(const StringName &p_parameter) const {
+Variant SceneShaderForwardMobile::ShaderData::get_default_parameter(const StringName &p_parameter) const {
 	if (uniforms.has(p_parameter)) {
 		ShaderLanguage::ShaderNode::Uniform uniform = uniforms[p_parameter];
 		Vector<ShaderLanguage::ConstantNode::Value> default_value = uniform.default_value;
@@ -403,19 +435,19 @@ Variant SceneShaderForwardClustered::ShaderData::get_default_parameter(const Str
 	return Variant();
 }
 
-RS::ShaderNativeSourceCode SceneShaderForwardClustered::ShaderData::get_native_source_code() const {
-	SceneShaderForwardClustered *shader_singleton = (SceneShaderForwardClustered *)SceneShaderForwardClustered::singleton;
+RS::ShaderNativeSourceCode SceneShaderForwardMobile::ShaderData::get_native_source_code() const {
+	SceneShaderForwardMobile *shader_singleton = (SceneShaderForwardMobile *)SceneShaderForwardMobile::singleton;
 
 	return shader_singleton->shader.version_get_native_source_code(version);
 }
 
-SceneShaderForwardClustered::ShaderData::ShaderData() {
+SceneShaderForwardMobile::ShaderData::ShaderData() {
 	valid = false;
 	uses_screen_texture = false;
 }
 
-SceneShaderForwardClustered::ShaderData::~ShaderData() {
-	SceneShaderForwardClustered *shader_singleton = (SceneShaderForwardClustered *)SceneShaderForwardClustered::singleton;
+SceneShaderForwardMobile::ShaderData::~ShaderData() {
+	SceneShaderForwardMobile *shader_singleton = (SceneShaderForwardMobile *)SceneShaderForwardMobile::singleton;
 	ERR_FAIL_COND(!shader_singleton);
 	//pipeline variants will clear themselves if shader is gone
 	if (version.is_valid()) {
@@ -423,21 +455,21 @@ SceneShaderForwardClustered::ShaderData::~ShaderData() {
 	}
 }
 
-RendererStorageRD::ShaderData *SceneShaderForwardClustered::_create_shader_func() {
+RendererStorageRD::ShaderData *SceneShaderForwardMobile::_create_shader_func() {
 	ShaderData *shader_data = memnew(ShaderData);
 	return shader_data;
 }
 
-void SceneShaderForwardClustered::MaterialData::set_render_priority(int p_priority) {
+void SceneShaderForwardMobile::MaterialData::set_render_priority(int p_priority) {
 	priority = p_priority - RS::MATERIAL_RENDER_PRIORITY_MIN; //8 bits
 }
 
-void SceneShaderForwardClustered::MaterialData::set_next_pass(RID p_pass) {
+void SceneShaderForwardMobile::MaterialData::set_next_pass(RID p_pass) {
 	next_pass = p_pass;
 }
 
-void SceneShaderForwardClustered::MaterialData::update_parameters(const Map<StringName, Variant> &p_parameters, bool p_uniform_dirty, bool p_textures_dirty) {
-	SceneShaderForwardClustered *shader_singleton = (SceneShaderForwardClustered *)SceneShaderForwardClustered::singleton;
+void SceneShaderForwardMobile::MaterialData::update_parameters(const Map<StringName, Variant> &p_parameters, bool p_uniform_dirty, bool p_textures_dirty) {
+	SceneShaderForwardMobile *shader_singleton = (SceneShaderForwardMobile *)SceneShaderForwardMobile::singleton;
 
 	if ((uint32_t)ubo_data.size() != shader_data->ubo_size) {
 		p_uniform_dirty = true;
@@ -513,10 +545,10 @@ void SceneShaderForwardClustered::MaterialData::update_parameters(const Map<Stri
 		}
 	}
 
-	uniform_set = RD::get_singleton()->uniform_set_create(uniforms, shader_singleton->shader.version_get_shader(shader_data->version, 0), RenderForwardClustered::MATERIAL_UNIFORM_SET);
+	uniform_set = RD::get_singleton()->uniform_set_create(uniforms, shader_singleton->shader.version_get_shader(shader_data->version, 0), RenderForwardMobile::MATERIAL_UNIFORM_SET);
 }
 
-SceneShaderForwardClustered::MaterialData::~MaterialData() {
+SceneShaderForwardMobile::MaterialData::~MaterialData() {
 	if (uniform_set.is_valid() && RD::get_singleton()->uniform_set_is_valid(uniform_set)) {
 		RD::get_singleton()->free(uniform_set);
 	}
@@ -526,7 +558,7 @@ SceneShaderForwardClustered::MaterialData::~MaterialData() {
 	}
 }
 
-RendererStorageRD::MaterialData *SceneShaderForwardClustered::_create_material_func(ShaderData *p_shader) {
+RendererStorageRD::MaterialData *SceneShaderForwardMobile::_create_material_func(ShaderData *p_shader) {
 	MaterialData *material_data = memnew(MaterialData);
 	material_data->shader_data = p_shader;
 	material_data->last_frame = false;
@@ -534,42 +566,27 @@ RendererStorageRD::MaterialData *SceneShaderForwardClustered::_create_material_f
 	return material_data;
 }
 
-SceneShaderForwardClustered *SceneShaderForwardClustered::singleton = nullptr;
+/* Scene Shader */
 
-SceneShaderForwardClustered::SceneShaderForwardClustered() {
-	// there should be only one of these, contained within our RenderFM singleton.
+SceneShaderForwardMobile *SceneShaderForwardMobile::singleton = nullptr;
+
+SceneShaderForwardMobile::SceneShaderForwardMobile() {
+	// there should be only one of these, contained within our RenderForwardMobile singleton.
 	singleton = this;
 }
 
-SceneShaderForwardClustered::~SceneShaderForwardClustered() {
-	RD::get_singleton()->free(default_vec4_xform_buffer);
-	RD::get_singleton()->free(shadow_sampler);
-
-	storage->free(wireframe_material_shader);
-	storage->free(overdraw_material_shader);
-	storage->free(default_shader);
-
-	storage->free(wireframe_material);
-	storage->free(overdraw_material);
-	storage->free(default_material);
-}
-
-void SceneShaderForwardClustered::init(RendererStorageRD *p_storage, const String p_defines) {
+void SceneShaderForwardMobile::init(RendererStorageRD *p_storage, const String p_defines) {
 	storage = p_storage;
+
+	/* SCENE SHADER */
 
 	{
 		Vector<String> shader_versions;
-		shader_versions.push_back("\n#define MODE_RENDER_DEPTH\n");
-		shader_versions.push_back("\n#define MODE_RENDER_DEPTH\n#define MODE_DUAL_PARABOLOID\n");
-		shader_versions.push_back("\n#define MODE_RENDER_DEPTH\n#define MODE_RENDER_NORMAL_ROUGHNESS\n");
-		shader_versions.push_back("\n#define MODE_RENDER_DEPTH\n#define MODE_RENDER_NORMAL_ROUGHNESS\n#define MODE_RENDER_GIPROBE\n");
-		shader_versions.push_back("\n#define MODE_RENDER_DEPTH\n#define MODE_RENDER_MATERIAL\n");
-		shader_versions.push_back("\n#define MODE_RENDER_DEPTH\n#define MODE_RENDER_SDF\n");
-		shader_versions.push_back("");
-		shader_versions.push_back("\n#define USE_FORWARD_GI\n");
-		shader_versions.push_back("\n#define MODE_MULTIPLE_RENDER_TARGETS\n");
-		shader_versions.push_back("\n#define USE_LIGHTMAP\n");
-		shader_versions.push_back("\n#define MODE_MULTIPLE_RENDER_TARGETS\n#define USE_LIGHTMAP\n");
+		shader_versions.push_back(""); // SHADER_VERSION_COLOR_PASS
+		shader_versions.push_back("\n#define USE_LIGHTMAP\n"); // SHADER_VERSION_LIGHTMAP_COLOR_PASS
+		shader_versions.push_back("\n#define MODE_RENDER_DEPTH\n"); // !BAS! SHADER_VERSION_SHADOW_PASS, should probably change this to MODE_RENDER_SHADOW because we don't have a depth pass here...
+		shader_versions.push_back("\n#define MODE_RENDER_DEPTH\n#define MODE_DUAL_PARABOLOID\n"); // SHADER_VERSION_DEPTH_PASS_DP (maybe rename to SHADER_VERSION_SHADOW_PASS_DP?)
+		shader_versions.push_back("\n#define MODE_RENDER_DEPTH\n#define MODE_RENDER_MATERIAL\n"); // SHADER_VERSION_DEPTH_PASS_WITH_MATERIAL
 		shader.initialize(shader_versions, p_defines);
 	}
 
@@ -712,7 +729,6 @@ void SceneShaderForwardClustered::init(RendererStorageRD *p_storage, const Strin
 		actions.render_mode_defines["particle_trails"] = "#define USE_PARTICLE_TRAILS\n";
 
 		bool force_lambert = GLOBAL_GET("rendering/shading/overrides/force_lambert_over_burley");
-
 		if (!force_lambert) {
 			actions.render_mode_defines["diffuse_burley"] = "#define DIFFUSE_BURLEY\n";
 		}
@@ -724,7 +740,6 @@ void SceneShaderForwardClustered::init(RendererStorageRD *p_storage, const Strin
 		actions.render_mode_defines["sss_mode_skin"] = "#define SSS_MODE_SKIN\n";
 
 		bool force_blinn = GLOBAL_GET("rendering/shading/overrides/force_blinn_over_ggx");
-
 		if (!force_blinn) {
 			actions.render_mode_defines["specular_schlick_ggx"] = "#define SPECULAR_SCHLICK_GGX\n";
 		} else {
@@ -742,7 +757,7 @@ void SceneShaderForwardClustered::init(RendererStorageRD *p_storage, const Strin
 
 		actions.sampler_array_name = "material_samplers";
 		actions.base_texture_binding_index = 1;
-		actions.texture_layout_set = RenderForwardClustered::MATERIAL_UNIFORM_SET;
+		actions.texture_layout_set = RenderForwardMobile::MATERIAL_UNIFORM_SET;
 		actions.base_uniform_string = "material.";
 		actions.base_varying_index = 10;
 
@@ -765,7 +780,6 @@ void SceneShaderForwardClustered::init(RendererStorageRD *p_storage, const Strin
 
 		MaterialData *md = (MaterialData *)storage->material_get_data(default_material, RendererStorageRD::SHADER_TYPE_3D);
 		default_shader_rd = shader.version_get_shader(md->shader_data->version, SHADER_VERSION_COLOR_PASS);
-		default_shader_sdfgi_rd = shader.version_get_shader(md->shader_data->version, SHADER_VERSION_DEPTH_PASS_WITH_SDF);
 	}
 
 	{
@@ -793,7 +807,7 @@ void SceneShaderForwardClustered::init(RendererStorageRD *p_storage, const Strin
 		u.binding = 0;
 		uniforms.push_back(u);
 
-		default_vec4_xform_uniform_set = RD::get_singleton()->uniform_set_create(uniforms, default_shader_rd, RenderForwardClustered::TRANSFORMS_UNIFORM_SET);
+		default_vec4_xform_uniform_set = RD::get_singleton()->uniform_set_create(uniforms, default_shader_rd, RenderForwardMobile::TRANSFORMS_UNIFORM_SET);
 	}
 	{
 		RD::SamplerState sampler;
@@ -803,4 +817,17 @@ void SceneShaderForwardClustered::init(RendererStorageRD *p_storage, const Strin
 		sampler.compare_op = RD::COMPARE_OP_LESS;
 		shadow_sampler = RD::get_singleton()->sampler_create(sampler);
 	}
+}
+
+SceneShaderForwardMobile::~SceneShaderForwardMobile() {
+	RD::get_singleton()->free(default_vec4_xform_buffer);
+	RD::get_singleton()->free(shadow_sampler);
+
+	storage->free(wireframe_material_shader);
+	storage->free(overdraw_material_shader);
+	storage->free(default_shader);
+
+	storage->free(wireframe_material);
+	storage->free(overdraw_material);
+	storage->free(default_material);
 }
