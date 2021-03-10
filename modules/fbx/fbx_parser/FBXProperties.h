@@ -137,6 +137,7 @@ class PropertyTable {
 public:
 	// in-memory property table with no source element
 	PropertyTable();
+	PropertyTable(const PropertyTable *templateProps);
 	PropertyTable(const ElementPtr element, const PropertyTable *templateProps);
 	~PropertyTable();
 
