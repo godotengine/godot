@@ -1233,7 +1233,7 @@ SpriteFramesEditor::SpriteFramesEditor() {
 	thumbnail_zoom = 1.0f;
 	max_thumbnail_zoom = 8.0f;
 	min_thumbnail_zoom = 0.1f;
-	sheet_zoom = 1.0f;
+	sheet_zoom = MAX(1, EDSCALE);
 	max_sheet_zoom = 16.0f;
 	min_sheet_zoom = 0.01f;
 	_zoom_reset();
