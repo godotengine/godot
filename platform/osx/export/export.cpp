@@ -894,9 +894,22 @@ Error EditorExportPlatformOSX::export_project(const Ref<EditorExportPreset> &p_p
 		if (err == OK) {
 			DirAccess *da = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
 			for (int i = 0; i < shared_objects.size(); i++) {
-				err = da->copy(shared_objects[i].path, tmp_app_path_name + "/Contents/Frameworks/" + shared_objects[i].path.get_file());
+				String src_path = ProjectSettings::get_singleton()->globalize_path(shared_objects[i].path);
+				if (da->dir_exists(src_path)) {
+#ifndef UNIX_ENABLED
+					WARN_PRINT("Relative symlinks are not supported, exported " + src_path.get_file() + " might be broken!");
+#endif
+					print_verbose("export framework: " + src_path + " -> " + tmp_app_path_name + "/Contents/Frameworks/" + src_path.get_file());
+					err = da->make_dir_recursive(tmp_app_path_name + "/Contents/Frameworks/" + src_path.get_file());
+					if (err == OK) {
+						err = da->copy_dir(src_path, tmp_app_path_name + "/Contents/Frameworks/" + src_path.get_file(), -1, true);
+					}
+				} else {
+					print_verbose("export dylib: " + src_path + " -> " + tmp_app_path_name + "/Contents/Frameworks/" + src_path.get_file());
+					err = da->copy(src_path, tmp_app_path_name + "/Contents/Frameworks/" + src_path.get_file());
+				}
 				if (err == OK && sign_enabled) {
-					err = _code_sign(p_preset, tmp_app_path_name + "/Contents/Frameworks/" + shared_objects[i].path.get_file(), ent_path);
+					err = _code_sign(p_preset, tmp_app_path_name + "/Contents/Frameworks/" + src_path.get_file(), ent_path);
 				}
 			}
 			memdelete(da);
@@ -980,7 +993,48 @@ void EditorExportPlatformOSX::_zip_folder_recursive(zipFile &p_zip, const String
 		if (f == "." || f == "..") {
 			continue;
 		}
-		if (da->current_is_dir()) {
+		if (da->is_link(f)) {
+			OS::Time time = OS::get_singleton()->get_time();
+			OS::Date date = OS::get_singleton()->get_date();
+
+			zip_fileinfo zipfi;
+			zipfi.tmz_date.tm_hour = time.hour;
+			zipfi.tmz_date.tm_mday = date.day;
+			zipfi.tmz_date.tm_min = time.min;
+			zipfi.tmz_date.tm_mon = date.month - 1; // Note: "tm" month range - 0..11, Godot month range - 1..12, http://www.cplusplus.com/reference/ctime/tm/
+			zipfi.tmz_date.tm_sec = time.sec;
+			zipfi.tmz_date.tm_year = date.year;
+			zipfi.dosDate = 0;
+			// 0120000: symbolic link type
+			// 0000755: permissions rwxr-xr-x
+			// 0000644: permissions rw-r--r--
+			uint32_t _mode = 0120644;
+			zipfi.external_fa = (_mode << 16L) | !(_mode & 0200);
+			zipfi.internal_fa = 0;
+
+			zipOpenNewFileInZip4(p_zip,
+					p_folder.plus_file(f).utf8().get_data(),
+					&zipfi,
+					nullptr,
+					0,
+					nullptr,
+					0,
+					nullptr,
+					Z_DEFLATED,
+					Z_DEFAULT_COMPRESSION,
+					0,
+					-MAX_WBITS,
+					DEF_MEM_LEVEL,
+					Z_DEFAULT_STRATEGY,
+					nullptr,
+					0,
+					0x0314, // "version made by", 0x03 - Unix, 0x14 - ZIP specification version 2.0, required to store Unix file permissions
+					0);
+
+			String target = da->read_link(f);
+			zipWriteInFileInZip(p_zip, target.utf8().get_data(), target.utf8().size());
+			zipCloseFileInZip(p_zip);
+		} else if (da->current_is_dir()) {
 			_zip_folder_recursive(p_zip, p_root_path, p_folder.plus_file(f), p_pkg_name);
 		} else {
 			bool is_executable = (p_folder.ends_with("MacOS") && (f == p_pkg_name));
