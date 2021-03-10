@@ -11,7 +11,7 @@ if "RD_GLSL" in env["BUILDERS"]:
     env.RD_GLSL("cubemap_roughness.glsl")
     env.RD_GLSL("cubemap_downsampler.glsl")
     env.RD_GLSL("cubemap_filter.glsl")
-    env.RD_GLSL("scene_forward.glsl")
+    env.RD_GLSL("scene_forward_clustered.glsl")
     env.RD_GLSL("sky.glsl")
     env.RD_GLSL("tonemap.glsl")
     env.RD_GLSL("cube_to_dp.glsl")

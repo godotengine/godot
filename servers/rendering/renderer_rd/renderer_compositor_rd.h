@@ -35,14 +35,14 @@
 #include "core/templates/thread_work_pool.h"
 #include "servers/rendering/renderer_compositor.h"
 #include "servers/rendering/renderer_rd/renderer_canvas_render_rd.h"
-#include "servers/rendering/renderer_rd/renderer_scene_render_forward.h"
+#include "servers/rendering/renderer_rd/renderer_scene_render_forward_clustered.h"
 #include "servers/rendering/renderer_rd/renderer_storage_rd.h"
 
 class RendererCompositorRD : public RendererCompositor {
 protected:
 	RendererCanvasRenderRD *canvas;
 	RendererStorageRD *storage;
-	RendererSceneRenderForward *scene;
+	RendererSceneRenderRD *scene;
 
 	RID copy_viewports_rd_shader;
 	RID copy_viewports_rd_pipeline;
