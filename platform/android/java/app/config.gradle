@@ -239,5 +239,5 @@ ext.shouldSign = { ->
 }
 
 ext.shouldNotStrip = { ->
-    return isAndroidStudio()
+    return isAndroidStudio() || project.hasProperty("doNotStrip")
 }

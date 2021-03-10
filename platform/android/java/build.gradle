@@ -122,16 +122,17 @@ task zipCustomBuild(type: Zip) {
     destinationDir(file(binDir))
 }
 
-/**
- * Master task used to coordinate the tasks defined above to generate the set of Godot templates.
- */
-task generateGodotTemplates(type: GradleBuild) {
+def templateExcludedBuildTask() {
     // We exclude these gradle tasks so we can run the scons command manually.
+    def excludedTasks = []
     for (String buildType : supportedTargets) {
-        startParameter.excludedTaskNames += ":lib:" + getSconsTaskName(buildType)
+        excludedTasks += ":lib:" + getSconsTaskName(buildType)
     }
+    return excludedTasks
+}
 
-    tasks = []
+def templateBuildTasks() {
+    def tasks = []
 
     // Only build the apks and aar files for which we have native shared libraries.
     for (String target : supportedTargets) {
@@ -151,6 +152,29 @@ task generateGodotTemplates(type: GradleBuild) {
             logger.lifecycle("No native shared libs for target $target. Skipping build.")
         }
     }
+
+    return tasks
+}
+
+/**
+ * Master task used to coordinate the tasks defined above to generate the set of Godot templates.
+ */
+task generateGodotTemplates(type: GradleBuild) {
+    startParameter.excludedTaskNames = templateExcludedBuildTask()
+    tasks = templateBuildTasks()
+
+    finalizedBy 'zipCustomBuild'
+}
+
+/**
+ * Generates the same output as generateGodotTemplates but with dev symbols
+ */
+task generateDevTemplate (type: GradleBuild) {
+    // add parameter to set symbols to true
+    startParameter.projectProperties += [doNotStrip: true]
+
+    startParameter.excludedTaskNames = templateExcludedBuildTask()
+    tasks = templateBuildTasks()
 
     finalizedBy 'zipCustomBuild'
 }
