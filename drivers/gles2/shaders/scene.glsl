@@ -1357,7 +1357,7 @@ LIGHT_SHADER_CODE
 
 #elif defined(SPECULAR_DISABLED)
 		// none..
-#elif defined(SPECULAR_SCHLICK_GGX)
+#else defined(SPECULAR_SCHLICK_GGX)
 		// shlick+ggx as default
 
 #if defined(LIGHT_USE_ANISOTROPY)
