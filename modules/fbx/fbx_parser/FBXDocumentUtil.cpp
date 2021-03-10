@@ -160,7 +160,7 @@ const PropertyTable *GetPropertyTable(const Document &doc,
 			DOMWarning("property table (Properties70) not found", element);
 		}
 		if (templateProps) {
-			return templateProps;
+			return new const PropertyTable(templateProps);
 		} else {
 			return new const PropertyTable();
 		}
