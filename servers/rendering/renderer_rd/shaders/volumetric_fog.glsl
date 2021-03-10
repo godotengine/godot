@@ -193,13 +193,13 @@ vec3 hash3f(uvec3 x) {
 	return vec3(x & 0xFFFFF) / vec3(float(0xFFFFF));
 }
 
-float get_omni_attenuation(float distance, float inv_range, float decay) {
+float get_omni_attenuation(float distance, float inv_range, float decay, float max_energy) {
 	float nd = distance * inv_range;
 	nd *= nd;
 	nd *= nd; // nd^4
 	nd = max(1.0 - nd, 0.0);
 	nd *= nd; // nd^2
-	return nd * pow(max(distance, 0.0001), -decay);
+	return min(nd * pow(max(distance, 0.0001), -decay), max_energy);
 }
 
 void cluster_get_item_range(uint p_offset, out uint item_min, out uint item_max, out uint item_from, out uint item_to) {
@@ -417,7 +417,7 @@ void main() {
 				float shadow_attenuation = 1.0;
 
 				if (d * omni_lights.data[light_index].inv_radius < 1.0) {
-					float attenuation = get_omni_attenuation(d, omni_lights.data[light_index].inv_radius, omni_lights.data[light_index].attenuation);
+					float attenuation = get_omni_attenuation(d, omni_lights.data[light_index].inv_radius, omni_lights.data[light_index].attenuation, omni_lights.data[light_index].max_energy);
 
 					vec3 light = omni_lights.data[light_index].color / M_PI;
 
@@ -503,7 +503,7 @@ void main() {
 				float shadow_attenuation = 1.0;
 
 				if (d * spot_lights.data[light_index].inv_radius < 1.0) {
-					float attenuation = get_omni_attenuation(d, spot_lights.data[light_index].inv_radius, spot_lights.data[light_index].attenuation);
+					float attenuation = get_omni_attenuation(d, spot_lights.data[light_index].inv_radius, spot_lights.data[light_index].attenuation, omni_lights.data[light_index].max_energy);
 
 					vec3 spot_dir = spot_lights.data[light_index].direction;
 					float scos = max(dot(-normalize(light_rel_vec), spot_dir), spot_lights.data[light_index].cone_angle);

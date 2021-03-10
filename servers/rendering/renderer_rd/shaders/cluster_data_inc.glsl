@@ -27,7 +27,7 @@ struct LightData { //this structure needs to be as packed as possible
 	float soft_shadow_scale; // scales the shadow kernel for blurrier shadows
 	uint mask;
 	float shadow_volumetric_fog_fade;
-	uint pad;
+	float max_energy;
 	vec4 projector_rect; //projector rect in srgb decal atlas
 };
 
