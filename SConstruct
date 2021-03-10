@@ -61,8 +61,14 @@ elif platform_arg == "javascript":
     # Use generic POSIX build toolchain for Emscripten.
     custom_tools = ["cc", "c++", "ar", "link", "textfile", "zip"]
 
-# Construct the environment using the user's host env variables.
-env_base = Environment(ENV=os.environ, tools=custom_tools)
+# We let SCons build its default ENV as it includes OS-specific things which we don't
+# want to have to pull in manually.
+# Then we prepend PATH to make it take precedence, while preserving SCons' own entries.
+env_base = Environment(tools=custom_tools)
+env_base.PrependENVPath("PATH", os.getenv("PATH"))
+env_base.PrependENVPath("PKG_CONFIG_PATH", os.getenv("PKG_CONFIG_PATH"))
+if "TERM" in os.environ:  # Used for colored output.
+    env_base["ENV"]["TERM"] = os.environ["TERM"]
 
 env_base.disabled_modules = []
 env_base.module_version_string = ""
