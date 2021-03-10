@@ -75,6 +75,27 @@ void Camera2D::_update_process_mode() {
 	}
 }
 
+void Camera2D::_setup_viewport() {
+	// Disconnect signal on previous viewport if there's one.
+	if (viewport && viewport->is_connected("size_changed", this, "_update_scroll")) {
+		viewport->disconnect("size_changed", this, "_update_scroll");
+	}
+
+	if (custom_viewport && ObjectDB::get_instance(custom_viewport_id)) {
+		viewport = custom_viewport;
+	} else {
+		viewport = get_viewport();
+	}
+
+	RID vp = viewport->get_viewport_rid();
+	group_name = "__cameras_" + itos(vp.get_id());
+	canvas_group_name = "__cameras_c" + itos(canvas.get_id());
+	add_to_group(group_name);
+	add_to_group(canvas_group_name);
+
+	viewport->connect("size_changed", this, "_update_scroll");
+}
+
 void Camera2D::set_zoom(const Vector2 &p_zoom) {
 	// Setting zoom to zero causes 'affine_invert' issues
 	ERR_FAIL_COND_MSG(Math::is_zero_approx(p_zoom.x) || Math::is_zero_approx(p_zoom.y), "Zoom level must be different from 0 (can be negative).");
@@ -203,15 +224,7 @@ Transform2D Camera2D::get_camera_transform() {
 	if (rotating) {
 		xform.set_rotation(angle);
 	}
-	xform.set_origin(screen_rect.position /*.floor()*/);
-
-	/*
-	if (0) {
-		xform = get_global_transform() * xform;
-	} else {
-		xform.elements[2]+=get_global_transform().get_origin();
-	}
-*/
+	xform.set_origin(screen_rect.position);
 
 	return (xform).affine_inverse();
 }
@@ -235,20 +248,9 @@ void Camera2D::_notification(int p_what) {
 		} break;
 		case NOTIFICATION_ENTER_TREE: {
 
-			if (custom_viewport && ObjectDB::get_instance(custom_viewport_id)) {
-				viewport = custom_viewport;
-			} else {
-				viewport = get_viewport();
-			}
-
 			canvas = get_canvas();
 
-			RID vp = viewport->get_viewport_rid();
-
-			group_name = "__cameras_" + itos(vp.get_id());
-			canvas_group_name = "__cameras_c" + itos(canvas.get_id());
-			add_to_group(group_name);
-			add_to_group(canvas_group_name);
+			_setup_viewport();
 
 			_update_process_mode();
 			_update_scroll();
@@ -261,6 +263,9 @@ void Camera2D::_notification(int p_what) {
 				if (viewport && !(custom_viewport && !ObjectDB::get_instance(custom_viewport_id))) {
 					viewport->set_canvas_transform(Transform2D());
 				}
+			}
+			if (viewport) {
+				viewport->disconnect("size_changed", this, "_update_scroll");
 			}
 			remove_from_group(group_name);
 			remove_from_group(canvas_group_name);
@@ -624,17 +629,7 @@ void Camera2D::set_custom_viewport(Node *p_viewport) {
 	}
 
 	if (is_inside_tree()) {
-
-		if (custom_viewport)
-			viewport = custom_viewport;
-		else
-			viewport = get_viewport();
-
-		RID vp = viewport->get_viewport_rid();
-		group_name = "__cameras_" + itos(vp.get_id());
-		canvas_group_name = "__cameras_c" + itos(canvas.get_id());
-		add_to_group(group_name);
-		add_to_group(canvas_group_name);
+		_setup_viewport();
 	}
 }
 
@@ -811,6 +806,8 @@ Camera2D::Camera2D() {
 	smoothing_enabled = false;
 	smoothing_active = false;
 	limit_smoothing_enabled = false;
+
+	viewport = NULL;
 	custom_viewport = NULL;
 	custom_viewport_id = 0;
 	process_mode = CAMERA2D_PROCESS_IDLE;
