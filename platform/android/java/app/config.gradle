@@ -209,10 +209,19 @@ ext.getReleaseKeyAlias = { ->
     return keyAlias
 }
 
+ext.isAndroidStudio = { ->
+    def sysProps = System.getProperties()
+    return sysProps != null && sysProps['idea.platform.prefix'] != null
+}
+
 ext.shouldZipAlign = { ->
     String zipAlignFlag = project.hasProperty("perform_zipalign") ? project.property("perform_zipalign") : ""
     if (zipAlignFlag == null || zipAlignFlag.isEmpty()) {
-        zipAlignFlag = "false"
+        if (isAndroidStudio()) {
+            zipAlignFlag = "true"
+        } else {
+            zipAlignFlag = "false"
+        }
     }
     return Boolean.parseBoolean(zipAlignFlag)
 }
@@ -220,7 +229,15 @@ ext.shouldZipAlign = { ->
 ext.shouldSign = { ->
     String signFlag = project.hasProperty("perform_signing") ? project.property("perform_signing") : ""
     if (signFlag == null || signFlag.isEmpty()) {
-        signFlag = "false"
+        if (isAndroidStudio()) {
+            signFlag = "true"
+        } else {
+            signFlag = "false"
+        }
     }
     return Boolean.parseBoolean(signFlag)
+}
+
+ext.shouldNotStrip = { ->
+    return isAndroidStudio()
 }
