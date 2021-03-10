@@ -2297,8 +2297,12 @@ RenderingServer::RenderingServer() {
 
 	GLOBAL_DEF("rendering/2d/shadow_atlas/size", 2048);
 
-	GLOBAL_DEF("rendering/driver/rd_renderer/use_low_end_renderer", false);
-	GLOBAL_DEF("rendering/driver/rd_renderer/use_low_end_renderer.mobile", true);
+	GLOBAL_DEF_RST("rendering/vulkan/rendering/back_end", 0);
+	GLOBAL_DEF_RST("rendering/vulkan/rendering/back_end.mobile", 1);
+	ProjectSettings::get_singleton()->set_custom_property_info("rendering/vulkan/rendering/back_end",
+			PropertyInfo(Variant::INT,
+					"rendering/vulkan/rendering/back_end",
+					PROPERTY_HINT_ENUM, "ForwardClustered,ForwardMobile"));
 
 	GLOBAL_DEF("rendering/reflections/sky_reflections/roughness_layers", 8);
 	GLOBAL_DEF("rendering/reflections/sky_reflections/texture_array_reflections", true);

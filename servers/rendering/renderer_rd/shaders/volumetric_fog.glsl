@@ -26,6 +26,7 @@ layout(local_size_x = 4, local_size_y = 4, local_size_z = 4) in;
 #endif
 
 #include "cluster_data_inc.glsl"
+#include "light_data_inc.glsl"
 
 #define M_PI 3.14159265359
 
