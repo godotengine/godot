@@ -36,8 +36,10 @@ android {
         exclude 'META-INF/LICENSE'
         exclude 'META-INF/NOTICE'
 
-        // Should be uncommented for development purpose within Android Studio
-        // doNotStrip '**/*.so'
+        // 'doNotStrip' is enabled for development within Android Studio
+        if (shouldNotStrip()) {
+            doNotStrip '**/*.so'
+        }
     }
 
     sourceSets {
