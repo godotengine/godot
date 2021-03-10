@@ -406,6 +406,53 @@ Error DirAccessUnix::remove(String p_path) {
 	}
 }
 
+bool DirAccessUnix::is_link(String p_file) {
+	if (p_file.is_rel_path()) {
+		p_file = get_current_dir().plus_file(p_file);
+	}
+
+	p_file = fix_path(p_file);
+
+	struct stat flags;
+	if ((lstat(p_file.utf8().get_data(), &flags) != 0)) {
+		return FAILED;
+	}
+
+	return S_ISLNK(flags.st_mode);
+}
+
+String DirAccessUnix::read_link(String p_file) {
+	if (p_file.is_rel_path()) {
+		p_file = get_current_dir().plus_file(p_file);
+	}
+
+	p_file = fix_path(p_file);
+
+	char buf[256];
+	memset(buf, 0, 256);
+	ssize_t len = readlink(p_file.utf8().get_data(), buf, sizeof(buf));
+	String link;
+	if (len > 0) {
+		link.parse_utf8(buf, len);
+	}
+	return link;
+}
+
+Error DirAccessUnix::create_link(String p_source, String p_target) {
+	if (p_target.is_rel_path()) {
+		p_target = get_current_dir().plus_file(p_target);
+	}
+
+	p_source = fix_path(p_source);
+	p_target = fix_path(p_target);
+
+	if (symlink(p_source.utf8().get_data(), p_target.utf8().get_data()) == 0) {
+		return OK;
+	} else {
+		return FAILED;
+	}
+}
+
 uint64_t DirAccessUnix::get_space_left() {
 #ifndef NO_STATVFS
 	struct statvfs vfs;

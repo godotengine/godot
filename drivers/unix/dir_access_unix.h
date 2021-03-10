@@ -79,6 +79,10 @@ public:
 	virtual Error rename(String p_path, String p_new_path);
 	virtual Error remove(String p_path);
 
+	virtual bool is_link(String p_file);
+	virtual String read_link(String p_file);
+	virtual Error create_link(String p_source, String p_target);
+
 	virtual uint64_t get_space_left();
 
 	virtual String get_filesystem_type() const;

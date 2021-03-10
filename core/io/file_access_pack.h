@@ -245,6 +245,10 @@ public:
 
 	uint64_t get_space_left();
 
+	virtual bool is_link(String p_file) { return false; }
+	virtual String read_link(String p_file) { return p_file; }
+	virtual Error create_link(String p_source, String p_target) { return FAILED; }
+
 	virtual String get_filesystem_type() const;
 
 	DirAccessPack();
