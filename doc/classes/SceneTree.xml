@@ -88,6 +88,14 @@
 				The timer will be automatically freed after its time elapses.
 			</description>
 		</method>
+		<method name="get_first_node_in_group">
+			<return type="Node">
+			</return>
+			<argument index="0" name="group" type="StringName">
+			</argument>
+			<description>
+			</description>
+		</method>
 		<method name="get_frame" qualifiers="const">
 			<return type="int">
 			</return>

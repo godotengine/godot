@@ -412,7 +412,7 @@
 				[/gdscript]
 				[csharp]
 				int[] result = Search("print", (uint)TextEdit.SearchFlags.WholeWords, 0, 0);
-				if (result.Length > 0)
+				if (result.Length &gt; 0)
 				{
 				    // Result found.
 				    int lineNumber = result[(int)TextEdit.SearchResult.Line];
