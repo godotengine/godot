@@ -85,8 +85,11 @@ bool xatlas_mesh_lightmap_unwrap_callback(float p_texel_size, const float *p_ver
 	const xatlas::Mesh &output = atlas->meshes[0];
 
 	*r_vertex = (int *)malloc(sizeof(int) * output.vertexCount);
+	ERR_FAIL_NULL_V_MSG(*r_vertex, false, "Out of memory.");
 	*r_uv = (float *)malloc(sizeof(float) * output.vertexCount * 2);
+	ERR_FAIL_NULL_V_MSG(*r_uv, false, "Out of memory.");
 	*r_index = (int *)malloc(sizeof(int) * output.indexCount);
+	ERR_FAIL_NULL_V_MSG(*r_index, false, "Out of memory.");
 
 	float max_x = 0;
 	float max_y = 0;
