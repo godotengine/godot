@@ -137,7 +137,7 @@ class BroadPhase2DHashGrid : public BroadPhase2DSW {
 			k = k ^ (k >> 11);
 			k = k + (k << 6);
 			k = k ^ (k >> 22);
-			return k;
+			return uint32_t(k);
 		}
 
 		bool operator==(const PosKey &p_key) const { return key == p_key.key; }

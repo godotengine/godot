@@ -5407,7 +5407,7 @@ RID RenderingDeviceVulkan::render_pipeline_create(RID p_shader, FramebufferForma
 
 		//validate with inputs
 		for (uint32_t i = 0; i < 32; i++) {
-			if (!(shader->vertex_input_mask & (1 << i))) {
+			if (!(shader->vertex_input_mask & (1u << i))) {
 				continue;
 			}
 			bool found = false;

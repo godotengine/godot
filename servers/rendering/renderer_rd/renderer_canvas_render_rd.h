@@ -66,7 +66,7 @@ class RendererCanvasRenderRD : public RendererCanvasRender {
 		SHADER_VARIANT_MAX
 	};
 
-	enum {
+	enum : uint32_t {
 		FLAGS_INSTANCING_STRIDE_MASK = 0xF,
 		FLAGS_INSTANCING_ENABLED = (1 << 4),
 		FLAGS_INSTANCING_HAS_COLORS = (1 << 5),
@@ -90,7 +90,7 @@ class RendererCanvasRenderRD : public RendererCanvasRender {
 
 	};
 
-	enum {
+	enum : uint32_t {
 		LIGHT_FLAGS_TEXTURE_MASK = 0xFFFF,
 		LIGHT_FLAGS_BLEND_SHIFT = 16,
 		LIGHT_FLAGS_BLEND_MASK = (3 << 16),
@@ -103,7 +103,7 @@ class RendererCanvasRenderRD : public RendererCanvasRender {
 
 	};
 
-	enum {
+	enum : uint32_t {
 		MAX_RENDER_ITEMS = 256 * 1024,
 		MAX_LIGHT_TEXTURES = 1024,
 		MAX_LIGHTS_PER_ITEM = 16,

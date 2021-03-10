@@ -212,7 +212,7 @@ public:
 
 	/* MESH API */
 
-	enum ArrayType {
+	enum ArrayType : uint32_t {
 		ARRAY_VERTEX = 0, // RG32F or RGB32F (depending on 2D bit)
 		ARRAY_NORMAL = 1, // A2B10G10R10
 		ARRAY_TANGENT = 2, // A2B10G10R10, A flips sign of binormal
@@ -245,7 +245,7 @@ public:
 		ARRAY_CUSTOM_MAX
 	};
 
-	enum ArrayFormat {
+	enum ArrayFormat : uint32_t {
 		/* ARRAY FORMAT FLAGS */
 		ARRAY_FORMAT_VERTEX = 1 << ARRAY_VERTEX, // mandatory
 		ARRAY_FORMAT_NORMAL = 1 << ARRAY_NORMAL,
@@ -278,7 +278,7 @@ public:
 		ARRAY_FLAG_USE_8_BONE_WEIGHTS = 1 << (ARRAY_COMPRESS_FLAGS_BASE + 2),
 	};
 
-	enum PrimitiveType {
+	enum PrimitiveType : uint32_t {
 		PRIMITIVE_POINTS,
 		PRIMITIVE_LINES,
 		PRIMITIVE_LINE_STRIP,
@@ -1225,7 +1225,7 @@ public:
 
 	virtual void canvas_item_set_draw_behind_parent(RID p_item, bool p_enable) = 0;
 
-	enum NinePatchAxisMode {
+	enum NinePatchAxisMode : uint32_t {
 		NINE_PATCH_STRETCH,
 		NINE_PATCH_TILE,
 		NINE_PATCH_TILE_FIT,

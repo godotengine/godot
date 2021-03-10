@@ -711,7 +711,7 @@ Error MultiplayerAPI::_decode_and_decompress_variant(Variant &r_variant, const u
 			if (encode_mode == ENCODE_8) {
 				// 8 bits.
 				ERR_FAIL_COND_V(len < 1, ERR_INVALID_DATA);
-				int8_t val = buf[0];
+				int8_t val = int8_t(buf[0]);
 				r_variant = val;
 				if (r_len) {
 					(*r_len) += 1;
@@ -719,7 +719,7 @@ Error MultiplayerAPI::_decode_and_decompress_variant(Variant &r_variant, const u
 			} else if (encode_mode == ENCODE_16) {
 				// 16 bits.
 				ERR_FAIL_COND_V(len < 2, ERR_INVALID_DATA);
-				int16_t val = decode_uint16(buf);
+				int16_t val = int16_t(decode_uint16(buf));
 				r_variant = val;
 				if (r_len) {
 					(*r_len) += 2;
@@ -727,7 +727,7 @@ Error MultiplayerAPI::_decode_and_decompress_variant(Variant &r_variant, const u
 			} else if (encode_mode == ENCODE_32) {
 				// 32 bits.
 				ERR_FAIL_COND_V(len < 4, ERR_INVALID_DATA);
-				int32_t val = decode_uint32(buf);
+				int32_t val = int32_t(decode_uint32(buf));
 				r_variant = val;
 				if (r_len) {
 					(*r_len) += 4;
@@ -735,7 +735,7 @@ Error MultiplayerAPI::_decode_and_decompress_variant(Variant &r_variant, const u
 			} else {
 				// 64 bits.
 				ERR_FAIL_COND_V(len < 8, ERR_INVALID_DATA);
-				int64_t val = decode_uint64(buf);
+				int64_t val = int64_t(decode_uint64(buf));
 				r_variant = val;
 				if (r_len) {
 					(*r_len) += 8;
