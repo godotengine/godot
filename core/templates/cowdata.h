@@ -278,6 +278,7 @@ Error CowData<T>::resize(int p_size) {
 	size_t current_alloc_size = _get_alloc_size(current_size);
 	size_t alloc_size;
 	ERR_FAIL_COND_V(!_get_alloc_size_checked(p_size, &alloc_size), ERR_OUT_OF_MEMORY);
+	ERR_FAIL_COND_V_MSG(alloc_size == 0 && p_size > 0, ERR_INVALID_PARAMETER, "Attempted a memory allocation with a size greater than `MAX_INT`.");
 
 	if (p_size > current_size) {
 		if (alloc_size != current_alloc_size) {
