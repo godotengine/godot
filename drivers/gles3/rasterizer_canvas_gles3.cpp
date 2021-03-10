@@ -2340,6 +2340,12 @@ void RasterizerCanvasGLES3::initialize() {
 
 		glBindVertexArray(0);
 	} // for vao
+
+	// deal with ninepatch mode option
+	if (bdata.settings_ninepatch_mode == 1) {
+		state.canvas_shader.add_custom_define("#define USE_NINEPATCH_SCALING\n");
+	}
+
 	gl_checkerror();
 }
 
