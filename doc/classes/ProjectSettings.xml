@@ -1034,8 +1034,8 @@
 			Fix to improve physics jitter, specially on monitors where refresh rate is different than the physics FPS.
 			[b]Note:[/b] This property is only read when the project starts. To change the physics FPS at runtime, set [member Engine.physics_jitter_fix] instead.
 		</member>
-		<member name="rendering/2d/options/ninepatch_mode" type="int" setter="" getter="" default="0">
-			Choose between default mode where corner scalings are preserved matching the artwork, and scaling mode.
+		<member name="rendering/2d/options/ninepatch_mode" type="int" setter="" getter="" default="1">
+			Choose between fixed mode where corner scalings are preserved matching the artwork, and scaling mode.
 			Not available in GLES3 when [member rendering/batching/options/use_batching] is off.
 		</member>
 		<member name="rendering/2d/options/use_nvidia_rect_flicker_workaround" type="bool" setter="" getter="" default="false">
