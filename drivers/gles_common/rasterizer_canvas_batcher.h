@@ -1162,10 +1162,17 @@ PREAMBLE(bool)::_light_scissor_begin(const Rect2 &p_item_rect, const Transform2D
 
 	int rh = get_storage()->frame.current_rt->height;
 
+	// using the exact size was leading to off by one errors,
+	// possibly due to pixel snap. For this reason we will boost
+	// the scissor area by 1 pixel, this will take care of any rounding
+	// issues, and shouldn't significantly negatively impact performance.
 	int y = rh - (cliprect.position.y + cliprect.size.y);
+	y += 1; // off by 1 boost before flipping
+
 	if (get_storage()->frame.current_rt->flags[RasterizerStorage::RENDER_TARGET_VFLIP])
 		y = cliprect.position.y;
-	get_this()->gl_enable_scissor(cliprect.position.x, y, cliprect.size.width, cliprect.size.height);
+
+	get_this()->gl_enable_scissor(cliprect.position.x - 1, y, cliprect.size.width + 2, cliprect.size.height + 2);
 
 	return true;
 }
