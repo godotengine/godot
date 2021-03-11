@@ -297,7 +297,7 @@ void FabrikInverseKinematic::solve(Task *p_task, real_t blending_delta, bool ove
 		p_task->skeleton->set_bone_global_pose_override(p_task->chain.tips[i].chain_item->bone, Transform(), 0.0, true);
 	}
 
-	make_goal(p_task, p_task->skeleton->get_global_transform().affine_inverse().scaled(p_task->skeleton->get_global_transform().get_basis().get_scale()), blending_delta);
+	make_goal(p_task, p_task->skeleton->get_global_transform().affine_inverse(), blending_delta);
 
 	update_chain(p_task->skeleton, &p_task->chain.chain_root);
 
