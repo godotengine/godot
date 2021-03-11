@@ -30,6 +30,7 @@
 
 #include "core/io/image_loader.h"
 #include "core/io/json.h"
+#include "core/io/stream_peer_ssl.h"
 #include "core/io/tcp_server.h"
 #include "core/io/zip_io.h"
 #include "editor/editor_export.h"
@@ -41,17 +42,44 @@
 class EditorHTTPServer : public Reference {
 private:
 	Ref<TCP_Server> server;
-	Ref<StreamPeerTCP> connection;
 	Map<String, String> mimes;
+	Ref<StreamPeerTCP> tcp;
+	Ref<StreamPeerSSL> ssl;
+	Ref<StreamPeer> peer;
+	Ref<CryptoKey> key;
+	Ref<X509Certificate> cert;
+	bool use_ssl = false;
 	uint64_t time = 0;
 	uint8_t req_buf[4096];
 	int req_pos = 0;
 
 	void _clear_client() {
-		connection = Ref<StreamPeerTCP>();
+		peer = Ref<StreamPeer>();
+		ssl = Ref<StreamPeerSSL>();
+		tcp = Ref<StreamPeerTCP>();
 		memset(req_buf, 0, sizeof(req_buf));
 		time = 0;
 		req_pos = 0;
+	}
+
+	void _set_internal_certs(Ref<Crypto> p_crypto) {
+		const String cache_path = EditorSettings::get_singleton()->get_cache_dir();
+		const String key_path = cache_path.plus_file("html5_server.key");
+		const String crt_path = cache_path.plus_file("html5_server.crt");
+		bool regen = !FileAccess::exists(key_path) || !FileAccess::exists(crt_path);
+		if (!regen) {
+			key = Ref<CryptoKey>(CryptoKey::create());
+			cert = Ref<X509Certificate>(X509Certificate::create());
+			if (key->load(key_path) != OK || cert->load(crt_path) != OK) {
+				regen = true;
+			}
+		}
+		if (regen) {
+			key = p_crypto->generate_rsa(2048);
+			key->save(key_path);
+			cert = p_crypto->generate_self_signed_certificate(key, "CN=godot-debug.local,O=A Game Dev,C=XXA", "20140101000000", "20340101000000");
+			cert->save(crt_path);
+		}
 	}
 
 public:
@@ -72,7 +100,24 @@ public:
 		_clear_client();
 	}
 
-	Error listen(int p_port, IP_Address p_address) {
+	Error listen(int p_port, IP_Address p_address, bool p_use_ssl, String p_ssl_key, String p_ssl_cert) {
+		use_ssl = p_use_ssl;
+		if (use_ssl) {
+			Ref<Crypto> crypto = Crypto::create();
+			if (crypto.is_null()) {
+				return ERR_UNAVAILABLE;
+			}
+			if (!p_ssl_key.is_empty() && !p_ssl_cert.is_empty()) {
+				key = Ref<CryptoKey>(CryptoKey::create());
+				Error err = key->load(p_ssl_key);
+				ERR_FAIL_COND_V(err != OK, err);
+				cert = Ref<X509Certificate>(X509Certificate::create());
+				err = cert->load(p_ssl_cert);
+				ERR_FAIL_COND_V(err != OK, err);
+			} else {
+				_set_internal_certs(crypto);
+			}
+		}
 		return server->listen(p_port, p_address);
 	}
 
@@ -101,7 +146,7 @@ public:
 			s += "Connection: Close\r\n";
 			s += "\r\n";
 			CharString cs = s.utf8();
-			connection->put_data((const uint8_t *)cs.get_data(), cs.size() - 1);
+			peer->put_data((const uint8_t *)cs.get_data(), cs.size() - 1);
 			return;
 		}
 		const String ctype = mimes[req_ext];
@@ -117,7 +162,7 @@ public:
 		s += "Cache-Control: no-store, max-age=0\r\n";
 		s += "\r\n";
 		CharString cs = s.utf8();
-		Error err = connection->put_data((const uint8_t *)cs.get_data(), cs.size() - 1);
+		Error err = peer->put_data((const uint8_t *)cs.get_data(), cs.size() - 1);
 		if (err != OK) {
 			memdelete(f);
 			ERR_FAIL();
@@ -129,7 +174,7 @@ public:
 			if (read < 1) {
 				break;
 			}
-			err = connection->put_data(bytes, read);
+			err = peer->put_data(bytes, read);
 			if (err != OK) {
 				memdelete(f);
 				ERR_FAIL();
@@ -142,19 +187,41 @@ public:
 		if (!server->is_listening()) {
 			return;
 		}
-		if (connection.is_null()) {
+		if (tcp.is_null()) {
 			if (!server->is_connection_available()) {
 				return;
 			}
-			connection = server->take_connection();
+			tcp = server->take_connection();
+			peer = tcp;
 			time = OS::get_singleton()->get_ticks_usec();
 		}
 		if (OS::get_singleton()->get_ticks_usec() - time > 1000000) {
 			_clear_client();
 			return;
 		}
-		if (connection->get_status() != StreamPeerTCP::STATUS_CONNECTED) {
+		if (tcp->get_status() != StreamPeerTCP::STATUS_CONNECTED) {
 			return;
+		}
+
+		if (use_ssl) {
+			if (ssl.is_null()) {
+				ssl = Ref<StreamPeerSSL>(StreamPeerSSL::create());
+				peer = ssl;
+				ssl->set_blocking_handshake_enabled(false);
+				if (ssl->accept_stream(tcp, key, cert) != OK) {
+					_clear_client();
+					return;
+				}
+			}
+			ssl->poll();
+			if (ssl->get_status() == StreamPeerSSL::STATUS_HANDSHAKING) {
+				// Still handshaking, keep waiting.
+				return;
+			}
+			if (ssl->get_status() != StreamPeerSSL::STATUS_CONNECTED) {
+				_clear_client();
+				return;
+			}
 		}
 
 		while (true) {
@@ -168,7 +235,7 @@ public:
 
 			int read = 0;
 			ERR_FAIL_COND(req_pos >= 4096);
-			Error err = connection->get_partial_data(&req_buf[req_pos], 1, read);
+			Error err = peer->get_partial_data(&req_buf[req_pos], 1, read);
 			if (err != OK) {
 				// Got an error
 				_clear_client();
@@ -669,19 +736,23 @@ Error EditorExportPlatformJavaScript::run(const Ref<EditorExportPreset> &p_prese
 	}
 	ERR_FAIL_COND_V_MSG(!bind_ip.is_valid(), ERR_INVALID_PARAMETER, "Invalid editor setting 'export/web/http_host': '" + bind_host + "'. Try using '127.0.0.1'.");
 
+	const bool use_ssl = EDITOR_GET("export/web/use_ssl");
+	const String ssl_key = EDITOR_GET("export/web/ssl_key");
+	const String ssl_cert = EDITOR_GET("export/web/ssl_certificate");
+
 	// Restart server.
 	{
 		MutexLock lock(server_lock);
 
 		server->stop();
-		err = server->listen(bind_port, bind_ip);
+		err = server->listen(bind_port, bind_ip, use_ssl, ssl_key, ssl_cert);
 	}
 	if (err != OK) {
 		EditorNode::get_singleton()->show_warning(TTR("Error starting HTTP server:") + "\n" + itos(err));
 		return err;
 	}
 
-	OS::get_singleton()->shell_open(String("http://" + bind_host + ":" + itos(bind_port) + "/tmp_js_export.html"));
+	OS::get_singleton()->shell_open(String((use_ssl ? "https://" : "http://") + bind_host + ":" + itos(bind_port) + "/tmp_js_export.html"));
 	// FIXME: Find out how to clean up export files after running the successfully
 	// exported game. Might not be trivial.
 	return OK;
@@ -731,7 +802,12 @@ EditorExportPlatformJavaScript::~EditorExportPlatformJavaScript() {
 void register_javascript_exporter() {
 	EDITOR_DEF("export/web/http_host", "localhost");
 	EDITOR_DEF("export/web/http_port", 8060);
+	EDITOR_DEF("export/web/use_ssl", false);
+	EDITOR_DEF("export/web/ssl_key", "");
+	EDITOR_DEF("export/web/ssl_certificate", "");
 	EditorSettings::get_singleton()->add_property_hint(PropertyInfo(Variant::INT, "export/web/http_port", PROPERTY_HINT_RANGE, "1,65535,1"));
+	EditorSettings::get_singleton()->add_property_hint(PropertyInfo(Variant::STRING, "export/web/ssl_key", PROPERTY_HINT_GLOBAL_FILE, "*.key"));
+	EditorSettings::get_singleton()->add_property_hint(PropertyInfo(Variant::STRING, "export/web/ssl_certificate", PROPERTY_HINT_GLOBAL_FILE, "*.crt,*.pem"));
 
 	Ref<EditorExportPlatformJavaScript> platform;
 	platform.instance();
