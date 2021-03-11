@@ -1,4 +1,5 @@
 import methods
+from compat import open_utf8
 import os
 import sys
 
@@ -13,18 +14,19 @@ def get_name():
 
 def can_build():
     if os.name == "nt":
-        # building natively on windows!
+        # Building natively on Windows!
         if os.getenv("VSINSTALLDIR"):
-
             if os.getenv("ANGLE_SRC_PATH") is None:
                 return False
-
             return True
     return False
 
 
 def get_opts():
+    from SCons.Variables import EnumVariable
+
     return [
+        EnumVariable("angle_toolchain", "Toolchain to build ANGLE sources", "ninja", ("msvc", "ninja")),
         ("msvc_version", "MSVC version to use (ignored if the VCINSTALLDIR environment variable is set)", None),
     ]
 
@@ -71,44 +73,78 @@ def configure(env):
         env.Append(LINKFLAGS=["/SUBSYSTEM:CONSOLE"])
         env.Append(LINKFLAGS=["/DEBUG"])
 
-    ## Compiler configuration
+    ## Compiler configuration.
 
     env["ENV"] = os.environ
     vc_base_path = os.environ["VCTOOLSINSTALLDIR"] if "VCTOOLSINSTALLDIR" in os.environ else os.environ["VCINSTALLDIR"]
 
-    # Force to use Unicode encoding
+    # Force to use Unicode encoding.
     env.AppendUnique(CCFLAGS=["/utf-8"])
 
-    # ANGLE
+    # ANGLE.
     angle_root = os.getenv("ANGLE_SRC_PATH")
     env.Prepend(CPPPATH=[angle_root + "/include"])
     jobs = str(env.GetOption("num_jobs"))
-    angle_build_cmd = (
-        "msbuild.exe "
-        + angle_root
-        + "/winrt/10/src/angle.sln /nologo /v:m /m:"
-        + jobs
-        + " /p:Configuration=Release /p:Platform="
-    )
 
-    if os.path.isfile(str(os.getenv("ANGLE_SRC_PATH")) + "/winrt/10/src/angle.sln"):
+    angle_build_cmd = ""
+    if env["angle_toolchain"] == "msvc":
+        angle_build_cmd = (
+            "msbuild.exe "
+            + angle_root
+            + "/winrt/10/src/angle.sln /nologo /v:m /m:"
+            + jobs
+            + " /p:Configuration=Release /p:Platform="
+        )
+    elif env["angle_toolchain"] == "ninja":
+        angle_build_cmd = "autoninja -C " + angle_root + "/out/Release"
+
+    env["build_angle"] = False
+    if os.path.isfile(angle_root + "/winrt/10/src/angle.sln"):
         env["build_angle"] = True
+    elif os.path.isfile(angle_root + "/.gclient"):  # If exists, then configured.
+        env["build_angle"] = True
+        os.environ["DEPOT_TOOLS_WIN_TOOLCHAIN"] = "0"  # Only available to Googlers...
+        args_gn = open_utf8(angle_root + "/out/Release/args.gn", "w")
 
-    ## Architecture
+        args_gn.write("is_debug = false\n")
+        args_gn.write("is_clang = false\n")
+
+        if env["target"] == "release_debug":
+            args_gn.write("dcheck_always_on = true\n")
+        elif env["target"] == "release":
+            args_gn.write("dcheck_always_on = false\n")
+
+        args_gn.write('target_os = "winuwp"\n')
+
+    ## Architecture.
 
     arch = ""
-    if str(os.getenv("Platform")).lower() == "arm":
+    plat = str(os.getenv("Platform")).lower()
+    if plat == "arm":
+        if env["angle_toolchain"] == "msvc":
+            print("Compiled program architecture will be an ARM executable (forcing bits=32).")
+            arch = "arm"
+            env["bits"] = "32"
+            angle_build_cmd += "ARM"
+            env.Append(LINKFLAGS=["/MACHINE:ARM"])
+            env.Append(LIBPATH=[vc_base_path + "lib/store/arm"])
+            env.Append(LIBPATH=[angle_root + "/winrt/10/src/Release_ARM/lib"])
+        elif env["angle_toolchain"] == "ninja":
+            print("Compiled program architecture `arm` not supported with `angle_toolchain=ninja` option.")
+            sys.exit(255)
 
-        print("Compiled program architecture will be an ARM executable. (forcing bits=32).")
-
-        arch = "arm"
-        env["bits"] = "32"
-        env.Append(LINKFLAGS=["/MACHINE:ARM"])
-        env.Append(LIBPATH=[vc_base_path + "lib/store/arm"])
-
-        angle_build_cmd += "ARM"
-
-        env.Append(LIBPATH=[angle_root + "/winrt/10/src/Release_ARM/lib"])
+    elif plat == "arm64":
+        if env["angle_toolchain"] == "msvc":
+            print("Compiled program architecture `arm64` not supported with `angle_toolchain=msvc` option.")
+            sys.exit(255)
+        elif env["angle_toolchain"] == "ninja":
+            print("Compiled program architecture will be an ARM executable (forcing bits=64).")
+            arch = "arm64"
+            env["bits"] = "64"
+            args_gn.write('target_cpu = "arm64"\n')
+            env.Append(LINKFLAGS=["/MACHINE:ARM64"])
+            env.Append(LIBPATH=[vc_base_path + "lib/store/arm64"])
+            env.Append(LIBPATH=[angle_root + "/out/Release"])
 
     else:
         compiler_version_str = methods.detect_visual_c_compiler_version(env["ENV"])
@@ -118,7 +154,7 @@ def configure(env):
             print("Compiled program architecture will be a x64 executable (forcing bits=64).")
         elif compiler_version_str == "x86" or compiler_version_str == "amd64_x86":
             env["bits"] = "32"
-            print("Compiled program architecture will be a x86 executable. (forcing bits=32).")
+            print("Compiled program architecture will be a x86 executable (forcing bits=32).")
         else:
             print(
                 "Failed to detect MSVC compiler architecture version... Defaulting to 32-bit executable settings (forcing bits=32). Compilation attempt will continue, but SCons can not detect for what architecture this build is compiled for. You should check your settings/compilation setup."
@@ -128,20 +164,30 @@ def configure(env):
         if env["bits"] == "32":
             arch = "x86"
 
-            angle_build_cmd += "Win32"
-
             env.Append(LINKFLAGS=["/MACHINE:X86"])
             env.Append(LIBPATH=[vc_base_path + "lib/store"])
-            env.Append(LIBPATH=[angle_root + "/winrt/10/src/Release_Win32/lib"])
 
+            if env["angle_toolchain"] == "msvc":
+                angle_build_cmd += "Win32"
+                env.Append(LIBPATH=[angle_root + "/winrt/10/src/Release_Win32/lib"])
+            elif env["angle_toolchain"] == "ninja":
+                args_gn.write('target_cpu = "x86"\n')
+                env.Append(LIBPATH=[angle_root + "/out/Release"])
         else:
             arch = "x64"
 
-            angle_build_cmd += "x64"
-
             env.Append(LINKFLAGS=["/MACHINE:X64"])
             env.Append(LIBPATH=[os.environ["VCINSTALLDIR"] + "lib/store/amd64"])
-            env.Append(LIBPATH=[angle_root + "/winrt/10/src/Release_x64/lib"])
+
+            if env["angle_toolchain"] == "msvc":
+                angle_build_cmd += "x64"
+                env.Append(LIBPATH=[angle_root + "/winrt/10/src/Release_x64/lib"])
+            elif env["angle_toolchain"] == "ninja":
+                args_gn.write('target_cpu = "x64"\n')
+                env.Append(LIBPATH=[angle_root + "/out/Release"])
+
+    if env["angle_toolchain"] == "ninja":
+        args_gn.close()
 
     env["PROGSUFFIX"] = "." + arch + env["PROGSUFFIX"]
     env["OBJSUFFIX"] = "." + arch + env["OBJSUFFIX"]
@@ -157,8 +203,8 @@ def configure(env):
 
     env.Append(CPPDEFINES=["__WRL_NO_DEFAULT_LIB__", ("PNG_ABORT", "abort")])
 
-    env.Append(CPPFLAGS=["/AI", vc_base_path + "lib/store/references"])
-    env.Append(CPPFLAGS=["/AI", vc_base_path + "lib/x86/store/references"])
+    env.Append(CPPFLAGS=["/AI%s" % vc_base_path + "lib/store/references"])
+    env.Append(CPPFLAGS=["/AI%s" % vc_base_path + "lib/x86/store/references"])
 
     env.Append(
         CCFLAGS='/FS /MP /GS /wd"4453" /wd"28204" /wd"4291" /Zc:wchar_t /Gm- /fp:precise /errorReport:prompt /WX- /Zc:forScope /Gd /EHsc /nologo'.split()
@@ -167,10 +213,8 @@ def configure(env):
     env.Append(CXXFLAGS=["/ZW"])
     env.Append(
         CCFLAGS=[
-            "/AI",
-            vc_base_path + "\\vcpackages",
-            "/AI",
-            os.environ["WINDOWSSDKDIR"] + "\\References\\CommonConfiguration\\Neutral",
+            "/AI%s" % vc_base_path + "\\vcpackages",
+            "/AI%s" % os.environ["WINDOWSSDKDIR"] + "\\References\\CommonConfiguration\\Neutral",
         ]
     )
 
@@ -195,14 +239,16 @@ def configure(env):
         "WindowsApp",
         "mincore",
         "ws2_32",
-        "libANGLE",
-        "libEGL",
-        "libGLESv2",
         "bcrypt",
     ]
+    if env["angle_toolchain"] == "msvc":
+        LIBS.extend(["libANGLE", "libEGL", "libGLESv2"])
+    elif env["angle_toolchain"] == "ninja":
+        LIBS.extend(["libEGL.dll", "libGLESv2.dll"])
+
     env.Append(LINKFLAGS=[p + ".lib" for p in LIBS])
 
-    # Incremental linking fix
+    # Incremental linking fix.
     env["BUILDERS"]["ProgramOriginal"] = env["BUILDERS"]["Program"]
     env["BUILDERS"]["Program"] = methods.precious_program
 
