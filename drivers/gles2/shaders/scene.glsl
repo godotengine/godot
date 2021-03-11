@@ -956,8 +956,6 @@ vec4 texture2D_bicubic(sampler2D tex, vec2 uv) {
 
 #ifdef USE_LIGHTMAP_CAPTURE
 uniform mediump vec4 lightmap_captures[12];
-uniform bool lightmap_capture_sky;
-
 #endif
 
 #ifdef USE_RADIANCE_MAP
@@ -1781,8 +1779,9 @@ FRAGMENT_SHADER_CODE
 
 		captured /= sum;
 
-		if (lightmap_capture_sky) {
-			ambient_light = mix(ambient_light, captured.rgb, captured.a);
+		// Alpha channel is used to indicate if dynamic objects keep the environment lighting
+		if (lightmap_captures[0].a > 0.5) {
+			ambient_light += captured.rgb;
 		} else {
 			ambient_light = captured.rgb;
 		}

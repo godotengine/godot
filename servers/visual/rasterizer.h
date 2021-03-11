@@ -514,6 +514,8 @@ public:
 	virtual int lightmap_capture_get_octree_cell_subdiv(RID p_capture) const = 0;
 	virtual void lightmap_capture_set_energy(RID p_capture, float p_energy) = 0;
 	virtual float lightmap_capture_get_energy(RID p_capture) const = 0;
+	virtual void lightmap_capture_set_interior(RID p_capture, bool p_interior) = 0;
+	virtual bool lightmap_capture_is_interior(RID p_capture) const = 0;
 	virtual const PoolVector<LightmapCaptureOctree> *lightmap_capture_get_octree_ptr(RID p_capture) const = 0;
 
 	/* PARTICLES */

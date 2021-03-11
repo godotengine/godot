@@ -1830,6 +1830,8 @@ void VisualServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("lightmap_capture_get_octree", "capture"), &VisualServer::lightmap_capture_get_octree);
 	ClassDB::bind_method(D_METHOD("lightmap_capture_set_energy", "capture", "energy"), &VisualServer::lightmap_capture_set_energy);
 	ClassDB::bind_method(D_METHOD("lightmap_capture_get_energy", "capture"), &VisualServer::lightmap_capture_get_energy);
+	ClassDB::bind_method(D_METHOD("lightmap_capture_set_interior", "capture", "interior"), &VisualServer::lightmap_capture_set_interior);
+	ClassDB::bind_method(D_METHOD("lightmap_capture_is_interior", "capture"), &VisualServer::lightmap_capture_is_interior);
 #endif
 	ClassDB::bind_method(D_METHOD("particles_create"), &VisualServer::particles_create);
 	ClassDB::bind_method(D_METHOD("particles_set_emitting", "particles", "emitting"), &VisualServer::particles_set_emitting);

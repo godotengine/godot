@@ -44,6 +44,7 @@ class BakedLightmapData : public Resource {
 	RID baked_light;
 	AABB bounds;
 	float energy;
+	bool interior;
 	int cell_subdiv;
 	Transform cell_space_xform;
 
@@ -82,6 +83,9 @@ public:
 
 	void set_energy(float p_energy);
 	float get_energy() const;
+
+	void set_interior(bool p_interior);
+	bool is_interior() const;
 
 	void add_user(const NodePath &p_path, const Ref<Resource> &p_lightmap, int p_lightmap_slice, const Rect2 &p_lightmap_uv_rect, int p_instance);
 	int get_user_count() const;
@@ -169,6 +173,7 @@ private:
 	Vector3 environment_custom_sky_rotation_degrees;
 	Color environment_custom_color;
 	float environment_custom_energy;
+	Color environment_min_light;
 
 	BakeQuality capture_quality;
 	float capture_propagation;
@@ -246,6 +251,9 @@ public:
 
 	void set_environment_custom_energy(float p_energy);
 	float get_environment_custom_energy() const;
+
+	void set_environment_min_light(Color p_min_light);
+	Color get_environment_min_light() const;
 
 	void set_use_denoiser(bool p_enable);
 	bool is_using_denoiser() const;

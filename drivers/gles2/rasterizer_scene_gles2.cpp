@@ -2598,7 +2598,6 @@ void RasterizerSceneGLES2::_render_render_list(RenderList::Element **p_elements,
 
 		if (use_lightmap_capture) { //this is per instance, must be set always if present
 			glUniform4fv(state.scene_shader.get_uniform_location(SceneShaderGLES2::LIGHTMAP_CAPTURES), 12, (const GLfloat *)e->instance->lightmap_capture_data.ptr());
-			state.scene_shader.set_uniform(SceneShaderGLES2::LIGHTMAP_CAPTURE_SKY, false);
 		}
 
 		_render_geometry(e);

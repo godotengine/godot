@@ -66,6 +66,10 @@
 		<member name="cell_subdiv" type="int" setter="set_cell_subdiv" getter="get_cell_subdiv" default="1">
 		</member>
 		<member name="energy" type="float" setter="set_energy" getter="get_energy" default="1.0">
+			Global energy multiplier for baked and dynamic capture objects.
+		</member>
+		<member name="interior" type="bool" setter="set_interior" getter="is_interior" default="false">
+			Controls whether dynamic capture objects receive environment lighting or not.
 		</member>
 		<member name="octree" type="PoolByteArray" setter="set_octree" getter="get_octree" default="PoolByteArray(  )">
 		</member>

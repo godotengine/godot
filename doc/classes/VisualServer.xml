@@ -2323,6 +2323,15 @@
 				Returns the cell transform for this lightmap capture's octree.
 			</description>
 		</method>
+		<method name="lightmap_capture_is_interior" qualifiers="const">
+			<return type="bool">
+			</return>
+			<argument index="0" name="capture" type="RID">
+			</argument>
+			<description>
+				Returns [code]true[/code] if capture is in "interior" mode.
+			</description>
+		</method>
 		<method name="lightmap_capture_set_bounds">
 			<return type="void">
 			</return>
@@ -2343,6 +2352,17 @@
 			</argument>
 			<description>
 				Sets the energy multiplier for this lightmap capture. Equivalent to [member BakedLightmapData.energy].
+			</description>
+		</method>
+		<method name="lightmap_capture_set_interior">
+			<return type="void">
+			</return>
+			<argument index="0" name="capture" type="RID">
+			</argument>
+			<argument index="1" name="interior" type="bool">
+			</argument>
+			<description>
+				Sets the "interior" mode for this lightmap capture. Equivalent to [member BakedLightmapData.interior].
 			</description>
 		</method>
 		<method name="lightmap_capture_set_octree">
