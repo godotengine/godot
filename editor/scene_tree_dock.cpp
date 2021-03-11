@@ -224,19 +224,19 @@ void SceneTreeDock::_perform_instance_scenes(const Vector<String> &p_files, Node
 	}
 }
 
-void SceneTreeDock::_replace_with_branch_scene(const String &p_file, Node *base) {
+Node *SceneTreeDock::_replace_with_branch_scene(const String &p_file, Node *base) {
 	Ref<PackedScene> sdata = ResourceLoader::load(p_file);
 	if (!sdata.is_valid()) {
 		accept->set_text(vformat(TTR("Error loading scene from %s"), p_file));
 		accept->popup_centered();
-		return;
+		return nullptr;
 	}
 
 	Node *instanced_scene = sdata->instance(PackedScene::GEN_EDIT_STATE_INSTANCE);
 	if (!instanced_scene) {
 		accept->set_text(vformat(TTR("Error instancing scene from %s"), p_file));
 		accept->popup_centered();
-		return;
+		return nullptr;
 	}
 
 	UndoRedo *undo_redo = editor->get_undo_redo();
@@ -270,6 +270,7 @@ void SceneTreeDock::_replace_with_branch_scene(const String &p_file, Node *base)
 	undo_redo->add_do_reference(instanced_scene);
 	undo_redo->add_undo_reference(base);
 	undo_redo->commit_action();
+	return instanced_scene;
 }
 
 bool SceneTreeDock::_cyclical_dependency_exists(const String &p_target_scene_path, Node *p_desired_node) {
@@ -741,7 +742,7 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 			}
 
 			for (List<Node *>::Element *E = editable_children.back(); E; E = E->prev()) {
-				_toggle_editable_children(E->get());
+				_set_instance_editable(E->get(), true);
 			}
 
 		} break;
@@ -988,9 +989,9 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 					if (editable) {
 						editable_instance_remove_dialog->set_text(TTR("Disabling \"editable_instance\" will cause all properties of the node to be reverted to their default."));
 						editable_instance_remove_dialog->popup_centered();
-						break;
+					} else {
+						_toggle_editable_instance(true);
 					}
-					_toggle_editable_children(node);
 				}
 			}
 		} break;
@@ -1011,17 +1012,9 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 					if (editable && !placeholder) {
 						placeholder_editable_instance_remove_dialog->set_text(TTR("Enabling \"Load As Placeholder\" will disable \"Editable Children\" and cause all properties of the node to be reverted to their default."));
 						placeholder_editable_instance_remove_dialog->popup_centered();
-						break;
+					} else {
+						_toggle_placeholder(!placeholder);
 					}
-
-					placeholder = !placeholder;
-
-					if (placeholder) {
-						EditorNode::get_singleton()->get_edited_scene()->set_editable_instance(node, false);
-					}
-
-					node->set_scene_instance_load_placeholder(placeholder);
-					scene_tree->update_tree();
 				}
 			}
 		} break;
@@ -1894,44 +1887,77 @@ void SceneTreeDock::_script_creation_closed() {
 	script_create_dialog->disconnect("cancelled", callable_mp(this, &SceneTreeDock::_script_creation_closed));
 }
 
-void SceneTreeDock::_toggle_editable_children_from_selection() {
-	List<Node *> selection = editor_selection->get_selected_node_list();
-	List<Node *>::Element *e = selection.front();
-
-	if (e) {
-		_toggle_editable_children(e->get());
-	}
-}
-
-void SceneTreeDock::_toggle_placeholder_from_selection() {
+void SceneTreeDock::_toggle_editable_instance(bool p_editable) {
 	List<Node *> selection = editor_selection->get_selected_node_list();
 	List<Node *>::Element *e = selection.front();
 
 	if (e) {
 		Node *node = e->get();
 		if (node) {
-			_toggle_editable_children(node);
-
-			bool placeholder = node->get_scene_instance_load_placeholder();
-			placeholder = !placeholder;
-
-			node->set_scene_instance_load_placeholder(placeholder);
-			scene_tree->update_tree();
+			if (p_editable) {
+				editor_data->get_undo_redo().create_action(TTR("Enable editable instance"));
+				editor_data->get_undo_redo().add_do_method(this, "_set_instance_editable", node, true);
+				editor_data->get_undo_redo().add_undo_method(this, "_set_instance_editable", node, false);
+				if (node->get_scene_instance_load_placeholder()) {
+					editor_data->get_undo_redo().add_do_method(this, "_set_instance_load_placeholder", node, false);
+					editor_data->get_undo_redo().add_undo_method(this, "_set_instance_load_placeholder", node, true);
+				}
+				editor_data->get_undo_redo().add_do_method(this, "_update_all_gizmos", node);
+				editor_data->get_undo_redo().add_undo_method(this, "_update_all_gizmos", node);
+			} else {
+				editor_data->get_undo_redo().create_action(TTR("Disable editable instance"));
+				Node *new_node = _replace_with_branch_scene(node->get_filename(), node);
+				if (new_node) {
+					editor_data->get_undo_redo().add_do_method(this, "_update_all_gizmos", new_node);
+				} else {
+					editor_data->get_undo_redo().commit_action();
+					editor_data->get_undo_redo().undo();
+					return;
+				}
+				editor_data->get_undo_redo().add_undo_method(this, "_update_all_gizmos", node);
+			}
+			editor_data->get_undo_redo().add_do_method(scene_tree, "update_tree");
+			editor_data->get_undo_redo().add_undo_method(scene_tree, "update_tree");
+			editor_data->get_undo_redo().commit_action();
 		}
 	}
 }
 
-void SceneTreeDock::_toggle_editable_children(Node *p_node) {
-	if (p_node) {
-		bool editable = !EditorNode::get_singleton()->get_edited_scene()->is_editable_instance(p_node);
-		EditorNode::get_singleton()->get_edited_scene()->set_editable_instance(p_node, editable);
-		if (editable) {
-			p_node->set_scene_instance_load_placeholder(false);
+void SceneTreeDock::_toggle_placeholder(bool p_placeholder) {
+	List<Node *> selection = editor_selection->get_selected_node_list();
+	List<Node *>::Element *e = selection.front();
+
+	if (e) {
+		Node *node = e->get();
+		if (node) {
+			if (p_placeholder) {
+				editor_data->get_undo_redo().create_action(TTR("Enable placeholder"));
+				if (EditorNode::get_singleton()->get_edited_scene()->is_editable_instance(node)) {
+					Node *new_node = _replace_with_branch_scene(node->get_filename(), node);
+					if (new_node) {
+						editor_data->get_undo_redo().add_do_method(this, "_set_instance_load_placeholder", new_node, true);
+						editor_data->get_undo_redo().add_do_method(this, "_update_all_gizmos", new_node);
+						editor_data->get_undo_redo().add_undo_method(this, "_update_all_gizmos", node);
+					} else {
+						editor_data->get_undo_redo().commit_action();
+						editor_data->get_undo_redo().undo();
+						return;
+					}
+				} else {
+					editor_data->get_undo_redo().add_do_method(this, "_set_instance_load_placeholder", node, true);
+					editor_data->get_undo_redo().add_undo_method(this, "_set_instance_load_placeholder", node, false);
+				}
+			} else {
+				editor_data->get_undo_redo().create_action(TTR("Disable placeholder"));
+				editor_data->get_undo_redo().add_do_method(this, "_set_instance_load_placeholder", node, false);
+				editor_data->get_undo_redo().add_undo_method(this, "_set_instance_load_placeholder", node, true);
+				editor_data->get_undo_redo().add_do_method(this, "_update_all_gizmos", node);
+				editor_data->get_undo_redo().add_undo_method(this, "_update_all_gizmos", node);
+			}
+			editor_data->get_undo_redo().add_do_method(scene_tree, "update_tree");
+			editor_data->get_undo_redo().add_undo_method(scene_tree, "update_tree");
+			editor_data->get_undo_redo().commit_action();
 		}
-
-		Node3DEditor::get_singleton()->update_all_gizmos(p_node);
-
-		scene_tree->update_tree();
 	}
 }
 
@@ -3003,11 +3029,26 @@ void SceneTreeDock::_create_remap_for_resource(RES p_resource, Map<RES, RES> &r_
 	}
 }
 
+void SceneTreeDock::_set_instance_editable(Node *p_node, bool p_editable) {
+	EditorNode::get_singleton()->get_edited_scene()->set_editable_instance(p_node, p_editable);
+}
+
+void SceneTreeDock::_set_instance_load_placeholder(Node *p_node, bool p_load_placeholder) {
+	p_node->set_scene_instance_load_placeholder(p_load_placeholder);
+}
+
+void SceneTreeDock::_update_all_gizmos(Node *p_node) {
+	Node3DEditor::get_singleton()->update_all_gizmos(p_node);
+}
+
 void SceneTreeDock::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_set_owners"), &SceneTreeDock::_set_owners);
 	ClassDB::bind_method(D_METHOD("_unhandled_key_input"), &SceneTreeDock::_unhandled_key_input);
 	ClassDB::bind_method(D_METHOD("_input"), &SceneTreeDock::_input);
 	ClassDB::bind_method(D_METHOD("_update_script_button"), &SceneTreeDock::_update_script_button);
+	ClassDB::bind_method(D_METHOD("_set_instance_editable"), &SceneTreeDock::_set_instance_editable);
+	ClassDB::bind_method(D_METHOD("_set_instance_load_placeholder"), &SceneTreeDock::_set_instance_load_placeholder);
+	ClassDB::bind_method(D_METHOD("_update_all_gizmos"), &SceneTreeDock::_update_all_gizmos);
 
 	ClassDB::bind_method(D_METHOD("instance"), &SceneTreeDock::instance);
 	ClassDB::bind_method(D_METHOD("get_tree_editor"), &SceneTreeDock::get_tree_editor);
@@ -3172,11 +3213,11 @@ SceneTreeDock::SceneTreeDock(EditorNode *p_editor, Node *p_scene_root, EditorSel
 
 	editable_instance_remove_dialog = memnew(ConfirmationDialog);
 	add_child(editable_instance_remove_dialog);
-	editable_instance_remove_dialog->connect("confirmed", callable_mp(this, &SceneTreeDock::_toggle_editable_children_from_selection));
+	editable_instance_remove_dialog->connect("confirmed", callable_mp(this, &SceneTreeDock::_toggle_editable_instance), varray(false));
 
 	placeholder_editable_instance_remove_dialog = memnew(ConfirmationDialog);
 	add_child(placeholder_editable_instance_remove_dialog);
-	placeholder_editable_instance_remove_dialog->connect("confirmed", callable_mp(this, &SceneTreeDock::_toggle_placeholder_from_selection));
+	placeholder_editable_instance_remove_dialog->connect("confirmed", callable_mp(this, &SceneTreeDock::_toggle_placeholder), varray(true));
 
 	new_scene_from_dialog = memnew(EditorFileDialog);
 	new_scene_from_dialog->set_file_mode(EditorFileDialog::FILE_MODE_SAVE_FILE);

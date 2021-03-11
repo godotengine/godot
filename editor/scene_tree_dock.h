@@ -190,10 +190,8 @@ class SceneTreeDock : public VBoxContainer {
 
 	void _delete_confirm(bool p_cut = false);
 
-	void _toggle_editable_children_from_selection();
-	void _toggle_editable_children(Node *p_node);
-
-	void _toggle_placeholder_from_selection();
+	void _toggle_editable_instance(bool p_editable);
+	void _toggle_placeholder(bool p_placeholder);
 
 	void _node_prerenamed(Node *p_node, const String &p_new_name);
 
@@ -225,7 +223,7 @@ class SceneTreeDock : public VBoxContainer {
 	void _filter_changed(const String &p_filter);
 
 	void _perform_instance_scenes(const Vector<String> &p_files, Node *parent, int p_pos);
-	void _replace_with_branch_scene(const String &p_file, Node *base);
+	Node *_replace_with_branch_scene(const String &p_file, Node *base);
 
 	void _file_selected(String p_file);
 
@@ -240,6 +238,10 @@ class SceneTreeDock : public VBoxContainer {
 	void _clear_clipboard();
 	void _create_remap_for_node(Node *p_node, Map<RES, RES> &r_remap);
 	void _create_remap_for_resource(RES p_resource, Map<RES, RES> &r_remap);
+
+	void _set_instance_editable(Node *p_node, bool p_editable);
+	void _set_instance_load_placeholder(Node *p_node, bool p_load_placeholder);
+	void _update_all_gizmos(Node *p_node);
 
 	bool profile_allow_editing;
 	bool profile_allow_script_editing;
