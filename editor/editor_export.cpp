@@ -301,6 +301,8 @@ void EditorExportPlatform::gen_debug_flags(Vector<String> &r_flags, int p_flags)
 }
 
 Error EditorExportPlatform::_save_pack_file(void *p_userdata, const String &p_path, const Vector<uint8_t> &p_data, int p_file, int p_total, const Vector<String> &p_enc_in_filters, const Vector<String> &p_enc_ex_filters, const Vector<uint8_t> &p_key) {
+	ERR_FAIL_COND_V_MSG(p_total < 1, ERR_PARAMETER_RANGE_ERROR, "Must select at least one file to export.");
+
 	PackData *pd = (PackData *)p_userdata;
 
 	SavedData sd;
@@ -368,6 +370,8 @@ Error EditorExportPlatform::_save_pack_file(void *p_userdata, const String &p_pa
 }
 
 Error EditorExportPlatform::_save_zip_file(void *p_userdata, const String &p_path, const Vector<uint8_t> &p_data, int p_file, int p_total, const Vector<String> &p_enc_in_filters, const Vector<String> &p_enc_ex_filters, const Vector<uint8_t> &p_key) {
+	ERR_FAIL_COND_V_MSG(p_total < 1, ERR_PARAMETER_RANGE_ERROR, "Must select at least one file to export.");
+
 	String path = p_path.replace_first("res://", "");
 
 	ZipData *zd = (ZipData *)p_userdata;
@@ -824,17 +828,25 @@ Error EditorExportPlatform::export_project_files(const Ref<EditorExportPreset> &
 		}
 	}
 
+	Error err = OK;
 	Vector<Ref<EditorExportPlugin>> export_plugins = EditorExport::get_singleton()->get_export_plugins();
+
 	for (int i = 0; i < export_plugins.size(); i++) {
 		export_plugins.write[i]->set_export_preset(p_preset);
 
 		if (p_so_func) {
 			for (int j = 0; j < export_plugins[i]->shared_objects.size(); j++) {
-				p_so_func(p_udata, export_plugins[i]->shared_objects[j]);
+				err = p_so_func(p_udata, export_plugins[i]->shared_objects[j]);
+				if (err != OK) {
+					return err;
+				}
 			}
 		}
 		for (int j = 0; j < export_plugins[i]->extra_files.size(); j++) {
-			p_func(p_udata, export_plugins[i]->extra_files[j].path, export_plugins[i]->extra_files[j].data, 0, paths.size(), enc_in_filters, enc_ex_filters, key);
+			err = p_func(p_udata, export_plugins[i]->extra_files[j].path, export_plugins[i]->extra_files[j].data, 0, paths.size(), enc_in_filters, enc_ex_filters, key);
+			if (err != OK) {
+				return err;
+			}
 		}
 
 		export_plugins.write[i]->_clear();
@@ -856,7 +868,7 @@ Error EditorExportPlatform::export_project_files(const Ref<EditorExportPreset> &
 			//file is imported, replace by what it imports
 			Ref<ConfigFile> config;
 			config.instance();
-			Error err = config->load(path + ".import");
+			err = config->load(path + ".import");
 			if (err != OK) {
 				ERR_PRINT("Could not parse: '" + path + "', not exported.");
 				continue;
@@ -920,12 +932,18 @@ Error EditorExportPlatform::export_project_files(const Ref<EditorExportPreset> &
 				}
 				if (p_so_func) {
 					for (int j = 0; j < export_plugins[i]->shared_objects.size(); j++) {
-						p_so_func(p_udata, export_plugins[i]->shared_objects[j]);
+						err = p_so_func(p_udata, export_plugins[i]->shared_objects[j]);
+						if (err != OK) {
+							return err;
+						}
 					}
 				}
 
 				for (int j = 0; j < export_plugins[i]->extra_files.size(); j++) {
-					p_func(p_udata, export_plugins[i]->extra_files[j].path, export_plugins[i]->extra_files[j].data, idx, total, enc_in_filters, enc_ex_filters, key);
+					err = p_func(p_udata, export_plugins[i]->extra_files[j].path, export_plugins[i]->extra_files[j].data, idx, total, enc_in_filters, enc_ex_filters, key);
+					if (err != OK) {
+						return err;
+					}
 					if (export_plugins[i]->extra_files[j].remap) {
 						do_export = false; //if remap, do not
 						path_remaps.push_back(path);
@@ -945,7 +963,10 @@ Error EditorExportPlatform::export_project_files(const Ref<EditorExportPreset> &
 			//just store it as it comes
 			if (do_export) {
 				Vector<uint8_t> array = FileAccess::get_file_as_array(path);
-				p_func(p_udata, path, array, idx, total, enc_in_filters, enc_ex_filters, key);
+				err = p_func(p_udata, path, array, idx, total, enc_in_filters, enc_ex_filters, key);
+				if (err != OK) {
+					return err;
+				}
 			}
 		}
 
@@ -981,7 +1002,10 @@ Error EditorExportPlatform::export_project_files(const Ref<EditorExportPreset> &
 					new_file.write[j] = utf8[j];
 				}
 
-				p_func(p_udata, from + ".remap", new_file, idx, total, enc_in_filters, enc_ex_filters, key);
+				err = p_func(p_udata, from + ".remap", new_file, idx, total, enc_in_filters, enc_ex_filters, key);
+				if (err != OK) {
+					return err;
+				}
 			}
 		} else {
 			//old remap mode, will still work, but it's unused because it's not multiple pck export friendly
@@ -994,11 +1018,17 @@ Error EditorExportPlatform::export_project_files(const Ref<EditorExportPreset> &
 	String splash = ProjectSettings::get_singleton()->get("application/boot_splash/image");
 	if (icon != String() && FileAccess::exists(icon)) {
 		Vector<uint8_t> array = FileAccess::get_file_as_array(icon);
-		p_func(p_udata, icon, array, idx, total, enc_in_filters, enc_ex_filters, key);
+		err = p_func(p_udata, icon, array, idx, total, enc_in_filters, enc_ex_filters, key);
+		if (err != OK) {
+			return err;
+		}
 	}
 	if (splash != String() && FileAccess::exists(splash) && icon != splash) {
 		Vector<uint8_t> array = FileAccess::get_file_as_array(splash);
-		p_func(p_udata, splash, array, idx, total, enc_in_filters, enc_ex_filters, key);
+		err = p_func(p_udata, splash, array, idx, total, enc_in_filters, enc_ex_filters, key);
+		if (err != OK) {
+			return err;
+		}
 	}
 
 	// Store text server data if exists.
@@ -1006,7 +1036,10 @@ Error EditorExportPlatform::export_project_files(const Ref<EditorExportPreset> &
 		String ts_data = "res://" + TS->get_support_data_filename();
 		if (FileAccess::exists(ts_data)) {
 			Vector<uint8_t> array = FileAccess::get_file_as_array(ts_data);
-			p_func(p_udata, ts_data, array, idx, total, enc_in_filters, enc_ex_filters, key);
+			err = p_func(p_udata, ts_data, array, idx, total, enc_in_filters, enc_ex_filters, key);
+			if (err != OK) {
+				return err;
+			}
 		}
 	}
 
@@ -1016,9 +1049,7 @@ Error EditorExportPlatform::export_project_files(const Ref<EditorExportPreset> &
 	Vector<uint8_t> data = FileAccess::get_file_as_array(engine_cfb);
 	DirAccess::remove_file_or_error(engine_cfb);
 
-	p_func(p_udata, "res://" + config_file, data, idx, total, enc_in_filters, enc_ex_filters, key);
-
-	return OK;
+	return p_func(p_udata, "res://" + config_file, data, idx, total, enc_in_filters, enc_ex_filters, key);
 }
 
 Error EditorExportPlatform::_add_shared_object(void *p_userdata, const SharedObject &p_so) {
@@ -1052,6 +1083,7 @@ Error EditorExportPlatform::save_pack(const Ref<EditorExportPreset> &p_preset, c
 
 	if (err != OK) {
 		DirAccess::remove_file_or_error(tmppath);
+		ERR_PRINT("Failed to export project files");
 		return err;
 	}
 
