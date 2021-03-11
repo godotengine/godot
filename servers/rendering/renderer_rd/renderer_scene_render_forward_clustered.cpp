@@ -2805,11 +2805,6 @@ RID RendererSceneRenderForwardClustered::_render_buffers_get_normal_texture(RID 
 
 RendererSceneRenderForwardClustered *RendererSceneRenderForwardClustered::singleton = nullptr;
 
-void RendererSceneRenderForwardClustered::set_time(double p_time, double p_step) {
-	time = p_time;
-	RendererSceneRenderRD::set_time(p_time, p_step);
-}
-
 void RendererSceneRenderForwardClustered::_geometry_instance_mark_dirty(GeometryInstance *p_geometry_instance) {
 	GeometryInstanceForwardClustered *ginstance = static_cast<GeometryInstanceForwardClustered *>(p_geometry_instance);
 	if (ginstance->dirty_list_element.in_list()) {

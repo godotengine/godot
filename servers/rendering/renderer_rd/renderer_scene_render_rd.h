@@ -1182,7 +1182,7 @@ public:
 		return debug_draw;
 	}
 
-	virtual void set_time(double p_time, double p_step);
+	void set_time(double p_time, double p_step);
 
 	RID get_reflection_probe_buffer();
 	RID get_omni_light_buffer();
