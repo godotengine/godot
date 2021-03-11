@@ -532,7 +532,7 @@ class RendererSceneRenderForwardClustered : public RendererSceneRenderRD {
 	Map<Size2i, RID> sdfgi_framebuffer_size_cache;
 
 	struct GeometryInstanceData;
-	struct GeometryInstanceForward;
+	struct GeometryInstanceForwardClustered;
 
 	struct GeometryInstanceLightmapSH {
 		Color sh[9];
@@ -586,10 +586,10 @@ class RendererSceneRenderForwardClustered : public RendererSceneRenderRD {
 		ShaderData *shader_shadow = nullptr;
 
 		GeometryInstanceSurfaceDataCache *next = nullptr;
-		GeometryInstanceForward *owner = nullptr;
+		GeometryInstanceForwardClustered *owner = nullptr;
 	};
 
-	struct GeometryInstanceForward : public GeometryInstance {
+	struct GeometryInstanceForwardClustered : public GeometryInstance {
 		//used during rendering
 		bool mirror = false;
 		bool non_uniform_scale = false;
@@ -615,7 +615,7 @@ class RendererSceneRenderForwardClustered : public RendererSceneRenderRD {
 		RID lightmap_instance;
 		GeometryInstanceLightmapSH *lightmap_sh = nullptr;
 		GeometryInstanceSurfaceDataCache *surface_caches = nullptr;
-		SelfList<GeometryInstanceForward> dirty_list_element;
+		SelfList<GeometryInstanceForwardClustered> dirty_list_element;
 
 		struct Data {
 			//data used less often goes into regular heap
@@ -629,7 +629,7 @@ class RendererSceneRenderForwardClustered : public RendererSceneRenderRD {
 
 			bool use_dynamic_gi = false;
 			bool use_baked_light = false;
-			bool cast_double_sided_shaodows = false;
+			bool cast_double_sided_shadows = false;
 			bool mirror = false;
 			bool dirty_dependencies = false;
 
@@ -638,21 +638,21 @@ class RendererSceneRenderForwardClustered : public RendererSceneRenderRD {
 
 		Data *data = nullptr;
 
-		GeometryInstanceForward() :
+		GeometryInstanceForwardClustered() :
 				dirty_list_element(this) {}
 	};
 
 	static void _geometry_instance_dependency_changed(RendererStorage::DependencyChangedNotification p_notification, RendererStorage::DependencyTracker *p_tracker);
 	static void _geometry_instance_dependency_deleted(const RID &p_dependency, RendererStorage::DependencyTracker *p_tracker);
 
-	SelfList<GeometryInstanceForward>::List geometry_instance_dirty_list;
+	SelfList<GeometryInstanceForwardClustered>::List geometry_instance_dirty_list;
 
-	PagedAllocator<GeometryInstanceForward> geometry_instance_alloc;
+	PagedAllocator<GeometryInstanceForwardClustered> geometry_instance_alloc;
 	PagedAllocator<GeometryInstanceSurfaceDataCache> geometry_instance_surface_alloc;
 	PagedAllocator<GeometryInstanceLightmapSH> geometry_instance_lightmap_sh;
 
-	void _geometry_instance_add_surface_with_material(GeometryInstanceForward *ginstance, uint32_t p_surface, MaterialData *p_material, uint32_t p_material_id, uint32_t p_shader_id, RID p_mesh);
-	void _geometry_instance_add_surface(GeometryInstanceForward *ginstance, uint32_t p_surface, RID p_material, RID p_mesh);
+	void _geometry_instance_add_surface_with_material(GeometryInstanceForwardClustered *ginstance, uint32_t p_surface, MaterialData *p_material, uint32_t p_material_id, uint32_t p_shader_id, RID p_mesh);
+	void _geometry_instance_add_surface(GeometryInstanceForwardClustered *ginstance, uint32_t p_surface, RID p_material, RID p_mesh);
 	void _geometry_instance_mark_dirty(GeometryInstance *p_geometry_instance);
 	void _geometry_instance_update(GeometryInstance *p_geometry_instance);
 	void _update_dirty_geometry_instances();
