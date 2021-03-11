@@ -14,6 +14,17 @@ layout(location = 3) in vec4 color_attrib;
 layout(location = 5) in vec4 modulate_attrib; // attrib:5
 #endif
 
+// Usually, final_modulate is passed as a uniform. However during batching
+// If larger fvfs are used, final_modulate is passed as an attribute.
+// we need to read from the attribute in custom vertex shader
+// rather than the uniform. We do this by specifying final_modulate_alias
+// in shaders rather than final_modulate directly.
+#ifdef USE_ATTRIB_MODULATE
+#define final_modulate_alias modulate_attrib
+#else
+#define final_modulate_alias final_modulate
+#endif
+
 #ifdef USE_ATTRIB_LARGE_VERTEX
 // shared with skeleton attributes, not used in batched shader
 layout(location = 6) in vec2 translate_attrib; // attrib:6
@@ -567,6 +578,18 @@ void main() {
 		normal_used = true;
 #endif
 
+		// If larger fvfs are used, final_modulate is passed as an attribute.
+		// we need to read from this in custom fragment shaders or applying in the post step,
+		// rather than using final_modulate directly.
+#if defined(final_modulate_alias)
+#undef final_modulate_alias
+#endif
+#ifdef USE_ATTRIB_MODULATE
+#define final_modulate_alias modulate_interp
+#else
+#define final_modulate_alias final_modulate
+#endif
+
 		/* clang-format off */
 
 FRAGMENT_SHADER_CODE
@@ -582,12 +605,8 @@ FRAGMENT_SHADER_CODE
 	color = vec4(vec3(enc32), 1.0);
 #endif
 
-#ifdef USE_ATTRIB_MODULATE
-	color *= modulate_interp;
-#else
 #if !defined(MODULATE_USED)
-	color *= final_modulate;
-#endif
+	color *= final_modulate_alias;
 #endif
 
 #ifdef USE_LIGHTING
