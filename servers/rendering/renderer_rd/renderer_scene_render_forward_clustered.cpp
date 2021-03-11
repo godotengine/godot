@@ -1298,7 +1298,7 @@ void RendererSceneRenderForwardClustered::_fill_instance_data(RenderListType p_r
 	GeometryInstanceSurfaceDataCache *prev_surface = nullptr;
 	for (uint32_t i = 0; i < element_total; i++) {
 		GeometryInstanceSurfaceDataCache *surface = rl->elements[i + p_offset];
-		GeometryInstanceForward *inst = surface->owner;
+		GeometryInstanceForwardClustered *inst = surface->owner;
 
 		SceneState::InstanceData &instance_data = scene_state.instance_data[p_render_list][i + p_offset];
 
@@ -1381,7 +1381,7 @@ void RendererSceneRenderForwardClustered::_fill_render_list(RenderListType p_ren
 	//fill list
 
 	for (int i = 0; i < (int)p_instances.size(); i++) {
-		GeometryInstanceForward *inst = static_cast<GeometryInstanceForward *>(p_instances[i]);
+		GeometryInstanceForwardClustered *inst = static_cast<GeometryInstanceForwardClustered *>(p_instances[i]);
 
 		Vector3 support_min = inst->transformed_aabb.get_support(-near_plane.normal);
 		inst->depth = near_plane.distance_to(support_min);
@@ -2805,13 +2805,8 @@ RID RendererSceneRenderForwardClustered::_render_buffers_get_normal_texture(RID 
 
 RendererSceneRenderForwardClustered *RendererSceneRenderForwardClustered::singleton = nullptr;
 
-void RendererSceneRenderForwardClustered::set_time(double p_time, double p_step) {
-	time = p_time;
-	RendererSceneRenderRD::set_time(p_time, p_step);
-}
-
 void RendererSceneRenderForwardClustered::_geometry_instance_mark_dirty(GeometryInstance *p_geometry_instance) {
-	GeometryInstanceForward *ginstance = static_cast<GeometryInstanceForward *>(p_geometry_instance);
+	GeometryInstanceForwardClustered *ginstance = static_cast<GeometryInstanceForwardClustered *>(p_geometry_instance);
 	if (ginstance->dirty_list_element.in_list()) {
 		return;
 	}
@@ -2830,7 +2825,7 @@ void RendererSceneRenderForwardClustered::_geometry_instance_mark_dirty(Geometry
 	geometry_instance_dirty_list.add(&ginstance->dirty_list_element);
 }
 
-void RendererSceneRenderForwardClustered::_geometry_instance_add_surface_with_material(GeometryInstanceForward *ginstance, uint32_t p_surface, MaterialData *p_material, uint32_t p_material_id, uint32_t p_shader_id, RID p_mesh) {
+void RendererSceneRenderForwardClustered::_geometry_instance_add_surface_with_material(GeometryInstanceForwardClustered *ginstance, uint32_t p_surface, MaterialData *p_material, uint32_t p_material_id, uint32_t p_shader_id, RID p_mesh) {
 	bool has_read_screen_alpha = p_material->shader_data->uses_screen_texture || p_material->shader_data->uses_depth_texture || p_material->shader_data->uses_normal_texture;
 	bool has_base_alpha = (p_material->shader_data->uses_alpha || has_read_screen_alpha);
 	bool has_blend_alpha = p_material->shader_data->uses_blend_alpha;
@@ -2854,7 +2849,7 @@ void RendererSceneRenderForwardClustered::_geometry_instance_add_surface_with_ma
 		flags |= GeometryInstanceSurfaceDataCache::FLAG_USES_NORMAL_TEXTURE;
 	}
 
-	if (ginstance->data->cast_double_sided_shaodows) {
+	if (ginstance->data->cast_double_sided_shadows) {
 		flags |= GeometryInstanceSurfaceDataCache::FLAG_USES_DOUBLE_SIDED_SHADOWS;
 	}
 
@@ -2926,7 +2921,7 @@ void RendererSceneRenderForwardClustered::_geometry_instance_add_surface_with_ma
 	sdcache->sort.priority = p_material->priority;
 }
 
-void RendererSceneRenderForwardClustered::_geometry_instance_add_surface(GeometryInstanceForward *ginstance, uint32_t p_surface, RID p_material, RID p_mesh) {
+void RendererSceneRenderForwardClustered::_geometry_instance_add_surface(GeometryInstanceForwardClustered *ginstance, uint32_t p_surface, RID p_material, RID p_mesh) {
 	RID m_src;
 
 	m_src = ginstance->data->material_override.is_valid() ? ginstance->data->material_override : p_material;
@@ -2967,7 +2962,7 @@ void RendererSceneRenderForwardClustered::_geometry_instance_add_surface(Geometr
 }
 
 void RendererSceneRenderForwardClustered::_geometry_instance_update(GeometryInstance *p_geometry_instance) {
-	GeometryInstanceForward *ginstance = static_cast<GeometryInstanceForward *>(p_geometry_instance);
+	GeometryInstanceForwardClustered *ginstance = static_cast<GeometryInstanceForwardClustered *>(p_geometry_instance);
 
 	if (ginstance->data->dirty_dependencies) {
 		ginstance->data->dependency_tracker.update_begin();
@@ -3139,7 +3134,7 @@ void RendererSceneRenderForwardClustered::_geometry_instance_dependency_changed(
 			static_cast<RendererSceneRenderForwardClustered *>(singleton)->_geometry_instance_mark_dirty(static_cast<GeometryInstance *>(p_tracker->userdata));
 		} break;
 		case RendererStorage::DEPENDENCY_CHANGED_MULTIMESH_VISIBLE_INSTANCES: {
-			GeometryInstanceForward *ginstance = static_cast<GeometryInstanceForward *>(p_tracker->userdata);
+			GeometryInstanceForwardClustered *ginstance = static_cast<GeometryInstanceForwardClustered *>(p_tracker->userdata);
 			if (ginstance->data->base_type == RS::INSTANCE_MULTIMESH) {
 				ginstance->instance_count = static_cast<RendererSceneRenderForwardClustered *>(singleton)->storage->multimesh_get_instances_to_draw(ginstance->data->base);
 			}
@@ -3157,8 +3152,8 @@ RendererSceneRender::GeometryInstance *RendererSceneRenderForwardClustered::geom
 	RS::InstanceType type = storage->get_base_type(p_base);
 	ERR_FAIL_COND_V(!((1 << type) & RS::INSTANCE_GEOMETRY_MASK), nullptr);
 
-	GeometryInstanceForward *ginstance = geometry_instance_alloc.alloc();
-	ginstance->data = memnew(GeometryInstanceForward::Data);
+	GeometryInstanceForwardClustered *ginstance = geometry_instance_alloc.alloc();
+	ginstance->data = memnew(GeometryInstanceForwardClustered::Data);
 
 	ginstance->data->base = p_base;
 	ginstance->data->base_type = type;
@@ -3171,34 +3166,34 @@ RendererSceneRender::GeometryInstance *RendererSceneRenderForwardClustered::geom
 	return ginstance;
 }
 void RendererSceneRenderForwardClustered::geometry_instance_set_skeleton(GeometryInstance *p_geometry_instance, RID p_skeleton) {
-	GeometryInstanceForward *ginstance = static_cast<GeometryInstanceForward *>(p_geometry_instance);
+	GeometryInstanceForwardClustered *ginstance = static_cast<GeometryInstanceForwardClustered *>(p_geometry_instance);
 	ERR_FAIL_COND(!ginstance);
 	ginstance->data->skeleton = p_skeleton;
 	_geometry_instance_mark_dirty(ginstance);
 	ginstance->data->dirty_dependencies = true;
 }
 void RendererSceneRenderForwardClustered::geometry_instance_set_material_override(GeometryInstance *p_geometry_instance, RID p_override) {
-	GeometryInstanceForward *ginstance = static_cast<GeometryInstanceForward *>(p_geometry_instance);
+	GeometryInstanceForwardClustered *ginstance = static_cast<GeometryInstanceForwardClustered *>(p_geometry_instance);
 	ERR_FAIL_COND(!ginstance);
 	ginstance->data->material_override = p_override;
 	_geometry_instance_mark_dirty(ginstance);
 	ginstance->data->dirty_dependencies = true;
 }
 void RendererSceneRenderForwardClustered::geometry_instance_set_surface_materials(GeometryInstance *p_geometry_instance, const Vector<RID> &p_materials) {
-	GeometryInstanceForward *ginstance = static_cast<GeometryInstanceForward *>(p_geometry_instance);
+	GeometryInstanceForwardClustered *ginstance = static_cast<GeometryInstanceForwardClustered *>(p_geometry_instance);
 	ERR_FAIL_COND(!ginstance);
 	ginstance->data->surface_materials = p_materials;
 	_geometry_instance_mark_dirty(ginstance);
 	ginstance->data->dirty_dependencies = true;
 }
 void RendererSceneRenderForwardClustered::geometry_instance_set_mesh_instance(GeometryInstance *p_geometry_instance, RID p_mesh_instance) {
-	GeometryInstanceForward *ginstance = static_cast<GeometryInstanceForward *>(p_geometry_instance);
+	GeometryInstanceForwardClustered *ginstance = static_cast<GeometryInstanceForwardClustered *>(p_geometry_instance);
 	ERR_FAIL_COND(!ginstance);
 	ginstance->mesh_instance = p_mesh_instance;
 	_geometry_instance_mark_dirty(ginstance);
 }
 void RendererSceneRenderForwardClustered::geometry_instance_set_transform(GeometryInstance *p_geometry_instance, const Transform &p_transform, const AABB &p_aabb, const AABB &p_transformed_aabb) {
-	GeometryInstanceForward *ginstance = static_cast<GeometryInstanceForward *>(p_geometry_instance);
+	GeometryInstanceForwardClustered *ginstance = static_cast<GeometryInstanceForwardClustered *>(p_geometry_instance);
 	ERR_FAIL_COND(!ginstance);
 	ginstance->transform = p_transform;
 	ginstance->mirror = p_transform.basis.determinant() < 0;
@@ -3215,24 +3210,24 @@ void RendererSceneRenderForwardClustered::geometry_instance_set_transform(Geomet
 	ginstance->lod_model_scale = max_scale;
 }
 void RendererSceneRenderForwardClustered::geometry_instance_set_lod_bias(GeometryInstance *p_geometry_instance, float p_lod_bias) {
-	GeometryInstanceForward *ginstance = static_cast<GeometryInstanceForward *>(p_geometry_instance);
+	GeometryInstanceForwardClustered *ginstance = static_cast<GeometryInstanceForwardClustered *>(p_geometry_instance);
 	ERR_FAIL_COND(!ginstance);
 	ginstance->lod_bias = p_lod_bias;
 }
 void RendererSceneRenderForwardClustered::geometry_instance_set_use_baked_light(GeometryInstance *p_geometry_instance, bool p_enable) {
-	GeometryInstanceForward *ginstance = static_cast<GeometryInstanceForward *>(p_geometry_instance);
+	GeometryInstanceForwardClustered *ginstance = static_cast<GeometryInstanceForwardClustered *>(p_geometry_instance);
 	ERR_FAIL_COND(!ginstance);
 	ginstance->data->use_baked_light = p_enable;
 	_geometry_instance_mark_dirty(ginstance);
 }
 void RendererSceneRenderForwardClustered::geometry_instance_set_use_dynamic_gi(GeometryInstance *p_geometry_instance, bool p_enable) {
-	GeometryInstanceForward *ginstance = static_cast<GeometryInstanceForward *>(p_geometry_instance);
+	GeometryInstanceForwardClustered *ginstance = static_cast<GeometryInstanceForwardClustered *>(p_geometry_instance);
 	ERR_FAIL_COND(!ginstance);
 	ginstance->data->use_dynamic_gi = p_enable;
 	_geometry_instance_mark_dirty(ginstance);
 }
 void RendererSceneRenderForwardClustered::geometry_instance_set_use_lightmap(GeometryInstance *p_geometry_instance, RID p_lightmap_instance, const Rect2 &p_lightmap_uv_scale, int p_lightmap_slice_index) {
-	GeometryInstanceForward *ginstance = static_cast<GeometryInstanceForward *>(p_geometry_instance);
+	GeometryInstanceForwardClustered *ginstance = static_cast<GeometryInstanceForwardClustered *>(p_geometry_instance);
 	ERR_FAIL_COND(!ginstance);
 	ginstance->lightmap_instance = p_lightmap_instance;
 	ginstance->lightmap_uv_scale = p_lightmap_uv_scale;
@@ -3240,7 +3235,7 @@ void RendererSceneRenderForwardClustered::geometry_instance_set_use_lightmap(Geo
 	_geometry_instance_mark_dirty(ginstance);
 }
 void RendererSceneRenderForwardClustered::geometry_instance_set_lightmap_capture(GeometryInstance *p_geometry_instance, const Color *p_sh9) {
-	GeometryInstanceForward *ginstance = static_cast<GeometryInstanceForward *>(p_geometry_instance);
+	GeometryInstanceForwardClustered *ginstance = static_cast<GeometryInstanceForwardClustered *>(p_geometry_instance);
 	ERR_FAIL_COND(!ginstance);
 	if (p_sh9) {
 		if (ginstance->lightmap_sh == nullptr) {
@@ -3257,27 +3252,27 @@ void RendererSceneRenderForwardClustered::geometry_instance_set_lightmap_capture
 	_geometry_instance_mark_dirty(ginstance);
 }
 void RendererSceneRenderForwardClustered::geometry_instance_set_instance_shader_parameters_offset(GeometryInstance *p_geometry_instance, int32_t p_offset) {
-	GeometryInstanceForward *ginstance = static_cast<GeometryInstanceForward *>(p_geometry_instance);
+	GeometryInstanceForwardClustered *ginstance = static_cast<GeometryInstanceForwardClustered *>(p_geometry_instance);
 	ERR_FAIL_COND(!ginstance);
 	ginstance->shader_parameters_offset = p_offset;
 	_geometry_instance_mark_dirty(ginstance);
 }
 void RendererSceneRenderForwardClustered::geometry_instance_set_cast_double_sided_shadows(GeometryInstance *p_geometry_instance, bool p_enable) {
-	GeometryInstanceForward *ginstance = static_cast<GeometryInstanceForward *>(p_geometry_instance);
+	GeometryInstanceForwardClustered *ginstance = static_cast<GeometryInstanceForwardClustered *>(p_geometry_instance);
 	ERR_FAIL_COND(!ginstance);
 
-	ginstance->data->cast_double_sided_shaodows = p_enable;
+	ginstance->data->cast_double_sided_shadows = p_enable;
 	_geometry_instance_mark_dirty(ginstance);
 }
 
 void RendererSceneRenderForwardClustered::geometry_instance_set_layer_mask(GeometryInstance *p_geometry_instance, uint32_t p_layer_mask) {
-	GeometryInstanceForward *ginstance = static_cast<GeometryInstanceForward *>(p_geometry_instance);
+	GeometryInstanceForwardClustered *ginstance = static_cast<GeometryInstanceForwardClustered *>(p_geometry_instance);
 	ERR_FAIL_COND(!ginstance);
 	ginstance->layer_mask = p_layer_mask;
 }
 
 void RendererSceneRenderForwardClustered::geometry_instance_free(GeometryInstance *p_geometry_instance) {
-	GeometryInstanceForward *ginstance = static_cast<GeometryInstanceForward *>(p_geometry_instance);
+	GeometryInstanceForwardClustered *ginstance = static_cast<GeometryInstanceForwardClustered *>(p_geometry_instance);
 	ERR_FAIL_COND(!ginstance);
 	if (ginstance->lightmap_sh != nullptr) {
 		geometry_instance_lightmap_sh.free(ginstance->lightmap_sh);
@@ -3303,18 +3298,18 @@ void RendererSceneRenderForwardClustered::geometry_instance_pair_decal_instances
 }
 
 Transform RendererSceneRenderForwardClustered::geometry_instance_get_transform(GeometryInstance *p_instance) {
-	GeometryInstanceForward *ginstance = static_cast<GeometryInstanceForward *>(p_instance);
+	GeometryInstanceForwardClustered *ginstance = static_cast<GeometryInstanceForwardClustered *>(p_instance);
 	ERR_FAIL_COND_V(!ginstance, Transform());
 	return ginstance->transform;
 }
 AABB RendererSceneRenderForwardClustered::geometry_instance_get_aabb(GeometryInstance *p_instance) {
-	GeometryInstanceForward *ginstance = static_cast<GeometryInstanceForward *>(p_instance);
+	GeometryInstanceForwardClustered *ginstance = static_cast<GeometryInstanceForwardClustered *>(p_instance);
 	ERR_FAIL_COND_V(!ginstance, AABB());
 	return ginstance->data->aabb;
 }
 
 void RendererSceneRenderForwardClustered::geometry_instance_pair_gi_probe_instances(GeometryInstance *p_geometry_instance, const RID *p_gi_probe_instances, uint32_t p_gi_probe_instance_count) {
-	GeometryInstanceForward *ginstance = static_cast<GeometryInstanceForward *>(p_geometry_instance);
+	GeometryInstanceForwardClustered *ginstance = static_cast<GeometryInstanceForwardClustered *>(p_geometry_instance);
 	ERR_FAIL_COND(!ginstance);
 	if (p_gi_probe_instance_count > 0) {
 		ginstance->gi_probes[0] = p_gi_probe_instances[0];
@@ -3333,7 +3328,6 @@ RendererSceneRenderForwardClustered::RendererSceneRenderForwardClustered(Rendere
 		RendererSceneRenderRD(p_storage) {
 	singleton = this;
 	low_end = is_low_end();
-	storage = p_storage;
 
 	/* SCENE SHADER */
 

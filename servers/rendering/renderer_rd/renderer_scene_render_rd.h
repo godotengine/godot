@@ -48,6 +48,7 @@ class RendererSceneRenderRD : public RendererSceneRender {
 	friend RendererSceneGIRD;
 
 protected:
+	RendererStorageRD *storage;
 	double time;
 	double time_step = 0;
 
@@ -110,8 +111,6 @@ protected:
 private:
 	RS::ViewportDebugDraw debug_draw = RS::VIEWPORT_DEBUG_DRAW_DISABLED;
 	static RendererSceneRenderRD *singleton;
-
-	RendererStorageRD *storage;
 
 	/* REFLECTION ATLAS */
 
@@ -1183,7 +1182,7 @@ public:
 		return debug_draw;
 	}
 
-	virtual void set_time(double p_time, double p_step);
+	void set_time(double p_time, double p_step);
 
 	RID get_reflection_probe_buffer();
 	RID get_omni_light_buffer();
