@@ -48,6 +48,7 @@ class RendererSceneRenderRD : public RendererSceneRender {
 	friend RendererSceneGIRD;
 
 protected:
+	RendererStorageRD *storage;
 	double time;
 	double time_step = 0;
 
@@ -110,8 +111,6 @@ protected:
 private:
 	RS::ViewportDebugDraw debug_draw = RS::VIEWPORT_DEBUG_DRAW_DISABLED;
 	static RendererSceneRenderRD *singleton;
-
-	RendererStorageRD *storage;
 
 	/* REFLECTION ATLAS */
 

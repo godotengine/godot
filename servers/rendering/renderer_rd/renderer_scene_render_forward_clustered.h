@@ -83,8 +83,6 @@ class RendererSceneRenderForwardClustered : public RendererSceneRenderRD {
 		ShaderCompilerRD compiler;
 	} shader;
 
-	RendererStorageRD *storage;
-
 	/* Material */
 
 	struct ShaderData : public RendererStorageRD::ShaderData {
