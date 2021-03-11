@@ -3333,7 +3333,6 @@ RendererSceneRenderForwardClustered::RendererSceneRenderForwardClustered(Rendere
 		RendererSceneRenderRD(p_storage) {
 	singleton = this;
 	low_end = is_low_end();
-	storage = p_storage;
 
 	/* SCENE SHADER */
 
