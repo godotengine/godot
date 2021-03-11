@@ -43,7 +43,7 @@ Performance *Performance::singleton = nullptr;
 
 void Performance::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_monitor", "monitor"), &Performance::get_monitor);
-	ClassDB::bind_method(D_METHOD("add_custom_monitor", "id", "callable", "arguments"), &Performance::add_custom_monitor, DEFVAL(Array()));
+	ClassDB::bind_method(D_METHOD("add_custom_monitor", "id", "callable", "arguments"), &Performance::add_custom_monitor, Array());
 	ClassDB::bind_method(D_METHOD("remove_custom_monitor", "id"), &Performance::remove_custom_monitor);
 	ClassDB::bind_method(D_METHOD("has_custom_monitor", "id"), &Performance::has_custom_monitor);
 	ClassDB::bind_method(D_METHOD("get_custom_monitor", "id"), &Performance::get_custom_monitor);

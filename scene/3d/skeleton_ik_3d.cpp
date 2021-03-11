@@ -383,7 +383,7 @@ void SkeletonIK3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_max_iterations", "iterations"), &SkeletonIK3D::set_max_iterations);
 	ClassDB::bind_method(D_METHOD("get_max_iterations"), &SkeletonIK3D::get_max_iterations);
 
-	ClassDB::bind_method(D_METHOD("start", "one_time"), &SkeletonIK3D::start, DEFVAL(false));
+	ClassDB::bind_method(D_METHOD("start", "one_time"), &SkeletonIK3D::start, false);
 	ClassDB::bind_method(D_METHOD("stop"), &SkeletonIK3D::stop);
 
 	ADD_PROPERTY(PropertyInfo(Variant::STRING_NAME, "root_bone"), "set_root_bone", "get_root_bone");

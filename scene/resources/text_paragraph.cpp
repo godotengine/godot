@@ -55,12 +55,12 @@ void TextParagraph::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_bidi_override", "override"), &TextParagraph::_set_bidi_override);
 
-	ClassDB::bind_method(D_METHOD("set_dropcap", "text", "fonts", "size", "dropcap_margins", "opentype_features", "language"), &TextParagraph::set_dropcap, DEFVAL(Rect2()), DEFVAL(Dictionary()), DEFVAL(""));
+	ClassDB::bind_method(D_METHOD("set_dropcap", "text", "fonts", "size", "dropcap_margins", "opentype_features", "language"), &TextParagraph::set_dropcap, Rect2(), Dictionary(), "");
 	ClassDB::bind_method(D_METHOD("clear_dropcap"), &TextParagraph::clear_dropcap);
 
-	ClassDB::bind_method(D_METHOD("add_string", "text", "fonts", "size", "opentype_features", "language"), &TextParagraph::add_string, DEFVAL(Dictionary()), DEFVAL(""));
-	ClassDB::bind_method(D_METHOD("add_object", "key", "size", "inline_align", "length"), &TextParagraph::add_object, DEFVAL(VALIGN_CENTER), DEFVAL(1));
-	ClassDB::bind_method(D_METHOD("resize_object", "key", "size", "inline_align"), &TextParagraph::resize_object, DEFVAL(VALIGN_CENTER));
+	ClassDB::bind_method(D_METHOD("add_string", "text", "fonts", "size", "opentype_features", "language"), &TextParagraph::add_string, Dictionary(), "");
+	ClassDB::bind_method(D_METHOD("add_object", "key", "size", "inline_align", "length"), &TextParagraph::add_object, VALIGN_CENTER, 1);
+	ClassDB::bind_method(D_METHOD("resize_object", "key", "size", "inline_align"), &TextParagraph::resize_object, VALIGN_CENTER);
 
 	ClassDB::bind_method(D_METHOD("set_align", "align"), &TextParagraph::set_align);
 	ClassDB::bind_method(D_METHOD("get_align"), &TextParagraph::get_align);
@@ -101,14 +101,14 @@ void TextParagraph::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_dropcap_size"), &TextParagraph::get_dropcap_size);
 	ClassDB::bind_method(D_METHOD("get_dropcap_lines"), &TextParagraph::get_dropcap_lines);
 
-	ClassDB::bind_method(D_METHOD("draw", "canvas", "pos", "color", "dc_color"), &TextParagraph::draw, DEFVAL(Color(1, 1, 1)), DEFVAL(Color(1, 1, 1)));
-	ClassDB::bind_method(D_METHOD("draw_outline", "canvas", "pos", "outline_size", "color", "dc_color"), &TextParagraph::draw_outline, DEFVAL(1), DEFVAL(Color(1, 1, 1)), DEFVAL(Color(1, 1, 1)));
+	ClassDB::bind_method(D_METHOD("draw", "canvas", "pos", "color", "dc_color"), &TextParagraph::draw, Color(1, 1, 1), Color(1, 1, 1));
+	ClassDB::bind_method(D_METHOD("draw_outline", "canvas", "pos", "outline_size", "color", "dc_color"), &TextParagraph::draw_outline, 1, Color(1, 1, 1), Color(1, 1, 1));
 
-	ClassDB::bind_method(D_METHOD("draw_line", "canvas", "pos", "line", "color"), &TextParagraph::draw_line, DEFVAL(Color(1, 1, 1)));
-	ClassDB::bind_method(D_METHOD("draw_line_outline", "canvas", "pos", "line", "outline_size", "color"), &TextParagraph::draw_line_outline, DEFVAL(1), DEFVAL(Color(1, 1, 1)));
+	ClassDB::bind_method(D_METHOD("draw_line", "canvas", "pos", "line", "color"), &TextParagraph::draw_line, Color(1, 1, 1));
+	ClassDB::bind_method(D_METHOD("draw_line_outline", "canvas", "pos", "line", "outline_size", "color"), &TextParagraph::draw_line_outline, 1, Color(1, 1, 1));
 
-	ClassDB::bind_method(D_METHOD("draw_dropcap", "canvas", "pos", "color"), &TextParagraph::draw_dropcap, DEFVAL(Color(1, 1, 1)));
-	ClassDB::bind_method(D_METHOD("draw_dropcap_outline", "canvas", "pos", "outline_size", "color"), &TextParagraph::draw_dropcap_outline, DEFVAL(1), DEFVAL(Color(1, 1, 1)));
+	ClassDB::bind_method(D_METHOD("draw_dropcap", "canvas", "pos", "color"), &TextParagraph::draw_dropcap, Color(1, 1, 1));
+	ClassDB::bind_method(D_METHOD("draw_dropcap_outline", "canvas", "pos", "outline_size", "color"), &TextParagraph::draw_dropcap_outline, 1, Color(1, 1, 1));
 
 	ClassDB::bind_method(D_METHOD("hit_test", "coords"), &TextParagraph::hit_test);
 }

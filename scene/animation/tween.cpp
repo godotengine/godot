@@ -237,13 +237,13 @@ void Tween::_bind_methods() {
 
 	// Bind the various Tween control methods
 	ClassDB::bind_method(D_METHOD("start"), &Tween::start);
-	ClassDB::bind_method(D_METHOD("reset", "object", "key"), &Tween::reset, DEFVAL(""));
+	ClassDB::bind_method(D_METHOD("reset", "object", "key"), &Tween::reset, "");
 	ClassDB::bind_method(D_METHOD("reset_all"), &Tween::reset_all);
-	ClassDB::bind_method(D_METHOD("stop", "object", "key"), &Tween::stop, DEFVAL(""));
+	ClassDB::bind_method(D_METHOD("stop", "object", "key"), &Tween::stop, "");
 	ClassDB::bind_method(D_METHOD("stop_all"), &Tween::stop_all);
-	ClassDB::bind_method(D_METHOD("resume", "object", "key"), &Tween::resume, DEFVAL(""));
+	ClassDB::bind_method(D_METHOD("resume", "object", "key"), &Tween::resume, "");
 	ClassDB::bind_method(D_METHOD("resume_all"), &Tween::resume_all);
-	ClassDB::bind_method(D_METHOD("remove", "object", "key"), &Tween::remove, DEFVAL(""));
+	ClassDB::bind_method(D_METHOD("remove", "object", "key"), &Tween::remove, "");
 	ClassDB::bind_method(D_METHOD("_remove_by_uid", "uid"), &Tween::_remove_by_uid);
 	ClassDB::bind_method(D_METHOD("remove_all"), &Tween::remove_all);
 	ClassDB::bind_method(D_METHOD("seek", "time"), &Tween::seek);
@@ -251,14 +251,14 @@ void Tween::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_runtime"), &Tween::get_runtime);
 
 	// Bind interpolation and follow methods
-	ClassDB::bind_method(D_METHOD("interpolate_property", "object", "property", "initial_val", "final_val", "duration", "trans_type", "ease_type", "delay"), &Tween::interpolate_property, DEFVAL(TRANS_LINEAR), DEFVAL(EASE_IN_OUT), DEFVAL(0));
-	ClassDB::bind_method(D_METHOD("interpolate_method", "object", "method", "initial_val", "final_val", "duration", "trans_type", "ease_type", "delay"), &Tween::interpolate_method, DEFVAL(TRANS_LINEAR), DEFVAL(EASE_IN_OUT), DEFVAL(0));
-	ClassDB::bind_method(D_METHOD("interpolate_callback", "object", "duration", "callback", "arg1", "arg2", "arg3", "arg4", "arg5"), &Tween::interpolate_callback, DEFVAL(Variant()), DEFVAL(Variant()), DEFVAL(Variant()), DEFVAL(Variant()), DEFVAL(Variant()));
-	ClassDB::bind_method(D_METHOD("interpolate_deferred_callback", "object", "duration", "callback", "arg1", "arg2", "arg3", "arg4", "arg5"), &Tween::interpolate_deferred_callback, DEFVAL(Variant()), DEFVAL(Variant()), DEFVAL(Variant()), DEFVAL(Variant()), DEFVAL(Variant()));
-	ClassDB::bind_method(D_METHOD("follow_property", "object", "property", "initial_val", "target", "target_property", "duration", "trans_type", "ease_type", "delay"), &Tween::follow_property, DEFVAL(TRANS_LINEAR), DEFVAL(EASE_IN_OUT), DEFVAL(0));
-	ClassDB::bind_method(D_METHOD("follow_method", "object", "method", "initial_val", "target", "target_method", "duration", "trans_type", "ease_type", "delay"), &Tween::follow_method, DEFVAL(TRANS_LINEAR), DEFVAL(EASE_IN_OUT), DEFVAL(0));
-	ClassDB::bind_method(D_METHOD("targeting_property", "object", "property", "initial", "initial_val", "final_val", "duration", "trans_type", "ease_type", "delay"), &Tween::targeting_property, DEFVAL(TRANS_LINEAR), DEFVAL(EASE_IN_OUT), DEFVAL(0));
-	ClassDB::bind_method(D_METHOD("targeting_method", "object", "method", "initial", "initial_method", "final_val", "duration", "trans_type", "ease_type", "delay"), &Tween::targeting_method, DEFVAL(TRANS_LINEAR), DEFVAL(EASE_IN_OUT), DEFVAL(0));
+	ClassDB::bind_method(D_METHOD("interpolate_property", "object", "property", "initial_val", "final_val", "duration", "trans_type", "ease_type", "delay"), &Tween::interpolate_property, TRANS_LINEAR, EASE_IN_OUT, 0);
+	ClassDB::bind_method(D_METHOD("interpolate_method", "object", "method", "initial_val", "final_val", "duration", "trans_type", "ease_type", "delay"), &Tween::interpolate_method, TRANS_LINEAR, EASE_IN_OUT, 0);
+	ClassDB::bind_method(D_METHOD("interpolate_callback", "object", "duration", "callback", "arg1", "arg2", "arg3", "arg4", "arg5"), &Tween::interpolate_callback, Variant(), Variant(), Variant(), Variant(), Variant());
+	ClassDB::bind_method(D_METHOD("interpolate_deferred_callback", "object", "duration", "callback", "arg1", "arg2", "arg3", "arg4", "arg5"), &Tween::interpolate_deferred_callback, Variant(), Variant(), Variant(), Variant(), Variant());
+	ClassDB::bind_method(D_METHOD("follow_property", "object", "property", "initial_val", "target", "target_property", "duration", "trans_type", "ease_type", "delay"), &Tween::follow_property, TRANS_LINEAR, EASE_IN_OUT, 0);
+	ClassDB::bind_method(D_METHOD("follow_method", "object", "method", "initial_val", "target", "target_method", "duration", "trans_type", "ease_type", "delay"), &Tween::follow_method, TRANS_LINEAR, EASE_IN_OUT, 0);
+	ClassDB::bind_method(D_METHOD("targeting_property", "object", "property", "initial", "initial_val", "final_val", "duration", "trans_type", "ease_type", "delay"), &Tween::targeting_property, TRANS_LINEAR, EASE_IN_OUT, 0);
+	ClassDB::bind_method(D_METHOD("targeting_method", "object", "method", "initial", "initial_method", "final_val", "duration", "trans_type", "ease_type", "delay"), &Tween::targeting_method, TRANS_LINEAR, EASE_IN_OUT, 0);
 
 	// Add the Tween signals
 	ADD_SIGNAL(MethodInfo("tween_started", PropertyInfo(Variant::OBJECT, "object"), PropertyInfo(Variant::NODE_PATH, "key")));

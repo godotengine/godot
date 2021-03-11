@@ -297,7 +297,7 @@ Error ConfigFile::_parse(const String &p_path, VariantParser::Stream *p_stream) 
 
 void ConfigFile::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_value", "section", "key", "value"), &ConfigFile::set_value);
-	ClassDB::bind_method(D_METHOD("get_value", "section", "key", "default"), &ConfigFile::get_value, DEFVAL(Variant()));
+	ClassDB::bind_method(D_METHOD("get_value", "section", "key", "default"), &ConfigFile::get_value, Variant());
 
 	ClassDB::bind_method(D_METHOD("has_section", "section"), &ConfigFile::has_section);
 	ClassDB::bind_method(D_METHOD("has_section_key", "section", "key"), &ConfigFile::has_section_key);

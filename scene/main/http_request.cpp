@@ -581,8 +581,8 @@ void HTTPRequest::_timeout() {
 }
 
 void HTTPRequest::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("request", "url", "custom_headers", "ssl_validate_domain", "method", "request_data"), &HTTPRequest::request, DEFVAL(PackedStringArray()), DEFVAL(true), DEFVAL(HTTPClient::METHOD_GET), DEFVAL(String()));
-	ClassDB::bind_method(D_METHOD("request_raw", "url", "custom_headers", "ssl_validate_domain", "method", "request_data_raw"), &HTTPRequest::request_raw, DEFVAL(PackedStringArray()), DEFVAL(true), DEFVAL(HTTPClient::METHOD_GET), DEFVAL(PackedByteArray()));
+	ClassDB::bind_method(D_METHOD("request", "url", "custom_headers", "ssl_validate_domain", "method", "request_data"), &HTTPRequest::request, PackedStringArray(), true, HTTPClient::METHOD_GET, String());
+	ClassDB::bind_method(D_METHOD("request_raw", "url", "custom_headers", "ssl_validate_domain", "method", "request_data_raw"), &HTTPRequest::request_raw, PackedStringArray(), true, HTTPClient::METHOD_GET, PackedByteArray());
 	ClassDB::bind_method(D_METHOD("cancel_request"), &HTTPRequest::cancel_request);
 
 	ClassDB::bind_method(D_METHOD("get_http_client_status"), &HTTPRequest::get_http_client_status);

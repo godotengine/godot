@@ -136,8 +136,8 @@ Error PacketPeer::_get_packet_error() const {
 }
 
 void PacketPeer::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("get_var", "allow_objects"), &PacketPeer::_bnd_get_var, DEFVAL(false));
-	ClassDB::bind_method(D_METHOD("put_var", "var", "full_objects"), &PacketPeer::put_var, DEFVAL(false));
+	ClassDB::bind_method(D_METHOD("get_var", "allow_objects"), &PacketPeer::_bnd_get_var, false);
+	ClassDB::bind_method(D_METHOD("put_var", "var", "full_objects"), &PacketPeer::put_var, false);
 	ClassDB::bind_method(D_METHOD("get_packet"), &PacketPeer::_get_packet);
 	ClassDB::bind_method(D_METHOD("put_packet", "buffer"), &PacketPeer::_put_packet);
 	ClassDB::bind_method(D_METHOD("get_packet_error"), &PacketPeer::_get_packet_error);

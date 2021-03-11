@@ -2667,11 +2667,11 @@ void Node::_bind_methods() {
 	GLOBAL_DEF("editor/node_naming/name_casing", NAME_CASING_PASCAL_CASE);
 	ProjectSettings::get_singleton()->set_custom_property_info("editor/node_naming/name_casing", PropertyInfo(Variant::INT, "editor/node_naming/name_casing", PROPERTY_HINT_ENUM, "PascalCase,camelCase,snake_case"));
 
-	ClassDB::bind_method(D_METHOD("add_sibling", "sibling", "legible_unique_name"), &Node::add_sibling, DEFVAL(false));
+	ClassDB::bind_method(D_METHOD("add_sibling", "sibling", "legible_unique_name"), &Node::add_sibling, false);
 
 	ClassDB::bind_method(D_METHOD("set_name", "name"), &Node::set_name);
 	ClassDB::bind_method(D_METHOD("get_name"), &Node::get_name);
-	ClassDB::bind_method(D_METHOD("add_child", "node", "legible_unique_name"), &Node::add_child, DEFVAL(false));
+	ClassDB::bind_method(D_METHOD("add_child", "node", "legible_unique_name"), &Node::add_child, false);
 	ClassDB::bind_method(D_METHOD("remove_child", "node"), &Node::remove_child);
 	ClassDB::bind_method(D_METHOD("get_child_count"), &Node::get_child_count);
 	ClassDB::bind_method(D_METHOD("get_children"), &Node::_get_children);
@@ -2680,7 +2680,7 @@ void Node::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_node", "path"), &Node::get_node);
 	ClassDB::bind_method(D_METHOD("get_node_or_null", "path"), &Node::get_node_or_null);
 	ClassDB::bind_method(D_METHOD("get_parent"), &Node::get_parent);
-	ClassDB::bind_method(D_METHOD("find_node", "mask", "recursive", "owned"), &Node::find_node, DEFVAL(true), DEFVAL(true));
+	ClassDB::bind_method(D_METHOD("find_node", "mask", "recursive", "owned"), &Node::find_node, true, true);
 	ClassDB::bind_method(D_METHOD("find_parent", "mask"), &Node::find_parent);
 	ClassDB::bind_method(D_METHOD("has_node_and_resource", "path"), &Node::has_node_and_resource);
 	ClassDB::bind_method(D_METHOD("get_node_and_resource", "path"), &Node::_get_node_and_resource);
@@ -2690,7 +2690,7 @@ void Node::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("is_greater_than", "node"), &Node::is_greater_than);
 	ClassDB::bind_method(D_METHOD("get_path"), &Node::get_path);
 	ClassDB::bind_method(D_METHOD("get_path_to", "node"), &Node::get_path_to);
-	ClassDB::bind_method(D_METHOD("add_to_group", "group", "persistent"), &Node::add_to_group, DEFVAL(false));
+	ClassDB::bind_method(D_METHOD("add_to_group", "group", "persistent"), &Node::add_to_group, false);
 	ClassDB::bind_method(D_METHOD("remove_from_group", "group"), &Node::remove_from_group);
 	ClassDB::bind_method(D_METHOD("is_in_group", "group"), &Node::is_in_group);
 	ClassDB::bind_method(D_METHOD("move_child", "child_node", "to_position"), &Node::move_child);
@@ -2705,7 +2705,7 @@ void Node::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_filename", "filename"), &Node::set_filename);
 	ClassDB::bind_method(D_METHOD("get_filename"), &Node::get_filename);
 	ClassDB::bind_method(D_METHOD("propagate_notification", "what"), &Node::propagate_notification);
-	ClassDB::bind_method(D_METHOD("propagate_call", "method", "args", "parent_first"), &Node::propagate_call, DEFVAL(Array()), DEFVAL(false));
+	ClassDB::bind_method(D_METHOD("propagate_call", "method", "args", "parent_first"), &Node::propagate_call, Array(), false);
 	ClassDB::bind_method(D_METHOD("set_physics_process", "enable"), &Node::set_physics_process);
 	ClassDB::bind_method(D_METHOD("get_physics_process_delta_time"), &Node::get_physics_process_delta_time);
 	ClassDB::bind_method(D_METHOD("is_physics_processing"), &Node::is_physics_processing);
@@ -2736,8 +2736,8 @@ void Node::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("get_tree"), &Node::get_tree);
 
-	ClassDB::bind_method(D_METHOD("duplicate", "flags"), &Node::duplicate, DEFVAL(DUPLICATE_USE_INSTANCING | DUPLICATE_SIGNALS | DUPLICATE_GROUPS | DUPLICATE_SCRIPTS));
-	ClassDB::bind_method(D_METHOD("replace_by", "node", "keep_groups"), &Node::replace_by, DEFVAL(false));
+	ClassDB::bind_method(D_METHOD("duplicate", "flags"), &Node::duplicate, DUPLICATE_USE_INSTANCING | DUPLICATE_SIGNALS | DUPLICATE_GROUPS | DUPLICATE_SCRIPTS);
+	ClassDB::bind_method(D_METHOD("replace_by", "node", "keep_groups"), &Node::replace_by, false);
 
 	ClassDB::bind_method(D_METHOD("set_scene_instance_load_placeholder", "load_placeholder"), &Node::set_scene_instance_load_placeholder);
 	ClassDB::bind_method(D_METHOD("get_scene_instance_load_placeholder"), &Node::get_scene_instance_load_placeholder);
@@ -2748,7 +2748,7 @@ void Node::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("request_ready"), &Node::request_ready);
 
-	ClassDB::bind_method(D_METHOD("set_network_master", "id", "recursive"), &Node::set_network_master, DEFVAL(true));
+	ClassDB::bind_method(D_METHOD("set_network_master", "id", "recursive"), &Node::set_network_master, true);
 	ClassDB::bind_method(D_METHOD("get_network_master"), &Node::get_network_master);
 
 	ClassDB::bind_method(D_METHOD("is_network_master"), &Node::is_network_master);

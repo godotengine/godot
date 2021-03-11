@@ -34,8 +34,8 @@
 #include "core/os/os.h"
 
 void WebRTCMultiplayer::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("initialize", "peer_id", "server_compatibility"), &WebRTCMultiplayer::initialize, DEFVAL(false));
-	ClassDB::bind_method(D_METHOD("add_peer", "peer", "peer_id", "unreliable_lifetime"), &WebRTCMultiplayer::add_peer, DEFVAL(1));
+	ClassDB::bind_method(D_METHOD("initialize", "peer_id", "server_compatibility"), &WebRTCMultiplayer::initialize, false);
+	ClassDB::bind_method(D_METHOD("add_peer", "peer", "peer_id", "unreliable_lifetime"), &WebRTCMultiplayer::add_peer, 1);
 	ClassDB::bind_method(D_METHOD("remove_peer", "peer_id"), &WebRTCMultiplayer::remove_peer);
 	ClassDB::bind_method(D_METHOD("has_peer", "peer_id"), &WebRTCMultiplayer::has_peer);
 	ClassDB::bind_method(D_METHOD("get_peer", "peer_id"), &WebRTCMultiplayer::get_peer);

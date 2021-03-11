@@ -39,13 +39,13 @@ JSONRPC::~JSONRPC() {
 
 void JSONRPC::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_scope", "scope", "target"), &JSONRPC::set_scope);
-	ClassDB::bind_method(D_METHOD("process_action", "action", "recurse"), &JSONRPC::process_action, DEFVAL(false));
+	ClassDB::bind_method(D_METHOD("process_action", "action", "recurse"), &JSONRPC::process_action, false);
 	ClassDB::bind_method(D_METHOD("process_string", "action"), &JSONRPC::process_string);
 
 	ClassDB::bind_method(D_METHOD("make_request", "method", "params", "id"), &JSONRPC::make_request);
 	ClassDB::bind_method(D_METHOD("make_response", "result", "id"), &JSONRPC::make_response);
 	ClassDB::bind_method(D_METHOD("make_notification", "method", "params"), &JSONRPC::make_notification);
-	ClassDB::bind_method(D_METHOD("make_response_error", "code", "message", "id"), &JSONRPC::make_response_error, DEFVAL(Variant()));
+	ClassDB::bind_method(D_METHOD("make_response_error", "code", "message", "id"), &JSONRPC::make_response_error, Variant());
 
 	BIND_ENUM_CONSTANT(PARSE_ERROR);
 	BIND_ENUM_CONSTANT(INVALID_REQUEST);

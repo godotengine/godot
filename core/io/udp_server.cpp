@@ -31,7 +31,7 @@
 #include "udp_server.h"
 
 void UDPServer::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("listen", "port", "bind_address"), &UDPServer::listen, DEFVAL("*"));
+	ClassDB::bind_method(D_METHOD("listen", "port", "bind_address"), &UDPServer::listen, "*");
 	ClassDB::bind_method(D_METHOD("poll"), &UDPServer::poll);
 	ClassDB::bind_method(D_METHOD("is_connection_available"), &UDPServer::is_connection_available);
 	ClassDB::bind_method(D_METHOD("is_listening"), &UDPServer::is_listening);

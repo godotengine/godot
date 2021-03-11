@@ -111,7 +111,7 @@ public:
 		ClassDB::bind_method(D_METHOD("test_methodr_args"), &MethodBindTester::test_methodr_args);
 		ClassDB::bind_method(D_METHOD("test_methodrc"), &MethodBindTester::test_methodrc);
 		ClassDB::bind_method(D_METHOD("test_methodrc_args"), &MethodBindTester::test_methodrc_args);
-		ClassDB::bind_method(D_METHOD("test_method_default_args"), &MethodBindTester::test_method_default_args, DEFVAL(9) /* wrong on purpose */, DEFVAL(4), DEFVAL(5));
+		ClassDB::bind_method(D_METHOD("test_method_default_args"), &MethodBindTester::test_method_default_args, 9 /* wrong on purpose */, 4, 5);
 	}
 
 	virtual void run_tests() {

@@ -407,8 +407,8 @@ void Node2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_scale"), &Node2D::get_scale);
 
 	ClassDB::bind_method(D_METHOD("rotate", "radians"), &Node2D::rotate);
-	ClassDB::bind_method(D_METHOD("move_local_x", "delta", "scaled"), &Node2D::move_x, DEFVAL(false));
-	ClassDB::bind_method(D_METHOD("move_local_y", "delta", "scaled"), &Node2D::move_y, DEFVAL(false));
+	ClassDB::bind_method(D_METHOD("move_local_x", "delta", "scaled"), &Node2D::move_x, false);
+	ClassDB::bind_method(D_METHOD("move_local_y", "delta", "scaled"), &Node2D::move_y, false);
 	ClassDB::bind_method(D_METHOD("translate", "offset"), &Node2D::translate);
 	ClassDB::bind_method(D_METHOD("global_translate", "offset"), &Node2D::global_translate);
 	ClassDB::bind_method(D_METHOD("apply_scale", "ratio"), &Node2D::apply_scale);

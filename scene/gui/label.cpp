@@ -667,7 +667,7 @@ void Label::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("is_clipping_text"), &Label::is_clipping_text);
 	ClassDB::bind_method(D_METHOD("set_uppercase", "enable"), &Label::set_uppercase);
 	ClassDB::bind_method(D_METHOD("is_uppercase"), &Label::is_uppercase);
-	ClassDB::bind_method(D_METHOD("get_line_height", "line"), &Label::get_line_height, DEFVAL(-1));
+	ClassDB::bind_method(D_METHOD("get_line_height", "line"), &Label::get_line_height, -1);
 	ClassDB::bind_method(D_METHOD("get_line_count"), &Label::get_line_count);
 	ClassDB::bind_method(D_METHOD("get_visible_line_count"), &Label::get_visible_line_count);
 	ClassDB::bind_method(D_METHOD("get_total_character_count"), &Label::get_total_character_count);

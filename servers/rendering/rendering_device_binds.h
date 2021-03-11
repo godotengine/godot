@@ -371,8 +371,8 @@ protected:
 	}
 
 	static void _bind_methods() {
-		ClassDB::bind_method(D_METHOD("set_bytecode", "bytecode", "version"), &RDShaderFile::set_bytecode, DEFVAL(StringName()));
-		ClassDB::bind_method(D_METHOD("get_bytecode", "version"), &RDShaderFile::get_bytecode, DEFVAL(StringName()));
+		ClassDB::bind_method(D_METHOD("set_bytecode", "bytecode", "version"), &RDShaderFile::set_bytecode, StringName());
+		ClassDB::bind_method(D_METHOD("get_bytecode", "version"), &RDShaderFile::get_bytecode, StringName());
 		ClassDB::bind_method(D_METHOD("get_version_list"), &RDShaderFile::get_version_list);
 
 		ClassDB::bind_method(D_METHOD("set_base_error", "error"), &RDShaderFile::set_base_error);

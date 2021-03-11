@@ -100,7 +100,7 @@ void AESContext::finish() {
 }
 
 void AESContext::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("start", "mode", "key", "iv"), &AESContext::start, DEFVAL(PackedByteArray()));
+	ClassDB::bind_method(D_METHOD("start", "mode", "key", "iv"), &AESContext::start, PackedByteArray());
 	ClassDB::bind_method(D_METHOD("update", "src"), &AESContext::update);
 	ClassDB::bind_method(D_METHOD("get_iv_state"), &AESContext::get_iv_state);
 	ClassDB::bind_method(D_METHOD("finish"), &AESContext::finish);

@@ -191,7 +191,7 @@ void Timer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_autostart", "enable"), &Timer::set_autostart);
 	ClassDB::bind_method(D_METHOD("has_autostart"), &Timer::has_autostart);
 
-	ClassDB::bind_method(D_METHOD("start", "time_sec"), &Timer::start, DEFVAL(-1));
+	ClassDB::bind_method(D_METHOD("start", "time_sec"), &Timer::start, -1);
 	ClassDB::bind_method(D_METHOD("stop"), &Timer::stop);
 
 	ClassDB::bind_method(D_METHOD("set_paused", "paused"), &Timer::set_paused);

@@ -6802,7 +6802,7 @@ void TextEdit::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_gui_input"), &TextEdit::_gui_input);
 	ClassDB::bind_method(D_METHOD("_cursor_changed_emit"), &TextEdit::_cursor_changed_emit);
 	ClassDB::bind_method(D_METHOD("_text_changed_emit"), &TextEdit::_text_changed_emit);
-	ClassDB::bind_method(D_METHOD("_update_wrap_at", "force"), &TextEdit::_update_wrap_at, DEFVAL(false));
+	ClassDB::bind_method(D_METHOD("_update_wrap_at", "force"), &TextEdit::_update_wrap_at, false);
 
 	BIND_ENUM_CONSTANT(SEARCH_MATCH_CASE);
 	BIND_ENUM_CONSTANT(SEARCH_WHOLE_WORDS);
@@ -6843,8 +6843,8 @@ void TextEdit::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_structured_text_bidi_override_options"), &TextEdit::get_structured_text_bidi_override_options);
 
 	ClassDB::bind_method(D_METHOD("center_viewport_to_cursor"), &TextEdit::center_viewport_to_cursor);
-	ClassDB::bind_method(D_METHOD("cursor_set_column", "column", "adjust_viewport"), &TextEdit::cursor_set_column, DEFVAL(true));
-	ClassDB::bind_method(D_METHOD("cursor_set_line", "line", "adjust_viewport", "can_be_hidden", "wrap_index"), &TextEdit::cursor_set_line, DEFVAL(true), DEFVAL(true), DEFVAL(0));
+	ClassDB::bind_method(D_METHOD("cursor_set_column", "column", "adjust_viewport"), &TextEdit::cursor_set_column, true);
+	ClassDB::bind_method(D_METHOD("cursor_set_line", "line", "adjust_viewport", "can_be_hidden", "wrap_index"), &TextEdit::cursor_set_line, true, true, 0);
 
 	ClassDB::bind_method(D_METHOD("cursor_get_column"), &TextEdit::cursor_get_column);
 	ClassDB::bind_method(D_METHOD("cursor_get_line"), &TextEdit::cursor_get_line);
@@ -6862,7 +6862,7 @@ void TextEdit::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("is_right_click_moving_caret"), &TextEdit::is_right_click_moving_caret);
 
 	ClassDB::bind_method(D_METHOD("get_selection_mode"), &TextEdit::get_selection_mode);
-	ClassDB::bind_method(D_METHOD("set_selection_mode", "mode", "line", "column"), &TextEdit::set_selection_mode, DEFVAL(-1), DEFVAL(-1));
+	ClassDB::bind_method(D_METHOD("set_selection_mode", "mode", "line", "column"), &TextEdit::set_selection_mode, -1, -1);
 	ClassDB::bind_method(D_METHOD("get_selection_line"), &TextEdit::get_selection_line);
 	ClassDB::bind_method(D_METHOD("get_selection_column"), &TextEdit::get_selection_column);
 
@@ -6932,7 +6932,7 @@ void TextEdit::_bind_methods() {
 	BIND_ENUM_CONSTANT(GUTTER_TPYE_ICON);
 	BIND_ENUM_CONSTANT(GUTTER_TPYE_CUSTOM);
 
-	ClassDB::bind_method(D_METHOD("add_gutter", "at"), &TextEdit::add_gutter, DEFVAL(-1));
+	ClassDB::bind_method(D_METHOD("add_gutter", "at"), &TextEdit::add_gutter, -1);
 	ClassDB::bind_method(D_METHOD("remove_gutter", "gutter"), &TextEdit::remove_gutter);
 	ClassDB::bind_method(D_METHOD("get_gutter_count"), &TextEdit::get_gutter_count);
 	ClassDB::bind_method(D_METHOD("set_gutter_name", "gutter", "name"), &TextEdit::set_gutter_name);

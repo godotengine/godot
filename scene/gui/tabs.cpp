@@ -1102,7 +1102,7 @@ void Tabs::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_tab_disabled", "tab_idx", "disabled"), &Tabs::set_tab_disabled);
 	ClassDB::bind_method(D_METHOD("get_tab_disabled", "tab_idx"), &Tabs::get_tab_disabled);
 	ClassDB::bind_method(D_METHOD("remove_tab", "tab_idx"), &Tabs::remove_tab);
-	ClassDB::bind_method(D_METHOD("add_tab", "title", "icon"), &Tabs::add_tab, DEFVAL(""), DEFVAL(Ref<Texture2D>()));
+	ClassDB::bind_method(D_METHOD("add_tab", "title", "icon"), &Tabs::add_tab, "", Ref<Texture2D>());
 	ClassDB::bind_method(D_METHOD("set_tab_align", "align"), &Tabs::set_tab_align);
 	ClassDB::bind_method(D_METHOD("get_tab_align"), &Tabs::get_tab_align);
 	ClassDB::bind_method(D_METHOD("get_tab_offset"), &Tabs::get_tab_offset);

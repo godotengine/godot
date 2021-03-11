@@ -1159,19 +1159,19 @@ void SurfaceTool::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_custom", "index", "custom"), &SurfaceTool::set_custom);
 	ClassDB::bind_method(D_METHOD("set_smooth_group", "index"), &SurfaceTool::set_smooth_group);
 
-	ClassDB::bind_method(D_METHOD("add_triangle_fan", "vertices", "uvs", "colors", "uv2s", "normals", "tangents"), &SurfaceTool::add_triangle_fan, DEFVAL(Vector<Vector2>()), DEFVAL(Vector<Color>()), DEFVAL(Vector<Vector2>()), DEFVAL(Vector<Vector3>()), DEFVAL(Vector<Plane>()));
+	ClassDB::bind_method(D_METHOD("add_triangle_fan", "vertices", "uvs", "colors", "uv2s", "normals", "tangents"), &SurfaceTool::add_triangle_fan, Vector<Vector2>(), Vector<Color>(), Vector<Vector2>(), Vector<Vector3>(), Vector<Plane>());
 
 	ClassDB::bind_method(D_METHOD("add_index", "index"), &SurfaceTool::add_index);
 
 	ClassDB::bind_method(D_METHOD("index"), &SurfaceTool::index);
 	ClassDB::bind_method(D_METHOD("deindex"), &SurfaceTool::deindex);
-	ClassDB::bind_method(D_METHOD("generate_normals", "flip"), &SurfaceTool::generate_normals, DEFVAL(false));
+	ClassDB::bind_method(D_METHOD("generate_normals", "flip"), &SurfaceTool::generate_normals, false);
 	ClassDB::bind_method(D_METHOD("generate_tangents"), &SurfaceTool::generate_tangents);
 
 	ClassDB::bind_method(D_METHOD("optimize_indices_for_cache"), &SurfaceTool::optimize_indices_for_cache);
 
 	ClassDB::bind_method(D_METHOD("get_max_axis_length"), &SurfaceTool::get_max_axis_length);
-	ClassDB::bind_method(D_METHOD("generate_lod", "nd_threshold", "target_index_count"), &SurfaceTool::generate_lod, DEFVAL(3));
+	ClassDB::bind_method(D_METHOD("generate_lod", "nd_threshold", "target_index_count"), &SurfaceTool::generate_lod, 3);
 
 	ClassDB::bind_method(D_METHOD("set_material", "material"), &SurfaceTool::set_material);
 
@@ -1180,7 +1180,7 @@ void SurfaceTool::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("create_from", "existing", "surface"), &SurfaceTool::create_from);
 	ClassDB::bind_method(D_METHOD("create_from_blend_shape", "existing", "surface", "blend_shape"), &SurfaceTool::create_from_blend_shape);
 	ClassDB::bind_method(D_METHOD("append_from", "existing", "surface", "transform"), &SurfaceTool::append_from);
-	ClassDB::bind_method(D_METHOD("commit", "existing", "flags"), &SurfaceTool::commit, DEFVAL(Variant()), DEFVAL(0));
+	ClassDB::bind_method(D_METHOD("commit", "existing", "flags"), &SurfaceTool::commit, Variant(), 0);
 	ClassDB::bind_method(D_METHOD("commit_to_arrays"), &SurfaceTool::commit_to_arrays);
 
 	BIND_ENUM_CONSTANT(CUSTOM_RGBA8_UNORM);

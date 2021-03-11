@@ -1482,8 +1482,8 @@ bool ItemList::has_auto_height() const {
 }
 
 void ItemList::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("add_item", "text", "icon", "selectable"), &ItemList::add_item, DEFVAL(Variant()), DEFVAL(true));
-	ClassDB::bind_method(D_METHOD("add_icon_item", "icon", "selectable"), &ItemList::add_icon_item, DEFVAL(true));
+	ClassDB::bind_method(D_METHOD("add_item", "text", "icon", "selectable"), &ItemList::add_item, Variant(), true);
+	ClassDB::bind_method(D_METHOD("add_icon_item", "icon", "selectable"), &ItemList::add_icon_item, true);
 
 	ClassDB::bind_method(D_METHOD("set_item_text", "idx", "text"), &ItemList::set_item_text);
 	ClassDB::bind_method(D_METHOD("get_item_text", "idx"), &ItemList::get_item_text);
@@ -1531,7 +1531,7 @@ void ItemList::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_item_tooltip", "idx", "tooltip"), &ItemList::set_item_tooltip);
 	ClassDB::bind_method(D_METHOD("get_item_tooltip", "idx"), &ItemList::get_item_tooltip);
 
-	ClassDB::bind_method(D_METHOD("select", "idx", "single"), &ItemList::select, DEFVAL(true));
+	ClassDB::bind_method(D_METHOD("select", "idx", "single"), &ItemList::select, true);
 	ClassDB::bind_method(D_METHOD("deselect", "idx"), &ItemList::deselect);
 	ClassDB::bind_method(D_METHOD("deselect_all"), &ItemList::deselect_all);
 
@@ -1581,7 +1581,7 @@ void ItemList::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("is_anything_selected"), &ItemList::is_anything_selected);
 
-	ClassDB::bind_method(D_METHOD("get_item_at_position", "position", "exact"), &ItemList::get_item_at_position, DEFVAL(false));
+	ClassDB::bind_method(D_METHOD("get_item_at_position", "position", "exact"), &ItemList::get_item_at_position, false);
 
 	ClassDB::bind_method(D_METHOD("ensure_current_is_visible"), &ItemList::ensure_current_is_visible);
 

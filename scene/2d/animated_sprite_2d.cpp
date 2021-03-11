@@ -290,7 +290,7 @@ void SpriteFrames::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_animation_loop", "anim", "loop"), &SpriteFrames::set_animation_loop);
 	ClassDB::bind_method(D_METHOD("get_animation_loop", "anim"), &SpriteFrames::get_animation_loop);
 
-	ClassDB::bind_method(D_METHOD("add_frame", "anim", "frame", "at_position"), &SpriteFrames::add_frame, DEFVAL(-1));
+	ClassDB::bind_method(D_METHOD("add_frame", "anim", "frame", "at_position"), &SpriteFrames::add_frame, -1);
 	ClassDB::bind_method(D_METHOD("get_frame_count", "anim"), &SpriteFrames::get_frame_count);
 	ClassDB::bind_method(D_METHOD("get_frame", "anim", "idx"), &SpriteFrames::get_frame);
 	ClassDB::bind_method(D_METHOD("set_frame", "anim", "idx", "txt"), &SpriteFrames::set_frame);
@@ -671,7 +671,7 @@ void AnimatedSprite2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_set_playing", "playing"), &AnimatedSprite2D::_set_playing);
 	ClassDB::bind_method(D_METHOD("_is_playing"), &AnimatedSprite2D::_is_playing);
 
-	ClassDB::bind_method(D_METHOD("play", "anim", "backwards"), &AnimatedSprite2D::play, DEFVAL(StringName()), DEFVAL(false));
+	ClassDB::bind_method(D_METHOD("play", "anim", "backwards"), &AnimatedSprite2D::play, StringName(), false);
 	ClassDB::bind_method(D_METHOD("stop"), &AnimatedSprite2D::stop);
 	ClassDB::bind_method(D_METHOD("is_playing"), &AnimatedSprite2D::is_playing);
 

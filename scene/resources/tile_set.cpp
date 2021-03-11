@@ -1129,7 +1129,7 @@ void TileSet::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("tile_get_shape_one_way", "id", "shape_id"), &TileSet::tile_get_shape_one_way);
 	ClassDB::bind_method(D_METHOD("tile_set_shape_one_way_margin", "id", "shape_id", "one_way"), &TileSet::tile_set_shape_one_way_margin);
 	ClassDB::bind_method(D_METHOD("tile_get_shape_one_way_margin", "id", "shape_id"), &TileSet::tile_get_shape_one_way_margin);
-	ClassDB::bind_method(D_METHOD("tile_add_shape", "id", "shape", "shape_transform", "one_way", "autotile_coord"), &TileSet::tile_add_shape, DEFVAL(false), DEFVAL(Vector2()));
+	ClassDB::bind_method(D_METHOD("tile_add_shape", "id", "shape", "shape_transform", "one_way", "autotile_coord"), &TileSet::tile_add_shape, false, Vector2());
 	ClassDB::bind_method(D_METHOD("tile_get_shape_count", "id"), &TileSet::tile_get_shape_count);
 	ClassDB::bind_method(D_METHOD("tile_set_shapes", "id", "shapes"), &TileSet::_tile_set_shapes);
 	ClassDB::bind_method(D_METHOD("tile_get_shapes", "id"), &TileSet::_tile_get_shapes);

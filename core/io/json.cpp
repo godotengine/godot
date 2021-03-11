@@ -530,6 +530,6 @@ void JSONParser::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_error_text"), &JSONParser::get_error_text);
 	ClassDB::bind_method(D_METHOD("get_error_line"), &JSONParser::get_error_line);
 	ClassDB::bind_method(D_METHOD("get_data"), &JSONParser::get_data);
-	ClassDB::bind_method(D_METHOD("decode_data", "data", "indent", "sort_keys"), &JSONParser::decode_data, DEFVAL(""), DEFVAL(true));
+	ClassDB::bind_method(D_METHOD("decode_data", "data", "indent", "sort_keys"), &JSONParser::decode_data, "", true);
 	ClassDB::bind_method(D_METHOD("get_string"), &JSONParser::get_string);
 }

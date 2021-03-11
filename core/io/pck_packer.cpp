@@ -47,9 +47,9 @@ static int _get_pad(int p_alignment, int p_n) {
 }
 
 void PCKPacker::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("pck_start", "pck_name", "alignment", "key", "encrypt_directory"), &PCKPacker::pck_start, DEFVAL(0), DEFVAL(String()), DEFVAL(false));
-	ClassDB::bind_method(D_METHOD("add_file", "pck_path", "source_path", "encrypt"), &PCKPacker::add_file, DEFVAL(false));
-	ClassDB::bind_method(D_METHOD("flush", "verbose"), &PCKPacker::flush, DEFVAL(false));
+	ClassDB::bind_method(D_METHOD("pck_start", "pck_name", "alignment", "key", "encrypt_directory"), &PCKPacker::pck_start, 0, String(), false);
+	ClassDB::bind_method(D_METHOD("add_file", "pck_path", "source_path", "encrypt"), &PCKPacker::add_file, false);
+	ClassDB::bind_method(D_METHOD("flush", "verbose"), &PCKPacker::flush, false);
 }
 
 Error PCKPacker::pck_start(const String &p_file, int p_alignment, const String &p_key, bool p_encrypt_directory) {

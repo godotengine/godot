@@ -910,7 +910,7 @@ void AudioStreamPlayer3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_pitch_scale", "pitch_scale"), &AudioStreamPlayer3D::set_pitch_scale);
 	ClassDB::bind_method(D_METHOD("get_pitch_scale"), &AudioStreamPlayer3D::get_pitch_scale);
 
-	ClassDB::bind_method(D_METHOD("play", "from_position"), &AudioStreamPlayer3D::play, DEFVAL(0.0));
+	ClassDB::bind_method(D_METHOD("play", "from_position"), &AudioStreamPlayer3D::play, 0.0);
 	ClassDB::bind_method(D_METHOD("seek", "to_position"), &AudioStreamPlayer3D::seek);
 	ClassDB::bind_method(D_METHOD("stop"), &AudioStreamPlayer3D::stop);
 

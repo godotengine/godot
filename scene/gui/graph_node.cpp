@@ -790,7 +790,7 @@ void GraphNode::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("_gui_input"), &GraphNode::_gui_input);
 
-	ClassDB::bind_method(D_METHOD("set_slot", "idx", "enable_left", "type_left", "color_left", "enable_right", "type_right", "color_right", "custom_left", "custom_right"), &GraphNode::set_slot, DEFVAL(Ref<Texture2D>()), DEFVAL(Ref<Texture2D>()));
+	ClassDB::bind_method(D_METHOD("set_slot", "idx", "enable_left", "type_left", "color_left", "enable_right", "type_right", "color_right", "custom_left", "custom_right"), &GraphNode::set_slot, Ref<Texture2D>(), Ref<Texture2D>());
 	ClassDB::bind_method(D_METHOD("clear_slot", "idx"), &GraphNode::clear_slot);
 	ClassDB::bind_method(D_METHOD("clear_all_slots"), &GraphNode::clear_all_slots);
 	ClassDB::bind_method(D_METHOD("is_slot_enabled_left", "idx"), &GraphNode::is_slot_enabled_left);

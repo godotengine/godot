@@ -244,14 +244,14 @@ void IP::get_local_addresses(List<IP_Address> *r_addresses) const {
 }
 
 void IP::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("resolve_hostname", "host", "ip_type"), &IP::resolve_hostname, DEFVAL(IP::TYPE_ANY));
-	ClassDB::bind_method(D_METHOD("resolve_hostname_queue_item", "host", "ip_type"), &IP::resolve_hostname_queue_item, DEFVAL(IP::TYPE_ANY));
+	ClassDB::bind_method(D_METHOD("resolve_hostname", "host", "ip_type"), &IP::resolve_hostname, IP::TYPE_ANY);
+	ClassDB::bind_method(D_METHOD("resolve_hostname_queue_item", "host", "ip_type"), &IP::resolve_hostname_queue_item, IP::TYPE_ANY);
 	ClassDB::bind_method(D_METHOD("get_resolve_item_status", "id"), &IP::get_resolve_item_status);
 	ClassDB::bind_method(D_METHOD("get_resolve_item_address", "id"), &IP::get_resolve_item_address);
 	ClassDB::bind_method(D_METHOD("erase_resolve_item", "id"), &IP::erase_resolve_item);
 	ClassDB::bind_method(D_METHOD("get_local_addresses"), &IP::_get_local_addresses);
 	ClassDB::bind_method(D_METHOD("get_local_interfaces"), &IP::_get_local_interfaces);
-	ClassDB::bind_method(D_METHOD("clear_cache", "hostname"), &IP::clear_cache, DEFVAL(""));
+	ClassDB::bind_method(D_METHOD("clear_cache", "hostname"), &IP::clear_cache, "");
 
 	BIND_ENUM_CONSTANT(RESOLVER_STATUS_NONE);
 	BIND_ENUM_CONSTANT(RESOLVER_STATUS_WAITING);

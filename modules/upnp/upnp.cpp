@@ -342,12 +342,12 @@ void UPNP::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("get_gateway"), &UPNP::get_gateway);
 
-	ClassDB::bind_method(D_METHOD("discover", "timeout", "ttl", "device_filter"), &UPNP::discover, DEFVAL(2000), DEFVAL(2), DEFVAL("InternetGatewayDevice"));
+	ClassDB::bind_method(D_METHOD("discover", "timeout", "ttl", "device_filter"), &UPNP::discover, 2000, 2, "InternetGatewayDevice");
 
 	ClassDB::bind_method(D_METHOD("query_external_address"), &UPNP::query_external_address);
 
-	ClassDB::bind_method(D_METHOD("add_port_mapping", "port", "port_internal", "desc", "proto", "duration"), &UPNP::add_port_mapping, DEFVAL(0), DEFVAL(""), DEFVAL("UDP"), DEFVAL(0));
-	ClassDB::bind_method(D_METHOD("delete_port_mapping", "port", "proto"), &UPNP::delete_port_mapping, DEFVAL("UDP"));
+	ClassDB::bind_method(D_METHOD("add_port_mapping", "port", "port_internal", "desc", "proto", "duration"), &UPNP::add_port_mapping, 0, "", "UDP", 0);
+	ClassDB::bind_method(D_METHOD("delete_port_mapping", "port", "proto"), &UPNP::delete_port_mapping, "UDP");
 
 	ClassDB::bind_method(D_METHOD("set_discover_multicast_if", "m_if"), &UPNP::set_discover_multicast_if);
 	ClassDB::bind_method(D_METHOD("get_discover_multicast_if"), &UPNP::get_discover_multicast_if);
