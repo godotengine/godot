@@ -41,6 +41,54 @@ void _debug_write_garbage() {
 #endif
 }
 
+String _diagnose_make_item_joined_string(const BItemJoined &p_bij) const {
+	String sz;
+	if (p_bij.use_hardware_transform()) {
+		sz = "hxform";
+	} else {
+		sz = "sxform";
+	}
+	sz += _diagnose_batch_flags_to_string(p_bij.flags);
+
+	String sz_long;
+	sz_long = "\tjoined_item " + itos(p_bij.num_item_refs) + " refs, " + sz + "\n";
+	if (p_bij.z_index != 0) {
+		sz_long += "\t\t(z " + itos(p_bij.z_index) + ")\n";
+	}
+
+	return sz_long;
+}
+
+String _diagnose_batch_flags_to_string(uint32_t p_flags) const {
+	String sz;
+
+	if (p_flags) {
+		sz += " ( ";
+	}
+
+	if (p_flags & RasterizerStorageCommon::PREVENT_COLOR_BAKING) {
+		sz += "prevent_color_baking, ";
+	}
+	if (p_flags & RasterizerStorageCommon::PREVENT_VERTEX_BAKING) {
+		sz += "prevent_vertex_baking, ";
+	}
+	if (p_flags & RasterizerStorageCommon::PREVENT_ITEM_JOINING) {
+		sz += "prevent_item_joining, ";
+	}
+	if (p_flags & RasterizerStorageCommon::USE_MODULATE_FVF) {
+		sz += "use_modulate_fvf, ";
+	}
+	if (p_flags & RasterizerStorageCommon::USE_LARGE_FVF) {
+		sz += "use_large_fvf, ";
+	}
+
+	if (p_flags) {
+		sz += " )";
+	}
+
+	return sz;
+}
+
 String get_command_type_string(const RasterizerCanvas::Item::Command &p_command) const {
 	String sz = "";
 
@@ -86,6 +134,8 @@ String get_command_type_string(const RasterizerCanvas::Item::Command &p_command)
 
 			sz += " ";
 			sz += String(Variant(mat.elements[2]));
+			sz += String(Variant(mat.elements[0]));
+			sz += String(Variant(mat.elements[1]));
 			sz += " ";
 		} break;
 		case RasterizerCanvas::Item::Command::TYPE_CLIP_IGNORE: {

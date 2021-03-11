@@ -1194,12 +1194,9 @@ void RasterizerCanvasGLES3::render_batches(Item::Command *const *p_commands, Ite
 void RasterizerCanvasGLES3::render_joined_item(const BItemJoined &p_bij, RenderItemState &r_ris) {
 	storage->info.render._2d_item_count++;
 
-#ifdef DEBUG_ENABLED
+#if defined(TOOLS_ENABLED) && defined(DEBUG_ENABLED)
 	if (bdata.diagnose_frame) {
-		bdata.frame_string += "\tjoined_item " + itos(p_bij.num_item_refs) + " refs\n";
-		if (p_bij.z_index != 0) {
-			bdata.frame_string += "\t\t(z " + itos(p_bij.z_index) + ")\n";
-		}
+		bdata.frame_string += _diagnose_make_item_joined_string(p_bij);
 	}
 #endif
 
