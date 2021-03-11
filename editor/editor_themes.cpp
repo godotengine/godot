@@ -852,7 +852,7 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 
 	Ref<StyleBoxFlat> style_tree_cursor = style_default->duplicate();
 	style_tree_cursor->set_draw_center(false);
-	style_tree_cursor->set_border_width_all(border_width);
+	style_tree_cursor->set_border_width_all(MAX(1, border_width));
 	style_tree_cursor->set_border_color(contrast_color_1);
 
 	Ref<StyleBoxFlat> style_tree_title = style_default->duplicate();
