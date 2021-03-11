@@ -1100,8 +1100,6 @@ void RendererSceneGIRD::SDFGI::update_cascades() {
 }
 
 void RendererSceneGIRD::SDFGI::debug_draw(const CameraMatrix &p_projection, const Transform &p_transform, int p_width, int p_height, RID p_render_target, RID p_texture) {
-	// !BAS! Need to find a nicer way then adding width/height/renderbuffer/texture as parameters
-
 	if (!debug_uniform_set.is_valid() || !RD::get_singleton()->uniform_set_is_valid(debug_uniform_set)) {
 		Vector<RD::Uniform> uniforms;
 		{
@@ -2806,8 +2804,10 @@ RendererSceneGIRD::RendererSceneGIRD() {
 RendererSceneGIRD::~RendererSceneGIRD() {
 }
 
-void RendererSceneGIRD::init_gi(RendererStorageRD *p_storage) {
+void RendererSceneGIRD::init(RendererStorageRD *p_storage, RendererSceneSkyRD *p_sky) {
 	storage = p_storage;
+
+	/* GI */
 
 	{
 		//kinda complicated to compute the amount of slots, we try to use as many as we can
@@ -2861,9 +2861,9 @@ void RendererSceneGIRD::init_gi(RendererStorageRD *p_storage) {
 			giprobe_debug_shader_version_pipelines[i].setup(giprobe_debug_shader_version_shaders[i], RD::RENDER_PRIMITIVE_TRIANGLES, rs, RD::PipelineMultisampleState(), ds, RD::PipelineColorBlendState::create_disabled(), 0);
 		}
 	}
-}
 
-void RendererSceneGIRD::init_sdfgi(RendererSceneSkyRD *p_sky) {
+	/* SDGFI */
+
 	{
 		Vector<String> preprocess_modes;
 		preprocess_modes.push_back("\n#define MODE_SCROLL\n");

@@ -4097,17 +4097,14 @@ RendererSceneRenderRD::RendererSceneRenderRD(RendererStorageRD *p_storage) {
 		low_end = true;
 	}
 
-	if (!low_end) {
-		gi.init_gi(storage);
-	}
-
 	/* SKY SHADER */
 
 	sky.init(storage);
 
+	/* GI */
+
 	if (!low_end) {
-		//SDFGI
-		gi.init_sdfgi(&sky);
+		gi.init(storage, &sky);
 	}
 
 	{ //decals

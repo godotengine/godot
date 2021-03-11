@@ -53,8 +53,6 @@ class RendererSceneRenderRD;
 
 class RendererSceneGIRD {
 private:
-	// !BAS! need to see which things become internal..
-
 	RendererStorageRD *storage;
 
 	/* GIPROBE INSTANCE */
@@ -652,9 +650,7 @@ public:
 	RendererSceneGIRD();
 	~RendererSceneGIRD();
 
-	// !BAS! Can we merge these two inits? Possibly, need to check
-	void init_gi(RendererStorageRD *p_storage);
-	void init_sdfgi(RendererSceneSkyRD *p_sky);
+	void init(RendererStorageRD *p_storage, RendererSceneSkyRD *p_sky);
 	void free();
 
 	SDFGI *create_sdfgi(RendererSceneEnvironmentRD *p_env, const Vector3 &p_world_position, uint32_t p_requested_history_size);
