@@ -290,6 +290,10 @@ void SoftBody3D::_notification(int p_what) {
 		case NOTIFICATION_VISIBILITY_CHANGED: {
 			_update_pickable();
 
+			if (is_inside_tree()) {
+				prepare_physics_server();
+			}
+
 		} break;
 		case NOTIFICATION_EXIT_WORLD: {
 			PhysicsServer3D::get_singleton()->soft_body_set_space(physics_rid, RID());
@@ -449,7 +453,7 @@ void SoftBody3D::prepare_physics_server() {
 		return;
 	}
 
-	if (get_mesh().is_valid()) {
+	if (get_mesh().is_valid() && is_visible_in_tree()) {
 		become_mesh_owner();
 		PhysicsServer3D::get_singleton()->soft_body_set_mesh(physics_rid, get_mesh());
 		RS::get_singleton()->connect("frame_pre_draw", callable_mp(this, &SoftBody3D::_draw_soft_mesh));
