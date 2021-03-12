@@ -294,6 +294,10 @@ void SoftBody::_notification(int p_what) {
 
 			_update_pickable();
 
+			if (is_inside_tree()) {
+				prepare_physics_server();
+			}
+
 		} break;
 		case NOTIFICATION_EXIT_WORLD: {
 
@@ -456,7 +460,7 @@ void SoftBody::prepare_physics_server() {
 		return;
 	}
 
-	if (get_mesh().is_valid()) {
+	if (get_mesh().is_valid() && is_visible_in_tree()) {
 
 		become_mesh_owner();
 		PhysicsServer::get_singleton()->soft_body_set_mesh(physics_rid, get_mesh());
