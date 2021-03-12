@@ -192,33 +192,45 @@ const GodotDisplayDragDrop = {
 				GodotDisplayDragDrop.promises = [];
 				GodotDisplayDragDrop.pending_files = [];
 				callback(drops);
-				const dirs = [DROP.substr(0, DROP.length - 1)];
-				// Remove temporary files
-				files.forEach(function (file) {
-					FS.unlink(file);
-					let dir = file.replace(DROP, '');
-					let idx = dir.lastIndexOf('/');
-					while (idx > 0) {
-						dir = dir.substr(0, idx);
-						if (dirs.indexOf(DROP + dir) === -1) {
-							dirs.push(DROP + dir);
-						}
-						idx = dir.lastIndexOf('/');
+				if (GodotConfig.persistent_drops) {
+					// Delay removal at exit.
+					GodotOS.atexit(function (resolve, reject) {
+						GodotDisplayDragDrop.remove_drop(files, DROP);
+						resolve();
+					});
+				} else {
+					GodotDisplayDragDrop.remove_drop(files, DROP);
+				}
+			});
+		},
+
+		remove_drop: function (files, drop_path) {
+			const dirs = [drop_path.substr(0, drop_path.length - 1)];
+			// Remove temporary files
+			files.forEach(function (file) {
+				FS.unlink(file);
+				let dir = file.replace(drop_path, '');
+				let idx = dir.lastIndexOf('/');
+				while (idx > 0) {
+					dir = dir.substr(0, idx);
+					if (dirs.indexOf(drop_path + dir) === -1) {
+						dirs.push(drop_path + dir);
 					}
-				});
-				// Remove dirs.
-				dirs.sort(function (a, b) {
-					const al = (a.match(/\//g) || []).length;
-					const bl = (b.match(/\//g) || []).length;
-					if (al > bl) {
-						return -1;
-					} else if (al < bl) {
-						return 1;
-					}
-					return 0;
-				}).forEach(function (dir) {
-					FS.rmdir(dir);
-				});
+					idx = dir.lastIndexOf('/');
+				}
+			});
+			// Remove dirs.
+			dirs.sort(function (a, b) {
+				const al = (a.match(/\//g) || []).length;
+				const bl = (b.match(/\//g) || []).length;
+				if (al > bl) {
+					return -1;
+				} else if (al < bl) {
+					return 1;
+				}
+				return 0;
+			}).forEach(function (dir) {
+				FS.rmdir(dir);
 			});
 		},
 

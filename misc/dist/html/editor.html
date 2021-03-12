@@ -502,7 +502,7 @@
 									showTab('loader');
 									setLoaderEnabled(true);
 								};
-								editor.start({'args': args});
+								editor.start({'args': args, 'persistentDrops': is_project_manager});
 							});
 						}, 0);
 						OnEditorExit = null;
@@ -563,7 +563,7 @@
 					//selectVideoMode();
 					showTab('editor');
 					setLoaderEnabled(false);
-					editor.start({'args': ['--video-driver', video_driver]}).then(function() {
+					editor.start({'args': ['--project-manager', '--video-driver', video_driver], 'persistentDrops': true}).then(function() {
 						setStatusMode('hidden');
 						initializing = false;
 					});

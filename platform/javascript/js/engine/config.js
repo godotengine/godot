@@ -105,6 +105,11 @@ const InternalConfig = function (initConfig) { // eslint-disable-line no-unused-
 		persistentPaths: ['/userfs'],
 		/**
 		 * @ignore
+		 * @type {boolean}
+		 */
+		persistentDrops: false,
+		/**
+		 * @ignore
 		 * @type {Array.<string>}
 		 */
 		gdnativeLibs: [],
@@ -231,6 +236,7 @@ const InternalConfig = function (initConfig) { // eslint-disable-line no-unused-
 		this.locale = parse('locale', this.locale);
 		this.canvasResizePolicy = parse('canvasResizePolicy', this.canvasResizePolicy);
 		this.persistentPaths = parse('persistentPaths', this.persistentPaths);
+		this.persistentDrops = parse('persistentDrops', this.persistentDrops);
 		this.experimentalVK = parse('experimentalVK', this.experimentalVK);
 		this.gdnativeLibs = parse('gdnativeLibs', this.gdnativeLibs);
 		this.fileSizes = parse('fileSizes', this.fileSizes);
@@ -316,6 +322,7 @@ const InternalConfig = function (initConfig) { // eslint-disable-line no-unused-
 			'canvas': this.canvas,
 			'canvasResizePolicy': this.canvasResizePolicy,
 			'locale': locale,
+			'persistentDrops': this.persistentDrops,
 			'virtualKeyboard': this.experimentalVK,
 			'onExecute': this.onExecute,
 			'onExit': function (p_code) {
