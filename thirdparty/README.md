@@ -324,7 +324,7 @@ changes are marked with `// -- GODOT --` comments.
 ## mbedtls
 
 - Upstream: https://tls.mbed.org/
-- Version: 2.16.9 (3fac0bae4a50113989b3d015cd2d948f51a6d9ac, 2020)
+- Version: 2.16.10 (d61fa61bef06b64132e3490543c81b8ee40fbee3, 2021)
 - License: Apache 2.0
 
 File extracted from upstream release tarball:
