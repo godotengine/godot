@@ -273,7 +273,7 @@ public:
 
 	FUNCRID(soft_body)
 
-	FUNC2(soft_body_update_rendering_server, RID, class SoftBodyRenderingServerHandler *)
+	FUNC2(soft_body_update_rendering_server, RID, class RenderingServerHandler *)
 
 	FUNC2(soft_body_set_space, RID, RID)
 	FUNC1RC(RID, soft_body_get_space, RID)
@@ -294,7 +294,6 @@ public:
 	FUNC2RC(Variant, soft_body_get_state, RID, BodyState);
 
 	FUNC2(soft_body_set_transform, RID, const Transform &);
-	FUNC2RC(Vector3, soft_body_get_vertex_position, RID, int);
 
 	FUNC2(soft_body_set_simulation_precision, RID, int);
 	FUNC1RC(int, soft_body_get_simulation_precision, RID);
@@ -305,17 +304,8 @@ public:
 	FUNC2(soft_body_set_linear_stiffness, RID, real_t);
 	FUNC1RC(real_t, soft_body_get_linear_stiffness, RID);
 
-	FUNC2(soft_body_set_angular_stiffness, RID, real_t);
-	FUNC1RC(real_t, soft_body_get_angular_stiffness, RID);
-
-	FUNC2(soft_body_set_volume_stiffness, RID, real_t);
-	FUNC1RC(real_t, soft_body_get_volume_stiffness, RID);
-
 	FUNC2(soft_body_set_pressure_coefficient, RID, real_t);
 	FUNC1RC(real_t, soft_body_get_pressure_coefficient, RID);
-
-	FUNC2(soft_body_set_pose_matching_coefficient, RID, real_t);
-	FUNC1RC(real_t, soft_body_get_pose_matching_coefficient, RID);
 
 	FUNC2(soft_body_set_damping_coefficient, RID, real_t);
 	FUNC1RC(real_t, soft_body_get_damping_coefficient, RID);
@@ -325,9 +315,10 @@ public:
 
 	FUNC2(soft_body_set_mesh, RID, const REF &);
 
+	FUNC1RC(AABB, soft_body_get_bounds, RID);
+
 	FUNC3(soft_body_move_point, RID, int, const Vector3 &);
 	FUNC2RC(Vector3, soft_body_get_point_global_position, RID, int);
-	FUNC2RC(Vector3, soft_body_get_point_offset, RID, int);
 
 	FUNC1(soft_body_remove_all_pinned_points, RID);
 	FUNC3(soft_body_pin_point, RID, int, bool);

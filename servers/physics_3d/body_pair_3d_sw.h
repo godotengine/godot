@@ -28,13 +28,45 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef BODY_PAIR_SW_H
-#define BODY_PAIR_SW_H
+#ifndef BODY_PAIR_3D_SW_H
+#define BODY_PAIR_3D_SW_H
 
 #include "body_3d_sw.h"
 #include "constraint_3d_sw.h"
+#include "core/templates/local_vector.h"
+#include "soft_body_3d_sw.h"
 
-class BodyPair3DSW : public Constraint3DSW {
+class BodyContact3DSW : public Constraint3DSW {
+protected:
+	struct Contact {
+		Vector3 position;
+		Vector3 normal;
+		int index_A, index_B;
+		Vector3 local_A, local_B;
+		real_t acc_normal_impulse; // accumulated normal impulse (Pn)
+		Vector3 acc_tangent_impulse; // accumulated tangent impulse (Pt)
+		real_t acc_bias_impulse; // accumulated normal impulse for position bias (Pnb)
+		real_t acc_bias_impulse_center_of_mass; // accumulated normal impulse for position bias applied to com
+		real_t mass_normal;
+		real_t bias;
+		real_t bounce;
+
+		real_t depth;
+		bool active;
+		Vector3 rA, rB; // Offset in world orientation with respect to center of mass
+	};
+
+	Vector3 sep_axis;
+	bool collided;
+
+	Space3DSW *space;
+
+	BodyContact3DSW(Body3DSW **p_body_ptr = nullptr, int p_body_count = 0) :
+			Constraint3DSW(p_body_ptr, p_body_count) {
+	}
+};
+
+class BodyPair3DSW : public BodyContact3DSW {
 	enum {
 		MAX_CONTACTS = 4
 	};
@@ -51,38 +83,17 @@ class BodyPair3DSW : public Constraint3DSW {
 	int shape_A;
 	int shape_B;
 
-	struct Contact {
-		Vector3 position;
-		Vector3 normal;
-		Vector3 local_A, local_B;
-		real_t acc_normal_impulse; // accumulated normal impulse (Pn)
-		Vector3 acc_tangent_impulse; // accumulated tangent impulse (Pt)
-		real_t acc_bias_impulse; // accumulated normal impulse for position bias (Pnb)
-		real_t acc_bias_impulse_center_of_mass; // accumulated normal impulse for position bias applied to com
-		real_t mass_normal;
-		real_t bias;
-		real_t bounce;
-
-		real_t depth;
-		bool active;
-		Vector3 rA, rB; // Offset in world orientation with respect to center of mass
-	};
-
 	Vector3 offset_B; //use local A coordinates to avoid numerical issues on collision detection
 
-	Vector3 sep_axis;
 	Contact contacts[MAX_CONTACTS];
 	int contact_count;
-	bool collided;
 
-	static void _contact_added_callback(const Vector3 &p_point_A, const Vector3 &p_point_B, void *p_userdata);
+	static void _contact_added_callback(const Vector3 &p_point_A, int p_index_A, const Vector3 &p_point_B, int p_index_B, void *p_userdata);
 
-	void contact_added_callback(const Vector3 &p_point_A, const Vector3 &p_point_B);
+	void contact_added_callback(const Vector3 &p_point_A, int p_index_A, const Vector3 &p_point_B, int p_index_B);
 
 	void validate_contacts();
 	bool _test_ccd(real_t p_step, Body3DSW *p_A, int p_shape_A, const Transform &p_xform_A, Body3DSW *p_B, int p_shape_B, const Transform &p_xform_B);
-
-	Space3DSW *space;
 
 public:
 	bool setup(real_t p_step);
@@ -92,4 +103,26 @@ public:
 	~BodyPair3DSW();
 };
 
-#endif // BODY_PAIR__SW_H
+class BodySoftBodyPair3DSW : public BodyContact3DSW {
+	Body3DSW *body;
+	SoftBody3DSW *soft_body;
+
+	int body_shape;
+
+	LocalVector<Contact> contacts;
+
+	static void _contact_added_callback(const Vector3 &p_point_A, int p_index_A, const Vector3 &p_point_B, int p_index_B, void *p_userdata);
+
+	void contact_added_callback(const Vector3 &p_point_A, int p_index_A, const Vector3 &p_point_B, int p_index_B);
+
+	void validate_contacts();
+
+public:
+	bool setup(real_t p_step);
+	void solve(real_t p_step);
+
+	BodySoftBodyPair3DSW(Body3DSW *p_A, int p_shape_A, SoftBody3DSW *p_B);
+	~BodySoftBodyPair3DSW();
+};
+
+#endif // BODY_PAIR_3D_SW_H
