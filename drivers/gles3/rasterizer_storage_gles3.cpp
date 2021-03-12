@@ -743,12 +743,45 @@ void RasterizerStorageGLES3::texture_allocate(RID p_texture, int p_width, int p_
 
 		int mipmaps = 0;
 
+#ifndef GLES_OVER_GL
+		int pixel_size = 16;
+		if (compressed) {
+			switch (internal_format) {
+				case _EXT_COMPRESSED_R11_EAC:
+				case _EXT_COMPRESSED_SIGNED_R11_EAC:
+				case _EXT_COMPRESSED_RGB8_ETC2:
+				case _EXT_COMPRESSED_SRGB8_ETC2:
+				case _EXT_COMPRESSED_RGB8_PUNCHTHROUGH_ALPHA1_ETC2:
+				case _EXT_COMPRESSED_SRGB8_PUNCHTHROUGH_ALPHA1_ETC2:
+					pixel_size = 8;
+					break;
+				case _EXT_COMPRESSED_RG11_EAC:
+				case _EXT_COMPRESSED_SIGNED_RG11_EAC:
+				case _EXT_COMPRESSED_RGBA8_ETC2_EAC:
+				case _EXT_COMPRESSED_SRGB8_ALPHA8_ETC2_EAC:
+					pixel_size = 16;
+					break;
+				default:
+					ERR_PRINT("Unsupportted internal texture format for allocating compressed texture array (" + itos(internal_format) + ")");
+			}
+		}
+#endif
+
 		while (width > 0 || height > 0 || (p_type == VS::TEXTURE_TYPE_3D && depth > 0)) {
 			width = MAX(1, width);
 			height = MAX(1, height);
 			depth = MAX(1, depth);
 
+#ifdef GLES_OVER_GL
 			glTexImage3D(texture->target, mipmaps, internal_format, width, height, depth, 0, format, type, NULL);
+#else
+			if (compressed) {
+				int size = MAX(pixel_size, ceil(width / 4) * ceil(height / 4) * pixel_size) * depth;
+				glCompressedTexImage3D(texture->target, mipmaps, internal_format, width, height, depth, 0, size, NULL);
+			} else {
+				glTexImage3D(texture->target, mipmaps, internal_format, width, height, depth, 0, format, type, NULL);
+			}
+#endif
 
 			width /= 2;
 			height /= 2;
