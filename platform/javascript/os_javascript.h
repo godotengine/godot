@@ -60,9 +60,6 @@ private:
 	double last_click_ms;
 	int last_click_button_index;
 
-	int last_width;
-	int last_height;
-
 	MainLoop *main_loop;
 	int video_driver_index;
 	AudioDriverJavaScript *audio_driver_javascript;
@@ -89,6 +86,7 @@ private:
 	static EM_BOOL touchmove_callback(int p_event_type, const EmscriptenTouchEvent *p_event, void *p_user_data);
 
 	static void gamepad_callback(int p_index, int p_connected, const char *p_id, const char *p_guid);
+	static void input_text_callback(const char *p_text, int p_cursor);
 	void process_joypads();
 
 	static void file_access_close_callback(const String &p_file, int p_flags);
@@ -119,6 +117,10 @@ public:
 
 	// Override return type to make writing static callbacks less tedious.
 	static OS_JavaScript *get_singleton();
+
+	virtual bool has_virtual_keyboard() const;
+	virtual void show_virtual_keyboard(const String &p_existing_text, const Rect2 &p_screen_rect = Rect2(), bool p_multiline = false, int p_max_input_length = -1, int p_cursor_start = -1, int p_cursor_end = -1);
+	virtual void hide_virtual_keyboard();
 
 	virtual bool get_swap_ok_cancel();
 	virtual void swap_buffers();

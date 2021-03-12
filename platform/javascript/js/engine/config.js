@@ -91,6 +91,14 @@ const InternalConfig = function (initConfig) { // eslint-disable-line no-unused-
 		 */
 		args: [],
 		/**
+		 * When enabled, this will turn on experimental virtual keyboard support on mobile.
+		 *
+		 * @memberof EngineConfig
+		 * @type {boolean}
+		 * @default
+		 */
+		experimentalVK: false,
+		/**
 		 * @ignore
 		 * @type {Array.<string>}
 		 */
@@ -223,6 +231,7 @@ const InternalConfig = function (initConfig) { // eslint-disable-line no-unused-
 		this.locale = parse('locale', this.locale);
 		this.canvasResizePolicy = parse('canvasResizePolicy', this.canvasResizePolicy);
 		this.persistentPaths = parse('persistentPaths', this.persistentPaths);
+		this.experimentalVK = parse('experimentalVK', this.experimentalVK);
 		this.gdnativeLibs = parse('gdnativeLibs', this.gdnativeLibs);
 		this.fileSizes = parse('fileSizes', this.fileSizes);
 		this.args = parse('args', this.args);
@@ -307,6 +316,7 @@ const InternalConfig = function (initConfig) { // eslint-disable-line no-unused-
 			'canvas': this.canvas,
 			'canvasResizePolicy': this.canvasResizePolicy,
 			'locale': locale,
+			'virtualKeyboard': this.experimentalVK,
 			'onExecute': this.onExecute,
 			'onExit': function (p_code) {
 				cleanup(); // We always need to call the cleanup callback to free memory.

@@ -897,10 +897,44 @@ Error OS_JavaScript::initialize(const VideoMode &p_desired, int p_video_driver, 
 	godot_js_display_paste_cb(&OS_JavaScript::update_clipboard_callback);
 	godot_js_display_drop_files_cb(&OS_JavaScript::drop_files_callback);
 	godot_js_display_gamepad_cb(&OS_JavaScript::gamepad_callback);
+	godot_js_display_vk_cb(&input_text_callback);
 
 	visual_server->init();
 
 	return OK;
+}
+
+void OS_JavaScript::input_text_callback(const char *p_text, int p_cursor) {
+	OS_JavaScript *os = OS_JavaScript::get_singleton();
+	if (!os || !os->get_main_loop()) {
+		return;
+	}
+	os->get_main_loop()->input_text(String::utf8(p_text));
+	Ref<InputEventKey> k;
+	for (int i = 0; i < p_cursor; i++) {
+		k.instance();
+		k->set_pressed(true);
+		k->set_echo(false);
+		k->set_scancode(KEY_RIGHT);
+		os->input->parse_input_event(k);
+		k.instance();
+		k->set_pressed(false);
+		k->set_echo(false);
+		k->set_scancode(KEY_RIGHT);
+		os->input->parse_input_event(k);
+	}
+}
+
+bool OS_JavaScript::has_virtual_keyboard() const {
+	return godot_js_display_vk_available() != 0;
+}
+
+void OS_JavaScript::show_virtual_keyboard(const String &p_existing_text, const Rect2 &p_screen_rect, bool p_multiline, int p_max_input_length, int p_cursor_start, int p_cursor_end) {
+	godot_js_display_vk_show(p_existing_text.utf8().get_data(), p_multiline, p_cursor_start, p_cursor_end);
+}
+
+void OS_JavaScript::hide_virtual_keyboard() {
+	godot_js_display_vk_hide();
 }
 
 bool OS_JavaScript::get_swap_ok_cancel() {
@@ -1191,9 +1225,6 @@ OS_JavaScript::OS_JavaScript() {
 	last_click_button_index = -1;
 	last_click_ms = 0;
 	last_click_pos = Point2(-100, -100);
-
-	last_width = 0;
-	last_height = 0;
 
 	window_maximized = false;
 	entering_fullscreen = false;
