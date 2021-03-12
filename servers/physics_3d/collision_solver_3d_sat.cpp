@@ -74,9 +74,9 @@ struct _CollectorCallback {
 
 	_FORCE_INLINE_ void call(const Vector3 &p_point_A, const Vector3 &p_point_B) {
 		if (swap) {
-			callback(p_point_B, p_point_A, userdata);
+			callback(p_point_B, 0, p_point_A, 0, userdata);
 		} else {
-			callback(p_point_A, p_point_B, userdata);
+			callback(p_point_A, 0, p_point_B, 0, userdata);
 		}
 	}
 };
@@ -680,7 +680,7 @@ public:
 		return true;
 	}
 
-	static _FORCE_INLINE_ void test_contact_points(const Vector3 &p_point_A, const Vector3 &p_point_B, void *p_userdata) {
+	static _FORCE_INLINE_ void test_contact_points(const Vector3 &p_point_A, int p_index_A, const Vector3 &p_point_B, int p_index_B, void *p_userdata) {
 		SeparatorAxisTest<ShapeA, ShapeB, withMargin> *separator = (SeparatorAxisTest<ShapeA, ShapeB, withMargin> *)p_userdata;
 		Vector3 axis = (p_point_B - p_point_A);
 		real_t depth = axis.length();

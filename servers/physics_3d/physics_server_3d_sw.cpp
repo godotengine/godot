@@ -611,9 +611,18 @@ uint32_t PhysicsServer3DSW::body_get_collision_mask(RID p_body) const {
 
 void PhysicsServer3DSW::body_attach_object_instance_id(RID p_body, ObjectID p_id) {
 	Body3DSW *body = body_owner.getornull(p_body);
-	ERR_FAIL_COND(!body);
+	if (body) {
+		body->set_instance_id(p_id);
+		return;
+	}
 
-	body->set_instance_id(p_id);
+	SoftBody3DSW *soft_body = soft_body_owner.getornull(p_body);
+	if (soft_body) {
+		soft_body->set_instance_id(p_id);
+		return;
+	}
+
+	ERR_FAIL_MSG("Invalid ID.");
 };
 
 ObjectID PhysicsServer3DSW::body_get_object_instance_id(RID p_body) const {
@@ -891,6 +900,266 @@ PhysicsDirectBodyState3D *PhysicsServer3DSW::body_get_direct_state(RID p_body) {
 
 	direct_state->body = body;
 	return direct_state;
+}
+
+/* SOFT BODY */
+
+RID PhysicsServer3DSW::soft_body_create() {
+	SoftBody3DSW *soft_body = memnew(SoftBody3DSW);
+	RID rid = soft_body_owner.make_rid(soft_body);
+	soft_body->set_self(rid);
+	return rid;
+}
+
+void PhysicsServer3DSW::soft_body_update_rendering_server(RID p_body, RenderingServerHandler *p_rendering_server_handler) {
+	SoftBody3DSW *soft_body = soft_body_owner.getornull(p_body);
+	ERR_FAIL_COND(!soft_body);
+
+	soft_body->update_rendering_server(p_rendering_server_handler);
+}
+
+void PhysicsServer3DSW::soft_body_set_space(RID p_body, RID p_space) {
+	SoftBody3DSW *soft_body = soft_body_owner.getornull(p_body);
+	ERR_FAIL_COND(!soft_body);
+
+	Space3DSW *space = nullptr;
+	if (p_space.is_valid()) {
+		space = space_owner.getornull(p_space);
+		ERR_FAIL_COND(!space);
+	}
+
+	if (soft_body->get_space() == space) {
+		return;
+	}
+
+	soft_body->set_space(space);
+}
+
+RID PhysicsServer3DSW::soft_body_get_space(RID p_body) const {
+	SoftBody3DSW *soft_body = soft_body_owner.getornull(p_body);
+	ERR_FAIL_COND_V(!soft_body, RID());
+
+	Space3DSW *space = soft_body->get_space();
+	if (!space) {
+		return RID();
+	}
+	return space->get_self();
+}
+
+void PhysicsServer3DSW::soft_body_set_collision_layer(RID p_body, uint32_t p_layer) {
+	SoftBody3DSW *soft_body = soft_body_owner.getornull(p_body);
+	ERR_FAIL_COND(!soft_body);
+
+	soft_body->set_collision_layer(p_layer);
+}
+
+uint32_t PhysicsServer3DSW::soft_body_get_collision_layer(RID p_body) const {
+	SoftBody3DSW *soft_body = soft_body_owner.getornull(p_body);
+	ERR_FAIL_COND_V(!soft_body, 0);
+
+	return soft_body->get_collision_layer();
+}
+
+void PhysicsServer3DSW::soft_body_set_collision_mask(RID p_body, uint32_t p_mask) {
+	SoftBody3DSW *soft_body = soft_body_owner.getornull(p_body);
+	ERR_FAIL_COND(!soft_body);
+
+	soft_body->set_collision_mask(p_mask);
+}
+
+uint32_t PhysicsServer3DSW::soft_body_get_collision_mask(RID p_body) const {
+	SoftBody3DSW *soft_body = soft_body_owner.getornull(p_body);
+	ERR_FAIL_COND_V(!soft_body, 0);
+
+	return soft_body->get_collision_mask();
+}
+
+void PhysicsServer3DSW::soft_body_add_collision_exception(RID p_body, RID p_body_b) {
+	SoftBody3DSW *soft_body = soft_body_owner.getornull(p_body);
+	ERR_FAIL_COND(!soft_body);
+
+	soft_body->add_exception(p_body_b);
+}
+
+void PhysicsServer3DSW::soft_body_remove_collision_exception(RID p_body, RID p_body_b) {
+	SoftBody3DSW *soft_body = soft_body_owner.getornull(p_body);
+	ERR_FAIL_COND(!soft_body);
+
+	soft_body->remove_exception(p_body_b);
+}
+
+void PhysicsServer3DSW::soft_body_get_collision_exceptions(RID p_body, List<RID> *p_exceptions) {
+	SoftBody3DSW *soft_body = soft_body_owner.getornull(p_body);
+	ERR_FAIL_COND(!soft_body);
+
+	for (int i = 0; i < soft_body->get_exceptions().size(); i++) {
+		p_exceptions->push_back(soft_body->get_exceptions()[i]);
+	}
+}
+
+void PhysicsServer3DSW::soft_body_set_state(RID p_body, BodyState p_state, const Variant &p_variant) {
+	SoftBody3DSW *soft_body = soft_body_owner.getornull(p_body);
+	ERR_FAIL_COND(!soft_body);
+
+	soft_body->set_state(p_state, p_variant);
+}
+
+Variant PhysicsServer3DSW::soft_body_get_state(RID p_body, BodyState p_state) const {
+	SoftBody3DSW *soft_body = soft_body_owner.getornull(p_body);
+	ERR_FAIL_COND_V(!soft_body, Variant());
+
+	return soft_body->get_state(p_state);
+}
+
+void PhysicsServer3DSW::soft_body_set_transform(RID p_body, const Transform &p_transform) {
+	SoftBody3DSW *soft_body = soft_body_owner.getornull(p_body);
+	ERR_FAIL_COND(!soft_body);
+
+	soft_body->set_state(BODY_STATE_TRANSFORM, p_transform);
+}
+
+void PhysicsServer3DSW::soft_body_set_ray_pickable(RID p_body, bool p_enable) {
+	SoftBody3DSW *soft_body = soft_body_owner.getornull(p_body);
+	ERR_FAIL_COND(!soft_body);
+
+	soft_body->set_ray_pickable(p_enable);
+}
+
+void PhysicsServer3DSW::soft_body_set_simulation_precision(RID p_body, int p_simulation_precision) {
+	SoftBody3DSW *soft_body = soft_body_owner.getornull(p_body);
+	ERR_FAIL_COND(!soft_body);
+
+	soft_body->set_iteration_count(p_simulation_precision);
+}
+
+int PhysicsServer3DSW::soft_body_get_simulation_precision(RID p_body) const {
+	SoftBody3DSW *soft_body = soft_body_owner.getornull(p_body);
+	ERR_FAIL_COND_V(!soft_body, 0.f);
+
+	return soft_body->get_iteration_count();
+}
+
+void PhysicsServer3DSW::soft_body_set_total_mass(RID p_body, real_t p_total_mass) {
+	SoftBody3DSW *soft_body = soft_body_owner.getornull(p_body);
+	ERR_FAIL_COND(!soft_body);
+
+	soft_body->set_total_mass(p_total_mass);
+}
+
+real_t PhysicsServer3DSW::soft_body_get_total_mass(RID p_body) const {
+	SoftBody3DSW *soft_body = soft_body_owner.getornull(p_body);
+	ERR_FAIL_COND_V(!soft_body, 0.f);
+
+	return soft_body->get_total_mass();
+}
+
+void PhysicsServer3DSW::soft_body_set_linear_stiffness(RID p_body, real_t p_stiffness) {
+	SoftBody3DSW *soft_body = soft_body_owner.getornull(p_body);
+	ERR_FAIL_COND(!soft_body);
+
+	soft_body->set_linear_stiffness(p_stiffness);
+}
+
+real_t PhysicsServer3DSW::soft_body_get_linear_stiffness(RID p_body) const {
+	SoftBody3DSW *soft_body = soft_body_owner.getornull(p_body);
+	ERR_FAIL_COND_V(!soft_body, 0.f);
+
+	return soft_body->get_linear_stiffness();
+}
+
+void PhysicsServer3DSW::soft_body_set_pressure_coefficient(RID p_body, real_t p_pressure_coefficient) {
+	SoftBody3DSW *soft_body = soft_body_owner.getornull(p_body);
+	ERR_FAIL_COND(!soft_body);
+
+	soft_body->set_pressure_coefficient(p_pressure_coefficient);
+}
+
+real_t PhysicsServer3DSW::soft_body_get_pressure_coefficient(RID p_body) const {
+	SoftBody3DSW *soft_body = soft_body_owner.getornull(p_body);
+	ERR_FAIL_COND_V(!soft_body, 0.f);
+
+	return soft_body->get_pressure_coefficient();
+}
+
+void PhysicsServer3DSW::soft_body_set_damping_coefficient(RID p_body, real_t p_damping_coefficient) {
+	SoftBody3DSW *soft_body = soft_body_owner.getornull(p_body);
+	ERR_FAIL_COND(!soft_body);
+
+	soft_body->set_damping_coefficient(p_damping_coefficient);
+}
+
+real_t PhysicsServer3DSW::soft_body_get_damping_coefficient(RID p_body) const {
+	SoftBody3DSW *soft_body = soft_body_owner.getornull(p_body);
+	ERR_FAIL_COND_V(!soft_body, 0.f);
+
+	return soft_body->get_damping_coefficient();
+}
+
+void PhysicsServer3DSW::soft_body_set_drag_coefficient(RID p_body, real_t p_drag_coefficient) {
+	SoftBody3DSW *soft_body = soft_body_owner.getornull(p_body);
+	ERR_FAIL_COND(!soft_body);
+
+	soft_body->set_drag_coefficient(p_drag_coefficient);
+}
+
+real_t PhysicsServer3DSW::soft_body_get_drag_coefficient(RID p_body) const {
+	SoftBody3DSW *soft_body = soft_body_owner.getornull(p_body);
+	ERR_FAIL_COND_V(!soft_body, 0.f);
+
+	return soft_body->get_drag_coefficient();
+}
+
+void PhysicsServer3DSW::soft_body_set_mesh(RID p_body, const REF &p_mesh) {
+	SoftBody3DSW *soft_body = soft_body_owner.getornull(p_body);
+	ERR_FAIL_COND(!soft_body);
+
+	soft_body->set_mesh(p_mesh);
+}
+
+AABB PhysicsServer3DSW::soft_body_get_bounds(RID p_body) const {
+	SoftBody3DSW *soft_body = soft_body_owner.getornull(p_body);
+	ERR_FAIL_COND_V(!soft_body, AABB());
+
+	return soft_body->get_bounds();
+}
+
+void PhysicsServer3DSW::soft_body_move_point(RID p_body, int p_point_index, const Vector3 &p_global_position) {
+	SoftBody3DSW *soft_body = soft_body_owner.getornull(p_body);
+	ERR_FAIL_COND(!soft_body);
+
+	soft_body->set_vertex_position(p_point_index, p_global_position);
+}
+
+Vector3 PhysicsServer3DSW::soft_body_get_point_global_position(RID p_body, int p_point_index) const {
+	SoftBody3DSW *soft_body = soft_body_owner.getornull(p_body);
+	ERR_FAIL_COND_V(!soft_body, Vector3());
+
+	return soft_body->get_vertex_position(p_point_index);
+}
+
+void PhysicsServer3DSW::soft_body_remove_all_pinned_points(RID p_body) {
+	SoftBody3DSW *soft_body = soft_body_owner.getornull(p_body);
+	ERR_FAIL_COND(!soft_body);
+
+	soft_body->unpin_all_vertices();
+}
+
+void PhysicsServer3DSW::soft_body_pin_point(RID p_body, int p_point_index, bool p_pin) {
+	SoftBody3DSW *soft_body = soft_body_owner.getornull(p_body);
+	ERR_FAIL_COND(!soft_body);
+
+	if (p_pin) {
+		soft_body->pin_vertex(p_point_index);
+	} else {
+		soft_body->unpin_vertex(p_point_index);
+	}
+}
+
+bool PhysicsServer3DSW::soft_body_is_point_pinned(RID p_body, int p_point_index) const {
+	SoftBody3DSW *soft_body = soft_body_owner.getornull(p_body);
+	ERR_FAIL_COND_V(!soft_body, false);
+
+	return soft_body->is_vertex_pinned(p_point_index);
 }
 
 /* JOINT API */
@@ -1278,7 +1547,13 @@ void PhysicsServer3DSW::free(RID p_rid) {
 
 		body_owner.free(p_rid);
 		memdelete(body);
+	} else if (soft_body_owner.owns(p_rid)) {
+		SoftBody3DSW *soft_body = soft_body_owner.getornull(p_rid);
 
+		soft_body->set_space(nullptr);
+
+		soft_body_owner.free(p_rid);
+		memdelete(soft_body);
 	} else if (area_owner.owns(p_rid)) {
 		Area3DSW *area = area_owner.getornull(p_rid);
 
@@ -1444,7 +1719,7 @@ void PhysicsServer3DSW::_update_shapes() {
 	}
 }
 
-void PhysicsServer3DSW::_shape_col_cbk(const Vector3 &p_point_A, const Vector3 &p_point_B, void *p_userdata) {
+void PhysicsServer3DSW::_shape_col_cbk(const Vector3 &p_point_A, int p_index_A, const Vector3 &p_point_B, int p_index_B, void *p_userdata) {
 	CollCbkData *cbk = (CollCbkData *)p_userdata;
 
 	if (cbk->max == 0) {

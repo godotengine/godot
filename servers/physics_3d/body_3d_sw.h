@@ -290,10 +290,10 @@ public:
 	void update_inertias();
 
 	_FORCE_INLINE_ real_t get_inv_mass() const { return _inv_mass; }
-	_FORCE_INLINE_ Vector3 get_inv_inertia() const { return _inv_inertia; }
-	_FORCE_INLINE_ Basis get_inv_inertia_tensor() const { return _inv_inertia_tensor; }
+	_FORCE_INLINE_ const Vector3 &get_inv_inertia() const { return _inv_inertia; }
+	_FORCE_INLINE_ const Basis &get_inv_inertia_tensor() const { return _inv_inertia_tensor; }
 	_FORCE_INLINE_ real_t get_friction() const { return friction; }
-	_FORCE_INLINE_ Vector3 get_gravity() const { return gravity; }
+	_FORCE_INLINE_ const Vector3 &get_gravity() const { return gravity; }
 	_FORCE_INLINE_ real_t get_bounce() const { return bounce; }
 
 	void set_axis_lock(PhysicsServer3D::BodyAxis p_axis, bool lock);
