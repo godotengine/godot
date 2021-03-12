@@ -375,11 +375,17 @@ ConcavePolygonShapeBullet::~ConcavePolygonShapeBullet() {
 }
 
 void ConcavePolygonShapeBullet::set_data(const Variant &p_data) {
-	setup(p_data);
+	Dictionary d = p_data;
+	ERR_FAIL_COND(!d.has("faces"));
+
+	setup(d["faces"]);
 }
 
 Variant ConcavePolygonShapeBullet::get_data() const {
-	return faces;
+	Dictionary d;
+	d["faces"] = faces;
+
+	return d;
 }
 
 PhysicsServer3D::ShapeType ConcavePolygonShapeBullet::get_type() const {

@@ -187,8 +187,10 @@ protected:
 		RenderingServer *vs = RenderingServer::get_singleton();
 		PhysicsServer3D *ps = PhysicsServer3D::get_singleton();
 		RID trimesh_shape = ps->shape_create(PhysicsServer3D::SHAPE_CONCAVE_POLYGON);
-		ps->shape_set_data(trimesh_shape, p_faces);
-		p_faces = ps->shape_get_data(trimesh_shape); // optimized one
+		Dictionary trimesh_params;
+		trimesh_params["faces"] = p_faces;
+		trimesh_params["backface_collision"] = false;
+		ps->shape_set_data(trimesh_shape, trimesh_params);
 		Vector<Vector3> normals; // for drawing
 		for (int i = 0; i < p_faces.size() / 3; i++) {
 			Plane p(p_faces[i * 3 + 0], p_faces[i * 3 + 1], p_faces[i * 3 + 2]);

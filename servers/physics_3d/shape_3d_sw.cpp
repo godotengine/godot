@@ -1134,7 +1134,7 @@ void FaceShape3DSW::get_supports(const Vector3 &p_normal, int p_max, Vector3 *r_
 	Vector3 n = p_normal;
 
 	/** TEST FACE AS SUPPORT **/
-	if (normal.dot(n) > _FACE_IS_VALID_SUPPORT_THRESHOLD) {
+	if (Math::abs(normal.dot(n)) > _FACE_IS_VALID_SUPPORT_THRESHOLD) {
 		r_amount = 3;
 		r_type = FEATURE_FACE;
 		for (int i = 0; i < 3; i++) {
@@ -1187,7 +1187,11 @@ bool FaceShape3DSW::intersect_segment(const Vector3 &p_begin, const Vector3 &p_e
 	if (c) {
 		r_normal = Plane(vertex[0], vertex[1], vertex[2]).normal;
 		if (r_normal.dot(p_end - p_begin) > 0) {
-			r_normal = -r_normal;
+			if (backface_collision) {
+				r_normal = -r_normal;
+			} else {
+				c = false;
+			}
 		}
 	}
 
@@ -1285,30 +1289,24 @@ void ConcavePolygonShape3DSW::_cull_segment(int p_idx, _SegmentCullParams *p_par
 	}
 
 	if (bvh->face_index >= 0) {
-		Vector3 res;
-		Vector3 vertices[3] = {
-			p_params->vertices[p_params->faces[bvh->face_index].indices[0]],
-			p_params->vertices[p_params->faces[bvh->face_index].indices[1]],
-			p_params->vertices[p_params->faces[bvh->face_index].indices[2]]
-		};
+		const Face *f = &p_params->faces[bvh->face_index];
+		FaceShape3DSW *face = p_params->face;
+		face->normal = f->normal;
+		face->vertex[0] = p_params->vertices[f->indices[0]];
+		face->vertex[1] = p_params->vertices[f->indices[1]];
+		face->vertex[2] = p_params->vertices[f->indices[2]];
 
-		if (Geometry3D::segment_intersects_triangle(
-					p_params->from,
-					p_params->to,
-					vertices[0],
-					vertices[1],
-					vertices[2],
-					&res)) {
+		Vector3 res;
+		Vector3 normal;
+		if (face->intersect_segment(p_params->from, p_params->to, res, normal)) {
 			real_t d = p_params->dir.dot(res) - p_params->dir.dot(p_params->from);
-			//TODO, seems segmen/triangle intersection is broken :(
-			if (d > 0 && d < p_params->min_d) {
+			if ((d > 0) && (d < p_params->min_d)) {
 				p_params->min_d = d;
 				p_params->result = res;
-				p_params->normal = Plane(vertices[0], vertices[1], vertices[2]).normal;
+				p_params->normal = normal;
 				p_params->collisions++;
 			}
 		}
-
 	} else {
 		if (bvh->left >= 0) {
 			_cull_segment(bvh->left, p_params);
@@ -1329,17 +1327,20 @@ bool ConcavePolygonShape3DSW::intersect_segment(const Vector3 &p_begin, const Ve
 	const Vector3 *vr = vertices.ptr();
 	const BVH *br = bvh.ptr();
 
+	FaceShape3DSW face;
+	face.backface_collision = backface_collision;
+
 	_SegmentCullParams params;
 	params.from = p_begin;
 	params.to = p_end;
-	params.collisions = 0;
 	params.dir = (p_end - p_begin).normalized();
 
 	params.faces = fr;
 	params.vertices = vr;
 	params.bvh = br;
 
-	params.min_d = 1e20;
+	params.face = &face;
+
 	// cull
 	_cull_segment(0, &params);
 
@@ -1401,6 +1402,7 @@ void ConcavePolygonShape3DSW::cull(const AABB &p_local_aabb, Callback p_callback
 	const BVH *br = bvh.ptr();
 
 	FaceShape3DSW face; // use this to send in the callback
+	face.backface_collision = backface_collision;
 
 	_CullParams params;
 	params.aabb = local_aabb;
@@ -1532,7 +1534,7 @@ void ConcavePolygonShape3DSW::_fill_bvh(_VolumeSW_BVH *p_bvh_tree, BVH *p_bvh_ar
 	memdelete(p_bvh_tree);
 }
 
-void ConcavePolygonShape3DSW::_setup(Vector<Vector3> p_faces) {
+void ConcavePolygonShape3DSW::_setup(const Vector<Vector3> &p_faces, bool p_backface_collision) {
 	int src_face_count = p_faces.size();
 	if (src_face_count == 0) {
 		configure(AABB());
@@ -1587,15 +1589,24 @@ void ConcavePolygonShape3DSW::_setup(Vector<Vector3> p_faces) {
 	int idx = 0;
 	_fill_bvh(bvh_tree, bvh_arrayw2, idx);
 
+	backface_collision = p_backface_collision;
+
 	configure(_aabb); // this type of shape has no margin
 }
 
 void ConcavePolygonShape3DSW::set_data(const Variant &p_data) {
-	_setup(p_data);
+	Dictionary d = p_data;
+	ERR_FAIL_COND(!d.has("faces"));
+
+	_setup(d["faces"], d["backface_collision"]);
 }
 
 Variant ConcavePolygonShape3DSW::get_data() const {
-	return get_faces();
+	Dictionary d;
+	d["faces"] = get_faces();
+	d["backface_collision"] = backface_collision;
+
+	return d;
 }
 
 ConcavePolygonShape3DSW::ConcavePolygonShape3DSW() {
