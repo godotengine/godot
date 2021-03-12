@@ -60,6 +60,7 @@ const GodotConfig = {
 		locale: 'en',
 		canvas_resize_policy: 2, // Adaptive
 		virtual_keyboard: false,
+		persistent_drops: false,
 		on_execute: null,
 		on_exit: null,
 
@@ -68,6 +69,7 @@ const GodotConfig = {
 			GodotConfig.canvas = p_opts['canvas'];
 			GodotConfig.locale = p_opts['locale'] || GodotConfig.locale;
 			GodotConfig.virtual_keyboard = p_opts['virtualKeyboard'];
+			GodotConfig.persistent_drops = !!p_opts['persistentDrops'];
 			GodotConfig.on_execute = p_opts['onExecute'];
 			GodotConfig.on_exit = p_opts['onExit'];
 		},
@@ -80,6 +82,7 @@ const GodotConfig = {
 			GodotConfig.locale = 'en';
 			GodotConfig.canvas_resize_policy = 2;
 			GodotConfig.virtual_keyboard = false;
+			GodotConfig.persistent_drops = false;
 			GodotConfig.on_execute = null;
 			GodotConfig.on_exit = null;
 		},
