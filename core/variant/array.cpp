@@ -141,7 +141,7 @@ uint32_t Array::hash() const {
 
 void Array::_assign(const Array &p_array) {
 	if (_p->typed.type != Variant::OBJECT && _p->typed.type == p_array._p->typed.type) {
-		//same type or untyped, just reference, shuold be fine
+		//same type or untyped, just reference, should be fine
 		_ref(p_array);
 	} else if (_p->typed.type == Variant::NIL) { //from typed to untyped, must copy, but this is cheap anyway
 		_p->array = p_array._p->array;

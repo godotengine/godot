@@ -1703,7 +1703,7 @@ void BaseMaterial3D::_validate_property(PropertyInfo &property) const {
 		property.usage = PROPERTY_USAGE_NOEDITOR;
 	}
 
-	// you can only enable anti-aliasing (in mataerials) on alpha scissor and alpha hash
+	// you can only enable anti-aliasing (in materials) on alpha scissor and alpha hash
 	const bool can_select_aa = (transparency == TRANSPARENCY_ALPHA_SCISSOR || transparency == TRANSPARENCY_ALPHA_HASH);
 	// alpha anti aliasiasing is only enabled when you can select aa
 	const bool alpha_aa_enabled = (alpha_antialiasing_mode != ALPHA_ANTIALIASING_OFF) && can_select_aa;
@@ -1722,7 +1722,7 @@ void BaseMaterial3D::_validate_property(PropertyInfo &property) const {
 		property.usage = 0;
 	}
 
-	// we cant choose an antialiasing mode if alpha isnt possible
+	// we can't choose an antialiasing mode if alpha isn't possible
 	if (property.name == "alpha_antialiasing_edge" && !alpha_aa_enabled) {
 		property.usage = 0;
 	}

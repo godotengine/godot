@@ -1377,9 +1377,9 @@ Vector<String> _File::get_csv_line(const String &p_delim) const {
 	return f->get_csv_line(p_delim);
 }
 
-/**< use this for files WRITTEN in _big_ endian machines (ie, amiga/mac)
+/**< use this for files WRITTEN in _big_ endian machines (i.e. amiga/mac)
  * It's not about the current CPU type but file formats.
- * this flags get reset to false (little endian) on each open
+ * These flags get reset to false (little endian) on each open
  */
 
 void _File::set_endian_swap(bool p_swap) {

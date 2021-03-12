@@ -1369,7 +1369,7 @@ void VisualScriptInstance::_dependency_step(VisualScriptNodeInstance *node, int 
 			// Is a default value (unassigned input port).
 			input_args[i] = &default_values[index];
 		} else {
-			// Rregular temporary in stack.
+			// Regular temporary in stack.
 			input_args[i] = &variant_stack[index];
 		}
 	}
@@ -1391,7 +1391,7 @@ Variant VisualScriptInstance::_call_internal(const StringName &p_method, void *p
 	ERR_FAIL_COND_V(!F, Variant());
 	Function *f = &F->get();
 
-	// This call goes separate, so it can e yielded and suspended.
+	// This call goes separate, so it can be yielded and suspended.
 	Variant *variant_stack = (Variant *)p_stack;
 	bool *sequence_bits = (bool *)(variant_stack + f->max_stack);
 	const Variant **input_args = (const Variant **)(sequence_bits + f->node_count);

@@ -1160,7 +1160,7 @@ CSGBrush *CSGBox3D::_build_brush() {
 				materialsw[face] = material;
 
 				face++;
-				//face 1
+				//face 2
 				facesw[face * 3 + 0] = face_points[2] * vertex_mul;
 				facesw[face * 3 + 1] = face_points[3] * vertex_mul;
 				facesw[face * 3 + 2] = face_points[0] * vertex_mul;

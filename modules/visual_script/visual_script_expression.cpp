@@ -1054,7 +1054,7 @@ VisualScriptExpression::ENode *VisualScriptExpression::_parse_expression() {
 		}
 	}
 
-	/* Reduce the set set of expressions and place them in an operator tree, respecting precedence */
+	/* Reduce the set of expressions and place them in an operator tree, respecting precedence */
 
 	while (expression.size() > 1) {
 		int next_op = -1;

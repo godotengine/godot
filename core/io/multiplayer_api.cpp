@@ -50,7 +50,7 @@ _FORCE_INLINE_ bool _should_call_local(MultiplayerAPI::RPCMode mode, bool is_mas
 			// Do nothing.
 		} break;
 		case MultiplayerAPI::RPC_MODE_REMOTE: {
-			// Do nothing also. Remote cannot produce a local call.
+			// Do nothing. Remote cannot produce a local call.
 		} break;
 		case MultiplayerAPI::RPC_MODE_MASTERSYNC: {
 			if (is_master) {
@@ -675,7 +675,7 @@ Error MultiplayerAPI::_encode_and_compress_variant(const Variant &p_variant, uin
 				return err;
 			}
 			if (r_buffer) {
-				// The first byte is not used by the marshaling, so store the type
+				// The first byte is not used by the marshalling, so store the type
 				// so we know how to decompress and decode this variant.
 				r_buffer[0] = p_variant.get_type();
 			}
@@ -791,7 +791,7 @@ void MultiplayerAPI::_send_rpc(Node *p_from, int p_to, bool p_unreliable, bool p
 		packet_cache.resize(m_amount);
 
 	// Encode meta.
-	// The meta is composed by a single byte that contains (starting from the least segnificant bit):
+	// The meta is composed by a single byte that contains (starting from the least significant bit):
 	// - `NetworkCommands` in the first three bits.
 	// - `NetworkNodeIdCompression` in the next 2 bits.
 	// - `NetworkNameIdCompression` in the next 1 bit.
@@ -830,7 +830,7 @@ void MultiplayerAPI::_send_rpc(Node *p_from, int p_to, bool p_unreliable, bool p
 			ofs += 4;
 		}
 	} else {
-		// The targets doesn't know the node yet, so we need to use 32 bits int.
+		// The targets don't know the node yet, so we need to use 32 bits int.
 		node_id_compression = NETWORK_NODE_ID_COMPRESSION_32;
 		MAKE_ROOM(ofs + 4);
 		encode_uint32(psc->id, &(packet_cache.write[ofs]));

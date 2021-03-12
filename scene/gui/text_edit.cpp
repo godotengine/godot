@@ -808,7 +808,7 @@ void TextEdit::_notification(int p_what) {
 			// Get the highlighted words.
 			String highlighted_text = get_selection_text();
 
-			// Check if highlighted words contains only whitespaces (tabs or spaces).
+			// Check if highlighted words contain only whitespaces (tabs or spaces).
 			bool only_whitespaces_highlighted = highlighted_text.strip_edges() == String();
 
 			int cursor_wrap_index = get_cursor_wrap_index();
@@ -1057,7 +1057,7 @@ void TextEdit::_notification(int p_what) {
 					}
 
 					if (str.length() == 0) {
-						// Draw line background if empty as we won't loop at at all.
+						// Draw line background if empty as we won't loop at all.
 						if (line == cursor.line && cursor_wrap_index == line_wrap_index && highlight_current_line) {
 							if (rtl) {
 								RenderingServer::get_singleton()->canvas_item_add_rect(ci, Rect2(size.width - ofs_x - xmargin_end, ofs_y, xmargin_end, row_height), cache.current_line_color);
@@ -1442,7 +1442,7 @@ void TextEdit::_notification(int p_what) {
 							}
 						} else {
 							{
-								// IME intermidiet text range.
+								// IME Intermediate text range.
 								Vector<Vector2> sel = TS->shaped_text_get_selection(rid, cursor.column, cursor.column + ime_text.length());
 								for (int j = 0; j < sel.size(); j++) {
 									Rect2 rect = Rect2(sel[j].x + char_margin + ofs_x, ofs_y, sel[j].y - sel[j].x, text_height);
@@ -2009,7 +2009,7 @@ void TextEdit::indent_selected_lines_right() {
 			// We don't really care where selection is - we just need to know indentation level at the beginning of the line.
 			int left = _find_first_non_whitespace_column_of_line(line_text);
 			int spaces_to_add = _calculate_spaces_till_next_right_indent(left);
-			// Since we will add this much spaces we want move whole selection and cursor by this much.
+			// Since we will add these many spaces, we want to move the whole selection and cursor by this much.
 			selection_offset = spaces_to_add;
 			for (int j = 0; j < spaces_to_add; j++) {
 				line_text = ' ' + line_text;
@@ -2034,7 +2034,7 @@ void TextEdit::indent_selected_lines_left() {
 	int end_line;
 
 	// Moving cursor and selection after unindenting can get tricky because
-	// changing content of line can move cursor and selection on it's own (if new line ends before previous position of either),
+	// changing content of line can move cursor and selection on its own (if new line ends before previous position of either),
 	// therefore we just remember initial values and at the end of the operation offset them by number of removed characters.
 	int removed_characters = 0;
 	int initial_selection_end_column = selection.to_column;
@@ -2454,7 +2454,7 @@ void TextEdit::_move_cursor_to_line_start(bool p_select) {
 		row_start_col += rows[i].length();
 	}
 	if (cursor.column == row_start_col || wi == 0) {
-		// Compute whitespace symbols seq length.
+		// Compute whitespace symbols sequence length.
 		int current_line_whitespace_len = 0;
 		while (current_line_whitespace_len < text[cursor.line].length()) {
 			char32_t c = text[cursor.line][current_line_whitespace_len];

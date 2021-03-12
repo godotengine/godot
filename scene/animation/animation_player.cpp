@@ -605,7 +605,7 @@ void AnimationPlayer::_animation_process_animation(AnimationData *p_anim, float 
 				}
 
 				if (p_seeked) {
-					//find whathever should be playing
+					//find whatever should be playing
 					int idx = a->track_find_key(i, p_time);
 					if (idx < 0) {
 						continue;
@@ -634,7 +634,7 @@ void AnimationPlayer::_animation_process_animation(AnimationData *p_anim, float 
 
 						nc->audio_playing = true;
 						playing_caches.insert(nc);
-						if (len && end_ofs > 0) { //force a end at a time
+						if (len && end_ofs > 0) { //force an end at a time
 							nc->audio_len = len - start_ofs - end_ofs;
 						} else {
 							nc->audio_len = 0;
@@ -665,7 +665,7 @@ void AnimationPlayer::_animation_process_animation(AnimationData *p_anim, float 
 
 							nc->audio_playing = true;
 							playing_caches.insert(nc);
-							if (len && end_ofs > 0) { //force a end at a time
+							if (len && end_ofs > 0) { //force an end at a time
 								nc->audio_len = len - start_ofs - end_ofs;
 							} else {
 								nc->audio_len = 0;
@@ -1343,7 +1343,7 @@ void AnimationPlayer::_stop_playing_caches() {
 }
 
 void AnimationPlayer::_node_removed(Node *p_node) {
-	clear_caches(); // nodes contained here ar being removed, clear the caches
+	clear_caches(); // nodes contained here are being removed, clear the caches
 }
 
 void AnimationPlayer::clear_caches() {

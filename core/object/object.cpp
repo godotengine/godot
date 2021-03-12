@@ -596,7 +596,7 @@ void Object::get_property_list(List<PropertyInfo> *p_list, bool p_reversed) cons
 
 	_get_property_listv(p_list, p_reversed);
 
-	if (!is_class("Script")) { // can still be set, but this is for userfriendlyness
+	if (!is_class("Script")) { // can still be set, but this is for user-friendliness
 		p_list->push_back(PropertyInfo(Variant::OBJECT, "script", PROPERTY_HINT_RESOURCE_TYPE, "Script", PROPERTY_USAGE_DEFAULT));
 	}
 	if (!metadata.is_empty()) {
@@ -1671,7 +1671,7 @@ Variant::Type Object::get_static_property_type_indexed(const Vector<StringName> 
 
 	for (int i = 1; i < p_path.size(); i++) {
 		if (check.get_type() == Variant::OBJECT || check.get_type() == Variant::DICTIONARY || check.get_type() == Variant::ARRAY) {
-			// We cannot be sure about the type of properties this types can have
+			// We cannot be sure about the type of properties this type can have
 			if (r_valid) {
 				*r_valid = false;
 			}
@@ -1719,10 +1719,10 @@ void *Object::get_script_instance_binding(int p_script_language_index) {
 	ERR_FAIL_INDEX_V(p_script_language_index, MAX_SCRIPT_INSTANCE_BINDINGS, nullptr);
 #endif
 
-	//it's up to the script language to make this thread safe, if the function is called twice due to threads being out of syncro
+	//it's up to the script language to make this thread safe, if the function is called twice due to threads being out of sync
 	//just return the same pointer.
 	//if you want to put a big lock in the entire function and keep allocated pointers in a map or something, feel free to do it
-	//as it should not really affect performance much (won't be called too often), as in far most caes the condition below will be false afterwards
+	//as it should not really affect performance much (won't be called too often), as in far most cases the condition below will be false afterwards
 
 	if (!_script_instance_bindings[p_script_language_index]) {
 		void *script_data = ScriptServer::get_language(p_script_language_index)->alloc_instance_binding_data(this);

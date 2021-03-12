@@ -224,7 +224,7 @@ Error PacketPeerUDP::connect_to_host(const IP_Address &p_host, int p_port) {
 
 	// I see no reason why we should get ERR_BUSY (wouldblock/eagain) here.
 	// This is UDP, so connect is only used to tell the OS to which socket
-	// it shuold deliver packets when multiple are bound on the same address/port.
+	// it should deliver packets when multiple are bound on the same address/port.
 	if (err != OK) {
 		close();
 		ERR_FAIL_V_MSG(FAILED, "Unable to connect");

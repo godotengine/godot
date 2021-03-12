@@ -85,7 +85,7 @@ public:
 			return;
 		}
 
-		// TODO: Readd compiled GDScript on export.
+		// TODO: Re-add compiled GDScript on export.
 		return;
 	}
 };

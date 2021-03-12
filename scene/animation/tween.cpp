@@ -1115,7 +1115,7 @@ real_t Tween::tell() const {
 
 	// For each interpolation...
 	for (const List<InterpolateData>::Element *E = interpolates.front(); E; E = E->next()) {
-		// Get the data and figure out if it's position is further along than the previous ones
+		// Get the data and figure out if its position is further along than the previous ones
 		const InterpolateData &data = E->get();
 		if (data.elapsed > pos) {
 			// Save it if so

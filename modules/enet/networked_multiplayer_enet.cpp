@@ -248,7 +248,7 @@ void NetworkedMultiplayerENet::poll() {
 				int *new_id = memnew(int);
 				*new_id = event.data;
 
-				if (*new_id == 0) { // Data zero is sent by server (enet won't let you configure this). Server is always 1.
+				if (*new_id == 0) { // Data zero is sent by server (ENet won't let you configure this). Server is always 1.
 					*new_id = 1;
 				}
 

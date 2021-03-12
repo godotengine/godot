@@ -211,7 +211,7 @@ void Area3D::_clear_monitoring() {
 			Object *obj = ObjectDB::get_instance(E->key());
 			Node *node = Object::cast_to<Node>(obj);
 
-			if (!node) { //node may have been deleted in previous frame or at other legiminate point
+			if (!node) { //node may have been deleted in previous frame or at other legitimate point
 				continue;
 			}
 			//ERR_CONTINUE(!node);
@@ -240,7 +240,7 @@ void Area3D::_clear_monitoring() {
 			Object *obj = ObjectDB::get_instance(E->key());
 			Node *node = Object::cast_to<Node>(obj);
 
-			if (!node) { //node may have been deleted in previous frame or at other legiminate point
+			if (!node) { //node may have been deleted in previous frame or at other legitimate point
 				continue;
 			}
 			//ERR_CONTINUE(!node);

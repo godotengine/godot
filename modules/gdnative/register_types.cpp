@@ -142,7 +142,7 @@ void GDNativeExportPlugin::_export_file(const String &p_path, const String &p_ty
 		}
 	}
 
-	// Add symbols for staticaly linked libraries on iOS
+	// Add symbols for statically linked libraries on iOS
 	if (p_features.has("iOS")) {
 		bool should_fake_dynamic = false;
 

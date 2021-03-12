@@ -1009,7 +1009,7 @@ void AnimationTree::_process_graph(float p_delta) {
 						TrackCacheAudio *t = static_cast<TrackCacheAudio *>(track);
 
 						if (seeked) {
-							//find whathever should be playing
+							//find whatever should be playing
 							int idx = a->track_find_key(i, time);
 							if (idx < 0) {
 								continue;
@@ -1038,7 +1038,7 @@ void AnimationTree::_process_graph(float p_delta) {
 
 								t->playing = true;
 								playing_caches.insert(t);
-								if (len && end_ofs > 0) { //force a end at a time
+								if (len && end_ofs > 0) { //force an end at a time
 									t->len = len - start_ofs - end_ofs;
 								} else {
 									t->len = 0;
@@ -1069,7 +1069,7 @@ void AnimationTree::_process_graph(float p_delta) {
 
 									t->playing = true;
 									playing_caches.insert(t);
-									if (len && end_ofs > 0) { //force a end at a time
+									if (len && end_ofs > 0) { //force an end at a time
 										t->len = len - start_ofs - end_ofs;
 									} else {
 										t->len = 0;

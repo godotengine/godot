@@ -151,7 +151,7 @@ void Voxelizer::_plot_face(int p_idx, int p_level, int p_x, int p_y, int p_z, co
 				Vector2 uv;
 				Vector3 lnormal;
 				get_uv_and_normal(intersection, p_vtx, p_uv, p_normal, uv, lnormal);
-				if (lnormal == Vector3()) { //just in case normal as nor provided
+				if (lnormal == Vector3()) { //just in case normal is not provided
 					lnormal = normal;
 				}
 
@@ -183,7 +183,7 @@ void Voxelizer::_plot_face(int p_idx, int p_level, int p_x, int p_y, int p_z, co
 			Vector3 lnormal;
 			Vector2 uv;
 			get_uv_and_normal(inters, p_vtx, p_uv, p_normal, uv, normal);
-			if (lnormal == Vector3()) { //just in case normal as nor provided
+			if (lnormal == Vector3()) { //just in case normal is not provided
 				lnormal = normal;
 			}
 

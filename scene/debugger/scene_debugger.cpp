@@ -487,7 +487,7 @@ void LiveEditor::_send_tree() {
 	}
 
 	Array arr;
-	// Encoded as a flat list depth fist.
+	// Encoded as a flat list depth first.
 	SceneDebuggerTree tree(scene_tree->root);
 	tree.serialize(arr);
 	EngineDebugger::get_singleton()->send_message("scene:scene_tree", arr);

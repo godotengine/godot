@@ -129,7 +129,7 @@ DynamicFontDataAdvanced::DataAtSize *DynamicFontDataAdvanced::get_data_for_size(
 		fds->underline_position = (-FT_MulFix(fds->face->underline_position, fds->face->size->metrics.y_scale) / 64.0) / oversampling * fds->scale_color_font;
 		fds->underline_thickness = (FT_MulFix(fds->face->underline_thickness, fds->face->size->metrics.y_scale) / 64.0) / oversampling * fds->scale_color_font;
 
-		//Load os2 TTF pable
+		//Load os2 TTF table
 		fds->os2 = (TT_OS2 *)FT_Get_Sfnt_Table(fds->face, FT_SFNT_OS2);
 
 		fds->hb_handle = hb_ft_font_create(fds->face, nullptr);

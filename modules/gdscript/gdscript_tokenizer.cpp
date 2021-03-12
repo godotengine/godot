@@ -1169,7 +1169,7 @@ GDScriptTokenizer::Token GDScriptTokenizer::scan() {
 	if (pending_newline) {
 		pending_newline = false;
 		if (!multiline_mode) {
-			// Don't return newline tokens on multine mode.
+			// Don't return newline tokens on multiline mode.
 			return last_newline;
 		}
 	}

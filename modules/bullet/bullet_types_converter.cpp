@@ -116,7 +116,7 @@ void UNSCALE_BT_BASIS(btTransform &scaledBasis) {
 			}
 		} else { // Column 1 scale not fuzzy zero.
 			if (column2.fuzzyZero()) {
-				// Create two vectors othogonal to column 1.
+				// Create two vectors orthogonal to column 1.
 				// Ensure that a default basis is created if column 1 = <0, 1, 0>
 				column0 = btVector3(column1[1], -column1[0], 0);
 				column2 = column0.cross(column1);

@@ -348,7 +348,7 @@ void GPUParticles3D::_notification(int p_what) {
 		}
 	}
 
-	// Use internal process when emitting and one_shot are on so that when
+	// Use internal process when emitting and one_shot is on so that when
 	// the shot ends the editor can properly update
 	if (p_what == NOTIFICATION_INTERNAL_PROCESS) {
 		if (one_shot && !is_emitting()) {

@@ -171,7 +171,7 @@ void AudioStreamPlayer::set_stream(Ref<AudioStream> p_stream) {
 
 	if (active.is_set() && stream_playback.is_valid() && !stream_paused) {
 		//changing streams out of the blue is not a great idea, but at least
-		//lets try to somehow avoid a click
+		//let's try to somehow avoid a click
 
 		AudioFrame *buffer = fadeout_buffer.ptrw();
 		int buffer_size = fadeout_buffer.size();

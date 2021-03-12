@@ -2738,7 +2738,7 @@ bool Animation::_transform_track_optimize_key(const TKey<TransformKey> &t0, cons
 			real_t d = Geometry3D::get_closest_point_to_segment(v1, s).distance_to(v1);
 
 			if (d > pd.length() * p_alowed_linear_err) {
-				return false; //beyond allowed error for colinearity
+				return false; //beyond allowed error for collinearity
 			}
 
 			if (p_norm != Vector3() && Math::acos(pd.normalized().dot(p_norm)) > p_alowed_angular_err) {
@@ -2828,7 +2828,7 @@ bool Animation::_transform_track_optimize_key(const TKey<TransformKey> &t0, cons
 			real_t d = Geometry3D::get_closest_point_to_segment(v1, s).distance_to(v1);
 
 			if (d > pd.length() * p_alowed_linear_err) {
-				return false; //beyond allowed error for colinearity
+				return false; //beyond allowed error for collinearity
 			}
 
 			t[2] = (d1 - d0) / (d2 - d0);

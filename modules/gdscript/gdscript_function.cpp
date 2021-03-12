@@ -244,7 +244,7 @@ Variant GDScriptFunctionState::resume(const Variant &p_arg) {
 	bool completed = true;
 
 	// If the return value is a GDScriptFunctionState reference,
-	// then the function did awaited again after resuming.
+	// then the function did await again after resuming.
 	if (ret.is_ref()) {
 		GDScriptFunctionState *gdfs = Object::cast_to<GDScriptFunctionState>(ret);
 		if (gdfs && gdfs->function == function) {

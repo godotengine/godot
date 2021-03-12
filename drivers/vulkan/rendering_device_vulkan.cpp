@@ -119,7 +119,7 @@ static void update_external_dependency_for_store(VkSubpassDependency &dependency
 	}
 
 	if (is_depth) {
-		// Depth resources have addtional stages that may be interested in them
+		// Depth resources have additional stages that may be interested in them
 		dependency.dstStageMask |= VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT | VK_PIPELINE_STAGE_LATE_FRAGMENT_TESTS_BIT;
 		dependency.dstAccessMask |= VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_READ_BIT | VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
 	}
@@ -3108,7 +3108,7 @@ Error RenderingDeviceVulkan::texture_clear(RID p_texture, const Color &p_color, 
 
 	VkImageLayout clear_layout = (src_tex->layout == VK_IMAGE_LAYOUT_GENERAL) ? VK_IMAGE_LAYOUT_GENERAL : VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
 
-	// NOTE: Perhaps the valid stages/accesses for a given onwner should be a property of the owner. (Here and places like _get_buffer_from_owner)
+	// NOTE: Perhaps the valid stages/accesses for a given owner should be a property of the owner. (Here and places like _get_buffer_from_owner)
 	const VkPipelineStageFlags valid_texture_stages = VK_PIPELINE_STAGE_VERTEX_SHADER_BIT | VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT | VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT;
 	constexpr VkAccessFlags read_access = VK_ACCESS_SHADER_READ_BIT;
 	constexpr VkAccessFlags read_write_access = VK_ACCESS_SHADER_READ_BIT | VK_ACCESS_SHADER_WRITE_BIT;
@@ -3250,7 +3250,7 @@ VkRenderPass RenderingDeviceVulkan::_render_pass_create(const Vector<AttachmentF
 	Vector<VkAttachmentReference> depth_stencil_references;
 	Vector<VkAttachmentReference> resolve_references;
 
-	// Set up a dependencies from/to external equivalent to the default (implicit) one, and then amend them
+	// Set up dependencies from/to external equivalent to the default (implicit) one, and then amend them
 	const VkPipelineStageFlags default_access_mask = VK_ACCESS_INPUT_ATTACHMENT_READ_BIT |
 													 VK_ACCESS_COLOR_ATTACHMENT_READ_BIT |
 													 VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT |
@@ -3279,7 +3279,7 @@ VkRenderPass RenderingDeviceVulkan::_render_pass_create(const Vector<AttachmentF
 		bool is_storage = p_format[i].usage_flags & TEXTURE_USAGE_STORAGE_BIT;
 
 		// For each UNDEFINED, assume the prior use was a *read*, as we'd be discarding the output of a write
-		// Also, each UNDEFINED will do an immediate layout transition (write), s.t. we must ensure execution syncronization vs.
+		// Also, each UNDEFINED will do an immediate layout transition (write), s.t. we must ensure execution synchronization vs.
 		// the read.  If this is a performance issue, one could track the actual last accessor of each resource, adding only that
 		// stage
 		switch (is_depth_stencil ? p_initial_depth_action : p_initial_color_action) {
@@ -3424,12 +3424,12 @@ VkRenderPass RenderingDeviceVulkan::_render_pass_create(const Vector<AttachmentF
 
 		// NOTE: Big Mallet Approach -- any layout transition causes a full barrier
 		if (reference.layout != description.initialLayout) {
-			// NOTE: this should be smarter based on the textures knowledge of it's previous role
+			// NOTE: this should be smarter based on the texture's knowledge of its previous role
 			dependency_from_external.srcStageMask |= VK_PIPELINE_STAGE_ALL_COMMANDS_BIT;
 			dependency_from_external.srcAccessMask |= VK_ACCESS_MEMORY_READ_BIT | VK_ACCESS_MEMORY_WRITE_BIT;
 		}
 		if (reference.layout != description.finalLayout) {
-			// NOTE: this should be smarter based on the textures knowledge of it's subsequent role
+			// NOTE: this should be smarter based on the texture's knowledge of its subsequent role
 			dependency_to_external.dstStageMask |= VK_PIPELINE_STAGE_ALL_COMMANDS_BIT;
 			dependency_to_external.dstAccessMask |= VK_ACCESS_MEMORY_READ_BIT | VK_ACCESS_MEMORY_WRITE_BIT;
 		}
@@ -5151,7 +5151,7 @@ RID RenderingDeviceVulkan::uniform_set_create(const Vector<Uniform> &p_uniforms,
 				}
 				ERR_FAIL_COND_V_MSG(!buffer, RID(), "Storage buffer supplied (binding: " + itos(uniform.binding) + ") is invalid.");
 
-				//if 0, then its sized on link time
+				//if 0, then it's sized on link time
 				ERR_FAIL_COND_V_MSG(set_uniform.length > 0 && buffer->size != (uint32_t)set_uniform.length, RID(),
 						"Storage buffer supplied (binding: " + itos(uniform.binding) + ") size (" + itos(buffer->size) + " does not match size of shader uniform: (" + itos(set_uniform.length) + ").");
 
@@ -5336,7 +5336,7 @@ Vector<uint8_t> RenderingDeviceVulkan::buffer_get_data(RID p_buffer) {
 		ERR_FAIL_V_MSG(Vector<uint8_t>(), "Buffer is either invalid or this type of buffer can't be retrieved. Only Index and Vertex buffers allow retrieving.");
 	}
 
-	// Make sure  no one is using the buffer -- the "false" gets us to the same command buffer as below.
+	// Make sure no one is using the buffer -- the "false" gets us to the same command buffer as below.
 	_buffer_memory_barrier(buffer->buffer, 0, buffer->size, src_stage_mask, src_access_mask, VK_PIPELINE_STAGE_TRANSFER_BIT, VK_ACCESS_TRANSFER_READ_BIT, false);
 
 	VkCommandBuffer command_buffer = frames[frame].setup_command_buffer;
@@ -5729,7 +5729,7 @@ RID RenderingDeviceVulkan::render_pipeline_create(RID p_shader, FramebufferForma
 #endif
 	//create ID to associate with this pipeline
 	RID id = render_pipeline_owner.make_rid(pipeline);
-	//now add aall the dependencies
+	//now add all the dependencies
 	_add_dependency(id, p_shader);
 	return id;
 }
@@ -5780,7 +5780,7 @@ RID RenderingDeviceVulkan::compute_pipeline_create(RID p_shader) {
 
 	//create ID to associate with this pipeline
 	RID id = compute_pipeline_owner.make_rid(pipeline);
-	//now add aall the dependencies
+	//now add all the dependencies
 	_add_dependency(id, p_shader);
 	return id;
 }
@@ -6817,7 +6817,7 @@ void RenderingDeviceVulkan::draw_list_end(uint32_t p_post_barrier) {
 
 	// To ensure proper synchronization, we must make sure rendering is done before:
 	//  * Some buffer is copied
-	//  * Another render pass happens (since we may be done
+	//  * Another render pass happens (since we may be done)
 
 #ifdef FORCE_FULL_BARRIER
 	_full_barrier(true);
@@ -7780,7 +7780,7 @@ uint64_t RenderingDeviceVulkan::get_memory_usage() const {
 
 void RenderingDeviceVulkan::_flush(bool p_current_frame) {
 	if (local_device.is_valid() && !p_current_frame) {
-		return; //flushign previous frames has no effect with local device
+		return; //flushing previous frames has no effect with local device
 	}
 	//not doing this crashes RADV (undefined behavior)
 	if (p_current_frame) {

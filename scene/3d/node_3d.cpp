@@ -48,7 +48,7 @@
     a) If above is invalid, don't keep invalidating upwards
  2) If a node sets a GLOBAL, it is converted to LOCAL (and forces validation of everything pending below)
 
- drawback: setting/reading globals is useful and used very very often, and using affine inverses is slow
+ drawback: setting/reading globals is useful and used very often, and using affine inverses is slow
 
 ---
 

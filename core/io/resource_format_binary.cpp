@@ -1245,7 +1245,7 @@ Error ResourceFormatLoaderBinary::rename_dependencies(const String &p_path, cons
 String ResourceFormatLoaderBinary::get_resource_type(const String &p_path) const {
 	FileAccess *f = FileAccess::open(p_path, FileAccess::READ);
 	if (!f) {
-		return ""; //could not rwead
+		return ""; //could not read
 	}
 
 	ResourceLoaderBinary loader;

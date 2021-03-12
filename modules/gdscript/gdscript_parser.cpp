@@ -3018,7 +3018,7 @@ GDScriptParser::ParseRule *GDScriptParser::get_rule(GDScriptTokenizer::Token::Ty
 	// Avoid desync.
 	static_assert(sizeof(rules) / sizeof(rules[0]) == GDScriptTokenizer::Token::TK_MAX, "Amount of parse rules don't match the amount of token types.");
 
-	// Let's assume this this never invalid, since nothing generates a TK_MAX.
+	// Let's assume this is never invalid, since nothing generates a TK_MAX.
 	return &rules[p_token_type];
 }
 

@@ -81,7 +81,7 @@ int BulletPhysicsDirectSpaceState::intersect_point(const Vector3 &p_point, Shape
 	btResult.m_collisionFilterMask = p_collision_mask;
 	space->dynamicsWorld->contactTest(&collision_object_point, btResult);
 
-	// The results is already populated by GodotAllConvexResultCallback
+	// The results are already populated by GodotAllConvexResultCallback
 	return btResult.m_count;
 }
 

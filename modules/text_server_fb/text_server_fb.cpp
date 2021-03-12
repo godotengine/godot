@@ -1091,7 +1091,7 @@ bool TextServerFallback::shaped_text_update_breaks(RID p_shaped) {
 	}
 
 	if (sd->line_breaks_valid) {
-		return true; // Noting to do.
+		return true; // Nothing to do.
 	}
 
 	int sd_size = sd->glyphs.size();

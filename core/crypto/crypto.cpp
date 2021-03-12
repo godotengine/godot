@@ -100,7 +100,7 @@ void Crypto::load_default_certificates(String p_path) {
 
 PackedByteArray Crypto::hmac_digest(HashingContext::HashType p_hash_type, PackedByteArray p_key, PackedByteArray p_msg) {
 	Ref<HMACContext> ctx = Ref<HMACContext>(HMACContext::create());
-	ERR_FAIL_COND_V_MSG(ctx.is_null(), PackedByteArray(), "HMAC is not available witout mbedtls module.");
+	ERR_FAIL_COND_V_MSG(ctx.is_null(), PackedByteArray(), "HMAC is not available without mbedtls module.");
 	Error err = ctx->start(p_hash_type, p_key);
 	ERR_FAIL_COND_V(err != OK, PackedByteArray());
 	err = ctx->update(p_msg);
@@ -108,7 +108,7 @@ PackedByteArray Crypto::hmac_digest(HashingContext::HashType p_hash_type, Packed
 	return ctx->finish();
 }
 
-// Compares two HMACS for equality without leaking timing information in order to prevent timing attakcs.
+// Compares two HMACS for equality without leaking timing information in order to prevent timing attacks.
 // @see: https://paragonie.com/blog/2015/11/preventing-timing-attacks-on-string-comparison-with-double-hmac-strategy
 bool Crypto::constant_time_compare(PackedByteArray p_trusted, PackedByteArray p_received) {
 	const uint8_t *t = p_trusted.ptr();

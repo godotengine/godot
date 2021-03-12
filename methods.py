@@ -334,7 +334,7 @@ def use_windows_spawn_fix(self, platform=None):
     # On Windows, due to the limited command line length, when creating a static library
     # from a very high number of objects SCons will invoke "ar" once per object file;
     # that makes object files with same names to be overwritten so the last wins and
-    # the library looses symbols defined by overwritten objects.
+    # the library loses symbols defined by overwritten objects.
     # By enabling quick append instead of the default mode (replacing), libraries will
     # got built correctly regardless the invocation strategy.
     # Furthermore, since SCons will rebuild the library from scratch when an object file
@@ -478,7 +478,7 @@ def detect_visual_c_compiler_version(tools_env):
     # and not scons setup environment (env)... so make sure you call the right environment on it or it will fail to detect
     # the proper vc version that will be called
 
-    # There is no flag to give to visual c compilers to set the architecture, ie scons bits argument (32,64,ARM etc)
+    # There is no flag to give to visual c compilers to set the architecture, i.e. scons bits argument (32,64,ARM etc)
     # There are many different cl.exe files that are run, and each one compiles & links to a different architecture
     # As far as I know, the only way to figure out what compiler will be run when Scons calls cl.exe via Program()
     # is to check the PATH variable and figure out which one will be called first. Code below does that and returns:
@@ -633,7 +633,7 @@ def generate_vs_project(env, num_jobs):
                 'call "' + batch_file + '" !plat!',
             ]
 
-            # windows allows us to have spaces in paths, so we need
+            # Windows allows us to have spaces in paths, so we need
             # to double quote off the directory. However, the path ends
             # in a backslash, so we need to remove this, lest it escape the
             # last double quote off, confusing MSBuild

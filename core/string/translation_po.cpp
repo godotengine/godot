@@ -158,7 +158,7 @@ int TranslationPO::_get_plural_index(int p_n) const {
 void TranslationPO::_cache_plural_tests(const String &p_plural_rule) {
 	// Some examples of p_plural_rule passed in can have the form:
 	// "n==0 ? 0 : n==1 ? 1 : n==2 ? 2 : n%100>=3 && n%100<=10 ? 3 : n%100>=11 && n%100<=99 ? 4 : 5" (Arabic)
-	// "n >= 2" (French) // When evaluating the last, esp careful with this one.
+	// "n >= 2" (French) // When evaluating the last, especially careful with this one.
 	// "n != 1" (English)
 	int first_ques_mark = p_plural_rule.find("?");
 	if (first_ques_mark == -1) {

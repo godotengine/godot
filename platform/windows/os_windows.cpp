@@ -334,7 +334,7 @@ OS::TimeZoneInfo OS_Windows::get_time_zone_info() const {
 	}
 
 	// Bias value returned by GetTimeZoneInformation is inverted of what we expect
-	// For example on GMT-3 GetTimeZoneInformation return a Bias of 180, so invert the value to get -180
+	// For example, on GMT-3 GetTimeZoneInformation return a Bias of 180, so invert the value to get -180
 	ret.bias = -info.Bias;
 	return ret;
 }

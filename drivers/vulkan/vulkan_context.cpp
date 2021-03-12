@@ -1313,13 +1313,13 @@ Error VulkanContext::swap_buffers() {
 		DemoUpdateTargetIPD(demo);
 
 		// Note: a real application would position its geometry to that it's in
-		// the correct locatoin for when the next image is presented.  It might
+		// the correct location for when the next image is presented.  It might
 		// also wait, so that there's less latency between any input and when
 		// the next image is rendered/presented.  This demo program is so
 		// simple that it doesn't do either of those.
 	}
 #endif
-	// Wait for the image acquired semaphore to be signaled to ensure
+	// Wait for the image acquired semaphore to be signalled to ensure
 	// that the image won't be rendered to until the presentation
 	// engine has fully released ownership to the application, and it is
 	// okay to render to the image.
@@ -1385,7 +1385,7 @@ Error VulkanContext::swap_buffers() {
 		ERR_FAIL_COND_V(err, ERR_CANT_CREATE);
 	}
 
-	// If we are using separate queues we have to wait for image ownership,
+	// If we are using separate queues, we have to wait for image ownership,
 	// otherwise wait for draw complete
 	VkPresentInfoKHR present = {
 		/*sType*/ VK_STRUCTURE_TYPE_PRESENT_INFO_KHR,
