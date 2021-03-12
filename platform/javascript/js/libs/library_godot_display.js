@@ -231,6 +231,105 @@ const GodotDisplayDragDrop = {
 };
 mergeInto(LibraryManager.library, GodotDisplayDragDrop);
 
+const GodotDisplayVK = {
+
+	$GodotDisplayVK__deps: ['$GodotRuntime', '$GodotConfig', '$GodotDisplayListeners'],
+	$GodotDisplayVK__postset: 'GodotOS.atexit(function(resolve, reject) { GodotDisplayVK.clear(); resolve(); });',
+	$GodotDisplayVK: {
+		textinput: null,
+		textarea: null,
+
+		available: function () {
+			return GodotConfig.virtual_keyboard && 'ontouchstart' in window;
+		},
+
+		init: function (input_cb) {
+			function create(what) {
+				const elem = document.createElement(what);
+				elem.style.display = 'none';
+				elem.style.position = 'absolute';
+				elem.style.zIndex = '-1';
+				elem.style.background = 'transparent';
+				elem.style.padding = '0px';
+				elem.style.margin = '0px';
+				elem.style.overflow = 'hidden';
+				elem.style.width = '0px';
+				elem.style.height = '0px';
+				elem.style.border = '0px';
+				elem.style.outline = 'none';
+				elem.readonly = true;
+				elem.disabled = true;
+				GodotDisplayListeners.add(elem, 'input', function (evt) {
+					const c_str = GodotRuntime.allocString(elem.value);
+					input_cb(c_str, elem.selectionEnd);
+					GodotRuntime.free(c_str);
+				}, false);
+				GodotDisplayListeners.add(elem, 'blur', function (evt) {
+					elem.style.display = 'none';
+					elem.readonly = true;
+					elem.disabled = true;
+				}, false);
+				GodotConfig.canvas.insertAdjacentElement('beforebegin', elem);
+				return elem;
+			}
+			GodotDisplayVK.textinput = create('input');
+			GodotDisplayVK.textarea = create('textarea');
+			GodotDisplayVK.updateSize();
+		},
+		show: function (text, multiline, start, end) {
+			if (!GodotDisplayVK.textinput || !GodotDisplayVK.textarea) {
+				return;
+			}
+			if (GodotDisplayVK.textinput.style.display !== '' || GodotDisplayVK.textarea.style.display !== '') {
+				GodotDisplayVK.hide();
+			}
+			GodotDisplayVK.updateSize();
+			const elem = multiline ? GodotDisplayVK.textarea : GodotDisplayVK.textinput;
+			elem.readonly = false;
+			elem.disabled = false;
+			elem.value = text;
+			elem.style.display = 'block';
+			elem.focus();
+			elem.setSelectionRange(start, end);
+		},
+		hide: function () {
+			if (!GodotDisplayVK.textinput || !GodotDisplayVK.textarea) {
+				return;
+			}
+			[GodotDisplayVK.textinput, GodotDisplayVK.textarea].forEach(function (elem) {
+				elem.blur();
+				elem.style.display = 'none';
+				elem.value = '';
+			});
+		},
+		updateSize: function () {
+			if (!GodotDisplayVK.textinput || !GodotDisplayVK.textarea) {
+				return;
+			}
+			const rect = GodotConfig.canvas.getBoundingClientRect();
+			function update(elem) {
+				elem.style.left = `${rect.left}px`;
+				elem.style.top = `${rect.top}px`;
+				elem.style.width = `${rect.width}px`;
+				elem.style.height = `${rect.height}px`;
+			}
+			update(GodotDisplayVK.textinput);
+			update(GodotDisplayVK.textarea);
+		},
+		clear: function () {
+			if (GodotDisplayVK.textinput) {
+				GodotDisplayVK.textinput.remove();
+				GodotDisplayVK.textinput = null;
+			}
+			if (GodotDisplayVK.textarea) {
+				GodotDisplayVK.textarea.remove();
+				GodotDisplayVK.textarea = null;
+			}
+		},
+	},
+};
+mergeInto(LibraryManager.library, GodotDisplayVK);
+
 /*
  * Display server cursor helper.
  * Keeps track of cursor status and custom shapes.
@@ -511,7 +610,7 @@ mergeInto(LibraryManager.library, GodotDisplayScreen);
  * Exposes all the functions needed by DisplayServer implementation.
  */
 const GodotDisplay = {
-	$GodotDisplay__deps: ['$GodotConfig', '$GodotRuntime', '$GodotDisplayCursor', '$GodotDisplayListeners', '$GodotDisplayDragDrop', '$GodotDisplayGamepads', '$GodotDisplayScreen'],
+	$GodotDisplay__deps: ['$GodotConfig', '$GodotRuntime', '$GodotDisplayCursor', '$GodotDisplayListeners', '$GodotDisplayDragDrop', '$GodotDisplayGamepads', '$GodotDisplayScreen', '$GodotDisplayVK'],
 	$GodotDisplay: {
 		window_icon: '',
 		findDPI: function () {
@@ -580,7 +679,11 @@ const GodotDisplay = {
 
 	godot_js_display_size_update__sig: 'i',
 	godot_js_display_size_update: function () {
-		return GodotDisplayScreen.updateSize();
+		const updated = GodotDisplayScreen.updateSize();
+		if (updated) {
+			GodotDisplayVK.updateSize();
+		}
+		return updated;
 	},
 
 	godot_js_display_screen_size_get__sig: 'vii',
@@ -808,6 +911,35 @@ const GodotDisplay = {
 		GodotDisplayScreen.updateSize();
 		if (p_fullscreen) {
 			GodotDisplayScreen.requestFullscreen();
+		}
+	},
+
+	/*
+	 * Virtual Keyboard
+	 */
+	godot_js_display_vk_show__sig: 'viiii',
+	godot_js_display_vk_show: function (p_text, p_multiline, p_start, p_end) {
+		const text = GodotRuntime.parseString(p_text);
+		const start = p_start > 0 ? p_start : 0;
+		const end = p_end > 0 ? p_end : start;
+		GodotDisplayVK.show(text, p_multiline, start, end);
+	},
+
+	godot_js_display_vk_hide__sig: 'v',
+	godot_js_display_vk_hide: function () {
+		GodotDisplayVK.hide();
+	},
+
+	godot_js_display_vk_available__sig: 'i',
+	godot_js_display_vk_available: function () {
+		return GodotDisplayVK.available();
+	},
+
+	godot_js_display_vk_cb__sig: 'vi',
+	godot_js_display_vk_cb: function (p_input_cb) {
+		const input_cb = GodotRuntime.get_func(p_input_cb);
+		if (GodotDisplayVK.available()) {
+			GodotDisplayVK.init(input_cb);
 		}
 	},
 
