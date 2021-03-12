@@ -181,6 +181,7 @@ protected:
 public:
 	void popup_scenetree_dialog();
 	SceneTreeEditor *get_scene_tree() { return tree; }
+	LineEdit *get_filter_line_edit() { return filter; }
 	SceneTreeDialog();
 	~SceneTreeDialog();
 };
