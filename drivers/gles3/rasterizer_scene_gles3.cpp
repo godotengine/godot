@@ -1941,7 +1941,6 @@ void RasterizerSceneGLES3::_setup_light(RenderList::Element *e, const Transform 
 	} else if (!e->instance->lightmap_capture_data.empty()) {
 
 		glUniform4fv(state.scene_shader.get_uniform_location(SceneShaderGLES3::LIGHTMAP_CAPTURES), 12, (const GLfloat *)e->instance->lightmap_capture_data.ptr());
-		state.scene_shader.set_uniform(SceneShaderGLES3::LIGHTMAP_CAPTURE_SKY, false);
 
 	} else if (e->instance->lightmap.is_valid()) {
 		RasterizerStorageGLES3::Texture *lightmap = storage->texture_owner.getornull(e->instance->lightmap);

@@ -230,6 +230,9 @@
 		<member name="mesh_library" type="MeshLibrary" setter="set_mesh_library" getter="get_mesh_library">
 			The assigned [MeshLibrary].
 		</member>
+		<member name="use_in_baked_light" type="bool" setter="set_use_in_baked_light" getter="get_use_in_baked_light" default="false">
+			Controls whether this GridMap will be baked in a [BakedLightmap] or not.
+		</member>
 	</members>
 	<signals>
 		<signal name="cell_size_changed">

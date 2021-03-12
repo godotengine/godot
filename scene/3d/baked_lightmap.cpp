@@ -87,6 +87,17 @@ float BakedLightmapData::get_energy() const {
 	return energy;
 }
 
+void BakedLightmapData::set_interior(bool p_interior) {
+
+	interior = p_interior;
+	VS::get_singleton()->lightmap_capture_set_interior(baked_light, interior);
+}
+
+bool BakedLightmapData::is_interior() const {
+
+	return interior;
+}
+
 void BakedLightmapData::add_user(const NodePath &p_path, const Ref<Resource> &p_lightmap, int p_lightmap_slice, const Rect2 &p_lightmap_uv_rect, int p_instance) {
 
 	ERR_FAIL_COND_MSG(p_lightmap.is_null(), "It's not a reference to a valid Texture object.");
@@ -230,6 +241,9 @@ void BakedLightmapData::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_energy", "energy"), &BakedLightmapData::set_energy);
 	ClassDB::bind_method(D_METHOD("get_energy"), &BakedLightmapData::get_energy);
 
+	ClassDB::bind_method(D_METHOD("set_interior", "interior"), &BakedLightmapData::set_interior);
+	ClassDB::bind_method(D_METHOD("is_interior"), &BakedLightmapData::is_interior);
+
 	ClassDB::bind_method(D_METHOD("add_user", "path", "lightmap", "lightmap_slice", "lightmap_uv_rect", "instance"), &BakedLightmapData::add_user);
 	ClassDB::bind_method(D_METHOD("get_user_count"), &BakedLightmapData::get_user_count);
 	ClassDB::bind_method(D_METHOD("get_user_path", "user_idx"), &BakedLightmapData::get_user_path);
@@ -241,6 +255,7 @@ void BakedLightmapData::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::TRANSFORM, "cell_space_transform", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR), "set_cell_space_transform", "get_cell_space_transform");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "cell_subdiv", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR), "set_cell_subdiv", "get_cell_subdiv");
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "energy", PROPERTY_HINT_RANGE, "0,16,0.01,or_greater"), "set_energy", "get_energy");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "interior"), "set_interior", "is_interior");
 	ADD_PROPERTY(PropertyInfo(Variant::POOL_BYTE_ARRAY, "octree", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR), "set_octree", "get_octree");
 	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "user_data", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR | PROPERTY_USAGE_INTERNAL), "_set_user_data", "_get_user_data");
 }
@@ -250,6 +265,7 @@ BakedLightmapData::BakedLightmapData() {
 	baked_light = VS::get_singleton()->lightmap_capture_create();
 	energy = 1;
 	cell_subdiv = 1;
+	interior = false;
 }
 
 BakedLightmapData::~BakedLightmapData() {
@@ -464,7 +480,7 @@ void BakedLightmap::_get_material_images(const MeshesFound &p_found_mesh, Lightm
 		}
 
 		Ref<Texture> albedo_texture;
-		Color albedo_add = Color(0, 0, 0, 0);
+		Color albedo_add = Color(1, 1, 1, 1);
 		Color albedo_mul = Color(1, 1, 1, 1);
 
 		Ref<Texture> emission_texture;
@@ -477,6 +493,7 @@ void BakedLightmap::_get_material_images(const MeshesFound &p_found_mesh, Lightm
 
 			if (albedo_texture.is_valid()) {
 				albedo_mul = mat->get_albedo();
+				albedo_add = Color(0, 0, 0, 0);
 			} else {
 				albedo_add = mat->get_albedo();
 			}
@@ -531,25 +548,27 @@ void BakedLightmap::_save_image(String &r_base_path, Ref<Image> r_img, bool p_us
 
 	bool hdr_grayscale = use_hdr && !use_color;
 
-	if (p_use_srgb || hdr_grayscale) {
-		r_img->lock();
-		for (int i = 0; i < r_img->get_height(); i++) {
-			for (int j = 0; j < r_img->get_width(); j++) {
-				Color c = r_img->get_pixel(j, i);
+	r_img->lock();
+	for (int i = 0; i < r_img->get_height(); i++) {
+		for (int j = 0; j < r_img->get_width(); j++) {
+			Color c = r_img->get_pixel(j, i);
 
-				if (hdr_grayscale) {
-					c = Color(c.get_v(), 0.0f, 0.0f);
-				}
+			c.r = MAX(c.r, environment_min_light.r);
+			c.g = MAX(c.g, environment_min_light.g);
+			c.b = MAX(c.b, environment_min_light.b);
 
-				if (p_use_srgb) {
-					c = c.to_srgb();
-				}
-
-				r_img->set_pixel(j, i, c);
+			if (hdr_grayscale) {
+				c = Color(c.get_v(), 0.0f, 0.0f);
 			}
+
+			if (p_use_srgb) {
+				c = c.to_srgb();
+			}
+
+			r_img->set_pixel(j, i, c);
 		}
-		r_img->unlock();
 	}
+	r_img->unlock();
 
 	if (!use_color) {
 		if (use_hdr) {
@@ -792,7 +811,6 @@ BakedLightmap::BakeError BakedLightmap::bake(Node *p_from_node, String p_data_sa
 			case ENVIRONMENT_MODE_CUSTOM_SKY: {
 				if (environment_custom_sky.is_valid()) {
 					environment_image = _get_irradiance_from_sky(environment_custom_sky, Vector2i(128, 64));
-					print_line(vformat("env -> %s", environment_custom_sky_rotation_degrees));
 					environment_xform.set_euler(environment_custom_sky_rotation_degrees * Math_PI / 180.0);
 				}
 
@@ -804,12 +822,13 @@ BakedLightmap::BakeError BakedLightmap::bake(Node *p_from_node, String p_data_sa
 				c.r *= environment_custom_energy;
 				c.g *= environment_custom_energy;
 				c.b *= environment_custom_energy;
+				environment_image->lock();
 				for (int i = 0; i < 128; i++) {
 					for (int j = 0; j < 64; j++) {
 						environment_image->set_pixel(i, j, c);
 					}
 				}
-
+				environment_image->unlock();
 			} break;
 		}
 	}
@@ -1409,6 +1428,14 @@ float BakedLightmap::get_environment_custom_energy() const {
 	return environment_custom_energy;
 }
 
+void BakedLightmap::set_environment_min_light(Color p_min_light) {
+	environment_min_light = p_min_light;
+}
+
+Color BakedLightmap::get_environment_min_light() const {
+	return environment_min_light;
+}
+
 void BakedLightmap::set_bounces(int p_bounces) {
 	ERR_FAIL_COND(p_bounces < 0 || p_bounces > 16);
 	bounces = p_bounces;
@@ -1486,6 +1513,9 @@ void BakedLightmap::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_environment_custom_energy", "energy"), &BakedLightmap::set_environment_custom_energy);
 	ClassDB::bind_method(D_METHOD("get_environment_custom_energy"), &BakedLightmap::get_environment_custom_energy);
 
+	ClassDB::bind_method(D_METHOD("set_environment_min_light", "min_light"), &BakedLightmap::set_environment_min_light);
+	ClassDB::bind_method(D_METHOD("get_environment_min_light"), &BakedLightmap::get_environment_min_light);
+
 	ClassDB::bind_method(D_METHOD("set_use_denoiser", "use_denoiser"), &BakedLightmap::set_use_denoiser);
 	ClassDB::bind_method(D_METHOD("is_using_denoiser"), &BakedLightmap::is_using_denoiser);
 
@@ -1545,6 +1575,7 @@ void BakedLightmap::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "environment_custom_sky_rotation_degrees", PROPERTY_HINT_NONE), "set_environment_custom_sky_rotation_degrees", "get_environment_custom_sky_rotation_degrees");
 	ADD_PROPERTY(PropertyInfo(Variant::COLOR, "environment_custom_color", PROPERTY_HINT_COLOR_NO_ALPHA), "set_environment_custom_color", "get_environment_custom_color");
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "environment_custom_energy", PROPERTY_HINT_RANGE, "0,64,0.01"), "set_environment_custom_energy", "get_environment_custom_energy");
+	ADD_PROPERTY(PropertyInfo(Variant::COLOR, "environment_min_light", PROPERTY_HINT_COLOR_NO_ALPHA), "set_environment_min_light", "get_environment_min_light");
 
 	ADD_GROUP("Capture", "capture_");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "capture_enabled"), "set_capture_enabled", "get_capture_enabled");
@@ -1595,6 +1626,7 @@ BakedLightmap::BakedLightmap() {
 	environment_mode = ENVIRONMENT_MODE_DISABLED;
 	environment_custom_color = Color(0.2, 0.7, 1.0);
 	environment_custom_energy = 1.0;
+	environment_min_light = Color(0.0, 0.0, 0.0);
 
 	use_denoiser = true;
 	use_hdr = true;

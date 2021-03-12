@@ -6385,6 +6385,10 @@ void RasterizerStorageGLES3::lightmap_capture_set_energy(RID p_capture, float p_
 	LightmapCapture *capture = lightmap_capture_data_owner.getornull(p_capture);
 	ERR_FAIL_COND(!capture);
 	capture->energy = p_energy;
+
+	if (!capture->update_list.in_list()) {
+		capture_update_list.add(&capture->update_list);
+	}
 }
 
 float RasterizerStorageGLES3::lightmap_capture_get_energy(RID p_capture) const {
@@ -6394,10 +6398,33 @@ float RasterizerStorageGLES3::lightmap_capture_get_energy(RID p_capture) const {
 	return capture->energy;
 }
 
+void RasterizerStorageGLES3::lightmap_capture_set_interior(RID p_capture, bool p_interior) {
+	LightmapCapture *capture = lightmap_capture_data_owner.getornull(p_capture);
+	ERR_FAIL_COND(!capture);
+	capture->interior = p_interior;
+	if (!capture->update_list.in_list()) {
+		capture_update_list.add(&capture->update_list);
+	}
+}
+
+bool RasterizerStorageGLES3::lightmap_capture_is_interior(RID p_capture) const {
+	const LightmapCapture *capture = lightmap_capture_data_owner.getornull(p_capture);
+	ERR_FAIL_COND_V(!capture, false);
+	return capture->interior;
+}
+
 const PoolVector<RasterizerStorage::LightmapCaptureOctree> *RasterizerStorageGLES3::lightmap_capture_get_octree_ptr(RID p_capture) const {
 	const LightmapCapture *capture = lightmap_capture_data_owner.getornull(p_capture);
 	ERR_FAIL_COND_V(!capture, NULL);
 	return &capture->octree;
+}
+
+void RasterizerStorageGLES3::update_dirty_captures() {
+	while (capture_update_list.first()) {
+		LightmapCapture *capture = capture_update_list.first()->self();
+		capture->instance_change_notify(false, true);
+		capture_update_list.remove(capture_update_list.first());
+	}
 }
 
 ///////
@@ -8591,6 +8618,7 @@ void RasterizerStorageGLES3::update_dirty_resources() {
 	update_dirty_shaders();
 	update_dirty_materials();
 	update_particles();
+	update_dirty_captures();
 }
 
 RasterizerStorageGLES3::RasterizerStorageGLES3() {
