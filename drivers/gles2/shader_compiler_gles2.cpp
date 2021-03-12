@@ -923,6 +923,7 @@ ShaderCompilerGLES2::ShaderCompilerGLES2() {
 	actions[VS::SHADER_CANVAS_ITEM].renames["SCREEN_PIXEL_SIZE"] = "screen_pixel_size";
 	actions[VS::SHADER_CANVAS_ITEM].renames["FRAGCOORD"] = "gl_FragCoord";
 	actions[VS::SHADER_CANVAS_ITEM].renames["POINT_COORD"] = "gl_PointCoord";
+	actions[VS::SHADER_CANVAS_ITEM].renames["SRC_VERTEX"] = "src_vertex";
 
 	actions[VS::SHADER_CANVAS_ITEM].renames["LIGHT_VEC"] = "light_vec";
 	actions[VS::SHADER_CANVAS_ITEM].renames["LIGHT_HEIGHT"] = "light_height";
