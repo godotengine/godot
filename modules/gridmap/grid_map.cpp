@@ -746,6 +746,10 @@ void GridMap::_update_visibility() {
 			VS::get_singleton()->instance_set_visible(mi.instance, is_visible_in_tree());
 		}
 	}
+
+	for (int i = 0; i < baked_meshes.size(); i++) {
+		VS::get_singleton()->instance_set_visible(baked_meshes[i].instance, is_visible_in_tree());
+	}
 }
 
 void GridMap::_queue_octants_dirty() {
