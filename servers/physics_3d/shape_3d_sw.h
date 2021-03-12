@@ -334,34 +334,37 @@ struct ConcavePolygonShape3DSW : public ConcaveShape3DSW {
 
 	struct _CullParams {
 		AABB aabb;
-		Callback callback;
-		void *userdata;
-		const Face *faces;
-		const Vector3 *vertices;
-		const BVH *bvh;
-		FaceShape3DSW *face;
+		Callback callback = nullptr;
+		void *userdata = nullptr;
+		const Face *faces = nullptr;
+		const Vector3 *vertices = nullptr;
+		const BVH *bvh = nullptr;
+		FaceShape3DSW *face = nullptr;
 	};
 
 	struct _SegmentCullParams {
 		Vector3 from;
 		Vector3 to;
-		const Face *faces;
-		const Vector3 *vertices;
-		const BVH *bvh;
 		Vector3 dir;
+		const Face *faces = nullptr;
+		const Vector3 *vertices = nullptr;
+		const BVH *bvh = nullptr;
+		FaceShape3DSW *face = nullptr;
 
 		Vector3 result;
 		Vector3 normal;
-		real_t min_d;
-		int collisions;
+		real_t min_d = 1e20;
+		int collisions = 0;
 	};
+
+	bool backface_collision = false;
 
 	void _cull_segment(int p_idx, _SegmentCullParams *p_params) const;
 	void _cull(int p_idx, _CullParams *p_params) const;
 
 	void _fill_bvh(_VolumeSW_BVH *p_bvh_tree, BVH *p_bvh_array, int &p_idx);
 
-	void _setup(Vector<Vector3> p_faces);
+	void _setup(const Vector<Vector3> &p_faces, bool p_backface_collision);
 
 public:
 	Vector<Vector3> get_faces() const;
@@ -424,6 +427,7 @@ public:
 struct FaceShape3DSW : public Shape3DSW {
 	Vector3 normal; //cache
 	Vector3 vertex[3];
+	bool backface_collision = false;
 
 	virtual PhysicsServer3D::ShapeType get_type() const { return PhysicsServer3D::SHAPE_CONCAVE_POLYGON; }
 
