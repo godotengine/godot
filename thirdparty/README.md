@@ -285,7 +285,7 @@ Godot build configurations, check them out when updating.
 ## mbedtls
 
 - Upstream: https://tls.mbed.org/
-- Version: 2.16.9 (2020)
+- Version: 2.16.10 (d61fa61bef06b64132e3490543c81b8ee40fbee3, 2021)
 - License: Apache 2.0
 
 File extracted from upstream release tarball:

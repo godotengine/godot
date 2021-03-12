@@ -146,6 +146,11 @@ void mbedtls_entropy_init( mbedtls_entropy_context *ctx )
 
 void mbedtls_entropy_free( mbedtls_entropy_context *ctx )
 {
+    /* If the context was already free, don't call free() again.
+     * This is important for mutexes which don't allow double-free. */
+    if( ctx->accumulator_started == -1 )
+        return;
+
 #if defined(MBEDTLS_HAVEGE_C)
     mbedtls_havege_free( &ctx->havege_data );
 #endif
@@ -162,7 +167,7 @@ void mbedtls_entropy_free( mbedtls_entropy_context *ctx )
 #endif
     ctx->source_count = 0;
     mbedtls_platform_zeroize( ctx->source, sizeof( ctx->source ) );
-    ctx->accumulator_started = 0;
+    ctx->accumulator_started = -1;
 }
 
 int mbedtls_entropy_add_source( mbedtls_entropy_context *ctx,

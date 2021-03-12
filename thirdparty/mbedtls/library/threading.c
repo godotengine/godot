@@ -98,6 +98,12 @@ static void threading_mutex_init_pthread( mbedtls_threading_mutex_t *mutex )
     if( mutex == NULL )
         return;
 
+    /* A nonzero value of is_valid indicates a successfully initialized
+     * mutex. This is a workaround for not being able to return an error
+     * code for this function. The lock/unlock functions return an error
+     * if is_valid is nonzero. The Mbed TLS unit test code uses this field
+     * to distinguish more states of the mutex; see helpers.function for
+     * details. */
     mutex->is_valid = pthread_mutex_init( &mutex->mutex, NULL ) == 0;
 }
 

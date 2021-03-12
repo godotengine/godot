@@ -247,6 +247,9 @@ static void ecdsa_restart_det_free( mbedtls_ecdsa_restart_det_ctx *ctx )
 
 #endif /* MBEDTLS_ECP_RESTARTABLE */
 
+#if defined(MBEDTLS_ECDSA_DETERMINISTIC) || \
+    !defined(MBEDTLS_ECDSA_SIGN_ALT)     || \
+    !defined(MBEDTLS_ECDSA_VERIFY_ALT)
 /*
  * Derive a suitable integer for group grp from a buffer of length len
  * SEC1 4.1.3 step 5 aka SEC1 4.1.4 step 3
@@ -269,6 +272,7 @@ static int derive_mpi( const mbedtls_ecp_group *grp, mbedtls_mpi *x,
 cleanup:
     return( ret );
 }
+#endif /* ECDSA_DETERMINISTIC || !ECDSA_SIGN_ALT || !ECDSA_VERIFY_ALT */
 
 #if !defined(MBEDTLS_ECDSA_SIGN_ALT)
 /*
@@ -780,6 +784,8 @@ int mbedtls_ecdsa_write_signature_restartable( mbedtls_ecdsa_context *ctx,
     (void) md_alg;
 
 #if defined(MBEDTLS_ECDSA_SIGN_ALT)
+    (void) rs_ctx;
+
     MBEDTLS_MPI_CHK( mbedtls_ecdsa_sign( &ctx->grp, &r, &s, &ctx->d,
                          hash, hlen, f_rng, p_rng ) );
 #else
@@ -888,6 +894,8 @@ int mbedtls_ecdsa_read_signature_restartable( mbedtls_ecdsa_context *ctx,
         goto cleanup;
     }
 #if defined(MBEDTLS_ECDSA_VERIFY_ALT)
+    (void) rs_ctx;
+
     if( ( ret = mbedtls_ecdsa_verify( &ctx->grp, hash, hlen,
                                       &ctx->Q, &r, &s ) ) != 0 )
         goto cleanup;

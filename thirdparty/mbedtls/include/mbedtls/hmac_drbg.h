@@ -128,6 +128,14 @@ typedef struct mbedtls_hmac_drbg_context
     void *p_entropy;            /*!< context for the entropy function        */
 
 #if defined(MBEDTLS_THREADING_C)
+    /* Invariant: the mutex is initialized if and only if
+     * md_ctx->md_info != NULL. This means that the mutex is initialized
+     * during the initial seeding in mbedtls_hmac_drbg_seed() or
+     * mbedtls_hmac_drbg_seed_buf() and freed in mbedtls_ctr_drbg_free().
+     *
+     * Note that this invariant may change without notice. Do not rely on it
+     * and do not access the mutex directly in application code.
+     */
     mbedtls_threading_mutex_t mutex;
 #endif
 } mbedtls_hmac_drbg_context;
@@ -177,7 +185,17 @@ void mbedtls_hmac_drbg_init( mbedtls_hmac_drbg_context *ctx );
  * \note                During the initial seeding, this function calls
  *                      the entropy source to obtain a nonce
  *                      whose length is half the entropy length.
- *
+ */
+#if defined(MBEDTLS_THREADING_C)
+/**
+ * \note                When Mbed TLS is built with threading support,
+ *                      after this function returns successfully,
+ *                      it is safe to call mbedtls_hmac_drbg_random()
+ *                      from multiple threads. Other operations, including
+ *                      reseeding, are not thread-safe.
+ */
+#endif /* MBEDTLS_THREADING_C */
+/**
  * \param ctx           HMAC_DRBG context to be seeded.
  * \param md_info       MD algorithm to use for HMAC_DRBG.
  * \param f_entropy     The entropy callback, taking as arguments the
@@ -216,7 +234,17 @@ int mbedtls_hmac_drbg_seed( mbedtls_hmac_drbg_context *ctx,
  *
  * This function is meant for use in algorithms that need a pseudorandom
  * input such as deterministic ECDSA.
- *
+ */
+#if defined(MBEDTLS_THREADING_C)
+/**
+ * \note                When Mbed TLS is built with threading support,
+ *                      after this function returns successfully,
+ *                      it is safe to call mbedtls_hmac_drbg_random()
+ *                      from multiple threads. Other operations, including
+ *                      reseeding, are not thread-safe.
+ */
+#endif /* MBEDTLS_THREADING_C */
+/**
  * \param ctx           HMAC_DRBG context to be initialised.
  * \param md_info       MD algorithm to use for HMAC_DRBG.
  * \param data          Concatenation of the initial entropy string and
@@ -279,6 +307,11 @@ void mbedtls_hmac_drbg_set_reseed_interval( mbedtls_hmac_drbg_context *ctx,
 /**
  * \brief               This function updates the state of the HMAC_DRBG context.
  *
+ * \note                This function is not thread-safe. It is not safe
+ *                      to call this function if another thread might be
+ *                      concurrently obtaining random numbers from the same
+ *                      context or updating or reseeding the same context.
+ *
  * \param ctx           The HMAC_DRBG context.
  * \param additional    The data to update the state with.
  *                      If this is \c NULL, there is no additional data.
@@ -294,6 +327,11 @@ int mbedtls_hmac_drbg_update_ret( mbedtls_hmac_drbg_context *ctx,
 /**
  * \brief               This function reseeds the HMAC_DRBG context, that is
  *                      extracts data from the entropy source.
+ *
+ * \note                This function is not thread-safe. It is not safe
+ *                      to call this function if another thread might be
+ *                      concurrently obtaining random numbers from the same
+ *                      context or updating or reseeding the same context.
  *
  * \param ctx           The HMAC_DRBG context.
  * \param additional    Additional data to add to the state.
@@ -319,6 +357,11 @@ int mbedtls_hmac_drbg_reseed( mbedtls_hmac_drbg_context *ctx,
  *
  * This function automatically reseeds if the reseed counter is exceeded
  * or prediction resistance is enabled.
+ *
+ * \note                This function is not thread-safe. It is not safe
+ *                      to call this function if another thread might be
+ *                      concurrently obtaining random numbers from the same
+ *                      context or updating or reseeding the same context.
  *
  * \param p_rng         The HMAC_DRBG context. This must be a pointer to a
  *                      #mbedtls_hmac_drbg_context structure.
@@ -349,7 +392,16 @@ int mbedtls_hmac_drbg_random_with_add( void *p_rng,
  *
  * This function automatically reseeds if the reseed counter is exceeded
  * or prediction resistance is enabled.
- *
+ */
+#if defined(MBEDTLS_THREADING_C)
+/**
+ * \note                When Mbed TLS is built with threading support,
+ *                      it is safe to call mbedtls_ctr_drbg_random()
+ *                      from multiple threads. Other operations, including
+ *                      reseeding, are not thread-safe.
+ */
+#endif /* MBEDTLS_THREADING_C */
+/**
  * \param p_rng         The HMAC_DRBG context. This must be a pointer to a
  *                      #mbedtls_hmac_drbg_context structure.
  * \param output        The buffer to fill.

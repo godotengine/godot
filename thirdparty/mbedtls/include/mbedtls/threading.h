@@ -73,6 +73,9 @@ extern "C" {
 typedef struct mbedtls_threading_mutex_t
 {
     pthread_mutex_t mutex;
+    /* is_valid is 0 after a failed init or a free, and nonzero after a
+     * successful init. This field is not considered part of the public
+     * API of Mbed TLS and may change without notice. */
     char is_valid;
 } mbedtls_threading_mutex_t;
 #endif
