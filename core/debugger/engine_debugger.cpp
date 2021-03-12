@@ -192,7 +192,7 @@ void EngineDebugger::deinitialize() {
 		singleton = nullptr;
 	}
 
-	// Clear profilers/captuers/protocol handlers.
+	// Clear profilers/captures/protocol handlers.
 	profilers.clear();
 	captures.clear();
 	protocols.clear();

@@ -529,7 +529,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 	input_map = memnew(InputMap);
 	globals = memnew(ProjectSettings);
 
-	register_core_settings(); //here globals is present
+	register_core_settings(); //here globals are present
 
 	translation_server = memnew(TranslationServer);
 	performance = memnew(Performance);
@@ -1517,7 +1517,7 @@ Error Main::setup2(Thread::ID p_main_tid_override) {
 
 	input = memnew(Input);
 
-	/* Iniitalize Display Server */
+	/* Initialize Display Server */
 
 	{
 		String rendering_driver; // temp broken
@@ -1547,7 +1547,7 @@ Error Main::setup2(Thread::ID p_main_tid_override) {
 		display_server->screen_set_orientation(window_orientation);
 	}
 
-	/* Initialize Pen Table Driver */
+	/* Initialize Pen Tablet Driver */
 
 	{
 		GLOBAL_DEF_RST_NOVAL("input_devices/pen_tablet/driver", "");
@@ -1796,7 +1796,7 @@ Error Main::setup2(Thread::ID p_main_tid_override) {
 	if (!project_manager) {
 		// If not running the project manager, and now that the engine is
 		// able to load resources, load the global shader variables.
-		// If running on editor, dont load the textures because the editor
+		// If running on editor, don't load the textures because the editor
 		// may want to import them first. Editor will reload those later.
 		rendering_server->global_variables_load_settings(!editor);
 	}
@@ -1804,7 +1804,7 @@ Error Main::setup2(Thread::ID p_main_tid_override) {
 	_start_success = true;
 	locale = String();
 
-	ClassDB::set_current_api(ClassDB::API_NONE); //no more api is registered at this point
+	ClassDB::set_current_api(ClassDB::API_NONE); //no more APIs are registered at this point
 
 	print_verbose("CORE API HASH: " + uitos(ClassDB::get_api_hash(ClassDB::API_CORE)));
 	print_verbose("EDITOR API HASH: " + uitos(ClassDB::get_api_hash(ClassDB::API_EDITOR)));
@@ -2606,7 +2606,7 @@ void Main::cleanup(bool p_force) {
 	// Sync pending commands that may have been queued from a different thread during ScriptServer finalization
 	RenderingServer::get_singleton()->sync();
 
-	//clear global shader variables before scene and other graphics stuff is deinitialized.
+	//clear global shader variables before scene and other graphics stuff are deinitialized.
 	rendering_server->global_variables_clear();
 
 #ifdef TOOLS_ENABLED

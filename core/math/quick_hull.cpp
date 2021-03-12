@@ -268,7 +268,7 @@ Error QuickHull::build(const Vector<Vector3> &p_points, Geometry3D::MeshData &r_
 		for (Map<Edge, FaceConnect>::Element *E = lit_edges.front(); E; E = E->next()) {
 			FaceConnect &fc = E->get();
 			if (fc.left && fc.right) {
-				continue; //edge is uninteresting, not on horizont
+				continue; //edge is uninteresting, not on horizon
 			}
 
 			//create new face!

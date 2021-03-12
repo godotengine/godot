@@ -194,7 +194,7 @@ RES TranslationLoaderPO::load_translation(FileAccess *f, Error *r_error) {
 		l = l.substr(1, l.length());
 		// Find final quote, ignoring escaped ones (\").
 		// The escape_next logic is necessary to properly parse things like \\"
-		// where the blackslash is the one being escaped, not the quote.
+		// where the backslash is the one being escaped, not the quote.
 		int end_pos = -1;
 		bool escape_next = false;
 		for (int i = 0; i < l.length(); i++) {

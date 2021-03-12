@@ -222,7 +222,7 @@ void PopupMenu::_activate_submenu(int p_over) {
 
 	submenu_popup->set_close_on_parent_focus(false);
 	submenu_popup->set_position(submenu_pos);
-	submenu_popup->set_as_minsize(); // Shrink the popup size to it's contents.
+	submenu_popup->set_as_minsize(); // Shrink the popup size to its contents.
 	submenu_popup->popup();
 
 	// Set autohide areas

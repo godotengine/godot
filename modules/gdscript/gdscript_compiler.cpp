@@ -2419,7 +2419,7 @@ Error GDScriptCompiler::_parse_class_blocks(GDScript *p_script, const GDScriptPa
 					p_script->initializer->call(instance, nullptr, 0, ce);
 
 					if (ce.error != Callable::CallError::CALL_OK) {
-						//well, tough luck, not goinna do anything here
+						//well, tough luck, not gonna do anything here
 					}
 				}
 #endif

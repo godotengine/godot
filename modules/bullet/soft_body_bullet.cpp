@@ -336,7 +336,7 @@ void SoftBodyBullet::set_trimesh_body_shape(Vector<int> p_indices, Vector<Vector
 				Map<Vector3, int>::Element *e = unique_vertices.find(p_vertices_read[vs_vertex_index]);
 				int vertex_id;
 				if (e) {
-					// Already rxisting
+					// Already existing
 					vertex_id = e->value();
 				} else {
 					// Create new one

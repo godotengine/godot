@@ -2198,7 +2198,7 @@ void Variant::interpolate(const Variant &a, const Variant &b, float c, Variant &
 		}
 			return;
 		case STRING: {
-			//this is pretty funny and bizarre, but artists like to use it for typewritter effects
+			//this is pretty funny and bizarre, but artists like to use it for typewriter effects
 			String sa = *reinterpret_cast<const String *>(a._data._mem);
 			String sb = *reinterpret_cast<const String *>(b._data._mem);
 			String dst;

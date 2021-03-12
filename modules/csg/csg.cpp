@@ -970,7 +970,7 @@ void CSGBrushOperation::Build2DFaces::_merge_faces(const Vector<int> &p_segment_
 					continue;
 				}
 
-				// Check if point is on an each edge.
+				// Check if point is on each edge.
 				for (int face_edge_idx = 0; face_edge_idx < 3; ++face_edge_idx) {
 					Vector2 edge_points[2] = {
 						face_points[face_edge_idx],
@@ -1076,7 +1076,7 @@ void CSGBrushOperation::Build2DFaces::_find_edge_intersections(const Vector2 p_s
 					break;
 				}
 
-				// If opposite point is on the segemnt, add its index to segment indices too.
+				// If opposite point is on the segment, add its index to segment indices too.
 				Vector2 closest_point = Geometry2D::get_closest_point_to_segment(vertices[opposite_vertex_idx].point, p_segment_points);
 				if ((closest_point - vertices[opposite_vertex_idx].point).length_squared() < vertex_snap2) {
 					_add_vertex_idx_sorted(r_segment_indices, opposite_vertex_idx);
@@ -1137,7 +1137,7 @@ int CSGBrushOperation::Build2DFaces::_insert_point(const Vector2 &p_point) {
 			}
 		}
 
-		// Check if point is on an each edge.
+		// Check if point is on each edge.
 		bool on_edge = false;
 		for (int face_edge_idx = 0; face_edge_idx < 3; ++face_edge_idx) {
 			Vector2 edge_points[2] = {
@@ -1400,7 +1400,7 @@ void CSGBrushOperation::update_faces(const CSGBrush &p_brush_a, const int p_face
 			under_count++;
 		}
 	}
-	// If all points under or over the plane, there is no intesection.
+	// If all points under or over the plane, there is no intersection.
 	if (over_count == 3 || under_count == 3) {
 		return;
 	}
@@ -1421,7 +1421,7 @@ void CSGBrushOperation::update_faces(const CSGBrush &p_brush_a, const int p_face
 			under_count++;
 		}
 	}
-	// If all points under or over the plane, there is no intesection.
+	// If all points under or over the plane, there is no intersection.
 	if (over_count == 3 || under_count == 3) {
 		return;
 	}

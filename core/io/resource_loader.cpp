@@ -215,7 +215,7 @@ void ResourceLoader::_thread_load_function(void *p_userdata) {
 	load_task.loader_id = Thread::get_caller_id();
 
 	if (load_task.semaphore) {
-		//this is an actual thread, so wait for Ok fom semaphore
+		//this is an actual thread, so wait for Ok from semaphore
 		thread_load_semaphore->wait(); //wait until its ok to start loading
 	}
 	load_task.resource = _load(load_task.remapped_path, load_task.remapped_path != load_task.local_path ? load_task.local_path : String(), load_task.type_hint, load_task.cache_mode, &load_task.error, load_task.use_sub_threads, &load_task.progress);
@@ -443,7 +443,7 @@ RES ResourceLoader::load_threaded_get(const String &p_path, Error *r_error) {
 
 	ThreadLoadTask &load_task = thread_load_tasks[local_path];
 
-	//semaphore still exists, meaning its still loading, request poll
+	//semaphore still exists, meaning it's still loading, request poll
 	Semaphore *semaphore = load_task.semaphore;
 	if (semaphore) {
 		load_task.poll_requests++;
@@ -452,7 +452,7 @@ RES ResourceLoader::load_threaded_get(const String &p_path, Error *r_error) {
 			// As we got a semaphore, this means we are going to have to wait
 			// until the sub-resource is done loading
 			//
-			// As this thread will become 'blocked' we should "echange" its
+			// As this thread will become 'blocked' we should "exchange" its
 			// active status with a waiting one, to ensure load continues.
 			//
 			// This ensures loading is never blocked and that is also within

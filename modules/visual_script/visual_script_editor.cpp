@@ -3958,7 +3958,7 @@ void VisualScriptEditor::_menu_option(int p_what) {
 					if (start_node == -1) {
 						// If we still don't have a start node then,
 						// run through the nodes and select the first tree node,
-						// ie node without any input sequence but output sequence.
+						// i.e. node without any input sequence but output sequence.
 						for (Set<int>::Element *E = nodes_from.front(); E; E = E->next()) {
 							if (!nodes_to.has(E->get())) {
 								start_node = E->get();

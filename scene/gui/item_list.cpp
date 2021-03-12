@@ -768,7 +768,7 @@ void ItemList::_gui_input(const Ref<InputEvent> &p_event) {
 				}
 			}
 		} else if (p_event->is_action("ui_accept")) {
-			search_string = ""; //any mousepress cance
+			search_string = ""; //any mousepress cancels
 
 			if (current >= 0 && current < items.size()) {
 				emit_signal("item_activated", current);

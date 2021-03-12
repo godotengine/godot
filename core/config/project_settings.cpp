@@ -393,7 +393,7 @@ Error ProjectSettings::_setup(const String &p_path, const String &p_main_pack, b
 
 	if (exec_path != "") {
 		// We do several tests sequentially until one succeeds to find a PCK,
-		// and if so we attempt loading it at the end.
+		// and if so, we attempt loading it at the end.
 
 		// Attempt with PCK bundled into executable.
 		bool found = _load_resource_pack(exec_path);

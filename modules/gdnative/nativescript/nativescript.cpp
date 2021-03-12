@@ -173,7 +173,7 @@ bool NativeScript::can_instance() const {
 
 #ifdef TOOLS_ENABLED
 	// Only valid if this is either a tool script or a "regular" script.
-	// (so an environment whre scripting is disabled (and not the editor) would not
+	// (so, an environment where scripting is disabled (and not the editor) would not
 	// create objects).
 	return script_data && (is_tool() || ScriptServer::is_scripting_enabled());
 #else

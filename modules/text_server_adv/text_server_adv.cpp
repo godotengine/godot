@@ -166,7 +166,7 @@ bool TextServerAdvanced::load_support_data(const String &p_filename) {
 #ifdef ICU_STATIC_DATA
 	if (icu_data == nullptr) {
 		UErrorCode err = U_ZERO_ERROR;
-		u_init(&err); // Do not check for errors, since we only load part the of data.
+		u_init(&err); // Do not check for errors, since we only load part of the data.
 		icu_data = (uint8_t *)&U_ICUDATA_ENTRY_POINT;
 	}
 #else
@@ -244,7 +244,7 @@ struct FeatureInfo {
 };
 
 static FeatureInfo feature_set[] = {
-	// Registred OpenType feature tags.
+	// Registered OpenType feature tags.
 	{ HB_TAG('a', 'a', 'l', 't'), "access_all_alternates" },
 	{ HB_TAG('a', 'b', 'v', 'f'), "above_base_forms" },
 	{ HB_TAG('a', 'b', 'v', 'm'), "above_base_mark_positioning" },
@@ -484,7 +484,7 @@ static FeatureInfo feature_set[] = {
 	{ HB_TAG('v', 'r', 't', '2'), "vertical_alternates_and_rotation" },
 	{ HB_TAG('v', 'r', 't', 'r'), "vertical_alternates_for_rotation" },
 	{ HB_TAG('z', 'e', 'r', 'o'), "slashed_zero" },
-	// Registred OpenType variation tags.
+	// Registered OpenType variation tags.
 	{ HB_TAG('i', 't', 'a', 'l'), "italic" },
 	{ HB_TAG('o', 'p', 's', 'z'), "optical_size" },
 	{ HB_TAG('s', 'l', 'n', 't'), "slant" },
@@ -1660,7 +1660,7 @@ bool TextServerAdvanced::shaped_text_update_breaks(RID p_shaped) {
 	}
 
 	if (sd->line_breaks_valid) {
-		return true; // Noting to do.
+		return true; // Nothing to do.
 	}
 
 	const UChar *data = sd->utf16.ptr();
@@ -1845,7 +1845,7 @@ bool TextServerAdvanced::shaped_text_update_justification_ops(RID p_shaped) {
 	}
 
 	if (sd->justification_ops_valid) {
-		return true; // Noting to do.
+		return true; // Nothing to do.
 	}
 
 	const UChar *data = sd->utf16.ptr();

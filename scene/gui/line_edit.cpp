@@ -809,7 +809,7 @@ void LineEdit::_notification(int p_what) {
 					}
 				} else {
 					{
-						// IME intermidiet text range.
+						// IME intermediate text range.
 						Vector<Vector2> sel = TS->shaped_text_get_selection(text_rid, cursor_pos, cursor_pos + ime_text.length());
 						for (int i = 0; i < sel.size(); i++) {
 							Rect2 rect = Rect2(sel[i].x + ofs.x, ofs.y, sel[i].y - sel[i].x, text_height);
@@ -1436,7 +1436,7 @@ void LineEdit::set_cursor_position(int p_pos) {
 		ofs_max -= r_icon->get_width();
 	}
 
-	// Note: Use too coordinates to fit IME input range.
+	// Note: Use two coordinates to fit IME input range.
 	Vector2i primary_catret_offset = get_cursor_pixel_pos();
 
 	if (MIN(primary_catret_offset.x, primary_catret_offset.y) <= x_ofs) {

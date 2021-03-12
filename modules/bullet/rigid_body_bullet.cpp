@@ -515,7 +515,7 @@ real_t RigidBodyBullet::get_param(PhysicsServer3D::BodyParameter p_param) const 
 }
 
 void RigidBodyBullet::set_mode(PhysicsServer3D::BodyMode p_mode) {
-	// This is necessary to block force_integration untile next move
+	// This is necessary to block force_integration until next move
 	can_integrate_forces = false;
 	destroy_kinematic_utilities();
 	// The mode change is relevant to its mass
@@ -725,7 +725,7 @@ void RigidBodyBullet::set_continuous_collision_detection(bool p_enable) {
 		// 1 meter in one simulation frame
 		btBody->setCcdMotionThreshold(1e-7);
 
-		/// Calculate using the rule writte below the CCD swept sphere radius
+		/// Calculate using the rule write below the CCD swept sphere radius
 		///     CCD works on an embedded sphere of radius, make sure this radius
 		///     is embedded inside the convex objects, preferably smaller:
 		///     for an object of dimensions 1 meter, try 0.2

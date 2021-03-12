@@ -461,7 +461,7 @@ void BulletPhysicsServer3D::body_set_space(RID p_body, RID p_space) {
 	}
 
 	if (body->get_space() == space) {
-		return; //pointles
+		return; //pointless
 	}
 
 	body->set_space(space);
@@ -617,11 +617,11 @@ uint32_t BulletPhysicsServer3D::body_get_collision_mask(RID p_body) const {
 }
 
 void BulletPhysicsServer3D::body_set_user_flags(RID p_body, uint32_t p_flags) {
-	// This function si not currently supported
+	// This function is not currently supported
 }
 
 uint32_t BulletPhysicsServer3D::body_get_user_flags(RID p_body) const {
-	// This function si not currently supported
+	// This function is not currently supported
 	return 0;
 }
 
@@ -898,7 +898,7 @@ void BulletPhysicsServer3D::soft_body_set_space(RID p_body, RID p_space) {
 	}
 
 	if (body->get_space() == space) {
-		return; //pointles
+		return; //pointless
 	}
 
 	body->set_space(space);

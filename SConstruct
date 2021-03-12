@@ -385,7 +385,7 @@ if selected_platform in platform_list:
         if not (f[0] in ARGUMENTS):  # allow command line to override platform flags
             env[f[0]] = f[1]
 
-    # Must happen after the flags definition, so that they can be used by platform detect
+    # Must happen after the flags' definition, so that they can be used by platform detect
     detect.configure(env)
 
     # Set our C and C++ standard requirements.
