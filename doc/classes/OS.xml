@@ -367,6 +367,7 @@
 			<description>
 				Gets an epoch time value from a dictionary of time values.
 				[code]datetime[/code] must be populated with the following keys: [code]year[/code], [code]month[/code], [code]day[/code], [code]hour[/code], [code]minute[/code], [code]second[/code].
+				If the dictionary is empty [code]0[/code] is returned.
 				You can pass the output from [method get_datetime_from_unix_time] directly into this function. Daylight Savings Time ([code]dst[/code]), if present, is ignored.
 			</description>
 		</method>
