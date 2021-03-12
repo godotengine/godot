@@ -1511,17 +1511,17 @@ Error GDScriptCompiler::_parse_block(CodeGen &codegen, const GDScriptParser::Sui
 				codegen.start_block();
 
 				// Evaluate the match expression.
-				GDScriptCodeGenerator::Address value_local = codegen.add_local("@match_value", _gdtype_from_datatype(match->test->get_datatype()));
-				GDScriptCodeGenerator::Address value = _parse_expression(codegen, error, match->test);
+				GDScriptCodeGenerator::Address value = codegen.add_local("@match_value", _gdtype_from_datatype(match->test->get_datatype()));
+				GDScriptCodeGenerator::Address value_expr = _parse_expression(codegen, error, match->test);
 				if (error) {
 					return error;
 				}
 
 				// Assign to local.
 				// TODO: This can be improved by passing the target to parse_expression().
-				gen->write_assign(value_local, value);
+				gen->write_assign(value, value_expr);
 
-				if (value.mode == GDScriptCodeGenerator::Address::TEMPORARY) {
+				if (value_expr.mode == GDScriptCodeGenerator::Address::TEMPORARY) {
 					codegen.generator->pop_temporary();
 				}
 
