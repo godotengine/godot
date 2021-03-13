@@ -76,6 +76,11 @@ public:
 	};
 
 private:
+	template <typename T>
+	int sgn(T val) {
+		return (T(0) < val) - (val < T(0));
+	}
+
 	enum {
 		NODE_CACHE_UPDATE_MAX = 1024,
 		BLEND_FROM_MAX = 3
@@ -105,10 +110,16 @@ private:
 		uint64_t accum_pass = 0;
 
 		bool audio_playing = false;
+
+		int audio_idx = -1;
 		float audio_start = 0.0;
 		float audio_len = 0.0;
 
 		bool animation_playing = false;
+
+		int animation_idx = -1;
+		float animation_start = 0.0;
+		float animation_len = 0.0;
 
 		struct PropertyAnim {
 			TrackNodeCache *owner = nullptr;
@@ -169,6 +180,16 @@ private:
 		Ref<Animation> animation;
 	};
 
+	struct BlockData {
+		float pos;
+		float length;
+
+		BlockData() {
+			this->pos = -1;
+			this->length = -1;
+		}
+	} blockData;
+
 	Map<StringName, AnimationData> animation_set;
 	struct BlendKey {
 		StringName from;
@@ -223,6 +244,17 @@ private:
 
 	void _node_removed(Node *p_node);
 	void _stop_playing_caches();
+
+	float get_local_audio_pos(Animation *a, int p_track, int p_key, float p_time);
+
+	void get_audio_play_block(BlockData &b, Animation *a, int p_track, int p_key, float p_time);
+	void get_audio_block(BlockData &b, Animation *a, int p_track, int p_key);
+
+	float get_local_animation_pos(Animation *a, int p_track, int p_key, float p_time);
+	float get_local_animation_end_pos(Animation *a, int p_track, int p_key, AnimationPlayer *player);
+
+	void get_animation_play_block(BlockData &b, Animation *a, int p_track, int p_key, float p_time, AnimationPlayer *player);
+	void get_animation_block(BlockData &b, Animation *a, int p_track, int p_key, AnimationPlayer *player);
 
 	// bind helpers
 	Vector<String> _get_animation_list() const {
