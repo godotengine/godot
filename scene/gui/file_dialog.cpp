@@ -731,9 +731,9 @@ FileDialog::Access FileDialog::get_access() const {
 }
 
 void FileDialog::_make_dir_confirm() {
-	Error err = dir_access->make_dir(makedirname->get_text());
+	Error err = dir_access->make_dir(makedirname->get_text().strip_edges());
 	if (err == OK) {
-		dir_access->change_dir(makedirname->get_text());
+		dir_access->change_dir(makedirname->get_text().strip_edges());
 		invalidate();
 		update_filters();
 		update_dir();
