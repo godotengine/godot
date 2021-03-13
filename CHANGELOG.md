@@ -187,7 +187,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - `posmod()` built-in GDScript function that behaves like `fposmod()`, but returns an integer value.
 - `smoothstep()` built-in GDScript function for smooth easing of values.
 - `lerp_angle()` built-in GDScript function to interpolate between two angles.
-- `ord()` built-in GDScript function to return the Unicode code point of an 1-character string.
+- `ord()` built-in GDScript function to return the Unicode code point of a 1-character string.
 - `PoolByteArray.hex_encode()` method to get a string of hexadecimal numbers.
 - `Font.get_wordwrap_string_size()` method to return the rectangle size needed to draw a word-wrapped text.
 - `Camera.get_camera_rid()` method to retrieve a Camera's RID.
