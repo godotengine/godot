@@ -584,6 +584,24 @@ void EditorAssetLibrary::_notification(int p_what) {
 			filter->set_right_icon(get_theme_icon("Search", "EditorIcons"));
 			filter->set_clear_button_enabled(true);
 		} break;
+
+		case EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED: {
+			_update_repository_options();
+		} break;
+	}
+}
+
+void EditorAssetLibrary::_update_repository_options() {
+	Dictionary default_urls;
+	default_urls["godotengine.org"] = "https://godotengine.org/asset-library/api";
+	default_urls["localhost"] = "http://127.0.0.1/asset-library/api";
+	Dictionary available_urls = _EDITOR_DEF("asset_library/available_urls", default_urls, true);
+	repository->clear();
+	Array keys = available_urls.keys();
+	for (int i = 0; i < available_urls.size(); i++) {
+		String key = keys[i];
+		repository->add_item(key);
+		repository->set_item_metadata(i, available_urls[key]);
 	}
 }
 
@@ -1373,18 +1391,7 @@ EditorAssetLibrary::EditorAssetLibrary(bool p_templates_only) {
 	search_hb2->add_child(memnew(Label(TTR("Site:") + " ")));
 	repository = memnew(OptionButton);
 
-	{
-		Dictionary default_urls;
-		default_urls["godotengine.org"] = "https://godotengine.org/asset-library/api";
-		default_urls["localhost"] = "http://127.0.0.1/asset-library/api";
-		Dictionary available_urls = _EDITOR_DEF("asset_library/available_urls", default_urls, true);
-		Array keys = available_urls.keys();
-		for (int i = 0; i < available_urls.size(); i++) {
-			String key = keys[i];
-			repository->add_item(key);
-			repository->set_item_metadata(i, available_urls[key]);
-		}
-	}
+	_update_repository_options();
 
 	repository->connect("item_selected", callable_mp(this, &EditorAssetLibrary::_repository_changed));
 
