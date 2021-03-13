@@ -2148,7 +2148,17 @@ void SoftBodySpatialGizmoPlugin::redraw(EditorSpatialGizmo *p_gizmo) {
 	Ref<TriangleMesh> tm = soft_body->get_mesh()->generate_triangle_mesh();
 
 	Vector<Vector3> points;
-	soft_body->get_mesh()->generate_debug_mesh_indices(points);
+	for (int i = 0; i < soft_body->get_mesh()->get_surface_count(); i++) {
+		Array arrays = soft_body->get_mesh()->surface_get_arrays(i);
+		ERR_CONTINUE(arrays.empty());
+
+		const PoolVector<Vector3> &vertices = arrays[Mesh::ARRAY_VERTEX];
+		PoolVector<Vector3>::Read vertices_read = vertices.read();
+		int vertex_count = vertices.size();
+		for (int index = 0; index < vertex_count; ++index) {
+			points.push_back(vertices_read[index]);
+		}
+	}
 
 	Ref<Material> material = get_material("shape_material", p_gizmo);
 
