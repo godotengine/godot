@@ -49,6 +49,10 @@
 #define SECS_DAY (24L * 60L * 60L)
 #define LEAPYEAR(year) (!((year) % 4) && (((year) % 100) || !((year) % 400)))
 #define YEARSIZE(year) (LEAPYEAR(year) ? 366 : 365)
+#define TIMEZONE_KEY "timezone"
+#define TIMEZONE_BIAS_KEY "bias"
+#define TIMEZONE_NAME_KEY "name"
+#define MILLISECOND_KEY "millisecond"
 #define SECOND_KEY "second"
 #define MINUTE_KEY "minute"
 #define HOUR_KEY "hour"
@@ -327,21 +331,28 @@ uint64_t _OS::get_static_memory_peak_usage() const {
  *     dst
  */
 Dictionary _OS::get_datetime(bool utc) const {
-	Dictionary dated = get_date(utc);
-	Dictionary timed = get_time(utc);
+	OS::DateTime dt = OS::get_singleton()->get_datetime(!utc);
+	Dictionary ret;
+	ret[YEAR_KEY] = dt.year;
+	ret[MONTH_KEY] = dt.month;
+	ret[DAY_KEY] = dt.day;
+	ret[WEEKDAY_KEY] = dt.weekday;
+	ret[DST_KEY] = dt.dst;
+	ret[HOUR_KEY] = dt.hour;
+	ret[MINUTE_KEY] = dt.min;
+	ret[SECOND_KEY] = dt.sec;
+	ret[MILLISECOND_KEY] = dt.msec;
 
-	List<Variant> keys;
-	timed.get_key_list(&keys);
+	Dictionary timezone;
+	timezone[TIMEZONE_BIAS_KEY] = dt.timezone.bias;
+	timezone[TIMEZONE_NAME_KEY] = dt.timezone.name;
+	ret[TIMEZONE_KEY] = timezone;
 
-	for (int i = 0; i < keys.size(); i++) {
-		dated[keys[i]] = timed[keys[i]];
-	}
-
-	return dated;
+	return ret;
 }
 
 Dictionary _OS::get_date(bool utc) const {
-	OS::Date date = OS::get_singleton()->get_date(utc);
+	OS::Date date = OS::get_singleton()->get_date(!utc);
 	Dictionary dated;
 	dated[YEAR_KEY] = date.year;
 	dated[MONTH_KEY] = date.month;
@@ -352,27 +363,28 @@ Dictionary _OS::get_date(bool utc) const {
 }
 
 Dictionary _OS::get_time(bool utc) const {
-	OS::Time time = OS::get_singleton()->get_time(utc);
+	OS::Time time = OS::get_singleton()->get_time(!utc);
 	Dictionary timed;
 	timed[HOUR_KEY] = time.hour;
 	timed[MINUTE_KEY] = time.min;
 	timed[SECOND_KEY] = time.sec;
+	timed[MILLISECOND_KEY] = time.msec;
 	return timed;
 }
 
 /**
  *  Get an epoch time value from a dictionary of time values
  *  @p datetime must be populated with the following keys:
- *    day, hour, minute, month, second, year. (dst is ignored).
+ *    year, month, day, hour, minute, second, millisecond and timezone (dst is ignored).
  *
- *    You can pass the output from
- *   get_datetime_from_unix_time directly into this function
+ *    If timezone field is omitted, UTC timezone is assumed.
+ *    You can pass the output from get_datetime_from_unix_time directly into this function.
  *
  * @param datetime dictionary of date and time values to convert
  *
  * @return epoch calculated
  */
-int64_t _OS::get_unix_time_from_datetime(Dictionary datetime) const {
+double _OS::get_unix_time_from_datetime(Dictionary datetime) const {
 	// if datetime is an empty Dictionary throws an error
 	ERR_FAIL_COND_V_MSG(datetime.is_empty(), 0, "Invalid datetime Dictionary: Dictionary is empty");
 
@@ -385,12 +397,17 @@ int64_t _OS::get_unix_time_from_datetime(Dictionary datetime) const {
 
 	// Get all time values from the dictionary, set to zero if it doesn't exist.
 	//   Risk incorrect calculation over throwing errors
+	unsigned int millisecond = ((datetime.has(MILLISECOND_KEY)) ? static_cast<unsigned int>(datetime[MILLISECOND_KEY]) : 0);
 	unsigned int second = ((datetime.has(SECOND_KEY)) ? static_cast<unsigned int>(datetime[SECOND_KEY]) : 0);
 	unsigned int minute = ((datetime.has(MINUTE_KEY)) ? static_cast<unsigned int>(datetime[MINUTE_KEY]) : 0);
 	unsigned int hour = ((datetime.has(HOUR_KEY)) ? static_cast<unsigned int>(datetime[HOUR_KEY]) : 0);
 	unsigned int day = ((datetime.has(DAY_KEY)) ? static_cast<unsigned int>(datetime[DAY_KEY]) : 1);
 	unsigned int month = ((datetime.has(MONTH_KEY)) ? static_cast<unsigned int>(datetime[MONTH_KEY]) : 1);
 	unsigned int year = ((datetime.has(YEAR_KEY)) ? static_cast<unsigned int>(datetime[YEAR_KEY]) : 0);
+
+	// Retrieve bias from timezone != UTC
+	Dictionary timezone = ((datetime.has(TIMEZONE_KEY)) ? static_cast<Dictionary>(datetime[TIMEZONE_KEY]) : Dictionary());
+	unsigned int timezone_bias = ((timezone.has(TIMEZONE_BIAS_KEY)) ? static_cast<unsigned int>(timezone[TIMEZONE_BIAS_KEY]) : 0);
 
 	/// How many days come before each month (0-12)
 	static const unsigned short int DAYS_PAST_THIS_YEAR_TABLE[2][13] = {
@@ -399,6 +416,8 @@ int64_t _OS::get_unix_time_from_datetime(Dictionary datetime) const {
 		/* Leap years.  */
 		{ 0, 31, 60, 91, 121, 152, 182, 213, 244, 274, 305, 335, 366 }
 	};
+
+	ERR_FAIL_COND_V_MSG(millisecond > 999, 0, "Invalid millisecond value of: " + itos(millisecond) + ".");
 
 	ERR_FAIL_COND_V_MSG(second > 59, 0, "Invalid second value of: " + itos(second) + ".");
 
@@ -424,7 +443,8 @@ int64_t _OS::get_unix_time_from_datetime(Dictionary datetime) const {
 		}
 	}
 
-	int64_t epoch =
+	double epoch =
+			(double)millisecond / 1000 +
 			second +
 			minute * SECONDS_PER_MINUTE +
 			hour * SECONDS_PER_HOUR +
@@ -433,30 +453,33 @@ int64_t _OS::get_unix_time_from_datetime(Dictionary datetime) const {
 			(day - 1) * SECONDS_PER_DAY +
 			SECONDS_FROM_MONTHS_PAST_THIS_YEAR +
 			SECONDS_FROM_YEARS_PAST;
+	// Apply timezone to UTC correction
+	epoch -= timezone_bias * SECONDS_PER_MINUTE;
 	return epoch;
 }
 
 /**
  *  Get a dictionary of time values when given epoch time
  *
- *  Dictionary Time values will be a union if values from #get_time
- *    and #get_date dictionaries (with the exception of dst =
- *    day light standard time, as it cannot be determined from epoch)
+ *  Dictionary will be equivalent to what is returned by #get_datetime with utc=true
+ *    (with the exception of dst = day light standard time, as it cannot be
+ *    determined from epoch)
  *
  * @param unix_time_val epoch time to convert
  *
- * @return dictionary of date and time values
+ * @return dictionary of date, time and timezone values
  */
-Dictionary _OS::get_datetime_from_unix_time(int64_t unix_time_val) const {
+Dictionary _OS::get_datetime_from_unix_time(double unix_time_val) const {
 	OS::Date date;
 	OS::Time time;
 
 	long dayclock, dayno;
 	int year = EPOCH_YR;
+	int64_t unix_time_seconds = unix_time_val;
 
-	if (unix_time_val >= 0) {
-		dayno = unix_time_val / SECS_DAY;
-		dayclock = unix_time_val % SECS_DAY;
+	if (unix_time_seconds >= 0) {
+		dayno = unix_time_seconds / SECS_DAY;
+		dayclock = unix_time_seconds % SECS_DAY;
 		/* day 0 was a thursday */
 		date.weekday = static_cast<OS::Weekday>((dayno + 4) % 7);
 		while (dayno >= YEARSIZE(year)) {
@@ -464,8 +487,8 @@ Dictionary _OS::get_datetime_from_unix_time(int64_t unix_time_val) const {
 			year++;
 		}
 	} else {
-		dayno = (unix_time_val - SECS_DAY + 1) / SECS_DAY;
-		dayclock = unix_time_val - dayno * SECS_DAY;
+		dayno = (unix_time_seconds - SECS_DAY + 1) / SECS_DAY;
+		dayclock = unix_time_seconds - dayno * SECS_DAY;
 		date.weekday = static_cast<OS::Weekday>(((dayno % 7) + 11) % 7);
 		do {
 			year--;
@@ -473,6 +496,8 @@ Dictionary _OS::get_datetime_from_unix_time(int64_t unix_time_val) const {
 		} while (dayno < 0);
 	}
 
+	double intpart;
+	time.msec = modf(unix_time_val, &intpart) * 1000;
 	time.sec = dayclock % 60;
 	time.min = (dayclock % 3600) / 60;
 	time.hour = dayclock / 3600;
@@ -490,16 +515,24 @@ Dictionary _OS::get_datetime_from_unix_time(int64_t unix_time_val) const {
 
 	date.day = dayno + 1;
 
-	Dictionary timed;
-	timed[HOUR_KEY] = time.hour;
-	timed[MINUTE_KEY] = time.min;
-	timed[SECOND_KEY] = time.sec;
-	timed[YEAR_KEY] = date.year;
-	timed[MONTH_KEY] = date.month;
-	timed[DAY_KEY] = date.day;
-	timed[WEEKDAY_KEY] = date.weekday;
+	Dictionary ret;
 
-	return timed;
+	ret[YEAR_KEY] = date.year;
+	ret[MONTH_KEY] = date.month;
+	ret[DAY_KEY] = date.day;
+	ret[WEEKDAY_KEY] = date.weekday;
+
+	ret[HOUR_KEY] = time.hour;
+	ret[MINUTE_KEY] = time.min;
+	ret[SECOND_KEY] = time.sec;
+	ret[MILLISECOND_KEY] = time.msec;
+
+	Dictionary timezone;
+	timezone[TIMEZONE_NAME_KEY] = String("UTC");
+	timezone[TIMEZONE_BIAS_KEY] = 0;
+	ret[TIMEZONE_KEY] = timezone;
+
+	return ret;
 }
 
 Dictionary _OS::get_time_zone_info() const {

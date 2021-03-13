@@ -164,15 +164,18 @@ double OS_Unix::get_unix_time() const {
 	return (double)tv_now.tv_sec + double(tv_now.tv_usec) / 1000000;
 };
 
-OS::Date OS_Unix::get_date(bool utc) const {
-	time_t t = time(nullptr);
+OS::DateTime OS_Unix::get_datetime(bool utc) const {
+	struct timeval tv_now;
+	gettimeofday(&tv_now, nullptr);
 	struct tm lt;
 	if (utc) {
-		gmtime_r(&t, &lt);
+		gmtime_r(&tv_now.tv_sec, &lt);
 	} else {
-		localtime_r(&t, &lt);
+		localtime_r(&tv_now.tv_sec, &lt);
 	}
-	Date ret;
+
+	DateTime ret;
+
 	ret.year = 1900 + lt.tm_year;
 	// Index starting at 1 to match OS_Unix::get_date
 	//   and Windows SYSTEMTIME and tm_mon follows the typical structure
@@ -182,34 +185,17 @@ OS::Date OS_Unix::get_date(bool utc) const {
 	ret.weekday = (Weekday)lt.tm_wday;
 	ret.dst = lt.tm_isdst;
 
-	return ret;
-}
-
-OS::Time OS_Unix::get_time(bool utc) const {
-	time_t t = time(nullptr);
-	struct tm lt;
-	if (utc) {
-		gmtime_r(&t, &lt);
-	} else {
-		localtime_r(&t, &lt);
-	}
-	Time ret;
 	ret.hour = lt.tm_hour;
 	ret.min = lt.tm_min;
 	ret.sec = lt.tm_sec;
-	get_time_zone_info();
-	return ret;
-}
+	ret.msec = tv_now.tv_usec / 1000;
 
-OS::TimeZoneInfo OS_Unix::get_time_zone_info() const {
-	time_t t = time(nullptr);
-	struct tm lt;
-	localtime_r(&t, &lt);
+	// Retreive timezone info
+
 	char name[16];
 	strftime(name, 16, "%Z", &lt);
 	name[15] = 0;
-	TimeZoneInfo ret;
-	ret.name = name;
+	ret.timezone.name = name;
 
 	char bias_buf[16];
 	strftime(bias_buf, 16, "%z", &lt);
@@ -221,9 +207,9 @@ OS::TimeZoneInfo OS_Unix::get_time_zone_info() const {
 	int hour = (int)bias / 100;
 	int minutes = bias % 100;
 	if (bias < 0) {
-		ret.bias = hour * 60 - minutes;
+		ret.timezone.bias = hour * 60 - minutes;
 	} else {
-		ret.bias = hour * 60 + minutes;
+		ret.timezone.bias = hour * 60 + minutes;
 	}
 
 	return ret;

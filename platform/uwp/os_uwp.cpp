@@ -472,6 +472,7 @@ OS::Time OS_UWP::get_time(bool utc) const {
 	time.hour = systemtime.wHour;
 	time.min = systemtime.wMinute;
 	time.sec = systemtime.wSecond;
+	time.msec = systemtime.wMilliseconds;
 	return time;
 }
 
