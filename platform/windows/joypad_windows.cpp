@@ -110,12 +110,11 @@ bool JoypadWindows::is_xinput_device(const GUID *p_guid) {
 	if (GetRawInputDeviceList(nullptr, &dev_list_count, sizeof(RAWINPUTDEVICELIST)) == (UINT)-1) {
 		return false;
 	}
-	dev_list = (PRAWINPUTDEVICELIST)malloc(sizeof(RAWINPUTDEVICELIST) * dev_list_count);
-	if (!dev_list)
-		return false;
+	dev_list = (PRAWINPUTDEVICELIST)memalloc(sizeof(RAWINPUTDEVICELIST) * dev_list_count);
+	ERR_FAIL_NULL_V_MSG(dev_list, false, "Out of memory.");
 
 	if (GetRawInputDeviceList(dev_list, &dev_list_count, sizeof(RAWINPUTDEVICELIST)) == (UINT)-1) {
-		free(dev_list);
+		memfree(dev_list);
 		return false;
 	}
 	for (unsigned int i = 0; i < dev_list_count; i++) {
@@ -130,11 +129,11 @@ bool JoypadWindows::is_xinput_device(const GUID *p_guid) {
 				(MAKELONG(rdi.hid.dwVendorId, rdi.hid.dwProductId) == (LONG)p_guid->Data1) &&
 				(GetRawInputDeviceInfoA(dev_list[i].hDevice, RIDI_DEVICENAME, &dev_name, &nameSize) != (UINT)-1) &&
 				(strstr(dev_name, "IG_") != nullptr)) {
-			free(dev_list);
+			memfree(dev_list);
 			return true;
 		}
 	}
-	free(dev_list);
+	memfree(dev_list);
 	return false;
 }
 
