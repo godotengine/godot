@@ -82,5 +82,8 @@ namespace Godot.SourceGenerators
 
         public static string FullQualifiedName(this INamedTypeSymbol symbol)
             => symbol.ToDisplayString(NullableFlowState.NotNull, FullyQualifiedFormatOmitGlobal);
+
+        public static string FullQualifiedName(this INamespaceSymbol namespaceSymbol)
+            => namespaceSymbol.ToDisplayString(FullyQualifiedFormatOmitGlobal);
     }
 }

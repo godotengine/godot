@@ -23,11 +23,12 @@
 
   <ItemGroup>
     <!-- Package Sdk\Sdk.props and Sdk\Sdk.targets file -->
-    <None Include="Sdk\Sdk.props" Pack="true" PackagePath="Sdk" Visible="false" />
-    <None Include="Sdk\Sdk.targets" Pack="true" PackagePath="Sdk" Visible="false" />
+    <None Include="Sdk\Sdk.props" Pack="true" PackagePath="Sdk" />
+    <None Include="Sdk\Sdk.targets" Pack="true" PackagePath="Sdk" />
     <!-- SdkPackageVersions.props -->
-
-    <None Include="..\..\..\SdkPackageVersions.props" Pack="true" PackagePath="Sdk" Visible="false" />
+    <None Include="..\..\..\SdkPackageVersions.props" Pack="true" PackagePath="Sdk">
+      <Link>Sdk\SdkPackageVersions.props</Link>
+    </None>
   </ItemGroup>
 
   <Target Name="CopyNupkgToSConsOutputDir" AfterTargets="Pack">

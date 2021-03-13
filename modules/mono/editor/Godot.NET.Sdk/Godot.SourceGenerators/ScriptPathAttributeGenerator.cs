@@ -69,7 +69,7 @@ namespace Godot.SourceGenerators
             IEnumerable<ClassDeclarationSyntax> classDeclarations
         )
         {
-            var attributesBuilder = new StringBuilder();
+            var attributes = new StringBuilder();
 
             // Remember syntax trees for which we already added an attribute, to prevent unnecessary duplicates.
             var attributedTrees = new List<SyntaxTree>();
@@ -81,28 +81,54 @@ namespace Godot.SourceGenerators
 
                 attributedTrees.Add(cds.SyntaxTree);
 
-                if (attributesBuilder.Length != 0)
-                    attributesBuilder.Append("\n    ");
+                if (attributes.Length != 0)
+                    attributes.Append("\n");
 
-                attributesBuilder.Append(@"[ScriptPathAttribute(""res://");
-                attributesBuilder.Append(RelativeToDir(cds.SyntaxTree.FilePath, godotProjectDir));
-                attributesBuilder.Append(@""")]");
+                attributes.Append(@"[ScriptPathAttribute(""res://");
+                attributes.Append(RelativeToDir(cds.SyntaxTree.FilePath, godotProjectDir));
+                attributes.Append(@""")]");
             }
 
-            string classNs = symbol.ContainingNamespace.Name;
             string className = symbol.Name;
 
-            var source = $@"using Godot;
-namespace {classNs}
-{{
-    {attributesBuilder}
-    partial class {className}
-    {{
-    }}
-}}
-";
-            context.AddSource(classNs + "." + className + "_ScriptPath_Generated",
-                SourceText.From(source, Encoding.UTF8));
+            INamespaceSymbol namespaceSymbol = symbol.ContainingNamespace;
+            string classNs = namespaceSymbol != null && !namespaceSymbol.IsGlobalNamespace ?
+                namespaceSymbol.FullQualifiedName() :
+                string.Empty;
+            bool hasNamespace = classNs.Length != 0;
+
+            string uniqueName = hasNamespace ?
+                classNs + "." + className + "_ScriptPath_Generated" :
+                className + "_ScriptPath_Generated";
+
+            var source = new StringBuilder();
+
+            // using Godot;
+            // namespace {classNs} {
+            //     {attributesBuilder}
+            //     partial class {className} { }
+            // }
+
+            source.Append("using Godot;\n");
+
+            if (hasNamespace)
+            {
+                source.Append("namespace ");
+                source.Append(classNs);
+                source.Append(" {\n\n");
+            }
+
+            source.Append(attributes);
+            source.Append("\n    partial class ");
+            source.Append(className);
+            source.Append("\n{\n}\n");
+
+            if (hasNamespace)
+            {
+                source.Append("\n}\n");
+            }
+
+            context.AddSource(uniqueName, SourceText.From(source.ToString(), Encoding.UTF8));
         }
 
         private static void AddScriptTypesAssemblyAttr(GeneratorExecutionContext context,
