@@ -2216,11 +2216,10 @@ void EditorInspector::_notification(int p_what) {
 
 	if (p_what == NOTIFICATION_READY) {
 		EditorFeatureProfileManager::get_singleton()->connect("current_feature_profile_changed", this, "_feature_profile_changed");
+		_update_inspector_bg();
 	}
 
 	if (p_what == NOTIFICATION_ENTER_TREE) {
-
-		_update_inspector_bg();
 		if (!sub_inspector) {
 			get_tree()->connect("node_removed", this, "_node_removed");
 		}
