@@ -31,13 +31,13 @@
 #ifndef THEME_EDITOR_PLUGIN_H
 #define THEME_EDITOR_PLUGIN_H
 
-#include "scene/gui/check_box.h"
-#include "scene/gui/file_dialog.h"
 #include "scene/gui/margin_container.h"
 #include "scene/gui/option_button.h"
 #include "scene/gui/scroll_container.h"
+#include "scene/gui/tabs.h"
 #include "scene/gui/texture_rect.h"
 #include "scene/resources/theme.h"
+#include "theme_editor_preview.h"
 
 #include "editor/editor_node.h"
 
@@ -263,30 +263,123 @@ public:
 	ThemeItemEditorDialog();
 };
 
+class ThemeTypeEditor : public MarginContainer {
+	GDCLASS(ThemeTypeEditor, MarginContainer);
+
+	Ref<Theme> edited_theme;
+	String edited_type;
+	bool updating = false;
+
+	struct LeadingStylebox {
+		bool pinned = false;
+		StringName item_name;
+		Ref<StyleBox> stylebox;
+		Ref<StyleBox> ref_stylebox;
+	};
+
+	LeadingStylebox leading_stylebox;
+
+	OptionButton *theme_type_list;
+	Button *add_type_button;
+	ConfirmationDialog *add_type_dialog;
+	LineEdit *add_type_filter;
+	ItemList *add_type_options;
+
+	CheckButton *show_default_items_button;
+
+	TabContainer *data_type_tabs;
+	VBoxContainer *color_items_list;
+	VBoxContainer *constant_items_list;
+	VBoxContainer *font_items_list;
+	VBoxContainer *font_size_items_list;
+	VBoxContainer *icon_items_list;
+	VBoxContainer *stylebox_items_list;
+
+	Vector<Control *> focusables;
+	Timer *update_debounce_timer;
+
+	VBoxContainer *_create_item_list(Theme::DataType p_data_type);
+	void _update_type_list();
+	void _update_type_list_debounced();
+	void _update_add_type_options(const String &p_filter = "");
+	OrderedHashMap<StringName, bool> _get_type_items(String p_type_name, void (Theme::*get_list_func)(StringName, List<StringName> *) const, bool include_default);
+	HBoxContainer *_create_property_control(Theme::DataType p_data_type, String p_item_name, bool p_editable);
+	void _add_focusable(Control *p_control);
+	void _update_type_items();
+
+	void _list_type_selected(int p_index);
+	void _select_type(String p_type_name);
+	void _add_type_button_cbk();
+	void _add_type_filter_cbk(const String &p_value);
+	void _add_type_options_cbk(int p_index);
+	void _add_type_dialog_confirmed();
+	void _add_type_dialog_entered(const String &p_value);
+	void _add_type_dialog_activated(int p_index);
+	void _add_default_type_items();
+
+	void _item_add_cbk(int p_data_type, Control *p_control);
+	void _item_add_lineedit_cbk(String p_value, int p_data_type, Control *p_control);
+	void _item_override_cbk(int p_data_type, String p_item_name);
+	void _item_remove_cbk(int p_data_type, String p_item_name);
+	void _item_rename_cbk(int p_data_type, String p_item_name, Control *p_control);
+	void _item_rename_confirmed(int p_data_type, String p_item_name, Control *p_control);
+	void _item_rename_entered(String p_value, int p_data_type, String p_item_name, Control *p_control);
+	void _item_rename_canceled(int p_data_type, String p_item_name, Control *p_control);
+
+	void _color_item_changed(Color p_value, String p_item_name);
+	void _constant_item_changed(float p_value, String p_item_name);
+	void _font_size_item_changed(float p_value, String p_item_name);
+	void _edit_resource_item(RES p_resource, Control *p_editor);
+	void _font_item_changed(Ref<Font> p_value, String p_item_name);
+	void _icon_item_changed(Ref<Texture2D> p_value, String p_item_name);
+	void _stylebox_item_changed(Ref<StyleBox> p_value, String p_item_name);
+	void _pin_leading_stylebox(Ref<StyleBox> p_stylebox, String p_item_name);
+	void _unpin_leading_stylebox();
+	void _update_stylebox_from_leading();
+
+protected:
+	void _notification(int p_what);
+
+public:
+	void set_edited_theme(const Ref<Theme> &p_theme);
+	void select_type(String p_type_name);
+
+	ThemeTypeEditor();
+};
+
 class ThemeEditor : public VBoxContainer {
 	GDCLASS(ThemeEditor, VBoxContainer);
 
 	Ref<Theme> theme;
 
-	double time_left = 0;
+	Tabs *preview_tabs;
+	PanelContainer *preview_tabs_content;
+	Button *add_preview_button;
+	EditorFileDialog *preview_scene_dialog;
 
-	Button *theme_edit_button;
+	ThemeTypeEditor *theme_type_editor;
+
+	Label *theme_name;
 	ThemeItemEditorDialog *theme_edit_dialog;
 
-	Panel *main_panel;
-	MarginContainer *main_container;
-	Tree *test_tree;
-
+	void _theme_save_button_cbk(bool p_save_as);
 	void _theme_edit_button_cbk();
-	void _propagate_redraw(Control *p_at);
-	void _refresh_interval();
+
+	void _add_preview_button_cbk();
+	void _preview_scene_dialog_cbk(const String &p_path);
+	void _add_preview_tab(ThemeEditorPreview *p_preview_tab, const String &p_preview_name, const Ref<Texture2D> &p_icon);
+	void _change_preview_tab(int p_tab);
+	void _remove_preview_tab(int p_tab);
+	void _remove_preview_tab_invalid(Node *p_tab_control);
+	void _update_preview_tab(Node *p_tab_control);
+	void _preview_control_picked(String p_class_name);
 
 protected:
 	void _notification(int p_what);
-	static void _bind_methods();
 
 public:
 	void edit(const Ref<Theme> &p_theme);
+	Ref<Theme> get_edited_theme();
 
 	ThemeEditor();
 };

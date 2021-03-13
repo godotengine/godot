@@ -44,6 +44,7 @@ class Theme : public Resource {
 #ifdef TOOLS_ENABLED
 	friend class ThemeItemImportTree;
 	friend class ThemeItemEditorDialog;
+	friend class ThemeTypeEditor;
 #endif
 
 public:
