@@ -56,7 +56,7 @@ def configure(env):
     if env["target"] == "release":
         if env["optimize"] == "speed":  # optimize for speed (default)
             env.Prepend(CCFLAGS=["-O3"])
-        else:  # optimize for size
+        elif env["optimize"] == "size":  # optimize for size
             env.Prepend(CCFLAGS=["-Os"])
 
         if env["debug_symbols"]:
@@ -65,7 +65,7 @@ def configure(env):
     elif env["target"] == "release_debug":
         if env["optimize"] == "speed":  # optimize for speed (default)
             env.Prepend(CCFLAGS=["-O2"])
-        else:  # optimize for size
+        elif env["optimize"] == "size":  # optimize for size
             env.Prepend(CCFLAGS=["-Os"])
         env.Prepend(CPPDEFINES=["DEBUG_ENABLED"])
 
