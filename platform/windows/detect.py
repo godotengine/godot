@@ -72,6 +72,7 @@ def get_opts():
         BoolVariable("use_llvm", "Use the LLVM compiler", False),
         BoolVariable("use_thinlto", "Use ThinLTO", False),
         BoolVariable("use_static_cpp", "Link MinGW/MSVC C++ runtime libraries statically", True),
+        BoolVariable("use_asan", "Use address sanitizer (ASAN)", False),
     ]
 
 
@@ -305,6 +306,12 @@ def configure_msvc(env, manual_msvc_config):
     if manual_msvc_config:
         env.Prepend(CPPPATH=[p for p in os.getenv("INCLUDE").split(";")])
         env.Append(LIBPATH=[p for p in os.getenv("LIB").split(";")])
+
+    # Sanitizers
+    if env["use_asan"]:
+        env.extra_suffix += ".s"
+        env.Append(LINKFLAGS=["/INFERASANLIBS"])
+        env.Append(CCFLAGS=["/fsanitize=address"])
 
     # Incremental linking fix
     env["BUILDERS"]["ProgramOriginal"] = env["BUILDERS"]["Program"]
