@@ -233,7 +233,7 @@ public:
 	FUNC2(shader_set_code, RID, const String &)
 	FUNC1RC(String, shader_get_code, RID)
 
-	FUNC2C(shader_get_param_list, RID, List<PropertyInfo> *)
+	FUNC2SC(shader_get_param_list, RID, List<PropertyInfo> *)
 
 	FUNC3(shader_set_default_texture_param, RID, const StringName &, RID)
 	FUNC2RC(RID, shader_get_default_texture_param, RID, const StringName &)
