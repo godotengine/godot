@@ -91,7 +91,10 @@ GLuint RasterizerStorageGLES2::system_fbo = 0;
 
 // enable extensions manually for android and ios
 #ifndef UWP_ENABLED
+#ifndef WINDOWS_ENABLED
 #include <dlfcn.h> // needed to load extensions
+
+#endif // !WINDOWS_ENABLED
 #endif
 
 #ifdef IPHONE_ENABLED

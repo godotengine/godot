@@ -71,6 +71,7 @@ def get_opts():
         BoolVariable("use_llvm", "Use the LLVM compiler", False),
         BoolVariable("use_thinlto", "Use ThinLTO", False),
         BoolVariable("use_static_cpp", "Link MinGW/MSVC C++ runtime libraries statically", True),
+        BoolVariable("use_angle", "Build using ANGLE instead of native GL", False),
     ]
 
 
@@ -241,7 +242,6 @@ def configure_msvc(env, manual_msvc_config):
 
     LIBS = [
         "winmm",
-        "opengl32",
         "dsound",
         "kernel32",
         "ole32",
@@ -261,6 +261,16 @@ def configure_msvc(env, manual_msvc_config):
         "Avrt",
         "dwmapi",
     ]
+
+    if env["use_angle"]:
+        LIBS += ["libEGL.dll", "libGLESv2.dll"]
+        angle_include_dir = "#thirdparty/angle/include"
+        env.Prepend(CPPPATH=[angle_include_dir])
+        env.Append(LIBPATH=["#thirdparty/angle/out/Release"])
+        env.Append(CPPDEFINES=["GL_GLEXT_PROTOTYPES", "EGL_EGLEXT_PROTOTYPES", "ANGLE_ENABLED"])
+    else:
+        LIBS.append("opengl32")
+
     env.Append(LINKFLAGS=[p + env["LIBSUFFIX"] for p in LIBS])
 
     if manual_msvc_config:

@@ -103,7 +103,7 @@ out vec2 uv2_out; //tfb:ENABLE_UV2
 #endif
 
 #ifdef ENABLE_SKELETON
-out ivec4 bone_out; //tfb:ENABLE_SKELETON
+flat out ivec4 bone_out; //tfb:ENABLE_SKELETON
 out vec4 weight_out; //tfb:ENABLE_SKELETON
 #endif
 

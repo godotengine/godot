@@ -8,7 +8,6 @@ import platform_windows_builders
 
 common_win = [
     "godot_windows.cpp",
-    "context_gl_windows.cpp",
     "crash_handler_windows.cpp",
     "os_windows.cpp",
     "key_mapping_windows.cpp",
@@ -16,6 +15,11 @@ common_win = [
     "power_windows.cpp",
     "windows_terminal_logger.cpp",
 ]
+
+if env["use_angle"]:
+    common_win.append("context_gl_windows_angle.cpp")
+else:
+    common_win.append("context_gl_windows.cpp")
 
 res_file = "godot_res.rc"
 res_target = "godot_res" + env["OBJSUFFIX"]

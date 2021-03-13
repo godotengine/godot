@@ -31,7 +31,11 @@
 #ifndef OS_WINDOWS_H
 #define OS_WINDOWS_H
 
+#ifdef ANGLE_ENABLED
+#include "context_gl_windows_angle.h"
+#else
 #include "context_gl_windows.h"
+#endif
 #include "core/os/input.h"
 #include "core/os/os.h"
 #include "core/project_settings.h"

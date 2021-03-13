@@ -1,12 +1,12 @@
 /*************************************************************************/
-/*  platform_config.h                                                    */
+/*  context_gl_windows_angle.h                                           */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -28,14 +28,68 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#include <malloc.h>
-//#else
-//#include <alloca.h>
-//#endif
-#ifdef ANGLE_ENABLED
-#define GLES3_INCLUDE_H <GLES3/gl3.h>
-#define GLES2_INCLUDE_H <GLES3/gl3.h>
-#else
-#define GLES3_INCLUDE_H "thirdparty/glad/glad/glad.h"
-#define GLES2_INCLUDE_H "thirdparty/glad/glad/glad.h"
+#if defined(OPENGL_ENABLED) || defined(GLES_ENABLED)
+
+// Author: Juan Linietsky <reduzio@gmail.com>, (C) 2008
+
+#ifndef CONTEXT_GL_WIN_H
+#define CONTEXT_GL_WIN_H
+
+#include "core/error_list.h"
+#include "core/os/os.h"
+
+#include <windows.h>
+
+#include <EGL/egl.h>
+#include <EGL/eglext.h>
+
+typedef bool(APIENTRY *PFNWGLSWAPINTERVALEXTPROC)(int interval);
+typedef int(APIENTRY *PFNWGLGETSWAPINTERVALEXTPROC)(void);
+
+class ContextGL_Windows {
+
+	HDC hDC;
+	HGLRC hRC;
+	unsigned int pixel_format;
+	HWND hWnd;
+	bool opengl_3_context;
+	bool use_vsync;
+	bool vsync_via_compositor;
+
+	PFNWGLSWAPINTERVALEXTPROC wglSwapIntervalEXT;
+	PFNWGLGETSWAPINTERVALEXTPROC wglGetSwapIntervalEXT;
+
+	static bool should_vsync_via_compositor();
+
+public:
+	void release_current();
+
+	void make_current();
+
+	HDC get_hdc();
+	HGLRC get_hglrc();
+
+	int get_window_width();
+	int get_window_height();
+	void swap_buffers();
+
+	Error initialize();
+	void cleanup();
+
+	void set_use_vsync(bool p_use);
+	bool is_using_vsync() const;
+
+	ContextGL_Windows(HWND hwnd, bool p_opengl_3_context);
+	~ContextGL_Windows();
+
+private:
+	EGLDisplay mEglDisplay;
+	EGLContext mEglContext;
+	EGLSurface mEglSurface;
+
+	EGLint width;
+	EGLint height;
+};
+
+#endif
 #endif
