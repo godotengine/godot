@@ -218,6 +218,11 @@ void CodeEdit::_gui_input(const Ref<InputEvent> &p_gui_input) {
 	Ref<InputEventMouseButton> mb = p_gui_input;
 
 	if (mb.is_valid()) {
+		/* Ignore mouse clicks in IME input mode. */
+		if (has_ime_text()) {
+			return;
+		}
+
 		if (code_completion_active && code_completion_rect.has_point(mb->get_position())) {
 			if (!mb->is_pressed()) {
 				return;
@@ -248,6 +253,30 @@ void CodeEdit::_gui_input(const Ref<InputEvent> &p_gui_input) {
 		}
 		cancel_code_completion();
 		set_code_hint("");
+
+		if (mb->is_pressed()) {
+			Vector2i mpos = mb->get_position();
+			if (is_layout_rtl()) {
+				mpos.x = get_size().x - mpos.x;
+			}
+
+			int line, col;
+			_get_mouse_pos(Point2i(mpos.x, mpos.y), line, col);
+
+			if (mb->get_button_index() == MOUSE_BUTTON_LEFT) {
+				if (is_line_folded(line)) {
+					int wrap_index = get_line_wrap_index_at_col(line, col);
+					if (wrap_index == times_line_wraps(line)) {
+						int eol_icon_width = cache.folded_eol_icon->get_width();
+						int left_margin = get_total_gutter_width() + eol_icon_width + get_line_width(line, wrap_index) - get_h_scroll();
+						if (mpos.x > left_margin && mpos.x <= left_margin + eol_icon_width + 3) {
+							unfold_line(line);
+							return;
+						}
+					}
+				}
+			}
+		}
 	}
 
 	Ref<InputEventKey> k = p_gui_input;
@@ -356,6 +385,16 @@ void CodeEdit::_gui_input(const Ref<InputEvent> &p_gui_input) {
 		set_code_hint("");
 	}
 
+	/* Override input to unfold lines where needed. */
+	if (!is_readonly()) {
+		if (k->is_action("ui_text_newline_above", true) || k->is_action("ui_text_newline_blank", true) || k->is_action("ui_text_newline", true)) {
+			unfold_line(cursor_get_line());
+		}
+		if (cursor_get_line() > 0 && k->is_action("ui_text_backspace", true)) {
+			unfold_line(cursor_get_line() - 1);
+		}
+	}
+
 	/* Remove shift otherwise actions will not match. */
 	k = k->duplicate();
 	k->set_shift_pressed(false);
@@ -380,6 +419,21 @@ Control::CursorShape CodeEdit::get_cursor_shape(const Point2 &p_pos) const {
 	if ((code_completion_active && code_completion_rect.has_point(p_pos)) || (is_readonly() && (!is_selecting_enabled() || get_line_count() == 0))) {
 		return CURSOR_ARROW;
 	}
+
+	int line, col;
+	_get_mouse_pos(p_pos, line, col);
+
+	if (is_line_folded(line)) {
+		int wrap_index = get_line_wrap_index_at_col(line, col);
+		if (wrap_index == times_line_wraps(line)) {
+			int eol_icon_width = cache.folded_eol_icon->get_width();
+			int left_margin = get_total_gutter_width() + eol_icon_width + get_line_width(line, wrap_index) - get_h_scroll();
+			if (p_pos.x > left_margin && p_pos.x <= left_margin + eol_icon_width + 3) {
+				return CURSOR_POINTING_HAND;
+			}
+		}
+	}
+
 	return TextEdit::get_cursor_shape(p_pos);
 }
 
@@ -581,7 +635,7 @@ bool CodeEdit::is_drawing_fold_gutter() const {
 }
 
 void CodeEdit::_fold_gutter_draw_callback(int p_line, int p_gutter, Rect2 p_region) {
-	if (!can_fold(p_line) && !is_folded(p_line)) {
+	if (!can_fold_line(p_line) && !is_line_folded(p_line)) {
 		set_line_gutter_clickable(p_line, fold_gutter, false);
 		return;
 	}
@@ -593,11 +647,191 @@ void CodeEdit::_fold_gutter_draw_callback(int p_line, int p_gutter, Rect2 p_regi
 	p_region.position += Point2(horizontal_padding, vertical_padding);
 	p_region.size -= Point2(horizontal_padding, vertical_padding) * 2;
 
-	if (can_fold(p_line)) {
+	if (can_fold_line(p_line)) {
 		can_fold_icon->draw_rect(get_canvas_item(), p_region, false, folding_color);
 		return;
 	}
 	folded_icon->draw_rect(get_canvas_item(), p_region, false, folding_color);
+}
+
+/* Line Folding */
+void CodeEdit::set_line_folding_enabled(bool p_enabled) {
+	line_folding_enabled = p_enabled;
+	set_hiding_enabled(p_enabled);
+}
+
+bool CodeEdit::is_line_folding_enabled() const {
+	return line_folding_enabled;
+}
+
+bool CodeEdit::can_fold_line(int p_line) const {
+	ERR_FAIL_INDEX_V(p_line, get_line_count(), false);
+	if (!line_folding_enabled) {
+		return false;
+	}
+
+	if (p_line + 1 >= get_line_count() || get_line(p_line).strip_edges().size() == 0) {
+		return false;
+	}
+
+	if (is_line_hidden(p_line) || is_line_folded(p_line)) {
+		return false;
+	}
+
+	/* Check for full multiline line or block strings / comments. */
+	int in_comment = is_in_comment(p_line);
+	int in_string = (in_comment == -1) ? is_in_string(p_line) : -1;
+	if (in_string != -1 || in_comment != -1) {
+		if (get_delimiter_start_position(p_line, get_line(p_line).size() - 1).y != p_line) {
+			return false;
+		}
+
+		int delimter_end_line = get_delimiter_end_position(p_line, get_line(p_line).size() - 1).y;
+		/* No end line, therefore we have a multiline region over the rest of the file. */
+		if (delimter_end_line == -1) {
+			return true;
+		}
+		/* End line is the same therefore we have a block. */
+		if (delimter_end_line == p_line) {
+			/* Check we are the start of the block. */
+			if (p_line - 1 >= 0) {
+				if ((in_string != -1 && is_in_string(p_line - 1) != -1) || (in_comment != -1 && is_in_comment(p_line - 1) != -1)) {
+					return false;
+				}
+			}
+			/* Check it continues for at least one line. */
+			return ((in_string != -1 && is_in_string(p_line + 1) != -1) || (in_comment != -1 && is_in_comment(p_line + 1) != -1));
+		}
+		return ((in_string != -1 && is_in_string(delimter_end_line) != -1) || (in_comment != -1 && is_in_comment(delimter_end_line) != -1));
+	}
+
+	/* Otherwise check indent levels. */
+	int start_indent = get_indent_level(p_line);
+	for (int i = p_line + 1; i < get_line_count(); i++) {
+		if (is_in_string(i) != -1 || is_in_comment(i) != -1 || get_line(i).strip_edges().size() == 0) {
+			continue;
+		}
+		return (get_indent_level(i) > start_indent);
+	}
+	return false;
+}
+
+void CodeEdit::fold_line(int p_line) {
+	ERR_FAIL_INDEX(p_line, get_line_count());
+	if (!is_line_folding_enabled() || !can_fold_line(p_line)) {
+		return;
+	}
+
+	/* Find the last line to be hidden. */
+	int end_line = get_line_count();
+
+	int in_comment = is_in_comment(p_line);
+	int in_string = (in_comment == -1) ? is_in_string(p_line) : -1;
+	if (in_string != -1 || in_comment != -1) {
+		end_line = get_delimiter_end_position(p_line, get_line(p_line).size() - 1).y;
+		/* End line is the same therefore we have a block. */
+		if (end_line == p_line) {
+			for (int i = p_line + 1; i < get_line_count(); i++) {
+				if ((in_string != -1 && is_in_string(i) == -1) || (in_comment != -1 && is_in_comment(i) == -1)) {
+					end_line = i - 1;
+					break;
+				}
+			}
+		}
+	} else {
+		int start_indent = get_indent_level(p_line);
+		for (int i = p_line + 1; i < get_line_count(); i++) {
+			if (get_line(p_line).strip_edges().size() == 0 || is_in_string(i) != -1 || is_in_comment(i) != -1) {
+				end_line = i;
+				continue;
+			}
+
+			if (get_indent_level(i) <= start_indent && get_line(i).strip_edges().size() != 0) {
+				end_line = i - 1;
+				break;
+			}
+		}
+	}
+
+	for (int i = p_line + 1; i <= end_line; i++) {
+		set_line_as_hidden(i, true);
+	}
+
+	/* Fix selection. */
+	if (is_selection_active()) {
+		if (is_line_hidden(get_selection_from_line()) && is_line_hidden(get_selection_to_line())) {
+			deselect();
+		} else if (is_line_hidden(get_selection_from_line())) {
+			select(p_line, 9999, get_selection_to_line(), get_selection_to_column());
+		} else if (is_line_hidden(get_selection_to_line())) {
+			select(get_selection_from_line(), get_selection_from_column(), p_line, 9999);
+		}
+	}
+
+	/* Reset caret. */
+	if (is_line_hidden(cursor_get_line())) {
+		cursor_set_line(p_line, false, false);
+		cursor_set_column(get_line(p_line).length(), false);
+	}
+	update();
+}
+
+void CodeEdit::unfold_line(int p_line) {
+	ERR_FAIL_INDEX(p_line, get_line_count());
+	if (!is_line_folded(p_line) && !is_line_hidden(p_line)) {
+		return;
+	}
+
+	int fold_start = p_line;
+	for (; fold_start > 0; fold_start--) {
+		if (is_line_folded(fold_start)) {
+			break;
+		}
+	}
+	fold_start = is_line_folded(fold_start) ? fold_start : p_line;
+
+	for (int i = fold_start + 1; i < get_line_count(); i++) {
+		if (!is_line_hidden(i)) {
+			break;
+		}
+		set_line_as_hidden(i, false);
+	}
+	update();
+}
+
+void CodeEdit::fold_all_lines() {
+	for (int i = 0; i < get_line_count(); i++) {
+		fold_line(i);
+	}
+	update();
+}
+
+void CodeEdit::unfold_all_lines() {
+	unhide_all_lines();
+}
+
+void CodeEdit::toggle_foldable_line(int p_line) {
+	ERR_FAIL_INDEX(p_line, get_line_count());
+	if (is_line_folded(p_line)) {
+		unfold_line(p_line);
+		return;
+	}
+	fold_line(p_line);
+}
+
+bool CodeEdit::is_line_folded(int p_line) const {
+	ERR_FAIL_INDEX_V(p_line, get_line_count(), false);
+	return p_line + 1 < get_line_count() && !is_line_hidden(p_line) && is_line_hidden(p_line + 1);
+}
+
+TypedArray<int> CodeEdit::get_folded_lines() const {
+	TypedArray<int> folded_lines;
+	for (int i = 0; i < get_line_count(); i++) {
+		if (is_line_folded(i)) {
+			folded_lines.push_back(i);
+		}
+	}
+	return folded_lines;
 }
 
 /* Delimiters */
@@ -1094,6 +1328,21 @@ void CodeEdit::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_draw_fold_gutter", "enable"), &CodeEdit::set_draw_fold_gutter);
 	ClassDB::bind_method(D_METHOD("is_drawing_fold_gutter"), &CodeEdit::is_drawing_fold_gutter);
 
+	/* Line folding */
+	ClassDB::bind_method(D_METHOD("set_line_folding_enabled", "enabled"), &CodeEdit::set_line_folding_enabled);
+	ClassDB::bind_method(D_METHOD("is_line_folding_enabled"), &CodeEdit::is_line_folding_enabled);
+
+	ClassDB::bind_method(D_METHOD("can_fold_line", "line"), &CodeEdit::can_fold_line);
+
+	ClassDB::bind_method(D_METHOD("fold_line", "line"), &CodeEdit::fold_line);
+	ClassDB::bind_method(D_METHOD("unfold_line", "line"), &CodeEdit::unfold_line);
+	ClassDB::bind_method(D_METHOD("fold_all_lines"), &CodeEdit::fold_all_lines);
+	ClassDB::bind_method(D_METHOD("unfold_all_lines"), &CodeEdit::unfold_all_lines);
+	ClassDB::bind_method(D_METHOD("toggle_foldable_line", "line"), &CodeEdit::toggle_foldable_line);
+
+	ClassDB::bind_method(D_METHOD("is_line_folded", "line"), &CodeEdit::is_line_folded);
+	ClassDB::bind_method(D_METHOD("get_folded_lines"), &CodeEdit::get_folded_lines);
+
 	/* Delimiters */
 	// Strings
 	ClassDB::bind_method(D_METHOD("add_string_delimiter", "start_key", "end_key", "line_only"), &CodeEdit::add_string_delimiter, DEFVAL(false));
@@ -1175,6 +1424,8 @@ void CodeEdit::_bind_methods() {
 
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "draw_fold_gutter"), "set_draw_fold_gutter", "is_drawing_fold_gutter");
 
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "line_folding"), "set_line_folding_enabled", "is_line_folding_enabled");
+
 	ADD_GROUP("Delimiters", "delimiter_");
 	ADD_PROPERTY(PropertyInfo(Variant::PACKED_STRING_ARRAY, "delimiter_strings"), "set_string_delimiters", "get_string_delimiters");
 	ADD_PROPERTY(PropertyInfo(Variant::PACKED_STRING_ARRAY, "delimiter_comments"), "set_comment_delimiters", "get_comment_delimiters");
@@ -1205,9 +1456,9 @@ void CodeEdit::_gutter_clicked(int p_line, int p_gutter) {
 	}
 
 	if (p_gutter == fold_gutter) {
-		if (is_folded(p_line)) {
+		if (is_line_folded(p_line)) {
 			unfold_line(p_line);
-		} else if (can_fold(p_line)) {
+		} else if (can_fold_line(p_line)) {
 			fold_line(p_line);
 		}
 		return;
