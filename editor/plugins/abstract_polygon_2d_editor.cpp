@@ -686,12 +686,12 @@ void AbstractPolygon2DEditor::edit(Node *p_polygon) {
 		edited_point = PosVertex();
 		hover_point = Vertex();
 		selected_point = Vertex();
-
-		canvas_item_editor->update_viewport();
 	} else {
 
 		_set_node(NULL);
 	}
+
+	canvas_item_editor->update_viewport();
 }
 
 void AbstractPolygon2DEditor::_bind_methods() {
