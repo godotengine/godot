@@ -328,7 +328,7 @@ Ref<Script> CSharpLanguage::get_template(const String &p_class_name, const Strin
 	String script_template = "using " BINDINGS_NAMESPACE ";\n"
 							 "using System;\n"
 							 "\n"
-							 "public class %CLASS% : %BASE%\n"
+							 "public partial class %CLASS% : %BASE%\n"
 							 "{\n"
 							 "    // Declare member variables here. Examples:\n"
 							 "    // private int a = 2;\n"
