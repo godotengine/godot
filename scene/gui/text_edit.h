@@ -124,7 +124,7 @@ private:
 		void set_draw_control_chars(bool p_draw_control_chars);
 
 		int get_line_height(int p_line, int p_wrap_index) const;
-		int get_line_width(int p_line) const;
+		int get_line_width(int p_line, int p_wrap_index = -1) const;
 		int get_max_width(bool p_exclude_hidden = false) const;
 
 		void set_width(float p_width);
@@ -349,11 +349,8 @@ private:
 
 	void update_cursor_wrap_offset();
 	void _update_wrap_at(bool p_force = false);
-	bool line_wraps(int line) const;
-	int times_line_wraps(int line) const;
 	Vector<String> get_wrap_rows_text(int p_line) const;
 	int get_cursor_wrap_index() const;
-	int get_line_wrap_index_at_col(int p_line, int p_column) const;
 	int get_char_count();
 
 	double get_scroll_pos_for_line(int p_line, int p_wrap_index = 0) const;
@@ -514,6 +511,7 @@ public:
 
 	void set_gutter_width(int p_gutter, int p_width);
 	int get_gutter_width(int p_gutter) const;
+	int get_total_gutter_width() const;
 
 	void set_gutter_draw(int p_gutter, bool p_draw);
 	bool is_gutter_drawn(int p_gutter) const;
@@ -622,24 +620,19 @@ public:
 	void insert_text_at_cursor(const String &p_text);
 	void insert_at(const String &p_text, int at);
 	int get_line_count() const;
+	int get_line_width(int p_line, int p_wrap_offset = -1) const;
+	int get_line_wrap_index_at_col(int p_line, int p_column) const;
 
 	void set_line_as_hidden(int p_line, bool p_hidden);
 	bool is_line_hidden(int p_line) const;
-	void fold_all_lines();
 	void unhide_all_lines();
 	int num_lines_from(int p_line_from, int visible_amount) const;
 	int num_lines_from_rows(int p_line_from, int p_wrap_index_from, int visible_amount, int &wrap_index) const;
 	int get_last_unhidden_line() const;
 
-	bool can_fold(int p_line) const;
-	bool is_folded(int p_line) const;
-	Vector<int> get_folded_lines() const;
-	void fold_line(int p_line);
-	void unfold_line(int p_line);
-	void toggle_fold_line(int p_line);
-
 	String get_text();
 	String get_line(int line) const;
+	bool has_ime_text() const;
 	void set_line(int line, String new_text);
 	int get_row_height() const;
 	void backspace_at_cursor();
@@ -701,6 +694,8 @@ public:
 
 	void set_wrap_enabled(bool p_wrap_enabled);
 	bool is_wrap_enabled() const;
+	bool line_wraps(int line) const;
+	int times_line_wraps(int line) const;
 
 	void clear();
 

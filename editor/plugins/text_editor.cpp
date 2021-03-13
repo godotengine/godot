@@ -332,7 +332,7 @@ void TextEditor::_edit_option(int p_op) {
 			code_editor->clone_lines_down();
 		} break;
 		case EDIT_TOGGLE_FOLD_LINE: {
-			tx->toggle_fold_line(tx->cursor_get_line());
+			tx->toggle_foldable_line(tx->cursor_get_line());
 			tx->update();
 		} break;
 		case EDIT_FOLD_ALL_LINES: {
@@ -432,8 +432,8 @@ void TextEditor::_text_edit_gui_input(const Ref<InputEvent> &ev) {
 			tx->_get_mouse_pos(mb->get_global_position() - tx->get_global_position(), row, col);
 
 			tx->set_right_click_moves_caret(EditorSettings::get_singleton()->get("text_editor/cursor/right_click_moves_caret"));
-			bool can_fold = tx->can_fold(row);
-			bool is_folded = tx->is_folded(row);
+			bool can_fold = tx->can_fold_line(row);
+			bool is_folded = tx->is_line_folded(row);
 
 			if (tx->is_right_click_moving_caret()) {
 				if (tx->is_selection_active()) {
@@ -463,7 +463,7 @@ void TextEditor::_text_edit_gui_input(const Ref<InputEvent> &ev) {
 	if (k.is_valid() && k->is_pressed() && k->get_keycode() == KEY_MENU) {
 		CodeEdit *tx = code_editor->get_text_editor();
 		int line = tx->cursor_get_line();
-		_make_context_menu(tx->is_selection_active(), tx->can_fold(line), tx->is_folded(line), (get_global_transform().inverse() * tx->get_global_transform()).xform(tx->_get_cursor_pixel_pos()));
+		_make_context_menu(tx->is_selection_active(), tx->can_fold_line(line), tx->is_line_folded(line), (get_global_transform().inverse() * tx->get_global_transform()).xform(tx->_get_cursor_pixel_pos()));
 		context_menu->grab_focus();
 	}
 }

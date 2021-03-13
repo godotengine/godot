@@ -98,6 +98,9 @@ private:
 	void _gutter_clicked(int p_line, int p_gutter);
 	void _update_gutter_indexes();
 
+	/* Line Folding */
+	bool line_folding_enabled = true;
+
 	/* Delimiters */
 	enum DelimiterType {
 		TYPE_STRING,
@@ -240,6 +243,21 @@ public:
 	/* Fold gutter */
 	void set_draw_fold_gutter(bool p_draw);
 	bool is_drawing_fold_gutter() const;
+
+	/* Line Folding */
+	void set_line_folding_enabled(bool p_enabled);
+	bool is_line_folding_enabled() const;
+
+	bool can_fold_line(int p_line) const;
+
+	void fold_line(int p_line);
+	void unfold_line(int p_line);
+	void fold_all_lines();
+	void unfold_all_lines();
+	void toggle_foldable_line(int p_line);
+
+	bool is_line_folded(int p_line) const;
+	TypedArray<int> get_folded_lines() const;
 
 	/* Delimiters */
 	void add_string_delimiter(const String &p_start_key, const String &p_end_key, bool p_line_only = false);

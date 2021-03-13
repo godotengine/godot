@@ -137,8 +137,11 @@ void TextEdit::Text::set_draw_control_chars(bool p_draw_control_chars) {
 	draw_control_chars = p_draw_control_chars;
 }
 
-int TextEdit::Text::get_line_width(int p_line) const {
+int TextEdit::Text::get_line_width(int p_line, int p_wrap_index) const {
 	ERR_FAIL_INDEX_V(p_line, text.size(), 0);
+	if (p_wrap_index != -1) {
+		return text[p_line].data_buf->get_line_width(p_wrap_index);
+	}
 	return text[p_line].data_buf->get_size().x;
 }
 
@@ -1354,7 +1357,8 @@ void TextEdit::_notification(int p_what) {
 						}
 					}
 
-					if (line_wrap_index == line_wrap_amount && is_folded(line)) {
+					// is_line_folded
+					if (line_wrap_index == line_wrap_amount && line < text.size() - 1 && is_line_hidden(line + 1)) {
 						int xofs = char_ofs + char_margin + ofs_x + (cache.folded_eol_icon->get_width() / 2);
 						if (xofs >= xmargin_beg && xofs < xmargin_end) {
 							int yofs = (text_height - cache.folded_eol_icon->get_height()) / 2 - ldata->get_line_ascent(line_wrap_index);
@@ -1943,10 +1947,6 @@ void TextEdit::_new_line(bool p_split_current_line, bool p_above) {
 		}
 	}
 
-	if (is_folded(cursor.line)) {
-		unfold_line(cursor.line);
-	}
-
 	bool brace_indent = false;
 
 	// No need to indent if we are going upwards.
@@ -2361,10 +2361,6 @@ void TextEdit::_backspace(bool p_word, bool p_all_to_left) {
 		cursor_set_line(line, false);
 		cursor_set_column(column);
 	} else {
-		// One character.
-		if (cursor.line > 0 && is_line_hidden(cursor.line - 1)) {
-			unfold_line(cursor.line - 1);
-		}
 		backspace_at_cursor();
 	}
 }
@@ -2690,15 +2686,6 @@ void TextEdit::_gui_input(const Ref<InputEvent> &p_gui_input) {
 					}
 
 					left_margin += gutters[i].width;
-				}
-
-				// Unfold on folded icon click.
-				if (is_folded(row)) {
-					left_margin += gutter_padding + text.get_line_width(row) - cursor.x_ofs;
-					if (mpos.x > left_margin && mpos.x <= left_margin + cache.folded_eol_icon->get_width() + 3) {
-						unfold_line(row);
-						return;
-					}
 				}
 
 				// minimap
@@ -3703,10 +3690,6 @@ void TextEdit::center_viewport_to_cursor() {
 	scrolling = false;
 	minimap_clicked = false;
 
-	if (is_line_hidden(cursor.line)) {
-		unfold_line(cursor.line);
-	}
-
 	set_line_as_center_visible(cursor.line, get_cursor_wrap_index());
 	int visible_width = get_size().width - cache.style_normal->get_minimum_size().width - gutters_width - gutter_padding - cache.minimap_width;
 	if (v_scroll->is_visible_in_tree()) {
@@ -4124,15 +4107,6 @@ Control::CursorShape TextEdit::get_cursor_shape(const Point2 &p_pos) const {
 	if (draw_minimap && p_pos.x > xmargin_end - minimap_width && p_pos.x <= xmargin_end) {
 		return CURSOR_ARROW;
 	}
-
-	// EOL fold icon.
-	if (is_folded(row)) {
-		gutter += gutter_padding + text.get_line_width(row) - cursor.x_ofs;
-		if (p_pos.x > gutter - 3 && p_pos.x <= gutter + cache.folded_eol_icon->get_width() + 3) {
-			return CURSOR_POINTING_HAND;
-		}
-	}
-
 	return get_default_cursor_shape();
 }
 
@@ -4318,6 +4292,10 @@ String TextEdit::get_line(int line) const {
 	return text[line];
 };
 
+bool TextEdit::has_ime_text() const {
+	return !ime_text.is_empty();
+}
+
 void TextEdit::_clear() {
 	clear_undo_history();
 	text.clear();
@@ -4404,7 +4382,7 @@ void TextEdit::_update_caches() {
 	cache.selection_color = get_theme_color("selection_color");
 	cache.current_line_color = get_theme_color("current_line_color");
 	cache.line_length_guideline_color = get_theme_color("line_length_guideline_color");
-	cache.code_folding_color = get_theme_color("code_folding_color");
+	cache.code_folding_color = get_theme_color("code_folding_color", "CodeEdit");
 	cache.brace_mismatch_color = get_theme_color("brace_mismatch_color");
 	cache.word_highlighted_color = get_theme_color("word_highlighted_color");
 	cache.search_result_color = get_theme_color("search_result_color");
@@ -4417,7 +4395,7 @@ void TextEdit::_update_caches() {
 #endif
 	cache.tab_icon = get_theme_icon("tab");
 	cache.space_icon = get_theme_icon("space");
-	cache.folded_eol_icon = get_theme_icon("GuiEllipsis", "EditorIcons");
+	cache.folded_eol_icon = get_theme_icon("folded_eol_icon", "CodeEdit");
 
 	TextServer::Direction dir;
 	if (text_direction == Control::TEXT_DIRECTION_INHERITED) {
@@ -4524,6 +4502,10 @@ void TextEdit::set_gutter_width(int p_gutter, int p_width) {
 int TextEdit::get_gutter_width(int p_gutter) const {
 	ERR_FAIL_INDEX_V(p_gutter, gutters.size(), -1);
 	return gutters[p_gutter].width;
+}
+
+int TextEdit::get_total_gutter_width() const {
+	return gutters_width + gutter_padding;
 }
 
 void TextEdit::set_gutter_draw(int p_gutter, bool p_draw) {
@@ -5107,14 +5089,6 @@ bool TextEdit::is_line_hidden(int p_line) const {
 	return text.is_hidden(p_line);
 }
 
-void TextEdit::fold_all_lines() {
-	for (int i = 0; i < text.size(); i++) {
-		fold_line(i);
-	}
-	_update_scrollbars();
-	update();
-}
-
 void TextEdit::unhide_all_lines() {
 	for (int i = 0; i < text.size(); i++) {
 		text.set_hidden(i, false);
@@ -5262,149 +5236,12 @@ bool TextEdit::is_line_comment(int p_line) const {
 	return false;
 }
 
-bool TextEdit::can_fold(int p_line) const {
-	ERR_FAIL_INDEX_V(p_line, text.size(), false);
-	if (!is_hiding_enabled()) {
-		return false;
-	}
-	if (p_line + 1 >= text.size()) {
-		return false;
-	}
-	if (text[p_line].strip_edges().size() == 0) {
-		return false;
-	}
-	if (is_folded(p_line)) {
-		return false;
-	}
-	if (is_line_hidden(p_line)) {
-		return false;
-	}
-	if (is_line_comment(p_line)) {
-		return false;
-	}
-
-	int start_indent = get_indent_level(p_line);
-
-	for (int i = p_line + 1; i < text.size(); i++) {
-		if (text[i].strip_edges().size() == 0) {
-			continue;
-		}
-		int next_indent = get_indent_level(i);
-		if (is_line_comment(i)) {
-			continue;
-		} else if (next_indent > start_indent) {
-			return true;
-		} else {
-			return false;
-		}
-	}
-
-	return false;
-}
-
-bool TextEdit::is_folded(int p_line) const {
-	ERR_FAIL_INDEX_V(p_line, text.size(), false);
-	if (p_line + 1 >= text.size()) {
-		return false;
-	}
-	return !is_line_hidden(p_line) && is_line_hidden(p_line + 1);
-}
-
-Vector<int> TextEdit::get_folded_lines() const {
-	Vector<int> folded_lines;
-
-	for (int i = 0; i < text.size(); i++) {
-		if (is_folded(i)) {
-			folded_lines.push_back(i);
-		}
-	}
-	return folded_lines;
-}
-
-void TextEdit::fold_line(int p_line) {
-	ERR_FAIL_INDEX(p_line, text.size());
-	if (!is_hiding_enabled()) {
-		return;
-	}
-	if (!can_fold(p_line)) {
-		return;
-	}
-
-	// Hide lines below this one.
-	int start_indent = get_indent_level(p_line);
-	int last_line = start_indent;
-	for (int i = p_line + 1; i < text.size(); i++) {
-		if (text[i].strip_edges().size() != 0) {
-			if (is_line_comment(i)) {
-				continue;
-			} else if (get_indent_level(i) > start_indent) {
-				last_line = i;
-			} else {
-				break;
-			}
-		}
-	}
-	for (int i = p_line + 1; i <= last_line; i++) {
-		set_line_as_hidden(i, true);
-	}
-
-	// Fix selection.
-	if (is_selection_active()) {
-		if (is_line_hidden(selection.from_line) && is_line_hidden(selection.to_line)) {
-			deselect();
-		} else if (is_line_hidden(selection.from_line)) {
-			select(p_line, 9999, selection.to_line, selection.to_column);
-		} else if (is_line_hidden(selection.to_line)) {
-			select(selection.from_line, selection.from_column, p_line, 9999);
-		}
-	}
-
-	// Reset cursor.
-	if (is_line_hidden(cursor.line)) {
-		cursor_set_line(p_line, false, false);
-		cursor_set_column(get_line(p_line).length(), false);
-	}
-	_update_scrollbars();
-	update();
-}
-
-void TextEdit::unfold_line(int p_line) {
-	ERR_FAIL_INDEX(p_line, text.size());
-
-	if (!is_folded(p_line) && !is_line_hidden(p_line)) {
-		return;
-	}
-	int fold_start;
-	for (fold_start = p_line; fold_start > 0; fold_start--) {
-		if (is_folded(fold_start)) {
-			break;
-		}
-	}
-	fold_start = is_folded(fold_start) ? fold_start : p_line;
-
-	for (int i = fold_start + 1; i < text.size(); i++) {
-		if (is_line_hidden(i)) {
-			set_line_as_hidden(i, false);
-		} else {
-			break;
-		}
-	}
-	_update_scrollbars();
-	update();
-}
-
-void TextEdit::toggle_fold_line(int p_line) {
-	ERR_FAIL_INDEX(p_line, text.size());
-
-	if (!is_folded(p_line)) {
-		fold_line(p_line);
-	} else {
-		unfold_line(p_line);
-	}
-}
-
 int TextEdit::get_line_count() const {
 	return text.size();
+}
+
+int TextEdit::get_line_width(int p_line, int p_wrap_offset) const {
+	return text.get_line_width(p_line, p_wrap_offset);
 }
 
 void TextEdit::_do_text_op(const TextOperation &p_op, bool p_reverse) {
@@ -6270,18 +6107,6 @@ void TextEdit::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_draw_spaces"), &TextEdit::set_draw_spaces);
 	ClassDB::bind_method(D_METHOD("is_drawing_spaces"), &TextEdit::is_drawing_spaces);
 
-	ClassDB::bind_method(D_METHOD("set_hiding_enabled", "enable"), &TextEdit::set_hiding_enabled);
-	ClassDB::bind_method(D_METHOD("is_hiding_enabled"), &TextEdit::is_hiding_enabled);
-	ClassDB::bind_method(D_METHOD("set_line_as_hidden", "line", "enable"), &TextEdit::set_line_as_hidden);
-	ClassDB::bind_method(D_METHOD("is_line_hidden", "line"), &TextEdit::is_line_hidden);
-	ClassDB::bind_method(D_METHOD("fold_all_lines"), &TextEdit::fold_all_lines);
-	ClassDB::bind_method(D_METHOD("unhide_all_lines"), &TextEdit::unhide_all_lines);
-	ClassDB::bind_method(D_METHOD("fold_line", "line"), &TextEdit::fold_line);
-	ClassDB::bind_method(D_METHOD("unfold_line", "line"), &TextEdit::unfold_line);
-	ClassDB::bind_method(D_METHOD("toggle_fold_line", "line"), &TextEdit::toggle_fold_line);
-	ClassDB::bind_method(D_METHOD("can_fold", "line"), &TextEdit::can_fold);
-	ClassDB::bind_method(D_METHOD("is_folded", "line"), &TextEdit::is_folded);
-
 	ClassDB::bind_method(D_METHOD("set_highlight_all_occurrences", "enable"), &TextEdit::set_highlight_all_occurrences);
 	ClassDB::bind_method(D_METHOD("is_highlight_all_occurrences_enabled"), &TextEdit::is_highlight_all_occurrences_enabled);
 
@@ -6365,7 +6190,6 @@ void TextEdit::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "selecting_enabled"), "set_selecting_enabled", "is_selecting_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "smooth_scrolling"), "set_smooth_scroll_enable", "is_smooth_scroll_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "v_scroll_speed"), "set_v_scroll_speed", "get_v_scroll_speed");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "hiding_enabled"), "set_hiding_enabled", "is_hiding_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "wrap_enabled"), "set_wrap_enabled", "is_wrap_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "scroll_vertical"), "set_v_scroll", "get_v_scroll");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "scroll_horizontal"), "set_h_scroll", "get_h_scroll");

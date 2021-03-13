@@ -18,15 +18,6 @@
 			<description>
 			</description>
 		</method>
-		<method name="can_fold" qualifiers="const">
-			<return type="bool">
-			</return>
-			<argument index="0" name="line" type="int">
-			</argument>
-			<description>
-				Returns if the given line is foldable, that is, it has indented lines right below it.
-			</description>
-		</method>
 		<method name="center_viewport_to_cursor">
 			<return type="void">
 			</return>
@@ -95,7 +86,7 @@
 			<description>
 				Moves the cursor at the specified [code]line[/code] index.
 				If [code]adjust_viewport[/code] is set to [code]true[/code], the viewport will center at the cursor position after the move occurs.
-				If [code]can_be_hidden[/code] is set to [code]true[/code], the specified [code]line[/code] can be hidden using [method set_line_as_hidden].
+				If [code]can_be_hidden[/code] is set to [code]true[/code], the specified [code]line[/code] can be hidden.
 			</description>
 		</method>
 		<method name="cut">
@@ -110,22 +101,6 @@
 			</return>
 			<description>
 				Deselects the current selection.
-			</description>
-		</method>
-		<method name="fold_all_lines">
-			<return type="void">
-			</return>
-			<description>
-				Folds all lines that are possible to be folded (see [method can_fold]).
-			</description>
-		</method>
-		<method name="fold_line">
-			<return type="void">
-			</return>
-			<argument index="0" name="line" type="int">
-			</argument>
-			<description>
-				Folds the given line, if possible (see [method can_fold]).
 			</description>
 		</method>
 		<method name="get_caret_draw_pos" qualifiers="const">
@@ -329,15 +304,6 @@
 				Returns [code]true[/code] if the caret is visible on the screen.
 			</description>
 		</method>
-		<method name="is_folded" qualifiers="const">
-			<return type="bool">
-			</return>
-			<argument index="0" name="line" type="int">
-			</argument>
-			<description>
-				Returns whether the line at the specified index is folded or not.
-			</description>
-		</method>
 		<method name="is_gutter_clickable" qualifiers="const">
 			<return type="bool">
 			</return>
@@ -370,15 +336,6 @@
 			<argument index="1" name="gutter" type="int">
 			</argument>
 			<description>
-			</description>
-		</method>
-		<method name="is_line_hidden" qualifiers="const">
-			<return type="bool">
-			</return>
-			<argument index="0" name="line" type="int">
-			</argument>
-			<description>
-				Returns whether the line at the specified index is hidden or not.
 			</description>
 		</method>
 		<method name="is_selection_active" qualifiers="const">
@@ -560,17 +517,6 @@
 				Sets the text for a specific line.
 			</description>
 		</method>
-		<method name="set_line_as_hidden">
-			<return type="void">
-			</return>
-			<argument index="0" name="line" type="int">
-			</argument>
-			<argument index="1" name="enable" type="bool">
-			</argument>
-			<description>
-				If [code]true[/code], hides the line of the specified index.
-			</description>
-		</method>
 		<method name="set_line_background_color">
 			<return type="void">
 			</return>
@@ -665,36 +611,11 @@
 			<description>
 			</description>
 		</method>
-		<method name="toggle_fold_line">
-			<return type="void">
-			</return>
-			<argument index="0" name="line" type="int">
-			</argument>
-			<description>
-				Toggle the folding of the code block at the given line.
-			</description>
-		</method>
 		<method name="undo">
 			<return type="void">
 			</return>
 			<description>
 				Perform undo operation.
-			</description>
-		</method>
-		<method name="unfold_line">
-			<return type="void">
-			</return>
-			<argument index="0" name="line" type="int">
-			</argument>
-			<description>
-				Unfolds the given line, if folded.
-			</description>
-		</method>
-		<method name="unhide_all_lines">
-			<return type="void">
-			</return>
-			<description>
-				Unhide all lines that were previously set to hidden by [method set_line_as_hidden].
 			</description>
 		</method>
 	</methods>
@@ -730,9 +651,6 @@
 			If [code]true[/code], the "tab" character will have a visible representation.
 		</member>
 		<member name="focus_mode" type="int" setter="set_focus_mode" getter="get_focus_mode" override="true" enum="Control.FocusMode" default="2" />
-		<member name="hiding_enabled" type="bool" setter="set_hiding_enabled" getter="is_hiding_enabled" default="false">
-			If [code]true[/code], all lines that have been set to hidden by [method set_line_as_hidden], will not be visible.
-		</member>
 		<member name="highlight_all_occurrences" type="bool" setter="set_highlight_all_occurrences" getter="is_highlight_all_occurrences_enabled" default="false">
 			If [code]true[/code], all occurrences of the selected text will be highlighted.
 		</member>
@@ -971,8 +889,6 @@
 		<theme_item name="caret_background_color" type="Color" default="Color( 0, 0, 0, 1 )">
 		</theme_item>
 		<theme_item name="caret_color" type="Color" default="Color( 0.88, 0.88, 0.88, 1 )">
-		</theme_item>
-		<theme_item name="code_folding_color" type="Color" default="Color( 0.8, 0.8, 0.8, 0.8 )">
 		</theme_item>
 		<theme_item name="current_line_color" type="Color" default="Color( 0.25, 0.25, 0.26, 0.8 )">
 			Sets the [Color] of the breakpoints. [member breakpoint_gutter] has to be enabled.
