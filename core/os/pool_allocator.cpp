@@ -136,7 +136,7 @@ void PoolAllocator::compact_up(int p_from) {
 	for (int i = entry_count - 1; i >= p_from; i--) {
 		Entry &entry = entry_array[entry_indices[i]];
 
-		/* determine hole size to nextious entry */
+		/* determine hole size for next entry */
 
 		int hole_size = next_entry_end_pos - (entry.pos + aligned(entry.len));
 

@@ -1075,7 +1075,7 @@ ParticlesMaterial::SubEmitterMode ParticlesMaterial::get_sub_emitter_mode() cons
 
 void ParticlesMaterial::set_sub_emitter_frequency(float p_frequency) {
 	sub_emitter_frequency = p_frequency;
-	RenderingServer::get_singleton()->material_set_param(_get_material(), shader_names->sub_emitter_frequency, 1.0 / p_frequency); //pas delta instead of frequency, since its easier to compute
+	RenderingServer::get_singleton()->material_set_param(_get_material(), shader_names->sub_emitter_frequency, 1.0 / p_frequency); //pass delta instead of frequency, since its easier to compute
 }
 float ParticlesMaterial::get_sub_emitter_frequency() const {
 	return sub_emitter_frequency;

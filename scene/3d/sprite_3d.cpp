@@ -692,7 +692,7 @@ void AnimatedSprite3D::_draw() {
 
 	Ref<Texture2D> texture = frames->get_frame(animation, frame);
 	if (!texture.is_valid()) {
-		return; //no texuture no life
+		return; //no texture no life
 	}
 	Vector2 tsize = texture->get_size();
 	if (tsize.x == 0 || tsize.y == 0) {

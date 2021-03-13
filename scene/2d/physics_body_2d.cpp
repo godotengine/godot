@@ -411,13 +411,13 @@ void RigidBody2D::_direct_state_changed(Object *p_state) {
 			}
 		}
 
-		//process remotions
+		//process removals
 
 		for (int i = 0; i < toremove_count; i++) {
 			_body_inout(0, toremove[i].body_id, toremove[i].pair.body_shape, toremove[i].pair.local_shape);
 		}
 
-		//process aditions
+		//process additions
 
 		for (int i = 0; i < toadd_count; i++) {
 			_body_inout(1, toadd[i].id, toadd[i].shape, toadd[i].local_shape);

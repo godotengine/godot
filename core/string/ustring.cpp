@@ -1764,7 +1764,7 @@ bool String::parse_utf8(const char *p_utf8, int p_len) {
 
 		if (skip) {
 			_UNICERROR("no space left");
-			return true; //not enough spac
+			return true; //not enough space
 		}
 	}
 
@@ -4480,7 +4480,7 @@ String String::sprintf(const Array &values, bool *error) const {
 	for (; *self; self++) {
 		const char32_t c = *self;
 
-		if (in_format) { // We have % - lets see what else we get.
+		if (in_format) { // We have % - let's see what else we get.
 			switch (c) {
 				case '%': { // Replace %% with %
 					formatted += chr(c);

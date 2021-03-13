@@ -723,7 +723,7 @@ void Input::warp_mouse_position(const Vector2 &p_to) {
 
 Point2i Input::warp_mouse_motion(const Ref<InputEventMouseMotion> &p_motion, const Rect2 &p_rect) {
 	// The relative distance reported for the next event after a warp is in the boundaries of the
-	// size of the rect on that axis, but it may be greater, in which case there's not problem as fmod()
+	// size of the rect on that axis, but it may be greater, in which case there's no problem as fmod()
 	// will warp it, but if the pointer has moved in the opposite direction between the pointer relocation
 	// and the subsequent event, the reported relative distance will be less than the size of the rect
 	// and thus fmod() will be disabled for handling the situation.
@@ -779,7 +779,7 @@ bool Input::is_emulating_touch_from_mouse() const {
 	return emulate_touch_from_mouse;
 }
 
-// Calling this whenever the game window is focused helps unstucking the "touch mouse"
+// Calling this whenever the game window is focused helps unsticking the "touch mouse"
 // if the OS or its abstraction class hasn't properly reported that touch pointers raised
 void Input::ensure_touch_mouse_raised() {
 	if (mouse_from_touch_index != -1) {

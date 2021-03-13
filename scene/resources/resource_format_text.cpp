@@ -1321,7 +1321,7 @@ String ResourceFormatLoaderText::get_resource_type(const String &p_path) const {
 
 	FileAccess *f = FileAccess::open(p_path, FileAccess::READ);
 	if (!f) {
-		return ""; //could not rwead
+		return ""; //could not read
 	}
 
 	ResourceLoaderText loader;

@@ -87,9 +87,9 @@ struct _AtlasWorkRectResult {
 void Geometry2D::make_atlas(const Vector<Size2i> &p_rects, Vector<Point2i> &r_result, Size2i &r_size) {
 	// Super simple, almost brute force scanline stacking fitter.
 	// It's pretty basic for now, but it tries to make sure that the aspect ratio of the
-	// resulting atlas is somehow square. This is necessary because video cards have limits.
-	// On texture size (usually 2048 or 4096), so the more square a texture, the more chances.
-	// It will work in every hardware.
+	// resulting atlas is somehow square. This is necessary because video cards have limits
+	// on texture size (usually 2048 or 4096), so the squarer a texture, the more the chances
+	// that it will work in every hardware.
 	// For example, it will prioritize a 1024x1024 atlas (works everywhere) instead of a
 	// 256x8192 atlas (won't work anywhere).
 

@@ -649,7 +649,7 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 
 					if (scr_B) {
 						//if B is a script, the only valid condition is that A has an instance which inherits from the script
-						//in other situation, this shoul return false.
+						//in other situation, this should return false.
 
 						if (obj_A->get_script_instance() && obj_A->get_script_instance()->get_language() == GDScriptLanguage::get_singleton()) {
 							GDScript *cmp = static_cast<GDScript *>(obj_A->get_script_instance()->get_script().ptr());

@@ -428,7 +428,7 @@ void Node::set_process_mode(ProcessMode p_mode) {
 	_propagate_process_owner(data.process_owner, pause_notification);
 #ifdef TOOLS_ENABLED
 	// This is required for the editor to update the visibility of disabled nodes
-	// Its very expensive during runtime to change, so editor-only
+	// It's very expensive during runtime to change, so editor-only
 	if (Engine::get_singleton()->is_editor_hint()) {
 		get_tree()->emit_signal("tree_process_mode_changed");
 	}
@@ -1130,7 +1130,7 @@ String increase_numeric_string(const String &s) {
 
 void Node::_generate_serial_child_name(const Node *p_child, StringName &name) const {
 	if (name == StringName()) {
-		//no name and a new nade is needed, create one.
+		//no name and a new name is needed, create one.
 
 		name = p_child->get_class();
 		// Adjust casing according to project setting. The current type name is expected to be in PascalCase.
@@ -1156,7 +1156,7 @@ void Node::_generate_serial_child_name(const Node *p_child, StringName &name) co
 		bool exists = false;
 
 		for (int i = 0; i < cc; i++) {
-			if (children_ptr[i] == p_child) { //exclude self in renaming if its already a child
+			if (children_ptr[i] == p_child) { //exclude self in renaming if it's already a child
 				continue;
 			}
 			if (children_ptr[i]->data.name == name) {
@@ -1945,7 +1945,7 @@ void Node::set_editable_instance(Node *p_node, bool p_editable) {
 	if (!p_editable) {
 		p_node->data.editable_instance = false;
 		// Avoid this flag being needlessly saved;
-		// also give more visual feedback if editable children is re-enabled
+		// also give more visual feedback if editable children are re-enabled
 		set_display_folded(false);
 	} else {
 		p_node->data.editable_instance = true;

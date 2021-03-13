@@ -449,7 +449,7 @@ int32_t BakedLightmap::_compute_bsp_tree(const Vector<Vector3> &p_points, const 
 		ERR_FAIL_COND_V(p_simplex_indices.size() <= 1, 0); //should not happen, this is a bug
 
 		// Failed to separate the tetrahedrons using planes
-		// this means Delaunay borked at some point.
+		// this means Delaunay broke at some point.
 		// Luckily, because we are using tetrahedrons, we can resort to
 		// less precise but still working ways to generate the separating plane
 		// this will most likely look bad when interpolating, but at least it will not crash.
@@ -511,7 +511,7 @@ int32_t BakedLightmap::_compute_bsp_tree(const Vector<Vector3> &p_points, const 
 	node.plane = best_plane;
 
 	if (indices_under.size() == 0) {
-		//noting to do here
+		//nothing to do here
 		node.under = BSPNode::EMPTY_LEAF;
 	} else if (indices_under.size() == 1) {
 		node.under = -(indices_under[0] + 1);
@@ -520,7 +520,7 @@ int32_t BakedLightmap::_compute_bsp_tree(const Vector<Vector3> &p_points, const 
 	}
 
 	if (indices_over.size() == 0) {
-		//noting to do here
+		//nothing to do here
 		node.over = BSPNode::EMPTY_LEAF;
 	} else if (indices_over.size() == 1) {
 		node.over = -(indices_over[0] + 1);
@@ -660,7 +660,7 @@ BakedLightmap::BakeError BakedLightmap::bake(Node *p_from_node, String p_image_d
 		}
 		// create mesh data for insert
 
-		//get the base material textures, help compute altlas size and bounds
+		//get the base material textures, help compute atlas size and bounds
 		for (int m_i = 0; m_i < meshes_found.size(); m_i++) {
 			if (p_bake_step) {
 				float p = (float)(m_i) / meshes_found.size();
@@ -974,7 +974,7 @@ BakedLightmap::BakeError BakedLightmap::bake(Node *p_from_node, String p_image_d
 		for (int i = 0; i < lightmapper->get_bake_texture_count(); i++) {
 			images.push_back(lightmapper->get_bake_texture(i));
 		}
-		//we assume they are all the same, so lets create a large one for saving
+		//we assume they are all the same, so let's create a large one for saving
 		Ref<Image> large_image;
 		large_image.instance();
 

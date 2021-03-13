@@ -1253,12 +1253,12 @@ void DisplayServerWindows::GetMaskBitmaps(HBITMAP hSourceBitmap, COLORREF clrTra
 	HBITMAP hOldAndMaskBitmap = (HBITMAP)SelectObject(hAndMaskDC, hAndMaskBitmap);
 	HBITMAP hOldXorMaskBitmap = (HBITMAP)SelectObject(hXorMaskDC, hXorMaskBitmap);
 
-	// Assign the monochrome AND mask bitmap pixels so that a pixels of the source bitmap
+	// Assign the monochrome AND mask bitmap pixels so that the pixels of the source bitmap
 	// with 'clrTransparent' will be white pixels of the monochrome bitmap
 	SetBkColor(hMainDC, clrTransparent);
 	BitBlt(hAndMaskDC, 0, 0, bm.bmWidth, bm.bmHeight, hMainDC, 0, 0, SRCCOPY);
 
-	// Assign the color XOR mask bitmap pixels so that a pixels of the source bitmap
+	// Assign the color XOR mask bitmap pixels so that the pixels of the source bitmap
 	// with 'clrTransparent' will be black and rest the pixels same as corresponding
 	// pixels of the source bitmap
 	SetBkColor(hXorMaskDC, RGB(0, 0, 0));
@@ -2305,7 +2305,7 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 			mm->set_alt(alt_mem);
 
 			if ((tablet_get_current_driver() == "wintab") && wintab_available && windows[window_id].wtctx) {
-				// Note: WinTab sends both WT_PACKET and WM_xBUTTONDOWN/UP/MOUSEMOVE events, use mouse 1/0 pressure only when last_pressure was not update recently.
+				// Note: WinTab sends both WT_PACKET and WM_xBUTTONDOWN/UP/MOUSEMOVE events, use mouse 1/0 pressure only when last_pressure was not updated recently.
 				if (windows[window_id].last_pressure_update < 10) {
 					windows[window_id].last_pressure_update++;
 				} else {

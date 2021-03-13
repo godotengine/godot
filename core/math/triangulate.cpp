@@ -97,7 +97,7 @@ bool Triangulate::snip(const Vector<Vector2> &p_contour, int u, int v, int w, in
 
 	// It can happen that the triangulation ends up with three aligned vertices to deal with.
 	// In this scenario, making the check below strict may reject the possibility of
-	// forming a last triangle with these aligned vertices, preventing the triangulatiom
+	// forming a last triangle with these aligned vertices, preventing the triangulation
 	// from completing.
 	// To avoid that we allow zero-area triangles if all else failed.
 	float threshold = relaxed ? -CMP_EPSILON : CMP_EPSILON;

@@ -44,7 +44,7 @@ struct _PHashTranslationCmp {
 
 void PHashTranslation::generate(const Ref<Translation> &p_from) {
 	// This method compresses a Translation instance.
-	// Right now it doesn't handle context or plurals, so Translation subclasses using plurals or context (i.e TranslationPO) shouldn't be compressed.
+	// Right now, it doesn't handle context or plurals, so Translation subclasses using plurals or context (i.e TranslationPO) shouldn't be compressed.
 #ifdef TOOLS_ENABLED
 	List<StringName> keys;
 	p_from->get_message_list(&keys);

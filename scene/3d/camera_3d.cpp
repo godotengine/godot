@@ -102,7 +102,7 @@ void Camera3D::_update_camera() {
 void Camera3D::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_ENTER_WORLD: {
-			// Needs to track the Viewport  because it's needed on NOTIFICATION_EXIT_WORLD
+			// Needs to track the Viewport because it's needed on NOTIFICATION_EXIT_WORLD
 			// and Spatial will handle it first, including clearing its reference to the Viewport,
 			// therefore making it impossible to subclasses to access it
 			viewport = get_viewport();
@@ -715,7 +715,7 @@ void ClippedCamera3D::_notification(int p_what) {
 
 		Vector3 ray_from = parent_plane.project(cam_pos);
 
-		clip_offset = 0; //reset by defau;t
+		clip_offset = 0; //reset by default
 
 		{ //check if points changed
 			Vector<Vector3> local_points = get_near_plane_points();

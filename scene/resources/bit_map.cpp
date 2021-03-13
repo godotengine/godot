@@ -285,7 +285,7 @@ Vector<Vector2> BitMap::_march_square(const Rect2i &rect, const Point2i &start) 
 				+---+---+
 				| 4 |   |
 				+---+---+
-				this normally go RIGHT, but if its coming from RIGHT, it should go LEFT
+				this normally go RIGHT, but if it's coming from RIGHT, it should go LEFT
 				*/
 				if (case6s.has(Point2i(curx, cury))) {
 					//found, so we go left, and delete from case6s;
