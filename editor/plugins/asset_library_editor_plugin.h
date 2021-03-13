@@ -176,6 +176,7 @@ class EditorAssetLibrary : public PanelContainer {
 
 	void _asset_open();
 	void _asset_file_selected(const String &p_file);
+	void _update_repository_options();
 
 	PanelContainer *library_scroll_bg;
 	ScrollContainer *library_scroll;
