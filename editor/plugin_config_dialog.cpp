@@ -86,7 +86,7 @@ void PluginConfigDialog::_on_confirmed() {
 			// Hard-coded GDScript template to keep usability until we use script templates.
 			Ref<Script> gdscript = memnew(GDScript);
 			gdscript->set_source_code(
-					"tool\n"
+					"@tool\n"
 					"extends EditorPlugin\n"
 					"\n"
 					"\n"
