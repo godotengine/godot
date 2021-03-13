@@ -188,12 +188,6 @@ private:
 
 	void _set_tree(SceneTree *p_tree);
 
-#ifdef TOOLS_ENABLED
-	friend class SceneTreeEditor;
-#endif
-	static String invalid_character;
-	static bool _validate_node_name(String &p_name);
-
 protected:
 	void _block() { data.blocked++; }
 	void _unblock() { data.blocked--; }

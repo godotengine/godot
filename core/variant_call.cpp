@@ -300,6 +300,7 @@ struct _VariantCall {
 	VCALL_LOCALMEM0R(String, json_escape);
 	VCALL_LOCALMEM0R(String, percent_encode);
 	VCALL_LOCALMEM0R(String, percent_decode);
+	VCALL_LOCALMEM0R(String, validate_node_name);
 	VCALL_LOCALMEM0R(String, is_valid_identifier);
 	VCALL_LOCALMEM0R(String, is_valid_integer);
 	VCALL_LOCALMEM0R(String, is_valid_float);
@@ -1646,6 +1647,7 @@ void register_variant_methods() {
 	ADDFUNC0R(STRING, STRING, String, json_escape, varray());
 	ADDFUNC0R(STRING, STRING, String, percent_encode, varray());
 	ADDFUNC0R(STRING, STRING, String, percent_decode, varray());
+	ADDFUNC0R(STRING, STRING, String, validate_node_name, varray());
 	ADDFUNC0R(STRING, BOOL, String, is_valid_identifier, varray());
 	ADDFUNC0R(STRING, BOOL, String, is_valid_integer, varray());
 	ADDFUNC0R(STRING, BOOL, String, is_valid_float, varray());

@@ -342,6 +342,7 @@ class EditorSceneImporterGLTF : public EditorSceneImporter {
 		Vector<GLTFLight> lights;
 
 		Set<String> unique_names;
+		Set<String> unique_animation_names;
 
 		Vector<GLTFSkeleton> skeletons;
 		Vector<GLTFAnimation> animations;
@@ -358,8 +359,10 @@ class EditorSceneImporterGLTF : public EditorSceneImporter {
 		}
 	};
 
-	String _sanitize_scene_name(const String &name);
 	String _gen_unique_name(GLTFState &state, const String &p_name);
+
+	String _sanitize_animation_name(const String &p_name);
+	String _gen_unique_animation_name(GLTFState &state, const String &p_name);
 
 	String _sanitize_bone_name(const String &name);
 	String _gen_unique_bone_name(GLTFState &state, const GLTFSkeletonIndex skel_i, const String &p_name);
