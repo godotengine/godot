@@ -1841,9 +1841,8 @@ void Node3DEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 			}
 
 		} else if (m->get_button_mask() & BUTTON_MASK_MIDDLE) {
+			const int mod = _get_key_modifier(m);
 			if (nav_scheme == NAVIGATION_GODOT) {
-				const int mod = _get_key_modifier(m);
-
 				if (mod == _get_key_modifier_setting("editors/3d/navigation/pan_modifier")) {
 					nav_mode = NAVIGATION_PAN;
 				} else if (mod == _get_key_modifier_setting("editors/3d/navigation/zoom_modifier")) {
@@ -1854,7 +1853,7 @@ void Node3DEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 				}
 
 			} else if (nav_scheme == NAVIGATION_MAYA) {
-				if (m->get_alt()) {
+				if (mod == _get_key_modifier_setting("editors/3d/navigation/pan_modifier")) {
 					nav_mode = NAVIGATION_PAN;
 				}
 			}
