@@ -122,7 +122,9 @@ void ViewportContainer::_notification(int p_what) {
 			else
 				c->set_update_mode(Viewport::UPDATE_DISABLED);
 
-			c->set_handle_input_locally(false); //do not handle input locally here
+			// #46982: the reason for this is unknown - commented - this causes issues with input in viewport
+			//         please either document behaviour or explain why this is here
+			//  c->set_handle_input_locally(false); //do not handle input locally here
 		}
 	}
 
