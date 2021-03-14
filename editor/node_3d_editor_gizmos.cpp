@@ -33,7 +33,7 @@
 #include "core/math/geometry_2d.h"
 #include "core/math/geometry_3d.h"
 #include "core/math/quick_hull.h"
-#include "scene/3d/audio_stream_player_3d.h"
+#include "scene/3d/audio_player_3d.h"
 #include "scene/3d/baked_lightmap.h"
 #include "scene/3d/collision_polygon_3d.h"
 #include "scene/3d/collision_shape_3d.h"
@@ -1049,7 +1049,7 @@ void Light3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 //////
 
 //// player gizmo
-AudioStreamPlayer3DGizmoPlugin::AudioStreamPlayer3DGizmoPlugin() {
+AudioPlayer3DGizmoPlugin::AudioPlayer3DGizmoPlugin() {
 	Color gizmo_color = EDITOR_DEF("editors/3d_gizmos/gizmo_colors/stream_player_3d", Color(0.4, 0.8, 1));
 
 	create_icon_material("stream_player_3d_icon", Node3DEditor::get_singleton()->get_theme_icon("Gizmo3DSamplePlayer", "EditorIcons"));
@@ -1058,29 +1058,29 @@ AudioStreamPlayer3DGizmoPlugin::AudioStreamPlayer3DGizmoPlugin() {
 	create_handle_material("handles");
 }
 
-bool AudioStreamPlayer3DGizmoPlugin::has_gizmo(Node3D *p_spatial) {
-	return Object::cast_to<AudioStreamPlayer3D>(p_spatial) != nullptr;
+bool AudioPlayer3DGizmoPlugin::has_gizmo(Node3D *p_spatial) {
+	return Object::cast_to<AudioPlayer3D>(p_spatial) != nullptr;
 }
 
-String AudioStreamPlayer3DGizmoPlugin::get_gizmo_name() const {
-	return "AudioStreamPlayer3D";
+String AudioPlayer3DGizmoPlugin::get_gizmo_name() const {
+	return "AudioPlayer3D";
 }
 
-int AudioStreamPlayer3DGizmoPlugin::get_priority() const {
+int AudioPlayer3DGizmoPlugin::get_priority() const {
 	return -1;
 }
 
-String AudioStreamPlayer3DGizmoPlugin::get_handle_name(const EditorNode3DGizmo *p_gizmo, int p_idx) const {
+String AudioPlayer3DGizmoPlugin::get_handle_name(const EditorNode3DGizmo *p_gizmo, int p_idx) const {
 	return "Emission Radius";
 }
 
-Variant AudioStreamPlayer3DGizmoPlugin::get_handle_value(EditorNode3DGizmo *p_gizmo, int p_idx) const {
-	AudioStreamPlayer3D *player = Object::cast_to<AudioStreamPlayer3D>(p_gizmo->get_spatial_node());
+Variant AudioPlayer3DGizmoPlugin::get_handle_value(EditorNode3DGizmo *p_gizmo, int p_idx) const {
+	AudioPlayer3D *player = Object::cast_to<AudioPlayer3D>(p_gizmo->get_spatial_node());
 	return player->get_emission_angle();
 }
 
-void AudioStreamPlayer3DGizmoPlugin::set_handle(EditorNode3DGizmo *p_gizmo, int p_idx, Camera3D *p_camera, const Point2 &p_point) {
-	AudioStreamPlayer3D *player = Object::cast_to<AudioStreamPlayer3D>(p_gizmo->get_spatial_node());
+void AudioPlayer3DGizmoPlugin::set_handle(EditorNode3DGizmo *p_gizmo, int p_idx, Camera3D *p_camera, const Point2 &p_point) {
+	AudioPlayer3D *player = Object::cast_to<AudioPlayer3D>(p_gizmo->get_spatial_node());
 
 	Transform gt = player->get_global_transform();
 	Transform gi = gt.affine_inverse();
@@ -1116,23 +1116,23 @@ void AudioStreamPlayer3DGizmoPlugin::set_handle(EditorNode3DGizmo *p_gizmo, int 
 	}
 }
 
-void AudioStreamPlayer3DGizmoPlugin::commit_handle(EditorNode3DGizmo *p_gizmo, int p_idx, const Variant &p_restore, bool p_cancel) {
-	AudioStreamPlayer3D *player = Object::cast_to<AudioStreamPlayer3D>(p_gizmo->get_spatial_node());
+void AudioPlayer3DGizmoPlugin::commit_handle(EditorNode3DGizmo *p_gizmo, int p_idx, const Variant &p_restore, bool p_cancel) {
+	AudioPlayer3D *player = Object::cast_to<AudioPlayer3D>(p_gizmo->get_spatial_node());
 
 	if (p_cancel) {
 		player->set_emission_angle(p_restore);
 
 	} else {
 		UndoRedo *ur = Node3DEditor::get_singleton()->get_undo_redo();
-		ur->create_action(TTR("Change AudioStreamPlayer3D Emission Angle"));
+		ur->create_action(TTR("Change AudioPlayer3D Emission Angle"));
 		ur->add_do_method(player, "set_emission_angle", player->get_emission_angle());
 		ur->add_undo_method(player, "set_emission_angle", p_restore);
 		ur->commit_action();
 	}
 }
 
-void AudioStreamPlayer3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
-	const AudioStreamPlayer3D *player = Object::cast_to<AudioStreamPlayer3D>(p_gizmo->get_spatial_node());
+void AudioPlayer3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
+	const AudioPlayer3D *player = Object::cast_to<AudioPlayer3D>(p_gizmo->get_spatial_node());
 
 	p_gizmo->clear();
 

@@ -200,7 +200,7 @@ void AudioStreamEditor::_bind_methods() {
 AudioStreamEditor::AudioStreamEditor() {
 	set_custom_minimum_size(Size2(1, 100) * EDSCALE);
 
-	_player = memnew(AudioStreamPlayer);
+	_player = memnew(AudioPlayer);
 	_player->connect("finished", callable_mp(this, &AudioStreamEditor::_on_finished));
 	add_child(_player);
 

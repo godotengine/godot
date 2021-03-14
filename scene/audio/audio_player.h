@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  audio_stream_player.h                                                */
+/*  audio_player.h                                                       */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,15 +28,15 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef AUDIO_STREAM_PLAYER_H
-#define AUDIO_STREAM_PLAYER_H
+#ifndef AUDIO_PLAYER_H
+#define AUDIO_PLAYER_H
 
 #include "core/templates/safe_refcount.h"
 #include "scene/main/node.h"
 #include "servers/audio/audio_stream.h"
 
-class AudioStreamPlayer : public Node {
-	GDCLASS(AudioStreamPlayer, Node);
+class AudioPlayer : public Node {
+	GDCLASS(AudioPlayer, Node);
 
 public:
 	enum MixTarget {
@@ -69,7 +69,7 @@ private:
 
 	void _mix_internal(bool p_fadeout);
 	void _mix_audio();
-	static void _mix_audios(void *self) { reinterpret_cast<AudioStreamPlayer *>(self)->_mix_audio(); }
+	static void _mix_audios(void *self) { reinterpret_cast<AudioPlayer *>(self)->_mix_audio(); }
 
 	void _set_playing(bool p_enable);
 	bool _is_active() const;
@@ -112,10 +112,10 @@ public:
 
 	Ref<AudioStreamPlayback> get_stream_playback();
 
-	AudioStreamPlayer();
-	~AudioStreamPlayer();
+	AudioPlayer();
+	~AudioPlayer();
 };
 
-VARIANT_ENUM_CAST(AudioStreamPlayer::MixTarget)
+VARIANT_ENUM_CAST(AudioPlayer::MixTarget)
 
-#endif // AUDIO_STREAM_PLAYER_H
+#endif // AUDIO_PLAYER_H

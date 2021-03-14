@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  audio_stream_player_3d.h                                             */
+/*  audio_player_3d.h                                                    */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,8 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef AUDIO_STREAM_PLAYER_3D_H
-#define AUDIO_STREAM_PLAYER_3D_H
+#ifndef AUDIO_PLAYER_3D_H
+#define AUDIO_PLAYER_3D_H
 
 #include "core/templates/safe_refcount.h"
 #include "scene/3d/node_3d.h"
@@ -39,8 +39,8 @@
 #include "servers/audio_server.h"
 
 class Camera3D;
-class AudioStreamPlayer3D : public Node3D {
-	GDCLASS(AudioStreamPlayer3D, Node3D);
+class AudioPlayer3D : public Node3D {
+	GDCLASS(AudioPlayer3D, Node3D);
 
 public:
 	enum AttenuationModel {
@@ -109,7 +109,7 @@ private:
 
 	static void _calc_output_vol(const Vector3 &source_dir, real_t tightness, Output &output);
 	void _mix_audio();
-	static void _mix_audios(void *self) { reinterpret_cast<AudioStreamPlayer3D *>(self)->_mix_audio(); }
+	static void _mix_audios(void *self) { reinterpret_cast<AudioPlayer3D *>(self)->_mix_audio(); }
 
 	void _set_playing(bool p_enable);
 	bool _is_active() const;
@@ -202,11 +202,11 @@ public:
 
 	Ref<AudioStreamPlayback> get_stream_playback();
 
-	AudioStreamPlayer3D();
-	~AudioStreamPlayer3D();
+	AudioPlayer3D();
+	~AudioPlayer3D();
 };
 
-VARIANT_ENUM_CAST(AudioStreamPlayer3D::AttenuationModel)
-VARIANT_ENUM_CAST(AudioStreamPlayer3D::OutOfRangeMode)
-VARIANT_ENUM_CAST(AudioStreamPlayer3D::DopplerTracking)
-#endif // AUDIO_STREAM_PLAYER_3D_H
+VARIANT_ENUM_CAST(AudioPlayer3D::AttenuationModel)
+VARIANT_ENUM_CAST(AudioPlayer3D::OutOfRangeMode)
+VARIANT_ENUM_CAST(AudioPlayer3D::DopplerTracking)
+#endif // AUDIO_PLAYER_3D_H
