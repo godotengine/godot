@@ -240,6 +240,8 @@ uint8_t FileAccessUnix::get_8() const {
 }
 
 int FileAccessUnix::get_buffer(uint8_t *p_dst, int p_length) const {
+	ERR_FAIL_COND_V(!p_dst, -1);
+	ERR_FAIL_COND_V(p_length < 0, -1);
 	ERR_FAIL_COND_V_MSG(!f, -1, "File must be opened before use.");
 	int read = fread(p_dst, 1, p_length, f);
 	check_errors();

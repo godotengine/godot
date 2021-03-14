@@ -366,6 +366,9 @@ void FileAccessNetwork::_queue_page(int p_page) const {
 }
 
 int FileAccessNetwork::get_buffer(uint8_t *p_dst, int p_length) const {
+	ERR_FAIL_COND_V(!p_dst, -1);
+	ERR_FAIL_COND_V(p_length < 0, -1);
+
 	//bool eof=false;
 	if (pos + p_length > total_size) {
 		eof_flag = true;

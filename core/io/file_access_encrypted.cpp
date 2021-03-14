@@ -237,7 +237,9 @@ uint8_t FileAccessEncrypted::get_8() const {
 }
 
 int FileAccessEncrypted::get_buffer(uint8_t *p_dst, int p_length) const {
-	ERR_FAIL_COND_V_MSG(writing, 0, "File has not been opened in read mode.");
+	ERR_FAIL_COND_V(!p_dst, -1);
+	ERR_FAIL_COND_V(p_length < 0, -1);
+	ERR_FAIL_COND_V_MSG(writing, -1, "File has not been opened in read mode.");
 
 	int to_copy = MIN(p_length, data.size() - pos);
 	for (int i = 0; i < to_copy; i++) {
