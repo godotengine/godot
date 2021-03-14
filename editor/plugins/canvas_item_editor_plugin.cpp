@@ -1176,7 +1176,7 @@ bool CanvasItemEditor::_gui_input_rulers_and_guides(const Ref<InputEvent> &p_eve
 
 				Point2 edited = snap_point(xform.affine_inverse().xform(b->get_position()), SNAP_GRID | SNAP_PIXEL | SNAP_OTHER_NODES);
 				if (drag_type == DRAG_V_GUIDE) {
-					Array prev_vguides = vguides.duplicate();
+					Array prev_vguides = vguides.copy();
 					if (b->get_position().x > RULER_WIDTH) {
 						// Adds a new vertical guide
 						if (dragged_guide_index >= 0) {
@@ -1209,7 +1209,7 @@ bool CanvasItemEditor::_gui_input_rulers_and_guides(const Ref<InputEvent> &p_eve
 						}
 					}
 				} else if (drag_type == DRAG_H_GUIDE) {
-					Array prev_hguides = hguides.duplicate();
+					Array prev_hguides = hguides.copy();
 					if (b->get_position().y > RULER_WIDTH) {
 						// Adds a new horizontal guide
 						if (dragged_guide_index >= 0) {
@@ -1242,8 +1242,8 @@ bool CanvasItemEditor::_gui_input_rulers_and_guides(const Ref<InputEvent> &p_eve
 						}
 					}
 				} else if (drag_type == DRAG_DOUBLE_GUIDE) {
-					Array prev_hguides = hguides.duplicate();
-					Array prev_vguides = vguides.duplicate();
+					Array prev_hguides = hguides.copy();
+					Array prev_vguides = vguides.copy();
 					if (b->get_position().x > RULER_WIDTH && b->get_position().y > RULER_WIDTH) {
 						// Adds a new horizontal guide a new vertical guide
 						vguides.push_back(edited.x);

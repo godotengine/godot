@@ -405,7 +405,7 @@ void Object::set(const StringName &p_name, const Variant &p_value, bool *r_valid
 
 	} else if (p_name == CoreStringNames::get_singleton()->_meta) {
 		//set_meta(p_name,p_value);
-		metadata = p_value.duplicate();
+		metadata = p_value.copy();
 		if (r_valid) {
 			*r_valid = true;
 		}

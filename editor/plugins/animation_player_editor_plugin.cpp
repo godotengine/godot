@@ -1345,14 +1345,14 @@ void AnimationPlayerEditor::_prepare_onion_layers_2() {
 	if (Node3DEditor::get_singleton()->is_visible()) {
 		// 3D
 		spatial_edit_state = Node3DEditor::get_singleton()->get_state();
-		Dictionary new_state = spatial_edit_state.duplicate();
+		Dictionary new_state = spatial_edit_state.copy();
 		new_state["show_grid"] = false;
 		new_state["show_origin"] = false;
 		Array orig_vp = spatial_edit_state["viewports"];
 		Array vp;
 		vp.resize(4);
 		for (int i = 0; i < vp.size(); i++) {
-			Dictionary d = ((Dictionary)orig_vp[i]).duplicate();
+			Dictionary d = ((Dictionary)orig_vp[i]).copy();
 			d["use_environment"] = false;
 			d["doppler"] = false;
 			d["gizmos"] = onion.include_gizmos ? d["gizmos"] : Variant(false);
@@ -1365,7 +1365,7 @@ void AnimationPlayerEditor::_prepare_onion_layers_2() {
 	} else { // CanvasItemEditor
 		// 2D
 		canvas_edit_state = CanvasItemEditor::get_singleton()->get_state();
-		Dictionary new_state = canvas_edit_state.duplicate();
+		Dictionary new_state = canvas_edit_state.copy();
 		new_state["show_grid"] = false;
 		new_state["show_rulers"] = false;
 		new_state["show_guides"] = false;

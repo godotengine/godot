@@ -98,7 +98,7 @@ public:
 	Variant pop_back();
 	Variant pop_front();
 
-	Array duplicate(bool p_deep = false) const;
+	Array copy(bool p_deep = false) const;
 
 	Array slice(int p_begin, int p_end, int p_step = 1, bool p_deep = false) const;
 

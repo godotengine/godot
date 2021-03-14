@@ -242,7 +242,7 @@ Node *SceneState::instance(GenEditState p_edit_state) const {
 								}
 							}
 						} else if (p_edit_state == GEN_EDIT_STATE_INSTANCE) {
-							value = value.duplicate(true); // Duplicate arrays and dictionaries for the editor
+							value = value.copy(true); // Copy arrays and dictionaries for the editor
 						}
 						node->set(snames[nprops[j].name], value, &valid);
 					}

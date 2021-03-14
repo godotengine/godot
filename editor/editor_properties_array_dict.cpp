@@ -163,7 +163,7 @@ void EditorPropertyArray::_property_changed(const String &p_property, Variant p_
 		emit_changed(get_edited_property(), array, "", true);
 
 		if (array.get_type() == Variant::ARRAY) {
-			array = array.call("duplicate"); //dupe, so undo/redo works better
+			array = array.call("copy"); // Copy, so undo/redo works better
 		}
 		object->set_array(array);
 	}
@@ -193,7 +193,7 @@ void EditorPropertyArray::_change_type_menu(int p_index) {
 	emit_changed(get_edited_property(), array, "", true);
 
 	if (array.get_type() == Variant::ARRAY) {
-		array = array.call("duplicate"); //dupe, so undo/redo works better
+		array = array.call("copy"); // Copy, so undo/redo works better
 	}
 
 	object->set_array(array);
@@ -316,7 +316,7 @@ void EditorPropertyArray::update_property() {
 		int amount = MIN(len - offset, page_len);
 
 		if (array.get_type() == Variant::ARRAY) {
-			array = array.call("duplicate");
+			array = array.call("copy");
 		}
 
 		object->set_array(array);
@@ -385,7 +385,7 @@ void EditorPropertyArray::_remove_pressed(int p_index) {
 	array.call("remove", p_index);
 
 	if (array.get_type() == Variant::ARRAY) {
-		array = array.call("duplicate");
+		array = array.call("copy");
 	}
 
 	emit_changed(get_edited_property(), array, "", false);
@@ -459,7 +459,7 @@ void EditorPropertyArray::drop_data_fw(const Point2 &p_point, const Variant &p_d
 		}
 
 		if (array.get_type() == Variant::ARRAY) {
-			array = array.call("duplicate");
+			array = array.call("copy");
 		}
 
 		emit_changed(get_edited_property(), array, "", false);
@@ -530,7 +530,7 @@ void EditorPropertyArray::_length_changed(double p_page) {
 				}
 			}
 		}
-		array = array.call("duplicate"); //dupe, so undo/redo works better
+		array = array.call("copy"); // Copy, so undo/redo works better
 	} else {
 		int size = array.call("size");
 		// Pool*Array don't initialize their elements, have to do it manually
@@ -622,7 +622,7 @@ void EditorPropertyDictionary::_property_changed(const String &p_property, Varia
 
 		emit_changed(get_edited_property(), dict, "", true);
 
-		dict = dict.duplicate(); //dupe, so undo/redo works better
+		dict = dict.copy(); // Copy, so undo/redo works better
 		object->set_dict(dict);
 	}
 }
@@ -651,7 +651,7 @@ void EditorPropertyDictionary::_add_key_value() {
 
 	emit_changed(get_edited_property(), dict, "", false);
 
-	dict = dict.duplicate(); //dupe, so undo/redo works better
+	dict = dict.copy(); // Copy, so undo/redo works better
 	object->set_dict(dict);
 	update_property();
 }
@@ -685,7 +685,7 @@ void EditorPropertyDictionary::_change_type_menu(int p_index) {
 
 	emit_changed(get_edited_property(), dict, "", false);
 
-	dict = dict.duplicate(); //dupe, so undo/redo works better
+	dict = dict.copy(); // Copy, so undo/redo works better
 	object->set_dict(dict);
 	update_property();
 }
@@ -751,7 +751,7 @@ void EditorPropertyDictionary::update_property() {
 
 		int amount = MIN(len - offset, page_len);
 
-		dict = dict.duplicate();
+		dict = dict.copy();
 
 		object->set_dict(dict);
 		VBoxContainer *add_vbox = nullptr;

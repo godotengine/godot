@@ -2012,7 +2012,7 @@ Variant Variant::iter_get(const Variant &r_iter, bool &r_valid) const {
 	return Variant();
 }
 
-Variant Variant::duplicate(bool deep) const {
+Variant Variant::copy(bool deep) const {
 	switch (type) {
 		case OBJECT: {
 			/*  breaks stuff :(
@@ -2026,27 +2026,27 @@ Variant Variant::duplicate(bool deep) const {
 			return *this;
 		} break;
 		case DICTIONARY:
-			return operator Dictionary().duplicate(deep);
+			return operator Dictionary().copy(deep);
 		case ARRAY:
-			return operator Array().duplicate(deep);
+			return operator Array().copy(deep);
 		case PACKED_BYTE_ARRAY:
-			return operator Vector<uint8_t>().duplicate();
+			return operator Vector<uint8_t>().copy();
 		case PACKED_INT32_ARRAY:
-			return operator Vector<int32_t>().duplicate();
+			return operator Vector<int32_t>().copy();
 		case PACKED_INT64_ARRAY:
-			return operator Vector<int64_t>().duplicate();
+			return operator Vector<int64_t>().copy();
 		case PACKED_FLOAT32_ARRAY:
-			return operator Vector<float>().duplicate();
+			return operator Vector<float>().copy();
 		case PACKED_FLOAT64_ARRAY:
-			return operator Vector<double>().duplicate();
+			return operator Vector<double>().copy();
 		case PACKED_STRING_ARRAY:
-			return operator Vector<String>().duplicate();
+			return operator Vector<String>().copy();
 		case PACKED_VECTOR2_ARRAY:
-			return operator Vector<Vector2>().duplicate();
+			return operator Vector<Vector2>().copy();
 		case PACKED_VECTOR3_ARRAY:
-			return operator Vector<Vector3>().duplicate();
+			return operator Vector<Vector3>().copy();
 		case PACKED_COLOR_ARRAY:
-			return operator Vector<Color>().duplicate();
+			return operator Vector<Color>().copy();
 		default:
 			return *this;
 	}

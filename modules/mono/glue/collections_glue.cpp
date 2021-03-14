@@ -115,13 +115,13 @@ Array *godot_icall_Array_Ctor_MonoArray(MonoArray *mono_array) {
 	return godot_array;
 }
 
-Array *godot_icall_Array_Duplicate(Array *ptr, MonoBoolean deep) {
-	return memnew(Array(ptr->duplicate(deep)));
+Array *godot_icall_Array_Copy(Array *ptr, MonoBoolean deep) {
+	return memnew(Array(ptr->copy(deep)));
 }
 
 Array *godot_icall_Array_Concatenate(Array *left, Array *right) {
 	int count = left->size() + right->size();
-	Array *new_array = memnew(Array(left->duplicate(false)));
+	Array *new_array = memnew(Array(left->copy(false)));
 	new_array->resize(count);
 	for (unsigned int i = 0; i < (unsigned int)right->size(); i++) {
 		new_array->operator[](i + left->size()) = right->operator[](i);
@@ -254,8 +254,8 @@ MonoBoolean godot_icall_Dictionary_ContainsKey(Dictionary *ptr, MonoObject *key)
 	return ptr->has(GDMonoMarshal::mono_object_to_variant(key));
 }
 
-Dictionary *godot_icall_Dictionary_Duplicate(Dictionary *ptr, MonoBoolean deep) {
-	return memnew(Dictionary(ptr->duplicate(deep)));
+Dictionary *godot_icall_Dictionary_Copy(Dictionary *ptr, MonoBoolean deep) {
+	return memnew(Dictionary(ptr->copy(deep)));
 }
 
 MonoBoolean godot_icall_Dictionary_RemoveKey(Dictionary *ptr, MonoObject *key) {
@@ -320,7 +320,7 @@ void godot_register_collections_icalls() {
 	GDMonoUtils::add_internal_call("Godot.Collections.Array::godot_icall_Array_Concatenate", godot_icall_Array_Concatenate);
 	GDMonoUtils::add_internal_call("Godot.Collections.Array::godot_icall_Array_Contains", godot_icall_Array_Contains);
 	GDMonoUtils::add_internal_call("Godot.Collections.Array::godot_icall_Array_CopyTo", godot_icall_Array_CopyTo);
-	GDMonoUtils::add_internal_call("Godot.Collections.Array::godot_icall_Array_Duplicate", godot_icall_Array_Duplicate);
+	GDMonoUtils::add_internal_call("Godot.Collections.Array::godot_icall_Array_Copy", godot_icall_Array_Copy);
 	GDMonoUtils::add_internal_call("Godot.Collections.Array::godot_icall_Array_IndexOf", godot_icall_Array_IndexOf);
 	GDMonoUtils::add_internal_call("Godot.Collections.Array::godot_icall_Array_Insert", godot_icall_Array_Insert);
 	GDMonoUtils::add_internal_call("Godot.Collections.Array::godot_icall_Array_Remove", godot_icall_Array_Remove);
@@ -342,7 +342,7 @@ void godot_register_collections_icalls() {
 	GDMonoUtils::add_internal_call("Godot.Collections.Dictionary::godot_icall_Dictionary_Clear", godot_icall_Dictionary_Clear);
 	GDMonoUtils::add_internal_call("Godot.Collections.Dictionary::godot_icall_Dictionary_Contains", godot_icall_Dictionary_Contains);
 	GDMonoUtils::add_internal_call("Godot.Collections.Dictionary::godot_icall_Dictionary_ContainsKey", godot_icall_Dictionary_ContainsKey);
-	GDMonoUtils::add_internal_call("Godot.Collections.Dictionary::godot_icall_Dictionary_Duplicate", godot_icall_Dictionary_Duplicate);
+	GDMonoUtils::add_internal_call("Godot.Collections.Dictionary::godot_icall_Dictionary_Copy", godot_icall_Dictionary_Copy);
 	GDMonoUtils::add_internal_call("Godot.Collections.Dictionary::godot_icall_Dictionary_RemoveKey", godot_icall_Dictionary_RemoveKey);
 	GDMonoUtils::add_internal_call("Godot.Collections.Dictionary::godot_icall_Dictionary_Remove", godot_icall_Dictionary_Remove);
 	GDMonoUtils::add_internal_call("Godot.Collections.Dictionary::godot_icall_Dictionary_TryGetValue", godot_icall_Dictionary_TryGetValue);

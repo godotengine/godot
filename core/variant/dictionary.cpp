@@ -240,11 +240,11 @@ const Variant *Dictionary::next(const Variant *p_key) const {
 	return nullptr;
 }
 
-Dictionary Dictionary::duplicate(bool p_deep) const {
+Dictionary Dictionary::copy(bool p_deep) const {
 	Dictionary n;
 
 	for (OrderedHashMap<Variant, Variant, VariantHasher, VariantComparator>::Element E = _p->variant_map.front(); E; E = E.next()) {
-		n[E.key()] = p_deep ? E.value().duplicate(true) : E.value();
+		n[E.key()] = p_deep ? E.value().copy(true) : E.value();
 	}
 
 	return n;

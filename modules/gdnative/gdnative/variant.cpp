@@ -777,9 +777,9 @@ void GDAPI godot_variant_interpolate(const godot_variant *p_a, const godot_varia
 	Variant::interpolate(*a, *b, p_c, *dst);
 }
 
-godot_variant GDAPI godot_variant_duplicate(const godot_variant *p_self, godot_bool p_deep) {
+godot_variant GDAPI godot_variant_copy(const godot_variant *p_self, godot_bool p_deep) {
 	const Variant *self = (const Variant *)p_self;
-	Variant result = self->duplicate(p_deep);
+	Variant result = self->copy(p_deep);
 	godot_variant ret;
 	memnew_placement_custom(&ret, Variant, Variant(result));
 	return ret;

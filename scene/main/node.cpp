@@ -2100,7 +2100,7 @@ Node *Node::_duplicate(int p_flags, Map<const Node *, Node *> *r_duplimap) const
 				continue;
 			}
 
-			Variant value = N->get()->get(name).duplicate(true);
+			Variant value = N->get()->get(name).copy(true);
 
 			if (E->get().usage & PROPERTY_USAGE_DO_NOT_SHARE_ON_DUPLICATE) {
 				Resource *res = Object::cast_to<Resource>(value);

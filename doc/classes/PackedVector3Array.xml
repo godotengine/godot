@@ -52,7 +52,7 @@
 				Appends a [PackedVector3Array] at the end of this array.
 			</description>
 		</method>
-		<method name="duplicate">
+		<method name="copy">
 			<return type="PackedVector3Array">
 			</return>
 			<description>

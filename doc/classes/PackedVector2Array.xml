@@ -53,7 +53,7 @@
 				Appends a [PackedVector2Array] at the end of this array.
 			</description>
 		</method>
-		<method name="duplicate">
+		<method name="copy">
 			<return type="PackedVector2Array">
 			</return>
 			<description>

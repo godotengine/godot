@@ -765,7 +765,7 @@ void EditorProperty::_gui_input(const Ref<InputEvent> &p_event) {
 
 			Node *node = Object::cast_to<Node>(object);
 			if (node && EditorPropertyRevert::may_node_be_in_instance(node) && EditorPropertyRevert::get_instanced_node_original_property(node, property, vorig)) {
-				emit_changed(property, vorig.duplicate(true));
+				emit_changed(property, vorig.copy(true));
 				update_property();
 				return;
 			}

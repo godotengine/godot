@@ -708,7 +708,7 @@ Node *ResourceImporterScene::_post_fix_node(Node *p_node, Node *p_root, Map<Ref<
 
 		{
 			//make sure this is unique
-			node_settings = node_settings.duplicate(true);
+			node_settings = node_settings.copy(true);
 			//fill node settings for this node with default values
 			List<ImportOption> iopts;
 			get_internal_import_options(INTERNAL_IMPORT_CATEGORY_ANIMATION_NODE, &iopts);

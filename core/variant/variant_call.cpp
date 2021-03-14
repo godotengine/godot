@@ -1631,7 +1631,7 @@ static void _register_variant_builtin_methods() {
 	bind_method(Dictionary, hash, sarray(), varray());
 	bind_method(Dictionary, keys, sarray(), varray());
 	bind_method(Dictionary, values, sarray(), varray());
-	bind_method(Dictionary, duplicate, sarray("deep"), varray(false));
+	bind_method(Dictionary, copy, sarray("deep"), varray(false));
 	bind_method(Dictionary, get, sarray("key", "default"), varray(Variant()));
 
 	/* Array */
@@ -1664,7 +1664,7 @@ static void _register_variant_builtin_methods() {
 	bind_method(Array, bsearch, sarray("value", "before"), varray(true));
 	bind_method(Array, bsearch_custom, sarray("value", "func", "before"), varray(true));
 	bind_method(Array, reverse, sarray(), varray());
-	bind_method(Array, duplicate, sarray("deep"), varray(false));
+	bind_method(Array, copy, sarray("deep"), varray(false));
 	bind_method(Array, slice, sarray("begin", "end", "step", "deep"), varray(1, false));
 	bind_method(Array, max, sarray(), varray());
 	bind_method(Array, min, sarray(), varray());
@@ -1684,7 +1684,7 @@ static void _register_variant_builtin_methods() {
 	bind_method(PackedByteArray, reverse, sarray(), varray());
 	bind_method(PackedByteArray, subarray, sarray("from", "to"), varray());
 	bind_method(PackedByteArray, sort, sarray(), varray());
-	bind_method(PackedByteArray, duplicate, sarray(), varray());
+	bind_method(PackedByteArray, copy, sarray(), varray());
 
 	bind_function(PackedByteArray, get_string_from_ascii, _VariantCall::func_PackedByteArray_get_string_from_ascii, sarray(), varray());
 	bind_function(PackedByteArray, get_string_from_utf8, _VariantCall::func_PackedByteArray_get_string_from_utf8, sarray(), varray());
@@ -1740,7 +1740,7 @@ static void _register_variant_builtin_methods() {
 	bind_method(PackedInt32Array, subarray, sarray("from", "to"), varray());
 	bind_method(PackedInt32Array, to_byte_array, sarray(), varray());
 	bind_method(PackedInt32Array, sort, sarray(), varray());
-	bind_method(PackedInt32Array, duplicate, sarray(), varray());
+	bind_method(PackedInt32Array, copy, sarray(), varray());
 
 	/* Int64 Array */
 
@@ -1759,7 +1759,7 @@ static void _register_variant_builtin_methods() {
 	bind_method(PackedInt64Array, subarray, sarray("from", "to"), varray());
 	bind_method(PackedInt64Array, to_byte_array, sarray(), varray());
 	bind_method(PackedInt64Array, sort, sarray(), varray());
-	bind_method(PackedInt64Array, duplicate, sarray(), varray());
+	bind_method(PackedInt64Array, copy, sarray(), varray());
 
 	/* Float32 Array */
 
@@ -1778,7 +1778,7 @@ static void _register_variant_builtin_methods() {
 	bind_method(PackedFloat32Array, subarray, sarray("from", "to"), varray());
 	bind_method(PackedFloat32Array, to_byte_array, sarray(), varray());
 	bind_method(PackedFloat32Array, sort, sarray(), varray());
-	bind_method(PackedFloat32Array, duplicate, sarray(), varray());
+	bind_method(PackedFloat32Array, copy, sarray(), varray());
 
 	/* Float64 Array */
 
@@ -1797,7 +1797,7 @@ static void _register_variant_builtin_methods() {
 	bind_method(PackedFloat64Array, subarray, sarray("from", "to"), varray());
 	bind_method(PackedFloat64Array, to_byte_array, sarray(), varray());
 	bind_method(PackedFloat64Array, sort, sarray(), varray());
-	bind_method(PackedFloat64Array, duplicate, sarray(), varray());
+	bind_method(PackedFloat64Array, copy, sarray(), varray());
 
 	/* String Array */
 
@@ -1816,7 +1816,7 @@ static void _register_variant_builtin_methods() {
 	bind_method(PackedStringArray, subarray, sarray("from", "to"), varray());
 	bind_method(PackedStringArray, to_byte_array, sarray(), varray());
 	bind_method(PackedStringArray, sort, sarray(), varray());
-	bind_method(PackedStringArray, duplicate, sarray(), varray());
+	bind_method(PackedStringArray, copy, sarray(), varray());
 
 	/* Vector2 Array */
 
@@ -1835,7 +1835,7 @@ static void _register_variant_builtin_methods() {
 	bind_method(PackedVector2Array, subarray, sarray("from", "to"), varray());
 	bind_method(PackedVector2Array, to_byte_array, sarray(), varray());
 	bind_method(PackedVector2Array, sort, sarray(), varray());
-	bind_method(PackedVector2Array, duplicate, sarray(), varray());
+	bind_method(PackedVector2Array, copy, sarray(), varray());
 
 	/* Vector3 Array */
 
@@ -1854,7 +1854,7 @@ static void _register_variant_builtin_methods() {
 	bind_method(PackedVector3Array, subarray, sarray("from", "to"), varray());
 	bind_method(PackedVector3Array, to_byte_array, sarray(), varray());
 	bind_method(PackedVector3Array, sort, sarray(), varray());
-	bind_method(PackedVector3Array, duplicate, sarray(), varray());
+	bind_method(PackedVector3Array, copy, sarray(), varray());
 
 	/* Color Array */
 
@@ -1873,7 +1873,7 @@ static void _register_variant_builtin_methods() {
 	bind_method(PackedColorArray, subarray, sarray("from", "to"), varray());
 	bind_method(PackedColorArray, to_byte_array, sarray(), varray());
 	bind_method(PackedColorArray, sort, sarray(), varray());
-	bind_method(PackedColorArray, duplicate, sarray(), varray());
+	bind_method(PackedColorArray, copy, sarray(), varray());
 
 	/* Register constants */
 

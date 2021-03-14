@@ -112,7 +112,7 @@ public:
 		sort_custom<_DefaultComparator<T>>();
 	}
 
-	Vector<T> duplicate() {
+	Vector<T> copy() {
 		return *this;
 	}
 

@@ -298,13 +298,13 @@ const Variant &Array::get(int p_idx) const {
 	return operator[](p_idx);
 }
 
-Array Array::duplicate(bool p_deep) const {
+Array Array::copy(bool p_deep) const {
 	Array new_arr;
 	int element_count = size();
 	new_arr.resize(element_count);
 	new_arr._p->typed = _p->typed;
 	for (int i = 0; i < element_count; i++) {
-		new_arr[i] = p_deep ? get(i).duplicate(p_deep) : get(i);
+		new_arr[i] = p_deep ? get(i).copy(p_deep) : get(i);
 	}
 
 	return new_arr;
@@ -348,13 +348,13 @@ Array Array::slice(int p_begin, int p_end, int p_step, bool p_deep) const { // l
 		int dest_idx = 0;
 		for (int idx = begin; idx <= end; idx += p_step) {
 			ERR_FAIL_COND_V_MSG(dest_idx < 0 || dest_idx >= new_arr_size, Array(), "Bug in Array slice()");
-			new_arr[dest_idx++] = p_deep ? get(idx).duplicate(p_deep) : get(idx);
+			new_arr[dest_idx++] = p_deep ? get(idx).copy(p_deep) : get(idx);
 		}
 	} else { // p_step < 0
 		int dest_idx = 0;
 		for (int idx = begin; idx >= end; idx += p_step) {
 			ERR_FAIL_COND_V_MSG(dest_idx < 0 || dest_idx >= new_arr_size, Array(), "Bug in Array slice()");
-			new_arr[dest_idx++] = p_deep ? get(idx).duplicate(p_deep) : get(idx);
+			new_arr[dest_idx++] = p_deep ? get(idx).copy(p_deep) : get(idx);
 		}
 	}
 

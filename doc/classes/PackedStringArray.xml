@@ -53,7 +53,7 @@
 				Appends a [PackedStringArray] at the end of this array.
 			</description>
 		</method>
-		<method name="duplicate">
+		<method name="copy">
 			<return type="PackedStringArray">
 			</return>
 			<description>

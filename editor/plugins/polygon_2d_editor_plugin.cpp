@@ -658,7 +658,7 @@ void Polygon2DEditor::_uv_input(const Ref<InputEvent> &p_input) {
 								error->popup_centered();
 							} else {
 								Array polygons = node->get_polygons();
-								polygons = polygons.duplicate(); //copy because its a reference
+								polygons = polygons.copy(); //copy because its a reference
 
 								//todo, could check whether it already exists?
 								polygons.push_back(polygon_create);
@@ -680,7 +680,7 @@ void Polygon2DEditor::_uv_input(const Ref<InputEvent> &p_input) {
 
 				if (uv_move_current == UV_MODE_REMOVE_POLYGON) {
 					Array polygons = node->get_polygons();
-					polygons = polygons.duplicate(); //copy because its a reference
+					polygons = polygons.copy(); //copy because its a reference
 
 					int erase_index = -1;
 					for (int i = polygons.size() - 1; i >= 0; i--) {

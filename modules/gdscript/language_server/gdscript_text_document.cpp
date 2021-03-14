@@ -194,7 +194,7 @@ Array GDScriptTextDocument::completion(const Dictionary &p_params) {
 			i++;
 		}
 	} else if (GDScriptLanguageProtocol::get_singleton()->is_smart_resolve_enabled()) {
-		arr = native_member_completions.duplicate();
+		arr = native_member_completions.copy();
 
 		for (Map<String, ExtendGDScriptParser *>::Element *E = GDScriptLanguageProtocol::get_singleton()->get_workspace()->scripts.front(); E; E = E->next()) {
 			ExtendGDScriptParser *script = E->get();

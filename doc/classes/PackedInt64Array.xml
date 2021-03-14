@@ -53,7 +53,7 @@
 				Appends a [PackedInt64Array] at the end of this array.
 			</description>
 		</method>
-		<method name="duplicate">
+		<method name="copy">
 			<return type="PackedInt64Array">
 			</return>
 			<description>

@@ -710,7 +710,7 @@ static bool _is_action_name_valid(const String &p_name) {
 void ActionMapEditor::_event_config_confirmed() {
 	Ref<InputEvent> ev = event_config_dialog->get_event();
 
-	Dictionary new_action = current_action.duplicate();
+	Dictionary new_action = current_action.copy();
 	Array events = new_action["events"];
 
 	if (current_action_event_index == -1) {
@@ -773,7 +773,7 @@ void ActionMapEditor::_action_edited() {
 		// Deadzone Edited
 		String name = ti->get_meta("__name");
 		Dictionary old_action = ti->get_meta("__action");
-		Dictionary new_action = old_action.duplicate();
+		Dictionary new_action = old_action.copy();
 		new_action["deadzone"] = ti->get_range(1);
 
 		// Call deferred so that input can finish propagating through tree, allowing re-making of tree to occur.

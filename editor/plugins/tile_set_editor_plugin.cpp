@@ -1839,7 +1839,7 @@ void TileSetEditor::_on_tool_clicked(int p_tool) {
 			}
 			for (int i = 0; i < sd.size(); i++) {
 				if (sd[i].get("shape") == previous_shape) {
-					undo_redo->add_undo_method(tileset.ptr(), "tile_set_shapes", get_current_tile(), sd.duplicate());
+					undo_redo->add_undo_method(tileset.ptr(), "tile_set_shapes", get_current_tile(), sd.copy());
 					sd.remove(i);
 					break;
 				}
@@ -1903,7 +1903,7 @@ void TileSetEditor::_on_tool_clicked(int p_tool) {
 						for (int i = 0; i < sd.size(); i++) {
 							if (sd[i].get("shape") == edited_collision_shape) {
 								undo_redo->create_action(TTR("Remove Collision Polygon"));
-								undo_redo->add_undo_method(tileset.ptr(), "tile_set_shapes", get_current_tile(), sd.duplicate());
+								undo_redo->add_undo_method(tileset.ptr(), "tile_set_shapes", get_current_tile(), sd.copy());
 								sd.remove(i);
 								undo_redo->add_do_method(tileset.ptr(), "tile_set_shapes", get_current_tile(), sd);
 								undo_redo->add_do_method(this, "_select_edited_shape_coord");
@@ -2936,7 +2936,7 @@ void TileSetEditor::close_shape(const Vector2 &shape_anchor) {
 			undo_redo->create_action(TTR("Create Collision Polygon"));
 			// Necessary to get the version that returns a Array instead of a Vector.
 			Array sd = tileset->call("tile_get_shapes", get_current_tile());
-			undo_redo->add_undo_method(tileset.ptr(), "tile_set_shapes", get_current_tile(), sd.duplicate());
+			undo_redo->add_undo_method(tileset.ptr(), "tile_set_shapes", get_current_tile(), sd.copy());
 			for (int i = 0; i < sd.size(); i++) {
 				if (sd[i].get("shape") == edited_collision_shape) {
 					sd.remove(i);

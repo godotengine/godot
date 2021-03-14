@@ -1529,7 +1529,7 @@
 				]
 			},
 			{
-				"name": "godot_variant_duplicate",
+				"name": "godot_variant_copy",
 				"return_type": "godot_variant",
 				"arguments": [
 					[

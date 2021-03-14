@@ -39,7 +39,7 @@
 		[/csharp]
 		[/codeblocks]
 		[b]Note:[/b] Concatenating with the [code]+=[/code] operator will create a new array, which has a cost. If you want to append another array to an existing array, [method append_array] is more efficient.
-		[b]Note:[/b] Arrays are always passed by reference. To get a copy of an array which can be modified independently of the original array, use [method duplicate].
+		[b]Note:[/b] Arrays are always passed by reference. To get a copy of an array which can be modified independently of the original array, use [method copy].
 		[b]Note:[/b] When declaring an array with [code]const[/code], the array itself can still be mutated by defining the values at individual indices or pushing/removing elements. Using [code]const[/code] will only prevent assigning the constant with another value after it was initialized.
 	</description>
 	<tutorials>
@@ -207,6 +207,16 @@
 				Clears the array. This is equivalent to using [method resize] with a size of [code]0[/code].
 			</description>
 		</method>
+		<method name="copy" qualifiers="const">
+			<return type="Array">
+			</return>
+			<argument index="0" name="deep" type="bool" default="false">
+			</argument>
+			<description>
+				Returns a copy of the array.
+				If [code]deep[/code] is [code]true[/code], a deep copy is performed: all nested arrays and dictionaries are copied and will not be shared with the original array. If [code]false[/code], a shallow copy is made and references to the original nested arrays and dictionaries are kept, so that modifying a sub-array or dictionary in the copy will also impact those referenced in the source array.
+			</description>
+		</method>
 		<method name="count" qualifiers="const">
 			<return type="int">
 			</return>
@@ -214,16 +224,6 @@
 			</argument>
 			<description>
 				Returns the number of times an element is in the array.
-			</description>
-		</method>
-		<method name="duplicate" qualifiers="const">
-			<return type="Array">
-			</return>
-			<argument index="0" name="deep" type="bool" default="false">
-			</argument>
-			<description>
-				Returns a copy of the array.
-				If [code]deep[/code] is [code]true[/code], a deep copy is performed: all nested arrays and dictionaries are duplicated and will not be shared with the original array. If [code]false[/code], a shallow copy is made and references to the original nested arrays and dictionaries are kept, so that modifying a sub-array or dictionary in the copy will also impact those referenced in the source array.
 			</description>
 		</method>
 		<method name="erase">

@@ -53,7 +53,7 @@
 				Appends a [PackedFloat64Array] at the end of this array.
 			</description>
 		</method>
-		<method name="duplicate">
+		<method name="copy">
 			<return type="PackedFloat64Array">
 			</return>
 			<description>

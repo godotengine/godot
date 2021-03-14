@@ -221,7 +221,7 @@ protected:
 		Dictionary d = script->call("get_variable_info", var);
 
 		if (String(p_name) == "type") {
-			Dictionary dc = d.duplicate();
+			Dictionary dc = d.copy();
 			dc["type"] = p_value;
 			undo_redo->create_action(TTR("Set Variable Type"));
 			undo_redo->add_do_method(script.ptr(), "set_variable_info", var, dc);
@@ -246,7 +246,7 @@ protected:
 		}
 
 		if (String(p_name) == "hint") {
-			Dictionary dc = d.duplicate();
+			Dictionary dc = d.copy();
 			dc["hint"] = p_value;
 			undo_redo->create_action(TTR("Set Variable Type"));
 			undo_redo->add_do_method(script.ptr(), "set_variable_info", var, dc);
@@ -258,7 +258,7 @@ protected:
 		}
 
 		if (String(p_name) == "hint_string") {
-			Dictionary dc = d.duplicate();
+			Dictionary dc = d.copy();
 			dc["hint_string"] = p_value;
 			undo_redo->create_action(TTR("Set Variable Type"));
 			undo_redo->add_do_method(script.ptr(), "set_variable_info", var, dc);
