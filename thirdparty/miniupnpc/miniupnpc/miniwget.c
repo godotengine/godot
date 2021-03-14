@@ -1,8 +1,8 @@
-/* $Id: miniwget.c,v 1.78 2018/03/13 23:22:18 nanard Exp $ */
+/* $Id: miniwget.c,v 1.82 2020/05/29 21:14:22 nanard Exp $ */
 /* Project : miniupnp
- * Website : http://miniupnp.free.fr/
+ * Website : http://miniupnp.free.fr/ or https://miniupnp.tuxfamily.org/
  * Author : Thomas Bernard
- * Copyright (c) 2005-2018 Thomas Bernard
+ * Copyright (c) 2005-2020 Thomas Bernard
  * This software is subject to the conditions detailed in the
  * LICENCE file provided in this distribution. */
 
@@ -15,7 +15,7 @@
 #include <ws2tcpip.h>
 #include <io.h>
 #define MAXHOSTNAMELEN 64
-#define snprintf _snprintf
+#include "win32_snprintf.h"
 #define socklen_t int
 #ifndef strncasecmp
 #if defined(_MSC_VER) && (_MSC_VER >= 1400)
@@ -176,11 +176,14 @@ getHTTPResponse(SOCKET s, int * size, int * status_code)
 						/* Status line
 						 * HTTP-Version SP Status-Code SP Reason-Phrase CRLF */
 						int sp;
-						for(sp = 0; sp < i; sp++)
+						for(sp = 0; sp < i - 1; sp++)
 							if(header_buf[sp] == ' ')
 							{
 								if(*status_code < 0)
-									*status_code = atoi(header_buf + sp + 1);
+								{
+									if (header_buf[sp+1] >= '1' && header_buf[sp+1] <= '9')
+										*status_code = atoi(header_buf + sp + 1);
+								}
 								else
 								{
 #ifdef DEBUG
