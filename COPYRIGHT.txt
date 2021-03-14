@@ -269,7 +269,7 @@ License: CC0-1.0
 
 Files: ./thirdparty/miniupnpc/
 Comment: MiniUPnPc
-Copyright: 2005-2019, Thomas Bernard
+Copyright: 2005-2021, Thomas Bernard
 License: BSD-3-clause
 
 Files: ./thirdparty/minizip/
