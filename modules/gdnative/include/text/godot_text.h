@@ -213,7 +213,7 @@ godot_bool GDAPI godot_packed_glyph_array_has(godot_packed_glyph_array *p_self, 
 
 void GDAPI godot_packed_glyph_array_sort(godot_packed_glyph_array *p_self);
 
-void GDAPI godot_packed_glyph_array_invert(godot_packed_glyph_array *p_self);
+void GDAPI godot_packed_glyph_array_reverse(godot_packed_glyph_array *p_self);
 
 void GDAPI godot_packed_glyph_array_push_back(godot_packed_glyph_array *p_self, const godot_glyph *p_data);
 

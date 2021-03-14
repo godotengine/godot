@@ -368,7 +368,7 @@ Vector<Vector2> PolygonPathFinder::find_path(const Vector2 &p_from, const Vector
 			path.push_back(points[at].pos);
 		} while (at != aidx);
 
-		path.invert();
+		path.reverse();
 	}
 
 	for (int i = 0; i < points.size() - 2; i++) {

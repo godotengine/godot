@@ -86,11 +86,11 @@ void DependencyEditor::_fix_and_find(EditorFileSystemDirectory *efsd, Map<String
 			String lost = E->key().replace_first("res://", "");
 
 			Vector<String> existingv = existing.split("/");
-			existingv.invert();
+			existingv.reverse();
 			Vector<String> currentv = current.split("/");
-			currentv.invert();
+			currentv.reverse();
 			Vector<String> lostv = lost.split("/");
-			lostv.invert();
+			lostv.reverse();
 
 			int existing_score = 0;
 			int current_score = 0;

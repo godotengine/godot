@@ -2928,7 +2928,7 @@ void TileSetEditor::close_shape(const Vector2 &shape_anchor) {
 			}
 
 			if (p_total < 0) {
-				points.invert();
+				points.reverse();
 			}
 
 			shape->set_points(points);

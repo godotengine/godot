@@ -931,7 +931,7 @@ void CSGBrushOperation::Build2DFaces::_merge_faces(const Vector<int> &p_segment_
 
 		// Delete the old faces in reverse index order.
 		merge_faces_idx.sort();
-		merge_faces_idx.invert();
+		merge_faces_idx.reverse();
 		for (int i = 0; i < merge_faces_idx.size(); ++i) {
 			faces.remove(merge_faces_idx[i]);
 		}
