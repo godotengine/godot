@@ -103,7 +103,7 @@ CLANG_FORMAT_VERSION="$(clang-format --version | cut -d' ' -f3)"
 CLANG_FORMAT_MAJOR="$(echo "$CLANG_FORMAT_VERSION" | cut -d'.' -f1)"
 
 if [ "$CLANG_FORMAT_MAJOR" != "$RECOMMENDED_CLANG_FORMAT_MAJOR" ]; then
-    echo "Warning: Your clang-format binary is the wrong version ($CLANG_FORMAT_VERSION, expected $CLANG_FORMAT_MAJOR.x.x)."
+    echo "Warning: Your clang-format binary is the wrong version ($CLANG_FORMAT_VERSION, expected $RECOMMENDED_CLANG_FORMAT_MAJOR.x.x)."
     echo "         Consider upgrading or downgrading clang-format as formatting may not be applied correctly."
 fi
 
