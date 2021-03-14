@@ -37,7 +37,7 @@
 #include "scene/2d/animated_sprite_2d.h"
 #include "scene/2d/area_2d.h"
 #include "scene/2d/audio_listener_2d.h"
-#include "scene/2d/audio_stream_player_2d.h"
+#include "scene/2d/audio_player_2d.h"
 #include "scene/2d/back_buffer_copy.h"
 #include "scene/2d/camera_2d.h"
 #include "scene/2d/canvas_group.h"
@@ -77,7 +77,7 @@
 #include "scene/animation/animation_tree.h"
 #include "scene/animation/root_motion_view.h"
 #include "scene/animation/tween.h"
-#include "scene/audio/audio_stream_player.h"
+#include "scene/audio/audio_player.h"
 #include "scene/debugger/scene_debugger.h"
 #include "scene/gui/aspect_ratio_container.h"
 #include "scene/gui/box_container.h"
@@ -207,7 +207,7 @@
 #ifndef _3D_DISABLED
 #include "scene/3d/area_3d.h"
 #include "scene/3d/audio_listener_3d.h"
-#include "scene/3d/audio_stream_player_3d.h"
+#include "scene/3d/audio_player_3d.h"
 #include "scene/3d/bone_attachment_3d.h"
 #include "scene/3d/camera_3d.h"
 #include "scene/3d/collision_polygon_3d.h"
@@ -833,10 +833,10 @@ void register_scene_types() {
 
 	OS::get_singleton()->yield(); // may take time to init
 
-	GDREGISTER_CLASS(AudioStreamPlayer);
-	GDREGISTER_CLASS(AudioStreamPlayer2D);
+	GDREGISTER_CLASS(AudioPlayer);
+	GDREGISTER_CLASS(AudioPlayer2D);
 #ifndef _3D_DISABLED
-	GDREGISTER_CLASS(AudioStreamPlayer3D);
+	GDREGISTER_CLASS(AudioPlayer3D);
 #endif
 	GDREGISTER_VIRTUAL_CLASS(VideoStream);
 	GDREGISTER_CLASS(AudioStreamSample);

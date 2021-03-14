@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  audio_stream_player.cpp                                              */
+/*  audio_player.cpp                                                     */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,13 +28,13 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#include "audio_stream_player.h"
+#include "audio_player.h"
 
 #include "core/config/engine.h"
 #include "core/math/audio_frame.h"
 #include "servers/audio_server.h"
 
-void AudioStreamPlayer::_notification(int p_what) {
+void AudioPlayer::_notification(int p_what) {
 	if (p_what == NOTIFICATION_ENTER_TREE) {
 		if (autoplay && !Engine::get_singleton()->is_editor_hint()) {
 			play();
@@ -81,16 +81,16 @@ void AudioStreamPlayer::_notification(int p_what) {
 	}
 }
 
-void AudioStreamPlayer::set_stream(Ref<AudioStream> p_stream) {
+void AudioPlayer::set_stream(Ref<AudioStream> p_stream) {
 	stop();
 	stream = p_stream;
 }
 
-Ref<AudioStream> AudioStreamPlayer::get_stream() const {
+Ref<AudioStream> AudioPlayer::get_stream() const {
 	return stream;
 }
 
-void AudioStreamPlayer::set_volume_db(float p_volume) {
+void AudioPlayer::set_volume_db(float p_volume) {
 	volume_db = p_volume;
 
 	Vector<AudioFrame> volume_vector = _get_volume_vector();
@@ -99,11 +99,11 @@ void AudioStreamPlayer::set_volume_db(float p_volume) {
 	}
 }
 
-float AudioStreamPlayer::get_volume_db() const {
+float AudioPlayer::get_volume_db() const {
 	return volume_db;
 }
 
-void AudioStreamPlayer::set_pitch_scale(float p_pitch_scale) {
+void AudioPlayer::set_pitch_scale(float p_pitch_scale) {
 	ERR_FAIL_COND(p_pitch_scale <= 0.0);
 	pitch_scale = p_pitch_scale;
 
@@ -112,21 +112,21 @@ void AudioStreamPlayer::set_pitch_scale(float p_pitch_scale) {
 	}
 }
 
-float AudioStreamPlayer::get_pitch_scale() const {
+float AudioPlayer::get_pitch_scale() const {
 	return pitch_scale;
 }
 
-void AudioStreamPlayer::set_max_polyphony(int p_max_polyphony) {
+void AudioPlayer::set_max_polyphony(int p_max_polyphony) {
 	if (p_max_polyphony > 0) {
 		max_polyphony = p_max_polyphony;
 	}
 }
 
-int AudioStreamPlayer::get_max_polyphony() const {
+int AudioPlayer::get_max_polyphony() const {
 	return max_polyphony;
 }
 
-void AudioStreamPlayer::play(float p_from_pos) {
+void AudioPlayer::play(float p_from_pos) {
 	if (stream.is_null()) {
 		return;
 	}
@@ -147,14 +147,14 @@ void AudioStreamPlayer::play(float p_from_pos) {
 	}
 }
 
-void AudioStreamPlayer::seek(float p_seconds) {
+void AudioPlayer::seek(float p_seconds) {
 	if (is_playing()) {
 		stop();
 		play(p_seconds);
 	}
 }
 
-void AudioStreamPlayer::stop() {
+void AudioPlayer::stop() {
 	for (Ref<AudioStreamPlayback> &playback : stream_playbacks) {
 		AudioServer::get_singleton()->stop_playback_stream(playback);
 	}
@@ -163,7 +163,7 @@ void AudioStreamPlayer::stop() {
 	set_process_internal(false);
 }
 
-bool AudioStreamPlayer::is_playing() const {
+bool AudioPlayer::is_playing() const {
 	for (const Ref<AudioStreamPlayback> &playback : stream_playbacks) {
 		if (AudioServer::get_singleton()->is_playback_active(playback)) {
 			return true;
@@ -172,7 +172,7 @@ bool AudioStreamPlayer::is_playing() const {
 	return false;
 }
 
-float AudioStreamPlayer::get_playback_position() {
+float AudioPlayer::get_playback_position() {
 	// Return the playback position of the most recently started playback stream.
 	if (!stream_playbacks.is_empty()) {
 		return AudioServer::get_singleton()->get_playback_position(stream_playbacks[stream_playbacks.size() - 1]);
@@ -180,14 +180,14 @@ float AudioStreamPlayer::get_playback_position() {
 	return 0;
 }
 
-void AudioStreamPlayer::set_bus(const StringName &p_bus) {
+void AudioPlayer::set_bus(const StringName &p_bus) {
 	bus = p_bus;
 	for (const Ref<AudioStreamPlayback> &playback : stream_playbacks) {
 		AudioServer::get_singleton()->set_playback_bus_exclusive(playback, p_bus, _get_volume_vector());
 	}
 }
 
-StringName AudioStreamPlayer::get_bus() const {
+StringName AudioPlayer::get_bus() const {
 	for (int i = 0; i < AudioServer::get_singleton()->get_bus_count(); i++) {
 		if (AudioServer::get_singleton()->get_bus_name(i) == String(bus)) {
 			return bus;
@@ -196,23 +196,23 @@ StringName AudioStreamPlayer::get_bus() const {
 	return SNAME("Master");
 }
 
-void AudioStreamPlayer::set_autoplay(bool p_enable) {
+void AudioPlayer::set_autoplay(bool p_enable) {
 	autoplay = p_enable;
 }
 
-bool AudioStreamPlayer::is_autoplay_enabled() {
+bool AudioPlayer::is_autoplay_enabled() {
 	return autoplay;
 }
 
-void AudioStreamPlayer::set_mix_target(MixTarget p_target) {
+void AudioPlayer::set_mix_target(MixTarget p_target) {
 	mix_target = p_target;
 }
 
-AudioStreamPlayer::MixTarget AudioStreamPlayer::get_mix_target() const {
+AudioPlayer::MixTarget AudioPlayer::get_mix_target() const {
 	return mix_target;
 }
 
-void AudioStreamPlayer::_set_playing(bool p_enable) {
+void AudioPlayer::_set_playing(bool p_enable) {
 	if (p_enable) {
 		play();
 	} else {
@@ -220,7 +220,7 @@ void AudioStreamPlayer::_set_playing(bool p_enable) {
 	}
 }
 
-bool AudioStreamPlayer::_is_active() const {
+bool AudioPlayer::_is_active() const {
 	for (const Ref<AudioStreamPlayback> &playback : stream_playbacks) {
 		if (AudioServer::get_singleton()->is_playback_active(playback)) {
 			return true;
@@ -229,14 +229,14 @@ bool AudioStreamPlayer::_is_active() const {
 	return false;
 }
 
-void AudioStreamPlayer::set_stream_paused(bool p_pause) {
+void AudioPlayer::set_stream_paused(bool p_pause) {
 	// TODO this does not have perfect recall, fix that maybe? If there are zero playbacks registered with the AudioServer, this bool isn't persisted.
 	for (Ref<AudioStreamPlayback> &playback : stream_playbacks) {
 		AudioServer::get_singleton()->set_playback_paused(playback, p_pause);
 	}
 }
 
-bool AudioStreamPlayer::get_stream_paused() const {
+bool AudioPlayer::get_stream_paused() const {
 	// There's currently no way to pause some playback streams but not others. Check the first and don't bother looking at the rest.
 	if (!stream_playbacks.is_empty()) {
 		return AudioServer::get_singleton()->is_playback_paused(stream_playbacks[0]);
@@ -244,7 +244,7 @@ bool AudioStreamPlayer::get_stream_paused() const {
 	return false;
 }
 
-Vector<AudioFrame> AudioStreamPlayer::_get_volume_vector() {
+Vector<AudioFrame> AudioPlayer::_get_volume_vector() {
 	Vector<AudioFrame> volume_vector;
 	// We need at most four stereo pairs (for 7.1 systems).
 	volume_vector.resize(4);
@@ -281,7 +281,7 @@ Vector<AudioFrame> AudioStreamPlayer::_get_volume_vector() {
 	return volume_vector;
 }
 
-void AudioStreamPlayer::_validate_property(PropertyInfo &property) const {
+void AudioPlayer::_validate_property(PropertyInfo &property) const {
 	if (property.name == "bus") {
 		String options;
 		for (int i = 0; i < AudioServer::get_singleton()->get_bus_count(); i++) {
@@ -298,53 +298,53 @@ void AudioStreamPlayer::_validate_property(PropertyInfo &property) const {
 	Node::_validate_property(property);
 }
 
-void AudioStreamPlayer::_bus_layout_changed() {
+void AudioPlayer::_bus_layout_changed() {
 	notify_property_list_changed();
 }
 
-Ref<AudioStreamPlayback> AudioStreamPlayer::get_stream_playback() {
+Ref<AudioStreamPlayback> AudioPlayer::get_stream_playback() {
 	if (!stream_playbacks.is_empty()) {
 		return stream_playbacks[stream_playbacks.size() - 1];
 	}
 	return nullptr;
 }
 
-void AudioStreamPlayer::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("set_stream", "stream"), &AudioStreamPlayer::set_stream);
-	ClassDB::bind_method(D_METHOD("get_stream"), &AudioStreamPlayer::get_stream);
+void AudioPlayer::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("set_stream", "stream"), &AudioPlayer::set_stream);
+	ClassDB::bind_method(D_METHOD("get_stream"), &AudioPlayer::get_stream);
 
-	ClassDB::bind_method(D_METHOD("set_volume_db", "volume_db"), &AudioStreamPlayer::set_volume_db);
-	ClassDB::bind_method(D_METHOD("get_volume_db"), &AudioStreamPlayer::get_volume_db);
+	ClassDB::bind_method(D_METHOD("set_volume_db", "volume_db"), &AudioPlayer::set_volume_db);
+	ClassDB::bind_method(D_METHOD("get_volume_db"), &AudioPlayer::get_volume_db);
 
-	ClassDB::bind_method(D_METHOD("set_pitch_scale", "pitch_scale"), &AudioStreamPlayer::set_pitch_scale);
-	ClassDB::bind_method(D_METHOD("get_pitch_scale"), &AudioStreamPlayer::get_pitch_scale);
+	ClassDB::bind_method(D_METHOD("set_pitch_scale", "pitch_scale"), &AudioPlayer::set_pitch_scale);
+	ClassDB::bind_method(D_METHOD("get_pitch_scale"), &AudioPlayer::get_pitch_scale);
 
-	ClassDB::bind_method(D_METHOD("play", "from_position"), &AudioStreamPlayer::play, DEFVAL(0.0));
-	ClassDB::bind_method(D_METHOD("seek", "to_position"), &AudioStreamPlayer::seek);
-	ClassDB::bind_method(D_METHOD("stop"), &AudioStreamPlayer::stop);
+	ClassDB::bind_method(D_METHOD("play", "from_position"), &AudioPlayer::play, DEFVAL(0.0));
+	ClassDB::bind_method(D_METHOD("seek", "to_position"), &AudioPlayer::seek);
+	ClassDB::bind_method(D_METHOD("stop"), &AudioPlayer::stop);
 
-	ClassDB::bind_method(D_METHOD("is_playing"), &AudioStreamPlayer::is_playing);
-	ClassDB::bind_method(D_METHOD("get_playback_position"), &AudioStreamPlayer::get_playback_position);
+	ClassDB::bind_method(D_METHOD("is_playing"), &AudioPlayer::is_playing);
+	ClassDB::bind_method(D_METHOD("get_playback_position"), &AudioPlayer::get_playback_position);
 
-	ClassDB::bind_method(D_METHOD("set_bus", "bus"), &AudioStreamPlayer::set_bus);
-	ClassDB::bind_method(D_METHOD("get_bus"), &AudioStreamPlayer::get_bus);
+	ClassDB::bind_method(D_METHOD("set_bus", "bus"), &AudioPlayer::set_bus);
+	ClassDB::bind_method(D_METHOD("get_bus"), &AudioPlayer::get_bus);
 
-	ClassDB::bind_method(D_METHOD("set_autoplay", "enable"), &AudioStreamPlayer::set_autoplay);
-	ClassDB::bind_method(D_METHOD("is_autoplay_enabled"), &AudioStreamPlayer::is_autoplay_enabled);
+	ClassDB::bind_method(D_METHOD("set_autoplay", "enable"), &AudioPlayer::set_autoplay);
+	ClassDB::bind_method(D_METHOD("is_autoplay_enabled"), &AudioPlayer::is_autoplay_enabled);
 
-	ClassDB::bind_method(D_METHOD("set_mix_target", "mix_target"), &AudioStreamPlayer::set_mix_target);
-	ClassDB::bind_method(D_METHOD("get_mix_target"), &AudioStreamPlayer::get_mix_target);
+	ClassDB::bind_method(D_METHOD("set_mix_target", "mix_target"), &AudioPlayer::set_mix_target);
+	ClassDB::bind_method(D_METHOD("get_mix_target"), &AudioPlayer::get_mix_target);
 
-	ClassDB::bind_method(D_METHOD("_set_playing", "enable"), &AudioStreamPlayer::_set_playing);
-	ClassDB::bind_method(D_METHOD("_is_active"), &AudioStreamPlayer::_is_active);
+	ClassDB::bind_method(D_METHOD("_set_playing", "enable"), &AudioPlayer::_set_playing);
+	ClassDB::bind_method(D_METHOD("_is_active"), &AudioPlayer::_is_active);
 
-	ClassDB::bind_method(D_METHOD("set_stream_paused", "pause"), &AudioStreamPlayer::set_stream_paused);
-	ClassDB::bind_method(D_METHOD("get_stream_paused"), &AudioStreamPlayer::get_stream_paused);
+	ClassDB::bind_method(D_METHOD("set_stream_paused", "pause"), &AudioPlayer::set_stream_paused);
+	ClassDB::bind_method(D_METHOD("get_stream_paused"), &AudioPlayer::get_stream_paused);
 
-	ClassDB::bind_method(D_METHOD("set_max_polyphony", "max_polyphony"), &AudioStreamPlayer::set_max_polyphony);
-	ClassDB::bind_method(D_METHOD("get_max_polyphony"), &AudioStreamPlayer::get_max_polyphony);
+	ClassDB::bind_method(D_METHOD("set_max_polyphony", "max_polyphony"), &AudioPlayer::set_max_polyphony);
+	ClassDB::bind_method(D_METHOD("get_max_polyphony"), &AudioPlayer::get_max_polyphony);
 
-	ClassDB::bind_method(D_METHOD("get_stream_playback"), &AudioStreamPlayer::get_stream_playback);
+	ClassDB::bind_method(D_METHOD("get_stream_playback"), &AudioPlayer::get_stream_playback);
 
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "stream", PROPERTY_HINT_RESOURCE_TYPE, "AudioStream"), "set_stream", "get_stream");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "volume_db", PROPERTY_HINT_RANGE, "-80,24"), "set_volume_db", "get_volume_db");
@@ -363,9 +363,9 @@ void AudioStreamPlayer::_bind_methods() {
 	BIND_ENUM_CONSTANT(MIX_TARGET_CENTER);
 }
 
-AudioStreamPlayer::AudioStreamPlayer() {
-	AudioServer::get_singleton()->connect("bus_layout_changed", callable_mp(this, &AudioStreamPlayer::_bus_layout_changed));
+AudioPlayer::AudioPlayer() {
+	AudioServer::get_singleton()->connect("bus_layout_changed", callable_mp(this, &AudioPlayer::_bus_layout_changed));
 }
 
-AudioStreamPlayer::~AudioStreamPlayer() {
+AudioPlayer::~AudioPlayer() {
 }

@@ -1304,7 +1304,7 @@ AnimationTrackEditTypeAnimation::AnimationTrackEditTypeAnimation() {
 
 /////////
 AnimationTrackEdit *AnimationTrackEditDefaultPlugin::create_value_track_edit(Object *p_object, Variant::Type p_type, const String &p_property, PropertyHint p_hint, const String &p_hint_string, int p_usage) {
-	if (p_property == "playing" && (p_object->is_class("AudioStreamPlayer") || p_object->is_class("AudioStreamPlayer2D") || p_object->is_class("AudioStreamPlayer3D"))) {
+	if (p_property == "playing" && (p_object->is_class("AudioPlayer") || p_object->is_class("AudioPlayer2D") || p_object->is_class("AudioPlayer3D"))) {
 		AnimationTrackEditAudio *audio = memnew(AnimationTrackEditAudio);
 		audio->set_node(p_object);
 		return audio;
