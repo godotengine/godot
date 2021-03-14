@@ -680,17 +680,17 @@ void FileSystemDock::_sort_file_info_list(List<FileSystemDock::FileInfo> &r_file
 			break;
 		case FILE_SORT_TYPE_REVERSE:
 			r_file_list.sort_custom<FileInfoTypeComparator>();
-			r_file_list.invert();
+			r_file_list.reverse();
 			break;
 		case FILE_SORT_MODIFIED_TIME:
 			r_file_list.sort_custom<FileInfoModifiedTimeComparator>();
 			break;
 		case FILE_SORT_MODIFIED_TIME_REVERSE:
 			r_file_list.sort_custom<FileInfoModifiedTimeComparator>();
-			r_file_list.invert();
+			r_file_list.reverse();
 			break;
 		case FILE_SORT_NAME_REVERSE:
-			r_file_list.invert();
+			r_file_list.reverse();
 			break;
 		default: // FILE_SORT_NAME
 			break;

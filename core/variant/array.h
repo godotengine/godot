@@ -83,7 +83,7 @@ public:
 	void shuffle();
 	int bsearch(const Variant &p_value, bool p_before = true);
 	int bsearch_custom(const Variant &p_value, Callable p_callable, bool p_before = true);
-	void invert();
+	void reverse();
 
 	int find(const Variant &p_value, int p_from = 0) const;
 	int rfind(const Variant &p_value, int p_from = -1) const;

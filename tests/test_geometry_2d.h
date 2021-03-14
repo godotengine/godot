@@ -113,7 +113,7 @@ TEST_CASE("[Geometry2D] Polygon clockwise") {
 	p.push_back(Vector2(1, 5));
 	CHECK(Geometry2D::is_polygon_clockwise(p));
 
-	p.invert();
+	p.reverse();
 	CHECK_FALSE(Geometry2D::is_polygon_clockwise(p));
 }
 

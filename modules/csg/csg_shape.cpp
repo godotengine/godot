@@ -1679,7 +1679,7 @@ CSGBrush *CSGPolygon3D::_build_brush() {
 	Vector<Point2> final_polygon = polygon;
 
 	if (Triangulate::get_area(final_polygon) > 0) {
-		final_polygon.invert();
+		final_polygon.reverse();
 	}
 
 	Vector<int> triangles = Geometry2D::triangulate_polygon(final_polygon);

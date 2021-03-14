@@ -351,7 +351,7 @@ Vector<Vector3> NavMap::get_path(Vector3 p_origin, Vector3 p_destination, bool p
 			path.push_back(begin_point);
 		}
 
-		path.invert();
+		path.reverse();
 
 	} else {
 		path.push_back(end_point);
@@ -363,7 +363,7 @@ Vector<Vector3> NavMap::get_path(Vector3 p_origin, Vector3 p_destination, bool p
 			np_id = navigation_polys[np_id].back_navigation_poly_id;
 		}
 
-		path.invert();
+		path.reverse();
 	}
 
 	return path;

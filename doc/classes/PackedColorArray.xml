@@ -79,7 +79,7 @@
 				Inserts a new element at a given position in the array. The position must be valid, or at the end of the array ([code]idx == size()[/code]).
 			</description>
 		</method>
-		<method name="invert">
+		<method name="reverse">
 			<return type="void">
 			</return>
 			<description>

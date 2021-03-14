@@ -1138,7 +1138,7 @@ Vector<String> String::rsplit(const String &p_splitter, bool p_allow_empty, int 
 		remaining_len = left_edge;
 	}
 
-	ret.invert();
+	ret.reverse();
 	return ret;
 }
 

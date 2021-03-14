@@ -100,7 +100,7 @@ void GDScriptByteCodeGenerator::start_parameters() {
 }
 
 void GDScriptByteCodeGenerator::end_parameters() {
-	function->default_arguments.invert();
+	function->default_arguments.reverse();
 }
 
 void GDScriptByteCodeGenerator::write_start(GDScript *p_script, const StringName &p_function_name, bool p_static, MultiplayerAPI::RPCMode p_rpc_mode, const GDScriptDataType &p_return_type) {

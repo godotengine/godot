@@ -298,7 +298,7 @@ struct GDScriptUtilityFunctionsDefinitions {
 					sname.push_back(p->name);
 					p = p->_owner;
 				}
-				sname.invert();
+				sname.reverse();
 
 				if (!p->path.is_resource_file()) {
 					r_error.error = Callable::CallError::CALL_ERROR_INVALID_ARGUMENT;

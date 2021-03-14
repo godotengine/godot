@@ -5716,7 +5716,7 @@
 					]
 				},
 				{
-					"name": "godot_packed_glyph_array_invert",
+					"name": "godot_packed_glyph_array_reverse",
 					"return_type": "void",
 					"arguments": [
 						[

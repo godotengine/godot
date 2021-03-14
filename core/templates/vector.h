@@ -74,7 +74,7 @@ public:
 			remove(idx);
 		}
 	}
-	void invert();
+	void reverse();
 
 	_FORCE_INLINE_ T *ptrw() { return _cowdata.ptrw(); }
 	_FORCE_INLINE_ const T *ptr() const { return _cowdata.ptr(); }
@@ -194,7 +194,7 @@ public:
 };
 
 template <class T>
-void Vector<T>::invert() {
+void Vector<T>::reverse() {
 	for (int i = 0; i < size() / 2; i++) {
 		T *p = ptrw();
 		SWAP(p[i], p[size() - i - 1]);

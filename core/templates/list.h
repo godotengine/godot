@@ -492,7 +492,7 @@ public:
 		_data->last = p_I;
 	}
 
-	void invert() {
+	void reverse() {
 		int s = size() / 2;
 		Element *F = front();
 		Element *B = back();
