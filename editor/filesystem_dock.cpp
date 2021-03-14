@@ -2718,7 +2718,22 @@ FileSystemDock::FileSystemDock(EditorNode *p_editor) {
 	// `KEY_MASK_CMD | KEY_C` conflicts with other editor shortcuts.
 	ED_SHORTCUT("filesystem_dock/copy_path", TTR("Copy Path"), KEY_MASK_CMD | KEY_MASK_SHIFT | KEY_C);
 	ED_SHORTCUT("filesystem_dock/duplicate", TTR("Duplicate..."), KEY_MASK_CMD | KEY_D);
+
+#if defined(WINDOWS_ENABLED)
+	// TRANSLATORS: This string is only used on Windows, as it refers to the system trash
+	// as "Recycle Bin" instead of "Trash". Make sure to use the translation of "Recycle Bin"
+	// recommended by Microsoft for the target language.
+	ED_SHORTCUT("filesystem_dock/delete", TTR("Move to Recycle Bin"), KEY_DELETE);
+#elif defined(OSX_ENABLED)
+	// TRANSLATORS: This string is only used on macOS, as it refers to the system trash
+	// as "Bin" instead of "Trash". Make sure to use the translation of "Bin"
+	// recommended by Apple for the target language.
+	ED_SHORTCUT("filesystem_dock/delete", TTR("Move to Bin"), KEY_DELETE);
+#else
+	// TRANSLATORS: This string is only used on platforms other than Windows and macOS.
 	ED_SHORTCUT("filesystem_dock/delete", TTR("Move to Trash"), KEY_DELETE);
+#endif
+
 	ED_SHORTCUT("filesystem_dock/rename", TTR("Rename..."), KEY_F2);
 
 	VBoxContainer *top_vbc = memnew(VBoxContainer);
