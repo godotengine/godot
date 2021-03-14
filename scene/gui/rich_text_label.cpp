@@ -147,7 +147,7 @@ RichTextLabel::Item *RichTextLabel::_get_item_at_pos(RichTextLabel::Item *p_item
 			case ITEM_TEXT: {
 				ItemText *t = (ItemText *)it;
 				offset += t->text.length();
-				if (offset >= p_position) {
+				if (offset > p_position) {
 					return it;
 				}
 			} break;
@@ -1117,7 +1117,8 @@ void RichTextLabel::_find_click(ItemFrame *p_frame, const Point2i &p_click, Item
 
 	Point2 ofs = text_rect.get_position() + Vector2(0, main->lines[from_line].offset.y - vofs);
 	while (ofs.y < size.height && from_line < main->lines.size()) {
-		ofs.y += _find_click_in_line(p_frame, from_line, ofs, text_rect.size.x, p_click, r_click_frame, r_click_line, r_click_item, r_click_char);
+		_find_click_in_line(p_frame, from_line, ofs, text_rect.size.x, p_click, r_click_frame, r_click_line, r_click_item, r_click_char);
+		ofs.y += main->lines[from_line].text_buf->get_size().y;
 		if (((r_click_item != nullptr) && ((*r_click_item) != nullptr)) || ((r_click_frame != nullptr) && ((*r_click_frame) != nullptr))) {
 			if (r_outside != nullptr) {
 				*r_outside = false;
@@ -1244,8 +1245,19 @@ float RichTextLabel::_find_click_in_line(ItemFrame *p_frame, int p_line, const V
 		if (r_click_item != nullptr) {
 			Item *it = p_frame->lines[p_line].from;
 			Item *it_to = (p_line + 1 < p_frame->lines.size()) ? p_frame->lines[p_line + 1].from : nullptr;
-			it = _get_item_at_pos(it, it_to, char_pos);
-			*r_click_item = it;
+			if (char_pos == p_frame->lines[p_line].char_count) {
+				// Selection after the end of line, select last item.
+				if (it_to != nullptr) {
+					*r_click_item = _get_prev_item(it_to);
+				} else {
+					for (Item *i = it; i && i != it_to; i = _get_next_item(i)) {
+						*r_click_item = i;
+					}
+				}
+			} else {
+				// Selection in the line.
+				*r_click_item = _get_item_at_pos(it, it_to, char_pos);
+			}
 		}
 
 		if (r_click_frame != nullptr) {
