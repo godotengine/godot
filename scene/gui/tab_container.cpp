@@ -1023,6 +1023,7 @@ void TabContainer::set_tab_title(int p_tab, const String &p_title) {
 	Control *child = _get_tab(p_tab);
 	ERR_FAIL_COND(!child);
 	child->set_meta("_tab_name", p_title);
+	_refresh_texts();
 	update();
 }
 
