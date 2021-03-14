@@ -897,7 +897,7 @@ void TextureRegionEditor::edit(Object *p_obj) {
 		atlas_tex = Ref<AtlasTexture>(nullptr);
 	}
 	edit_draw->update();
-	if ((node_sprite && !node_sprite->is_region()) || (node_sprite_3d && !node_sprite_3d->is_region())) {
+	if ((node_sprite && !node_sprite->is_region_enabled()) || (node_sprite_3d && !node_sprite_3d->is_region_enabled())) {
 		set_process(true);
 	}
 	if (!p_obj) {
@@ -1115,7 +1115,7 @@ void TextureRegionEditorPlugin::_editor_visiblity_changed() {
 void TextureRegionEditorPlugin::make_visible(bool p_visible) {
 	if (p_visible) {
 		texture_region_button->show();
-		bool is_node_configured = region_editor->is_stylebox() || region_editor->is_atlas_texture() || region_editor->is_ninepatch() || (region_editor->get_sprite() && region_editor->get_sprite()->is_region()) || (region_editor->get_sprite_3d() && region_editor->get_sprite_3d()->is_region());
+		bool is_node_configured = region_editor->is_stylebox() || region_editor->is_atlas_texture() || region_editor->is_ninepatch() || (region_editor->get_sprite() && region_editor->get_sprite()->is_region_enabled()) || (region_editor->get_sprite_3d() && region_editor->get_sprite_3d()->is_region_enabled());
 		if ((is_node_configured && !manually_hidden) || texture_region_button->is_pressed()) {
 			editor->make_bottom_panel_item_visible(region_editor);
 		}
