@@ -366,7 +366,7 @@ void Sprite3D::_draw() {
 	}
 
 	Rect2 base_rect;
-	if (region) {
+	if (region_enabled) {
 		base_rect = region_rect;
 	} else {
 		base_rect = Rect2(0, 0, texture->get_width(), texture->get_height());
@@ -511,24 +511,24 @@ Ref<Texture2D> Sprite3D::get_texture() const {
 	return texture;
 }
 
-void Sprite3D::set_region(bool p_region) {
-	if (p_region == region) {
+void Sprite3D::set_region_enabled(bool p_region_enabled) {
+	if (p_region_enabled == region_enabled) {
 		return;
 	}
 
-	region = p_region;
+	region_enabled = p_region_enabled;
 	_queue_update();
 	notify_property_list_changed();
 }
 
-bool Sprite3D::is_region() const {
-	return region;
+bool Sprite3D::is_region_enabled() const {
+	return region_enabled;
 }
 
 void Sprite3D::set_region_rect(const Rect2 &p_region_rect) {
 	bool changed = region_rect != p_region_rect;
 	region_rect = p_region_rect;
-	if (region && changed) {
+	if (region_enabled && changed) {
 		_queue_update();
 	}
 }
@@ -595,7 +595,7 @@ Rect2 Sprite3D::get_item_rect() const {
 
 	Size2i s;
 
-	if (region) {
+	if (region_enabled) {
 		s = region_rect.size;
 	} else {
 		s = texture->get_size();
@@ -625,7 +625,7 @@ void Sprite3D::_validate_property(PropertyInfo &property) const {
 		property.usage |= PROPERTY_USAGE_KEYING_INCREMENTS;
 	}
 
-	if (!region && property.name == "region_rect") {
+	if (!region_enabled && property.name == "region_rect") {
 		property.usage = PROPERTY_USAGE_NOEDITOR;
 	}
 }
@@ -634,8 +634,8 @@ void Sprite3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_texture", "texture"), &Sprite3D::set_texture);
 	ClassDB::bind_method(D_METHOD("get_texture"), &Sprite3D::get_texture);
 
-	ClassDB::bind_method(D_METHOD("set_region", "enabled"), &Sprite3D::set_region);
-	ClassDB::bind_method(D_METHOD("is_region"), &Sprite3D::is_region);
+	ClassDB::bind_method(D_METHOD("set_region_enabled", "enabled"), &Sprite3D::set_region_enabled);
+	ClassDB::bind_method(D_METHOD("is_region_enabled"), &Sprite3D::is_region_enabled);
 
 	ClassDB::bind_method(D_METHOD("set_region_rect", "rect"), &Sprite3D::set_region_rect);
 	ClassDB::bind_method(D_METHOD("get_region_rect"), &Sprite3D::get_region_rect);
@@ -659,14 +659,14 @@ void Sprite3D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "frame"), "set_frame", "get_frame");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "frame_coords", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_EDITOR), "set_frame_coords", "get_frame_coords");
 	ADD_GROUP("Region", "region_");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "region_enabled"), "set_region", "is_region");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "region_enabled"), "set_region_enabled", "is_region_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::RECT2, "region_rect"), "set_region_rect", "get_region_rect");
 
 	ADD_SIGNAL(MethodInfo("frame_changed"));
 }
 
 Sprite3D::Sprite3D() {
-	region = false;
+	region_enabled = false;
 	frame = 0;
 	vframes = 1;
 	hframes = 1;

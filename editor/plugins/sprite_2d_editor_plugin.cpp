@@ -179,7 +179,7 @@ void Sprite2DEditor::_update_mesh_data() {
 	}
 
 	Rect2 rect;
-	if (node->is_region()) {
+	if (node->is_region_enabled()) {
 		rect = node->get_region_rect();
 	} else {
 		rect.size = Size2(image->get_width(), image->get_height());
