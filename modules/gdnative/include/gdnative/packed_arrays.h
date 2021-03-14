@@ -160,10 +160,6 @@ typedef struct {
 
 #include <gdnative/gdnative.h>
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
 #if __STDC_VERSION__ >= 201112L
 
 #define godot_packed_array_new(r_dest)          \

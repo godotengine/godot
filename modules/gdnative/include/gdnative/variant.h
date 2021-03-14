@@ -191,9 +191,6 @@ typedef void (*godot_ptr_utility_function)(void *r_return, const void **p_argume
 
 #include <gdnative/gdnative.h>
 
-#ifdef __cplusplus
-extern "C" {
-#endif
 #if __STDC_VERSION__ >= 201112L
 #define godot_variant_new(r_dest, p_value)             \
 	_Generic((p_value),                                \
