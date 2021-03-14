@@ -63,7 +63,16 @@ class AnimationTimelineEdit : public Range {
 	Button *loop;
 	TextureRect *time_icon;
 
-	MenuButton *add_track;
+	HBoxContainer *track_buttons_hb;
+	Button *property_track_button;
+	Button *transform_track_button;
+	Button *method_track_button;
+	Button *curve_track_button;
+	Button *audio_track_button;
+	Button *animation_track_button;
+
+	Button *_create_track_button(const String &p_title, int p_index);
+
 	Control *play_position; //separate control used to draw so updates for only position changed are much faster
 	HScrollBar *hscroll;
 

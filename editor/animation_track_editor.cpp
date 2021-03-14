@@ -1349,7 +1349,7 @@ int AnimationTimelineEdit::get_buttons_width() const {
 int AnimationTimelineEdit::get_name_limit() const {
 	Ref<Texture2D> hsize_icon = get_theme_icon("Hsize", "EditorIcons");
 
-	int limit = MAX(name_limit, add_track->get_minimum_size().width + hsize_icon->get_width());
+	int limit = MAX(name_limit, track_buttons_hb->get_minimum_size().width + hsize_icon->get_width());
 
 	limit = MIN(limit, get_size().width - get_buttons_width() - 1);
 
@@ -1358,17 +1358,15 @@ int AnimationTimelineEdit::get_name_limit() const {
 
 void AnimationTimelineEdit::_notification(int p_what) {
 	if (p_what == NOTIFICATION_ENTER_TREE) {
-		add_track->set_icon(get_theme_icon("Add", "EditorIcons"));
 		loop->set_icon(get_theme_icon("Loop", "EditorIcons"));
 		time_icon->set_texture(get_theme_icon("Time", "EditorIcons"));
 
-		add_track->get_popup()->clear();
-		add_track->get_popup()->add_icon_item(get_theme_icon("KeyValue", "EditorIcons"), TTR("Property Track"));
-		add_track->get_popup()->add_icon_item(get_theme_icon("KeyXform", "EditorIcons"), TTR("3D Transform Track"));
-		add_track->get_popup()->add_icon_item(get_theme_icon("KeyCall", "EditorIcons"), TTR("Call Method Track"));
-		add_track->get_popup()->add_icon_item(get_theme_icon("KeyBezier", "EditorIcons"), TTR("Bezier Curve Track"));
-		add_track->get_popup()->add_icon_item(get_theme_icon("KeyAudio", "EditorIcons"), TTR("Audio Playback Track"));
-		add_track->get_popup()->add_icon_item(get_theme_icon("KeyAnimation", "EditorIcons"), TTR("Animation Playback Track"));
+		property_track_button->set_icon(get_theme_icon("KeyValue", "EditorIcons"));
+		transform_track_button->set_icon(get_theme_icon("KeyXform", "EditorIcons"));
+		method_track_button->set_icon(get_theme_icon("KeyCall", "EditorIcons"));
+		curve_track_button->set_icon(get_theme_icon("KeyBezier", "EditorIcons"));
+		audio_track_button->set_icon(get_theme_icon("KeyAudio", "EditorIcons"));
+		animation_track_button->set_icon(get_theme_icon("KeyAnimation", "EditorIcons"));
 	}
 
 	if (p_what == NOTIFICATION_RESIZED) {
@@ -1557,11 +1555,11 @@ void AnimationTimelineEdit::set_animation(const Ref<Animation> &p_animation) {
 	animation = p_animation;
 	if (animation.is_valid()) {
 		len_hb->show();
-		add_track->show();
+		track_buttons_hb->show();
 		play_position->show();
 	} else {
 		len_hb->hide();
-		add_track->hide();
+		track_buttons_hb->hide();
 		play_position->hide();
 	}
 	update();
@@ -1569,11 +1567,11 @@ void AnimationTimelineEdit::set_animation(const Ref<Animation> &p_animation) {
 }
 
 Size2 AnimationTimelineEdit::get_minimum_size() const {
-	Size2 ms = add_track->get_minimum_size();
+	Size2 ms = track_buttons_hb->get_minimum_size();
 	Ref<Font> font = get_theme_font("font", "Label");
 	int font_size = get_theme_font_size("font_size", "Label");
 	ms.height = MAX(ms.height, font->get_height(font_size));
-	ms.width = get_buttons_width() + add_track->get_minimum_size().width + get_theme_icon("Hsize", "EditorIcons")->get_width() + 2;
+	ms.width = get_buttons_width() + track_buttons_hb->get_minimum_size().width + get_theme_icon("Hsize", "EditorIcons")->get_width() + 2;
 	return ms;
 }
 
@@ -1748,10 +1746,32 @@ AnimationTimelineEdit::AnimationTimelineEdit() {
 	play_position->set_anchors_and_offsets_preset(PRESET_WIDE);
 	play_position->connect("draw", callable_mp(this, &AnimationTimelineEdit::_play_position_draw));
 
-	add_track = memnew(MenuButton);
-	add_track->set_position(Vector2(0, 0));
-	add_child(add_track);
-	add_track->set_text(TTR("Add Track"));
+	track_buttons_hb = memnew(HBoxContainer);
+	track_buttons_hb->add_theme_constant_override("separation", 0);
+	track_buttons_hb->set_position(Vector2(0, 0));
+	add_child(track_buttons_hb);
+
+	Label *add_track_label = memnew(Label);
+	add_track_label->set_text(TTR("Add Track:"));
+	track_buttons_hb->add_child(add_track_label);
+
+	property_track_button = _create_track_button("Add Property Track", 0);
+	track_buttons_hb->add_child(property_track_button);
+
+	transform_track_button = _create_track_button("Add 3D Transform Track", 1);
+	track_buttons_hb->add_child(transform_track_button);
+
+	method_track_button = _create_track_button("Add Call Method Track", 2);
+	track_buttons_hb->add_child(method_track_button);
+
+	curve_track_button = _create_track_button("Add Bezier Curve Track", 3);
+	track_buttons_hb->add_child(curve_track_button);
+
+	audio_track_button = _create_track_button("Add Audio Playback Track", 4);
+	track_buttons_hb->add_child(audio_track_button);
+
+	animation_track_button = _create_track_button("Add Animation Playback Track", 5);
+	track_buttons_hb->add_child(animation_track_button);
 
 	len_hb = memnew(HBoxContainer);
 
@@ -1780,8 +1800,7 @@ AnimationTimelineEdit::AnimationTimelineEdit() {
 	len_hb->add_child(loop);
 	add_child(len_hb);
 
-	add_track->hide();
-	add_track->get_popup()->connect("index_pressed", callable_mp(this, &AnimationTimelineEdit::_track_added));
+	track_buttons_hb->hide();
 	len_hb->hide();
 
 	panning_timeline = false;
@@ -1789,6 +1808,20 @@ AnimationTimelineEdit::AnimationTimelineEdit() {
 	dragging_hsize = false;
 
 	set_layout_direction(Control::LAYOUT_DIRECTION_LTR);
+}
+
+Button *AnimationTimelineEdit::_create_track_button(const String &p_title, int p_index) {
+	Button *btn = memnew(Button);
+	btn->set_tooltip(TTR(p_title));
+	btn->set_expand_icon(true);
+	btn->set_flat(true);
+	btn->add_theme_font_size_override("font_size", 1);
+	btn->connect("pressed", callable_mp(this, &AnimationTimelineEdit::_track_added), varray(p_index));
+
+	Size2 custom_size = Size2(22.0f, 22.0f);
+	btn->set_custom_minimum_size(custom_size);
+
+	return btn;
 }
 
 ////////////////////////////////////
