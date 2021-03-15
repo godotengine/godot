@@ -52,10 +52,12 @@ int UPNP::discover(int timeout, int ttl, const String &device_filter) {
 	int error = 0;
 	struct UPNPDev *devlist;
 
+	CharString cs = discover_multicast_if.utf8();
+	const char *m_if = cs.length() ? cs.get_data() : nullptr;
 	if (is_common_device(device_filter)) {
-		devlist = upnpDiscover(timeout, discover_multicast_if.utf8().get_data(), nullptr, discover_local_port, discover_ipv6, ttl, &error);
+		devlist = upnpDiscover(timeout, m_if, nullptr, discover_local_port, discover_ipv6, ttl, &error);
 	} else {
-		devlist = upnpDiscoverAll(timeout, discover_multicast_if.utf8().get_data(), nullptr, discover_local_port, discover_ipv6, ttl, &error);
+		devlist = upnpDiscoverAll(timeout, m_if, nullptr, discover_local_port, discover_ipv6, ttl, &error);
 	}
 
 	if (error != UPNPDISCOVER_SUCCESS) {
