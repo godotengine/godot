@@ -643,7 +643,6 @@ Error ProjectSettings::_load_settings_text_or_binary(const String &p_text_path, 
 	} else if (err != ERR_FILE_NOT_FOUND) {
 		// If the file exists but can't be loaded, we want to know it.
 		ERR_PRINT("Couldn't load file '" + p_bin_path + "', error code " + itos(err) + ".");
-		return err;
 	}
 
 	// Fallback to text-based project.godot file if binary was not found.
@@ -652,7 +651,6 @@ Error ProjectSettings::_load_settings_text_or_binary(const String &p_text_path, 
 		return OK;
 	} else if (err != ERR_FILE_NOT_FOUND) {
 		ERR_PRINT("Couldn't load file '" + p_text_path + "', error code " + itos(err) + ".");
-		return err;
 	}
 
 	return err;
