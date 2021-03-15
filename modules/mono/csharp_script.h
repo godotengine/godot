@@ -271,6 +271,8 @@ class CSharpInstance : public ScriptInstance {
 	Ref<CSharpScript> script;
 	MonoGCHandleData gchandle;
 
+	List<Callable> connected_event_signals;
+
 	bool _reference_owner_unsafe();
 
 	/*
