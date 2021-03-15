@@ -48,7 +48,7 @@ class Array {
 
 protected:
 	Array(const Array &p_base, uint32_t p_type, const StringName &p_class_name, const Variant &p_script);
-	void _assign(const Array &p_array);
+	bool _assign(const Array &p_array);
 
 public:
 	Variant &operator[](int p_idx);
@@ -111,6 +111,7 @@ public:
 
 	const void *id() const;
 
+	bool typed_assign(const Array &p_other);
 	void set_typed(uint32_t p_type, const StringName &p_class_name, const Variant &p_script);
 	Array(const Array &p_from);
 	Array();

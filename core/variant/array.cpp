@@ -139,7 +139,7 @@ uint32_t Array::hash() const {
 	return h;
 }
 
-void Array::_assign(const Array &p_array) {
+bool Array::_assign(const Array &p_array) {
 	if (_p->typed.type != Variant::OBJECT && _p->typed.type == p_array._p->typed.type) {
 		//same type or untyped, just reference, should be fine
 		_ref(p_array);
@@ -150,7 +150,7 @@ void Array::_assign(const Array &p_array) {
 			//for objects, it needs full validation, either can be converted or fail
 			for (int i = 0; i < p_array._p->array.size(); i++) {
 				if (!_p->typed.validate(p_array._p->array[i], "assign")) {
-					return;
+					return false;
 				}
 			}
 			_p->array = p_array._p->array; //then just copy, which is cheap anyway
@@ -168,10 +168,10 @@ void Array::_assign(const Array &p_array) {
 					Callable::CallError ce;
 					Variant::construct(_p->typed.type, new_array.write[i], (const Variant **)&ptr, 1, ce);
 					if (ce.error != Callable::CallError::CALL_OK) {
-						ERR_FAIL_MSG("Unable to convert array index " + itos(i) + " from '" + Variant::get_type_name(src_val.get_type()) + "' to '" + Variant::get_type_name(_p->typed.type) + "'.");
+						ERR_FAIL_V_MSG(false, "Unable to convert array index " + itos(i) + " from '" + Variant::get_type_name(src_val.get_type()) + "' to '" + Variant::get_type_name(_p->typed.type) + "'.");
 					}
 				} else {
-					ERR_FAIL_MSG("Unable to convert array index " + itos(i) + " from '" + Variant::get_type_name(src_val.get_type()) + "' to '" + Variant::get_type_name(_p->typed.type) + "'.");
+					ERR_FAIL_V_MSG(false, "Unable to convert array index " + itos(i) + " from '" + Variant::get_type_name(src_val.get_type()) + "' to '" + Variant::get_type_name(_p->typed.type) + "'.");
 				}
 			}
 
@@ -180,12 +180,13 @@ void Array::_assign(const Array &p_array) {
 	} else if (_p->typed.can_reference(p_array._p->typed)) { //same type or compatible
 		_ref(p_array);
 	} else {
-		ERR_FAIL_MSG("Assignment of arrays of incompatible types.");
+		ERR_FAIL_V_MSG(false, "Assignment of arrays of incompatible types.");
 	}
+	return true;
 }
 
 void Array::operator=(const Array &p_array) {
-	_assign(p_array);
+	_ref(p_array);
 }
 
 void Array::push_back(const Variant &p_value) {
@@ -526,6 +527,10 @@ Array::Array(const Array &p_from, uint32_t p_type, const StringName &p_class_nam
 	_p->refcount.init();
 	set_typed(p_type, p_class_name, p_script);
 	_assign(p_from);
+}
+
+bool Array::typed_assign(const Array &p_other) {
+	return _assign(p_other);
 }
 
 void Array::set_typed(uint32_t p_type, const StringName &p_class_name, const Variant &p_script) {
