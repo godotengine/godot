@@ -335,6 +335,37 @@
 				Creates a new region.
 			</description>
 		</method>
+		<method name="region_get_connection_pathway_end" qualifiers="const">
+			<return type="Vector3">
+			</return>
+			<argument index="0" name="region" type="RID">
+			</argument>
+			<argument index="1" name="connection" type="int">
+			</argument>
+			<description>
+				Returns the ending point of a connection door. [code]connection[/code] is an index between 0 and the return value of [method region_get_connections_count].
+			</description>
+		</method>
+		<method name="region_get_connection_pathway_start" qualifiers="const">
+			<return type="Vector3">
+			</return>
+			<argument index="0" name="region" type="RID">
+			</argument>
+			<argument index="1" name="connection" type="int">
+			</argument>
+			<description>
+				Returns the starting point of a connection door. [code]connection[/code] is an index between 0 and the return value of [method region_get_connections_count].
+			</description>
+		</method>
+		<method name="region_get_connections_count" qualifiers="const">
+			<return type="int">
+			</return>
+			<argument index="0" name="region" type="RID">
+			</argument>
+			<description>
+				Returns how many connections this [code]region[/code] has with other regions in the map.
+			</description>
+		</method>
 		<method name="region_get_layers" qualifiers="const">
 			<return type="int">
 			</return>
@@ -398,6 +429,15 @@
 			</description>
 		</method>
 	</methods>
+	<signals>
+		<signal name="map_changed">
+			<argument index="0" name="map" type="RID">
+			</argument>
+			<description>
+				Emitted when a navigation map is updated, when a region moves or is modified.
+			</description>
+		</signal>
+	</signals>
 	<constants>
 	</constants>
 </class>

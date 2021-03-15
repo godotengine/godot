@@ -364,8 +364,10 @@ void NavigationRegion2D::set_enabled(bool p_enabled) {
 
 	if (!enabled) {
 		NavigationServer2D::get_singleton()->region_set_map(region, RID());
+		NavigationServer2D::get_singleton()->disconnect("map_changed", callable_mp(this, &NavigationRegion2D::_map_changed));
 	} else {
 		NavigationServer2D::get_singleton()->region_set_map(region, get_world_2d()->get_navigation_map());
+		NavigationServer2D::get_singleton()->connect("map_changed", callable_mp(this, &NavigationRegion2D::_map_changed));
 	}
 
 	if (Engine::get_singleton()->is_editor_hint() || get_tree()->is_debugging_navigation_hint()) {
@@ -401,6 +403,7 @@ void NavigationRegion2D::_notification(int p_what) {
 		case NOTIFICATION_ENTER_TREE: {
 			if (enabled) {
 				NavigationServer2D::get_singleton()->region_set_map(region, get_world_2d()->get_navigation_map());
+				NavigationServer2D::get_singleton()->connect("map_changed", callable_mp(this, &NavigationRegion2D::_map_changed));
 			}
 		} break;
 		case NOTIFICATION_TRANSFORM_CHANGED: {
@@ -408,12 +411,14 @@ void NavigationRegion2D::_notification(int p_what) {
 		} break;
 		case NOTIFICATION_EXIT_TREE: {
 			NavigationServer2D::get_singleton()->region_set_map(region, RID());
+			if (enabled) {
+				NavigationServer2D::get_singleton()->disconnect("map_changed", callable_mp(this, &NavigationRegion2D::_map_changed));
+			}
 		} break;
 		case NOTIFICATION_DRAW: {
 			if (is_inside_tree() && (Engine::get_singleton()->is_editor_hint() || get_tree()->is_debugging_navigation_hint()) && navpoly.is_valid()) {
 				Vector<Vector2> verts = navpoly->get_vertices();
-				int vsize = verts.size();
-				if (vsize < 3) {
+				if (verts.size() < 3) {
 					return;
 				}
 
@@ -423,33 +428,47 @@ void NavigationRegion2D::_notification(int p_what) {
 				} else {
 					color = get_tree()->get_debug_navigation_disabled_color();
 				}
-				Vector<Color> colors;
-				Vector<Vector2> vertices;
-				vertices.resize(vsize);
-				colors.resize(vsize);
-				{
-					const Vector2 *vr = verts.ptr();
-					for (int i = 0; i < vsize; i++) {
-						vertices.write[i] = vr[i];
-						colors.write[i] = color;
-					}
-				}
+				Color doors_color = color.lightened(0.2);
 
-				Vector<int> indices;
+				RandomPCG rand;
 
 				for (int i = 0; i < navpoly->get_polygon_count(); i++) {
+					// An array of vertices for this polygon.
 					Vector<int> polygon = navpoly->get_polygon(i);
-
-					for (int j = 2; j < polygon.size(); j++) {
-						int kofs[3] = { 0, j - 1, j };
-						for (int k = 0; k < 3; k++) {
-							int idx = polygon[kofs[k]];
-							ERR_FAIL_INDEX(idx, vsize);
-							indices.push_back(idx);
-						}
+					Vector<Vector2> vertices;
+					vertices.resize(polygon.size());
+					for (int j = 0; j < polygon.size(); j++) {
+						ERR_FAIL_INDEX(polygon[j], verts.size());
+						vertices.write[j] = verts[polygon[j]];
 					}
+
+					// Generate the polygon color, slightly randomly modified from the settings one.
+					Color random_variation_color;
+					random_variation_color.set_hsv(color.get_h() + rand.random(-1.0, 1.0) * 0.05, color.get_s(), color.get_v() + rand.random(-1.0, 1.0) * 0.1);
+					random_variation_color.a = color.a;
+					Vector<Color> colors;
+					colors.push_back(random_variation_color);
+
+					RS::get_singleton()->canvas_item_add_polygon(get_canvas_item(), vertices, colors);
 				}
-				RS::get_singleton()->canvas_item_add_triangle_array(get_canvas_item(), indices, vertices, colors);
+
+				// Draw the region
+				Transform2D xform = get_global_transform();
+				const NavigationServer2D *ns = NavigationServer2D::get_singleton();
+				float radius = ns->map_get_edge_connection_margin(get_world_2d()->get_navigation_map()) / 2.0;
+				for (int i = 0; i < ns->region_get_connections_count(region); i++) {
+					// Two main points
+					Vector2 a = ns->region_get_connection_pathway_start(region, i);
+					a = xform.affine_inverse().xform(a);
+					Vector2 b = ns->region_get_connection_pathway_end(region, i);
+					b = xform.affine_inverse().xform(b);
+					draw_line(a, b, doors_color);
+
+					// Draw a circle to illustrate the margins.
+					float angle = (b - a).angle();
+					draw_arc(a, radius, angle + Math_PI / 2.0, angle - Math_PI / 2.0 + Math_TAU, 10, doors_color);
+					draw_arc(b, radius, angle - Math_PI / 2.0, angle + Math_PI / 2.0, 10, doors_color);
+				}
 			}
 		} break;
 	}
@@ -481,6 +500,11 @@ Ref<NavigationPolygon> NavigationRegion2D::get_navigation_polygon() const {
 
 void NavigationRegion2D::_navpoly_changed() {
 	if (is_inside_tree() && (Engine::get_singleton()->is_editor_hint() || get_tree()->is_debugging_navigation_hint())) {
+		update();
+	}
+}
+void NavigationRegion2D::_map_changed(RID p_map) {
+	if (enabled && get_world_2d()->get_navigation_map() == p_map) {
 		update();
 	}
 }

@@ -34,6 +34,7 @@
 #include "nav_rid.h"
 
 #include "core/math/math_defs.h"
+#include "core/templates/map.h"
 #include "nav_utils.h"
 #include <KdTree.h>
 

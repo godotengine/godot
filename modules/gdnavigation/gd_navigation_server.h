@@ -31,6 +31,7 @@
 #ifndef GD_NAVIGATION_SERVER_H
 #define GD_NAVIGATION_SERVER_H
 
+#include "core/templates/local_vector.h"
 #include "core/templates/rid.h"
 #include "core/templates/rid_owner.h"
 #include "servers/navigation_server_3d.h"
@@ -79,7 +80,8 @@ class GdNavigationServer : public NavigationServer3D {
 	mutable RID_PtrOwner<RvoAgent> agent_owner;
 
 	bool active = true;
-	Vector<NavMap *> active_maps;
+	LocalVector<NavMap *> active_maps;
+	LocalVector<uint32_t> active_maps_update_id;
 
 public:
 	GdNavigationServer();
@@ -114,6 +116,9 @@ public:
 	COMMAND_2(region_set_transform, RID, p_region, Transform, p_transform);
 	COMMAND_2(region_set_navmesh, RID, p_region, Ref<NavigationMesh>, p_nav_mesh);
 	virtual void region_bake_navmesh(Ref<NavigationMesh> r_mesh, Node *p_node) const;
+	virtual int region_get_connections_count(RID p_region) const;
+	virtual Vector3 region_get_connection_pathway_start(RID p_region, int p_connection_id) const;
+	virtual Vector3 region_get_connection_pathway_end(RID p_region, int p_connection_id) const;
 
 	virtual RID agent_create() const;
 	COMMAND_2(agent_set_map, RID, p_agent, RID, p_map);
