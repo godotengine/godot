@@ -4961,6 +4961,11 @@ bool RasterizerSceneGLES3::free(RID p_rid) {
 
 		LightInstance *light_instance = light_instance_owner.getptr(p_rid);
 
+		// Make sure first_directional_light is invalidated
+		if (p_rid == first_directional_light) {
+			first_directional_light = RID();
+		}
+
 		//remove from shadow atlases..
 		for (Set<RID>::Element *E = light_instance->shadow_atlases.front(); E; E = E->next()) {
 			ShadowAtlas *shadow_atlas = shadow_atlas_owner.get(E->get());
