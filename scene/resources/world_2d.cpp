@@ -368,7 +368,7 @@ World2D::World2D() {
 	navigation_map = NavigationServer2D::get_singleton()->map_create();
 	NavigationServer2D::get_singleton()->map_set_active(navigation_map, true);
 	NavigationServer2D::get_singleton()->map_set_cell_size(navigation_map, GLOBAL_DEF("navigation/2d/default_cell_size", 10));
-	NavigationServer2D::get_singleton()->map_set_edge_connection_margin(navigation_map, GLOBAL_DEF("navigation/2d/default_edge_connection_margin", 100));
+	NavigationServer2D::get_singleton()->map_set_edge_connection_margin(navigation_map, GLOBAL_DEF("navigation/2d/default_edge_connection_margin", 5));
 
 	indexer = memnew(SpatialIndexer2D);
 }

@@ -45,12 +45,14 @@ class NavigationServer2D : public Object {
 
 	static NavigationServer2D *singleton;
 
+	void _emit_map_changed(RID p_map);
+
 protected:
 	static void _bind_methods();
 
 public:
 	/// Thread safe, can be used across many threads.
-	static const NavigationServer2D *get_singleton() { return singleton; }
+	static NavigationServer2D *get_singleton() { return singleton; }
 
 	/// MUST be used in single thread!
 	static NavigationServer2D *get_singleton_mut() { return singleton; }
@@ -97,6 +99,11 @@ public:
 
 	/// Set the navigation poly of this region.
 	virtual void region_set_navpoly(RID p_region, Ref<NavigationPolygon> p_nav_mesh) const;
+
+	/// Get a list of a region's connection to other regions.
+	virtual int region_get_connections_count(RID p_region) const;
+	virtual Vector2 region_get_connection_pathway_start(RID p_region, int p_connection_id) const;
+	virtual Vector2 region_get_connection_pathway_end(RID p_region, int p_connection_id) const;
 
 	/// Creates the agent.
 	virtual RID agent_create() const;

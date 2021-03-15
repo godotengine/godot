@@ -1163,7 +1163,7 @@ void Viewport::set_world_2d(const Ref<World2D> &p_world_2d) {
 	if (p_world_2d.is_valid()) {
 		world_2d = p_world_2d;
 	} else {
-		WARN_PRINT("Invalid world_3d");
+		WARN_PRINT("Invalid world_2d");
 		world_2d = Ref<World2D>(memnew(World2D));
 	}
 

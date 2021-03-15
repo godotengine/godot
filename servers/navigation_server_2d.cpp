@@ -156,6 +156,10 @@ static Ref<NavigationMesh> poly_to_mesh(Ref<NavigationPolygon> d) {
 	}
 }
 
+void NavigationServer2D::_emit_map_changed(RID p_map) {
+	emit_signal("map_changed", p_map);
+}
+
 void NavigationServer2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("map_create"), &NavigationServer2D::map_create);
 	ClassDB::bind_method(D_METHOD("map_set_active", "map", "active"), &NavigationServer2D::map_set_active);
@@ -174,6 +178,9 @@ void NavigationServer2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("region_get_layers", "region"), &NavigationServer2D::region_get_layers);
 	ClassDB::bind_method(D_METHOD("region_set_transform", "region", "transform"), &NavigationServer2D::region_set_transform);
 	ClassDB::bind_method(D_METHOD("region_set_navpoly", "region", "nav_poly"), &NavigationServer2D::region_set_navpoly);
+	ClassDB::bind_method(D_METHOD("region_get_connections_count", "region"), &NavigationServer2D::region_get_connections_count);
+	ClassDB::bind_method(D_METHOD("region_get_connection_pathway_start", "region", "connection"), &NavigationServer2D::region_get_connection_pathway_start);
+	ClassDB::bind_method(D_METHOD("region_get_connection_pathway_end", "region", "connection"), &NavigationServer2D::region_get_connection_pathway_end);
 
 	ClassDB::bind_method(D_METHOD("agent_create"), &NavigationServer2D::agent_create);
 	ClassDB::bind_method(D_METHOD("agent_set_map", "agent", "map"), &NavigationServer2D::agent_set_map);
@@ -189,10 +196,14 @@ void NavigationServer2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("agent_set_callback", "agent", "receiver", "method", "userdata"), &NavigationServer2D::agent_set_callback, DEFVAL(Variant()));
 
 	ClassDB::bind_method(D_METHOD("free", "object"), &NavigationServer2D::free);
+
+	ADD_SIGNAL(MethodInfo("map_changed", PropertyInfo(Variant::RID, "map")));
 }
 
 NavigationServer2D::NavigationServer2D() {
 	singleton = this;
+	ERR_FAIL_COND_MSG(!NavigationServer3D::get_singleton(), "The Navigation3D singleton should be initialized before the 2D one.");
+	NavigationServer3D::get_singleton()->connect("map_changed", callable_mp(this, &NavigationServer2D::_emit_map_changed));
 }
 
 NavigationServer2D::~NavigationServer2D() {
@@ -225,6 +236,10 @@ void FORWARD_2_C(region_set_transform, RID, p_region, Transform2D, p_transform, 
 void NavigationServer2D::region_set_navpoly(RID p_region, Ref<NavigationPolygon> p_nav_mesh) const {
 	NavigationServer3D::get_singleton()->region_set_navmesh(p_region, poly_to_mesh(p_nav_mesh));
 }
+
+int FORWARD_1_C(region_get_connections_count, RID, p_region, rid_to_rid);
+Vector2 FORWARD_2_R_C(v3_to_v2, region_get_connection_pathway_start, RID, p_region, int, p_connection_id, rid_to_rid, int_to_int);
+Vector2 FORWARD_2_R_C(v3_to_v2, region_get_connection_pathway_end, RID, p_region, int, p_connection_id, rid_to_rid, int_to_int);
 
 RID NavigationServer2D::agent_create() const {
 	RID agent = NavigationServer3D::get_singleton()->agent_create();

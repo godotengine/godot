@@ -145,9 +145,13 @@ COMMAND_2(map_set_active, RID, p_map, bool, p_active) {
 	if (p_active) {
 		if (!map_is_active(p_map)) {
 			active_maps.push_back(map);
+			active_maps_update_id.push_back(map->get_map_update_id());
 		}
 	} else {
-		active_maps.erase(map);
+		int map_index = active_maps.find(map);
+		ERR_FAIL_COND(map_index < 0);
+		active_maps.remove(map_index);
+		active_maps_update_id.remove(map_index);
 	}
 }
 
@@ -304,6 +308,27 @@ void GdNavigationServer::region_bake_navmesh(Ref<NavigationMesh> r_mesh, Node *p
 #endif
 }
 
+int GdNavigationServer::region_get_connections_count(RID p_region) const {
+	NavRegion *region = region_owner.getornull(p_region);
+	ERR_FAIL_COND_V(!region, 0);
+
+	return region->get_connections_count();
+}
+
+Vector3 GdNavigationServer::region_get_connection_pathway_start(RID p_region, int p_connection_id) const {
+	NavRegion *region = region_owner.getornull(p_region);
+	ERR_FAIL_COND_V(!region, Vector3());
+
+	return region->get_connection_pathway_start(p_connection_id);
+}
+
+Vector3 GdNavigationServer::region_get_connection_pathway_end(RID p_region, int p_connection_id) const {
+	NavRegion *region = region_owner.getornull(p_region);
+	ERR_FAIL_COND_V(!region, Vector3());
+
+	return region->get_connection_pathway_end(p_connection_id);
+}
+
 RID GdNavigationServer::agent_create() const {
 	auto mut_this = const_cast<GdNavigationServer *>(this);
 	MutexLock lock(mut_this->operations_mutex);
@@ -443,7 +468,9 @@ COMMAND_1(free, RID, p_object) {
 			agents[i]->set_map(nullptr);
 		}
 
-		active_maps.erase(map);
+		int map_index = active_maps.find(map);
+		active_maps.remove(map_index);
+		active_maps_update_id.remove(map_index);
 		map_owner.free(p_object);
 		memdelete(map);
 
@@ -504,10 +531,17 @@ void GdNavigationServer::process(real_t p_delta_time) {
 	// In c++ we can't be sure that this is performed in the main thread
 	// even with mutable functions.
 	MutexLock lock(operations_mutex);
-	for (int i(0); i < active_maps.size(); i++) {
+	for (uint32_t i(0); i < active_maps.size(); i++) {
 		active_maps[i]->sync();
 		active_maps[i]->step(p_delta_time);
 		active_maps[i]->dispatch_callbacks();
+
+		// Emit a signal if a map changed.
+		const uint32_t new_map_update_id = active_maps[i]->get_map_update_id();
+		if (new_map_update_id != active_maps_update_id[i]) {
+			emit_signal("map_changed", active_maps[i]->get_self());
+			active_maps_update_id[i] = new_map_update_id;
+		}
 	}
 }
 
