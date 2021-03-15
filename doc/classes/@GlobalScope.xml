@@ -50,7 +50,7 @@
 			<argument index="0" name="x" type="float">
 			</argument>
 			<description>
-				Returns the arc cosine of [code]x[/code] in radians. Use to get the angle of cosine [code]x[/code].
+				Returns the arc cosine of [code]x[/code] in radians. Use to get the angle of cosine [code]x[/code]. [code]x[/code] must be between [code]-1.0[/code] and [code]1.0[/code] (inclusive), otherwise, [method acos] will return [constant @GDScript.NAN].
 				[codeblock]
 				# c is 0.523599 or 30 degrees if converted with rad2deg(c)
 				c = acos(0.866025)
@@ -63,7 +63,7 @@
 			<argument index="0" name="x" type="float">
 			</argument>
 			<description>
-				Returns the arc sine of [code]x[/code] in radians. Use to get the angle of sine [code]x[/code].
+				Returns the arc sine of [code]x[/code] in radians. Use to get the angle of sine [code]x[/code]. [code]x[/code] must be between [code]-1.0[/code] and [code]1.0[/code] (inclusive), otherwise, [method asin] will return [constant @GDScript.NAN].
 				[codeblock]
 				# s is 0.523599 or 30 degrees if converted with rad2deg(s)
 				s = asin(0.5)
