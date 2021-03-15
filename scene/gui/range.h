@@ -74,6 +74,8 @@ public:
 	void set_step(double p_step);
 	void set_page(double p_page);
 	void set_as_ratio(double p_value);
+	void validate_min();
+	void validate_max();
 
 	double get_value() const;
 	double get_min() const;
