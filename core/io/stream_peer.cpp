@@ -389,7 +389,7 @@ void StreamPeer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("put_double", "value"), &StreamPeer::put_double);
 	ClassDB::bind_method(D_METHOD("put_string", "value"), &StreamPeer::put_string);
 	ClassDB::bind_method(D_METHOD("put_utf8_string", "value"), &StreamPeer::put_utf8_string);
-	ClassDB::bind_method(D_METHOD("put_var", "value", "full_objects"), &StreamPeer::put_var, DEFVAL(false));
+	ClassDB::bind_method(D_METHOD("put_var", "value", "full_objects"), &StreamPeer::put_var, false);
 
 	ClassDB::bind_method(D_METHOD("get_8"), &StreamPeer::get_8);
 	ClassDB::bind_method(D_METHOD("get_u8"), &StreamPeer::get_u8);
@@ -401,9 +401,9 @@ void StreamPeer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_u64"), &StreamPeer::get_u64);
 	ClassDB::bind_method(D_METHOD("get_float"), &StreamPeer::get_float);
 	ClassDB::bind_method(D_METHOD("get_double"), &StreamPeer::get_double);
-	ClassDB::bind_method(D_METHOD("get_string", "bytes"), &StreamPeer::get_string, DEFVAL(-1));
-	ClassDB::bind_method(D_METHOD("get_utf8_string", "bytes"), &StreamPeer::get_utf8_string, DEFVAL(-1));
-	ClassDB::bind_method(D_METHOD("get_var", "allow_objects"), &StreamPeer::get_var, DEFVAL(false));
+	ClassDB::bind_method(D_METHOD("get_string", "bytes"), &StreamPeer::get_string, -1);
+	ClassDB::bind_method(D_METHOD("get_utf8_string", "bytes"), &StreamPeer::get_utf8_string, -1);
+	ClassDB::bind_method(D_METHOD("get_var", "allow_objects"), &StreamPeer::get_var, false);
 
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "big_endian"), "set_big_endian", "is_big_endian_enabled");
 }

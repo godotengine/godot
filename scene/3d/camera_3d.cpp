@@ -469,7 +469,7 @@ void Camera3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_orthogonal", "size", "z_near", "z_far"), &Camera3D::set_orthogonal);
 	ClassDB::bind_method(D_METHOD("set_frustum", "size", "offset", "z_near", "z_far"), &Camera3D::set_frustum);
 	ClassDB::bind_method(D_METHOD("make_current"), &Camera3D::make_current);
-	ClassDB::bind_method(D_METHOD("clear_current", "enable_next"), &Camera3D::clear_current, DEFVAL(true));
+	ClassDB::bind_method(D_METHOD("clear_current", "enable_next"), &Camera3D::clear_current, true);
 	ClassDB::bind_method(D_METHOD("set_current"), &Camera3D::set_current);
 	ClassDB::bind_method(D_METHOD("is_current"), &Camera3D::is_current);
 	ClassDB::bind_method(D_METHOD("get_camera_transform"), &Camera3D::get_camera_transform);

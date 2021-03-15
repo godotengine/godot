@@ -132,8 +132,8 @@ void WebSocketClient::_on_error() {
 }
 
 void WebSocketClient::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("connect_to_url", "url", "protocols", "gd_mp_api", "custom_headers"), &WebSocketClient::connect_to_url, DEFVAL(Vector<String>()), DEFVAL(false), DEFVAL(Vector<String>()));
-	ClassDB::bind_method(D_METHOD("disconnect_from_host", "code", "reason"), &WebSocketClient::disconnect_from_host, DEFVAL(1000), DEFVAL(""));
+	ClassDB::bind_method(D_METHOD("connect_to_url", "url", "protocols", "gd_mp_api", "custom_headers"), &WebSocketClient::connect_to_url, Vector<String>(), false, Vector<String>());
+	ClassDB::bind_method(D_METHOD("disconnect_from_host", "code", "reason"), &WebSocketClient::disconnect_from_host, 1000, "");
 	ClassDB::bind_method(D_METHOD("get_connected_host"), &WebSocketClient::get_connected_host);
 	ClassDB::bind_method(D_METHOD("get_connected_port"), &WebSocketClient::get_connected_port);
 	ClassDB::bind_method(D_METHOD("set_verify_ssl_enabled", "enabled"), &WebSocketClient::set_verify_ssl_enabled);

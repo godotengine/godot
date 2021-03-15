@@ -37,8 +37,8 @@
 #include "scene/resources/text_paragraph.h"
 
 void FontData::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("load_resource", "filename", "base_size"), &FontData::load_resource, DEFVAL(16));
-	ClassDB::bind_method(D_METHOD("load_memory", "data", "type", "base_size"), &FontData::_load_memory, DEFVAL(16));
+	ClassDB::bind_method(D_METHOD("load_resource", "filename", "base_size"), &FontData::load_resource, 16);
+	ClassDB::bind_method(D_METHOD("load_memory", "data", "type", "base_size"), &FontData::_load_memory, 16);
 	ClassDB::bind_method(D_METHOD("new_bitmap", "height", "ascent", "base_size"), &FontData::new_bitmap);
 
 	ClassDB::bind_method(D_METHOD("bitmap_add_texture", "texture"), &FontData::bitmap_add_texture);
@@ -97,9 +97,9 @@ void FontData::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("remove_script_support_override", "script"), &FontData::remove_script_support_override);
 	ClassDB::bind_method(D_METHOD("get_script_support_overrides"), &FontData::get_script_support_overrides);
 
-	ClassDB::bind_method(D_METHOD("get_glyph_index", "char", "variation_selector"), &FontData::get_glyph_index, DEFVAL(0x0000));
-	ClassDB::bind_method(D_METHOD("draw_glyph", "canvas", "size", "pos", "index", "color"), &FontData::draw_glyph, DEFVAL(Color(1, 1, 1)));
-	ClassDB::bind_method(D_METHOD("draw_glyph_outline", "canvas", "size", "outline_size", "pos", "index", "color"), &FontData::draw_glyph_outline, DEFVAL(Color(1, 1, 1)));
+	ClassDB::bind_method(D_METHOD("get_glyph_index", "char", "variation_selector"), &FontData::get_glyph_index, 0x0000);
+	ClassDB::bind_method(D_METHOD("draw_glyph", "canvas", "size", "pos", "index", "color"), &FontData::draw_glyph, Color(1, 1, 1));
+	ClassDB::bind_method(D_METHOD("draw_glyph_outline", "canvas", "size", "outline_size", "pos", "index", "color"), &FontData::draw_glyph_outline, Color(1, 1, 1));
 
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "data_path", PROPERTY_HINT_FILE, "*.ttf,*.otf,*.woff,*.fnt,*.font"), "set_data_path", "get_data_path");
 
@@ -544,27 +544,27 @@ void Font::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_data", "idx"), &Font::get_data);
 	ClassDB::bind_method(D_METHOD("remove_data", "idx"), &Font::remove_data);
 
-	ClassDB::bind_method(D_METHOD("get_height", "size"), &Font::get_height, DEFVAL(-1));
-	ClassDB::bind_method(D_METHOD("get_ascent", "size"), &Font::get_ascent, DEFVAL(-1));
-	ClassDB::bind_method(D_METHOD("get_descent", "size"), &Font::get_descent, DEFVAL(-1));
+	ClassDB::bind_method(D_METHOD("get_height", "size"), &Font::get_height, -1);
+	ClassDB::bind_method(D_METHOD("get_ascent", "size"), &Font::get_ascent, -1);
+	ClassDB::bind_method(D_METHOD("get_descent", "size"), &Font::get_descent, -1);
 
-	ClassDB::bind_method(D_METHOD("get_underline_position", "size"), &Font::get_underline_position, DEFVAL(-1));
-	ClassDB::bind_method(D_METHOD("get_underline_thickness", "size"), &Font::get_underline_thickness, DEFVAL(-1));
+	ClassDB::bind_method(D_METHOD("get_underline_position", "size"), &Font::get_underline_position, -1);
+	ClassDB::bind_method(D_METHOD("get_underline_thickness", "size"), &Font::get_underline_thickness, -1);
 
 	ClassDB::bind_method(D_METHOD("get_spacing", "type"), &Font::get_spacing);
 	ClassDB::bind_method(D_METHOD("set_spacing", "type", "value"), &Font::set_spacing);
 
-	ClassDB::bind_method(D_METHOD("get_string_size", "text", "size"), &Font::get_string_size, DEFVAL(-1));
-	ClassDB::bind_method(D_METHOD("get_multiline_string_size", "text", "width", "size", "flags"), &Font::get_multiline_string_size, DEFVAL(-1), DEFVAL(-1), DEFVAL(TextServer::BREAK_MANDATORY | TextServer::BREAK_WORD_BOUND));
+	ClassDB::bind_method(D_METHOD("get_string_size", "text", "size"), &Font::get_string_size, -1);
+	ClassDB::bind_method(D_METHOD("get_multiline_string_size", "text", "width", "size", "flags"), &Font::get_multiline_string_size, -1, -1, TextServer::BREAK_MANDATORY | TextServer::BREAK_WORD_BOUND);
 
-	ClassDB::bind_method(D_METHOD("draw_string", "canvas_item", "pos", "text", "align", "width", "size", "modulate", "outline_size", "outline_modulate", "flags"), &Font::draw_string, DEFVAL(HALIGN_LEFT), DEFVAL(-1), DEFVAL(-1), DEFVAL(Color(1, 1, 1)), DEFVAL(0), DEFVAL(Color(1, 1, 1, 0)), DEFVAL(TextServer::JUSTIFICATION_KASHIDA | TextServer::JUSTIFICATION_WORD_BOUND));
-	ClassDB::bind_method(D_METHOD("draw_multiline_string", "canvas_item", "pos", "text", "align", "width", "max_lines", "size", "modulate", "outline_size", "outline_modulate", "flags"), &Font::draw_multiline_string, DEFVAL(HALIGN_LEFT), DEFVAL(-1), DEFVAL(-1), DEFVAL(-1), DEFVAL(Color(1, 1, 1)), DEFVAL(0), DEFVAL(Color(1, 1, 1, 0)), DEFVAL(TextServer::BREAK_MANDATORY | TextServer::BREAK_WORD_BOUND | TextServer::JUSTIFICATION_KASHIDA | TextServer::JUSTIFICATION_WORD_BOUND));
+	ClassDB::bind_method(D_METHOD("draw_string", "canvas_item", "pos", "text", "align", "width", "size", "modulate", "outline_size", "outline_modulate", "flags"), &Font::draw_string, HALIGN_LEFT, -1, -1, Color(1, 1, 1), 0, Color(1, 1, 1, 0), TextServer::JUSTIFICATION_KASHIDA | TextServer::JUSTIFICATION_WORD_BOUND);
+	ClassDB::bind_method(D_METHOD("draw_multiline_string", "canvas_item", "pos", "text", "align", "width", "max_lines", "size", "modulate", "outline_size", "outline_modulate", "flags"), &Font::draw_multiline_string, HALIGN_LEFT, -1, -1, -1, Color(1, 1, 1), 0, Color(1, 1, 1, 0), TextServer::BREAK_MANDATORY | TextServer::BREAK_WORD_BOUND | TextServer::JUSTIFICATION_KASHIDA | TextServer::JUSTIFICATION_WORD_BOUND);
 
 	ClassDB::bind_method(D_METHOD("has_char", "char"), &Font::has_char);
 	ClassDB::bind_method(D_METHOD("get_supported_chars"), &Font::get_supported_chars);
 
-	ClassDB::bind_method(D_METHOD("get_char_size", "char", "next", "size"), &Font::get_char_size, DEFVAL(0), DEFVAL(-1));
-	ClassDB::bind_method(D_METHOD("draw_char", "canvas_item", "pos", "char", "next", "size", "modulate", "outline_size", "outline_modulate"), &Font::draw_char, DEFVAL(0), DEFVAL(-1), DEFVAL(Color(1, 1, 1)), DEFVAL(0), DEFVAL(Color(1, 1, 1, 0)));
+	ClassDB::bind_method(D_METHOD("get_char_size", "char", "next", "size"), &Font::get_char_size, 0, -1);
+	ClassDB::bind_method(D_METHOD("draw_char", "canvas_item", "pos", "char", "next", "size", "modulate", "outline_size", "outline_modulate"), &Font::draw_char, 0, -1, Color(1, 1, 1), 0, Color(1, 1, 1, 0));
 
 	ClassDB::bind_method(D_METHOD("update_changes"), &Font::update_changes);
 

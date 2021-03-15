@@ -528,7 +528,7 @@ void GIProbe::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_extents", "extents"), &GIProbe::set_extents);
 	ClassDB::bind_method(D_METHOD("get_extents"), &GIProbe::get_extents);
 
-	ClassDB::bind_method(D_METHOD("bake", "from_node", "create_visual_debug"), &GIProbe::bake, DEFVAL(Variant()), DEFVAL(false));
+	ClassDB::bind_method(D_METHOD("bake", "from_node", "create_visual_debug"), &GIProbe::bake, Variant(), false);
 	ClassDB::bind_method(D_METHOD("debug_bake"), &GIProbe::_debug_bake);
 	ClassDB::set_method_flags(get_class_static(), _scs_create("debug_bake"), METHOD_FLAGS_DEFAULT | METHOD_FLAG_EDITOR);
 

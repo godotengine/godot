@@ -1570,7 +1570,7 @@ void SceneState::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_node_count"), &SceneState::get_node_count);
 	ClassDB::bind_method(D_METHOD("get_node_type", "idx"), &SceneState::get_node_type);
 	ClassDB::bind_method(D_METHOD("get_node_name", "idx"), &SceneState::get_node_name);
-	ClassDB::bind_method(D_METHOD("get_node_path", "idx", "for_parent"), &SceneState::get_node_path, DEFVAL(false));
+	ClassDB::bind_method(D_METHOD("get_node_path", "idx", "for_parent"), &SceneState::get_node_path, false);
 	ClassDB::bind_method(D_METHOD("get_node_owner_path", "idx"), &SceneState::get_node_owner_path);
 	ClassDB::bind_method(D_METHOD("is_node_instance_placeholder", "idx"), &SceneState::is_node_instance_placeholder);
 	ClassDB::bind_method(D_METHOD("get_node_instance_placeholder", "idx"), &SceneState::get_node_instance_placeholder);
@@ -1671,7 +1671,7 @@ void PackedScene::reset_state() {
 }
 void PackedScene::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("pack", "path"), &PackedScene::pack);
-	ClassDB::bind_method(D_METHOD("instance", "edit_state"), &PackedScene::instance, DEFVAL(GEN_EDIT_STATE_DISABLED));
+	ClassDB::bind_method(D_METHOD("instance", "edit_state"), &PackedScene::instance, GEN_EDIT_STATE_DISABLED);
 	ClassDB::bind_method(D_METHOD("can_instance"), &PackedScene::can_instance);
 	ClassDB::bind_method(D_METHOD("_set_bundled_scene"), &PackedScene::_set_bundled_scene);
 	ClassDB::bind_method(D_METHOD("_get_bundled_scene"), &PackedScene::_get_bundled_scene);

@@ -146,9 +146,9 @@ void RegExMatch::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_group_count"), &RegExMatch::get_group_count);
 	ClassDB::bind_method(D_METHOD("get_names"), &RegExMatch::get_names);
 	ClassDB::bind_method(D_METHOD("get_strings"), &RegExMatch::get_strings);
-	ClassDB::bind_method(D_METHOD("get_string", "name"), &RegExMatch::get_string, DEFVAL(0));
-	ClassDB::bind_method(D_METHOD("get_start", "name"), &RegExMatch::get_start, DEFVAL(0));
-	ClassDB::bind_method(D_METHOD("get_end", "name"), &RegExMatch::get_end, DEFVAL(0));
+	ClassDB::bind_method(D_METHOD("get_string", "name"), &RegExMatch::get_string, 0);
+	ClassDB::bind_method(D_METHOD("get_start", "name"), &RegExMatch::get_start, 0);
+	ClassDB::bind_method(D_METHOD("get_end", "name"), &RegExMatch::get_end, 0);
 
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "subject"), "", "get_subject");
 	ADD_PROPERTY(PropertyInfo(Variant::DICTIONARY, "names"), "", "get_names");
@@ -382,9 +382,9 @@ RegEx::~RegEx() {
 void RegEx::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("clear"), &RegEx::clear);
 	ClassDB::bind_method(D_METHOD("compile", "pattern"), &RegEx::compile);
-	ClassDB::bind_method(D_METHOD("search", "subject", "offset", "end"), &RegEx::search, DEFVAL(0), DEFVAL(-1));
-	ClassDB::bind_method(D_METHOD("search_all", "subject", "offset", "end"), &RegEx::search_all, DEFVAL(0), DEFVAL(-1));
-	ClassDB::bind_method(D_METHOD("sub", "subject", "replacement", "all", "offset", "end"), &RegEx::sub, DEFVAL(false), DEFVAL(0), DEFVAL(-1));
+	ClassDB::bind_method(D_METHOD("search", "subject", "offset", "end"), &RegEx::search, 0, -1);
+	ClassDB::bind_method(D_METHOD("search_all", "subject", "offset", "end"), &RegEx::search_all, 0, -1);
+	ClassDB::bind_method(D_METHOD("sub", "subject", "replacement", "all", "offset", "end"), &RegEx::sub, false, 0, -1);
 	ClassDB::bind_method(D_METHOD("is_valid"), &RegEx::is_valid);
 	ClassDB::bind_method(D_METHOD("get_pattern"), &RegEx::get_pattern);
 	ClassDB::bind_method(D_METHOD("get_group_count"), &RegEx::get_group_count);

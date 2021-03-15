@@ -135,14 +135,14 @@ void ImmediateGeometry3D::add_sphere(int p_lats, int p_lons, float p_radius, boo
 }
 
 void ImmediateGeometry3D::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("begin", "primitive", "texture"), &ImmediateGeometry3D::begin, DEFVAL(Ref<Texture2D>()));
+	ClassDB::bind_method(D_METHOD("begin", "primitive", "texture"), &ImmediateGeometry3D::begin, Ref<Texture2D>());
 	ClassDB::bind_method(D_METHOD("set_normal", "normal"), &ImmediateGeometry3D::set_normal);
 	ClassDB::bind_method(D_METHOD("set_tangent", "tangent"), &ImmediateGeometry3D::set_tangent);
 	ClassDB::bind_method(D_METHOD("set_color", "color"), &ImmediateGeometry3D::set_color);
 	ClassDB::bind_method(D_METHOD("set_uv", "uv"), &ImmediateGeometry3D::set_uv);
 	ClassDB::bind_method(D_METHOD("set_uv2", "uv"), &ImmediateGeometry3D::set_uv2);
 	ClassDB::bind_method(D_METHOD("add_vertex", "position"), &ImmediateGeometry3D::add_vertex);
-	ClassDB::bind_method(D_METHOD("add_sphere", "lats", "lons", "radius", "add_uv"), &ImmediateGeometry3D::add_sphere, DEFVAL(true));
+	ClassDB::bind_method(D_METHOD("add_sphere", "lats", "lons", "radius", "add_uv"), &ImmediateGeometry3D::add_sphere, true);
 	ClassDB::bind_method(D_METHOD("end"), &ImmediateGeometry3D::end);
 	ClassDB::bind_method(D_METHOD("clear"), &ImmediateGeometry3D::clear);
 }

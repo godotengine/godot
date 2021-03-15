@@ -1081,7 +1081,7 @@ void AnimatedSprite3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_set_playing", "playing"), &AnimatedSprite3D::_set_playing);
 	ClassDB::bind_method(D_METHOD("_is_playing"), &AnimatedSprite3D::_is_playing);
 
-	ClassDB::bind_method(D_METHOD("play", "anim"), &AnimatedSprite3D::play, DEFVAL(StringName()));
+	ClassDB::bind_method(D_METHOD("play", "anim"), &AnimatedSprite3D::play, StringName());
 	ClassDB::bind_method(D_METHOD("stop"), &AnimatedSprite3D::stop);
 	ClassDB::bind_method(D_METHOD("is_playing"), &AnimatedSprite3D::is_playing);
 

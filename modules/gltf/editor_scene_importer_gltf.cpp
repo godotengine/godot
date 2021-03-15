@@ -73,11 +73,11 @@ Ref<Animation> EditorSceneImporterGLTF::import_animation(const String &p_path,
 void PackedSceneGLTF::_bind_methods() {
 	ClassDB::bind_method(
 			D_METHOD("export_gltf", "node", "path", "flags", "bake_fps"),
-			&PackedSceneGLTF::export_gltf, DEFVAL(0), DEFVAL(1000.0f));
+			&PackedSceneGLTF::export_gltf, 0, 1000.0f);
 	ClassDB::bind_method(D_METHOD("pack_gltf", "path", "flags", "bake_fps", "state"),
-			&PackedSceneGLTF::pack_gltf, DEFVAL(0), DEFVAL(1000.0f), DEFVAL(Ref<GLTFState>()));
+			&PackedSceneGLTF::pack_gltf, 0, 1000.0f, Ref<GLTFState>());
 	ClassDB::bind_method(D_METHOD("import_gltf_scene", "path", "flags", "bake_fps", "state"),
-			&PackedSceneGLTF::import_gltf_scene, DEFVAL(0), DEFVAL(1000.0f), DEFVAL(Ref<GLTFState>()));
+			&PackedSceneGLTF::import_gltf_scene, 0, 1000.0f, Ref<GLTFState>());
 }
 Node *PackedSceneGLTF::import_gltf_scene(const String &p_path, uint32_t p_flags, float p_bake_fps, Ref<GLTFState> r_state) {
 	Error err = FAILED;

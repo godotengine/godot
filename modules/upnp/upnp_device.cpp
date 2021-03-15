@@ -147,8 +147,8 @@ bool UPNPDevice::is_valid_gateway() const {
 void UPNPDevice::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("is_valid_gateway"), &UPNPDevice::is_valid_gateway);
 	ClassDB::bind_method(D_METHOD("query_external_address"), &UPNPDevice::query_external_address);
-	ClassDB::bind_method(D_METHOD("add_port_mapping", "port", "port_internal", "desc", "proto", "duration"), &UPNPDevice::add_port_mapping, DEFVAL(0), DEFVAL(""), DEFVAL("UDP"), DEFVAL(0));
-	ClassDB::bind_method(D_METHOD("delete_port_mapping", "port", "proto"), &UPNPDevice::delete_port_mapping, DEFVAL("UDP"));
+	ClassDB::bind_method(D_METHOD("add_port_mapping", "port", "port_internal", "desc", "proto", "duration"), &UPNPDevice::add_port_mapping, 0, "", "UDP", 0);
+	ClassDB::bind_method(D_METHOD("delete_port_mapping", "port", "proto"), &UPNPDevice::delete_port_mapping, "UDP");
 
 	ClassDB::bind_method(D_METHOD("set_description_url", "url"), &UPNPDevice::set_description_url);
 	ClassDB::bind_method(D_METHOD("get_description_url"), &UPNPDevice::get_description_url);

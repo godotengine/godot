@@ -43,8 +43,6 @@
 // Needs to come after method_bind and object have been included.
 #include "core/object/callable_method_pointer.h"
 
-#define DEFVAL(m_defval) (m_defval)
-
 #ifdef DEBUG_METHODS_ENABLED
 
 struct MethodDefinition {

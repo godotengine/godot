@@ -354,7 +354,7 @@ void Line2D::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("get_point_count"), &Line2D::get_point_count);
 
-	ClassDB::bind_method(D_METHOD("add_point", "position", "at_position"), &Line2D::add_point, DEFVAL(-1));
+	ClassDB::bind_method(D_METHOD("add_point", "position", "at_position"), &Line2D::add_point, -1);
 	ClassDB::bind_method(D_METHOD("remove_point", "i"), &Line2D::remove_point);
 
 	ClassDB::bind_method(D_METHOD("clear_points"), &Line2D::clear_points);

@@ -1377,29 +1377,29 @@ void Window::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_theme", "theme"), &Window::set_theme);
 	ClassDB::bind_method(D_METHOD("get_theme"), &Window::get_theme);
 
-	ClassDB::bind_method(D_METHOD("get_theme_icon", "name", "type"), &Window::get_theme_icon, DEFVAL(""));
-	ClassDB::bind_method(D_METHOD("get_theme_stylebox", "name", "type"), &Window::get_theme_stylebox, DEFVAL(""));
-	ClassDB::bind_method(D_METHOD("get_theme_font", "name", "type"), &Window::get_theme_font, DEFVAL(""));
-	ClassDB::bind_method(D_METHOD("get_theme_font_size", "name", "type"), &Window::get_theme_font_size, DEFVAL(""));
-	ClassDB::bind_method(D_METHOD("get_theme_color", "name", "type"), &Window::get_theme_color, DEFVAL(""));
-	ClassDB::bind_method(D_METHOD("get_theme_constant", "name", "type"), &Window::get_theme_constant, DEFVAL(""));
+	ClassDB::bind_method(D_METHOD("get_theme_icon", "name", "type"), &Window::get_theme_icon, "");
+	ClassDB::bind_method(D_METHOD("get_theme_stylebox", "name", "type"), &Window::get_theme_stylebox, "");
+	ClassDB::bind_method(D_METHOD("get_theme_font", "name", "type"), &Window::get_theme_font, "");
+	ClassDB::bind_method(D_METHOD("get_theme_font_size", "name", "type"), &Window::get_theme_font_size, "");
+	ClassDB::bind_method(D_METHOD("get_theme_color", "name", "type"), &Window::get_theme_color, "");
+	ClassDB::bind_method(D_METHOD("get_theme_constant", "name", "type"), &Window::get_theme_constant, "");
 
-	ClassDB::bind_method(D_METHOD("has_theme_icon", "name", "type"), &Window::has_theme_icon, DEFVAL(""));
-	ClassDB::bind_method(D_METHOD("has_theme_stylebox", "name", "type"), &Window::has_theme_stylebox, DEFVAL(""));
-	ClassDB::bind_method(D_METHOD("has_theme_font", "name", "type"), &Window::has_theme_font, DEFVAL(""));
-	ClassDB::bind_method(D_METHOD("has_theme_font_size", "name", "type"), &Window::has_theme_font_size, DEFVAL(""));
-	ClassDB::bind_method(D_METHOD("has_theme_color", "name", "type"), &Window::has_theme_color, DEFVAL(""));
-	ClassDB::bind_method(D_METHOD("has_theme_constant", "name", "type"), &Window::has_theme_constant, DEFVAL(""));
+	ClassDB::bind_method(D_METHOD("has_theme_icon", "name", "type"), &Window::has_theme_icon, "");
+	ClassDB::bind_method(D_METHOD("has_theme_stylebox", "name", "type"), &Window::has_theme_stylebox, "");
+	ClassDB::bind_method(D_METHOD("has_theme_font", "name", "type"), &Window::has_theme_font, "");
+	ClassDB::bind_method(D_METHOD("has_theme_font_size", "name", "type"), &Window::has_theme_font_size, "");
+	ClassDB::bind_method(D_METHOD("has_theme_color", "name", "type"), &Window::has_theme_color, "");
+	ClassDB::bind_method(D_METHOD("has_theme_constant", "name", "type"), &Window::has_theme_constant, "");
 
 	ClassDB::bind_method(D_METHOD("set_layout_direction", "direction"), &Window::set_layout_direction);
 	ClassDB::bind_method(D_METHOD("get_layout_direction"), &Window::get_layout_direction);
 	ClassDB::bind_method(D_METHOD("is_layout_rtl"), &Window::is_layout_rtl);
 
-	ClassDB::bind_method(D_METHOD("popup", "rect"), &Window::popup, DEFVAL(Rect2i()));
+	ClassDB::bind_method(D_METHOD("popup", "rect"), &Window::popup, Rect2i());
 	ClassDB::bind_method(D_METHOD("popup_on_parent", "parent_rect"), &Window::popup_on_parent);
-	ClassDB::bind_method(D_METHOD("popup_centered_ratio", "ratio"), &Window::popup_centered_ratio, DEFVAL(0.8));
-	ClassDB::bind_method(D_METHOD("popup_centered", "minsize"), &Window::popup_centered, DEFVAL(Size2i()));
-	ClassDB::bind_method(D_METHOD("popup_centered_clamped", "minsize", "fallback_ratio"), &Window::popup_centered_clamped, DEFVAL(Size2i()), DEFVAL(0.75));
+	ClassDB::bind_method(D_METHOD("popup_centered_ratio", "ratio"), &Window::popup_centered_ratio, 0.8);
+	ClassDB::bind_method(D_METHOD("popup_centered", "minsize"), &Window::popup_centered, Size2i());
+	ClassDB::bind_method(D_METHOD("popup_centered_clamped", "minsize", "fallback_ratio"), &Window::popup_centered_clamped, Size2i(), 0.75);
 
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "title"), "set_title", "get_title");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2I, "position"), "set_position", "get_position");

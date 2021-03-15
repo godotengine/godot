@@ -503,8 +503,8 @@ Variant UndoRedo::_add_undo_method(const Variant **p_args, int p_argcount, Calla
 }
 
 void UndoRedo::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("create_action", "name", "merge_mode"), &UndoRedo::create_action, DEFVAL(MERGE_DISABLE));
-	ClassDB::bind_method(D_METHOD("commit_action", "execute"), &UndoRedo::commit_action, DEFVAL(true));
+	ClassDB::bind_method(D_METHOD("create_action", "name", "merge_mode"), &UndoRedo::create_action, MERGE_DISABLE);
+	ClassDB::bind_method(D_METHOD("commit_action", "execute"), &UndoRedo::commit_action, true);
 	ClassDB::bind_method(D_METHOD("is_committing_action"), &UndoRedo::is_committing_action);
 
 	{
@@ -533,7 +533,7 @@ void UndoRedo::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_history_count"), &UndoRedo::get_history_count);
 	ClassDB::bind_method(D_METHOD("get_current_action"), &UndoRedo::get_current_action);
 	ClassDB::bind_method(D_METHOD("get_action_name", "id"), &UndoRedo::get_action_name);
-	ClassDB::bind_method(D_METHOD("clear_history", "increase_version"), &UndoRedo::clear_history, DEFVAL(true));
+	ClassDB::bind_method(D_METHOD("clear_history", "increase_version"), &UndoRedo::clear_history, true);
 
 	ClassDB::bind_method(D_METHOD("get_current_action_name"), &UndoRedo::get_current_action_name);
 

@@ -4240,7 +4240,7 @@ void VisualScriptEditor::set_syntax_highlighter(Ref<EditorSyntaxHighlighter> p_h
 
 void VisualScriptEditor::_bind_methods() {
 	ClassDB::bind_method("_move_node", &VisualScriptEditor::_move_node);
-	ClassDB::bind_method("_update_graph", &VisualScriptEditor::_update_graph, DEFVAL(-1));
+	ClassDB::bind_method("_update_graph", &VisualScriptEditor::_update_graph, -1);
 
 	ClassDB::bind_method("_center_on_node", &VisualScriptEditor::_center_on_node);
 	ClassDB::bind_method("_button_resource_previewed", &VisualScriptEditor::_button_resource_previewed);

@@ -106,7 +106,7 @@ void Script::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("has_source_code"), &Script::has_source_code);
 	ClassDB::bind_method(D_METHOD("get_source_code"), &Script::get_source_code);
 	ClassDB::bind_method(D_METHOD("set_source_code", "source"), &Script::set_source_code);
-	ClassDB::bind_method(D_METHOD("reload", "keep_state"), &Script::reload, DEFVAL(false));
+	ClassDB::bind_method(D_METHOD("reload", "keep_state"), &Script::reload, false);
 	ClassDB::bind_method(D_METHOD("get_base_script"), &Script::get_base_script);
 	ClassDB::bind_method(D_METHOD("get_instance_base_type"), &Script::get_instance_base_type);
 

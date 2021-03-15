@@ -60,7 +60,7 @@ JavaScript::JavaScript() {
 JavaScript::~JavaScript() {}
 
 void JavaScript::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("eval", "code", "use_global_execution_context"), &JavaScript::eval, DEFVAL(false));
+	ClassDB::bind_method(D_METHOD("eval", "code", "use_global_execution_context"), &JavaScript::eval, false);
 }
 
 #if !defined(JAVASCRIPT_ENABLED) || !defined(JAVASCRIPT_EVAL_ENABLED)

@@ -1421,7 +1421,7 @@ void BakedLightmap::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_directional", "directional"), &BakedLightmap::set_directional);
 	ClassDB::bind_method(D_METHOD("is_directional"), &BakedLightmap::is_directional);
 
-	//	ClassDB::bind_method(D_METHOD("bake", "from_node"), &BakedLightmap::bake, DEFVAL(Variant()));
+	//	ClassDB::bind_method(D_METHOD("bake", "from_node"), &BakedLightmap::bake, Variant());
 
 	ADD_GROUP("Tweaks", "");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "quality", PROPERTY_HINT_ENUM, "Low,Medium,High,Ultra"), "set_bake_quality", "get_bake_quality");
