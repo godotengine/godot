@@ -2018,22 +2018,20 @@ void CSharpInstance::connect_event_signals() {
 		// TODO: Use pooling for ManagedCallable instances.
 		auto event_signal_callable = memnew(EventSignalCallable(owner, &event_signal));
 
-		owner->connect(signal_name, Callable(event_signal_callable));
+		Callable callable(event_signal_callable);
+		connected_event_signals.push_back(callable);
+		owner->connect(signal_name, callable);
 	}
 }
 
 void CSharpInstance::disconnect_event_signals() {
-	for (const Map<StringName, CSharpScript::EventSignal>::Element *E = script->event_signals.front(); E; E = E->next()) {
-		const CSharpScript::EventSignal &event_signal = E->value();
-
-		StringName signal_name = event_signal.field->get_name();
-
-		// TODO: It would be great if we could store this EventSignalCallable on the stack.
-		// The problem is that Callable memdeletes it when it's destructed...
-		auto event_signal_callable = memnew(EventSignalCallable(owner, &event_signal));
-
-		owner->disconnect(signal_name, Callable(event_signal_callable));
+	for (const List<Callable>::Element *E = connected_event_signals.front(); E; E = E->next()) {
+		const Callable &callable = E->get();
+		auto event_signal_callable = static_cast<const EventSignalCallable *>(callable.get_custom());
+		owner->disconnect(event_signal_callable->get_signal(), callable);
 	}
+
+	connected_event_signals.clear();
 }
 
 void CSharpInstance::refcount_incremented() {
