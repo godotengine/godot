@@ -1,10 +1,11 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="AtlasTexture" inherits="Texture2D" version="4.0">
 	<brief_description>
-		Packs multiple small textures in a single, bigger one. Helps to optimize video memory costs and render calls.
+		Crops out one part of a texture, such as a texture from a texture atlas.
 	</brief_description>
 	<description>
-		[Texture2D] resource aimed at managing big textures files that pack multiple smaller textures. Consists of a [Texture2D], a margin that defines the border width, and a region that defines the actual area of the AtlasTexture.
+		[Texture2D] resource that crops out one part of the [member atlas] texture, defined by [member region]. The main use case is cropping out textures from a texture atlas, which is a big texture file that packs multiple smaller textures. Consists of a [Texture2D] for the [member atlas], a [member region] that defines the area of [member atlas] to use, and a [member margin] that defines the border width.
+		[AtlasTexture] cannot be used in an [AnimatedTexture], cannot be tiled in nodes such as [TextureRect], and does not work properly if used inside of other [AtlasTexture] resources. Multiple [AtlasTexture] resources can be used to crop multiple textures from the atlas. Using a texture atlas helps to optimize video memory costs and render calls compared to using multiple small files.
 	</description>
 	<tutorials>
 	</tutorials>
