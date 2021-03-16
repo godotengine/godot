@@ -110,26 +110,60 @@ struct	MinkowskiDiff {
 	Transform transform_A;
 	Transform transform_B;
 
-	// i wonder how this could be sped up... if it can
-	_FORCE_INLINE_ Vector3 Support0 ( const Vector3& d ) const {
-		return transform_A.xform( m_shapes[0]->get_support( transform_A.basis.xform_inv(d).normalized() ) );
-	}
+	real_t margin_A = 0.0;
+	real_t margin_B = 0.0;
 
-	_FORCE_INLINE_ Vector3 Support1 ( const Vector3& d ) const {
-		return transform_B.xform( m_shapes[1]->get_support( transform_B.basis.xform_inv(d).normalized() ) );
-	}
+	Vector3 (*get_support)(const Shape3DSW*, const Vector3&, real_t);
 
-	_FORCE_INLINE_ Vector3 Support ( const Vector3& d ) const {
-		return ( Support0 ( d )-Support1 ( -d ) );
-	}
+	void Initialize(const Shape3DSW* shape0, const Transform& wtrs0, const real_t margin0,
+		const Shape3DSW* shape1, const Transform& wtrs1, const real_t margin1) {
+		m_shapes[0]		=	shape0;
+		m_shapes[1]		=	shape1;
+		transform_A		=	wtrs0;
+		transform_B		=	wtrs1;
+		margin_A		=	margin0;
+		margin_B		=	margin1;
 
-	_FORCE_INLINE_ Vector3	Support ( const Vector3& d,U index ) const
-	{
-		if ( index ) {
-			return ( Support1 ( d ) );
+		if ((margin0 > 0.0) || (margin1 > 0.0)) {
+			get_support = get_support_with_margin;
 		} else {
-			return ( Support0 ( d ) );
-}
+			get_support = get_support_without_margin;
+		}
+	}
+
+	static Vector3 get_support_without_margin(const Shape3DSW* p_shape, const Vector3& p_dir, real_t p_margin) {
+		return p_shape->get_support(p_dir.normalized());
+	}
+
+	static Vector3 get_support_with_margin(const Shape3DSW* p_shape, const Vector3& p_dir, real_t p_margin) {
+		Vector3 local_dir_norm = p_dir;
+		if (local_dir_norm.length_squared() < CMP_EPSILON2) {
+			local_dir_norm = Vector3(-1.0, -1.0, -1.0);
+		}
+		local_dir_norm.normalize();
+
+		return p_shape->get_support(local_dir_norm) + p_margin * local_dir_norm;
+	}
+
+	// i wonder how this could be sped up... if it can
+	_FORCE_INLINE_ Vector3 Support0(const Vector3& d) const {
+		return transform_A.xform(get_support(m_shapes[0], transform_A.basis.xform_inv(d), margin_A));
+	}
+
+	_FORCE_INLINE_ Vector3 Support1(const Vector3& d) const {
+		return transform_B.xform(get_support(m_shapes[1], transform_B.basis.xform_inv(d), margin_B));
+	}
+
+	_FORCE_INLINE_ Vector3 Support (const Vector3& d) const {
+		return (Support0(d) - Support1(-d));
+	}
+
+	_FORCE_INLINE_ Vector3 Support(const Vector3& d, U index) const {
+		if (index) {
+			return Support1(d);
+		} else {
+			return Support0(d);
+		}
 	}
 };
 
@@ -828,22 +862,17 @@ struct	GJK
 	};
 
 	//
-	static void	Initialize(	const Shape3DSW* shape0,const Transform& wtrs0,
-		const Shape3DSW* shape1,const Transform& wtrs1,
+	static void	Initialize(	const Shape3DSW* shape0, const Transform& wtrs0, real_t margin0,
+		const Shape3DSW* shape1, const Transform& wtrs1, real_t margin1,
 		sResults& results,
-		tShape& shape,
-		bool withmargins)
+		tShape& shape)
 	{
 		/* Results		*/
-		results.witnesses[0]	=
-			results.witnesses[1]	=	Vector3(0,0,0);
+		results.witnesses[0]	=	Vector3(0,0,0);
+		results.witnesses[1]	=	Vector3(0,0,0);
 		results.status			=	sResults::Separated;
 		/* Shape		*/
-		shape.m_shapes[0]		=	shape0;
-		shape.m_shapes[1]		=	shape1;
-		shape.transform_A		=	wtrs0;
-		shape.transform_B		=	wtrs1;
-
+		shape.Initialize(shape0, wtrs0, margin0, shape1, wtrs1, margin1);
 	}
 
 
@@ -857,13 +886,15 @@ struct	GJK
 //
 bool Distance(	const Shape3DSW*	shape0,
 									  const Transform&		wtrs0,
-									  const Shape3DSW*	shape1,
+									  real_t				margin0,
+									  const Shape3DSW*		shape1,
 									  const Transform&		wtrs1,
+									  real_t				margin1,
 									  const Vector3&		guess,
 									  sResults&				results)
 {
 	tShape			shape;
-	Initialize(shape0,wtrs0,shape1,wtrs1,results,shape,false);
+	Initialize(shape0, wtrs0, margin0, shape1, wtrs1, margin1, results, shape);
 	GJK				gjk;
 	GJK::eStatus::_	gjk_status=gjk.Evaluate(shape,guess);
 	if(gjk_status==GJK::eStatus::Valid)
@@ -896,14 +927,16 @@ bool Distance(	const Shape3DSW*	shape0,
 //
 bool Penetration(	const Shape3DSW*	shape0,
 									 const Transform&		wtrs0,
-									 const Shape3DSW*	shape1,
+									 real_t					margin0,
+									 const Shape3DSW*		shape1,
 									 const Transform&		wtrs1,
-									 const Vector3&		guess,
+									 real_t					margin1,
+									 const Vector3&			guess,
 									 sResults&				results
 									)
 {
 	tShape			shape;
-	Initialize(shape0,wtrs0,shape1,wtrs1,results,shape,false);
+	Initialize(shape0, wtrs0, margin0, shape1, wtrs1, margin1, results, shape);
 	GJK				gjk;
 	GJK::eStatus::_	gjk_status=gjk.Evaluate(shape,-guess);
 	switch(gjk_status)
@@ -963,7 +996,7 @@ bool Penetration(	const Shape3DSW*	shape0,
 bool gjk_epa_calculate_distance(const Shape3DSW *p_shape_A, const Transform &p_transform_A, const Shape3DSW *p_shape_B, const Transform &p_transform_B, Vector3 &r_result_A, Vector3 &r_result_B) {
 	GjkEpa2::sResults res;
 
-	if (GjkEpa2::Distance(p_shape_A, p_transform_A, p_shape_B, p_transform_B, p_transform_B.origin - p_transform_A.origin, res)) {
+	if (GjkEpa2::Distance(p_shape_A, p_transform_A, 0.0, p_shape_B, p_transform_B, 0.0, p_transform_B.origin - p_transform_A.origin, res)) {
 		r_result_A = res.witnesses[0];
 		r_result_B = res.witnesses[1];
 		return true;
@@ -972,10 +1005,10 @@ bool gjk_epa_calculate_distance(const Shape3DSW *p_shape_A, const Transform &p_t
 	return false;
 }
 
-bool gjk_epa_calculate_penetration(const Shape3DSW *p_shape_A, const Transform &p_transform_A, const Shape3DSW *p_shape_B, const Transform &p_transform_B, CollisionSolver3DSW::CallbackResult p_result_callback, void *p_userdata, bool p_swap) {
+bool gjk_epa_calculate_penetration(const Shape3DSW *p_shape_A, const Transform &p_transform_A, const Shape3DSW *p_shape_B, const Transform &p_transform_B, CollisionSolver3DSW::CallbackResult p_result_callback, void *p_userdata, bool p_swap, real_t p_margin_A, real_t p_margin_B) {
 	GjkEpa2::sResults res;
 
-	if (GjkEpa2::Penetration(p_shape_A, p_transform_A, p_shape_B, p_transform_B, p_transform_B.origin - p_transform_A.origin, res)) {
+	if (GjkEpa2::Penetration(p_shape_A, p_transform_A, p_margin_A, p_shape_B, p_transform_B, p_margin_B, p_transform_B.origin - p_transform_A.origin, res)) {
 		if (p_result_callback) {
 			if (p_swap) {
 				p_result_callback(res.witnesses[1], res.witnesses[0], p_userdata);
