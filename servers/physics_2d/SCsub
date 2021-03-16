@@ -2,4 +2,5 @@
 
 Import("env")
 
-env.add_source_files(env.servers_sources, "*.cpp")
+if not env["disable_2d"]:
+    env.add_source_files(env.servers_sources, "*.cpp")

@@ -37,7 +37,9 @@
 #include "core/os/os.h"
 #include "core/string/translation.h"
 
+#ifndef _2D_DISABLED
 #include "scene/2d/collision_object_2d.h"
+#endif // _2D_DISABLED
 #include "scene/3d/camera_3d.h"
 #include "scene/3d/collision_object_3d.h"
 #include "scene/3d/listener_3d.h"
@@ -431,7 +433,9 @@ void Viewport::_notification(int p_what) {
 			add_to_group("_viewports");
 			if (get_tree()->is_debugging_collisions_hint()) {
 				//2D
+#ifndef _2D_DISABLED
 				PhysicsServer2D::get_singleton()->space_set_debug_contacts(find_world_2d()->get_space(), get_tree()->get_collision_debug_contact_count());
+#endif // _2D_DISABLED
 				contact_2d_debug = RenderingServer::get_singleton()->canvas_item_create();
 				RenderingServer::get_singleton()->canvas_item_set_parent(contact_2d_debug, find_world_2d()->get_canvas());
 				//3D
@@ -519,6 +523,7 @@ void Viewport::_notification(int p_what) {
 				RenderingServer::get_singleton()->canvas_item_clear(contact_2d_debug);
 				RenderingServer::get_singleton()->canvas_item_set_draw_index(contact_2d_debug, 0xFFFFF); //very high index
 
+#ifndef _2D_DISABLED
 				Vector<Vector2> points = PhysicsServer2D::get_singleton()->space_get_contacts(find_world_2d()->get_space());
 				int point_count = PhysicsServer2D::get_singleton()->space_get_contact_count(find_world_2d()->get_space());
 				Color ccol = get_tree()->get_debug_collision_contact_color();
@@ -526,6 +531,7 @@ void Viewport::_notification(int p_what) {
 				for (int i = 0; i < point_count; i++) {
 					RenderingServer::get_singleton()->canvas_item_add_rect(contact_2d_debug, Rect2(points[i] - Vector2(2, 2), Vector2(5, 5)), ccol);
 				}
+#endif // _2D_DISABLED
 			}
 
 			if (get_tree()->is_debugging_collisions_hint() && contact_3d_debug_multimesh.is_valid()) {
@@ -578,7 +584,9 @@ void Viewport::_process_picking() {
 	ObjectID last_id;
 #endif
 	PhysicsDirectSpaceState3D::RayResult result;
+#ifndef _2D_DISABLED
 	PhysicsDirectSpaceState2D *ss2d = PhysicsServer2D::get_singleton()->space_get_direct_state(find_world_2d()->get_space());
+#endif // _2D_DISABLED
 
 	if (physics_has_last_mousepos) {
 		// if no mouse event exists, create a motion one. This is necessary because objects or camera may have moved.
@@ -677,6 +685,9 @@ void Viewport::_process_picking() {
 			pos = st->get_position();
 		}
 
+		// Avoid unused variable warning if 2D and 3D are both disabled.
+		(void)is_mouse;
+#ifndef _2D_DISABLED
 		if (ss2d) {
 			//send to 2D
 
@@ -749,6 +760,7 @@ void Viewport::_process_picking() {
 				}
 			}
 		}
+#endif // _2D_DISABLED
 
 #ifndef _3D_DISABLED
 		bool captured = false;
@@ -2609,6 +2621,7 @@ void Viewport::_drop_physics_mouseover(bool p_paused_only) {
 
 	List<Map<ObjectID, uint64_t>::Element *> to_erase;
 
+#ifndef _2D_DISABLED
 	for (Map<ObjectID, uint64_t>::Element *E = physics_2d_mouseover.front(); E; E = E->next()) {
 		Object *o = ObjectDB::get_instance(E->key());
 		if (o) {
@@ -2627,6 +2640,9 @@ void Viewport::_drop_physics_mouseover(bool p_paused_only) {
 		physics_2d_mouseover.erase(to_erase.front()->get());
 		to_erase.pop_front();
 	}
+#else
+	to_erase.clear();
+#endif // _2D_DISABLED
 
 #ifndef _3D_DISABLED
 	if (physics_object_over.is_valid()) {

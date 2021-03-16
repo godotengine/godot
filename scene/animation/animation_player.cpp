@@ -45,12 +45,14 @@ void AnimatedValuesBackup::update_skeletons() {
 		if (entries[i].bone_idx != -1) {
 			// 3D bone
 			Object::cast_to<Skeleton3D>(entries[i].object)->notification(Skeleton3D::NOTIFICATION_UPDATE_SKELETON);
+#ifndef _2D_DISABLED
 		} else {
 			Bone2D *bone = Object::cast_to<Bone2D>(entries[i].object);
 			if (bone && bone->skeleton) {
 				// 2D bone
 				bone->skeleton->_update_transform();
 			}
+#endif // _2D_DISABLED
 		}
 	}
 }
@@ -280,7 +282,9 @@ void AnimationPlayer::_ensure_node_caches(AnimationData *p_anim, Node *p_root_ov
 		p_anim->node_cache[i]->path = a->track_get_path(i);
 		p_anim->node_cache[i]->node = child;
 		p_anim->node_cache[i]->resource = resource;
+#ifndef _2D_DISABLED
 		p_anim->node_cache[i]->node_2d = Object::cast_to<Node2D>(child);
+#endif // _2D_DISABLED
 #ifndef _3D_DISABLED
 		if (a->track_get_type(i) == Animation::TYPE_TRANSFORM3D) {
 			// special cases and caches for transform tracks
@@ -315,7 +319,11 @@ void AnimationPlayer::_ensure_node_caches(AnimationData *p_anim, Node *p_root_ov
 				pa.object = resource.is_valid() ? (Object *)resource.ptr() : (Object *)child;
 				pa.special = SP_NONE;
 				pa.owner = p_anim->node_cache[i];
+#ifndef _2D_DISABLED
 				if (false && p_anim->node_cache[i]->node_2d) {
+#else
+				if (false) {
+#endif // _2D_DISABLED
 					if (leftover_path.size() == 1 && leftover_path[0] == SceneStringNames::get_singleton()->transform_pos) {
 						pa.special = SP_NODE2D_POS;
 					} else if (leftover_path.size() == 1 && leftover_path[0] == SceneStringNames::get_singleton()->transform_rot) {
@@ -498,6 +506,7 @@ void AnimationPlayer::_animation_process_animation(AnimationData *p_anim, float 
 #endif
 
 							} break;
+#ifndef _2D_DISABLED
 							case SP_NODE2D_POS: {
 #ifdef DEBUG_ENABLED
 								if (value.get_type() != Variant::VECTOR2) {
@@ -524,6 +533,10 @@ void AnimationPlayer::_animation_process_animation(AnimationData *p_anim, float 
 
 								static_cast<Node2D *>(pa->object)->set_scale(value);
 							} break;
+#else
+							default:
+								break;
+#endif // _2D_DISABLED
 						}
 					}
 				}
@@ -879,6 +892,7 @@ void AnimationPlayer::_animation_update_transforms() {
 #endif
 
 			} break;
+#ifndef _2D_DISABLED
 			case SP_NODE2D_POS: {
 #ifdef DEBUG_ENABLED
 				if (pa->value_accum.get_type() != Variant::VECTOR2) {
@@ -905,6 +919,10 @@ void AnimationPlayer::_animation_update_transforms() {
 
 				static_cast<Node2D *>(pa->object)->set_scale(pa->value_accum);
 			} break;
+#else
+			default:
+				break;
+#endif // _2D_DISABLED
 		}
 	}
 

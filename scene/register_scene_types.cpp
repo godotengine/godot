@@ -34,6 +34,7 @@
 #include "core/extension/native_extension_manager.h"
 #include "core/object/class_db.h"
 #include "core/os/os.h"
+#ifndef _2D_DISABLED
 #include "scene/2d/animated_sprite_2d.h"
 #include "scene/2d/area_2d.h"
 #include "scene/2d/audio_stream_player_2d.h"
@@ -67,6 +68,7 @@
 #include "scene/2d/tile_map.h"
 #include "scene/2d/touch_screen_button.h"
 #include "scene/2d/visible_on_screen_notifier_2d.h"
+#endif // _2D_DISABLED
 #include "scene/animation/animation_blend_space_1d.h"
 #include "scene/animation/animation_blend_space_2d.h"
 #include "scene/animation/animation_blend_tree.h"
@@ -131,6 +133,7 @@
 #include "scene/main/timer.h"
 #include "scene/main/viewport.h"
 #include "scene/main/window.h"
+#ifndef _2D_DISABLED
 #include "scene/resources/2d/capsule_shape_2d.h"
 #include "scene/resources/2d/circle_shape_2d.h"
 #include "scene/resources/2d/concave_polygon_shape_2d.h"
@@ -150,6 +153,7 @@
 #include "scene/resources/2d/skeleton/skeleton_modification_2d_twoboneik.h"
 #include "scene/resources/2d/skeleton/skeleton_modification_stack_2d.h"
 #include "scene/resources/2d/tile_set.h"
+#endif // _2D_DISABLED
 #include "scene/resources/audio_stream_sample.h"
 #include "scene/resources/bit_map.h"
 #include "scene/resources/box_shape_3d.h"
@@ -303,7 +307,9 @@ void register_scene_types() {
 	ClassDB::register_class<HTTPRequest>();
 	ClassDB::register_class<Timer>();
 	ClassDB::register_class<CanvasLayer>();
+#ifndef _2D_DISABLED
 	ClassDB::register_class<CanvasModulate>();
+#endif // _2D_DISABLED
 	ClassDB::register_class<ResourcePreloader>();
 	ClassDB::register_class<Window>();
 
@@ -639,6 +645,7 @@ void register_scene_types() {
 
 	/* REGISTER 2D */
 
+#ifndef _2D_DISABLED
 	ClassDB::register_class<Node2D>();
 	ClassDB::register_class<CanvasGroup>();
 	ClassDB::register_class<CPUParticles2D>();
@@ -687,6 +694,7 @@ void register_scene_types() {
 	ClassDB::register_class<TileMap>();
 	ClassDB::register_class<ParallaxBackground>();
 	ClassDB::register_class<ParallaxLayer>();
+	ClassDB::register_class<PolygonPathFinder>();
 	ClassDB::register_class<TouchScreenButton>();
 	ClassDB::register_class<RemoteTransform2D>();
 
@@ -701,6 +709,7 @@ void register_scene_types() {
 
 	ClassDB::register_class<PhysicalBone2D>();
 	ClassDB::register_class<SkeletonModification2DPhysicalBones>();
+#endif // _2D_DISABLED
 
 	OS::get_singleton()->yield(); //may take time to init
 
@@ -808,14 +817,15 @@ void register_scene_types() {
 	ClassDB::register_class<StyleBoxLine>();
 	ClassDB::register_class<Theme>();
 
-	ClassDB::register_class<PolygonPathFinder>();
 	ClassDB::register_class<BitMap>();
 	ClassDB::register_class<Gradient>();
 
 	OS::get_singleton()->yield(); //may take time to init
 
 	ClassDB::register_class<AudioStreamPlayer>();
+#ifndef _2D_DISABLED
 	ClassDB::register_class<AudioStreamPlayer2D>();
+#endif // _2D_DISABLED
 #ifndef _3D_DISABLED
 	ClassDB::register_class<AudioStreamPlayer3D>();
 #endif
@@ -824,6 +834,7 @@ void register_scene_types() {
 
 	OS::get_singleton()->yield(); //may take time to init
 
+#ifndef _2D_DISABLED
 	ClassDB::register_virtual_class<Shape2D>();
 	ClassDB::register_class<LineShape2D>();
 	ClassDB::register_class<SegmentShape2D>();
@@ -842,6 +853,7 @@ void register_scene_types() {
 	ClassDB::register_class<NavigationRegion2D>();
 	ClassDB::register_class<NavigationAgent2D>();
 	ClassDB::register_class<NavigationObstacle2D>();
+#endif // _2D_DISABLED
 
 	OS::get_singleton()->yield(); //may take time to init
 

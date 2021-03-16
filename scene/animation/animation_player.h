@@ -31,7 +31,9 @@
 #ifndef ANIMATION_PLAYER_H
 #define ANIMATION_PLAYER_H
 
+#ifndef _2D_DISABLED
 #include "scene/2d/node_2d.h"
+#endif // _2D_DISABLED
 #include "scene/3d/node_3d.h"
 #include "scene/3d/skeleton_3d.h"
 #include "scene/resources/animation.h"
@@ -93,7 +95,9 @@ private:
 		uint32_t id = 0;
 		RES resource;
 		Node *node = nullptr;
+#ifndef _2D_DISABLED
 		Node2D *node_2d = nullptr;
+#endif // _2D_DISABLED
 #ifndef _3D_DISABLED
 		Node3D *node_3d = nullptr;
 		Skeleton3D *skeleton = nullptr;

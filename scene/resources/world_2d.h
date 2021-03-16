@@ -33,7 +33,9 @@
 
 #include "core/config/project_settings.h"
 #include "core/io/resource.h"
+#ifndef _2D_DISABLED
 #include "servers/physics_server_2d.h"
+#endif // _2D_DISABLED
 
 class VisibleOnScreenNotifier2D;
 class Viewport;
@@ -43,8 +45,10 @@ class World2D : public Resource {
 	GDCLASS(World2D, Resource);
 
 	RID canvas;
+#ifndef _2D_DISABLED
 	RID space;
 	RID navigation_map;
+#endif // _2D_DISABLED
 
 	Set<Viewport *> viewports;
 
@@ -57,10 +61,12 @@ protected:
 
 public:
 	RID get_canvas() const;
+#ifndef _2D_DISABLED
 	RID get_space() const;
 	RID get_navigation_map() const;
 
 	PhysicsDirectSpaceState2D *get_direct_space_state();
+#endif // _2D_DISABLED
 
 	_FORCE_INLINE_ const Set<Viewport *> &get_viewports() { return viewports; }
 

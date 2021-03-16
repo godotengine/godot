@@ -28,6 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
+#ifndef _2D_DISABLED
+
 #include "servers/navigation_server_2d.h"
 #include "core/math/transform_2d.h"
 #include "core/math/transform_3d.h"
@@ -273,3 +275,5 @@ bool FORWARD_1_C(agent_is_map_changed, RID, p_agent, rid_to_rid);
 void FORWARD_4_C(agent_set_callback, RID, p_agent, Object *, p_receiver, StringName, p_method, Variant, p_udata, rid_to_rid, obj_to_obj, sn_to_sn, var_to_var);
 
 void FORWARD_1_C(free, RID, p_object, rid_to_rid);
+
+#endif // _2D_DISABLED

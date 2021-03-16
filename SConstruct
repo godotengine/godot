@@ -136,6 +136,7 @@ opts.Add(EnumVariable("warnings", "Level of compilation warnings", "all", ("extr
 opts.Add(BoolVariable("werror", "Treat compiler warnings as errors", False))
 opts.Add("extra_suffix", "Custom extra suffix added to the base filename of all generated binary files", "")
 opts.Add(BoolVariable("vsproj", "Generate a Visual Studio solution", False))
+opts.Add(BoolVariable("disable_2d", "Disable 2D nodes for a smaller executable", False))
 opts.Add(BoolVariable("disable_3d", "Disable 3D nodes for a smaller executable", False))
 opts.Add(BoolVariable("disable_advanced_gui", "Disable advanced GUI nodes and behaviors", False))
 opts.Add(BoolVariable("modules_enabled_by_default", "If no, disable all modules except ones explicitly enabled", True))
@@ -638,6 +639,15 @@ if selected_platform in platform_list:
 
     if env["tools"]:
         env.Append(CPPDEFINES=["TOOLS_ENABLED"])
+    if env["disable_2d"]:
+        if env["tools"]:
+            print(
+                "Build option 'disable_2d=yes' cannot be used with 'tools=yes' (editor), "
+                "only with 'tools=no' (export template)."
+            )
+            Exit(255)
+        else:
+            env.Append(CPPDEFINES=["_2D_DISABLED"])
     if env["disable_3d"]:
         if env["tools"]:
             print(

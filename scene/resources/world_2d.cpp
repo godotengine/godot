@@ -42,6 +42,7 @@ RID World2D::get_canvas() const {
 	return canvas;
 }
 
+#ifndef _2D_DISABLED
 RID World2D::get_space() const {
 	return space;
 }
@@ -50,26 +51,30 @@ RID World2D::get_navigation_map() const {
 	return navigation_map;
 }
 
+PhysicsDirectSpaceState2D *World2D::get_direct_space_state() {
+	return PhysicsServer2D::get_singleton()->space_get_direct_state(space);
+}
+#endif // _2D_DISABLED
+
 void World2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_canvas"), &World2D::get_canvas);
+	ADD_PROPERTY(PropertyInfo(Variant::RID, "canvas", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NONE), "", "get_canvas");
+
+#ifndef _2D_DISABLED
 	ClassDB::bind_method(D_METHOD("get_space"), &World2D::get_space);
 	ClassDB::bind_method(D_METHOD("get_navigation_map"), &World2D::get_navigation_map);
-
 	ClassDB::bind_method(D_METHOD("get_direct_space_state"), &World2D::get_direct_space_state);
 
-	ADD_PROPERTY(PropertyInfo(Variant::RID, "canvas", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NONE), "", "get_canvas");
 	ADD_PROPERTY(PropertyInfo(Variant::RID, "space", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NONE), "", "get_space");
 	ADD_PROPERTY(PropertyInfo(Variant::RID, "navigation_map", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NONE), "", "get_navigation_map");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "direct_space_state", PROPERTY_HINT_RESOURCE_TYPE, "PhysicsDirectSpaceState2D", PROPERTY_USAGE_NONE), "", "get_direct_space_state");
-}
-
-PhysicsDirectSpaceState2D *World2D::get_direct_space_state() {
-	return PhysicsServer2D::get_singleton()->space_get_direct_state(space);
+#endif // _2D_DISABLED
 }
 
 World2D::World2D() {
 	canvas = RenderingServer::get_singleton()->canvas_create();
 
+#ifndef _2D_DISABLED
 	// Create and configure space2D to be more friendly with pixels than meters
 	space = PhysicsServer2D::get_singleton()->space_create();
 	PhysicsServer2D::get_singleton()->space_set_active(space, true);
@@ -85,10 +90,13 @@ World2D::World2D() {
 	NavigationServer2D::get_singleton()->map_set_active(navigation_map, true);
 	NavigationServer2D::get_singleton()->map_set_cell_size(navigation_map, GLOBAL_DEF("navigation/2d/default_cell_size", 10));
 	NavigationServer2D::get_singleton()->map_set_edge_connection_margin(navigation_map, GLOBAL_DEF("navigation/2d/default_edge_connection_margin", 5));
+#endif // _2D_DISABLED
 }
 
 World2D::~World2D() {
 	RenderingServer::get_singleton()->free(canvas);
+#ifndef _2D_DISABLED
 	PhysicsServer2D::get_singleton()->free(space);
 	NavigationServer2D::get_singleton()->free(navigation_map);
+#endif // _2D_DISABLED
 }
