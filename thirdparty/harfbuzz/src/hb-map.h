@@ -24,7 +24,7 @@
  * Google Author(s): Behdad Esfahbod
  */
 
-#ifndef HB_H_IN
+#if !defined(HB_H_IN) && !defined(HB_NO_SINGLE_HEADER_ERROR)
 #error "Include <hb.h> instead."
 #endif
 
@@ -36,7 +36,11 @@
 HB_BEGIN_DECLS
 
 
-/*
+/**
+ * HB_MAP_VALUE_INVALID:
+ *
+ * Unset #hb_map_t value.
+ *
  * Since: 1.7.7
  */
 #define HB_MAP_VALUE_INVALID ((hb_codepoint_t) -1)

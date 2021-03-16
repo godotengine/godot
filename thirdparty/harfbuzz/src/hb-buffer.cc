@@ -218,9 +218,6 @@ hb_buffer_t::get_scratch_buffer (unsigned int *size)
 void
 hb_buffer_t::reset ()
 {
-  if (unlikely (hb_object_is_immutable (this)))
-    return;
-
   hb_unicode_funcs_destroy (unicode);
   unicode = hb_unicode_funcs_reference (hb_unicode_funcs_get_default ());
   flags = HB_BUFFER_FLAG_DEFAULT;
@@ -233,9 +230,6 @@ hb_buffer_t::reset ()
 void
 hb_buffer_t::clear ()
 {
-  if (unlikely (hb_object_is_immutable (this)))
-    return;
-
   hb_segment_properties_t default_props = HB_SEGMENT_PROPERTIES_DEFAULT;
   props = default_props;
   scratch_flags = HB_BUFFER_SCRATCH_FLAG_DEFAULT;
@@ -290,9 +284,6 @@ hb_buffer_t::add_info (const hb_glyph_info_t &glyph_info)
 void
 hb_buffer_t::remove_output ()
 {
-  if (unlikely (hb_object_is_immutable (this)))
-    return;
-
   have_output = false;
   have_positions = false;
 
@@ -303,9 +294,6 @@ hb_buffer_t::remove_output ()
 void
 hb_buffer_t::clear_output ()
 {
-  if (unlikely (hb_object_is_immutable (this)))
-    return;
-
   have_output = true;
   have_positions = false;
 
@@ -316,9 +304,6 @@ hb_buffer_t::clear_output ()
 void
 hb_buffer_t::clear_positions ()
 {
-  if (unlikely (hb_object_is_immutable (this)))
-    return;
-
   have_output = false;
   have_positions = true;
 
@@ -333,15 +318,19 @@ hb_buffer_t::swap_buffers ()
 {
   if (unlikely (!successful)) return;
 
+  assert (idx <= len);
+  if (unlikely (!next_glyphs (len - idx))) return;
+
   assert (have_output);
   have_output = false;
 
   if (out_info != info)
   {
-    hb_glyph_info_t *tmp_string;
-    tmp_string = info;
+    hb_glyph_info_t *tmp;
+    tmp = info;
     info = out_info;
-    out_info = tmp_string;
+    out_info = tmp;
+
     pos = (hb_glyph_position_t *) out_info;
   }
 
@@ -351,31 +340,6 @@ hb_buffer_t::swap_buffers ()
   out_len = tmp;
 
   idx = 0;
-}
-
-
-void
-hb_buffer_t::replace_glyphs (unsigned int num_in,
-			     unsigned int num_out,
-			     const uint32_t *glyph_data)
-{
-  if (unlikely (!make_room_for (num_in, num_out))) return;
-
-  assert (idx + num_in <= len);
-
-  merge_clusters (idx, idx + num_in);
-
-  hb_glyph_info_t orig_info = info[idx];
-  hb_glyph_info_t *pinfo = &out_info[out_len];
-  for (unsigned int i = 0; i < num_out; i++)
-  {
-    *pinfo = orig_info;
-    pinfo->codepoint = glyph_data[i];
-    pinfo++;
-  }
-
-  idx  += num_in;
-  out_len += num_out;
 }
 
 bool
@@ -768,7 +732,7 @@ hb_buffer_destroy (hb_buffer_t *buffer)
  * @buffer: An #hb_buffer_t
  * @key: The user-data key
  * @data: A pointer to the user data
- * @destroy: (optional): A callback to call when @data is not needed anymore
+ * @destroy: (nullable): A callback to call when @data is not needed anymore
  * @replace: Whether to replace an existing data with the same key
  *
  * Attaches a user-data key/data pair to the specified buffer. 
@@ -795,7 +759,7 @@ hb_buffer_set_user_data (hb_buffer_t        *buffer,
  * Fetches the user data associated with the specified key,
  * attached to the specified buffer.
  *
- * Return value: (transfer-none): A pointer to the user data
+ * Return value: (transfer none): A pointer to the user data
  *
  * Since: 0.9.2
  **/
@@ -1137,7 +1101,7 @@ hb_buffer_get_cluster_level (hb_buffer_t *buffer)
  * Sets the #hb_codepoint_t that replaces invalid entries for a given encoding
  * when adding text to @buffer.
  *
- * Default is %HB_BUFFER_REPLACEMENT_CODEPOINT_DEFAULT.
+ * Default is #HB_BUFFER_REPLACEMENT_CODEPOINT_DEFAULT.
  *
  * Since: 0.9.31
  **/
@@ -1222,6 +1186,9 @@ hb_buffer_get_invisible_glyph (hb_buffer_t    *buffer)
 void
 hb_buffer_reset (hb_buffer_t *buffer)
 {
+  if (unlikely (hb_object_is_immutable (buffer)))
+    return;
+
   buffer->reset ();
 }
 
@@ -1237,6 +1204,9 @@ hb_buffer_reset (hb_buffer_t *buffer)
 void
 hb_buffer_clear_contents (hb_buffer_t *buffer)
 {
+  if (unlikely (hb_object_is_immutable (buffer)))
+    return;
+
   buffer->clear ();
 }
 
@@ -1321,7 +1291,7 @@ hb_buffer_set_length (hb_buffer_t  *buffer,
   if (unlikely (hb_object_is_immutable (buffer)))
     return length == 0;
 
-  if (!buffer->ensure (length))
+  if (unlikely (!buffer->ensure (length)))
     return false;
 
   /* Wipe the new space */
@@ -1501,20 +1471,20 @@ hb_buffer_reverse_clusters (hb_buffer_t *buffer)
  *
  * Sets unset buffer segment properties based on buffer Unicode
  * contents.  If buffer is not empty, it must have content type
- * %HB_BUFFER_CONTENT_TYPE_UNICODE.
+ * #HB_BUFFER_CONTENT_TYPE_UNICODE.
  *
- * If buffer script is not set (ie. is %HB_SCRIPT_INVALID), it
+ * If buffer script is not set (ie. is #HB_SCRIPT_INVALID), it
  * will be set to the Unicode script of the first character in
- * the buffer that has a script other than %HB_SCRIPT_COMMON,
- * %HB_SCRIPT_INHERITED, and %HB_SCRIPT_UNKNOWN.
+ * the buffer that has a script other than #HB_SCRIPT_COMMON,
+ * #HB_SCRIPT_INHERITED, and #HB_SCRIPT_UNKNOWN.
  *
- * Next, if buffer direction is not set (ie. is %HB_DIRECTION_INVALID),
+ * Next, if buffer direction is not set (ie. is #HB_DIRECTION_INVALID),
  * it will be set to the natural horizontal direction of the
  * buffer script as returned by hb_script_get_horizontal_direction().
- * If hb_script_get_horizontal_direction() returns %HB_DIRECTION_INVALID,
- * then %HB_DIRECTION_LTR is used.
+ * If hb_script_get_horizontal_direction() returns #HB_DIRECTION_INVALID,
+ * then #HB_DIRECTION_LTR is used.
  *
- * Finally, if buffer language is not set (ie. is %HB_LANGUAGE_INVALID),
+ * Finally, if buffer language is not set (ie. is #HB_LANGUAGE_INVALID),
  * it will be set to the process's default language as returned by
  * hb_language_get_default().  This may change in the future by
  * taking buffer script into consideration when choosing a language.
@@ -1551,7 +1521,10 @@ hb_buffer_add_utf (hb_buffer_t  *buffer,
   if (item_length == -1)
     item_length = text_length - item_offset;
 
-  buffer->ensure (buffer->len + item_length * sizeof (T) / 4);
+  if (unlikely (item_length < 0 ||
+		item_length > INT_MAX / 8 ||
+		!buffer->ensure (buffer->len + item_length * sizeof (T) / 4)))
+    return;
 
   /* If buffer is empty and pre-context provided, install it.
    * This check is written this way, to make sure people can
@@ -1768,11 +1741,6 @@ hb_buffer_append (hb_buffer_t *buffer,
   if (start == end)
     return;
 
-  if (!buffer->len)
-    buffer->content_type = source->content_type;
-  if (!buffer->have_positions && source->have_positions)
-    buffer->clear_positions ();
-
   if (buffer->len + (end - start) < buffer->len) /* Overflows. */
   {
     buffer->successful = false;
@@ -1783,6 +1751,11 @@ hb_buffer_append (hb_buffer_t *buffer,
   hb_buffer_set_length (buffer, buffer->len + (end - start));
   if (unlikely (!buffer->successful))
     return;
+
+  if (!orig_len)
+    buffer->content_type = source->content_type;
+  if (!buffer->have_positions && source->have_positions)
+    buffer->clear_positions ();
 
   memcpy (buffer->info + orig_len, source->info + start, (end - start) * sizeof (buffer->info[0]));
   if (buffer->have_positions)
@@ -1902,8 +1875,8 @@ hb_buffer_t::sort (unsigned int start, unsigned int end, int(*compar)(const hb_g
  * @dottedcircle_glyph: glyph id of U+25CC DOTTED CIRCLE, or (hb_codepont_t) -1.
  * @position_fuzz: allowed absolute difference in position values.
  *
- * If dottedcircle_glyph is (hb_codepoint_t) -1 then %HB_BUFFER_DIFF_FLAG_DOTTED_CIRCLE_PRESENT
- * and %HB_BUFFER_DIFF_FLAG_NOTDEF_PRESENT are never returned.  This should be used by most
+ * If dottedcircle_glyph is (hb_codepoint_t) -1 then #HB_BUFFER_DIFF_FLAG_DOTTED_CIRCLE_PRESENT
+ * and #HB_BUFFER_DIFF_FLAG_NOTDEF_PRESENT are never returned.  This should be used by most
  * callers if just comparing two buffers is needed.
  *
  * Since: 1.5.0
@@ -1994,11 +1967,11 @@ hb_buffer_diff (hb_buffer_t *buffer,
 /**
  * hb_buffer_set_message_func:
  * @buffer: An #hb_buffer_t
- * @func: (closure user_data) (destroy destroy) (scope notified):
- * @user_data:
- * @destroy:
+ * @func: (closure user_data) (destroy destroy) (scope notified): Callback function
+ * @user_data: (nullable): Data to pass to @func
+ * @destroy: (nullable): The function to call when @user_data is not needed anymore
  *
- *
+ * Sets the implementation function for #hb_buffer_message_func_t.
  *
  * Since: 1.1.3
  **/

@@ -652,8 +652,8 @@ no_more_gaps:
 	/* apply specified / inferred deltas to points */
 	for (unsigned int i = 0; i < points.length; i++)
 	{
-	  points[i].x += roundf (deltas[i].x);
-	  points[i].y += roundf (deltas[i].y);
+	  points[i].x += deltas[i].x;
+	  points[i].y += deltas[i].y;
 	}
       } while (iterator.move_to_next ());
 

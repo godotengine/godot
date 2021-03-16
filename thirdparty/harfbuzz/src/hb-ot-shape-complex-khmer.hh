@@ -54,7 +54,7 @@ set_khmer_properties (hb_glyph_info_t &info)
 {
   hb_codepoint_t u = info.codepoint;
   unsigned int type = hb_indic_get_categories (u);
-  khmer_category_t cat = (khmer_category_t) (type & 0x7Fu);
+  khmer_category_t cat = (khmer_category_t) (type & 0xFFu);
   indic_position_t pos = (indic_position_t) (type >> 8);
 
 

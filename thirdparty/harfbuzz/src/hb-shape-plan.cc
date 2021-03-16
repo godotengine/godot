@@ -329,12 +329,12 @@ hb_shape_plan_destroy (hb_shape_plan_t *shape_plan)
  * @shape_plan: A shaping plan
  * @key: The user-data key to set
  * @data: A pointer to the user data
- * @destroy: (optional): A callback to call when @data is not needed anymore
+ * @destroy: (nullable): A callback to call when @data is not needed anymore
  * @replace: Whether to replace an existing data with the same key
  *
  * Attaches a user-data key/data pair to the given shaping plan. 
  *
- * Return value:
+ * Return value: %true if success, %false otherwise.
  *
  * Since: 0.9.7
  **/
@@ -439,7 +439,7 @@ _hb_shape_plan_execute_internal (hb_shape_plan_t    *shape_plan,
  * Executes the given shaping plan on the specified buffer, using
  * the given @font and @features.
  *
- * Return value: 
+ * Return value: %true if success, %false otherwise.
  *
  * Since: 0.9.7
  **/
