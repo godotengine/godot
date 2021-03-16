@@ -1222,6 +1222,7 @@ void GridMapEditor::_bind_methods() {
 GridMapEditor::GridMapEditor(EditorNode *p_editor) {
 
 	input_action = INPUT_NONE;
+	node = NULL;
 	editor = p_editor;
 	undo_redo = p_editor->get_undo_redo();
 
