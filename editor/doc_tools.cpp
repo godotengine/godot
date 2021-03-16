@@ -394,11 +394,20 @@ void DocTools::generate(bool p_basic_types) {
 					method.qualifiers += " ";
 				}
 				method.qualifiers += "const";
-			} else if (E->get().flags & METHOD_FLAG_VARARG) {
+			}
+
+			if (E->get().flags & METHOD_FLAG_VARARG) {
 				if (method.qualifiers != "") {
 					method.qualifiers += " ";
 				}
 				method.qualifiers += "vararg";
+			}
+
+			if (E->get().flags & METHOD_FLAG_STATIC) {
+				if (method.qualifiers != "") {
+					method.qualifiers += " ";
+				}
+				method.qualifiers += "static";
 			}
 
 			for (int i = -1; i < E->get().arguments.size(); i++) {
@@ -645,6 +654,20 @@ void DocTools::generate(bool p_basic_types) {
 					method.qualifiers += " ";
 				}
 				method.qualifiers += "vararg";
+			}
+
+			if (mi.flags & METHOD_FLAG_CONST) {
+				if (method.qualifiers != "") {
+					method.qualifiers += " ";
+				}
+				method.qualifiers += "const";
+			}
+
+			if (mi.flags & METHOD_FLAG_STATIC) {
+				if (method.qualifiers != "") {
+					method.qualifiers += " ";
+				}
+				method.qualifiers += "static";
 			}
 
 			c.methods.push_back(method);
