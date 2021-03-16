@@ -33,8 +33,8 @@
 #include "collision_object_2d.h"
 #include "core/math/geometry_2d.h"
 #include "scene/2d/area_2d.h"
-#include "scene/resources/concave_polygon_shape_2d.h"
-#include "scene/resources/convex_polygon_shape_2d.h"
+#include "scene/resources/2d/concave_polygon_shape_2d.h"
+#include "scene/resources/2d/convex_polygon_shape_2d.h"
 
 #include "thirdparty/misc/polypartition.h"
 

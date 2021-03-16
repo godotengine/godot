@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  skeleton_modification_2d_lookat.h                                     */
+/*  skeleton_modification_2d_twoboneik.h                                  */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,42 +28,46 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef SKELETON_MODIFICATION_2D_LOOKAT_H
-#define SKELETON_MODIFICATION_2D_LOOKAT_H
+#ifndef SKELETON_MODIFICATION_2D_TWOBONEIK_H
+#define SKELETON_MODIFICATION_2D_TWOBONEIK_H
 
 #include "scene/2d/skeleton_2d.h"
-#include "scene/resources/skeleton_modification_2d.h"
+#include "scene/resources/2d/skeleton/skeleton_modification_2d.h"
 
 ///////////////////////////////////////
-// SkeletonModification2DLookAt
+// SkeletonModification2DJIGGLE
 ///////////////////////////////////////
 
-class SkeletonModification2DLookAt : public SkeletonModification2D {
-	GDCLASS(SkeletonModification2DLookAt, SkeletonModification2D);
+class SkeletonModification2DTwoBoneIK : public SkeletonModification2D {
+	GDCLASS(SkeletonModification2DTwoBoneIK, SkeletonModification2D);
 
 private:
-	int bone_idx = -1;
-	NodePath bone2d_node;
-	ObjectID bone2d_node_cache;
-
 	NodePath target_node;
 	ObjectID target_node_cache;
-	Node2D *target_node_reference = nullptr;
+	float target_minimum_distance = 0;
+	float target_maximum_distance = 0;
+	bool flip_bend_direction = false;
 
-	float additional_rotation = 0;
-	bool enable_constraint = false;
-	float constraint_angle_min = 0;
-	float constraint_angle_max = (2.0 * Math_PI);
-	bool constraint_angle_invert = false;
-	bool constraint_in_localspace = true;
+	NodePath joint_one_bone2d_node;
+	ObjectID joint_one_bone2d_node_cache;
+	int joint_one_bone_idx = -1;
 
-	void update_bone2d_cache();
+	NodePath joint_two_bone2d_node;
+	ObjectID joint_two_bone2d_node_cache;
+	int joint_two_bone_idx = -1;
+
+#ifdef TOOLS_ENABLED
+	bool editor_draw_min_max = false;
+#endif // TOOLS_ENABLED
+
 	void update_target_cache();
+	void update_joint_one_bone2d_cache();
+	void update_joint_two_bone2d_cache();
 
 protected:
 	static void _bind_methods();
-	bool _set(const StringName &p_path, const Variant &p_value);
 	bool _get(const StringName &p_path, Variant &r_ret) const;
+	bool _set(const StringName &p_path, const Variant &p_value);
 	void _get_property_list(List<PropertyInfo> *p_list) const;
 
 public:
@@ -71,30 +75,33 @@ public:
 	void _setup_modification(SkeletonModificationStack2D *p_stack) override;
 	void _draw_editor_gizmo() override;
 
-	void set_bone2d_node(const NodePath &p_target_node);
-	NodePath get_bone2d_node() const;
-	void set_bone_index(int p_idx);
-	int get_bone_index() const;
-
 	void set_target_node(const NodePath &p_target_node);
 	NodePath get_target_node() const;
 
-	void set_additional_rotation(float p_rotation);
-	float get_additional_rotation() const;
+	void set_target_minimum_distance(float p_minimum_distance);
+	float get_target_minimum_distance() const;
+	void set_target_maximum_distance(float p_maximum_distance);
+	float get_target_maximum_distance() const;
+	void set_flip_bend_direction(bool p_flip_direction);
+	bool get_flip_bend_direction() const;
 
-	void set_enable_constraint(bool p_constraint);
-	bool get_enable_constraint() const;
-	void set_constraint_angle_min(float p_angle_min);
-	float get_constraint_angle_min() const;
-	void set_constraint_angle_max(float p_angle_max);
-	float get_constraint_angle_max() const;
-	void set_constraint_angle_invert(bool p_invert);
-	bool get_constraint_angle_invert() const;
-	void set_constraint_in_localspace(bool p_constraint_in_localspace);
-	bool get_constraint_in_localspace() const;
+	void set_joint_one_bone2d_node(const NodePath &p_node);
+	NodePath get_joint_one_bone2d_node() const;
+	void set_joint_one_bone_idx(int p_bone_idx);
+	int get_joint_one_bone_idx() const;
 
-	SkeletonModification2DLookAt();
-	~SkeletonModification2DLookAt();
+	void set_joint_two_bone2d_node(const NodePath &p_node);
+	NodePath get_joint_two_bone2d_node() const;
+	void set_joint_two_bone_idx(int p_bone_idx);
+	int get_joint_two_bone_idx() const;
+
+#ifdef TOOLS_ENABLED
+	void set_editor_draw_min_max(bool p_draw);
+	bool get_editor_draw_min_max() const;
+#endif // TOOLS_ENABLED
+
+	SkeletonModification2DTwoBoneIK();
+	~SkeletonModification2DTwoBoneIK();
 };
 
-#endif // SKELETON_MODIFICATION_2D_LOOKAT_H
+#endif // SKELETON_MODIFICATION_2D_TWOBONEIK_H

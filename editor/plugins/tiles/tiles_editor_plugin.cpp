@@ -47,8 +47,8 @@
 #include "scene/gui/button.h"
 #include "scene/gui/control.h"
 #include "scene/gui/separator.h"
+#include "scene/resources/2d/tile_set.h"
 #include "scene/resources/image_texture.h"
-#include "scene/resources/tile_set.h"
 
 TilesEditorUtils *TilesEditorUtils::singleton = nullptr;
 TileMapEditorPlugin *tile_map_plugin_singleton = nullptr;

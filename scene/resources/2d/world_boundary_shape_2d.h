@@ -31,7 +31,7 @@
 #ifndef WORLD_BOUNDARY_SHAPE_2D_H
 #define WORLD_BOUNDARY_SHAPE_2D_H
 
-#include "scene/resources/shape_2d.h"
+#include "scene/resources/2d/shape_2d.h"
 
 class WorldBoundaryShape2D : public Shape2D {
 	GDCLASS(WorldBoundaryShape2D, Shape2D);

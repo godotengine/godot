@@ -36,7 +36,6 @@
 #include "core/templates/local_vector.h"
 #include "core/templates/rb_set.h"
 #include "scene/gui/control.h"
-#include "scene/resources/convex_polygon_shape_2d.h"
 #include "scene/resources/image_texture.h"
 #include "servers/navigation_server_2d.h"
 
