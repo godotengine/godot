@@ -1635,7 +1635,7 @@ static void _collision_capsule_cylinder(const ShapeSW *p_a, const Transform &p_t
 	CollisionSolverSW::CallbackResult callback = SeparatorAxisTest<CapsuleShapeSW, CylinderShapeSW, withMargin>::test_contact_points;
 
 	// Fallback to generic algorithm to find the best separating axis.
-	if (!fallback_collision_solver(p_a, p_transform_a, p_b, p_transform_b, callback, &separator)) {
+	if (!fallback_collision_solver(p_a, p_transform_a, p_b, p_transform_b, callback, &separator, false, p_margin_a, p_margin_b)) {
 		return;
 	}
 
@@ -1809,7 +1809,7 @@ static void _collision_cylinder_cylinder(const ShapeSW *p_a, const Transform &p_
 	CollisionSolverSW::CallbackResult callback = SeparatorAxisTest<CylinderShapeSW, CylinderShapeSW, withMargin>::test_contact_points;
 
 	// Fallback to generic algorithm to find the best separating axis.
-	if (!fallback_collision_solver(p_a, p_transform_a, p_b, p_transform_b, callback, &separator)) {
+	if (!fallback_collision_solver(p_a, p_transform_a, p_b, p_transform_b, callback, &separator, false, p_margin_a, p_margin_b)) {
 		return;
 	}
 
@@ -1826,7 +1826,7 @@ static void _collision_cylinder_convex_polygon(const ShapeSW *p_a, const Transfo
 	CollisionSolverSW::CallbackResult callback = SeparatorAxisTest<CylinderShapeSW, ConvexPolygonShapeSW, withMargin>::test_contact_points;
 
 	// Fallback to generic algorithm to find the best separating axis.
-	if (!fallback_collision_solver(p_a, p_transform_a, p_b, p_transform_b, callback, &separator)) {
+	if (!fallback_collision_solver(p_a, p_transform_a, p_b, p_transform_b, callback, &separator, false, p_margin_a, p_margin_b)) {
 		return;
 	}
 
