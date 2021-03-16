@@ -15,7 +15,7 @@
 #if defined(__HAIKU__)
 /* rename our private function because Haiku already defines a atoui() function */
 #define atoui atoui2
-#endif
+#endif 
 
 /* list of the elements */
 static const struct {
