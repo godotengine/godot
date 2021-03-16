@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  skeleton_modification_2d_ccdik.h                                     */
+/*  skeleton_modification_2d_fabrik.h                                    */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,47 +28,52 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef SKELETONMODIFICATION2DCCDIK_H
-#define SKELETONMODIFICATION2DCCDIK_H
+#ifndef SKELETONMODIFICATION2DFABRIK_H
+#define SKELETONMODIFICATION2DFABRIK_H
 
 #include "scene/2d/skeleton_2d.h"
-#include "scene/resources/skeleton_modification_2d.h"
+#include "scene/resources/2d/skeleton/skeleton_modification_2d.h"
 
 ///////////////////////////////////////
-// SkeletonModification2DCCDIK
+// SkeletonModification2DFABRIK
 ///////////////////////////////////////
 
-class SkeletonModification2DCCDIK : public SkeletonModification2D {
-	GDCLASS(SkeletonModification2DCCDIK, SkeletonModification2D);
+class SkeletonModification2DFABRIK : public SkeletonModification2D {
+	GDCLASS(SkeletonModification2DFABRIK, SkeletonModification2D);
 
 private:
-	struct CCDIK_Joint_Data2D {
+	struct FABRIK_Joint_Data2D {
 		int bone_idx = -1;
 		NodePath bone2d_node;
 		ObjectID bone2d_node_cache;
-		bool rotate_from_joint = false;
 
-		bool enable_constraint = false;
-		float constraint_angle_min = 0;
-		float constraint_angle_max = (2.0 * Math_PI);
-		bool constraint_angle_invert = false;
-		bool constraint_in_localspace = true;
+		Vector2 magnet_position = Vector2(0, 0);
+		bool use_target_rotation = false;
 
 		bool editor_draw_gizmo = true;
 	};
 
-	Vector<CCDIK_Joint_Data2D> ccdik_data_chain;
+	Vector<FABRIK_Joint_Data2D> fabrik_data_chain;
+
+	// Unlike in 3D, we need a vector of Transform2D objects to perform FABRIK.
+	// This is because FABRIK (unlike CCDIK) needs to operate on transforms that are NOT
+	// affected by each other, making the transforms stored in Bone2D unusable, as well as those in Skeleton2D.
+	// For this reason, this modification stores a vector of Transform2Ds used for the calculations, which are then applied at the end.
+	Vector<Transform2D> fabrik_transform_chain;
 
 	NodePath target_node;
 	ObjectID target_node_cache;
 	void update_target_cache();
 
-	NodePath tip_node;
-	ObjectID tip_node_cache;
-	void update_tip_cache();
+	float chain_tolarance = 0.01;
+	int chain_max_iterations = 10;
+	int chain_iterations = 0;
+	Transform2D target_global_pose = Transform2D();
+	Transform2D origin_global_pose = Transform2D();
 
-	void ccdik_joint_update_bone2d_cache(int p_joint_idx);
-	void _execute_ccdik_joint(int p_joint_idx, Node2D *p_target, Node2D *p_tip);
+	void fabrik_joint_update_bone2d_cache(int p_joint_idx);
+	void chain_backwards();
+	void chain_forwards();
 
 protected:
 	static void _bind_methods();
@@ -79,38 +84,25 @@ protected:
 public:
 	void _execute(float p_delta) override;
 	void _setup_modification(SkeletonModificationStack2D *p_stack) override;
-	void _draw_editor_gizmo() override;
 
 	void set_target_node(const NodePath &p_target_node);
 	NodePath get_target_node() const;
-	void set_tip_node(const NodePath &p_tip_node);
-	NodePath get_tip_node() const;
 
-	int get_ccdik_data_chain_length();
-	void set_ccdik_data_chain_length(int p_new_length);
+	int get_fabrik_data_chain_length();
+	void set_fabrik_data_chain_length(int p_new_length);
 
-	void set_ccdik_joint_bone2d_node(int p_joint_idx, const NodePath &p_target_node);
-	NodePath get_ccdik_joint_bone2d_node(int p_joint_idx) const;
-	void set_ccdik_joint_bone_index(int p_joint_idx, int p_bone_idx);
-	int get_ccdik_joint_bone_index(int p_joint_idx) const;
+	void set_fabrik_joint_bone2d_node(int p_joint_idx, const NodePath &p_target_node);
+	NodePath get_fabrik_joint_bone2d_node(int p_joint_idx) const;
+	void set_fabrik_joint_bone_index(int p_joint_idx, int p_bone_idx);
+	int get_fabrik_joint_bone_index(int p_joint_idx) const;
 
-	void set_ccdik_joint_rotate_from_joint(int p_joint_idx, bool p_rotate_from_joint);
-	bool get_ccdik_joint_rotate_from_joint(int p_joint_idx) const;
-	void set_ccdik_joint_enable_constraint(int p_joint_idx, bool p_constraint);
-	bool get_ccdik_joint_enable_constraint(int p_joint_idx) const;
-	void set_ccdik_joint_constraint_angle_min(int p_joint_idx, float p_angle_min);
-	float get_ccdik_joint_constraint_angle_min(int p_joint_idx) const;
-	void set_ccdik_joint_constraint_angle_max(int p_joint_idx, float p_angle_max);
-	float get_ccdik_joint_constraint_angle_max(int p_joint_idx) const;
-	void set_ccdik_joint_constraint_angle_invert(int p_joint_idx, bool p_invert);
-	bool get_ccdik_joint_constraint_angle_invert(int p_joint_idx) const;
-	void set_ccdik_joint_constraint_in_localspace(int p_joint_idx, bool p_constraint_in_localspace);
-	bool get_ccdik_joint_constraint_in_localspace(int p_joint_idx) const;
-	void set_ccdik_joint_editor_draw_gizmo(int p_joint_idx, bool p_draw_gizmo);
-	bool get_ccdik_joint_editor_draw_gizmo(int p_joint_idx) const;
+	void set_fabrik_joint_magnet_position(int p_joint_idx, Vector2 p_magnet_position);
+	Vector2 get_fabrik_joint_magnet_position(int p_joint_idx) const;
+	void set_fabrik_joint_use_target_rotation(int p_joint_idx, bool p_use_target_rotation);
+	bool get_fabrik_joint_use_target_rotation(int p_joint_idx) const;
 
-	SkeletonModification2DCCDIK();
-	~SkeletonModification2DCCDIK();
+	SkeletonModification2DFABRIK();
+	~SkeletonModification2DFABRIK();
 };
 
-#endif // SKELETONMODIFICATION2DCCDIK_H
+#endif // SKELETONMODIFICATION2DFABRIK_H

@@ -39,7 +39,7 @@
 #include "scene/gui/margin_container.h"
 #include "scene/gui/scroll_container.h"
 #include "scene/gui/texture_rect.h"
-#include "scene/resources/tile_set.h"
+#include "scene/resources/2d/tile_set.h"
 
 class TileAtlasView : public Control {
 	GDCLASS(TileAtlasView, Control);

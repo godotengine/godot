@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  line_shape_2d.h                                                      */
+/*  skeleton_modification_2d.h                                           */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,37 +28,58 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef LINE_SHAPE_2D_H
-#define LINE_SHAPE_2D_H
+#ifndef SKELETONMODIFICATION2D_H
+#define SKELETONMODIFICATION2D_H
 
-#include "scene/resources/shape_2d.h"
+#include "scene/2d/skeleton_2d.h"
+#include "scene/resources/2d/skeleton/skeleton_modification_stack_2d.h"
 
-class LineShape2D : public Shape2D {
-	GDCLASS(LineShape2D, Shape2D);
+///////////////////////////////////////
+// SkeletonModification2D
+///////////////////////////////////////
 
-	// LineShape2D is often used for one-way platforms, where the normal pointing up makes sense.
-	Vector2 normal = Vector2(0, -1);
-	real_t distance = 0.0;
+class SkeletonModificationStack2D;
+class Bone2D;
 
-	void _update_shape();
+class SkeletonModification2D : public Resource {
+	GDCLASS(SkeletonModification2D, Resource);
+	friend class Skeleton2D;
+	friend class Bone2D;
 
 protected:
 	static void _bind_methods();
 
+	SkeletonModificationStack2D *stack;
+	int execution_mode = 0; // 0 = process
+
+	bool enabled = true;
+	bool is_setup = false;
+
+	bool _print_execution_error(bool p_condition, String p_message);
+
 public:
-	virtual bool _edit_is_selected_on_click(const Point2 &p_point, double p_tolerance) const override;
+	virtual void _execute(float _delta);
+	virtual void _setup_modification(SkeletonModificationStack2D *p_stack);
+	virtual void _draw_editor_gizmo();
 
-	void set_normal(const Vector2 &p_normal);
-	void set_distance(real_t p_distance);
+	bool editor_draw_gizmo = false;
+	void set_editor_draw_gizmo(bool p_draw_gizmo);
+	bool get_editor_draw_gizmo() const;
 
-	Vector2 get_normal() const;
-	real_t get_distance() const;
+	void set_enabled(bool p_enabled);
+	bool get_enabled();
 
-	virtual void draw(const RID &p_to_rid, const Color &p_color) override;
-	virtual Rect2 get_rect() const override;
-	virtual real_t get_enclosing_radius() const override;
+	Ref<SkeletonModificationStack2D> get_modification_stack();
+	void set_is_setup(bool p_setup);
+	bool get_is_setup() const;
 
-	LineShape2D();
+	void set_execution_mode(int p_mode);
+	int get_execution_mode() const;
+
+	float clamp_angle(float p_angle, float p_min_bound, float p_max_bound, bool p_invert_clamp = false);
+	void editor_draw_angle_constraints(Bone2D *p_operation_bone, float p_min_bound, float p_max_bound, bool p_constraint_enabled, bool p_constraint_in_localspace, bool p_constraint_inverted);
+
+	SkeletonModification2D();
 };
 
-#endif // LINE_SHAPE_2D_H
+#endif // SKELETONMODIFICATION2D_H
