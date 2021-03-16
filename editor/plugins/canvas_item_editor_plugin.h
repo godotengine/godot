@@ -632,6 +632,8 @@ public:
 
 	bool is_anchors_mode_enabled() { return anchors_mode; };
 
+	EditorSelection *editor_selection;
+
 	CanvasItemEditor(EditorNode *p_editor);
 };
 

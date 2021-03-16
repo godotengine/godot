@@ -185,7 +185,6 @@ void Bone2D::_notification(int p_what) {
 		set_transform(cache_transform);
 		cache_transform = tmp_trans;
 	}
-
 	// Bone2D Editor gizmo drawing:
 #ifdef _MSC_VER
 #warning TODO Bone2D gizmo drawing needs to be moved to an editor plugin
