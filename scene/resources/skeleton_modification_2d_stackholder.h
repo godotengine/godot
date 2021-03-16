@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  skeleton_modification_2d.h                                           */
+/*  skeleton_modification_2d_stackholder.h                               */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,58 +28,37 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef SKELETONMODIFICATION2D_H
-#define SKELETONMODIFICATION2D_H
+#ifndef SKELETONMODIFICATION2DSTACKHOLDER_H
+#define SKELETONMODIFICATION2DSTACKHOLDER_H
 
 #include "scene/2d/skeleton_2d.h"
-#include "scene/resources/skeleton_modification_stack_2d.h"
+#include "scene/resources/skeleton_modification_2d.h"
 
 ///////////////////////////////////////
-// SkeletonModification2D
+// SkeletonModification2DJIGGLE
 ///////////////////////////////////////
 
-class SkeletonModificationStack2D;
-class Bone2D;
-
-class SkeletonModification2D : public Resource {
-	GDCLASS(SkeletonModification2D, Resource);
-	friend class Skeleton2D;
-	friend class Bone2D;
+class SkeletonModification2DStackHolder : public SkeletonModification2D {
+	GDCLASS(SkeletonModification2DStackHolder, SkeletonModification2D);
 
 protected:
 	static void _bind_methods();
-
-	SkeletonModificationStack2D *stack;
-	int execution_mode = 0; // 0 = process
-
-	bool enabled = true;
-	bool is_setup = false;
-
-	bool _print_execution_error(bool p_condition, String p_message);
+	bool _get(const StringName &p_path, Variant &r_ret) const;
+	bool _set(const StringName &p_path, const Variant &p_value);
+	void _get_property_list(List<PropertyInfo> *p_list) const;
 
 public:
-	virtual void _execute(float delta);
-	virtual void _setup_modification(SkeletonModificationStack2D *p_stack);
-	virtual void _draw_editor_gizmo();
+	Ref<SkeletonModificationStack2D> held_modification_stack;
 
-	bool editor_draw_gizmo = false;
-	void set_editor_draw_gizmo(bool p_draw_gizmo);
-	bool get_editor_draw_gizmo() const;
+	void _execute(float delta) override;
+	void _setup_modification(SkeletonModificationStack2D *p_stack) override;
+	void _draw_editor_gizmo() override;
 
-	void set_enabled(bool p_enabled);
-	bool get_enabled();
+	void set_held_modification_stack(Ref<SkeletonModificationStack2D> p_held_stack);
+	Ref<SkeletonModificationStack2D> get_held_modification_stack() const;
 
-	Ref<SkeletonModificationStack2D> get_modification_stack();
-	void set_is_setup(bool p_setup);
-	bool get_is_setup() const;
-
-	void set_execution_mode(int p_mode);
-	int get_execution_mode() const;
-
-	float clamp_angle(float angle, float min_bound, float max_bound, bool invert_clamp = false);
-	void editor_draw_angle_constraints(Bone2D *operation_bone, float min_bound, float max_bound, bool constraint_enabled, bool constraint_in_localspace, bool constraint_inverted);
-
-	SkeletonModification2D();
+	SkeletonModification2DStackHolder();
+	~SkeletonModification2DStackHolder();
 };
 
-#endif // SKELETONMODIFICATION2D_H
+#endif // SKELETONMODIFICATION2DSTACKHOLDER_H

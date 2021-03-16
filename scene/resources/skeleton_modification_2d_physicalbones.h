@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  skeleton_modification_2d.h                                           */
+/*  skeleton_modification_2d_physicalbones.h                             */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,58 +28,55 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef SKELETONMODIFICATION2D_H
-#define SKELETONMODIFICATION2D_H
+#ifndef SKELETONMODIFICATION2DPHYSICALBONES_H
+#define SKELETONMODIFICATION2DPHYSICALBONES_H
 
 #include "scene/2d/skeleton_2d.h"
-#include "scene/resources/skeleton_modification_stack_2d.h"
+#include "scene/resources/skeleton_modification_2d.h"
 
 ///////////////////////////////////////
-// SkeletonModification2D
+// SkeletonModification2DJIGGLE
 ///////////////////////////////////////
 
-class SkeletonModificationStack2D;
-class Bone2D;
+class SkeletonModification2DPhysicalBones : public SkeletonModification2D {
+	GDCLASS(SkeletonModification2DPhysicalBones, SkeletonModification2D);
 
-class SkeletonModification2D : public Resource {
-	GDCLASS(SkeletonModification2D, Resource);
-	friend class Skeleton2D;
-	friend class Bone2D;
+private:
+	struct PhysicalBone_Data2D {
+		NodePath physical_bone_node;
+		ObjectID physical_bone_node_cache;
+	};
+	Vector<PhysicalBone_Data2D> physical_bone_chain;
+
+	void _physical_bone_update_cache(int p_joint_idx);
+
+	bool _simulation_state_dirty = false;
+	TypedArray<StringName> _simulation_state_dirty_names;
+	bool _simulation_state_dirty_process;
+	void _update_simulation_state();
 
 protected:
 	static void _bind_methods();
-
-	SkeletonModificationStack2D *stack;
-	int execution_mode = 0; // 0 = process
-
-	bool enabled = true;
-	bool is_setup = false;
-
-	bool _print_execution_error(bool p_condition, String p_message);
+	bool _get(const StringName &p_path, Variant &r_ret) const;
+	bool _set(const StringName &p_path, const Variant &p_value);
+	void _get_property_list(List<PropertyInfo> *p_list) const;
 
 public:
-	virtual void _execute(float delta);
-	virtual void _setup_modification(SkeletonModificationStack2D *p_stack);
-	virtual void _draw_editor_gizmo();
+	void _execute(float delta) override;
+	void _setup_modification(SkeletonModificationStack2D *p_stack) override;
 
-	bool editor_draw_gizmo = false;
-	void set_editor_draw_gizmo(bool p_draw_gizmo);
-	bool get_editor_draw_gizmo() const;
+	int get_physical_bone_chain_length();
+	void set_physical_bone_chain_length(int p_new_length);
 
-	void set_enabled(bool p_enabled);
-	bool get_enabled();
+	void set_physical_bone_node(int p_joint_idx, const NodePath &p_path);
+	NodePath get_physical_bone_node(int p_joint_idx) const;
 
-	Ref<SkeletonModificationStack2D> get_modification_stack();
-	void set_is_setup(bool p_setup);
-	bool get_is_setup() const;
+	void fetch_physical_bones();
+	void start_simulation(const TypedArray<StringName> &p_bones);
+	void stop_simulation(const TypedArray<StringName> &p_bones);
 
-	void set_execution_mode(int p_mode);
-	int get_execution_mode() const;
-
-	float clamp_angle(float angle, float min_bound, float max_bound, bool invert_clamp = false);
-	void editor_draw_angle_constraints(Bone2D *operation_bone, float min_bound, float max_bound, bool constraint_enabled, bool constraint_in_localspace, bool constraint_inverted);
-
-	SkeletonModification2D();
+	SkeletonModification2DPhysicalBones();
+	~SkeletonModification2DPhysicalBones();
 };
 
-#endif // SKELETONMODIFICATION2D_H
+#endif // SKELETONMODIFICATION2DPHYSICALBONES_H
