@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  GodotPluginInfoProvider.java                                         */
+/*  GodotHost.java                                                       */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,45 +28,29 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-package org.godotengine.godot.plugin;
-
-import androidx.annotation.NonNull;
+package org.godotengine.godot;
 
 import java.util.Collections;
-import java.util.Set;
+import java.util.List;
 
 /**
- * Provides the set of information expected from a Godot plugin.
+ * Denotate a component (e.g: Activity, Fragment) that hosts the {@link Godot} fragment.
  */
-public interface GodotPluginInfoProvider {
+public interface GodotHost {
 	/**
-	 * Returns the name of the plugin.
+	 * Provides a set of command line parameters to setup the engine.
 	 */
-	@NonNull
-	String getPluginName();
-
-	/**
-	 * Returns the list of signals to be exposed to Godot.
-	 */
-	@NonNull
-	default Set<SignalInfo> getPluginSignals() {
-		return Collections.emptySet();
+	default List<String> getCommandLine() {
+		return Collections.emptyList();
 	}
 
 	/**
-	 * Returns the paths for the plugin's gdnative libraries (if any).
-	 *
-	 * The paths must be relative to the 'assets' directory and point to a '*.gdnlib' file.
+	 * Invoked on the render thread when the Godot setup is complete.
 	 */
-	@NonNull
-	default Set<String> getPluginGDNativeLibrariesPaths() {
-		return Collections.emptySet();
-	}
+	default void onGodotSetupCompleted() {}
 
 	/**
-	 * This is invoked on the render thread when the plugin described by this instance has been
-	 * registered.
+	 * Invoked on the render thread when the Godot main loop has started.
 	 */
-	default void onPluginRegistered() {
-	}
+	default void onGodotMainLoopStarted() {}
 }
