@@ -117,7 +117,7 @@ hb_set_destroy (hb_set_t *set)
  * @set: A set
  * @key: The user-data key to set
  * @data: A pointer to the user data to set
- * @destroy: (optional): A callback to call when @data is not needed anymore
+ * @destroy: (nullable): A callback to call when @data is not needed anymore
  * @replace: Whether to replace an existing data with the same key
  *
  * Attaches a user-data key/data pair to the specified set.
@@ -162,7 +162,7 @@ hb_set_get_user_data (hb_set_t           *set,
  *
  * Tests whether memory allocation for a set was successful.
  *
- * Return value: %true if allocation succeeded, false otherwise
+ * Return value: %true if allocation succeeded, %false otherwise
  *
  * Since: 0.9.2
  **/
@@ -183,6 +183,9 @@ hb_set_allocation_successful (const hb_set_t  *set)
 void
 hb_set_clear (hb_set_t *set)
 {
+  if (unlikely (hb_object_is_immutable (set)))
+    return;
+
   set->clear ();
 }
 
@@ -209,7 +212,7 @@ hb_set_is_empty (const hb_set_t *set)
  *
  * Tests whether @codepoint belongs to @set.
  *
- * Return value: %true if @codepoint is in @set, false otherwise
+ * Return value: %true if @codepoint is in @set, %false otherwise
  *
  * Since: 0.9.2
  **/
@@ -298,7 +301,7 @@ hb_set_del_range (hb_set_t       *set,
  * Tests whether @set and @other are equal (contain the same
  * elements).
  *
- * Return value: %TRUE if the two sets are equal, %FALSE otherwise.
+ * Return value: %true if the two sets are equal, %false otherwise.
  *
  * Since: 0.9.7
  **/
@@ -316,7 +319,7 @@ hb_set_is_equal (const hb_set_t *set,
  *
  * Tests whether @set is a subset of @larger_set.
  *
- * Return value: %TRUE if the @set is a subset of (or equal to) @larger_set, %FALSE otherwise.
+ * Return value: %true if the @set is a subset of (or equal to) @larger_set, %false otherwise.
  *
  * Since: 1.8.1
  **/
@@ -447,7 +450,7 @@ hb_set_get_population (const hb_set_t *set)
  *
  * Finds the smallest element in the set.
  *
- * Return value: minimum of @set, or %HB_SET_VALUE_INVALID if @set is empty.
+ * Return value: minimum of @set, or #HB_SET_VALUE_INVALID if @set is empty.
  *
  * Since: 0.9.7
  **/
@@ -463,7 +466,7 @@ hb_set_get_min (const hb_set_t *set)
  *
  * Finds the largest element in the set.
  *
- * Return value: maximum of @set, or %HB_SET_VALUE_INVALID if @set is empty.
+ * Return value: maximum of @set, or #HB_SET_VALUE_INVALID if @set is empty.
  *
  * Since: 0.9.7
  **/
@@ -481,9 +484,9 @@ hb_set_get_max (const hb_set_t *set)
  *
  * Fetches the next element in @set that is greater than current value of @codepoint.
  *
- * Set @codepoint to %HB_SET_VALUE_INVALID to get started.
+ * Set @codepoint to #HB_SET_VALUE_INVALID to get started.
  *
- * Return value: %true if there was a next value, false otherwise
+ * Return value: %true if there was a next value, %false otherwise
  *
  * Since: 0.9.2
  **/
@@ -502,9 +505,9 @@ hb_set_next (const hb_set_t *set,
  *
  * Fetches the previous element in @set that is lower than current value of @codepoint.
  *
- * Set @codepoint to %HB_SET_VALUE_INVALID to get started.
+ * Set @codepoint to #HB_SET_VALUE_INVALID to get started.
  *
- * Return value: %true if there was a previous value, false otherwise
+ * Return value: %true if there was a previous value, %false otherwise
  *
  * Since: 1.8.0
  **/
@@ -525,9 +528,9 @@ hb_set_previous (const hb_set_t *set,
  * Fetches the next consecutive range of elements in @set that
  * are greater than current value of @last.
  *
- * Set @last to %HB_SET_VALUE_INVALID to get started.
+ * Set @last to #HB_SET_VALUE_INVALID to get started.
  *
- * Return value: %true if there was a next range, false otherwise
+ * Return value: %true if there was a next range, %false otherwise
  *
  * Since: 0.9.7
  **/
@@ -549,9 +552,9 @@ hb_set_next_range (const hb_set_t *set,
  * Fetches the previous consecutive range of elements in @set that
  * are greater than current value of @last.
  *
- * Set @first to %HB_SET_VALUE_INVALID to get started.
+ * Set @first to #HB_SET_VALUE_INVALID to get started.
  *
- * Return value: %true if there was a previous range, false otherwise
+ * Return value: %true if there was a previous range, %false otherwise
  *
  * Since: 1.8.0
  **/

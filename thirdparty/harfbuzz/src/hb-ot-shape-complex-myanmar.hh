@@ -64,7 +64,7 @@ set_myanmar_properties (hb_glyph_info_t &info)
 {
   hb_codepoint_t u = info.codepoint;
   unsigned int type = hb_indic_get_categories (u);
-  unsigned int cat = type & 0x7Fu;
+  unsigned int cat = type & 0xFFu;
   indic_position_t pos = (indic_position_t) (type >> 8);
 
   /* Myanmar

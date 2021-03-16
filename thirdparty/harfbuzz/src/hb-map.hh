@@ -97,8 +97,6 @@ struct hb_hashmap_t
 
   void reset ()
   {
-    if (unlikely (hb_object_is_immutable (this)))
-      return;
     successful = true;
     clear ();
   }
@@ -171,8 +169,6 @@ struct hb_hashmap_t
 
   void clear ()
   {
-    if (unlikely (hb_object_is_immutable (this)))
-      return;
     if (items)
       for (auto &_ : hb_iter (items, mask + 1))
 	_.clear ();
@@ -181,6 +177,7 @@ struct hb_hashmap_t
   }
 
   bool is_empty () const { return population == 0; }
+  explicit operator bool () const { return !is_empty (); }
 
   unsigned int get_population () const { return population; }
 

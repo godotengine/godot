@@ -27,7 +27,7 @@
  * Google Author(s): Behdad Esfahbod
  */
 
-#ifndef HB_H_IN
+#if !defined(HB_H_IN) && !defined(HB_NO_SINGLE_HEADER_ERROR)
 #error "Include <hb.h> instead."
 #endif
 
@@ -90,6 +90,8 @@ typedef struct hb_glyph_info_t {
  * 				   breaking point only.
  * @HB_GLYPH_FLAG_DEFINED: All the currently defined flags.
  *
+ * Flags for #hb_glyph_info_t.
+ *
  * Since: 1.5.0
  */
 typedef enum { /*< flags >*/
@@ -150,6 +152,11 @@ typedef struct hb_segment_properties_t {
   void           *reserved2;
 } hb_segment_properties_t;
 
+/**
+ * HB_SEGMENT_PROPERTIES_DEFAULT:
+ *
+ * The default #hb_segment_properties_t of of freshly created #hb_buffer_t.
+ */
 #define HB_SEGMENT_PROPERTIES_DEFAULT {HB_DIRECTION_INVALID, \
 				       HB_SCRIPT_INVALID, \
 				       HB_LANGUAGE_INVALID, \
@@ -203,6 +210,8 @@ hb_buffer_get_user_data (hb_buffer_t        *buffer,
  * @HB_BUFFER_CONTENT_TYPE_INVALID: Initial value for new buffer.
  * @HB_BUFFER_CONTENT_TYPE_UNICODE: The buffer contains input characters (before shaping).
  * @HB_BUFFER_CONTENT_TYPE_GLYPHS: The buffer contains output glyphs (after shaping).
+ *
+ * The type of #hb_buffer_t contents.
  */
 typedef enum {
   HB_BUFFER_CONTENT_TYPE_INVALID = 0,
@@ -287,6 +296,8 @@ hb_buffer_guess_segment_properties (hb_buffer_t *buffer);
  *                      flag indicating that a dotted circle should
  *                      not be inserted in the rendering of incorrect
  *                      character sequences (such at <0905 093E>). Since: 2.4
+ *
+ * Flags for #hb_buffer_t.
  *
  * Since: 0.9.20
  */
@@ -579,6 +590,35 @@ hb_buffer_deserialize_unicode (hb_buffer_t *buffer,
  * Compare buffers
  */
 
+/**
+ * hb_buffer_diff_flags_t:
+ * @HB_BUFFER_DIFF_FLAG_EQUAL: equal buffers.
+ * @HB_BUFFER_DIFF_FLAG_CONTENT_TYPE_MISMATCH: buffers with different
+ *     #hb_buffer_content_type_t.
+ * @HB_BUFFER_DIFF_FLAG_LENGTH_MISMATCH: buffers with differing length.
+ * @HB_BUFFER_DIFF_FLAG_NOTDEF_PRESENT: `.notdef` glyph is present in the
+ *     reference buffer.
+ * @HB_BUFFER_DIFF_FLAG_DOTTED_CIRCLE_PRESENT: dotted circle glyph is present
+ *     in the reference buffer.
+ * @HB_BUFFER_DIFF_FLAG_CODEPOINT_MISMATCH: difference in #hb_glyph_info_t.codepoint
+ * @HB_BUFFER_DIFF_FLAG_CLUSTER_MISMATCH: difference in #hb_glyph_info_t.cluster
+ * @HB_BUFFER_DIFF_FLAG_GLYPH_FLAGS_MISMATCH: difference in #hb_glyph_flags_t.
+ * @HB_BUFFER_DIFF_FLAG_POSITION_MISMATCH: difference in #hb_glyph_position_t.
+ *
+ * Flags from comparing two #hb_buffer_t's.
+ *
+ * Buffer with different #hb_buffer_content_type_t cannot be meaningfully
+ * compared in any further detail.
+ *
+ * For buffers with differing length, the per-glyph comparison is not
+ * attempted, though we do still scan reference buffer for dotted circle and
+ * `.notdef` glyphs.
+ *
+ * If the buffers have the same length, we compare them glyph-by-glyph and
+ * report which aspect(s) of the glyph info/position are different.
+ *
+ * Since: 1.5.0
+ */
 typedef enum { /*< flags >*/
   HB_BUFFER_DIFF_FLAG_EQUAL			= 0x0000,
 
@@ -618,6 +658,23 @@ hb_buffer_diff (hb_buffer_t *buffer,
  * Debugging.
  */
 
+/**
+ * hb_buffer_message_func_t:
+ * @buffer: An #hb_buffer_t to work upon
+ * @font: The #hb_font_t the @buffer is shaped with
+ * @message: %NULL-terminated message passed to the function
+ * @user_data: User data pointer passed by the caller
+ *
+ * A callback method for #hb_buffer_t. The method gets called with the
+ * #hb_buffer_t it was set on, the #hb_font_t the buffer is shaped with and a
+ * message describing what step of the shaping process will be performed.
+ * Returning %false from this method will skip this shaping step and move to
+ * the next one.
+ *
+ * Return value: %true to perform the shaping step, %false to skip it.
+ *
+ * Since: 1.1.3
+ */
 typedef hb_bool_t	(*hb_buffer_message_func_t)	(hb_buffer_t *buffer,
 							 hb_font_t   *font,
 							 const char  *message,
