@@ -25,7 +25,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2021-03-08 15:33+0000\n"
+"PO-Revision-Date: 2021-03-12 09:17+0000\n"
 "Last-Translator: Myeongjin Lee <aranet100@gmail.com>\n"
 "Language-Team: Korean <https://hosted.weblate.org/projects/godot-engine/"
 "godot/ko/>\n"
@@ -34,7 +34,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Weblate 4.5.1\n"
+"X-Generator: Weblate 4.5.2-dev\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -4051,19 +4051,16 @@ msgid "Saving..."
 msgstr "저장 중..."
 
 #: editor/import_defaults_editor.cpp
-#, fuzzy
 msgid "Select Importer"
-msgstr "모드 선택"
+msgstr "임포터 선택"
 
 #: editor/import_defaults_editor.cpp
-#, fuzzy
 msgid "Importer:"
-msgstr "가져오기"
+msgstr "임포터:"
 
 #: editor/import_defaults_editor.cpp
-#, fuzzy
 msgid "Reset to Defaults"
-msgstr "기본 sRGB 사용"
+msgstr "기본값으로 재설정"
 
 #: editor/import_dock.cpp
 msgid "%d Files"
@@ -10347,9 +10344,8 @@ msgid "Plugins"
 msgstr "플러그인(Plugin)"
 
 #: editor/project_settings_editor.cpp
-#, fuzzy
 msgid "Import Defaults"
-msgstr "기본값 불러오기"
+msgstr "기본값 가져오기"
 
 #: editor/property_editor.cpp
 msgid "Preset..."
@@ -12374,11 +12370,11 @@ msgstr "빈 CollisionPolygon2D는 충돌에 영향을 주지 않습니다."
 
 #: scene/2d/collision_polygon_2d.cpp
 msgid "Invalid polygon. At least 3 points are needed in 'Solids' build mode."
-msgstr ""
+msgstr "잘못된 폴리곤. 적어도 '솔리드' 빌드 모드에서 점 3개가 필요합니다."
 
 #: scene/2d/collision_polygon_2d.cpp
 msgid "Invalid polygon. At least 2 points are needed in 'Segments' build mode."
-msgstr ""
+msgstr "잘못된 폴리곤. 적어도 '세그먼트' 빌드 모드에서 점 2개가 필요합니다."
 
 #: scene/2d/collision_shape_2d.cpp
 msgid ""

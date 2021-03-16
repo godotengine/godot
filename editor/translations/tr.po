@@ -53,7 +53,7 @@
 # Hazar <duurkak@yandex.com>, 2020.
 # Mutlu ORAN <mutlu.oran66@gmail.com>, 2020.
 # Yusuf Osman YILMAZ <wolfkan4219@gmail.com>, 2020.
-# furkan atalar <fatalar55@gmail.com>, 2020.
+# furkan atalar <fatalar55@gmail.com>, 2020, 2021.
 # Suleyman Poyraz <zaryob.dev@gmail.com>, 2020.
 # Çağlar KOPARIR <ckoparir@gmail.com>, 2021.
 # Cem Eren Fukara <cefukara@hotmail.com>, 2021.
@@ -61,8 +61,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2021-03-03 15:50+0000\n"
-"Last-Translator: Oğuz Ersen <oguzersen@protonmail.com>\n"
+"PO-Revision-Date: 2021-03-16 10:40+0000\n"
+"Last-Translator: furkan atalar <fatalar55@gmail.com>\n"
 "Language-Team: Turkish <https://hosted.weblate.org/projects/godot-engine/"
 "godot/tr/>\n"
 "Language: tr\n"
@@ -70,7 +70,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 4.5.1-dev\n"
+"X-Generator: Weblate 4.5.2-dev\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -4112,19 +4112,16 @@ msgid "Saving..."
 msgstr "Kaydediliyor..."
 
 #: editor/import_defaults_editor.cpp
-#, fuzzy
 msgid "Select Importer"
-msgstr "Kip Seç"
+msgstr "İçe Aktarıcı'yı seçin"
 
 #: editor/import_defaults_editor.cpp
-#, fuzzy
 msgid "Importer:"
 msgstr "İçe Aktar"
 
 #: editor/import_defaults_editor.cpp
-#, fuzzy
 msgid "Reset to Defaults"
-msgstr "Önyüklü sRGB'yi Kullan"
+msgstr "Varsayılanlara dön"
 
 #: editor/import_dock.cpp
 msgid "%d Files"
@@ -5093,9 +5090,8 @@ msgid "Got:"
 msgstr "Alınan:"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
-#, fuzzy
 msgid "Failed SHA-256 hash check"
-msgstr "Başarısız sha256 hash sınaması"
+msgstr "SHA-256 hash kontrolü başarısız oldu"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Asset Download Error:"
@@ -10456,7 +10452,7 @@ msgstr "Eklentiler"
 #: editor/project_settings_editor.cpp
 #, fuzzy
 msgid "Import Defaults"
-msgstr "Varsayılanı Yükle"
+msgstr "Varsayılanları İçe Aktar"
 
 #: editor/property_editor.cpp
 msgid "Preset..."
@@ -10707,12 +10703,10 @@ msgid "Instance Child Scene"
 msgstr "Çocuk Sahnesini Örnekle"
 
 #: editor/scene_tree_dock.cpp
-#, fuzzy
 msgid "Can't paste root node into the same scene."
-msgstr "Yad bir sahnedeki düğümler üzerinde çalışamaz!"
+msgstr "Kök düğüm aynı sahneye yapıştırılamıyor."
 
 #: editor/scene_tree_dock.cpp
-#, fuzzy
 msgid "Paste Node(s)"
 msgstr "Düğümleri Yapıştır"
 
@@ -10844,9 +10838,8 @@ msgid "Attach Script"
 msgstr "Betik İliştir"
 
 #: editor/scene_tree_dock.cpp
-#, fuzzy
 msgid "Cut Node(s)"
-msgstr "Düğümleri Kes"
+msgstr "Düğümleri Kes(s)"
 
 #: editor/scene_tree_dock.cpp
 msgid "Remove Node(s)"

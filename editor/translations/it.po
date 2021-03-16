@@ -50,7 +50,7 @@
 # J. Lavoie <j.lavoie@net-c.ca>, 2020.
 # Andrea Terenziani <andrea.terenziani.at@gmail.com>, 2020.
 # Anonymous <noreply@weblate.org>, 2020.
-# riccardo boffelli <riccardo.boffelli.96@gmail.com>, 2020.
+# riccardo boffelli <riccardo.boffelli.96@gmail.com>, 2020, 2021.
 # Lorenzo Asolan <brixiumx@gmail.com>, 2020.
 # Lorenzo Cerqua <lorenzocerqua@tutanota.com>, 2020, 2021.
 # Federico Manzella <ferdiu.manzella@gmail.com>, 2020.
@@ -60,8 +60,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2021-03-07 06:04+0000\n"
-"Last-Translator: Riteo Siuga <lorenzocerqua@tutanota.com>\n"
+"PO-Revision-Date: 2021-03-10 22:14+0000\n"
+"Last-Translator: riccardo boffelli <riccardo.boffelli.96@gmail.com>\n"
 "Language-Team: Italian <https://hosted.weblate.org/projects/godot-engine/"
 "godot/it/>\n"
 "Language: it\n"
@@ -69,7 +69,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 4.5.1\n"
+"X-Generator: Weblate 4.5.2-dev\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -253,7 +253,7 @@ msgstr "Traccia di chiamate di metodo"
 
 #: editor/animation_track_editor.cpp
 msgid "Bezier Curve Track"
-msgstr "Traccia curva di Bézier"
+msgstr "Traccia di curve di Bézier"
 
 #: editor/animation_track_editor.cpp
 msgid "Audio Playback Track"
@@ -273,11 +273,11 @@ msgstr "Durata dell'animazione (secondi)"
 
 #: editor/animation_track_editor.cpp
 msgid "Add Track"
-msgstr "Aggiungi Traccia"
+msgstr "Aggiungi una traccia"
 
 #: editor/animation_track_editor.cpp
 msgid "Animation Looping"
-msgstr "Ciclicità Animazione"
+msgstr "Ciclicità animazione"
 
 #: editor/animation_track_editor.cpp
 #: modules/visual_script/visual_script_editor.cpp
@@ -286,11 +286,11 @@ msgstr "Funzioni:"
 
 #: editor/animation_track_editor.cpp
 msgid "Audio Clips:"
-msgstr "Clip Audio:"
+msgstr "Clip audio:"
 
 #: editor/animation_track_editor.cpp
 msgid "Anim Clips:"
-msgstr "Clip Animazione:"
+msgstr "Clip animazione:"
 
 #: editor/animation_track_editor.cpp
 msgid "Change Track Path"
@@ -302,15 +302,15 @@ msgstr "Attiva/Disattiva questa traccia."
 
 #: editor/animation_track_editor.cpp
 msgid "Update Mode (How this property is set)"
-msgstr "Modalità Aggiornamento (come viene impostata questa proprietà)"
+msgstr "Modalità di aggiornamento (come viene impostata questa proprietà)"
 
 #: editor/animation_track_editor.cpp
 msgid "Interpolation Mode"
-msgstr "Modalità Interpolazione"
+msgstr "Modalità d'interpolazione"
 
 #: editor/animation_track_editor.cpp
 msgid "Loop Wrap Mode (Interpolate end with beginning on loop)"
-msgstr "Modalità Ciclo ad Anello (interpola la fine con l'inizio a ciclo)"
+msgstr "Modalità ciclo ad anello (interpola la fine con l'inizio del ciclo)"
 
 #: editor/animation_track_editor.cpp
 msgid "Remove this track."
@@ -322,7 +322,7 @@ msgstr "Tempo (s): "
 
 #: editor/animation_track_editor.cpp
 msgid "Toggle Track Enabled"
-msgstr "Abilita/DisabilitaTraccia"
+msgstr "Abilita/Disabilita una traccia"
 
 #: editor/animation_track_editor.cpp
 msgid "Continuous"
@@ -334,7 +334,7 @@ msgstr "Discreta"
 
 #: editor/animation_track_editor.cpp
 msgid "Trigger"
-msgstr "Attivatore"
+msgstr "Attivazione"
 
 #: editor/animation_track_editor.cpp
 msgid "Capture"
@@ -355,32 +355,32 @@ msgstr "Cubica"
 
 #: editor/animation_track_editor.cpp
 msgid "Clamp Loop Interp"
-msgstr "Blocca Interpolazione Ciclo"
+msgstr "Blocca l'interpolazione d'un ciclo"
 
 #: editor/animation_track_editor.cpp
 msgid "Wrap Loop Interp"
-msgstr "Avvolgi Interpolazione Ciclo"
+msgstr "Continua l'interpolazione d'un ciclo"
 
 #: editor/animation_track_editor.cpp
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Insert Key"
-msgstr "Inserisci Fotogramma Chiave"
+msgstr "Inserisci un fotogramma chiave"
 
 #: editor/animation_track_editor.cpp
 msgid "Duplicate Key(s)"
-msgstr "Duplica Fotogrammi Chiave Selezionati"
+msgstr "Duplica i fotogrammi chiave selezionati"
 
 #: editor/animation_track_editor.cpp
 msgid "Delete Key(s)"
-msgstr "Elimina Fotogrammi Chiave Selezionati"
+msgstr "Elimina i fotogrammi chiave selezionati"
 
 #: editor/animation_track_editor.cpp
 msgid "Change Animation Update Mode"
-msgstr "Cambia Modalità Aggiornamento Animazione"
+msgstr "Cambia la modalità d'aggiornamento di un'animazione"
 
 #: editor/animation_track_editor.cpp
 msgid "Change Animation Interpolation Mode"
-msgstr "Cambia Modalità Interpolazione Animazione"
+msgstr "Cambia la modalità d'interpolazione di un'animazione"
 
 #: editor/animation_track_editor.cpp
 msgid "Change Animation Loop Mode"
@@ -4145,9 +4145,8 @@ msgid "Importer:"
 msgstr "Importare"
 
 #: editor/import_defaults_editor.cpp
-#, fuzzy
 msgid "Reset to Defaults"
-msgstr "Usa sRGB Default"
+msgstr "Ripristinare le impostazioni predefinite"
 
 #: editor/import_dock.cpp
 msgid "%d Files"
@@ -10523,7 +10522,6 @@ msgid "Plugins"
 msgstr "Plugins"
 
 #: editor/project_settings_editor.cpp
-#, fuzzy
 msgid "Import Defaults"
 msgstr "Carica Predefiniti"
 
@@ -12596,10 +12594,14 @@ msgstr "Un CollisionPolygon2D vuoto non ha effetti sulla collisione."
 #: scene/2d/collision_polygon_2d.cpp
 msgid "Invalid polygon. At least 3 points are needed in 'Solids' build mode."
 msgstr ""
+"Poligono non valido. Sono necessari almeno 3 punti nella modalità di "
+"costruzione 'Solidi'."
 
 #: scene/2d/collision_polygon_2d.cpp
 msgid "Invalid polygon. At least 2 points are needed in 'Segments' build mode."
 msgstr ""
+"Poligono non valido. Sono necessari almeno 2 punti nella modalità di "
+"costruzione 'Segmenti'."
 
 #: scene/2d/collision_shape_2d.cpp
 msgid ""
