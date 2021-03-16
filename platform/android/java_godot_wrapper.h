@@ -63,6 +63,7 @@ private:
 	jmethodID _is_activity_resumed = 0;
 	jmethodID _vibrate = 0;
 	jmethodID _get_input_fallback_mapping = 0;
+	jmethodID _on_godot_setup_completed = 0;
 	jmethodID _on_godot_main_loop_started = 0;
 	jmethodID _get_class_loader = 0;
 
@@ -77,6 +78,7 @@ public:
 
 	void gfx_init(bool gl2);
 	void on_video_init(JNIEnv *p_env = NULL);
+	void on_godot_setup_completed(JNIEnv *p_env = NULL);
 	void on_godot_main_loop_started(JNIEnv *p_env = NULL);
 	void restart(JNIEnv *p_env = NULL);
 	void force_quit(JNIEnv *p_env = NULL);
