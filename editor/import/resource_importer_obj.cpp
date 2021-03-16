@@ -36,6 +36,7 @@
 #include "scene/3d/spatial.h"
 #include "scene/resources/mesh.h"
 #include "scene/resources/surface_tool.h"
+#include "editor/import/scene_importer_mesh.h"
 
 uint32_t EditorOBJImporter::get_import_flags() const {
 
@@ -229,6 +230,8 @@ static Error _parse_obj(const String &p_path, List<Ref<Mesh> > &r_meshes, bool p
 	String current_material_library;
 	String current_material;
 	String current_group;
+	uint32_t smooth_group = 0;
+	bool smoothing = true;
 
 	while (true) {
 
@@ -316,13 +319,11 @@ static Error _parse_obj(const String &p_path, List<Ref<Mesh> > &r_meshes, bool p
 						vtx += vertices.size() + 1;
 					ERR_FAIL_INDEX_V(vtx, vertices.size(), ERR_FILE_CORRUPT);
 
-					Vector3 vertex = vertices[vtx];
-					//if (weld_vertices)
-					//	vertex.snap(Vector3(weld_tolerance, weld_tolerance, weld_tolerance));
 					if (!smoothing) {
 						smooth_group++;
 					}
-					surf_tool->set_smooth_group(smooth_group);
+					surf_tool->add_smooth_group(smooth_group);
+					Vector3 vertex = vertices[vtx];
 					surf_tool->add_vertex(vertex);
 				}
 
@@ -429,7 +430,6 @@ static Error _parse_obj(const String &p_path, List<Ref<Mesh> > &r_meshes, bool p
 }
 
 Node *EditorOBJImporter::import_scene(const String &p_path, uint32_t p_flags, int p_bake_fps, List<String> *r_missing_deps, Error *r_err) {
-
 	List<Ref<Mesh> > meshes;
 
 	Error err = _parse_obj(p_path, meshes, false, p_flags & IMPORT_GENERATE_TANGENT_ARRAYS, p_flags & IMPORT_USE_COMPRESSION, Vector3(1, 1, 1), Vector3(0, 0, 0), r_missing_deps);
@@ -438,21 +438,22 @@ Node *EditorOBJImporter::import_scene(const String &p_path, uint32_t p_flags, in
 		if (r_err) {
 			*r_err = err;
 		}
-		return NULL;
+		return nullptr;
 	}
 
 	Spatial *scene = memnew(Spatial);
 
-	for (List<Ref<Mesh>>::Element *E = meshes.front(); E; E = E->next()) {
+	for (List<Ref<Mesh> >::Element *E = meshes.front(); E; E = E->next()) {
 		Ref<EditorSceneImporterMesh> mesh;
 		mesh.instance();
 		Ref<Mesh> m = E->get();
 		for (int i = 0; i < m->get_surface_count(); i++) {
-			mesh->add_surface(m->surface_get_primitive_type(i), m->surface_get_arrays(i), Array(), Dictionary(), m->surface_get_material(i));
+			mesh->add_surface(m->surface_get_primitive_type(i), m->surface_get_arrays(i), Array(), Dictionary(), "");
+			mesh->set_surface_material(m->surface_get_material(i));
 		}
 
 		MeshInstance *mi = memnew(MeshInstance);
-		mi->set_mesh(E->get());
+		mi->set_mesh(mesh);
 		mi->set_name(E->get()->get_name());
 		scene->add_child(mi);
 		mi->set_owner(scene);

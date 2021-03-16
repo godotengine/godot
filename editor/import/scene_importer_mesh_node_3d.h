@@ -32,13 +32,14 @@
 #define EDITOR_SCENE_IMPORTER_MESH_NODE_3D_H
 
 #include "editor/import/scene_importer_mesh.h"
-#include "scene/3d/node_3d.h"
+#include "scene/3d/spatial.h"
 #include "scene/resources/skin.h"
 
 class EditorSceneImporterMesh;
 
-class EditorSceneImporterMeshNode3D : public Node3D {
-	GDCLASS(EditorSceneImporterMeshNode3D, Node3D)
+
+class EditorSceneImporterMeshNode3D : public Spatial {
+	GDCLASS(EditorSceneImporterMeshNode3D, Spatial)
 
 	Ref<EditorSceneImporterMesh> mesh;
 	Ref<Skin> skin;

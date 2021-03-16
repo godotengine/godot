@@ -31,7 +31,7 @@
 #ifndef EDITOR_SCENE_IMPORTER_MESH_H
 #define EDITOR_SCENE_IMPORTER_MESH_H
 
-#include "core/io/resource.h"
+#include "core/resource.h"
 #include "scene/resources/mesh.h"
 // The following classes are used by importers instead of ArrayMesh and MeshInstance3D
 // so the data is not registered (hence, quality loss), importing happens faster and
@@ -72,7 +72,8 @@ public:
 	int get_blend_shape_count() const;
 	String get_blend_shape_name(int p_blend_shape) const;
 
-	void add_surface(Mesh::PrimitiveType p_primitive, const Array &p_arrays, const Array &p_blend_shapes = Array(), const Dictionary &p_lods = Dictionary(), const Ref<Material> &p_material = Ref<Material>(), const String &p_name = String());
+	void add_surface(Mesh::PrimitiveType p_primitive, const Array &p_arrays, const Array &p_blend_shapes, const Dictionary &p_lods, /* const Ref<Material> &p_material, */ const String &p_name);
+	void set_surface_material(Ref<Material> &p_material, int p_surface = -1);
 	int get_surface_count() const;
 
 	void set_blend_shape_mode(Mesh::BlendShapeMode p_blend_shape_mode);
@@ -87,7 +88,6 @@ public:
 	float get_surface_lod_size(int p_surface, int p_lod) const;
 	Ref<Material> get_surface_material(int p_surface) const;
 
-	void generate_lods();
 
 	bool has_mesh() const;
 	Ref<ArrayMesh> get_mesh();

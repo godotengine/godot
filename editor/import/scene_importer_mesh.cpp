@@ -54,7 +54,7 @@ Mesh::BlendShapeMode EditorSceneImporterMesh::get_blend_shape_mode() const {
 	return blend_shape_mode;
 }
 
-void EditorSceneImporterMesh::add_surface(Mesh::PrimitiveType p_primitive, const Array &p_arrays, const Array &p_blend_shapes, const Dictionary &p_lods, const Ref<Material> &p_material, const String &p_name) {
+void EditorSceneImporterMesh::add_surface(Mesh::PrimitiveType p_primitive, const Array &p_arrays, const Array &p_blend_shapes, const Dictionary &p_lods, /* const Ref<Material> &p_material, */ const String &p_name) {
 	ERR_FAIL_COND(p_blend_shapes.size() != blend_shapes.size());
 	ERR_FAIL_COND(p_arrays.size() != Mesh::ARRAY_MAX);
 	Surface s;
@@ -81,7 +81,7 @@ void EditorSceneImporterMesh::add_surface(Mesh::PrimitiveType p_primitive, const
 		s.lods.push_back(lod);
 	}
 
-	s.material = p_material;
+	//s.material = p_material;
 
 	surfaces.push_back(s);
 	mesh.unref();
@@ -129,47 +129,12 @@ Ref<Material> EditorSceneImporterMesh::get_surface_material(int p_surface) const
 	ERR_FAIL_INDEX_V(p_surface, surfaces.size(), Ref<Material>());
 	return surfaces[p_surface].material;
 }
-
-void EditorSceneImporterMesh::generate_lods() {
-	if (!SurfaceTool::simplify_func) {
-		return;
-	}
-
-	for (int i = 0; i < surfaces.size(); i++) {
-		if (surfaces[i].primitive != Mesh::PRIMITIVE_TRIANGLES) {
-			continue;
-		}
-
-		surfaces.write[i].lods.clear();
-		Vector<Vector3> vertices = surfaces[i].arrays[RS::ARRAY_VERTEX];
-		Vector<int> indices = surfaces[i].arrays[RS::ARRAY_INDEX];
-		if (indices.size() == 0) {
-			continue; //no lods if no indices
-		}
-		uint32_t vertex_count = vertices.size();
-		const Vector3 *vertices_ptr = vertices.ptr();
-
-		int min_indices = 10;
-		int index_target = indices.size() / 2;
-		print_line("total: " + itos(indices.size()));
-		while (index_target > min_indices) {
-			float error;
-			Vector<int> new_indices;
-			new_indices.resize(indices.size());
-			size_t new_len = SurfaceTool::simplify_func((unsigned int *)new_indices.ptrw(), (const unsigned int *)indices.ptr(), indices.size(), (const float *)vertices_ptr, vertex_count, sizeof(Vector3), index_target, 1e20, &error);
-			print_line("shoot for " + itos(index_target) + ", got " + itos(new_len) + " distance " + rtos(error));
-			if ((int)new_len > (index_target * 120 / 100)) {
-				break; // 20 percent tolerance
-			}
-			new_indices.resize(new_len);
-			Surface::LOD lod;
-			lod.distance = error;
-			lod.indices = new_indices;
-			surfaces.write[i].lods.push_back(lod);
-			index_target /= 2;
-		}
-	}
+void EditorSceneImporterMesh::set_surface_material(Ref<Material> &p_material, int p_surface) {
+	ERR_FAIL_COND(p_surface < surfaces.size() || p_surface >= -1);
+	Surface &surface = surfaces.write[p_surface == -1 ? surfaces.size() - 1 : p_surface];
+	surface.material = p_material;
 }
+
 
 bool EditorSceneImporterMesh::has_mesh() const {
 	return mesh.is_valid();
@@ -198,7 +163,7 @@ Ref<ArrayMesh> EditorSceneImporterMesh::get_mesh() {
 				}
 			}
 
-			mesh->add_surface_from_arrays(surfaces[i].primitive, surfaces[i].arrays, bs_data, lods);
+			mesh->add_surface_from_arrays(surfaces[i].primitive, surfaces[i].arrays, bs_data);
 			if (surfaces[i].material.is_valid()) {
 				mesh->surface_set_material(mesh->get_surface_count() - 1, surfaces[i].material);
 			}
@@ -247,7 +212,8 @@ void EditorSceneImporterMesh::_set_data(const Dictionary &p_data) {
 			if (s.has("material")) {
 				material = s["material"];
 			}
-			add_surface(prim, arr, blend_shapes, lods, material, name);
+			add_surface(prim, arr, blend_shapes, lods, name);
+			set_surface_material(material);
 		}
 	}
 }
@@ -298,7 +264,8 @@ void EditorSceneImporterMesh::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_blend_shape_mode", "mode"), &EditorSceneImporterMesh::set_blend_shape_mode);
 	ClassDB::bind_method(D_METHOD("get_blend_shape_mode"), &EditorSceneImporterMesh::get_blend_shape_mode);
 
-	ClassDB::bind_method(D_METHOD("add_surface", "primitive", "arrays", "blend_shapes", "lods", "material"), &EditorSceneImporterMesh::add_surface, DEFVAL(Array()), DEFVAL(Dictionary()), DEFVAL(Ref<Material>()), DEFVAL(String()));
+	ClassDB::bind_method(D_METHOD("add_surface", "primitive", "arrays", "blend_shapes", "lods"), &EditorSceneImporterMesh::add_surface, DEFVAL(Array()), DEFVAL(Dictionary()), DEFVAL(String()));
+	ClassDB::bind_method(D_METHOD("set_surface_material", "material", "surface_idx"), &EditorSceneImporterMesh::get_surface_material, DEFVAL(Ref<Material>()), DEFVAL(-1));
 
 	ClassDB::bind_method(D_METHOD("get_surface_count"), &EditorSceneImporterMesh::get_surface_count);
 	ClassDB::bind_method(D_METHOD("get_surface_primitive_type", "surface_idx"), &EditorSceneImporterMesh::get_surface_primitive_type);
