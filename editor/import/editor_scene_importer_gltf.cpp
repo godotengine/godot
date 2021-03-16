@@ -35,7 +35,6 @@
 #include "core/math/math_defs.h"
 #include "core/os/file_access.h"
 #include "core/os/os.h"
-#include "modules/regex/regex.h"
 #include "scene/3d/bone_attachment.h"
 #include "scene/3d/camera.h"
 #include "scene/3d/mesh_instance.h"
@@ -213,25 +212,11 @@ String EditorSceneImporterGLTF::_gen_unique_animation_name(GLTFState &state, con
 	return name;
 }
 
-String EditorSceneImporterGLTF::_sanitize_bone_name(const String &name) {
-	String p_name = name.camelcase_to_underscore(true);
-
-	RegEx pattern_nocolon(":");
-	p_name = pattern_nocolon.sub(p_name, "_", true);
-
-	RegEx pattern_noslash("/");
-	p_name = pattern_noslash.sub(p_name, "_", true);
-
-	RegEx pattern_nospace(" +");
-	p_name = pattern_nospace.sub(p_name, "_", true);
-
-	RegEx pattern_multiple("_+");
-	p_name = pattern_multiple.sub(p_name, "_", true);
-
-	RegEx pattern_padded("0+(\\d+)");
-	p_name = pattern_padded.sub(p_name, "$1", true);
-
-	return p_name;
+String EditorSceneImporterGLTF::_sanitize_bone_name(const String &p_name) {
+	String name = p_name;
+	name = name.replace(":", "_");
+	name = name.replace("/", "_");
+	return name;
 }
 
 String EditorSceneImporterGLTF::_gen_unique_bone_name(GLTFState &state, const GLTFSkeletonIndex skel_i, const String &p_name) {
