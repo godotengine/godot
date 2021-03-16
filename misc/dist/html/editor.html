@@ -49,6 +49,29 @@
 			filter: brightness(82.5%);
 		}
 
+		.welcome-modal {
+			display: none;
+ 			position: fixed;
+			z-index: 1;
+			left: 0;
+			top: 0;
+			width: 100%;
+			height: 100%;
+			overflow: auto;
+			background-color: hsla(0, 0%, 0%, 0.5);
+		}
+
+		.welcome-modal-content {
+			background-color: #333b4f;
+			box-shadow: 0 0.25rem 0.25rem hsla(0, 0%, 0%, 0.5);
+			line-height: 1.5;
+			max-width: 38rem;
+			margin: 4rem auto 0 auto;
+			color: white;
+			border-radius: 0.5rem;
+			padding: 1rem 1rem 2rem 1rem;
+		}
+
 		#tabs-buttons {
 			/* Match the default background color of the editor window for a seamless appearance. */
 			background-color: #202531;
@@ -197,6 +220,36 @@
 	</style>
 </head>
 <body>
+	<div
+		id="welcome-modal"
+		class="welcome-modal"
+		role="dialog"
+		aria-labelledby="welcome-modal-title"
+		aria-describedby="welcome-modal-description"
+		onclick="if (event.target === this) closeWelcomeModal(false)"
+	>
+		<div class="welcome-modal-content">
+			<h2 id="welcome-modal-title">Important - Please read before continuing</h2>
+			<div id="welcome-modal-description">
+				<p>
+					The Godot Web Editor has some limitations compared to the native version.
+					Its main focus is education and experimentation;
+					<strong>it is not recommended for production</strong>.
+				</p>
+				<p>
+					Refer to the
+					<a
+						href="https://docs.godotengine.org/en/latest/tutorials/editor/using_the_web_editor.html"
+						target="_blank"
+						rel="noopener"
+					>Web editor documentation</a> for usage instructions and limitations.
+				</p>
+			</div>
+			<button id="welcome-modal-dismiss" class="btn" type="button" onclick="closeWelcomeModal(true)" style="margin-top: 1rem">
+				OK, don't show again
+			</button>
+		</div>
+	</div>
 	<div id="tabs-buttons">
 		<button id="btn-tab-loader" class="btn tab-btn" onclick="showTab('loader')">Loader</button>
 		<button id="btn-tab-editor" class="btn tab-btn" disabled="disabled" onclick="showTab('editor')">Editor</button>
@@ -265,7 +318,19 @@
 			if ("serviceWorker" in navigator) {
 				navigator.serviceWorker.register("service.worker.js");
 			}
+
+			if (localStorage.getItem("welcomeModalDismissed") !== 'true') {
+				document.getElementById("welcome-modal").style.display = "block";
+				document.getElementById("welcome-modal-dismiss").focus();
+			}
 		});
+
+		function closeWelcomeModal(dontShowAgain) {
+			document.getElementById("welcome-modal").style.display = "none";
+			if (dontShowAgain) {
+				localStorage.setItem("welcomeModalDismissed", 'true');
+			}
+		}
 	</script>
 	<script src='godot.tools.js'></script>
 	<script>//<![CDATA[
