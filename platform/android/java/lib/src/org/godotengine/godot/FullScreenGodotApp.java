@@ -44,7 +44,7 @@ import androidx.fragment.app.FragmentActivity;
  * It's also a reference implementation for how to setup and use the {@link Godot} fragment
  * within an Android app.
  */
-public abstract class FullScreenGodotApp extends FragmentActivity {
+public abstract class FullScreenGodotApp extends FragmentActivity implements GodotHost {
 	@Nullable
 	private Godot godotFragment;
 
@@ -64,6 +64,8 @@ public abstract class FullScreenGodotApp extends FragmentActivity {
 	public void onNewIntent(Intent intent) {
 		if (godotFragment != null) {
 			godotFragment.onNewIntent(intent);
+		} else {
+			super.onNewIntent(intent);
 		}
 	}
 

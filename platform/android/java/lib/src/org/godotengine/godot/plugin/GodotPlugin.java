@@ -47,6 +47,7 @@ import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -109,31 +110,9 @@ public abstract class GodotPlugin {
 	 * This method is invoked on the render thread.
 	 */
 	public final void onRegisterPluginWithGodotNative() {
-		registeredSignals.putAll(registerPluginWithGodotNative(this, new GodotPluginInfoProvider() {
-			@NonNull
-			@Override
-			public String getPluginName() {
-				return GodotPlugin.this.getPluginName();
-			}
-
-			@NonNull
-			@Override
-			public List<String> getPluginMethods() {
-				return GodotPlugin.this.getPluginMethods();
-			}
-
-			@NonNull
-			@Override
-			public Set<SignalInfo> getPluginSignals() {
-				return GodotPlugin.this.getPluginSignals();
-			}
-
-			@NonNull
-			@Override
-			public Set<String> getPluginGDNativeLibrariesPaths() {
-				return GodotPlugin.this.getPluginGDNativeLibrariesPaths();
-			}
-		}));
+		registeredSignals.putAll(
+				registerPluginWithGodotNative(this, getPluginName(), getPluginMethods(), getPluginSignals(),
+						getPluginGDNativeLibrariesPaths()));
 	}
 
 	/**
@@ -141,23 +120,41 @@ public abstract class GodotPlugin {
 	 *
 	 * This method must be invoked on the render thread.
 	 */
-	public static Map<String, SignalInfo> registerPluginWithGodotNative(Object pluginObject, GodotPluginInfoProvider pluginInfoProvider) {
-		nativeRegisterSingleton(pluginInfoProvider.getPluginName(), pluginObject);
+	public static void registerPluginWithGodotNative(Object pluginObject,
+			GodotPluginInfoProvider pluginInfoProvider) {
+		registerPluginWithGodotNative(pluginObject, pluginInfoProvider.getPluginName(),
+				Collections.emptyList(), pluginInfoProvider.getPluginSignals(),
+				pluginInfoProvider.getPluginGDNativeLibrariesPaths());
 
+		// Notify that registration is complete.
+		pluginInfoProvider.onPluginRegistered();
+	}
+
+	private static Map<String, SignalInfo> registerPluginWithGodotNative(Object pluginObject,
+			String pluginName, List<String> pluginMethods, Set<SignalInfo> pluginSignals,
+			Set<String> pluginGDNativeLibrariesPaths) {
+		nativeRegisterSingleton(pluginName, pluginObject);
+
+		Set<Method> filteredMethods = new HashSet<>();
 		Class clazz = pluginObject.getClass();
+
 		Method[] methods = clazz.getDeclaredMethods();
 		for (Method method : methods) {
-			boolean found = false;
-
-			for (String s : pluginInfoProvider.getPluginMethods()) {
-				if (s.equals(method.getName())) {
-					found = true;
-					break;
+			// Check if the method is annotated with {@link UsedByGodot}.
+			if (method.getAnnotation(UsedByGodot.class) != null) {
+				filteredMethods.add(method);
+			} else {
+				// For backward compatibility, process the methods from the given <pluginMethods> argument.
+				for (String methodName : pluginMethods) {
+					if (methodName.equals(method.getName())) {
+						filteredMethods.add(method);
+						break;
+					}
 				}
 			}
-			if (!found)
-				continue;
+		}
 
+		for (Method method : filteredMethods) {
 			List<String> ptr = new ArrayList<>();
 
 			Class[] paramTypes = method.getParameterTypes();
@@ -168,21 +165,20 @@ public abstract class GodotPlugin {
 			String[] pt = new String[ptr.size()];
 			ptr.toArray(pt);
 
-			nativeRegisterMethod(pluginInfoProvider.getPluginName(), method.getName(), method.getReturnType().getName(), pt);
+			nativeRegisterMethod(pluginName, method.getName(), method.getReturnType().getName(), pt);
 		}
 
 		// Register the signals for this plugin.
 		Map<String, SignalInfo> registeredSignals = new HashMap<>();
-		for (SignalInfo signalInfo : pluginInfoProvider.getPluginSignals()) {
+		for (SignalInfo signalInfo : pluginSignals) {
 			String signalName = signalInfo.getName();
-			nativeRegisterSignal(pluginInfoProvider.getPluginName(), signalName, signalInfo.getParamTypesNames());
+			nativeRegisterSignal(pluginName, signalName, signalInfo.getParamTypesNames());
 			registeredSignals.put(signalName, signalInfo);
 		}
 
 		// Get the list of gdnative libraries to register.
-		Set<String> gdnativeLibrariesPaths = pluginInfoProvider.getPluginGDNativeLibrariesPaths();
-		if (!gdnativeLibrariesPaths.isEmpty()) {
-			nativeRegisterGDNativeLibraries(gdnativeLibrariesPaths.toArray(new String[0]));
+		if (!pluginGDNativeLibrariesPaths.isEmpty()) {
+			nativeRegisterGDNativeLibraries(pluginGDNativeLibrariesPaths.toArray(new String[0]));
 		}
 
 		return registeredSignals;
@@ -236,6 +232,11 @@ public abstract class GodotPlugin {
 	public boolean onMainBackPressed() { return false; }
 
 	/**
+	 * Invoked on the render thread when the Godot setup is complete.
+	 */
+	public void onGodotSetupCompleted() {}
+
+	/**
 	 * Invoked on the render thread when the Godot main loop has started.
 	 */
 	public void onGodotMainLoopStarted() {}
@@ -282,8 +283,11 @@ public abstract class GodotPlugin {
 
 	/**
 	 * Returns the list of methods to be exposed to Godot.
+	 *
+	 * @deprecated Used the {@link UsedByGodot} annotation instead.
 	 */
 	@NonNull
+	@Deprecated
 	public List<String> getPluginMethods() {
 		return Collections.emptyList();
 	}
