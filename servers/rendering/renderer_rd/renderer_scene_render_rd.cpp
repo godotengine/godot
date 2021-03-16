@@ -1833,6 +1833,7 @@ void RendererSceneRenderRD::_render_buffers_post_process_and_tonemap(const Rende
 		}
 
 		tonemap.use_debanding = rb->use_debanding;
+		tonemap.sharpen_intensity = rb->sharpen_intensity;
 		tonemap.texture_size = Vector2i(rb->width, rb->height);
 
 		if (env) {
@@ -2114,7 +2115,7 @@ float RendererSceneRenderRD::render_buffers_get_volumetric_fog_detail_spread(RID
 	return rb->volumetric_fog->spread;
 }
 
-void RendererSceneRenderRD::render_buffers_configure(RID p_render_buffers, RID p_render_target, int p_width, int p_height, RS::ViewportMSAA p_msaa, RenderingServer::ViewportScreenSpaceAA p_screen_space_aa, bool p_use_debanding, uint32_t p_view_count) {
+void RendererSceneRenderRD::render_buffers_configure(RID p_render_buffers, RID p_render_target, int p_width, int p_height, RS::ViewportMSAA p_msaa, RenderingServer::ViewportScreenSpaceAA p_screen_space_aa, bool p_use_debanding, float p_sharpen_intensity, uint32_t p_view_count) {
 	ERR_FAIL_COND_MSG(p_view_count == 0, "Must have atleast 1 view");
 
 	RenderBuffers *rb = render_buffers_owner.getornull(p_render_buffers);
@@ -2124,6 +2125,7 @@ void RendererSceneRenderRD::render_buffers_configure(RID p_render_buffers, RID p
 	rb->msaa = p_msaa;
 	rb->screen_space_aa = p_screen_space_aa;
 	rb->use_debanding = p_use_debanding;
+	rb->sharpen_intensity = p_sharpen_intensity;
 	rb->view_count = p_view_count;
 
 	if (is_clustered_enabled()) {

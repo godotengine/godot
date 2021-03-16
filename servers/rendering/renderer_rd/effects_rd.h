@@ -204,6 +204,9 @@ class EffectsRD {
 		float pixel_size[2];
 		uint32_t use_fxaa;
 		uint32_t use_debanding;
+
+		float sharpen_intensity;
+		uint32_t pad[3];
 	};
 
 	/* tonemap actually writes to a framebuffer, which is
@@ -717,6 +720,7 @@ public:
 
 		bool use_fxaa = false;
 		bool use_debanding = false;
+		float sharpen_intensity = 0.0;
 		Vector2i texture_size;
 		uint32_t view_count = 1;
 	};
