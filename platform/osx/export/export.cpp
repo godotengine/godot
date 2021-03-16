@@ -182,6 +182,7 @@ void EditorExportPlatformOSX::get_export_options(List<ExportOption> *r_options) 
 	r_options->push_back(ExportOption(PropertyInfo(Variant::INT, "codesign/entitlements/app_sandbox/files_pictures", PROPERTY_HINT_ENUM, "No,Read-only,Read-write"), 0));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::INT, "codesign/entitlements/app_sandbox/files_music", PROPERTY_HINT_ENUM, "No,Read-only,Read-write"), 0));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::INT, "codesign/entitlements/app_sandbox/files_movies", PROPERTY_HINT_ENUM, "No,Read-only,Read-write"), 0));
+	r_options->push_back(ExportOption(PropertyInfo(Variant::INT, "codesign/entitlements/app_sandbox/files_user_selected", PROPERTY_HINT_ENUM, "No,Read-only,Read-write"), 0));
 
 	r_options->push_back(ExportOption(PropertyInfo(Variant::PACKED_STRING_ARRAY, "codesign/custom_options"), PackedStringArray()));
 
@@ -868,6 +869,14 @@ Error EditorExportPlatformOSX::export_project(const Ref<EditorExportPreset> &p_p
 					}
 					if ((int)p_preset->get("codesign/entitlements/app_sandbox/files_movies") == 2) {
 						ent_f->store_line("<key>com.apple.security.files.movies.read-write</key>");
+						ent_f->store_line("<true/>");
+					}
+					if ((int)p_preset->get("codesign/entitlements/app_sandbox/files_user_selected") == 1) {
+						ent_f->store_line("<key>ccom.apple.security.files.user-selected.read-only</key>");
+						ent_f->store_line("<true/>");
+					}
+					if ((int)p_preset->get("codesign/entitlements/app_sandbox/files_user_selected") == 2) {
+						ent_f->store_line("<key>com.apple.security.files.user-selected.read-write</key>");
 						ent_f->store_line("<true/>");
 					}
 				}

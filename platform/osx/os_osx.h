@@ -101,6 +101,9 @@ public:
 
 	virtual Error move_to_trash(const String &p_path) override;
 
+	virtual bool request_permission(const String &p_name) override;
+	virtual Vector<String> get_granted_permissions() const override;
+
 	OS_OSX();
 };
 

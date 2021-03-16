@@ -225,8 +225,8 @@
 			<return type="PackedStringArray">
 			</return>
 			<description>
-				With this function you can get the list of dangerous permissions that have been granted to the Android application.
-				[b]Note:[/b] This method is implemented on Android.
+				On Android devices, this function you can get the list of dangerous permissions that have been granted.
+				On macOS (sandboxed applications only), this function you can get the list of user selected folders accessible to the application. Use [code]request_permission("APP_SANDBOX_FILE_ACCESS")[/code] to request folder access permission.
 			</description>
 		</method>
 		<method name="get_keycode_string" qualifiers="const">
@@ -493,7 +493,10 @@
 			<argument index="0" name="name" type="String">
 			</argument>
 			<description>
-				At the moment this function is only used by [code]AudioDriverOpenSL[/code] to request permission for [code]RECORD_AUDIO[/code] on Android.
+				On Android devices, [code]request_permission("RECORD_AUDIO")[/code] is used by [code]AudioDriverOpenSL[/code] to request permission for audio recording (function is called automatically).
+
+				On macOS (sandboxed applications only), [code]request_permission("APP_SANDBOX_FILE_ACCESS")[/code] can be used to request access to the user selected folder. Granted permissions are saved as security-scoped bookmark and automatically granted in subsequent sessions.
+				[b]Note:[/b] To use this function, sandboxed applications must have [code]codesign/entitlements/app_sandbox/files_user_selected[/code] entitlement enabled.
 			</description>
 		</method>
 		<method name="request_permissions">
