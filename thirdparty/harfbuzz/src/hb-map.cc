@@ -117,7 +117,7 @@ hb_map_destroy (hb_map_t *map)
  * @map: A map
  * @key: The user-data key to set
  * @data: A pointer to the user data to set
- * @destroy: (optional): A callback to call when @data is not needed anymore
+ * @destroy: (nullable): A callback to call when @data is not needed anymore
  * @replace: Whether to replace an existing data with the same key
  *
  * Attaches a user-data key/data pair to the specified map.
@@ -162,7 +162,7 @@ hb_map_get_user_data (hb_map_t           *map,
  *
  * Tests whether memory allocation for a set was successful.
  *
- * Return value: %true if allocation succeeded, false otherwise
+ * Return value: %true if allocation succeeded, %false otherwise
  *
  * Since: 1.7.7
  **/
@@ -230,7 +230,7 @@ hb_map_del (hb_map_t       *map,
  *
  * Tests whether @key is an element of @map.
  *
- * Return value: %true if @key is found in @map, false otherwise
+ * Return value: %true if @key is found in @map, %false otherwise
  *
  * Since: 1.7.7
  **/
@@ -253,6 +253,9 @@ hb_map_has (const hb_map_t *map,
 void
 hb_map_clear (hb_map_t *map)
 {
+  if (unlikely (hb_object_is_immutable (map)))
+    return;
+
   return map->clear ();
 }
 

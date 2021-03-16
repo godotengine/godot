@@ -140,9 +140,7 @@ struct hb_lockable_set_t
  * Reference-count.
  */
 
-#define HB_REFERENCE_COUNT_INERT_VALUE 0
-#define HB_REFERENCE_COUNT_POISON_VALUE -0x0000DEAD
-#define HB_REFERENCE_COUNT_INIT {HB_ATOMIC_INT_INIT (HB_REFERENCE_COUNT_INERT_VALUE)}
+#define HB_REFERENCE_COUNT_INIT {0}
 
 struct hb_reference_count_t
 {
@@ -152,9 +150,9 @@ struct hb_reference_count_t
   int get_relaxed () const { return ref_count.get_relaxed (); }
   int inc () const { return ref_count.inc (); }
   int dec () const { return ref_count.dec (); }
-  void fini () { ref_count.set_relaxed (HB_REFERENCE_COUNT_POISON_VALUE); }
+  void fini () { ref_count.set_relaxed (-0x0000DEAD); }
 
-  bool is_inert () const { return ref_count.get_relaxed () == HB_REFERENCE_COUNT_INERT_VALUE; }
+  bool is_inert () const { return !ref_count.get_relaxed (); }
   bool is_valid () const { return ref_count.get_relaxed () > 0; }
 };
 
@@ -197,15 +195,10 @@ struct hb_user_data_array_t
 struct hb_object_header_t
 {
   hb_reference_count_t ref_count;
-  mutable hb_atomic_int_t writable;
+  mutable hb_atomic_int_t writable = 0;
   hb_atomic_ptr_t<hb_user_data_array_t> user_data;
 };
-#define HB_OBJECT_HEADER_STATIC \
-	{ \
-	  HB_REFERENCE_COUNT_INIT, \
-	  HB_ATOMIC_INT_INIT (false), \
-	  HB_ATOMIC_PTR_INIT (nullptr) \
-	}
+#define HB_OBJECT_HEADER_STATIC {}
 
 
 /*

@@ -111,10 +111,10 @@ hb_shape_list_shapers ()
  * hb_shape_full:
  * @font: an #hb_font_t to use for shaping
  * @buffer: an #hb_buffer_t to shape
- * @features: (array length=num_features) (allow-none): an array of user
+ * @features: (array length=num_features) (nullable): an array of user
  *    specified #hb_feature_t or %NULL
  * @num_features: the length of @features array
- * @shaper_list: (array zero-terminated=1) (allow-none): a %NULL-terminated
+ * @shaper_list: (array zero-terminated=1) (nullable): a %NULL-terminated
  *    array of shapers to use or %NULL
  *
  * See hb_shape() for details. If @shaper_list is not %NULL, the specified
@@ -146,7 +146,7 @@ hb_shape_full (hb_font_t          *font,
  * hb_shape:
  * @font: an #hb_font_t to use for shaping
  * @buffer: an #hb_buffer_t to shape
- * @features: (array length=num_features) (allow-none): an array of user
+ * @features: (array length=num_features) (nullable): an array of user
  *    specified #hb_feature_t or %NULL
  * @num_features: the length of @features array
  *

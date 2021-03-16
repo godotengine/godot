@@ -31,56 +31,57 @@
  * UnicodeData.txt does not have a header.
  */
 
+#ifndef HB_OT_SHAPE_COMPLEX_USE_TABLE_HH
+#define HB_OT_SHAPE_COMPLEX_USE_TABLE_HH
+
 #include "hb.hh"
 
-#ifndef HB_NO_OT_SHAPE
-
-#include "hb-ot-shape-complex-use.hh"
+#include "hb-ot-shape-complex-use-machine.hh"
 
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wunused-macros"
-#define B	USE_B	/* BASE */
-#define CS	USE_CS	/* CONS_WITH_STACKER */
-#define G	USE_G	/* HIEROGLYPH */
-#define GB	USE_GB	/* BASE_OTHER */
-#define H	USE_H	/* HALANT */
-#define HN	USE_HN	/* HALANT_NUM */
-#define HVM	USE_HVM	/* HALANT_OR_VOWEL_MODIFIER */
-#define J	USE_J	/* HIEROGLYPH_JOINER */
-#define N	USE_N	/* BASE_NUM */
-#define O	USE_O	/* OTHER */
-#define R	USE_R	/* REPHA */
-#define S	USE_S	/* SYM */
-#define SB	USE_SB	/* HIEROGLYPH_SEGMENT_BEGIN */
-#define SE	USE_SE	/* HIEROGLYPH_SEGMENT_END */
-#define SUB	USE_SUB	/* CONS_SUB */
-#define Sk	USE_Sk	/* SAKOT */
-#define ZWNJ	USE_ZWNJ	/* ZWNJ */
-#define CMAbv	USE_CMAbv
-#define CMBlw	USE_CMBlw
-#define FAbv	USE_FAbv
-#define FBlw	USE_FBlw
-#define FPst	USE_FPst
-#define FMAbv	USE_FMAbv
-#define FMBlw	USE_FMBlw
-#define FMPst	USE_FMPst
-#define MAbv	USE_MAbv
-#define MBlw	USE_MBlw
-#define MPst	USE_MPst
-#define MPre	USE_MPre
-#define SMAbv	USE_SMAbv
-#define SMBlw	USE_SMBlw
-#define VAbv	USE_VAbv
-#define VBlw	USE_VBlw
-#define VPst	USE_VPst
-#define VPre	USE_VPre
-#define VMAbv	USE_VMAbv
-#define VMBlw	USE_VMBlw
-#define VMPst	USE_VMPst
-#define VMPre	USE_VMPre
+#define B	USE(B)	/* BASE */
+#define CS	USE(CS)	/* CONS_WITH_STACKER */
+#define G	USE(G)	/* HIEROGLYPH */
+#define GB	USE(GB)	/* BASE_OTHER */
+#define H	USE(H)	/* HALANT */
+#define HN	USE(HN)	/* HALANT_NUM */
+#define HVM	USE(HVM)	/* HALANT_OR_VOWEL_MODIFIER */
+#define J	USE(J)	/* HIEROGLYPH_JOINER */
+#define N	USE(N)	/* BASE_NUM */
+#define O	USE(O)	/* OTHER */
+#define R	USE(R)	/* REPHA */
+#define S	USE(S)	/* SYM */
+#define SB	USE(SB)	/* HIEROGLYPH_SEGMENT_BEGIN */
+#define SE	USE(SE)	/* HIEROGLYPH_SEGMENT_END */
+#define SUB	USE(SUB)	/* CONS_SUB */
+#define Sk	USE(Sk)	/* SAKOT */
+#define ZWNJ	USE(ZWNJ)	/* ZWNJ */
+#define CMAbv	USE(CMAbv)
+#define CMBlw	USE(CMBlw)
+#define FAbv	USE(FAbv)
+#define FBlw	USE(FBlw)
+#define FPst	USE(FPst)
+#define FMAbv	USE(FMAbv)
+#define FMBlw	USE(FMBlw)
+#define FMPst	USE(FMPst)
+#define MAbv	USE(MAbv)
+#define MBlw	USE(MBlw)
+#define MPst	USE(MPst)
+#define MPre	USE(MPre)
+#define SMAbv	USE(SMAbv)
+#define SMBlw	USE(SMBlw)
+#define VAbv	USE(VAbv)
+#define VBlw	USE(VBlw)
+#define VPst	USE(VPst)
+#define VPre	USE(VPre)
+#define VMAbv	USE(VMAbv)
+#define VMBlw	USE(VMBlw)
+#define VMPst	USE(VMPst)
+#define VMPre	USE(VMPre)
 #pragma GCC diagnostic pop
 
-static const USE_TABLE_ELEMENT_TYPE use_table[] = {
+static const uint8_t use_table[] = {
 
 
 #define use_offset_0x0028u 0
@@ -767,7 +768,7 @@ static const USE_TABLE_ELEMENT_TYPE use_table[] = {
 
   /* 11700 */     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,
   /* 11710 */     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     O,     O,  MBlw,  MPre,  MAbv,
-  /* 11720 */  VPst,  VPst,  VAbv,  VAbv,  VBlw,  VBlw,  VPre,  VAbv,  VBlw,  VAbv,  VAbv, VMAbv,     O,     O,     O,     O,
+  /* 11720 */  VPst,  VPst,  VAbv,  VAbv,  VBlw,  VBlw,  VPre,  VAbv,  VBlw,  VAbv,  VAbv,  VAbv,     O,     O,     O,     O,
   /* 11730 */     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     O,     O,     O,     O,
 
 #define use_offset_0x11800u 5848
@@ -1066,7 +1067,7 @@ static const USE_TABLE_ELEMENT_TYPE use_table[] = {
 
 }; /* Table items: 8824; occupancy: 79% */
 
-USE_TABLE_ELEMENT_TYPE
+static inline uint8_t
 hb_use_get_category (hb_codepoint_t u)
 {
   switch (u >> 12)
@@ -1154,7 +1155,7 @@ hb_use_get_category (hb_codepoint_t u)
     default:
       break;
   }
-  return USE_O;
+  return USE(O);
 }
 
 #undef B
@@ -1198,5 +1199,5 @@ hb_use_get_category (hb_codepoint_t u)
 #undef VMPre
 
 
-#endif
+#endif /* HB_OT_SHAPE_COMPLEX_USE_TABLE_HH */
 /* == End of generated table == */

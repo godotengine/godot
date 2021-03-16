@@ -95,7 +95,7 @@ struct CmapSubtableFormat4
     HBUINT16 *endCode = c->start_embed<HBUINT16> ();
     hb_codepoint_t prev_endcp = 0xFFFF;
 
-    for (const hb_item_type<Iterator> _ : +it)
+    for (const auto& _ : +it)
     {
       if (prev_endcp != 0xFFFF && prev_endcp + 1u != _.first)
       {
@@ -131,7 +131,7 @@ struct CmapSubtableFormat4
     HBUINT16 *startCode = c->start_embed<HBUINT16> ();
     hb_codepoint_t prev_cp = 0xFFFF;
 
-    for (const hb_item_type<Iterator> _ : +it)
+    for (const auto& _ : +it)
     {
       if (prev_cp == 0xFFFF || prev_cp + 1u != _.first)
       {
@@ -170,7 +170,7 @@ struct CmapSubtableFormat4
     if ((char *)idDelta - (char *)startCode != (int) segcount * (int) HBINT16::static_size)
       return nullptr;
 
-    for (const hb_item_type<Iterator> _ : +it)
+    for (const auto& _ : +it)
     {
       if (_.first == startCode[i])
       {
@@ -696,7 +696,7 @@ struct CmapSubtableFormat12 : CmapSubtableLongSegmented<CmapSubtableFormat12>
     hb_codepoint_t startCharCode = 0xFFFF, endCharCode = 0xFFFF;
     hb_codepoint_t glyphID = 0;
 
-    for (const hb_item_type<Iterator> _ : +it)
+    for (const auto& _ : +it)
     {
       if (startCharCode == 0xFFFF)
       {

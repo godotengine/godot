@@ -24,7 +24,7 @@
  * Google Author(s): Behdad Esfahbod
  */
 
-#ifndef HB_H_IN
+#if !defined(HB_H_IN) && !defined(HB_NO_SINGLE_HEADER_ERROR)
 #error "Include <hb.h> instead."
 #endif
 
@@ -36,12 +36,41 @@
 HB_BEGIN_DECLS
 
 
+/**
+ * HB_VERSION_MAJOR:
+ *
+ * The major component of the library version available at compile-time.
+ */
 #define HB_VERSION_MAJOR 2
-#define HB_VERSION_MINOR 7
-#define HB_VERSION_MICRO 4
+/**
+ * HB_VERSION_MINOR:
+ *
+ * The minor component of the library version available at compile-time.
+ */
+#define HB_VERSION_MINOR 8
+/**
+ * HB_VERSION_MICRO:
+ *
+ * The micro component of the library version available at compile-time.
+ */
+#define HB_VERSION_MICRO 0
 
-#define HB_VERSION_STRING "2.7.4"
+/**
+ * HB_VERSION_STRING:
+ *
+ * A string literal containing the library version available at compile-time.
+ */
+#define HB_VERSION_STRING "2.8.0"
 
+/**
+ * HB_VERSION_ATLEAST:
+ * @major: the major component of the version number
+ * @minor: the minor component of the version number
+ * @micro: the micro component of the version number
+ *
+ * Tests the library version at compile-time against a minimum value,
+ * as three integer components.
+ */
 #define HB_VERSION_ATLEAST(major,minor,micro) \
 	((major)*10000+(minor)*100+(micro) <= \
 	 HB_VERSION_MAJOR*10000+HB_VERSION_MINOR*100+HB_VERSION_MICRO)

@@ -23,15 +23,15 @@
 static void
 _output_dotted_circle (hb_buffer_t *buffer)
 {
-  hb_glyph_info_t &dottedcircle = buffer->output_glyph (0x25CCu);
-  _hb_glyph_info_reset_continuation (&dottedcircle);
+  (void) buffer->output_glyph (0x25CCu);
+  _hb_glyph_info_reset_continuation (&buffer->prev());
 }
 
 static void
 _output_with_dotted_circle (hb_buffer_t *buffer)
 {
   _output_dotted_circle (buffer);
-  buffer->next_glyph ();
+  (void) buffer->next_glyph ();
 }
 
 void
@@ -51,7 +51,6 @@ _hb_preprocess_text_vowel_constraints (const hb_ot_shape_plan_t *plan HB_UNUSED,
    *
    * https://github.com/harfbuzz/harfbuzz/issues/1019
    */
-  bool processed = false;
   buffer->clear_output ();
   unsigned int count = buffer->len;
   switch ((unsigned) buffer->props.script)
@@ -97,15 +96,14 @@ _hb_preprocess_text_vowel_constraints (const hb_ot_shape_plan_t *plan HB_UNUSED,
 		buffer->idx + 2 < count &&
 		0x0907u == buffer->cur (2).codepoint)
 	    {
-	      buffer->next_glyph ();
+	      (void) buffer->next_glyph ();
 	      matched = true;
 	    }
 	    break;
 	}
-	buffer->next_glyph ();
+	(void) buffer->next_glyph ();
 	if (matched) _output_with_dotted_circle (buffer);
       }
-      processed = true;
       break;
 
     case HB_SCRIPT_BENGALI:
@@ -124,10 +122,9 @@ _hb_preprocess_text_vowel_constraints (const hb_ot_shape_plan_t *plan HB_UNUSED,
 	    matched = 0x09E2u == buffer->cur (1).codepoint;
 	    break;
 	}
-	buffer->next_glyph ();
+	(void) buffer->next_glyph ();
 	if (matched) _output_with_dotted_circle (buffer);
       }
-      processed = true;
       break;
 
     case HB_SCRIPT_GURMUKHI:
@@ -161,10 +158,9 @@ _hb_preprocess_text_vowel_constraints (const hb_ot_shape_plan_t *plan HB_UNUSED,
 	    }
 	    break;
 	}
-	buffer->next_glyph ();
+	(void) buffer->next_glyph ();
 	if (matched) _output_with_dotted_circle (buffer);
       }
-      processed = true;
       break;
 
     case HB_SCRIPT_GUJARATI:
@@ -186,10 +182,9 @@ _hb_preprocess_text_vowel_constraints (const hb_ot_shape_plan_t *plan HB_UNUSED,
 	    matched = 0x0ABEu == buffer->cur (1).codepoint;
 	    break;
 	}
-	buffer->next_glyph ();
+	(void) buffer->next_glyph ();
 	if (matched) _output_with_dotted_circle (buffer);
       }
-      processed = true;
       break;
 
     case HB_SCRIPT_ORIYA:
@@ -205,10 +200,9 @@ _hb_preprocess_text_vowel_constraints (const hb_ot_shape_plan_t *plan HB_UNUSED,
 	    matched = 0x0B57u == buffer->cur (1).codepoint;
 	    break;
 	}
-	buffer->next_glyph ();
+	(void) buffer->next_glyph ();
 	if (matched) _output_with_dotted_circle (buffer);
       }
-      processed = true;
       break;
 
     case HB_SCRIPT_TAMIL:
@@ -220,10 +214,9 @@ _hb_preprocess_text_vowel_constraints (const hb_ot_shape_plan_t *plan HB_UNUSED,
 	{
 	  matched = true;
 	}
-	buffer->next_glyph ();
+	(void) buffer->next_glyph ();
 	if (matched) _output_with_dotted_circle (buffer);
       }
-      processed = true;
       break;
 
     case HB_SCRIPT_TELUGU:
@@ -244,10 +237,9 @@ _hb_preprocess_text_vowel_constraints (const hb_ot_shape_plan_t *plan HB_UNUSED,
 	    matched = 0x0C55u == buffer->cur (1).codepoint;
 	    break;
 	}
-	buffer->next_glyph ();
+	(void) buffer->next_glyph ();
 	if (matched) _output_with_dotted_circle (buffer);
       }
-      processed = true;
       break;
 
     case HB_SCRIPT_KANNADA:
@@ -263,10 +255,9 @@ _hb_preprocess_text_vowel_constraints (const hb_ot_shape_plan_t *plan HB_UNUSED,
 	    matched = 0x0CCCu == buffer->cur (1).codepoint;
 	    break;
 	}
-	buffer->next_glyph ();
+	(void) buffer->next_glyph ();
 	if (matched) _output_with_dotted_circle (buffer);
       }
-      processed = true;
       break;
 
     case HB_SCRIPT_MALAYALAM:
@@ -290,10 +281,9 @@ _hb_preprocess_text_vowel_constraints (const hb_ot_shape_plan_t *plan HB_UNUSED,
 	    }
 	    break;
 	}
-	buffer->next_glyph ();
+	(void) buffer->next_glyph ();
 	if (matched) _output_with_dotted_circle (buffer);
       }
-      processed = true;
       break;
 
     case HB_SCRIPT_SINHALA:
@@ -326,10 +316,9 @@ _hb_preprocess_text_vowel_constraints (const hb_ot_shape_plan_t *plan HB_UNUSED,
 	    }
 	    break;
 	}
-	buffer->next_glyph ();
+	(void) buffer->next_glyph ();
 	if (matched) _output_with_dotted_circle (buffer);
       }
-      processed = true;
       break;
 
     case HB_SCRIPT_BRAHMI:
@@ -348,10 +337,9 @@ _hb_preprocess_text_vowel_constraints (const hb_ot_shape_plan_t *plan HB_UNUSED,
 	    matched = 0x11042u == buffer->cur (1).codepoint;
 	    break;
 	}
-	buffer->next_glyph ();
+	(void) buffer->next_glyph ();
 	if (matched) _output_with_dotted_circle (buffer);
       }
-      processed = true;
       break;
 
     case HB_SCRIPT_KHUDAWADI:
@@ -370,10 +358,9 @@ _hb_preprocess_text_vowel_constraints (const hb_ot_shape_plan_t *plan HB_UNUSED,
 	    }
 	    break;
 	}
-	buffer->next_glyph ();
+	(void) buffer->next_glyph ();
 	if (matched) _output_with_dotted_circle (buffer);
       }
-      processed = true;
       break;
 
     case HB_SCRIPT_TIRHUTA:
@@ -397,10 +384,9 @@ _hb_preprocess_text_vowel_constraints (const hb_ot_shape_plan_t *plan HB_UNUSED,
 	    }
 	    break;
 	}
-	buffer->next_glyph ();
+	(void) buffer->next_glyph ();
 	if (matched) _output_with_dotted_circle (buffer);
       }
-      processed = true;
       break;
 
     case HB_SCRIPT_MODI:
@@ -418,10 +404,9 @@ _hb_preprocess_text_vowel_constraints (const hb_ot_shape_plan_t *plan HB_UNUSED,
 	    }
 	    break;
 	}
-	buffer->next_glyph ();
+	(void) buffer->next_glyph ();
 	if (matched) _output_with_dotted_circle (buffer);
       }
-      processed = true;
       break;
 
     case HB_SCRIPT_TAKRI:
@@ -442,21 +427,15 @@ _hb_preprocess_text_vowel_constraints (const hb_ot_shape_plan_t *plan HB_UNUSED,
 	    matched = 0x116B2u == buffer->cur (1).codepoint;
 	    break;
 	}
-	buffer->next_glyph ();
+	(void) buffer->next_glyph ();
 	if (matched) _output_with_dotted_circle (buffer);
       }
-      processed = true;
       break;
 
     default:
       break;
   }
-  if (processed)
-  {
-    if (buffer->idx < count)
-      buffer->next_glyph ();
-    buffer->swap_buffers ();
-  }
+  buffer->swap_buffers ();
 }
 
 

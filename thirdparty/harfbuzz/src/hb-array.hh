@@ -142,7 +142,7 @@ struct hb_array_t : hb_iter_with_fallback_t<hb_array_t<Type>, Type&>
   bool lfind (const T &x, unsigned *pos = nullptr) const
   {
     for (unsigned i = 0; i < length; ++i)
-      if (!this->arrayZ[i].cmp (x))
+      if (hb_equal (x, this->arrayZ[i]))
       {
 	if (pos)
 	  *pos = i;

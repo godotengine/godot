@@ -81,7 +81,7 @@ struct hb_face_t
     return blob;
   }
 
-  HB_PURE_FUNC unsigned int get_upem () const
+  unsigned int get_upem () const
   {
     unsigned int ret = upem.get_relaxed ();
     if (unlikely (!ret))

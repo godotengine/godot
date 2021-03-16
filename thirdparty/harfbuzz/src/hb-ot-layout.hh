@@ -315,12 +315,13 @@ _hb_glyph_info_get_unicode_space_fallback_type (const hb_glyph_info_t *info)
 }
 
 static inline bool _hb_glyph_info_ligated (const hb_glyph_info_t *info);
+static inline bool _hb_glyph_info_substituted (const hb_glyph_info_t *info);
 
 static inline bool
 _hb_glyph_info_is_default_ignorable (const hb_glyph_info_t *info)
 {
   return (info->unicode_props() & UPROPS_MASK_IGNORABLE) &&
-	 !_hb_glyph_info_ligated (info);
+	 !_hb_glyph_info_substituted (info);
 }
 static inline bool
 _hb_glyph_info_is_default_ignorable_and_not_hidden (const hb_glyph_info_t *info)

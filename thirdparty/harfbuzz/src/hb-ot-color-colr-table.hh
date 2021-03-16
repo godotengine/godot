@@ -214,7 +214,7 @@ struct COLR
 				if (unlikely (!old_record))
 				  return hb_pair_t<bool, BaseGlyphRecord> (false, Null (BaseGlyphRecord));
 
-				BaseGlyphRecord new_record;
+				BaseGlyphRecord new_record = {};
 				new_record.glyphId = new_gid;
 				new_record.numLayers = old_record->numLayers;
 				return hb_pair_t<bool, BaseGlyphRecord> (true, new_record);

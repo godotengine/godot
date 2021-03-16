@@ -43,7 +43,7 @@ namespace OT {
 
 struct head
 {
-  friend struct OffsetTable;
+  friend struct OpenTypeOffsetTable;
 
   static constexpr hb_tag_t tableTag = HB_OT_TAG_head;
 

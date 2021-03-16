@@ -29,6 +29,7 @@
 #ifndef HB_NO_OT_SHAPE
 
 #include "hb-ot-shape-complex-myanmar.hh"
+#include "hb-ot-shape-complex-myanmar-machine.hh"
 
 
 /*
@@ -96,17 +97,6 @@ collect_features_myanmar (hb_ot_shape_planner_t *plan)
   for (unsigned int i = 0; i < ARRAY_LENGTH (myanmar_other_features); i++)
     map->enable_feature (myanmar_other_features[i], F_MANUAL_ZWJ);
 }
-
-
-enum myanmar_syllable_type_t {
-  myanmar_consonant_syllable,
-  myanmar_punctuation_cluster,
-  myanmar_broken_cluster,
-  myanmar_non_myanmar_cluster,
-};
-
-#include "hb-ot-shape-complex-myanmar-machine.hh"
-
 
 static void
 setup_masks_myanmar (const hb_ot_shape_plan_t *plan HB_UNUSED,
@@ -265,70 +255,16 @@ reorder_syllable_myanmar (const hb_ot_shape_plan_t *plan HB_UNUSED,
   }
 }
 
-static inline void
-insert_dotted_circles_myanmar (const hb_ot_shape_plan_t *plan HB_UNUSED,
-			       hb_font_t *font,
-			       hb_buffer_t *buffer)
-{
-  if (unlikely (buffer->flags & HB_BUFFER_FLAG_DO_NOT_INSERT_DOTTED_CIRCLE))
-    return;
-
-  /* Note: This loop is extra overhead, but should not be measurable.
-   * TODO Use a buffer scratch flag to remove the loop. */
-  bool has_broken_syllables = false;
-  unsigned int count = buffer->len;
-  hb_glyph_info_t *info = buffer->info;
-  for (unsigned int i = 0; i < count; i++)
-    if ((info[i].syllable() & 0x0F) == myanmar_broken_cluster)
-    {
-      has_broken_syllables = true;
-      break;
-    }
-  if (likely (!has_broken_syllables))
-    return;
-
-
-  hb_codepoint_t dottedcircle_glyph;
-  if (!font->get_nominal_glyph (0x25CCu, &dottedcircle_glyph))
-    return;
-
-  hb_glyph_info_t dottedcircle = {0};
-  dottedcircle.codepoint = 0x25CCu;
-  set_myanmar_properties (dottedcircle);
-  dottedcircle.codepoint = dottedcircle_glyph;
-
-  buffer->clear_output ();
-
-  buffer->idx = 0;
-  unsigned int last_syllable = 0;
-  while (buffer->idx < buffer->len && buffer->successful)
-  {
-    unsigned int syllable = buffer->cur().syllable();
-    myanmar_syllable_type_t syllable_type = (myanmar_syllable_type_t) (syllable & 0x0F);
-    if (unlikely (last_syllable != syllable && syllable_type == myanmar_broken_cluster))
-    {
-      last_syllable = syllable;
-
-      hb_glyph_info_t ginfo = dottedcircle;
-      ginfo.cluster = buffer->cur().cluster;
-      ginfo.mask = buffer->cur().mask;
-      ginfo.syllable() = buffer->cur().syllable();
-
-      buffer->output_info (ginfo);
-    }
-    else
-      buffer->next_glyph ();
-  }
-  buffer->swap_buffers ();
-}
-
 static void
 reorder_myanmar (const hb_ot_shape_plan_t *plan,
 		 hb_font_t *font,
 		 hb_buffer_t *buffer)
 {
-  if (buffer->message (font, "start reordering myanmar")) {
-    insert_dotted_circles_myanmar (plan, font, buffer);
+  if (buffer->message (font, "start reordering myanmar"))
+  {
+    hb_syllabic_insert_dotted_circles (font, buffer,
+				       myanmar_broken_cluster,
+				       OT_GB);
 
     foreach_syllable (buffer, start, end)
       reorder_syllable_myanmar (plan, font->face, buffer, start, end);

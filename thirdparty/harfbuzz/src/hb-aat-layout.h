@@ -22,7 +22,7 @@
  * PROVIDE MAINTENANCE, SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
  */
 
-#ifndef HB_AAT_H_IN
+#if !defined(HB_AAT_H_IN) && !defined(HB_NO_SINGLE_HEADER_ERROR)
 #error "Include <hb-aat.h> instead."
 #endif
 
@@ -38,47 +38,47 @@ HB_BEGIN_DECLS
 /**
  * hb_aat_layout_feature_type_t:
  * @HB_AAT_LAYOUT_FEATURE_TYPE_INVALID: Initial, unset feature type
- * @HB_AAT_LAYOUT_FEATURE_TYPE_ALL_TYPOGRAPHIC:
- * @HB_AAT_LAYOUT_FEATURE_TYPE_LIGATURES:
- * @HB_AAT_LAYOUT_FEATURE_TYPE_CURISVE_CONNECTION:
- * @HB_AAT_LAYOUT_FEATURE_TYPE_LETTER_CASE:
- * @HB_AAT_LAYOUT_FEATURE_TYPE_VERTICAL_SUBSTITUTION:
- * @HB_AAT_LAYOUT_FEATURE_TYPE_LINGUISTIC_REARRANGEMENT:
- * @HB_AAT_LAYOUT_FEATURE_TYPE_NUMBER_SPACING:
- * @HB_AAT_LAYOUT_FEATURE_TYPE_SMART_SWASH_TYPE:
- * @HB_AAT_LAYOUT_FEATURE_TYPE_DIACRITICS_TYPE:
- * @HB_AAT_LAYOUT_FEATURE_TYPE_VERTICAL_POSITION:
- * @HB_AAT_LAYOUT_FEATURE_TYPE_FRACTIONS:
- * @HB_AAT_LAYOUT_FEATURE_TYPE_OVERLAPPING_CHARACTERS_TYPE:
- * @HB_AAT_LAYOUT_FEATURE_TYPE_TYPOGRAPHIC_EXTRAS:
- * @HB_AAT_LAYOUT_FEATURE_TYPE_MATHEMATICAL_EXTRAS:
- * @HB_AAT_LAYOUT_FEATURE_TYPE_ORNAMENT_SETS_TYPE:
- * @HB_AAT_LAYOUT_FEATURE_TYPE_CHARACTER_ALTERNATIVES:
- * @HB_AAT_LAYOUT_FEATURE_TYPE_DESIGN_COMPLEXITY_TYPE:
- * @HB_AAT_LAYOUT_FEATURE_TYPE_STYLE_OPTIONS:
- * @HB_AAT_LAYOUT_FEATURE_TYPE_CHARACTER_SHAPE:
- * @HB_AAT_LAYOUT_FEATURE_TYPE_NUMBER_CASE:
- * @HB_AAT_LAYOUT_FEATURE_TYPE_TEXT_SPACING:
- * @HB_AAT_LAYOUT_FEATURE_TYPE_TRANSLITERATION:
- * @HB_AAT_LAYOUT_FEATURE_TYPE_ANNOTATION_TYPE:
- * @HB_AAT_LAYOUT_FEATURE_TYPE_KANA_SPACING_TYPE:
- * @HB_AAT_LAYOUT_FEATURE_TYPE_IDEOGRAPHIC_SPACING_TYPE:
- * @HB_AAT_LAYOUT_FEATURE_TYPE_UNICODE_DECOMPOSITION_TYPE:
- * @HB_AAT_LAYOUT_FEATURE_TYPE_RUBY_KANA:
- * @HB_AAT_LAYOUT_FEATURE_TYPE_CJK_SYMBOL_ALTERNATIVES_TYPE:
- * @HB_AAT_LAYOUT_FEATURE_TYPE_IDEOGRAPHIC_ALTERNATIVES_TYPE:
- * @HB_AAT_LAYOUT_FEATURE_TYPE_CJK_VERTICAL_ROMAN_PLACEMENT_TYPE:
- * @HB_AAT_LAYOUT_FEATURE_TYPE_ITALIC_CJK_ROMAN:
- * @HB_AAT_LAYOUT_FEATURE_TYPE_CASE_SENSITIVE_LAYOUT:
- * @HB_AAT_LAYOUT_FEATURE_TYPE_ALTERNATE_KANA:
- * @HB_AAT_LAYOUT_FEATURE_TYPE_STYLISTIC_ALTERNATIVES:
- * @HB_AAT_LAYOUT_FEATURE_TYPE_CONTEXTUAL_ALTERNATIVES:
- * @HB_AAT_LAYOUT_FEATURE_TYPE_LOWER_CASE:
- * @HB_AAT_LAYOUT_FEATURE_TYPE_UPPER_CASE:
- * @HB_AAT_LAYOUT_FEATURE_TYPE_LANGUAGE_TAG_TYPE:
- * @HB_AAT_LAYOUT_FEATURE_TYPE_CJK_ROMAN_SPACING_TYPE:
+ * @HB_AAT_LAYOUT_FEATURE_TYPE_ALL_TYPOGRAPHIC: [All Typographic Features](https://developer.apple.com/fonts/TrueType-Reference-Manual/RM09/AppendixF.html#Type0)
+ * @HB_AAT_LAYOUT_FEATURE_TYPE_LIGATURES: [Ligatures](https://developer.apple.com/fonts/TrueType-Reference-Manual/RM09/AppendixF.html#Type1)
+ * @HB_AAT_LAYOUT_FEATURE_TYPE_CURISVE_CONNECTION: [Cursive Connection](https://developer.apple.com/fonts/TrueType-Reference-Manual/RM09/AppendixF.html#Type2)
+ * @HB_AAT_LAYOUT_FEATURE_TYPE_LETTER_CASE: [Letter Case](https://developer.apple.com/fonts/TrueType-Reference-Manual/RM09/AppendixF.html#Type3)
+ * @HB_AAT_LAYOUT_FEATURE_TYPE_VERTICAL_SUBSTITUTION: [Vertical Substitution](https://developer.apple.com/fonts/TrueType-Reference-Manual/RM09/AppendixF.html#Type4)
+ * @HB_AAT_LAYOUT_FEATURE_TYPE_LINGUISTIC_REARRANGEMENT: [Linguistic Rearrangement](https://developer.apple.com/fonts/TrueType-Reference-Manual/RM09/AppendixF.html#Type5)
+ * @HB_AAT_LAYOUT_FEATURE_TYPE_NUMBER_SPACING: [Number Spacing](https://developer.apple.com/fonts/TrueType-Reference-Manual/RM09/AppendixF.html#Type6)
+ * @HB_AAT_LAYOUT_FEATURE_TYPE_SMART_SWASH_TYPE: [Smart Swash](https://developer.apple.com/fonts/TrueType-Reference-Manual/RM09/AppendixF.html#Type8)
+ * @HB_AAT_LAYOUT_FEATURE_TYPE_DIACRITICS_TYPE: [Diacritics](https://developer.apple.com/fonts/TrueType-Reference-Manual/RM09/AppendixF.html#Type9)
+ * @HB_AAT_LAYOUT_FEATURE_TYPE_VERTICAL_POSITION: [Vertical Position](https://developer.apple.com/fonts/TrueType-Reference-Manual/RM09/AppendixF.html#Type10)
+ * @HB_AAT_LAYOUT_FEATURE_TYPE_FRACTIONS: [Fractions](https://developer.apple.com/fonts/TrueType-Reference-Manual/RM09/AppendixF.html#Type11)
+ * @HB_AAT_LAYOUT_FEATURE_TYPE_OVERLAPPING_CHARACTERS_TYPE: [Overlapping Characters](https://developer.apple.com/fonts/TrueType-Reference-Manual/RM09/AppendixF.html#Type13)
+ * @HB_AAT_LAYOUT_FEATURE_TYPE_TYPOGRAPHIC_EXTRAS: [Typographic Extras](https://developer.apple.com/fonts/TrueType-Reference-Manual/RM09/AppendixF.html#Type14)
+ * @HB_AAT_LAYOUT_FEATURE_TYPE_MATHEMATICAL_EXTRAS: [Mathematical Extras](https://developer.apple.com/fonts/TrueType-Reference-Manual/RM09/AppendixF.html#Type15)
+ * @HB_AAT_LAYOUT_FEATURE_TYPE_ORNAMENT_SETS_TYPE: [Ornament Sets](https://developer.apple.com/fonts/TrueType-Reference-Manual/RM09/AppendixF.html#Type16)
+ * @HB_AAT_LAYOUT_FEATURE_TYPE_CHARACTER_ALTERNATIVES: [Character Alternatives](https://developer.apple.com/fonts/TrueType-Reference-Manual/RM09/AppendixF.html#Type17)
+ * @HB_AAT_LAYOUT_FEATURE_TYPE_DESIGN_COMPLEXITY_TYPE: [Design Complexity](https://developer.apple.com/fonts/TrueType-Reference-Manual/RM09/AppendixF.html#Type18)
+ * @HB_AAT_LAYOUT_FEATURE_TYPE_STYLE_OPTIONS: [Style Options](https://developer.apple.com/fonts/TrueType-Reference-Manual/RM09/AppendixF.html#Type19)
+ * @HB_AAT_LAYOUT_FEATURE_TYPE_CHARACTER_SHAPE: [Character Shape](https://developer.apple.com/fonts/TrueType-Reference-Manual/RM09/AppendixF.html#Type20)
+ * @HB_AAT_LAYOUT_FEATURE_TYPE_NUMBER_CASE: [Number Case](https://developer.apple.com/fonts/TrueType-Reference-Manual/RM09/AppendixF.html#Type21)
+ * @HB_AAT_LAYOUT_FEATURE_TYPE_TEXT_SPACING: [Text Spacing](https://developer.apple.com/fonts/TrueType-Reference-Manual/RM09/AppendixF.html#Type22)
+ * @HB_AAT_LAYOUT_FEATURE_TYPE_TRANSLITERATION: [Transliteration](https://developer.apple.com/fonts/TrueType-Reference-Manual/RM09/AppendixF.html#Type23)
+ * @HB_AAT_LAYOUT_FEATURE_TYPE_ANNOTATION_TYPE: [Annotation](https://developer.apple.com/fonts/TrueType-Reference-Manual/RM09/AppendixF.html#Type24)
+ * @HB_AAT_LAYOUT_FEATURE_TYPE_KANA_SPACING_TYPE: [Kana Spacing](https://developer.apple.com/fonts/TrueType-Reference-Manual/RM09/AppendixF.html#Type25)
+ * @HB_AAT_LAYOUT_FEATURE_TYPE_IDEOGRAPHIC_SPACING_TYPE: [Ideographic Spacing](https://developer.apple.com/fonts/TrueType-Reference-Manual/RM09/AppendixF.html#Type26)
+ * @HB_AAT_LAYOUT_FEATURE_TYPE_UNICODE_DECOMPOSITION_TYPE: [Unicode Decomposition](https://developer.apple.com/fonts/TrueType-Reference-Manual/RM09/AppendixF.html#Type27)
+ * @HB_AAT_LAYOUT_FEATURE_TYPE_RUBY_KANA: [Ruby Kana](https://developer.apple.com/fonts/TrueType-Reference-Manual/RM09/AppendixF.html#Type28)
+ * @HB_AAT_LAYOUT_FEATURE_TYPE_CJK_SYMBOL_ALTERNATIVES_TYPE: [CJK Symbol Alternatives](https://developer.apple.com/fonts/TrueType-Reference-Manual/RM09/AppendixF.html#Type29)
+ * @HB_AAT_LAYOUT_FEATURE_TYPE_IDEOGRAPHIC_ALTERNATIVES_TYPE: [Ideographic Alternatives](https://developer.apple.com/fonts/TrueType-Reference-Manual/RM09/AppendixF.html#Type30)
+ * @HB_AAT_LAYOUT_FEATURE_TYPE_CJK_VERTICAL_ROMAN_PLACEMENT_TYPE: [CJK Vertical Roman Placement](https://developer.apple.com/fonts/TrueType-Reference-Manual/RM09/AppendixF.html#Type31)
+ * @HB_AAT_LAYOUT_FEATURE_TYPE_ITALIC_CJK_ROMAN: [Italic CJK Roman](https://developer.apple.com/fonts/TrueType-Reference-Manual/RM09/AppendixF.html#Type32)
+ * @HB_AAT_LAYOUT_FEATURE_TYPE_CASE_SENSITIVE_LAYOUT: [Case Sensitive Layout](https://developer.apple.com/fonts/TrueType-Reference-Manual/RM09/AppendixF.html#Type33)
+ * @HB_AAT_LAYOUT_FEATURE_TYPE_ALTERNATE_KANA: [Alternate Kana](https://developer.apple.com/fonts/TrueType-Reference-Manual/RM09/AppendixF.html#Type34)
+ * @HB_AAT_LAYOUT_FEATURE_TYPE_STYLISTIC_ALTERNATIVES: [Stylistic Alternatives](https://developer.apple.com/fonts/TrueType-Reference-Manual/RM09/AppendixF.html#Type35)
+ * @HB_AAT_LAYOUT_FEATURE_TYPE_CONTEXTUAL_ALTERNATIVES: [Contextual Alternatives](https://developer.apple.com/fonts/TrueType-Reference-Manual/RM09/AppendixF.html#Type36)
+ * @HB_AAT_LAYOUT_FEATURE_TYPE_LOWER_CASE: [Lower Case](https://developer.apple.com/fonts/TrueType-Reference-Manual/RM09/AppendixF.html#Type37)
+ * @HB_AAT_LAYOUT_FEATURE_TYPE_UPPER_CASE: [Upper Case](https://developer.apple.com/fonts/TrueType-Reference-Manual/RM09/AppendixF.html#Type38)
+ * @HB_AAT_LAYOUT_FEATURE_TYPE_LANGUAGE_TAG_TYPE: [Language Tag](https://developer.apple.com/fonts/TrueType-Reference-Manual/RM09/AppendixF.html#Type39)
+ * @HB_AAT_LAYOUT_FEATURE_TYPE_CJK_ROMAN_SPACING_TYPE: [CJK Roman Spacing](https://developer.apple.com/fonts/TrueType-Reference-Manual/RM09/AppendixF.html#Type103)
  *
- * The possible feature types defined for AAT shaping.
+ * The possible feature types defined for AAT shaping, from Apple [Font Feature Registry](https://developer.apple.com/fonts/TrueType-Reference-Manual/RM09/AppendixF.html).
  *
  * Since: 2.2.0
  */
@@ -732,6 +732,14 @@ HB_EXTERN hb_ot_name_id_t
 hb_aat_layout_feature_type_get_name_id (hb_face_t                    *face,
 					hb_aat_layout_feature_type_t  feature_type);
 
+/**
+ * hb_aat_layout_feature_selector_info_t:
+ * @name_id: The selector's name identifier
+ * @enable: The value to turn the selector on
+ * @disable: The value to turn the selector off
+ *
+ * Structure representing a setting for an #hb_aat_layout_feature_type_t.
+ */
 typedef struct hb_aat_layout_feature_selector_info_t {
   hb_ot_name_id_t			name_id;
   hb_aat_layout_feature_selector_t	enable;

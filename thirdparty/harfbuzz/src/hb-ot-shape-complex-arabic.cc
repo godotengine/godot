@@ -33,7 +33,7 @@
 
 
 /* buffer var allocations */
-#define arabic_shaping_action() complex_var_u8_0() /* arabic shaping action */
+#define arabic_shaping_action() complex_var_u8_auxiliary() /* arabic shaping action */
 
 #define HB_BUFFER_SCRATCH_FLAG_ARABIC_HAS_STCH HB_BUFFER_SCRATCH_FLAG_COMPLEX0
 

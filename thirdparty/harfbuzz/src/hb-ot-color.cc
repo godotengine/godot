@@ -37,9 +37,6 @@
 #include "hb-ot-color-sbix-table.hh"
 #include "hb-ot-color-svg-table.hh"
 
-#include <stdlib.h>
-#include <string.h>
-
 
 /**
  * SECTION:hb-ot-color
@@ -64,7 +61,7 @@
  *
  * Tests whether a face includes a `CPAL` color-palette table.
  *
- * Return value: true if data found, false otherwise
+ * Return value: %true if data found, %false otherwise
  *
  * Since: 2.1.0
  */
@@ -195,7 +192,7 @@ hb_ot_color_palette_get_colors (hb_face_t     *face,
  *
  * Tests whether a face includes any `COLR` color layers.
  *
- * Return value: true if data found, false otherwise
+ * Return value: %true if data found, %false otherwise
  *
  * Since: 2.1.0
  */
@@ -242,7 +239,7 @@ hb_ot_color_glyph_get_layers (hb_face_t           *face,
  *
  * Tests whether a face includes any `SVG` glyph images.
  *
- * Return value: true if data found, false otherwise.
+ * Return value: %true if data found, %false otherwise.
  *
  * Since: 2.1.0
  */
@@ -280,7 +277,7 @@ hb_ot_color_glyph_reference_svg (hb_face_t *face, hb_codepoint_t glyph)
  *
  * Tests whether a face has PNG glyph images (either in `CBDT` or `sbix` tables).
  *
- * Return value: true if data found, false otherwise
+ * Return value: %true if data found, %false otherwise
  *
  * Since: 2.1.0
  */

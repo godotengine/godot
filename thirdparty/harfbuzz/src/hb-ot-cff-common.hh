@@ -183,7 +183,7 @@ struct CFFIndex
     else
     {
       serialize_header(c, + it | hb_map ([] (const byte_str_t &_) { return _.length; }));
-      for (const byte_str_t &_ : +it)
+      for (const auto &_ : +it)
 	_.copy (c);
     }
     return_trace (true);

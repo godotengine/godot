@@ -35,9 +35,6 @@
 #include <sys/mman.h>
 #endif /* HAVE_SYS_MMAN_H */
 
-#include <stdio.h>
-#include <stdlib.h>
-
 
 /**
  * SECTION: hb-blob
@@ -58,7 +55,7 @@
  * @length: Length of @data in bytes.
  * @mode: Memory mode for @data.
  * @user_data: Data parameter to pass to @destroy.
- * @destroy: (optional): Callback to call when @data is not needed anymore.
+ * @destroy: (nullable): Callback to call when @data is not needed anymore.
  *
  * Creates a new "blob" object wrapping @data.  The @mode parameter is used
  * to negotiate ownership and lifecycle of @data.
@@ -116,7 +113,7 @@ _hb_blob_destroy (void *data)
  * @length: Length of sub-blob.
  *
  * Returns a blob that represents a range of bytes in @parent.  The new
- * blob is always created with %HB_MEMORY_MODE_READONLY, meaning that it
+ * blob is always created with #HB_MEMORY_MODE_READONLY, meaning that it
  * will never modify data in the parent blob.  The parent data is not
  * expected to be modified, and will result in undefined behavior if it
  * is.
@@ -237,7 +234,7 @@ hb_blob_destroy (hb_blob_t *blob)
  * @blob: An #hb_blob_t
  * @key: The user-data key to set
  * @data: A pointer to the user data to set
- * @destroy: (optional): A callback to call when @data is not needed anymore
+ * @destroy: (nullable): A callback to call when @data is not needed anymore
  * @replace: Whether to replace an existing data with the same key
  *
  * Attaches a user-data key/data pair to the specified blob.
@@ -299,7 +296,7 @@ hb_blob_make_immutable (hb_blob_t *blob)
  *
  * Tests whether a blob is immutable.
  *
- * Return value: %true if @blob is immutable, false otherwise
+ * Return value: %true if @blob is immutable, %false otherwise
  *
  * Since: 0.9.2
  **/
@@ -365,16 +362,14 @@ hb_blob_get_data (hb_blob_t *blob, unsigned int *length)
 char *
 hb_blob_get_data_writable (hb_blob_t *blob, unsigned int *length)
 {
-  if (!blob->try_make_writable ()) {
-    if (length)
-      *length = 0;
-
+  if (hb_object_is_immutable (blob) ||
+     !blob->try_make_writable ())
+  {
+    if (length) *length = 0;
     return nullptr;
   }
 
-  if (length)
-    *length = blob->length;
-
+  if (length) *length = blob->length;
   return const_cast<char *> (blob->data);
 }
 
@@ -440,8 +435,8 @@ hb_blob_t::try_make_writable_inplace ()
 bool
 hb_blob_t::try_make_writable ()
 {
-  if (hb_object_is_immutable (this))
-    return false;
+  if (unlikely (!length))
+    mode = HB_MEMORY_MODE_WRITABLE;
 
   if (this->mode == HB_MEMORY_MODE_WRITABLE)
     return true;

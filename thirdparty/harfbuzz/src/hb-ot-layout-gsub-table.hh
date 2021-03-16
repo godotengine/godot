@@ -356,7 +356,7 @@ struct Sequence
   bool subset (hb_subset_context_t *c) const
   {
     TRACE_SUBSET (this);
-    const hb_set_t &glyphset = *c->plan->glyphset ();
+    const hb_set_t &glyphset = *c->plan->glyphset_gsub ();
     const hb_map_t &glyph_map = *c->plan->glyph_map;
 
     if (!intersects (&glyphset)) return_trace (false);
@@ -447,7 +447,7 @@ struct MultipleSubstFormat1
   bool subset (hb_subset_context_t *c) const
   {
     TRACE_SUBSET (this);
-    const hb_set_t &glyphset = *c->plan->glyphset ();
+    const hb_set_t &glyphset = *c->plan->glyphset_gsub ();
     const hb_map_t &glyph_map = *c->plan->glyph_map;
 
     auto *out = c->serializer->start_embed (*this);
@@ -582,7 +582,7 @@ struct AlternateSet
   bool subset (hb_subset_context_t *c) const
   {
     TRACE_SUBSET (this);
-    const hb_set_t &glyphset = *c->plan->glyphset ();
+    const hb_set_t &glyphset = *c->plan->glyphset_gsub ();
     const hb_map_t &glyph_map = *c->plan->glyph_map;
 
     auto it =
@@ -682,7 +682,7 @@ struct AlternateSubstFormat1
   bool subset (hb_subset_context_t *c) const
   {
     TRACE_SUBSET (this);
-    const hb_set_t &glyphset = *c->plan->glyphset ();
+    const hb_set_t &glyphset = *c->plan->glyphset_gsub ();
     const hb_map_t &glyph_map = *c->plan->glyph_map;
 
     auto *out = c->serializer->start_embed (*this);
@@ -840,7 +840,7 @@ struct Ligature
   bool subset (hb_subset_context_t *c) const
   {
     TRACE_SUBSET (this);
-    const hb_set_t &glyphset = *c->plan->glyphset ();
+    const hb_set_t &glyphset = *c->plan->glyphset_gsub ();
     const hb_map_t &glyph_map = *c->plan->glyph_map;
 
     if (!intersects (&glyphset) || !glyphset.has (ligGlyph)) return_trace (false);
@@ -1058,7 +1058,7 @@ struct LigatureSubstFormat1
   bool subset (hb_subset_context_t *c) const
   {
     TRACE_SUBSET (this);
-    const hb_set_t &glyphset = *c->plan->glyphset ();
+    const hb_set_t &glyphset = *c->plan->glyphset_gsub ();
     const hb_map_t &glyph_map = *c->plan->glyph_map;
 
     auto *out = c->serializer->start_embed (*this);

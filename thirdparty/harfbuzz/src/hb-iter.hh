@@ -922,7 +922,7 @@ HB_FUNCOBJ (hb_none);
 template <typename C, typename V,
 	  hb_requires (hb_is_iterable (C))>
 inline void
-hb_fill (C& c, const V &v)
+hb_fill (C&& c, const V &v)
 {
   for (auto i = hb_iter (c); i; i++)
     *i = v;

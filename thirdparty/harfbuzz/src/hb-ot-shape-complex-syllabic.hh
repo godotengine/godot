@@ -1,6 +1,5 @@
 /*
- * Copyright © 2009  Red Hat, Inc.
- * Copyright © 2012  Google, Inc.
+ * Copyright © 2021  Behdad Esfahbod.
  *
  *  This is part of HarfBuzz, a text shaping library.
  *
@@ -21,42 +20,22 @@
  * FITNESS FOR A PARTICULAR PURPOSE.  THE SOFTWARE PROVIDED HEREUNDER IS
  * ON AN "AS IS" BASIS, AND THE COPYRIGHT HOLDER HAS NO OBLIGATION TO
  * PROVIDE MAINTENANCE, SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
- *
- * Red Hat Author(s): Behdad Esfahbod
- * Google Author(s): Behdad Esfahbod
  */
 
-#if !defined(HB_H_IN) && !defined(HB_NO_SINGLE_HEADER_ERROR)
-#error "Include <hb.h> instead."
-#endif
+#ifndef HB_OT_SHAPE_COMPLEX_SYLLABIC_HH
+#define HB_OT_SHAPE_COMPLEX_SYLLABIC_HH
 
-#ifndef HB_SHAPE_H
-#define HB_SHAPE_H
+#include "hb.hh"
 
-#include "hb-common.h"
-#include "hb-buffer.h"
-#include "hb-font.h"
-
-HB_BEGIN_DECLS
+#include "hb-ot-shape-complex.hh"
 
 
-HB_EXTERN void
-hb_shape (hb_font_t           *font,
-	  hb_buffer_t         *buffer,
-	  const hb_feature_t  *features,
-	  unsigned int         num_features);
-
-HB_EXTERN hb_bool_t
-hb_shape_full (hb_font_t          *font,
-	       hb_buffer_t        *buffer,
-	       const hb_feature_t *features,
-	       unsigned int        num_features,
-	       const char * const *shaper_list);
-
-HB_EXTERN const char **
-hb_shape_list_shapers (void);
+HB_INTERNAL void
+hb_syllabic_insert_dotted_circles (hb_font_t *font,
+				   hb_buffer_t *buffer,
+				   unsigned int broken_syllable_type,
+				   unsigned int dottedcircle_category,
+				   int repha_category = -1);
 
 
-HB_END_DECLS
-
-#endif /* HB_SHAPE_H */
+#endif /* HB_OT_SHAPE_COMPLEX_SYLLABIC_HH */

@@ -73,7 +73,7 @@
  * === The sanitize() contract ===
  *
  * The sanitize() method of each object type shall return true if it's safe to
- * call other methods of the object, and false otherwise.
+ * call other methods of the object, and %false otherwise.
  *
  * Note that what sanitize() checks for might align with what the specification
  * describes as valid table data, but does not have to be.  In particular, we
@@ -113,8 +113,8 @@
 #ifndef HB_SANITIZE_MAX_OPS_MAX
 #define HB_SANITIZE_MAX_OPS_MAX 0x3FFFFFFF
 #endif
-#ifndef HB_SANITIZE_MAX_SUTABLES
-#define HB_SANITIZE_MAX_SUTABLES 0x4000
+#ifndef HB_SANITIZE_MAX_SUBTABLES
+#define HB_SANITIZE_MAX_SUBTABLES 0x4000
 #endif
 
 struct hb_sanitize_context_t :
@@ -139,7 +139,7 @@ struct hb_sanitize_context_t :
   bool visit_subtables (unsigned count)
   {
     max_subtables += count;
-    return max_subtables < HB_SANITIZE_MAX_SUTABLES;
+    return max_subtables < HB_SANITIZE_MAX_SUBTABLES;
   }
 
   private:

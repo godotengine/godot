@@ -89,8 +89,8 @@ DEFINE_NULL_INSTANCE (hb_face_t) =
   nullptr, /* destroy */
 
   0,    /* index */
-  HB_ATOMIC_INT_INIT (1000), /* upem */
-  HB_ATOMIC_INT_INIT (0),    /* num_glyphs */
+  1000, /* upem */
+  0,    /* num_glyphs */
 
   /* Zero for the rest is fine. */
 };
@@ -100,7 +100,7 @@ DEFINE_NULL_INSTANCE (hb_face_t) =
  * hb_face_create_for_tables:
  * @reference_table_func: (closure user_data) (destroy destroy) (scope notified): Table-referencing function
  * @user_data: A pointer to the user data
- * @destroy: (optional): A callback to call when @data is not needed anymore
+ * @destroy: (nullable): A callback to call when @data is not needed anymore
  *
  * Variant of hb_face_create(), built for those cases where it is more
  * convenient to provide data for individual tables instead of the whole font
@@ -235,7 +235,7 @@ hb_face_create (hb_blob_t    *blob,
  *
  * Fetches the singleton empty face object.
  *
- * Return value: (transfer full) The empty face object
+ * Return value: (transfer full): The empty face object
  *
  * Since: 0.9.2
  **/
@@ -299,7 +299,7 @@ hb_face_destroy (hb_face_t *face)
  * @face: A face object
  * @key: The user-data key to set
  * @data: A pointer to the user data
- * @destroy: (optional): A callback to call when @data is not needed anymore
+ * @destroy: (nullable): A callback to call when @data is not needed anymore
  * @replace: Whether to replace an existing data with the same key
  *
  * Attaches a user-data key/data pair to the given face object. 
@@ -360,7 +360,7 @@ hb_face_make_immutable (hb_face_t *face)
  *
  * Tests whether the given face object is immutable.
  *
- * Return value: True is @face is immutable, false otherwise
+ * Return value: %true is @face is immutable, %false otherwise
  *
  * Since: 0.9.2
  **/
@@ -756,7 +756,7 @@ hb_face_builder_add_table (hb_face_t *face, hb_tag_t tag, hb_blob_t *blob)
   hb_face_builder_data_t *data = (hb_face_builder_data_t *) face->user_data;
 
   hb_face_builder_data_t::table_entry_t *entry = data->tables.push ();
-  if (data->tables.in_error())
+  if (unlikely (data->tables.in_error()))
     return false;
 
   entry->tag = tag;

@@ -276,7 +276,7 @@ hb_unicode_funcs_destroy (hb_unicode_funcs_t *ufuncs)
  * @ufuncs: The Unicode-functions structure
  * @key: The user-data key
  * @data: A pointer to the user data
- * @destroy: (optional): A callback to call when @data is not needed anymore
+ * @destroy: (nullable): A callback to call when @data is not needed anymore
  * @replace: Whether to replace an existing data with the same key
  *
  * Attaches a user-data key/data pair to the specified Unicode-functions structure. 
@@ -340,7 +340,7 @@ hb_unicode_funcs_make_immutable (hb_unicode_funcs_t *ufuncs)
  * Tests whether the specified Unicode-functions structure
  * is immutable.
  *
- * Return value: %true if @ufuncs is immutable, false otherwise
+ * Return value: %true if @ufuncs is immutable, %false otherwise
  *
  * Since: 0.9.2
  **/
@@ -421,7 +421,7 @@ HB_UNICODE_FUNCS_IMPLEMENT_CALLBACKS_SIMPLE
  * Calls the composition function of the specified
  * Unicode-functions structure @ufuncs.
  *
- * Return value: %true if @a and @b composed, false otherwise
+ * Return value: %true if @a and @b composed, %false otherwise
  *
  * Since: 0.9.2
  **/
@@ -446,7 +446,7 @@ hb_unicode_compose (hb_unicode_funcs_t *ufuncs,
  * Calls the decomposition function of the specified
  * Unicode-functions structure @ufuncs.
  *
- * Return value: %true if @ab was decomposed, false otherwise
+ * Return value: %true if @ab was decomposed, %false otherwise
  *
  * Since: 0.9.2
  **/
@@ -469,7 +469,7 @@ hb_unicode_decompose (hb_unicode_funcs_t *ufuncs,
  * Fetches the compatibility decomposition of a Unicode
  * code point. Deprecated.
  *
- * Return value:
+ * Return value: length of @decomposed.
  *
  * Since: 0.9.2
  * Deprecated: 2.0.0

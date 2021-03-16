@@ -24,7 +24,7 @@
  * Red Hat Author(s): Behdad Esfahbod
  */
 
-#ifndef HB_OT_H_IN
+#if !defined(HB_OT_H_IN) && !defined(HB_NO_SINGLE_HEADER_ERROR)
 #error "Include <hb-ot.h> instead."
 #endif
 
@@ -38,10 +38,35 @@
 HB_BEGIN_DECLS
 
 
+/**
+ * HB_OT_TAG_BASE:
+ *
+ * OpenType [Baseline Table](https://docs.microsoft.com/en-us/typography/opentype/spec/base).
+ */
 #define HB_OT_TAG_BASE HB_TAG('B','A','S','E')
+/**
+ * HB_OT_TAG_GDEF:
+ *
+ * OpenType [Glyph Definition Table](https://docs.microsoft.com/en-us/typography/opentype/spec/gdef).
+ */
 #define HB_OT_TAG_GDEF HB_TAG('G','D','E','F')
+/**
+ * HB_OT_TAG_GSUB:
+ *
+ * OpenType [Glyph Substitution Table](https://docs.microsoft.com/en-us/typography/opentype/spec/gsub).
+ */
 #define HB_OT_TAG_GSUB HB_TAG('G','S','U','B')
+/**
+ * HB_OT_TAG_GPOS:
+ *
+ * OpenType [Glyph Positioning Table](https://docs.microsoft.com/en-us/typography/opentype/spec/gpos).
+ */
 #define HB_OT_TAG_GPOS HB_TAG('G','P','O','S')
+/**
+ * HB_OT_TAG_JSTF:
+ *
+ * OpenType [Justification Table](https://docs.microsoft.com/en-us/typography/opentype/spec/jstf).
+ */
 #define HB_OT_TAG_JSTF HB_TAG('J','S','T','F')
 
 
@@ -49,17 +74,33 @@ HB_BEGIN_DECLS
  * Script & Language tags.
  */
 
+/**
+ * HB_OT_TAG_DEFAULT_SCRIPT:
+ *
+ * OpenType script tag, `DFLT`, for features that are not script-specific.
+ *
+ */
 #define HB_OT_TAG_DEFAULT_SCRIPT	HB_TAG ('D', 'F', 'L', 'T')
+/**
+ * HB_OT_TAG_DEFAULT_LANGUAGE:
+ *
+ * OpenType language tag, `dflt`. Not a valid language tag, but some fonts
+ * mistakenly use it.
+ */
 #define HB_OT_TAG_DEFAULT_LANGUAGE	HB_TAG ('d', 'f', 'l', 't')
 
 /**
  * HB_OT_MAX_TAGS_PER_SCRIPT:
+ *
+ * Maximum number of OpenType tags that can correspond to a give #hb_script_t.
  *
  * Since: 2.0.0
  **/
 #define HB_OT_MAX_TAGS_PER_SCRIPT	3u
 /**
  * HB_OT_MAX_TAGS_PER_LANGUAGE:
+ *
+ * Maximum number of OpenType tags that can correspond to a give #hb_language_t.
  *
  * Since: 2.0.0
  **/
@@ -144,9 +185,29 @@ hb_ot_layout_get_ligature_carets (hb_font_t      *font,
  * GSUB/GPOS feature query and enumeration interface
  */
 
+/**
+ * HB_OT_LAYOUT_NO_SCRIPT_INDEX:
+ *
+ * Special value for script index indicating unsupported script.
+ */
 #define HB_OT_LAYOUT_NO_SCRIPT_INDEX		0xFFFFu
+/**
+ * HB_OT_LAYOUT_NO_FEATURE_INDEX:
+ *
+ * Special value for feature index indicating unsupported feature.
+ */
 #define HB_OT_LAYOUT_NO_FEATURE_INDEX		0xFFFFu
+/**
+ * HB_OT_LAYOUT_DEFAULT_LANGUAGE_INDEX:
+ *
+ * Special value for language index indicating default or unsupported language.
+ */
 #define HB_OT_LAYOUT_DEFAULT_LANGUAGE_INDEX	0xFFFFu
+/**
+ * HB_OT_LAYOUT_NO_VARIATIONS_INDEX:
+ *
+ * Special value for variations index indicating unsupported variation.
+ */
 #define HB_OT_LAYOUT_NO_VARIATIONS_INDEX	0xFFFFFFFFu
 
 HB_EXTERN unsigned int
@@ -433,7 +494,7 @@ hb_ot_layout_feature_get_characters (hb_face_t      *face,
  * @HB_OT_LAYOUT_BASELINE_TAG_MATH: The baseline about which mathematical characters are centered.
  * In vertical writing mode when mathematical characters rotated 90 degrees clockwise, are centered.
  *
- * Baseline tags from https://docs.microsoft.com/en-us/typography/opentype/spec/baselinetags
+ * Baseline tags from [Baseline Tags](https://docs.microsoft.com/en-us/typography/opentype/spec/baselinetags) registry.
  *
  * Since: 2.6.0
  */
@@ -446,6 +507,7 @@ typedef enum {
   HB_OT_LAYOUT_BASELINE_TAG_IDEO_EMBOX_TOP_OR_RIGHT	= HB_TAG ('i','d','t','p'),
   HB_OT_LAYOUT_BASELINE_TAG_MATH			= HB_TAG ('m','a','t','h'),
 
+  /*< private >*/
   _HB_OT_LAYOUT_BASELINE_TAG_MAX_VALUE = HB_TAG_MAX_SIGNED /*< skip >*/
 } hb_ot_layout_baseline_tag_t;
 

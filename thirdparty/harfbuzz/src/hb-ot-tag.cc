@@ -164,6 +164,15 @@ hb_ot_all_tags_from_script (hb_script_t   script,
   *count = i;
 }
 
+/**
+ * hb_ot_tag_to_script:
+ * @tag: a script tag
+ *
+ * Converts a script tag to an #hb_script_t.
+ *
+ * Return value: The #hb_script_t corresponding to @tag.
+ *
+ **/
 hb_script_t
 hb_ot_tag_to_script (hb_tag_t tag)
 {
@@ -351,13 +360,13 @@ parse_private_use_subtag (const char     *private_use_subtag,
  * hb_ot_tags_from_script_and_language:
  * @script: an #hb_script_t to convert.
  * @language: an #hb_language_t to convert.
- * @script_count: (allow-none): maximum number of script tags to retrieve (IN)
+ * @script_count: (inout) (optional): maximum number of script tags to retrieve (IN)
  * and actual number of script tags retrieved (OUT)
- * @script_tags: (out) (allow-none): array of size at least @script_count to store the
+ * @script_tags: (out) (optional): array of size at least @script_count to store the
  * script tag results
- * @language_count: (allow-none): maximum number of language tags to retrieve
+ * @language_count: (inout) (optional): maximum number of language tags to retrieve
  * (IN) and actual number of language tags retrieved (OUT)
- * @language_tags: (out) (allow-none): array of size at least @language_count to store
+ * @language_tags: (out) (optional): array of size at least @language_count to store
  * the language tag results
  *
  * Converts an #hb_script_t and an #hb_language_t to script and language tags.
@@ -424,10 +433,12 @@ hb_ot_tags_from_script_and_language (hb_script_t   script,
 
 /**
  * hb_ot_tag_to_language:
+ * @tag: an language tag
  *
+ * Converts a language tag to an #hb_language_t.
  *
- *
- * Return value: (transfer none):
+ * Return value: (transfer none) (nullable):
+ * The #hb_language_t corresponding to @tag.
  *
  * Since: 0.9.2
  **/
@@ -478,9 +489,9 @@ hb_ot_tag_to_language (hb_tag_t tag)
  * hb_ot_tags_to_script_and_language:
  * @script_tag: a script tag
  * @language_tag: a language tag
- * @script: (allow-none): the #hb_script_t corresponding to @script_tag (OUT).
- * @language: (allow-none): the #hb_language_t corresponding to @script_tag and
- * @language_tag (OUT).
+ * @script: (out) (optional): the #hb_script_t corresponding to @script_tag.
+ * @language: (out) (optional): the #hb_language_t corresponding to @script_tag and
+ * @language_tag.
  *
  * Converts a script tag and a language tag to an #hb_script_t and an
  * #hb_language_t.
