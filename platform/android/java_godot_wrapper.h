@@ -66,6 +66,7 @@ private:
 	jmethodID _is_activity_resumed = 0;
 	jmethodID _vibrate = 0;
 	jmethodID _get_input_fallback_mapping = 0;
+	jmethodID _on_godot_setup_completed = 0;
 	jmethodID _on_godot_main_loop_started = 0;
 	jmethodID _get_class_loader = 0;
 
@@ -80,6 +81,7 @@ public:
 	GodotJavaViewWrapper *get_godot_view();
 
 	void on_video_init(JNIEnv *p_env = nullptr);
+	void on_godot_setup_completed(JNIEnv *p_env = nullptr);
 	void on_godot_main_loop_started(JNIEnv *p_env = nullptr);
 	void restart(JNIEnv *p_env = nullptr);
 	void force_quit(JNIEnv *p_env = nullptr);

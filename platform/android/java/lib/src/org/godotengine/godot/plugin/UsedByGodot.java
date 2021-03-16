@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  GodotPluginInfoProvider.java                                         */
+/*  UsedByGodot.java                                                     */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -30,43 +30,16 @@
 
 package org.godotengine.godot.plugin;
 
-import androidx.annotation.NonNull;
-
-import java.util.Collections;
-import java.util.Set;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 
 /**
- * Provides the set of information expected from a Godot plugin.
+ * Annotation to indicate a method is being invoked from the Godot game logic.
+ *
+ * At runtime, annotated plugin methods are detected and automatically registered.
  */
-public interface GodotPluginInfoProvider {
-	/**
-	 * Returns the name of the plugin.
-	 */
-	@NonNull
-	String getPluginName();
-
-	/**
-	 * Returns the list of signals to be exposed to Godot.
-	 */
-	@NonNull
-	default Set<SignalInfo> getPluginSignals() {
-		return Collections.emptySet();
-	}
-
-	/**
-	 * Returns the paths for the plugin's gdnative libraries (if any).
-	 *
-	 * The paths must be relative to the 'assets' directory and point to a '*.gdnlib' file.
-	 */
-	@NonNull
-	default Set<String> getPluginGDNativeLibrariesPaths() {
-		return Collections.emptySet();
-	}
-
-	/**
-	 * This is invoked on the render thread when the plugin described by this instance has been
-	 * registered.
-	 */
-	default void onPluginRegistered() {
-	}
-}
+@Target({ ElementType.METHOD })
+@Retention(RetentionPolicy.RUNTIME)
+public @interface UsedByGodot {}

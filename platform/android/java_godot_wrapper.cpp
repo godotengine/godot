@@ -74,6 +74,7 @@ GodotJavaWrapper::GodotJavaWrapper(JNIEnv *p_env, jobject p_activity, jobject p_
 	_is_activity_resumed = p_env->GetMethodID(godot_class, "isActivityResumed", "()Z");
 	_vibrate = p_env->GetMethodID(godot_class, "vibrate", "(I)V");
 	_get_input_fallback_mapping = p_env->GetMethodID(godot_class, "getInputFallbackMapping", "()Ljava/lang/String;");
+	_on_godot_setup_completed = p_env->GetMethodID(godot_class, "onGodotSetupCompleted", "()V");
 	_on_godot_main_loop_started = p_env->GetMethodID(godot_class, "onGodotMainLoopStarted", "()V");
 
 	// get some Activity method pointers...
@@ -120,11 +121,21 @@ GodotJavaViewWrapper *GodotJavaWrapper::get_godot_view() {
 }
 
 void GodotJavaWrapper::on_video_init(JNIEnv *p_env) {
-	if (_on_video_init)
+	if (_on_video_init) {
 		if (p_env == nullptr)
 			p_env = get_jni_env();
 
-	p_env->CallVoidMethod(godot_instance, _on_video_init);
+		p_env->CallVoidMethod(godot_instance, _on_video_init);
+	}
+}
+
+void GodotJavaWrapper::on_godot_setup_completed(JNIEnv *p_env) {
+	if (_on_godot_setup_completed) {
+		if (p_env == nullptr) {
+			p_env = get_jni_env();
+		}
+		p_env->CallVoidMethod(godot_instance, _on_godot_setup_completed);
+	}
 }
 
 void GodotJavaWrapper::on_godot_main_loop_started(JNIEnv *p_env) {
@@ -132,24 +143,26 @@ void GodotJavaWrapper::on_godot_main_loop_started(JNIEnv *p_env) {
 		if (p_env == nullptr) {
 			p_env = get_jni_env();
 		}
+		p_env->CallVoidMethod(godot_instance, _on_godot_main_loop_started);
 	}
-	p_env->CallVoidMethod(godot_instance, _on_godot_main_loop_started);
 }
 
 void GodotJavaWrapper::restart(JNIEnv *p_env) {
-	if (_restart)
+	if (_restart) {
 		if (p_env == nullptr)
 			p_env = get_jni_env();
 
-	p_env->CallVoidMethod(godot_instance, _restart);
+		p_env->CallVoidMethod(godot_instance, _restart);
+	}
 }
 
 void GodotJavaWrapper::force_quit(JNIEnv *p_env) {
-	if (_finish)
+	if (_finish) {
 		if (p_env == nullptr)
 			p_env = get_jni_env();
 
-	p_env->CallVoidMethod(godot_instance, _finish);
+		p_env->CallVoidMethod(godot_instance, _finish);
+	}
 }
 
 void GodotJavaWrapper::set_keep_screen_on(bool p_enabled) {
