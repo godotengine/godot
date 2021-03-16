@@ -69,6 +69,7 @@ public:
 		RS::ViewportScreenSpaceAA screen_space_aa;
 		bool use_taa;
 		bool use_debanding;
+		float sharpen_intensity;
 
 		RendererSceneRender::CameraData prev_camera_data;
 		uint64_t prev_camera_data_frame = 0;
@@ -159,6 +160,7 @@ public:
 			msaa = RS::VIEWPORT_MSAA_DISABLED;
 			screen_space_aa = RS::VIEWPORT_SCREEN_SPACE_AA_DISABLED;
 			use_debanding = false;
+			sharpen_intensity = 0.0;
 			use_occlusion_culling = false;
 			occlusion_buffer_dirty = true;
 
@@ -262,6 +264,8 @@ public:
 	void viewport_set_screen_space_aa(RID p_viewport, RS::ViewportScreenSpaceAA p_mode);
 	void viewport_set_use_taa(RID p_viewport, bool p_use_taa);
 	void viewport_set_use_debanding(RID p_viewport, bool p_use_debanding);
+	void viewport_set_sharpen_intensity(RID p_viewport, float p_intensity);
+
 	void viewport_set_use_occlusion_culling(RID p_viewport, bool p_use_occlusion_culling);
 	void viewport_set_occlusion_rays_per_thread(int p_rays_per_thread);
 	void viewport_set_occlusion_culling_build_quality(RS::ViewportOcclusionCullingBuildQuality p_quality);

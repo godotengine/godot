@@ -3287,6 +3287,14 @@
 				Sets the size of the shadow atlas's images (used for omni and spot lights). The value will be rounded up to the nearest power of 2.
 			</description>
 		</method>
+		<method name="viewport_set_sharpen_intensity">
+			<return type="void" />
+			<argument index="0" name="viewport" type="RID" />
+			<argument index="1" name="intensity" type="float" />
+			<description>
+				Sets the sharpening [code]intensity[/code] for the [code]viewport[/code]. If set to a value greater than [code]0.0[/code], contrast-adaptive sharpening will be applied to the 3D viewport. This has a small GPU performance cost and can be used to recover some of the sharpness lost due to screen-space antialiasing. Values around [code]0.5[/code] generally give the best results.
+			</description>
+		</method>
 		<method name="viewport_set_size">
 			<return type="void" />
 			<argument index="0" name="viewport" type="RID" />

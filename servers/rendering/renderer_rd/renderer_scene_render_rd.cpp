@@ -2610,6 +2610,8 @@ void RendererSceneRenderRD::_render_buffers_post_process_and_tonemap(const Rende
 		}
 
 		tonemap.use_debanding = rb->use_debanding;
+		tonemap.sharpen_intensity = rb->sharpen_intensity;
+
 		tonemap.texture_size = Vector2i(rb->internal_width, rb->internal_height);
 
 		if (env) {
@@ -2717,6 +2719,7 @@ void RendererSceneRenderRD::_post_process_subpass(RID p_source_texture, RID p_fr
 	}
 
 	tonemap.use_debanding = rb->use_debanding;
+	tonemap.sharpen_intensity = rb->sharpen_intensity;
 	tonemap.texture_size = Vector2i(rb->width, rb->height);
 
 	tonemap.luminance_multiplier = _render_buffers_get_luminance_multiplier();
@@ -3031,7 +3034,7 @@ bool RendererSceneRenderRD::_render_buffers_can_be_storage() {
 	return true;
 }
 
-void RendererSceneRenderRD::render_buffers_configure(RID p_render_buffers, RID p_render_target, int p_internal_width, int p_internal_height, int p_width, int p_height, float p_fsr_sharpness, float p_fsr_mipmap_bias, RS::ViewportMSAA p_msaa, RenderingServer::ViewportScreenSpaceAA p_screen_space_aa, bool p_use_taa, bool p_use_debanding, uint32_t p_view_count) {
+void RendererSceneRenderRD::render_buffers_configure(RID p_render_buffers, RID p_render_target, int p_internal_width, int p_internal_height, int p_width, int p_height, float p_fsr_sharpness, float p_fsr_mipmap_bias, RS::ViewportMSAA p_msaa, RenderingServer::ViewportScreenSpaceAA p_screen_space_aa, bool p_use_taa, bool p_use_debanding, float p_sharpen_intensity, uint32_t p_view_count) {
 	RendererRD::TextureStorage *texture_storage = RendererRD::TextureStorage::get_singleton();
 	RendererRD::MaterialStorage *material_storage = RendererRD::MaterialStorage::get_singleton();
 
@@ -3061,6 +3064,7 @@ void RendererSceneRenderRD::render_buffers_configure(RID p_render_buffers, RID p
 	rb->screen_space_aa = p_screen_space_aa;
 	rb->use_taa = p_use_taa;
 	rb->use_debanding = p_use_debanding;
+	rb->sharpen_intensity = p_sharpen_intensity;
 	rb->view_count = p_view_count;
 
 	if (is_clustered_enabled()) {
