@@ -32,7 +32,7 @@
 #define TILE_SET_EDITOR_H
 
 #include "scene/gui/box_container.h"
-#include "scene/resources/tile_set.h"
+#include "scene/resources/2d/tile_set.h"
 #include "tile_set_atlas_source_editor.h"
 #include "tile_set_scenes_collection_source_editor.h"
 

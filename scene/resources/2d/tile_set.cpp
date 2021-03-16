@@ -36,7 +36,6 @@
 
 #include "scene/2d/navigation_region_2d.h"
 #include "scene/gui/control.h"
-#include "scene/resources/convex_polygon_shape_2d.h"
 #include "servers/navigation_server_2d.h"
 
 /////////////////////////////// TileSet //////////////////////////////////////
