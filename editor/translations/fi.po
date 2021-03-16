@@ -15,7 +15,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2021-02-27 00:47+0000\n"
+"PO-Revision-Date: 2021-03-10 22:14+0000\n"
 "Last-Translator: Tapani Niemi <tapani.niemi@kapsi.fi>\n"
 "Language-Team: Finnish <https://hosted.weblate.org/projects/godot-engine/"
 "godot/fi/>\n"
@@ -24,7 +24,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 4.5\n"
+"X-Generator: Weblate 4.5.2-dev\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -4056,19 +4056,16 @@ msgid "Saving..."
 msgstr "Tallennetaan..."
 
 #: editor/import_defaults_editor.cpp
-#, fuzzy
 msgid "Select Importer"
-msgstr "Valintatila"
+msgstr "Valitse tuoja"
 
 #: editor/import_defaults_editor.cpp
-#, fuzzy
 msgid "Importer:"
-msgstr "Tuonti"
+msgstr "Tuoja:"
 
 #: editor/import_defaults_editor.cpp
-#, fuzzy
 msgid "Reset to Defaults"
-msgstr "Lataa oletus"
+msgstr "Palauta oletusarvoihin"
 
 #: editor/import_dock.cpp
 msgid "%d Files"
@@ -10409,9 +10406,8 @@ msgid "Plugins"
 msgstr "Liitännäiset"
 
 #: editor/project_settings_editor.cpp
-#, fuzzy
 msgid "Import Defaults"
-msgstr "Lataa oletus"
+msgstr "Lataa oletusarvot"
 
 #: editor/property_editor.cpp
 msgid "Preset..."
@@ -12466,10 +12462,14 @@ msgstr "Tyhjällä CollisionPolygon2D solmulla ei ole vaikutusta törmäyksessä
 #: scene/2d/collision_polygon_2d.cpp
 msgid "Invalid polygon. At least 3 points are needed in 'Solids' build mode."
 msgstr ""
+"Virheellinen polygoni. 'Solids' luontitilassa tarvitaan ainakin kolme "
+"pistettä."
 
 #: scene/2d/collision_polygon_2d.cpp
 msgid "Invalid polygon. At least 2 points are needed in 'Segments' build mode."
 msgstr ""
+"Virheellinen polygoni. 'Segments' luontitilassa tarvitaan ainakin kaksi "
+"pistettä."
 
 #: scene/2d/collision_shape_2d.cpp
 msgid ""

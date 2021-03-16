@@ -71,8 +71,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2021-03-07 06:04+0000\n"
-"Last-Translator: El Captian <elcaptian@posteo.me>\n"
+"PO-Revision-Date: 2021-03-09 04:13+0000\n"
+"Last-Translator: So Wieso <sowieso@dukun.de>\n"
 "Language-Team: German <https://hosted.weblate.org/projects/godot-engine/"
 "godot/de/>\n"
 "Language: de\n"
@@ -4148,19 +4148,16 @@ msgid "Saving..."
 msgstr "Speichere..."
 
 #: editor/import_defaults_editor.cpp
-#, fuzzy
 msgid "Select Importer"
-msgstr "Auswahlmodus"
+msgstr "Importer auswählen"
 
 #: editor/import_defaults_editor.cpp
-#, fuzzy
 msgid "Importer:"
-msgstr "Import"
+msgstr "Importer:"
 
 #: editor/import_defaults_editor.cpp
-#, fuzzy
 msgid "Reset to Defaults"
-msgstr "Nutze Standard-sRGB"
+msgstr "Auf Standardwerte zurücksetzen"
 
 #: editor/import_dock.cpp
 msgid "%d Files"
@@ -10531,9 +10528,8 @@ msgid "Plugins"
 msgstr "Erweiterungen"
 
 #: editor/project_settings_editor.cpp
-#, fuzzy
 msgid "Import Defaults"
-msgstr "Standard laden"
+msgstr "Standardwerte importieren"
 
 #: editor/property_editor.cpp
 msgid "Preset..."
@@ -12598,10 +12594,14 @@ msgstr "Ein leeres CollisionPolygon2D hat keinen Effekt auf Kollisionen."
 #: scene/2d/collision_polygon_2d.cpp
 msgid "Invalid polygon. At least 3 points are needed in 'Solids' build mode."
 msgstr ""
+"Ungültiges Polygon. Mindestens drei Punkte werden im ‚Festkörper‘-Baumodus "
+"benötigt."
 
 #: scene/2d/collision_polygon_2d.cpp
 msgid "Invalid polygon. At least 2 points are needed in 'Segments' build mode."
 msgstr ""
+"Ungültiges Polygon. Mindestens zwei Punkte werden im ‚Segment‘-Baumodus "
+"benötigt."
 
 #: scene/2d/collision_shape_2d.cpp
 msgid ""

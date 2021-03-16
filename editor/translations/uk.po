@@ -12,7 +12,7 @@
 # Kirill Omelchenko <kirill.omelchenko@gmail.com>, 2018.
 # Александр <ol-vin@mail.ru>, 2018.
 # Богдан Матвіїв <bomtvv@gmail.com>, 2019.
-# Tymofij Lytvynenko <till.svit@gmail.com>, 2020.
+# Tymofij Lytvynenko <till.svit@gmail.com>, 2020, 2021.
 # Vladislav Glinsky <cl0ne@mithril.org.ua>, 2020.
 # Микола Тимошенко <9081@ukr.net>, 2020.
 # Miroslav <zinmirx@gmail.com>, 2020.
@@ -20,8 +20,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Ukrainian (Godot Engine)\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2021-02-22 21:30+0000\n"
-"Last-Translator: Yuri Chornoivan <yurchor@ukr.net>\n"
+"PO-Revision-Date: 2021-03-10 22:14+0000\n"
+"Last-Translator: Tymofij Lytvynenko <till.svit@gmail.com>\n"
 "Language-Team: Ukrainian <https://hosted.weblate.org/projects/godot-engine/"
 "godot/uk/>\n"
 "Language: uk\n"
@@ -30,7 +30,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=3; plural=n%10==1 && n%100!=11 ? 0 : n%10>=2 && n"
 "%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2;\n"
-"X-Generator: Weblate 4.5\n"
+"X-Generator: Weblate 4.5.2-dev\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -1152,7 +1152,7 @@ msgstr "Ведучий розробник"
 #. you do not have to keep it in your translation.
 #: editor/editor_about.cpp
 msgid "Project Manager "
-msgstr "Керівник проектів "
+msgstr "Керівник проєктів "
 
 #: editor/editor_about.cpp
 msgid "Developers"
@@ -4083,19 +4083,16 @@ msgid "Saving..."
 msgstr "Збереження..."
 
 #: editor/import_defaults_editor.cpp
-#, fuzzy
 msgid "Select Importer"
-msgstr "Режим виділення"
+msgstr "Виберіть засіб імпортування"
 
 #: editor/import_defaults_editor.cpp
-#, fuzzy
 msgid "Importer:"
-msgstr "Імпорт"
+msgstr "Засіб імпортування:"
 
 #: editor/import_defaults_editor.cpp
-#, fuzzy
 msgid "Reset to Defaults"
-msgstr "Завантажити типовий"
+msgstr "Відновити типові параметри"
 
 #: editor/import_dock.cpp
 msgid "%d Files"
@@ -10069,7 +10066,7 @@ msgstr ""
 #. TRANSLATORS: This refers to the application where users manage their Godot projects.
 #: editor/project_manager.cpp
 msgid "Project Manager"
-msgstr "Керівник проекту"
+msgstr "Керівник проєкту"
 
 #: editor/project_manager.cpp
 msgid "Projects"
@@ -10450,9 +10447,8 @@ msgid "Plugins"
 msgstr "Плаґіни (додатки)"
 
 #: editor/project_settings_editor.cpp
-#, fuzzy
 msgid "Import Defaults"
-msgstr "Завантажити типовий"
+msgstr "Типові параметри імпортування"
 
 #: editor/property_editor.cpp
 msgid "Preset..."
@@ -12524,10 +12520,12 @@ msgstr "Порожній CollisionPolygon2D ніяк не вплине на зі
 #: scene/2d/collision_polygon_2d.cpp
 msgid "Invalid polygon. At least 3 points are needed in 'Solids' build mode."
 msgstr ""
+"Некоректний полігон. У режимі збирання «Solids» потрібно принаймні 3 точки."
 
 #: scene/2d/collision_polygon_2d.cpp
 msgid "Invalid polygon. At least 2 points are needed in 'Segments' build mode."
 msgstr ""
+"Некоректний полігон. У режимі збирання «Segments» потрібні принаймні 2 точки."
 
 #: scene/2d/collision_shape_2d.cpp
 msgid ""

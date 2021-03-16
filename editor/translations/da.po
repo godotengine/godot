@@ -22,7 +22,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2021-02-05 09:20+0000\n"
+"PO-Revision-Date: 2021-03-16 10:40+0000\n"
 "Last-Translator: snakatk <snaqii@live.dk>\n"
 "Language-Team: Danish <https://hosted.weblate.org/projects/godot-engine/"
 "godot/da/>\n"
@@ -31,7 +31,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 4.5-dev\n"
+"X-Generator: Weblate 4.5.2-dev\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -1648,16 +1648,22 @@ msgid "Packing"
 msgstr "Pakker"
 
 #: editor/editor_export.cpp
+#, fuzzy
 msgid ""
 "Target platform requires 'ETC' texture compression for GLES2. Enable 'Import "
 "Etc' in Project Settings."
 msgstr ""
+"Målplatform kræver 'ETC' teksturkomprimering for GLES2. Aktivér 'Import Etc' "
+"i Projektindstillingerne."
 
 #: editor/editor_export.cpp
+#, fuzzy
 msgid ""
 "Target platform requires 'ETC2' texture compression for GLES3. Enable "
 "'Import Etc 2' in Project Settings."
 msgstr ""
+"Målplatform kræver 'ETC2' teksturkomprimering for GLES3. Aktivér 'Import Etc "
+"2' i Projektindstillingerne."
 
 #: editor/editor_export.cpp
 msgid ""
@@ -1690,15 +1696,14 @@ msgstr ""
 #: editor/editor_export.cpp platform/android/export/export.cpp
 #: platform/iphone/export/export.cpp platform/javascript/export/export.cpp
 #: platform/osx/export/export.cpp platform/uwp/export/export.cpp
-#, fuzzy
 msgid "Custom debug template not found."
-msgstr "Skabelonfil ikke fundet:"
+msgstr "Brugerdefineret debug skabelonfil ikke fundet:"
 
 #: editor/editor_export.cpp platform/android/export/export.cpp
 #: platform/iphone/export/export.cpp platform/javascript/export/export.cpp
 #: platform/osx/export/export.cpp platform/uwp/export/export.cpp
 msgid "Custom release template not found."
-msgstr ""
+msgstr "Brugerdefineret release skabelonfil ikke fundet."
 
 #: editor/editor_export.cpp platform/javascript/export/export.cpp
 msgid "Template file not found:"
@@ -1743,13 +1748,12 @@ msgid "Import Dock"
 msgstr "Importer"
 
 #: editor/editor_feature_profile.cpp
-#, fuzzy
 msgid "Erase profile '%s'? (no undo)"
-msgstr "Erstat Alle"
+msgstr "Slet profil '%s'? (kan ikke fortrydes)"
 
 #: editor/editor_feature_profile.cpp
 msgid "Profile must be a valid filename and must not contain '.'"
-msgstr ""
+msgstr "Profil skal være et gyldigt filnavn og må ikke indeholde '.'"
 
 #: editor/editor_feature_profile.cpp
 #, fuzzy
@@ -1828,7 +1832,7 @@ msgstr "(Nuværende)"
 #: editor/plugins/animation_player_editor_plugin.cpp
 #: editor/plugins/version_control_editor_plugin.cpp
 msgid "New"
-msgstr ""
+msgstr "Ny"
 
 #: editor/editor_feature_profile.cpp editor/editor_node.cpp
 #: editor/project_manager.cpp

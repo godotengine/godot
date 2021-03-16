@@ -21,7 +21,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2021-02-27 00:47+0000\n"
+"PO-Revision-Date: 2021-03-09 04:13+0000\n"
 "Last-Translator: Lisandro Lorea <lisandrolorea@gmail.com>\n"
 "Language-Team: Spanish (Argentina) <https://hosted.weblate.org/projects/"
 "godot-engine/godot/es_AR/>\n"
@@ -30,7 +30,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 4.5\n"
+"X-Generator: Weblate 4.5.1\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -4096,19 +4096,16 @@ msgid "Saving..."
 msgstr "Guardando..."
 
 #: editor/import_defaults_editor.cpp
-#, fuzzy
 msgid "Select Importer"
-msgstr "Modo Seleccionar"
+msgstr "Seleccionar Importador"
 
 #: editor/import_defaults_editor.cpp
-#, fuzzy
 msgid "Importer:"
-msgstr "Importar"
+msgstr "Importador:"
 
 #: editor/import_defaults_editor.cpp
-#, fuzzy
 msgid "Reset to Defaults"
-msgstr "Usar sRGB por Defecto"
+msgstr "Restablecer Valores Por Defecto"
 
 #: editor/import_dock.cpp
 msgid "%d Files"
@@ -10467,9 +10464,8 @@ msgid "Plugins"
 msgstr "Plugins"
 
 #: editor/project_settings_editor.cpp
-#, fuzzy
 msgid "Import Defaults"
-msgstr "Cargar Valores por Defecto"
+msgstr "Valores de Importacion Por Defecto"
 
 #: editor/property_editor.cpp
 msgid "Preset..."
@@ -12540,10 +12536,14 @@ msgstr "Un CollisionPolygon2D vacío no tiene efecto en la colisión."
 #: scene/2d/collision_polygon_2d.cpp
 msgid "Invalid polygon. At least 3 points are needed in 'Solids' build mode."
 msgstr ""
+"Polígono inválido. Se necesitan al menos 3 puntos en modo de construcción "
+"\"Sólidos\"."
 
 #: scene/2d/collision_polygon_2d.cpp
 msgid "Invalid polygon. At least 2 points are needed in 'Segments' build mode."
 msgstr ""
+"Polígono inválido. Se necesitan al menos 2 puntos en modo de construcción "
+"\"Segmentos\"."
 
 #: scene/2d/collision_shape_2d.cpp
 msgid ""
