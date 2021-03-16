@@ -135,12 +135,13 @@ void SkeletonModification2DJiggle::_execute(float delta) {
 		return;
 	}
 	if (target_node_cache.is_null()) {
-		_print_execution_error(true, "Target cache is out of date. Attempting to update...");
+		WARN_PRINT_ONCE("Target cache is out of date. Attempting to update...");
 		update_target_cache();
 		return;
 	}
 	Node2D *target = Object::cast_to<Node2D>(ObjectDB::get_instance(target_node_cache));
-	if (_print_execution_error(!target || !target->is_inside_tree(), "Target node is not in the scene tree. Cannot execute modification!")) {
+	if (!target || !target->is_inside_tree()) {
+		ERR_PRINT_ONCE("Target node is not in the scene tree. Cannot execute modification!");
 		return;
 	}
 
@@ -153,19 +154,19 @@ void SkeletonModification2DJiggle::_execute_jiggle_joint(int p_joint_idx, Node2D
 	// Adopted from: https://wiki.unity3d.com/index.php/JiggleBone
 	// With modifications by TwistedTwigleg.
 
-	if (_print_execution_error(
-				jiggle_data_chain[p_joint_idx].bone_idx <= -1 || jiggle_data_chain[p_joint_idx].bone_idx > stack->skeleton->get_bone_count(),
-				"Jiggle joint " + itos(p_joint_idx) + " bone index is invalid. Cannot execute modification on joint...")) {
+	if (jiggle_data_chain[p_joint_idx].bone_idx <= -1 || jiggle_data_chain[p_joint_idx].bone_idx > stack->skeleton->get_bone_count()) {
+		ERR_PRINT_ONCE("Jiggle joint " + itos(p_joint_idx) + " bone index is invalid. Cannot execute modification on joint...");
 		return;
 	}
 
 	if (jiggle_data_chain[p_joint_idx].bone2d_node_cache.is_null() && !jiggle_data_chain[p_joint_idx].bone2d_node.is_empty()) {
-		_print_execution_error(true, "Bone2D cache for joint " + itos(p_joint_idx) + " is out of date. Updating...");
+		WARN_PRINT_ONCE("Bone2D cache for joint " + itos(p_joint_idx) + " is out of date. Updating...");
 		jiggle_joint_update_bone2d_cache(p_joint_idx);
 	}
 
 	Bone2D *operation_bone = stack->skeleton->get_bone(jiggle_data_chain[p_joint_idx].bone_idx);
-	if (_print_execution_error(!operation_bone, "Jiggle joint " + itos(p_joint_idx) + " does not have a Bone2D node or it cannot be found!")) {
+	if (!operation_bone) {
+		ERR_PRINT_ONCE("Jiggle joint " + itos(p_joint_idx) + " does not have a Bone2D node or it cannot be found!");
 		return;
 	}
 
@@ -254,7 +255,7 @@ void SkeletonModification2DJiggle::_setup_modification(SkeletonModificationStack
 
 void SkeletonModification2DJiggle::update_target_cache() {
 	if (!is_setup || !stack) {
-		_print_execution_error(true, "Cannot update target cache: modification is not properly setup!");
+		ERR_PRINT_ONCE("Cannot update target cache: modification is not properly setup!");
 		return;
 	}
 
@@ -276,7 +277,7 @@ void SkeletonModification2DJiggle::update_target_cache() {
 void SkeletonModification2DJiggle::jiggle_joint_update_bone2d_cache(int p_joint_idx) {
 	ERR_FAIL_INDEX_MSG(p_joint_idx, jiggle_data_chain.size(), "Cannot update bone2d cache: joint index out of range!");
 	if (!is_setup || !stack) {
-		_print_execution_error(true, "Cannot update Jiggle " + itos(p_joint_idx) + " Bone2D cache: modification is not properly setup!");
+		ERR_PRINT_ONCE("Cannot update Jiggle " + itos(p_joint_idx) + " Bone2D cache: modification is not properly setup!");
 		return;
 	}
 

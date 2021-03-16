@@ -113,17 +113,18 @@ void SkeletonModification2DPhysicalBones::_execute(float delta) {
 	for (int i = 0; i < physical_bone_chain.size(); i++) {
 		PhysicalBone_Data2D bone_data = physical_bone_chain[i];
 		if (bone_data.physical_bone_node_cache.is_null()) {
-			_print_execution_error(true, "PhysicalBone2D cache " + itos(i) + " is out of date. Attempting to update...");
+			WARN_PRINT_ONCE("PhysicalBone2D cache " + itos(i) + " is out of date. Attempting to update...");
 			_physical_bone_update_cache(i);
 			continue;
 		}
 
 		PhysicalBone2D *physical_bone = Object::cast_to<PhysicalBone2D>(ObjectDB::get_instance(bone_data.physical_bone_node_cache));
-		if (_print_execution_error(!physical_bone, "PhysicalBone2D not found at index " + itos(i) + "!")) {
+		if (!physical_bone) {
+			ERR_PRINT_ONCE("PhysicalBone2D not found at index " + itos(i) + "!");
 			return;
 		}
-		if (_print_execution_error(physical_bone->get_bone2d_index() < 0 || physical_bone->get_bone2d_index() > stack->skeleton->get_bone_count(),
-					"PhysicalBone2D at index " + itos(i) + " has invalid Bone2D!")) {
+		if (physical_bone->get_bone2d_index() < 0 || physical_bone->get_bone2d_index() > stack->skeleton->get_bone_count()) {
+			ERR_PRINT_ONCE("PhysicalBone2D at index " + itos(i) + " has invalid Bone2D!");
 			return;
 		}
 		Bone2D *bone_2d = stack->skeleton->get_bone(physical_bone->get_bone2d_index());
@@ -152,7 +153,7 @@ void SkeletonModification2DPhysicalBones::_setup_modification(SkeletonModificati
 void SkeletonModification2DPhysicalBones::_physical_bone_update_cache(int p_joint_idx) {
 	ERR_FAIL_INDEX_MSG(p_joint_idx, physical_bone_chain.size(), "Cannot update PhysicalBone2D cache: joint index out of range!");
 	if (!is_setup || !stack) {
-		_print_execution_error(true, "Cannot update PhysicalBone2D cache: modification is not properly setup!");
+		ERR_PRINT_ONCE("Cannot update PhysicalBone2D cache: modification is not properly setup!");
 		return;
 	}
 

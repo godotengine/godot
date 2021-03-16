@@ -103,17 +103,19 @@ void SkeletonModification2DFABRIK::_execute(float delta) {
 	}
 
 	if (target_node_cache.is_null()) {
-		_print_execution_error(true, "Target cache is out of date. Attempting to update...");
+		WARN_PRINT_ONCE("Target cache is out of date. Attempting to update...");
 		update_target_cache();
 		return;
 	}
 
-	if (_print_execution_error(fabrik_data_chain.size() <= 1, "FABRIK requires at least two joints to operate! Cannot execute modification!")) {
+	if (fabrik_data_chain.size() <= 1) {
+		ERR_PRINT_ONCE("FABRIK requires at least two joints to operate! Cannot execute modification!");
 		return;
 	}
 
 	Node2D *target = Object::cast_to<Node2D>(ObjectDB::get_instance(target_node_cache));
-	if (_print_execution_error(!target || !target->is_inside_tree(), "Target node is not in the scene tree. Cannot execute modification!")) {
+	if (!target || !target->is_inside_tree()) {
+		ERR_PRINT_ONCE("Target node is not in the scene tree. Cannot execute modification!");
 		return;
 	}
 	target_global_pose = target->get_global_transform();
@@ -124,7 +126,8 @@ void SkeletonModification2DFABRIK::_execute(float delta) {
 	}
 
 	Bone2D *origin_bone2d_node = Object::cast_to<Bone2D>(ObjectDB::get_instance(fabrik_data_chain[0].bone2d_node_cache));
-	if (_print_execution_error(!origin_bone2d_node || !origin_bone2d_node->is_inside_tree(), "Origin joint's Bone2D node is not in the scene tree. Cannot execute modification!")) {
+	if (!origin_bone2d_node || !origin_bone2d_node->is_inside_tree()) {
+		ERR_PRINT_ONCE("Origin joint's Bone2D node is not in the scene tree. Cannot execute modification!");
 		return;
 	}
 
@@ -137,11 +140,12 @@ void SkeletonModification2DFABRIK::_execute(float delta) {
 	for (int i = 0; i < fabrik_data_chain.size(); i++) {
 		// Update the transform chain
 		if (fabrik_data_chain[i].bone2d_node_cache.is_null() && !fabrik_data_chain[i].bone2d_node.is_empty()) {
-			_print_execution_error(true, "Bone2D cache for joint " + itos(i) + " is out of date.. Attempting to update...");
+			WARN_PRINT_ONCE("Bone2D cache for joint " + itos(i) + " is out of date.. Attempting to update...");
 			fabrik_joint_update_bone2d_cache(i);
 		}
 		Bone2D *joint_bone2d_node = Object::cast_to<Bone2D>(ObjectDB::get_instance(fabrik_data_chain[i].bone2d_node_cache));
-		if (_print_execution_error(!joint_bone2d_node, "FABRIK Joint " + itos(i) + " does not have a Bone2D node set! Cannot execute modification!")) {
+		if (!joint_bone2d_node) {
+			ERR_PRINT_ONCE("FABRIK Joint " + itos(i) + " does not have a Bone2D node set! Cannot execute modification!");
 			return;
 		}
 		fabrik_transform_chain.write[i] = joint_bone2d_node->get_global_transform();
@@ -186,7 +190,8 @@ void SkeletonModification2DFABRIK::_execute(float delta) {
 	// Apply all of the saved transforms to the Bone2D nodes
 	for (int i = 0; i < fabrik_data_chain.size(); i++) {
 		Bone2D *joint_bone2d_node = Object::cast_to<Bone2D>(ObjectDB::get_instance(fabrik_data_chain[i].bone2d_node_cache));
-		if (_print_execution_error(!joint_bone2d_node, "FABRIK Joint " + itos(i) + " does not have a Bone2D node set!")) {
+		if (!joint_bone2d_node) {
+			ERR_PRINT_ONCE("FABRIK Joint " + itos(i) + " does not have a Bone2D node set!");
 			continue;
 		}
 		Transform2D chain_trans = fabrik_transform_chain[i];
@@ -282,7 +287,7 @@ void SkeletonModification2DFABRIK::_setup_modification(SkeletonModificationStack
 
 void SkeletonModification2DFABRIK::update_target_cache() {
 	if (!is_setup || !stack) {
-		_print_execution_error(true, "Cannot update target cache: modification is not properly setup!");
+		ERR_PRINT_ONCE("Cannot update target cache: modification is not properly setup!");
 		return;
 	}
 
@@ -304,7 +309,7 @@ void SkeletonModification2DFABRIK::update_target_cache() {
 void SkeletonModification2DFABRIK::fabrik_joint_update_bone2d_cache(int p_joint_idx) {
 	ERR_FAIL_INDEX_MSG(p_joint_idx, fabrik_data_chain.size(), "Cannot update bone2d cache: joint index out of range!");
 	if (!is_setup || !stack) {
-		_print_execution_error(true, "Cannot update FABRIK Bone2D cache: modification is not properly setup!");
+		ERR_PRINT_ONCE("Cannot update FABRIK Bone2D cache: modification is not properly setup!");
 		return;
 	}
 

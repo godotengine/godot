@@ -65,17 +65,6 @@ void SkeletonModification2D::_draw_editor_gizmo() {
 	call("_draw_editor_gizmo");
 }
 
-bool SkeletonModification2D::_print_execution_error(bool p_condition, String p_message) {
-	if (!is_setup) {
-		return p_condition;
-	}
-
-	if (p_condition) {
-		ERR_PRINT_ONCE(p_message);
-	}
-	return p_condition;
-}
-
 void SkeletonModification2D::set_enabled(bool p_enabled) {
 	enabled = p_enabled;
 

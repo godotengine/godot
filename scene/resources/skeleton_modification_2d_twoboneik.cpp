@@ -106,32 +106,35 @@ void SkeletonModification2DTwoBoneIK::_execute(float delta) {
 	}
 
 	if (target_node_cache.is_null()) {
-		_print_execution_error(true, "Target cache is out of date. Attempting to update...");
+		WARN_PRINT_ONCE("Target cache is out of date. Attempting to update...");
 		update_target_cache();
 		return;
 	}
 
 	if (joint_one_bone2d_node_cache.is_null() && !joint_one_bone2d_node.is_empty()) {
-		_print_execution_error(true, "Joint one Bone2D node cache is out of date. Attempting to update...");
+		WARN_PRINT_ONCE("Joint one Bone2D node cache is out of date. Attempting to update...");
 		update_joint_one_bone2d_cache();
 	}
 	if (joint_two_bone2d_node_cache.is_null() && !joint_two_bone2d_node.is_empty()) {
-		_print_execution_error(true, "Joint two Bone2D node cache is out of date. Attempting to update...");
+		WARN_PRINT_ONCE("Joint two Bone2D node cache is out of date. Attempting to update...");
 		update_joint_two_bone2d_cache();
 	}
 
 	Node2D *target = Object::cast_to<Node2D>(ObjectDB::get_instance(target_node_cache));
-	if (_print_execution_error(!target || !target->is_inside_tree(), "Target node is not in the scene tree. Cannot execute modification!")) {
+	if (!target || !target->is_inside_tree()) {
+		ERR_PRINT_ONCE("Target node is not in the scene tree. Cannot execute modification!");
 		return;
 	}
 
 	Bone2D *joint_one_bone = stack->skeleton->get_bone(joint_one_bone_idx);
-	if (_print_execution_error(joint_one_bone == nullptr, "Joint one bone_idx does not point to a valid bone! Cannot execute modification!")) {
+	if (joint_one_bone == nullptr) {
+		ERR_PRINT_ONCE("Joint one bone_idx does not point to a valid bone! Cannot execute modification!");
 		return;
 	}
 
 	Bone2D *joint_two_bone = stack->skeleton->get_bone(joint_two_bone_idx);
-	if (_print_execution_error(joint_two_bone == nullptr, "Joint one bone_idx does not point to a valid bone! Cannot execute modification!")) {
+	if (joint_two_bone == nullptr) {
+		ERR_PRINT_ONCE("Joint two bone_idx does not point to a valid bone! Cannot execute modification!");
 		return;
 	}
 
@@ -243,7 +246,7 @@ void SkeletonModification2DTwoBoneIK::_draw_editor_gizmo() {
 
 void SkeletonModification2DTwoBoneIK::update_target_cache() {
 	if (!is_setup || !stack) {
-		_print_execution_error(true, "Cannot update target cache: modification is not properly setup!");
+		ERR_PRINT_ONCE("Cannot update target cache: modification is not properly setup!");
 		return;
 	}
 
@@ -264,7 +267,7 @@ void SkeletonModification2DTwoBoneIK::update_target_cache() {
 
 void SkeletonModification2DTwoBoneIK::update_joint_one_bone2d_cache() {
 	if (!is_setup || !stack) {
-		_print_execution_error(true, "Cannot update joint one Bone2D cache: modification is not properly setup!");
+		ERR_PRINT_ONCE("Cannot update joint one Bone2D cache: modification is not properly setup!");
 		return;
 	}
 
@@ -292,7 +295,7 @@ void SkeletonModification2DTwoBoneIK::update_joint_one_bone2d_cache() {
 
 void SkeletonModification2DTwoBoneIK::update_joint_two_bone2d_cache() {
 	if (!is_setup || !stack) {
-		_print_execution_error(true, "Cannot update joint two Bone2D cache: modification is not properly setup!");
+		ERR_PRINT_ONCE("Cannot update joint two Bone2D cache: modification is not properly setup!");
 		return;
 	}
 

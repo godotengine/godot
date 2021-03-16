@@ -112,29 +112,32 @@ void SkeletonModification2DLookAt::_execute(float delta) {
 	}
 
 	if (target_node_cache.is_null()) {
-		_print_execution_error(true, "Target cache is out of date. Attempting to update...");
+		WARN_PRINT_ONCE("Target cache is out of date. Attempting to update...");
 		update_target_cache();
 		return;
 	}
 
 	if (bone2d_node_cache.is_null() && !bone2d_node.is_empty()) {
 		update_bone2d_cache();
-		_print_execution_error(true, "Bone2D node cache is out of date. Attempting to update...");
+		WARN_PRINT_ONCE("Bone2D node cache is out of date. Attempting to update...");
 		return;
 	}
 
 	if (target_node_reference == nullptr) {
 		target_node_reference = Object::cast_to<Node2D>(ObjectDB::get_instance(target_node_cache));
 	}
-	if (_print_execution_error(!target_node_reference || !target_node_reference->is_inside_tree(), "Target node is not in the scene tree. Cannot execute modification!")) {
+	if (!target_node_reference || !target_node_reference->is_inside_tree()) {
+		ERR_PRINT_ONCE("Target node is not in the scene tree. Cannot execute modification!");
 		return;
 	}
-	if (_print_execution_error(bone_idx <= -1, "Bone index is invalid. Cannot execute modification!")) {
+	if (bone_idx <= -1) {
+		ERR_PRINT_ONCE("Bone index is invalid. Cannot execute modification!");
 		return;
 	}
 
 	Bone2D *operation_bone = stack->skeleton->get_bone(bone_idx);
-	if (_print_execution_error(operation_bone == nullptr, "bone_idx for modification does not point to a valid bone! Cannot execute modification")) {
+	if (operation_bone == nullptr) {
+		ERR_PRINT_ONCE("bone_idx for modification does not point to a valid bone! Cannot execute modification");
 		return;
 	}
 
@@ -193,7 +196,7 @@ void SkeletonModification2DLookAt::_draw_editor_gizmo() {
 
 void SkeletonModification2DLookAt::update_bone2d_cache() {
 	if (!is_setup || !stack) {
-		_print_execution_error(true, "Cannot update Bone2D cache: modification is not properly setup!");
+		ERR_PRINT_ONCE("Cannot update Bone2D cache: modification is not properly setup!");
 		return;
 	}
 
@@ -258,7 +261,7 @@ void SkeletonModification2DLookAt::set_bone_index(int p_bone_idx) {
 
 void SkeletonModification2DLookAt::update_target_cache() {
 	if (!is_setup || !stack) {
-		_print_execution_error(true, "Cannot update target cache: modification is not properly setup!");
+		ERR_PRINT_ONCE("Cannot update target cache: modification is not properly setup!");
 		return;
 	}
 
