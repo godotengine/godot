@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  register_types.cpp                                                   */
+/*  audio_stream_ogg_opus.h                                              */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,25 +28,80 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#include "register_types.h"
+#ifndef AUDIO_STREAM_OGG_OPUS_H
+#define AUDIO_STREAM_OGG_OPUS_H
 
-#include "audio_stream_ogg_opus.h"
+#include "core/io/resource_loader.h"
+#include "servers/audio/audio_stream.h"
 
-#ifdef TOOLS_ENABLED
-#include "core/config/engine.h"
-#include "resource_importer_ogg_opus.h"
+#include <opus/opusfile.h>
+
+class AudioStreamOGGOpus;
+
+class AudioStreamPlaybackOGGOpus : public AudioStreamPlaybackResampled {
+	GDCLASS(AudioStreamPlaybackOGGOpus, AudioStreamPlaybackResampled);
+
+	OggOpusFile *opus_file;
+	uint32_t frames_mixed;
+	bool active;
+	int loops;
+
+	friend class AudioStreamOGGOpus;
+
+	Ref<AudioStreamOGGOpus> opus_stream;
+
+protected:
+	virtual void _mix_internal(AudioFrame *p_buffer, int p_frames) override;
+	virtual float get_stream_sampling_rate() override;
+
+public:
+	virtual void start(float p_from_pos = 0.0) override;
+	virtual void stop() override;
+	virtual bool is_playing() const override;
+
+	virtual int get_loop_count() const override; //times it looped
+
+	virtual float get_playback_position() const override;
+	virtual void seek(float p_time) override;
+
+	AudioStreamPlaybackOGGOpus() {}
+	~AudioStreamPlaybackOGGOpus();
+};
+
+class AudioStreamOGGOpus : public AudioStream {
+	GDCLASS(AudioStreamOGGOpus, AudioStream);
+	OBJ_SAVE_TYPE(AudioStream); // Saves derived classes with common type so they can be interchanged.
+	RES_BASE_EXTENSION("opusstr");
+
+	friend class AudioStreamPlaybackOGGOpus;
+
+	void *data;
+	uint32_t data_len;
+	float length;
+	bool loop;
+	float loop_offset;
+	void clear_data();
+
+protected:
+	static void _bind_methods();
+
+public:
+	void set_loop(bool p_enable);
+	bool has_loop() const;
+
+	void set_loop_offset(float p_seconds);
+	float get_loop_offset() const;
+
+	virtual Ref<AudioStreamPlayback> instance_playback() override;
+	virtual String get_stream_name() const override;
+
+	void set_data(const Vector<uint8_t> &p_data);
+	Vector<uint8_t> get_data() const;
+
+	virtual float get_length() const override; //if supported, otherwise return 0
+
+	AudioStreamOGGOpus();
+	virtual ~AudioStreamOGGOpus();
+};
+
 #endif
-
-void register_opus_types() {
-#ifdef TOOLS_ENABLED
-	if (Engine::get_singleton()->is_editor_hint()) {
-		Ref<ResourceImporterOGGOpus> ogg_import;
-		ogg_import.instance();
-		ResourceFormatImporter::get_singleton()->add_importer(ogg_import);
-	}
-#endif
-	ClassDB::register_class<AudioStreamOGGOpus>();
-}
-
-void unregister_opus_types() {
-}
