@@ -162,7 +162,7 @@ void NoiseTexture::_update_texture() {
 #endif
 	if (use_thread) {
 
-		if (noise_thread.is_started()) {
+		if (!noise_thread.is_started()) {
 			noise_thread.start(_thread_function, this);
 			regen_queued = false;
 		} else {

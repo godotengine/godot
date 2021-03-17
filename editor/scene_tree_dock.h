@@ -211,6 +211,7 @@ class SceneTreeDock : public VBoxContainer {
 	void _new_scene_from(String p_file);
 
 	bool _validate_no_foreign();
+	bool _validate_no_instance();
 	void _selection_changed();
 	void _update_script_button();
 	Node *_get_selection_group_tail(Node *p_node, List<Node *> p_list);

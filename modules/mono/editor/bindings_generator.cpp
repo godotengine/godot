@@ -3067,18 +3067,53 @@ void BindingsGenerator::_initialize() {
 	initialized = true;
 }
 
+static String generate_all_glue_option = "--generate-mono-glue";
+static String generate_cs_glue_option = "--generate-mono-cs-glue";
+static String generate_cpp_glue_option = "--generate-mono-cpp-glue";
+
+static void handle_cmdline_options(String glue_dir_path, String cs_dir_path, String cpp_dir_path) {
+	BindingsGenerator bindings_generator;
+	bindings_generator.set_log_print_enabled(true);
+
+	if (!bindings_generator.is_initialized()) {
+		ERR_PRINT("Failed to initialize the bindings generator");
+		return;
+	}
+
+	if (glue_dir_path.length()) {
+		if (bindings_generator.generate_glue(glue_dir_path) != OK) {
+			ERR_PRINT(generate_all_glue_option + ": Failed to generate the C++ glue.");
+		}
+
+		if (bindings_generator.generate_cs_api(glue_dir_path.plus_file(API_SOLUTION_NAME)) != OK) {
+			ERR_PRINT(generate_all_glue_option + ": Failed to generate the C# API.");
+		}
+	}
+
+	if (cs_dir_path.length()) {
+		if (bindings_generator.generate_cs_api(cs_dir_path) != OK) {
+			ERR_PRINT(generate_cs_glue_option + ": Failed to generate the C# API.");
+		}
+	}
+
+	if (cpp_dir_path.length()) {
+		if (bindings_generator.generate_glue(cpp_dir_path) != OK) {
+			ERR_PRINT(generate_cpp_glue_option + ": Failed to generate the C++ glue.");
+		}
+	}
+}
+
 void BindingsGenerator::handle_cmdline_args(const List<String> &p_cmdline_args) {
 
 	const int NUM_OPTIONS = 2;
-	String generate_all_glue_option = "--generate-mono-glue";
-	String generate_cs_glue_option = "--generate-mono-cs-glue";
-	String generate_cpp_glue_option = "--generate-mono-cpp-glue";
 
 	String glue_dir_path;
 	String cs_dir_path;
 	String cpp_dir_path;
 
 	int options_left = NUM_OPTIONS;
+
+	bool exit_godot = false;
 
 	const List<String>::Element *elem = p_cmdline_args.front();
 
@@ -3090,7 +3125,8 @@ void BindingsGenerator::handle_cmdline_args(const List<String> &p_cmdline_args) 
 				glue_dir_path = path_elem->get();
 				elem = elem->next();
 			} else {
-				ERR_PRINTS(generate_all_glue_option + ": No output directory specified (expected path to '{GODOT_ROOT}/modules/mono/glue').");
+				ERR_PRINT(generate_all_glue_option + ": No output directory specified (expected path to '{GODOT_ROOT}/modules/mono/glue').");
+				exit_godot = true;
 			}
 
 			--options_left;
@@ -3101,7 +3137,8 @@ void BindingsGenerator::handle_cmdline_args(const List<String> &p_cmdline_args) 
 				cs_dir_path = path_elem->get();
 				elem = elem->next();
 			} else {
-				ERR_PRINTS(generate_cs_glue_option + ": No output directory specified.");
+				ERR_PRINT(generate_cs_glue_option + ": No output directory specified.");
+				exit_godot = true;
 			}
 
 			--options_left;
@@ -3112,7 +3149,8 @@ void BindingsGenerator::handle_cmdline_args(const List<String> &p_cmdline_args) 
 				cpp_dir_path = path_elem->get();
 				elem = elem->next();
 			} else {
-				ERR_PRINTS(generate_cpp_glue_option + ": No output directory specified.");
+				ERR_PRINT(generate_cpp_glue_option + ": No output directory specified.");
+				exit_godot = true;
 			}
 
 			--options_left;
@@ -3122,33 +3160,11 @@ void BindingsGenerator::handle_cmdline_args(const List<String> &p_cmdline_args) 
 	}
 
 	if (glue_dir_path.length() || cs_dir_path.length() || cpp_dir_path.length()) {
-		BindingsGenerator bindings_generator;
-		bindings_generator.set_log_print_enabled(true);
+		handle_cmdline_options(glue_dir_path, cs_dir_path, cpp_dir_path);
+		exit_godot = true;
+	}
 
-		if (!bindings_generator.initialized) {
-			ERR_PRINTS("Failed to initialize the bindings generator");
-			Main::cleanup(true);
-			::exit(0);
-		}
-
-		if (glue_dir_path.length()) {
-			if (bindings_generator.generate_glue(glue_dir_path) != OK)
-				ERR_PRINTS(generate_all_glue_option + ": Failed to generate the C++ glue.");
-
-			if (bindings_generator.generate_cs_api(glue_dir_path.plus_file(API_SOLUTION_NAME)) != OK)
-				ERR_PRINTS(generate_all_glue_option + ": Failed to generate the C# API.");
-		}
-
-		if (cs_dir_path.length()) {
-			if (bindings_generator.generate_cs_api(cs_dir_path) != OK)
-				ERR_PRINTS(generate_cs_glue_option + ": Failed to generate the C# API.");
-		}
-
-		if (cpp_dir_path.length()) {
-			if (bindings_generator.generate_glue(cpp_dir_path) != OK)
-				ERR_PRINTS(generate_cpp_glue_option + ": Failed to generate the C++ glue.");
-		}
-
+	if (exit_godot) {
 		// Exit once done
 		Main::cleanup(true);
 		::exit(0);

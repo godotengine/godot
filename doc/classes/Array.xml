@@ -165,7 +165,7 @@
 				    # `compare` is defined in this object, so we use `self` as the `obj` parameter.
 				    print(a.bsearch_custom("three", self, "compare", true)) # Expected value is 2.
 				[/codeblock]
-				[b]Note:[/b] Calling [method bsearch] on an unsorted array results in unexpected behavior.
+				[b]Note:[/b] Calling [method bsearch_custom] on an unsorted array results in unexpected behavior.
 			</description>
 		</method>
 		<method name="clear">

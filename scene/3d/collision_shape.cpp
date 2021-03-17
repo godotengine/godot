@@ -89,9 +89,6 @@ void CollisionShape::_notification(int p_what) {
 			if (parent) {
 				_update_in_shape_owner();
 			}
-			if (get_tree()->is_debugging_collisions_hint()) {
-				_update_debug_shape();
-			}
 		} break;
 		case NOTIFICATION_LOCAL_TRANSFORM_CHANGED: {
 			if (parent) {
@@ -162,7 +159,6 @@ void CollisionShape::_bind_methods() {
 	ClassDB::set_method_flags("CollisionShape", "make_convex_from_brothers", METHOD_FLAGS_DEFAULT | METHOD_FLAG_EDITOR);
 
 	ClassDB::bind_method(D_METHOD("_shape_changed"), &CollisionShape::_shape_changed);
-	ClassDB::bind_method(D_METHOD("_update_debug_shape"), &CollisionShape::_update_debug_shape);
 
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "shape", PROPERTY_HINT_RESOURCE_TYPE, "Shape"), "set_shape", "get_shape");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "disabled"), "set_disabled", "is_disabled");
@@ -217,7 +213,6 @@ CollisionShape::CollisionShape() {
 
 	//indicator = VisualServer::get_singleton()->mesh_create();
 	disabled = false;
-	debug_shape = NULL;
 	parent = NULL;
 	owner_id = 0;
 	set_notify_local_transform(true);
@@ -229,33 +224,9 @@ CollisionShape::~CollisionShape() {
 	//VisualServer::get_singleton()->free(indicator);
 }
 
-void CollisionShape::_update_debug_shape() {
-	debug_shape_dirty = false;
-
-	if (debug_shape) {
-		debug_shape->queue_delete();
-		debug_shape = NULL;
-	}
-
-	Ref<Shape> s = get_shape();
-	if (s.is_null())
-		return;
-
-	Ref<Mesh> mesh = s->get_debug_mesh();
-	MeshInstance *mi = memnew(MeshInstance);
-	mi->set_mesh(mesh);
-	add_child(mi);
-	debug_shape = mi;
-}
-
 void CollisionShape::_shape_changed() {
 	// If this is a heightfield shape our center may have changed
 	if (parent) {
 		_update_in_shape_owner(true);
-	}
-
-	if (is_inside_tree() && get_tree()->is_debugging_collisions_hint() && !debug_shape_dirty) {
-		debug_shape_dirty = true;
-		call_deferred("_update_debug_shape");
 	}
 }

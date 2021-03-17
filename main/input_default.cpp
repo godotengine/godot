@@ -97,12 +97,18 @@ bool InputDefault::is_joy_button_pressed(int p_device, int p_button) const {
 }
 
 bool InputDefault::is_action_pressed(const StringName &p_action) const {
-
+#ifdef DEBUG_ENABLED
+	bool has_action = InputMap::get_singleton()->has_action(p_action);
+	ERR_FAIL_COND_V_MSG(!has_action, false, "Request for nonexistent InputMap action '" + String(p_action) + "'.");
+#endif
 	return action_state.has(p_action) && action_state[p_action].pressed;
 }
 
 bool InputDefault::is_action_just_pressed(const StringName &p_action) const {
-
+#ifdef DEBUG_ENABLED
+	bool has_action = InputMap::get_singleton()->has_action(p_action);
+	ERR_FAIL_COND_V_MSG(!has_action, false, "Request for nonexistent InputMap action '" + String(p_action) + "'.");
+#endif
 	const Map<StringName, Action>::Element *E = action_state.find(p_action);
 	if (!E)
 		return false;
@@ -115,7 +121,10 @@ bool InputDefault::is_action_just_pressed(const StringName &p_action) const {
 }
 
 bool InputDefault::is_action_just_released(const StringName &p_action) const {
-
+#ifdef DEBUG_ENABLED
+	bool has_action = InputMap::get_singleton()->has_action(p_action);
+	ERR_FAIL_COND_V_MSG(!has_action, false, "Request for nonexistent InputMap action '" + String(p_action) + "'.");
+#endif
 	const Map<StringName, Action>::Element *E = action_state.find(p_action);
 	if (!E)
 		return false;
@@ -128,6 +137,10 @@ bool InputDefault::is_action_just_released(const StringName &p_action) const {
 }
 
 float InputDefault::get_action_strength(const StringName &p_action) const {
+#ifdef DEBUG_ENABLED
+	bool has_action = InputMap::get_singleton()->has_action(p_action);
+	ERR_FAIL_COND_V_MSG(!has_action, false, "Request for nonexistent InputMap action '" + String(p_action) + "'.");
+#endif
 	const Map<StringName, Action>::Element *E = action_state.find(p_action);
 	if (!E)
 		return 0.0f;
@@ -1283,7 +1296,7 @@ static const char *_buttons[JOY_BUTTON_MAX] = {
 	"DPAD Up",
 	"DPAD Down",
 	"DPAD Left",
-	"DPAD Right"
+	"DPAD Right",
 	"Misc 1",
 	"Paddle 1",
 	"Paddle 2",

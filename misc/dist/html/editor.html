@@ -2,11 +2,20 @@
 <html xmlns='http://www.w3.org/1999/xhtml' lang='' xml:lang=''>
 <head>
 	<meta charset='utf-8' />
-	<meta name='viewport' content='width=device-width, user-scalable=no' />
+	<meta name='viewport' content='width=device-width, initial-scale=1, minimum-scale=1, maximum-scale=1, user-scalable=no' />
+	<meta name="mobile-web-app-capable" content="yes" />
+	<meta name="apple-mobile-web-app-capable" content="yes" />
+	<meta name="application-name" content="Godot" />
+	<meta name="apple-mobile-web-app-title" content="Godot" />
+	<meta name="theme-color" content="#478cbf" />
+	<meta name="msapplication-navbutton-color" content="#478cbf" />
+	<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+	<meta name="msapplication-starturl" content="/latest" />
 	<link id='-gd-engine-icon' rel='icon' type='image/png' href='favicon.png' />
-	<title>Godot Engine Web Editor ($GODOT_VERSION)</title>
-	<style type='text/css'>
-
+	<link rel="apple-touch-icon" type="image/png" href="favicon.png" />
+	<link rel="manifest" href="manifest.json" />
+	<title>Godot Engine Web Editor (@GODOT_VERSION@)</title>
+	<style>
 		*:focus {
 			/* More visible outline for better keyboard navigation. */
 			outline: 0.125rem solid hsl(220, 100%, 62.5%);
@@ -40,13 +49,30 @@
 			filter: brightness(82.5%);
 		}
 
+		#tabs-buttons {
+			/* Match the default background color of the editor window for a seamless appearance. */
+			background-color: #202531;
+		}
+
+		#tab-game {
+			/* Use a pure black background to better distinguish the running project */
+			/* from the editor window, and to use a more neutral background color (no tint). */
+			background-color: black;
+			/* Make the background span the entire page height. */
+			min-height: 100vh;
+		}
+
 		#canvas, #gameCanvas {
 			display: block;
 			margin: 0;
 			color: white;
 		}
 
-		#canvas:focus, #gameCanvas:focus {
+		/* Don't show distracting focus outlines for the main tabs' contents. */
+		#tab-editor canvas:focus,
+		#tab-game canvas:focus,
+		#canvas:focus,
+		#gameCanvas:focus {
 			outline: none;
 		}
 
@@ -189,7 +215,7 @@
 				<br />
 				<img src="logo.svg" width="1024" height="414" style="width: auto; height: auto; max-width: 85%; max-height: 250px" />
 				<br />
-				$GODOT_VERSION
+				@GODOT_VERSION@
 				<br />
 				<a href="releases/">Need an old version?</a>
 				<br />
@@ -200,9 +226,11 @@
 <a href="demo.zip">(Try this for example)</a>
 				<br />
 				<br />
-				<button id="startButton" class="btn" style="margin-bottom: 4rem">Start Godot editor</button>
+				<button id="startButton" class="btn" style="margin-bottom: 4rem; font-weight: 700">Start Godot editor</button>
 				<br />
-				<button class="btn" onclick="clearPersistence()">Clear persistent data</button>
+				<button class="btn" onclick="clearPersistence()" style="margin-bottom: 1.5rem">Clear persistent data</button>
+				<br />
+				<a href="https://docs.godotengine.org/en/latest/tutorials/editor/using_the_web_editor.html">Web editor documentation</a>
 			</div>
 		</div>
 		<div id='tab-editor' style="display: none;">
@@ -232,9 +260,15 @@
 			<div id='status-notice' class='godot' style='display: none;'></div>
 		</div>
 	</div>
-
-	<script type='text/javascript' src='godot.tools.js'></script>
-	<script type='text/javascript'>//<![CDATA[
+	<script>
+		window.addEventListener("load", () => {
+			if ("serviceWorker" in navigator) {
+				navigator.serviceWorker.register("service.worker.js");
+			}
+		});
+	</script>
+	<script src='godot.tools.js'></script>
+	<script>//<![CDATA[
 
 		var editor = null;
 		var game = null;
@@ -258,7 +292,7 @@
 
 				});
 			}
-			if (!window.confirm("Are you sure you want to delete all the locally stored files?")) {
+			if (!window.confirm("Are you sure you want to delete all the locally stored files?\nClicking \"OK\" will permanently remove your projects and editor settings!")) {
 				return;
 			}
 			Promise.all([
@@ -468,7 +502,7 @@
 									showTab('loader');
 									setLoaderEnabled(true);
 								};
-								editor.start({'args': args});
+								editor.start({'args': args, 'persistentDrops': is_project_manager});
 							});
 						}, 0);
 						OnEditorExit = null;
@@ -529,7 +563,7 @@
 					//selectVideoMode();
 					showTab('editor');
 					setLoaderEnabled(false);
-					editor.start({'args': ['--video-driver', video_driver]}).then(function() {
+					editor.start({'args': ['--project-manager', '--video-driver', video_driver], 'persistentDrops': true}).then(function() {
 						setStatusMode('hidden');
 						initializing = false;
 					});

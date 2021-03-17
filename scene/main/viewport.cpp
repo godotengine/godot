@@ -428,7 +428,15 @@ void Viewport::_notification(int p_what) {
 				_process_picking(false);
 			}
 		} break;
-		case SceneTree::NOTIFICATION_WM_MOUSE_EXIT:
+		case SceneTree::NOTIFICATION_WM_MOUSE_EXIT: {
+
+			_drop_physics_mouseover();
+
+			// Unlike on loss of focus (NOTIFICATION_WM_WINDOW_FOCUS_OUT), do not
+			// drop the gui mouseover here, as a scrollbar may be dragged while the
+			// mouse is outside the window (without the window having lost focus).
+			// See bug #39634
+		} break;
 		case SceneTree::NOTIFICATION_WM_FOCUS_OUT: {
 
 			_drop_physics_mouseover();
@@ -1836,17 +1844,22 @@ Control *Viewport::_gui_find_control_at_pos(CanvasItem *p_node, const Point2 &p_
 		}
 	}
 
-	if (!c)
-		return NULL;
+	if (!c || c->data.mouse_filter == Control::MOUSE_FILTER_IGNORE) {
+		return nullptr;
+	}
 
 	matrix.affine_invert();
+	if (!c->has_point(matrix.xform(p_global))) {
+		return nullptr;
+	}
 
-	//conditions for considering this as a valid control for return
-	if (c->data.mouse_filter != Control::MOUSE_FILTER_IGNORE && c->has_point(matrix.xform(p_global)) && (!gui.drag_preview || (c != gui.drag_preview && !gui.drag_preview->is_a_parent_of(c)))) {
+	Control *drag_preview = _gui_get_drag_preview();
+	if (!drag_preview || (c != drag_preview && !drag_preview->is_a_parent_of(c))) {
 		r_inv_xform = matrix;
 		return c;
-	} else
-		return NULL;
+	}
+
+	return nullptr;
 }
 
 bool Viewport::_gui_drop(Control *p_at_control, Point2 p_at_pos, bool p_just_check) {
@@ -2032,9 +2045,10 @@ void Viewport::_gui_input_event(Ref<InputEvent> p_event) {
 				gui.drag_data = Variant();
 				gui.dragging = false;
 
-				if (gui.drag_preview) {
-					memdelete(gui.drag_preview);
-					gui.drag_preview = NULL;
+				Control *drag_preview = _gui_get_drag_preview();
+				if (drag_preview) {
+					memdelete(drag_preview);
+					gui.drag_preview_id = 0;
 				}
 				_propagate_viewport_notification(this, NOTIFICATION_DRAG_END);
 				//change mouse accordingly
@@ -2052,9 +2066,10 @@ void Viewport::_gui_input_event(Ref<InputEvent> p_event) {
 					_gui_drop(gui.mouse_over, pos, false);
 				}
 
-				if (gui.drag_preview && mb->get_button_index() == BUTTON_LEFT) {
-					memdelete(gui.drag_preview);
-					gui.drag_preview = NULL;
+				Control *drag_preview = _gui_get_drag_preview();
+				if (drag_preview) {
+					memdelete(drag_preview);
+					gui.drag_preview_id = 0;
 				}
 
 				gui.drag_data = Variant();
@@ -2155,10 +2170,11 @@ void Viewport::_gui_input_event(Ref<InputEvent> p_event) {
 								gui.mouse_focus_mask = 0;
 								break;
 							} else {
-								if (gui.drag_preview != NULL) {
+								Control *drag_preview = _gui_get_drag_preview();
+								if (drag_preview) {
 									ERR_PRINT("Don't set a drag preview and return null data. Preview was deleted and drag request ignored.");
-									memdelete(gui.drag_preview);
-									gui.drag_preview = NULL;
+									memdelete(drag_preview);
+									gui.drag_preview_id = 0;
 								}
 								gui.dragging = false;
 							}
@@ -2246,8 +2262,9 @@ void Viewport::_gui_input_event(Ref<InputEvent> p_event) {
 
 		gui.mouse_over = over;
 
-		if (gui.drag_preview) {
-			gui.drag_preview->set_position(mpos);
+		Control *drag_preview = _gui_get_drag_preview();
+		if (drag_preview) {
+			drag_preview->set_position(mpos);
 		}
 
 		if (!over) {
@@ -2624,15 +2641,29 @@ void Viewport::_gui_set_drag_preview(Control *p_base, Control *p_control) {
 	ERR_FAIL_COND(p_control->is_inside_tree());
 	ERR_FAIL_COND(p_control->get_parent() != NULL);
 
-	if (gui.drag_preview) {
-		memdelete(gui.drag_preview);
+	Control *drag_preview = _gui_get_drag_preview();
+	if (drag_preview) {
+		memdelete(drag_preview);
 	}
 	p_control->set_as_toplevel(true);
 	p_control->set_position(gui.last_mouse_pos);
 	p_base->get_root_parent_control()->add_child(p_control); //add as child of viewport
 	p_control->raise();
 
-	gui.drag_preview = p_control;
+	gui.drag_preview_id = p_control->get_instance_id();
+}
+
+Control *Viewport::_gui_get_drag_preview() {
+	if (!gui.drag_preview_id) {
+		return nullptr;
+	} else {
+		Control *drag_preview = Object::cast_to<Control>(ObjectDB::get_instance(gui.drag_preview_id));
+		if (!drag_preview) {
+			ERR_PRINT("Don't free the control set as drag preview.");
+			gui.drag_preview_id = 0;
+		}
+		return drag_preview;
+	}
 }
 
 void Viewport::_gui_remove_root_control(List<Control *>::Element *RI) {
@@ -3497,7 +3528,7 @@ Viewport::Viewport() {
 
 	gui.tooltip_control = NULL;
 	gui.tooltip_label = NULL;
-	gui.drag_preview = NULL;
+	gui.drag_preview_id = 0;
 	gui.drag_attempted = false;
 	gui.canvas_sort_index = 0;
 	gui.roots_order_dirty = false;

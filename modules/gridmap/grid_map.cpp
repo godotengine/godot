@@ -210,6 +210,14 @@ Ref<MeshLibrary> GridMap::get_mesh_library() const {
 	return mesh_library;
 }
 
+void GridMap::set_use_in_baked_light(bool p_use_baked_light) {
+	use_in_baked_light = p_use_baked_light;
+}
+
+bool GridMap::get_use_in_baked_light() const {
+	return use_in_baked_light;
+}
+
 void GridMap::set_cell_size(const Vector3 &p_size) {
 	ERR_FAIL_COND(p_size.x < 0.001 || p_size.y < 0.001 || p_size.z < 0.001);
 	cell_size = p_size;
@@ -738,6 +746,10 @@ void GridMap::_update_visibility() {
 			VS::get_singleton()->instance_set_visible(mi.instance, is_visible_in_tree());
 		}
 	}
+
+	for (int i = 0; i < baked_meshes.size(); i++) {
+		VS::get_singleton()->instance_set_visible(baked_meshes[i].instance, is_visible_in_tree());
+	}
 }
 
 void GridMap::_queue_octants_dirty() {
@@ -864,7 +876,11 @@ void GridMap::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("clear_baked_meshes"), &GridMap::clear_baked_meshes);
 	ClassDB::bind_method(D_METHOD("make_baked_meshes", "gen_lightmap_uv", "lightmap_uv_texel_size"), &GridMap::make_baked_meshes, DEFVAL(false), DEFVAL(0.1));
 
+	ClassDB::bind_method(D_METHOD("set_use_in_baked_light", "use_in_baked_light"), &GridMap::set_use_in_baked_light);
+	ClassDB::bind_method(D_METHOD("get_use_in_baked_light"), &GridMap::get_use_in_baked_light);
+
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "mesh_library", PROPERTY_HINT_RESOURCE_TYPE, "MeshLibrary"), "set_mesh_library", "get_mesh_library");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "use_in_baked_light"), "set_use_in_baked_light", "get_use_in_baked_light");
 	ADD_GROUP("Cell", "cell_");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "cell_size"), "set_cell_size", "get_cell_size");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "cell_octant_size", PROPERTY_HINT_RANGE, "1,1024,1"), "set_octant_size", "get_octant_size");
@@ -1066,6 +1082,10 @@ void GridMap::make_baked_meshes(bool p_gen_lightmap_uv, float p_lightmap_uv_texe
 
 Array GridMap::get_bake_meshes() {
 
+	if (!use_in_baked_light) {
+		return Array();
+	}
+
 	if (!baked_meshes.size()) {
 		make_baked_meshes(true);
 	}
@@ -1107,6 +1127,8 @@ GridMap::GridMap() {
 	navigation = NULL;
 	set_notify_transform(true);
 	recreating_octants = false;
+
+	use_in_baked_light = false;
 }
 
 GridMap::~GridMap() {

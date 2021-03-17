@@ -684,9 +684,7 @@ void EditorFileSystem::_scan_new_dir(EditorFileSystemDirectory *p_dir, DirAccess
 			if (f.begins_with(".")) // Ignore special and . / ..
 				continue;
 
-			if (FileAccess::exists(cd.plus_file(f).plus_file("project.godot"))) // skip if another project inside this
-				continue;
-			if (FileAccess::exists(cd.plus_file(f).plus_file(".gdignore"))) // skip if another project inside this
+			if (_should_skip_directory(cd.plus_file(f)))
 				continue;
 
 			dirs.push_back(f);
@@ -886,9 +884,7 @@ void EditorFileSystem::_scan_fs_changes(EditorFileSystemDirectory *p_dir, const 
 				int idx = p_dir->find_dir_index(f);
 				if (idx == -1) {
 
-					if (FileAccess::exists(cd.plus_file(f).plus_file("project.godot"))) // skip if another project inside this
-						continue;
-					if (FileAccess::exists(cd.plus_file(f).plus_file(".gdignore"))) // skip if another project inside this
+					if (_should_skip_directory(cd.plus_file(f)))
 						continue;
 
 					EditorFileSystemDirectory *efd = memnew(EditorFileSystemDirectory);
@@ -2022,6 +2018,16 @@ Error EditorFileSystem::_resource_import(const String &p_path) {
 	singleton->reimport_files(files);
 
 	return OK;
+}
+
+bool EditorFileSystem::_should_skip_directory(const String &p_path) {
+	if (FileAccess::exists(p_path.plus_file("project.godot"))) // skip if another project inside this
+		return true;
+
+	if (FileAccess::exists(p_path.plus_file(".gdignore"))) // skip if a `.gdignore` file is inside this
+		return true;
+
+	return false;
 }
 
 bool EditorFileSystem::is_group_file(const String &p_path) const {

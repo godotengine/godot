@@ -156,17 +156,23 @@ void CollisionObjectBullet::add_collision_exception(const CollisionObjectBullet 
 
 void CollisionObjectBullet::remove_collision_exception(const CollisionObjectBullet *p_ignoreCollisionObject) {
 	exceptions.erase(p_ignoreCollisionObject->get_self());
+	if (!bt_collision_object) {
+		return;
+	}
 	bt_collision_object->setIgnoreCollisionCheck(p_ignoreCollisionObject->bt_collision_object, false);
 	if (space)
 		space->get_broadphase()->getOverlappingPairCache()->cleanProxyFromPairs(bt_collision_object->getBroadphaseHandle(), space->get_dispatcher());
 }
 
 bool CollisionObjectBullet::has_collision_exception(const CollisionObjectBullet *p_otherCollisionObject) const {
-	return !bt_collision_object->checkCollideWith(p_otherCollisionObject->bt_collision_object);
+	return exceptions.has(p_otherCollisionObject->get_self());
 }
 
 void CollisionObjectBullet::set_collision_enabled(bool p_enabled) {
 	collisionsEnabled = p_enabled;
+	if (!bt_collision_object) {
+		return;
+	}
 	if (collisionsEnabled) {
 		bt_collision_object->setCollisionFlags(bt_collision_object->getCollisionFlags() & (~btCollisionObject::CF_NO_CONTACT_RESPONSE));
 	} else {

@@ -33,6 +33,7 @@
 // From Embree.
 #include <math/vec2.h>
 #include <math/vec3.h>
+#include <xmmintrin.h>
 
 using namespace embree;
 
@@ -185,12 +186,18 @@ void embree_error_handler(void *p_user_data, RTCError p_code, const char *p_str)
 }
 
 LightmapRaycasterEmbree::LightmapRaycasterEmbree() {
+	_MM_SET_FLUSH_ZERO_MODE(_MM_FLUSH_ZERO_ON);
+	_MM_SET_DENORMALS_ZERO_MODE(_MM_DENORMALS_ZERO_ON);
+
 	embree_device = rtcNewDevice(nullptr);
 	rtcSetDeviceErrorFunction(embree_device, &embree_error_handler, nullptr);
 	embree_scene = rtcNewScene(embree_device);
 }
 
 LightmapRaycasterEmbree::~LightmapRaycasterEmbree() {
+	_MM_SET_FLUSH_ZERO_MODE(_MM_FLUSH_ZERO_OFF);
+	_MM_SET_DENORMALS_ZERO_MODE(_MM_DENORMALS_ZERO_OFF);
+
 	if (embree_scene != nullptr)
 		rtcReleaseScene(embree_scene);
 	if (embree_device != nullptr)

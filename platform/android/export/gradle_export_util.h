@@ -257,14 +257,6 @@ String _get_instrumentation_tag(const Ref<EditorExportPreset> &p_preset) {
 	return manifest_instrumentation_text;
 }
 
-String _get_plugins_tag(const String &plugins_names) {
-	if (!plugins_names.empty()) {
-		return vformat("    <meta-data tools:node=\"replace\" android:name=\"plugins\" android:value=\"%s\" />\n", plugins_names);
-	} else {
-		return "    <meta-data tools:node=\"remove\" android:name=\"plugins\" />\n";
-	}
-}
-
 String _get_activity_tag(const Ref<EditorExportPreset> &p_preset) {
 	bool uses_xr = (int)(p_preset->get("xr_features/xr_mode")) == 1;
 	String orientation = _get_android_orientation_label(_get_screen_orientation());
@@ -283,7 +275,7 @@ String _get_activity_tag(const Ref<EditorExportPreset> &p_preset) {
 	return manifest_activity_text;
 }
 
-String _get_application_tag(const Ref<EditorExportPreset> &p_preset, const String &plugins_names) {
+String _get_application_tag(const Ref<EditorExportPreset> &p_preset) {
 	bool uses_xr = (int)(p_preset->get("xr_features/xr_mode")) == 1;
 	String manifest_application_text =
 			"    <application android:label=\"@string/godot_project_name_string\"\n"
@@ -291,7 +283,6 @@ String _get_application_tag(const Ref<EditorExportPreset> &p_preset, const Strin
 			"        android:icon=\"@mipmap/icon\">\n\n"
 			"        <meta-data tools:node=\"remove\" android:name=\"xr_mode_metadata_name\" />\n";
 
-	manifest_application_text += _get_plugins_tag(plugins_names);
 	if (uses_xr) {
 		manifest_application_text += "        <meta-data tools:node=\"replace\" android:name=\"com.samsung.android.vr.application.mode\" android:value=\"vr_only\" />\n";
 	}

@@ -264,7 +264,10 @@ Error OS_X11::initialize(const VideoMode &p_desired, int p_video_driver, int p_a
 			use_prime = 0;
 		}
 
-		if (getenv("LD_LIBRARY_PATH")) {
+		// Some tools use fake libGL libraries and have them override the real one using
+		// LD_LIBRARY_PATH, so we skip them. *But* Steam also sets LD_LIBRARY_PATH for its
+		// runtime and includes system `/lib` and `/lib64`... so ignore Steam.
+		if (use_prime == -1 && getenv("LD_LIBRARY_PATH") && !getenv("STEAM_RUNTIME_LIBRARY_PATH")) {
 			String ld_library_path(getenv("LD_LIBRARY_PATH"));
 			Vector<String> libraries = ld_library_path.split(":");
 
@@ -1171,8 +1174,12 @@ int OS_X11::get_current_screen() const {
 }
 
 void OS_X11::set_current_screen(int p_screen) {
-	int count = get_screen_count();
-	if (p_screen >= count) return;
+	if (p_screen == -1) {
+		p_screen = get_current_screen();
+	}
+
+	// Check if screen is valid
+	ERR_FAIL_INDEX(p_screen, get_screen_count());
 
 	if (current_videomode.fullscreen) {
 		Point2i position = get_screen_position(p_screen);
@@ -1201,9 +1208,9 @@ Point2 OS_X11::get_screen_position(int p_screen) const {
 
 	int count;
 	XineramaScreenInfo *xsi = XineramaQueryScreens(x11_display, &count);
-	if (p_screen >= count) {
-		return Point2i(0, 0);
-	}
+
+	// Check if screen is valid
+	ERR_FAIL_INDEX_V(p_screen, count, Point2i(0, 0));
 
 	Point2i position = Point2i(xsi[p_screen].x_org, xsi[p_screen].y_org);
 
@@ -1224,7 +1231,9 @@ Size2 OS_X11::get_screen_size(int p_screen) const {
 
 	int count;
 	XineramaScreenInfo *xsi = XineramaQueryScreens(x11_display, &count);
-	if (p_screen >= count) return Size2i(0, 0);
+
+	// Check if screen is valid
+	ERR_FAIL_INDEX_V(p_screen, count, Size2i(0, 0));
 
 	Size2i size = Point2i(xsi[p_screen].width, xsi[p_screen].height);
 	XFree(xsi);
@@ -1415,15 +1424,19 @@ void OS_X11::set_window_size(const Size2 p_size) {
 	int old_w = xwa.width;
 	int old_h = xwa.height;
 
+	Size2 size = p_size;
+	size.x = MAX(1, size.x);
+	size.y = MAX(1, size.y);
+
 	// If window resizable is disabled we need to update the attributes first
 	XSizeHints *xsh;
 	xsh = XAllocSizeHints();
 	if (!is_window_resizable()) {
 		xsh->flags = PMinSize | PMaxSize;
-		xsh->min_width = p_size.x;
-		xsh->max_width = p_size.x;
-		xsh->min_height = p_size.y;
-		xsh->max_height = p_size.y;
+		xsh->min_width = size.x;
+		xsh->max_width = size.x;
+		xsh->min_height = size.y;
+		xsh->max_height = size.y;
 	} else {
 		xsh->flags = 0L;
 		if (min_size != Size2()) {
@@ -1441,11 +1454,11 @@ void OS_X11::set_window_size(const Size2 p_size) {
 	XFree(xsh);
 
 	// Resize the window
-	XResizeWindow(x11_display, x11_window, p_size.x, p_size.y);
+	XResizeWindow(x11_display, x11_window, size.x, size.y);
 
 	// Update our videomode width and height
-	current_videomode.width = p_size.x;
-	current_videomode.height = p_size.y;
+	current_videomode.width = size.x;
+	current_videomode.height = size.y;
 
 	for (int timeout = 0; timeout < 50; ++timeout) {
 		XSync(x11_display, False);

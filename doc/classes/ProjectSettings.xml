@@ -149,6 +149,7 @@
 			</return>
 			<description>
 				Saves the configuration to the [code]project.godot[/code] file.
+				[b]Note:[/b] This method is intended to be used by editor plugins, as modified [ProjectSettings] can't be loaded back in the running app. If you want to change project settings in exported projects, use [method save_custom] to save [code]override.cfg[/code] file.
 			</description>
 		</method>
 		<method name="save_custom">
@@ -157,7 +158,7 @@
 			<argument index="0" name="file" type="String">
 			</argument>
 			<description>
-				Saves the configuration to a custom file. The file extension must be [code].godot[/code] (to save in text-based [ConfigFile] format) or [code].binary[/code] (to save in binary format).
+				Saves the configuration to a custom file. The file extension must be [code].godot[/code] (to save in text-based [ConfigFile] format) or [code].binary[/code] (to save in binary format). You can also save [code]override.cfg[/code] file, which is also text, but can be used in exported projects unlike other formats.
 			</description>
 		</method>
 		<method name="set_initial_value">
@@ -252,9 +253,11 @@
 			If [code]true[/code], flushes the standard output stream every time a line is printed. This affects both terminal logging and file logging.
 			When running a project, this setting must be enabled if you want logs to be collected by service managers such as systemd/journalctl. This setting is disabled by default on release builds, since flushing on every printed line will negatively affect performance if lots of lines are printed in a rapid succession. Also, if this setting is enabled, logged files will still be written successfully if the application crashes or is otherwise killed by the user (without being closed "normally").
 			[b]Note:[/b] Regardless of this setting, the standard error stream ([code]stderr[/code]) is always flushed when a line is printed to it.
+			Changes to this setting will only be applied upon restarting the application.
 		</member>
 		<member name="application/run/flush_stdout_on_print.debug" type="bool" setter="" getter="" default="true">
 			Debug build override for [member application/run/flush_stdout_on_print], as performance is less important during debugging.
+			Changes to this setting will only be applied upon restarting the application.
 		</member>
 		<member name="application/run/frame_delay_msec" type="int" setter="" getter="" default="0">
 			Forces a delay between frames in the main loop (in milliseconds). This may be useful if you plan to disable vertical synchronization.
@@ -429,10 +432,13 @@
 		<member name="debug/shapes/collision/contact_color" type="Color" setter="" getter="" default="Color( 1, 0.2, 0.1, 0.8 )">
 			Color of the contact points between collision shapes, visible when "Visible Collision Shapes" is enabled in the Debug menu.
 		</member>
+		<member name="debug/shapes/collision/draw_2d_outlines" type="bool" setter="" getter="" default="true">
+			Sets whether 2D physics will display collision outlines in game when "Visible Collision Shapes" is enabled in the Debug menu.
+		</member>
 		<member name="debug/shapes/collision/max_contacts_displayed" type="int" setter="" getter="" default="10000">
 			Maximum number of contact points between collision shapes to display when "Visible Collision Shapes" is enabled in the Debug menu.
 		</member>
-		<member name="debug/shapes/collision/shape_color" type="Color" setter="" getter="" default="Color( 0, 0.6, 0.7, 0.5 )">
+		<member name="debug/shapes/collision/shape_color" type="Color" setter="" getter="" default="Color( 0, 0.6, 0.7, 0.42 )">
 			Color of the collision shapes, visible when "Visible Collision Shapes" is enabled in the Debug menu.
 		</member>
 		<member name="debug/shapes/navigation/disabled_geometry_color" type="Color" setter="" getter="" default="Color( 1, 0.7, 0.1, 0.4 )">
@@ -451,7 +457,7 @@
 			Position offset for tooltips, relative to the mouse cursor's hotspot.
 		</member>
 		<member name="display/window/dpi/allow_hidpi" type="bool" setter="" getter="" default="false">
-			If [code]true[/code], allows HiDPI display on Windows and macOS. This setting has no effect on desktop Linux, as DPI-awareness fallbacks are not supported there.
+			If [code]true[/code], allows HiDPI display on Windows, macOS, and the HTML5 platform. This setting has no effect on desktop Linux, as DPI-awareness fallbacks are not supported there.
 		</member>
 		<member name="display/window/energy_saving/keep_screen_on" type="bool" setter="" getter="" default="true">
 			If [code]true[/code], keeps the screen on (even in case of inactivity), so the screensaver does not take over. Works on desktop and mobile platforms.
@@ -1028,6 +1034,24 @@
 			Fix to improve physics jitter, specially on monitors where refresh rate is different than the physics FPS.
 			[b]Note:[/b] This property is only read when the project starts. To change the physics FPS at runtime, set [member Engine.physics_jitter_fix] instead.
 		</member>
+		<member name="rendering/2d/options/ninepatch_mode" type="int" setter="" getter="" default="1">
+			Choose between fixed mode where corner scalings are preserved matching the artwork, and scaling mode.
+			Not available in GLES3 when [member rendering/batching/options/use_batching] is off.
+		</member>
+		<member name="rendering/2d/options/use_nvidia_rect_flicker_workaround" type="bool" setter="" getter="" default="false">
+			Some NVIDIA GPU drivers have a bug which produces flickering issues for the [code]draw_rect[/code] method, especially as used in [TileMap]. Refer to [url=https://github.com/godotengine/godot/issues/9913]GitHub issue 9913[/url] for details.
+			If [code]true[/code], this option enables a "safe" code path for such NVIDIA GPUs at the cost of performance. This option affects GLES2 and GLES3 rendering, but only on desktop platforms.
+		</member>
+		<member name="rendering/2d/options/use_software_skinning" type="bool" setter="" getter="" default="true">
+			If [code]true[/code], performs 2D skinning on the CPU rather than the GPU. This provides greater compatibility with a wide range of hardware, and also may be faster in some circumstances.
+			Currently only available when [member rendering/batching/options/use_batching] is active.
+			[b]Note:[/b] Antialiased software skinned polys are not supported, and will be rendered without antialiasing.
+		</member>
+		<member name="rendering/2d/snapping/use_gpu_pixel_snap" type="bool" setter="" getter="" default="false">
+			If [code]true[/code], forces snapping of vertices to pixels in 2D rendering. May help in some pixel art styles.
+			This snapping is performed on the GPU in the vertex shader.
+			Consider using the project setting [member rendering/batching/precision/uv_contract] to prevent artifacts.
+		</member>
 		<member name="rendering/batching/debug/diagnose_frame" type="bool" setter="" getter="" default="false">
 			When batching is on, this regularly prints a frame diagnosis log. Note that this will degrade performance.
 		</member>
@@ -1120,30 +1144,6 @@
 		</member>
 		<member name="rendering/limits/time/time_rollover_secs" type="float" setter="" getter="" default="3600">
 			Shaders have a time variable that constantly increases. At some point, it needs to be rolled back to zero to avoid precision errors on shader animations. This setting specifies when (in seconds).
-		</member>
-		<member name="rendering/quality/2d/ninepatch_mode" type="int" setter="" getter="" default="0">
-			Choose between default mode where corner scalings are preserved matching the artwork, and scaling mode.
-			Not available in GLES3 when [member rendering/batching/options/use_batching] is off.
-		</member>
-		<member name="rendering/quality/2d/use_camera_snap" type="bool" setter="" getter="" default="false">
-			If [code]true[/code], forces snapping of 2D viewports to the nearest whole coordinate.
-			Can reduce unwanted camera relative movement in pixel art styles.
-		</member>
-		<member name="rendering/quality/2d/use_nvidia_rect_flicker_workaround" type="bool" setter="" getter="" default="false">
-			Some NVIDIA GPU drivers have a bug which produces flickering issues for the [code]draw_rect[/code] method, especially as used in [TileMap]. Refer to [url=https://github.com/godotengine/godot/issues/9913]GitHub issue 9913[/url] for details.
-			If [code]true[/code], this option enables a "safe" code path for such NVIDIA GPUs at the cost of performance. This option affects GLES2 and GLES3 rendering, but only on desktop platforms.
-		</member>
-		<member name="rendering/quality/2d/use_pixel_snap" type="bool" setter="" getter="" default="false">
-			If [code]true[/code], forces snapping of polygons to pixels in 2D rendering. May help in some pixel art styles.
-			Consider using the project setting [member rendering/batching/precision/uv_contract] to prevent artifacts.
-		</member>
-		<member name="rendering/quality/2d/use_software_skinning" type="bool" setter="" getter="" default="true">
-			If [code]true[/code], performs 2D skinning on the CPU rather than the GPU. This provides greater compatibility with a wide range of hardware, and also may be faster in some circumstances.
-			Currently only available when [member rendering/batching/options/use_batching] is active.
-		</member>
-		<member name="rendering/quality/2d/use_transform_snap" type="bool" setter="" getter="" default="false">
-			If [code]true[/code], forces snapping of 2D object transforms to the nearest whole coordinate.
-			Can help prevent unwanted relative movement in pixel art styles.
 		</member>
 		<member name="rendering/quality/depth/hdr" type="bool" setter="" getter="" default="true">
 			If [code]true[/code], allocates the main framebuffer with high dynamic range. High dynamic range allows the use of [Color] values greater than 1.

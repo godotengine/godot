@@ -14,6 +14,17 @@ layout(location = 3) in vec4 color_attrib;
 layout(location = 5) in vec4 modulate_attrib; // attrib:5
 #endif
 
+// Usually, final_modulate is passed as a uniform. However during batching
+// If larger fvfs are used, final_modulate is passed as an attribute.
+// we need to read from the attribute in custom vertex shader
+// rather than the uniform. We do this by specifying final_modulate_alias
+// in shaders rather than final_modulate directly.
+#ifdef USE_ATTRIB_MODULATE
+#define final_modulate_alias modulate_attrib
+#else
+#define final_modulate_alias final_modulate
+#endif
+
 #ifdef USE_ATTRIB_LARGE_VERTEX
 // shared with skeleton attributes, not used in batched shader
 layout(location = 6) in vec2 translate_attrib; // attrib:6
@@ -451,6 +462,47 @@ uniform bool np_draw_center;
 // left top right bottom in pixel coordinates
 uniform vec4 np_margins;
 
+// there are two ninepatch modes, and we don't want to waste a conditional
+#if defined USE_NINEPATCH_SCALING
+float map_ninepatch_axis(float pixel, float draw_size, float tex_pixel_size, float margin_begin, float margin_end, float s_ratio, int np_repeat, inout int draw_center) {
+
+	float tex_size = 1.0 / tex_pixel_size;
+
+	float screen_margin_begin = margin_begin / s_ratio;
+	float screen_margin_end = margin_end / s_ratio;
+	if (pixel < screen_margin_begin) {
+		return pixel * s_ratio * tex_pixel_size;
+	} else if (pixel >= draw_size - screen_margin_end) {
+		return (tex_size - (draw_size - pixel) * s_ratio) * tex_pixel_size;
+	} else {
+		if (!np_draw_center) {
+			draw_center--;
+		}
+
+		if (np_repeat == 0) { //stretch
+			//convert to ratio
+			float ratio = (pixel - screen_margin_begin) / (draw_size - screen_margin_begin - screen_margin_end);
+			//scale to source texture
+			return (margin_begin + ratio * (tex_size - margin_begin - margin_end)) * tex_pixel_size;
+		} else if (np_repeat == 1) { //tile
+			//convert to ratio
+			float ofs = mod((pixel - screen_margin_begin), tex_size - margin_begin - margin_end);
+			//scale to source texture
+			return (margin_begin + ofs) * tex_pixel_size;
+		} else if (np_repeat == 2) { //tile fit
+			//convert to ratio
+			float src_area = draw_size - screen_margin_begin - screen_margin_end;
+			float dst_area = tex_size - margin_begin - margin_end;
+			float scale = max(1.0, floor(src_area / max(dst_area, 0.0000001) + 0.5));
+
+			//convert to ratio
+			float ratio = (pixel - screen_margin_begin) / src_area;
+			ratio = mod(ratio * scale, 1.0);
+			return (margin_begin + ratio * dst_area) * tex_pixel_size;
+		}
+	}
+}
+#else
 float map_ninepatch_axis(float pixel, float draw_size, float tex_pixel_size, float margin_begin, float margin_end, int np_repeat, inout int draw_center) {
 
 	float tex_size = 1.0 / tex_pixel_size;
@@ -490,6 +542,7 @@ float map_ninepatch_axis(float pixel, float draw_size, float tex_pixel_size, flo
 		}
 	}
 }
+#endif
 
 #endif
 #endif
@@ -506,6 +559,17 @@ void main() {
 #ifdef USE_NINEPATCH
 
 	int draw_center = 2;
+#if defined USE_NINEPATCH_SCALING
+	float s_ratio = max((1.0 / color_texpixel_size.x) / abs(dst_rect.z), (1.0 / color_texpixel_size.y) / abs(dst_rect.w));
+	s_ratio = max(1.0, s_ratio);
+	uv = vec2(
+			map_ninepatch_axis(pixel_size_interp.x, abs(dst_rect.z), color_texpixel_size.x, np_margins.x, np_margins.z, s_ratio, np_repeat_h, draw_center),
+			map_ninepatch_axis(pixel_size_interp.y, abs(dst_rect.w), color_texpixel_size.y, np_margins.y, np_margins.w, s_ratio, np_repeat_v, draw_center));
+
+	if (draw_center == 0) {
+		color.a = 0.0;
+	}
+#else
 	uv = vec2(
 			map_ninepatch_axis(pixel_size_interp.x, abs(dst_rect.z), color_texpixel_size.x, np_margins.x, np_margins.z, np_repeat_h, draw_center),
 			map_ninepatch_axis(pixel_size_interp.y, abs(dst_rect.w), color_texpixel_size.y, np_margins.y, np_margins.w, np_repeat_v, draw_center));
@@ -513,7 +577,7 @@ void main() {
 	if (draw_center == 0) {
 		color.a = 0.0;
 	}
-
+#endif
 	uv = uv * src_rect.zw + src_rect.xy; //apply region if needed
 #endif
 
@@ -567,6 +631,18 @@ void main() {
 		normal_used = true;
 #endif
 
+		// If larger fvfs are used, final_modulate is passed as an attribute.
+		// we need to read from this in custom fragment shaders or applying in the post step,
+		// rather than using final_modulate directly.
+#if defined(final_modulate_alias)
+#undef final_modulate_alias
+#endif
+#ifdef USE_ATTRIB_MODULATE
+#define final_modulate_alias modulate_interp
+#else
+#define final_modulate_alias final_modulate
+#endif
+
 		/* clang-format off */
 
 FRAGMENT_SHADER_CODE
@@ -582,12 +658,8 @@ FRAGMENT_SHADER_CODE
 	color = vec4(vec3(enc32), 1.0);
 #endif
 
-#ifdef USE_ATTRIB_MODULATE
-	color *= modulate_interp;
-#else
 #if !defined(MODULATE_USED)
-	color *= final_modulate;
-#endif
+	color *= final_modulate_alias;
 #endif
 
 #ifdef USE_LIGHTING

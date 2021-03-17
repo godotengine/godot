@@ -2148,7 +2148,17 @@ void SoftBodySpatialGizmoPlugin::redraw(EditorSpatialGizmo *p_gizmo) {
 	Ref<TriangleMesh> tm = soft_body->get_mesh()->generate_triangle_mesh();
 
 	Vector<Vector3> points;
-	soft_body->get_mesh()->generate_debug_mesh_indices(points);
+	for (int i = 0; i < soft_body->get_mesh()->get_surface_count(); i++) {
+		Array arrays = soft_body->get_mesh()->surface_get_arrays(i);
+		ERR_CONTINUE(arrays.empty());
+
+		const PoolVector<Vector3> &vertices = arrays[Mesh::ARRAY_VERTEX];
+		PoolVector<Vector3>::Read vertices_read = vertices.read();
+		int vertex_count = vertices.size();
+		for (int index = 0; index < vertex_count; ++index) {
+			points.push_back(vertices_read[index]);
+		}
+	}
 
 	Ref<Material> material = get_material("shape_material", p_gizmo);
 
@@ -3025,6 +3035,57 @@ void BakedIndirectLightGizmoPlugin::redraw(EditorSpatialGizmo *p_gizmo) {
 
 	p_gizmo->add_unscaled_billboard(icon, 0.05);
 	p_gizmo->add_handles(handles, get_material("handles"));
+}
+
+////
+
+CollisionObjectGizmoPlugin::CollisionObjectGizmoPlugin() {
+	const Color gizmo_color = EDITOR_DEF("editors/3d_gizmos/gizmo_colors/shape", Color(0.5, 0.7, 1));
+	create_material("shape_material", gizmo_color);
+	const float gizmo_value = gizmo_color.get_v();
+	const Color gizmo_color_disabled = Color(gizmo_value, gizmo_value, gizmo_value, 0.65);
+	create_material("shape_material_disabled", gizmo_color_disabled);
+}
+
+bool CollisionObjectGizmoPlugin::has_gizmo(Spatial *p_spatial) {
+	return Object::cast_to<CollisionObject>(p_spatial) != nullptr;
+}
+
+String CollisionObjectGizmoPlugin::get_name() const {
+	return "CollisionObject";
+}
+
+int CollisionObjectGizmoPlugin::get_priority() const {
+	return -1;
+}
+
+void CollisionObjectGizmoPlugin::redraw(EditorSpatialGizmo *p_gizmo) {
+	CollisionObject *co = Object::cast_to<CollisionObject>(p_gizmo->get_spatial_node());
+
+	p_gizmo->clear();
+
+	List<uint32_t> owners;
+	co->get_shape_owners(&owners);
+	for (List<uint32_t>::Element *E = owners.front(); E; E = E->next()) {
+		uint32_t owner_id = E->get();
+		Transform xform = co->shape_owner_get_transform(owner_id);
+		Object *owner = co->shape_owner_get_owner(owner_id);
+		// Exclude CollisionShape and CollisionPolygon as they have their gizmo.
+		if (!Object::cast_to<CollisionShape>(owner) && !Object::cast_to<CollisionPolygon>(owner)) {
+			Ref<Material> material = get_material(!co->is_shape_owner_disabled(owner_id) ? "shape_material" : "shape_material_disabled", p_gizmo);
+			for (int shape_id = 0; shape_id < co->shape_owner_get_shape_count(owner_id); shape_id++) {
+				Ref<Shape> s = co->shape_owner_get_shape(owner_id, shape_id);
+				if (s.is_null()) {
+					continue;
+				}
+				SurfaceTool st;
+				st.append_from(s->get_debug_mesh(), 0, xform);
+
+				p_gizmo->add_mesh(st.commit(), false, Ref<SkinReference>(), material);
+				p_gizmo->add_collision_segments(s->get_debug_mesh_lines());
+			}
+		}
+	}
 }
 
 ////

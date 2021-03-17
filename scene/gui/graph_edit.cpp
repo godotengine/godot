@@ -1620,7 +1620,12 @@ bool GraphEdit::is_minimap_enabled() const {
 }
 
 void GraphEdit::_minimap_toggled() {
-	minimap->update();
+	if (is_minimap_enabled()) {
+		minimap->set_visible(true);
+		minimap->update();
+	} else {
+		minimap->set_visible(false);
+	}
 }
 
 HBoxContainer *GraphEdit::get_zoom_hbox() {

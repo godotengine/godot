@@ -927,23 +927,9 @@ void Node::_set_name_nocheck(const StringName &p_name) {
 	data.name = p_name;
 }
 
-String Node::invalid_character = ". : @ / \"";
-
-bool Node::_validate_node_name(String &p_name) {
-	String name = p_name;
-	Vector<String> chars = Node::invalid_character.split(" ");
-	for (int i = 0; i < chars.size(); i++) {
-		name = name.replace(chars[i], "");
-	}
-	bool is_valid = name == p_name;
-	p_name = name;
-	return is_valid;
-}
-
 void Node::set_name(const String &p_name) {
 
-	String name = p_name;
-	_validate_node_name(name);
+	String name = p_name.validate_node_name();
 
 	ERR_FAIL_COND(name == "");
 	data.name = name;
@@ -1929,7 +1915,7 @@ bool Node::is_editable_instance(const Node *p_node) const {
 
 Node *Node::get_deepest_editable_node(Node *p_start_node) const {
 	ERR_FAIL_NULL_V(p_start_node, nullptr);
-	ERR_FAIL_COND_V(!is_a_parent_of(p_start_node), nullptr);
+	ERR_FAIL_COND_V(!is_a_parent_of(p_start_node), p_start_node);
 
 	Node const *iterated_item = p_start_node;
 	Node *node = p_start_node;

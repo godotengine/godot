@@ -158,6 +158,7 @@ class GridMap : public Spatial {
 	Vector3::Axis clip_axis;
 
 	Ref<MeshLibrary> mesh_library;
+	bool use_in_baked_light;
 
 	Map<OctantKey, Octant *> octant_map;
 	Map<IndexKey, Cell> cell_map;
@@ -229,6 +230,9 @@ public:
 
 	void set_mesh_library(const Ref<MeshLibrary> &p_mesh_library);
 	Ref<MeshLibrary> get_mesh_library() const;
+
+	void set_use_in_baked_light(bool p_use_baked_light);
+	bool get_use_in_baked_light() const;
 
 	void set_cell_size(const Vector3 &p_size);
 	Vector3 get_cell_size() const;

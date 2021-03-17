@@ -119,6 +119,7 @@
 		</member>
 		<member name="depth_enabled" type="bool" setter="set_feature" getter="get_feature" default="false">
 			If [code]true[/code], depth mapping is enabled (also called "parallax mapping" or "height mapping"). See also [member normal_enabled].
+			[b]Note:[/b] Depth mapping is not supported if triplanar mapping is used on the same material. The value of [member depth_enabled] will be ignored if [member uv1_triplanar] is enabled.
 		</member>
 		<member name="depth_flip_binormal" type="bool" setter="set_depth_deep_parallax_flip_binormal" getter="get_depth_deep_parallax_flip_binormal">
 			If [code]true[/code], direction of the binormal is flipped before using in the depth effect. This may be necessary if you have encoded your binormals in a way that is conflicting with the depth effect.

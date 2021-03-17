@@ -196,7 +196,7 @@ void ImageTexture::create(int p_width, int p_height, Image::Format p_format, uin
 }
 void ImageTexture::create_from_image(const Ref<Image> &p_image, uint32_t p_flags) {
 
-	ERR_FAIL_COND(p_image.is_null());
+	ERR_FAIL_COND_MSG(p_image.is_null() || p_image->empty(), "Invalid image");
 	flags = p_flags;
 	w = p_image->get_width();
 	h = p_image->get_height();

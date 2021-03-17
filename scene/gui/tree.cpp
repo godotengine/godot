@@ -3203,11 +3203,11 @@ void Tree::item_selected(int p_column, TreeItem *p_item) {
 
 void Tree::item_deselected(int p_column, TreeItem *p_item) {
 	if (selected_item == p_item) {
-		selected_item = NULL;
-	}
+		selected_item = nullptr;
 
-	if (selected_col == p_column) {
-		selected_col = -1;
+		if (selected_col == p_column) {
+			selected_col = -1;
+		}
 	}
 
 	if (select_mode == SELECT_MULTI || select_mode == SELECT_SINGLE) {
@@ -4013,6 +4013,7 @@ void Tree::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("get_edited"), &Tree::get_edited);
 	ClassDB::bind_method(D_METHOD("get_edited_column"), &Tree::get_edited_column);
+	ClassDB::bind_method(D_METHOD("edit_selected"), &Tree::edit_selected);
 	ClassDB::bind_method(D_METHOD("get_custom_popup_rect"), &Tree::get_custom_popup_rect);
 	ClassDB::bind_method(D_METHOD("get_item_area_rect", "item", "column"), &Tree::_get_item_rect, DEFVAL(-1));
 	ClassDB::bind_method(D_METHOD("get_item_at_position", "position"), &Tree::get_item_at_position);

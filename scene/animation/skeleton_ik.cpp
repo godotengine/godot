@@ -64,7 +64,6 @@ bool FabrikInverseKinematic::build_chain(Task *p_task, bool p_force_simple_chain
 	chain.chain_root.bone = p_task->root_bone;
 	chain.chain_root.initial_transform = p_task->skeleton->get_bone_global_pose(chain.chain_root.bone);
 	chain.chain_root.current_pos = chain.chain_root.initial_transform.origin;
-	chain.chain_root.pb = p_task->skeleton->get_physical_bone(chain.chain_root.bone);
 	chain.middle_chain_item = NULL;
 
 	// Holds all IDs that are composing a single chain in reverse order
@@ -101,8 +100,6 @@ bool FabrikInverseKinematic::build_chain(Task *p_task, bool p_force_simple_chain
 
 				child_ci = sub_chain->add_child(chain_ids[i]);
 
-				child_ci->pb = p_task->skeleton->get_physical_bone(child_ci->bone);
-
 				child_ci->initial_transform = p_task->skeleton->get_bone_global_pose(child_ci->bone);
 				child_ci->current_pos = child_ci->initial_transform.origin;
 
@@ -134,20 +131,6 @@ bool FabrikInverseKinematic::build_chain(Task *p_task, bool p_force_simple_chain
 		}
 	}
 	return true;
-}
-
-void FabrikInverseKinematic::update_chain(const Skeleton *p_sk, ChainItem *p_chain_item) {
-
-	if (!p_chain_item)
-		return;
-
-	p_chain_item->initial_transform = p_sk->get_bone_global_pose(p_chain_item->bone);
-	p_chain_item->current_pos = p_chain_item->initial_transform.origin;
-
-	ChainItem *items = p_chain_item->children.ptrw();
-	for (int i = 0; i < p_chain_item->children.size(); i += 1) {
-		update_chain(p_sk, items + i);
-	}
 }
 
 void FabrikInverseKinematic::solve_simple(Task *p_task, bool p_solve_magnet) {
@@ -297,9 +280,7 @@ void FabrikInverseKinematic::solve(Task *p_task, real_t blending_delta, bool ove
 		p_task->skeleton->set_bone_global_pose_override(p_task->chain.tips[i].chain_item->bone, Transform(), 0.0, true);
 	}
 
-	make_goal(p_task, p_task->skeleton->get_global_transform().affine_inverse().scaled(p_task->skeleton->get_global_transform().get_basis().get_scale()), blending_delta);
-
-	update_chain(p_task->skeleton, &p_task->chain.chain_root);
+	make_goal(p_task, p_task->skeleton->get_global_transform().affine_inverse(), blending_delta);
 
 	if (p_use_magnet && p_task->chain.middle_chain_item) {
 		p_task->chain.magnet_position = p_task->chain.middle_chain_item->initial_transform.origin.linear_interpolate(p_magnet_position, blending_delta);
@@ -323,6 +304,7 @@ void FabrikInverseKinematic::solve(Task *p_task, real_t blending_delta, bool ove
 				const real_t rot_angle(Math::acos(CLAMP(initial_ori.dot(ci->current_ori), -1, 1)));
 				new_bone_pose.basis.rotate(rot_axis, rot_angle);
 			}
+
 		} else {
 			// Set target orientation to tip
 			if (override_tip_basis)

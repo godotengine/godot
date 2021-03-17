@@ -4521,6 +4521,10 @@ void RasterizerStorageGLES2::lightmap_capture_set_energy(RID p_capture, float p_
 	LightmapCapture *capture = lightmap_capture_data_owner.getornull(p_capture);
 	ERR_FAIL_COND(!capture);
 	capture->energy = p_energy;
+
+	if (!capture->update_list.in_list()) {
+		capture_update_list.add(&capture->update_list);
+	}
 }
 
 float RasterizerStorageGLES2::lightmap_capture_get_energy(RID p_capture) const {
@@ -4528,6 +4532,30 @@ float RasterizerStorageGLES2::lightmap_capture_get_energy(RID p_capture) const {
 	const LightmapCapture *capture = lightmap_capture_data_owner.getornull(p_capture);
 	ERR_FAIL_COND_V(!capture, 0);
 	return capture->energy;
+}
+
+void RasterizerStorageGLES2::lightmap_capture_set_interior(RID p_capture, bool p_interior) {
+	LightmapCapture *capture = lightmap_capture_data_owner.getornull(p_capture);
+	ERR_FAIL_COND(!capture);
+	capture->interior = p_interior;
+
+	if (!capture->update_list.in_list()) {
+		capture_update_list.add(&capture->update_list);
+	}
+}
+
+bool RasterizerStorageGLES2::lightmap_capture_is_interior(RID p_capture) const {
+	const LightmapCapture *capture = lightmap_capture_data_owner.getornull(p_capture);
+	ERR_FAIL_COND_V(!capture, false);
+	return capture->interior;
+}
+
+void RasterizerStorageGLES2::update_dirty_captures() {
+	while (capture_update_list.first()) {
+		LightmapCapture *capture = capture_update_list.first()->self();
+		capture->instance_change_notify(false, true);
+		capture_update_list.remove(capture_update_list.first());
+	}
 }
 
 const PoolVector<RasterizerStorage::LightmapCaptureOctree> *RasterizerStorageGLES2::lightmap_capture_get_octree_ptr(RID p_capture) const {
@@ -5946,7 +5974,7 @@ int RasterizerStorageGLES2::get_captured_render_info(VS::RenderInfo p_info) {
 	}
 }
 
-int RasterizerStorageGLES2::get_render_info(VS::RenderInfo p_info) {
+uint64_t RasterizerStorageGLES2::get_render_info(VS::RenderInfo p_info) {
 	switch (p_info) {
 		case VS::INFO_OBJECTS_IN_FRAME:
 			return info.render_final.object_count;
@@ -6361,6 +6389,7 @@ void RasterizerStorageGLES2::update_dirty_resources() {
 	update_dirty_materials();
 	update_dirty_skeletons();
 	update_dirty_multimeshes();
+	update_dirty_captures();
 }
 
 RasterizerStorageGLES2::RasterizerStorageGLES2() {

@@ -300,6 +300,7 @@ struct _VariantCall {
 	VCALL_LOCALMEM0R(String, json_escape);
 	VCALL_LOCALMEM0R(String, percent_encode);
 	VCALL_LOCALMEM0R(String, percent_decode);
+	VCALL_LOCALMEM0R(String, validate_node_name);
 	VCALL_LOCALMEM0R(String, is_valid_identifier);
 	VCALL_LOCALMEM0R(String, is_valid_integer);
 	VCALL_LOCALMEM0R(String, is_valid_float);
@@ -348,6 +349,24 @@ struct _VariantCall {
 		retval.resize(len);
 		PoolByteArray::Write w = retval.write();
 		copymem(w.ptr(), charstr.ptr(), len);
+		w.release();
+
+		r_ret = retval;
+	}
+
+	static void _call_String_to_wchar(Variant &r_ret, Variant &p_self, const Variant **p_args) {
+
+		String *s = reinterpret_cast<String *>(p_self._data._mem);
+		if (s->empty()) {
+			r_ret = PoolByteArray();
+			return;
+		}
+
+		PoolByteArray retval;
+		size_t len = s->length() * sizeof(wchar_t);
+		retval.resize(len);
+		PoolByteArray::Write w = retval.write();
+		copymem(w.ptr(), s->ptr(), len);
 		w.release();
 
 		r_ret = retval;
@@ -1628,6 +1647,7 @@ void register_variant_methods() {
 	ADDFUNC0R(STRING, STRING, String, json_escape, varray());
 	ADDFUNC0R(STRING, STRING, String, percent_encode, varray());
 	ADDFUNC0R(STRING, STRING, String, percent_decode, varray());
+	ADDFUNC0R(STRING, STRING, String, validate_node_name, varray());
 	ADDFUNC0R(STRING, BOOL, String, is_valid_identifier, varray());
 	ADDFUNC0R(STRING, BOOL, String, is_valid_integer, varray());
 	ADDFUNC0R(STRING, BOOL, String, is_valid_float, varray());
@@ -1645,6 +1665,7 @@ void register_variant_methods() {
 
 	ADDFUNC0R(STRING, POOL_BYTE_ARRAY, String, to_ascii, varray());
 	ADDFUNC0R(STRING, POOL_BYTE_ARRAY, String, to_utf8, varray());
+	ADDFUNC0R(STRING, POOL_BYTE_ARRAY, String, to_wchar, varray());
 
 	ADDFUNC0R(VECTOR2, REAL, Vector2, angle, varray());
 	ADDFUNC1R(VECTOR2, REAL, Vector2, angle_to, VECTOR2, "to", varray());

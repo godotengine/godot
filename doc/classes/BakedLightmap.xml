@@ -5,7 +5,6 @@
 	</brief_description>
 	<description>
 		Baked lightmaps are an alternative workflow for adding indirect (or baked) lighting to a scene. Unlike the [GIProbe] approach, baked lightmaps work fine on low-end PCs and mobile devices as they consume almost no resources in run-time.
-		[b]Note:[/b] This node has many known bugs and will be [url=https://godotengine.org/article/godot-40-will-get-new-modernized-lightmapper]rewritten for Godot 4.0[/url]. See [url=https://github.com/godotengine/godot/issues/30929]GitHub issue #30929[/url].
 	</description>
 	<tutorials>
 		<link>https://docs.godotengine.org/en/3.2/tutorials/3d/baked_lightmaps.html</link>
@@ -63,6 +62,9 @@
 		<member name="environment_custom_sky_rotation_degrees" type="Vector3" setter="set_environment_custom_sky_rotation_degrees" getter="get_environment_custom_sky_rotation_degrees">
 			The rotation of the baked custom sky.
 		</member>
+		<member name="environment_min_light" type="Color" setter="set_environment_min_light" getter="get_environment_min_light" default="Color( 0, 0, 0, 1 )">
+			Minimum ambient light for all the lightmap texels. This doesn't take into account any occlusion from the scene's geometry, it simply ensures a minimum amount of light on all the lightmap texels. Can be used for artistic control on shadow color.
+		</member>
 		<member name="environment_mode" type="int" setter="set_environment_mode" getter="get_environment_mode" enum="BakedLightmap.EnvironmentMode" default="0">
 			Decides which environment to use during baking.
 		</member>
@@ -85,7 +87,8 @@
 			When enabled, a lightmap denoiser will be used to reduce the noise inherent to Monte Carlo based global illumination.
 		</member>
 		<member name="use_hdr" type="bool" setter="set_use_hdr" getter="is_using_hdr" default="true">
-			Store the lightmap textures in a Hight Dynamic Range format (EXR). Can be disabled to reduce disk usage, but light values over 1.0 will be clamped and you may see banding caused by the reduced precision.
+			If [code]true[/code], stores the lightmap textures in a high dynamic range format (EXR). If [code]false[/code], stores the lightmap texture in a low dynamic range PNG image. This can be set to [code]false[/code] to reduce disk usage, but light values over 1.0 will be clamped and you may see banding caused by the reduced precision.
+			[b]Note:[/b] Setting [member use_hdr] to [code]true[/code] will decrease lightmap banding even when using the GLES2 backend or if [member ProjectSettings.rendering/quality/depth/hdr] is [code]false[/code].
 		</member>
 	</members>
 	<constants>

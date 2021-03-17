@@ -59,6 +59,9 @@ public:
 	virtual void draw(const RID &p_to_rid, const Color &p_color) {}
 	virtual Rect2 get_rect() const { return Rect2(); }
 	virtual RID get_rid() const;
+
+	bool is_collision_outline_enabled();
+
 	Shape2D();
 	~Shape2D();
 };

@@ -55,17 +55,21 @@ custom_tools = ["default"]
 
 platform_arg = ARGUMENTS.get("platform", ARGUMENTS.get("p", False))
 
-if os.name == "nt" and (platform_arg == "android" or ARGUMENTS.get("use_mingw", False)):
+if os.name == "nt" and (platform_arg == "android" or methods.get_cmdline_bool("use_mingw", False)):
     custom_tools = ["mingw"]
 elif platform_arg == "javascript":
     # Use generic POSIX build toolchain for Emscripten.
     custom_tools = ["cc", "c++", "ar", "link", "textfile", "zip"]
 
+# We let SCons build its default ENV as it includes OS-specific things which we don't
+# want to have to pull in manually.
+# Then we prepend PATH to make it take precedence, while preserving SCons' own entries.
 env_base = Environment(tools=custom_tools)
-if "TERM" in os.environ:
+env_base.PrependENVPath("PATH", os.getenv("PATH"))
+env_base.PrependENVPath("PKG_CONFIG_PATH", os.getenv("PKG_CONFIG_PATH"))
+if "TERM" in os.environ:  # Used for colored output.
     env_base["ENV"]["TERM"] = os.environ["TERM"]
-env_base.AppendENVPath("PATH", os.getenv("PATH"))
-env_base.AppendENVPath("PKG_CONFIG_PATH", os.getenv("PKG_CONFIG_PATH"))
+
 env_base.disabled_modules = []
 env_base.use_ptrcall = False
 env_base.module_version_string = ""
@@ -95,7 +99,7 @@ env_base.SConsignFile(".sconsign{0}.dblite".format(pickle.HIGHEST_PROTOCOL))
 
 customs = ["custom.py"]
 
-profile = ARGUMENTS.get("profile", False)
+profile = ARGUMENTS.get("profile", "")
 if profile:
     if os.path.isfile(profile):
         customs.append(profile)
@@ -243,13 +247,16 @@ for path in module_search_paths:
         # Built-in modules don't have nested modules,
         # so save the time it takes to parse directories.
         modules = methods.detect_modules(path, recursive=False)
-    else:  # External.
+    else:  # Custom.
         modules = methods.detect_modules(path, env_base["custom_modules_recursive"])
+        # Provide default include path for both the custom module search `path`
+        # and the base directory containing custom modules, as it may be different
+        # from the built-in "modules" name (e.g. "custom_modules/summator/summator.h"),
+        # so it can be referenced simply as `#include "summator/summator.h"`
+        # independently of where a module is located on user's filesystem.
+        env_base.Prepend(CPPPATH=[path, os.path.dirname(path)])
     # Note: custom modules can override built-in ones.
     modules_detected.update(modules)
-    include_path = os.path.dirname(path)
-    if include_path:
-        env_base.Prepend(CPPPATH=[include_path])
 
 # Add module options
 for name, path in modules_detected.items():
@@ -322,15 +329,16 @@ if selected_platform in platform_list:
         env.Alias("compiledb", env.CompilationDatabase())
 
     # 'dev' and 'production' are aliases to set default options if they haven't been set
-    # manually by the user. We use `ARGUMENTS.get()` to check if they were manually set.
+    # manually by the user.
     if env["dev"]:
-        env["verbose"] = ARGUMENTS.get("verbose", True)
+        env["verbose"] = methods.get_cmdline_bool("verbose", True)
         env["warnings"] = ARGUMENTS.get("warnings", "extra")
-        env["werror"] = ARGUMENTS.get("werror", True)
+        env["werror"] = methods.get_cmdline_bool("werror", True)
     if env["production"]:
-        env["use_static_cpp"] = ARGUMENTS.get("use_static_cpp", True)
-        env["use_lto"] = ARGUMENTS.get("use_lto", True)
-        env["debug_symbols"] = ARGUMENTS.get("debug_symbols", False)
+        env["use_static_cpp"] = methods.get_cmdline_bool("use_static_cpp", True)
+        env["use_lto"] = methods.get_cmdline_bool("use_lto", True)
+        print("use_lto is: " + str(env["use_lto"]))
+        env["debug_symbols"] = methods.get_cmdline_bool("debug_symbols", False)
         if not env["tools"] and env["target"] == "debug":
             print(
                 "WARNING: Requested `production` build with `tools=no target=debug`, "

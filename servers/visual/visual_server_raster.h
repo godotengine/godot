@@ -396,6 +396,9 @@ public:
 	BIND2(lightmap_capture_set_energy, RID, float)
 	BIND1RC(float, lightmap_capture_get_energy, RID)
 
+	BIND2(lightmap_capture_set_interior, RID, bool)
+	BIND1RC(bool, lightmap_capture_is_interior, RID)
+
 	/* PARTICLES */
 
 	BIND0R(RID, particles_create)
@@ -685,7 +688,7 @@ public:
 
 	/* STATUS INFORMATION */
 
-	virtual int get_render_info(RenderInfo p_info);
+	virtual uint64_t get_render_info(RenderInfo p_info);
 	virtual String get_video_adapter_name() const;
 	virtual String get_video_adapter_vendor() const;
 

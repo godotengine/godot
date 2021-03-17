@@ -558,6 +558,8 @@ public:
 	virtual PoolVector<uint8_t> lightmap_capture_get_octree(RID p_capture) const = 0;
 	virtual void lightmap_capture_set_energy(RID p_capture, float p_energy) = 0;
 	virtual float lightmap_capture_get_energy(RID p_capture) const = 0;
+	virtual void lightmap_capture_set_interior(RID p_capture, bool p_interior) = 0;
+	virtual bool lightmap_capture_is_interior(RID p_capture) const = 0;
 
 	/* PARTICLES API */
 
@@ -1038,7 +1040,7 @@ public:
 		INFO_VERTEX_MEM_USED,
 	};
 
-	virtual int get_render_info(RenderInfo p_info) = 0;
+	virtual uint64_t get_render_info(RenderInfo p_info) = 0;
 	virtual String get_video_adapter_name() const = 0;
 	virtual String get_video_adapter_vendor() const = 0;
 

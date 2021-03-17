@@ -1820,8 +1820,10 @@ void TileMapEditor::edit(Node *p_tile_map) {
 		canvas_item_editor_viewport = CanvasItemEditor::get_singleton()->get_viewport_control();
 	}
 
-	if (node)
+	if (node && node->is_connected("settings_changed", this, "_tileset_settings_changed")) {
 		node->disconnect("settings_changed", this, "_tileset_settings_changed");
+	}
+
 	if (p_tile_map) {
 
 		node = Object::cast_to<TileMap>(p_tile_map);
@@ -1843,8 +1845,9 @@ void TileMapEditor::edit(Node *p_tile_map) {
 		_update_palette();
 	}
 
-	if (node)
+	if (node && !node->is_connected("settings_changed", this, "_tileset_settings_changed")) {
 		node->connect("settings_changed", this, "_tileset_settings_changed");
+	}
 
 	_clear_bucket_cache();
 }

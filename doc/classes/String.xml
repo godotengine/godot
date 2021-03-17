@@ -934,6 +934,13 @@
 				Converts the String (which is an array of characters) to [PoolByteArray] (which is an array of bytes). The conversion is a bit slower than [method to_ascii], but supports all UTF-8 characters. Therefore, you should prefer this function over [method to_ascii].
 			</description>
 		</method>
+		<method name="to_wchar">
+			<return type="PoolByteArray">
+			</return>
+			<description>
+				Converts the String (which is an array of characters) to [PoolByteArray] (which is an array of bytes).
+			</description>
+		</method>
 		<method name="trim_prefix">
 			<return type="String">
 			</return>
@@ -950,6 +957,13 @@
 			</argument>
 			<description>
 				Removes a given string from the end if it ends with it or leaves the string unchanged.
+			</description>
+		</method>
+		<method name="validate_node_name">
+			<return type="String">
+			</return>
+			<description>
+				Removes any characters from the string that are prohibited in [Node] names ([code].[/code] [code]:[/code] [code]@[/code] [code]/[/code] [code]"[/code]).
 			</description>
 		</method>
 		<method name="xml_escape">

@@ -58,9 +58,7 @@ private:
 	float _fps;
 	int _target_fps;
 	float _time_scale;
-	bool _pixel_snap;
-	bool _snap_2d_transforms;
-	bool _snap_2d_viewports;
+	bool _gpu_pixel_snap;
 	uint64_t _physics_frames;
 	float _physics_interpolation_fraction;
 
@@ -108,9 +106,7 @@ public:
 	bool has_singleton(const String &p_name) const;
 	Object *get_singleton_object(const String &p_name) const;
 
-	_FORCE_INLINE_ bool get_use_pixel_snap() const { return _pixel_snap; }
-	bool get_snap_2d_transforms() const { return _snap_2d_transforms; }
-	bool get_snap_2d_viewports() const { return _snap_2d_viewports; }
+	_FORCE_INLINE_ bool get_use_gpu_pixel_snap() const { return _gpu_pixel_snap; }
 
 #ifdef TOOLS_ENABLED
 	_FORCE_INLINE_ void set_editor_hint(bool p_enabled) { editor_hint = p_enabled; }

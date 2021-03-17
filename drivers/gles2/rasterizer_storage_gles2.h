@@ -1096,11 +1096,21 @@ public:
 		Transform cell_xform;
 		int cell_subdiv;
 		float energy;
-		LightmapCapture() {
+		bool interior;
+
+		SelfList<LightmapCapture> update_list;
+
+		LightmapCapture() :
+				update_list(this) {
 			energy = 1.0;
 			cell_subdiv = 1;
+			interior = false;
 		}
 	};
+
+	SelfList<LightmapCapture>::List capture_update_list;
+
+	void update_dirty_captures();
 
 	mutable RID_Owner<LightmapCapture> lightmap_capture_data_owner;
 
@@ -1115,6 +1125,9 @@ public:
 	virtual int lightmap_capture_get_octree_cell_subdiv(RID p_capture) const;
 	virtual void lightmap_capture_set_energy(RID p_capture, float p_energy);
 	virtual float lightmap_capture_get_energy(RID p_capture) const;
+	virtual void lightmap_capture_set_interior(RID p_capture, bool p_interior);
+	virtual bool lightmap_capture_is_interior(RID p_capture) const;
+
 	virtual const PoolVector<LightmapCaptureOctree> *lightmap_capture_get_octree_ptr(RID p_capture) const;
 
 	/* PARTICLES */
@@ -1345,7 +1358,7 @@ public:
 	virtual void render_info_end_capture();
 	virtual int get_captured_render_info(VS::RenderInfo p_info);
 
-	virtual int get_render_info(VS::RenderInfo p_info);
+	virtual uint64_t get_render_info(VS::RenderInfo p_info);
 	virtual String get_video_adapter_name() const;
 	virtual String get_video_adapter_vendor() const;
 

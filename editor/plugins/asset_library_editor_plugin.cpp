@@ -626,6 +626,24 @@ void EditorAssetLibrary::_notification(int p_what) {
 			filter->set_right_icon(get_icon("Search", "EditorIcons"));
 			filter->set_clear_button_enabled(true);
 		} break;
+
+		case EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED: {
+			_update_repository_options();
+		} break;
+	}
+}
+
+void EditorAssetLibrary::_update_repository_options() {
+	Dictionary default_urls;
+	default_urls["godotengine.org"] = "https://godotengine.org/asset-library/api";
+	default_urls["localhost"] = "http://127.0.0.1/asset-library/api";
+	Dictionary available_urls = _EDITOR_DEF("asset_library/available_urls", default_urls, true);
+	repository->clear();
+	Array keys = available_urls.keys();
+	for (int i = 0; i < available_urls.size(); i++) {
+		String key = keys[i];
+		repository->add_item(key);
+		repository->set_item_metadata(i, available_urls[key]);
 	}
 }
 
@@ -1010,7 +1028,8 @@ HBoxContainer *EditorAssetLibrary::_make_pages(int p_page, int p_page_count, int
 		if (i == p_page) {
 
 			Button *current = memnew(Button);
-			current->set_text(itos(i + 1));
+			// Keep the extended padding for the currently active page (see below).
+			current->set_text(vformat(" %d ", i + 1));
 			current->set_disabled(true);
 			current->set_focus_mode(Control::FOCUS_NONE);
 
@@ -1018,7 +1037,8 @@ HBoxContainer *EditorAssetLibrary::_make_pages(int p_page, int p_page_count, int
 		} else {
 
 			Button *current = memnew(Button);
-			current->set_text(itos(i + 1));
+			// Add padding to make page number buttons easier to click.
+			current->set_text(vformat(" %d ", i + 1));
 			current->connect("pressed", this, "_search", varray(i));
 
 			hbc->add_child(current);
@@ -1430,18 +1450,7 @@ EditorAssetLibrary::EditorAssetLibrary(bool p_templates_only) {
 	search_hb2->add_child(memnew(Label(TTR("Site:") + " ")));
 	repository = memnew(OptionButton);
 
-	{
-		Dictionary default_urls;
-		default_urls["godotengine.org"] = "https://godotengine.org/asset-library/api";
-		default_urls["localhost"] = "http://127.0.0.1/asset-library/api";
-		Dictionary available_urls = _EDITOR_DEF("asset_library/available_urls", default_urls, true);
-		Array keys = available_urls.keys();
-		for (int i = 0; i < available_urls.size(); i++) {
-			String key = keys[i];
-			repository->add_item(key);
-			repository->set_item_metadata(i, available_urls[key]);
-		}
-	}
+	_update_repository_options();
 
 	repository->connect("item_selected", this, "_repository_changed");
 
@@ -1453,6 +1462,7 @@ EditorAssetLibrary::EditorAssetLibrary(bool p_templates_only) {
 	support = memnew(MenuButton);
 	search_hb2->add_child(support);
 	support->set_text(TTR("Support"));
+	support->get_popup()->set_hide_on_checkable_item_selection(false);
 	support->get_popup()->add_check_item(TTR("Official"), SUPPORT_OFFICIAL);
 	support->get_popup()->add_check_item(TTR("Community"), SUPPORT_COMMUNITY);
 	support->get_popup()->add_check_item(TTR("Testing"), SUPPORT_TESTING);

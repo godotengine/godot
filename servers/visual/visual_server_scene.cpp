@@ -855,12 +855,14 @@ void VisualServerScene::instance_set_use_lightmap(RID p_instance, RID p_lightmap
 	Instance *instance = instance_owner.get(p_instance);
 	ERR_FAIL_COND(!instance);
 
+	instance->lightmap = RID();
+	instance->lightmap_slice = -1;
+	instance->lightmap_uv_rect = Rect2(0, 0, 1, 1);
+	instance->baked_light = false;
+
 	if (instance->lightmap_capture) {
 		InstanceLightmapCaptureData *lightmap_capture = static_cast<InstanceLightmapCaptureData *>(((Instance *)instance->lightmap_capture)->base_data);
 		lightmap_capture->users.erase(instance);
-		instance->lightmap = RID();
-		instance->lightmap_slice = -1;
-		instance->lightmap_uv_rect = Rect2(0, 0, 1, 1);
 		instance->lightmap_capture = NULL;
 	}
 
@@ -875,6 +877,7 @@ void VisualServerScene::instance_set_use_lightmap(RID p_instance, RID p_lightmap
 		instance->lightmap = p_lightmap;
 		instance->lightmap_slice = p_lightmap_slice;
 		instance->lightmap_uv_rect = p_lightmap_uv_rect;
+		instance->baked_light = true;
 	}
 }
 
@@ -1080,6 +1083,13 @@ void VisualServerScene::_update_instance(Instance *p_instance) {
 	if (p_instance->base_type == VS::INSTANCE_PARTICLES) {
 
 		VSG::storage->particles_set_emission_transform(p_instance->base, p_instance->transform);
+	}
+
+	if (p_instance->base_type == VS::INSTANCE_LIGHTMAP_CAPTURE) {
+		InstanceLightmapCaptureData *capture = static_cast<InstanceLightmapCaptureData *>(p_instance->base_data);
+		for (List<InstanceLightmapCaptureData::PairInfo>::Element *E = capture->geometries.front(); E; E = E->next()) {
+			_instance_queue_update(E->get().geometry, false, true);
+		}
 	}
 
 	if (p_instance->aabb.has_no_surface()) {
@@ -1438,6 +1448,7 @@ void VisualServerScene::_update_instance_lightmap_captures(Instance *p_instance)
 	for (int i = 0; i < 12; i++)
 		new (&p_instance->lightmap_capture_data.ptrw()[i]) Color;
 
+	bool interior = true;
 	//this could use some sort of blending..
 	for (List<Instance *>::Element *E = geom->lightmap_captures.front(); E; E = E->next()) {
 		const PoolVector<RasterizerStorage::LightmapCaptureOctree> *octree = VSG::storage->lightmap_capture_get_octree_ptr(E->get()->base);
@@ -1453,6 +1464,7 @@ void VisualServerScene::_update_instance_lightmap_captures(Instance *p_instance)
 		Vector3 pos = to_cell_xform.xform(p_instance->transform.origin);
 
 		const float capture_energy = VSG::storage->lightmap_capture_get_energy(E->get()->base);
+		interior = interior && VSG::storage->lightmap_capture_is_interior(E->get()->base);
 
 		for (int i = 0; i < 12; i++) {
 
@@ -1464,6 +1476,7 @@ void VisualServerScene::_update_instance_lightmap_captures(Instance *p_instance)
 			p_instance->lightmap_capture_data.write[i] += capture;
 		}
 	}
+	p_instance->lightmap_capture_data.write[0].a = interior ? 0.0f : 1.0f;
 }
 
 bool VisualServerScene::_light_instance_update_shadow(Instance *p_instance, const Transform p_cam_transform, const CameraMatrix &p_cam_projection, bool p_cam_orthogonal, RID p_shadow_atlas, Scenario *p_scenario) {

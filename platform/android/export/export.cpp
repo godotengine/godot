@@ -817,8 +817,7 @@ class EditorExportPlatformAndroid : public EditorExportPlatform {
 
 		manifest_text += _get_xr_features_tag(p_preset);
 		manifest_text += _get_instrumentation_tag(p_preset);
-		String plugins_names = get_plugins_names(get_enabled_plugins(p_preset));
-		manifest_text += _get_application_tag(p_preset, plugins_names);
+		manifest_text += _get_application_tag(p_preset);
 		manifest_text += "</manifest>\n";
 		String manifest_path = vformat("res://android/build/src/%s/AndroidManifest.xml", (p_debug ? "debug" : "release"));
 
@@ -868,8 +867,6 @@ class EditorExportPlatformAndroid : public EditorExportPlatform {
 
 		int xr_mode_index = p_preset->get("xr_features/xr_mode");
 		bool focus_awareness = p_preset->get("xr_features/focus_awareness");
-
-		String plugins_names = get_plugins_names(get_enabled_plugins(p_preset));
 
 		Vector<String> perms;
 		// Write permissions into the perms variable.
@@ -1022,11 +1019,6 @@ class EditorExportPlatformAndroid : public EditorExportPlatform {
 						if (tname == "meta-data" && attrname == "value" && is_focus_aware_metadata) {
 							// Update the focus awareness meta-data value
 							encode_uint32(xr_mode_index == /* XRMode.OVR */ 1 && focus_awareness ? 0xFFFFFFFF : 0, &p_manifest.write[iofs + 16]);
-						}
-
-						if (tname == "meta-data" && attrname == "value" && value == "plugins_value" && !plugins_names.empty()) {
-							// Update the meta-data 'android:value' attribute with the list of enabled plugins.
-							string_table.write[attr_value] = plugins_names;
 						}
 
 						is_focus_aware_metadata = tname == "meta-data" && attrname == "name" && value == "com.oculus.vr.focusaware";
@@ -2059,6 +2051,7 @@ public:
 			String template_err;
 			bool dvalid = false;
 			bool rvalid = false;
+			bool has_export_templates = false;
 
 			if (p_preset->get("custom_template/debug") != "") {
 				dvalid = FileAccess::exists(p_preset->get("custom_template/debug"));
@@ -2066,7 +2059,7 @@ public:
 					template_err += TTR("Custom debug template not found.") + "\n";
 				}
 			} else {
-				dvalid = exists_export_template("android_debug.apk", &template_err);
+				has_export_templates |= exists_export_template("android_debug.apk", &template_err);
 			}
 
 			if (p_preset->get("custom_template/release") != "") {
@@ -2075,23 +2068,25 @@ public:
 					template_err += TTR("Custom release template not found.") + "\n";
 				}
 			} else {
-				rvalid = exists_export_template("android_release.apk", &template_err);
+				has_export_templates |= exists_export_template("android_release.apk", &template_err);
 			}
 
-			valid = dvalid || rvalid;
+			r_missing_templates = !has_export_templates;
+			valid = dvalid || rvalid || has_export_templates;
 			if (!valid) {
 				err += template_err;
 			}
 		} else {
-			valid = exists_export_template("android_source.zip", &err);
+			r_missing_templates = !exists_export_template("android_source.zip", &err);
 
-			if (!FileAccess::exists("res://android/build/build.gradle")) {
+			bool installed_android_build_template = FileAccess::exists("res://android/build/build.gradle");
+			if (!installed_android_build_template) {
 
 				err += TTR("Android build template not installed in the project. Install it from the Project menu.") + "\n";
-				valid = false;
 			}
+
+			valid = installed_android_build_template && !r_missing_templates;
 		}
-		r_missing_templates = !valid;
 
 		// Validate the rest of the configuration.
 
@@ -2774,6 +2769,9 @@ public:
 		print_verbose("- custom build enabled: " + bool_to_string(use_custom_build));
 		print_verbose("- apk expansion enabled: " + bool_to_string(apk_expansion));
 		print_verbose("- enabled abis: " + String(",").join(enabled_abis));
+		print_verbose("- export filter: " + itos(p_preset->get_export_filter()));
+		print_verbose("- include filter: " + p_preset->get_include_filter());
+		print_verbose("- exclude filter: " + p_preset->get_exclude_filter());
 
 		Ref<Image> splash_image;
 		Ref<Image> splash_bg_color_image;
@@ -2913,6 +2911,7 @@ public:
 			cmdline.push_back("-Pplugins_maven_repos=" + custom_maven_repos); // argument to specify the list of custom maven repos for the plugins dependencies.
 			cmdline.push_back("-Pperform_zipalign=" + zipalign_flag); // argument to specify whether the build should be zipaligned.
 			cmdline.push_back("-Pperform_signing=" + sign_flag); // argument to specify whether the build should be signed.
+			cmdline.push_back("-Pgodot_editor_version=" + String(VERSION_FULL_CONFIG));
 
 			// NOTE: The release keystore is not included in the verbose logging
 			// to avoid accidentally leaking sensitive information when sharing verbose logs for troubleshooting.

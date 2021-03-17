@@ -10,7 +10,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
-"PO-Revision-Date: 2021-02-05 09:20+0000\n"
+"PO-Revision-Date: 2021-03-07 06:04+0000\n"
 "Last-Translator: Kritzmensch <streef.gtx@gmail.com>\n"
 "Language-Team: Estonian <https://hosted.weblate.org/projects/godot-engine/"
 "godot/et/>\n"
@@ -18,7 +18,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8-bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 4.5-dev\n"
+"X-Generator: Weblate 4.5.1\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -697,7 +697,7 @@ msgstr ""
 
 #: editor/code_editor.cpp
 msgid "Replace"
-msgstr ""
+msgstr "Asenda"
 
 #: editor/code_editor.cpp
 msgid "Replace All"
@@ -814,7 +814,7 @@ msgstr ""
 
 #: editor/connections_dialog.cpp
 msgid "Oneshot"
-msgstr ""
+msgstr "Ainulaadne"
 
 #: editor/connections_dialog.cpp
 msgid "Disconnects the signal after its first emission."
@@ -840,7 +840,7 @@ msgstr "Sulge"
 
 #: editor/connections_dialog.cpp
 msgid "Connect"
-msgstr ""
+msgstr "Ühenda"
 
 #: editor/connections_dialog.cpp
 msgid "Signal:"
@@ -860,12 +860,12 @@ msgstr ""
 
 #: editor/connections_dialog.cpp
 msgid "Connect..."
-msgstr ""
+msgstr "Ühenda..."
 
 #: editor/connections_dialog.cpp
 #: editor/plugins/animation_tree_player_editor_plugin.cpp
 msgid "Disconnect"
-msgstr ""
+msgstr "Katkesta ühendus"
 
 #: editor/connections_dialog.cpp
 msgid "Connect a Signal to a Method"
@@ -898,7 +898,7 @@ msgstr ""
 
 #: editor/connections_dialog.cpp
 msgid "Edit..."
-msgstr ""
+msgstr "Muuda..."
 
 #: editor/connections_dialog.cpp
 msgid "Go To Method"
@@ -910,7 +910,7 @@ msgstr ""
 
 #: editor/create_dialog.cpp editor/project_settings_editor.cpp
 msgid "Change"
-msgstr ""
+msgstr "Muuda"
 
 #: editor/create_dialog.cpp
 msgid "Create New %s"
@@ -968,20 +968,20 @@ msgstr ""
 #: editor/dependency_editor.cpp
 #: modules/gdnative/gdnative_library_editor_plugin.cpp
 msgid "Dependencies"
-msgstr ""
+msgstr "Sõltuvused"
 
 #: editor/dependency_editor.cpp
 msgid "Resource"
-msgstr ""
+msgstr "Ressurss"
 
 #: editor/dependency_editor.cpp editor/editor_autoload_settings.cpp
 #: editor/project_manager.cpp editor/project_settings_editor.cpp
 msgid "Path"
-msgstr ""
+msgstr "Tee"
 
 #: editor/dependency_editor.cpp
 msgid "Dependencies:"
-msgstr ""
+msgstr "Sõltuvused:"
 
 #: editor/dependency_editor.cpp
 msgid "Fix Broken"
@@ -1213,7 +1213,7 @@ msgstr ""
 #: editor/editor_asset_installer.cpp
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Success!"
-msgstr ""
+msgstr "Õnnestus!"
 
 #: editor/editor_asset_installer.cpp
 msgid "Package Contents:"
@@ -1221,7 +1221,7 @@ msgstr ""
 
 #: editor/editor_asset_installer.cpp editor/editor_node.cpp
 msgid "Install"
-msgstr ""
+msgstr "Paigalda"
 
 #: editor/editor_asset_installer.cpp
 msgid "Package Installer"
@@ -1285,7 +1285,7 @@ msgstr "Vaigista"
 
 #: editor/editor_audio_buses.cpp
 msgid "Bypass"
-msgstr ""
+msgstr "Jäta vahele"
 
 #: editor/editor_audio_buses.cpp
 msgid "Bus options"
@@ -1306,7 +1306,7 @@ msgstr ""
 
 #: editor/editor_audio_buses.cpp
 msgid "Audio"
-msgstr ""
+msgstr "Heli"
 
 #: editor/editor_audio_buses.cpp
 msgid "Add Audio Bus"
@@ -1830,8 +1830,8 @@ msgid "Open a File or Directory"
 msgstr "Ava kaust või kataloog"
 
 #: editor/editor_file_dialog.cpp editor/editor_node.cpp
-#: editor/editor_properties.cpp editor/inspector_dock.cpp
-#: editor/plugins/animation_player_editor_plugin.cpp
+#: editor/editor_properties.cpp editor/import_defaults_editor.cpp
+#: editor/inspector_dock.cpp editor/plugins/animation_player_editor_plugin.cpp
 #: editor/plugins/script_editor_plugin.cpp scene/gui/file_dialog.cpp
 msgid "Save"
 msgstr "Salvesta"
@@ -2171,7 +2171,7 @@ msgstr "Imporditud ressursse ei saa salvestada."
 #: editor/editor_node.cpp editor/plugins/script_editor_plugin.cpp
 #: scene/gui/dialogs.cpp
 msgid "OK"
-msgstr ""
+msgstr "Olgu"
 
 #: editor/editor_node.cpp editor/plugins/animation_player_editor_plugin.cpp
 msgid "Error saving resource!"
@@ -2427,7 +2427,7 @@ msgstr "Välju"
 
 #: editor/editor_node.cpp
 msgid "Yes"
-msgstr ""
+msgstr "Jah"
 
 #: editor/editor_node.cpp
 msgid "Exit the editor?"
@@ -3048,7 +3048,7 @@ msgstr "Laadimisvead"
 
 #: editor/editor_node.cpp editor/plugins/tile_map_editor_plugin.cpp
 msgid "Select"
-msgstr ""
+msgstr "Vali"
 
 #: editor/editor_node.cpp
 msgid "Open 2D Editor"
@@ -3088,7 +3088,7 @@ msgstr ""
 
 #: editor/editor_plugin.cpp
 msgid "Thumbnail..."
-msgstr ""
+msgstr "Pisipilt..."
 
 #: editor/editor_plugin_settings.cpp
 msgid "Main Script:"
@@ -3145,7 +3145,7 @@ msgstr ""
 
 #: editor/editor_profiler.cpp
 msgid "Inclusive"
-msgstr ""
+msgstr "Kaasav"
 
 #: editor/editor_profiler.cpp
 msgid "Self"
@@ -3169,11 +3169,11 @@ msgstr ""
 
 #: editor/editor_properties.cpp editor/script_create_dialog.cpp
 msgid "On"
-msgstr ""
+msgstr "Sees"
 
 #: editor/editor_properties.cpp
 msgid "Layer"
-msgstr ""
+msgstr "Kiht"
 
 #: editor/editor_properties.cpp
 msgid "Bit %d, value %d"
@@ -3181,11 +3181,11 @@ msgstr ""
 
 #: editor/editor_properties.cpp
 msgid "[Empty]"
-msgstr ""
+msgstr "[Tühi]"
 
 #: editor/editor_properties.cpp editor/plugins/root_motion_editor_plugin.cpp
 msgid "Assign..."
-msgstr ""
+msgstr "Määra..."
 
 #: editor/editor_properties.cpp
 msgid "Invalid RID"
@@ -3243,7 +3243,7 @@ msgstr ""
 #: editor/plugins/tile_map_editor_plugin.cpp editor/property_editor.cpp
 #: editor/scene_tree_dock.cpp scene/gui/line_edit.cpp scene/gui/text_edit.cpp
 msgid "Paste"
-msgstr ""
+msgstr "Kleebi"
 
 #: editor/editor_properties.cpp editor/property_editor.cpp
 msgid "Convert To %s"
@@ -3255,7 +3255,7 @@ msgstr ""
 
 #: editor/editor_properties_array_dict.cpp
 msgid "Size: "
-msgstr ""
+msgstr "Suurus: "
 
 #: editor/editor_properties_array_dict.cpp
 msgid "Page: "
@@ -3339,7 +3339,7 @@ msgstr ""
 
 #: editor/export_template_manager.cpp
 msgid "(Installed)"
-msgstr ""
+msgstr "(Paigaldatud)"
 
 #: editor/export_template_manager.cpp
 #: editor/plugins/asset_library_editor_plugin.cpp
@@ -3352,11 +3352,11 @@ msgstr ""
 
 #: editor/export_template_manager.cpp
 msgid "(Missing)"
-msgstr ""
+msgstr "(Puudub)"
 
 #: editor/export_template_manager.cpp
 msgid "(Current)"
-msgstr ""
+msgstr "(Praegune)"
 
 #: editor/export_template_manager.cpp
 msgid "Retrieving mirrors, please wait..."
@@ -3477,7 +3477,7 @@ msgstr ""
 
 #: editor/export_template_manager.cpp
 msgid "Connected"
-msgstr ""
+msgstr "Ühendatud"
 
 #: editor/export_template_manager.cpp
 #: editor/plugins/asset_library_editor_plugin.cpp
@@ -3538,7 +3538,7 @@ msgstr ""
 
 #: editor/filesystem_dock.cpp
 msgid "Favorites"
-msgstr ""
+msgstr "Lemmikud"
 
 #: editor/filesystem_dock.cpp
 msgid "Status: Import of file failed. Please fix file and reimport manually."
@@ -3921,6 +3921,21 @@ msgstr ""
 #: editor/import/resource_importer_scene.cpp
 msgid "Saving..."
 msgstr ""
+
+#: editor/import_defaults_editor.cpp
+#, fuzzy
+msgid "Select Importer"
+msgstr "Valimisrežiim"
+
+#: editor/import_defaults_editor.cpp
+#, fuzzy
+msgid "Importer:"
+msgstr "Impordi"
+
+#: editor/import_defaults_editor.cpp
+#, fuzzy
+msgid "Reset to Defaults"
+msgstr "Laadi vaikimisi"
 
 #: editor/import_dock.cpp
 msgid "%d Files"
@@ -4973,7 +4988,6 @@ msgid "Sort:"
 msgstr "Sordi:"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
-#: editor/project_settings_editor.cpp
 msgid "Category:"
 msgstr "Kategooria:"
 
@@ -10010,6 +10024,11 @@ msgstr ""
 msgid "Plugins"
 msgstr "Pistikprogrammid"
 
+#: editor/project_settings_editor.cpp
+#, fuzzy
+msgid "Import Defaults"
+msgstr "Laadi vaikimisi"
+
 #: editor/property_editor.cpp
 msgid "Preset..."
 msgstr ""
@@ -11345,7 +11364,7 @@ msgstr ""
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Signals:"
-msgstr ""
+msgstr "Signaalid:"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Create a new signal."
@@ -11963,6 +11982,14 @@ msgstr ""
 msgid "An empty CollisionPolygon2D has no effect on collision."
 msgstr ""
 
+#: scene/2d/collision_polygon_2d.cpp
+msgid "Invalid polygon. At least 3 points are needed in 'Solids' build mode."
+msgstr ""
+
+#: scene/2d/collision_polygon_2d.cpp
+msgid "Invalid polygon. At least 2 points are needed in 'Segments' build mode."
+msgstr ""
+
 #: scene/2d/collision_shape_2d.cpp
 msgid ""
 "CollisionShape2D only serves to provide a collision shape to a "
@@ -12219,11 +12246,6 @@ msgid ""
 "Use a BakedLightmap instead."
 msgstr ""
 
-#: scene/3d/interpolated_camera.cpp
-msgid ""
-"InterpolatedCamera has been deprecated and will be removed in Godot 4.0."
-msgstr ""
-
 #: scene/3d/light.cpp
 msgid "A SpotLight with an angle wider than 90 degrees cannot cast shadows."
 msgstr ""
@@ -12421,7 +12443,7 @@ msgstr ""
 
 #: scene/gui/dialogs.cpp
 msgid "Alert!"
-msgstr ""
+msgstr "Tähelepanu!"
 
 #: scene/gui/dialogs.cpp
 msgid "Please Confirm..."
@@ -12455,7 +12477,7 @@ msgstr ""
 
 #: scene/gui/tree.cpp
 msgid "(Other)"
-msgstr ""
+msgstr "(Muu)"
 
 #: scene/main/scene_tree.cpp
 msgid ""

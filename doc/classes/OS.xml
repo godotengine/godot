@@ -222,10 +222,11 @@
 		<method name="get_environment" qualifiers="const">
 			<return type="String">
 			</return>
-			<argument index="0" name="environment" type="String">
+			<argument index="0" name="variable" type="String">
 			</argument>
 			<description>
-				Returns an environment variable.
+				Returns the value of an environment variable. Returns an empty string if the environment variable doesn't exist.
+				[b]Note:[/b] Double-check the casing of [code]variable[/code]. Environment variable names are case-sensitive on all platforms except Windows.
 			</description>
 		</method>
 		<method name="get_executable_path" qualifiers="const">
@@ -548,6 +549,7 @@
 			<description>
 				Gets an epoch time value from a dictionary of time values.
 				[code]datetime[/code] must be populated with the following keys: [code]year[/code], [code]month[/code], [code]day[/code], [code]hour[/code], [code]minute[/code], [code]second[/code].
+				If the dictionary is empty [code]0[/code] is returned.
 				You can pass the output from [method get_datetime_from_unix_time] directly into this function. Daylight Savings Time ([code]dst[/code]), if present, is ignored.
 			</description>
 		</method>
@@ -643,10 +645,11 @@
 		<method name="has_environment" qualifiers="const">
 			<return type="bool">
 			</return>
-			<argument index="0" name="environment" type="String">
+			<argument index="0" name="variable" type="String">
 			</argument>
 			<description>
-				Returns [code]true[/code] if an environment variable exists.
+				Returns [code]true[/code] if the environment variable with the name [code]variable[/code] exists.
+				[b]Note:[/b] Double-check the casing of [code]variable[/code]. Environment variable names are case-sensitive on all platforms except Windows.
 			</description>
 		</method>
 		<method name="has_feature" qualifiers="const">
@@ -912,6 +915,18 @@
 			<description>
 				With this function you can request dangerous permissions since normal permissions are automatically granted at install time in Android application.
 				[b]Note:[/b] This method is implemented on Android.
+			</description>
+		</method>
+		<method name="set_environment" qualifiers="const">
+			<return type="bool">
+			</return>
+			<argument index="0" name="variable" type="String">
+			</argument>
+			<argument index="1" name="value" type="String">
+			</argument>
+			<description>
+				Sets the value of the environment variable [code]variable[/code] to [code]value[/code]. The environment variable will be set for the Godot process and any process executed with [method execute] after running [method set_environment]. The environment variable will [i]not[/i] persist to processes run after the Godot process was terminated.
+				[b]Note:[/b] Double-check the casing of [code]variable[/code]. Environment variable names are case-sensitive on all platforms except Windows.
 			</description>
 		</method>
 		<method name="set_icon">

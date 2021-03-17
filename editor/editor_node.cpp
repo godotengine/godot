@@ -491,11 +491,7 @@ void EditorNode::_notification(int p_what) {
 				}
 
 				for (int i = 0; i < addons.size(); i++) {
-					if (addons[i].begins_with("res://")) {
-						set_addon_plugin_enabled(addons[i], true);
-					} else {
-						set_addon_plugin_enabled("res://addons/" + addons[i] + "/plugin.cfg", true);
-					}
+					set_addon_plugin_enabled(addons[i], true);
 				}
 				_initializing_addons = false;
 			}
@@ -822,7 +818,8 @@ void EditorNode::_scan_external_changes() {
 	// Check if any edited scene has changed.
 
 	for (int i = 0; i < editor_data.get_edited_scene_count(); i++) {
-		if (editor_data.get_scene_path(i) == "") {
+		DirAccessRef da = DirAccess::create(DirAccess::ACCESS_RESOURCES);
+		if (editor_data.get_scene_path(i) == "" || !da->file_exists(editor_data.get_scene_path(i))) {
 			continue;
 		}
 
@@ -2343,11 +2340,14 @@ void EditorNode::_menu_option_confirm(int p_option, bool p_confirmed) {
 				_scene_tab_changed(tab_closing);
 
 				if (unsaved_cache || p_option == FILE_CLOSE_ALL_AND_QUIT || p_option == FILE_CLOSE_ALL_AND_RUN_PROJECT_MANAGER) {
-					String scene_filename = editor_data.get_edited_scene_root(tab_closing)->get_filename();
-					save_confirmation->get_ok()->set_text(TTR("Save & Close"));
-					save_confirmation->set_text(vformat(TTR("Save changes to '%s' before closing?"), scene_filename != "" ? scene_filename : "unsaved scene"));
-					save_confirmation->popup_centered_minsize();
-					break;
+					Node *scene_root = editor_data.get_edited_scene_root(tab_closing);
+					if (scene_root) {
+						String scene_filename = scene_root->get_filename();
+						save_confirmation->get_ok()->set_text(TTR("Save & Close"));
+						save_confirmation->set_text(vformat(TTR("Save changes to '%s' before closing?"), scene_filename != "" ? scene_filename : "unsaved scene"));
+						save_confirmation->popup_centered_minsize();
+						break;
+					}
 				}
 			} else if (p_option == FILE_CLOSE) {
 				tab_closing = editor_data.get_edited_scene();
@@ -3210,7 +3210,11 @@ void EditorNode::_update_addon_config() {
 	project_settings->queue_save();
 }
 
-void EditorNode::set_addon_plugin_enabled(const String &p_addon, bool p_enabled, bool p_config_changed) {
+void EditorNode::set_addon_plugin_enabled(String p_addon, bool p_enabled, bool p_config_changed) {
+
+	if (!p_addon.begins_with("res://")) {
+		p_addon = _to_absolute_plugin_path(p_addon);
+	}
 
 	ERR_FAIL_COND(p_enabled && plugin_addons.has(p_addon));
 	ERR_FAIL_COND(!p_enabled && !plugin_addons.has(p_addon));
@@ -3293,7 +3297,11 @@ void EditorNode::set_addon_plugin_enabled(const String &p_addon, bool p_enabled,
 
 bool EditorNode::is_addon_plugin_enabled(const String &p_addon) const {
 
-	return plugin_addons.has(p_addon);
+	if (p_addon.begins_with("res://")) {
+		return plugin_addons.has(p_addon);
+	}
+
+	return plugin_addons.has(_to_absolute_plugin_path(p_addon));
 }
 
 void EditorNode::_remove_edited_scene(bool p_change_tab) {
@@ -3969,6 +3977,10 @@ Ref<ImageTexture> EditorNode::_load_custom_class_icon(const String &p_path) cons
 		}
 	}
 	return NULL;
+}
+
+String EditorNode::_to_absolute_plugin_path(const String &p_plugin_name) {
+	return "res://addons/" + p_plugin_name + "/plugin.cfg";
 }
 
 Ref<Texture> EditorNode::get_object_icon(const Object *p_object, const String &p_fallback) const {
@@ -5329,7 +5341,7 @@ void EditorNode::_global_menu_action(const Variant &p_id, const Variant &p_meta)
 	if (id == GLOBAL_NEW_WINDOW) {
 		if (OS::get_singleton()->get_main_loop()) {
 			List<String> args;
-			args.push_back("-e");
+			args.push_back("-p");
 			String exec = OS::get_singleton()->get_executable_path();
 
 			OS::ProcessID pid = 0;

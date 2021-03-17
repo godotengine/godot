@@ -22,6 +22,7 @@
 	</description>
 	<tutorials>
 		<link title="When and how to avoid using nodes for everything">https://docs.godotengine.org/en/3.2/getting_started/workflow/best_practices/node_alternatives.html</link>
+		<link title="Advanced exports using _get_property_list()">https://docs.godotengine.org/en/3.2/getting_started/scripting/gdscript/gdscript_exports.html#advanced-exports</link>
 	</tutorials>
 	<methods>
 		<method name="_get" qualifiers="virtual">

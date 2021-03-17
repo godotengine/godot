@@ -330,6 +330,8 @@ public:
 	FUNC1RC(int, lightmap_capture_get_octree_cell_subdiv, RID)
 	FUNC2(lightmap_capture_set_energy, RID, float)
 	FUNC1RC(float, lightmap_capture_get_energy, RID)
+	FUNC2(lightmap_capture_set_interior, RID, bool)
+	FUNC1RC(bool, lightmap_capture_is_interior, RID)
 
 	/* PARTICLES */
 
@@ -605,7 +607,7 @@ public:
 	/* RENDER INFO */
 
 	//this passes directly to avoid stalling
-	virtual int get_render_info(RenderInfo p_info) {
+	virtual uint64_t get_render_info(RenderInfo p_info) {
 		return visual_server->get_render_info(p_info);
 	}
 

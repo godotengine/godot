@@ -70,7 +70,9 @@ Dictionary Control::_edit_get_state() const {
 }
 
 void Control::_edit_set_state(const Dictionary &p_state) {
-
+	ERR_FAIL_COND((p_state.size() <= 0) ||
+				  !p_state.has("rotation") || !p_state.has("scale") ||
+				  !p_state.has("pivot") || !p_state.has("anchors") || !p_state.has("margins"));
 	Dictionary state = p_state;
 
 	set_rotation(state["rotation"]);
@@ -91,6 +93,7 @@ void Control::_edit_set_state(const Dictionary &p_state) {
 
 void Control::_edit_set_position(const Point2 &p_position) {
 #ifdef TOOLS_ENABLED
+	ERR_FAIL_COND_MSG(!Engine::get_singleton()->is_editor_hint(), "This function can only be used from editor plugins.");
 	set_position(p_position, CanvasItemEditor::get_singleton()->is_anchors_mode_enabled());
 #else
 	// Unlikely to happen. TODO: enclose all _edit_ functions into TOOLS_ENABLED
@@ -112,6 +115,7 @@ Size2 Control::_edit_get_scale() const {
 
 void Control::_edit_set_rect(const Rect2 &p_edit_rect) {
 #ifdef TOOLS_ENABLED
+	ERR_FAIL_COND_MSG(!Engine::get_singleton()->is_editor_hint(), "This function can only be used from editor plugins.");
 	set_position((get_position() + get_transform().basis_xform(p_edit_rect.position)).snapped(Vector2(1, 1)), CanvasItemEditor::get_singleton()->is_anchors_mode_enabled());
 	set_size(p_edit_rect.size.snapped(Vector2(1, 1)), CanvasItemEditor::get_singleton()->is_anchors_mode_enabled());
 #else
@@ -433,10 +437,6 @@ void Control::_resize(const Size2 &p_size) {
 	_size_changed();
 }
 
-void Control::_clear_size_warning() {
-	data.size_warning = false;
-}
-
 //moved theme configuration here, so controls can set up even if still not inside active scene
 
 void Control::add_child_notify(Node *p_child) {
@@ -488,9 +488,7 @@ void Control::_notification(int p_notification) {
 		case NOTIFICATION_EXIT_TREE: {
 
 			get_viewport()->_gui_remove_control(this);
-		} break;
-		case NOTIFICATION_READY: {
-			connect("ready", this, "_clear_size_warning", varray(), CONNECT_DEFERRED | CONNECT_ONESHOT);
+
 		} break;
 
 		case NOTIFICATION_ENTER_CANVAS: {
@@ -1835,11 +1833,6 @@ void Control::set_position(const Size2 &p_point, bool p_keep_margins) {
 }
 
 void Control::_set_size(const Size2 &p_size) {
-#ifdef DEBUG_ENABLED
-	if (data.size_warning) {
-		WARN_PRINT("Adjusting the size of Control nodes before they are fully initialized is unreliable. Consider deferring it with set_deferred().");
-	}
-#endif
 	set_size(p_size);
 }
 
@@ -2963,8 +2956,6 @@ void Control::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_theme_changed"), &Control::_theme_changed);
 
 	ClassDB::bind_method(D_METHOD("_override_changed"), &Control::_override_changed);
-
-	ClassDB::bind_method(D_METHOD("_clear_size_warning"), &Control::_clear_size_warning);
 
 	BIND_VMETHOD(MethodInfo("_gui_input", PropertyInfo(Variant::OBJECT, "event", PROPERTY_HINT_RESOURCE_TYPE, "InputEvent")));
 	BIND_VMETHOD(MethodInfo(Variant::VECTOR2, "_get_minimum_size"));

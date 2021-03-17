@@ -227,8 +227,7 @@ Engine::Engine() {
 	_fps = 1;
 	_target_fps = 0;
 	_time_scale = 1.0;
-	_pixel_snap = false;
-	_snap_2d_transforms = false;
+	_gpu_pixel_snap = false;
 	_physics_frames = 0;
 	_idle_frames = 0;
 	_in_physics = false;

@@ -548,6 +548,11 @@ String _OS::get_environment(const String &p_var) const {
 	return OS::get_singleton()->get_environment(p_var);
 }
 
+bool _OS::set_environment(const String &p_var, const String &p_value) const {
+
+	return OS::get_singleton()->set_environment(p_var, p_value);
+}
+
 String _OS::get_name() const {
 
 	return OS::get_singleton()->get_name();
@@ -793,6 +798,8 @@ Dictionary _OS::get_time(bool utc) const {
  * @return epoch calculated
  */
 int64_t _OS::get_unix_time_from_datetime(Dictionary datetime) const {
+	// if datetime is an empty Dictionary throws an error
+	ERR_FAIL_COND_V_MSG(datetime.empty(), 0, "Invalid datetime Dictionary: Dictionary is empty");
 
 	// Bunch of conversion constants
 	static const unsigned int SECONDS_PER_MINUTE = 60;
@@ -1016,7 +1023,7 @@ struct _OSCoreBindImg {
 void _OS::print_all_textures_by_size() {
 
 	List<_OSCoreBindImg> imgs;
-	int total = 0;
+	uint64_t total = 0;
 	{
 		List<Ref<Resource> > rsrc;
 		ResourceCache::get_cached_resources(&rsrc);
@@ -1342,8 +1349,9 @@ void _OS::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("shell_open", "uri"), &_OS::shell_open);
 	ClassDB::bind_method(D_METHOD("get_process_id"), &_OS::get_process_id);
 
-	ClassDB::bind_method(D_METHOD("get_environment", "environment"), &_OS::get_environment);
-	ClassDB::bind_method(D_METHOD("has_environment", "environment"), &_OS::has_environment);
+	ClassDB::bind_method(D_METHOD("get_environment", "variable"), &_OS::get_environment);
+	ClassDB::bind_method(D_METHOD("set_environment", "variable", "value"), &_OS::set_environment);
+	ClassDB::bind_method(D_METHOD("has_environment", "variable"), &_OS::has_environment);
 
 	ClassDB::bind_method(D_METHOD("get_name"), &_OS::get_name);
 	ClassDB::bind_method(D_METHOD("get_cmdline_args"), &_OS::get_cmdline_args);

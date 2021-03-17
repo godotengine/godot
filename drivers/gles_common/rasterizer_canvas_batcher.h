@@ -227,7 +227,7 @@ public:
 
 		// we are always splitting items with lots of commands,
 		// and items with unhandled primitives (default)
-		bool use_hardware_transform() const { return num_item_refs == 1; }
+		bool use_hardware_transform() const { return (num_item_refs == 1) && !(flags & RasterizerStorageCommon::USE_LARGE_FVF); }
 	};
 
 	struct BItemRef {
@@ -969,7 +969,7 @@ PREAMBLE(void)::batch_constructor() {
 	bdata.settings_use_batching = false;
 
 #ifdef GLES_OVER_GL
-	use_nvidia_rect_workaround = GLOBAL_GET("rendering/quality/2d/use_nvidia_rect_flicker_workaround");
+	use_nvidia_rect_workaround = GLOBAL_GET("rendering/2d/options/use_nvidia_rect_flicker_workaround");
 #else
 	// Not needed (a priori) on GLES devices
 	use_nvidia_rect_workaround = false;
@@ -983,8 +983,8 @@ PREAMBLE(void)::batch_initialize() {
 	bdata.settings_item_reordering_lookahead = GLOBAL_GET("rendering/batching/parameters/item_reordering_lookahead");
 	bdata.settings_light_max_join_items = GLOBAL_GET("rendering/batching/lights/max_join_items");
 	bdata.settings_use_single_rect_fallback = GLOBAL_GET("rendering/batching/options/single_rect_fallback");
-	bdata.settings_use_software_skinning = GLOBAL_GET("rendering/quality/2d/use_software_skinning");
-	bdata.settings_ninepatch_mode = GLOBAL_GET("rendering/quality/2d/ninepatch_mode");
+	bdata.settings_use_software_skinning = GLOBAL_GET("rendering/2d/options/use_software_skinning");
+	bdata.settings_ninepatch_mode = GLOBAL_GET("rendering/2d/options/ninepatch_mode");
 
 	// alternatively only enable uv contract if pixel snap in use,
 	// but with this enable bool, it should not be necessary
@@ -1162,10 +1162,17 @@ PREAMBLE(bool)::_light_scissor_begin(const Rect2 &p_item_rect, const Transform2D
 
 	int rh = get_storage()->frame.current_rt->height;
 
+	// using the exact size was leading to off by one errors,
+	// possibly due to pixel snap. For this reason we will boost
+	// the scissor area by 1 pixel, this will take care of any rounding
+	// issues, and shouldn't significantly negatively impact performance.
 	int y = rh - (cliprect.position.y + cliprect.size.y);
+	y += 1; // off by 1 boost before flipping
+
 	if (get_storage()->frame.current_rt->flags[RasterizerStorage::RENDER_TARGET_VFLIP])
 		y = cliprect.position.y;
-	get_this()->gl_enable_scissor(cliprect.position.x, y, cliprect.size.width, cliprect.size.height);
+
+	get_this()->gl_enable_scissor(cliprect.position.x - 1, y, cliprect.size.width + 2, cliprect.size.height + 2);
 
 	return true;
 }
@@ -2061,9 +2068,9 @@ bool C_PREAMBLE::_prefill_rect(RasterizerCanvas::Item::CommandRect *rect, FillSt
 		const Transform2D &tr = r_fill_state.transform_combined;
 
 		pBT[0].translate.set(tr.elements[2]);
-		// could do swizzling in shader?
-		pBT[0].basis[0].set(tr.elements[0][0], tr.elements[1][0]);
-		pBT[0].basis[1].set(tr.elements[0][1], tr.elements[1][1]);
+
+		pBT[0].basis[0].set(tr.elements[0][0], tr.elements[0][1]);
+		pBT[0].basis[1].set(tr.elements[1][0], tr.elements[1][1]);
 
 		pBT[1] = pBT[0];
 		pBT[2] = pBT[0];
@@ -2282,7 +2289,16 @@ PREAMBLE(bool)::prefill_joined_item(FillState &r_fill_state, int &r_command_star
 #ifdef GLES_OVER_GL
 				// anti aliasing not accelerated .. it is problematic because it requires a 2nd line drawn around the outside of each
 				// poly, which would require either a second list of indices or a second list of vertices for this step
+				bool use_legacy_path = false;
+
 				if (polygon->antialiased) {
+					// anti aliasing is also not supported for software skinned meshes.
+					// we can't easily revert, so we force software skinned meshes to run through
+					// batching path with no AA.
+					use_legacy_path = !bdata.settings_use_software_skinning || p_item->skeleton == RID();
+				}
+
+				if (use_legacy_path) {
 					// not accelerated
 					_prefill_default_batch(r_fill_state, command_num, *p_item);
 				} else {
@@ -2298,9 +2314,9 @@ PREAMBLE(bool)::prefill_joined_item(FillState &r_fill_state, int &r_command_star
 						bool buffer_full = false;
 
 						if (send_light_angles) {
-							// NYI
+							// polygon with light angles is not yet implemented
+							// for batching .. this means software skinned with light angles won't work
 							_prefill_default_batch(r_fill_state, command_num, *p_item);
-							//buffer_full = prefill_polygon<true>(polygon, r_fill_state, r_command_start, command_num, command_count, p_item, multiply_final_modulate);
 						} else
 							buffer_full = _prefill_polygon<false>(polygon, r_fill_state, r_command_start, command_num, command_count, p_item, multiply_final_modulate);
 

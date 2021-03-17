@@ -340,6 +340,10 @@ public:
 
 	String property_name_encode() const;
 
+	// node functions
+	static const String invalid_node_name_characters;
+	String validate_node_name() const;
+
 	bool is_valid_identifier() const;
 	bool is_valid_integer() const;
 	bool is_valid_float() const;
