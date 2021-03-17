@@ -43,10 +43,8 @@ void _debug_write_garbage() {
 
 String _diagnose_make_item_joined_string(const BItemJoined &p_bij) const {
 	String sz;
-	if (p_bij.use_hardware_transform()) {
-		sz = "hxform";
-	} else {
-		sz = "sxform";
+	if (p_bij.use_attrib_transform()) {
+		sz = "attrib_xform";
 	}
 	sz += _diagnose_batch_flags_to_string(p_bij.flags);
 

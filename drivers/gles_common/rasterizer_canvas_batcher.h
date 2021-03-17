@@ -227,7 +227,8 @@ public:
 
 		// we are always splitting items with lots of commands,
 		// and items with unhandled primitives (default)
-		bool use_hardware_transform() const { return (num_item_refs == 1) && !(flags & RasterizerStorageCommon::USE_LARGE_FVF); }
+		bool is_single_item() const { return (num_item_refs == 1); }
+		bool use_attrib_transform() const { return flags & RasterizerStorageCommon::USE_LARGE_FVF; }
 	};
 
 	struct BItemRef {
@@ -441,9 +442,12 @@ public:
 			sequence_batch_type_flags = 0;
 		}
 
-		void reset_joined_item(bool p_use_hardware_transform) {
+		void reset_joined_item(bool p_is_single_item, bool p_use_attrib_transform) {
 			reset_flush();
-			use_hardware_transform = p_use_hardware_transform;
+			is_single_item = p_is_single_item;
+			use_attrib_transform = p_use_attrib_transform;
+			use_software_transform = !is_single_item && !use_attrib_transform;
+
 			extra_matrix_sent = false;
 		}
 
@@ -453,7 +457,11 @@ public:
 
 		Batch *curr_batch;
 		int batch_tex_id;
-		bool use_hardware_transform;
+
+		bool is_single_item;
+		bool use_attrib_transform;
+		bool use_software_transform;
+
 		bool contract_uvs;
 		Vector2 texpixel_size;
 		Color final_modulate;
@@ -1849,7 +1857,7 @@ bool C_PREAMBLE::_prefill_rect(RasterizerCanvas::Item::CommandRect *rect, FillSt
 		// because joined items with more than 1, the command * will be incorrect
 		// NOTE - this is assuming that use_hardware_transform means that it is a non-joined item!!
 		// If that assumption is incorrect this will go horribly wrong.
-		if (bdata.settings_use_single_rect_fallback && r_fill_state.use_hardware_transform) {
+		if (bdata.settings_use_single_rect_fallback && r_fill_state.is_single_item) {
 			bool is_single_rect = false;
 			int command_num_next = command_num + 1;
 			if (command_num_next < command_count) {
@@ -2156,7 +2164,7 @@ PREAMBLE(bool)::prefill_joined_item(FillState &r_fill_state, int &r_command_star
 
 	// checking the color for not being white makes it 92/90 times faster in the case where it is white
 	bool multiply_final_modulate = false;
-	if (!r_fill_state.use_hardware_transform && (r_fill_state.final_modulate != Color(1, 1, 1, 1))) {
+	if (!r_fill_state.is_single_item && (r_fill_state.final_modulate != Color(1, 1, 1, 1))) {
 		multiply_final_modulate = true;
 	}
 
@@ -2210,7 +2218,7 @@ PREAMBLE(bool)::prefill_joined_item(FillState &r_fill_state, int &r_command_star
 					RasterizerCanvas::Item::CommandTransform *transform = static_cast<RasterizerCanvas::Item::CommandTransform *>(command);
 					const Transform2D &extra_matrix = transform->xform;
 
-					if (r_fill_state.use_hardware_transform) {
+					if (r_fill_state.is_single_item && !r_fill_state.use_attrib_transform) {
 						// if we are using hardware transform mode, we have already sent the final transform,
 						// so we only want to software transform the extra matrix
 						r_fill_state.transform_combined = extra_matrix;
@@ -2447,7 +2455,7 @@ PREAMBLE(void)::render_joined_item_commands(const BItemJoined &p_bij, Rasterizer
 
 	// fill_state and bdata have once off setup per joined item, and a smaller reset on flush
 	FillState fill_state;
-	fill_state.reset_joined_item(p_bij.use_hardware_transform());
+	fill_state.reset_joined_item(p_bij.is_single_item(), p_bij.use_attrib_transform());
 
 	bdata.reset_joined_item();
 
@@ -2489,7 +2497,7 @@ PREAMBLE(void)::render_joined_item_commands(const BItemJoined &p_bij, Rasterizer
 
 		// decide the initial transform mode, and make a backup
 		// in orig_transform_mode in case we need to switch back
-		if (!fill_state.use_hardware_transform) {
+		if (fill_state.use_software_transform) {
 			fill_state.transform_mode = _find_transform_mode(fill_state.transform_combined);
 		} else {
 			fill_state.transform_mode = TM_NONE;
