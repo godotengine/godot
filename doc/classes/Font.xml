@@ -65,7 +65,7 @@
 			<argument index="1" name="next" type="int" default="0">
 			</argument>
 			<description>
-				Returns the size of a character, optionally taking kerning into account if the next character is provided.
+				Returns the size of a character, optionally taking kerning into account if the next character is provided. Note that the height returned is the font height (see [method get_height]) and has no relation to the glyph height.
 			</description>
 		</method>
 		<method name="get_descent" qualifiers="const">
@@ -88,7 +88,7 @@
 			<argument index="0" name="string" type="String">
 			</argument>
 			<description>
-				Returns the size of a string, taking kerning and advance into account.
+				Returns the size of a string, taking kerning and advance into account. Note that the height returned is the font height (see [method get_height]) and has no relation to the string.
 			</description>
 		</method>
 		<method name="get_wordwrap_string_size" qualifiers="const">
