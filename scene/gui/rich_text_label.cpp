@@ -588,7 +588,8 @@ void RichTextLabel::_shape_line(ItemFrame *p_frame, int p_line, const Ref<Font> 
 					offset.x += table->columns[column].width + hseparation + frame->padding.size.x;
 
 					row_height = MAX(yofs, row_height);
-					if (column == col_count - 1) {
+					// Add row height after last column of the row or last cell of the table.
+					if (column == col_count - 1 || E->next() == nullptr) {
 						offset.x = 0;
 						row_height += vseparation;
 						table->total_height += row_height;
