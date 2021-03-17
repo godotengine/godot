@@ -5121,6 +5121,7 @@ void RendererStorageRD::particles_collision_height_field_update(RID p_particles_
 void RendererStorageRD::particles_collision_set_height_field_resolution(RID p_particles_collision, RS::ParticlesCollisionHeightfieldResolution p_resolution) {
 	ParticlesCollision *particles_collision = particles_collision_owner.getornull(p_particles_collision);
 	ERR_FAIL_COND(!particles_collision);
+	ERR_FAIL_INDEX(p_resolution, RS::PARTICLES_COLLISION_HEIGHTFIELD_RESOLUTION_MAX);
 
 	if (particles_collision->heightfield_resolution == p_resolution) {
 		return;
