@@ -31,8 +31,8 @@
 #ifndef GLTF_SPEC_GLOSS_H
 #define GLTF_SPEC_GLOSS_H
 
-#include "core/io/image.h"
-#include "core/io/resource.h"
+#include "core/image.h"
+#include "core/resource.h"
 
 class GLTFSpecGloss : public Resource {
 	GDCLASS(GLTFSpecGloss, Resource);

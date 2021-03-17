@@ -158,6 +158,8 @@ public:
 	Node *import_scene_from_other_importer(EditorSceneImporter *p_exception, const String &p_path, uint32_t p_flags, int p_bake_fps);
 	Ref<Animation> import_animation_from_other_importer(EditorSceneImporter *p_exception, const String &p_path, uint32_t p_flags, int p_bake_fps);
 
+	void _generate_meshes(Node *p_node);
+
 	ResourceImporterScene();
 };
 

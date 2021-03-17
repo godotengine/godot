@@ -130,7 +130,7 @@ Ref<Material> EditorSceneImporterMesh::get_surface_material(int p_surface) const
 	return surfaces[p_surface].material;
 }
 void EditorSceneImporterMesh::set_surface_material(Ref<Material> &p_material, int p_surface) {
-	ERR_FAIL_COND(p_surface < surfaces.size() || p_surface >= -1);
+	ERR_FAIL_COND(p_surface >= surfaces.size() || p_surface < -1);
 	Surface &surface = surfaces.write[p_surface == -1 ? surfaces.size() - 1 : p_surface];
 	surface.material = p_material;
 }

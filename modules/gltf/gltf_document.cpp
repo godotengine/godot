@@ -44,12 +44,13 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#include "core/core_bind.h"
+#include "core/os/os.h"
+#include "core/bind/core_bind.h"
 #include "core/crypto/crypto_core.h"
 #include "core/io/json.h"
 #include "core/math/disjoint_set.h"
 #include "core/os/file_access.h"
-#include "core/variant/typed_array.h"
+//#include "core/variant/typed_array.h"
 #include "core/version.h"
 #include "core/version_hash.gen.h"
 #include "drivers/png/png_driver_common.h"
@@ -58,12 +59,12 @@
 #include "modules/gridmap/grid_map.h"
 #include "modules/regex/regex.h"
 #include "scene/2d/node_2d.h"
-#include "scene/3d/bone_attachment_3d.h"
-#include "scene/3d/camera_3d.h"
-#include "scene/3d/mesh_instance_3d.h"
-#include "scene/3d/multimesh_instance_3d.h"
-#include "scene/3d/node_3d.h"
-#include "scene/3d/skeleton_3d.h"
+#include "scene/3d/bone_attachment.h"
+#include "scene/3d/camera.h"
+#include "scene/3d/mesh_instance.h"
+#include "scene/3d/multimesh_instance.h"
+#include "scene/3d/spatial.h"
+#include "scene/3d/skeleton.h"
 #include "scene/animation/animation_player.h"
 #include "scene/resources/surface_tool.h"
 #include <limits>
@@ -177,7 +178,7 @@ Error GLTFDocument::serialize(Ref<GLTFState> state, Node *p_root, const String &
 		return Error::FAILED;
 	}
 	uint64_t elapsed = OS::get_singleton()->get_ticks_usec() - begin_time;
-	float elapsed_sec = double(elapsed) / 1000000.0;
+	float elapsed_sec = float(elapsed) / 1000000.0;
 	elapsed_sec = Math::stepify(elapsed_sec, 0.01f);
 	print_line("glTF: Export time elapsed seconds " + rtos(elapsed_sec).pad_decimals(2));
 
@@ -247,7 +248,7 @@ Error GLTFDocument::_parse_json(const String &p_path, Ref<GLTFState> state) {
 Error GLTFDocument::_serialize_bone_attachment(Ref<GLTFState> state) {
 	for (int skeleton_i = 0; skeleton_i < state->skeletons.size(); skeleton_i++) {
 		for (int attachment_i = 0; attachment_i < state->skeletons[skeleton_i]->bone_attachments.size(); attachment_i++) {
-			BoneAttachment3D *bone_attachment = state->skeletons[skeleton_i]->bone_attachments[attachment_i];
+			BoneAttachment *bone_attachment = state->skeletons[skeleton_i]->bone_attachments[attachment_i];
 			String bone_name = bone_attachment->get_bone_name();
 			bone_name = _sanitize_bone_name(bone_name);
 			int32_t bone = state->skeletons[skeleton_i]->godot_skeleton->find_bone(bone_name);
@@ -1006,7 +1007,7 @@ Error GLTFDocument::_parse_accessors(Ref<GLTFState> state) {
 	return OK;
 }
 
-double GLTFDocument::_filter_number(double p_float) {
+float GLTFDocument::_filter_number(float p_float) {
 	if (Math::is_nan(p_float)) {
 		return 0.0f;
 	}
@@ -1046,7 +1047,7 @@ String GLTFDocument::_get_type_name(const GLTFType p_component) {
 	return names[p_component];
 }
 
-Error GLTFDocument::_encode_buffer_view(Ref<GLTFState> state, const double *src, const int count, const GLTFType type, const int component_type, const bool normalized, const int byte_offset, const bool for_vertex, GLTFBufferViewIndex &r_accessor) {
+Error GLTFDocument::_encode_buffer_view(Ref<GLTFState> state, const float *src, const int count, const GLTFType type, const int component_type, const bool normalized, const int byte_offset, const bool for_vertex, GLTFBufferViewIndex &r_accessor) {
 	const int component_count_for_type[7] = {
 		1, 2, 3, 4, 4, 9, 16
 	};
@@ -1109,7 +1110,7 @@ Error GLTFDocument::_encode_buffer_view(Ref<GLTFState> state, const double *src,
 					if (skip_every && j > 0 && (j % skip_every) == 0) {
 						dst_i += skip_bytes;
 					}
-					double d = *src;
+					float d = *src;
 					if (normalized) {
 						buffer.write[dst_i] = d * 128.0;
 					} else {
@@ -1133,7 +1134,7 @@ Error GLTFDocument::_encode_buffer_view(Ref<GLTFState> state, const double *src,
 					if (skip_every && j > 0 && (j % skip_every) == 0) {
 						dst_i += skip_bytes;
 					}
-					double d = *src;
+					float d = *src;
 					if (normalized) {
 						buffer.write[dst_i] = d * 255.0;
 					} else {
@@ -1155,7 +1156,7 @@ Error GLTFDocument::_encode_buffer_view(Ref<GLTFState> state, const double *src,
 					if (skip_every && j > 0 && (j % skip_every) == 0) {
 						dst_i += skip_bytes;
 					}
-					double d = *src;
+					float d = *src;
 					if (normalized) {
 						buffer.write[dst_i] = d * 32768.0;
 					} else {
@@ -1179,7 +1180,7 @@ Error GLTFDocument::_encode_buffer_view(Ref<GLTFState> state, const double *src,
 					if (skip_every && j > 0 && (j % skip_every) == 0) {
 						dst_i += skip_bytes;
 					}
-					double d = *src;
+					float d = *src;
 					if (normalized) {
 						buffer.write[dst_i] = d * 65535.0;
 					} else {
@@ -1203,7 +1204,7 @@ Error GLTFDocument::_encode_buffer_view(Ref<GLTFState> state, const double *src,
 					if (skip_every && j > 0 && (j % skip_every) == 0) {
 						dst_i += skip_bytes;
 					}
-					double d = *src;
+					float d = *src;
 					buffer.write[dst_i] = d;
 					src++;
 					dst_i++;
@@ -1223,7 +1224,7 @@ Error GLTFDocument::_encode_buffer_view(Ref<GLTFState> state, const double *src,
 					if (skip_every && j > 0 && (j % skip_every) == 0) {
 						dst_i += skip_bytes;
 					}
-					double d = *src;
+					float d = *src;
 					buffer.write[dst_i] = d;
 					src++;
 					dst_i++;
@@ -1243,7 +1244,7 @@ Error GLTFDocument::_encode_buffer_view(Ref<GLTFState> state, const double *src,
 	return OK;
 }
 
-Error GLTFDocument::_decode_buffer_view(Ref<GLTFState> state, double *dst, const GLTFBufferViewIndex p_buffer_view, const int skip_every, const int skip_bytes, const int element_size, const int count, const GLTFType type, const int component_count, const int component_type, const int component_size, const bool normalized, const int byte_offset, const bool for_vertex) {
+Error GLTFDocument::_decode_buffer_view(Ref<GLTFState> state, float *dst, const GLTFBufferViewIndex p_buffer_view, const int skip_every, const int skip_bytes, const int element_size, const int count, const GLTFType type, const int component_count, const int component_type, const int component_size, const bool normalized, const int byte_offset, const bool for_vertex) {
 	const Ref<GLTFBufferView> bv = state->buffer_views[p_buffer_view];
 
 	int stride = element_size;
@@ -1269,7 +1270,7 @@ Error GLTFDocument::_decode_buffer_view(Ref<GLTFState> state, double *dst, const
 
 	ERR_FAIL_COND_V((int)(offset + buffer_end) > buffer.size(), ERR_PARSE_ERROR);
 
-	//fill everything as doubles
+	//fill everything as floats
 
 	for (int i = 0; i < count; i++) {
 		const uint8_t *src = &bufptr[offset + i * stride];
@@ -1279,39 +1280,39 @@ Error GLTFDocument::_decode_buffer_view(Ref<GLTFState> state, double *dst, const
 				src += skip_bytes;
 			}
 
-			double d = 0;
+			float d = 0;
 
 			switch (component_type) {
 				case COMPONENT_TYPE_BYTE: {
 					int8_t b = int8_t(*src);
 					if (normalized) {
-						d = (double(b) / 128.0);
+						d = (float(b) / 128.0);
 					} else {
-						d = double(b);
+						d = float(b);
 					}
 				} break;
 				case COMPONENT_TYPE_UNSIGNED_BYTE: {
 					uint8_t b = *src;
 					if (normalized) {
-						d = (double(b) / 255.0);
+						d = (float(b) / 255.0);
 					} else {
-						d = double(b);
+						d = float(b);
 					}
 				} break;
 				case COMPONENT_TYPE_SHORT: {
 					int16_t s = *(int16_t *)src;
 					if (normalized) {
-						d = (double(s) / 32768.0);
+						d = (float(s) / 32768.0);
 					} else {
-						d = double(s);
+						d = float(s);
 					}
 				} break;
 				case COMPONENT_TYPE_UNSIGNED_SHORT: {
 					uint16_t s = *(uint16_t *)src;
 					if (normalized) {
-						d = (double(s) / 65535.0);
+						d = (float(s) / 65535.0);
 					} else {
-						d = double(s);
+						d = float(s);
 					}
 				} break;
 				case COMPONENT_TYPE_INT: {
@@ -1351,11 +1352,11 @@ int GLTFDocument::_get_component_type_size(const int component_type) {
 	return 0;
 }
 
-Vector<double> GLTFDocument::_decode_accessor(Ref<GLTFState> state, const GLTFAccessorIndex p_accessor, const bool p_for_vertex) {
+Vector<float> GLTFDocument::_decode_accessor(Ref<GLTFState> state, const GLTFAccessorIndex p_accessor, const bool p_for_vertex) {
 	//spec, for reference:
 	//https://github.com/KhronosGroup/glTF/tree/master/specification/2.0#data-alignment
 
-	ERR_FAIL_INDEX_V(p_accessor, state->accessors.size(), Vector<double>());
+	ERR_FAIL_INDEX_V(p_accessor, state->accessors.size(), Vector<float>());
 
 	const Ref<GLTFAccessor> a = state->accessors[p_accessor];
 
@@ -1365,7 +1366,7 @@ Vector<double> GLTFDocument::_decode_accessor(Ref<GLTFState> state, const GLTFAc
 
 	const int component_count = component_count_for_type[a->type];
 	const int component_size = _get_component_type_size(a->component_type);
-	ERR_FAIL_COND_V(component_size == 0, Vector<double>());
+	ERR_FAIL_COND_V(component_size == 0, Vector<float>());
 	int element_size = component_count * component_size;
 
 	int skip_every = 0;
@@ -1397,16 +1398,16 @@ Vector<double> GLTFDocument::_decode_accessor(Ref<GLTFState> state, const GLTFAc
 		}
 	}
 
-	Vector<double> dst_buffer;
+	Vector<float> dst_buffer;
 	dst_buffer.resize(component_count * a->count);
-	double *dst = dst_buffer.ptrw();
+	float *dst = dst_buffer.ptrw();
 
 	if (a->buffer_view >= 0) {
-		ERR_FAIL_INDEX_V(a->buffer_view, state->buffer_views.size(), Vector<double>());
+		ERR_FAIL_INDEX_V(a->buffer_view, state->buffer_views.size(), Vector<float>());
 
 		const Error err = _decode_buffer_view(state, dst, a->buffer_view, skip_every, skip_bytes, element_size, a->count, a->type, component_count, a->component_type, component_size, a->normalized, a->byte_offset, p_for_vertex);
 		if (err != OK)
-			return Vector<double>();
+			return Vector<float>();
 	} else {
 		//fill with zeros, as bufferview is not defined.
 		for (int i = 0; i < (a->count * component_count); i++) {
@@ -1416,19 +1417,19 @@ Vector<double> GLTFDocument::_decode_accessor(Ref<GLTFState> state, const GLTFAc
 
 	if (a->sparse_count > 0) {
 		// I could not find any file using this, so this code is so far untested
-		Vector<double> indices;
+		Vector<float> indices;
 		indices.resize(a->sparse_count);
 		const int indices_component_size = _get_component_type_size(a->sparse_indices_component_type);
 
 		Error err = _decode_buffer_view(state, indices.ptrw(), a->sparse_indices_buffer_view, 0, 0, indices_component_size, a->sparse_count, TYPE_SCALAR, 1, a->sparse_indices_component_type, indices_component_size, false, a->sparse_indices_byte_offset, false);
 		if (err != OK)
-			return Vector<double>();
+			return Vector<float>();
 
-		Vector<double> data;
+		Vector<float> data;
 		data.resize(component_count * a->sparse_count);
 		err = _decode_buffer_view(state, data.ptrw(), a->sparse_values_buffer_view, skip_every, skip_bytes, element_size, a->sparse_count, a->type, component_count, a->component_type, component_size, a->normalized, a->sparse_values_byte_offset, p_for_vertex);
 		if (err != OK)
-			return Vector<double>();
+			return Vector<float>();
 
 		for (int i = 0; i < indices.size(); i++) {
 			const int write_offset = int(indices[i]) * component_count;
@@ -1448,11 +1449,11 @@ GLTFAccessorIndex GLTFDocument::_encode_accessor_as_ints(Ref<GLTFState> state, c
 	}
 	const int element_count = 1;
 	const int ret_size = p_attribs.size();
-	Vector<double> attribs;
+	Vector<float> attribs;
 	attribs.resize(ret_size);
-	Vector<double> type_max;
+	Vector<float> type_max;
 	type_max.resize(element_count);
-	Vector<double> type_min;
+	Vector<float> type_min;
 	type_min.resize(element_count);
 	for (int i = 0; i < p_attribs.size(); i++) {
 		attribs.write[i] = Math::stepify(p_attribs[i], 1.0);
@@ -1496,13 +1497,13 @@ GLTFAccessorIndex GLTFDocument::_encode_accessor_as_ints(Ref<GLTFState> state, c
 }
 
 Vector<int> GLTFDocument::_decode_accessor_as_ints(Ref<GLTFState> state, const GLTFAccessorIndex p_accessor, const bool p_for_vertex) {
-	const Vector<double> attribs = _decode_accessor(state, p_accessor, p_for_vertex);
+	const Vector<float> attribs = _decode_accessor(state, p_accessor, p_for_vertex);
 	Vector<int> ret;
 
 	if (attribs.size() == 0)
 		return ret;
 
-	const double *attribs_ptr = attribs.ptr();
+	const float *attribs_ptr = attribs.ptr();
 	const int ret_size = attribs.size();
 	ret.resize(ret_size);
 	{
@@ -1514,13 +1515,13 @@ Vector<int> GLTFDocument::_decode_accessor_as_ints(Ref<GLTFState> state, const G
 }
 
 Vector<float> GLTFDocument::_decode_accessor_as_floats(Ref<GLTFState> state, const GLTFAccessorIndex p_accessor, const bool p_for_vertex) {
-	const Vector<double> attribs = _decode_accessor(state, p_accessor, p_for_vertex);
+	const Vector<float> attribs = _decode_accessor(state, p_accessor, p_for_vertex);
 	Vector<float> ret;
 
 	if (attribs.size() == 0)
 		return ret;
 
-	const double *attribs_ptr = attribs.ptr();
+	const float *attribs_ptr = attribs.ptr();
 	const int ret_size = attribs.size();
 	ret.resize(ret_size);
 	{
@@ -1538,11 +1539,11 @@ GLTFAccessorIndex GLTFDocument::_encode_accessor_as_vec2(Ref<GLTFState> state, c
 	const int element_count = 2;
 
 	const int ret_size = p_attribs.size() * element_count;
-	Vector<double> attribs;
+	Vector<float> attribs;
 	attribs.resize(ret_size);
-	Vector<double> type_max;
+	Vector<float> type_max;
 	type_max.resize(element_count);
-	Vector<double> type_min;
+	Vector<float> type_min;
 	type_min.resize(element_count);
 
 	for (int i = 0; i < p_attribs.size(); i++) {
@@ -1583,13 +1584,13 @@ GLTFAccessorIndex GLTFDocument::_encode_accessor_as_color(Ref<GLTFState> state, 
 	}
 
 	const int ret_size = p_attribs.size() * 4;
-	Vector<double> attribs;
+	Vector<float> attribs;
 	attribs.resize(ret_size);
 
 	const int element_count = 4;
-	Vector<double> type_max;
+	Vector<float> type_max;
 	type_max.resize(element_count);
-	Vector<double> type_min;
+	Vector<float> type_min;
 	type_min.resize(element_count);
 	for (int i = 0; i < p_attribs.size(); i++) {
 		Color attrib = p_attribs[i];
@@ -1626,7 +1627,7 @@ GLTFAccessorIndex GLTFDocument::_encode_accessor_as_color(Ref<GLTFState> state, 
 	return state->accessors.size() - 1;
 }
 
-void GLTFDocument::_calc_accessor_min_max(int i, const int element_count, Vector<double> &type_max, Vector<double> attribs, Vector<double> &type_min) {
+void GLTFDocument::_calc_accessor_min_max(int i, const int element_count, Vector<float> &type_max, Vector<float> attribs, Vector<float> &type_min) {
 	if (i == 0) {
 		for (int32_t type_i = 0; type_i < element_count; type_i++) {
 			type_max.write[type_i] = attribs[(i * element_count) + type_i];
@@ -1647,14 +1648,14 @@ GLTFAccessorIndex GLTFDocument::_encode_accessor_as_weights(Ref<GLTFState> state
 	}
 
 	const int ret_size = p_attribs.size() * 4;
-	Vector<double> attribs;
+	Vector<float> attribs;
 	attribs.resize(ret_size);
 
 	const int element_count = 4;
 
-	Vector<double> type_max;
+	Vector<float> type_max;
 	type_max.resize(element_count);
-	Vector<double> type_min;
+	Vector<float> type_min;
 	type_min.resize(element_count);
 	for (int i = 0; i < p_attribs.size(); i++) {
 		Color attrib = p_attribs[i];
@@ -1698,12 +1699,12 @@ GLTFAccessorIndex GLTFDocument::_encode_accessor_as_joints(Ref<GLTFState> state,
 
 	const int element_count = 4;
 	const int ret_size = p_attribs.size() * element_count;
-	Vector<double> attribs;
+	Vector<float> attribs;
 	attribs.resize(ret_size);
 
-	Vector<double> type_max;
+	Vector<float> type_max;
 	type_max.resize(element_count);
-	Vector<double> type_min;
+	Vector<float> type_min;
 	type_min.resize(element_count);
 	for (int i = 0; i < p_attribs.size(); i++) {
 		Color attrib = p_attribs[i];
@@ -1745,12 +1746,12 @@ GLTFAccessorIndex GLTFDocument::_encode_accessor_as_quats(Ref<GLTFState> state, 
 	const int element_count = 4;
 
 	const int ret_size = p_attribs.size() * element_count;
-	Vector<double> attribs;
+	Vector<float> attribs;
 	attribs.resize(ret_size);
 
-	Vector<double> type_max;
+	Vector<float> type_max;
 	type_max.resize(element_count);
-	Vector<double> type_min;
+	Vector<float> type_min;
 	type_min.resize(element_count);
 	for (int i = 0; i < p_attribs.size(); i++) {
 		Quat quat = p_attribs[i];
@@ -1788,14 +1789,14 @@ GLTFAccessorIndex GLTFDocument::_encode_accessor_as_quats(Ref<GLTFState> state, 
 }
 
 Vector<Vector2> GLTFDocument::_decode_accessor_as_vec2(Ref<GLTFState> state, const GLTFAccessorIndex p_accessor, const bool p_for_vertex) {
-	const Vector<double> attribs = _decode_accessor(state, p_accessor, p_for_vertex);
+	const Vector<float> attribs = _decode_accessor(state, p_accessor, p_for_vertex);
 	Vector<Vector2> ret;
 
 	if (attribs.size() == 0)
 		return ret;
 
 	ERR_FAIL_COND_V(attribs.size() % 2 != 0, ret);
-	const double *attribs_ptr = attribs.ptr();
+	const float *attribs_ptr = attribs.ptr();
 	const int ret_size = attribs.size() / 2;
 	ret.resize(ret_size);
 	{
@@ -1812,12 +1813,12 @@ GLTFAccessorIndex GLTFDocument::_encode_accessor_as_floats(Ref<GLTFState> state,
 	}
 	const int element_count = 1;
 	const int ret_size = p_attribs.size();
-	Vector<double> attribs;
+	Vector<float> attribs;
 	attribs.resize(ret_size);
 
-	Vector<double> type_max;
+	Vector<float> type_max;
 	type_max.resize(element_count);
-	Vector<double> type_min;
+	Vector<float> type_min;
 	type_min.resize(element_count);
 
 	for (int i = 0; i < p_attribs.size(); i++) {
@@ -1857,12 +1858,12 @@ GLTFAccessorIndex GLTFDocument::_encode_accessor_as_vec3(Ref<GLTFState> state, c
 	}
 	const int element_count = 3;
 	const int ret_size = p_attribs.size() * element_count;
-	Vector<double> attribs;
+	Vector<float> attribs;
 	attribs.resize(ret_size);
 
-	Vector<double> type_max;
+	Vector<float> type_max;
 	type_max.resize(element_count);
-	Vector<double> type_min;
+	Vector<float> type_min;
 	type_min.resize(element_count);
 	for (int i = 0; i < p_attribs.size(); i++) {
 		Vector3 attrib = p_attribs[i];
@@ -1903,12 +1904,12 @@ GLTFAccessorIndex GLTFDocument::_encode_accessor_as_xform(Ref<GLTFState> state, 
 	}
 	const int element_count = 16;
 	const int ret_size = p_attribs.size() * element_count;
-	Vector<double> attribs;
+	Vector<float> attribs;
 	attribs.resize(ret_size);
 
-	Vector<double> type_max;
+	Vector<float> type_max;
 	type_max.resize(element_count);
-	Vector<double> type_min;
+	Vector<float> type_min;
 	type_min.resize(element_count);
 	for (int i = 0; i < p_attribs.size(); i++) {
 		Transform attrib = p_attribs[i];
@@ -1966,14 +1967,14 @@ GLTFAccessorIndex GLTFDocument::_encode_accessor_as_xform(Ref<GLTFState> state, 
 }
 
 Vector<Vector3> GLTFDocument::_decode_accessor_as_vec3(Ref<GLTFState> state, const GLTFAccessorIndex p_accessor, const bool p_for_vertex) {
-	const Vector<double> attribs = _decode_accessor(state, p_accessor, p_for_vertex);
+	const Vector<float> attribs = _decode_accessor(state, p_accessor, p_for_vertex);
 	Vector<Vector3> ret;
 
 	if (attribs.size() == 0)
 		return ret;
 
 	ERR_FAIL_COND_V(attribs.size() % 3 != 0, ret);
-	const double *attribs_ptr = attribs.ptr();
+	const float *attribs_ptr = attribs.ptr();
 	const int ret_size = attribs.size() / 3;
 	ret.resize(ret_size);
 	{
@@ -1985,7 +1986,7 @@ Vector<Vector3> GLTFDocument::_decode_accessor_as_vec3(Ref<GLTFState> state, con
 }
 
 Vector<Color> GLTFDocument::_decode_accessor_as_color(Ref<GLTFState> state, const GLTFAccessorIndex p_accessor, const bool p_for_vertex) {
-	const Vector<double> attribs = _decode_accessor(state, p_accessor, p_for_vertex);
+	const Vector<float> attribs = _decode_accessor(state, p_accessor, p_for_vertex);
 	Vector<Color> ret;
 
 	if (attribs.size() == 0)
@@ -1999,7 +2000,7 @@ Vector<Color> GLTFDocument::_decode_accessor_as_color(Ref<GLTFState> state, cons
 	}
 
 	ERR_FAIL_COND_V(attribs.size() % vec_len != 0, ret);
-	const double *attribs_ptr = attribs.ptr();
+	const float *attribs_ptr = attribs.ptr();
 	const int ret_size = attribs.size() / vec_len;
 	ret.resize(ret_size);
 	{
@@ -2010,14 +2011,14 @@ Vector<Color> GLTFDocument::_decode_accessor_as_color(Ref<GLTFState> state, cons
 	return ret;
 }
 Vector<Quat> GLTFDocument::_decode_accessor_as_quat(Ref<GLTFState> state, const GLTFAccessorIndex p_accessor, const bool p_for_vertex) {
-	const Vector<double> attribs = _decode_accessor(state, p_accessor, p_for_vertex);
+	const Vector<float> attribs = _decode_accessor(state, p_accessor, p_for_vertex);
 	Vector<Quat> ret;
 
 	if (attribs.size() == 0)
 		return ret;
 
 	ERR_FAIL_COND_V(attribs.size() % 4 != 0, ret);
-	const double *attribs_ptr = attribs.ptr();
+	const float *attribs_ptr = attribs.ptr();
 	const int ret_size = attribs.size() / 4;
 	ret.resize(ret_size);
 	{
@@ -2028,7 +2029,7 @@ Vector<Quat> GLTFDocument::_decode_accessor_as_quat(Ref<GLTFState> state, const 
 	return ret;
 }
 Vector<Transform2D> GLTFDocument::_decode_accessor_as_xform2d(Ref<GLTFState> state, const GLTFAccessorIndex p_accessor, const bool p_for_vertex) {
-	const Vector<double> attribs = _decode_accessor(state, p_accessor, p_for_vertex);
+	const Vector<float> attribs = _decode_accessor(state, p_accessor, p_for_vertex);
 	Vector<Transform2D> ret;
 
 	if (attribs.size() == 0)
@@ -2044,7 +2045,7 @@ Vector<Transform2D> GLTFDocument::_decode_accessor_as_xform2d(Ref<GLTFState> sta
 }
 
 Vector<Basis> GLTFDocument::_decode_accessor_as_basis(Ref<GLTFState> state, const GLTFAccessorIndex p_accessor, const bool p_for_vertex) {
-	const Vector<double> attribs = _decode_accessor(state, p_accessor, p_for_vertex);
+	const Vector<float> attribs = _decode_accessor(state, p_accessor, p_for_vertex);
 	Vector<Basis> ret;
 
 	if (attribs.size() == 0)
@@ -2061,7 +2062,7 @@ Vector<Basis> GLTFDocument::_decode_accessor_as_basis(Ref<GLTFState> state, cons
 }
 
 Vector<Transform> GLTFDocument::_decode_accessor_as_xform(Ref<GLTFState> state, const GLTFAccessorIndex p_accessor, const bool p_for_vertex) {
-	const Vector<double> attribs = _decode_accessor(state, p_accessor, p_for_vertex);
+	const Vector<float> attribs = _decode_accessor(state, p_accessor, p_for_vertex);
 	Vector<Transform> ret;
 
 	if (attribs.size() == 0)
@@ -2303,9 +2304,9 @@ Error GLTFDocument::_serialize_meshes(Ref<GLTFState> state) {
 				}
 			}
 
-			Ref<BaseMaterial3D> mat = import_mesh->get_surface_material(surface_i);
+			Ref<Material> mat = import_mesh->get_surface_material(surface_i);
 			if (mat.is_valid()) {
-				Map<Ref<BaseMaterial3D>, GLTFMaterialIndex>::Element *material_cache_i = state->material_cache.find(mat);
+				Map<Ref<Material>, GLTFMaterialIndex>::Element *material_cache_i = state->material_cache.find(mat);
 				if (material_cache_i && material_cache_i->get() != -1) {
 					primitive["material"] = material_cache_i->get();
 				} else {
@@ -2615,24 +2616,25 @@ Error GLTFDocument::_parse_meshes(Ref<GLTFState> state) {
 
 			//just add it
 
-			Ref<BaseMaterial3D> mat;
+			Ref<SpatialMaterial> mat;
 			if (p.has("material")) {
 				const int material = p["material"];
 				ERR_FAIL_INDEX_V(material, state->materials.size(), ERR_FILE_CORRUPT);
-				Ref<BaseMaterial3D> mat3d = state->materials[material];
+				Ref<SpatialMaterial> mat3d = state->materials[material];
 				if (has_vertex_color) {
-					mat3d->set_flag(BaseMaterial3D::FLAG_ALBEDO_FROM_VERTEX_COLOR, true);
+					mat3d->set_flag(SpatialMaterial::FLAG_ALBEDO_FROM_VERTEX_COLOR, true);
 				}
 				mat = mat3d;
 
 			} else if (has_vertex_color) {
-				Ref<StandardMaterial3D> mat3d;
+				Ref<SpatialMaterial> mat3d;
 				mat3d.instance();
-				mat3d->set_flag(BaseMaterial3D::FLAG_ALBEDO_FROM_VERTEX_COLOR, true);
+				mat3d->set_flag(SpatialMaterial::FLAG_ALBEDO_FROM_VERTEX_COLOR, true);
 				mat = mat3d;
 			}
 
-			import_mesh->add_surface(primitive, array, morphs, Dictionary(), mat);
+			import_mesh->add_surface(primitive, array, morphs, Dictionary(), "");
+			import_mesh->set_surface_material((Ref<Material>)mat);
 		}
 
 		Vector<float> blend_weights;
@@ -2679,17 +2681,18 @@ Error GLTFDocument::_serialize_images(Ref<GLTFState> state, const String &p_path
 			bv->byte_offset = state->buffers[bi].size();
 			ERR_FAIL_INDEX_V(bi, state->buffers.size(), ERR_PARAMETER_RANGE_ERROR);
 
-			Vector<uint8_t> buffer;
+			PoolByteArray buffer;
 			Ref<ImageTexture> img_tex = image;
 			if (img_tex.is_valid()) {
 				image = img_tex->get_data();
 			}
+			PoolByteArray::Read reader = buffer.read();
 			Error err = PNGDriverCommon::image_to_png(image, buffer);
 			ERR_FAIL_COND_V_MSG(err, err, "Can't convert image to PNG.");
 
 			bv->byte_length = buffer.size();
 			state->buffers.write[bi].resize(state->buffers[bi].size() + bv->byte_length);
-			copymem(&state->buffers.write[bi].write[bv->byte_offset], buffer.ptr(), buffer.size());
+			copymem(&state->buffers.write[bi].write[bv->byte_offset], reader.ptr(), buffer.size());
 			ERR_FAIL_COND_V(bv->byte_offset + bv->byte_length > state->buffers[bi].size(), ERR_FILE_CORRUPT);
 
 			state->buffer_views.push_back(bv);
@@ -2773,7 +2776,7 @@ Error GLTFDocument::_parse_images(Ref<GLTFState> state, const String &p_base_pat
 						!uri.begins_with("data:image/png;base64") &&
 						!uri.begins_with("data:image/jpeg;base64")) {
 					WARN_PRINT(vformat("glTF: Image index '%d' uses an unsupported URI data type: %s. Skipping it.", i, uri));
-					state->images.push_back(Ref<Texture2D>()); // Placeholder to keep count.
+					state->images.push_back(Ref<Texture>()); // Placeholder to keep count.
 					continue;
 				}
 				data = _parse_base64_uri(uri);
@@ -2802,7 +2805,7 @@ Error GLTFDocument::_parse_images(Ref<GLTFState> state, const String &p_base_pat
 					data_size = data.size();
 				} else {
 					// Good old ResourceLoader will rely on file extension.
-					Ref<Texture2D> texture = ResourceLoader::load(uri);
+					Ref<Texture> texture = ResourceLoader::load(uri);
 					state->images.push_back(texture);
 					continue;
 				}
@@ -2899,7 +2902,7 @@ Error GLTFDocument::_parse_textures(Ref<GLTFState> state) {
 	return OK;
 }
 
-GLTFTextureIndex GLTFDocument::_set_texture(Ref<GLTFState> state, Ref<Texture2D> p_texture) {
+GLTFTextureIndex GLTFDocument::_set_texture(Ref<GLTFState> state, Ref<Texture> p_texture) {
 	ERR_FAIL_COND_V(p_texture.is_null(), -1);
 	Ref<GLTFTexture> gltf_texture;
 	gltf_texture.instance();
@@ -2912,11 +2915,11 @@ GLTFTextureIndex GLTFDocument::_set_texture(Ref<GLTFState> state, Ref<Texture2D>
 	return gltf_texture_i;
 }
 
-Ref<Texture2D> GLTFDocument::_get_texture(Ref<GLTFState> state, const GLTFTextureIndex p_texture) {
-	ERR_FAIL_INDEX_V(p_texture, state->textures.size(), Ref<Texture2D>());
+Ref<Texture> GLTFDocument::_get_texture(Ref<GLTFState> state, const GLTFTextureIndex p_texture) {
+	ERR_FAIL_INDEX_V(p_texture, state->textures.size(), Ref<Texture>());
 	const GLTFImageIndex image = state->textures[p_texture]->get_src_image();
 
-	ERR_FAIL_INDEX_V(image, state->images.size(), Ref<Texture2D>());
+	ERR_FAIL_INDEX_V(image, state->images.size(), Ref<Texture>());
 
 	return state->images[image];
 }
@@ -2926,7 +2929,7 @@ Error GLTFDocument::_serialize_materials(Ref<GLTFState> state) {
 	for (int32_t i = 0; i < state->materials.size(); i++) {
 		Dictionary d;
 
-		Ref<BaseMaterial3D> material = state->materials[i];
+		Ref<SpatialMaterial> material = state->materials[i];
 		if (material.is_null()) {
 			materials.push_back(d);
 			continue;
@@ -2947,7 +2950,7 @@ Error GLTFDocument::_serialize_materials(Ref<GLTFState> state) {
 			}
 			{
 				Dictionary bct;
-				Ref<Texture2D> albedo_texture = material->get_texture(BaseMaterial3D::TEXTURE_ALBEDO);
+				Ref<Texture> albedo_texture = material->get_texture(SpatialMaterial::TEXTURE_ALBEDO);
 				GLTFTextureIndex gltf_texture_index = -1;
 
 				if (albedo_texture.is_valid() && albedo_texture->get_data().is_valid()) {
@@ -2963,17 +2966,17 @@ Error GLTFDocument::_serialize_materials(Ref<GLTFState> state) {
 
 			mr["metallicFactor"] = material->get_metallic();
 			mr["roughnessFactor"] = material->get_roughness();
-			bool has_roughness = material->get_texture(BaseMaterial3D::TEXTURE_ROUGHNESS).is_valid() && material->get_texture(BaseMaterial3D::TEXTURE_ROUGHNESS)->get_data().is_valid();
-			bool has_ao = material->get_feature(BaseMaterial3D::FEATURE_AMBIENT_OCCLUSION) && material->get_texture(BaseMaterial3D::TEXTURE_AMBIENT_OCCLUSION).is_valid();
-			bool has_metalness = material->get_texture(BaseMaterial3D::TEXTURE_METALLIC).is_valid() && material->get_texture(BaseMaterial3D::TEXTURE_METALLIC)->get_data().is_valid();
+			bool has_roughness = material->get_texture(SpatialMaterial::TEXTURE_ROUGHNESS).is_valid() && material->get_texture(SpatialMaterial::TEXTURE_ROUGHNESS)->get_data().is_valid();
+			bool has_ao = material->get_feature(SpatialMaterial::FEATURE_AMBIENT_OCCLUSION) && material->get_texture(SpatialMaterial::TEXTURE_AMBIENT_OCCLUSION).is_valid();
+			bool has_metalness = material->get_texture(SpatialMaterial::TEXTURE_METALLIC).is_valid() && material->get_texture(SpatialMaterial::TEXTURE_METALLIC)->get_data().is_valid();
 			if (has_ao || has_roughness || has_metalness) {
 				Dictionary mrt;
-				Ref<Texture2D> roughness_texture = material->get_texture(BaseMaterial3D::TEXTURE_ROUGHNESS);
-				BaseMaterial3D::TextureChannel roughness_channel = material->get_roughness_texture_channel();
-				Ref<Texture2D> metallic_texture = material->get_texture(BaseMaterial3D::TEXTURE_METALLIC);
-				BaseMaterial3D::TextureChannel metalness_channel = material->get_metallic_texture_channel();
-				Ref<Texture2D> ao_texture = material->get_texture(BaseMaterial3D::TEXTURE_AMBIENT_OCCLUSION);
-				BaseMaterial3D::TextureChannel ao_channel = material->get_ao_texture_channel();
+				Ref<Texture> roughness_texture = material->get_texture(SpatialMaterial::TEXTURE_ROUGHNESS);
+				SpatialMaterial::TextureChannel roughness_channel = material->get_roughness_texture_channel();
+				Ref<Texture> metallic_texture = material->get_texture(SpatialMaterial::TEXTURE_METALLIC);
+				SpatialMaterial::TextureChannel metalness_channel = material->get_metallic_texture_channel();
+				Ref<Texture> ao_texture = material->get_texture(SpatialMaterial::TEXTURE_AMBIENT_OCCLUSION);
+				SpatialMaterial::TextureChannel ao_channel = material->get_ao_texture_channel();
 				Ref<ImageTexture> orm_texture;
 				orm_texture.instance();
 				Ref<Image> orm_image;
@@ -3019,7 +3022,7 @@ Error GLTFDocument::_serialize_materials(Ref<GLTFState> state) {
 						metallness_image->decompress();
 					}
 				}
-				Ref<Texture2D> albedo_texture = material->get_texture(BaseMaterial3D::TEXTURE_ALBEDO);
+				Ref<Texture> albedo_texture = material->get_texture(SpatialMaterial::TEXTURE_ALBEDO);
 				if (albedo_texture.is_valid() && albedo_texture->get_data().is_valid()) {
 					height = albedo_texture->get_height();
 					width = albedo_texture->get_width();
@@ -3038,35 +3041,35 @@ Error GLTFDocument::_serialize_materials(Ref<GLTFState> state) {
 					for (int32_t w = 0; w < width; w++) {
 						Color c = Color(1.0f, 1.0f, 1.0f);
 						if (has_ao) {
-							if (BaseMaterial3D::TextureChannel::TEXTURE_CHANNEL_RED == ao_channel) {
+							if (SpatialMaterial::TextureChannel::TEXTURE_CHANNEL_RED == ao_channel) {
 								c.r = ao_image->get_pixel(w, h).r;
-							} else if (BaseMaterial3D::TextureChannel::TEXTURE_CHANNEL_GREEN == ao_channel) {
+							} else if (SpatialMaterial::TextureChannel::TEXTURE_CHANNEL_GREEN == ao_channel) {
 								c.r = ao_image->get_pixel(w, h).g;
-							} else if (BaseMaterial3D::TextureChannel::TEXTURE_CHANNEL_BLUE == ao_channel) {
+							} else if (SpatialMaterial::TextureChannel::TEXTURE_CHANNEL_BLUE == ao_channel) {
 								c.r = ao_image->get_pixel(w, h).b;
-							} else if (BaseMaterial3D::TextureChannel::TEXTURE_CHANNEL_ALPHA == ao_channel) {
+							} else if (SpatialMaterial::TextureChannel::TEXTURE_CHANNEL_ALPHA == ao_channel) {
 								c.r = ao_image->get_pixel(w, h).a;
 							}
 						}
 						if (has_roughness) {
-							if (BaseMaterial3D::TextureChannel::TEXTURE_CHANNEL_RED == roughness_channel) {
+							if (SpatialMaterial::TextureChannel::TEXTURE_CHANNEL_RED == roughness_channel) {
 								c.g = roughness_image->get_pixel(w, h).r;
-							} else if (BaseMaterial3D::TextureChannel::TEXTURE_CHANNEL_GREEN == roughness_channel) {
+							} else if (SpatialMaterial::TextureChannel::TEXTURE_CHANNEL_GREEN == roughness_channel) {
 								c.g = roughness_image->get_pixel(w, h).g;
-							} else if (BaseMaterial3D::TextureChannel::TEXTURE_CHANNEL_BLUE == roughness_channel) {
+							} else if (SpatialMaterial::TextureChannel::TEXTURE_CHANNEL_BLUE == roughness_channel) {
 								c.g = roughness_image->get_pixel(w, h).b;
-							} else if (BaseMaterial3D::TextureChannel::TEXTURE_CHANNEL_ALPHA == roughness_channel) {
+							} else if (SpatialMaterial::TextureChannel::TEXTURE_CHANNEL_ALPHA == roughness_channel) {
 								c.g = roughness_image->get_pixel(w, h).a;
 							}
 						}
 						if (has_metalness) {
-							if (BaseMaterial3D::TextureChannel::TEXTURE_CHANNEL_RED == metalness_channel) {
+							if (SpatialMaterial::TextureChannel::TEXTURE_CHANNEL_RED == metalness_channel) {
 								c.b = metallness_image->get_pixel(w, h).r;
-							} else if (BaseMaterial3D::TextureChannel::TEXTURE_CHANNEL_GREEN == metalness_channel) {
+							} else if (SpatialMaterial::TextureChannel::TEXTURE_CHANNEL_GREEN == metalness_channel) {
 								c.b = metallness_image->get_pixel(w, h).g;
-							} else if (BaseMaterial3D::TextureChannel::TEXTURE_CHANNEL_BLUE == metalness_channel) {
+							} else if (SpatialMaterial::TextureChannel::TEXTURE_CHANNEL_BLUE == metalness_channel) {
 								c.b = metallness_image->get_pixel(w, h).b;
-							} else if (BaseMaterial3D::TextureChannel::TEXTURE_CHANNEL_ALPHA == metalness_channel) {
+							} else if (SpatialMaterial::TextureChannel::TEXTURE_CHANNEL_ALPHA == metalness_channel) {
 								c.b = metallness_image->get_pixel(w, h).a;
 							}
 						}
@@ -3094,12 +3097,12 @@ Error GLTFDocument::_serialize_materials(Ref<GLTFState> state) {
 			d["pbrMetallicRoughness"] = mr;
 		}
 
-		if (material->get_feature(BaseMaterial3D::FEATURE_NORMAL_MAPPING)) {
+		if (material->get_feature(SpatialMaterial::FEATURE_NORMAL_MAPPING)) {
 			Dictionary nt;
 			Ref<ImageTexture> tex;
 			tex.instance();
 			{
-				Ref<Texture2D> normal_texture = material->get_texture(BaseMaterial3D::TEXTURE_NORMAL);
+				Ref<Texture> normal_texture = material->get_texture(SpatialMaterial::TEXTURE_NORMAL);
 				// Code for uncompressing RG normal maps
 				Ref<Image> img = normal_texture->get_data();
 				Ref<ImageTexture> img_tex = img;
@@ -3121,7 +3124,7 @@ Error GLTFDocument::_serialize_materials(Ref<GLTFState> state) {
 				}
 				tex->create_from_image(img);
 			}
-			Ref<Texture2D> normal_texture = material->get_texture(BaseMaterial3D::TEXTURE_NORMAL);
+			Ref<Texture> normal_texture = material->get_texture(SpatialMaterial::TEXTURE_NORMAL);
 			GLTFTextureIndex gltf_texture_index = -1;
 			if (tex.is_valid() && tex->get_data().is_valid()) {
 				tex->set_name(material->get_name() + "_normal");
@@ -3134,7 +3137,7 @@ Error GLTFDocument::_serialize_materials(Ref<GLTFState> state) {
 			}
 		}
 
-		if (material->get_feature(BaseMaterial3D::FEATURE_EMISSION)) {
+		if (material->get_feature(SpatialMaterial::FEATURE_EMISSION)) {
 			const Color c = material->get_emission().to_srgb();
 			Array arr;
 			arr.push_back(c.r);
@@ -3142,9 +3145,9 @@ Error GLTFDocument::_serialize_materials(Ref<GLTFState> state) {
 			arr.push_back(c.b);
 			d["emissiveFactor"] = arr;
 		}
-		if (material->get_feature(BaseMaterial3D::FEATURE_EMISSION)) {
+		if (material->get_feature(SpatialMaterial::FEATURE_EMISSION)) {
 			Dictionary et;
-			Ref<Texture2D> emission_texture = material->get_texture(BaseMaterial3D::TEXTURE_EMISSION);
+			Ref<Texture> emission_texture = material->get_texture(SpatialMaterial::TEXTURE_EMISSION);
 			GLTFTextureIndex gltf_texture_index = -1;
 			if (emission_texture.is_valid() && emission_texture->get_data().is_valid()) {
 				emission_texture->set_name(material->get_name() + "_emission");
@@ -3156,14 +3159,14 @@ Error GLTFDocument::_serialize_materials(Ref<GLTFState> state) {
 				d["emissiveTexture"] = et;
 			}
 		}
-		const bool ds = material->get_cull_mode() == BaseMaterial3D::CULL_DISABLED;
+		const bool ds = material->get_cull_mode() == SpatialMaterial::CULL_DISABLED;
 		if (ds) {
-			d["doubleSided"] = ds;
+			d["floatSided"] = ds;
 		}
-		if (material->get_transparency() == BaseMaterial3D::TRANSPARENCY_ALPHA_SCISSOR) {
+		if (material->get_flag(SpatialMaterial::FLAG_USE_ALPHA_SCISSOR)) {
 			d["alphaMode"] = "MASK";
 			d["alphaCutoff"] = material->get_alpha_scissor_threshold();
-		} else if (material->get_transparency() != BaseMaterial3D::TRANSPARENCY_DISABLED) {
+		} else if (material->get_feature(SpatialMaterial::FEATURE_TRANSPARENT)) {
 			d["alphaMode"] = "BLEND";
 		}
 		materials.push_back(d);
@@ -3182,12 +3185,12 @@ Error GLTFDocument::_parse_materials(Ref<GLTFState> state) {
 	for (GLTFMaterialIndex i = 0; i < materials.size(); i++) {
 		const Dictionary &d = materials[i];
 
-		Ref<StandardMaterial3D> material;
+		Ref<SpatialMaterial> material;
 		material.instance();
 		if (d.has("name")) {
 			material->set_name(d["name"]);
 		}
-		material->set_flag(BaseMaterial3D::FLAG_ALBEDO_FROM_VERTEX_COLOR, true);
+		material->set_flag(SpatialMaterial::FLAG_ALBEDO_FROM_VERTEX_COLOR, true);
 		Dictionary pbr_spec_gloss_extensions;
 		if (d.has("extensions")) {
 			pbr_spec_gloss_extensions = d["extensions"];
@@ -3201,10 +3204,10 @@ Error GLTFDocument::_parse_materials(Ref<GLTFState> state) {
 			if (sgm.has("diffuseTexture")) {
 				const Dictionary &diffuse_texture_dict = sgm["diffuseTexture"];
 				if (diffuse_texture_dict.has("index")) {
-					Ref<Texture2D> diffuse_texture = _get_texture(state, diffuse_texture_dict["index"]);
+					Ref<Texture> diffuse_texture = _get_texture(state, diffuse_texture_dict["index"]);
 					if (diffuse_texture.is_valid()) {
 						spec_gloss->diffuse_img = diffuse_texture->get_data();
-						material->set_texture(BaseMaterial3D::TEXTURE_ALBEDO, diffuse_texture);
+						material->set_texture(SpatialMaterial::TEXTURE_ALBEDO, diffuse_texture);
 					}
 				}
 			}
@@ -3229,7 +3232,7 @@ Error GLTFDocument::_parse_materials(Ref<GLTFState> state) {
 			if (sgm.has("specularGlossinessTexture")) {
 				const Dictionary &spec_gloss_texture = sgm["specularGlossinessTexture"];
 				if (spec_gloss_texture.has("index")) {
-					const Ref<Texture2D> orig_texture = _get_texture(state, spec_gloss_texture["index"]);
+					const Ref<Texture> orig_texture = _get_texture(state, spec_gloss_texture["index"]);
 					if (orig_texture.is_valid()) {
 						spec_gloss->spec_gloss_img = orig_texture->get_data();
 					}
@@ -3249,7 +3252,7 @@ Error GLTFDocument::_parse_materials(Ref<GLTFState> state) {
 			if (mr.has("baseColorTexture")) {
 				const Dictionary &bct = mr["baseColorTexture"];
 				if (bct.has("index")) {
-					material->set_texture(BaseMaterial3D::TEXTURE_ALBEDO, _get_texture(state, bct["index"]));
+					material->set_texture(SpatialMaterial::TEXTURE_ALBEDO, _get_texture(state, bct["index"]));
 				}
 				if (!mr.has("baseColorFactor")) {
 					material->set_albedo(Color(1, 1, 1));
@@ -3272,11 +3275,11 @@ Error GLTFDocument::_parse_materials(Ref<GLTFState> state) {
 			if (mr.has("metallicRoughnessTexture")) {
 				const Dictionary &bct = mr["metallicRoughnessTexture"];
 				if (bct.has("index")) {
-					const Ref<Texture2D> t = _get_texture(state, bct["index"]);
-					material->set_texture(BaseMaterial3D::TEXTURE_METALLIC, t);
-					material->set_metallic_texture_channel(BaseMaterial3D::TEXTURE_CHANNEL_BLUE);
-					material->set_texture(BaseMaterial3D::TEXTURE_ROUGHNESS, t);
-					material->set_roughness_texture_channel(BaseMaterial3D::TEXTURE_CHANNEL_GREEN);
+					const Ref<Texture> t = _get_texture(state, bct["index"]);
+					material->set_texture(SpatialMaterial::TEXTURE_METALLIC, t);
+					material->set_metallic_texture_channel(SpatialMaterial::TEXTURE_CHANNEL_BLUE);
+					material->set_texture(SpatialMaterial::TEXTURE_ROUGHNESS, t);
+					material->set_roughness_texture_channel(SpatialMaterial::TEXTURE_CHANNEL_GREEN);
 					if (!mr.has("metallicFactor")) {
 						material->set_metallic(1);
 					}
@@ -3290,8 +3293,8 @@ Error GLTFDocument::_parse_materials(Ref<GLTFState> state) {
 		if (d.has("normalTexture")) {
 			const Dictionary &bct = d["normalTexture"];
 			if (bct.has("index")) {
-				material->set_texture(BaseMaterial3D::TEXTURE_NORMAL, _get_texture(state, bct["index"]));
-				material->set_feature(BaseMaterial3D::FEATURE_NORMAL_MAPPING, true);
+				material->set_texture(SpatialMaterial::TEXTURE_NORMAL, _get_texture(state, bct["index"]));
+				material->set_feature(SpatialMaterial::FEATURE_NORMAL_MAPPING, true);
 			}
 			if (bct.has("scale")) {
 				material->set_normal_scale(bct["scale"]);
@@ -3300,9 +3303,9 @@ Error GLTFDocument::_parse_materials(Ref<GLTFState> state) {
 		if (d.has("occlusionTexture")) {
 			const Dictionary &bct = d["occlusionTexture"];
 			if (bct.has("index")) {
-				material->set_texture(BaseMaterial3D::TEXTURE_AMBIENT_OCCLUSION, _get_texture(state, bct["index"]));
-				material->set_ao_texture_channel(BaseMaterial3D::TEXTURE_CHANNEL_RED);
-				material->set_feature(BaseMaterial3D::FEATURE_AMBIENT_OCCLUSION, true);
+				material->set_texture(SpatialMaterial::TEXTURE_AMBIENT_OCCLUSION, _get_texture(state, bct["index"]));
+				material->set_ao_texture_channel(SpatialMaterial::TEXTURE_CHANNEL_RED);
+				material->set_feature(SpatialMaterial::FEATURE_AMBIENT_OCCLUSION, true);
 			}
 		}
 
@@ -3310,7 +3313,7 @@ Error GLTFDocument::_parse_materials(Ref<GLTFState> state) {
 			const Array &arr = d["emissiveFactor"];
 			ERR_FAIL_COND_V(arr.size() != 3, ERR_PARSE_ERROR);
 			const Color c = Color(arr[0], arr[1], arr[2]).to_srgb();
-			material->set_feature(BaseMaterial3D::FEATURE_EMISSION, true);
+			material->set_feature(SpatialMaterial::FEATURE_EMISSION, true);
 
 			material->set_emission(c);
 		}
@@ -3318,25 +3321,25 @@ Error GLTFDocument::_parse_materials(Ref<GLTFState> state) {
 		if (d.has("emissiveTexture")) {
 			const Dictionary &bct = d["emissiveTexture"];
 			if (bct.has("index")) {
-				material->set_texture(BaseMaterial3D::TEXTURE_EMISSION, _get_texture(state, bct["index"]));
-				material->set_feature(BaseMaterial3D::FEATURE_EMISSION, true);
+				material->set_texture(SpatialMaterial::TEXTURE_EMISSION, _get_texture(state, bct["index"]));
+				material->set_feature(SpatialMaterial::FEATURE_EMISSION, true);
 				material->set_emission(Color(0, 0, 0));
 			}
 		}
 
-		if (d.has("doubleSided")) {
-			const bool ds = d["doubleSided"];
+		if (d.has("floatSided")) {
+			const bool ds = d["floatSided"];
 			if (ds) {
-				material->set_cull_mode(BaseMaterial3D::CULL_DISABLED);
+				material->set_cull_mode(SpatialMaterial::CULL_DISABLED);
 			}
 		}
 
 		if (d.has("alphaMode")) {
 			const String &am = d["alphaMode"];
 			if (am == "BLEND") {
-				material->set_transparency(BaseMaterial3D::TRANSPARENCY_ALPHA_DEPTH_PRE_PASS);
+				material->set_feature(SpatialMaterial::FEATURE_TRANSPARENT, true);
 			} else if (am == "MASK") {
-				material->set_transparency(BaseMaterial3D::TRANSPARENCY_ALPHA_SCISSOR);
+				material->set_flag(SpatialMaterial::FLAG_USE_ALPHA_SCISSOR, true);
 				if (d.has("alphaCutoff")) {
 					material->set_alpha_scissor_threshold(d["alphaCutoff"]);
 				} else {
@@ -3352,7 +3355,7 @@ Error GLTFDocument::_parse_materials(Ref<GLTFState> state) {
 	return OK;
 }
 
-void GLTFDocument::_set_texture_transform_uv1(const Dictionary &d, Ref<BaseMaterial3D> material) {
+void GLTFDocument::_set_texture_transform_uv1(const Dictionary &d, Ref<SpatialMaterial> material) {
 	if (d.has("extensions")) {
 		const Dictionary &extensions = d["extensions"];
 		if (extensions.has("KHR_texture_transform")) {
@@ -3372,7 +3375,7 @@ void GLTFDocument::_set_texture_transform_uv1(const Dictionary &d, Ref<BaseMater
 	}
 }
 
-void GLTFDocument::spec_gloss_to_rough_metal(Ref<GLTFSpecGloss> r_spec_gloss, Ref<BaseMaterial3D> p_material) {
+void GLTFDocument::spec_gloss_to_rough_metal(Ref<GLTFSpecGloss> r_spec_gloss, Ref<SpatialMaterial> p_material) {
 	if (r_spec_gloss->spec_gloss_img.is_null()) {
 		return;
 	}
@@ -3424,18 +3427,18 @@ void GLTFDocument::spec_gloss_to_rough_metal(Ref<GLTFSpecGloss> r_spec_gloss, Re
 	Ref<ImageTexture> diffuse_image_texture;
 	diffuse_image_texture.instance();
 	diffuse_image_texture->create_from_image(r_spec_gloss->diffuse_img);
-	p_material->set_texture(BaseMaterial3D::TEXTURE_ALBEDO, diffuse_image_texture);
+	p_material->set_texture(SpatialMaterial::TEXTURE_ALBEDO, diffuse_image_texture);
 	Ref<ImageTexture> rm_image_texture;
 	rm_image_texture.instance();
 	rm_image_texture->create_from_image(rm_img);
 	if (has_roughness) {
-		p_material->set_texture(BaseMaterial3D::TEXTURE_ROUGHNESS, rm_image_texture);
-		p_material->set_roughness_texture_channel(BaseMaterial3D::TEXTURE_CHANNEL_GREEN);
+		p_material->set_texture(SpatialMaterial::TEXTURE_ROUGHNESS, rm_image_texture);
+		p_material->set_roughness_texture_channel(SpatialMaterial::TEXTURE_CHANNEL_GREEN);
 	}
 
 	if (has_metal) {
-		p_material->set_texture(BaseMaterial3D::TEXTURE_METALLIC, rm_image_texture);
-		p_material->set_metallic_texture_channel(BaseMaterial3D::TEXTURE_CHANNEL_BLUE);
+		p_material->set_texture(SpatialMaterial::TEXTURE_METALLIC, rm_image_texture);
+		p_material->set_metallic_texture_channel(SpatialMaterial::TEXTURE_CHANNEL_BLUE);
 	}
 }
 
@@ -4050,11 +4053,11 @@ Error GLTFDocument::_create_skeletons(Ref<GLTFState> state) {
 	for (GLTFSkeletonIndex skel_i = 0; skel_i < state->skeletons.size(); ++skel_i) {
 		Ref<GLTFSkeleton> gltf_skeleton = state->skeletons.write[skel_i];
 
-		Skeleton3D *skeleton = memnew(Skeleton3D);
+		Skeleton *skeleton = memnew(Skeleton);
 		gltf_skeleton->godot_skeleton = skeleton;
 
 		// Make a unique name, no gltf node represents this skeleton
-		skeleton->set_name(_gen_unique_name(state, "Skeleton3D"));
+		skeleton->set_name(_gen_unique_name(state, "Skeleton"));
 
 		List<GLTFNodeIndex> bones;
 
@@ -4716,11 +4719,11 @@ void GLTFDocument::_assign_scene_names(Ref<GLTFState> state) {
 	}
 }
 
-BoneAttachment3D *GLTFDocument::_generate_bone_attachment(Ref<GLTFState> state, Skeleton3D *skeleton, const GLTFNodeIndex node_index) {
+BoneAttachment *GLTFDocument::_generate_bone_attachment(Ref<GLTFState> state, Skeleton *skeleton, const GLTFNodeIndex node_index) {
 	Ref<GLTFNode> gltf_node = state->nodes[node_index];
 	Ref<GLTFNode> bone_node = state->nodes[gltf_node->parent];
 
-	BoneAttachment3D *bone_attachment = memnew(BoneAttachment3D);
+	BoneAttachment *bone_attachment = memnew(BoneAttachment);
 	print_verbose("glTF: Creating bone attachment for: " + gltf_node->get_name());
 
 	ERR_FAIL_COND_V(!bone_node->joint, nullptr);
@@ -4730,7 +4733,7 @@ BoneAttachment3D *GLTFDocument::_generate_bone_attachment(Ref<GLTFState> state, 
 	return bone_attachment;
 }
 
-GLTFMeshIndex GLTFDocument::_convert_mesh_instance(Ref<GLTFState> state, MeshInstance3D *p_mesh_instance) {
+GLTFMeshIndex GLTFDocument::_convert_mesh_instance(Ref<GLTFState> state, MeshInstance *p_mesh_instance) {
 	ERR_FAIL_NULL_V(p_mesh_instance, -1);
 	if (p_mesh_instance->get_mesh().is_null()) {
 		return -1;
@@ -4767,7 +4770,8 @@ GLTFMeshIndex GLTFDocument::_convert_mesh_instance(Ref<GLTFState> state, MeshIns
 		if (p_mesh_instance->get_material_override().is_valid()) {
 			mat = p_mesh_instance->get_material_override();
 		}
-		import_mesh->add_surface(primitive_type, arrays, blend_shape_arrays, Dictionary(), mat, surface_name);
+		import_mesh->add_surface(primitive_type, arrays, blend_shape_arrays, Dictionary(), surface_name);
+		import_mesh->set_surface_material(mat);
 	}
 	for (int32_t blend_i = 0; blend_i < blend_count; blend_i++) {
 		blend_weights.write[blend_i] = 0.0f;
@@ -4804,7 +4808,7 @@ EditorSceneImporterMeshNode3D *GLTFDocument::_generate_mesh_instance(Ref<GLTFSta
 	return mi;
 }
 
-Light3D *GLTFDocument::_generate_light(Ref<GLTFState> state, Node *scene_parent, const GLTFNodeIndex node_index) {
+Light *GLTFDocument::_generate_light(Ref<GLTFState> state, Node *scene_parent, const GLTFNodeIndex node_index) {
 	Ref<GLTFNode> gltf_node = state->nodes[node_index];
 
 	ERR_FAIL_INDEX_V(gltf_node->light, state->lights.size(), nullptr);
@@ -4822,46 +4826,46 @@ Light3D *GLTFDocument::_generate_light(Ref<GLTFState> state, Node *scene_parent,
 	}
 
 	if (l->type == "directional") {
-		DirectionalLight3D *light = memnew(DirectionalLight3D);
-		light->set_param(Light3D::PARAM_ENERGY, intensity);
+		DirectionalLight *light = memnew(DirectionalLight);
+		light->set_param(Light::PARAM_ENERGY, intensity);
 		light->set_color(l->color);
 		return light;
 	}
 
 	const float range = CLAMP(l->range, 0, 4096);
-	// Doubling the range will double the effective brightness, so we need double attenuation (half brightness).
-	// We want to have double intensity give double brightness, so we need half the attenuation.
+	// Doubling the range will float the effective brightness, so we need float attenuation (half brightness).
+	// We want to have float intensity give float brightness, so we need half the attenuation.
 	const float attenuation = range / intensity;
 	if (l->type == "point") {
-		OmniLight3D *light = memnew(OmniLight3D);
-		light->set_param(OmniLight3D::PARAM_ATTENUATION, attenuation);
-		light->set_param(OmniLight3D::PARAM_RANGE, range);
+		OmniLight *light = memnew(OmniLight);
+		light->set_param(OmniLight::PARAM_ATTENUATION, attenuation);
+		light->set_param(OmniLight::PARAM_RANGE, range);
 		light->set_color(l->color);
 		return light;
 	}
 	if (l->type == "spot") {
-		SpotLight3D *light = memnew(SpotLight3D);
-		light->set_param(SpotLight3D::PARAM_ATTENUATION, attenuation);
-		light->set_param(SpotLight3D::PARAM_RANGE, range);
-		light->set_param(SpotLight3D::PARAM_SPOT_ANGLE, Math::rad2deg(l->outer_cone_angle));
+		SpotLight *light = memnew(SpotLight);
+		light->set_param(SpotLight::PARAM_ATTENUATION, attenuation);
+		light->set_param(SpotLight::PARAM_RANGE, range);
+		light->set_param(SpotLight::PARAM_SPOT_ANGLE, Math::rad2deg(l->outer_cone_angle));
 		light->set_color(l->color);
 
 		// Line of best fit derived from guessing, see https://www.desmos.com/calculator/biiflubp8b
 		// The points in desmos are not exact, except for (1, infinity).
 		float angle_ratio = l->inner_cone_angle / l->outer_cone_angle;
 		float angle_attenuation = 0.2 / (1 - angle_ratio) - 0.1;
-		light->set_param(SpotLight3D::PARAM_SPOT_ATTENUATION, angle_attenuation);
+		light->set_param(SpotLight::PARAM_SPOT_ATTENUATION, angle_attenuation);
 		return light;
 	}
 	return nullptr;
 }
 
-Camera3D *GLTFDocument::_generate_camera(Ref<GLTFState> state, Node *scene_parent, const GLTFNodeIndex node_index) {
+Camera *GLTFDocument::_generate_camera(Ref<GLTFState> state, Node *scene_parent, const GLTFNodeIndex node_index) {
 	Ref<GLTFNode> gltf_node = state->nodes[node_index];
 
 	ERR_FAIL_INDEX_V(gltf_node->camera, state->cameras.size(), nullptr);
 
-	Camera3D *camera = memnew(Camera3D);
+	Camera *camera = memnew(Camera);
 	print_verbose("glTF: Creating camera for: " + gltf_node->get_name());
 
 	Ref<GLTFCamera> c = state->cameras[gltf_node->camera];
@@ -4874,13 +4878,13 @@ Camera3D *GLTFDocument::_generate_camera(Ref<GLTFState> state, Node *scene_paren
 	return camera;
 }
 
-GLTFCameraIndex GLTFDocument::_convert_camera(Ref<GLTFState> state, Camera3D *p_camera) {
+GLTFCameraIndex GLTFDocument::_convert_camera(Ref<GLTFState> state, Camera *p_camera) {
 	print_verbose("glTF: Converting camera: " + p_camera->get_name());
 
 	Ref<GLTFCamera> c;
 	c.instance();
 
-	if (p_camera->get_projection() == Camera3D::Projection::PROJECTION_PERSPECTIVE) {
+	if (p_camera->get_projection() == Camera::Projection::PROJECTION_PERSPECTIVE) {
 		c->set_perspective(true);
 		c->set_fov_size(p_camera->get_fov());
 		c->set_zfar(p_camera->get_zfar());
@@ -4895,33 +4899,33 @@ GLTFCameraIndex GLTFDocument::_convert_camera(Ref<GLTFState> state, Camera3D *p_
 	return camera_index;
 }
 
-GLTFLightIndex GLTFDocument::_convert_light(Ref<GLTFState> state, Light3D *p_light) {
+GLTFLightIndex GLTFDocument::_convert_light(Ref<GLTFState> state, Light *p_light) {
 	print_verbose("glTF: Converting light: " + p_light->get_name());
 
 	Ref<GLTFLight> l;
 	l.instance();
 	l->color = p_light->get_color();
-	if (cast_to<DirectionalLight3D>(p_light)) {
+	if (cast_to<DirectionalLight>(p_light)) {
 		l->type = "directional";
-		DirectionalLight3D *light = cast_to<DirectionalLight3D>(p_light);
-		l->intensity = light->get_param(DirectionalLight3D::PARAM_ENERGY);
+		DirectionalLight *light = cast_to<DirectionalLight>(p_light);
+		l->intensity = light->get_param(DirectionalLight::PARAM_ENERGY);
 		l->range = FLT_MAX; // Range for directional lights is infinite in Godot.
-	} else if (cast_to<OmniLight3D>(p_light)) {
+	} else if (cast_to<OmniLight>(p_light)) {
 		l->type = "point";
-		OmniLight3D *light = cast_to<OmniLight3D>(p_light);
-		l->range = light->get_param(OmniLight3D::PARAM_RANGE);
-		float attenuation = p_light->get_param(OmniLight3D::PARAM_ATTENUATION);
+		OmniLight *light = cast_to<OmniLight>(p_light);
+		l->range = light->get_param(OmniLight::PARAM_RANGE);
+		float attenuation = p_light->get_param(OmniLight::PARAM_ATTENUATION);
 		l->intensity = l->range / attenuation;
-	} else if (cast_to<SpotLight3D>(p_light)) {
+	} else if (cast_to<SpotLight>(p_light)) {
 		l->type = "spot";
-		SpotLight3D *light = cast_to<SpotLight3D>(p_light);
-		l->range = light->get_param(SpotLight3D::PARAM_RANGE);
-		float attenuation = light->get_param(SpotLight3D::PARAM_ATTENUATION);
+		SpotLight *light = cast_to<SpotLight>(p_light);
+		l->range = light->get_param(SpotLight::PARAM_RANGE);
+		float attenuation = light->get_param(SpotLight::PARAM_ATTENUATION);
 		l->intensity = l->range / attenuation;
-		l->outer_cone_angle = Math::deg2rad(light->get_param(SpotLight3D::PARAM_SPOT_ANGLE));
+		l->outer_cone_angle = Math::deg2rad(light->get_param(SpotLight::PARAM_SPOT_ANGLE));
 
 		// This equation is the inverse of the import equation (which has a desmos link).
-		float angle_ratio = 1 - (0.2 / (0.1 + light->get_param(SpotLight3D::PARAM_SPOT_ATTENUATION)));
+		float angle_ratio = 1 - (0.2 / (0.1 + light->get_param(SpotLight::PARAM_SPOT_ATTENUATION)));
 		angle_ratio = MAX(0, angle_ratio);
 		l->inner_cone_angle = l->outer_cone_angle * angle_ratio;
 	}
@@ -4931,7 +4935,7 @@ GLTFLightIndex GLTFDocument::_convert_light(Ref<GLTFState> state, Light3D *p_lig
 	return light_index;
 }
 
-GLTFSkeletonIndex GLTFDocument::_convert_skeleton(Ref<GLTFState> state, Skeleton3D *p_skeleton) {
+GLTFSkeletonIndex GLTFDocument::_convert_skeleton(Ref<GLTFState> state, Skeleton *p_skeleton) {
 	print_verbose("glTF: Converting skeleton: " + p_skeleton->get_name());
 	Ref<GLTFSkeleton> gltf_skeleton;
 	gltf_skeleton.instance();
@@ -4942,24 +4946,24 @@ GLTFSkeletonIndex GLTFDocument::_convert_skeleton(Ref<GLTFState> state, Skeleton
 	return skeleton_i;
 }
 
-void GLTFDocument::_convert_spatial(Ref<GLTFState> state, Node3D *p_spatial, Ref<GLTFNode> p_node) {
+void GLTFDocument::_convert_spatial(Ref<GLTFState> state, Spatial *p_spatial, Ref<GLTFNode> p_node) {
 	Transform xform = p_spatial->get_transform();
 	p_node->scale = xform.basis.get_scale();
 	p_node->rotation = xform.basis.get_rotation_quat();
 	p_node->translation = xform.origin;
 }
 
-Node3D *GLTFDocument::_generate_spatial(Ref<GLTFState> state, Node *scene_parent, const GLTFNodeIndex node_index) {
+Spatial *GLTFDocument::_generate_spatial(Ref<GLTFState> state, Node *scene_parent, const GLTFNodeIndex node_index) {
 	Ref<GLTFNode> gltf_node = state->nodes[node_index];
 
-	Node3D *spatial = memnew(Node3D);
+	Spatial *spatial = memnew(Spatial);
 	print_verbose("glTF: Converting spatial: " + gltf_node->get_name());
 
 	return spatial;
 }
 void GLTFDocument::_convert_scene_node(Ref<GLTFState> state, Node *p_current, Node *p_root, const GLTFNodeIndex p_gltf_parent, const GLTFNodeIndex p_gltf_root) {
 	bool retflag = true;
-	Node3D *spatial = cast_to<Node3D>(p_current);
+	Spatial *spatial = cast_to<Spatial>(p_current);
 	_check_visibility(p_current, retflag);
 	if (retflag) {
 		return;
@@ -4967,32 +4971,32 @@ void GLTFDocument::_convert_scene_node(Ref<GLTFState> state, Node *p_current, No
 	Ref<GLTFNode> gltf_node;
 	gltf_node.instance();
 	gltf_node->set_name(_gen_unique_name(state, p_current->get_name()));
-	if (cast_to<Node3D>(p_current)) {
+	if (cast_to<Spatial>(p_current)) {
 		_convert_spatial(state, spatial, gltf_node);
 	}
-	if (cast_to<MeshInstance3D>(p_current)) {
+	if (cast_to<MeshInstance>(p_current)) {
 		_convert_mesh_to_gltf(p_current, state, spatial, gltf_node);
-	} else if (cast_to<BoneAttachment3D>(p_current)) {
+	} else if (cast_to<BoneAttachment>(p_current)) {
 		_convert_bone_attachment_to_gltf(p_current, state, gltf_node, retflag);
 		// TODO 2020-12-21 iFire Handle the case of objects under the bone attachment.
 		return;
-	} else if (cast_to<Skeleton3D>(p_current)) {
+	} else if (cast_to<Skeleton>(p_current)) {
 		_convert_skeleton_to_gltf(p_current, state, p_gltf_parent, p_gltf_root, gltf_node, p_root);
 		// We ignore the Godot Engine node that is the skeleton.
 		return;
-	} else if (cast_to<MultiMeshInstance3D>(p_current)) {
+	} else if (cast_to<MultiMeshInstance>(p_current)) {
 		_convert_mult_mesh_instance_to_gltf(p_current, p_gltf_parent, p_gltf_root, gltf_node, state, p_root);
-	} else if (cast_to<CSGShape3D>(p_current)) {
-		if (p_current->get_parent() && cast_to<CSGShape3D>(p_current)->is_root_shape()) {
+	} else if (cast_to<CSGShape>(p_current)) {
+		if (p_current->get_parent() && cast_to<CSGShape>(p_current)->is_root_shape()) {
 			_convert_csg_shape_to_gltf(p_current, p_gltf_parent, gltf_node, state);
 		}
 	} else if (cast_to<GridMap>(p_current)) {
 		_convert_grid_map_to_gltf(p_current, p_gltf_parent, p_gltf_root, gltf_node, state, p_root);
-	} else if (cast_to<Camera3D>(p_current)) {
-		Camera3D *camera = Object::cast_to<Camera3D>(p_current);
+	} else if (cast_to<Camera>(p_current)) {
+		Camera *camera = Object::cast_to<Camera>(p_current);
 		_convert_camera_to_gltf(camera, state, spatial, gltf_node);
-	} else if (cast_to<Light3D>(p_current)) {
-		Light3D *light = Object::cast_to<Light3D>(p_current);
+	} else if (cast_to<Light>(p_current)) {
+		Light *light = Object::cast_to<Light>(p_current);
 		_convert_light_to_gltf(light, state, spatial, gltf_node);
 	} else if (cast_to<AnimationPlayer>(p_current)) {
 		AnimationPlayer *animation_player = Object::cast_to<AnimationPlayer>(p_current);
@@ -5013,7 +5017,7 @@ void GLTFDocument::_convert_scene_node(Ref<GLTFState> state, Node *p_current, No
 }
 
 void GLTFDocument::_convert_csg_shape_to_gltf(Node *p_current, GLTFNodeIndex p_gltf_parent, Ref<GLTFNode> gltf_node, Ref<GLTFState> state) {
-	CSGShape3D *csg = Object::cast_to<CSGShape3D>(p_current);
+	CSGShape *csg = Object::cast_to<CSGShape>(p_current);
 	csg->call("_update_shape");
 	Array meshes = csg->get_meshes();
 	if (meshes.size() != 2) {
@@ -5029,7 +5033,8 @@ void GLTFDocument::_convert_csg_shape_to_gltf(Node *p_current, GLTFNodeIndex p_g
 	import_mesh.instance();
 	Ref<ArrayMesh> array_mesh = csg->get_meshes()[1];
 	for (int32_t surface_i = 0; surface_i < array_mesh->get_surface_count(); surface_i++) {
-		import_mesh->add_surface(Mesh::PrimitiveType::PRIMITIVE_TRIANGLES, array_mesh->surface_get_arrays(surface_i), Array(), Dictionary(), mat, array_mesh->surface_get_name(surface_i));
+		import_mesh->add_surface(Mesh::PrimitiveType::PRIMITIVE_TRIANGLES, array_mesh->surface_get_arrays(surface_i), Array(), Dictionary(), array_mesh->surface_get_name(surface_i));
+		import_mesh->set_surface_material(mat);
 	}
 	gltf_mesh->set_mesh(import_mesh);
 	GLTFMeshIndex mesh_i = state->meshes.size();
@@ -5060,7 +5065,7 @@ void GLTFDocument::_convert_animation_player_to_gltf(AnimationPlayer *animation_
 
 void GLTFDocument::_check_visibility(Node *p_node, bool &retflag) {
 	retflag = true;
-	Node3D *spatial = Object::cast_to<Node3D>(p_node);
+	Spatial *spatial = Object::cast_to<Spatial>(p_node);
 	Node2D *node_2d = Object::cast_to<Node2D>(p_node);
 	if (node_2d && !node_2d->is_visible()) {
 		return;
@@ -5071,7 +5076,7 @@ void GLTFDocument::_check_visibility(Node *p_node, bool &retflag) {
 	retflag = false;
 }
 
-void GLTFDocument::_convert_camera_to_gltf(Camera3D *camera, Ref<GLTFState> state, Node3D *spatial, Ref<GLTFNode> gltf_node) {
+void GLTFDocument::_convert_camera_to_gltf(Camera *camera, Ref<GLTFState> state, Spatial *spatial, Ref<GLTFNode> gltf_node) {
 	ERR_FAIL_COND(!camera);
 	GLTFCameraIndex camera_index = _convert_camera(state, camera);
 	if (camera_index != -1) {
@@ -5079,7 +5084,7 @@ void GLTFDocument::_convert_camera_to_gltf(Camera3D *camera, Ref<GLTFState> stat
 	}
 }
 
-void GLTFDocument::_convert_light_to_gltf(Light3D *light, Ref<GLTFState> state, Node3D *spatial, Ref<GLTFNode> gltf_node) {
+void GLTFDocument::_convert_light_to_gltf(Light *light, Ref<GLTFState> state, Spatial *spatial, Ref<GLTFNode> gltf_node) {
 	ERR_FAIL_COND(!light);
 	GLTFLightIndex light_index = _convert_light(state, light);
 	if (light_index != -1) {
@@ -5096,19 +5101,16 @@ void GLTFDocument::_convert_grid_map_to_gltf(Node *p_scene_parent, const GLTFNod
 		gltf_node->children.push_back(state->nodes.size());
 		state->nodes.push_back(new_gltf_node);
 		Vector3 cell_location = cells[k];
-		int32_t cell = grid_map->get_cell_item(
-				Vector3(cell_location.x, cell_location.y, cell_location.z));
+		int32_t cell = grid_map->get_cell_item(cell_location.x, cell_location.y, cell_location.z);
 		EditorSceneImporterMeshNode3D *import_mesh_node = memnew(EditorSceneImporterMeshNode3D);
 		import_mesh_node->set_mesh(grid_map->get_mesh_library()->get_item_mesh(cell));
 		Transform cell_xform;
 		cell_xform.basis.set_orthogonal_index(
-				grid_map->get_cell_item_orientation(
-						Vector3(cell_location.x, cell_location.y, cell_location.z)));
+				grid_map->get_cell_item_orientation(cell_location.x, cell_location.y, cell_location.z));
 		cell_xform.basis.scale(Vector3(grid_map->get_cell_scale(),
 				grid_map->get_cell_scale(),
 				grid_map->get_cell_scale()));
-		cell_xform.set_origin(grid_map->map_to_world(
-				Vector3(cell_location.x, cell_location.y, cell_location.z)));
+		cell_xform.set_origin(grid_map->map_to_world(cell_location.x, cell_location.y, cell_location.z));
 		Ref<GLTFMesh> gltf_mesh;
 		gltf_mesh.instance();
 		gltf_mesh = import_mesh_node;
@@ -5120,7 +5122,7 @@ void GLTFDocument::_convert_grid_map_to_gltf(Node *p_scene_parent, const GLTFNod
 }
 
 void GLTFDocument::_convert_mult_mesh_instance_to_gltf(Node *p_scene_parent, const GLTFNodeIndex &p_parent_node_index, const GLTFNodeIndex &p_root_node_index, Ref<GLTFNode> gltf_node, Ref<GLTFState> state, Node *p_root_node) {
-	MultiMeshInstance3D *multi_mesh_instance = Object::cast_to<MultiMeshInstance3D>(p_scene_parent);
+	MultiMeshInstance *multi_mesh_instance = Object::cast_to<MultiMeshInstance>(p_scene_parent);
 	ERR_FAIL_COND(!multi_mesh_instance);
 	Ref<MultiMesh> multi_mesh = multi_mesh_instance->get_multimesh();
 	if (multi_mesh.is_valid()) {
@@ -5150,8 +5152,8 @@ void GLTFDocument::_convert_mult_mesh_instance_to_gltf(Node *p_scene_parent, con
 				mesh.instance();
 				for (int32_t surface_i = 0; surface_i < mm->get_surface_count(); surface_i++) {
 					Array surface = mm->surface_get_arrays(surface_i);
-					mesh->add_surface(mm->surface_get_primitive_type(surface_i), surface, Array(), Dictionary(),
-							mm->surface_get_material(surface_i), mm->get_name());
+					mesh->add_surface(mm->surface_get_primitive_type(surface_i), surface, Array(), Dictionary(), mm->get_name());
+					mesh->set_surface_material(mm->surface_get_material(surface_i));
 				}
 				Ref<GLTFMesh> gltf_mesh;
 				gltf_mesh.instance();
@@ -5169,7 +5171,7 @@ void GLTFDocument::_convert_mult_mesh_instance_to_gltf(Node *p_scene_parent, con
 }
 
 void GLTFDocument::_convert_skeleton_to_gltf(Node *p_scene_parent, Ref<GLTFState> state, const GLTFNodeIndex &p_parent_node_index, const GLTFNodeIndex &p_root_node_index, Ref<GLTFNode> gltf_node, Node *p_root_node) {
-	Skeleton3D *skeleton = Object::cast_to<Skeleton3D>(p_scene_parent);
+	Skeleton *skeleton = Object::cast_to<Skeleton>(p_scene_parent);
 	if (skeleton) {
 		// Remove placeholder skeleton3d node by not creating the gltf node
 		// Skins are per mesh
@@ -5181,11 +5183,11 @@ void GLTFDocument::_convert_skeleton_to_gltf(Node *p_scene_parent, Ref<GLTFState
 
 void GLTFDocument::_convert_bone_attachment_to_gltf(Node *p_scene_parent, Ref<GLTFState> state, Ref<GLTFNode> gltf_node, bool &retflag) {
 	retflag = true;
-	BoneAttachment3D *bone_attachment = Object::cast_to<BoneAttachment3D>(p_scene_parent);
+	BoneAttachment *bone_attachment = Object::cast_to<BoneAttachment>(p_scene_parent);
 	if (bone_attachment) {
 		Node *node = bone_attachment->get_parent();
 		while (node) {
-			Skeleton3D *bone_attachment_skeleton = Object::cast_to<Skeleton3D>(node);
+			Skeleton *bone_attachment_skeleton = Object::cast_to<Skeleton>(node);
 			if (bone_attachment_skeleton) {
 				for (GLTFSkeletonIndex skeleton_i = 0; skeleton_i < state->skeletons.size(); skeleton_i++) {
 					if (state->skeletons[skeleton_i]->godot_skeleton != bone_attachment_skeleton) {
@@ -5204,8 +5206,8 @@ void GLTFDocument::_convert_bone_attachment_to_gltf(Node *p_scene_parent, Ref<GL
 	retflag = false;
 }
 
-void GLTFDocument::_convert_mesh_to_gltf(Node *p_scene_parent, Ref<GLTFState> state, Node3D *spatial, Ref<GLTFNode> gltf_node) {
-	MeshInstance3D *mi = Object::cast_to<MeshInstance3D>(p_scene_parent);
+void GLTFDocument::_convert_mesh_to_gltf(Node *p_scene_parent, Ref<GLTFState> state, Spatial *spatial, Ref<GLTFNode> gltf_node) {
+	MeshInstance *mi = Object::cast_to<MeshInstance>(p_scene_parent);
 	if (mi) {
 		GLTFMeshIndex gltf_mesh_index = _convert_mesh_instance(state, mi);
 		if (gltf_mesh_index != -1) {
@@ -5214,16 +5216,16 @@ void GLTFDocument::_convert_mesh_to_gltf(Node *p_scene_parent, Ref<GLTFState> st
 	}
 }
 
-void GLTFDocument::_generate_scene_node(Ref<GLTFState> state, Node *scene_parent, Node3D *scene_root, const GLTFNodeIndex node_index) {
+void GLTFDocument::_generate_scene_node(Ref<GLTFState> state, Node *scene_parent, Spatial *scene_root, const GLTFNodeIndex node_index) {
 	Ref<GLTFNode> gltf_node = state->nodes[node_index];
 
-	Node3D *current_node = nullptr;
+	Spatial *current_node = nullptr;
 
 	// Is our parent a skeleton
-	Skeleton3D *active_skeleton = Object::cast_to<Skeleton3D>(scene_parent);
+	Skeleton *active_skeleton = Object::cast_to<Skeleton>(scene_parent);
 
 	if (gltf_node->skeleton >= 0) {
-		Skeleton3D *skeleton = state->skeletons[gltf_node->skeleton]->godot_skeleton;
+		Skeleton *skeleton = state->skeletons[gltf_node->skeleton]->godot_skeleton;
 
 		if (active_skeleton != skeleton) {
 			ERR_FAIL_COND_MSG(active_skeleton != nullptr, "glTF: Generating scene detected direct parented Skeletons");
@@ -5241,7 +5243,7 @@ void GLTFDocument::_generate_scene_node(Ref<GLTFState> state, Node *scene_parent
 
 	// If we have an active skeleton, and the node is node skinned, we need to create a bone attachment
 	if (current_node == nullptr && active_skeleton != nullptr && gltf_node->skin < 0) {
-		BoneAttachment3D *bone_attachment = _generate_bone_attachment(state, active_skeleton, node_index);
+		BoneAttachment *bone_attachment = _generate_bone_attachment(state, active_skeleton, node_index);
 
 		scene_parent->add_child(bone_attachment);
 		bone_attachment->set_owner(scene_root);
@@ -5431,7 +5433,7 @@ void GLTFDocument::_import_animation(Ref<GLTFState> state, AnimationPlayer *ap, 
 		const Ref<GLTFNode> gltf_node = state->nodes[track_i->key()];
 
 		if (gltf_node->skeleton >= 0) {
-			const Skeleton3D *sk = Object::cast_to<Skeleton3D>(state->scene_nodes.find(node_index)->get());
+			const Skeleton *sk = Object::cast_to<Skeleton>(state->scene_nodes.find(node_index)->get());
 			ERR_FAIL_COND(sk == nullptr);
 
 			const String path = ap->get_parent()->get_path_to(sk);
@@ -5508,7 +5510,7 @@ void GLTFDocument::_import_animation(Ref<GLTFState> state, AnimationPlayer *ap, 
 					xform.basis.set_quat_scale(rot, scale);
 					xform.origin = pos;
 
-					const Skeleton3D *skeleton = state->skeletons[gltf_node->skeleton]->godot_skeleton;
+					const Skeleton *skeleton = state->skeletons[gltf_node->skeleton]->godot_skeleton;
 					const int bone_idx = skeleton->find_bone(gltf_node->get_name());
 					xform = skeleton->get_bone_rest(bone_idx).affine_inverse() * xform;
 
@@ -5595,7 +5597,7 @@ void GLTFDocument::_convert_mesh_instances(Ref<GLTFState> state) {
 		if (!mi_element) {
 			continue;
 		}
-		MeshInstance3D *mi = Object::cast_to<MeshInstance3D>(mi_element->get());
+		MeshInstance *mi = Object::cast_to<MeshInstance>(mi_element->get());
 		ERR_CONTINUE(!mi);
 		Transform mi_xform = mi->get_transform();
 		node->scale = mi_xform.basis.get_scale();
@@ -5603,7 +5605,7 @@ void GLTFDocument::_convert_mesh_instances(Ref<GLTFState> state) {
 		node->translation = mi_xform.origin;
 
 		Dictionary json_skin;
-		Skeleton3D *skeleton = Object::cast_to<Skeleton3D>(mi->get_node(mi->get_skeleton_path()));
+		Skeleton *skeleton = Object::cast_to<Skeleton>(mi->get_node(mi->get_skeleton_path()));
 		if (!skeleton) {
 			continue;
 		}
@@ -5773,7 +5775,7 @@ void GLTFDocument::_process_mesh_instances(Ref<GLTFState> state, Node *scene_roo
 
 			const GLTFSkeletonIndex skel_i = state->skins.write[node->skin]->skeleton;
 			Ref<GLTFSkeleton> gltf_skeleton = state->skeletons.write[skel_i];
-			Skeleton3D *skeleton = gltf_skeleton->godot_skeleton;
+			Skeleton *skeleton = gltf_skeleton->godot_skeleton;
 			ERR_FAIL_COND(skeleton == nullptr);
 
 			mi->get_parent()->remove_child(mi);
@@ -6053,7 +6055,7 @@ void GLTFDocument::_convert_animation(Ref<GLTFState> state, AnimationPlayer *ap,
 			const Node *node = ap->get_parent()->get_node_or_null(path);
 			for (Map<GLTFNodeIndex, Node *>::Element *transform_track_i = state->scene_nodes.front(); transform_track_i; transform_track_i = transform_track_i->next()) {
 				if (transform_track_i->get() == node) {
-					const MeshInstance3D *mi = Object::cast_to<MeshInstance3D>(node);
+					const MeshInstance *mi = Object::cast_to<MeshInstance>(node);
 					if (!mi) {
 						continue;
 					}
@@ -6120,10 +6122,10 @@ void GLTFDocument::_convert_animation(Ref<GLTFState> state, AnimationPlayer *ap,
 			const NodePath node_path = node;
 			const String suffix = node_suffix[1];
 			Node *godot_node = ap->get_parent()->get_node_or_null(node_path);
-			Skeleton3D *skeleton = nullptr;
+			Skeleton *skeleton = nullptr;
 			GLTFSkeletonIndex skeleton_gltf_i = -1;
 			for (GLTFSkeletonIndex skeleton_i = 0; skeleton_i < state->skeletons.size(); skeleton_i++) {
-				if (state->skeletons[skeleton_i]->godot_skeleton == cast_to<Skeleton3D>(godot_node)) {
+				if (state->skeletons[skeleton_i]->godot_skeleton == cast_to<Skeleton>(godot_node)) {
 					skeleton = state->skeletons[skeleton_i]->godot_skeleton;
 					skeleton_gltf_i = skeleton_i;
 					ERR_CONTINUE(!skeleton);
@@ -6285,9 +6287,9 @@ Error GLTFDocument::parse(Ref<GLTFState> state, String p_path, bool p_read_binar
 	return OK;
 }
 
-Dictionary GLTFDocument::_serialize_texture_transform_uv2(Ref<BaseMaterial3D> p_material) {
+Dictionary GLTFDocument::_serialize_texture_transform_uv2(Ref<SpatialMaterial> p_material) {
 	Dictionary extension;
-	Ref<BaseMaterial3D> mat = p_material;
+	Ref<SpatialMaterial> mat = p_material;
 	if (mat.is_valid()) {
 		Dictionary texture_transform;
 		Array offset;
@@ -6306,7 +6308,7 @@ Dictionary GLTFDocument::_serialize_texture_transform_uv2(Ref<BaseMaterial3D> p_
 	return extension;
 }
 
-Dictionary GLTFDocument::_serialize_texture_transform_uv1(Ref<BaseMaterial3D> p_material) {
+Dictionary GLTFDocument::_serialize_texture_transform_uv1(Ref<SpatialMaterial> p_material) {
 	Dictionary extension;
 	if (p_material.is_valid()) {
 		Dictionary texture_transform;

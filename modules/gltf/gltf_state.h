@@ -31,8 +31,8 @@
 #ifndef GLTF_STATE_H
 #define GLTF_STATE_H
 
-#include "core/io/resource.h"
-#include "core/templates/vector.h"
+#include "core/resource.h"
+#include "core/vector.h"
 #include "editor_scene_importer_gltf.h"
 #include "gltf_accessor.h"
 #include "gltf_animation.h"
@@ -68,13 +68,13 @@ class GLTFState : public Resource {
 	Vector<Ref<GLTFMesh>> meshes; // meshes are loaded directly, no reason not to.
 
 	Vector<AnimationPlayer *> animation_players;
-	Map<Ref<BaseMaterial3D>, GLTFMaterialIndex> material_cache;
-	Vector<Ref<BaseMaterial3D>> materials;
+	Map<Ref<Material>, GLTFMaterialIndex> material_cache;
+	Vector<Ref<Material>> materials;
 
 	String scene_name;
 	Vector<int> root_nodes;
 	Vector<Ref<GLTFTexture>> textures;
-	Vector<Ref<Texture2D>> images;
+	Vector<Ref<Texture>> images;
 
 	Vector<Ref<GLTFSkin>> skins;
 	Vector<Ref<GLTFCamera>> cameras;

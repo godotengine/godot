@@ -31,7 +31,7 @@
 #ifndef GLTF_NODE_H
 #define GLTF_NODE_H
 
-#include "core/io/resource.h"
+#include "core/resource.h"
 #include "gltf_document.h"
 
 class GLTFNode : public Resource {

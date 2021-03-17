@@ -31,7 +31,7 @@
 #ifndef GLTF_SKIN_H
 #define GLTF_SKIN_H
 
-#include "core/io/resource.h"
+#include "core/resource.h"
 #include "gltf_document.h"
 
 class GLTFSkin : public Resource {

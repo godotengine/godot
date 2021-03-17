@@ -31,17 +31,17 @@
 #ifndef EDITOR_SCENE_IMPORTER_GLTF_H
 #define EDITOR_SCENE_IMPORTER_GLTF_H
 
-#include "core/config/project_settings.h"
+#include "core/project_settings.h"
 #include "core/io/json.h"
-#include "core/object/object.h"
-#include "core/templates/vector.h"
+#include "core/object.h"
+#include "core/vector.h"
 #include "editor/import/resource_importer_scene.h"
 #include "modules/csg/csg_shape.h"
 #include "modules/gridmap/grid_map.h"
-#include "scene/3d/mesh_instance_3d.h"
-#include "scene/3d/multimesh_instance_3d.h"
-#include "scene/3d/node_3d.h"
-#include "scene/3d/skeleton_3d.h"
+#include "scene/3d/mesh_instance.h"
+#include "scene/3d/multimesh_instance.h"
+#include "scene/3d/spatial.h"
+#include "scene/3d/skeleton.h"
 #include "scene/animation/animation_player.h"
 #include "scene/gui/check_box.h"
 #include "scene/main/node.h"
@@ -53,7 +53,7 @@
 
 class AnimationPlayer;
 class BoneAttachment;
-class EditorSceneImporterMeshNode3D;
+class EditorSceneImporterMeshNode;
 
 #ifdef TOOLS_ENABLED
 class EditorSceneImporterGLTF : public EditorSceneImporter {

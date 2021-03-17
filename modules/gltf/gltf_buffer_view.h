@@ -31,7 +31,7 @@
 #ifndef GLTF_BUFFER_VIEW_H
 #define GLTF_BUFFER_VIEW_H
 
-#include "core/io/resource.h"
+#include "core/resource.h"
 #include "gltf_document.h"
 
 class GLTFBufferView : public Resource {

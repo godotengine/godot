@@ -41,7 +41,7 @@ void GLTFCamera::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_znear", "znear"), &GLTFCamera::set_znear);
 
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "perspective"), "set_perspective", "get_perspective"); // bool
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "fov_size"), "set_fov_size", "get_fov_size"); // float
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "zfar"), "set_zfar", "get_zfar"); // float
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "znear"), "set_znear", "get_znear"); // float
+	ADD_PROPERTY(PropertyInfo(Variant::REAL, "fov_size"), "set_fov_size", "get_fov_size"); // float
+	ADD_PROPERTY(PropertyInfo(Variant::REAL, "zfar"), "set_zfar", "get_zfar"); // float
+	ADD_PROPERTY(PropertyInfo(Variant::REAL, "znear"), "set_znear", "get_znear"); // float
 }

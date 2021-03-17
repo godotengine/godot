@@ -31,8 +31,8 @@
 #ifndef GLTF_LIGHT_H
 #define GLTF_LIGHT_H
 
-#include "core/config/engine.h"
-#include "core/io/resource.h"
+#include "core/engine.h"
+#include "core/resource.h"
 
 class GLTFLight : public Resource {
 	GDCLASS(GLTFLight, Resource)

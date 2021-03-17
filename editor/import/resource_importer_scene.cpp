@@ -32,6 +32,7 @@
 
 #include "core/io/resource_saver.h"
 #include "editor/editor_node.h"
+#include "editor/import/scene_importer_mesh_node_3d.h"
 #include "scene/3d/collision_shape.h"
 #include "scene/3d/mesh_instance.h"
 #include "scene/3d/navigation.h"
@@ -1261,6 +1262,34 @@ Ref<Animation> ResourceImporterScene::import_animation_from_other_importer(Edito
 	return importer->import_animation(p_path, p_flags, p_bake_fps);
 }
 
+void ResourceImporterScene::_generate_meshes(Node *p_node) {
+	EditorSceneImporterMeshNode3D *src_mesh_node = Object::cast_to<EditorSceneImporterMeshNode3D>(p_node);
+	if (src_mesh_node) {
+		//is mesh
+		MeshInstance *mesh_node = memnew(MeshInstance);
+		mesh_node->set_name(src_mesh_node->get_name());
+		mesh_node->set_transform(src_mesh_node->get_transform());
+		mesh_node->set_skin(src_mesh_node->get_skin());
+		mesh_node->set_skeleton_path(src_mesh_node->get_skeleton_path());
+		if (src_mesh_node->get_mesh().is_valid()) {
+			Ref<ArrayMesh> mesh;
+			mesh = src_mesh_node->get_mesh()->get_mesh();
+			if (mesh.is_valid()) {
+				mesh_node->set_mesh(mesh);
+				for (int i = 0; i < mesh->get_surface_count(); i++) {
+					mesh_node->set_surface_material(i, src_mesh_node->get_surface_material(i));
+				}
+			}
+		}
+		p_node->replace_by(mesh_node);
+		memdelete(p_node);
+		p_node = mesh_node;
+	}
+
+	for (int i = 0; i < p_node->get_child_count(); i++) {
+		_generate_meshes(p_node->get_child(i));
+	}
+}
 Error ResourceImporterScene::import(const String &p_source_file, const String &p_save_path, const Map<StringName, Variant> &p_options, List<String> *r_platform_variants, List<String> *r_gen_files, Variant *r_metadata) {
 
 	const String &src_path = p_source_file;
@@ -1352,6 +1381,8 @@ Error ResourceImporterScene::import(const String &p_source_file, const String &p
 		scene->set_name(p_options["nodes/root_name"]);
 	else
 		scene->set_name(p_save_path.get_file().get_basename());
+
+	_generate_meshes(scene);
 
 	err = OK;
 

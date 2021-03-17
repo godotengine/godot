@@ -32,6 +32,8 @@
 
 #include "core/io/resource_saver.h"
 #include "core/os/file_access.h"
+#include "editor/import/scene_importer_mesh.h"
+#include "editor/import/scene_importer_mesh_node_3d.h"
 #include "scene/3d/mesh_instance.h"
 #include "scene/3d/spatial.h"
 #include "scene/resources/mesh.h"
@@ -230,8 +232,6 @@ static Error _parse_obj(const String &p_path, List<Ref<Mesh> > &r_meshes, bool p
 	String current_material_library;
 	String current_material;
 	String current_group;
-	uint32_t smooth_group = 0;
-	bool smoothing = true;
 
 	while (true) {
 
@@ -319,10 +319,6 @@ static Error _parse_obj(const String &p_path, List<Ref<Mesh> > &r_meshes, bool p
 						vtx += vertices.size() + 1;
 					ERR_FAIL_INDEX_V(vtx, vertices.size(), ERR_FILE_CORRUPT);
 
-					if (!smoothing) {
-						smooth_group++;
-					}
-					surf_tool->add_smooth_group(smooth_group);
 					Vector3 vertex = vertices[vtx];
 					surf_tool->add_vertex(vertex);
 				}
@@ -331,16 +327,9 @@ static Error _parse_obj(const String &p_path, List<Ref<Mesh> > &r_meshes, bool p
 			}
 		} else if (l.begins_with("s ")) { //smoothing
 			String what = l.substr(2, l.length()).strip_edges();
-			bool do_smooth;
-			if (what == "off") {
-				do_smooth = false;
-			} else {
-				do_smooth = true;
-			}
-			if (do_smooth != smoothing) {
-				smooth_group++;
-				smoothing = do_smooth;
-			}
+
+			surf_tool->add_smooth_group(what != "off");
+
 		} else if (/*l.begins_with("g ") ||*/ l.begins_with("usemtl ") || (l.begins_with("o ") || f->eof_reached())) { //commit group to mesh
 			//groups are too annoying
 			if (surf_tool->get_vertex_array().size()) {
@@ -438,7 +427,7 @@ Node *EditorOBJImporter::import_scene(const String &p_path, uint32_t p_flags, in
 		if (r_err) {
 			*r_err = err;
 		}
-		return nullptr;
+		return NULL;
 	}
 
 	Spatial *scene = memnew(Spatial);

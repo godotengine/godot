@@ -66,8 +66,8 @@ void GLTFAccessor::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "normalized"), "set_normalized", "get_normalized"); // bool
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "count"), "set_count", "get_count"); // int
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "type"), "set_type", "get_type"); // GLTFDocument::GLTFType
-	ADD_PROPERTY(PropertyInfo(Variant::PACKED_FLOAT64_ARRAY, "min"), "set_min", "get_min"); // Vector<real_t>
-	ADD_PROPERTY(PropertyInfo(Variant::PACKED_FLOAT64_ARRAY, "max"), "set_max", "get_max"); // Vector<real_t>
+	ADD_PROPERTY(PropertyInfo(Variant::POOL_REAL_ARRAY, "min"), "set_min", "get_min"); // Vector<real_t>
+	ADD_PROPERTY(PropertyInfo(Variant::POOL_REAL_ARRAY, "max"), "set_max", "get_max"); // Vector<real_t>
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "sparse_count"), "set_sparse_count", "get_sparse_count"); // int
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "sparse_indices_buffer_view"), "set_sparse_indices_buffer_view", "get_sparse_indices_buffer_view"); // int
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "sparse_indices_byte_offset"), "set_sparse_indices_byte_offset", "get_sparse_indices_byte_offset"); // int
@@ -124,19 +124,19 @@ void GLTFAccessor::set_type(int p_type) {
 	type = (GLTFDocument::GLTFType)p_type; // TODO: Register enum
 }
 
-Vector<double> GLTFAccessor::get_min() {
+Vector<float> GLTFAccessor::get_min() {
 	return min;
 }
 
-void GLTFAccessor::set_min(Vector<double> p_min) {
+void GLTFAccessor::set_min(Vector<float> p_min) {
 	min = p_min;
 }
 
-Vector<double> GLTFAccessor::get_max() {
+Vector<float> GLTFAccessor::get_max() {
 	return max;
 }
 
-void GLTFAccessor::set_max(Vector<double> p_max) {
+void GLTFAccessor::set_max(Vector<float> p_max) {
 	max = p_max;
 }
 
