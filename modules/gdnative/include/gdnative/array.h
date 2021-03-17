@@ -50,6 +50,7 @@ typedef struct {
 #include <gdnative/variant_struct.h>
 
 void GDAPI godot_array_new(godot_array *p_self);
+void GDAPI godot_array_new_copy(godot_array *r_dest, const godot_array *p_src);
 void GDAPI godot_array_destroy(godot_array *p_self);
 godot_variant GDAPI *godot_array_operator_index(godot_array *p_self, godot_int p_index);
 const godot_variant GDAPI *godot_array_operator_index_const(const godot_array *p_self, godot_int p_index);

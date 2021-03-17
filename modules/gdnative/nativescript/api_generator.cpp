@@ -71,6 +71,7 @@ struct MethodAPI {
 	bool is_editor = false;
 	bool is_noscript = false;
 	bool is_const = false;
+	bool is_static = false; // For builtin types.
 	bool is_reverse = false;
 	bool is_virtual = false;
 	bool is_from_script = false;
@@ -528,6 +529,7 @@ List<ClassAPI> generate_c_builtin_api_types() {
 			method_api.argument_count = Variant::get_builtin_method_argument_count(type, method_name);
 			method_api.has_varargs = Variant::is_builtin_method_vararg(type, method_name);
 			method_api.is_const = Variant::is_builtin_method_const(type, method_name);
+			method_api.is_static = Variant::is_builtin_method_static(type, method_name);
 
 			for (int i = 0; i < method_api.argument_count; i++) {
 				method_api.argument_names.push_back(Variant::get_builtin_method_argument_name(type, method_name, i));
@@ -757,6 +759,7 @@ static void write_builtin_method(StringBuilder &p_source, const MethodAPI &p_met
 	append_indented(p_source, vformat(R"("name": "%s",)", p_method.method_name));
 	append_indented(p_source, vformat(R"("return_type": "%s",)", p_method.return_type));
 	append_indented(p_source, vformat(R"("is_const": %s,)", p_method.is_const ? "true" : "false"));
+	append_indented(p_source, vformat(R"("is_static": %s,)", p_method.is_static ? "true" : "false"));
 	append_indented(p_source, vformat(R"("has_varargs": %s,)", p_method.has_varargs ? "true" : "false"));
 
 	append_indented(p_source, R"("arguments": [)");

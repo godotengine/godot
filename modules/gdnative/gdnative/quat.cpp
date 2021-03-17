@@ -42,6 +42,10 @@ void GDAPI godot_quat_new(godot_quat *p_self) {
 	memnew_placement(p_self, Quat);
 }
 
+void GDAPI godot_quat_new_copy(godot_quat *r_dest, const godot_quat *p_src) {
+	memnew_placement(r_dest, Quat(*(Quat *)p_src));
+}
+
 godot_real_t GDAPI *godot_quat_operator_index(godot_quat *p_self, godot_int p_index) {
 	Quat *self = (Quat *)p_self;
 	return (godot_real_t *)&self->operator[](p_index);

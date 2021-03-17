@@ -45,10 +45,7 @@ void GDAPI godot_string_new(godot_string *r_dest) {
 }
 
 void GDAPI godot_string_new_copy(godot_string *r_dest, const godot_string *p_src) {
-	String *dest = (String *)r_dest;
-	const String *src = (const String *)p_src;
-	memnew_placement(dest, String);
-	*dest = String(*src);
+	memnew_placement(r_dest, String(*(String *)p_src));
 }
 
 void GDAPI godot_string_new_with_latin1_chars(godot_string *r_dest, const char *p_contents) {
@@ -123,6 +120,45 @@ void GDAPI godot_string_new_with_wide_chars_and_len(godot_string *r_dest, const 
 		memnew_placement(dest, String);
 		*dest = String((const char32_t *)p_contents, p_size);
 	}
+}
+
+const char GDAPI *godot_string_to_latin1_chars(const godot_string *p_self) {
+	String *self = (String *)p_self;
+	return self->ascii(true).get_data();
+}
+
+const char GDAPI *godot_string_to_utf8_chars(const godot_string *p_self) {
+	String *self = (String *)p_self;
+	return self->utf8().get_data();
+}
+
+const char16_t GDAPI *godot_string_to_utf16_chars(const godot_string *p_self) {
+	String *self = (String *)p_self;
+	return self->utf16().get_data();
+}
+
+const char32_t GDAPI *godot_string_to_utf32_chars(const godot_string *p_self) {
+	String *self = (String *)p_self;
+	return self->get_data();
+}
+
+const wchar_t GDAPI *godot_string_to_wide_chars(const godot_string *p_self) {
+	String *self = (String *)p_self;
+	if (sizeof(wchar_t) == 2) {
+		return (const wchar_t *)self->utf16().get_data();
+	} else {
+		return (const wchar_t *)self->get_data();
+	}
+}
+
+char32_t GDAPI *godot_string_operator_index(godot_string *p_self, godot_int p_index) {
+	String *self = (String *)p_self;
+	return self->ptrw();
+}
+
+const char32_t GDAPI *godot_string_operator_index_const(const godot_string *p_self, godot_int p_index) {
+	const String *self = (const String *)p_self;
+	return self->ptr();
 }
 
 void GDAPI godot_string_destroy(godot_string *p_self) {

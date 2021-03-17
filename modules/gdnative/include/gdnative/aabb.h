@@ -49,6 +49,7 @@ typedef struct {
 #include <gdnative/gdnative.h>
 
 void GDAPI godot_aabb_new(godot_aabb *p_self);
+void GDAPI godot_aabb_new_copy(godot_aabb *r_dest, const godot_aabb *p_src);
 
 #ifdef __cplusplus
 }

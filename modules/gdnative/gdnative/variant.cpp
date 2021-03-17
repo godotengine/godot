@@ -577,6 +577,54 @@ void GDAPI godot_variant_call(godot_variant *p_self, const godot_string_name *p_
 	}
 }
 
+void GDAPI godot_variant_call_with_cstring(godot_variant *p_self, const char *p_method, const godot_variant **p_args, const godot_int p_argcount, godot_variant *r_return, godot_variant_call_error *r_error) {
+	Variant *self = (Variant *)p_self;
+	const StringName method(p_method);
+	const Variant **args = (const Variant **)p_args;
+	Variant ret;
+	Callable::CallError error;
+	self->call(method, args, p_argcount, ret, error);
+	memnew_placement_custom(r_return, Variant, Variant(ret));
+
+	if (r_error) {
+		r_error->error = (godot_variant_call_error_error)error.error;
+		r_error->argument = error.argument;
+		r_error->expected = (godot_variant_type)error.expected;
+	}
+}
+
+void GDAPI godot_variant_call_static(godot_variant_type p_type, const godot_string_name *p_method, const godot_variant **p_args, const godot_int p_argcount, godot_variant *r_return, godot_variant_call_error *r_error) {
+	Variant::Type type = (Variant::Type)p_type;
+	const StringName *method = (const StringName *)p_method;
+	const Variant **args = (const Variant **)p_args;
+	Variant ret;
+	Callable::CallError error;
+	Variant::call_static(type, *method, args, p_argcount, ret, error);
+	memnew_placement_custom(r_return, Variant, Variant(ret));
+
+	if (r_error) {
+		r_error->error = (godot_variant_call_error_error)error.error;
+		r_error->argument = error.argument;
+		r_error->expected = (godot_variant_type)error.expected;
+	}
+}
+
+void GDAPI godot_variant_call_static_with_cstring(godot_variant_type p_type, const char *p_method, const godot_variant **p_args, const godot_int p_argcount, godot_variant *r_return, godot_variant_call_error *r_error) {
+	Variant::Type type = (Variant::Type)p_type;
+	const StringName method(p_method);
+	const Variant **args = (const Variant **)p_args;
+	Variant ret;
+	Callable::CallError error;
+	Variant::call_static(type, method, args, p_argcount, ret, error);
+	memnew_placement_custom(r_return, Variant, Variant(ret));
+
+	if (r_error) {
+		r_error->error = (godot_variant_call_error_error)error.error;
+		r_error->argument = error.argument;
+		r_error->expected = (godot_variant_type)error.expected;
+	}
+}
+
 void GDAPI godot_variant_evaluate(godot_variant_operator p_op, const godot_variant *p_a, const godot_variant *p_b, godot_variant *r_return, bool *r_valid) {
 	Variant::Operator op = (Variant::Operator)p_op;
 	const Variant *a = (const Variant *)p_a;
@@ -593,12 +641,20 @@ void GDAPI godot_variant_set(godot_variant *p_self, const godot_variant *p_key, 
 	self->set(*key, *value, r_valid);
 }
 
-void GDAPI godot_variant_set_named(godot_variant *p_self, const godot_string_name *p_name, const godot_variant *p_value, bool *r_valid) {
+void GDAPI godot_variant_set_named(godot_variant *p_self, const godot_string_name *p_key, const godot_variant *p_value, bool *r_valid) {
 	Variant *self = (Variant *)p_self;
-	const StringName *name = (const StringName *)p_name;
+	const StringName *key = (const StringName *)p_key;
 	const Variant *value = (const Variant *)p_value;
 
-	self->set_named(*name, *value, *r_valid);
+	self->set_named(*key, *value, *r_valid);
+}
+
+void GDAPI godot_variant_set_named_with_cstring(godot_variant *p_self, const char *p_key, const godot_variant *p_value, bool *r_valid) {
+	Variant *self = (Variant *)p_self;
+	const StringName key(p_key);
+	const Variant *value = (const Variant *)p_value;
+
+	self->set_named(key, *value, *r_valid);
 }
 
 void GDAPI godot_variant_set_keyed(godot_variant *p_self, const godot_variant *p_key, const godot_variant *p_value, bool *r_valid) {
@@ -628,6 +684,17 @@ godot_variant GDAPI godot_variant_get(const godot_variant *p_self, const godot_v
 }
 
 godot_variant GDAPI godot_variant_get_named(const godot_variant *p_self, const godot_string_name *p_key, bool *r_valid) {
+	const Variant *self = (const Variant *)p_self;
+	const StringName *key = (const StringName *)p_key;
+	Variant ret;
+
+	ret = self->get_named(*key, *r_valid);
+	godot_variant result;
+	memnew_placement_custom(&result, Variant, Variant(ret));
+	return result;
+}
+
+godot_variant GDAPI godot_variant_get_named_with_cstring(const godot_variant *p_self, const char *p_key, bool *r_valid) {
 	const Variant *self = (const Variant *)p_self;
 	const StringName *key = (const StringName *)p_key;
 	Variant ret;
@@ -822,6 +889,14 @@ bool GDAPI godot_variant_is_builtin_method_const(godot_variant_type p_type, cons
 
 bool GDAPI godot_variant_is_builtin_method_const_with_cstring(godot_variant_type p_type, const char *p_method) {
 	return Variant::is_builtin_method_const((Variant::Type)p_type, StringName(p_method));
+}
+
+bool GDAPI godot_variant_is_builtin_method_static(godot_variant_type p_type, const godot_string_name *p_method) {
+	return Variant::is_builtin_method_static((Variant::Type)p_type, *((const StringName *)p_method));
+}
+
+bool GDAPI godot_variant_is_builtin_method_static_with_cstring(godot_variant_type p_type, const char *p_method) {
+	return Variant::is_builtin_method_static((Variant::Type)p_type, StringName(p_method));
 }
 
 bool GDAPI godot_variant_is_builtin_method_vararg(godot_variant_type p_type, const godot_string_name *p_method) {

@@ -43,6 +43,10 @@ void GDAPI godot_array_new(godot_array *p_self) {
 	memnew_placement(p_self, Array);
 }
 
+void GDAPI godot_array_new_copy(godot_array *r_dest, const godot_array *p_src) {
+	memnew_placement(r_dest, Array(*(Array *)p_src));
+}
+
 void GDAPI godot_array_destroy(godot_array *p_self) {
 	((Array *)p_self)->~Array();
 }
