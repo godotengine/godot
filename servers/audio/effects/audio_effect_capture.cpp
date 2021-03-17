@@ -91,8 +91,6 @@ Ref<AudioEffectInstance> AudioEffectCapture::instance() {
 }
 
 void AudioEffectCapture::set_buffer_length(float p_buffer_length_seconds) {
-	ERR_FAIL_COND(buffer_initialized);
-
 	buffer_length_seconds = p_buffer_length_seconds;
 }
 
