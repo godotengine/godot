@@ -844,6 +844,9 @@ GDScriptParser::VariableNode *GDScriptParser::parse_variable(bool p_allow_proper
 	if (match(GDScriptTokenizer::Token::EQUAL)) {
 		// Initializer.
 		variable->initializer = parse_expression(false);
+		if (variable->initializer == nullptr) {
+			push_error(R"(Expected expression for variable initial value after "=".)");
+		}
 		variable->assignments++;
 	}
 
