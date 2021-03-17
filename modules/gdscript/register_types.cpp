@@ -158,7 +158,6 @@ void unregister_gdscript_types() {
 #endif // TOOLS_ENABLED
 
 	GDScriptParser::cleanup();
-	GDScriptAnalyzer::cleanup();
 	GDScriptUtilityFunctions::unregister_functions();
 }
 

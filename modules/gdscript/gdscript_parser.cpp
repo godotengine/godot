@@ -94,8 +94,43 @@ Variant::Type GDScriptParser::get_builtin_type(const StringName &p_type) {
 	return Variant::VARIANT_MAX;
 }
 
+// TODO: Move this to a central location (maybe core?).
+static HashMap<StringName, StringName> underscore_map;
+static const char *underscore_classes[] = {
+	"ClassDB",
+	"Directory",
+	"Engine",
+	"File",
+	"Geometry",
+	"GodotSharp",
+	"JSON",
+	"Marshalls",
+	"Mutex",
+	"OS",
+	"ResourceLoader",
+	"ResourceSaver",
+	"Semaphore",
+	"Thread",
+	"VisualScriptEditor",
+	nullptr,
+};
+StringName GDScriptParser::get_real_class_name(const StringName &p_source) {
+	if (underscore_map.is_empty()) {
+		const char **class_name = underscore_classes;
+		while (*class_name != nullptr) {
+			underscore_map[*class_name] = String("_") + *class_name;
+			class_name++;
+		}
+	}
+	if (underscore_map.has(p_source)) {
+		return underscore_map[p_source];
+	}
+	return p_source;
+}
+
 void GDScriptParser::cleanup() {
 	builtin_types.clear();
+	underscore_map.clear();
 }
 
 void GDScriptParser::get_annotation_list(List<MethodInfo> *r_annotations) const {
@@ -109,12 +144,11 @@ void GDScriptParser::get_annotation_list(List<MethodInfo> *r_annotations) const 
 GDScriptParser::GDScriptParser() {
 	// Register valid annotations.
 	// TODO: Should this be static?
-	// TODO: Validate applicable types (e.g. a VARIABLE annotation that only applies to string variables).
 	register_annotation(MethodInfo("@tool"), AnnotationInfo::SCRIPT, &GDScriptParser::tool_annotation);
 	register_annotation(MethodInfo("@icon", { Variant::STRING, "icon_path" }), AnnotationInfo::SCRIPT, &GDScriptParser::icon_annotation);
 	register_annotation(MethodInfo("@onready"), AnnotationInfo::VARIABLE, &GDScriptParser::onready_annotation);
 	// Export annotations.
-	register_annotation(MethodInfo("@export"), AnnotationInfo::VARIABLE, &GDScriptParser::export_annotations<PROPERTY_HINT_TYPE_STRING, Variant::NIL>);
+	register_annotation(MethodInfo("@export"), AnnotationInfo::VARIABLE, &GDScriptParser::export_annotations<PROPERTY_HINT_NONE, Variant::NIL>);
 	register_annotation(MethodInfo("@export_enum", { Variant::STRING, "names" }), AnnotationInfo::VARIABLE, &GDScriptParser::export_annotations<PROPERTY_HINT_ENUM, Variant::INT>, 0, true);
 	register_annotation(MethodInfo("@export_file", { Variant::STRING, "filter" }), AnnotationInfo::VARIABLE, &GDScriptParser::export_annotations<PROPERTY_HINT_FILE, Variant::STRING>, 1, true);
 	register_annotation(MethodInfo("@export_dir"), AnnotationInfo::VARIABLE, &GDScriptParser::export_annotations<PROPERTY_HINT_DIR, Variant::STRING>);
@@ -680,7 +714,6 @@ void GDScriptParser::parse_class_member(T *(GDScriptParser::*p_parse_function)()
 	while (!annotation_stack.is_empty()) {
 		AnnotationNode *last_annotation = annotation_stack.back()->get();
 		if (last_annotation->applies_to(p_target)) {
-			last_annotation->apply(this, member);
 			member->annotations.push_front(last_annotation);
 			annotation_stack.pop_back();
 		} else {
@@ -3173,28 +3206,9 @@ bool GDScriptParser::export_annotations(const AnnotationNode *p_annotation, Node
 	}
 
 	variable->exported = true;
-	// TODO: Improving setting type, especially for range hints, which can be int or float.
+
 	variable->export_info.type = t_type;
 	variable->export_info.hint = t_hint;
-
-	if (p_annotation->name == "@export") {
-		if (variable->datatype_specifier == nullptr) {
-			if (variable->initializer == nullptr) {
-				push_error(R"(Cannot use "@export" annotation with variable without type or initializer, since type can't be inferred.)", p_annotation);
-				return false;
-			}
-			if (variable->initializer->type == Node::LITERAL) {
-				variable->export_info.type = static_cast<LiteralNode *>(variable->initializer)->value.get_type();
-			} else if (variable->initializer->type == Node::ARRAY) {
-				variable->export_info.type = Variant::ARRAY;
-			} else if (variable->initializer->type == Node::DICTIONARY) {
-				variable->export_info.type = Variant::DICTIONARY;
-			} else {
-				push_error(R"(To use "@export" annotation with type-less variable, the default value must be a literal.)", p_annotation);
-				return false;
-			}
-		} // else: Actual type will be set by the analyzer, which can infer the proper type.
-	}
 
 	String hint_string;
 	for (int i = 0; i < p_annotation->resolved_arguments.size(); i++) {
@@ -3205,6 +3219,51 @@ bool GDScriptParser::export_annotations(const AnnotationNode *p_annotation, Node
 	}
 
 	variable->export_info.hint_string = hint_string;
+
+	// This is called after tne analyzer is done finding the type, so this should be set here.
+	const DataType &export_type = variable->get_datatype();
+
+	if (p_annotation->name == "@export") {
+		if (variable->datatype_specifier == nullptr && variable->initializer == nullptr) {
+			push_error(R"(Cannot use simple "@export" annotation with variable without type or initializer, since type can't be inferred.)", p_annotation);
+			return false;
+		}
+
+		if (export_type.is_variant() || export_type.has_no_type()) {
+			push_error(R"(Cannot use simple "@export" annotation because the type of the initialized value can't be inferred.)", p_annotation);
+			return false;
+		}
+
+		switch (export_type.kind) {
+			case GDScriptParser::DataType::BUILTIN:
+				variable->export_info.type = export_type.builtin_type;
+				variable->export_info.hint = PROPERTY_HINT_NONE;
+				variable->export_info.hint_string = Variant::get_type_name(export_type.builtin_type);
+				break;
+			case GDScriptParser::DataType::NATIVE:
+				if (ClassDB::is_parent_class(get_real_class_name(export_type.native_type), "Resource")) {
+					variable->export_info.type = Variant::OBJECT;
+					variable->export_info.hint = PROPERTY_HINT_RESOURCE_TYPE;
+					variable->export_info.hint_string = get_real_class_name(export_type.native_type);
+				} else {
+					push_error(R"(Export type can only be built-in or a resource.)", variable);
+				}
+				break;
+			default:
+				// TODO: Allow custom user resources.
+				push_error(R"(Export type can only be built-in or a resource.)", variable);
+				break;
+		}
+	} else {
+		// Validate variable type with export.
+		if (!export_type.is_variant() && (export_type.kind != DataType::BUILTIN || export_type.builtin_type != t_type)) {
+			// Allow float/int conversion.
+			if ((t_type != Variant::FLOAT || export_type.builtin_type != Variant::INT) && (t_type != Variant::INT || export_type.builtin_type != Variant::FLOAT)) {
+				push_error(vformat(R"("%s" annotation requires a variable of type "%s" but type "%s" was given instead.)", p_annotation->name.operator String(), Variant::get_type_name(t_type), export_type.to_string()), variable);
+				return false;
+			}
+		}
+	}
 
 	return true;
 }

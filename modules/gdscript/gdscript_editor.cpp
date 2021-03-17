@@ -500,36 +500,6 @@ struct GDScriptCompletionIdentifier {
 	const GDScriptParser::ExpressionNode *assigned_expression = nullptr;
 };
 
-// TODO: Move this to a central location (maybe core?).
-static const char *underscore_classes[] = {
-	"ClassDB",
-	"Directory",
-	"Engine",
-	"File",
-	"Geometry",
-	"GodotSharp",
-	"JSON",
-	"Marshalls",
-	"Mutex",
-	"OS",
-	"ResourceLoader",
-	"ResourceSaver",
-	"Semaphore",
-	"Thread",
-	"VisualScriptEditor",
-	nullptr,
-};
-static StringName _get_real_class_name(const StringName &p_source) {
-	const char **class_name = underscore_classes;
-	while (*class_name != nullptr) {
-		if (p_source == *class_name) {
-			return String("_") + p_source;
-		}
-		class_name++;
-	}
-	return p_source;
-}
-
 static String _get_visual_datatype(const PropertyInfo &p_info, bool p_is_arg = true) {
 	if (p_info.usage & PROPERTY_USAGE_CLASS_IS_ENUM) {
 		String enum_name = p_info.class_name;
@@ -930,7 +900,7 @@ static void _find_identifiers_in_base(const GDScriptCompletionIdentifier &p_base
 				}
 			} break;
 			case GDScriptParser::DataType::NATIVE: {
-				StringName type = _get_real_class_name(base_type.native_type);
+				StringName type = GDScriptParser::get_real_class_name(base_type.native_type);
 				if (!ClassDB::class_exists(type)) {
 					return;
 				}
@@ -1783,7 +1753,7 @@ static bool _guess_identifier_type(GDScriptParser::CompletionContext &p_context,
 						base_type = GDScriptParser::DataType();
 						break;
 					}
-					StringName real_native = _get_real_class_name(base_type.native_type);
+					StringName real_native = GDScriptParser::get_real_class_name(base_type.native_type);
 					MethodInfo info;
 					if (ClassDB::get_method_info(real_native, p_context.current_function->identifier->name, &info)) {
 						for (const List<PropertyInfo>::Element *E = info.arguments.front(); E; E = E->next()) {
@@ -1854,7 +1824,7 @@ static bool _guess_identifier_type(GDScriptParser::CompletionContext &p_context,
 	}
 
 	// Check ClassDB.
-	StringName class_name = _get_real_class_name(p_identifier);
+	StringName class_name = GDScriptParser::get_real_class_name(p_identifier);
 	if (ClassDB::class_exists(class_name) && ClassDB::is_class_exposed(class_name)) {
 		r_type.type.type_source = GDScriptParser::DataType::ANNOTATED_EXPLICIT;
 		r_type.type.kind = GDScriptParser::DataType::NATIVE;
@@ -1970,7 +1940,7 @@ static bool _guess_identifier_type_from_base(GDScriptParser::CompletionContext &
 				}
 			} break;
 			case GDScriptParser::DataType::NATIVE: {
-				StringName class_name = _get_real_class_name(base_type.native_type);
+				StringName class_name = GDScriptParser::get_real_class_name(base_type.native_type);
 				if (!ClassDB::class_exists(class_name)) {
 					return false;
 				}
@@ -2133,7 +2103,7 @@ static bool _guess_method_return_type_from_base(GDScriptParser::CompletionContex
 				}
 			} break;
 			case GDScriptParser::DataType::NATIVE: {
-				StringName native = _get_real_class_name(base_type.native_type);
+				StringName native = GDScriptParser::get_real_class_name(base_type.native_type);
 				if (!ClassDB::class_exists(native)) {
 					return false;
 				}
@@ -2230,7 +2200,7 @@ static void _find_call_arguments(GDScriptParser::CompletionContext &p_context, c
 				base_type = base_type.class_type->base_type;
 			} break;
 			case GDScriptParser::DataType::NATIVE: {
-				StringName class_name = _get_real_class_name(base_type.native_type);
+				StringName class_name = GDScriptParser::get_real_class_name(base_type.native_type);
 				if (!ClassDB::class_exists(class_name)) {
 					base_type.kind = GDScriptParser::DataType::UNRESOLVED;
 					break;
@@ -2615,7 +2585,7 @@ Error GDScriptLanguage::complete_code(const String &p_code, const String &p_path
 				break;
 			}
 
-			StringName class_name = _get_real_class_name(native_type.native_type);
+			StringName class_name = GDScriptParser::get_real_class_name(native_type.native_type);
 			if (!ClassDB::class_exists(class_name)) {
 				break;
 			}
@@ -2844,7 +2814,7 @@ static Error _lookup_symbol_from_base(const GDScriptParser::DataType &p_base, co
 				}
 			} break;
 			case GDScriptParser::DataType::NATIVE: {
-				StringName class_name = _get_real_class_name(base_type.native_type);
+				StringName class_name = GDScriptParser::get_real_class_name(base_type.native_type);
 				if (!ClassDB::class_exists(class_name)) {
 					base_type.kind = GDScriptParser::DataType::UNRESOLVED;
 					break;

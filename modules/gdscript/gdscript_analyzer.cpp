@@ -39,40 +39,6 @@
 #include "gdscript.h"
 #include "gdscript_utility_functions.h"
 
-// TODO: Move this to a central location (maybe core?).
-static HashMap<StringName, StringName> underscore_map;
-static const char *underscore_classes[] = {
-	"ClassDB",
-	"Directory",
-	"Engine",
-	"File",
-	"Geometry",
-	"GodotSharp",
-	"JSON",
-	"Marshalls",
-	"Mutex",
-	"OS",
-	"ResourceLoader",
-	"ResourceSaver",
-	"Semaphore",
-	"Thread",
-	"VisualScriptEditor",
-	nullptr,
-};
-static StringName get_real_class_name(const StringName &p_source) {
-	if (underscore_map.is_empty()) {
-		const char **class_name = underscore_classes;
-		while (*class_name != nullptr) {
-			underscore_map[*class_name] = String("_") + *class_name;
-			class_name++;
-		}
-	}
-	if (underscore_map.has(p_source)) {
-		return underscore_map[p_source];
-	}
-	return p_source;
-}
-
 static MethodInfo info_from_utility_func(const StringName &p_function) {
 	ERR_FAIL_COND_V(!Variant::has_utility_function(p_function), MethodInfo());
 
@@ -104,10 +70,6 @@ static MethodInfo info_from_utility_func(const StringName &p_function) {
 	}
 
 	return info;
-}
-
-void GDScriptAnalyzer::cleanup() {
-	underscore_map.clear();
 }
 
 static GDScriptParser::DataType make_callable_type(const MethodInfo &p_info) {
@@ -150,7 +112,7 @@ static GDScriptParser::DataType make_native_enum_type(const StringName &p_native
 	type.is_meta_type = true;
 
 	List<StringName> enum_values;
-	StringName real_native_name = get_real_class_name(p_native_class);
+	StringName real_native_name = GDScriptParser::get_real_class_name(p_native_class);
 	ClassDB::get_enum_constants(real_native_name, p_enum_name, &enum_values);
 
 	for (const List<StringName>::Element *E = enum_values.front(); E != nullptr; E = E->next()) {
@@ -267,7 +229,7 @@ Error GDScriptAnalyzer::resolve_inheritance(GDScriptParser::ClassNode *p_class, 
 					push_error(vformat(R"(Could not resolve super class inheritance from "%s".)", name), p_class);
 					return err;
 				}
-			} else if (class_exists(name) && ClassDB::can_instance(get_real_class_name(name))) {
+			} else if (class_exists(name) && ClassDB::can_instance(GDScriptParser::get_real_class_name(name))) {
 				base.kind = GDScriptParser::DataType::NATIVE;
 				base.native_type = name;
 			} else {
@@ -444,7 +406,7 @@ GDScriptParser::DataType GDScriptAnalyzer::resolve_datatype(GDScriptParser::Type
 			return GDScriptParser::DataType();
 		}
 		result = ref->get_parser()->head->get_datatype();
-	} else if (ClassDB::has_enum(get_real_class_name(parser->current_class->base_type.native_type), first)) {
+	} else if (ClassDB::has_enum(GDScriptParser::get_real_class_name(parser->current_class->base_type.native_type), first)) {
 		// Native enum in current class.
 		result = make_native_enum_type(parser->current_class->base_type.native_type, first);
 	} else {
@@ -507,7 +469,7 @@ GDScriptParser::DataType GDScriptAnalyzer::resolve_datatype(GDScriptParser::Type
 			}
 		} else if (result.kind == GDScriptParser::DataType::NATIVE) {
 			// Only enums allowed for native.
-			if (ClassDB::has_enum(get_real_class_name(result.native_type), p_type->type_chain[1]->name)) {
+			if (ClassDB::has_enum(GDScriptParser::get_real_class_name(result.native_type), p_type->type_chain[1]->name)) {
 				if (p_type->type_chain.size() > 2) {
 					push_error(R"(Enums cannot contain nested types.)", p_type->type_chain[2]);
 				} else {
@@ -607,28 +569,10 @@ void GDScriptAnalyzer::resolve_class_interface(GDScriptParser::ClassNode *p_clas
 
 				datatype.is_constant = false;
 				member.variable->set_datatype(datatype);
-				if (!datatype.has_no_type()) {
-					// TODO: Move this out into a routine specific to validate annotations.
-					if (member.variable->export_info.hint == PROPERTY_HINT_TYPE_STRING) {
-						// @export annotation.
-						switch (datatype.kind) {
-							case GDScriptParser::DataType::BUILTIN:
-								member.variable->export_info.hint_string = Variant::get_type_name(datatype.builtin_type);
-								break;
-							case GDScriptParser::DataType::NATIVE:
-								if (ClassDB::is_parent_class(get_real_class_name(datatype.native_type), "Resource")) {
-									member.variable->export_info.hint = PROPERTY_HINT_RESOURCE_TYPE;
-									member.variable->export_info.hint_string = get_real_class_name(datatype.native_type);
-								} else {
-									push_error(R"(Export type can only be built-in or a resource.)", member.variable);
-								}
-								break;
-							default:
-								// TODO: Allow custom user resources.
-								push_error(R"(Export type can only be built-in or a resource.)", member.variable);
-								break;
-						}
-					}
+
+				// Apply annotations.
+				for (List<GDScriptParser::AnnotationNode *>::Element *E = member.variable->annotations.front(); E; E = E->next()) {
+					E->get()->apply(parser, member.variable);
 				}
 			} break;
 			case GDScriptParser::ClassNode::Member::CONSTANT: {
@@ -674,6 +618,11 @@ void GDScriptAnalyzer::resolve_class_interface(GDScriptParser::ClassNode *p_clas
 				datatype.is_constant = true;
 
 				member.constant->set_datatype(datatype);
+
+				// Apply annotations.
+				for (List<GDScriptParser::AnnotationNode *>::Element *E = member.constant->annotations.front(); E; E = E->next()) {
+					E->get()->apply(parser, member.constant);
+				}
 			} break;
 			case GDScriptParser::ClassNode::Member::SIGNAL: {
 				for (int j = 0; j < member.signal->parameters.size(); j++) {
@@ -688,6 +637,11 @@ void GDScriptAnalyzer::resolve_class_interface(GDScriptParser::ClassNode *p_clas
 				signal_type.builtin_type = Variant::SIGNAL;
 
 				member.signal->set_datatype(signal_type);
+
+				// Apply annotations.
+				for (List<GDScriptParser::AnnotationNode *>::Element *E = member.signal->annotations.front(); E; E = E->next()) {
+					E->get()->apply(parser, member.signal);
+				}
 			} break;
 			case GDScriptParser::ClassNode::Member::ENUM: {
 				GDScriptParser::DataType enum_type;
@@ -730,6 +684,11 @@ void GDScriptAnalyzer::resolve_class_interface(GDScriptParser::ClassNode *p_clas
 				current_enum = nullptr;
 
 				member.m_enum->set_datatype(enum_type);
+
+				// Apply annotations.
+				for (List<GDScriptParser::AnnotationNode *>::Element *E = member.m_enum->annotations.front(); E; E = E->next()) {
+					E->get()->apply(parser, member.m_enum);
+				}
 			} break;
 			case GDScriptParser::ClassNode::Member::FUNCTION:
 				resolve_function_signature(member.function);
@@ -798,6 +757,11 @@ void GDScriptAnalyzer::resolve_class_body(GDScriptParser::ClassNode *p_class) {
 		}
 
 		resolve_function_body(member.function);
+
+		// Apply annotations.
+		for (List<GDScriptParser::AnnotationNode *>::Element *E = member.function->annotations.front(); E; E = E->next()) {
+			E->get()->apply(parser, member.function);
+		}
 	}
 
 	parser->current_class = previous_class;
@@ -2253,7 +2217,7 @@ void GDScriptAnalyzer::reduce_get_node(GDScriptParser::GetNodeNode *p_get_node) 
 	result.native_type = "Node";
 	result.builtin_type = Variant::OBJECT;
 
-	if (!ClassDB::is_parent_class(get_real_class_name(parser->current_class->base_type.native_type), result.native_type)) {
+	if (!ClassDB::is_parent_class(GDScriptParser::get_real_class_name(parser->current_class->base_type.native_type), result.native_type)) {
 		push_error(R"*(Cannot use shorthand "get_node()" notation ("$") on a class that isn't a node.)*", p_get_node);
 	}
 
@@ -2419,7 +2383,7 @@ void GDScriptAnalyzer::reduce_identifier_from_base(GDScriptParser::IdentifierNod
 	}
 
 	// Check native members.
-	const StringName &native = get_real_class_name(base.native_type);
+	const StringName &native = GDScriptParser::get_real_class_name(base.native_type);
 
 	if (class_exists(native)) {
 		PropertyInfo prop_info;
@@ -3243,7 +3207,7 @@ bool GDScriptAnalyzer::get_function_signature(GDScriptParser::Node *p_source, GD
 		return true;
 	}
 
-	StringName real_native = get_real_class_name(base_native);
+	StringName real_native = GDScriptParser::get_real_class_name(base_native);
 
 	MethodInfo info;
 	if (ClassDB::get_method_info(real_native, function_name, &info)) {
@@ -3338,7 +3302,7 @@ bool GDScriptAnalyzer::is_shadowing(GDScriptParser::IdentifierNode *p_local, con
 
 	StringName parent = base_native;
 	while (parent != StringName()) {
-		StringName real_class_name = get_real_class_name(parent);
+		StringName real_class_name = GDScriptParser::get_real_class_name(parent);
 		if (ClassDB::has_method(real_class_name, name, true)) {
 			parser->push_warning(p_local, GDScriptWarning::SHADOWED_VARIABLE_BASE_CLASS, p_context, p_local->name, "method", parent);
 			return true;
@@ -3500,14 +3464,14 @@ bool GDScriptAnalyzer::is_type_compatible(const GDScriptParser::DataType &p_targ
 	}
 
 	// Get underscore-prefixed version for some classes.
-	src_native = get_real_class_name(src_native);
+	src_native = GDScriptParser::get_real_class_name(src_native);
 
 	switch (p_target.kind) {
 		case GDScriptParser::DataType::NATIVE: {
 			if (p_target.is_meta_type) {
 				return ClassDB::is_parent_class(src_native, GDScriptNativeClass::get_class_static());
 			}
-			StringName tgt_native = get_real_class_name(p_target.native_type);
+			StringName tgt_native = GDScriptParser::get_real_class_name(p_target.native_type);
 			return ClassDB::is_parent_class(src_native, tgt_native);
 		}
 		case GDScriptParser::DataType::SCRIPT:
@@ -3557,7 +3521,7 @@ void GDScriptAnalyzer::mark_node_unsafe(const GDScriptParser::Node *p_node) {
 }
 
 bool GDScriptAnalyzer::class_exists(const StringName &p_class) const {
-	StringName real_name = get_real_class_name(p_class);
+	StringName real_name = GDScriptParser::get_real_class_name(p_class);
 	return ClassDB::class_exists(real_name) && ClassDB::is_class_exposed(real_name);
 }
 
