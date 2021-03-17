@@ -137,15 +137,11 @@ GDScriptDataType GDScriptCompiler::_gdtype_from_datatype(const GDScriptParser::D
 				}
 			}
 		} break;
+		case GDScriptParser::DataType::ENUM:
 		case GDScriptParser::DataType::ENUM_VALUE:
 			result.has_type = true;
 			result.kind = GDScriptDataType::BUILTIN;
 			result.builtin_type = Variant::INT;
-			break;
-		case GDScriptParser::DataType::ENUM:
-			result.has_type = true;
-			result.kind = GDScriptDataType::BUILTIN;
-			result.builtin_type = Variant::DICTIONARY;
 			break;
 		case GDScriptParser::DataType::UNRESOLVED: {
 			ERR_PRINT("Parser bug: converting unresolved type.");
@@ -2218,9 +2214,8 @@ Error GDScriptCompiler::_parse_class_level(GDScript *p_script, const GDScriptPar
 					prop_info.hint = export_info.hint;
 					prop_info.hint_string = export_info.hint_string;
 					prop_info.usage = export_info.usage;
-				} else {
-					prop_info.usage = PROPERTY_USAGE_SCRIPT_VARIABLE;
 				}
+				prop_info.usage |= PROPERTY_USAGE_SCRIPT_VARIABLE;
 #ifdef TOOLS_ENABLED
 				p_script->doc_variables[name] = variable->doc_description;
 #endif
