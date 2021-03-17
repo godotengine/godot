@@ -180,10 +180,6 @@
 #include "scene/resources/world_margin_shape_3d.h"
 #include "scene/scene_string_names.h"
 
-// Needed by animation code, so keep when 3D disabled.
-#include "scene/3d/node_3d.h"
-#include "scene/3d/skeleton_3d.h"
-
 #include "scene/main/shader_globals_override.h"
 
 #ifndef _3D_DISABLED
@@ -208,6 +204,7 @@
 #include "scene/3d/navigation_agent_3d.h"
 #include "scene/3d/navigation_obstacle_3d.h"
 #include "scene/3d/navigation_region_3d.h"
+#include "scene/3d/node_3d.h"
 #include "scene/3d/occluder_instance_3d.h"
 #include "scene/3d/path_3d.h"
 #include "scene/3d/physics_body_3d.h"
@@ -217,6 +214,7 @@
 #include "scene/3d/ray_cast_3d.h"
 #include "scene/3d/reflection_probe.h"
 #include "scene/3d/remote_transform_3d.h"
+#include "scene/3d/skeleton_3d.h"
 #include "scene/3d/skeleton_ik_3d.h"
 #include "scene/3d/soft_body_3d.h"
 #include "scene/3d/spring_arm_3d.h"
@@ -395,14 +393,7 @@ void register_scene_types() {
 	AcceptDialog::set_swap_cancel_ok(swap_cancel_ok);
 #endif
 
-	/* REGISTER 3D */
-
-	// Needed even with _3D_DISABLED as used in animation code.
-	ClassDB::register_class<Node3D>();
-	ClassDB::register_virtual_class<Node3DGizmo>();
-	ClassDB::register_class<Skin>();
-	ClassDB::register_virtual_class<SkinReference>();
-	ClassDB::register_class<Skeleton3D>();
+	/* REGISTER ANIMATION */
 
 	ClassDB::register_class<AnimationPlayer>();
 	ClassDB::register_class<Tween>();
@@ -432,7 +423,14 @@ void register_scene_types() {
 
 	OS::get_singleton()->yield(); //may take time to init
 
+	/* REGISTER 3D */
+
 #ifndef _3D_DISABLED
+	ClassDB::register_class<Node3D>();
+	ClassDB::register_virtual_class<Node3DGizmo>();
+	ClassDB::register_class<Skin>();
+	ClassDB::register_virtual_class<SkinReference>();
+	ClassDB::register_class<Skeleton3D>();
 	ClassDB::register_virtual_class<VisualInstance3D>();
 	ClassDB::register_virtual_class<GeometryInstance3D>();
 	ClassDB::register_class<Camera3D>();

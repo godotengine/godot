@@ -337,7 +337,6 @@ void Skeleton3D::_notification(int p_what) {
 
 		} break;
 
-#ifndef _3D_DISABLED
 		case NOTIFICATION_INTERNAL_PHYSICS_PROCESS: {
 			// This is active only if the skeleton animates the physical bones
 			// and the state of the bone is not active.
@@ -356,7 +355,6 @@ void Skeleton3D::_notification(int p_what) {
 				set_physics_process_internal(true);
 			}
 		} break;
-#endif
 	}
 }
 
@@ -621,8 +619,6 @@ void Skeleton3D::localize_rests() {
 	}
 }
 
-#ifndef _3D_DISABLED
-
 void Skeleton3D::set_animate_physical_bones(bool p_animate) {
 	animate_physical_bones = p_animate;
 
@@ -783,8 +779,6 @@ void Skeleton3D::physical_bones_remove_collision_exception(RID p_exception) {
 	_physical_bones_add_remove_collision_exception(false, this, p_exception);
 }
 
-#endif // _3D_DISABLED
-
 void Skeleton3D::_skin_changed() {
 	_make_dirty();
 }
@@ -898,8 +892,6 @@ void Skeleton3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("bone_transform_to_world_transform", "bone_transform"), &Skeleton3D::bone_transform_to_world_transform);
 	ClassDB::bind_method(D_METHOD("world_transform_to_bone_transform", "world_transform"), &Skeleton3D::world_transform_to_bone_transform);
 
-#ifndef _3D_DISABLED
-
 	ClassDB::bind_method(D_METHOD("set_animate_physical_bones"), &Skeleton3D::set_animate_physical_bones);
 	ClassDB::bind_method(D_METHOD("get_animate_physical_bones"), &Skeleton3D::get_animate_physical_bones);
 
@@ -909,7 +901,6 @@ void Skeleton3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("physical_bones_remove_collision_exception", "exception"), &Skeleton3D::physical_bones_remove_collision_exception);
 
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "animate_physical_bones"), "set_animate_physical_bones", "get_animate_physical_bones");
-#endif // _3D_DISABLED
 
 #ifdef TOOLS_ENABLED
 	ADD_SIGNAL(MethodInfo("pose_updated"));

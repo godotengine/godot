@@ -40,9 +40,11 @@ class AnimationCache : public Object {
 	struct Path {
 		RES resource;
 		Object *object = nullptr;
-		Skeleton3D *skeleton = nullptr; // haxor
+#ifndef _3D_DISABLED
+		Skeleton3D *skeleton = nullptr;
+		Node3D *node_3d = nullptr;
+#endif // _3D_DISABLED
 		Node *node = nullptr;
-		Node3D *spatial = nullptr;
 
 		int bone_idx = -1;
 		Vector<StringName> subpath;

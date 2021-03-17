@@ -252,6 +252,7 @@ void AnimationPlayer::_ensure_node_caches(AnimationData *p_anim, Node *p_root_ov
 		ObjectID id = resource.is_valid() ? resource->get_instance_id() : child->get_instance_id();
 		int bone_idx = -1;
 
+#ifndef _3D_DISABLED
 		if (a->track_get_path(i).get_subname_count() == 1 && Object::cast_to<Skeleton3D>(child)) {
 			Skeleton3D *sk = Object::cast_to<Skeleton3D>(child);
 			bone_idx = sk->find_bone(a->track_get_path(i).get_subname(0));
@@ -259,6 +260,7 @@ void AnimationPlayer::_ensure_node_caches(AnimationData *p_anim, Node *p_root_ov
 				continue;
 			}
 		}
+#endif // _3D_DISABLED
 
 		{
 			if (!child->is_connected("tree_exiting", callable_mp(this, &AnimationPlayer::_node_removed))) {
@@ -279,11 +281,12 @@ void AnimationPlayer::_ensure_node_caches(AnimationData *p_anim, Node *p_root_ov
 		p_anim->node_cache[i]->node = child;
 		p_anim->node_cache[i]->resource = resource;
 		p_anim->node_cache[i]->node_2d = Object::cast_to<Node2D>(child);
+#ifndef _3D_DISABLED
 		if (a->track_get_type(i) == Animation::TYPE_TRANSFORM3D) {
 			// special cases and caches for transform tracks
 
-			// cache spatial
-			p_anim->node_cache[i]->spatial = Object::cast_to<Node3D>(child);
+			// cache node_3d
+			p_anim->node_cache[i]->node_3d = Object::cast_to<Node3D>(child);
 			// cache skeleton
 			p_anim->node_cache[i]->skeleton = Object::cast_to<Skeleton3D>(child);
 			if (p_anim->node_cache[i]->skeleton) {
@@ -294,7 +297,7 @@ void AnimationPlayer::_ensure_node_caches(AnimationData *p_anim, Node *p_root_ov
 					if (p_anim->node_cache[i]->bone_idx < 0) {
 						// broken track (nonexistent bone)
 						p_anim->node_cache[i]->skeleton = nullptr;
-						p_anim->node_cache[i]->spatial = nullptr;
+						p_anim->node_cache[i]->node_3d = nullptr;
 						ERR_CONTINUE(p_anim->node_cache[i]->bone_idx < 0);
 					}
 				} else {
@@ -303,6 +306,7 @@ void AnimationPlayer::_ensure_node_caches(AnimationData *p_anim, Node *p_root_ov
 				}
 			}
 		}
+#endif // _3D_DISABLED
 
 		if (a->track_get_type(i) == Animation::TYPE_VALUE) {
 			if (!p_anim->node_cache[i]->property_anim.has(a->track_get_path(i).get_concatenated_subnames())) {
@@ -367,7 +371,8 @@ void AnimationPlayer::_animation_process_animation(AnimationData *p_anim, float 
 
 		switch (a->track_get_type(i)) {
 			case Animation::TYPE_TRANSFORM3D: {
-				if (!nc->spatial) {
+#ifndef _3D_DISABLED
+				if (!nc->node_3d) {
 					continue;
 				}
 
@@ -395,7 +400,7 @@ void AnimationPlayer::_animation_process_animation(AnimationData *p_anim, float 
 					nc->rot_accum = nc->rot_accum.slerp(rot, p_interp);
 					nc->scale_accum = nc->scale_accum.lerp(scale, p_interp);
 				}
-
+#endif // _3D_DISABLED
 			} break;
 			case Animation::TYPE_VALUE: {
 				if (!nc->node) {
@@ -846,12 +851,13 @@ void AnimationPlayer::_animation_update_transforms() {
 
 			t.origin = nc->loc_accum;
 			t.basis.set_quat_scale(nc->rot_accum, nc->scale_accum);
+#ifndef _3D_DISABLED
 			if (nc->skeleton && nc->bone_idx >= 0) {
 				nc->skeleton->set_bone_pose(nc->bone_idx, t);
-
-			} else if (nc->spatial) {
-				nc->spatial->set_transform(t);
+			} else if (nc->node_3d) {
+				nc->node_3d->set_transform(t);
 			}
+#endif // _3D_DISABLED
 		}
 	}
 
@@ -1523,11 +1529,11 @@ Ref<AnimatedValuesBackup> AnimationPlayer::backup_animated_values(Node *p_root_o
 			entry.value = nc->skeleton->get_bone_pose(nc->bone_idx);
 			backup->entries.push_back(entry);
 		} else {
-			if (nc->spatial) {
+			if (nc->node_3d) {
 				AnimatedValuesBackup::Entry entry;
-				entry.object = nc->spatial;
+				entry.object = nc->node_3d;
 				entry.subpath.push_back("transform");
-				entry.value = nc->spatial->get_transform();
+				entry.value = nc->node_3d->get_transform();
 				entry.bone_idx = -1;
 				backup->entries.push_back(entry);
 			} else {

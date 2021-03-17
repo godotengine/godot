@@ -81,6 +81,7 @@ void AnimationCache::_update_cache() {
 		Ref<Resource> res;
 
 		if (animation->track_get_type(i) == Animation::TYPE_TRANSFORM3D) {
+#ifndef _3D_DISABLED
 			if (np.get_subname_count() > 1) {
 				path_cache.push_back(Path());
 				ERR_CONTINUE_MSG(animation->track_get_type(i) == Animation::TYPE_TRANSFORM3D, "Transform tracks can't have a subpath '" + np + "'.");
@@ -113,8 +114,8 @@ void AnimationCache::_update_cache() {
 				path.skeleton = sk;
 			}
 
-			path.spatial = sp;
-
+			path.node_3d = sp;
+#endif // _3D_DISABLED
 		} else {
 			if (np.get_subname_count() > 0) {
 				RES res2;
@@ -179,14 +180,16 @@ void AnimationCache::set_track_transform(int p_idx, const Transform3D &p_transfo
 		return;
 	}
 
+#ifndef _3D_DISABLED
 	ERR_FAIL_COND(!p.node);
-	ERR_FAIL_COND(!p.spatial);
+	ERR_FAIL_COND(!p.node_3d);
 
 	if (p.skeleton) {
 		p.skeleton->set_bone_pose(p.bone_idx, p_transform);
 	} else {
-		p.spatial->set_transform(p_transform);
+		p.node_3d->set_transform(p_transform);
 	}
+#endif // _3D_DISABLED
 }
 
 void AnimationCache::set_track_value(int p_idx, const Variant &p_value) {
