@@ -30,6 +30,7 @@
 
 #include "collision_object_3d.h"
 
+#include "core/config/engine.h"
 #include "mesh_instance_3d.h"
 #include "scene/scene_string_names.h"
 #include "servers/physics_server_3d.h"
@@ -139,7 +140,7 @@ void CollisionObject3D::_update_debug_shapes() {
 }
 
 void CollisionObject3D::_update_shape_data(uint32_t p_owner) {
-	if (is_inside_tree() && get_tree()->is_debugging_collisions_hint()) {
+	if (is_inside_tree() && get_tree()->is_debugging_collisions_hint() && !Engine::get_singleton()->is_editor_hint()) {
 		if (debug_shapes_to_update.is_empty()) {
 			call_deferred("_update_debug_shapes");
 		}
