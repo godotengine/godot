@@ -49,6 +49,7 @@ class NavRegion : public NavRid {
 	Transform transform;
 	Ref<NavigationMesh> mesh;
 	uint32_t layers = 1;
+	Vector<gd::Edge::Connection> connections;
 
 	bool polygons_dirty = true;
 
@@ -79,6 +80,13 @@ public:
 	const Ref<NavigationMesh> get_mesh() const {
 		return mesh;
 	}
+
+	Vector<gd::Edge::Connection> &get_connections() {
+		return connections;
+	}
+	int get_connections_count() const;
+	Vector3 get_connection_pathway_start(int p_connection_id) const;
+	Vector3 get_connection_pathway_end(int p_connection_id) const;
 
 	std::vector<gd::Polygon> const &get_polygons() const {
 		return polygons;

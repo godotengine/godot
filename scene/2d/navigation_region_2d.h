@@ -99,6 +99,7 @@ class NavigationRegion2D : public Node2D {
 	Ref<NavigationPolygon> navpoly;
 
 	void _navpoly_changed();
+	void _map_changed(RID p_RID);
 
 protected:
 	void _notification(int p_what);
