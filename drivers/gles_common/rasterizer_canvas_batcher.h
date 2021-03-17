@@ -1310,7 +1310,9 @@ PREAMBLE(bool)::_prefill_line(RasterizerCanvas::Item::CommandLine *p_line, FillS
 	Vector2 from = p_line->from;
 	Vector2 to = p_line->to;
 
-	if (r_fill_state.transform_mode != TM_NONE) {
+	const bool use_large_verts = bdata.use_large_verts;
+
+	if ((r_fill_state.transform_mode != TM_NONE) && (!use_large_verts)) {
 		_software_transform_vertex(from, r_fill_state.transform_combined);
 		_software_transform_vertex(to, r_fill_state.transform_combined);
 	}
@@ -1658,13 +1660,15 @@ bool C_PREAMBLE::_prefill_polygon(RasterizerCanvas::Item::CommandPolygon *p_poly
 
 	if (!_software_skin_poly(p_poly, p_item, bvs, vertex_colors, r_fill_state, precalced_colors)) {
 
+		bool software_transform = (r_fill_state.transform_mode != TM_NONE) && (!use_large_verts);
+
 		for (int n = 0; n < num_inds; n++) {
 			int ind = p_poly->indices[n];
 
 			RAST_DEV_DEBUG_ASSERT(ind < p_poly->points.size());
 
 			// this could be moved outside the loop
-			if (r_fill_state.transform_mode != TM_NONE) {
+			if (software_transform) {
 				Vector2 pos = p_poly->points[ind];
 				_software_transform_vertex(pos, r_fill_state.transform_combined);
 				bvs[n].pos.set(pos.x, pos.y);
