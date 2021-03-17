@@ -35,12 +35,9 @@
 #include "scene/3d/node_3d.h"
 #include "scene/resources/skin.h"
 
-#ifndef _3D_DISABLED
 typedef int BoneId;
 
 class PhysicalBone3D;
-#endif // _3D_DISABLED
-
 class Skeleton3D;
 
 class SkinReference : public Reference {
@@ -92,10 +89,8 @@ private:
 		bool global_pose_override_reset = false;
 		Transform3D global_pose_override;
 
-#ifndef _3D_DISABLED
 		PhysicalBone3D *physical_bone = nullptr;
 		PhysicalBone3D *cache_parent_physical_bone = nullptr;
-#endif // _3D_DISABLED
 
 		List<ObjectID> nodes_bound;
 	};
@@ -181,7 +176,6 @@ public:
 	Transform3D bone_transform_to_world_transform(Transform3D p_transform);
 	Transform3D world_transform_to_bone_transform(Transform3D p_transform);
 
-#ifndef _3D_DISABLED
 	// Physical bone API
 
 	void set_animate_physical_bones(bool p_animate);
@@ -203,7 +197,6 @@ public:
 	void physical_bones_start_simulation_on(const TypedArray<StringName> &p_bones);
 	void physical_bones_add_collision_exception(RID p_exception);
 	void physical_bones_remove_collision_exception(RID p_exception);
-#endif // _3D_DISABLED
 
 public:
 	Skeleton3D();

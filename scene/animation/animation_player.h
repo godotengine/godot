@@ -93,9 +93,11 @@ private:
 		uint32_t id = 0;
 		RES resource;
 		Node *node = nullptr;
-		Node3D *spatial = nullptr;
 		Node2D *node_2d = nullptr;
+#ifndef _3D_DISABLED
+		Node3D *node_3d = nullptr;
 		Skeleton3D *skeleton = nullptr;
+#endif // _3D_DISABLED
 		int bone_idx = -1;
 		// accumulated transforms
 
