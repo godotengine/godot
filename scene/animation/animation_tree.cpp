@@ -1337,6 +1337,7 @@ void AnimationTree::_tree_changed() {
 }
 
 void AnimationTree::_update_properties_for_node(const String &p_base_path, Ref<AnimationNode> node) {
+	ERR_FAIL_COND(node.is_null());
 	if (!property_parent_map.has(p_base_path)) {
 		property_parent_map[p_base_path] = HashMap<StringName, StringName>();
 	}
