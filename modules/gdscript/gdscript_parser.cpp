@@ -3249,12 +3249,29 @@ bool GDScriptParser::export_annotations(const AnnotationNode *p_annotation, Node
 					variable->export_info.hint = PROPERTY_HINT_RESOURCE_TYPE;
 					variable->export_info.hint_string = get_real_class_name(export_type.native_type);
 				} else {
-					push_error(R"(Export type can only be built-in or a resource.)", variable);
+					push_error(R"(Export type can only be built-in, a resource, or an enum.)", variable);
 				}
 				break;
+			case GDScriptParser::DataType::ENUM: {
+				variable->export_info.type = Variant::INT;
+				variable->export_info.hint = PROPERTY_HINT_ENUM;
+
+				String enum_hint_string;
+				for (const Map<StringName, int>::Element *E = export_type.enum_values.front(); E; E = E->next()) {
+					enum_hint_string += E->key().operator String().camelcase_to_underscore(true).capitalize().xml_escape();
+					enum_hint_string += ":";
+					enum_hint_string += String::num_int64(E->get()).xml_escape();
+
+					if (E->next()) {
+						enum_hint_string += ",";
+					}
+				}
+
+				variable->export_info.hint_string = enum_hint_string;
+			} break;
 			default:
 				// TODO: Allow custom user resources.
-				push_error(R"(Export type can only be built-in or a resource.)", variable);
+				push_error(R"(Export type can only be built-in, a resource, or an enum.)", variable);
 				break;
 		}
 	} else {
