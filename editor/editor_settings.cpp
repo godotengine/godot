@@ -620,8 +620,8 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 	// is increased significantly more than it really should need to be.
 	hints["editors/3d/grid_division_level_max"] = PropertyInfo(Variant::INT, "editors/3d/grid_division_level_max", PROPERTY_HINT_RANGE, "-1,3,1", PROPERTY_USAGE_DEFAULT);
 
-	// Default smallest grid size is 1cm, 10^-2.
-	_initial_set("editors/3d/grid_division_level_min", -2);
+	// Default smallest grid size is 1m, 10^0.
+	_initial_set("editors/3d/grid_division_level_min", 0);
 	// Lower values produce graphical artifacts regardless of view clipping planes, so limit to -2 as a lower bound.
 	hints["editors/3d/grid_division_level_min"] = PropertyInfo(Variant::INT, "editors/3d/grid_division_level_min", PROPERTY_HINT_RANGE, "-2,2,1", PROPERTY_USAGE_DEFAULT);
 
