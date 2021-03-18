@@ -65,14 +65,14 @@
 				Constructs a [Rect2] by x, y, width, and height.
 			</description>
 		</method>
-		<method name="abs">
+		<method name="abs" qualifiers="const">
 			<return type="Rect2">
 			</return>
 			<description>
 				Returns a [Rect2] with equivalent position and area, modified so that the top-left corner is the origin and [code]width[/code] and [code]height[/code] are positive.
 			</description>
 		</method>
-		<method name="encloses">
+		<method name="encloses" qualifiers="const">
 			<return type="bool">
 			</return>
 			<argument index="0" name="b" type="Rect2">
@@ -81,7 +81,7 @@
 				Returns [code]true[/code] if this [Rect2] completely encloses another one.
 			</description>
 		</method>
-		<method name="expand">
+		<method name="expand" qualifiers="const">
 			<return type="Rect2">
 			</return>
 			<argument index="0" name="to" type="Vector2">
@@ -90,14 +90,14 @@
 				Returns this [Rect2] expanded to include a given point.
 			</description>
 		</method>
-		<method name="get_area">
+		<method name="get_area" qualifiers="const">
 			<return type="float">
 			</return>
 			<description>
 				Returns the area of the [Rect2].
 			</description>
 		</method>
-		<method name="grow">
+		<method name="grow" qualifiers="const">
 			<return type="Rect2">
 			</return>
 			<argument index="0" name="amount" type="float">
@@ -106,7 +106,7 @@
 				Returns a copy of the [Rect2] grown by the specified [code]amount[/code] on all sides.
 			</description>
 		</method>
-		<method name="grow_individual">
+		<method name="grow_individual" qualifiers="const">
 			<return type="Rect2">
 			</return>
 			<argument index="0" name="left" type="float">
@@ -121,7 +121,7 @@
 				Returns a copy of the [Rect2] grown by the specified amount on each side individually.
 			</description>
 		</method>
-		<method name="grow_side">
+		<method name="grow_side" qualifiers="const">
 			<return type="Rect2">
 			</return>
 			<argument index="0" name="side" type="int">
@@ -132,14 +132,14 @@
 				Returns a copy of the [Rect2] grown by the specified [code]amount[/code] on the specified [enum Side].
 			</description>
 		</method>
-		<method name="has_no_area">
+		<method name="has_no_area" qualifiers="const">
 			<return type="bool">
 			</return>
 			<description>
 				Returns [code]true[/code] if the [Rect2] is flat or empty.
 			</description>
 		</method>
-		<method name="has_point">
+		<method name="has_point" qualifiers="const">
 			<return type="bool">
 			</return>
 			<argument index="0" name="point" type="Vector2">
@@ -148,7 +148,7 @@
 				Returns [code]true[/code] if the [Rect2] contains a point.
 			</description>
 		</method>
-		<method name="intersection">
+		<method name="intersection" qualifiers="const">
 			<return type="Rect2">
 			</return>
 			<argument index="0" name="b" type="Rect2">
@@ -158,7 +158,7 @@
 				If the rectangles do not intersect, an empty [Rect2] is returned.
 			</description>
 		</method>
-		<method name="intersects">
+		<method name="intersects" qualifiers="const">
 			<return type="bool">
 			</return>
 			<argument index="0" name="b" type="Rect2">
@@ -170,7 +170,7 @@
 				If [code]include_borders[/code] is [code]true[/code], they will also be considered overlapping if their borders touch, even without intersection.
 			</description>
 		</method>
-		<method name="is_equal_approx">
+		<method name="is_equal_approx" qualifiers="const">
 			<return type="bool">
 			</return>
 			<argument index="0" name="rect" type="Rect2">
@@ -179,7 +179,7 @@
 				Returns [code]true[/code] if this [Rect2] and [code]rect[/code] are approximately equal, by calling [code]is_equal_approx[/code] on each component.
 			</description>
 		</method>
-		<method name="merge">
+		<method name="merge" qualifiers="const">
 			<return type="Rect2">
 			</return>
 			<argument index="0" name="b" type="Rect2">

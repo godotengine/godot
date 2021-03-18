@@ -55,14 +55,14 @@
 				Returns a [Vector3] with the given components.
 			</description>
 		</method>
-		<method name="abs">
+		<method name="abs" qualifiers="const">
 			<return type="Vector3">
 			</return>
 			<description>
 				Returns a new vector with all components in absolute values (i.e. positive).
 			</description>
 		</method>
-		<method name="angle_to">
+		<method name="angle_to" qualifiers="const">
 			<return type="float">
 			</return>
 			<argument index="0" name="to" type="Vector3">
@@ -71,7 +71,7 @@
 				Returns the unsigned minimum angle to the given vector, in radians.
 			</description>
 		</method>
-		<method name="bounce">
+		<method name="bounce" qualifiers="const">
 			<return type="Vector3">
 			</return>
 			<argument index="0" name="n" type="Vector3">
@@ -80,14 +80,14 @@
 				Returns the vector "bounced off" from a plane defined by the given normal.
 			</description>
 		</method>
-		<method name="ceil">
+		<method name="ceil" qualifiers="const">
 			<return type="Vector3">
 			</return>
 			<description>
 				Returns a new vector with all components rounded up (towards positive infinity).
 			</description>
 		</method>
-		<method name="cross">
+		<method name="cross" qualifiers="const">
 			<return type="Vector3">
 			</return>
 			<argument index="0" name="with" type="Vector3">
@@ -96,7 +96,7 @@
 				Returns the cross product of this vector and [code]b[/code].
 			</description>
 		</method>
-		<method name="cubic_interpolate">
+		<method name="cubic_interpolate" qualifiers="const">
 			<return type="Vector3">
 			</return>
 			<argument index="0" name="b" type="Vector3">
@@ -111,7 +111,7 @@
 				Performs a cubic interpolation between vectors [code]pre_a[/code], [code]a[/code], [code]b[/code], [code]post_b[/code] ([code]a[/code] is current), by the given amount [code]weight[/code]. [code]weight[/code] is on the range of 0.0 to 1.0, representing the amount of interpolation.
 			</description>
 		</method>
-		<method name="direction_to">
+		<method name="direction_to" qualifiers="const">
 			<return type="Vector3">
 			</return>
 			<argument index="0" name="b" type="Vector3">
@@ -120,7 +120,7 @@
 				Returns the normalized vector pointing from this vector to [code]b[/code]. This is equivalent to using [code](b - a).normalized()[/code].
 			</description>
 		</method>
-		<method name="distance_squared_to">
+		<method name="distance_squared_to" qualifiers="const">
 			<return type="float">
 			</return>
 			<argument index="0" name="b" type="Vector3">
@@ -130,7 +130,7 @@
 				This method runs faster than [method distance_to], so prefer it if you need to compare vectors or need the squared distance for some formula.
 			</description>
 		</method>
-		<method name="distance_to">
+		<method name="distance_to" qualifiers="const">
 			<return type="float">
 			</return>
 			<argument index="0" name="b" type="Vector3">
@@ -139,7 +139,7 @@
 				Returns the distance between this vector and [code]b[/code].
 			</description>
 		</method>
-		<method name="dot">
+		<method name="dot" qualifiers="const">
 			<return type="float">
 			</return>
 			<argument index="0" name="with" type="Vector3">
@@ -151,21 +151,21 @@
 				[b]Note:[/b] [code]a.dot(b)[/code] is equivalent to [code]b.dot(a)[/code].
 			</description>
 		</method>
-		<method name="floor">
+		<method name="floor" qualifiers="const">
 			<return type="Vector3">
 			</return>
 			<description>
 				Returns a new vector with all components rounded down (towards negative infinity).
 			</description>
 		</method>
-		<method name="inverse">
+		<method name="inverse" qualifiers="const">
 			<return type="Vector3">
 			</return>
 			<description>
 				Returns the inverse of the vector. This is the same as [code]Vector3( 1.0 / v.x, 1.0 / v.y, 1.0 / v.z )[/code].
 			</description>
 		</method>
-		<method name="is_equal_approx">
+		<method name="is_equal_approx" qualifiers="const">
 			<return type="bool">
 			</return>
 			<argument index="0" name="to" type="Vector3">
@@ -174,21 +174,21 @@
 				Returns [code]true[/code] if this vector and [code]v[/code] are approximately equal, by running [method @GlobalScope.is_equal_approx] on each component.
 			</description>
 		</method>
-		<method name="is_normalized">
+		<method name="is_normalized" qualifiers="const">
 			<return type="bool">
 			</return>
 			<description>
 				Returns [code]true[/code] if the vector is normalized, [code]false[/code] otherwise.
 			</description>
 		</method>
-		<method name="length">
+		<method name="length" qualifiers="const">
 			<return type="float">
 			</return>
 			<description>
 				Returns the length (magnitude) of this vector.
 			</description>
 		</method>
-		<method name="length_squared">
+		<method name="length_squared" qualifiers="const">
 			<return type="float">
 			</return>
 			<description>
@@ -196,7 +196,7 @@
 				This method runs faster than [method length], so prefer it if you need to compare vectors or need the squared distance for some formula.
 			</description>
 		</method>
-		<method name="lerp">
+		<method name="lerp" qualifiers="const">
 			<return type="Vector3">
 			</return>
 			<argument index="0" name="to" type="Vector3">
@@ -207,21 +207,21 @@
 				Returns the result of the linear interpolation between this vector and [code]b[/code] by amount [code]weight[/code]. [code]weight[/code] is on the range of 0.0 to 1.0, representing the amount of interpolation.
 			</description>
 		</method>
-		<method name="max_axis">
+		<method name="max_axis" qualifiers="const">
 			<return type="int">
 			</return>
 			<description>
 				Returns the axis of the vector's largest value. See [code]AXIS_*[/code] constants. If all components are equal, this method returns [constant AXIS_X].
 			</description>
 		</method>
-		<method name="min_axis">
+		<method name="min_axis" qualifiers="const">
 			<return type="int">
 			</return>
 			<description>
 				Returns the axis of the vector's smallest value. See [code]AXIS_*[/code] constants. If all components are equal, this method returns [constant AXIS_Z].
 			</description>
 		</method>
-		<method name="move_toward">
+		<method name="move_toward" qualifiers="const">
 			<return type="Vector3">
 			</return>
 			<argument index="0" name="to" type="Vector3">
@@ -232,7 +232,7 @@
 				Moves this vector toward [code]to[/code] by the fixed [code]delta[/code] amount.
 			</description>
 		</method>
-		<method name="normalized">
+		<method name="normalized" qualifiers="const">
 			<return type="Vector3">
 			</return>
 			<description>
@@ -395,7 +395,7 @@
 			<description>
 			</description>
 		</method>
-		<method name="outer">
+		<method name="outer" qualifiers="const">
 			<return type="Basis">
 			</return>
 			<argument index="0" name="with" type="Vector3">
@@ -404,7 +404,7 @@
 				Returns the outer product with [code]b[/code].
 			</description>
 		</method>
-		<method name="posmod">
+		<method name="posmod" qualifiers="const">
 			<return type="Vector3">
 			</return>
 			<argument index="0" name="mod" type="float">
@@ -413,7 +413,7 @@
 				Returns a vector composed of the [method @GlobalScope.fposmod] of this vector's components and [code]mod[/code].
 			</description>
 		</method>
-		<method name="posmodv">
+		<method name="posmodv" qualifiers="const">
 			<return type="Vector3">
 			</return>
 			<argument index="0" name="modv" type="Vector3">
@@ -422,7 +422,7 @@
 				Returns a vector composed of the [method @GlobalScope.fposmod] of this vector's components and [code]modv[/code]'s components.
 			</description>
 		</method>
-		<method name="project">
+		<method name="project" qualifiers="const">
 			<return type="Vector3">
 			</return>
 			<argument index="0" name="b" type="Vector3">
@@ -431,7 +431,7 @@
 				Returns this vector projected onto another vector [code]b[/code].
 			</description>
 		</method>
-		<method name="reflect">
+		<method name="reflect" qualifiers="const">
 			<return type="Vector3">
 			</return>
 			<argument index="0" name="n" type="Vector3">
@@ -440,7 +440,7 @@
 				Returns this vector reflected from a plane defined by the given normal.
 			</description>
 		</method>
-		<method name="rotated">
+		<method name="rotated" qualifiers="const">
 			<return type="Vector3">
 			</return>
 			<argument index="0" name="by_axis" type="Vector3">
@@ -451,21 +451,21 @@
 				Rotates this vector around a given axis by [code]phi[/code] radians. The axis must be a normalized vector.
 			</description>
 		</method>
-		<method name="round">
+		<method name="round" qualifiers="const">
 			<return type="Vector3">
 			</return>
 			<description>
 				Returns this vector with all components rounded to the nearest integer, with halfway cases rounded away from zero.
 			</description>
 		</method>
-		<method name="sign">
+		<method name="sign" qualifiers="const">
 			<return type="Vector3">
 			</return>
 			<description>
 				Returns a vector with each component set to one or negative one, depending on the signs of this vector's components, or zero if the component is zero, by calling [method @GlobalScope.sign] on each component.
 			</description>
 		</method>
-		<method name="signed_angle_to">
+		<method name="signed_angle_to" qualifiers="const">
 			<return type="float">
 			</return>
 			<argument index="0" name="to" type="Vector3">
@@ -476,7 +476,7 @@
 				Returns the signed angle to the given vector, in radians. The sign of the angle is positive in a counter-clockwise direction and negative in a clockwise direction when viewed from the side specified by the [code]axis[/code].
 			</description>
 		</method>
-		<method name="slerp">
+		<method name="slerp" qualifiers="const">
 			<return type="Vector3">
 			</return>
 			<argument index="0" name="to" type="Vector3">
@@ -488,7 +488,7 @@
 				[b]Note:[/b] Both vectors must be normalized.
 			</description>
 		</method>
-		<method name="slide">
+		<method name="slide" qualifiers="const">
 			<return type="Vector3">
 			</return>
 			<argument index="0" name="n" type="Vector3">
@@ -497,7 +497,7 @@
 				Returns this vector slid along a plane defined by the given normal.
 			</description>
 		</method>
-		<method name="snapped">
+		<method name="snapped" qualifiers="const">
 			<return type="Vector3">
 			</return>
 			<argument index="0" name="step" type="Vector3">
@@ -506,7 +506,7 @@
 				Returns this vector with each component snapped to the nearest multiple of [code]step[/code]. This can also be used to round to an arbitrary number of decimals.
 			</description>
 		</method>
-		<method name="to_diagonal_matrix">
+		<method name="to_diagonal_matrix" qualifiers="const">
 			<return type="Basis">
 			</return>
 			<description>

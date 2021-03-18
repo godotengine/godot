@@ -76,14 +76,14 @@
 				Creates a plane from the three points, given in clockwise order.
 			</description>
 		</method>
-		<method name="center">
+		<method name="center" qualifiers="const">
 			<return type="Vector3">
 			</return>
 			<description>
 				Returns the center of the plane.
 			</description>
 		</method>
-		<method name="distance_to">
+		<method name="distance_to" qualifiers="const">
 			<return type="float">
 			</return>
 			<argument index="0" name="point" type="Vector3">
@@ -92,7 +92,7 @@
 				Returns the shortest distance from the plane to the position [code]point[/code].
 			</description>
 		</method>
-		<method name="has_point">
+		<method name="has_point" qualifiers="const">
 			<return type="bool">
 			</return>
 			<argument index="0" name="point" type="Vector3">
@@ -103,7 +103,7 @@
 				Returns [code]true[/code] if [code]point[/code] is inside the plane. Comparison uses a custom minimum [code]epsilon[/code] threshold.
 			</description>
 		</method>
-		<method name="intersect_3">
+		<method name="intersect_3" qualifiers="const">
 			<return type="Variant">
 			</return>
 			<argument index="0" name="b" type="Plane">
@@ -114,7 +114,7 @@
 				Returns the intersection point of the three planes [code]b[/code], [code]c[/code] and this plane. If no intersection is found, [code]null[/code] is returned.
 			</description>
 		</method>
-		<method name="intersects_ray">
+		<method name="intersects_ray" qualifiers="const">
 			<return type="Variant">
 			</return>
 			<argument index="0" name="from" type="Vector3">
@@ -125,7 +125,7 @@
 				Returns the intersection point of a ray consisting of the position [code]from[/code] and the direction normal [code]dir[/code] with this plane. If no intersection is found, [code]null[/code] is returned.
 			</description>
 		</method>
-		<method name="intersects_segment">
+		<method name="intersects_segment" qualifiers="const">
 			<return type="Variant">
 			</return>
 			<argument index="0" name="from" type="Vector3">
@@ -136,7 +136,7 @@
 				Returns the intersection point of a segment from position [code]begin[/code] to position [code]end[/code] with this plane. If no intersection is found, [code]null[/code] is returned.
 			</description>
 		</method>
-		<method name="is_equal_approx">
+		<method name="is_equal_approx" qualifiers="const">
 			<return type="bool">
 			</return>
 			<argument index="0" name="to_plane" type="Plane">
@@ -145,7 +145,7 @@
 				Returns [code]true[/code] if this plane and [code]plane[/code] are approximately equal, by running [method @GlobalScope.is_equal_approx] on each component.
 			</description>
 		</method>
-		<method name="is_point_over">
+		<method name="is_point_over" qualifiers="const">
 			<return type="bool">
 			</return>
 			<argument index="0" name="plane" type="Vector3">
@@ -154,7 +154,7 @@
 				Returns [code]true[/code] if [code]point[/code] is located above the plane.
 			</description>
 		</method>
-		<method name="normalized">
+		<method name="normalized" qualifiers="const">
 			<return type="Plane">
 			</return>
 			<description>
@@ -189,7 +189,7 @@
 			<description>
 			</description>
 		</method>
-		<method name="project">
+		<method name="project" qualifiers="const">
 			<return type="Vector3">
 			</return>
 			<argument index="0" name="point" type="Vector3">

@@ -54,14 +54,14 @@
 				Constructs the transform from 3 [Vector2] values representing [member x], [member y], and the [member origin] (the three column vectors).
 			</description>
 		</method>
-		<method name="affine_inverse">
+		<method name="affine_inverse" qualifiers="const">
 			<return type="Transform2D">
 			</return>
 			<description>
 				Returns the inverse of the transform, under the assumption that the transformation is composed of rotation, scaling and translation.
 			</description>
 		</method>
-		<method name="basis_xform">
+		<method name="basis_xform" qualifiers="const">
 			<return type="Vector2">
 			</return>
 			<argument index="0" name="v" type="Vector2">
@@ -71,7 +71,7 @@
 				This method does not account for translation (the origin vector).
 			</description>
 		</method>
-		<method name="basis_xform_inv">
+		<method name="basis_xform_inv" qualifiers="const">
 			<return type="Vector2">
 			</return>
 			<argument index="0" name="v" type="Vector2">
@@ -81,28 +81,28 @@
 				This method does not account for translation (the origin vector).
 			</description>
 		</method>
-		<method name="get_origin">
+		<method name="get_origin" qualifiers="const">
 			<return type="Vector2">
 			</return>
 			<description>
 				Returns the transform's origin (translation).
 			</description>
 		</method>
-		<method name="get_rotation">
+		<method name="get_rotation" qualifiers="const">
 			<return type="float">
 			</return>
 			<description>
 				Returns the transform's rotation (in radians).
 			</description>
 		</method>
-		<method name="get_scale">
+		<method name="get_scale" qualifiers="const">
 			<return type="Vector2">
 			</return>
 			<description>
 				Returns the scale.
 			</description>
 		</method>
-		<method name="interpolate_with">
+		<method name="interpolate_with" qualifiers="const">
 			<return type="Transform2D">
 			</return>
 			<argument index="0" name="xform" type="Transform2D">
@@ -113,14 +113,14 @@
 				Returns a transform interpolated between this transform and another by a given [code]weight[/code] (on the range of 0.0 to 1.0).
 			</description>
 		</method>
-		<method name="inverse">
+		<method name="inverse" qualifiers="const">
 			<return type="Transform2D">
 			</return>
 			<description>
 				Returns the inverse of the transform, under the assumption that the transformation is composed of rotation and translation (no scaling, use [method affine_inverse] for transforms with scaling).
 			</description>
 		</method>
-		<method name="is_equal_approx">
+		<method name="is_equal_approx" qualifiers="const">
 			<return type="bool">
 			</return>
 			<argument index="0" name="xform" type="Transform2D">
@@ -185,14 +185,14 @@
 			<description>
 			</description>
 		</method>
-		<method name="orthonormalized">
+		<method name="orthonormalized" qualifiers="const">
 			<return type="Transform2D">
 			</return>
 			<description>
 				Returns the transform with the basis orthogonal (90 degrees), and normalized axis vectors (scale of 1 or -1).
 			</description>
 		</method>
-		<method name="rotated">
+		<method name="rotated" qualifiers="const">
 			<return type="Transform2D">
 			</return>
 			<argument index="0" name="phi" type="float">
@@ -201,7 +201,7 @@
 				Rotates the transform by the given angle (in radians), using matrix multiplication.
 			</description>
 		</method>
-		<method name="scaled">
+		<method name="scaled" qualifiers="const">
 			<return type="Transform2D">
 			</return>
 			<argument index="0" name="scale" type="Vector2">
@@ -210,7 +210,7 @@
 				Scales the transform by the given scale factor, using matrix multiplication.
 			</description>
 		</method>
-		<method name="translated">
+		<method name="translated" qualifiers="const">
 			<return type="Transform2D">
 			</return>
 			<argument index="0" name="offset" type="Vector2">

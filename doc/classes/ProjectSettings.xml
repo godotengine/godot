@@ -1143,7 +1143,7 @@
 		<member name="navigation/2d/default_cell_size" type="int" setter="" getter="" default="10">
 			Default cell size for 2D navigation maps. See [method NavigationServer2D.map_set_cell_size].
 		</member>
-		<member name="navigation/2d/default_edge_connection_margin" type="int" setter="" getter="" default="100">
+		<member name="navigation/2d/default_edge_connection_margin" type="int" setter="" getter="" default="5">
 			Default edge connection margin for 2D navigation maps. See [method NavigationServer2D.map_set_edge_connection_margin].
 		</member>
 		<member name="navigation/3d/default_cell_size" type="float" setter="" getter="" default="0.3">

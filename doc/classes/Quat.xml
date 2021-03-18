@@ -83,7 +83,7 @@
 				Constructs a quaternion defined by the given values.
 			</description>
 		</method>
-		<method name="cubic_slerp">
+		<method name="cubic_slerp" qualifiers="const">
 			<return type="Quat">
 			</return>
 			<argument index="0" name="b" type="Quat">
@@ -98,7 +98,7 @@
 				Performs a cubic spherical interpolation between quaternions [code]pre_a[/code], this vector, [code]b[/code], and [code]post_b[/code], by the given amount [code]weight[/code].
 			</description>
 		</method>
-		<method name="dot">
+		<method name="dot" qualifiers="const">
 			<return type="float">
 			</return>
 			<argument index="0" name="with" type="Quat">
@@ -107,21 +107,21 @@
 				Returns the dot product of two quaternions.
 			</description>
 		</method>
-		<method name="get_euler">
+		<method name="get_euler" qualifiers="const">
 			<return type="Vector3">
 			</return>
 			<description>
 				Returns Euler angles (in the YXZ convention: when decomposing, first Z, then X, and Y last) corresponding to the rotation represented by the unit quaternion. Returned vector contains the rotation angles in the format (X angle, Y angle, Z angle).
 			</description>
 		</method>
-		<method name="inverse">
+		<method name="inverse" qualifiers="const">
 			<return type="Quat">
 			</return>
 			<description>
 				Returns the inverse of the quaternion.
 			</description>
 		</method>
-		<method name="is_equal_approx">
+		<method name="is_equal_approx" qualifiers="const">
 			<return type="bool">
 			</return>
 			<argument index="0" name="to" type="Quat">
@@ -130,28 +130,28 @@
 				Returns [code]true[/code] if this quaterion and [code]quat[/code] are approximately equal, by running [method @GlobalScope.is_equal_approx] on each component.
 			</description>
 		</method>
-		<method name="is_normalized">
+		<method name="is_normalized" qualifiers="const">
 			<return type="bool">
 			</return>
 			<description>
 				Returns whether the quaternion is normalized or not.
 			</description>
 		</method>
-		<method name="length">
+		<method name="length" qualifiers="const">
 			<return type="float">
 			</return>
 			<description>
 				Returns the length of the quaternion.
 			</description>
 		</method>
-		<method name="length_squared">
+		<method name="length_squared" qualifiers="const">
 			<return type="float">
 			</return>
 			<description>
 				Returns the length of the quaternion, squared.
 			</description>
 		</method>
-		<method name="normalized">
+		<method name="normalized" qualifiers="const">
 			<return type="Quat">
 			</return>
 			<description>
@@ -258,7 +258,7 @@
 			<description>
 			</description>
 		</method>
-		<method name="slerp">
+		<method name="slerp" qualifiers="const">
 			<return type="Quat">
 			</return>
 			<argument index="0" name="to" type="Quat">
@@ -270,7 +270,7 @@
 				[b]Note:[/b] Both quaternions must be normalized.
 			</description>
 		</method>
-		<method name="slerpni">
+		<method name="slerpni" qualifiers="const">
 			<return type="Quat">
 			</return>
 			<argument index="0" name="to" type="Quat">

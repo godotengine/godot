@@ -86,7 +86,7 @@
 				Reverses the order of the elements in the array.
 			</description>
 		</method>
-		<method name="is_empty">
+		<method name="is_empty" qualifiers="const">
 			<return type="bool">
 			</return>
 			<description>
@@ -171,7 +171,7 @@
 				Changes the [Vector3] at the given index.
 			</description>
 		</method>
-		<method name="size">
+		<method name="size" qualifiers="const">
 			<return type="int">
 			</return>
 			<description>
@@ -185,7 +185,7 @@
 				Sorts the elements of the array in ascending order.
 			</description>
 		</method>
-		<method name="subarray">
+		<method name="subarray" qualifiers="const">
 			<return type="PackedVector3Array">
 			</return>
 			<argument index="0" name="from" type="int">
@@ -195,7 +195,7 @@
 			<description>
 			</description>
 		</method>
-		<method name="to_byte_array">
+		<method name="to_byte_array" qualifiers="const">
 			<return type="PackedByteArray">
 			</return>
 			<description>

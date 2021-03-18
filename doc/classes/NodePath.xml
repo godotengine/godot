@@ -66,7 +66,7 @@
 				[/codeblock]
 			</description>
 		</method>
-		<method name="get_as_property_path">
+		<method name="get_as_property_path" qualifiers="const">
 			<return type="NodePath">
 			</return>
 			<description>
@@ -89,7 +89,7 @@
 				[/codeblocks]
 			</description>
 		</method>
-		<method name="get_concatenated_subnames">
+		<method name="get_concatenated_subnames" qualifiers="const">
 			<return type="StringName">
 			</return>
 			<description>
@@ -106,7 +106,7 @@
 				[/codeblocks]
 			</description>
 		</method>
-		<method name="get_name">
+		<method name="get_name" qualifiers="const">
 			<return type="StringName">
 			</return>
 			<argument index="0" name="idx" type="int">
@@ -129,7 +129,7 @@
 				[/codeblocks]
 			</description>
 		</method>
-		<method name="get_name_count">
+		<method name="get_name_count" qualifiers="const">
 			<return type="int">
 			</return>
 			<description>
@@ -137,7 +137,7 @@
 				For example, [code]"Path2D/PathFollow2D/Sprite2D"[/code] has 3 names.
 			</description>
 		</method>
-		<method name="get_subname">
+		<method name="get_subname" qualifiers="const">
 			<return type="StringName">
 			</return>
 			<argument index="0" name="idx" type="int">
@@ -158,7 +158,7 @@
 				[/codeblocks]
 			</description>
 		</method>
-		<method name="get_subname_count">
+		<method name="get_subname_count" qualifiers="const">
 			<return type="int">
 			</return>
 			<description>
@@ -166,14 +166,14 @@
 				For example, [code]"Path2D/PathFollow2D/Sprite2D:texture:load_path"[/code] has 2 subnames.
 			</description>
 		</method>
-		<method name="is_absolute">
+		<method name="is_absolute" qualifiers="const">
 			<return type="bool">
 			</return>
 			<description>
 				Returns [code]true[/code] if the node path is absolute (as opposed to relative), which means that it starts with a slash character ([code]/[/code]). Absolute node paths can be used to access the root node ([code]"/root"[/code]) or autoloads (e.g. [code]"/global"[/code] if a "global" autoload was registered).
 			</description>
 		</method>
-		<method name="is_empty">
+		<method name="is_empty" qualifiers="const">
 			<return type="bool">
 			</return>
 			<description>

@@ -50,14 +50,14 @@
 				Constructs a new [Vector2i] from the given [code]x[/code] and [code]y[/code].
 			</description>
 		</method>
-		<method name="abs">
+		<method name="abs" qualifiers="const">
 			<return type="Vector2i">
 			</return>
 			<description>
 				Returns a new vector with all components in absolute values (i.e. positive).
 			</description>
 		</method>
-		<method name="aspect">
+		<method name="aspect" qualifiers="const">
 			<return type="float">
 			</return>
 			<description>
@@ -212,7 +212,7 @@
 			<description>
 			</description>
 		</method>
-		<method name="sign">
+		<method name="sign" qualifiers="const">
 			<return type="Vector2i">
 			</return>
 			<description>

@@ -57,42 +57,42 @@
 				Disconnects this signal from the specified [Callable].
 			</description>
 		</method>
-		<method name="emit" qualifiers="vararg">
+		<method name="emit" qualifiers="vararg const">
 			<return type="void">
 			</return>
 			<description>
 				Emits this signal to all connected objects.
 			</description>
 		</method>
-		<method name="get_connections">
+		<method name="get_connections" qualifiers="const">
 			<return type="Array">
 			</return>
 			<description>
 				Returns the list of [Callable]s connected to this signal.
 			</description>
 		</method>
-		<method name="get_name">
+		<method name="get_name" qualifiers="const">
 			<return type="StringName">
 			</return>
 			<description>
 				Returns the name of this signal.
 			</description>
 		</method>
-		<method name="get_object">
+		<method name="get_object" qualifiers="const">
 			<return type="Object">
 			</return>
 			<description>
 				Returns the object emitting this signal.
 			</description>
 		</method>
-		<method name="get_object_id">
+		<method name="get_object_id" qualifiers="const">
 			<return type="int">
 			</return>
 			<description>
 				Returns the ID of the object emitting this signal (see [method Object.get_instance_id]).
 			</description>
 		</method>
-		<method name="is_connected">
+		<method name="is_connected" qualifiers="const">
 			<return type="bool">
 			</return>
 			<argument index="0" name="callable" type="Callable">
@@ -101,7 +101,7 @@
 				Returns [code]true[/code] if the specified [Callable] is connected to this signal.
 			</description>
 		</method>
-		<method name="is_null">
+		<method name="is_null" qualifiers="const">
 			<return type="bool">
 			</return>
 			<description>

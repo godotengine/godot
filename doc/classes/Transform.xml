@@ -58,14 +58,14 @@
 				Constructs a Transform from four [Vector3] values (matrix columns). Each axis corresponds to local basis vectors (some of which may be scaled).
 			</description>
 		</method>
-		<method name="affine_inverse">
+		<method name="affine_inverse" qualifiers="const">
 			<return type="Transform">
 			</return>
 			<description>
 				Returns the inverse of the transform, under the assumption that the transformation is composed of rotation, scaling and translation.
 			</description>
 		</method>
-		<method name="interpolate_with">
+		<method name="interpolate_with" qualifiers="const">
 			<return type="Transform">
 			</return>
 			<argument index="0" name="xform" type="Transform">
@@ -76,14 +76,14 @@
 				Interpolates the transform to other Transform by weight amount (on the range of 0.0 to 1.0).
 			</description>
 		</method>
-		<method name="inverse">
+		<method name="inverse" qualifiers="const">
 			<return type="Transform">
 			</return>
 			<description>
 				Returns the inverse of the transform, under the assumption that the transformation is composed of rotation and translation (no scaling, use affine_inverse for transforms with scaling).
 			</description>
 		</method>
-		<method name="is_equal_approx">
+		<method name="is_equal_approx" qualifiers="const">
 			<return type="bool">
 			</return>
 			<argument index="0" name="xform" type="Transform">
@@ -92,7 +92,7 @@
 				Returns [code]true[/code] if this transform and [code]transform[/code] are approximately equal, by calling [code]is_equal_approx[/code] on each component.
 			</description>
 		</method>
-		<method name="looking_at">
+		<method name="looking_at" qualifiers="const">
 			<return type="Transform">
 			</return>
 			<argument index="0" name="target" type="Vector3">
@@ -153,14 +153,14 @@
 			<description>
 			</description>
 		</method>
-		<method name="orthonormalized">
+		<method name="orthonormalized" qualifiers="const">
 			<return type="Transform">
 			</return>
 			<description>
 				Returns the transform with the basis orthogonal (90 degrees), and normalized axis vectors.
 			</description>
 		</method>
-		<method name="rotated">
+		<method name="rotated" qualifiers="const">
 			<return type="Transform">
 			</return>
 			<argument index="0" name="axis" type="Vector3">
@@ -171,7 +171,7 @@
 				Rotates the transform around the given axis by the given angle (in radians), using matrix multiplication. The axis must be a normalized vector.
 			</description>
 		</method>
-		<method name="scaled">
+		<method name="scaled" qualifiers="const">
 			<return type="Transform">
 			</return>
 			<argument index="0" name="scale" type="Vector3">
@@ -180,7 +180,7 @@
 				Scales basis and origin of the transform by the given scale factor, using matrix multiplication.
 			</description>
 		</method>
-		<method name="translated">
+		<method name="translated" qualifiers="const">
 			<return type="Transform">
 			</return>
 			<argument index="0" name="offset" type="Vector3">

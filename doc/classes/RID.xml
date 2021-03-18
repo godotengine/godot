@@ -25,7 +25,7 @@
 				Constructs a [RID] as a copy of the given [RID].
 			</description>
 		</method>
-		<method name="get_id">
+		<method name="get_id" qualifiers="const">
 			<return type="int">
 			</return>
 			<description>
