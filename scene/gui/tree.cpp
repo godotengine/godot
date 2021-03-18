@@ -3506,9 +3506,13 @@ int Tree::get_column_width(int p_column) const {
 		return columns[p_column].min_width;
 	}
 
+	int expand_area = get_size().width;
+
 	Ref<StyleBox> bg = cache.bg;
 
-	int expand_area = get_size().width - (bg->get_margin(SIDE_LEFT) + bg->get_margin(SIDE_RIGHT));
+	if (bg.is_valid()) {
+		expand_area -= bg->get_margin(SIDE_LEFT) + bg->get_margin(SIDE_RIGHT);
+	}
 
 	if (v_scroll->is_visible_in_tree()) {
 		expand_area -= v_scroll->get_combined_minimum_size().width;
