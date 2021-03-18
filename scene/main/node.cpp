@@ -2837,7 +2837,16 @@ static void _Node_debug_sn(Object *p_obj) {
 	} else {
 		path = String(p->get_name()) + "/" + p->get_path_to(n);
 	}
-	print_line(itos(p_obj->get_instance_id()) + " - Stray Node: " + path + " (Type: " + n->get_class() + ")");
+
+	String script_file_string;
+	if (!n->get_script().is_null()) {
+		Ref<Script> script = n->get_script();
+		if (script.is_valid()) {
+			script_file_string = ", Script: " + script->get_path();
+		}
+	}
+
+	print_line(itos(p_obj->get_instance_id()) + " - Stray Node: " + path + " (Type: " + n->get_class() + script_file_string + ")");
 }
 #endif // DEBUG_ENABLED
 
