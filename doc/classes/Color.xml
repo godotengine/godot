@@ -56,6 +56,15 @@
 			</return>
 			<argument index="0" name="code" type="String">
 			</argument>
+			<description>
+				Constructs a [Color] either from an HTML color code or from a standardized color name. Supported color names are the same as the constants.
+			</description>
+		</method>
+		<method name="Color" qualifiers="constructor">
+			<return type="Color">
+			</return>
+			<argument index="0" name="code" type="String">
+			</argument>
 			<argument index="1" name="alpha" type="float">
 			</argument>
 			<description>
@@ -65,10 +74,22 @@
 		<method name="Color" qualifiers="constructor">
 			<return type="Color">
 			</return>
-			<argument index="0" name="code" type="String">
+			<argument index="0" name="r" type="float">
+			</argument>
+			<argument index="1" name="g" type="float">
+			</argument>
+			<argument index="2" name="b" type="float">
 			</argument>
 			<description>
-				Constructs a [Color] either from an HTML color code or from a standardized color name. Supported color names are the same as the constants.
+				Constructs a [Color] from RGB values, typically between 0 and 1. Alpha will be 1.
+				[codeblocks]
+				[gdscript]
+				var color = Color(0.2, 1.0, 0.7) # Similar to `Color8(51, 255, 178, 255)`
+				[/gdscript]
+				[csharp]
+				var color = new Color(0.2f, 1.0f, 0.7f); // Similar to `Color.Color8(51, 255, 178, 255)`
+				[/csharp]
+				[/codeblocks]
 			</description>
 		</method>
 		<method name="Color" qualifiers="constructor">
@@ -94,28 +115,7 @@
 				[/codeblocks]
 			</description>
 		</method>
-		<method name="Color" qualifiers="constructor">
-			<return type="Color">
-			</return>
-			<argument index="0" name="r" type="float">
-			</argument>
-			<argument index="1" name="g" type="float">
-			</argument>
-			<argument index="2" name="b" type="float">
-			</argument>
-			<description>
-				Constructs a [Color] from RGB values, typically between 0 and 1. Alpha will be 1.
-				[codeblocks]
-				[gdscript]
-				var color = Color(0.2, 1.0, 0.7) # Similar to `Color8(51, 255, 178, 255)`
-				[/gdscript]
-				[csharp]
-				var color = new Color(0.2f, 1.0f, 0.7f); // Similar to `Color.Color8(51, 255, 178, 255)`
-				[/csharp]
-				[/codeblocks]
-			</description>
-		</method>
-		<method name="blend">
+		<method name="blend" qualifiers="const">
 			<return type="Color">
 			</return>
 			<argument index="0" name="over" type="Color">
@@ -136,7 +136,7 @@
 				[/codeblocks]
 			</description>
 		</method>
-		<method name="darkened">
+		<method name="darkened" qualifiers="const">
 			<return type="Color">
 			</return>
 			<argument index="0" name="amount" type="float">
@@ -155,7 +155,87 @@
 				[/codeblocks]
 			</description>
 		</method>
-		<method name="inverted">
+		<method name="find_named_color" qualifiers="static">
+			<return type="int">
+			</return>
+			<argument index="0" name="name" type="String">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="from_rgbe9995" qualifiers="static">
+			<return type="Color">
+			</return>
+			<argument index="0" name="rgbe" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="from_string" qualifiers="static">
+			<return type="Color">
+			</return>
+			<argument index="0" name="str" type="String">
+			</argument>
+			<argument index="1" name="default" type="Color">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_named_color" qualifiers="static">
+			<return type="Color">
+			</return>
+			<argument index="0" name="idx" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_named_color_count" qualifiers="static">
+			<return type="int">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_named_color_name" qualifiers="static">
+			<return type="String">
+			</return>
+			<argument index="0" name="idx" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="hex" qualifiers="static">
+			<return type="Color">
+			</return>
+			<argument index="0" name="hex" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="hex64" qualifiers="static">
+			<return type="Color">
+			</return>
+			<argument index="0" name="hex" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="html" qualifiers="static">
+			<return type="Color">
+			</return>
+			<argument index="0" name="rgba" type="String">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="html_is_valid" qualifiers="static">
+			<return type="bool">
+			</return>
+			<argument index="0" name="color" type="String">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="inverted" qualifiers="const">
 			<return type="Color">
 			</return>
 			<description>
@@ -172,7 +252,7 @@
 				[/codeblocks]
 			</description>
 		</method>
-		<method name="is_equal_approx">
+		<method name="is_equal_approx" qualifiers="const">
 			<return type="bool">
 			</return>
 			<argument index="0" name="to" type="Color">
@@ -181,7 +261,7 @@
 				Returns [code]true[/code] if this color and [code]color[/code] are approximately equal, by running [method @GlobalScope.is_equal_approx] on each component.
 			</description>
 		</method>
-		<method name="lerp">
+		<method name="lerp" qualifiers="const">
 			<return type="Color">
 			</return>
 			<argument index="0" name="to" type="Color">
@@ -204,7 +284,7 @@
 				[/codeblocks]
 			</description>
 		</method>
-		<method name="lightened">
+		<method name="lightened" qualifiers="const">
 			<return type="Color">
 			</return>
 			<argument index="0" name="amount" type="float">
@@ -323,7 +403,7 @@
 			<description>
 			</description>
 		</method>
-		<method name="to_abgr32">
+		<method name="to_abgr32" qualifiers="const">
 			<return type="int">
 			</return>
 			<description>
@@ -340,7 +420,7 @@
 				[/codeblocks]
 			</description>
 		</method>
-		<method name="to_abgr64">
+		<method name="to_abgr64" qualifiers="const">
 			<return type="int">
 			</return>
 			<description>
@@ -357,7 +437,7 @@
 				[/codeblocks]
 			</description>
 		</method>
-		<method name="to_argb32">
+		<method name="to_argb32" qualifiers="const">
 			<return type="int">
 			</return>
 			<description>
@@ -374,7 +454,7 @@
 				[/codeblocks]
 			</description>
 		</method>
-		<method name="to_argb64">
+		<method name="to_argb64" qualifiers="const">
 			<return type="int">
 			</return>
 			<description>
@@ -391,7 +471,7 @@
 				[/codeblocks]
 			</description>
 		</method>
-		<method name="to_html">
+		<method name="to_html" qualifiers="const">
 			<return type="String">
 			</return>
 			<argument index="0" name="with_alpha" type="bool" default="true">
@@ -413,7 +493,7 @@
 				[/codeblocks]
 			</description>
 		</method>
-		<method name="to_rgba32">
+		<method name="to_rgba32" qualifiers="const">
 			<return type="int">
 			</return>
 			<description>
@@ -430,7 +510,7 @@
 				[/codeblocks]
 			</description>
 		</method>
-		<method name="to_rgba64">
+		<method name="to_rgba64" qualifiers="const">
 			<return type="int">
 			</return>
 			<description>

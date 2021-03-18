@@ -63,70 +63,70 @@
 				Creates a new [Callable] for the method called [code]method[/code] in the specified [code]object[/code].
 			</description>
 		</method>
-		<method name="bind" qualifiers="vararg">
+		<method name="bind" qualifiers="vararg const">
 			<return type="Callable">
 			</return>
 			<description>
 				Returns a copy of this [Callable] with the arguments bound. Bound arguments are passed after the arguments supplied by [method call].
 			</description>
 		</method>
-		<method name="call" qualifiers="vararg">
+		<method name="call" qualifiers="vararg const">
 			<return type="Variant">
 			</return>
 			<description>
 				Calls the method represented by this [Callable]. Arguments can be passed and should match the method's signature.
 			</description>
 		</method>
-		<method name="call_deferred" qualifiers="vararg">
+		<method name="call_deferred" qualifiers="vararg const">
 			<return type="void">
 			</return>
 			<description>
 				Calls the method represented by this [Callable] in deferred mode, i.e. during the idle frame. Arguments can be passed and should match the method's signature.
 			</description>
 		</method>
-		<method name="get_method">
+		<method name="get_method" qualifiers="const">
 			<return type="StringName">
 			</return>
 			<description>
 				Returns the name of the method represented by this [Callable].
 			</description>
 		</method>
-		<method name="get_object">
+		<method name="get_object" qualifiers="const">
 			<return type="Object">
 			</return>
 			<description>
 				Returns the object on which this [Callable] is called.
 			</description>
 		</method>
-		<method name="get_object_id">
+		<method name="get_object_id" qualifiers="const">
 			<return type="int">
 			</return>
 			<description>
 				Returns the ID of this [Callable]'s object (see [method Object.get_instance_id]).
 			</description>
 		</method>
-		<method name="hash">
+		<method name="hash" qualifiers="const">
 			<return type="int">
 			</return>
 			<description>
 				Returns the hash value of this [Callable]'s object.
 			</description>
 		</method>
-		<method name="is_custom">
+		<method name="is_custom" qualifiers="const">
 			<return type="bool">
 			</return>
 			<description>
 				Returns [code]true[/code] if this [Callable] is a custom callable whose behavior differs based on implementation details. Custom callables are used in the engine for various reasons. If [code]true[/code], you can't use [method get_method].
 			</description>
 		</method>
-		<method name="is_null">
+		<method name="is_null" qualifiers="const">
 			<return type="bool">
 			</return>
 			<description>
 				Returns [code]true[/code] if this [Callable] has no target to call the method on.
 			</description>
 		</method>
-		<method name="is_standard">
+		<method name="is_standard" qualifiers="const">
 			<return type="bool">
 			</return>
 			<description>
@@ -151,7 +151,7 @@
 				Returns [code]true[/code] if both [Callable]s invoke the same custom target.
 			</description>
 		</method>
-		<method name="unbind">
+		<method name="unbind" qualifiers="const">
 			<return type="Callable">
 			</return>
 			<argument index="0" name="argcount" type="int">

@@ -2530,6 +2530,8 @@
 		<constant name="METHOD_FLAG_FROM_SCRIPT" value="64" enum="MethodFlags">
 			Deprecated method flag, unused.
 		</constant>
+		<constant name="METHOD_FLAG_STATIC" value="256" enum="MethodFlags">
+		</constant>
 		<constant name="METHOD_FLAGS_DEFAULT" value="1" enum="MethodFlags">
 			Default method flags.
 		</constant>

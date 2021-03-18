@@ -44,7 +44,7 @@
 				Constructs a new String from the given [StringName].
 			</description>
 		</method>
-		<method name="begins_with">
+		<method name="begins_with" qualifiers="const">
 			<return type="bool">
 			</return>
 			<argument index="0" name="text" type="String">
@@ -53,14 +53,14 @@
 				Returns [code]true[/code] if the string begins with the given string.
 			</description>
 		</method>
-		<method name="bigrams">
+		<method name="bigrams" qualifiers="const">
 			<return type="PackedStringArray">
 			</return>
 			<description>
 				Returns the bigrams (pairs of consecutive letters) of this string.
 			</description>
 		</method>
-		<method name="bin_to_int">
+		<method name="bin_to_int" qualifiers="const">
 			<return type="int">
 			</return>
 			<description>
@@ -77,14 +77,14 @@
 				[/codeblocks]
 			</description>
 		</method>
-		<method name="c_escape">
+		<method name="c_escape" qualifiers="const">
 			<return type="String">
 			</return>
 			<description>
 				Returns a copy of the string with special characters escaped using the C language standard.
 			</description>
 		</method>
-		<method name="c_unescape">
+		<method name="c_unescape" qualifiers="const">
 			<return type="String">
 			</return>
 			<description>
@@ -92,14 +92,14 @@
 				[b]Note:[/b] Unlike the GDScript parser, this method doesn't support the [code]\uXXXX[/code] escape sequence.
 			</description>
 		</method>
-		<method name="capitalize">
+		<method name="capitalize" qualifiers="const">
 			<return type="String">
 			</return>
 			<description>
 				Changes the case of some letters. Replaces underscores with spaces, adds spaces before in-word uppercase characters, converts all letters to lowercase, then capitalizes the first letter and every letter following a space character. For [code]capitalize camelCase mixed_with_underscores[/code], it will return [code]Capitalize Camel Case Mixed With Underscores[/code].
 			</description>
 		</method>
-		<method name="casecmp_to">
+		<method name="casecmp_to" qualifiers="const">
 			<return type="int">
 			</return>
 			<argument index="0" name="to" type="String">
@@ -111,7 +111,15 @@
 				To get a boolean result from a string comparison, use the [code]==[/code] operator instead. See also [method nocasecmp_to] and [method naturalnocasecmp_to].
 			</description>
 		</method>
-		<method name="count">
+		<method name="chr" qualifiers="static">
+			<return type="String">
+			</return>
+			<argument index="0" name="char" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="count" qualifiers="const">
 			<return type="int">
 			</return>
 			<argument index="0" name="what" type="String">
@@ -124,7 +132,7 @@
 				Returns the number of occurrences of substring [code]what[/code] between [code]from[/code] and [code]to[/code] positions. If [code]from[/code] and [code]to[/code] equals 0 the whole string will be used. If only [code]to[/code] equals 0 the remained substring will be used.
 			</description>
 		</method>
-		<method name="countn">
+		<method name="countn" qualifiers="const">
 			<return type="int">
 			</return>
 			<argument index="0" name="what" type="String">
@@ -137,14 +145,14 @@
 				Returns the number of occurrences of substring [code]what[/code] (ignoring case) between [code]from[/code] and [code]to[/code] positions. If [code]from[/code] and [code]to[/code] equals 0 the whole string will be used. If only [code]to[/code] equals 0 the remained substring will be used.
 			</description>
 		</method>
-		<method name="dedent">
+		<method name="dedent" qualifiers="const">
 			<return type="String">
 			</return>
 			<description>
 				Returns a copy of the string with indentation (leading tabs and spaces) removed.
 			</description>
 		</method>
-		<method name="ends_with">
+		<method name="ends_with" qualifiers="const">
 			<return type="bool">
 			</return>
 			<argument index="0" name="text" type="String">
@@ -153,7 +161,7 @@
 				Returns [code]true[/code] if the string ends with the given string.
 			</description>
 		</method>
-		<method name="find">
+		<method name="find" qualifiers="const">
 			<return type="int">
 			</return>
 			<argument index="0" name="what" type="String">
@@ -174,7 +182,7 @@
 				[/codeblocks]
 			</description>
 		</method>
-		<method name="findn">
+		<method name="findn" qualifiers="const">
 			<return type="int">
 			</return>
 			<argument index="0" name="what" type="String">
@@ -185,7 +193,7 @@
 				Returns the index of the [b]first[/b] case-insensitive occurrence of the specified string in this instance, or [code]-1[/code]. Optionally, the starting search index can be specified, continuing to the end of the string.
 			</description>
 		</method>
-		<method name="format">
+		<method name="format" qualifiers="const">
 			<return type="String">
 			</return>
 			<argument index="0" name="values" type="Variant">
@@ -196,42 +204,42 @@
 				Formats the string by replacing all occurrences of [code]placeholder[/code] with [code]values[/code].
 			</description>
 		</method>
-		<method name="get_base_dir">
+		<method name="get_base_dir" qualifiers="const">
 			<return type="String">
 			</return>
 			<description>
 				If the string is a valid file path, returns the base directory name.
 			</description>
 		</method>
-		<method name="get_basename">
+		<method name="get_basename" qualifiers="const">
 			<return type="String">
 			</return>
 			<description>
 				If the string is a valid file path, returns the full file path without the extension.
 			</description>
 		</method>
-		<method name="get_extension">
+		<method name="get_extension" qualifiers="const">
 			<return type="String">
 			</return>
 			<description>
 				If the string is a valid file path, returns the extension.
 			</description>
 		</method>
-		<method name="get_file">
+		<method name="get_file" qualifiers="const">
 			<return type="String">
 			</return>
 			<description>
 				If the string is a valid file path, returns the filename.
 			</description>
 		</method>
-		<method name="hash">
+		<method name="hash" qualifiers="const">
 			<return type="int">
 			</return>
 			<description>
 				Hashes the string and returns a 32-bit integer.
 			</description>
 		</method>
-		<method name="hex_to_int">
+		<method name="hex_to_int" qualifiers="const">
 			<return type="int">
 			</return>
 			<description>
@@ -248,7 +256,15 @@
 				[/codeblocks]
 			</description>
 		</method>
-		<method name="insert">
+		<method name="humanize_size" qualifiers="static">
+			<return type="String">
+			</return>
+			<argument index="0" name="size" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="insert" qualifiers="const">
 			<return type="String">
 			</return>
 			<argument index="0" name="position" type="int">
@@ -259,28 +275,28 @@
 				Returns a copy of the string with the substring [code]what[/code] inserted at the given position.
 			</description>
 		</method>
-		<method name="is_abs_path">
+		<method name="is_abs_path" qualifiers="const">
 			<return type="bool">
 			</return>
 			<description>
 				If the string is a path to a file or directory, returns [code]true[/code] if the path is absolute.
 			</description>
 		</method>
-		<method name="is_empty">
+		<method name="is_empty" qualifiers="const">
 			<return type="bool">
 			</return>
 			<description>
 				Returns [code]true[/code] if the length of the string equals [code]0[/code].
 			</description>
 		</method>
-		<method name="is_rel_path">
+		<method name="is_rel_path" qualifiers="const">
 			<return type="bool">
 			</return>
 			<description>
 				If the string is a path to a file or directory, returns [code]true[/code] if the path is relative.
 			</description>
 		</method>
-		<method name="is_subsequence_of">
+		<method name="is_subsequence_of" qualifiers="const">
 			<return type="bool">
 			</return>
 			<argument index="0" name="text" type="String">
@@ -289,7 +305,7 @@
 				Returns [code]true[/code] if this string is a subsequence of the given string.
 			</description>
 		</method>
-		<method name="is_subsequence_ofi">
+		<method name="is_subsequence_ofi" qualifiers="const">
 			<return type="bool">
 			</return>
 			<argument index="0" name="text" type="String">
@@ -298,7 +314,7 @@
 				Returns [code]true[/code] if this string is a subsequence of the given string, without considering case.
 			</description>
 		</method>
-		<method name="is_valid_filename">
+		<method name="is_valid_filename" qualifiers="const">
 			<return type="bool">
 			</return>
 			<description>
@@ -306,14 +322,14 @@
 				[code]: / \ ? * " | % &lt; &gt;[/code]
 			</description>
 		</method>
-		<method name="is_valid_float">
+		<method name="is_valid_float" qualifiers="const">
 			<return type="bool">
 			</return>
 			<description>
 				Returns [code]true[/code] if this string contains a valid float.
 			</description>
 		</method>
-		<method name="is_valid_hex_number">
+		<method name="is_valid_hex_number" qualifiers="const">
 			<return type="bool">
 			</return>
 			<argument index="0" name="with_prefix" type="bool" default="false">
@@ -322,35 +338,35 @@
 				Returns [code]true[/code] if this string contains a valid hexadecimal number. If [code]with_prefix[/code] is [code]true[/code], then a validity of the hexadecimal number is determined by [code]0x[/code] prefix, for instance: [code]0xDEADC0DE[/code].
 			</description>
 		</method>
-		<method name="is_valid_html_color">
+		<method name="is_valid_html_color" qualifiers="const">
 			<return type="bool">
 			</return>
 			<description>
 				Returns [code]true[/code] if this string contains a valid color in hexadecimal HTML notation. Other HTML notations such as named colors or [code]hsl()[/code] colors aren't considered valid by this method and will return [code]false[/code].
 			</description>
 		</method>
-		<method name="is_valid_identifier">
+		<method name="is_valid_identifier" qualifiers="const">
 			<return type="bool">
 			</return>
 			<description>
 				Returns [code]true[/code] if this string is a valid identifier. A valid identifier may contain only letters, digits and underscores ([code]_[/code]) and the first character may not be a digit.
 			</description>
 		</method>
-		<method name="is_valid_integer">
+		<method name="is_valid_integer" qualifiers="const">
 			<return type="bool">
 			</return>
 			<description>
 				Returns [code]true[/code] if this string contains a valid integer.
 			</description>
 		</method>
-		<method name="is_valid_ip_address">
+		<method name="is_valid_ip_address" qualifiers="const">
 			<return type="bool">
 			</return>
 			<description>
 				Returns [code]true[/code] if this string contains only a well-formatted IPv4 or IPv6 address. This method considers [url=https://en.wikipedia.org/wiki/Reserved_IP_addresses]reserved IP addresses[/url] such as [code]0.0.0.0[/code] as valid.
 			</description>
 		</method>
-		<method name="join">
+		<method name="join" qualifiers="const">
 			<return type="String">
 			</return>
 			<argument index="0" name="parts" type="PackedStringArray">
@@ -368,14 +384,14 @@
 				[/codeblocks]
 			</description>
 		</method>
-		<method name="json_escape">
+		<method name="json_escape" qualifiers="const">
 			<return type="String">
 			</return>
 			<description>
 				Returns a copy of the string with special characters escaped using the JSON standard.
 			</description>
 		</method>
-		<method name="left">
+		<method name="left" qualifiers="const">
 			<return type="String">
 			</return>
 			<argument index="0" name="position" type="int">
@@ -384,14 +400,14 @@
 				Returns a number of characters from the left of the string.
 			</description>
 		</method>
-		<method name="length">
+		<method name="length" qualifiers="const">
 			<return type="int">
 			</return>
 			<description>
 				Returns the string's amount of characters.
 			</description>
 		</method>
-		<method name="lpad">
+		<method name="lpad" qualifiers="const">
 			<return type="String">
 			</return>
 			<argument index="0" name="min_length" type="int">
@@ -402,7 +418,7 @@
 				Formats a string to be at least [code]min_length[/code] long by adding [code]character[/code]s to the left of the string.
 			</description>
 		</method>
-		<method name="lstrip">
+		<method name="lstrip" qualifiers="const">
 			<return type="String">
 			</return>
 			<argument index="0" name="chars" type="String">
@@ -412,7 +428,7 @@
 				[b]Note:[/b] The [code]chars[/code] is not a prefix. See [method trim_prefix] method that will remove a single prefix string rather than a set of characters.
 			</description>
 		</method>
-		<method name="match">
+		<method name="match" qualifiers="const">
 			<return type="bool">
 			</return>
 			<argument index="0" name="expr" type="String">
@@ -421,7 +437,7 @@
 				Does a simple case-sensitive expression match, where [code]"*"[/code] matches zero or more arbitrary characters and [code]"?"[/code] matches any single character except a period ([code]"."[/code]).
 			</description>
 		</method>
-		<method name="matchn">
+		<method name="matchn" qualifiers="const">
 			<return type="bool">
 			</return>
 			<argument index="0" name="expr" type="String">
@@ -430,21 +446,21 @@
 				Does a simple case-insensitive expression match, where [code]"*"[/code] matches zero or more arbitrary characters and [code]"?"[/code] matches any single character except a period ([code]"."[/code]).
 			</description>
 		</method>
-		<method name="md5_buffer">
+		<method name="md5_buffer" qualifiers="const">
 			<return type="PackedByteArray">
 			</return>
 			<description>
 				Returns the MD5 hash of the string as an array of bytes.
 			</description>
 		</method>
-		<method name="md5_text">
+		<method name="md5_text" qualifiers="const">
 			<return type="String">
 			</return>
 			<description>
 				Returns the MD5 hash of the string as a string.
 			</description>
 		</method>
-		<method name="naturalnocasecmp_to">
+		<method name="naturalnocasecmp_to" qualifiers="const">
 			<return type="int">
 			</return>
 			<argument index="0" name="to" type="String">
@@ -457,7 +473,7 @@
 				To get a boolean result from a string comparison, use the [code]==[/code] operator instead. See also [method nocasecmp_to] and [method casecmp_to].
 			</description>
 		</method>
-		<method name="nocasecmp_to">
+		<method name="nocasecmp_to" qualifiers="const">
 			<return type="int">
 			</return>
 			<argument index="0" name="to" type="String">
@@ -467,6 +483,24 @@
 				[b]Behavior with different string lengths:[/b] Returns [code]1[/code] if the "base" string is longer than the [code]to[/code] string or [code]-1[/code] if the "base" string is shorter than the [code]to[/code] string. Keep in mind this length is determined by the number of Unicode codepoints, [i]not[/i] the actual visible characters.
 				[b]Behavior with empty strings:[/b] Returns [code]-1[/code] if the "base" string is empty, [code]1[/code] if the [code]to[/code] string is empty or [code]0[/code] if both strings are empty.
 				To get a boolean result from a string comparison, use the [code]==[/code] operator instead. See also [method casecmp_to] and [method naturalnocasecmp_to].
+			</description>
+		</method>
+		<method name="num" qualifiers="static">
+			<return type="String">
+			</return>
+			<argument index="0" name="number" type="float">
+			</argument>
+			<argument index="1" name="decimals" type="int" default="-1">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="num_scientific" qualifiers="static">
+			<return type="String">
+			</return>
+			<argument index="0" name="number" type="float">
+			</argument>
+			<description>
 			</description>
 		</method>
 		<method name="operator !=" qualifiers="operator">
@@ -549,7 +583,7 @@
 			<description>
 			</description>
 		</method>
-		<method name="pad_decimals">
+		<method name="pad_decimals" qualifiers="const">
 			<return type="String">
 			</return>
 			<argument index="0" name="digits" type="int">
@@ -558,7 +592,7 @@
 				Formats a number to have an exact number of [code]digits[/code] after the decimal point.
 			</description>
 		</method>
-		<method name="pad_zeros">
+		<method name="pad_zeros" qualifiers="const">
 			<return type="String">
 			</return>
 			<argument index="0" name="digits" type="int">
@@ -567,7 +601,7 @@
 				Formats a number to have an exact number of [code]digits[/code] before the decimal point.
 			</description>
 		</method>
-		<method name="plus_file">
+		<method name="plus_file" qualifiers="const">
 			<return type="String">
 			</return>
 			<argument index="0" name="file" type="String">
@@ -576,7 +610,7 @@
 				If the string is a path, this concatenates [code]file[/code] at the end of the string as a subpath. E.g. [code]"this/is".plus_file("path") == "this/is/path"[/code].
 			</description>
 		</method>
-		<method name="repeat">
+		<method name="repeat" qualifiers="const">
 			<return type="String">
 			</return>
 			<argument index="0" name="count" type="int">
@@ -585,7 +619,7 @@
 				Returns original string repeated a number of times. The number of repetitions is given by the argument.
 			</description>
 		</method>
-		<method name="replace">
+		<method name="replace" qualifiers="const">
 			<return type="String">
 			</return>
 			<argument index="0" name="what" type="String">
@@ -596,7 +630,7 @@
 				Replaces occurrences of a case-sensitive substring with the given one inside the string.
 			</description>
 		</method>
-		<method name="replacen">
+		<method name="replacen" qualifiers="const">
 			<return type="String">
 			</return>
 			<argument index="0" name="what" type="String">
@@ -607,7 +641,7 @@
 				Replaces occurrences of a case-insensitive substring with the given one inside the string.
 			</description>
 		</method>
-		<method name="rfind">
+		<method name="rfind" qualifiers="const">
 			<return type="int">
 			</return>
 			<argument index="0" name="what" type="String">
@@ -618,7 +652,7 @@
 				Returns the index of the [b]last[/b] case-sensitive occurrence of the specified string in this instance, or [code]-1[/code]. Optionally, the starting search index can be specified, continuing to the beginning of the string.
 			</description>
 		</method>
-		<method name="rfindn">
+		<method name="rfindn" qualifiers="const">
 			<return type="int">
 			</return>
 			<argument index="0" name="what" type="String">
@@ -629,7 +663,7 @@
 				Returns the index of the [b]last[/b] case-insensitive occurrence of the specified string in this instance, or [code]-1[/code]. Optionally, the starting search index can be specified, continuing to the beginning of the string.
 			</description>
 		</method>
-		<method name="right">
+		<method name="right" qualifiers="const">
 			<return type="String">
 			</return>
 			<argument index="0" name="position" type="int">
@@ -638,7 +672,7 @@
 				Returns the right side of the string from a given position.
 			</description>
 		</method>
-		<method name="rpad">
+		<method name="rpad" qualifiers="const">
 			<return type="String">
 			</return>
 			<argument index="0" name="min_length" type="int">
@@ -649,7 +683,7 @@
 				Formats a string to be at least [code]min_length[/code] long by adding [code]character[/code]s to the right of the string.
 			</description>
 		</method>
-		<method name="rsplit">
+		<method name="rsplit" qualifiers="const">
 			<return type="PackedStringArray">
 			</return>
 			<argument index="0" name="delimiter" type="String">
@@ -677,7 +711,7 @@
 				[/codeblocks]
 			</description>
 		</method>
-		<method name="rstrip">
+		<method name="rstrip" qualifiers="const">
 			<return type="String">
 			</return>
 			<argument index="0" name="chars" type="String">
@@ -687,35 +721,35 @@
 				[b]Note:[/b] The [code]chars[/code] is not a suffix. See [method trim_suffix] method that will remove a single suffix string rather than a set of characters.
 			</description>
 		</method>
-		<method name="sha1_buffer">
+		<method name="sha1_buffer" qualifiers="const">
 			<return type="PackedByteArray">
 			</return>
 			<description>
 				Returns the SHA-1 hash of the string as an array of bytes.
 			</description>
 		</method>
-		<method name="sha1_text">
+		<method name="sha1_text" qualifiers="const">
 			<return type="String">
 			</return>
 			<description>
 				Returns the SHA-1 hash of the string as a string.
 			</description>
 		</method>
-		<method name="sha256_buffer">
+		<method name="sha256_buffer" qualifiers="const">
 			<return type="PackedByteArray">
 			</return>
 			<description>
 				Returns the SHA-256 hash of the string as an array of bytes.
 			</description>
 		</method>
-		<method name="sha256_text">
+		<method name="sha256_text" qualifiers="const">
 			<return type="String">
 			</return>
 			<description>
 				Returns the SHA-256 hash of the string as a string.
 			</description>
 		</method>
-		<method name="similarity">
+		<method name="similarity" qualifiers="const">
 			<return type="float">
 			</return>
 			<argument index="0" name="text" type="String">
@@ -724,7 +758,7 @@
 				Returns the similarity index of the text compared to this string. 1 means totally similar and 0 means totally dissimilar.
 			</description>
 		</method>
-		<method name="split">
+		<method name="split" qualifiers="const">
 			<return type="PackedStringArray">
 			</return>
 			<argument index="0" name="delimiter" type="String">
@@ -755,7 +789,7 @@
 				If you need to split strings with more complex rules, use the [RegEx] class instead.
 			</description>
 		</method>
-		<method name="split_floats">
+		<method name="split_floats" qualifiers="const">
 			<return type="PackedFloat32Array">
 			</return>
 			<argument index="0" name="delimiter" type="String">
@@ -767,7 +801,7 @@
 				For example, [code]"1,2.5,3"[/code] will return [code][1,2.5,3][/code] if split by [code]","[/code].
 			</description>
 		</method>
-		<method name="strip_edges">
+		<method name="strip_edges" qualifiers="const">
 			<return type="String">
 			</return>
 			<argument index="0" name="left" type="bool" default="true">
@@ -778,14 +812,14 @@
 				Returns a copy of the string stripped of any non-printable character (including tabulations, spaces and line breaks) at the beginning and the end. The optional arguments are used to toggle stripping on the left and right edges respectively.
 			</description>
 		</method>
-		<method name="strip_escapes">
+		<method name="strip_escapes" qualifiers="const">
 			<return type="String">
 			</return>
 			<description>
 				Returns a copy of the string stripped of any escape character. These include all non-printable control characters of the first page of the ASCII table (&lt; 32), such as tabulation ([code]\t[/code] in C) and newline ([code]\n[/code] and [code]\r[/code]) characters, but not spaces.
 			</description>
 		</method>
-		<method name="substr">
+		<method name="substr" qualifiers="const">
 			<return type="String">
 			</return>
 			<argument index="0" name="from" type="int">
@@ -796,63 +830,63 @@
 				Returns part of the string from the position [code]from[/code] with length [code]len[/code]. Argument [code]len[/code] is optional and using [code]-1[/code] will return remaining characters from given position.
 			</description>
 		</method>
-		<method name="to_ascii_buffer">
+		<method name="to_ascii_buffer" qualifiers="const">
 			<return type="PackedByteArray">
 			</return>
 			<description>
 				Converts the String (which is a character array) to ASCII/Latin-1 encoded [PackedByteArray] (which is an array of bytes). The conversion is faster compared to [method to_utf8_buffer], as this method assumes that all the characters in the String are ASCII/Latin-1 characters, unsupported characters are replaced with spaces.
 			</description>
 		</method>
-		<method name="to_float">
+		<method name="to_float" qualifiers="const">
 			<return type="float">
 			</return>
 			<description>
 				Converts a string containing a decimal number into a [code]float[/code].
 			</description>
 		</method>
-		<method name="to_int">
+		<method name="to_int" qualifiers="const">
 			<return type="int">
 			</return>
 			<description>
 				Converts a string containing an integer number into an [code]int[/code].
 			</description>
 		</method>
-		<method name="to_lower">
+		<method name="to_lower" qualifiers="const">
 			<return type="String">
 			</return>
 			<description>
 				Returns the string converted to lowercase.
 			</description>
 		</method>
-		<method name="to_upper">
+		<method name="to_upper" qualifiers="const">
 			<return type="String">
 			</return>
 			<description>
 				Returns the string converted to uppercase.
 			</description>
 		</method>
-		<method name="to_utf16_buffer">
+		<method name="to_utf16_buffer" qualifiers="const">
 			<return type="PackedByteArray">
 			</return>
 			<description>
 				Converts the String (which is an array of characters) to UTF-16 encoded [PackedByteArray] (which is an array of bytes).
 			</description>
 		</method>
-		<method name="to_utf32_buffer">
+		<method name="to_utf32_buffer" qualifiers="const">
 			<return type="PackedByteArray">
 			</return>
 			<description>
 				Converts the String (which is an array of characters) to UTF-32 encoded [PackedByteArray] (which is an array of bytes).
 			</description>
 		</method>
-		<method name="to_utf8_buffer">
+		<method name="to_utf8_buffer" qualifiers="const">
 			<return type="PackedByteArray">
 			</return>
 			<description>
 				Converts the String (which is an array of characters) to UTF-8 encode [PackedByteArray] (which is an array of bytes). The conversion is a bit slower than [method to_ascii_buffer], but supports all UTF-8 characters. Therefore, you should prefer this function over [method to_ascii_buffer].
 			</description>
 		</method>
-		<method name="trim_prefix">
+		<method name="trim_prefix" qualifiers="const">
 			<return type="String">
 			</return>
 			<argument index="0" name="prefix" type="String">
@@ -861,7 +895,7 @@
 				Removes a given string from the start if it starts with it or leaves the string unchanged.
 			</description>
 		</method>
-		<method name="trim_suffix">
+		<method name="trim_suffix" qualifiers="const">
 			<return type="String">
 			</return>
 			<argument index="0" name="suffix" type="String">
@@ -870,7 +904,7 @@
 				Removes a given string from the end if it ends with it or leaves the string unchanged.
 			</description>
 		</method>
-		<method name="unicode_at">
+		<method name="unicode_at" qualifiers="const">
 			<return type="int">
 			</return>
 			<argument index="0" name="at" type="int">
@@ -879,7 +913,7 @@
 				Returns the character code at position [code]at[/code].
 			</description>
 		</method>
-		<method name="uri_decode">
+		<method name="uri_decode" qualifiers="const">
 			<return type="String">
 			</return>
 			<description>
@@ -894,7 +928,7 @@
 				[/codeblocks]
 			</description>
 		</method>
-		<method name="uri_encode">
+		<method name="uri_encode" qualifiers="const">
 			<return type="String">
 			</return>
 			<description>
@@ -909,14 +943,14 @@
 				[/codeblocks]
 			</description>
 		</method>
-		<method name="validate_node_name">
+		<method name="validate_node_name" qualifiers="const">
 			<return type="String">
 			</return>
 			<description>
 				Removes any characters from the string that are prohibited in [Node] names ([code].[/code] [code]:[/code] [code]@[/code] [code]/[/code] [code]"[/code]).
 			</description>
 		</method>
-		<method name="xml_escape">
+		<method name="xml_escape" qualifiers="const">
 			<return type="String">
 			</return>
 			<argument index="0" name="escape_quotes" type="bool" default="false">
@@ -925,7 +959,7 @@
 				Returns a copy of the string with special characters escaped using the XML standard. If [code]escape_quotes[/code] is [code]true[/code], the single quote ([code]'[/code]) and double quote ([code]"[/code]) characters are also escaped.
 			</description>
 		</method>
-		<method name="xml_unescape">
+		<method name="xml_unescape" qualifiers="const">
 			<return type="String">
 			</return>
 			<description>

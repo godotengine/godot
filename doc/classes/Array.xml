@@ -166,7 +166,7 @@
 				[/codeblock]
 			</description>
 		</method>
-		<method name="back">
+		<method name="back" qualifiers="const">
 			<return type="Variant">
 			</return>
 			<description>
@@ -207,7 +207,7 @@
 				Clears the array. This is equivalent to using [method resize] with a size of [code]0[/code].
 			</description>
 		</method>
-		<method name="count">
+		<method name="count" qualifiers="const">
 			<return type="int">
 			</return>
 			<argument index="0" name="value" type="Variant">
@@ -216,7 +216,7 @@
 				Returns the number of times an element is in the array.
 			</description>
 		</method>
-		<method name="duplicate">
+		<method name="duplicate" qualifiers="const">
 			<return type="Array">
 			</return>
 			<argument index="0" name="deep" type="bool" default="false">
@@ -237,7 +237,7 @@
 				[b]Note:[/b] On large arrays, this method will be slower if the removed element is close to the beginning of the array (index 0). This is because all elements placed after the removed element have to be reindexed.
 			</description>
 		</method>
-		<method name="find">
+		<method name="find" qualifiers="const">
 			<return type="int">
 			</return>
 			<argument index="0" name="what" type="Variant">
@@ -248,7 +248,7 @@
 				Searches the array for a value and returns its index or [code]-1[/code] if not found. Optionally, the initial search index can be passed.
 			</description>
 		</method>
-		<method name="find_last">
+		<method name="find_last" qualifiers="const">
 			<return type="int">
 			</return>
 			<argument index="0" name="value" type="Variant">
@@ -257,7 +257,7 @@
 				Searches the array in reverse order for a value and returns its index or [code]-1[/code] if not found.
 			</description>
 		</method>
-		<method name="front">
+		<method name="front" qualifiers="const">
 			<return type="Variant">
 			</return>
 			<description>
@@ -265,7 +265,7 @@
 				[b]Note:[/b] Calling this function is not the same as writing [code]array[0][/code]. If the array is empty, accessing by index will pause project execution when running from the editor.
 			</description>
 		</method>
-		<method name="has">
+		<method name="has" qualifiers="const">
 			<return type="bool">
 			</return>
 			<argument index="0" name="value" type="Variant">
@@ -307,7 +307,7 @@
 				[/codeblocks]
 			</description>
 		</method>
-		<method name="hash">
+		<method name="hash" qualifiers="const">
 			<return type="int">
 			</return>
 			<description>
@@ -335,21 +335,21 @@
 				Reverses the order of the elements in the array.
 			</description>
 		</method>
-		<method name="is_empty">
+		<method name="is_empty" qualifiers="const">
 			<return type="bool">
 			</return>
 			<description>
 				Returns [code]true[/code] if the array is empty.
 			</description>
 		</method>
-		<method name="max">
+		<method name="max" qualifiers="const">
 			<return type="Variant">
 			</return>
 			<description>
 				Returns the maximum value contained in the array if all elements are of comparable types. If the elements can't be compared, [code]null[/code] is returned.
 			</description>
 		</method>
-		<method name="min">
+		<method name="min" qualifiers="const">
 			<return type="Variant">
 			</return>
 			<description>
@@ -474,7 +474,7 @@
 				Resizes the array to contain a different number of elements. If the array size is smaller, elements are cleared, if bigger, new elements are [code]null[/code].
 			</description>
 		</method>
-		<method name="rfind">
+		<method name="rfind" qualifiers="const">
 			<return type="int">
 			</return>
 			<argument index="0" name="what" type="Variant">
@@ -492,14 +492,14 @@
 				Shuffles the array such that the items will have a random order. This method uses the global random number generator common to methods such as [method @GlobalScope.randi]. Call [method @GlobalScope.randomize] to ensure that a new seed will be used each time if you want non-reproducible shuffling.
 			</description>
 		</method>
-		<method name="size">
+		<method name="size" qualifiers="const">
 			<return type="int">
 			</return>
 			<description>
 				Returns the number of elements in the array.
 			</description>
 		</method>
-		<method name="slice">
+		<method name="slice" qualifiers="const">
 			<return type="Array">
 			</return>
 			<argument index="0" name="begin" type="int">
