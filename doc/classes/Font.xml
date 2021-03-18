@@ -175,7 +175,7 @@
 			</argument>
 			<description>
 				Returns the size of a character, optionally taking kerning into account if the next character is provided.
-				[b]Note:[/b] Do not use this function to calculate width of the string character by character, use [method get_string_size] or [TextLine] instead.
+				[b]Note:[/b] Do not use this function to calculate width of the string character by character, use [method get_string_size] or [TextLine] instead. The height returned is the font height (see also [method get_height]) and has no relation to the glyph height.
 			</description>
 		</method>
 		<method name="get_data" qualifiers="const">
@@ -248,6 +248,7 @@
 			</argument>
 			<description>
 				Returns the size size of a bounding box of a string, taking kerning and advance into account.
+				[b]Note:[/b] Real height of the string is context-dependent and can be significantly different from the value returned by [method get_height].
 				See also [method draw_string].
 			</description>
 		</method>
