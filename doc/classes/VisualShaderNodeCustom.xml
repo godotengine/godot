@@ -20,7 +20,7 @@
 			<return type="String">
 			</return>
 			<description>
-				Override this method to define the category of the associated custom node in the Visual Shader Editor's members dialog.
+				Override this method to define the category of the associated custom node in the Visual Shader Editor's members dialog. The path may look like [code]"MyGame/MyFunctions/Noise"[/code].
 				Defining this method is [b]optional[/b]. If not overridden, the node will be filed under the "Custom" category.
 			</description>
 		</method>

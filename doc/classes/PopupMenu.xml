@@ -530,7 +530,7 @@
 			<argument index="1" name="state" type="int">
 			</argument>
 			<description>
-				Sets the state of an multistate item. See [method add_multistate_item] for details.
+				Sets the state of a multistate item. See [method add_multistate_item] for details.
 			</description>
 		</method>
 		<method name="set_item_shortcut">
@@ -605,13 +605,13 @@
 			<argument index="0" name="idx" type="int">
 			</argument>
 			<description>
-				Cycle to the next state of an multistate item. See [method add_multistate_item] for details.
+				Cycle to the next state of a multistate item. See [method add_multistate_item] for details.
 			</description>
 		</method>
 	</methods>
 	<members>
 		<member name="allow_search" type="bool" setter="set_allow_search" getter="get_allow_search" default="false">
-			If [code]true[/code], allows to navigate [PopupMenu] with letter keys.
+			If [code]true[/code], allows navigating [PopupMenu] with letter keys.
 		</member>
 		<member name="focus_mode" type="int" setter="set_focus_mode" getter="get_focus_mode" override="true" enum="Control.FocusMode" default="2" />
 		<member name="hide_on_checkable_item_selection" type="bool" setter="set_hide_on_checkable_item_selection" getter="is_hide_on_checkable_item_selection" default="true">

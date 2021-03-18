@@ -21,7 +21,7 @@
 			If [code]true[/code], the action's state is pressed. If [code]false[/code], the action's state is released.
 		</member>
 		<member name="strength" type="float" setter="set_strength" getter="get_strength" default="1.0">
-			The action's strength between 0 and 1. This value is considered as equal to 0 if pressed is [code]false[/code]. The event strength allows faking analog joypad motion events, by precising how strongly is the joypad axis bent or pressed.
+			The action's strength between 0 and 1. This value is considered as equal to 0 if pressed is [code]false[/code]. The event strength allows faking analog joypad motion events, by specifying how strongly the joypad axis is bent or pressed.
 		</member>
 	</members>
 	<constants>

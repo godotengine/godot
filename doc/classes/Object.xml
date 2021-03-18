@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="Object" version="3.3">
 	<brief_description>
-		Base class for all non built-in types.
+		Base class for all non-built-in types.
 	</brief_description>
 	<description>
 		Every class which is not a built-in type inherits from this class.

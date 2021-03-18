@@ -167,7 +167,7 @@
 			<return type="bool">
 			</return>
 			<description>
-				Override this method to define whether Spatial with this gizmo should be selecteble even when the gizmo is hidden.
+				Override this method to define whether a Spatial with this gizmo should be selectable even when the gizmo is hidden.
 			</description>
 		</method>
 		<method name="redraw" qualifiers="virtual">

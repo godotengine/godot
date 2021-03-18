@@ -31,7 +31,7 @@
 			<return type="Array">
 			</return>
 			<description>
-				Returns all of the user's current IPv4 and IPv6 addresses as an array.
+				Returns all the user's current IPv4 and IPv6 addresses as an array.
 			</description>
 		</method>
 		<method name="get_local_interfaces" qualifiers="const">
