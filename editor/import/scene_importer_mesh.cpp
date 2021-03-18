@@ -265,7 +265,7 @@ void EditorSceneImporterMesh::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_blend_shape_mode"), &EditorSceneImporterMesh::get_blend_shape_mode);
 
 	ClassDB::bind_method(D_METHOD("add_surface", "primitive", "arrays", "blend_shapes", "lods"), &EditorSceneImporterMesh::add_surface, DEFVAL(Array()), DEFVAL(Dictionary()), DEFVAL(String()));
-	ClassDB::bind_method(D_METHOD("set_surface_material", "material", "surface_idx"), &EditorSceneImporterMesh::get_surface_material, DEFVAL(Ref<Material>()), DEFVAL(-1));
+	ClassDB::bind_method(D_METHOD("set_surface_material", "material", "surface_idx"), &EditorSceneImporterMesh::set_surface_material, DEFVAL(Ref<Material>()), DEFVAL(-1));
 
 	ClassDB::bind_method(D_METHOD("get_surface_count"), &EditorSceneImporterMesh::get_surface_count);
 	ClassDB::bind_method(D_METHOD("get_surface_primitive_type", "surface_idx"), &EditorSceneImporterMesh::get_surface_primitive_type);

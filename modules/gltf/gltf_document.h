@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -71,6 +71,7 @@ class GLTFDocument : public Resource {
 	friend class GLTFSkeleton;
 
 public:
+	const int32_t JOINT_GROUP_SIZE = 4;
 	enum GLTFType {
 		TYPE_SCALAR,
 		TYPE_VEC2,
@@ -375,8 +376,9 @@ public:
 	void _convert_scene_node(Ref<GLTFState> state, Node *p_current, Node *p_root,
 			const GLTFNodeIndex p_gltf_current,
 			const GLTFNodeIndex p_gltf_root);
-
-	void _convert_csg_shape_to_gltf(Node *p_current, GLTFNodeIndex p_gltf_parent, Ref<GLTFNode> gltf_node, Ref<GLTFState> state);
+#ifdef MODULE_CSG_ENABLED
+	void _convert_csg_shape_to_gltf(Node* p_current, GLTFNodeIndex p_gltf_parent, Ref<GLTFNode> gltf_node, Ref<GLTFState> state);
+#endif // MODULE_CSG_ENABLED
 
 	void _create_gltf_node(Ref<GLTFState> state,
 			Node *p_scene_parent,
@@ -394,12 +396,14 @@ public:
 	void _convert_camera_to_gltf(Camera *camera, Ref<GLTFState> state,
 			Spatial *spatial,
 			Ref<GLTFNode> gltf_node);
+#ifdef MODULE_GRIDMAP_ENABLED
 	void _convert_grid_map_to_gltf(
-			Node *p_scene_parent,
-			const GLTFNodeIndex &p_parent_node_index,
-			const GLTFNodeIndex &p_root_node_index,
-			Ref<GLTFNode> gltf_node, Ref<GLTFState> state,
-			Node *p_root_node);
+		Node* p_scene_parent,
+		const GLTFNodeIndex& p_parent_node_index,
+		const GLTFNodeIndex& p_root_node_index,
+		Ref<GLTFNode> gltf_node, Ref<GLTFState> state,
+		Node* p_root_node);
+#endif // MODULE_GRIDMAP_ENABLED
 	void _convert_mult_mesh_instance_to_gltf(
 			Node *p_scene_parent,
 			const GLTFNodeIndex &p_parent_node_index,

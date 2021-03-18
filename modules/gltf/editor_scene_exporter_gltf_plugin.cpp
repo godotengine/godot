@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  editor_scene_importer_gltf.h                                         */
+/*  editor_scene_exporter_gltf_plugin.cpp                                */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,69 +28,68 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef EDITOR_SCENE_IMPORTER_GLTF_H
-#define EDITOR_SCENE_IMPORTER_GLTF_H
-
-#include "core/io/json.h"
+#include "editor_scene_exporter_gltf_plugin.h"
 #include "core/object.h"
 #include "core/project_settings.h"
 #include "core/vector.h"
-#include "editor/import/resource_importer_scene.h"
-#include "modules/csg/csg_shape.h"
-#include "modules/gridmap/grid_map.h"
+#include "editor/editor_file_system.h"
 #include "scene/3d/mesh_instance.h"
-#include "scene/3d/multimesh_instance.h"
-#include "scene/3d/skeleton.h"
-#include "scene/3d/spatial.h"
-#include "scene/animation/animation_player.h"
 #include "scene/gui/check_box.h"
 #include "scene/main/node.h"
-#include "scene/resources/packed_scene.h"
-#include "scene/resources/surface_tool.h"
 
-#include "gltf_document.h"
-#include "gltf_state.h"
+#include "editor/editor_node.h"
 
-class AnimationPlayer;
-class BoneAttachment;
-class EditorSceneImporterMeshNode;
+String SceneExporterGLTFPlugin::get_name() const {
+	return "ConvertGLTF2";
+}
 
-#ifdef TOOLS_ENABLED
-class EditorSceneImporterGLTF : public EditorSceneImporter {
-	GDCLASS(EditorSceneImporterGLTF, EditorSceneImporter);
+bool SceneExporterGLTFPlugin::has_main_screen() const {
+	return false;
+}
 
-public:
-	virtual uint32_t get_import_flags() const;
-	virtual void get_extensions(List<String> *r_extensions) const;
-	virtual Node *import_scene(const String &p_path, uint32_t p_flags,
-			int p_bake_fps,
-			List<String> *r_missing_deps = NULL,
-			Error *r_err = NULL);
-	virtual Ref<Animation> import_animation(const String &p_path,
-			uint32_t p_flags, int p_bake_fps);
-};
-#endif
+SceneExporterGLTFPlugin::SceneExporterGLTFPlugin(EditorNode *p_node) {
+	editor = p_node;
+	convert_gltf2.instance();
+	file_export_lib = memnew(EditorFileDialog);
+	editor->get_gui_base()->add_child(file_export_lib);
+	file_export_lib->connect("file_selected", this, "_gltf2_dialog_action");
+	file_export_lib->set_title(TTR("Export Library"));
+	file_export_lib->set_mode(EditorFileDialog::MODE_SAVE_FILE);
+	file_export_lib->set_access(EditorFileDialog::ACCESS_FILESYSTEM);
+	file_export_lib->clear_filters();
+	file_export_lib->add_filter("*.glb");
+	file_export_lib->add_filter("*.gltf");
+	file_export_lib->set_title(TTR("Export Mesh GLTF2"));
+	String gltf_scene_name = TTR("Export GLTF...");
+	add_tool_menu_item(gltf_scene_name, this, "convert_scene_to_gltf2", DEFVAL(Variant()));
+}
 
-class PackedSceneGLTF : public PackedScene {
-	GDCLASS(PackedSceneGLTF, PackedScene);
+void SceneExporterGLTFPlugin::_gltf2_dialog_action(String p_file) {
+	Node *root = editor->get_tree()->get_edited_scene_root();
+	if (!root) {
+		editor->show_accept(TTR("This operation can't be done without a scene."), TTR("OK"));
+		return;
+	}
+	List<String> deps;
+	convert_gltf2->save_scene(root, p_file, p_file, 0, 1000.0f, &deps);
+	EditorFileSystem::get_singleton()->scan_changes();
+}
 
-protected:
-	static void _bind_methods();
+void SceneExporterGLTFPlugin::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("convert_scene_to_gltf2"), &SceneExporterGLTFPlugin::convert_scene_to_gltf2);
+	ClassDB::bind_method(D_METHOD("_gltf2_dialog_action", "file"), &SceneExporterGLTFPlugin::_gltf2_dialog_action);
+}
 
-public:
-	virtual void save_scene(Node *p_node, const String &p_path, const String &p_src_path,
-			uint32_t p_flags, int p_bake_fps,
-			List<String> *r_missing_deps, Error *r_err = NULL);
-	virtual void _build_parent_hierachy(Ref<GLTFState> state);
-	virtual Error export_gltf(Node *p_root, String p_path, int32_t p_flags = 0,
-			real_t p_bake_fps = 1000.0f);
-	virtual Node *import_scene(const String &p_path, uint32_t p_flags,
-			int p_bake_fps,
-			List<String> *r_missing_deps,
-			Error *r_err,
-			Ref<GLTFState> r_state);
-	virtual Node *import_gltf_scene(const String &p_path, uint32_t p_flags, float p_bake_fps, Ref<GLTFState> r_state = Ref<GLTFState>());
-	virtual void pack_gltf(String p_path, int32_t p_flags = 0,
-			real_t p_bake_fps = 1000.0f, Ref<GLTFState> r_state = Ref<GLTFState>());
-};
-#endif // EDITOR_SCENE_IMPORTER_GLTF_H
+void SceneExporterGLTFPlugin::convert_scene_to_gltf2(Variant p_null) {
+	Node *root = editor->get_tree()->get_edited_scene_root();
+	if (!root) {
+		editor->show_accept(TTR("This operation can't be done without a scene."), TTR("OK"));
+		return;
+	}
+	String filename = String(root->get_filename().get_file().get_basename());
+	if (filename.empty()) {
+		filename = root->get_name();
+	}
+	file_export_lib->set_current_file(filename + String(".gltf"));
+	file_export_lib->popup_centered_ratio();
+}

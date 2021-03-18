@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  gltf_texture.cpp                                                     */
+/*  editor_scene_exporter_gltf_plugin.h                                  */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,19 +28,28 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#include "gltf_texture.h"
+#ifndef EDITOR_SCENE_EXPORTER_GLTF_PLUGIN_H
+#define EDITOR_SCENE_EXPORTER_GLTF_PLUGIN_H
 
-void GLTFTexture::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("get_src_image"), &GLTFTexture::get_src_image);
-	ClassDB::bind_method(D_METHOD("set_src_image", "src_image"), &GLTFTexture::set_src_image);
+#include "editor/editor_plugin.h"
+#include "editor_scene_importer_gltf.h"
 
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "src_image"), "set_src_image", "get_src_image"); // int
-}
+class SceneExporterGLTFPlugin : public EditorPlugin {
+	GDCLASS(SceneExporterGLTFPlugin, EditorPlugin);
 
-GLTFImageIndex GLTFTexture::get_src_image() const {
-	return src_image;
-}
+	Ref<PackedSceneGLTF> convert_gltf2;
+	EditorNode *editor = nullptr;
+	EditorFileDialog *file_export_lib = nullptr;
+	void _gltf2_dialog_action(String p_file);
+	void convert_scene_to_gltf2(Variant p_null);
 
-void GLTFTexture::set_src_image(GLTFImageIndex val) {
-	src_image = val;
-}
+protected:
+	static void _bind_methods();
+
+public:
+	virtual String get_name() const;
+	bool has_main_screen() const;
+	SceneExporterGLTFPlugin(class EditorNode *p_node);
+};
+
+#endif // EDITOR_SCENE_EXPORTER_GLTF_PLUGIN_H
