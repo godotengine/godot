@@ -132,7 +132,8 @@ static Vector<Vector2> vector_v3_to_v2(const Vector<Vector3> &d) {
 static Transform trf2_to_trf3(const Transform2D &d) {
 	Vector3 o(v2_to_v3(d.get_origin()));
 	Basis b;
-	b.rotate(Vector3(0, 1, 0), d.get_rotation());
+	b.rotate(Vector3(0, -1, 0), d.get_rotation());
+	b.scale(v2_to_v3(d.get_scale()));
 	return Transform(b, o);
 }
 
