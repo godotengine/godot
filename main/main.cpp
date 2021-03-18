@@ -1368,13 +1368,19 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 	}
 
 	OS::get_singleton()->set_low_processor_usage_mode(GLOBAL_DEF("application/run/low_processor_mode", false));
+	// In headless environments, we want to save CPU usage by default.
+	OS::get_singleton()->set_low_processor_usage_mode(GLOBAL_DEF("application/run/low_processor_mode.Server", true));
+
 	OS::get_singleton()->set_low_processor_usage_mode_sleep_usec(
-			GLOBAL_DEF("application/run/low_processor_mode_sleep_usec", 6900)); // Roughly 144 FPS
+			GLOBAL_DEF("application/run/low_processor_mode_sleep_usec", 6900)); // Roughly 144 FPS.
+	// A common tick rate in multiplayer games is 60 Hz, so set the default limit to match that.
+	OS::get_singleton()->set_low_processor_usage_mode_sleep_usec(
+			GLOBAL_DEF("application/run/low_processor_mode_sleep_usec.Server", 16600)); // Roughly 60 FPS.
 	ProjectSettings::get_singleton()->set_custom_property_info("application/run/low_processor_mode_sleep_usec",
 			PropertyInfo(Variant::INT,
 					"application/run/low_processor_mode_sleep_usec",
 					PROPERTY_HINT_RANGE,
-					"0,33200,1,or_greater")); // No negative numbers
+					"0,33200,1,or_greater")); // No negative numbers.
 
 	GLOBAL_DEF("display/window/ios/hide_home_indicator", true);
 	GLOBAL_DEF("input_devices/pointing/ios/touch_delay", 0.150);
@@ -2555,7 +2561,7 @@ bool Main::iteration() {
 		return exit;
 	}
 
-	OS::get_singleton()->add_frame_delay(DisplayServer::get_singleton()->window_can_draw());
+	OS::get_singleton()->add_frame_delay();
 
 #ifdef TOOLS_ENABLED
 	if (auto_build_solutions) {

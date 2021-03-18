@@ -286,8 +286,14 @@
 		<member name="application/run/low_processor_mode" type="bool" setter="" getter="" default="false">
 			If [code]true[/code], enables low-processor usage mode. This setting only works on desktop platforms. The screen is not redrawn if nothing changes visually. This is meant for writing applications and editors, but is pretty useless (and can hurt performance) in most games.
 		</member>
+		<member name="application/run/low_processor_mode.Server" type="bool" setter="" getter="" default="true">
+			Server (headless) override for the [member application/run/low_processor_mode] setting to decrease CPU usage.
+		</member>
 		<member name="application/run/low_processor_mode_sleep_usec" type="int" setter="" getter="" default="6900">
-			Amount of sleeping between frames when the low-processor usage mode is enabled (in microseconds). Higher values will result in lower CPU usage.
+			Amount of sleeping between frames when the low-processor usage mode is enabled (in microseconds). Higher values will result in lower CPU usage. The default value is roughly equal to 144 FPS and is chosen to match 144 Hz monitors (V-Sync will take care of limiting the frame rate below that if needed).
+		</member>
+		<member name="application/run/low_processor_mode_sleep_usec.Server" type="int" setter="" getter="" default="16600">
+			Server (headless) override for the [member application/run/low_processor_mode_sleep_usec] setting. This value effectively determines the rate at which [method Node._process] will run on server platforms. The default value is chosen to decrease CPU usage and is roughly equal to 60 FPS.
 		</member>
 		<member name="application/run/main_scene" type="String" setter="" getter="" default="&quot;&quot;">
 			Path to the main scene file that will be loaded when the project runs.

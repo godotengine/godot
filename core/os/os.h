@@ -209,7 +209,7 @@ public:
 	virtual double get_unix_time() const;
 
 	virtual void delay_usec(uint32_t p_usec) const = 0;
-	virtual void add_frame_delay(bool p_can_draw);
+	virtual void add_frame_delay();
 
 	virtual uint64_t get_ticks_usec() const = 0;
 	uint32_t get_ticks_msec() const;

@@ -469,7 +469,7 @@ void OS::close_midi_inputs() {
 	}
 }
 
-void OS::add_frame_delay(bool p_can_draw) {
+void OS::add_frame_delay() {
 	const uint32_t frame_delay = Engine::get_singleton()->get_frame_delay();
 	if (frame_delay) {
 		// Add fixed frame delay to decrease CPU/GPU usage. This doesn't take
@@ -482,7 +482,7 @@ void OS::add_frame_delay(bool p_can_draw) {
 	// Add a dynamic frame delay to decrease CPU/GPU usage. This takes the
 	// previous frame time into account for a smoother result.
 	uint64_t dynamic_delay = 0;
-	if (is_in_low_processor_usage_mode() || !p_can_draw) {
+	if (is_in_low_processor_usage_mode()) {
 		dynamic_delay = get_low_processor_usage_mode_sleep_usec();
 	}
 	const int target_fps = Engine::get_singleton()->get_target_fps();

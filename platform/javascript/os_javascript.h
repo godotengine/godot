@@ -81,7 +81,7 @@ public:
 	String get_name() const override;
 	// Override default OS implementation which would block the main thread with delay_usec.
 	// Implemented in javascript_main.cpp loop callback instead.
-	void add_frame_delay(bool p_can_draw) override {}
+	void add_frame_delay() override {}
 
 	String get_cache_path() const override;
 	String get_config_path() const override;
