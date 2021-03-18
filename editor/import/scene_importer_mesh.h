@@ -73,7 +73,7 @@ public:
 	String get_blend_shape_name(int p_blend_shape) const;
 
 	void add_surface(Mesh::PrimitiveType p_primitive, const Array &p_arrays, const Array &p_blend_shapes, const Dictionary &p_lods, /* const Ref<Material> &p_material, */ const String &p_name);
-	void set_surface_material(Ref<Material> &p_material, int p_surface = -1);
+	void set_surface_material(Ref<Material> p_material, int p_surface = -1);
 	int get_surface_count() const;
 
 	void set_blend_shape_mode(Mesh::BlendShapeMode p_blend_shape_mode);
