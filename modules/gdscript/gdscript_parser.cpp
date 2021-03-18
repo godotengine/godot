@@ -3224,12 +3224,19 @@ bool GDScriptParser::export_annotations(const AnnotationNode *p_annotation, Node
 	variable->export_info.hint_string = hint_string;
 
 	// This is called after tne analyzer is done finding the type, so this should be set here.
-	const DataType &export_type = variable->get_datatype();
+	DataType export_type = variable->get_datatype();
 
 	if (p_annotation->name == "@export") {
 		if (variable->datatype_specifier == nullptr && variable->initializer == nullptr) {
 			push_error(R"(Cannot use simple "@export" annotation with variable without type or initializer, since type can't be inferred.)", p_annotation);
 			return false;
+		}
+
+		bool is_array = false;
+
+		if (export_type.builtin_type == Variant::ARRAY && export_type.has_container_element_type()) {
+			export_type = export_type.get_container_element_type(); // Use inner type for.
+			is_array = true;
 		}
 
 		if (export_type.is_variant() || export_type.has_no_type()) {
@@ -3250,6 +3257,7 @@ bool GDScriptParser::export_annotations(const AnnotationNode *p_annotation, Node
 					variable->export_info.hint_string = get_real_class_name(export_type.native_type);
 				} else {
 					push_error(R"(Export type can only be built-in, a resource, or an enum.)", variable);
+					return false;
 				}
 				break;
 			case GDScriptParser::DataType::ENUM: {
@@ -3273,6 +3281,16 @@ bool GDScriptParser::export_annotations(const AnnotationNode *p_annotation, Node
 				// TODO: Allow custom user resources.
 				push_error(R"(Export type can only be built-in, a resource, or an enum.)", variable);
 				break;
+		}
+
+		if (is_array) {
+			String hint_prefix = itos(variable->export_info.type);
+			if (variable->export_info.hint) {
+				hint_prefix += "/" + itos(variable->export_info.hint);
+			}
+			variable->export_info.hint = PROPERTY_HINT_TYPE_STRING;
+			variable->export_info.hint_string = hint_prefix + ":" + variable->export_info.hint_string;
+			variable->export_info.type = Variant::ARRAY;
 		}
 	} else {
 		// Validate variable type with export.
