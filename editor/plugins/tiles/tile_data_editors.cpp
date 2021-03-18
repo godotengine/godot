@@ -159,3 +159,50 @@ void TileDataCollisionShapeEditor::draw_over_tile(CanvasItem *p_canvas_item, Tra
 		}
 	}
 }
+
+void TileDataNavigationPolygonEditor::draw_over_tile(CanvasItem *p_canvas_item, Transform2D p_transform, TileSet *p_tile_set, int p_atlas_source_id, Vector2i p_atlas_coords, int p_alternative_tile, String p_property) {
+	TileData *tile_data = _get_tile_data(p_tile_set, p_atlas_source_id, p_atlas_coords, p_alternative_tile);
+	ERR_FAIL_COND(!tile_data);
+
+	Vector<String> components = String(p_property).split("/", true);
+	if (components[0].begins_with("navigation_layer_") && components[0].trim_prefix("navigation_layer_").is_valid_integer()) {
+		int navigation_layer = components[0].trim_prefix("navigation_layer_").to_int();
+		if (navigation_layer >= 0 && navigation_layer < p_tile_set->get_navigation_layers_count()) {
+			// Draw all shapes.
+			RenderingServer::get_singleton()->canvas_item_add_set_transform(p_canvas_item->get_canvas_item(), p_transform);
+
+			Ref<NavigationPolygon> navigation_polygon = tile_data->get_navigation_polygon(navigation_layer);
+			if (navigation_polygon.is_valid()) {
+				Vector<Vector2> verts = navigation_polygon->get_vertices();
+				if (verts.size() < 3) {
+					return;
+				}
+
+				Color color = p_canvas_item->get_tree()->get_debug_navigation_color();
+
+				RandomPCG rand;
+				for (int i = 0; i < navigation_polygon->get_polygon_count(); i++) {
+					// An array of vertices for this polygon.
+					Vector<int> polygon = navigation_polygon->get_polygon(i);
+					Vector<Vector2> vertices;
+					vertices.resize(polygon.size());
+					for (int j = 0; j < polygon.size(); j++) {
+						ERR_FAIL_INDEX(polygon[j], verts.size());
+						vertices.write[j] = verts[polygon[j]];
+					}
+
+					// Generate the polygon color, slightly randomly modified from the settings one.
+					Color random_variation_color;
+					random_variation_color.set_hsv(color.get_h() + rand.random(-1.0, 1.0) * 0.05, color.get_s(), color.get_v() + rand.random(-1.0, 1.0) * 0.1);
+					random_variation_color.a = color.a;
+					Vector<Color> colors;
+					colors.push_back(random_variation_color);
+
+					RenderingServer::get_singleton()->canvas_item_add_polygon(p_canvas_item->get_canvas_item(), vertices, colors);
+				}
+			}
+
+			RenderingServer::get_singleton()->canvas_item_add_set_transform(p_canvas_item->get_canvas_item(), Transform2D());
+		}
+	}
+}

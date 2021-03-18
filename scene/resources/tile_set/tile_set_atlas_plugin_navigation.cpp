@@ -28,180 +28,184 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-/*
-void TileSetAtlasPluginNavigation::tilemap_notification(TileMap * p_tile_map, int p_what) {
+#include "tile_set_atlas_plugin_navigation.h"
+
+#include "scene/2d/navigation_region_2d.h"
+#include "scene/2d/tile_map.h"
+#include "servers/navigation_server_2d.h"
+
+void TileSetAtlasPluginNavigation::tilemap_notification(TileMap *p_tile_map, int p_what) {
 	switch (p_what) {
-		case NOTIFICATION_ENTER_TREE: {
-            // Get the parent navigation node
-            Node2D *c = this;
-            while (c) {
-                navigation = Object::cast_to<Navigation2D>(c);
-                if (navigation) {
-                    break;
-                }
-
-                c = Object::cast_to<Node2D>(c->get_parent());
-            }
-
-            _update_transform(p_tile_map);
-		} break;
-
-		case NOTIFICATION_EXIT_TREE: {
-            for (Map<Vector2i, Quadrant>::Element *E = quadrant_map.front(); E; E = E->next()) {
-                Quadrant &q = E->get();
-
-                if (navigation) {
-                    for (Map<Vector2i, Quadrant::NavPoly>::Element *F = q.navpoly_ids.front(); F; F = F->next()) {
-                        NavigationServer2D::get_singleton()->region_set_map(F->get().region, RID());
-                    }
-                    q.navpoly_ids.clear();
-                }
-
-                navigation = nullptr;
-            }
-
-            _update_transform(p_tile_map);
-		} break;
-
-		case NOTIFICATION_TRANSFORM_CHANGED: {
+		case CanvasItem::NOTIFICATION_TRANSFORM_CHANGED: {
+			if (p_tile_map->is_inside_tree()) {
+				Map<Vector2i, TileMapQuadrant> quadrant_map = p_tile_map->get_quadrant_map();
+				Transform2D tilemap_xform = p_tile_map->get_global_transform();
+				for (Map<Vector2i, TileMapQuadrant>::Element *E_quadrant = quadrant_map.front(); E_quadrant; E_quadrant = E_quadrant->next()) {
+					TileMapQuadrant &q = E_quadrant->get();
+					for (Map<Vector2i, Vector<RID>>::Element *E_region = q.navigation_regions.front(); E_region; E_region = E_region->next()) {
+						for (int layer_index = 0; layer_index < E_region->get().size(); layer_index++) {
+							RID region = E_region->get()[layer_index];
+							if (!region.is_valid()) {
+								continue;
+							}
+							Transform2D tile_transform;
+							tile_transform.set_origin(p_tile_map->map_to_world(E_region->key()));
+							NavigationServer2D::get_singleton()->region_set_transform(region, tilemap_xform * tile_transform);
+						}
+					}
+				}
+			}
 		} break;
 	}
 }
 
-// --- Called in NOTIFICATION_ENTER_TREE and NOTIFICATION_TRANSFORM_CHANGED ---
-void TileSetPLuginNavigation::_update_transform(const TileMap * p_tile_map) {
-    if (!p_tile_map->is_inside_tree()) {
-        return;
-    }
+void TileSetAtlasPluginNavigation::update_dirty_quadrants(TileMap *p_tile_map, SelfList<TileMapQuadrant>::List &r_dirty_quadrant_list) {
+	ERR_FAIL_COND(!p_tile_map);
+	ERR_FAIL_COND(!p_tile_map->is_inside_tree());
+	Ref<TileSet> tile_set = p_tile_map->get_tileset();
+	ERR_FAIL_COND(!tile_set.is_valid());
 
-    Transform2D nav_rel;
-    if (navigation) {
-        nav_rel = p_tile_map->get_relative_transform_to_parent(navigation);
-    }
+	// Get colors for debug.
+	SceneTree *st = SceneTree::get_singleton();
+	Color debug_navigation_color;
+	bool debug_navigation = st && st->is_debugging_navigation_hint();
+	if (debug_navigation) {
+		debug_navigation_color = st->get_debug_navigation_color();
+	}
 
-    for (Map<Vector2i, Quadrant>::Element *E = quadrant_map.front(); E; E = E->next()) {
-        Quadrant &q = E->get();
-        if (navigation) {
-            for (Map<Vector2i, Quadrant::NavPoly>::Element *F = q.navpoly_ids.front(); F; F = F->next()) {
-                NavigationServer2D::get_singleton()->region_set_transform(F->get().region, nav_rel * F->get().xform);
-            }
-        }
-    }
+	Transform2D tilemap_xform = p_tile_map->get_global_transform();
+	SelfList<TileMapQuadrant> *q_list_element = r_dirty_quadrant_list.first();
+	while (q_list_element) {
+		TileMapQuadrant &q = *q_list_element->self();
+
+		// Clear navigation shapes in the quadrant.
+		for (Map<Vector2i, Vector<RID>>::Element *E = q.navigation_regions.front(); E; E = E->next()) {
+			for (int i = 0; i < E->get().size(); i++) {
+				RID region = E->get()[i];
+				if (!region.is_valid()) {
+					continue;
+				}
+				NavigationServer2D::get_singleton()->region_set_map(region, RID());
+			}
+		}
+		q.navigation_regions.clear();
+
+		// Get the navigation polygons and create regions.
+		for (Set<Vector2i>::Element *E_cell = q.cells.front(); E_cell; E_cell = E_cell->next()) {
+			TileMapCell c = p_tile_map->get_cell(E_cell->get());
+
+			TileSetSource *source;
+			if (tile_set->has_source(c.source_id)) {
+				source = *tile_set->get_source(c.source_id);
+
+				if (!source->has_tile(c.get_atlas_coords()) || !source->has_alternative_tile(c.get_atlas_coords(), c.alternative_tile)) {
+					continue;
+				}
+
+				TileSetAtlasSource *atlas_source = Object::cast_to<TileSetAtlasSource>(source);
+				if (atlas_source) {
+					TileData *tile_data = Object::cast_to<TileData>(atlas_source->get_tile_data(c.get_atlas_coords(), c.alternative_tile));
+					q.navigation_regions[E_cell->get()].resize(tile_set->get_navigation_layers_count());
+
+					for (int layer_index = 0; layer_index < tile_set->get_navigation_layers_count(); layer_index++) {
+						Ref<NavigationPolygon> navpoly;
+						navpoly = tile_data->get_navigation_polygon(layer_index);
+
+						if (navpoly.is_valid()) {
+							Transform2D tile_transform;
+							tile_transform.set_origin(p_tile_map->map_to_world(E_cell->get()));
+
+							RID region = NavigationServer2D::get_singleton()->region_create();
+							NavigationServer2D::get_singleton()->region_set_map(region, p_tile_map->get_world_2d()->get_navigation_map());
+							NavigationServer2D::get_singleton()->region_set_transform(region, tilemap_xform * tile_transform);
+							NavigationServer2D::get_singleton()->region_set_navpoly(region, navpoly);
+							q.navigation_regions[E_cell->get()].write[layer_index] = region;
+						}
+					}
+				}
+			}
+		}
+
+		q_list_element = q_list_element->next();
+	}
 }
 
-
-// --- Called in update_dirty_quadrants ---
-// Compute the transform to the navigation node.
-Transform2D nav_rel;
-if (navigation) {
-    nav_rel = get_relative_transform_to_parent(navigation);
+void TileSetAtlasPluginNavigation::cleanup_quadrant(TileMap *p_tile_map, TileMapQuadrant *p_quadrant) {
+	// Clear navigation shapes in the quadrant.
+	for (Map<Vector2i, Vector<RID>>::Element *E = p_quadrant->navigation_regions.front(); E; E = E->next()) {
+		for (int i = 0; i < E->get().size(); i++) {
+			RID region = E->get()[i];
+			if (!region.is_valid()) {
+				continue;
+			}
+			NavigationServer2D::get_singleton()->free(region);
+		}
+	}
+	p_quadrant->navigation_regions.clear();
 }
 
-// Navigation: get the scene tree for next things.
-SceneTree *st = SceneTree::get_singleton();
+void TileSetAtlasPluginNavigation::draw_quadrant_debug(TileMap *p_tile_map, TileMapQuadrant *p_quadrant) {
+	// Draw the debug collision shapes.
+	Ref<TileSet> tile_set = p_tile_map->get_tileset();
+	ERR_FAIL_COND(!tile_set.is_valid());
 
-// Navigation: color for debug.
-Color debug_navigation_color;
-bool debug_navigation = st && st->is_debugging_navigation_hint();
-if (debug_navigation) {
-    debug_navigation_color = st->get_debug_navigation_color();
+	if (!p_tile_map->get_tree() || !(Engine::get_singleton()->is_editor_hint() || p_tile_map->get_tree()->is_debugging_navigation_hint())) {
+		return;
+	}
+
+	RenderingServer *rs = RenderingServer::get_singleton();
+
+	Color color = p_tile_map->get_tree()->get_debug_navigation_color();
+	RandomPCG rand;
+
+	Vector2 quadrant_pos = p_tile_map->map_to_world(p_quadrant->coords * p_tile_map->get_effective_quadrant_size());
+
+	for (Set<Vector2i>::Element *E_cell = p_quadrant->cells.front(); E_cell; E_cell = E_cell->next()) {
+		TileMapCell c = p_tile_map->get_cell(E_cell->get());
+
+		TileSetSource *source;
+		if (tile_set->has_source(c.source_id)) {
+			source = *tile_set->get_source(c.source_id);
+
+			if (!source->has_tile(c.get_atlas_coords()) || !source->has_alternative_tile(c.get_atlas_coords(), c.alternative_tile)) {
+				continue;
+			}
+
+			TileSetAtlasSource *atlas_source = Object::cast_to<TileSetAtlasSource>(source);
+			if (atlas_source) {
+				TileData *tile_data = Object::cast_to<TileData>(atlas_source->get_tile_data(c.get_atlas_coords(), c.alternative_tile));
+
+				Transform2D xform;
+				xform.set_origin(p_tile_map->map_to_world(E_cell->get()) - quadrant_pos);
+				rs->canvas_item_add_set_transform(p_quadrant->debug_canvas_item, xform);
+
+				for (int layer_index = 0; layer_index < tile_set->get_navigation_layers_count(); layer_index++) {
+					Ref<NavigationPolygon> navpoly = tile_data->get_navigation_polygon(layer_index);
+					if (navpoly.is_valid()) {
+						PackedVector2Array navigation_polygon_vertices = navpoly->get_vertices();
+
+						for (int i = 0; i < navpoly->get_polygon_count(); i++) {
+							// An array of vertices for this polygon.
+							Vector<int> polygon = navpoly->get_polygon(i);
+							Vector<Vector2> vertices;
+							vertices.resize(polygon.size());
+							for (int j = 0; j < polygon.size(); j++) {
+								ERR_FAIL_INDEX(polygon[j], navigation_polygon_vertices.size());
+								vertices.write[j] = navigation_polygon_vertices[polygon[j]];
+							}
+
+							// Generate the polygon color, slightly randomly modified from the settings one.
+							Color random_variation_color;
+							random_variation_color.set_hsv(color.get_h() + rand.random(-1.0, 1.0) * 0.05, color.get_s(), color.get_v() + rand.random(-1.0, 1.0) * 0.1);
+							random_variation_color.a = color.a;
+							Vector<Color> colors;
+							colors.push_back(random_variation_color);
+
+							RS::get_singleton()->canvas_item_add_polygon(p_quadrant->debug_canvas_item, vertices, colors);
+						}
+					}
+				}
+			}
+		}
+	}
 }
-
-while (dirty_quadrant_list.first()) {
-    Quadrant &q = *dirty_quadrant_list.first()->self();
-    // Navigation: Clear navigation shapes in the quadrant.
-    if (navigation) {
-        for (Map<Vector2i, Quadrant::NavPoly>::Element *E = q.navpoly_ids.front(); E; E = E->next()) {
-            NavigationServer2D::get_singleton()->region_set_map(E->get().region, RID());
-        }
-        q.navpoly_ids.clear();
-    }
-
-    // Navigation: handle navigation shapes.
-    if (navigation) {
-        // Get the navigation polygon.
-        Ref<NavigationPolygon> navpoly;
-        Vector2 npoly_ofs;
-        if (tile_set->tile_get_tile_mode(c.source_id) == TileSet::AUTO_TILE || tile_set->tile_get_tile_mode(c.source_id) == TileSet::ATLAS_TILE) {
-            navpoly = tile_set->autotile_get_navigation_polygon(c.source_id, c.get_tileset_coords());
-            npoly_ofs = Vector2();
-        } else {
-            navpoly = tile_set->tile_get_navigation_polygon(c.source_id);
-            npoly_ofs = tile_set->tile_get_navigation_polygon_offset(c.source_id);
-        }
-
-        if (navpoly.is_valid()) {
-            Transform2D xform;
-            xform.set_origin(offset.floor() + q.pos);
-            _fix_cell_transform(xform, c, npoly_ofs, s);
-
-            RID region = NavigationServer2D::get_singleton()->region_create();
-            NavigationServer2D::get_singleton()->region_set_map(region, navigation->get_rid());
-            NavigationServer2D::get_singleton()->region_set_transform(region, nav_rel * xform);
-            NavigationServer2D::get_singleton()->region_set_navpoly(region, navpoly);
-
-            Quadrant::NavPoly np;
-            np.region = region;
-            np.xform = xform;
-            q.navpoly_ids[E->key()] = np;
-
-            // Diplay debug info.
-            if (debug_navigation) {
-                RID debug_navigation_item = vs->canvas_item_create();
-                vs->canvas_item_set_parent(debug_navigation_item, canvas_item);
-                vs->canvas_item_set_z_as_relative_to_parent(debug_navigation_item, false);
-                vs->canvas_item_set_z_index(debug_navigation_item, RS::CANVAS_ITEM_Z_MAX - 2); // Display one below collision debug
-
-                if (debug_navigation_item.is_valid()) {
-                    Vector<Vector2> navigation_polygon_vertices = navpoly->get_vertices();
-                    int vsize = navigation_polygon_vertices.size();
-
-                    if (vsize > 2) {
-                        Vector<Color> colors;
-                        Vector<Vector2> vertices;
-                        vertices.resize(vsize);
-                        colors.resize(vsize);
-                        {
-                            const Vector2 *vr = navigation_polygon_vertices.ptr();
-                            for (int j = 0; j < vsize; j++) {
-                                vertices.write[j] = vr[j];
-                                colors.write[j] = debug_navigation_color;
-                            }
-                        }
-
-                        Vector<int> indices;
-
-                        for (int j = 0; j < navpoly->get_polygon_count(); j++) {
-                            Vector<int> polygon = navpoly->get_polygon(j);
-
-                            for (int k = 2; k < polygon.size(); k++) {
-                                int kofs[3] = { 0, k - 1, k };
-                                for (int l = 0; l < 3; l++) {
-                                    int idx = polygon[kofs[l]];
-                                    ERR_FAIL_INDEX(idx, vsize);
-                                    indices.push_back(idx);
-                                }
-                            }
-                        }
-                        Transform2D navxform;
-                        navxform.set_origin(offset.floor());
-                        _fix_cell_transform(navxform, c, npoly_ofs, s);
-
-                        vs->canvas_item_set_transform(debug_navigation_item, navxform);
-                        vs->canvas_item_add_triangle_array(debug_navigation_item, indices, vertices, colors);
-                    }
-                }
-            }
-        }
-    }
-}
-
-// --- Called in _erase_quadrant ---
-// Navigation: Free the navigation polygons.
-if (navigation) {
-    for (Map<Vector2i, Quadrant::NavPoly>::Element *E = q.navpoly_ids.front(); E; E = E->next()) {
-        NavigationServer2D::get_singleton()->region_set_map(E->get().region, RID());
-    }
-    q.navpoly_ids.clear();
-}
-*/

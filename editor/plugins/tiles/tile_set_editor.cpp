@@ -284,6 +284,8 @@ TileDataEditor *TileSetEditor::get_tile_data_editor(String p_property) {
 		return tile_data_occlusion_shape_editor;
 	} else if (components.size() >= 1 && components[0].begins_with("physics_layer_")) {
 		return tile_data_collision_shape_editor;
+	} else if (components.size() >= 1 && components[0].begins_with("navigation_layer_")) {
+		return tile_data_navigation_polygon_editor;
 	}
 
 	return nullptr;
@@ -433,4 +435,5 @@ TileSetEditor::~TileSetEditor() {
 	memdelete(tile_data_float_editor);
 	memdelete(tile_data_occlusion_shape_editor);
 	memdelete(tile_data_collision_shape_editor);
+	memdelete(tile_data_navigation_polygon_editor);
 }

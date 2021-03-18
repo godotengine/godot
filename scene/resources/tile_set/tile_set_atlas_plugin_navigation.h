@@ -31,30 +31,20 @@
 #ifndef TILE_SET_ATLAS_PLUGIN_NAVIGATION_H
 #define TILE_SET_ATLAS_PLUGIN_NAVIGATION_H
 
+#include "tile_set_atlas_plugin.h"
+
 #include "scene/2d/navigation_region_2d.h"
 
-class TileMap;
-
-// Tile data
-struct NavigationData {
-	Ref<NavigationPolygon> navigation;
-	Vector2 navigation_offset;
-};
-
-// TileSet data
-struct NavigationTileSetData {
-};
-
-/*
-class TileSetAtlasPluginNavigation : public Resource {
-	GDCLASS(TileSetAtlasPluginNavigation, Resource);
-
-private:
-    void _update_transform(const TileMap * p_tile_map);
+class TileSetAtlasPluginNavigation : public TileSetPlugin {
+	GDCLASS(TileSetAtlasPluginNavigation, TileSetPlugin);
 
 public:
-    virtual void tilemap_notification(const TileMap * p_tile_map, int p_what);
+	// Tilemap updates
+	virtual void tilemap_notification(TileMap *p_tile_map, int p_what) override;
+	virtual void update_dirty_quadrants(TileMap *p_tile_map, SelfList<TileMapQuadrant>::List &r_dirty_quadrant_list) override;
+	//virtual void create_quadrant(TileMap *p_tile_map, TileMapQuadrant *p_quadrant) override;
+	virtual void cleanup_quadrant(TileMap *p_tile_map, TileMapQuadrant *p_quadrant) override;
+	virtual void draw_quadrant_debug(TileMap *p_tile_map, TileMapQuadrant *p_quadrant) override;
 };
-*/
 
 #endif // TILE_SET_ATLAS_PLUGIN_NAVIGATION_H

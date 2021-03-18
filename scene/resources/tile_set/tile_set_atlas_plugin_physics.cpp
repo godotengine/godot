@@ -187,12 +187,14 @@ void TileSetAtlasPluginPhysics::draw_quadrant_debug(TileMap *p_tile_map, TileMap
 
 	RenderingServer *rs = RenderingServer::get_singleton();
 
+	Vector2 quadrant_pos = p_tile_map->map_to_world(p_quadrant->coords * p_tile_map->get_effective_quadrant_size());
+
 	Color debug_collision_color = p_tile_map->get_tree()->get_debug_collisions_color();
 	for (Set<Vector2i>::Element *E_cell = p_quadrant->cells.front(); E_cell; E_cell = E_cell->next()) {
 		TileMapCell c = p_tile_map->get_cell(E_cell->get());
 
 		Transform2D xform;
-		xform.set_origin(p_tile_map->map_to_world(E_cell->get()) - p_tile_map->map_to_world(p_quadrant->coords * p_tile_map->get_effective_quadrant_size()));
+		xform.set_origin(p_tile_map->map_to_world(E_cell->get()) - quadrant_pos);
 		rs->canvas_item_add_set_transform(p_quadrant->debug_canvas_item, xform);
 
 		if (tile_set->has_source(c.source_id)) {

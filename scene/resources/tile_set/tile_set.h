@@ -86,8 +86,10 @@ private:
 	Vector<PhysicsLayerTileData> physics;
 	// TODO add support for areas.
 
+	// Navigation
+	Vector<Ref<NavigationPolygon>> navigation;
+
 	//TerrainTileData terrains;
-	//NavigationData navigation;
 
 	// Misc
 	double probability = 1.0;
@@ -150,9 +152,8 @@ public:
 	*/
 
 	// Navigation
-	/*
-	Ref<NavigationPolygon> tile_get_navigation(int p_layer_id) const;
-	*/
+	void set_navigation_polygon(int p_layer_id, Ref<NavigationPolygon> p_navigation_polygon);
+	Ref<NavigationPolygon> get_navigation_polygon(int p_layer_id) const;
 
 	// Misc
 	void set_probability(float p_probability);
@@ -390,7 +391,10 @@ private:
 	Vector<PhysicsLayer> physics_layers;
 
 	//TerrainsTileSetData terrains;
-	//NavigationTileSetData navigation;
+	struct Navigationlayer {
+		uint32_t layers = 1;
+	};
+	Vector<Navigationlayer> navigation_layers;
 
 	// CustomData
 	struct CustomDataLayer {
@@ -408,9 +412,10 @@ private:
 
 	// Plugins themselves.
 	TileSetAtlasPluginRendering tile_set_plugin_rendering;
-	//TileSetAtlasPluginTerrain tile_set_plugin_terrain;
+
 	TileSetAtlasPluginPhysics tile_set_plugin_physics;
-	//TileSetAtlasPluginNavigation tile_set_plugin_navigation;
+	TileSetAtlasPluginNavigation tile_set_plugin_navigation;
+	//TileSetAtlasPluginTerrain tile_set_plugin_terrain;
 
 	Vector<TileSetPlugin *> tile_set_plugins_vector;
 
@@ -483,6 +488,10 @@ public:
 	Ref<PhysicsMaterial> get_physics_layer_physics_material(int p_layer_index) const;
 
 	// Navigation
+	void set_navigation_layers_count(int p_navigation_layers_count);
+	int get_navigation_layers_count() const;
+	void set_navigation_layer_layers(int p_layer_index, uint32_t p_layers);
+	uint32_t get_navigation_layer_layers(int p_layer_index) const;
 
 	// Terrains
 

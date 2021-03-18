@@ -116,12 +116,16 @@ struct TileMapQuadrant {
 	// Physics.
 	List<RID> bodies;
 
+	// Navigation
+	Map<Vector2i, Vector<RID>> navigation_regions;
+
 	void operator=(const TileMapQuadrant &q) {
 		coords = q.coords;
 		debug_canvas_item = q.debug_canvas_item;
 		canvas_items = q.canvas_items;
 		occluders = q.occluders;
 		bodies = q.bodies;
+		navigation_regions = q.navigation_regions;
 	}
 
 	TileMapQuadrant(const TileMapQuadrant &q) :
@@ -131,6 +135,7 @@ struct TileMapQuadrant {
 		canvas_items = q.canvas_items;
 		occluders = q.occluders;
 		bodies = q.bodies;
+		navigation_regions = q.navigation_regions;
 	}
 
 	TileMapQuadrant() :

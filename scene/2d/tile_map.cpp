@@ -1425,9 +1425,6 @@ void TileMap::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "tile_set", PROPERTY_HINT_RESOURCE_TYPE, "TileSet"), "set_tileset", "get_tileset");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "cell_quadrant_size", PROPERTY_HINT_RANGE, "1,128,1"), "set_quadrant_size", "get_quadrant_size");
 
-	ADD_GROUP("Navigation", "");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "bake_navigation"), "set_bake_navigation", "is_baking_navigation");
-
 	ADD_PROPERTY_DEFAULT("format", FORMAT_1);
 
 	ADD_SIGNAL(MethodInfo("changed"));
