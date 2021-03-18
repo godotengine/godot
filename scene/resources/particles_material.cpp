@@ -319,14 +319,20 @@ void ParticlesMaterial::_update_shader() {
 		//initiate velocity spread in 3D
 		code += "		float angle1_rad = rand_from_seed_m1_p1(alt_seed) * spread_rad;\n";
 		code += "		float angle2_rad = rand_from_seed_m1_p1(alt_seed) * spread_rad * (1.0 - flatness);\n";
-		code += "		angle1_rad += direction.z != 0.0 ? atan(direction.x, direction.z) : sign(direction.x) * (pi / 2.0);\n";
-		code += "		angle2_rad += direction.z != 0.0 ? atan(direction.y, abs(direction.z)) : (direction.x != 0.0 ? atan(direction.y, abs(direction.x)) : sign(direction.y) * (pi / 2.0));\n";
 		code += "		vec3 direction_xz = vec3(sin(angle1_rad), 0.0, cos(angle1_rad));\n";
 		code += "		vec3 direction_yz = vec3(0.0, sin(angle2_rad), cos(angle2_rad));\n";
 		code += "		direction_yz.z = direction_yz.z / max(0.0001,sqrt(abs(direction_yz.z))); // better uniform distribution\n";
 		code += "		vec3 vec_direction = vec3(direction_xz.x * direction_yz.z, direction_yz.y, direction_xz.z * direction_yz.z);\n";
-		code += "		vec_direction = normalize(vec_direction);\n";
-		code += "		VELOCITY = vec_direction * initial_linear_velocity * mix(1.0, rand_from_seed(alt_seed), initial_linear_velocity_random);\n";
+		code += "		vec3 direction_nrm = normalize(direction);\n";
+		code += "		// rotate spread to direction\n";
+		code += "		vec3 cross_up = vec3(0.0, 1.0, 0.0); // assume local Y is up\n";
+		code += "		vec3 cross_side = cross(cross_up, direction_nrm);\n";
+		code += "		if (length(cross_side) < 0.0001)\n";
+		code += "			cross_side = vec3(0.0, 0.0, 1.0);\n";
+		code += "		cross_side = normalize(cross_side);\n";
+		code += "		cross_up = cross(cross_side, direction_nrm);\n";
+		code += "		vec_direction = cross_side * vec_direction.x + cross_up * vec_direction.y + direction_nrm * vec_direction.z;\n";
+		code += "		VELOCITY = normalize(vec_direction) * initial_linear_velocity * mix(1.0, rand_from_seed(alt_seed), initial_linear_velocity_random);\n";
 	}
 
 	code += "		float base_angle = (initial_angle + tex_angle) * mix(1.0, angle_rand, initial_angle_random);\n";
