@@ -129,7 +129,7 @@
 			<argument index="2" name="planes" type="Array">
 			</argument>
 			<description>
-				Given a convex hull defined though the [Plane]s in the array [code]planes[/code], tests if the segment ([code]from[/code], [code]to[/code]) intersects with that hull. If an intersection is found, returns a [PackedVector3Array] containing the point the intersection and the hull's normal. If no intersecion is found, an the returned array is empty.
+				Given a convex hull defined though the [Plane]s in the array [code]planes[/code], tests if the segment ([code]from[/code], [code]to[/code]) intersects with that hull. If an intersection is found, returns a [PackedVector3Array] containing the point the intersection and the hull's normal. Otherwise, returns an empty array.
 			</description>
 		</method>
 		<method name="segment_intersects_cylinder">

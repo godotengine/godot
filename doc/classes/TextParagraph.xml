@@ -145,7 +145,7 @@
 			<argument index="4" name="dc_color" type="Color" default="Color( 1, 1, 1, 1 )">
 			</argument>
 			<description>
-				Draw outilines of all lines of the text and drop cap into a canvas item at a given position, with [code]color[/code]. [code]pos[/code] specifies the top left corner of the bounding box.
+				Draw outlines of all lines of the text and drop cap into a canvas item at a given position, with [code]color[/code]. [code]pos[/code] specifies the top left corner of the bounding box.
 			</description>
 		</method>
 		<method name="get_dropcap_lines" qualifiers="const">

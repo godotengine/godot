@@ -111,7 +111,7 @@
 			The physics layers used to generate the [NavigationMesh].
 		</member>
 		<member name="geometry/parsed_geometry_type" type="int" setter="set_parsed_geometry_type" getter="get_parsed_geometry_type" default="0">
-			What kind of geomerty is used to generate the [NavigationMesh].
+			What kind of geometry is used to generate the [NavigationMesh].
 		</member>
 		<member name="geometry/source_geometry_mode" type="int" setter="set_source_geometry_mode" getter="get_source_geometry_mode" default="0">
 			Which geometry is used to generate the [NavigationMesh].

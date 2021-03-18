@@ -32,7 +32,7 @@
 			</argument>
 			<description>
 				Returns the height of the line [code]line[/code].
-				If [code]line[/code] is set to [code]-1[/code], returns biggest line height.
+				If [code]line[/code] is set to [code]-1[/code], returns the biggest line height.
 				If there're no lines returns font size in pixels.
 			</description>
 		</method>

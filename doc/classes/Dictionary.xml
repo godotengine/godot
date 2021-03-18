@@ -4,7 +4,7 @@
 		Dictionary type.
 	</brief_description>
 	<description>
-		Dictionary type. Associative container which contains values referenced by unique keys. Dictionaries are composed of pairs of keys (which must be unique) and values. Dictionaries will preserve the insertion order when adding elements, even though this may not be reflected when printing the dictionary. In other programming languages, this data structure is sometimes referred to as an hash map or associative array.
+		Dictionary type. Associative container which contains values referenced by unique keys. Dictionaries are composed of pairs of keys (which must be unique) and values. Dictionaries will preserve the insertion order when adding elements, even though this may not be reflected when printing the dictionary. In other programming languages, this data structure is sometimes referred to as a hash map or associative array.
 		You can define a dictionary by placing a comma-separated list of [code]key: value[/code] pairs in curly braces [code]{}[/code].
 		Erasing elements while iterating over them [b]is not supported[/b] and will result in undefined behavior.
 		[b]Note:[/b] Dictionaries are always passed by reference. To get a copy of a dictionary which can be modified independently of the original dictionary, use [method duplicate].
@@ -266,7 +266,7 @@
 			<argument index="0" name="keys" type="Array">
 			</argument>
 			<description>
-				Returns [code]true[/code] if the dictionary has all of the keys in the given array.
+				Returns [code]true[/code] if the dictionary has all the keys in the given array.
 			</description>
 		</method>
 		<method name="hash" qualifiers="const">

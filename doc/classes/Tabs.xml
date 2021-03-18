@@ -261,7 +261,7 @@
 			If [code]true[/code], tabs can be rearranged with mouse drag.
 		</member>
 		<member name="scrolling_enabled" type="bool" setter="set_scrolling_enabled" getter="get_scrolling_enabled" default="true">
-			if [code]true[/code], the mouse's scroll wheel cab be used to navigate the scroll view.
+			if [code]true[/code], the mouse's scroll wheel can be used to navigate the scroll view.
 		</member>
 		<member name="tab_align" type="int" setter="set_tab_align" getter="get_tab_align" enum="Tabs.TabAlign" default="1">
 			The alignment of all tabs. See [enum TabAlign] for details.

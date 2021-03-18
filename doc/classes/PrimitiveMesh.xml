@@ -31,7 +31,7 @@
 	</methods>
 	<members>
 		<member name="custom_aabb" type="AABB" setter="set_custom_aabb" getter="get_custom_aabb" default="AABB( 0, 0, 0, 0, 0, 0 )">
-			Overrides the [AABB] with one defined by user for use with frustum culling. Especially useful to avoid unnexpected culling when  using a shader to offset vertices.
+			Overrides the [AABB] with one defined by user for use with frustum culling. Especially useful to avoid unexpected culling when  using a shader to offset vertices.
 		</member>
 		<member name="flip_faces" type="bool" setter="set_flip_faces" getter="get_flip_faces" default="false">
 			If set, the order of the vertices in each triangle are reversed resulting in the backside of the mesh being drawn.

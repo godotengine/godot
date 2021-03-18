@@ -70,7 +70,7 @@
 			<return type="NodePath">
 			</return>
 			<description>
-				Returns a node path with a colon character ([code]:[/code]) prepended, transforming it to a pure property path with no node name (defaults to resolving from the from the current node).
+				Returns a node path with a colon character ([code]:[/code]) prepended, transforming it to a pure property path with no node name (defaults to resolving from the current node).
 				[codeblocks]
 				[gdscript]
 				# This will be parsed as a node path to the "x" property in the "position" node.

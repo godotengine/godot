@@ -710,7 +710,7 @@
 			[b]Note:[/b] Length is not delimited by the last key, as this one may be before or after the end to ensure correct interpolation and looping.
 		</member>
 		<member name="loop" type="bool" setter="set_loop" getter="has_loop" default="false">
-			A flag indicating that the animation must loop. This is uses for correct interpolation of animation cycles, and for hinting the player that it must restart the animation.
+			A flag indicating that the animation must loop. This is used for correct interpolation of animation cycles, and for hinting the player that it must restart the animation.
 		</member>
 		<member name="step" type="float" setter="set_step" getter="get_step" default="0.1">
 			The animation step value.

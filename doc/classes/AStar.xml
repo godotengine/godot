@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="AStar" inherits="Reference" version="4.0">
 	<brief_description>
-		An implementation of A* to find shortest paths among connected points in space.
+		An implementation of A* to find the shortest paths among connected points in space.
 	</brief_description>
 	<description>
 		A* (A star) is a computer algorithm that is widely used in pathfinding and graph traversal, the process of plotting short paths among vertices (points), passing through a given set of edges (segments). It enjoys widespread use due to its performance and accuracy. Godot's A* implementation uses points in three-dimensional space and Euclidean distances by default.

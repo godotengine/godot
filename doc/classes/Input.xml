@@ -85,7 +85,7 @@
 			</argument>
 			<description>
 				Get axis input by specifying two actions, one negative and one positive.
-				This is a horthand for writing [code]Input.get_action_strength("positive_action") - Input.get_action_strength("negative_action")[/code].
+				This is a shorthand for writing [code]Input.get_action_strength("positive_action") - Input.get_action_strength("negative_action")[/code].
 			</description>
 		</method>
 		<method name="get_connected_joypads">
@@ -176,7 +176,7 @@
 			<return type="Vector3">
 			</return>
 			<description>
-				Returns the the magnetic field strength in micro-Tesla for all axes of the device's magnetometer sensor, if the device has one. Otherwise, the method returns [constant Vector3.ZERO].
+				Returns the magnetic field strength in micro-Tesla for all axes of the device's magnetometer sensor, if the device has one. Otherwise, the method returns [constant Vector3.ZERO].
 				[b]Note:[/b] This method only works on Android, iOS and UWP. On other platforms, it always returns [constant Vector3.ZERO].
 			</description>
 		</method>

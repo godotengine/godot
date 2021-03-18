@@ -74,7 +74,7 @@
 			<return type="String">
 			</return>
 			<description>
-				Returns a [String] description of the input ports as as colon-separated list using the format [code]id,type,name;[/code] (see [method add_input_port]).
+				Returns a [String] description of the input ports as a colon-separated list using the format [code]id,type,name;[/code] (see [method add_input_port]).
 			</description>
 		</method>
 		<method name="get_output_port_count" qualifiers="const">
@@ -88,7 +88,7 @@
 			<return type="String">
 			</return>
 			<description>
-				Returns a [String] description of the output ports as as colon-separated list using the format [code]id,type,name;[/code] (see [method add_output_port]).
+				Returns a [String] description of the output ports as a colon-separated list using the format [code]id,type,name;[/code] (see [method add_output_port]).
 			</description>
 		</method>
 		<method name="has_input_port" qualifiers="const">

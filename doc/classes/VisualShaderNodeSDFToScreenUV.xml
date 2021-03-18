@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="VisualShaderNodeSDFToScreenUV" inherits="VisualShaderNode" version="4.0">
 	<brief_description>
-		A function to convert a SDF (signed-distance field) to screen UV, to be used within the visual shader graph.
+		A function to convert an SDF (signed-distance field) to screen UV, to be used within the visual shader graph.
 	</brief_description>
 	<description>
 		Translates to [code]sdf_to_screen_uv(sdf_pos)[/code] in the shader language.

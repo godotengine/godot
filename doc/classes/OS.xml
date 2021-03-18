@@ -244,9 +244,9 @@
 			</return>
 			<description>
 				Returns the host OS locale as a string of the form [code]language_Script_COUNTRY_VARIANT@extra[/code].
-				[code]language[/code] - 2 or 3 letter [url=https://en.wikipedia.org/wiki/List_of_ISO_639-1_codes]language code[/url], in lower case.
-				[code]Script[/code] - optional, 4 letter [url=https://en.wikipedia.org/wiki/ISO_15924]script code[/url], in title case.
-				[code]COUNTRY[/code] - optional, 2 or 3 letter [url=https://en.wikipedia.org/wiki/ISO_3166-1]country code[/url], in upper case.
+				[code]language[/code] - 2 or 3-letter [url=https://en.wikipedia.org/wiki/List_of_ISO_639-1_codes]language code[/url], in lower case.
+				[code]Script[/code] - optional, 4-letter [url=https://en.wikipedia.org/wiki/ISO_15924]script code[/url], in title case.
+				[code]COUNTRY[/code] - optional, 2 or 3-letter [url=https://en.wikipedia.org/wiki/ISO_3166-1]country code[/url], in upper case.
 				[code]VARIANT[/code] - optional, language variant, region and sort order. Variant can have any number of underscored key words.
 				[code]extra[/code] - optional, semicolon separated list of additional key words. Currency, calendar, sort order and numbering system information.
 			</description>

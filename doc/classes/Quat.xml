@@ -127,7 +127,7 @@
 			<argument index="0" name="to" type="Quat">
 			</argument>
 			<description>
-				Returns [code]true[/code] if this quaterion and [code]quat[/code] are approximately equal, by running [method @GlobalScope.is_equal_approx] on each component.
+				Returns [code]true[/code] if this quaternion and [code]quat[/code] are approximately equal, by running [method @GlobalScope.is_equal_approx] on each component.
 			</description>
 		</method>
 		<method name="is_normalized" qualifiers="const">
