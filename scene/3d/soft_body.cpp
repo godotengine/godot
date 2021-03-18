@@ -785,8 +785,11 @@ void SoftBody::_reset_points_offsets() {
 	PoolVector<PinnedPoint>::Write w = pinned_points.write();
 	for (int i = pinned_points.size() - 1; 0 <= i; --i) {
 
-		if (!r[i].spatial_attachment)
-			w[i].spatial_attachment = Object::cast_to<Spatial>(get_node(r[i].spatial_attachment_path));
+		if (!r[i].spatial_attachment) {
+			if (!r[i].spatial_attachment_path.is_empty() && has_node(r[i].spatial_attachment_path)) {
+				w[i].spatial_attachment = Object::cast_to<Spatial>(get_node(r[i].spatial_attachment_path));
+			}
+		}
 
 		if (!r[i].spatial_attachment)
 			continue;
