@@ -268,6 +268,10 @@ void FabrikInverseKinematic::solve(Task *p_task, real_t blending_delta, bool ove
 		p_task->skeleton->set_bone_global_pose_override(p_task->chain.tips[i].chain_item->bone, Transform(), 0.0, true);
 	}
 
+	// Update the initial root transform
+	p_task->chain.chain_root.initial_transform = p_task->skeleton->get_bone_global_pose(p_task->chain.chain_root.bone);
+	p_task->chain.chain_root.current_pos = p_task->chain.chain_root.initial_transform.origin;
+
 	make_goal(p_task, p_task->skeleton->get_global_transform().affine_inverse(), blending_delta);
 
 	if (p_use_magnet && p_task->chain.middle_chain_item) {
