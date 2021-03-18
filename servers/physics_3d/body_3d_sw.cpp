@@ -501,20 +501,18 @@ void Body3DSW::integrate_forces(real_t p_step) {
 
 	if (mode == PhysicsServer3D::BODY_MODE_KINEMATIC) {
 		//compute motion, angular and etc. velocities from prev transform
-		linear_velocity = (new_transform.origin - get_transform().origin) / p_step;
+		motion = new_transform.origin - get_transform().origin;
+		do_motion = true;
+		linear_velocity = motion / p_step;
 
 		//compute a FAKE angular velocity, not so easy
-		Basis rot = new_transform.basis.orthonormalized().transposed() * get_transform().basis.orthonormalized();
+		Basis rot = new_transform.basis.orthonormalized() * get_transform().basis.orthonormalized().transposed();
 		Vector3 axis;
 		real_t angle;
 
 		rot.get_axis_angle(axis, angle);
 		axis.normalize();
-		angular_velocity = axis.normalized() * (angle / p_step);
-
-		motion = new_transform.origin - get_transform().origin;
-		do_motion = true;
-
+		angular_velocity = axis * (angle / p_step);
 	} else {
 		if (!omit_force_integration && !first_integration) {
 			//overridden by direct state query
