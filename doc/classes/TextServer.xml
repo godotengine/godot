@@ -359,7 +359,7 @@
 			<argument index="0" name="font" type="RID">
 			</argument>
 			<description>
-				Returns extra spacing for each glyphs in pixels.
+				Returns extra spacing for each glyph in pixels.
 			</description>
 		</method>
 		<method name="font_get_spacing_space" qualifiers="const">
@@ -368,7 +368,7 @@
 			<argument index="0" name="font" type="RID">
 			</argument>
 			<description>
-				Sets extra spacing for each glyphs in pixels.
+				Sets extra spacing for each glyph in pixels.
 			</description>
 		</method>
 		<method name="font_get_supported_chars" qualifiers="const">

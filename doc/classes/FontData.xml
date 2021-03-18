@@ -391,7 +391,7 @@
 			If [code]true[/code], distance field hint is enabled.
 		</member>
 		<member name="extra_spacing_glyph" type="int" setter="set_spacing" getter="get_spacing" default="0">
-			Extra spacing for each glyphs in pixels.
+			Extra spacing for each glyph in pixels.
 			This can be a negative number to make the distance between glyphs smaller.
 		</member>
 		<member name="extra_spacing_space" type="int" setter="set_spacing" getter="get_spacing" default="0">
