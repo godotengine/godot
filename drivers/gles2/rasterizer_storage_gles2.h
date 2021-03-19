@@ -829,6 +829,7 @@ public:
 	virtual Color multimesh_instance_get_custom_data(RID p_multimesh, int p_index) const;
 
 	virtual void multimesh_set_as_bulk_array(RID p_multimesh, const PoolVector<float> &p_array);
+	virtual PoolVector<float> multimesh_get_as_bulk_array(RID p_multimesh) const;
 
 	virtual void multimesh_set_visible_instances(RID p_multimesh, int p_visible);
 	virtual int multimesh_get_visible_instances(RID p_multimesh) const;

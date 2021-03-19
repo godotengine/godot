@@ -268,6 +268,11 @@ void MultiMesh::set_as_bulk_array(const PoolVector<float> &p_array) {
 	VisualServer::get_singleton()->multimesh_set_as_bulk_array(multimesh, p_array);
 }
 
+PoolVector<float> MultiMesh::get_as_bulk_array() {
+
+	return VisualServer::get_singleton()->multimesh_get_as_bulk_array(multimesh);
+}
+
 AABB MultiMesh::get_aabb() const {
 
 	return VisualServer::get_singleton()->multimesh_get_aabb(multimesh);
@@ -334,6 +339,7 @@ void MultiMesh::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_instance_custom_data", "instance", "custom_data"), &MultiMesh::set_instance_custom_data);
 	ClassDB::bind_method(D_METHOD("get_instance_custom_data", "instance"), &MultiMesh::get_instance_custom_data);
 	ClassDB::bind_method(D_METHOD("set_as_bulk_array", "array"), &MultiMesh::set_as_bulk_array);
+	ClassDB::bind_method(D_METHOD("get_as_bulk_array"), &MultiMesh::get_as_bulk_array);
 	ClassDB::bind_method(D_METHOD("get_aabb"), &MultiMesh::get_aabb);
 
 	ClassDB::bind_method(D_METHOD("_set_transform_array"), &MultiMesh::_set_transform_array);

@@ -440,6 +440,7 @@ public:
 	Color multimesh_instance_get_custom_data(RID p_multimesh, int p_index) const { return Color(); }
 
 	void multimesh_set_as_bulk_array(RID p_multimesh, const PoolVector<float> &p_array) {}
+	PoolVector<float> multimesh_get_as_bulk_array(RID p_multimesh) const { return PoolVector<float>(); }
 
 	void multimesh_set_visible_instances(RID p_multimesh, int p_visible) {}
 	int multimesh_get_visible_instances(RID p_multimesh) const { return 0; }

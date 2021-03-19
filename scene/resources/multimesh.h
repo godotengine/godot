@@ -112,6 +112,7 @@ public:
 	Color get_instance_custom_data(int p_instance) const;
 
 	void set_as_bulk_array(const PoolVector<float> &p_array);
+	PoolVector<float> get_as_bulk_array();
 
 	virtual AABB get_aabb() const;
 

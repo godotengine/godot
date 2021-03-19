@@ -206,6 +206,7 @@ public:
 	FUNC2RC(Color, multimesh_instance_get_custom_data, RID, int)
 
 	FUNC2(multimesh_set_as_bulk_array, RID, const PoolVector<float> &)
+	FUNC1RC(PoolVector<float>, multimesh_get_as_bulk_array, RID)
 
 	FUNC2(multimesh_set_visible_instances, RID, int)
 	FUNC1RC(int, multimesh_get_visible_instances, RID)

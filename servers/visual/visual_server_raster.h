@@ -269,6 +269,7 @@ public:
 	BIND2RC(Color, multimesh_instance_get_custom_data, RID, int)
 
 	BIND2(multimesh_set_as_bulk_array, RID, const PoolVector<float> &)
+	BIND1RC(PoolVector<float>, multimesh_get_as_bulk_array, RID)
 
 	BIND2(multimesh_set_visible_instances, RID, int)
 	BIND1RC(int, multimesh_get_visible_instances, RID)

@@ -1734,6 +1734,7 @@ void VisualServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("multimesh_set_visible_instances", "multimesh", "visible"), &VisualServer::multimesh_set_visible_instances);
 	ClassDB::bind_method(D_METHOD("multimesh_get_visible_instances", "multimesh"), &VisualServer::multimesh_get_visible_instances);
 	ClassDB::bind_method(D_METHOD("multimesh_set_as_bulk_array", "multimesh", "array"), &VisualServer::multimesh_set_as_bulk_array);
+	ClassDB::bind_method(D_METHOD("multimesh_get_as_bulk_array", "multimesh"), &VisualServer::multimesh_get_as_bulk_array);
 #ifndef _3D_DISABLED
 	ClassDB::bind_method(D_METHOD("immediate_create"), &VisualServer::immediate_create);
 	ClassDB::bind_method(D_METHOD("immediate_begin", "immediate", "primitive", "texture"), &VisualServer::immediate_begin, DEFVAL(RID()));

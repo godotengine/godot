@@ -3410,6 +3410,23 @@ void RasterizerStorageGLES2::multimesh_set_as_bulk_array(RID p_multimesh, const 
 	}
 }
 
+PoolVector<float> RasterizerStorageGLES2::multimesh_get_as_bulk_array(RID p_multimesh) const {
+	MultiMesh *multimesh = multimesh_owner.getornull(p_multimesh);
+	ERR_FAIL_COND_V(!multimesh, PoolVector<float>());
+	ERR_FAIL_COND_V(!multimesh->data.ptr(), PoolVector<float>());
+
+	int dsize = multimesh->data.size();
+
+	ERR_FAIL_COND_V(dsize <= 0, PoolVector<float>());
+
+	PoolVector<float> ret;
+	ret.resize(dsize);
+	PoolVector<float>::Write w = ret.write();
+	copymem(w.ptr(), multimesh->data.ptr(), dsize);
+
+	return ret;
+}
+
 void RasterizerStorageGLES2::multimesh_set_visible_instances(RID p_multimesh, int p_visible) {
 	MultiMesh *multimesh = multimesh_owner.getornull(p_multimesh);
 	ERR_FAIL_COND(!multimesh);
