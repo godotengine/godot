@@ -86,12 +86,20 @@ private:
 	DirAccess *dir_access;
 	ConfirmationDialog *confirm_save;
 
+	Label *message;
+
+	Button *dir_prev;
+	Button *dir_next;
 	Button *dir_up;
 
 	Button *refresh;
 	Button *show_hidden;
 
 	Vector<String> filters;
+
+	Vector<String> local_history;
+	int local_history_pos = 0;
+	void _push_history();
 
 	bool mode_overrides_title = true;
 
@@ -119,6 +127,8 @@ private:
 	void _make_dir();
 	void _make_dir_confirm();
 	void _go_up();
+	void _go_back();
+	void _go_forward();
 
 	void _update_drives();
 
