@@ -59,7 +59,6 @@ public:
 
 	CryptoKeyMbedTLS() {
 		mbedtls_pk_init(&pkey);
-		locks = 0;
 	}
 	~CryptoKeyMbedTLS() {
 		mbedtls_pk_free(&pkey);
@@ -75,7 +74,7 @@ public:
 class X509CertificateMbedTLS : public X509Certificate {
 private:
 	mbedtls_x509_crt cert;
-	int locks;
+	int locks = 0;
 
 public:
 	static X509Certificate *create();
@@ -88,7 +87,6 @@ public:
 
 	X509CertificateMbedTLS() {
 		mbedtls_x509_crt_init(&cert);
-		locks = 0;
 	}
 	~X509CertificateMbedTLS() {
 		mbedtls_x509_crt_free(&cert);
@@ -125,7 +123,7 @@ class CryptoMbedTLS : public Crypto {
 private:
 	mbedtls_entropy_context entropy;
 	mbedtls_ctr_drbg_context ctr_drbg;
-	static X509CertificateMbedTLS *default_certs;
+	static X509CertificateMbedTLS *default_certs = nullptr;
 
 public:
 	static Crypto *create();
