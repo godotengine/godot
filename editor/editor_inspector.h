@@ -105,6 +105,9 @@ protected:
 	static void _bind_methods();
 
 	void _gui_input(const Ref<InputEvent> &p_event);
+	Color *_xy_property_colors();
+	Color *_xyz_property_colors();
+	Color *_xyzw_property_colors();
 
 public:
 	void emit_changed(const StringName &p_property, const Variant &p_value, const StringName &p_field = StringName(), bool p_changing = false);
