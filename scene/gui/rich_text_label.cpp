@@ -822,7 +822,8 @@ int RichTextLabel::_process_line(ItemFrame *p_frame, const Vector2 &p_ofs, int &
 					row_height = MAX(yofs, row_height);
 					offset.x += table->columns[column].width + hseparation;
 
-					if (column == table->columns.size() - 1) {
+					// Add row height after last column of the row or last cell of the table.
+					if (column == table->columns.size() - 1 || E->next() == NULL) {
 
 						offset.y += row_height + vseparation;
 						offset.x = hseparation;

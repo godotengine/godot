@@ -96,7 +96,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2021-02-27 00:47+0000\n"
+"PO-Revision-Date: 2021-03-16 10:40+0000\n"
 "Last-Translator: Danil Alexeev <danil@alexeev.xyz>\n"
 "Language-Team: Russian <https://hosted.weblate.org/projects/godot-engine/"
 "godot/ru/>\n"
@@ -106,7 +106,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=3; plural=n%10==1 && n%100!=11 ? 0 : n%10>=2 && n"
 "%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2;\n"
-"X-Generator: Weblate 4.5\n"
+"X-Generator: Weblate 4.5.2-dev\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -4144,19 +4144,16 @@ msgid "Saving..."
 msgstr "Сохранение..."
 
 #: editor/import_defaults_editor.cpp
-#, fuzzy
 msgid "Select Importer"
-msgstr "Режим выделения"
+msgstr "Выберите импортёр"
 
 #: editor/import_defaults_editor.cpp
-#, fuzzy
 msgid "Importer:"
-msgstr "Импорт"
+msgstr "Импортёр:"
 
 #: editor/import_defaults_editor.cpp
-#, fuzzy
 msgid "Reset to Defaults"
-msgstr "Использовать sRGB"
+msgstr "Сбросить настройки"
 
 #: editor/import_dock.cpp
 msgid "%d Files"
@@ -10492,9 +10489,8 @@ msgid "Plugins"
 msgstr "Плагины"
 
 #: editor/project_settings_editor.cpp
-#, fuzzy
 msgid "Import Defaults"
-msgstr "Загрузить по умолчанию"
+msgstr "Шаблоны импорта"
 
 #: editor/property_editor.cpp
 msgid "Preset..."
@@ -12543,10 +12539,12 @@ msgstr "Пустой CollisionPolygon2D не влияет на столкнов�
 #: scene/2d/collision_polygon_2d.cpp
 msgid "Invalid polygon. At least 3 points are needed in 'Solids' build mode."
 msgstr ""
+"Недопустимый полигон. В режиме «Solids» необходимо по крайней мере 3 точки."
 
 #: scene/2d/collision_polygon_2d.cpp
 msgid "Invalid polygon. At least 2 points are needed in 'Segments' build mode."
 msgstr ""
+"Недопустимый полигон. В режиме «Segments» необходимо по крайней мере 2 точки."
 
 #: scene/2d/collision_shape_2d.cpp
 msgid ""

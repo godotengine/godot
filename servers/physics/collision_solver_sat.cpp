@@ -1632,10 +1632,55 @@ static void _collision_capsule_cylinder(const ShapeSW *p_a, const Transform &p_t
 
 	SeparatorAxisTest<CapsuleShapeSW, CylinderShapeSW, withMargin> separator(capsule_A, p_transform_a, cylinder_B, p_transform_b, p_collector, p_margin_a, p_margin_b);
 
+	if (!separator.test_previous_axis()) {
+		return;
+	}
+
+	// Cylinder B end caps.
+	Vector3 cylinder_B_axis = p_transform_b.basis.get_axis(1).normalized();
+	if (!separator.test_axis(cylinder_B_axis)) {
+		return;
+	}
+
+	// Cylinder edge against capsule balls.
+
+	Vector3 capsule_A_axis = p_transform_a.basis.get_axis(2);
+
+	Vector3 capsule_A_ball_1 = p_transform_a.origin + capsule_A_axis * (capsule_A->get_height() * 0.5);
+	Vector3 capsule_A_ball_2 = p_transform_a.origin - capsule_A_axis * (capsule_A->get_height() * 0.5);
+
+	if (!separator.test_axis((p_transform_b.origin - capsule_A_ball_1).cross(cylinder_B_axis).cross(cylinder_B_axis).normalized())) {
+		return;
+	}
+
+	if (!separator.test_axis((p_transform_b.origin - capsule_A_ball_2).cross(cylinder_B_axis).cross(cylinder_B_axis).normalized())) {
+		return;
+	}
+
+	// Cylinder edge against capsule edge.
+
+	Vector3 center_diff = p_transform_b.origin - p_transform_a.origin;
+
+	if (!separator.test_axis(capsule_A_axis.cross(center_diff).cross(capsule_A_axis).normalized())) {
+		return;
+	}
+
+	if (!separator.test_axis(cylinder_B_axis.cross(center_diff).cross(cylinder_B_axis).normalized())) {
+		return;
+	}
+
+	real_t proj = capsule_A_axis.cross(cylinder_B_axis).cross(cylinder_B_axis).dot(capsule_A_axis);
+	if (Math::is_zero_approx(proj)) {
+		// Parallel capsule and cylinder axes, handle with specific axes only.
+		// Note: GJKEPA with no margin can lead to degenerate cases in this situation.
+		separator.generate_contacts();
+		return;
+	}
+
 	CollisionSolverSW::CallbackResult callback = SeparatorAxisTest<CapsuleShapeSW, CylinderShapeSW, withMargin>::test_contact_points;
 
 	// Fallback to generic algorithm to find the best separating axis.
-	if (!fallback_collision_solver(p_a, p_transform_a, p_b, p_transform_b, callback, &separator)) {
+	if (!fallback_collision_solver(p_a, p_transform_a, p_b, p_transform_b, callback, &separator, false, p_margin_a, p_margin_b)) {
 		return;
 	}
 
@@ -1809,7 +1854,7 @@ static void _collision_cylinder_cylinder(const ShapeSW *p_a, const Transform &p_
 	CollisionSolverSW::CallbackResult callback = SeparatorAxisTest<CylinderShapeSW, CylinderShapeSW, withMargin>::test_contact_points;
 
 	// Fallback to generic algorithm to find the best separating axis.
-	if (!fallback_collision_solver(p_a, p_transform_a, p_b, p_transform_b, callback, &separator)) {
+	if (!fallback_collision_solver(p_a, p_transform_a, p_b, p_transform_b, callback, &separator, false, p_margin_a, p_margin_b)) {
 		return;
 	}
 
@@ -1826,7 +1871,7 @@ static void _collision_cylinder_convex_polygon(const ShapeSW *p_a, const Transfo
 	CollisionSolverSW::CallbackResult callback = SeparatorAxisTest<CylinderShapeSW, ConvexPolygonShapeSW, withMargin>::test_contact_points;
 
 	// Fallback to generic algorithm to find the best separating axis.
-	if (!fallback_collision_solver(p_a, p_transform_a, p_b, p_transform_b, callback, &separator)) {
+	if (!fallback_collision_solver(p_a, p_transform_a, p_b, p_transform_b, callback, &separator, false, p_margin_a, p_margin_b)) {
 		return;
 	}
 

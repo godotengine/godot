@@ -67,7 +67,7 @@
 	</methods>
 	<members>
 		<member name="buffer_length" type="float" setter="set_buffer_length" getter="get_buffer_length" default="0.1">
-			Length of the internal ring buffer, in seconds.
+			Length of the internal ring buffer, in seconds. Setting the buffer length will have no effect if already initialized.
 		</member>
 	</members>
 	<constants>

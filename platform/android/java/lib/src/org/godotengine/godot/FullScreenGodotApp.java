@@ -34,6 +34,7 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.view.KeyEvent;
 
+import androidx.annotation.CallSuper;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.FragmentActivity;
@@ -44,7 +45,7 @@ import androidx.fragment.app.FragmentActivity;
  * It's also a reference implementation for how to setup and use the {@link Godot} fragment
  * within an Android app.
  */
-public abstract class FullScreenGodotApp extends FragmentActivity {
+public abstract class FullScreenGodotApp extends FragmentActivity implements GodotHost {
 
 	@Nullable
 	private Godot godotFragment;
@@ -65,6 +66,28 @@ public abstract class FullScreenGodotApp extends FragmentActivity {
 	public void onNewIntent(Intent intent) {
 		if (godotFragment != null) {
 			godotFragment.onNewIntent(intent);
+		} else {
+			super.onNewIntent(intent);
+		}
+	}
+
+	@CallSuper
+	@Override
+	public void onActivityResult(int requestCode, int resultCode, Intent data) {
+		if (godotFragment != null) {
+			godotFragment.onActivityResult(requestCode, resultCode, data);
+		} else {
+			super.onActivityResult(requestCode, resultCode, data);
+		}
+	}
+
+	@CallSuper
+	@Override
+	public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
+		if (godotFragment != null) {
+			godotFragment.onRequestPermissionsResult(requestCode, permissions, grantResults);
+		} else {
+			super.onRequestPermissionsResult(requestCode, permissions, grantResults);
 		}
 	}
 

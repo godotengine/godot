@@ -20,7 +20,7 @@
 # MalcomRF <malcomkbk@gmail.com>, 2017.
 # Marcus Correia <marknokalt@live.com>, 2017-2018.
 # Michael Alexsander Silva Dias <michaelalexsander@protonmail.com>, 2017-2018.
-# Renato Rotenberg <renato.rotenberg@gmail.com>, 2017, 2019.
+# Renato Rotenberg <renato.rotenberg@gmail.com>, 2017, 2019, 2021.
 # Rodolfo R Gomes <rodolforg@gmail.com>, 2017-2018, 2019.
 # Tiago Almeida <thyagoeap@gmail.com>, 2017.
 # Mauricio Luan Carneiro deSouza <newmailmlcs@gmail.com>, 2018.
@@ -116,8 +116,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: 2016-05-30\n"
-"PO-Revision-Date: 2021-02-15 10:51+0000\n"
-"Last-Translator: Carlos Bonifacio <carlosboni.sa@gmail.com>\n"
+"PO-Revision-Date: 2021-03-10 22:14+0000\n"
+"Last-Translator: Renato Rotenberg <renato.rotenberg@gmail.com>\n"
 "Language-Team: Portuguese (Brazil) <https://hosted.weblate.org/projects/"
 "godot-engine/godot/pt_BR/>\n"
 "Language: pt_BR\n"
@@ -125,7 +125,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n > 1;\n"
-"X-Generator: Weblate 4.5-dev\n"
+"X-Generator: Weblate 4.5.2-dev\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -3236,13 +3236,12 @@ msgid "Open & Run a Script"
 msgstr "Abrir e Rodar um Script"
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid ""
 "The following files are newer on disk.\n"
 "What action should be taken?"
 msgstr ""
 "Os seguintes arquivos são mais recentes no disco.\n"
-"Que ação deve ser tomada?:"
+"Que ação deve ser tomada?"
 
 #: editor/editor_node.cpp editor/plugins/script_editor_plugin.cpp
 #: editor/plugins/shader_editor_plugin.cpp
@@ -7470,9 +7469,8 @@ msgid "Yaw"
 msgstr "Guinada"
 
 #: editor/plugins/spatial_editor_plugin.cpp
-#, fuzzy
 msgid "Size"
-msgstr "Tamanho: "
+msgstr "Tamanho"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Objects Drawn"
@@ -10158,9 +10156,8 @@ msgid "Projects"
 msgstr "Projetos"
 
 #: editor/project_manager.cpp
-#, fuzzy
 msgid "Loading, please wait..."
-msgstr "Reconectando, por favor aguarde."
+msgstr "Carregando, por favor aguarde."
 
 #: editor/project_manager.cpp
 msgid "Last Modified"
@@ -10787,14 +10784,12 @@ msgid "Instance Child Scene"
 msgstr "Instânciar Cena Filha"
 
 #: editor/scene_tree_dock.cpp
-#, fuzzy
 msgid "Can't paste root node into the same scene."
-msgstr "Não é possível operar em nós de uma cena externa!"
+msgstr "Não é possível colar o nó raiz na mesma cena."
 
 #: editor/scene_tree_dock.cpp
-#, fuzzy
 msgid "Paste Node(s)"
-msgstr "Colar Nodes"
+msgstr "Colar Nó(s)"
 
 #: editor/scene_tree_dock.cpp
 msgid "Detach Script"
@@ -10923,9 +10918,8 @@ msgid "Attach Script"
 msgstr "Adicionar Script"
 
 #: editor/scene_tree_dock.cpp
-#, fuzzy
 msgid "Cut Node(s)"
-msgstr "Recortar Nós"
+msgstr "Recortar Nó(s)"
 
 #: editor/scene_tree_dock.cpp
 msgid "Remove Node(s)"
@@ -12598,10 +12592,14 @@ msgstr "Um nó CollisionPolygon2D vazio não é efetivo para colisão."
 #: scene/2d/collision_polygon_2d.cpp
 msgid "Invalid polygon. At least 3 points are needed in 'Solids' build mode."
 msgstr ""
+"Polígono inválido. Pelo menos 3 pontos são necessários no modo de construção "
+"\"Sólidos\"."
 
 #: scene/2d/collision_polygon_2d.cpp
 msgid "Invalid polygon. At least 2 points are needed in 'Segments' build mode."
 msgstr ""
+"Polígono inválido. Pelo menos 2 pontos são necessários no modo de construção "
+"\"Segmentos\"."
 
 #: scene/2d/collision_shape_2d.cpp
 msgid ""
@@ -12816,9 +12814,8 @@ msgid "Finding meshes and lights"
 msgstr "Encontrando malhas e luzes"
 
 #: scene/3d/baked_lightmap.cpp
-#, fuzzy
 msgid "Preparing geometry (%d/%d)"
-msgstr "Analisando Geometria..."
+msgstr "Preparando geometria (%d/%d)"
 
 #: scene/3d/baked_lightmap.cpp
 msgid "Preparing environment"

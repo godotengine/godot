@@ -1311,8 +1311,8 @@ static void _generate_po2_mipmap(const Component *p_src, Component *p_dst, uint3
 }
 
 void Image::expand_x2_hq2x() {
-
 	ERR_FAIL_COND(!_can_modify(format));
+	ERR_FAIL_COND_MSG(write_lock.ptr(), "Cannot modify image when it is locked.");
 
 	bool used_mipmaps = has_mipmaps();
 	if (used_mipmaps) {
@@ -2915,6 +2915,7 @@ Ref<Image> Image::rgbe_to_srgb() {
 
 void Image::bumpmap_to_normalmap(float bump_scale) {
 	ERR_FAIL_COND(!_can_modify(format));
+	ERR_FAIL_COND_MSG(write_lock.ptr(), "Cannot modify image when it is locked.");
 	convert(Image::FORMAT_RF);
 
 	PoolVector<uint8_t> result_image; //rgba output
