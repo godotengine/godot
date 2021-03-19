@@ -6217,6 +6217,7 @@ void RasterizerStorageGLES2::initialize() {
 	glGetIntegerv(GL_MAX_VERTEX_TEXTURE_IMAGE_UNITS, &config.max_vertex_texture_image_units);
 	glGetIntegerv(GL_MAX_COMBINED_TEXTURE_IMAGE_UNITS, &config.max_texture_image_units);
 	glGetIntegerv(GL_MAX_TEXTURE_SIZE, &config.max_texture_size);
+	glGetIntegerv(GL_MAX_CUBE_MAP_TEXTURE_SIZE, &config.max_cubemap_texture_size);
 	glGetIntegerv(GL_MAX_VIEWPORT_DIMS, config.max_viewport_dimensions);
 
 	// the use skeleton software path should be used if either float texture is not supported,
