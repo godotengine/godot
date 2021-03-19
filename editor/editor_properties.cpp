@@ -1430,11 +1430,9 @@ void EditorPropertyVector2::update_property() {
 
 void EditorPropertyVector2::_notification(int p_what) {
 	if (p_what == NOTIFICATION_ENTER_TREE || p_what == NOTIFICATION_THEME_CHANGED) {
-		Color base = get_theme_color(SNAME("accent_color"), SNAME("Editor"));
+		const Color *colors = _get_property_colors();
 		for (int i = 0; i < 2; i++) {
-			Color c = base;
-			c.set_hsv(float(i) / 3.0 + 0.05, c.get_s() * 0.75, c.get_v());
-			spin[i]->set_custom_label_color(true, c);
+			spin[i]->set_custom_label_color(true, colors[i]);
 		}
 	}
 }
@@ -1517,11 +1515,9 @@ void EditorPropertyRect2::update_property() {
 
 void EditorPropertyRect2::_notification(int p_what) {
 	if (p_what == NOTIFICATION_ENTER_TREE || p_what == NOTIFICATION_THEME_CHANGED) {
-		Color base = get_theme_color(SNAME("accent_color"), SNAME("Editor"));
+		const Color *colors = _get_property_colors();
 		for (int i = 0; i < 4; i++) {
-			Color c = base;
-			c.set_hsv(float(i % 2) / 3.0 + 0.05, c.get_s() * 0.75, c.get_v());
-			spin[i]->set_custom_label_color(true, c);
+			spin[i]->set_custom_label_color(true, colors[i % 2]);
 		}
 	}
 }
@@ -1639,11 +1635,9 @@ Vector3 EditorPropertyVector3::get_vector() {
 
 void EditorPropertyVector3::_notification(int p_what) {
 	if (p_what == NOTIFICATION_ENTER_TREE || p_what == NOTIFICATION_THEME_CHANGED) {
-		Color base = get_theme_color(SNAME("accent_color"), SNAME("Editor"));
+		const Color *colors = _get_property_colors();
 		for (int i = 0; i < 3; i++) {
-			Color c = base;
-			c.set_hsv(float(i) / 3.0 + 0.05, c.get_s() * 0.75, c.get_v());
-			spin[i]->set_custom_label_color(true, c);
+			spin[i]->set_custom_label_color(true, colors[i]);
 		}
 	}
 }
@@ -1722,11 +1716,9 @@ void EditorPropertyVector2i::update_property() {
 
 void EditorPropertyVector2i::_notification(int p_what) {
 	if (p_what == NOTIFICATION_ENTER_TREE || p_what == NOTIFICATION_THEME_CHANGED) {
-		Color base = get_theme_color(SNAME("accent_color"), SNAME("Editor"));
+		const Color *colors = _get_property_colors();
 		for (int i = 0; i < 2; i++) {
-			Color c = base;
-			c.set_hsv(float(i) / 3.0 + 0.05, c.get_s() * 0.75, c.get_v());
-			spin[i]->set_custom_label_color(true, c);
+			spin[i]->set_custom_label_color(true, colors[i]);
 		}
 	}
 }
@@ -1809,11 +1801,9 @@ void EditorPropertyRect2i::update_property() {
 
 void EditorPropertyRect2i::_notification(int p_what) {
 	if (p_what == NOTIFICATION_ENTER_TREE || p_what == NOTIFICATION_THEME_CHANGED) {
-		Color base = get_theme_color(SNAME("accent_color"), SNAME("Editor"));
+		const Color *colors = _get_property_colors();
 		for (int i = 0; i < 4; i++) {
-			Color c = base;
-			c.set_hsv(float(i % 2) / 3.0 + 0.05, c.get_s() * 0.75, c.get_v());
-			spin[i]->set_custom_label_color(true, c);
+			spin[i]->set_custom_label_color(true, colors[i % 2]);
 		}
 	}
 }
@@ -1904,11 +1894,9 @@ void EditorPropertyVector3i::update_property() {
 
 void EditorPropertyVector3i::_notification(int p_what) {
 	if (p_what == NOTIFICATION_ENTER_TREE || p_what == NOTIFICATION_THEME_CHANGED) {
-		Color base = get_theme_color(SNAME("accent_color"), SNAME("Editor"));
+		const Color *colors = _get_property_colors();
 		for (int i = 0; i < 3; i++) {
-			Color c = base;
-			c.set_hsv(float(i) / 3.0 + 0.05, c.get_s() * 0.75, c.get_v());
-			spin[i]->set_custom_label_color(true, c);
+			spin[i]->set_custom_label_color(true, colors[i]);
 		}
 	}
 }
@@ -1990,11 +1978,9 @@ void EditorPropertyPlane::update_property() {
 
 void EditorPropertyPlane::_notification(int p_what) {
 	if (p_what == NOTIFICATION_ENTER_TREE || p_what == NOTIFICATION_THEME_CHANGED) {
-		Color base = get_theme_color(SNAME("accent_color"), SNAME("Editor"));
-		for (int i = 0; i < 3; i++) {
-			Color c = base;
-			c.set_hsv(float(i) / 3.0 + 0.05, c.get_s() * 0.75, c.get_v());
-			spin[i]->set_custom_label_color(true, c);
+		const Color *colors = _get_property_colors();
+		for (int i = 0; i < 4; i++) {
+			spin[i]->set_custom_label_color(true, colors[i]);
 		}
 	}
 }
@@ -2077,11 +2063,9 @@ void EditorPropertyQuaternion::update_property() {
 
 void EditorPropertyQuaternion::_notification(int p_what) {
 	if (p_what == NOTIFICATION_ENTER_TREE || p_what == NOTIFICATION_THEME_CHANGED) {
-		Color base = get_theme_color(SNAME("accent_color"), SNAME("Editor"));
-		for (int i = 0; i < 3; i++) {
-			Color c = base;
-			c.set_hsv(float(i) / 3.0 + 0.05, c.get_s() * 0.75, c.get_v());
-			spin[i]->set_custom_label_color(true, c);
+		const Color *colors = _get_property_colors();
+		for (int i = 0; i < 4; i++) {
+			spin[i]->set_custom_label_color(true, colors[i]);
 		}
 	}
 }
@@ -2167,11 +2151,9 @@ void EditorPropertyAABB::update_property() {
 
 void EditorPropertyAABB::_notification(int p_what) {
 	if (p_what == NOTIFICATION_ENTER_TREE || p_what == NOTIFICATION_THEME_CHANGED) {
-		Color base = get_theme_color(SNAME("accent_color"), SNAME("Editor"));
+		const Color *colors = _get_property_colors();
 		for (int i = 0; i < 6; i++) {
-			Color c = base;
-			c.set_hsv(float(i % 3) / 3.0 + 0.05, c.get_s() * 0.75, c.get_v());
-			spin[i]->set_custom_label_color(true, c);
+			spin[i]->set_custom_label_color(true, colors[i % 3]);
 		}
 	}
 }
@@ -2220,10 +2202,10 @@ void EditorPropertyTransform2D::_value_changed(double val, const String &p_name)
 
 	Transform2D p;
 	p[0][0] = spin[0]->get_value();
-	p[0][1] = spin[1]->get_value();
-	p[1][0] = spin[2]->get_value();
-	p[1][1] = spin[3]->get_value();
-	p[2][0] = spin[4]->get_value();
+	p[1][0] = spin[1]->get_value();
+	p[2][0] = spin[2]->get_value();
+	p[0][1] = spin[3]->get_value();
+	p[1][1] = spin[4]->get_value();
 	p[2][1] = spin[5]->get_value();
 
 	emit_changed(get_edited_property(), p, p_name);
@@ -2233,10 +2215,10 @@ void EditorPropertyTransform2D::update_property() {
 	Transform2D val = get_edited_object()->get(get_edited_property());
 	setting = true;
 	spin[0]->set_value(val[0][0]);
-	spin[1]->set_value(val[0][1]);
-	spin[2]->set_value(val[1][0]);
-	spin[3]->set_value(val[1][1]);
-	spin[4]->set_value(val[2][0]);
+	spin[1]->set_value(val[1][0]);
+	spin[2]->set_value(val[2][0]);
+	spin[3]->set_value(val[0][1]);
+	spin[4]->set_value(val[1][1]);
 	spin[5]->set_value(val[2][1]);
 
 	setting = false;
@@ -2244,11 +2226,14 @@ void EditorPropertyTransform2D::update_property() {
 
 void EditorPropertyTransform2D::_notification(int p_what) {
 	if (p_what == NOTIFICATION_ENTER_TREE || p_what == NOTIFICATION_THEME_CHANGED) {
-		Color base = get_theme_color(SNAME("accent_color"), SNAME("Editor"));
+		const Color *colors = _get_property_colors();
 		for (int i = 0; i < 6; i++) {
-			Color c = base;
-			c.set_hsv(float(i % 2) / 3.0 + 0.05, c.get_s() * 0.75, c.get_v());
-			spin[i]->set_custom_label_color(true, c);
+			// For Transform2D, use the 4th color (cyan) for the origin vector.
+			if (i % 3 == 2) {
+				spin[i]->set_custom_label_color(true, colors[3]);
+			} else {
+				spin[i]->set_custom_label_color(true, colors[i % 3]);
+			}
 		}
 	}
 }
@@ -2268,17 +2253,19 @@ void EditorPropertyTransform2D::setup(double p_min, double p_max, double p_step,
 	}
 }
 
-EditorPropertyTransform2D::EditorPropertyTransform2D() {
+EditorPropertyTransform2D::EditorPropertyTransform2D(bool p_include_origin) {
 	GridContainer *g = memnew(GridContainer);
-	g->set_columns(2);
+	g->set_columns(p_include_origin ? 3 : 2);
 	add_child(g);
 
-	static const char *desc[6] = { "x", "y", "x", "y", "x", "y" };
+	static const char *desc[6] = { "xx", "xy", "xo", "yx", "yy", "yo" };
 	for (int i = 0; i < 6; i++) {
 		spin[i] = memnew(EditorSpinSlider);
 		spin[i]->set_label(desc[i]);
 		spin[i]->set_flat(true);
-		g->add_child(spin[i]);
+		if (p_include_origin || i % 3 != 2) {
+			g->add_child(spin[i]);
+		}
 		spin[i]->set_h_size_flags(SIZE_EXPAND_FILL);
 		add_focusable(spin[i]);
 		spin[i]->connect("value_changed", callable_mp(this, &EditorPropertyTransform2D::_value_changed), varray(desc[i]));
@@ -2296,13 +2283,13 @@ void EditorPropertyBasis::_value_changed(double val, const String &p_name) {
 
 	Basis p;
 	p[0][0] = spin[0]->get_value();
-	p[1][0] = spin[1]->get_value();
-	p[2][0] = spin[2]->get_value();
-	p[0][1] = spin[3]->get_value();
+	p[0][1] = spin[1]->get_value();
+	p[0][2] = spin[2]->get_value();
+	p[1][0] = spin[3]->get_value();
 	p[1][1] = spin[4]->get_value();
-	p[2][1] = spin[5]->get_value();
-	p[0][2] = spin[6]->get_value();
-	p[1][2] = spin[7]->get_value();
+	p[1][2] = spin[5]->get_value();
+	p[2][0] = spin[6]->get_value();
+	p[2][1] = spin[7]->get_value();
 	p[2][2] = spin[8]->get_value();
 
 	emit_changed(get_edited_property(), p, p_name);
@@ -2312,13 +2299,13 @@ void EditorPropertyBasis::update_property() {
 	Basis val = get_edited_object()->get(get_edited_property());
 	setting = true;
 	spin[0]->set_value(val[0][0]);
-	spin[1]->set_value(val[1][0]);
-	spin[2]->set_value(val[2][0]);
-	spin[3]->set_value(val[0][1]);
+	spin[1]->set_value(val[0][1]);
+	spin[2]->set_value(val[0][2]);
+	spin[3]->set_value(val[1][0]);
 	spin[4]->set_value(val[1][1]);
-	spin[5]->set_value(val[2][1]);
-	spin[6]->set_value(val[0][2]);
-	spin[7]->set_value(val[1][2]);
+	spin[5]->set_value(val[1][2]);
+	spin[6]->set_value(val[2][0]);
+	spin[7]->set_value(val[2][1]);
 	spin[8]->set_value(val[2][2]);
 
 	setting = false;
@@ -2326,11 +2313,9 @@ void EditorPropertyBasis::update_property() {
 
 void EditorPropertyBasis::_notification(int p_what) {
 	if (p_what == NOTIFICATION_ENTER_TREE || p_what == NOTIFICATION_THEME_CHANGED) {
-		Color base = get_theme_color(SNAME("accent_color"), SNAME("Editor"));
+		const Color *colors = _get_property_colors();
 		for (int i = 0; i < 9; i++) {
-			Color c = base;
-			c.set_hsv(float(i % 3) / 3.0 + 0.05, c.get_s() * 0.75, c.get_v());
-			spin[i]->set_custom_label_color(true, c);
+			spin[i]->set_custom_label_color(true, colors[i % 3]);
 		}
 	}
 }
@@ -2355,7 +2340,7 @@ EditorPropertyBasis::EditorPropertyBasis() {
 	g->set_columns(3);
 	add_child(g);
 
-	static const char *desc[9] = { "x", "y", "z", "x", "y", "z", "x", "y", "z" };
+	static const char *desc[9] = { "xx", "xy", "xz", "yx", "yy", "yz", "zx", "zy", "zz" };
 	for (int i = 0; i < 9; i++) {
 		spin[i] = memnew(EditorSpinSlider);
 		spin[i]->set_label(desc[i]);
@@ -2378,16 +2363,16 @@ void EditorPropertyTransform3D::_value_changed(double val, const String &p_name)
 
 	Transform3D p;
 	p.basis[0][0] = spin[0]->get_value();
-	p.basis[1][0] = spin[1]->get_value();
-	p.basis[2][0] = spin[2]->get_value();
-	p.basis[0][1] = spin[3]->get_value();
-	p.basis[1][1] = spin[4]->get_value();
-	p.basis[2][1] = spin[5]->get_value();
-	p.basis[0][2] = spin[6]->get_value();
-	p.basis[1][2] = spin[7]->get_value();
-	p.basis[2][2] = spin[8]->get_value();
-	p.origin[0] = spin[9]->get_value();
-	p.origin[1] = spin[10]->get_value();
+	p.basis[0][1] = spin[1]->get_value();
+	p.basis[0][2] = spin[2]->get_value();
+	p.origin[0] = spin[3]->get_value();
+	p.basis[1][0] = spin[4]->get_value();
+	p.basis[1][1] = spin[5]->get_value();
+	p.basis[1][2] = spin[6]->get_value();
+	p.origin[1] = spin[7]->get_value();
+	p.basis[2][0] = spin[8]->get_value();
+	p.basis[2][1] = spin[9]->get_value();
+	p.basis[2][2] = spin[10]->get_value();
 	p.origin[2] = spin[11]->get_value();
 
 	emit_changed(get_edited_property(), p, p_name);
@@ -2400,27 +2385,25 @@ void EditorPropertyTransform3D::update_property() {
 void EditorPropertyTransform3D::update_using_transform(Transform3D p_transform) {
 	setting = true;
 	spin[0]->set_value(p_transform.basis[0][0]);
-	spin[1]->set_value(p_transform.basis[1][0]);
-	spin[2]->set_value(p_transform.basis[2][0]);
-	spin[3]->set_value(p_transform.basis[0][1]);
-	spin[4]->set_value(p_transform.basis[1][1]);
-	spin[5]->set_value(p_transform.basis[2][1]);
-	spin[6]->set_value(p_transform.basis[0][2]);
-	spin[7]->set_value(p_transform.basis[1][2]);
-	spin[8]->set_value(p_transform.basis[2][2]);
-	spin[9]->set_value(p_transform.origin[0]);
-	spin[10]->set_value(p_transform.origin[1]);
+	spin[1]->set_value(p_transform.basis[0][1]);
+	spin[2]->set_value(p_transform.basis[0][2]);
+	spin[3]->set_value(p_transform.origin[0]);
+	spin[4]->set_value(p_transform.basis[1][0]);
+	spin[5]->set_value(p_transform.basis[1][1]);
+	spin[6]->set_value(p_transform.basis[1][2]);
+	spin[7]->set_value(p_transform.origin[1]);
+	spin[8]->set_value(p_transform.basis[2][0]);
+	spin[9]->set_value(p_transform.basis[2][1]);
+	spin[10]->set_value(p_transform.basis[2][2]);
 	spin[11]->set_value(p_transform.origin[2]);
 	setting = false;
 }
 
 void EditorPropertyTransform3D::_notification(int p_what) {
 	if (p_what == NOTIFICATION_ENTER_TREE || p_what == NOTIFICATION_THEME_CHANGED) {
-		Color base = get_theme_color(SNAME("accent_color"), SNAME("Editor"));
+		const Color *colors = _get_property_colors();
 		for (int i = 0; i < 12; i++) {
-			Color c = base;
-			c.set_hsv(float(i % 3) / 3.0 + 0.05, c.get_s() * 0.75, c.get_v());
-			spin[i]->set_custom_label_color(true, c);
+			spin[i]->set_custom_label_color(true, colors[i % 4]);
 		}
 	}
 }
@@ -2442,10 +2425,10 @@ void EditorPropertyTransform3D::setup(double p_min, double p_max, double p_step,
 
 EditorPropertyTransform3D::EditorPropertyTransform3D() {
 	GridContainer *g = memnew(GridContainer);
-	g->set_columns(3);
+	g->set_columns(4);
 	add_child(g);
 
-	static const char *desc[12] = { "x", "y", "z", "x", "y", "z", "x", "y", "z", "x", "y", "z" };
+	static const char *desc[12] = { "xx", "xy", "xz", "xo", "yx", "yy", "yz", "yo", "zx", "zy", "zz", "zo" };
 	for (int i = 0; i < 12; i++) {
 		spin[i] = memnew(EditorSpinSlider);
 		spin[i]->set_label(desc[i]);
@@ -3289,7 +3272,6 @@ EditorProperty *EditorInspectorDefaultPlugin::get_editor_for_property(Object *p_
 			EditorPropertyRangeHint hint = _parse_range_hint(p_hint, p_hint_text, default_float_step);
 			editor->setup(hint.min, hint.max, hint.step, hint.hide_slider, hint.suffix);
 			return editor;
-
 		} break;
 		case Variant::PLANE: {
 			EditorPropertyPlane *editor = memnew(EditorPropertyPlane(p_wide));
