@@ -966,9 +966,9 @@ void TileMapEditor::_update_copydata() {
 				tcd.flip_v = node->is_cell_y_flipped(j, i);
 				tcd.transpose = node->is_cell_transposed(j, i);
 				tcd.autotile_coord = node->get_cell_autotile_coord(j, i);
-			}
 
-			copydata.push_back(tcd);
+				copydata.push_back(tcd);
+			}
 		}
 	}
 }
