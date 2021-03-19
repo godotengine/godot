@@ -110,6 +110,8 @@ MonoObject *create_managed_from(const RID &p_from);
 MonoObject *create_managed_from(const Array &p_from, GDMonoClass *p_class);
 MonoObject *create_managed_from(const Dictionary &p_from, GDMonoClass *p_class);
 
+MonoObject *create_nullable(MonoObject *p_from, MonoClass *p_class, GDMonoClass *p_class_from);
+
 MonoDomain *create_domain(const String &p_friendly_name);
 
 String get_type_desc(MonoType *p_type);

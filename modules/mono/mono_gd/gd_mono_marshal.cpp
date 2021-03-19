@@ -1224,6 +1224,20 @@ Variant mono_object_to_variant_impl(MonoObject *p_obj, const ManagedType &p_type
 				GDMonoUtils::Marshal::array_get_element_type(reftype, &elem_reftype);
 				return system_generic_list_to_Array_variant(p_obj, p_type.type_class, elem_reftype);
 			}
+
+			// Nullable
+			if (GDMonoUtils::Marshal::type_is_generic_nullable(reftype)) {
+				ERR_PRINT("Just checking...");
+				MonoReflectionType *underlying_reftype;
+				GDMonoUtils::Marshal::nullable_get_underlying_type(reftype, &underlying_reftype);
+
+				MonoClass *klass = mono_class_from_mono_type(mono_reflection_type_get_type(reftype));
+				const char *class_name = mono_class_get_name(klass);
+				MonoProperty *value_property = mono_class_get_property_from_name(klass, "Value");
+				MonoObject *underlying_object = mono_property_get_value(value_property, p_obj, nullptr, nullptr);
+
+				return mono_object_to_variant_impl(underlying_object, ManagedType::from_reftype(underlying_reftype), p_fail_with_err);
+			}
 		} break;
 	}
 
