@@ -543,11 +543,11 @@ Error GLTFDocument::_parse_scenes(Ref<GLTFState> state) {
 			state->root_nodes.push_back(nodes[j]);
 		}
 
-		if (s.has("name") && s["name"] != "") {
+		if (s.has("name") && s["name"] != "" && s["name"] != "Scene") {
 			state->scene_name = _gen_unique_name(state, s["name"]);
 		}
 		else {
-			state->scene_name = _gen_unique_name(state, "Scene");
+			state->scene_name = _gen_unique_name(state, state->filename + "Scene");
 		}
 	}
 
@@ -2445,6 +2445,11 @@ Error GLTFDocument::_parse_meshes(Ref<GLTFState> state) {
 		const Dictionary& extras = d.has("extras") ? (Dictionary)d["extras"] : Dictionary();
 		Ref<EditorSceneImporterMesh> import_mesh;
 		import_mesh.instance();
+		String mesh_name = "mesh";
+		if (d.has("name" && d["name"] != "")) {
+			mesh_name = d["name"];
+		}
+		import_mesh->set_name(_gen_unique_name(state, vformat("%s_%s", state->scene_name, mesh_name)));		
 		for (int j = 0; j < primitives.size(); j++) {
 			Dictionary p = primitives[j];
 
@@ -3280,6 +3285,8 @@ Error GLTFDocument::_serialize_materials(Ref<GLTFState> state) {
 			material.instance();
 			if (d.has("name")) {
 				material->set_name(d["name"]);
+			} else {
+				material->set_name(vformat("material_%s", itos(i)));
 			}
 			material->set_flag(SpatialMaterial::FLAG_ALBEDO_FROM_VERTEX_COLOR, true);
 			Dictionary pbr_spec_gloss_extensions;
@@ -6367,6 +6374,8 @@ Error GLTFDocument::_serialize_materials(Ref<GLTFState> state) {
 				return FAILED;
 		}
 		f->close();
+
+		state->filename = p_path.get_file().get_slice(".", 0);
 
 		ERR_FAIL_COND_V(!state->json.has("asset"), Error::FAILED);
 

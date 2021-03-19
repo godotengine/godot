@@ -145,6 +145,7 @@ Ref<ArrayMesh> EditorSceneImporterMesh::get_mesh() {
 
 	if (mesh.is_null()) {
 		mesh.instance();
+		mesh->set_name(this->get_name());
 		for (int i = 0; i < blend_shapes.size(); i++) {
 			mesh->add_blend_shape(blend_shapes[i]);
 		}
