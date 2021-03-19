@@ -898,6 +898,9 @@ GDScriptTokenizer::Token GDScriptTokenizer::string() {
 					_advance();
 					_advance();
 					break;
+				} else {
+					// Not a multiline string termination, add consumed quote.
+					result += quote_char;
 				}
 			} else {
 				// Ended single-line string.
