@@ -102,6 +102,28 @@ bool DirAccessUnix::dir_exists(String p_dir) {
 	return (success && S_ISDIR(flags.st_mode));
 }
 
+bool DirAccessUnix::is_readable(String p_dir) {
+	GLOBAL_LOCK_FUNCTION
+
+	if (p_dir.is_rel_path()) {
+		p_dir = get_current_dir().plus_file(p_dir);
+	}
+
+	p_dir = fix_path(p_dir);
+	return (access(p_dir.utf8().get_data(), R_OK) == 0);
+}
+
+bool DirAccessUnix::is_writable(String p_dir) {
+	GLOBAL_LOCK_FUNCTION
+
+	if (p_dir.is_rel_path()) {
+		p_dir = get_current_dir().plus_file(p_dir);
+	}
+
+	p_dir = fix_path(p_dir);
+	return (access(p_dir.utf8().get_data(), W_OK) == 0);
+}
+
 uint64_t DirAccessUnix::get_modified_time(String p_file) {
 	if (p_file.is_rel_path()) {
 		p_file = current_dir.plus_file(p_file);
