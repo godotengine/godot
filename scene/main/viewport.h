@@ -286,7 +286,6 @@ private:
 	StringName unhandled_key_input_group;
 
 	void _update_listener_3d();
-	void _update_listener_2d();
 
 	void _propagate_enter_world(Node *p_node);
 	void _propagate_exit_world(Node *p_node);
@@ -433,7 +432,6 @@ private:
 	bool _gui_drop(Control *p_at_control, Point2 p_at_pos, bool p_just_check);
 
 	friend class Listener2D;
-	void _listener_2d_transform_changed_notify();
 	void _listener_2d_set(Listener2D *p_listener);
 	void _listener_2d_remove(Listener2D *p_listener);
 

@@ -440,7 +440,6 @@ void Viewport::_notification(int p_what) {
 			RenderingServer::get_singleton()->viewport_attach_canvas(viewport, current_canvas);
 
 			_update_listener_3d();
-			_update_listener_2d();
 
 			find_world_2d()->_register_viewport(this, Rect2());
 
@@ -912,9 +911,6 @@ Rect2 Viewport::get_visible_rect() const {
 void Viewport::_update_listener_3d() {
 }
 
-void Viewport::_update_listener_2d() {
-}
-
 void Viewport::set_as_audio_listener_3d(bool p_enable) {
 	if (p_enable == audio_listener_3d) {
 		return;
@@ -934,8 +930,6 @@ void Viewport::set_as_audio_listener_2d(bool p_enable) {
 	}
 
 	audio_listener_2d = p_enable;
-
-	_update_listener_2d();
 }
 
 bool Viewport::is_audio_listener_2d() const {
@@ -1002,9 +996,6 @@ Transform2D Viewport::get_global_canvas_transform() const {
 	return global_canvas_transform;
 }
 
-void Viewport::_listener_2d_transform_changed_notify() {
-}
-
 void Viewport::_listener_2d_set(Listener2D *p_listener) {
 	if (listener_2d == p_listener) {
 		return;
@@ -1013,9 +1004,6 @@ void Viewport::_listener_2d_set(Listener2D *p_listener) {
 	}
 
 	listener_2d = p_listener;
-
-	_update_listener_2d();
-	_listener_2d_transform_changed_notify();
 }
 
 void Viewport::_listener_2d_remove(Listener2D *p_listener) {
@@ -1183,8 +1171,6 @@ void Viewport::set_world_2d(const Ref<World2D> &p_world_2d) {
 		WARN_PRINT("Invalid world_2d");
 		world_2d = Ref<World2D>(memnew(World2D));
 	}
-
-	_update_listener_2d();
 
 	if (is_inside_tree()) {
 		current_canvas = find_world_2d()->get_canvas();

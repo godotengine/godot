@@ -41,11 +41,9 @@ private:
 	bool current = false;
 
 	friend class Viewport;
-	void _update_audio_listener_state();
 
 protected:
 	void _update_listener();
-	virtual void _request_listener_update();
 
 	bool _set(const StringName &p_name, const Variant &p_value);
 	bool _get(const StringName &p_name, Variant &r_ret) const;
@@ -58,8 +56,6 @@ public:
 	void make_current();
 	void clear_current();
 	bool is_current() const;
-
-	Listener2D();
 };
 
 #endif

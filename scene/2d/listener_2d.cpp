@@ -30,13 +30,6 @@
 
 #include "listener_2d.h"
 
-void Listener2D::_update_audio_listener_state() {
-}
-
-void Listener2D::_request_listener_update() {
-	_update_listener();
-}
-
 bool Listener2D::_set(const StringName &p_name, const Variant &p_value) {
 	if (p_name == "current") {
 		if (p_value.operator bool()) {
@@ -69,21 +62,12 @@ void Listener2D::_get_property_list(List<PropertyInfo> *p_list) const {
 	p_list->push_back(PropertyInfo(Variant::BOOL, "current"));
 }
 
-void Listener2D::_update_listener() {
-	if (is_inside_tree() && is_current()) {
-		get_viewport()->_listener_2d_transform_changed_notify();
-	}
-}
-
 void Listener2D::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE: {
 			if (!get_tree()->is_node_being_edited(this) && current) {
 				make_current();
 			}
-		} break;
-		case NOTIFICATION_TRANSFORM_CHANGED: {
-			_request_listener_update();
 		} break;
 		case NOTIFICATION_EXIT_TREE: {
 			if (!get_tree()->is_node_being_edited(this)) {
@@ -130,8 +114,4 @@ void Listener2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("make_current"), &Listener2D::make_current);
 	ClassDB::bind_method(D_METHOD("clear_current"), &Listener2D::clear_current);
 	ClassDB::bind_method(D_METHOD("is_current"), &Listener2D::is_current);
-}
-
-Listener2D::Listener2D() {
-	set_notify_transform(true);
 }
