@@ -1668,7 +1668,7 @@ Error EditorFileSystem::_reimport_group(const String &p_group_file, const Vector
 	return err;
 }
 
-void EditorFileSystem::_reimport_file(const String &p_file) {
+void EditorFileSystem::_reimport_file(const String &p_file, const Map<StringName, Variant> *p_custom_options, const String &p_custom_importer) {
 	EditorFileSystemDirectory *fs = nullptr;
 	int cpos = -1;
 	bool found = _find_file(p_file, &fs, cpos);
@@ -1677,23 +1677,32 @@ void EditorFileSystem::_reimport_file(const String &p_file) {
 	//try to obtain existing params
 
 	Map<StringName, Variant> params;
-	String importer_name;
+	String importer_name; //empty by default though
+
+	if (p_custom_importer != String()) {
+		importer_name = p_custom_importer;
+	}
+	if (p_custom_options != nullptr) {
+		params = *p_custom_options;
+	}
 
 	if (FileAccess::exists(p_file + ".import")) {
 		//use existing
-		Ref<ConfigFile> cf;
-		cf.instance();
-		Error err = cf->load(p_file + ".import");
-		if (err == OK) {
-			if (cf->has_section("params")) {
-				List<String> sk;
-				cf->get_section_keys("params", &sk);
-				for (List<String>::Element *E = sk.front(); E; E = E->next()) {
-					params[E->get()] = cf->get_value("params", E->get());
+		if (p_custom_options == nullptr) {
+			Ref<ConfigFile> cf;
+			cf.instance();
+			Error err = cf->load(p_file + ".import");
+			if (err == OK) {
+				if (cf->has_section("params")) {
+					List<String> sk;
+					cf->get_section_keys("params", &sk);
+					for (List<String>::Element *E = sk.front(); E; E = E->next()) {
+						params[E->get()] = cf->get_value("params", E->get());
+					}
 				}
-			}
-			if (cf->has_section("remap")) {
-				importer_name = cf->get_value("remap", "importer");
+				if (p_custom_importer != String() && cf->has_section("remap")) {
+					importer_name = cf->get_value("remap", "importer");
+				}
 			}
 		}
 
@@ -1885,6 +1894,10 @@ void EditorFileSystem::_find_group_files(EditorFileSystemDirectory *efd, Map<Str
 	for (int i = 0; i < efd->get_subdir_count(); i++) {
 		_find_group_files(efd->get_subdir(i), group_files, groups_to_reimport);
 	}
+}
+
+void EditorFileSystem::reimport_file_with_custom_parameters(const String &p_file, const String &p_importer, const Map<StringName, Variant> &p_custom_params) {
+	_reimport_file(p_file, &p_custom_params, p_importer);
 }
 
 void EditorFileSystem::reimport_files(const Vector<String> &p_files) {

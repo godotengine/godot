@@ -893,12 +893,13 @@ void Window::_window_input(const Ref<InputEvent> &p_ev) {
 	}
 
 	if (exclusive_child != nullptr) {
+		/*
 		Window *focus_target = exclusive_child;
 		focus_target->grab_focus();
 		while (focus_target->exclusive_child != nullptr) {
 			focus_target = focus_target->exclusive_child;
 			focus_target->grab_focus();
-		}
+		}*/
 
 		if (!is_embedding_subwindows()) { //not embedding, no need for event
 			return;

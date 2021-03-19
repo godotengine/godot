@@ -39,7 +39,9 @@
 #include "scene/resources/skin.h"
 
 class Material;
+class AnimationPlayer;
 
+class EditorSceneImporterMesh;
 class EditorSceneImporter : public Reference {
 	GDCLASS(EditorSceneImporter, Reference);
 
@@ -53,15 +55,9 @@ public:
 	enum ImportFlags {
 		IMPORT_SCENE = 1,
 		IMPORT_ANIMATION = 2,
-		IMPORT_ANIMATION_DETECT_LOOP = 4,
-		IMPORT_ANIMATION_OPTIMIZE = 8,
-		IMPORT_ANIMATION_FORCE_ALL_TRACKS_IN_ALL_CLIPS = 16,
-		IMPORT_ANIMATION_KEEP_VALUE_TRACKS = 32,
-		IMPORT_GENERATE_TANGENT_ARRAYS = 256,
-		IMPORT_FAIL_ON_MISSING_DEPENDENCIES = 512,
-		IMPORT_MATERIALS_IN_INSTANCES = 1024,
-		IMPORT_USE_COMPRESSION = 2048,
-		IMPORT_USE_NAMED_SKIN_BINDS = 4096,
+		IMPORT_FAIL_ON_MISSING_DEPENDENCIES = 4,
+		IMPORT_GENERATE_TANGENT_ARRAYS = 8,
+		IMPORT_USE_NAMED_SKIN_BINDS = 16,
 
 	};
 
@@ -76,17 +72,15 @@ public:
 class EditorScenePostImport : public Reference {
 	GDCLASS(EditorScenePostImport, Reference);
 
-	String source_folder;
 	String source_file;
 
 protected:
 	static void _bind_methods();
 
 public:
-	String get_source_folder() const;
 	String get_source_file() const;
 	virtual Node *post_import(Node *p_scene);
-	virtual void init(const String &p_source_folder, const String &p_source_file);
+	virtual void init(const String &p_source_file);
 	EditorScenePostImport();
 };
 
@@ -97,31 +91,35 @@ class ResourceImporterScene : public ResourceImporter {
 
 	static ResourceImporterScene *singleton;
 
-	enum Presets {
-		PRESET_SEPARATE_MATERIALS,
-		PRESET_SEPARATE_MESHES,
-		PRESET_SEPARATE_ANIMATIONS,
-
-		PRESET_SINGLE_SCENE,
-
-		PRESET_SEPARATE_MESHES_AND_MATERIALS,
-		PRESET_SEPARATE_MESHES_AND_ANIMATIONS,
-		PRESET_SEPARATE_MATERIALS_AND_ANIMATIONS,
-		PRESET_SEPARATE_MESHES_MATERIALS_AND_ANIMATIONS,
-
-		PRESET_MULTIPLE_SCENES,
-		PRESET_MULTIPLE_SCENES_AND_MATERIALS,
-		PRESET_MAX
-	};
-
 	enum LightBakeMode {
 		LIGHT_BAKE_DISABLED,
-		LIGHT_BAKE_ENABLE,
-		LIGHT_BAKE_LIGHTMAPS
+		LIGHT_BAKE_DYNAMIC,
+		LIGHT_BAKE_STATIC,
+		LIGHT_BAKE_STATIC_LIGHTMAPS
+	};
+
+	enum MeshPhysicsMode {
+		MESH_PHYSICS_DISABLED,
+		MESH_PHYSICS_MESH_AND_STATIC_COLLIDER,
+		MESH_PHYSICS_RIGID_BODY_AND_MESH,
+		MESH_PHYSICS_STATIC_COLLIDER_ONLY,
+		MESH_PHYSICS_AREA_ONLY,
+	};
+
+	enum NavMeshMode {
+		NAVMESH_DISABLED,
+		NAVMESH_MESH_AND_NAVMESH,
+		NAVMESH_NAVMESH_ONLY,
+	};
+
+	enum MeshOverride {
+		MESH_OVERRIDE_DEFAULT,
+		MESH_OVERRIDE_ENABLE,
+		MESH_OVERRIDE_DISABLE,
 	};
 
 	void _replace_owner(Node *p_node, Node *p_scene, Node *p_new_owner);
-	void _generate_meshes(Node *p_node, bool p_generate_lods, bool p_create_shadow_meshes);
+	void _generate_meshes(Node *p_node, const Dictionary &p_mesh_data, bool p_generate_lods, bool p_create_shadow_meshes, LightBakeMode p_light_bake_mode, float p_lightmap_texel_size, const Vector<uint8_t> &p_src_lightmap_cache, Vector<uint8_t> &r_dst_lightmap_cache);
 
 public:
 	static ResourceImporterScene *get_singleton() { return singleton; }
@@ -141,25 +139,38 @@ public:
 	virtual int get_preset_count() const override;
 	virtual String get_preset_name(int p_idx) const override;
 
+	enum InternalImportCategory {
+		INTERNAL_IMPORT_CATEGORY_NODE,
+		INTERNAL_IMPORT_CATEGORY_MESH_3D_NODE,
+		INTERNAL_IMPORT_CATEGORY_MESH,
+		INTERNAL_IMPORT_CATEGORY_MATERIAL,
+		INTERNAL_IMPORT_CATEGORY_ANIMATION,
+		INTERNAL_IMPORT_CATEGORY_ANIMATION_NODE,
+		INTERNAL_IMPORT_CATEGORY_MAX
+	};
+
+	void get_internal_import_options(InternalImportCategory p_category, List<ImportOption> *r_options) const;
+	bool get_internal_option_visibility(InternalImportCategory p_category, const String &p_option, const Map<StringName, Variant> &p_options) const;
+
 	virtual void get_import_options(List<ImportOption> *r_options, int p_preset = 0) const override;
 	virtual bool get_option_visibility(const String &p_option, const Map<StringName, Variant> &p_options) const override;
 	virtual int get_import_order() const override { return 100; } //after everything
 
-	void _find_meshes(Node *p_node, Map<Ref<ArrayMesh>, Transform> &meshes);
+	Node *_pre_fix_node(Node *p_node, Node *p_root, Map<Ref<EditorSceneImporterMesh>, List<Ref<Shape3D>>> &collision_map);
+	Node *_post_fix_node(Node *p_node, Node *p_root, Map<Ref<EditorSceneImporterMesh>, List<Ref<Shape3D>>> &collision_map, Set<Ref<EditorSceneImporterMesh>> &r_scanned_meshes, const Dictionary &p_node_data, const Dictionary &p_material_data, const Dictionary &p_animation_data, float p_animation_fps);
 
-	void _make_external_resources(Node *p_node, const String &p_base_path, bool p_make_animations, bool p_animations_as_text, bool p_keep_animations, bool p_make_materials, bool p_materials_as_text, bool p_keep_materials, bool p_make_meshes, bool p_meshes_as_text, Map<Ref<Animation>, Ref<Animation>> &p_animations, Map<Ref<Material>, Ref<Material>> &p_materials, Map<Ref<ArrayMesh>, Ref<ArrayMesh>> &p_meshes);
+	Ref<Animation> _save_animation_to_file(Ref<Animation> anim, bool p_save_to_file, String p_save_to_path, bool p_keep_custom_tracks);
+	void _create_clips(AnimationPlayer *anim, const Array &p_clips, bool p_bake_all);
+	void _optimize_animations(AnimationPlayer *anim, float p_max_lin_error, float p_max_ang_error, float p_max_angle);
 
-	Node *_fix_node(Node *p_node, Node *p_root, Map<Ref<Mesh>, List<Ref<Shape3D>>> &collision_map, LightBakeMode p_light_bake_mode);
-
-	void _create_clips(Node *scene, const Array &p_clips, bool p_bake_all);
-	void _filter_anim_tracks(Ref<Animation> anim, Set<String> &keep);
-	void _filter_tracks(Node *scene, const String &p_text);
-	void _optimize_animations(Node *scene, float p_max_lin_error, float p_max_ang_error, float p_max_angle);
-
+	Node *pre_import(const String &p_source_file);
 	virtual Error import(const String &p_source_file, const String &p_save_path, const Map<StringName, Variant> &p_options, List<String> *r_platform_variants, List<String> *r_gen_files = nullptr, Variant *r_metadata = nullptr) override;
 
 	Node *import_scene_from_other_importer(EditorSceneImporter *p_exception, const String &p_path, uint32_t p_flags, int p_bake_fps);
 	Ref<Animation> import_animation_from_other_importer(EditorSceneImporter *p_exception, const String &p_path, uint32_t p_flags, int p_bake_fps);
+
+	virtual bool has_advanced_options() const override;
+	virtual void show_advanced_options(const String &p_path) override;
 
 	ResourceImporterScene();
 };

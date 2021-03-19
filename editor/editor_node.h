@@ -88,6 +88,7 @@ class Button;
 class VSplitContainer;
 class Window;
 class SubViewport;
+class SceneImportSettings;
 
 class EditorNode : public Node {
 	GDCLASS(EditorNode, Node);
@@ -410,6 +411,7 @@ private:
 	EditorResourcePreview *resource_preview;
 	EditorFolding editor_folding;
 
+	SceneImportSettings *scene_import_settings;
 	struct BottomPanelItem {
 		String name;
 		Control *control = nullptr;

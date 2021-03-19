@@ -313,7 +313,7 @@ BoxContainer::AlignMode BoxContainer::get_alignment() const {
 	return align;
 }
 
-void BoxContainer::add_spacer(bool p_begin) {
+Control *BoxContainer::add_spacer(bool p_begin) {
 	Control *c = memnew(Control);
 	c->set_mouse_filter(MOUSE_FILTER_PASS); //allow spacer to pass mouse events
 
@@ -327,6 +327,8 @@ void BoxContainer::add_spacer(bool p_begin) {
 	if (p_begin) {
 		move_child(c, 0);
 	}
+
+	return c;
 }
 
 BoxContainer::BoxContainer(bool p_vertical) {

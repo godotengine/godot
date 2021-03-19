@@ -1059,6 +1059,10 @@ void SurfaceTool::set_material(const Ref<Material> &p_material) {
 	material = p_material;
 }
 
+Ref<Material> SurfaceTool::get_material() const {
+	return material;
+}
+
 void SurfaceTool::clear() {
 	begun = false;
 	primitive = Mesh::PRIMITIVE_LINES;
@@ -1087,6 +1091,10 @@ void SurfaceTool::set_custom_format(int p_index, CustomFormat p_format) {
 	ERR_FAIL_INDEX(p_index, RS::ARRAY_CUSTOM_COUNT);
 	ERR_FAIL_COND(begun);
 	last_custom_format[p_index] = p_format;
+}
+
+Mesh::PrimitiveType SurfaceTool::get_primitive() const {
+	return primitive;
 }
 SurfaceTool::CustomFormat SurfaceTool::get_custom_format(int p_index) const {
 	ERR_FAIL_INDEX_V(p_index, RS::ARRAY_CUSTOM_COUNT, CUSTOM_MAX);
@@ -1174,6 +1182,7 @@ void SurfaceTool::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("generate_lod", "nd_threshold", "target_index_count"), &SurfaceTool::generate_lod, DEFVAL(3));
 
 	ClassDB::bind_method(D_METHOD("set_material", "material"), &SurfaceTool::set_material);
+	ClassDB::bind_method(D_METHOD("get_primitive"), &SurfaceTool::get_primitive);
 
 	ClassDB::bind_method(D_METHOD("clear"), &SurfaceTool::clear);
 
