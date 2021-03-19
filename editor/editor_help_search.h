@@ -125,6 +125,7 @@ class EditorHelpSearch::Runner : public Reference {
 	TreeItem *root_item;
 	Map<String, TreeItem *> class_items;
 	TreeItem *matched_item;
+	float match_highest_score = 0;
 
 	bool _is_class_disabled_by_feature_profile(const StringName &p_class);
 
