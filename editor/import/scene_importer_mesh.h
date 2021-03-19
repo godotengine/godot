@@ -32,7 +32,10 @@
 #define EDITOR_SCENE_IMPORTER_MESH_H
 
 #include "core/io/resource.h"
+#include "scene/resources/concave_polygon_shape_3d.h"
+#include "scene/resources/convex_polygon_shape_3d.h"
 #include "scene/resources/mesh.h"
+#include "scene/resources/navigation_mesh.h"
 // The following classes are used by importers instead of ArrayMesh and MeshInstance3D
 // so the data is not registered (hence, quality loss), importing happens faster and
 // its easier to modify before saving
@@ -63,6 +66,8 @@ class EditorSceneImporterMesh : public Resource {
 
 	Ref<EditorSceneImporterMesh> shadow_mesh;
 
+	Size2i lightmap_size_hint;
+
 protected:
 	void _set_data(const Dictionary &p_data);
 	Dictionary _get_data() const;
@@ -89,13 +94,24 @@ public:
 	float get_surface_lod_size(int p_surface, int p_lod) const;
 	Ref<Material> get_surface_material(int p_surface) const;
 
+	void set_surface_material(int p_surface, const Ref<Material> &p_material);
+
 	void generate_lods();
 
 	void create_shadow_mesh();
 	Ref<EditorSceneImporterMesh> get_shadow_mesh() const;
 
+	Vector<Face3> get_faces() const;
+	Vector<Ref<Shape3D>> convex_decompose() const;
+	Ref<Shape3D> create_trimesh_shape() const;
+	Ref<NavigationMesh> create_navigation_mesh();
+	Error lightmap_unwrap_cached(int *&r_cache_data, unsigned int &r_cache_size, bool &r_used_cache, const Transform &p_base_transform, float p_texel_size);
+
+	void set_lightmap_size_hint(const Size2i &p_size);
+	Size2i get_lightmap_size_hint() const;
+
 	bool has_mesh() const;
-	Ref<ArrayMesh> get_mesh();
+	Ref<ArrayMesh> get_mesh(const Ref<Mesh> &p_base = Ref<Mesh>());
 	void clear();
 };
 #endif // EDITOR_SCENE_IMPORTER_MESH_H

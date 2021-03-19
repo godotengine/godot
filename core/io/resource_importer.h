@@ -115,6 +115,9 @@ public:
 		ImportOption() {}
 	};
 
+	virtual bool has_advanced_options() const { return false; }
+	virtual void show_advanced_options(const String &p_path) {}
+
 	virtual int get_preset_count() const { return 0; }
 	virtual String get_preset_name(int p_idx) const { return String(); }
 

@@ -57,6 +57,9 @@ class ImportDock : public VBoxContainer {
 	Label *label_warning;
 	Button *import;
 
+	Control *advanced_spacer;
+	Button *advanced;
+
 	ImportDockParameters *params;
 
 	void _preset_selected(int p_idx);
@@ -69,6 +72,7 @@ class ImportDock : public VBoxContainer {
 	void _reimport_and_restart();
 	void _reimport();
 
+	void _advanced_options();
 	enum {
 		ITEM_SET_AS_DEFAULT = 100,
 		ITEM_LOAD_DEFAULT,

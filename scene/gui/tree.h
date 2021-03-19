@@ -229,6 +229,8 @@ public:
 	void set_collapsed(bool p_collapsed);
 	bool is_collapsed();
 
+	void uncollapse_tree();
+
 	void set_custom_minimum_height(int p_height);
 	int get_custom_minimum_height() const;
 
