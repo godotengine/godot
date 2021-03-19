@@ -240,7 +240,7 @@
 			<argument index="0" name="renormalize" type="bool" default="false">
 			</argument>
 			<description>
-				Generates mipmaps for the image. Mipmaps are pre-calculated and lower resolution copies of the image. Mipmaps are automatically used if the image needs to be scaled down when rendered. This improves image quality and the performance of the rendering. Returns an error if the image is compressed, in a custom format or if the image's width/height is 0.
+				Generates mipmaps for the image. Mipmaps are precalculated and lower resolution copies of the image. Mipmaps are automatically used if the image needs to be scaled down when rendered. This improves image quality and the performance of the rendering. Returns an error if the image is compressed, in a custom format or if the image's width/height is 0.
 			</description>
 		</method>
 		<method name="get_data" qualifiers="const">
@@ -560,7 +560,7 @@
 	</methods>
 	<members>
 		<member name="data" type="Dictionary" setter="_set_data" getter="_get_data" default="{&quot;data&quot;: PackedByteArray(  ),&quot;format&quot;: &quot;Lum8&quot;,&quot;height&quot;: 0,&quot;mipmaps&quot;: false,&quot;width&quot;: 0}">
-			Holds all of the image's color data in a given format. See [enum Format] constants.
+			Holds all the image's color data in a given format. See [enum Format] constants.
 		</member>
 	</members>
 	<constants>

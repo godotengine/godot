@@ -561,7 +561,7 @@
 			<argument index="0" name="script" type="Script">
 			</argument>
 			<description>
-				Removes the debugger plugin with given script fromm the Debugger.
+				Removes the debugger plugin with given script from the Debugger.
 			</description>
 		</method>
 		<method name="remove_export_plugin">

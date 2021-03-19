@@ -247,7 +247,7 @@
 			<argument index="1" name="size" type="int" default="-1">
 			</argument>
 			<description>
-				Returns the size size of a bounding box of a string, taking kerning and advance into account.
+				Returns the size of a bounding box of a string, taking kerning and advance into account.
 				[b]Note:[/b] Real height of the string is context-dependent and can be significantly different from the value returned by [method get_height].
 				See also [method draw_string].
 			</description>

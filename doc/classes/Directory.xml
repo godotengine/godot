@@ -125,7 +125,7 @@
 			<argument index="0" name="idx" type="int">
 			</argument>
 			<description>
-				On Windows, returns the name of the drive (partition) passed as an argument (e.g. [code]C:[/code]). On other platforms, or if the requested drive does not existed, the method returns an empty String.
+				On Windows, returns the name of the drive (partition) passed as an argument (e.g. [code]C:[/code]). On other platforms, or if the requested drive does not exist, the method returns an empty String.
 			</description>
 		</method>
 		<method name="get_drive_count">
@@ -167,7 +167,7 @@
 			<return type="void">
 			</return>
 			<description>
-				Closes the current stream opened with [method list_dir_begin] (whether it has been fully processed with [method get_next] or not does not matter).
+				Closes the current stream opened with [method list_dir_begin] (whether it has been fully processed with [method get_next] does not matter).
 			</description>
 		</method>
 		<method name="make_dir">

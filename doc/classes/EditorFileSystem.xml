@@ -90,7 +90,7 @@
 			<argument index="0" name="resources" type="PackedStringArray">
 			</argument>
 			<description>
-				Remitted if a resource is reimported.
+				Emitted if a resource is reimported.
 			</description>
 		</signal>
 		<signal name="resources_reload">
