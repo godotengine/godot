@@ -180,7 +180,12 @@ void GraphEditMinimap::_gui_input(const Ref<InputEvent> &p_ev) {
 		accept_event();
 	} else if (mm.is_valid() && is_pressing) {
 		if (is_resizing) {
-			ge->set_minimap_size(ge->get_minimap_size() - mm->get_relative());
+			// Prevent setting minimap wider than GraphEdit
+			Vector2 new_minimap_size;
+			new_minimap_size.x = MIN(get_size().x - mm->get_relative().x, ge->get_size().x - 2.0 * minimap_padding.x);
+			new_minimap_size.y = MIN(get_size().y - mm->get_relative().y, ge->get_size().y - 2.0 * minimap_padding.y);
+			ge->set_minimap_size(new_minimap_size);
+
 			update();
 		} else {
 			Vector2 click_position = _convert_to_graph_position(mm->get_position() - minimap_padding) - graph_padding;
