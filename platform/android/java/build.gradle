@@ -22,8 +22,6 @@ allprojects {
 }
 
 ext {
-    sconsExt = org.gradle.internal.os.OperatingSystem.current().isWindows() ? ".bat" : ""
-
     supportedAbis = ["armv7", "arm64v8", "x86", "x86_64"]
     supportedTargets = ["release", "debug"]
 
@@ -166,12 +164,6 @@ task cleanGodotTemplates(type: Delete) {
 
     // Delete the library generated AAR files
     delete("lib/build/outputs/aar")
-
-    // Delete the godotpayment libs directory contents
-    delete("plugins/godotpayment/libs")
-
-    // Delete the generated godotpayment aar
-    delete("plugins/godotpayment/build/outputs/aar")
 
     // Delete the app libs directory contents
     delete("app/libs")

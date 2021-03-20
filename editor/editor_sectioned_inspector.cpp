@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -35,9 +35,9 @@
 class SectionedInspectorFilter : public Object {
 	GDCLASS(SectionedInspectorFilter, Object);
 
-	Object *edited;
+	Object *edited = nullptr;
 	String section;
-	bool allow_sub;
+	bool allow_sub = false;
 
 	bool _set(const StringName &p_name, const Variant &p_value) {
 		if (!edited) {
@@ -116,16 +116,12 @@ public:
 	void set_section(const String &p_section, bool p_allow_sub) {
 		section = p_section;
 		allow_sub = p_allow_sub;
-		_change_notify();
+		notify_property_list_changed();
 	}
 
 	void set_edited(Object *p_edited) {
 		edited = p_edited;
-		_change_notify();
-	}
-
-	SectionedInspectorFilter() {
-		edited = nullptr;
+		notify_property_list_changed();
 	}
 };
 
@@ -230,7 +226,7 @@ void SectionedInspector::update_category_list() {
 
 		if (pi.usage & PROPERTY_USAGE_CATEGORY) {
 			continue;
-		} else if (!(pi.usage & PROPERTY_USAGE_EDITOR)) {
+		} else if (!(pi.usage & PROPERTY_USAGE_EDITOR) || (restrict_to_basic && !(pi.usage & PROPERTY_USAGE_EDITOR_BASIC_SETTING))) {
 			continue;
 		}
 
@@ -238,7 +234,7 @@ void SectionedInspector::update_category_list() {
 			continue;
 		}
 
-		if (!filter.empty() && !filter.is_subsequence_ofi(pi.name) && !filter.is_subsequence_ofi(pi.name.replace("/", " ").capitalize())) {
+		if (!filter.is_empty() && pi.name.findn(filter) == -1 && pi.name.replace("/", " ").capitalize().findn(filter) == -1) {
 			continue;
 		}
 
@@ -296,6 +292,12 @@ void SectionedInspector::_search_changed(const String &p_what) {
 
 EditorInspector *SectionedInspector::get_inspector() {
 	return inspector;
+}
+
+void SectionedInspector::set_restrict_to_basic_settings(bool p_restrict) {
+	restrict_to_basic = p_restrict;
+	update_category_list();
+	inspector->set_restrict_to_basic_settings(p_restrict);
 }
 
 SectionedInspector::SectionedInspector() :

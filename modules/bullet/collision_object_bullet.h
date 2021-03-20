@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -31,11 +31,10 @@
 #ifndef COLLISION_OBJECT_BULLET_H
 #define COLLISION_OBJECT_BULLET_H
 
-#include "core/local_vector.h"
 #include "core/math/transform.h"
 #include "core/math/vector3.h"
-#include "core/object.h"
-#include "core/vset.h"
+#include "core/object/class_db.h"
+#include "core/templates/vset.h"
 #include "shape_owner_bullet.h"
 
 #include <LinearMath/btTransform.h>
@@ -71,12 +70,11 @@ public:
 
 	struct ShapeWrapper {
 		ShapeBullet *shape = nullptr;
+		btCollisionShape *bt_shape = nullptr;
 		btTransform transform;
 		btVector3 scale;
 		bool active = true;
-		btCollisionShape *bt_shape = nullptr;
 
-	public:
 		ShapeWrapper() {}
 
 		ShapeWrapper(ShapeBullet *p_shape, const btTransform &p_transform, bool p_active) :
@@ -109,11 +107,10 @@ public:
 		btTransform get_adjusted_transform() const;
 
 		void claim_bt_shape(const btVector3 &body_scale);
-		void release_bt_shape();
 	};
 
 protected:
-	Type type;
+	Type type = TYPE_AREA;
 	ObjectID instance_id;
 	uint32_t collisionLayer = 0;
 	uint32_t collisionMask = 0;
@@ -127,18 +124,11 @@ protected:
 
 	VSet<RID> exceptions;
 
-	bool needs_body_reload = true;
-	bool needs_collision_filters_reload = true;
-
 	/// This array is used to know all areas where this Object is overlapped in
 	/// New area is added when overlap with new area (AreaBullet::addOverlap), then is removed when it exit (CollisionObjectBullet::onExitArea)
 	/// This array is used mainly to know which area hold the pointer of this object
-	LocalVector<AreaBullet *> areasOverlapped;
+	Vector<AreaBullet *> areasOverlapped;
 	bool isTransformChanged = false;
-
-public:
-	bool is_in_world = false;
-	bool is_in_flush_queue = false;
 
 public:
 	CollisionObjectBullet(Type p_type);
@@ -174,7 +164,7 @@ public:
 	_FORCE_INLINE_ void set_collision_layer(uint32_t p_layer) {
 		if (collisionLayer != p_layer) {
 			collisionLayer = p_layer;
-			needs_collision_filters_reload = true;
+			on_collision_filters_change();
 		}
 	}
 	_FORCE_INLINE_ uint32_t get_collision_layer() const { return collisionLayer; }
@@ -182,32 +172,25 @@ public:
 	_FORCE_INLINE_ void set_collision_mask(uint32_t p_mask) {
 		if (collisionMask != p_mask) {
 			collisionMask = p_mask;
-			needs_collision_filters_reload = true;
+			on_collision_filters_change();
 		}
 	}
 	_FORCE_INLINE_ uint32_t get_collision_mask() const { return collisionMask; }
 
-	virtual void do_reload_collision_filters() = 0;
+	virtual void on_collision_filters_change() = 0;
 
 	_FORCE_INLINE_ bool test_collision_mask(CollisionObjectBullet *p_other) const {
 		return collisionLayer & p_other->collisionMask || p_other->collisionLayer & collisionMask;
 	}
 
-	bool need_reload_body() const {
-		return needs_body_reload;
-	}
-
-	void reload_body();
-
-	virtual void do_reload_body() = 0;
+	virtual void reload_body() = 0;
 	virtual void set_space(SpaceBullet *p_space) = 0;
 	_FORCE_INLINE_ SpaceBullet *get_space() const { return space; }
 
 	virtual void on_collision_checker_start() = 0;
 	virtual void on_collision_checker_end() = 0;
 
-	virtual void dispatch_callbacks();
-	virtual void pre_process();
+	virtual void dispatch_callbacks() = 0;
 
 	void set_collision_enabled(bool p_enabled);
 	bool is_collisions_response_enabled();
@@ -231,15 +214,14 @@ public:
 class RigidCollisionObjectBullet : public CollisionObjectBullet, public ShapeOwnerBullet {
 protected:
 	btCollisionShape *mainShape = nullptr;
-	LocalVector<ShapeWrapper> shapes;
-	bool need_shape_reload = true;
+	Vector<ShapeWrapper> shapes;
 
 public:
 	RigidCollisionObjectBullet(Type p_type) :
 			CollisionObjectBullet(p_type) {}
 	~RigidCollisionObjectBullet();
 
-	_FORCE_INLINE_ const LocalVector<ShapeWrapper> &get_shapes_wrappers() const { return shapes; }
+	_FORCE_INLINE_ const Vector<ShapeWrapper> &get_shapes_wrappers() const { return shapes; }
 
 	_FORCE_INLINE_ btCollisionShape *get_main_shape() const { return mainShape; }
 
@@ -250,9 +232,9 @@ public:
 	ShapeBullet *get_shape(int p_index) const;
 	btCollisionShape *get_bt_shape(int p_index) const;
 
-	virtual int find_shape(ShapeBullet *p_shape) const override;
+	int find_shape(ShapeBullet *p_shape) const;
 
-	virtual void remove_shape_full(ShapeBullet *p_shape) override;
+	virtual void remove_shape_full(ShapeBullet *p_shape);
 	void remove_shape_full(int p_index);
 	void remove_all_shapes(bool p_permanentlyFromThisBody = false, bool p_force_not_reload = false);
 
@@ -264,15 +246,11 @@ public:
 	void set_shape_disabled(int p_index, bool p_disabled);
 	bool is_shape_disabled(int p_index);
 
-	virtual void pre_process() override;
-
-	virtual void shape_changed(int p_shape_index) override;
-	virtual void reload_shapes() override;
-	bool need_reload_shapes() const { return need_shape_reload; }
-	virtual void do_reload_shapes();
+	virtual void shape_changed(int p_shape_index);
+	virtual void reload_shapes();
 
 	virtual void main_shape_changed() = 0;
-	virtual void body_scale_changed() override;
+	virtual void body_scale_changed();
 
 private:
 	void internal_shape_destroy(int p_index, bool p_permanentlyFromThisBody = false);

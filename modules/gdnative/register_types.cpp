@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -40,11 +40,11 @@
 #include "videodecoder/register_types.h"
 #include "xr/register_types.h"
 
-#include "core/engine.h"
+#include "core/config/engine.h"
+#include "core/config/project_settings.h"
 #include "core/io/resource_loader.h"
 #include "core/io/resource_saver.h"
 #include "core/os/os.h"
-#include "core/project_settings.h"
 
 #ifdef TOOLS_ENABLED
 #include "editor/editor_export.h"
@@ -142,7 +142,7 @@ void GDNativeExportPlugin::_export_file(const String &p_path, const String &p_ty
 		}
 	}
 
-	// Add symbols for staticaly linked libraries on iOS
+	// Add symbols for statically linked libraries on iOS
 	if (p_features.has("iOS")) {
 		bool should_fake_dynamic = false;
 

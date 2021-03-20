@@ -10,12 +10,12 @@
 		</Expand>
 	</Type>
 
-	<Type Name="PoolVector&lt;*&gt;">
+	<Type Name="LocalVector&lt;*&gt;">
 		<Expand>
-			<Item Name="[size]">alloc ? (alloc-&gt;size / sizeof($T1)) : 0</Item>
+			<Item Name="[size]">count</Item>
 			<ArrayItems>
-				<Size>alloc ? (alloc-&gt;size / sizeof($T1)) : 0</Size>
-				<ValuePointer>alloc ? (($T1 *)alloc-&gt;mem) : 0</ValuePointer>
+				<Size>count</Size>
+				<ValuePointer>data</ValuePointer>
 			</ArrayItems>
 		</Expand>
 	</Type>
@@ -36,7 +36,7 @@
 		<DisplayString Condition="type == Variant::NIL">nil</DisplayString>
 		<DisplayString Condition="type == Variant::BOOL">{_data._bool}</DisplayString>
 		<DisplayString Condition="type == Variant::INT">{_data._int}</DisplayString>
-		<DisplayString Condition="type == Variant::REAL">{_data._real}</DisplayString>
+		<DisplayString Condition="type == Variant::FLOAT">{_data._float}</DisplayString>
 		<DisplayString Condition="type == Variant::TRANSFORM2D">{_data._transform2d}</DisplayString>
 		<DisplayString Condition="type == Variant::AABB">{_data._aabb}</DisplayString>
 		<DisplayString Condition="type == Variant::BASIS">{_data._basis}</DisplayString>
@@ -49,24 +49,26 @@
 		<DisplayString Condition="type == Variant::QUAT">{*(Quat *)_data._mem}</DisplayString>
 		<DisplayString Condition="type == Variant::COLOR">{*(Color *)_data._mem}</DisplayString>
 		<DisplayString Condition="type == Variant::NODE_PATH">{*(NodePath *)_data._mem}</DisplayString>
-		<DisplayString Condition="type == Variant::_RID">{*(RID *)_data._mem}</DisplayString>
+		<DisplayString Condition="type == Variant::RID">{*(::RID *)_data._mem}</DisplayString>
 		<DisplayString Condition="type == Variant::OBJECT">{*(Object *)_data._mem}</DisplayString>
 		<DisplayString Condition="type == Variant::DICTIONARY">{*(Dictionary *)_data._mem}</DisplayString>
 		<DisplayString Condition="type == Variant::ARRAY">{*(Array *)_data._mem}</DisplayString>
-		<DisplayString Condition="type == Variant::POOL_BYTE_ARRAY">{*(PoolByteArray *)_data._mem}</DisplayString>
-		<DisplayString Condition="type == Variant::POOL_INT_ARRAY">{*(PoolIntArray *)_data._mem}</DisplayString>
-		<DisplayString Condition="type == Variant::POOL_REAL_ARRAY">{*(PoolRealArray *)_data._mem}</DisplayString>
-		<DisplayString Condition="type == Variant::POOL_STRING_ARRAY">{*(PoolStringArray *)_data._mem}</DisplayString>
-		<DisplayString Condition="type == Variant::POOL_VECTOR2_ARRAY">{*(PoolVector2Array *)_data._mem}</DisplayString>
-		<DisplayString Condition="type == Variant::POOL_VECTOR3_ARRAY">{*(PoolVector3Array *)_data._mem}</DisplayString>
-		<DisplayString Condition="type == Variant::POOL_COLOR_ARRAY">{*(PoolColorArray *)_data._mem}</DisplayString>
+		<DisplayString Condition="type == Variant::PACKED_BYTE_ARRAY">{*(PackedByteArray *)_data._mem}</DisplayString>
+		<DisplayString Condition="type == Variant::PACKED_INT32_ARRAY">{*(PackedInt32Array *)_data._mem}</DisplayString>
+		<DisplayString Condition="type == Variant::PACKED_INT64_ARRAY">{*(PackedInt64Array *)_data._mem}</DisplayString>
+		<DisplayString Condition="type == Variant::PACKED_FLOAT32_ARRAY">{*(PackedFloat32Array *)_data._mem}</DisplayString>
+		<DisplayString Condition="type == Variant::PACKED_FLOAT64_ARRAY">{*(PackedFloat64Array *)_data._mem}</DisplayString>
+		<DisplayString Condition="type == Variant::PACKED_STRING_ARRAY">{*(PackedStringArray *)_data._mem}</DisplayString>
+		<DisplayString Condition="type == Variant::PACKED_VECTOR2_ARRAY">{*(PackedVector2Array *)_data._mem}</DisplayString>
+		<DisplayString Condition="type == Variant::PACKED_VECTOR3_ARRAY">{*(PackedVector3Array *)_data._mem}</DisplayString>
+		<DisplayString Condition="type == Variant::PACKED_COLOR_ARRAY">{*(PackedColorArray *)_data._mem}</DisplayString>
 
-		<StringView Condition="type == Variant::STRING &amp;&amp; ((String *)(_data._mem))->_cowdata._ptr">((String *)(_data._mem))->_cowdata._ptr,su</StringView>
+		<StringView Condition="type == Variant::STRING &amp;&amp; ((String *)(_data._mem))->_cowdata._ptr">((String *)(_data._mem))->_cowdata._ptr,s32</StringView>
 
 		<Expand>
 			<Item Name="[value]" Condition="type == Variant::BOOL">_data._bool</Item>
 			<Item Name="[value]" Condition="type == Variant::INT">_data._int</Item>
-			<Item Name="[value]" Condition="type == Variant::REAL">_data._real</Item>
+			<Item Name="[value]" Condition="type == Variant::FLOAT">_data._float</Item>
 			<Item Name="[value]" Condition="type == Variant::TRANSFORM2D">_data._transform2d</Item>
 			<Item Name="[value]" Condition="type == Variant::AABB">_data._aabb</Item>
 			<Item Name="[value]" Condition="type == Variant::BASIS">_data._basis</Item>
@@ -79,32 +81,34 @@
 			<Item Name="[value]" Condition="type == Variant::QUAT">*(Quat *)_data._mem</Item>
 			<Item Name="[value]" Condition="type == Variant::COLOR">*(Color *)_data._mem</Item>
 			<Item Name="[value]" Condition="type == Variant::NODE_PATH">*(NodePath *)_data._mem</Item>
-			<Item Name="[value]" Condition="type == Variant::_RID">*(RID *)_data._mem</Item>
+			<Item Name="[value]" Condition="type == Variant::RID">*(::RID *)_data._mem</Item>
 			<Item Name="[value]" Condition="type == Variant::OBJECT">*(Object *)_data._mem</Item>
 			<Item Name="[value]" Condition="type == Variant::DICTIONARY">*(Dictionary *)_data._mem</Item>
 			<Item Name="[value]" Condition="type == Variant::ARRAY">*(Array *)_data._mem</Item>
-			<Item Name="[value]" Condition="type == Variant::POOL_BYTE_ARRAY">*(PoolByteArray *)_data._mem</Item>
-			<Item Name="[value]" Condition="type == Variant::POOL_INT_ARRAY">*(PoolIntArray *)_data._mem</Item>
-			<Item Name="[value]" Condition="type == Variant::POOL_REAL_ARRAY">*(PoolRealArray *)_data._mem</Item>
-			<Item Name="[value]" Condition="type == Variant::POOL_STRING_ARRAY">*(PoolStringArray *)_data._mem</Item>
-			<Item Name="[value]" Condition="type == Variant::POOL_VECTOR2_ARRAY">*(PoolVector2Array *)_data._mem</Item>
-			<Item Name="[value]" Condition="type == Variant::POOL_VECTOR3_ARRAY">*(PoolVector3Array *)_data._mem</Item>
-			<Item Name="[value]" Condition="type == Variant::POOL_COLOR_ARRAY">*(PoolColorArray *)_data._mem</Item>
+			<Item Name="[value]" Condition="type == Variant::PACKED_BYTE_ARRAY">*(PackedByteArray *)_data._mem</Item>
+			<Item Name="[value]" Condition="type == Variant::PACKED_INT32_ARRAY">*(PackedInt32Array *)_data._mem</Item>
+			<Item Name="[value]" Condition="type == Variant::PACKED_INT64_ARRAY">*(PackedInt64Array *)_data._mem</Item>
+			<Item Name="[value]" Condition="type == Variant::PACKED_FLOAT32_ARRAY">*(PackedFloat32Array *)_data._mem</Item>
+			<Item Name="[value]" Condition="type == Variant::PACKED_FLOAT64_ARRAY">*(PackedFloat64Array *)_data._mem</Item>
+			<Item Name="[value]" Condition="type == Variant::PACKED_STRING_ARRAY">*(PackedStringArray *)_data._mem</Item>
+			<Item Name="[value]" Condition="type == Variant::PACKED_VECTOR2_ARRAY">*(PackedVector2Array *)_data._mem</Item>
+			<Item Name="[value]" Condition="type == Variant::PACKED_VECTOR3_ARRAY">*(PackedVector3Array *)_data._mem</Item>
+			<Item Name="[value]" Condition="type == Variant::PACKED_COLOR_ARRAY">*(PackedColorArray *)_data._mem</Item>
 		</Expand>
 	</Type>
 
 	<Type Name="String">
 		<DisplayString Condition="_cowdata._ptr == 0">[empty]</DisplayString>
-		<DisplayString Condition="_cowdata._ptr != 0">{_cowdata._ptr,su}</DisplayString>
-		<StringView Condition="_cowdata._ptr != 0">_cowdata._ptr,su</StringView>
+		<DisplayString Condition="_cowdata._ptr != 0">{_cowdata._ptr,s32}</DisplayString>
+		<StringView Condition="_cowdata._ptr != 0">_cowdata._ptr,s32</StringView>
 	</Type>
 
 	<Type Name="StringName">
 		<DisplayString Condition="_data &amp;&amp; _data->cname">{_data->cname}</DisplayString>
-		<DisplayString Condition="_data &amp;&amp; !_data->cname">{_data->name,su}</DisplayString>
+		<DisplayString Condition="_data &amp;&amp; !_data->cname">{_data->name,s32}</DisplayString>
 		<DisplayString Condition="!_data">[empty]</DisplayString>
 		<StringView Condition="_data &amp;&amp; _data->cname">_data->cname</StringView>
-		<StringView Condition="_data &amp;&amp; !_data->cname">_data->name,su</StringView>
+		<StringView Condition="_data &amp;&amp; !_data->cname">_data->name,s32</StringView>
 	</Type>
 
 	<Type Name="Vector2">

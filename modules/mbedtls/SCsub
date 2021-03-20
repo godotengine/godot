@@ -5,8 +5,11 @@ Import("env_modules")
 
 env_mbed_tls = env_modules.Clone()
 
+# Thirdparty source files
+
+thirdparty_obj = []
+
 if env["builtin_mbedtls"]:
-    # Thirdparty source files
     thirdparty_sources = [
         "aes.c",
         "aesni.c",
@@ -96,7 +99,21 @@ if env["builtin_mbedtls"]:
 
     env_thirdparty = env_mbed_tls.Clone()
     env_thirdparty.disable_warnings()
-    env_thirdparty.add_source_files(env.modules_sources, thirdparty_sources)
+    env_thirdparty.add_source_files(thirdparty_obj, thirdparty_sources)
+    env.modules_sources += thirdparty_obj
 
-# Module sources
-env_mbed_tls.add_source_files(env.modules_sources, "*.cpp")
+
+# Godot source files
+
+module_obj = []
+
+env_mbed_tls.add_source_files(module_obj, "*.cpp")
+
+if env["tests"]:
+    env_mbed_tls.Append(CPPDEFINES=["TESTS_ENABLED"])
+    env_mbed_tls.add_source_files(module_obj, "./tests/*.cpp")
+
+env.modules_sources += module_obj
+
+# Needed to force rebuilding the module files when the thirdparty library is updated.
+env.Depends(module_obj, thirdparty_obj)

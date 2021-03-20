@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -31,17 +31,17 @@
 #ifndef BIT_MAP_H
 #define BIT_MAP_H
 
-#include "core/image.h"
+#include "core/io/image.h"
+#include "core/io/resource.h"
 #include "core/io/resource_loader.h"
-#include "core/resource.h"
 
 class BitMap : public Resource {
 	GDCLASS(BitMap, Resource);
 	OBJ_SAVE_TYPE(BitMap);
 
 	Vector<uint8_t> bitmask;
-	int width;
-	int height;
+	int width = 0;
+	int height = 0;
 
 	Vector<Vector2> _march_square(const Rect2i &rect, const Point2i &start) const;
 

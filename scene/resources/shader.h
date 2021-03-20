@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -31,9 +31,9 @@
 #ifndef SHADER_H
 #define SHADER_H
 
+#include "core/io/resource.h"
 #include "core/io/resource_loader.h"
 #include "core/io/resource_saver.h"
-#include "core/resource.h"
 #include "scene/resources/texture.h"
 
 class Shader : public Resource {
@@ -42,7 +42,6 @@ class Shader : public Resource {
 
 public:
 	enum Mode {
-
 		MODE_SPATIAL,
 		MODE_CANVAS_ITEM,
 		MODE_PARTICLES,
@@ -52,12 +51,12 @@ public:
 
 private:
 	RID shader;
-	Mode mode;
+	Mode mode = MODE_SPATIAL;
 
 	// hack the name of performance
 	// shaders keep a list of ShaderMaterial -> RenderingServer name translations, to make
 	// conversion fast and save memory.
-	mutable bool params_cache_dirty;
+	mutable bool params_cache_dirty = true;
 	mutable Map<StringName, StringName> params_cache; //map a shader param to a material param..
 	Map<StringName, Ref<Texture2D>> default_textures;
 
@@ -103,7 +102,7 @@ VARIANT_ENUM_CAST(Shader::Mode);
 
 class ResourceFormatLoaderShader : public ResourceFormatLoader {
 public:
-	virtual RES load(const String &p_path, const String &p_original_path = "", Error *r_error = nullptr, bool p_use_sub_threads = false, float *r_progress = nullptr, bool p_no_cache = false);
+	virtual RES load(const String &p_path, const String &p_original_path = "", Error *r_error = nullptr, bool p_use_sub_threads = false, float *r_progress = nullptr, CacheMode p_cache_mode = CACHE_MODE_REUSE);
 	virtual void get_recognized_extensions(List<String> *p_extensions) const;
 	virtual bool handles_type(const String &p_type) const;
 	virtual String get_resource_type(const String &p_path) const;

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -31,19 +31,19 @@
 #ifndef REGEX_H
 #define REGEX_H
 
-#include "core/array.h"
-#include "core/dictionary.h"
-#include "core/map.h"
-#include "core/reference.h"
-#include "core/ustring.h"
-#include "core/vector.h"
+#include "core/object/reference.h"
+#include "core/string/ustring.h"
+#include "core/templates/map.h"
+#include "core/templates/vector.h"
+#include "core/variant/array.h"
+#include "core/variant/dictionary.h"
 
 class RegExMatch : public Reference {
 	GDCLASS(RegExMatch, Reference);
 
 	struct Range {
-		int start;
-		int end;
+		int start = 0;
+		int end = 0;
 	};
 
 	String subject;
@@ -72,7 +72,7 @@ class RegEx : public Reference {
 	GDCLASS(RegEx, Reference);
 
 	void *general_ctx;
-	void *code;
+	void *code = nullptr;
 	String pattern;
 
 	void _pattern_info(uint32_t what, void *where) const;
@@ -83,7 +83,6 @@ protected:
 public:
 	void clear();
 	Error compile(const String &p_pattern);
-	void _init(const String &p_pattern = "");
 
 	Ref<RegExMatch> search(const String &p_subject, int p_offset = 0, int p_end = -1) const;
 	Array search_all(const String &p_subject, int p_offset = 0, int p_end = -1) const;

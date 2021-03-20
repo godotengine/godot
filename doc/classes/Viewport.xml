@@ -12,8 +12,14 @@
 		Finally, viewports can also behave as render targets, in which case they will not be visible unless the associated texture is used to draw.
 	</description>
 	<tutorials>
-		<link>https://docs.godotengine.org/en/latest/tutorials/2d/2d_transforms.html</link>
-		<link>https://docs.godotengine.org/en/latest/tutorials/viewports/index.html</link>
+		<link title="Viewport and canvas transforms">https://docs.godotengine.org/en/latest/tutorials/2d/2d_transforms.html</link>
+		<link title="Viewports tutorial index">https://docs.godotengine.org/en/latest/tutorials/viewports/index.html</link>
+		<link title="GUI in 3D Demo">https://godotengine.org/asset-library/asset/127</link>
+		<link title="3D in 2D Demo">https://godotengine.org/asset-library/asset/128</link>
+		<link title="2D in 3D Demo">https://godotengine.org/asset-library/asset/129</link>
+		<link title="Screen Capture Demo">https://godotengine.org/asset-library/asset/130</link>
+		<link title="Dynamic Split Screen Demo">https://godotengine.org/asset-library/asset/541</link>
+		<link title="3D Viewport Scaling Demo">https://godotengine.org/asset-library/asset/586</link>
 	</tutorials>
 	<methods>
 		<method name="find_world_2d" qualifiers="const">
@@ -207,7 +213,7 @@
 			The global canvas transform of the viewport. The canvas transform is relative to this.
 		</member>
 		<member name="gui_disable_input" type="bool" setter="set_disable_input" getter="is_input_disabled" default="false">
-			If [code]true[/code], the viewport will not receive input event.
+			If [code]true[/code], the viewport will not receive input events.
 		</member>
 		<member name="gui_embed_subwindows" type="bool" setter="set_embed_subwindows_hint" getter="get_embed_subwindows_hint" default="false">
 		</member>
@@ -215,6 +221,8 @@
 			If [code]true[/code], the GUI controls on the viewport will lay pixel perfectly.
 		</member>
 		<member name="handle_input_locally" type="bool" setter="set_handle_input_locally" getter="is_handling_input_locally" default="true">
+		</member>
+		<member name="lod_threshold" type="float" setter="set_lod_threshold" getter="get_lod_threshold" default="1.0">
 		</member>
 		<member name="msaa" type="int" setter="set_msaa" getter="get_msaa" enum="Viewport.MSAA" default="0">
 			The multisample anti-aliasing mode. A higher number results in smoother edges at the cost of significantly worse performance. A value of 4 is best unless targeting very high-end systems.
@@ -228,6 +236,12 @@
 		<member name="screen_space_aa" type="int" setter="set_screen_space_aa" getter="get_screen_space_aa" enum="Viewport.ScreenSpaceAA" default="0">
 			Sets the screen-space antialiasing method used. Screen-space antialiasing works by selectively blurring edges in a post-process shader. It differs from MSAA which takes multiple coverage samples while rendering objects. Screen-space AA methods are typically faster than MSAA and will smooth out specular aliasing, but tend to make scenes appear blurry.
 		</member>
+		<member name="sdf_oversize" type="int" setter="set_sdf_oversize" getter="get_sdf_oversize" enum="Viewport.SDFOversize" default="1">
+		</member>
+		<member name="sdf_scale" type="int" setter="set_sdf_scale" getter="get_sdf_scale" enum="Viewport.SDFScale" default="1">
+		</member>
+		<member name="shadow_atlas_16_bits" type="bool" setter="set_shadow_atlas_16_bits" getter="get_shadow_atlas_16_bits" default="true">
+		</member>
 		<member name="shadow_atlas_quad_0" type="int" setter="set_shadow_atlas_quadrant_subdiv" getter="get_shadow_atlas_quadrant_subdiv" enum="Viewport.ShadowAtlasQuadrantSubdiv" default="2">
 			The subdivision amount of the first quadrant on the shadow atlas.
 		</member>
@@ -240,12 +254,18 @@
 		<member name="shadow_atlas_quad_3" type="int" setter="set_shadow_atlas_quadrant_subdiv" getter="get_shadow_atlas_quadrant_subdiv" enum="Viewport.ShadowAtlasQuadrantSubdiv" default="4">
 			The subdivision amount of the fourth quadrant on the shadow atlas.
 		</member>
-		<member name="shadow_atlas_size" type="int" setter="set_shadow_atlas_size" getter="get_shadow_atlas_size" default="0">
+		<member name="shadow_atlas_size" type="int" setter="set_shadow_atlas_size" getter="get_shadow_atlas_size" default="2048">
 			The shadow atlas' resolution (used for omni and spot lights). The value will be rounded up to the nearest power of 2.
-			[b]Note:[/b] If this is set to 0, shadows won't be visible. Since user-created viewports default to a value of 0, this value must be set above 0 manually.
+			[b]Note:[/b] If this is set to 0, shadows won't be visible.
+		</member>
+		<member name="snap_2d_transforms_to_pixel" type="bool" setter="set_snap_2d_transforms_to_pixel" getter="is_snap_2d_transforms_to_pixel_enabled" default="false">
+		</member>
+		<member name="snap_2d_vertices_to_pixel" type="bool" setter="set_snap_2d_vertices_to_pixel" getter="is_snap_2d_vertices_to_pixel_enabled" default="false">
 		</member>
 		<member name="transparent_bg" type="bool" setter="set_transparent_background" getter="has_transparent_background" default="false">
 			If [code]true[/code], the viewport should render its background as transparent.
+		</member>
+		<member name="use_debanding" type="bool" setter="set_use_debanding" getter="is_using_debanding" default="false">
 		</member>
 		<member name="world_2d" type="World2D" setter="set_world_2d" getter="get_world_2d">
 			The custom [World2D] which can be used as 2D environment source.
@@ -389,6 +409,16 @@
 		</constant>
 		<constant name="DEBUG_DRAW_GI_BUFFER" value="17" enum="DebugDraw">
 		</constant>
+		<constant name="DEBUG_DRAW_DISABLE_LOD" value="18" enum="DebugDraw">
+		</constant>
+		<constant name="DEBUG_DRAW_CLUSTER_OMNI_LIGHTS" value="19" enum="DebugDraw">
+		</constant>
+		<constant name="DEBUG_DRAW_CLUSTER_SPOT_LIGHTS" value="20" enum="DebugDraw">
+		</constant>
+		<constant name="DEBUG_DRAW_CLUSTER_DECALS" value="21" enum="DebugDraw">
+		</constant>
+		<constant name="DEBUG_DRAW_CLUSTER_REFLECTION_PROBES" value="22" enum="DebugDraw">
+		</constant>
 		<constant name="DEFAULT_CANVAS_ITEM_TEXTURE_FILTER_NEAREST" value="0" enum="DefaultCanvasItemTextureFilter">
 			The texture filter reads from the nearest pixel only. The simplest and fastest method of filtering, but the texture will look pixelized.
 		</constant>
@@ -415,6 +445,24 @@
 		</constant>
 		<constant name="DEFAULT_CANVAS_ITEM_TEXTURE_REPEAT_MAX" value="3" enum="DefaultCanvasItemTextureRepeat">
 			Max value for [enum DefaultCanvasItemTextureRepeat] enum.
+		</constant>
+		<constant name="SDF_OVERSIZE_100_PERCENT" value="0" enum="SDFOversize">
+		</constant>
+		<constant name="SDF_OVERSIZE_120_PERCENT" value="1" enum="SDFOversize">
+		</constant>
+		<constant name="SDF_OVERSIZE_150_PERCENT" value="2" enum="SDFOversize">
+		</constant>
+		<constant name="SDF_OVERSIZE_200_PERCENT" value="3" enum="SDFOversize">
+		</constant>
+		<constant name="SDF_OVERSIZE_MAX" value="4" enum="SDFOversize">
+		</constant>
+		<constant name="SDF_SCALE_100_PERCENT" value="0" enum="SDFScale">
+		</constant>
+		<constant name="SDF_SCALE_50_PERCENT" value="1" enum="SDFScale">
+		</constant>
+		<constant name="SDF_SCALE_25_PERCENT" value="2" enum="SDFScale">
+		</constant>
+		<constant name="SDF_SCALE_MAX" value="3" enum="SDFScale">
 		</constant>
 	</constants>
 </class>

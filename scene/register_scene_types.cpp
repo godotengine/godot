@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -30,14 +30,15 @@
 
 #include "register_scene_types.h"
 
-#include "core/class_db.h"
+#include "core/config/project_settings.h"
+#include "core/object/class_db.h"
 #include "core/os/os.h"
-#include "core/project_settings.h"
 #include "scene/2d/animated_sprite_2d.h"
 #include "scene/2d/area_2d.h"
 #include "scene/2d/audio_stream_player_2d.h"
 #include "scene/2d/back_buffer_copy.h"
 #include "scene/2d/camera_2d.h"
+#include "scene/2d/canvas_group.h"
 #include "scene/2d/canvas_modulate.h"
 #include "scene/2d/collision_polygon_2d.h"
 #include "scene/2d/collision_shape_2d.h"
@@ -49,7 +50,6 @@
 #include "scene/2d/line_2d.h"
 #include "scene/2d/mesh_instance_2d.h"
 #include "scene/2d/multimesh_instance_2d.h"
-#include "scene/2d/navigation_2d.h"
 #include "scene/2d/navigation_agent_2d.h"
 #include "scene/2d/navigation_obstacle_2d.h"
 #include "scene/2d/parallax_background.h"
@@ -76,11 +76,13 @@
 #include "scene/animation/tween.h"
 #include "scene/audio/audio_stream_player.h"
 #include "scene/debugger/scene_debugger.h"
+#include "scene/gui/aspect_ratio_container.h"
 #include "scene/gui/box_container.h"
 #include "scene/gui/button.h"
 #include "scene/gui/center_container.h"
 #include "scene/gui/check_box.h"
 #include "scene/gui/check_button.h"
+#include "scene/gui/code_edit.h"
 #include "scene/gui/color_picker.h"
 #include "scene/gui/color_rect.h"
 #include "scene/gui/control.h"
@@ -115,7 +117,7 @@
 #include "scene/gui/tabs.h"
 #include "scene/gui/text_edit.h"
 #include "scene/gui/texture_button.h"
-#include "scene/gui/texture_progress.h"
+#include "scene/gui/texture_progress_bar.h"
 #include "scene/gui/texture_rect.h"
 #include "scene/gui/tree.h"
 #include "scene/gui/video_player.h"
@@ -141,7 +143,7 @@
 #include "scene/resources/convex_polygon_shape_3d.h"
 #include "scene/resources/cylinder_shape_3d.h"
 #include "scene/resources/default_theme/default_theme.h"
-#include "scene/resources/dynamic_font.h"
+#include "scene/resources/font.h"
 #include "scene/resources/gradient.h"
 #include "scene/resources/height_map_shape_3d.h"
 #include "scene/resources/line_shape_2d.h"
@@ -165,11 +167,14 @@
 #include "scene/resources/surface_tool.h"
 #include "scene/resources/syntax_highlighter.h"
 #include "scene/resources/text_file.h"
+#include "scene/resources/text_line.h"
+#include "scene/resources/text_paragraph.h"
 #include "scene/resources/texture.h"
 #include "scene/resources/tile_set.h"
 #include "scene/resources/video_stream.h"
 #include "scene/resources/visual_shader.h"
 #include "scene/resources/visual_shader_nodes.h"
+#include "scene/resources/visual_shader_sdf_nodes.h"
 #include "scene/resources/world_2d.h"
 #include "scene/resources/world_3d.h"
 #include "scene/resources/world_margin_shape_3d.h"
@@ -193,13 +198,13 @@
 #include "scene/3d/decal.h"
 #include "scene/3d/gi_probe.h"
 #include "scene/3d/gpu_particles_3d.h"
+#include "scene/3d/gpu_particles_collision_3d.h"
 #include "scene/3d/immediate_geometry_3d.h"
 #include "scene/3d/light_3d.h"
 #include "scene/3d/lightmap_probe.h"
 #include "scene/3d/listener_3d.h"
 #include "scene/3d/mesh_instance_3d.h"
 #include "scene/3d/multimesh_instance_3d.h"
-#include "scene/3d/navigation_3d.h"
 #include "scene/3d/navigation_agent_3d.h"
 #include "scene/3d/navigation_obstacle_3d.h"
 #include "scene/3d/navigation_region_3d.h"
@@ -226,12 +231,15 @@
 static Ref<ResourceFormatSaverText> resource_saver_text;
 static Ref<ResourceFormatLoaderText> resource_loader_text;
 
-static Ref<ResourceFormatLoaderDynamicFont> resource_loader_dynamic_font;
+static Ref<ResourceFormatLoaderFont> resource_loader_font;
+
+#ifndef DISABLE_DEPRECATED
+static Ref<ResourceFormatLoaderCompatFont> resource_loader_compat_font;
+#endif /* DISABLE_DEPRECATED */
 
 static Ref<ResourceFormatLoaderStreamTexture2D> resource_loader_stream_texture;
 static Ref<ResourceFormatLoaderStreamTextureLayered> resource_loader_texture_layered;
-
-static Ref<ResourceFormatLoaderBMFont> resource_loader_bmfont;
+static Ref<ResourceFormatLoaderStreamTexture3D> resource_loader_texture_3d;
 
 static Ref<ResourceFormatSaverShader> resource_saver_shader;
 static Ref<ResourceFormatLoaderShader> resource_loader_shader;
@@ -243,14 +251,22 @@ void register_scene_types() {
 
 	Node::init_node_hrcr();
 
-	resource_loader_dynamic_font.instance();
-	ResourceLoader::add_resource_format_loader(resource_loader_dynamic_font);
+	resource_loader_font.instance();
+	ResourceLoader::add_resource_format_loader(resource_loader_font);
+
+#ifndef DISABLE_DEPRECATED
+	resource_loader_compat_font.instance();
+	ResourceLoader::add_resource_format_loader(resource_loader_compat_font);
+#endif /* DISABLE_DEPRECATED */
 
 	resource_loader_stream_texture.instance();
 	ResourceLoader::add_resource_format_loader(resource_loader_stream_texture);
 
 	resource_loader_texture_layered.instance();
 	ResourceLoader::add_resource_format_loader(resource_loader_texture_layered);
+
+	resource_loader_texture_3d.instance();
+	ResourceLoader::add_resource_format_loader(resource_loader_texture_3d);
 
 	resource_saver_text.instance();
 	ResourceSaver::add_resource_format_saver(resource_saver_text, true);
@@ -263,9 +279,6 @@ void register_scene_types() {
 
 	resource_loader_shader.instance();
 	ResourceLoader::add_resource_format_loader(resource_loader_shader, true);
-
-	resource_loader_bmfont.instance();
-	ResourceLoader::add_resource_format_loader(resource_loader_bmfont, true);
 
 	OS::get_singleton()->yield(); //may take time to init
 
@@ -291,7 +304,7 @@ void register_scene_types() {
 
 	OS::get_singleton()->yield(); //may take time to init
 
-	ClassDB::register_class<ShortCut>();
+	ClassDB::register_class<Shortcut>();
 	ClassDB::register_class<Control>();
 	ClassDB::register_class<Button>();
 	ClassDB::register_class<Label>();
@@ -317,6 +330,7 @@ void register_scene_types() {
 	ClassDB::register_class<ColorRect>();
 	ClassDB::register_class<NinePatchRect>();
 	ClassDB::register_class<ReferenceRect>();
+	ClassDB::register_class<AspectRatioContainer>();
 	ClassDB::register_class<TabContainer>();
 	ClassDB::register_class<Tabs>();
 	ClassDB::register_virtual_class<Separator>();
@@ -334,7 +348,7 @@ void register_scene_types() {
 
 	OS::get_singleton()->yield(); //may take time to init
 
-	ClassDB::register_class<TextureProgress>();
+	ClassDB::register_class<TextureProgressBar>();
 	ClassDB::register_class<ItemList>();
 
 	ClassDB::register_class<LineEdit>();
@@ -347,6 +361,7 @@ void register_scene_types() {
 	ClassDB::register_class<Tree>();
 
 	ClassDB::register_class<TextEdit>();
+	ClassDB::register_class<CodeEdit>();
 	ClassDB::register_class<SyntaxHighlighter>();
 	ClassDB::register_class<CodeHighlighter>();
 
@@ -372,7 +387,11 @@ void register_scene_types() {
 
 	OS::get_singleton()->yield(); //may take time to init
 
-	AcceptDialog::set_swap_cancel_ok(GLOBAL_DEF_NOVAL("gui/common/swap_cancel_ok", bool(DisplayServer::get_singleton()->get_swap_cancel_ok())));
+	bool swap_cancel_ok = false;
+	if (DisplayServer::get_singleton()) {
+		swap_cancel_ok = GLOBAL_DEF_NOVAL("gui/common/swap_cancel_ok", bool(DisplayServer::get_singleton()->get_swap_cancel_ok()));
+	}
+	AcceptDialog::set_swap_cancel_ok(swap_cancel_ok);
 #endif
 
 	/* REGISTER 3D */
@@ -440,6 +459,15 @@ void register_scene_types() {
 	ClassDB::register_class<LightmapProbe>();
 	ClassDB::register_virtual_class<Lightmapper>();
 	ClassDB::register_class<GPUParticles3D>();
+	ClassDB::register_virtual_class<GPUParticlesCollision3D>();
+	ClassDB::register_class<GPUParticlesCollisionBox>();
+	ClassDB::register_class<GPUParticlesCollisionSphere>();
+	ClassDB::register_class<GPUParticlesCollisionSDF>();
+	ClassDB::register_class<GPUParticlesCollisionHeightField>();
+	ClassDB::register_virtual_class<GPUParticlesAttractor3D>();
+	ClassDB::register_class<GPUParticlesAttractorBox>();
+	ClassDB::register_class<GPUParticlesAttractorSphere>();
+	ClassDB::register_class<GPUParticlesAttractorVectorField>();
 	ClassDB::register_class<CPUParticles3D>();
 	ClassDB::register_class<Position3D>();
 
@@ -486,7 +514,6 @@ void register_scene_types() {
 	ClassDB::register_class<ConeTwistJoint3D>();
 	ClassDB::register_class<Generic6DOFJoint3D>();
 
-	ClassDB::register_class<Navigation3D>();
 	ClassDB::register_class<NavigationRegion3D>();
 	ClassDB::register_class<NavigationAgent3D>();
 	ClassDB::register_class<NavigationObstacle3D>();
@@ -502,7 +529,9 @@ void register_scene_types() {
 	ClassDB::register_class<VisualShaderNodeCustom>();
 	ClassDB::register_class<VisualShaderNodeInput>();
 	ClassDB::register_virtual_class<VisualShaderNodeOutput>();
-	ClassDB::register_class<VisualShaderNodeGroupBase>();
+	ClassDB::register_virtual_class<VisualShaderNodeResizableBase>();
+	ClassDB::register_virtual_class<VisualShaderNodeGroupBase>();
+	ClassDB::register_virtual_class<VisualShaderNodeConstant>();
 	ClassDB::register_class<VisualShaderNodeFloatConstant>();
 	ClassDB::register_class<VisualShaderNodeIntConstant>();
 	ClassDB::register_class<VisualShaderNodeBooleanConstant>();
@@ -525,26 +554,23 @@ void register_scene_types() {
 	ClassDB::register_class<VisualShaderNodeDeterminant>();
 	ClassDB::register_class<VisualShaderNodeScalarDerivativeFunc>();
 	ClassDB::register_class<VisualShaderNodeVectorDerivativeFunc>();
-	ClassDB::register_class<VisualShaderNodeScalarClamp>();
-	ClassDB::register_class<VisualShaderNodeVectorClamp>();
+	ClassDB::register_class<VisualShaderNodeClamp>();
 	ClassDB::register_class<VisualShaderNodeFaceForward>();
 	ClassDB::register_class<VisualShaderNodeOuterProduct>();
-	ClassDB::register_class<VisualShaderNodeVectorScalarStep>();
-	ClassDB::register_class<VisualShaderNodeScalarSmoothStep>();
-	ClassDB::register_class<VisualShaderNodeVectorSmoothStep>();
-	ClassDB::register_class<VisualShaderNodeVectorScalarSmoothStep>();
+	ClassDB::register_class<VisualShaderNodeSmoothStep>();
+	ClassDB::register_class<VisualShaderNodeStep>();
 	ClassDB::register_class<VisualShaderNodeVectorDistance>();
 	ClassDB::register_class<VisualShaderNodeVectorRefract>();
-	ClassDB::register_class<VisualShaderNodeScalarInterp>();
-	ClassDB::register_class<VisualShaderNodeVectorInterp>();
-	ClassDB::register_class<VisualShaderNodeVectorScalarMix>();
+	ClassDB::register_class<VisualShaderNodeMix>();
 	ClassDB::register_class<VisualShaderNodeVectorCompose>();
 	ClassDB::register_class<VisualShaderNodeTransformCompose>();
 	ClassDB::register_class<VisualShaderNodeVectorDecompose>();
 	ClassDB::register_class<VisualShaderNodeTransformDecompose>();
 	ClassDB::register_class<VisualShaderNodeTexture>();
+	ClassDB::register_class<VisualShaderNodeCurveTexture>();
 	ClassDB::register_virtual_class<VisualShaderNodeSample3D>();
 	ClassDB::register_class<VisualShaderNodeTexture2DArray>();
+	ClassDB::register_class<VisualShaderNodeTexture3D>();
 	ClassDB::register_class<VisualShaderNodeCubemap>();
 	ClassDB::register_virtual_class<VisualShaderNodeUniform>();
 	ClassDB::register_class<VisualShaderNodeUniformRef>();
@@ -557,10 +583,10 @@ void register_scene_types() {
 	ClassDB::register_class<VisualShaderNodeTextureUniform>();
 	ClassDB::register_class<VisualShaderNodeTextureUniformTriplanar>();
 	ClassDB::register_class<VisualShaderNodeTexture2DArrayUniform>();
+	ClassDB::register_class<VisualShaderNodeTexture3DUniform>();
 	ClassDB::register_class<VisualShaderNodeCubemapUniform>();
 	ClassDB::register_class<VisualShaderNodeIf>();
 	ClassDB::register_class<VisualShaderNodeSwitch>();
-	ClassDB::register_class<VisualShaderNodeScalarSwitch>();
 	ClassDB::register_class<VisualShaderNodeFresnel>();
 	ClassDB::register_class<VisualShaderNodeExpression>();
 	ClassDB::register_class<VisualShaderNodeGlobalExpression>();
@@ -568,8 +594,15 @@ void register_scene_types() {
 	ClassDB::register_class<VisualShaderNodeCompare>();
 	ClassDB::register_class<VisualShaderNodeMultiplyAdd>();
 
+	ClassDB::register_class<VisualShaderNodeSDFToScreenUV>();
+	ClassDB::register_class<VisualShaderNodeScreenUVToSDF>();
+	ClassDB::register_class<VisualShaderNodeTextureSDF>();
+	ClassDB::register_class<VisualShaderNodeTextureSDFNormal>();
+	ClassDB::register_class<VisualShaderNodeSDFRaymarch>();
+
 	ClassDB::register_class<ShaderMaterial>();
 	ClassDB::register_virtual_class<CanvasItem>();
+	ClassDB::register_class<CanvasTexture>();
 	ClassDB::register_class<CanvasItemMaterial>();
 	SceneTree::add_idle_callback(CanvasItemMaterial::flush_changes);
 	CanvasItemMaterial::init_shaders();
@@ -577,6 +610,7 @@ void register_scene_types() {
 	/* REGISTER 2D */
 
 	ClassDB::register_class<Node2D>();
+	ClassDB::register_class<CanvasGroup>();
 	ClassDB::register_class<CPUParticles2D>();
 	ClassDB::register_class<GPUParticles2D>();
 	ClassDB::register_class<Sprite2D>();
@@ -601,7 +635,9 @@ void register_scene_types() {
 	ClassDB::register_class<Polygon2D>();
 	ClassDB::register_class<Skeleton2D>();
 	ClassDB::register_class<Bone2D>();
-	ClassDB::register_class<Light2D>();
+	ClassDB::register_virtual_class<Light2D>();
+	ClassDB::register_class<PointLight2D>();
+	ClassDB::register_class<DirectionalLight2D>();
 	ClassDB::register_class<LightOccluder2D>();
 	ClassDB::register_class<OccluderPolygon2D>();
 	ClassDB::register_class<YSort>();
@@ -642,8 +678,8 @@ void register_scene_types() {
 
 #ifndef _3D_DISABLED
 	ClassDB::register_virtual_class<PrimitiveMesh>();
+	ClassDB::register_class<BoxMesh>();
 	ClassDB::register_class<CapsuleMesh>();
-	ClassDB::register_class<CubeMesh>();
 	ClassDB::register_class<CylinderMesh>();
 	ClassDB::register_class<PlaneMesh>();
 	ClassDB::register_class<PrismMesh>();
@@ -697,6 +733,9 @@ void register_scene_types() {
 	ClassDB::register_class<CameraTexture>();
 	ClassDB::register_virtual_class<TextureLayered>();
 	ClassDB::register_virtual_class<ImageTextureLayered>();
+	ClassDB::register_virtual_class<Texture3D>();
+	ClassDB::register_class<ImageTexture3D>();
+	ClassDB::register_class<StreamTexture3D>();
 	ClassDB::register_class<Cubemap>();
 	ClassDB::register_class<CubemapArray>();
 	ClassDB::register_class<Texture2DArray>();
@@ -706,16 +745,13 @@ void register_scene_types() {
 	ClassDB::register_class<StreamTexture2DArray>();
 
 	ClassDB::register_class<Animation>();
-	ClassDB::register_virtual_class<Font>();
-	ClassDB::register_class<BitmapFont>();
+	ClassDB::register_class<FontData>();
+	ClassDB::register_class<Font>();
 	ClassDB::register_class<Curve>();
 
 	ClassDB::register_class<TextFile>();
-
-	ClassDB::register_class<DynamicFontData>();
-	ClassDB::register_class<DynamicFont>();
-
-	DynamicFont::initialize_dynamic_fonts();
+	ClassDB::register_class<TextLine>();
+	ClassDB::register_class<TextParagraph>();
 
 	ClassDB::register_virtual_class<StyleBox>();
 	ClassDB::register_class<StyleBoxEmpty>();
@@ -754,7 +790,6 @@ void register_scene_types() {
 	ClassDB::register_class<PathFollow2D>();
 
 	ClassDB::register_class<NavigationMesh>();
-	ClassDB::register_class<Navigation2D>();
 	ClassDB::register_class<NavigationPolygon>();
 	ClassDB::register_class<NavigationRegion2D>();
 	ClassDB::register_class<NavigationAgent2D>();
@@ -771,7 +806,12 @@ void register_scene_types() {
 #ifndef DISABLE_DEPRECATED
 	// Dropped in 4.0, near approximation.
 	ClassDB::add_compatibility_class("AnimationTreePlayer", "AnimationTree");
+	ClassDB::add_compatibility_class("BitmapFont", "Font");
+	ClassDB::add_compatibility_class("DynamicFont", "Font");
+	ClassDB::add_compatibility_class("DynamicFontData", "FontData");
 	ClassDB::add_compatibility_class("ToolButton", "Button");
+	ClassDB::add_compatibility_class("Navigation3D", "Node3D");
+	ClassDB::add_compatibility_class("Navigation2D", "Node2D");
 
 	// Renamed in 4.0.
 	// Keep alphabetical ordering to easily locate classes and avoid duplicates.
@@ -807,6 +847,7 @@ void register_scene_types() {
 	ClassDB::add_compatibility_class("CSGShape", "CSGShape3D");
 	ClassDB::add_compatibility_class("CSGSphere", "CSGSphere3D");
 	ClassDB::add_compatibility_class("CSGTorus", "CSGTorus3D");
+	ClassDB::add_compatibility_class("CubeMesh", "BoxMesh");
 	ClassDB::add_compatibility_class("CylinderShape", "CylinderShape3D");
 	ClassDB::add_compatibility_class("DirectionalLight", "DirectionalLight3D");
 	ClassDB::add_compatibility_class("EditorSpatialGizmo", "EditorNode3DGizmo");
@@ -822,7 +863,6 @@ void register_scene_types() {
 	ClassDB::add_compatibility_class("Listener", "Listener3D");
 	ClassDB::add_compatibility_class("MeshInstance", "MeshInstance3D");
 	ClassDB::add_compatibility_class("MultiMeshInstance", "MultiMeshInstance3D");
-	ClassDB::add_compatibility_class("Navigation", "Navigation3D");
 	ClassDB::add_compatibility_class("NavigationAgent", "NavigationAgent3D");
 	ClassDB::add_compatibility_class("NavigationMeshInstance", "NavigationRegion3D");
 	ClassDB::add_compatibility_class("NavigationObstacle", "NavigationObstacle3D");
@@ -860,6 +900,7 @@ void register_scene_types() {
 	ClassDB::add_compatibility_class("RemoteTransform", "RemoteTransform3D");
 	ClassDB::add_compatibility_class("RigidBody", "RigidBody3D");
 	ClassDB::add_compatibility_class("Shape", "Shape3D");
+	ClassDB::add_compatibility_class("ShortCut", "Shortcut");
 	ClassDB::add_compatibility_class("Skeleton", "Skeleton3D");
 	ClassDB::add_compatibility_class("SkeletonIK", "SkeletonIK3D");
 	ClassDB::add_compatibility_class("SliderJoint", "SliderJoint3D");
@@ -873,9 +914,11 @@ void register_scene_types() {
 	ClassDB::add_compatibility_class("SpringArm", "SpringArm3D");
 	ClassDB::add_compatibility_class("Sprite", "Sprite2D");
 	ClassDB::add_compatibility_class("StaticBody", "StaticBody3D");
+	ClassDB::add_compatibility_class("TextureProgress", "TextureProgressBar");
 	ClassDB::add_compatibility_class("VehicleBody", "VehicleBody3D");
 	ClassDB::add_compatibility_class("VehicleWheel", "VehicleWheel3D");
 	ClassDB::add_compatibility_class("ViewportContainer", "SubViewportContainer");
+	ClassDB::add_compatibility_class("Viewport", "SubViewport");
 	ClassDB::add_compatibility_class("VisibilityEnabler", "VisibilityEnabler3D");
 	ClassDB::add_compatibility_class("VisibilityNotifier", "VisibilityNotifier3D");
 	ClassDB::add_compatibility_class("VisualServer", "RenderingServer");
@@ -883,18 +926,31 @@ void register_scene_types() {
 	ClassDB::add_compatibility_class("VisualShaderNodeScalarFunc", "VisualShaderNodeFloatFunc");
 	ClassDB::add_compatibility_class("VisualShaderNodeScalarOp", "VisualShaderNodeFloatOp");
 	ClassDB::add_compatibility_class("VisualShaderNodeScalarUniform", "VisualShaderNodeFloatUniform");
+	ClassDB::add_compatibility_class("VisualShaderNodeScalarClamp", "VisualShaderNodeClamp");
+	ClassDB::add_compatibility_class("VisualShaderNodeVectorClamp", "VisualShaderNodeClamp");
+	ClassDB::add_compatibility_class("VisualShaderNodeScalarInterp", "VisualShaderNodeMix");
+	ClassDB::add_compatibility_class("VisualShaderNodeVectorInterp", "VisualShaderNodeMix");
+	ClassDB::add_compatibility_class("VisualShaderNodeVectorScalarMix", "VisualShaderNodeMix");
+	ClassDB::add_compatibility_class("VisualShaderNodeScalarSmoothStep", "VisualShaderNodeSmoothStep");
+	ClassDB::add_compatibility_class("VisualShaderNodeVectorSmoothStep", "VisualShaderNodeSmoothStep");
+	ClassDB::add_compatibility_class("VisualShaderNodeVectorScalarSmoothStep", "VisualShaderNodeSmoothStep");
+	ClassDB::add_compatibility_class("VisualShaderNodeVectorScalarStep", "VisualShaderNodeStep");
+	ClassDB::add_compatibility_class("VisualShaderNodeScalarSwitch", "VisualShaderNodeSwitch");
 	ClassDB::add_compatibility_class("World", "World3D");
 	ClassDB::add_compatibility_class("StreamTexture", "StreamTexture2D");
+	ClassDB::add_compatibility_class("Light2D", "PointLight2D");
 
-#endif
+#endif /* DISABLE_DEPRECATED */
 
 	OS::get_singleton()->yield(); //may take time to init
 
 	for (int i = 0; i < 20; i++) {
-		GLOBAL_DEF("layer_names/2d_render/layer_" + itos(i + 1), "");
-		GLOBAL_DEF("layer_names/2d_physics/layer_" + itos(i + 1), "");
-		GLOBAL_DEF("layer_names/3d_render/layer_" + itos(i + 1), "");
-		GLOBAL_DEF("layer_names/3d_physics/layer_" + itos(i + 1), "");
+		GLOBAL_DEF_BASIC(vformat("layer_names/2d_render/layer_%d", i), "");
+		GLOBAL_DEF_BASIC(vformat("layer_names/2d_physics/layer_%d", i), "");
+		GLOBAL_DEF_BASIC(vformat("layer_names/2d_navigation/layer_%d", i), "");
+		GLOBAL_DEF_BASIC(vformat("layer_names/3d_render/layer_%d", i), "");
+		GLOBAL_DEF_BASIC(vformat("layer_names/3d_physics/layer_%d", i), "");
+		GLOBAL_DEF_BASIC(vformat("layer_names/3d_navigation/layer_%d", i), "");
 	}
 
 	bool default_theme_hidpi = GLOBAL_DEF("gui/theme/use_hidpi", false);
@@ -912,8 +968,10 @@ void register_scene_types() {
 		}
 	}
 
-	// Always make the default theme to avoid invalid default font/icon/style in the given theme
-	make_default_theme(default_theme_hidpi, font);
+	// Always make the default theme to avoid invalid default font/icon/style in the given theme.
+	if (RenderingServer::get_singleton()) {
+		make_default_theme(default_theme_hidpi, font);
+	}
 
 	if (theme_path != String()) {
 		Ref<Theme> theme = ResourceLoader::load(theme_path);
@@ -933,16 +991,22 @@ void unregister_scene_types() {
 	SceneDebugger::deinitialize();
 	clear_default_theme();
 
-	ResourceLoader::remove_resource_format_loader(resource_loader_dynamic_font);
-	resource_loader_dynamic_font.unref();
+	ResourceLoader::remove_resource_format_loader(resource_loader_font);
+	resource_loader_font.unref();
+
+#ifndef DISABLE_DEPRECATED
+	ResourceLoader::remove_resource_format_loader(resource_loader_compat_font);
+	resource_loader_compat_font.unref();
+#endif /* DISABLE_DEPRECATED */
 
 	ResourceLoader::remove_resource_format_loader(resource_loader_texture_layered);
 	resource_loader_texture_layered.unref();
 
+	ResourceLoader::remove_resource_format_loader(resource_loader_texture_3d);
+	resource_loader_texture_3d.unref();
+
 	ResourceLoader::remove_resource_format_loader(resource_loader_stream_texture);
 	resource_loader_stream_texture.unref();
-
-	DynamicFont::finish_dynamic_fonts();
 
 	ResourceSaver::remove_resource_format_saver(resource_saver_text);
 	resource_saver_text.unref();
@@ -955,9 +1019,6 @@ void unregister_scene_types() {
 
 	ResourceLoader::remove_resource_format_loader(resource_loader_shader);
 	resource_loader_shader.unref();
-
-	ResourceLoader::remove_resource_format_loader(resource_loader_bmfont);
-	resource_loader_bmfont.unref();
 
 	//StandardMaterial3D is not initialised when 3D is disabled, so it shouldn't be cleaned up either
 #ifndef _3D_DISABLED

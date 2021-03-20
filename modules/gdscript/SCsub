@@ -17,3 +17,7 @@ if env["tools"]:
         # Using a define in the disabled case, to avoid having an extra define
         # in regular builds where all modules are enabled.
         env_gdscript.Append(CPPDEFINES=["GDSCRIPT_NO_LSP"])
+
+if env["tests"]:
+    env_gdscript.Append(CPPDEFINES=["TESTS_ENABLED"])
+    env_gdscript.add_source_files(env.modules_sources, "./tests/*.cpp")

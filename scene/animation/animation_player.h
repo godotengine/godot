@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -37,20 +37,25 @@
 #include "scene/resources/animation.h"
 
 #ifdef TOOLS_ENABLED
-// To save/restore animated values
-class AnimatedValuesBackup {
+class AnimatedValuesBackup : public Reference {
+	GDCLASS(AnimatedValuesBackup, Reference);
+
 	struct Entry {
-		Object *object;
+		Object *object = nullptr;
 		Vector<StringName> subpath; // Unused if bone
-		int bone_idx; // -1 if not a bone
+		int bone_idx = -1; // -1 if not a bone
 		Variant value;
 	};
 	Vector<Entry> entries;
 
 	friend class AnimationPlayer;
 
+protected:
+	static void _bind_methods();
+
 public:
 	void update_skeletons();
+	void restore() const;
 };
 #endif
 
@@ -59,7 +64,7 @@ class AnimationPlayer : public Node {
 	OBJ_CATEGORY("Animation Nodes");
 
 public:
-	enum AnimationProcessMode {
+	enum AnimationProcessCallback {
 		ANIMATION_PROCESS_PHYSICS,
 		ANIMATION_PROCESS_IDLE,
 		ANIMATION_PROCESS_MANUAL,
@@ -72,7 +77,6 @@ public:
 
 private:
 	enum {
-
 		NODE_CACHE_UPDATE_MAX = 1024,
 		BLEND_FROM_MAX = 3
 	};
@@ -114,8 +118,6 @@ private:
 			Variant value_accum;
 			uint64_t accum_pass = 0;
 			Variant capture;
-
-			PropertyAnim() {}
 		};
 
 		Map<StringName, PropertyAnim> property_anim;
@@ -126,8 +128,6 @@ private:
 			float bezier_accum = 0.0;
 			Object *object = nullptr;
 			uint64_t accum_pass = 0;
-
-			BezierAnim() {}
 		};
 
 		Map<StringName, BezierAnim> bezier_anim;
@@ -137,7 +137,7 @@ private:
 
 	struct TrackNodeCacheKey {
 		ObjectID id;
-		int bone_idx;
+		int bone_idx = -1;
 
 		inline bool operator<(const TrackNodeCacheKey &p_right) const {
 			if (id == p_right.id) {
@@ -151,16 +151,16 @@ private:
 	Map<TrackNodeCacheKey, TrackNodeCache> node_cache_map;
 
 	TrackNodeCache *cache_update[NODE_CACHE_UPDATE_MAX];
-	int cache_update_size;
+	int cache_update_size = 0;
 	TrackNodeCache::PropertyAnim *cache_update_prop[NODE_CACHE_UPDATE_MAX];
-	int cache_update_prop_size;
+	int cache_update_prop_size = 0;
 	TrackNodeCache::BezierAnim *cache_update_bezier[NODE_CACHE_UPDATE_MAX];
-	int cache_update_bezier_size;
+	int cache_update_bezier_size = 0;
 	Set<TrackNodeCache *> playing_caches;
 
-	uint64_t accum_pass;
-	float speed_scale;
-	float default_blend_time;
+	uint64_t accum_pass = 1;
+	float speed_scale = 1.0;
+	float default_blend_time = 0.0;
 
 	struct AnimationData {
 		String name;
@@ -179,53 +179,43 @@ private:
 	Map<BlendKey, float> blend_times;
 
 	struct PlaybackData {
-		AnimationData *from;
-		float pos;
-		float speed_scale;
-
-		PlaybackData() {
-			pos = 0;
-			speed_scale = 1.0;
-			from = nullptr;
-		}
+		AnimationData *from = nullptr;
+		float pos = 0.0;
+		float speed_scale = 1.0;
 	};
 
 	struct Blend {
 		PlaybackData data;
 
-		float blend_time;
-		float blend_left;
-
-		Blend() {
-			blend_left = 0;
-			blend_time = 0;
-		}
+		float blend_time = 0.0;
+		float blend_left = 0.0;
 	};
 
 	struct Playback {
 		List<Blend> blend;
 		PlaybackData current;
 		StringName assigned;
-		bool seeked;
-		bool started;
+		bool seeked = false;
+		bool started = false;
 	} playback;
 
 	List<StringName> queued;
 
-	bool end_reached;
-	bool end_notify;
+	bool end_reached = false;
+	bool end_notify = false;
 
 	String autoplay;
-	AnimationProcessMode animation_process_mode;
-	AnimationMethodCallMode method_call_mode;
-	bool processing;
-	bool active;
+	bool reset_on_save = true;
+	AnimationProcessCallback process_callback = ANIMATION_PROCESS_IDLE;
+	AnimationMethodCallMode method_call_mode = ANIMATION_METHOD_CALL_DEFERRED;
+	bool processing = false;
+	bool active = true;
 
 	NodePath root;
 
 	void _animation_process_animation(AnimationData *p_anim, float p_time, float p_delta, float p_interp, bool p_is_current = true, bool p_seeked = false, bool p_started = false);
 
-	void _ensure_node_caches(AnimationData *p_anim);
+	void _ensure_node_caches(AnimationData *p_anim, Node *p_root_override = nullptr);
 	void _animation_process_data(PlaybackData &cd, float p_delta, float p_blend, bool p_seeked, bool p_started);
 	void _animation_process2(float p_delta, bool p_started);
 	void _animation_update_transforms();
@@ -252,7 +242,7 @@ private:
 
 	void _set_process(bool p_process, bool p_force = false);
 
-	bool playing;
+	bool playing = false;
 
 protected:
 	bool _set(const StringName &p_name, const Variant &p_value);
@@ -305,8 +295,11 @@ public:
 	void set_autoplay(const String &p_name);
 	String get_autoplay() const;
 
-	void set_animation_process_mode(AnimationProcessMode p_mode);
-	AnimationProcessMode get_animation_process_mode() const;
+	void set_reset_on_save_enabled(bool p_enabled);
+	bool is_reset_on_save_enabled() const;
+
+	void set_process_callback(AnimationProcessCallback p_mode);
+	AnimationProcessCallback get_process_callback() const;
 
 	void set_method_call_mode(AnimationMethodCallMode p_mode);
 	AnimationMethodCallMode get_method_call_mode() const;
@@ -326,16 +319,16 @@ public:
 	void get_argument_options(const StringName &p_function, int p_idx, List<String> *r_options) const override;
 
 #ifdef TOOLS_ENABLED
-	// These may be interesting for games, but are too dangerous for general use
-	AnimatedValuesBackup backup_animated_values();
-	void restore_animated_values(const AnimatedValuesBackup &p_backup);
+	Ref<AnimatedValuesBackup> backup_animated_values(Node *p_root_override = nullptr);
+	Ref<AnimatedValuesBackup> apply_reset(bool p_user_initiated = false);
+	bool can_apply_reset() const;
 #endif
 
 	AnimationPlayer();
 	~AnimationPlayer();
 };
 
-VARIANT_ENUM_CAST(AnimationPlayer::AnimationProcessMode);
+VARIANT_ENUM_CAST(AnimationPlayer::AnimationProcessCallback);
 VARIANT_ENUM_CAST(AnimationPlayer::AnimationMethodCallMode);
 
 #endif

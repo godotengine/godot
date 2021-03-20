@@ -50,8 +50,7 @@ Godot is not only an engine but an ever-growing community of users and engine
 developers. The main community channels are listed [on the homepage](https://godotengine.org/community).
 
 To get in touch with the engine developers, the best way is to join the
-[#godotengine-devel IRC channel](https://webchat.freenode.net/?channels=godotengine-devel)
-on Freenode.
+[Godot Contributors Chat](https://chat.godotengine.org).
 
 To get started contributing to the project, see the [contributing guide](CONTRIBUTING.md).
 
@@ -72,7 +71,6 @@ provided by the community, such as text and video tutorials, demos, etc.
 Consult the [community channels](https://godotengine.org/community)
 for more information.
 
-[![Actions Build Status](https://github.com/godotengine/godot/workflows/Godot/badge.svg?branch=master)](https://github.com/godotengine/godot/actions)
 [![Code Triagers Badge](https://www.codetriage.com/godotengine/godot/badges/users.svg)](https://www.codetriage.com/godotengine/godot)
 [![Translate on Weblate](https://hosted.weblate.org/widgets/godot-engine/-/godot/svg-badge.svg)](https://hosted.weblate.org/engage/godot-engine/?utm_source=widget)
 [![Total alerts on LGTM](https://img.shields.io/lgtm/alerts/g/godotengine/godot.svg?logo=lgtm&logoWidth=18)](https://lgtm.com/projects/g/godotengine/godot/alerts)

@@ -1,4 +1,6 @@
 <Project>
+  <Import Project="$(MSBuildThisFileDirectory)\SdkPackageVersions.props" />
+
   <PropertyGroup>
     <!-- Determines if we should import Microsoft.NET.Sdk, if it wasn't already imported. -->
     <GodotSdkImportsMicrosoftNetSdk Condition=" '$(UsingMicrosoftNETSdk)' != 'true' ">true</GodotSdkImportsMicrosoftNetSdk>
@@ -14,15 +16,15 @@
     <GodotProjectDir Condition=" '$(SolutionDir)' == '' ">$(MSBuildProjectDirectory)</GodotProjectDir>
     <GodotProjectDir>$([MSBuild]::EnsureTrailingSlash('$(GodotProjectDir)'))</GodotProjectDir>
 
-    <!-- Custom output paths for Godot projects. In brief, 'bin\' and 'obj\' are moved to '$(GodotProjectDir)\.mono\temp\'. -->
-    <BaseOutputPath>$(GodotProjectDir).mono\temp\bin\</BaseOutputPath>
-    <OutputPath>$(GodotProjectDir).mono\temp\bin\$(Configuration)\</OutputPath>
+    <!-- Custom output paths for Godot projects. In brief, 'bin\' and 'obj\' are moved to '$(GodotProjectDir)\.godot\mono\temp\'. -->
+    <BaseOutputPath>$(GodotProjectDir).godot\mono\temp\bin\</BaseOutputPath>
+    <OutputPath>$(GodotProjectDir).godot\mono\temp\bin\$(Configuration)\</OutputPath>
     <!--
     Use custom IntermediateOutputPath and BaseIntermediateOutputPath only if it wasn't already set.
     Otherwise the old values may have already been changed by MSBuild which can cause problems with NuGet.
     -->
-    <IntermediateOutputPath Condition=" '$(IntermediateOutputPath)' == '' ">$(GodotProjectDir).mono\temp\obj\$(Configuration)\</IntermediateOutputPath>
-    <BaseIntermediateOutputPath Condition=" '$(BaseIntermediateOutputPath)' == '' ">$(GodotProjectDir).mono\temp\obj\</BaseIntermediateOutputPath>
+    <IntermediateOutputPath Condition=" '$(IntermediateOutputPath)' == '' ">$(GodotProjectDir).godot\mono\temp\obj\$(Configuration)\</IntermediateOutputPath>
+    <BaseIntermediateOutputPath Condition=" '$(BaseIntermediateOutputPath)' == '' ">$(GodotProjectDir).godot\mono\temp\obj\</BaseIntermediateOutputPath>
 
     <!-- Do not append the target framework name to the output path. -->
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
@@ -88,12 +90,13 @@
   <PropertyGroup>
     <!-- ExportDebug also defines DEBUG like Debug does. -->
     <DefineConstants Condition=" '$(Configuration)' == 'ExportDebug' ">$(DefineConstants);DEBUG</DefineConstants>
-    <!-- Debug defines TOOLS to differenciate between Debug and ExportDebug configurations. -->
+    <!-- Debug defines TOOLS to differentiate between Debug and ExportDebug configurations. -->
     <DefineConstants Condition=" '$(Configuration)' == 'Debug' ">$(DefineConstants);TOOLS</DefineConstants>
 
     <DefineConstants>$(GodotDefineConstants);$(DefineConstants)</DefineConstants>
   </PropertyGroup>
 
+  <!-- Godot API references -->
   <ItemGroup>
     <!--
     TODO:
@@ -102,11 +105,11 @@
     -->
     <Reference Include="GodotSharp">
       <Private>false</Private>
-      <HintPath>$(GodotProjectDir).mono\assemblies\$(GodotApiConfiguration)\GodotSharp.dll</HintPath>
+      <HintPath>$(GodotProjectDir).godot\mono\assemblies\$(GodotApiConfiguration)\GodotSharp.dll</HintPath>
     </Reference>
     <Reference Include="GodotSharpEditor" Condition=" '$(Configuration)' == 'Debug' ">
       <Private>false</Private>
-      <HintPath>$(GodotProjectDir).mono\assemblies\$(GodotApiConfiguration)\GodotSharpEditor.dll</HintPath>
+      <HintPath>$(GodotProjectDir).godot\mono\assemblies\$(GodotApiConfiguration)\GodotSharpEditor.dll</HintPath>
     </Reference>
   </ItemGroup>
 </Project>

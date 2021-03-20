@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -31,7 +31,9 @@
 #ifndef ANIMATION_H
 #define ANIMATION_H
 
-#include "core/resource.h"
+#include "core/io/resource.h"
+
+#define ANIM_MIN_LENGTH 0.001
 
 class Animation : public Resource {
 	GDCLASS(Animation, Resource);
@@ -63,28 +65,19 @@ public:
 
 private:
 	struct Track {
-		TrackType type;
-		InterpolationType interpolation;
-		bool loop_wrap;
+		TrackType type = TrackType::TYPE_ANIMATION;
+		InterpolationType interpolation = INTERPOLATION_LINEAR;
+		bool loop_wrap = true;
 		NodePath path; // path to something
-		bool imported;
-		bool enabled;
-		Track() {
-			interpolation = INTERPOLATION_LINEAR;
-			imported = false;
-			loop_wrap = true;
-			enabled = true;
-		}
+		bool imported = false;
+		bool enabled = true;
+		Track() {}
 		virtual ~Track() {}
 	};
 
 	struct Key {
-		float transition;
-		float time; // time in secs
-		Key() {
-			transition = 1;
-			time = 0;
-		}
+		float transition = 1.0;
+		float time = 0.0; // time in secs
 	};
 
 	// transform key holds either Vector3 or Quaternion
@@ -110,13 +103,12 @@ private:
 	/* PROPERTY VALUE TRACK */
 
 	struct ValueTrack : public Track {
-		UpdateMode update_mode;
-		bool update_on_seek;
+		UpdateMode update_mode = UPDATE_CONTINUOUS;
+		bool update_on_seek = false;
 		Vector<TKey<Variant>> values;
 
 		ValueTrack() {
 			type = TYPE_VALUE;
-			update_mode = UPDATE_CONTINUOUS;
 		}
 	};
 
@@ -137,7 +129,7 @@ private:
 	struct BezierKey {
 		Vector2 in_handle; //relative (x always <0)
 		Vector2 out_handle; //relative (x always >0)
-		float value;
+		float value = 0.0;
 	};
 
 	struct BezierTrack : public Track {
@@ -152,11 +144,9 @@ private:
 
 	struct AudioKey {
 		RES stream;
-		float start_offset; //offset from start
-		float end_offset; //offset from end, if 0 then full length or infinite
+		float start_offset = 0.0; //offset from start
+		float end_offset = 0.0; //offset from end, if 0 then full length or infinite
 		AudioKey() {
-			start_offset = 0;
-			end_offset = 0;
 		}
 	};
 
@@ -215,9 +205,9 @@ private:
 	_FORCE_INLINE_ void _value_track_get_key_indices_in_range(const ValueTrack *vt, float from_time, float to_time, List<int> *p_indices) const;
 	_FORCE_INLINE_ void _method_track_get_key_indices_in_range(const MethodTrack *mt, float from_time, float to_time, List<int> *p_indices) const;
 
-	float length;
-	float step;
-	bool loop;
+	float length = 1.0;
+	float step = 0.1;
+	bool loop = false;
 
 	// bind helpers
 private:
@@ -262,6 +252,8 @@ protected:
 	bool _get(const StringName &p_name, Variant &r_ret) const;
 	void _get_property_list(List<PropertyInfo> *p_list) const;
 
+	virtual void reset_state() override;
+
 	static void _bind_methods();
 
 public:
@@ -293,7 +285,7 @@ public:
 	void track_set_key_time(int p_track, int p_key_idx, float p_time);
 	int track_find_key(int p_track, float p_time, bool p_exact = false) const;
 	void track_remove_key(int p_track, int p_idx);
-	void track_remove_key_at_position(int p_track, float p_pos);
+	void track_remove_key_at_time(int p_track, float p_time);
 	int track_get_key_count(int p_track) const;
 	Variant track_get_key_value(int p_track, int p_key_idx) const;
 	float track_get_key_time(int p_track, int p_key_idx) const;

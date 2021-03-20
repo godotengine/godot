@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -31,7 +31,7 @@
 #ifndef GODOT_UPNP_H
 #define GODOT_UPNP_H
 
-#include "core/reference.h"
+#include "core/object/reference.h"
 
 #include "upnp_device.h"
 
@@ -41,9 +41,9 @@ class UPNP : public Reference {
 	GDCLASS(UPNP, Reference);
 
 private:
-	String discover_multicast_if;
-	int discover_local_port;
-	bool discover_ipv6;
+	String discover_multicast_if = "";
+	int discover_local_port = 0;
+	bool discover_ipv6 = false;
 
 	Vector<Ref<UPNPDevice>> devices;
 
@@ -57,7 +57,6 @@ protected:
 
 public:
 	enum UPNPResult {
-
 		UPNP_RESULT_SUCCESS,
 		UPNP_RESULT_NOT_AUTHORIZED,
 		UPNP_RESULT_PORT_MAPPING_NOT_FOUND,

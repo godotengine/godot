@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -32,8 +32,8 @@
 
 #ifdef PULSEAUDIO_ENABLED
 
+#include "core/config/project_settings.h"
 #include "core/os/os.h"
-#include "core/project_settings.h"
 
 void AudioDriverPulseAudio::pa_state_cb(pa_context *c, void *userdata) {
 	AudioDriverPulseAudio *ad = (AudioDriverPulseAudio *)userdata;
@@ -179,7 +179,7 @@ Error AudioDriverPulseAudio::init_device() {
 			break;
 	}
 
-	int latency = GLOBAL_GET("audio/output_latency");
+	int latency = GLOBAL_GET("audio/driver/output_latency");
 	buffer_frames = closest_power_of_2(latency * mix_rate / 1000);
 	pa_buffer_size = buffer_frames * pa_map.channels;
 
@@ -233,11 +233,20 @@ Error AudioDriverPulseAudio::init_device() {
 }
 
 Error AudioDriverPulseAudio::init() {
+#ifdef DEBUG_ENABLED
+	int dylibloader_verbose = 1;
+#else
+	int dylibloader_verbose = 0;
+#endif
+	if (initialize_pulse(dylibloader_verbose)) {
+		return ERR_CANT_OPEN;
+	}
+
 	active = false;
 	thread_exited = false;
 	exit_thread = false;
 
-	mix_rate = GLOBAL_GET("audio/mix_rate");
+	mix_rate = GLOBAL_GET("audio/driver/mix_rate");
 
 	pa_ml = pa_mainloop_new();
 	ERR_FAIL_COND_V(pa_ml == nullptr, ERR_CANT_OPEN);
@@ -287,7 +296,7 @@ Error AudioDriverPulseAudio::init() {
 
 	Error err = init_device();
 	if (err == OK) {
-		thread = Thread::create(AudioDriverPulseAudio::thread_func, this);
+		thread.start(AudioDriverPulseAudio::thread_func, this);
 	}
 
 	return OK;
@@ -581,16 +590,10 @@ void AudioDriverPulseAudio::set_device(String device) {
 }
 
 void AudioDriverPulseAudio::lock() {
-	if (!thread) {
-		return;
-	}
 	mutex.lock();
 }
 
 void AudioDriverPulseAudio::unlock() {
-	if (!thread) {
-		return;
-	}
 	mutex.unlock();
 }
 
@@ -603,12 +606,12 @@ void AudioDriverPulseAudio::finish_device() {
 }
 
 void AudioDriverPulseAudio::finish() {
-	if (!thread) {
+	if (!thread.is_started()) {
 		return;
 	}
 
 	exit_thread = true;
-	Thread::wait_to_finish(thread);
+	thread.wait_to_finish();
 
 	finish_device();
 
@@ -622,10 +625,6 @@ void AudioDriverPulseAudio::finish() {
 		pa_mainloop_free(pa_ml);
 		pa_ml = nullptr;
 	}
-
-	memdelete(thread);
-
-	thread = nullptr;
 }
 
 Error AudioDriverPulseAudio::capture_init_device() {

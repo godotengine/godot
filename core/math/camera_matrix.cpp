@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -31,7 +31,7 @@
 #include "camera_matrix.h"
 
 #include "core/math/math_funcs.h"
-#include "core/print_string.h"
+#include "core/string/print_string.h"
 
 float CameraMatrix::determinant() const {
 	return matrix[0][3] * matrix[1][2] * matrix[2][1] * matrix[3][0] - matrix[0][2] * matrix[1][3] * matrix[2][1] * matrix[3][0] -
@@ -74,13 +74,22 @@ Plane CameraMatrix::xform4(const Plane &p_vec4) const {
 	return ret;
 }
 
+void CameraMatrix::adjust_perspective_znear(real_t p_new_znear) {
+	real_t zfar = get_z_far();
+	real_t znear = p_new_znear;
+
+	real_t deltaZ = zfar - znear;
+	matrix[2][2] = -(zfar + znear) / deltaZ;
+	matrix[3][2] = -2 * znear * zfar / deltaZ;
+}
+
 void CameraMatrix::set_perspective(real_t p_fovy_degrees, real_t p_aspect, real_t p_z_near, real_t p_z_far, bool p_flip_fov) {
 	if (p_flip_fov) {
 		p_fovy_degrees = get_fovy(p_fovy_degrees, 1.0 / p_aspect);
 	}
 
 	real_t sine, cotangent, deltaZ;
-	real_t radians = p_fovy_degrees / 2.0 * Math_PI / 180.0;
+	real_t radians = Math::deg2rad(p_fovy_degrees / 2.0);
 
 	deltaZ = p_z_far - p_z_near;
 	sine = Math::sin(radians);
@@ -107,7 +116,7 @@ void CameraMatrix::set_perspective(real_t p_fovy_degrees, real_t p_aspect, real_
 
 	real_t left, right, modeltranslation, ymax, xmax, frustumshift;
 
-	ymax = p_z_near * tan(p_fovy_degrees * Math_PI / 360.0f);
+	ymax = p_z_near * tan(Math::deg2rad(p_fovy_degrees / 2.0));
 	xmax = ymax * p_aspect;
 	frustumshift = (p_intraocular_dist / 2.0) * p_z_near / p_convergence_dist;
 
@@ -278,7 +287,7 @@ Vector2 CameraMatrix::get_viewport_half_extents() const {
 	return Vector2(res.x, res.y);
 }
 
-void CameraMatrix::get_far_plane_size(real_t &r_width, real_t &r_height) const {
+Vector2 CameraMatrix::get_far_plane_half_extents() const {
 	const real_t *matrix = (const real_t *)this->matrix;
 	///////--- Far Plane ---///////
 	Plane far_plane = Plane(matrix[3] - matrix[2],
@@ -303,8 +312,7 @@ void CameraMatrix::get_far_plane_size(real_t &r_width, real_t &r_height) const {
 	Vector3 res;
 	far_plane.intersect_3(right_plane, top_plane, &res);
 
-	r_width = res.x;
-	r_height = res.y;
+	return Vector2(res.x, res.y);
 }
 
 bool CameraMatrix::get_endpoints(const Transform &p_transform, Vector3 *p_8points) const {
@@ -656,6 +664,17 @@ real_t CameraMatrix::get_fov() const {
 	}
 }
 
+float CameraMatrix::get_lod_multiplier() const {
+	if (is_orthogonal()) {
+		return get_viewport_half_extents().x;
+	} else {
+		float zn = get_z_near();
+		float width = get_viewport_half_extents().x * 2.0;
+		return 1.0 / (zn / width);
+	}
+
+	//usage is lod_size / (lod_distance * multiplier) < threshold
+}
 void CameraMatrix::make_scale(const Vector3 &p_scale) {
 	set_identity();
 	matrix[0][0] = p_scale.x;

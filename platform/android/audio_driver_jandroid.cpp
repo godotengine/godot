@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -30,8 +30,8 @@
 
 #include "audio_driver_jandroid.h"
 
+#include "core/config/project_settings.h"
 #include "core/os/os.h"
-#include "core/project_settings.h"
 #include "thread_jandroid.h"
 
 AudioDriverAndroid *AudioDriverAndroid::s_ad = nullptr;
@@ -72,10 +72,10 @@ Error AudioDriverAndroid::init() {
 
 	//        __android_log_print(ANDROID_LOG_VERBOSE, "SDL", "SDL audio: opening device");
 
-	JNIEnv *env = ThreadAndroid::get_env();
-	int mix_rate = GLOBAL_GET("audio/mix_rate");
+	JNIEnv *env = get_jni_env();
+	int mix_rate = GLOBAL_GET("audio/driver/mix_rate");
 
-	int latency = GLOBAL_GET("audio/output_latency");
+	int latency = GLOBAL_GET("audio/driver/output_latency");
 	unsigned int buffer_size = next_power_of_2(latency * mix_rate / 1000);
 	print_verbose("Audio buffer size: " + itos(buffer_size));
 
@@ -98,7 +98,7 @@ void AudioDriverAndroid::start() {
 }
 
 void AudioDriverAndroid::setup(jobject p_io) {
-	JNIEnv *env = ThreadAndroid::get_env();
+	JNIEnv *env = get_jni_env();
 	io = p_io;
 
 	jclass c = env->GetObjectClass(io);
@@ -162,7 +162,7 @@ void AudioDriverAndroid::unlock() {
 }
 
 void AudioDriverAndroid::finish() {
-	JNIEnv *env = ThreadAndroid::get_env();
+	JNIEnv *env = get_jni_env();
 	env->CallVoidMethod(io, _quit);
 
 	if (audioBuffer) {
@@ -175,7 +175,7 @@ void AudioDriverAndroid::finish() {
 }
 
 void AudioDriverAndroid::set_pause(bool p_pause) {
-	JNIEnv *env = ThreadAndroid::get_env();
+	JNIEnv *env = get_jni_env();
 	env->CallVoidMethod(io, _pause, p_pause);
 }
 

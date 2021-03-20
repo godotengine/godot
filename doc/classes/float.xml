@@ -9,7 +9,23 @@
 	<tutorials>
 	</tutorials>
 	<methods>
-		<method name="float">
+		<method name="float" qualifiers="constructor">
+			<return type="float">
+			</return>
+			<description>
+				Constructs a default-initialized [float] set to [code]0.0[/code].
+			</description>
+		</method>
+		<method name="float" qualifiers="constructor">
+			<return type="float">
+			</return>
+			<argument index="0" name="from" type="float">
+			</argument>
+			<description>
+				Constructs a [float] as a copy of the given [float].
+			</description>
+		</method>
+		<method name="float" qualifiers="constructor">
 			<return type="float">
 			</return>
 			<argument index="0" name="from" type="bool">
@@ -18,22 +34,233 @@
 				Cast a [bool] value to a floating-point value, [code]float(true)[/code] will be equal to 1.0 and [code]float(false)[/code] will be equal to 0.0.
 			</description>
 		</method>
-		<method name="float">
+		<method name="float" qualifiers="constructor">
 			<return type="float">
 			</return>
 			<argument index="0" name="from" type="int">
 			</argument>
 			<description>
-				Cast an [int] value to a floating-point value, [code]float(1)[/code] will be equal to 1.0.
+				Cast an [int] value to a floating-point value, [code]float(1)[/code] will be equal to [code]1.0[/code].
 			</description>
 		</method>
-		<method name="float">
-			<return type="float">
+		<method name="operator !=" qualifiers="operator">
+			<return type="bool">
 			</return>
-			<argument index="0" name="from" type="String">
+			<argument index="0" name="right" type="float">
 			</argument>
 			<description>
-				Cast a [String] value to a floating-point value. This method accepts float value strings like [code]"1.23"[/code] and exponential notation strings for its parameter so calling [code]float("1e3")[/code] will return 1000.0 and calling [code]float("1e-3")[/code] will return 0.001. Calling this method with an invalid float string will return 0. This method stops parsing at the first invalid character and will return the parsed result so far, so calling [code]float("1a3")[/code] will return 1 while calling [code]float("1e3a2")[/code] will return 1000.0.
+			</description>
+		</method>
+		<method name="operator !=" qualifiers="operator">
+			<return type="bool">
+			</return>
+			<argument index="0" name="right" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="operator *" qualifiers="operator">
+			<return type="float">
+			</return>
+			<argument index="0" name="right" type="float">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="operator *" qualifiers="operator">
+			<return type="Vector2">
+			</return>
+			<argument index="0" name="right" type="Vector2">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="operator *" qualifiers="operator">
+			<return type="Vector2i">
+			</return>
+			<argument index="0" name="right" type="Vector2i">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="operator *" qualifiers="operator">
+			<return type="Vector3">
+			</return>
+			<argument index="0" name="right" type="Vector3">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="operator *" qualifiers="operator">
+			<return type="Vector3i">
+			</return>
+			<argument index="0" name="right" type="Vector3i">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="operator *" qualifiers="operator">
+			<return type="Quat">
+			</return>
+			<argument index="0" name="right" type="Quat">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="operator *" qualifiers="operator">
+			<return type="Color">
+			</return>
+			<argument index="0" name="right" type="Color">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="operator *" qualifiers="operator">
+			<return type="float">
+			</return>
+			<argument index="0" name="right" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="operator +" qualifiers="operator">
+			<return type="float">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="operator +" qualifiers="operator">
+			<return type="float">
+			</return>
+			<argument index="0" name="right" type="float">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="operator +" qualifiers="operator">
+			<return type="float">
+			</return>
+			<argument index="0" name="right" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="operator -" qualifiers="operator">
+			<return type="float">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="operator -" qualifiers="operator">
+			<return type="float">
+			</return>
+			<argument index="0" name="right" type="float">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="operator -" qualifiers="operator">
+			<return type="float">
+			</return>
+			<argument index="0" name="right" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="operator /" qualifiers="operator">
+			<return type="float">
+			</return>
+			<argument index="0" name="right" type="float">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="operator /" qualifiers="operator">
+			<return type="float">
+			</return>
+			<argument index="0" name="right" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="operator &lt;" qualifiers="operator">
+			<return type="bool">
+			</return>
+			<argument index="0" name="right" type="float">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="operator &lt;" qualifiers="operator">
+			<return type="bool">
+			</return>
+			<argument index="0" name="right" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="operator &lt;=" qualifiers="operator">
+			<return type="bool">
+			</return>
+			<argument index="0" name="right" type="float">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="operator &lt;=" qualifiers="operator">
+			<return type="bool">
+			</return>
+			<argument index="0" name="right" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="operator ==" qualifiers="operator">
+			<return type="bool">
+			</return>
+			<argument index="0" name="right" type="float">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="operator ==" qualifiers="operator">
+			<return type="bool">
+			</return>
+			<argument index="0" name="right" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="operator &gt;" qualifiers="operator">
+			<return type="bool">
+			</return>
+			<argument index="0" name="right" type="float">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="operator &gt;" qualifiers="operator">
+			<return type="bool">
+			</return>
+			<argument index="0" name="right" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="operator &gt;=" qualifiers="operator">
+			<return type="bool">
+			</return>
+			<argument index="0" name="right" type="float">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="operator &gt;=" qualifiers="operator">
+			<return type="bool">
+			</return>
+			<argument index="0" name="right" type="int">
+			</argument>
+			<description>
 			</description>
 		</method>
 	</methods>

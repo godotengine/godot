@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -30,11 +30,11 @@
 
 #include "animation_state_machine_editor.h"
 
+#include "core/config/project_settings.h"
 #include "core/input/input.h"
 #include "core/io/resource_loader.h"
 #include "core/math/geometry_2d.h"
 #include "core/os/keyboard.h"
-#include "core/project_settings.h"
 #include "editor/editor_scale.h"
 #include "scene/animation/animation_blend_tree.h"
 #include "scene/animation/animation_player.h"
@@ -386,6 +386,12 @@ void AnimationNodeStateMachineEditor::_state_machine_gui_input(const Ref<InputEv
 			over_text = over_text_now;
 		}
 	}
+
+	Ref<InputEventPanGesture> pan_gesture = p_event;
+	if (pan_gesture.is_valid()) {
+		h_scroll->set_value(h_scroll->get_value() + h_scroll->get_page() * pan_gesture->get_delta().x / 8);
+		v_scroll->set_value(v_scroll->get_value() + v_scroll->get_page() * pan_gesture->get_delta().y / 8);
+	}
 }
 
 void AnimationNodeStateMachineEditor::_file_opened(const String &p_file) {
@@ -514,7 +520,7 @@ void AnimationNodeStateMachineEditor::_connection_draw(const Vector2 &p_from, co
 
 	Transform2D xf;
 	xf.elements[0] = (p_to - p_from).normalized();
-	xf.elements[1] = xf.elements[0].tangent();
+	xf.elements[1] = xf.elements[0].orthogonal();
 	xf.elements[2] = (p_from + p_to) * 0.5 - xf.elements[1] * icon->get_height() * 0.5 - xf.elements[0] * icon->get_height() * 0.5;
 
 	state_machine_draw->draw_set_transform_matrix(xf);
@@ -553,6 +559,7 @@ void AnimationNodeStateMachineEditor::_state_machine_draw() {
 	Ref<StyleBox> style_selected = get_theme_stylebox("state_machine_selectedframe", "GraphNode");
 
 	Ref<Font> font = get_theme_font("title_font", "GraphNode");
+	int font_size = get_theme_font_size("title_font_size", "GraphNode");
 	Color font_color = get_theme_color("title_color", "GraphNode");
 	Ref<Texture2D> play = get_theme_icon("Play", "EditorIcons");
 	Ref<Texture2D> auto_play = get_theme_icon("AutoPlay", "EditorIcons");
@@ -606,9 +613,9 @@ void AnimationNodeStateMachineEditor::_state_machine_draw() {
 		Ref<StyleBox> sb = E->get() == selected_node ? style_selected : style;
 
 		Size2 s = sb->get_minimum_size();
-		int strsize = font->get_string_size(name).width;
+		int strsize = font->get_string_size(name, font_size).width;
 		s.width += strsize;
-		s.height += MAX(font->get_height(), play->get_height());
+		s.height += MAX(font->get_height(font_size), play->get_height());
 		s.width += sep + play->get_width();
 		if (needs_editor) {
 			s.width += sep + edit->get_width();
@@ -683,7 +690,7 @@ void AnimationNodeStateMachineEditor::_state_machine_draw() {
 		tl.width = tr_bidi_offset;
 
 		if (state_machine->has_transition(tl.to_node, tl.from_node)) { //offset if same exists
-			Vector2 offset = -(tl.from - tl.to).normalized().tangent() * tr_bidi_offset;
+			Vector2 offset = -(tl.from - tl.to).normalized().orthogonal() * tr_bidi_offset;
 			tl.from += offset;
 			tl.to += offset;
 		}
@@ -735,7 +742,7 @@ void AnimationNodeStateMachineEditor::_state_machine_draw() {
 		Ref<AnimationNode> anode = state_machine->get_node(name);
 		bool needs_editor = AnimationTreeEditor::get_singleton()->can_edit(anode);
 		Ref<StyleBox> sb = name == selected_node ? style_selected : style;
-		int strsize = font->get_string_size(name).width;
+		int strsize = font->get_string_size(name, font_size).width;
 
 		NodeRect &nr = node_rects.write[i];
 
@@ -753,12 +760,12 @@ void AnimationNodeStateMachineEditor::_state_machine_draw() {
 
 		bool onstart = state_machine->get_start_node() == name;
 		if (onstart) {
-			state_machine_draw->draw_string(font, offset + Vector2(0, -font->get_height() - 3 * EDSCALE + font->get_ascent()), TTR("Start"), font_color);
+			state_machine_draw->draw_string(font, offset + Vector2(0, -font->get_height(font_size) - 3 * EDSCALE + font->get_ascent(font_size)), TTR("Start"), HALIGN_LEFT, -1, font_size, font_color);
 		}
 
 		if (state_machine->get_end_node() == name) {
-			int endofs = nr.node.size.x - font->get_string_size(TTR("End")).x;
-			state_machine_draw->draw_string(font, offset + Vector2(endofs, -font->get_height() - 3 * EDSCALE + font->get_ascent()), TTR("End"), font_color);
+			int endofs = nr.node.size.x - font->get_string_size(TTR("End"), font_size).x;
+			state_machine_draw->draw_string(font, offset + Vector2(endofs, -font->get_height(font_size) - 3 * EDSCALE + font->get_ascent(font_size)), TTR("End"), HALIGN_LEFT, -1, font_size, font_color);
 		}
 
 		offset.x += sb->get_offset().x;
@@ -775,10 +782,10 @@ void AnimationNodeStateMachineEditor::_state_machine_draw() {
 		}
 		offset.x += sep + play->get_width();
 
-		nr.name.position = offset + Vector2(0, (h - font->get_height()) / 2).floor();
-		nr.name.size = Vector2(strsize, font->get_height());
+		nr.name.position = offset + Vector2(0, (h - font->get_height(font_size)) / 2).floor();
+		nr.name.size = Vector2(strsize, font->get_height(font_size));
 
-		state_machine_draw->draw_string(font, nr.name.position + Vector2(0, font->get_ascent()), name, font_color);
+		state_machine_draw->draw_string(font, nr.name.position + Vector2(0, font->get_ascent(font_size)), name, HALIGN_LEFT, -1, font_size, font_color);
 		offset.x += strsize + sep;
 
 		if (needs_editor) {
@@ -874,7 +881,7 @@ void AnimationNodeStateMachineEditor::_update_graph() {
 }
 
 void AnimationNodeStateMachineEditor::_notification(int p_what) {
-	if (p_what == NOTIFICATION_ENTER_TREE || p_what == NOTIFICATION_THEME_CHANGED) {
+	if (p_what == NOTIFICATION_ENTER_TREE || p_what == NOTIFICATION_THEME_CHANGED || p_what == NOTIFICATION_LAYOUT_DIRECTION_CHANGED || p_what == NOTIFICATION_TRANSLATION_CHANGED) {
 		error_panel->add_theme_style_override("panel", get_theme_stylebox("bg", "Tree"));
 		error_label->add_theme_color_override("font_color", get_theme_color("error_color", "Editor"));
 		panel->add_theme_style_override("panel", get_theme_stylebox("bg", "Tree"));
@@ -1284,18 +1291,18 @@ AnimationNodeStateMachineEditor::AnimationNodeStateMachineEditor() {
 	state_machine_play_pos = memnew(Control);
 	state_machine_draw->add_child(state_machine_play_pos);
 	state_machine_play_pos->set_mouse_filter(MOUSE_FILTER_PASS); //pass all to parent
-	state_machine_play_pos->set_anchors_and_margins_preset(PRESET_WIDE);
+	state_machine_play_pos->set_anchors_and_offsets_preset(PRESET_WIDE);
 	state_machine_play_pos->connect("draw", callable_mp(this, &AnimationNodeStateMachineEditor::_state_machine_pos_draw));
 
 	v_scroll = memnew(VScrollBar);
 	state_machine_draw->add_child(v_scroll);
-	v_scroll->set_anchors_and_margins_preset(PRESET_RIGHT_WIDE);
+	v_scroll->set_anchors_and_offsets_preset(PRESET_RIGHT_WIDE);
 	v_scroll->connect("value_changed", callable_mp(this, &AnimationNodeStateMachineEditor::_scroll_changed));
 
 	h_scroll = memnew(HScrollBar);
 	state_machine_draw->add_child(h_scroll);
-	h_scroll->set_anchors_and_margins_preset(PRESET_BOTTOM_WIDE);
-	h_scroll->set_margin(MARGIN_RIGHT, -v_scroll->get_size().x * EDSCALE);
+	h_scroll->set_anchors_and_offsets_preset(PRESET_BOTTOM_WIDE);
+	h_scroll->set_offset(SIDE_RIGHT, -v_scroll->get_size().x * EDSCALE);
 	h_scroll->connect("value_changed", callable_mp(this, &AnimationNodeStateMachineEditor::_scroll_changed));
 
 	error_panel = memnew(PanelContainer);
@@ -1321,7 +1328,7 @@ AnimationNodeStateMachineEditor::AnimationNodeStateMachineEditor() {
 	add_child(name_edit_popup);
 	name_edit = memnew(LineEdit);
 	name_edit_popup->add_child(name_edit);
-	name_edit->set_anchors_and_margins_preset(PRESET_WIDE);
+	name_edit->set_anchors_and_offsets_preset(PRESET_WIDE);
 	name_edit->connect("text_entered", callable_mp(this, &AnimationNodeStateMachineEditor::_name_edited));
 	name_edit->connect("focus_exited", callable_mp(this, &AnimationNodeStateMachineEditor::_name_edited_focus_out));
 

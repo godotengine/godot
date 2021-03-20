@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -32,7 +32,7 @@
 #define AREABULLET_H
 
 #include "collision_object_bullet.h"
-#include "core/local_vector.h"
+#include "core/templates/vector.h"
 #include "servers/physics_server_3d.h"
 #include "space_bullet.h"
 
@@ -80,21 +80,23 @@ public:
 private:
 	// These are used by function callEvent. Instead to create this each call I create if one time.
 	Variant call_event_res[5];
-	Variant *call_event_res_ptr[5];
+	Variant *call_event_res_ptr[5] = {};
 
-	btGhostObject *btGhost;
-	LocalVector<OverlappingObjectData> overlappingObjects;
+	btGhostObject *btGhost = nullptr;
+	Vector<OverlappingObjectData> overlappingObjects;
 	bool monitorable = true;
 
 	PhysicsServer3D::AreaSpaceOverrideMode spOv_mode = PhysicsServer3D::AREA_SPACE_OVERRIDE_DISABLED;
 	bool spOv_gravityPoint = false;
-	real_t spOv_gravityPointDistanceScale = 0;
-	real_t spOv_gravityPointAttenuation = 1;
+	real_t spOv_gravityPointDistanceScale = 0.0;
+	real_t spOv_gravityPointAttenuation = 1.0;
 	Vector3 spOv_gravityVec = Vector3(0, -1, 0);
-	real_t spOv_gravityMag = 10;
+	real_t spOv_gravityMag = 10.0;
 	real_t spOv_linearDump = 0.1;
 	real_t spOv_angularDump = 0.1;
 	int spOv_priority = 0;
+
+	bool isScratched = false;
 
 	InOutEventCallback eventsCallbacks[2];
 
@@ -137,11 +139,11 @@ public:
 	_FORCE_INLINE_ void set_spOv_priority(int p_priority) { spOv_priority = p_priority; }
 	_FORCE_INLINE_ int get_spOv_priority() { return spOv_priority; }
 
-	virtual void main_shape_changed() override;
-	virtual void do_reload_body() override;
-	virtual void set_space(SpaceBullet *p_space) override;
+	virtual void main_shape_changed();
+	virtual void reload_body();
+	virtual void set_space(SpaceBullet *p_space);
 
-	virtual void dispatch_callbacks() override;
+	virtual void dispatch_callbacks();
 	void call_event(CollisionObjectBullet *p_otherObject, PhysicsServer3D::AreaBodyStatus p_status);
 	void set_on_state_change(ObjectID p_id, const StringName &p_method, const Variant &p_udata = Variant());
 	void scratch();
@@ -150,9 +152,9 @@ public:
 	// Dispatch the callbacks and removes from overlapping list
 	void remove_overlap(CollisionObjectBullet *p_object, bool p_notify);
 
-	virtual void do_reload_collision_filters() override;
-	virtual void on_collision_checker_start() override {}
-	virtual void on_collision_checker_end() override { isTransformChanged = false; }
+	virtual void on_collision_filters_change();
+	virtual void on_collision_checker_start() {}
+	virtual void on_collision_checker_end() { isTransformChanged = false; }
 
 	void add_overlap(CollisionObjectBullet *p_otherObject);
 	void put_overlap_as_exit(int p_index);
@@ -164,8 +166,8 @@ public:
 	void set_event_callback(Type p_callbackObjectType, ObjectID p_id, const StringName &p_method);
 	bool has_event_callback(Type p_callbackObjectType);
 
-	virtual void on_enter_area(AreaBullet *p_area) override;
-	virtual void on_exit_area(AreaBullet *p_area) override;
+	virtual void on_enter_area(AreaBullet *p_area);
+	virtual void on_exit_area(AreaBullet *p_area);
 };
 
 #endif

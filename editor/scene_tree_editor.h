@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -31,7 +31,7 @@
 #ifndef SCENE_TREE_EDITOR_H
 #define SCENE_TREE_EDITOR_H
 
-#include "core/undo_redo.h"
+#include "core/object/undo_redo.h"
 #include "editor_data.h"
 #include "editor_settings.h"
 #include "scene/gui/button.h"
@@ -71,10 +71,11 @@ class SceneTreeEditor : public Control {
 
 	void _compute_hash(Node *p_node, uint64_t &hash);
 
-	bool _add_nodes(Node *p_node, TreeItem *p_parent);
+	bool _add_nodes(Node *p_node, TreeItem *p_parent, bool p_scroll_to_selected = false);
 	void _test_update_tree();
-	void _update_tree();
+	void _update_tree(bool p_scroll_to_selected = false);
 	void _tree_changed();
+	void _tree_process_mode_changed();
 	void _node_removed(Node *p_node);
 	void _node_renamed(Node *p_node);
 
@@ -138,7 +139,6 @@ public:
 
 	void set_undo_redo(UndoRedo *p_undo_redo) { undo_redo = p_undo_redo; };
 	void set_display_foreign_nodes(bool p_display);
-	bool get_display_foreign_nodes() const;
 
 	void set_marked(const Set<Node *> &p_marked, bool p_selectable = false, bool p_children_selectable = true);
 	void set_marked(Node *p_marked, bool p_selectable = false, bool p_children_selectable = true);

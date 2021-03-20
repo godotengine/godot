@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -30,9 +30,9 @@
 
 #include "tile_set.h"
 
-#include "core/array.h"
-#include "core/engine.h"
+#include "core/config/engine.h"
 #include "core/math/geometry_2d.h"
+#include "core/variant/array.h"
 
 bool TileSet::_set(const StringName &p_name, const Variant &p_value) {
 	String n = p_name;
@@ -40,7 +40,7 @@ bool TileSet::_set(const StringName &p_name, const Variant &p_value) {
 	if (slash == -1) {
 		return false;
 	}
-	int id = String::to_int(n.c_str(), slash);
+	int id = String::to_int(n.get_data(), slash);
 
 	if (!tile_map.has(id)) {
 		create_tile(id);
@@ -51,8 +51,6 @@ bool TileSet::_set(const StringName &p_name, const Variant &p_value) {
 		tile_set_name(id, p_value);
 	} else if (what == "texture") {
 		tile_set_texture(id, p_value);
-	} else if (what == "normal_map") {
-		tile_set_normal_map(id, p_value);
 	} else if (what == "tex_offset") {
 		tile_set_texture_offset(id, p_value);
 	} else if (what == "material") {
@@ -216,7 +214,7 @@ bool TileSet::_get(const StringName &p_name, Variant &r_ret) const {
 	if (slash == -1) {
 		return false;
 	}
-	int id = String::to_int(n.c_str(), slash);
+	int id = String::to_int(n.get_data(), slash);
 
 	ERR_FAIL_COND_V(!tile_map.has(id), false);
 
@@ -226,8 +224,6 @@ bool TileSet::_get(const StringName &p_name, Variant &r_ret) const {
 		r_ret = tile_get_name(id);
 	} else if (what == "texture") {
 		r_ret = tile_get_texture(id);
-	} else if (what == "normal_map") {
-		r_ret = tile_get_normal_map(id);
 	} else if (what == "tex_offset") {
 		r_ret = tile_get_texture_offset(id);
 	} else if (what == "material") {
@@ -331,7 +327,6 @@ void TileSet::_get_property_list(List<PropertyInfo> *p_list) const {
 		String pre = itos(id) + "/";
 		p_list->push_back(PropertyInfo(Variant::STRING, pre + "name", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR));
 		p_list->push_back(PropertyInfo(Variant::OBJECT, pre + "texture", PROPERTY_HINT_RESOURCE_TYPE, "Texture2D", PROPERTY_USAGE_NOEDITOR));
-		p_list->push_back(PropertyInfo(Variant::OBJECT, pre + "normal_map", PROPERTY_HINT_RESOURCE_TYPE, "Texture2D", PROPERTY_USAGE_NOEDITOR));
 		p_list->push_back(PropertyInfo(Variant::VECTOR2, pre + "tex_offset", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR));
 		p_list->push_back(PropertyInfo(Variant::OBJECT, pre + "material", PROPERTY_HINT_RESOURCE_TYPE, "ShaderMaterial", PROPERTY_USAGE_NOEDITOR));
 		p_list->push_back(PropertyInfo(Variant::COLOR, pre + "modulate", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR));
@@ -374,14 +369,14 @@ void TileSet::create_tile(int p_id) {
 	ERR_FAIL_COND(tile_map.has(p_id));
 	tile_map[p_id] = TileData();
 	tile_map[p_id].autotile_data = AutotileData();
-	_change_notify("");
+	notify_property_list_changed();
 	emit_changed();
 }
 
 void TileSet::autotile_set_bitmask_mode(int p_id, BitmaskMode p_mode) {
 	ERR_FAIL_COND(!tile_map.has(p_id));
 	tile_map[p_id].autotile_data.bitmask_mode = p_mode;
-	_change_notify("");
+	notify_property_list_changed();
 	emit_changed();
 }
 
@@ -394,23 +389,11 @@ void TileSet::tile_set_texture(int p_id, const Ref<Texture2D> &p_texture) {
 	ERR_FAIL_COND(!tile_map.has(p_id));
 	tile_map[p_id].texture = p_texture;
 	emit_changed();
-	_change_notify("texture");
 }
 
 Ref<Texture2D> TileSet::tile_get_texture(int p_id) const {
 	ERR_FAIL_COND_V(!tile_map.has(p_id), Ref<Texture2D>());
 	return tile_map[p_id].texture;
-}
-
-void TileSet::tile_set_normal_map(int p_id, const Ref<Texture2D> &p_normal_map) {
-	ERR_FAIL_COND(!tile_map.has(p_id));
-	tile_map[p_id].normal_map = p_normal_map;
-	emit_changed();
-}
-
-Ref<Texture2D> TileSet::tile_get_normal_map(int p_id) const {
-	ERR_FAIL_COND_V(!tile_map.has(p_id), Ref<Texture2D>());
-	return tile_map[p_id].normal_map;
 }
 
 void TileSet::tile_set_material(int p_id, const Ref<ShaderMaterial> &p_material) {
@@ -428,7 +411,6 @@ void TileSet::tile_set_modulate(int p_id, const Color &p_modulate) {
 	ERR_FAIL_COND(!tile_map.has(p_id));
 	tile_map[p_id].modulate = p_modulate;
 	emit_changed();
-	_change_notify("modulate");
 }
 
 Color TileSet::tile_get_modulate(int p_id) const {
@@ -451,7 +433,6 @@ void TileSet::tile_set_region(int p_id, const Rect2 &p_region) {
 	ERR_FAIL_COND(!tile_map.has(p_id));
 	tile_map[p_id].region = p_region;
 	emit_changed();
-	_change_notify("region");
 }
 
 Rect2 TileSet::tile_get_region(int p_id) const {
@@ -463,7 +444,6 @@ void TileSet::tile_set_tile_mode(int p_id, TileMode p_tile_mode) {
 	ERR_FAIL_COND(!tile_map.has(p_id));
 	tile_map[p_id].tile_mode = p_tile_mode;
 	emit_changed();
-	_change_notify("tile_mode");
 }
 
 TileSet::TileMode TileSet::tile_get_tile_mode(int p_id) const {
@@ -685,7 +665,6 @@ void TileSet::tile_set_name(int p_id, const String &p_name) {
 	ERR_FAIL_COND(!tile_map.has(p_id));
 	tile_map[p_id].name = p_name;
 	emit_changed();
-	_change_notify("name");
 }
 
 String TileSet::tile_get_name(int p_id) const {
@@ -1076,7 +1055,7 @@ bool TileSet::is_tile_bound(int p_drawn_id, int p_neighbor_id) {
 void TileSet::remove_tile(int p_id) {
 	ERR_FAIL_COND(!tile_map.has(p_id));
 	tile_map.erase(p_id);
-	_change_notify("");
+	notify_property_list_changed();
 	emit_changed();
 }
 
@@ -1097,9 +1076,13 @@ int TileSet::find_tile_by_name(const String &p_name) const {
 	return -1;
 }
 
+void TileSet::reset_state() {
+	clear();
+}
+
 void TileSet::clear() {
 	tile_map.clear();
-	_change_notify("");
+	notify_property_list_changed();
 	emit_changed();
 }
 
@@ -1128,8 +1111,6 @@ void TileSet::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("tile_get_name", "id"), &TileSet::tile_get_name);
 	ClassDB::bind_method(D_METHOD("tile_set_texture", "id", "texture"), &TileSet::tile_set_texture);
 	ClassDB::bind_method(D_METHOD("tile_get_texture", "id"), &TileSet::tile_get_texture);
-	ClassDB::bind_method(D_METHOD("tile_set_normal_map", "id", "normal_map"), &TileSet::tile_set_normal_map);
-	ClassDB::bind_method(D_METHOD("tile_get_normal_map", "id"), &TileSet::tile_get_normal_map);
 	ClassDB::bind_method(D_METHOD("tile_set_material", "id", "material"), &TileSet::tile_set_material);
 	ClassDB::bind_method(D_METHOD("tile_get_material", "id"), &TileSet::tile_get_material);
 	ClassDB::bind_method(D_METHOD("tile_set_modulate", "id", "color"), &TileSet::tile_set_modulate);

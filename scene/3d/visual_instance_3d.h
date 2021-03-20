@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -32,7 +32,7 @@
 #define VISUAL_INSTANCE_H
 
 #include "core/math/face3.h"
-#include "core/rid.h"
+#include "core/templates/rid.h"
 #include "scene/3d/node_3d.h"
 #include "scene/resources/material.h"
 
@@ -42,7 +42,7 @@ class VisualInstance3D : public Node3D {
 
 	RID base;
 	RID instance;
-	uint32_t layers;
+	uint32_t layers = 1;
 
 	RID _get_visual_instance_rid() const;
 
@@ -105,19 +105,21 @@ public:
 	};
 
 private:
-	ShadowCastingSetting shadow_casting_setting;
+	ShadowCastingSetting shadow_casting_setting = SHADOW_CASTING_SETTING_ON;
 	Ref<Material> material_override;
-	float lod_min_distance;
-	float lod_max_distance;
-	float lod_min_hysteresis;
-	float lod_max_hysteresis;
+	float lod_min_distance = 0.0;
+	float lod_max_distance = 0.0;
+	float lod_min_hysteresis = 0.0;
+	float lod_max_hysteresis = 0.0;
+
+	float lod_bias = 1.0;
 
 	mutable HashMap<StringName, Variant> instance_uniforms;
 	mutable HashMap<StringName, StringName> instance_uniform_property_remap;
 
-	float extra_cull_margin;
-	LightmapScale lightmap_scale;
-	GIMode gi_mode;
+	float extra_cull_margin = 0.0;
+	LightmapScale lightmap_scale = LIGHTMAP_SCALE_1X;
+	GIMode gi_mode = GI_MODE_DISABLED;
 
 	const StringName *_instance_uniform_get_remap(const StringName p_name) const;
 
@@ -150,6 +152,9 @@ public:
 
 	void set_extra_cull_margin(float p_margin);
 	float get_extra_cull_margin() const;
+
+	void set_lod_bias(float p_bias);
+	float get_lod_bias() const;
 
 	void set_gi_mode(GIMode p_mode);
 	GIMode get_gi_mode() const;

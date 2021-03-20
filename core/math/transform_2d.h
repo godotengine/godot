@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -126,6 +126,12 @@ struct Transform2D {
 		elements[1][1] = yy;
 		elements[2][0] = ox;
 		elements[2][1] = oy;
+	}
+
+	Transform2D(const Vector2 &p_x, const Vector2 &p_y, const Vector2 &p_origin) {
+		elements[0] = p_x;
+		elements[1] = p_y;
+		elements[2] = p_origin;
 	}
 
 	Transform2D(real_t p_rot, const Vector2 &p_pos);

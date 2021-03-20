@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -30,7 +30,7 @@
 
 #include "audio_stream_player_3d.h"
 
-#include "core/engine.h"
+#include "core/config/engine.h"
 #include "scene/3d/area_3d.h"
 #include "scene/3d/camera_3d.h"
 #include "scene/3d/listener_3d.h"
@@ -42,8 +42,8 @@ class Spcap {
 private:
 	struct Speaker {
 		Vector3 direction;
-		real_t effective_number_of_speakers; // precalculated
-		mutable real_t squared_gain; // temporary
+		real_t effective_number_of_speakers = 0; // precalculated
+		mutable real_t squared_gain = 0; // temporary
 	};
 
 	Vector<Speaker> speakers;
@@ -138,15 +138,15 @@ void AudioStreamPlayer3D::_calc_output_vol(const Vector3 &source_dir, real_t tig
 }
 
 void AudioStreamPlayer3D::_mix_audio() {
-	if (!stream_playback.is_valid() || !active ||
+	if (!stream_playback.is_valid() || !active.is_set() ||
 			(stream_paused && !stream_paused_fade_out)) {
 		return;
 	}
 
 	bool started = false;
-	if (setseek >= 0.0) {
-		stream_playback->start(setseek);
-		setseek = -1.0; //reset seek
+	if (setseek.get() >= 0.0) {
+		stream_playback->start(setseek.get());
+		setseek.set(-1.0); //reset seek
 		started = true;
 	}
 
@@ -160,14 +160,14 @@ void AudioStreamPlayer3D::_mix_audio() {
 	}
 
 	// Mix if we're not paused or we're fading out
-	if ((output_count > 0 || out_of_range_mode == OUT_OF_RANGE_MIX)) {
+	if ((output_count.get() > 0 || out_of_range_mode == OUT_OF_RANGE_MIX)) {
 		float output_pitch_scale = 0.0;
-		if (output_count) {
+		if (output_count.get()) {
 			//used for doppler, not realistic but good enough
-			for (int i = 0; i < output_count; i++) {
+			for (int i = 0; i < output_count.get(); i++) {
 				output_pitch_scale += outputs[i].pitch_scale;
 			}
-			output_pitch_scale /= float(output_count);
+			output_pitch_scale /= float(output_count.get());
 		} else {
 			output_pitch_scale = 1.0;
 		}
@@ -176,7 +176,7 @@ void AudioStreamPlayer3D::_mix_audio() {
 	}
 
 	//write all outputs
-	for (int i = 0; i < output_count; i++) {
+	for (int i = 0; i < output_count.get(); i++) {
 		Output current = outputs[i];
 
 		//see if current output exists, to keep volume ramp
@@ -285,14 +285,14 @@ void AudioStreamPlayer3D::_mix_audio() {
 		prev_outputs[i] = current;
 	}
 
-	prev_output_count = output_count;
+	prev_output_count = output_count.get();
 
 	//stream is no longer active, disable this.
 	if (!stream_playback->is_playing()) {
-		active = false;
+		active.clear();
 	}
 
-	output_ready = false;
+	output_ready.clear();
 	stream_paused_fade_in = false;
 	stream_paused_fade_out = false;
 }
@@ -325,9 +325,6 @@ float AudioStreamPlayer3D::_get_attenuation_db(float p_distance) const {
 	}
 
 	return att;
-}
-
-void _update_sound() {
 }
 
 void AudioStreamPlayer3D::_notification(int p_what) {
@@ -363,7 +360,7 @@ void AudioStreamPlayer3D::_notification(int p_what) {
 	if (p_what == NOTIFICATION_INTERNAL_PHYSICS_PROCESS) {
 		//update anything related to position first, if possible of course
 
-		if (!output_ready) {
+		if (!output_ready.is_set()) {
 			Vector3 linear_velocity;
 
 			//compute linear velocity for doppler
@@ -487,7 +484,7 @@ void AudioStreamPlayer3D::_notification(int p_what) {
 				if (area) {
 					if (area->is_overriding_audio_bus()) {
 						//override audio bus
-						StringName bus_name = area->get_audio_bus();
+						StringName bus_name = area->get_audio_bus_name();
 						output.bus_index = AudioServer::get_singleton()->thread_find_bus_index(bus_name);
 					}
 
@@ -599,24 +596,20 @@ void AudioStreamPlayer3D::_notification(int p_what) {
 				}
 			}
 
-			output_count = new_output_count;
-			output_ready = true;
+			output_count.set(new_output_count);
+			output_ready.set();
 		}
 
 		//start playing if requested
-		if (setplay >= 0.0) {
-			setseek = setplay;
-			active = true;
-			setplay = -1;
-			//do not update, this makes it easier to animate (will shut off otherwise)
-			///_change_notify("playing"); //update property in editor
+		if (setplay.get() >= 0.0) {
+			setseek.set(setplay.get());
+			active.set();
+			setplay.set(-1);
 		}
 
 		//stop playing if no longer active
-		if (!active) {
+		if (!active.is_set()) {
 			set_physics_process_internal(false);
-			//do not update, this makes it easier to animate (will shut off otherwise)
-			//_change_notify("playing"); //update property in editor
 			emit_signal("finished");
 		}
 	}
@@ -630,8 +623,8 @@ void AudioStreamPlayer3D::set_stream(Ref<AudioStream> p_stream) {
 	if (stream_playback.is_valid()) {
 		stream_playback.unref();
 		stream.unref();
-		active = false;
-		setseek = -1;
+		active.clear();
+		setseek.set(-1);
 	}
 
 	if (p_stream.is_valid()) {
@@ -690,30 +683,29 @@ void AudioStreamPlayer3D::play(float p_from_pos) {
 	}
 
 	if (stream_playback.is_valid()) {
-		active = true;
-		setplay = p_from_pos;
-		output_ready = false;
+		setplay.set(p_from_pos);
+		output_ready.clear();
 		set_physics_process_internal(true);
 	}
 }
 
 void AudioStreamPlayer3D::seek(float p_seconds) {
 	if (stream_playback.is_valid()) {
-		setseek = p_seconds;
+		setseek.set(p_seconds);
 	}
 }
 
 void AudioStreamPlayer3D::stop() {
 	if (stream_playback.is_valid()) {
-		active = false;
+		active.clear();
 		set_physics_process_internal(false);
-		setplay = -1;
+		setplay.set(-1);
 	}
 }
 
 bool AudioStreamPlayer3D::is_playing() const {
 	if (stream_playback.is_valid()) {
-		return active; // && stream_playback->is_playing();
+		return active.is_set() || setplay.get() >= 0;
 	}
 
 	return false;
@@ -721,6 +713,10 @@ bool AudioStreamPlayer3D::is_playing() const {
 
 float AudioStreamPlayer3D::get_playback_position() {
 	if (stream_playback.is_valid()) {
+		float ss = setseek.get();
+		if (ss >= 0.0) {
+			return ss;
+		}
 		return stream_playback->get_playback_position();
 	}
 
@@ -760,7 +756,7 @@ void AudioStreamPlayer3D::_set_playing(bool p_enable) {
 }
 
 bool AudioStreamPlayer3D::_is_active() const {
-	return active;
+	return active.is_set();
 }
 
 void AudioStreamPlayer3D::_validate_property(PropertyInfo &property) const {
@@ -779,7 +775,7 @@ void AudioStreamPlayer3D::_validate_property(PropertyInfo &property) const {
 }
 
 void AudioStreamPlayer3D::_bus_layout_changed() {
-	_change_notify();
+	notify_property_list_changed();
 }
 
 void AudioStreamPlayer3D::set_max_distance(float p_metres) {
@@ -812,7 +808,6 @@ void AudioStreamPlayer3D::set_emission_angle(float p_angle) {
 	ERR_FAIL_COND(p_angle < 0 || p_angle > 90);
 	emission_angle = p_angle;
 	update_gizmo();
-	_change_notify("emission_angle");
 }
 
 float AudioStreamPlayer3D::get_emission_angle() const {
@@ -1005,31 +1000,6 @@ void AudioStreamPlayer3D::_bind_methods() {
 }
 
 AudioStreamPlayer3D::AudioStreamPlayer3D() {
-	unit_db = 0;
-	unit_size = 1;
-	attenuation_model = ATTENUATION_INVERSE_DISTANCE;
-	max_db = 3;
-	pitch_scale = 1.0;
-	autoplay = false;
-	setseek = -1;
-	active = false;
-	output_count = 0;
-	prev_output_count = 0;
-	max_distance = 0;
-	setplay = -1;
-	output_ready = false;
-	area_mask = 1;
-	emission_angle = 45;
-	emission_angle_enabled = false;
-	emission_angle_filter_attenuation_db = -12;
-	attenuation_filter_cutoff_hz = 5000;
-	attenuation_filter_db = -24;
-	out_of_range_mode = OUT_OF_RANGE_MIX;
-	doppler_tracking = DOPPLER_TRACKING_DISABLED;
-	stream_paused = false;
-	stream_paused_fade_in = false;
-	stream_paused_fade_out = false;
-
 	velocity_tracker.instance();
 	AudioServer::get_singleton()->connect("bus_layout_changed", callable_mp(this, &AudioStreamPlayer3D::_bus_layout_changed));
 	set_disable_scale(true);

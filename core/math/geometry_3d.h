@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -32,8 +32,8 @@
 #define GEOMETRY_3D_H
 
 #include "core/math/face3.h"
-#include "core/object.h"
-#include "core/vector.h"
+#include "core/object/object.h"
+#include "core/templates/vector.h"
 
 class Geometry3D {
 	Geometry3D();
@@ -252,27 +252,34 @@ public:
 		return true;
 	}
 
-	static inline bool segment_intersects_cylinder(const Vector3 &p_from, const Vector3 &p_to, real_t p_height, real_t p_radius, Vector3 *r_res = nullptr, Vector3 *r_norm = nullptr) {
+	static inline bool segment_intersects_cylinder(const Vector3 &p_from, const Vector3 &p_to, real_t p_height, real_t p_radius, Vector3 *r_res = nullptr, Vector3 *r_norm = nullptr, int p_cylinder_axis = 2) {
 		Vector3 rel = (p_to - p_from);
 		real_t rel_l = rel.length();
 		if (rel_l < CMP_EPSILON) {
 			return false; // Both points are the same.
 		}
 
+		ERR_FAIL_COND_V(p_cylinder_axis < 0, false);
+		ERR_FAIL_COND_V(p_cylinder_axis > 2, false);
+		Vector3 cylinder_axis;
+		cylinder_axis[p_cylinder_axis] = 1.0;
+
 		// First check if they are parallel.
 		Vector3 normal = (rel / rel_l);
-		Vector3 crs = normal.cross(Vector3(0, 0, 1));
+		Vector3 crs = normal.cross(cylinder_axis);
 		real_t crs_l = crs.length();
 
-		Vector3 z_dir;
+		Vector3 axis_dir;
 
 		if (crs_l < CMP_EPSILON) {
-			z_dir = Vector3(1, 0, 0); // Any x/y vector OK.
+			Vector3 side_axis;
+			side_axis[(p_cylinder_axis + 1) % 3] = 1.0; // Any side axis OK.
+			axis_dir = side_axis;
 		} else {
-			z_dir = crs / crs_l;
+			axis_dir = crs / crs_l;
 		}
 
-		real_t dist = z_dir.dot(p_from);
+		real_t dist = axis_dir.dot(p_from);
 
 		if (dist >= p_radius) {
 			return false; // Too far away.
@@ -285,10 +292,10 @@ public:
 		}
 		Size2 size(Math::sqrt(w2), p_height * 0.5);
 
-		Vector3 x_dir = z_dir.cross(Vector3(0, 0, 1)).normalized();
+		Vector3 side_dir = axis_dir.cross(cylinder_axis).normalized();
 
-		Vector2 from2D(x_dir.dot(p_from), p_from.z);
-		Vector2 to2D(x_dir.dot(p_to), p_to.z);
+		Vector2 from2D(side_dir.dot(p_from), p_from[p_cylinder_axis]);
+		Vector2 to2D(side_dir.dot(p_to), p_to[p_cylinder_axis]);
 
 		real_t min = 0, max = 1;
 
@@ -335,10 +342,12 @@ public:
 		Vector3 res_normal = result;
 
 		if (axis == 0) {
-			res_normal.z = 0;
+			res_normal[p_cylinder_axis] = 0;
 		} else {
-			res_normal.x = 0;
-			res_normal.y = 0;
+			int axis_side = (p_cylinder_axis + 1) % 3;
+			res_normal[axis_side] = 0;
+			axis_side = (axis_side + 1) % 3;
+			res_normal[axis_side] = 0;
 		}
 
 		res_normal.normalize();
@@ -636,54 +645,6 @@ public:
 		void optimize_vertices();
 	};
 
-	_FORCE_INLINE_ static int get_uv84_normal_bit(const Vector3 &p_vector) {
-		int lat = Math::fast_ftoi(Math::floor(Math::acos(p_vector.dot(Vector3(0, 1, 0))) * 4.0 / Math_PI + 0.5));
-
-		if (lat == 0) {
-			return 24;
-		} else if (lat == 4) {
-			return 25;
-		}
-
-		int lon = Math::fast_ftoi(Math::floor((Math_PI + Math::atan2(p_vector.x, p_vector.z)) * 8.0 / (Math_PI * 2.0) + 0.5)) % 8;
-
-		return lon + (lat - 1) * 8;
-	}
-
-	_FORCE_INLINE_ static int get_uv84_normal_bit_neighbors(int p_idx) {
-		if (p_idx == 24) {
-			return 1 | 2 | 4 | 8;
-		} else if (p_idx == 25) {
-			return (1 << 23) | (1 << 22) | (1 << 21) | (1 << 20);
-		} else {
-			int ret = 0;
-			if ((p_idx % 8) == 0) {
-				ret |= (1 << (p_idx + 7));
-			} else {
-				ret |= (1 << (p_idx - 1));
-			}
-			if ((p_idx % 8) == 7) {
-				ret |= (1 << (p_idx - 7));
-			} else {
-				ret |= (1 << (p_idx + 1));
-			}
-
-			int mask = ret | (1 << p_idx);
-			if (p_idx < 8) {
-				ret |= 24;
-			} else {
-				ret |= mask >> 8;
-			}
-
-			if (p_idx >= 16) {
-				ret |= 25;
-			} else {
-				ret |= mask << 8;
-			}
-
-			return ret;
-		}
-	}
 	static MeshData build_convex_mesh(const Vector<Plane> &p_planes);
 	static Vector<Plane> build_sphere_planes(real_t p_radius, int p_lats, int p_lons, Vector3::Axis p_axis = Vector3::AXIS_Z);
 	static Vector<Plane> build_box_planes(const Vector3 &p_extents);

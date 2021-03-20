@@ -5,9 +5,16 @@
 	</brief_description>
 	<description>
 		Node for 2D tile-based maps. Tilemaps use a [TileSet] which contain a list of tiles (textures plus optional collision, navigation, and/or occluder shapes) which are used to create grid-based maps.
+		When doing physics queries against the tilemap, the cell coordinates are encoded as [code]metadata[/code] for each detected collision shape returned by methods such as [method PhysicsDirectSpaceState2D.intersect_shape], [method PhysicsDirectBodyState2D.get_contact_collider_shape_metadata] etc.
 	</description>
 	<tutorials>
-		<link>https://docs.godotengine.org/en/latest/tutorials/2d/using_tilemaps.html</link>
+		<link title="Using Tilemaps">https://docs.godotengine.org/en/latest/tutorials/2d/using_tilemaps.html</link>
+		<link title="2D Platformer Demo">https://godotengine.org/asset-library/asset/120</link>
+		<link title="2D Isometric Demo">https://godotengine.org/asset-library/asset/112</link>
+		<link title="2D Hexagonal Demo">https://godotengine.org/asset-library/asset/111</link>
+		<link title="2D Navigation Astar Demo">https://godotengine.org/asset-library/asset/519</link>
+		<link title="2D Role Playing Game Demo">https://godotengine.org/asset-library/asset/520</link>
+		<link title="2D Kinematic Character Demo">https://godotengine.org/asset-library/asset/113</link>
 	</tutorials>
 	<methods>
 		<method name="clear">
@@ -137,7 +144,7 @@
 			<argument index="1" name="ignore_half_ofs" type="bool" default="false">
 			</argument>
 			<description>
-				Returns the global position corresponding to the given tilemap (grid-based) coordinates.
+				Returns the local position corresponding to the given tilemap (grid-based) coordinates.
 				Optionally, the tilemap's half offset can be ignored.
 			</description>
 		</method>
@@ -165,12 +172,22 @@
 				[b]Note:[/b] Data such as navigation polygons and collision shapes are not immediately updated for performance reasons.
 				If you need these to be immediately updated, you can call [method update_dirty_quadrants].
 				Overriding this method also overrides it internally, allowing custom logic to be implemented when tiles are placed/removed:
-				[codeblock]
-				func set_cell(x, y, tile, flip_x, flip_y, transpose, autotile_coord)
+				[codeblocks]
+				[gdscript]
+				func set_cell(x, y, tile, flip_x=false, flip_y=false, transpose=false, autotile_coord=Vector2())
 				    # Write your custom logic here.
 				    # To call the default method:
 				    .set_cell(x, y, tile, flip_x, flip_y, transpose, autotile_coord)
-				[/codeblock]
+				[/gdscript]
+				[csharp]
+				public void SetCell(int x, int y, int tile, bool flipX = false, bool flipY = false, bool transpose = false, Vector2 autotileCoord = new Vector2())
+				{
+				    // Write your custom logic here.
+				    // To call the default method:
+				    base.SetCell(x, y, tile, flipX, flipY, transpose, autotileCoord);
+				}
+				[/csharp]
+				[/codeblocks]
 			</description>
 		</method>
 		<method name="set_cellv">
@@ -255,6 +272,9 @@
 		</method>
 	</methods>
 	<members>
+		<member name="bake_navigation" type="bool" setter="set_bake_navigation" getter="is_baking_navigation" default="false">
+			If [code]true[/code], this TileMap bakes a navigation region.
+		</member>
 		<member name="cell_clip_uv" type="bool" setter="set_clip_uv" getter="get_clip_uv" default="false">
 			If [code]true[/code], the cell's UVs will be clipped.
 		</member>
@@ -274,7 +294,7 @@
 			Position for tile origin. See [enum TileOrigin] for possible values.
 		</member>
 		<member name="cell_y_sort" type="bool" setter="set_y_sort_enabled" getter="is_y_sort_enabled" default="false">
-			If [code]true[/code], the TileMap's children will be drawn in order of their Y coordinate.
+			If [code]true[/code], the TileMap's direct children will be drawn in order of their Y coordinate.
 		</member>
 		<member name="centered_textures" type="bool" setter="set_centered_textures" getter="is_centered_textures_enabled" default="false">
 			If [code]true[/code], the textures will be centered in the middle of each tile. This is useful for certain isometric or top-down modes when textures are made larger or smaller than the tiles (e.g. to avoid flickering on tile edges). The offset is still applied, but from the center of the tile. If used, [member compatibility_mode] is ignored.
@@ -287,10 +307,10 @@
 			Friction value for static body collisions (see [code]collision_use_kinematic[/code]).
 		</member>
 		<member name="collision_layer" type="int" setter="set_collision_layer" getter="get_collision_layer" default="1">
-			The collision layer(s) for all colliders in the TileMap.
+			The collision layer(s) for all colliders in the TileMap. See [url=https://docs.godotengine.org/en/latest/tutorials/physics/physics_introduction.html#collision-layers-and-masks]Collision layers and masks[/url] in the documentation for more information.
 		</member>
 		<member name="collision_mask" type="int" setter="set_collision_mask" getter="get_collision_mask" default="1">
-			The collision mask(s) for all colliders in the TileMap.
+			The collision mask(s) for all colliders in the TileMap. See [url=https://docs.godotengine.org/en/latest/tutorials/physics/physics_introduction.html#collision-layers-and-masks]Collision layers and masks[/url] in the documentation for more information.
 		</member>
 		<member name="collision_use_kinematic" type="bool" setter="set_collision_use_kinematic" getter="get_collision_use_kinematic" default="false">
 			If [code]true[/code], TileMap collisions will be handled as a kinematic body. If [code]false[/code], collisions will be handled as static body.

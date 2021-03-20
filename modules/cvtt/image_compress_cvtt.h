@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -31,7 +31,7 @@
 #ifndef IMAGE_COMPRESS_CVTT_H
 #define IMAGE_COMPRESS_CVTT_H
 
-#include "core/image.h"
+#include "core/io/image.h"
 
 void image_compress_cvtt(Image *p_image, float p_lossy_quality, Image::UsedChannels p_channels);
 void image_decompress_cvtt(Image *p_image);

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -724,7 +724,7 @@ bool GridMapEditor::forward_spatial_input_event(Camera3D *p_camera, const Ref<In
 					return true;
 				} else {
 					selected_palette = -1;
-					mesh_library_palette->unselect_all();
+					mesh_library_palette->deselect_all();
 					update_palette();
 					_update_cursor_instance();
 					return true;
@@ -769,7 +769,7 @@ bool GridMapEditor::forward_spatial_input_event(Camera3D *p_camera, const Ref<In
 
 struct _CGMEItemSort {
 	String name;
-	int id;
+	int id = 0;
 	_FORCE_INLINE_ bool operator<(const _CGMEItemSort &r_it) const { return name < r_it.name; }
 };
 
@@ -1030,11 +1030,15 @@ void GridMapEditor::_notification(int p_what) {
 			for (int i = 0; i < 3; i++) {
 				grid[i] = RS::get_singleton()->mesh_create();
 				grid_instance[i] = RS::get_singleton()->instance_create2(grid[i], get_tree()->get_root()->get_world_3d()->get_scenario());
+				RenderingServer::get_singleton()->instance_set_layer_mask(grid_instance[i], 1 << Node3DEditorViewport::MISC_TOOL_LAYER);
 				selection_level_instance[i] = RenderingServer::get_singleton()->instance_create2(selection_level_mesh[i], get_tree()->get_root()->get_world_3d()->get_scenario());
+				RenderingServer::get_singleton()->instance_set_layer_mask(selection_level_instance[i], 1 << Node3DEditorViewport::MISC_TOOL_LAYER);
 			}
 
 			selection_instance = RenderingServer::get_singleton()->instance_create2(selection_mesh, get_tree()->get_root()->get_world_3d()->get_scenario());
+			RenderingServer::get_singleton()->instance_set_layer_mask(selection_instance, 1 << Node3DEditorViewport::MISC_TOOL_LAYER);
 			paste_instance = RenderingServer::get_singleton()->instance_create2(paste_mesh, get_tree()->get_root()->get_world_3d()->get_scenario());
+			RenderingServer::get_singleton()->instance_set_layer_mask(paste_instance, 1 << Node3DEditorViewport::MISC_TOOL_LAYER);
 
 			_update_selection_transform();
 			_update_paste_indicator();
@@ -1147,7 +1151,6 @@ void GridMapEditor::_bind_methods() {
 }
 
 GridMapEditor::GridMapEditor(EditorNode *p_editor) {
-	input_action = INPUT_NONE;
 	editor = p_editor;
 	undo_redo = p_editor->get_undo_redo();
 
@@ -1169,7 +1172,7 @@ GridMapEditor::GridMapEditor(EditorNode *p_editor) {
 	floor->set_min(-32767);
 	floor->set_max(32767);
 	floor->set_step(1);
-	floor->get_line_edit()->add_theme_constant_override("minimum_spaces", 16);
+	floor->get_line_edit()->add_theme_constant_override("minimum_character_width", 16);
 
 	spatial_editor_hb->add_child(floor);
 	floor->connect("value_changed", callable_mp(this, &GridMapEditor::_floor_changed));
@@ -1230,7 +1233,6 @@ GridMapEditor::GridMapEditor(EditorNode *p_editor) {
 	settings_pick_distance->set_value(EDITOR_DEF("editors/grid_map/pick_distance", 5000.0));
 	settings_vbc->add_margin_child(TTR("Pick Distance:"), settings_pick_distance);
 
-	clip_mode = CLIP_DISABLED;
 	options->get_popup()->connect("id_pressed", callable_mp(this, &GridMapEditor::_menu_option));
 
 	HBoxContainer *hb = memnew(HBoxContainer);
@@ -1271,8 +1273,6 @@ GridMapEditor::GridMapEditor(EditorNode *p_editor) {
 
 	EDITOR_DEF("editors/grid_map/preview_size", 64);
 
-	display_mode = DISPLAY_THUMBNAIL;
-
 	mesh_library_palette = memnew(ItemList);
 	add_child(mesh_library_palette);
 	mesh_library_palette->set_v_size_flags(SIZE_EXPAND_FILL);
@@ -1284,18 +1284,13 @@ GridMapEditor::GridMapEditor(EditorNode *p_editor) {
 	info_message->set_align(Label::ALIGN_CENTER);
 	info_message->set_autowrap(true);
 	info_message->set_custom_minimum_size(Size2(100 * EDSCALE, 0));
-	info_message->set_anchors_and_margins_preset(PRESET_WIDE, PRESET_MODE_KEEP_SIZE, 8 * EDSCALE);
+	info_message->set_anchors_and_offsets_preset(PRESET_WIDE, PRESET_MODE_KEEP_SIZE, 8 * EDSCALE);
 	mesh_library_palette->add_child(info_message);
 
 	edit_axis = Vector3::AXIS_Y;
 	edit_floor[0] = -1;
 	edit_floor[1] = -1;
 	edit_floor[2] = -1;
-
-	cursor_visible = false;
-	selected_palette = -1;
-	lock_view = false;
-	cursor_rot = 0;
 
 	selection_mesh = RenderingServer::get_singleton()->mesh_create();
 	paste_mesh = RenderingServer::get_singleton()->mesh_create();
@@ -1414,8 +1409,6 @@ GridMapEditor::GridMapEditor(EditorNode *p_editor) {
 	}
 
 	_set_selection(false);
-	updating = false;
-	accumulated_floor_delta = 0.0;
 
 	indicator_mat.instance();
 	indicator_mat->set_shading_mode(StandardMaterial3D::SHADING_MODE_UNSHADED);

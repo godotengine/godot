@@ -135,6 +135,9 @@ SLJIT_API_FUNC_ATTRIBUTE sljit_s32 sljit_emit_enter(struct sljit_compiler *compi
 	CHECK(check_sljit_emit_enter(compiler, options, arg_types, scratches, saveds, fscratches, fsaveds, local_size));
 	set_emit_enter(compiler, options, arg_types, scratches, saveds, fscratches, fsaveds, local_size);
 
+	/* Emit ENDBR64 at function entry if needed.  */
+	FAIL_IF(emit_endbranch(compiler));
+
 	compiler->mode32 = 0;
 
 #ifdef _WIN64
@@ -796,13 +799,9 @@ SLJIT_API_FUNC_ATTRIBUTE sljit_s32 sljit_emit_fast_enter(struct sljit_compiler *
 	return SLJIT_SUCCESS;
 }
 
-SLJIT_API_FUNC_ATTRIBUTE sljit_s32 sljit_emit_fast_return(struct sljit_compiler *compiler, sljit_s32 src, sljit_sw srcw)
+static sljit_s32 emit_fast_return(struct sljit_compiler *compiler, sljit_s32 src, sljit_sw srcw)
 {
 	sljit_u8 *inst;
-
-	CHECK_ERROR();
-	CHECK(check_sljit_emit_fast_return(compiler, src, srcw));
-	ADJUST_LOCAL_OFFSET(src, srcw);
 
 	if (FAST_IS_REG(src)) {
 		if (reg_map[src] < 8) {
@@ -897,4 +896,23 @@ static sljit_s32 emit_mov_int(struct sljit_compiler *compiler, sljit_s32 sign,
 	}
 
 	return SLJIT_SUCCESS;
+}
+
+static sljit_s32 skip_frames_before_return(struct sljit_compiler *compiler)
+{
+	sljit_s32 tmp, size;
+
+	/* Don't adjust shadow stack if it isn't enabled.  */
+	if (!cpu_has_shadow_stack ())
+		return SLJIT_SUCCESS;
+
+	size = compiler->local_size;
+	tmp = compiler->scratches;
+	if (tmp >= SLJIT_FIRST_SAVED_REG)
+		size += (tmp - SLJIT_FIRST_SAVED_REG + 1) * sizeof(sljit_uw);
+	tmp = compiler->saveds < SLJIT_NUMBER_OF_SAVED_REGISTERS ? (SLJIT_S0 + 1 - compiler->saveds) : SLJIT_FIRST_SAVED_REG;
+	if (SLJIT_S0 >= tmp)
+		size += (SLJIT_S0 - tmp + 1) * sizeof(sljit_uw);
+
+	return adjust_shadow_stack(compiler, SLJIT_UNUSED, 0, SLJIT_SP, size);
 }

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -118,14 +118,14 @@ Vector2 Vector2::posmodv(const Vector2 &p_modv) const {
 	return Vector2(Math::fposmod(x, p_modv.x), Math::fposmod(y, p_modv.y));
 }
 
-Vector2 Vector2::project(const Vector2 &p_b) const {
-	return p_b * (dot(p_b) / p_b.length_squared());
+Vector2 Vector2::project(const Vector2 &p_to) const {
+	return p_to * (dot(p_to) / p_to.length_squared());
 }
 
-Vector2 Vector2::snapped(const Vector2 &p_by) const {
+Vector2 Vector2::snapped(const Vector2 &p_step) const {
 	return Vector2(
-			Math::stepify(x, p_by.x),
-			Math::stepify(y, p_by.y));
+			Math::snapped(x, p_step.x),
+			Math::snapped(y, p_step.y));
 }
 
 Vector2 Vector2::clamped(real_t p_len) const {
@@ -139,13 +139,13 @@ Vector2 Vector2::clamped(real_t p_len) const {
 	return v;
 }
 
-Vector2 Vector2::cubic_interpolate(const Vector2 &p_b, const Vector2 &p_pre_a, const Vector2 &p_post_b, real_t p_t) const {
+Vector2 Vector2::cubic_interpolate(const Vector2 &p_b, const Vector2 &p_pre_a, const Vector2 &p_post_b, real_t p_weight) const {
 	Vector2 p0 = p_pre_a;
 	Vector2 p1 = *this;
 	Vector2 p2 = p_b;
 	Vector2 p3 = p_post_b;
 
-	real_t t = p_t;
+	real_t t = p_weight;
 	real_t t2 = t * t;
 	real_t t3 = t2 * t;
 
@@ -211,11 +211,11 @@ Vector2i Vector2i::operator*(const Vector2i &p_v1) const {
 	return Vector2i(x * p_v1.x, y * p_v1.y);
 }
 
-Vector2i Vector2i::operator*(const int &rvalue) const {
+Vector2i Vector2i::operator*(const int32_t &rvalue) const {
 	return Vector2i(x * rvalue, y * rvalue);
 }
 
-void Vector2i::operator*=(const int &rvalue) {
+void Vector2i::operator*=(const int32_t &rvalue) {
 	x *= rvalue;
 	y *= rvalue;
 }
@@ -224,13 +224,26 @@ Vector2i Vector2i::operator/(const Vector2i &p_v1) const {
 	return Vector2i(x / p_v1.x, y / p_v1.y);
 }
 
-Vector2i Vector2i::operator/(const int &rvalue) const {
+Vector2i Vector2i::operator/(const int32_t &rvalue) const {
 	return Vector2i(x / rvalue, y / rvalue);
 }
 
-void Vector2i::operator/=(const int &rvalue) {
+void Vector2i::operator/=(const int32_t &rvalue) {
 	x /= rvalue;
 	y /= rvalue;
+}
+
+Vector2i Vector2i::operator%(const Vector2i &p_v1) const {
+	return Vector2i(x % p_v1.x, y % p_v1.y);
+}
+
+Vector2i Vector2i::operator%(const int32_t &rvalue) const {
+	return Vector2i(x % rvalue, y % rvalue);
+}
+
+void Vector2i::operator%=(const int32_t &rvalue) {
+	x %= rvalue;
+	y %= rvalue;
 }
 
 Vector2i Vector2i::operator-() const {

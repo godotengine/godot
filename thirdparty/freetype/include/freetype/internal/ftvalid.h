@@ -20,8 +20,9 @@
 #define FTVALID_H_
 
 #include <ft2build.h>
-#include FT_CONFIG_STANDARD_LIBRARY_H   /* for ft_setjmp and ft_longjmp */
+#include FT_CONFIG_STANDARD_LIBRARY_H   /* for ft_jmpbuf */
 
+#include "compiler-macros.h"
 
 FT_BEGIN_HEADER
 

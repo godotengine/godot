@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -30,7 +30,7 @@
 
 #include "syntax_highlighter.h"
 
-#include "core/script_language.h"
+#include "core/object/script_language.h"
 #include "scene/gui/text_edit.h"
 
 Dictionary SyntaxHighlighter::get_line_syntax_highlighting(int p_line) {
@@ -53,13 +53,13 @@ Dictionary SyntaxHighlighter::get_line_syntax_highlighting(int p_line) {
 	return color_map;
 }
 
-void SyntaxHighlighter::_line_edited_from(int p_line) {
+void SyntaxHighlighter::_lines_edited_from(int p_from_line, int p_to_line) {
 	if (highlighting_cache.size() < 1) {
 		return;
 	}
 
 	int cache_size = highlighting_cache.back()->key();
-	for (int i = p_line - 1; i <= cache_size; i++) {
+	for (int i = MIN(p_from_line, p_to_line) - 1; i <= cache_size; i++) {
 		if (highlighting_cache.has(i)) {
 			highlighting_cache.erase(i);
 		}
@@ -93,7 +93,7 @@ void SyntaxHighlighter::update_cache() {
 
 void SyntaxHighlighter::set_text_edit(TextEdit *p_text_edit) {
 	if (text_edit && ObjectDB::get_instance(text_edit_instance_id)) {
-		text_edit->disconnect("line_edited_from", callable_mp(this, &SyntaxHighlighter::_line_edited_from));
+		text_edit->disconnect("lines_edited_from", callable_mp(this, &SyntaxHighlighter::_lines_edited_from));
 	}
 
 	text_edit = p_text_edit;
@@ -101,7 +101,7 @@ void SyntaxHighlighter::set_text_edit(TextEdit *p_text_edit) {
 		return;
 	}
 	text_edit_instance_id = text_edit->get_instance_id();
-	text_edit->connect("line_edited_from", callable_mp(this, &SyntaxHighlighter::_line_edited_from));
+	text_edit->connect("lines_edited_from", callable_mp(this, &SyntaxHighlighter::_lines_edited_from));
 	update_cache();
 }
 
@@ -110,26 +110,23 @@ TextEdit *SyntaxHighlighter::get_text_edit() {
 }
 
 void SyntaxHighlighter::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("get_line_syntax_highlighting", "p_line"), &SyntaxHighlighter::get_line_syntax_highlighting);
+	ClassDB::bind_method(D_METHOD("get_line_syntax_highlighting", "line"), &SyntaxHighlighter::get_line_syntax_highlighting);
 	ClassDB::bind_method(D_METHOD("update_cache"), &SyntaxHighlighter::update_cache);
 	ClassDB::bind_method(D_METHOD("clear_highlighting_cache"), &SyntaxHighlighter::clear_highlighting_cache);
 	ClassDB::bind_method(D_METHOD("get_text_edit"), &SyntaxHighlighter::get_text_edit);
 
-	ClassDB::bind_method(D_METHOD("_get_line_syntax_highlighting", "p_line"), &SyntaxHighlighter::_get_line_syntax_highlighting);
-	ClassDB::bind_method(D_METHOD("_update_cache"), &SyntaxHighlighter::_update_cache);
-	ClassDB::bind_method(D_METHOD("_clear_highlighting_cache"), &SyntaxHighlighter::_clear_highlighting_cache);
-
-	BIND_VMETHOD(MethodInfo(Variant::DICTIONARY, "_get_line_syntax_highlighting", PropertyInfo(Variant::INT, "p_line")));
+	BIND_VMETHOD(MethodInfo(Variant::DICTIONARY, "_get_line_syntax_highlighting", PropertyInfo(Variant::INT, "line")));
+	BIND_VMETHOD(MethodInfo("_clear_highlighting_cache"));
 	BIND_VMETHOD(MethodInfo("_update_cache"));
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 
-static bool _is_char(CharType c) {
+static bool _is_char(char32_t c) {
 	return (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || c == '_';
 }
 
-static bool _is_hex_symbol(CharType c) {
+static bool _is_hex_symbol(char32_t c) {
 	return ((c >= 'a' && c <= 'f') || (c >= 'A' && c <= 'F'));
 }
 
@@ -149,6 +146,13 @@ Dictionary CodeHighlighter::_get_line_syntax_highlighting(int p_line) {
 	color_region_cache[p_line] = -1;
 	int in_region = -1;
 	if (p_line != 0) {
+		int prev_region_line = p_line - 1;
+		while (prev_region_line > 0 && !color_region_cache.has(prev_region_line)) {
+			prev_region_line--;
+		}
+		for (int i = prev_region_line; i < p_line - 1; i++) {
+			get_line_syntax_highlighting(i);
+		}
 		if (!color_region_cache.has(p_line - 1)) {
 			get_line_syntax_highlighting(p_line - 1);
 		}
@@ -195,7 +199,7 @@ Dictionary CodeHighlighter::_get_line_syntax_highlighting(int p_line) {
 
 						/* search the line */
 						bool match = true;
-						const CharType *start_key = color_regions[c].start_key.c_str();
+						const char32_t *start_key = color_regions[c].start_key.get_data();
 						for (int k = 0; k < start_key_length; k++) {
 							if (start_key[k] != str[from + k]) {
 								match = false;
@@ -229,18 +233,16 @@ Dictionary CodeHighlighter::_get_line_syntax_highlighting(int p_line) {
 
 				/* if we are in one find the end key */
 				if (in_region != -1) {
-					/* check there is enough room */
-					int chars_left = line_length - from;
-					int end_key_length = color_regions[in_region].end_key.length();
-					if (chars_left < end_key_length) {
-						continue;
-					}
-
 					/* search the line */
 					int region_end_index = -1;
-					const CharType *end_key = color_regions[in_region].start_key.c_str();
+					int end_key_length = color_regions[in_region].end_key.length();
+					const char32_t *end_key = color_regions[in_region].end_key.get_data();
 					for (; from < line_length; from++) {
-						if (!is_a_symbol) {
+						if (line_length - from < end_key_length) {
+							break;
+						}
+
+						if (!is_symbol(str[from])) {
 							continue;
 						}
 
@@ -249,9 +251,10 @@ Dictionary CodeHighlighter::_get_line_syntax_highlighting(int p_line) {
 							continue;
 						}
 
+						region_end_index = from;
 						for (int k = 0; k < end_key_length; k++) {
-							if (end_key[k] == str[from + k]) {
-								region_end_index = from;
+							if (end_key[k] != str[from + k]) {
+								region_end_index = -1;
 								break;
 							}
 						}
@@ -265,7 +268,7 @@ Dictionary CodeHighlighter::_get_line_syntax_highlighting(int p_line) {
 					highlighter_info["color"] = color_regions[in_region].color;
 					color_map[j] = highlighter_info;
 
-					j = from;
+					j = from + (end_key_length - 1);
 					if (region_end_index == -1) {
 						color_region_cache[p_line] = in_region;
 					}
@@ -484,8 +487,12 @@ void CodeHighlighter::add_color_region(const String &p_start_key, const String &
 		}
 	}
 
+	int at = 0;
 	for (int i = 0; i < color_regions.size(); i++) {
 		ERR_FAIL_COND_MSG(color_regions[i].start_key == p_start_key, "color region with start key '" + p_start_key + "' already exists.");
+		if (p_start_key.length() < color_regions[i].start_key.length()) {
+			at++;
+		}
 	}
 
 	ColorRegion color_region;
@@ -493,7 +500,7 @@ void CodeHighlighter::add_color_region(const String &p_start_key, const String &
 	color_region.start_key = p_start_key;
 	color_region.end_key = p_end_key;
 	color_region.line_only = p_line_only || p_end_key == "";
-	color_regions.push_back(color_region);
+	color_regions.insert(at, color_region);
 	clear_highlighting_cache();
 }
 
@@ -542,7 +549,7 @@ Dictionary CodeHighlighter::get_color_regions() const {
 	Dictionary r_color_regions;
 	for (int i = 0; i < color_regions.size(); i++) {
 		ColorRegion region = color_regions[i];
-		r_color_regions[region.start_key + (region.end_key.empty() ? "" : " " + region.end_key)] = region.color;
+		r_color_regions[region.start_key + (region.end_key.is_empty() ? "" : " " + region.end_key)] = region.color;
 	}
 	return r_color_regions;
 }
@@ -566,11 +573,11 @@ void CodeHighlighter::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("clear_member_keyword_colors"), &CodeHighlighter::clear_member_keyword_colors);
 	ClassDB::bind_method(D_METHOD("get_member_keyword_colors"), &CodeHighlighter::get_member_keyword_colors);
 
-	ClassDB::bind_method(D_METHOD("add_color_region", "p_start_key", "p_end_key", "p_color", "p_line_only"), &CodeHighlighter::add_color_region, DEFVAL(false));
-	ClassDB::bind_method(D_METHOD("remove_color_region", "p_start_key"), &CodeHighlighter::remove_color_region);
-	ClassDB::bind_method(D_METHOD("has_color_region", "p_start_key"), &CodeHighlighter::has_color_region);
+	ClassDB::bind_method(D_METHOD("add_color_region", "start_key", "end_key", "color", "line_only"), &CodeHighlighter::add_color_region, DEFVAL(false));
+	ClassDB::bind_method(D_METHOD("remove_color_region", "start_key"), &CodeHighlighter::remove_color_region);
+	ClassDB::bind_method(D_METHOD("has_color_region", "start_key"), &CodeHighlighter::has_color_region);
 
-	ClassDB::bind_method(D_METHOD("set_color_regions", "p_color_regions"), &CodeHighlighter::set_color_regions);
+	ClassDB::bind_method(D_METHOD("set_color_regions", "color_regions"), &CodeHighlighter::set_color_regions);
 	ClassDB::bind_method(D_METHOD("clear_color_regions"), &CodeHighlighter::clear_color_regions);
 	ClassDB::bind_method(D_METHOD("get_color_regions"), &CodeHighlighter::get_color_regions);
 

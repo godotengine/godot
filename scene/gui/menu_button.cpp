@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -34,6 +34,10 @@
 #include "scene/main/window.h"
 
 void MenuButton::_unhandled_key_input(Ref<InputEvent> p_event) {
+	if (!_is_focus_owner_in_shorcut_context()) {
+		return;
+	}
+
 	if (disable_shortcuts) {
 		return;
 	}
@@ -43,9 +47,6 @@ void MenuButton::_unhandled_key_input(Ref<InputEvent> p_event) {
 			return;
 		}
 
-		//bool global_only = (get_viewport()->get_modal_stack_top() && !get_viewport()->get_modal_stack_top()->is_a_parent_of(this));
-		//if (popup->activate_item_by_event(p_event, global_only))
-		//	accept_event();
 		if (popup->activate_item_by_event(p_event, false)) {
 			accept_event();
 		}
@@ -53,17 +54,9 @@ void MenuButton::_unhandled_key_input(Ref<InputEvent> p_event) {
 }
 
 void MenuButton::pressed() {
-	{
-		Window *w = Object::cast_to<Window>(get_viewport());
-		if (w && !w->is_embedding_subwindows()) {
-			print_line("windowpos: " + w->get_position());
-		}
-	}
 	Size2 size = get_size();
 
 	Point2 gp = get_screen_position();
-
-	print_line("screenpos: " + gp);
 	gp.y += get_size().y;
 
 	popup->set_position(gp);
@@ -108,7 +101,6 @@ void MenuButton::_notification(int p_what) {
 
 void MenuButton::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_popup"), &MenuButton::get_popup);
-	ClassDB::bind_method(D_METHOD("_unhandled_key_input"), &MenuButton::_unhandled_key_input);
 	ClassDB::bind_method(D_METHOD("_set_items"), &MenuButton::_set_items);
 	ClassDB::bind_method(D_METHOD("_get_items"), &MenuButton::_get_items);
 	ClassDB::bind_method(D_METHOD("set_switch_on_hover", "enable"), &MenuButton::set_switch_on_hover);
@@ -126,12 +118,11 @@ void MenuButton::set_disable_shortcuts(bool p_disabled) {
 }
 
 MenuButton::MenuButton() {
-	switch_on_hover = false;
 	set_flat(true);
 	set_toggle_mode(true);
 	set_disable_shortcuts(false);
-	set_enabled_focus_mode(FOCUS_NONE);
 	set_process_unhandled_key_input(true);
+	set_focus_mode(FOCUS_NONE);
 	set_action_mode(ACTION_MODE_BUTTON_PRESS);
 
 	popup = memnew(PopupMenu);

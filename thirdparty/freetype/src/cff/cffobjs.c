@@ -16,32 +16,31 @@
  */
 
 
-#include <ft2build.h>
 
-#include FT_INTERNAL_DEBUG_H
-#include FT_INTERNAL_CALC_H
-#include FT_INTERNAL_STREAM_H
-#include FT_ERRORS_H
-#include FT_TRUETYPE_IDS_H
-#include FT_TRUETYPE_TAGS_H
-#include FT_INTERNAL_SFNT_H
-#include FT_DRIVER_H
+#include <freetype/internal/ftdebug.h>
+#include <freetype/internal/ftcalc.h>
+#include <freetype/internal/ftstream.h>
+#include <freetype/fterrors.h>
+#include <freetype/ttnameid.h>
+#include <freetype/tttags.h>
+#include <freetype/internal/sfnt.h>
+#include <freetype/ftdriver.h>
 
 #ifdef TT_CONFIG_OPTION_GX_VAR_SUPPORT
-#include FT_MULTIPLE_MASTERS_H
-#include FT_SERVICE_MULTIPLE_MASTERS_H
-#include FT_SERVICE_METRICS_VARIATIONS_H
+#include <freetype/ftmm.h>
+#include <freetype/internal/services/svmm.h>
+#include <freetype/internal/services/svmetric.h>
 #endif
 
-#include FT_INTERNAL_CFF_OBJECTS_TYPES_H
+#include <freetype/internal/cffotypes.h>
 #include "cffobjs.h"
 #include "cffload.h"
 #include "cffcmap.h"
 
 #include "cfferrs.h"
 
-#include FT_INTERNAL_POSTSCRIPT_AUX_H
-#include FT_SERVICE_CFF_TABLE_LOAD_H
+#include <freetype/internal/psaux.h>
+#include <freetype/internal/services/svcfftl.h>
 
 
   /**************************************************************************
@@ -167,46 +166,56 @@
     FT_Error           error = FT_Err_Ok;
     PSH_Globals_Funcs  funcs = cff_size_get_globals_funcs( size );
 
+    FT_Memory     memory   = cffsize->face->memory;
+    CFF_Internal  internal = NULL;
+    CFF_Face      face     = (CFF_Face)cffsize->face;
+    CFF_Font      font     = (CFF_Font)face->extra.data;
 
-    if ( funcs )
-    {
-      CFF_Face      face     = (CFF_Face)cffsize->face;
-      CFF_Font      font     = (CFF_Font)face->extra.data;
-      CFF_Internal  internal = NULL;
+    PS_PrivateRec priv;
 
-      PS_PrivateRec  priv;
-      FT_Memory      memory = cffsize->face->memory;
+    FT_UInt       i;
 
-      FT_UInt  i;
+    if ( !funcs )
+      goto Exit;
 
+    if ( FT_NEW( internal ) )
+      goto Exit;
 
-      if ( FT_NEW( internal ) )
-        goto Exit;
-
-      cff_make_private_dict( &font->top_font, &priv );
-      error = funcs->create( cffsize->face->memory, &priv,
+    cff_make_private_dict( &font->top_font, &priv );
+    error = funcs->create( cffsize->face->memory, &priv,
                              &internal->topfont );
+    if ( error )
+      goto Exit;
+
+    for ( i = font->num_subfonts; i > 0; i-- )
+    {
+      CFF_SubFont  sub = font->subfonts[i - 1];
+
+
+      cff_make_private_dict( sub, &priv );
+      error = funcs->create( cffsize->face->memory, &priv,
+                               &internal->subfonts[i - 1] );
       if ( error )
         goto Exit;
-
-      for ( i = font->num_subfonts; i > 0; i-- )
-      {
-        CFF_SubFont  sub = font->subfonts[i - 1];
-
-
-        cff_make_private_dict( sub, &priv );
-        error = funcs->create( cffsize->face->memory, &priv,
-                               &internal->subfonts[i - 1] );
-        if ( error )
-          goto Exit;
-      }
-
-      cffsize->internal->module_data = internal;
     }
+
+    cffsize->internal->module_data = internal;
 
     size->strike_index = 0xFFFFFFFFUL;
 
   Exit:
+    if ( error )
+    {
+      if ( internal )
+      {
+        for ( i = font->num_subfonts; i > 0; i-- )
+          FT_FREE( internal->subfonts[i - 1] );
+        FT_FREE( internal->topfont );
+      }
+
+      FT_FREE( internal );
+    }
+
     return error;
   }
 
@@ -349,7 +358,8 @@
   FT_LOCAL_DEF( void )
   cff_slot_done( FT_GlyphSlot  slot )
   {
-    slot->internal->glyph_hints = NULL;
+    if ( slot->internal )
+      slot->internal->glyph_hints = NULL;
   }
 
 
@@ -940,7 +950,8 @@
                 style_name = cff_strcpy( memory, fullp );
 
                 /* remove the style part from the family name (if present) */
-                remove_style( cffface->family_name, style_name );
+                if ( style_name )
+                  remove_style( cffface->family_name, style_name );
               }
               break;
             }

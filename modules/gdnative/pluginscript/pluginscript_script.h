@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -32,7 +32,9 @@
 #define PLUGINSCRIPT_SCRIPT_H
 
 // Godot imports
-#include "core/script_language.h"
+
+#include "core/doc_data.h"
+#include "core/object/script_language.h"
 // PluginScript imports
 #include "pluginscript_language.h"
 #include <pluginscript/godot_pluginscript.h>
@@ -67,6 +69,7 @@ private:
 	String _source;
 	String _path;
 	StringName _name;
+	String _icon_path;
 
 protected:
 	static void _bind_methods();
@@ -82,6 +85,14 @@ protected:
 	virtual void _placeholder_erased(PlaceHolderScriptInstance *p_placeholder) override;
 #endif
 public:
+	String get_script_class_name() const {
+		return _name;
+	}
+
+	String get_script_class_icon_path() const {
+		return _icon_path;
+	}
+
 	virtual bool can_instance() const override;
 
 	virtual Ref<Script> get_base_script() const override; //for script inheritance
@@ -96,6 +107,13 @@ public:
 	virtual Error reload(bool p_keep_state = false) override;
 	// TODO: load_source_code only allow utf-8 file, should handle bytecode as well ?
 	virtual Error load_source_code(const String &p_path);
+
+#ifdef TOOLS_ENABLED
+	virtual const Vector<DocData::ClassDoc> &get_documentation() const override {
+		static Vector<DocData::ClassDoc> docs;
+		return docs;
+	}
+#endif // TOOLS_ENABLED
 
 	virtual bool has_method(const StringName &p_method) const override;
 	virtual MethodInfo get_method_info(const StringName &p_method) const override;

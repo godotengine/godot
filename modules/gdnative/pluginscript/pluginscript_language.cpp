@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -29,9 +29,9 @@
 /*************************************************************************/
 
 // Godot imports
+#include "core/config/project_settings.h"
 #include "core/os/file_access.h"
 #include "core/os/os.h"
-#include "core/project_settings.h"
 // PluginScript imports
 #include "pluginscript_language.h"
 #include "pluginscript_script.h"
@@ -140,6 +140,10 @@ bool PluginScriptLanguage::has_named_classes() const {
 
 bool PluginScriptLanguage::supports_builtin_mode() const {
 	return _desc.supports_builtin_mode;
+}
+
+bool PluginScriptLanguage::can_inherit_from_file() const {
+	return _desc.can_inherit_from_file;
 }
 
 int PluginScriptLanguage::find_function(const String &p_function, const String &p_code) const {
@@ -396,6 +400,32 @@ void PluginScriptLanguage::reload_tool_script(const Ref<Script> &p_script, bool 
 	// TODO
 	unlock();
 #endif
+}
+
+bool PluginScriptLanguage::handles_global_class_type(const String &p_type) const {
+	return p_type == "PluginScript";
+}
+
+String PluginScriptLanguage::get_global_class_name(const String &p_path, String *r_base_type, String *r_icon_path) const {
+	if (!p_path.is_empty()) {
+		Ref<PluginScript> script = ResourceLoader::load(p_path, "PluginScript");
+		if (script.is_valid()) {
+			if (r_base_type) {
+				*r_base_type = script->get_instance_base_type();
+			}
+			if (r_icon_path) {
+				*r_icon_path = script->get_script_class_icon_path();
+			}
+			return script->get_script_class_name();
+		}
+		if (r_base_type) {
+			*r_base_type = String();
+		}
+		if (r_icon_path) {
+			*r_icon_path = String();
+		}
+	}
+	return String();
 }
 
 void PluginScriptLanguage::lock() {

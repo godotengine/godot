@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -101,7 +101,7 @@ void ParallaxBackground::_update_scroll() {
 		}
 
 		if (ignore_camera_zoom) {
-			l->set_base_offset_and_scale(ofs, 1.0, screen_offset);
+			l->set_base_offset_and_scale((ofs + screen_offset * (scale - 1)) / scale, 1.0, screen_offset);
 		} else {
 			l->set_base_offset_and_scale(ofs, scale, screen_offset);
 		}
@@ -185,9 +185,5 @@ void ParallaxBackground::_bind_methods() {
 }
 
 ParallaxBackground::ParallaxBackground() {
-	scale = 1.0;
 	set_layer(-100); //behind all by default
-
-	base_scale = Vector2(1, 1);
-	ignore_camera_zoom = false;
 }

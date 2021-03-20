@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -81,6 +81,14 @@ class ScriptTextEditor : public ScriptEditorBase {
 	ScriptEditorQuickOpen *quick_open = nullptr;
 	ConnectionInfoDialog *connection_info_dialog = nullptr;
 
+	int connection_gutter = -1;
+	void _gutter_clicked(int p_line, int p_gutter);
+	void _update_gutter_indexes();
+
+	int line_number_gutter = -1;
+	Color default_line_number_color = Color(1, 1, 1);
+	Color safe_line_number_color = Color(1, 1, 1);
+
 	PopupPanel *color_panel = nullptr;
 	ColorPicker *color_picker = nullptr;
 	Vector2 color_position;
@@ -154,6 +162,7 @@ protected:
 	void _show_warnings_panel(bool p_show);
 	void _warning_clicked(Variant p_line);
 
+	void _notification(int p_what);
 	static void _bind_methods();
 
 	Map<String, Ref<EditorSyntaxHighlighter>> highlighters;
@@ -168,8 +177,6 @@ protected:
 	void _goto_line(int p_line) { goto_line(p_line); }
 	void _lookup_symbol(const String &p_symbol, int p_row, int p_column);
 	void _validate_symbol(const String &p_symbol);
-
-	void _lookup_connections(int p_row, String p_method);
 
 	void _convert_case(CodeTextEditor::CaseStyle p_case);
 
@@ -211,7 +218,7 @@ public:
 	virtual void clear_executing_line() override;
 
 	virtual void reload(bool p_soft) override;
-	virtual void get_breakpoints(List<int> *p_breakpoints) override;
+	virtual Array get_breakpoints() override;
 
 	virtual void add_callback(const String &p_function, PackedStringArray p_args) override;
 	virtual void update_settings() override;

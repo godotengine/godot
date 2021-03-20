@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="PointLight2D" inherits="Light2D" version="4.0">
+	<brief_description>
+	</brief_description>
+	<description>
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+	</methods>
+	<members>
+		<member name="height" type="float" setter="set_height" getter="get_height" default="0.0">
+			The height of the light. Used with 2D normal mapping.
+		</member>
+		<member name="offset" type="Vector2" setter="set_texture_offset" getter="get_texture_offset" default="Vector2( 0, 0 )">
+			The offset of the light's [member texture].
+		</member>
+		<member name="texture" type="Texture2D" setter="set_texture" getter="get_texture">
+			[Texture2D] used for the light's appearance.
+		</member>
+		<member name="texture_scale" type="float" setter="set_texture_scale" getter="get_texture_scale" default="1.0">
+			The [member texture]'s scale factor.
+		</member>
+	</members>
+	<constants>
+	</constants>
+</class>

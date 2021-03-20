@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -30,8 +30,8 @@
 
 #include "video_stream_theora.h"
 
+#include "core/config/project_settings.h"
 #include "core/os/os.h"
-#include "core/project_settings.h"
 
 #include "thirdparty/misc/yuv2rgb.h"
 
@@ -140,9 +140,7 @@ void VideoStreamPlaybackTheora::clear() {
 #ifdef THEORA_USE_THREAD_STREAMING
 	thread_exit = true;
 	thread_sem->post(); //just in case
-	Thread::wait_to_finish(thread);
-	memdelete(thread);
-	thread = nullptr;
+	thread.wait_to_finish();
 	ring_buffer.clear();
 #endif
 
@@ -181,7 +179,7 @@ void VideoStreamPlaybackTheora::set_file(const String &p_file) {
 	int read = file->get_buffer(read_buffer.ptr(), to_read);
 	ring_buffer.write(read_buffer.ptr(), read);
 
-	thread = Thread::create(_streaming_thread, this);
+	thread.start(_streaming_thread, this);
 
 #endif
 
@@ -556,7 +554,7 @@ void VideoStreamPlaybackTheora::play() {
 	}
 
 	playing = true;
-	delay_compensation = ProjectSettings::get_singleton()->get("audio/video_delay_compensation_ms");
+	delay_compensation = ProjectSettings::get_singleton()->get("audio/video/video_delay_compensation_ms");
 	delay_compensation /= 1000.0;
 };
 
@@ -647,31 +645,13 @@ void VideoStreamPlaybackTheora::_streaming_thread(void *ud) {
 #endif
 
 VideoStreamPlaybackTheora::VideoStreamPlaybackTheora() {
-	file = nullptr;
-	theora_p = 0;
-	vorbis_p = 0;
-	videobuf_ready = 0;
-	playing = false;
-	frames_pending = 0;
-	videobuf_time = 0;
-	paused = false;
-
-	buffering = false;
 	texture = Ref<ImageTexture>(memnew(ImageTexture));
-	mix_callback = nullptr;
-	mix_udata = nullptr;
-	audio_track = 0;
-	delay_compensation = 0;
-	audio_frames_wrote = 0;
 
 #ifdef THEORA_USE_THREAD_STREAMING
 	int rb_power = nearest_shift(RB_SIZE_KB * 1024);
 	ring_buffer.resize(rb_power);
 	read_buffer.resize(RB_SIZE_KB * 1024);
 	thread_sem = Semaphore::create();
-	thread = nullptr;
-	thread_exit = false;
-	thread_eof = false;
 
 #endif
 };
@@ -697,7 +677,7 @@ void VideoStreamTheora::_bind_methods() {
 
 ////////////
 
-RES ResourceFormatLoaderTheora::load(const String &p_path, const String &p_original_path, Error *r_error, bool p_use_sub_threads, float *r_progress, bool p_no_cache) {
+RES ResourceFormatLoaderTheora::load(const String &p_path, const String &p_original_path, Error *r_error, bool p_use_sub_threads, float *r_progress, CacheMode p_cache_mode) {
 	FileAccess *f = FileAccess::open(p_path, FileAccess::READ);
 	if (!f) {
 		if (r_error) {

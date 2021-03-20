@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -29,7 +29,9 @@
 /*************************************************************************/
 
 #include "texture_button.h"
+
 #include "core/typedefs.h"
+
 #include <stdlib.h>
 
 Size2 TextureButton::get_minimum_size() const {
@@ -247,8 +249,8 @@ void TextureButton::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_disabled_texture", "texture"), &TextureButton::set_disabled_texture);
 	ClassDB::bind_method(D_METHOD("set_focused_texture", "texture"), &TextureButton::set_focused_texture);
 	ClassDB::bind_method(D_METHOD("set_click_mask", "mask"), &TextureButton::set_click_mask);
-	ClassDB::bind_method(D_METHOD("set_expand", "p_expand"), &TextureButton::set_expand);
-	ClassDB::bind_method(D_METHOD("set_stretch_mode", "p_mode"), &TextureButton::set_stretch_mode);
+	ClassDB::bind_method(D_METHOD("set_expand", "expand"), &TextureButton::set_expand);
+	ClassDB::bind_method(D_METHOD("set_stretch_mode", "mode"), &TextureButton::set_stretch_mode);
 	ClassDB::bind_method(D_METHOD("set_flip_h", "enable"), &TextureButton::set_flip_h);
 	ClassDB::bind_method(D_METHOD("is_flipped_h"), &TextureButton::is_flipped_h);
 	ClassDB::bind_method(D_METHOD("set_flip_v", "enable"), &TextureButton::set_flip_v);
@@ -375,13 +377,4 @@ bool TextureButton::is_flipped_v() const {
 	return vflip;
 }
 
-TextureButton::TextureButton() {
-	expand = false;
-	stretch_mode = STRETCH_SCALE;
-	hflip = false;
-	vflip = false;
-
-	_texture_region = Rect2();
-	_position_rect = Rect2();
-	_tile = false;
-}
+TextureButton::TextureButton() {}

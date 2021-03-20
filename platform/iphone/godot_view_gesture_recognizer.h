@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -32,12 +32,14 @@
 // emulating UIScrollView's UIScrollViewDelayedTouchesBeganGestureRecognizer.
 // It catches all gestures incoming to UIView and delays them for 150ms
 // (the same value used by UIScrollViewDelayedTouchesBeganGestureRecognizer)
-// If touch cancelation or end message is fired it fires delayed
+// If touch cancellation or end message is fired it fires delayed
 // begin touch immediately as well as last touch signal
 
 #import <UIKit/UIKit.h>
 
 @interface GodotViewGestureRecognizer : UIGestureRecognizer
+
+@property(nonatomic, readonly, assign) NSTimeInterval delayTimeInterval;
 
 - (instancetype)init;
 

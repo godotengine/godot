@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -31,7 +31,7 @@
 #ifndef RESOURCEIMPORTTEXTURE_H
 #define RESOURCEIMPORTTEXTURE_H
 
-#include "core/image.h"
+#include "core/io/image.h"
 #include "core/io/resource_importer.h"
 #include "core/os/file_access.h"
 #include "scene/resources/texture.h"
@@ -60,13 +60,9 @@ protected:
 
 	Mutex mutex;
 	struct MakeInfo {
-		int flags;
+		int flags = 0;
 		String normal_path_for_roughness;
-		RS::TextureDetectRoughnessChannel channel_for_roughness;
-		MakeInfo() {
-			flags = 0;
-			channel_for_roughness = RS::TEXTURE_DETECT_ROUGNHESS_R;
-		}
+		RS::TextureDetectRoughnessChannel channel_for_roughness = RS::TEXTURE_DETECT_ROUGHNESS_R;
 	};
 
 	Map<StringName, MakeInfo> make_flags;

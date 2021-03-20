@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -31,10 +31,11 @@
 #ifndef CSHARP_SCRIPT_H
 #define CSHARP_SCRIPT_H
 
+#include "core/doc_data.h"
 #include "core/io/resource_loader.h"
 #include "core/io/resource_saver.h"
-#include "core/script_language.h"
-#include "core/self_list.h"
+#include "core/object/script_language.h"
+#include "core/templates/self_list.h"
 
 #include "mono_gc_handle.h"
 #include "mono_gd/gd_mono.h"
@@ -64,6 +65,18 @@ TScriptInstance *cast_script_instance(ScriptInstance *p_inst) {
 #endif
 
 #define CAST_CSHARP_INSTANCE(m_inst) (cast_script_instance<CSharpInstance, CSharpLanguage>(m_inst))
+
+struct DotNetScriptLookupInfo {
+	String class_namespace;
+	String class_name;
+	GDMonoClass *script_class = nullptr;
+
+	DotNetScriptLookupInfo() {} // Required by HashMap...
+
+	DotNetScriptLookupInfo(const String &p_class_namespace, const String &p_class_name, GDMonoClass *p_script_class) :
+			class_namespace(p_class_namespace), class_name(p_class_name), script_class(p_script_class) {
+	}
+};
 
 class CSharpScript : public Script {
 	GDCLASS(CSharpScript, Script);
@@ -164,6 +177,7 @@ private:
 	// Do not use unless you know what you are doing
 	friend void GDMonoInternals::tie_managed_to_unmanaged(MonoObject *, Object *);
 	static Ref<CSharpScript> create_for_managed_type(GDMonoClass *p_class, GDMonoClass *p_native);
+	static void update_script_class_info(Ref<CSharpScript> p_script);
 	static void initialize_for_managed_type(Ref<CSharpScript> p_script, GDMonoClass *p_class, GDMonoClass *p_native);
 
 	MultiplayerAPI::RPCMode _member_get_rpc_mode(IMonoClassMember *p_member) const;
@@ -187,6 +201,14 @@ public:
 	bool has_source_code() const override;
 	String get_source_code() const override;
 	void set_source_code(const String &p_code) override;
+
+#ifdef TOOLS_ENABLED
+	virtual const Vector<DocData::ClassDoc> &get_documentation() const override {
+		// TODO
+		static Vector<DocData::ClassDoc> docs;
+		return docs;
+	}
+#endif // TOOLS_ENABLED
 
 	Error reload(bool p_keep_state = false) override;
 
@@ -249,6 +271,8 @@ class CSharpInstance : public ScriptInstance {
 	Ref<CSharpScript> script;
 	MonoGCHandleData gchandle;
 
+	List<Callable> connected_event_signals;
+
 	bool _reference_owner_unsafe();
 
 	/*
@@ -287,7 +311,7 @@ public:
 	void mono_object_disposed(MonoObject *p_obj);
 
 	/*
-	 * If 'r_delete_owner' is set to true, the caller must memdelete the script instance's owner. Otherwise, ifevent_signal
+	 * If 'r_delete_owner' is set to true, the caller must memdelete the script instance's owner. Otherwise, if
 	 * 'r_remove_script_instance' is set to true, the caller must destroy the script instance by removing it from its owner.
 	 */
 	void mono_object_disposed_baseref(MonoObject *p_obj, bool p_is_finalizer, bool &r_delete_owner, bool &r_remove_script_instance);
@@ -380,15 +404,14 @@ class CSharpLanguage : public ScriptLanguage {
 
 	int lang_idx = -1;
 
-	Dictionary scripts_metadata;
-	bool scripts_metadata_invalidated = true;
+	HashMap<String, DotNetScriptLookupInfo> dotnet_script_lookup_map;
+
+	void lookup_script_for_class(GDMonoClass *p_class);
 
 	// For debug_break and debug_break_parse
 	int _debug_parse_err_line = -1;
 	String _debug_parse_err_file;
 	String _debug_error;
-
-	void _load_scripts_metadata();
 
 	friend class GDMono;
 	void _on_scripts_domain_unloaded();
@@ -426,18 +449,13 @@ public:
 	void reload_assemblies(bool p_soft_reload);
 #endif
 
-	_FORCE_INLINE_ Dictionary get_scripts_metadata_or_nothing() {
-		return scripts_metadata_invalidated ? Dictionary() : scripts_metadata;
-	}
-
-	_FORCE_INLINE_ const Dictionary &get_scripts_metadata() {
-		if (scripts_metadata_invalidated) {
-			_load_scripts_metadata();
-		}
-		return scripts_metadata;
-	}
-
 	_FORCE_INLINE_ ManagedCallableMiddleman *get_managed_callable_middleman() const { return managed_callable_middleman; }
+
+	void lookup_scripts_in_assembly(GDMonoAssembly *p_assembly);
+
+	const DotNetScriptLookupInfo *lookup_dotnet_script(const String &p_script_path) const {
+		return dotnet_script_lookup_map.getptr(p_script_path);
+	}
 
 	String get_name() const override;
 
@@ -532,7 +550,7 @@ public:
 
 class ResourceFormatLoaderCSharpScript : public ResourceFormatLoader {
 public:
-	RES load(const String &p_path, const String &p_original_path = "", Error *r_error = nullptr, bool p_use_sub_threads = false, float *r_progress = nullptr, bool p_no_cache = false) override;
+	RES load(const String &p_path, const String &p_original_path = "", Error *r_error = nullptr, bool p_use_sub_threads = false, float *r_progress = nullptr, CacheMode p_cache_mode = CACHE_MODE_REUSE) override;
 	void get_recognized_extensions(List<String> *p_extensions) const override;
 	bool handles_type(const String &p_type) const override;
 	String get_resource_type(const String &p_path) const override;

@@ -39,14 +39,6 @@ namespace Godot
             return val * sgn;
         }
 
-        public static FuncRef FuncRef(Object instance, StringName funcName)
-        {
-            var ret = new FuncRef();
-            ret.SetInstance(instance);
-            ret.SetFunction(funcName);
-            return ret;
-        }
-
         public static int Hash(object var)
         {
             return godot_icall_GD_hash(var);
@@ -129,7 +121,12 @@ namespace Godot
 
         public static double RandRange(double from, double to)
         {
-            return godot_icall_GD_rand_range(from, to);
+            return godot_icall_GD_randf_range(from, to);
+        }
+
+        public static int RandRange(int from, int to)
+        {
+            return godot_icall_GD_randi_range(from, to);
         }
 
         public static uint RandSeed(ulong seed, out ulong newSeed)
@@ -238,9 +235,11 @@ namespace Godot
         [MethodImpl(MethodImplOptions.InternalCall)]
         internal extern static void godot_icall_GD_randomize();
 
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal extern static double godot_icall_GD_randf_range(double from, double to);
 
         [MethodImpl(MethodImplOptions.InternalCall)]
-        internal extern static double godot_icall_GD_rand_range(double from, double to);
+        internal extern static int godot_icall_GD_randi_range(int from, int to);
 
         [MethodImpl(MethodImplOptions.InternalCall)]
         internal extern static uint godot_icall_GD_rand_seed(ulong seed, out ulong newSeed);

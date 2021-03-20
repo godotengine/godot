@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -36,20 +36,20 @@
 class Timer : public Node {
 	GDCLASS(Timer, Node);
 
-	float wait_time;
-	bool one_shot;
-	bool autostart;
-	bool processing;
-	bool paused;
+	float wait_time = 1.0;
+	bool one_shot = false;
+	bool autostart = false;
+	bool processing = false;
+	bool paused = false;
 
-	double time_left;
+	double time_left = -1.0;
 
 protected:
 	void _notification(int p_what);
 	static void _bind_methods();
 
 public:
-	enum TimerProcessMode {
+	enum TimerProcessCallback {
 		TIMER_PROCESS_PHYSICS,
 		TIMER_PROCESS_IDLE,
 	};
@@ -73,15 +73,15 @@ public:
 
 	float get_time_left() const;
 
-	void set_timer_process_mode(TimerProcessMode p_mode);
-	TimerProcessMode get_timer_process_mode() const;
+	void set_timer_process_callback(TimerProcessCallback p_callback);
+	TimerProcessCallback get_timer_process_callback() const;
 	Timer();
 
 private:
-	TimerProcessMode timer_process_mode;
+	TimerProcessCallback timer_process_callback = TIMER_PROCESS_IDLE;
 	void _set_process(bool p_process, bool p_force = false);
 };
 
-VARIANT_ENUM_CAST(Timer::TimerProcessMode);
+VARIANT_ENUM_CAST(Timer::TimerProcessCallback);
 
 #endif // TIMER_H

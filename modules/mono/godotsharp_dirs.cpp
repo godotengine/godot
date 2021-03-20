@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -30,9 +30,9 @@
 
 #include "godotsharp_dirs.h"
 
+#include "core/config/project_settings.h"
 #include "core/os/dir_access.h"
 #include "core/os/os.h"
-#include "core/project_settings.h"
 
 #ifdef TOOLS_ENABLED
 #include "core/version.h"
@@ -122,7 +122,7 @@ public:
 
 private:
 	_GodotSharpDirs() {
-		res_data_dir = "res://.mono";
+		res_data_dir = "res://.godot/mono";
 		res_metadata_dir = res_data_dir.plus_file("metadata");
 		res_assemblies_base_dir = res_data_dir.plus_file("assemblies");
 		res_assemblies_dir = res_assemblies_base_dir.plus_file(GDMono::get_expected_api_build_config());
@@ -146,7 +146,7 @@ private:
 
 		String appname = ProjectSettings::get_singleton()->get("application/config/name");
 		String appname_safe = OS::get_singleton()->get_safe_dir_name(appname);
-		if (appname_safe.empty()) {
+		if (appname_safe.is_empty()) {
 			appname_safe = "UnnamedProject";
 		}
 
@@ -179,16 +179,16 @@ private:
 
 #ifdef OSX_ENABLED
 		if (!DirAccess::exists(data_editor_tools_dir)) {
-			data_editor_tools_dir = exe_dir.plus_file("../Frameworks/GodotSharp/Tools");
+			data_editor_tools_dir = exe_dir.plus_file("../Resources/GodotSharp/Tools");
 		}
 
 		if (!DirAccess::exists(data_editor_prebuilt_api_dir)) {
-			data_editor_prebuilt_api_dir = exe_dir.plus_file("../Frameworks/GodotSharp/Api");
+			data_editor_prebuilt_api_dir = exe_dir.plus_file("../Resources/GodotSharp/Api");
 		}
 
 		if (!DirAccess::exists(data_mono_root_dir)) {
 			data_mono_etc_dir = exe_dir.plus_file("../Resources/GodotSharp/Mono/etc");
-			data_mono_lib_dir = exe_dir.plus_file("../Frameworks/GodotSharp/Mono/lib");
+			data_mono_lib_dir = exe_dir.plus_file("../Resources/GodotSharp/Mono/lib");
 		}
 #endif
 
@@ -218,11 +218,11 @@ private:
 #ifdef OSX_ENABLED
 		if (!DirAccess::exists(data_mono_root_dir)) {
 			data_mono_etc_dir = exe_dir.plus_file("../Resources/GodotSharp/Mono/etc");
-			data_mono_lib_dir = exe_dir.plus_file("../Frameworks/GodotSharp/Mono/lib");
+			data_mono_lib_dir = exe_dir.plus_file("../Resources/GodotSharp/Mono/lib");
 		}
 
 		if (!DirAccess::exists(data_game_assemblies_dir)) {
-			data_game_assemblies_dir = exe_dir.plus_file("../Frameworks/GodotSharp/Assemblies");
+			data_game_assemblies_dir = exe_dir.plus_file("../Resources/GodotSharp/Assemblies");
 		}
 #endif
 
@@ -322,5 +322,4 @@ String get_data_mono_bin_dir() {
 	return _GodotSharpDirs::get_singleton().data_mono_bin_dir;
 }
 #endif
-
 } // namespace GodotSharpDirs

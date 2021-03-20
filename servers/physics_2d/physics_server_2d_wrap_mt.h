@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -31,9 +31,10 @@
 #ifndef PHYSICS2DSERVERWRAPMT_H
 #define PHYSICS2DSERVERWRAPMT_H
 
-#include "core/command_queue_mt.h"
+#include "core/config/project_settings.h"
 #include "core/os/thread.h"
-#include "core/project_settings.h"
+#include "core/templates/command_queue_mt.h"
+#include "core/templates/safe_refcount.h"
 #include "servers/physics_server_2d.h"
 
 #ifdef DEBUG_SYNC
@@ -52,9 +53,9 @@ class PhysicsServer2DWrapMT : public PhysicsServer2D {
 
 	Thread::ID server_thread;
 	Thread::ID main_thread;
-	volatile bool exit;
-	Thread *thread;
-	volatile bool step_thread_up;
+	SafeFlag exit;
+	Thread thread;
+	SafeFlag step_thread_up;
 	bool create_thread;
 
 	Semaphore step_sem;
@@ -73,6 +74,8 @@ public:
 #define ServerName PhysicsServer2D
 #define ServerNameWrapMT PhysicsServer2DWrapMT
 #define server_name physics_2d_server
+#define WRITE_ACTION
+
 #include "servers/server_wrap_mt_common.h"
 
 	//FUNC1RID(shape,ShapeType); todo fix
@@ -93,7 +96,7 @@ public:
 	FUNC1RC(real_t, shape_get_custom_solver_bias, RID);
 
 	//these work well, but should be used from the main thread only
-	bool shape_collide(RID p_shape_A, const Transform2D &p_xform_A, const Vector2 &p_motion_A, RID p_shape_B, const Transform2D &p_xform_B, const Vector2 &p_motion_B, Vector2 *r_results, int p_result_max, int &r_result_count) {
+	bool shape_collide(RID p_shape_A, const Transform2D &p_xform_A, const Vector2 &p_motion_A, RID p_shape_B, const Transform2D &p_xform_B, const Vector2 &p_motion_B, Vector2 *r_results, int p_result_max, int &r_result_count) override {
 		ERR_FAIL_COND_V(main_thread != Thread::get_caller_id(), false);
 		return physics_2d_server->shape_collide(p_shape_A, p_xform_A, p_motion_A, p_shape_B, p_xform_B, p_motion_B, r_results, p_result_max, r_result_count);
 	}
@@ -108,18 +111,18 @@ public:
 	FUNC2RC(real_t, space_get_param, RID, SpaceParameter);
 
 	// this function only works on physics process, errors and returns null otherwise
-	PhysicsDirectSpaceState2D *space_get_direct_state(RID p_space) {
+	PhysicsDirectSpaceState2D *space_get_direct_state(RID p_space) override {
 		ERR_FAIL_COND_V(main_thread != Thread::get_caller_id(), nullptr);
 		return physics_2d_server->space_get_direct_state(p_space);
 	}
 
 	FUNC2(space_set_debug_contacts, RID, int);
-	virtual Vector<Vector2> space_get_contacts(RID p_space) const {
+	virtual Vector<Vector2> space_get_contacts(RID p_space) const override {
 		ERR_FAIL_COND_V(main_thread != Thread::get_caller_id(), Vector<Vector2>());
 		return physics_2d_server->space_get_contacts(p_space);
 	}
 
-	virtual int space_get_contact_count(RID p_space) const {
+	virtual int space_get_contact_count(RID p_space) const override {
 		ERR_FAIL_COND_V(main_thread != Thread::get_caller_id(), 0);
 		return physics_2d_server->space_get_contact_count(p_space);
 	}
@@ -189,7 +192,7 @@ public:
 	FUNC2RC(RID, body_get_shape, RID, int);
 
 	FUNC3(body_set_shape_disabled, RID, int, bool);
-	FUNC4(body_set_shape_as_one_way_collision, RID, int, bool, float);
+	FUNC4(body_set_shape_as_one_way_collision, RID, int, bool, real_t);
 
 	FUNC2(body_remove_shape, RID, int);
 	FUNC1(body_clear_shapes, RID);
@@ -244,29 +247,33 @@ public:
 
 	FUNC4(body_set_force_integration_callback, RID, Object *, const StringName &, const Variant &);
 
-	bool body_collide_shape(RID p_body, int p_body_shape, RID p_shape, const Transform2D &p_shape_xform, const Vector2 &p_motion, Vector2 *r_results, int p_result_max, int &r_result_count) {
+	bool body_collide_shape(RID p_body, int p_body_shape, RID p_shape, const Transform2D &p_shape_xform, const Vector2 &p_motion, Vector2 *r_results, int p_result_max, int &r_result_count) override {
 		return physics_2d_server->body_collide_shape(p_body, p_body_shape, p_shape, p_shape_xform, p_motion, r_results, p_result_max, r_result_count);
 	}
 
 	FUNC2(body_set_pickable, RID, bool);
 
-	bool body_test_motion(RID p_body, const Transform2D &p_from, const Vector2 &p_motion, bool p_infinite_inertia, real_t p_margin = 0.001, MotionResult *r_result = nullptr, bool p_exclude_raycast_shapes = true) {
+	bool body_test_motion(RID p_body, const Transform2D &p_from, const Vector2 &p_motion, bool p_infinite_inertia, real_t p_margin = 0.001, MotionResult *r_result = nullptr, bool p_exclude_raycast_shapes = true) override {
 		ERR_FAIL_COND_V(main_thread != Thread::get_caller_id(), false);
 		return physics_2d_server->body_test_motion(p_body, p_from, p_motion, p_infinite_inertia, p_margin, r_result, p_exclude_raycast_shapes);
 	}
 
-	int body_test_ray_separation(RID p_body, const Transform2D &p_transform, bool p_infinite_inertia, Vector2 &r_recover_motion, SeparationResult *r_results, int p_result_max, float p_margin = 0.001) {
+	int body_test_ray_separation(RID p_body, const Transform2D &p_transform, bool p_infinite_inertia, Vector2 &r_recover_motion, SeparationResult *r_results, int p_result_max, real_t p_margin = 0.001) override {
 		ERR_FAIL_COND_V(main_thread != Thread::get_caller_id(), false);
 		return physics_2d_server->body_test_ray_separation(p_body, p_transform, p_infinite_inertia, r_recover_motion, r_results, p_result_max, p_margin);
 	}
 
 	// this function only works on physics process, errors and returns null otherwise
-	PhysicsDirectBodyState2D *body_get_direct_state(RID p_body) {
+	PhysicsDirectBodyState2D *body_get_direct_state(RID p_body) override {
 		ERR_FAIL_COND_V(main_thread != Thread::get_caller_id(), nullptr);
 		return physics_2d_server->body_get_direct_state(p_body);
 	}
 
 	/* JOINT API */
+
+	FUNCRID(joint)
+
+	FUNC1(joint_clear, RID)
 
 	FUNC3(joint_set_param, RID, JointParam, real_t);
 	FUNC2RC(real_t, joint_get_param, RID, JointParam);
@@ -280,9 +287,9 @@ public:
 
 	//TODO need to convert this to FUNCRID, but it's a hassle..
 
-	FUNC3R(RID, pin_joint_create, const Vector2 &, RID, RID);
-	FUNC5R(RID, groove_joint_create, const Vector2 &, const Vector2 &, const Vector2 &, RID, RID);
-	FUNC4R(RID, damped_spring_joint_create, const Vector2 &, const Vector2 &, RID, RID);
+	FUNC4(joint_make_pin, RID, const Vector2 &, RID, RID);
+	FUNC6(joint_make_groove, RID, const Vector2 &, const Vector2 &, const Vector2 &, RID, RID);
+	FUNC5(joint_make_damped_spring, RID, const Vector2 &, const Vector2 &, RID, RID);
 
 	FUNC3(pin_joint_set_param, RID, PinJointParam, real_t);
 	FUNC2RC(real_t, pin_joint_get_param, RID, PinJointParam);
@@ -297,39 +304,28 @@ public:
 	FUNC1(free, RID);
 	FUNC1(set_active, bool);
 
-	virtual void init();
-	virtual void step(real_t p_step);
-	virtual void sync();
-	virtual void end_sync();
-	virtual void flush_queries();
-	virtual void finish();
+	virtual void init() override;
+	virtual void step(real_t p_step) override;
+	virtual void sync() override;
+	virtual void end_sync() override;
+	virtual void flush_queries() override;
+	virtual void finish() override;
 
-	virtual bool is_flushing_queries() const {
+	virtual bool is_flushing_queries() const override {
 		return physics_2d_server->is_flushing_queries();
 	}
 
-	int get_process_info(ProcessInfo p_info) {
+	int get_process_info(ProcessInfo p_info) override {
 		return physics_2d_server->get_process_info(p_info);
 	}
 
 	PhysicsServer2DWrapMT(PhysicsServer2D *p_contained, bool p_create_thread);
 	~PhysicsServer2DWrapMT();
 
-	template <class T>
-	static PhysicsServer2D *init_server() {
-		int tm = GLOBAL_DEF("physics/2d/thread_model", 1);
-		if (tm == 0) { // single unsafe
-			return memnew(T);
-		} else if (tm == 1) { // single safe
-			return memnew(PhysicsServer2DWrapMT(memnew(T), false));
-		} else { // multi threaded
-			return memnew(PhysicsServer2DWrapMT(memnew(T), true));
-		}
-	}
-
 #undef ServerNameWrapMT
 #undef ServerName
 #undef server_name
+#undef WRITE_ACTION
 };
 
 #ifdef DEBUG_SYNC

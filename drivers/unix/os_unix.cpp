@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -32,14 +32,12 @@
 
 #ifdef UNIX_ENABLED
 
+#include "core/config/project_settings.h"
 #include "core/debugger/engine_debugger.h"
 #include "core/debugger/script_debugger.h"
-#include "core/os/thread_dummy.h"
-#include "core/project_settings.h"
 #include "drivers/unix/dir_access_unix.h"
 #include "drivers/unix/file_access_unix.h"
 #include "drivers/unix/net_socket_posix.h"
-#include "drivers/unix/rw_lock_posix.h"
 #include "drivers/unix/thread_posix.h"
 #include "servers/rendering_server.h"
 
@@ -48,7 +46,7 @@
 #include <mach/mach_time.h>
 #endif
 
-#if defined(__FreeBSD__) || defined(__OpenBSD__)
+#if defined(__FreeBSD__) || defined(__OpenBSD__) || defined(__NetBSD__)
 #include <sys/param.h>
 #include <sys/sysctl.h>
 #endif
@@ -64,6 +62,7 @@
 #include <string.h>
 #include <sys/time.h>
 #include <sys/wait.h>
+#include <time.h>
 #include <unistd.h>
 
 /// Clock Setup function (used by get_ticks_usec)
@@ -117,17 +116,13 @@ int OS_Unix::unix_initialize_audio(int p_audio_driver) {
 }
 
 void OS_Unix::initialize_core() {
-#ifdef NO_THREADS
-	ThreadDummy::make_default();
-	RWLockDummy::make_default();
-#else
-	ThreadPosix::make_default();
-	RWLockPosix::make_default();
+#if !defined(NO_THREADS)
+	init_thread_posix();
 #endif
+
 	FileAccess::make_default<FileAccessUnix>(FileAccess::ACCESS_RESOURCES);
 	FileAccess::make_default<FileAccessUnix>(FileAccess::ACCESS_USERDATA);
 	FileAccess::make_default<FileAccessUnix>(FileAccess::ACCESS_FILESYSTEM);
-	//FileAccessBufferedFA<FileAccessUnix>::make_default();
 	DirAccess::make_default<DirAccessUnix>(DirAccess::ACCESS_RESOURCES);
 	DirAccess::make_default<DirAccessUnix>(DirAccess::ACCESS_USERDATA);
 	DirAccess::make_default<DirAccessUnix>(DirAccess::ACCESS_FILESYSTEM);
@@ -171,52 +166,53 @@ double OS_Unix::get_unix_time() const {
 
 OS::Date OS_Unix::get_date(bool utc) const {
 	time_t t = time(nullptr);
-	struct tm *lt;
+	struct tm lt;
 	if (utc) {
-		lt = gmtime(&t);
+		gmtime_r(&t, &lt);
 	} else {
-		lt = localtime(&t);
+		localtime_r(&t, &lt);
 	}
 	Date ret;
-	ret.year = 1900 + lt->tm_year;
+	ret.year = 1900 + lt.tm_year;
 	// Index starting at 1 to match OS_Unix::get_date
 	//   and Windows SYSTEMTIME and tm_mon follows the typical structure
 	//   of 0-11, noted here: http://www.cplusplus.com/reference/ctime/tm/
-	ret.month = (Month)(lt->tm_mon + 1);
-	ret.day = lt->tm_mday;
-	ret.weekday = (Weekday)lt->tm_wday;
-	ret.dst = lt->tm_isdst;
+	ret.month = (Month)(lt.tm_mon + 1);
+	ret.day = lt.tm_mday;
+	ret.weekday = (Weekday)lt.tm_wday;
+	ret.dst = lt.tm_isdst;
 
 	return ret;
 }
 
 OS::Time OS_Unix::get_time(bool utc) const {
 	time_t t = time(nullptr);
-	struct tm *lt;
+	struct tm lt;
 	if (utc) {
-		lt = gmtime(&t);
+		gmtime_r(&t, &lt);
 	} else {
-		lt = localtime(&t);
+		localtime_r(&t, &lt);
 	}
 	Time ret;
-	ret.hour = lt->tm_hour;
-	ret.min = lt->tm_min;
-	ret.sec = lt->tm_sec;
+	ret.hour = lt.tm_hour;
+	ret.min = lt.tm_min;
+	ret.sec = lt.tm_sec;
 	get_time_zone_info();
 	return ret;
 }
 
 OS::TimeZoneInfo OS_Unix::get_time_zone_info() const {
 	time_t t = time(nullptr);
-	struct tm *lt = localtime(&t);
+	struct tm lt;
+	localtime_r(&t, &lt);
 	char name[16];
-	strftime(name, 16, "%Z", lt);
+	strftime(name, 16, "%Z", &lt);
 	name[15] = 0;
 	TimeZoneInfo ret;
 	ret.name = name;
 
 	char bias_buf[16];
-	strftime(bias_buf, 16, "%z", lt);
+	strftime(bias_buf, 16, "%z", &lt);
 	int bias;
 	bias_buf[15] = 0;
 	sscanf(bias_buf, "%d", &bias);
@@ -234,8 +230,11 @@ OS::TimeZoneInfo OS_Unix::get_time_zone_info() const {
 }
 
 void OS_Unix::delay_usec(uint32_t p_usec) const {
-	struct timespec rem = { static_cast<time_t>(p_usec / 1000000), (static_cast<long>(p_usec) % 1000000) * 1000 };
-	while (nanosleep(&rem, &rem) == EINTR) {
+	struct timespec requested = { static_cast<time_t>(p_usec / 1000000), (static_cast<long>(p_usec) % 1000000) * 1000 };
+	struct timespec remaining;
+	while (nanosleep(&requested, &remaining) == -1 && errno == EINTR) {
+		requested.tv_sec = remaining.tv_sec;
+		requested.tv_nsec = remaining.tv_nsec;
 	}
 }
 
@@ -254,31 +253,26 @@ uint64_t OS_Unix::get_ticks_usec() const {
 	return longtime;
 }
 
-Error OS_Unix::execute(const String &p_path, const List<String> &p_arguments, bool p_blocking, ProcessID *r_child_id, String *r_pipe, int *r_exitcode, bool read_stderr, Mutex *p_pipe_mutex) {
+Error OS_Unix::execute(const String &p_path, const List<String> &p_arguments, String *r_pipe, int *r_exitcode, bool read_stderr, Mutex *p_pipe_mutex) {
 #ifdef __EMSCRIPTEN__
 	// Don't compile this code at all to avoid undefined references.
 	// Actual virtual call goes to OS_JavaScript.
 	ERR_FAIL_V(ERR_BUG);
 #else
-	if (p_blocking && r_pipe) {
-		String argss;
-		argss = "\"" + p_path + "\"";
-
+	if (r_pipe) {
+		String command = "\"" + p_path + "\"";
 		for (int i = 0; i < p_arguments.size(); i++) {
-			argss += String(" \"") + p_arguments[i] + "\"";
+			command += String(" \"") + p_arguments[i] + "\"";
 		}
-
 		if (read_stderr) {
-			argss += " 2>&1"; // Read stderr too
+			command += " 2>&1"; // Include stderr
 		} else {
-			argss += " 2>/dev/null"; //silence stderr
+			command += " 2>/dev/null"; // Silence stderr
 		}
-		FILE *f = popen(argss.utf8().get_data(), "r");
 
-		ERR_FAIL_COND_V_MSG(!f, ERR_CANT_OPEN, "Cannot pipe stream from process running with following arguments '" + argss + "'.");
-
+		FILE *f = popen(command.utf8().get_data(), "r");
+		ERR_FAIL_COND_V_MSG(!f, ERR_CANT_OPEN, "Cannot create pipe from command: " + command);
 		char buf[65535];
-
 		while (fgets(buf, 65535, f)) {
 			if (p_pipe_mutex) {
 				p_pipe_mutex->lock();
@@ -289,10 +283,10 @@ Error OS_Unix::execute(const String &p_path, const List<String> &p_arguments, bo
 			}
 		}
 		int rv = pclose(f);
+
 		if (r_exitcode) {
 			*r_exitcode = WEXITSTATUS(rv);
 		}
-
 		return OK;
 	}
 
@@ -300,13 +294,48 @@ Error OS_Unix::execute(const String &p_path, const List<String> &p_arguments, bo
 	ERR_FAIL_COND_V(pid < 0, ERR_CANT_FORK);
 
 	if (pid == 0) {
-		// is child
-
-		if (!p_blocking) {
-			// For non blocking calls, create a new session-ID so parent won't wait for it.
-			// This ensures the process won't go zombie at end.
-			setsid();
+		// The child process
+		Vector<CharString> cs;
+		cs.push_back(p_path.utf8());
+		for (int i = 0; i < p_arguments.size(); i++) {
+			cs.push_back(p_arguments[i].utf8());
 		}
+
+		Vector<char *> args;
+		for (int i = 0; i < cs.size(); i++) {
+			args.push_back((char *)cs[i].get_data());
+		}
+		args.push_back(0);
+
+		execvp(p_path.utf8().get_data(), &args[0]);
+		// The execvp() function only returns if an error occurs.
+		ERR_PRINT("Could not create child process: " + p_path);
+		raise(SIGKILL);
+	}
+
+	int status;
+	waitpid(pid, &status, 0);
+	if (r_exitcode) {
+		*r_exitcode = WIFEXITED(status) ? WEXITSTATUS(status) : status;
+	}
+	return OK;
+#endif
+}
+
+Error OS_Unix::create_process(const String &p_path, const List<String> &p_arguments, ProcessID *r_child_id) {
+#ifdef __EMSCRIPTEN__
+	// Don't compile this code at all to avoid undefined references.
+	// Actual virtual call goes to OS_JavaScript.
+	ERR_FAIL_V(ERR_BUG);
+#else
+	pid_t pid = fork();
+	ERR_FAIL_COND_V(pid < 0, ERR_CANT_FORK);
+
+	if (pid == 0) {
+		// The new process
+		// Create a new session-ID so parent won't wait for it.
+		// This ensures the process won't go zombie at the end.
+		setsid();
 
 		Vector<CharString> cs;
 		cs.push_back(p_path.utf8());
@@ -321,24 +350,14 @@ Error OS_Unix::execute(const String &p_path, const List<String> &p_arguments, bo
 		args.push_back(0);
 
 		execvp(p_path.utf8().get_data(), &args[0]);
-		// still alive? something failed..
-		fprintf(stderr, "**ERROR** OS_Unix::execute - Could not create child process while executing: %s\n", p_path.utf8().get_data());
+		// The execvp() function only returns if an error occurs.
+		ERR_PRINT("Could not create child process: " + p_path);
 		raise(SIGKILL);
 	}
 
-	if (p_blocking) {
-		int status;
-		waitpid(pid, &status, 0);
-		if (r_exitcode) {
-			*r_exitcode = WEXITSTATUS(status);
-		}
-
-	} else {
-		if (r_child_id) {
-			*r_child_id = pid;
-		}
+	if (r_child_id) {
+		*r_child_id = pid;
 	}
-
 	return OK;
 #endif
 }
@@ -476,7 +495,7 @@ String OS_Unix::get_executable_path() const {
 		return OS::get_executable_path();
 	}
 	return b;
-#elif defined(__OpenBSD__)
+#elif defined(__OpenBSD__) || defined(__NetBSD__)
 	char resolved_path[MAXPATHLEN];
 
 	realpath(OS::get_executable_path().utf8().get_data(), resolved_path);

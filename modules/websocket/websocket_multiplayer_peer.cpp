@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -33,15 +33,6 @@
 #include "core/os/os.h"
 
 WebSocketMultiplayerPeer::WebSocketMultiplayerPeer() {
-	_is_multiplayer = false;
-	_peer_id = 0;
-	_target_peer = 0;
-	_refusing = false;
-
-	_current_packet.source = 0;
-	_current_packet.destination = 0;
-	_current_packet.size = 0;
-	_current_packet.data = nullptr;
 }
 
 WebSocketMultiplayerPeer::~WebSocketMultiplayerPeer() {
@@ -62,7 +53,7 @@ int WebSocketMultiplayerPeer::_gen_unique_id() const {
 				(uint32_t)((uint64_t)this), hash); //rely on aslr heap
 		hash = hash_djb2_one_32(
 				(uint32_t)((uint64_t)&hash), hash); //rely on aslr stack
-		hash = hash & 0x7FFFFFFF; // make it compatible with unsigned, since negatie id is used for exclusion
+		hash = hash & 0x7FFFFFFF; // make it compatible with unsigned, since negative id is used for exclusion
 	}
 
 	return hash;
@@ -195,7 +186,7 @@ void WebSocketMultiplayerPeer::_send_add(int32_t p_peer_id) {
 	for (Map<int, Ref<WebSocketPeer>>::Element *E = _peer_map.front(); E; E = E->next()) {
 		int32_t id = E->key();
 		if (p_peer_id == id) {
-			continue; // Skip the newwly added peer (already confirmed)
+			continue; // Skip the newly added peer (already confirmed)
 		}
 
 		// Send new peer to others
@@ -323,7 +314,7 @@ void WebSocketMultiplayerPeer::_process_multiplayer(Ref<WebSocketPeer> p_peer, u
 				_peer_map.erase(id);
 				emit_signal("peer_disconnected", id);
 				break;
-			case SYS_ID: // Helo, server assigned ID
+			case SYS_ID: // Hello, server assigned ID
 				_peer_id = id;
 				break;
 			default:

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -65,9 +65,9 @@ void OS_LinuxBSD::initialize_joypads() {
 
 String OS_LinuxBSD::get_unique_id() const {
 	static String machine_id;
-	if (machine_id.empty()) {
+	if (machine_id.is_empty()) {
 		if (FileAccess *f = FileAccess::open("/etc/machine-id", FileAccess::READ)) {
-			while (machine_id.empty() && !f->eof_reached()) {
+			while (machine_id.is_empty() && !f->eof_reached()) {
 				machine_id = f->get_line().strip_edges();
 			}
 			f->close();
@@ -88,7 +88,9 @@ void OS_LinuxBSD::finalize() {
 #endif
 
 #ifdef JOYDEV_ENABLED
-	memdelete(joypad);
+	if (joypad) {
+		memdelete(joypad);
+	}
 #endif
 }
 
@@ -121,18 +123,39 @@ String OS_LinuxBSD::get_name() const {
 
 Error OS_LinuxBSD::shell_open(String p_uri) {
 	Error ok;
+	int err_code;
 	List<String> args;
 	args.push_back(p_uri);
-	ok = execute("xdg-open", args, false);
-	if (ok == OK) {
+
+	// Agnostic
+	ok = execute("xdg-open", args, nullptr, &err_code);
+	if (ok == OK && !err_code) {
+		return OK;
+	} else if (err_code == 2) {
+		return ERR_FILE_NOT_FOUND;
+	}
+	// GNOME
+	args.push_front("open"); // The command is `gio open`, so we need to add it to args
+	ok = execute("gio", args, nullptr, &err_code);
+	if (ok == OK && !err_code) {
+		return OK;
+	} else if (err_code == 2) {
+		return ERR_FILE_NOT_FOUND;
+	}
+	args.pop_front();
+	ok = execute("gvfs-open", args, nullptr, &err_code);
+	if (ok == OK && !err_code) {
+		return OK;
+	} else if (err_code == 2) {
+		return ERR_FILE_NOT_FOUND;
+	}
+	// KDE
+	ok = execute("kde-open5", args, nullptr, &err_code);
+	if (ok == OK && !err_code) {
 		return OK;
 	}
-	ok = execute("gnome-open", args, false);
-	if (ok == OK) {
-		return OK;
-	}
-	ok = execute("kde-open", args, false);
-	return ok;
+	ok = execute("kde-open", args, nullptr, &err_code);
+	return !err_code ? ok : FAILED;
 }
 
 bool OS_LinuxBSD::_check_internal_feature_support(const String &p_feature) {
@@ -209,7 +232,7 @@ String OS_LinuxBSD::get_system_dir(SystemDir p_dir) const {
 	String pipe;
 	List<String> arg;
 	arg.push_back(xdgparam);
-	Error err = const_cast<OS_LinuxBSD *>(this)->execute("xdg-user-dir", arg, true, nullptr, &pipe);
+	Error err = const_cast<OS_LinuxBSD *>(this)->execute("xdg-user-dir", arg, &pipe);
 	if (err != OK) {
 		return ".";
 	}
@@ -223,7 +246,7 @@ void OS_LinuxBSD::run() {
 		return;
 	}
 
-	main_loop->init();
+	main_loop->initialize();
 
 	//uint64_t last_ticks=get_ticks_usec();
 
@@ -240,7 +263,7 @@ void OS_LinuxBSD::run() {
 		}
 	};
 
-	main_loop->finish();
+	main_loop->finalize();
 }
 
 void OS_LinuxBSD::disable_crash_handler() {
@@ -280,65 +303,147 @@ static String get_mountpoint(const String &p_path) {
 }
 
 Error OS_LinuxBSD::move_to_trash(const String &p_path) {
-	String trash_can = "";
+	int err_code;
+	List<String> args;
+	args.push_back(p_path);
+	args.push_front("trash"); // The command is `gio trash <file_name>` so we need to add it to args.
+	Error result = execute("gio", args, nullptr, &err_code); // For GNOME based machines.
+	if (result == OK && !err_code) {
+		return OK;
+	} else if (err_code == 2) {
+		return ERR_FILE_NOT_FOUND;
+	}
+
+	args.pop_front();
+	args.push_front("move");
+	args.push_back("trash:/"); // The command is `kioclient5 move <file_name> trash:/`.
+	result = execute("kioclient5", args, nullptr, &err_code); // For KDE based machines.
+	if (result == OK && !err_code) {
+		return OK;
+	} else if (err_code == 2) {
+		return ERR_FILE_NOT_FOUND;
+	}
+
+	args.pop_front();
+	args.pop_back();
+	result = execute("gvfs-trash", args, nullptr, &err_code); // For older Linux machines.
+	if (result == OK && !err_code) {
+		return OK;
+	} else if (err_code == 2) {
+		return ERR_FILE_NOT_FOUND;
+	}
+
+	// If the commands `kioclient5`, `gio` or `gvfs-trash` don't exist on the system we do it manually.
+	String trash_path = "";
 	String mnt = get_mountpoint(p_path);
 
-	// If there is a directory "[Mountpoint]/.Trash-[UID]/files", use it as the trash can.
+	// If there is a directory "[Mountpoint]/.Trash-[UID], use it as the trash can.
 	if (mnt != "") {
-		String path(mnt + "/.Trash-" + itos(getuid()) + "/files");
+		String path(mnt + "/.Trash-" + itos(getuid()));
 		struct stat s;
 		if (!stat(path.utf8().get_data(), &s)) {
-			trash_can = path;
+			trash_path = path;
 		}
 	}
 
-	// Otherwise, if ${XDG_DATA_HOME} is defined, use "${XDG_DATA_HOME}/Trash/files" as the trash can.
-	if (trash_can == "") {
+	// Otherwise, if ${XDG_DATA_HOME} is defined, use "${XDG_DATA_HOME}/Trash" as the trash can.
+	if (trash_path == "") {
 		char *dhome = getenv("XDG_DATA_HOME");
 		if (dhome) {
-			trash_can = String(dhome) + "/Trash/files";
+			trash_path = String(dhome) + "/Trash";
 		}
 	}
 
-	// Otherwise, if ${HOME} is defined, use "${HOME}/.local/share/Trash/files" as the trash can.
-	if (trash_can == "") {
+	// Otherwise, if ${HOME} is defined, use "${HOME}/.local/share/Trash" as the trash can.
+	if (trash_path == "") {
 		char *home = getenv("HOME");
 		if (home) {
-			trash_can = String(home) + "/.local/share/Trash/files";
+			trash_path = String(home) + "/.local/share/Trash";
 		}
 	}
 
 	// Issue an error if none of the previous locations is appropriate for the trash can.
-	if (trash_can == "") {
-		ERR_PRINT("move_to_trash: Could not determine the trash can location");
-		return FAILED;
-	}
+	ERR_FAIL_COND_V_MSG(trash_path == "", FAILED, "Could not determine the trash can location");
 
 	// Create needed directories for decided trash can location.
-	DirAccess *dir_access = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
-	Error err = dir_access->make_dir_recursive(trash_can);
-	memdelete(dir_access);
+	{
+		DirAccess *dir_access = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
+		Error err = dir_access->make_dir_recursive(trash_path);
 
-	// Issue an error if trash can is not created proprely.
-	if (err != OK) {
-		ERR_PRINT("move_to_trash: Could not create the trash can \"" + trash_can + "\"");
-		return err;
+		// Issue an error if trash can is not created proprely.
+		ERR_FAIL_COND_V_MSG(err != OK, err, "Could not create the trash path \"" + trash_path + "\"");
+		err = dir_access->make_dir_recursive(trash_path + "/files");
+		ERR_FAIL_COND_V_MSG(err != OK, err, "Could not create the trash path \"" + trash_path + "\"/files");
+		err = dir_access->make_dir_recursive(trash_path + "/info");
+		ERR_FAIL_COND_V_MSG(err != OK, err, "Could not create the trash path \"" + trash_path + "\"/info");
+		memdelete(dir_access);
 	}
 
-	// The trash can is successfully created, now move the given resource to it.
+	// The trash can is successfully created, now we check that we don't exceed our file name length limit.
+	// If the file name is too long trim it so we can add the identifying number and ".trashinfo".
+	// Assumes that the file name length limit is 255 characters.
+	String file_name = basename(p_path.utf8().get_data());
+	if (file_name.length() > 240) {
+		file_name = file_name.substr(0, file_name.length() - 15);
+	}
+
+	String dest_path = trash_path + "/files/" + file_name;
+	struct stat buff;
+	int id_number = 0;
+	String fn = file_name;
+
+	// Checks if a resource with the same name already exist in the trash can,
+	// if there is, add an identifying number to our resource's name.
+	while (stat(dest_path.utf8().get_data(), &buff) == 0) {
+		id_number++;
+
+		// Added a limit to check for identically named files already on the trash can
+		// if there are too many it could make the editor unresponsive.
+		ERR_FAIL_COND_V_MSG(id_number > 99, FAILED, "Too many identically named resources already in the trash can.");
+		fn = file_name + "." + itos(id_number);
+		dest_path = trash_path + "/files/" + fn;
+	}
+	file_name = fn;
+
+	// Generates the .trashinfo file
+	OS::Date date = OS::get_singleton()->get_date(false);
+	OS::Time time = OS::get_singleton()->get_time(false);
+	String timestamp = vformat("%04d-%02d-%02dT%02d:%02d:", date.year, date.month, date.day, time.hour, time.min);
+	timestamp = vformat("%s%02d", timestamp, time.sec); // vformat only supports up to 6 arguments.
+	String trash_info = "[Trash Info]\nPath=" + p_path.uri_encode() + "\nDeletionDate=" + timestamp + "\n";
+	{
+		Error err;
+		FileAccess *file = FileAccess::open(trash_path + "/info/" + file_name + ".trashinfo", FileAccess::WRITE, &err);
+		ERR_FAIL_COND_V_MSG(err != OK, err, "Can't create trashinfo file:" + trash_path + "/info/" + file_name + ".trashinfo");
+		file->store_string(trash_info);
+		file->close();
+
+		// Rename our resource before moving it to the trash can.
+		DirAccess *dir_access = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
+		err = dir_access->rename(p_path, p_path.get_base_dir() + "/" + file_name);
+		ERR_FAIL_COND_V_MSG(err != OK, err, "Can't rename file \"" + p_path + "\"");
+		memdelete(dir_access);
+	}
+
+	// Move the given resource to the trash can.
 	// Do not use DirAccess:rename() because it can't move files across multiple mountpoints.
 	List<String> mv_args;
-	mv_args.push_back(p_path);
-	mv_args.push_back(trash_can);
-	int retval;
-	err = execute("mv", mv_args, true, nullptr, nullptr, &retval);
+	mv_args.push_back(p_path.get_base_dir() + "/" + file_name);
+	mv_args.push_back(trash_path + "/files");
+	{
+		int retval;
+		Error err = execute("mv", mv_args, nullptr, &retval);
 
-	// Issue an error if "mv" failed to move the given resource to the trash can.
-	if (err != OK || retval != 0) {
-		ERR_PRINT("move_to_trash: Could not move the resource \"" + p_path + "\" to the trash can \"" + trash_can + "\"");
-		return FAILED;
+		// Issue an error if "mv" failed to move the given resource to the trash can.
+		if (err != OK || retval != 0) {
+			ERR_PRINT("move_to_trash: Could not move the resource \"" + p_path + "\" to the trash can \"" + trash_path + "/files\"");
+			DirAccess *dir_access = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
+			err = dir_access->rename(p_path.get_base_dir() + "/" + file_name, p_path);
+			memdelete(dir_access);
+			ERR_FAIL_COND_V_MSG(err != OK, err, "Could not rename " + p_path.get_base_dir() + "/" + file_name + " back to its original name:" + p_path);
+			return FAILED;
+		}
 	}
-
 	return OK;
 }
 

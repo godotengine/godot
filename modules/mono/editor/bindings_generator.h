@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -31,20 +31,21 @@
 #ifndef BINDINGS_GENERATOR_H
 #define BINDINGS_GENERATOR_H
 
-#include "core/class_db.h"
-#include "core/string_builder.h"
-#include "editor/doc_data.h"
+#include "core/doc_data.h"
+#include "core/object/class_db.h"
+#include "core/string/string_builder.h"
+#include "editor/doc_tools.h"
 #include "editor/editor_help.h"
 
 #if defined(DEBUG_METHODS_ENABLED) && defined(TOOLS_ENABLED)
 
-#include "core/ustring.h"
+#include "core/string/ustring.h"
 
 class BindingsGenerator {
 	struct ConstantInterface {
 		String name;
 		String proxy_name;
-		int value;
+		int value = 0;
 		const DocData::ConstantDoc *const_doc;
 
 		ConstantInterface() {}
@@ -74,7 +75,7 @@ class BindingsGenerator {
 	struct PropertyInterface {
 		StringName cname;
 		String proxy_name;
-		int index;
+		int index = 0;
 
 		StringName setter;
 		StringName getter;
@@ -479,7 +480,7 @@ class BindingsGenerator {
 		String im_type_out; // Return type for the C# method declaration. Also used as companion of [unique_siq]
 		String im_sig; // Signature for the C# method declaration
 		String unique_sig; // Unique signature to avoid duplicates in containers
-		bool editor_only;
+		bool editor_only = false;
 
 		InternalCall() {}
 
@@ -660,6 +661,7 @@ class BindingsGenerator {
 	Error _generate_cs_method(const TypeInterface &p_itype, const MethodInterface &p_imethod, int &p_method_bind_count, StringBuilder &p_output);
 	Error _generate_cs_signal(const BindingsGenerator::TypeInterface &p_itype, const BindingsGenerator::SignalInterface &p_isignal, StringBuilder &p_output);
 
+	void _generate_array_extensions(StringBuilder &p_output);
 	void _generate_global_constants(StringBuilder &p_output);
 
 	Error _generate_glue_method(const TypeInterface &p_itype, const MethodInterface &p_imethod, StringBuilder &p_output);

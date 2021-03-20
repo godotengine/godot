@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -30,7 +30,7 @@
 
 #include "popup.h"
 
-#include "core/engine.h"
+#include "core/config/engine.h"
 #include "core/os/keyboard.h"
 #include "scene/gui/panel.h"
 
@@ -41,62 +41,90 @@ void Popup::_input_from_window(const Ref<InputEvent> &p_event) {
 	}
 }
 
-void Popup::_parent_focused() {
-	_close_pressed();
+void Popup::_initialize_visible_parents() {
+	visible_parents.clear();
+
+	Window *parent_window = this;
+	while (parent_window) {
+		parent_window = parent_window->get_parent_visible_window();
+		if (parent_window) {
+			visible_parents.push_back(parent_window);
+			parent_window->connect("focus_entered", callable_mp(this, &Popup::_parent_focused));
+			parent_window->connect("tree_exited", callable_mp(this, &Popup::_deinitialize_visible_parents));
+		}
+	}
+}
+
+void Popup::_deinitialize_visible_parents() {
+	for (uint32_t i = 0; i < visible_parents.size(); ++i) {
+		visible_parents[i]->disconnect("focus_entered", callable_mp(this, &Popup::_parent_focused));
+		visible_parents[i]->disconnect("tree_exited", callable_mp(this, &Popup::_deinitialize_visible_parents));
+	}
+
+	visible_parents.clear();
 }
 
 void Popup::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_VISIBILITY_CHANGED: {
 			if (is_visible()) {
-				parent_visible = get_parent_visible_window();
-				if (parent_visible) {
-					parent_visible->connect("focus_entered", callable_mp(this, &Popup::_parent_focused));
-				}
+				_initialize_visible_parents();
 			} else {
-				if (parent_visible) {
-					parent_visible->disconnect("focus_entered", callable_mp(this, &Popup::_parent_focused));
-					parent_visible = nullptr;
-				}
-
+				_deinitialize_visible_parents();
 				emit_signal("popup_hide");
 			}
 
 		} break;
-		case NOTIFICATION_EXIT_TREE: {
-			if (parent_visible) {
-				parent_visible->disconnect("focus_entered", callable_mp(this, &Popup::_parent_focused));
-				parent_visible = nullptr;
+		case NOTIFICATION_WM_WINDOW_FOCUS_IN: {
+			if (has_focus()) {
+				popped_up = true;
 			}
+		} break;
+		case NOTIFICATION_EXIT_TREE: {
+			_deinitialize_visible_parents();
 		} break;
 		case NOTIFICATION_WM_CLOSE_REQUEST: {
 			_close_pressed();
-
+		} break;
+		case NOTIFICATION_APPLICATION_FOCUS_OUT: {
+			_close_pressed();
 		} break;
 	}
 }
 
-void Popup::_close_pressed() {
-	Window *parent_window = parent_visible;
-	if (parent_visible) {
-		parent_visible->disconnect("focus_entered", callable_mp(this, &Popup::_parent_focused));
-		parent_visible = nullptr;
+void Popup::_parent_focused() {
+	if (popped_up && close_on_parent_focus) {
+		_close_pressed();
 	}
+}
+
+void Popup::_close_pressed() {
+	popped_up = false;
+
+	_deinitialize_visible_parents();
 
 	call_deferred("hide");
 
 	emit_signal("cancelled");
-
-	if (parent_window) {
-		//parent_window->grab_focus();
-	}
 }
 
 void Popup::set_as_minsize() {
 	set_size(get_contents_minimum_size());
 }
 
+void Popup::set_close_on_parent_focus(bool p_close) {
+	close_on_parent_focus = p_close;
+}
+
+bool Popup::get_close_on_parent_focus() {
+	return close_on_parent_focus;
+}
+
 void Popup::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("set_close_on_parent_focus", "close"), &Popup::set_close_on_parent_focus);
+	ClassDB::bind_method(D_METHOD("get_close_on_parent_focus"), &Popup::get_close_on_parent_focus);
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "close_on_parent_focus"), "set_close_on_parent_focus", "get_close_on_parent_focus");
+
 	ADD_SIGNAL(MethodInfo("popup_hide"));
 }
 
@@ -126,12 +154,32 @@ Rect2i Popup::_popup_adjust_rect() const {
 		current.position.y = parent.position.y;
 	}
 
+	if (current.size.y > parent.size.y) {
+		current.size.y = parent.size.y;
+	}
+
+	if (current.size.x > parent.size.x) {
+		current.size.x = parent.size.x;
+	}
+
+	// Early out if max size not set.
+	Size2i max_size = get_max_size();
+	if (max_size <= Size2()) {
+		return current;
+	}
+
+	if (current.size.x > max_size.x) {
+		current.size.x = max_size.x;
+	}
+
+	if (current.size.y > max_size.y) {
+		current.size.y = max_size.y;
+	}
+
 	return current;
 }
 
 Popup::Popup() {
-	parent_visible = nullptr;
-
 	set_wrap_controls(true);
 	set_visible(false);
 	set_transient(true);
@@ -155,7 +203,7 @@ Size2 PopupPanel::_get_contents_minimum_size() const {
 			continue;
 		}
 
-		if (c->is_set_as_toplevel()) {
+		if (c->is_set_as_top_level()) {
 			continue;
 		}
 
@@ -179,7 +227,7 @@ void PopupPanel::_update_child_rects() {
 			continue;
 		}
 
-		if (c->is_set_as_toplevel()) {
+		if (c->is_set_as_top_level()) {
 			continue;
 		}
 

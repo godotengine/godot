@@ -1,50 +1,83 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="SyntaxHighlighter" inherits="Resource" version="4.0">
 	<brief_description>
+		Base Syntax highlighter resource for [TextEdit].
 	</brief_description>
 	<description>
+		Base syntax highlighter resource all syntax highlighters extend from, provides syntax highlighting data to [TextEdit].
+		The associated [TextEdit] node will call into the [SyntaxHighlighter] on a as needed basis.
+		[b]Note:[/b] Each Syntax highlighter instance should not be shared across multiple [TextEdit] nodes.
 	</description>
 	<tutorials>
 	</tutorials>
 	<methods>
+		<method name="_clear_highlighting_cache" qualifiers="virtual">
+			<return type="void">
+			</return>
+			<description>
+				Virtual method which can be overridden to clear any local caches.
+			</description>
+		</method>
 		<method name="_get_line_syntax_highlighting" qualifiers="virtual">
 			<return type="Dictionary">
 			</return>
-			<argument index="0" name="p_line" type="int">
+			<argument index="0" name="line" type="int">
 			</argument>
 			<description>
+				Virtual method which can be overridden to return syntax highlighting data.
+				See [method get_line_syntax_highlighting] for more details.
 			</description>
 		</method>
 		<method name="_update_cache" qualifiers="virtual">
 			<return type="void">
 			</return>
 			<description>
+				Virtual method which can be overridden to update any local caches.
 			</description>
 		</method>
 		<method name="clear_highlighting_cache">
 			<return type="void">
 			</return>
 			<description>
+				Clears all cached syntax highlighting data.
+				Then calls overridable method [method _clear_highlighting_cache].
 			</description>
 		</method>
 		<method name="get_line_syntax_highlighting">
 			<return type="Dictionary">
 			</return>
-			<argument index="0" name="p_line" type="int">
+			<argument index="0" name="line" type="int">
 			</argument>
 			<description>
+				Returns syntax highlighting data for a single line. If the line is not cached, calls [method _get_line_syntax_highlighting] to calculate the data.
+				The return [Dictionary] is column number to [Dictionary]. The column number notes the start of a region, the region will end if another region is found, or at the end of the line. The nested [Dictionary] contains the data for that region, currently only the key "color" is supported.
+				[b]Example return:[/b]
+				[codeblock]
+				var color_map = {
+				    0: {
+				        "color": Color(1, 0, 0)
+				    },
+				    5: {
+				        "color": Color(0, 1, 0)
+				    }
+				}
+				[/codeblock]
+				This will color columns 0-4 red, and columns 5-eol in green.
 			</description>
 		</method>
 		<method name="get_text_edit">
 			<return type="TextEdit">
 			</return>
 			<description>
+				Returns the associated [TextEdit] node.
 			</description>
 		</method>
 		<method name="update_cache">
 			<return type="void">
 			</return>
 			<description>
+				Clears then updates the [SyntaxHighlighter] caches. Override [method _update_cache] for a callback.
+				[b]Note:[/b] This is called automatically when the associated [TextEdit] node, updates its own cache.
 			</description>
 		</method>
 	</methods>

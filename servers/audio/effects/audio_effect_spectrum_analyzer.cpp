@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -110,18 +110,19 @@ void AudioEffectSpectrumAnalyzerInstance::process(const AudioFrame *p_src_frames
 	while (p_frame_count) {
 		int to_fill = fft_size * 2 - temporal_fft_pos;
 		to_fill = MIN(to_fill, p_frame_count);
+		const double to_fill_step = Math_TAU / (double)fft_size;
 
 		float *fftw = temporal_fft.ptrw();
 		for (int i = 0; i < to_fill; i++) { //left and right buffers
-			float window = -0.5 * Math::cos(2.0 * Math_PI * (double)i / (double)to_fill) + 0.5;
-			fftw[(i + temporal_fft_pos) * 2] = window * p_src_frames[i].l;
-			fftw[(i + temporal_fft_pos) * 2 + 1] = 0;
-			fftw[(i + temporal_fft_pos + fft_size * 2) * 2] = window * p_src_frames[i].r;
-			fftw[(i + temporal_fft_pos + fft_size * 2) * 2 + 1] = 0;
+			float window = -0.5 * Math::cos(to_fill_step * (double)temporal_fft_pos) + 0.5;
+			fftw[temporal_fft_pos * 2] = window * p_src_frames->l;
+			fftw[temporal_fft_pos * 2 + 1] = 0;
+			fftw[(temporal_fft_pos + fft_size * 2) * 2] = window * p_src_frames->r;
+			fftw[(temporal_fft_pos + fft_size * 2) * 2 + 1] = 0;
+			++p_src_frames;
+			++temporal_fft_pos;
 		}
 
-		p_src_frames += to_fill;
-		temporal_fft_pos += to_fill;
 		p_frame_count -= to_fill;
 
 		if (temporal_fft_pos == fft_size * 2) {
@@ -134,9 +135,8 @@ void AudioEffectSpectrumAnalyzerInstance::process(const AudioFrame *p_src_frames
 
 			for (int i = 0; i < fft_size; i++) {
 				//abs(vec)/fft_size normalizes each frequency
-				float window = 1.0; //-.5 * Math::cos(2. * Math_PI * (double)i / (double)fft_size) + .5;
-				hw[i].l = window * Vector2(fftw[i * 2], fftw[i * 2 + 1]).length() / float(fft_size);
-				hw[i].r = window * Vector2(fftw[fft_size * 4 + i * 2], fftw[fft_size * 4 + i * 2 + 1]).length() / float(fft_size);
+				hw[i].l = Vector2(fftw[i * 2], fftw[i * 2 + 1]).length() / float(fft_size);
+				hw[i].r = Vector2(fftw[fft_size * 4 + i * 2], fftw[fft_size * 4 + i * 2 + 1]).length() / float(fft_size);
 			}
 
 			fft_pos = next; //swap

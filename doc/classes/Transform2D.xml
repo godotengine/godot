@@ -8,19 +8,40 @@
 		For more information, read the "Matrices and transforms" documentation article.
 	</description>
 	<tutorials>
-		<link>https://docs.godotengine.org/en/latest/tutorials/math/matrices_and_transforms.html</link>
+		<link title="Math tutorial index">https://docs.godotengine.org/en/latest/tutorials/math/index.html</link>
+		<link title="Matrices and transforms">https://docs.godotengine.org/en/latest/tutorials/math/matrices_and_transforms.html</link>
+		<link title="Matrix Transform Demo">https://godotengine.org/asset-library/asset/584</link>
+		<link title="2.5D Demo">https://godotengine.org/asset-library/asset/583</link>
 	</tutorials>
 	<methods>
-		<method name="Transform2D">
+		<method name="Transform2D" qualifiers="constructor">
 			<return type="Transform2D">
 			</return>
-			<argument index="0" name="from" type="Transform">
-			</argument>
 			<description>
-				Constructs the transform from a 3D [Transform].
+				Constructs a default-initialized [Transform] set to [constant IDENTITY].
 			</description>
 		</method>
-		<method name="Transform2D">
+		<method name="Transform2D" qualifiers="constructor">
+			<return type="Transform2D">
+			</return>
+			<argument index="0" name="from" type="Transform2D">
+			</argument>
+			<description>
+				Constructs a [Transform2D] as a copy of the given [Transform2D].
+			</description>
+		</method>
+		<method name="Transform2D" qualifiers="constructor">
+			<return type="Transform2D">
+			</return>
+			<argument index="0" name="rotation" type="float">
+			</argument>
+			<argument index="1" name="position" type="Vector2">
+			</argument>
+			<description>
+				Constructs the transform from a given angle (in radians) and position.
+			</description>
+		</method>
+		<method name="Transform2D" qualifiers="constructor">
 			<return type="Transform2D">
 			</return>
 			<argument index="0" name="x_axis" type="Vector2">
@@ -33,25 +54,14 @@
 				Constructs the transform from 3 [Vector2] values representing [member x], [member y], and the [member origin] (the three column vectors).
 			</description>
 		</method>
-		<method name="Transform2D">
-			<return type="Transform2D">
-			</return>
-			<argument index="0" name="rotation" type="float">
-			</argument>
-			<argument index="1" name="position" type="Vector2">
-			</argument>
-			<description>
-				Constructs the transform from a given angle (in radians) and position.
-			</description>
-		</method>
-		<method name="affine_inverse">
+		<method name="affine_inverse" qualifiers="const">
 			<return type="Transform2D">
 			</return>
 			<description>
 				Returns the inverse of the transform, under the assumption that the transformation is composed of rotation, scaling and translation.
 			</description>
 		</method>
-		<method name="basis_xform">
+		<method name="basis_xform" qualifiers="const">
 			<return type="Vector2">
 			</return>
 			<argument index="0" name="v" type="Vector2">
@@ -61,7 +71,7 @@
 				This method does not account for translation (the origin vector).
 			</description>
 		</method>
-		<method name="basis_xform_inv">
+		<method name="basis_xform_inv" qualifiers="const">
 			<return type="Vector2">
 			</return>
 			<argument index="0" name="v" type="Vector2">
@@ -71,62 +81,118 @@
 				This method does not account for translation (the origin vector).
 			</description>
 		</method>
-		<method name="get_origin">
+		<method name="get_origin" qualifiers="const">
 			<return type="Vector2">
 			</return>
 			<description>
 				Returns the transform's origin (translation).
 			</description>
 		</method>
-		<method name="get_rotation">
+		<method name="get_rotation" qualifiers="const">
 			<return type="float">
 			</return>
 			<description>
 				Returns the transform's rotation (in radians).
 			</description>
 		</method>
-		<method name="get_scale">
+		<method name="get_scale" qualifiers="const">
 			<return type="Vector2">
 			</return>
 			<description>
 				Returns the scale.
 			</description>
 		</method>
-		<method name="interpolate_with">
+		<method name="interpolate_with" qualifiers="const">
 			<return type="Transform2D">
 			</return>
-			<argument index="0" name="transform" type="Transform2D">
+			<argument index="0" name="xform" type="Transform2D">
 			</argument>
 			<argument index="1" name="weight" type="float">
 			</argument>
 			<description>
-				Returns a transform interpolated between this transform and another by a given weight (on the range of 0.0 to 1.0).
+				Returns a transform interpolated between this transform and another by a given [code]weight[/code] (on the range of 0.0 to 1.0).
 			</description>
 		</method>
-		<method name="inverse">
+		<method name="inverse" qualifiers="const">
 			<return type="Transform2D">
 			</return>
 			<description>
 				Returns the inverse of the transform, under the assumption that the transformation is composed of rotation and translation (no scaling, use [method affine_inverse] for transforms with scaling).
 			</description>
 		</method>
-		<method name="is_equal_approx">
+		<method name="is_equal_approx" qualifiers="const">
 			<return type="bool">
 			</return>
-			<argument index="0" name="transform" type="Transform2D">
+			<argument index="0" name="xform" type="Transform2D">
 			</argument>
 			<description>
 				Returns [code]true[/code] if this transform and [code]transform[/code] are approximately equal, by calling [code]is_equal_approx[/code] on each component.
 			</description>
 		</method>
-		<method name="orthonormalized">
+		<method name="operator !=" qualifiers="operator">
+			<return type="bool">
+			</return>
+			<argument index="0" name="right" type="Transform2D">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="operator *" qualifiers="operator">
+			<return type="Vector2">
+			</return>
+			<argument index="0" name="right" type="Vector2">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="operator *" qualifiers="operator">
+			<return type="Rect2">
+			</return>
+			<argument index="0" name="right" type="Rect2">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="operator *" qualifiers="operator">
+			<return type="Transform2D">
+			</return>
+			<argument index="0" name="right" type="Transform2D">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="operator *" qualifiers="operator">
+			<return type="PackedVector2Array">
+			</return>
+			<argument index="0" name="right" type="PackedVector2Array">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="operator ==" qualifiers="operator">
+			<return type="bool">
+			</return>
+			<argument index="0" name="right" type="Transform2D">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="operator []" qualifiers="operator">
+			<return type="Vector2">
+			</return>
+			<argument index="0" name="index" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="orthonormalized" qualifiers="const">
 			<return type="Transform2D">
 			</return>
 			<description>
 				Returns the transform with the basis orthogonal (90 degrees), and normalized axis vectors (scale of 1 or -1).
 			</description>
 		</method>
-		<method name="rotated">
+		<method name="rotated" qualifiers="const">
 			<return type="Transform2D">
 			</return>
 			<argument index="0" name="phi" type="float">
@@ -135,7 +201,7 @@
 				Rotates the transform by the given angle (in radians), using matrix multiplication.
 			</description>
 		</method>
-		<method name="scaled">
+		<method name="scaled" qualifiers="const">
 			<return type="Transform2D">
 			</return>
 			<argument index="0" name="scale" type="Vector2">
@@ -144,7 +210,7 @@
 				Scales the transform by the given scale factor, using matrix multiplication.
 			</description>
 		</method>
-		<method name="translated">
+		<method name="translated" qualifiers="const">
 			<return type="Transform2D">
 			</return>
 			<argument index="0" name="offset" type="Vector2">
@@ -152,24 +218,6 @@
 			<description>
 				Translates the transform by the given offset, relative to the transform's basis vectors.
 				Unlike [method rotated] and [method scaled], this does not use matrix multiplication.
-			</description>
-		</method>
-		<method name="xform">
-			<return type="Variant">
-			</return>
-			<argument index="0" name="v" type="Variant">
-			</argument>
-			<description>
-				Transforms the given [Vector2], [Rect2], or [PackedVector2Array] by this transform.
-			</description>
-		</method>
-		<method name="xform_inv">
-			<return type="Variant">
-			</return>
-			<argument index="0" name="v" type="Variant">
-			</argument>
-			<description>
-				Inverse-transforms the given [Vector2], [Rect2], or [PackedVector2Array] by this transform.
 			</description>
 		</method>
 	</methods>

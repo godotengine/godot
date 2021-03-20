@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2018-present, Facebook, Inc.
+ * Copyright (c) 2018-2020, Facebook, Inc.
  * All rights reserved.
  *
  * This source code is licensed under both the BSD-style license (found in the
@@ -15,8 +15,6 @@
  * Implementation taken from folly/CpuId.h
  * https://github.com/facebook/folly/blob/master/folly/CpuId.h
  */
-
-#include <string.h>
 
 #include "mem.h"
 

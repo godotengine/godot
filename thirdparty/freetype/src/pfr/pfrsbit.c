@@ -18,8 +18,8 @@
 
 #include "pfrsbit.h"
 #include "pfrload.h"
-#include FT_INTERNAL_DEBUG_H
-#include FT_INTERNAL_STREAM_H
+#include <freetype/internal/ftdebug.h>
+#include <freetype/internal/ftstream.h>
 
 #include "pfrerror.h"
 
@@ -745,7 +745,7 @@
            ypos + (FT_Long)ysize < FT_INT_MIN )
       {
         FT_TRACE1(( "pfr_slot_load_bitmap:" ));
-        FT_TRACE1(( "huge bitmap glyph %dx%d over FT_GlyphSlot\n",
+        FT_TRACE1(( "huge bitmap glyph %ldx%ld over FT_GlyphSlot\n",
                      xpos, ypos ));
         error = FT_THROW( Invalid_Pixel_Size );
       }

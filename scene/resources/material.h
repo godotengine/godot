@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -31,8 +31,8 @@
 #ifndef MATERIAL_H
 #define MATERIAL_H
 
-#include "core/resource.h"
-#include "core/self_list.h"
+#include "core/io/resource.h"
+#include "core/templates/self_list.h"
 #include "scene/resources/shader.h"
 #include "scene/resources/texture.h"
 #include "servers/rendering/shader_language.h"
@@ -46,6 +46,8 @@ class Material : public Resource {
 	RID material;
 	Ref<Material> next_pass;
 	int render_priority;
+
+	void inspect_native_shader_code();
 
 protected:
 	_FORCE_INLINE_ RID _get_material() const { return material; }
@@ -66,6 +68,7 @@ public:
 	int get_render_priority() const;
 
 	virtual RID get_rid() const override;
+	virtual RID get_shader_rid() const = 0;
 
 	virtual Shader::Mode get_shader_mode() const = 0;
 	Material();
@@ -99,6 +102,8 @@ public:
 	Variant get_shader_param(const StringName &p_param) const;
 
 	virtual Shader::Mode get_shader_mode() const override;
+
+	virtual RID get_shader_rid() const override;
 
 	ShaderMaterial();
 	~ShaderMaterial();
@@ -145,15 +150,24 @@ public:
 
 	enum DetailUV {
 		DETAIL_UV_1,
-		DETAIL_UV_2
+		DETAIL_UV_2,
+		DETAIL_UV_MAX
 	};
 
 	enum Transparency {
 		TRANSPARENCY_DISABLED,
 		TRANSPARENCY_ALPHA,
 		TRANSPARENCY_ALPHA_SCISSOR,
+		TRANSPARENCY_ALPHA_HASH,
 		TRANSPARENCY_ALPHA_DEPTH_PRE_PASS,
 		TRANSPARENCY_MAX,
+	};
+
+	enum AlphaAntiAliasing {
+		ALPHA_ANTIALIASING_OFF,
+		ALPHA_ANTIALIASING_ALPHA_TO_COVERAGE,
+		ALPHA_ANTIALIASING_ALPHA_TO_COVERAGE_AND_TO_ONE,
+		ALPHA_ANTIALIASING_MAX
 	};
 
 	enum ShadingMode {
@@ -184,18 +198,21 @@ public:
 		BLEND_MODE_ADD,
 		BLEND_MODE_SUB,
 		BLEND_MODE_MUL,
+		BLEND_MODE_MAX
 	};
 
 	enum DepthDrawMode {
 		DEPTH_DRAW_OPAQUE_ONLY,
 		DEPTH_DRAW_ALWAYS,
 		DEPTH_DRAW_DISABLED,
+		DEPTH_DRAW_MAX
 	};
 
 	enum CullMode {
 		CULL_BACK,
 		CULL_FRONT,
-		CULL_DISABLED
+		CULL_DISABLED,
+		CULL_MAX
 	};
 
 	enum Flags {
@@ -227,6 +244,7 @@ public:
 		DIFFUSE_LAMBERT_WRAP,
 		DIFFUSE_OREN_NAYAR,
 		DIFFUSE_TOON,
+		DIFFUSE_MAX
 	};
 
 	enum SpecularMode {
@@ -235,6 +253,7 @@ public:
 		SPECULAR_PHONG,
 		SPECULAR_TOON,
 		SPECULAR_DISABLED,
+		SPECULAR_MAX
 	};
 
 	enum BillboardMode {
@@ -242,6 +261,7 @@ public:
 		BILLBOARD_ENABLED,
 		BILLBOARD_FIXED_Y,
 		BILLBOARD_PARTICLES,
+		BILLBOARD_MAX
 	};
 
 	enum TextureChannel {
@@ -249,12 +269,14 @@ public:
 		TEXTURE_CHANNEL_GREEN,
 		TEXTURE_CHANNEL_BLUE,
 		TEXTURE_CHANNEL_ALPHA,
-		TEXTURE_CHANNEL_GRAYSCALE
+		TEXTURE_CHANNEL_GRAYSCALE,
+		TEXTURE_CHANNEL_MAX
 	};
 
 	enum EmissionOperator {
 		EMISSION_OP_ADD,
-		EMISSION_OP_MULTIPLY
+		EMISSION_OP_MULTIPLY,
+		EMISSION_OP_MAX
 	};
 
 	enum DistanceFadeMode {
@@ -262,49 +284,53 @@ public:
 		DISTANCE_FADE_PIXEL_ALPHA,
 		DISTANCE_FADE_PIXEL_DITHER,
 		DISTANCE_FADE_OBJECT_DITHER,
+		DISTANCE_FADE_MAX
 	};
 
 private:
-	union MaterialKey {
-		struct {
-			uint64_t feature_mask : FEATURE_MAX;
-			uint64_t detail_uv : 1;
-			uint64_t blend_mode : 2;
-			uint64_t depth_draw_mode : 2;
-			uint64_t cull_mode : 2;
-			uint64_t flags : FLAG_MAX;
-			uint64_t detail_blend_mode : 2;
-			uint64_t diffuse_mode : 3;
-			uint64_t specular_mode : 3;
-			uint64_t invalid_key : 1;
-			uint64_t deep_parallax : 1;
-			uint64_t billboard_mode : 2;
-			uint64_t grow : 1;
-			uint64_t proximity_fade : 1;
-			uint64_t distance_fade : 2;
-			uint64_t emission_op : 1;
-			uint64_t texture_filter : 3;
-			uint64_t transparency : 2;
-			uint64_t shading_mode : 2;
-			uint64_t roughness_channel : 3;
-		};
+	struct MaterialKey {
+		// enum values
+		uint64_t texture_filter : get_num_bits(TEXTURE_FILTER_MAX - 1);
+		uint64_t detail_uv : get_num_bits(DETAIL_UV_MAX - 1);
+		uint64_t transparency : get_num_bits(TRANSPARENCY_MAX - 1);
+		uint64_t alpha_antialiasing_mode : get_num_bits(ALPHA_ANTIALIASING_MAX - 1);
+		uint64_t shading_mode : get_num_bits(SHADING_MODE_MAX - 1);
+		uint64_t blend_mode : get_num_bits(BLEND_MODE_MAX - 1);
+		uint64_t depth_draw_mode : get_num_bits(DEPTH_DRAW_MAX - 1);
+		uint64_t cull_mode : get_num_bits(CULL_MAX - 1);
+		uint64_t diffuse_mode : get_num_bits(DIFFUSE_MAX - 1);
+		uint64_t specular_mode : get_num_bits(SPECULAR_MAX - 1);
+		uint64_t billboard_mode : get_num_bits(BILLBOARD_MAX - 1);
+		uint64_t detail_blend_mode : get_num_bits(BLEND_MODE_MAX - 1);
+		uint64_t roughness_channel : get_num_bits(TEXTURE_CHANNEL_MAX - 1);
+		uint64_t emission_op : get_num_bits(EMISSION_OP_MAX - 1);
+		uint64_t distance_fade : get_num_bits(DISTANCE_FADE_MAX - 1);
 
-		struct {
-			uint64_t key0;
-			uint64_t key1;
-		};
+		// flag bitfield
+		uint64_t feature_mask : FEATURE_MAX - 1;
+		uint64_t flags : FLAG_MAX - 1;
+
+		// booleans
+		uint64_t deep_parallax : 1;
+		uint64_t grow : 1;
+		uint64_t proximity_fade : 1;
+
+		MaterialKey() {
+			memset(this, 0, sizeof(MaterialKey));
+		}
 
 		bool operator==(const MaterialKey &p_key) const {
-			return (key0 == p_key.key0) && (key1 == p_key.key1);
+			return memcmp(this, &p_key, sizeof(MaterialKey)) == 0;
 		}
+
 		bool operator<(const MaterialKey &p_key) const {
-			return (key0 == p_key.key0) ? (key1 < p_key.key1) : (key0 < p_key.key0);
+			return memcmp(this, &p_key, sizeof(MaterialKey)) < 0;
 		}
 	};
 
 	struct ShaderData {
 		RID shader;
-		int users;
+		int users = 0;
 	};
 
 	static Map<MaterialKey, ShaderData> shader_map;
@@ -313,13 +339,7 @@ private:
 
 	_FORCE_INLINE_ MaterialKey _compute_key() const {
 		MaterialKey mk;
-		mk.key0 = 0;
-		mk.key1 = 0;
-		for (int i = 0; i < FEATURE_MAX; i++) {
-			if (features[i]) {
-				mk.feature_mask |= ((uint64_t)1 << i);
-			}
-		}
+
 		mk.detail_uv = detail_uv;
 		mk.blend_mode = blend_mode;
 		mk.depth_draw_mode = depth_draw_mode;
@@ -328,20 +348,28 @@ private:
 		mk.transparency = transparency;
 		mk.shading_mode = shading_mode;
 		mk.roughness_channel = roughness_texture_channel;
+		mk.detail_blend_mode = detail_blend_mode;
+		mk.diffuse_mode = diffuse_mode;
+		mk.specular_mode = specular_mode;
+		mk.billboard_mode = billboard_mode;
+		mk.deep_parallax = deep_parallax;
+		mk.grow = grow_enabled;
+		mk.proximity_fade = proximity_fade_enabled;
+		mk.distance_fade = distance_fade;
+		mk.emission_op = emission_op;
+		mk.alpha_antialiasing_mode = alpha_antialiasing_mode;
+
+		for (int i = 0; i < FEATURE_MAX; i++) {
+			if (features[i]) {
+				mk.feature_mask |= ((uint64_t)1 << i);
+			}
+		}
+
 		for (int i = 0; i < FLAG_MAX; i++) {
 			if (flags[i]) {
 				mk.flags |= ((uint64_t)1 << i);
 			}
 		}
-		mk.detail_blend_mode = detail_blend_mode;
-		mk.diffuse_mode = diffuse_mode;
-		mk.specular_mode = specular_mode;
-		mk.billboard_mode = billboard_mode;
-		mk.deep_parallax = deep_parallax ? 1 : 0;
-		mk.grow = grow_enabled;
-		mk.proximity_fade = proximity_fade_enabled;
-		mk.distance_fade = distance_fade;
-		mk.emission_op = emission_op;
 
 		return mk;
 	}
@@ -392,9 +420,14 @@ private:
 		StringName rim_texture_channel;
 		StringName heightmap_texture_channel;
 		StringName refraction_texture_channel;
-		StringName alpha_scissor_threshold;
 
 		StringName texture_names[TEXTURE_MAX];
+
+		StringName alpha_scissor_threshold;
+		StringName alpha_hash_scale;
+
+		StringName alpha_antialiasing_edge;
+		StringName albedo_texture_size;
 	};
 
 	static Mutex material_mutex;
@@ -433,16 +466,18 @@ private:
 	float refraction;
 	float point_size;
 	float alpha_scissor_threshold;
-	bool grow_enabled;
+	float alpha_hash_scale;
+	float alpha_antialiasing_edge;
+	bool grow_enabled = false;
 	float ao_light_affect;
 	float grow;
 	int particles_anim_h_frames;
 	int particles_anim_v_frames;
 	bool particles_anim_loop;
-	Transparency transparency;
-	ShadingMode shading_mode;
+	Transparency transparency = TRANSPARENCY_DISABLED;
+	ShadingMode shading_mode = SHADING_MODE_PER_PIXEL;
 
-	TextureFilter texture_filter;
+	TextureFilter texture_filter = TEXTURE_FILTER_LINEAR_WITH_MIPMAPS;
 
 	Vector3 uv1_scale;
 	Vector3 uv1_offset;
@@ -452,37 +487,39 @@ private:
 	Vector3 uv2_offset;
 	float uv2_triplanar_sharpness;
 
-	DetailUV detail_uv;
+	DetailUV detail_uv = DETAIL_UV_1;
 
-	bool deep_parallax;
+	bool deep_parallax = false;
 	int deep_parallax_min_layers;
 	int deep_parallax_max_layers;
-	bool heightmap_parallax_flip_tangent;
-	bool heightmap_parallax_flip_binormal;
+	bool heightmap_parallax_flip_tangent = false;
+	bool heightmap_parallax_flip_binormal = false;
 
-	bool proximity_fade_enabled;
+	bool proximity_fade_enabled = false;
 	float proximity_fade_distance;
 
-	DistanceFadeMode distance_fade;
+	DistanceFadeMode distance_fade = DISTANCE_FADE_DISABLED;
 	float distance_fade_max_distance;
 	float distance_fade_min_distance;
 
-	BlendMode blend_mode;
-	BlendMode detail_blend_mode;
-	DepthDrawMode depth_draw_mode;
-	CullMode cull_mode;
-	bool flags[FLAG_MAX];
-	SpecularMode specular_mode;
-	DiffuseMode diffuse_mode;
+	BlendMode blend_mode = BLEND_MODE_MIX;
+	BlendMode detail_blend_mode = BLEND_MODE_MIX;
+	DepthDrawMode depth_draw_mode = DEPTH_DRAW_OPAQUE_ONLY;
+	CullMode cull_mode = CULL_BACK;
+	bool flags[FLAG_MAX] = {};
+	SpecularMode specular_mode = SPECULAR_SCHLICK_GGX;
+	DiffuseMode diffuse_mode = DIFFUSE_BURLEY;
 	BillboardMode billboard_mode;
-	EmissionOperator emission_op;
+	EmissionOperator emission_op = EMISSION_OP_ADD;
 
 	TextureChannel metallic_texture_channel;
 	TextureChannel roughness_texture_channel;
 	TextureChannel ao_texture_channel;
 	TextureChannel refraction_texture_channel;
 
-	bool features[FEATURE_MAX];
+	AlphaAntiAliasing alpha_antialiasing_mode = ALPHA_ANTIALIASING_OFF;
+
+	bool features[FEATURE_MAX] = {};
 
 	Ref<Texture2D> textures[TEXTURE_MAX];
 
@@ -584,6 +621,12 @@ public:
 	void set_transparency(Transparency p_transparency);
 	Transparency get_transparency() const;
 
+	void set_alpha_antialiasing(AlphaAntiAliasing p_alpha_aa);
+	AlphaAntiAliasing get_alpha_antialiasing() const;
+
+	void set_alpha_antialiasing_edge(float p_edge);
+	float get_alpha_antialiasing_edge() const;
+
 	void set_shading_mode(ShadingMode p_shading_mode);
 	ShadingMode get_shading_mode() const;
 
@@ -660,6 +703,9 @@ public:
 	void set_alpha_scissor_threshold(float p_threshold);
 	float get_alpha_scissor_threshold() const;
 
+	void set_alpha_hash_scale(float p_scale);
+	float get_alpha_hash_scale() const;
+
 	void set_on_top_of_alpha();
 
 	void set_proximity_fade(bool p_enable);
@@ -695,7 +741,7 @@ public:
 
 	static RID get_material_rid_for_2d(bool p_shaded, bool p_transparent, bool p_double_sided, bool p_cut_alpha, bool p_opaque_prepass, bool p_billboard = false, bool p_billboard_y = false);
 
-	RID get_shader_rid() const;
+	virtual RID get_shader_rid() const override;
 
 	virtual Shader::Mode get_shader_mode() const override;
 
@@ -707,6 +753,7 @@ VARIANT_ENUM_CAST(BaseMaterial3D::TextureParam)
 VARIANT_ENUM_CAST(BaseMaterial3D::TextureFilter)
 VARIANT_ENUM_CAST(BaseMaterial3D::ShadingMode)
 VARIANT_ENUM_CAST(BaseMaterial3D::Transparency)
+VARIANT_ENUM_CAST(BaseMaterial3D::AlphaAntiAliasing)
 VARIANT_ENUM_CAST(BaseMaterial3D::DetailUV)
 VARIANT_ENUM_CAST(BaseMaterial3D::Feature)
 VARIANT_ENUM_CAST(BaseMaterial3D::BlendMode)

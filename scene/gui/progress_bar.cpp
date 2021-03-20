@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -29,17 +29,21 @@
 /*************************************************************************/
 
 #include "progress_bar.h"
+#include "scene/resources/text_line.h"
 
 Size2 ProgressBar::get_minimum_size() const {
 	Ref<StyleBox> bg = get_theme_stylebox("bg");
 	Ref<StyleBox> fg = get_theme_stylebox("fg");
 	Ref<Font> font = get_theme_font("font");
+	int font_size = get_theme_font_size("font_size");
 
 	Size2 minimum_size = bg->get_minimum_size();
 	minimum_size.height = MAX(minimum_size.height, fg->get_minimum_size().height);
 	minimum_size.width = MAX(minimum_size.width, fg->get_minimum_size().width);
 	if (percent_visible) {
-		minimum_size.height = MAX(minimum_size.height, bg->get_minimum_size().height + font->get_height());
+		String txt = "100%";
+		TextLine tl = TextLine(txt, font, font_size);
+		minimum_size.height = MAX(minimum_size.height, bg->get_minimum_size().height + tl.get_size().y);
 	} else { // this is needed, else the progressbar will collapse
 		minimum_size.width = MAX(minimum_size.width, 1);
 		minimum_size.height = MAX(minimum_size.height, 1);
@@ -52,6 +56,7 @@ void ProgressBar::_notification(int p_what) {
 		Ref<StyleBox> bg = get_theme_stylebox("bg");
 		Ref<StyleBox> fg = get_theme_stylebox("fg");
 		Ref<Font> font = get_theme_font("font");
+		int font_size = get_theme_font_size("font_size");
 		Color font_color = get_theme_color("font_color");
 
 		draw_style_box(bg, Rect2(Point2(), get_size()));
@@ -59,12 +64,23 @@ void ProgressBar::_notification(int p_what) {
 		int mp = fg->get_minimum_size().width;
 		int p = r * (get_size().width - mp);
 		if (p > 0) {
-			draw_style_box(fg, Rect2(Point2(), Size2(p + fg->get_minimum_size().width, get_size().height)));
+			if (is_layout_rtl()) {
+				draw_style_box(fg, Rect2(Point2(p, 0), Size2(fg->get_minimum_size().width, get_size().height)));
+			} else {
+				draw_style_box(fg, Rect2(Point2(0, 0), Size2(p + fg->get_minimum_size().width, get_size().height)));
+			}
 		}
 
 		if (percent_visible) {
-			String txt = itos(int(get_as_ratio() * 100)) + "%";
-			font->draw_halign(get_canvas_item(), Point2(0, font->get_ascent() + (get_size().height - font->get_height()) / 2), HALIGN_CENTER, get_size().width, txt, font_color);
+			String txt = TS->format_number(itos(int(get_as_ratio() * 100))) + TS->percent_sign();
+			TextLine tl = TextLine(txt, font, font_size);
+			Vector2 text_pos = (Point2(get_size().width - tl.get_size().x, get_size().height - tl.get_size().y) / 2).round();
+			Color font_outline_color = get_theme_color("font_outline_color");
+			int outline_size = get_theme_constant("outline_size");
+			if (outline_size > 0 && font_outline_color.a > 0) {
+				tl.draw_outline(get_canvas_item(), text_pos, outline_size, font_outline_color);
+			}
+			tl.draw(get_canvas_item(), text_pos, font_color);
 		}
 	}
 }
@@ -88,5 +104,4 @@ void ProgressBar::_bind_methods() {
 ProgressBar::ProgressBar() {
 	set_v_size_flags(0);
 	set_step(0.01);
-	percent_visible = true;
 }

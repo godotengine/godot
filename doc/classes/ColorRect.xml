@@ -4,18 +4,24 @@
 		Colored rectangle.
 	</brief_description>
 	<description>
-		Displays a colored rectangle.
+		Displays a rectangle filled with a solid [member color]. If you need to display the border alone, consider using [ReferenceRect] instead.
 	</description>
 	<tutorials>
+		<link title="2D Dodge The Creeps Demo">https://godotengine.org/asset-library/asset/515</link>
 	</tutorials>
 	<methods>
 	</methods>
 	<members>
-		<member name="color" type="Color" setter="set_frame_color" getter="get_frame_color" default="Color( 1, 1, 1, 1 )">
+		<member name="color" type="Color" setter="set_color" getter="get_color" default="Color( 1, 1, 1, 1 )">
 			The fill color.
-			[codeblock]
+			[codeblocks]
+			[gdscript]
 			$ColorRect.color = Color(1, 0, 0, 1) # Set ColorRect's color to red.
-			[/codeblock]
+			[/gdscript]
+			[csharp]
+			GetNode&lt;ColorRect&gt;("ColorRect").Color = new Color(1, 0, 0, 1); // Set ColorRect's color to red.
+			[/csharp]
+			[/codeblocks]
 		</member>
 	</members>
 	<constants>

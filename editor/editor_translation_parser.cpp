@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -30,22 +30,37 @@
 
 #include "editor_translation_parser.h"
 
-#include "core/error_macros.h"
+#include "core/error/error_macros.h"
+#include "core/object/script_language.h"
 #include "core/os/file_access.h"
-#include "core/script_language.h"
-#include "core/set.h"
+#include "core/templates/set.h"
 
 EditorTranslationParser *EditorTranslationParser::singleton = nullptr;
 
-Error EditorTranslationParserPlugin::parse_file(const String &p_path, Vector<String> *r_extracted_strings) {
+Error EditorTranslationParserPlugin::parse_file(const String &p_path, Vector<String> *r_ids, Vector<Vector<String>> *r_ids_ctx_plural) {
 	if (!get_script_instance())
 		return ERR_UNAVAILABLE;
 
 	if (get_script_instance()->has_method("parse_file")) {
-		Array extracted_strings;
-		get_script_instance()->call("parse_file", p_path, extracted_strings);
-		for (int i = 0; i < extracted_strings.size(); i++) {
-			r_extracted_strings->append(extracted_strings[i]);
+		Array ids;
+		Array ids_ctx_plural;
+		get_script_instance()->call("parse_file", p_path, ids, ids_ctx_plural);
+
+		// Add user's extracted translatable messages.
+		for (int i = 0; i < ids.size(); i++) {
+			r_ids->append(ids[i]);
+		}
+
+		// Add user's collected translatable messages with context or plurals.
+		for (int i = 0; i < ids_ctx_plural.size(); i++) {
+			Array arr = ids_ctx_plural[i];
+			ERR_FAIL_COND_V_MSG(arr.size() != 3, ERR_INVALID_DATA, "Array entries written into `msgids_context_plural` in `parse_file()` method should have the form [\"message\", \"context\", \"plural message\"]");
+
+			Vector<String> id_ctx_plural;
+			id_ctx_plural.push_back(arr[0]);
+			id_ctx_plural.push_back(arr[1]);
+			id_ctx_plural.push_back(arr[2]);
+			r_ids_ctx_plural->append(id_ctx_plural);
 		}
 		return OK;
 	} else {
@@ -69,7 +84,7 @@ void EditorTranslationParserPlugin::get_recognized_extensions(List<String> *r_ex
 }
 
 void EditorTranslationParserPlugin::_bind_methods() {
-	ClassDB::add_virtual_method(get_class_static(), MethodInfo(Variant::NIL, "parse_file", PropertyInfo(Variant::STRING, "path"), PropertyInfo(Variant::ARRAY, "extracted_strings")));
+	ClassDB::add_virtual_method(get_class_static(), MethodInfo(Variant::NIL, "parse_file", PropertyInfo(Variant::STRING, "path"), PropertyInfo(Variant::ARRAY, "msgids"), PropertyInfo(Variant::ARRAY, "msgids_context_plural")));
 	ClassDB::add_virtual_method(get_class_static(), MethodInfo(Variant::ARRAY, "get_recognized_extensions"));
 }
 

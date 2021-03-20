@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -31,7 +31,7 @@
 #ifndef JAVA_CLASS_WRAPPER_H
 #define JAVA_CLASS_WRAPPER_H
 
-#include "core/reference.h"
+#include "core/object/reference.h"
 
 #ifdef ANDROID_ENABLED
 #include <android/log.h>
@@ -47,7 +47,6 @@ class JavaClass : public Reference {
 
 #ifdef ANDROID_ENABLED
 	enum ArgumentType{
-
 		ARG_TYPE_VOID,
 		ARG_TYPE_BOOLEAN,
 		ARG_TYPE_BYTE,
@@ -67,10 +66,10 @@ class JavaClass : public Reference {
 	Map<StringName, Variant> constant_map;
 
 	struct MethodInfo {
-		bool _static;
+		bool _static = false;
 		Vector<uint32_t> param_types;
 		Vector<StringName> param_sigs;
-		uint32_t return_type;
+		uint32_t return_type = 0;
 		jmethodID method;
 	};
 

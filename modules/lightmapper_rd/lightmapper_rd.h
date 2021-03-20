@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -31,7 +31,7 @@
 #ifndef LIGHTMAPPER_RD_H
 #define LIGHTMAPPER_RD_H
 
-#include "core/local_vector.h"
+#include "core/templates/local_vector.h"
 #include "scene/3d/lightmapper.h"
 #include "scene/resources/mesh.h"
 #include "servers/rendering/rendering_device.h"
@@ -46,18 +46,18 @@ class LightmapperRD : public Lightmapper {
 	};
 
 	struct Light {
-		float position[3];
+		float position[3] = {};
 		uint32_t type = LIGHT_TYPE_DIRECTIONAL;
-		float direction[3];
-		float energy;
-		float color[3];
-		float size;
-		float range;
-		float attenuation;
-		float spot_angle;
-		float spot_attenuation;
-		uint32_t static_bake;
-		uint32_t pad[3];
+		float direction[3] = {};
+		float energy = 0.0;
+		float color[3] = {};
+		float size = 0.0;
+		float range = 0.0;
+		float attenuation = 0.0;
+		float cos_spot_angle = 0.0;
+		float inv_spot_attenuation = 0.0;
+		uint32_t static_bake = 0;
+		uint32_t pad[3] = {};
 
 		bool operator<(const Light &p_light) const {
 			return type < p_light.type;
@@ -65,10 +65,10 @@ class LightmapperRD : public Lightmapper {
 	};
 
 	struct Vertex {
-		float position[3];
-		float normal_z;
-		float uv[2];
-		float normal_xy[2];
+		float position[3] = {};
+		float normal_z = 0.0;
+		float uv[2] = {};
+		float normal_xy[2] = {};
 
 		bool operator==(const Vertex &p_vtx) const {
 			return (position[0] == p_vtx.position[0]) &&
@@ -102,7 +102,7 @@ class LightmapperRD : public Lightmapper {
 	};
 
 	struct Probe {
-		float position[4];
+		float position[4] = {};
 	};
 
 	Vector<Probe> probe_positions;
@@ -158,15 +158,15 @@ class LightmapperRD : public Lightmapper {
 	};
 
 	struct Box {
-		float min_bounds[3];
-		float pad0;
-		float max_bounds[3];
-		float pad1;
+		float min_bounds[3] = {};
+		float pad0 = 0.0;
+		float max_bounds[3] = {};
+		float pad1 = 0.0;
 	};
 
 	struct Triangle {
-		uint32_t indices[3];
-		uint32_t slice;
+		uint32_t indices[3] = {};
+		uint32_t slice = 0;
 		bool operator<(const Triangle &p_triangle) const {
 			return slice < p_triangle.slice;
 		}
@@ -177,8 +177,8 @@ class LightmapperRD : public Lightmapper {
 	Vector<Light> lights;
 
 	struct TriangleSort {
-		uint32_t cell_index;
-		uint32_t triangle_index;
+		uint32_t cell_index = 0;
+		uint32_t triangle_index = 0;
 		bool operator<(const TriangleSort &p_triangle_sort) const {
 			return cell_index < p_triangle_sort.cell_index; //sorting by triangle index in this case makes no sense
 		}
@@ -187,44 +187,44 @@ class LightmapperRD : public Lightmapper {
 	void _plot_triangle_into_triangle_index_list(int p_size, const Vector3i &p_ofs, const AABB &p_bounds, const Vector3 p_points[], uint32_t p_triangle_index, LocalVector<TriangleSort> &triangles, uint32_t p_grid_size);
 
 	struct RasterPushConstant {
-		float atlas_size[2];
-		float uv_offset[2];
-		float to_cell_size[3];
-		uint32_t base_triangle;
-		float to_cell_offset[3];
-		float bias;
-		int32_t grid_size[3];
-		uint32_t pad2;
+		float atlas_size[2] = {};
+		float uv_offset[2] = {};
+		float to_cell_size[3] = {};
+		uint32_t base_triangle = 0;
+		float to_cell_offset[3] = {};
+		float bias = 0.0;
+		int32_t grid_size[3] = {};
+		uint32_t pad2 = 0;
 	};
 
 	struct RasterSeamsPushConstant {
-		uint32_t base_index;
-		uint32_t slice;
-		float uv_offset[2];
-		uint32_t debug;
-		float blend;
-		uint32_t pad[2];
+		uint32_t base_index = 0;
+		uint32_t slice = 0;
+		float uv_offset[2] = {};
+		uint32_t debug = 0;
+		float blend = 0.0;
+		uint32_t pad[2] = {};
 	};
 
 	struct PushConstant {
-		int32_t atlas_size[2];
-		uint32_t ray_count;
-		uint32_t ray_to;
+		int32_t atlas_size[2] = {};
+		uint32_t ray_count = 0;
+		uint32_t ray_to = 0;
 
-		float world_size[3];
-		float bias;
+		float world_size[3] = {};
+		float bias = 0.0;
 
-		float to_cell_offset[3];
-		uint32_t ray_from;
+		float to_cell_offset[3] = {};
+		uint32_t ray_from = 0;
 
-		float to_cell_size[3];
-		uint32_t light_count;
+		float to_cell_size[3] = {};
+		uint32_t light_count = 0;
 
-		int32_t grid_size;
-		int32_t atlas_slice;
-		int32_t region_ofs[2];
+		int32_t grid_size = 0;
+		int32_t atlas_slice = 0;
+		int32_t region_ofs[2] = {};
 
-		float environment_xform[12];
+		float environment_xform[12] = {};
 	};
 
 	Vector<Ref<Image>> bake_textures;

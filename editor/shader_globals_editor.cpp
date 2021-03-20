@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -284,7 +284,13 @@ static Variant create_var(RS::GlobalVariableType p_type) {
 			return Vector3i();
 		}
 		case RS::GLOBAL_VAR_TYPE_UVEC4: {
-			return Rect2i();
+			Vector<int> v4;
+			v4.resize(4);
+			v4.write[0] = 0;
+			v4.write[1] = 0;
+			v4.write[2] = 0;
+			v4.write[3] = 0;
+			return v4;
 		}
 		case RS::GLOBAL_VAR_TYPE_FLOAT: {
 			return 0.0;
@@ -324,7 +330,7 @@ static Variant create_var(RS::GlobalVariableType p_type) {
 		}
 		case RS::GLOBAL_VAR_TYPE_MAT4: {
 			Vector<real_t> xform;
-			xform.resize(4);
+			xform.resize(16);
 			xform.write[0] = 1;
 			xform.write[1] = 0;
 			xform.write[2] = 0;
@@ -421,7 +427,7 @@ void ShaderGlobalsEditor::_variable_deleted(const String &p_variable) {
 void ShaderGlobalsEditor::_changed() {
 	emit_signal("globals_changed");
 	if (!interface->block_update) {
-		interface->_change_notify();
+		interface->notify_property_list_changed();
 	}
 }
 
@@ -436,6 +442,9 @@ void ShaderGlobalsEditor::_notification(int p_what) {
 			print_line("OK load settings in globalseditor");
 			inspector->edit(interface);
 		}
+	}
+	if (p_what == NOTIFICATION_PREDELETE) {
+		inspector->edit(nullptr);
 	}
 }
 
@@ -474,6 +483,5 @@ ShaderGlobalsEditor::ShaderGlobalsEditor() {
 }
 
 ShaderGlobalsEditor::~ShaderGlobalsEditor() {
-	inspector->edit(nullptr);
 	memdelete(interface);
 }

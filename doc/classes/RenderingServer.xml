@@ -10,12 +10,12 @@
 		Resources are created using the [code]*_create[/code] functions.
 		All objects are drawn to a viewport. You can use the [Viewport] attached to the [SceneTree] or you can create one yourself with [method viewport_create]. When using a custom scenario or canvas, the scenario or canvas needs to be attached to the viewport using [method viewport_set_scenario] or [method viewport_attach_canvas].
 		In 3D, all visual objects must be associated with a scenario. The scenario is a visual representation of the world. If accessing the rendering server from a running game, the scenario can be accessed from the scene tree from any [Node3D] node with [method Node3D.get_world_3d]. Otherwise, a scenario can be created with [method scenario_create].
-		Similarly in 2D, a canvas is needed to draw all canvas items.
+		Similarly, in 2D, a canvas is needed to draw all canvas items.
 		In 3D, all visible objects are comprised of a resource and an instance. A resource can be a mesh, a particle system, a light, or any other 3D object. In order to be visible resources must be attached to an instance using [method instance_set_base]. The instance must also be attached to the scenario using [method instance_set_scenario] in order to be visible.
 		In 2D, all visible objects are some form of canvas item. In order to be visible, a canvas item needs to be the child of a canvas attached to a viewport, or it needs to be the child of another canvas item that is eventually attached to the canvas.
 	</description>
 	<tutorials>
-		<link>https://docs.godotengine.org/en/latest/tutorials/optimization/using_servers.html</link>
+		<link title="Optimization using Servers">https://docs.godotengine.org/en/latest/tutorials/optimization/using_servers.html</link>
 	</tutorials>
 	<methods>
 		<method name="black_bars_set_images">
@@ -404,28 +404,6 @@
 				The mode of the light, see [enum CanvasLightMode] constants.
 			</description>
 		</method>
-		<method name="canvas_light_set_scale">
-			<return type="void">
-			</return>
-			<argument index="0" name="light" type="RID">
-			</argument>
-			<argument index="1" name="scale" type="float">
-			</argument>
-			<description>
-				Sets the texture's scale factor of the light. Equivalent to [member Light2D.texture_scale].
-			</description>
-		</method>
-		<method name="canvas_light_set_shadow_buffer_size">
-			<return type="void">
-			</return>
-			<argument index="0" name="light" type="RID">
-			</argument>
-			<argument index="1" name="size" type="int">
-			</argument>
-			<description>
-				Sets the width of the shadow buffer, size gets scaled to the next power of two for this.
-			</description>
-		</method>
 		<method name="canvas_light_set_shadow_color">
 			<return type="void">
 			</return>
@@ -478,7 +456,7 @@
 			<argument index="1" name="texture" type="RID">
 			</argument>
 			<description>
-				Sets texture to be used by light. Equivalent to [member Light2D.texture].
+				Sets the texture to be used by a [PointLight2D]. Equivalent to [member PointLight2D.texture].
 			</description>
 		</method>
 		<method name="canvas_light_set_texture_offset">
@@ -489,7 +467,18 @@
 			<argument index="1" name="offset" type="Vector2">
 			</argument>
 			<description>
-				Sets the offset of the light's texture. Equivalent to [member Light2D.offset].
+				Sets the offset of a [PointLight2D]'s texture. Equivalent to [member PointLight2D.offset].
+			</description>
+		</method>
+		<method name="canvas_light_set_texture_scale">
+			<return type="void">
+			</return>
+			<argument index="0" name="light" type="RID">
+			</argument>
+			<argument index="1" name="scale" type="float">
+			</argument>
+			<description>
+				Sets the scale factor of a [PointLight2D]'s texture. Equivalent to [member PointLight2D.texture_scale].
 			</description>
 		</method>
 		<method name="canvas_light_set_transform">
@@ -548,17 +537,6 @@
 				Sets the shape of the occluder polygon.
 			</description>
 		</method>
-		<method name="canvas_occluder_polygon_set_shape_as_lines">
-			<return type="void">
-			</return>
-			<argument index="0" name="occluder_polygon" type="RID">
-			</argument>
-			<argument index="1" name="shape" type="PackedVector2Array">
-			</argument>
-			<description>
-				Sets the shape of the occluder polygon as lines.
-			</description>
-		</method>
 		<method name="canvas_set_item_mirroring">
 			<return type="void">
 			</return>
@@ -581,6 +559,12 @@
 			</argument>
 			<description>
 				Modulates all colors in the given canvas.
+			</description>
+		</method>
+		<method name="create_local_rendering_device" qualifiers="const">
+			<return type="RenderingDevice">
+			</return>
+			<description>
 			</description>
 		</method>
 		<method name="directional_light_create">
@@ -613,7 +597,9 @@
 			</argument>
 			<argument index="4" name="saturation" type="float">
 			</argument>
-			<argument index="5" name="ramp" type="RID">
+			<argument index="5" name="use_1d_color_correction" type="bool">
+			</argument>
+			<argument index="6" name="color_correction" type="RID">
 			</argument>
 			<description>
 				Sets the values to be used with the "Adjustment" post-process effect. See [Environment] for more details.
@@ -690,52 +676,21 @@
 			</argument>
 			<argument index="1" name="enable" type="bool">
 			</argument>
-			<argument index="2" name="color" type="Color">
+			<argument index="2" name="light_color" type="Color">
 			</argument>
-			<argument index="3" name="sun_color" type="Color">
+			<argument index="3" name="light_energy" type="float">
 			</argument>
-			<argument index="4" name="sun_amount" type="float">
+			<argument index="4" name="sun_scatter" type="float">
 			</argument>
-			<description>
-				Sets the variables to be used with the scene fog. See [Environment] for more details.
-			</description>
-		</method>
-		<method name="environment_set_fog_depth">
-			<return type="void">
-			</return>
-			<argument index="0" name="env" type="RID">
+			<argument index="5" name="density" type="float">
 			</argument>
-			<argument index="1" name="enable" type="bool">
+			<argument index="6" name="height" type="float">
 			</argument>
-			<argument index="2" name="depth_begin" type="float">
+			<argument index="7" name="height_density" type="float">
 			</argument>
-			<argument index="3" name="depth_end" type="float">
-			</argument>
-			<argument index="4" name="depth_curve" type="float">
-			</argument>
-			<argument index="5" name="transmit" type="bool">
-			</argument>
-			<argument index="6" name="transmit_curve" type="float">
+			<argument index="8" name="aerial_perspective" type="float">
 			</argument>
 			<description>
-				Sets the variables to be used with the fog depth effect. See [Environment] for more details.
-			</description>
-		</method>
-		<method name="environment_set_fog_height">
-			<return type="void">
-			</return>
-			<argument index="0" name="env" type="RID">
-			</argument>
-			<argument index="1" name="enable" type="bool">
-			</argument>
-			<argument index="2" name="min_height" type="float">
-			</argument>
-			<argument index="3" name="max_height" type="float">
-			</argument>
-			<argument index="4" name="height_curve" type="float">
-			</argument>
-			<description>
-				Sets the variables to be used with the fog height effect. See [Environment] for more details.
 			</description>
 		</method>
 		<method name="environment_set_glow">
@@ -745,7 +700,7 @@
 			</argument>
 			<argument index="1" name="enable" type="bool">
 			</argument>
-			<argument index="2" name="level_flags" type="int">
+			<argument index="2" name="levels" type="PackedFloat32Array">
 			</argument>
 			<argument index="3" name="intensity" type="float">
 			</argument>
@@ -810,17 +765,20 @@
 			</argument>
 			<argument index="3" name="intensity" type="float">
 			</argument>
-			<argument index="4" name="bias" type="float">
+			<argument index="4" name="power" type="float">
 			</argument>
-			<argument index="5" name="light_affect" type="float">
+			<argument index="5" name="detail" type="float">
 			</argument>
-			<argument index="6" name="ao_channel_affect" type="float">
+			<argument index="6" name="horizon" type="float">
 			</argument>
-			<argument index="7" name="blur" type="int" enum="RenderingServer.EnvironmentSSAOBlur">
+			<argument index="7" name="sharpness" type="float">
 			</argument>
-			<argument index="8" name="bilateral_sharpness" type="float">
+			<argument index="8" name="light_affect" type="float">
+			</argument>
+			<argument index="9" name="ao_channel_affect" type="float">
 			</argument>
 			<description>
+				Sets the variables to be used with the "screen space ambient occlusion" post-process effect. See [Environment] for more details.
 			</description>
 		</method>
 		<method name="environment_set_ssr">
@@ -899,6 +857,12 @@
 			</argument>
 			<description>
 				Tries to free an object in the RenderingServer.
+			</description>
+		</method>
+		<method name="get_frame_setup_time_cpu" qualifiers="const">
+			<return type="float">
+			</return>
+			<description>
 			</description>
 		</method>
 		<method name="get_render_info">
@@ -1328,7 +1292,7 @@
 			<argument index="1" name="margin" type="float">
 			</argument>
 			<description>
-				Sets a margin to increase the size of the AABB when culling objects from the view frustum. This allows you avoid culling objects that fall outside the view frustum. Equivalent to [member GeometryInstance3D.extra_cull_margin].
+				Sets a margin to increase the size of the AABB when culling objects from the view frustum. This allows you to avoid culling objects that fall outside the view frustum. Equivalent to [member GeometryInstance3D.extra_cull_margin].
 			</description>
 		</method>
 		<method name="instance_set_layer_mask">
@@ -1396,7 +1360,7 @@
 			<argument index="1" name="scenario" type="RID">
 			</argument>
 			<description>
-				Returns an array of object IDs intersecting with the provided AABB. Only visual 3D nodes are considered, such as [MeshInstance3D] or [DirectionalLight3D]. Use [method @GDScript.instance_from_id] to obtain the actual nodes. A scenario RID must be provided, which is available in the [World3D] you want to query. This forces an update for all resources queued to update.
+				Returns an array of object IDs intersecting with the provided AABB. Only visual 3D nodes are considered, such as [MeshInstance3D] or [DirectionalLight3D]. Use [method @GlobalScope.instance_from_id] to obtain the actual nodes. A scenario RID must be provided, which is available in the [World3D] you want to query. This forces an update for all resources queued to update.
 				[b]Warning:[/b] This function is primarily intended for editor usage. For in-game use cases, prefer physics collision.
 			</description>
 		</method>
@@ -1408,7 +1372,7 @@
 			<argument index="1" name="scenario" type="RID">
 			</argument>
 			<description>
-				Returns an array of object IDs intersecting with the provided convex shape. Only visual 3D nodes are considered, such as [MeshInstance3D] or [DirectionalLight3D]. Use [method @GDScript.instance_from_id] to obtain the actual nodes. A scenario RID must be provided, which is available in the [World3D] you want to query. This forces an update for all resources queued to update.
+				Returns an array of object IDs intersecting with the provided convex shape. Only visual 3D nodes are considered, such as [MeshInstance3D] or [DirectionalLight3D]. Use [method @GlobalScope.instance_from_id] to obtain the actual nodes. A scenario RID must be provided, which is available in the [World3D] you want to query. This forces an update for all resources queued to update.
 				[b]Warning:[/b] This function is primarily intended for editor usage. For in-game use cases, prefer physics collision.
 			</description>
 		</method>
@@ -1422,7 +1386,7 @@
 			<argument index="2" name="scenario" type="RID">
 			</argument>
 			<description>
-				Returns an array of object IDs intersecting with the provided 3D ray. Only visual 3D nodes are considered, such as [MeshInstance3D] or [DirectionalLight3D]. Use [method @GDScript.instance_from_id] to obtain the actual nodes. A scenario RID must be provided, which is available in the [World3D] you want to query. This forces an update for all resources queued to update.
+				Returns an array of object IDs intersecting with the provided 3D ray. Only visual 3D nodes are considered, such as [MeshInstance3D] or [DirectionalLight3D]. Use [method @GlobalScope.instance_from_id] to obtain the actual nodes. A scenario RID must be provided, which is available in the [World3D] you want to query. This forces an update for all resources queued to update.
 				[b]Warning:[/b] This function is primarily intended for editor usage. For in-game use cases, prefer physics collision.
 			</description>
 		</method>
@@ -1457,6 +1421,17 @@
 			</argument>
 			<description>
 				Sets the shadow mode for this directional light. Equivalent to [member DirectionalLight3D.directional_shadow_mode]. See [enum LightDirectionalShadowMode] for options.
+			</description>
+		</method>
+		<method name="light_directional_set_sky_only">
+			<return type="void">
+			</return>
+			<argument index="0" name="light" type="RID">
+			</argument>
+			<argument index="1" name="enable" type="bool">
+			</argument>
+			<description>
+				If [code]true[/code], this light will not be used for anything except sky shaders. Use this for lights that impact your sky shader that you may want to hide from affecting the rest of the scene. For example, you may want to enable this when the sun in your sky shader falls below the horizon.
 			</description>
 		</method>
 		<method name="light_omni_set_shadow_mode">
@@ -1545,7 +1520,7 @@
 			<argument index="1" name="enabled" type="bool">
 			</argument>
 			<description>
-				If [code]true[/code], reverses the backface culling of the mesh. This can be useful when you have a flat mesh that has a light behind it. If you need to cast a shadow on both sides of the mesh, set the mesh to use double sided shadows with [method instance_geometry_set_cast_shadows_setting]. Equivalent to [member Light3D.shadow_reverse_cull_face].
+				If [code]true[/code], reverses the backface culling of the mesh. This can be useful when you have a flat mesh that has a light behind it. If you need to cast a shadow on both sides of the mesh, set the mesh to use double-sided shadows with [method instance_geometry_set_cast_shadows_setting]. Equivalent to [member Light3D.shadow_reverse_cull_face].
 			</description>
 		</method>
 		<method name="light_set_shadow">
@@ -1648,26 +1623,6 @@
 				Sets a shader material's shader.
 			</description>
 		</method>
-		<method name="mesh_add_surface_from_arrays">
-			<return type="void">
-			</return>
-			<argument index="0" name="mesh" type="RID">
-			</argument>
-			<argument index="1" name="primitive" type="int" enum="RenderingServer.PrimitiveType">
-			</argument>
-			<argument index="2" name="arrays" type="Array">
-			</argument>
-			<argument index="3" name="blend_shapes" type="Array" default="[  ]">
-			</argument>
-			<argument index="4" name="lods" type="Dictionary" default="{
-
-}">
-			</argument>
-			<argument index="5" name="compress_format" type="int" default="31744">
-			</argument>
-			<description>
-			</description>
-		</method>
 		<method name="mesh_clear">
 			<return type="void">
 			</return>
@@ -1766,32 +1721,46 @@
 				Returns a mesh's surface's arrays for blend shapes.
 			</description>
 		</method>
+		<method name="mesh_surface_get_format_attribute_stride" qualifiers="const">
+			<return type="int">
+			</return>
+			<argument index="0" name="format" type="int">
+			</argument>
+			<argument index="1" name="vertex_count" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
 		<method name="mesh_surface_get_format_offset" qualifiers="const">
 			<return type="int">
 			</return>
 			<argument index="0" name="format" type="int">
 			</argument>
-			<argument index="1" name="vertex_len" type="int">
+			<argument index="1" name="vertex_count" type="int">
 			</argument>
-			<argument index="2" name="index_len" type="int">
-			</argument>
-			<argument index="3" name="array_index" type="int">
+			<argument index="2" name="array_index" type="int">
 			</argument>
 			<description>
-				Function is unused in Godot 3.x.
 			</description>
 		</method>
-		<method name="mesh_surface_get_format_stride" qualifiers="const">
+		<method name="mesh_surface_get_format_skin_stride" qualifiers="const">
 			<return type="int">
 			</return>
 			<argument index="0" name="format" type="int">
 			</argument>
-			<argument index="1" name="vertex_len" type="int">
-			</argument>
-			<argument index="2" name="index_len" type="int">
+			<argument index="1" name="vertex_count" type="int">
 			</argument>
 			<description>
-				Function is unused in Godot 3.x.
+			</description>
+		</method>
+		<method name="mesh_surface_get_format_vertex_stride" qualifiers="const">
+			<return type="int">
+			</return>
+			<argument index="0" name="format" type="int">
+			</argument>
+			<argument index="1" name="vertex_count" type="int">
+			</argument>
+			<description>
 			</description>
 		</method>
 		<method name="mesh_surface_get_material" qualifiers="const">
@@ -1833,7 +1802,7 @@
 				Updates a specific region of a vertex buffer for the specified surface. Warning: this function alters the vertex buffer directly with no safety mechanisms, you can easily corrupt your mesh.
 			</description>
 		</method>
-		<method name="multimesh_allocate">
+		<method name="multimesh_allocate_data">
 			<return type="void">
 			</return>
 			<argument index="0" name="multimesh" type="RID">
@@ -2235,7 +2204,7 @@
 			<argument index="1" name="time" type="float">
 			</argument>
 			<description>
-				Sets the preprocess time for the particles animation. This lets you delay starting an animation until after the particles have begun emitting. Equivalent to [member GPUParticles3D.preprocess].
+				Sets the preprocess time for the particles' animation. This lets you delay starting an animation until after the particles have begun emitting. Equivalent to [member GPUParticles3D.preprocess].
 			</description>
 		</method>
 		<method name="particles_set_process_material">
@@ -2580,7 +2549,7 @@
 				Sets a shader's default texture. Overwrites the texture given by name.
 			</description>
 		</method>
-		<method name="skeleton_allocate">
+		<method name="skeleton_allocate_data">
 			<return type="void">
 			</return>
 			<argument index="0" name="skeleton" type="RID">
@@ -2590,7 +2559,6 @@
 			<argument index="2" name="is_2d_skeleton" type="bool" default="false">
 			</argument>
 			<description>
-				Allocates the GPU buffers for this skeleton.
 			</description>
 		</method>
 		<method name="skeleton_bone_get_transform" qualifiers="const">
@@ -2736,11 +2704,14 @@
 			<description>
 				Copies the viewport to a region of the screen specified by [code]rect[/code]. If [method viewport_set_render_direct_to_screen] is [code]true[/code], then the viewport does not use a framebuffer and the contents of the viewport are rendered directly to screen. However, note that the root viewport is drawn last, therefore it will draw over the screen. Accordingly, you must set the root viewport to an area that does not cover the area that you have attached this viewport to.
 				For example, you can set the root viewport to not render at all with the following code:
-				[codeblock]
+				FIXME: The method seems to be non-existent.
+				[codeblocks]
+				[gdscript]
 				func _ready():
 				    get_viewport().set_attach_to_screen_rect(Rect2())
 				    $Viewport.set_attach_to_screen_rect(Rect2(0, 0, 600, 600))
-				[/codeblock]
+				[/gdscript]
+				[/codeblocks]
 				Using this can result in significant optimization, especially on lower-end devices. However, it comes at the cost of having to manage your viewports manually. For a further optimization see, [method viewport_set_render_direct_to_screen].
 			</description>
 		</method>
@@ -2750,6 +2721,22 @@
 			<description>
 				Creates an empty viewport and adds it to the RenderingServer. It can be accessed with the RID that is returned. This RID will be used in all [code]viewport_*[/code] RenderingServer functions.
 				Once finished with your RID, you will want to free the RID using the RenderingServer's [method free_rid] static method.
+			</description>
+		</method>
+		<method name="viewport_get_measured_render_time_cpu" qualifiers="const">
+			<return type="float">
+			</return>
+			<argument index="0" name="viewport" type="RID">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="viewport_get_measured_render_time_gpu" qualifiers="const">
+			<return type="float">
+			</return>
+			<argument index="0" name="viewport" type="RID">
+			</argument>
+			<description>
 			</description>
 		</method>
 		<method name="viewport_get_render_info">
@@ -2889,6 +2876,16 @@
 				Currently unimplemented in Godot 3.x.
 			</description>
 		</method>
+		<method name="viewport_set_measure_render_time">
+			<return type="void">
+			</return>
+			<argument index="0" name="viewport" type="RID">
+			</argument>
+			<argument index="1" name="enable" type="bool">
+			</argument>
+			<description>
+			</description>
+		</method>
 		<method name="viewport_set_msaa">
 			<return type="void">
 			</return>
@@ -2954,6 +2951,8 @@
 			</argument>
 			<argument index="1" name="size" type="int">
 			</argument>
+			<argument index="2" name="use_16_bits" type="bool" default="false">
+			</argument>
 			<description>
 				Sets the size of the shadow atlas's images (used for omni and spot lights). The value will be rounded up to the nearest power of 2.
 			</description>
@@ -2991,6 +2990,16 @@
 			</argument>
 			<description>
 				Sets when the viewport should be updated. See [enum ViewportUpdateMode] constants for options.
+			</description>
+		</method>
+		<method name="viewport_set_use_debanding">
+			<return type="void">
+			</return>
+			<argument index="0" name="viewport" type="RID">
+			</argument>
+			<argument index="1" name="enable" type="bool">
+			</argument>
+			<description>
 			</description>
 		</method>
 		<method name="viewport_set_use_xr">
@@ -3098,16 +3107,24 @@
 		<constant name="ARRAY_TEX_UV2" value="5" enum="ArrayType">
 			Array is an UV coordinates array for the second UV coordinates.
 		</constant>
-		<constant name="ARRAY_BONES" value="6" enum="ArrayType">
+		<constant name="ARRAY_CUSTOM0" value="6" enum="ArrayType">
+		</constant>
+		<constant name="ARRAY_CUSTOM1" value="7" enum="ArrayType">
+		</constant>
+		<constant name="ARRAY_CUSTOM2" value="8" enum="ArrayType">
+		</constant>
+		<constant name="ARRAY_CUSTOM3" value="9" enum="ArrayType">
+		</constant>
+		<constant name="ARRAY_BONES" value="10" enum="ArrayType">
 			Array contains bone information.
 		</constant>
-		<constant name="ARRAY_WEIGHTS" value="7" enum="ArrayType">
+		<constant name="ARRAY_WEIGHTS" value="11" enum="ArrayType">
 			Array is weight information.
 		</constant>
-		<constant name="ARRAY_INDEX" value="8" enum="ArrayType">
+		<constant name="ARRAY_INDEX" value="12" enum="ArrayType">
 			Array is index array.
 		</constant>
-		<constant name="ARRAY_MAX" value="9" enum="ArrayType">
+		<constant name="ARRAY_MAX" value="13" enum="ArrayType">
 			Represents the size of the [enum ArrayType] enum.
 		</constant>
 		<constant name="ARRAY_FORMAT_VERTEX" value="1" enum="ArrayFormat">
@@ -3128,40 +3145,45 @@
 		<constant name="ARRAY_FORMAT_TEX_UV2" value="32" enum="ArrayFormat">
 			Flag used to mark an UV coordinates array for the second UV coordinates.
 		</constant>
-		<constant name="ARRAY_FORMAT_BONES" value="64" enum="ArrayFormat">
+		<constant name="ARRAY_FORMAT_CUSTOM0" value="64" enum="ArrayFormat">
+		</constant>
+		<constant name="ARRAY_FORMAT_CUSTOM1" value="128" enum="ArrayFormat">
+		</constant>
+		<constant name="ARRAY_FORMAT_CUSTOM2" value="256" enum="ArrayFormat">
+		</constant>
+		<constant name="ARRAY_FORMAT_CUSTOM3" value="512" enum="ArrayFormat">
+		</constant>
+		<constant name="ARRAY_FORMAT_BONES" value="1024" enum="ArrayFormat">
 			Flag used to mark a bone information array.
 		</constant>
-		<constant name="ARRAY_FORMAT_WEIGHTS" value="128" enum="ArrayFormat">
+		<constant name="ARRAY_FORMAT_WEIGHTS" value="2048" enum="ArrayFormat">
 			Flag used to mark a weights array.
 		</constant>
-		<constant name="ARRAY_FORMAT_INDEX" value="256" enum="ArrayFormat">
+		<constant name="ARRAY_FORMAT_INDEX" value="4096" enum="ArrayFormat">
 			Flag used to mark an index array.
 		</constant>
-		<constant name="ARRAY_COMPRESS_NORMAL" value="1024" enum="ArrayFormat">
-			Flag used to mark a compressed (half float) normal array.
+		<constant name="ARRAY_FORMAT_BLEND_SHAPE_MASK" value="2147475463" enum="ArrayFormat">
 		</constant>
-		<constant name="ARRAY_COMPRESS_TANGENT" value="2048" enum="ArrayFormat">
-			Flag used to mark a compressed (half float) tangent array.
+		<constant name="ARRAY_FORMAT_CUSTOM_BASE" value="13" enum="ArrayFormat">
 		</constant>
-		<constant name="ARRAY_COMPRESS_COLOR" value="4096" enum="ArrayFormat">
-			Flag used to mark a compressed (half float) color array.
+		<constant name="ARRAY_FORMAT_CUSTOM0_SHIFT" value="13" enum="ArrayFormat">
 		</constant>
-		<constant name="ARRAY_COMPRESS_TEX_UV" value="8192" enum="ArrayFormat">
-			Flag used to mark a compressed (half float) UV coordinates array.
+		<constant name="ARRAY_FORMAT_CUSTOM1_SHIFT" value="16" enum="ArrayFormat">
 		</constant>
-		<constant name="ARRAY_COMPRESS_TEX_UV2" value="16384" enum="ArrayFormat">
-			Flag used to mark a compressed (half float) UV coordinates array for the second UV coordinates.
+		<constant name="ARRAY_FORMAT_CUSTOM2_SHIFT" value="19" enum="ArrayFormat">
 		</constant>
-		<constant name="ARRAY_COMPRESS_INDEX" value="131072" enum="ArrayFormat">
-			Flag used to mark a compressed index array.
+		<constant name="ARRAY_FORMAT_CUSTOM3_SHIFT" value="22" enum="ArrayFormat">
 		</constant>
-		<constant name="ARRAY_COMPRESS_DEFAULT" value="31744" enum="ArrayFormat">
-			Used to set flags [constant ARRAY_COMPRESS_NORMAL], [constant ARRAY_COMPRESS_TANGENT], [constant ARRAY_COMPRESS_COLOR], [constant ARRAY_COMPRESS_TEX_UV] and [constant ARRAY_COMPRESS_TEX_UV2] quickly.
+		<constant name="ARRAY_FORMAT_CUSTOM_MASK" value="7" enum="ArrayFormat">
 		</constant>
-		<constant name="ARRAY_FLAG_USE_2D_VERTICES" value="262144" enum="ArrayFormat">
+		<constant name="ARRAY_COMPRESS_FLAGS_BASE" value="25" enum="ArrayFormat">
+		</constant>
+		<constant name="ARRAY_FLAG_USE_2D_VERTICES" value="33554432" enum="ArrayFormat">
 			Flag used to mark that the array contains 2D vertices.
 		</constant>
-		<constant name="ARRAY_FLAG_USE_DYNAMIC_UPDATE" value="1048576" enum="ArrayFormat">
+		<constant name="ARRAY_FLAG_USE_DYNAMIC_UPDATE" value="67108864" enum="ArrayFormat">
+		</constant>
+		<constant name="ARRAY_FLAG_USE_8_BONE_WEIGHTS" value="134217728" enum="ArrayFormat">
 		</constant>
 		<constant name="PRIMITIVE_POINTS" value="0" enum="PrimitiveType">
 			Primitive to draw consists of points.
@@ -3252,9 +3274,9 @@
 		<constant name="LIGHT_PARAM_SHADOW_BLUR" value="16" enum="LightParam">
 			Blurs the edges of the shadow. Can be used to hide pixel artifacts in low resolution shadow maps. A high value can make shadows appear grainy and can cause other unwanted artifacts. Try to keep as near default as possible.
 		</constant>
-		<constant name="LIGHT_PARAM_TRANSMITTANCE_BIAS" value="17" enum="LightParam">
+		<constant name="LIGHT_PARAM_TRANSMITTANCE_BIAS" value="18" enum="LightParam">
 		</constant>
-		<constant name="LIGHT_PARAM_MAX" value="18" enum="LightParam">
+		<constant name="LIGHT_PARAM_MAX" value="19" enum="LightParam">
 			Represents the size of the [enum LightParam] enum.
 		</constant>
 		<constant name="LIGHT_BAKE_DISABLED" value="0" enum="LightBakeMode">
@@ -3392,7 +3414,8 @@
 			Objects are displayed with only light information.
 		</constant>
 		<constant name="VIEWPORT_DEBUG_DRAW_OVERDRAW" value="3" enum="ViewportDebugDraw">
-			Objects are displayed semi-transparent with additive blending so you can see where they are drawing over top of one another. A higher overdraw means you are wasting performance on drawing pixels that are being hidden behind others.
+			Objects are displayed semi-transparent with additive blending so you can see where they are drawing over top of one another. A higher overdraw (represented by brighter colors) means you are wasting performance on drawing pixels that are being hidden behind others.
+			[b]Note:[/b] When using this debug draw mode, custom shaders will be ignored. This means vertex displacement won't be visible anymore.
 		</constant>
 		<constant name="VIEWPORT_DEBUG_DRAW_WIREFRAME" value="4" enum="ViewportDebugDraw">
 			Debug draw draws objects in wireframe.
@@ -3432,7 +3455,7 @@
 		<constant name="VIEWPORT_DEBUG_DRAW_GI_BUFFER" value="17" enum="ViewportDebugDraw">
 		</constant>
 		<constant name="SKY_MODE_QUALITY" value="1" enum="SkyMode">
-			Uses high quality importance sampling to process the radiance map. In general, this results in much higher quality than [constant Sky.PROCESS_MODE_REALTIME] but takes much longer to generate. This should not be used if you plan on changing the sky at runtime. If you are finding that the reflection is not blurry enough and is showing sparkles or fireflies, try increasing [member ProjectSettings.rendering/quality/reflections/ggx_samples].
+			Uses high quality importance sampling to process the radiance map. In general, this results in much higher quality than [constant Sky.PROCESS_MODE_REALTIME] but takes much longer to generate. This should not be used if you plan on changing the sky at runtime. If you are finding that the reflection is not blurry enough and is showing sparkles or fireflies, try increasing [member ProjectSettings.rendering/reflections/sky_reflections/ggx_samples].
 		</constant>
 		<constant name="SKY_MODE_REALTIME" value="3" enum="SkyMode">
 			Uses the fast filtering algorithm to process the radiance map. In general this results in lower quality, but substantially faster run times.
@@ -3515,29 +3538,20 @@
 		</constant>
 		<constant name="ENV_SSR_ROUGNESS_QUALITY_HIGH" value="3" enum="EnvironmentSSRRoughnessQuality">
 		</constant>
-		<constant name="ENV_SSAO_BLUR_DISABLED" value="0" enum="EnvironmentSSAOBlur">
-			Disables the blur set for SSAO. Will make SSAO look noisier.
-		</constant>
-		<constant name="ENV_SSAO_BLUR_1x1" value="1" enum="EnvironmentSSAOBlur">
-			Perform a 1x1 blur on the SSAO output.
-		</constant>
-		<constant name="ENV_SSAO_BLUR_2x2" value="2" enum="EnvironmentSSAOBlur">
-			Performs a 2x2 blur on the SSAO output.
-		</constant>
-		<constant name="ENV_SSAO_BLUR_3x3" value="3" enum="EnvironmentSSAOBlur">
-			Performs a 3x3 blur on the SSAO output. Use this for smoothest SSAO.
-		</constant>
-		<constant name="ENV_SSAO_QUALITY_LOW" value="0" enum="EnvironmentSSAOQuality">
+		<constant name="ENV_SSAO_QUALITY_VERY_LOW" value="0" enum="EnvironmentSSAOQuality">
 			Lowest quality of screen space ambient occlusion.
 		</constant>
-		<constant name="ENV_SSAO_QUALITY_MEDIUM" value="1" enum="EnvironmentSSAOQuality">
+		<constant name="ENV_SSAO_QUALITY_LOW" value="1" enum="EnvironmentSSAOQuality">
+			Low quality screen space ambient occlusion.
+		</constant>
+		<constant name="ENV_SSAO_QUALITY_MEDIUM" value="2" enum="EnvironmentSSAOQuality">
 			Medium quality screen space ambient occlusion.
 		</constant>
-		<constant name="ENV_SSAO_QUALITY_HIGH" value="2" enum="EnvironmentSSAOQuality">
+		<constant name="ENV_SSAO_QUALITY_HIGH" value="3" enum="EnvironmentSSAOQuality">
 			High quality screen space ambient occlusion.
 		</constant>
-		<constant name="ENV_SSAO_QUALITY_ULTRA" value="3" enum="EnvironmentSSAOQuality">
-			Highest quality screen space ambient occlusion.
+		<constant name="ENV_SSAO_QUALITY_ULTRA" value="4" enum="EnvironmentSSAOQuality">
+			Highest quality screen space ambient occlusion. Uses the adaptive setting which can be dynamically adjusted to smoothly balance performance and visual quality.
 		</constant>
 		<constant name="SUB_SURFACE_SCATTERING_QUALITY_DISABLED" value="0" enum="SubSurfaceScatteringQuality">
 		</constant>
@@ -3607,22 +3621,24 @@
 		<constant name="INSTANCE_PARTICLES" value="4" enum="InstanceType">
 			The instance is a particle emitter.
 		</constant>
-		<constant name="INSTANCE_LIGHT" value="5" enum="InstanceType">
+		<constant name="INSTANCE_PARTICLES_COLLISION" value="5" enum="InstanceType">
+		</constant>
+		<constant name="INSTANCE_LIGHT" value="6" enum="InstanceType">
 			The instance is a light.
 		</constant>
-		<constant name="INSTANCE_REFLECTION_PROBE" value="6" enum="InstanceType">
+		<constant name="INSTANCE_REFLECTION_PROBE" value="7" enum="InstanceType">
 			The instance is a reflection probe.
 		</constant>
-		<constant name="INSTANCE_DECAL" value="7" enum="InstanceType">
+		<constant name="INSTANCE_DECAL" value="8" enum="InstanceType">
 			The instance is a decal.
 		</constant>
-		<constant name="INSTANCE_GI_PROBE" value="8" enum="InstanceType">
+		<constant name="INSTANCE_GI_PROBE" value="9" enum="InstanceType">
 			The instance is a GI probe.
 		</constant>
-		<constant name="INSTANCE_LIGHTMAP" value="9" enum="InstanceType">
+		<constant name="INSTANCE_LIGHTMAP" value="10" enum="InstanceType">
 			The instance is a lightmap.
 		</constant>
-		<constant name="INSTANCE_MAX" value="10" enum="InstanceType">
+		<constant name="INSTANCE_MAX" value="11" enum="InstanceType">
 			Represents the size of the [enum InstanceType] enum.
 		</constant>
 		<constant name="INSTANCE_GEOMETRY_MASK" value="30" enum="InstanceType">
@@ -3700,17 +3716,24 @@
 		<constant name="CANVAS_ITEM_TEXTURE_REPEAT_MAX" value="4" enum="CanvasItemTextureRepeat">
 			Max value for [enum CanvasItemTextureRepeat] enum.
 		</constant>
-		<constant name="CANVAS_LIGHT_MODE_ADD" value="0" enum="CanvasLightMode">
+		<constant name="CANVAS_GROUP_MODE_DISABLED" value="0" enum="CanvasGroupMode">
+		</constant>
+		<constant name="CANVAS_GROUP_MODE_OPAQUE" value="1" enum="CanvasGroupMode">
+		</constant>
+		<constant name="CANVAS_GROUP_MODE_TRANSPARENT" value="2" enum="CanvasGroupMode">
+		</constant>
+		<constant name="CANVAS_LIGHT_MODE_POINT" value="0" enum="CanvasLightMode">
+		</constant>
+		<constant name="CANVAS_LIGHT_MODE_DIRECTIONAL" value="1" enum="CanvasLightMode">
+		</constant>
+		<constant name="CANVAS_LIGHT_BLEND_MODE_ADD" value="0" enum="CanvasLightBlendMode">
 			Adds light color additive to the canvas.
 		</constant>
-		<constant name="CANVAS_LIGHT_MODE_SUB" value="1" enum="CanvasLightMode">
+		<constant name="CANVAS_LIGHT_BLEND_MODE_SUB" value="1" enum="CanvasLightBlendMode">
 			Adds light color subtractive to the canvas.
 		</constant>
-		<constant name="CANVAS_LIGHT_MODE_MIX" value="2" enum="CanvasLightMode">
+		<constant name="CANVAS_LIGHT_BLEND_MODE_MIX" value="2" enum="CanvasLightBlendMode">
 			The light adds color depending on transparency.
-		</constant>
-		<constant name="CANVAS_LIGHT_MODE_MASK" value="3" enum="CanvasLightMode">
-			The light adds color depending on mask.
 		</constant>
 		<constant name="CANVAS_LIGHT_FILTER_NONE" value="0" enum="CanvasLightShadowFilter">
 			Do not apply a filter to canvas light shadows.

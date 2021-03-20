@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -28,10 +28,10 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifdef WEBRTC_GDNATIVE_ENABLED
-
 #ifndef WEBRTC_PEER_CONNECTION_GDNATIVE_H
 #define WEBRTC_PEER_CONNECTION_GDNATIVE_H
+
+#ifdef WEBRTC_GDNATIVE_ENABLED
 
 #include "modules/gdnative/include/net/godot_net.h"
 #include "webrtc_peer_connection.h"
@@ -68,6 +68,6 @@ public:
 	~WebRTCPeerConnectionGDNative();
 };
 
-#endif // WEBRTC_PEER_CONNECTION_GDNATIVE_H
-
 #endif // WEBRTC_GDNATIVE_ENABLED
+
+#endif // WEBRTC_PEER_CONNECTION_GDNATIVE_H

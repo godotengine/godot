@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -29,7 +29,6 @@
 /*************************************************************************/
 
 package org.godotengine.godot;
-
 import org.godotengine.godot.input.GodotGestureHandler;
 import org.godotengine.godot.input.GodotInputHandler;
 import org.godotengine.godot.utils.GLUtils;
@@ -127,7 +126,7 @@ public class GodotGLRenderView extends GLSurfaceView implements GodotRenderView 
 	public boolean onTouchEvent(MotionEvent event) {
 		super.onTouchEvent(event);
 		this.detector.onTouchEvent(event);
-		return godot.gotTouchEvent(event);
+		return inputHandler.onTouchEvent(event);
 	}
 
 	@Override
@@ -143,6 +142,11 @@ public class GodotGLRenderView extends GLSurfaceView implements GodotRenderView 
 	@Override
 	public boolean onGenericMotionEvent(MotionEvent event) {
 		return inputHandler.onGenericMotionEvent(event) || super.onGenericMotionEvent(event);
+	}
+
+	@Override
+	public boolean onCapturedPointerEvent(MotionEvent event) {
+		return inputHandler.onGenericMotionEvent(event);
 	}
 
 	private void init(XRMode xrMode, boolean translucent, int depth, int stencil) {
@@ -184,15 +188,15 @@ public class GodotGLRenderView extends GLSurfaceView implements GodotRenderView 
 
 				if (GLUtils.use_32) {
 					setEGLConfigChooser(translucent ?
-												new RegularFallbackConfigChooser(8, 8, 8, 8, 24, stencil,
+												  new RegularFallbackConfigChooser(8, 8, 8, 8, 24, stencil,
 														new RegularConfigChooser(8, 8, 8, 8, 16, stencil)) :
-												new RegularFallbackConfigChooser(8, 8, 8, 8, 24, stencil,
+												  new RegularFallbackConfigChooser(8, 8, 8, 8, 24, stencil,
 														new RegularConfigChooser(5, 6, 5, 0, 16, stencil)));
 
 				} else {
 					setEGLConfigChooser(translucent ?
-												new RegularConfigChooser(8, 8, 8, 8, 16, stencil) :
-												new RegularConfigChooser(5, 6, 5, 0, 16, stencil));
+												  new RegularConfigChooser(8, 8, 8, 8, 16, stencil) :
+												  new RegularConfigChooser(5, 6, 5, 0, 16, stencil));
 				}
 				break;
 		}

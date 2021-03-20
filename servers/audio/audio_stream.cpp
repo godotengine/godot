@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -30,8 +30,8 @@
 
 #include "audio_stream.h"
 
+#include "core/config/project_settings.h"
 #include "core/os/os.h"
-#include "core/project_settings.h"
 
 //////////////////////////////
 
@@ -54,21 +54,21 @@ void AudioStreamPlaybackResampled::mix(AudioFrame *p_buffer, float p_rate_scale,
 
 	for (int i = 0; i < p_frames; i++) {
 		uint32_t idx = CUBIC_INTERP_HISTORY + uint32_t(mix_offset >> FP_BITS);
-		//standard cubic interpolation (great quality/performance ratio)
-		//this used to be moved to a LUT for greater performance, but nowadays CPU speed is generally faster than memory.
+		// 4 point, 4th order optimal resampling algorithm from: http://yehar.com/blog/wp-content/uploads/2009/08/deip.pdf
 		float mu = (mix_offset & FP_MASK) / float(FP_LEN);
 		AudioFrame y0 = internal_buffer[idx - 3];
 		AudioFrame y1 = internal_buffer[idx - 2];
 		AudioFrame y2 = internal_buffer[idx - 1];
 		AudioFrame y3 = internal_buffer[idx - 0];
 
-		float mu2 = mu * mu;
-		AudioFrame a0 = y3 - y2 - y0 + y1;
-		AudioFrame a1 = y0 - y1 - a0;
-		AudioFrame a2 = y2 - y0;
-		AudioFrame a3 = y1;
-
-		p_buffer[i] = (a0 * mu * mu2 + a1 * mu2 + a2 * mu + a3);
+		AudioFrame even1 = y2 + y1, odd1 = y2 - y1;
+		AudioFrame even2 = y3 + y0, odd2 = y3 - y0;
+		AudioFrame c0 = even1 * 0.46835497211269561 + even2 * 0.03164502784253309;
+		AudioFrame c1 = odd1 * 0.56001293337091440 + odd2 * 0.14666238593949288;
+		AudioFrame c2 = even1 * -0.250038759826233691 + even2 * 0.25003876124297131;
+		AudioFrame c3 = odd1 * -0.49949850957839148 + odd2 * 0.16649935475113800;
+		AudioFrame c4 = even1 * 0.00016095224137360 + even2 * -0.00016095810460478;
+		p_buffer[i] = (((c4 * mu + c3) * mu + c2) * mu + c1) * mu + c0;
 
 		mix_offset += mix_increment;
 
@@ -184,7 +184,7 @@ void AudioStreamPlaybackMicrophone::start(float p_from_pos) {
 		return;
 	}
 
-	if (!GLOBAL_GET("audio/enable_audio_input")) {
+	if (!GLOBAL_GET("audio/driver/enable_input")) {
 		WARN_PRINT("Need to enable Project settings > Audio > Enable Audio Input option to use capturing.");
 		return;
 	}

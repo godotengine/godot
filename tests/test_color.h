@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -31,7 +31,7 @@
 #ifndef TEST_COLOR_H
 #define TEST_COLOR_H
 
-#include "core/color.h"
+#include "core/math/color.h"
 
 #include "thirdparty/doctest/doctest.h"
 
@@ -39,9 +39,7 @@ namespace TestColor {
 
 TEST_CASE("[Color] Constructor methods") {
 	const Color blue_rgba = Color(0.25098, 0.376471, 1, 0.501961);
-	// HTML currently uses ARGB notation, which is contrary to the CSS standard.
-	// This may be changed to RGBA in 4.0.
-	const Color blue_html = Color::html("#804060ff");
+	const Color blue_html = Color::html("#4060ff80");
 	const Color blue_hex = Color::hex(0x4060ff80);
 	const Color blue_hex64 = Color::hex64(0x4040'6060'ffff'8080);
 
@@ -118,10 +116,10 @@ TEST_CASE("[Color] Conversion methods") {
 	const Color cyan_transparent = Color(0, 1, 1, 0);
 
 	CHECK_MESSAGE(
-			cyan.to_html() == "ff00ffff",
+			cyan.to_html() == "00ffffff",
 			"The returned RGB HTML color code should match the expected value.");
 	CHECK_MESSAGE(
-			cyan_transparent.to_html() == "0000ffff",
+			cyan_transparent.to_html() == "00ffff00",
 			"The returned RGBA HTML color code should match the expected value.");
 	CHECK_MESSAGE(
 			cyan.to_argb32() == 0xff00ffff,
@@ -187,9 +185,6 @@ TEST_CASE("[Color] Manipulation methods") {
 	CHECK_MESSAGE(
 			blue.inverted().is_equal_approx(Color(1, 1, 0, 0.4)),
 			"Inverted color should have its red, green and blue components inverted.");
-	CHECK_MESSAGE(
-			blue.contrasted().is_equal_approx(Color(0.5, 0.5, 0.5, 0.4)),
-			"Contrasted pure blue should be fully gray.");
 
 	const Color purple = Color(0.5, 0.2, 0.5, 0.25);
 
@@ -207,7 +202,6 @@ TEST_CASE("[Color] Manipulation methods") {
 			red.lerp(yellow, 0.5).is_equal_approx(Color(1, 0.5, 0, 0.5)),
 			"Red interpolated with yellow should be orange (with interpolated alpha).");
 }
-
 } // namespace TestColor
 
 #endif // TEST_COLOR_H

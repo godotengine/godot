@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -103,19 +103,6 @@ public:
 		m_enableLimit = false;
 	}
 
-	G6DOFRotationalLimitMotor3DSW(const G6DOFRotationalLimitMotor3DSW &limot) {
-		m_targetVelocity = limot.m_targetVelocity;
-		m_maxMotorForce = limot.m_maxMotorForce;
-		m_limitSoftness = limot.m_limitSoftness;
-		m_loLimit = limot.m_loLimit;
-		m_hiLimit = limot.m_hiLimit;
-		m_ERP = limot.m_ERP;
-		m_bounce = limot.m_bounce;
-		m_currentLimit = limot.m_currentLimit;
-		m_currentLimitError = limot.m_currentLimitError;
-		m_enableMotor = limot.m_enableMotor;
-	}
-
 	//! Is limited
 	bool isLimited() {
 		return (m_loLimit < m_hiLimit);
@@ -161,16 +148,6 @@ public:
 		enable_limit[0] = true;
 		enable_limit[1] = true;
 		enable_limit[2] = true;
-	}
-
-	G6DOFTranslationalLimitMotor3DSW(const G6DOFTranslationalLimitMotor3DSW &other) {
-		m_lowerLimit = other.m_lowerLimit;
-		m_upperLimit = other.m_upperLimit;
-		m_accumulatedImpulse = other.m_accumulatedImpulse;
-
-		m_limitSoftness = other.m_limitSoftness;
-		m_damping = other.m_damping;
-		m_restitution = other.m_restitution;
 	}
 
 	//! Test limit
@@ -242,11 +219,8 @@ protected:
 
 	//!@}
 
-	Generic6DOFJoint3DSW &operator=(Generic6DOFJoint3DSW &other) {
-		ERR_PRINT("pito");
-		(void)other;
-		return *this;
-	}
+	Generic6DOFJoint3DSW(Generic6DOFJoint3DSW const &) = delete;
+	void operator=(Generic6DOFJoint3DSW const &) = delete;
 
 	void buildLinearJacobian(
 			JacobianEntry3DSW &jacLinear, const Vector3 &normalWorld,
@@ -260,7 +234,7 @@ protected:
 public:
 	Generic6DOFJoint3DSW(Body3DSW *rbA, Body3DSW *rbB, const Transform &frameInA, const Transform &frameInB, bool useLinearReferenceFrameA);
 
-	virtual PhysicsServer3D::JointType get_type() const { return PhysicsServer3D::JOINT_6DOF; }
+	virtual PhysicsServer3D::JointType get_type() const { return PhysicsServer3D::JOINT_TYPE_6DOF; }
 
 	virtual bool setup(real_t p_timestep);
 	virtual void solve(real_t p_timestep);

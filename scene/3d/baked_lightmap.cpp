@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -37,7 +37,7 @@
 #include "core/os/dir_access.h"
 #include "core/os/file_access.h"
 #include "core/os/os.h"
-#include "core/sort_array.h"
+#include "core/templates/sort_array.h"
 #include "lightmap_probe.h"
 
 void BakedLightmapData::add_user(const NodePath &p_path, const Rect2 &p_uv_scale, int p_slice_index, int32_t p_sub_instance) {
@@ -78,6 +78,7 @@ void BakedLightmapData::clear_users() {
 }
 
 void BakedLightmapData::_set_user_data(const Array &p_data) {
+	ERR_FAIL_COND(p_data.size() <= 0);
 	ERR_FAIL_COND((p_data.size() % 4) != 0);
 
 	for (int i = 0; i < p_data.size(); i += 4) {
@@ -195,7 +196,7 @@ void BakedLightmapData::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_uses_spherical_harmonics", "uses_spherical_harmonics"), &BakedLightmapData::set_uses_spherical_harmonics);
 	ClassDB::bind_method(D_METHOD("is_using_spherical_harmonics"), &BakedLightmapData::is_using_spherical_harmonics);
 
-	ClassDB::bind_method(D_METHOD("add_user", "path", "lightmap", "offset"), &BakedLightmapData::add_user);
+	ClassDB::bind_method(D_METHOD("add_user", "path", "uv_scale", "slice_index", "sub_instance"), &BakedLightmapData::add_user);
 	ClassDB::bind_method(D_METHOD("get_user_count"), &BakedLightmapData::get_user_count);
 	ClassDB::bind_method(D_METHOD("get_user_path", "user_idx"), &BakedLightmapData::get_user_path);
 	ClassDB::bind_method(D_METHOD("clear_users"), &BakedLightmapData::clear_users);
@@ -448,7 +449,7 @@ int32_t BakedLightmap::_compute_bsp_tree(const Vector<Vector3> &p_points, const 
 		ERR_FAIL_COND_V(p_simplex_indices.size() <= 1, 0); //should not happen, this is a bug
 
 		// Failed to separate the tetrahedrons using planes
-		// this means Delaunay borked at some point.
+		// this means Delaunay broke at some point.
 		// Luckily, because we are using tetrahedrons, we can resort to
 		// less precise but still working ways to generate the separating plane
 		// this will most likely look bad when interpolating, but at least it will not crash.
@@ -510,7 +511,7 @@ int32_t BakedLightmap::_compute_bsp_tree(const Vector<Vector3> &p_points, const 
 	node.plane = best_plane;
 
 	if (indices_under.size() == 0) {
-		//noting to do here
+		//nothing to do here
 		node.under = BSPNode::EMPTY_LEAF;
 	} else if (indices_under.size() == 1) {
 		node.under = -(indices_under[0] + 1);
@@ -519,7 +520,7 @@ int32_t BakedLightmap::_compute_bsp_tree(const Vector<Vector3> &p_points, const 
 	}
 
 	if (indices_over.size() == 0) {
-		//noting to do here
+		//nothing to do here
 		node.over = BSPNode::EMPTY_LEAF;
 	} else if (indices_over.size() == 1) {
 		node.over = -(indices_over[0] + 1);
@@ -659,7 +660,7 @@ BakedLightmap::BakeError BakedLightmap::bake(Node *p_from_node, String p_image_d
 		}
 		// create mesh data for insert
 
-		//get the base material textures, help compute altlas size and bounds
+		//get the base material textures, help compute atlas size and bounds
 		for (int m_i = 0; m_i < meshes_found.size(); m_i++) {
 			if (p_bake_step) {
 				float p = (float)(m_i) / meshes_found.size();
@@ -678,7 +679,7 @@ BakedLightmap::BakeError BakedLightmap::bake(Node *p_from_node, String p_image_d
 			}
 			TypedArray<Image> images = RS::get_singleton()->bake_render_uv2(mf.mesh->get_rid(), overrides, lightmap_size);
 
-			ERR_FAIL_COND_V(images.empty(), BAKE_ERROR_CANT_CREATE_IMAGE);
+			ERR_FAIL_COND_V(images.is_empty(), BAKE_ERROR_CANT_CREATE_IMAGE);
 
 			Ref<Image> albedo = images[RS::BAKE_CHANNEL_ALBEDO_ALPHA];
 			Ref<Image> orm = images[RS::BAKE_CHANNEL_ORM];
@@ -973,7 +974,7 @@ BakedLightmap::BakeError BakedLightmap::bake(Node *p_from_node, String p_image_d
 		for (int i = 0; i < lightmapper->get_bake_texture_count(); i++) {
 			images.push_back(lightmapper->get_bake_texture(i));
 		}
-		//we assume they are all the same, so lets create a large one for saving
+		//we assume they are all the same, so let's create a large one for saving
 		Ref<Image> large_image;
 		large_image.instance();
 
@@ -1302,7 +1303,7 @@ bool BakedLightmap::is_interior() const {
 
 void BakedLightmap::set_environment_mode(EnvironmentMode p_mode) {
 	environment_mode = p_mode;
-	_change_notify();
+	notify_property_list_changed();
 }
 
 BakedLightmap::EnvironmentMode BakedLightmap::get_environment_mode() const {
@@ -1466,17 +1467,4 @@ void BakedLightmap::_bind_methods() {
 }
 
 BakedLightmap::BakedLightmap() {
-	environment_mode = ENVIRONMENT_MODE_DISABLED;
-	environment_custom_color = Color(0.2, 0.7, 1.0);
-	environment_custom_energy = 1.0;
-
-	bake_quality = BAKE_QUALITY_MEDIUM;
-	interior = false;
-	directional = false;
-
-	gen_probes = GENERATE_PROBES_DISABLED;
-	use_denoiser = true;
-	bounces = 1;
-	bias = 0.0005;
-	max_texture_size = 16384;
 }

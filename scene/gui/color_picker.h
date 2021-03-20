@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -46,7 +46,7 @@ class ColorPicker : public BoxContainer {
 	GDCLASS(ColorPicker, BoxContainer);
 
 private:
-	Control *screen;
+	Control *screen = nullptr;
 	Control *uv_edit;
 	Control *w_edit;
 	TextureRect *sample;
@@ -64,20 +64,22 @@ private:
 	Label *labels[4];
 	Button *text_type;
 	LineEdit *c_text;
-	bool edit_alpha;
+	bool edit_alpha = true;
 	Size2i ms;
-	bool text_is_constructor;
-	int presets_per_row;
+	bool text_is_constructor = false;
+	int presets_per_row = 0;
 
 	Color color;
-	bool raw_mode_enabled;
-	bool hsv_mode_enabled;
-	bool deferred_mode_enabled;
-	bool updating;
-	bool changing_color;
-	bool presets_enabled;
-	bool presets_visible;
-	float h, s, v;
+	bool raw_mode_enabled = false;
+	bool hsv_mode_enabled = false;
+	bool deferred_mode_enabled = false;
+	bool updating = true;
+	bool changing_color = false;
+	bool presets_enabled = true;
+	bool presets_visible = true;
+	float h = 0.0;
+	float s = 0.0;
+	float v = 0.0;
 	Color last_hsv;
 
 	void _html_entered(const String &p_html);
@@ -89,6 +91,7 @@ private:
 	void _text_type_toggled();
 	void _sample_draw();
 	void _hsv_draw(int p_which, Control *c);
+	void _slider_draw(int p_which);
 
 	void _uv_input(const Ref<InputEvent> &p_event);
 	void _w_input(const Ref<InputEvent> &p_event);
@@ -139,10 +142,14 @@ public:
 class ColorPickerButton : public Button {
 	GDCLASS(ColorPickerButton, Button);
 
-	PopupPanel *popup;
-	ColorPicker *picker;
+	// Initialization is now done deferred,
+	// this improves performance in the inspector as the color picker
+	// can be expensive to initialize.
+
+	PopupPanel *popup = nullptr;
+	ColorPicker *picker = nullptr;
 	Color color;
-	bool edit_alpha;
+	bool edit_alpha = true;
 
 	void _color_changed(const Color &p_color);
 	void _modal_closed();

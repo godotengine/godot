@@ -37,6 +37,7 @@
 			<return type="ScriptEditorBase">
 			</return>
 			<description>
+				Returns the [ScriptEditorBase] object that the user is currently editing.
 			</description>
 		</method>
 		<method name="get_current_script">
@@ -60,6 +61,7 @@
 			<return type="Array">
 			</return>
 			<description>
+				Returns an array with all [ScriptEditorBase] objects which are currently open in editor.
 			</description>
 		</method>
 		<method name="get_open_scripts" qualifiers="const">
@@ -86,6 +88,7 @@
 			<argument index="1" name="base_path" type="String">
 			</argument>
 			<description>
+				Opens the script create dialog. The script will extend [code]base_name[/code]. The file extension can be omitted from [code]base_path[/code]. It will be added based on the selected scripting language.
 			</description>
 		</method>
 		<method name="register_syntax_highlighter">
@@ -94,6 +97,8 @@
 			<argument index="0" name="syntax_highlighter" type="EditorSyntaxHighlighter">
 			</argument>
 			<description>
+				Registers the [EditorSyntaxHighlighter] to the editor, the [EditorSyntaxHighlighter] will be available on all open scripts.
+				[b]Note:[/b] Does not apply to scripts that are already opened.
 			</description>
 		</method>
 		<method name="unregister_syntax_highlighter">
@@ -102,6 +107,8 @@
 			<argument index="0" name="syntax_highlighter" type="EditorSyntaxHighlighter">
 			</argument>
 			<description>
+				Unregisters the [EditorSyntaxHighlighter] from the editor.
+				[b]Note:[/b] The [EditorSyntaxHighlighter] will still be applied to scripts that are already opened.
 			</description>
 		</method>
 	</methods>

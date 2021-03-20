@@ -5,56 +5,73 @@
 	</brief_description>
 	<description>
 		A color represented by red, green, blue, and alpha (RGBA) components. The alpha component is often used for transparency. Values are in floating-point and usually range from 0 to 1. Some properties (such as CanvasItem.modulate) may accept values greater than 1 (overbright or HDR colors).
-		You can also create a color from standardized color names by using [method @GDScript.ColorN] or directly using the color constants defined here. The standardized color set is based on the [url=https://en.wikipedia.org/wiki/X11_color_names]X11 color names[/url].
+		You can also create a color from standardized color names by using the string constructor or directly using the color constants defined here. The standardized color set is based on the [url=https://en.wikipedia.org/wiki/X11_color_names]X11 color names[/url].
 		If you want to supply values in a range of 0 to 255, you should use [method @GDScript.Color8].
 		[b]Note:[/b] In a boolean context, a Color will evaluate to [code]false[/code] if it's equal to [code]Color(0, 0, 0, 1)[/code] (opaque black). Otherwise, a Color will always evaluate to [code]true[/code].
+		[url=https://raw.githubusercontent.com/godotengine/godot-docs/master/img/color_constants.png]Color constants cheatsheet[/url]
 	</description>
 	<tutorials>
+		<link title="2D GD Paint Demo">https://godotengine.org/asset-library/asset/517</link>
+		<link title="Tween Demo">https://godotengine.org/asset-library/asset/146</link>
+		<link title="GUI Drag And Drop Demo">https://godotengine.org/asset-library/asset/133</link>
 	</tutorials>
 	<methods>
-		<method name="Color">
+		<method name="Color" qualifiers="constructor">
 			<return type="Color">
 			</return>
-			<argument index="0" name="from" type="String">
-			</argument>
 			<description>
-				Constructs a color from an HTML hexadecimal color string in ARGB or RGB format. See also [method @GDScript.ColorN].
-				[codeblock]
-				# Each of the following creates the same color RGBA(178, 217, 10, 255).
-				var c1 = Color("#ffb2d90a") # ARGB format with "#".
-				var c2 = Color("ffb2d90a") # ARGB format.
-				var c3 = Color("#b2d90a") # RGB format with "#".
-				var c4 = Color("b2d90a") # RGB format.
-				[/codeblock]
+				Constructs a default-initialized [Color] with all components set to [code]0[/code].
 			</description>
 		</method>
-		<method name="Color">
+		<method name="Color" qualifiers="constructor">
 			<return type="Color">
 			</return>
-			<argument index="0" name="from" type="int">
+			<argument index="0" name="from" type="Color">
 			</argument>
 			<description>
-				Constructs a color from a 32-bit integer (each byte represents a component of the RGBA profile).
-				[codeblock]
-				var c = Color(274) # Equivalent to RGBA(0, 0, 1, 18)
-				[/codeblock]
+				Constructs a [Color] as a copy of the given [Color].
 			</description>
 		</method>
-		<method name="Color">
+		<method name="Color" qualifiers="constructor">
 			<return type="Color">
 			</return>
-			<argument index="0" name="c" type="Color">
+			<argument index="0" name="from" type="Color">
 			</argument>
-			<argument index="1" name="a" type="float">
+			<argument index="1" name="alpha" type="float">
 			</argument>
 			<description>
-				Constructs a color from an existing color, but with a custom alpha value.
-				[codeblock]
+				Constructs a [Color] from an existing color, but with a custom alpha value.
+				[codeblocks]
+				[gdscript]
 				var red = Color(Color.red, 0.5) # 50% transparent red.
-				[/codeblock]
+				[/gdscript]
+				[csharp]
+				var red = new Color(Colors.Red, 0.5f); // 50% transparent red.
+				[/csharp]
+				[/codeblocks]
 			</description>
 		</method>
-		<method name="Color">
+		<method name="Color" qualifiers="constructor">
+			<return type="Color">
+			</return>
+			<argument index="0" name="code" type="String">
+			</argument>
+			<description>
+				Constructs a [Color] either from an HTML color code or from a standardized color name. Supported color names are the same as the constants.
+			</description>
+		</method>
+		<method name="Color" qualifiers="constructor">
+			<return type="Color">
+			</return>
+			<argument index="0" name="code" type="String">
+			</argument>
+			<argument index="1" name="alpha" type="float">
+			</argument>
+			<description>
+				Constructs a [Color] either from an HTML color code or from a standardized color name, with [code]alpha[/code] on the range of 0 to 1. Supported color names are the same as the constants.
+			</description>
+		</method>
+		<method name="Color" qualifiers="constructor">
 			<return type="Color">
 			</return>
 			<argument index="0" name="r" type="float">
@@ -64,13 +81,18 @@
 			<argument index="2" name="b" type="float">
 			</argument>
 			<description>
-				Constructs a color from an RGB profile using values between 0 and 1. Alpha will always be 1.
-				[codeblock]
-				var c = Color(0.2, 1.0, 0.7) # Equivalent to RGBA(51, 255, 178, 255)
-				[/codeblock]
+				Constructs a [Color] from RGB values, typically between 0 and 1. Alpha will be 1.
+				[codeblocks]
+				[gdscript]
+				var color = Color(0.2, 1.0, 0.7) # Similar to `Color8(51, 255, 178, 255)`
+				[/gdscript]
+				[csharp]
+				var color = new Color(0.2f, 1.0f, 0.7f); // Similar to `Color.Color8(51, 255, 178, 255)`
+				[/csharp]
+				[/codeblocks]
 			</description>
 		</method>
-		<method name="Color">
+		<method name="Color" qualifiers="constructor">
 			<return type="Color">
 			</return>
 			<argument index="0" name="r" type="float">
@@ -82,196 +104,427 @@
 			<argument index="3" name="a" type="float">
 			</argument>
 			<description>
-				Constructs a color from an RGBA profile using values between 0 and 1.
-				[codeblock]
-				var c = Color(0.2, 1.0, 0.7, 0.8) # Equivalent to RGBA(51, 255, 178, 204)
-				[/codeblock]
+				Constructs a [Color] from RGBA values, typically between 0 and 1.
+				[codeblocks]
+				[gdscript]
+				var color = Color(0.2, 1.0, 0.7, 0.8) # Similar to `Color8(51, 255, 178, 204)`
+				[/gdscript]
+				[csharp]
+				var color = new Color(0.2f, 1.0f, 0.7f, 0.8f); // Similar to `Color.Color8(51, 255, 178, 255, 204)`
+				[/csharp]
+				[/codeblocks]
 			</description>
 		</method>
-		<method name="blend">
+		<method name="blend" qualifiers="const">
 			<return type="Color">
 			</return>
 			<argument index="0" name="over" type="Color">
 			</argument>
 			<description>
 				Returns a new color resulting from blending this color over another. If the color is opaque, the result is also opaque. The second color may have a range of alpha values.
-				[codeblock]
+				[codeblocks]
+				[gdscript]
 				var bg = Color(0.0, 1.0, 0.0, 0.5) # Green with alpha of 50%
 				var fg = Color(1.0, 0.0, 0.0, 0.5) # Red with alpha of 50%
 				var blended_color = bg.blend(fg) # Brown with alpha of 75%
-				[/codeblock]
+				[/gdscript]
+				[csharp]
+				var bg = new Color(0.0f, 1.0f, 0.0f, 0.5f); // Green with alpha of 50%
+				var fg = new Color(1.0f, 0.0f, 0.0f, 0.5f); // Red with alpha of 50%
+				Color blendedColor = bg.Blend(fg); // Brown with alpha of 75%
+				[/csharp]
+				[/codeblocks]
 			</description>
 		</method>
-		<method name="contrasted">
-			<return type="Color">
-			</return>
-			<description>
-				Returns the most contrasting color.
-				[codeblock]
-				var c = Color(0.3, 0.4, 0.9)
-				var contrasted_color = c.contrasted() # Equivalent to RGBA(204, 229, 102, 255)
-				[/codeblock]
-			</description>
-		</method>
-		<method name="darkened">
+		<method name="darkened" qualifiers="const">
 			<return type="Color">
 			</return>
 			<argument index="0" name="amount" type="float">
 			</argument>
 			<description>
 				Returns a new color resulting from making this color darker by the specified percentage (ratio from 0 to 1).
-				[codeblock]
+				[codeblocks]
+				[gdscript]
 				var green = Color(0.0, 1.0, 0.0)
 				var darkgreen = green.darkened(0.2) # 20% darker than regular green
-				[/codeblock]
+				[/gdscript]
+				[csharp]
+				var green = new Color(0.0f, 1.0f, 0.0f);
+				Color darkgreen = green.Darkened(0.2f); // 20% darker than regular green
+				[/csharp]
+				[/codeblocks]
 			</description>
 		</method>
-		<method name="from_hsv">
-			<return type="Color">
+		<method name="find_named_color" qualifiers="static">
+			<return type="int">
 			</return>
-			<argument index="0" name="h" type="float">
-			</argument>
-			<argument index="1" name="s" type="float">
-			</argument>
-			<argument index="2" name="v" type="float">
-			</argument>
-			<argument index="3" name="a" type="float" default="1.0">
+			<argument index="0" name="name" type="String">
 			</argument>
 			<description>
-				Constructs a color from an HSV profile. [code]h[/code], [code]s[/code], and [code]v[/code] are values between 0 and 1.
-				[codeblock]
-				var c = Color.from_hsv(0.58, 0.5, 0.79, 0.8) # Equivalent to HSV(210, 50, 79, 0.8) or Color8(100, 151, 201, 0.8)
-				[/codeblock]
 			</description>
 		</method>
-		<method name="inverted">
+		<method name="from_rgbe9995" qualifiers="static">
+			<return type="Color">
+			</return>
+			<argument index="0" name="rgbe" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="from_string" qualifiers="static">
+			<return type="Color">
+			</return>
+			<argument index="0" name="str" type="String">
+			</argument>
+			<argument index="1" name="default" type="Color">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_named_color" qualifiers="static">
+			<return type="Color">
+			</return>
+			<argument index="0" name="idx" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_named_color_count" qualifiers="static">
+			<return type="int">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_named_color_name" qualifiers="static">
+			<return type="String">
+			</return>
+			<argument index="0" name="idx" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="hex" qualifiers="static">
+			<return type="Color">
+			</return>
+			<argument index="0" name="hex" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="hex64" qualifiers="static">
+			<return type="Color">
+			</return>
+			<argument index="0" name="hex" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="html" qualifiers="static">
+			<return type="Color">
+			</return>
+			<argument index="0" name="rgba" type="String">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="html_is_valid" qualifiers="static">
+			<return type="bool">
+			</return>
+			<argument index="0" name="color" type="String">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="inverted" qualifiers="const">
 			<return type="Color">
 			</return>
 			<description>
 				Returns the inverted color [code](1 - r, 1 - g, 1 - b, a)[/code].
-				[codeblock]
-				var c = Color(0.3, 0.4, 0.9)
-				var inverted_color = c.inverted() # A color of an RGBA(178, 153, 26, 255)
-				[/codeblock]
+				[codeblocks]
+				[gdscript]
+				var color = Color(0.3, 0.4, 0.9)
+				var inverted_color = color.inverted() # Equivalent to `Color(0.7, 0.6, 0.1)`
+				[/gdscript]
+				[csharp]
+				var color = new Color(0.3f, 0.4f, 0.9f);
+				Color invertedColor = color.Inverted(); // Equivalent to `new Color(0.7f, 0.6f, 0.1f)`
+				[/csharp]
+				[/codeblocks]
 			</description>
 		</method>
-		<method name="is_equal_approx">
+		<method name="is_equal_approx" qualifiers="const">
 			<return type="bool">
 			</return>
-			<argument index="0" name="color" type="Color">
+			<argument index="0" name="to" type="Color">
 			</argument>
 			<description>
-				Returns [code]true[/code] if this color and [code]color[/code] are approximately equal, by running [method @GDScript.is_equal_approx] on each component.
+				Returns [code]true[/code] if this color and [code]color[/code] are approximately equal, by running [method @GlobalScope.is_equal_approx] on each component.
 			</description>
 		</method>
-		<method name="lerp">
+		<method name="lerp" qualifiers="const">
 			<return type="Color">
 			</return>
-			<argument index="0" name="b" type="Color">
+			<argument index="0" name="to" type="Color">
 			</argument>
-			<argument index="1" name="t" type="float">
+			<argument index="1" name="weight" type="float">
 			</argument>
 			<description>
 				Returns the linear interpolation with another color. The interpolation factor [code]t[/code] is between 0 and 1.
-				[codeblock]
+				[codeblocks]
+				[gdscript]
 				var c1 = Color(1.0, 0.0, 0.0)
 				var c2 = Color(0.0, 1.0, 0.0)
-				var li_c = c1.lerp(c2, 0.5) # A color of an RGBA(128, 128, 0, 255)
-				[/codeblock]
+				var lerp_color = c1.lerp(c2, 0.5) # Equivalent to `Color(0.5, 0.5, 0.0)`
+				[/gdscript]
+				[csharp]
+				var c1 = new Color(1.0f, 0.0f, 0.0f);
+				var c2 = new Color(0.0f, 1.0f, 0.0f);
+				Color lerpColor = c1.Lerp(c2, 0.5f); // Equivalent to `new Color(0.5f, 0.5f, 0.0f)`
+				[/csharp]
+				[/codeblocks]
 			</description>
 		</method>
-		<method name="lightened">
+		<method name="lightened" qualifiers="const">
 			<return type="Color">
 			</return>
 			<argument index="0" name="amount" type="float">
 			</argument>
 			<description>
 				Returns a new color resulting from making this color lighter by the specified percentage (ratio from 0 to 1).
-				[codeblock]
+				[codeblocks]
+				[gdscript]
 				var green = Color(0.0, 1.0, 0.0)
 				var lightgreen = green.lightened(0.2) # 20% lighter than regular green
-				[/codeblock]
+				[/gdscript]
+				[csharp]
+				var green = new Color(0.0f, 1.0f, 0.0f);
+				Color lightgreen = green.Lightened(0.2f); // 20% lighter than regular green
+				[/csharp]
+				[/codeblocks]
 			</description>
 		</method>
-		<method name="to_abgr32">
+		<method name="operator !=" qualifiers="operator">
+			<return type="bool">
+			</return>
+			<argument index="0" name="right" type="Color">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="operator *" qualifiers="operator">
+			<return type="Color">
+			</return>
+			<argument index="0" name="right" type="Color">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="operator *" qualifiers="operator">
+			<return type="Color">
+			</return>
+			<argument index="0" name="right" type="float">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="operator *" qualifiers="operator">
+			<return type="Color">
+			</return>
+			<argument index="0" name="right" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="operator +" qualifiers="operator">
+			<return type="Color">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="operator +" qualifiers="operator">
+			<return type="Color">
+			</return>
+			<argument index="0" name="right" type="Color">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="operator -" qualifiers="operator">
+			<return type="Color">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="operator -" qualifiers="operator">
+			<return type="Color">
+			</return>
+			<argument index="0" name="right" type="Color">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="operator /" qualifiers="operator">
+			<return type="Color">
+			</return>
+			<argument index="0" name="right" type="Color">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="operator /" qualifiers="operator">
+			<return type="Color">
+			</return>
+			<argument index="0" name="right" type="float">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="operator /" qualifiers="operator">
+			<return type="Color">
+			</return>
+			<argument index="0" name="right" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="operator ==" qualifiers="operator">
+			<return type="bool">
+			</return>
+			<argument index="0" name="right" type="Color">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="operator []" qualifiers="operator">
+			<return type="float">
+			</return>
+			<argument index="0" name="index" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="to_abgr32" qualifiers="const">
 			<return type="int">
 			</return>
 			<description>
-				Returns the color's 32-bit integer in ABGR format (each byte represents a component of the ABGR profile). ABGR is the reversed version of the default format.
-				[codeblock]
-				var c = Color(1, 0.5, 0.2)
-				print(c.to_abgr32()) # Prints 4281565439
-				[/codeblock]
+				Returns the color converted to a 32-bit integer in ABGR format (each byte represents a color channel). ABGR is the reversed version of the default format.
+				[codeblocks]
+				[gdscript]
+				var color = Color(1, 0.5, 0.2)
+				print(color.to_abgr32()) # Prints 4281565439
+				[/gdscript]
+				[csharp]
+				var color = new Color(1.0f, 0.5f, 0.2f);
+				GD.Print(color.ToAbgr32()); // Prints 4281565439
+				[/csharp]
+				[/codeblocks]
 			</description>
 		</method>
-		<method name="to_abgr64">
+		<method name="to_abgr64" qualifiers="const">
 			<return type="int">
 			</return>
 			<description>
-				Returns the color's 64-bit integer in ABGR format (each word represents a component of the ABGR profile). ABGR is the reversed version of the default format.
-				[codeblock]
-				var c = Color(1, 0.5, 0.2)
-				print(c.to_abgr64()) # Prints -225178692812801
-				[/codeblock]
+				Returns the color converted to a 64-bit integer in ABGR format (each word represents a color channel). ABGR is the reversed version of the default format.
+				[codeblocks]
+				[gdscript]
+				var color = Color(1, 0.5, 0.2)
+				print(color.to_abgr64()) # Prints -225178692812801
+				[/gdscript]
+				[csharp]
+				var color = new Color(1.0f, 0.5f, 0.2f);
+				GD.Print(color.ToAbgr64()); // Prints -225178692812801
+				[/csharp]
+				[/codeblocks]
 			</description>
 		</method>
-		<method name="to_argb32">
+		<method name="to_argb32" qualifiers="const">
 			<return type="int">
 			</return>
 			<description>
-				Returns the color's 32-bit integer in ARGB format (each byte represents a component of the ARGB profile). ARGB is more compatible with DirectX.
-				[codeblock]
-				var c = Color(1, 0.5, 0.2)
-				print(c.to_argb32()) # Prints 4294934323
-				[/codeblock]
+				Returns the color converted to a 32-bit integer in ARGB format (each byte represents a color channel). ARGB is more compatible with DirectX.
+				[codeblocks]
+				[gdscript]
+				var color = Color(1, 0.5, 0.2)
+				print(color.to_argb32()) # Prints 4294934323
+				[/gdscript]
+				[csharp]
+				var color = new Color(1.0f, 0.5f, 0.2f);
+				GD.Print(color.ToArgb32()); // Prints 4294934323
+				[/csharp]
+				[/codeblocks]
 			</description>
 		</method>
-		<method name="to_argb64">
+		<method name="to_argb64" qualifiers="const">
 			<return type="int">
 			</return>
 			<description>
-				Returns the color's 64-bit integer in ARGB format (each word represents a component of the ARGB profile). ARGB is more compatible with DirectX.
-				[codeblock]
-				var c = Color(1, 0.5, 0.2)
-				print(c.to_argb64()) # Prints -2147470541
-				[/codeblock]
+				Returns the color converted to a 64-bit integer in ARGB format (each word represents a color channel). ARGB is more compatible with DirectX.
+				[codeblocks]
+				[gdscript]
+				var color = Color(1, 0.5, 0.2)
+				print(color.to_argb64()) # Prints -2147470541
+				[/gdscript]
+				[csharp]
+				var color = new Color(1.0f, 0.5f, 0.2f);
+				GD.Print(color.ToArgb64()); // Prints -2147470541
+				[/csharp]
+				[/codeblocks]
 			</description>
 		</method>
-		<method name="to_html">
+		<method name="to_html" qualifiers="const">
 			<return type="String">
 			</return>
 			<argument index="0" name="with_alpha" type="bool" default="true">
 			</argument>
 			<description>
-				Returns the color's HTML hexadecimal color string in ARGB format (ex: [code]ff34f822[/code]).
-				Setting [code]with_alpha[/code] to [code]false[/code] excludes alpha from the hexadecimal string.
-				[codeblock]
-				var c = Color(1, 1, 1, 0.5)
-				var s1 = c.to_html() # Returns "7fffffff"
-				var s2 = c.to_html(false) # Returns "ffffff"
-				[/codeblock]
+				Returns the color converted to an HTML hexadecimal color string in RGBA format (ex: [code]ff34f822[/code]).
+				Setting [code]with_alpha[/code] to [code]false[/code] excludes alpha from the hexadecimal string (and uses RGB instead of RGBA format).
+				[codeblocks]
+				[gdscript]
+				var color = Color(1, 1, 1, 0.5)
+				var with_alpha = color.to_html() # Returns "ffffff7f"
+				var without_alpha = color.to_html(false) # Returns "ffffff"
+				[/gdscript]
+				[csharp]
+				var color = new Color(1, 1, 1, 0.5f);
+				String withAlpha = color.ToHtml(); // Returns "ffffff7f"
+				String withoutAlpha = color.ToHtml(false); // Returns "ffffff"
+				[/csharp]
+				[/codeblocks]
 			</description>
 		</method>
-		<method name="to_rgba32">
+		<method name="to_rgba32" qualifiers="const">
 			<return type="int">
 			</return>
 			<description>
-				Returns the color's 32-bit integer in RGBA format (each byte represents a component of the RGBA profile). RGBA is Godot's default format.
-				[codeblock]
-				var c = Color(1, 0.5, 0.2)
-				print(c.to_rgba32()) # Prints 4286526463
-				[/codeblock]
+				Returns the color converted to a 32-bit integer in RGBA format (each byte represents a color channel). RGBA is Godot's default format.
+				[codeblocks]
+				[gdscript]
+				var color = Color(1, 0.5, 0.2)
+				print(color.to_rgba32()) # Prints 4286526463
+				[/gdscript]
+				[csharp]
+				var color = new Color(1, 0.5f, 0.2f);
+				GD.Print(color.ToRgba32()); // Prints 4286526463
+				[/csharp]
+				[/codeblocks]
 			</description>
 		</method>
-		<method name="to_rgba64">
+		<method name="to_rgba64" qualifiers="const">
 			<return type="int">
 			</return>
 			<description>
-				Returns the color's 64-bit integer in RGBA format (each word represents a component of the RGBA profile). RGBA is Godot's default format.
-				[codeblock]
-				var c = Color(1, 0.5, 0.2)
-				print(c.to_rgba64()) # Prints -140736629309441
-				[/codeblock]
+				Returns the color converted to a 64-bit integer in RGBA format (each word represents a color channel). RGBA is Godot's default format.
+				[codeblocks]
+				[gdscript]
+				var color = Color(1, 0.5, 0.2)
+				print(color.to_rgba64()) # Prints -140736629309441
+				[/gdscript]
+				[csharp]
+				var color = new Color(1, 0.5f, 0.2f);
+				GD.Print(color.ToRgba64()); // Prints -140736629309441
+				[/csharp]
+				[/codeblocks]
 			</description>
 		</method>
 	</methods>

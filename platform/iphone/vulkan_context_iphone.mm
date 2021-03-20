@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -35,14 +35,12 @@ const char *VulkanContextIPhone::_get_platform_surface_extension() const {
 	return VK_MVK_IOS_SURFACE_EXTENSION_NAME;
 }
 
-Error VulkanContextIPhone::window_create(DisplayServer::WindowID p_window_id,
-		CALayer *p_metal_layer, int p_width,
-		int p_height) {
+Error VulkanContextIPhone::window_create(DisplayServer::WindowID p_window_id, CALayer *p_metal_layer, int p_width, int p_height) {
 	VkIOSSurfaceCreateInfoMVK createInfo;
 	createInfo.sType = VK_STRUCTURE_TYPE_IOS_SURFACE_CREATE_INFO_MVK;
 	createInfo.pNext = NULL;
 	createInfo.flags = 0;
-	createInfo.pView = p_metal_layer;
+	createInfo.pView = (__bridge const void *)p_metal_layer;
 
 	VkSurfaceKHR surface;
 	VkResult err =

@@ -58,7 +58,7 @@ public:
                    const SpvVersion& spvVersion, EShLanguage language, TInfoSink& infoSink,
                    bool forwardCompatible, EShMessages messages)
         :
-#ifndef GLSLANG_WEB
+#if !defined(GLSLANG_WEB) && !defined(GLSLANG_ANGLE)
         forwardCompatible(forwardCompatible),
         profile(profile),
 #endif
@@ -101,6 +101,7 @@ public:
     void updateExtensionBehavior(int line, const char* const extension, const char* behavior) { }
     void updateExtensionBehavior(const char* const extension, TExtensionBehavior) { }
     void checkExtensionStage(const TSourceLoc&, const char* const extension) { }
+    void extensionRequires(const TSourceLoc&, const char* const extension, const char* behavior) { }
     void fullIntegerCheck(const TSourceLoc&, const char* op) { }
     void doubleCheck(const TSourceLoc&, const char* op) { }
     bool float16Arithmetic() { return false; }
@@ -116,8 +117,13 @@ public:
     bool suppressWarnings() const { return true; }
     bool isForwardCompatible() const { return false; }
 #else
+#ifdef GLSLANG_ANGLE
+    const bool forwardCompatible = true;
+    const EProfile profile = ECoreProfile;
+#else
     bool forwardCompatible;      // true if errors are to be given for use of deprecated features
     EProfile profile;            // the declared profile in the shader (core by default)
+#endif
     bool isEsProfile() const { return profile == EEsProfile; }
     void requireProfile(const TSourceLoc& loc, int profileMask, const char* featureDesc);
     void profileRequires(const TSourceLoc& loc, int profileMask, int minVersion, int numExtensions,
@@ -139,6 +145,7 @@ public:
     virtual bool checkExtensionsRequested(const TSourceLoc&, int numExtensions, const char* const extensions[],
         const char* featureDesc);
     virtual void checkExtensionStage(const TSourceLoc&, const char* const extension);
+    virtual void extensionRequires(const TSourceLoc&, const char* const extension, const char* behavior);
     virtual void fullIntegerCheck(const TSourceLoc&, const char* op);
 
     virtual void unimplemented(const TSourceLoc&, const char* featureDesc);
@@ -170,6 +177,7 @@ public:
     virtual void vulkanRemoved(const TSourceLoc&, const char* op);
     virtual void requireVulkan(const TSourceLoc&, const char* op);
     virtual void requireSpv(const TSourceLoc&, const char* op);
+    virtual void requireSpv(const TSourceLoc&, const char *op, unsigned int version);
 
 
 #if defined(GLSLANG_WEB) && !defined(GLSLANG_WEB_DEVEL)
@@ -221,7 +229,8 @@ public:
     TIntermediate& intermediate; // helper for making and hooking up pieces of the parse tree
 
 protected:
-    TMap<TString, TExtensionBehavior> extensionBehavior;    // for each extension string, what its current behavior is set to
+    TMap<TString, TExtensionBehavior> extensionBehavior;    // for each extension string, what its current behavior is
+    TMap<TString, unsigned int> extensionMinSpv;            // for each extension string, store minimum spirv required
     EShMessages messages;        // errors/warnings/rule-sets
     int numErrors;               // number of compile-time errors encountered
     TInputScanner* currentScanner;

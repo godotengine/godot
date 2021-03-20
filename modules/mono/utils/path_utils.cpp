@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -30,10 +30,10 @@
 
 #include "path_utils.h"
 
+#include "core/config/project_settings.h"
 #include "core/os/dir_access.h"
 #include "core/os/file_access.h"
 #include "core/os/os.h"
-#include "core/project_settings.h"
 
 #ifdef WINDOWS_ENABLED
 #include <windows.h>
@@ -54,12 +54,16 @@ String cwd() {
 #ifdef WINDOWS_ENABLED
 	const DWORD expected_size = ::GetCurrentDirectoryW(0, nullptr);
 
-	String buffer;
+	Char16String buffer;
 	buffer.resize((int)expected_size);
-	if (::GetCurrentDirectoryW(expected_size, buffer.ptrw()) == 0)
+	if (::GetCurrentDirectoryW(expected_size, (wchar_t *)buffer.ptrw()) == 0)
 		return ".";
 
-	return buffer.simplify_path();
+	String result;
+	if (result.parse_utf16(buffer.ptr())) {
+		return ".";
+	}
+	return result.simplify_path();
 #else
 	char buffer[PATH_MAX];
 	if (::getcwd(buffer, sizeof(buffer)) == nullptr) {
@@ -86,7 +90,7 @@ String abspath(const String &p_path) {
 String realpath(const String &p_path) {
 #ifdef WINDOWS_ENABLED
 	// Open file without read/write access
-	HANDLE hFile = ::CreateFileW(p_path.c_str(), 0,
+	HANDLE hFile = ::CreateFileW((LPCWSTR)(p_path.utf16().get_data()), 0,
 			FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE,
 			nullptr, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, nullptr);
 
@@ -100,12 +104,18 @@ String realpath(const String &p_path) {
 		return p_path;
 	}
 
-	String buffer;
+	Char16String buffer;
 	buffer.resize((int)expected_size);
-	::GetFinalPathNameByHandleW(hFile, buffer.ptrw(), expected_size, FILE_NAME_NORMALIZED);
+	::GetFinalPathNameByHandleW(hFile, (wchar_t *)buffer.ptrw(), expected_size, FILE_NAME_NORMALIZED);
 
 	::CloseHandle(hFile);
-	return buffer.simplify_path();
+
+	String result;
+	if (result.parse_utf16(buffer.ptr())) {
+		return p_path;
+	}
+
+	return result.simplify_path();
 #elif UNIX_ENABLED
 	char *resolved_path = ::realpath(p_path.utf8().get_data(), nullptr);
 
@@ -126,11 +136,11 @@ String realpath(const String &p_path) {
 }
 
 String join(const String &p_a, const String &p_b) {
-	if (p_a.empty()) {
+	if (p_a.is_empty()) {
 		return p_b;
 	}
 
-	const CharType a_last = p_a[p_a.length() - 1];
+	const char32_t a_last = p_a[p_a.length() - 1];
 	if ((a_last == '/' || a_last == '\\') ||
 			(p_b.size() > 0 && (p_b[0] == '/' || p_b[0] == '\\'))) {
 		return p_a + p_b;
@@ -155,7 +165,7 @@ String relative_to_impl(const String &p_path, const String &p_relative_to) {
 	} else {
 		String base_dir = p_relative_to.get_base_dir();
 
-		if (base_dir.length() <= 2 && (base_dir.empty() || base_dir.ends_with(":"))) {
+		if (base_dir.length() <= 2 && (base_dir.is_empty() || base_dir.ends_with(":"))) {
 			return p_path;
 		}
 
@@ -184,5 +194,4 @@ String relative_to(const String &p_path, const String &p_relative_to) {
 
 	return relative_to_impl(path_abs_norm, relative_to_abs_norm);
 }
-
 } // namespace path

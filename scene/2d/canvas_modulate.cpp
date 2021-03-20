@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -78,18 +78,22 @@ String CanvasModulate::get_configuration_warning() const {
 		return String();
 	}
 
+	String warning = Node2D::get_configuration_warning();
+
 	List<Node *> nodes;
 	get_tree()->get_nodes_in_group("_canvas_modulate_" + itos(get_canvas().get_id()), &nodes);
 
 	if (nodes.size() > 1) {
-		return TTR("Only one visible CanvasModulate is allowed per scene (or set of instanced scenes). The first created one will work, while the rest will be ignored.");
+		if (!warning.is_empty()) {
+			warning += "\n\n";
+		}
+		warning += TTR("Only one visible CanvasModulate is allowed per scene (or set of instanced scenes). The first created one will work, while the rest will be ignored.");
 	}
 
-	return String();
+	return warning;
 }
 
 CanvasModulate::CanvasModulate() {
-	color = Color(1, 1, 1, 1);
 }
 
 CanvasModulate::~CanvasModulate() {

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -89,12 +89,12 @@ void RootMotionView::_notification(int p_what) {
 
 			AnimationTree *tree = Object::cast_to<AnimationTree>(node);
 			if (tree && tree->is_active() && tree->get_root_motion_track() != NodePath()) {
-				if (is_processing_internal() && tree->get_process_mode() == AnimationTree::ANIMATION_PROCESS_PHYSICS) {
+				if (is_processing_internal() && tree->get_process_callback() == AnimationTree::ANIMATION_PROCESS_PHYSICS) {
 					set_process_internal(false);
 					set_physics_process_internal(true);
 				}
 
-				if (is_physics_processing_internal() && tree->get_process_mode() == AnimationTree::ANIMATION_PROCESS_IDLE) {
+				if (is_physics_processing_internal() && tree->get_process_callback() == AnimationTree::ANIMATION_PROCESS_IDLE) {
 					set_process_internal(true);
 					set_physics_process_internal(false);
 				}
@@ -188,13 +188,9 @@ void RootMotionView::_bind_methods() {
 }
 
 RootMotionView::RootMotionView() {
-	zero_y = true;
-	radius = 10;
-	cell_size = 1;
 	set_process_internal(true);
 	immediate = RenderingServer::get_singleton()->immediate_create();
 	set_base(immediate);
-	color = Color(0.5, 0.5, 1.0);
 }
 
 RootMotionView::~RootMotionView() {

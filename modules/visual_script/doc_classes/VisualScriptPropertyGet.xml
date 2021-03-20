@@ -31,5 +31,7 @@
 		</constant>
 		<constant name="CALL_MODE_INSTANCE" value="2" enum="CallMode">
 		</constant>
+		<constant name="CALL_MODE_BASIC_TYPE" value="3" enum="CallMode">
+		</constant>
 	</constants>
 </class>

@@ -1,8 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="ScriptEditorBase" inherits="VBoxContainer" version="4.0">
 	<brief_description>
+		Base editor for editing scripts in the [ScriptEditor].
 	</brief_description>
 	<description>
+		Base editor for editing scripts in the [ScriptEditor], this does not include documentation items.
 	</description>
 	<tutorials>
 	</tutorials>
@@ -13,34 +15,40 @@
 			<argument index="0" name="highlighter" type="Object">
 			</argument>
 			<description>
+				Adds a [EditorSyntaxHighlighter] to the open script.
 			</description>
 		</method>
 	</methods>
 	<signals>
 		<signal name="edited_script_changed">
 			<description>
+				Emitted after script validation. For visual scripts on modification.
 			</description>
 		</signal>
 		<signal name="go_to_help">
 			<argument index="0" name="what" type="String">
 			</argument>
 			<description>
+				Emitted when the user requests a specific documentation page.
 			</description>
 		</signal>
 		<signal name="name_changed">
 			<description>
+				Emitted after script validation or when the edited resource has changed. Not used by visual scripts.
 			</description>
 		</signal>
 		<signal name="replace_in_files_requested">
 			<argument index="0" name="text" type="String">
 			</argument>
 			<description>
+				Emitted when the user request to find and replace text in the file system. Not used by visual scripts.
 			</description>
 		</signal>
 		<signal name="request_help">
 			<argument index="0" name="topic" type="String">
 			</argument>
 			<description>
+				Emitted when the user requests contextual help.
 			</description>
 		</signal>
 		<signal name="request_open_script_at_line">
@@ -49,16 +57,19 @@
 			<argument index="1" name="line" type="int">
 			</argument>
 			<description>
+				Emitted when the user requests a script.
 			</description>
 		</signal>
 		<signal name="request_save_history">
 			<description>
+				Emitted when the user contextual goto and the item is in the same script.
 			</description>
 		</signal>
 		<signal name="search_in_files_requested">
 			<argument index="0" name="text" type="String">
 			</argument>
 			<description>
+				Emitted when the user request to search text in the file system. Not used by visual scripts.
 			</description>
 		</signal>
 	</signals>

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -39,6 +39,17 @@
 void NavRegion::set_map(NavMap *p_map) {
 	map = p_map;
 	polygons_dirty = true;
+	if (!map) {
+		connections.clear();
+	}
+}
+
+void NavRegion::set_layers(uint32_t p_layers) {
+	layers = p_layers;
+}
+
+uint32_t NavRegion::get_layers() const {
+	return layers;
 }
 
 void NavRegion::set_transform(Transform p_transform) {
@@ -49,6 +60,25 @@ void NavRegion::set_transform(Transform p_transform) {
 void NavRegion::set_mesh(Ref<NavigationMesh> p_mesh) {
 	mesh = p_mesh;
 	polygons_dirty = true;
+}
+
+int NavRegion::get_connections_count() const {
+	if (!map) {
+		return 0;
+	}
+	return connections.size();
+}
+
+Vector3 NavRegion::get_connection_pathway_start(int p_connection_id) const {
+	ERR_FAIL_COND_V(!map, Vector3());
+	ERR_FAIL_INDEX_V(p_connection_id, connections.size(), Vector3());
+	return connections[p_connection_id].pathway_start;
+}
+
+Vector3 NavRegion::get_connection_pathway_end(int p_connection_id) const {
+	ERR_FAIL_COND_V(!map, Vector3());
+	ERR_FAIL_INDEX_V(p_connection_id, connections.size(), Vector3());
+	return connections[p_connection_id].pathway_end;
 }
 
 bool NavRegion::sync() {

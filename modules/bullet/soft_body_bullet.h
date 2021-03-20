@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -32,6 +32,7 @@
 #define SOFT_BODY_BULLET_H
 
 #include "collision_object_bullet.h"
+#include "scene/resources/material.h" // TODO remove this please
 
 #ifdef None
 /// This is required to remove the macro None defined by x11 compiler because this word "None" is used internally by Bullet
@@ -54,11 +55,13 @@
 	@author AndreaCatania
 */
 
+class RenderingServerHandler;
+
 class SoftBodyBullet : public CollisionObjectBullet {
 private:
 	btSoftBody *bt_soft_body = nullptr;
-	LocalVector<Vector<int>> indices_table;
-	btSoftBody::Material *mat0; // This is just a copy of pointer managed by btSoftBody
+	Vector<Vector<int>> indices_table;
+	btSoftBody::Material *mat0 = nullptr; // This is just a copy of pointer managed by btSoftBody
 	bool isScratched = false;
 
 	Ref<Mesh> soft_mesh;
@@ -66,13 +69,10 @@ private:
 	int simulation_precision = 5;
 	real_t total_mass = 1.;
 	real_t linear_stiffness = 0.5; // [0,1]
-	real_t areaAngular_stiffness = 0.5; // [0,1]
-	real_t volume_stiffness = 0.5; // [0,1]
 	real_t pressure_coefficient = 0.; // [-inf,+inf]
-	real_t pose_matching_coefficient = 0.; // [0,1]
 	real_t damping_coefficient = 0.01; // [0,1]
 	real_t drag_coefficient = 0.; // [0,1]
-	LocalVector<int> pinned_nodes;
+	Vector<int> pinned_nodes;
 
 	// Other property to add
 	//btScalar				kVC;			// Volume conversation coefficient [0,+inf]
@@ -86,18 +86,19 @@ public:
 	SoftBodyBullet();
 	~SoftBodyBullet();
 
-	virtual void do_reload_body() override;
-	virtual void set_space(SpaceBullet *p_space) override;
+	virtual void reload_body();
+	virtual void set_space(SpaceBullet *p_space);
 
-	virtual void do_reload_collision_filters() override {}
-	virtual void on_collision_checker_start() override {}
-	virtual void on_collision_checker_end() override {}
-	virtual void on_enter_area(AreaBullet *p_area) override;
-	virtual void on_exit_area(AreaBullet *p_area) override;
+	virtual void dispatch_callbacks() {}
+	virtual void on_collision_filters_change() {}
+	virtual void on_collision_checker_start() {}
+	virtual void on_collision_checker_end() {}
+	virtual void on_enter_area(AreaBullet *p_area);
+	virtual void on_exit_area(AreaBullet *p_area);
 
 	_FORCE_INLINE_ btSoftBody *get_bt_soft_body() const { return bt_soft_body; }
 
-	void update_rendering_server(class SoftBodyRenderingServerHandler *p_rendering_server_handler);
+	void update_rendering_server(RenderingServerHandler *p_rendering_server_handler);
 
 	void set_soft_mesh(const Ref<Mesh> &p_mesh);
 	void destroy_soft_body();
@@ -105,14 +106,12 @@ public:
 	// Special function. This function has bad performance
 	void set_soft_transform(const Transform &p_transform);
 
+	AABB get_bounds() const;
+
 	void move_all_nodes(const Transform &p_transform);
 	void set_node_position(int node_index, const Vector3 &p_global_position);
 	void set_node_position(int node_index, const btVector3 &p_global_position);
 	void get_node_position(int node_index, Vector3 &r_position) const;
-	// Heavy function, Please cache this info
-	void get_node_offset(int node_index, Vector3 &r_offset) const;
-	// Heavy function, Please cache this info
-	void get_node_offset(int node_index, btVector3 &r_offset) const;
 
 	void set_node_mass(int node_index, btScalar p_mass);
 	btScalar get_node_mass(int node_index) const;
@@ -127,20 +126,11 @@ public:
 	void set_linear_stiffness(real_t p_val);
 	_FORCE_INLINE_ real_t get_linear_stiffness() const { return linear_stiffness; }
 
-	void set_areaAngular_stiffness(real_t p_val);
-	_FORCE_INLINE_ real_t get_areaAngular_stiffness() const { return areaAngular_stiffness; }
-
-	void set_volume_stiffness(real_t p_val);
-	_FORCE_INLINE_ real_t get_volume_stiffness() const { return volume_stiffness; }
-
 	void set_simulation_precision(int p_val);
 	_FORCE_INLINE_ int get_simulation_precision() const { return simulation_precision; }
 
 	void set_pressure_coefficient(real_t p_val);
 	_FORCE_INLINE_ real_t get_pressure_coefficient() const { return pressure_coefficient; }
-
-	void set_pose_matching_coefficient(real_t p_val);
-	_FORCE_INLINE_ real_t get_pose_matching_coefficient() const { return pose_matching_coefficient; }
 
 	void set_damping_coefficient(real_t p_val);
 	_FORCE_INLINE_ real_t get_damping_coefficient() const { return damping_coefficient; }

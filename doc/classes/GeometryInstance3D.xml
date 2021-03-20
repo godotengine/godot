@@ -48,6 +48,8 @@
 		</member>
 		<member name="gi_mode" type="int" setter="set_gi_mode" getter="get_gi_mode" enum="GeometryInstance3D.GIMode" default="0">
 		</member>
+		<member name="lod_bias" type="float" setter="set_lod_bias" getter="get_lod_bias" default="1.0">
+		</member>
 		<member name="lod_max_distance" type="float" setter="set_lod_max_distance" getter="get_lod_max_distance" default="0.0">
 			The GeometryInstance3D's max LOD distance.
 			[b]Note:[/b] This property currently has no effect.

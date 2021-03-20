@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -40,7 +40,7 @@
 GDMonoProperty::GDMonoProperty(MonoProperty *p_mono_property, GDMonoClass *p_owner) {
 	owner = p_owner;
 	mono_property = p_mono_property;
-	name = mono_property_get_name(mono_property);
+	name = String::utf8(mono_property_get_name(mono_property));
 
 	MonoMethod *prop_method = mono_property_get_get_method(mono_property);
 
@@ -149,10 +149,9 @@ bool GDMonoProperty::has_setter() {
 
 void GDMonoProperty::set_value(MonoObject *p_object, MonoObject *p_value, MonoException **r_exc) {
 	MonoMethod *prop_method = mono_property_get_set_method(mono_property);
-	MonoArray *params = mono_array_new(mono_domain_get(), CACHED_CLASS_RAW(MonoObject), 1);
-	mono_array_setref(params, 0, p_value);
+	void *params[1] = { p_value };
 	MonoException *exc = nullptr;
-	GDMonoUtils::runtime_invoke_array(prop_method, p_object, params, &exc);
+	GDMonoUtils::runtime_invoke(prop_method, p_object, params, &exc);
 	if (exc) {
 		if (r_exc) {
 			*r_exc = exc;

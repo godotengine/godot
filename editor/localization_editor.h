@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -31,7 +31,7 @@
 #ifndef LOCALIZATION_EDITOR_H
 #define LOCALIZATION_EDITOR_H
 
-#include "core/undo_redo.h"
+#include "core/object/undo_redo.h"
 #include "editor_file_dialog.h"
 #include "scene/gui/tree.h"
 
@@ -58,6 +58,11 @@ class LocalizationEditor : public VBoxContainer {
 	Vector<TreeItem *> translation_filter_treeitems;
 	Vector<int> translation_locales_idxs_remap;
 
+	Label *ts_name;
+	Label *ts_data_status;
+	Label *ts_data_info;
+	Button *ts_install;
+
 	Tree *translation_pot_list;
 	EditorFileDialog *pot_file_open_dialog;
 	EditorFileDialog *pot_generate_dialog;
@@ -67,27 +72,29 @@ class LocalizationEditor : public VBoxContainer {
 	String localization_changed;
 
 	void _translation_file_open();
-	void _translation_add(const String &p_path);
+	void _translation_add(const PackedStringArray &p_paths);
 	void _translation_delete(Object *p_item, int p_column, int p_button);
 
 	void _translation_res_file_open();
-	void _translation_res_add(const String &p_path);
+	void _translation_res_add(const PackedStringArray &p_paths);
 	void _translation_res_delete(Object *p_item, int p_column, int p_button);
 	void _translation_res_select();
 	void _translation_res_option_file_open();
-	void _translation_res_option_add(const String &p_path);
+	void _translation_res_option_add(const PackedStringArray &p_paths);
 	void _translation_res_option_changed();
 	void _translation_res_option_delete(Object *p_item, int p_column, int p_button);
 
 	void _translation_filter_option_changed();
 	void _translation_filter_mode_changed(int p_mode);
 
-	void _pot_add(const String &p_path);
+	void _pot_add(const PackedStringArray &p_paths);
 	void _pot_delete(Object *p_item, int p_column, int p_button);
 	void _pot_file_open();
 	void _pot_generate_open();
 	void _pot_generate(const String &p_file);
 	void _update_pot_file_extensions();
+
+	void _install_ts_data();
 
 protected:
 	void _notification(int p_what);

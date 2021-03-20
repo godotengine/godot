@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -31,7 +31,7 @@
 #include "shape_2d_sw.h"
 
 #include "core/math/geometry_2d.h"
-#include "core/sort_array.h"
+#include "core/templates/sort_array.h"
 
 void Shape2DSW::configure(const Rect2 &p_aabb) {
 	aabb = p_aabb;
@@ -228,7 +228,7 @@ void SegmentShape2DSW::set_data(const Variant &p_data) {
 	Rect2 r = p_data;
 	a = r.position;
 	b = r.size;
-	n = (b - a).tangent();
+	n = (b - a).orthogonal();
 
 	Rect2 aabb;
 	aabb.position = a;
@@ -339,10 +339,10 @@ void RectangleShape2DSW::get_supports(const Vector2 &p_normal, Vector2 *r_suppor
 }
 
 bool RectangleShape2DSW::contains_point(const Vector2 &p_point) const {
-	float x = p_point.x;
-	float y = p_point.y;
-	float edge_x = half_extents.x;
-	float edge_y = half_extents.y;
+	real_t x = p_point.x;
+	real_t y = p_point.y;
+	real_t edge_x = half_extents.x;
+	real_t edge_y = half_extents.y;
 	return (x >= -edge_x) && (x < edge_x) && (y >= -edge_y) && (y < edge_y);
 }
 
@@ -590,7 +590,11 @@ real_t ConvexPolygonShape2DSW::get_moment_of_inertia(real_t p_mass, const Size2 
 }
 
 void ConvexPolygonShape2DSW::set_data(const Variant &p_data) {
+#ifdef REAL_T_IS_DOUBLE
+	ERR_FAIL_COND(p_data.get_type() != Variant::PACKED_VECTOR2_ARRAY && p_data.get_type() != Variant::PACKED_FLOAT64_ARRAY);
+#else
 	ERR_FAIL_COND(p_data.get_type() != Variant::PACKED_VECTOR2_ARRAY && p_data.get_type() != Variant::PACKED_FLOAT32_ARRAY);
+#endif
 
 	if (points) {
 		memdelete_arr(points);
@@ -612,7 +616,7 @@ void ConvexPolygonShape2DSW::set_data(const Variant &p_data) {
 		for (int i = 0; i < point_count; i++) {
 			Vector2 p = points[i].pos;
 			Vector2 pn = points[(i + 1) % point_count].pos;
-			points[i].normal = (pn - p).tangent().normalized();
+			points[i].normal = (pn - p).orthogonal().normalized();
 		}
 	} else {
 		Vector<real_t> dvr = p_data;
@@ -740,7 +744,7 @@ bool ConcavePolygonShape2DSW::intersect_segment(const Vector2 &p_begin, const Ve
 							if (nd < d) {
 								d = nd;
 								r_point = res;
-								r_normal = (b - a).tangent().normalized();
+								r_normal = (b - a).orthogonal().normalized();
 								inters = true;
 							}
 						}
@@ -829,7 +833,11 @@ int ConcavePolygonShape2DSW::_generate_bvh(BVH *p_bvh, int p_len, int p_depth) {
 }
 
 void ConcavePolygonShape2DSW::set_data(const Variant &p_data) {
+#ifdef REAL_T_IS_DOUBLE
+	ERR_FAIL_COND(p_data.get_type() != Variant::PACKED_VECTOR2_ARRAY && p_data.get_type() != Variant::PACKED_FLOAT64_ARRAY);
+#else
 	ERR_FAIL_COND(p_data.get_type() != Variant::PACKED_VECTOR2_ARRAY && p_data.get_type() != Variant::PACKED_FLOAT32_ARRAY);
+#endif
 
 	Rect2 aabb;
 
@@ -960,7 +968,7 @@ void ConcavePolygonShape2DSW::cull(const Rect2 &p_local_aabb, Callback p_callbac
 						Vector2 a = pointptr[s.points[0]];
 						Vector2 b = pointptr[s.points[1]];
 
-						SegmentShape2DSW ss(a, b, (b - a).tangent().normalized());
+						SegmentShape2DSW ss(a, b, (b - a).orthogonal().normalized());
 
 						p_callback(p_userdata, &ss);
 						stack[level] = (VISIT_DONE_BIT << VISITED_BIT_SHIFT) | node;

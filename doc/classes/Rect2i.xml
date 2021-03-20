@@ -5,24 +5,50 @@
 	</brief_description>
 	<description>
 		[Rect2i] consists of a position, a size, and several utility functions. It is typically used for fast overlap tests.
-		It uses integer coordinates.
+		It uses integer coordinates. If you need floating-point coordinates, use [Rect2] instead.
 	</description>
 	<tutorials>
-		<link>https://docs.godotengine.org/en/latest/tutorials/math/index.html</link>
+		<link title="Math tutorial index">https://docs.godotengine.org/en/latest/tutorials/math/index.html</link>
+		<link title="Vector math">https://docs.godotengine.org/en/latest/tutorials/math/vector_math.html</link>
 	</tutorials>
 	<methods>
-		<method name="Rect2i">
+		<method name="Rect2i" qualifiers="constructor">
 			<return type="Rect2i">
 			</return>
-			<argument index="0" name="position" type="Vector2">
+			<description>
+				Constructs a default-initialized [Rect2i] with default (zero) values of [member position] and [member size].
+			</description>
+		</method>
+		<method name="Rect2i" qualifiers="constructor">
+			<return type="Rect2i">
+			</return>
+			<argument index="0" name="from" type="Rect2i">
 			</argument>
-			<argument index="1" name="size" type="Vector2">
+			<description>
+				Constructs a [Rect2i] as a copy of the given [Rect2i].
+			</description>
+		</method>
+		<method name="Rect2i" qualifiers="constructor">
+			<return type="Rect2i">
+			</return>
+			<argument index="0" name="from" type="Rect2">
+			</argument>
+			<description>
+				Constructs a new [Rect2i] from [Rect2]. The floating point coordinates will be truncated.
+			</description>
+		</method>
+		<method name="Rect2i" qualifiers="constructor">
+			<return type="Rect2i">
+			</return>
+			<argument index="0" name="position" type="Vector2i">
+			</argument>
+			<argument index="1" name="size" type="Vector2i">
 			</argument>
 			<description>
 				Constructs a [Rect2i] by position and size.
 			</description>
 		</method>
-		<method name="Rect2i">
+		<method name="Rect2i" qualifiers="constructor">
 			<return type="Rect2i">
 			</return>
 			<argument index="0" name="x" type="int">
@@ -37,32 +63,14 @@
 				Constructs a [Rect2i] by x, y, width, and height.
 			</description>
 		</method>
-		<method name="Rect2i">
-			<return type="Rect2i">
-			</return>
-			<argument index="0" name="from" type="Rect2">
-			</argument>
-			<description>
-				Constructs a new [Rect2i] from [Rect2]. The floating point coordinates will be truncated.
-			</description>
-		</method>
-		<method name="abs">
+		<method name="abs" qualifiers="const">
 			<return type="Rect2i">
 			</return>
 			<description>
 				Returns a [Rect2i] with equivalent position and area, modified so that the top-left corner is the origin and [code]width[/code] and [code]height[/code] are positive.
 			</description>
 		</method>
-		<method name="clip">
-			<return type="Rect2i">
-			</return>
-			<argument index="0" name="b" type="Rect2i">
-			</argument>
-			<description>
-				Returns the intersection of this [Rect2i] and b.
-			</description>
-		</method>
-		<method name="encloses">
+		<method name="encloses" qualifiers="const">
 			<return type="bool">
 			</return>
 			<argument index="0" name="b" type="Rect2i">
@@ -71,7 +79,7 @@
 				Returns [code]true[/code] if this [Rect2i] completely encloses another one.
 			</description>
 		</method>
-		<method name="expand">
+		<method name="expand" qualifiers="const">
 			<return type="Rect2i">
 			</return>
 			<argument index="0" name="to" type="Vector2i">
@@ -80,23 +88,23 @@
 				Returns this [Rect2i] expanded to include a given point.
 			</description>
 		</method>
-		<method name="get_area">
+		<method name="get_area" qualifiers="const">
 			<return type="int">
 			</return>
 			<description>
 				Returns the area of the [Rect2i].
 			</description>
 		</method>
-		<method name="grow">
+		<method name="grow" qualifiers="const">
 			<return type="Rect2i">
 			</return>
-			<argument index="0" name="by" type="int">
+			<argument index="0" name="amount" type="int">
 			</argument>
 			<description>
-				Returns a copy of the [Rect2i] grown a given amount of units towards all the sides.
+				Returns a copy of the [Rect2i] grown by the specified [code]amount[/code] on all sides.
 			</description>
 		</method>
-		<method name="grow_individual">
+		<method name="grow_individual" qualifiers="const">
 			<return type="Rect2i">
 			</return>
 			<argument index="0" name="left" type="int">
@@ -105,31 +113,31 @@
 			</argument>
 			<argument index="2" name="right" type="int">
 			</argument>
-			<argument index="3" name=" bottom" type="int">
+			<argument index="3" name="bottom" type="int">
 			</argument>
 			<description>
-				Returns a copy of the [Rect2i] grown a given amount of units towards each direction individually.
+				Returns a copy of the [Rect2i] grown by the specified amount on each side individually.
 			</description>
 		</method>
-		<method name="grow_margin">
+		<method name="grow_side" qualifiers="const">
 			<return type="Rect2i">
 			</return>
-			<argument index="0" name="margin" type="int">
+			<argument index="0" name="side" type="int">
 			</argument>
-			<argument index="1" name="by" type="int">
+			<argument index="1" name="amount" type="int">
 			</argument>
 			<description>
-				Returns a copy of the [Rect2i] grown a given amount of units towards the [enum Margin] direction.
+				Returns a copy of the [Rect2i] grown by the specified [code]amount[/code] on the specified [enum Side].
 			</description>
 		</method>
-		<method name="has_no_area">
+		<method name="has_no_area" qualifiers="const">
 			<return type="bool">
 			</return>
 			<description>
 				Returns [code]true[/code] if the [Rect2i] is flat or empty.
 			</description>
 		</method>
-		<method name="has_point">
+		<method name="has_point" qualifiers="const">
 			<return type="bool">
 			</return>
 			<argument index="0" name="point" type="Vector2i">
@@ -138,7 +146,17 @@
 				Returns [code]true[/code] if the [Rect2i] contains a point.
 			</description>
 		</method>
-		<method name="intersects">
+		<method name="intersection" qualifiers="const">
+			<return type="Rect2i">
+			</return>
+			<argument index="0" name="b" type="Rect2i">
+			</argument>
+			<description>
+				Returns the intersection of this [Rect2i] and [code]b[/code].
+				If the rectangles do not intersect, an empty [Rect2i] is returned.
+			</description>
+		</method>
+		<method name="intersects" qualifiers="const">
 			<return type="bool">
 			</return>
 			<argument index="0" name="b" type="Rect2i">
@@ -148,13 +166,29 @@
 				If [code]include_borders[/code] is [code]true[/code], they will also be considered overlapping if their borders touch, even without intersection.
 			</description>
 		</method>
-		<method name="merge">
+		<method name="merge" qualifiers="const">
 			<return type="Rect2i">
 			</return>
 			<argument index="0" name="b" type="Rect2i">
 			</argument>
 			<description>
 				Returns a larger [Rect2i] that contains this [Rect2i] and [code]b[/code].
+			</description>
+		</method>
+		<method name="operator !=" qualifiers="operator">
+			<return type="bool">
+			</return>
+			<argument index="0" name="right" type="Rect2i">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="operator ==" qualifiers="operator">
+			<return type="bool">
+			</return>
+			<argument index="0" name="right" type="Rect2i">
+			</argument>
+			<description>
 			</description>
 		</method>
 	</methods>
@@ -166,7 +200,7 @@
 			Beginning corner. Typically has values lower than [member end].
 		</member>
 		<member name="size" type="Vector2i" setter="" getter="" default="Vector2i( 0, 0 )">
-			Size from [member position] to [member end]. Typically all components are positive.
+			Size from [member position] to [member end]. Typically, all components are positive.
 			If the size is negative, you can use [method abs] to fix it.
 		</member>
 	</members>

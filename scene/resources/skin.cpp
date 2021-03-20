@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -58,7 +58,7 @@ void Skin::set_bind_name(int p_index, const StringName &p_name) {
 	binds_ptr[p_index].name = p_name;
 	emit_changed();
 	if (notify_change) {
-		_change_notify();
+		notify_property_list_changed();
 	}
 }
 
@@ -79,6 +79,10 @@ void Skin::clear_binds() {
 	binds_ptr = nullptr;
 	bind_count = 0;
 	emit_changed();
+}
+
+void Skin::reset_state() {
+	clear_binds();
 }
 
 bool Skin::_set(const StringName &p_name, const Variant &p_value) {
@@ -153,6 +157,4 @@ void Skin::_bind_methods() {
 }
 
 Skin::Skin() {
-	bind_count = 0;
-	binds_ptr = nullptr;
 }

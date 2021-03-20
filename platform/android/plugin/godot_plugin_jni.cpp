@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -30,9 +30,9 @@
 
 #include "godot_plugin_jni.h"
 
-#include <core/engine.h>
-#include <core/error_macros.h>
-#include <core/project_settings.h>
+#include <core/config/engine.h>
+#include <core/config/project_settings.h>
+#include <core/error/error_macros.h>
 #include <platform/android/api/jni_singleton.h>
 #include <platform/android/jni_utils.h>
 #include <platform/android/string_android.h>
@@ -41,7 +41,7 @@ static HashMap<String, JNISingleton *> jni_singletons;
 
 extern "C" {
 
-JNIEXPORT void JNICALL Java_org_godotengine_godot_plugin_GodotPlugin_nativeRegisterSingleton(JNIEnv *env, jobject obj, jstring name) {
+JNIEXPORT void JNICALL Java_org_godotengine_godot_plugin_GodotPlugin_nativeRegisterSingleton(JNIEnv *env, jclass clazz, jstring name, jobject obj) {
 	String singname = jstring_to_string(name, env);
 	JNISingleton *s = (JNISingleton *)ClassDB::instance("JNISingleton");
 	s->set_instance(env->NewGlobalRef(obj));
@@ -51,7 +51,7 @@ JNIEXPORT void JNICALL Java_org_godotengine_godot_plugin_GodotPlugin_nativeRegis
 	ProjectSettings::get_singleton()->set(singname, s);
 }
 
-JNIEXPORT void JNICALL Java_org_godotengine_godot_plugin_GodotPlugin_nativeRegisterMethod(JNIEnv *env, jobject obj, jstring sname, jstring name, jstring ret, jobjectArray args) {
+JNIEXPORT void JNICALL Java_org_godotengine_godot_plugin_GodotPlugin_nativeRegisterMethod(JNIEnv *env, jclass clazz, jstring sname, jstring name, jstring ret, jobjectArray args) {
 	String singname = jstring_to_string(sname, env);
 
 	ERR_FAIL_COND(!jni_singletons.has(singname));
@@ -83,7 +83,7 @@ JNIEXPORT void JNICALL Java_org_godotengine_godot_plugin_GodotPlugin_nativeRegis
 	s->add_method(mname, mid, types, get_jni_type(retval));
 }
 
-JNIEXPORT void JNICALL Java_org_godotengine_godot_plugin_GodotPlugin_nativeRegisterSignal(JNIEnv *env, jobject obj, jstring j_plugin_name, jstring j_signal_name, jobjectArray j_signal_param_types) {
+JNIEXPORT void JNICALL Java_org_godotengine_godot_plugin_GodotPlugin_nativeRegisterSignal(JNIEnv *env, jclass clazz, jstring j_plugin_name, jstring j_signal_name, jobjectArray j_signal_param_types) {
 	String singleton_name = jstring_to_string(j_plugin_name, env);
 
 	ERR_FAIL_COND(!jni_singletons.has(singleton_name));
@@ -104,7 +104,7 @@ JNIEXPORT void JNICALL Java_org_godotengine_godot_plugin_GodotPlugin_nativeRegis
 	singleton->add_signal(signal_name, types);
 }
 
-JNIEXPORT void JNICALL Java_org_godotengine_godot_plugin_GodotPlugin_nativeEmitSignal(JNIEnv *env, jobject obj, jstring j_plugin_name, jstring j_signal_name, jobjectArray j_signal_params) {
+JNIEXPORT void JNICALL Java_org_godotengine_godot_plugin_GodotPlugin_nativeEmitSignal(JNIEnv *env, jclass clazz, jstring j_plugin_name, jstring j_signal_name, jobjectArray j_signal_params) {
 	String singleton_name = jstring_to_string(j_plugin_name, env);
 
 	ERR_FAIL_COND(!jni_singletons.has(singleton_name));
@@ -129,7 +129,7 @@ JNIEXPORT void JNICALL Java_org_godotengine_godot_plugin_GodotPlugin_nativeEmitS
 	singleton->emit_signal(signal_name, args, count);
 }
 
-JNIEXPORT void JNICALL Java_org_godotengine_godot_plugin_GodotPlugin_nativeRegisterGDNativeLibraries(JNIEnv *env, jobject obj, jobjectArray gdnlib_paths) {
+JNIEXPORT void JNICALL Java_org_godotengine_godot_plugin_GodotPlugin_nativeRegisterGDNativeLibraries(JNIEnv *env, jclass clazz, jobjectArray gdnlib_paths) {
 	int gdnlib_count = env->GetArrayLength(gdnlib_paths);
 	if (gdnlib_count == 0) {
 		return;

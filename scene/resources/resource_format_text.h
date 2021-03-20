@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -34,16 +34,16 @@
 #include "core/io/resource_loader.h"
 #include "core/io/resource_saver.h"
 #include "core/os/file_access.h"
-#include "core/variant_parser.h"
+#include "core/variant/variant_parser.h"
 #include "scene/resources/packed_scene.h"
 
 class ResourceLoaderText {
-	bool translation_remapped;
+	bool translation_remapped = false;
 	String local_path;
 	String res_path;
 	String error_text;
 
-	FileAccess *f;
+	FileAccess *f = nullptr;
 
 	VariantParser::StreamFile stream;
 
@@ -53,28 +53,28 @@ class ResourceLoaderText {
 		String type;
 	};
 
-	bool is_scene;
+	bool is_scene = false;
 	String res_type;
 
-	bool ignore_resource_parsing;
+	bool ignore_resource_parsing = false;
 
 	//Map<String,String> remaps;
 
 	Map<int, ExtResource> ext_resources;
 	Map<int, RES> int_resources;
 
-	int resources_total;
-	int resource_current;
+	int resources_total = 0;
+	int resource_current = 0;
 	String resource_type;
 
 	VariantParser::Tag next_tag;
 
-	bool use_nocache;
+	ResourceFormatLoader::CacheMode cache_mode = ResourceFormatLoader::CACHE_MODE_REUSE;
 
-	bool use_sub_threads;
-	float *progress;
+	bool use_sub_threads = false;
+	float *progress = nullptr;
 
-	mutable int lines;
+	mutable int lines = 0;
 
 	Map<String, String> remaps;
 	//void _printerr();
@@ -107,7 +107,7 @@ class ResourceLoaderText {
 
 	friend class ResourceFormatLoaderText;
 
-	Error error;
+	Error error = OK;
 
 	RES resource;
 
@@ -134,7 +134,7 @@ public:
 class ResourceFormatLoaderText : public ResourceFormatLoader {
 public:
 	static ResourceFormatLoaderText *singleton;
-	virtual RES load(const String &p_path, const String &p_original_path = "", Error *r_error = nullptr, bool p_use_sub_threads = false, float *r_progress = nullptr, bool p_no_cache = false);
+	virtual RES load(const String &p_path, const String &p_original_path = "", Error *r_error = nullptr, bool p_use_sub_threads = false, float *r_progress = nullptr, CacheMode p_cache_mode = CACHE_MODE_REUSE);
 	virtual void get_recognized_extensions_for_type(const String &p_type, List<String> *p_extensions) const;
 	virtual void get_recognized_extensions(List<String> *p_extensions) const;
 	virtual bool handles_type(const String &p_type) const;
@@ -152,11 +152,11 @@ class ResourceFormatSaverTextInstance {
 
 	Ref<PackedScene> packed_scene;
 
-	bool takeover_paths;
-	bool relative_paths;
-	bool bundle_resources;
-	bool skip_editor;
-	FileAccess *f;
+	bool takeover_paths = false;
+	bool relative_paths = false;
+	bool bundle_resources = false;
+	bool skip_editor = false;
+	FileAccess *f = nullptr;
 
 	struct NonPersistentKey { //for resource properties generated on the fly
 		RES base;
@@ -173,7 +173,7 @@ class ResourceFormatSaverTextInstance {
 
 	struct ResourceSort {
 		RES resource;
-		int index;
+		int index = 0;
 		bool operator<(const ResourceSort &p_right) const {
 			return index < p_right.index;
 		}

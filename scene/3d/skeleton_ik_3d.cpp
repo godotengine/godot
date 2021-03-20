@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -63,7 +63,6 @@ bool FabrikInverseKinematic::build_chain(Task *p_task, bool p_force_simple_chain
 	chain.chain_root.bone = p_task->root_bone;
 	chain.chain_root.initial_transform = p_task->skeleton->get_bone_global_pose(chain.chain_root.bone);
 	chain.chain_root.current_pos = chain.chain_root.initial_transform.origin;
-	chain.chain_root.pb = p_task->skeleton->get_physical_bone(chain.chain_root.bone);
 	chain.middle_chain_item = nullptr;
 
 	// Holds all IDs that are composing a single chain in reverse order
@@ -96,8 +95,6 @@ bool FabrikInverseKinematic::build_chain(Task *p_task, bool p_force_simple_chain
 			if (!child_ci) {
 				child_ci = sub_chain->add_child(chain_ids[i]);
 
-				child_ci->pb = p_task->skeleton->get_physical_bone(child_ci->bone);
-
 				child_ci->initial_transform = p_task->skeleton->get_bone_global_pose(child_ci->bone);
 				child_ci->current_pos = child_ci->initial_transform.origin;
 
@@ -123,27 +120,13 @@ bool FabrikInverseKinematic::build_chain(Task *p_task, bool p_force_simple_chain
 
 		if (p_force_simple_chain) {
 			// NOTE:
-			//	This is an "hack" that force to create only one tip per chain since the solver of multi tip (end effector)
+			//	This is a "hack" that force to create only one tip per chain since the solver of multi tip (end effector)
 			//	is not yet created.
 			//	Remove this code when this is done
 			break;
 		}
 	}
 	return true;
-}
-
-void FabrikInverseKinematic::update_chain(const Skeleton3D *p_sk, ChainItem *p_chain_item) {
-	if (!p_chain_item) {
-		return;
-	}
-
-	p_chain_item->initial_transform = p_sk->get_bone_global_pose(p_chain_item->bone);
-	p_chain_item->current_pos = p_chain_item->initial_transform.origin;
-
-	ChainItem *items = p_chain_item->children.ptrw();
-	for (int i = 0; i < p_chain_item->children.size(); i += 1) {
-		update_chain(p_sk, items + i);
-	}
 }
 
 void FabrikInverseKinematic::solve_simple(Task *p_task, bool p_solve_magnet) {
@@ -204,7 +187,7 @@ void FabrikInverseKinematic::solve_simple_forwards(Chain &r_chain, bool p_solve_
 	while (sub_chain_root) { // Reach the tip
 		sub_chain_root->current_pos = origin;
 
-		if (!sub_chain_root->children.empty()) {
+		if (!sub_chain_root->children.is_empty()) {
 			ChainItem &child(sub_chain_root->children.write[0]);
 
 			// Is not tip
@@ -263,7 +246,7 @@ void FabrikInverseKinematic::make_goal(Task *p_task, const Transform &p_inverse_
 		p_task->end_effectors.write[0].goal_transform = p_inverse_transf * p_task->goal_global_transform;
 	} else {
 		// End effector in local transform
-		const Transform end_effector_pose(p_task->skeleton->get_bone_global_pose(p_task->end_effectors.write[0].tip_bone));
+		const Transform end_effector_pose(p_task->skeleton->get_bone_global_pose(p_task->end_effectors[0].tip_bone));
 
 		// Update the end_effector (local transform) by blending with current pose
 		p_task->end_effectors.write[0].goal_transform = end_effector_pose.interpolate_with(p_inverse_transf * p_task->goal_global_transform, blending_delta);
@@ -285,9 +268,11 @@ void FabrikInverseKinematic::solve(Task *p_task, real_t blending_delta, bool ove
 		p_task->skeleton->set_bone_global_pose_override(p_task->chain.tips[i].chain_item->bone, Transform(), 0.0, true);
 	}
 
-	make_goal(p_task, p_task->skeleton->get_global_transform().affine_inverse().scaled(p_task->skeleton->get_global_transform().get_basis().get_scale()), blending_delta);
+	// Update the initial root transform
+	p_task->chain.chain_root.initial_transform = p_task->skeleton->get_bone_global_pose(p_task->chain.chain_root.bone);
+	p_task->chain.chain_root.current_pos = p_task->chain.chain_root.initial_transform.origin;
 
-	update_chain(p_task->skeleton, &p_task->chain.chain_root);
+	make_goal(p_task, p_task->skeleton->get_global_transform().affine_inverse(), blending_delta);
 
 	if (p_use_magnet && p_task->chain.middle_chain_item) {
 		p_task->chain.magnet_position = p_task->chain.middle_chain_item->initial_transform.origin.lerp(p_magnet_position, blending_delta);
@@ -301,7 +286,7 @@ void FabrikInverseKinematic::solve(Task *p_task, real_t blending_delta, bool ove
 		Transform new_bone_pose(ci->initial_transform);
 		new_bone_pose.origin = ci->current_pos;
 
-		if (!ci->children.empty()) {
+		if (!ci->children.is_empty()) {
 			/// Rotate basis
 			const Vector3 initial_ori((ci->children[0].initial_transform.origin - ci->initial_transform.origin).normalized());
 			const Vector3 rot_axis(initial_ori.cross(ci->current_ori).normalized());
@@ -310,6 +295,7 @@ void FabrikInverseKinematic::solve(Task *p_task, real_t blending_delta, bool ove
 				const real_t rot_angle(Math::acos(CLAMP(initial_ori.dot(ci->current_ori), -1, 1)));
 				new_bone_pose.basis.rotate(rot_axis, rot_angle);
 			}
+
 		} else {
 			// Set target orientation to tip
 			if (override_tip_basis) {
@@ -319,9 +305,13 @@ void FabrikInverseKinematic::solve(Task *p_task, real_t blending_delta, bool ove
 			}
 		}
 
+		// IK should not affect scale, so undo any scaling
+		new_bone_pose.basis.orthonormalize();
+		new_bone_pose.basis.scale(p_task->skeleton->get_bone_global_pose(ci->bone).basis.get_scale());
+
 		p_task->skeleton->set_bone_global_pose_override(ci->bone, new_bone_pose, 1.0, true);
 
-		if (!ci->children.empty()) {
+		if (!ci->children.is_empty()) {
 			ci = &ci->children.write[0];
 		} else {
 			ci = nullptr;

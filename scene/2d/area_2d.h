@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -31,7 +31,7 @@
 #ifndef AREA_2D_H
 #define AREA_2D_H
 
-#include "core/vset.h"
+#include "core/templates/vset.h"
 #include "scene/2d/collision_object_2d.h"
 
 class Area2D : public CollisionObject2D {
@@ -47,19 +47,19 @@ public:
 	};
 
 private:
-	SpaceOverride space_override;
+	SpaceOverride space_override = SPACE_OVERRIDE_DISABLED;
 	Vector2 gravity_vec;
 	real_t gravity;
-	bool gravity_is_point;
-	real_t gravity_distance_scale;
-	real_t linear_damp;
-	real_t angular_damp;
-	uint32_t collision_mask;
-	uint32_t collision_layer;
-	int priority;
-	bool monitoring;
-	bool monitorable;
-	bool locked;
+	bool gravity_is_point = false;
+	real_t gravity_distance_scale = 0.0;
+	real_t linear_damp = 0.1;
+	real_t angular_damp = 1.0;
+	uint32_t collision_mask = 1;
+	uint32_t collision_layer = 1;
+	int priority = 0;
+	bool monitoring = false;
+	bool monitorable = false;
+	bool locked = false;
 
 	void _body_inout(int p_status, const RID &p_body, ObjectID p_instance, int p_body_shape, int p_area_shape);
 
@@ -67,8 +67,8 @@ private:
 	void _body_exit_tree(ObjectID p_id);
 
 	struct ShapePair {
-		int body_shape;
-		int area_shape;
+		int body_shape = 0;
+		int area_shape = 0;
 		bool operator<(const ShapePair &p_sp) const {
 			if (body_shape == p_sp.body_shape) {
 				return area_shape < p_sp.area_shape;
@@ -85,8 +85,8 @@ private:
 	};
 
 	struct BodyState {
-		int rc;
-		bool in_tree;
+		int rc = 0;
+		bool in_tree = false;
 		VSet<ShapePair> shapes;
 	};
 
@@ -98,8 +98,8 @@ private:
 	void _area_exit_tree(ObjectID p_id);
 
 	struct AreaShapePair {
-		int area_shape;
-		int self_shape;
+		int area_shape = 0;
+		int self_shape = 0;
 		bool operator<(const AreaShapePair &p_sp) const {
 			if (area_shape == p_sp.area_shape) {
 				return self_shape < p_sp.self_shape;
@@ -116,15 +116,15 @@ private:
 	};
 
 	struct AreaState {
-		int rc;
-		bool in_tree;
+		int rc = 0;
+		bool in_tree = false;
 		VSet<AreaShapePair> shapes;
 	};
 
 	Map<ObjectID, AreaState> area_map;
 	void _clear_monitoring();
 
-	bool audio_bus_override;
+	bool audio_bus_override = false;
 	StringName audio_bus;
 
 protected:

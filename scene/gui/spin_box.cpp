@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -40,7 +40,7 @@ Size2 SpinBox::get_minimum_size() const {
 }
 
 void SpinBox::_value_changed(double) {
-	String value = String::num(get_value(), Math::range_step_decimals(get_step()));
+	String value = TS->format_number(String::num(get_value(), Math::range_step_decimals(get_step())));
 	if (prefix != "") {
 		value = prefix + " " + value;
 	}
@@ -53,8 +53,10 @@ void SpinBox::_value_changed(double) {
 void SpinBox::_text_entered(const String &p_string) {
 	Ref<Expression> expr;
 	expr.instance();
+
+	String num = TS->parse_number(p_string);
 	// Ignore the prefix and suffix in the expression
-	Error err = expr->parse(p_string.trim_prefix(prefix + " ").trim_suffix(" " + suffix));
+	Error err = expr->parse(num.trim_prefix(prefix + " ").trim_suffix(" " + suffix));
 	if (err != OK) {
 		return;
 	}
@@ -62,8 +64,8 @@ void SpinBox::_text_entered(const String &p_string) {
 	Variant value = expr->execute(Array(), nullptr, false);
 	if (value.get_type() != Variant::NIL) {
 		set_value(value);
-		_value_changed(0);
 	}
+	_value_changed(0);
 }
 
 LineEdit *SpinBox::get_line_edit() {
@@ -86,6 +88,14 @@ void SpinBox::_range_click_timeout() {
 
 	} else {
 		range_click_timer->stop();
+	}
+}
+
+void SpinBox::_release_mouse() {
+	if (drag.enabled) {
+		drag.enabled = false;
+		Input::get_singleton()->set_mouse_mode(Input::MOUSE_MODE_VISIBLE);
+		warp_mouse(drag.capture_pos);
 	}
 }
 
@@ -134,12 +144,7 @@ void SpinBox::_gui_input(const Ref<InputEvent> &p_event) {
 	if (mb.is_valid() && !mb->is_pressed() && mb->get_button_index() == BUTTON_LEFT) {
 		//set_default_cursor_shape(CURSOR_ARROW);
 		range_click_timer->stop();
-
-		if (drag.enabled) {
-			drag.enabled = false;
-			Input::get_singleton()->set_mouse_mode(Input::MOUSE_MODE_VISIBLE);
-			warp_mouse(drag.capture_pos);
-		}
+		_release_mouse();
 		drag.allowed = false;
 	}
 
@@ -170,8 +175,9 @@ void SpinBox::_line_edit_focus_exit() {
 
 inline void SpinBox::_adjust_width_for_icon(const Ref<Texture2D> &icon) {
 	int w = icon->get_width();
-	if (w != last_w) {
-		line_edit->set_margin(MARGIN_RIGHT, -w);
+	if ((w != last_w)) {
+		line_edit->set_offset(SIDE_LEFT, 0);
+		line_edit->set_offset(SIDE_RIGHT, -w);
 		last_w = w;
 	}
 }
@@ -185,16 +191,26 @@ void SpinBox::_notification(int p_what) {
 		RID ci = get_canvas_item();
 		Size2i size = get_size();
 
-		updown->draw(ci, Point2i(size.width - updown->get_width(), (size.height - updown->get_height()) / 2));
+		if (is_layout_rtl()) {
+			updown->draw(ci, Point2i(0, (size.height - updown->get_height()) / 2));
+		} else {
+			updown->draw(ci, Point2i(size.width - updown->get_width(), (size.height - updown->get_height()) / 2));
+		}
 
 	} else if (p_what == NOTIFICATION_FOCUS_EXIT) {
 		//_value_changed(0);
 	} else if (p_what == NOTIFICATION_ENTER_TREE) {
 		_adjust_width_for_icon(get_theme_icon("updown"));
 		_value_changed(0);
+	} else if (p_what == NOTIFICATION_EXIT_TREE) {
+		_release_mouse();
+	} else if (p_what == NOTIFICATION_TRANSLATION_CHANGED) {
+		_value_changed(0);
 	} else if (p_what == NOTIFICATION_THEME_CHANGED) {
 		call_deferred("minimum_size_changed");
 		get_line_edit()->call_deferred("minimum_size_changed");
+	} else if (p_what == NOTIFICATION_LAYOUT_DIRECTION_CHANGED || p_what == NOTIFICATION_TRANSLATION_CHANGED) {
+		update();
 	}
 }
 
@@ -257,17 +273,17 @@ void SpinBox::_bind_methods() {
 }
 
 SpinBox::SpinBox() {
-	last_w = 0;
 	line_edit = memnew(LineEdit);
 	add_child(line_edit);
 
-	line_edit->set_anchors_and_margins_preset(Control::PRESET_WIDE);
+	line_edit->set_anchors_and_offsets_preset(Control::PRESET_WIDE);
 	line_edit->set_mouse_filter(MOUSE_FILTER_PASS);
+	line_edit->set_align(LineEdit::ALIGN_LEFT);
+
 	//connect("value_changed",this,"_value_changed");
 	line_edit->connect("text_entered", callable_mp(this, &SpinBox::_text_entered), Vector<Variant>(), CONNECT_DEFERRED);
 	line_edit->connect("focus_exited", callable_mp(this, &SpinBox::_line_edit_focus_exit), Vector<Variant>(), CONNECT_DEFERRED);
 	line_edit->connect("gui_input", callable_mp(this, &SpinBox::_line_edit_input));
-	drag.enabled = false;
 
 	range_click_timer = memnew(Timer);
 	range_click_timer->connect("timeout", callable_mp(this, &SpinBox::_range_click_timeout));

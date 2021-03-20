@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -31,13 +31,13 @@
 #ifndef REMOTE_DEBUGGER_H
 #define REMOTE_DEBUGGER_H
 
-#include "core/array.h"
 #include "core/debugger/debugger_marshalls.h"
 #include "core/debugger/engine_debugger.h"
 #include "core/debugger/remote_debugger_peer.h"
-#include "core/object.h"
-#include "core/string_name.h"
-#include "core/ustring.h"
+#include "core/object/class_db.h"
+#include "core/string/string_name.h"
+#include "core/string/ustring.h"
+#include "core/variant/array.h"
 
 class RemoteDebugger : public EngineDebugger {
 public:

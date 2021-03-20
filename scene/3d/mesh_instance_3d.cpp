@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -95,7 +95,7 @@ void MeshInstance3D::_get_property_list(List<PropertyInfo> *p_list) const {
 	ls.sort();
 
 	for (List<String>::Element *E = ls.front(); E; E = E->next()) {
-		p_list->push_back(PropertyInfo(Variant::FLOAT, E->get(), PROPERTY_HINT_RANGE, "0,1,0.00001"));
+		p_list->push_back(PropertyInfo(Variant::FLOAT, E->get(), PROPERTY_HINT_RANGE, "-1,1,0.00001"));
 	}
 
 	if (mesh.is_valid()) {
@@ -112,7 +112,6 @@ void MeshInstance3D::set_mesh(const Ref<Mesh> &p_mesh) {
 
 	if (mesh.is_valid()) {
 		mesh->disconnect(CoreStringNames::get_singleton()->changed, callable_mp(this, &MeshInstance3D::_mesh_changed));
-		materials.clear();
 	}
 
 	mesh = p_mesh;
@@ -136,7 +135,7 @@ void MeshInstance3D::set_mesh(const Ref<Mesh> &p_mesh) {
 
 	update_gizmo();
 
-	_change_notify();
+	notify_property_list_changed();
 }
 
 Ref<Mesh> MeshInstance3D::get_mesh() const {
@@ -153,7 +152,7 @@ void MeshInstance3D::_resolve_skeleton_path() {
 			if (skin_internal.is_null()) {
 				//a skin was created for us
 				skin_internal = new_skin_reference->get_skin();
-				_change_notify();
+				notify_property_list_changed();
 			}
 		}
 	}
@@ -320,6 +319,7 @@ Ref<Material> MeshInstance3D::get_active_material(int p_surface) const {
 }
 
 void MeshInstance3D::_mesh_changed() {
+	ERR_FAIL_COND(mesh.is_null());
 	materials.resize(mesh->get_surface_count());
 }
 
@@ -429,7 +429,6 @@ void MeshInstance3D::_bind_methods() {
 }
 
 MeshInstance3D::MeshInstance3D() {
-	skeleton_path = NodePath("..");
 }
 
 MeshInstance3D::~MeshInstance3D() {

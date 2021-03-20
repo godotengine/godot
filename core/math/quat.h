@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -36,12 +36,26 @@
 
 #include "core/math/math_defs.h"
 #include "core/math/math_funcs.h"
-#include "core/ustring.h"
+#include "core/string/ustring.h"
 
 class Quat {
 public:
-	real_t x = 0, y = 0, z = 0, w = 1;
+	union {
+		struct {
+			real_t x;
+			real_t y;
+			real_t z;
+			real_t w;
+		};
+		real_t components[4] = { 0, 0, 0, 1.0 };
+	};
 
+	_FORCE_INLINE_ real_t &operator[](int idx) {
+		return components[idx];
+	}
+	_FORCE_INLINE_ const real_t &operator[](int idx) const {
+		return components[idx];
+	}
 	_FORCE_INLINE_ real_t length_squared() const;
 	bool is_equal_approx(const Quat &p_quat) const;
 	real_t length() const;
@@ -49,21 +63,16 @@ public:
 	Quat normalized() const;
 	bool is_normalized() const;
 	Quat inverse() const;
-	_FORCE_INLINE_ real_t dot(const Quat &q) const;
+	_FORCE_INLINE_ real_t dot(const Quat &p_q) const;
 
-	void set_euler_xyz(const Vector3 &p_euler);
 	Vector3 get_euler_xyz() const;
-	void set_euler_yxz(const Vector3 &p_euler);
 	Vector3 get_euler_yxz() const;
-
-	void set_euler(const Vector3 &p_euler) { set_euler_yxz(p_euler); };
 	Vector3 get_euler() const { return get_euler_yxz(); };
 
-	Quat slerp(const Quat &q, const real_t &t) const;
-	Quat slerpni(const Quat &q, const real_t &t) const;
-	Quat cubic_slerp(const Quat &q, const Quat &prep, const Quat &postq, const real_t &t) const;
+	Quat slerp(const Quat &p_to, const real_t &p_weight) const;
+	Quat slerpni(const Quat &p_to, const real_t &p_weight) const;
+	Quat cubic_slerp(const Quat &p_b, const Quat &p_pre_a, const Quat &p_post_b, const real_t &p_weight) const;
 
-	void set_axis_angle(const Vector3 &axis, const real_t &angle);
 	_FORCE_INLINE_ void get_axis_angle(Vector3 &r_axis, real_t &r_angle) const {
 		r_angle = 2 * Math::acos(w);
 		real_t r = ((real_t)1) / Math::sqrt(1 - w * w);
@@ -72,8 +81,8 @@ public:
 		r_axis.z = z * r;
 	}
 
-	void operator*=(const Quat &q);
-	Quat operator*(const Quat &q) const;
+	void operator*=(const Quat &p_q);
+	Quat operator*(const Quat &p_q) const;
 
 	Quat operator*(const Vector3 &v) const {
 		return Quat(w * v.x + y * v.z - z * v.y,
@@ -91,8 +100,12 @@ public:
 		return v + ((uv * w) + u.cross(uv)) * ((real_t)2);
 	}
 
-	_FORCE_INLINE_ void operator+=(const Quat &q);
-	_FORCE_INLINE_ void operator-=(const Quat &q);
+	_FORCE_INLINE_ Vector3 xform_inv(const Vector3 &v) const {
+		return inverse().xform(v);
+	}
+
+	_FORCE_INLINE_ void operator+=(const Quat &p_q);
+	_FORCE_INLINE_ void operator-=(const Quat &p_q);
 	_FORCE_INLINE_ void operator*=(const real_t &s);
 	_FORCE_INLINE_ void operator/=(const real_t &s);
 	_FORCE_INLINE_ Quat operator+(const Quat &q2) const;
@@ -106,35 +119,31 @@ public:
 
 	operator String() const;
 
-	inline void set(real_t p_x, real_t p_y, real_t p_z, real_t p_w) {
-		x = p_x;
-		y = p_y;
-		z = p_z;
-		w = p_w;
-	}
-
 	_FORCE_INLINE_ Quat() {}
+
 	_FORCE_INLINE_ Quat(real_t p_x, real_t p_y, real_t p_z, real_t p_w) :
 			x(p_x),
 			y(p_y),
 			z(p_z),
 			w(p_w) {
 	}
-	Quat(const Vector3 &axis, const real_t &angle) { set_axis_angle(axis, angle); }
 
-	Quat(const Vector3 &euler) { set_euler(euler); }
-	Quat(const Quat &q) :
-			x(q.x),
-			y(q.y),
-			z(q.z),
-			w(q.w) {
+	Quat(const Vector3 &p_axis, real_t p_angle);
+
+	Quat(const Vector3 &p_euler);
+
+	Quat(const Quat &p_q) :
+			x(p_q.x),
+			y(p_q.y),
+			z(p_q.z),
+			w(p_q.w) {
 	}
 
-	Quat operator=(const Quat &q) {
-		x = q.x;
-		y = q.y;
-		z = q.z;
-		w = q.w;
+	Quat &operator=(const Quat &p_q) {
+		x = p_q.x;
+		y = p_q.y;
+		z = p_q.z;
+		w = p_q.w;
 		return *this;
 	}
 
@@ -160,26 +169,26 @@ public:
 	}
 };
 
-real_t Quat::dot(const Quat &q) const {
-	return x * q.x + y * q.y + z * q.z + w * q.w;
+real_t Quat::dot(const Quat &p_q) const {
+	return x * p_q.x + y * p_q.y + z * p_q.z + w * p_q.w;
 }
 
 real_t Quat::length_squared() const {
 	return dot(*this);
 }
 
-void Quat::operator+=(const Quat &q) {
-	x += q.x;
-	y += q.y;
-	z += q.z;
-	w += q.w;
+void Quat::operator+=(const Quat &p_q) {
+	x += p_q.x;
+	y += p_q.y;
+	z += p_q.z;
+	w += p_q.w;
 }
 
-void Quat::operator-=(const Quat &q) {
-	x -= q.x;
-	y -= q.y;
-	z -= q.z;
-	w -= q.w;
+void Quat::operator-=(const Quat &p_q) {
+	x -= p_q.x;
+	y -= p_q.y;
+	z -= p_q.z;
+	w -= p_q.w;
 }
 
 void Quat::operator*=(const real_t &s) {
@@ -222,6 +231,10 @@ bool Quat::operator==(const Quat &p_quat) const {
 
 bool Quat::operator!=(const Quat &p_quat) const {
 	return x != p_quat.x || y != p_quat.y || z != p_quat.z || w != p_quat.w;
+}
+
+_FORCE_INLINE_ Quat operator*(const real_t &p_real, const Quat &p_quat) {
+	return p_quat * p_real;
 }
 
 #endif // QUAT_H

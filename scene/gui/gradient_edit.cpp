@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -42,8 +42,6 @@
 #endif
 
 GradientEdit::GradientEdit() {
-	grabbed = -1;
-	grabbing = false;
 	set_focus_mode(FOCUS_ALL);
 
 	popup = memnew(PopupPanel);
@@ -237,7 +235,7 @@ void GradientEdit::_gui_input(const Ref<InputEvent> &p_event) {
 		// Snap to "round" coordinates if holding Ctrl.
 		// Be more precise if holding Shift as well
 		if (mm->get_control()) {
-			newofs = Math::stepify(newofs, mm->get_shift() ? 0.025 : 0.1);
+			newofs = Math::snapped(newofs, mm->get_shift() ? 0.025 : 0.1);
 		} else if (mm->get_shift()) {
 			// Snap to nearest point if holding just Shift
 			const float snap_threshold = 0.03;
@@ -357,7 +355,7 @@ void GradientEdit::_notification(int p_what) {
 
 		//Draw point markers
 		for (int i = 0; i < points.size(); i++) {
-			Color col = points[i].color.contrasted();
+			Color col = points[i].color.inverted();
 			col.a = 0.9;
 
 			draw_line(Vector2(points[i].offset * total_w, 0), Vector2(points[i].offset * total_w, h / 2), col);

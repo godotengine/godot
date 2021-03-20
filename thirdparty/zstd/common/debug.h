@@ -1,35 +1,15 @@
 /* ******************************************************************
-   debug
-   Part of FSE library
-   Copyright (C) 2013-present, Yann Collet.
-
-   BSD 2-Clause License (http://www.opensource.org/licenses/bsd-license.php)
-
-   Redistribution and use in source and binary forms, with or without
-   modification, are permitted provided that the following conditions are
-   met:
-
-       * Redistributions of source code must retain the above copyright
-   notice, this list of conditions and the following disclaimer.
-       * Redistributions in binary form must reproduce the above
-   copyright notice, this list of conditions and the following disclaimer
-   in the documentation and/or other materials provided with the
-   distribution.
-
-   THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
-   "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
-   LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
-   A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
-   OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
-   SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
-   LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
-   DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
-   THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-   (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
-   OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-
-   You can contact the author at :
-   - Source repository : https://github.com/Cyan4973/FiniteStateEntropy
+ * debug
+ * Part of FSE library
+ * Copyright (c) 2013-2020, Yann Collet, Facebook, Inc.
+ *
+ * You can contact the author at :
+ * - Source repository : https://github.com/Cyan4973/FiniteStateEntropy
+ *
+ * This source code is licensed under both the BSD-style license (found in the
+ * LICENSE file in the root directory of this source tree) and the GPLv2 (found
+ * in the COPYING file in the root directory of this source tree).
+ * You may select, at your option, one of the above-listed licenses.
 ****************************************************************** */
 
 
@@ -71,15 +51,6 @@ extern "C" {
 #endif
 
 
-/* DEBUGFILE can be defined externally,
- * typically through compiler command line.
- * note : currently useless.
- * Value must be stderr or stdout */
-#ifndef DEBUGFILE
-#  define DEBUGFILE stderr
-#endif
-
-
 /* recommended values for DEBUGLEVEL :
  * 0 : release mode, no debug, all run-time checks disabled
  * 1 : enables assert() only, no display
@@ -96,7 +67,8 @@ extern "C" {
  */
 
 #if (DEBUGLEVEL>=1)
-#  include <assert.h>
+#  define ZSTD_DEPS_NEED_ASSERT
+#  include "zstd_deps.h"
 #else
 #  ifndef assert   /* assert may be already defined, due to prior #include <assert.h> */
 #    define assert(condition) ((void)0)   /* disable assert (default) */
@@ -104,7 +76,8 @@ extern "C" {
 #endif
 
 #if (DEBUGLEVEL>=2)
-#  include <stdio.h>
+#  define ZSTD_DEPS_NEED_IO
+#  include "zstd_deps.h"
 extern int g_debuglevel; /* the variable is only declared,
                             it actually lives in debug.c,
                             and is shared by the whole process.
@@ -112,14 +85,14 @@ extern int g_debuglevel; /* the variable is only declared,
                             It's useful when enabling very verbose levels
                             on selective conditions (such as position in src) */
 
-#  define RAWLOG(l, ...) {                                      \
-                if (l<=g_debuglevel) {                          \
-                    fprintf(stderr, __VA_ARGS__);               \
+#  define RAWLOG(l, ...) {                                       \
+                if (l<=g_debuglevel) {                           \
+                    ZSTD_DEBUG_PRINT(__VA_ARGS__);               \
             }   }
-#  define DEBUGLOG(l, ...) {                                    \
-                if (l<=g_debuglevel) {                          \
-                    fprintf(stderr, __FILE__ ": " __VA_ARGS__); \
-                    fprintf(stderr, " \n");                     \
+#  define DEBUGLOG(l, ...) {                                     \
+                if (l<=g_debuglevel) {                           \
+                    ZSTD_DEBUG_PRINT(__FILE__ ": " __VA_ARGS__); \
+                    ZSTD_DEBUG_PRINT(" \n");                     \
             }   }
 #else
 #  define RAWLOG(l, ...)      {}    /* disabled */

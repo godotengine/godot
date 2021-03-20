@@ -7,8 +7,8 @@
 		Translations are resources that can be loaded and unloaded on demand. They map a string to another string.
 	</description>
 	<tutorials>
-		<link>https://docs.godotengine.org/en/latest/tutorials/i18n/internationalizing_games.html</link>
-		<link>https://docs.godotengine.org/en/latest/tutorials/i18n/locales.html</link>
+		<link title="Internationalizing games">https://docs.godotengine.org/en/latest/tutorials/i18n/internationalizing_games.html</link>
+		<link title="Locales">https://docs.godotengine.org/en/latest/tutorials/i18n/locales.html</link>
 	</tutorials>
 	<methods>
 		<method name="add_message">
@@ -18,14 +18,33 @@
 			</argument>
 			<argument index="1" name="xlated_message" type="StringName">
 			</argument>
+			<argument index="2" name="context" type="StringName" default="&quot;&quot;">
+			</argument>
 			<description>
 				Adds a message if nonexistent, followed by its translation.
+				An additional context could be used to specify the translation context or differentiate polysemic words.
+			</description>
+		</method>
+		<method name="add_plural_message">
+			<return type="void">
+			</return>
+			<argument index="0" name="src_message" type="StringName">
+			</argument>
+			<argument index="1" name="xlated_messages" type="PackedStringArray">
+			</argument>
+			<argument index="2" name="context" type="StringName" default="&quot;&quot;">
+			</argument>
+			<description>
+				Adds a message involving plural translation if nonexistent, followed by its translation.
+				An additional context could be used to specify the translation context or differentiate polysemic words.
 			</description>
 		</method>
 		<method name="erase_message">
 			<return type="void">
 			</return>
 			<argument index="0" name="src_message" type="StringName">
+			</argument>
+			<argument index="1" name="context" type="StringName" default="&quot;&quot;">
 			</argument>
 			<description>
 				Erases a message.
@@ -35,6 +54,8 @@
 			<return type="StringName">
 			</return>
 			<argument index="0" name="src_message" type="StringName">
+			</argument>
+			<argument index="1" name="context" type="StringName" default="&quot;&quot;">
 			</argument>
 			<description>
 				Returns a message's translation.
@@ -52,6 +73,22 @@
 			</return>
 			<description>
 				Returns all the messages (keys).
+			</description>
+		</method>
+		<method name="get_plural_message" qualifiers="const">
+			<return type="StringName">
+			</return>
+			<argument index="0" name="src_message" type="StringName">
+			</argument>
+			<argument index="1" name="src_plural_message" type="StringName">
+			</argument>
+			<argument index="2" name="n" type="int">
+			</argument>
+			<argument index="3" name="context" type="StringName" default="&quot;&quot;">
+			</argument>
+			<description>
+				Returns a message's translation involving plurals.
+				The number [code]n[/code] is the number or quantity of the plural object. It will be used to guide the translation system to fetch the correct plural form for the selected language.
 			</description>
 		</method>
 	</methods>

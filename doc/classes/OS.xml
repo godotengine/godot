@@ -7,6 +7,7 @@
 		Operating System functions. OS wraps the most common functionality to communicate with the host operating system, such as the clipboard, video driver, date and time, timers, environment variables, execution of binaries, command line, etc.
 	</description>
 	<tutorials>
+		<link title="OS Test Demo">https://godotengine.org/asset-library/asset/677</link>
 	</tutorials>
 	<methods>
 		<method name="can_use_threads" qualifiers="const">
@@ -24,13 +25,36 @@
 				[b]Note:[/b] This method is implemented on Linux, macOS and Windows.
 			</description>
 		</method>
+		<method name="create_process">
+			<return type="int">
+			</return>
+			<argument index="0" name="path" type="String">
+			</argument>
+			<argument index="1" name="arguments" type="PackedStringArray">
+			</argument>
+			<description>
+				Creates a new process that runs independently of Godot. It will not terminate if Godot terminates. The file specified in [code]path[/code] must exist and be executable. Platform path resolution will be used. The [code]arguments[/code] are used in the given order and separated by a space.
+				If the process creation succeeds, the method will return the new process ID, which you can use to monitor the process (and potentially terminate it with [method kill]). If the process creation fails, the method will return [code]-1[/code].
+				For example, running another instance of the project:
+				[codeblocks]
+				[gdscript]
+				var pid = OS.create_process(OS.get_executable_path(), [])
+				[/gdscript]
+				[csharp]
+				var pid = OS.CreateProcess(OS.GetExecutablePath(), new string[] {});
+				[/csharp]
+				[/codeblocks]
+				See [method execute] if you wish to run an external command and retrieve the results.
+				[b]Note:[/b] This method is implemented on Android, iOS, Linux, macOS and Windows.
+			</description>
+		</method>
 		<method name="delay_msec" qualifiers="const">
 			<return type="void">
 			</return>
 			<argument index="0" name="msec" type="int">
 			</argument>
 			<description>
-				Delay execution of the current thread by [code]msec[/code] milliseconds.
+				Delay execution of the current thread by [code]msec[/code] milliseconds. [code]usec[/code] must be greater than or equal to [code]0[/code]. Otherwise, [method delay_msec] will do nothing and will print an error message.
 			</description>
 		</method>
 		<method name="delay_usec" qualifiers="const">
@@ -39,7 +63,7 @@
 			<argument index="0" name="usec" type="int">
 			</argument>
 			<description>
-				Delay execution of the current thread by [code]usec[/code] microseconds.
+				Delay execution of the current thread by [code]usec[/code] microseconds. [code]usec[/code] must be greater than or equal to [code]0[/code]. Otherwise, [method delay_usec] will do nothing and will print an error message.
 			</description>
 		</method>
 		<method name="dump_memory_to_file">
@@ -70,32 +94,36 @@
 			</argument>
 			<argument index="1" name="arguments" type="PackedStringArray">
 			</argument>
-			<argument index="2" name="blocking" type="bool" default="true">
+			<argument index="2" name="output" type="Array" default="[  ]">
 			</argument>
-			<argument index="3" name="output" type="Array" default="[  ]">
-			</argument>
-			<argument index="4" name="read_stderr" type="bool" default="false">
+			<argument index="3" name="read_stderr" type="bool" default="false">
 			</argument>
 			<description>
-				Execute the file at the given path with the arguments passed as an array of strings. Platform path resolution will take place. The resolved file must exist and be executable.
-				The arguments are used in the given order and separated by a space, so [code]OS.execute("ping", ["-w", "3", "godotengine.org"], false)[/code] will resolve to [code]ping -w 3 godotengine.org[/code] in the system's shell.
-				This method has slightly different behavior based on whether the [code]blocking[/code] mode is enabled.
-				If [code]blocking[/code] is [code]true[/code], the Godot thread will pause its execution while waiting for the process to terminate. The shell output of the process will be written to the [code]output[/code] array as a single string. When the process terminates, the Godot thread will resume execution.
-				If [code]blocking[/code] is [code]false[/code], the Godot thread will continue while the new process runs. It is not possible to retrieve the shell output in non-blocking mode, so [code]output[/code] will be empty.
-				The return value also depends on the blocking mode. When blocking, the method will return an exit code of the process. When non-blocking, the method returns a process ID, which you can use to monitor the process (and potentially terminate it with [method kill]). If the process forking (non-blocking) or opening (blocking) fails, the method will return [code]-1[/code] or another exit code.
-				Example of blocking mode and retrieving the shell output:
-				[codeblock]
+				Executes a command. The file specified in [code]path[/code] must exist and be executable. Platform path resolution will be used. The [code]arguments[/code] are used in the given order and separated by a space. If an [code]output[/code] [Array] is provided, the complete shell output of the process will be appended as a single [String] element in [code]output[/code]. If [code]read_stderr[/code] is [code]true[/code], the output to the standard error stream will be included too.
+				If the command is successfully executed, the method will return the exit code of the command, or [code]-1[/code] if it fails.
+				[b]Note:[/b] The Godot thread will pause its execution until the executed command terminates. Use [Thread] to create a separate thread that will not pause the Godot thread, or use [method create_process] to create a completely independent process.
+				For example, to retrieve a list of the working directory's contents:
+				[codeblocks]
+				[gdscript]
 				var output = []
-				var exit_code = OS.execute("ls", ["-l", "/tmp"], true, output)
-				[/codeblock]
-				Example of non-blocking mode, running another instance of the project and storing its process ID:
-				[codeblock]
-				var pid = OS.execute(OS.get_executable_path(), [], false)
-				[/codeblock]
-				If you wish to access a shell built-in or perform a composite command, a platform-specific shell can be invoked. For example:
-				[codeblock]
-				OS.execute("CMD.exe", ["/C", "cd %TEMP% &amp;&amp; dir"], true, output)
-				[/codeblock]
+				var exit_code = OS.execute("ls", ["-l", "/tmp"], output)
+				[/gdscript]
+				[csharp]
+				var output = new Godot.Collections.Array();
+				int exitCode = OS.Execute("ls", new string[] {"-l", "/tmp"}, output);
+				[/csharp]
+				[/codeblocks]
+				To execute a composite command, a platform-specific shell can be invoked. For example:
+				[codeblocks]
+				[gdscript]
+				var output = []
+				OS.execute("CMD.exe", ["/C", "cd %TEMP% &amp;&amp; dir"], output)
+				[/gdscript]
+				[csharp]
+				var output = new Godot.Collections.Array();
+				OS.Execute("CMD.exe", new string[] {"/C", "cd %TEMP% &amp;&amp; dir"}, output);
+				[/csharp]
+				[/codeblocks]
 				[b]Note:[/b] This method is implemented on Android, iOS, Linux, macOS and Windows.
 			</description>
 		</method>
@@ -117,13 +145,26 @@
 				You can also incorporate environment variables using the [method get_environment] method.
 				You can set [code]editor/main_run_args[/code] in the Project Settings to define command-line arguments to be passed by the editor when running the project.
 				Here's a minimal example on how to parse command-line arguments into a dictionary using the [code]--key=value[/code] form for arguments:
-				[codeblock]
+				[codeblocks]
+				[gdscript]
 				var arguments = {}
 				for argument in OS.get_cmdline_args():
 				    if argument.find("=") &gt; -1:
 				        var key_value = argument.split("=")
 				        arguments[key_value[0].lstrip("--")] = key_value[1]
-				[/codeblock]
+				[/gdscript]
+				[csharp]
+				var arguments = new Godot.Collections.Dictionary();
+				foreach (var argument in OS.GetCmdlineArgs())
+				{
+				    if (argument.Find("=") &gt; -1)
+				    {
+				        string[] keyValue = argument.Split("=");
+				        arguments[keyValue[0].LStrip("--")] = keyValue[1];
+				    }
+				}
+				[/csharp]
+				[/codeblocks]
 			</description>
 		</method>
 		<method name="get_connected_midi_inputs">
@@ -166,10 +207,11 @@
 		<method name="get_environment" qualifiers="const">
 			<return type="String">
 			</return>
-			<argument index="0" name="environment" type="String">
+			<argument index="0" name="variable" type="String">
 			</argument>
 			<description>
-				Returns an environment variable.
+				Returns the value of an environment variable. Returns an empty string if the environment variable doesn't exist.
+				[b]Note:[/b] Double-check the casing of [code]variable[/code]. Environment variable names are case-sensitive on all platforms except Windows.
 			</description>
 		</method>
 		<method name="get_executable_path" qualifiers="const">
@@ -201,7 +243,12 @@
 			<return type="String">
 			</return>
 			<description>
-				Returns the host OS locale.
+				Returns the host OS locale as a string of the form [code]language_Script_COUNTRY_VARIANT@extra[/code].
+				[code]language[/code] - 2 or 3-letter [url=https://en.wikipedia.org/wiki/List_of_ISO_639-1_codes]language code[/url], in lower case.
+				[code]Script[/code] - optional, 4-letter [url=https://en.wikipedia.org/wiki/ISO_15924]script code[/url], in title case.
+				[code]COUNTRY[/code] - optional, 2 or 3-letter [url=https://en.wikipedia.org/wiki/ISO_3166-1]country code[/url], in upper case.
+				[code]VARIANT[/code] - optional, language variant, region and sort order. Variant can have any number of underscored key words.
+				[code]extra[/code] - optional, semicolon separated list of additional key words. Currency, calendar, sort order and numbering system information.
 			</description>
 		</method>
 		<method name="get_model_name" qualifiers="const">
@@ -234,13 +281,6 @@
 				Returns the number of threads available on the host machine.
 			</description>
 		</method>
-		<method name="get_splash_tick_msec" qualifiers="const">
-			<return type="int">
-			</return>
-			<description>
-				Returns the amount of time in milliseconds it took for the boot logo to appear.
-			</description>
-		</method>
 		<method name="get_static_memory_peak_usage" qualifiers="const">
 			<return type="int">
 			</return>
@@ -265,22 +305,12 @@
 				[b]Note:[/b] This method is implemented on Android, Linux, macOS and Windows.
 			</description>
 		</method>
-		<method name="get_tablet_driver_count" qualifiers="const">
+		<method name="get_thread_caller_id" qualifiers="const">
 			<return type="int">
 			</return>
 			<description>
-				Returns the total number of available tablet drivers.
-				[b]Note:[/b] This method is implemented on Windows.
-			</description>
-		</method>
-		<method name="get_tablet_driver_name" qualifiers="const">
-			<return type="String">
-			</return>
-			<argument index="0" name="idx" type="int">
-			</argument>
-			<description>
-				Returns the tablet driver name for the given index.
-				[b]Note:[/b] This method is implemented on Windows.
+				Returns the ID of the current thread. This can be used in logs to ease debugging of multi-threaded applications.
+				[b]Note:[/b] Thread IDs are not deterministic and may be reused across application restarts.
 			</description>
 		</method>
 		<method name="get_ticks_msec" qualifiers="const">
@@ -326,6 +356,7 @@
 			</return>
 			<description>
 				Returns the current UNIX epoch timestamp.
+				[b]Important:[/b] This is the system clock that the user can manully set. [b]Never use[/b] this method for precise time calculation since its results are also subject to automatic adjustments by the operating system. [b]Always use[/b] [method get_ticks_usec] or [method get_ticks_msec] for precise time calculation instead, since they are guaranteed to be monotonic (i.e. never decrease).
 			</description>
 		</method>
 		<method name="get_unix_time_from_datetime" qualifiers="const">
@@ -336,6 +367,7 @@
 			<description>
 				Gets an epoch time value from a dictionary of time values.
 				[code]datetime[/code] must be populated with the following keys: [code]year[/code], [code]month[/code], [code]day[/code], [code]hour[/code], [code]minute[/code], [code]second[/code].
+				If the dictionary is empty [code]0[/code] is returned.
 				You can pass the output from [method get_datetime_from_unix_time] directly into this function. Daylight Savings Time ([code]dst[/code]), if present, is ignored.
 			</description>
 		</method>
@@ -353,10 +385,11 @@
 		<method name="has_environment" qualifiers="const">
 			<return type="bool">
 			</return>
-			<argument index="0" name="environment" type="String">
+			<argument index="0" name="variable" type="String">
 			</argument>
 			<description>
-				Returns [code]true[/code] if an environment variable exists.
+				Returns [code]true[/code] if the environment variable with the name [code]variable[/code] exists.
+				[b]Note:[/b] Double-check the casing of [code]variable[/code]. Environment variable names are case-sensitive on all platforms except Windows.
 			</description>
 		</method>
 		<method name="has_feature" qualifiers="const">
@@ -471,6 +504,18 @@
 				[b]Note:[/b] This method is implemented on Android.
 			</description>
 		</method>
+		<method name="set_environment" qualifiers="const">
+			<return type="bool">
+			</return>
+			<argument index="0" name="variable" type="String">
+			</argument>
+			<argument index="1" name="value" type="String">
+			</argument>
+			<description>
+				Sets the value of the environment variable [code]variable[/code] to [code]value[/code]. The environment variable will be set for the Godot process and any process executed with [method execute] after running [method set_environment]. The environment variable will [i]not[/i] persist to processes run after the Godot process was terminated.
+				[b]Note:[/b] Double-check the casing of [code]variable[/code]. Environment variable names are case-sensitive on all platforms except Windows.
+			</description>
+		</method>
 		<method name="set_thread_name">
 			<return type="int" enum="Error">
 			</return>
@@ -505,18 +550,11 @@
 		</method>
 	</methods>
 	<members>
-		<member name="exit_code" type="int" setter="set_exit_code" getter="get_exit_code" default="0">
-			The exit code passed to the OS when the main loop exits. By convention, an exit code of [code]0[/code] indicates success whereas a non-zero exit code indicates an error. For portability reasons, the exit code should be set between 0 and 125 (inclusive).
-			[b]Note:[/b] This value will be ignored if using [method SceneTree.quit] with an [code]exit_code[/code] argument passed.
-		</member>
 		<member name="low_processor_usage_mode" type="bool" setter="set_low_processor_usage_mode" getter="is_in_low_processor_usage_mode" default="false">
 			If [code]true[/code], the engine optimizes for low processor usage by only refreshing the screen if needed. Can improve battery consumption on mobile.
 		</member>
 		<member name="low_processor_usage_mode_sleep_usec" type="int" setter="set_low_processor_usage_mode_sleep_usec" getter="get_low_processor_usage_mode_sleep_usec" default="6900">
 			The amount of sleeping between frames when the low-processor usage mode is enabled (in microseconds). Higher values will result in lower CPU usage.
-		</member>
-		<member name="tablet_driver" type="String" setter="set_current_tablet_driver" getter="get_current_tablet_driver" default="&quot;&quot;">
-			The current tablet driver in use.
 		</member>
 	</members>
 	<constants>

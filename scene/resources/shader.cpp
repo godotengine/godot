@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -29,6 +29,7 @@
 /*************************************************************************/
 
 #include "shader.h"
+
 #include "core/os/file_access.h"
 #include "scene/scene_string_names.h"
 #include "servers/rendering/shader_language.h"
@@ -80,7 +81,7 @@ void Shader::get_param_list(List<PropertyInfo> *p_params) const {
 		params_cache[pi.name] = E->get().name;
 		if (p_params) {
 			//small little hack
-			if (pi.type == Variant::_RID) {
+			if (pi.type == Variant::RID) {
 				pi.type = Variant::OBJECT;
 			}
 			p_params->push_back(pi);
@@ -142,8 +143,6 @@ void Shader::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("has_param", "name"), &Shader::has_param);
 
-	//ClassDB::bind_method(D_METHOD("get_param_list"),&Shader::get_fragment_code);
-
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "code", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR), "set_code", "get_code");
 
 	BIND_ENUM_CONSTANT(MODE_SPATIAL);
@@ -153,9 +152,7 @@ void Shader::_bind_methods() {
 }
 
 Shader::Shader() {
-	mode = MODE_SPATIAL;
 	shader = RenderingServer::get_singleton()->shader_create();
-	params_cache_dirty = true;
 }
 
 Shader::~Shader() {
@@ -164,7 +161,7 @@ Shader::~Shader() {
 
 ////////////
 
-RES ResourceFormatLoaderShader::load(const String &p_path, const String &p_original_path, Error *r_error, bool p_use_sub_threads, float *r_progress, bool p_no_cache) {
+RES ResourceFormatLoaderShader::load(const String &p_path, const String &p_original_path, Error *r_error, bool p_use_sub_threads, float *r_progress, CacheMode p_cache_mode) {
 	if (r_error) {
 		*r_error = ERR_FILE_CANT_OPEN;
 	}

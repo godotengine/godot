@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -60,13 +60,18 @@ String XRCamera3D::get_configuration_warning() const {
 		return String();
 	}
 
+	String warning = Camera3D::get_configuration_warning();
+
 	// must be child node of XROrigin3D!
 	XROrigin3D *origin = Object::cast_to<XROrigin3D>(get_parent());
 	if (origin == nullptr) {
-		return TTR("XRCamera3D must have an XROrigin3D node as its parent.");
+		if (!warning.is_empty()) {
+			warning += "\n\n";
+		}
+		warning += TTR("XRCamera3D must have an XROrigin3D node as its parent.");
 	};
 
-	return String();
+	return warning;
 };
 
 Vector3 XRCamera3D::project_local_ray_normal(const Point2 &p_pos) const {
@@ -86,9 +91,9 @@ Vector3 XRCamera3D::project_local_ray_normal(const Point2 &p_pos) const {
 	Vector2 cpos = get_viewport()->get_camera_coords(p_pos);
 	Vector3 ray;
 
-	CameraMatrix cm = xr_interface->get_projection_for_eye(XRInterface::EYE_MONO, viewport_size.aspect(), get_znear(), get_zfar());
+	CameraMatrix cm = xr_interface->get_projection_for_eye(XRInterface::EYE_MONO, viewport_size.aspect(), get_near(), get_far());
 	Vector2 screen_he = cm.get_viewport_half_extents();
-	ray = Vector3(((cpos.x / viewport_size.width) * 2.0 - 1.0) * screen_he.x, ((1.0 - (cpos.y / viewport_size.height)) * 2.0 - 1.0) * screen_he.y, -get_znear()).normalized();
+	ray = Vector3(((cpos.x / viewport_size.width) * 2.0 - 1.0) * screen_he.x, ((1.0 - (cpos.y / viewport_size.height)) * 2.0 - 1.0) * screen_he.y, -get_near()).normalized();
 
 	return ray;
 };
@@ -108,7 +113,7 @@ Point2 XRCamera3D::unproject_position(const Vector3 &p_pos) const {
 
 	Size2 viewport_size = get_viewport()->get_visible_rect().size;
 
-	CameraMatrix cm = xr_interface->get_projection_for_eye(XRInterface::EYE_MONO, viewport_size.aspect(), get_znear(), get_zfar());
+	CameraMatrix cm = xr_interface->get_projection_for_eye(XRInterface::EYE_MONO, viewport_size.aspect(), get_near(), get_far());
 
 	Plane p(get_camera_transform().xform_inv(p_pos), 1.0);
 
@@ -137,7 +142,7 @@ Vector3 XRCamera3D::project_position(const Point2 &p_point, float p_z_depth) con
 
 	Size2 viewport_size = get_viewport()->get_visible_rect().size;
 
-	CameraMatrix cm = xr_interface->get_projection_for_eye(XRInterface::EYE_MONO, viewport_size.aspect(), get_znear(), get_zfar());
+	CameraMatrix cm = xr_interface->get_projection_for_eye(XRInterface::EYE_MONO, viewport_size.aspect(), get_near(), get_far());
 
 	Vector2 vp_he = cm.get_viewport_half_extents();
 
@@ -165,7 +170,7 @@ Vector<Plane> XRCamera3D::get_frustum() const {
 	ERR_FAIL_COND_V(!is_inside_world(), Vector<Plane>());
 
 	Size2 viewport_size = get_viewport()->get_visible_rect().size;
-	CameraMatrix cm = xr_interface->get_projection_for_eye(XRInterface::EYE_MONO, viewport_size.aspect(), get_znear(), get_zfar());
+	CameraMatrix cm = xr_interface->get_projection_for_eye(XRInterface::EYE_MONO, viewport_size.aspect(), get_near(), get_far());
 	return cm.get_projection_planes(get_camera_transform());
 };
 
@@ -206,7 +211,7 @@ void XRController3D::_notification(int p_what) {
 							emit_signal("button_pressed", i);
 							button_states += mask;
 						} else if (was_pressed && !is_pressed) {
-							emit_signal("button_release", i);
+							emit_signal("button_released", i);
 							button_states -= mask;
 						};
 
@@ -242,7 +247,7 @@ void XRController3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_joystick_axis", "axis"), &XRController3D::get_joystick_axis);
 
 	ClassDB::bind_method(D_METHOD("get_is_active"), &XRController3D::get_is_active);
-	ClassDB::bind_method(D_METHOD("get_hand"), &XRController3D::get_hand);
+	ClassDB::bind_method(D_METHOD("get_tracker_hand"), &XRController3D::get_tracker_hand);
 
 	ClassDB::bind_method(D_METHOD("get_rumble"), &XRController3D::get_rumble);
 	ClassDB::bind_method(D_METHOD("set_rumble", "rumble"), &XRController3D::set_rumble);
@@ -252,7 +257,7 @@ void XRController3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_mesh"), &XRController3D::get_mesh);
 
 	ADD_SIGNAL(MethodInfo("button_pressed", PropertyInfo(Variant::INT, "button")));
-	ADD_SIGNAL(MethodInfo("button_release", PropertyInfo(Variant::INT, "button")));
+	ADD_SIGNAL(MethodInfo("button_released", PropertyInfo(Variant::INT, "button")));
 	ADD_SIGNAL(MethodInfo("mesh_updated", PropertyInfo(Variant::OBJECT, "mesh", PROPERTY_HINT_RESOURCE_TYPE, "Mesh")));
 };
 
@@ -277,7 +282,7 @@ String XRController3D::get_controller_name() const {
 		return String("Not connected");
 	};
 
-	return tracker->get_name();
+	return tracker->get_tracker_name();
 };
 
 int XRController3D::get_joystick_id() const {
@@ -344,7 +349,7 @@ bool XRController3D::get_is_active() const {
 	return is_active;
 };
 
-XRPositionalTracker::TrackerHand XRController3D::get_hand() const {
+XRPositionalTracker::TrackerHand XRController3D::get_tracker_hand() const {
 	// get our XRServer
 	XRServer *xr_server = XRServer::get_singleton();
 	ERR_FAIL_NULL_V(xr_server, XRPositionalTracker::TRACKER_HAND_UNKNOWN);
@@ -354,7 +359,7 @@ XRPositionalTracker::TrackerHand XRController3D::get_hand() const {
 		return XRPositionalTracker::TRACKER_HAND_UNKNOWN;
 	};
 
-	return tracker->get_hand();
+	return tracker->get_tracker_hand();
 };
 
 String XRController3D::get_configuration_warning() const {
@@ -362,17 +367,25 @@ String XRController3D::get_configuration_warning() const {
 		return String();
 	}
 
+	String warning = Node3D::get_configuration_warning();
+
 	// must be child node of XROrigin!
 	XROrigin3D *origin = Object::cast_to<XROrigin3D>(get_parent());
 	if (origin == nullptr) {
-		return TTR("XRController3D must have an XROrigin3D node as its parent.");
+		if (!warning.is_empty()) {
+			warning += "\n\n";
+		}
+		warning += TTR("XRController3D must have an XROrigin3D node as its parent.");
 	};
 
 	if (controller_id == 0) {
-		return TTR("The controller ID must not be 0 or this controller won't be bound to an actual controller.");
+		if (!warning.is_empty()) {
+			warning += "\n\n";
+		}
+		warning += TTR("The controller ID must not be 0 or this controller won't be bound to an actual controller.");
 	};
 
-	return String();
+	return warning;
 };
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -467,7 +480,7 @@ String XRAnchor3D::get_anchor_name() const {
 		return String("Not connected");
 	};
 
-	return tracker->get_name();
+	return tracker->get_tracker_name();
 };
 
 bool XRAnchor3D::get_is_active() const {
@@ -479,17 +492,25 @@ String XRAnchor3D::get_configuration_warning() const {
 		return String();
 	}
 
+	String warning = Node3D::get_configuration_warning();
+
 	// must be child node of XROrigin3D!
 	XROrigin3D *origin = Object::cast_to<XROrigin3D>(get_parent());
 	if (origin == nullptr) {
-		return TTR("XRAnchor3D must have an XROrigin3D node as its parent.");
+		if (!warning.is_empty()) {
+			warning += "\n\n";
+		}
+		warning += TTR("XRAnchor3D must have an XROrigin3D node as its parent.");
 	};
 
 	if (anchor_id == 0) {
-		return TTR("The anchor ID must not be 0 or this anchor won't be bound to an actual anchor.");
+		if (!warning.is_empty()) {
+			warning += "\n\n";
+		}
+		warning += TTR("The anchor ID must not be 0 or this anchor won't be bound to an actual anchor.");
 	};
 
-	return String();
+	return warning;
 };
 
 Plane XRAnchor3D::get_plane() const {
@@ -512,11 +533,16 @@ String XROrigin3D::get_configuration_warning() const {
 		return String();
 	}
 
+	String warning = Node3D::get_configuration_warning();
+
 	if (tracked_camera == nullptr) {
-		return TTR("XROrigin3D requires an XRCamera3D child node.");
+		if (!warning.is_empty()) {
+			warning += "\n\n";
+		}
+		warning += TTR("XROrigin3D requires an XRCamera3D child node.");
 	}
 
-	return String();
+	return warning;
 };
 
 void XROrigin3D::_bind_methods() {

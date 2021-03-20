@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -32,9 +32,9 @@
 
 #ifdef DEBUG_METHODS_ENABLED
 
+#include "core/config/project_settings.h"
 #include "core/io/json.h"
 #include "core/os/file_access.h"
-#include "core/project_settings.h"
 #include "core/version.h"
 
 void class_db_api_to_json(const String &p_output_file, ClassDB::APIType p_api) {
@@ -71,7 +71,7 @@ void class_db_api_to_json(const String &p_output_file, ClassDB::APIType p_api) {
 			while ((k = t->method_map.next(k))) {
 				String name = k->operator String();
 
-				ERR_CONTINUE(name.empty());
+				ERR_CONTINUE(name.is_empty());
 
 				if (name[0] == '_') {
 					continue; // Ignore non-virtual methods that start with an underscore
@@ -122,7 +122,7 @@ void class_db_api_to_json(const String &p_output_file, ClassDB::APIType p_api) {
 				method_dict["hint_flags"] = mb->get_hint_flags();
 			}
 
-			if (!methods.empty()) {
+			if (!methods.is_empty()) {
 				class_dict["methods"] = methods;
 			}
 		}
@@ -149,7 +149,7 @@ void class_db_api_to_json(const String &p_output_file, ClassDB::APIType p_api) {
 				constant_dict["value"] = t->constant_map[F->get()];
 			}
 
-			if (!constants.empty()) {
+			if (!constants.is_empty()) {
 				class_dict["constants"] = constants;
 			}
 		}
@@ -184,7 +184,7 @@ void class_db_api_to_json(const String &p_output_file, ClassDB::APIType p_api) {
 				}
 			}
 
-			if (!signals.empty()) {
+			if (!signals.is_empty()) {
 				class_dict["signals"] = signals;
 			}
 		}
@@ -214,7 +214,7 @@ void class_db_api_to_json(const String &p_output_file, ClassDB::APIType p_api) {
 				property_dict["getter"] = psg->getter;
 			}
 
-			if (!properties.empty()) {
+			if (!properties.is_empty()) {
 				class_dict["property_setget"] = properties;
 			}
 		}
@@ -233,7 +233,7 @@ void class_db_api_to_json(const String &p_output_file, ClassDB::APIType p_api) {
 			property_dict["usage"] = F->get().usage;
 		}
 
-		if (!property_list.empty()) {
+		if (!property_list.is_empty()) {
 			class_dict["property_list"] = property_list;
 		}
 	}

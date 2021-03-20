@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -32,7 +32,8 @@
 #define EDITOR_PLUGIN_H
 
 #include "core/io/config_file.h"
-#include "core/undo_redo.h"
+#include "core/object/undo_redo.h"
+#include "editor/debugger/editor_debugger_node.h"
 #include "editor/editor_inspector.h"
 #include "editor/editor_translation_parser.h"
 #include "editor/import/editor_import_plugin.h"
@@ -68,7 +69,7 @@ protected:
 public:
 	static EditorInterface *get_singleton() { return singleton; }
 
-	Control *get_editor_viewport();
+	Control *get_editor_main_control();
 	void edit_resource(const Ref<Resource> &p_resource);
 	void open_scene_from_path(const String &scene_path);
 	void reload_scene_from_path(const String &scene_path);
@@ -88,7 +89,7 @@ public:
 	String get_selected_path() const;
 	String get_current_path() const;
 
-	void inspect_object(Object *p_obj, const String &p_for_property = String());
+	void inspect_object(Object *p_obj, const String &p_for_property = String(), bool p_inspector_only = false);
 
 	EditorSelection *get_selection();
 	//EditorImportExport *get_import_export();
@@ -129,7 +130,11 @@ class EditorPlugin : public Node {
 
 	String last_main_screen_name;
 
+	void _editor_project_settings_changed();
+
 protected:
+	void _notification(int p_what);
+
 	static void _bind_methods();
 	UndoRedo &get_undo_redo() { return *undo_redo; }
 
@@ -173,7 +178,7 @@ public:
 	void remove_control_from_docks(Control *p_control);
 	void remove_control_from_bottom_panel(Control *p_control);
 
-	void add_tool_menu_item(const String &p_name, Object *p_handler, const String &p_callback, const Variant &p_ud = Variant());
+	void add_tool_menu_item(const String &p_name, const Callable &p_callable);
 	void add_tool_submenu_item(const String &p_name, Object *p_submenu);
 	void remove_tool_menu_item(const String &p_name);
 
@@ -220,7 +225,7 @@ public:
 
 	int update_overlays() const;
 
-	void queue_save_layout() const;
+	void queue_save_layout();
 
 	void make_bottom_panel_item_visible(Control *p_item);
 	void hide_bottom_panel();
@@ -248,6 +253,9 @@ public:
 
 	void add_autoload_singleton(const String &p_name, const String &p_path);
 	void remove_autoload_singleton(const String &p_name);
+
+	void add_debugger_plugin(const Ref<Script> &p_script);
+	void remove_debugger_plugin(const Ref<Script> &p_script);
 
 	void enable_plugin();
 	void disable_plugin();

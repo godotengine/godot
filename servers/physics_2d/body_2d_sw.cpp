@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -468,7 +468,7 @@ void Body2DSW::integrate_forces(real_t p_step) {
 		linear_velocity = motion / p_step;
 
 		real_t rot = new_transform.get_rotation() - get_transform().get_rotation();
-		angular_velocity = rot / p_step;
+		angular_velocity = remainder(rot, 2.0 * Math_PI) / p_step;
 
 		do_motion = true;
 
@@ -562,13 +562,13 @@ void Body2DSW::integrate_velocities(real_t p_step) {
 }
 
 void Body2DSW::wakeup_neighbours() {
-	for (Map<Constraint2DSW *, int>::Element *E = constraint_map.front(); E; E = E->next()) {
-		const Constraint2DSW *c = E->key();
+	for (List<Pair<Constraint2DSW *, int>>::Element *E = constraint_list.front(); E; E = E->next()) {
+		const Constraint2DSW *c = E->get().first;
 		Body2DSW **n = c->get_body_ptr();
 		int bc = c->get_body_count();
 
 		for (int i = 0; i < bc; i++) {
-			if (i == E->get()) {
+			if (i == E->get().second) {
 				continue;
 			}
 			Body2DSW *b = n[i];

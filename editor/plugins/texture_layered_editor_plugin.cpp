@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -30,8 +30,8 @@
 
 #include "texture_layered_editor_plugin.h"
 
+#include "core/config/project_settings.h"
 #include "core/io/resource_loader.h"
-#include "core/project_settings.h"
 #include "editor/editor_settings.h"
 
 void TextureLayeredEditor::_gui_input(Ref<InputEvent> p_event) {
@@ -63,7 +63,7 @@ void TextureLayeredEditor::_notification(int p_what) {
 	}
 }
 
-void TextureLayeredEditor::_changed_callback(Object *p_changed, const char *p_prop) {
+void TextureLayeredEditor::_texture_changed() {
 	if (!is_visible()) {
 		return;
 	}
@@ -173,7 +173,7 @@ void TextureLayeredEditor::_texture_rect_update_area() {
 
 void TextureLayeredEditor::edit(Ref<TextureLayered> p_texture) {
 	if (!texture.is_null()) {
-		texture->remove_change_receptor(this);
+		texture->disconnect("changed", callable_mp(this, &TextureLayeredEditor::_texture_changed));
 	}
 
 	texture = p_texture;
@@ -183,7 +183,7 @@ void TextureLayeredEditor::edit(Ref<TextureLayered> p_texture) {
 			_make_shaders();
 		}
 
-		texture->add_change_receptor(this);
+		texture->connect("changed", callable_mp(this, &TextureLayeredEditor::_texture_changed));
 		update();
 		texture_rect->set_material(materials[texture->get_layered_type()]);
 		setting = true;
@@ -225,21 +225,20 @@ TextureLayeredEditor::TextureLayeredEditor() {
 	layer->set_step(1);
 	layer->set_max(100);
 	add_child(layer);
-	layer->set_anchor(MARGIN_RIGHT, 1);
-	layer->set_anchor(MARGIN_LEFT, 1);
+	layer->set_anchor(SIDE_RIGHT, 1);
+	layer->set_anchor(SIDE_LEFT, 1);
 	layer->set_h_grow_direction(GROW_DIRECTION_BEGIN);
 	layer->set_modulate(Color(1, 1, 1, 0.8));
 	info = memnew(Label);
 	add_child(info);
-	info->set_anchor(MARGIN_RIGHT, 1);
-	info->set_anchor(MARGIN_LEFT, 1);
-	info->set_anchor(MARGIN_BOTTOM, 1);
-	info->set_anchor(MARGIN_TOP, 1);
+	info->set_anchor(SIDE_RIGHT, 1);
+	info->set_anchor(SIDE_LEFT, 1);
+	info->set_anchor(SIDE_BOTTOM, 1);
+	info->set_anchor(SIDE_TOP, 1);
 	info->set_h_grow_direction(GROW_DIRECTION_BEGIN);
 	info->set_v_grow_direction(GROW_DIRECTION_BEGIN);
 	info->add_theme_color_override("font_color", Color(1, 1, 1, 1));
-	info->add_theme_color_override("font_color_shadow", Color(0, 0, 0, 0.5));
-	info->add_theme_color_override("font_color_shadow", Color(0, 0, 0, 0.5));
+	info->add_theme_color_override("font_shadow_color", Color(0, 0, 0, 0.5));
 	info->add_theme_constant_override("shadow_as_outline", 1);
 	info->add_theme_constant_override("shadow_offset_x", 2);
 	info->add_theme_constant_override("shadow_offset_y", 2);
@@ -249,9 +248,6 @@ TextureLayeredEditor::TextureLayeredEditor() {
 }
 
 TextureLayeredEditor::~TextureLayeredEditor() {
-	if (!texture.is_null()) {
-		texture->remove_change_receptor(this);
-	}
 }
 
 //

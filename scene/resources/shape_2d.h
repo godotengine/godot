@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -31,14 +31,14 @@
 #ifndef SHAPE_2D_H
 #define SHAPE_2D_H
 
-#include "core/resource.h"
+#include "core/io/resource.h"
 
 class Shape2D : public Resource {
 	GDCLASS(Shape2D, Resource);
 	OBJ_SAVE_TYPE(Shape2D);
 
 	RID shape;
-	real_t custom_bias;
+	real_t custom_bias = 0.0;
 
 protected:
 	static void _bind_methods();
@@ -61,6 +61,9 @@ public:
 	/// Returns the radius of a circle that fully enclose this shape
 	virtual real_t get_enclosing_radius() const = 0;
 	virtual RID get_rid() const override;
+
+	static bool is_collision_outline_enabled();
+
 	Shape2D();
 	~Shape2D();
 };

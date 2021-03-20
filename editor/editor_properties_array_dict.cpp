@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -186,7 +186,7 @@ void EditorPropertyArray::_change_type_menu(int p_index) {
 
 	Variant value;
 	Callable::CallError ce;
-	value = Variant::construct(Variant::Type(p_index), nullptr, 0, ce);
+	Variant::construct(Variant::Type(p_index), value, nullptr, 0, ce);
 	Variant array = object->get_array();
 	array.set(changing_type_idx, value);
 
@@ -445,7 +445,7 @@ void EditorPropertyArray::drop_data_fw(const Point2 &p_point, const Variant &p_d
 		// Handle the case where array is not initialised yet
 		if (!array.is_array()) {
 			Callable::CallError ce;
-			array = Variant::construct(array_type, nullptr, 0, ce);
+			Variant::construct(array_type, array, nullptr, 0, ce);
 		}
 
 		// Loop the file array and add to existing array
@@ -491,7 +491,7 @@ void EditorPropertyArray::_edit_pressed() {
 	Variant array = get_edited_object()->get(get_edited_property());
 	if (!array.is_array()) {
 		Callable::CallError ce;
-		array = Variant::construct(array_type, nullptr, 0, ce);
+		Variant::construct(array_type, array, nullptr, 0, ce);
 
 		get_edited_object()->set(get_edited_property(), array);
 	}
@@ -524,7 +524,9 @@ void EditorPropertyArray::_length_changed(double p_page) {
 			for (int i = previous_size; i < size; i++) {
 				if (array.get(i).get_type() == Variant::NIL) {
 					Callable::CallError ce;
-					array.set(i, Variant::construct(subtype, nullptr, 0, ce));
+					Variant r;
+					Variant::construct(subtype, r, nullptr, 0, ce);
+					array.set(i, r);
 				}
 			}
 		}
@@ -534,7 +536,9 @@ void EditorPropertyArray::_length_changed(double p_page) {
 		// Pool*Array don't initialize their elements, have to do it manually
 		for (int i = previous_size; i < size; i++) {
 			Callable::CallError ce;
-			array.set(i, Variant::construct(array.get(i).get_type(), nullptr, 0, ce));
+			Variant r;
+			Variant::construct(array.get(i).get_type(), r, nullptr, 0, ce);
+			array.set(i, r);
 		}
 	}
 
@@ -546,7 +550,7 @@ void EditorPropertyArray::_length_changed(double p_page) {
 void EditorPropertyArray::setup(Variant::Type p_array_type, const String &p_hint_string) {
 	array_type = p_array_type;
 
-	if (array_type == Variant::ARRAY && !p_hint_string.empty()) {
+	if (array_type == Variant::ARRAY && !p_hint_string.is_empty()) {
 		int hint_subtype_separator = p_hint_string.find(":");
 		if (hint_subtype_separator >= 0) {
 			String subtype_string = p_hint_string.substr(0, hint_subtype_separator);
@@ -569,8 +573,7 @@ void EditorPropertyArray::_bind_methods() {
 
 EditorPropertyArray::EditorPropertyArray() {
 	object.instance();
-	page_idx = 0;
-	page_len = 10;
+	page_len = int(EDITOR_GET("interface/inspector/max_array_dictionary_items_per_page"));
 	edit = memnew(Button);
 	edit->set_flat(true);
 	edit->set_h_size_flags(SIZE_EXPAND_FILL);
@@ -657,7 +660,7 @@ void EditorPropertyDictionary::_change_type_menu(int p_index) {
 	if (changing_type_idx < 0) {
 		Variant value;
 		Callable::CallError ce;
-		value = Variant::construct(Variant::Type(p_index), nullptr, 0, ce);
+		Variant::construct(Variant::Type(p_index), value, nullptr, 0, ce);
 		if (changing_type_idx == -1) {
 			object->set_new_item_key(value);
 		} else {
@@ -672,7 +675,7 @@ void EditorPropertyDictionary::_change_type_menu(int p_index) {
 	if (p_index < Variant::VARIANT_MAX) {
 		Variant value;
 		Callable::CallError ce;
-		value = Variant::construct(Variant::Type(p_index), nullptr, 0, ce);
+		Variant::construct(Variant::Type(p_index), value, nullptr, 0, ce);
 		Variant key = dict.get_key_at_index(changing_type_idx);
 		dict[key] = value;
 	} else {
@@ -888,7 +891,7 @@ void EditorPropertyDictionary::update_property() {
 					prop = memnew(EditorPropertyNodePath);
 
 				} break;
-				case Variant::_RID: {
+				case Variant::RID: {
 					prop = memnew(EditorPropertyRID);
 
 				} break;
@@ -971,7 +974,7 @@ void EditorPropertyDictionary::update_property() {
 				Ref<StyleBoxFlat> flat;
 				flat.instance();
 				for (int j = 0; j < 4; j++) {
-					flat->set_default_margin(Margin(j), 2 * EDSCALE);
+					flat->set_default_margin(Side(j), 2 * EDSCALE);
 				}
 				flat->set_bg_color(get_theme_color("prop_subsection", "Editor"));
 
@@ -1044,7 +1047,7 @@ void EditorPropertyDictionary::_edit_pressed() {
 	Variant prop_val = get_edited_object()->get(get_edited_property());
 	if (prop_val.get_type() == Variant::NIL) {
 		Callable::CallError ce;
-		prop_val = Variant::construct(Variant::DICTIONARY, nullptr, 0, ce);
+		Variant::construct(Variant::DICTIONARY, prop_val, nullptr, 0, ce);
 		get_edited_object()->set(get_edited_property(), prop_val);
 	}
 
@@ -1065,8 +1068,7 @@ void EditorPropertyDictionary::_bind_methods() {
 
 EditorPropertyDictionary::EditorPropertyDictionary() {
 	object.instance();
-	page_idx = 0;
-	page_len = 10;
+	page_len = int(EDITOR_GET("interface/inspector/max_array_dictionary_items_per_page"));
 	edit = memnew(Button);
 	edit->set_flat(true);
 	edit->set_h_size_flags(SIZE_EXPAND_FILL);

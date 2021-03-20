@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -35,11 +35,11 @@
 #include "core/input/input.h"
 #include "core/math/transform_2d.h"
 #include "core/os/os.h"
-#include "core/ustring.h"
+#include "core/string/ustring.h"
 #include "drivers/xaudio2/audio_driver_xaudio2.h"
 #include "joypad_uwp.h"
 #include "servers/audio_server.h"
-#include "servers/rendering/rasterizer.h"
+#include "servers/rendering/renderer_compositor.h"
 #include "servers/rendering_server.h"
 
 #include <fcntl.h>
@@ -55,13 +55,13 @@ public:
 			CHAR_EVENT_MESSAGE
 		};
 
-		bool alt, shift, control;
-		MessageType type;
-		bool pressed;
-		unsigned int keycode;
-		unsigned int physical_keycode;
-		unsigned int unicode;
-		bool echo;
+		bool alt = false, shift = false, control = false;
+		MessageType type = KEY_EVENT_MESSAGE;
+		bool pressed = false;
+		unsigned int keycode = 0;
+		unsigned int physical_keycode = 0;
+		unsigned int unicode = 0;
+		bool echo = false;
 		CorePhysicalKeyStatus status;
 	};
 
@@ -194,13 +194,13 @@ public:
 	virtual TimeZoneInfo get_time_zone_info() const;
 	virtual uint64_t get_unix_time() const;
 
-	virtual bool can_draw() const;
 	virtual Error set_cwd(const String &p_cwd);
 
 	virtual void delay_usec(uint32_t p_usec) const;
 	virtual uint64_t get_ticks_usec() const;
 
-	virtual Error execute(const String &p_path, const List<String> &p_arguments, bool p_blocking = true, ProcessID *r_child_id = nullptr, String *r_pipe = nullptr, int *r_exitcode = nullptr, bool read_stderr = false, Mutex *p_pipe_mutex = nullptr);
+	virtual Error execute(const String &p_path, const List<String> &p_arguments, String *r_pipe = nullptr, int *r_exitcode = nullptr, bool read_stderr = false, Mutex *p_pipe_mutex = nullptr);
+	virtual Error create_process(const String &p_path, const List<String> &p_arguments, ProcessID *r_child_id = nullptr);
 	virtual Error kill(const ProcessID &p_pid);
 
 	virtual bool has_environment(const String &p_var) const;

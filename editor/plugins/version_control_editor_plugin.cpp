@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -30,7 +30,7 @@
 
 #include "version_control_editor_plugin.h"
 
-#include "core/script_language.h"
+#include "core/object/script_language.h"
 #include "editor/editor_file_system.h"
 #include "editor/editor_node.h"
 #include "editor/editor_scale.h"
@@ -119,19 +119,13 @@ void VersionControlEditorPlugin::_initialize_vcs() {
 }
 
 void VersionControlEditorPlugin::_send_commit_msg() {
-	String msg = commit_message->get_text();
-	if (msg == "") {
-		commit_status->set_text(TTR("No commit message was provided"));
-		return;
-	}
-
 	if (EditorVCSInterface::get_singleton()) {
 		if (staged_files_count == 0) {
 			commit_status->set_text(TTR("No files added to stage"));
 			return;
 		}
 
-		EditorVCSInterface::get_singleton()->commit(msg);
+		EditorVCSInterface::get_singleton()->commit(commit_message->get_text());
 
 		commit_message->set_text("");
 		version_control_dock_button->set_pressed(false);
@@ -294,6 +288,10 @@ void VersionControlEditorPlugin::_update_commit_status() {
 	staged_files_count = 0;
 }
 
+void VersionControlEditorPlugin::_update_commit_button() {
+	commit_button->set_disabled(commit_message->get_text().strip_edges() == "");
+}
+
 void VersionControlEditorPlugin::register_editor() {
 	if (!EditorVCSInterface::get_singleton()) {
 		EditorNode::get_singleton()->add_control_to_dock(EditorNode::DOCK_SLOT_RIGHT_UL, version_commit_dock);
@@ -357,7 +355,7 @@ VersionControlEditorPlugin::VersionControlEditorPlugin() {
 	set_up_dialog->set_min_size(Size2(400, 100));
 	version_control_actions->add_child(set_up_dialog);
 
-	set_up_ok_button = set_up_dialog->get_ok();
+	set_up_ok_button = set_up_dialog->get_ok_button();
 	set_up_ok_button->set_text(TTR("Close"));
 
 	set_up_vbc = memnew(VBoxContainer);
@@ -463,11 +461,12 @@ VersionControlEditorPlugin::VersionControlEditorPlugin() {
 	commit_message->set_v_grow_direction(Control::GrowDirection::GROW_DIRECTION_END);
 	commit_message->set_custom_minimum_size(Size2(200, 100));
 	commit_message->set_wrap_enabled(true);
-	commit_message->set_text(TTR("Add a commit message"));
+	commit_message->connect("text_changed", callable_mp(this, &VersionControlEditorPlugin::_update_commit_button));
 	commit_box_vbc->add_child(commit_message);
 
 	commit_button = memnew(Button);
 	commit_button->set_text(TTR("Commit Changes"));
+	commit_button->set_disabled(true);
 	commit_button->connect("pressed", callable_mp(this, &VersionControlEditorPlugin::_send_commit_msg));
 	commit_box_vbc->add_child(commit_button);
 

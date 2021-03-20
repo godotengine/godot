@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -31,6 +31,7 @@
 #include "property_selector.h"
 
 #include "core/os/keyboard.h"
+#include "editor/doc_tools.h"
 #include "editor/editor_node.h"
 #include "editor_scale.h"
 
@@ -84,6 +85,9 @@ void PropertySelector::_update_search() {
 
 	TreeItem *root = search_options->create_item();
 
+	// Allow using spaces in place of underscores in the search string (makes the search more fault-tolerant).
+	const String search_text = search_box->get_text().replace(" ", "_");
+
 	if (properties) {
 		List<PropertyInfo> props;
 
@@ -92,7 +96,7 @@ void PropertySelector::_update_search() {
 		} else if (type != Variant::NIL) {
 			Variant v;
 			Callable::CallError ce;
-			v = Variant::construct(type, nullptr, 0, ce);
+			Variant::construct(type, v, nullptr, 0, ce);
 
 			v.get_property_list(&props);
 		} else {
@@ -167,7 +171,7 @@ void PropertySelector::_update_search() {
 				continue;
 			}
 
-			if (search_box->get_text() != String() && E->get().name.find(search_box->get_text()) == -1) {
+			if (search_box->get_text() != String() && E->get().name.findn(search_text) == -1) {
 				continue;
 			}
 
@@ -180,7 +184,7 @@ void PropertySelector::_update_search() {
 			item->set_metadata(0, E->get().name);
 			item->set_icon(0, type_icons[E->get().type]);
 
-			if (!found && search_box->get_text() != String() && E->get().name.find(search_box->get_text()) != -1) {
+			if (!found && search_box->get_text() != String() && E->get().name.findn(search_text) != -1) {
 				item->select(0);
 				found = true;
 			}
@@ -197,7 +201,7 @@ void PropertySelector::_update_search() {
 		if (type != Variant::NIL) {
 			Variant v;
 			Callable::CallError ce;
-			v = Variant::construct(type, nullptr, 0, ce);
+			Variant::construct(type, v, nullptr, 0, ce);
 			v.get_method_list(&methods);
 		} else {
 			Object *obj = ObjectDB::get_instance(script);
@@ -255,7 +259,7 @@ void PropertySelector::_update_search() {
 				continue;
 			}
 
-			if (search_box->get_text() != String() && name.find(search_box->get_text()) == -1) {
+			if (search_box->get_text() != String() && name.findn(search_text) == -1) {
 				continue;
 			}
 
@@ -270,29 +274,29 @@ void PropertySelector::_update_search() {
 			} else if (mi.return_val.type != Variant::NIL) {
 				desc = Variant::get_type_name(mi.return_val.type);
 			} else {
-				desc = "void ";
+				desc = "void";
 			}
 
-			desc += " " + mi.name + " ( ";
+			desc += vformat(" %s(", mi.name);
 
 			for (int i = 0; i < mi.arguments.size(); i++) {
 				if (i > 0) {
 					desc += ", ";
 				}
 
+				desc += mi.arguments[i].name;
+
 				if (mi.arguments[i].type == Variant::NIL) {
-					desc += "var ";
+					desc += ": Variant";
 				} else if (mi.arguments[i].name.find(":") != -1) {
-					desc += mi.arguments[i].name.get_slice(":", 1) + " ";
+					desc += vformat(": %s", mi.arguments[i].name.get_slice(":", 1));
 					mi.arguments[i].name = mi.arguments[i].name.get_slice(":", 0);
 				} else {
-					desc += Variant::get_type_name(mi.arguments[i].type) + " ";
+					desc += vformat(": %s", Variant::get_type_name(mi.arguments[i].type));
 				}
-
-				desc += mi.arguments[i].name;
 			}
 
-			desc += " )";
+			desc += ")";
 
 			if (E->get().flags & METHOD_FLAG_CONST) {
 				desc += " const";
@@ -306,7 +310,7 @@ void PropertySelector::_update_search() {
 			item->set_metadata(0, name);
 			item->set_selectable(0, true);
 
-			if (!found && search_box->get_text() != String() && name.find(search_box->get_text()) != -1) {
+			if (!found && search_box->get_text() != String() && name.findn(search_text) != -1) {
 				item->select(0);
 				found = true;
 			}
@@ -317,7 +321,7 @@ void PropertySelector::_update_search() {
 		}
 	}
 
-	get_ok()->set_disabled(root->get_children() == nullptr);
+	get_ok_button()->set_disabled(root->get_children() == nullptr);
 }
 
 void PropertySelector::_confirmed() {
@@ -346,7 +350,7 @@ void PropertySelector::_item_selected() {
 		class_type = base_type;
 	}
 
-	DocData *dd = EditorHelp::get_doc_data();
+	DocTools *dd = EditorHelp::get_doc_data();
 	String text;
 
 	if (properties) {
@@ -549,8 +553,8 @@ PropertySelector::PropertySelector() {
 	search_box->connect("gui_input", callable_mp(this, &PropertySelector::_sbox_input));
 	search_options = memnew(Tree);
 	vbc->add_margin_child(TTR("Matches:"), search_options, true);
-	get_ok()->set_text(TTR("Open"));
-	get_ok()->set_disabled(true);
+	get_ok_button()->set_text(TTR("Open"));
+	get_ok_button()->set_disabled(true);
 	register_text_enter(search_box);
 	set_hide_on_ok(false);
 	search_options->connect("item_activated", callable_mp(this, &PropertySelector::_confirmed));

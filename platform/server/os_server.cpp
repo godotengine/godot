@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -30,10 +30,10 @@
 
 #include "os_server.h"
 
-#include "core/print_string.h"
+#include "core/string/print_string.h"
 #include "drivers/dummy/rasterizer_dummy.h"
 #include "drivers/dummy/texture_loader_dummy.h"
-#include "servers/rendering/rendering_server_raster.h"
+#include "servers/rendering/rendering_server_default.h"
 
 #include "main/main.h"
 
@@ -46,14 +46,6 @@ int OS_Server::get_video_driver_count() const {
 }
 
 const char *OS_Server::get_video_driver_name(int p_driver) const {
-	return "Dummy";
-}
-
-int OS_Server::get_audio_driver_count() const {
-	return 1;
-}
-
-const char *OS_Server::get_audio_driver_name(int p_driver) const {
 	return "Dummy";
 }
 
@@ -76,7 +68,7 @@ Error OS_Server::initialize(const VideoMode &p_desired, int p_video_driver, int 
 
 	video_driver_index = p_video_driver; // unused in server platform, but should still be initialized
 
-	rendering_server = memnew(RenderingServerRaster);
+	rendering_server = memnew(RenderingServerDefault);
 	rendering_server->init();
 
 	AudioDriverManager::initialize(p_audio_driver);
@@ -157,10 +149,6 @@ void OS_Server::set_main_loop(MainLoop *p_main_loop) {
 	main_loop = p_main_loop;
 	input->set_main_loop(p_main_loop);
 }
-
-bool OS_Server::can_draw() const {
-	return false; //can never draw
-};
 
 String OS_Server::get_name() const {
 	return "Server";

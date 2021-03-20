@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -31,10 +31,9 @@
 #ifndef THEME_H
 #define THEME_H
 
+#include "core/io/resource.h"
 #include "core/io/resource_loader.h"
-#include "core/resource.h"
 #include "scene/resources/font.h"
-#include "scene/resources/shader.h"
 #include "scene/resources/style_box.h"
 #include "scene/resources/texture.h"
 
@@ -47,17 +46,22 @@ class Theme : public Resource {
 	HashMap<StringName, HashMap<StringName, Ref<Texture2D>>> icon_map;
 	HashMap<StringName, HashMap<StringName, Ref<StyleBox>>> style_map;
 	HashMap<StringName, HashMap<StringName, Ref<Font>>> font_map;
-	HashMap<StringName, HashMap<StringName, Ref<Shader>>> shader_map;
+	HashMap<StringName, HashMap<StringName, int>> font_size_map;
 	HashMap<StringName, HashMap<StringName, Color>> color_map;
 	HashMap<StringName, HashMap<StringName, int>> constant_map;
 
-	Vector<String> _get_icon_list(const String &p_type) const;
-	Vector<String> _get_stylebox_list(const String &p_type) const;
-	Vector<String> _get_stylebox_types() const;
-	Vector<String> _get_font_list(const String &p_type) const;
-	Vector<String> _get_color_list(const String &p_type) const;
-	Vector<String> _get_constant_list(const String &p_type) const;
-	Vector<String> _get_type_list(const String &p_type) const;
+	Vector<String> _get_icon_list(const String &p_node_type) const;
+	Vector<String> _get_icon_type_list() const;
+	Vector<String> _get_stylebox_list(const String &p_node_type) const;
+	Vector<String> _get_stylebox_type_list() const;
+	Vector<String> _get_font_list(const String &p_node_type) const;
+	Vector<String> _get_font_type_list() const;
+	Vector<String> _get_font_size_list(const String &p_node_type) const;
+	Vector<String> _get_color_list(const String &p_node_type) const;
+	Vector<String> _get_color_type_list() const;
+	Vector<String> _get_constant_list(const String &p_node_type) const;
+	Vector<String> _get_constant_type_list() const;
+	Vector<String> _get_type_list() const;
 
 protected:
 	bool _set(const StringName &p_name, const Variant &p_value);
@@ -69,10 +73,14 @@ protected:
 	static Ref<Texture2D> default_icon;
 	static Ref<StyleBox> default_style;
 	static Ref<Font> default_font;
+	static int default_font_size;
 
 	Ref<Font> default_theme_font;
+	int default_theme_font_size = -1;
 
 	static void _bind_methods();
+
+	virtual void reset_state() override;
 
 public:
 	static Ref<Theme> get_default();
@@ -84,46 +92,54 @@ public:
 	static void set_default_icon(const Ref<Texture2D> &p_icon);
 	static void set_default_style(const Ref<StyleBox> &p_style);
 	static void set_default_font(const Ref<Font> &p_font);
+	static void set_default_font_size(int p_font_size);
 
 	void set_default_theme_font(const Ref<Font> &p_default_font);
 	Ref<Font> get_default_theme_font() const;
 
-	void set_icon(const StringName &p_name, const StringName &p_type, const Ref<Texture2D> &p_icon);
-	Ref<Texture2D> get_icon(const StringName &p_name, const StringName &p_type) const;
-	bool has_icon(const StringName &p_name, const StringName &p_type) const;
-	void clear_icon(const StringName &p_name, const StringName &p_type);
-	void get_icon_list(StringName p_type, List<StringName> *p_list) const;
+	void set_default_theme_font_size(int p_font_size);
+	int get_default_theme_font_size() const;
 
-	void set_shader(const StringName &p_name, const StringName &p_type, const Ref<Shader> &p_shader);
-	Ref<Shader> get_shader(const StringName &p_name, const StringName &p_type) const;
-	bool has_shader(const StringName &p_name, const StringName &p_type) const;
-	void clear_shader(const StringName &p_name, const StringName &p_type);
-	void get_shader_list(const StringName &p_type, List<StringName> *p_list) const;
+	void set_icon(const StringName &p_name, const StringName &p_node_type, const Ref<Texture2D> &p_icon);
+	Ref<Texture2D> get_icon(const StringName &p_name, const StringName &p_node_type) const;
+	bool has_icon(const StringName &p_name, const StringName &p_node_type) const;
+	void clear_icon(const StringName &p_name, const StringName &p_node_type);
+	void get_icon_list(StringName p_node_type, List<StringName> *p_list) const;
+	void get_icon_type_list(List<StringName> *p_list) const;
 
-	void set_stylebox(const StringName &p_name, const StringName &p_type, const Ref<StyleBox> &p_style);
-	Ref<StyleBox> get_stylebox(const StringName &p_name, const StringName &p_type) const;
-	bool has_stylebox(const StringName &p_name, const StringName &p_type) const;
-	void clear_stylebox(const StringName &p_name, const StringName &p_type);
-	void get_stylebox_list(StringName p_type, List<StringName> *p_list) const;
-	void get_stylebox_types(List<StringName> *p_list) const;
+	void set_stylebox(const StringName &p_name, const StringName &p_node_type, const Ref<StyleBox> &p_style);
+	Ref<StyleBox> get_stylebox(const StringName &p_name, const StringName &p_node_type) const;
+	bool has_stylebox(const StringName &p_name, const StringName &p_node_type) const;
+	void clear_stylebox(const StringName &p_name, const StringName &p_node_type);
+	void get_stylebox_list(StringName p_node_type, List<StringName> *p_list) const;
+	void get_stylebox_type_list(List<StringName> *p_list) const;
 
-	void set_font(const StringName &p_name, const StringName &p_type, const Ref<Font> &p_font);
-	Ref<Font> get_font(const StringName &p_name, const StringName &p_type) const;
-	bool has_font(const StringName &p_name, const StringName &p_type) const;
-	void clear_font(const StringName &p_name, const StringName &p_type);
-	void get_font_list(StringName p_type, List<StringName> *p_list) const;
+	void set_font(const StringName &p_name, const StringName &p_node_type, const Ref<Font> &p_font);
+	Ref<Font> get_font(const StringName &p_name, const StringName &p_node_type) const;
+	bool has_font(const StringName &p_name, const StringName &p_node_type) const;
+	void clear_font(const StringName &p_name, const StringName &p_node_type);
+	void get_font_list(StringName p_node_type, List<StringName> *p_list) const;
+	void get_font_type_list(List<StringName> *p_list) const;
 
-	void set_color(const StringName &p_name, const StringName &p_type, const Color &p_color);
-	Color get_color(const StringName &p_name, const StringName &p_type) const;
-	bool has_color(const StringName &p_name, const StringName &p_type) const;
-	void clear_color(const StringName &p_name, const StringName &p_type);
-	void get_color_list(StringName p_type, List<StringName> *p_list) const;
+	void set_font_size(const StringName &p_name, const StringName &p_node_type, int p_font_size);
+	int get_font_size(const StringName &p_name, const StringName &p_node_type) const;
+	bool has_font_size(const StringName &p_name, const StringName &p_node_type) const;
+	void clear_font_size(const StringName &p_name, const StringName &p_node_type);
+	void get_font_size_list(StringName p_node_type, List<StringName> *p_list) const;
 
-	void set_constant(const StringName &p_name, const StringName &p_type, int p_constant);
-	int get_constant(const StringName &p_name, const StringName &p_type) const;
-	bool has_constant(const StringName &p_name, const StringName &p_type) const;
-	void clear_constant(const StringName &p_name, const StringName &p_type);
-	void get_constant_list(StringName p_type, List<StringName> *p_list) const;
+	void set_color(const StringName &p_name, const StringName &p_node_type, const Color &p_color);
+	Color get_color(const StringName &p_name, const StringName &p_node_type) const;
+	bool has_color(const StringName &p_name, const StringName &p_node_type) const;
+	void clear_color(const StringName &p_name, const StringName &p_node_type);
+	void get_color_list(StringName p_node_type, List<StringName> *p_list) const;
+	void get_color_type_list(List<StringName> *p_list) const;
+
+	void set_constant(const StringName &p_name, const StringName &p_node_type, int p_constant);
+	int get_constant(const StringName &p_name, const StringName &p_node_type) const;
+	bool has_constant(const StringName &p_name, const StringName &p_node_type) const;
+	void clear_constant(const StringName &p_name, const StringName &p_node_type);
+	void get_constant_list(StringName p_node_type, List<StringName> *p_list) const;
+	void get_constant_type_list(List<StringName> *p_list) const;
 
 	void get_type_list(List<StringName> *p_list) const;
 

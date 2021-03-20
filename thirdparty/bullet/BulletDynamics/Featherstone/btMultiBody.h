@@ -210,7 +210,13 @@ public:
 	void setBasePos(const btVector3 &pos)
 	{
 		m_basePos = pos;
-        m_basePos_interpolate = pos;
+		if(!isBaseKinematic())
+			m_basePos_interpolate = pos;
+	}
+
+	void setInterpolateBasePos(const btVector3 &pos)
+	{
+		m_basePos_interpolate = pos;
 	}
 
 	void setBaseWorldTransform(const btTransform &tr)
@@ -227,23 +233,47 @@ public:
 		return tr;
 	}
 
+	void setInterpolateBaseWorldTransform(const btTransform &tr)
+	{
+		setInterpolateBasePos(tr.getOrigin());
+		setInterpolateWorldToBaseRot(tr.getRotation().inverse());
+	}
+
+	btTransform getInterpolateBaseWorldTransform() const
+	{
+		btTransform tr;
+		tr.setOrigin(getInterpolateBasePos());
+		tr.setRotation(getInterpolateWorldToBaseRot().inverse());
+		return tr;
+	}
+
 	void setBaseVel(const btVector3 &vel)
 	{
 		m_realBuf[3] = vel[0];
 		m_realBuf[4] = vel[1];
 		m_realBuf[5] = vel[2];
 	}
+
 	void setWorldToBaseRot(const btQuaternion &rot)
 	{
 		m_baseQuat = rot;  //m_baseQuat asumed to ba alias!?
-        m_baseQuat_interpolate = rot;
+		if(!isBaseKinematic())
+			m_baseQuat_interpolate = rot;
 	}
+
+	void setInterpolateWorldToBaseRot(const btQuaternion &rot)
+	{
+		m_baseQuat_interpolate = rot;
+	}
+
 	void setBaseOmega(const btVector3 &omega)
 	{
 		m_realBuf[0] = omega[0];
 		m_realBuf[1] = omega[1];
 		m_realBuf[2] = omega[2];
 	}
+
+	void saveKinematicState(btScalar timeStep);
 
 	//
 	// get/set pos/vel for child m_links (i = 0 to num_links-1)
@@ -277,6 +307,11 @@ public:
     const btScalar *getDeltaVelocityVector() const
     {
         return &m_deltaV[0];
+    }
+    
+    const btScalar *getSplitVelocityVector() const
+    {
+        return &m_splitV[0];
     }
 	/*    btScalar * getVelocityVector() 
 	{ 
@@ -397,6 +432,26 @@ public:
 			m_deltaV[dof] += delta_vee[dof] * multiplier;
 		}
 	}
+    void applyDeltaSplitVeeMultiDof(const btScalar *delta_vee, btScalar multiplier)
+    {
+        for (int dof = 0; dof < 6 + getNumDofs(); ++dof)
+        {
+            m_splitV[dof] += delta_vee[dof] * multiplier;
+        }
+    }
+    void addSplitV()
+    {
+        applyDeltaVeeMultiDof(&m_splitV[0], 1);
+    }
+    void substractSplitV()
+    {
+        applyDeltaVeeMultiDof(&m_splitV[0], -1);
+        
+        for (int dof = 0; dof < 6 + getNumDofs(); ++dof)
+        {
+            m_splitV[dof] = 0.f;
+        }
+    }
 	void processDeltaVeeMultiDof2()
 	{
 		applyDeltaVeeMultiDof(&m_deltaV[0], 1);
@@ -495,14 +550,22 @@ public:
 	void goToSleep();
 	void checkMotionAndSleepIfRequired(btScalar timestep);
 
-	bool hasFixedBase() const
-	{
-		return m_fixedBase;
-	}
+	bool hasFixedBase() const;
+
+	bool isBaseKinematic() const;
+
+	bool isBaseStaticOrKinematic() const;
+
+	// set the dynamic type in the base's collision flags.
+	void setBaseDynamicType(int dynamicType);
 
 	void setFixedBase(bool fixedBase)
 	{
 		m_fixedBase = fixedBase;
+		if(m_fixedBase)
+			setBaseDynamicType(btCollisionObject::CF_STATIC_OBJECT);
+		else
+			setBaseDynamicType(btCollisionObject::CF_DYNAMIC_OBJECT);
 	}
 
 	int getCompanionId() const
@@ -653,7 +716,15 @@ public:
 		btVector3 &top_out,         // top part of output vector
 		btVector3 &bottom_out);      // bottom part of output vector
 
+	void setLinkDynamicType(const int i, int type);
 
+	bool isLinkStaticOrKinematic(const int i) const;
+
+	bool isLinkKinematic(const int i) const;
+
+	bool isLinkAndAllAncestorsStaticOrKinematic(const int i) const;
+
+	bool isLinkAndAllAncestorsKinematic(const int i) const;
 
 private:
 	btMultiBody(const btMultiBody &);     // not implemented
@@ -711,6 +782,7 @@ private:
 	//  offset         size         array
 	//   0              num_links+1  rot_from_parent
 	//
+    btAlignedObjectArray<btScalar> m_splitV;
 	btAlignedObjectArray<btScalar> m_deltaV;
 	btAlignedObjectArray<btScalar> m_realBuf;
 	btAlignedObjectArray<btVector3> m_vectorBuf;
@@ -751,6 +823,9 @@ private:
 
 	///the m_needsJointFeedback gets updated/computed during the stepVelocitiesMultiDof and it for internal usage only
 	bool m_internalNeedsJointFeedback;
+
+  //If enabled, calculate the velocity based on kinematic transform changes. Currently only implemented for the base.
+	bool m_kinematic_calculate_velocity;
 };
 
 struct btMultiBodyLinkDoubleData

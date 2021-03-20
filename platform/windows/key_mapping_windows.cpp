@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -38,7 +38,6 @@ struct _WinTranslatePair {
 };
 
 static _WinTranslatePair _vk_to_keycode[] = {
-
 	{ KEY_BACKSPACE, VK_BACK }, // (0x08) // backspace
 	{ KEY_TAB, VK_TAB }, //(0x09)
 
@@ -238,7 +237,6 @@ VK_OEM_CLEAR (0xFE)
 */
 
 static _WinTranslatePair _scancode_to_keycode[] = {
-
 	{ KEY_ESCAPE, 0x01 },
 	{ KEY_1, 0x02 },
 	{ KEY_2, 0x03 },

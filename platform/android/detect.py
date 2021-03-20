@@ -13,7 +13,7 @@ def get_name():
 
 
 def can_build():
-    return "ANDROID_NDK_ROOT" in os.environ
+    return ("ANDROID_SDK_ROOT" in os.environ) or ("ANDROID_HOME" in os.environ)
 
 
 def get_platform(platform):
@@ -24,11 +24,31 @@ def get_opts():
     from SCons.Variables import BoolVariable, EnumVariable
 
     return [
-        ("ANDROID_NDK_ROOT", "Path to the Android NDK", os.environ.get("ANDROID_NDK_ROOT", 0)),
+        ("ANDROID_NDK_ROOT", "Path to the Android NDK", get_android_ndk_root()),
+        ("ANDROID_SDK_ROOT", "Path to the Android SDK", get_android_sdk_root()),
         ("ndk_platform", 'Target platform (android-<api>, e.g. "android-24")', "android-24"),
         EnumVariable("android_arch", "Target architecture", "armv7", ("armv7", "arm64v8", "x86", "x86_64")),
         BoolVariable("android_neon", "Enable NEON support (armv7 only)", True),
     ]
+
+
+# Return the ANDROID_SDK_ROOT environment variable.
+# While ANDROID_HOME has been deprecated, it's used as a fallback for backward
+# compatibility purposes.
+def get_android_sdk_root():
+    if "ANDROID_SDK_ROOT" in os.environ:
+        return os.environ.get("ANDROID_SDK_ROOT", 0)
+    else:
+        return os.environ.get("ANDROID_HOME", 0)
+
+
+# Return the ANDROID_NDK_ROOT environment variable.
+# We generate one for this build using the ANDROID_SDK_ROOT env
+# variable and the project ndk version.
+# If the env variable is already defined, we override it with
+# our own to match what the project expects.
+def get_android_ndk_root():
+    return get_android_sdk_root() + "/ndk/" + get_project_ndk_version()
 
 
 def get_flags():
@@ -47,7 +67,31 @@ def create(env):
     return env.Clone(tools=tools)
 
 
+# Check if ANDROID_NDK_ROOT is valid.
+# If not, install the ndk using ANDROID_SDK_ROOT and sdkmanager.
+def install_ndk_if_needed(env):
+    print("Checking for Android NDK...")
+    env_ndk_version = get_env_ndk_version(env["ANDROID_NDK_ROOT"])
+    if env_ndk_version is None:
+        # Reinstall the ndk and update ANDROID_NDK_ROOT.
+        print("Installing Android NDK...")
+        if env["ANDROID_SDK_ROOT"] is None:
+            raise Exception("Invalid ANDROID_SDK_ROOT environment variable.")
+
+        import subprocess
+
+        extension = ".bat" if os.name == "nt" else ""
+        sdkmanager_path = env["ANDROID_SDK_ROOT"] + "/cmdline-tools/latest/bin/sdkmanager" + extension
+        ndk_download_args = "ndk;" + get_project_ndk_version()
+        subprocess.check_call([sdkmanager_path, ndk_download_args])
+
+        env["ANDROID_NDK_ROOT"] = env["ANDROID_SDK_ROOT"] + "/ndk/" + get_project_ndk_version()
+        print("ANDROID_NDK_ROOT: " + env["ANDROID_NDK_ROOT"])
+
+
 def configure(env):
+    install_ndk_if_needed(env)
+
     # Workaround for MinGW. See:
     # http://www.scons.org/wiki/LongCmdLinesOnWin32
     if os.name == "nt":
@@ -215,7 +259,7 @@ def configure(env):
     env.Append(CPPFLAGS=["-isystem", env["ANDROID_NDK_ROOT"] + "/sources/cxx-stl/llvm-libc++abi/include"])
 
     # Disable exceptions and rtti on non-tools (template) builds
-    if env["tools"]:
+    if env["tools"] or env["builtin_icu"]:
         env.Append(CXXFLAGS=["-frtti"])
     else:
         env.Append(CXXFLAGS=["-fno-rtti", "-fno-exceptions"])
@@ -270,7 +314,7 @@ def configure(env):
 
     # Link flags
 
-    ndk_version = get_ndk_version(env["ANDROID_NDK_ROOT"])
+    ndk_version = get_env_ndk_version(env["ANDROID_NDK_ROOT"])
     if ndk_version != None and LooseVersion(ndk_version) >= LooseVersion("17.1.4828580"):
         env.Append(LINKFLAGS=["-Wl,--exclude-libs,libgcc.a", "-Wl,--exclude-libs,libatomic.a", "-nostdlib++"])
     else:
@@ -323,8 +367,14 @@ def configure(env):
     env.Append(LIBS=["OpenSLES", "EGL", "GLESv2", "vulkan", "android", "log", "z", "dl"])
 
 
+# Return the project NDK version.
+# This is kept in sync with the value in 'platform/android/java/app/config.gradle'.
+def get_project_ndk_version():
+    return "21.4.7075529"
+
+
 # Return NDK version string in source.properties (adapted from the Chromium project).
-def get_ndk_version(path):
+def get_env_ndk_version(path):
     if path is None:
         return None
     prop_file_path = os.path.join(path, "source.properties")
@@ -334,6 +384,6 @@ def get_ndk_version(path):
                 key_value = list(map(lambda x: x.strip(), line.split("=")))
                 if key_value[0] == "Pkg.Revision":
                     return key_value[1]
-    except:
+    except Exception:
         print("Could not read source prop file '%s'" % prop_file_path)
     return None

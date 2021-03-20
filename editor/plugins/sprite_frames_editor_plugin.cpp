@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -30,12 +30,15 @@
 
 #include "sprite_frames_editor_plugin.h"
 
+#include "core/config/project_settings.h"
 #include "core/io/resource_loader.h"
-#include "core/project_settings.h"
+#include "core/os/keyboard.h"
 #include "editor/editor_scale.h"
 #include "editor/editor_settings.h"
 #include "scene/3d/sprite_3d.h"
 #include "scene/gui/center_container.h"
+#include "scene/gui/margin_container.h"
+#include "scene/gui/panel_container.h"
 
 void SpriteFramesEditor::_gui_input(Ref<InputEvent> p_event) {
 }
@@ -72,8 +75,8 @@ void SpriteFramesEditor::_sheet_preview_draw() {
 	}
 
 	if (frames_selected.size() == 0) {
-		split_sheet_dialog->get_ok()->set_disabled(true);
-		split_sheet_dialog->get_ok()->set_text(TTR("No Frames Selected"));
+		split_sheet_dialog->get_ok_button()->set_disabled(true);
+		split_sheet_dialog->get_ok_button()->set_text(TTR("No Frames Selected"));
 		return;
 	}
 
@@ -95,8 +98,8 @@ void SpriteFramesEditor::_sheet_preview_draw() {
 		split_sheet_preview->draw_rect(Rect2(x + 5, y + 5, width - 10, height - 10), Color(0, 0, 0, 1), false);
 	}
 
-	split_sheet_dialog->get_ok()->set_disabled(false);
-	split_sheet_dialog->get_ok()->set_text(vformat(TTR("Add %d Frame(s)"), frames_selected.size()));
+	split_sheet_dialog->get_ok_button()->set_disabled(false);
+	split_sheet_dialog->get_ok_button()->set_text(vformat(TTR("Add %d Frame(s)"), frames_selected.size()));
 }
 
 void SpriteFramesEditor::_sheet_preview_input(const Ref<InputEvent> &p_event) {
@@ -140,8 +143,27 @@ void SpriteFramesEditor::_sheet_preview_input(const Ref<InputEvent> &p_event) {
 	}
 }
 
+void SpriteFramesEditor::_sheet_scroll_input(const Ref<InputEvent> &p_event) {
+	const Ref<InputEventMouseButton> mb = p_event;
+
+	if (mb.is_valid()) {
+		// Zoom in/out using Ctrl + mouse wheel. This is done on the ScrollContainer
+		// to allow performing this action anywhere, even if the cursor isn't
+		// hovering the texture in the workspace.
+		if (mb->get_button_index() == BUTTON_WHEEL_UP && mb->is_pressed() && mb->get_control()) {
+			_sheet_zoom_in();
+			// Don't scroll up after zooming in.
+			accept_event();
+		} else if (mb->get_button_index() == BUTTON_WHEEL_DOWN && mb->is_pressed() && mb->get_control()) {
+			_sheet_zoom_out();
+			// Don't scroll down after zooming out.
+			accept_event();
+		}
+	}
+}
+
 void SpriteFramesEditor::_sheet_add_frames() {
-	Size2i size = split_sheet_preview->get_size();
+	Size2i size = split_sheet_preview->get_texture()->get_size();
 	int h = split_sheet_h->get_value();
 	int v = split_sheet_v->get_value();
 
@@ -180,6 +202,29 @@ void SpriteFramesEditor::_sheet_add_frames() {
 	undo_redo->commit_action();
 }
 
+void SpriteFramesEditor::_sheet_zoom_in() {
+	if (sheet_zoom < max_sheet_zoom) {
+		sheet_zoom *= scale_ratio;
+		Size2 texture_size = split_sheet_preview->get_texture()->get_size();
+		split_sheet_preview->set_custom_minimum_size(texture_size * sheet_zoom);
+	}
+}
+
+void SpriteFramesEditor::_sheet_zoom_out() {
+	if (sheet_zoom > min_sheet_zoom) {
+		sheet_zoom /= scale_ratio;
+		Size2 texture_size = split_sheet_preview->get_texture()->get_size();
+		split_sheet_preview->set_custom_minimum_size(texture_size * sheet_zoom);
+	}
+}
+
+void SpriteFramesEditor::_sheet_zoom_reset() {
+	// Default the zoom to match the editor scale, but don't dezoom on editor scales below 100% to prevent pixel art from looking bad.
+	sheet_zoom = MAX(1.0, EDSCALE);
+	Size2 texture_size = split_sheet_preview->get_texture()->get_size();
+	split_sheet_preview->set_custom_minimum_size(texture_size * sheet_zoom);
+}
+
 void SpriteFramesEditor::_sheet_select_clear_all_frames() {
 	bool should_clear = true;
 	for (int i = 0; i < split_sheet_h->get_value() * split_sheet_v->get_value(); i++) {
@@ -207,15 +252,18 @@ void SpriteFramesEditor::_prepare_sprite_sheet(const String &p_file) {
 		EditorNode::get_singleton()->show_warning(TTR("Unable to load images"));
 		ERR_FAIL_COND(!texture.is_valid());
 	}
-	if (texture != split_sheet_preview->get_texture()) {
-		//different texture, reset to 4x4
-		split_sheet_h->set_value(4);
-		split_sheet_v->set_value(4);
-	}
+	bool new_texture = texture != split_sheet_preview->get_texture();
 	frames_selected.clear();
 	last_frame_selected = -1;
 
 	split_sheet_preview->set_texture(texture);
+	if (new_texture) {
+		//different texture, reset to 4x4
+		split_sheet_h->set_value(4);
+		split_sheet_v->set_value(4);
+		//reset zoom
+		_sheet_zoom_reset();
+	}
 	split_sheet_dialog->popup_centered_ratio(0.65);
 }
 
@@ -231,8 +279,14 @@ void SpriteFramesEditor::_notification(int p_what) {
 			move_up->set_icon(get_theme_icon("MoveLeft", "EditorIcons"));
 			move_down->set_icon(get_theme_icon("MoveRight", "EditorIcons"));
 			_delete->set_icon(get_theme_icon("Remove", "EditorIcons"));
+			zoom_out->set_icon(get_theme_icon("ZoomLess", "EditorIcons"));
+			zoom_1->set_icon(get_theme_icon("ZoomReset", "EditorIcons"));
+			zoom_in->set_icon(get_theme_icon("ZoomMore", "EditorIcons"));
 			new_anim->set_icon(get_theme_icon("New", "EditorIcons"));
 			remove_anim->set_icon(get_theme_icon("Remove", "EditorIcons"));
+			split_sheet_zoom_out->set_icon(get_theme_icon("ZoomLess", "EditorIcons"));
+			split_sheet_zoom_1->set_icon(get_theme_icon("ZoomReset", "EditorIcons"));
+			split_sheet_zoom_in->set_icon(get_theme_icon("ZoomMore", "EditorIcons"));
 			[[fallthrough]];
 		}
 		case NOTIFICATION_THEME_CHANGED: {
@@ -258,7 +312,7 @@ void SpriteFramesEditor::_file_load_request(const Vector<String> &p_path, int p_
 			dialog->set_title(TTR("Error!"));
 
 			//dialog->get_cancel()->set_text("Close");
-			dialog->get_ok()->set_text(TTR("Close"));
+			dialog->get_ok_button()->set_text(TTR("Close"));
 			dialog->popup_centered();
 			return; ///beh should show an error i guess
 		}
@@ -266,7 +320,7 @@ void SpriteFramesEditor::_file_load_request(const Vector<String> &p_path, int p_
 		resources.push_back(resource);
 	}
 
-	if (resources.empty()) {
+	if (resources.is_empty()) {
 		return;
 	}
 
@@ -309,7 +363,7 @@ void SpriteFramesEditor::_paste_pressed() {
 		dialog->set_text(TTR("Resource clipboard is empty or not a texture!"));
 		dialog->set_title(TTR("Error!"));
 		//dialog->get_cancel()->set_text("Close");
-		dialog->get_ok()->set_text(TTR("Close"));
+		dialog->get_ok_button()->set_text(TTR("Close"));
 		dialog->popup_centered();
 		return; ///beh should show an error i guess
 	}
@@ -636,6 +690,54 @@ void SpriteFramesEditor::_animation_fps_changed(double p_value) {
 	undo_redo->commit_action();
 }
 
+void SpriteFramesEditor::_tree_input(const Ref<InputEvent> &p_event) {
+	const Ref<InputEventMouseButton> mb = p_event;
+
+	if (mb.is_valid()) {
+		if (mb->get_button_index() == BUTTON_WHEEL_UP && mb->is_pressed() && mb->get_control()) {
+			_zoom_in();
+			// Don't scroll up after zooming in.
+			accept_event();
+		} else if (mb->get_button_index() == BUTTON_WHEEL_DOWN && mb->is_pressed() && mb->get_control()) {
+			_zoom_out();
+			// Don't scroll down after zooming out.
+			accept_event();
+		}
+	}
+}
+
+void SpriteFramesEditor::_zoom_in() {
+	// Do not zoom in or out with no visible frames
+	if (frames->get_frame_count(edited_anim) <= 0) {
+		return;
+	}
+	if (thumbnail_zoom < max_thumbnail_zoom) {
+		thumbnail_zoom *= scale_ratio;
+		int thumbnail_size = (int)(thumbnail_default_size * thumbnail_zoom);
+		tree->set_fixed_column_width(thumbnail_size * 3 / 2);
+		tree->set_fixed_icon_size(Size2(thumbnail_size, thumbnail_size));
+	}
+}
+
+void SpriteFramesEditor::_zoom_out() {
+	// Do not zoom in or out with no visible frames
+	if (frames->get_frame_count(edited_anim) <= 0) {
+		return;
+	}
+	if (thumbnail_zoom > min_thumbnail_zoom) {
+		thumbnail_zoom /= scale_ratio;
+		int thumbnail_size = (int)(thumbnail_default_size * thumbnail_zoom);
+		tree->set_fixed_column_width(thumbnail_size * 3 / 2);
+		tree->set_fixed_icon_size(Size2(thumbnail_size, thumbnail_size));
+	}
+}
+
+void SpriteFramesEditor::_zoom_reset() {
+	thumbnail_zoom = MAX(1.0, EDSCALE);
+	tree->set_fixed_column_width(thumbnail_default_size * 3 / 2);
+	tree->set_fixed_icon_size(Size2(thumbnail_default_size, thumbnail_default_size));
+}
+
 void SpriteFramesEditor::_update_library(bool p_skip_selector) {
 	updating = true;
 
@@ -727,6 +829,9 @@ void SpriteFramesEditor::edit(SpriteFrames *p_frames) {
 		}
 
 		_update_library();
+		// Clear zoom and split sheet texture
+		split_sheet_preview->set_texture(Ref<Texture2D>());
+		_zoom_reset();
 	} else {
 		hide();
 	}
@@ -849,7 +954,11 @@ void SpriteFramesEditor::drop_data_fw(const Point2 &p_point, const Variant &p_da
 	if (String(d["type"]) == "files") {
 		Vector<String> files = d["files"];
 
-		_file_load_request(files, at_pos);
+		if (Input::get_singleton()->is_key_pressed(KEY_CONTROL)) {
+			_prepare_sprite_sheet(files[0]);
+		} else {
+			_file_load_request(files, at_pos);
+		}
 	}
 }
 
@@ -892,11 +1001,16 @@ SpriteFramesEditor::SpriteFramesEditor() {
 	animations->connect("item_edited", callable_mp(this, &SpriteFramesEditor::_animation_name_edited));
 	animations->set_allow_reselect(true);
 
+	HBoxContainer *hbc_anim_speed = memnew(HBoxContainer);
+	hbc_anim_speed->add_child(memnew(Label(TTR("Speed:"))));
+	vbc_animlist->add_child(hbc_anim_speed);
 	anim_speed = memnew(SpinBox);
-	vbc_animlist->add_margin_child(TTR("Speed (FPS):"), anim_speed);
+	anim_speed->set_suffix(TTR("FPS"));
 	anim_speed->set_min(0);
 	anim_speed->set_max(100);
 	anim_speed->set_step(0.01);
+	anim_speed->set_h_size_flags(SIZE_EXPAND_FILL);
+	hbc_anim_speed->add_child(anim_speed);
 	anim_speed->connect("value_changed", callable_mp(this, &SpriteFramesEditor::_animation_fps_changed));
 
 	anim_loop = memnew(CheckButton);
@@ -965,6 +1079,24 @@ SpriteFramesEditor::SpriteFramesEditor() {
 	_delete->set_tooltip(TTR("Delete"));
 	hbc->add_child(_delete);
 
+	hbc->add_spacer();
+
+	zoom_out = memnew(Button);
+	zoom_out->connect("pressed", callable_mp(this, &SpriteFramesEditor::_zoom_out));
+	zoom_out->set_flat(true);
+	zoom_out->set_tooltip(TTR("Zoom Out"));
+	hbc->add_child(zoom_out);
+	zoom_1 = memnew(Button);
+	zoom_1->connect("pressed", callable_mp(this, &SpriteFramesEditor::_zoom_reset));
+	zoom_1->set_flat(true);
+	zoom_1->set_tooltip(TTR("Zoom Reset"));
+	hbc->add_child(zoom_1);
+	zoom_in = memnew(Button);
+	zoom_in->connect("pressed", callable_mp(this, &SpriteFramesEditor::_zoom_in));
+	zoom_in->set_flat(true);
+	zoom_in->set_tooltip(TTR("Zoom In"));
+	hbc->add_child(zoom_in);
+
 	file = memnew(EditorFileDialog);
 	add_child(file);
 
@@ -972,13 +1104,11 @@ SpriteFramesEditor::SpriteFramesEditor() {
 	tree->set_v_size_flags(SIZE_EXPAND_FILL);
 	tree->set_icon_mode(ItemList::ICON_MODE_TOP);
 
-	int thumbnail_size = 96;
 	tree->set_max_columns(0);
 	tree->set_icon_mode(ItemList::ICON_MODE_TOP);
-	tree->set_fixed_column_width(thumbnail_size * 3 / 2);
 	tree->set_max_text_lines(2);
-	tree->set_fixed_icon_size(Size2(thumbnail_size, thumbnail_size));
 	tree->set_drag_forwarding(this);
+	tree->connect("gui_input", callable_mp(this, &SpriteFramesEditor::_tree_input));
 
 	sub_vb->add_child(tree);
 
@@ -1042,8 +1172,13 @@ SpriteFramesEditor::SpriteFramesEditor() {
 
 	split_sheet_vb->add_child(split_sheet_hb);
 
+	PanelContainer *split_sheet_panel = memnew(PanelContainer);
+	split_sheet_panel->set_h_size_flags(SIZE_EXPAND_FILL);
+	split_sheet_panel->set_v_size_flags(SIZE_EXPAND_FILL);
+	split_sheet_vb->add_child(split_sheet_panel);
+
 	split_sheet_preview = memnew(TextureRect);
-	split_sheet_preview->set_expand(false);
+	split_sheet_preview->set_expand(true);
 	split_sheet_preview->set_mouse_filter(MOUSE_FILTER_PASS);
 	split_sheet_preview->connect("draw", callable_mp(this, &SpriteFramesEditor::_sheet_preview_draw));
 	split_sheet_preview->connect("gui_input", callable_mp(this, &SpriteFramesEditor::_sheet_preview_input));
@@ -1051,20 +1186,59 @@ SpriteFramesEditor::SpriteFramesEditor() {
 	splite_sheet_scroll = memnew(ScrollContainer);
 	splite_sheet_scroll->set_enable_h_scroll(true);
 	splite_sheet_scroll->set_enable_v_scroll(true);
-	splite_sheet_scroll->set_v_size_flags(SIZE_EXPAND_FILL);
+	splite_sheet_scroll->connect("gui_input", callable_mp(this, &SpriteFramesEditor::_sheet_scroll_input));
+	split_sheet_panel->add_child(splite_sheet_scroll);
 	CenterContainer *cc = memnew(CenterContainer);
 	cc->add_child(split_sheet_preview);
 	cc->set_h_size_flags(SIZE_EXPAND_FILL);
 	cc->set_v_size_flags(SIZE_EXPAND_FILL);
 	splite_sheet_scroll->add_child(cc);
 
-	split_sheet_vb->add_child(splite_sheet_scroll);
+	MarginContainer *split_sheet_zoom_margin = memnew(MarginContainer);
+	split_sheet_panel->add_child(split_sheet_zoom_margin);
+	split_sheet_zoom_margin->set_h_size_flags(0);
+	split_sheet_zoom_margin->set_v_size_flags(0);
+	split_sheet_zoom_margin->add_theme_constant_override("margin_top", 5);
+	split_sheet_zoom_margin->add_theme_constant_override("margin_left", 5);
+	HBoxContainer *split_sheet_zoom_hb = memnew(HBoxContainer);
+	split_sheet_zoom_margin->add_child(split_sheet_zoom_hb);
+
+	split_sheet_zoom_out = memnew(Button);
+	split_sheet_zoom_out->set_flat(true);
+	split_sheet_zoom_out->set_focus_mode(FOCUS_NONE);
+	split_sheet_zoom_out->set_tooltip(TTR("Zoom Out"));
+	split_sheet_zoom_out->connect("pressed", callable_mp(this, &SpriteFramesEditor::_sheet_zoom_out));
+	split_sheet_zoom_hb->add_child(split_sheet_zoom_out);
+	split_sheet_zoom_1 = memnew(Button);
+	split_sheet_zoom_1->set_flat(true);
+	split_sheet_zoom_1->set_focus_mode(FOCUS_NONE);
+	split_sheet_zoom_1->set_tooltip(TTR("Zoom Reset"));
+	split_sheet_zoom_1->connect("pressed", callable_mp(this, &SpriteFramesEditor::_sheet_zoom_reset));
+	split_sheet_zoom_hb->add_child(split_sheet_zoom_1);
+	split_sheet_zoom_in = memnew(Button);
+	split_sheet_zoom_in->set_flat(true);
+	split_sheet_zoom_in->set_focus_mode(FOCUS_NONE);
+	split_sheet_zoom_in->set_tooltip(TTR("Zoom In"));
+	split_sheet_zoom_in->connect("pressed", callable_mp(this, &SpriteFramesEditor::_sheet_zoom_in));
+	split_sheet_zoom_hb->add_child(split_sheet_zoom_in);
 
 	file_split_sheet = memnew(EditorFileDialog);
 	file_split_sheet->set_title(TTR("Create Frames from Sprite Sheet"));
 	file_split_sheet->set_file_mode(EditorFileDialog::FILE_MODE_OPEN_FILE);
 	add_child(file_split_sheet);
 	file_split_sheet->connect("file_selected", callable_mp(this, &SpriteFramesEditor::_prepare_sprite_sheet));
+
+	// Config scale.
+	scale_ratio = 1.2f;
+	thumbnail_default_size = 96 * MAX(1.0, EDSCALE);
+	thumbnail_zoom = MAX(1.0, EDSCALE);
+	max_thumbnail_zoom = 8.0f * MAX(1.0, EDSCALE);
+	min_thumbnail_zoom = 0.1f * MAX(1.0, EDSCALE);
+	// Default the zoom to match the editor scale, but don't dezoom on editor scales below 100% to prevent pixel art from looking bad.
+	sheet_zoom = MAX(1.0, EDSCALE);
+	max_sheet_zoom = 16.0f * MAX(1.0, EDSCALE);
+	min_sheet_zoom = 0.01f * MAX(1.0, EDSCALE);
+	_zoom_reset();
 }
 
 void SpriteFramesEditorPlugin::edit(Object *p_object) {

@@ -7,7 +7,10 @@
 		2D area that detects [CollisionObject2D] nodes overlapping, entering, or exiting. Can also alter or override local physics parameters (gravity, damping).
 	</description>
 	<tutorials>
-		<link>https://docs.godotengine.org/en/latest/tutorials/physics/using_area_2d.html</link>
+		<link title="Using Area2D">https://docs.godotengine.org/en/latest/tutorials/physics/using_area_2d.html</link>
+		<link title="2D Dodge The Creeps Demo">https://godotengine.org/asset-library/asset/515</link>
+		<link title="2D Pong Demo">https://godotengine.org/asset-library/asset/121</link>
+		<link title="2D Platformer Demo">https://godotengine.org/asset-library/asset/120</link>
 	</tutorials>
 	<methods>
 		<method name="get_collision_layer_bit" qualifiers="const">
@@ -88,7 +91,8 @@
 	</methods>
 	<members>
 		<member name="angular_damp" type="float" setter="set_angular_damp" getter="get_angular_damp" default="1.0">
-			The rate at which objects stop spinning in this area. Represents the angular velocity lost per second. Values range from [code]0[/code] (no damping) to [code]1[/code] (full damping).
+			The rate at which objects stop spinning in this area. Represents the angular velocity lost per second.
+			See [member ProjectSettings.physics/2d/default_angular_damp] for more details about damping.
 		</member>
 		<member name="audio_bus_name" type="StringName" setter="set_audio_bus_name" getter="get_audio_bus_name" default="@&quot;Master&quot;">
 			The name of the area's audio bus.
@@ -97,10 +101,10 @@
 			If [code]true[/code], the area's audio bus overrides the default audio bus.
 		</member>
 		<member name="collision_layer" type="int" setter="set_collision_layer" getter="get_collision_layer" default="1">
-			The area's physics layer(s). Collidable objects can exist in any of 32 different layers. A contact is detected if object A is in any of the layers that object B scans, or object B is in any layers that object A scans. See also [member collision_mask].
+			The area's physics layer(s). Collidable objects can exist in any of 32 different layers. A contact is detected if object A is in any of the layers that object B scans, or object B is in any layers that object A scans. See also [member collision_mask]. See [url=https://docs.godotengine.org/en/latest/tutorials/physics/physics_introduction.html#collision-layers-and-masks]Collision layers and masks[/url] in the documentation for more information.
 		</member>
 		<member name="collision_mask" type="int" setter="set_collision_mask" getter="get_collision_mask" default="1">
-			The physics layers this area scans to determine collision detection.
+			The physics layers this area scans to determine collision detection. See [url=https://docs.godotengine.org/en/latest/tutorials/physics/physics_introduction.html#collision-layers-and-masks]Collision layers and masks[/url] in the documentation for more information.
 		</member>
 		<member name="gravity" type="float" setter="set_gravity" getter="get_gravity" default="98.0">
 			The area's gravity intensity (ranges from -1024 to 1024). This value multiplies the gravity vector. This is useful to alter the force of gravity without altering its direction.
@@ -115,7 +119,8 @@
 			The area's gravity vector (not normalized). If gravity is a point (see [member gravity_point]), this will be the point of attraction.
 		</member>
 		<member name="linear_damp" type="float" setter="set_linear_damp" getter="get_linear_damp" default="0.1">
-			The rate at which objects stop moving in this area. Represents the linear velocity lost per second. Values range from [code]0[/code] (no damping) to [code]1[/code] (full damping).
+			The rate at which objects stop moving in this area. Represents the linear velocity lost per second.
+			See [member ProjectSettings.physics/2d/default_linear_damp] for more details about damping.
 		</member>
 		<member name="monitorable" type="bool" setter="set_monitorable" getter="is_monitorable" default="true">
 			If [code]true[/code], other monitoring areas can detect this area.
@@ -135,14 +140,16 @@
 			<argument index="0" name="area" type="Area2D">
 			</argument>
 			<description>
-				Emitted when another area enters.
+				Emitted when another Area2D enters this Area2D. Requires [member monitoring] to be set to [code]true[/code].
+				[code]area[/code] the other Area2D.
 			</description>
 		</signal>
 		<signal name="area_exited">
 			<argument index="0" name="area" type="Area2D">
 			</argument>
 			<description>
-				Emitted when another area exits.
+				Emitted when another Area2D exits this Area2D. Requires [member monitoring] to be set to [code]true[/code].
+				[code]area[/code] the other Area2D.
 			</description>
 		</signal>
 		<signal name="area_shape_entered">
@@ -152,10 +159,14 @@
 			</argument>
 			<argument index="2" name="area_shape" type="int">
 			</argument>
-			<argument index="3" name="self_shape" type="int">
+			<argument index="3" name="local_shape" type="int">
 			</argument>
 			<description>
-				Emitted when another area enters, reporting which shapes overlapped. [code]shape_owner_get_owner(shape_find_owner(shape))[/code] returns the parent object of the owner of the [code]shape[/code].
+				Emitted when one of another Area2D's [Shape2D]s enters one of this Area2D's [Shape2D]s. Requires [member monitoring] to be set to [code]true[/code].
+				[code]area_id[/code] the [RID] of the other Area2D's [CollisionObject2D] used by the [PhysicsServer2D].
+				[code]area[/code] the other Area2D.
+				[code]area_shape[/code] the index of the [Shape2D] of the other Area2D used by the [PhysicsServer2D].
+				[code]local_shape[/code] the index of the [Shape2D] of this Area2D used by the [PhysicsServer2D].
 			</description>
 		</signal>
 		<signal name="area_shape_exited">
@@ -165,54 +176,64 @@
 			</argument>
 			<argument index="2" name="area_shape" type="int">
 			</argument>
-			<argument index="3" name="self_shape" type="int">
+			<argument index="3" name="local_shape" type="int">
 			</argument>
 			<description>
-				Emitted when another area exits, reporting which shapes were overlapping.
+				Emitted when one of another Area2D's [Shape2D]s exits one of this Area2D's [Shape2D]s. Requires [member monitoring] to be set to [code]true[/code].
+				[code]area_id[/code] the [RID] of the other Area2D's [CollisionObject2D] used by the [PhysicsServer2D].
+				[code]area[/code] the other Area2D.
+				[code]area_shape[/code] the index of the [Shape2D] of the other Area2D used by the [PhysicsServer2D].
+				[code]local_shape[/code] the index of the [Shape2D] of this Area2D used by the [PhysicsServer2D].
 			</description>
 		</signal>
 		<signal name="body_entered">
-			<argument index="0" name="body" type="Node">
+			<argument index="0" name="body" type="Node2D">
 			</argument>
 			<description>
-				Emitted when a physics body enters.
-				The [code]body[/code] argument can either be a [PhysicsBody2D] or a [TileMap] instance (while TileMaps are not physics body themselves, they register their tiles with collision shapes as a virtual physics body).
+				Emitted when a [PhysicsBody2D] or [TileMap] enters this Area2D. Requires [member monitoring] to be set to [code]true[/code]. [TileMap]s are detected if the [TileSet] has Collision [Shape2D]s.
+				[code]body[/code] the [Node], if it exists in the tree, of the other [PhysicsBody2D] or [TileMap].
 			</description>
 		</signal>
 		<signal name="body_exited">
-			<argument index="0" name="body" type="Node">
+			<argument index="0" name="body" type="Node2D">
 			</argument>
 			<description>
-				Emitted when a physics body exits.
-				The [code]body[/code] argument can either be a [PhysicsBody2D] or a [TileMap] instance (while TileMaps are not physics body themselves, they register their tiles with collision shapes as a virtual physics body).
+				Emitted when a [PhysicsBody2D] or [TileMap] exits this Area2D. Requires [member monitoring] to be set to [code]true[/code]. [TileMap]s are detected if the [TileSet] has Collision [Shape2D]s.
+				[code]body[/code] the [Node], if it exists in the tree, of the other [PhysicsBody2D] or [TileMap].
 			</description>
 		</signal>
 		<signal name="body_shape_entered">
 			<argument index="0" name="body_id" type="int">
 			</argument>
-			<argument index="1" name="body" type="Node">
+			<argument index="1" name="body" type="Node2D">
 			</argument>
 			<argument index="2" name="body_shape" type="int">
 			</argument>
-			<argument index="3" name="area_shape" type="int">
+			<argument index="3" name="local_shape" type="int">
 			</argument>
 			<description>
-				Emitted when a physics body enters, reporting which shapes overlapped.
-				The [code]body[/code] argument can either be a [PhysicsBody2D] or a [TileMap] instance (while TileMaps are not physics body themselves, they register their tiles with collision shapes as a virtual physics body).
+				Emitted when one of a [PhysicsBody2D] or [TileMap]'s [Shape2D]s enters one of this Area2D's [Shape2D]s. Requires [member monitoring] to be set to [code]true[/code]. [TileMap]s are detected if the [TileSet] has Collision [Shape2D]s.
+				[code]body_id[/code] the [RID] of the [PhysicsBody2D] or [TileSet]'s [CollisionObject2D] used by the [PhysicsServer2D].
+				[code]body[/code] the [Node], if it exists in the tree, of the [PhysicsBody2D] or [TileMap].
+				[code]body_shape[/code] the index of the [Shape2D] of the [PhysicsBody2D] or [TileMap] used by the [PhysicsServer2D].
+				[code]local_shape[/code] the index of the [Shape2D] of this Area2D used by the [PhysicsServer2D].
 			</description>
 		</signal>
 		<signal name="body_shape_exited">
 			<argument index="0" name="body_id" type="int">
 			</argument>
-			<argument index="1" name="body" type="Node">
+			<argument index="1" name="body" type="Node2D">
 			</argument>
 			<argument index="2" name="body_shape" type="int">
 			</argument>
-			<argument index="3" name="area_shape" type="int">
+			<argument index="3" name="local_shape" type="int">
 			</argument>
 			<description>
-				Emitted when a physics body exits, reporting which shapes were overlapping.
-				The [code]body[/code] argument can either be a [PhysicsBody2D] or a [TileMap] instance (while TileMaps are not physics body themselves, they register their tiles with collision shapes as a virtual physics body).
+				Emitted when one of a [PhysicsBody2D] or [TileMap]'s [Shape2D]s exits one of this Area2D's [Shape2D]s. Requires [member monitoring] to be set to [code]true[/code]. [TileMap]s are detected if the [TileSet] has Collision [Shape2D]s.
+				[code]body_id[/code] the [RID] of the [PhysicsBody2D] or [TileSet]'s [CollisionObject2D] used by the [PhysicsServer2D].
+				[code]body[/code] the [Node], if it exists in the tree, of the [PhysicsBody2D] or [TileMap].
+				[code]body_shape[/code] the index of the [Shape2D] of the [PhysicsBody2D] or [TileMap] used by the [PhysicsServer2D].
+				[code]local_shape[/code] the index of the [Shape2D] of this Area2D used by the [PhysicsServer2D].
 			</description>
 		</signal>
 	</signals>

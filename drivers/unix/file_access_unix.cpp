@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -33,7 +33,7 @@
 #if defined(UNIX_ENABLED) || defined(LIBC_FILEIO_ENABLED)
 
 #include "core/os/os.h"
-#include "core/print_string.h"
+#include "core/string/print_string.h"
 
 #include <sys/stat.h>
 #include <sys/types.h>
@@ -78,7 +78,7 @@ Error FileAccessUnix::_open(const String &p_path, int p_mode_flags) {
 
 	path_src = p_path;
 	path = fix_path(p_path);
-	//printf("opening %ls, %i\n", path.c_str(), Memory::get_static_mem_usage());
+	//printf("opening %s, %i\n", path.utf8().get_data(), Memory::get_static_mem_usage());
 
 	ERR_FAIL_COND_V_MSG(f, ERR_ALREADY_IN_USE, "File is already in use.");
 	const char *mode_string;
@@ -240,6 +240,8 @@ uint8_t FileAccessUnix::get_8() const {
 }
 
 int FileAccessUnix::get_buffer(uint8_t *p_dst, int p_length) const {
+	ERR_FAIL_COND_V(!p_dst && p_length > 0, -1);
+	ERR_FAIL_COND_V(p_length < 0, -1);
 	ERR_FAIL_COND_V_MSG(!f, -1, "File must be opened before use.");
 	int read = fread(p_dst, 1, p_length, f);
 	check_errors();

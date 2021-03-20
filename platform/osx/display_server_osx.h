@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -77,13 +77,13 @@ public:
 
 	struct KeyEvent {
 		WindowID window_id;
-		unsigned int osx_state;
-		bool pressed;
-		bool echo;
-		bool raw;
-		uint32_t keycode;
-		uint32_t physical_keycode;
-		uint32_t unicode;
+		unsigned int osx_state = false;
+		bool pressed = false;
+		bool echo = false;
+		bool raw = false;
+		uint32_t keycode = 0;
+		uint32_t physical_keycode = 0;
+		uint32_t unicode = 0;
 	};
 
 	struct WarpEvent {
@@ -93,6 +93,7 @@ public:
 
 	List<WarpEvent> warp_events;
 	NSTimeInterval last_warp = 0;
+	bool ignore_warp = false;
 
 	Vector<KeyEvent> key_event_buffer;
 	int key_event_pos;
@@ -101,6 +102,8 @@ public:
 		id window_delegate;
 		id window_object;
 		id window_view;
+
+		Vector<Vector2> mpath;
 
 #if defined(OPENGL_ENABLED)
 		ContextGL_OSX *context_gles2 = nullptr;
@@ -240,6 +243,7 @@ public:
 	virtual void window_set_drop_files_callback(const Callable &p_callable, WindowID p_window = MAIN_WINDOW_ID) override;
 
 	virtual void window_set_title(const String &p_title, WindowID p_window = MAIN_WINDOW_ID) override;
+	virtual void window_set_mouse_passthrough(const Vector<Vector2> &p_region, WindowID p_window = MAIN_WINDOW_ID) override;
 
 	virtual int window_get_current_screen(WindowID p_window = MAIN_WINDOW_ID) const override;
 	virtual void window_set_current_screen(int p_screen, WindowID p_window = MAIN_WINDOW_ID) override;

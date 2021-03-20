@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -31,18 +31,78 @@
 #ifndef AUDIO_DRIVER_JAVASCRIPT_H
 #define AUDIO_DRIVER_JAVASCRIPT_H
 
+#include "core/os/mutex.h"
+#include "core/os/thread.h"
 #include "servers/audio_server.h"
 
-class AudioDriverJavaScript : public AudioDriver {
-	float *internal_buffer = nullptr;
+#include "godot_audio.h"
 
-	int _driver_id = 0;
+class AudioDriverJavaScript : public AudioDriver {
+public:
+	class AudioNode {
+	public:
+		virtual int create(int p_buffer_size, int p_output_channels) = 0;
+		virtual void start(float *p_out_buf, int p_out_buf_size, float *p_in_buf, int p_in_buf_size) = 0;
+		virtual void finish() {}
+		virtual void lock() {}
+		virtual void unlock() {}
+		virtual ~AudioNode() {}
+	};
+
+	class WorkletNode : public AudioNode {
+	private:
+		enum {
+			STATE_LOCK,
+			STATE_PROCESS,
+			STATE_SAMPLES_IN,
+			STATE_SAMPLES_OUT,
+			STATE_MAX,
+		};
+		Mutex mutex;
+		Thread thread;
+		bool quit = false;
+		int32_t state[STATE_MAX] = { 0 };
+
+		static void _audio_thread_func(void *p_data);
+
+	public:
+		int create(int p_buffer_size, int p_output_channels) override;
+		void start(float *p_out_buf, int p_out_buf_size, float *p_in_buf, int p_in_buf_size) override;
+		void finish() override;
+		void lock() override;
+		void unlock() override;
+	};
+
+	class ScriptProcessorNode : public AudioNode {
+	private:
+		static void _process_callback();
+
+	public:
+		int create(int p_buffer_samples, int p_channels) override;
+		void start(float *p_out_buf, int p_out_buf_size, float *p_in_buf, int p_in_buf_size) override;
+	};
+
+private:
+	AudioNode *node = nullptr;
+
+	float *output_rb = nullptr;
+	float *input_rb = nullptr;
+
 	int buffer_length = 0;
+	int mix_rate = 0;
+	int channel_count = 0;
+	int state = 0;
+	float output_latency = 0.0;
+
+	static void _state_change_callback(int p_state);
+	static void _latency_update_callback(float p_latency);
+
+protected:
+	void _audio_driver_process(int p_from = 0, int p_samples = 0);
+	void _audio_driver_capture(int p_from = 0, int p_samples = 0);
 
 public:
 	static bool is_available();
-	void mix_to_js();
-	void process_capture(float sample);
 
 	static AudioDriverJavaScript *singleton;
 
@@ -57,12 +117,10 @@ public:
 	virtual void lock();
 	virtual void unlock();
 	virtual void finish();
-	void finish_async();
 
 	virtual Error capture_start();
 	virtual Error capture_stop();
 
 	AudioDriverJavaScript();
 };
-
 #endif

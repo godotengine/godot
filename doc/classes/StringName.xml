@@ -4,18 +4,66 @@
 		An optimized string type for unique names.
 	</brief_description>
 	<description>
-		[StringName]s are immutable strings designed for general-purpose represention of unique names. [StringName] ensures that only one instance of a given name exists (so two [StringName]s with the same value are the same object). Comparing them is much faster than with regular [String]s, because only the pointers are compared, not the whole strings.
+		[StringName]s are immutable strings designed for general-purpose representation of unique names. [StringName] ensures that only one instance of a given name exists (so two [StringName]s with the same value are the same object). Comparing them is much faster than with regular [String]s, because only the pointers are compared, not the whole strings.
 	</description>
 	<tutorials>
 	</tutorials>
 	<methods>
-		<method name="StringName">
+		<method name="StringName" qualifiers="constructor">
+			<return type="StringName">
+			</return>
+			<description>
+				Constructs an empty [StringName].
+			</description>
+		</method>
+		<method name="StringName" qualifiers="constructor">
+			<return type="StringName">
+			</return>
+			<argument index="0" name="from" type="StringName">
+			</argument>
+			<description>
+				Constructs a [StringName] as a copy of the given [StringName].
+			</description>
+		</method>
+		<method name="StringName" qualifiers="constructor">
 			<return type="StringName">
 			</return>
 			<argument index="0" name="from" type="String">
 			</argument>
 			<description>
 				Creates a new [StringName] from the given [String].
+			</description>
+		</method>
+		<method name="operator !=" qualifiers="operator">
+			<return type="bool">
+			</return>
+			<argument index="0" name="right" type="String">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="operator !=" qualifiers="operator">
+			<return type="bool">
+			</return>
+			<argument index="0" name="right" type="StringName">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="operator ==" qualifiers="operator">
+			<return type="bool">
+			</return>
+			<argument index="0" name="right" type="String">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="operator ==" qualifiers="operator">
+			<return type="bool">
+			</return>
+			<argument index="0" name="right" type="StringName">
+			</argument>
+			<description>
 			</description>
 		</method>
 	</methods>

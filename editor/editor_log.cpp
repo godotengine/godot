@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -35,7 +35,7 @@
 #include "editor_node.h"
 #include "editor_scale.h"
 #include "scene/gui/center_container.h"
-#include "scene/resources/dynamic_font.h"
+#include "scene/resources/font.h"
 
 void EditorLog::_error_handler(void *p_self, const char *p_func, const char *p_file, int p_line, const char *p_error, const char *p_errorexp, ErrorHandlerType p_type) {
 	EditorLog *self = (EditorLog *)p_self;
@@ -61,12 +61,14 @@ void EditorLog::_notification(int p_what) {
 	if (p_what == NOTIFICATION_ENTER_TREE) {
 		//button->set_icon(get_icon("Console","EditorIcons"));
 		log->add_theme_font_override("normal_font", get_theme_font("output_source", "EditorFonts"));
+		log->add_theme_font_size_override("normal_font_size", get_theme_font_size("output_source_size", "EditorFonts"));
 		log->add_theme_color_override("selection_color", get_theme_color("accent_color", "Editor") * Color(1, 1, 1, 0.4));
 	} else if (p_what == NOTIFICATION_THEME_CHANGED) {
-		Ref<DynamicFont> df_output_code = get_theme_font("output_source", "EditorFonts");
+		Ref<Font> df_output_code = get_theme_font("output_source", "EditorFonts");
 		if (df_output_code.is_valid()) {
 			if (log != nullptr) {
 				log->add_theme_font_override("normal_font", get_theme_font("output_source", "EditorFonts"));
+				log->add_theme_font_size_override("normal_font_size", get_theme_font_size("output_source_size", "EditorFonts"));
 				log->add_theme_color_override("selection_color", get_theme_color("accent_color", "Editor") * Color(1, 1, 1, 0.4));
 			}
 		}
@@ -79,7 +81,15 @@ void EditorLog::_clear_request() {
 }
 
 void EditorLog::_copy_request() {
-	log->selection_copy();
+	String text = log->get_selected_text();
+
+	if (text == "") {
+		text = log->get_text();
+	}
+
+	if (text != "") {
+		DisplayServer::get_singleton()->clipboard_set(text);
+	}
 }
 
 void EditorLog::clear() {
@@ -91,8 +101,6 @@ void EditorLog::copy() {
 }
 
 void EditorLog::add_message(const String &p_msg, MessageType p_type) {
-	log->add_newline();
-
 	bool restore = p_type != MSG_TYPE_STD;
 	switch (p_type) {
 		case MSG_TYPE_STD: {
@@ -118,6 +126,7 @@ void EditorLog::add_message(const String &p_msg, MessageType p_type) {
 	}
 
 	log->add_text(p_msg);
+	log->add_newline();
 
 	if (restore) {
 		log->pop();
@@ -152,12 +161,14 @@ EditorLog::EditorLog() {
 	hb->add_child(copybutton);
 	copybutton->set_text(TTR("Copy"));
 	copybutton->set_shortcut(ED_SHORTCUT("editor/copy_output", TTR("Copy Selection"), KEY_MASK_CMD | KEY_C));
+	copybutton->set_shortcut_context(this);
 	copybutton->connect("pressed", callable_mp(this, &EditorLog::_copy_request));
 
 	clearbutton = memnew(Button);
 	hb->add_child(clearbutton);
 	clearbutton->set_text(TTR("Clear"));
 	clearbutton->set_shortcut(ED_SHORTCUT("editor/clear_output", TTR("Clear Output"), KEY_MASK_CMD | KEY_MASK_SHIFT | KEY_K));
+	clearbutton->set_shortcut_context(this);
 	clearbutton->connect("pressed", callable_mp(this, &EditorLog::_clear_request));
 
 	log = memnew(RichTextLabel);
@@ -168,7 +179,7 @@ EditorLog::EditorLog() {
 	log->set_v_size_flags(SIZE_EXPAND_FILL);
 	log->set_h_size_flags(SIZE_EXPAND_FILL);
 	vb->add_child(log);
-	add_message(VERSION_FULL_NAME " (c) 2007-2020 Juan Linietsky, Ariel Manzur & Godot Contributors.");
+	add_message(VERSION_FULL_NAME " (c) 2007-2021 Juan Linietsky, Ariel Manzur & Godot Contributors.");
 
 	eh.errfunc = _error_handler;
 	eh.userdata = this;

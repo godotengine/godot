@@ -2,8 +2,7 @@
 
 Import("env")
 
-env_spirv_reflect = env.Clone()
-env_spirv_reflect.disable_warnings()
+# Thirdparty source files
 
 thirdparty_dir = "#thirdparty/spirv-reflect/"
 thirdparty_sources = [
@@ -12,6 +11,7 @@ thirdparty_sources = [
 
 thirdparty_sources = [thirdparty_dir + file for file in thirdparty_sources]
 
-env_spirv_reflect.add_source_files(env.drivers_sources, thirdparty_sources)
+env_thirdparty = env.Clone()
+env_thirdparty.disable_warnings()
 
-Export("env")
+env_thirdparty.add_source_files(env.drivers_sources, thirdparty_sources)

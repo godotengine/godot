@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -145,9 +145,13 @@ COMMAND_2(map_set_active, RID, p_map, bool, p_active) {
 	if (p_active) {
 		if (!map_is_active(p_map)) {
 			active_maps.push_back(map);
+			active_maps_update_id.push_back(map->get_map_update_id());
 		}
 	} else {
-		active_maps.erase(map);
+		int map_index = active_maps.find(map);
+		ERR_FAIL_COND(map_index < 0);
+		active_maps.remove(map_index);
+		active_maps_update_id.remove(map_index);
 	}
 }
 
@@ -200,11 +204,11 @@ real_t GdNavigationServer::map_get_edge_connection_margin(RID p_map) const {
 	return map->get_edge_connection_margin();
 }
 
-Vector<Vector3> GdNavigationServer::map_get_path(RID p_map, Vector3 p_origin, Vector3 p_destination, bool p_optimize) const {
+Vector<Vector3> GdNavigationServer::map_get_path(RID p_map, Vector3 p_origin, Vector3 p_destination, bool p_optimize, uint32_t p_layers) const {
 	const NavMap *map = map_owner.getornull(p_map);
 	ERR_FAIL_COND_V(map == nullptr, Vector<Vector3>());
 
-	return map->get_path(p_origin, p_destination, p_optimize);
+	return map->get_path(p_origin, p_destination, p_optimize, p_layers);
 }
 
 Vector3 GdNavigationServer::map_get_closest_point_to_segment(RID p_map, const Vector3 &p_from, const Vector3 &p_to, const bool p_use_collision) const {
@@ -273,6 +277,20 @@ COMMAND_2(region_set_transform, RID, p_region, Transform, p_transform) {
 	region->set_transform(p_transform);
 }
 
+COMMAND_2(region_set_layers, RID, p_region, uint32_t, p_layers) {
+	NavRegion *region = region_owner.getornull(p_region);
+	ERR_FAIL_COND(region == nullptr);
+
+	region->set_layers(p_layers);
+}
+
+uint32_t GdNavigationServer::region_get_layers(RID p_region) const {
+	NavRegion *region = region_owner.getornull(p_region);
+	ERR_FAIL_COND_V(region == nullptr, 0);
+
+	return region->get_layers();
+}
+
 COMMAND_2(region_set_navmesh, RID, p_region, Ref<NavigationMesh>, p_nav_mesh) {
 	NavRegion *region = region_owner.getornull(p_region);
 	ERR_FAIL_COND(region == nullptr);
@@ -288,6 +306,27 @@ void GdNavigationServer::region_bake_navmesh(Ref<NavigationMesh> r_mesh, Node *p
 	NavigationMeshGenerator::get_singleton()->clear(r_mesh);
 	NavigationMeshGenerator::get_singleton()->bake(r_mesh, p_node);
 #endif
+}
+
+int GdNavigationServer::region_get_connections_count(RID p_region) const {
+	NavRegion *region = region_owner.getornull(p_region);
+	ERR_FAIL_COND_V(!region, 0);
+
+	return region->get_connections_count();
+}
+
+Vector3 GdNavigationServer::region_get_connection_pathway_start(RID p_region, int p_connection_id) const {
+	NavRegion *region = region_owner.getornull(p_region);
+	ERR_FAIL_COND_V(!region, Vector3());
+
+	return region->get_connection_pathway_start(p_connection_id);
+}
+
+Vector3 GdNavigationServer::region_get_connection_pathway_end(RID p_region, int p_connection_id) const {
+	NavRegion *region = region_owner.getornull(p_region);
+	ERR_FAIL_COND_V(!region, Vector3());
+
+	return region->get_connection_pathway_end(p_connection_id);
 }
 
 RID GdNavigationServer::agent_create() const {
@@ -429,7 +468,9 @@ COMMAND_1(free, RID, p_object) {
 			agents[i]->set_map(nullptr);
 		}
 
-		active_maps.erase(map);
+		int map_index = active_maps.find(map);
+		active_maps.remove(map_index);
+		active_maps_update_id.remove(map_index);
 		map_owner.free(p_object);
 		memdelete(map);
 
@@ -490,10 +531,17 @@ void GdNavigationServer::process(real_t p_delta_time) {
 	// In c++ we can't be sure that this is performed in the main thread
 	// even with mutable functions.
 	MutexLock lock(operations_mutex);
-	for (int i(0); i < active_maps.size(); i++) {
+	for (uint32_t i(0); i < active_maps.size(); i++) {
 		active_maps[i]->sync();
 		active_maps[i]->step(p_delta_time);
 		active_maps[i]->dispatch_callbacks();
+
+		// Emit a signal if a map changed.
+		const uint32_t new_map_update_id = active_maps[i]->get_map_update_id();
+		if (new_map_update_id != active_maps_update_id[i]) {
+			emit_signal("map_changed", active_maps[i]->get_self());
+			active_maps_update_id[i] = new_map_update_id;
+		}
 	}
 }
 

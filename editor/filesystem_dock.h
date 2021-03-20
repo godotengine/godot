@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -69,6 +69,16 @@ public:
 		DISPLAY_MODE_SPLIT,
 	};
 
+	enum FileSortOption {
+		FILE_SORT_NAME = 0,
+		FILE_SORT_NAME_REVERSE,
+		FILE_SORT_TYPE,
+		FILE_SORT_TYPE_REVERSE,
+		FILE_SORT_MODIFIED_TIME,
+		FILE_SORT_MODIFIED_TIME_REVERSE,
+		FILE_SORT_MAX,
+	};
+
 private:
 	enum FileMenu {
 		FILE_OPEN,
@@ -95,6 +105,8 @@ private:
 		FOLDER_COLLAPSE_ALL,
 	};
 
+	FileSortOption file_sort = FILE_SORT_NAME;
+
 	VBoxContainer *scanning_vb;
 	ProgressBar *scanning_progress;
 	VSplitContainer *split_box;
@@ -109,8 +121,13 @@ private:
 	Button *button_hist_next;
 	Button *button_hist_prev;
 	LineEdit *current_path;
+
+	HBoxContainer *toolbar2_hbc;
 	LineEdit *tree_search_box;
+	MenuButton *tree_button_sort;
+
 	LineEdit *file_list_search_box;
+	MenuButton *file_list_button_sort;
 
 	String searched_string;
 	Vector<String> uncollapsed_paths_before_search;
@@ -173,7 +190,7 @@ private:
 	ItemList *files;
 	bool import_dock_needs_update;
 
-	Ref<Texture2D> _get_tree_item_icon(EditorFileSystemDirectory *p_dir, int p_idx);
+	Ref<Texture2D> _get_tree_item_icon(bool p_is_valid, String p_file_type);
 	bool _create_tree(TreeItem *p_parent, EditorFileSystemDirectory *p_dir, Vector<String> &uncollapsed_paths, bool p_select_in_favorites, bool p_unfold_path = false);
 	Vector<String> _compute_uncollapsed_paths();
 	void _update_tree(const Vector<String> &p_uncollapsed_paths = Vector<String>(), bool p_uncollapse_root = false, bool p_select_in_favorites = false, bool p_unfold_path = false);
@@ -195,6 +212,7 @@ private:
 	void _file_multi_selected(int p_index, bool p_selected);
 	void _tree_multi_selected(Object *p_item, int p_column, bool p_selected);
 
+	void _get_imported_files(const String &p_path, Vector<String> &files) const;
 	void _update_import_dock();
 
 	void _get_all_items_in_dir(EditorFileSystemDirectory *efsd, Vector<String> &files, Vector<String> &folders) const;
@@ -218,7 +236,7 @@ private:
 	void _rename_operation_confirm();
 	void _duplicate_operation_confirm();
 	void _move_with_overwrite();
-	bool _check_existing();
+	Vector<String> _check_existing();
 	void _move_operation_confirm(const String &p_to_path, bool p_overwrite = false);
 
 	void _tree_rmb_option(int p_option);
@@ -237,6 +255,9 @@ private:
 
 	void _search_changed(const String &p_text, const Control *p_from);
 
+	MenuButton *_create_file_menu_button();
+	void _file_sort_popup(int p_id);
+
 	void _file_and_folders_fill_popup(PopupMenu *p_popup, Vector<String> p_paths, bool p_display_path_dependent_options = true);
 	void _tree_rmb_select(const Vector2 &p_pos);
 	void _tree_rmb_empty(const Vector2 &p_pos);
@@ -249,12 +270,18 @@ private:
 		String path;
 		StringName type;
 		Vector<String> sources;
-		bool import_broken;
+		bool import_broken = false;
+		uint64_t modified_time = 0;
 
 		bool operator<(const FileInfo &fi) const {
 			return NaturalNoCaseComparator()(name, fi.name);
 		}
 	};
+
+	struct FileInfoTypeComparator;
+	struct FileInfoModifiedTimeComparator;
+
+	void _sort_file_info_list(List<FileSystemDock::FileInfo> &r_file_list);
 
 	void _search(EditorFileSystemDirectory *p_path, List<FileInfo> *matches, int p_max_items);
 
@@ -297,6 +324,9 @@ public:
 
 	void set_display_mode(DisplayMode p_display_mode);
 	DisplayMode get_display_mode() { return display_mode; }
+
+	void set_file_sort(FileSortOption p_file_sort);
+	FileSortOption get_file_sort() { return file_sort; }
 
 	void set_file_list_display_mode(FileListDisplayMode p_mode);
 	FileListDisplayMode get_file_list_display_mode() { return file_list_display_mode; };

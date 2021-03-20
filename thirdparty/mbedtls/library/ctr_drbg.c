@@ -1,7 +1,7 @@
 /*
  *  CTR_DRBG implementation based on AES-256 (NIST SP 800-90)
  *
- *  Copyright (C) 2006-2015, ARM Limited, All Rights Reserved
+ *  Copyright The Mbed TLS Contributors
  *  SPDX-License-Identifier: Apache-2.0 OR GPL-2.0-or-later
  *
  *  This file is provided under the Apache License 2.0, or the
@@ -42,8 +42,6 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
  *  **********
- *
- *  This file is part of mbed TLS (https://tls.mbed.org)
  */
 /*
  *  The NIST SP 800-90 DRBGs are described in the following publication.
@@ -84,21 +82,26 @@ void mbedtls_ctr_drbg_init( mbedtls_ctr_drbg_context *ctx )
 {
     memset( ctx, 0, sizeof( mbedtls_ctr_drbg_context ) );
 
-#if defined(MBEDTLS_THREADING_C)
-    mbedtls_mutex_init( &ctx->mutex );
-#endif
+    ctx->reseed_interval = MBEDTLS_CTR_DRBG_RESEED_INTERVAL;
 }
 
+/*
+ *  This function resets CTR_DRBG context to the state immediately
+ *  after initial call of mbedtls_ctr_drbg_init().
+ */
 void mbedtls_ctr_drbg_free( mbedtls_ctr_drbg_context *ctx )
 {
     if( ctx == NULL )
         return;
 
 #if defined(MBEDTLS_THREADING_C)
-    mbedtls_mutex_free( &ctx->mutex );
+    /* The mutex is initialized iff f_entropy is set. */
+    if( ctx->f_entropy != NULL )
+        mbedtls_mutex_free( &ctx->mutex );
 #endif
     mbedtls_aes_free( &ctx->aes_ctx );
     mbedtls_platform_zeroize( ctx, sizeof( mbedtls_ctr_drbg_context ) );
+    ctx->reseed_interval = MBEDTLS_CTR_DRBG_RESEED_INTERVAL;
 }
 
 void mbedtls_ctr_drbg_set_prediction_resistance( mbedtls_ctr_drbg_context *ctx, int resistance )
@@ -414,6 +417,11 @@ int mbedtls_ctr_drbg_seed( mbedtls_ctr_drbg_context *ctx,
 
     memset( key, 0, MBEDTLS_CTR_DRBG_KEYSIZE );
 
+    /* The mutex is initialized iff f_entropy is set. */
+#if defined(MBEDTLS_THREADING_C)
+    mbedtls_mutex_init( &ctx->mutex );
+#endif
+
     mbedtls_aes_init( &ctx->aes_ctx );
 
     ctx->f_entropy = f_entropy;
@@ -421,7 +429,6 @@ int mbedtls_ctr_drbg_seed( mbedtls_ctr_drbg_context *ctx,
 
     if( ctx->entropy_len == 0 )
         ctx->entropy_len = MBEDTLS_CTR_DRBG_ENTROPY_LEN;
-    ctx->reseed_interval = MBEDTLS_CTR_DRBG_RESEED_INTERVAL;
 
     /*
      * Initialize with an empty key

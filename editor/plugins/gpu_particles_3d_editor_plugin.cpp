@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -213,7 +213,7 @@ GPUParticles3DEditorBase::GPUParticles3DEditorBase() {
 	emission_fill->add_item(TTR("Volume"));
 	emd_vb->add_margin_child(TTR("Emission Source: "), emission_fill);
 
-	emission_dialog->get_ok()->set_text(TTR("Create"));
+	emission_dialog->get_ok_button()->set_text(TTR("Create"));
 	emission_dialog->connect("confirmed", callable_mp(this, &GPUParticles3DEditorBase::_generate_emission_points));
 
 	emission_tree_dialog = memnew(SceneTreeDialog);
@@ -263,7 +263,7 @@ void GPUParticles3DEditor::_menu_option(int p_option) {
 			cpu_particles->set_name(node->get_name());
 			cpu_particles->set_transform(node->get_transform());
 			cpu_particles->set_visible(node->is_visible());
-			cpu_particles->set_pause_mode(node->get_pause_mode());
+			cpu_particles->set_process_mode(node->get_process_mode());
 
 			UndoRedo *ur = EditorNode::get_singleton()->get_undo_redo();
 			ur->create_action(TTR("Convert to CPUParticles3D"));
@@ -454,7 +454,7 @@ void GPUParticles3DEditorPlugin::make_visible(bool p_visible) {
 GPUParticles3DEditorPlugin::GPUParticles3DEditorPlugin(EditorNode *p_node) {
 	editor = p_node;
 	particles_editor = memnew(GPUParticles3DEditor);
-	editor->get_viewport()->add_child(particles_editor);
+	editor->get_main_control()->add_child(particles_editor);
 
 	particles_editor->hide();
 }

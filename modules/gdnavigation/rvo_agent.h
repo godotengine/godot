@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -31,8 +31,9 @@
 #ifndef RVO_AGENT_H
 #define RVO_AGENT_H
 
-#include "core/object.h"
+#include "core/object/class_db.h"
 #include "nav_rid.h"
+
 #include <Agent.h>
 
 /**
@@ -52,7 +53,7 @@ class RvoAgent : public NavRid {
 	NavMap *map = nullptr;
 	RVO::Agent agent;
 	AvoidanceComputedCallback callback;
-	uint32_t map_update_id;
+	uint32_t map_update_id = 0;
 
 public:
 	RvoAgent();

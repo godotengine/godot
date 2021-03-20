@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -148,6 +148,11 @@ void CachedData::clear_godot_api_cache() {
 	class_PuppetSyncAttribute = nullptr;
 	class_GodotMethodAttribute = nullptr;
 	field_GodotMethodAttribute_methodName = nullptr;
+	class_ScriptPathAttribute = nullptr;
+	field_ScriptPathAttribute_path = nullptr;
+	class_AssemblyHasScriptsAttribute = nullptr;
+	field_AssemblyHasScriptsAttribute_requiresLookup = nullptr;
+	field_AssemblyHasScriptsAttribute_scriptTypes = nullptr;
 
 	field_GodotObject_ptr = nullptr;
 	field_StringName_ptr = nullptr;
@@ -272,6 +277,11 @@ void update_godot_api_cache() {
 	CACHE_CLASS_AND_CHECK(PuppetSyncAttribute, GODOT_API_CLASS(PuppetSyncAttribute));
 	CACHE_CLASS_AND_CHECK(GodotMethodAttribute, GODOT_API_CLASS(GodotMethodAttribute));
 	CACHE_FIELD_AND_CHECK(GodotMethodAttribute, methodName, CACHED_CLASS(GodotMethodAttribute)->get_field("methodName"));
+	CACHE_CLASS_AND_CHECK(ScriptPathAttribute, GODOT_API_CLASS(ScriptPathAttribute));
+	CACHE_FIELD_AND_CHECK(ScriptPathAttribute, path, CACHED_CLASS(ScriptPathAttribute)->get_field("path"));
+	CACHE_CLASS_AND_CHECK(AssemblyHasScriptsAttribute, GODOT_API_CLASS(AssemblyHasScriptsAttribute));
+	CACHE_FIELD_AND_CHECK(AssemblyHasScriptsAttribute, requiresLookup, CACHED_CLASS(AssemblyHasScriptsAttribute)->get_field("requiresLookup"));
+	CACHE_FIELD_AND_CHECK(AssemblyHasScriptsAttribute, scriptTypes, CACHED_CLASS(AssemblyHasScriptsAttribute)->get_field("scriptTypes"));
 
 	CACHE_FIELD_AND_CHECK(GodotObject, ptr, CACHED_CLASS(GodotObject)->get_field(BINDINGS_PTR_FIELD));
 	CACHE_FIELD_AND_CHECK(StringName, ptr, CACHED_CLASS(StringName)->get_field(BINDINGS_PTR_FIELD));
@@ -316,5 +326,4 @@ void update_godot_api_cache() {
 
 	cached_data.godot_api_cache_updated = true;
 }
-
 } // namespace GDMonoCache

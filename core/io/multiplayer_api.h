@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -32,7 +32,7 @@
 #define MULTIPLAYER_API_H
 
 #include "core/io/networked_multiplayer_peer.h"
-#include "core/reference.h"
+#include "core/object/reference.h"
 
 class MultiplayerAPI : public Reference {
 	GDCLASS(MultiplayerAPI, Reference);
@@ -102,7 +102,6 @@ public:
 	};
 
 	enum RPCMode {
-
 		RPC_MODE_DISABLED, // No rpc for this method, calls to this will be blocked (default)
 		RPC_MODE_REMOTE, // Using rpc() on it will call method / set property in all remote peers
 		RPC_MODE_MASTER, // Using rpc() on it will call method on wherever the master is, be it local or remote
@@ -115,6 +114,7 @@ public:
 	void poll();
 	void clear();
 	void set_root_node(Node *p_node);
+	Node *get_root_node();
 	void set_network_peer(const Ref<NetworkedMultiplayerPeer> &p_peer);
 	Ref<NetworkedMultiplayerPeer> get_network_peer() const;
 	Error send_bytes(Vector<uint8_t> p_data, int p_to = NetworkedMultiplayerPeer::TARGET_PEER_BROADCAST, NetworkedMultiplayerPeer::TransferMode p_mode = NetworkedMultiplayerPeer::TRANSFER_MODE_RELIABLE);

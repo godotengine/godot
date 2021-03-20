@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -32,10 +32,10 @@
 
 #include "os_iphone.h"
 #import "app_delegate.h"
+#include "core/config/project_settings.h"
 #include "core/io/file_access_pack.h"
 #include "core/os/dir_access.h"
 #include "core/os/file_access.h"
-#include "core/project_settings.h"
 #include "display_server_iphone.h"
 #include "drivers/unix/syslog_logger.h"
 #import "godot_view.h"
@@ -47,7 +47,7 @@
 #import <dlfcn.h>
 
 #if defined(VULKAN_ENABLED)
-#include "servers/rendering/rasterizer_rd/rasterizer_rd.h"
+#include "servers/rendering/renderer_rd/renderer_compositor_rd.h"
 #import <QuartzCore/CAMetalLayer.h>
 #include <vulkan/vulkan_metal.h>
 #endif
@@ -125,22 +125,6 @@ void OSIPhone::initialize() {
 }
 
 void OSIPhone::initialize_modules() {
-#ifdef GAME_CENTER_ENABLED
-	game_center = memnew(GameCenter);
-	Engine::get_singleton()->add_singleton(Engine::Singleton("GameCenter", game_center));
-	game_center->connect();
-#endif
-
-#ifdef STOREKIT_ENABLED
-	store_kit = memnew(InAppStore);
-	Engine::get_singleton()->add_singleton(Engine::Singleton("InAppStore", store_kit));
-#endif
-
-#ifdef ICLOUD_ENABLED
-	icloud = memnew(ICloud);
-	Engine::get_singleton()->add_singleton(Engine::Singleton("ICloud", icloud));
-#endif
-
 	ios = memnew(iOS);
 	Engine::get_singleton()->add_singleton(Engine::Singleton("iOS", ios));
 
@@ -156,30 +140,14 @@ void OSIPhone::deinitialize_modules() {
 		memdelete(ios);
 	}
 
-#ifdef GAME_CENTER_ENABLED
-	if (game_center) {
-		memdelete(game_center);
-	}
-#endif
-
-#ifdef STOREKIT_ENABLED
-	if (store_kit) {
-		memdelete(store_kit);
-	}
-#endif
-
-#ifdef ICLOUD_ENABLED
-	if (icloud) {
-		memdelete(icloud);
-	}
-#endif
+	godot_ios_plugins_deinitialize();
 }
 
 void OSIPhone::set_main_loop(MainLoop *p_main_loop) {
 	main_loop = p_main_loop;
 
 	if (main_loop) {
-		main_loop->init();
+		main_loop->initialize();
 	}
 }
 
@@ -189,7 +157,7 @@ MainLoop *OSIPhone::get_main_loop() const {
 
 void OSIPhone::delete_main_loop() {
 	if (main_loop) {
-		main_loop->finish();
+		main_loop->finalize();
 		memdelete(main_loop);
 	};
 
@@ -209,6 +177,8 @@ bool OSIPhone::iterate() {
 }
 
 void OSIPhone::start() {
+	godot_ios_plugins_initialize();
+
 	Main::start();
 
 	if (joypad_iphone) {
@@ -272,19 +242,14 @@ String OSIPhone::get_model_name() const {
 Error OSIPhone::shell_open(String p_uri) {
 	NSString *urlPath = [[NSString alloc] initWithUTF8String:p_uri.utf8().get_data()];
 	NSURL *url = [NSURL URLWithString:urlPath];
-	[urlPath release];
 
 	if (![[UIApplication sharedApplication] canOpenURL:url]) {
 		return ERR_CANT_OPEN;
 	}
 
-	printf("opening url %ls\n", p_uri.c_str());
+	printf("opening url %s\n", p_uri.utf8().get_data());
 
-	//    if (@available(iOS 10, *)) {
 	[[UIApplication sharedApplication] openURL:url options:@{} completionHandler:nil];
-	//    } else {
-	//        [[UIApplication sharedApplication] openURL:url];
-	//    }
 
 	return OK;
 };
@@ -293,7 +258,7 @@ void OSIPhone::set_user_data_dir(String p_dir) {
 	DirAccess *da = DirAccess::open(p_dir);
 
 	user_data_dir = da->get_current_dir();
-	printf("setting data dir to %ls from %ls\n", user_data_dir.c_str(), p_dir.c_str());
+	printf("setting data dir to %s from %s\n", user_data_dir.utf8().get_data(), p_dir.utf8().get_data());
 	memdelete(da);
 }
 

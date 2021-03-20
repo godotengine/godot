@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -31,8 +31,8 @@
 #ifndef CAMERA_EFFECTS_H
 #define CAMERA_EFFECTS_H
 
-#include "core/resource.h"
-#include "core/rid.h"
+#include "core/io/resource.h"
+#include "core/templates/rid.h"
 
 class CameraEffects : public Resource {
 	GDCLASS(CameraEffects, Resource);
@@ -42,12 +42,12 @@ private:
 
 	// DOF blur
 	bool dof_blur_far_enabled = false;
-	float dof_blur_far_distance = 10;
-	float dof_blur_far_transition = 5;
+	float dof_blur_far_distance = 10.0;
+	float dof_blur_far_transition = 5.0;
 
 	bool dof_blur_near_enabled = false;
-	float dof_blur_near_distance = 2;
-	float dof_blur_near_transition = 1;
+	float dof_blur_near_distance = 2.0;
+	float dof_blur_near_transition = 1.0;
 
 	float dof_blur_amount = 0.1;
 	void _update_dof_blur();
@@ -59,6 +59,7 @@ private:
 
 protected:
 	static void _bind_methods();
+	void _validate_property(PropertyInfo &property) const override;
 
 public:
 	virtual RID get_rid() const override;

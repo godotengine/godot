@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -30,11 +30,11 @@
 
 #include "script_editor_debugger.h"
 
+#include "core/config/project_settings.h"
 #include "core/debugger/debugger_marshalls.h"
 #include "core/debugger/remote_debugger.h"
 #include "core/io/marshalls.h"
-#include "core/project_settings.h"
-#include "core/ustring.h"
+#include "core/string/ustring.h"
 #include "editor/debugger/editor_network_profiler.h"
 #include "editor/debugger/editor_performance_profiler.h"
 #include "editor/debugger/editor_profiler.h"
@@ -44,6 +44,7 @@
 #include "editor/editor_scale.h"
 #include "editor/editor_settings.h"
 #include "editor/plugins/canvas_item_editor_plugin.h"
+#include "editor/plugins/editor_debugger_plugin.h"
 #include "editor/plugins/node_3d_editor_plugin.h"
 #include "editor/property_editor.h"
 #include "main/performance.h"
@@ -342,7 +343,7 @@ void ScriptEditorDebugger::_parse_message(const String &p_msg, const Array &p_da
 		DebuggerMarshalls::ResourceUsage usage;
 		usage.deserialize(p_data);
 
-		int total = 0;
+		uint64_t total = 0;
 
 		for (List<DebuggerMarshalls::ResourceInfo>::Element *E = usage.infos.front(); E; E = E->next()) {
 			TreeItem *it = vmem_tree->create_item(root);
@@ -486,17 +487,20 @@ void ScriptEditorDebugger::_parse_message(const String &p_msg, const Array &p_da
 		error->set_text_align(0, TreeItem::ALIGN_LEFT);
 
 		String error_title;
-		// Include method name, when given, in error title.
-		if (!oe.source_func.empty()) {
+		if (oe.callstack.size() > 0) {
+			// If available, use the script's stack in the error title.
+			error_title = oe.callstack[oe.callstack.size() - 1].func + ": ";
+		} else if (!oe.source_func.is_empty()) {
+			// Otherwise try to use the C++ source function.
 			error_title += oe.source_func + ": ";
 		}
 		// If we have a (custom) error message, use it as title, and add a C++ Error
 		// item with the original error condition.
-		error_title += oe.error_descr.empty() ? oe.error : oe.error_descr;
+		error_title += oe.error_descr.is_empty() ? oe.error : oe.error_descr;
 		error->set_text(1, error_title);
 		tooltip += " " + error_title + "\n";
 
-		if (!oe.error_descr.empty()) {
+		if (!oe.error_descr.is_empty()) {
 			// Add item for C++ error condition.
 			TreeItem *cpp_cond = error_tree->create_item(error);
 			cpp_cond->set_text(0, "<" + TTR("C++ Error") + ">");
@@ -512,7 +516,7 @@ void ScriptEditorDebugger::_parse_message(const String &p_msg, const Array &p_da
 
 		// Source of the error.
 		String source_txt = (source_is_project_file ? oe.source_file.get_file() : oe.source_file) + ":" + itos(oe.source_line);
-		if (!oe.source_func.empty()) {
+		if (!oe.source_func.is_empty()) {
 			source_txt += " @ " + oe.source_func + "()";
 		}
 
@@ -527,9 +531,6 @@ void ScriptEditorDebugger::_parse_message(const String &p_msg, const Array &p_da
 			error->set_metadata(0, source_meta);
 			cpp_source->set_metadata(0, source_meta);
 		}
-
-		error->set_tooltip(0, tooltip);
-		error->set_tooltip(1, tooltip);
 
 		// Format stack trace.
 		// stack_items_count is the number of elements to parse, with 3 items per frame
@@ -547,9 +548,16 @@ void ScriptEditorDebugger::_parse_message(const String &p_msg, const Array &p_da
 				stack_trace->set_text(0, "<" + TTR("Stack Trace") + ">");
 				stack_trace->set_text_align(0, TreeItem::ALIGN_LEFT);
 				error->set_metadata(0, meta);
+				tooltip += TTR("Stack Trace:") + "\n";
 			}
-			stack_trace->set_text(1, infos[i].file.get_file() + ":" + itos(infos[i].line) + " @ " + infos[i].func + "()");
+
+			String frame_txt = infos[i].file.get_file() + ":" + itos(infos[i].line) + " @ " + infos[i].func + "()";
+			tooltip += frame_txt + "\n";
+			stack_trace->set_text(1, frame_txt);
 		}
+
+		error->set_tooltip(0, tooltip);
+		error->set_tooltip(1, tooltip);
 
 		if (oe.warning) {
 			warning_count++;
@@ -701,7 +709,28 @@ void ScriptEditorDebugger::_parse_message(const String &p_msg, const Array &p_da
 		performance_profiler->update_monitors(monitors);
 
 	} else {
-		WARN_PRINT("unknown message " + p_msg);
+		int colon_index = p_msg.find_char(':');
+		ERR_FAIL_COND_MSG(colon_index < 1, "Invalid message received");
+
+		bool parsed = false;
+		const String cap = p_msg.substr(0, colon_index);
+		Map<StringName, Callable>::Element *element = captures.find(cap);
+		if (element) {
+			Callable &c = element->value();
+			ERR_FAIL_COND_MSG(c.is_null(), "Invalid callable registered: " + cap);
+			Variant cmd = p_msg.substr(colon_index + 1), data = p_data;
+			const Variant *args[2] = { &cmd, &data };
+			Variant retval;
+			Callable::CallError err;
+			c.call(args, 2, retval, err);
+			ERR_FAIL_COND_MSG(err.error != Callable::CallError::CALL_OK, "Error calling 'capture' to callable: " + Variant::get_callable_error_text(c, args, 2, err));
+			ERR_FAIL_COND_MSG(retval.get_type() != Variant::BOOL, "Error calling 'capture' to callable: " + String(c) + ". Return type is not bool.");
+			parsed = retval;
+		}
+
+		if (!parsed) {
+			WARN_PRINT("unknown message " + p_msg);
+		}
 	}
 }
 
@@ -773,8 +802,8 @@ void ScriptEditorDebugger::_notification(int p_what) {
 						msg.push_back(true);
 						msg.push_back(cam->get_fov());
 					}
-					msg.push_back(cam->get_znear());
-					msg.push_back(cam->get_zfar());
+					msg.push_back(cam->get_near());
+					msg.push_back(cam->get_far());
 					_put_msg("scene:override_camera_3D:transform", msg);
 				}
 			}
@@ -847,6 +876,7 @@ void ScriptEditorDebugger::start(Ref<RemoteDebuggerPeer> p_peer) {
 	tabs->set_current_tab(0);
 	_set_reason_text(TTR("Debug session started."), MESSAGE_SUCCESS);
 	_update_buttons_state();
+	emit_signal("started");
 }
 
 void ScriptEditorDebugger::_update_buttons_state() {
@@ -1000,7 +1030,7 @@ void ScriptEditorDebugger::_method_changed(Object *p_base, const StringName &p_n
 
 	for (int i = 0; i < VARIANT_ARG_MAX; i++) {
 		//no pointers, sorry
-		if (argptr[i] && (argptr[i]->get_type() == Variant::OBJECT || argptr[i]->get_type() == Variant::_RID)) {
+		if (argptr[i] && (argptr[i]->get_type() == Variant::OBJECT || argptr[i]->get_type() == Variant::RID)) {
 			return;
 		}
 	}
@@ -1395,6 +1425,7 @@ void ScriptEditorDebugger::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("request_remote_object", "id"), &ScriptEditorDebugger::request_remote_object);
 	ClassDB::bind_method(D_METHOD("update_remote_object", "id", "property", "value"), &ScriptEditorDebugger::update_remote_object);
 
+	ADD_SIGNAL(MethodInfo("started"));
 	ADD_SIGNAL(MethodInfo("stopped"));
 	ADD_SIGNAL(MethodInfo("stop_requested"));
 	ADD_SIGNAL(MethodInfo("stack_frame_selected", PropertyInfo(Variant::INT, "frame")));
@@ -1406,6 +1437,43 @@ void ScriptEditorDebugger::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("remote_object_updated", PropertyInfo(Variant::INT, "id")));
 	ADD_SIGNAL(MethodInfo("remote_object_property_updated", PropertyInfo(Variant::INT, "id"), PropertyInfo(Variant::STRING, "property")));
 	ADD_SIGNAL(MethodInfo("remote_tree_updated"));
+}
+
+void ScriptEditorDebugger::add_debugger_plugin(const Ref<Script> &p_script) {
+	if (!debugger_plugins.has(p_script)) {
+		EditorDebuggerPlugin *plugin = memnew(EditorDebuggerPlugin());
+		plugin->attach_debugger(this);
+		plugin->set_script(p_script);
+		tabs->add_child(plugin);
+		debugger_plugins.insert(p_script, plugin);
+	}
+}
+
+void ScriptEditorDebugger::remove_debugger_plugin(const Ref<Script> &p_script) {
+	if (debugger_plugins.has(p_script)) {
+		tabs->remove_child(debugger_plugins[p_script]);
+		debugger_plugins[p_script]->detach_debugger(false);
+		memdelete(debugger_plugins[p_script]);
+		debugger_plugins.erase(p_script);
+	}
+}
+
+void ScriptEditorDebugger::send_message(const String &p_message, const Array &p_args) {
+	_put_msg(p_message, p_args);
+}
+
+void ScriptEditorDebugger::register_message_capture(const StringName &p_name, const Callable &p_callable) {
+	ERR_FAIL_COND_MSG(has_capture(p_name), "Capture already registered: " + p_name);
+	captures.insert(p_name, p_callable);
+}
+
+void ScriptEditorDebugger::unregister_message_capture(const StringName &p_name) {
+	ERR_FAIL_COND_MSG(!has_capture(p_name), "Capture not registered: " + p_name);
+	captures.erase(p_name);
+}
+
+bool ScriptEditorDebugger::has_capture(const StringName &p_name) {
+	return captures.has(p_name);
 }
 
 ScriptEditorDebugger::ScriptEditorDebugger(EditorNode *p_editor) {

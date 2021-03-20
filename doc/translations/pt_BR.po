@@ -1,6 +1,6 @@
 # Portuguese (Brazil) translation of the Godot Engine class reference.
-# Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.
-# Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).
+# Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.
+# Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).
 # This file is distributed under the same license as the Godot source code.
 #
 # José Paulo <jose.paulo1919@gmail.com>, 2020.
@@ -11116,7 +11116,7 @@ msgstr ""
 #: doc/classes/CanvasItem.xml:523
 msgid ""
 "Returns [code]true[/code] if the node is set as top-level. See [method "
-"set_as_toplevel]."
+"set_as_top_level]."
 msgstr ""
 
 #: doc/classes/CanvasItem.xml:530
@@ -14210,7 +14210,7 @@ msgstr ""
 
 #: doc/classes/Control.xml:545
 msgid ""
-"Invalidates the size cache in this node and in parent nodes up to toplevel. "
+"Invalidates the size cache in this node and in parent nodes up to top_level. "
 "Intended to be used with [method get_minimum_size] when the return value is "
 "changed. Setting [member rect_min_size] directly calls this method "
 "automatically."
@@ -32662,7 +32662,7 @@ msgstr ""
 
 #: doc/classes/Node3D.xml:90
 msgid ""
-"Returns whether this node is set as Toplevel, that is whether it ignores its "
+"Returns whether this node is set as top_level, that is whether it ignores its "
 "parent nodes transformations."
 msgstr ""
 

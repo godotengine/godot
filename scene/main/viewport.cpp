@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -30,11 +30,13 @@
 
 #include "viewport.h"
 
+#include "core/config/project_settings.h"
 #include "core/core_string_names.h"
 #include "core/debugger/engine_debugger.h"
 #include "core/input/input.h"
 #include "core/os/os.h"
-#include "core/project_settings.h"
+#include "core/string/translation.h"
+
 #include "scene/2d/collision_object_2d.h"
 #include "scene/3d/camera_3d.h"
 #include "scene/3d/collision_object_3d.h"
@@ -142,7 +144,6 @@ void ViewportTexture::_bind_methods() {
 }
 
 ViewportTexture::ViewportTexture() {
-	vp = nullptr;
 	set_local_to_scene(true);
 }
 
@@ -161,6 +162,11 @@ ViewportTexture::~ViewportTexture() {
 
 /////////////////////////////////////
 
+// Aliases used to provide custom styles to tooltips in the default
+// theme and editor theme.
+// TooltipPanel is also used for custom tooltips, while TooltipLabel
+// is only relevant for default tooltips.
+
 class TooltipPanel : public PopupPanel {
 	GDCLASS(TooltipPanel, PopupPanel);
 
@@ -174,24 +180,6 @@ class TooltipLabel : public Label {
 public:
 	TooltipLabel() {}
 };
-
-Viewport::GUI::GUI() {
-	embed_subwindows_hint = false;
-	embedding_subwindows = false;
-
-	dragging = false;
-	mouse_focus = nullptr;
-	forced_mouse_focus = false;
-	mouse_click_grabber = nullptr;
-	mouse_focus_mask = 0;
-	key_focus = nullptr;
-	mouse_over = nullptr;
-	drag_mouse_over = nullptr;
-
-	tooltip = nullptr;
-	tooltip_popup = nullptr;
-	tooltip_label = nullptr;
-}
 
 /////////////////////////////////////
 
@@ -278,16 +266,24 @@ void Viewport::_sub_window_update(Window *p_window) {
 
 		// Draw the title bar text.
 		Ref<Font> title_font = p_window->get_theme_font("title_font");
+		int font_size = p_window->get_theme_font_size("title_font_size");
 		Color title_color = p_window->get_theme_color("title_color");
 		int title_height = p_window->get_theme_constant("title_height");
-		int font_height = title_font->get_height() - title_font->get_descent() * 2;
-		int x = (r.size.width - title_font->get_string_size(p_window->get_title()).x) / 2;
-		int y = (-title_height + font_height) / 2;
-
 		int close_h_ofs = p_window->get_theme_constant("close_h_ofs");
 		int close_v_ofs = p_window->get_theme_constant("close_v_ofs");
 
-		title_font->draw(sw.canvas_item, r.position + Point2(x, y), p_window->get_title(), title_color, r.size.width - panel->get_minimum_size().x - close_h_ofs);
+		TextLine title_text = TextLine(p_window->get_title(), title_font, font_size, Dictionary(), TranslationServer::get_singleton()->get_tool_locale());
+		title_text.set_width(r.size.width - panel->get_minimum_size().x - close_h_ofs);
+		title_text.set_direction(p_window->is_layout_rtl() ? TextServer::DIRECTION_RTL : TextServer::DIRECTION_LTR);
+		int x = (r.size.width - title_text.get_size().x) / 2;
+		int y = (-title_height - title_text.get_size().y) / 2;
+
+		Color font_outline_color = p_window->get_theme_color("title_outline_modulate");
+		int outline_size = p_window->get_theme_constant("title_outline_size");
+		if (outline_size > 0 && font_outline_color.a > 0) {
+			title_text.draw_outline(sw.canvas_item, r.position + Point2(x, y), outline_size, font_outline_color);
+		}
+		title_text.draw(sw.canvas_item, r.position + Point2(x, y), title_color);
 
 		bool hl = gui.subwindow_focused == sw.window && gui.subwindow_drag == SUB_WINDOW_DRAG_CLOSE && gui.subwindow_drag_close_inside;
 
@@ -456,7 +452,7 @@ void Viewport::_notification(int p_what) {
 				//3D
 				PhysicsServer3D::get_singleton()->space_set_debug_contacts(find_world_3d()->get_space(), get_tree()->get_collision_debug_contact_count());
 				contact_3d_debug_multimesh = RenderingServer::get_singleton()->multimesh_create();
-				RenderingServer::get_singleton()->multimesh_allocate(contact_3d_debug_multimesh, get_tree()->get_collision_debug_contact_count(), RS::MULTIMESH_TRANSFORM_3D, true);
+				RenderingServer::get_singleton()->multimesh_allocate_data(contact_3d_debug_multimesh, get_tree()->get_collision_debug_contact_count(), RS::MULTIMESH_TRANSFORM_3D, true);
 				RenderingServer::get_singleton()->multimesh_set_visible_instances(contact_3d_debug_multimesh, 0);
 				RenderingServer::get_singleton()->multimesh_set_mesh(contact_3d_debug_multimesh, get_tree()->get_debug_contact_mesh()->get_rid());
 				contact_3d_debug_instance = RenderingServer::get_singleton()->instance_create();
@@ -555,266 +551,22 @@ void Viewport::_notification(int p_what) {
 				int point_count = PhysicsServer3D::get_singleton()->space_get_contact_count(find_world_3d()->get_space());
 
 				RS::get_singleton()->multimesh_set_visible_instances(contact_3d_debug_multimesh, point_count);
-			}
 
-			if (physics_object_picking && (to_screen_rect == Rect2i() || Input::get_singleton()->get_mouse_mode() != Input::MOUSE_MODE_CAPTURED)) {
-#ifndef _3D_DISABLED
-				Vector2 last_pos(1e20, 1e20);
-				CollisionObject3D *last_object = nullptr;
-				ObjectID last_id;
-#endif
-				PhysicsDirectSpaceState3D::RayResult result;
-				PhysicsDirectSpaceState2D *ss2d = PhysicsServer2D::get_singleton()->space_get_direct_state(find_world_2d()->get_space());
-
-				if (physics_has_last_mousepos) {
-					// if no mouse event exists, create a motion one. This is necessary because objects or camera may have moved.
-					// while this extra event is sent, it is checked if both camera and last object and last ID did not move. If nothing changed, the event is discarded to avoid flooding with unnecessary motion events every frame
-					bool has_mouse_event = false;
-					for (List<Ref<InputEvent>>::Element *E = physics_picking_events.front(); E; E = E->next()) {
-						Ref<InputEventMouse> m = E->get();
-						if (m.is_valid()) {
-							has_mouse_event = true;
-							break;
-						}
-					}
-
-					if (!has_mouse_event) {
-						Ref<InputEventMouseMotion> mm;
-						mm.instance();
-
-						mm->set_device(InputEvent::DEVICE_ID_INTERNAL);
-						mm->set_global_position(physics_last_mousepos);
-						mm->set_position(physics_last_mousepos);
-						mm->set_alt(physics_last_mouse_state.alt);
-						mm->set_shift(physics_last_mouse_state.shift);
-						mm->set_control(physics_last_mouse_state.control);
-						mm->set_metakey(physics_last_mouse_state.meta);
-						mm->set_button_mask(physics_last_mouse_state.mouse_mask);
-						physics_picking_events.push_back(mm);
-					}
-				}
-
-				while (physics_picking_events.size()) {
-					Ref<InputEvent> ev = physics_picking_events.front()->get();
-					physics_picking_events.pop_front();
-
-					Vector2 pos;
-					bool is_mouse = false;
-
-					Ref<InputEventMouseMotion> mm = ev;
-
-					if (mm.is_valid()) {
-						pos = mm->get_position();
-						is_mouse = true;
-
-						physics_has_last_mousepos = true;
-						physics_last_mousepos = pos;
-						physics_last_mouse_state.alt = mm->get_alt();
-						physics_last_mouse_state.shift = mm->get_shift();
-						physics_last_mouse_state.control = mm->get_control();
-						physics_last_mouse_state.meta = mm->get_metakey();
-						physics_last_mouse_state.mouse_mask = mm->get_button_mask();
-					}
-
-					Ref<InputEventMouseButton> mb = ev;
-
-					if (mb.is_valid()) {
-						pos = mb->get_position();
-						is_mouse = true;
-
-						physics_has_last_mousepos = true;
-						physics_last_mousepos = pos;
-						physics_last_mouse_state.alt = mb->get_alt();
-						physics_last_mouse_state.shift = mb->get_shift();
-						physics_last_mouse_state.control = mb->get_control();
-						physics_last_mouse_state.meta = mb->get_metakey();
-
-						if (mb->is_pressed()) {
-							physics_last_mouse_state.mouse_mask |= (1 << (mb->get_button_index() - 1));
-						} else {
-							physics_last_mouse_state.mouse_mask &= ~(1 << (mb->get_button_index() - 1));
-
-							// If touch mouse raised, assume we don't know last mouse pos until new events come
-							if (mb->get_device() == InputEvent::DEVICE_ID_TOUCH_MOUSE) {
-								physics_has_last_mousepos = false;
-							}
-						}
-					}
-
-					Ref<InputEventKey> k = ev;
-					if (k.is_valid()) {
-						//only for mask
-						physics_last_mouse_state.alt = k->get_alt();
-						physics_last_mouse_state.shift = k->get_shift();
-						physics_last_mouse_state.control = k->get_control();
-						physics_last_mouse_state.meta = k->get_metakey();
-						continue;
-					}
-
-					Ref<InputEventScreenDrag> sd = ev;
-
-					if (sd.is_valid()) {
-						pos = sd->get_position();
-					}
-
-					Ref<InputEventScreenTouch> st = ev;
-
-					if (st.is_valid()) {
-						pos = st->get_position();
-					}
-
-					if (ss2d) {
-						//send to 2D
-
-						uint64_t frame = get_tree()->get_frame();
-
-						PhysicsDirectSpaceState2D::ShapeResult res[64];
-						for (Set<CanvasLayer *>::Element *E = canvas_layers.front(); E; E = E->next()) {
-							Transform2D canvas_transform;
-							ObjectID canvas_layer_id;
-							if (E->get()) {
-								// A descendant CanvasLayer
-								canvas_transform = E->get()->get_transform();
-								canvas_layer_id = E->get()->get_instance_id();
-							} else {
-								// This Viewport's builtin canvas
-								canvas_transform = get_canvas_transform();
-								canvas_layer_id = ObjectID();
-							}
-
-							Vector2 point = canvas_transform.affine_inverse().xform(pos);
-
-							int rc = ss2d->intersect_point_on_canvas(point, canvas_layer_id, res, 64, Set<RID>(), 0xFFFFFFFF, true, true, true);
-							for (int i = 0; i < rc; i++) {
-								if (res[i].collider_id.is_valid() && res[i].collider) {
-									CollisionObject2D *co = Object::cast_to<CollisionObject2D>(res[i].collider);
-									if (co) {
-										bool send_event = true;
-										if (is_mouse) {
-											Map<ObjectID, uint64_t>::Element *F = physics_2d_mouseover.find(res[i].collider_id);
-
-											if (!F) {
-												physics_2d_mouseover.insert(res[i].collider_id, frame);
-												co->_mouse_enter();
-											} else {
-												F->get() = frame;
-												// It was already hovered, so don't send the event if it's faked
-												if (mm.is_valid() && mm->get_device() == InputEvent::DEVICE_ID_INTERNAL) {
-													send_event = false;
-												}
-											}
-										}
-
-										if (send_event) {
-											co->_input_event(this, ev, res[i].shape);
-										}
-									}
-								}
-							}
-						}
-
-						if (is_mouse) {
-							List<Map<ObjectID, uint64_t>::Element *> to_erase;
-
-							for (Map<ObjectID, uint64_t>::Element *E = physics_2d_mouseover.front(); E; E = E->next()) {
-								if (E->get() != frame) {
-									Object *o = ObjectDB::get_instance(E->key());
-									if (o) {
-										CollisionObject2D *co = Object::cast_to<CollisionObject2D>(o);
-										if (co) {
-											co->_mouse_exit();
-										}
-									}
-									to_erase.push_back(E);
-								}
-							}
-
-							while (to_erase.size()) {
-								physics_2d_mouseover.erase(to_erase.front()->get());
-								to_erase.pop_front();
-							}
-						}
-					}
-
-#ifndef _3D_DISABLED
-					bool captured = false;
-
-					if (physics_object_capture.is_valid()) {
-						CollisionObject3D *co = Object::cast_to<CollisionObject3D>(ObjectDB::get_instance(physics_object_capture));
-						if (co && camera) {
-							_collision_object_input_event(co, camera, ev, Vector3(), Vector3(), 0);
-							captured = true;
-							if (mb.is_valid() && mb->get_button_index() == 1 && !mb->is_pressed()) {
-								physics_object_capture = ObjectID();
-							}
-
-						} else {
-							physics_object_capture = ObjectID();
-						}
-					}
-
-					if (captured) {
-						//none
-					} else if (pos == last_pos) {
-						if (last_id.is_valid()) {
-							if (ObjectDB::get_instance(last_id) && last_object) {
-								//good, exists
-								_collision_object_input_event(last_object, camera, ev, result.position, result.normal, result.shape);
-								if (last_object->get_capture_input_on_drag() && mb.is_valid() && mb->get_button_index() == 1 && mb->is_pressed()) {
-									physics_object_capture = last_id;
-								}
-							}
-						}
-					} else {
-						if (camera) {
-							Vector3 from = camera->project_ray_origin(pos);
-							Vector3 dir = camera->project_ray_normal(pos);
-
-							PhysicsDirectSpaceState3D *space = PhysicsServer3D::get_singleton()->space_get_direct_state(find_world_3d()->get_space());
-							if (space) {
-								bool col = space->intersect_ray(from, from + dir * 10000, result, Set<RID>(), 0xFFFFFFFF, true, true, true);
-								ObjectID new_collider;
-								if (col) {
-									CollisionObject3D *co = Object::cast_to<CollisionObject3D>(result.collider);
-									if (co) {
-										_collision_object_input_event(co, camera, ev, result.position, result.normal, result.shape);
-										last_object = co;
-										last_id = result.collider_id;
-										new_collider = last_id;
-										if (co->get_capture_input_on_drag() && mb.is_valid() && mb->get_button_index() == 1 && mb->is_pressed()) {
-											physics_object_capture = last_id;
-										}
-									}
-								}
-
-								if (is_mouse && new_collider != physics_object_over) {
-									if (physics_object_over.is_valid()) {
-										CollisionObject3D *co = Object::cast_to<CollisionObject3D>(ObjectDB::get_instance(physics_object_over));
-										if (co) {
-											co->_mouse_exit();
-										}
-									}
-
-									if (new_collider.is_valid()) {
-										CollisionObject3D *co = Object::cast_to<CollisionObject3D>(ObjectDB::get_instance(new_collider));
-										if (co) {
-											co->_mouse_enter();
-										}
-									}
-
-									physics_object_over = new_collider;
-								}
-							}
-
-							last_pos = pos;
-						}
-					}
-#endif
+				for (int i = 0; i < point_count; i++) {
+					Transform point_transform;
+					point_transform.origin = points[i];
+					RS::get_singleton()->multimesh_instance_set_transform(contact_3d_debug_multimesh, i, point_transform);
 				}
 			}
-
 		} break;
-		case NOTIFICATION_WM_MOUSE_EXIT:
+		case NOTIFICATION_WM_MOUSE_EXIT: {
+			_drop_physics_mouseover();
+
+			// Unlike on loss of focus (NOTIFICATION_WM_WINDOW_FOCUS_OUT), do not
+			// drop the gui mouseover here, as a scrollbar may be dragged while the
+			// mouse is outside the window (without the window having lost focus).
+			// See bug #39634
+		} break;
 		case NOTIFICATION_WM_WINDOW_FOCUS_OUT: {
 			_drop_physics_mouseover();
 
@@ -822,6 +574,274 @@ void Viewport::_notification(int p_what) {
 				_drop_mouse_focus();
 			}
 		} break;
+	}
+}
+
+void Viewport::_process_picking() {
+	if (!is_inside_tree()) {
+		return;
+	}
+	if (!physics_object_picking) {
+		return;
+	}
+	if (to_screen_rect != Rect2i() && Input::get_singleton()->get_mouse_mode() == Input::MOUSE_MODE_CAPTURED) {
+		return;
+	}
+
+	_drop_physics_mouseover(true);
+
+#ifndef _3D_DISABLED
+	Vector2 last_pos(1e20, 1e20);
+	CollisionObject3D *last_object = nullptr;
+	ObjectID last_id;
+#endif
+	PhysicsDirectSpaceState3D::RayResult result;
+	PhysicsDirectSpaceState2D *ss2d = PhysicsServer2D::get_singleton()->space_get_direct_state(find_world_2d()->get_space());
+
+	if (physics_has_last_mousepos) {
+		// if no mouse event exists, create a motion one. This is necessary because objects or camera may have moved.
+		// while this extra event is sent, it is checked if both camera and last object and last ID did not move. If nothing changed, the event is discarded to avoid flooding with unnecessary motion events every frame
+		bool has_mouse_event = false;
+		for (List<Ref<InputEvent>>::Element *E = physics_picking_events.front(); E; E = E->next()) {
+			Ref<InputEventMouse> m = E->get();
+			if (m.is_valid()) {
+				has_mouse_event = true;
+				break;
+			}
+		}
+
+		if (!has_mouse_event) {
+			Ref<InputEventMouseMotion> mm;
+			mm.instance();
+
+			mm->set_device(InputEvent::DEVICE_ID_INTERNAL);
+			mm->set_global_position(physics_last_mousepos);
+			mm->set_position(physics_last_mousepos);
+			mm->set_alt(physics_last_mouse_state.alt);
+			mm->set_shift(physics_last_mouse_state.shift);
+			mm->set_control(physics_last_mouse_state.control);
+			mm->set_metakey(physics_last_mouse_state.meta);
+			mm->set_button_mask(physics_last_mouse_state.mouse_mask);
+			physics_picking_events.push_back(mm);
+		}
+	}
+
+	while (physics_picking_events.size()) {
+		Ref<InputEvent> ev = physics_picking_events.front()->get();
+		physics_picking_events.pop_front();
+
+		Vector2 pos;
+		bool is_mouse = false;
+
+		Ref<InputEventMouseMotion> mm = ev;
+
+		if (mm.is_valid()) {
+			pos = mm->get_position();
+			is_mouse = true;
+
+			physics_has_last_mousepos = true;
+			physics_last_mousepos = pos;
+			physics_last_mouse_state.alt = mm->get_alt();
+			physics_last_mouse_state.shift = mm->get_shift();
+			physics_last_mouse_state.control = mm->get_control();
+			physics_last_mouse_state.meta = mm->get_metakey();
+			physics_last_mouse_state.mouse_mask = mm->get_button_mask();
+		}
+
+		Ref<InputEventMouseButton> mb = ev;
+
+		if (mb.is_valid()) {
+			pos = mb->get_position();
+			is_mouse = true;
+
+			physics_has_last_mousepos = true;
+			physics_last_mousepos = pos;
+			physics_last_mouse_state.alt = mb->get_alt();
+			physics_last_mouse_state.shift = mb->get_shift();
+			physics_last_mouse_state.control = mb->get_control();
+			physics_last_mouse_state.meta = mb->get_metakey();
+
+			if (mb->is_pressed()) {
+				physics_last_mouse_state.mouse_mask |= (1 << (mb->get_button_index() - 1));
+			} else {
+				physics_last_mouse_state.mouse_mask &= ~(1 << (mb->get_button_index() - 1));
+
+				// If touch mouse raised, assume we don't know last mouse pos until new events come
+				if (mb->get_device() == InputEvent::DEVICE_ID_TOUCH_MOUSE) {
+					physics_has_last_mousepos = false;
+				}
+			}
+		}
+
+		Ref<InputEventKey> k = ev;
+		if (k.is_valid()) {
+			//only for mask
+			physics_last_mouse_state.alt = k->get_alt();
+			physics_last_mouse_state.shift = k->get_shift();
+			physics_last_mouse_state.control = k->get_control();
+			physics_last_mouse_state.meta = k->get_metakey();
+			continue;
+		}
+
+		Ref<InputEventScreenDrag> sd = ev;
+
+		if (sd.is_valid()) {
+			pos = sd->get_position();
+		}
+
+		Ref<InputEventScreenTouch> st = ev;
+
+		if (st.is_valid()) {
+			pos = st->get_position();
+		}
+
+		if (ss2d) {
+			//send to 2D
+
+			uint64_t frame = get_tree()->get_frame();
+
+			PhysicsDirectSpaceState2D::ShapeResult res[64];
+			for (Set<CanvasLayer *>::Element *E = canvas_layers.front(); E; E = E->next()) {
+				Transform2D canvas_transform;
+				ObjectID canvas_layer_id;
+				if (E->get()) {
+					// A descendant CanvasLayer
+					canvas_transform = E->get()->get_transform();
+					canvas_layer_id = E->get()->get_instance_id();
+				} else {
+					// This Viewport's builtin canvas
+					canvas_transform = get_canvas_transform();
+					canvas_layer_id = ObjectID();
+				}
+
+				Vector2 point = canvas_transform.affine_inverse().xform(pos);
+
+				int rc = ss2d->intersect_point_on_canvas(point, canvas_layer_id, res, 64, Set<RID>(), 0xFFFFFFFF, true, true, true);
+				for (int i = 0; i < rc; i++) {
+					if (res[i].collider_id.is_valid() && res[i].collider) {
+						CollisionObject2D *co = Object::cast_to<CollisionObject2D>(res[i].collider);
+						if (co && co->can_process()) {
+							bool send_event = true;
+							if (is_mouse) {
+								Map<ObjectID, uint64_t>::Element *F = physics_2d_mouseover.find(res[i].collider_id);
+
+								if (!F) {
+									physics_2d_mouseover.insert(res[i].collider_id, frame);
+									co->_mouse_enter();
+								} else {
+									F->get() = frame;
+									// It was already hovered, so don't send the event if it's faked
+									if (mm.is_valid() && mm->get_device() == InputEvent::DEVICE_ID_INTERNAL) {
+										send_event = false;
+									}
+								}
+							}
+
+							if (send_event) {
+								co->_input_event(this, ev, res[i].shape);
+							}
+						}
+					}
+				}
+			}
+
+			if (is_mouse) {
+				List<Map<ObjectID, uint64_t>::Element *> to_erase;
+
+				for (Map<ObjectID, uint64_t>::Element *E = physics_2d_mouseover.front(); E; E = E->next()) {
+					if (E->get() != frame) {
+						Object *o = ObjectDB::get_instance(E->key());
+						if (o) {
+							CollisionObject2D *co = Object::cast_to<CollisionObject2D>(o);
+							if (co) {
+								co->_mouse_exit();
+							}
+						}
+						to_erase.push_back(E);
+					}
+				}
+
+				while (to_erase.size()) {
+					physics_2d_mouseover.erase(to_erase.front()->get());
+					to_erase.pop_front();
+				}
+			}
+		}
+
+#ifndef _3D_DISABLED
+		bool captured = false;
+
+		if (physics_object_capture.is_valid()) {
+			CollisionObject3D *co = Object::cast_to<CollisionObject3D>(ObjectDB::get_instance(physics_object_capture));
+			if (co && camera) {
+				_collision_object_input_event(co, camera, ev, Vector3(), Vector3(), 0);
+				captured = true;
+				if (mb.is_valid() && mb->get_button_index() == 1 && !mb->is_pressed()) {
+					physics_object_capture = ObjectID();
+				}
+
+			} else {
+				physics_object_capture = ObjectID();
+			}
+		}
+
+		if (captured) {
+			//none
+		} else if (pos == last_pos) {
+			if (last_id.is_valid()) {
+				if (ObjectDB::get_instance(last_id) && last_object) {
+					//good, exists
+					_collision_object_input_event(last_object, camera, ev, result.position, result.normal, result.shape);
+					if (last_object->get_capture_input_on_drag() && mb.is_valid() && mb->get_button_index() == 1 && mb->is_pressed()) {
+						physics_object_capture = last_id;
+					}
+				}
+			}
+		} else {
+			if (camera) {
+				Vector3 from = camera->project_ray_origin(pos);
+				Vector3 dir = camera->project_ray_normal(pos);
+
+				PhysicsDirectSpaceState3D *space = PhysicsServer3D::get_singleton()->space_get_direct_state(find_world_3d()->get_space());
+				if (space) {
+					bool col = space->intersect_ray(from, from + dir * 10000, result, Set<RID>(), 0xFFFFFFFF, true, true, true);
+					ObjectID new_collider;
+					if (col) {
+						CollisionObject3D *co = Object::cast_to<CollisionObject3D>(result.collider);
+						if (co && co->can_process()) {
+							_collision_object_input_event(co, camera, ev, result.position, result.normal, result.shape);
+							last_object = co;
+							last_id = result.collider_id;
+							new_collider = last_id;
+							if (co->get_capture_input_on_drag() && mb.is_valid() && mb->get_button_index() == 1 && mb->is_pressed()) {
+								physics_object_capture = last_id;
+							}
+						}
+					}
+
+					if (is_mouse && new_collider != physics_object_over) {
+						if (physics_object_over.is_valid()) {
+							CollisionObject3D *co = Object::cast_to<CollisionObject3D>(ObjectDB::get_instance(physics_object_over));
+							if (co) {
+								co->_mouse_exit();
+							}
+						}
+
+						if (new_collider.is_valid()) {
+							CollisionObject3D *co = Object::cast_to<CollisionObject3D>(ObjectDB::get_instance(new_collider));
+							if (co) {
+								co->_mouse_enter();
+							}
+						}
+
+						physics_object_over = new_collider;
+					}
+				}
+
+				last_pos = pos;
+			}
+		}
+#endif
 	}
 }
 
@@ -1143,7 +1163,7 @@ void Viewport::set_world_2d(const Ref<World2D> &p_world_2d) {
 	if (p_world_2d.is_valid()) {
 		world_2d = p_world_2d;
 	} else {
-		WARN_PRINT("Invalid world_3d");
+		WARN_PRINT("Invalid world_2d");
 		world_2d = Ref<World2D>(memnew(World2D));
 	}
 
@@ -1397,18 +1417,26 @@ Ref<ViewportTexture> Viewport::get_texture() const {
 }
 
 void Viewport::set_shadow_atlas_size(int p_size) {
-	if (shadow_atlas_size == p_size) {
-		return;
-	}
-
 	shadow_atlas_size = p_size;
-	RS::get_singleton()->viewport_set_shadow_atlas_size(viewport, p_size);
+	RS::get_singleton()->viewport_set_shadow_atlas_size(viewport, p_size, shadow_atlas_16_bits);
 }
 
 int Viewport::get_shadow_atlas_size() const {
 	return shadow_atlas_size;
 }
 
+void Viewport::set_shadow_atlas_16_bits(bool p_16_bits) {
+	if (shadow_atlas_16_bits == p_16_bits) {
+		return;
+	}
+
+	shadow_atlas_16_bits = p_16_bits;
+	RS::get_singleton()->viewport_set_shadow_atlas_size(viewport, shadow_atlas_size, shadow_atlas_16_bits);
+}
+
+bool Viewport::get_shadow_atlas_16_bits() const {
+	return shadow_atlas_16_bits;
+}
 void Viewport::set_shadow_atlas_quadrant_subdiv(int p_quadrant, ShadowAtlasQuadrantSubdiv p_subdiv) {
 	ERR_FAIL_INDEX(p_quadrant, 4);
 	ERR_FAIL_INDEX(p_subdiv, SHADOW_ATLAS_QUADRANT_SUBDIV_MAX);
@@ -1465,7 +1493,7 @@ void Viewport::_gui_sort_roots() {
 }
 
 void Viewport::_gui_cancel_tooltip() {
-	gui.tooltip = nullptr;
+	gui.tooltip_control = nullptr;
 	gui.tooltip_timer = -1;
 	if (gui.tooltip_popup) {
 		gui.tooltip_popup->queue_delete();
@@ -1474,28 +1502,33 @@ void Viewport::_gui_cancel_tooltip() {
 	}
 }
 
-String Viewport::_gui_get_tooltip(Control *p_control, const Vector2 &p_pos, Control **r_which) {
+String Viewport::_gui_get_tooltip(Control *p_control, const Vector2 &p_pos, Control **r_tooltip_owner) {
 	Vector2 pos = p_pos;
 	String tooltip;
 
 	while (p_control) {
 		tooltip = p_control->get_tooltip(pos);
 
-		if (r_which) {
-			*r_which = p_control;
+		if (r_tooltip_owner) {
+			*r_tooltip_owner = p_control;
 		}
 
-		if (tooltip != String()) {
+		// If we found a tooltip, we stop here.
+		if (!tooltip.is_empty()) {
 			break;
 		}
-		pos = p_control->get_transform().xform(pos);
+
+		// Otherwise, we check parent controls unless some conditions prevent it.
 
 		if (p_control->data.mouse_filter == Control::MOUSE_FILTER_STOP) {
 			break;
 		}
-		if (p_control->is_set_as_toplevel()) {
+		if (p_control->is_set_as_top_level()) {
 			break;
 		}
+
+		// Transform cursor pos for parent control.
+		pos = p_control->get_transform().xform(pos);
 
 		p_control = p_control->get_parent_control();
 	}
@@ -1504,38 +1537,44 @@ String Viewport::_gui_get_tooltip(Control *p_control, const Vector2 &p_pos, Cont
 }
 
 void Viewport::_gui_show_tooltip() {
-	if (!gui.tooltip) {
+	if (!gui.tooltip_control) {
 		return;
 	}
 
-	Control *which = nullptr;
-	String tooltip = _gui_get_tooltip(gui.tooltip, gui.tooltip->get_global_transform().xform_inv(gui.tooltip_pos), &which);
-	tooltip = tooltip.strip_edges();
-	if (tooltip.length() == 0) {
-		return; // bye
+	// Get the Control under cursor and the relevant tooltip text, if any.
+	Control *tooltip_owner = nullptr;
+	String tooltip_text = _gui_get_tooltip(
+			gui.tooltip_control,
+			gui.tooltip_control->get_global_transform().xform_inv(gui.last_mouse_pos),
+			&tooltip_owner);
+	tooltip_text = tooltip_text.strip_edges();
+	if (tooltip_text.is_empty()) {
+		return; // Nothing to show.
 	}
 
+	// Remove previous popup if we change something.
 	if (gui.tooltip_popup) {
 		memdelete(gui.tooltip_popup);
 		gui.tooltip_popup = nullptr;
 		gui.tooltip_label = nullptr;
 	}
 
-	if (!which) {
+	if (!tooltip_owner) {
 		return;
 	}
 
-	Control *rp = which;
+	// Controls can implement `make_custom_tooltip` to provide their own tooltip.
+	// This should be a Control node which will be added as child to a TooltipPanel.
+	Control *base_tooltip = tooltip_owner->make_custom_tooltip(tooltip_text);
 
-	Control *base_tooltip = which->make_custom_tooltip(tooltip);
-
+	// If no custom tooltip is given, use a default implementation.
 	if (!base_tooltip) {
 		gui.tooltip_label = memnew(TooltipLabel);
-		gui.tooltip_label->set_text(tooltip);
+		gui.tooltip_label->set_text(tooltip_text);
 		base_tooltip = gui.tooltip_label;
 	}
 
-	base_tooltip->set_anchors_and_margins_preset(Control::PRESET_WIDE);
+	base_tooltip->set_anchors_and_offsets_preset(Control::PRESET_WIDE);
 
 	TooltipPanel *panel = memnew(TooltipPanel);
 	panel->set_transient(false);
@@ -1545,15 +1584,13 @@ void Viewport::_gui_show_tooltip() {
 
 	gui.tooltip_popup = panel;
 
-	rp->add_child(gui.tooltip_popup);
-
-	//if (gui.tooltip) // Avoids crash when rapidly switching controls.
-	//	gui.tooltip_popup->set_scale(gui.tooltip->get_global_transform().get_scale());
+	tooltip_owner->add_child(gui.tooltip_popup);
 
 	Point2 tooltip_offset = ProjectSettings::get_singleton()->get("display/mouse_cursor/tooltip_position_offset");
 	Rect2 r(gui.tooltip_pos + tooltip_offset, gui.tooltip_popup->get_contents_minimum_size());
 
-	Rect2i vr = gui.tooltip_popup->get_parent_visible_window()->get_usable_parent_rect();
+	Window *window = gui.tooltip_popup->get_parent_visible_window();
+	Rect2i vr = window->get_usable_parent_rect();
 
 	if (r.size.x + r.position.x > vr.size.x + vr.position.x) {
 		r.position.x = vr.position.x + vr.size.x - r.size.x;
@@ -1567,6 +1604,7 @@ void Viewport::_gui_show_tooltip() {
 		r.position.y = vr.position.y;
 	}
 
+	gui.tooltip_popup->set_current_screen(window->get_current_screen());
 	gui.tooltip_popup->set_position(r.position);
 	gui.tooltip_popup->set_size(r.size);
 
@@ -1620,7 +1658,7 @@ void Viewport::_gui_call_input(Control *p_control, const Ref<InputEvent> &p_inpu
 				}
 			}
 
-			if (!control->is_inside_tree() || control->is_set_as_toplevel()) {
+			if (!control->is_inside_tree() || control->is_set_as_top_level()) {
 				break;
 			}
 			if (gui.key_event_accepted) {
@@ -1631,7 +1669,7 @@ void Viewport::_gui_call_input(Control *p_control, const Ref<InputEvent> &p_inpu
 			}
 		}
 
-		if (ci->is_set_as_toplevel()) {
+		if (ci->is_set_as_top_level()) {
 			break;
 		}
 
@@ -1655,7 +1693,7 @@ void Viewport::_gui_call_notification(Control *p_control, int p_what) {
 				break;
 			}
 
-			if (!control->is_inside_tree() || control->is_set_as_toplevel()) {
+			if (!control->is_inside_tree() || control->is_set_as_top_level()) {
 				break;
 			}
 			if (control->data.mouse_filter == Control::MOUSE_FILTER_STOP) {
@@ -1663,7 +1701,7 @@ void Viewport::_gui_call_notification(Control *p_control, int p_what) {
 			}
 		}
 
-		if (ci->is_set_as_toplevel()) {
+		if (ci->is_set_as_top_level()) {
 			break;
 		}
 
@@ -1721,7 +1759,7 @@ Control *Viewport::_gui_find_control_at_pos(CanvasItem *p_node, const Point2 &p_
 	if (!c || !c->clips_input() || c->has_point(matrix.affine_inverse().xform(p_global))) {
 		for (int i = p_node->get_child_count() - 1; i >= 0; i--) {
 			CanvasItem *ci = Object::cast_to<CanvasItem>(p_node->get_child(i));
-			if (!ci || ci->is_set_as_toplevel()) {
+			if (!ci || ci->is_set_as_top_level()) {
 				continue;
 			}
 
@@ -1732,19 +1770,22 @@ Control *Viewport::_gui_find_control_at_pos(CanvasItem *p_node, const Point2 &p_
 		}
 	}
 
-	if (!c) {
+	if (!c || c->data.mouse_filter == Control::MOUSE_FILTER_IGNORE) {
 		return nullptr;
 	}
 
 	matrix.affine_invert();
-
-	//conditions for considering this as a valid control for return
-	if (c->data.mouse_filter != Control::MOUSE_FILTER_IGNORE && c->has_point(matrix.xform(p_global)) && (!gui.drag_preview || (c != gui.drag_preview && !gui.drag_preview->is_a_parent_of(c)))) {
-		r_inv_xform = matrix;
-		return c;
-	} else {
+	if (!c->has_point(matrix.xform(p_global))) {
 		return nullptr;
 	}
+
+	Control *drag_preview = _gui_get_drag_preview();
+	if (!drag_preview || (c != drag_preview && !drag_preview->is_a_parent_of(c))) {
+		r_inv_xform = matrix;
+		return c;
+	}
+
+	return nullptr;
 }
 
 bool Viewport::_gui_drop(Control *p_at_control, Point2 p_at_pos, bool p_just_check) {
@@ -1768,7 +1809,7 @@ bool Viewport::_gui_drop(Control *p_at_control, Point2 p_at_pos, bool p_just_che
 
 			p_at_pos = ci->get_transform().xform(p_at_pos);
 
-			if (ci->is_set_as_toplevel()) {
+			if (ci->is_set_as_top_level()) {
 				break;
 			}
 
@@ -1782,17 +1823,11 @@ bool Viewport::_gui_drop(Control *p_at_control, Point2 p_at_pos, bool p_just_che
 void Viewport::_gui_input_event(Ref<InputEvent> p_event) {
 	ERR_FAIL_COND(p_event.is_null());
 
-	//?
-	/*
-	if (!is_visible()) {
-		return; //simple and plain
-	}
-	*/
-
 	Ref<InputEventMouseButton> mb = p_event;
-
 	if (mb.is_valid()) {
 		gui.key_event_accepted = false;
+
+		Control *over = nullptr;
 
 		Point2 mpos = mb->get_position();
 		if (mb->is_pressed()) {
@@ -1865,7 +1900,7 @@ void Viewport::_gui_input_event(Ref<InputEvent> p_event) {
 						}
 					}
 
-					if (ci->is_set_as_toplevel()) {
+					if (ci->is_set_as_top_level()) {
 						break;
 					}
 
@@ -1888,26 +1923,26 @@ void Viewport::_gui_input_event(Ref<InputEvent> p_event) {
 				gui.drag_data = Variant();
 				gui.dragging = false;
 
-				if (gui.drag_preview) {
-					memdelete(gui.drag_preview);
-					gui.drag_preview = nullptr;
+				Control *drag_preview = _gui_get_drag_preview();
+				if (drag_preview) {
+					memdelete(drag_preview);
+					gui.drag_preview_id = ObjectID();
 				}
 				_propagate_viewport_notification(this, NOTIFICATION_DRAG_END);
 				//change mouse accordingly
 			}
 
 			_gui_cancel_tooltip();
-			//gui.tooltip_popup->hide();
-
 		} else {
 			if (gui.drag_data.get_type() != Variant::NIL && mb->get_button_index() == BUTTON_LEFT) {
 				if (gui.drag_mouse_over) {
 					_gui_drop(gui.drag_mouse_over, gui.drag_mouse_over_pos, false);
 				}
 
-				if (gui.drag_preview && mb->get_button_index() == BUTTON_LEFT) {
-					memdelete(gui.drag_preview);
-					gui.drag_preview = nullptr;
+				Control *drag_preview = _gui_get_drag_preview();
+				if (drag_preview) {
+					memdelete(drag_preview);
+					gui.drag_preview_id = ObjectID();
 				}
 
 				gui.drag_data = Variant();
@@ -1948,12 +1983,36 @@ void Viewport::_gui_input_event(Ref<InputEvent> p_event) {
 				gui.drag_data=Variant(); //always clear
 			}*/
 
+			// In case the mouse was released after for example dragging a scrollbar,
+			// check whether the current control is different from the stored one. If
+			// it is different, rather than wait for it to be updated the next time the
+			// mouse is moved, notify the control so that it can e.g. drop the highlight.
+			// This code is duplicated from the mm.is_valid()-case further below.
+			if (gui.mouse_focus) {
+				over = gui.mouse_focus;
+			} else {
+				over = _gui_find_control(mpos);
+			}
+
+			if (gui.mouse_focus_mask == 0 && over != gui.mouse_over) {
+				if (gui.mouse_over) {
+					_gui_call_notification(gui.mouse_over, Control::NOTIFICATION_MOUSE_EXIT);
+				}
+
+				_gui_cancel_tooltip();
+
+				if (over) {
+					_gui_call_notification(over, Control::NOTIFICATION_MOUSE_ENTER);
+				}
+			}
+
+			gui.mouse_over = over;
+
 			set_input_as_handled();
 		}
 	}
 
 	Ref<InputEventMouseMotion> mm = p_event;
-
 	if (mm.is_valid()) {
 		gui.key_event_accepted = false;
 		Point2 mpos = mm->get_position();
@@ -1980,10 +2039,11 @@ void Viewport::_gui_input_event(Ref<InputEvent> p_event) {
 								gui.mouse_focus_mask = 0;
 								break;
 							} else {
-								if (gui.drag_preview != nullptr) {
+								Control *drag_preview = _gui_get_drag_preview();
+								if (drag_preview) {
 									ERR_PRINT("Don't set a drag preview and return null data. Preview was deleted and drag request ignored.");
-									memdelete(gui.drag_preview);
-									gui.drag_preview = nullptr;
+									memdelete(drag_preview);
+									gui.drag_preview_id = ObjectID();
 								}
 								gui.dragging = false;
 							}
@@ -1993,7 +2053,7 @@ void Viewport::_gui_input_event(Ref<InputEvent> p_event) {
 							}
 						}
 
-						if (ci->is_set_as_toplevel()) {
+						if (ci->is_set_as_top_level()) {
 							break;
 						}
 
@@ -2008,10 +2068,11 @@ void Viewport::_gui_input_event(Ref<InputEvent> p_event) {
 			}
 		}
 
+		// These sections of code are reused in the mb.is_valid() case further up
+		// for the purpose of notifying controls about potential changes in focus
+		// when the mousebutton is released.
 		if (gui.mouse_focus) {
 			over = gui.mouse_focus;
-			//recompute focus_inv_xform again here
-
 		} else {
 			over = _gui_find_control(mpos);
 		}
@@ -2052,8 +2113,8 @@ void Viewport::_gui_input_event(Ref<InputEvent> p_event) {
 				bool is_tooltip_shown = false;
 
 				if (gui.tooltip_popup) {
-					if (can_tooltip && gui.tooltip) {
-						String tooltip = _gui_get_tooltip(over, gui.tooltip->get_global_transform().xform_inv(mpos));
+					if (can_tooltip && gui.tooltip_control) {
+						String tooltip = _gui_get_tooltip(over, gui.tooltip_control->get_global_transform().xform_inv(mpos));
 
 						if (tooltip.length() == 0) {
 							_gui_cancel_tooltip();
@@ -2078,13 +2139,11 @@ void Viewport::_gui_input_event(Ref<InputEvent> p_event) {
 				}
 
 				if (can_tooltip && !is_tooltip_shown) {
-					gui.tooltip = over;
-					gui.tooltip_pos = over->get_screen_transform().xform(pos); //(parent_xform * get_transform()).affine_inverse().xform(pos);
+					gui.tooltip_control = over;
+					gui.tooltip_pos = over->get_screen_transform().xform(pos);
 					gui.tooltip_timer = gui.tooltip_delay;
 				}
 			}
-
-			//pos = gui.focus_inv_xform.xform(pos);
 
 			mm->set_position(pos);
 
@@ -2105,7 +2164,7 @@ void Viewport::_gui_input_event(Ref<InputEvent> p_event) {
 					if (c->data.mouse_filter == Control::MOUSE_FILTER_STOP) {
 						break;
 					}
-					if (c->is_set_as_toplevel()) {
+					if (c->is_set_as_top_level()) {
 						break;
 					}
 					c = c->get_parent_control();
@@ -2124,8 +2183,9 @@ void Viewport::_gui_input_event(Ref<InputEvent> p_event) {
 		if (gui.drag_data.get_type() != Variant::NIL) {
 			//handle dragandrop
 
-			if (gui.drag_preview) {
-				gui.drag_preview->set_position(mpos);
+			Control *drag_preview = _gui_get_drag_preview();
+			if (drag_preview) {
+				drag_preview->set_position(mpos);
 			}
 
 			gui.drag_mouse_over = over;
@@ -2141,7 +2201,7 @@ void Viewport::_gui_input_event(Ref<InputEvent> p_event) {
 				embedder = this;
 				viewport_pos = mpos;
 			} else {
-				//not an embeder, but may be a subwindow of an embedder
+				//not an embedder, but may be a subwindow of an embedder
 				Window *w = Object::cast_to<Window>(this);
 				if (w) {
 					if (w->is_embedded()) {
@@ -2332,9 +2392,8 @@ void Viewport::_gui_input_event(Ref<InputEvent> p_event) {
 
 		//keyboard focus
 		//if (from && p_event->is_pressed() && !p_event->get_alt() && !p_event->get_metakey() && !p_event->key->get_command()) {
-
 		Ref<InputEventKey> k = p_event;
-		//need to check for mods, otherwise any combination of alt/ctrl/shift+<up/down/left/righ/etc> is handled here when it shouldn't be.
+		//need to check for mods, otherwise any combination of alt/ctrl/shift+<up/down/left/right/etc> is handled here when it shouldn't be.
 		bool mods = k.is_valid() && (k->get_control() || k->get_alt() || k->get_shift() || k->get_metakey());
 
 		if (from && p_event->is_pressed()) {
@@ -2351,19 +2410,19 @@ void Viewport::_gui_input_event(Ref<InputEvent> p_event) {
 			}
 
 			if (!mods && p_event->is_action_pressed("ui_up") && input->is_action_just_pressed("ui_up")) {
-				next = from->_get_focus_neighbour(MARGIN_TOP);
+				next = from->_get_focus_neighbor(SIDE_TOP);
 			}
 
 			if (!mods && p_event->is_action_pressed("ui_left") && input->is_action_just_pressed("ui_left")) {
-				next = from->_get_focus_neighbour(MARGIN_LEFT);
+				next = from->_get_focus_neighbor(SIDE_LEFT);
 			}
 
 			if (!mods && p_event->is_action_pressed("ui_right") && input->is_action_just_pressed("ui_right")) {
-				next = from->_get_focus_neighbour(MARGIN_RIGHT);
+				next = from->_get_focus_neighbor(SIDE_RIGHT);
 			}
 
 			if (!mods && p_event->is_action_pressed("ui_down") && input->is_action_just_pressed("ui_down")) {
-				next = from->_get_focus_neighbour(MARGIN_BOTTOM);
+				next = from->_get_focus_neighbor(SIDE_BOTTOM);
 			}
 
 			if (next) {
@@ -2401,15 +2460,29 @@ void Viewport::_gui_set_drag_preview(Control *p_base, Control *p_control) {
 	ERR_FAIL_COND(p_control->is_inside_tree());
 	ERR_FAIL_COND(p_control->get_parent() != nullptr);
 
-	if (gui.drag_preview) {
-		memdelete(gui.drag_preview);
+	Control *drag_preview = _gui_get_drag_preview();
+	if (drag_preview) {
+		memdelete(drag_preview);
 	}
-	p_control->set_as_toplevel(true);
+	p_control->set_as_top_level(true);
 	p_control->set_position(gui.last_mouse_pos);
 	p_base->get_root_parent_control()->add_child(p_control); //add as child of viewport
 	p_control->raise();
 
-	gui.drag_preview = p_control;
+	gui.drag_preview_id = p_control->get_instance_id();
+}
+
+Control *Viewport::_gui_get_drag_preview() {
+	if (gui.drag_preview_id.is_null()) {
+		return nullptr;
+	} else {
+		Control *drag_preview = Object::cast_to<Control>(ObjectDB::get_instance(gui.drag_preview_id));
+		if (!drag_preview) {
+			ERR_PRINT("Don't free the control set as drag preview.");
+			gui.drag_preview_id = ObjectID();
+		}
+		return drag_preview;
+	}
 }
 
 void Viewport::_gui_remove_root_control(List<Control *>::Element *RI) {
@@ -2422,7 +2495,7 @@ void Viewport::_gui_unfocus_control(Control *p_control) {
 	}
 }
 
-void Viewport::_gui_hid_control(Control *p_control) {
+void Viewport::_gui_hide_control(Control *p_control) {
 	if (gui.mouse_focus == p_control) {
 		_drop_mouse_focus();
 	}
@@ -2436,7 +2509,7 @@ void Viewport::_gui_hid_control(Control *p_control) {
 	if (gui.drag_mouse_over == p_control) {
 		gui.drag_mouse_over = nullptr;
 	}
-	if (gui.tooltip == p_control) {
+	if (gui.tooltip_control == p_control) {
 		_gui_cancel_tooltip();
 	}
 }
@@ -2459,8 +2532,8 @@ void Viewport::_gui_remove_control(Control *p_control) {
 	if (gui.drag_mouse_over == p_control) {
 		gui.drag_mouse_over = nullptr;
 	}
-	if (gui.tooltip == p_control) {
-		gui.tooltip = nullptr;
+	if (gui.tooltip_control == p_control) {
+		gui.tooltip_control = nullptr;
 	}
 }
 
@@ -2531,28 +2604,41 @@ void Viewport::_drop_mouse_focus() {
 	}
 }
 
-void Viewport::_drop_physics_mouseover() {
+void Viewport::_drop_physics_mouseover(bool p_paused_only) {
 	physics_has_last_mousepos = false;
 
-	while (physics_2d_mouseover.size()) {
-		Object *o = ObjectDB::get_instance(physics_2d_mouseover.front()->key());
+	List<Map<ObjectID, uint64_t>::Element *> to_erase;
+
+	for (Map<ObjectID, uint64_t>::Element *E = physics_2d_mouseover.front(); E; E = E->next()) {
+		Object *o = ObjectDB::get_instance(E->key());
 		if (o) {
 			CollisionObject2D *co = Object::cast_to<CollisionObject2D>(o);
-			co->_mouse_exit();
+			if (co) {
+				if (p_paused_only && co->can_process()) {
+					continue;
+				}
+				co->_mouse_exit();
+				to_erase.push_back(E);
+			}
 		}
-		physics_2d_mouseover.erase(physics_2d_mouseover.front());
+	}
+
+	while (to_erase.size()) {
+		physics_2d_mouseover.erase(to_erase.front()->get());
+		to_erase.pop_front();
 	}
 
 #ifndef _3D_DISABLED
 	if (physics_object_over.is_valid()) {
 		CollisionObject3D *co = Object::cast_to<CollisionObject3D>(ObjectDB::get_instance(physics_object_over));
 		if (co) {
-			co->_mouse_exit();
+			if (!(p_paused_only && co->can_process())) {
+				co->_mouse_exit();
+				physics_object_over = ObjectID();
+				physics_object_capture = ObjectID();
+			}
 		}
 	}
-
-	physics_object_over = ObjectID();
-	physics_object_capture = ObjectID();
 #endif
 }
 
@@ -2586,7 +2672,7 @@ void Viewport::_post_gui_grab_click_focus() {
 				Ref<InputEventMouseButton> mb;
 				mb.instance();
 
-				//send unclic
+				//send unclick
 
 				mb->set_position(click);
 				mb->set_button_index(i + 1);
@@ -2604,7 +2690,7 @@ void Viewport::_post_gui_grab_click_focus() {
 				Ref<InputEventMouseButton> mb;
 				mb.instance();
 
-				//send clic
+				//send click
 
 				mb->set_position(click);
 				mb->set_button_index(i + 1);
@@ -2998,7 +3084,10 @@ void Viewport::unhandled_input(const Ref<InputEvent> &p_event, bool p_local_coor
 		ev = p_event;
 	}
 
+	// Unhandled Input
 	get_tree()->_call_input_pause(unhandled_input_group, "_unhandled_input", ev, this);
+
+	// Unhandled key Input - used for performance reasons - This is called a lot less then _unhandled_input since it ignores MouseMotion, etc
 	if (!is_input_handled() && Object::cast_to<InputEventKey>(*ev) != nullptr) {
 		get_tree()->_call_input_pause(unhandled_key_input_group, "_unhandled_key_input", ev, this);
 	}
@@ -3089,14 +3178,18 @@ Variant Viewport::gui_get_drag_data() const {
 
 String Viewport::get_configuration_warning() const {
 	/*if (get_parent() && !Object::cast_to<Control>(get_parent()) && !render_target) {
-
 		return TTR("This viewport is not set as render target. If you intend for it to display its contents directly to the screen, make it a child of a Control so it can obtain a size. Otherwise, make it a RenderTarget and assign its internal texture to some node for display.");
 	}*/
 
+	String warning = Node::get_configuration_warning();
+
 	if (size.x == 0 || size.y == 0) {
-		return TTR("Viewport size must be greater than 0 to render anything.");
+		if (!warning.is_empty()) {
+			warning += "\n\n";
+		}
+		warning += TTR("Viewport size must be greater than 0 to render anything.");
 	}
-	return String();
+	return warning;
 }
 
 void Viewport::gui_reset_canvas_sort_index() {
@@ -3133,6 +3226,25 @@ Viewport::ScreenSpaceAA Viewport::get_screen_space_aa() const {
 	return screen_space_aa;
 }
 
+void Viewport::set_use_debanding(bool p_use_debanding) {
+	if (use_debanding == p_use_debanding)
+		return;
+	use_debanding = p_use_debanding;
+	RS::get_singleton()->viewport_set_use_debanding(viewport, p_use_debanding);
+}
+
+bool Viewport::is_using_debanding() const {
+	return use_debanding;
+}
+
+void Viewport::set_lod_threshold(float p_pixels) {
+	lod_threshold = p_pixels;
+	RS::get_singleton()->viewport_set_lod_threshold(viewport, lod_threshold);
+}
+float Viewport::get_lod_threshold() const {
+	return lod_threshold;
+}
+
 void Viewport::set_debug_draw(DebugDraw p_debug_draw) {
 	debug_draw = p_debug_draw;
 	RS::get_singleton()->viewport_set_debug_draw(viewport, RS::ViewportDebugDraw(p_debug_draw));
@@ -3152,6 +3264,24 @@ void Viewport::set_snap_controls_to_pixels(bool p_enable) {
 
 bool Viewport::is_snap_controls_to_pixels_enabled() const {
 	return snap_controls_to_pixels;
+}
+
+void Viewport::set_snap_2d_transforms_to_pixel(bool p_enable) {
+	snap_2d_transforms_to_pixel = p_enable;
+	RS::get_singleton()->viewport_set_snap_2d_transforms_to_pixel(viewport, snap_2d_transforms_to_pixel);
+}
+
+bool Viewport::is_snap_2d_transforms_to_pixel_enabled() const {
+	return snap_2d_transforms_to_pixel;
+}
+
+void Viewport::set_snap_2d_vertices_to_pixel(bool p_enable) {
+	snap_2d_vertices_to_pixel = p_enable;
+	RS::get_singleton()->viewport_set_snap_2d_vertices_to_pixel(viewport, snap_2d_vertices_to_pixel);
+}
+
+bool Viewport::is_snap_2d_vertices_to_pixel_enabled() const {
+	return snap_2d_vertices_to_pixel;
 }
 
 bool Viewport::gui_is_dragging() const {
@@ -3208,11 +3338,28 @@ void Viewport::_validate_property(PropertyInfo &property) const {
 }
 
 void Viewport::set_default_canvas_item_texture_filter(DefaultCanvasItemTextureFilter p_filter) {
+	ERR_FAIL_INDEX(p_filter, DEFAULT_CANVAS_ITEM_TEXTURE_FILTER_MAX);
+
 	if (default_canvas_item_texture_filter == p_filter) {
 		return;
 	}
 	default_canvas_item_texture_filter = p_filter;
-	_propagate_update_default_filter(this);
+	switch (default_canvas_item_texture_filter) {
+		case DEFAULT_CANVAS_ITEM_TEXTURE_FILTER_NEAREST:
+			RS::get_singleton()->viewport_set_default_canvas_item_texture_filter(viewport, RS::CANVAS_ITEM_TEXTURE_FILTER_NEAREST);
+			break;
+		case DEFAULT_CANVAS_ITEM_TEXTURE_FILTER_LINEAR:
+			RS::get_singleton()->viewport_set_default_canvas_item_texture_filter(viewport, RS::CANVAS_ITEM_TEXTURE_FILTER_LINEAR);
+			break;
+		case DEFAULT_CANVAS_ITEM_TEXTURE_FILTER_LINEAR_WITH_MIPMAPS:
+			RS::get_singleton()->viewport_set_default_canvas_item_texture_filter(viewport, RS::CANVAS_ITEM_TEXTURE_FILTER_LINEAR_WITH_MIPMAPS);
+			break;
+		case DEFAULT_CANVAS_ITEM_TEXTURE_FILTER_NEAREST_WITH_MIPMAPS:
+			RS::get_singleton()->viewport_set_default_canvas_item_texture_filter(viewport, RS::CANVAS_ITEM_TEXTURE_FILTER_NEAREST_WITH_MIPMAPS);
+			break;
+		default: {
+		}
+	}
 }
 
 Viewport::DefaultCanvasItemTextureFilter Viewport::get_default_canvas_item_texture_filter() const {
@@ -3220,37 +3367,31 @@ Viewport::DefaultCanvasItemTextureFilter Viewport::get_default_canvas_item_textu
 }
 
 void Viewport::set_default_canvas_item_texture_repeat(DefaultCanvasItemTextureRepeat p_repeat) {
+	ERR_FAIL_INDEX(p_repeat, DEFAULT_CANVAS_ITEM_TEXTURE_REPEAT_MAX);
+
 	if (default_canvas_item_texture_repeat == p_repeat) {
 		return;
 	}
+
 	default_canvas_item_texture_repeat = p_repeat;
-	_propagate_update_default_repeat(this);
+
+	switch (default_canvas_item_texture_repeat) {
+		case DEFAULT_CANVAS_ITEM_TEXTURE_REPEAT_DISABLED:
+			RS::get_singleton()->viewport_set_default_canvas_item_texture_repeat(viewport, RS::CANVAS_ITEM_TEXTURE_REPEAT_DISABLED);
+			break;
+		case DEFAULT_CANVAS_ITEM_TEXTURE_REPEAT_ENABLED:
+			RS::get_singleton()->viewport_set_default_canvas_item_texture_repeat(viewport, RS::CANVAS_ITEM_TEXTURE_REPEAT_ENABLED);
+			break;
+		case DEFAULT_CANVAS_ITEM_TEXTURE_REPEAT_MIRROR:
+			RS::get_singleton()->viewport_set_default_canvas_item_texture_repeat(viewport, RS::CANVAS_ITEM_TEXTURE_REPEAT_MIRROR);
+			break;
+		default: {
+		}
+	}
 }
 
 Viewport::DefaultCanvasItemTextureRepeat Viewport::get_default_canvas_item_texture_repeat() const {
 	return default_canvas_item_texture_repeat;
-}
-
-void Viewport::_propagate_update_default_filter(Node *p_node) {
-	CanvasItem *ci = Object::cast_to<CanvasItem>(p_node);
-	if (ci) {
-		ci->_update_texture_filter_changed(false);
-	}
-
-	for (int i = 0; i < p_node->get_child_count(); i++) {
-		_propagate_update_default_filter(p_node->get_child(i));
-	}
-}
-
-void Viewport::_propagate_update_default_repeat(Node *p_node) {
-	CanvasItem *ci = Object::cast_to<CanvasItem>(p_node);
-	if (ci) {
-		ci->_update_texture_repeat_changed(false);
-	}
-
-	for (int i = 0; i < p_node->get_child_count(); i++) {
-		_propagate_update_default_repeat(p_node->get_child(i));
-	}
 }
 
 DisplayServer::WindowID Viewport::get_window_id() const {
@@ -3294,6 +3435,24 @@ void Viewport::pass_mouse_focus_to(Viewport *p_viewport, Control *p_control) {
 	}
 }
 
+void Viewport::set_sdf_oversize(SDFOversize p_sdf_oversize) {
+	ERR_FAIL_INDEX(p_sdf_oversize, SDF_OVERSIZE_MAX);
+	sdf_oversize = p_sdf_oversize;
+	RS::get_singleton()->viewport_set_sdf_oversize_and_scale(viewport, RS::ViewportSDFOversize(sdf_oversize), RS::ViewportSDFScale(sdf_scale));
+}
+Viewport::SDFOversize Viewport::get_sdf_oversize() const {
+	return sdf_oversize;
+}
+
+void Viewport::set_sdf_scale(SDFScale p_sdf_scale) {
+	ERR_FAIL_INDEX(p_sdf_scale, SDF_SCALE_MAX);
+	sdf_scale = p_sdf_scale;
+	RS::get_singleton()->viewport_set_sdf_oversize_and_scale(viewport, RS::ViewportSDFOversize(sdf_oversize), RS::ViewportSDFScale(sdf_scale));
+}
+Viewport::SDFScale Viewport::get_sdf_scale() const {
+	return sdf_scale;
+}
+
 void Viewport::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_world_2d", "world_2d"), &Viewport::set_world_2d);
 	ClassDB::bind_method(D_METHOD("get_world_2d"), &Viewport::get_world_2d);
@@ -3318,6 +3477,9 @@ void Viewport::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_screen_space_aa", "screen_space_aa"), &Viewport::set_screen_space_aa);
 	ClassDB::bind_method(D_METHOD("get_screen_space_aa"), &Viewport::get_screen_space_aa);
+
+	ClassDB::bind_method(D_METHOD("set_use_debanding", "enable"), &Viewport::set_use_debanding);
+	ClassDB::bind_method(D_METHOD("is_using_debanding"), &Viewport::is_using_debanding);
 
 	ClassDB::bind_method(D_METHOD("set_debug_draw", "debug_draw"), &Viewport::set_debug_draw);
 	ClassDB::bind_method(D_METHOD("get_debug_draw"), &Viewport::get_debug_draw);
@@ -3362,8 +3524,17 @@ void Viewport::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_shadow_atlas_size", "size"), &Viewport::set_shadow_atlas_size);
 	ClassDB::bind_method(D_METHOD("get_shadow_atlas_size"), &Viewport::get_shadow_atlas_size);
 
+	ClassDB::bind_method(D_METHOD("set_shadow_atlas_16_bits", "enable"), &Viewport::set_shadow_atlas_16_bits);
+	ClassDB::bind_method(D_METHOD("get_shadow_atlas_16_bits"), &Viewport::get_shadow_atlas_16_bits);
+
 	ClassDB::bind_method(D_METHOD("set_snap_controls_to_pixels", "enabled"), &Viewport::set_snap_controls_to_pixels);
 	ClassDB::bind_method(D_METHOD("is_snap_controls_to_pixels_enabled"), &Viewport::is_snap_controls_to_pixels_enabled);
+
+	ClassDB::bind_method(D_METHOD("set_snap_2d_transforms_to_pixel", "enabled"), &Viewport::set_snap_2d_transforms_to_pixel);
+	ClassDB::bind_method(D_METHOD("is_snap_2d_transforms_to_pixel_enabled"), &Viewport::is_snap_2d_transforms_to_pixel_enabled);
+
+	ClassDB::bind_method(D_METHOD("set_snap_2d_vertices_to_pixel", "enabled"), &Viewport::set_snap_2d_vertices_to_pixel);
+	ClassDB::bind_method(D_METHOD("is_snap_2d_vertices_to_pixel_enabled"), &Viewport::is_snap_2d_vertices_to_pixel_enabled);
 
 	ClassDB::bind_method(D_METHOD("set_shadow_atlas_quadrant_subdiv", "quadrant", "subdiv"), &Viewport::set_shadow_atlas_quadrant_subdiv);
 	ClassDB::bind_method(D_METHOD("get_shadow_atlas_quadrant_subdiv", "quadrant"), &Viewport::get_shadow_atlas_quadrant_subdiv);
@@ -3384,14 +3555,29 @@ void Viewport::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_default_canvas_item_texture_repeat", "mode"), &Viewport::set_default_canvas_item_texture_repeat);
 	ClassDB::bind_method(D_METHOD("get_default_canvas_item_texture_repeat"), &Viewport::get_default_canvas_item_texture_repeat);
 
+	ClassDB::bind_method(D_METHOD("set_sdf_oversize", "oversize"), &Viewport::set_sdf_oversize);
+	ClassDB::bind_method(D_METHOD("get_sdf_oversize"), &Viewport::get_sdf_oversize);
+
+	ClassDB::bind_method(D_METHOD("set_sdf_scale", "scale"), &Viewport::set_sdf_scale);
+	ClassDB::bind_method(D_METHOD("get_sdf_scale"), &Viewport::get_sdf_scale);
+
+	ClassDB::bind_method(D_METHOD("set_lod_threshold", "pixels"), &Viewport::set_lod_threshold);
+	ClassDB::bind_method(D_METHOD("get_lod_threshold"), &Viewport::get_lod_threshold);
+
+	ClassDB::bind_method(D_METHOD("_process_picking"), &Viewport::_process_picking);
+
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "own_world_3d"), "set_use_own_world_3d", "is_using_own_world_3d");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "world_3d", PROPERTY_HINT_RESOURCE_TYPE, "World3D"), "set_world_3d", "get_world_3d");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "world_2d", PROPERTY_HINT_RESOURCE_TYPE, "World2D", 0), "set_world_2d", "get_world_2d");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "transparent_bg"), "set_transparent_background", "has_transparent_background");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "handle_input_locally"), "set_handle_input_locally", "is_handling_input_locally");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "snap_2d_transforms_to_pixel"), "set_snap_2d_transforms_to_pixel", "is_snap_2d_transforms_to_pixel_enabled");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "snap_2d_vertices_to_pixel"), "set_snap_2d_vertices_to_pixel", "is_snap_2d_vertices_to_pixel_enabled");
 	ADD_GROUP("Rendering", "");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "msaa", PROPERTY_HINT_ENUM, "Disabled,2x,4x,8x,16x,AndroidVR 2x,AndroidVR 4x"), "set_msaa", "get_msaa");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "screen_space_aa", PROPERTY_HINT_ENUM, "Disabled,FXAA"), "set_screen_space_aa", "get_screen_space_aa");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "use_debanding"), "set_use_debanding", "is_using_debanding");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "lod_threshold", PROPERTY_HINT_RANGE, "0,1024,0.1"), "set_lod_threshold", "get_lod_threshold");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "debug_draw", PROPERTY_HINT_ENUM, "Disabled,Unshaded,Overdraw,Wireframe"), "set_debug_draw", "get_debug_draw");
 	ADD_GROUP("Canvas Items", "canvas_item_");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "canvas_item_default_texture_filter", PROPERTY_HINT_ENUM, "Nearest,Linear,MipmapLinear,MipmapNearest"), "set_default_canvas_item_texture_filter", "get_default_canvas_item_texture_filter");
@@ -3405,8 +3591,12 @@ void Viewport::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "gui_disable_input"), "set_disable_input", "is_input_disabled");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "gui_snap_controls_to_pixels"), "set_snap_controls_to_pixels", "is_snap_controls_to_pixels_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "gui_embed_subwindows"), "set_embed_subwindows_hint", "get_embed_subwindows_hint");
+	ADD_GROUP("SDF", "sdf_");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "sdf_oversize", PROPERTY_HINT_ENUM, "100%,120%,150%,200%"), "set_sdf_oversize", "get_sdf_oversize");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "sdf_scale", PROPERTY_HINT_ENUM, "100%,50%,25%"), "set_sdf_scale", "get_sdf_scale");
 	ADD_GROUP("Shadow Atlas", "shadow_atlas_");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "shadow_atlas_size"), "set_shadow_atlas_size", "get_shadow_atlas_size");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "shadow_atlas_16_bits"), "set_shadow_atlas_16_bits", "get_shadow_atlas_16_bits");
 	ADD_PROPERTYI(PropertyInfo(Variant::INT, "shadow_atlas_quad_0", PROPERTY_HINT_ENUM, "Disabled,1 Shadow,4 Shadows,16 Shadows,64 Shadows,256 Shadows,1024 Shadows"), "set_shadow_atlas_quadrant_subdiv", "get_shadow_atlas_quadrant_subdiv", 0);
 	ADD_PROPERTYI(PropertyInfo(Variant::INT, "shadow_atlas_quad_1", PROPERTY_HINT_ENUM, "Disabled,1 Shadow,4 Shadows,16 Shadows,64 Shadows,256 Shadows,1024 Shadows"), "set_shadow_atlas_quadrant_subdiv", "get_shadow_atlas_quadrant_subdiv", 1);
 	ADD_PROPERTYI(PropertyInfo(Variant::INT, "shadow_atlas_quad_2", PROPERTY_HINT_ENUM, "Disabled,1 Shadow,4 Shadows,16 Shadows,64 Shadows,256 Shadows,1024 Shadows"), "set_shadow_atlas_quadrant_subdiv", "get_shadow_atlas_quadrant_subdiv", 2);
@@ -3463,6 +3653,11 @@ void Viewport::_bind_methods() {
 	BIND_ENUM_CONSTANT(DEBUG_DRAW_SDFGI);
 	BIND_ENUM_CONSTANT(DEBUG_DRAW_SDFGI_PROBES);
 	BIND_ENUM_CONSTANT(DEBUG_DRAW_GI_BUFFER);
+	BIND_ENUM_CONSTANT(DEBUG_DRAW_DISABLE_LOD);
+	BIND_ENUM_CONSTANT(DEBUG_DRAW_CLUSTER_OMNI_LIGHTS);
+	BIND_ENUM_CONSTANT(DEBUG_DRAW_CLUSTER_SPOT_LIGHTS);
+	BIND_ENUM_CONSTANT(DEBUG_DRAW_CLUSTER_DECALS);
+	BIND_ENUM_CONSTANT(DEBUG_DRAW_CLUSTER_REFLECTION_PROBES);
 
 	BIND_ENUM_CONSTANT(DEFAULT_CANVAS_ITEM_TEXTURE_FILTER_NEAREST);
 	BIND_ENUM_CONSTANT(DEFAULT_CANVAS_ITEM_TEXTURE_FILTER_LINEAR);
@@ -3474,6 +3669,17 @@ void Viewport::_bind_methods() {
 	BIND_ENUM_CONSTANT(DEFAULT_CANVAS_ITEM_TEXTURE_REPEAT_ENABLED);
 	BIND_ENUM_CONSTANT(DEFAULT_CANVAS_ITEM_TEXTURE_REPEAT_MIRROR);
 	BIND_ENUM_CONSTANT(DEFAULT_CANVAS_ITEM_TEXTURE_REPEAT_MAX);
+
+	BIND_ENUM_CONSTANT(SDF_OVERSIZE_100_PERCENT);
+	BIND_ENUM_CONSTANT(SDF_OVERSIZE_120_PERCENT);
+	BIND_ENUM_CONSTANT(SDF_OVERSIZE_150_PERCENT);
+	BIND_ENUM_CONSTANT(SDF_OVERSIZE_200_PERCENT);
+	BIND_ENUM_CONSTANT(SDF_OVERSIZE_MAX);
+
+	BIND_ENUM_CONSTANT(SDF_SCALE_100_PERCENT);
+	BIND_ENUM_CONSTANT(SDF_SCALE_50_PERCENT);
+	BIND_ENUM_CONSTANT(SDF_SCALE_25_PERCENT);
+	BIND_ENUM_CONSTANT(SDF_SCALE_MAX);
 }
 
 Viewport::Viewport() {
@@ -3487,25 +3693,12 @@ Viewport::Viewport() {
 	viewport_textures.insert(default_texture.ptr());
 	default_texture->proxy = RS::get_singleton()->texture_proxy_create(texture_rid);
 
-	audio_listener = false;
 	//internal_listener_2d = SpatialSound2DServer::get_singleton()->listener_create();
-	audio_listener_2d = false;
-	transparent_bg = false;
-	parent = nullptr;
-	listener = nullptr;
-	camera = nullptr;
-	override_canvas_transform = false;
 	canvas_layers.insert(nullptr); // This eases picking code (interpreted as the canvas of the Viewport)
 
-	gen_mipmaps = false;
-
 	//clear=true;
+	set_shadow_atlas_size(shadow_atlas_size);
 
-	physics_object_picking = false;
-	physics_has_last_mousepos = false;
-	physics_last_mousepos = Vector2(Math_INF, Math_INF);
-
-	shadow_atlas_size = 0;
 	for (int i = 0; i < 4; i++) {
 		shadow_atlas_quadrant_subdiv[i] = SHADOW_ATLAS_QUADRANT_SUBDIV_MAX;
 	}
@@ -3514,50 +3707,19 @@ Viewport::Viewport() {
 	set_shadow_atlas_quadrant_subdiv(2, SHADOW_ATLAS_QUADRANT_SUBDIV_16);
 	set_shadow_atlas_quadrant_subdiv(3, SHADOW_ATLAS_QUADRANT_SUBDIV_64);
 
+	set_lod_threshold(lod_threshold);
+
 	String id = itos(get_instance_id());
 	input_group = "_vp_input" + id;
 	gui_input_group = "_vp_gui_input" + id;
 	unhandled_input_group = "_vp_unhandled_input" + id;
 	unhandled_key_input_group = "_vp_unhandled_key_input" + id;
 
-	disable_input = false;
-
-	//window tooltip
-	gui.tooltip_timer = -1;
-
-	//gui.tooltip_timer->force_parent_owned();
+	// Window tooltip.
 	gui.tooltip_delay = GLOBAL_DEF("gui/timers/tooltip_delay_sec", 0.5);
 	ProjectSettings::get_singleton()->set_custom_property_info("gui/timers/tooltip_delay_sec", PropertyInfo(Variant::FLOAT, "gui/timers/tooltip_delay_sec", PROPERTY_HINT_RANGE, "0,5,0.01,or_greater")); // No negative numbers
 
-	gui.tooltip = nullptr;
-	gui.tooltip_label = nullptr;
-	gui.drag_preview = nullptr;
-	gui.drag_attempted = false;
-	gui.canvas_sort_index = 0;
-	gui.roots_order_dirty = false;
-	gui.mouse_focus = nullptr;
-	gui.forced_mouse_focus = false;
-	gui.last_mouse_focus = nullptr;
-	gui.subwindow_focused = nullptr;
-	gui.subwindow_drag = SUB_WINDOW_DRAG_DISABLED;
-
-	msaa = MSAA_DISABLED;
-	screen_space_aa = SCREEN_SPACE_AA_DISABLED;
-	debug_draw = DEBUG_DRAW_DISABLED;
-
-	snap_controls_to_pixels = true;
-	physics_last_mouse_state.alt = false;
-	physics_last_mouse_state.control = false;
-	physics_last_mouse_state.shift = false;
-	physics_last_mouse_state.meta = false;
-	physics_last_mouse_state.mouse_mask = 0;
-	local_input_handled = false;
-	handle_input_locally = true;
-
-	size_allocated = false;
-
-	default_canvas_item_texture_filter = DEFAULT_CANVAS_ITEM_TEXTURE_FILTER_LINEAR;
-	default_canvas_item_texture_repeat = DEFAULT_CANVAS_ITEM_TEXTURE_REPEAT_DISABLED;
+	set_sdf_oversize(sdf_oversize); //set to server
 }
 
 Viewport::~Viewport() {
@@ -3680,7 +3842,7 @@ void SubViewport::_bind_methods() {
 
 	BIND_ENUM_CONSTANT(CLEAR_MODE_ALWAYS);
 	BIND_ENUM_CONSTANT(CLEAR_MODE_NEVER);
-	BIND_ENUM_CONSTANT(CLEAR_MODE_ONLY_NEXT_FRAME);
+	BIND_ENUM_CONSTANT(CLEAR_MODE_ONCE);
 
 	BIND_ENUM_CONSTANT(UPDATE_DISABLED);
 	BIND_ENUM_CONSTANT(UPDATE_ONCE);
@@ -3689,12 +3851,6 @@ void SubViewport::_bind_methods() {
 	BIND_ENUM_CONSTANT(UPDATE_ALWAYS);
 }
 
-SubViewport::SubViewport() {
-	xr = false;
-	size_2d_override_stretch = false;
-	update_mode = UPDATE_WHEN_VISIBLE;
-	clear_mode = CLEAR_MODE_ALWAYS;
-}
+SubViewport::SubViewport() {}
 
-SubViewport::~SubViewport() {
-}
+SubViewport::~SubViewport() {}

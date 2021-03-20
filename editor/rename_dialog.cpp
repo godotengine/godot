@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -30,7 +30,7 @@
 
 #include "rename_dialog.h"
 
-#include "core/print_string.h"
+#include "core/string/print_string.h"
 #include "editor_node.h"
 #include "editor_scale.h"
 #include "editor_settings.h"
@@ -61,18 +61,16 @@ RenameDialog::RenameDialog(SceneTreeEditor *p_scene_tree_editor, UndoRedo *p_und
 	// ---- 1st & 2nd row
 
 	Label *lbl_search = memnew(Label);
-	lbl_search->set_text(TTR("Search"));
+	lbl_search->set_text(TTR("Search:"));
 
 	lne_search = memnew(LineEdit);
-	lne_search->set_placeholder(TTR("Search"));
 	lne_search->set_name("lne_search");
 	lne_search->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 
 	Label *lbl_replace = memnew(Label);
-	lbl_replace->set_text(TTR("Replace"));
+	lbl_replace->set_text(TTR("Replace:"));
 
 	lne_replace = memnew(LineEdit);
-	lne_replace->set_placeholder(TTR("Replace"));
 	lne_replace->set_name("lne_replace");
 	lne_replace->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 
@@ -84,18 +82,16 @@ RenameDialog::RenameDialog(SceneTreeEditor *p_scene_tree_editor, UndoRedo *p_und
 	// ---- 3rd & 4th row
 
 	Label *lbl_prefix = memnew(Label);
-	lbl_prefix->set_text(TTR("Prefix"));
+	lbl_prefix->set_text(TTR("Prefix:"));
 
 	lne_prefix = memnew(LineEdit);
-	lne_prefix->set_placeholder(TTR("Prefix"));
 	lne_prefix->set_name("lne_prefix");
 	lne_prefix->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 
 	Label *lbl_suffix = memnew(Label);
-	lbl_suffix->set_text(TTR("Suffix"));
+	lbl_suffix->set_text(TTR("Suffix:"));
 
 	lne_suffix = memnew(LineEdit);
-	lne_suffix->set_placeholder(TTR("Suffix"));
 	lne_suffix->set_name("lne_suffix");
 	lne_suffix->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 
@@ -105,8 +101,6 @@ RenameDialog::RenameDialog(SceneTreeEditor *p_scene_tree_editor, UndoRedo *p_und
 	grd_main->add_child(lne_suffix);
 
 	// -- Feature Tabs
-
-	const int feature_min_height = 160 * EDSCALE;
 
 	cbut_regex = memnew(CheckButton);
 	cbut_regex->set_text(TTR("Use Regular Expressions"));
@@ -118,13 +112,13 @@ RenameDialog::RenameDialog(SceneTreeEditor *p_scene_tree_editor, UndoRedo *p_und
 
 	tabc_features = memnew(TabContainer);
 	tabc_features->set_tab_align(TabContainer::ALIGN_LEFT);
+	tabc_features->set_use_hidden_tabs_for_min_size(true);
 	vbc->add_child(tabc_features);
 
 	// ---- Tab Substitute
 
 	VBoxContainer *vbc_substitute = memnew(VBoxContainer);
 	vbc_substitute->set_h_size_flags(Control::SIZE_EXPAND_FILL);
-	vbc_substitute->set_custom_minimum_size(Size2(0, feature_min_height));
 
 	vbc_substitute->set_name(TTR("Substitute"));
 	tabc_features->add_child(vbc_substitute);
@@ -199,7 +193,7 @@ RenameDialog::RenameDialog(SceneTreeEditor *p_scene_tree_editor, UndoRedo *p_und
 
 	chk_per_level_counter = memnew(CheckBox);
 	chk_per_level_counter->set_text(TTR("Per-level Counter"));
-	chk_per_level_counter->set_tooltip(TTR("If set the counter restarts for each group of child nodes."));
+	chk_per_level_counter->set_tooltip(TTR("If set, the counter restarts for each group of child nodes."));
 	vbc_substitute->add_child(chk_per_level_counter);
 
 	HBoxContainer *hbc_count_options = memnew(HBoxContainer);
@@ -241,7 +235,6 @@ RenameDialog::RenameDialog(SceneTreeEditor *p_scene_tree_editor, UndoRedo *p_und
 	VBoxContainer *vbc_process = memnew(VBoxContainer);
 	vbc_process->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	vbc_process->set_name(TTR("Post-Process"));
-	vbc_process->set_custom_minimum_size(Size2(0, feature_min_height));
 	tabc_features->add_child(vbc_process);
 
 	cbut_process = memnew(CheckBox);
@@ -285,19 +278,15 @@ RenameDialog::RenameDialog(SceneTreeEditor *p_scene_tree_editor, UndoRedo *p_und
 	vbc->add_child(sep_preview);
 
 	lbl_preview_title = memnew(Label);
-	lbl_preview_title->set_text(TTR("Preview"));
 	vbc->add_child(lbl_preview_title);
 
 	lbl_preview = memnew(Label);
-	lbl_preview->set_text("");
-	lbl_preview->add_theme_color_override("font_color", EditorNode::get_singleton()->get_gui_base()->get_theme_color("error_color", "Editor"));
 	vbc->add_child(lbl_preview);
 
 	// ---- Dialog related
 
 	set_min_size(Size2(383, 0));
-	//set_as_toplevel(true);
-	get_ok()->set_text(TTR("Rename"));
+	get_ok_button()->set_text(TTR("Rename"));
 	Button *but_reset = add_button(TTR("Reset"));
 
 	eh.errfunc = _error_handler;
@@ -307,7 +296,7 @@ RenameDialog::RenameDialog(SceneTreeEditor *p_scene_tree_editor, UndoRedo *p_und
 
 	cbut_collapse_features->connect("toggled", callable_mp(this, &RenameDialog::_features_toggled));
 
-	// Substitite Buttons
+	// Substitute Buttons
 
 	lne_search->connect("focus_entered", callable_mp(this, &RenameDialog::_update_substitute));
 	lne_search->connect("focus_exited", callable_mp(this, &RenameDialog::_update_substitute));
@@ -391,7 +380,7 @@ void RenameDialog::_update_preview(String new_text) {
 	String new_name = _apply_rename(preview_node, spn_count_start->get_value());
 
 	if (!has_errors) {
-		lbl_preview_title->set_text(TTR("Preview"));
+		lbl_preview_title->set_text(TTR("Preview:"));
 		lbl_preview->set_text(new_name);
 
 		if (new_name == preview_node->get_name()) {
@@ -482,7 +471,7 @@ void RenameDialog::_error_handler(void *p_self, const char *p_func, const char *
 	}
 
 	self->has_errors = true;
-	self->lbl_preview_title->set_text(TTR("Regular Expression Error"));
+	self->lbl_preview_title->set_text(TTR("Regular Expression Error:"));
 	self->lbl_preview->add_theme_color_override("font_color", EditorNode::get_singleton()->get_gui_base()->get_theme_color("error_color", "Editor"));
 	self->lbl_preview->set_text(vformat(TTR("At character %s"), err_str));
 }
@@ -583,7 +572,7 @@ void RenameDialog::rename() {
 	// Forward recursive as opposed to the actual renaming.
 	_iterate_scene(root_node, selected_node_list, &global_count);
 
-	if (undo_redo && !to_rename.empty()) {
+	if (undo_redo && !to_rename.is_empty()) {
 		undo_redo->create_action(TTR("Batch Rename"));
 
 		// Make sure to iterate reversed so that child nodes will find parents.

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -31,7 +31,7 @@
 #ifndef POLYGON_PATH_FINDER_H
 #define POLYGON_PATH_FINDER_H
 
-#include "core/resource.h"
+#include "core/io/resource.h"
 
 class PolygonPathFinder : public Resource {
 	GDCLASS(PolygonPathFinder, Resource);
@@ -39,13 +39,13 @@ class PolygonPathFinder : public Resource {
 	struct Point {
 		Vector2 pos;
 		Set<int> connections;
-		float distance;
-		float penalty;
-		int prev;
+		float distance = 0.0;
+		float penalty = 0.0;
+		int prev = 0;
 	};
 
 	struct Edge {
-		int points[2];
+		int points[2] = {};
 
 		_FORCE_INLINE_ bool operator<(const Edge &p_edge) const {
 			if (points[0] == p_edge.points[0]) {

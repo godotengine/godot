@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -41,8 +41,8 @@
 #include "platform_config.h"
 
 // Should be available everywhere.
-#include "core/error_list.h"
-#include "core/int_types.h"
+#include "core/error/error_list.h"
+#include <cstdint>
 
 // Turn argument to string constant:
 // https://gcc.gnu.org/onlinedocs/cpp/Stringizing.html#Stringizing
@@ -92,7 +92,7 @@
 #endif
 
 #ifndef SGN
-#define SGN(m_v) (((m_v) < 0) ? (-1.0) : (+1.0))
+#define SGN(m_v) (((m_v) == 0) ? (0.0) : (((m_v) < 0) ? (-1.0) : (+1.0)))
 #endif
 
 #ifndef MIN
@@ -193,6 +193,20 @@ static inline unsigned int nearest_shift(unsigned int p_number) {
 	return 0;
 }
 
+// constexpr function to find the floored log2 of a number
+template <typename T>
+constexpr T floor_log2(T x) {
+	return x < 2 ? x : 1 + floor_log2(x >> 1);
+}
+
+// Get the number of bits needed to represent the number.
+// IE, if you pass in 8, you will get 4.
+// If you want to know how many bits are needed to store 8 values however, pass in (8 - 1).
+template <typename T>
+constexpr T get_num_bits(T x) {
+	return floor_log2(x);
+}
+
 // Swap 16, 32 and 64 bits value for endianness.
 #if defined(__GNUC__)
 #define BSWAP16(x) __builtin_bswap16(x)
@@ -262,5 +276,9 @@ struct BuildIndexSequence : BuildIndexSequence<N - 1, N - 1, Is...> {};
 
 template <size_t... Is>
 struct BuildIndexSequence<0, Is...> : IndexSequence<Is...> {};
+
+#ifdef DEBUG_ENABLED
+#define DEBUG_METHODS_ENABLED
+#endif
 
 #endif // TYPEDEFS_H

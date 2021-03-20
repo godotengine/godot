@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -33,6 +33,7 @@
 #include "os_osx.h"
 
 #include "core/io/marshalls.h"
+#include "core/math/geometry_2d.h"
 #include "core/os/keyboard.h"
 #include "main/main.h"
 #include "scene/resources/texture.h"
@@ -51,7 +52,7 @@
 #endif
 
 #if defined(VULKAN_ENABLED)
-#include "servers/rendering/rasterizer_rd/rasterizer_rd.h"
+#include "servers/rendering/renderer_rd/renderer_compositor_rd.h"
 
 #include <QuartzCore/CAMetalLayer.h>
 #endif
@@ -61,6 +62,8 @@
 #endif
 
 #define DS_OSX ((DisplayServerOSX *)(DisplayServerOSX::get_singleton()))
+
+static bool ignore_momentum_scroll = false;
 
 static void _get_key_modifier_state(unsigned int p_osx_state, Ref<InputEventWithModifiers> r_state) {
 	r_state->set_shift((p_osx_state & NSEventModifierFlagShift));
@@ -253,9 +256,7 @@ static NSCursor *_cursorFromSelector(SEL selector, SEL fallback = nil) {
 		List<String> args;
 		args.push_back(((OS_OSX *)(OS_OSX::get_singleton()))->open_with_filename);
 		String exec = OS::get_singleton()->get_executable_path();
-
-		OS::ProcessID pid = 0;
-		OS::get_singleton()->execute(exec, args, false, &pid);
+		OS::get_singleton()->create_process(exec, args);
 	}
 #endif
 	return YES;
@@ -311,8 +312,6 @@ static NSCursor *_cursorFromSelector(SEL selector, SEL fallback = nil) {
 		DS_OSX->window_set_transient(wd.transient_children.front()->get(), DisplayServerOSX::INVALID_WINDOW_ID);
 	}
 
-	DS_OSX->windows.erase(window_id);
-
 	if (wd.transient_parent != DisplayServerOSX::INVALID_WINDOW_ID) {
 		DisplayServerOSX::WindowData &pwd = DS_OSX->windows[wd.transient_parent];
 		[pwd.window_object makeKeyAndOrderFront:nil]; // Move focus back to parent.
@@ -332,6 +331,8 @@ static NSCursor *_cursorFromSelector(SEL selector, SEL fallback = nil) {
 		DS_OSX->context_vulkan->window_destroy(window_id);
 	}
 #endif
+
+	DS_OSX->windows.erase(window_id);
 }
 
 - (void)windowDidEnterFullScreen:(NSNotification *)notification {
@@ -698,8 +699,6 @@ static const NSRange kEmptyRange = { NSNotFound, 0 };
 		characters = (NSString *)aString;
 	}
 
-	NSUInteger i, length = [characters length];
-
 	NSCharacterSet *ctrlChars = [NSCharacterSet controlCharacterSet];
 	NSCharacterSet *wsnlChars = [NSCharacterSet whitespaceAndNewlineCharacterSet];
 	if ([characters rangeOfCharacterFromSet:ctrlChars].length && [characters rangeOfCharacterFromSet:wsnlChars].length == 0) {
@@ -709,8 +708,15 @@ static const NSRange kEmptyRange = { NSNotFound, 0 };
 		return;
 	}
 
-	for (i = 0; i < length; i++) {
-		const unichar codepoint = [characters characterAtIndex:i];
+	Char16String text;
+	text.resize([characters length] + 1);
+	[characters getCharacters:(unichar *)text.ptrw() range:NSMakeRange(0, [characters length])];
+
+	String u32text;
+	u32text.parse_utf16(text.ptr(), text.length());
+
+	for (int i = 0; i < u32text.length(); i++) {
+		const char32_t codepoint = u32text[i];
 		if ((codepoint & 0xFF00) == 0xF700) {
 			continue;
 		}
@@ -743,28 +749,32 @@ static const NSRange kEmptyRange = { NSNotFound, 0 };
 	ERR_FAIL_COND_V(!DS_OSX->windows.has(window_id), NO);
 	DisplayServerOSX::WindowData &wd = DS_OSX->windows[window_id];
 
-	NSPasteboard *pboard = [sender draggingPasteboard];
-#if MAC_OS_X_VERSION_MIN_REQUIRED >= 101400
-	NSArray<NSURL *> *filenames = [pboard propertyListForType:NSPasteboardTypeFileURL];
-#else
-	NSArray *filenames = [pboard propertyListForType:NSFilenamesPboardType];
-#endif
-
-	Vector<String> files;
-	for (NSUInteger i = 0; i < filenames.count; i++) {
-#if MAC_OS_X_VERSION_MIN_REQUIRED >= 101400
-		NSString *ns = [[filenames objectAtIndex:i] path];
-#else
-		NSString *ns = [filenames objectAtIndex:i];
-#endif
-		char *utfs = strdup([ns UTF8String]);
-		String ret;
-		ret.parse_utf8(utfs);
-		free(utfs);
-		files.push_back(ret);
-	}
-
 	if (!wd.drop_files_callback.is_null()) {
+		Vector<String> files;
+		NSPasteboard *pboard = [sender draggingPasteboard];
+
+#if MAC_OS_X_VERSION_MIN_REQUIRED >= 101400
+		NSArray *items = pboard.pasteboardItems;
+		for (NSPasteboardItem *item in items) {
+			NSString *path = [item stringForType:NSPasteboardTypeFileURL];
+			NSString *ns = [NSURL URLWithString:path].path;
+			char *utfs = strdup([ns UTF8String]);
+			String ret;
+			ret.parse_utf8(utfs);
+			free(utfs);
+			files.push_back(ret);
+		}
+#else
+		NSArray *filenames = [pboard propertyListForType:NSFilenamesPboardType];
+		for (NSString *ns in filenames) {
+			char *utfs = strdup([ns UTF8String]);
+			String ret;
+			ret.parse_utf8(utfs);
+			free(utfs);
+			files.push_back(ret);
+		}
+#endif
+
 		Variant v = files;
 		Variant *vp = &v;
 		Variant ret;
@@ -860,6 +870,15 @@ static void _mouseDownEvent(DisplayServer::WindowID window_id, NSEvent *event, i
 
 	NSPoint delta = NSMakePoint([event deltaX], [event deltaY]);
 	NSPoint mpos = [event locationInWindow];
+
+	if (DS_OSX->ignore_warp) {
+		// Discard late events, before warp
+		if (([event timestamp]) < DS_OSX->last_warp) {
+			return;
+		}
+		DS_OSX->ignore_warp = false;
+		return;
+	}
 
 	if (DS_OSX->mouse_mode == DisplayServer::MOUSE_MODE_CONFINED) {
 		// Discard late events
@@ -1303,6 +1322,8 @@ static int remapKey(unsigned int key, unsigned int state) {
 	ERR_FAIL_COND(!DS_OSX->windows.has(window_id));
 	DisplayServerOSX::WindowData &wd = DS_OSX->windows[window_id];
 
+	ignore_momentum_scroll = true;
+
 	// Ignore all input if IME input is in progress
 	if (!imeInputEventInProgress) {
 		NSString *characters = [event characters];
@@ -1310,7 +1331,16 @@ static int remapKey(unsigned int key, unsigned int state) {
 
 		if (!wd.im_active && length > 0 && keycode_has_unicode(remapKey([event keyCode], [event modifierFlags]))) {
 			// Fallback unicode character handler used if IME is not active
-			for (NSUInteger i = 0; i < length; i++) {
+			Char16String text;
+			text.resize([characters length] + 1);
+			[characters getCharacters:(unichar *)text.ptrw() range:NSMakeRange(0, [characters length])];
+
+			String u32text;
+			u32text.parse_utf16(text.ptr(), text.length());
+
+			for (int i = 0; i < u32text.length(); i++) {
+				const char32_t codepoint = u32text[i];
+
 				DisplayServerOSX::KeyEvent ke;
 
 				ke.window_id = window_id;
@@ -1320,7 +1350,7 @@ static int remapKey(unsigned int key, unsigned int state) {
 				ke.keycode = remapKey([event keyCode], [event modifierFlags]);
 				ke.physical_keycode = translateKey([event keyCode]);
 				ke.raw = true;
-				ke.unicode = [characters characterAtIndex:i];
+				ke.unicode = codepoint;
 
 				_push_to_key_event_buffer(ke);
 			}
@@ -1347,6 +1377,8 @@ static int remapKey(unsigned int key, unsigned int state) {
 }
 
 - (void)flagsChanged:(NSEvent *)event {
+	ignore_momentum_scroll = true;
+
 	// Ignore all input if IME input is in progress
 	if (!imeInputEventInProgress) {
 		DisplayServerOSX::KeyEvent ke;
@@ -1410,7 +1442,15 @@ static int remapKey(unsigned int key, unsigned int state) {
 
 		// Fallback unicode character handler used if IME is not active
 		if (!wd.im_active && length > 0 && keycode_has_unicode(remapKey([event keyCode], [event modifierFlags]))) {
-			for (NSUInteger i = 0; i < length; i++) {
+			Char16String text;
+			text.resize([characters length] + 1);
+			[characters getCharacters:(unichar *)text.ptrw() range:NSMakeRange(0, [characters length])];
+
+			String u32text;
+			u32text.parse_utf16(text.ptr(), text.length());
+
+			for (int i = 0; i < u32text.length(); i++) {
+				const char32_t codepoint = u32text[i];
 				DisplayServerOSX::KeyEvent ke;
 
 				ke.window_id = window_id;
@@ -1420,7 +1460,7 @@ static int remapKey(unsigned int key, unsigned int state) {
 				ke.keycode = remapKey([event keyCode], [event modifierFlags]);
 				ke.physical_keycode = translateKey([event keyCode]);
 				ke.raw = true;
-				ke.unicode = [characters characterAtIndex:i];
+				ke.unicode = codepoint;
 
 				_push_to_key_event_buffer(ke);
 			}
@@ -1504,6 +1544,14 @@ inline void sendPanEvent(DisplayServer::WindowID window_id, double dx, double dy
 	if ([event hasPreciseScrollingDeltas]) {
 		deltaX *= 0.03;
 		deltaY *= 0.03;
+	}
+
+	if ([event momentumPhase] != NSEventPhaseNone) {
+		if (ignore_momentum_scroll) {
+			return;
+		}
+	} else {
+		ignore_momentum_scroll = false;
 	}
 
 	if ([event phase] != NSEventPhaseNone || [event momentumPhase] != NSEventPhaseNone) {
@@ -2040,6 +2088,12 @@ void DisplayServerOSX::mouse_set_mode(MouseMode p_mode) {
 			CGDisplayHideCursor(kCGDirectMainDisplay);
 		}
 		CGAssociateMouseAndMouseCursorPosition(false);
+		WindowData &wd = windows[MAIN_WINDOW_ID];
+		const NSRect contentRect = [wd.window_view frame];
+		NSRect pointInWindowRect = NSMakeRect(contentRect.size.width / 2, contentRect.size.height / 2, 0, 0);
+		NSPoint pointOnScreen = [[wd.window_view window] convertRectToScreen:pointInWindowRect].origin;
+		CGPoint lMouseWarpPos = { pointOnScreen.x, CGDisplayBounds(CGMainDisplayID()).size.height - pointOnScreen.y };
+		CGWarpMouseCursorPosition(lMouseWarpPos);
 	} else if (p_mode == MOUSE_MODE_HIDDEN) {
 		if (mouse_mode == MOUSE_MODE_VISIBLE || mouse_mode == MOUSE_MODE_CONFINED) {
 			CGDisplayHideCursor(kCGDirectMainDisplay);
@@ -2053,6 +2107,8 @@ void DisplayServerOSX::mouse_set_mode(MouseMode p_mode) {
 		CGAssociateMouseAndMouseCursorPosition(true);
 	}
 
+	last_warp = [[NSProcessInfo processInfo] systemUptime];
+	ignore_warp = true;
 	warp_events.clear();
 	mouse_mode = p_mode;
 }
@@ -2239,11 +2295,18 @@ int DisplayServerOSX::screen_get_dpi(int p_screen) const {
 	NSArray *screenArray = [NSScreen screens];
 	if ((NSUInteger)p_screen < [screenArray count]) {
 		NSDictionary *description = [[screenArray objectAtIndex:p_screen] deviceDescription];
-		NSSize displayDPI = [[description objectForKey:NSDeviceResolution] sizeValue];
-		return (displayDPI.width + displayDPI.height) / 2;
+
+		const NSSize displayPixelSize = [[description objectForKey:NSDeviceSize] sizeValue];
+		const CGSize displayPhysicalSize = CGDisplayScreenSize([[description objectForKey:@"NSScreenNumber"] unsignedIntValue]);
+		float scale = [[screenArray objectAtIndex:p_screen] backingScaleFactor];
+
+		float den2 = (displayPhysicalSize.width / 25.4f) * (displayPhysicalSize.width / 25.4f) + (displayPhysicalSize.height / 25.4f) * (displayPhysicalSize.height / 25.4f);
+		if (den2 > 0.0f) {
+			return ceil(sqrt(displayPixelSize.width * displayPixelSize.width + displayPixelSize.height * displayPixelSize.height) / sqrt(den2) * scale);
+		}
 	}
 
-	return 96;
+	return 72;
 }
 
 float DisplayServerOSX::screen_get_scale(int p_screen) const {
@@ -2374,7 +2437,11 @@ void DisplayServerOSX::_update_window(WindowData p_wd) {
 		[p_wd.window_object setHidesOnDeactivate:YES];
 	} else {
 		// Reset these when our window is not a borderless window that covers up the screen
-		[p_wd.window_object setLevel:NSNormalWindowLevel];
+		if (p_wd.on_top) {
+			[p_wd.window_object setLevel:NSFloatingWindowLevel];
+		} else {
+			[p_wd.window_object setLevel:NSNormalWindowLevel];
+		}
 		[p_wd.window_object setHidesOnDeactivate:NO];
 	}
 }
@@ -2398,6 +2465,15 @@ void DisplayServerOSX::window_set_title(const String &p_title, WindowID p_window
 	WindowData &wd = windows[p_window];
 
 	[wd.window_object setTitle:[NSString stringWithUTF8String:p_title.utf8().get_data()]];
+}
+
+void DisplayServerOSX::window_set_mouse_passthrough(const Vector<Vector2> &p_region, WindowID p_window) {
+	_THREAD_SAFE_METHOD_
+
+	ERR_FAIL_COND(!windows.has(p_window));
+	WindowData &wd = windows[p_window];
+
+	wd.mpath = p_region;
 }
 
 void DisplayServerOSX::window_set_rect_changed_callback(const Callable &p_callable, WindowID p_window) {
@@ -3352,6 +3428,26 @@ void DisplayServerOSX::process_events() {
 		Input::get_singleton()->flush_accumulated_events();
 	}
 
+	for (Map<WindowID, WindowData>::Element *E = windows.front(); E; E = E->next()) {
+		WindowData &wd = E->get();
+		if (wd.mpath.size() > 0) {
+			const Vector2 mpos = _get_mouse_pos(wd, [wd.window_object mouseLocationOutsideOfEventStream]);
+			if (Geometry2D::is_point_in_polygon(mpos, wd.mpath)) {
+				if ([wd.window_object ignoresMouseEvents]) {
+					[wd.window_object setIgnoresMouseEvents:NO];
+				}
+			} else {
+				if (![wd.window_object ignoresMouseEvents]) {
+					[wd.window_object setIgnoresMouseEvents:YES];
+				}
+			}
+		} else {
+			if ([wd.window_object ignoresMouseEvents]) {
+				[wd.window_object setIgnoresMouseEvents:NO];
+			}
+		}
+	}
+
 	[autoreleasePool drain];
 	autoreleasePool = [[NSAutoreleasePool alloc] init];
 }
@@ -3787,7 +3883,7 @@ DisplayServerOSX::DisplayServerOSX(const String &p_rendering_driver, WindowMode 
 		rendering_device_vulkan = memnew(RenderingDeviceVulkan);
 		rendering_device_vulkan->initialize(context_vulkan);
 
-		RasterizerRD::make_current();
+		RendererCompositorRD::make_current();
 	}
 #endif
 
@@ -3804,9 +3900,11 @@ DisplayServerOSX::~DisplayServerOSX() {
 	}
 
 	//destroy all windows
-	for (Map<WindowID, WindowData>::Element *E = windows.front(); E; E = E->next()) {
-		[E->get().window_object setContentView:nil];
-		[E->get().window_object close];
+	for (Map<WindowID, WindowData>::Element *E = windows.front(); E;) {
+		Map<WindowID, WindowData>::Element *F = E;
+		E = E->next();
+		[F->get().window_object setContentView:nil];
+		[F->get().window_object close];
 	}
 
 	//destroy drivers

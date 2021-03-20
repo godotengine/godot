@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -31,7 +31,7 @@
 #include "gdscript_cache.h"
 
 #include "core/os/file_access.h"
-#include "core/vector.h"
+#include "core/templates/vector.h"
 #include "gdscript.h"
 #include "gdscript_analyzer.h"
 #include "gdscript_parser.h"
@@ -85,6 +85,17 @@ Error GDScriptParserRef::raise_status(Status p_new_status) {
 				return result;
 			}
 		}
+		if (result != OK) {
+			if (parser != nullptr) {
+				memdelete(parser);
+				parser = nullptr;
+			}
+			if (analyzer != nullptr) {
+				memdelete(analyzer);
+				analyzer = nullptr;
+			}
+			return result;
+		}
 	}
 
 	return result;
@@ -97,33 +108,36 @@ GDScriptParserRef::~GDScriptParserRef() {
 	if (analyzer != nullptr) {
 		memdelete(analyzer);
 	}
-	MutexLock(GDScriptCache::singleton->lock);
+	MutexLock lock(GDScriptCache::singleton->lock);
 	GDScriptCache::singleton->parser_map.erase(path);
 }
 
 GDScriptCache *GDScriptCache::singleton = nullptr;
 
 void GDScriptCache::remove_script(const String &p_path) {
-	MutexLock(singleton->lock);
+	MutexLock lock(singleton->lock);
 	singleton->shallow_gdscript_cache.erase(p_path);
 	singleton->full_gdscript_cache.erase(p_path);
 }
 
 Ref<GDScriptParserRef> GDScriptCache::get_parser(const String &p_path, GDScriptParserRef::Status p_status, Error &r_error, const String &p_owner) {
-	MutexLock(singleton->lock);
+	MutexLock lock(singleton->lock);
 	Ref<GDScriptParserRef> ref;
 	if (p_owner != String()) {
 		singleton->dependencies[p_owner].insert(p_path);
 	}
 	if (singleton->parser_map.has(p_path)) {
-		ref = singleton->parser_map[p_path];
+		ref = Ref<GDScriptParserRef>(singleton->parser_map[p_path]);
 	} else {
+		if (!FileAccess::exists(p_path)) {
+			r_error = ERR_FILE_NOT_FOUND;
+			return ref;
+		}
 		GDScriptParser *parser = memnew(GDScriptParser);
 		ref.instance();
 		ref->parser = parser;
 		ref->path = p_path;
-		singleton->parser_map[p_path] = ref;
-		ref->unreference();
+		singleton->parser_map[p_path] = ref.ptr();
 	}
 
 	r_error = ref->raise_status(p_status);
@@ -154,7 +168,7 @@ String GDScriptCache::get_source_code(const String &p_path) {
 }
 
 Ref<GDScript> GDScriptCache::get_shallow_script(const String &p_path, const String &p_owner) {
-	MutexLock(singleton->lock);
+	MutexLock lock(singleton->lock);
 	if (p_owner != String()) {
 		singleton->dependencies[p_owner].insert(p_path);
 	}
@@ -171,15 +185,12 @@ Ref<GDScript> GDScriptCache::get_shallow_script(const String &p_path, const Stri
 	script->set_script_path(p_path);
 	script->load_source_code(p_path);
 
-	singleton->shallow_gdscript_cache[p_path] = script;
-	// The one in cache is not a hard reference: if the script dies somewhere else it's fine.
-	// Scripts remove themselves from cache when they die.
-	script->unreference();
+	singleton->shallow_gdscript_cache[p_path] = script.ptr();
 	return script;
 }
 
 Ref<GDScript> GDScriptCache::get_full_script(const String &p_path, Error &r_error, const String &p_owner) {
-	MutexLock(singleton->lock);
+	MutexLock lock(singleton->lock);
 
 	if (p_owner != String()) {
 		singleton->dependencies[p_owner].insert(p_path);
@@ -202,7 +213,7 @@ Ref<GDScript> GDScriptCache::get_full_script(const String &p_path, Error &r_erro
 		return script;
 	}
 
-	singleton->full_gdscript_cache[p_path] = script;
+	singleton->full_gdscript_cache[p_path] = script.ptr();
 	singleton->shallow_gdscript_cache.erase(p_path);
 
 	return script;
@@ -211,7 +222,7 @@ Ref<GDScript> GDScriptCache::get_full_script(const String &p_path, Error &r_erro
 Error GDScriptCache::finish_compiling(const String &p_owner) {
 	// Mark this as compiled.
 	Ref<GDScript> script = get_shallow_script(p_owner);
-	singleton->full_gdscript_cache[p_owner] = script;
+	singleton->full_gdscript_cache[p_owner] = script.ptr();
 	singleton->shallow_gdscript_cache.erase(p_owner);
 
 	Set<String> depends = singleton->dependencies[p_owner];

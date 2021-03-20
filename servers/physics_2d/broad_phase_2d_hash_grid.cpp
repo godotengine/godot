@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -30,7 +30,7 @@
 
 #include "broad_phase_2d_hash_grid.h"
 #include "collision_object_2d_sw.h"
-#include "core/project_settings.h"
+#include "core/config/project_settings.h"
 
 #define LARGE_ELEMENT_FI 1.01239812
 
@@ -261,7 +261,7 @@ void BroadPhase2DHashGrid::_exit_grid(Element *p_elem, const Rect2 &p_rect, bool
 				}
 			}
 
-			if (pb->object_set.empty() && pb->static_object_set.empty()) {
+			if (pb->object_set.is_empty() && pb->static_object_set.is_empty()) {
 				if (hash_table[idx] == pb) {
 					hash_table[idx] = pb->next;
 				} else {

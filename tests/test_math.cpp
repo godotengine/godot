@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -36,14 +36,14 @@
 #include "core/math/geometry_2d.h"
 #include "core/math/math_funcs.h"
 #include "core/math/transform.h"
-#include "core/method_ptrcall.h"
 #include "core/os/file_access.h"
 #include "core/os/keyboard.h"
 #include "core/os/os.h"
-#include "core/print_string.h"
-#include "core/ustring.h"
-#include "core/variant.h"
-#include "core/vmap.h"
+#include "core/string/print_string.h"
+#include "core/string/ustring.h"
+#include "core/templates/vmap.h"
+#include "core/variant/method_ptrcall.h"
+#include "core/variant/variant.h"
 #include "scene/main/node.h"
 #include "scene/resources/texture.h"
 #include "servers/rendering/shader_language.h"
@@ -162,7 +162,7 @@ class GetClassAndNamespace {
 				} break;
 				case '\'':
 				case '"': {
-					CharType begin_str = code[idx];
+					char32_t begin_str = code[idx];
 					idx++;
 					String tk_string = String();
 					while (true) {
@@ -176,13 +176,13 @@ class GetClassAndNamespace {
 						} else if (code[idx] == '\\') {
 							//escaped characters...
 							idx++;
-							CharType next = code[idx];
+							char32_t next = code[idx];
 							if (next == 0) {
 								error_str = "Unterminated String";
 								error = true;
 								return TK_ERROR;
 							}
-							CharType res = 0;
+							char32_t res = 0;
 
 							switch (next) {
 								case 'b':
@@ -241,7 +241,7 @@ class GetClassAndNamespace {
 
 					if (code[idx] == '-' || (code[idx] >= '0' && code[idx] <= '9')) {
 						//a number
-						const CharType *rptr;
+						const char32_t *rptr;
 						double number = String::to_float(&code[idx], &rptr);
 						idx += (rptr - &code[idx]);
 						value = number;
@@ -513,7 +513,7 @@ MainLoop *test() {
 
 	List<String> cmdlargs = OS::get_singleton()->get_cmdline_args();
 
-	if (cmdlargs.empty()) {
+	if (cmdlargs.is_empty()) {
 		//try editor!
 		return nullptr;
 	}
@@ -617,7 +617,7 @@ MainLoop *test() {
 
 	List<String> args;
 	args.push_back("-l");
-	Error err = OS::get_singleton()->execute("/bin/ls", args, true, nullptr, &ret);
+	Error err = OS::get_singleton()->execute("/bin/ls", args, &ret);
 	print_line("error: " + itos(err));
 	print_line(ret);
 
@@ -699,5 +699,4 @@ MainLoop *test() {
 
 	return nullptr;
 }
-
 } // namespace TestMath

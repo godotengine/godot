@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -113,7 +113,7 @@ btScalar GodotAllConvexResultCallback::addSingleResult(btCollisionWorld::LocalCo
 
 	PhysicsDirectSpaceState3D::ShapeResult &result = m_results[count];
 
-	result.shape = convexResult.m_localShapeInfo->m_triangleIndex; // "m_triangleIndex" Is a odd name but contains the compound shape ID
+	result.shape = convexResult.m_localShapeInfo->m_triangleIndex; // "m_triangleIndex" Is an odd name but contains the compound shape ID
 	result.rid = gObj->get_self();
 	result.collider_id = gObj->get_instance_id();
 	result.collider = result.collider_id.is_null() ? nullptr : ObjectDB::get_instance(result.collider_id);
@@ -176,7 +176,7 @@ bool GodotClosestConvexResultCallback::needsCollision(btBroadphaseProxy *proxy0)
 
 btScalar GodotClosestConvexResultCallback::addSingleResult(btCollisionWorld::LocalConvexResult &convexResult, bool normalInWorldSpace) {
 	if (convexResult.m_localShapeInfo) {
-		m_shapeId = convexResult.m_localShapeInfo->m_triangleIndex; // "m_triangleIndex" Is a odd name but contains the compound shape ID
+		m_shapeId = convexResult.m_localShapeInfo->m_triangleIndex; // "m_triangleIndex" Is an odd name but contains the compound shape ID
 	} else {
 		m_shapeId = 0;
 	}

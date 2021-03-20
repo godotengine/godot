@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -31,9 +31,9 @@
 #ifndef MESH_H
 #define MESH_H
 
+#include "core/io/resource.h"
 #include "core/math/face3.h"
 #include "core/math/triangle_mesh.h"
-#include "core/resource.h"
 #include "scene/resources/material.h"
 #include "scene/resources/shape_3d.h"
 #include "servers/rendering_server.h"
@@ -50,19 +50,24 @@ protected:
 
 public:
 	enum {
-
 		NO_INDEX_ARRAY = RenderingServer::NO_INDEX_ARRAY,
 		ARRAY_WEIGHTS_SIZE = RenderingServer::ARRAY_WEIGHTS_SIZE
 	};
-
+	enum BlendShapeMode {
+		BLEND_SHAPE_MODE_NORMALIZED = RS::BLEND_SHAPE_MODE_NORMALIZED,
+		BLEND_SHAPE_MODE_RELATIVE = RS::BLEND_SHAPE_MODE_RELATIVE,
+	};
 	enum ArrayType {
-
 		ARRAY_VERTEX = RenderingServer::ARRAY_VERTEX,
 		ARRAY_NORMAL = RenderingServer::ARRAY_NORMAL,
 		ARRAY_TANGENT = RenderingServer::ARRAY_TANGENT,
 		ARRAY_COLOR = RenderingServer::ARRAY_COLOR,
 		ARRAY_TEX_UV = RenderingServer::ARRAY_TEX_UV,
 		ARRAY_TEX_UV2 = RenderingServer::ARRAY_TEX_UV2,
+		ARRAY_CUSTOM0 = RenderingServer::ARRAY_CUSTOM0,
+		ARRAY_CUSTOM1 = RenderingServer::ARRAY_CUSTOM1,
+		ARRAY_CUSTOM2 = RenderingServer::ARRAY_CUSTOM2,
+		ARRAY_CUSTOM3 = RenderingServer::ARRAY_CUSTOM3,
 		ARRAY_BONES = RenderingServer::ARRAY_BONES,
 		ARRAY_WEIGHTS = RenderingServer::ARRAY_WEIGHTS,
 		ARRAY_INDEX = RenderingServer::ARRAY_INDEX,
@@ -70,30 +75,47 @@ public:
 
 	};
 
+	enum ArrayCustomFormat {
+		ARRAY_CUSTOM_RGBA8_UNORM,
+		ARRAY_CUSTOM_RGBA8_SNORM,
+		ARRAY_CUSTOM_RG_HALF,
+		ARRAY_CUSTOM_RGBA_HALF,
+		ARRAY_CUSTOM_R_FLOAT,
+		ARRAY_CUSTOM_RG_FLOAT,
+		ARRAY_CUSTOM_RGB_FLOAT,
+		ARRAY_CUSTOM_RGBA_FLOAT,
+		ARRAY_CUSTOM_MAX
+	};
+
 	enum ArrayFormat {
-		/* ARRAY FORMAT FLAGS */
-		ARRAY_FORMAT_VERTEX = 1 << ARRAY_VERTEX, // mandatory
-		ARRAY_FORMAT_NORMAL = 1 << ARRAY_NORMAL,
-		ARRAY_FORMAT_TANGENT = 1 << ARRAY_TANGENT,
-		ARRAY_FORMAT_COLOR = 1 << ARRAY_COLOR,
-		ARRAY_FORMAT_TEX_UV = 1 << ARRAY_TEX_UV,
-		ARRAY_FORMAT_TEX_UV2 = 1 << ARRAY_TEX_UV2,
-		ARRAY_FORMAT_BONES = 1 << ARRAY_BONES,
-		ARRAY_FORMAT_WEIGHTS = 1 << ARRAY_WEIGHTS,
-		ARRAY_FORMAT_INDEX = 1 << ARRAY_INDEX,
+		ARRAY_FORMAT_VERTEX = RS::ARRAY_FORMAT_VERTEX,
+		ARRAY_FORMAT_NORMAL = RS::ARRAY_FORMAT_NORMAL,
+		ARRAY_FORMAT_TANGENT = RS::ARRAY_FORMAT_TANGENT,
+		ARRAY_FORMAT_COLOR = RS::ARRAY_FORMAT_COLOR,
+		ARRAY_FORMAT_TEX_UV = RS::ARRAY_FORMAT_TEX_UV,
+		ARRAY_FORMAT_TEX_UV2 = RS::ARRAY_FORMAT_TEX_UV2,
+		ARRAY_FORMAT_CUSTOM0 = RS::ARRAY_FORMAT_CUSTOM0,
+		ARRAY_FORMAT_CUSTOM1 = RS::ARRAY_FORMAT_CUSTOM1,
+		ARRAY_FORMAT_CUSTOM2 = RS::ARRAY_FORMAT_CUSTOM2,
+		ARRAY_FORMAT_CUSTOM3 = RS::ARRAY_FORMAT_CUSTOM3,
+		ARRAY_FORMAT_BONES = RS::ARRAY_FORMAT_BONES,
+		ARRAY_FORMAT_WEIGHTS = RS::ARRAY_FORMAT_WEIGHTS,
+		ARRAY_FORMAT_INDEX = RS::ARRAY_FORMAT_INDEX,
 
-		ARRAY_COMPRESS_BASE = (ARRAY_INDEX + 1),
-		ARRAY_COMPRESS_NORMAL = 1 << (ARRAY_NORMAL + ARRAY_COMPRESS_BASE),
-		ARRAY_COMPRESS_TANGENT = 1 << (ARRAY_TANGENT + ARRAY_COMPRESS_BASE),
-		ARRAY_COMPRESS_COLOR = 1 << (ARRAY_COLOR + ARRAY_COMPRESS_BASE),
-		ARRAY_COMPRESS_TEX_UV = 1 << (ARRAY_TEX_UV + ARRAY_COMPRESS_BASE),
-		ARRAY_COMPRESS_TEX_UV2 = 1 << (ARRAY_TEX_UV2 + ARRAY_COMPRESS_BASE),
-		ARRAY_COMPRESS_INDEX = 1 << (ARRAY_INDEX + ARRAY_COMPRESS_BASE),
+		ARRAY_FORMAT_BLEND_SHAPE_MASK = RS::ARRAY_FORMAT_BLEND_SHAPE_MASK,
 
-		ARRAY_FLAG_USE_2D_VERTICES = ARRAY_COMPRESS_INDEX << 1,
-		ARRAY_FLAG_USE_DYNAMIC_UPDATE = ARRAY_COMPRESS_INDEX << 3,
+		ARRAY_FORMAT_CUSTOM_BASE = RS::ARRAY_FORMAT_CUSTOM_BASE,
+		ARRAY_FORMAT_CUSTOM0_SHIFT = RS::ARRAY_FORMAT_CUSTOM0_SHIFT,
+		ARRAY_FORMAT_CUSTOM1_SHIFT = RS::ARRAY_FORMAT_CUSTOM1_SHIFT,
+		ARRAY_FORMAT_CUSTOM2_SHIFT = RS::ARRAY_FORMAT_CUSTOM2_SHIFT,
+		ARRAY_FORMAT_CUSTOM3_SHIFT = RS::ARRAY_FORMAT_CUSTOM3_SHIFT,
 
-		ARRAY_COMPRESS_DEFAULT = ARRAY_COMPRESS_NORMAL | ARRAY_COMPRESS_TANGENT | ARRAY_COMPRESS_COLOR | ARRAY_COMPRESS_TEX_UV | ARRAY_COMPRESS_TEX_UV2
+		ARRAY_FORMAT_CUSTOM_MASK = RS::ARRAY_FORMAT_CUSTOM_MASK,
+		ARRAY_COMPRESS_FLAGS_BASE = RS::ARRAY_COMPRESS_FLAGS_BASE,
+
+		ARRAY_FLAG_USE_2D_VERTICES = RS::ARRAY_FLAG_USE_2D_VERTICES,
+		ARRAY_FLAG_USE_DYNAMIC_UPDATE = RS::ARRAY_FLAG_USE_DYNAMIC_UPDATE,
+		ARRAY_FLAG_USE_8_BONE_WEIGHTS = RS::ARRAY_FLAG_USE_8_BONE_WEIGHTS,
 
 	};
 
@@ -104,12 +126,6 @@ public:
 		PRIMITIVE_TRIANGLES = RenderingServer::PRIMITIVE_TRIANGLES,
 		PRIMITIVE_TRIANGLE_STRIP = RenderingServer::PRIMITIVE_TRIANGLE_STRIP,
 		PRIMITIVE_MAX = RenderingServer::PRIMITIVE_MAX,
-	};
-
-	enum BlendShapeMode {
-
-		BLEND_SHAPE_MODE_NORMALIZED = RS::BLEND_SHAPE_MODE_NORMALIZED,
-		BLEND_SHAPE_MODE_RELATIVE = RS::BLEND_SHAPE_MODE_RELATIVE,
 	};
 
 	virtual int get_surface_count() const = 0;
@@ -155,25 +171,29 @@ class ArrayMesh : public Mesh {
 	GDCLASS(ArrayMesh, Mesh);
 	RES_BASE_EXTENSION("mesh");
 
+	PackedStringArray _get_blend_shape_names() const;
+	void _set_blend_shape_names(const PackedStringArray &p_names);
+
 	Array _get_surfaces() const;
 	void _set_surfaces(const Array &p_data);
+	Ref<ArrayMesh> shadow_mesh;
 
 private:
 	struct Surface {
-		uint32_t format;
-		int array_length;
-		int index_array_length;
-		PrimitiveType primitive;
+		uint32_t format = 0;
+		int array_length = 0;
+		int index_array_length = 0;
+		PrimitiveType primitive = PrimitiveType::PRIMITIVE_MAX;
 
 		String name;
 		AABB aabb;
 		Ref<Material> material;
-		bool is_2d;
+		bool is_2d = false;
 	};
 	Vector<Surface> surfaces;
 	mutable RID mesh;
 	AABB aabb;
-	BlendShapeMode blend_shape_mode;
+	BlendShapeMode blend_shape_mode = BLEND_SHAPE_MODE_RELATIVE;
 	Vector<StringName> blend_shapes;
 	AABB custom_aabb;
 
@@ -187,12 +207,14 @@ protected:
 	bool _get(const StringName &p_name, Variant &r_ret) const;
 	void _get_property_list(List<PropertyInfo> *p_list) const;
 
+	virtual void reset_state() override;
+
 	static void _bind_methods();
 
 public:
-	void add_surface_from_arrays(PrimitiveType p_primitive, const Array &p_arrays, const Array &p_blend_shapes = Array(), const Dictionary &p_lods = Dictionary(), uint32_t p_flags = ARRAY_COMPRESS_DEFAULT);
+	void add_surface_from_arrays(PrimitiveType p_primitive, const Array &p_arrays, const Array &p_blend_shapes = Array(), const Dictionary &p_lods = Dictionary(), uint32_t p_flags = 0);
 
-	void add_surface(uint32_t p_format, PrimitiveType p_primitive, const Vector<uint8_t> &p_array, int p_vertex_count, const Vector<uint8_t> &p_index_array, int p_index_count, const AABB &p_aabb, const Vector<Vector<uint8_t>> &p_blend_shapes = Vector<Vector<uint8_t>>(), const Vector<AABB> &p_bone_aabbs = Vector<AABB>(), const Vector<RS::SurfaceData::LOD> &p_lods = Vector<RS::SurfaceData::LOD>());
+	void add_surface(uint32_t p_format, PrimitiveType p_primitive, const Vector<uint8_t> &p_array, const Vector<uint8_t> &p_attribute_array, const Vector<uint8_t> &p_skin_array, int p_vertex_count, const Vector<uint8_t> &p_index_array, int p_index_count, const AABB &p_aabb, const Vector<uint8_t> &p_blend_shape_data = Vector<uint8_t>(), const Vector<AABB> &p_bone_aabbs = Vector<AABB>(), const Vector<RS::SurfaceData::LOD> &p_lods = Vector<RS::SurfaceData::LOD>());
 
 	Array surface_get_arrays(int p_surface) const override;
 	Array surface_get_blend_shape_arrays(int p_surface) const override;
@@ -209,7 +231,6 @@ public:
 	void surface_update_region(int p_surface, int p_offset, const Vector<uint8_t> &p_data);
 
 	int get_surface_count() const override;
-	void surface_remove(int p_idx);
 
 	void clear_surfaces();
 
@@ -234,12 +255,15 @@ public:
 	AABB get_aabb() const override;
 	virtual RID get_rid() const override;
 
-	void regen_normalmaps();
+	void regen_normal_maps();
 
 	Error lightmap_unwrap(const Transform &p_base_transform = Transform(), float p_texel_size = 0.05);
 	Error lightmap_unwrap_cached(int *&r_cache_data, unsigned int &r_cache_size, bool &r_used_cache, const Transform &p_base_transform = Transform(), float p_texel_size = 0.05);
 
 	virtual void reload_from_file() override;
+
+	void set_shadow_mesh(const Ref<ArrayMesh> &p_mesh);
+	Ref<ArrayMesh> get_shadow_mesh() const;
 
 	ArrayMesh();
 
@@ -248,6 +272,7 @@ public:
 
 VARIANT_ENUM_CAST(Mesh::ArrayType);
 VARIANT_ENUM_CAST(Mesh::ArrayFormat);
+VARIANT_ENUM_CAST(Mesh::ArrayCustomFormat);
 VARIANT_ENUM_CAST(Mesh::PrimitiveType);
 VARIANT_ENUM_CAST(Mesh::BlendShapeMode);
 

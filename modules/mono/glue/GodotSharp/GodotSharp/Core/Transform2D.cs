@@ -221,8 +221,7 @@ namespace Godot
 
             real_t dot = v1.Dot(v2);
 
-            // Clamp dot to [-1, 1]
-            dot = dot < -1.0f ? -1.0f : (dot > 1.0f ? 1.0f : dot);
+            dot = Mathf.Clamp(dot, -1.0f, 1.0f);
 
             Vector2 v;
 

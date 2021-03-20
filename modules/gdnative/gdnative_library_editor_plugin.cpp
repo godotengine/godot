@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -65,7 +65,7 @@ void GDNativeLibraryEditor::_update_tree() {
 			continue;
 		}
 		Map<String, NativePlatformConfig>::Element *E = platforms.find(filter_list->get_item_metadata(i));
-		if (!text.empty()) {
+		if (!text.is_empty()) {
 			text += ", ";
 		}
 		text += E->get().name;
@@ -91,7 +91,7 @@ void GDNativeLibraryEditor::_update_tree() {
 
 			bit->add_button(1, get_theme_icon("Folder", "EditorIcons"), BUTTON_SELECT_LIBRARY, false, TTR("Select the dynamic library for this entry"));
 			String file = entry_configs[target].library;
-			if (!file.empty()) {
+			if (!file.is_empty()) {
 				bit->add_button(1, get_theme_icon("Clear", "EditorIcons"), BUTTON_CLEAR_LIBRARY, false, TTR("Clear"));
 			}
 			bit->set_text(1, file);
@@ -195,7 +195,7 @@ void GDNativeLibraryEditor::_on_item_activated() {
 void GDNativeLibraryEditor::_on_create_new_entry() {
 	String platform = new_architecture_dialog->get_meta("platform");
 	String entry = new_architecture_input->get_text().strip_edges();
-	if (!entry.empty()) {
+	if (!entry.is_empty()) {
 		platforms[platform].entries.push_back(entry);
 		_update_tree();
 	}
@@ -248,7 +248,7 @@ void GDNativeLibraryEditor::_translate_to_config_file() {
 		for (Map<String, NativePlatformConfig>::Element *E = platforms.front(); E; E = E->next()) {
 			for (List<String>::Element *it = E->value().entries.front(); it; it = it->next()) {
 				String target = E->key() + "." + it->get();
-				if (entry_configs[target].library.empty() && entry_configs[target].dependencies.empty()) {
+				if (entry_configs[target].library.is_empty() && entry_configs[target].dependencies.is_empty()) {
 					continue;
 				}
 
@@ -257,7 +257,7 @@ void GDNativeLibraryEditor::_translate_to_config_file() {
 			}
 		}
 
-		library->_change_notify();
+		library->notify_property_list_changed();
 	}
 }
 
@@ -308,16 +308,17 @@ GDNativeLibraryEditor::GDNativeLibraryEditor() {
 		platform_android.library_extension = "*.so";
 		platforms["Android"] = platform_android;
 
-		//		TODO: Javascript platform is not supported yet
-		//		NativePlatformConfig platform_html5;
-		//		platform_html5.name = "HTML5";
-		//		platform_html5.library_extension = "*.wasm";
-		//		platforms["Javascript"] = platform_html5;
+		NativePlatformConfig platform_html5;
+		platform_html5.name = "HTML5";
+		platform_html5.entries.push_back("wasm32");
+		platform_html5.library_extension = "*.wasm";
+		platforms["HTML5"] = platform_html5;
 
 		NativePlatformConfig platform_ios;
 		platform_ios.name = "iOS";
 		platform_ios.entries.push_back("armv7");
 		platform_ios.entries.push_back("arm64");
+		platform_ios.entries.push_back("x86_64");
 		// iOS can use both Static and Dynamic libraries.
 		// Frameworks is actually a folder with files.
 		platform_ios.library_extension = "*.framework; Framework, *.xcframework; Binary Framework, *.a; Static Library, *.dylib; Dynamic Library";
@@ -326,7 +327,7 @@ GDNativeLibraryEditor::GDNativeLibraryEditor() {
 
 	VBoxContainer *container = memnew(VBoxContainer);
 	add_child(container);
-	container->set_anchors_and_margins_preset(PRESET_WIDE);
+	container->set_anchors_and_offsets_preset(PRESET_WIDE);
 
 	HBoxContainer *hbox = memnew(HBoxContainer);
 	container->add_child(hbox);
@@ -380,8 +381,8 @@ GDNativeLibraryEditor::GDNativeLibraryEditor() {
 	new_architecture_input = memnew(LineEdit);
 	new_architecture_dialog->add_child(new_architecture_input);
 	//	new_architecture_dialog->set_custom_minimum_size(Vector2(300, 80) * EDSCALE);
-	new_architecture_input->set_anchors_and_margins_preset(PRESET_HCENTER_WIDE, PRESET_MODE_MINSIZE, 5 * EDSCALE);
-	new_architecture_dialog->get_ok()->connect("pressed", callable_mp(this, &GDNativeLibraryEditor::_on_create_new_entry));
+	new_architecture_input->set_anchors_and_offsets_preset(PRESET_HCENTER_WIDE, PRESET_MODE_MINSIZE, 5 * EDSCALE);
+	new_architecture_dialog->get_ok_button()->connect("pressed", callable_mp(this, &GDNativeLibraryEditor::_on_create_new_entry));
 }
 
 void GDNativeLibraryEditorPlugin::edit(Object *p_node) {

@@ -6,6 +6,9 @@ Import("env_modules")
 env_theora = env_modules.Clone()
 
 # Thirdparty source files
+
+thirdparty_obj = []
+
 if env["builtin_libtheora"]:
     thirdparty_dir = "#thirdparty/libtheora/"
     thirdparty_sources = [
@@ -80,7 +83,16 @@ if env["builtin_libtheora"]:
 
     env_thirdparty = env_theora.Clone()
     env_thirdparty.disable_warnings()
-    env_thirdparty.add_source_files(env.modules_sources, thirdparty_sources)
+    env_thirdparty.add_source_files(thirdparty_obj, thirdparty_sources)
+    env.modules_sources += thirdparty_obj
+
 
 # Godot source files
-env_theora.add_source_files(env.modules_sources, "*.cpp")
+
+module_obj = []
+
+env_theora.add_source_files(module_obj, "*.cpp")
+env.modules_sources += module_obj
+
+# Needed to force rebuilding the module files when the thirdparty library is updated.
+env.Depends(module_obj, thirdparty_obj)

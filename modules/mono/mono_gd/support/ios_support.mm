@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -72,7 +72,6 @@ void initialize() {
 
 void cleanup() {
 }
-
 } // namespace support
 } // namespace ios
 } // namespace gdmono
@@ -131,8 +130,7 @@ GD_PINVOKE_EXPORT void *xamarin_timezone_get_data(const char *p_name, uint32_t *
 	NSTimeZone *tz = nil;
 	if (p_name) {
 		NSString *n = [[NSString alloc] initWithUTF8String:p_name];
-		tz = [[[NSTimeZone alloc] initWithName:n] autorelease];
-		[n release];
+		tz = [[NSTimeZone alloc] initWithName:n];
 	} else {
 		tz = [NSTimeZone localTimeZone];
 	}

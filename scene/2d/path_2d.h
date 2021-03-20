@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -63,14 +63,14 @@ class PathFollow2D : public Node2D {
 
 public:
 private:
-	Path2D *path;
-	real_t offset;
-	real_t h_offset;
-	real_t v_offset;
-	real_t lookahead;
-	bool cubic;
-	bool loop;
-	bool rotate;
+	Path2D *path = nullptr;
+	real_t offset = 0.0;
+	real_t h_offset = 0.0;
+	real_t v_offset = 0.0;
+	real_t lookahead = 4.0;
+	bool cubic = true;
+	bool loop = true;
+	bool rotates = true;
 
 	void _update_transform();
 
@@ -99,7 +99,7 @@ public:
 	void set_loop(bool p_loop);
 	bool has_loop() const;
 
-	void set_rotate(bool p_rotate);
+	void set_rotates(bool p_rotates);
 	bool is_rotating() const;
 
 	void set_cubic_interpolation(bool p_enable);
@@ -107,7 +107,7 @@ public:
 
 	String get_configuration_warning() const override;
 
-	PathFollow2D();
+	PathFollow2D() {}
 };
 
 #endif // PATH_2D_H

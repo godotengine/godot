@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -42,7 +42,7 @@ float ReflectionProbe::get_intensity() const {
 void ReflectionProbe::set_ambient_mode(AmbientMode p_mode) {
 	ambient_mode = p_mode;
 	RS::get_singleton()->reflection_probe_set_ambient_mode(probe, RS::ReflectionProbeAmbientMode(p_mode));
-	_change_notify();
+	notify_property_list_changed();
 }
 
 ReflectionProbe::AmbientMode ReflectionProbe::get_ambient_mode() const {
@@ -76,6 +76,15 @@ float ReflectionProbe::get_max_distance() const {
 	return max_distance;
 }
 
+void ReflectionProbe::set_lod_threshold(float p_pixels) {
+	lod_threshold = p_pixels;
+	RS::get_singleton()->reflection_probe_set_lod_threshold(probe, p_pixels);
+}
+
+float ReflectionProbe::get_lod_threshold() const {
+	return lod_threshold;
+}
+
 void ReflectionProbe::set_extents(const Vector3 &p_extents) {
 	extents = p_extents;
 
@@ -86,13 +95,12 @@ void ReflectionProbe::set_extents(const Vector3 &p_extents) {
 
 		if (extents[i] - 0.01 < ABS(origin_offset[i])) {
 			origin_offset[i] = SGN(origin_offset[i]) * (extents[i] - 0.01);
-			_change_notify("origin_offset");
 		}
 	}
 
 	RS::get_singleton()->reflection_probe_set_extents(probe, extents);
 	RS::get_singleton()->reflection_probe_set_origin_offset(probe, origin_offset);
-	_change_notify("extents");
+
 	update_gizmo();
 }
 
@@ -111,7 +119,6 @@ void ReflectionProbe::set_origin_offset(const Vector3 &p_extents) {
 	RS::get_singleton()->reflection_probe_set_extents(probe, extents);
 	RS::get_singleton()->reflection_probe_set_origin_offset(probe, origin_offset);
 
-	_change_notify("origin_offset");
 	update_gizmo();
 }
 
@@ -199,6 +206,9 @@ void ReflectionProbe::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_max_distance", "max_distance"), &ReflectionProbe::set_max_distance);
 	ClassDB::bind_method(D_METHOD("get_max_distance"), &ReflectionProbe::get_max_distance);
 
+	ClassDB::bind_method(D_METHOD("set_lod_threshold", "ratio"), &ReflectionProbe::set_lod_threshold);
+	ClassDB::bind_method(D_METHOD("get_lod_threshold"), &ReflectionProbe::get_lod_threshold);
+
 	ClassDB::bind_method(D_METHOD("set_extents", "extents"), &ReflectionProbe::set_extents);
 	ClassDB::bind_method(D_METHOD("get_extents"), &ReflectionProbe::get_extents);
 
@@ -229,6 +239,7 @@ void ReflectionProbe::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "interior"), "set_as_interior", "is_set_as_interior");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "enable_shadows"), "set_enable_shadows", "are_shadows_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "cull_mask", PROPERTY_HINT_LAYERS_3D_RENDER), "set_cull_mask", "get_cull_mask");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "lod_threshold", PROPERTY_HINT_RANGE, "0,1024,0.1"), "set_lod_threshold", "get_lod_threshold");
 
 	ADD_GROUP("Ambient", "ambient_");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "ambient_mode", PROPERTY_HINT_ENUM, "Disabled,Environment,ConstantColor"), "set_ambient_mode", "get_ambient_mode");
@@ -244,19 +255,6 @@ void ReflectionProbe::_bind_methods() {
 }
 
 ReflectionProbe::ReflectionProbe() {
-	intensity = 1.0;
-	ambient_mode = AMBIENT_ENVIRONMENT;
-	ambient_color = Color(0, 0, 0);
-	ambient_color_energy = 1.0;
-	max_distance = 0;
-	extents = Vector3(1, 1, 1);
-	origin_offset = Vector3(0, 0, 0);
-	box_projection = false;
-	interior = false;
-	enable_shadows = false;
-	cull_mask = (1 << 20) - 1;
-	update_mode = UPDATE_ONCE;
-
 	probe = RenderingServer::get_singleton()->reflection_probe_create();
 	RS::get_singleton()->instance_set_base(get_instance(), probe);
 	set_disable_scale(true);

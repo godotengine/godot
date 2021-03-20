@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -217,7 +217,7 @@ Ref<Mesh> MultiMesh::get_mesh() const {
 
 void MultiMesh::set_instance_count(int p_count) {
 	ERR_FAIL_COND(p_count < 0);
-	RenderingServer::get_singleton()->multimesh_allocate(multimesh, p_count, RS::MultimeshTransformFormat(transform_format), use_colors, use_custom_data);
+	RenderingServer::get_singleton()->multimesh_allocate_data(multimesh, p_count, RS::MultimeshTransformFormat(transform_format), use_colors, use_custom_data);
 	instance_count = p_count;
 }
 
@@ -361,11 +361,6 @@ void MultiMesh::_bind_methods() {
 
 MultiMesh::MultiMesh() {
 	multimesh = RenderingServer::get_singleton()->multimesh_create();
-	use_colors = false;
-	use_custom_data = false;
-	transform_format = TRANSFORM_2D;
-	visible_instance_count = -1;
-	instance_count = 0;
 }
 
 MultiMesh::~MultiMesh() {

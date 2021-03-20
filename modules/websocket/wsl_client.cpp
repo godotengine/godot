@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -31,8 +31,8 @@
 #ifndef JAVASCRIPT_ENABLED
 
 #include "wsl_client.h"
+#include "core/config/project_settings.h"
 #include "core/io/ip.h"
-#include "core/project_settings.h"
 
 void WSLClient::_do_handshake() {
 	if (_requested < _request.size() - 1) {
@@ -337,11 +337,6 @@ Error WSLClient::set_buffers(int p_in_buffer, int p_in_packets, int p_out_buffer
 }
 
 WSLClient::WSLClient() {
-	_in_buf_size = DEF_BUF_SHIFT;
-	_in_pkt_size = DEF_PKT_SHIFT;
-	_out_buf_size = DEF_BUF_SHIFT;
-	_out_pkt_size = DEF_PKT_SHIFT;
-
 	_peer.instance();
 	_tcp.instance();
 	disconnect_from_host();

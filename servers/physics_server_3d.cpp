@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -30,9 +30,8 @@
 
 #include "physics_server_3d.h"
 
-#include "core/method_bind_ext.gen.inc"
-#include "core/print_string.h"
-#include "core/project_settings.h"
+#include "core/config/project_settings.h"
+#include "core/string/print_string.h"
 
 PhysicsServer3D *PhysicsServer3D::singleton = nullptr;
 
@@ -43,13 +42,13 @@ void PhysicsDirectBodyState3D::integrate_forces() {
 
 	Vector3 av = get_angular_velocity();
 
-	float linear_damp = 1.0 - step * get_total_linear_damp();
+	real_t linear_damp = 1.0 - step * get_total_linear_damp();
 
 	if (linear_damp < 0) { // reached zero in the given time
 		linear_damp = 0;
 	}
 
-	float angular_damp = 1.0 - step * get_total_angular_damp();
+	real_t angular_damp = 1.0 - step * get_total_angular_damp();
 
 	if (angular_damp < 0) { // reached zero in the given time
 		angular_damp = 0;
@@ -129,7 +128,7 @@ void PhysicsDirectBodyState3D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "angular_velocity"), "set_angular_velocity", "get_angular_velocity");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "linear_velocity"), "set_linear_velocity", "get_linear_velocity");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "sleeping"), "set_sleep_state", "is_sleeping");
-	ADD_PROPERTY(PropertyInfo(Variant::TRANSFORM2D, "transform"), "set_transform", "get_transform");
+	ADD_PROPERTY(PropertyInfo(Variant::TRANSFORM, "transform"), "set_transform", "get_transform");
 }
 
 PhysicsDirectBodyState3D::PhysicsDirectBodyState3D() {}
@@ -165,11 +164,11 @@ Transform PhysicsShapeQueryParameters3D::get_transform() const {
 	return transform;
 }
 
-void PhysicsShapeQueryParameters3D::set_margin(float p_margin) {
+void PhysicsShapeQueryParameters3D::set_margin(real_t p_margin) {
 	margin = p_margin;
 }
 
-float PhysicsShapeQueryParameters3D::get_margin() const {
+real_t PhysicsShapeQueryParameters3D::get_margin() const {
 	return margin;
 }
 
@@ -239,10 +238,10 @@ void PhysicsShapeQueryParameters3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("is_collide_with_areas_enabled"), &PhysicsShapeQueryParameters3D::is_collide_with_areas_enabled);
 
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "collision_mask", PROPERTY_HINT_LAYERS_3D_PHYSICS), "set_collision_mask", "get_collision_mask");
-	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "exclude", PROPERTY_HINT_NONE, itos(Variant::_RID) + ":"), "set_exclude", "get_exclude");
+	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "exclude", PROPERTY_HINT_NONE, itos(Variant::RID) + ":"), "set_exclude", "get_exclude");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "margin", PROPERTY_HINT_RANGE, "0,100,0.01"), "set_margin", "get_margin");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "shape", PROPERTY_HINT_RESOURCE_TYPE, "Shape3D"), "set_shape", "get_shape");
-	ADD_PROPERTY(PropertyInfo(Variant::_RID, "shape_rid"), "set_shape_rid", "get_shape_rid");
+	ADD_PROPERTY(PropertyInfo(Variant::RID, "shape_rid"), "set_shape_rid", "get_shape_rid");
 	ADD_PROPERTY(PropertyInfo(Variant::TRANSFORM, "transform"), "set_transform", "get_transform");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "collide_with_bodies"), "set_collide_with_bodies", "is_collide_with_bodies_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "collide_with_areas"), "set_collide_with_areas", "is_collide_with_areas_enabled");
@@ -304,7 +303,7 @@ Array PhysicsDirectSpaceState3D::_intersect_shape(const Ref<PhysicsShapeQueryPar
 Array PhysicsDirectSpaceState3D::_cast_motion(const Ref<PhysicsShapeQueryParameters3D> &p_shape_query, const Vector3 &p_motion) {
 	ERR_FAIL_COND_V(!p_shape_query.is_valid(), Array());
 
-	float closest_safe = 1.0f, closest_unsafe = 1.0f;
+	real_t closest_safe = 1.0f, closest_unsafe = 1.0f;
 	bool res = cast_motion(p_shape_query->shape, p_shape_query->transform, p_motion, p_shape_query->margin, closest_safe, closest_unsafe, p_shape_query->exclude, p_shape_query->collision_mask, p_shape_query->collide_with_bodies, p_shape_query->collide_with_areas);
 	if (!res) {
 		return Array();
@@ -399,10 +398,47 @@ void PhysicsShapeQueryResult3D::_bind_methods() {
 
 ///////////////////////////////////////
 
+RID PhysicsServer3D::shape_create(ShapeType p_shape) {
+	switch (p_shape) {
+		case SHAPE_PLANE:
+			return plane_shape_create();
+		case SHAPE_RAY:
+			return ray_shape_create();
+		case SHAPE_SPHERE:
+			return sphere_shape_create();
+		case SHAPE_BOX:
+			return box_shape_create();
+		case SHAPE_CAPSULE:
+			return capsule_shape_create();
+		case SHAPE_CYLINDER:
+			return cylinder_shape_create();
+		case SHAPE_CONVEX_POLYGON:
+			return convex_polygon_shape_create();
+		case SHAPE_CONCAVE_POLYGON:
+			return concave_polygon_shape_create();
+		case SHAPE_HEIGHTMAP:
+			return heightmap_shape_create();
+		case SHAPE_CUSTOM:
+			return custom_shape_create();
+		default:
+			return RID();
+	}
+}
+
 void PhysicsServer3D::_bind_methods() {
 #ifndef _3D_DISABLED
 
-	ClassDB::bind_method(D_METHOD("shape_create", "type"), &PhysicsServer3D::shape_create);
+	ClassDB::bind_method(D_METHOD("plane_shape_create"), &PhysicsServer3D::plane_shape_create);
+	ClassDB::bind_method(D_METHOD("ray_shape_create"), &PhysicsServer3D::ray_shape_create);
+	ClassDB::bind_method(D_METHOD("sphere_shape_create"), &PhysicsServer3D::sphere_shape_create);
+	ClassDB::bind_method(D_METHOD("box_shape_create"), &PhysicsServer3D::box_shape_create);
+	ClassDB::bind_method(D_METHOD("capsule_shape_create"), &PhysicsServer3D::capsule_shape_create);
+	ClassDB::bind_method(D_METHOD("cylinder_shape_create"), &PhysicsServer3D::cylinder_shape_create);
+	ClassDB::bind_method(D_METHOD("convex_polygon_shape_create"), &PhysicsServer3D::convex_polygon_shape_create);
+	ClassDB::bind_method(D_METHOD("concave_polygon_shape_create"), &PhysicsServer3D::concave_polygon_shape_create);
+	ClassDB::bind_method(D_METHOD("heightmap_shape_create"), &PhysicsServer3D::heightmap_shape_create);
+	ClassDB::bind_method(D_METHOD("custom_shape_create"), &PhysicsServer3D::custom_shape_create);
+
 	ClassDB::bind_method(D_METHOD("shape_set_data", "shape", "data"), &PhysicsServer3D::shape_set_data);
 
 	ClassDB::bind_method(D_METHOD("shape_get_type", "shape"), &PhysicsServer3D::shape_get_type);
@@ -451,9 +487,8 @@ void PhysicsServer3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("area_set_monitorable", "area", "monitorable"), &PhysicsServer3D::area_set_monitorable);
 
 	ClassDB::bind_method(D_METHOD("area_set_ray_pickable", "area", "enable"), &PhysicsServer3D::area_set_ray_pickable);
-	ClassDB::bind_method(D_METHOD("area_is_ray_pickable", "area"), &PhysicsServer3D::area_is_ray_pickable);
 
-	ClassDB::bind_method(D_METHOD("body_create", "mode", "init_sleeping"), &PhysicsServer3D::body_create, DEFVAL(BODY_MODE_RIGID), DEFVAL(false));
+	ClassDB::bind_method(D_METHOD("body_create"), &PhysicsServer3D::body_create);
 
 	ClassDB::bind_method(D_METHOD("body_set_space", "body", "space"), &PhysicsServer3D::body_set_space);
 	ClassDB::bind_method(D_METHOD("body_get_space", "body"), &PhysicsServer3D::body_get_space);
@@ -518,19 +553,26 @@ void PhysicsServer3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("body_set_force_integration_callback", "body", "receiver", "method", "userdata"), &PhysicsServer3D::body_set_force_integration_callback, DEFVAL(Variant()));
 
 	ClassDB::bind_method(D_METHOD("body_set_ray_pickable", "body", "enable"), &PhysicsServer3D::body_set_ray_pickable);
-	ClassDB::bind_method(D_METHOD("body_is_ray_pickable", "body"), &PhysicsServer3D::body_is_ray_pickable);
 
 	ClassDB::bind_method(D_METHOD("body_get_direct_state", "body"), &PhysicsServer3D::body_get_direct_state);
 
+	/* SOFT BODY API */
+
+	ClassDB::bind_method(D_METHOD("soft_body_get_bounds", "body"), &PhysicsServer3D::soft_body_get_bounds);
+
 	/* JOINT API */
 
-	BIND_ENUM_CONSTANT(JOINT_PIN);
-	BIND_ENUM_CONSTANT(JOINT_HINGE);
-	BIND_ENUM_CONSTANT(JOINT_SLIDER);
-	BIND_ENUM_CONSTANT(JOINT_CONE_TWIST);
-	BIND_ENUM_CONSTANT(JOINT_6DOF);
+	ClassDB::bind_method(D_METHOD("joint_create"), &PhysicsServer3D::joint_create);
+	ClassDB::bind_method(D_METHOD("joint_clear", "joint"), &PhysicsServer3D::joint_clear);
 
-	ClassDB::bind_method(D_METHOD("joint_create_pin", "body_A", "local_A", "body_B", "local_B"), &PhysicsServer3D::joint_create_pin);
+	BIND_ENUM_CONSTANT(JOINT_TYPE_PIN);
+	BIND_ENUM_CONSTANT(JOINT_TYPE_HINGE);
+	BIND_ENUM_CONSTANT(JOINT_TYPE_SLIDER);
+	BIND_ENUM_CONSTANT(JOINT_TYPE_CONE_TWIST);
+	BIND_ENUM_CONSTANT(JOINT_TYPE_6DOF);
+	BIND_ENUM_CONSTANT(JOINT_TYPE_MAX);
+
+	ClassDB::bind_method(D_METHOD("joint_make_pin", "joint", "body_A", "local_A", "body_B", "local_B"), &PhysicsServer3D::joint_make_pin);
 	ClassDB::bind_method(D_METHOD("pin_joint_set_param", "joint", "param", "value"), &PhysicsServer3D::pin_joint_set_param);
 	ClassDB::bind_method(D_METHOD("pin_joint_get_param", "joint", "param"), &PhysicsServer3D::pin_joint_get_param);
 
@@ -556,7 +598,7 @@ void PhysicsServer3D::_bind_methods() {
 	BIND_ENUM_CONSTANT(HINGE_JOINT_FLAG_USE_LIMIT);
 	BIND_ENUM_CONSTANT(HINGE_JOINT_FLAG_ENABLE_MOTOR);
 
-	ClassDB::bind_method(D_METHOD("joint_create_hinge", "body_A", "hinge_A", "body_B", "hinge_B"), &PhysicsServer3D::joint_create_hinge);
+	ClassDB::bind_method(D_METHOD("joint_make_hinge", "joint", "body_A", "hinge_A", "body_B", "hinge_B"), &PhysicsServer3D::joint_make_hinge);
 
 	ClassDB::bind_method(D_METHOD("hinge_joint_set_param", "joint", "param", "value"), &PhysicsServer3D::hinge_joint_set_param);
 	ClassDB::bind_method(D_METHOD("hinge_joint_get_param", "joint", "param"), &PhysicsServer3D::hinge_joint_get_param);
@@ -564,7 +606,7 @@ void PhysicsServer3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("hinge_joint_set_flag", "joint", "flag", "enabled"), &PhysicsServer3D::hinge_joint_set_flag);
 	ClassDB::bind_method(D_METHOD("hinge_joint_get_flag", "joint", "flag"), &PhysicsServer3D::hinge_joint_get_flag);
 
-	ClassDB::bind_method(D_METHOD("joint_create_slider", "body_A", "local_ref_A", "body_B", "local_ref_B"), &PhysicsServer3D::joint_create_slider);
+	ClassDB::bind_method(D_METHOD("joint_make_slider", "joint", "body_A", "local_ref_A", "body_B", "local_ref_B"), &PhysicsServer3D::joint_make_slider);
 
 	ClassDB::bind_method(D_METHOD("slider_joint_set_param", "joint", "param", "value"), &PhysicsServer3D::slider_joint_set_param);
 	ClassDB::bind_method(D_METHOD("slider_joint_get_param", "joint", "param"), &PhysicsServer3D::slider_joint_get_param);
@@ -594,7 +636,7 @@ void PhysicsServer3D::_bind_methods() {
 	BIND_ENUM_CONSTANT(SLIDER_JOINT_ANGULAR_ORTHOGONAL_DAMPING);
 	BIND_ENUM_CONSTANT(SLIDER_JOINT_MAX);
 
-	ClassDB::bind_method(D_METHOD("joint_create_cone_twist", "body_A", "local_ref_A", "body_B", "local_ref_B"), &PhysicsServer3D::joint_create_cone_twist);
+	ClassDB::bind_method(D_METHOD("joint_make_cone_twist", "joint", "body_A", "local_ref_A", "body_B", "local_ref_B"), &PhysicsServer3D::joint_make_cone_twist);
 
 	ClassDB::bind_method(D_METHOD("cone_twist_joint_set_param", "joint", "param", "value"), &PhysicsServer3D::cone_twist_joint_set_param);
 	ClassDB::bind_method(D_METHOD("cone_twist_joint_get_param", "joint", "param"), &PhysicsServer3D::cone_twist_joint_get_param);
@@ -632,7 +674,7 @@ void PhysicsServer3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("joint_set_solver_priority", "joint", "priority"), &PhysicsServer3D::joint_set_solver_priority);
 	ClassDB::bind_method(D_METHOD("joint_get_solver_priority", "joint"), &PhysicsServer3D::joint_get_solver_priority);
 
-	ClassDB::bind_method(D_METHOD("joint_create_generic_6dof", "body_A", "local_ref_A", "body_B", "local_ref_B"), &PhysicsServer3D::joint_create_generic_6dof);
+	ClassDB::bind_method(D_METHOD("joint_make_generic_6dof", "joint", "body_A", "local_ref_A", "body_B", "local_ref_B"), &PhysicsServer3D::joint_make_generic_6dof);
 
 	ClassDB::bind_method(D_METHOD("generic_6dof_joint_set_param", "joint", "axis", "param", "value"), &PhysicsServer3D::generic_6dof_joint_set_param);
 	ClassDB::bind_method(D_METHOD("generic_6dof_joint_get_param", "joint", "axis", "param"), &PhysicsServer3D::generic_6dof_joint_get_param);
@@ -655,6 +697,7 @@ void PhysicsServer3D::_bind_methods() {
 	BIND_ENUM_CONSTANT(SHAPE_CONVEX_POLYGON);
 	BIND_ENUM_CONSTANT(SHAPE_CONCAVE_POLYGON);
 	BIND_ENUM_CONSTANT(SHAPE_HEIGHTMAP);
+	BIND_ENUM_CONSTANT(SHAPE_SOFT_BODY);
 	BIND_ENUM_CONSTANT(SHAPE_CUSTOM);
 
 	BIND_ENUM_CONSTANT(AREA_PARAM_GRAVITY);
@@ -719,7 +762,6 @@ void PhysicsServer3D::_bind_methods() {
 }
 
 PhysicsServer3D::PhysicsServer3D() {
-	ERR_FAIL_COND(singleton != nullptr);
 	singleton = this;
 }
 

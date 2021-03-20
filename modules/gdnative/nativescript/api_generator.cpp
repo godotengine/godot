@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -32,11 +32,12 @@
 
 #ifdef TOOLS_ENABLED
 
-#include "core/class_db.h"
-#include "core/engine.h"
-#include "core/global_constants.h"
+#include "core/config/engine.h"
+#include "core/core_constants.h"
+#include "core/object/class_db.h"
 #include "core/os/file_access.h"
-#include "core/pair.h"
+#include "core/string/string_builder.h"
+#include "core/templates/pair.h"
 
 // helper stuff
 
@@ -65,14 +66,15 @@ struct MethodAPI {
 
 	Map<int, Variant> default_arguments;
 
-	int argument_count;
-	bool has_varargs;
-	bool is_editor;
-	bool is_noscript;
-	bool is_const;
-	bool is_reverse;
-	bool is_virtual;
-	bool is_from_script;
+	int argument_count = 0;
+	bool has_varargs = false;
+	bool is_editor = false;
+	bool is_noscript = false;
+	bool is_const = false;
+	bool is_static = false; // For builtin types.
+	bool is_reverse = false;
+	bool is_virtual = false;
+	bool is_from_script = false;
 };
 
 struct PropertyAPI {
@@ -80,12 +82,14 @@ struct PropertyAPI {
 	String getter;
 	String setter;
 	String type;
-	int index;
+	int index = 0;
 };
 
 struct ConstantAPI {
 	String constant_name;
-	int constant_value;
+	int constant_value = 0;
+	Variant builtin_constant_value; // For builtin types;
+	String builtin_constant_type; // For builtin types;
 };
 
 struct SignalAPI {
@@ -100,23 +104,35 @@ struct EnumAPI {
 	List<Pair<int, String>> values;
 };
 
+struct OperatorAPI { // For builtin types;
+	String name;
+	int oper = Variant::OP_MAX;
+	String other_type;
+	String return_type;
+};
+
 struct ClassAPI {
 	String class_name;
 	String super_class_name;
 
-	ClassDB::APIType api_type;
+	ClassDB::APIType api_type = ClassDB::API_NONE;
 
-	bool is_singleton;
+	bool is_singleton = false;
 	String singleton_name;
-	bool is_instanciable;
+	bool is_instantiable = false;
 	// @Unclear
-	bool is_reference;
+	bool is_reference = false;
+	bool has_indexing = false; // For builtin types.
+	String indexed_type; // For builtin types.
+	bool is_keyed = false; // For builtin types.
 
 	List<MethodAPI> methods;
+	List<MethodAPI> constructors; // For builtin types.
 	List<PropertyAPI> properties;
 	List<ConstantAPI> constants;
 	List<SignalAPI> signals_;
 	List<EnumAPI> enums;
+	List<OperatorAPI> operators; // For builtin types.
 };
 
 static String get_type_name(const PropertyInfo &info) {
@@ -127,7 +143,7 @@ static String get_type_name(const PropertyInfo &info) {
 		return info.class_name;
 	}
 	if (info.hint == PROPERTY_HINT_RESOURCE_TYPE) {
-		return info.hint_string;
+		return info.class_name;
 	}
 	if (info.type == Variant::NIL && (info.usage & PROPERTY_USAGE_NIL_IS_VARIANT)) {
 		return "Variant";
@@ -173,20 +189,41 @@ List<ClassAPI> generate_c_api_classes() {
 	ClassDB::get_class_list(&classes);
 	classes.sort_custom<StringName::AlphCompare>();
 
-	// Register global constants as a fake GlobalConstants singleton class
+	// Register global constants as a fake CoreConstants singleton class
 	{
 		ClassAPI global_constants_api;
-		global_constants_api.class_name = L"GlobalConstants";
+		global_constants_api.class_name = "CoreConstants";
 		global_constants_api.api_type = ClassDB::API_CORE;
 		global_constants_api.is_singleton = true;
-		global_constants_api.singleton_name = L"GlobalConstants";
-		global_constants_api.is_instanciable = false;
-		const int constants_count = GlobalConstants::get_global_constant_count();
+		global_constants_api.singleton_name = "CoreConstants";
+		global_constants_api.is_instantiable = false;
+		const int constants_count = CoreConstants::get_global_constant_count();
+
+		Map<StringName, EnumAPI> enum_api_map;
 		for (int i = 0; i < constants_count; ++i) {
-			ConstantAPI constant_api;
-			constant_api.constant_name = GlobalConstants::get_global_constant_name(i);
-			constant_api.constant_value = GlobalConstants::get_global_constant_value(i);
-			global_constants_api.constants.push_back(constant_api);
+			StringName enum_name = CoreConstants::get_global_constant_enum(i);
+			String name = String(CoreConstants::get_global_constant_name(i));
+			int value = CoreConstants::get_global_constant_value(i);
+
+			if (enum_name == StringName()) {
+				ConstantAPI constant_api;
+				constant_api.constant_name = name;
+				constant_api.constant_value = value;
+				global_constants_api.constants.push_back(constant_api);
+			} else {
+				EnumAPI enum_api;
+				if (enum_api_map.has(enum_name)) {
+					enum_api = enum_api_map[enum_name];
+				} else {
+					enum_api.name = String(enum_name);
+				}
+				enum_api.values.push_back(Pair(value, name));
+
+				enum_api_map[enum_name] = enum_api;
+			}
+		}
+		for (const Map<StringName, EnumAPI>::Element *E = enum_api_map.front(); E; E = E->next()) {
+			global_constants_api.enums.push_back(E->get());
 		}
 		global_constants_api.constants.sort_custom<ConstantAPIComparator>();
 		api.push_back(global_constants_api);
@@ -194,6 +231,10 @@ List<ClassAPI> generate_c_api_classes() {
 
 	for (List<StringName>::Element *e = classes.front(); e != nullptr; e = e->next()) {
 		StringName class_name = e->get();
+
+		if (!ClassDB::is_class_exposed(class_name)) {
+			continue;
+		}
 
 		ClassAPI class_api;
 		class_api.api_type = ClassDB::get_api_type(e->get());
@@ -209,7 +250,7 @@ List<ClassAPI> generate_c_api_classes() {
 				class_api.singleton_name = name;
 			}
 		}
-		class_api.is_instanciable = !class_api.is_singleton && ClassDB::can_instance(class_name);
+		class_api.is_instantiable = !class_api.is_singleton && ClassDB::can_instance(class_name);
 
 		{
 			List<StringName> inheriters;
@@ -290,12 +331,14 @@ List<ClassAPI> generate_c_api_classes() {
 					property_api.type = p->get().name.get_slice(":", 1);
 					property_api.name = p->get().name.get_slice(":", 0);
 				} else {
-					property_api.type = get_type_name(p->get());
+					MethodInfo minfo;
+					ClassDB::get_method_info(class_name, property_api.getter, &minfo, true, false);
+					property_api.type = get_type_name(minfo.return_val);
 				}
 
 				property_api.index = ClassDB::get_property_index(class_name, p->get().name);
 
-				if (!property_api.setter.empty() || !property_api.getter.empty()) {
+				if (!property_api.setter.is_empty() || !property_api.getter.is_empty()) {
 					class_api.properties.push_back(property_api);
 				}
 			}
@@ -352,7 +395,7 @@ List<ClassAPI> generate_c_api_classes() {
 						arg_type = arg_info.name.get_slice(":", 1);
 						arg_name = arg_info.name.get_slice(":", 0);
 					} else if (arg_info.hint == PROPERTY_HINT_RESOURCE_TYPE) {
-						arg_type = arg_info.hint_string;
+						arg_type = arg_info.class_name;
 					} else if (arg_info.type == Variant::NIL) {
 						arg_type = "Variant";
 					} else if (arg_info.type == Variant::OBJECT) {
@@ -402,6 +445,193 @@ List<ClassAPI> generate_c_api_classes() {
 }
 
 /*
+ * Reads the builtin Variant API to a list
+ */
+List<ClassAPI> generate_c_builtin_api_types() {
+	List<ClassAPI> api;
+
+	// Special class for the utility methods.
+	{
+		ClassAPI utility_api;
+		utility_api.class_name = "Utilities";
+		utility_api.is_instantiable = false;
+
+		List<StringName> utility_functions;
+		Variant::get_utility_function_list(&utility_functions);
+		for (const List<StringName>::Element *E = utility_functions.front(); E; E = E->next()) {
+			const StringName &function_name = E->get();
+
+			MethodAPI function_api;
+			function_api.method_name = function_name;
+			function_api.has_varargs = Variant::is_utility_function_vararg(function_name);
+			function_api.argument_count = function_api.has_varargs ? 0 : Variant::get_utility_function_argument_count(function_name);
+			function_api.is_const = Variant::get_utility_function_type(function_name) == Variant::UTILITY_FUNC_TYPE_MATH;
+
+			for (int i = 0; i < function_api.argument_count; i++) {
+				function_api.argument_names.push_back(Variant::get_utility_function_argument_name(function_name, i));
+				Variant::Type arg_type = Variant::get_utility_function_argument_type(function_name, i);
+				function_api.argument_types.push_back(arg_type == Variant::NIL ? "Variant" : Variant::get_type_name(arg_type));
+			}
+
+			if (Variant::has_utility_function_return_value(function_name)) {
+				Variant::Type ret_type = Variant::get_utility_function_return_type(function_name);
+				function_api.return_type = ret_type == Variant::NIL ? "Variant" : Variant::get_type_name(ret_type);
+			} else {
+				function_api.return_type = "void";
+			}
+
+			utility_api.methods.push_back(function_api);
+		}
+
+		api.push_back(utility_api);
+	}
+
+	for (int t = 0; t < Variant::VARIANT_MAX; t++) {
+		Variant::Type type = (Variant::Type)t;
+
+		ClassAPI class_api;
+		class_api.class_name = Variant::get_type_name(type);
+		class_api.is_instantiable = true;
+		class_api.has_indexing = Variant::has_indexing(type);
+		class_api.indexed_type = Variant::get_type_name(Variant::get_indexed_element_type(type));
+		class_api.is_keyed = Variant::is_keyed(type);
+		// Types that are passed by reference.
+		switch (type) {
+			case Variant::OBJECT:
+			case Variant::DICTIONARY:
+			case Variant::ARRAY:
+			case Variant::PACKED_BYTE_ARRAY:
+			case Variant::PACKED_INT32_ARRAY:
+			case Variant::PACKED_INT64_ARRAY:
+			case Variant::PACKED_FLOAT32_ARRAY:
+			case Variant::PACKED_FLOAT64_ARRAY:
+			case Variant::PACKED_STRING_ARRAY:
+			case Variant::PACKED_VECTOR2_ARRAY:
+			case Variant::PACKED_VECTOR3_ARRAY:
+			case Variant::PACKED_COLOR_ARRAY:
+				class_api.is_reference = true;
+				break;
+			default:
+				class_api.is_reference = false;
+				break;
+		}
+
+		// Methods.
+
+		List<StringName> methods;
+		Variant::get_builtin_method_list(type, &methods);
+		for (const List<StringName>::Element *E = methods.front(); E; E = E->next()) {
+			const StringName &method_name = E->get();
+
+			MethodAPI method_api;
+
+			method_api.method_name = method_name;
+			method_api.argument_count = Variant::get_builtin_method_argument_count(type, method_name);
+			method_api.has_varargs = Variant::is_builtin_method_vararg(type, method_name);
+			method_api.is_const = Variant::is_builtin_method_const(type, method_name);
+			method_api.is_static = Variant::is_builtin_method_static(type, method_name);
+
+			for (int i = 0; i < method_api.argument_count; i++) {
+				method_api.argument_names.push_back(Variant::get_builtin_method_argument_name(type, method_name, i));
+				Variant::Type arg_type = Variant::get_builtin_method_argument_type(type, method_name, i);
+				method_api.argument_types.push_back(arg_type == Variant::NIL ? "Variant" : Variant::get_type_name(arg_type));
+			}
+
+			Vector<Variant> default_arguments = Variant::get_builtin_method_default_arguments(type, method_name);
+
+			int default_start = method_api.argument_names.size() - default_arguments.size();
+
+			for (int i = 0; i < default_arguments.size(); i++) {
+				method_api.default_arguments[default_start + i] = default_arguments[i];
+			}
+
+			if (Variant::has_builtin_method_return_value(type, method_name)) {
+				Variant::Type ret_type = Variant::get_builtin_method_return_type(type, method_name);
+				method_api.return_type = ret_type == Variant::NIL ? "Variant" : Variant::get_type_name(ret_type);
+			} else {
+				method_api.return_type = "void";
+			}
+
+			class_api.methods.push_back(method_api);
+		}
+
+		// Constructors.
+
+		for (int c = 0; c < Variant::get_constructor_count(type); c++) {
+			MethodAPI constructor_api;
+
+			constructor_api.method_name = Variant::get_type_name(type);
+			constructor_api.argument_count = Variant::get_constructor_argument_count(type, c);
+			constructor_api.return_type = Variant::get_type_name(type);
+
+			for (int i = 0; i < constructor_api.argument_count; i++) {
+				constructor_api.argument_names.push_back(Variant::get_constructor_argument_name(type, c, i));
+				Variant::Type arg_type = Variant::get_constructor_argument_type(type, c, i);
+				constructor_api.argument_types.push_back(arg_type == Variant::NIL ? "Variant" : Variant::get_type_name(arg_type));
+			}
+
+			class_api.constructors.push_back(constructor_api);
+		}
+
+		// Constants.
+
+		List<StringName> constants;
+		Variant::get_constants_for_type(type, &constants);
+		for (const List<StringName>::Element *E = constants.front(); E; E = E->next()) {
+			const StringName &constant_name = E->get();
+			ConstantAPI constant_api;
+
+			constant_api.constant_name = constant_name;
+			constant_api.builtin_constant_value = Variant::get_constant_value(type, constant_name);
+			constant_api.builtin_constant_type = Variant::get_type_name(constant_api.builtin_constant_value.get_type());
+
+			class_api.constants.push_back(constant_api);
+		}
+
+		// Members.
+
+		List<StringName> members;
+		Variant::get_member_list(type, &members);
+		for (const List<StringName>::Element *E = members.front(); E; E = E->next()) {
+			const StringName &member_name = E->get();
+
+			PropertyAPI member_api;
+			member_api.name = member_name;
+			Variant::Type member_type = Variant::get_member_type(type, member_name);
+			member_api.type = member_type == Variant::NIL ? "Variant" : Variant::get_type_name(member_type);
+
+			class_api.properties.push_back(member_api);
+		}
+
+		// Operators.
+
+		for (int op = 0; op < Variant::OP_MAX; op++) {
+			Variant::Operator oper = (Variant::Operator)op;
+
+			for (int ot = 0; ot < Variant::VARIANT_MAX; ot++) {
+				Variant::Type other_type = (Variant::Type)ot;
+
+				if (!Variant::get_validated_operator_evaluator(oper, type, other_type)) {
+					continue;
+				}
+
+				OperatorAPI oper_api;
+				oper_api.name = Variant::get_operator_name(oper);
+				oper_api.oper = oper;
+				oper_api.other_type = Variant::get_type_name(other_type);
+				oper_api.return_type = Variant::get_type_name(Variant::get_operator_return_type(oper, type, other_type));
+
+				class_api.operators.push_back(oper_api);
+			}
+		}
+
+		api.push_back(class_api);
+	}
+
+	return api;
+}
+
+/*
  * Generates the JSON source from the API in p_api
  */
 static List<String> generate_c_api_json(const List<ClassAPI> &p_api) {
@@ -421,9 +651,8 @@ static List<String> generate_c_api_json(const List<ClassAPI> &p_api) {
 		source.push_back(String("\t\t\"api_type\": \"") + (api.api_type == ClassDB::API_CORE ? "core" : (api.api_type == ClassDB::API_EDITOR ? "tools" : "none")) + "\",\n");
 		source.push_back(String("\t\t\"singleton\": ") + (api.is_singleton ? "true" : "false") + ",\n");
 		source.push_back("\t\t\"singleton_name\": \"" + api.singleton_name + "\",\n");
-		source.push_back(String("\t\t\"instanciable\": ") + (api.is_instanciable ? "true" : "false") + ",\n");
+		source.push_back(String("\t\t\"instantiable\": ") + (api.is_instantiable ? "true" : "false") + ",\n");
 		source.push_back(String("\t\t\"is_reference\": ") + (api.is_reference ? "true" : "false") + ",\n");
-		// @Unclear
 
 		source.push_back("\t\t\"constants\": {\n");
 		for (List<ConstantAPI>::Element *e = api.constants.front(); e; e = e->next()) {
@@ -508,6 +737,166 @@ static List<String> generate_c_api_json(const List<ClassAPI> &p_api) {
 	return source;
 }
 
+static int indent_level = 0;
+
+static void append_indented(StringBuilder &p_source, const String &p_text) {
+	for (int i = 0; i < indent_level; i++) {
+		p_source.append("\t");
+	}
+	p_source.append(p_text);
+	p_source.append("\n");
+}
+
+static void append_indented(StringBuilder &p_source, const char *p_text) {
+	for (int i = 0; i < indent_level; i++) {
+		p_source.append("\t");
+	}
+	p_source.append(p_text);
+	p_source.append("\n");
+}
+
+static void write_builtin_method(StringBuilder &p_source, const MethodAPI &p_method) {
+	append_indented(p_source, vformat(R"("name": "%s",)", p_method.method_name));
+	append_indented(p_source, vformat(R"("return_type": "%s",)", p_method.return_type));
+	append_indented(p_source, vformat(R"("is_const": %s,)", p_method.is_const ? "true" : "false"));
+	append_indented(p_source, vformat(R"("is_static": %s,)", p_method.is_static ? "true" : "false"));
+	append_indented(p_source, vformat(R"("has_varargs": %s,)", p_method.has_varargs ? "true" : "false"));
+
+	append_indented(p_source, R"("arguments": [)");
+	indent_level++;
+	for (int i = 0; i < p_method.argument_count; i++) {
+		append_indented(p_source, "{");
+		indent_level++;
+
+		append_indented(p_source, vformat(R"("name": "%s",)", p_method.argument_names[i]));
+		append_indented(p_source, vformat(R"("type": "%s",)", p_method.argument_types[i]));
+		append_indented(p_source, vformat(R"("has_default_value": %s,)", p_method.default_arguments.has(i) ? "true" : "false"));
+		append_indented(p_source, vformat(R"("default_value": "%s")", p_method.default_arguments.has(i) ? p_method.default_arguments[i].operator String() : ""));
+
+		indent_level--;
+		append_indented(p_source, i < p_method.argument_count - 1 ? "}," : "}");
+	}
+	indent_level--;
+	append_indented(p_source, "]");
+}
+
+static List<String> generate_c_builtin_api_json(const List<ClassAPI> &p_api) {
+	StringBuilder source;
+
+	source.append("[\n");
+
+	indent_level = 1;
+
+	for (const List<ClassAPI>::Element *C = p_api.front(); C; C = C->next()) {
+		const ClassAPI &class_api = C->get();
+		append_indented(source, "{");
+		indent_level++;
+
+		append_indented(source, vformat(R"("name": "%s",)", class_api.class_name));
+		append_indented(source, vformat(R"("is_instantiable": %s,)", class_api.is_instantiable ? "true" : "false"));
+		append_indented(source, vformat(R"("is_reference": %s,)", class_api.is_reference ? "true" : "false"));
+		append_indented(source, vformat(R"("has_indexing": %s,)", class_api.has_indexing ? "true" : "false"));
+		append_indented(source, vformat(R"("indexed_type": "%s",)", class_api.has_indexing && class_api.indexed_type == "Nil" ? "Variant" : class_api.indexed_type));
+		append_indented(source, vformat(R"("is_keyed": %s,)", class_api.is_keyed ? "true" : "false"));
+
+		// Constructors.
+		append_indented(source, R"("constructors": [)");
+		indent_level++;
+		for (const List<MethodAPI>::Element *E = class_api.constructors.front(); E; E = E->next()) {
+			const MethodAPI &constructor = E->get();
+			append_indented(source, "{");
+			indent_level++;
+
+			write_builtin_method(source, constructor);
+
+			indent_level--;
+			append_indented(source, E->next() ? "}," : "}");
+		}
+		indent_level--;
+		append_indented(source, "],");
+
+		// Constants.
+		append_indented(source, R"("constants": [)");
+		indent_level++;
+		for (const List<ConstantAPI>::Element *E = class_api.constants.front(); E; E = E->next()) {
+			const ConstantAPI &constant = E->get();
+			append_indented(source, "{");
+			indent_level++;
+
+			append_indented(source, vformat(R"("name": "%s",)", constant.constant_name));
+			append_indented(source, vformat(R"("type": "%s",)", constant.builtin_constant_type));
+			append_indented(source, vformat(R"("value": "%s")", constant.builtin_constant_value.operator String()));
+
+			indent_level--;
+			append_indented(source, E->next() ? "}," : "}");
+		}
+		indent_level--;
+		append_indented(source, "],");
+
+		// Methods.
+		append_indented(source, R"("methods": [)");
+		indent_level++;
+		for (const List<MethodAPI>::Element *E = class_api.methods.front(); E; E = E->next()) {
+			const MethodAPI &method = E->get();
+			append_indented(source, "{");
+			indent_level++;
+
+			write_builtin_method(source, method);
+
+			indent_level--;
+			append_indented(source, E->next() ? "}," : "}");
+		}
+		indent_level--;
+		append_indented(source, "],");
+
+		// Members.
+		append_indented(source, R"("members": [)");
+		indent_level++;
+		for (const List<PropertyAPI>::Element *E = class_api.properties.front(); E; E = E->next()) {
+			const PropertyAPI &member = E->get();
+			append_indented(source, "{");
+			indent_level++;
+
+			append_indented(source, vformat(R"("name": "%s",)", member.name));
+			append_indented(source, vformat(R"("type": "%s")", member.type));
+
+			indent_level--;
+			append_indented(source, E->next() ? "}," : "}");
+		}
+		indent_level--;
+		append_indented(source, "],");
+
+		// Operators.
+		append_indented(source, R"("operators": [)");
+		indent_level++;
+		for (const List<OperatorAPI>::Element *E = class_api.operators.front(); E; E = E->next()) {
+			const OperatorAPI &oper = E->get();
+			append_indented(source, "{");
+			indent_level++;
+
+			append_indented(source, vformat(R"("name": "%s",)", oper.name));
+			append_indented(source, vformat(R"("operator": %d,)", oper.oper));
+			append_indented(source, vformat(R"("other_type": "%s",)", oper.other_type));
+			append_indented(source, vformat(R"("return_type": "%s")", oper.return_type));
+
+			indent_level--;
+			append_indented(source, E->next() ? "}," : "}");
+		}
+		indent_level--;
+		append_indented(source, "]");
+
+		indent_level--;
+		append_indented(source, C->next() ? "}," : "}");
+	}
+
+	indent_level--;
+	source.append("]\n");
+
+	List<String> result;
+	result.push_back(source.as_string());
+	return result;
+}
+
 #endif
 
 /*
@@ -522,6 +911,22 @@ Error generate_c_api(const String &p_path) {
 	List<ClassAPI> api = generate_c_api_classes();
 
 	List<String> json_source = generate_c_api_json(api);
+
+	return save_file(p_path, json_source);
+#endif
+}
+/*
+ * Saves the builtin Godot API to a JSON file located at
+ *  p_path
+ */
+Error generate_c_builtin_api(const String &p_path) {
+#ifndef TOOLS_ENABLED
+	return ERR_BUG;
+#else
+
+	List<ClassAPI> api = generate_c_builtin_api_types();
+
+	List<String> json_source = generate_c_builtin_api_json(api);
 
 	return save_file(p_path, json_source);
 #endif

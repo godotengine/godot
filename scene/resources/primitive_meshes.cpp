@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -148,7 +148,7 @@ Array PrimitiveMesh::surface_get_blend_shape_arrays(int p_surface) const {
 uint32_t PrimitiveMesh::surface_get_format(int p_idx) const {
 	ERR_FAIL_INDEX_V(p_idx, 1, 0);
 
-	return RS::ARRAY_FORMAT_VERTEX | RS::ARRAY_FORMAT_NORMAL | RS::ARRAY_FORMAT_TANGENT | RS::ARRAY_FORMAT_TEX_UV | RS::ARRAY_FORMAT_INDEX | RS::ARRAY_COMPRESS_DEFAULT;
+	return RS::ARRAY_FORMAT_VERTEX | RS::ARRAY_FORMAT_NORMAL | RS::ARRAY_FORMAT_TANGENT | RS::ARRAY_FORMAT_TEX_UV | RS::ARRAY_FORMAT_INDEX;
 }
 
 Mesh::PrimitiveType PrimitiveMesh::surface_get_primitive_type(int p_idx) const {
@@ -214,7 +214,7 @@ void PrimitiveMesh::set_material(const Ref<Material> &p_material) {
 	if (!pending_request) {
 		// just apply it, else it'll happen when _update is called.
 		RenderingServer::get_singleton()->mesh_surface_set_material(mesh, 0, material.is_null() ? RID() : material->get_rid());
-		_change_notify();
+		notify_property_list_changed();
 		emit_changed();
 	};
 }
@@ -247,18 +247,7 @@ bool PrimitiveMesh::get_flip_faces() const {
 }
 
 PrimitiveMesh::PrimitiveMesh() {
-	flip_faces = false;
-	// defaults
 	mesh = RenderingServer::get_singleton()->mesh_create();
-
-	// assume primitive triangles as the type, correct for all but one and it will change this :)
-	primitive_type = Mesh::PRIMITIVE_TRIANGLES;
-
-	// make sure we do an update after we've finished constructing our object
-	pending_request = true;
-
-	array_len = 0;
-	index_array_len = 0;
 }
 
 PrimitiveMesh::~PrimitiveMesh() {
@@ -304,8 +293,8 @@ void CapsuleMesh::_create_mesh_array(Array &p_arr) const {
 			u = i;
 			u /= radial_segments;
 
-			x = -sin(u * (Math_PI * 2.0));
-			z = cos(u * (Math_PI * 2.0));
+			x = -sin(u * Math_TAU);
+			z = cos(u * Math_TAU);
 
 			Vector3 p = Vector3(x * radius * w, y, -z * radius * w);
 			points.push_back(p + Vector3(0.0, 0.5 * mid_height, 0.0));
@@ -343,8 +332,8 @@ void CapsuleMesh::_create_mesh_array(Array &p_arr) const {
 			u = i;
 			u /= radial_segments;
 
-			x = -sin(u * (Math_PI * 2.0));
-			z = cos(u * (Math_PI * 2.0));
+			x = -sin(u * Math_TAU);
+			z = cos(u * Math_TAU);
 
 			Vector3 p = Vector3(x * radius, y, -z * radius);
 			points.push_back(p);
@@ -383,8 +372,8 @@ void CapsuleMesh::_create_mesh_array(Array &p_arr) const {
 			float u2 = i;
 			u2 /= radial_segments;
 
-			x = -sin(u2 * (Math_PI * 2.0));
-			z = cos(u2 * (Math_PI * 2.0));
+			x = -sin(u2 * Math_TAU);
+			z = cos(u2 * Math_TAU);
 
 			Vector3 p = Vector3(x * radius * w, y, -z * radius * w);
 			points.push_back(p + Vector3(0.0, -0.5 * mid_height, 0.0));
@@ -468,19 +457,13 @@ int CapsuleMesh::get_rings() const {
 	return rings;
 }
 
-CapsuleMesh::CapsuleMesh() {
-	// defaults
-	radius = 1.0;
-	mid_height = 1.0;
-	radial_segments = 64;
-	rings = 8;
-}
+CapsuleMesh::CapsuleMesh() {}
 
 /**
-  CubeMesh
+  BoxMesh
 */
 
-void CubeMesh::_create_mesh_array(Array &p_arr) const {
+void BoxMesh::_create_mesh_array(Array &p_arr) const {
 	int i, j, prevrow, thisrow, point;
 	float x, y, z;
 	float onethird = 1.0 / 3.0;
@@ -672,16 +655,16 @@ void CubeMesh::_create_mesh_array(Array &p_arr) const {
 	p_arr[RS::ARRAY_INDEX] = indices;
 }
 
-void CubeMesh::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("set_size", "size"), &CubeMesh::set_size);
-	ClassDB::bind_method(D_METHOD("get_size"), &CubeMesh::get_size);
+void BoxMesh::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("set_size", "size"), &BoxMesh::set_size);
+	ClassDB::bind_method(D_METHOD("get_size"), &BoxMesh::get_size);
 
-	ClassDB::bind_method(D_METHOD("set_subdivide_width", "subdivide"), &CubeMesh::set_subdivide_width);
-	ClassDB::bind_method(D_METHOD("get_subdivide_width"), &CubeMesh::get_subdivide_width);
-	ClassDB::bind_method(D_METHOD("set_subdivide_height", "divisions"), &CubeMesh::set_subdivide_height);
-	ClassDB::bind_method(D_METHOD("get_subdivide_height"), &CubeMesh::get_subdivide_height);
-	ClassDB::bind_method(D_METHOD("set_subdivide_depth", "divisions"), &CubeMesh::set_subdivide_depth);
-	ClassDB::bind_method(D_METHOD("get_subdivide_depth"), &CubeMesh::get_subdivide_depth);
+	ClassDB::bind_method(D_METHOD("set_subdivide_width", "subdivide"), &BoxMesh::set_subdivide_width);
+	ClassDB::bind_method(D_METHOD("get_subdivide_width"), &BoxMesh::get_subdivide_width);
+	ClassDB::bind_method(D_METHOD("set_subdivide_height", "divisions"), &BoxMesh::set_subdivide_height);
+	ClassDB::bind_method(D_METHOD("get_subdivide_height"), &BoxMesh::get_subdivide_height);
+	ClassDB::bind_method(D_METHOD("set_subdivide_depth", "divisions"), &BoxMesh::set_subdivide_depth);
+	ClassDB::bind_method(D_METHOD("get_subdivide_depth"), &BoxMesh::get_subdivide_depth);
 
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "size"), "set_size", "get_size");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "subdivide_width", PROPERTY_HINT_RANGE, "0,100,1,or_greater"), "set_subdivide_width", "get_subdivide_width");
@@ -689,49 +672,43 @@ void CubeMesh::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "subdivide_depth", PROPERTY_HINT_RANGE, "0,100,1,or_greater"), "set_subdivide_depth", "get_subdivide_depth");
 }
 
-void CubeMesh::set_size(const Vector3 &p_size) {
+void BoxMesh::set_size(const Vector3 &p_size) {
 	size = p_size;
 	_request_update();
 }
 
-Vector3 CubeMesh::get_size() const {
+Vector3 BoxMesh::get_size() const {
 	return size;
 }
 
-void CubeMesh::set_subdivide_width(const int p_divisions) {
+void BoxMesh::set_subdivide_width(const int p_divisions) {
 	subdivide_w = p_divisions > 0 ? p_divisions : 0;
 	_request_update();
 }
 
-int CubeMesh::get_subdivide_width() const {
+int BoxMesh::get_subdivide_width() const {
 	return subdivide_w;
 }
 
-void CubeMesh::set_subdivide_height(const int p_divisions) {
+void BoxMesh::set_subdivide_height(const int p_divisions) {
 	subdivide_h = p_divisions > 0 ? p_divisions : 0;
 	_request_update();
 }
 
-int CubeMesh::get_subdivide_height() const {
+int BoxMesh::get_subdivide_height() const {
 	return subdivide_h;
 }
 
-void CubeMesh::set_subdivide_depth(const int p_divisions) {
+void BoxMesh::set_subdivide_depth(const int p_divisions) {
 	subdivide_d = p_divisions > 0 ? p_divisions : 0;
 	_request_update();
 }
 
-int CubeMesh::get_subdivide_depth() const {
+int BoxMesh::get_subdivide_depth() const {
 	return subdivide_d;
 }
 
-CubeMesh::CubeMesh() {
-	// defaults
-	size = Vector3(2.0, 2.0, 2.0);
-	subdivide_w = 0;
-	subdivide_h = 0;
-	subdivide_d = 0;
-}
+BoxMesh::BoxMesh() {}
 
 /**
   CylinderMesh
@@ -769,8 +746,8 @@ void CylinderMesh::_create_mesh_array(Array &p_arr) const {
 			u = i;
 			u /= radial_segments;
 
-			x = sin(u * (Math_PI * 2.0));
-			z = cos(u * (Math_PI * 2.0));
+			x = sin(u * Math_TAU);
+			z = cos(u * Math_TAU);
 
 			Vector3 p = Vector3(x * radius, y, z * radius);
 			points.push_back(p);
@@ -809,8 +786,8 @@ void CylinderMesh::_create_mesh_array(Array &p_arr) const {
 			float r = i;
 			r /= radial_segments;
 
-			x = sin(r * (Math_PI * 2.0));
-			z = cos(r * (Math_PI * 2.0));
+			x = sin(r * Math_TAU);
+			z = cos(r * Math_TAU);
 
 			u = ((x + 1.0) * 0.25);
 			v = 0.5 + ((z + 1.0) * 0.25);
@@ -845,8 +822,8 @@ void CylinderMesh::_create_mesh_array(Array &p_arr) const {
 			float r = i;
 			r /= radial_segments;
 
-			x = sin(r * (Math_PI * 2.0));
-			z = cos(r * (Math_PI * 2.0));
+			x = sin(r * Math_TAU);
+			z = cos(r * Math_TAU);
 
 			u = 0.5 + ((x + 1.0) * 0.25);
 			v = 1.0 - ((z + 1.0) * 0.25);
@@ -938,14 +915,7 @@ int CylinderMesh::get_rings() const {
 	return rings;
 }
 
-CylinderMesh::CylinderMesh() {
-	// defaults
-	top_radius = 1.0;
-	bottom_radius = 1.0;
-	height = 2.0;
-	radial_segments = 64;
-	rings = 4;
-}
+CylinderMesh::CylinderMesh() {}
 
 /**
   PlaneMesh
@@ -1053,12 +1023,7 @@ int PlaneMesh::get_subdivide_depth() const {
 	return subdivide_d;
 }
 
-PlaneMesh::PlaneMesh() {
-	// defaults
-	size = Size2(2.0, 2.0);
-	subdivide_w = 0;
-	subdivide_d = 0;
-}
+PlaneMesh::PlaneMesh() {}
 
 /**
   PrismMesh
@@ -1338,14 +1303,7 @@ int PrismMesh::get_subdivide_depth() const {
 	return subdivide_d;
 }
 
-PrismMesh::PrismMesh() {
-	// defaults
-	left_to_right = 0.5;
-	size = Vector3(2.0, 2.0, 2.0);
-	subdivide_w = 0;
-	subdivide_h = 0;
-	subdivide_d = 0;
-}
+PrismMesh::PrismMesh() {}
 
 /**
   QuadMesh
@@ -1409,7 +1367,6 @@ void QuadMesh::_bind_methods() {
 
 QuadMesh::QuadMesh() {
 	primitive_type = PRIMITIVE_TRIANGLES;
-	size = Size2(1.0, 1.0);
 }
 
 void QuadMesh::set_size(const Size2 &p_size) {
@@ -1458,8 +1415,8 @@ void SphereMesh::_create_mesh_array(Array &p_arr) const {
 			float u = i;
 			u /= radial_segments;
 
-			x = sin(u * (Math_PI * 2.0));
-			z = cos(u * (Math_PI * 2.0));
+			x = sin(u * Math_TAU);
+			z = cos(u * Math_TAU);
 
 			if (is_hemisphere && y < 0.0) {
 				points.push_back(Vector3(x * radius * w, 0.0, z * radius * w));
@@ -1561,14 +1518,7 @@ bool SphereMesh::get_is_hemisphere() const {
 	return is_hemisphere;
 }
 
-SphereMesh::SphereMesh() {
-	// defaults
-	radius = 1.0;
-	height = 2.0;
-	radial_segments = 64;
-	rings = 32;
-	is_hemisphere = false;
-}
+SphereMesh::SphereMesh() {}
 
 /**
   PointMesh

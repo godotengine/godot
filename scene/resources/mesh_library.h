@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -28,11 +28,11 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef GRID_THEME_H
-#define GRID_THEME_H
+#ifndef MESH_LIBRARY_H
+#define MESH_LIBRARY_H
 
-#include "core/map.h"
-#include "core/resource.h"
+#include "core/io/resource.h"
+#include "core/templates/map.h"
 #include "mesh.h"
 #include "scene/3d/navigation_region_3d.h"
 #include "shape_3d.h"
@@ -65,6 +65,7 @@ protected:
 	bool _get(const StringName &p_name, Variant &r_ret) const;
 	void _get_property_list(List<PropertyInfo> *p_list) const;
 
+	virtual void reset_state() override;
 	static void _bind_methods();
 
 public:
@@ -96,4 +97,4 @@ public:
 	~MeshLibrary();
 };
 
-#endif // CUBE_GRID_THEME_H
+#endif // MESH_LIBRARY_H

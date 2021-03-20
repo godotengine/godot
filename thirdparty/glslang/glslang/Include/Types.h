@@ -3,6 +3,7 @@
 // Copyright (C) 2012-2016 LunarG, Inc.
 // Copyright (C) 2015-2016 Google, Inc.
 // Copyright (C) 2017 ARM Limited.
+// Modifications Copyright (C) 2020 Advanced Micro Devices, Inc. All rights reserved.
 //
 // All rights reserved.
 //
@@ -405,6 +406,7 @@ enum TLayoutFormat {
     ElfRg8i,
     ElfR16i,
     ElfR8i,
+    ElfR64i,
 
     ElfIntGuard,       // to help with comparisons
 
@@ -422,6 +424,7 @@ enum TLayoutFormat {
     ElfRg8ui,
     ElfR16ui,
     ElfR8ui,
+    ElfR64ui,
 
     ElfCount
 };
@@ -471,6 +474,18 @@ enum TInterlockOrdering {
 
     EioCount,
 };
+
+enum TShaderInterface
+{
+    // Includes both uniform blocks and buffer blocks
+    EsiUniform = 0,
+    EsiInput,
+    EsiOutput,
+    EsiNone,
+
+    EsiCount
+};
+
 
 class TQualifier {
 public:
@@ -532,6 +547,7 @@ public:
         queuefamilycoherent = false;
         workgroupcoherent = false;
         subgroupcoherent  = false;
+        shadercallcoherent = false;
         nonprivate = false;
         volatil      = false;
         restrict     = false;
@@ -553,6 +569,7 @@ public:
     // having a constant_id is not sufficient: expressions have no id, but are still specConstant
     bool specConstant : 1;
     bool nonUniform   : 1;
+    bool explicitOffset   : 1;
 
 #ifdef GLSLANG_WEB
     bool isWriteOnly() const { return false; }
@@ -590,6 +607,7 @@ public:
     bool queuefamilycoherent : 1;
     bool workgroupcoherent : 1;
     bool subgroupcoherent  : 1;
+    bool shadercallcoherent : 1;
     bool nonprivate   : 1;
     bool isWriteOnly() const { return writeonly; }
     bool isReadOnly() const { return readonly; }
@@ -599,11 +617,11 @@ public:
     bool isSample() const { return sample; }
     bool isMemory() const
     {
-        return subgroupcoherent || workgroupcoherent || queuefamilycoherent || devicecoherent || coherent || volatil || restrict || readonly || writeonly || nonprivate;
+        return shadercallcoherent || subgroupcoherent || workgroupcoherent || queuefamilycoherent || devicecoherent || coherent || volatil || restrict || readonly || writeonly || nonprivate;
     }
     bool isMemoryQualifierImageAndSSBOOnly() const
     {
-        return subgroupcoherent || workgroupcoherent || queuefamilycoherent || devicecoherent || coherent || volatil || restrict || readonly || writeonly;
+        return shadercallcoherent || subgroupcoherent || workgroupcoherent || queuefamilycoherent || devicecoherent || coherent || volatil || restrict || readonly || writeonly;
     }
     bool bufferReferenceNeedsVulkanMemoryModel() const
     {
@@ -739,6 +757,12 @@ public:
     bool isPerPrimitive() const { return perPrimitiveNV; }
     bool isPerView() const { return perViewNV; }
     bool isTaskMemory() const { return perTaskNV; }
+    bool isAnyPayload() const {
+        return storage == EvqPayload || storage == EvqPayloadIn;
+    }
+    bool isAnyCallable() const {
+        return storage == EvqCallableData || storage == EvqCallableDataIn;
+    }
 
     // True if this type of IO is supposed to be arrayed with extra level for per-vertex data
     bool isArrayedIo(EShLanguage language) const
@@ -773,7 +797,7 @@ public:
         layoutViewportRelative = false;
         // -2048 as the default value indicating layoutSecondaryViewportRelative is not set
         layoutSecondaryViewportRelativeOffset = -2048;
-        layoutShaderRecordNV = false;
+        layoutShaderRecord = false;
         layoutBufferReferenceAlign = layoutBufferReferenceAlignEnd;
         layoutFormat = ElfNone;
 #endif
@@ -812,7 +836,7 @@ public:
                hasAnyLocation() ||
                hasStream() ||
                hasFormat() ||
-               isShaderRecordNV() ||
+               isShaderRecord() ||
                isPushConstant() ||
                hasBufferReference();
     }
@@ -871,7 +895,7 @@ public:
     bool layoutPassthrough;
     bool layoutViewportRelative;
     int layoutSecondaryViewportRelativeOffset;
-    bool layoutShaderRecordNV;
+    bool layoutShaderRecord;
 #endif
 
     bool hasUniformLayout() const
@@ -942,7 +966,7 @@ public:
     bool hasAttachment() const { return false; }
     TLayoutFormat getFormat() const { return ElfNone; }
     bool isPushConstant() const { return false; }
-    bool isShaderRecordNV() const { return false; }
+    bool isShaderRecord() const { return false; }
     bool hasBufferReference() const { return false; }
     bool hasBufferReferenceAlign() const { return false; }
     bool isNonUniform() const { return false; }
@@ -993,7 +1017,7 @@ public:
     }
     TLayoutFormat getFormat() const { return layoutFormat; }
     bool isPushConstant() const { return layoutPushConstant; }
-    bool isShaderRecordNV() const { return layoutShaderRecordNV; }
+    bool isShaderRecord() const { return layoutShaderRecord; }
     bool hasBufferReference() const { return layoutBufferReference; }
     bool hasBufferReferenceAlign() const
     {
@@ -1101,6 +1125,8 @@ public:
         case ElfR32ui:        return "r32ui";
         case ElfR16ui:        return "r16ui";
         case ElfR8ui:         return "r8ui";
+        case ElfR64ui:        return "r64ui";
+        case ElfR64i:         return "r64i";
         default:              return "none";
         }
     }
@@ -1219,6 +1245,7 @@ struct TShaderQualifiers {
     bool layoutDerivativeGroupQuads;    // true if layout derivative_group_quadsNV set
     bool layoutDerivativeGroupLinear;   // true if layout derivative_group_linearNV set
     int primitives;                     // mesh shader "max_primitives"DerivativeGroupLinear;   // true if layout derivative_group_linearNV set
+    bool layoutPrimitiveCulling;        // true if layout primitive_culling set
     TLayoutDepth getDepth() const { return layoutDepth; }
 #else
     TLayoutDepth getDepth() const { return EldNone; }
@@ -1252,6 +1279,7 @@ struct TShaderQualifiers {
         layoutOverrideCoverage      = false;
         layoutDerivativeGroupQuads  = false;
         layoutDerivativeGroupLinear = false;
+        layoutPrimitiveCulling      = false;
         primitives                  = TQualifier::layoutNotSet;
         interlockOrdering = EioNone;
 #endif
@@ -1315,6 +1343,8 @@ struct TShaderQualifiers {
             primitives = src.primitives;
         if (src.interlockOrdering != EioNone)
             interlockOrdering = src.interlockOrdering;
+        if (src.layoutPrimitiveCulling)
+            layoutPrimitiveCulling = src.layoutPrimitiveCulling;
 #endif
     }
 };
@@ -1612,6 +1642,23 @@ public:
         assert(fieldName);
         return *fieldName;
     }
+    TShaderInterface getShaderInterface() const
+    {
+        if (basicType != EbtBlock)
+            return EsiNone;
+
+        switch (qualifier.storage) {
+        default:
+            return EsiNone;
+        case EvqVaryingIn:
+            return EsiInput;
+        case EvqVaryingOut:
+            return EsiOutput;
+        case EvqUniform:
+        case EvqBuffer:
+            return EsiUniform;
+        }
+    }
 
     virtual TBasicType getBasicType() const { return basicType; }
     virtual const TSampler& getSampler() const { return sampler; }
@@ -1670,7 +1717,7 @@ public:
     }
     virtual bool isOpaque() const { return basicType == EbtSampler
 #ifndef GLSLANG_WEB
-         || basicType == EbtAtomicUint || basicType == EbtAccStructNV
+         || basicType == EbtAtomicUint || basicType == EbtAccStruct || basicType == EbtRayQuery
 #endif
         ; }
     virtual bool isBuiltIn() const { return getQualifier().builtIn != EbvNone; }
@@ -1946,8 +1993,10 @@ public:
         case EbtAtomicUint:        return "atomic_uint";
         case EbtStruct:            return "structure";
         case EbtBlock:             return "block";
-        case EbtAccStructNV:       return "accelerationStructureNV";
+        case EbtAccStruct:         return "accelerationStructureNV";
+        case EbtRayQuery:          return "rayQueryEXT";
         case EbtReference:         return "reference";
+        case EbtString:            return "string";
 #endif
         default:                   return "unknown type";
         }
@@ -2056,7 +2105,7 @@ public:
                     appendStr(" layoutSecondaryViewportRelativeOffset=");
                     appendInt(qualifier.layoutSecondaryViewportRelativeOffset);
                 }
-                if (qualifier.layoutShaderRecordNV)
+                if (qualifier.layoutShaderRecord)
                     appendStr(" shaderRecordNV");
 
                 appendStr(")");
@@ -2099,6 +2148,8 @@ public:
             appendStr(" workgroupcoherent");
         if (qualifier.subgroupcoherent)
             appendStr(" subgroupcoherent");
+        if (qualifier.shadercallcoherent)
+            appendStr(" shadercallcoherent");
         if (qualifier.nonprivate)
             appendStr(" nonprivate");
         if (qualifier.volatil)

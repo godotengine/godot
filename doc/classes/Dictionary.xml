@@ -4,78 +4,201 @@
 		Dictionary type.
 	</brief_description>
 	<description>
-		Dictionary type. Associative container which contains values referenced by unique keys. Dictionaries are composed of pairs of keys (which must be unique) and values. Dictionaries will preserve the insertion order when adding elements, even though this may not be reflected when printing the dictionary. In other programming languages, this data structure is sometimes referred to as an hash map or associative array.
+		Dictionary type. Associative container which contains values referenced by unique keys. Dictionaries are composed of pairs of keys (which must be unique) and values. Dictionaries will preserve the insertion order when adding elements, even though this may not be reflected when printing the dictionary. In other programming languages, this data structure is sometimes referred to as a hash map or associative array.
 		You can define a dictionary by placing a comma-separated list of [code]key: value[/code] pairs in curly braces [code]{}[/code].
 		Erasing elements while iterating over them [b]is not supported[/b] and will result in undefined behavior.
 		[b]Note:[/b] Dictionaries are always passed by reference. To get a copy of a dictionary which can be modified independently of the original dictionary, use [method duplicate].
 		Creating a dictionary:
-		[codeblock]
-		var my_dir = {} # Creates an empty dictionary.
-		var points_dir = {"White": 50, "Yellow": 75, "Orange": 100}
-		var another_dir = {
-		    key1: value1,
-		    key2: value2,
-		    key3: value3,
-		}
-		[/codeblock]
-		You can access a dictionary's values by referencing the appropriate key. In the above example, [code]points_dir["White"][/code] will return [code]50[/code]. You can also write [code]points_dir.White[/code], which is equivalent. However, you'll have to use the bracket syntax if the key you're accessing the dictionary with isn't a fixed string (such as a number or variable).
-		[codeblock]
-		export(String, "White", "Yellow", "Orange") var my_color
-		var points_dir = {"White": 50, "Yellow": 75, "Orange": 100}
+		[codeblocks]
+		[gdscript]
+		var my_dict = {} # Creates an empty dictionary.
 
+		var dict_variable_key = "Another key name"
+		var dict_variable_value = "value2"
+		var another_dict = {
+		    "Some key name": "value1",
+		    dict_variable_key: dict_variable_value,
+		}
+
+		var points_dict = {"White": 50, "Yellow": 75, "Orange": 100}
+
+		# Alternative Lua-style syntax.
+		# Doesn't require quotes around keys, but only string constants can be used as key names.
+		# Additionally, key names must start with a letter or an underscore.
+		# Here, `some_key` is a string literal, not a variable!
+		another_dict = {
+		    some_key = 42,
+		}
+		[/gdscript]
+		[csharp]
+		var myDict = new Godot.Collections.Dictionary(); // Creates an empty dictionary.
+		var pointsDict = new Godot.Collections.Dictionary
+		{
+		    {"White", 50},
+		    {"Yellow", 75},
+		    {"Orange", 100}
+		};
+		[/csharp]
+		[/codeblocks]
+		You can access a dictionary's values by referencing the appropriate key. In the above example, [code]points_dir["White"][/code] will return [code]50[/code]. You can also write [code]points_dir.White[/code], which is equivalent. However, you'll have to use the bracket syntax if the key you're accessing the dictionary with isn't a fixed string (such as a number or variable).
+		[codeblocks]
+		[gdscript]
+		export(string, "White", "Yellow", "Orange") var my_color
+		var points_dict = {"White": 50, "Yellow": 75, "Orange": 100}
 		func _ready():
 		    # We can't use dot syntax here as `my_color` is a variable.
-		    var points = points_dir[my_color]
-		[/codeblock]
+		    var points = points_dict[my_color]
+		[/gdscript]
+		[csharp]
+		[Export(PropertyHint.Enum, "White,Yellow,Orange")]
+		public string MyColor { get; set; }
+		public Godot.Collections.Dictionary pointsDict = new Godot.Collections.Dictionary
+		{
+		    {"White", 50},
+		    {"Yellow", 75},
+		    {"Orange", 100}
+		};
+
+		public override void _Ready()
+		{
+		    int points = (int)pointsDict[MyColor];
+		}
+		[/csharp]
+		[/codeblocks]
 		In the above code, [code]points[/code] will be assigned the value that is paired with the appropriate color selected in [code]my_color[/code].
 		Dictionaries can contain more complex data:
-		[codeblock]
-		my_dir = {"First Array": [1, 2, 3, 4]} # Assigns an Array to a String key.
-		[/codeblock]
+		[codeblocks]
+		[gdscript]
+		my_dict = {"First Array": [1, 2, 3, 4]} # Assigns an Array to a String key.
+		[/gdscript]
+		[csharp]
+		var myDir = new Godot.Collections.Dictionary
+		{
+		    {"First Array", new Godot.Collections.Array{1, 2, 3, 4}}
+		};
+		[/csharp]
+		[/codeblocks]
 		To add a key to an existing dictionary, access it like an existing key and assign to it:
-		[codeblock]
-		var points_dir = {"White": 50, "Yellow": 75, "Orange": 100}
-		points_dir["Blue"] = 150 # Add "Blue" as a key and assign 150 as its value.
-		[/codeblock]
+		[codeblocks]
+		[gdscript]
+		var points_dict = {"White": 50, "Yellow": 75, "Orange": 100}
+		points_dict["Blue"] = 150 # Add "Blue" as a key and assign 150 as its value.
+		[/gdscript]
+		[csharp]
+		var pointsDir = new Godot.Collections.Dictionary
+		{
+		    {"White", 50},
+		    {"Yellow", 75},
+		    {"Orange", 100}
+		};
+		pointsDict["blue"] = 150; // Add "Blue" as a key and assign 150 as its value.
+		[/csharp]
+		[/codeblocks]
 		Finally, dictionaries can contain different types of keys and values in the same dictionary:
-		[codeblock]
+		[codeblocks]
+		[gdscript]
 		# This is a valid dictionary.
 		# To access the string "Nested value" below, use `my_dir.sub_dir.sub_key` or `my_dir["sub_dir"]["sub_key"]`.
 		# Indexing styles can be mixed and matched depending on your needs.
-		var my_dir = {
+		var my_dict = {
 		    "String Key": 5,
 		    4: [1, 2, 3],
 		    7: "Hello",
-		    "sub_dir": {"sub_key": "Nested value"},
+		    "sub_dict": {"sub_key": "Nested value"},
 		}
-		[/codeblock]
+		[/gdscript]
+		[csharp]
+		// This is a valid dictionary.
+		// To access the string "Nested value" below, use `my_dir.sub_dir.sub_key` or `my_dir["sub_dir"]["sub_key"]`.
+		// Indexing styles can be mixed and matched depending on your needs.
+		var myDict = new Godot.Collections.Dictionary {
+		    {"String Key", 5},
+		    {4, new Godot.Collections.Array{1,2,3}},
+		    {7, "Hello"},
+		    {"sub_dict", new Godot.Collections.Dictionary{{"sub_key", "Nested value"}}}
+		};
+		[/csharp]
+		[/codeblocks]
 		[b]Note:[/b] Unlike [Array]s, you can't compare dictionaries directly:
-		[codeblock]
-		array1 = [1, 2, 3]
-		array2 = [1, 2, 3]
+		[codeblocks]
+		[gdscript]
+		var array1 = [1, 2, 3]
+		var array2 = [1, 2, 3]
 
 		func compare_arrays():
 		    print(array1 == array2) # Will print true.
 
-		dir1 = {"a": 1, "b": 2, "c": 3}
-		dir2 = {"a": 1, "b": 2, "c": 3}
+		var dict1 = {"a": 1, "b": 2, "c": 3}
+		var dict2 = {"a": 1, "b": 2, "c": 3}
 
 		func compare_dictionaries():
-		    print(dir1 == dir2) # Will NOT print true.
-		[/codeblock]
+		    print(dict1 == dict2) # Will NOT print true.
+		[/gdscript]
+		[csharp]
+		// You have to use GD.Hash().
+
+		public Godot.Collections.Array array1 = new Godot.Collections.Array{1, 2, 3};
+		public Godot.Collections.Array array2 = new Godot.Collections.Array{1, 2, 3};
+
+		public void CompareArrays()
+		{
+		    GD.Print(array1 == array2); // Will print FALSE!!
+		    GD.Print(GD.Hash(array1) == GD.Hash(array2)); // Will print true.
+		}
+
+		public Godot.Collections.Dictionary dict1 = new Godot.Collections.Dictionary{{"a", 1}, {"b", 2}, {"c", 3}};
+		public Godot.Collections.Dictionary dict2 = new Godot.Collections.Dictionary{{"a", 1}, {"b", 2}, {"c", 3}};
+
+		public void CompareDictionaries()
+		{
+		    GD.Print(dict1 == dict2); // Will NOT print true.
+		}
+		[/csharp]
+		[/codeblocks]
 		You need to first calculate the dictionary's hash with [method hash] before you can compare them:
-		[codeblock]
-		dir1 = {"a": 1, "b": 2, "c": 3}
-		dir2 = {"a": 1, "b": 2, "c": 3}
+		[codeblocks]
+		[gdscript]
+		var dict1 = {"a": 1, "b": 2, "c": 3}
+		var dict2 = {"a": 1, "b": 2, "c": 3}
 
 		func compare_dictionaries():
-		    print(dir1.hash() == dir2.hash()) # Will print true.
-		[/codeblock]
+		    print(dict1.hash() == dict2.hash()) # Will print true.
+		[/gdscript]
+		[csharp]
+		// You have to use GD.Hash().
+		public Godot.Collections.Dictionary dict1 = new Godot.Collections.Dictionary{{"a", 1}, {"b", 2}, {"c", 3}};
+		public Godot.Collections.Dictionary dict2 = new Godot.Collections.Dictionary{{"a", 1}, {"b", 2}, {"c", 3}};
+
+		public void CompareDictionaries()
+		{
+		    GD.Print(GD.Hash(dict1) == GD.Hash(dict2)); // Will print true.
+		}
+		[/csharp]
+		[/codeblocks]
+		[b]Note:[/b] When declaring a dictionary with [code]const[/code], the dictionary itself can still be mutated by defining the values of individual keys. Using [code]const[/code] will only prevent assigning the constant with another value after it was initialized.
 	</description>
 	<tutorials>
-		<link>https://docs.godotengine.org/en/latest/getting_started/scripting/gdscript/gdscript_basics.html#dictionary</link>
+		<link title="GDScript basics: Dictionary">https://docs.godotengine.org/en/latest/getting_started/scripting/gdscript/gdscript_basics.html#dictionary</link>
+		<link title="3D Voxel Demo">https://godotengine.org/asset-library/asset/676</link>
+		<link title="OS Test Demo">https://godotengine.org/asset-library/asset/677</link>
 	</tutorials>
 	<methods>
+		<method name="Dictionary" qualifiers="constructor">
+			<return type="Dictionary">
+			</return>
+			<description>
+				Constructs an empty [Dictionary].
+			</description>
+		</method>
+		<method name="Dictionary" qualifiers="constructor">
+			<return type="Dictionary">
+			</return>
+			<argument index="0" name="from" type="Dictionary">
+			</argument>
+			<description>
+				Constructs a [Dictionary] as a copy of the given [Dictionary].
+			</description>
+		</method>
 		<method name="clear">
 			<return type="void">
 			</return>
@@ -83,20 +206,13 @@
 				Clear the dictionary, removing all key/value pairs.
 			</description>
 		</method>
-		<method name="duplicate">
+		<method name="duplicate" qualifiers="const">
 			<return type="Dictionary">
 			</return>
 			<argument index="0" name="deep" type="bool" default="false">
 			</argument>
 			<description>
 				Creates a copy of the dictionary, and returns it. The [code]deep[/code] parameter causes inner dictionaries and arrays to be copied recursively, but does not apply to objects.
-			</description>
-		</method>
-		<method name="empty">
-			<return type="bool">
-			</return>
-			<description>
-				Returns [code]true[/code] if the dictionary is empty.
 			</description>
 		</method>
 		<method name="erase">
@@ -108,7 +224,7 @@
 				Erase a dictionary key/value pair by key. Returns [code]true[/code] if the given key was present in the dictionary, [code]false[/code] otherwise. Does not erase elements while iterating over the dictionary.
 			</description>
 		</method>
-		<method name="get">
+		<method name="get" qualifiers="const">
 			<return type="Variant">
 			</return>
 			<argument index="0" name="key" type="Variant">
@@ -119,7 +235,7 @@
 				Returns the current value for the specified key in the [Dictionary]. If the key does not exist, the method returns the value of the optional default argument, or [code]null[/code] if it is omitted.
 			</description>
 		</method>
-		<method name="has">
+		<method name="has" qualifiers="const">
 			<return type="bool">
 			</return>
 			<argument index="0" name="key" type="Variant">
@@ -127,52 +243,101 @@
 			<description>
 				Returns [code]true[/code] if the dictionary has a given key.
 				[b]Note:[/b] This is equivalent to using the [code]in[/code] operator as follows:
-				[codeblock]
+				[codeblocks]
+				[gdscript]
 				# Will evaluate to `true`.
 				if "godot" in {"godot": "engine"}:
 				    pass
-				[/codeblock]
+				[/gdscript]
+				[csharp]
+				// You have to use Contains() here as an alternative to GDScript's `in` operator.
+				if (new Godot.Collections.Dictionary{{"godot", "engine"}}.Contains("godot"))
+				{
+				    // I am executed.
+				}
+				[/csharp]
+				[/codeblocks]
 				This method (like the [code]in[/code] operator) will evaluate to [code]true[/code] as long as the key exists, even if the associated value is [code]null[/code].
 			</description>
 		</method>
-		<method name="has_all">
+		<method name="has_all" qualifiers="const">
 			<return type="bool">
 			</return>
 			<argument index="0" name="keys" type="Array">
 			</argument>
 			<description>
-				Returns [code]true[/code] if the dictionary has all of the keys in the given array.
+				Returns [code]true[/code] if the dictionary has all the keys in the given array.
 			</description>
 		</method>
-		<method name="hash">
+		<method name="hash" qualifiers="const">
 			<return type="int">
 			</return>
 			<description>
 				Returns a hashed integer value representing the dictionary contents. This can be used to compare dictionaries by value:
-				[codeblock]
+				[codeblocks]
+				[gdscript]
 				var dict1 = {0: 10}
 				var dict2 = {0: 10}
 				# The line below prints `true`, whereas it would have printed `false` if both variables were compared directly.
 				print(dict1.hash() == dict2.hash())
-				[/codeblock]
+				[/gdscript]
+				[csharp]
+				var dict1 = new Godot.Collections.Dictionary{{0, 10}};
+				var dict2 = new Godot.Collections.Dictionary{{0, 10}};
+				// The line below prints `true`, whereas it would have printed `false` if both variables were compared directly.
+				// Dictionary has no Hash() method. Use GD.Hash() instead.
+				GD.Print(GD.Hash(dict1) == GD.Hash(dict2));
+				[/csharp]
+				[/codeblocks]
 				[b]Note:[/b] Dictionaries with the same keys/values but in a different order will have a different hash.
 			</description>
 		</method>
-		<method name="keys">
+		<method name="is_empty" qualifiers="const">
+			<return type="bool">
+			</return>
+			<description>
+				Returns [code]true[/code] if the dictionary is empty.
+			</description>
+		</method>
+		<method name="keys" qualifiers="const">
 			<return type="Array">
 			</return>
 			<description>
 				Returns the list of keys in the [Dictionary].
 			</description>
 		</method>
-		<method name="size">
+		<method name="operator !=" qualifiers="operator">
+			<return type="bool">
+			</return>
+			<argument index="0" name="right" type="Dictionary">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="operator ==" qualifiers="operator">
+			<return type="bool">
+			</return>
+			<argument index="0" name="right" type="Dictionary">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="operator []" qualifiers="operator">
+			<return type="Variant">
+			</return>
+			<argument index="0" name="key" type="Variant">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="size" qualifiers="const">
 			<return type="int">
 			</return>
 			<description>
-				Returns the size of the dictionary (in pairs).
+				Returns the number of keys in the dictionary.
 			</description>
 		</method>
-		<method name="values">
+		<method name="values" qualifiers="const">
 			<return type="Array">
 			</return>
 			<description>

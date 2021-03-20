@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -30,10 +30,10 @@
 
 #include "editor_data.h"
 
+#include "core/config/project_settings.h"
 #include "core/io/resource_loader.h"
 #include "core/os/dir_access.h"
 #include "core/os/file_access.h"
-#include "core/project_settings.h"
 #include "editor_node.h"
 #include "editor_settings.h"
 #include "scene/resources/packed_scene.h"
@@ -262,18 +262,10 @@ EditorHistory::EditorHistory() {
 }
 
 EditorPlugin *EditorData::get_editor(Object *p_object) {
-	for (int i = 0; i < editor_plugins.size(); i++) {
+	// We need to iterate backwards so that we can check user-created plugins first.
+	// Otherwise, it would not be possible for plugins to handle CanvasItem and Spatial nodes.
+	for (int i = editor_plugins.size() - 1; i > -1; i--) {
 		if (editor_plugins[i]->has_main_screen() && editor_plugins[i]->handles(p_object)) {
-			return editor_plugins[i];
-		}
-	}
-
-	return nullptr;
-}
-
-EditorPlugin *EditorData::get_subeditor(Object *p_object) {
-	for (int i = 0; i < editor_plugins.size(); i++) {
-		if (!editor_plugins[i]->has_main_screen() && editor_plugins[i]->handles(p_object)) {
 			return editor_plugins[i];
 		}
 	}
@@ -283,7 +275,7 @@ EditorPlugin *EditorData::get_subeditor(Object *p_object) {
 
 Vector<EditorPlugin *> EditorData::get_subeditors(Object *p_object) {
 	Vector<EditorPlugin *> sub_plugins;
-	for (int i = 0; i < editor_plugins.size(); i++) {
+	for (int i = editor_plugins.size() - 1; i > -1; i--) {
 		if (!editor_plugins[i]->has_main_screen() && editor_plugins[i]->handles(p_object)) {
 			sub_plugins.push_back(editor_plugins[i]);
 		}
@@ -292,7 +284,7 @@ Vector<EditorPlugin *> EditorData::get_subeditors(Object *p_object) {
 }
 
 EditorPlugin *EditorData::get_editor(String p_name) {
-	for (int i = 0; i < editor_plugins.size(); i++) {
+	for (int i = editor_plugins.size() - 1; i > -1; i--) {
 		if (editor_plugins[i]->get_name() == p_name) {
 			return editor_plugins[i];
 		}
@@ -329,7 +321,7 @@ Dictionary EditorData::get_editor_states() const {
 	Dictionary metadata;
 	for (int i = 0; i < editor_plugins.size(); i++) {
 		Dictionary state = editor_plugins[i]->get_state();
-		if (state.empty()) {
+		if (state.is_empty()) {
 			continue;
 		}
 		metadata[editor_plugins[i]->get_name()] = state;
@@ -466,24 +458,25 @@ void EditorData::add_custom_type(const String &p_type, const String &p_inherits,
 	custom_types[p_inherits].push_back(ct);
 }
 
-Object *EditorData::instance_custom_type(const String &p_type, const String &p_inherits) {
+Variant EditorData::instance_custom_type(const String &p_type, const String &p_inherits) {
 	if (get_custom_types().has(p_inherits)) {
 		for (int i = 0; i < get_custom_types()[p_inherits].size(); i++) {
 			if (get_custom_types()[p_inherits][i].name == p_type) {
 				Ref<Script> script = get_custom_types()[p_inherits][i].script;
 
-				Object *ob = ClassDB::instance(p_inherits);
-				ERR_FAIL_COND_V(!ob, nullptr);
-				if (ob->is_class("Node")) {
-					ob->call("set_name", p_type);
+				Variant ob = ClassDB::instance(p_inherits);
+				ERR_FAIL_COND_V(!ob, Variant());
+				Node *n = Object::cast_to<Node>(ob);
+				if (n) {
+					n->set_name(p_type);
 				}
-				ob->set_script(script);
+				((Object *)ob)->set_script(script);
 				return ob;
 			}
 		}
 	}
 
-	return nullptr;
+	return Variant();
 }
 
 void EditorData::remove_custom_type(const String &p_type) {
@@ -491,7 +484,7 @@ void EditorData::remove_custom_type(const String &p_type) {
 		for (int i = 0; i < E->get().size(); i++) {
 			if (E->get()[i].name == p_type) {
 				E->get().remove(i);
-				if (E->get().empty()) {
+				if (E->get().is_empty()) {
 					custom_types.erase(E->key());
 				}
 				return;
@@ -507,6 +500,7 @@ int EditorData::add_edited_scene(int p_at_pos) {
 	EditedScene es;
 	es.root = nullptr;
 	es.path = String();
+	es.file_modified_time = 0;
 	es.history_current = -1;
 	es.version = 0;
 	es.live_edit_root = NodePath(String("/root"));
@@ -663,6 +657,10 @@ void EditorData::set_edited_scene_root(Node *p_root) {
 			p_root->set_filename(edited_scene[current_edited_scene].path);
 		}
 	}
+
+	if (edited_scene[current_edited_scene].path != "") {
+		edited_scene.write[current_edited_scene].file_modified_time = FileAccess::get_modified_time(edited_scene[current_edited_scene].path);
+	}
 }
 
 int EditorData::get_edited_scene_count() const {
@@ -689,14 +687,24 @@ void EditorData::set_edited_scene_version(uint64_t version, int p_scene_idx) {
 	}
 }
 
-uint64_t EditorData::get_edited_scene_version() const {
-	ERR_FAIL_INDEX_V(current_edited_scene, edited_scene.size(), 0);
-	return edited_scene[current_edited_scene].version;
-}
-
 uint64_t EditorData::get_scene_version(int p_idx) const {
 	ERR_FAIL_INDEX_V(p_idx, edited_scene.size(), 0);
 	return edited_scene[p_idx].version;
+}
+
+void EditorData::set_scene_modified_time(int p_idx, uint64_t p_time) {
+	if (p_idx == -1) {
+		p_idx = current_edited_scene;
+	}
+
+	ERR_FAIL_INDEX(p_idx, edited_scene.size());
+
+	edited_scene.write[p_idx].file_modified_time = p_time;
+}
+
+uint64_t EditorData::get_scene_modified_time(int p_idx) const {
+	ERR_FAIL_INDEX_V(p_idx, edited_scene.size(), 0);
+	return edited_scene[p_idx].file_modified_time;
 }
 
 String EditorData::get_scene_type(int p_idx) const {
@@ -870,18 +878,18 @@ StringName EditorData::script_class_get_base(const String &p_class) const {
 	return script->get_language()->get_global_class_name(base_script->get_path());
 }
 
-Object *EditorData::script_class_instance(const String &p_class) {
+Variant EditorData::script_class_instance(const String &p_class) {
 	if (ScriptServer::is_global_class(p_class)) {
-		Object *obj = ClassDB::instance(ScriptServer::get_global_class_native_base(p_class));
+		Variant obj = ClassDB::instance(ScriptServer::get_global_class_native_base(p_class));
 		if (obj) {
 			Ref<Script> script = script_class_load_script(p_class);
 			if (script.is_valid()) {
-				obj->set_script(script);
+				((Object *)obj)->set_script(script);
 			}
 			return obj;
 		}
 	}
-	return nullptr;
+	return Variant();
 }
 
 Ref<Script> EditorData::script_class_load_script(const String &p_class) const {
@@ -904,7 +912,7 @@ String EditorData::script_class_get_icon_path(const String &p_class) const {
 
 	String current = p_class;
 	String ret = _script_class_icon_paths[current];
-	while (ret.empty()) {
+	while (ret.is_empty()) {
 		current = script_class_get_base(current);
 		if (!ScriptServer::is_global_class(current)) {
 			return String();
@@ -934,7 +942,21 @@ void EditorData::script_class_save_icon_paths() {
 		}
 	}
 
-	ProjectSettings::get_singleton()->set("_global_script_class_icons", d);
+	Dictionary old;
+	if (ProjectSettings::get_singleton()->has_setting("_global_script_class_icons")) {
+		old = ProjectSettings::get_singleton()->get("_global_script_class_icons");
+	}
+	if ((!old.is_empty() || d.is_empty()) && d.hash() == old.hash()) {
+		return;
+	}
+
+	if (d.is_empty()) {
+		if (ProjectSettings::get_singleton()->has_setting("_global_script_class_icons")) {
+			ProjectSettings::get_singleton()->clear("_global_script_class_icons");
+		}
+	} else {
+		ProjectSettings::get_singleton()->set("_global_script_class_icons", d);
+	}
 	ProjectSettings::get_singleton()->save();
 }
 
@@ -1122,7 +1144,7 @@ List<Node *> EditorSelection::get_full_selected_node_list() {
 }
 
 void EditorSelection::clear() {
-	while (!selection.empty()) {
+	while (!selection.is_empty()) {
 		remove_node(selection.front()->key());
 	}
 

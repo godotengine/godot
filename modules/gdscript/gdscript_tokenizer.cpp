@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -30,7 +30,7 @@
 
 #include "gdscript_tokenizer.h"
 
-#include "core/error_macros.h"
+#include "core/error/error_macros.h"
 
 #ifdef TOOLS_ENABLED
 #include "editor/editor_settings.h"
@@ -156,6 +156,64 @@ const char *GDScriptTokenizer::Token::get_name() const {
 	return token_names[type];
 }
 
+bool GDScriptTokenizer::Token::is_identifier() const {
+	// Note: Most keywords should not be recognized as identifiers.
+	// These are only exceptions for stuff that already is on the engine's API.
+	switch (type) {
+		case IDENTIFIER:
+		case MATCH: // Used in String.match().
+			return true;
+		default:
+			return false;
+	}
+}
+
+bool GDScriptTokenizer::Token::is_node_name() const {
+	// This is meant to allow keywords with the $ notation, but not as general identifiers.
+	switch (type) {
+		case IDENTIFIER:
+		case AND:
+		case AS:
+		case ASSERT:
+		case AWAIT:
+		case BREAK:
+		case BREAKPOINT:
+		case CLASS_NAME:
+		case CLASS:
+		case CONST:
+		case CONTINUE:
+		case ELIF:
+		case ELSE:
+		case ENUM:
+		case EXTENDS:
+		case FOR:
+		case FUNC:
+		case IF:
+		case IN:
+		case IS:
+		case MATCH:
+		case NAMESPACE:
+		case NOT:
+		case OR:
+		case PASS:
+		case PRELOAD:
+		case RETURN:
+		case SELF:
+		case SIGNAL:
+		case STATIC:
+		case SUPER:
+		case TRAIT:
+		case UNDERSCORE:
+		case VAR:
+		case VOID:
+		case WHILE:
+		case YIELD:
+			return true;
+		default:
+			return false;
+	}
+}
+
 String GDScriptTokenizer::get_token_name(Token::Type p_token_type) {
 	ERR_FAIL_INDEX_V_MSG(p_token_type, Token::TK_MAX, "<error>", "Using token type out of the enum.");
 	return token_names[p_token_type];
@@ -163,8 +221,8 @@ String GDScriptTokenizer::get_token_name(Token::Type p_token_type) {
 
 void GDScriptTokenizer::set_source_code(const String &p_source_code) {
 	source = p_source_code;
-	if (source.empty()) {
-		_source = L"";
+	if (source.is_empty()) {
+		_source = U"";
 	} else {
 		_source = source.ptr();
 	}
@@ -205,7 +263,7 @@ bool GDScriptTokenizer::is_past_cursor() const {
 	return true;
 }
 
-CharType GDScriptTokenizer::_advance() {
+char32_t GDScriptTokenizer::_advance() {
 	if (unlikely(_is_at_end())) {
 		return '\0';
 	}
@@ -224,15 +282,15 @@ CharType GDScriptTokenizer::_advance() {
 	return _peek(-1);
 }
 
-void GDScriptTokenizer::push_paren(CharType p_char) {
+void GDScriptTokenizer::push_paren(char32_t p_char) {
 	paren_stack.push_back(p_char);
 }
 
-bool GDScriptTokenizer::pop_paren(CharType p_expected) {
-	if (paren_stack.empty()) {
+bool GDScriptTokenizer::pop_paren(char32_t p_expected) {
+	if (paren_stack.is_empty()) {
 		return false;
 	}
-	CharType actual = paren_stack.back()->get();
+	char32_t actual = paren_stack.back()->get();
 	paren_stack.pop_back();
 
 	return actual == p_expected;
@@ -244,19 +302,19 @@ GDScriptTokenizer::Token GDScriptTokenizer::pop_error() {
 	return error;
 }
 
-static bool _is_alphanumeric(CharType c) {
+static bool _is_alphanumeric(char32_t c) {
 	return (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || (c >= '0' && c <= '9') || c == '_';
 }
 
-static bool _is_digit(CharType c) {
+static bool _is_digit(char32_t c) {
 	return (c >= '0' && c <= '9');
 }
 
-static bool _is_hex_digit(CharType c) {
+static bool _is_hex_digit(char32_t c) {
 	return (c >= '0' && c <= '9') || (c >= 'a' && c <= 'f') || (c >= 'A' && c <= 'F');
 }
 
-static bool _is_binary_digit(CharType c) {
+static bool _is_binary_digit(char32_t c) {
 	return (c == '0' || c == '1');
 }
 
@@ -346,8 +404,8 @@ void GDScriptTokenizer::push_error(const Token &p_error) {
 	error_stack.push_back(p_error);
 }
 
-GDScriptTokenizer::Token GDScriptTokenizer::make_paren_error(CharType p_paren) {
-	if (paren_stack.empty()) {
+GDScriptTokenizer::Token GDScriptTokenizer::make_paren_error(char32_t p_paren) {
+	if (paren_stack.is_empty()) {
 		return make_error(vformat("Closing \"%c\" doesn't have an opening counterpart.", p_paren));
 	}
 	Token error = make_error(vformat("Closing \"%c\" doesn't match the opening \"%c\".", p_paren, paren_stack.back()->get()));
@@ -355,8 +413,8 @@ GDScriptTokenizer::Token GDScriptTokenizer::make_paren_error(CharType p_paren) {
 	return error;
 }
 
-GDScriptTokenizer::Token GDScriptTokenizer::check_vcs_marker(CharType p_test, Token::Type p_double_type) {
-	const CharType *next = _current + 1;
+GDScriptTokenizer::Token GDScriptTokenizer::check_vcs_marker(char32_t p_test, Token::Type p_double_type) {
+	const char32_t *next = _current + 1;
 	int chars = 2; // Two already matched.
 
 	// Test before consuming characters, since we don't want to consume more than needed.
@@ -520,7 +578,7 @@ GDScriptTokenizer::Token GDScriptTokenizer::potential_identifier() {
 }
 
 void GDScriptTokenizer::newline(bool p_make_token) {
-	// Don't overwrite previous newline, nor create if we want a line contination.
+	// Don't overwrite previous newline, nor create if we want a line continuation.
 	if (p_make_token && !pending_newline && !line_continuation) {
 		Token newline(Token::NEWLINE);
 		newline.start_line = line;
@@ -544,7 +602,7 @@ GDScriptTokenizer::Token GDScriptTokenizer::number() {
 	bool has_decimal = false;
 	bool has_exponent = false;
 	bool has_error = false;
-	bool (*digit_check_func)(CharType) = _is_digit;
+	bool (*digit_check_func)(char32_t) = _is_digit;
 
 	if (_peek(-1) == '.') {
 		has_decimal = true;
@@ -563,7 +621,19 @@ GDScriptTokenizer::Token GDScriptTokenizer::number() {
 	}
 
 	// Allow '_' to be used in a number, for readability.
+	bool previous_was_underscore = false;
 	while (digit_check_func(_peek()) || _peek() == '_') {
+		if (_peek() == '_') {
+			if (previous_was_underscore) {
+				Token error = make_error(R"(Only one underscore can be used as a numeric separator.)");
+				error.start_column = column;
+				error.leftmost_column = column;
+				error.end_column = column + 1;
+				error.rightmost_column = column + 1;
+				push_error(error);
+			}
+			previous_was_underscore = true;
+		}
 		_advance();
 	}
 
@@ -614,7 +684,27 @@ GDScriptTokenizer::Token GDScriptTokenizer::number() {
 				_advance();
 			}
 			// Consume exponent digits.
+			if (!_is_digit(_peek())) {
+				Token error = make_error(R"(Expected exponent value after "e".)");
+				error.start_column = column;
+				error.leftmost_column = column;
+				error.end_column = column + 1;
+				error.rightmost_column = column + 1;
+				push_error(error);
+			}
+			previous_was_underscore = false;
 			while (_is_digit(_peek()) || _peek() == '_') {
+				if (_peek() == '_') {
+					if (previous_was_underscore) {
+						Token error = make_error(R"(Only one underscore can be used as a numeric separator.)");
+						error.start_column = column;
+						error.leftmost_column = column;
+						error.end_column = column + 1;
+						error.rightmost_column = column + 1;
+						push_error(error);
+					}
+					previous_was_underscore = true;
+				}
 				_advance();
 			}
 		}
@@ -672,7 +762,7 @@ GDScriptTokenizer::Token GDScriptTokenizer::string() {
 		_advance();
 	}
 
-	CharType quote_char = _peek(-1);
+	char32_t quote_char = _peek(-1);
 
 	if (_peek() == quote_char && _peek(1) == quote_char) {
 		is_multiline = true;
@@ -689,7 +779,7 @@ GDScriptTokenizer::Token GDScriptTokenizer::string() {
 			return make_error("Unterminated string.");
 		}
 
-		CharType ch = _peek();
+		char32_t ch = _peek();
 
 		if (ch == '\\') {
 			// Escape pattern.
@@ -699,13 +789,13 @@ GDScriptTokenizer::Token GDScriptTokenizer::string() {
 			}
 
 			// Grab escape character.
-			CharType code = _peek();
+			char32_t code = _peek();
 			_advance();
 			if (_is_at_end()) {
 				return make_error("Unterminated string.");
 			}
 
-			CharType escaped = 0;
+			char32_t escaped = 0;
 			bool valid_escape = true;
 
 			switch (code) {
@@ -746,8 +836,8 @@ GDScriptTokenizer::Token GDScriptTokenizer::string() {
 							return make_error("Unterminated string.");
 						}
 
-						CharType digit = _peek();
-						CharType value = 0;
+						char32_t digit = _peek();
+						char32_t value = 0;
 						if (digit >= '0' && digit <= '9') {
 							value = digit - '0';
 						} else if (digit >= 'a' && digit <= 'f') {
@@ -808,6 +898,9 @@ GDScriptTokenizer::Token GDScriptTokenizer::string() {
 					_advance();
 					_advance();
 					break;
+				} else {
+					// Not a multiline string termination, add consumed quote.
+					result += quote_char;
 				}
 			} else {
 				// Ended single-line string.
@@ -850,7 +943,7 @@ void GDScriptTokenizer::check_indent() {
 	}
 
 	for (;;) {
-		CharType current_indent_char = _peek();
+		char32_t current_indent_char = _peek();
 		int indent_count = 0;
 
 		if (current_indent_char != ' ' && current_indent_char != '\t' && current_indent_char != '\r' && current_indent_char != '\n' && current_indent_char != '#') {
@@ -880,7 +973,7 @@ void GDScriptTokenizer::check_indent() {
 		// Check indent level.
 		bool mixed = false;
 		while (!_is_at_end()) {
-			CharType space = _peek();
+			char32_t space = _peek();
 			if (space == '\t') {
 				// Consider individual tab columns.
 				column += tab_size - 1;
@@ -924,9 +1017,17 @@ void GDScriptTokenizer::check_indent() {
 		}
 		if (_peek() == '#') {
 			// Comment. Advance to the next line.
+#ifdef TOOLS_ENABLED
+			String comment;
+			while (_peek() != '\n' && !_is_at_end()) {
+				comment += _advance();
+			}
+			comments[line] = CommentData(comment, true);
+#else
 			while (_peek() != '\n' && !_is_at_end()) {
 				_advance();
 			}
+#endif // TOOLS_ENABLED
 			if (_is_at_end()) {
 				// Reached the end with an empty line, so just dedent as much as needed.
 				pending_indents -= indent_level();
@@ -949,7 +1050,7 @@ void GDScriptTokenizer::check_indent() {
 			// First time indenting, choose character now.
 			indent_char = current_indent_char;
 		} else if (current_indent_char != indent_char) {
-			Token error = make_error(vformat("Used \"%c\" for indentation instead \"%c\" as used before in the file.", String(&current_indent_char, 1).c_escape(), String(&indent_char, 1).c_escape()));
+			Token error = make_error(vformat("Used \"%s\" for indentation instead \"%s\" as used before in the file.", String(&current_indent_char, 1).c_escape(), String(&indent_char, 1).c_escape()));
 			error.start_line = line;
 			error.start_column = 1;
 			error.leftmost_column = 1;
@@ -1013,7 +1114,7 @@ void GDScriptTokenizer::_skip_whitespace() {
 	}
 
 	for (;;) {
-		CharType c = _peek();
+		char32_t c = _peek();
 		switch (c) {
 			case ' ':
 				_advance();
@@ -1035,18 +1136,26 @@ void GDScriptTokenizer::_skip_whitespace() {
 				newline(!is_bol); // Don't create new line token if line is empty.
 				check_indent();
 				break;
-			case '#':
+			case '#': {
 				// Comment.
+#ifdef TOOLS_ENABLED
+				String comment;
+				while (_peek() != '\n' && !_is_at_end()) {
+					comment += _advance();
+				}
+				comments[line] = CommentData(comment, is_bol);
+#else
 				while (_peek() != '\n' && !_is_at_end()) {
 					_advance();
 				}
+#endif // TOOLS_ENABLED
 				if (_is_at_end()) {
 					return;
 				}
 				_advance(); // Consume '\n'
 				newline(!is_bol);
 				check_indent();
-				break;
+			} break;
 			default:
 				return;
 		}
@@ -1063,7 +1172,7 @@ GDScriptTokenizer::Token GDScriptTokenizer::scan() {
 	if (pending_newline) {
 		pending_newline = false;
 		if (!multiline_mode) {
-			// Don't return newline tokens on multine mode.
+			// Don't return newline tokens on multiline mode.
 			return last_newline;
 		}
 	}
@@ -1102,7 +1211,7 @@ GDScriptTokenizer::Token GDScriptTokenizer::scan() {
 		return make_token(Token::TK_EOF);
 	}
 
-	const CharType c = _advance();
+	const char32_t c = _advance();
 
 	if (c == '\\') {
 		// Line continuation with backslash.

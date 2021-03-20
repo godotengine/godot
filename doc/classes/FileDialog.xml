@@ -25,11 +25,11 @@
 				Clear all the added filters in the dialog.
 			</description>
 		</method>
-		<method name="deselect_items">
+		<method name="deselect_all">
 			<return type="void">
 			</return>
 			<description>
-				Clear currently selected items in the dialog.
+				Clear all currently selected items in the dialog.
 			</description>
 		</method>
 		<method name="get_line_edit">
@@ -57,6 +57,7 @@
 	<members>
 		<member name="access" type="int" setter="set_access" getter="get_access" enum="FileDialog.Access" default="0">
 			The file system access scope. See enum [code]Access[/code] constants.
+			[b]Warning:[/b] Currently, in sandboxed environments such as HTML5 builds or sandboxed macOS apps, FileDialog cannot access the host file system. See [url=https://github.com/godotengine/godot-proposals/issues/1123]godot-proposals#1123[/url].
 		</member>
 		<member name="current_dir" type="String" setter="set_current_dir" getter="get_current_dir" default="&quot;res://&quot;">
 			The current working directory of the file dialog.

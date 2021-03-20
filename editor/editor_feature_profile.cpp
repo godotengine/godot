@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -41,9 +41,9 @@ const char *EditorFeatureProfile::feature_names[FEATURE_MAX] = {
 	TTRC("Script Editor"),
 	TTRC("Asset Library"),
 	TTRC("Scene Tree Editing"),
-	TTRC("Import Dock"),
 	TTRC("Node Dock"),
-	TTRC("FileSystem and Import Docks")
+	TTRC("FileSystem Dock"),
+	TTRC("Import Dock"),
 };
 
 const char *EditorFeatureProfile::feature_identifiers[FEATURE_MAX] = {
@@ -51,9 +51,9 @@ const char *EditorFeatureProfile::feature_identifiers[FEATURE_MAX] = {
 	"script",
 	"asset_lib",
 	"scene_tree",
-	"import_dock",
 	"node_dock",
-	"filesystem_dock"
+	"filesystem_dock",
+	"import_dock",
 };
 
 void EditorFeatureProfile::set_disable_class(const StringName &p_class, bool p_disabled) {
@@ -96,7 +96,7 @@ void EditorFeatureProfile::set_disable_class_property(const StringName &p_class,
 	} else {
 		ERR_FAIL_COND(!disabled_properties.has(p_class));
 		disabled_properties[p_class].erase(p_property);
-		if (disabled_properties[p_class].empty()) {
+		if (disabled_properties[p_class].is_empty()) {
 			disabled_properties.erase(p_class);
 		}
 	}
@@ -271,17 +271,13 @@ void EditorFeatureProfile::_bind_methods() {
 	BIND_ENUM_CONSTANT(FEATURE_SCRIPT);
 	BIND_ENUM_CONSTANT(FEATURE_ASSET_LIB);
 	BIND_ENUM_CONSTANT(FEATURE_SCENE_TREE);
-	BIND_ENUM_CONSTANT(FEATURE_IMPORT_DOCK);
 	BIND_ENUM_CONSTANT(FEATURE_NODE_DOCK);
 	BIND_ENUM_CONSTANT(FEATURE_FILESYSTEM_DOCK);
+	BIND_ENUM_CONSTANT(FEATURE_IMPORT_DOCK);
 	BIND_ENUM_CONSTANT(FEATURE_MAX);
 }
 
-EditorFeatureProfile::EditorFeatureProfile() {
-	for (int i = 0; i < FEATURE_MAX; i++) {
-		features_disabled[i] = false;
-	}
-}
+EditorFeatureProfile::EditorFeatureProfile() {}
 
 //////////////////////////
 
@@ -678,9 +674,16 @@ void EditorFeatureProfileManager::_update_selected_profile() {
 	TreeItem *root = class_list->create_item();
 
 	TreeItem *features = class_list->create_item(root);
+	TreeItem *last_feature;
 	features->set_text(0, TTR("Enabled Features:"));
 	for (int i = 0; i < EditorFeatureProfile::FEATURE_MAX; i++) {
-		TreeItem *feature = class_list->create_item(features);
+		TreeItem *feature;
+		if (i == EditorFeatureProfile::FEATURE_IMPORT_DOCK) {
+			feature = class_list->create_item(last_feature);
+		} else {
+			feature = class_list->create_item(features);
+			last_feature = feature;
+		}
 		feature->set_cell_mode(0, TreeItem::CELL_MODE_CHECK);
 		feature->set_text(0, TTRGET(EditorFeatureProfile::get_feature_name(EditorFeatureProfile::Feature(i))));
 		feature->set_selectable(0, true);
@@ -869,7 +872,7 @@ EditorFeatureProfileManager::EditorFeatureProfileManager() {
 	no_profile_selected_help = memnew(Label(TTR("Create or import a profile to edit available classes and properties.")));
 	// Add some spacing above the help label.
 	Ref<StyleBoxEmpty> sb = memnew(StyleBoxEmpty);
-	sb->set_default_margin(MARGIN_TOP, 20 * EDSCALE);
+	sb->set_default_margin(SIDE_TOP, 20 * EDSCALE);
 	no_profile_selected_help->add_theme_style_override("normal", sb);
 	no_profile_selected_help->set_align(Label::ALIGN_CENTER);
 	no_profile_selected_help->set_v_size_flags(Control::SIZE_EXPAND_FILL);
@@ -883,7 +886,7 @@ EditorFeatureProfileManager::EditorFeatureProfileManager() {
 	add_child(new_profile_dialog);
 	new_profile_dialog->connect("confirmed", callable_mp(this, &EditorFeatureProfileManager::_create_new_profile));
 	new_profile_dialog->register_text_enter(new_profile_name);
-	new_profile_dialog->get_ok()->set_text(TTR("Create"));
+	new_profile_dialog->get_ok_button()->set_text(TTR("Create"));
 
 	erase_profile_dialog = memnew(ConfirmationDialog);
 	add_child(erase_profile_dialog);

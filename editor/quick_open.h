@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -31,7 +31,7 @@
 #ifndef EDITOR_QUICK_OPEN_H
 #define EDITOR_QUICK_OPEN_H
 
-#include "core/oa_hash_map.h"
+#include "core/templates/oa_hash_map.h"
 #include "editor_file_system.h"
 #include "scene/gui/dialogs.h"
 #include "scene/gui/tree.h"
@@ -49,7 +49,7 @@ class EditorQuickOpen : public ConfirmationDialog {
 
 	struct Entry {
 		String path;
-		float score;
+		float score = 0;
 	};
 
 	struct EntryComparator {

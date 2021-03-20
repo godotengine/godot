@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -34,9 +34,9 @@
 // Godot imports
 #include "core/io/resource_loader.h"
 #include "core/io/resource_saver.h"
-#include "core/map.h"
-#include "core/script_language.h"
-#include "core/self_list.h"
+#include "core/object/script_language.h"
+#include "core/templates/map.h"
+#include "core/templates/self_list.h"
 // PluginScript imports
 #include "pluginscript_loader.h"
 #include <pluginscript/godot_pluginscript.h>
@@ -78,7 +78,7 @@ public:
 	virtual Script *create_script() const;
 	virtual bool has_named_classes() const;
 	virtual bool supports_builtin_mode() const;
-	virtual bool can_inherit_from_file() { return true; }
+	virtual bool can_inherit_from_file() const;
 	virtual int find_function(const String &p_function, const String &p_code) const;
 	virtual String make_function(const String &p_class, const String &p_name, const PackedStringArray &p_args) const;
 	virtual Error complete_code(const String &p_code, const String &p_path, Object *p_owner, List<ScriptCodeCompletionOption> *r_options, bool &r_force, String &r_call_hint);
@@ -121,6 +121,11 @@ public:
 	virtual int profiling_get_frame_data(ProfilingInfo *p_info_arr, int p_info_max);
 
 	virtual void frame();
+
+	/* GLOBAL CLASSES */
+
+	virtual bool handles_global_class_type(const String &p_type) const;
+	virtual String get_global_class_name(const String &p_path, String *r_base_type = nullptr, String *r_icon_path = nullptr) const;
 
 	void lock();
 	void unlock();

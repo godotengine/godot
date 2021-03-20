@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -30,10 +30,10 @@
 
 #include "skeleton_3d.h"
 
-#include "core/engine.h"
-#include "core/message_queue.h"
-#include "core/project_settings.h"
-#include "core/type_info.h"
+#include "core/config/engine.h"
+#include "core/config/project_settings.h"
+#include "core/object/message_queue.h"
+#include "core/variant/type_info.h"
 #include "scene/3d/physics_body_3d.h"
 #include "scene/resources/surface_tool.h"
 #include "scene/scene_string_names.h"
@@ -304,7 +304,7 @@ void Skeleton3D::_notification(int p_what) {
 				uint32_t bind_count = skin->get_bind_count();
 
 				if (E->get()->bind_count != bind_count) {
-					RS::get_singleton()->skeleton_allocate(skeleton, bind_count);
+					RS::get_singleton()->skeleton_allocate_data(skeleton, bind_count);
 					E->get()->bind_count = bind_count;
 					E->get()->skin_bone_indices.resize(bind_count);
 					E->get()->skin_bone_indices_ptrs = E->get()->skin_bone_indices.ptrw();
@@ -848,7 +848,7 @@ Ref<SkinReference> Skeleton3D::register_skin(const Ref<Skin> &p_skin) {
 
 	skin_bindings.insert(skin_ref.operator->());
 
-	skin->connect_compat("changed", skin_ref.operator->(), "_skin_changed");
+	skin->connect("changed", Callable(skin_ref.operator->(), "_skin_changed"));
 
 	_make_dirty(); //skin needs to be updated, so update skeleton
 
@@ -927,10 +927,6 @@ void Skeleton3D::_bind_methods() {
 }
 
 Skeleton3D::Skeleton3D() {
-	animate_physical_bones = true;
-	dirty = false;
-	version = 1;
-	process_order_dirty = true;
 }
 
 Skeleton3D::~Skeleton3D() {

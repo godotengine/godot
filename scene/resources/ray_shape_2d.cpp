@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -45,7 +45,7 @@ void RayShape2D::draw(const RID &p_to_rid, const Color &p_color) {
 	Vector2 tip = Vector2(0, get_length());
 	RS::get_singleton()->canvas_item_add_line(p_to_rid, Vector2(), tip, p_color, 3);
 	Vector<Vector2> pts;
-	float tsize = 4;
+	float tsize = 4.0;
 	pts.push_back(tip + Vector2(0, tsize));
 	pts.push_back(tip + Vector2(Math_SQRT12 * tsize, 0));
 	pts.push_back(tip + Vector2(-Math_SQRT12 * tsize, 0));
@@ -99,7 +99,5 @@ bool RayShape2D::get_slips_on_slope() const {
 
 RayShape2D::RayShape2D() :
 		Shape2D(PhysicsServer2D::get_singleton()->ray_shape_create()) {
-	length = 20;
-	slips_on_slope = false;
 	_update_shape();
 }

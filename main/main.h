@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -31,7 +31,7 @@
 #ifndef MAIN_H
 #define MAIN_H
 
-#include "core/error_list.h"
+#include "core/error/error_list.h"
 #include "core/os/thread.h"
 #include "core/typedefs.h"
 
@@ -48,6 +48,10 @@ public:
 	static int test_entrypoint(int argc, char *argv[], bool &tests_need_run);
 	static Error setup(const char *execpath, int argc, char *argv[], bool p_second_phase = true);
 	static Error setup2(Thread::ID p_main_tid_override = 0);
+#ifdef TESTS_ENABLED
+	static Error test_setup();
+	static void test_cleanup();
+#endif
 	static bool start();
 
 	static bool iteration();
@@ -55,10 +59,10 @@ public:
 
 	static bool is_iterating();
 
-	static void cleanup();
+	static void cleanup(bool p_force = false);
 };
 
-// Test main override is for the testing behaviour
+// Test main override is for the testing behaviour.
 #define TEST_MAIN_OVERRIDE                                         \
 	bool run_test = false;                                         \
 	int return_code = Main::test_entrypoint(argc, argv, run_test); \

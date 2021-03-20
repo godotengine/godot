@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -231,6 +231,7 @@ void CanvasLayer::set_follow_viewport(bool p_enable) {
 
 	follow_viewport = p_enable;
 	_update_follow_viewport();
+	notify_property_list_changed();
 }
 
 bool CanvasLayer::is_following_viewport() const {
@@ -254,6 +255,12 @@ void CanvasLayer::_update_follow_viewport(bool p_force_exit) {
 		RS::get_singleton()->canvas_set_parent(canvas, RID(), 1.0);
 	} else {
 		RS::get_singleton()->canvas_set_parent(canvas, vp->get_world_2d()->get_canvas(), follow_viewport_scale);
+	}
+}
+
+void CanvasLayer::_validate_property(PropertyInfo &property) const {
+	if (!follow_viewport && property.name == "follow_viewport_scale") {
+		property.usage = PROPERTY_USAGE_NOEDITOR;
 	}
 }
 
@@ -303,17 +310,7 @@ void CanvasLayer::_bind_methods() {
 }
 
 CanvasLayer::CanvasLayer() {
-	vp = nullptr;
-	scale = Vector2(1, 1);
-	rot = 0;
-	locrotscale_dirty = false;
-	layer = 1;
 	canvas = RS::get_singleton()->canvas_create();
-	custom_viewport = nullptr;
-
-	sort_index = 0;
-	follow_viewport = false;
-	follow_viewport_scale = 1.0;
 }
 
 CanvasLayer::~CanvasLayer() {

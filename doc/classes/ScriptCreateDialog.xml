@@ -5,12 +5,24 @@
 	</brief_description>
 	<description>
 		The [ScriptCreateDialog] creates script files according to a given template for a given scripting language. The standard use is to configure its fields prior to calling one of the [method Window.popup] methods.
-		[codeblock]
+		[codeblocks]
+		[gdscript]
 		func _ready():
-		    dialog.config("Node", "res://new_node.gd") # For in-engine types
-		    dialog.config("\"res://base_node.gd\"", "res://derived_node.gd") # For script types
+		    var dialog = ScriptCreateDialog.new();
+		    dialog.config("Node", "res://new_node.gd") # For in-engine types.
+		    dialog.config("\"res://base_node.gd\"", "res://derived_node.gd") # For script types.
 		    dialog.popup_centered()
-		[/codeblock]
+		[/gdscript]
+		[csharp]
+		public override void _Ready()
+		{
+		    var dialog = new ScriptCreateDialog();
+		    dialog.Config("Node", "res://NewNode.cs"); // For in-engine types.
+		    dialog.Config("\"res://BaseNode.cs\"", "res://DerivedNode.cs"); // For script types.
+		    dialog.PopupCentered();
+		}
+		[/csharp]
+		[/codeblocks]
 	</description>
 	<tutorials>
 	</tutorials>

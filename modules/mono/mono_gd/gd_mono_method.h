@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -38,15 +38,16 @@
 class GDMonoMethod : public IMonoClassMember {
 	StringName name;
 
-	int params_count;
+	uint16_t params_count;
+	unsigned int params_buffer_size = 0;
 	ManagedType return_type;
 	Vector<ManagedType> param_types;
 
-	bool method_info_fetched;
+	bool method_info_fetched = false;
 	MethodInfo method_info;
 
-	bool attrs_fetched;
-	MonoCustomAttrInfo *attributes;
+	bool attrs_fetched = false;
+	MonoCustomAttrInfo *attributes = nullptr;
 
 	void _update_signature();
 	void _update_signature(MonoMethodSignature *p_method_sig);
@@ -72,7 +73,7 @@ public:
 
 	_FORCE_INLINE_ MonoMethod *get_mono_ptr() const { return mono_method; }
 
-	_FORCE_INLINE_ int get_parameters_count() const { return params_count; }
+	_FORCE_INLINE_ uint16_t get_parameters_count() const { return params_count; }
 	_FORCE_INLINE_ ManagedType get_return_type() const { return return_type; }
 
 	MonoObject *invoke(MonoObject *p_object, const Variant **p_params, MonoException **r_exc = nullptr) const;

@@ -1,7 +1,7 @@
 /*
  *  Privacy Enhanced Mail (PEM) decoding
  *
- *  Copyright (C) 2006-2015, ARM Limited, All Rights Reserved
+ *  Copyright The Mbed TLS Contributors
  *  SPDX-License-Identifier: Apache-2.0 OR GPL-2.0-or-later
  *
  *  This file is provided under the Apache License 2.0, or the
@@ -42,8 +42,6 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
  *  **********
- *
- *  This file is part of mbed TLS (https://tls.mbed.org)
  */
 
 #if !defined(MBEDTLS_CONFIG_FILE)
@@ -510,8 +508,12 @@ int mbedtls_pem_write_buffer( const char *header, const char *footer,
     *p++ = '\0';
     *olen = p - buf;
 
+     /* Clean any remaining data previously written to the buffer */
+    memset( buf + *olen, 0, buf_len - *olen );
+
     mbedtls_free( encode_buf );
     return( 0 );
 }
 #endif /* MBEDTLS_PEM_WRITE_C */
 #endif /* MBEDTLS_PEM_PARSE_C || MBEDTLS_PEM_WRITE_C */
+

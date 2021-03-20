@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -153,8 +153,8 @@ void MobileVRInterface::set_position_from_sensors() {
 	last_magnetometer_data = magneto;
 
 	if (grav.length() < 0.1) {
-		// not ideal but use our accelerometer, this will contain shakey shakey user behaviour
-		// maybe look into some math but I'm guessing that if this isn't available, its because we lack the gyro sensor to actually work out
+		// not ideal but use our accelerometer, this will contain shaky user behaviour
+		// maybe look into some math but I'm guessing that if this isn't available, it's because we lack the gyro sensor to actually work out
 		// what a stable gravity vector is
 		grav = acc;
 		if (grav.length() > 0.1) {
@@ -181,8 +181,8 @@ void MobileVRInterface::set_position_from_sensors() {
 		tracking_state = XRInterface::XR_NORMAL_TRACKING;
 	};
 
-	///@TODO improve this, the magnetometer is very fidgity sometimes flipping the axis for no apparent reason (probably a bug on my part)
-	// if you have a gyro + accelerometer that combo tends to be better then combining all three but without a gyro you need the magnetometer..
+	///@TODO improve this, the magnetometer is very fidgety sometimes flipping the axis for no apparent reason (probably a bug on my part)
+	// if you have a gyro + accelerometer that combo tends to be better than combining all three but without a gyro you need the magnetometer..
 	if (has_magneto && has_grav && !has_gyro) {
 		// convert to quaternions, easier to smooth those out
 		Quat transform_quat(orientation);
@@ -372,7 +372,7 @@ Transform MobileVRInterface::get_transform_for_eye(XRInterface::Eyes p_eye, cons
 	if (initialized) {
 		float world_scale = xr_server->get_world_scale();
 
-		// we don't need to check for the existence of our HMD, doesn't effect our values...
+		// we don't need to check for the existence of our HMD, doesn't affect our values...
 		// note * 0.01 to convert cm to m and * 0.5 as we're moving half in each direction...
 		if (p_eye == XRInterface::EYE_LEFT) {
 			transform_for_eye.origin.x = -(intraocular_dist * 0.01 * 0.5 * world_scale);
@@ -402,7 +402,7 @@ CameraMatrix MobileVRInterface::get_projection_for_eye(XRInterface::Eyes p_eye, 
 	CameraMatrix eye;
 
 	if (p_eye == XRInterface::EYE_MONO) {
-		///@TODO for now hardcode some of this, what is really needed here is that this needs to be in sync with the real cameras properties
+		///@TODO for now hardcode some of this, what is really needed here is that this needs to be in sync with the real camera's properties
 		// which probably means implementing a specific class for iOS and Android. For now this is purely here as an example.
 		// Note also that if you use a normal viewport with AR/VR turned off you can still use the tracker output of this interface
 		// to position a stock standard Godot camera and have control over this.
@@ -448,19 +448,7 @@ void MobileVRInterface::process() {
 	};
 };
 
-MobileVRInterface::MobileVRInterface() {
-	initialized = false;
-
-	// Just set some defaults for these. At some point we need to look at adding a lookup table for common device + headset combos and/or support reading cardboard QR codes
-	eye_height = 1.85;
-	intraocular_dist = 6.0;
-	display_width = 14.5;
-	display_to_lens = 4.0;
-	oversample = 1.5;
-	k1 = 0.215;
-	k2 = 0.215;
-	last_ticks = 0;
-};
+MobileVRInterface::MobileVRInterface() {}
 
 MobileVRInterface::~MobileVRInterface() {
 	// and make sure we cleanup if we haven't already

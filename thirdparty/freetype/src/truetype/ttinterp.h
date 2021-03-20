@@ -19,7 +19,6 @@
 #ifndef TTINTERP_H_
 #define TTINTERP_H_
 
-#include <ft2build.h>
 #include "ttobjs.h"
 
 
@@ -52,7 +51,7 @@ FT_BEGIN_HEADER
   typedef FT_F26Dot6
   (*TT_Round_Func)( TT_ExecContext  exc,
                     FT_F26Dot6      distance,
-                    FT_F26Dot6      compensation );
+                    FT_Int          color );
 
   /* Point displacement along the freedom vector routine */
   typedef void

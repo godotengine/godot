@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -30,10 +30,13 @@
 
 #include "display_server_iphone.h"
 #import "app_delegate.h"
+#include "core/config/project_settings.h"
 #include "core/io/file_access_pack.h"
-#include "core/project_settings.h"
+#import "device_metrics.h"
 #import "godot_view.h"
 #include "ios.h"
+#import "keyboard_input_view.h"
+#import "native_video_view.h"
 #include "os_iphone.h"
 #import "view_controller.h"
 
@@ -41,120 +44,6 @@
 #import <sys/utsname.h>
 
 static const float kDisplayServerIPhoneAcceleration = 1;
-static NSDictionary *iOSModelToDPI = @{
-	@[
-		@"iPad1,1",
-		@"iPad2,1",
-		@"iPad2,2",
-		@"iPad2,3",
-		@"iPad2,4",
-	] : @132,
-	@[
-		@"iPhone1,1",
-		@"iPhone1,2",
-		@"iPhone2,1",
-		@"iPad2,5",
-		@"iPad2,6",
-		@"iPad2,7",
-		@"iPod1,1",
-		@"iPod2,1",
-		@"iPod3,1",
-	] : @163,
-	@[
-		@"iPad3,1",
-		@"iPad3,2",
-		@"iPad3,3",
-		@"iPad3,4",
-		@"iPad3,5",
-		@"iPad3,6",
-		@"iPad4,1",
-		@"iPad4,2",
-		@"iPad4,3",
-		@"iPad5,3",
-		@"iPad5,4",
-		@"iPad6,3",
-		@"iPad6,4",
-		@"iPad6,7",
-		@"iPad6,8",
-		@"iPad6,11",
-		@"iPad6,12",
-		@"iPad7,1",
-		@"iPad7,2",
-		@"iPad7,3",
-		@"iPad7,4",
-		@"iPad7,5",
-		@"iPad7,6",
-		@"iPad7,11",
-		@"iPad7,12",
-		@"iPad8,1",
-		@"iPad8,2",
-		@"iPad8,3",
-		@"iPad8,4",
-		@"iPad8,5",
-		@"iPad8,6",
-		@"iPad8,7",
-		@"iPad8,8",
-		@"iPad8,9",
-		@"iPad8,10",
-		@"iPad8,11",
-		@"iPad8,12",
-		@"iPad11,3",
-		@"iPad11,4",
-	] : @264,
-	@[
-		@"iPhone3,1",
-		@"iPhone3,2",
-		@"iPhone3,3",
-		@"iPhone4,1",
-		@"iPhone5,1",
-		@"iPhone5,2",
-		@"iPhone5,3",
-		@"iPhone5,4",
-		@"iPhone6,1",
-		@"iPhone6,2",
-		@"iPhone7,2",
-		@"iPhone8,1",
-		@"iPhone8,4",
-		@"iPhone9,1",
-		@"iPhone9,3",
-		@"iPhone10,1",
-		@"iPhone10,4",
-		@"iPhone11,8",
-		@"iPhone12,1",
-		@"iPhone12,8",
-		@"iPad4,4",
-		@"iPad4,5",
-		@"iPad4,6",
-		@"iPad4,7",
-		@"iPad4,8",
-		@"iPad4,9",
-		@"iPad5,1",
-		@"iPad5,2",
-		@"iPad11,1",
-		@"iPad11,2",
-		@"iPod4,1",
-		@"iPod5,1",
-		@"iPod7,1",
-		@"iPod9,1",
-	] : @326,
-	@[
-		@"iPhone7,1",
-		@"iPhone8,2",
-		@"iPhone9,2",
-		@"iPhone9,4",
-		@"iPhone10,2",
-		@"iPhone10,5",
-	] : @401,
-	@[
-		@"iPhone10,3",
-		@"iPhone10,6",
-		@"iPhone11,2",
-		@"iPhone11,4",
-		@"iPhone11,6",
-		@"iPhone12,3",
-		@"iPhone12,5",
-	] : @458,
-};
 
 DisplayServerIPhone *DisplayServerIPhone::get_singleton() {
 	return (DisplayServerIPhone *)DisplayServer::get_singleton();
@@ -184,7 +73,7 @@ DisplayServerIPhone::DisplayServerIPhone(const String &p_rendering_driver, Displ
 			//        return ERR_UNAVAILABLE;
 		}
 
-		//    rendering_server = memnew(RenderingServerRaster);
+		//    rendering_server = memnew(RenderingServerDefault);
 		//    // FIXME: Reimplement threaded rendering
 		//    if (get_render_thread_mode() != RENDER_THREAD_UNSAFE) {
 		//        rendering_server = memnew(RenderingServerWrapMT(rendering_server,
@@ -229,7 +118,7 @@ DisplayServerIPhone::DisplayServerIPhone(const String &p_rendering_driver, Displ
 		rendering_device_vulkan = memnew(RenderingDeviceVulkan);
 		rendering_device_vulkan->initialize(context_vulkan);
 
-		RasterizerRD::make_current();
+		RendererCompositorRD::make_current();
 	}
 #endif
 
@@ -383,8 +272,7 @@ void DisplayServerIPhone::update_gravity(float p_x, float p_y, float p_z) {
 	Input::get_singleton()->set_gravity(Vector3(p_x, p_y, p_z));
 };
 
-void DisplayServerIPhone::update_accelerometer(float p_x, float p_y,
-		float p_z) {
+void DisplayServerIPhone::update_accelerometer(float p_x, float p_y, float p_z) {
 	// Found out the Z should not be negated! Pass as is!
 	Vector3 v_accelerometer = Vector3(
 			p_x / kDisplayServerIPhoneAcceleration,
@@ -392,39 +280,6 @@ void DisplayServerIPhone::update_accelerometer(float p_x, float p_y,
 			p_z / kDisplayServerIPhoneAcceleration);
 
 	Input::get_singleton()->set_accelerometer(v_accelerometer);
-
-	/*
-  if (p_x != last_accel.x) {
-      //printf("updating accel x %f\n", p_x);
-      InputEvent ev;
-      ev.type = InputEvent::JOYPAD_MOTION;
-      ev.device = 0;
-      ev.joy_motion.axis = JOY_ANALOG_0;
-      ev.joy_motion.axis_value = (p_x / (float)ACCEL_RANGE);
-      last_accel.x = p_x;
-      queue_event(ev);
-  };
-  if (p_y != last_accel.y) {
-      //printf("updating accel y %f\n", p_y);
-      InputEvent ev;
-      ev.type = InputEvent::JOYPAD_MOTION;
-      ev.device = 0;
-      ev.joy_motion.axis = JOY_ANALOG_1;
-      ev.joy_motion.axis_value = (p_y / (float)ACCEL_RANGE);
-      last_accel.y = p_y;
-      queue_event(ev);
-  };
-  if (p_z != last_accel.z) {
-      //printf("updating accel z %f\n", p_z);
-      InputEvent ev;
-      ev.type = InputEvent::JOYPAD_MOTION;
-      ev.device = 0;
-      ev.joy_motion.axis = JOY_ANALOG_2;
-      ev.joy_motion.axis_value = ( (1.0 - p_z) / (float)ACCEL_RANGE);
-      last_accel.z = p_z;
-      queue_event(ev);
-  };
-  */
 };
 
 void DisplayServerIPhone::update_magnetometer(float p_x, float p_y, float p_z) {
@@ -516,6 +371,8 @@ int DisplayServerIPhone::screen_get_dpi(int p_screen) const {
 
 	NSString *string = [NSString stringWithCString:systemInfo.machine encoding:NSUTF8StringEncoding];
 
+	NSDictionary *iOSModelToDPI = [GodotDeviceMetrics dpiList];
+
 	for (NSArray *keyArray in iOSModelToDPI) {
 		if ([keyArray containsObject:string]) {
 			NSNumber *value = iOSModelToDPI[keyArray];
@@ -523,7 +380,26 @@ int DisplayServerIPhone::screen_get_dpi(int p_screen) const {
 		}
 	}
 
-	return 163;
+	// If device wasn't found in dictionary
+	// make a best guess from device metrics.
+	CGFloat scale = [UIScreen mainScreen].scale;
+
+	UIUserInterfaceIdiom idiom = [UIDevice currentDevice].userInterfaceIdiom;
+
+	switch (idiom) {
+		case UIUserInterfaceIdiomPad:
+			return scale == 2 ? 264 : 132;
+		case UIUserInterfaceIdiomPhone: {
+			if (scale == 3) {
+				CGFloat nativeScale = [UIScreen mainScreen].nativeScale;
+				return nativeScale == 3 ? 458 : 401;
+			}
+
+			return 326;
+		}
+		default:
+			return 72;
+	}
 }
 
 float DisplayServerIPhone::screen_get_scale(int p_screen) const {
@@ -654,11 +530,17 @@ bool DisplayServerIPhone::screen_is_touchscreen(int p_screen) const {
 }
 
 void DisplayServerIPhone::virtual_keyboard_show(const String &p_existing_text, const Rect2 &p_screen_rect, bool p_multiline, int p_max_length, int p_cursor_start, int p_cursor_end) {
-	[AppDelegate.viewController.godotView becomeFirstResponderWithString:p_existing_text];
+	NSString *existingString = [[NSString alloc] initWithUTF8String:p_existing_text.utf8().get_data()];
+
+	[AppDelegate.viewController.keyboardView
+			becomeFirstResponderWithString:existingString
+								 multiline:p_multiline
+							   cursorStart:p_cursor_start
+								 cursorEnd:p_cursor_end];
 }
 
 void DisplayServerIPhone::virtual_keyboard_hide() {
-	[AppDelegate.viewController.godotView resignFirstResponder];
+	[AppDelegate.viewController.keyboardView resignFirstResponder];
 }
 
 void DisplayServerIPhone::virtual_keyboard_set_height(int height) {
@@ -701,7 +583,7 @@ Error DisplayServerIPhone::native_video_play(String p_path, float p_volume, Stri
 
 	if (p_path.begins_with("res://")) {
 		if (PackedData::get_singleton()->has_path(p_path)) {
-			printf("Unable to play %S using the native player as it resides in a .pck file\n", p_path.c_str());
+			printf("Unable to play %s using the native player as it resides in a .pck file\n", p_path.utf8().get_data());
 			return ERR_INVALID_PARAMETER;
 		} else {
 			p_path = p_path.replace("res:/", ProjectSettings::get_singleton()->get_resource_path());
@@ -712,11 +594,11 @@ Error DisplayServerIPhone::native_video_play(String p_path, float p_volume, Stri
 
 	memdelete(f);
 
-	printf("Playing video: %S\n", p_path.c_str());
+	printf("Playing video: %s\n", p_path.utf8().get_data());
 
 	String file_path = ProjectSettings::get_singleton()->globalize_path(p_path);
 
-	NSString *filePath = [[[NSString alloc] initWithUTF8String:file_path.utf8().get_data()] autorelease];
+	NSString *filePath = [[NSString alloc] initWithUTF8String:file_path.utf8().get_data()];
 	NSString *audioTrack = [NSString stringWithUTF8String:p_audio_track.utf8()];
 	NSString *subtitleTrack = [NSString stringWithUTF8String:p_subtitle_track.utf8()];
 
@@ -731,22 +613,22 @@ Error DisplayServerIPhone::native_video_play(String p_path, float p_volume, Stri
 }
 
 bool DisplayServerIPhone::native_video_is_playing() const {
-	return [AppDelegate.viewController isVideoPlaying];
+	return [AppDelegate.viewController.videoView isVideoPlaying];
 }
 
 void DisplayServerIPhone::native_video_pause() {
 	if (native_video_is_playing()) {
-		[AppDelegate.viewController pauseVideo];
+		[AppDelegate.viewController.videoView pauseVideo];
 	}
 }
 
 void DisplayServerIPhone::native_video_unpause() {
-	[AppDelegate.viewController unpauseVideo];
+	[AppDelegate.viewController.videoView unpauseVideo];
 };
 
 void DisplayServerIPhone::native_video_stop() {
 	if (native_video_is_playing()) {
-		[AppDelegate.viewController stopVideo];
+		[AppDelegate.viewController.videoView stopVideo];
 	}
 }
 

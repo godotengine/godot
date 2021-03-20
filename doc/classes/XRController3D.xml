@@ -9,7 +9,7 @@
 		The position of the controller node is automatically updated by the [XRServer]. This makes this node ideal to add child nodes to visualize the controller.
 	</description>
 	<tutorials>
-		<link>https://docs.godotengine.org/en/latest/tutorials/vr/index.html</link>
+		<link title="VR tutorial index">https://docs.godotengine.org/en/latest/tutorials/vr/index.html</link>
 	</tutorials>
 	<methods>
 		<method name="get_controller_name" qualifiers="const">
@@ -17,13 +17,6 @@
 			</return>
 			<description>
 				If active, returns the name of the associated controller if provided by the AR/VR SDK used.
-			</description>
-		</method>
-		<method name="get_hand" qualifiers="const">
-			<return type="int" enum="XRPositionalTracker.TrackerHand">
-			</return>
-			<description>
-				Returns the hand holding this controller, if known. See [enum XRPositionalTracker.TrackerHand].
 			</description>
 		</method>
 		<method name="get_is_active" qualifiers="const">
@@ -56,6 +49,13 @@
 				If provided by the [XRInterface], this returns a mesh associated with the controller. This can be used to visualize the controller.
 			</description>
 		</method>
+		<method name="get_tracker_hand" qualifiers="const">
+			<return type="int" enum="XRPositionalTracker.TrackerHand">
+			</return>
+			<description>
+				Returns the hand holding this controller, if known. See [enum XRPositionalTracker.TrackerHand].
+			</description>
+		</method>
 		<method name="is_button_pressed" qualifiers="const">
 			<return type="bool">
 			</return>
@@ -86,7 +86,7 @@
 				Emitted when a button on this controller is pressed.
 			</description>
 		</signal>
-		<signal name="button_release">
+		<signal name="button_released">
 			<argument index="0" name="button" type="int">
 			</argument>
 			<description>

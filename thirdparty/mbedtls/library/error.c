@@ -1,7 +1,7 @@
 /*
  *  Error message information
  *
- *  Copyright (C) 2006-2015, ARM Limited, All Rights Reserved
+ *  Copyright The Mbed TLS Contributors
  *  SPDX-License-Identifier: Apache-2.0 OR GPL-2.0-or-later
  *
  *  This file is provided under the Apache License 2.0, or the
@@ -42,8 +42,6 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
  *  **********
- *
- *  This file is part of mbed TLS (https://tls.mbed.org)
  */
 
 #if !defined(MBEDTLS_CONFIG_FILE)
@@ -53,20 +51,19 @@
 #endif
 
 #if defined(MBEDTLS_ERROR_C) || defined(MBEDTLS_ERROR_STRERROR_DUMMY)
+
 #include "mbedtls/error.h"
-#include <string.h>
-#endif
+
+#if defined(MBEDTLS_ERROR_C)
 
 #if defined(MBEDTLS_PLATFORM_C)
 #include "mbedtls/platform.h"
 #else
 #define mbedtls_snprintf snprintf
-#define mbedtls_time_t   time_t
 #endif
 
-#if defined(MBEDTLS_ERROR_C)
-
 #include <stdio.h>
+#include <string.h>
 
 #if defined(MBEDTLS_AES_C)
 #include "mbedtls/aes.h"
@@ -931,8 +928,6 @@ void mbedtls_strerror( int ret, char *buf, size_t buflen )
 
 #else /* MBEDTLS_ERROR_C */
 
-#if defined(MBEDTLS_ERROR_STRERROR_DUMMY)
-
 /*
  * Provide an non-function in case MBEDTLS_ERROR_C is not defined
  */
@@ -944,6 +939,6 @@ void mbedtls_strerror( int ret, char *buf, size_t buflen )
         buf[0] = '\0';
 }
 
-#endif /* MBEDTLS_ERROR_STRERROR_DUMMY */
-
 #endif /* MBEDTLS_ERROR_C */
+
+#endif /* MBEDTLS_ERROR_C || MBEDTLS_ERROR_STRERROR_DUMMY */

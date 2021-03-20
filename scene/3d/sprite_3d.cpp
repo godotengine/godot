@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -204,7 +204,6 @@ Ref<TriangleMesh> SpriteBase3D::generate_triangle_mesh() const {
 	float pixel_size = get_pixel_size();
 
 	Vector2 vertices[4] = {
-
 		(final_rect.position + Vector2(0, final_rect.size.y)) * pixel_size,
 		(final_rect.position + final_rect.size) * pixel_size,
 		(final_rect.position + Vector2(final_rect.size.x, 0)) * pixel_size,
@@ -340,24 +339,10 @@ void SpriteBase3D::_bind_methods() {
 }
 
 SpriteBase3D::SpriteBase3D() {
-	color_dirty = true;
-	centered = true;
-	hflip = false;
-	vflip = false;
-	parent_sprite = nullptr;
-	pI = nullptr;
-
 	for (int i = 0; i < FLAG_MAX; i++) {
 		flags[i] = i == FLAG_TRANSPARENT || i == FLAG_DOUBLE_SIDED;
 	}
 
-	alpha_cut = ALPHA_CUT_DISABLED;
-	billboard_mode = StandardMaterial3D::BILLBOARD_DISABLED;
-	axis = Vector3::AXIS_Z;
-	pixel_size = 0.01;
-	modulate = Color(1, 1, 1, 1);
-	pending_update = false;
-	opacity = 1.0;
 	immediate = RenderingServer::get_singleton()->immediate_create();
 	set_base(immediate);
 }
@@ -381,7 +366,7 @@ void Sprite3D::_draw() {
 	}
 
 	Rect2 base_rect;
-	if (region) {
+	if (region_enabled) {
 		base_rect = region_rect;
 	} else {
 		base_rect = Rect2(0, 0, texture->get_width(), texture->get_height());
@@ -414,7 +399,6 @@ void Sprite3D::_draw() {
 	float pixel_size = get_pixel_size();
 
 	Vector2 vertices[4] = {
-
 		(final_rect.position + Vector2(0, final_rect.size.y)) * pixel_size,
 		(final_rect.position + final_rect.size) * pixel_size,
 		(final_rect.position + Vector2(final_rect.size.x, 0)) * pixel_size,
@@ -488,7 +472,7 @@ void Sprite3D::_draw() {
 		RS::get_singleton()->immediate_normal(immediate, normal);
 		RS::get_singleton()->immediate_tangent(immediate, tangent);
 		RS::get_singleton()->immediate_color(immediate, color);
-		RS::get_singleton()->immediate_uv(immediate, uvs[i]);
+		RS::get_singleton()->immediate_uv(immediate, uvs[index[i]]);
 
 		Vector3 vtx;
 		vtx[x_axis] = vertices[index[i]][0];
@@ -527,23 +511,24 @@ Ref<Texture2D> Sprite3D::get_texture() const {
 	return texture;
 }
 
-void Sprite3D::set_region(bool p_region) {
-	if (p_region == region) {
+void Sprite3D::set_region_enabled(bool p_region_enabled) {
+	if (p_region_enabled == region_enabled) {
 		return;
 	}
 
-	region = p_region;
+	region_enabled = p_region_enabled;
 	_queue_update();
+	notify_property_list_changed();
 }
 
-bool Sprite3D::is_region() const {
-	return region;
+bool Sprite3D::is_region_enabled() const {
+	return region_enabled;
 }
 
 void Sprite3D::set_region_rect(const Rect2 &p_region_rect) {
 	bool changed = region_rect != p_region_rect;
 	region_rect = p_region_rect;
-	if (region && changed) {
+	if (region_enabled && changed) {
 		_queue_update();
 	}
 }
@@ -559,8 +544,6 @@ void Sprite3D::set_frame(int p_frame) {
 
 	_queue_update();
 
-	_change_notify("frame");
-	_change_notify("frame_coords");
 	emit_signal(SceneStringNames::get_singleton()->frame_changed);
 }
 
@@ -583,7 +566,7 @@ void Sprite3D::set_vframes(int p_amount) {
 	ERR_FAIL_COND(p_amount < 1);
 	vframes = p_amount;
 	_queue_update();
-	_change_notify();
+	notify_property_list_changed();
 }
 
 int Sprite3D::get_vframes() const {
@@ -594,7 +577,7 @@ void Sprite3D::set_hframes(int p_amount) {
 	ERR_FAIL_COND(p_amount < 1);
 	hframes = p_amount;
 	_queue_update();
-	_change_notify();
+	notify_property_list_changed();
 }
 
 int Sprite3D::get_hframes() const {
@@ -612,7 +595,7 @@ Rect2 Sprite3D::get_item_rect() const {
 
 	Size2i s;
 
-	if (region) {
+	if (region_enabled) {
 		s = region_rect.size;
 	} else {
 		s = texture->get_size();
@@ -641,14 +624,18 @@ void Sprite3D::_validate_property(PropertyInfo &property) const {
 	if (property.name == "frame_coords") {
 		property.usage |= PROPERTY_USAGE_KEYING_INCREMENTS;
 	}
+
+	if (!region_enabled && property.name == "region_rect") {
+		property.usage = PROPERTY_USAGE_NOEDITOR;
+	}
 }
 
 void Sprite3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_texture", "texture"), &Sprite3D::set_texture);
 	ClassDB::bind_method(D_METHOD("get_texture"), &Sprite3D::get_texture);
 
-	ClassDB::bind_method(D_METHOD("set_region", "enabled"), &Sprite3D::set_region);
-	ClassDB::bind_method(D_METHOD("is_region"), &Sprite3D::is_region);
+	ClassDB::bind_method(D_METHOD("set_region_enabled", "enabled"), &Sprite3D::set_region_enabled);
+	ClassDB::bind_method(D_METHOD("is_region_enabled"), &Sprite3D::is_region_enabled);
 
 	ClassDB::bind_method(D_METHOD("set_region_rect", "rect"), &Sprite3D::set_region_rect);
 	ClassDB::bind_method(D_METHOD("get_region_rect"), &Sprite3D::get_region_rect);
@@ -667,19 +654,19 @@ void Sprite3D::_bind_methods() {
 
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "texture", PROPERTY_HINT_RESOURCE_TYPE, "Texture2D"), "set_texture", "get_texture");
 	ADD_GROUP("Animation", "");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "vframes", PROPERTY_HINT_RANGE, "1,16384,1"), "set_vframes", "get_vframes");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "hframes", PROPERTY_HINT_RANGE, "1,16384,1"), "set_hframes", "get_hframes");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "vframes", PROPERTY_HINT_RANGE, "1,16384,1"), "set_vframes", "get_vframes");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "frame"), "set_frame", "get_frame");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "frame_coords", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_EDITOR), "set_frame_coords", "get_frame_coords");
 	ADD_GROUP("Region", "region_");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "region_enabled"), "set_region", "is_region");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "region_enabled"), "set_region_enabled", "is_region_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::RECT2, "region_rect"), "set_region_rect", "get_region_rect");
 
 	ADD_SIGNAL(MethodInfo("frame_changed"));
 }
 
 Sprite3D::Sprite3D() {
-	region = false;
+	region_enabled = false;
 	frame = 0;
 	vframes = 1;
 	hframes = 1;
@@ -705,7 +692,7 @@ void AnimatedSprite3D::_draw() {
 
 	Ref<Texture2D> texture = frames->get_frame(animation, frame);
 	if (!texture.is_valid()) {
-		return; //no texuture no life
+		return; //no texture no life
 	}
 	Vector2 tsize = texture->get_size();
 	if (tsize.x == 0 || tsize.y == 0) {
@@ -740,7 +727,6 @@ void AnimatedSprite3D::_draw() {
 	float pixel_size = get_pixel_size();
 
 	Vector2 vertices[4] = {
-
 		(final_rect.position + Vector2(0, final_rect.size.y)) * pixel_size,
 		(final_rect.position + final_rect.size) * pixel_size,
 		(final_rect.position + Vector2(final_rect.size.x, 0)) * pixel_size,
@@ -818,7 +804,7 @@ void AnimatedSprite3D::_draw() {
 		RS::get_singleton()->immediate_normal(immediate, normal);
 		RS::get_singleton()->immediate_tangent(immediate, tangent);
 		RS::get_singleton()->immediate_color(immediate, color);
-		RS::get_singleton()->immediate_uv(immediate, uvs[i]);
+		RS::get_singleton()->immediate_uv(immediate, uvs[indices[i]]);
 
 		Vector3 vtx;
 		vtx[x_axis] = vertices[indices[i]][0];
@@ -907,12 +893,13 @@ void AnimatedSprite3D::_notification(int p_what) {
 						} else {
 							frame = fc - 1;
 						}
+						emit_signal(SceneStringNames::get_singleton()->animation_finished);
 					} else {
 						frame++;
 					}
 
 					_queue_update();
-					_change_notify("frame");
+					emit_signal(SceneStringNames::get_singleton()->frame_changed);
 				}
 
 				float to_process = MIN(timeout, remaining);
@@ -938,7 +925,7 @@ void AnimatedSprite3D::set_sprite_frames(const Ref<SpriteFrames> &p_frames) {
 		set_frame(frame);
 	}
 
-	_change_notify();
+	notify_property_list_changed();
 	_reset_timeout();
 	_queue_update();
 	update_configuration_warning();
@@ -971,7 +958,7 @@ void AnimatedSprite3D::set_frame(int p_frame) {
 	frame = p_frame;
 	_reset_timeout();
 	_queue_update();
-	_change_notify("frame");
+
 	emit_signal(SceneStringNames::get_singleton()->frame_changed);
 }
 
@@ -1007,8 +994,6 @@ Rect2 AnimatedSprite3D::get_item_rect() const {
 
 void AnimatedSprite3D::_res_changed() {
 	set_frame(frame);
-	_change_notify("frame");
-	_change_notify("animation");
 	_queue_update();
 }
 
@@ -1065,7 +1050,7 @@ void AnimatedSprite3D::set_animation(const StringName &p_animation) {
 	animation = p_animation;
 	_reset_timeout();
 	set_frame(0);
-	_change_notify();
+	notify_property_list_changed();
 	_queue_update();
 }
 
@@ -1074,11 +1059,16 @@ StringName AnimatedSprite3D::get_animation() const {
 }
 
 String AnimatedSprite3D::get_configuration_warning() const {
+	String warning = SpriteBase3D::get_configuration_warning();
+
 	if (frames.is_null()) {
-		return TTR("A SpriteFrames resource must be created or set in the \"Frames\" property in order for AnimatedSprite3D to display frames.");
+		if (!warning.is_empty()) {
+			warning += "\n\n";
+		}
+		warning += TTR("A SpriteFrames resource must be created or set in the \"Frames\" property in order for AnimatedSprite3D to display frames.");
 	}
 
-	return String();
+	return warning;
 }
 
 void AnimatedSprite3D::_bind_methods() {
@@ -1099,6 +1089,7 @@ void AnimatedSprite3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_frame"), &AnimatedSprite3D::get_frame);
 
 	ADD_SIGNAL(MethodInfo("frame_changed"));
+	ADD_SIGNAL(MethodInfo("animation_finished"));
 
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "frames", PROPERTY_HINT_RESOURCE_TYPE, "SpriteFrames"), "set_sprite_frames", "get_sprite_frames");
 	ADD_PROPERTY(PropertyInfo(Variant::STRING_NAME, "animation"), "set_animation", "get_animation");
@@ -1107,8 +1098,4 @@ void AnimatedSprite3D::_bind_methods() {
 }
 
 AnimatedSprite3D::AnimatedSprite3D() {
-	frame = 0;
-	playing = false;
-	animation = "default";
-	timeout = 0;
 }

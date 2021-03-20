@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -147,7 +147,7 @@ void ExtendGDScriptParser::parse_class_symbol(const GDScriptParser::ClassNode *p
 	r_symbol.script_path = path;
 	r_symbol.children.clear();
 	r_symbol.name = p_class->identifier != nullptr ? String(p_class->identifier->name) : String();
-	if (r_symbol.name.empty()) {
+	if (r_symbol.name.is_empty()) {
 		r_symbol.name = path.get_file();
 	}
 	r_symbol.kind = lsp::SymbolKind::Class;
@@ -215,9 +215,9 @@ void ExtendGDScriptParser::parse_class_symbol(const GDScriptParser::ClassNode *p
 				String value_text;
 				if (default_value.get_type() == Variant::OBJECT) {
 					RES res = default_value;
-					if (res.is_valid() && !res->get_path().empty()) {
+					if (res.is_valid() && !res->get_path().is_empty()) {
 						value_text = "preload(\"" + res->get_path() + "\")";
-						if (symbol.documentation.empty()) {
+						if (symbol.documentation.is_empty()) {
 							if (Map<String, ExtendGDScriptParser *>::Element *S = GDScriptLanguageProtocol::get_singleton()->get_workspace()->scripts.find(res->get_path())) {
 								symbol.documentation = S->get()->class_symbol.documentation;
 							}
@@ -228,7 +228,7 @@ void ExtendGDScriptParser::parse_class_symbol(const GDScriptParser::ClassNode *p
 				} else {
 					value_text = JSON::print(default_value);
 				}
-				if (!value_text.empty()) {
+				if (!value_text.is_empty()) {
 					symbol.detail += " = " + value_text;
 				}
 
@@ -237,7 +237,7 @@ void ExtendGDScriptParser::parse_class_symbol(const GDScriptParser::ClassNode *p
 			case ClassNode::Member::ENUM_VALUE: {
 				lsp::DocumentSymbol symbol;
 
-				symbol.name = m.constant->identifier->name;
+				symbol.name = m.enum_value.identifier->name;
 				symbol.kind = lsp::SymbolKind::EnumMember;
 				symbol.deprecated = false;
 				symbol.range.start.line = LINE_NUMBER_TO_INDEX(m.enum_value.line);
@@ -453,7 +453,7 @@ String ExtendGDScriptParser::get_text_for_lookup_symbol(const lsp::Position &p_c
 			String line = lines[i];
 			String first_part = line.substr(0, p_cursor.character);
 			String last_part = line.substr(p_cursor.character + 1, lines[i].length());
-			if (!p_symbol.empty()) {
+			if (!p_symbol.is_empty()) {
 				String left_cursor_text;
 				for (int c = p_cursor.character - 1; c >= 0; c--) {
 					left_cursor_text = line.substr(c, p_cursor.character - c);
@@ -491,7 +491,7 @@ String ExtendGDScriptParser::get_identifier_under_position(const lsp::Position &
 	int start_pos = p_position.character;
 	for (int c = p_position.character; c >= 0; c--) {
 		start_pos = c;
-		CharType ch = line[c];
+		char32_t ch = line[c];
 		bool valid_char = (ch >= '0' && ch <= '9') || (ch >= 'a' && ch <= 'z') || (ch >= 'A' && ch <= 'Z') || ch == '_';
 		if (!valid_char) {
 			break;
@@ -500,7 +500,7 @@ String ExtendGDScriptParser::get_identifier_under_position(const lsp::Position &
 
 	int end_pos = p_position.character;
 	for (int c = p_position.character; c < line.length(); c++) {
-		CharType ch = line[c];
+		char32_t ch = line[c];
 		bool valid_char = (ch >= '0' && ch <= '9') || (ch >= 'a' && ch <= 'z') || (ch >= 'A' && ch <= 'Z') || ch == '_';
 		if (!valid_char) {
 			break;
@@ -552,7 +552,7 @@ Error ExtendGDScriptParser::get_left_function_call(const lsp::Position &p_positi
 		}
 
 		while (c >= 0) {
-			const CharType &character = line[c];
+			const char32_t &character = line[c];
 			if (character == ')') {
 				++bracket_stack;
 			} else if (character == '(') {
@@ -589,7 +589,7 @@ const lsp::DocumentSymbol *ExtendGDScriptParser::get_symbol_defined_at_line(int 
 }
 
 const lsp::DocumentSymbol *ExtendGDScriptParser::get_member_symbol(const String &p_name, const String &p_subclass) const {
-	if (p_subclass.empty()) {
+	if (p_subclass.is_empty()) {
 		const lsp::DocumentSymbol *const *ptr = members.getptr(p_name);
 		if (ptr) {
 			return *ptr;
@@ -611,7 +611,7 @@ const List<lsp::DocumentLink> &ExtendGDScriptParser::get_document_links() const 
 }
 
 const Array &ExtendGDScriptParser::get_member_completions() {
-	if (member_completions.empty()) {
+	if (member_completions.is_empty()) {
 		const String *name = members.next(nullptr);
 		while (name) {
 			const lsp::DocumentSymbol *symbol = members.get(*name);
@@ -723,8 +723,8 @@ Dictionary ExtendGDScriptParser::dump_class_api(const GDScriptParser::ClassNode 
 			} break;
 			case ClassNode::Member::ENUM: {
 				Dictionary enum_dict;
-				for (int j = 0; j < m.m_enum->values.size(); i++) {
-					enum_dict[m.m_enum->values[i].identifier->name] = m.m_enum->values[i].value;
+				for (int j = 0; j < m.m_enum->values.size(); j++) {
+					enum_dict[m.m_enum->values[j].identifier->name] = m.m_enum->values[j].value;
 				}
 
 				Dictionary api;

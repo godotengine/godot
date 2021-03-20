@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -31,7 +31,7 @@
 #ifndef RESOURCE_SAVER_H
 #define RESOURCE_SAVER_H
 
-#include "core/resource.h"
+#include "core/io/resource.h"
 
 class ResourceFormatSaver : public Reference {
 	GDCLASS(ResourceFormatSaver, Reference);
@@ -63,7 +63,6 @@ class ResourceSaver {
 
 public:
 	enum SaverFlags {
-
 		FLAG_RELATIVE_PATHS = 1,
 		FLAG_BUNDLE_RESOURCES = 2,
 		FLAG_CHANGE_PATH = 4,

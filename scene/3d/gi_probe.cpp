@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -32,7 +32,6 @@
 
 #include "core/os/os.h"
 
-#include "core/method_bind_ext.gen.inc"
 #include "mesh_instance_3d.h"
 #include "voxelizer.h"
 
@@ -92,7 +91,7 @@ Dictionary GIProbeData::_get_data() const {
 }
 
 void GIProbeData::allocate(const Transform &p_to_cell_xform, const AABB &p_aabb, const Vector3 &p_octree_size, const Vector<uint8_t> &p_octree_cells, const Vector<uint8_t> &p_data_cells, const Vector<uint8_t> &p_distance_field, const Vector<int> &p_level_counts) {
-	RS::get_singleton()->gi_probe_allocate(probe, p_to_cell_xform, p_aabb, p_octree_size, p_octree_cells, p_data_cells, p_distance_field, p_level_counts);
+	RS::get_singleton()->gi_probe_allocate_data(probe, p_to_cell_xform, p_aabb, p_octree_size, p_octree_cells, p_data_cells, p_distance_field, p_level_counts);
 	bounds = p_aabb;
 	to_cell_xform = p_to_cell_xform;
 	octree_size = p_octree_size;
@@ -222,7 +221,7 @@ RID GIProbeData::get_rid() const {
 
 void GIProbeData::_validate_property(PropertyInfo &property) const {
 	if (property.name == "anisotropy_strength") {
-		bool anisotropy_enabled = ProjectSettings::get_singleton()->get("rendering/quality/gi_probes/anisotropic");
+		bool anisotropy_enabled = ProjectSettings::get_singleton()->get("rendering/global_illumination/gi_probes/anisotropic");
 		if (!anisotropy_enabled) {
 			property.usage = PROPERTY_USAGE_NOEDITOR;
 		}
@@ -287,17 +286,6 @@ void GIProbeData::_bind_methods() {
 }
 
 GIProbeData::GIProbeData() {
-	ao = 0.0;
-	ao_size = 0.5;
-	dynamic_range = 4;
-	energy = 1.0;
-	bias = 1.5;
-	normal_bias = 0.0;
-	propagation = 0.7;
-	anisotropy_strength = 0.5;
-	interior = false;
-	use_two_bounces = false;
-
 	probe = RS::get_singleton()->gi_probe_create();
 }
 
@@ -335,7 +323,6 @@ GIProbe::Subdiv GIProbe::get_subdiv() const {
 void GIProbe::set_extents(const Vector3 &p_extents) {
 	extents = p_extents;
 	update_gizmo();
-	_change_notify("extents");
 }
 
 Vector3 GIProbe::get_extents() const {
@@ -428,13 +415,16 @@ Vector3i GIProbe::get_estimated_cell_size() const {
 void GIProbe::bake(Node *p_from_node, bool p_create_visual_debug) {
 	static const int subdiv_value[SUBDIV_MAX] = { 6, 7, 8, 9 };
 
+	p_from_node = p_from_node ? p_from_node : get_parent();
+	ERR_FAIL_NULL(p_from_node);
+
 	Voxelizer baker;
 
 	baker.begin_bake(subdiv_value[subdiv], AABB(-extents, extents * 2.0));
 
 	List<PlotMesh> mesh_list;
 
-	_find_meshes(p_from_node ? p_from_node : get_parent(), mesh_list);
+	_find_meshes(p_from_node, mesh_list);
 
 	if (bake_begin_function) {
 		bake_begin_function(mesh_list.size() + 1);
@@ -498,7 +488,7 @@ void GIProbe::bake(Node *p_from_node, bool p_create_visual_debug) {
 		bake_end_function();
 	}
 
-	_change_notify(); //bake property may have changed
+	notify_property_list_changed(); //bake property may have changed
 }
 
 void GIProbe::_debug_bake() {
@@ -514,10 +504,18 @@ Vector<Face3> GIProbe::get_faces(uint32_t p_usage_flags) const {
 }
 
 String GIProbe::get_configuration_warning() const {
+	String warning = VisualInstance3D::get_configuration_warning();
+
 	if (RenderingServer::get_singleton()->is_low_end()) {
-		return TTR("GIProbes are not supported by the GLES2 video driver.\nUse a BakedLightmap instead.");
+		if (!warning.is_empty()) {
+			warning += "\n\n";
+		}
+		warning += TTR("GIProbes are not supported by the GLES2 video driver.\nUse a BakedLightmap instead.");
+	} else if (probe_data.is_null()) {
+		warning += TTR("No GIProbe data set, so this node is disabled. Bake static objects to enable GI.");
 	}
-	return String();
+
+	return warning;
 }
 
 void GIProbe::_bind_methods() {
@@ -546,9 +544,6 @@ void GIProbe::_bind_methods() {
 }
 
 GIProbe::GIProbe() {
-	subdiv = SUBDIV_128;
-	extents = Vector3(10, 10, 10);
-
 	gi_probe = RS::get_singleton()->gi_probe_create();
 	set_disable_scale(true);
 }

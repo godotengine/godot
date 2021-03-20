@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -31,7 +31,7 @@
 #ifndef PARTICLES_2D_H
 #define PARTICLES_2D_H
 
-#include "core/rid.h"
+#include "core/templates/rid.h"
 #include "scene/2d/node_2d.h"
 #include "scene/resources/texture.h"
 
@@ -65,7 +65,6 @@ private:
 	DrawOrder draw_order;
 
 	Ref<Texture2D> texture;
-	Ref<Texture2D> normal_map;
 
 	void _update_particle_emission_transform();
 
@@ -110,9 +109,6 @@ public:
 
 	void set_texture(const Ref<Texture2D> &p_texture);
 	Ref<Texture2D> get_texture() const;
-
-	void set_normal_map(const Ref<Texture2D> &p_normal_map);
-	Ref<Texture2D> get_normal_map() const;
 
 	virtual String get_configuration_warning() const override;
 

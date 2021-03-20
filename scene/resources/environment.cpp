@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -30,7 +30,8 @@
 
 #include "environment.h"
 
-#include "core/project_settings.h"
+#include "core/config/project_settings.h"
+#include "core/core_string_names.h"
 #include "servers/rendering_server.h"
 #include "texture.h"
 
@@ -43,7 +44,10 @@ RID Environment::get_rid() const {
 void Environment::set_background(BGMode p_bg) {
 	bg_mode = p_bg;
 	RS::get_singleton()->environment_set_background(environment, RS::EnvironmentBG(p_bg));
-	_change_notify();
+	notify_property_list_changed();
+	if (bg_mode != BG_SKY) {
+		set_fog_aerial_perspective(0.0);
+	}
 }
 
 Environment::BGMode Environment::get_background() const {
@@ -134,6 +138,7 @@ Color Environment::get_ambient_light_color() const {
 void Environment::set_ambient_source(AmbientSource p_source) {
 	ambient_source = p_source;
 	_update_ambient_light();
+	notify_property_list_changed();
 }
 
 Environment::AmbientSource Environment::get_ambient_source() const {
@@ -161,6 +166,7 @@ float Environment::get_ambient_light_sky_contribution() const {
 void Environment::set_reflection_source(ReflectionSource p_source) {
 	reflection_source = p_source;
 	_update_ambient_light();
+	notify_property_list_changed();
 }
 
 Environment::ReflectionSource Environment::get_reflection_source() const {
@@ -218,7 +224,7 @@ float Environment::get_tonemap_white() const {
 void Environment::set_tonemap_auto_exposure_enabled(bool p_enabled) {
 	tonemap_auto_exposure_enabled = p_enabled;
 	_update_tonemap();
-	_change_notify();
+	notify_property_list_changed();
 }
 
 bool Environment::is_tonemap_auto_exposure_enabled() const {
@@ -279,7 +285,7 @@ void Environment::_update_tonemap() {
 void Environment::set_ssr_enabled(bool p_enabled) {
 	ssr_enabled = p_enabled;
 	_update_ssr();
-	_change_notify();
+	notify_property_list_changed();
 }
 
 bool Environment::is_ssr_enabled() const {
@@ -337,7 +343,7 @@ void Environment::_update_ssr() {
 void Environment::set_ssao_enabled(bool p_enabled) {
 	ssao_enabled = p_enabled;
 	_update_ssao();
-	_change_notify();
+	notify_property_list_changed();
 }
 
 bool Environment::is_ssao_enabled() const {
@@ -362,13 +368,40 @@ float Environment::get_ssao_intensity() const {
 	return ssao_intensity;
 }
 
-void Environment::set_ssao_bias(float p_bias) {
-	ssao_bias = p_bias;
+void Environment::set_ssao_power(float p_power) {
+	ssao_power = p_power;
 	_update_ssao();
 }
 
-float Environment::get_ssao_bias() const {
-	return ssao_bias;
+float Environment::get_ssao_power() const {
+	return ssao_power;
+}
+
+void Environment::set_ssao_detail(float p_detail) {
+	ssao_detail = p_detail;
+	_update_ssao();
+}
+
+float Environment::get_ssao_detail() const {
+	return ssao_detail;
+}
+
+void Environment::set_ssao_horizon(float p_horizon) {
+	ssao_horizon = p_horizon;
+	_update_ssao();
+}
+
+float Environment::get_ssao_horizon() const {
+	return ssao_horizon;
+}
+
+void Environment::set_ssao_sharpness(float p_sharpness) {
+	ssao_sharpness = p_sharpness;
+	_update_ssao();
+}
+
+float Environment::get_ssao_sharpness() const {
+	return ssao_sharpness;
 }
 
 void Environment::set_ssao_direct_light_affect(float p_direct_light_affect) {
@@ -389,35 +422,18 @@ float Environment::get_ssao_ao_channel_affect() const {
 	return ssao_ao_channel_affect;
 }
 
-void Environment::set_ssao_blur(SSAOBlur p_blur) {
-	ssao_blur = p_blur;
-	_update_ssao();
-}
-
-Environment::SSAOBlur Environment::get_ssao_blur() const {
-	return ssao_blur;
-}
-
-void Environment::set_ssao_edge_sharpness(float p_edge_sharpness) {
-	ssao_edge_sharpness = p_edge_sharpness;
-	_update_ssao();
-}
-
-float Environment::get_ssao_edge_sharpness() const {
-	return ssao_edge_sharpness;
-}
-
 void Environment::_update_ssao() {
 	RS::get_singleton()->environment_set_ssao(
 			environment,
 			ssao_enabled,
 			ssao_radius,
 			ssao_intensity,
-			ssao_bias,
+			ssao_power,
+			ssao_detail,
+			ssao_horizon,
+			ssao_sharpness,
 			ssao_direct_light_affect,
-			ssao_ao_channel_affect,
-			RS::EnvironmentSSAOBlur(ssao_blur),
-			ssao_edge_sharpness);
+			ssao_ao_channel_affect);
 }
 
 // SDFGI
@@ -425,6 +441,7 @@ void Environment::_update_ssao() {
 void Environment::set_sdfgi_enabled(bool p_enabled) {
 	sdfgi_enabled = p_enabled;
 	_update_sdfgi();
+	notify_property_list_changed();
 }
 
 bool Environment::is_sdfgi_enabled() const {
@@ -442,8 +459,6 @@ Environment::SDFGICascades Environment::get_sdfgi_cascades() const {
 
 void Environment::set_sdfgi_min_cell_size(float p_size) {
 	sdfgi_min_cell_size = p_size;
-	_change_notify("sdfgi_max_distance");
-	_change_notify("sdfgi_cascade0_distance");
 	_update_sdfgi();
 }
 
@@ -459,8 +474,6 @@ void Environment::set_sdfgi_max_distance(float p_distance) {
 		p_distance *= 0.5; //halve for each cascade
 	}
 	sdfgi_min_cell_size = p_distance;
-	_change_notify("sdfgi_min_cell_size");
-	_change_notify("sdfgi_cascade0_distance");
 	_update_sdfgi();
 }
 
@@ -477,8 +490,6 @@ float Environment::get_sdfgi_max_distance() const {
 
 void Environment::set_sdfgi_cascade0_distance(float p_distance) {
 	sdfgi_min_cell_size = p_distance / 64.0;
-	_change_notify("sdfgi_min_cell_size");
-	_change_notify("sdfgi_max_distance");
 	_update_sdfgi();
 }
 
@@ -504,13 +515,12 @@ bool Environment::is_sdfgi_using_occlusion() const {
 	return sdfgi_use_occlusion;
 }
 
-void Environment::set_sdfgi_use_multi_bounce(bool p_enabled) {
-	sdfgi_use_multibounce = p_enabled;
+void Environment::set_sdfgi_bounce_feedback(float p_amount) {
+	sdfgi_bounce_feedback = p_amount;
 	_update_sdfgi();
 }
-
-bool Environment::is_sdfgi_using_multi_bounce() const {
-	return sdfgi_use_multibounce;
+float Environment::get_sdfgi_bounce_feedback() const {
+	return sdfgi_bounce_feedback;
 }
 
 void Environment::set_sdfgi_read_sky_light(bool p_enabled) {
@@ -557,7 +567,7 @@ void Environment::_update_sdfgi() {
 			sdfgi_min_cell_size,
 			RS::EnvironmentSDFGIYScale(sdfgi_y_scale),
 			sdfgi_use_occlusion,
-			sdfgi_use_multibounce,
+			sdfgi_bounce_feedback,
 			sdfgi_read_sky_light,
 			sdfgi_energy,
 			sdfgi_normal_bias,
@@ -569,29 +579,35 @@ void Environment::_update_sdfgi() {
 void Environment::set_glow_enabled(bool p_enabled) {
 	glow_enabled = p_enabled;
 	_update_glow();
-	_change_notify();
+	notify_property_list_changed();
 }
 
 bool Environment::is_glow_enabled() const {
 	return glow_enabled;
 }
 
-void Environment::set_glow_level_enabled(int p_level, bool p_enabled) {
+void Environment::set_glow_level(int p_level, float p_intensity) {
 	ERR_FAIL_INDEX(p_level, RS::MAX_GLOW_LEVELS);
 
-	if (p_enabled) {
-		glow_levels |= (1 << p_level);
-	} else {
-		glow_levels &= ~(1 << p_level);
-	}
+	glow_levels.write[p_level] = p_intensity;
 
 	_update_glow();
 }
 
-bool Environment::is_glow_level_enabled(int p_level) const {
-	ERR_FAIL_INDEX_V(p_level, RS::MAX_GLOW_LEVELS, false);
+float Environment::get_glow_level(int p_level) const {
+	ERR_FAIL_INDEX_V(p_level, RS::MAX_GLOW_LEVELS, 0.0);
 
-	return glow_levels & (1 << p_level);
+	return glow_levels[p_level];
+}
+
+void Environment::set_glow_normalized(bool p_normalized) {
+	glow_normalize_levels = p_normalized;
+
+	_update_glow();
+}
+
+bool Environment::is_glow_normalized() const {
+	return glow_normalize_levels;
 }
 
 void Environment::set_glow_intensity(float p_intensity) {
@@ -633,7 +649,7 @@ float Environment::get_glow_bloom() const {
 void Environment::set_glow_blend_mode(GlowBlendMode p_mode) {
 	glow_blend_mode = p_mode;
 	_update_glow();
-	_change_notify();
+	notify_property_list_changed();
 }
 
 Environment::GlowBlendMode Environment::get_glow_blend_mode() const {
@@ -668,10 +684,24 @@ float Environment::get_glow_hdr_luminance_cap() const {
 }
 
 void Environment::_update_glow() {
+	Vector<float> normalized_levels;
+	if (glow_normalize_levels) {
+		normalized_levels.resize(7);
+		float size = 0.0;
+		for (int i = 0; i < glow_levels.size(); i++) {
+			size += glow_levels[i];
+		}
+		for (int i = 0; i < glow_levels.size(); i++) {
+			normalized_levels.write[i] = glow_levels[i] / size;
+		}
+	} else {
+		normalized_levels = glow_levels;
+	}
+
 	RS::get_singleton()->environment_set_glow(
 			environment,
 			glow_enabled,
-			glow_levels,
+			normalized_levels,
 			glow_intensity,
 			glow_strength,
 			glow_mix,
@@ -687,157 +717,151 @@ void Environment::_update_glow() {
 void Environment::set_fog_enabled(bool p_enabled) {
 	fog_enabled = p_enabled;
 	_update_fog();
-	_change_notify();
+	notify_property_list_changed();
 }
 
 bool Environment::is_fog_enabled() const {
 	return fog_enabled;
 }
 
-void Environment::set_fog_color(const Color &p_color) {
-	fog_color = p_color;
+void Environment::set_fog_light_color(const Color &p_light_color) {
+	fog_light_color = p_light_color;
 	_update_fog();
 }
-
-Color Environment::get_fog_color() const {
-	return fog_color;
+Color Environment::get_fog_light_color() const {
+	return fog_light_color;
 }
-
-void Environment::set_fog_sun_color(const Color &p_color) {
-	fog_sun_color = p_color;
+void Environment::set_fog_light_energy(float p_amount) {
+	fog_light_energy = p_amount;
 	_update_fog();
 }
-
-Color Environment::get_fog_sun_color() const {
-	return fog_sun_color;
+float Environment::get_fog_light_energy() const {
+	return fog_light_energy;
 }
-
-void Environment::set_fog_sun_amount(float p_amount) {
-	fog_sun_amount = p_amount;
+void Environment::set_fog_sun_scatter(float p_amount) {
+	fog_sun_scatter = p_amount;
 	_update_fog();
 }
+float Environment::get_fog_sun_scatter() const {
+	return fog_sun_scatter;
+}
+void Environment::set_fog_density(float p_amount) {
+	fog_density = p_amount;
+	_update_fog();
+}
+float Environment::get_fog_density() const {
+	return fog_density;
+}
+void Environment::set_fog_height(float p_amount) {
+	fog_height = p_amount;
+	_update_fog();
+}
+float Environment::get_fog_height() const {
+	return fog_height;
+}
+void Environment::set_fog_height_density(float p_amount) {
+	fog_height_density = p_amount;
+	_update_fog();
+}
+float Environment::get_fog_height_density() const {
+	return fog_height_density;
+}
 
-float Environment::get_fog_sun_amount() const {
-	return fog_sun_amount;
+void Environment::set_fog_aerial_perspective(float p_aerial_perspective) {
+	fog_aerial_perspective = p_aerial_perspective;
+	_update_fog();
+}
+float Environment::get_fog_aerial_perspective() const {
+	return fog_aerial_perspective;
 }
 
 void Environment::_update_fog() {
 	RS::get_singleton()->environment_set_fog(
 			environment,
 			fog_enabled,
-			fog_color,
-			fog_sun_color,
-			fog_sun_amount);
+			fog_light_color,
+			fog_light_energy,
+			fog_sun_scatter,
+			fog_density,
+			fog_height,
+			fog_height_density,
+			fog_aerial_perspective);
 }
 
-void Environment::set_fog_depth_enabled(bool p_enabled) {
-	fog_depth_enabled = p_enabled;
-	_update_fog_depth();
+// Volumetric Fog
+
+void Environment::_update_volumetric_fog() {
+	RS::get_singleton()->environment_set_volumetric_fog(environment, volumetric_fog_enabled, volumetric_fog_density, volumetric_fog_light, volumetric_fog_light_energy, volumetric_fog_length, volumetric_fog_detail_spread, volumetric_fog_gi_inject, volumetric_fog_temporal_reproject, volumetric_fog_temporal_reproject_amount);
 }
 
-bool Environment::is_fog_depth_enabled() const {
-	return fog_depth_enabled;
+void Environment::set_volumetric_fog_enabled(bool p_enable) {
+	volumetric_fog_enabled = p_enable;
+	_update_volumetric_fog();
+	notify_property_list_changed();
 }
 
-void Environment::set_fog_depth_begin(float p_distance) {
-	fog_depth_begin = p_distance;
-	_update_fog_depth();
+bool Environment::is_volumetric_fog_enabled() const {
+	return volumetric_fog_enabled;
+}
+void Environment::set_volumetric_fog_density(float p_density) {
+	p_density = CLAMP(p_density, 0.0000001, 1.0);
+	volumetric_fog_density = p_density;
+	_update_volumetric_fog();
+}
+float Environment::get_volumetric_fog_density() const {
+	return volumetric_fog_density;
+}
+void Environment::set_volumetric_fog_light(Color p_color) {
+	volumetric_fog_light = p_color;
+	_update_volumetric_fog();
+}
+Color Environment::get_volumetric_fog_light() const {
+	return volumetric_fog_light;
+}
+void Environment::set_volumetric_fog_light_energy(float p_begin) {
+	volumetric_fog_light_energy = p_begin;
+	_update_volumetric_fog();
+}
+float Environment::get_volumetric_fog_light_energy() const {
+	return volumetric_fog_light_energy;
+}
+void Environment::set_volumetric_fog_length(float p_length) {
+	volumetric_fog_length = p_length;
+	_update_volumetric_fog();
+}
+float Environment::get_volumetric_fog_length() const {
+	return volumetric_fog_length;
+}
+void Environment::set_volumetric_fog_detail_spread(float p_detail_spread) {
+	volumetric_fog_detail_spread = p_detail_spread;
+	_update_volumetric_fog();
+}
+float Environment::get_volumetric_fog_detail_spread() const {
+	return volumetric_fog_detail_spread;
 }
 
-float Environment::get_fog_depth_begin() const {
-	return fog_depth_begin;
+void Environment::set_volumetric_fog_gi_inject(float p_gi_inject) {
+	volumetric_fog_gi_inject = p_gi_inject;
+	_update_volumetric_fog();
+}
+float Environment::get_volumetric_fog_gi_inject() const {
+	return volumetric_fog_gi_inject;
 }
 
-void Environment::set_fog_depth_end(float p_distance) {
-	fog_depth_end = p_distance;
-	_update_fog_depth();
+void Environment::set_volumetric_fog_temporal_reprojection_enabled(bool p_enable) {
+	volumetric_fog_temporal_reproject = p_enable;
+	_update_volumetric_fog();
+}
+bool Environment::is_volumetric_fog_temporal_reprojection_enabled() const {
+	return volumetric_fog_temporal_reproject;
+}
+void Environment::set_volumetric_fog_temporal_reprojection_amount(float p_amount) {
+	volumetric_fog_temporal_reproject_amount = p_amount;
+	_update_volumetric_fog();
 }
 
-float Environment::get_fog_depth_end() const {
-	return fog_depth_end;
-}
-
-void Environment::set_fog_depth_curve(float p_curve) {
-	fog_depth_curve = p_curve;
-	_update_fog_depth();
-}
-
-float Environment::get_fog_depth_curve() const {
-	return fog_depth_curve;
-}
-
-void Environment::set_fog_transmit_enabled(bool p_enabled) {
-	fog_transmit_enabled = p_enabled;
-	_update_fog_depth();
-}
-
-bool Environment::is_fog_transmit_enabled() const {
-	return fog_transmit_enabled;
-}
-
-void Environment::set_fog_transmit_curve(float p_curve) {
-	fog_transmit_curve = p_curve;
-	_update_fog_depth();
-}
-
-float Environment::get_fog_transmit_curve() const {
-	return fog_transmit_curve;
-}
-
-void Environment::_update_fog_depth() {
-	RS::get_singleton()->environment_set_fog_depth(
-			environment,
-			fog_depth_enabled,
-			fog_depth_begin,
-			fog_depth_end,
-			fog_depth_curve,
-			fog_transmit_enabled,
-			fog_transmit_curve);
-}
-
-void Environment::set_fog_height_enabled(bool p_enabled) {
-	fog_height_enabled = p_enabled;
-	_update_fog_height();
-}
-
-bool Environment::is_fog_height_enabled() const {
-	return fog_height_enabled;
-}
-
-void Environment::set_fog_height_min(float p_distance) {
-	fog_height_min = p_distance;
-	_update_fog_height();
-}
-
-float Environment::get_fog_height_min() const {
-	return fog_height_min;
-}
-
-void Environment::set_fog_height_max(float p_distance) {
-	fog_height_max = p_distance;
-	_update_fog_height();
-}
-
-float Environment::get_fog_height_max() const {
-	return fog_height_max;
-}
-
-void Environment::set_fog_height_curve(float p_distance) {
-	fog_height_curve = p_distance;
-	_update_fog_height();
-}
-
-float Environment::get_fog_height_curve() const {
-	return fog_height_curve;
-}
-
-void Environment::_update_fog_height() {
-	RS::get_singleton()->environment_set_fog_height(
-			environment,
-			fog_height_enabled,
-			fog_height_min,
-			fog_height_max,
-			fog_height_curve);
+float Environment::get_volumetric_fog_temporal_reprojection_amount() const {
+	return volumetric_fog_temporal_reproject_amount;
 }
 
 // Adjustment
@@ -845,7 +869,7 @@ void Environment::_update_fog_height() {
 void Environment::set_adjustment_enabled(bool p_enabled) {
 	adjustment_enabled = p_enabled;
 	_update_adjustment();
-	_change_notify();
+	notify_property_list_changed();
 }
 
 bool Environment::is_adjustment_enabled() const {
@@ -879,23 +903,38 @@ float Environment::get_adjustment_saturation() const {
 	return adjustment_saturation;
 }
 
-void Environment::set_adjustment_color_correction(const Ref<Texture2D> &p_ramp) {
-	adjustment_color_correction = p_ramp;
+void Environment::set_adjustment_color_correction(Ref<Texture> p_color_correction) {
+	adjustment_color_correction = p_color_correction;
+	Ref<GradientTexture> grad_tex = p_color_correction;
+	if (grad_tex.is_valid()) {
+		if (!grad_tex->is_connected(CoreStringNames::get_singleton()->changed, callable_mp(this, &Environment::_update_adjustment))) {
+			grad_tex->connect(CoreStringNames::get_singleton()->changed, callable_mp(this, &Environment::_update_adjustment));
+		}
+	}
+	Ref<Texture2D> adjustment_texture_2d = adjustment_color_correction;
+	if (adjustment_texture_2d.is_valid()) {
+		use_1d_color_correction = true;
+	} else {
+		use_1d_color_correction = false;
+	}
 	_update_adjustment();
 }
 
-Ref<Texture2D> Environment::get_adjustment_color_correction() const {
+Ref<Texture> Environment::get_adjustment_color_correction() const {
 	return adjustment_color_correction;
 }
 
 void Environment::_update_adjustment() {
+	RID color_correction = adjustment_color_correction.is_valid() ? adjustment_color_correction->get_rid() : RID();
+
 	RS::get_singleton()->environment_set_adjustment(
 			environment,
 			adjustment_enabled,
 			adjustment_brightness,
 			adjustment_contrast,
 			adjustment_saturation,
-			adjustment_color_correction.is_valid() ? adjustment_color_correction->get_rid() : RID());
+			use_1d_color_correction,
+			color_correction);
 }
 
 // Private methods, constructor and destructor
@@ -903,6 +942,12 @@ void Environment::_update_adjustment() {
 void Environment::_validate_property(PropertyInfo &property) const {
 	if (property.name == "sky" || property.name == "sky_custom_fov" || property.name == "sky_rotation" || property.name == "ambient_light/sky_contribution") {
 		if (bg_mode != BG_SKY && ambient_source != AMBIENT_SOURCE_SKY && reflection_source != REFLECTION_SOURCE_SKY) {
+			property.usage = PROPERTY_USAGE_NOEDITOR | PROPERTY_USAGE_INTERNAL;
+		}
+	}
+
+	if (property.name == "fog_aerial_perspective") {
+		if (bg_mode != BG_SKY) {
 			property.usage = PROPERTY_USAGE_NOEDITOR | PROPERTY_USAGE_INTERNAL;
 		}
 	}
@@ -935,9 +980,11 @@ void Environment::_validate_property(PropertyInfo &property) const {
 
 	static const char *hide_prefixes[] = {
 		"fog_",
+		"volumetric_fog_",
 		"auto_exposure_",
 		"ss_reflections_",
 		"ssao_",
+		"sdfgi_",
 		"glow_",
 		"adjustment_",
 		nullptr
@@ -1115,26 +1162,29 @@ void Environment::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_ssao_radius"), &Environment::get_ssao_radius);
 	ClassDB::bind_method(D_METHOD("set_ssao_intensity", "intensity"), &Environment::set_ssao_intensity);
 	ClassDB::bind_method(D_METHOD("get_ssao_intensity"), &Environment::get_ssao_intensity);
-	ClassDB::bind_method(D_METHOD("set_ssao_bias", "bias"), &Environment::set_ssao_bias);
-	ClassDB::bind_method(D_METHOD("get_ssao_bias"), &Environment::get_ssao_bias);
+	ClassDB::bind_method(D_METHOD("set_ssao_power", "power"), &Environment::set_ssao_power);
+	ClassDB::bind_method(D_METHOD("get_ssao_power"), &Environment::get_ssao_power);
+	ClassDB::bind_method(D_METHOD("set_ssao_detail", "detail"), &Environment::set_ssao_detail);
+	ClassDB::bind_method(D_METHOD("get_ssao_detail"), &Environment::get_ssao_detail);
+	ClassDB::bind_method(D_METHOD("set_ssao_horizon", "horizon"), &Environment::set_ssao_horizon);
+	ClassDB::bind_method(D_METHOD("get_ssao_horizon"), &Environment::get_ssao_horizon);
+	ClassDB::bind_method(D_METHOD("set_ssao_sharpness", "sharpness"), &Environment::set_ssao_sharpness);
+	ClassDB::bind_method(D_METHOD("get_ssao_sharpness"), &Environment::get_ssao_sharpness);
 	ClassDB::bind_method(D_METHOD("set_ssao_direct_light_affect", "amount"), &Environment::set_ssao_direct_light_affect);
 	ClassDB::bind_method(D_METHOD("get_ssao_direct_light_affect"), &Environment::get_ssao_direct_light_affect);
 	ClassDB::bind_method(D_METHOD("set_ssao_ao_channel_affect", "amount"), &Environment::set_ssao_ao_channel_affect);
 	ClassDB::bind_method(D_METHOD("get_ssao_ao_channel_affect"), &Environment::get_ssao_ao_channel_affect);
-	ClassDB::bind_method(D_METHOD("set_ssao_blur", "mode"), &Environment::set_ssao_blur);
-	ClassDB::bind_method(D_METHOD("get_ssao_blur"), &Environment::get_ssao_blur);
-	ClassDB::bind_method(D_METHOD("set_ssao_edge_sharpness", "edge_sharpness"), &Environment::set_ssao_edge_sharpness);
-	ClassDB::bind_method(D_METHOD("get_ssao_edge_sharpness"), &Environment::get_ssao_edge_sharpness);
 
 	ADD_GROUP("SSAO", "ssao_");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "ssao_enabled"), "set_ssao_enabled", "is_ssao_enabled");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "ssao_radius", PROPERTY_HINT_RANGE, "0.1,128,0.01"), "set_ssao_radius", "get_ssao_radius");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "ssao_intensity", PROPERTY_HINT_RANGE, "0.0,128,0.01"), "set_ssao_intensity", "get_ssao_intensity");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "ssao_bias", PROPERTY_HINT_RANGE, "0.001,8,0.001"), "set_ssao_bias", "get_ssao_bias");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "ssao_radius", PROPERTY_HINT_RANGE, "0.01,16,0.01,or_greater"), "set_ssao_radius", "get_ssao_radius");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "ssao_intensity", PROPERTY_HINT_RANGE, "0,16,0.01,or_greater"), "set_ssao_intensity", "get_ssao_intensity");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "ssao_power", PROPERTY_HINT_EXP_EASING), "set_ssao_power", "get_ssao_power");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "ssao_detail", PROPERTY_HINT_RANGE, "0,5,0.01"), "set_ssao_detail", "get_ssao_detail");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "ssao_horizon", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_ssao_horizon", "get_ssao_horizon");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "ssao_sharpness", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_ssao_sharpness", "get_ssao_sharpness");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "ssao_light_affect", PROPERTY_HINT_RANGE, "0.00,1,0.01"), "set_ssao_direct_light_affect", "get_ssao_direct_light_affect");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "ssao_ao_channel_affect", PROPERTY_HINT_RANGE, "0.00,1,0.01"), "set_ssao_ao_channel_affect", "get_ssao_ao_channel_affect");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "ssao_blur", PROPERTY_HINT_ENUM, "Disabled,1x1,2x2,3x3"), "set_ssao_blur", "get_ssao_blur");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "ssao_edge_sharpness", PROPERTY_HINT_RANGE, "0,32,0.01"), "set_ssao_edge_sharpness", "get_ssao_edge_sharpness");
 
 	// SDFGI
 
@@ -1152,8 +1202,8 @@ void Environment::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_sdfgi_y_scale"), &Environment::get_sdfgi_y_scale);
 	ClassDB::bind_method(D_METHOD("set_sdfgi_use_occlusion", "enable"), &Environment::set_sdfgi_use_occlusion);
 	ClassDB::bind_method(D_METHOD("is_sdfgi_using_occlusion"), &Environment::is_sdfgi_using_occlusion);
-	ClassDB::bind_method(D_METHOD("set_sdfgi_use_multi_bounce", "enable"), &Environment::set_sdfgi_use_multi_bounce);
-	ClassDB::bind_method(D_METHOD("is_sdfgi_using_multi_bounce"), &Environment::is_sdfgi_using_multi_bounce);
+	ClassDB::bind_method(D_METHOD("set_sdfgi_bounce_feedback", "amount"), &Environment::set_sdfgi_bounce_feedback);
+	ClassDB::bind_method(D_METHOD("get_sdfgi_bounce_feedback"), &Environment::get_sdfgi_bounce_feedback);
 	ClassDB::bind_method(D_METHOD("set_sdfgi_read_sky_light", "enable"), &Environment::set_sdfgi_read_sky_light);
 	ClassDB::bind_method(D_METHOD("is_sdfgi_reading_sky_light"), &Environment::is_sdfgi_reading_sky_light);
 	ClassDB::bind_method(D_METHOD("set_sdfgi_energy", "amount"), &Environment::set_sdfgi_energy);
@@ -1165,9 +1215,9 @@ void Environment::_bind_methods() {
 
 	ADD_GROUP("SDFGI", "sdfgi_");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "sdfgi_enabled"), "set_sdfgi_enabled", "is_sdfgi_enabled");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "sdfgi_use_multi_bounce"), "set_sdfgi_use_multi_bounce", "is_sdfgi_using_multi_bounce");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "sdfgi_use_occlusion"), "set_sdfgi_use_occlusion", "is_sdfgi_using_occlusion");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "sdfgi_read_sky_light"), "set_sdfgi_read_sky_light", "is_sdfgi_reading_sky_light");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "sdfgi_bounce_feedback", PROPERTY_HINT_RANGE, "0,1.99,0.01"), "set_sdfgi_bounce_feedback", "get_sdfgi_bounce_feedback");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "sdfgi_cascades", PROPERTY_HINT_ENUM, "4 Cascades,6 Cascades,8 Cascades"), "set_sdfgi_cascades", "get_sdfgi_cascades");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "sdfgi_min_cell_size", PROPERTY_HINT_RANGE, "0.01,64,0.01"), "set_sdfgi_min_cell_size", "get_sdfgi_min_cell_size");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "sdfgi_cascade0_distance", PROPERTY_HINT_RANGE, "0.1,16384,0.1,or_greater"), "set_sdfgi_cascade0_distance", "get_sdfgi_cascade0_distance");
@@ -1181,8 +1231,10 @@ void Environment::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_glow_enabled", "enabled"), &Environment::set_glow_enabled);
 	ClassDB::bind_method(D_METHOD("is_glow_enabled"), &Environment::is_glow_enabled);
-	ClassDB::bind_method(D_METHOD("set_glow_level_enabled", "idx", "enabled"), &Environment::set_glow_level_enabled);
-	ClassDB::bind_method(D_METHOD("is_glow_level_enabled", "idx"), &Environment::is_glow_level_enabled);
+	ClassDB::bind_method(D_METHOD("set_glow_level", "idx", "intensity"), &Environment::set_glow_level);
+	ClassDB::bind_method(D_METHOD("get_glow_level", "idx"), &Environment::get_glow_level);
+	ClassDB::bind_method(D_METHOD("set_glow_normalized", "normalize"), &Environment::set_glow_normalized);
+	ClassDB::bind_method(D_METHOD("is_glow_normalized"), &Environment::is_glow_normalized);
 	ClassDB::bind_method(D_METHOD("set_glow_intensity", "intensity"), &Environment::set_glow_intensity);
 	ClassDB::bind_method(D_METHOD("get_glow_intensity"), &Environment::get_glow_intensity);
 	ClassDB::bind_method(D_METHOD("set_glow_strength", "strength"), &Environment::set_glow_strength);
@@ -1202,13 +1254,14 @@ void Environment::_bind_methods() {
 
 	ADD_GROUP("Glow", "glow_");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "glow_enabled"), "set_glow_enabled", "is_glow_enabled");
-	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "glow_levels/1"), "set_glow_level_enabled", "is_glow_level_enabled", 0);
-	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "glow_levels/2"), "set_glow_level_enabled", "is_glow_level_enabled", 1);
-	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "glow_levels/3"), "set_glow_level_enabled", "is_glow_level_enabled", 2);
-	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "glow_levels/4"), "set_glow_level_enabled", "is_glow_level_enabled", 3);
-	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "glow_levels/5"), "set_glow_level_enabled", "is_glow_level_enabled", 4);
-	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "glow_levels/6"), "set_glow_level_enabled", "is_glow_level_enabled", 5);
-	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "glow_levels/7"), "set_glow_level_enabled", "is_glow_level_enabled", 6);
+	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "glow_levels/1", PROPERTY_HINT_RANGE, "0,16,0.01,or_greater"), "set_glow_level", "get_glow_level", 0);
+	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "glow_levels/2", PROPERTY_HINT_RANGE, "0,16,0.01,or_greater"), "set_glow_level", "get_glow_level", 1);
+	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "glow_levels/3", PROPERTY_HINT_RANGE, "0,16,0.01,or_greater"), "set_glow_level", "get_glow_level", 2);
+	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "glow_levels/4", PROPERTY_HINT_RANGE, "0,16,0.01,or_greater"), "set_glow_level", "get_glow_level", 3);
+	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "glow_levels/5", PROPERTY_HINT_RANGE, "0,16,0.01,or_greater"), "set_glow_level", "get_glow_level", 4);
+	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "glow_levels/6", PROPERTY_HINT_RANGE, "0,16,0.01,or_greater"), "set_glow_level", "get_glow_level", 5);
+	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "glow_levels/7", PROPERTY_HINT_RANGE, "0,16,0.01,or_greater"), "set_glow_level", "get_glow_level", 6);
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "glow_normalized"), "set_glow_normalized", "is_glow_normalized");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "glow_intensity", PROPERTY_HINT_RANGE, "0.0,8.0,0.01"), "set_glow_intensity", "get_glow_intensity");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "glow_strength", PROPERTY_HINT_RANGE, "0.0,2.0,0.01"), "set_glow_strength", "get_glow_strength");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "glow_mix", PROPERTY_HINT_RANGE, "0.0,1.0,0.001"), "set_glow_mix", "get_glow_mix");
@@ -1222,52 +1275,66 @@ void Environment::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_fog_enabled", "enabled"), &Environment::set_fog_enabled);
 	ClassDB::bind_method(D_METHOD("is_fog_enabled"), &Environment::is_fog_enabled);
-	ClassDB::bind_method(D_METHOD("set_fog_color", "color"), &Environment::set_fog_color);
-	ClassDB::bind_method(D_METHOD("get_fog_color"), &Environment::get_fog_color);
-	ClassDB::bind_method(D_METHOD("set_fog_sun_color", "color"), &Environment::set_fog_sun_color);
-	ClassDB::bind_method(D_METHOD("get_fog_sun_color"), &Environment::get_fog_sun_color);
-	ClassDB::bind_method(D_METHOD("set_fog_sun_amount", "amount"), &Environment::set_fog_sun_amount);
-	ClassDB::bind_method(D_METHOD("get_fog_sun_amount"), &Environment::get_fog_sun_amount);
+	ClassDB::bind_method(D_METHOD("set_fog_light_color", "light_color"), &Environment::set_fog_light_color);
+	ClassDB::bind_method(D_METHOD("get_fog_light_color"), &Environment::get_fog_light_color);
+	ClassDB::bind_method(D_METHOD("set_fog_light_energy", "light_energy"), &Environment::set_fog_light_energy);
+	ClassDB::bind_method(D_METHOD("get_fog_light_energy"), &Environment::get_fog_light_energy);
+	ClassDB::bind_method(D_METHOD("set_fog_sun_scatter", "sun_scatter"), &Environment::set_fog_sun_scatter);
+	ClassDB::bind_method(D_METHOD("get_fog_sun_scatter"), &Environment::get_fog_sun_scatter);
 
-	ClassDB::bind_method(D_METHOD("set_fog_depth_enabled", "enabled"), &Environment::set_fog_depth_enabled);
-	ClassDB::bind_method(D_METHOD("is_fog_depth_enabled"), &Environment::is_fog_depth_enabled);
-	ClassDB::bind_method(D_METHOD("set_fog_depth_begin", "distance"), &Environment::set_fog_depth_begin);
-	ClassDB::bind_method(D_METHOD("get_fog_depth_begin"), &Environment::get_fog_depth_begin);
-	ClassDB::bind_method(D_METHOD("set_fog_depth_end", "distance"), &Environment::set_fog_depth_end);
-	ClassDB::bind_method(D_METHOD("get_fog_depth_end"), &Environment::get_fog_depth_end);
-	ClassDB::bind_method(D_METHOD("set_fog_depth_curve", "curve"), &Environment::set_fog_depth_curve);
-	ClassDB::bind_method(D_METHOD("get_fog_depth_curve"), &Environment::get_fog_depth_curve);
-	ClassDB::bind_method(D_METHOD("set_fog_transmit_enabled", "enabled"), &Environment::set_fog_transmit_enabled);
-	ClassDB::bind_method(D_METHOD("is_fog_transmit_enabled"), &Environment::is_fog_transmit_enabled);
-	ClassDB::bind_method(D_METHOD("set_fog_transmit_curve", "curve"), &Environment::set_fog_transmit_curve);
-	ClassDB::bind_method(D_METHOD("get_fog_transmit_curve"), &Environment::get_fog_transmit_curve);
+	ClassDB::bind_method(D_METHOD("set_fog_density", "density"), &Environment::set_fog_density);
+	ClassDB::bind_method(D_METHOD("get_fog_density"), &Environment::get_fog_density);
 
-	ClassDB::bind_method(D_METHOD("set_fog_height_enabled", "enabled"), &Environment::set_fog_height_enabled);
-	ClassDB::bind_method(D_METHOD("is_fog_height_enabled"), &Environment::is_fog_height_enabled);
-	ClassDB::bind_method(D_METHOD("set_fog_height_min", "height"), &Environment::set_fog_height_min);
-	ClassDB::bind_method(D_METHOD("get_fog_height_min"), &Environment::get_fog_height_min);
-	ClassDB::bind_method(D_METHOD("set_fog_height_max", "height"), &Environment::set_fog_height_max);
-	ClassDB::bind_method(D_METHOD("get_fog_height_max"), &Environment::get_fog_height_max);
-	ClassDB::bind_method(D_METHOD("set_fog_height_curve", "curve"), &Environment::set_fog_height_curve);
-	ClassDB::bind_method(D_METHOD("get_fog_height_curve"), &Environment::get_fog_height_curve);
+	ClassDB::bind_method(D_METHOD("set_fog_height", "height"), &Environment::set_fog_height);
+	ClassDB::bind_method(D_METHOD("get_fog_height"), &Environment::get_fog_height);
+
+	ClassDB::bind_method(D_METHOD("set_fog_height_density", "height_density"), &Environment::set_fog_height_density);
+	ClassDB::bind_method(D_METHOD("get_fog_height_density"), &Environment::get_fog_height_density);
+
+	ClassDB::bind_method(D_METHOD("set_fog_aerial_perspective", "aerial_perspective"), &Environment::set_fog_aerial_perspective);
+	ClassDB::bind_method(D_METHOD("get_fog_aerial_perspective"), &Environment::get_fog_aerial_perspective);
 
 	ADD_GROUP("Fog", "fog_");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "fog_enabled"), "set_fog_enabled", "is_fog_enabled");
-	ADD_PROPERTY(PropertyInfo(Variant::COLOR, "fog_color"), "set_fog_color", "get_fog_color");
-	ADD_PROPERTY(PropertyInfo(Variant::COLOR, "fog_sun_color"), "set_fog_sun_color", "get_fog_sun_color");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "fog_sun_amount", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_fog_sun_amount", "get_fog_sun_amount");
+	ADD_PROPERTY(PropertyInfo(Variant::COLOR, "fog_light_color", PROPERTY_HINT_COLOR_NO_ALPHA), "set_fog_light_color", "get_fog_light_color");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "fog_light_energy", PROPERTY_HINT_RANGE, "0,16,0.01,or_greater"), "set_fog_light_energy", "get_fog_light_energy");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "fog_sun_scatter", PROPERTY_HINT_RANGE, "0,1,0.01,or_greater"), "set_fog_sun_scatter", "get_fog_sun_scatter");
 
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "fog_depth_enabled"), "set_fog_depth_enabled", "is_fog_depth_enabled");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "fog_depth_begin", PROPERTY_HINT_RANGE, "0,4000,0.1"), "set_fog_depth_begin", "get_fog_depth_begin");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "fog_depth_end", PROPERTY_HINT_RANGE, "0,4000,0.1,or_greater"), "set_fog_depth_end", "get_fog_depth_end");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "fog_depth_curve", PROPERTY_HINT_EXP_EASING), "set_fog_depth_curve", "get_fog_depth_curve");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "fog_transmit_enabled"), "set_fog_transmit_enabled", "is_fog_transmit_enabled");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "fog_transmit_curve", PROPERTY_HINT_EXP_EASING), "set_fog_transmit_curve", "get_fog_transmit_curve");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "fog_density", PROPERTY_HINT_RANGE, "0,16,0.0001"), "set_fog_density", "get_fog_density");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "fog_aerial_perspective", PROPERTY_HINT_RANGE, "0,1,0.001"), "set_fog_aerial_perspective", "get_fog_aerial_perspective");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "fog_height", PROPERTY_HINT_RANGE, "-1024,1024,0.01,or_lesser,or_greater"), "set_fog_height", "get_fog_height");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "fog_height_density", PROPERTY_HINT_RANGE, "0,128,0.001,or_greater"), "set_fog_height_density", "get_fog_height_density");
 
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "fog_height_enabled"), "set_fog_height_enabled", "is_fog_height_enabled");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "fog_height_min", PROPERTY_HINT_RANGE, "-4000,4000,0.1,or_lesser,or_greater"), "set_fog_height_min", "get_fog_height_min");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "fog_height_max", PROPERTY_HINT_RANGE, "-4000,4000,0.1,or_lesser,or_greater"), "set_fog_height_max", "get_fog_height_max");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "fog_height_curve", PROPERTY_HINT_EXP_EASING), "set_fog_height_curve", "get_fog_height_curve");
+	ClassDB::bind_method(D_METHOD("set_volumetric_fog_enabled", "enabled"), &Environment::set_volumetric_fog_enabled);
+	ClassDB::bind_method(D_METHOD("is_volumetric_fog_enabled"), &Environment::is_volumetric_fog_enabled);
+	ClassDB::bind_method(D_METHOD("set_volumetric_fog_light", "color"), &Environment::set_volumetric_fog_light);
+	ClassDB::bind_method(D_METHOD("get_volumetric_fog_light"), &Environment::get_volumetric_fog_light);
+	ClassDB::bind_method(D_METHOD("set_volumetric_fog_density", "density"), &Environment::set_volumetric_fog_density);
+	ClassDB::bind_method(D_METHOD("get_volumetric_fog_density"), &Environment::get_volumetric_fog_density);
+	ClassDB::bind_method(D_METHOD("set_volumetric_fog_light_energy", "begin"), &Environment::set_volumetric_fog_light_energy);
+	ClassDB::bind_method(D_METHOD("get_volumetric_fog_light_energy"), &Environment::get_volumetric_fog_light_energy);
+	ClassDB::bind_method(D_METHOD("set_volumetric_fog_length", "length"), &Environment::set_volumetric_fog_length);
+	ClassDB::bind_method(D_METHOD("get_volumetric_fog_length"), &Environment::get_volumetric_fog_length);
+	ClassDB::bind_method(D_METHOD("set_volumetric_fog_detail_spread", "detail_spread"), &Environment::set_volumetric_fog_detail_spread);
+	ClassDB::bind_method(D_METHOD("get_volumetric_fog_detail_spread"), &Environment::get_volumetric_fog_detail_spread);
+	ClassDB::bind_method(D_METHOD("set_volumetric_fog_gi_inject", "gi_inject"), &Environment::set_volumetric_fog_gi_inject);
+	ClassDB::bind_method(D_METHOD("get_volumetric_fog_gi_inject"), &Environment::get_volumetric_fog_gi_inject);
+	ClassDB::bind_method(D_METHOD("set_volumetric_fog_temporal_reprojection_enabled", "enabled"), &Environment::set_volumetric_fog_temporal_reprojection_enabled);
+	ClassDB::bind_method(D_METHOD("is_volumetric_fog_temporal_reprojection_enabled"), &Environment::is_volumetric_fog_temporal_reprojection_enabled);
+	ClassDB::bind_method(D_METHOD("set_volumetric_fog_temporal_reprojection_amount", "temporal_reprojection_amount"), &Environment::set_volumetric_fog_temporal_reprojection_amount);
+	ClassDB::bind_method(D_METHOD("get_volumetric_fog_temporal_reprojection_amount"), &Environment::get_volumetric_fog_temporal_reprojection_amount);
+
+	ADD_GROUP("Volumetric Fog", "volumetric_fog_");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "volumetric_fog_enabled"), "set_volumetric_fog_enabled", "is_volumetric_fog_enabled");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "volumetric_fog_density", PROPERTY_HINT_RANGE, "0,1,0.0001,or_greater"), "set_volumetric_fog_density", "get_volumetric_fog_density");
+	ADD_PROPERTY(PropertyInfo(Variant::COLOR, "volumetric_fog_light", PROPERTY_HINT_COLOR_NO_ALPHA), "set_volumetric_fog_light", "get_volumetric_fog_light");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "volumetric_fog_light_energy", PROPERTY_HINT_RANGE, "0,1024,0.01,or_greater"), "set_volumetric_fog_light_energy", "get_volumetric_fog_light_energy");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "volumetric_fog_gi_inject", PROPERTY_HINT_EXP_RANGE, "0.00,16,0.01"), "set_volumetric_fog_gi_inject", "get_volumetric_fog_gi_inject");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "volumetric_fog_length", PROPERTY_HINT_RANGE, "0,1024,0.01,or_greater"), "set_volumetric_fog_length", "get_volumetric_fog_length");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "volumetric_fog_detail_spread", PROPERTY_HINT_EXP_EASING, "0.01,16,0.01"), "set_volumetric_fog_detail_spread", "get_volumetric_fog_detail_spread");
+	ADD_SUBGROUP("Temporal Reprojection", "volumetric_fog_temporal_reprojection_");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "volumetric_fog_temporal_reprojection_enabled"), "set_volumetric_fog_temporal_reprojection_enabled", "is_volumetric_fog_temporal_reprojection_enabled");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "volumetric_fog_temporal_reprojection_amount", PROPERTY_HINT_RANGE, "0.0,0.999,0.001"), "set_volumetric_fog_temporal_reprojection_amount", "get_volumetric_fog_temporal_reprojection_amount");
 
 	// Adjustment
 
@@ -1287,7 +1354,7 @@ void Environment::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "adjustment_brightness", PROPERTY_HINT_RANGE, "0.01,8,0.01"), "set_adjustment_brightness", "get_adjustment_brightness");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "adjustment_contrast", PROPERTY_HINT_RANGE, "0.01,8,0.01"), "set_adjustment_contrast", "get_adjustment_contrast");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "adjustment_saturation", PROPERTY_HINT_RANGE, "0.01,8,0.01"), "set_adjustment_saturation", "get_adjustment_saturation");
-	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "adjustment_color_correction", PROPERTY_HINT_RESOURCE_TYPE, "Texture2D"), "set_adjustment_color_correction", "get_adjustment_color_correction");
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "adjustment_color_correction", PROPERTY_HINT_RESOURCE_TYPE, "Texture2D,Texture3D"), "set_adjustment_color_correction", "get_adjustment_color_correction");
 
 	// Constants
 
@@ -1319,11 +1386,6 @@ void Environment::_bind_methods() {
 	BIND_ENUM_CONSTANT(GLOW_BLEND_MODE_REPLACE);
 	BIND_ENUM_CONSTANT(GLOW_BLEND_MODE_MIX);
 
-	BIND_ENUM_CONSTANT(SSAO_BLUR_DISABLED);
-	BIND_ENUM_CONSTANT(SSAO_BLUR_1x1);
-	BIND_ENUM_CONSTANT(SSAO_BLUR_2x2);
-	BIND_ENUM_CONSTANT(SSAO_BLUR_3x3);
-
 	BIND_ENUM_CONSTANT(SDFGI_CASCADES_4);
 	BIND_ENUM_CONSTANT(SDFGI_CASCADES_6);
 	BIND_ENUM_CONSTANT(SDFGI_CASCADES_8);
@@ -1331,12 +1393,27 @@ void Environment::_bind_methods() {
 	BIND_ENUM_CONSTANT(SDFGI_Y_SCALE_DISABLED);
 	BIND_ENUM_CONSTANT(SDFGI_Y_SCALE_75_PERCENT);
 	BIND_ENUM_CONSTANT(SDFGI_Y_SCALE_50_PERCENT);
+
+	BIND_ENUM_CONSTANT(VOLUMETRIC_FOG_SHADOW_FILTER_DISABLED);
+	BIND_ENUM_CONSTANT(VOLUMETRIC_FOG_SHADOW_FILTER_LOW);
+	BIND_ENUM_CONSTANT(VOLUMETRIC_FOG_SHADOW_FILTER_MEDIUM);
+	BIND_ENUM_CONSTANT(VOLUMETRIC_FOG_SHADOW_FILTER_HIGH);
 }
 
 Environment::Environment() {
 	environment = RS::get_singleton()->environment_create();
 
 	set_camera_feed_id(bg_camera_feed_id);
+
+	glow_levels.resize(7);
+	glow_levels.write[0] = 0.0;
+	glow_levels.write[1] = 0.0;
+	glow_levels.write[2] = 1.0;
+	glow_levels.write[3] = 0.0;
+	glow_levels.write[4] = 1.0;
+	glow_levels.write[5] = 0.0;
+	glow_levels.write[6] = 0.0;
+
 	_update_ambient_light();
 	_update_tonemap();
 	_update_ssr();
@@ -1344,11 +1421,9 @@ Environment::Environment() {
 	_update_sdfgi();
 	_update_glow();
 	_update_fog();
-	_update_fog_depth();
-	_update_fog_height();
 	_update_adjustment();
-
-	_change_notify();
+	_update_volumetric_fog();
+	notify_property_list_changed();
 }
 
 Environment::~Environment() {

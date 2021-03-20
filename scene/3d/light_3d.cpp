@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -30,8 +30,8 @@
 
 #include "light_3d.h"
 
-#include "core/engine.h"
-#include "core/project_settings.h"
+#include "core/config/engine.h"
+#include "core/config/project_settings.h"
 #include "scene/resources/surface_tool.h"
 
 bool Light3D::_can_gizmo_scale() const {
@@ -48,11 +48,7 @@ void Light3D::set_param(Param p_param, float p_value) {
 		update_gizmo();
 
 		if (p_param == PARAM_SPOT_ANGLE) {
-			_change_notify("spot_angle");
 			update_configuration_warning();
-		} else if (p_param == PARAM_RANGE) {
-			_change_notify("omni_range");
-			_change_notify("spot_range");
 		}
 	}
 }
@@ -69,6 +65,8 @@ void Light3D::set_shadow(bool p_enable) {
 	if (type == RenderingServer::LIGHT_SPOT || type == RenderingServer::LIGHT_OMNI) {
 		update_configuration_warning();
 	}
+
+	notify_property_list_changed();
 }
 
 bool Light3D::has_shadow() const {
@@ -184,8 +182,6 @@ void Light3D::_update_visibility() {
 #endif
 
 	RS::get_singleton()->instance_set_visible(get_instance(), is_visible_in_tree() && editor_ok);
-
-	_change_notify("geometry/visible");
 }
 
 void Light3D::_notification(int p_what) {
@@ -208,7 +204,15 @@ bool Light3D::is_editor_only() const {
 }
 
 void Light3D::_validate_property(PropertyInfo &property) const {
+	if (!shadow && (property.name == "shadow_color" || property.name == "shadow_bias" || property.name == "shadow_normal_bias" || property.name == "shadow_reverse_cull_face" || property.name == "shadow_transmittance_bias" || property.name == "shadow_fog_fade" || property.name == "shadow_blur")) {
+		property.usage = PROPERTY_USAGE_NOEDITOR;
+	}
+
 	if (get_light_type() == RS::LIGHT_DIRECTIONAL && property.name == "light_size") {
+		property.usage = 0;
+	}
+
+	if (get_light_type() == RS::LIGHT_DIRECTIONAL && property.name == "light_specular") {
 		property.usage = 0;
 	}
 
@@ -257,7 +261,7 @@ void Light3D::_bind_methods() {
 	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "light_energy", PROPERTY_HINT_RANGE, "0,16,0.01,or_greater"), "set_param", "get_param", PARAM_ENERGY);
 	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "light_indirect_energy", PROPERTY_HINT_RANGE, "0,16,0.01,or_greater"), "set_param", "get_param", PARAM_INDIRECT_ENERGY);
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "light_projector", PROPERTY_HINT_RESOURCE_TYPE, "Texture2D"), "set_projector", "get_projector");
-	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "light_size", PROPERTY_HINT_RANGE, "0,64,0.01,or_greater"), "set_param", "get_param", PARAM_SIZE);
+	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "light_size", PROPERTY_HINT_RANGE, "0,1,0.01,or_greater"), "set_param", "get_param", PARAM_SIZE);
 	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "light_angular_distance", PROPERTY_HINT_RANGE, "0,90,0.01"), "set_param", "get_param", PARAM_SIZE);
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "light_negative"), "set_negative", "is_negative");
 	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "light_specular", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_param", "get_param", PARAM_SPECULAR);
@@ -270,6 +274,7 @@ void Light3D::_bind_methods() {
 	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "shadow_normal_bias", PROPERTY_HINT_RANGE, "0,10,0.001"), "set_param", "get_param", PARAM_SHADOW_NORMAL_BIAS);
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "shadow_reverse_cull_face"), "set_shadow_reverse_cull_face", "get_shadow_reverse_cull_face");
 	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "shadow_transmittance_bias", PROPERTY_HINT_RANGE, "-16,16,0.01"), "set_param", "get_param", PARAM_TRANSMITTANCE_BIAS);
+	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "shadow_fog_fade", PROPERTY_HINT_RANGE, "0.01,10,0.01"), "set_param", "get_param", PARAM_SHADOW_VOLUMETRIC_FOG_FADE);
 	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "shadow_blur", PROPERTY_HINT_RANGE, "0.1,8,0.01"), "set_param", "get_param", PARAM_SHADOW_BLUR);
 	ADD_GROUP("Editor", "");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "editor_only"), "set_editor_only", "is_editor_only");
@@ -292,6 +297,7 @@ void Light3D::_bind_methods() {
 	BIND_ENUM_CONSTANT(PARAM_SHADOW_BIAS);
 	BIND_ENUM_CONSTANT(PARAM_SHADOW_PANCAKE_SIZE);
 	BIND_ENUM_CONSTANT(PARAM_SHADOW_BLUR);
+	BIND_ENUM_CONSTANT(PARAM_SHADOW_VOLUMETRIC_FOG_FADE);
 	BIND_ENUM_CONSTANT(PARAM_TRANSMITTANCE_BIAS);
 	BIND_ENUM_CONSTANT(PARAM_MAX);
 
@@ -318,10 +324,6 @@ Light3D::Light3D(RenderingServer::LightType p_type) {
 
 	RS::get_singleton()->instance_set_base(get_instance(), light);
 
-	reverse_cull = false;
-	bake_mode = BAKE_DYNAMIC;
-
-	editor_only = false;
 	set_color(Color(1, 1, 1, 1));
 	set_shadow(false);
 	set_negative(false);
@@ -345,12 +347,12 @@ Light3D::Light3D(RenderingServer::LightType p_type) {
 	set_param(PARAM_SHADOW_BIAS, 0.02);
 	set_param(PARAM_SHADOW_NORMAL_BIAS, 1.0);
 	set_param(PARAM_TRANSMITTANCE_BIAS, 0.05);
+	set_param(PARAM_SHADOW_VOLUMETRIC_FOG_FADE, 0.1);
 	set_param(PARAM_SHADOW_FADE_START, 1);
 	set_disable_scale(true);
 }
 
 Light3D::Light3D() {
-	type = RenderingServer::LIGHT_DIRECTIONAL;
 	ERR_PRINT("Light3D should not be instanced directly; use the DirectionalLight3D, OmniLight3D or SpotLight3D subtypes instead.");
 }
 
@@ -391,6 +393,15 @@ bool DirectionalLight3D::is_blend_splits_enabled() const {
 	return blend_splits;
 }
 
+void DirectionalLight3D::set_sky_only(bool p_sky_only) {
+	sky_only = p_sky_only;
+	RS::get_singleton()->light_directional_set_sky_only(light, p_sky_only);
+}
+
+bool DirectionalLight3D::is_sky_only() const {
+	return sky_only;
+}
+
 void DirectionalLight3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_shadow_mode", "mode"), &DirectionalLight3D::set_shadow_mode);
 	ClassDB::bind_method(D_METHOD("get_shadow_mode"), &DirectionalLight3D::get_shadow_mode);
@@ -400,6 +411,9 @@ void DirectionalLight3D::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_blend_splits", "enabled"), &DirectionalLight3D::set_blend_splits);
 	ClassDB::bind_method(D_METHOD("is_blend_splits_enabled"), &DirectionalLight3D::is_blend_splits_enabled);
+
+	ClassDB::bind_method(D_METHOD("set_sky_only", "priority"), &DirectionalLight3D::set_sky_only);
+	ClassDB::bind_method(D_METHOD("is_sky_only"), &DirectionalLight3D::is_sky_only);
 
 	ADD_GROUP("Directional Shadow", "directional_shadow_");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "directional_shadow_mode", PROPERTY_HINT_ENUM, "Orthogonal (Fast),PSSM 2 Splits (Average),PSSM 4 Splits (Slow)"), "set_shadow_mode", "get_shadow_mode");
@@ -411,6 +425,8 @@ void DirectionalLight3D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "directional_shadow_depth_range", PROPERTY_HINT_ENUM, "Stable,Optimized"), "set_shadow_depth_range", "get_shadow_depth_range");
 	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "directional_shadow_max_distance", PROPERTY_HINT_EXP_RANGE, "0,8192,0.1,or_greater"), "set_param", "get_param", PARAM_SHADOW_MAX_DISTANCE);
 	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "directional_shadow_pancake_size", PROPERTY_HINT_EXP_RANGE, "0,1024,0.1,or_greater"), "set_param", "get_param", PARAM_SHADOW_PANCAKE_SIZE);
+
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "use_in_sky_only"), "set_sky_only", "is_sky_only");
 
 	BIND_ENUM_CONSTANT(SHADOW_ORTHOGONAL);
 	BIND_ENUM_CONSTANT(SHADOW_PARALLEL_2_SPLITS);
@@ -445,7 +461,7 @@ String OmniLight3D::get_configuration_warning() const {
 	String warning = Light3D::get_configuration_warning();
 
 	if (!has_shadow() && get_projector().is_valid()) {
-		if (warning != String()) {
+		if (!warning.is_empty()) {
 			warning += "\n\n";
 		}
 		warning += TTR("Projector texture only works with shadows active.");
@@ -479,15 +495,14 @@ String SpotLight3D::get_configuration_warning() const {
 	String warning = Light3D::get_configuration_warning();
 
 	if (has_shadow() && get_param(PARAM_SPOT_ANGLE) >= 90.0) {
-		if (warning != String()) {
+		if (!warning.is_empty()) {
 			warning += "\n\n";
 		}
-
 		warning += TTR("A SpotLight3D with an angle wider than 90 degrees cannot cast shadows.");
 	}
 
 	if (!has_shadow() && get_projector().is_valid()) {
-		if (warning != String()) {
+		if (!warning.is_empty()) {
 			warning += "\n\n";
 		}
 		warning += TTR("Projector texture only works with shadows active.");

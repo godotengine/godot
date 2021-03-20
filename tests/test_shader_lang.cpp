@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -34,7 +34,7 @@
 #include "core/os/main_loop.h"
 #include "core/os/os.h"
 
-#include "core/print_string.h"
+#include "core/string/print_string.h"
 #include "scene/gui/control.h"
 #include "scene/gui/text_edit.h"
 #include "servers/rendering/shader_language.h"
@@ -308,7 +308,7 @@ static Error recreate_code(void *p_str, SL::ShaderNode *p_program) {
 MainLoop *test() {
 	List<String> cmdlargs = OS::get_singleton()->get_cmdline_args();
 
-	if (cmdlargs.empty()) {
+	if (cmdlargs.is_empty()) {
 		//try editor!
 		print_line("usage: godot -test shader_lang <shader>");
 		return nullptr;
@@ -325,7 +325,7 @@ MainLoop *test() {
 	String code;
 
 	while (true) {
-		CharType c = fa->get_8();
+		char32_t c = fa->get_8();
 		if (fa->eof_reached()) {
 			break;
 		}
@@ -357,5 +357,4 @@ MainLoop *test() {
 
 	return nullptr;
 }
-
 } // namespace TestShaderLang

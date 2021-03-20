@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -41,7 +41,7 @@ Control *SplitContainer::_getch(int p_idx) const {
 		if (!c || !c->is_visible_in_tree()) {
 			continue;
 		}
-		if (c->is_set_as_toplevel()) {
+		if (c->is_set_as_top_level()) {
 			continue;
 		}
 
@@ -102,7 +102,7 @@ void SplitContainer::_resort() {
 		middle_sep += clamped_split_offset;
 		if (should_clamp_split_offset) {
 			split_offset = clamped_split_offset;
-			_change_notify("split_offset");
+
 			should_clamp_split_offset = false;
 		}
 	}
@@ -112,9 +112,16 @@ void SplitContainer::_resort() {
 		int sofs = middle_sep + sep;
 		fit_child_in_rect(second, Rect2(Point2(0, sofs), Size2(get_size().width, get_size().height - sofs)));
 	} else {
-		fit_child_in_rect(first, Rect2(Point2(0, 0), Size2(middle_sep, get_size().height)));
-		int sofs = middle_sep + sep;
-		fit_child_in_rect(second, Rect2(Point2(sofs, 0), Size2(get_size().width - sofs, get_size().height)));
+		if (is_layout_rtl()) {
+			middle_sep = get_size().width - middle_sep - sep;
+			fit_child_in_rect(second, Rect2(Point2(0, 0), Size2(middle_sep, get_size().height)));
+			int sofs = middle_sep + sep;
+			fit_child_in_rect(first, Rect2(Point2(sofs, 0), Size2(get_size().width - sofs, get_size().height)));
+		} else {
+			fit_child_in_rect(first, Rect2(Point2(0, 0), Size2(middle_sep, get_size().height)));
+			int sofs = middle_sep + sep;
+			fit_child_in_rect(second, Rect2(Point2(sofs, 0), Size2(get_size().width - sofs, get_size().height)));
+		}
 	}
 
 	update();
@@ -157,6 +164,10 @@ Size2 SplitContainer::get_minimum_size() const {
 
 void SplitContainer::_notification(int p_what) {
 	switch (p_what) {
+		case NOTIFICATION_TRANSLATION_CHANGED:
+		case NOTIFICATION_LAYOUT_DIRECTION_CHANGED: {
+			queue_sort();
+		} break;
 		case NOTIFICATION_SORT_CHILDREN: {
 			_resort();
 		} break;
@@ -247,7 +258,11 @@ void SplitContainer::_gui_input(const Ref<InputEvent> &p_event) {
 			return;
 		}
 
-		split_offset = drag_ofs + ((vertical ? mm->get_position().y : mm->get_position().x) - drag_from);
+		if (!vertical && is_layout_rtl()) {
+			split_offset = drag_ofs + (drag_from - (vertical ? mm->get_position().y : mm->get_position().x));
+		} else {
+			split_offset = drag_ofs + ((vertical ? mm->get_position().y : mm->get_position().x) - drag_from);
+		}
 		should_clamp_split_offset = true;
 		queue_sort();
 		emit_signal("dragged", get_split_offset());
@@ -344,12 +359,5 @@ void SplitContainer::_bind_methods() {
 }
 
 SplitContainer::SplitContainer(bool p_vertical) {
-	mouse_inside = false;
-	split_offset = 0;
-	should_clamp_split_offset = false;
-	middle_sep = 0;
 	vertical = p_vertical;
-	dragging = false;
-	collapsed = false;
-	dragger_visibility = DRAGGER_VISIBLE;
 }

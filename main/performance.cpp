@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -30,7 +30,7 @@
 
 #include "performance.h"
 
-#include "core/message_queue.h"
+#include "core/object/message_queue.h"
 #include "core/os/os.h"
 #include "scene/main/node.h"
 #include "scene/main/scene_tree.h"
@@ -93,7 +93,6 @@ float Performance::_get_node_count() const {
 String Performance::get_monitor_name(Monitor p_monitor) const {
 	ERR_FAIL_INDEX_V(p_monitor, MONITOR_MAX, String());
 	static const char *names[MONITOR_MAX] = {
-
 		"time/fps",
 		"time/process",
 		"time/physics_process",
@@ -120,7 +119,7 @@ String Performance::get_monitor_name(Monitor p_monitor) const {
 		"physics_3d/active_objects",
 		"physics_3d/collision_pairs",
 		"physics_3d/islands",
-		"audio/output_latency",
+		"audio/driver/output_latency",
 
 	};
 
@@ -195,7 +194,6 @@ Performance::MonitorType Performance::get_monitor_type(Monitor p_monitor) const 
 	ERR_FAIL_INDEX_V(p_monitor, MONITOR_MAX, MONITOR_TYPE_QUANTITY);
 	// ugly
 	static const MonitorType types[MONITOR_MAX] = {
-
 		MONITOR_TYPE_QUANTITY,
 		MONITOR_TYPE_TIME,
 		MONITOR_TYPE_TIME,

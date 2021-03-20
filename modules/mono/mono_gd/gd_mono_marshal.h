@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -31,7 +31,7 @@
 #ifndef GDMONOMARSHAL_H
 #define GDMONOMARSHAL_H
 
-#include "core/variant.h"
+#include "core/variant/variant.h"
 
 #include "../managed_callable.h"
 #include "gd_mono.h"
@@ -69,15 +69,11 @@ bool try_get_array_element_type(const ManagedType &p_array_type, ManagedType &r_
 
 // String
 
-String mono_to_utf8_string(MonoString *p_mono_string);
-String mono_to_utf16_string(MonoString *p_mono_string);
-
 _FORCE_INLINE_ String mono_string_to_godot_not_null(MonoString *p_mono_string) {
-	if constexpr (sizeof(CharType) == 2) {
-		return mono_to_utf16_string(p_mono_string);
-	}
-
-	return mono_to_utf8_string(p_mono_string);
+	char32_t *utf32 = (char32_t *)mono_string_to_utf32(p_mono_string);
+	String ret = String(utf32);
+	mono_free(utf32);
+	return ret;
 }
 
 _FORCE_INLINE_ String mono_string_to_godot(MonoString *p_mono_string) {
@@ -88,33 +84,46 @@ _FORCE_INLINE_ String mono_string_to_godot(MonoString *p_mono_string) {
 	return mono_string_to_godot_not_null(p_mono_string);
 }
 
-_FORCE_INLINE_ MonoString *mono_from_utf8_string(const String &p_string) {
-	return mono_string_new(mono_domain_get(), p_string.utf8().get_data());
-}
-
-_FORCE_INLINE_ MonoString *mono_from_utf16_string(const String &p_string) {
-	return mono_string_from_utf16((mono_unichar2 *)p_string.c_str());
-}
-
 _FORCE_INLINE_ MonoString *mono_string_from_godot(const String &p_string) {
-	if constexpr (sizeof(CharType) == 2) {
-		return mono_from_utf16_string(p_string);
-	}
-
-	return mono_from_utf8_string(p_string);
+	return mono_string_from_utf32((mono_unichar4 *)(p_string.get_data()));
 }
 
 // Variant
 
-MonoObject *variant_to_mono_object(const Variant *p_var, const ManagedType &p_type);
-MonoObject *variant_to_mono_object(const Variant *p_var);
+size_t variant_get_managed_unboxed_size(const ManagedType &p_type);
+void *variant_to_managed_unboxed(const Variant &p_var, const ManagedType &p_type, void *r_buffer, unsigned int &r_offset);
+MonoObject *variant_to_mono_object(const Variant &p_var, const ManagedType &p_type);
 
-_FORCE_INLINE_ MonoObject *variant_to_mono_object(const Variant &p_var) {
-	return variant_to_mono_object(&p_var);
+MonoObject *variant_to_mono_object(const Variant &p_var);
+MonoArray *variant_to_mono_array(const Variant &p_var, GDMonoClass *p_type_class);
+MonoObject *variant_to_mono_object_of_class(const Variant &p_var, GDMonoClass *p_type_class);
+MonoObject *variant_to_mono_object_of_genericinst(const Variant &p_var, GDMonoClass *p_type_class);
+MonoString *variant_to_mono_string(const Variant &p_var);
+
+// These overloads were added to avoid passing a `const Variant *` to the `const Variant &`
+// parameter. That would result in the `Variant(bool)` copy constructor being called as
+// pointers are implicitly converted to bool. Implicit conversions are f-ing evil.
+
+_FORCE_INLINE_ void *variant_to_managed_unboxed(const Variant *p_var, const ManagedType &p_type, void *r_buffer, unsigned int &r_offset) {
+	return variant_to_managed_unboxed(*p_var, p_type, r_buffer, r_offset);
 }
-
-_FORCE_INLINE_ MonoObject *variant_to_mono_object(const Variant &p_var, const ManagedType &p_type) {
-	return variant_to_mono_object(&p_var, p_type);
+_FORCE_INLINE_ MonoObject *variant_to_mono_object(const Variant *p_var, const ManagedType &p_type) {
+	return variant_to_mono_object(*p_var, p_type);
+}
+_FORCE_INLINE_ MonoObject *variant_to_mono_object(const Variant *p_var) {
+	return variant_to_mono_object(*p_var);
+}
+_FORCE_INLINE_ MonoArray *variant_to_mono_array(const Variant *p_var, GDMonoClass *p_type_class) {
+	return variant_to_mono_array(*p_var, p_type_class);
+}
+_FORCE_INLINE_ MonoObject *variant_to_mono_object_of_class(const Variant *p_var, GDMonoClass *p_type_class) {
+	return variant_to_mono_object_of_class(*p_var, p_type_class);
+}
+_FORCE_INLINE_ MonoObject *variant_to_mono_object_of_genericinst(const Variant *p_var, GDMonoClass *p_type_class) {
+	return variant_to_mono_object_of_genericinst(*p_var, p_type_class);
+}
+_FORCE_INLINE_ MonoString *variant_to_mono_string(const Variant *p_var) {
+	return variant_to_mono_string(*p_var);
 }
 
 Variant mono_object_to_variant(MonoObject *p_obj);
@@ -131,12 +140,12 @@ MonoObject *Dictionary_to_system_generic_dict(const Dictionary &p_dict, GDMonoCl
 Dictionary system_generic_dict_to_Dictionary(MonoObject *p_obj, GDMonoClass *p_class, MonoReflectionType *p_key_reftype, MonoReflectionType *p_value_reftype);
 
 MonoObject *Array_to_system_generic_list(const Array &p_array, GDMonoClass *p_class, MonoReflectionType *p_elem_reftype);
-Array system_generic_list_to_Array(MonoObject *p_obj, GDMonoClass *p_class, MonoReflectionType *p_elem_reftype);
+Variant system_generic_list_to_Array_variant(MonoObject *p_obj, GDMonoClass *p_class, MonoReflectionType *p_elem_reftype);
 
 // Array
 
 MonoArray *Array_to_mono_array(const Array &p_array);
-MonoArray *Array_to_mono_array(const Array &p_array, GDMonoClass *p_array_type_class);
+MonoArray *Array_to_mono_array(const Array &p_array, MonoClass *p_array_type_class);
 Array mono_array_to_Array(MonoArray *p_array);
 
 // PackedInt32Array
@@ -287,7 +296,6 @@ static_assert(MATCHES_Vector2 && MATCHES_Rect2 && MATCHES_Transform2D && MATCHES
 				MATCHES_Plane && MATCHES_Vector2i && MATCHES_Rect2i && MATCHES_Vector3i);
 /* clang-format on */
 #endif
-
 } // namespace InteropLayout
 
 #pragma pack(push, 1)
@@ -533,7 +541,6 @@ DECL_TYPE_MARSHAL_TEMPLATES(Plane)
 
 #define MARSHALLED_IN(m_type, m_from_ptr) (GDMonoMarshal::marshalled_in_##m_type(m_from_ptr))
 #define MARSHALLED_OUT(m_type, m_from) (GDMonoMarshal::marshalled_out_##m_type(m_from))
-
 } // namespace GDMonoMarshal
 
 #endif // GDMONOMARSHAL_H

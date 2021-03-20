@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -43,7 +43,7 @@ void CollisionObject3DSW::add_shape(Shape3DSW *p_shape, const Transform &p_trans
 	p_shape->add_owner(this);
 
 	if (!pending_shape_update_list.in_list()) {
-		PhysicsServer3DSW::singleton->pending_shape_update_list.add(&pending_shape_update_list);
+		PhysicsServer3DSW::singletonsw->pending_shape_update_list.add(&pending_shape_update_list);
 	}
 	//_update_shapes();
 	//_shapes_changed();
@@ -56,7 +56,7 @@ void CollisionObject3DSW::set_shape(int p_index, Shape3DSW *p_shape) {
 
 	p_shape->add_owner(this);
 	if (!pending_shape_update_list.in_list()) {
-		PhysicsServer3DSW::singleton->pending_shape_update_list.add(&pending_shape_update_list);
+		PhysicsServer3DSW::singletonsw->pending_shape_update_list.add(&pending_shape_update_list);
 	}
 	//_update_shapes();
 	//_shapes_changed();
@@ -68,7 +68,7 @@ void CollisionObject3DSW::set_shape_transform(int p_index, const Transform &p_tr
 	shapes.write[p_index].xform = p_transform;
 	shapes.write[p_index].xform_inv = p_transform.affine_inverse();
 	if (!pending_shape_update_list.in_list()) {
-		PhysicsServer3DSW::singleton->pending_shape_update_list.add(&pending_shape_update_list);
+		PhysicsServer3DSW::singletonsw->pending_shape_update_list.add(&pending_shape_update_list);
 	}
 	//_update_shapes();
 	//_shapes_changed();
@@ -77,7 +77,7 @@ void CollisionObject3DSW::set_shape_transform(int p_index, const Transform &p_tr
 void CollisionObject3DSW::set_shape_as_disabled(int p_idx, bool p_enable) {
 	shapes.write[p_idx].disabled = p_enable;
 	if (!pending_shape_update_list.in_list()) {
-		PhysicsServer3DSW::singleton->pending_shape_update_list.add(&pending_shape_update_list);
+		PhysicsServer3DSW::singletonsw->pending_shape_update_list.add(&pending_shape_update_list);
 	}
 }
 
@@ -106,7 +106,7 @@ void CollisionObject3DSW::remove_shape(int p_index) {
 	shapes.remove(p_index);
 
 	if (!pending_shape_update_list.in_list()) {
-		PhysicsServer3DSW::singleton->pending_shape_update_list.add(&pending_shape_update_list);
+		PhysicsServer3DSW::singletonsw->pending_shape_update_list.add(&pending_shape_update_list);
 	}
 	//_update_shapes();
 	//_shapes_changed();

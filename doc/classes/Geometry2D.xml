@@ -91,7 +91,7 @@
 			<argument index="3" name="q2" type="Vector2">
 			</argument>
 			<description>
-				Given the two 2D segments ([code]p1[/code], [code]p2[/code]) and ([code]q1[/code], [code]q2[/code]), finds those two points on the two segments that are closest to each other. Returns a [PackedVector2Array] that contains this point on ([code]p1[/code], [code]p2[/code]) as well the accompanying point on ([code]q1[/code], [code]q2[/code]).
+				Given the two 2D segments ([code]p1[/code], [code]q1[/code]) and ([code]p2[/code], [code]q2[/code]), finds those two points on the two segments that are closest to each other. Returns a [PackedVector2Array] that contains this point on ([code]p1[/code], [code]q1[/code]) as well the accompanying point on ([code]p2[/code], [code]q2[/code]).
 			</description>
 		</method>
 		<method name="intersect_polygons">
@@ -200,13 +200,22 @@
 				Inflates or deflates [code]polygon[/code] by [code]delta[/code] units (pixels). If [code]delta[/code] is positive, makes the polygon grow outward. If [code]delta[/code] is negative, shrinks the polygon inward. Returns an array of polygons because inflating/deflating may result in multiple discrete polygons. Returns an empty array if [code]delta[/code] is negative and the absolute value of it approximately exceeds the minimum bounding rectangle dimensions of the polygon.
 				Each polygon's vertices will be rounded as determined by [code]join_type[/code], see [enum PolyJoinType].
 				The operation may result in an outer polygon (boundary) and inner polygon (hole) produced which could be distinguished by calling [method is_polygon_clockwise].
-				[b]Note:[/b] To translate the polygon's vertices specifically, use the [method Transform2D.xform] method:
-				[codeblock]
+				[b]Note:[/b] To translate the polygon's vertices specifically, multiply them to a [Transform2D]:
+				[codeblocks]
+				[gdscript]
 				var polygon = PackedVector2Array([Vector2(0, 0), Vector2(100, 0), Vector2(100, 100), Vector2(0, 100)])
 				var offset = Vector2(50, 50)
-				polygon = Transform2D(0, offset).xform(polygon)
+				polygon = Transform2D(0, offset) * polygon
 				print(polygon) # prints [Vector2(50, 50), Vector2(150, 50), Vector2(150, 150), Vector2(50, 150)]
-				[/codeblock]
+				[/gdscript]
+				[csharp]
+				var polygon = new Vector2[] { new Vector2(0, 0), new Vector2(100, 0), new Vector2(100, 100), new Vector2(0, 100) };
+				var offset = new Vector2(50, 50);
+				// TODO: This code is not valid right now. Ping @aaronfranke about it before Godot 4.0 is out.
+				//polygon = (Vector2[]) new Transform2D(0, offset).Xform(polygon);
+				//GD.Print(polygon); // prints [Vector2(50, 50), Vector2(150, 50), Vector2(150, 150), Vector2(50, 150)]
+				[/csharp]
+				[/codeblocks]
 			</description>
 		</method>
 		<method name="offset_polyline">

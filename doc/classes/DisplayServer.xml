@@ -492,7 +492,7 @@
 			</argument>
 			<argument index="3" name="subtitle_track" type="String">
 			</argument>
-			<argument index="4" name="arg4" type="int">
+			<argument index="4" name="screen" type="int">
 			</argument>
 			<description>
 			</description>
@@ -521,6 +521,18 @@
 			<argument index="0" name="screen" type="int" default="-1">
 			</argument>
 			<description>
+				Returns the dots per inch density of the specified screen. If [code]screen[/code] is [/code]SCREEN_OF_MAIN_WINDOW[/code] (the default value), a screen with the main window will be used.
+				[b]Note:[/b] On macOS, returned value is inaccurate if fractional display scaling mode is used.
+				[b]Note:[/b] On Android devices, the actual screen densities are grouped into six generalized densities:
+				[codeblock]
+				   ldpi - 120 dpi
+				   mdpi - 160 dpi
+				   hdpi - 240 dpi
+				  xhdpi - 320 dpi
+				 xxhdpi - 480 dpi
+				xxxhdpi - 640 dpi
+				[/codeblock]
+				[b]Note:[/b] This method is implemented on Android, Linux, macOS and Windows. Returns [code]72[/code] on unsupported platforms.
 			</description>
 		</method>
 		<method name="screen_get_max_scale" qualifiers="const">
@@ -621,6 +633,42 @@
 			<argument index="0" name="filename" type="String">
 			</argument>
 			<description>
+			</description>
+		</method>
+		<method name="tablet_get_current_driver" qualifiers="const">
+			<return type="String">
+			</return>
+			<description>
+				Returns current active tablet driver name.
+				[b]Note:[/b] This method is implemented on Windows.
+			</description>
+		</method>
+		<method name="tablet_get_driver_count" qualifiers="const">
+			<return type="int">
+			</return>
+			<description>
+				Returns the total number of available tablet drivers.
+				[b]Note:[/b] This method is implemented on Windows.
+			</description>
+		</method>
+		<method name="tablet_get_driver_name" qualifiers="const">
+			<return type="String">
+			</return>
+			<argument index="0" name="idx" type="int">
+			</argument>
+			<description>
+				Returns the tablet driver name for the given index.
+				[b]Note:[/b] This method is implemented on Windows.
+			</description>
+		</method>
+		<method name="tablet_set_current_driver">
+			<return type="void">
+			</return>
+			<argument index="0" name="name" type="String">
+			</argument>
+			<description>
+				Set active tablet driver name.
+				[b]Note:[/b] This method is implemented on Windows.
 			</description>
 		</method>
 		<method name="virtual_keyboard_get_height" qualifiers="const">
@@ -901,6 +949,42 @@
 			<description>
 			</description>
 		</method>
+		<method name="window_set_mouse_passthrough">
+			<return type="void">
+			</return>
+			<argument index="0" name="region" type="PackedVector2Array">
+			</argument>
+			<argument index="1" name="window_id" type="int" default="0">
+			</argument>
+			<description>
+				Sets a polygonal region of the window which accepts mouse events. Mouse events outside the region will be passed through.
+				Passing an empty array will disable passthrough support (all mouse events will be intercepted by the window, which is the default behavior).
+				[codeblocks]
+				[gdscript]
+				# Set region, using Path2D node.
+				DisplayServer.window_set_mouse_passthrough($Path2D.curve.get_baked_points())
+
+				# Set region, using Polygon2D node.
+				DisplayServer.window_set_mouse_passthrough($Polygon2D.polygon)
+
+				# Reset region to default.
+				DisplayServer.window_set_mouse_passthrough([])
+				[/gdscript]
+				[csharp]
+				// Set region, using Path2D node.
+				DisplayServer.WindowSetMousePassthrough(GetNode&lt;Path2D&gt;("Path2D").Curve.GetBakedPoints());
+
+				// Set region, using Polygon2D node.
+				DisplayServer.WindowSetMousePassthrough(GetNode&lt;Polygon2D&gt;("Polygon2D").Polygon);
+
+				// Reset region to default.
+				DisplayServer.WindowSetMousePassthrough(new Vector2[] {});
+				[/csharp]
+				[/codeblocks]
+				[b]Note:[/b] On Windows, the portion of a window that lies outside the region is not drawn, while on Linux and macOS it is.
+				[b]Note:[/b] This method is implemented on Linux, macOS and Windows.
+			</description>
+		</method>
 		<method name="window_set_position">
 			<return type="void">
 			</return>
@@ -1072,6 +1156,8 @@
 		<constant name="WINDOW_MODE_MAXIMIZED" value="2" enum="WindowMode">
 		</constant>
 		<constant name="WINDOW_MODE_FULLSCREEN" value="3" enum="WindowMode">
+			Fullscreen window mode. Note that this is not [i]exclusive[/i] fullscreen. On Windows and Linux, a borderless window is used to emulate fullscreen. On macOS, a new desktop is used to display the running project.
+			Regardless of the platform, enabling fullscreen will change the window size to match the monitor's size. Therefore, make sure your project supports [url=https://docs.godotengine.org/en/latest/tutorials/rendering/multiple_resolutions.html]multiple resolutions[/url] when enabling fullscreen mode.
 		</constant>
 		<constant name="WINDOW_FLAG_RESIZE_DISABLED" value="0" enum="WindowFlags">
 		</constant>

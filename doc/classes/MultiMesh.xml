@@ -6,19 +6,19 @@
 	<description>
 		MultiMesh provides low-level mesh instancing. Drawing thousands of [MeshInstance3D] nodes can be slow, since each object is submitted to the GPU then drawn individually.
 		MultiMesh is much faster as it can draw thousands of instances with a single draw call, resulting in less API overhead.
-		As a drawback, if the instances are too far away of each other, performance may be reduced as every single instance will always rendered (they are spatially indexed as one, for the whole object).
+		As a drawback, if the instances are too far away of each other, performance may be reduced as every single instance will always render (they are spatially indexed as one, for the whole object).
 		Since instances may have any behavior, the AABB used for visibility must be provided by the user.
 	</description>
 	<tutorials>
-		<link>https://docs.godotengine.org/en/latest/tutorials/3d/vertex_animation/animating_thousands_of_fish.html</link>
-		<link>https://docs.godotengine.org/en/latest/tutorials/optimization/using_multimesh.html</link>
+		<link title="Animating thousands of fish with MultiMeshInstance">https://docs.godotengine.org/en/latest/tutorials/3d/vertex_animation/animating_thousands_of_fish.html</link>
+		<link title="Optimization using MultiMeshes">https://docs.godotengine.org/en/latest/tutorials/optimization/using_multimesh.html</link>
 	</tutorials>
 	<methods>
 		<method name="get_aabb" qualifiers="const">
 			<return type="AABB">
 			</return>
 			<description>
-				Returns the visibility axis-aligned bounding box.
+				Returns the visibility axis-aligned bounding box in local space. See also [method VisualInstance3D.get_transformed_aabb].
 			</description>
 		</method>
 		<method name="get_instance_color" qualifiers="const">
@@ -65,7 +65,7 @@
 			<argument index="1" name="color" type="Color">
 			</argument>
 			<description>
-				Sets the color of a specific instance.
+				Sets the color of a specific instance by [i]multiplying[/i] the mesh's existing vertex colors.
 				For the color to take effect, ensure that [member use_colors] is [code]true[/code] on the [MultiMesh] and [member BaseMaterial3D.vertex_color_use_as_albedo] is [code]true[/code] on the material.
 			</description>
 		</method>

@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="CanvasTexture" inherits="Texture2D" version="4.0">
+	<brief_description>
+	</brief_description>
+	<description>
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+	</methods>
+	<members>
+		<member name="diffuse_texture" type="Texture2D" setter="set_diffuse_texture" getter="get_diffuse_texture">
+		</member>
+		<member name="normal_texture" type="Texture2D" setter="set_normal_texture" getter="get_normal_texture">
+		</member>
+		<member name="specular_color" type="Color" setter="set_specular_color" getter="get_specular_color" default="Color( 1, 1, 1, 1 )">
+		</member>
+		<member name="specular_shininess" type="float" setter="set_specular_shininess" getter="get_specular_shininess" default="1.0">
+		</member>
+		<member name="specular_texture" type="Texture2D" setter="set_specular_texture" getter="get_specular_texture">
+		</member>
+		<member name="texture_filter" type="int" setter="set_texture_filter" getter="get_texture_filter" enum="CanvasItem.TextureFilter" default="0">
+		</member>
+		<member name="texture_repeat" type="int" setter="set_texture_repeat" getter="get_texture_repeat" enum="CanvasItem.TextureRepeat" default="0">
+		</member>
+	</members>
+	<constants>
+	</constants>
+</class>

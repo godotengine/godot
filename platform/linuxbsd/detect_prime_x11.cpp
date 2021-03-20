@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -33,8 +33,8 @@
 
 #include "detect_prime.h"
 
-#include "core/print_string.h"
-#include "core/ustring.h"
+#include "core/string/print_string.h"
+#include "core/string/ustring.h"
 
 #include <stdlib.h>
 
@@ -56,11 +56,12 @@ typedef GLXContext (*GLXCREATECONTEXTATTRIBSARBPROC)(Display *, GLXFBConfig, GLX
 
 struct vendor {
 	const char *glxvendor;
-	int priority;
+	int priority = 0;
 };
 
 vendor vendormap[] = {
 	{ "Advanced Micro Devices, Inc.", 30 },
+	{ "AMD", 30 },
 	{ "NVIDIA Corporation", 30 },
 	{ "X.Org", 30 },
 	{ "Intel Open Source Technology Center", 20 },
@@ -128,7 +129,7 @@ void create_context() {
 
 int detect_prime() {
 	pid_t p;
-	int priorities[2];
+	int priorities[2] = {};
 	String vendors[2];
 	String renderers[2];
 

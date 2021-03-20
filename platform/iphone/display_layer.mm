@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -29,8 +29,8 @@
 /*************************************************************************/
 
 #import "display_layer.h"
+#include "core/config/project_settings.h"
 #include "core/os/keyboard.h"
-#include "core/project_settings.h"
 #include "display_server_iphone.h"
 #include "main/main.h"
 #include "os_iphone.h"
@@ -89,7 +89,7 @@
 	// FIXME: Add Vulkan support via MoltenVK. Add fallback code back?
 
 	// Create GL ES 2 context
-	if (GLOBAL_GET("rendering/quality/driver/driver_name") == "GLES2") {
+	if (GLOBAL_GET("rendering/driver/driver_name") == "GLES2") {
 		context = [[EAGLContext alloc] initWithAPI:kEAGLRenderingAPIOpenGLES2];
 		NSLog(@"Setting up an OpenGL ES 2.0 context.");
 		if (!context) {
@@ -124,11 +124,8 @@
 	}
 
 	if (context) {
-		[context release];
 		context = nil;
 	}
-
-	[super dealloc];
 }
 
 - (BOOL)createFramebuffer {

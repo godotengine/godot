@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -287,7 +287,7 @@ bool AbstractPolygon2DEditor::forward_gui_input(const Ref<InputEvent> &p_event) 
 							pre_move_edit = vertices2;
 							edited_point = PosVertex(insert.polygon, insert.vertex + 1, xform.affine_inverse().xform(insert.pos));
 							vertices2.insert(edited_point.vertex, edited_point.pos);
-							selected_point = edited_point;
+							selected_point = Vertex(edited_point.polygon, edited_point.vertex);
 							edge_point = PosVertex();
 
 							undo_redo->create_action(TTR("Insert Point"));
@@ -551,9 +551,10 @@ void AbstractPolygon2DEditor::forward_canvas_draw_over_viewport(Control *p_overl
 
 			if (vertex == hover_point) {
 				Ref<Font> font = get_theme_font("font", "Label");
+				int font_size = get_theme_font_size("font_size", "Label");
 				String num = String::num(vertex.vertex);
-				Size2 num_size = font->get_string_size(num);
-				p_overlay->draw_string(font, point - num_size * 0.5, num, Color(1.0, 1.0, 1.0, 0.5));
+				Size2 num_size = font->get_string_size(num, font_size);
+				p_overlay->draw_string(font, point - num_size * 0.5, num, HALIGN_LEFT, -1, font_size, Color(1.0, 1.0, 1.0, 0.5));
 			}
 		}
 	}
@@ -584,11 +585,11 @@ void AbstractPolygon2DEditor::edit(Node *p_polygon) {
 		edited_point = PosVertex();
 		hover_point = Vertex();
 		selected_point = Vertex();
-
-		canvas_item_editor->update_viewport();
 	} else {
 		_set_node(nullptr);
 	}
+
+	canvas_item_editor->update_viewport();
 }
 
 void AbstractPolygon2DEditor::_bind_methods() {
@@ -723,7 +724,7 @@ AbstractPolygon2DEditor::AbstractPolygon2DEditor(EditorNode *p_editor, bool p_wi
 
 	create_resource = memnew(ConfirmationDialog);
 	add_child(create_resource);
-	create_resource->get_ok()->set_text(TTR("Create"));
+	create_resource->get_ok_button()->set_text(TTR("Create"));
 
 	mode = MODE_EDIT;
 }

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -31,10 +31,10 @@
 #ifndef DISPLAY_SERVER_H
 #define DISPLAY_SERVER_H
 
-#include "core/callable.h"
 #include "core/input/input.h"
+#include "core/io/resource.h"
 #include "core/os/os.h"
-#include "core/resource.h"
+#include "core/variant/callable.h"
 
 class Texture2D;
 
@@ -83,7 +83,7 @@ protected:
 	static DisplayServerCreate server_create_functions[MAX_SERVERS];
 	static int server_create_count;
 
-	friend class RenderingServerRaster;
+	friend class RendererViewport;
 	virtual void _set_use_vsync(bool p_enable);
 
 public:
@@ -177,7 +177,6 @@ public:
 	}
 	virtual bool screen_is_touchscreen(int p_screen = SCREEN_OF_MAIN_WINDOW) const;
 	enum ScreenOrientation {
-
 		SCREEN_LANDSCAPE,
 		SCREEN_PORTRAIT,
 		SCREEN_REVERSE_LANDSCAPE,
@@ -246,6 +245,8 @@ public:
 	virtual void window_set_drop_files_callback(const Callable &p_callable, WindowID p_window = MAIN_WINDOW_ID) = 0;
 
 	virtual void window_set_title(const String &p_title, WindowID p_window = MAIN_WINDOW_ID) = 0;
+
+	virtual void window_set_mouse_passthrough(const Vector<Vector2> &p_region, WindowID p_window = MAIN_WINDOW_ID);
 
 	virtual int window_get_current_screen(WindowID p_window = MAIN_WINDOW_ID) const = 0;
 	virtual void window_set_current_screen(int p_screen, WindowID p_window = MAIN_WINDOW_ID) = 0;
@@ -338,6 +339,11 @@ public:
 	virtual void keyboard_set_current_layout(int p_index);
 	virtual String keyboard_get_layout_language(int p_index) const;
 	virtual String keyboard_get_layout_name(int p_index) const;
+
+	virtual int tablet_get_driver_count() const { return 1; };
+	virtual String tablet_get_driver_name(int p_driver) const { return "default"; };
+	virtual String tablet_get_current_driver() const { return "default"; };
+	virtual void tablet_set_current_driver(const String &p_driver){};
 
 	virtual void process_events() = 0;
 

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -30,7 +30,7 @@
 
 #include "create_dialog.h"
 
-#include "core/class_db.h"
+#include "core/object/class_db.h"
 #include "core/os/keyboard.h"
 #include "editor_feature_profile.h"
 #include "editor_node.h"
@@ -57,10 +57,10 @@ void CreateDialog::popup_create(bool p_dont_clear, bool p_replace_mode, const St
 
 	if (p_replace_mode) {
 		set_title(vformat(TTR("Change %s Type"), base_type));
-		get_ok()->set_text(TTR("Change"));
+		get_ok_button()->set_text(TTR("Change"));
 	} else {
 		set_title(vformat(TTR("Create New %s"), base_type));
-		get_ok()->set_text(TTR("Create"));
+		get_ok_button()->set_text(TTR("Create"));
 	}
 
 	_load_favorites_and_history();
@@ -170,6 +170,7 @@ void CreateDialog::_update_search() {
 	root->set_text(0, base_type);
 	root->set_icon(0, search_options->get_theme_icon(icon_fallback, "EditorIcons"));
 	search_options_types[base_type] = root;
+	_configure_search_option_item(root, base_type, ClassDB::class_exists(base_type));
 
 	const String search_text = search_box->get_text();
 	bool empty_search = search_text == "";
@@ -195,7 +196,7 @@ void CreateDialog::_update_search() {
 	} else {
 		favorite->set_disabled(true);
 		help_bit->set_text("");
-		get_ok()->set_disabled(true);
+		get_ok_button()->set_disabled(true);
 		search_options->deselect_all();
 	}
 }
@@ -236,7 +237,10 @@ void CreateDialog::_configure_search_option_item(TreeItem *r_item, const String 
 	bool can_instance = (p_cpp_type && ClassDB::can_instance(p_type)) || !p_cpp_type;
 	if (!can_instance) {
 		r_item->set_custom_color(0, search_options->get_theme_color("disabled_font_color", "Editor"));
+		r_item->set_icon(0, EditorNode::get_singleton()->get_class_icon(p_type, "NodeDisabled"));
 		r_item->set_selectable(0, false);
+	} else {
+		r_item->set_icon(0, EditorNode::get_singleton()->get_class_icon(p_type, icon_fallback));
 	}
 
 	if (search_box->get_text() != "") {
@@ -253,7 +257,6 @@ void CreateDialog::_configure_search_option_item(TreeItem *r_item, const String 
 
 	const String &description = DTR(EditorHelp::get_doc_data()->class_list[p_type].brief_description);
 	r_item->set_tooltip(0, description);
-	r_item->set_icon(0, EditorNode::get_singleton()->get_class_icon(p_type, icon_fallback));
 
 	if (!p_cpp_type && !script_type) {
 		Ref<Texture2D> icon = EditorNode::get_editor_data().get_custom_types()[custom_type_parents[p_type]][custom_type_indices[p_type]].icon;
@@ -396,7 +399,7 @@ void CreateDialog::select_type(const String &p_type) {
 
 	favorite->set_disabled(false);
 	favorite->set_pressed(favorite_list.find(p_type) != -1);
-	get_ok()->set_disabled(false);
+	get_ok_button()->set_disabled(false);
 }
 
 String CreateDialog::get_selected_type() {
@@ -408,15 +411,15 @@ String CreateDialog::get_selected_type() {
 	return selected->get_text(0);
 }
 
-Object *CreateDialog::instance_selected() {
+Variant CreateDialog::instance_selected() {
 	TreeItem *selected = search_options->get_selected();
 
 	if (!selected) {
-		return nullptr;
+		return Variant();
 	}
 
 	Variant md = selected->get_metadata(0);
-	Object *obj = nullptr;
+	Variant obj;
 	if (md.get_type() != Variant::NIL) {
 		String custom = md;
 		if (ScriptServer::is_global_class(custom)) {
@@ -434,13 +437,13 @@ Object *CreateDialog::instance_selected() {
 
 	// Check if any Object-type property should be instantiated.
 	List<PropertyInfo> pinfo;
-	obj->get_property_list(&pinfo);
+	((Object *)obj)->get_property_list(&pinfo);
 
 	for (List<PropertyInfo>::Element *E = pinfo.front(); E; E = E->next()) {
 		PropertyInfo pi = E->get();
 		if (pi.type == Variant::OBJECT && pi.usage & PROPERTY_USAGE_EDITOR_INSTANTIATE_OBJECT) {
 			Object *prop = ClassDB::instance(pi.class_name);
-			obj->set(pi.name, prop);
+			((Object *)obj)->set(pi.name, prop);
 		}
 	}
 
@@ -492,7 +495,7 @@ void CreateDialog::_favorite_selected() {
 	}
 
 	search_box->set_text(item->get_text(0).get_slicec(' ', 0));
-	recent->unselect_all();
+	recent->deselect_all();
 	_update_search();
 }
 

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -32,9 +32,9 @@
 
 #if defined(UNIX_ENABLED) || defined(LIBC_FILEIO_ENABLED)
 
-#include "core/list.h"
 #include "core/os/memory.h"
-#include "core/print_string.h"
+#include "core/string/print_string.h"
+#include "core/templates/list.h"
 
 #include <errno.h>
 #include <stdio.h>
@@ -152,7 +152,7 @@ String DirAccessUnix::get_next() {
 		_cisdir = (entry->d_type == DT_DIR);
 	}
 
-	_cishidden = (fname != "." && fname != ".." && fname.begins_with("."));
+	_cishidden = is_hidden(fname);
 
 	return fname;
 }
@@ -232,7 +232,7 @@ static void _get_drives(List<String> *list) {
 				// Parse only file:// links
 				if (strncmp(string, "file://", 7) == 0) {
 					// Strip any unwanted edges on the strings and push_back if it's not a duplicate
-					String fpath = String(string + 7).strip_edges().split_spaces()[0].percent_decode();
+					String fpath = String(string + 7).strip_edges().split_spaces()[0].uri_decode();
 					if (!list->find(fpath)) {
 						list->push_back(fpath);
 					}
@@ -398,6 +398,10 @@ size_t DirAccessUnix::get_space_left() {
 
 String DirAccessUnix::get_filesystem_type() const {
 	return ""; //TODO this should be implemented
+}
+
+bool DirAccessUnix::is_hidden(const String &p_name) {
+	return p_name != "." && p_name != ".." && p_name.begins_with(".");
 }
 
 DirAccessUnix::DirAccessUnix() {

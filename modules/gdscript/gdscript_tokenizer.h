@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -31,10 +31,11 @@
 #ifndef GDSCRIPT_TOKENIZER_H
 #define GDSCRIPT_TOKENIZER_H
 
-#include "core/list.h"
-#include "core/set.h"
-#include "core/variant.h"
-#include "core/vector.h"
+#include "core/templates/list.h"
+#include "core/templates/map.h"
+#include "core/templates/set.h"
+#include "core/templates/vector.h"
+#include "core/variant/variant.h"
 
 class GDScriptTokenizer {
 public:
@@ -168,29 +169,43 @@ public:
 		String source;
 
 		const char *get_name() const;
-		// TODO: Allow some keywords as identifiers?
-		bool is_identifier() const { return type == IDENTIFIER; }
-		StringName get_identifier() const { return literal; }
+		bool is_identifier() const;
+		bool is_node_name() const;
+		StringName get_identifier() const { return source; }
 
 		Token(Type p_type) {
 			type = p_type;
 		}
 
 		Token() {
-			type = EMPTY;
 		}
 	};
 
+#ifdef TOOLS_ENABLED
+	struct CommentData {
+		String comment;
+		bool new_line = false;
+		CommentData() {}
+		CommentData(const String &p_comment, bool p_new_line) {
+			comment = p_comment;
+			new_line = p_new_line;
+		}
+	};
+	const Map<int, CommentData> &get_comments() const {
+		return comments;
+	}
+#endif // TOOLS_ENABLED
+
 private:
 	String source;
-	const CharType *_source = nullptr;
-	const CharType *_current = nullptr;
+	const char32_t *_source = nullptr;
+	const char32_t *_current = nullptr;
 	int line = -1, column = -1;
 	int cursor_line = -1, cursor_column = -1;
 	int tab_size = 4;
 
 	// Keep track of multichar tokens.
-	const CharType *_start = nullptr;
+	const char32_t *_start = nullptr;
 	int start_line = 0, start_column = 0;
 	int leftmost_column = 0, rightmost_column = 0;
 
@@ -202,30 +217,34 @@ private:
 	Token last_newline;
 	int pending_indents = 0;
 	List<int> indent_stack;
-	List<CharType> paren_stack;
-	CharType indent_char = '\0';
+	List<char32_t> paren_stack;
+	char32_t indent_char = '\0';
 	int position = 0;
 	int length = 0;
 
+#ifdef TOOLS_ENABLED
+	Map<int, CommentData> comments;
+#endif // TOOLS_ENABLED
+
 	_FORCE_INLINE_ bool _is_at_end() { return position >= length; }
-	_FORCE_INLINE_ CharType _peek(int p_offset = 0) { return position + p_offset >= 0 && position + p_offset < length ? _current[p_offset] : '\0'; }
+	_FORCE_INLINE_ char32_t _peek(int p_offset = 0) { return position + p_offset >= 0 && position + p_offset < length ? _current[p_offset] : '\0'; }
 	int indent_level() const { return indent_stack.size(); }
-	bool has_error() const { return !error_stack.empty(); }
+	bool has_error() const { return !error_stack.is_empty(); }
 	Token pop_error();
-	CharType _advance();
+	char32_t _advance();
 	void _skip_whitespace();
 	void check_indent();
 
 	Token make_error(const String &p_message);
 	void push_error(const String &p_message);
 	void push_error(const Token &p_error);
-	Token make_paren_error(CharType p_paren);
+	Token make_paren_error(char32_t p_paren);
 	Token make_token(Token::Type p_type);
 	Token make_literal(const Variant &p_literal);
 	Token make_identifier(const StringName &p_identifier);
-	Token check_vcs_marker(CharType p_test, Token::Type p_double_type);
-	void push_paren(CharType p_char);
-	bool pop_paren(CharType p_expected);
+	Token check_vcs_marker(char32_t p_test, Token::Type p_double_type);
+	void push_paren(char32_t p_char);
+	bool pop_paren(char32_t p_expected);
 
 	void newline(bool p_make_token);
 	Token number();

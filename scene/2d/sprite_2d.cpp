@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -77,14 +77,14 @@ Rect2 Sprite2D::get_anchorable_rect() const {
 	return get_rect();
 }
 
-void Sprite2D::_get_rects(Rect2 &r_src_rect, Rect2 &r_dst_rect, bool &r_filter_clip) const {
+void Sprite2D::_get_rects(Rect2 &r_src_rect, Rect2 &r_dst_rect, bool &r_filter_clip_enabled) const {
 	Rect2 base_rect;
 
-	if (region) {
-		r_filter_clip = region_filter_clip;
+	if (region_enabled) {
+		r_filter_clip_enabled = region_filter_clip_enabled;
 		base_rect = region_rect;
 	} else {
-		r_filter_clip = false;
+		r_filter_clip_enabled = false;
 		base_rect = Rect2(0, 0, texture->get_width(), texture->get_height());
 	}
 
@@ -99,7 +99,8 @@ void Sprite2D::_get_rects(Rect2 &r_src_rect, Rect2 &r_dst_rect, bool &r_filter_c
 	if (centered) {
 		dest_offset -= frame_size / 2;
 	}
-	if (Engine::get_singleton()->get_use_pixel_snap()) {
+
+	if (get_viewport() && get_viewport()->is_snap_2d_transforms_to_pixel_enabled()) {
 		dest_offset = dest_offset.floor();
 	}
 
@@ -128,10 +129,10 @@ void Sprite2D::_notification(int p_what) {
 			*/
 
 			Rect2 src_rect, dst_rect;
-			bool filter_clip;
-			_get_rects(src_rect, dst_rect, filter_clip);
-			texture->draw_rect_region(ci, dst_rect, src_rect, Color(1, 1, 1), false, normal_map, specular, Color(specular_color.r, specular_color.g, specular_color.b, shininess), RS::CANVAS_ITEM_TEXTURE_FILTER_DEFAULT, RS::CANVAS_ITEM_TEXTURE_REPEAT_DEFAULT, filter_clip);
+			bool filter_clip_enabled;
+			_get_rects(src_rect, dst_rect, filter_clip_enabled);
 
+			texture->draw_rect_region(ci, dst_rect, src_rect, Color(1, 1, 1), false, filter_clip_enabled);
 		} break;
 	}
 }
@@ -154,43 +155,6 @@ void Sprite2D::set_texture(const Ref<Texture2D> &p_texture) {
 	update();
 	emit_signal("texture_changed");
 	item_rect_changed();
-	_change_notify("texture");
-}
-
-void Sprite2D::set_normal_map(const Ref<Texture2D> &p_texture) {
-	normal_map = p_texture;
-	update();
-}
-
-Ref<Texture2D> Sprite2D::get_normal_map() const {
-	return normal_map;
-}
-
-void Sprite2D::set_specular_map(const Ref<Texture2D> &p_texture) {
-	specular = p_texture;
-	update();
-}
-
-Ref<Texture2D> Sprite2D::get_specular_map() const {
-	return specular;
-}
-
-void Sprite2D::set_specular_color(const Color &p_color) {
-	specular_color = p_color;
-	update();
-}
-
-Color Sprite2D::get_specular_color() const {
-	return specular_color;
-}
-
-void Sprite2D::set_shininess(float p_shininess) {
-	shininess = CLAMP(p_shininess, 0.0, 1.0);
-	update();
-}
-
-float Sprite2D::get_shininess() const {
-	return shininess;
 }
 
 Ref<Texture2D> Sprite2D::get_texture() const {
@@ -211,7 +175,6 @@ void Sprite2D::set_offset(const Point2 &p_offset) {
 	offset = p_offset;
 	update();
 	item_rect_changed();
-	_change_notify("offset");
 }
 
 Point2 Sprite2D::get_offset() const {
@@ -236,17 +199,18 @@ bool Sprite2D::is_flipped_v() const {
 	return vflip;
 }
 
-void Sprite2D::set_region(bool p_region) {
-	if (p_region == region) {
+void Sprite2D::set_region_enabled(bool p_region_enabled) {
+	if (p_region_enabled == region_enabled) {
 		return;
 	}
 
-	region = p_region;
+	region_enabled = p_region_enabled;
 	update();
+	notify_property_list_changed();
 }
 
-bool Sprite2D::is_region() const {
-	return region;
+bool Sprite2D::is_region_enabled() const {
+	return region_enabled;
 }
 
 void Sprite2D::set_region_rect(const Rect2 &p_region_rect) {
@@ -256,24 +220,22 @@ void Sprite2D::set_region_rect(const Rect2 &p_region_rect) {
 
 	region_rect = p_region_rect;
 
-	if (region) {
+	if (region_enabled) {
 		item_rect_changed();
 	}
-
-	_change_notify("region_rect");
 }
 
 Rect2 Sprite2D::get_region_rect() const {
 	return region_rect;
 }
 
-void Sprite2D::set_region_filter_clip(bool p_enable) {
-	region_filter_clip = p_enable;
+void Sprite2D::set_region_filter_clip_enabled(bool p_region_filter_clip_enabled) {
+	region_filter_clip_enabled = p_region_filter_clip_enabled;
 	update();
 }
 
 bool Sprite2D::is_region_filter_clip_enabled() const {
-	return region_filter_clip;
+	return region_filter_clip_enabled;
 }
 
 void Sprite2D::set_frame(int p_frame) {
@@ -285,8 +247,6 @@ void Sprite2D::set_frame(int p_frame) {
 
 	frame = p_frame;
 
-	_change_notify("frame");
-	_change_notify("frame_coords");
 	emit_signal(SceneStringNames::get_singleton()->frame_changed);
 }
 
@@ -310,7 +270,7 @@ void Sprite2D::set_vframes(int p_amount) {
 	vframes = p_amount;
 	update();
 	item_rect_changed();
-	_change_notify();
+	notify_property_list_changed();
 }
 
 int Sprite2D::get_vframes() const {
@@ -322,7 +282,7 @@ void Sprite2D::set_hframes(int p_amount) {
 	hframes = p_amount;
 	update();
 	item_rect_changed();
-	_change_notify();
+	notify_property_list_changed();
 }
 
 int Sprite2D::get_hframes() const {
@@ -339,8 +299,8 @@ bool Sprite2D::is_pixel_opaque(const Point2 &p_point) const {
 	}
 
 	Rect2 src_rect, dst_rect;
-	bool filter_clip;
-	_get_rects(src_rect, dst_rect, filter_clip);
+	bool filter_clip_enabled;
+	_get_rects(src_rect, dst_rect, filter_clip_enabled);
 	dst_rect.size = dst_rect.size.abs();
 
 	if (!dst_rect.has_point(p_point)) {
@@ -390,7 +350,7 @@ Rect2 Sprite2D::get_rect() const {
 
 	Size2i s;
 
-	if (region) {
+	if (region_enabled) {
 		s = region_rect.size;
 	} else {
 		s = texture->get_size();
@@ -401,6 +361,10 @@ Rect2 Sprite2D::get_rect() const {
 	Point2 ofs = offset;
 	if (centered) {
 		ofs -= Size2(s) / 2;
+	}
+
+	if (get_viewport() && get_viewport()->is_snap_2d_transforms_to_pixel_enabled()) {
+		ofs = ofs.floor();
 	}
 
 	if (s == Size2(0, 0)) {
@@ -420,6 +384,10 @@ void Sprite2D::_validate_property(PropertyInfo &property) const {
 	if (property.name == "frame_coords") {
 		property.usage |= PROPERTY_USAGE_KEYING_INCREMENTS;
 	}
+
+	if (!region_enabled && (property.name == "region_rect" || property.name == "region_filter_clip")) {
+		property.usage = PROPERTY_USAGE_NOEDITOR;
+	}
 }
 
 void Sprite2D::_texture_changed() {
@@ -434,18 +402,6 @@ void Sprite2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_texture", "texture"), &Sprite2D::set_texture);
 	ClassDB::bind_method(D_METHOD("get_texture"), &Sprite2D::get_texture);
 
-	ClassDB::bind_method(D_METHOD("set_normal_map", "normal_map"), &Sprite2D::set_normal_map);
-	ClassDB::bind_method(D_METHOD("get_normal_map"), &Sprite2D::get_normal_map);
-
-	ClassDB::bind_method(D_METHOD("set_specular_map", "specular_map"), &Sprite2D::set_specular_map);
-	ClassDB::bind_method(D_METHOD("get_specular_map"), &Sprite2D::get_specular_map);
-
-	ClassDB::bind_method(D_METHOD("set_specular_color", "specular_color"), &Sprite2D::set_specular_color);
-	ClassDB::bind_method(D_METHOD("get_specular_color"), &Sprite2D::get_specular_color);
-
-	ClassDB::bind_method(D_METHOD("set_shininess", "shininess"), &Sprite2D::set_shininess);
-	ClassDB::bind_method(D_METHOD("get_shininess"), &Sprite2D::get_shininess);
-
 	ClassDB::bind_method(D_METHOD("set_centered", "centered"), &Sprite2D::set_centered);
 	ClassDB::bind_method(D_METHOD("is_centered"), &Sprite2D::is_centered);
 
@@ -458,15 +414,15 @@ void Sprite2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_flip_v", "flip_v"), &Sprite2D::set_flip_v);
 	ClassDB::bind_method(D_METHOD("is_flipped_v"), &Sprite2D::is_flipped_v);
 
-	ClassDB::bind_method(D_METHOD("set_region", "enabled"), &Sprite2D::set_region);
-	ClassDB::bind_method(D_METHOD("is_region"), &Sprite2D::is_region);
+	ClassDB::bind_method(D_METHOD("set_region_enabled", "enabled"), &Sprite2D::set_region_enabled);
+	ClassDB::bind_method(D_METHOD("is_region_enabled"), &Sprite2D::is_region_enabled);
 
 	ClassDB::bind_method(D_METHOD("is_pixel_opaque", "pos"), &Sprite2D::is_pixel_opaque);
 
 	ClassDB::bind_method(D_METHOD("set_region_rect", "rect"), &Sprite2D::set_region_rect);
 	ClassDB::bind_method(D_METHOD("get_region_rect"), &Sprite2D::get_region_rect);
 
-	ClassDB::bind_method(D_METHOD("set_region_filter_clip", "enabled"), &Sprite2D::set_region_filter_clip);
+	ClassDB::bind_method(D_METHOD("set_region_filter_clip_enabled", "enabled"), &Sprite2D::set_region_filter_clip_enabled);
 	ClassDB::bind_method(D_METHOD("is_region_filter_clip_enabled"), &Sprite2D::is_region_filter_clip_enabled);
 
 	ClassDB::bind_method(D_METHOD("set_frame", "frame"), &Sprite2D::set_frame);
@@ -487,41 +443,24 @@ void Sprite2D::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("texture_changed"));
 
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "texture", PROPERTY_HINT_RESOURCE_TYPE, "Texture2D"), "set_texture", "get_texture");
-	ADD_GROUP("Lighting", "");
-	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "normal_map", PROPERTY_HINT_RESOURCE_TYPE, "Texture2D"), "set_normal_map", "get_normal_map");
-	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "specular_map", PROPERTY_HINT_RESOURCE_TYPE, "Texture2D"), "set_specular_map", "get_specular_map");
-	ADD_PROPERTY(PropertyInfo(Variant::COLOR, "specular_color", PROPERTY_HINT_COLOR_NO_ALPHA), "set_specular_color", "get_specular_color");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "shininess", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_shininess", "get_shininess");
 	ADD_GROUP("Offset", "");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "centered"), "set_centered", "is_centered");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "offset"), "set_offset", "get_offset");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "flip_h"), "set_flip_h", "is_flipped_h");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "flip_v"), "set_flip_v", "is_flipped_v");
 	ADD_GROUP("Animation", "");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "vframes", PROPERTY_HINT_RANGE, "1,16384,1"), "set_vframes", "get_vframes");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "hframes", PROPERTY_HINT_RANGE, "1,16384,1"), "set_hframes", "get_hframes");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "vframes", PROPERTY_HINT_RANGE, "1,16384,1"), "set_vframes", "get_vframes");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "frame"), "set_frame", "get_frame");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "frame_coords", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_EDITOR), "set_frame_coords", "get_frame_coords");
 
 	ADD_GROUP("Region", "region_");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "region_enabled"), "set_region", "is_region");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "region_enabled"), "set_region_enabled", "is_region_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::RECT2, "region_rect"), "set_region_rect", "get_region_rect");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "region_filter_clip"), "set_region_filter_clip", "is_region_filter_clip_enabled");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "region_filter_clip_enabled"), "set_region_filter_clip_enabled", "is_region_filter_clip_enabled");
 }
 
 Sprite2D::Sprite2D() {
-	centered = true;
-	hflip = false;
-	vflip = false;
-	region = false;
-	region_filter_clip = false;
-	shininess = 1.0;
-	specular_color = Color(1, 1, 1, 1);
-
-	frame = 0;
-
-	vframes = 1;
-	hframes = 1;
 }
 
 Sprite2D::~Sprite2D() {

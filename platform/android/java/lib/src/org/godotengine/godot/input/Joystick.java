@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -30,9 +30,10 @@
 
 package org.godotengine.godot.input;
 
-import android.view.InputDevice.MotionRange;
+import android.util.SparseArray;
 
 import java.util.ArrayList;
+import java.util.List;
 
 /**
  * POJO class to represent a Joystick input device.
@@ -40,6 +41,12 @@ import java.util.ArrayList;
 class Joystick {
 	int device_id;
 	String name;
-	ArrayList<MotionRange> axes;
-	ArrayList<MotionRange> hats;
+	List<Integer> axes = new ArrayList<Integer>();
+	protected boolean hasAxisHat = false;
+	/*
+	 * Keep track of values so we can prevent flooding the engine with useless events.
+	 */
+	protected final SparseArray axesValues = new SparseArray<Float>(4);
+	protected int hatX;
+	protected int hatY;
 }

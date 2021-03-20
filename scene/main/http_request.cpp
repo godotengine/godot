@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -29,6 +29,8 @@
 /*************************************************************************/
 
 #include "http_request.h"
+#include "core/io/compression.h"
+#include "core/string/ustring.h"
 
 void HTTPRequest::_redirect_request(const String &p_new_url) {
 }
@@ -47,7 +49,7 @@ Error HTTPRequest::_parse_url(const String &p_url) {
 	got_response = false;
 	body_len = -1;
 	body.resize(0);
-	downloaded = 0;
+	downloaded.set(0);
 	redirections = 0;
 
 	String url_lower = url.to_lower();
@@ -82,7 +84,51 @@ Error HTTPRequest::_parse_url(const String &p_url) {
 	return OK;
 }
 
+bool HTTPRequest::has_header(const PackedStringArray &p_headers, const String &p_header_name) {
+	bool exists = false;
+
+	String lower_case_header_name = p_header_name.to_lower();
+	for (int i = 0; i < p_headers.size() && !exists; i++) {
+		String sanitized = p_headers[i].strip_edges().to_lower();
+		if (sanitized.begins_with(lower_case_header_name)) {
+			exists = true;
+		}
+	}
+
+	return exists;
+}
+
+String HTTPRequest::get_header_value(const PackedStringArray &p_headers, const String &p_header_name) {
+	String value = "";
+
+	String lowwer_case_header_name = p_header_name.to_lower();
+	for (int i = 0; i < p_headers.size(); i++) {
+		if (p_headers[i].find(":", 0) >= 0) {
+			Vector<String> parts = p_headers[i].split(":", false, 1);
+			if (parts[0].strip_edges().to_lower() == lowwer_case_header_name) {
+				value = parts[1].strip_edges();
+				break;
+			}
+		}
+	}
+
+	return value;
+}
+
 Error HTTPRequest::request(const String &p_url, const Vector<String> &p_custom_headers, bool p_ssl_validate_domain, HTTPClient::Method p_method, const String &p_request_data) {
+	// Copy the string into a raw buffer
+	Vector<uint8_t> raw_data;
+
+	CharString charstr = p_request_data.utf8();
+	size_t len = charstr.length();
+	raw_data.resize(len);
+	uint8_t *w = raw_data.ptrw();
+	copymem(w, charstr.ptr(), len);
+
+	return request_raw(p_url, p_custom_headers, p_ssl_validate_domain, p_method, raw_data);
+}
+
+Error HTTPRequest::request_raw(const String &p_url, const Vector<String> &p_custom_headers, bool p_ssl_validate_domain, HTTPClient::Method p_method, const Vector<uint8_t> &p_request_data_raw) {
 	ERR_FAIL_COND_V(!is_inside_tree(), ERR_UNCONFIGURED);
 	ERR_FAIL_COND_V_MSG(requesting, ERR_BUSY, "HTTPRequest is processing a request. Wait for completion or cancel it before attempting a new one.");
 
@@ -102,15 +148,22 @@ Error HTTPRequest::request(const String &p_url, const Vector<String> &p_custom_h
 
 	headers = p_custom_headers;
 
-	request_data = p_request_data;
+	if (accept_gzip) {
+		// If the user has specified a different Accept-Encoding, don't overwrite it
+		if (!has_header(headers, "Accept-Encoding")) {
+			headers.push_back("Accept-Encoding: gzip, deflate");
+		}
+	}
+
+	request_data = p_request_data_raw;
 
 	requesting = true;
 
-	if (use_threads) {
-		thread_done = false;
-		thread_request_quit = false;
+	if (use_threads.is_set()) {
+		thread_done.clear();
+		thread_request_quit.clear();
 		client->set_blocking_mode(true);
-		thread = Thread::create(_thread_func, this);
+		thread.start(_thread_func, this);
 	} else {
 		client->set_blocking_mode(false);
 		err = _request();
@@ -133,7 +186,7 @@ void HTTPRequest::_thread_func(void *p_userdata) {
 	if (err != OK) {
 		hr->call_deferred("_request_done", RESULT_CANT_CONNECT, 0, PackedStringArray(), PackedByteArray());
 	} else {
-		while (!hr->thread_request_quit) {
+		while (!hr->thread_request_quit.is_set()) {
 			bool exit = hr->_update_connection();
 			if (exit) {
 				break;
@@ -142,7 +195,7 @@ void HTTPRequest::_thread_func(void *p_userdata) {
 		}
 	}
 
-	hr->thread_done = true;
+	hr->thread_done.set();
 }
 
 void HTTPRequest::cancel_request() {
@@ -152,13 +205,11 @@ void HTTPRequest::cancel_request() {
 		return;
 	}
 
-	if (!use_threads) {
+	if (!use_threads.is_set()) {
 		set_process_internal(false);
 	} else {
-		thread_request_quit = true;
-		Thread::wait_to_finish(thread);
-		memdelete(thread);
-		thread = nullptr;
+		thread_request_quit.set();
+		thread.wait_to_finish();
 	}
 
 	if (file) {
@@ -185,7 +236,7 @@ bool HTTPRequest::_handle_response(bool *ret_value) {
 	List<String> rheaders;
 	client->get_response_headers(&rheaders);
 	response_headers.resize(0);
-	downloaded = 0;
+	downloaded.set(0);
 	for (List<String>::Element *E = rheaders.front(); E; E = E->next()) {
 		response_headers.push_back(E->get());
 	}
@@ -225,7 +276,7 @@ bool HTTPRequest::_handle_response(bool *ret_value) {
 				got_response = false;
 				body_len = -1;
 				body.resize(0);
-				downloaded = 0;
+				downloaded.set(0);
 				redirections = new_redirs;
 				*ret_value = false;
 				return true;
@@ -284,11 +335,11 @@ bool HTTPRequest::_update_connection() {
 
 				call_deferred("_request_done", RESULT_CHUNKED_BODY_SIZE_MISMATCH, response_code, response_headers, PackedByteArray());
 				return true;
-				// Request migh have been done
+				// Request might have been done
 			} else {
 				// Did not request yet, do request
 
-				Error err = client->request(method, request_string, headers, request_data);
+				Error err = client->request_raw(method, request_string, headers, request_data);
 				if (err != OK) {
 					call_deferred("_request_done", RESULT_CONNECTION_ERROR, 0, PackedStringArray(), PackedByteArray());
 					return true;
@@ -336,9 +387,12 @@ bool HTTPRequest::_update_connection() {
 			}
 
 			client->poll();
+			if (client->get_status() != HTTPClient::STATUS_BODY) {
+				return false;
+			}
 
 			PackedByteArray chunk = client->read_response_body_chunk();
-			downloaded += chunk.size();
+			downloaded.add(chunk.size());
 
 			if (file) {
 				const uint8_t *r = chunk.ptr();
@@ -351,19 +405,20 @@ bool HTTPRequest::_update_connection() {
 				body.append_array(chunk);
 			}
 
-			if (body_size_limit >= 0 && downloaded > body_size_limit) {
+			if (body_size_limit >= 0 && downloaded.get() > body_size_limit) {
 				call_deferred("_request_done", RESULT_BODY_SIZE_LIMIT_EXCEEDED, response_code, response_headers, PackedByteArray());
 				return true;
 			}
 
 			if (body_len >= 0) {
-				if (downloaded == body_len) {
+				if (downloaded.get() == body_len) {
 					call_deferred("_request_done", RESULT_SUCCESS, response_code, response_headers, body);
 					return true;
 				}
 			} else if (client->get_status() == HTTPClient::STATUS_DISCONNECTED) {
 				// We read till EOF, with no errors. Request is done.
 				call_deferred("_request_done", RESULT_SUCCESS, response_code, response_headers, body);
+				return true;
 			}
 
 			return false;
@@ -382,14 +437,52 @@ bool HTTPRequest::_update_connection() {
 	ERR_FAIL_V(false);
 }
 
-void HTTPRequest::_request_done(int p_status, int p_code, const PackedStringArray &headers, const PackedByteArray &p_data) {
+void HTTPRequest::_request_done(int p_status, int p_code, const PackedStringArray &p_headers, const PackedByteArray &p_data) {
 	cancel_request();
-	emit_signal("request_completed", p_status, p_code, headers, p_data);
+
+	// Determine if the request body is compressed
+	bool is_compressed;
+	String content_encoding = get_header_value(p_headers, "Content-Encoding").to_lower();
+	Compression::Mode mode;
+	if (content_encoding == "gzip") {
+		mode = Compression::Mode::MODE_GZIP;
+		is_compressed = true;
+	} else if (content_encoding == "deflate") {
+		mode = Compression::Mode::MODE_DEFLATE;
+		is_compressed = true;
+	} else {
+		is_compressed = false;
+	}
+
+	const PackedByteArray *data = NULL;
+
+	if (accept_gzip && is_compressed && p_data.size() > 0) {
+		// Decompress request body
+		PackedByteArray *decompressed = memnew(PackedByteArray);
+		int result = Compression::decompress_dynamic(decompressed, body_size_limit, p_data.ptr(), p_data.size(), mode);
+		if (result == OK) {
+			data = decompressed;
+		} else if (result == -5) {
+			WARN_PRINT("Decompressed size of HTTP response body exceeded body_size_limit");
+			p_status = RESULT_BODY_SIZE_LIMIT_EXCEEDED;
+			// Just return the raw data if we failed to decompress it
+			data = &p_data;
+		} else {
+			WARN_PRINT("Failed to decompress HTTP response body");
+			p_status = RESULT_BODY_DECOMPRESS_FAILED;
+			// Just return the raw data if we failed to decompress it
+			data = &p_data;
+		}
+	} else {
+		data = &p_data;
+	}
+
+	emit_signal("request_completed", p_status, p_code, p_headers, *data);
 }
 
 void HTTPRequest::_notification(int p_what) {
 	if (p_what == NOTIFICATION_INTERNAL_PROCESS) {
-		if (use_threads) {
+		if (use_threads.is_set()) {
 			return;
 		}
 		bool done = _update_connection();
@@ -408,11 +501,19 @@ void HTTPRequest::_notification(int p_what) {
 
 void HTTPRequest::set_use_threads(bool p_use) {
 	ERR_FAIL_COND(get_http_client_status() != HTTPClient::STATUS_DISCONNECTED);
-	use_threads = p_use;
+	use_threads.set_to(p_use);
 }
 
 bool HTTPRequest::is_using_threads() const {
-	return use_threads;
+	return use_threads.is_set();
+}
+
+void HTTPRequest::set_accept_gzip(bool p_gzip) {
+	accept_gzip = p_gzip;
+}
+
+bool HTTPRequest::is_accepting_gzip() const {
+	return accept_gzip;
 }
 
 void HTTPRequest::set_body_size_limit(int p_bytes) {
@@ -458,7 +559,7 @@ int HTTPRequest::get_max_redirects() const {
 }
 
 int HTTPRequest::get_downloaded_bytes() const {
-	return downloaded;
+	return downloaded.get();
 }
 
 int HTTPRequest::get_body_size() const {
@@ -481,12 +582,16 @@ void HTTPRequest::_timeout() {
 
 void HTTPRequest::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("request", "url", "custom_headers", "ssl_validate_domain", "method", "request_data"), &HTTPRequest::request, DEFVAL(PackedStringArray()), DEFVAL(true), DEFVAL(HTTPClient::METHOD_GET), DEFVAL(String()));
+	ClassDB::bind_method(D_METHOD("request_raw", "url", "custom_headers", "ssl_validate_domain", "method", "request_data_raw"), &HTTPRequest::request_raw, DEFVAL(PackedStringArray()), DEFVAL(true), DEFVAL(HTTPClient::METHOD_GET), DEFVAL(PackedByteArray()));
 	ClassDB::bind_method(D_METHOD("cancel_request"), &HTTPRequest::cancel_request);
 
 	ClassDB::bind_method(D_METHOD("get_http_client_status"), &HTTPRequest::get_http_client_status);
 
 	ClassDB::bind_method(D_METHOD("set_use_threads", "enable"), &HTTPRequest::set_use_threads);
 	ClassDB::bind_method(D_METHOD("is_using_threads"), &HTTPRequest::is_using_threads);
+
+	ClassDB::bind_method(D_METHOD("set_accept_gzip", "enable"), &HTTPRequest::set_accept_gzip);
+	ClassDB::bind_method(D_METHOD("is_accepting_gzip"), &HTTPRequest::is_accepting_gzip);
 
 	ClassDB::bind_method(D_METHOD("set_body_size_limit", "bytes"), &HTTPRequest::set_body_size_limit);
 	ClassDB::bind_method(D_METHOD("get_body_size_limit"), &HTTPRequest::get_body_size_limit);
@@ -512,6 +617,7 @@ void HTTPRequest::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "download_file", PROPERTY_HINT_FILE), "set_download_file", "get_download_file");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "download_chunk_size", PROPERTY_HINT_RANGE, "256,16777216"), "set_download_chunk_size", "get_download_chunk_size");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "use_threads"), "set_use_threads", "is_using_threads");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "accept_gzip"), "set_accept_gzip", "is_accepting_gzip");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "body_size_limit", PROPERTY_HINT_RANGE, "-1,2000000000"), "set_body_size_limit", "get_body_size_limit");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "max_redirects", PROPERTY_HINT_RANGE, "-1,64"), "set_max_redirects", "get_max_redirects");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "timeout", PROPERTY_HINT_RANGE, "0,86400"), "set_timeout", "get_timeout");
@@ -527,6 +633,7 @@ void HTTPRequest::_bind_methods() {
 	BIND_ENUM_CONSTANT(RESULT_SSL_HANDSHAKE_ERROR);
 	BIND_ENUM_CONSTANT(RESULT_NO_RESPONSE);
 	BIND_ENUM_CONSTANT(RESULT_BODY_SIZE_LIMIT_EXCEEDED);
+	BIND_ENUM_CONSTANT(RESULT_BODY_DECOMPRESS_FAILED);
 	BIND_ENUM_CONSTANT(RESULT_REQUEST_FAILED);
 	BIND_ENUM_CONSTANT(RESULT_DOWNLOAD_FILE_CANT_OPEN);
 	BIND_ENUM_CONSTANT(RESULT_DOWNLOAD_FILE_WRITE_ERROR);
@@ -535,30 +642,11 @@ void HTTPRequest::_bind_methods() {
 }
 
 HTTPRequest::HTTPRequest() {
-	thread = nullptr;
-
-	port = 80;
-	redirections = 0;
-	max_redirects = 8;
-	body_len = -1;
-	got_response = false;
-	validate_ssl = false;
-	use_ssl = false;
-	response_code = 0;
-	request_sent = false;
-	requesting = false;
 	client.instance();
-	use_threads = false;
-	thread_done = false;
-	downloaded = 0;
-	body_size_limit = -1;
-	file = nullptr;
-
 	timer = memnew(Timer);
 	timer->set_one_shot(true);
 	timer->connect("timeout", callable_mp(this, &HTTPRequest::_timeout));
 	add_child(timer);
-	timeout = 0;
 }
 
 HTTPRequest::~HTTPRequest() {

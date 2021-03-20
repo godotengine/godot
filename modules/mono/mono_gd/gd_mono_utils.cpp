@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -35,10 +35,10 @@
 
 #include "core/debugger/engine_debugger.h"
 #include "core/debugger/script_debugger.h"
+#include "core/object/reference.h"
 #include "core/os/dir_access.h"
 #include "core/os/mutex.h"
 #include "core/os/os.h"
-#include "core/reference.h"
 
 #ifdef TOOLS_ENABLED
 #include "editor/debugger/editor_debugger_node.h"
@@ -480,6 +480,7 @@ void set_pending_exception(MonoException *p_exc) {
 #else
 	if (get_runtime_invoke_count() == 0) {
 		debug_unhandled_exception(p_exc);
+		return;
 	}
 
 	if (!mono_runtime_set_pending_exception(p_exc, false)) {
@@ -494,13 +495,6 @@ thread_local int current_invoke_count = 0;
 MonoObject *runtime_invoke(MonoMethod *p_method, void *p_obj, void **p_params, MonoException **r_exc) {
 	GD_MONO_BEGIN_RUNTIME_INVOKE;
 	MonoObject *ret = mono_runtime_invoke(p_method, p_obj, p_params, (MonoObject **)r_exc);
-	GD_MONO_END_RUNTIME_INVOKE;
-	return ret;
-}
-
-MonoObject *runtime_invoke_array(MonoMethod *p_method, void *p_obj, MonoArray *p_params, MonoException **r_exc) {
-	GD_MONO_BEGIN_RUNTIME_INVOKE;
-	MonoObject *ret = mono_runtime_invoke_array(p_method, p_obj, p_params, (MonoObject **)r_exc);
 	GD_MONO_END_RUNTIME_INVOKE;
 	return ret;
 }
@@ -659,7 +653,6 @@ GDMonoClass *make_generic_dictionary_type(MonoReflectionType *p_key_reftype, Mon
 	UNHANDLED_EXCEPTION(exc);
 	return GDMono::get_singleton()->get_class(mono_class_from_mono_type(mono_reflection_type_get_type(reftype)));
 }
-
 } // namespace Marshal
 
 ScopeThreadAttach::ScopeThreadAttach() {
@@ -679,5 +672,4 @@ StringName get_native_godot_class_name(GDMonoClass *p_class) {
 	StringName *ptr = GDMonoMarshal::unbox<StringName *>(CACHED_FIELD(StringName, ptr)->get_value(native_name_obj));
 	return ptr ? *ptr : StringName();
 }
-
 } // namespace GDMonoUtils

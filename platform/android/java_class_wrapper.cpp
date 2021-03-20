@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -37,7 +37,8 @@ bool JavaClass::_call_method(JavaObject *p_instance, const StringName &p_method,
 	if (!M)
 		return false;
 
-	JNIEnv *env = ThreadAndroid::get_env();
+	JNIEnv *env = get_jni_env();
+	ERR_FAIL_COND_V(env == nullptr, false);
 
 	MethodInfo *method = nullptr;
 	for (List<MethodInfo>::Element *E = M->get().front(); E; E = E->next()) {
@@ -964,7 +965,8 @@ Ref<JavaClass> JavaClassWrapper::wrap(const String &p_class) {
 	if (class_cache.has(p_class))
 		return class_cache[p_class];
 
-	JNIEnv *env = ThreadAndroid::get_env();
+	JNIEnv *env = get_jni_env();
+	ERR_FAIL_COND_V(env == nullptr, Ref<JavaClass>());
 
 	jclass bclass = env->FindClass(p_class.utf8().get_data());
 	ERR_FAIL_COND_V(!bclass, Ref<JavaClass>());
@@ -1148,7 +1150,8 @@ JavaClassWrapper *JavaClassWrapper::singleton = nullptr;
 JavaClassWrapper::JavaClassWrapper(jobject p_activity) {
 	singleton = this;
 
-	JNIEnv *env = ThreadAndroid::get_env();
+	JNIEnv *env = get_jni_env();
+	ERR_FAIL_COND(env == nullptr);
 
 	jclass activityClass = env->FindClass("android/app/Activity");
 	jmethodID getClassLoader = env->GetMethodID(activityClass, "getClassLoader", "()Ljava/lang/ClassLoader;");

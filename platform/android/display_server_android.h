@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -41,7 +41,7 @@ class RenderingDeviceVulkan;
 class DisplayServerAndroid : public DisplayServer {
 public:
 	struct TouchPos {
-		int id;
+		int id = 0;
 		Point2 pos;
 	};
 
@@ -52,12 +52,12 @@ public:
 	};
 
 	struct JoypadEvent {
-		int device;
-		int type;
-		int index;
-		bool pressed;
-		float value;
-		int hat;
+		int device = 0;
+		int type = 0;
+		int index = 0;
+		bool pressed = false;
+		float value = 0;
+		int hat = 0;
 	};
 
 private:
@@ -67,6 +67,10 @@ private:
 	bool shift_mem = false;
 	bool control_mem = false;
 	bool meta_mem = false;
+
+	int buttons_state;
+
+	MouseMode mouse_mode;
 
 	bool keep_screen_on;
 
@@ -90,6 +94,12 @@ private:
 	static void _dispatch_input_events(const Ref<InputEvent> &p_event);
 
 	void _set_key_modifier_state(Ref<InputEventWithModifiers> ev);
+
+	static int _button_index_from_mask(int button_mask);
+
+	static int _android_button_mask_to_godot_button_mask(int android_button_mask);
+
+	void _wheel_button_click(int event_buttons_mask, const Ref<InputEventMouseButton> &ev, int wheel_button, float factor);
 
 public:
 	static DisplayServerAndroid *get_singleton();
@@ -162,18 +172,25 @@ public:
 	void process_gravity(const Vector3 &p_gravity);
 	void process_magnetometer(const Vector3 &p_magnetometer);
 	void process_gyroscope(const Vector3 &p_gyroscope);
-	void process_touch(int p_what, int p_pointer, const Vector<TouchPos> &p_points);
+	void process_touch(int p_event, int p_pointer, const Vector<TouchPos> &p_points);
 	void process_hover(int p_type, Point2 p_pos);
-	void process_double_tap(Point2 p_pos);
+	void process_mouse_event(int input_device, int event_action, int event_android_buttons_mask, Point2 event_pos, float event_vertical_factor = 0, float event_horizontal_factor = 0);
+	void process_double_tap(int event_android_button_mask, Point2 p_pos);
 	void process_scroll(Point2 p_pos);
 	void process_joy_event(JoypadEvent p_event);
 	void process_key_event(int p_keycode, int p_scancode, int p_unicode_char, bool p_pressed);
+
+	void mouse_set_mode(MouseMode p_mode);
+	MouseMode mouse_get_mode() const;
 
 	static DisplayServer *create_func(const String &p_rendering_driver, WindowMode p_mode, uint32_t p_flags, const Vector2i &p_resolution, Error &r_error);
 	static Vector<String> get_rendering_drivers_func();
 	static void register_android_driver();
 
 	void reset_window();
+
+	virtual Point2i mouse_get_position() const;
+	virtual int mouse_get_button_state() const;
 
 	DisplayServerAndroid(const String &p_rendering_driver, WindowMode p_mode, uint32_t p_flags, const Vector2i &p_resolution, Error &r_error);
 	~DisplayServerAndroid();

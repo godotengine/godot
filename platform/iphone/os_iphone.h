@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -35,18 +35,18 @@
 
 #include "drivers/coreaudio/audio_driver_coreaudio.h"
 #include "drivers/unix/os_unix.h"
-#include "game_center.h"
-#include "icloud.h"
-#include "in_app_store.h"
 #include "ios.h"
 #include "joypad_iphone.h"
 #include "servers/audio_server.h"
-#include "servers/rendering/rasterizer.h"
+#include "servers/rendering/renderer_compositor.h"
 
 #if defined(VULKAN_ENABLED)
 #include "drivers/vulkan/rendering_device_vulkan.h"
 #include "platform/iphone/vulkan_context_iphone.h"
 #endif
+
+extern void godot_ios_plugins_initialize();
+extern void godot_ios_plugins_deinitialize();
 
 class OSIPhone : public OS_Unix {
 private:
@@ -55,15 +55,6 @@ private:
 
 	AudioDriverCoreAudio audio_driver;
 
-#ifdef GAME_CENTER_ENABLED
-	GameCenter *game_center;
-#endif
-#ifdef STOREKIT_ENABLED
-	InAppStore *store_kit;
-#endif
-#ifdef ICLOUD_ENABLED
-	ICloud *icloud;
-#endif
 	iOS *ios;
 
 	JoypadIPhone *joypad_iphone;

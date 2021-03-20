@@ -24,6 +24,7 @@ platform/android/java/lib/.cxx/
 platform/android/java/libs/*
 platform/android/java/app/libs/*
 platform/android/java/lib/.cxx/*
+platform/android/java/nativeSrcsConfigs/.cxx/
 
 # General c++ generated files
 *.lib
@@ -267,8 +268,11 @@ __pycache__/
 # KDE
 .directory
 
-#Kdevelop project files
+# Kdevelop project files
 *.kdev4
+
+# Kate swap files
+*.kate-swp
 
 # Xcode
 xcuserdata/
@@ -374,7 +378,6 @@ cppcheck-cppcheck-build-dir/
 *index-sort-f.html
 *index-sort-l.html
 *index.html
-MachineIndependent/
 godot.info
 amber.png
 emerald.png
@@ -383,3 +386,7 @@ ruby.png
 snow.png
 updown.png
 gcov.css
+
+# https://clangd.llvm.org/ cache folder
+.clangd/
+.cache/

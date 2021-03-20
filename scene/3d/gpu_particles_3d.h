@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -31,7 +31,7 @@
 #ifndef PARTICLES_H
 #define PARTICLES_H
 
-#include "core/rid.h"
+#include "core/templates/rid.h"
 #include "scene/3d/visual_instance_3d.h"
 #include "scene/resources/material.h"
 
@@ -64,12 +64,16 @@ private:
 	bool local_coords;
 	int fixed_fps;
 	bool fractional_delta;
+	NodePath sub_emitter;
+	float collision_base_size;
 
 	Ref<Material> process_material;
 
 	DrawOrder draw_order;
 
 	Vector<Ref<Mesh>> draw_passes;
+
+	void _attach_sub_emitter();
 
 protected:
 	static void _bind_methods();
@@ -91,6 +95,7 @@ public:
 	void set_use_local_coordinates(bool p_enable);
 	void set_process_material(const Ref<Material> &p_material);
 	void set_speed_scale(float p_scale);
+	void set_collision_base_size(float p_ratio);
 
 	bool is_emitting() const;
 	int get_amount() const;
@@ -103,6 +108,7 @@ public:
 	bool get_use_local_coordinates() const;
 	Ref<Material> get_process_material() const;
 	float get_speed_scale() const;
+	float get_collision_base_size() const;
 
 	void set_fixed_fps(int p_count);
 	int get_fixed_fps() const;
@@ -121,7 +127,20 @@ public:
 
 	virtual String get_configuration_warning() const override;
 
+	void set_sub_emitter(const NodePath &p_path);
+	NodePath get_sub_emitter() const;
+
 	void restart();
+
+	enum EmitFlags {
+		EMIT_FLAG_POSITION = RS::PARTICLES_EMIT_FLAG_POSITION,
+		EMIT_FLAG_ROTATION_SCALE = RS::PARTICLES_EMIT_FLAG_ROTATION_SCALE,
+		EMIT_FLAG_VELOCITY = RS::PARTICLES_EMIT_FLAG_VELOCITY,
+		EMIT_FLAG_COLOR = RS::PARTICLES_EMIT_FLAG_COLOR,
+		EMIT_FLAG_CUSTOM = RS::PARTICLES_EMIT_FLAG_CUSTOM
+	};
+
+	void emit_particle(const Transform &p_transform, const Vector3 &p_velocity, const Color &p_color, const Color &p_custom, uint32_t p_emit_flags);
 
 	AABB capture_aabb() const;
 	GPUParticles3D();
@@ -129,5 +148,6 @@ public:
 };
 
 VARIANT_ENUM_CAST(GPUParticles3D::DrawOrder)
+VARIANT_ENUM_CAST(GPUParticles3D::EmitFlags)
 
 #endif // PARTICLES_H

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -37,119 +37,315 @@ void GDScriptEditorTranslationParserPlugin::get_recognized_extensions(List<Strin
 	GDScriptLanguage::get_singleton()->get_recognized_extensions(r_extensions);
 }
 
-Error GDScriptEditorTranslationParserPlugin::parse_file(const String &p_path, Vector<String> *r_extracted_strings) {
-	// Parse and match all GDScript function API that involves translation string.
-	// E.g get_node("Label").text = "something", var test = tr("something"), "something" will be matched and collected.
+Error GDScriptEditorTranslationParserPlugin::parse_file(const String &p_path, Vector<String> *r_ids, Vector<Vector<String>> *r_ids_ctx_plural) {
+	// Extract all translatable strings using the parsed tree from GDSriptParser.
+	// The strategy is to find all ExpressionNode and AssignmentNode from the tree and extract strings if relevant, i.e
+	// Search strings in ExpressionNode -> CallNode -> tr(), set_text(), set_placeholder() etc.
+	// Search strings in AssignmentNode -> text = "__", hint_tooltip = "__" etc.
 
 	Error err;
-	RES loaded_res = ResourceLoader::load(p_path, "", false, &err);
+	RES loaded_res = ResourceLoader::load(p_path, "", ResourceFormatLoader::CACHE_MODE_REUSE, &err);
 	if (err) {
 		ERR_PRINT("Failed to load " + p_path);
 		return err;
 	}
 
+	ids = r_ids;
+	ids_ctx_plural = r_ids_ctx_plural;
 	Ref<GDScript> gdscript = loaded_res;
 	String source_code = gdscript->get_source_code();
-	Vector<String> parsed_strings;
 
-	// Search translation strings with RegEx.
-	regex.clear();
-	regex.compile(String("|").join(patterns));
-	Array results = regex.search_all(source_code);
-	_get_captured_strings(results, &parsed_strings);
-
-	// Special handling for FileDialog.
-	Vector<String> temp;
-	_parse_file_dialog(source_code, &temp);
-	parsed_strings.append_array(temp);
-
-	// Filter out / and +
-	String filter = "(?:\\\\\\n|\"[\\s\\\\]*\\+\\s*\")";
-	regex.clear();
-	regex.compile(filter);
-	for (int i = 0; i < parsed_strings.size(); i++) {
-		parsed_strings.set(i, regex.sub(parsed_strings[i], "", true));
+	GDScriptParser parser;
+	err = parser.parse(source_code, p_path, false);
+	if (err != OK) {
+		ERR_PRINT("Failed to parse with GDScript with GDScriptParser.");
+		return err;
 	}
 
-	r_extracted_strings->append_array(parsed_strings);
+	// Traverse through the parsed tree from GDScriptParser.
+	GDScriptParser::ClassNode *c = parser.get_tree();
+	_traverse_class(c);
 
 	return OK;
 }
 
-void GDScriptEditorTranslationParserPlugin::_parse_file_dialog(const String &p_source_code, Vector<String> *r_output) {
-	// FileDialog API has the form .filters = PackedStringArray(["*.png ; PNG Images","*.gd ; GDScript Files"]).
-	// First filter: Get "*.png ; PNG Images", "*.gd ; GDScript Files" from PackedStringArray.
-	regex.clear();
-	regex.compile(String("|").join(file_dialog_patterns));
-	Array results = regex.search_all(p_source_code);
-
-	Vector<String> temp;
-	_get_captured_strings(results, &temp);
-	String captured_strings = String(",").join(temp);
-
-	// Second filter: Get the texts after semicolon from "*.png ; PNG Images","*.gd ; GDScript Files".
-	String second_filter = "\"[^;]+;" + text + "\"";
-	regex.clear();
-	regex.compile(second_filter);
-	results = regex.search_all(captured_strings);
-	_get_captured_strings(results, r_output);
-	for (int i = 0; i < r_output->size(); i++) {
-		r_output->set(i, r_output->get(i).strip_edges());
+void GDScriptEditorTranslationParserPlugin::_traverse_class(const GDScriptParser::ClassNode *p_class) {
+	for (int i = 0; i < p_class->members.size(); i++) {
+		const GDScriptParser::ClassNode::Member &m = p_class->members[i];
+		// There are 7 types of Member, but only class, function and variable can contain translatable strings.
+		switch (m.type) {
+			case GDScriptParser::ClassNode::Member::CLASS:
+				_traverse_class(m.m_class);
+				break;
+			case GDScriptParser::ClassNode::Member::FUNCTION:
+				_traverse_function(m.function);
+				break;
+			case GDScriptParser::ClassNode::Member::VARIABLE:
+				_read_variable(m.variable);
+				break;
+			default:
+				break;
+		}
 	}
 }
 
-void GDScriptEditorTranslationParserPlugin::_get_captured_strings(const Array &p_results, Vector<String> *r_output) {
-	Ref<RegExMatch> result;
-	for (int i = 0; i < p_results.size(); i++) {
-		result = p_results[i];
-		for (int j = 0; j < result->get_group_count(); j++) {
-			String s = result->get_string(j + 1);
-			// Prevent reading text with only spaces.
-			if (!s.strip_edges().empty()) {
-				r_output->push_back(s);
+void GDScriptEditorTranslationParserPlugin::_traverse_function(const GDScriptParser::FunctionNode *p_func) {
+	_traverse_block(p_func->body);
+}
+
+void GDScriptEditorTranslationParserPlugin::_read_variable(const GDScriptParser::VariableNode *p_var) {
+	_assess_expression(p_var->initializer);
+}
+
+void GDScriptEditorTranslationParserPlugin::_traverse_block(const GDScriptParser::SuiteNode *p_suite) {
+	if (!p_suite) {
+		return;
+	}
+
+	const Vector<GDScriptParser::Node *> &statements = p_suite->statements;
+	for (int i = 0; i < statements.size(); i++) {
+		GDScriptParser::Node *statement = statements[i];
+
+		// Statements with Node type constant, break, continue, pass, breakpoint are skipped because they can't contain translatable strings.
+		switch (statement->type) {
+			case GDScriptParser::Node::VARIABLE:
+				_assess_expression(static_cast<GDScriptParser::VariableNode *>(statement)->initializer);
+				break;
+			case GDScriptParser::Node::IF: {
+				GDScriptParser::IfNode *if_node = static_cast<GDScriptParser::IfNode *>(statement);
+				_assess_expression(if_node->condition);
+				//FIXME : if the elif logic is changed in GDScriptParser, then this probably will have to change as well. See GDScriptParser::TreePrinter::print_if().
+				_traverse_block(if_node->true_block);
+				_traverse_block(if_node->false_block);
+				break;
+			}
+			case GDScriptParser::Node::FOR: {
+				GDScriptParser::ForNode *for_node = static_cast<GDScriptParser::ForNode *>(statement);
+				_assess_expression(for_node->list);
+				_traverse_block(for_node->loop);
+				break;
+			}
+			case GDScriptParser::Node::WHILE: {
+				GDScriptParser::WhileNode *while_node = static_cast<GDScriptParser::WhileNode *>(statement);
+				_assess_expression(while_node->condition);
+				_traverse_block(while_node->loop);
+				break;
+			}
+			case GDScriptParser::Node::MATCH: {
+				GDScriptParser::MatchNode *match_node = static_cast<GDScriptParser::MatchNode *>(statement);
+				_assess_expression(match_node->test);
+				for (int j = 0; j < match_node->branches.size(); j++) {
+					_traverse_block(match_node->branches[j]->block);
+				}
+				break;
+			}
+			case GDScriptParser::Node::RETURN:
+				_assess_expression(static_cast<GDScriptParser::ReturnNode *>(statement)->return_value);
+				break;
+			case GDScriptParser::Node::ASSERT:
+				_assess_expression((static_cast<GDScriptParser::AssertNode *>(statement))->condition);
+				break;
+			case GDScriptParser::Node::ASSIGNMENT:
+				_assess_assignment(static_cast<GDScriptParser::AssignmentNode *>(statement));
+				break;
+			default:
+				if (statement->is_expression()) {
+					_assess_expression(static_cast<GDScriptParser::ExpressionNode *>(statement));
+				}
+				break;
+		}
+	}
+}
+
+void GDScriptEditorTranslationParserPlugin::_assess_expression(GDScriptParser::ExpressionNode *p_expression) {
+	// Explore all ExpressionNodes to find CallNodes which contain translation strings, such as tr(), set_text() etc.
+	// tr() can be embedded quite deep within multiple ExpressionNodes so need to dig down to search through all ExpressionNodes.
+	if (!p_expression) {
+		return;
+	}
+
+	// ExpressionNode of type await, cast, get_node, identifier, literal, preload, self, subscript, unary are ignored as they can't be CallNode
+	// containing translation strings.
+	switch (p_expression->type) {
+		case GDScriptParser::Node::ARRAY: {
+			GDScriptParser::ArrayNode *array_node = static_cast<GDScriptParser::ArrayNode *>(p_expression);
+			for (int i = 0; i < array_node->elements.size(); i++) {
+				_assess_expression(array_node->elements[i]);
+			}
+			break;
+		}
+		case GDScriptParser::Node::ASSIGNMENT:
+			_assess_assignment(static_cast<GDScriptParser::AssignmentNode *>(p_expression));
+			break;
+		case GDScriptParser::Node::BINARY_OPERATOR: {
+			GDScriptParser::BinaryOpNode *binary_op_node = static_cast<GDScriptParser::BinaryOpNode *>(p_expression);
+			_assess_expression(binary_op_node->left_operand);
+			_assess_expression(binary_op_node->right_operand);
+			break;
+		}
+		case GDScriptParser::Node::CALL: {
+			GDScriptParser::CallNode *call_node = static_cast<GDScriptParser::CallNode *>(p_expression);
+			_extract_from_call(call_node);
+			for (int i = 0; i < call_node->arguments.size(); i++) {
+				_assess_expression(call_node->arguments[i]);
+			}
+		} break;
+		case GDScriptParser::Node::DICTIONARY: {
+			GDScriptParser::DictionaryNode *dict_node = static_cast<GDScriptParser::DictionaryNode *>(p_expression);
+			for (int i = 0; i < dict_node->elements.size(); i++) {
+				_assess_expression(dict_node->elements[i].key);
+				_assess_expression(dict_node->elements[i].value);
+			}
+			break;
+		}
+		case GDScriptParser::Node::TERNARY_OPERATOR: {
+			GDScriptParser::TernaryOpNode *ternary_op_node = static_cast<GDScriptParser::TernaryOpNode *>(p_expression);
+			_assess_expression(ternary_op_node->condition);
+			_assess_expression(ternary_op_node->true_expr);
+			_assess_expression(ternary_op_node->false_expr);
+			break;
+		}
+		default:
+			break;
+	}
+}
+
+void GDScriptEditorTranslationParserPlugin::_assess_assignment(GDScriptParser::AssignmentNode *p_assignment) {
+	// Extract the translatable strings coming from assignments. For example, get_node("Label").text = "____"
+
+	StringName assignee_name;
+	if (p_assignment->assignee->type == GDScriptParser::Node::IDENTIFIER) {
+		assignee_name = static_cast<GDScriptParser::IdentifierNode *>(p_assignment->assignee)->name;
+	} else if (p_assignment->assignee->type == GDScriptParser::Node::SUBSCRIPT) {
+		assignee_name = static_cast<GDScriptParser::SubscriptNode *>(p_assignment->assignee)->attribute->name;
+	}
+
+	if (assignment_patterns.has(assignee_name) && p_assignment->assigned_value->type == GDScriptParser::Node::LITERAL) {
+		// If the assignment is towards one of the extract patterns (text, hint_tooltip etc.), and the value is a string literal, we collect the string.
+		ids->push_back(static_cast<GDScriptParser::LiteralNode *>(p_assignment->assigned_value)->value);
+	} else if (assignee_name == fd_filters && p_assignment->assigned_value->type == GDScriptParser::Node::CALL) {
+		// FileDialog.filters accepts assignment in the form of PackedStringArray. For example,
+		// get_node("FileDialog").filters = PackedStringArray(["*.png ; PNG Images","*.gd ; GDScript Files"]).
+
+		GDScriptParser::CallNode *call_node = static_cast<GDScriptParser::CallNode *>(p_assignment->assigned_value);
+		if (call_node->arguments[0]->type == GDScriptParser::Node::ARRAY) {
+			GDScriptParser::ArrayNode *array_node = static_cast<GDScriptParser::ArrayNode *>(call_node->arguments[0]);
+
+			// Extract the name in "extension ; name" of PackedStringArray.
+			for (int i = 0; i < array_node->elements.size(); i++) {
+				_extract_fd_literals(array_node->elements[i]);
+			}
+		}
+	} else {
+		// If the assignee is not in extract patterns or the assigned_value is not Literal type, try to see if the assigned_value contains tr().
+		_assess_expression(p_assignment->assigned_value);
+	}
+}
+
+void GDScriptEditorTranslationParserPlugin::_extract_from_call(GDScriptParser::CallNode *p_call) {
+	// Extract the translatable strings coming from function calls. For example:
+	// tr("___"), get_node("Label").set_text("____"), get_node("LineEdit").set_placeholder("____").
+
+	StringName function_name = p_call->function_name;
+
+	// Variables for extracting tr() and tr_n().
+	Vector<String> id_ctx_plural;
+	id_ctx_plural.resize(3);
+	bool extract_id_ctx_plural = true;
+
+	if (function_name == tr_func) {
+		// Extract from tr(id, ctx).
+		for (int i = 0; i < p_call->arguments.size(); i++) {
+			if (p_call->arguments[i]->type == GDScriptParser::Node::LITERAL) {
+				id_ctx_plural.write[i] = static_cast<GDScriptParser::LiteralNode *>(p_call->arguments[i])->value;
+			} else {
+				// Avoid adding something like tr("Flying dragon", var_context_level_1). We want to extract both id and context together.
+				extract_id_ctx_plural = false;
+			}
+		}
+		if (extract_id_ctx_plural) {
+			ids_ctx_plural->push_back(id_ctx_plural);
+		}
+	} else if (function_name == trn_func) {
+		// Extract from tr_n(id, plural, n, ctx).
+		Vector<int> indices;
+		indices.push_back(0);
+		indices.push_back(3);
+		indices.push_back(1);
+		for (int i = 0; i < indices.size(); i++) {
+			if (indices[i] >= p_call->arguments.size()) {
+				continue;
+			}
+
+			if (p_call->arguments[indices[i]]->type == GDScriptParser::Node::LITERAL) {
+				id_ctx_plural.write[i] = static_cast<GDScriptParser::LiteralNode *>(p_call->arguments[indices[i]])->value;
+			} else {
+				extract_id_ctx_plural = false;
+			}
+		}
+		if (extract_id_ctx_plural) {
+			ids_ctx_plural->push_back(id_ctx_plural);
+		}
+	} else if (first_arg_patterns.has(function_name)) {
+		// Extracting argument with only string literals. In other words, not extracting something like set_text("hello " + some_var).
+		if (p_call->arguments[0]->type == GDScriptParser::Node::LITERAL) {
+			ids->push_back(static_cast<GDScriptParser::LiteralNode *>(p_call->arguments[0])->value);
+		}
+	} else if (second_arg_patterns.has(function_name)) {
+		if (p_call->arguments[1]->type == GDScriptParser::Node::LITERAL) {
+			ids->push_back(static_cast<GDScriptParser::LiteralNode *>(p_call->arguments[1])->value);
+		}
+	} else if (function_name == fd_add_filter) {
+		// Extract the 'JPE Images' in this example - get_node("FileDialog").add_filter("*.jpg; JPE Images").
+		_extract_fd_literals(p_call->arguments[0]);
+
+	} else if (function_name == fd_set_filter && p_call->arguments[0]->type == GDScriptParser::Node::CALL) {
+		// FileDialog.set_filters() accepts assignment in the form of PackedStringArray. For example,
+		// get_node("FileDialog").set_filters( PackedStringArray(["*.png ; PNG Images","*.gd ; GDScript Files"])).
+
+		GDScriptParser::CallNode *call_node = static_cast<GDScriptParser::CallNode *>(p_call->arguments[0]);
+		if (call_node->arguments[0]->type == GDScriptParser::Node::ARRAY) {
+			GDScriptParser::ArrayNode *array_node = static_cast<GDScriptParser::ArrayNode *>(call_node->arguments[0]);
+			for (int i = 0; i < array_node->elements.size(); i++) {
+				_extract_fd_literals(array_node->elements[i]);
 			}
 		}
 	}
 }
 
+void GDScriptEditorTranslationParserPlugin::_extract_fd_literals(GDScriptParser::ExpressionNode *p_expression) {
+	// Extract the name in "extension ; name".
+
+	if (p_expression->type == GDScriptParser::Node::LITERAL) {
+		String arg_val = String(static_cast<GDScriptParser::LiteralNode *>(p_expression)->value);
+		PackedStringArray arr = arg_val.split(";", true);
+		if (arr.size() != 2) {
+			ERR_PRINT("Argument for setting FileDialog has bad format.");
+			return;
+		}
+		ids->push_back(arr[1].strip_edges());
+	}
+}
+
 GDScriptEditorTranslationParserPlugin::GDScriptEditorTranslationParserPlugin() {
-	// Regex search pattern templates.
-	// The extra complication in the regex pattern is to ensure that the matching works when users write over multiple lines, use tabs etc.
-	const String dot = "\\.[\\s\\\\]*";
-	const String str_assign_template = "[\\s\\\\]*=[\\s\\\\]*\"" + text + "\"";
-	const String first_arg_template = "[\\s\\\\]*\\([\\s\\\\]*\"" + text + "\"[\\s\\S]*?\\)";
-	const String second_arg_template = "[\\s\\\\]*\\([\\s\\S]+?,[\\s\\\\]*\"" + text + "\"[\\s\\S]*?\\)";
+	assignment_patterns.insert("text");
+	assignment_patterns.insert("placeholder_text");
+	assignment_patterns.insert("hint_tooltip");
 
-	// Common patterns.
-	patterns.push_back("tr" + first_arg_template);
-	patterns.push_back(dot + "text" + str_assign_template);
-	patterns.push_back(dot + "placeholder_text" + str_assign_template);
-	patterns.push_back(dot + "hint_tooltip" + str_assign_template);
-	patterns.push_back(dot + "set_text" + first_arg_template);
-	patterns.push_back(dot + "set_tooltip" + first_arg_template);
-	patterns.push_back(dot + "set_placeholder" + first_arg_template);
+	first_arg_patterns.insert("set_text");
+	first_arg_patterns.insert("set_tooltip");
+	first_arg_patterns.insert("set_placeholder");
+	first_arg_patterns.insert("add_tab");
+	first_arg_patterns.insert("add_check_item");
+	first_arg_patterns.insert("add_item");
+	first_arg_patterns.insert("add_multistate_item");
+	first_arg_patterns.insert("add_radio_check_item");
+	first_arg_patterns.insert("add_separator");
+	first_arg_patterns.insert("add_submenu_item");
 
-	// Tabs and TabContainer API.
-	patterns.push_back(dot + "set_tab_title" + second_arg_template);
-	patterns.push_back(dot + "add_tab" + first_arg_template);
-
-	// PopupMenu API.
-	patterns.push_back(dot + "add_check_item" + first_arg_template);
-	patterns.push_back(dot + "add_icon_check_item" + second_arg_template);
-	patterns.push_back(dot + "add_icon_item" + second_arg_template);
-	patterns.push_back(dot + "add_icon_radio_check_item" + second_arg_template);
-	patterns.push_back(dot + "add_item" + first_arg_template);
-	patterns.push_back(dot + "add_multistate_item" + first_arg_template);
-	patterns.push_back(dot + "add_radio_check_item" + first_arg_template);
-	patterns.push_back(dot + "add_separator" + first_arg_template);
-	patterns.push_back(dot + "add_submenu_item" + first_arg_template);
-	patterns.push_back(dot + "set_item_text" + second_arg_template);
-	//patterns.push_back(dot + "set_item_tooltip" + second_arg_template); //no tr() behind this function. might be bug.
-
-	// FileDialog API - special case.
-	const String fd_text = "((?:[\\s\\\\]*\"(?:[^\"\\\\]|\\\\[\\s\\S])*(?:\"[\\s\\\\]*\\+[\\s\\\\]*\"(?:[^\"\\\\]|\\\\[\\s\\S])*)*\"[\\s\\\\]*,?)*)";
-	const String packed_string_array = "[\\s\\\\]*PackedStringArray[\\s\\\\]*\\([\\s\\\\]*\\[" + fd_text + "\\][\\s\\\\]*\\)";
-	file_dialog_patterns.push_back(dot + "add_filter[\\s\\\\]*\\(" + fd_text + "[\\s\\\\]*\\)");
-	file_dialog_patterns.push_back(dot + "filters[\\s\\\\]*=" + packed_string_array);
-	file_dialog_patterns.push_back(dot + "set_filters[\\s\\\\]*\\(" + packed_string_array + "[\\s\\\\]*\\)");
+	second_arg_patterns.insert("set_tab_title");
+	second_arg_patterns.insert("add_icon_check_item");
+	second_arg_patterns.insert("add_icon_item");
+	second_arg_patterns.insert("add_icon_radio_check_item");
+	second_arg_patterns.insert("set_item_text");
 }

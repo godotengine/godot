@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -30,8 +30,8 @@
 
 #include "audio_stream_editor_plugin.h"
 
+#include "core/config/project_settings.h"
 #include "core/io/resource_loader.h"
-#include "core/project_settings.h"
 #include "editor/audio_stream_preview.h"
 #include "editor/editor_scale.h"
 #include "editor/editor_settings.h"
@@ -44,8 +44,8 @@ void AudioStreamEditor::_notification(int p_what) {
 	if (p_what == NOTIFICATION_THEME_CHANGED || p_what == NOTIFICATION_ENTER_TREE) {
 		_play_button->set_icon(get_theme_icon("MainPlay", "EditorIcons"));
 		_stop_button->set_icon(get_theme_icon("Stop", "EditorIcons"));
-		_preview->set_frame_color(get_theme_color("dark_color_2", "Editor"));
-		set_frame_color(get_theme_color("dark_color_1", "Editor"));
+		_preview->set_color(get_theme_color("dark_color_2", "Editor"));
+		set_color(get_theme_color("dark_color_1", "Editor"));
 
 		_indicator->update();
 		_preview->update();
@@ -96,7 +96,7 @@ void AudioStreamEditor::_preview_changed(ObjectID p_which) {
 	}
 }
 
-void AudioStreamEditor::_changed_callback(Object *p_changed, const char *p_prop) {
+void AudioStreamEditor::_audio_changed() {
 	if (!is_visible()) {
 		return;
 	}
@@ -172,7 +172,7 @@ void AudioStreamEditor::_seek_to(real_t p_x) {
 
 void AudioStreamEditor::edit(Ref<AudioStream> p_stream) {
 	if (!stream.is_null()) {
-		stream->remove_change_receptor(this);
+		stream->disconnect("changed", callable_mp(this, &AudioStreamEditor::_audio_changed));
 	}
 
 	stream = p_stream;
@@ -182,7 +182,7 @@ void AudioStreamEditor::edit(Ref<AudioStream> p_stream) {
 	_duration_label->set_text(text);
 
 	if (!stream.is_null()) {
-		stream->add_change_receptor(this);
+		stream->connect("changed", callable_mp(this, &AudioStreamEditor::_audio_changed));
 		update();
 	} else {
 		hide();
@@ -202,7 +202,7 @@ AudioStreamEditor::AudioStreamEditor() {
 	add_child(_player);
 
 	VBoxContainer *vbox = memnew(VBoxContainer);
-	vbox->set_anchors_and_margins_preset(PRESET_WIDE, PRESET_MODE_MINSIZE, 0);
+	vbox->set_anchors_and_offsets_preset(PRESET_WIDE, PRESET_MODE_MINSIZE, 0);
 	add_child(vbox);
 
 	_preview = memnew(ColorRect);
@@ -211,7 +211,7 @@ AudioStreamEditor::AudioStreamEditor() {
 	vbox->add_child(_preview);
 
 	_indicator = memnew(Control);
-	_indicator->set_anchors_and_margins_preset(PRESET_WIDE);
+	_indicator->set_anchors_and_offsets_preset(PRESET_WIDE);
 	_indicator->connect("draw", callable_mp(this, &AudioStreamEditor::_draw_indicator));
 	_indicator->connect("gui_input", callable_mp(this, &AudioStreamEditor::_on_input_indicator));
 	_preview->add_child(_indicator);
@@ -236,11 +236,13 @@ AudioStreamEditor::AudioStreamEditor() {
 	_current_label->set_align(Label::ALIGN_RIGHT);
 	_current_label->set_h_size_flags(SIZE_EXPAND_FILL);
 	_current_label->add_theme_font_override("font", EditorNode::get_singleton()->get_gui_base()->get_theme_font("status_source", "EditorFonts"));
+	_current_label->add_theme_font_size_override("font_size", EditorNode::get_singleton()->get_gui_base()->get_theme_font_size("status_source_size", "EditorFonts"));
 	_current_label->set_modulate(Color(1, 1, 1, 0.5));
 	hbox->add_child(_current_label);
 
 	_duration_label = memnew(Label);
 	_duration_label->add_theme_font_override("font", EditorNode::get_singleton()->get_gui_base()->get_theme_font("status_source", "EditorFonts"));
+	_duration_label->add_theme_font_size_override("font_size", EditorNode::get_singleton()->get_gui_base()->get_theme_font_size("status_source_size", "EditorFonts"));
 	hbox->add_child(_duration_label);
 }
 

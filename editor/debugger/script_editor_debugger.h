@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -54,6 +54,7 @@ class EditorVisualProfiler;
 class EditorNetworkProfiler;
 class EditorPerformanceProfiler;
 class SceneDebuggerTree;
+class EditorDebuggerPlugin;
 
 class ScriptEditorDebugger : public MarginContainer {
 	GDCLASS(ScriptEditorDebugger, MarginContainer);
@@ -145,6 +146,10 @@ private:
 	bool live_debug;
 
 	EditorDebuggerNode::CameraOverride camera_override;
+
+	Map<Ref<Script>, EditorDebuggerPlugin *> debugger_plugins;
+
+	Map<StringName, Callable> captures;
 
 	void _stack_dump_frame_selected();
 
@@ -253,6 +258,16 @@ public:
 	bool is_skip_breakpoints();
 
 	virtual Size2 get_minimum_size() const override;
+
+	void add_debugger_plugin(const Ref<Script> &p_script);
+	void remove_debugger_plugin(const Ref<Script> &p_script);
+
+	void send_message(const String &p_message, const Array &p_args);
+
+	void register_message_capture(const StringName &p_name, const Callable &p_callable);
+	void unregister_message_capture(const StringName &p_name);
+	bool has_capture(const StringName &p_name);
+
 	ScriptEditorDebugger(EditorNode *p_editor = nullptr);
 	~ScriptEditorDebugger();
 };

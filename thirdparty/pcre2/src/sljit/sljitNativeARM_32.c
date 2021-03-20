@@ -467,18 +467,28 @@ static SLJIT_INLINE void inline_set_jump_addr(sljit_uw jump_ptr, sljit_sw execut
 	sljit_s32 bl = (mov_pc & 0x0000f000) != RD(TMP_PC);
 	sljit_sw diff = (sljit_sw)(((sljit_sw)new_addr - (sljit_sw)(inst + 2) - executable_offset) >> 2);
 
+	SLJIT_UNUSED_ARG(executable_offset);
+
 	if (diff <= 0x7fffff && diff >= -0x800000) {
 		/* Turn to branch. */
 		if (!bl) {
+			if (flush_cache) {
+				SLJIT_UPDATE_WX_FLAGS(inst, inst + 1, 0);
+			}
 			inst[0] = (mov_pc & COND_MASK) | (B - CONDITIONAL) | (diff & 0xffffff);
 			if (flush_cache) {
+				SLJIT_UPDATE_WX_FLAGS(inst, inst + 1, 1);
 				inst = (sljit_uw *)SLJIT_ADD_EXEC_OFFSET(inst, executable_offset);
 				SLJIT_CACHE_FLUSH(inst, inst + 1);
 			}
 		} else {
+			if (flush_cache) {
+				SLJIT_UPDATE_WX_FLAGS(inst, inst + 2, 0);
+			}
 			inst[0] = (mov_pc & COND_MASK) | (BL - CONDITIONAL) | (diff & 0xffffff);
 			inst[1] = NOP;
 			if (flush_cache) {
+				SLJIT_UPDATE_WX_FLAGS(inst, inst + 2, 1);
 				inst = (sljit_uw *)SLJIT_ADD_EXEC_OFFSET(inst, executable_offset);
 				SLJIT_CACHE_FLUSH(inst, inst + 2);
 			}
@@ -491,28 +501,52 @@ static SLJIT_INLINE void inline_set_jump_addr(sljit_uw jump_ptr, sljit_sw execut
 			ptr = inst + 1;
 
 		if (*inst != mov_pc) {
+			if (flush_cache) {
+				SLJIT_UPDATE_WX_FLAGS(inst, inst + (!bl ? 1 : 2), 0);
+			}
 			inst[0] = mov_pc;
 			if (!bl) {
 				if (flush_cache) {
+					SLJIT_UPDATE_WX_FLAGS(inst, inst + 1, 1);
 					inst = (sljit_uw *)SLJIT_ADD_EXEC_OFFSET(inst, executable_offset);
 					SLJIT_CACHE_FLUSH(inst, inst + 1);
 				}
 			} else {
 				inst[1] = BLX | RM(TMP_REG1);
 				if (flush_cache) {
+					SLJIT_UPDATE_WX_FLAGS(inst, inst + 2, 1);
 					inst = (sljit_uw *)SLJIT_ADD_EXEC_OFFSET(inst, executable_offset);
 					SLJIT_CACHE_FLUSH(inst, inst + 2);
 				}
 			}
 		}
+
+		if (flush_cache) {
+			SLJIT_UPDATE_WX_FLAGS(ptr, ptr + 1, 0);
+		}
+
 		*ptr = new_addr;
+
+		if (flush_cache) {
+			SLJIT_UPDATE_WX_FLAGS(ptr, ptr + 1, 1);
+		}
 	}
 #else
 	sljit_uw *inst = (sljit_uw*)jump_ptr;
+
+	SLJIT_UNUSED_ARG(executable_offset);
+
 	SLJIT_ASSERT((inst[0] & 0xfff00000) == MOVW && (inst[1] & 0xfff00000) == MOVT);
+
+	if (flush_cache) {
+		SLJIT_UPDATE_WX_FLAGS(inst, inst + 2, 0);
+	}
+
 	inst[0] = MOVW | (inst[0] & 0xf000) | ((new_addr << 4) & 0xf0000) | (new_addr & 0xfff);
 	inst[1] = MOVT | (inst[1] & 0xf000) | ((new_addr >> 12) & 0xf0000) | ((new_addr >> 16) & 0xfff);
+
 	if (flush_cache) {
+		SLJIT_UPDATE_WX_FLAGS(inst, inst + 2, 1);
 		inst = (sljit_uw *)SLJIT_ADD_EXEC_OFFSET(inst, executable_offset);
 		SLJIT_CACHE_FLUSH(inst, inst + 2);
 	}
@@ -529,10 +563,18 @@ static SLJIT_INLINE void inline_set_const(sljit_uw addr, sljit_sw executable_off
 	sljit_uw ldr_literal = ptr[1];
 	sljit_uw src2;
 
+	SLJIT_UNUSED_ARG(executable_offset);
+
 	src2 = get_imm(new_constant);
 	if (src2) {
-		*inst = 0xe3a00000 | (ldr_literal & 0xf000) | src2;
 		if (flush_cache) {
+			SLJIT_UPDATE_WX_FLAGS(inst, inst + 1, 0);
+		}
+
+		*inst = 0xe3a00000 | (ldr_literal & 0xf000) | src2;
+
+		if (flush_cache) {
+			SLJIT_UPDATE_WX_FLAGS(inst, inst + 1, 1);
 			inst = (sljit_uw *)SLJIT_ADD_EXEC_OFFSET(inst, executable_offset);
 			SLJIT_CACHE_FLUSH(inst, inst + 1);
 		}
@@ -541,8 +583,14 @@ static SLJIT_INLINE void inline_set_const(sljit_uw addr, sljit_sw executable_off
 
 	src2 = get_imm(~new_constant);
 	if (src2) {
-		*inst = 0xe3e00000 | (ldr_literal & 0xf000) | src2;
 		if (flush_cache) {
+			SLJIT_UPDATE_WX_FLAGS(inst, inst + 1, 0);
+		}
+
+		*inst = 0xe3e00000 | (ldr_literal & 0xf000) | src2;
+
+		if (flush_cache) {
+			SLJIT_UPDATE_WX_FLAGS(inst, inst + 1, 1);
 			inst = (sljit_uw *)SLJIT_ADD_EXEC_OFFSET(inst, executable_offset);
 			SLJIT_CACHE_FLUSH(inst, inst + 1);
 		}
@@ -555,19 +603,44 @@ static SLJIT_INLINE void inline_set_const(sljit_uw addr, sljit_sw executable_off
 		ptr = inst + 1;
 
 	if (*inst != ldr_literal) {
-		*inst = ldr_literal;
 		if (flush_cache) {
+			SLJIT_UPDATE_WX_FLAGS(inst, inst + 1, 0);
+		}
+
+		*inst = ldr_literal;
+
+		if (flush_cache) {
+			SLJIT_UPDATE_WX_FLAGS(inst, inst + 1, 1);
 			inst = (sljit_uw *)SLJIT_ADD_EXEC_OFFSET(inst, executable_offset);
 			SLJIT_CACHE_FLUSH(inst, inst + 1);
 		}
 	}
+
+	if (flush_cache) {
+		SLJIT_UPDATE_WX_FLAGS(ptr, ptr + 1, 0);
+	}
+
 	*ptr = new_constant;
+
+	if (flush_cache) {
+		SLJIT_UPDATE_WX_FLAGS(ptr, ptr + 1, 1);
+	}
 #else
 	sljit_uw *inst = (sljit_uw*)addr;
+
+	SLJIT_UNUSED_ARG(executable_offset);
+
 	SLJIT_ASSERT((inst[0] & 0xfff00000) == MOVW && (inst[1] & 0xfff00000) == MOVT);
+
+	if (flush_cache) {
+		SLJIT_UPDATE_WX_FLAGS(inst, inst + 2, 0);
+	}
+
 	inst[0] = MOVW | (inst[0] & 0xf000) | ((new_constant << 4) & 0xf0000) | (new_constant & 0xfff);
 	inst[1] = MOVT | (inst[1] & 0xf000) | ((new_constant >> 12) & 0xf0000) | ((new_constant >> 16) & 0xfff);
+
 	if (flush_cache) {
+		SLJIT_UPDATE_WX_FLAGS(inst, inst + 2, 1);
 		inst = (sljit_uw *)SLJIT_ADD_EXEC_OFFSET(inst, executable_offset);
 		SLJIT_CACHE_FLUSH(inst, inst + 2);
 	}
@@ -612,7 +685,7 @@ SLJIT_API_FUNC_ATTRIBUTE void* sljit_generate_code(struct sljit_compiler *compil
 #else
 	size = compiler->size;
 #endif
-	code = (sljit_uw*)SLJIT_MALLOC_EXEC(size * sizeof(sljit_uw));
+	code = (sljit_uw*)SLJIT_MALLOC_EXEC(size * sizeof(sljit_uw), compiler->exec_allocator_data);
 	PTR_FAIL_WITH_EXEC_IF(code);
 	buf = compiler->buf;
 
@@ -653,7 +726,7 @@ SLJIT_API_FUNC_ATTRIBUTE void* sljit_generate_code(struct sljit_compiler *compil
 				}
 				else {
 					if (SLJIT_UNLIKELY(resolve_const_pool_index(compiler, &first_patch, cpool_current_index, cpool_start_address, buf_ptr))) {
-						SLJIT_FREE_EXEC(code);
+						SLJIT_FREE_EXEC(code, compiler->exec_allocator_data);
 						compiler->error = SLJIT_ERR_ALLOC_FAILED;
 						return NULL;
 					}
@@ -666,6 +739,8 @@ SLJIT_API_FUNC_ATTRIBUTE void* sljit_generate_code(struct sljit_compiler *compil
 							label->addr = (sljit_uw)SLJIT_ADD_EXEC_OFFSET(code_ptr, executable_offset);
 							label->size = code_ptr - code;
 							label = label->next;
+
+							next_addr = compute_next_addr(label, jump, const_, put_label);
 						}
 					}
 				}
@@ -754,7 +829,7 @@ SLJIT_API_FUNC_ATTRIBUTE void* sljit_generate_code(struct sljit_compiler *compil
 		cpool_current_index = 0;
 		while (buf_ptr < buf_end) {
 			if (SLJIT_UNLIKELY(resolve_const_pool_index(compiler, &first_patch, cpool_current_index, cpool_start_address, buf_ptr))) {
-				SLJIT_FREE_EXEC(code);
+				SLJIT_FREE_EXEC(code, compiler->exec_allocator_data);
 				compiler->error = SLJIT_ERR_ALLOC_FAILED;
 				return NULL;
 			}
@@ -854,6 +929,7 @@ SLJIT_API_FUNC_ATTRIBUTE void* sljit_generate_code(struct sljit_compiler *compil
 	code_ptr = (sljit_uw *)SLJIT_ADD_EXEC_OFFSET(code_ptr, executable_offset);
 
 	SLJIT_CACHE_FLUSH(code, code_ptr);
+	SLJIT_UPDATE_WX_FLAGS(code, code_ptr, 1);
 	return code;
 }
 
@@ -870,6 +946,9 @@ SLJIT_API_FUNC_ATTRIBUTE sljit_s32 sljit_has_cpu_feature(sljit_s32 feature_type)
 
 	case SLJIT_HAS_CLZ:
 	case SLJIT_HAS_CMOV:
+#if (defined SLJIT_CONFIG_ARM_V7 && SLJIT_CONFIG_ARM_V7)
+	case SLJIT_HAS_PREFETCH:
+#endif
 		return 1;
 
 	default:
@@ -1676,6 +1755,9 @@ SLJIT_API_FUNC_ATTRIBUTE sljit_s32 sljit_emit_op0(struct sljit_compiler *compile
 						| (saved_reg_list[0] << 12) /* ldr rX, [sp], #8/16 */);
 		}
 		return SLJIT_SUCCESS;
+	case SLJIT_ENDBR:
+	case SLJIT_SKIP_FRAMES_BEFORE_RETURN:
+		return SLJIT_SUCCESS;
 	}
 
 	return SLJIT_SUCCESS;
@@ -1689,14 +1771,6 @@ SLJIT_API_FUNC_ATTRIBUTE sljit_s32 sljit_emit_op1(struct sljit_compiler *compile
 	CHECK(check_sljit_emit_op1(compiler, op, dst, dstw, src, srcw));
 	ADJUST_LOCAL_OFFSET(dst, dstw);
 	ADJUST_LOCAL_OFFSET(src, srcw);
-
-	if (dst == SLJIT_UNUSED && !HAS_FLAGS(op)) {
-#if (defined SLJIT_CONFIG_ARM_V7 && SLJIT_CONFIG_ARM_V7)
-		if (op <= SLJIT_MOV_P && (src & SLJIT_MEM))
-			return emit_op_mem(compiler, PRELOAD | LOAD_DATA, TMP_PC, src, srcw, TMP_REG1);
-#endif
-		return SLJIT_SUCCESS;
-	}
 
 	switch (GET_OPCODE(op)) {
 	case SLJIT_MOV:
@@ -1774,6 +1848,40 @@ SLJIT_API_FUNC_ATTRIBUTE sljit_s32 sljit_emit_op2(struct sljit_compiler *compile
 			compiler->shift_imm = 0x20;
 			return emit_op(compiler, op, 0, dst, dstw, src1, src1w, src2, src2w);
 		}
+	}
+
+	return SLJIT_SUCCESS;
+}
+
+SLJIT_API_FUNC_ATTRIBUTE sljit_s32 sljit_emit_op_src(struct sljit_compiler *compiler, sljit_s32 op,
+	sljit_s32 src, sljit_sw srcw)
+{
+	CHECK_ERROR();
+	CHECK(check_sljit_emit_op_src(compiler, op, src, srcw));
+	ADJUST_LOCAL_OFFSET(src, srcw);
+
+	switch (op) {
+	case SLJIT_FAST_RETURN:
+		SLJIT_ASSERT(reg_map[TMP_REG2] == 14);
+
+		if (FAST_IS_REG(src))
+			FAIL_IF(push_inst(compiler, MOV | RD(TMP_REG2) | RM(src)));
+		else
+			FAIL_IF(emit_op_mem(compiler, WORD_SIZE | LOAD_DATA, TMP_REG2, src, srcw, TMP_REG1));
+
+		return push_inst(compiler, BX | RM(TMP_REG2));
+	case SLJIT_SKIP_FRAMES_BEFORE_FAST_RETURN:
+		return SLJIT_SUCCESS;
+	case SLJIT_PREFETCH_L1:
+	case SLJIT_PREFETCH_L2:
+	case SLJIT_PREFETCH_L3:
+	case SLJIT_PREFETCH_ONCE:
+#if (defined SLJIT_CONFIG_ARM_V7 && SLJIT_CONFIG_ARM_V7)
+		SLJIT_ASSERT(src & SLJIT_MEM);
+		return emit_op_mem(compiler, PRELOAD | LOAD_DATA, TMP_PC, src, srcw, TMP_REG1);
+#else /* !SLJIT_CONFIG_ARM_V7 */
+		return SLJIT_SUCCESS;
+#endif /* SLJIT_CONFIG_ARM_V7 */
 	}
 
 	return SLJIT_SUCCESS;
@@ -2039,22 +2147,6 @@ SLJIT_API_FUNC_ATTRIBUTE sljit_s32 sljit_emit_fast_enter(struct sljit_compiler *
 
 	/* Memory. */
 	return emit_op_mem(compiler, WORD_SIZE, TMP_REG2, dst, dstw, TMP_REG1);
-}
-
-SLJIT_API_FUNC_ATTRIBUTE sljit_s32 sljit_emit_fast_return(struct sljit_compiler *compiler, sljit_s32 src, sljit_sw srcw)
-{
-	CHECK_ERROR();
-	CHECK(check_sljit_emit_fast_return(compiler, src, srcw));
-	ADJUST_LOCAL_OFFSET(src, srcw);
-
-	SLJIT_ASSERT(reg_map[TMP_REG2] == 14);
-
-	if (FAST_IS_REG(src))
-		FAIL_IF(push_inst(compiler, MOV | RD(TMP_REG2) | RM(src)));
-	else
-		FAIL_IF(emit_op_mem(compiler, WORD_SIZE | LOAD_DATA, TMP_REG2, src, srcw, TMP_REG1));
-
-	return push_inst(compiler, BX | RM(TMP_REG2));
 }
 
 /* --------------------------------------------------------------------- */
@@ -2615,11 +2707,11 @@ SLJIT_API_FUNC_ATTRIBUTE sljit_s32 sljit_emit_mem(struct sljit_compiler *compile
 	}
 	else {
 		if (is_type1_transfer) {
-			if (memw > 4095 && memw < -4095)
+			if (memw > 4095 || memw < -4095)
 				return SLJIT_ERR_UNSUPPORTED;
 		}
 		else {
-			if (memw > 255 && memw < -255)
+			if (memw > 255 || memw < -255)
 				return SLJIT_ERR_UNSUPPORTED;
 		}
 	}

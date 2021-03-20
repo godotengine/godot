@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -64,25 +64,32 @@ static int get_log_level_id(const char *p_log_level) {
 	return -1;
 }
 
+static String make_text(const char *log_domain, const char *log_level, const char *message) {
+	String text(message);
+	text += " (in domain ";
+	text += log_domain;
+	if (log_level) {
+		text += ", ";
+		text += log_level;
+	}
+	text += ")";
+	return text;
+}
+
 void GDMonoLog::mono_log_callback(const char *log_domain, const char *log_level, const char *message, mono_bool fatal, void *) {
 	FileAccess *f = GDMonoLog::get_singleton()->log_file;
 
 	if (GDMonoLog::get_singleton()->log_level_id >= get_log_level_id(log_level)) {
-		String text(message);
-		text += " (in domain ";
-		text += log_domain;
-		if (log_level) {
-			text += ", ";
-			text += log_level;
-		}
-		text += ")\n";
+		String text = make_text(log_domain, log_level, message);
+		text += "\n";
 
 		f->seek_end();
 		f->store_string(text);
 	}
 
 	if (fatal) {
-		ERR_PRINT("Mono: FATAL ERROR, ABORTING! Logfile: '" + GDMonoLog::get_singleton()->log_file_path + "'.");
+		String text = make_text(log_domain, log_level, message);
+		ERR_PRINT("Mono: FATAL ERROR '" + text + "', ABORTING! Logfile: '" + GDMonoLog::get_singleton()->log_file_path + "'.");
 		// Make sure to flush before aborting
 		f->flush();
 		f->close();
@@ -153,13 +160,13 @@ void GDMonoLog::initialize() {
 		OS::Date date_now = OS::get_singleton()->get_date();
 		OS::Time time_now = OS::get_singleton()->get_time();
 
-		String log_file_name = str_format("%d_%02d_%02d %02d.%02d.%02d",
+		String log_file_name = str_format("%04d-%02d-%02d_%02d.%02d.%02d",
 				date_now.year, date_now.month, date_now.day,
 				time_now.hour, time_now.min, time_now.sec);
 
-		log_file_name += str_format(" (%d)", OS::get_singleton()->get_process_id());
+		log_file_name += str_format("_%d", OS::get_singleton()->get_process_id());
 
-		log_file_name += ".txt";
+		log_file_name += ".log";
 
 		log_file_path = logs_dir.plus_file(log_file_name);
 
@@ -182,8 +189,6 @@ void GDMonoLog::initialize() {
 
 GDMonoLog::GDMonoLog() {
 	singleton = this;
-
-	log_level_id = -1;
 }
 
 GDMonoLog::~GDMonoLog() {

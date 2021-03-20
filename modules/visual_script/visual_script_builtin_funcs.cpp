@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -30,13 +30,12 @@
 
 #include "visual_script_builtin_funcs.h"
 
-#include "core/class_db.h"
-#include "core/func_ref.h"
 #include "core/io/marshalls.h"
 #include "core/math/math_funcs.h"
+#include "core/object/class_db.h"
+#include "core/object/reference.h"
 #include "core/os/os.h"
-#include "core/reference.h"
-#include "core/variant_parser.h"
+#include "core/variant/variant_parser.h"
 
 const char *VisualScriptBuiltinFunc::func_name[VisualScriptBuiltinFunc::FUNC_MAX] = {
 	"sin",
@@ -64,7 +63,7 @@ const char *VisualScriptBuiltinFunc::func_name[VisualScriptBuiltinFunc::FUNC_MAX
 	"is_inf",
 	"ease",
 	"step_decimals",
-	"stepify",
+	"snapped",
 	"lerp",
 	"inverse_lerp",
 	"range_lerp",
@@ -73,7 +72,8 @@ const char *VisualScriptBuiltinFunc::func_name[VisualScriptBuiltinFunc::FUNC_MAX
 	"randomize",
 	"randi",
 	"randf",
-	"rand_range",
+	"randf_range",
+	"randi_range",
 	"seed",
 	"rand_seed",
 	"deg2rad",
@@ -89,7 +89,6 @@ const char *VisualScriptBuiltinFunc::func_name[VisualScriptBuiltinFunc::FUNC_MAX
 	"clamp",
 	"nearest_po2",
 	"weakref",
-	"funcref",
 	"convert",
 	"typeof",
 	"type_exists",
@@ -102,7 +101,6 @@ const char *VisualScriptBuiltinFunc::func_name[VisualScriptBuiltinFunc::FUNC_MAX
 	"str2var",
 	"var2bytes",
 	"bytes2var",
-	"color_named",
 	"smoothstep",
 	"posmod",
 	"lerp_angle",
@@ -143,7 +141,7 @@ bool VisualScriptBuiltinFunc::has_input_sequence_port() const {
 int VisualScriptBuiltinFunc::get_func_argument_count(BuiltinFunc p_func) {
 	switch (p_func) {
 		case MATH_RANDOMIZE:
-		case MATH_RAND:
+		case MATH_RANDI:
 		case MATH_RANDF:
 			return 0;
 		case MATH_SIN:
@@ -193,15 +191,14 @@ int VisualScriptBuiltinFunc::get_func_argument_count(BuiltinFunc p_func) {
 		case MATH_POSMOD:
 		case MATH_POW:
 		case MATH_EASE:
-		case MATH_STEPIFY:
-		case MATH_RANDOM:
+		case MATH_SNAPPED:
+		case MATH_RANDF_RANGE:
+		case MATH_RANDI_RANGE:
 		case MATH_POLAR2CARTESIAN:
 		case MATH_CARTESIAN2POLAR:
 		case LOGIC_MAX:
 		case LOGIC_MIN:
-		case FUNC_FUNCREF:
 		case TYPE_CONVERT:
-		case COLORN:
 			return 2;
 		case MATH_LERP:
 		case MATH_LERP_ANGLE:
@@ -310,7 +307,7 @@ PropertyInfo VisualScriptBuiltinFunc::get_input_value_port_info(int p_idx) const
 		case MATH_STEP_DECIMALS: {
 			return PropertyInfo(Variant::FLOAT, "step");
 		} break;
-		case MATH_STEPIFY: {
+		case MATH_SNAPPED: {
 			if (p_idx == 0) {
 				return PropertyInfo(Variant::FLOAT, "s");
 			} else {
@@ -361,14 +358,21 @@ PropertyInfo VisualScriptBuiltinFunc::get_input_value_port_info(int p_idx) const
 			}
 		} break;
 		case MATH_RANDOMIZE:
-		case MATH_RAND:
+		case MATH_RANDI:
 		case MATH_RANDF: {
 		} break;
-		case MATH_RANDOM: {
+		case MATH_RANDF_RANGE: {
 			if (p_idx == 0) {
 				return PropertyInfo(Variant::FLOAT, "from");
 			} else {
 				return PropertyInfo(Variant::FLOAT, "to");
+			}
+		} break;
+		case MATH_RANDI_RANGE: {
+			if (p_idx == 0) {
+				return PropertyInfo(Variant::INT, "from");
+			} else {
+				return PropertyInfo(Variant::INT, "to");
 			}
 		} break;
 		case MATH_SEED:
@@ -426,13 +430,6 @@ PropertyInfo VisualScriptBuiltinFunc::get_input_value_port_info(int p_idx) const
 		case OBJ_WEAKREF: {
 			return PropertyInfo(Variant::OBJECT, "source");
 		} break;
-		case FUNC_FUNCREF: {
-			if (p_idx == 0) {
-				return PropertyInfo(Variant::OBJECT, "instance");
-			} else {
-				return PropertyInfo(Variant::STRING, "funcname");
-			}
-		} break;
 		case TYPE_CONVERT: {
 			if (p_idx == 0) {
 				return PropertyInfo(Variant::NIL, "what");
@@ -475,13 +472,6 @@ PropertyInfo VisualScriptBuiltinFunc::get_input_value_port_info(int p_idx) const
 				return PropertyInfo(Variant::PACKED_BYTE_ARRAY, "bytes");
 			} else {
 				return PropertyInfo(Variant::BOOL, "allow_objects");
-			}
-		} break;
-		case COLORN: {
-			if (p_idx == 0) {
-				return PropertyInfo(Variant::STRING, "name");
-			} else {
-				return PropertyInfo(Variant::FLOAT, "alpha");
 			}
 		} break;
 		case FUNC_MAX: {
@@ -538,7 +528,7 @@ PropertyInfo VisualScriptBuiltinFunc::get_output_value_port_info(int p_idx) cons
 		case MATH_STEP_DECIMALS: {
 			t = Variant::INT;
 		} break;
-		case MATH_STEPIFY:
+		case MATH_SNAPPED:
 		case MATH_LERP:
 		case MATH_LERP_ANGLE:
 		case MATH_INVERSE_LERP:
@@ -551,12 +541,15 @@ PropertyInfo VisualScriptBuiltinFunc::get_output_value_port_info(int p_idx) cons
 		} break;
 		case MATH_RANDOMIZE: {
 		} break;
-		case MATH_RAND: {
+		case MATH_RANDI: {
 			t = Variant::INT;
 		} break;
 		case MATH_RANDF:
-		case MATH_RANDOM: {
+		case MATH_RANDF_RANGE: {
 			t = Variant::FLOAT;
+		} break;
+		case MATH_RANDI_RANGE: {
+			t = Variant::INT;
 		} break;
 		case MATH_SEED: {
 		} break;
@@ -590,10 +583,6 @@ PropertyInfo VisualScriptBuiltinFunc::get_output_value_port_info(int p_idx) cons
 			t = Variant::NIL;
 		} break;
 		case OBJ_WEAKREF: {
-			t = Variant::OBJECT;
-
-		} break;
-		case FUNC_FUNCREF: {
 			t = Variant::OBJECT;
 
 		} break;
@@ -637,9 +626,6 @@ PropertyInfo VisualScriptBuiltinFunc::get_output_value_port_info(int p_idx) cons
 				t = Variant::BOOL;
 			}
 		} break;
-		case COLORN: {
-			t = Variant::COLOR;
-		} break;
 		case FUNC_MAX: {
 		}
 	}
@@ -649,7 +635,6 @@ PropertyInfo VisualScriptBuiltinFunc::get_output_value_port_info(int p_idx) cons
 
 /*
 String VisualScriptBuiltinFunc::get_caption() const {
-
 	return "BuiltinFunc";
 }
 
@@ -662,7 +647,7 @@ String VisualScriptBuiltinFunc::get_caption() const {
 void VisualScriptBuiltinFunc::set_func(BuiltinFunc p_which) {
 	ERR_FAIL_INDEX(p_which, FUNC_MAX);
 	func = p_which;
-	_change_notify();
+	notify_property_list_changed();
 	ports_changed_notify();
 }
 
@@ -808,10 +793,10 @@ void VisualScriptBuiltinFunc::exec_func(BuiltinFunc p_func, const Variant **p_in
 			VALIDATE_ARG_NUM(0);
 			*r_return = Math::step_decimals((double)*p_inputs[0]);
 		} break;
-		case VisualScriptBuiltinFunc::MATH_STEPIFY: {
+		case VisualScriptBuiltinFunc::MATH_SNAPPED: {
 			VALIDATE_ARG_NUM(0);
 			VALIDATE_ARG_NUM(1);
-			*r_return = Math::stepify((double)*p_inputs[0], (double)*p_inputs[1]);
+			*r_return = Math::snapped((double)*p_inputs[0], (double)*p_inputs[1]);
 		} break;
 		case VisualScriptBuiltinFunc::MATH_LERP: {
 			VALIDATE_ARG_NUM(0);
@@ -861,16 +846,21 @@ void VisualScriptBuiltinFunc::exec_func(BuiltinFunc p_func, const Variant **p_in
 			Math::randomize();
 
 		} break;
-		case VisualScriptBuiltinFunc::MATH_RAND: {
+		case VisualScriptBuiltinFunc::MATH_RANDI: {
 			*r_return = Math::rand();
 		} break;
 		case VisualScriptBuiltinFunc::MATH_RANDF: {
 			*r_return = Math::randf();
 		} break;
-		case VisualScriptBuiltinFunc::MATH_RANDOM: {
+		case VisualScriptBuiltinFunc::MATH_RANDF_RANGE: {
 			VALIDATE_ARG_NUM(0);
 			VALIDATE_ARG_NUM(1);
 			*r_return = Math::random((double)*p_inputs[0], (double)*p_inputs[1]);
+		} break;
+		case VisualScriptBuiltinFunc::MATH_RANDI_RANGE: {
+			VALIDATE_ARG_NUM(0);
+			VALIDATE_ARG_NUM(1);
+			*r_return = Math::random((int)*p_inputs[0], (int)*p_inputs[1]);
 		} break;
 		case VisualScriptBuiltinFunc::MATH_SEED: {
 			VALIDATE_ARG_NUM(0);
@@ -1013,30 +1003,6 @@ void VisualScriptBuiltinFunc::exec_func(BuiltinFunc p_func, const Variant **p_in
 			}
 
 		} break;
-		case VisualScriptBuiltinFunc::FUNC_FUNCREF: {
-			if (p_inputs[0]->get_type() != Variant::OBJECT) {
-				r_error.error = Callable::CallError::CALL_ERROR_INVALID_ARGUMENT;
-				r_error.argument = 0;
-				r_error.expected = Variant::OBJECT;
-
-				return;
-			}
-			if (p_inputs[1]->get_type() != Variant::STRING && p_inputs[1]->get_type() != Variant::NODE_PATH) {
-				r_error.error = Callable::CallError::CALL_ERROR_INVALID_ARGUMENT;
-				r_error.argument = 1;
-				r_error.expected = Variant::STRING;
-
-				return;
-			}
-
-			Ref<FuncRef> fr = memnew(FuncRef);
-
-			fr->set_instance(*p_inputs[0]);
-			fr->set_function(*p_inputs[1]);
-
-			*r_return = fr;
-
-		} break;
 		case VisualScriptBuiltinFunc::TYPE_CONVERT: {
 			VALIDATE_ARG_NUM(1);
 			int type = *p_inputs[1];
@@ -1048,7 +1014,7 @@ void VisualScriptBuiltinFunc::exec_func(BuiltinFunc p_func, const Variant **p_in
 				return;
 
 			} else {
-				*r_return = Variant::construct(Variant::Type(type), p_inputs, 1, r_error);
+				Variant::construct(Variant::Type(type), *r_return, p_inputs, 1, r_error);
 			}
 		} break;
 		case VisualScriptBuiltinFunc::TYPE_OF: {
@@ -1060,7 +1026,7 @@ void VisualScriptBuiltinFunc::exec_func(BuiltinFunc p_func, const Variant **p_in
 
 		} break;
 		case VisualScriptBuiltinFunc::TEXT_CHAR: {
-			CharType result[2] = { *p_inputs[0], 0 };
+			char32_t result[2] = { *p_inputs[0], 0 };
 
 			*r_return = String(result);
 
@@ -1198,15 +1164,6 @@ void VisualScriptBuiltinFunc::exec_func(BuiltinFunc p_func, const Variant **p_in
 			*r_return = ret;
 
 		} break;
-		case VisualScriptBuiltinFunc::COLORN: {
-			VALIDATE_ARG_NUM(1);
-
-			Color color = Color::named(*p_inputs[0]);
-			color.a = *p_inputs[1];
-
-			*r_return = String(color);
-
-		} break;
 		default: {
 		}
 	}
@@ -1276,16 +1233,17 @@ void VisualScriptBuiltinFunc::_bind_methods() {
 	BIND_ENUM_CONSTANT(MATH_ISINF);
 	BIND_ENUM_CONSTANT(MATH_EASE);
 	BIND_ENUM_CONSTANT(MATH_STEP_DECIMALS);
-	BIND_ENUM_CONSTANT(MATH_STEPIFY);
+	BIND_ENUM_CONSTANT(MATH_SNAPPED);
 	BIND_ENUM_CONSTANT(MATH_LERP);
 	BIND_ENUM_CONSTANT(MATH_INVERSE_LERP);
 	BIND_ENUM_CONSTANT(MATH_RANGE_LERP);
 	BIND_ENUM_CONSTANT(MATH_MOVE_TOWARD);
 	BIND_ENUM_CONSTANT(MATH_DECTIME);
 	BIND_ENUM_CONSTANT(MATH_RANDOMIZE);
-	BIND_ENUM_CONSTANT(MATH_RAND);
+	BIND_ENUM_CONSTANT(MATH_RANDI);
 	BIND_ENUM_CONSTANT(MATH_RANDF);
-	BIND_ENUM_CONSTANT(MATH_RANDOM);
+	BIND_ENUM_CONSTANT(MATH_RANDF_RANGE);
+	BIND_ENUM_CONSTANT(MATH_RANDI_RANGE);
 	BIND_ENUM_CONSTANT(MATH_SEED);
 	BIND_ENUM_CONSTANT(MATH_RANDSEED);
 	BIND_ENUM_CONSTANT(MATH_DEG2RAD);
@@ -1301,7 +1259,6 @@ void VisualScriptBuiltinFunc::_bind_methods() {
 	BIND_ENUM_CONSTANT(LOGIC_CLAMP);
 	BIND_ENUM_CONSTANT(LOGIC_NEAREST_PO2);
 	BIND_ENUM_CONSTANT(OBJ_WEAKREF);
-	BIND_ENUM_CONSTANT(FUNC_FUNCREF);
 	BIND_ENUM_CONSTANT(TYPE_CONVERT);
 	BIND_ENUM_CONSTANT(TYPE_OF);
 	BIND_ENUM_CONSTANT(TYPE_EXISTS);
@@ -1314,7 +1271,6 @@ void VisualScriptBuiltinFunc::_bind_methods() {
 	BIND_ENUM_CONSTANT(STR_TO_VAR);
 	BIND_ENUM_CONSTANT(VAR_TO_BYTES);
 	BIND_ENUM_CONSTANT(BYTES_TO_VAR);
-	BIND_ENUM_CONSTANT(COLORN);
 	BIND_ENUM_CONSTANT(MATH_SMOOTHSTEP);
 	BIND_ENUM_CONSTANT(MATH_POSMOD);
 	BIND_ENUM_CONSTANT(MATH_LERP_ANGLE);
@@ -1366,7 +1322,7 @@ void register_visual_script_builtin_func_node() {
 
 	VisualScriptLanguage::singleton->add_register_func("functions/built_in/ease", create_builtin_func_node<VisualScriptBuiltinFunc::MATH_EASE>);
 	VisualScriptLanguage::singleton->add_register_func("functions/built_in/step_decimals", create_builtin_func_node<VisualScriptBuiltinFunc::MATH_STEP_DECIMALS>);
-	VisualScriptLanguage::singleton->add_register_func("functions/built_in/stepify", create_builtin_func_node<VisualScriptBuiltinFunc::MATH_STEPIFY>);
+	VisualScriptLanguage::singleton->add_register_func("functions/built_in/snapped", create_builtin_func_node<VisualScriptBuiltinFunc::MATH_SNAPPED>);
 	VisualScriptLanguage::singleton->add_register_func("functions/built_in/lerp", create_builtin_func_node<VisualScriptBuiltinFunc::MATH_LERP>);
 	VisualScriptLanguage::singleton->add_register_func("functions/built_in/lerp_angle", create_builtin_func_node<VisualScriptBuiltinFunc::MATH_LERP_ANGLE>);
 	VisualScriptLanguage::singleton->add_register_func("functions/built_in/inverse_lerp", create_builtin_func_node<VisualScriptBuiltinFunc::MATH_INVERSE_LERP>);
@@ -1375,9 +1331,10 @@ void register_visual_script_builtin_func_node() {
 	VisualScriptLanguage::singleton->add_register_func("functions/built_in/move_toward", create_builtin_func_node<VisualScriptBuiltinFunc::MATH_MOVE_TOWARD>);
 	VisualScriptLanguage::singleton->add_register_func("functions/built_in/dectime", create_builtin_func_node<VisualScriptBuiltinFunc::MATH_DECTIME>);
 	VisualScriptLanguage::singleton->add_register_func("functions/built_in/randomize", create_builtin_func_node<VisualScriptBuiltinFunc::MATH_RANDOMIZE>);
-	VisualScriptLanguage::singleton->add_register_func("functions/built_in/rand", create_builtin_func_node<VisualScriptBuiltinFunc::MATH_RAND>);
+	VisualScriptLanguage::singleton->add_register_func("functions/built_in/randi", create_builtin_func_node<VisualScriptBuiltinFunc::MATH_RANDI>);
 	VisualScriptLanguage::singleton->add_register_func("functions/built_in/randf", create_builtin_func_node<VisualScriptBuiltinFunc::MATH_RANDF>);
-	VisualScriptLanguage::singleton->add_register_func("functions/built_in/random", create_builtin_func_node<VisualScriptBuiltinFunc::MATH_RANDOM>);
+	VisualScriptLanguage::singleton->add_register_func("functions/built_in/randf_range", create_builtin_func_node<VisualScriptBuiltinFunc::MATH_RANDF_RANGE>);
+	VisualScriptLanguage::singleton->add_register_func("functions/built_in/randi_range", create_builtin_func_node<VisualScriptBuiltinFunc::MATH_RANDI_RANGE>);
 
 	VisualScriptLanguage::singleton->add_register_func("functions/built_in/seed", create_builtin_func_node<VisualScriptBuiltinFunc::MATH_SEED>);
 	VisualScriptLanguage::singleton->add_register_func("functions/built_in/randseed", create_builtin_func_node<VisualScriptBuiltinFunc::MATH_RANDSEED>);
@@ -1396,7 +1353,6 @@ void register_visual_script_builtin_func_node() {
 	VisualScriptLanguage::singleton->add_register_func("functions/built_in/nearest_po2", create_builtin_func_node<VisualScriptBuiltinFunc::LOGIC_NEAREST_PO2>);
 
 	VisualScriptLanguage::singleton->add_register_func("functions/built_in/weakref", create_builtin_func_node<VisualScriptBuiltinFunc::OBJ_WEAKREF>);
-	VisualScriptLanguage::singleton->add_register_func("functions/built_in/funcref", create_builtin_func_node<VisualScriptBuiltinFunc::FUNC_FUNCREF>);
 	VisualScriptLanguage::singleton->add_register_func("functions/built_in/convert", create_builtin_func_node<VisualScriptBuiltinFunc::TYPE_CONVERT>);
 	VisualScriptLanguage::singleton->add_register_func("functions/built_in/typeof", create_builtin_func_node<VisualScriptBuiltinFunc::TYPE_OF>);
 	VisualScriptLanguage::singleton->add_register_func("functions/built_in/type_exists", create_builtin_func_node<VisualScriptBuiltinFunc::TYPE_EXISTS>);
@@ -1410,5 +1366,4 @@ void register_visual_script_builtin_func_node() {
 	VisualScriptLanguage::singleton->add_register_func("functions/built_in/str2var", create_builtin_func_node<VisualScriptBuiltinFunc::STR_TO_VAR>);
 	VisualScriptLanguage::singleton->add_register_func("functions/built_in/var2bytes", create_builtin_func_node<VisualScriptBuiltinFunc::VAR_TO_BYTES>);
 	VisualScriptLanguage::singleton->add_register_func("functions/built_in/bytes2var", create_builtin_func_node<VisualScriptBuiltinFunc::BYTES_TO_VAR>);
-	VisualScriptLanguage::singleton->add_register_func("functions/built_in/color_named", create_builtin_func_node<VisualScriptBuiltinFunc::COLORN>);
 }

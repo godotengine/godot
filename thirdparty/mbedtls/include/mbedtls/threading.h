@@ -4,7 +4,7 @@
  * \brief Threading abstraction layer
  */
 /*
- *  Copyright (C) 2006-2015, ARM Limited, All Rights Reserved
+ *  Copyright The Mbed TLS Contributors
  *  SPDX-License-Identifier: Apache-2.0 OR GPL-2.0-or-later
  *
  *  This file is provided under the Apache License 2.0, or the
@@ -45,8 +45,6 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
  *  **********
- *
- *  This file is part of mbed TLS (https://tls.mbed.org)
  */
 #ifndef MBEDTLS_THREADING_H
 #define MBEDTLS_THREADING_H
@@ -75,6 +73,9 @@ extern "C" {
 typedef struct mbedtls_threading_mutex_t
 {
     pthread_mutex_t mutex;
+    /* is_valid is 0 after a failed init or a free, and nonzero after a
+     * successful init. This field is not considered part of the public
+     * API of Mbed TLS and may change without notice. */
     char is_valid;
 } mbedtls_threading_mutex_t;
 #endif

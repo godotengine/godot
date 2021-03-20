@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -53,19 +53,20 @@ public:
 
 private:
 	RID probe;
-	float intensity;
-	float max_distance;
-	Vector3 extents;
-	Vector3 origin_offset;
-	bool box_projection;
-	bool enable_shadows;
-	bool interior;
-	AmbientMode ambient_mode;
-	Color ambient_color;
-	float ambient_color_energy;
+	float intensity = 1.0;
+	float max_distance = 0.0;
+	Vector3 extents = Vector3(1, 1, 1);
+	Vector3 origin_offset = Vector3(0, 0, 0);
+	bool box_projection = false;
+	bool enable_shadows = false;
+	bool interior = false;
+	AmbientMode ambient_mode = AMBIENT_ENVIRONMENT;
+	Color ambient_color = Color(0, 0, 0);
+	float ambient_color_energy = 1.0;
+	float lod_threshold = 1.0;
 
-	uint32_t cull_mask;
-	UpdateMode update_mode;
+	uint32_t cull_mask = (1 << 20) - 1;
+	UpdateMode update_mode = UPDATE_ONCE;
 
 protected:
 	static void _bind_methods();
@@ -89,6 +90,9 @@ public:
 
 	void set_max_distance(float p_distance);
 	float get_max_distance() const;
+
+	void set_lod_threshold(float p_pixels);
+	float get_lod_threshold() const;
 
 	void set_extents(const Vector3 &p_extents);
 	Vector3 get_extents() const;

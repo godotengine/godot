@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -53,7 +53,9 @@ extern "C" {
 #endif
 
 // This is for libraries *using* the header, NOT GODOT EXPOSING STUFF!!
-#ifdef _WIN32
+#ifdef __GNUC__
+#define GDN_EXPORT __attribute__((visibility("default")))
+#elif defined(_WIN32)
 #define GDN_EXPORT __declspec(dllexport)
 #else
 #define GDN_EXPORT
@@ -61,8 +63,6 @@ extern "C" {
 
 #include <stdbool.h>
 #include <stdint.h>
-
-#define GODOT_API_VERSION 1
 
 ////// Error
 
@@ -117,21 +117,6 @@ typedef enum {
 	GODOT_ERR_BUG, ///< a bug in the software certainly happened, due to a double check failing or unexpected behavior.
 	GODOT_ERR_PRINTER_ON_FIRE, /// the parallel port printer is engulfed in flames
 } godot_error;
-
-////// bool
-
-typedef bool godot_bool;
-
-#define GODOT_TRUE 1
-#define GODOT_FALSE 0
-
-/////// int
-
-typedef int64_t godot_int;
-
-/////// real
-
-typedef float godot_real;
 
 /////// Object (forward declared)
 typedef void godot_object;
@@ -215,7 +200,7 @@ void GDAPI godot_object_destroy(godot_object *p_o);
 
 ////// Singleton API
 
-godot_object GDAPI *godot_global_get_singleton(char *p_name); // result shouldn't be freed
+godot_object GDAPI *godot_global_get_singleton(char *p_name); // Result shouldn't be freed.
 
 ////// MethodBind API
 
@@ -281,12 +266,10 @@ void GDAPI *godot_alloc(int p_bytes);
 void GDAPI *godot_realloc(void *p_ptr, int p_bytes);
 void GDAPI godot_free(void *p_ptr);
 
-//print using Godot's error handler list
+// Helper print functions.
 void GDAPI godot_print_error(const char *p_description, const char *p_function, const char *p_file, int p_line);
 void GDAPI godot_print_warning(const char *p_description, const char *p_function, const char *p_file, int p_line);
-void GDAPI godot_print(const godot_string *p_message);
-
-// GDNATIVE CORE 1.0.2?
+void GDAPI godot_print_script_error(const char *p_description, const char *p_function, const char *p_file, int p_line);
 
 //tags used for safe dynamic casting
 void GDAPI *godot_get_class_tag(const godot_string_name *p_class);
@@ -301,4 +284,4 @@ uint64_t GDAPI godot_object_get_instance_id(const godot_object *p_object);
 }
 #endif
 
-#endif // GODOT_C_H
+#endif // GODOT_GDNATIVE_H

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -99,7 +99,7 @@ public:
 String OS_OSX::get_unique_id() const {
 	static String serial_number;
 
-	if (serial_number.empty()) {
+	if (serial_number.is_empty()) {
 		io_service_t platformExpert = IOServiceGetMatchingService(kIOMasterPortDefault, IOServiceMatching("IOPlatformExpertDevice"));
 		CFStringRef serialNumberAsCFString = NULL;
 		if (platformExpert) {
@@ -145,7 +145,9 @@ void OS_OSX::finalize() {
 
 	delete_main_loop();
 
-	memdelete(joypad_osx);
+	if (joypad_osx) {
+		memdelete(joypad_osx);
+	}
 }
 
 void OS_OSX::set_main_loop(MainLoop *p_main_loop) {
@@ -284,7 +286,7 @@ Error OS_OSX::shell_open(String p_uri) {
 
 String OS_OSX::get_locale() const {
 	NSString *locale_code = [[NSLocale preferredLanguages] objectAtIndex:0];
-	return [locale_code UTF8String];
+	return String([locale_code UTF8String]).replace("-", "_");
 }
 
 String OS_OSX::get_executable_path() const {
@@ -310,7 +312,7 @@ void OS_OSX::run() {
 	if (!main_loop)
 		return;
 
-	main_loop->init();
+	main_loop->initialize();
 
 	bool quit = false;
 	while (!force_quit && !quit) {
@@ -327,7 +329,7 @@ void OS_OSX::run() {
 			ERR_PRINT("NSException: " + String([exception reason].UTF8String));
 		}
 	};
-	main_loop->finish();
+	main_loop->finalize();
 }
 
 Error OS_OSX::move_to_trash(const String &p_path) {

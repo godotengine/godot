@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -36,17 +36,15 @@
 class ColorRect : public Control {
 	GDCLASS(ColorRect, Control);
 
-	Color color;
+	Color color = Color(1, 1, 1);
 
 protected:
 	void _notification(int p_what);
 	static void _bind_methods();
 
 public:
-	void set_frame_color(const Color &p_color);
-	Color get_frame_color() const;
-
-	ColorRect();
+	void set_color(const Color &p_color);
+	Color get_color() const;
 };
 
 #endif // COLOR_RECT_H

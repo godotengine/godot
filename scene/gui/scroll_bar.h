@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -47,21 +47,20 @@ class ScrollBar : public Range {
 
 	Orientation orientation;
 	Size2 size;
-	float custom_step = -1;
+	float custom_step = -1.0;
 
 	HighlightStatus highlight = HIGHLIGHT_NONE;
 
 	struct Drag {
 		bool active = false;
-		float pos_at_click;
-		float value_at_click;
+		float pos_at_click = 0.0;
+		float value_at_click = 0.0;
 	} drag;
 
 	double get_grabber_size() const;
 	double get_grabber_min_size() const;
 	double get_area_size() const;
 	double get_area_offset() const;
-	double get_click_pos(const Point2 &p_pos) const;
 	double get_grabber_offset() const;
 
 	static void set_can_focus_by_default(bool p_can_focus);
@@ -74,14 +73,14 @@ class ScrollBar : public Range {
 	Vector2 drag_node_accum;
 	Vector2 drag_node_from;
 	Vector2 last_drag_node_accum;
-	float last_drag_node_time;
-	float time_since_motion;
+	float last_drag_node_time = 0.0;
+	float time_since_motion = 0.0;
 	bool drag_node_touching = false;
 	bool drag_node_touching_deaccel = false;
-	bool click_handled;
+	bool click_handled = false;
 
 	bool scrolling = false;
-	double target_scroll = 0;
+	double target_scroll = 0.0;
 	bool smooth_scroll_enabled = false;
 
 	void _drag_node_exit();

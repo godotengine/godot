@@ -12,7 +12,7 @@
  *
  */
 /*
- *  Copyright (C) 2006-2018, Arm Limited (or its affiliates), All Rights Reserved
+ *  Copyright The Mbed TLS Contributors
  *  SPDX-License-Identifier: Apache-2.0 OR GPL-2.0-or-later
  *
  *  This file is provided under the Apache License 2.0, or the
@@ -53,8 +53,6 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
  *  **********
- *
- *  This file is part of Mbed TLS (https://tls.mbed.org)
  */
 
 #ifndef MBEDTLS_GCM_H
@@ -184,7 +182,7 @@ int mbedtls_gcm_setkey( mbedtls_gcm_context *ctx,
  *                  than zero, this must be a writable buffer of at least that
  *                  size in Bytes.
  * \param tag_len   The length of the tag to generate.
- * \param tag       The buffer for holding the tag. This must be a readable
+ * \param tag       The buffer for holding the tag. This must be a writable
  *                  buffer of at least \p tag_len Bytes.
  *
  * \return          \c 0 if the encryption or decryption was performed
@@ -312,7 +310,7 @@ int mbedtls_gcm_update( mbedtls_gcm_context *ctx,
  *                  tag. The tag can have a maximum length of 16 Bytes.
  *
  * \param ctx       The GCM context. This must be initialized.
- * \param tag       The buffer for holding the tag. This must be a readable
+ * \param tag       The buffer for holding the tag. This must be a writable
  *                  buffer of at least \p tag_len Bytes.
  * \param tag_len   The length of the tag to generate. This must be at least
  *                  four.

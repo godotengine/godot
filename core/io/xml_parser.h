@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -31,10 +31,10 @@
 #ifndef XML_PARSER_H
 #define XML_PARSER_H
 
+#include "core/object/reference.h"
 #include "core/os/file_access.h"
-#include "core/reference.h"
-#include "core/ustring.h"
-#include "core/vector.h"
+#include "core/string/ustring.h"
+#include "core/templates/vector.h"
 
 /*
   Based on irrXML (see their zlib license). Added mainly for compatibility with their Collada loader.
@@ -68,8 +68,6 @@ private:
 	char *data = nullptr;
 	char *P = nullptr;
 	uint64_t length = 0;
-	void unescape(String &p_str);
-	Vector<String> special_characters;
 	String node_name;
 	bool node_empty = false;
 	NodeType node_type = NODE_NONE;

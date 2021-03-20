@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -164,7 +164,7 @@ void InspectorDock::_resource_file_selected(String p_file) {
 	editor->push_item(res.operator->());
 }
 
-void InspectorDock::_save_resource(bool save_as) const {
+void InspectorDock::_save_resource(bool save_as) {
 	ObjectID current = EditorNode::get_singleton()->get_editor_history()->get_current();
 	Object *current_obj = current.is_valid() ? ObjectDB::get_instance(current) : nullptr;
 
@@ -179,7 +179,7 @@ void InspectorDock::_save_resource(bool save_as) const {
 	}
 }
 
-void InspectorDock::_unref_resource() const {
+void InspectorDock::_unref_resource() {
 	ObjectID current = EditorNode::get_singleton()->get_editor_history()->get_current();
 	Object *current_obj = current.is_valid() ? ObjectDB::get_instance(current) : nullptr;
 
@@ -190,7 +190,7 @@ void InspectorDock::_unref_resource() const {
 	editor->edit_current();
 }
 
-void InspectorDock::_copy_resource() const {
+void InspectorDock::_copy_resource() {
 	ObjectID current = EditorNode::get_singleton()->get_editor_history()->get_current();
 	Object *current_obj = current.is_valid() ? ObjectDB::get_instance(current) : nullptr;
 
@@ -201,7 +201,7 @@ void InspectorDock::_copy_resource() const {
 	EditorSettings::get_singleton()->set_resource_clipboard(current_res);
 }
 
-void InspectorDock::_paste_resource() const {
+void InspectorDock::_paste_resource() {
 	RES r = EditorSettings::get_singleton()->get_resource_clipboard();
 	if (r.is_valid()) {
 		editor->push_item(EditorSettings::get_singleton()->get_resource_clipboard().ptr(), String());
@@ -270,14 +270,13 @@ void InspectorDock::_select_history(int p_idx) {
 }
 
 void InspectorDock::_resource_created() {
-	Object *c = new_resource_dialog->instance_selected();
+	Variant c = new_resource_dialog->instance_selected();
 
 	ERR_FAIL_COND(!c);
 	Resource *r = Object::cast_to<Resource>(c);
 	ERR_FAIL_COND(!r);
 
-	REF res(r);
-	editor->push_item(c);
+	editor->push_item(r);
 }
 
 void InspectorDock::_resource_selected(const RES &p_res, const String &p_property) {
@@ -332,13 +331,20 @@ Container *InspectorDock::get_addon_area() {
 
 void InspectorDock::_notification(int p_what) {
 	switch (p_what) {
+		case NOTIFICATION_TRANSLATION_CHANGED:
+		case NOTIFICATION_LAYOUT_DIRECTION_CHANGED:
 		case EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED: {
 			set_theme(editor->get_gui_base()->get_theme());
 			resource_new_button->set_icon(get_theme_icon("New", "EditorIcons"));
 			resource_load_button->set_icon(get_theme_icon("Load", "EditorIcons"));
 			resource_save_button->set_icon(get_theme_icon("Save", "EditorIcons"));
-			backward_button->set_icon(get_theme_icon("Back", "EditorIcons"));
-			forward_button->set_icon(get_theme_icon("Forward", "EditorIcons"));
+			if (is_layout_rtl()) {
+				backward_button->set_icon(get_theme_icon("Forward", "EditorIcons"));
+				forward_button->set_icon(get_theme_icon("Back", "EditorIcons"));
+			} else {
+				backward_button->set_icon(get_theme_icon("Back", "EditorIcons"));
+				forward_button->set_icon(get_theme_icon("Forward", "EditorIcons"));
+			}
 			history_menu->set_icon(get_theme_icon("History", "EditorIcons"));
 			object_menu->set_icon(get_theme_icon("Tools", "EditorIcons"));
 			warning->set_icon(get_theme_icon("NodeWarning", "EditorIcons"));
@@ -445,7 +451,7 @@ void InspectorDock::update(Object *p_object) {
 	List<MethodInfo> methods;
 	p_object->get_method_list(&methods);
 
-	if (!methods.empty()) {
+	if (!methods.is_empty()) {
 		bool found = false;
 		List<MethodInfo>::Element *I = methods.front();
 		int i = 0;
@@ -524,7 +530,11 @@ InspectorDock::InspectorDock(EditorNode *p_editor, EditorData &p_editor_data) {
 	backward_button = memnew(Button);
 	backward_button->set_flat(true);
 	general_options_hb->add_child(backward_button);
-	backward_button->set_icon(get_theme_icon("Back", "EditorIcons"));
+	if (is_layout_rtl()) {
+		backward_button->set_icon(get_theme_icon("Forward", "EditorIcons"));
+	} else {
+		backward_button->set_icon(get_theme_icon("Back", "EditorIcons"));
+	}
 	backward_button->set_flat(true);
 	backward_button->set_tooltip(TTR("Go to the previous edited object in history."));
 	backward_button->set_disabled(true);
@@ -533,7 +543,11 @@ InspectorDock::InspectorDock(EditorNode *p_editor, EditorData &p_editor_data) {
 	forward_button = memnew(Button);
 	forward_button->set_flat(true);
 	general_options_hb->add_child(forward_button);
-	forward_button->set_icon(get_theme_icon("Forward", "EditorIcons"));
+	if (is_layout_rtl()) {
+		forward_button->set_icon(get_theme_icon("Back", "EditorIcons"));
+	} else {
+		forward_button->set_icon(get_theme_icon("Forward", "EditorIcons"));
+	}
 	forward_button->set_flat(true);
 	forward_button->set_tooltip(TTR("Go to the next edited object in history."));
 	forward_button->set_disabled(true);
@@ -554,6 +568,7 @@ InspectorDock::InspectorDock(EditorNode *p_editor, EditorData &p_editor_data) {
 	node_info_hb->add_child(editor_path);
 
 	object_menu = memnew(MenuButton);
+	object_menu->set_shortcut_context(this);
 	object_menu->set_icon(get_theme_icon("Tools", "EditorIcons"));
 	node_info_hb->add_child(object_menu);
 	object_menu->set_tooltip(TTR("Object properties."));

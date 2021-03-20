@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -33,13 +33,15 @@
 
 #include "scene/3d/node_3d.h"
 
+class World3D;
 class Camera3D;
 class VisibilityNotifier3D : public Node3D {
 	GDCLASS(VisibilityNotifier3D, Node3D);
 
+	Ref<World3D> world;
 	Set<Camera3D *> cameras;
 
-	AABB aabb;
+	AABB aabb = AABB(Vector3(-1, -1, -1), Vector3(2, 2, 2));
 
 protected:
 	virtual void _screen_enter() {}
@@ -74,7 +76,7 @@ protected:
 	virtual void _screen_enter() override;
 	virtual void _screen_exit() override;
 
-	bool visible;
+	bool visible = false;
 
 	void _find_nodes(Node *p_node);
 

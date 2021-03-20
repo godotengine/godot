@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -58,6 +58,7 @@ public:
 		PARAM_SHADOW_BIAS = RS::LIGHT_PARAM_SHADOW_BIAS,
 		PARAM_SHADOW_PANCAKE_SIZE = RS::LIGHT_PARAM_SHADOW_PANCAKE_SIZE,
 		PARAM_SHADOW_BLUR = RS::LIGHT_PARAM_SHADOW_BLUR,
+		PARAM_SHADOW_VOLUMETRIC_FOG_FADE = RS::LIGHT_PARAM_SHADOW_VOLUMETRIC_FOG_FADE,
 		PARAM_TRANSMITTANCE_BIAS = RS::LIGHT_PARAM_TRANSMITTANCE_BIAS,
 		PARAM_MAX = RS::LIGHT_PARAM_MAX
 	};
@@ -70,16 +71,16 @@ public:
 
 private:
 	Color color;
-	float param[PARAM_MAX];
+	float param[PARAM_MAX] = {};
 	Color shadow_color;
-	bool shadow;
-	bool negative;
-	bool reverse_cull;
-	uint32_t cull_mask;
-	RS::LightType type;
-	bool editor_only;
+	bool shadow = false;
+	bool negative = false;
+	bool reverse_cull = false;
+	uint32_t cull_mask = 0;
+	RS::LightType type = RenderingServer::LIGHT_DIRECTIONAL;
+	bool editor_only = false;
 	void _update_visibility();
-	BakeMode bake_mode;
+	BakeMode bake_mode = BAKE_DYNAMIC;
 	Ref<Texture2D> projector;
 
 	// bind helpers
@@ -157,6 +158,7 @@ private:
 	bool blend_splits;
 	ShadowMode shadow_mode;
 	ShadowDepthRange shadow_depth_range;
+	bool sky_only = false;
 
 protected:
 	static void _bind_methods();
@@ -170,6 +172,9 @@ public:
 
 	void set_blend_splits(bool p_enable);
 	bool is_blend_splits_enabled() const;
+
+	void set_sky_only(bool p_sky_only);
+	bool is_sky_only() const;
 
 	DirectionalLight3D();
 };

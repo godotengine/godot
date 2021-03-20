@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -30,11 +30,11 @@
 
 #include "os.h"
 
+#include "core/config/project_settings.h"
 #include "core/input/input.h"
 #include "core/os/dir_access.h"
 #include "core/os/file_access.h"
 #include "core/os/midi_driver.h"
-#include "core/project_settings.h"
 #include "core/version_generated.gen.h"
 #include "servers/audio_server.h"
 
@@ -78,10 +78,6 @@ String OS::get_iso_date_time(bool local) const {
 		   ":" +
 		   itos(time.sec).pad_zeros(2) +
 		   timezone;
-}
-
-uint64_t OS::get_splash_tick_msec() const {
-	return _msec_splash;
 }
 
 double OS::get_unix_time() const {
@@ -509,11 +505,7 @@ void OS::add_frame_delay(bool p_can_draw) {
 }
 
 OS::OS() {
-	void *volatile stack_bottom;
-
 	singleton = this;
-
-	_stack_bottom = (void *)(&stack_bottom);
 
 	Vector<Logger *> loggers;
 	loggers.push_back(memnew(StdLogger));

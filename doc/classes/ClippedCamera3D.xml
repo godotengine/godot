@@ -90,20 +90,20 @@
 			If [code]true[/code], the camera stops on contact with [PhysicsBody3D]s.
 		</member>
 		<member name="collision_mask" type="int" setter="set_collision_mask" getter="get_collision_mask" default="1">
-			The camera's collision mask. Only objects in at least one collision layer matching the mask will be detected.
+			The camera's collision mask. Only objects in at least one collision layer matching the mask will be detected. See [url=https://docs.godotengine.org/en/latest/tutorials/physics/physics_introduction.html#collision-layers-and-masks]Collision layers and masks[/url] in the documentation for more information.
 		</member>
 		<member name="margin" type="float" setter="set_margin" getter="get_margin" default="0.0">
 			The camera's collision margin. The camera can't get closer than this distance to a colliding object.
 		</member>
-		<member name="process_mode" type="int" setter="set_process_mode" getter="get_process_mode" enum="ClippedCamera3D.ProcessMode" default="0">
-			The camera's process callback. See [enum ProcessMode].
+		<member name="process_callback" type="int" setter="set_process_callback" getter="get_process_callback" enum="ClippedCamera3D.ClipProcessCallback" default="0">
+			The camera's process callback. See [enum ClipProcessCallback].
 		</member>
 	</members>
 	<constants>
-		<constant name="CLIP_PROCESS_PHYSICS" value="0" enum="ProcessMode">
+		<constant name="CLIP_PROCESS_PHYSICS" value="0" enum="ClipProcessCallback">
 			The camera updates with the [code]_physics_process[/code] callback.
 		</constant>
-		<constant name="CLIP_PROCESS_IDLE" value="1" enum="ProcessMode">
+		<constant name="CLIP_PROCESS_IDLE" value="1" enum="ClipProcessCallback">
 			The camera updates with the [code]_process[/code] callback.
 		</constant>
 	</constants>

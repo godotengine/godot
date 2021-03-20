@@ -1,7 +1,7 @@
 /*
  *  TCP/IP or UDP/IP networking functions
  *
- *  Copyright (C) 2006-2015, ARM Limited, All Rights Reserved
+ *  Copyright The Mbed TLS Contributors
  *  SPDX-License-Identifier: Apache-2.0 OR GPL-2.0-or-later
  *
  *  This file is provided under the Apache License 2.0, or the
@@ -42,14 +42,16 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
  *  **********
- *
- *  This file is part of mbed TLS (https://tls.mbed.org)
  */
 
 /* Enable definition of getaddrinfo() even when compiling with -std=c99. Must
  * be set before config.h, which pulls in glibc's features.h indirectly.
  * Harmless on other platforms. */
 #define _POSIX_C_SOURCE 200112L
+
+#if defined(__NetBSD__)
+#define _XOPEN_SOURCE 600 /* sockaddr_storage */
+#endif
 
 #if !defined(MBEDTLS_CONFIG_FILE)
 #include "mbedtls/config.h"
@@ -345,8 +347,9 @@ int mbedtls_net_accept( mbedtls_net_context *bind_ctx,
 
     struct sockaddr_storage client_addr;
 
-#if defined(__socklen_t_defined) || defined(_SOCKLEN_T) ||  \
-    defined(_SOCKLEN_T_DECLARED) || defined(__DEFINED_socklen_t)
+#if defined(__socklen_t_defined) || defined(_SOCKLEN_T) || \
+    defined(_SOCKLEN_T_DECLARED) || defined(__DEFINED_socklen_t) || \
+    ( defined(__NetBSD__) && defined(socklen_t) )
     socklen_t n = (socklen_t) sizeof( client_addr );
     socklen_t type_len = (socklen_t) sizeof( type );
 #else
@@ -493,6 +496,13 @@ int mbedtls_net_poll( mbedtls_net_context *ctx, uint32_t rw, uint32_t timeout )
     if( fd < 0 )
         return( MBEDTLS_ERR_NET_INVALID_CONTEXT );
 
+    /* A limitation of select() is that it only works with file descriptors
+     * that are strictly less than FD_SETSIZE. This is a limitation of the
+     * fd_set type. Error out early, because attempting to call FD_SET on a
+     * large file descriptor is a buffer overflow on typical platforms. */
+    if( fd >= FD_SETSIZE )
+        return( MBEDTLS_ERR_NET_POLL_FAILED );
+
 #if defined(__has_feature)
 #if __has_feature(memory_sanitizer)
     /* Ensure that memory sanitizers consider read_fds and write_fds as
@@ -611,6 +621,13 @@ int mbedtls_net_recv_timeout( void *ctx, unsigned char *buf,
 
     if( fd < 0 )
         return( MBEDTLS_ERR_NET_INVALID_CONTEXT );
+
+    /* A limitation of select() is that it only works with file descriptors
+     * that are strictly less than FD_SETSIZE. This is a limitation of the
+     * fd_set type. Error out early, because attempting to call FD_SET on a
+     * large file descriptor is a buffer overflow on typical platforms. */
+    if( fd >= FD_SETSIZE )
+        return( MBEDTLS_ERR_NET_POLL_FAILED );
 
     FD_ZERO( &read_fds );
     FD_SET( fd, &read_fds );

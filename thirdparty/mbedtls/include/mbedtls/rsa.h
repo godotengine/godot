@@ -10,7 +10,7 @@
  *
  */
 /*
- *  Copyright (C) 2006-2018, Arm Limited (or its affiliates), All Rights Reserved
+ *  Copyright The Mbed TLS Contributors
  *  SPDX-License-Identifier: Apache-2.0 OR GPL-2.0-or-later
  *
  *  This file is provided under the Apache License 2.0, or the
@@ -51,8 +51,6 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
  *  **********
- *
- *  This file is part of Mbed TLS (https://tls.mbed.org)
  */
 #ifndef MBEDTLS_RSA_H
 #define MBEDTLS_RSA_H
@@ -126,7 +124,10 @@ extern "C" {
  */
 typedef struct mbedtls_rsa_context
 {
-    int ver;                    /*!<  Always 0.*/
+    int ver;                    /*!<  Reserved for internal purposes.
+                                 *    Do not set this field in application
+                                 *    code. Its meaning might change without
+                                 *    notice. */
     size_t len;                 /*!<  The size of \p N in Bytes. */
 
     mbedtls_mpi N;              /*!<  The public modulus. */
@@ -156,6 +157,7 @@ typedef struct mbedtls_rsa_context
                                      mask generating function used in the
                                      EME-OAEP and EMSA-PSS encodings. */
 #if defined(MBEDTLS_THREADING_C)
+    /* Invariant: the mutex is initialized iff ver != 0. */
     mbedtls_threading_mutex_t mutex;    /*!<  Thread-safety mutex. */
 #endif
 }

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -31,7 +31,7 @@
 #ifndef LINE_BUILDER_H
 #define LINE_BUILDER_H
 
-#include "core/color.h"
+#include "core/math/color.h"
 #include "core/math/vector2.h"
 #include "line_2d.h"
 #include "scene/resources/gradient.h"
@@ -41,17 +41,17 @@ public:
 	// TODO Move in a struct and reference it
 	// Input
 	Vector<Vector2> points;
-	Line2D::LineJointMode joint_mode;
-	Line2D::LineCapMode begin_cap_mode;
-	Line2D::LineCapMode end_cap_mode;
-	float width;
-	Curve *curve;
-	Color default_color;
-	Gradient *gradient;
-	Line2D::LineTextureMode texture_mode;
-	float sharp_limit;
-	int round_precision;
-	float tile_aspect; // w/h
+	Line2D::LineJointMode joint_mode = Line2D::LINE_JOINT_SHARP;
+	Line2D::LineCapMode begin_cap_mode = Line2D::LINE_CAP_NONE;
+	Line2D::LineCapMode end_cap_mode = Line2D::LINE_CAP_NONE;
+	float width = 10.0;
+	Curve *curve = nullptr;
+	Color default_color = Color(0.4, 0.5, 1);
+	Gradient *gradient = nullptr;
+	Line2D::LineTextureMode texture_mode = Line2D::LineTextureMode::LINE_TEXTURE_NONE;
+	float sharp_limit = 2.f;
+	int round_precision = 8;
+	float tile_aspect = 1.f; // w/h
 	// TODO offset_joints option (offers alternative implementation of round joints)
 
 	// TODO Move in a struct and reference it
@@ -82,8 +82,8 @@ private:
 	void new_arc(Vector2 center, Vector2 vbegin, float angle_delta, Color color, Rect2 uv_rect);
 
 private:
-	bool _interpolate_color;
-	int _last_index[2]; // Index of last up and down vertices of the strip
+	bool _interpolate_color = false;
+	int _last_index[2] = {}; // Index of last up and down vertices of the strip
 };
 
 #endif // LINE_BUILDER_H

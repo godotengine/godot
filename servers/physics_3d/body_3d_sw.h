@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -33,7 +33,7 @@
 
 #include "area_3d_sw.h"
 #include "collision_object_3d_sw.h"
-#include "core/vset.h"
+#include "core/templates/vset.h"
 
 class Constraint3DSW;
 
@@ -178,7 +178,7 @@ public:
 	}
 	_FORCE_INLINE_ int get_max_contacts_reported() const { return contacts.size(); }
 
-	_FORCE_INLINE_ bool can_report_contacts() const { return !contacts.empty(); }
+	_FORCE_INLINE_ bool can_report_contacts() const { return !contacts.is_empty(); }
 	_FORCE_INLINE_ void add_contact(const Vector3 &p_local_pos, const Vector3 &p_local_normal, real_t p_depth, int p_local_shape, const Vector3 &p_collider_pos, int p_collider_shape, ObjectID p_collider_instance_id, const RID &p_collider, const Vector3 &p_collider_velocity_at_pos);
 
 	_FORCE_INLINE_ void add_exception(const RID &p_exception) { exceptions.insert(p_exception); }
@@ -290,10 +290,10 @@ public:
 	void update_inertias();
 
 	_FORCE_INLINE_ real_t get_inv_mass() const { return _inv_mass; }
-	_FORCE_INLINE_ Vector3 get_inv_inertia() const { return _inv_inertia; }
-	_FORCE_INLINE_ Basis get_inv_inertia_tensor() const { return _inv_inertia_tensor; }
+	_FORCE_INLINE_ const Vector3 &get_inv_inertia() const { return _inv_inertia; }
+	_FORCE_INLINE_ const Basis &get_inv_inertia_tensor() const { return _inv_inertia_tensor; }
 	_FORCE_INLINE_ real_t get_friction() const { return friction; }
-	_FORCE_INLINE_ Vector3 get_gravity() const { return gravity; }
+	_FORCE_INLINE_ const Vector3 &get_gravity() const { return gravity; }
 	_FORCE_INLINE_ real_t get_bounce() const { return bounce; }
 
 	void set_axis_lock(PhysicsServer3D::BodyAxis p_axis, bool lock);
@@ -426,7 +426,7 @@ public:
 		ERR_FAIL_INDEX_V(p_contact_idx, body->contact_count, Vector3());
 		return body->contacts[p_contact_idx].local_normal;
 	}
-	virtual float get_contact_impulse(int p_contact_idx) const override {
+	virtual real_t get_contact_impulse(int p_contact_idx) const override {
 		return 0.0f; // Only implemented for bullet
 	}
 	virtual int get_contact_local_shape(int p_contact_idx) const override {

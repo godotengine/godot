@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -35,7 +35,8 @@
 #include "core/os/file_access.h"
 #include "core/os/semaphore.h"
 #include "core/os/thread.h"
-#include "core/ring_buffer.h"
+#include "core/templates/ring_buffer.h"
+#include "core/templates/safe_refcount.h"
 #include "scene/resources/video_stream.h"
 #include "servers/audio_server.h"
 
@@ -52,12 +53,12 @@ class VideoStreamPlaybackTheora : public VideoStreamPlayback {
 	};
 
 	//Image frames[MAX_FRAMES];
-	Image::Format format;
+	Image::Format format = Image::Format::FORMAT_L8;
 	Vector<uint8_t> frame_data;
-	int frames_pending;
-	FileAccess *file;
+	int frames_pending = 0;
+	FileAccess *file = nullptr;
 	String file_name;
-	int audio_frames_wrote;
+	int audio_frames_wrote = 0;
 	Point2i size;
 
 	int buffer_data();
@@ -65,8 +66,8 @@ class VideoStreamPlaybackTheora : public VideoStreamPlayback {
 	void video_write();
 	float get_time() const;
 
-	bool theora_eos;
-	bool vorbis_eos;
+	bool theora_eos = false;
+	bool vorbis_eos = false;
 
 	ogg_sync_state oy;
 	ogg_page og;
@@ -74,33 +75,33 @@ class VideoStreamPlaybackTheora : public VideoStreamPlayback {
 	ogg_stream_state to;
 	th_info ti;
 	th_comment tc;
-	th_dec_ctx *td;
+	th_dec_ctx *td = nullptr;
 	vorbis_info vi;
 	vorbis_dsp_state vd;
 	vorbis_block vb;
 	vorbis_comment vc;
 	th_pixel_fmt px_fmt;
-	double videobuf_time;
-	int pp_inc;
+	double videobuf_time = 0;
+	int pp_inc = 0;
 
-	int theora_p;
-	int vorbis_p;
-	int pp_level_max;
-	int pp_level;
-	int videobuf_ready;
+	int theora_p = 0;
+	int vorbis_p = 0;
+	int pp_level_max = 0;
+	int pp_level = 0;
+	int videobuf_ready = 0;
 
-	bool playing;
-	bool buffering;
+	bool playing = false;
+	bool buffering = false;
 
-	double last_update_time;
-	double time;
-	double delay_compensation;
+	double last_update_time = 0;
+	double time = 0;
+	double delay_compensation = 0;
 
 	Ref<ImageTexture> texture;
 
 	AudioMixCallback mix_callback;
-	void *mix_udata;
-	bool paused;
+	void *mix_udata = nullptr;
+	bool paused = false;
 
 #ifdef THEORA_USE_THREAD_STREAMING
 
@@ -110,16 +111,16 @@ class VideoStreamPlaybackTheora : public VideoStreamPlayback {
 
 	RingBuffer<uint8_t> ring_buffer;
 	Vector<uint8_t> read_buffer;
-	bool thread_eof;
+	bool thread_eof = false;
 	Semaphore *thread_sem;
-	Thread *thread;
-	volatile bool thread_exit;
+	Thread thread;
+	SafeFlag thread_exit;
 
 	static void _streaming_thread(void *ud);
 
 #endif
 
-	int audio_track;
+	int audio_track = 0;
 
 protected:
 	void clear();
@@ -185,7 +186,7 @@ public:
 
 class ResourceFormatLoaderTheora : public ResourceFormatLoader {
 public:
-	virtual RES load(const String &p_path, const String &p_original_path = "", Error *r_error = nullptr, bool p_use_sub_threads = false, float *r_progress = nullptr, bool p_no_cache = false);
+	virtual RES load(const String &p_path, const String &p_original_path = "", Error *r_error = nullptr, bool p_use_sub_threads = false, float *r_progress = nullptr, CacheMode p_cache_mode = CACHE_MODE_REUSE);
 	virtual void get_recognized_extensions(List<String> *p_extensions) const;
 	virtual bool handles_type(const String &p_type) const;
 	virtual String get_resource_type(const String &p_path) const;

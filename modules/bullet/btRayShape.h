@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -42,10 +42,10 @@
 /// Ray shape around z axis
 ATTRIBUTE_ALIGNED16(class)
 btRayShape : public btConvexInternalShape {
-	btScalar m_length;
-	bool slipsOnSlope;
+	btScalar m_length = 0;
+	bool slipsOnSlope = false;
 	/// The default axis is the z
-	btVector3 m_shapeAxis;
+	btVector3 m_shapeAxis = btVector3(0, 0, 1);
 
 	btTransform m_cacheSupportPoint;
 	btScalar m_cacheScaledLength;

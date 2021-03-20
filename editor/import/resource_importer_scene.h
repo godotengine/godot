@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -32,9 +32,11 @@
 #define RESOURCEIMPORTERSCENE_H
 
 #include "core/io/resource_importer.h"
+#include "scene/3d/node_3d.h"
 #include "scene/resources/animation.h"
 #include "scene/resources/mesh.h"
 #include "scene/resources/shape_3d.h"
+#include "scene/resources/skin.h"
 
 class Material;
 
@@ -119,6 +121,7 @@ class ResourceImporterScene : public ResourceImporter {
 	};
 
 	void _replace_owner(Node *p_node, Node *p_scene, Node *p_new_owner);
+	void _generate_meshes(Node *p_node, bool p_generate_lods, bool p_create_shadow_meshes);
 
 public:
 	static ResourceImporterScene *get_singleton() { return singleton; }
@@ -133,6 +136,7 @@ public:
 	virtual void get_recognized_extensions(List<String> *p_extensions) const override;
 	virtual String get_save_extension() const override;
 	virtual String get_resource_type() const override;
+	virtual int get_format_version() const override;
 
 	virtual int get_preset_count() const override;
 	virtual String get_preset_name(int p_idx) const override;

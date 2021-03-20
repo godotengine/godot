@@ -105,13 +105,13 @@ public:
     }
 
     // Used for comparing macro definitions, so checks what is relevant for that.
-    bool operator==(const TPpToken& right)
+    bool operator==(const TPpToken& right) const
     {
         return space == right.space &&
                ival == right.ival && dval == right.dval && i64val == right.i64val &&
                strncmp(name, right.name, MaxTokenLength) == 0;
     }
-    bool operator!=(const TPpToken& right) { return ! operator==(right); }
+    bool operator!=(const TPpToken& right) const { return ! operator==(right); }
 
     TSourceLoc loc;
     // True if a space (for white space or a removed comment) should also be
@@ -695,6 +695,7 @@ protected:
     std::string currentSourceFile;
 
     std::istringstream strtodStream;
+    bool disableEscapeSequences;
 };
 
 } // end namespace glslang

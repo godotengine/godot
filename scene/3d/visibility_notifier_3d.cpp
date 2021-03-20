@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -30,7 +30,7 @@
 
 #include "visibility_notifier_3d.h"
 
-#include "core/engine.h"
+#include "core/config/engine.h"
 #include "scene/3d/camera_3d.h"
 #include "scene/3d/physics_body_3d.h"
 #include "scene/animation/animation_player.h"
@@ -69,7 +69,6 @@ void VisibilityNotifier3D::set_aabb(const AABB &p_aabb) {
 		get_world_3d()->_update_notifier(this, get_global_transform().xform(aabb));
 	}
 
-	_change_notify("aabb");
 	update_gizmo();
 }
 
@@ -80,13 +79,16 @@ AABB VisibilityNotifier3D::get_aabb() const {
 void VisibilityNotifier3D::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_ENTER_WORLD: {
-			get_world_3d()->_register_notifier(this, get_global_transform().xform(aabb));
+			world = get_world_3d();
+			ERR_FAIL_COND(!world.is_valid());
+			world->_register_notifier(this, get_global_transform().xform(aabb));
 		} break;
 		case NOTIFICATION_TRANSFORM_CHANGED: {
-			get_world_3d()->_update_notifier(this, get_global_transform().xform(aabb));
+			world->_update_notifier(this, get_global_transform().xform(aabb));
 		} break;
 		case NOTIFICATION_EXIT_WORLD: {
-			get_world_3d()->_remove_notifier(this);
+			ERR_FAIL_COND(!world.is_valid());
+			world->_remove_notifier(this);
 		} break;
 	}
 }
@@ -109,7 +111,6 @@ void VisibilityNotifier3D::_bind_methods() {
 }
 
 VisibilityNotifier3D::VisibilityNotifier3D() {
-	aabb = AABB(Vector3(-1, -1, -1), Vector3(2, 2, 2));
 	set_notify_transform(true);
 }
 
@@ -249,6 +250,4 @@ VisibilityEnabler3D::VisibilityEnabler3D() {
 	for (int i = 0; i < ENABLER_MAX; i++) {
 		enabler[i] = true;
 	}
-
-	visible = false;
 }

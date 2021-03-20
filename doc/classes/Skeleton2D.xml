@@ -7,7 +7,7 @@
 		Skeleton2D parents a hierarchy of [Bone2D] objects. It is a requirement of [Bone2D]. Skeleton2D holds a reference to the rest pose of its children and acts as a single point of access to its bones.
 	</description>
 	<tutorials>
-		<link>https://docs.godotengine.org/en/latest/tutorials/animation/2d_skeletons.html</link>
+		<link title="2D skeletons">https://docs.godotengine.org/en/latest/tutorials/animation/2d_skeletons.html</link>
 	</tutorials>
 	<methods>
 		<method name="get_bone">

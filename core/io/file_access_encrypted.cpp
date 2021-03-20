@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -32,57 +32,59 @@
 
 #include "core/crypto/crypto_core.h"
 #include "core/os/copymem.h"
-#include "core/print_string.h"
-#include "core/variant.h"
+#include "core/string/print_string.h"
+#include "core/variant/variant.h"
 
 #include <stdio.h>
 
-#define COMP_MAGIC 0x43454447
-
-Error FileAccessEncrypted::open_and_parse(FileAccess *p_base, const Vector<uint8_t> &p_key, Mode p_mode) {
+Error FileAccessEncrypted::open_and_parse(FileAccess *p_base, const Vector<uint8_t> &p_key, Mode p_mode, bool p_with_magic) {
 	ERR_FAIL_COND_V_MSG(file != nullptr, ERR_ALREADY_IN_USE, "Can't open file while another file from path '" + file->get_path_absolute() + "' is open.");
 	ERR_FAIL_COND_V(p_key.size() != 32, ERR_INVALID_PARAMETER);
 
 	pos = 0;
 	eofed = false;
+	use_magic = p_with_magic;
 
 	if (p_mode == MODE_WRITE_AES256) {
 		data.clear();
 		writing = true;
 		file = p_base;
-		mode = p_mode;
 		key = p_key;
 
 	} else if (p_mode == MODE_READ) {
 		writing = false;
 		key = p_key;
-		uint32_t magic = p_base->get_32();
-		ERR_FAIL_COND_V(magic != COMP_MAGIC, ERR_FILE_UNRECOGNIZED);
 
-		mode = Mode(p_base->get_32());
-		ERR_FAIL_INDEX_V(mode, MODE_MAX, ERR_FILE_CORRUPT);
-		ERR_FAIL_COND_V(mode == 0, ERR_FILE_CORRUPT);
+		if (use_magic) {
+			uint32_t magic = p_base->get_32();
+			ERR_FAIL_COND_V(magic != ENCRYPTED_HEADER_MAGIC, ERR_FILE_UNRECOGNIZED);
+		}
 
 		unsigned char md5d[16];
 		p_base->get_buffer(md5d, 16);
 		length = p_base->get_64();
+
+		unsigned char iv[16];
+		for (int i = 0; i < 16; i++) {
+			iv[i] = p_base->get_8();
+		}
+
 		base = p_base->get_position();
 		ERR_FAIL_COND_V(p_base->get_len() < base + length, ERR_FILE_CORRUPT);
 		uint32_t ds = length;
 		if (ds % 16) {
 			ds += 16 - (ds % 16);
 		}
-
 		data.resize(ds);
 
 		uint32_t blen = p_base->get_buffer(data.ptrw(), ds);
 		ERR_FAIL_COND_V(blen != ds, ERR_FILE_CORRUPT);
 
-		CryptoCore::AESContext ctx;
-		ctx.set_decode_key(key.ptrw(), 256);
+		{
+			CryptoCore::AESContext ctx;
 
-		for (size_t i = 0; i < ds; i += 16) {
-			ctx.decrypt_ecb(&data.write[i], &data.write[i]);
+			ctx.set_encode_key(key.ptrw(), 256); // Due to the nature of CFB, same key schedule is used for both encryption and decryption!
+			ctx.decrypt_cfb(ds, iv, data.ptrw(), data.ptrw());
 		}
 
 		data.resize(length);
@@ -119,6 +121,25 @@ void FileAccessEncrypted::close() {
 		return;
 	}
 
+	_release();
+
+	file->close();
+	memdelete(file);
+
+	file = nullptr;
+}
+
+void FileAccessEncrypted::release() {
+	if (!file) {
+		return;
+	}
+
+	_release();
+
+	file = nullptr;
+}
+
+void FileAccessEncrypted::_release() {
 	if (writing) {
 		Vector<uint8_t> compressed;
 		size_t len = data.size();
@@ -138,27 +159,23 @@ void FileAccessEncrypted::close() {
 		CryptoCore::AESContext ctx;
 		ctx.set_encode_key(key.ptrw(), 256);
 
-		for (size_t i = 0; i < len; i += 16) {
-			ctx.encrypt_ecb(&compressed.write[i], &compressed.write[i]);
+		if (use_magic) {
+			file->store_32(ENCRYPTED_HEADER_MAGIC);
 		}
-
-		file->store_32(COMP_MAGIC);
-		file->store_32(mode);
 
 		file->store_buffer(hash, 16);
 		file->store_64(data.size());
 
-		file->store_buffer(compressed.ptr(), compressed.size());
-		file->close();
-		memdelete(file);
-		file = nullptr;
-		data.clear();
+		unsigned char iv[16];
+		for (int i = 0; i < 16; i++) {
+			iv[i] = Math::rand() % 256;
+			file->store_8(iv[i]);
+		}
 
-	} else {
-		file->close();
-		memdelete(file);
+		ctx.encrypt_cfb(len, iv, compressed.ptrw(), compressed.ptrw());
+
+		file->store_buffer(compressed.ptr(), compressed.size());
 		data.clear();
-		file = nullptr;
 	}
 }
 
@@ -220,7 +237,9 @@ uint8_t FileAccessEncrypted::get_8() const {
 }
 
 int FileAccessEncrypted::get_buffer(uint8_t *p_dst, int p_length) const {
-	ERR_FAIL_COND_V_MSG(writing, 0, "File has not been opened in read mode.");
+	ERR_FAIL_COND_V(!p_dst && p_length > 0, -1);
+	ERR_FAIL_COND_V(p_length < 0, -1);
+	ERR_FAIL_COND_V_MSG(writing, -1, "File has not been opened in read mode.");
 
 	int to_copy = MIN(p_length, data.size() - pos);
 	for (int i = 0; i < to_copy; i++) {
@@ -239,7 +258,7 @@ Error FileAccessEncrypted::get_error() const {
 }
 
 void FileAccessEncrypted::store_buffer(const uint8_t *p_src, int p_length) {
-	ERR_FAIL_COND_MSG(!writing, "File has not been opened in read mode.");
+	ERR_FAIL_COND_MSG(!writing, "File has not been opened in write mode.");
 
 	if (pos < data.size()) {
 		for (int i = 0; i < p_length; i++) {
@@ -255,13 +274,13 @@ void FileAccessEncrypted::store_buffer(const uint8_t *p_src, int p_length) {
 }
 
 void FileAccessEncrypted::flush() {
-	ERR_FAIL_COND_MSG(!writing, "File has not been opened in read mode.");
+	ERR_FAIL_COND_MSG(!writing, "File has not been opened in write mode.");
 
 	// encrypted files keep data in memory till close()
 }
 
 void FileAccessEncrypted::store_8(uint8_t p_dest) {
-	ERR_FAIL_COND_MSG(!writing, "File has not been opened in read mode.");
+	ERR_FAIL_COND_MSG(!writing, "File has not been opened in write mode.");
 
 	if (pos < data.size()) {
 		data.write[pos] = p_dest;

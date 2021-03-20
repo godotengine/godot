@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -28,7 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#include "core/ustring.h"
+#include "core/string/ustring.h"
 #include "main/main.h"
 #include "os_iphone.h"
 
@@ -49,10 +49,8 @@ int add_path(int p_argc, char **p_args) {
 	}
 
 	p_args[p_argc++] = (char *)"--path";
-	[str retain]; // memory leak lol (maybe make it static here and delete it in ViewController destructor? @todo
 	p_args[p_argc++] = (char *)[str cStringUsingEncoding:NSUTF8StringEncoding];
 	p_args[p_argc] = NULL;
-	[str release];
 
 	return p_argc;
 };
@@ -68,9 +66,7 @@ int add_cmdline(int p_argc, char **p_args) {
 		if (!str) {
 			continue;
 		}
-		[str retain]; // @todo delete these at some point
 		p_args[p_argc++] = (char *)[str cStringUsingEncoding:NSUTF8StringEncoding];
-		[str release];
 	};
 
 	p_args[p_argc] = NULL;

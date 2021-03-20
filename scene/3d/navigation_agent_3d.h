@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -31,17 +31,15 @@
 #ifndef NAVIGATION_AGENT_H
 #define NAVIGATION_AGENT_H
 
-#include "core/vector.h"
+#include "core/templates/vector.h"
 #include "scene/main/node.h"
 
 class Node3D;
-class Navigation3D;
 
 class NavigationAgent3D : public Node {
 	GDCLASS(NavigationAgent3D, Node);
 
 	Node3D *agent_parent = nullptr;
-	Navigation3D *navigation = nullptr;
 
 	RID agent;
 
@@ -75,14 +73,6 @@ protected:
 public:
 	NavigationAgent3D();
 	virtual ~NavigationAgent3D();
-
-	void set_navigation(Navigation3D *p_nav);
-	const Navigation3D *get_navigation() const {
-		return navigation;
-	}
-
-	void set_navigation_node(Node *p_nav);
-	Node *get_navigation_node() const;
 
 	RID get_rid() const {
 		return agent;

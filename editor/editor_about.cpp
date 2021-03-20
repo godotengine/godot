@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -40,9 +40,12 @@
 void EditorAbout::_theme_changed() {
 	Control *base = EditorNode::get_singleton()->get_gui_base();
 	Ref<Font> font = base->get_theme_font("source", "EditorFonts");
+	int font_size = base->get_theme_font_size("source_size", "EditorFonts");
 	_tpl_text->add_theme_font_override("normal_font", font);
+	_tpl_text->add_theme_font_size_override("normal_font_size", font_size);
 	_tpl_text->add_theme_constant_override("line_separation", 6 * EDSCALE);
 	_license_text->add_theme_font_override("normal_font", font);
+	_license_text->add_theme_font_size_override("normal_font_size", font_size);
 	_license_text->add_theme_constant_override("line_separation", 6 * EDSCALE);
 	_logo->set_texture(base->get_theme_icon("Logo", "EditorIcons"));
 }
@@ -130,7 +133,7 @@ EditorAbout::EditorAbout() {
 	Label *about_text = memnew(Label);
 	about_text->set_v_size_flags(Control::SIZE_SHRINK_CENTER);
 	about_text->set_text(VERSION_FULL_NAME + hash +
-						 String::utf8("\n\xc2\xa9 2007-2020 Juan Linietsky, Ariel Manzur.\n\xc2\xa9 2014-2020 ") +
+						 String::utf8("\n\xc2\xa9 2007-2021 Juan Linietsky, Ariel Manzur.\n\xc2\xa9 2014-2021 ") +
 						 TTR("Godot Engine contributors") + "\n");
 	hbc->add_child(about_text);
 
@@ -144,7 +147,10 @@ EditorAbout::EditorAbout() {
 	List<String> dev_sections;
 	dev_sections.push_back(TTR("Project Founders"));
 	dev_sections.push_back(TTR("Lead Developer"));
-	dev_sections.push_back(TTR("Project Manager ")); // " " appended to distinguish between 'project supervisor' and 'project list'
+	// TRANSLATORS: This refers to a job title.
+	// The trailing space is used to distinguish with the project list application,
+	// you do not have to keep it in your translation.
+	dev_sections.push_back(TTR("Project Manager "));
 	dev_sections.push_back(TTR("Developers"));
 	const char *const *dev_src[] = { AUTHORS_FOUNDERS, AUTHORS_LEAD_DEVELOPERS,
 		AUTHORS_PROJECT_MANAGERS, AUTHORS_DEVELOPERS };
@@ -155,12 +161,15 @@ EditorAbout::EditorAbout() {
 	List<String> donor_sections;
 	donor_sections.push_back(TTR("Platinum Sponsors"));
 	donor_sections.push_back(TTR("Gold Sponsors"));
+	donor_sections.push_back(TTR("Silver Sponsors"));
+	donor_sections.push_back(TTR("Bronze Sponsors"));
 	donor_sections.push_back(TTR("Mini Sponsors"));
 	donor_sections.push_back(TTR("Gold Donors"));
 	donor_sections.push_back(TTR("Silver Donors"));
 	donor_sections.push_back(TTR("Bronze Donors"));
-	const char *const *donor_src[] = { DONORS_SPONSOR_PLAT, DONORS_SPONSOR_GOLD,
-		DONORS_SPONSOR_MINI, DONORS_GOLD, DONORS_SILVER, DONORS_BRONZE };
+	const char *const *donor_src[] = { DONORS_SPONSOR_PLATINUM, DONORS_SPONSOR_GOLD,
+		DONORS_SPONSOR_SILVER, DONORS_SPONSOR_BRONZE, DONORS_SPONSOR_MINI,
+		DONORS_GOLD, DONORS_SILVER, DONORS_BRONZE };
 	tc->add_child(_populate_list(TTR("Donors"), donor_sections, donor_src, 3));
 
 	// License
@@ -207,7 +216,7 @@ EditorAbout::EditorAbout() {
 	for (int component_index = 0; component_index < COPYRIGHT_INFO_COUNT; component_index++) {
 		const ComponentCopyright &component = COPYRIGHT_INFO[component_index];
 		TreeItem *ti = _tpl_tree->create_item(tpl_ti_tp);
-		String component_name = component.name;
+		String component_name = String::utf8(component.name);
 		ti->set_text(0, component_name);
 		String text = component_name + "\n";
 		long_text += "- " + component_name + "\n";
@@ -215,7 +224,7 @@ EditorAbout::EditorAbout() {
 			const ComponentCopyrightPart &part = component.parts[part_index];
 			text += "\n    Files:";
 			for (int file_num = 0; file_num < part.file_count; file_num++) {
-				text += "\n        " + String(part.files[file_num]);
+				text += "\n        " + String::utf8(part.files[file_num]);
 			}
 			String copyright;
 			for (int copyright_index = 0; copyright_index < part.copyright_count; copyright_index++) {
@@ -223,7 +232,7 @@ EditorAbout::EditorAbout() {
 			}
 			text += copyright;
 			long_text += copyright;
-			String license = "\n    License: " + String(part.license) + "\n";
+			String license = "\n    License: " + String::utf8(part.license) + "\n";
 			text += license;
 			long_text += license + "\n";
 		}
@@ -231,10 +240,10 @@ EditorAbout::EditorAbout() {
 	}
 	for (int i = 0; i < LICENSE_COUNT; i++) {
 		TreeItem *ti = _tpl_tree->create_item(tpl_ti_lc);
-		String licensename = String(LICENSE_NAMES[i]);
+		String licensename = String::utf8(LICENSE_NAMES[i]);
 		ti->set_text(0, licensename);
 		long_text += "- " + licensename + "\n\n";
-		String licensebody = String(LICENSE_BODIES[i]);
+		String licensebody = String::utf8(LICENSE_BODIES[i]);
 		ti->set_metadata(0, licensebody);
 		long_text += "    " + licensebody.replace("\n", "\n    ") + "\n\n";
 	}

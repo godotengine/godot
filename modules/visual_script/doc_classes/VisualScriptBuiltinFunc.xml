@@ -92,7 +92,7 @@
 		<constant name="MATH_STEP_DECIMALS" value="24" enum="BuiltinFunc">
 			Return the number of digit places after the decimal that the first non-zero digit occurs.
 		</constant>
-		<constant name="MATH_STEPIFY" value="25" enum="BuiltinFunc">
+		<constant name="MATH_SNAPPED" value="25" enum="BuiltinFunc">
 			Return the input snapped to a given step.
 		</constant>
 		<constant name="MATH_LERP" value="26" enum="BuiltinFunc">
@@ -111,60 +111,60 @@
 		<constant name="MATH_RANDOMIZE" value="31" enum="BuiltinFunc">
 			Randomize the seed (or the internal state) of the random number generator. Current implementation reseeds using a number based on time.
 		</constant>
-		<constant name="MATH_RAND" value="32" enum="BuiltinFunc">
+		<constant name="MATH_RANDI" value="32" enum="BuiltinFunc">
 			Return a random 32 bits integer value. To obtain a random value between 0 to N (where N is smaller than 2^32 - 1), you can use it with the remainder function.
 		</constant>
 		<constant name="MATH_RANDF" value="33" enum="BuiltinFunc">
 			Return a random floating-point value between 0 and 1. To obtain a random value between 0 to N, you can use it with multiplication.
 		</constant>
-		<constant name="MATH_RANDOM" value="34" enum="BuiltinFunc">
+		<constant name="MATH_RANDF_RANGE" value="34" enum="BuiltinFunc">
 			Return a random floating-point value between the two inputs.
 		</constant>
-		<constant name="MATH_SEED" value="35" enum="BuiltinFunc">
+		<constant name="MATH_RANDI_RANGE" value="35" enum="BuiltinFunc">
+			Return a random 32-bit integer value between the two inputs.
+		</constant>
+		<constant name="MATH_SEED" value="36" enum="BuiltinFunc">
 			Set the seed for the random number generator.
 		</constant>
-		<constant name="MATH_RANDSEED" value="36" enum="BuiltinFunc">
+		<constant name="MATH_RANDSEED" value="37" enum="BuiltinFunc">
 			Return a random value from the given seed, along with the new seed.
 		</constant>
-		<constant name="MATH_DEG2RAD" value="37" enum="BuiltinFunc">
+		<constant name="MATH_DEG2RAD" value="38" enum="BuiltinFunc">
 			Convert the input from degrees to radians.
 		</constant>
-		<constant name="MATH_RAD2DEG" value="38" enum="BuiltinFunc">
+		<constant name="MATH_RAD2DEG" value="39" enum="BuiltinFunc">
 			Convert the input from radians to degrees.
 		</constant>
-		<constant name="MATH_LINEAR2DB" value="39" enum="BuiltinFunc">
+		<constant name="MATH_LINEAR2DB" value="40" enum="BuiltinFunc">
 			Convert the input from linear volume to decibel volume.
 		</constant>
-		<constant name="MATH_DB2LINEAR" value="40" enum="BuiltinFunc">
+		<constant name="MATH_DB2LINEAR" value="41" enum="BuiltinFunc">
 			Convert the input from decibel volume to linear volume.
 		</constant>
-		<constant name="MATH_POLAR2CARTESIAN" value="41" enum="BuiltinFunc">
+		<constant name="MATH_POLAR2CARTESIAN" value="42" enum="BuiltinFunc">
 			Converts a 2D point expressed in the polar coordinate system (a distance from the origin [code]r[/code] and an angle [code]th[/code]) to the cartesian coordinate system (X and Y axis).
 		</constant>
-		<constant name="MATH_CARTESIAN2POLAR" value="42" enum="BuiltinFunc">
+		<constant name="MATH_CARTESIAN2POLAR" value="43" enum="BuiltinFunc">
 			Converts a 2D point expressed in the cartesian coordinate system (X and Y axis) to the polar coordinate system (a distance from the origin and an angle).
 		</constant>
-		<constant name="MATH_WRAP" value="43" enum="BuiltinFunc">
+		<constant name="MATH_WRAP" value="44" enum="BuiltinFunc">
 		</constant>
-		<constant name="MATH_WRAPF" value="44" enum="BuiltinFunc">
+		<constant name="MATH_WRAPF" value="45" enum="BuiltinFunc">
 		</constant>
-		<constant name="LOGIC_MAX" value="45" enum="BuiltinFunc">
+		<constant name="LOGIC_MAX" value="46" enum="BuiltinFunc">
 			Return the greater of the two numbers, also known as their maximum.
 		</constant>
-		<constant name="LOGIC_MIN" value="46" enum="BuiltinFunc">
+		<constant name="LOGIC_MIN" value="47" enum="BuiltinFunc">
 			Return the lesser of the two numbers, also known as their minimum.
 		</constant>
-		<constant name="LOGIC_CLAMP" value="47" enum="BuiltinFunc">
+		<constant name="LOGIC_CLAMP" value="48" enum="BuiltinFunc">
 			Return the input clamped inside the given range, ensuring the result is never outside it. Equivalent to [code]min(max(input, range_low), range_high)[/code].
 		</constant>
-		<constant name="LOGIC_NEAREST_PO2" value="48" enum="BuiltinFunc">
+		<constant name="LOGIC_NEAREST_PO2" value="49" enum="BuiltinFunc">
 			Return the nearest power of 2 to the input.
 		</constant>
-		<constant name="OBJ_WEAKREF" value="49" enum="BuiltinFunc">
+		<constant name="OBJ_WEAKREF" value="50" enum="BuiltinFunc">
 			Create a [WeakRef] from the input.
-		</constant>
-		<constant name="FUNC_FUNCREF" value="50" enum="BuiltinFunc">
-			Create a [FuncRef] from the input.
 		</constant>
 		<constant name="TYPE_CONVERT" value="51" enum="BuiltinFunc">
 			Convert between types.
@@ -202,24 +202,20 @@
 		<constant name="BYTES_TO_VAR" value="62" enum="BuiltinFunc">
 			Deserialize a [Variant] from a [PackedByteArray] serialized using [constant VAR_TO_BYTES].
 		</constant>
-		<constant name="COLORN" value="63" enum="BuiltinFunc">
-			Return the [Color] with the given name and alpha ranging from 0 to 1.
-			[b]Note:[/b] Names are defined in [code]color_names.inc[/code].
-		</constant>
-		<constant name="MATH_SMOOTHSTEP" value="64" enum="BuiltinFunc">
+		<constant name="MATH_SMOOTHSTEP" value="63" enum="BuiltinFunc">
 			Return a number smoothly interpolated between the first two inputs, based on the third input. Similar to [constant MATH_LERP], but interpolates faster at the beginning and slower at the end. Using Hermite interpolation formula:
 			[codeblock]
 			var t = clamp((weight - from) / (to - from), 0.0, 1.0)
 			return t * t * (3.0 - 2.0 * t)
 			[/codeblock]
 		</constant>
-		<constant name="MATH_POSMOD" value="65" enum="BuiltinFunc">
+		<constant name="MATH_POSMOD" value="64" enum="BuiltinFunc">
 		</constant>
-		<constant name="MATH_LERP_ANGLE" value="66" enum="BuiltinFunc">
+		<constant name="MATH_LERP_ANGLE" value="65" enum="BuiltinFunc">
 		</constant>
-		<constant name="TEXT_ORD" value="67" enum="BuiltinFunc">
+		<constant name="TEXT_ORD" value="66" enum="BuiltinFunc">
 		</constant>
-		<constant name="FUNC_MAX" value="68" enum="BuiltinFunc">
+		<constant name="FUNC_MAX" value="67" enum="BuiltinFunc">
 			Represents the size of the [enum BuiltinFunc] enum.
 		</constant>
 	</constants>

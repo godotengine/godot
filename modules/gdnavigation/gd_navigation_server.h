@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -31,8 +31,9 @@
 #ifndef GD_NAVIGATION_SERVER_H
 #define GD_NAVIGATION_SERVER_H
 
-#include "core/rid.h"
-#include "core/rid_owner.h"
+#include "core/templates/local_vector.h"
+#include "core/templates/rid.h"
+#include "core/templates/rid_owner.h"
 #include "servers/navigation_server_3d.h"
 
 #include "nav_map.h"
@@ -79,7 +80,8 @@ class GdNavigationServer : public NavigationServer3D {
 	mutable RID_PtrOwner<RvoAgent> agent_owner;
 
 	bool active = true;
-	Vector<NavMap *> active_maps;
+	LocalVector<NavMap *> active_maps;
+	LocalVector<uint32_t> active_maps_update_id;
 
 public:
 	GdNavigationServer();
@@ -100,7 +102,7 @@ public:
 	COMMAND_2(map_set_edge_connection_margin, RID, p_map, real_t, p_connection_margin);
 	virtual real_t map_get_edge_connection_margin(RID p_map) const;
 
-	virtual Vector<Vector3> map_get_path(RID p_map, Vector3 p_origin, Vector3 p_destination, bool p_optimize) const;
+	virtual Vector<Vector3> map_get_path(RID p_map, Vector3 p_origin, Vector3 p_destination, bool p_optimize, uint32_t p_layers = 1) const;
 
 	virtual Vector3 map_get_closest_point_to_segment(RID p_map, const Vector3 &p_from, const Vector3 &p_to, const bool p_use_collision = false) const;
 	virtual Vector3 map_get_closest_point(RID p_map, const Vector3 &p_point) const;
@@ -109,9 +111,14 @@ public:
 
 	virtual RID region_create() const;
 	COMMAND_2(region_set_map, RID, p_region, RID, p_map);
+	COMMAND_2(region_set_layers, RID, p_region, uint32_t, p_layers);
+	virtual uint32_t region_get_layers(RID p_region) const;
 	COMMAND_2(region_set_transform, RID, p_region, Transform, p_transform);
 	COMMAND_2(region_set_navmesh, RID, p_region, Ref<NavigationMesh>, p_nav_mesh);
 	virtual void region_bake_navmesh(Ref<NavigationMesh> r_mesh, Node *p_node) const;
+	virtual int region_get_connections_count(RID p_region) const;
+	virtual Vector3 region_get_connection_pathway_start(RID p_region, int p_connection_id) const;
+	virtual Vector3 region_get_connection_pathway_end(RID p_region, int p_connection_id) const;
 
 	virtual RID agent_create() const;
 	COMMAND_2(agent_set_map, RID, p_agent, RID, p_map);

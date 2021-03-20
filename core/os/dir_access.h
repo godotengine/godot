@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -31,8 +31,8 @@
 #ifndef DIR_ACCESS_H
 #define DIR_ACCESS_H
 
+#include "core/string/ustring.h"
 #include "core/typedefs.h"
-#include "core/ustring.h"
 
 //@ TODO, excellent candidate for THREAD_SAFE MACRO, should go through all these and add THREAD_SAFE where it applies
 class DirAccess {
@@ -57,7 +57,6 @@ protected:
 	String _get_root_string() const;
 
 	String fix_path(String p_path) const;
-	bool next_is_dir;
 
 	template <class T>
 	static DirAccess *_create_builtin() {

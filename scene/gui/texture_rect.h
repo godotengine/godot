@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -28,8 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef TEXTURE_FRAME_H
-#define TEXTURE_FRAME_H
+#ifndef TEXTURE_RECT_H
+#define TEXTURE_RECT_H
 
 #include "scene/gui/control.h"
 
@@ -49,11 +49,11 @@ public:
 	};
 
 private:
-	bool expand;
-	bool hflip;
-	bool vflip;
+	bool expand = false;
+	bool hflip = false;
+	bool vflip = false;
 	Ref<Texture2D> texture;
-	StretchMode stretch_mode;
+	StretchMode stretch_mode = STRETCH_SCALE_ON_EXPAND;
 
 	void _texture_changed();
 
@@ -83,4 +83,5 @@ public:
 };
 
 VARIANT_ENUM_CAST(TextureRect::StretchMode);
-#endif // TEXTURE_FRAME_H
+
+#endif // TEXTURE_RECT_H

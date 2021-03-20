@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -36,6 +36,9 @@
 class ConcavePolygonShape3D : public Shape3D {
 	GDCLASS(ConcavePolygonShape3D, Shape3D);
 
+	Vector<Vector3> faces;
+	bool backface_collision = false;
+
 	struct DrawEdge {
 		Vector3 a;
 		Vector3 b;
@@ -64,6 +67,9 @@ protected:
 public:
 	void set_faces(const Vector<Vector3> &p_faces);
 	Vector<Vector3> get_faces() const;
+
+	void set_backface_collision_enabled(bool p_enabled);
+	bool is_backface_collision_enabled() const;
 
 	virtual Vector<Vector3> get_debug_mesh_lines() const override;
 	virtual real_t get_enclosing_radius() const override;

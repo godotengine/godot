@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -39,15 +39,12 @@
 #include "core/version_generated.gen.h"
 #include "drivers/windows/dir_access_windows.h"
 #include "drivers/windows/file_access_windows.h"
-#include "drivers/windows/rw_lock_windows.h"
-#include "drivers/windows/thread_windows.h"
 #include "joypad_windows.h"
 #include "lang_table.h"
 #include "main/main.h"
 #include "platform/windows/display_server_windows.h"
 #include "servers/audio_server.h"
-#include "servers/rendering/rendering_server_raster.h"
-#include "servers/rendering/rendering_server_wrap_mt.h"
+#include "servers/rendering/rendering_server_default.h"
 #include "windows_terminal_logger.h"
 
 #include <avrt.h>
@@ -84,7 +81,7 @@ static String format_error_message(DWORD id) {
 	size_t size = FormatMessageW(FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS,
 			nullptr, id, MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), (LPWSTR)&messageBuffer, 0, nullptr);
 
-	String msg = "Error " + itos(id) + ": " + String(messageBuffer, size);
+	String msg = "Error " + itos(id) + ": " + String::utf16((const char16_t *)messageBuffer, size);
 
 	LocalFree(messageBuffer);
 
@@ -107,15 +104,11 @@ void RedirectIOToConsole() {
 
 	// set the screen buffer to be big enough to let us scroll text
 
-	GetConsoleScreenBufferInfo(GetStdHandle(STD_OUTPUT_HANDLE),
-
-			&coninfo);
+	GetConsoleScreenBufferInfo(GetStdHandle(STD_OUTPUT_HANDLE), &coninfo);
 
 	coninfo.dwSize.Y = MAX_CONSOLE_LINES;
 
-	SetConsoleScreenBufferSize(GetStdHandle(STD_OUTPUT_HANDLE),
-
-			coninfo.dwSize);
+	SetConsoleScreenBufferSize(GetStdHandle(STD_OUTPUT_HANDLE), coninfo.dwSize);
 
 	// redirect unbuffered STDOUT to the console
 
@@ -181,13 +174,9 @@ void OS_Windows::initialize() {
 
 	//RedirectIOToConsole();
 
-	ThreadWindows::make_default();
-	RWLockWindows::make_default();
-
 	FileAccess::make_default<FileAccessWindows>(FileAccess::ACCESS_RESOURCES);
 	FileAccess::make_default<FileAccessWindows>(FileAccess::ACCESS_USERDATA);
 	FileAccess::make_default<FileAccessWindows>(FileAccess::ACCESS_FILESYSTEM);
-	//FileAccessBufferedFA<FileAccessWindows>::make_default();
 	DirAccess::make_default<DirAccessWindows>(DirAccess::ACCESS_RESOURCES);
 	DirAccess::make_default<DirAccessWindows>(DirAccess::ACCESS_USERDATA);
 	DirAccess::make_default<DirAccessWindows>(DirAccess::ACCESS_FILESYSTEM);
@@ -248,7 +237,7 @@ void OS_Windows::finalize_core() {
 }
 
 Error OS_Windows::open_dynamic_library(const String p_path, void *&p_library_handle, bool p_also_set_library_path) {
-	String path = p_path;
+	String path = p_path.replace("/", "\\");
 
 	if (!FileAccess::exists(path)) {
 		//this code exists so gdnative can load .dll files from within the executable path
@@ -265,10 +254,10 @@ Error OS_Windows::open_dynamic_library(const String p_path, void *&p_library_han
 	DLL_DIRECTORY_COOKIE cookie = nullptr;
 
 	if (p_also_set_library_path && has_dll_directory_api) {
-		cookie = add_dll_directory(path.get_base_dir().c_str());
+		cookie = add_dll_directory((LPCWSTR)(path.get_base_dir().utf16().get_data()));
 	}
 
-	p_library_handle = (void *)LoadLibraryExW(path.c_str(), nullptr, (p_also_set_library_path && has_dll_directory_api) ? LOAD_LIBRARY_SEARCH_DEFAULT_DIRS : 0);
+	p_library_handle = (void *)LoadLibraryExW((LPCWSTR)(path.utf16().get_data()), nullptr, (p_also_set_library_path && has_dll_directory_api) ? LOAD_LIBRARY_SEARCH_DEFAULT_DIRS : 0);
 	ERR_FAIL_COND_V_MSG(!p_library_handle, ERR_CANT_OPEN, "Can't open dynamic library: " + p_path + ", error: " + format_error_message(GetLastError()) + ".");
 
 	if (cookie) {
@@ -345,7 +334,7 @@ OS::TimeZoneInfo OS_Windows::get_time_zone_info() const {
 	}
 
 	// Bias value returned by GetTimeZoneInformation is inverted of what we expect
-	// For example on GMT-3 GetTimeZoneInformation return a Bias of 180, so invert the value to get -180
+	// For example, on GMT-3 GetTimeZoneInformation return a Bias of 180, so invert the value to get -180
 	ret.bias = -info.Bias;
 	return ret;
 }
@@ -407,7 +396,7 @@ uint64_t OS_Windows::get_ticks_usec() const {
 
 String OS_Windows::_quote_command_line_argument(const String &p_text) const {
 	for (int i = 0; i < p_text.size(); i++) {
-		CharType c = p_text[i];
+		char32_t c = p_text[i];
 		if (c == ' ' || c == '&' || c == '(' || c == ')' || c == '[' || c == ']' || c == '{' || c == '}' || c == '^' || c == '=' || c == ';' || c == '!' || c == '\'' || c == '+' || c == ',' || c == '`' || c == '~') {
 			return "\"" + p_text + "\"";
 		}
@@ -415,22 +404,23 @@ String OS_Windows::_quote_command_line_argument(const String &p_text) const {
 	return p_text;
 }
 
-Error OS_Windows::execute(const String &p_path, const List<String> &p_arguments, bool p_blocking, ProcessID *r_child_id, String *r_pipe, int *r_exitcode, bool read_stderr, Mutex *p_pipe_mutex) {
-	if (p_blocking && r_pipe) {
-		String argss = _quote_command_line_argument(p_path);
-		for (const List<String>::Element *E = p_arguments.front(); E; E = E->next()) {
-			argss += " " + _quote_command_line_argument(E->get());
-		}
+Error OS_Windows::execute(const String &p_path, const List<String> &p_arguments, String *r_pipe, int *r_exitcode, bool read_stderr, Mutex *p_pipe_mutex) {
+	String path = p_path.replace("/", "\\");
+	String command = _quote_command_line_argument(path);
+	for (const List<String>::Element *E = p_arguments.front(); E; E = E->next()) {
+		command += " " + _quote_command_line_argument(E->get());
+	}
 
+	if (r_pipe) {
 		if (read_stderr) {
-			argss += " 2>&1"; // Read stderr too
+			command += " 2>&1"; // Include stderr
 		}
-		// Note: _wpopen is calling command as "cmd.exe /c argss", instead of executing it directly, add extra quotes around full command, to prevent it from stripping quotes in the command.
-		argss = _quote_command_line_argument(argss);
+		// Add extra quotes around the full command, to prevent it from stripping quotes in the command,
+		// because _wpopen calls command as "cmd.exe /c command", instead of executing it directly
+		command = _quote_command_line_argument(command);
 
-		FILE *f = _wpopen(argss.c_str(), L"r");
-		ERR_FAIL_COND_V(!f, ERR_CANT_OPEN);
-
+		FILE *f = _wpopen((LPCWSTR)(command.utf16().get_data()), L"r");
+		ERR_FAIL_COND_V_MSG(!f, ERR_CANT_OPEN, "Cannot create pipe from command: " + command);
 		char buf[65535];
 		while (fgets(buf, 65535, f)) {
 			if (p_pipe_mutex) {
@@ -441,20 +431,12 @@ Error OS_Windows::execute(const String &p_path, const List<String> &p_arguments,
 				p_pipe_mutex->unlock();
 			}
 		}
-
 		int rv = _pclose(f);
+
 		if (r_exitcode) {
 			*r_exitcode = rv;
 		}
-
 		return OK;
-	}
-
-	String cmdline = _quote_command_line_argument(p_path);
-	const List<String>::Element *I = p_arguments.front();
-	while (I) {
-		cmdline += " " + _quote_command_line_argument(I->get());
-		I = I->next();
 	}
 
 	ProcessInfo pi;
@@ -463,30 +445,43 @@ Error OS_Windows::execute(const String &p_path, const List<String> &p_arguments,
 	ZeroMemory(&pi.pi, sizeof(pi.pi));
 	LPSTARTUPINFOW si_w = (LPSTARTUPINFOW)&pi.si;
 
-	Vector<CharType> modstr; // Windows wants to change this no idea why.
-	modstr.resize(cmdline.size());
-	for (int i = 0; i < cmdline.size(); i++) {
-		modstr.write[i] = cmdline[i];
+	int ret = CreateProcessW(nullptr, (LPWSTR)(command.utf16().ptrw()), nullptr, nullptr, false, NORMAL_PRIORITY_CLASS & CREATE_NO_WINDOW, nullptr, nullptr, si_w, &pi.pi);
+	ERR_FAIL_COND_V_MSG(ret == 0, ERR_CANT_FORK, "Could not create child process: " + command);
+
+	WaitForSingleObject(pi.pi.hProcess, INFINITE);
+	if (r_exitcode) {
+		DWORD ret2;
+		GetExitCodeProcess(pi.pi.hProcess, &ret2);
+		*r_exitcode = ret2;
+	}
+	CloseHandle(pi.pi.hProcess);
+	CloseHandle(pi.pi.hThread);
+
+	return OK;
+};
+
+Error OS_Windows::create_process(const String &p_path, const List<String> &p_arguments, ProcessID *r_child_id) {
+	String path = p_path.replace("/", "\\");
+	String command = _quote_command_line_argument(path);
+	for (const List<String>::Element *E = p_arguments.front(); E; E = E->next()) {
+		command += " " + _quote_command_line_argument(E->get());
 	}
 
-	int ret = CreateProcessW(nullptr, modstr.ptrw(), nullptr, nullptr, 0, NORMAL_PRIORITY_CLASS & CREATE_NO_WINDOW, nullptr, nullptr, si_w, &pi.pi);
-	ERR_FAIL_COND_V(ret == 0, ERR_CANT_FORK);
+	ProcessInfo pi;
+	ZeroMemory(&pi.si, sizeof(pi.si));
+	pi.si.cb = sizeof(pi.si);
+	ZeroMemory(&pi.pi, sizeof(pi.pi));
+	LPSTARTUPINFOW si_w = (LPSTARTUPINFOW)&pi.si;
 
-	if (p_blocking) {
-		DWORD ret2 = WaitForSingleObject(pi.pi.hProcess, INFINITE);
-		if (r_exitcode) {
-			*r_exitcode = ret2;
-		}
+	int ret = CreateProcessW(nullptr, (LPWSTR)(command.utf16().ptrw()), nullptr, nullptr, false, NORMAL_PRIORITY_CLASS & CREATE_NO_WINDOW, nullptr, nullptr, si_w, &pi.pi);
+	ERR_FAIL_COND_V_MSG(ret == 0, ERR_CANT_FORK, "Could not create child process: " + command);
 
-		CloseHandle(pi.pi.hProcess);
-		CloseHandle(pi.pi.hThread);
-	} else {
-		ProcessID pid = pi.pi.dwProcessId;
-		if (r_child_id) {
-			*r_child_id = pid;
-		}
-		process_map->insert(pid, pi);
+	ProcessID pid = pi.pi.dwProcessId;
+	if (r_child_id) {
+		*r_child_id = pid;
 	}
+	process_map->insert(pid, pi);
+
 	return OK;
 };
 
@@ -509,26 +504,26 @@ int OS_Windows::get_process_id() const {
 }
 
 Error OS_Windows::set_cwd(const String &p_cwd) {
-	if (_wchdir(p_cwd.c_str()) != 0)
+	if (_wchdir((LPCWSTR)(p_cwd.utf16().get_data())) != 0)
 		return ERR_CANT_OPEN;
 
 	return OK;
 }
 
 String OS_Windows::get_executable_path() const {
-	wchar_t bufname[4096];
+	WCHAR bufname[4096];
 	GetModuleFileNameW(nullptr, bufname, 4096);
-	String s = bufname;
+	String s = String::utf16((const char16_t *)bufname).replace("\\", "/");
 	return s;
 }
 
 bool OS_Windows::has_environment(const String &p_var) const {
 #ifdef MINGW_ENABLED
-	return _wgetenv(p_var.c_str()) != nullptr;
+	return _wgetenv((LPCWSTR)(p_var.utf16().get_data())) != nullptr;
 #else
-	wchar_t *env;
+	WCHAR *env;
 	size_t len;
-	_wdupenv_s(&env, &len, p_var.c_str());
+	_wdupenv_s(&env, &len, (LPCWSTR)(p_var.utf16().get_data()));
 	const bool has_env = env != nullptr;
 	free(env);
 	return has_env;
@@ -536,16 +531,16 @@ bool OS_Windows::has_environment(const String &p_var) const {
 };
 
 String OS_Windows::get_environment(const String &p_var) const {
-	wchar_t wval[0x7Fff]; // MSDN says 32767 char is the maximum
-	int wlen = GetEnvironmentVariableW(p_var.c_str(), wval, 0x7Fff);
+	WCHAR wval[0x7fff]; // MSDN says 32767 char is the maximum
+	int wlen = GetEnvironmentVariableW((LPCWSTR)(p_var.utf16().get_data()), wval, 0x7fff);
 	if (wlen > 0) {
-		return wval;
+		return String::utf16((const char16_t *)wval);
 	}
 	return "";
 }
 
 bool OS_Windows::set_environment(const String &p_var, const String &p_value) const {
-	return (bool)SetEnvironmentVariableW(p_var.c_str(), p_value.c_str());
+	return (bool)SetEnvironmentVariableW((LPCWSTR)(p_var.utf16().get_data()), (LPCWSTR)(p_value.utf16().get_data()));
 }
 
 String OS_Windows::get_stdin_string(bool p_block) {
@@ -558,7 +553,7 @@ String OS_Windows::get_stdin_string(bool p_block) {
 }
 
 Error OS_Windows::shell_open(String p_uri) {
-	ShellExecuteW(nullptr, nullptr, p_uri.c_str(), nullptr, nullptr, SW_SHOWNORMAL);
+	ShellExecuteW(nullptr, nullptr, (LPCWSTR)(p_uri.utf16().get_data()), nullptr, nullptr, SW_SHOWNORMAL);
 	return OK;
 }
 
@@ -567,21 +562,21 @@ String OS_Windows::get_locale() const {
 
 	LANGID langid = GetUserDefaultUILanguage();
 	String neutral;
-	int lang = langid & ((1 << 9) - 1);
-	int sublang = langid & ~((1 << 9) - 1);
+	int lang = PRIMARYLANGID(langid);
+	int sublang = SUBLANGID(langid);
 
 	while (wl->locale) {
 		if (wl->main_lang == lang && wl->sublang == SUBLANG_NEUTRAL)
 			neutral = wl->locale;
 
 		if (lang == wl->main_lang && sublang == wl->sublang)
-			return wl->locale;
+			return String(wl->locale).replace("-", "_");
 
 		wl++;
 	}
 
 	if (neutral != "")
-		return neutral;
+		return String(neutral).replace("-", "_");
 
 	return "en";
 }
@@ -620,7 +615,7 @@ void OS_Windows::run() {
 	if (!main_loop)
 		return;
 
-	main_loop->init();
+	main_loop->initialize();
 
 	while (!force_quit) {
 		DisplayServer::get_singleton()->process_events(); // get rid of pending events
@@ -628,7 +623,7 @@ void OS_Windows::run() {
 			break;
 	};
 
-	main_loop->finish();
+	main_loop->finalize();
 }
 
 MainLoop *OS_Windows::get_main_loop() const {
@@ -701,7 +696,7 @@ String OS_Windows::get_system_dir(SystemDir p_dir) const {
 	PWSTR szPath;
 	HRESULT res = SHGetKnownFolderPath(id, 0, nullptr, &szPath);
 	ERR_FAIL_COND_V(res != S_OK, String());
-	String path = String(szPath);
+	String path = String::utf16((const char16_t *)szPath);
 	CoTaskMemFree(szPath);
 	return path;
 }
@@ -727,7 +722,7 @@ String OS_Windows::get_user_data_dir() const {
 String OS_Windows::get_unique_id() const {
 	HW_PROFILE_INFO HwProfInfo;
 	ERR_FAIL_COND_V(!GetCurrentHwProfile(&HwProfInfo), "");
-	return String(HwProfInfo.szHwProfileGuid);
+	return String::utf16((const char16_t *)(HwProfInfo.szHwProfileGuid), HW_PROFILE_GUIDLEN);
 }
 
 bool OS_Windows::_check_internal_feature_support(const String &p_feature) {
@@ -744,9 +739,11 @@ bool OS_Windows::is_disable_crash_handler() const {
 
 Error OS_Windows::move_to_trash(const String &p_path) {
 	SHFILEOPSTRUCTW sf;
-	WCHAR *from = new WCHAR[p_path.length() + 2];
-	wcscpy_s(from, p_path.length() + 1, p_path.c_str());
-	from[p_path.length() + 1] = 0;
+
+	Char16String utf16 = p_path.utf16();
+	WCHAR *from = new WCHAR[utf16.length() + 2];
+	wcscpy_s(from, utf16.length() + 1, (LPCWSTR)(utf16.get_data()));
+	from[utf16.length() + 1] = 0;
 
 	sf.hwnd = main_window;
 	sf.wFunc = FO_DELETE;
@@ -768,71 +765,11 @@ Error OS_Windows::move_to_trash(const String &p_path) {
 	return OK;
 }
 
-int OS_Windows::get_tablet_driver_count() const {
-	return tablet_drivers.size();
-}
-
-String OS_Windows::get_tablet_driver_name(int p_driver) const {
-	if (p_driver < 0 || p_driver >= tablet_drivers.size()) {
-		return "";
-	} else {
-		return tablet_drivers[p_driver];
-	}
-}
-
-String OS_Windows::get_current_tablet_driver() const {
-	return tablet_driver;
-}
-
-void OS_Windows::set_current_tablet_driver(const String &p_driver) {
-	if (get_tablet_driver_count() == 0) {
-		return;
-	}
-	bool found = false;
-	for (int i = 0; i < get_tablet_driver_count(); i++) {
-		if (p_driver == get_tablet_driver_name(i)) {
-			found = true;
-		}
-	}
-	if (found) {
-		if (DisplayServerWindows::get_singleton()) {
-			((DisplayServerWindows *)DisplayServerWindows::get_singleton())->_update_tablet_ctx(tablet_driver, p_driver);
-		}
-		tablet_driver = p_driver;
-	} else {
-		ERR_PRINT("Unknown tablet driver " + p_driver + ".");
-	}
-}
-
 OS_Windows::OS_Windows(HINSTANCE _hInstance) {
-	//Note: Wacom WinTab driver API for pen input, for devices incompatible with Windows Ink.
-	HMODULE wintab_lib = LoadLibraryW(L"wintab32.dll");
-	if (wintab_lib) {
-		DisplayServerWindows::wintab_WTOpen = (WTOpenPtr)GetProcAddress(wintab_lib, "WTOpenW");
-		DisplayServerWindows::wintab_WTClose = (WTClosePtr)GetProcAddress(wintab_lib, "WTClose");
-		DisplayServerWindows::wintab_WTInfo = (WTInfoPtr)GetProcAddress(wintab_lib, "WTInfoW");
-		DisplayServerWindows::wintab_WTPacket = (WTPacketPtr)GetProcAddress(wintab_lib, "WTPacket");
-		DisplayServerWindows::wintab_WTEnable = (WTEnablePtr)GetProcAddress(wintab_lib, "WTEnable");
-
-		DisplayServerWindows::wintab_available = DisplayServerWindows::wintab_WTOpen && DisplayServerWindows::wintab_WTClose && DisplayServerWindows::wintab_WTInfo && DisplayServerWindows::wintab_WTPacket && DisplayServerWindows::wintab_WTEnable;
-	}
-
-	if (DisplayServerWindows::wintab_available) {
-		tablet_drivers.push_back("wintab");
-	}
-
-	//Note: Windows Ink API for pen input, available on Windows 8+ only.
-	HMODULE user32_lib = LoadLibraryW(L"user32.dll");
-	if (user32_lib) {
-		DisplayServerWindows::win8p_GetPointerType = (GetPointerTypePtr)GetProcAddress(user32_lib, "GetPointerType");
-		DisplayServerWindows::win8p_GetPointerPenInfo = (GetPointerPenInfoPtr)GetProcAddress(user32_lib, "GetPointerPenInfo");
-
-		DisplayServerWindows::winink_available = DisplayServerWindows::win8p_GetPointerType && DisplayServerWindows::win8p_GetPointerPenInfo;
-	}
-
-	if (DisplayServerWindows::winink_available) {
-		tablet_drivers.push_back("winink");
-	}
+	ticks_per_second = 0;
+	ticks_start = 0;
+	main_loop = nullptr;
+	process_map = nullptr;
 
 	force_quit = false;
 

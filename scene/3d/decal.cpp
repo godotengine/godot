@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -34,7 +34,6 @@ void Decal::set_extents(const Vector3 &p_extents) {
 	extents = p_extents;
 	RS::get_singleton()->decal_set_extents(decal, p_extents);
 	update_gizmo();
-	_change_notify("extents");
 }
 
 Vector3 Decal::get_extents() const {
@@ -110,6 +109,7 @@ Color Decal::get_modulate() const {
 void Decal::set_enable_distance_fade(bool p_enable) {
 	distance_fade_enabled = p_enable;
 	RS::get_singleton()->decal_set_distance_fade(decal, distance_fade_enabled, distance_fade_begin, distance_fade_length);
+	notify_property_list_changed();
 }
 
 bool Decal::is_distance_fade_enabled() const {
@@ -152,6 +152,12 @@ AABB Decal::get_aabb() const {
 
 Vector<Face3> Decal::get_faces(uint32_t p_usage_flags) const {
 	return Vector<Face3>();
+}
+
+void Decal::_validate_property(PropertyInfo &property) const {
+	if (!distance_fade_enabled && (property.name == "distance_fade_begin" || property.name == "distance_fade_length")) {
+		property.usage = PROPERTY_USAGE_NOEDITOR;
+	}
 }
 
 void Decal::_bind_methods() {
@@ -220,18 +226,6 @@ void Decal::_bind_methods() {
 }
 
 Decal::Decal() {
-	extents = Vector3(1, 1, 1);
-	emission_energy = 1.0;
-	modulate = Color(1, 1, 1, 1);
-	albedo_mix = 1.0;
-	cull_mask = (1 << 20) - 1;
-	upper_fade = 0.3;
-	lower_fade = 0.3;
-	normal_fade = 0;
-	distance_fade_enabled = false;
-	distance_fade_begin = 10;
-	distance_fade_length = 1;
-
 	decal = RenderingServer::get_singleton()->decal_create();
 	RS::get_singleton()->instance_set_base(get_instance(), decal);
 }

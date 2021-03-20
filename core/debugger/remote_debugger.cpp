@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -30,13 +30,13 @@
 
 #include "remote_debugger.h"
 
+#include "core/config/project_settings.h"
 #include "core/debugger/debugger_marshalls.h"
 #include "core/debugger/engine_debugger.h"
 #include "core/debugger/script_debugger.h"
 #include "core/input/input.h"
+#include "core/object/script_language.h"
 #include "core/os/os.h"
-#include "core/project_settings.h"
-#include "core/script_language.h"
 #include "scene/main/node.h"
 #include "servers/display_server.h"
 
@@ -76,6 +76,7 @@ public:
 	NetworkProfiler() {}
 
 	int bandwidth_usage(const Vector<BandwidthFrame> &p_buffer, int p_pointer) {
+		ERR_FAIL_COND_V(p_buffer.size() == 0, 0);
 		int total_bandwidth = 0;
 
 		uint32_t timestamp = OS::get_singleton()->get_ticks_msec();
@@ -317,7 +318,7 @@ struct RemoteDebugger::ServersProfiler {
 
 	void _send_frame_data(bool p_final) {
 		DebuggerMarshalls::ServersProfilerFrame frame;
-		frame.frame_number = Engine::get_singleton()->get_idle_frames();
+		frame.frame_number = Engine::get_singleton()->get_process_frames();
 		frame.frame_time = frame_time;
 		frame.idle_time = idle_time;
 		frame.physics_time = physics_time;
@@ -553,7 +554,7 @@ void RemoteDebugger::flush_output() {
 		for (int i = 0; i < output_strings.size(); i++) {
 			const OutputString &output_string = output_strings[i];
 			if (output_string.type == MESSAGE_TYPE_ERROR) {
-				if (!joined_log_strings.empty()) {
+				if (!joined_log_strings.is_empty()) {
 					strings.push_back(String("\n").join(joined_log_strings));
 					types.push_back(MESSAGE_TYPE_LOG);
 					joined_log_strings.clear();
@@ -565,7 +566,7 @@ void RemoteDebugger::flush_output() {
 			}
 		}
 
-		if (!joined_log_strings.empty()) {
+		if (!joined_log_strings.is_empty()) {
 			strings.push_back(String("\n").join(joined_log_strings));
 			types.push_back(MESSAGE_TYPE_LOG);
 		}

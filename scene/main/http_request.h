@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -34,6 +34,7 @@
 #include "core/io/http_client.h"
 #include "core/os/file_access.h"
 #include "core/os/thread.h"
+#include "core/templates/safe_refcount.h"
 #include "node.h"
 #include "scene/main/timer.h"
 
@@ -50,6 +51,7 @@ public:
 		RESULT_SSL_HANDSHAKE_ERROR,
 		RESULT_NO_RESPONSE,
 		RESULT_BODY_SIZE_LIMIT_EXCEEDED,
+		RESULT_BODY_DECOMPRESS_FAILED,
 		RESULT_REQUEST_FAILED,
 		RESULT_DOWNLOAD_FILE_CANT_OPEN,
 		RESULT_DOWNLOAD_FILE_WRITE_ERROR,
@@ -59,41 +61,42 @@ public:
 	};
 
 private:
-	bool requesting;
+	bool requesting = false;
 
 	String request_string;
 	String url;
-	int port;
+	int port = 80;
 	Vector<String> headers;
-	bool validate_ssl;
-	bool use_ssl;
+	bool validate_ssl = false;
+	bool use_ssl = false;
 	HTTPClient::Method method;
-	String request_data;
+	Vector<uint8_t> request_data;
 
-	bool request_sent;
+	bool request_sent = false;
 	Ref<HTTPClient> client;
 	PackedByteArray body;
-	volatile bool use_threads;
+	SafeFlag use_threads;
+	bool accept_gzip = true;
 
-	bool got_response;
-	int response_code;
+	bool got_response = false;
+	int response_code = 0;
 	Vector<String> response_headers;
 
 	String download_to_file;
 
-	FileAccess *file;
+	FileAccess *file = nullptr;
 
-	int body_len;
-	volatile int downloaded;
-	int body_size_limit;
+	int body_len = -1;
+	SafeNumeric<int> downloaded;
+	int body_size_limit = -1;
 
-	int redirections;
+	int redirections = 0;
 
 	bool _update_connection();
 
-	int max_redirects;
+	int max_redirects = 8;
 
-	int timeout;
+	int timeout = 0;
 
 	void _redirect_request(const String &p_new_url);
 
@@ -102,12 +105,15 @@ private:
 	Error _parse_url(const String &p_url);
 	Error _request();
 
-	volatile bool thread_done;
-	volatile bool thread_request_quit;
+	bool has_header(const PackedStringArray &p_headers, const String &p_header_name);
+	String get_header_value(const PackedStringArray &p_headers, const String &header_name);
 
-	Thread *thread;
+	SafeFlag thread_done;
+	SafeFlag thread_request_quit;
 
-	void _request_done(int p_status, int p_code, const PackedStringArray &headers, const PackedByteArray &p_data);
+	Thread thread;
+
+	void _request_done(int p_status, int p_code, const PackedStringArray &p_headers, const PackedByteArray &p_data);
 	static void _thread_func(void *p_userdata);
 
 protected:
@@ -116,11 +122,15 @@ protected:
 
 public:
 	Error request(const String &p_url, const Vector<String> &p_custom_headers = Vector<String>(), bool p_ssl_validate_domain = true, HTTPClient::Method p_method = HTTPClient::METHOD_GET, const String &p_request_data = ""); //connects to a full url and perform request
+	Error request_raw(const String &p_url, const Vector<String> &p_custom_headers = Vector<String>(), bool p_ssl_validate_domain = true, HTTPClient::Method p_method = HTTPClient::METHOD_GET, const Vector<uint8_t> &p_request_data_raw = Vector<uint8_t>()); //connects to a full url and perform request
 	void cancel_request();
 	HTTPClient::Status get_http_client_status() const;
 
 	void set_use_threads(bool p_use);
 	bool is_using_threads() const;
+
+	void set_accept_gzip(bool p_gzip);
+	bool is_accepting_gzip() const;
 
 	void set_download_file(const String &p_file);
 	String get_download_file() const;

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -31,23 +31,22 @@
 #ifndef GDSCRIPT_PARSER_H
 #define GDSCRIPT_PARSER_H
 
-#include "core/hash_map.h"
 #include "core/io/multiplayer_api.h"
-#include "core/list.h"
-#include "core/map.h"
-#include "core/reference.h"
-#include "core/resource.h"
-#include "core/script_language.h"
-#include "core/string_name.h"
-#include "core/ustring.h"
-#include "core/variant.h"
-#include "core/vector.h"
+#include "core/io/resource.h"
+#include "core/object/reference.h"
+#include "core/object/script_language.h"
+#include "core/string/string_name.h"
+#include "core/string/ustring.h"
+#include "core/templates/hash_map.h"
+#include "core/templates/list.h"
+#include "core/templates/map.h"
+#include "core/templates/vector.h"
+#include "core/variant/variant.h"
 #include "gdscript_cache.h"
-#include "gdscript_functions.h"
 #include "gdscript_tokenizer.h"
 
 #ifdef DEBUG_ENABLED
-#include "core/string_builder.h"
+#include "core/string/string_builder.h"
 #include "gdscript_warning.h"
 #endif // DEBUG_ENABLED
 
@@ -287,7 +286,7 @@ public:
 
 	struct AssertNode : public Node {
 		ExpressionNode *condition = nullptr;
-		LiteralNode *message = nullptr;
+		ExpressionNode *message = nullptr;
 
 		AssertNode() {
 			type = ASSERT;
@@ -352,7 +351,7 @@ public:
 			OP_COMP_GREATER_EQUAL,
 		};
 
-		OpType operation;
+		OpType operation = OpType::OP_ADDITION;
 		Variant::Operator variant_op = Variant::OP_MAX;
 		ExpressionNode *left_operand = nullptr;
 		ExpressionNode *right_operand = nullptr;
@@ -405,14 +404,24 @@ public:
 	struct EnumNode : public Node {
 		struct Value {
 			IdentifierNode *identifier = nullptr;
-			LiteralNode *custom_value = nullptr;
+			ExpressionNode *custom_value = nullptr;
+			EnumNode *parent_enum = nullptr;
+			int index = -1;
+			bool resolved = false;
 			int value = 0;
 			int line = 0;
 			int leftmost_column = 0;
 			int rightmost_column = 0;
+#ifdef TOOLS_ENABLED
+			String doc_description;
+#endif // TOOLS_ENABLED
 		};
+
 		IdentifierNode *identifier = nullptr;
 		Vector<Value> values;
+#ifdef TOOLS_ENABLED
+		String doc_description;
+#endif // TOOLS_ENABLED
 
 		EnumNode() {
 			type = ENUM;
@@ -565,6 +574,17 @@ public:
 		Vector<StringName> extends; // List for indexing: extends A.B.C
 		DataType base_type;
 		String fqcn; // Fully-qualified class name. Identifies uniquely any class in the project.
+#ifdef TOOLS_ENABLED
+		String doc_description;
+		String doc_brief_description;
+		Vector<Pair<String, String>> doc_tutorials;
+
+		// EnumValue docs are parsed after itself, so we need a method to add/modify the doc property later.
+		void set_enum_value_doc(const StringName &p_name, const String &p_doc_description) {
+			ERR_FAIL_INDEX(members_indices[p_name], members.size());
+			members.write[members_indices[p_name]].enum_value.doc_description = p_doc_description;
+		}
+#endif // TOOLS_ENABLED
 
 		bool resolved_interface = false;
 		bool resolved_body = false;
@@ -599,6 +619,9 @@ public:
 		TypeNode *datatype_specifier = nullptr;
 		bool infer_datatype = false;
 		int usages = 0;
+#ifdef TOOLS_ENABLED
+		String doc_description;
+#endif // TOOLS_ENABLED
 
 		ConstantNode() {
 			type = CONSTANT;
@@ -606,6 +629,7 @@ public:
 	};
 
 	struct ContinueNode : public Node {
+		bool is_for_match = false;
 		ContinueNode() {
 			type = CONTINUE;
 		}
@@ -649,6 +673,10 @@ public:
 		bool is_coroutine = false;
 		MultiplayerAPI::RPCMode rpc_mode = MultiplayerAPI::RPC_MODE_DISABLED;
 		MethodInfo info;
+#ifdef TOOLS_ENABLED
+		Vector<Variant> default_arg_values;
+		String doc_description;
+#endif // TOOLS_ENABLED
 
 		bool resolved_signature = false;
 		bool resolved_body = false;
@@ -725,7 +753,7 @@ public:
 
 	struct MatchBranchNode : public Node {
 		Vector<PatternNode *> patterns;
-		SuiteNode *block;
+		SuiteNode *block = nullptr;
 		bool has_wildcard = false;
 
 		MatchBranchNode() {
@@ -816,6 +844,9 @@ public:
 		IdentifierNode *identifier = nullptr;
 		Vector<ParameterNode *> parameters;
 		HashMap<StringName, int> parameters_indices;
+#ifdef TOOLS_ENABLED
+		String doc_description;
+#endif // TOOLS_ENABLED
 
 		SignalNode() {
 			type = SIGNAL;
@@ -970,7 +1001,7 @@ public:
 			OP_LOGIC_NOT,
 		};
 
-		OpType operation;
+		OpType operation = OP_POSITIVE;
 		Variant::Operator variant_op = Variant::OP_MAX;
 		ExpressionNode *operand = nullptr;
 
@@ -1008,6 +1039,9 @@ public:
 		MultiplayerAPI::RPCMode rpc_mode = MultiplayerAPI::RPC_MODE_DISABLED;
 		int assignments = 0;
 		int usages = 0;
+#ifdef TOOLS_ENABLED
+		String doc_description;
+#endif // TOOLS_ENABLED
 
 		VariableNode() {
 			type = VARIABLE;
@@ -1076,6 +1110,7 @@ private:
 	bool panic_mode = false;
 	bool can_break = false;
 	bool can_continue = false;
+	bool is_continue_match = false; // Whether a `continue` will act on a `match`.
 	bool is_ignoring_warnings = false;
 	List<bool> multiline_stack;
 
@@ -1137,8 +1172,7 @@ private:
 		PREC_BIT_XOR,
 		PREC_BIT_AND,
 		PREC_BIT_SHIFT,
-		PREC_SUBTRACTION,
-		PREC_ADDITION,
+		PREC_ADDITION_SUBTRACTION,
 		PREC_FACTOR,
 		PREC_SIGN,
 		PREC_BIT_NOT,
@@ -1251,6 +1285,7 @@ private:
 	ExpressionNode *parse_builtin_constant(ExpressionNode *p_previous_operand, bool p_can_assign);
 	ExpressionNode *parse_unary_operator(ExpressionNode *p_previous_operand, bool p_can_assign);
 	ExpressionNode *parse_binary_operator(ExpressionNode *p_previous_operand, bool p_can_assign);
+	ExpressionNode *parse_binary_not_in_operator(ExpressionNode *p_previous_operand, bool p_can_assign);
 	ExpressionNode *parse_ternary_operator(ExpressionNode *p_previous_operand, bool p_can_assign);
 	ExpressionNode *parse_assignment(ExpressionNode *p_previous_operand, bool p_can_assign);
 	ExpressionNode *parse_array(ExpressionNode *p_previous_operand, bool p_can_assign);
@@ -1265,13 +1300,19 @@ private:
 	ExpressionNode *parse_subscript(ExpressionNode *p_previous_operand, bool p_can_assign);
 	ExpressionNode *parse_invalid_token(ExpressionNode *p_previous_operand, bool p_can_assign);
 	TypeNode *parse_type(bool p_allow_void = false);
+#ifdef TOOLS_ENABLED
+	// Doc comments.
+	int class_doc_line = 0x7FFFFFFF;
+	bool has_comment(int p_line);
+	String get_doc_comment(int p_line, bool p_single_line = false);
+	void get_class_doc_comment(int p_line, String &p_brief, String &p_desc, Vector<Pair<String, String>> &p_tutorials, bool p_inner_class);
+#endif // TOOLS_ENABLED
 
 public:
 	Error parse(const String &p_source_code, const String &p_script_path, bool p_for_completion);
 	ClassNode *get_tree() const { return head; }
 	bool is_tool() const { return _is_tool; }
 	static Variant::Type get_builtin_type(const StringName &p_type);
-	static GDScriptFunctions::Function get_builtin_function(const StringName &p_name);
 
 	CompletionContext get_completion_context() const { return completion_context; }
 	CompletionCall get_completion_call() const { return completion_call; }

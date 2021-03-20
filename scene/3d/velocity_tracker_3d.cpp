@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -29,7 +29,7 @@
 /*************************************************************************/
 
 #include "velocity_tracker_3d.h"
-#include "core/engine.h"
+#include "core/config/engine.h"
 
 void VelocityTracker3D::set_track_physics_step(bool p_track_physics_step) {
 	physics_step = p_track_physics_step;
@@ -45,7 +45,7 @@ void VelocityTracker3D::update_position(const Vector3 &p_position) {
 	if (physics_step) {
 		ph.frame = Engine::get_singleton()->get_physics_frames();
 	} else {
-		ph.frame = Engine::get_singleton()->get_idle_frame_ticks();
+		ph.frame = Engine::get_singleton()->get_frame_ticks();
 	}
 
 	if (position_history_len == 0 || position_history[0].frame != ph.frame) { //in same frame, use latest
@@ -72,7 +72,7 @@ Vector3 VelocityTracker3D::get_tracked_linear_velocity() const {
 			uint64_t base = Engine::get_singleton()->get_physics_frames();
 			base_time = float(base - position_history[0].frame) / Engine::get_singleton()->get_iterations_per_second();
 		} else {
-			uint64_t base = Engine::get_singleton()->get_idle_frame_ticks();
+			uint64_t base = Engine::get_singleton()->get_frame_ticks();
 			base_time = double(base - position_history[0].frame) / 1000000.0;
 		}
 	}
@@ -109,7 +109,7 @@ void VelocityTracker3D::reset(const Vector3 &p_new_pos) {
 	if (physics_step) {
 		ph.frame = Engine::get_singleton()->get_physics_frames();
 	} else {
-		ph.frame = Engine::get_singleton()->get_idle_frame_ticks();
+		ph.frame = Engine::get_singleton()->get_frame_ticks();
 	}
 
 	position_history.write[0] = ph;
@@ -128,6 +128,4 @@ void VelocityTracker3D::_bind_methods() {
 
 VelocityTracker3D::VelocityTracker3D() {
 	position_history.resize(4); // should be configurable
-	position_history_len = 0;
-	physics_step = false;
 }

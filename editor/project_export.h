@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -87,12 +87,6 @@ private:
 
 	StringName editor_icons;
 
-	Tree *patches;
-	Button *patch_export;
-	int patch_index;
-	EditorFileDialog *patch_dialog;
-	ConfirmationDialog *patch_erase;
-
 	Button *export_button;
 	Button *export_all_button;
 	AcceptDialog *export_all_dialog;
@@ -108,9 +102,6 @@ private:
 	HBoxContainer *export_templates_error;
 
 	String default_filename;
-
-	void _patch_selected(const String &p_path);
-	void _patch_deleted();
 
 	void _runnable_pressed();
 	void _update_parameters(const String &p_edited_property);
@@ -132,9 +123,8 @@ private:
 	void _fill_resource_tree();
 	bool _fill_tree(EditorFileSystemDirectory *p_dir, TreeItem *p_item, Ref<EditorExportPreset> &current, bool p_only_scenes);
 	void _tree_changed();
-
-	void _patch_button_pressed(Object *p_item, int p_column, int p_id);
-	void _patch_edited();
+	void _check_dir_recursive(TreeItem *p_dir, bool p_checked);
+	void _refresh_parent_checks(TreeItem *p_item);
 
 	Variant get_drag_data_fw(const Point2 &p_point, Control *p_from);
 	bool can_drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from) const;
@@ -144,6 +134,11 @@ private:
 	EditorFileDialog *export_project;
 	CheckBox *export_debug;
 	CheckBox *export_pck_zip_debug;
+
+	CheckButton *enc_pck;
+	CheckButton *enc_directory;
+	LineEdit *enc_in_filters;
+	LineEdit *enc_ex_filters;
 
 	void _open_export_template_manager();
 
@@ -161,9 +156,15 @@ private:
 	void _custom_features_changed(const String &p_text);
 
 	bool updating_script_key;
+	bool updating_enc_filters;
+	void _enc_pck_changed(bool p_pressed);
+	void _enc_directory_changed(bool p_pressed);
+	void _enc_filters_changed(const String &p_text);
 	void _script_export_mode_changed(int p_mode);
 	void _script_encryption_key_changed(const String &p_key);
 	bool _validate_script_encryption_key(const String &p_key);
+
+	void _open_key_help_link();
 
 	void _tab_changed(int);
 

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -30,8 +30,8 @@
 
 #include "node_3d.h"
 
-#include "core/engine.h"
-#include "core/message_queue.h"
+#include "core/config/engine.h"
+#include "core/object/message_queue.h"
 #include "scene/main/scene_tree.h"
 #include "scene/main/window.h"
 #include "scene/scene_string_names.h"
@@ -48,7 +48,7 @@
     a) If above is invalid, don't keep invalidating upwards
  2) If a node sets a GLOBAL, it is converted to LOCAL (and forces validation of everything pending below)
 
- drawback: setting/reading globals is useful and used very very often, and using affine inverses is slow
+ drawback: setting/reading globals is useful and used very often, and using affine inverses is slow
 
 ---
 
@@ -103,8 +103,8 @@ void Node3D::_propagate_transform_changed(Node3D *p_origin) {
 	data.children_lock++;
 
 	for (List<Node3D *>::Element *E = data.children.front(); E; E = E->next()) {
-		if (E->get()->data.toplevel_active) {
-			continue; //don't propagate to a toplevel
+		if (E->get()->data.top_level_active) {
+			continue; //don't propagate to a top_level
 		}
 		E->get()->_propagate_transform_changed(p_origin);
 	}
@@ -136,12 +136,12 @@ void Node3D::_notification(int p_what) {
 				data.C = nullptr;
 			}
 
-			if (data.toplevel && !Engine::get_singleton()->is_editor_hint()) {
+			if (data.top_level && !Engine::get_singleton()->is_editor_hint()) {
 				if (data.parent) {
 					data.local_transform = data.parent->get_global_transform() * get_transform();
 					data.dirty = DIRTY_VECTORS; //global is always dirty upon entering a scene
 				}
-				data.toplevel_active = true;
+				data.top_level_active = true;
 			}
 
 			data.dirty |= DIRTY_GLOBAL; //global is always dirty upon entering a scene
@@ -160,7 +160,7 @@ void Node3D::_notification(int p_what) {
 			}
 			data.parent = nullptr;
 			data.C = nullptr;
-			data.toplevel_active = false;
+			data.top_level_active = false;
 		} break;
 		case NOTIFICATION_ENTER_WORLD: {
 			data.inside_world = true;
@@ -226,10 +226,6 @@ void Node3D::_notification(int p_what) {
 void Node3D::set_transform(const Transform &p_transform) {
 	data.local_transform = p_transform;
 	data.dirty |= DIRTY_VECTORS;
-	_change_notify("translation");
-	_change_notify("rotation");
-	_change_notify("rotation_degrees");
-	_change_notify("scale");
 	_propagate_transform_changed(this);
 	if (data.notify_local_transform) {
 		notification(NOTIFICATION_LOCAL_TRANSFORM_CHANGED);
@@ -238,9 +234,9 @@ void Node3D::set_transform(const Transform &p_transform) {
 
 void Node3D::set_global_transform(const Transform &p_transform) {
 	Transform xform =
-			(data.parent && !data.toplevel_active) ?
-					data.parent->get_global_transform().affine_inverse() * p_transform :
-					p_transform;
+			(data.parent && !data.top_level_active) ?
+					  data.parent->get_global_transform().affine_inverse() * p_transform :
+					  p_transform;
 
 	set_transform(xform);
 }
@@ -261,7 +257,7 @@ Transform Node3D::get_global_transform() const {
 			_update_local_transform();
 		}
 
-		if (data.parent && !data.toplevel_active) {
+		if (data.parent && !data.top_level_active) {
 			data.global_transform = data.parent->get_global_transform() * data.local_transform;
 		} else {
 			data.global_transform = data.local_transform;
@@ -307,7 +303,6 @@ Transform Node3D::get_relative_transform(const Node *p_parent) const {
 
 void Node3D::set_translation(const Vector3 &p_translation) {
 	data.local_transform.origin = p_translation;
-	_change_notify("transform");
 	_propagate_transform_changed(this);
 	if (data.notify_local_transform) {
 		notification(NOTIFICATION_LOCAL_TRANSFORM_CHANGED);
@@ -322,7 +317,6 @@ void Node3D::set_rotation(const Vector3 &p_euler_rad) {
 
 	data.rotation = p_euler_rad;
 	data.dirty |= DIRTY_LOCAL;
-	_change_notify("transform");
 	_propagate_transform_changed(this);
 	if (data.notify_local_transform) {
 		notification(NOTIFICATION_LOCAL_TRANSFORM_CHANGED);
@@ -330,7 +324,7 @@ void Node3D::set_rotation(const Vector3 &p_euler_rad) {
 }
 
 void Node3D::set_rotation_degrees(const Vector3 &p_euler_deg) {
-	set_rotation(p_euler_deg * Math_PI / 180.0);
+	set_rotation(p_euler_deg * (Math_PI / 180.0));
 }
 
 void Node3D::set_scale(const Vector3 &p_scale) {
@@ -341,7 +335,6 @@ void Node3D::set_scale(const Vector3 &p_scale) {
 
 	data.scale = p_scale;
 	data.dirty |= DIRTY_LOCAL;
-	_change_notify("transform");
 	_propagate_transform_changed(this);
 	if (data.notify_local_transform) {
 		notification(NOTIFICATION_LOCAL_TRANSFORM_CHANGED);
@@ -364,7 +357,7 @@ Vector3 Node3D::get_rotation() const {
 }
 
 Vector3 Node3D::get_rotation_degrees() const {
-	return get_rotation() * 180.0 / Math_PI;
+	return get_rotation() * (180.0 / Math_PI);
 }
 
 Vector3 Node3D::get_scale() const {
@@ -462,8 +455,8 @@ bool Node3D::is_scale_disabled() const {
 	return data.disable_scale;
 }
 
-void Node3D::set_as_toplevel(bool p_enabled) {
-	if (data.toplevel == p_enabled) {
+void Node3D::set_as_top_level(bool p_enabled) {
+	if (data.top_level == p_enabled) {
 		return;
 	}
 	if (is_inside_tree() && !Engine::get_singleton()->is_editor_hint()) {
@@ -473,16 +466,16 @@ void Node3D::set_as_toplevel(bool p_enabled) {
 			set_transform(data.parent->get_global_transform().affine_inverse() * get_global_transform());
 		}
 
-		data.toplevel = p_enabled;
-		data.toplevel_active = p_enabled;
+		data.top_level = p_enabled;
+		data.top_level_active = p_enabled;
 
 	} else {
-		data.toplevel = p_enabled;
+		data.top_level = p_enabled;
 	}
 }
 
-bool Node3D::is_set_as_toplevel() const {
-	return data.toplevel;
+bool Node3D::is_set_as_top_level() const {
+	return data.top_level;
 }
 
 Ref<World3D> Node3D::get_world_3d() const {
@@ -495,7 +488,6 @@ Ref<World3D> Node3D::get_world_3d() const {
 void Node3D::_propagate_visibility_changed() {
 	notification(NOTIFICATION_VISIBILITY_CHANGED);
 	emit_signal(SceneStringNames::get_singleton()->visibility_changed);
-	_change_notify("visible");
 #ifdef TOOLS_ENABLED
 	if (data.gizmo.is_valid()) {
 		_update_gizmo();
@@ -715,8 +707,8 @@ void Node3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_global_transform"), &Node3D::get_global_transform);
 	ClassDB::bind_method(D_METHOD("get_parent_spatial"), &Node3D::get_parent_spatial);
 	ClassDB::bind_method(D_METHOD("set_ignore_transform_notification", "enabled"), &Node3D::set_ignore_transform_notification);
-	ClassDB::bind_method(D_METHOD("set_as_toplevel", "enable"), &Node3D::set_as_toplevel);
-	ClassDB::bind_method(D_METHOD("is_set_as_toplevel"), &Node3D::is_set_as_toplevel);
+	ClassDB::bind_method(D_METHOD("set_as_top_level", "enable"), &Node3D::set_as_top_level);
+	ClassDB::bind_method(D_METHOD("is_set_as_top_level"), &Node3D::is_set_as_top_level);
 	ClassDB::bind_method(D_METHOD("set_disable_scale", "disable"), &Node3D::set_disable_scale);
 	ClassDB::bind_method(D_METHOD("is_scale_disabled"), &Node3D::is_scale_disabled);
 	ClassDB::bind_method(D_METHOD("get_world_3d"), &Node3D::get_world_3d);
@@ -755,8 +747,8 @@ void Node3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("orthonormalize"), &Node3D::orthonormalize);
 	ClassDB::bind_method(D_METHOD("set_identity"), &Node3D::set_identity);
 
-	ClassDB::bind_method(D_METHOD("look_at", "target", "up"), &Node3D::look_at);
-	ClassDB::bind_method(D_METHOD("look_at_from_position", "position", "target", "up"), &Node3D::look_at_from_position);
+	ClassDB::bind_method(D_METHOD("look_at", "target", "up"), &Node3D::look_at, DEFVAL(Vector3(0, 1, 0)));
+	ClassDB::bind_method(D_METHOD("look_at_from_position", "position", "target", "up"), &Node3D::look_at_from_position, DEFVAL(Vector3(0, 1, 0)));
 
 	ClassDB::bind_method(D_METHOD("to_local", "global_point"), &Node3D::to_local);
 	ClassDB::bind_method(D_METHOD("to_global", "local_point"), &Node3D::to_global);
@@ -773,6 +765,7 @@ void Node3D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "rotation_degrees", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_EDITOR), "set_rotation_degrees", "get_rotation_degrees");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "rotation", PROPERTY_HINT_NONE, "", 0), "set_rotation", "get_rotation");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "scale", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_EDITOR), "set_scale", "get_scale");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "top_level"), "set_as_top_level", "is_set_as_top_level");
 	ADD_GROUP("Matrix", "");
 	ADD_PROPERTY(PropertyInfo(Variant::TRANSFORM, "transform", PROPERTY_HINT_NONE, ""), "set_transform", "get_transform");
 	ADD_GROUP("Visibility", "");
@@ -783,28 +776,4 @@ void Node3D::_bind_methods() {
 }
 
 Node3D::Node3D() :
-		xform_change(this) {
-	data.dirty = DIRTY_NONE;
-	data.children_lock = 0;
-
-	data.ignore_notification = false;
-	data.toplevel = false;
-	data.toplevel_active = false;
-	data.scale = Vector3(1, 1, 1);
-	data.viewport = nullptr;
-	data.inside_world = false;
-	data.visible = true;
-	data.disable_scale = false;
-
-#ifdef TOOLS_ENABLED
-	data.gizmo_disabled = false;
-	data.gizmo_dirty = false;
-#endif
-	data.notify_local_transform = false;
-	data.notify_transform = false;
-	data.parent = nullptr;
-	data.C = nullptr;
-}
-
-Node3D::~Node3D() {
-}
+		xform_change(this) {}

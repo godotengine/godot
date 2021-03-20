@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -51,7 +51,7 @@ String ResourceImporterLayeredTexture::get_importer_name() const {
 			return "cubemap_array_texture";
 		} break;
 		case MODE_3D: {
-			return "cubemap_3d_texture";
+			return "3d_texture";
 		} break;
 	}
 
@@ -70,7 +70,7 @@ String ResourceImporterLayeredTexture::get_visible_name() const {
 			return "CubemapArray";
 		} break;
 		case MODE_3D: {
-			return "3D";
+			return "Texture3D";
 		} break;
 	}
 
@@ -156,15 +156,103 @@ void ResourceImporterLayeredTexture::get_import_options(List<ImportOption> *r_op
 }
 
 void ResourceImporterLayeredTexture::_save_tex(Vector<Ref<Image>> p_images, const String &p_to_path, int p_compress_mode, float p_lossy, Image::CompressMode p_vram_compression, Image::CompressSource p_csource, Image::UsedChannels used_channels, bool p_mipmaps, bool p_force_po2) {
-	for (int i = 0; i < p_images.size(); i++) {
-		if (p_force_po2) {
-			p_images.write[i]->resize_to_po2();
+	Vector<Ref<Image>> mipmap_images; //for 3D
+
+	if (mode == MODE_3D) {
+		//3D saves in its own way
+
+		for (int i = 0; i < p_images.size(); i++) {
+			if (p_images.write[i]->has_mipmaps()) {
+				p_images.write[i]->clear_mipmaps();
+			}
+
+			if (p_force_po2) {
+				p_images.write[i]->resize_to_po2();
+			}
 		}
 
 		if (p_mipmaps) {
-			p_images.write[i]->generate_mipmaps();
-		} else {
-			p_images.write[i]->clear_mipmaps();
+			Vector<Ref<Image>> parent_images = p_images;
+			//create 3D mipmaps, this is horrible, though not used very often
+			int w = p_images[0]->get_width();
+			int h = p_images[0]->get_height();
+			int d = p_images.size();
+
+			while (w > 1 || h > 1 || d > 1) {
+				Vector<Ref<Image>> mipmaps;
+				int mm_w = MAX(1, w >> 1);
+				int mm_h = MAX(1, h >> 1);
+				int mm_d = MAX(1, d >> 1);
+
+				for (int i = 0; i < mm_d; i++) {
+					Ref<Image> mm;
+					mm.instance();
+					mm->create(mm_w, mm_h, false, p_images[0]->get_format());
+					Vector3 pos;
+					pos.z = float(i) * float(d) / float(mm_d) + 0.5;
+					for (int x = 0; x < mm_w; x++) {
+						for (int y = 0; y < mm_h; y++) {
+							pos.x = float(x) * float(w) / float(mm_w) + 0.5;
+							pos.y = float(y) * float(h) / float(mm_h) + 0.5;
+
+							Vector3i posi = Vector3i(pos);
+							Vector3 fract = pos - Vector3(posi);
+							Vector3i posi_n = posi;
+							if (posi_n.x < w - 1) {
+								posi_n.x++;
+							}
+							if (posi_n.y < h - 1) {
+								posi_n.y++;
+							}
+							if (posi_n.z < d - 1) {
+								posi_n.z++;
+							}
+
+							Color c000 = parent_images[posi.z]->get_pixel(posi.x, posi.y);
+							Color c100 = parent_images[posi.z]->get_pixel(posi_n.x, posi.y);
+							Color c010 = parent_images[posi.z]->get_pixel(posi.x, posi_n.y);
+							Color c110 = parent_images[posi.z]->get_pixel(posi_n.x, posi_n.y);
+							Color c001 = parent_images[posi_n.z]->get_pixel(posi.x, posi.y);
+							Color c101 = parent_images[posi_n.z]->get_pixel(posi_n.x, posi.y);
+							Color c011 = parent_images[posi_n.z]->get_pixel(posi.x, posi_n.y);
+							Color c111 = parent_images[posi_n.z]->get_pixel(posi_n.x, posi_n.y);
+
+							Color cx00 = c000.lerp(c100, fract.x);
+							Color cx01 = c001.lerp(c101, fract.x);
+							Color cx10 = c010.lerp(c110, fract.x);
+							Color cx11 = c011.lerp(c111, fract.x);
+
+							Color cy0 = cx00.lerp(cx10, fract.y);
+							Color cy1 = cx01.lerp(cx11, fract.y);
+
+							Color cz = cy0.lerp(cy1, fract.z);
+
+							mm->set_pixel(x, y, cz);
+						}
+					}
+
+					mipmaps.push_back(mm);
+				}
+
+				w = mm_w;
+				h = mm_h;
+				d = mm_d;
+
+				mipmap_images.append_array(mipmaps);
+				parent_images = mipmaps;
+			}
+		}
+	} else {
+		for (int i = 0; i < p_images.size(); i++) {
+			if (p_force_po2) {
+				p_images.write[i]->resize_to_po2();
+			}
+
+			if (p_mipmaps) {
+				p_images.write[i]->generate_mipmaps();
+			} else {
+				p_images.write[i]->clear_mipmaps();
+			}
 		}
 	}
 
@@ -175,18 +263,21 @@ void ResourceImporterLayeredTexture::_save_tex(Vector<Ref<Image>> p_images, cons
 	f->store_8('L');
 
 	f->store_32(StreamTextureLayered::FORMAT_VERSION);
-	f->store_32(p_images.size());
+	f->store_32(p_images.size()); //2d layers or 3d depth
 	f->store_32(mode);
-	f->store_32(0); //dataformat
-	f->store_32(0); //mipmap limit
-
-	//reserved
 	f->store_32(0);
+
+	f->store_32(0);
+	f->store_32(mipmap_images.size()); // amount of mipmaps
 	f->store_32(0);
 	f->store_32(0);
 
 	for (int i = 0; i < p_images.size(); i++) {
 		ResourceImporterTexture::save_to_stex_format(f, p_images[i], ResourceImporterTexture::CompressMode(p_compress_mode), used_channels, p_vram_compression, p_lossy);
+	}
+
+	for (int i = 0; i < mipmap_images.size(); i++) {
+		ResourceImporterTexture::save_to_stex_format(f, mipmap_images[i], ResourceImporterTexture::CompressMode(p_compress_mode), used_channels, p_vram_compression, p_lossy);
 	}
 
 	f->close();
@@ -282,7 +373,7 @@ Error ResourceImporterLayeredTexture::import(const String &p_source_file, const 
 			int x = slice_w * j;
 			int y = slice_h * i;
 			Ref<Image> slice = image->get_rect(Rect2(x, y, slice_w, slice_h));
-			ERR_CONTINUE(slice.is_null() || slice->empty());
+			ERR_CONTINUE(slice.is_null() || slice->is_empty());
 			if (slice->get_width() != slice_w || slice->get_height() != slice_h) {
 				slice->resize(slice_w, slice_h);
 			}
@@ -300,8 +391,8 @@ Error ResourceImporterLayeredTexture::import(const String &p_source_file, const 
 		bool ok_on_pc = false;
 		bool is_hdr = (image->get_format() >= Image::FORMAT_RF && image->get_format() <= Image::FORMAT_RGBE9995);
 		bool is_ldr = (image->get_format() >= Image::FORMAT_L8 && image->get_format() <= Image::FORMAT_RGB565);
-		bool can_bptc = ProjectSettings::get_singleton()->get("rendering/vram_compression/import_bptc");
-		bool can_s3tc = ProjectSettings::get_singleton()->get("rendering/vram_compression/import_s3tc");
+		bool can_bptc = ProjectSettings::get_singleton()->get("rendering/textures/vram_compression/import_bptc");
+		bool can_s3tc = ProjectSettings::get_singleton()->get("rendering/textures/vram_compression/import_s3tc");
 
 		if (can_bptc) {
 			formats_imported.push_back("bptc"); //needs to be aded anyway
@@ -356,13 +447,13 @@ Error ResourceImporterLayeredTexture::import(const String &p_source_file, const 
 			ok_on_pc = true;
 		}
 
-		if (ProjectSettings::get_singleton()->get("rendering/vram_compression/import_etc2")) {
+		if (ProjectSettings::get_singleton()->get("rendering/textures/vram_compression/import_etc2")) {
 			_save_tex(slices, p_save_path + ".etc2." + extension, compress_mode, lossy, Image::COMPRESS_ETC2, csource, used_channels, mipmaps, true);
 			r_platform_variants->push_back("etc2");
 			formats_imported.push_back("etc2");
 		}
 
-		if (ProjectSettings::get_singleton()->get("rendering/vram_compression/import_pvrtc")) {
+		if (ProjectSettings::get_singleton()->get("rendering/textures/vram_compression/import_pvrtc")) {
 			_save_tex(slices, p_save_path + ".etc2." + extension, compress_mode, lossy, Image::COMPRESS_ETC2, csource, used_channels, mipmaps, true);
 			r_platform_variants->push_back("pvrtc");
 			formats_imported.push_back("pvrtc");
@@ -401,7 +492,7 @@ String ResourceImporterLayeredTexture::get_import_settings_string() const {
 
 	int index = 0;
 	while (compression_formats[index]) {
-		String setting_path = "rendering/vram_compression/import_" + String(compression_formats[index]);
+		String setting_path = "rendering/textures/vram_compression/import_" + String(compression_formats[index]);
 		bool test = ProjectSettings::get_singleton()->get(setting_path);
 		if (test) {
 			s += String(compression_formats[index]);
@@ -433,7 +524,7 @@ bool ResourceImporterLayeredTexture::are_import_settings_valid(const String &p_p
 	int index = 0;
 	bool valid = true;
 	while (compression_formats[index]) {
-		String setting_path = "rendering/vram_compression/import_" + String(compression_formats[index]);
+		String setting_path = "rendering/textures/vram_compression/import_" + String(compression_formats[index]);
 		bool test = ProjectSettings::get_singleton()->get(setting_path);
 		if (test) {
 			if (formats_imported.find(compression_formats[index]) == -1) {

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -30,9 +30,9 @@
 
 #include "compression.h"
 
+#include "core/config/project_settings.h"
 #include "core/io/zip_io.h"
 #include "core/os/copymem.h"
-#include "core/project_settings.h"
 
 #include "thirdparty/misc/fastlz.h"
 
@@ -180,8 +180,95 @@ int Compression::decompress(uint8_t *p_dst, int p_dst_max_size, const uint8_t *p
 	ERR_FAIL_V(-1);
 }
 
+/**
+	This will handle both Gzip and Deflate streams. It will automatically allocate the output buffer into the provided p_dst_vect Vector.
+	This is required for compressed data whose final uncompressed size is unknown, as is the case for HTTP response bodies.
+	This is much slower however than using Compression::decompress because it may result in multiple full copies of the output buffer.
+*/
+int Compression::decompress_dynamic(Vector<uint8_t> *p_dst_vect, int p_max_dst_size, const uint8_t *p_src, int p_src_size, Mode p_mode) {
+	int ret;
+	uint8_t *dst = nullptr;
+	int out_mark = 0;
+	z_stream strm;
+
+	ERR_FAIL_COND_V(p_src_size <= 0, Z_DATA_ERROR);
+
+	// This function only supports GZip and Deflate
+	int window_bits = p_mode == MODE_DEFLATE ? 15 : 15 + 16;
+	ERR_FAIL_COND_V(p_mode != MODE_DEFLATE && p_mode != MODE_GZIP, Z_ERRNO);
+
+	// Initialize the stream
+	strm.zalloc = Z_NULL;
+	strm.zfree = Z_NULL;
+	strm.opaque = Z_NULL;
+	strm.avail_in = 0;
+	strm.next_in = Z_NULL;
+
+	int err = inflateInit2(&strm, window_bits);
+	ERR_FAIL_COND_V(err != Z_OK, -1);
+
+	// Setup the stream inputs
+	strm.next_in = (Bytef *)p_src;
+	strm.avail_in = p_src_size;
+
+	// Ensure the destination buffer is empty
+	p_dst_vect->resize(0);
+
+	// decompress until deflate stream ends or end of file
+	do {
+		// Add another chunk size to the output buffer
+		// This forces a copy of the whole buffer
+		p_dst_vect->resize(p_dst_vect->size() + gzip_chunk);
+		// Get pointer to the actual output buffer
+		dst = p_dst_vect->ptrw();
+
+		// Set the stream to the new output stream
+		// Since it was copied, we need to reset the stream to the new buffer
+		strm.next_out = &(dst[out_mark]);
+		strm.avail_out = gzip_chunk;
+
+		// run inflate() on input until output buffer is full and needs to be resized
+		// or input runs out
+		do {
+			ret = inflate(&strm, Z_SYNC_FLUSH);
+
+			switch (ret) {
+				case Z_NEED_DICT:
+					ret = Z_DATA_ERROR;
+					[[fallthrough]];
+				case Z_DATA_ERROR:
+				case Z_MEM_ERROR:
+				case Z_STREAM_ERROR:
+					WARN_PRINT(strm.msg);
+					(void)inflateEnd(&strm);
+					p_dst_vect->resize(0);
+					return ret;
+			}
+		} while (strm.avail_out > 0 && strm.avail_in > 0);
+
+		out_mark += gzip_chunk;
+
+		// Enforce max output size
+		if (p_max_dst_size > -1 && strm.total_out > (uint64_t)p_max_dst_size) {
+			(void)inflateEnd(&strm);
+			p_dst_vect->resize(0);
+			return Z_BUF_ERROR;
+		}
+	} while (ret != Z_STREAM_END);
+
+	// If all done successfully, resize the output if it's larger than the actual output
+	if ((unsigned long)p_dst_vect->size() > strm.total_out) {
+		p_dst_vect->resize(strm.total_out);
+	}
+
+	// clean up and return
+	(void)inflateEnd(&strm);
+	return Z_OK;
+}
+
 int Compression::zlib_level = Z_DEFAULT_COMPRESSION;
 int Compression::gzip_level = Z_DEFAULT_COMPRESSION;
 int Compression::zstd_level = 3;
 bool Compression::zstd_long_distance_matching = false;
 int Compression::zstd_window_log_size = 27; // ZSTD_WINDOWLOG_LIMIT_DEFAULT
+int Compression::gzip_chunk = 16384;

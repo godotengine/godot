@@ -10,14 +10,23 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\GodotTools.Core\GodotTools.Core.csproj" />
+    <ProjectReference Include="..\GodotTools.Shared\GodotTools.Shared.csproj" />
   </ItemGroup>
+  <!--
+  The Microsoft.Build.Runtime package is too problematic so we create a MSBuild.exe stub. The workaround described
+  here doesn't work with Microsoft.NETFramework.ReferenceAssemblies: https://github.com/microsoft/msbuild/issues/3486
+  We need a MSBuild.exe file as there's an issue in Microsoft.Build where it executes platform dependent code when
+  searching for MSBuild.exe before the fallback to not using it. A stub is fine as it should never be executed.
+  -->
   <ItemGroup>
-    <!--
-    The Microsoft.Build.Runtime package is too problematic so we create a MSBuild.exe stub. The workaround described
-    here doesn't work with Microsoft.NETFramework.ReferenceAssemblies: https://github.com/microsoft/msbuild/issues/3486
-    We need a MSBuild.exe file as there's an issue in Microsoft.Build where it executes platform dependent code when
-    searching for MSBuild.exe before the fallback to not using it. A stub is fine as it should never be executed.
-    -->
     <None Include="MSBuild.exe" CopyToOutputDirectory="Always" />
   </ItemGroup>
+  <Target Name="CopyMSBuildStubWindows" AfterTargets="Build" Condition=" '$(GodotPlatform)' == 'windows' Or ( '$(GodotPlatform)' == '' And '$(OS)' == 'Windows_NT' ) ">
+    <PropertyGroup>
+      <GodotSourceRootPath>$(SolutionDir)/../../../../</GodotSourceRootPath>
+      <GodotOutputDataDir>$(GodotSourceRootPath)/bin/GodotSharp</GodotOutputDataDir>
+    </PropertyGroup>
+    <!-- Need to copy it here as well on Windows -->
+    <Copy SourceFiles="MSBuild.exe" DestinationFiles="$(GodotOutputDataDir)\Mono\lib\mono\v4.0\MSBuild.exe" />
+  </Target>
 </Project>

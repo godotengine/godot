@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -30,7 +30,7 @@
 
 #include "spring_arm_3d.h"
 
-#include "core/engine.h"
+#include "core/config/engine.h"
 #include "scene/3d/collision_object_3d.h"
 #include "scene/resources/sphere_shape_3d.h"
 #include "servers/physics_server_3d.h"
@@ -78,11 +78,11 @@ void SpringArm3D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "margin"), "set_margin", "get_margin");
 }
 
-float SpringArm3D::get_length() const {
+real_t SpringArm3D::get_length() const {
 	return spring_length;
 }
 
-void SpringArm3D::set_length(float p_length) {
+void SpringArm3D::set_length(real_t p_length) {
 	if (is_inside_tree() && (Engine::get_singleton()->is_editor_hint() || get_tree()->is_debugging_collisions_hint())) {
 		update_gizmo();
 	}
@@ -106,11 +106,11 @@ uint32_t SpringArm3D::get_mask() {
 	return mask;
 }
 
-float SpringArm3D::get_margin() {
+real_t SpringArm3D::get_margin() {
 	return margin;
 }
 
-void SpringArm3D::set_margin(float p_margin) {
+void SpringArm3D::set_margin(real_t p_margin) {
 	margin = p_margin;
 }
 
@@ -126,7 +126,7 @@ void SpringArm3D::clear_excluded_objects() {
 	excluded_objects.clear();
 }
 
-float SpringArm3D::get_hit_length() {
+real_t SpringArm3D::get_hit_length() {
 	return current_spring_length;
 }
 
@@ -143,7 +143,7 @@ void SpringArm3D::process_spring() {
 		PhysicsDirectSpaceState3D::RayResult r;
 		bool intersected = get_world_3d()->get_direct_space_state()->intersect_ray(get_global_transform().origin, get_global_transform().origin + motion, r, excluded_objects, mask);
 		if (intersected) {
-			float dist = get_global_transform().origin.distance_to(r.position);
+			real_t dist = get_global_transform().origin.distance_to(r.position);
 			dist -= margin;
 			motion_delta = dist / (spring_length);
 		}

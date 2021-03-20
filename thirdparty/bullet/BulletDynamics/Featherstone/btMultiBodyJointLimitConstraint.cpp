@@ -22,7 +22,7 @@ subject to the following restrictions:
 
 btMultiBodyJointLimitConstraint::btMultiBodyJointLimitConstraint(btMultiBody* body, int link, btScalar lower, btScalar upper)
 	//:btMultiBodyConstraint(body,0,link,-1,2,true),
-	: btMultiBodyConstraint(body, body, link, body->getLink(link).m_parent, 2, true),
+	: btMultiBodyConstraint(body, body, link, body->getLink(link).m_parent, 2, true, MULTIBODY_CONSTRAINT_LIMIT),
 	  m_lowerBound(lower),
 	  m_upperBound(upper)
 {

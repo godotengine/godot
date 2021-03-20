@@ -120,13 +120,13 @@ namespace Godot
         /// <param name="b">The destination quaternion.</param>
         /// <param name="preA">A quaternion before this quaternion.</param>
         /// <param name="postB">A quaternion after `b`.</param>
-        /// <param name="t">A value on the range of 0.0 to 1.0, representing the amount of interpolation.</param>
+        /// <param name="weight">A value on the range of 0.0 to 1.0, representing the amount of interpolation.</param>
         /// <returns>The interpolated quaternion.</returns>
-        public Quat CubicSlerp(Quat b, Quat preA, Quat postB, real_t t)
+        public Quat CubicSlerp(Quat b, Quat preA, Quat postB, real_t weight)
         {
-            real_t t2 = (1.0f - t) * t * 2f;
-            Quat sp = Slerp(b, t);
-            Quat sq = preA.Slerpni(postB, t);
+            real_t t2 = (1.0f - weight) * weight * 2f;
+            Quat sp = Slerp(b, weight);
+            Quat sq = preA.Slerpni(postB, weight);
             return sp.Slerpni(sq, t2);
         }
 

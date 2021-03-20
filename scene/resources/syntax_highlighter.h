@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -31,7 +31,7 @@
 #ifndef SYNTAX_HIGHLIGHTER_H
 #define SYNTAX_HIGHLIGHTER_H
 
-#include "core/resource.h"
+#include "core/io/resource.h"
 
 class TextEdit;
 
@@ -40,7 +40,7 @@ class SyntaxHighlighter : public Resource {
 
 private:
 	Map<int, Dictionary> highlighting_cache;
-	void _line_edited_from(int p_line);
+	void _lines_edited_from(int p_from_line, int p_to_line);
 
 protected:
 	ObjectID text_edit_instance_id; // For validity check
@@ -75,7 +75,7 @@ private:
 		Color color;
 		String start_key;
 		String end_key;
-		bool line_only;
+		bool line_only = false;
 	};
 	Vector<ColorRegion> color_regions;
 	Map<int, int> color_region_cache;

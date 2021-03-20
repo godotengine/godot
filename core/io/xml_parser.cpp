@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -30,68 +30,11 @@
 
 #include "xml_parser.h"
 
-#include "core/print_string.h"
+#include "core/string/print_string.h"
 
 //#define DEBUG_XML
 
 VARIANT_ENUM_CAST(XMLParser::NodeType);
-
-static bool _equalsn(const CharType *str1, const CharType *str2, int len) {
-	int i;
-	for (i = 0; i < len && str1[i] && str2[i]; ++i) {
-		if (str1[i] != str2[i]) {
-			return false;
-		}
-	}
-
-	// if one (or both) of the strings was smaller then they
-	// are only equal if they have the same length
-	return (i == len) || (str1[i] == 0 && str2[i] == 0);
-}
-
-String XMLParser::_replace_special_characters(const String &origstr) {
-	int pos = origstr.find("&");
-	int oldPos = 0;
-
-	if (pos == -1) {
-		return origstr;
-	}
-
-	String newstr;
-
-	while (pos != -1 && pos < origstr.length() - 2) {
-		// check if it is one of the special characters
-
-		int specialChar = -1;
-		for (int i = 0; i < (int)special_characters.size(); ++i) {
-			const CharType *p = &origstr[pos] + 1;
-
-			if (_equalsn(&special_characters[i][1], p, special_characters[i].length() - 1)) {
-				specialChar = i;
-				break;
-			}
-		}
-
-		if (specialChar != -1) {
-			newstr += (origstr.substr(oldPos, pos - oldPos));
-			newstr += (special_characters[specialChar][0]);
-			pos += special_characters[specialChar].length();
-		} else {
-			newstr += (origstr.substr(oldPos, pos - oldPos + 1));
-			pos += 1;
-		}
-
-		// find next &
-		oldPos = pos;
-		pos = origstr.find("&", pos);
-	}
-
-	if (oldPos < origstr.length() - 1) {
-		newstr += (origstr.substr(oldPos, origstr.length() - oldPos));
-	}
-
-	return newstr;
-}
 
 static inline bool _is_white_space(char c) {
 	return (c == ' ' || c == '\t' || c == '\n' || c == '\r');
@@ -116,7 +59,7 @@ bool XMLParser::_set_text(char *start, char *end) {
 
 	// set current text to the parsed text, and replace xml special characters
 	String s = String::utf8(start, (int)(end - start));
-	node_name = _replace_special_characters(s);
+	node_name = s.xml_unescape();
 
 	// current XML node type is text
 	node_type = NODE_TEXT;
@@ -292,7 +235,7 @@ void XMLParser::_parse_opening_xml_element() {
 				String s = String::utf8(attributeValueBegin,
 						(int)(attributeValueEnd - attributeValueBegin));
 
-				attr.value = _replace_special_characters(s);
+				attr.value = s.xml_unescape();
 				attributes.push_back(attr);
 			} else {
 				// tag is closed directly
@@ -401,7 +344,7 @@ void XMLParser::_bind_methods() {
 }
 
 Error XMLParser::read() {
-	// if not end reached, parse the node
+	// if end not reached, parse the node
 	if (P && (P - data) < (int64_t)length - 1 && *P != 0) {
 		_parse_current_node();
 		return OK;
@@ -555,11 +498,6 @@ int XMLParser::get_current_line() const {
 }
 
 XMLParser::XMLParser() {
-	special_characters.push_back("&amp;");
-	special_characters.push_back("<lt;");
-	special_characters.push_back(">gt;");
-	special_characters.push_back("\"quot;");
-	special_characters.push_back("'apos;");
 }
 
 XMLParser::~XMLParser() {

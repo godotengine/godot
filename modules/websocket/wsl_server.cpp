@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -31,17 +31,8 @@
 #ifndef JAVASCRIPT_ENABLED
 
 #include "wsl_server.h"
+#include "core/config/project_settings.h"
 #include "core/os/os.h"
-#include "core/project_settings.h"
-
-WSLServer::PendingPeer::PendingPeer() {
-	use_ssl = false;
-	time = 0;
-	has_request = false;
-	response_sent = 0;
-	req_pos = 0;
-	memset(req_buf, 0, sizeof(req_buf));
-}
 
 bool WSLServer::PendingPeer::_parse_request(const Vector<String> p_protocols) {
 	Vector<String> psa = String((char *)req_buf).split("\r\n");
@@ -310,10 +301,6 @@ Error WSLServer::set_buffers(int p_in_buffer, int p_in_packets, int p_out_buffer
 }
 
 WSLServer::WSLServer() {
-	_in_buf_size = DEF_BUF_SHIFT;
-	_in_pkt_size = DEF_PKT_SHIFT;
-	_out_buf_size = DEF_BUF_SHIFT;
-	_out_pkt_size = DEF_PKT_SHIFT;
 	_server.instance();
 }
 

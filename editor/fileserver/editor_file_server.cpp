@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -278,7 +278,8 @@ void EditorFileServer::_thread_start(void *s) {
 				cd->connection = self->server->take_connection();
 				cd->efs = self;
 				cd->quit = false;
-				cd->thread = Thread::create(_subthread_start, cd);
+				cd->thread = memnew(Thread);
+				cd->thread->start(_subthread_start, cd);
 			}
 		}
 
@@ -287,8 +288,7 @@ void EditorFileServer::_thread_start(void *s) {
 			Thread *w = self->to_wait.front()->get();
 			self->to_wait.erase(w);
 			self->wait_mutex.unlock();
-			Thread::wait_to_finish(w);
-			memdelete(w);
+			w->wait_to_finish();
 			self->wait_mutex.lock();
 		}
 		self->wait_mutex.unlock();
@@ -317,7 +317,7 @@ EditorFileServer::EditorFileServer() {
 	quit = false;
 	active = false;
 	cmd = CMD_NONE;
-	thread = Thread::create(_thread_start, this);
+	thread.start(_thread_start, this);
 
 	EDITOR_DEF("filesystem/file_server/port", 6010);
 	EDITOR_DEF("filesystem/file_server/password", "");
@@ -325,6 +325,5 @@ EditorFileServer::EditorFileServer() {
 
 EditorFileServer::~EditorFileServer() {
 	quit = true;
-	Thread::wait_to_finish(thread);
-	memdelete(thread);
+	thread.wait_to_finish();
 }

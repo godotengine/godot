@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -87,10 +87,10 @@ void EditorAssetLibraryItem::_bind_methods() {
 EditorAssetLibraryItem::EditorAssetLibraryItem() {
 	Ref<StyleBoxEmpty> border;
 	border.instance();
-	border->set_default_margin(MARGIN_LEFT, 5 * EDSCALE);
-	border->set_default_margin(MARGIN_RIGHT, 5 * EDSCALE);
-	border->set_default_margin(MARGIN_BOTTOM, 5 * EDSCALE);
-	border->set_default_margin(MARGIN_TOP, 5 * EDSCALE);
+	border->set_default_margin(SIDE_LEFT, 5 * EDSCALE);
+	border->set_default_margin(SIDE_RIGHT, 5 * EDSCALE);
+	border->set_default_margin(SIDE_BOTTOM, 5 * EDSCALE);
+	border->set_default_margin(SIDE_TOP, 5 * EDSCALE);
 	add_theme_style_override("panel", border);
 
 	HBoxContainer *hb = memnew(HBoxContainer);
@@ -295,8 +295,8 @@ EditorAssetLibraryItemDescription::EditorAssetLibraryItemDescription() {
 	preview_hb->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 
 	previews->add_child(preview_hb);
-	get_ok()->set_text(TTR("Download"));
-	get_cancel()->set_text(TTR("Close"));
+	get_ok_button()->set_text(TTR("Download"));
+	get_cancel_button()->set_text(TTR("Close"));
 }
 
 ///////////////////////////////////////////////////////////////////////////////////
@@ -350,7 +350,7 @@ void EditorAssetLibraryItemDownload::_http_download_completed(int p_status, int 
 				if (sha256 != download_sha256) {
 					error_text = TTR("Bad download hash, assuming file has been tampered with.") + "\n";
 					error_text += TTR("Expected:") + " " + sha256 + "\n" + TTR("Got:") + " " + download_sha256;
-					status->set_text(TTR("Failed sha256 hash check"));
+					status->set_text(TTR("Failed SHA-256 hash check"));
 				}
 			}
 		} break;
@@ -359,6 +359,8 @@ void EditorAssetLibraryItemDownload::_http_download_completed(int p_status, int 
 	if (error_text != String()) {
 		download_error->set_text(TTR("Asset Download Error:") + "\n" + error_text);
 		download_error->popup_centered();
+		// Let the user retry the download.
+		retry->show();
 		return;
 	}
 
@@ -459,6 +461,9 @@ void EditorAssetLibraryItemDownload::_install() {
 }
 
 void EditorAssetLibraryItemDownload::_make_request() {
+	// Hide the Retry button if we've just pressed it.
+	retry->hide();
+
 	download->cancel_request();
 	download->set_download_file(EditorSettings::get_singleton()->get_cache_dir().plus_file("tmp_asset_" + itos(asset_id)) + ".zip");
 
@@ -516,6 +521,8 @@ EditorAssetLibraryItemDownload::EditorAssetLibraryItemDownload() {
 	retry = memnew(Button);
 	retry->set_text(TTR("Retry"));
 	retry->connect("pressed", callable_mp(this, &EditorAssetLibraryItemDownload::_make_request));
+	// Only show the Retry button in case of a failure.
+	retry->hide();
 
 	hb2->add_child(retry);
 	hb2->add_child(install);
@@ -577,10 +584,28 @@ void EditorAssetLibrary::_notification(int p_what) {
 			filter->set_right_icon(get_theme_icon("Search", "EditorIcons"));
 			filter->set_clear_button_enabled(true);
 		} break;
+
+		case EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED: {
+			_update_repository_options();
+		} break;
 	}
 }
 
-void EditorAssetLibrary::_unhandled_input(const Ref<InputEvent> &p_event) {
+void EditorAssetLibrary::_update_repository_options() {
+	Dictionary default_urls;
+	default_urls["godotengine.org"] = "https://godotengine.org/asset-library/api";
+	default_urls["localhost"] = "http://127.0.0.1/asset-library/api";
+	Dictionary available_urls = _EDITOR_DEF("asset_library/available_urls", default_urls, true);
+	repository->clear();
+	Array keys = available_urls.keys();
+	for (int i = 0; i < available_urls.size(); i++) {
+		String key = keys[i];
+		repository->add_item(key);
+		repository->set_item_metadata(i, available_urls[key]);
+	}
+}
+
+void EditorAssetLibrary::_unhandled_key_input(const Ref<InputEvent> &p_event) {
 	const Ref<InputEventKey> key = p_event;
 
 	if (key.is_valid() && key->is_pressed()) {
@@ -702,7 +727,7 @@ void EditorAssetLibrary::_image_update(bool use_cache, bool final, const PackedB
 			}
 		}
 
-		if (!image->empty()) {
+		if (!image->is_empty()) {
 			switch (image_queue[p_queue_id].image_type) {
 				case IMAGE_QUEUE_ICON:
 
@@ -900,7 +925,7 @@ void EditorAssetLibrary::_search(int p_page) {
 	}
 
 	if (filter->get_text() != String()) {
-		args += "&filter=" + filter->get_text().http_escape();
+		args += "&filter=" + filter->get_text().uri_encode();
 	}
 
 	if (p_page > 0) {
@@ -910,7 +935,11 @@ void EditorAssetLibrary::_search(int p_page) {
 	_api_request("asset", REQUESTING_SEARCH, args);
 }
 
-void EditorAssetLibrary::_search_text_entered(const String &p_text) {
+void EditorAssetLibrary::_search_text_changed(const String &p_text) {
+	filter_debounce_timer->start();
+}
+
+void EditorAssetLibrary::_filter_debounce_timer_timeout() {
 	_search();
 }
 
@@ -958,14 +987,16 @@ HBoxContainer *EditorAssetLibrary::_make_pages(int p_page, int p_page_count, int
 	for (int i = from; i < to; i++) {
 		if (i == p_page) {
 			Button *current = memnew(Button);
-			current->set_text(itos(i + 1));
+			// Keep the extended padding for the currently active page (see below).
+			current->set_text(vformat(" %d ", i + 1));
 			current->set_disabled(true);
 			current->set_focus_mode(Control::FOCUS_NONE);
 
 			hbc->add_child(current);
 		} else {
 			Button *current = memnew(Button);
-			current->set_text(itos(i + 1));
+			// Add padding to make page number buttons easier to click.
+			current->set_text(vformat(" %d ", i + 1));
 			current->connect("pressed", callable_mp(this, &EditorAssetLibrary::_search), varray(i));
 
 			hbc->add_child(current);
@@ -1147,7 +1178,7 @@ void EditorAssetLibrary::_http_request_completed(int p_status, int p_code, const
 			asset_bottom_page = _make_pages(page, pages, page_len, total_items, result.size());
 			library_vb->add_child(asset_bottom_page);
 
-			if (result.empty()) {
+			if (result.is_empty()) {
 				if (filter->get_text() != String()) {
 					library_error->set_text(
 							vformat(TTR("No results for \"%s\"."), filter->get_text()));
@@ -1182,6 +1213,10 @@ void EditorAssetLibrary::_http_request_completed(int p_status, int p_code, const
 				if (r.has("icon_url") && r["icon_url"] != "") {
 					_request_image(item->get_instance_id(), r["icon_url"], IMAGE_QUEUE_ICON, 0);
 				}
+			}
+
+			if (!result.is_empty()) {
+				library_scroll->set_v_scroll(0);
 			}
 		} break;
 		case REQUESTING_ASSET: {
@@ -1277,7 +1312,7 @@ void EditorAssetLibrary::disable_community_support() {
 }
 
 void EditorAssetLibrary::_bind_methods() {
-	ClassDB::bind_method("_unhandled_input", &EditorAssetLibrary::_unhandled_input);
+	ClassDB::bind_method("_unhandled_key_input", &EditorAssetLibrary::_unhandled_key_input);
 
 	ADD_SIGNAL(MethodInfo("install_asset", PropertyInfo(Variant::STRING, "zip_path"), PropertyInfo(Variant::STRING, "name")));
 }
@@ -1299,10 +1334,15 @@ EditorAssetLibrary::EditorAssetLibrary(bool p_templates_only) {
 	filter = memnew(LineEdit);
 	search_hb->add_child(filter);
 	filter->set_h_size_flags(Control::SIZE_EXPAND_FILL);
-	filter->connect("text_entered", callable_mp(this, &EditorAssetLibrary::_search_text_entered));
-	search = memnew(Button(TTR("Search")));
-	search->connect("pressed", callable_mp(this, &EditorAssetLibrary::_search), make_binds(0));
-	search_hb->add_child(search);
+	filter->connect("text_changed", callable_mp(this, &EditorAssetLibrary::_search_text_changed));
+
+	// Perform a search automatically if the user hasn't entered any text for a certain duration.
+	// This way, the user doesn't need to press Enter to initiate their search.
+	filter_debounce_timer = memnew(Timer);
+	filter_debounce_timer->set_one_shot(true);
+	filter_debounce_timer->set_wait_time(0.25);
+	filter_debounce_timer->connect("timeout", callable_mp(this, &EditorAssetLibrary::_filter_debounce_timer_timeout));
+	search_hb->add_child(filter_debounce_timer);
 
 	if (!p_templates_only) {
 		search_hb->add_child(memnew(VSeparator));
@@ -1351,10 +1391,7 @@ EditorAssetLibrary::EditorAssetLibrary(bool p_templates_only) {
 	search_hb2->add_child(memnew(Label(TTR("Site:") + " ")));
 	repository = memnew(OptionButton);
 
-	repository->add_item("godotengine.org");
-	repository->set_item_metadata(0, "https://godotengine.org/asset-library/api");
-	repository->add_item("localhost");
-	repository->set_item_metadata(1, "http://127.0.0.1/asset-library/api");
+	_update_repository_options();
 
 	repository->connect("item_selected", callable_mp(this, &EditorAssetLibrary::_repository_changed));
 
@@ -1366,6 +1403,7 @@ EditorAssetLibrary::EditorAssetLibrary(bool p_templates_only) {
 	support = memnew(MenuButton);
 	search_hb2->add_child(support);
 	support->set_text(TTR("Support"));
+	support->get_popup()->set_hide_on_checkable_item_selection(false);
 	support->get_popup()->add_check_item(TTR("Official"), SUPPORT_OFFICIAL);
 	support->get_popup()->add_check_item(TTR("Community"), SUPPORT_COMMUNITY);
 	support->get_popup()->add_check_item(TTR("Testing"), SUPPORT_TESTING);
@@ -1387,10 +1425,10 @@ EditorAssetLibrary::EditorAssetLibrary(bool p_templates_only) {
 
 	Ref<StyleBoxEmpty> border2;
 	border2.instance();
-	border2->set_default_margin(MARGIN_LEFT, 15 * EDSCALE);
-	border2->set_default_margin(MARGIN_RIGHT, 35 * EDSCALE);
-	border2->set_default_margin(MARGIN_BOTTOM, 15 * EDSCALE);
-	border2->set_default_margin(MARGIN_TOP, 15 * EDSCALE);
+	border2->set_default_margin(SIDE_LEFT, 15 * EDSCALE);
+	border2->set_default_margin(SIDE_RIGHT, 35 * EDSCALE);
+	border2->set_default_margin(SIDE_BOTTOM, 15 * EDSCALE);
+	border2->set_default_margin(SIDE_TOP, 15 * EDSCALE);
 
 	PanelContainer *library_vb_border = memnew(PanelContainer);
 	library_scroll->add_child(library_vb_border);
@@ -1445,7 +1483,7 @@ EditorAssetLibrary::EditorAssetLibrary(bool p_templates_only) {
 	description = nullptr;
 
 	set_process(true);
-	set_process_unhandled_input(true);
+	set_process_unhandled_key_input(true); // Global shortcuts since there is no main element to be focused.
 
 	downloads_scroll = memnew(ScrollContainer);
 	downloads_scroll->set_enable_h_scroll(true);
@@ -1479,8 +1517,8 @@ AssetLibraryEditorPlugin::AssetLibraryEditorPlugin(EditorNode *p_node) {
 	editor = p_node;
 	addon_library = memnew(EditorAssetLibrary);
 	addon_library->set_v_size_flags(Control::SIZE_EXPAND_FILL);
-	editor->get_viewport()->add_child(addon_library);
-	addon_library->set_anchors_and_margins_preset(Control::PRESET_WIDE);
+	editor->get_main_control()->add_child(addon_library);
+	addon_library->set_anchors_and_offsets_preset(Control::PRESET_WIDE);
 	addon_library->hide();
 }
 

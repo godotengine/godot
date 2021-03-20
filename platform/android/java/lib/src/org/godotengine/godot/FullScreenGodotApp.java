@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -34,6 +34,9 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.view.KeyEvent;
 
+import androidx.annotation.CallSuper;
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.fragment.app.FragmentActivity;
 
 /**
@@ -42,14 +45,19 @@ import androidx.fragment.app.FragmentActivity;
  * It's also a reference implementation for how to setup and use the {@link Godot} fragment
  * within an Android app.
  */
-public abstract class FullScreenGodotApp extends FragmentActivity {
-	protected Godot godotFragment;
+public abstract class FullScreenGodotApp extends FragmentActivity implements GodotHost {
+	@Nullable
+	private Godot godotFragment;
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.godot_app_layout);
-		godotFragment = new Godot();
+		godotFragment = initGodotInstance();
+		if (godotFragment == null) {
+			throw new IllegalStateException("Godot instance must be non-null.");
+		}
+
 		getSupportFragmentManager().beginTransaction().replace(R.id.godot_fragment_container, godotFragment).setPrimaryNavigationFragment(godotFragment).commitNowAllowingStateLoss();
 	}
 
@@ -57,6 +65,28 @@ public abstract class FullScreenGodotApp extends FragmentActivity {
 	public void onNewIntent(Intent intent) {
 		if (godotFragment != null) {
 			godotFragment.onNewIntent(intent);
+		} else {
+			super.onNewIntent(intent);
+		}
+	}
+
+	@CallSuper
+	@Override
+	public void onActivityResult(int requestCode, int resultCode, Intent data) {
+		if (godotFragment != null) {
+			godotFragment.onActivityResult(requestCode, resultCode, data);
+		} else {
+			super.onActivityResult(requestCode, resultCode, data);
+		}
+	}
+
+	@CallSuper
+	@Override
+	public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
+		if (godotFragment != null) {
+			godotFragment.onRequestPermissionsResult(requestCode, permissions, grantResults);
+		} else {
+			super.onRequestPermissionsResult(requestCode, permissions, grantResults);
 		}
 	}
 
@@ -75,5 +105,18 @@ public abstract class FullScreenGodotApp extends FragmentActivity {
 			return true;
 		}
 		return super.onKeyMultiple(inKeyCode, repeatCount, event);
+	}
+
+	/**
+	 * Used to initialize the Godot fragment instance in {@link FullScreenGodotApp#onCreate(Bundle)}.
+	 */
+	@NonNull
+	protected Godot initGodotInstance() {
+		return new Godot();
+	}
+
+	@Nullable
+	protected final Godot getGodotFragment() {
+		return godotFragment;
 	}
 }

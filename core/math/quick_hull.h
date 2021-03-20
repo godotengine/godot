@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -31,17 +31,17 @@
 #ifndef QUICK_HULL_H
 #define QUICK_HULL_H
 
-#include "core/list.h"
 #include "core/math/aabb.h"
 #include "core/math/geometry_3d.h"
-#include "core/set.h"
+#include "core/templates/list.h"
+#include "core/templates/set.h"
 
 class QuickHull {
 public:
 	struct Edge {
 		union {
 			uint32_t vertices[2];
-			uint64_t id;
+			uint64_t id = 0;
 		};
 
 		bool operator<(const Edge &p_edge) const {
@@ -60,7 +60,7 @@ public:
 
 	struct Face {
 		Plane plane;
-		uint32_t vertices[3];
+		uint32_t vertices[3] = { 0 };
 		Vector<int> points_over;
 
 		bool operator<(const Face &p_face) const {
@@ -70,11 +70,13 @@ public:
 
 private:
 	struct FaceConnect {
-		List<Face>::Element *left, *right = nullptr;
+		List<Face>::Element *left = nullptr;
+		List<Face>::Element *right = nullptr;
 		FaceConnect() {}
 	};
 	struct RetFaceConnect {
-		List<Geometry3D::MeshData::Face>::Element *left, *right = nullptr;
+		List<Geometry3D::MeshData::Face>::Element *left = nullptr;
+		List<Geometry3D::MeshData::Face>::Element *right = nullptr;
 		RetFaceConnect() {}
 	};
 

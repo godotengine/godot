@@ -22,9 +22,9 @@
 #ifndef FTZOPEN_H_
 #define FTZOPEN_H_
 
-#include <ft2build.h>
-#include FT_FREETYPE_H
+#include <freetype/freetype.h>
 
+FT_BEGIN_HEADER
 
   /*
    * This is a complete re-implementation of the LZW file reader,
@@ -165,6 +165,8 @@
                   FT_ULong     out_size );
 
 /* */
+
+FT_END_HEADER
 
 #endif /* FTZOPEN_H_ */
 

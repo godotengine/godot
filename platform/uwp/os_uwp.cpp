@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -33,20 +33,17 @@
 
 #include "os_uwp.h"
 
+#include "core/config/project_settings.h"
 #include "core/io/marshalls.h"
-#include "core/project_settings.h"
 #include "drivers/unix/ip_unix.h"
 #include "drivers/windows/dir_access_windows.h"
 #include "drivers/windows/file_access_windows.h"
 #include "drivers/windows/mutex_windows.h"
-#include "drivers/windows/rw_lock_windows.h"
 #include "drivers/windows/semaphore_windows.h"
 #include "main/main.h"
 #include "platform/windows/windows_terminal_logger.h"
 #include "servers/audio_server.h"
-#include "servers/rendering/rendering_server_raster.h"
-#include "servers/rendering/rendering_server_wrap_mt.h"
-#include "thread_uwp.h"
+#include "servers/rendering/rendering_server_default.h"
 
 #include <ppltasks.h>
 #include <wrl.h>
@@ -64,6 +61,8 @@ using namespace Windows::Devices::Input;
 using namespace Windows::Devices::Sensors;
 using namespace Windows::ApplicationModel::DataTransfer;
 using namespace concurrency;
+
+static const float earth_gravity = 9.80665;
 
 int OS_UWP::get_video_driver_count() const {
 	return 2;
@@ -131,9 +130,6 @@ void OS_UWP::initialize_core() {
 
 	//RedirectIOToConsole();
 
-	ThreadUWP::make_default();
-	RWLockWindows::make_default();
-
 	FileAccess::make_default<FileAccessWindows>(FileAccess::ACCESS_RESOURCES);
 	FileAccess::make_default<FileAccessWindows>(FileAccess::ACCESS_USERDATA);
 	FileAccess::make_default<FileAccessWindows>(FileAccess::ACCESS_FILESYSTEM);
@@ -155,10 +151,6 @@ void OS_UWP::initialize_core() {
 
 	cursor_shape = CURSOR_ARROW;
 }
-
-bool OS_UWP::can_draw() const {
-	return !minimized;
-};
 
 void OS_UWP::set_window(Windows::UI::Core::CoreWindow ^ p_window) {
 	window = p_window;
@@ -240,7 +232,7 @@ Error OS_UWP::initialize(const VideoMode &p_desired, int p_video_driver, int p_a
 
 	set_video_mode(vm);
 
-	rendering_server = memnew(RenderingServerRaster);
+	rendering_server = memnew(RenderingServerDefault);
 	// FIXME: Reimplement threaded rendering
 	if (get_render_thread_mode() != RENDER_THREAD_UNSAFE) {
 		rendering_server = memnew(RenderingServerWrapMT(rendering_server, false));
@@ -296,7 +288,7 @@ Error OS_UWP::initialize(const VideoMode &p_desired, int p_video_driver, int p_a
 void OS_UWP::set_clipboard(const String &p_text) {
 	DataPackage ^ clip = ref new DataPackage();
 	clip->RequestedOperation = DataPackageOperation::Copy;
-	clip->SetText(ref new Platform::String((const wchar_t *)p_text.c_str()));
+	clip->SetText(ref new Platform::String((LPCWSTR)(p_text.utf16().get_data())));
 
 	Clipboard::SetContent(clip);
 };
@@ -346,8 +338,8 @@ void OS_UWP::finalize_core() {
 }
 
 void OS_UWP::alert(const String &p_alert, const String &p_title) {
-	Platform::String ^ alert = ref new Platform::String(p_alert.c_str());
-	Platform::String ^ title = ref new Platform::String(p_title.c_str());
+	Platform::String ^ alert = ref new Platform::String((LPCWSTR)(p_alert.utf16().get_data()));
+	Platform::String ^ title = ref new Platform::String((LPCWSTR)(p_title.utf16().get_data()));
 
 	MessageDialog ^ msg = ref new MessageDialog(alert, title);
 
@@ -382,9 +374,9 @@ void OS_UWP::ManagedType::on_accelerometer_reading_changed(Accelerometer ^ sende
 	AccelerometerReading ^ reading = args->Reading;
 
 	os->input->set_accelerometer(Vector3(
-			reading->AccelerationX,
-			reading->AccelerationY,
-			reading->AccelerationZ));
+			reading->AccelerationX * earth_gravity,
+			reading->AccelerationY * earth_gravity,
+			reading->AccelerationZ * earth_gravity));
 }
 
 void OS_UWP::ManagedType::on_magnetometer_reading_changed(Magnetometer ^ sender, MagnetometerReadingChangedEventArgs ^ args) {
@@ -642,7 +634,11 @@ void OS_UWP::set_custom_mouse_cursor(const RES &p_cursor, CursorShape p_shape, c
 	// TODO
 }
 
-Error OS_UWP::execute(const String &p_path, const List<String> &p_arguments, bool p_blocking, ProcessID *r_child_id, String *r_pipe, int *r_exitcode, bool read_stderr, Mutex *p_pipe_mutex) {
+Error OS_UWP::execute(const String &p_path, const List<String> &p_arguments, String *r_pipe, int *r_exitcode, bool read_stderr, Mutex *p_pipe_mutex) {
+	return FAILED;
+};
+
+Error OS_UWP::create_process(const String &p_path, const List<String> &p_arguments, ProcessID *r_child_id) {
 	return FAILED;
 };
 
@@ -738,7 +734,7 @@ static String format_error_message(DWORD id) {
 
 Error OS_UWP::open_dynamic_library(const String p_path, void *&p_library_handle, bool p_also_set_library_path) {
 	String full_path = "game/" + p_path;
-	p_library_handle = (void *)LoadPackagedLibrary(full_path.c_str(), 0);
+	p_library_handle = (void *)LoadPackagedLibrary((LPCWSTR)(full_path.utf16().get_data()), 0);
 	ERR_FAIL_COND_V_MSG(!p_library_handle, ERR_CANT_OPEN, "Can't open dynamic library: " + full_path + ", error: " + format_error_message(GetLastError()) + ".");
 	return OK;
 }

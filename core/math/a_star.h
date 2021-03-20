@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -31,8 +31,8 @@
 #ifndef A_STAR_H
 #define A_STAR_H
 
-#include "core/oa_hash_map.h"
-#include "core/reference.h"
+#include "core/object/reference.h"
+#include "core/templates/oa_hash_map.h"
 
 /**
 	A* pathfinding algorithm
@@ -47,20 +47,20 @@ class AStar : public Reference {
 	struct Point {
 		Point() {}
 
-		int id;
+		int id = 0;
 		Vector3 pos;
-		real_t weight_scale;
-		bool enabled;
+		real_t weight_scale = 0;
+		bool enabled = false;
 
 		OAHashMap<int, Point *> neighbours = 4u;
 		OAHashMap<int, Point *> unlinked_neighbours = 4u;
 
 		// Used for pathfinding.
-		Point *prev_point;
-		real_t g_score;
-		real_t f_score;
-		uint64_t open_pass;
-		uint64_t closed_pass;
+		Point *prev_point = nullptr;
+		real_t g_score = 0;
+		real_t f_score = 0;
+		uint64_t open_pass = 0;
+		uint64_t closed_pass = 0;
 	};
 
 	struct SortPoints {

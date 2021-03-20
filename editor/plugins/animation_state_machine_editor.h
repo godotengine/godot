@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -126,10 +126,10 @@ class AnimationNodeStateMachineEditor : public AnimationTreeNodeEditorPlugin {
 		Vector2 to;
 		AnimationNodeStateMachineTransition::SwitchMode mode;
 		StringName advance_condition_name;
-		bool advance_condition_state;
-		bool disabled;
-		bool auto_advance;
-		float width;
+		bool advance_condition_state = false;
+		bool disabled = false;
+		bool auto_advance = false;
+		float width = 0;
 	};
 
 	Vector<TransitionLine> transition_lines;

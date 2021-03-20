@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -28,13 +28,13 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifdef MINIZIP_ENABLED
-
 #ifndef FILE_ACCESS_ZIP_H
 #define FILE_ACCESS_ZIP_H
 
+#ifdef MINIZIP_ENABLED
+
 #include "core/io/file_access_pack.h"
-#include "core/map.h"
+#include "core/templates/map.h"
 
 #include "thirdparty/minizip/unzip.h"
 
@@ -59,8 +59,6 @@ private:
 
 	static ZipArchive *instance;
 
-	FileAccess::CreateFunc fa_create_func;
-
 public:
 	void close_handle(unzFile p_file) const;
 	unzFile get_file_handle(String p_file) const;
@@ -69,7 +67,7 @@ public:
 
 	bool file_exists(String p_name) const;
 
-	virtual bool try_open_pack(const String &p_path, bool p_replace_files);
+	virtual bool try_open_pack(const String &p_path, bool p_replace_files, size_t p_offset);
 	FileAccess *get_file(const String &p_path, PackedData::PackedFile *p_file);
 
 	static ZipArchive *get_singleton();
@@ -79,7 +77,7 @@ public:
 };
 
 class FileAccessZip : public FileAccess {
-	unzFile zfile;
+	unzFile zfile = nullptr;
 	unz_file_info64 file_info;
 
 	mutable bool at_eof;
@@ -113,6 +111,6 @@ public:
 	~FileAccessZip();
 };
 
-#endif // FILE_ACCESS_ZIP_H
-
 #endif // MINIZIP_ENABLED
+
+#endif // FILE_ACCESS_ZIP_H

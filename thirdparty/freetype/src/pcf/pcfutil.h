@@ -31,7 +31,7 @@ THE SOFTWARE.
 
 #include <ft2build.h>
 #include FT_CONFIG_CONFIG_H
-
+#include <freetype/internal/compiler-macros.h>
 
 FT_BEGIN_HEADER
 

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -35,7 +35,7 @@
 #include "scene/scene_string_names.h"
 
 #ifdef TOOLS_ENABLED
-#include "core/engine.h"
+#include "core/config/engine.h"
 #endif
 
 void GPUParticles2D::set_emitting(bool p_emitting) {
@@ -101,7 +101,6 @@ void GPUParticles2D::set_visibility_rect(const Rect2 &p_visibility_rect) {
 
 	RS::get_singleton()->particles_set_custom_aabb(particles, aabb);
 
-	_change_notify("visibility_rect");
 	update();
 }
 
@@ -127,9 +126,9 @@ void GPUParticles2D::_update_particle_emission_transform() {
 void GPUParticles2D::set_process_material(const Ref<Material> &p_material) {
 	process_material = p_material;
 	Ref<ParticlesMaterial> pm = p_material;
-	if (pm.is_valid() && !pm->get_flag(ParticlesMaterial::FLAG_DISABLE_Z) && pm->get_gravity() == Vector3(0, -9.8, 0)) {
+	if (pm.is_valid() && !pm->get_particle_flag(ParticlesMaterial::PARTICLE_FLAG_DISABLE_Z) && pm->get_gravity() == Vector3(0, -9.8, 0)) {
 		// Likely a new (3D) material, modify it to match 2D space
-		pm->set_flag(ParticlesMaterial::FLAG_DISABLE_Z, true);
+		pm->set_particle_flag(ParticlesMaterial::PARTICLE_FLAG_DISABLE_Z, true);
 		pm->set_gravity(Vector3(0, 98, 0));
 	}
 	RID material_rid;
@@ -222,7 +221,7 @@ String GPUParticles2D::get_configuration_warning() const {
 		return TTR("GPU-based particles are not supported by the GLES2 video driver.\nUse the CPUParticles2D node instead. You can use the \"Convert to CPUParticles2D\" option for this purpose.");
 	}
 
-	String warnings;
+	String warnings = Node2D::get_configuration_warning();
 
 	if (process_material.is_null()) {
 		if (warnings != String()) {
@@ -267,15 +266,6 @@ Ref<Texture2D> GPUParticles2D::get_texture() const {
 	return texture;
 }
 
-void GPUParticles2D::set_normal_map(const Ref<Texture2D> &p_normal_map) {
-	normal_map = p_normal_map;
-	update();
-}
-
-Ref<Texture2D> GPUParticles2D::get_normal_map() const {
-	return normal_map;
-}
-
 void GPUParticles2D::_validate_property(PropertyInfo &property) const {
 }
 
@@ -290,12 +280,8 @@ void GPUParticles2D::_notification(int p_what) {
 		if (texture.is_valid()) {
 			texture_rid = texture->get_rid();
 		}
-		RID normal_rid;
-		if (normal_map.is_valid()) {
-			normal_rid = normal_map->get_rid();
-		}
 
-		RS::get_singleton()->canvas_item_add_particles(get_canvas_item(), particles, texture_rid, normal_rid);
+		RS::get_singleton()->canvas_item_add_particles(get_canvas_item(), particles, texture_rid);
 
 #ifdef TOOLS_ENABLED
 		if (Engine::get_singleton()->is_editor_hint() && (this == get_tree()->get_edited_scene_root() || get_tree()->get_edited_scene_root()->is_a_parent_of(this))) {
@@ -318,7 +304,7 @@ void GPUParticles2D::_notification(int p_what) {
 
 	if (p_what == NOTIFICATION_INTERNAL_PROCESS) {
 		if (one_shot && !is_emitting()) {
-			_change_notify();
+			notify_property_list_changed();
 			set_process_internal(false);
 		}
 	}
@@ -359,9 +345,6 @@ void GPUParticles2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_texture", "texture"), &GPUParticles2D::set_texture);
 	ClassDB::bind_method(D_METHOD("get_texture"), &GPUParticles2D::get_texture);
 
-	ClassDB::bind_method(D_METHOD("set_normal_map", "texture"), &GPUParticles2D::set_normal_map);
-	ClassDB::bind_method(D_METHOD("get_normal_map"), &GPUParticles2D::get_normal_map);
-
 	ClassDB::bind_method(D_METHOD("capture_rect"), &GPUParticles2D::capture_rect);
 
 	ClassDB::bind_method(D_METHOD("restart"), &GPUParticles2D::restart);
@@ -385,7 +368,6 @@ void GPUParticles2D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "process_material", PROPERTY_HINT_RESOURCE_TYPE, "ShaderMaterial,ParticlesMaterial"), "set_process_material", "get_process_material");
 	ADD_GROUP("Textures", "");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "texture", PROPERTY_HINT_RESOURCE_TYPE, "Texture2D"), "set_texture", "get_texture");
-	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "normal_map", PROPERTY_HINT_RESOURCE_TYPE, "Texture2D"), "set_normal_map", "get_normal_map");
 
 	BIND_ENUM_CONSTANT(DRAW_ORDER_INDEX);
 	BIND_ENUM_CONSTANT(DRAW_ORDER_LIFETIME);

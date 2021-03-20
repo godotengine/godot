@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -31,8 +31,8 @@
 #include "dialogs.h"
 
 #include "core/os/keyboard.h"
-#include "core/print_string.h"
-#include "core/translation.h"
+#include "core/string/print_string.h"
+#include "core/string/translation.h"
 #include "line_edit.h"
 
 #ifdef TOOLS_ENABLED
@@ -60,7 +60,7 @@ void AcceptDialog::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_VISIBILITY_CHANGED: {
 			if (is_visible()) {
-				get_ok()->grab_focus();
+				get_ok_button()->grab_focus();
 				_update_child_rects();
 				parent_visible = get_parent_visible_window();
 				if (parent_visible) {
@@ -165,7 +165,7 @@ void AcceptDialog::register_text_enter(Node *p_line_edit) {
 
 void AcceptDialog::_update_child_rects() {
 	Size2 label_size = label->get_minimum_size();
-	if (label->get_text().empty()) {
+	if (label->get_text().is_empty()) {
 		label_size.height = 0;
 	}
 	int margin = hbc->get_theme_constant("margin", "Dialogs");
@@ -181,7 +181,7 @@ void AcceptDialog::_update_child_rects() {
 			continue;
 		}
 
-		if (c == hbc || c == label || c == bg || c->is_set_as_toplevel()) {
+		if (c == hbc || c == label || c == bg || c->is_set_as_top_level()) {
 			continue;
 		}
 
@@ -209,7 +209,7 @@ Size2 AcceptDialog::_get_contents_minimum_size() const {
 			continue;
 		}
 
-		if (c == hbc || c == label || c->is_set_as_toplevel()) {
+		if (c == hbc || c == label || c->is_set_as_top_level()) {
 			continue;
 		}
 
@@ -253,7 +253,7 @@ Button *AcceptDialog::add_button(const String &p_text, bool p_right, const Strin
 	return button;
 }
 
-Button *AcceptDialog::add_cancel(const String &p_cancel) {
+Button *AcceptDialog::add_cancel_button(const String &p_cancel) {
 	String c = p_cancel;
 	if (p_cancel == "") {
 		c = RTR("Cancel");
@@ -264,12 +264,12 @@ Button *AcceptDialog::add_cancel(const String &p_cancel) {
 }
 
 void AcceptDialog::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("get_ok"), &AcceptDialog::get_ok);
+	ClassDB::bind_method(D_METHOD("get_ok_button"), &AcceptDialog::get_ok_button);
 	ClassDB::bind_method(D_METHOD("get_label"), &AcceptDialog::get_label);
 	ClassDB::bind_method(D_METHOD("set_hide_on_ok", "enabled"), &AcceptDialog::set_hide_on_ok);
 	ClassDB::bind_method(D_METHOD("get_hide_on_ok"), &AcceptDialog::get_hide_on_ok);
 	ClassDB::bind_method(D_METHOD("add_button", "text", "right", "action"), &AcceptDialog::add_button, DEFVAL(false), DEFVAL(""));
-	ClassDB::bind_method(D_METHOD("add_cancel", "name"), &AcceptDialog::add_cancel);
+	ClassDB::bind_method(D_METHOD("add_cancel_button", "name"), &AcceptDialog::add_cancel_button);
 	ClassDB::bind_method(D_METHOD("register_text_enter", "line_edit"), &AcceptDialog::register_text_enter);
 	ClassDB::bind_method(D_METHOD("set_text", "text"), &AcceptDialog::set_text);
 	ClassDB::bind_method(D_METHOD("get_text"), &AcceptDialog::get_text);
@@ -292,8 +292,6 @@ void AcceptDialog::set_swap_cancel_ok(bool p_swap) {
 }
 
 AcceptDialog::AcceptDialog() {
-	parent_visible = nullptr;
-
 	set_wrap_controls(true);
 	set_visible(false);
 	set_transient(true);
@@ -309,8 +307,8 @@ AcceptDialog::AcceptDialog() {
 	int button_margin = hbc->get_theme_constant("button_margin", "Dialogs");
 
 	label = memnew(Label);
-	label->set_anchor(MARGIN_RIGHT, Control::ANCHOR_END);
-	label->set_anchor(MARGIN_BOTTOM, Control::ANCHOR_END);
+	label->set_anchor(SIDE_RIGHT, Control::ANCHOR_END);
+	label->set_anchor(SIDE_BOTTOM, Control::ANCHOR_END);
 	label->set_begin(Point2(margin, margin));
 	label->set_end(Point2(-margin, -button_margin - 10));
 	add_child(label);
@@ -325,7 +323,6 @@ AcceptDialog::AcceptDialog() {
 
 	ok->connect("pressed", callable_mp(this, &AcceptDialog::_ok_pressed));
 
-	hide_on_ok = true;
 	set_title(RTR("Alert!"));
 
 	connect("window_input", callable_mp(this, &AcceptDialog::_input_from_window));
@@ -337,10 +334,10 @@ AcceptDialog::~AcceptDialog() {
 // ConfirmationDialog
 
 void ConfirmationDialog::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("get_cancel"), &ConfirmationDialog::get_cancel);
+	ClassDB::bind_method(D_METHOD("get_cancel_button"), &ConfirmationDialog::get_cancel_button);
 }
 
-Button *ConfirmationDialog::get_cancel() {
+Button *ConfirmationDialog::get_cancel_button() {
 	return cancel;
 }
 
@@ -349,5 +346,5 @@ ConfirmationDialog::ConfirmationDialog() {
 #ifdef TOOLS_ENABLED
 	set_min_size(Size2(200, 70) * EDSCALE);
 #endif
-	cancel = add_cancel();
+	cancel = add_cancel_button();
 }

@@ -7,15 +7,24 @@
 		Object that holds the project-independent editor settings. These settings are generally visible in the [b]Editor &gt; Editor Settings[/b] menu.
 		Property names use slash delimiters to distinguish sections. Setting values can be of any [Variant] type. It's recommended to use [code]snake_case[/code] for editor settings to be consistent with the Godot editor itself.
 		Accessing the settings can be done using the following methods, such as:
-		[codeblock]
-		# `settings.set("some/property", value)` also works as this class overrides `_set()` internally.
-		settings.set_setting("some/property",value)
-
-		# `settings.get("some/property", value)` also works as this class overrides `_get()` internally.
+		[codeblocks]
+		[gdscript]
+		var settings = EditorInterface.get_editor_settings()
+		# `settings.set("some/property", 10)` also works as this class overrides `_set()` internally.
+		settings.set_setting("some/property", 10)
+		# `settings.get("some/property")` also works as this class overrides `_get()` internally.
 		settings.get_setting("some/property")
-
 		var list_of_settings = settings.get_property_list()
-		[/codeblock]
+		[/gdscript]
+		[csharp]
+		EditorSettings settings = GetEditorInterface().GetEditorSettings();
+		// `settings.set("some/property", value)` also works as this class overrides `_set()` internally.
+		settings.SetSetting("some/property", Value);
+		// `settings.get("some/property", value)` also works as this class overrides `_get()` internally.
+		settings.GetSetting("some/property");
+		Godot.Collections.Array listOfSettings = settings.GetPropertyList();
+		[/csharp]
+		[/codeblocks]
 		[b]Note:[/b] This class shouldn't be instantiated directly. Instead, access the singleton using [method EditorInterface.get_editor_settings].
 	</description>
 	<tutorials>
@@ -32,8 +41,10 @@
 				- [code]type[/code]: [int] (see [enum Variant.Type])
 				- optionally [code]hint[/code]: [int] (see [enum PropertyHint]) and [code]hint_string[/code]: [String]
 				[b]Example:[/b]
-				[codeblock]
-				editor_settings.set("category/property_name", 0)
+				[codeblocks]
+				[gdscript]
+				var settings = EditorInterface.get_editor_settings()
+				settings.set("category/property_name", 0)
 
 				var property_info = {
 				    "name": "category/property_name",
@@ -42,8 +53,23 @@
 				    "hint_string": "one,two,three"
 				}
 
-				editor_settings.add_property_info(property_info)
-				[/codeblock]
+				settings.add_property_info(property_info)
+				[/gdscript]
+				[csharp]
+				var settings = GetEditorInterface().GetEditorSettings();
+				settings.Set("category/property_name", 0);
+
+				var propertyInfo = new Godot.Collections.Dictionary
+				{
+				    {"name", "category/propertyName"},
+				    {"type", Variant.Type.Int},
+				    {"hint", PropertyHint.Enum},
+				    {"hint_string", "one,two,three"}
+				};
+
+				settings.AddPropertyInfo(propertyInfo);
+				[/csharp]
+				[/codeblocks]
 			</description>
 		</method>
 		<method name="erase">
@@ -132,6 +158,16 @@
 			</argument>
 			<description>
 				Returns the default value of the setting specified by [code]name[/code]. This is the value that would be applied when clicking the Revert button in the Editor Settings.
+			</description>
+		</method>
+		<method name="set_builtin_action_override">
+			<return type="void">
+			</return>
+			<argument index="0" name="name" type="String">
+			</argument>
+			<argument index="1" name="actions_list" type="Array">
+			</argument>
+			<description>
 			</description>
 		</method>
 		<method name="set_favorites">

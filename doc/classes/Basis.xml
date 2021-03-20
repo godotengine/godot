@@ -10,30 +10,32 @@
 		For more information, read the "Matrices and transforms" documentation article.
 	</description>
 	<tutorials>
-		<link>https://docs.godotengine.org/en/latest/tutorials/math/matrices_and_transforms.html</link>
-		<link>https://docs.godotengine.org/en/latest/tutorials/3d/using_transforms.html</link>
+		<link title="Math tutorial index">https://docs.godotengine.org/en/latest/tutorials/math/index.html</link>
+		<link title="Matrices and transforms">https://docs.godotengine.org/en/latest/tutorials/math/matrices_and_transforms.html</link>
+		<link title="Using 3D transforms">https://docs.godotengine.org/en/latest/tutorials/3d/using_transforms.html</link>
+		<link title="Matrix Transform Demo">https://godotengine.org/asset-library/asset/584</link>
+		<link title="3D Platformer Demo">https://godotengine.org/asset-library/asset/125</link>
+		<link title="3D Voxel Demo">https://godotengine.org/asset-library/asset/676</link>
+		<link title="2.5D Demo">https://godotengine.org/asset-library/asset/583</link>
 	</tutorials>
 	<methods>
-		<method name="Basis">
+		<method name="Basis" qualifiers="constructor">
 			<return type="Basis">
 			</return>
-			<argument index="0" name="from" type="Quat">
-			</argument>
 			<description>
-				Constructs a pure rotation basis matrix from the given quaternion.
+				Constructs a default-initialized [Basis] set to [constant IDENTITY].
 			</description>
 		</method>
-		<method name="Basis">
+		<method name="Basis" qualifiers="constructor">
 			<return type="Basis">
 			</return>
-			<argument index="0" name="from" type="Vector3">
+			<argument index="0" name="from" type="Basis">
 			</argument>
 			<description>
-				Constructs a pure rotation basis matrix from the given Euler angles (in the YXZ convention: when *composing*, first Y, then X, and Z last), given in the vector format as (X angle, Y angle, Z angle).
-				Consider using the [Quat] constructor instead, which uses a quaternion instead of Euler angles.
+				Constructs a [Basis] as a copy of the given [Basis].
 			</description>
 		</method>
-		<method name="Basis">
+		<method name="Basis" qualifiers="constructor">
 			<return type="Basis">
 			</return>
 			<argument index="0" name="axis" type="Vector3">
@@ -44,7 +46,26 @@
 				Constructs a pure rotation basis matrix, rotated around the given [code]axis[/code] by [code]phi[/code], in radians. The axis must be a normalized vector.
 			</description>
 		</method>
-		<method name="Basis">
+		<method name="Basis" qualifiers="constructor">
+			<return type="Basis">
+			</return>
+			<argument index="0" name="euler" type="Vector3">
+			</argument>
+			<description>
+				Constructs a pure rotation basis matrix from the given Euler angles (in the YXZ convention: when *composing*, first Y, then X, and Z last), given in the vector format as (X angle, Y angle, Z angle).
+				Consider using the [Quat] constructor instead, which uses a quaternion instead of Euler angles.
+			</description>
+		</method>
+		<method name="Basis" qualifiers="constructor">
+			<return type="Basis">
+			</return>
+			<argument index="0" name="from" type="Quat">
+			</argument>
+			<description>
+				Constructs a pure rotation basis matrix from the given quaternion.
+			</description>
+		</method>
+		<method name="Basis" qualifiers="constructor">
 			<return type="Basis">
 			</return>
 			<argument index="0" name="x_axis" type="Vector3">
@@ -57,7 +78,7 @@
 				Constructs a basis matrix from 3 axis vectors (matrix columns).
 			</description>
 		</method>
-		<method name="determinant">
+		<method name="determinant" qualifiers="const">
 			<return type="float">
 			</return>
 			<description>
@@ -65,7 +86,7 @@
 				A negative determinant means the basis has a negative scale. A zero determinant means the basis isn't invertible, and is usually considered invalid.
 			</description>
 		</method>
-		<method name="get_euler">
+		<method name="get_euler" qualifiers="const">
 			<return type="Vector3">
 			</return>
 			<description>
@@ -73,53 +94,91 @@
 				Consider using the [method get_rotation_quat] method instead, which returns a [Quat] quaternion instead of Euler angles.
 			</description>
 		</method>
-		<method name="get_orthogonal_index">
+		<method name="get_orthogonal_index" qualifiers="const">
 			<return type="int">
 			</return>
 			<description>
 				This function considers a discretization of rotations into 24 points on unit sphere, lying along the vectors (x,y,z) with each component being either -1, 0, or 1, and returns the index of the point best representing the orientation of the object. It is mainly used by the [GridMap] editor. For further details, refer to the Godot source code.
 			</description>
 		</method>
-		<method name="get_rotation_quat">
+		<method name="get_rotation_quat" qualifiers="const">
 			<return type="Quat">
 			</return>
 			<description>
 				Returns the basis's rotation in the form of a quaternion. See [method get_euler] if you need Euler angles, but keep in mind quaternions should generally be preferred to Euler angles.
 			</description>
 		</method>
-		<method name="get_scale">
+		<method name="get_scale" qualifiers="const">
 			<return type="Vector3">
 			</return>
 			<description>
 				Assuming that the matrix is the combination of a rotation and scaling, return the absolute value of scaling factors along each axis.
 			</description>
 		</method>
-		<method name="inverse">
+		<method name="inverse" qualifiers="const">
 			<return type="Basis">
 			</return>
 			<description>
 				Returns the inverse of the matrix.
 			</description>
 		</method>
-		<method name="is_equal_approx">
+		<method name="is_equal_approx" qualifiers="const">
 			<return type="bool">
 			</return>
 			<argument index="0" name="b" type="Basis">
-			</argument>
-			<argument index="1" name="epsilon" type="float" default="1e-05">
 			</argument>
 			<description>
 				Returns [code]true[/code] if this basis and [code]b[/code] are approximately equal, by calling [code]is_equal_approx[/code] on each component.
 			</description>
 		</method>
-		<method name="orthonormalized">
+		<method name="operator !=" qualifiers="operator">
+			<return type="bool">
+			</return>
+			<argument index="0" name="right" type="Basis">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="operator *" qualifiers="operator">
+			<return type="Vector3">
+			</return>
+			<argument index="0" name="right" type="Vector3">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="operator *" qualifiers="operator">
+			<return type="Basis">
+			</return>
+			<argument index="0" name="right" type="Basis">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="operator ==" qualifiers="operator">
+			<return type="bool">
+			</return>
+			<argument index="0" name="right" type="Basis">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="operator []" qualifiers="operator">
+			<return type="Vector3">
+			</return>
+			<argument index="0" name="index" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="orthonormalized" qualifiers="const">
 			<return type="Basis">
 			</return>
 			<description>
 				Returns the orthonormalized version of the matrix (useful to call from time to time to avoid rounding error for orthogonal matrices). This performs a Gram-Schmidt orthonormalization on the basis of the matrix.
 			</description>
 		</method>
-		<method name="rotated">
+		<method name="rotated" qualifiers="const">
 			<return type="Basis">
 			</return>
 			<argument index="0" name="axis" type="Vector3">
@@ -130,7 +189,7 @@
 				Introduce an additional rotation around the given axis by phi (radians). The axis must be a normalized vector.
 			</description>
 		</method>
-		<method name="scaled">
+		<method name="scaled" qualifiers="const">
 			<return type="Basis">
 			</return>
 			<argument index="0" name="scale" type="Vector3">
@@ -139,18 +198,18 @@
 				Introduce an additional scaling specified by the given 3D scaling factor.
 			</description>
 		</method>
-		<method name="slerp">
+		<method name="slerp" qualifiers="const">
 			<return type="Basis">
 			</return>
-			<argument index="0" name="b" type="Basis">
+			<argument index="0" name="to" type="Basis">
 			</argument>
-			<argument index="1" name="t" type="float">
+			<argument index="1" name="weight" type="float">
 			</argument>
 			<description>
 				Assuming that the matrix is a proper rotation matrix, slerp performs a spherical-linear interpolation with another rotation matrix.
 			</description>
 		</method>
-		<method name="tdotx">
+		<method name="tdotx" qualifiers="const">
 			<return type="float">
 			</return>
 			<argument index="0" name="with" type="Vector3">
@@ -159,7 +218,7 @@
 				Transposed dot product with the X axis of the matrix.
 			</description>
 		</method>
-		<method name="tdoty">
+		<method name="tdoty" qualifiers="const">
 			<return type="float">
 			</return>
 			<argument index="0" name="with" type="Vector3">
@@ -168,7 +227,7 @@
 				Transposed dot product with the Y axis of the matrix.
 			</description>
 		</method>
-		<method name="tdotz">
+		<method name="tdotz" qualifiers="const">
 			<return type="float">
 			</return>
 			<argument index="0" name="with" type="Vector3">
@@ -177,30 +236,11 @@
 				Transposed dot product with the Z axis of the matrix.
 			</description>
 		</method>
-		<method name="transposed">
+		<method name="transposed" qualifiers="const">
 			<return type="Basis">
 			</return>
 			<description>
 				Returns the transposed version of the matrix.
-			</description>
-		</method>
-		<method name="xform">
-			<return type="Vector3">
-			</return>
-			<argument index="0" name="v" type="Vector3">
-			</argument>
-			<description>
-				Returns a vector transformed (multiplied) by the matrix.
-			</description>
-		</method>
-		<method name="xform_inv">
-			<return type="Vector3">
-			</return>
-			<argument index="0" name="v" type="Vector3">
-			</argument>
-			<description>
-				Returns a vector transformed (multiplied) by the transposed basis matrix.
-				[b]Note:[/b] This results in a multiplication by the inverse of the matrix only if it represents a rotation-reflection.
 			</description>
 		</method>
 	</methods>

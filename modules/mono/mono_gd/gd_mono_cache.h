@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -119,6 +119,11 @@ struct CachedData {
 	GDMonoClass *class_PuppetSyncAttribute;
 	GDMonoClass *class_GodotMethodAttribute;
 	GDMonoField *field_GodotMethodAttribute_methodName;
+	GDMonoClass *class_ScriptPathAttribute;
+	GDMonoField *field_ScriptPathAttribute_path;
+	GDMonoClass *class_AssemblyHasScriptsAttribute;
+	GDMonoField *field_AssemblyHasScriptsAttribute_requiresLookup;
+	GDMonoField *field_AssemblyHasScriptsAttribute_scriptTypes;
 
 	GDMonoField *field_GodotObject_ptr;
 	GDMonoField *field_StringName_ptr;
@@ -181,7 +186,6 @@ inline void clear_corlib_cache() {
 inline void clear_godot_api_cache() {
 	cached_data.clear_godot_api_cache();
 }
-
 } // namespace GDMonoCache
 
 #define CACHED_CLASS(m_class) (GDMonoCache::cached_data.class_##m_class)

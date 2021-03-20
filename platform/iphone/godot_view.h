@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -32,12 +32,20 @@
 
 class String;
 
+@class GodotView;
 @protocol DisplayLayer;
 @protocol GodotViewRendererProtocol;
 
-@interface GodotView : UIView <UIKeyInput>
+@protocol GodotViewDelegate
+
+- (BOOL)godotViewFinishedSetup:(GodotView *)view;
+
+@end
+
+@interface GodotView : UIView
 
 @property(assign, nonatomic) id<GodotViewRendererProtocol> renderer;
+@property(assign, nonatomic) id<GodotViewDelegate> delegate;
 
 @property(assign, readonly, nonatomic) BOOL isActive;
 
@@ -50,7 +58,5 @@ class String;
 - (CALayer<DisplayLayer> *)initializeRenderingForDriver:(NSString *)driverName;
 - (void)stopRendering;
 - (void)startRendering;
-
-- (BOOL)becomeFirstResponderWithString:(String)p_existing;
 
 @end

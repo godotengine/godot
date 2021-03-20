@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="VisualShaderNodeGroupBase" inherits="VisualShaderNode" version="4.0">
+<class name="VisualShaderNodeGroupBase" inherits="VisualShaderNodeResizableBase" version="4.0">
 	<brief_description>
 		Base class for a family of nodes with variable amount of input and output ports within the visual shader graph.
 	</brief_description>
@@ -74,7 +74,7 @@
 			<return type="String">
 			</return>
 			<description>
-				Returns a [String] description of the input ports as as colon-separated list using the format [code]id,type,name;[/code] (see [method add_input_port]).
+				Returns a [String] description of the input ports as a colon-separated list using the format [code]id,type,name;[/code] (see [method add_input_port]).
 			</description>
 		</method>
 		<method name="get_output_port_count" qualifiers="const">
@@ -88,7 +88,7 @@
 			<return type="String">
 			</return>
 			<description>
-				Returns a [String] description of the output ports as as colon-separated list using the format [code]id,type,name;[/code] (see [method add_output_port]).
+				Returns a [String] description of the output ports as a colon-separated list using the format [code]id,type,name;[/code] (see [method add_output_port]).
 			</description>
 		</method>
 		<method name="has_input_port" qualifiers="const">
@@ -199,11 +199,6 @@
 			</description>
 		</method>
 	</methods>
-	<members>
-		<member name="size" type="Vector2" setter="set_size" getter="get_size" default="Vector2( 0, 0 )">
-			The size of the node in the visual shader graph.
-		</member>
-	</members>
 	<constants>
 	</constants>
 </class>

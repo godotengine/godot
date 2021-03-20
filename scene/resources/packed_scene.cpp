@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -30,10 +30,10 @@
 
 #include "packed_scene.h"
 
+#include "core/config/engine.h"
+#include "core/config/project_settings.h"
 #include "core/core_string_names.h"
-#include "core/engine.h"
 #include "core/io/resource_loader.h"
-#include "core/project_settings.h"
 #include "scene/2d/node_2d.h"
 #include "scene/3d/node_3d.h"
 #include "scene/gui/control.h"
@@ -80,7 +80,7 @@ Node *SceneState::instance(GenEditState p_edit_state) const {
 
 	Node **ret_nodes = (Node **)alloca(sizeof(Node *) * nc);
 
-	bool gen_node_path_cache = p_edit_state != GEN_EDIT_STATE_DISABLED && node_path_cache.empty();
+	bool gen_node_path_cache = p_edit_state != GEN_EDIT_STATE_DISABLED && node_path_cache.is_empty();
 
 	Map<Ref<Resource>, Ref<Resource>> resources_local_to_scene;
 
@@ -147,15 +147,20 @@ Node *SceneState::instance(GenEditState p_edit_state) const {
 				}
 #endif
 			}
-		} else if (ClassDB::is_class_enabled(snames[n.type])) {
-			//node belongs to this scene and must be created
-			Object *obj = ClassDB::instance(snames[n.type]);
+		} else {
+			Object *obj = nullptr;
+
+			if (ClassDB::is_class_enabled(snames[n.type])) {
+				//node belongs to this scene and must be created
+				obj = ClassDB::instance(snames[n.type]);
+			}
+
 			if (!Object::cast_to<Node>(obj)) {
 				if (obj) {
 					memdelete(obj);
 					obj = nullptr;
 				}
-				WARN_PRINT(String("Warning node of type " + snames[n.type].operator String() + " does not exist.").ascii().get_data());
+				WARN_PRINT(vformat("Node %s of type %s cannot be created. A placeholder will be created instead.", snames[n.name], snames[n.type]).ascii().get_data());
 				if (n.parent >= 0 && n.parent < nc && ret_nodes[n.parent]) {
 					if (Object::cast_to<Node3D>(ret_nodes[n.parent])) {
 						obj = memnew(Node3D);
@@ -172,10 +177,6 @@ Node *SceneState::instance(GenEditState p_edit_state) const {
 			}
 
 			node = Object::cast_to<Node>(obj);
-
-		} else {
-			//print_line("Class is disabled for: " + itos(n.type));
-			//print_line("name: " + String(snames[n.type]));
 		}
 
 		if (node) {
@@ -469,6 +470,11 @@ Error SceneState::_parse_node(Node *p_owner, Node *p_node, int p_parent_idx, Map
 	p_node->get_property_list(&plist);
 	StringName type = p_node->get_class();
 
+	Ref<Script> script = p_node->get_script();
+	if (script.is_valid()) {
+		script->update_exports();
+	}
+
 	for (List<PropertyInfo>::Element *E = plist.front(); E; E = E->next()) {
 		if (!(E->get().usage & PROPERTY_USAGE_STORAGE)) {
 			continue;
@@ -484,7 +490,6 @@ Error SceneState::_parse_node(Node *p_owner, Node *p_node, int p_parent_idx, Map
 			isdefault = bool(Variant::evaluate(Variant::OP_EQUAL, value, default_value));
 		}
 
-		Ref<Script> script = p_node->get_script();
 		if (!isdefault && script.is_valid() && script->get_property_default_value(name, default_value)) {
 			isdefault = bool(Variant::evaluate(Variant::OP_EQUAL, value, default_value));
 		}
@@ -603,7 +608,7 @@ Error SceneState::_parse_node(Node *p_owner, Node *p_node, int p_parent_idx, Map
 
 	// Save the right type. If this node was created by an instance
 	// then flag that the node should not be created but reused
-	if (pack_state_stack.empty()) {
+	if (pack_state_stack.is_empty()) {
 		//this node is not part of an instancing process, so save the type
 		nd.type = _nm_get_string(p_node->get_class(), name_map);
 	} else {
@@ -848,7 +853,7 @@ Error SceneState::pack(Node *p_scene) {
 	Map<Node *, int> node_map;
 	Map<Node *, int> nodepath_map;
 
-	//if using scene inheritance, pack the scene it inherits from
+	// If using scene inheritance, pack the scene it inherits from.
 	if (scene->get_scene_inherited_state().is_valid()) {
 		String path = scene->get_scene_inherited_state()->get_path();
 		Ref<PackedScene> instance = ResourceLoader::load(path);
@@ -856,8 +861,8 @@ Error SceneState::pack(Node *p_scene) {
 			base_scene_idx = _vm_get_variant(instance, variant_map);
 		}
 	}
-	//instanced, only direct sub-scnes are supported of course
 
+	// Instanced, only direct sub-scenes are supported of course.
 	Error err = _parse_node(scene, scene, -1, name_map, variant_map, node_map, nodepath_map);
 	if (err) {
 		clear();
@@ -1349,7 +1354,7 @@ NodePath SceneState::get_node_path(int p_idx, bool p_for_parent) const {
 		sub_path.insert(0, base_path.get_name(i));
 	}
 
-	if (sub_path.empty()) {
+	if (sub_path.is_empty()) {
 		return NodePath(".");
 	}
 
@@ -1481,16 +1486,6 @@ int SceneState::add_name(const StringName &p_name) {
 	return names.size() - 1;
 }
 
-int SceneState::find_name(const StringName &p_name) const {
-	for (int i = 0; i < names.size(); i++) {
-		if (names[i] == p_name) {
-			return i;
-		}
-	}
-
-	return -1;
-}
-
 int SceneState::add_value(const Variant &p_value) {
 	variants.push_back(p_value);
 	return variants.size() - 1;
@@ -1599,8 +1594,6 @@ void SceneState::_bind_methods() {
 }
 
 SceneState::SceneState() {
-	base_scene_idx = -1;
-	last_modified_time = 0;
 }
 
 ////////////////
@@ -1673,6 +1666,9 @@ void PackedScene::set_path(const String &p_path, bool p_take_over) {
 	Resource::set_path(p_path, p_take_over);
 }
 
+void PackedScene::reset_state() {
+	clear();
+}
 void PackedScene::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("pack", "path"), &PackedScene::pack);
 	ClassDB::bind_method(D_METHOD("instance", "edit_state"), &PackedScene::instance, DEFVAL(GEN_EDIT_STATE_DISABLED));

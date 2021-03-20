@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -31,18 +31,25 @@
 #ifndef RESOURCE_LOADER_H
 #define RESOURCE_LOADER_H
 
+#include "core/io/resource.h"
 #include "core/os/semaphore.h"
 #include "core/os/thread.h"
-#include "core/resource.h"
 
 class ResourceFormatLoader : public Reference {
 	GDCLASS(ResourceFormatLoader, Reference);
+
+public:
+	enum CacheMode {
+		CACHE_MODE_IGNORE, //resource and subresources do not use path cache, no path is set into resource.
+		CACHE_MODE_REUSE, //resource and subresources use patch cache, reuse existing loaded resources instead of loading from disk when available
+		CACHE_MODE_REPLACE, //resource and and subresource use path cache, but replace existing loaded resources when available with information from disk
+	};
 
 protected:
 	static void _bind_methods();
 
 public:
-	virtual RES load(const String &p_path, const String &p_original_path = "", Error *r_error = nullptr, bool p_use_sub_threads = false, float *r_progress = nullptr, bool p_no_cache = false);
+	virtual RES load(const String &p_path, const String &p_original_path = "", Error *r_error = nullptr, bool p_use_sub_threads = false, float *r_progress = nullptr, CacheMode p_cache_mode = CACHE_MODE_REUSE);
 	virtual bool exists(const String &p_path) const;
 	virtual void get_recognized_extensions(List<String> *p_extensions) const;
 	virtual void get_recognized_extensions_for_type(const String &p_type, List<String> *p_extensions) const;
@@ -58,6 +65,8 @@ public:
 
 	virtual ~ResourceFormatLoader() {}
 };
+
+VARIANT_ENUM_CAST(ResourceFormatLoader::CacheMode)
 
 typedef void (*ResourceLoadErrorNotify)(void *p_ud, const String &p_text);
 typedef void (*DependencyErrorNotify)(void *p_ud, const String &p_loading, const String &p_which, const String &p_type);
@@ -99,7 +108,7 @@ private:
 	friend class ResourceFormatImporter;
 	friend class ResourceInteractiveLoader;
 	//internal load function
-	static RES _load(const String &p_path, const String &p_original_path, const String &p_type_hint, bool p_no_cache, Error *r_error, bool p_use_sub_threads, float *r_progress);
+	static RES _load(const String &p_path, const String &p_original_path, const String &p_type_hint, ResourceFormatLoader::CacheMode p_cache_mode, Error *r_error, bool p_use_sub_threads, float *r_progress);
 
 	static ResourceLoadedCallback _loaded_callback;
 
@@ -114,6 +123,7 @@ private:
 		String type_hint;
 		float progress = 0.0;
 		ThreadLoadStatus status = THREAD_LOAD_IN_PROGRESS;
+		ResourceFormatLoader::CacheMode cache_mode = ResourceFormatLoader::CACHE_MODE_REUSE;
 		Error error = OK;
 		RES resource;
 		bool xl_remapped = false;
@@ -136,11 +146,11 @@ private:
 	static float _dependency_get_progress(const String &p_path);
 
 public:
-	static Error load_threaded_request(const String &p_path, const String &p_type_hint = "", bool p_use_sub_threads = false, const String &p_source_resource = String());
+	static Error load_threaded_request(const String &p_path, const String &p_type_hint = "", bool p_use_sub_threads = false, ResourceFormatLoader::CacheMode p_cache_mode = ResourceFormatLoader::CACHE_MODE_REUSE, const String &p_source_resource = String());
 	static ThreadLoadStatus load_threaded_get_status(const String &p_path, float *r_progress = nullptr);
 	static RES load_threaded_get(const String &p_path, Error *r_error = nullptr);
 
-	static RES load(const String &p_path, const String &p_type_hint = "", bool p_no_cache = false, Error *r_error = nullptr);
+	static RES load(const String &p_path, const String &p_type_hint = "", ResourceFormatLoader::CacheMode p_cache_mode = ResourceFormatLoader::CACHE_MODE_REUSE, Error *r_error = nullptr);
 	static bool exists(const String &p_path, const String &p_type_hint = "");
 
 	static void get_recognized_extensions_for_type(const String &p_type, List<String> *p_extensions);

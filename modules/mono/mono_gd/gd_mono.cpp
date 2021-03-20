@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -37,12 +37,12 @@
 #include <mono/metadata/mono-gc.h>
 #include <mono/metadata/profiler.h>
 
+#include "core/config/project_settings.h"
 #include "core/debugger/engine_debugger.h"
 #include "core/os/dir_access.h"
 #include "core/os/file_access.h"
 #include "core/os/os.h"
 #include "core/os/thread.h"
-#include "core/project_settings.h"
 
 #include "../csharp_script.h"
 #include "../godotsharp_dirs.h"
@@ -142,7 +142,7 @@ void gd_mono_debug_init() {
 	int da_timeout = GLOBAL_DEF("mono/debugger_agent/wait_timeout", 3000);
 
 	if (Engine::get_singleton()->is_editor_hint() ||
-			ProjectSettings::get_singleton()->get_resource_path().empty() ||
+			ProjectSettings::get_singleton()->get_resource_path().is_empty() ||
 			Main::is_project_manager()) {
 		if (da_args.size() == 0) {
 			return;
@@ -201,7 +201,6 @@ MonoDomain *gd_initialize_mono_runtime() {
 	return mono_jit_init_version("GodotEngine.RootDomain", runtime_version);
 }
 #endif
-
 } // namespace
 
 void GDMono::add_mono_shared_libs_dir_to_path() {
@@ -298,7 +297,7 @@ void GDMono::determine_mono_dirs(String &r_assembly_rootdir, String &r_config_di
 	}
 
 #ifdef WINDOWS_ENABLED
-	if (r_assembly_rootdir.empty() || r_config_dir.empty()) {
+	if (r_assembly_rootdir.is_empty() || r_config_dir.is_empty()) {
 		ERR_PRINT("Cannot find Mono in the registry.");
 		// Assertion: if they are not set, then they weren't found in the registry
 		CRASH_COND(mono_reg_info.assembly_dir.length() > 0 || mono_reg_info.config_dir.length() > 0);
@@ -361,7 +360,7 @@ void GDMono::initialize() {
 #ifndef TOOLS_ENABLED
 	// Exported games that don't use C# must still work. They likely don't ship with mscorlib.
 	// We only initialize the Mono runtime if we can find mscorlib. Otherwise it would crash.
-	if (GDMonoAssembly::find_assembly("mscorlib.dll").empty()) {
+	if (GDMonoAssembly::find_assembly("mscorlib.dll").is_empty()) {
 		print_verbose("Mono: Skipping runtime initialization because 'mscorlib.dll' could not be found");
 		return;
 	}
@@ -594,8 +593,8 @@ ApiAssemblyInfo::Version ApiAssemblyInfo::Version::get_from_loaded_assembly(GDMo
 	ApiAssemblyInfo::Version api_assembly_version;
 
 	const char *nativecalls_name = p_api_type == ApiAssemblyInfo::API_CORE ?
-										   BINDINGS_CLASS_NATIVECALLS :
-										   BINDINGS_CLASS_NATIVECALLS_EDITOR;
+											 BINDINGS_CLASS_NATIVECALLS :
+											 BINDINGS_CLASS_NATIVECALLS_EDITOR;
 
 	GDMonoClass *nativecalls_klass = p_api_assembly->get_class(BINDINGS_NAMESPACE, nativecalls_name);
 
@@ -758,11 +757,11 @@ String GDMono::update_api_assemblies_from_prebuilt(const String &p_config, const
 #define FAIL_REASON(m_out_of_sync, m_prebuilt_exists)                            \
 	(                                                                            \
 			(m_out_of_sync ?                                                     \
-							String("The assembly is invalidated ") :             \
-							String("The assembly was not found ")) +             \
+							  String("The assembly is invalidated ") :             \
+							  String("The assembly was not found ")) +             \
 			(m_prebuilt_exists ?                                                 \
-							String("and the prebuilt assemblies are missing.") : \
-							String("and we failed to copy the prebuilt assemblies.")))
+							  String("and the prebuilt assemblies are missing.") : \
+							  String("and we failed to copy the prebuilt assemblies.")))
 
 	String dst_assemblies_dir = GodotSharpDirs::get_res_assemblies_base_dir().plus_file(p_config);
 
@@ -821,8 +820,8 @@ bool GDMono::_load_core_api_assembly(LoadedApiAssembly &r_loaded_api_assembly, c
 
 	// If running the project manager, load it from the prebuilt API directory
 	String assembly_dir = !Main::is_project_manager() ?
-								  GodotSharpDirs::get_res_assemblies_base_dir().plus_file(p_config) :
-								  GodotSharpDirs::get_data_editor_prebuilt_api_dir().plus_file(p_config);
+									GodotSharpDirs::get_res_assemblies_base_dir().plus_file(p_config) :
+									GodotSharpDirs::get_data_editor_prebuilt_api_dir().plus_file(p_config);
 
 	String assembly_path = assembly_dir.plus_file(CORE_API_ASSEMBLY_NAME ".dll");
 
@@ -854,8 +853,8 @@ bool GDMono::_load_editor_api_assembly(LoadedApiAssembly &r_loaded_api_assembly,
 
 	// If running the project manager, load it from the prebuilt API directory
 	String assembly_dir = !Main::is_project_manager() ?
-								  GodotSharpDirs::get_res_assemblies_base_dir().plus_file(p_config) :
-								  GodotSharpDirs::get_data_editor_prebuilt_api_dir().plus_file(p_config);
+									GodotSharpDirs::get_res_assemblies_base_dir().plus_file(p_config) :
+									GodotSharpDirs::get_data_editor_prebuilt_api_dir().plus_file(p_config);
 
 	String assembly_path = assembly_dir.plus_file(EDITOR_API_ASSEMBLY_NAME ".dll");
 
@@ -945,7 +944,7 @@ void GDMono::_load_api_assemblies() {
 
 		// 2. Update the API assemblies
 		String update_error = update_api_assemblies_from_prebuilt("Debug", &core_api_assembly.out_of_sync, &editor_api_assembly.out_of_sync);
-		CRASH_COND_MSG(!update_error.empty(), update_error);
+		CRASH_COND_MSG(!update_error.is_empty(), update_error);
 
 		// 3. Load the scripts domain again
 		Error domain_load_err = _load_scripts_domain();
@@ -999,7 +998,7 @@ bool GDMono::_load_project_assembly() {
 
 	String appname = ProjectSettings::get_singleton()->get("application/config/name");
 	String appname_safe = OS::get_singleton()->get_safe_dir_name(appname);
-	if (appname_safe.empty()) {
+	if (appname_safe.is_empty()) {
 		appname_safe = "UnnamedProject";
 	}
 
@@ -1007,6 +1006,7 @@ bool GDMono::_load_project_assembly() {
 
 	if (success) {
 		mono_assembly_set_main(project_assembly->get_assembly());
+		CSharpLanguage::get_singleton()->lookup_scripts_in_assembly(project_assembly);
 	}
 
 	return success;

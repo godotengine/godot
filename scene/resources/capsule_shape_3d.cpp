@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -82,7 +82,6 @@ void CapsuleShape3D::set_radius(float p_radius) {
 	radius = p_radius;
 	_update_shape();
 	notify_change_to_owners();
-	_change_notify("radius");
 }
 
 float CapsuleShape3D::get_radius() const {
@@ -93,7 +92,6 @@ void CapsuleShape3D::set_height(float p_height) {
 	height = p_height;
 	_update_shape();
 	notify_change_to_owners();
-	_change_notify("height");
 }
 
 float CapsuleShape3D::get_height() const {
@@ -106,13 +104,11 @@ void CapsuleShape3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_height", "height"), &CapsuleShape3D::set_height);
 	ClassDB::bind_method(D_METHOD("get_height"), &CapsuleShape3D::get_height);
 
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "radius", PROPERTY_HINT_RANGE, "0.01,4096,0.01"), "set_radius", "get_radius");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "height", PROPERTY_HINT_RANGE, "0.01,4096,0.01"), "set_height", "get_height");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "radius", PROPERTY_HINT_RANGE, "0.001,4096,0.001"), "set_radius", "get_radius");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "height", PROPERTY_HINT_RANGE, "0.001,4096,0.001"), "set_height", "get_height");
 }
 
 CapsuleShape3D::CapsuleShape3D() :
 		Shape3D(PhysicsServer3D::get_singleton()->shape_create(PhysicsServer3D::SHAPE_CAPSULE)) {
-	radius = 1.0;
-	height = 1.0;
 	_update_shape();
 }

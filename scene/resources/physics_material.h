@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -31,7 +31,7 @@
 #ifndef PHYSICS_MATERIAL_H
 #define PHYSICS_MATERIAL_H
 
-#include "core/resource.h"
+#include "core/io/resource.h"
 #include "servers/physics_server_3d.h"
 
 class PhysicsMaterial : public Resource {
@@ -39,9 +39,9 @@ class PhysicsMaterial : public Resource {
 	OBJ_SAVE_TYPE(PhysicsMaterial);
 	RES_BASE_EXTENSION("phymat");
 
-	real_t friction = 1;
+	real_t friction = 1.0;
 	bool rough = false;
-	real_t bounce = 0;
+	real_t bounce = 0.0;
 	bool absorbent = false;
 
 protected:

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -31,10 +31,10 @@
 #ifndef GDSCRIPT_CACHE_H
 #define GDSCRIPT_CACHE_H
 
-#include "core/hash_map.h"
+#include "core/object/reference.h"
 #include "core/os/mutex.h"
-#include "core/reference.h"
-#include "core/set.h"
+#include "core/templates/hash_map.h"
+#include "core/templates/set.h"
 #include "gdscript.h"
 
 class GDScriptAnalyzer;
@@ -70,9 +70,9 @@ public:
 
 class GDScriptCache {
 	// String key is full path.
-	HashMap<String, Ref<GDScriptParserRef>> parser_map;
-	HashMap<String, Ref<GDScript>> shallow_gdscript_cache;
-	HashMap<String, Ref<GDScript>> full_gdscript_cache;
+	HashMap<String, GDScriptParserRef *> parser_map;
+	HashMap<String, GDScript *> shallow_gdscript_cache;
+	HashMap<String, GDScript *> full_gdscript_cache;
 	HashMap<String, Set<String>> dependencies;
 
 	friend class GDScript;

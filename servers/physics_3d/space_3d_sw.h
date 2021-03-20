@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -37,9 +37,10 @@
 #include "body_pair_3d_sw.h"
 #include "broad_phase_3d_sw.h"
 #include "collision_object_3d_sw.h"
-#include "core/hash_map.h"
-#include "core/project_settings.h"
+#include "core/config/project_settings.h"
+#include "core/templates/hash_map.h"
 #include "core/typedefs.h"
+#include "soft_body_3d_sw.h"
 
 class PhysicsDirectSpaceState3DSW : public PhysicsDirectSpaceState3D {
 	GDCLASS(PhysicsDirectSpaceState3DSW, PhysicsDirectSpaceState3D);
@@ -82,6 +83,7 @@ private:
 	SelfList<Body3DSW>::List state_query_list;
 	SelfList<Area3DSW>::List monitor_query_list;
 	SelfList<Area3DSW>::List area_moved_list;
+	SelfList<SoftBody3DSW>::List active_soft_body_list;
 
 	static void *_broadphase_pair(CollisionObject3DSW *A, int p_subindex_A, CollisionObject3DSW *B, int p_subindex_B, void *p_self);
 	static void _broadphase_unpair(CollisionObject3DSW *A, int p_subindex_A, CollisionObject3DSW *B, int p_subindex_B, void *p_data, void *p_self);
@@ -97,7 +99,6 @@ private:
 	real_t test_motion_min_contact_depth;
 
 	enum {
-
 		INTERSECTION_QUERY_MAX = 2048
 	};
 
@@ -146,6 +147,10 @@ public:
 	void area_remove_from_moved_list(SelfList<Area3DSW> *p_area);
 	const SelfList<Area3DSW>::List &get_moved_area_list() const;
 
+	const SelfList<SoftBody3DSW>::List &get_active_soft_body_list() const;
+	void soft_body_add_to_active_list(SelfList<SoftBody3DSW> *p_soft_body);
+	void soft_body_remove_from_active_list(SelfList<SoftBody3DSW> *p_soft_body);
+
 	BroadPhase3DSW *get_broadphase();
 
 	void add_object(CollisionObject3DSW *p_object);
@@ -183,7 +188,7 @@ public:
 	PhysicsDirectSpaceState3DSW *get_direct_state();
 
 	void set_debug_contacts(int p_amount) { contact_debug.resize(p_amount); }
-	_FORCE_INLINE_ bool is_debugging_contacts() const { return !contact_debug.empty(); }
+	_FORCE_INLINE_ bool is_debugging_contacts() const { return !contact_debug.is_empty(); }
 	_FORCE_INLINE_ void add_debug_contact(const Vector3 &p_contact) {
 		if (contact_debug_count < contact_debug.size()) {
 			contact_debug.write[contact_debug_count++] = p_contact;

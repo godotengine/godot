@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -261,7 +261,8 @@ void AudioStreamPlaybackSample::mix(AudioFrame *p_buffer, float p_rate_scale, in
 		sign = -1;
 	}
 
-	float base_rate = AudioServer::get_singleton()->get_mix_rate();
+	float global_rate_scale = AudioServer::get_singleton()->get_global_rate_scale();
+	float base_rate = AudioServer::get_singleton()->get_mix_rate() * global_rate_scale;
 	float srate = base->mix_rate;
 	srate *= p_rate_scale;
 	float fincrement = srate / base_rate;
@@ -402,11 +403,7 @@ void AudioStreamPlaybackSample::mix(AudioFrame *p_buffer, float p_rate_scale, in
 	}
 }
 
-AudioStreamPlaybackSample::AudioStreamPlaybackSample() {
-	active = false;
-	offset = 0;
-	sign = 1;
-}
+AudioStreamPlaybackSample::AudioStreamPlaybackSample() {}
 
 /////////////////////
 
@@ -650,16 +647,7 @@ void AudioStreamSample::_bind_methods() {
 	BIND_ENUM_CONSTANT(LOOP_BACKWARD);
 }
 
-AudioStreamSample::AudioStreamSample() {
-	format = FORMAT_8_BITS;
-	loop_mode = LOOP_DISABLED;
-	stereo = false;
-	loop_begin = 0;
-	loop_end = 0;
-	mix_rate = 44100;
-	data = nullptr;
-	data_bytes = 0;
-}
+AudioStreamSample::AudioStreamSample() {}
 
 AudioStreamSample::~AudioStreamSample() {
 	if (data) {

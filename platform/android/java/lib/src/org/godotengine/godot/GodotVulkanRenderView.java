@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -38,6 +38,7 @@ import org.godotengine.godot.vulkan.VkSurfaceView;
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.view.GestureDetector;
+import android.view.InputDevice;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
 import android.view.SurfaceView;
@@ -100,22 +101,27 @@ public class GodotVulkanRenderView extends VkSurfaceView implements GodotRenderV
 	public boolean onTouchEvent(MotionEvent event) {
 		super.onTouchEvent(event);
 		mGestureDetector.onTouchEvent(event);
-		return godot.gotTouchEvent(event);
+		return mInputHandler.onTouchEvent(event);
 	}
 
 	@Override
 	public boolean onKeyUp(final int keyCode, KeyEvent event) {
-		return mInputHandler.onKeyUp(keyCode, event) || super.onKeyUp(keyCode, event);
+		return mInputHandler.onKeyUp(keyCode, event);
 	}
 
 	@Override
 	public boolean onKeyDown(final int keyCode, KeyEvent event) {
-		return mInputHandler.onKeyDown(keyCode, event) || super.onKeyDown(keyCode, event);
+		return mInputHandler.onKeyDown(keyCode, event);
 	}
 
 	@Override
 	public boolean onGenericMotionEvent(MotionEvent event) {
-		return mInputHandler.onGenericMotionEvent(event) || super.onGenericMotionEvent(event);
+		return mInputHandler.onGenericMotionEvent(event);
+	}
+
+	@Override
+	public boolean onCapturedPointerEvent(MotionEvent event) {
+		return mInputHandler.onGenericMotionEvent(event);
 	}
 
 	@Override

@@ -7,7 +7,7 @@
 		A synchronization mutex (mutual exclusion). This is used to synchronize multiple [Thread]s, and is equivalent to a binary [Semaphore]. It guarantees that only one thread can ever acquire the lock at a time. A mutex can be used to protect a critical section; however, be careful to avoid deadlocks.
 	</description>
 	<tutorials>
-		<link>https://docs.godotengine.org/en/latest/tutorials/threads/using_multiple_threads.html</link>
+		<link title="Using multiple threads">https://docs.godotengine.org/en/latest/tutorials/threads/using_multiple_threads.html</link>
 	</tutorials>
 	<methods>
 		<method name="lock">

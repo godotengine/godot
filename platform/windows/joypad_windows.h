@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -77,7 +77,7 @@ private:
 		DWORD last_pad;
 
 		LPDIRECTINPUTDEVICE8 di_joy;
-		List<DWORD> joy_axis;
+		List<LONG> joy_axis;
 		GUID guid;
 
 		dinput_gamepad() {
@@ -92,21 +92,13 @@ private:
 	};
 
 	struct xinput_gamepad {
-		int id;
-		bool attached;
-		bool vibrating;
-		DWORD last_packet;
+		int id = 0;
+		bool attached = false;
+		bool vibrating = false;
+		DWORD last_packet = 0;
 		XINPUT_STATE state;
-		uint64_t ff_timestamp;
-		uint64_t ff_end_timestamp;
-
-		xinput_gamepad() {
-			attached = false;
-			vibrating = false;
-			ff_timestamp = 0;
-			ff_end_timestamp = 0;
-			last_packet = 0;
-		}
+		uint64_t ff_timestamp = 0;
+		uint64_t ff_end_timestamp = 0;
 	};
 
 	typedef DWORD(WINAPI *XInputGetState_t)(DWORD dwUserIndex, XINPUT_STATE *pState);

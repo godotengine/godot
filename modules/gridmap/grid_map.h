@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -31,7 +31,6 @@
 #ifndef GRID_MAP_H
 #define GRID_MAP_H
 
-#include "scene/3d/navigation_3d.h"
 #include "scene/3d/node_3d.h"
 #include "scene/resources/mesh_library.h"
 #include "scene/resources/multimesh.h"
@@ -53,7 +52,7 @@ class GridMap : public Node3D {
 			int16_t y;
 			int16_t z;
 		};
-		uint64_t key;
+		uint64_t key = 0;
 
 		_FORCE_INLINE_ bool operator<(const IndexKey &p_key) const {
 			return key < p_key.key;
@@ -68,7 +67,7 @@ class GridMap : public Node3D {
 			y = (int16_t)p_vector.y;
 			z = (int16_t)p_vector.z;
 		}
-		IndexKey() { key = 0; }
+		IndexKey() {}
 	};
 
 	/**
@@ -80,13 +79,7 @@ class GridMap : public Node3D {
 			unsigned int rot : 5;
 			unsigned int layer : 8;
 		};
-		uint32_t cell;
-
-		Cell() {
-			item = 0;
-			rot = 0;
-			layer = 0;
-		}
+		uint32_t cell = 0;
 	};
 
 	/**
@@ -103,7 +96,7 @@ class GridMap : public Node3D {
 			RID instance;
 			RID multimesh;
 			struct Item {
-				int index;
+				int index = 0;
 				Transform transform;
 				IndexKey key;
 			};
@@ -116,7 +109,7 @@ class GridMap : public Node3D {
 		RID collision_debug;
 		RID collision_debug_instance;
 
-		bool dirty;
+		bool dirty = false;
 		RID static_body;
 		Map<IndexKey, NavMesh> navmesh_ids;
 	};
@@ -129,35 +122,38 @@ class GridMap : public Node3D {
 			int16_t empty;
 		};
 
-		uint64_t key;
+		uint64_t key = 0;
 
 		_FORCE_INLINE_ bool operator<(const OctantKey &p_key) const {
 			return key < p_key.key;
 		}
 
 		//OctantKey(const IndexKey& p_k, int p_item) { indexkey=p_k.key; item=p_item; }
-		OctantKey() { key = 0; }
+		OctantKey() {}
 	};
 
-	uint32_t collision_layer;
-	uint32_t collision_mask;
+	uint32_t collision_layer = 1;
+	uint32_t collision_mask = 1;
+	bool bake_navigation = false;
+	uint32_t navigation_layers = 1;
 
 	Transform last_transform;
 
-	bool _in_tree;
-	Vector3 cell_size;
-	int octant_size;
-	bool center_x, center_y, center_z;
-	float cell_scale;
-	Navigation3D *navigation;
+	bool _in_tree = false;
+	Vector3 cell_size = Vector3(2, 2, 2);
+	int octant_size = 8;
+	bool center_x = true;
+	bool center_y = true;
+	bool center_z = true;
+	float cell_scale = 1.0;
 
-	bool clip;
-	bool clip_above;
-	int clip_floor;
+	bool clip = false;
+	bool clip_above = true;
+	int clip_floor = 0;
 
-	bool recreating_octants;
+	bool recreating_octants = false;
 
-	Vector3::Axis clip_axis;
+	Vector3::Axis clip_axis = Vector3::AXIS_Z;
 
 	Ref<MeshLibrary> mesh_library;
 
@@ -167,10 +163,10 @@ class GridMap : public Node3D {
 	void _recreate_octant_data();
 
 	struct BakeLight {
-		RS::LightType type;
+		RS::LightType type = RS::LightType::LIGHT_DIRECTIONAL;
 		Vector3 pos;
 		Vector3 dir;
-		float param[RS::LIGHT_PARAM_MAX];
+		float param[RS::LIGHT_PARAM_MAX] = {};
 	};
 
 	_FORCE_INLINE_ Vector3 _octant_get_offset(const OctantKey &p_key) const {
@@ -183,7 +179,7 @@ class GridMap : public Node3D {
 	bool _octant_update(const OctantKey &p_key);
 	void _octant_clean_up(const OctantKey &p_key);
 	void _octant_transform(const OctantKey &p_key);
-	bool awaiting_update;
+	bool awaiting_update = false;
 
 	void _queue_octants_dirty();
 	void _update_octants_callback();
@@ -226,6 +222,12 @@ public:
 
 	void set_collision_mask_bit(int p_bit, bool p_value);
 	bool get_collision_mask_bit(int p_bit) const;
+
+	void set_bake_navigation(bool p_bake_navigation);
+	bool is_baking_navigation();
+
+	void set_navigation_layers(uint32_t p_layers);
+	uint32_t get_navigation_layers();
 
 	void set_mesh_library(const Ref<MeshLibrary> &p_mesh_library);
 	Ref<MeshLibrary> get_mesh_library() const;

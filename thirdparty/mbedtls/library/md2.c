@@ -1,7 +1,7 @@
 /*
  *  RFC 1115/1319 compliant MD2 implementation
  *
- *  Copyright (C) 2006-2015, ARM Limited, All Rights Reserved
+ *  Copyright The Mbed TLS Contributors
  *  SPDX-License-Identifier: Apache-2.0 OR GPL-2.0-or-later
  *
  *  This file is provided under the Apache License 2.0, or the
@@ -42,8 +42,6 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
  *  **********
- *
- *  This file is part of mbed TLS (https://tls.mbed.org)
  */
 /*
  *  The MD2 algorithm was designed by Ron Rivest in 1989.
@@ -178,6 +176,9 @@ int mbedtls_internal_md2_process( mbedtls_md2_context *ctx )
            ( ctx->cksum[i] ^ PI_SUBST[ctx->buffer[i] ^ t] );
         t  = ctx->cksum[i];
     }
+
+    /* Zeroise variables to clear sensitive data from memory. */
+    mbedtls_platform_zeroize( &t, sizeof( t ) );
 
     return( 0 );
 }

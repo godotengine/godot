@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -31,7 +31,7 @@
 #ifndef ENVIRONMENT_H
 #define ENVIRONMENT_H
 
-#include "core/resource.h"
+#include "core/io/resource.h"
 #include "scene/resources/sky.h"
 #include "scene/resources/texture.h"
 #include "servers/rendering_server.h"
@@ -70,13 +70,6 @@ public:
 		TONE_MAPPER_ACES,
 	};
 
-	enum SSAOBlur {
-		SSAO_BLUR_DISABLED,
-		SSAO_BLUR_1x1,
-		SSAO_BLUR_2x2,
-		SSAO_BLUR_3x3,
-	};
-
 	enum SDFGICascades {
 		SDFGI_CASCADES_4,
 		SDFGI_CASCADES_6,
@@ -97,13 +90,20 @@ public:
 		GLOW_BLEND_MODE_MIX,
 	};
 
+	enum VolumetricFogShadowFilter {
+		VOLUMETRIC_FOG_SHADOW_FILTER_DISABLED,
+		VOLUMETRIC_FOG_SHADOW_FILTER_LOW,
+		VOLUMETRIC_FOG_SHADOW_FILTER_MEDIUM,
+		VOLUMETRIC_FOG_SHADOW_FILTER_HIGH,
+	};
+
 private:
 	RID environment;
 
 	// Background
 	BGMode bg_mode = BG_CLEAR_COLOR;
 	Ref<Sky> bg_sky;
-	float bg_sky_custom_fov = 0;
+	float bg_sky_custom_fov = 0.0;
 	Vector3 bg_sky_rotation;
 	Color bg_color;
 	float bg_energy = 1.0;
@@ -125,7 +125,7 @@ private:
 	float tonemap_white = 1.0;
 	bool tonemap_auto_exposure_enabled = false;
 	float tonemap_auto_exposure_min = 0.05;
-	float tonemap_auto_exposure_max = 8;
+	float tonemap_auto_exposure_max = 8.0;
 	float tonemap_auto_exposure_speed = 0.5;
 	float tonemap_auto_exposure_grey = 0.4;
 	void _update_tonemap();
@@ -141,12 +141,13 @@ private:
 	// SSAO
 	bool ssao_enabled = false;
 	float ssao_radius = 1.0;
-	float ssao_intensity = 1.0;
-	float ssao_bias = 0.01;
+	float ssao_intensity = 2.0;
+	float ssao_power = 1.5;
+	float ssao_detail = 0.5;
+	float ssao_horizon = 0.06;
+	float ssao_sharpness = 0.98;
 	float ssao_direct_light_affect = 0.0;
 	float ssao_ao_channel_affect = 0.0;
-	SSAOBlur ssao_blur = SSAO_BLUR_3x3;
-	float ssao_edge_sharpness = 4.0;
 	void _update_ssao();
 
 	// SDFGI
@@ -155,7 +156,7 @@ private:
 	float sdfgi_min_cell_size = 0.2;
 	SDFGIYScale sdfgi_y_scale = SDFGI_Y_SCALE_DISABLED;
 	bool sdfgi_use_occlusion = false;
-	bool sdfgi_use_multibounce = false;
+	float sdfgi_bounce_feedback = 0.0;
 	bool sdfgi_read_sky_light = false;
 	float sdfgi_energy = 1.0;
 	float sdfgi_normal_bias = 1.1;
@@ -164,7 +165,8 @@ private:
 
 	// Glow
 	bool glow_enabled = false;
-	int glow_levels = (1 << 2) | (1 << 4);
+	Vector<float> glow_levels;
+	bool glow_normalize_levels = false;
 	float glow_intensity = 0.8;
 	float glow_strength = 1.0;
 	float glow_mix = 0.05;
@@ -177,31 +179,35 @@ private:
 
 	// Fog
 	bool fog_enabled = false;
-	Color fog_color = Color(0.5, 0.6, 0.7);
-	Color fog_sun_color = Color(1.0, 0.9, 0.7);
-	float fog_sun_amount = 0.0;
+	Color fog_light_color = Color(0.5, 0.6, 0.7);
+	float fog_light_energy = 1.0;
+	float fog_sun_scatter = 0.0;
+	float fog_density = 0.001;
+	float fog_height = 0.0;
+	float fog_height_density = 0.0; //can be negative to invert effect
+	float fog_aerial_perspective = 0.0;
+
 	void _update_fog();
 
-	bool fog_depth_enabled = true;
-	float fog_depth_begin = 10.0;
-	float fog_depth_end = 100.0;
-	float fog_depth_curve = 1.0;
-	bool fog_transmit_enabled = false;
-	float fog_transmit_curve = 1.0;
-	void _update_fog_depth();
-
-	bool fog_height_enabled = false;
-	float fog_height_min = 10.0;
-	float fog_height_max = 0.0;
-	float fog_height_curve = 1.0;
-	void _update_fog_height();
+	// Volumetric Fog
+	bool volumetric_fog_enabled = false;
+	float volumetric_fog_density = 0.01;
+	Color volumetric_fog_light = Color(0.0, 0.0, 0.0);
+	float volumetric_fog_light_energy = 1.0;
+	float volumetric_fog_length = 64.0;
+	float volumetric_fog_detail_spread = 2.0;
+	float volumetric_fog_gi_inject = 0.0;
+	bool volumetric_fog_temporal_reproject = true;
+	float volumetric_fog_temporal_reproject_amount = 0.9;
+	void _update_volumetric_fog();
 
 	// Adjustment
 	bool adjustment_enabled = false;
 	float adjustment_brightness = 1.0;
 	float adjustment_contrast = 1.0;
 	float adjustment_saturation = 1.0;
-	Ref<Texture2D> adjustment_color_correction;
+	bool use_1d_color_correction = true;
+	Ref<Texture> adjustment_color_correction;
 	void _update_adjustment();
 
 protected:
@@ -284,16 +290,18 @@ public:
 	float get_ssao_radius() const;
 	void set_ssao_intensity(float p_intensity);
 	float get_ssao_intensity() const;
-	void set_ssao_bias(float p_bias);
-	float get_ssao_bias() const;
+	void set_ssao_power(float p_power);
+	float get_ssao_power() const;
+	void set_ssao_detail(float p_detail);
+	float get_ssao_detail() const;
+	void set_ssao_horizon(float p_horizon);
+	float get_ssao_horizon() const;
+	void set_ssao_sharpness(float p_sharpness);
+	float get_ssao_sharpness() const;
 	void set_ssao_direct_light_affect(float p_direct_light_affect);
 	float get_ssao_direct_light_affect() const;
 	void set_ssao_ao_channel_affect(float p_ao_channel_affect);
 	float get_ssao_ao_channel_affect() const;
-	void set_ssao_blur(SSAOBlur p_blur);
-	SSAOBlur get_ssao_blur() const;
-	void set_ssao_edge_sharpness(float p_edge_sharpness);
-	float get_ssao_edge_sharpness() const;
 
 	// SDFGI
 	void set_sdfgi_enabled(bool p_enabled);
@@ -310,8 +318,8 @@ public:
 	SDFGIYScale get_sdfgi_y_scale() const;
 	void set_sdfgi_use_occlusion(bool p_enabled);
 	bool is_sdfgi_using_occlusion() const;
-	void set_sdfgi_use_multi_bounce(bool p_enabled);
-	bool is_sdfgi_using_multi_bounce() const;
+	void set_sdfgi_bounce_feedback(float p_amount);
+	float get_sdfgi_bounce_feedback() const;
 	void set_sdfgi_read_sky_light(bool p_enabled);
 	bool is_sdfgi_reading_sky_light() const;
 	void set_sdfgi_energy(float p_energy);
@@ -324,8 +332,10 @@ public:
 	// Glow
 	void set_glow_enabled(bool p_enabled);
 	bool is_glow_enabled() const;
-	void set_glow_level_enabled(int p_level, bool p_enabled);
-	bool is_glow_level_enabled(int p_level) const;
+	void set_glow_level(int p_level, float p_intensity);
+	float get_glow_level(int p_level) const;
+	void set_glow_normalized(bool p_normalized);
+	bool is_glow_normalized() const;
 	void set_glow_intensity(float p_intensity);
 	float get_glow_intensity() const;
 	void set_glow_strength(float p_strength);
@@ -344,36 +354,44 @@ public:
 	float get_glow_hdr_luminance_cap() const;
 
 	// Fog
+
 	void set_fog_enabled(bool p_enabled);
 	bool is_fog_enabled() const;
-	void set_fog_color(const Color &p_color);
-	Color get_fog_color() const;
-	void set_fog_sun_color(const Color &p_color);
-	Color get_fog_sun_color() const;
-	void set_fog_sun_amount(float p_amount);
-	float get_fog_sun_amount() const;
+	void set_fog_light_color(const Color &p_light_color);
+	Color get_fog_light_color() const;
+	void set_fog_light_energy(float p_amount);
+	float get_fog_light_energy() const;
+	void set_fog_sun_scatter(float p_amount);
+	float get_fog_sun_scatter() const;
 
-	void set_fog_depth_enabled(bool p_enabled);
-	bool is_fog_depth_enabled() const;
-	void set_fog_depth_begin(float p_distance);
-	float get_fog_depth_begin() const;
-	void set_fog_depth_end(float p_distance);
-	float get_fog_depth_end() const;
-	void set_fog_depth_curve(float p_curve);
-	float get_fog_depth_curve() const;
-	void set_fog_transmit_enabled(bool p_enabled);
-	bool is_fog_transmit_enabled() const;
-	void set_fog_transmit_curve(float p_curve);
-	float get_fog_transmit_curve() const;
+	void set_fog_density(float p_amount);
+	float get_fog_density() const;
+	void set_fog_height(float p_amount);
+	float get_fog_height() const;
+	void set_fog_height_density(float p_amount);
+	float get_fog_height_density() const;
+	void set_fog_aerial_perspective(float p_aerial_perspective);
+	float get_fog_aerial_perspective() const;
 
-	void set_fog_height_enabled(bool p_enabled);
-	bool is_fog_height_enabled() const;
-	void set_fog_height_min(float p_distance);
-	float get_fog_height_min() const;
-	void set_fog_height_max(float p_distance);
-	float get_fog_height_max() const;
-	void set_fog_height_curve(float p_distance);
-	float get_fog_height_curve() const;
+	// Volumetric Fog
+	void set_volumetric_fog_enabled(bool p_enable);
+	bool is_volumetric_fog_enabled() const;
+	void set_volumetric_fog_density(float p_density);
+	float get_volumetric_fog_density() const;
+	void set_volumetric_fog_light(Color p_color);
+	Color get_volumetric_fog_light() const;
+	void set_volumetric_fog_light_energy(float p_begin);
+	float get_volumetric_fog_light_energy() const;
+	void set_volumetric_fog_length(float p_length);
+	float get_volumetric_fog_length() const;
+	void set_volumetric_fog_detail_spread(float p_detail_spread);
+	float get_volumetric_fog_detail_spread() const;
+	void set_volumetric_fog_gi_inject(float p_gi_inject);
+	float get_volumetric_fog_gi_inject() const;
+	void set_volumetric_fog_temporal_reprojection_enabled(bool p_enable);
+	bool is_volumetric_fog_temporal_reprojection_enabled() const;
+	void set_volumetric_fog_temporal_reprojection_amount(float p_amount);
+	float get_volumetric_fog_temporal_reprojection_amount() const;
 
 	// Adjustment
 	void set_adjustment_enabled(bool p_enabled);
@@ -384,8 +402,8 @@ public:
 	float get_adjustment_contrast() const;
 	void set_adjustment_saturation(float p_saturation);
 	float get_adjustment_saturation() const;
-	void set_adjustment_color_correction(const Ref<Texture2D> &p_ramp);
-	Ref<Texture2D> get_adjustment_color_correction() const;
+	void set_adjustment_color_correction(Ref<Texture> p_color_correction);
+	Ref<Texture> get_adjustment_color_correction() const;
 
 	Environment();
 	~Environment();
@@ -395,9 +413,9 @@ VARIANT_ENUM_CAST(Environment::BGMode)
 VARIANT_ENUM_CAST(Environment::AmbientSource)
 VARIANT_ENUM_CAST(Environment::ReflectionSource)
 VARIANT_ENUM_CAST(Environment::ToneMapper)
-VARIANT_ENUM_CAST(Environment::SSAOBlur)
 VARIANT_ENUM_CAST(Environment::SDFGICascades)
 VARIANT_ENUM_CAST(Environment::SDFGIYScale)
 VARIANT_ENUM_CAST(Environment::GlowBlendMode)
+VARIANT_ENUM_CAST(Environment::VolumetricFogShadowFilter)
 
 #endif // ENVIRONMENT_H

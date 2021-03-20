@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -30,18 +30,17 @@
 
 #include "resource_format_binary.h"
 
-#include "core/image.h"
+#include "core/config/project_settings.h"
 #include "core/io/file_access_compressed.h"
+#include "core/io/image.h"
 #include "core/io/marshalls.h"
 #include "core/os/dir_access.h"
-#include "core/project_settings.h"
 #include "core/version.h"
 
 //#define print_bl(m_what) print_line(m_what)
 #define print_bl(m_what) (void)(m_what)
 
 enum {
-
 	//numbering must be different from variant, in case new variant types are added (variant must be always contiguous for jumptable optimization)
 	VARIANT_NIL = 1,
 	VARIANT_BOOL = 2,
@@ -90,7 +89,6 @@ enum {
 	FORMAT_VERSION = 3,
 	FORMAT_VERSION_CAN_RENAME_DEPS = 1,
 	FORMAT_VERSION_NO_NODEPATH_PROPERTY = 3,
-
 };
 
 void ResourceLoaderBinary::_advance_padding(uint32_t p_len) {
@@ -263,11 +261,11 @@ Error ResourceLoaderBinary::parse_variant(Variant &r_v) {
 			r_v = v;
 		} break;
 		case VARIANT_COLOR: {
-			Color v;
-			v.r = f->get_real();
-			v.g = f->get_real();
-			v.b = f->get_real();
-			v.a = f->get_real();
+			Color v; // Colors should always be in single-precision.
+			v.r = f->get_float();
+			v.g = f->get_float();
+			v.b = f->get_float();
+			v.a = f->get_float();
 			r_v = v;
 
 		} break;
@@ -315,17 +313,12 @@ Error ResourceLoaderBinary::parse_variant(Variant &r_v) {
 					uint32_t index = f->get_32();
 					String path = res_path + "::" + itos(index);
 
-					if (use_nocache) {
-						if (!internal_index_cache.has(path)) {
-							WARN_PRINT(String("Couldn't load resource (no cache): " + path).utf8().get_data());
-						}
-						r_v = internal_index_cache[path];
+					//always use internal cache for loading internal resources
+					if (!internal_index_cache.has(path)) {
+						WARN_PRINT(String("Couldn't load resource (no cache): " + path).utf8().get_data());
+						r_v = Variant();
 					} else {
-						RES res = ResourceLoader::load(path);
-						if (res.is_null()) {
-							WARN_PRINT(String("Couldn't load resource: " + path).utf8().get_data());
-						}
-						r_v = res;
+						r_v = internal_index_cache[path];
 					}
 
 				} break;
@@ -647,7 +640,7 @@ Error ResourceLoaderBinary::load() {
 			}
 
 		} else {
-			Error err = ResourceLoader::load_threaded_request(path, external_resources[i].type, use_sub_threads, local_path);
+			Error err = ResourceLoader::load_threaded_request(path, external_resources[i].type, use_sub_threads, ResourceFormatLoader::CACHE_MODE_REUSE, local_path);
 			if (err != OK) {
 				if (!ResourceLoader::get_abort_on_missing_resources()) {
 					ResourceLoader::notify_dependency_error(local_path, path, external_resources[i].type);
@@ -677,7 +670,7 @@ Error ResourceLoaderBinary::load() {
 				path = res_path + "::" + path;
 			}
 
-			if (!use_nocache) {
+			if (cache_mode == ResourceFormatLoader::CACHE_MODE_REUSE) {
 				if (ResourceCache::has(path)) {
 					//already loaded, don't do anything
 					stage++;
@@ -686,7 +679,7 @@ Error ResourceLoaderBinary::load() {
 				}
 			}
 		} else {
-			if (!use_nocache && !ResourceCache::has(res_path)) {
+			if (cache_mode != ResourceFormatLoader::CACHE_MODE_IGNORE && !ResourceCache::has(res_path)) {
 				path = res_path;
 			}
 		}
@@ -697,26 +690,40 @@ Error ResourceLoaderBinary::load() {
 
 		String t = get_unicode_string();
 
-		Object *obj = ClassDB::instance(t);
-		if (!obj) {
-			error = ERR_FILE_CORRUPT;
-			ERR_FAIL_V_MSG(ERR_FILE_CORRUPT, local_path + ":Resource of unrecognized type in file: " + t + ".");
+		RES res;
+
+		if (cache_mode == ResourceFormatLoader::CACHE_MODE_REPLACE && ResourceCache::has(path)) {
+			//use the existing one
+			Resource *r = ResourceCache::get(path);
+			if (r->get_class() == t) {
+				r->reset_state();
+				res = Ref<Resource>(r);
+			}
 		}
 
-		Resource *r = Object::cast_to<Resource>(obj);
-		if (!r) {
-			String obj_class = obj->get_class();
-			error = ERR_FILE_CORRUPT;
-			memdelete(obj); //bye
-			ERR_FAIL_V_MSG(ERR_FILE_CORRUPT, local_path + ":Resource type in resource field not a resource, type is: " + obj_class + ".");
-		}
+		if (res.is_null()) {
+			//did not replace
 
-		RES res = RES(r);
+			Object *obj = ClassDB::instance(t);
+			if (!obj) {
+				error = ERR_FILE_CORRUPT;
+				ERR_FAIL_V_MSG(ERR_FILE_CORRUPT, local_path + ":Resource of unrecognized type in file: " + t + ".");
+			}
 
-		if (path != String()) {
-			r->set_path(path);
+			Resource *r = Object::cast_to<Resource>(obj);
+			if (!r) {
+				String obj_class = obj->get_class();
+				error = ERR_FILE_CORRUPT;
+				memdelete(obj); //bye
+				ERR_FAIL_V_MSG(ERR_FILE_CORRUPT, local_path + ":Resource type in resource field not a resource, type is: " + obj_class + ".");
+			}
+
+			res = RES(r);
+			if (path != String() && cache_mode != ResourceFormatLoader::CACHE_MODE_IGNORE) {
+				r->set_path(path, cache_mode == ResourceFormatLoader::CACHE_MODE_REPLACE); //if got here because the resource with same path has different type, replace it
+			}
+			r->set_subindex(subindex);
 		}
-		r->set_subindex(subindex);
 
 		if (!main) {
 			internal_index_cache[path] = res;
@@ -863,7 +870,8 @@ void ResourceLoaderBinary::open(FileAccess *p_f) {
 
 	if (ver_format > FORMAT_VERSION || ver_major > VERSION_MAJOR) {
 		f->close();
-		ERR_FAIL_MSG("File format '" + itos(FORMAT_VERSION) + "." + itos(ver_major) + "." + itos(ver_minor) + "' is too new! Please upgrade to a new engine version: " + local_path + ".");
+		ERR_FAIL_MSG(vformat("File '%s' can't be loaded, as it uses a format version (%d) or engine version (%d.%d) which are not supported by your engine version (%s).",
+				local_path, ver_format, ver_major, ver_minor, VERSION_BRANCH));
 	}
 
 	type = get_unicode_string();
@@ -962,7 +970,7 @@ ResourceLoaderBinary::~ResourceLoaderBinary() {
 	}
 }
 
-RES ResourceFormatLoaderBinary::load(const String &p_path, const String &p_original_path, Error *r_error, bool p_use_sub_threads, float *r_progress, bool p_no_cache) {
+RES ResourceFormatLoaderBinary::load(const String &p_path, const String &p_original_path, Error *r_error, bool p_use_sub_threads, float *r_progress, CacheMode p_cache_mode) {
 	if (r_error) {
 		*r_error = ERR_FILE_CANT_OPEN;
 	}
@@ -973,7 +981,7 @@ RES ResourceFormatLoaderBinary::load(const String &p_path, const String &p_origi
 	ERR_FAIL_COND_V_MSG(err != OK, RES(), "Cannot open file '" + p_path + "'.");
 
 	ResourceLoaderBinary loader;
-	loader.use_nocache = p_no_cache;
+	loader.cache_mode = p_cache_mode;
 	loader.use_sub_threads = p_use_sub_threads;
 	loader.progress = r_progress;
 	String path = p_original_path != "" ? p_original_path : p_path;
@@ -1136,7 +1144,9 @@ Error ResourceFormatLoaderBinary::rename_dependencies(const String &p_path, cons
 	if (ver_format > FORMAT_VERSION || ver_major > VERSION_MAJOR) {
 		memdelete(f);
 		memdelete(fw);
-		ERR_FAIL_V_MSG(ERR_FILE_UNRECOGNIZED, "File format '" + itos(FORMAT_VERSION) + "." + itos(ver_major) + "." + itos(ver_minor) + "' is too new! Please upgrade to a new engine version: " + local_path + ".");
+		ERR_FAIL_V_MSG(ERR_FILE_UNRECOGNIZED,
+				vformat("File '%s' can't be loaded, as it uses a format version (%d) or engine version (%d.%d) which are not supported by your engine version (%s).",
+						local_path, ver_format, ver_major, ver_minor, VERSION_BRANCH));
 	}
 
 	// Since we're not actually converting the file contents, leave the version
@@ -1235,7 +1245,7 @@ Error ResourceFormatLoaderBinary::rename_dependencies(const String &p_path, cons
 String ResourceFormatLoaderBinary::get_resource_type(const String &p_path) const {
 	FileAccess *f = FileAccess::open(p_path, FileAccess::READ);
 	if (!f) {
-		return ""; //could not rwead
+		return ""; //could not read
 	}
 
 	ResourceLoaderBinary loader;
@@ -1464,7 +1474,7 @@ void ResourceFormatSaverBinaryInstance::write_variant(FileAccess *f, const Varia
 			}
 
 		} break;
-		case Variant::_RID: {
+		case Variant::RID: {
 			f->store_32(VARIANT_RID);
 			WARN_PRINT("Can't save RIDs.");
 			RID val = p_property;

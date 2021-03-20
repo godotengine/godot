@@ -20,8 +20,7 @@
 #define CFFDRIVER_H_
 
 
-#include <ft2build.h>
-#include FT_INTERNAL_DRIVER_H
+#include <freetype/internal/ftdrv.h>
 
 
 FT_BEGIN_HEADER

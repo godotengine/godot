@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -33,7 +33,7 @@
 
 #ifdef JAVASCRIPT_ENABLED
 
-#include "core/error_list.h"
+#include "core/error/error_list.h"
 #include "emws_peer.h"
 #include "websocket_client.h"
 
@@ -41,13 +41,17 @@ class EMWSClient : public WebSocketClient {
 	GDCIIMPL(EMWSClient, WebSocketClient);
 
 private:
-	int _in_buf_size;
-	int _in_pkt_size;
-	int _js_id;
+	int _js_id = 0;
+	bool _is_connecting = false;
+	int _in_buf_size = DEF_BUF_SHIFT;
+	int _in_pkt_size = DEF_PKT_SHIFT;
+
+	static void _esws_on_connect(void *obj, char *proto);
+	static void _esws_on_message(void *obj, const uint8_t *p_data, int p_data_size, int p_is_string);
+	static void _esws_on_error(void *obj);
+	static void _esws_on_close(void *obj, int code, const char *reason, int was_clean);
 
 public:
-	bool _is_connecting;
-
 	Error set_buffers(int p_in_buffer, int p_in_packets, int p_out_buffer, int p_out_packets);
 	Error connect_to_host(String p_host, String p_path, uint16_t p_port, bool p_ssl, const Vector<String> p_protocol = Vector<String>(), const Vector<String> p_custom_headers = Vector<String>());
 	Ref<WebSocketPeer> get_peer(int p_peer_id) const;

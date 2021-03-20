@@ -1,15 +1,15 @@
 using System;
 using System.IO;
+using System.Text;
 using Microsoft.Build.Construction;
 using Microsoft.Build.Evaluation;
+using GodotTools.Shared;
 
 namespace GodotTools.ProjectEditor
 {
     public static class ProjectGenerator
     {
-        public const string GodotSdkVersionToUse = "4.0.0-dev2";
-
-        public static string GodotSdkAttrValue => $"Godot.NET.Sdk/{GodotSdkVersionToUse}";
+        public static string GodotSdkAttrValue => $"Godot.NET.Sdk/{GeneratedGodotNupkgsVersions.GodotNETSdk}";
 
         public static ProjectRootElement GenGameProject(string name)
         {
@@ -41,7 +41,8 @@ namespace GodotTools.ProjectEditor
 
             var root = GenGameProject(name);
 
-            root.Save(path);
+            // Save (without BOM)
+            root.Save(path, new UTF8Encoding(encoderShouldEmitUTF8Identifier: false));
 
             return Guid.NewGuid().ToString().ToUpper();
         }

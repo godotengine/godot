@@ -194,15 +194,16 @@ namespace Godot
         /// <param name="b">The destination vector.</param>
         /// <param name="preA">A vector before this vector.</param>
         /// <param name="postB">A vector after `b`.</param>
-        /// <param name="t">A value on the range of 0.0 to 1.0, representing the amount of interpolation.</param>
+        /// <param name="weight">A value on the range of 0.0 to 1.0, representing the amount of interpolation.</param>
         /// <returns>The interpolated vector.</returns>
-        public Vector2 CubicInterpolate(Vector2 b, Vector2 preA, Vector2 postB, real_t t)
+        public Vector2 CubicInterpolate(Vector2 b, Vector2 preA, Vector2 postB, real_t weight)
         {
             Vector2 p0 = preA;
             Vector2 p1 = this;
             Vector2 p2 = b;
             Vector2 p3 = postB;
 
+            real_t t = weight;
             real_t t2 = t * t;
             real_t t3 = t2 * t;
 
@@ -437,8 +438,11 @@ namespace Godot
         /// <returns>The rotated vector.</returns>
         public Vector2 Rotated(real_t phi)
         {
-            real_t rads = Angle() + phi;
-            return new Vector2(Mathf.Cos(rads), Mathf.Sin(rads)) * Length();
+            real_t sine = Mathf.Sin(phi);
+            real_t cosi = Mathf.Cos(phi);
+            return new Vector2(
+                x * cosi - y * sine,
+                x * sine + y * cosi);
         }
 
         /// <summary>
@@ -507,7 +511,7 @@ namespace Godot
         /// <returns>The snapped vector.</returns>
         public Vector2 Snapped(Vector2 step)
         {
-            return new Vector2(Mathf.Stepify(x, step.x), Mathf.Stepify(y, step.y));
+            return new Vector2(Mathf.Snapped(x, step.x), Mathf.Snapped(y, step.y));
         }
 
         /// <summary>
@@ -670,41 +674,37 @@ namespace Godot
 
         public static bool operator <(Vector2 left, Vector2 right)
         {
-            if (Mathf.IsEqualApprox(left.x, right.x))
+            if (left.x == right.x)
             {
                 return left.y < right.y;
             }
-
             return left.x < right.x;
         }
 
         public static bool operator >(Vector2 left, Vector2 right)
         {
-            if (Mathf.IsEqualApprox(left.x, right.x))
+            if (left.x == right.x)
             {
                 return left.y > right.y;
             }
-
             return left.x > right.x;
         }
 
         public static bool operator <=(Vector2 left, Vector2 right)
         {
-            if (Mathf.IsEqualApprox(left.x, right.x))
+            if (left.x == right.x)
             {
                 return left.y <= right.y;
             }
-
             return left.x <= right.x;
         }
 
         public static bool operator >=(Vector2 left, Vector2 right)
         {
-            if (Mathf.IsEqualApprox(left.x, right.x))
+            if (left.x == right.x)
             {
                 return left.y >= right.y;
             }
-
             return left.x >= right.x;
         }
 
@@ -714,7 +714,6 @@ namespace Godot
             {
                 return Equals((Vector2)obj);
             }
-
             return false;
         }
 

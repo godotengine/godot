@@ -12,19 +12,19 @@
 		<method name="get_expand_margin_size" qualifiers="const">
 			<return type="float">
 			</return>
-			<argument index="0" name="margin" type="int" enum="Margin">
+			<argument index="0" name="margin" type="int" enum="Side">
 			</argument>
 			<description>
-				Returns the size of the given [code]margin[/code]'s expand margin. See [enum Margin] for possible values.
+				Returns the expand margin size of the specified [enum Side].
 			</description>
 		</method>
 		<method name="get_margin_size" qualifiers="const">
 			<return type="float">
 			</return>
-			<argument index="0" name="margin" type="int" enum="Margin">
+			<argument index="0" name="margin" type="int" enum="Side">
 			</argument>
 			<description>
-				Returns the size of the given [code]margin[/code]. See [enum Margin] for possible values.
+				Returns the margin size of the specified [enum Side].
 			</description>
 		</method>
 		<method name="set_expand_margin_all">
@@ -54,23 +54,23 @@
 		<method name="set_expand_margin_size">
 			<return type="void">
 			</return>
-			<argument index="0" name="margin" type="int" enum="Margin">
+			<argument index="0" name="margin" type="int" enum="Side">
 			</argument>
 			<argument index="1" name="size" type="float">
 			</argument>
 			<description>
-				Sets the expand margin to [code]size[/code] pixels for the given [code]margin[/code]. See [enum Margin] for possible values.
+				Sets the expand margin to [code]size[/code] pixels for the specified [enum Side].
 			</description>
 		</method>
 		<method name="set_margin_size">
 			<return type="void">
 			</return>
-			<argument index="0" name="margin" type="int" enum="Margin">
+			<argument index="0" name="margin" type="int" enum="Side">
 			</argument>
 			<argument index="1" name="size" type="float">
 			</argument>
 			<description>
-				Sets the margin to [code]size[/code] pixels for the given [code]margin[/code]. See [enum Margin] for possible values.
+				Sets the margin to [code]size[/code] pixels for the specified [enum Side].
 			</description>
 		</method>
 	</methods>
@@ -118,10 +118,6 @@
 		</member>
 		<member name="modulate_color" type="Color" setter="set_modulate" getter="get_modulate" default="Color( 1, 1, 1, 1 )">
 			Modulates the color of the texture when this style box is drawn.
-		</member>
-		<member name="normal_map" type="Texture2D" setter="set_normal_map" getter="get_normal_map">
-			The normal map to use when drawing this style box.
-			[b]Note:[/b] Godot expects the normal map to use X+, Y-, and Z+ coordinates. See [url=http://wiki.polycount.com/wiki/Normal_Map_Technical_Details#Common_Swizzle_Coordinates]this page[/url] for a comparison of normal map coordinates expected by popular engines.
 		</member>
 		<member name="region_rect" type="Rect2" setter="set_region_rect" getter="get_region_rect" default="Rect2( 0, 0, 0, 0 )">
 			Species a sub-region of the texture to use.

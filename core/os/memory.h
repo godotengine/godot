@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -31,8 +31,8 @@
 #ifndef MEMORY_H
 #define MEMORY_H
 
-#include "core/error_macros.h"
-#include "core/safe_refcount.h"
+#include "core/error/error_macros.h"
+#include "core/templates/safe_refcount.h"
 
 #include <stddef.h>
 
@@ -43,11 +43,11 @@
 class Memory {
 	Memory();
 #ifdef DEBUG_ENABLED
-	static uint64_t mem_usage;
-	static uint64_t max_usage;
+	static SafeNumeric<uint64_t> mem_usage;
+	static SafeNumeric<uint64_t> max_usage;
 #endif
 
-	static uint64_t alloc_count;
+	static SafeNumeric<uint64_t> alloc_count;
 
 public:
 	static void *alloc_static(size_t p_bytes, bool p_pad_align = false);

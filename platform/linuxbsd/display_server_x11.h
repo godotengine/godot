@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -36,13 +36,14 @@
 #include "servers/display_server.h"
 
 #include "core/input/input.h"
+#include "core/templates/local_vector.h"
 #include "drivers/alsa/audio_driver_alsa.h"
 #include "drivers/alsamidi/midi_driver_alsamidi.h"
 #include "drivers/pulseaudio/audio_driver_pulseaudio.h"
 #include "drivers/unix/os_unix.h"
 #include "joypad_linux.h"
 #include "servers/audio_server.h"
-#include "servers/rendering/rasterizer.h"
+#include "servers/rendering/renderer_compositor.h"
 #include "servers/rendering_server.h"
 
 #if defined(OPENGL_ENABLED)
@@ -60,27 +61,18 @@
 #include <X11/extensions/Xrandr.h>
 #include <X11/keysym.h>
 
-// Hints for X11 fullscreen
-typedef struct {
-	unsigned long flags;
-	unsigned long functions;
-	unsigned long decorations;
-	long inputMode;
-	unsigned long status;
-} Hints;
-
 typedef struct _xrr_monitor_info {
 	Atom name;
-	Bool primary;
-	Bool automatic;
-	int noutput;
-	int x;
-	int y;
-	int width;
-	int height;
-	int mwidth;
-	int mheight;
-	RROutput *outputs;
+	Bool primary = false;
+	Bool automatic = false;
+	int noutput = 0;
+	int x = 0;
+	int y = 0;
+	int width = 0;
+	int height = 0;
+	int mwidth = 0;
+	int mheight = 0;
+	RROutput *outputs = nullptr;
 } xrr_monitor_info;
 
 #undef CursorShape
@@ -132,6 +124,9 @@ class DisplayServerX11 : public DisplayServer {
 
 		ObjectID instance_id;
 
+		bool menu_type = false;
+		bool no_focus = false;
+
 		//better to guess on the fly, given WM can change it
 		//WindowMode mode;
 		bool fullscreen = false; //OS can't exit from this mode
@@ -141,6 +136,8 @@ class DisplayServerX11 : public DisplayServer {
 		Vector2i last_position_before_fs;
 		bool focused = false;
 		bool minimized = false;
+
+		unsigned int focus_order = 0;
 	};
 
 	Map<WindowID, WindowData> windows;
@@ -197,7 +194,14 @@ class DisplayServerX11 : public DisplayServer {
 	MouseMode mouse_mode;
 	Point2i center;
 
-	void _handle_key_event(WindowID p_window, XKeyEvent *p_event, bool p_echo = false);
+	void _handle_key_event(WindowID p_window, XKeyEvent *p_event, LocalVector<XEvent> &p_events, uint32_t &p_event_index, bool p_echo = false);
+
+	Atom _process_selection_request_target(Atom p_target, Window p_requestor, Atom p_property) const;
+	void _handle_selection_request_event(XSelectionRequestEvent *p_event) const;
+
+	String _clipboard_get_impl(Atom p_source, Window x11_window, Atom target) const;
+	String _clipboard_get(Atom p_source, Window x11_window) const;
+	void _clipboard_transfer_ownership(Atom p_source, Window x11_window) const;
 
 	//bool minimized;
 	//bool window_has_focus;
@@ -247,6 +251,19 @@ class DisplayServerX11 : public DisplayServer {
 	static void _dispatch_input_events(const Ref<InputEvent> &p_event);
 	void _dispatch_input_event(const Ref<InputEvent> &p_event);
 
+	mutable Mutex events_mutex;
+	Thread events_thread;
+	SafeFlag events_thread_done;
+	LocalVector<XEvent> polled_events;
+	static void _poll_events_thread(void *ud);
+	bool _wait_for_events() const;
+	void _poll_events();
+
+	static Bool _predicate_all_events(Display *display, XEvent *event, XPointer arg);
+	static Bool _predicate_clipboard_selection(Display *display, XEvent *event, XPointer arg);
+	static Bool _predicate_clipboard_incr(Display *display, XEvent *event, XPointer arg);
+	static Bool _predicate_clipboard_save_targets(Display *display, XEvent *event, XPointer arg);
+
 protected:
 	void _window_changed(XEvent *event);
 
@@ -286,6 +303,8 @@ public:
 	virtual ObjectID window_get_attached_instance_id(WindowID p_window = MAIN_WINDOW_ID) const;
 
 	virtual void window_set_title(const String &p_title, WindowID p_window = MAIN_WINDOW_ID);
+	virtual void window_set_mouse_passthrough(const Vector<Vector2> &p_region, WindowID p_window = MAIN_WINDOW_ID);
+
 	virtual void window_set_rect_changed_callback(const Callable &p_callable, WindowID p_window = MAIN_WINDOW_ID);
 	virtual void window_set_window_event_callback(const Callable &p_callable, WindowID p_window = MAIN_WINDOW_ID);
 	virtual void window_set_input_event_callback(const Callable &p_callable, WindowID p_window = MAIN_WINDOW_ID);

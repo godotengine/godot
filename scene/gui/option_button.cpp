@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -30,7 +30,7 @@
 
 #include "option_button.h"
 
-#include "core/print_string.h"
+#include "core/string/print_string.h"
 
 Size2 OptionButton::get_minimum_size() const {
 	Size2 minsize = Button::get_minimum_size();
@@ -62,13 +62,13 @@ void OptionButton::_notification(int p_what) {
 			if (get_theme_constant("modulate_arrow")) {
 				switch (get_draw_mode()) {
 					case DRAW_PRESSED:
-						clr = get_theme_color("font_color_pressed");
+						clr = get_theme_color("font_pressed_color");
 						break;
 					case DRAW_HOVER:
-						clr = get_theme_color("font_color_hover");
+						clr = get_theme_color("font_hover_color");
 						break;
 					case DRAW_DISABLED:
-						clr = get_theme_color("font_color_disabled");
+						clr = get_theme_color("font_disabled_color");
 						break;
 					default:
 						clr = get_theme_color("font_color");
@@ -77,12 +77,25 @@ void OptionButton::_notification(int p_what) {
 
 			Size2 size = get_size();
 
-			Point2 ofs(size.width - arrow->get_width() - get_theme_constant("arrow_margin"), int(Math::abs((size.height - arrow->get_height()) / 2)));
+			Point2 ofs;
+			if (is_layout_rtl()) {
+				ofs = Point2(get_theme_constant("arrow_margin"), int(Math::abs((size.height - arrow->get_height()) / 2)));
+			} else {
+				ofs = Point2(size.width - arrow->get_width() - get_theme_constant("arrow_margin"), int(Math::abs((size.height - arrow->get_height()) / 2)));
+			}
 			arrow->draw(ci, ofs, clr);
 		} break;
+		case NOTIFICATION_TRANSLATION_CHANGED:
+		case NOTIFICATION_LAYOUT_DIRECTION_CHANGED:
 		case NOTIFICATION_THEME_CHANGED: {
 			if (has_theme_icon("arrow")) {
-				_set_internal_margin(MARGIN_RIGHT, Control::get_theme_icon("arrow")->get_width());
+				if (is_layout_rtl()) {
+					_set_internal_margin(SIDE_LEFT, Control::get_theme_icon("arrow")->get_width());
+					_set_internal_margin(SIDE_RIGHT, 0.f);
+				} else {
+					_set_internal_margin(SIDE_LEFT, 0.f);
+					_set_internal_margin(SIDE_RIGHT, Control::get_theme_icon("arrow")->get_width());
+				}
 			}
 		} break;
 		case NOTIFICATION_VISIBILITY_CHANGED: {
@@ -323,13 +336,18 @@ void OptionButton::_bind_methods() {
 }
 
 OptionButton::OptionButton() {
-	current = -1;
 	set_toggle_mode(true);
 	set_text_align(ALIGN_LEFT);
-	set_action_mode(ACTION_MODE_BUTTON_PRESS);
-	if (has_theme_icon("arrow")) {
-		_set_internal_margin(MARGIN_RIGHT, Control::get_theme_icon("arrow")->get_width());
+	if (is_layout_rtl()) {
+		if (has_theme_icon("arrow")) {
+			_set_internal_margin(SIDE_LEFT, Control::get_theme_icon("arrow")->get_width());
+		}
+	} else {
+		if (has_theme_icon("arrow")) {
+			_set_internal_margin(SIDE_RIGHT, Control::get_theme_icon("arrow")->get_width());
+		}
 	}
+	set_action_mode(ACTION_MODE_BUTTON_PRESS);
 
 	popup = memnew(PopupMenu);
 	popup->hide();
