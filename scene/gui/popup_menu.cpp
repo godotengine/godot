@@ -722,6 +722,7 @@ void PopupMenu::_notification(int p_what) {
 			for (int i = 0; i < items.size(); i++) {
 				items.write[i].xl_text = tr(items[i].text);
 				items.write[i].dirty = true;
+				_shape_item(i);
 			}
 
 			child_controls_changed();
