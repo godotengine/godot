@@ -389,6 +389,7 @@ void SceneTree::set_group(const StringName &p_group, const String &p_name, const
 }
 
 void SceneTree::initialize() {
+	ERR_FAIL_COND(!root);
 	initialized = true;
 	root->_set_tree(this);
 	MainLoop::initialize();
