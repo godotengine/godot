@@ -213,9 +213,19 @@ real_t combine_friction(Body3DSW *A, Body3DSW *B) {
 
 bool BodyPair3DSW::setup(real_t p_step) {
 	//cannot collide
-	if (!A->test_collision_mask(B) || A->has_exception(B->get_self()) || B->has_exception(A->get_self()) || (A->get_mode() <= PhysicsServer3D::BODY_MODE_KINEMATIC && B->get_mode() <= PhysicsServer3D::BODY_MODE_KINEMATIC && A->get_max_contacts_reported() == 0 && B->get_max_contacts_reported() == 0)) {
+	if (!A->test_collision_mask(B) || A->has_exception(B->get_self()) || B->has_exception(A->get_self())) {
 		collided = false;
 		return false;
+	}
+
+	bool report_contacts_only = false;
+	if ((A->get_mode() <= PhysicsServer3D::BODY_MODE_KINEMATIC) && (B->get_mode() <= PhysicsServer3D::BODY_MODE_KINEMATIC)) {
+		if ((A->get_max_contacts_reported() > 0) || (B->get_max_contacts_reported() > 0)) {
+			report_contacts_only = true;
+		} else {
+			collided = false;
+			return false;
+		}
 	}
 
 	if (A->is_shape_set_as_disabled(shape_A) || B->is_shape_set_as_disabled(shape_B)) {
@@ -281,11 +291,8 @@ bool BodyPair3DSW::setup(real_t p_step) {
 		real_t depth = c.normal.dot(global_A - global_B);
 
 		if (depth <= 0) {
-			c.active = false;
 			continue;
 		}
-
-		c.active = true;
 
 #ifdef DEBUG_ENABLED
 
@@ -308,6 +315,11 @@ bool BodyPair3DSW::setup(real_t p_step) {
 		if (B->can_report_contacts()) {
 			Vector3 crB = B->get_angular_velocity().cross(c.rB) + B->get_linear_velocity();
 			B->add_contact(global_B, c.normal, depth, shape_B, global_A, shape_A, A->get_instance_id(), A->get_self(), crB);
+		}
+
+		if (report_contacts_only) {
+			collided = false;
+			continue;
 		}
 
 		c.active = true;
