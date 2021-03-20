@@ -1778,7 +1778,7 @@ RID CurveTexture::get_rid() const {
 }
 
 CurveTexture::CurveTexture() {
-	_width = 2048;
+	_width = 64;
 	_texture = VS::get_singleton()->texture_create();
 }
 CurveTexture::~CurveTexture() {
@@ -1794,7 +1794,7 @@ CurveTexture::~CurveTexture() {
 
 GradientTexture::GradientTexture() {
 	update_pending = false;
-	width = 2048;
+	width = 64;
 
 	texture = VS::get_singleton()->texture_create();
 	_queue_update();
