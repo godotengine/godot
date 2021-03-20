@@ -317,7 +317,8 @@ bool PhysicsDirectSpaceStateSW::cast_motion(const RID &p_shape, const Transform 
 			best_first = false;
 			if (col_obj->get_type() == CollisionObjectSW::TYPE_BODY) {
 				const BodySW *body = static_cast<const BodySW *>(col_obj);
-				r_info->linear_velocity = body->get_linear_velocity() + (body->get_angular_velocity()).cross(body->get_transform().origin - closest_B);
+				Vector3 rel_vec = closest_B - (body->get_transform().origin + body->get_center_of_mass());
+				r_info->linear_velocity = body->get_linear_velocity() + (body->get_angular_velocity()).cross(rel_vec);
 			}
 		}
 	}
@@ -451,8 +452,8 @@ bool PhysicsDirectSpaceStateSW::rest_info(RID p_shape, const Transform &p_shape_
 	if (rcd.best_object->get_type() == CollisionObjectSW::TYPE_BODY) {
 
 		const BodySW *body = static_cast<const BodySW *>(rcd.best_object);
-		r_info->linear_velocity = body->get_linear_velocity() +
-								  (body->get_angular_velocity()).cross(body->get_transform().origin - rcd.best_contact); // * mPos);
+		Vector3 rel_vec = rcd.best_contact - (body->get_transform().origin + body->get_center_of_mass());
+		r_info->linear_velocity = body->get_linear_velocity() + (body->get_angular_velocity()).cross(rel_vec);
 
 	} else {
 		r_info->linear_velocity = Vector3();
@@ -664,9 +665,8 @@ int SpaceSW::test_body_ray_separation(BodySW *p_body, const Transform &p_transfo
 									if (col_obj->get_type() == CollisionObjectSW::TYPE_BODY) {
 										BodySW *body = (BodySW *)col_obj;
 
-										Vector3 rel_vec = b - body->get_transform().get_origin();
-										//result.collider_velocity = Vector3(-body->get_angular_velocity() * rel_vec.y, body->get_angular_velocity() * rel_vec.x) + body->get_linear_velocity();
-										result.collider_velocity = body->get_linear_velocity() + (body->get_angular_velocity()).cross(body->get_transform().origin - rel_vec); // * mPos);
+										Vector3 rel_vec = b - (body->get_transform().origin + body->get_center_of_mass());
+										result.collider_velocity = body->get_linear_velocity() + (body->get_angular_velocity()).cross(rel_vec);
 									}
 								}
 							}
@@ -999,9 +999,9 @@ bool SpaceSW::test_body_motion(BodySW *p_body, const Transform &p_from, const Ve
 				//r_result->collider_metadata = rcd.best_object->get_shape_metadata(rcd.best_shape);
 
 				const BodySW *body = static_cast<const BodySW *>(rcd.best_object);
-				//Vector3 rel_vec = r_result->collision_point - body->get_transform().get_origin();
-				//				r_result->collider_velocity = Vector3(-body->get_angular_velocity() * rel_vec.y, body->get_angular_velocity() * rel_vec.x) + body->get_linear_velocity();
-				r_result->collider_velocity = body->get_linear_velocity() + (body->get_angular_velocity()).cross(body->get_transform().origin - rcd.best_contact); // * mPos);
+
+				Vector3 rel_vec = rcd.best_contact - (body->get_transform().origin + body->get_center_of_mass());
+				r_result->collider_velocity = body->get_linear_velocity() + (body->get_angular_velocity()).cross(rel_vec);
 
 				r_result->motion = safe * p_motion;
 				r_result->remainder = p_motion - safe * p_motion;
