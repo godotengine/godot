@@ -80,7 +80,7 @@ void TileSetEditor::_import_node(Node *p_node, Ref<TileSet> p_library) {
 		Vector2 phys_offset;
 		Size2 s;
 
-		if (mi->is_region()) {
+		if (mi->is_region_enabled()) {
 			s = mi->get_region_rect().size;
 			p_library->tile_set_region(id, mi->get_region_rect());
 		} else {
