@@ -2503,7 +2503,7 @@ ProjectManager::ProjectManager() {
 		Vector<String> sort_filter_titles;
 		sort_filter_titles.push_back(TTR("Name"));
 		sort_filter_titles.push_back(TTR("Path"));
-		sort_filter_titles.push_back(TTR("Last Edited"));
+		sort_filter_titles.push_back(TTR("Last Modified"));
 
 		for (int i = 0; i < sort_filter_titles.size(); i++) {
 			filter_option->add_item(sort_filter_titles[i]);
