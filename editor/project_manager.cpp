@@ -1015,7 +1015,7 @@ public:
 	void sort_projects();
 	int get_project_count() const;
 	void select_project(int p_index);
-	void erase_selected_projects();
+	void erase_selected_projects(bool p_delete_project_contents);
 	Vector<Item> get_selected_projects() const;
 	const Set<String> &get_selected_project_keys() const;
 	void ensure_project_visible(int p_index);
@@ -1628,7 +1628,7 @@ void ProjectList::toggle_select(int p_index) {
 	item.control->update();
 }
 
-void ProjectList::erase_selected_projects() {
+void ProjectList::erase_selected_projects(bool p_delete_project_contents) {
 	if (_selected_project_keys.size() == 0) {
 		return;
 	}
@@ -1638,6 +1638,10 @@ void ProjectList::erase_selected_projects() {
 		if (_selected_project_keys.has(item.project_key) && item.control->is_visible()) {
 			EditorSettings::get_singleton()->erase("projects/" + item.project_key);
 			EditorSettings::get_singleton()->erase("favorite_projects/" + item.project_key);
+
+			if (p_delete_project_contents) {
+				OS::get_singleton()->move_to_trash(item.path);
+			}
 
 			memdelete(item.control);
 			_projects.remove(i);
@@ -2177,7 +2181,7 @@ void ProjectManager::_rename_project() {
 }
 
 void ProjectManager::_erase_project_confirm() {
-	_project_list->erase_selected_projects();
+	_project_list->erase_selected_projects(delete_project_contents->is_pressed());
 	_update_project_buttons();
 }
 
@@ -2195,12 +2199,13 @@ void ProjectManager::_erase_project() {
 
 	String confirm_message;
 	if (selected_list.size() >= 2) {
-		confirm_message = vformat(TTR("Remove %d projects from the list?\nThe project folders' contents won't be modified."), selected_list.size());
+		confirm_message = vformat(TTR("Remove %d projects from the list?"), selected_list.size());
 	} else {
-		confirm_message = TTR("Remove this project from the list?\nThe project folder's contents won't be modified.");
+		confirm_message = TTR("Remove this project from the list?");
 	}
 
-	erase_ask->set_text(confirm_message);
+	erase_ask_label->set_text(confirm_message);
+	delete_project_contents->set_pressed(false);
 	erase_ask->popup_centered_minsize();
 }
 
@@ -2659,6 +2664,16 @@ ProjectManager::ProjectManager() {
 	erase_ask->get_ok()->set_text(TTR("Remove"));
 	erase_ask->get_ok()->connect("pressed", this, "_erase_project_confirm");
 	gui_base->add_child(erase_ask);
+
+	VBoxContainer *erase_ask_vb = memnew(VBoxContainer);
+	erase_ask->add_child(erase_ask_vb);
+
+	erase_ask_label = memnew(Label);
+	erase_ask_vb->add_child(erase_ask_label);
+
+	delete_project_contents = memnew(CheckBox);
+	delete_project_contents->set_text(TTR("Also delete project contents (no undo!)"));
+	erase_ask_vb->add_child(delete_project_contents);
 
 	multi_open_ask = memnew(ConfirmationDialog);
 	multi_open_ask->get_ok()->set_text(TTR("Edit"));
