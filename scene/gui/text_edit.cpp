@@ -1557,7 +1557,7 @@ void TextEdit::_notification(int p_what) {
 					completion_rect.position.x = rect_left_border_x;
 				}
 
-				if (cursor_pos.y + row_height + total_height > get_size().height) {
+				if (cursor_pos.y + row_height + total_height > get_size().height && cursor_pos.y > total_height) {
 					// Completion panel above the cursor line
 					completion_rect.position.y = cursor_pos.y - total_height;
 				} else {
