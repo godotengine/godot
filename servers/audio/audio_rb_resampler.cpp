@@ -211,19 +211,8 @@ void AudioRBResampler::clear() {
 }
 
 AudioRBResampler::AudioRBResampler() {
-	rb = nullptr;
-	offset = 0;
-	read_buf = nullptr;
 	rb_read_pos.set(0);
 	rb_write_pos.set(0);
-
-	rb_bits = 0;
-	rb_len = 0;
-	rb_mask = 0;
-	read_buff_len = 0;
-	channels = 0;
-	src_mix_rate = 0;
-	target_mix_rate = 0;
 }
 
 AudioRBResampler::~AudioRBResampler() {

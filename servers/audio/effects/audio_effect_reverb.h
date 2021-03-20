@@ -58,14 +58,14 @@ class AudioEffectReverb : public AudioEffect {
 
 	friend class AudioEffectReverbInstance;
 
-	float predelay;
-	float predelay_fb;
-	float hpf;
-	float room_size;
-	float damping;
-	float spread;
-	float dry;
-	float wet;
+	float predelay = 150.0;
+	float predelay_fb = 0.4;
+	float hpf = 0.0;
+	float room_size = 0.8;
+	float damping = 0.5;
+	float spread = 1.0;
+	float dry = 1.0;
+	float wet = 0.5;
 
 protected:
 	static void _bind_methods();

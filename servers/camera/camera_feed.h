@@ -62,16 +62,16 @@ public:
 
 private:
 	int id; // unique id for this, for internal use in case feeds are removed
-	int base_width;
-	int base_height;
+	int base_width = 0;
+	int base_height = 0;
 
 protected:
 	String name; // name of our camera feed
-	FeedDataType datatype; // type of texture data stored
-	FeedPosition position; // position of camera on the device
-	Transform2D transform; // display transform
+	FeedDataType datatype = CameraFeed::FEED_RGB; // type of texture data stored
+	FeedPosition position = CameraFeed::FEED_UNSPECIFIED; // position of camera on the device
+	Transform2D transform = Transform2D(1.0, 0.0, 0.0, -1.0, 0.0, 1.0); // display transform
 
-	bool active; // only when active do we actually update the camera texture each frame
+	bool active = false; // only when active do we actually update the camera texture each frame
 	RID texture[CameraServer::FEED_IMAGES]; // texture images needed for this
 
 	static void _bind_methods();

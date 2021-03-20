@@ -140,10 +140,8 @@ CameraFeed::CameraFeed() {
 	// initialize our feed
 	id = CameraServer::get_singleton()->get_free_id();
 	name = "???";
-	active = false;
 	datatype = CameraFeed::FEED_RGB;
 	position = CameraFeed::FEED_UNSPECIFIED;
-	transform = Transform2D(1.0, 0.0, 0.0, -1.0, 0.0, 1.0);
 
 // FIXME: Disabled during Vulkan refactoring, should be ported.
 #if 0
@@ -157,13 +155,9 @@ CameraFeed::CameraFeed() {
 CameraFeed::CameraFeed(String p_name, FeedPosition p_position) {
 	// initialize our feed
 	id = CameraServer::get_singleton()->get_free_id();
-	base_width = 0;
-	base_height = 0;
 	name = p_name;
-	active = false;
 	datatype = CameraFeed::FEED_NOIMAGE;
 	position = p_position;
-	transform = Transform2D(1.0, 0.0, 0.0, -1.0, 0.0, 1.0);
 
 // FIXME: Disabled during Vulkan refactoring, should be ported.
 #if 0

@@ -52,10 +52,10 @@ public:
 
 	class BandProcess {
 		friend class EQ;
-		float c1, c2, c3;
+		float c1 = 0.0, c2 = 0.0, c3 = 0.0;
 		struct History {
-			float a1, a2, a3;
-			float b1, b2, b3;
+			float a1 = 0.0, a2 = 0.0, a3 = 0.0;
+			float b1 = 0.0, b2 = 0.0, b3 = 0.0;
 
 		} history;
 
@@ -67,13 +67,13 @@ public:
 
 private:
 	struct Band {
-		float freq;
-		float c1, c2, c3;
+		float freq = 0.0;
+		float c1 = 0.0, c2 = 0.0, c3 = 0.0;
 	};
 
 	Vector<Band> band;
 
-	float mix_rate;
+	float mix_rate = 44100.0;
 
 	void recalculate_band_coefficients();
 

@@ -361,7 +361,6 @@ void XRServer::_mark_commit() {
 
 XRServer::XRServer() {
 	singleton = this;
-	world_scale = 1.0;
 };
 
 XRServer::~XRServer() {

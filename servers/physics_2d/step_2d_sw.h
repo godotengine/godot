@@ -34,7 +34,7 @@
 #include "space_2d_sw.h"
 
 class Step2DSW {
-	uint64_t _step;
+	uint64_t _step = 1;
 
 	void _populate_island(Body2DSW *p_body, Body2DSW **p_island, Constraint2DSW **p_constraint_island);
 	bool _setup_island(Constraint2DSW *p_island, real_t p_delta);

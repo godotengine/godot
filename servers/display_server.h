@@ -75,7 +75,7 @@ protected:
 	};
 
 	struct DisplayServerCreate {
-		const char *name;
+		const char *name = nullptr;
 		CreateFunction create_function;
 		GetRenderingDriversFunction get_rendering_drivers_function;
 	};

@@ -58,8 +58,8 @@ public:
 class Shape3DSW {
 	RID self;
 	AABB aabb;
-	bool configured;
-	real_t custom_bias;
+	bool configured = false;
+	real_t custom_bias = 0.0;
 
 	Map<ShapeOwner3DSW *, int> owners;
 
@@ -146,8 +146,8 @@ public:
 };
 
 class RayShape3DSW : public Shape3DSW {
-	real_t length;
-	bool slips_on_slope;
+	real_t length = 1.0;
+	bool slips_on_slope = false;
 
 	void _setup(real_t p_length, bool p_slips_on_slope);
 
@@ -174,7 +174,7 @@ public:
 };
 
 class SphereShape3DSW : public Shape3DSW {
-	real_t radius;
+	real_t radius = 0.0;
 
 	void _setup(real_t p_radius);
 
@@ -226,8 +226,8 @@ public:
 };
 
 class CapsuleShape3DSW : public Shape3DSW {
-	real_t height;
-	real_t radius;
+	real_t height = 0.0;
+	real_t radius = 0.0;
 
 	void _setup(real_t p_height, real_t p_radius);
 
@@ -316,7 +316,7 @@ struct ConcavePolygonShape3DSW : public ConcaveShape3DSW {
 
 	struct Face {
 		Vector3 normal;
-		int indices[3];
+		int indices[3] = {};
 	};
 
 	Vector<Face> faces;
@@ -324,10 +324,10 @@ struct ConcavePolygonShape3DSW : public ConcaveShape3DSW {
 
 	struct BVH {
 		AABB aabb;
-		int left;
-		int right;
+		int left = 0;
+		int right = 0;
 
-		int face_index;
+		int face_index = 0;
 	};
 
 	Vector<BVH> bvh;
@@ -335,25 +335,25 @@ struct ConcavePolygonShape3DSW : public ConcaveShape3DSW {
 	struct _CullParams {
 		AABB aabb;
 		Callback callback;
-		void *userdata;
-		const Face *faces;
-		const Vector3 *vertices;
-		const BVH *bvh;
-		FaceShape3DSW *face;
+		void *userdata = nullptr;
+		const Face *faces = nullptr;
+		const Vector3 *vertices = nullptr;
+		const BVH *bvh = nullptr;
+		FaceShape3DSW *face = nullptr;
 	};
 
 	struct _SegmentCullParams {
 		Vector3 from;
 		Vector3 to;
-		const Face *faces;
-		const Vector3 *vertices;
-		const BVH *bvh;
+		const Face *faces = nullptr;
+		const Vector3 *vertices = nullptr;
+		const BVH *bvh = nullptr;
 		Vector3 dir;
 
 		Vector3 result;
 		Vector3 normal;
-		real_t min_d;
-		int collisions;
+		real_t min_d = 0.0;
+		int collisions = 0;
 	};
 
 	void _cull_segment(int p_idx, _SegmentCullParams *p_params) const;
@@ -387,9 +387,9 @@ public:
 
 struct HeightMapShape3DSW : public ConcaveShape3DSW {
 	Vector<real_t> heights;
-	int width;
-	int depth;
-	real_t cell_size;
+	int width = 0;
+	int depth = 0;
+	real_t cell_size = 0.0;
 
 	//void _cull_segment(int p_idx,_SegmentCullParams *p_params) const;
 	//void _cull(int p_idx,_CullParams *p_params) const;
@@ -445,7 +445,7 @@ struct FaceShape3DSW : public Shape3DSW {
 };
 
 struct MotionShape3DSW : public Shape3DSW {
-	Shape3DSW *shape;
+	Shape3DSW *shape = nullptr;
 	Vector3 motion;
 
 	virtual PhysicsServer3D::ShapeType get_type() const { return PhysicsServer3D::SHAPE_CONVEX_POLYGON; }

@@ -96,7 +96,7 @@ struct sResults	{
 
 	Vector3	witnesses[2];
 	Vector3	normal;
-	real_t	distance;
+	real_t	distance = 0.0;
 };
 
 // Shorthands

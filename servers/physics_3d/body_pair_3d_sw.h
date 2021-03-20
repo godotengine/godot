@@ -45,7 +45,7 @@ class BodyPair3DSW : public Constraint3DSW {
 			Body3DSW *B;
 		};
 
-		Body3DSW *_arr[2];
+		Body3DSW *_arr[2] = {};
 	};
 
 	int shape_A;
@@ -55,16 +55,16 @@ class BodyPair3DSW : public Constraint3DSW {
 		Vector3 position;
 		Vector3 normal;
 		Vector3 local_A, local_B;
-		real_t acc_normal_impulse; // accumulated normal impulse (Pn)
+		real_t acc_normal_impulse = 0.0; // accumulated normal impulse (Pn)
 		Vector3 acc_tangent_impulse; // accumulated tangent impulse (Pt)
-		real_t acc_bias_impulse; // accumulated normal impulse for position bias (Pnb)
-		real_t acc_bias_impulse_center_of_mass; // accumulated normal impulse for position bias applied to com
-		real_t mass_normal;
-		real_t bias;
-		real_t bounce;
+		real_t acc_bias_impulse = 0.0; // accumulated normal impulse for position bias (Pnb)
+		real_t acc_bias_impulse_center_of_mass = 0.0; // accumulated normal impulse for position bias applied to com
+		real_t mass_normal = 0.0;
+		real_t bias = 0.0;
+		real_t bounce = 0.0;
 
-		real_t depth;
-		bool active;
+		real_t depth = 0.0;
+		bool active = false;
 		Vector3 rA, rB; // Offset in world orientation with respect to center of mass
 	};
 
@@ -72,8 +72,8 @@ class BodyPair3DSW : public Constraint3DSW {
 
 	Vector3 sep_axis;
 	Contact contacts[MAX_CONTACTS];
-	int contact_count;
-	bool collided;
+	int contact_count = 0;
+	bool collided = false;
 
 	static void _contact_added_callback(const Vector3 &p_point_A, const Vector3 &p_point_B, void *p_userdata);
 

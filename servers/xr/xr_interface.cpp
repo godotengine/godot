@@ -118,9 +118,7 @@ XRInterface::Tracking_status XRInterface::get_tracking_status() const {
 	return tracking_state;
 };
 
-XRInterface::XRInterface() {
-	tracking_state = XR_UNKNOWN_TRACKING;
-};
+XRInterface::XRInterface() {}
 
 XRInterface::~XRInterface() {}
 

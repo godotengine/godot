@@ -255,12 +255,7 @@ void PhysicsShapeQueryParameters2D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "collide_with_areas"), "set_collide_with_areas", "is_collide_with_areas_enabled");
 }
 
-PhysicsShapeQueryParameters2D::PhysicsShapeQueryParameters2D() {
-	margin = 0;
-	collision_mask = 0x7FFFFFFF;
-	collide_with_bodies = true;
-	collide_with_areas = false;
-}
+PhysicsShapeQueryParameters2D::PhysicsShapeQueryParameters2D() {}
 
 Dictionary PhysicsDirectSpaceState2D::_intersect_ray(const Vector2 &p_from, const Vector2 &p_to, const Vector<RID> &p_exclude, uint32_t p_layers, bool p_collide_with_bodies, bool p_collide_with_areas) {
 	RayResult inters;
@@ -405,8 +400,7 @@ Dictionary PhysicsDirectSpaceState2D::_get_rest_info(const Ref<PhysicsShapeQuery
 	return r;
 }
 
-PhysicsDirectSpaceState2D::PhysicsDirectSpaceState2D() {
-}
+PhysicsDirectSpaceState2D::PhysicsDirectSpaceState2D() {}
 
 void PhysicsDirectSpaceState2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("intersect_point", "point", "max_results", "exclude", "collision_layer", "collide_with_bodies", "collide_with_areas"), &PhysicsDirectSpaceState2D::_intersect_point, DEFVAL(32), DEFVAL(Array()), DEFVAL(0x7FFFFFFF), DEFVAL(true), DEFVAL(false));
@@ -509,11 +503,7 @@ void PhysicsTestMotionResult2D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "collider_shape"), "", "get_collider_shape");
 }
 
-PhysicsTestMotionResult2D::PhysicsTestMotionResult2D() {
-	colliding = false;
-
-	result.collider_shape = 0;
-}
+PhysicsTestMotionResult2D::PhysicsTestMotionResult2D() {}
 
 ///////////////////////////////////////
 

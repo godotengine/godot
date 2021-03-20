@@ -41,16 +41,16 @@ class Body3DSW;
 class Constraint3DSW;
 
 class Area3DSW : public CollisionObject3DSW {
-	PhysicsServer3D::AreaSpaceOverrideMode space_override_mode;
-	real_t gravity;
-	Vector3 gravity_vector;
-	bool gravity_is_point;
-	real_t gravity_distance_scale;
-	real_t point_attenuation;
-	real_t linear_damp;
-	real_t angular_damp;
-	int priority;
-	bool monitorable;
+	PhysicsServer3D::AreaSpaceOverrideMode space_override_mode = PhysicsServer3D::AREA_SPACE_OVERRIDE_DISABLED;
+	real_t gravity = 9.80665;
+	Vector3 gravity_vector = Vector3(0, -1, 0);
+	bool gravity_is_point = false;
+	real_t gravity_distance_scale = 0.0;
+	real_t point_attenuation = 1.0;
+	real_t linear_damp = 0.1;
+	real_t angular_damp = 0.1;
+	int priority = 0;
+	bool monitorable = false;
 
 	ObjectID monitor_callback_id;
 	StringName monitor_callback_method;
@@ -64,8 +64,8 @@ class Area3DSW : public CollisionObject3DSW {
 	struct BodyKey {
 		RID rid;
 		ObjectID instance_id;
-		uint32_t body_shape;
-		uint32_t area_shape;
+		uint32_t body_shape = 0;
+		uint32_t area_shape = 0;
 
 		_FORCE_INLINE_ bool operator<(const BodyKey &p_key) const {
 			if (rid == p_key.rid) {
@@ -85,10 +85,10 @@ class Area3DSW : public CollisionObject3DSW {
 	};
 
 	struct BodyState {
-		int state;
+		int state = 0;
 		_FORCE_INLINE_ void inc() { state++; }
 		_FORCE_INLINE_ void dec() { state--; }
-		_FORCE_INLINE_ BodyState() { state = 0; }
+		_FORCE_INLINE_ BodyState() {}
 	};
 
 	Map<BodyKey, BodyState> monitored_bodies;

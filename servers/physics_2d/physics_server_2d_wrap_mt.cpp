@@ -119,7 +119,6 @@ PhysicsServer2DWrapMT::PhysicsServer2DWrapMT(PhysicsServer2D *p_contained, bool 
 		command_queue(p_create_thread) {
 	physics_2d_server = p_contained;
 	create_thread = p_create_thread;
-	step_pending = 0;
 
 	pool_max_size = GLOBAL_GET("memory/limits/multithreaded_server/rid_pool_prealloc");
 
@@ -130,7 +129,6 @@ PhysicsServer2DWrapMT::PhysicsServer2DWrapMT(PhysicsServer2D *p_contained, bool 
 	}
 
 	main_thread = Thread::get_caller_id();
-	first_frame = true;
 }
 
 PhysicsServer2DWrapMT::~PhysicsServer2DWrapMT() {

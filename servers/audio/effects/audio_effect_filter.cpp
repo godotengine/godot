@@ -166,8 +166,4 @@ void AudioEffectFilter::_bind_methods() {
 
 AudioEffectFilter::AudioEffectFilter(AudioFilterSW::Mode p_mode) {
 	mode = p_mode;
-	cutoff = 2000;
-	resonance = 0.5;
-	gain = 1.0;
-	db = FILTER_6DB;
 }

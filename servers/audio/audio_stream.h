@@ -64,7 +64,7 @@ class AudioStreamPlaybackResampled : public AudioStreamPlayback {
 	};
 
 	AudioFrame internal_buffer[INTERNAL_BUFFER_LEN + CUBIC_INTERP_HISTORY];
-	uint64_t mix_offset;
+	uint64_t mix_offset = 0;
 
 protected:
 	void _begin_resample();
@@ -74,7 +74,7 @@ protected:
 public:
 	virtual void mix(AudioFrame *p_buffer, float p_rate_scale, int p_frames) override;
 
-	AudioStreamPlaybackResampled() { mix_offset = 0; }
+	AudioStreamPlaybackResampled() {}
 };
 
 class AudioStream : public Resource {
@@ -117,8 +117,8 @@ class AudioStreamPlaybackMicrophone : public AudioStreamPlaybackResampled {
 	GDCLASS(AudioStreamPlaybackMicrophone, AudioStreamPlaybackResampled);
 	friend class AudioStreamMicrophone;
 
-	bool active;
-	unsigned int input_ofs;
+	bool active = false;
+	unsigned int input_ofs = 0;
 
 	Ref<AudioStreamMicrophone> microphone;
 

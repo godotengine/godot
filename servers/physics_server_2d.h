@@ -103,12 +103,12 @@ class PhysicsShapeQueryParameters2D : public Reference {
 	RID shape;
 	Transform2D transform;
 	Vector2 motion;
-	real_t margin;
+	real_t margin = 0.0;
 	Set<RID> exclude;
-	uint32_t collision_mask;
+	uint32_t collision_mask = 0x7FFFFFFF;
 
-	bool collide_with_bodies;
-	bool collide_with_areas;
+	bool collide_with_bodies = true;
+	bool collide_with_areas = false;
 
 protected:
 	static void _bind_methods();
@@ -164,8 +164,8 @@ public:
 		Vector2 normal;
 		RID rid;
 		ObjectID collider_id;
-		Object *collider;
-		int shape;
+		Object *collider = nullptr;
+		int shape = 0;
 		Variant metadata;
 	};
 
@@ -174,8 +174,8 @@ public:
 	struct ShapeResult {
 		RID rid;
 		ObjectID collider_id;
-		Object *collider;
-		int shape;
+		Object *collider = nullptr;
+		int shape = 0;
 		Variant metadata;
 	};
 
@@ -193,7 +193,7 @@ public:
 		Vector2 normal;
 		RID rid;
 		ObjectID collider_id;
-		int shape;
+		int shape = 0;
 		Vector2 linear_velocity; //velocity at contact point
 		Variant metadata;
 	};
@@ -493,17 +493,11 @@ public:
 		Vector2 collision_point;
 		Vector2 collision_normal;
 		Vector2 collider_velocity;
-		int collision_local_shape;
+		int collision_local_shape = 0;
 		ObjectID collider_id;
 		RID collider;
-		int collider_shape;
+		int collider_shape = 0;
 		Variant collider_metadata;
-
-		MotionResult() {
-			collision_local_shape = 0;
-			collider_shape = 0;
-			collider_id = ObjectID();
-		}
 	};
 
 	virtual bool body_test_motion(RID p_body, const Transform2D &p_from, const Vector2 &p_motion, bool p_infinite_inertia, real_t p_margin = 0.001, MotionResult *r_result = nullptr, bool p_exclude_raycast_shapes = true) = 0;
@@ -513,10 +507,10 @@ public:
 		Vector2 collision_point;
 		Vector2 collision_normal;
 		Vector2 collider_velocity;
-		int collision_local_shape;
+		int collision_local_shape = 0;
 		ObjectID collider_id;
 		RID collider;
-		int collider_shape;
+		int collider_shape = 0;
 		Variant collider_metadata;
 	};
 
@@ -605,7 +599,7 @@ class PhysicsTestMotionResult2D : public Reference {
 	GDCLASS(PhysicsTestMotionResult2D, Reference);
 
 	PhysicsServer2D::MotionResult result;
-	bool colliding;
+	bool colliding = false;
 	friend class PhysicsServer2D;
 
 protected:

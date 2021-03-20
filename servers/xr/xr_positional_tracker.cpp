@@ -222,13 +222,4 @@ void XRPositionalTracker::set_rumble(real_t p_rumble) {
 	};
 };
 
-XRPositionalTracker::XRPositionalTracker() {
-	type = XRServer::TRACKER_UNKNOWN;
-	name = "Unknown";
-	joy_id = -1;
-	tracker_id = 0;
-	tracking_orientation = false;
-	tracking_position = false;
-	hand = TRACKER_HAND_UNKNOWN;
-	rumble = 0.0;
-};
+XRPositionalTracker::XRPositionalTracker() {}

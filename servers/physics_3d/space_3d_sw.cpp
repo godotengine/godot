@@ -245,8 +245,8 @@ bool PhysicsDirectSpaceState3DSW::cast_motion(const RID &p_shape, const Transfor
 
 	int amount = space->broadphase->cull_aabb(aabb, space->intersection_query_results, Space3DSW::INTERSECTION_QUERY_MAX, space->intersection_query_subindex_results);
 
-	real_t best_safe = 1;
-	real_t best_unsafe = 1;
+	real_t best_safe = 1.0;
+	real_t best_unsafe = 1.0;
 
 	Transform xform_inv = p_xform.affine_inverse();
 	MotionShape3DSW mshape;
@@ -290,8 +290,8 @@ bool PhysicsDirectSpaceState3DSW::cast_motion(const RID &p_shape, const Transfor
 		}
 
 		//just do kinematic solving
-		real_t low = 0;
-		real_t hi = 1;
+		real_t low = 0.0;
+		real_t hi = 1.0;
 		Vector3 mnormal = p_motion.normalized();
 
 		for (int j = 0; j < 8; j++) { //steps should be customizable..
@@ -395,16 +395,16 @@ bool PhysicsDirectSpaceState3DSW::collide_shape(RID p_shape, const Transform &p_
 }
 
 struct _RestCallbackData {
-	const CollisionObject3DSW *object;
-	const CollisionObject3DSW *best_object;
-	int local_shape;
-	int best_local_shape;
-	int shape;
-	int best_shape;
+	const CollisionObject3DSW *object = nullptr;
+	const CollisionObject3DSW *best_object = nullptr;
+	int local_shape = 0;
+	int best_local_shape = 0;
+	int shape = 0;
+	int best_shape = 0;
 	Vector3 best_contact;
 	Vector3 best_normal;
-	real_t best_len;
-	real_t min_allowed_depth;
+	real_t best_len = 0.0;
+	real_t min_allowed_depth = 0.0;
 };
 
 static void _rest_cbk_result(const Vector3 &p_point_A, const Vector3 &p_point_B, void *p_userdata) {
@@ -528,9 +528,7 @@ Vector3 PhysicsDirectSpaceState3DSW::get_closest_point_to_object_volume(RID p_ob
 	}
 }
 
-PhysicsDirectSpaceState3DSW::PhysicsDirectSpaceState3DSW() {
-	space = nullptr;
-}
+PhysicsDirectSpaceState3DSW::PhysicsDirectSpaceState3DSW() {}
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -877,8 +875,8 @@ bool Space3DSW::test_body_motion(Body3DSW *p_body, const Transform &p_from, cons
 
 			bool stuck = false;
 
-			real_t best_safe = 1;
-			real_t best_unsafe = 1;
+			real_t best_safe = 1.0;
+			real_t best_unsafe = 1.0;
 
 			for (int i = 0; i < amount; i++) {
 				const CollisionObject3DSW *col_obj = intersection_query_results[i];
@@ -901,8 +899,8 @@ bool Space3DSW::test_body_motion(Body3DSW *p_body, const Transform &p_from, cons
 				}
 
 				//just do kinematic solving
-				real_t low = 0;
-				real_t hi = 1;
+				real_t low = 0.0;
+				real_t hi = 1.0;
 
 				for (int k = 0; k < 8; k++) { //steps should be customizable..
 
@@ -1243,35 +1241,16 @@ PhysicsDirectSpaceState3DSW *Space3DSW::get_direct_state() {
 }
 
 Space3DSW::Space3DSW() {
-	collision_pairs = 0;
-	active_objects = 0;
-	island_count = 0;
-	contact_debug_count = 0;
-
-	locked = false;
-	contact_recycle_radius = 0.01;
-	contact_max_separation = 0.05;
-	contact_max_allowed_penetration = 0.01;
-	test_motion_min_contact_depth = 0.00001;
-
-	constraint_bias = 0.01;
 	body_linear_velocity_sleep_threshold = GLOBAL_DEF("physics/3d/sleep_threshold_linear", 0.1);
 	body_angular_velocity_sleep_threshold = GLOBAL_DEF("physics/3d/sleep_threshold_angular", Math::deg2rad(8.0));
 	body_time_to_sleep = GLOBAL_DEF("physics/3d/time_before_sleep", 0.5);
 	ProjectSettings::get_singleton()->set_custom_property_info("physics/3d/time_before_sleep", PropertyInfo(Variant::FLOAT, "physics/3d/time_before_sleep", PROPERTY_HINT_RANGE, "0,5,0.01,or_greater"));
-	body_angular_velocity_damp_ratio = 10;
-
 	broadphase = BroadPhase3DSW::create_func();
 	broadphase->set_pair_callback(_broadphase_pair, this);
 	broadphase->set_unpair_callback(_broadphase_unpair, this);
-	area = nullptr;
 
 	direct_access = memnew(PhysicsDirectSpaceState3DSW);
 	direct_access->space = this;
-
-	for (int i = 0; i < ELAPSED_TIME_MAX; i++) {
-		elapsed_time[i] = 0;
-	}
 }
 
 Space3DSW::~Space3DSW() {

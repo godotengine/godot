@@ -283,6 +283,4 @@ void Step3DSW::step(Space3DSW *p_space, real_t p_delta, int p_iterations) {
 	_step++;
 }
 
-Step3DSW::Step3DSW() {
-	_step = 1;
-}
+Step3DSW::Step3DSW() {}

@@ -66,11 +66,11 @@
 
 struct _CollectorCallback {
 	CollisionSolver3DSW::CallbackResult callback;
-	void *userdata;
-	bool swap;
-	bool collided;
+	void *userdata = nullptr;
+	bool swap = false;
+	bool collided = false;
 	Vector3 normal;
-	Vector3 *prev_axis;
+	Vector3 *prev_axis = nullptr;
 
 	_FORCE_INLINE_ void call(const Vector3 &p_point_A, const Vector3 &p_point_B) {
 		if (swap) {

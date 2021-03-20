@@ -83,10 +83,7 @@ const Map<ShapeOwner3DSW *, int> &Shape3DSW::get_owners() const {
 	return owners;
 }
 
-Shape3DSW::Shape3DSW() {
-	custom_bias = 0;
-	configured = false;
-}
+Shape3DSW::Shape3DSW() {}
 
 Shape3DSW::~Shape3DSW() {
 	ERR_FAIL_COND(owners.size());
@@ -226,10 +223,7 @@ Variant RayShape3DSW::get_data() const {
 	return d;
 }
 
-RayShape3DSW::RayShape3DSW() {
-	length = 1;
-	slips_on_slope = false;
-}
+RayShape3DSW::RayShape3DSW() {}
 
 /********** SPHERE *************/
 
@@ -293,9 +287,7 @@ Variant SphereShape3DSW::get_data() const {
 	return radius;
 }
 
-SphereShape3DSW::SphereShape3DSW() {
-	radius = 0;
-}
+SphereShape3DSW::SphereShape3DSW() {}
 
 /********** BOX *************/
 
@@ -650,9 +642,7 @@ Variant CapsuleShape3DSW::get_data() const {
 	return d;
 }
 
-CapsuleShape3DSW::CapsuleShape3DSW() {
-	height = radius = 0;
-}
+CapsuleShape3DSW::CapsuleShape3DSW() {}
 
 /********** CYLINDER *************/
 
@@ -1451,10 +1441,10 @@ struct _VolumeSW_BVH_CompareZ {
 
 struct _VolumeSW_BVH {
 	AABB aabb;
-	_VolumeSW_BVH *left;
-	_VolumeSW_BVH *right;
+	_VolumeSW_BVH *left = nullptr;
+	_VolumeSW_BVH *right = nullptr;
 
-	int face_index;
+	int face_index = 0;
 };
 
 _VolumeSW_BVH *_volume_sw_build_bvh(_VolumeSW_BVH_Element *p_elements, int p_size, int &count) {

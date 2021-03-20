@@ -305,21 +305,4 @@ void AudioEffectDelay::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "feedback/lowpass", PROPERTY_HINT_RANGE, "1,16000,1"), "set_feedback_lowpass", "get_feedback_lowpass");
 }
 
-AudioEffectDelay::AudioEffectDelay() {
-	tap_1_active = true;
-	tap_1_delay_ms = 250;
-	tap_1_level = -6;
-	tap_1_pan = 0.2;
-
-	tap_2_active = true;
-	tap_2_delay_ms = 500;
-	tap_2_level = -12;
-	tap_2_pan = -0.4;
-
-	feedback_active = false;
-	feedback_delay_ms = 340;
-	feedback_level = -6;
-	feedback_lowpass = 16000;
-
-	dry = 1.0;
-}
+AudioEffectDelay::AudioEffectDelay() {}

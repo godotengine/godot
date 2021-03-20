@@ -34,7 +34,7 @@
 #include "space_3d_sw.h"
 
 class Step3DSW {
-	uint64_t _step;
+	uint64_t _step = 1;
 
 	void _populate_island(Body3DSW *p_body, Body3DSW **p_island, Constraint3DSW **p_constraint_island);
 	void _setup_island(Constraint3DSW *p_island, real_t p_delta);

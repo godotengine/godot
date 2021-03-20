@@ -41,11 +41,11 @@ class AudioEffectChorusInstance : public AudioEffectInstance {
 	Ref<AudioEffectChorus> base;
 
 	Vector<AudioFrame> audio_buffer;
-	unsigned int buffer_pos;
-	unsigned int buffer_mask;
+	unsigned int buffer_pos = 0;
+	unsigned int buffer_mask = 0;
 
 	AudioFrame filter_h[4];
-	uint64_t cycles[4];
+	uint64_t cycles[4] = {};
 
 	void _process_chunk(const AudioFrame *p_src_frames, AudioFrame *p_dst_frames, int p_frame_count);
 
@@ -72,28 +72,18 @@ public:
 
 private:
 	struct Voice {
-		float delay;
-		float rate;
-		float depth;
-		float level;
-		float cutoff;
-		float pan;
-
-		Voice() {
-			delay = 12.0;
-			rate = 1;
-			depth = 0;
-			level = 0;
-			cutoff = MS_CUTOFF_MAX;
-			pan = 0;
-		}
-
+		float delay = 12.0;
+		float rate = 1.0;
+		float depth = 0.0;
+		float level = 0.0;
+		float cutoff = MS_CUTOFF_MAX;
+		float pan = 0.0;
 	} voice[MAX_VOICES];
 
-	int voice_count;
+	int voice_count = 2;
 
-	float wet;
-	float dry;
+	float wet = 0.5;
+	float dry = 1.0;
 
 protected:
 	void _validate_property(PropertyInfo &property) const override;

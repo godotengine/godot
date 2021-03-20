@@ -40,7 +40,7 @@ class AudioEffectLimiterInstance : public AudioEffectInstance {
 	friend class AudioEffectLimiter;
 	Ref<AudioEffectLimiter> base;
 
-	float mix_volume_db;
+	float mix_volume_db = 0.0;
 
 public:
 	virtual void process(const AudioFrame *p_src_frames, AudioFrame *p_dst_frames, int p_frame_count) override;
@@ -50,10 +50,10 @@ class AudioEffectLimiter : public AudioEffect {
 	GDCLASS(AudioEffectLimiter, AudioEffect);
 
 	friend class AudioEffectLimiterInstance;
-	float threshold;
-	float ceiling;
-	float soft_clip;
-	float soft_clip_ratio;
+	float threshold = 0.0;
+	float ceiling = -0.1;
+	float soft_clip = 2.0;
+	float soft_clip_ratio = 10.0;
 
 protected:
 	static void _bind_methods();

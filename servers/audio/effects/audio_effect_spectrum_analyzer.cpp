@@ -276,8 +276,4 @@ void AudioEffectSpectrumAnalyzer::_bind_methods() {
 	BIND_ENUM_CONSTANT(FFT_SIZE_MAX);
 }
 
-AudioEffectSpectrumAnalyzer::AudioEffectSpectrumAnalyzer() {
-	buffer_length = 2;
-	tapback_pos = 0.01;
-	fft_size = FFT_SIZE_1024;
-}
+AudioEffectSpectrumAnalyzer::AudioEffectSpectrumAnalyzer() {}

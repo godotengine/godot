@@ -247,12 +247,7 @@ void PhysicsShapeQueryParameters3D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "collide_with_areas"), "set_collide_with_areas", "is_collide_with_areas_enabled");
 }
 
-PhysicsShapeQueryParameters3D::PhysicsShapeQueryParameters3D() {
-	margin = 0;
-	collision_mask = 0x7FFFFFFF;
-	collide_with_bodies = true;
-	collide_with_areas = false;
-}
+PhysicsShapeQueryParameters3D::PhysicsShapeQueryParameters3D() {}
 
 /////////////////////////////////////
 

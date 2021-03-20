@@ -1359,10 +1359,5 @@ PhysicsServer2DSW::PhysicsServer2DSW(bool p_using_threads) {
 	BroadPhase2DSW::create_func = BroadPhase2DHashGrid::_create;
 	//BroadPhase2DSW::create_func=BroadPhase2DBasic::_create;
 
-	active = true;
-	island_count = 0;
-	active_objects = 0;
-	collision_pairs = 0;
 	using_threads = p_using_threads;
-	flushing_queries = false;
 };

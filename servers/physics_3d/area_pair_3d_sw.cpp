@@ -72,7 +72,6 @@ AreaPair3DSW::AreaPair3DSW(Body3DSW *p_body, int p_body_shape, Area3DSW *p_area,
 	area = p_area;
 	body_shape = p_body_shape;
 	area_shape = p_area_shape;
-	colliding = false;
 	body->add_constraint(this, 0);
 	area->add_constraint(this);
 	if (p_body->get_mode() == PhysicsServer3D::BODY_MODE_KINEMATIC) {
@@ -137,7 +136,6 @@ Area2Pair3DSW::Area2Pair3DSW(Area3DSW *p_area_a, int p_shape_a, Area3DSW *p_area
 	area_b = p_area_b;
 	shape_a = p_shape_a;
 	shape_b = p_shape_b;
-	colliding = false;
 	area_a->add_constraint(this);
 	area_b->add_constraint(this);
 }

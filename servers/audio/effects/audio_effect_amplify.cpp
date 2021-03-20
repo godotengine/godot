@@ -67,6 +67,4 @@ void AudioEffectAmplify::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "volume_db", PROPERTY_HINT_RANGE, "-80,24,0.01"), "set_volume_db", "get_volume_db");
 }
 
-AudioEffectAmplify::AudioEffectAmplify() {
-	volume_db = 0;
-}
+AudioEffectAmplify::AudioEffectAmplify() {}

@@ -48,7 +48,7 @@ class SMBPitchShift {
 	float gAnaMagn[MAX_FRAME_LENGTH];
 	float gSynFreq[MAX_FRAME_LENGTH];
 	float gSynMagn[MAX_FRAME_LENGTH];
-	long gRover;
+	long gRover = 0;
 
 	void smbFft(float *fftBuffer, long fftFrameSize, long sign);
 
@@ -56,7 +56,6 @@ public:
 	void PitchShift(float pitchShift, long numSampsToProcess, long fftFrameSize, long osamp, float sampleRate, float *indata, float *outdata, int stride);
 
 	SMBPitchShift() {
-		gRover = 0;
 		memset(gInFIFO, 0, MAX_FRAME_LENGTH * sizeof(float));
 		memset(gOutFIFO, 0, MAX_FRAME_LENGTH * sizeof(float));
 		memset(gFFTworksp, 0, 2 * MAX_FRAME_LENGTH * sizeof(float));
@@ -65,6 +64,8 @@ public:
 		memset(gOutputAccum, 0, 2 * MAX_FRAME_LENGTH * sizeof(float));
 		memset(gAnaFreq, 0, MAX_FRAME_LENGTH * sizeof(float));
 		memset(gAnaMagn, 0, MAX_FRAME_LENGTH * sizeof(float));
+		memset(gSynFreq, 0, MAX_FRAME_LENGTH * sizeof(float));
+		memset(gSynMagn, 0, MAX_FRAME_LENGTH * sizeof(float));
 	}
 };
 
@@ -75,7 +76,7 @@ class AudioEffectPitchShiftInstance : public AudioEffectInstance {
 	friend class AudioEffectPitchShift;
 	Ref<AudioEffectPitchShift> base;
 
-	int fft_size;
+	int fft_size = 0;
 	SMBPitchShift shift_l;
 	SMBPitchShift shift_r;
 
@@ -98,12 +99,12 @@ public:
 		FFT_SIZE_MAX
 	};
 
-	float pitch_scale;
-	int oversampling;
-	FFT_Size fft_size;
-	float wet;
-	float dry;
-	bool filter;
+	float pitch_scale = 1.0;
+	int oversampling = 4;
+	FFT_Size fft_size = FFT_SIZE_2048;
+	float wet = 0.0;
+	float dry = 0.0;
+	bool filter = false;
 
 protected:
 	static void _bind_methods();

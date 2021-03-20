@@ -39,7 +39,7 @@ class AudioEffectDistortionInstance : public AudioEffectInstance {
 	GDCLASS(AudioEffectDistortionInstance, AudioEffectInstance);
 	friend class AudioEffectDistortion;
 	Ref<AudioEffectDistortion> base;
-	float h[2];
+	float h[2] = {};
 
 public:
 	virtual void process(const AudioFrame *p_src_frames, AudioFrame *p_dst_frames, int p_frame_count) override;
@@ -58,11 +58,12 @@ public:
 	};
 
 	friend class AudioEffectDistortionInstance;
-	Mode mode;
-	float pre_gain;
-	float post_gain;
-	float keep_hf_hz;
-	float drive;
+	Mode mode = MODE_CLIP;
+	;
+	float pre_gain = 0.0;
+	float post_gain = 0.0;
+	float keep_hf_hz = 16000.0;
+	float drive = 0.0;
 
 protected:
 	static void _bind_methods();

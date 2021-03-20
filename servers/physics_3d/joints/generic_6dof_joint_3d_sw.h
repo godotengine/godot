@@ -65,43 +65,28 @@ class G6DOFRotationalLimitMotor3DSW {
 public:
 	//! limit_parameters
 	//!@{
-	real_t m_loLimit; //!< joint limit
-	real_t m_hiLimit; //!< joint limit
+	real_t m_loLimit = -1e30; //!< joint limit
+	real_t m_hiLimit = 1e30; //!< joint limit
 	real_t m_targetVelocity; //!< target motor velocity
-	real_t m_maxMotorForce; //!< max force on motor
-	real_t m_maxLimitForce; //!< max force on limit
-	real_t m_damping; //!< Damping.
-	real_t m_limitSoftness; //! Relaxation factor
-	real_t m_ERP; //!< Error tolerance factor when joint is at limit
-	real_t m_bounce; //!< restitution factor
-	bool m_enableMotor;
-	bool m_enableLimit;
+	real_t m_maxMotorForce = 0.1f; //!< max force on motor
+	real_t m_maxLimitForce = 300.0f; //!< max force on limit
+	real_t m_damping = 1.0f; //!< Damping.
+	real_t m_limitSoftness = 0.5f; //! Relaxation factor
+	real_t m_ERP = 0.5f; //!< Error tolerance factor when joint is at limit
+	real_t m_bounce = 0.0f; //!< restitution factor
+	bool m_enableMotor = false;
+	bool m_enableLimit = false;
 
 	//!@}
 
 	//! temp_variables
 	//!@{
-	real_t m_currentLimitError; //!  How much is violated this limit
-	int m_currentLimit; //!< 0=free, 1=at lo limit, 2=at hi limit
-	real_t m_accumulatedImpulse;
+	real_t m_currentLimitError = 0.0; //!  How much is violated this limit
+	int m_currentLimit = 0; //!< 0=free, 1=at lo limit, 2=at hi limit
+	real_t m_accumulatedImpulse = 0.f;
 	//!@}
 
-	G6DOFRotationalLimitMotor3DSW() {
-		m_accumulatedImpulse = 0.f;
-		m_targetVelocity = 0;
-		m_maxMotorForce = 0.1f;
-		m_maxLimitForce = 300.0f;
-		m_loLimit = -1e30;
-		m_hiLimit = 1e30;
-		m_ERP = 0.5f;
-		m_bounce = 0.0f;
-		m_damping = 1.0f;
-		m_limitSoftness = 0.5f;
-		m_currentLimit = 0;
-		m_currentLimitError = 0;
-		m_enableMotor = false;
-		m_enableLimit = false;
-	}
+	G6DOFRotationalLimitMotor3DSW() {}
 
 	//! Is limited
 	bool isLimited() {
@@ -125,30 +110,18 @@ public:
 
 class G6DOFTranslationalLimitMotor3DSW {
 public:
-	Vector3 m_lowerLimit; //!< the constraint lower limits
-	Vector3 m_upperLimit; //!< the constraint upper limits
-	Vector3 m_accumulatedImpulse;
+	Vector3 m_lowerLimit = Vector3(0.f, 0.f, 0.f); //!< the constraint lower limits
+	Vector3 m_upperLimit = Vector3(0.f, 0.f, 0.f); //!< the constraint upper limits
+	Vector3 m_accumulatedImpulse = Vector3(0.f, 0.f, 0.f);
 	//! Linear_Limit_parameters
 	//!@{
-	Vector3 m_limitSoftness; //!< Softness for linear limit
-	Vector3 m_damping; //!< Damping for linear limit
-	Vector3 m_restitution; //! Bounce parameter for linear limit
+	Vector3 m_limitSoftness = Vector3(1, 1, 1) * 0.7f; //!< Softness for linear limit
+	Vector3 m_damping = Vector3(1, 1, 1) * real_t(1.0f); //!< Damping for linear limit
+	Vector3 m_restitution = Vector3(1, 1, 1) * real_t(0.5f); //! Bounce parameter for linear limit
 	//!@}
-	bool enable_limit[3];
+	bool enable_limit[3] = { true, true, true };
 
-	G6DOFTranslationalLimitMotor3DSW() {
-		m_lowerLimit = Vector3(0.f, 0.f, 0.f);
-		m_upperLimit = Vector3(0.f, 0.f, 0.f);
-		m_accumulatedImpulse = Vector3(0.f, 0.f, 0.f);
-
-		m_limitSoftness = Vector3(1, 1, 1) * 0.7f;
-		m_damping = Vector3(1, 1, 1) * real_t(1.0f);
-		m_restitution = Vector3(1, 1, 1) * real_t(0.5f);
-
-		enable_limit[0] = true;
-		enable_limit[1] = true;
-		enable_limit[2] = true;
-	}
+	G6DOFTranslationalLimitMotor3DSW() {}
 
 	//! Test limit
 	/*!
@@ -179,7 +152,7 @@ protected:
 			Body3DSW *B;
 		};
 
-		Body3DSW *_arr[2];
+		Body3DSW *_arr[2] = {};
 	};
 
 	//! relative_frames
@@ -215,7 +188,7 @@ protected:
 
 	Vector3 m_AnchorPos; // point between pivots of bodies A and B to solve linear axes
 
-	bool m_useLinearReferenceFrameA;
+	bool m_useLinearReferenceFrameA = false;
 
 	//!@}
 
