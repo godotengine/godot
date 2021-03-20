@@ -197,12 +197,11 @@ def configure(env):
         if env["optimize"] == "speed":  # optimize for speed (default)
             env.Append(LINKFLAGS=["-O2"])
             env.Append(CCFLAGS=["-O2", "-fomit-frame-pointer"])
-            env.Append(CPPDEFINES=["NDEBUG"])
-        else:  # optimize for size
+        elif env["optimize"] == "size":  # optimize for size
             env.Append(CCFLAGS=["-Os"])
-            env.Append(CPPDEFINES=["NDEBUG"])
             env.Append(LINKFLAGS=["-Os"])
 
+        env.Append(CPPDEFINES=["NDEBUG"])
         if can_vectorize:
             env.Append(CCFLAGS=["-ftree-vectorize"])
         if env["target"] == "release_debug":
