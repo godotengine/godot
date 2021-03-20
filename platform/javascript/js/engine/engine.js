@@ -102,7 +102,7 @@ const Engine = (function () {
 				const me = this;
 				function doInit(promise) {
 					return promise.then(function (response) {
-						return Godot(me.config.getModuleConfig(loadPath, response.clone()));
+						return Godot(me.config.getModuleConfig(loadPath, new Response(response.clone().body, { 'headers': [['content-type', 'application/wasm']] })));
 					}).then(function (module) {
 						const paths = me.config.persistentPaths;
 						return module['initFS'](paths).then(function (err) {
