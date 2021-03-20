@@ -50,6 +50,12 @@ public:
 		MODE_CUSTOM
 	};
 
+	enum CollisionVisibilityMode {
+		COLLISION_VISIBILITY_MODE_ALWAYS_SHOW,
+		COLLISION_VISIBILITY_MODE_ALWAYS_HIDE,
+		COLLISION_VISIBILITY_MODE_USE_DEBUG_SETTING
+	};
+
 	enum HalfOffset {
 		HALF_OFFSET_X,
 		HALF_OFFSET_Y,
@@ -80,7 +86,7 @@ private:
 	CollisionObject2D *collision_parent;
 	bool use_kinematic;
 	Navigation2D *navigation;
-	bool show_collision = true;
+	CollisionVisibilityMode collision_visibility = COLLISION_VISIBILITY_MODE_USE_DEBUG_SETTING;
 
 	union PosKey {
 
@@ -278,8 +284,8 @@ public:
 
 	void update_dirty_quadrants();
 
-	void set_show_collision(bool p_value);
-	bool is_show_collision_enabled() const;
+	void set_collision_visibility_mode(CollisionVisibilityMode p_value);
+	CollisionVisibilityMode get_collision_visibility_mode() const;
 
 	void set_collision_layer(uint32_t p_layer);
 	uint32_t get_collision_layer() const;
@@ -360,5 +366,6 @@ public:
 VARIANT_ENUM_CAST(TileMap::Mode);
 VARIANT_ENUM_CAST(TileMap::HalfOffset);
 VARIANT_ENUM_CAST(TileMap::TileOrigin);
+VARIANT_ENUM_CAST(TileMap::CollisionVisibilityMode);
 
 #endif // TILE_MAP_H

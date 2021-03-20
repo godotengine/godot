@@ -326,8 +326,8 @@
 		<member name="occluder_light_mask" type="int" setter="set_occluder_light_mask" getter="get_occluder_light_mask" default="1">
 			The light mask assigned to all light occluders in the TileMap. The TileSet's light occluders will cast shadows only from Light2D(s) that have the same light mask(s).
 		</member>
-		<member name="show_collision" type="bool" setter="set_show_collision" getter="is_show_collision_enabled" default="true">
-			If [code]true[/code], collision shapes are shown in the editor and at run-time. Requires [b]Visible Collision Shapes[/b] to be enabled in the [b]Debug[/b] menu for collision shapes to be visible at run-time.
+		<member name="show_collision" type="int" setter="set_show_collision" getter="is_show_collision_enabled" enum="TileMap.CollisionVisibilityMode" default="2">
+			Show or hide collision shapes. See [enum CollisionVisibilityMode] for possible values.
 		</member>
 		<member name="tile_set" type="TileSet" setter="set_tileset" getter="get_tileset">
 			The assigned [TileSet].
@@ -376,6 +376,15 @@
 		</constant>
 		<constant name="TILE_ORIGIN_BOTTOM_LEFT" value="2" enum="TileOrigin">
 			Tile origin at its bottom-left corner.
+		</constant>
+		<constant name="COLLISION_VISIBILITY_MODE_ALWAYS_SHOW" value="0" enum="CollisionVisibilityMode">
+			Always show collision shapes in editor and game.
+		</constant>
+		<constant name="COLLISION_VISIBILITY_MODE_ALWAYS_HIDE" value="1" enum="CollisionVisibilityMode">
+			Always Hide collision shapes in editor and game.
+		</constant>
+		<constant name="COLLISION_VISIBILITY_MODE_USE_DEBUG_SETTING" value="2" enum="CollisionVisibilityMode">
+			Use [b]Visible Collision Shapes[/b] in debug menu to control visibility. Only works in game.
 		</constant>
 	</constants>
 </class>

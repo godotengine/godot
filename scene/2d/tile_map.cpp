@@ -346,7 +346,11 @@ void TileMap::update_dirty_quadrants() {
 	Color debug_collision_color;
 	Color debug_navigation_color;
 
-	bool debug_shapes = show_collision && (Engine::get_singleton()->is_editor_hint() || (st && st->is_debugging_collisions_hint()));
+	bool debug_shapes = false;
+
+#ifdef DEBUG_ENABLED
+	debug_shapes = (collision_visibility == COLLISION_VISIBILITY_MODE_ALWAYS_SHOW) || (collision_visibility == COLLISION_VISIBILITY_MODE_USE_DEBUG_SETTING && (st && st->is_debugging_collisions_hint()));
+#endif
 
 	if (debug_shapes) {
 		debug_collision_color = st->get_debug_collisions_color();
@@ -1793,13 +1797,13 @@ String TileMap::get_configuration_warning() const {
 	return warning;
 }
 
-void TileMap::set_show_collision(bool p_value) {
-	show_collision = p_value;
+void TileMap::set_collision_visibility_mode(CollisionVisibilityMode p_value) {
+	collision_visibility = p_value;
 	_recreate_quadrants();
 }
 
-bool TileMap::is_show_collision_enabled() const {
-	return show_collision;
+TileMap::CollisionVisibilityMode TileMap::get_collision_visibility_mode() const {
+	return collision_visibility;
 }
 
 void TileMap::_bind_methods() {
@@ -1837,8 +1841,8 @@ void TileMap::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_compatibility_mode", "enable"), &TileMap::set_compatibility_mode);
 	ClassDB::bind_method(D_METHOD("is_compatibility_mode_enabled"), &TileMap::is_compatibility_mode_enabled);
 
-	ClassDB::bind_method(D_METHOD("set_show_collision", "enable"), &TileMap::set_show_collision);
-	ClassDB::bind_method(D_METHOD("is_show_collision_enabled"), &TileMap::is_show_collision_enabled);
+	ClassDB::bind_method(D_METHOD("set_collision_visibility_mode", "mode"), &TileMap::set_collision_visibility_mode);
+	ClassDB::bind_method(D_METHOD("get_collision_visibility_mode"), &TileMap::get_collision_visibility_mode);
 
 	ClassDB::bind_method(D_METHOD("set_centered_textures", "enable"), &TileMap::set_centered_textures);
 	ClassDB::bind_method(D_METHOD("is_centered_textures_enabled"), &TileMap::is_centered_textures_enabled);
@@ -1911,7 +1915,7 @@ void TileMap::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "cell_half_offset", PROPERTY_HINT_ENUM, "Offset X,Offset Y,Disabled,Offset Negative X,Offset Negative Y"), "set_half_offset", "get_half_offset");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "cell_tile_origin", PROPERTY_HINT_ENUM, "Top Left,Center,Bottom Left"), "set_tile_origin", "get_tile_origin");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "cell_y_sort"), "set_y_sort_mode", "is_y_sort_mode_enabled");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "show_collision"), "set_show_collision", "is_show_collision_enabled");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "collision_visibility", PROPERTY_HINT_ENUM, "Always Show, Always Hide, Use debug settings"), "set_collision_visibility_mode", "get_collision_visibility_mode");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "compatibility_mode"), "set_compatibility_mode", "is_compatibility_mode_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "centered_textures"), "set_centered_textures", "is_centered_textures_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "cell_clip_uv"), "set_clip_uv", "get_clip_uv");
@@ -1946,6 +1950,10 @@ void TileMap::_bind_methods() {
 	BIND_ENUM_CONSTANT(TILE_ORIGIN_TOP_LEFT);
 	BIND_ENUM_CONSTANT(TILE_ORIGIN_CENTER);
 	BIND_ENUM_CONSTANT(TILE_ORIGIN_BOTTOM_LEFT);
+
+	BIND_ENUM_CONSTANT(COLLISION_VISIBILITY_MODE_ALWAYS_SHOW);
+	BIND_ENUM_CONSTANT(COLLISION_VISIBILITY_MODE_ALWAYS_HIDE);
+	BIND_ENUM_CONSTANT(COLLISION_VISIBILITY_MODE_USE_DEBUG_SETTING);
 }
 
 void TileMap::_changed_callback(Object *p_changed, const char *p_prop) {
