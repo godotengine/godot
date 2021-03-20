@@ -163,7 +163,6 @@ public:
 	virtual void area_set_monitor_callback(RID p_area, Object *p_receiver, const StringName &p_method) override;
 	virtual void area_set_area_monitor_callback(RID p_area, Object *p_receiver, const StringName &p_method) override;
 	virtual void area_set_ray_pickable(RID p_area, bool p_enable) override;
-	virtual bool area_is_ray_pickable(RID p_area) const override;
 
 	/* RIGID BODY API */
 
@@ -250,7 +249,6 @@ public:
 	virtual void body_set_force_integration_callback(RID p_body, Object *p_receiver, const StringName &p_method, const Variant &p_udata = Variant()) override;
 
 	virtual void body_set_ray_pickable(RID p_body, bool p_enable) override;
-	virtual bool body_is_ray_pickable(RID p_body) const override;
 
 	// this function only works on physics process, errors and returns null otherwise
 	virtual PhysicsDirectBodyState3D *body_get_direct_state(RID p_body) override;
@@ -262,12 +260,14 @@ public:
 
 	virtual RID soft_body_create(bool p_init_sleeping = false) override;
 
-	virtual void soft_body_update_rendering_server(RID p_body, class SoftBodyRenderingServerHandler *p_rendering_server_handler) override;
+	virtual void soft_body_update_rendering_server(RID p_body, RenderingServerHandler *p_rendering_server_handler) override;
 
 	virtual void soft_body_set_space(RID p_body, RID p_space) override;
 	virtual RID soft_body_get_space(RID p_body) const override;
 
 	virtual void soft_body_set_mesh(RID p_body, const REF &p_mesh) override;
+
+	virtual AABB soft_body_get_bounds(RID p_body) const override;
 
 	virtual void soft_body_set_collision_layer(RID p_body, uint32_t p_layer) override;
 	virtual uint32_t soft_body_get_collision_layer(RID p_body) const override;
@@ -284,46 +284,33 @@ public:
 
 	/// Special function. This function has bad performance
 	virtual void soft_body_set_transform(RID p_body, const Transform &p_transform) override;
-	virtual Vector3 soft_body_get_vertex_position(RID p_body, int vertex_index) const override;
 
 	virtual void soft_body_set_ray_pickable(RID p_body, bool p_enable) override;
-	virtual bool soft_body_is_ray_pickable(RID p_body) const override;
 
 	virtual void soft_body_set_simulation_precision(RID p_body, int p_simulation_precision) override;
-	virtual int soft_body_get_simulation_precision(RID p_body) override;
+	virtual int soft_body_get_simulation_precision(RID p_body) const override;
 
 	virtual void soft_body_set_total_mass(RID p_body, real_t p_total_mass) override;
-	virtual real_t soft_body_get_total_mass(RID p_body) override;
+	virtual real_t soft_body_get_total_mass(RID p_body) const override;
 
 	virtual void soft_body_set_linear_stiffness(RID p_body, real_t p_stiffness) override;
-	virtual real_t soft_body_get_linear_stiffness(RID p_body) override;
-
-	virtual void soft_body_set_angular_stiffness(RID p_body, real_t p_stiffness) override;
-	virtual real_t soft_body_get_angular_stiffness(RID p_body) override;
-
-	virtual void soft_body_set_volume_stiffness(RID p_body, real_t p_stiffness) override;
-	virtual real_t soft_body_get_volume_stiffness(RID p_body) override;
+	virtual real_t soft_body_get_linear_stiffness(RID p_body) const override;
 
 	virtual void soft_body_set_pressure_coefficient(RID p_body, real_t p_pressure_coefficient) override;
-	virtual real_t soft_body_get_pressure_coefficient(RID p_body) override;
-
-	virtual void soft_body_set_pose_matching_coefficient(RID p_body, real_t p_pose_matching_coefficient) override;
-	virtual real_t soft_body_get_pose_matching_coefficient(RID p_body) override;
+	virtual real_t soft_body_get_pressure_coefficient(RID p_body) const override;
 
 	virtual void soft_body_set_damping_coefficient(RID p_body, real_t p_damping_coefficient) override;
-	virtual real_t soft_body_get_damping_coefficient(RID p_body) override;
+	virtual real_t soft_body_get_damping_coefficient(RID p_body) const override;
 
 	virtual void soft_body_set_drag_coefficient(RID p_body, real_t p_drag_coefficient) override;
-	virtual real_t soft_body_get_drag_coefficient(RID p_body) override;
+	virtual real_t soft_body_get_drag_coefficient(RID p_body) const override;
 
 	virtual void soft_body_move_point(RID p_body, int p_point_index, const Vector3 &p_global_position) override;
-	virtual Vector3 soft_body_get_point_global_position(RID p_body, int p_point_index) override;
-
-	virtual Vector3 soft_body_get_point_offset(RID p_body, int p_point_index) const override;
+	virtual Vector3 soft_body_get_point_global_position(RID p_body, int p_point_index) const override;
 
 	virtual void soft_body_remove_all_pinned_points(RID p_body) override;
 	virtual void soft_body_pin_point(RID p_body, int p_point_index, bool p_pin) override;
-	virtual bool soft_body_is_point_pinned(RID p_body, int p_point_index) override;
+	virtual bool soft_body_is_point_pinned(RID p_body, int p_point_index) const override;
 
 	/* JOINT API */
 

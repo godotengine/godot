@@ -1011,9 +1011,9 @@ bool gjk_epa_calculate_penetration(const Shape3DSW *p_shape_A, const Transform &
 	if (GjkEpa2::Penetration(p_shape_A, p_transform_A, p_margin_A, p_shape_B, p_transform_B, p_margin_B, p_transform_B.origin - p_transform_A.origin, res)) {
 		if (p_result_callback) {
 			if (p_swap) {
-				p_result_callback(res.witnesses[1], res.witnesses[0], p_userdata);
+				p_result_callback(res.witnesses[1], 0, res.witnesses[0], 0, p_userdata);
 			} else {
-				p_result_callback(res.witnesses[0], res.witnesses[1], p_userdata);
+				p_result_callback(res.witnesses[0], 0, res.witnesses[1], 0, p_userdata);
 			}
 		}
 		return true;

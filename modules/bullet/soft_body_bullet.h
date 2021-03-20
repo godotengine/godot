@@ -55,6 +55,8 @@
 	@author AndreaCatania
 */
 
+class RenderingServerHandler;
+
 class SoftBodyBullet : public CollisionObjectBullet {
 private:
 	btSoftBody *bt_soft_body = nullptr;
@@ -67,10 +69,7 @@ private:
 	int simulation_precision = 5;
 	real_t total_mass = 1.;
 	real_t linear_stiffness = 0.5; // [0,1]
-	real_t angular_stiffness = 0.5; // [0,1]
-	real_t volume_stiffness = 0.5; // [0,1]
 	real_t pressure_coefficient = 0.; // [-inf,+inf]
-	real_t pose_matching_coefficient = 0.; // [0,1]
 	real_t damping_coefficient = 0.01; // [0,1]
 	real_t drag_coefficient = 0.; // [0,1]
 	Vector<int> pinned_nodes;
@@ -99,7 +98,7 @@ public:
 
 	_FORCE_INLINE_ btSoftBody *get_bt_soft_body() const { return bt_soft_body; }
 
-	void update_rendering_server(class SoftBodyRenderingServerHandler *p_rendering_server_handler);
+	void update_rendering_server(RenderingServerHandler *p_rendering_server_handler);
 
 	void set_soft_mesh(const Ref<Mesh> &p_mesh);
 	void destroy_soft_body();
@@ -107,14 +106,12 @@ public:
 	// Special function. This function has bad performance
 	void set_soft_transform(const Transform &p_transform);
 
+	AABB get_bounds() const;
+
 	void move_all_nodes(const Transform &p_transform);
 	void set_node_position(int node_index, const Vector3 &p_global_position);
 	void set_node_position(int node_index, const btVector3 &p_global_position);
 	void get_node_position(int node_index, Vector3 &r_position) const;
-	// Heavy function, Please cache this info
-	void get_node_offset(int node_index, Vector3 &r_offset) const;
-	// Heavy function, Please cache this info
-	void get_node_offset(int node_index, btVector3 &r_offset) const;
 
 	void set_node_mass(int node_index, btScalar p_mass);
 	btScalar get_node_mass(int node_index) const;
@@ -129,20 +126,11 @@ public:
 	void set_linear_stiffness(real_t p_val);
 	_FORCE_INLINE_ real_t get_linear_stiffness() const { return linear_stiffness; }
 
-	void set_angular_stiffness(real_t p_val);
-	_FORCE_INLINE_ real_t get_angular_stiffness() const { return angular_stiffness; }
-
-	void set_volume_stiffness(real_t p_val);
-	_FORCE_INLINE_ real_t get_volume_stiffness() const { return volume_stiffness; }
-
 	void set_simulation_precision(int p_val);
 	_FORCE_INLINE_ int get_simulation_precision() const { return simulation_precision; }
 
 	void set_pressure_coefficient(real_t p_val);
 	_FORCE_INLINE_ real_t get_pressure_coefficient() const { return pressure_coefficient; }
-
-	void set_pose_matching_coefficient(real_t p_val);
-	_FORCE_INLINE_ real_t get_pose_matching_coefficient() const { return pose_matching_coefficient; }
 
 	void set_damping_coefficient(real_t p_val);
 	_FORCE_INLINE_ real_t get_damping_coefficient() const { return damping_coefficient; }
