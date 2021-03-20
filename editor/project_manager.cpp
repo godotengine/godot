@@ -487,7 +487,7 @@ private:
 					if (ProjectSettings::get_singleton()->save_custom(dir.plus_file("project.godot"), initial_settings, Vector<String>(), false) != OK) {
 						set_message(TTR("Couldn't create project.godot in project path."), MESSAGE_ERROR);
 					} else {
-						ResourceSaver::save(dir.plus_file("icon.png"), msg->get_theme_icon("DefaultProjectIcon", "EditorIcons"));
+						ResourceSaver::save(dir.plus_file("icon.png"), create_unscaled_default_project_icon());
 
 						FileAccess *f = FileAccess::open(dir.plus_file("default_env.tres"), FileAccess::WRITE);
 						if (!f) {
