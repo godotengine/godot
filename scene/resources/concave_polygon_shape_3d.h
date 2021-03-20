@@ -36,6 +36,9 @@
 class ConcavePolygonShape3D : public Shape3D {
 	GDCLASS(ConcavePolygonShape3D, Shape3D);
 
+	Vector<Vector3> faces;
+	bool backface_collision = false;
+
 	struct DrawEdge {
 		Vector3 a;
 		Vector3 b;
@@ -64,6 +67,9 @@ protected:
 public:
 	void set_faces(const Vector<Vector3> &p_faces);
 	Vector<Vector3> get_faces() const;
+
+	void set_backface_collision_enabled(bool p_enabled);
+	bool is_backface_collision_enabled() const;
 
 	virtual Vector<Vector3> get_debug_mesh_lines() const override;
 	virtual real_t get_enclosing_radius() const override;
