@@ -1132,7 +1132,7 @@ Node3D *EditorSceneImporterFBX::_generate_scene(
 								max_duration = animation_track_time;
 							}
 
-							rot_values.push_back(final_rotation);
+							rot_values.push_back(final_rotation.normalized());
 							rot_times.push_back(animation_track_time);
 						}
 
