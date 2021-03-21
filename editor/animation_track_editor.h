@@ -483,6 +483,10 @@ class AnimationTrackEditor : public VBoxContainer {
 
 	void _insert_animation_key(NodePath p_path, const Variant &p_value);
 
+	void _pick_track_filter_text_changed(const String &p_text);
+	void _pick_track_select_recursive(TreeItem *p_item, const String &p_filter, Vector<Node *> &p_select_candidates);
+	void _pick_track_filter_input(const Ref<InputEvent> &p_ie);
+
 protected:
 	static void _bind_methods();
 	void _notification(int p_what);
