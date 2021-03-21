@@ -605,7 +605,7 @@ void ParticlesMaterial::_update_shader() {
 		}
 	}
 	//scale by scale
-	code += "	float base_scale = tex_scale * mix(scale, 1.0, scale_random * scale_rand);\n";
+	code += "	float base_scale = tex_scale * mix(scale - scale_random * 0.5, scale + scale_random * 0.5, scale_rand);\n";
 	code += "	if (base_scale < 0.000001) {\n";
 	code += "		base_scale = 0.000001;\n";
 	code += "	}\n";
@@ -1283,7 +1283,7 @@ void ParticlesMaterial::_bind_methods() {
 	ADD_PROPERTYI(PropertyInfo(Variant::OBJECT, "angle_curve", PROPERTY_HINT_RESOURCE_TYPE, "CurveTexture"), "set_param_texture", "get_param_texture", PARAM_ANGLE);
 	ADD_GROUP("Scale", "");
 	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "scale", PROPERTY_HINT_RANGE, "0,1000,0.01,or_greater"), "set_param", "get_param", PARAM_SCALE);
-	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "scale_random", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_param_randomness", "get_param_randomness", PARAM_SCALE);
+	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "scale_random", PROPERTY_HINT_RANGE, "0,100.0,0.01"), "set_param_randomness", "get_param_randomness", PARAM_SCALE);
 	ADD_PROPERTYI(PropertyInfo(Variant::OBJECT, "scale_curve", PROPERTY_HINT_RESOURCE_TYPE, "CurveTexture"), "set_param_texture", "get_param_texture", PARAM_SCALE);
 	ADD_GROUP("Color", "");
 	ADD_PROPERTY(PropertyInfo(Variant::COLOR, "color"), "set_color", "get_color");
