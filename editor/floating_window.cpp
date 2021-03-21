@@ -44,10 +44,6 @@ void FloatingWindow::_on_window_event(const Ref<InputEvent> &p_event) {
 	if (single_window_mode) {
 		Size2i editor_window_size = get_parent_rect().size;
 		Vector2 window_position = this->get_position();
-		print_line("Window position:");
-		print_line(window_position);
-		print_line("Size");
-		print_line(editor_window_size);
 		Rect2 window_size = this->get_visible_rect();
 		if (editor_window_size.x < (window_position.x + window_size.size.x)) {
 			this->set_position(Vector2((editor_window_size.x - window_size.size.x), window_position.y));
