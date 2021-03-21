@@ -332,7 +332,7 @@ void AnimationNodeBlendTreeEditor::_add_node(int p_idx) {
 		instance_pos += graph->get_size() * 0.5;
 	}
 
-	instance_pos /= graph->get_zoom();
+	instance_pos /= graph->get_zoom_scale();
 
 	int base = 1;
 	String name = base_name;

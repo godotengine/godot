@@ -2495,7 +2495,7 @@ Variant VisualScriptEditor::get_edit_state() {
 	Dictionary d;
 	d["function"] = default_func;
 	d["scroll"] = graph->get_scroll_ofs();
-	d["zoom"] = graph->get_zoom();
+	d["zoom_factor"] = graph->get_zoom_factor();
 	d["using_snap"] = graph->is_using_snap();
 	d["snap"] = graph->get_snap();
 	return d;
@@ -2514,8 +2514,8 @@ void VisualScriptEditor::set_edit_state(const Variant &p_state) {
 	if (d.has("scroll")) {
 		graph->set_scroll_ofs(d["scroll"]);
 	}
-	if (d.has("zoom")) {
-		graph->set_zoom(d["zoom"]);
+	if (d.has("zoom_factor")) {
+		graph->set_zoom(d["zoom_factor"]);
 	}
 	if (d.has("snap")) {
 		graph->set_snap(d["snap"]);
@@ -3504,7 +3504,7 @@ void VisualScriptEditor::_selected_connect_node(const String &p_text, const Stri
 		ofs = ofs.snapped(Vector2(snap, snap));
 	}
 	ofs /= EDSCALE;
-	ofs /= graph->get_zoom();
+	ofs /= graph->get_zoom_scale();
 
 	Set<int> vn;
 

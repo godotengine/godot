@@ -143,7 +143,7 @@ private:
 	bool moving_selection;
 	Vector2 drag_accum;
 
-	float zoom;
+	float zoom_factor;
 
 	bool box_selecting;
 	bool box_selection_mode_additive;
@@ -241,9 +241,10 @@ public:
 	void remove_valid_connection_type(int p_type, int p_with_type);
 	bool is_valid_connection_type(int p_type, int p_with_type) const;
 
-	void set_zoom(float p_zoom);
-	void set_zoom_custom(float p_zoom, const Vector2 &p_center);
-	float get_zoom() const;
+	void set_zoom(float p_zoom_factor);
+	void set_zoom_custom(float p_zoom_factor, const Vector2 &p_center);
+	float get_zoom_factor() const;
+	float get_zoom_scale() const;
 
 	void set_minimap_size(Vector2 p_size);
 	Vector2 get_minimap_size() const;

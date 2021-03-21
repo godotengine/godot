@@ -41,8 +41,8 @@
 
 #define ZOOM_SCALE 1.2
 
-#define MIN_ZOOM (((1 / ZOOM_SCALE) / ZOOM_SCALE) / ZOOM_SCALE)
-#define MAX_ZOOM (1 * ZOOM_SCALE * ZOOM_SCALE * ZOOM_SCALE)
+#define MIN_ZOOM -8
+#define MAX_ZOOM 3
 
 #define MINIMAP_OFFSET 12
 #define MINIMAP_PADDING 5
@@ -291,6 +291,7 @@ void GraphEdit::_update_scroll_offset() {
 		if (!gn)
 			continue;
 
+		float zoom = get_zoom_scale();
 		Point2 pos = gn->get_offset() * zoom;
 		pos -= Point2(h_scroll->get_value(), v_scroll->get_value());
 		gn->set_position(pos);
@@ -321,6 +322,7 @@ void GraphEdit::_update_scroll() {
 			continue;
 
 		Rect2 r;
+		float zoom = get_zoom_scale();
 		r.position = gn->get_offset() * zoom;
 		r.size = gn->get_size() * zoom;
 		screen = screen.merge(r);
@@ -413,6 +415,7 @@ void GraphEdit::add_child_notify(Node *p_child) {
 
 	GraphNode *gn = Object::cast_to<GraphNode>(p_child);
 	if (gn) {
+		float zoom = get_zoom_scale();
 		gn->set_scale(Vector2(zoom, zoom));
 		gn->connect("offset_changed", this, "_graph_node_moved", varray(gn));
 		gn->connect("slot_updated", this, "_graph_node_slot_updated", varray(gn));
@@ -482,6 +485,7 @@ void GraphEdit::_notification(int p_what) {
 		v_scroll->set_anchor_and_margin(MARGIN_BOTTOM, ANCHOR_END, 0);
 	}
 	if (p_what == NOTIFICATION_DRAW) {
+		float zoom = get_zoom_scale();
 
 		draw_style_box(get_stylebox("bg"), Rect2(Point2(), get_size()));
 
@@ -855,6 +859,7 @@ void GraphEdit::_draw_cos_line(CanvasItem *p_where, const Vector2 &p_from, const
 	} else {
 		cp_offset = MAX(MIN(cp_len - diff, cp_neg_len), -diff * 0.5);
 	}
+	float zoom = get_zoom_scale();
 
 	Vector2 c1 = Vector2(cp_offset * zoom, 0);
 	Vector2 c2 = Vector2(-cp_offset * zoom, 0);
@@ -912,6 +917,7 @@ void GraphEdit::_connections_layer_draw() {
 			continue;
 		}
 
+		float zoom = get_zoom_scale();
 		Vector2 frompos = gfrom->get_connection_output_position(E->get().from_port) + gfrom->get_offset() * zoom;
 		Color color = gfrom->get_connection_output_color(E->get().from_port);
 		Vector2 topos = gto->get_connection_input_position(E->get().to_port) + gto->get_offset() * zoom;
@@ -983,6 +989,8 @@ void GraphEdit::_minimap_draw() {
 
 	Vector2 graph_offset = minimap->_get_graph_offset();
 	Vector2 minimap_offset = minimap->minimap_offset;
+
+	float zoom = get_zoom_scale();
 
 	// Draw comment graph nodes.
 	for (int i = get_child_count() - 1; i >= 0; i--) {
@@ -1097,6 +1105,8 @@ void GraphEdit::_gui_input(const Ref<InputEvent> &p_ev) {
 		h_scroll->set_value(h_scroll->get_value() - mm->get_relative().x);
 		v_scroll->set_value(v_scroll->get_value() - mm->get_relative().y);
 	}
+
+	float zoom = get_zoom_scale();
 
 	if (mm.is_valid() && dragging) {
 		if (!moving_selection) {
@@ -1341,19 +1351,21 @@ void GraphEdit::_gui_input(const Ref<InputEvent> &p_ev) {
 			minimap->update();
 		}
 
-		if (b->get_button_index() == BUTTON_WHEEL_UP && b->is_pressed()) {
-			//too difficult to get right
-			//set_zoom(zoom*ZOOM_SCALE);
+		if (b->get_button_index() == BUTTON_WHEEL_UP && Input::get_singleton()->is_key_pressed(KEY_CONTROL)) {
+			set_zoom_custom(zoom_factor + 1, b->get_position());
 		}
 
-		if (b->get_button_index() == BUTTON_WHEEL_DOWN && b->is_pressed()) {
-			//too difficult to get right
-			//set_zoom(zoom/ZOOM_SCALE);
+		if (b->get_button_index() == BUTTON_WHEEL_DOWN && Input::get_singleton()->is_key_pressed(KEY_CONTROL)) {
+			set_zoom_custom(zoom_factor - 1, b->get_position());
 		}
-		if (b->get_button_index() == BUTTON_WHEEL_UP && !Input::get_singleton()->is_key_pressed(KEY_SHIFT)) {
+		if (b->get_button_index() == BUTTON_WHEEL_UP && 
+			!Input::get_singleton()->is_key_pressed(KEY_SHIFT) &&
+			!Input::get_singleton()->is_key_pressed(KEY_CONTROL)) {
 			v_scroll->set_value(v_scroll->get_value() - v_scroll->get_page() * b->get_factor() / 8);
 		}
-		if (b->get_button_index() == BUTTON_WHEEL_DOWN && !Input::get_singleton()->is_key_pressed(KEY_SHIFT)) {
+		if (b->get_button_index() == BUTTON_WHEEL_DOWN && 
+			!Input::get_singleton()->is_key_pressed(KEY_SHIFT) &&
+			!Input::get_singleton()->is_key_pressed(KEY_CONTROL)) {
 			v_scroll->set_value(v_scroll->get_value() + v_scroll->get_page() * b->get_factor() / 8);
 		}
 		if (b->get_button_index() == BUTTON_WHEEL_RIGHT || (b->get_button_index() == BUTTON_WHEEL_DOWN && Input::get_singleton()->is_key_pressed(KEY_SHIFT))) {
@@ -1391,8 +1403,9 @@ void GraphEdit::_gui_input(const Ref<InputEvent> &p_ev) {
 
 	Ref<InputEventMagnifyGesture> magnify_gesture = p_ev;
 	if (magnify_gesture.is_valid()) {
-
-		set_zoom_custom(zoom * magnify_gesture->get_factor(), magnify_gesture->get_position());
+		float scale = zoom * magnify_gesture->get_factor();
+		float factor = logf(scale) / logf(ZOOM_SCALE);
+		set_zoom_custom(factor, magnify_gesture->get_position());
 	}
 
 	Ref<InputEventPanGesture> pan_gesture = p_ev;
@@ -1437,15 +1450,17 @@ void GraphEdit::set_zoom(float p_zoom) {
 void GraphEdit::set_zoom_custom(float p_zoom, const Vector2 &p_center) {
 
 	p_zoom = CLAMP(p_zoom, MIN_ZOOM, MAX_ZOOM);
-	if (zoom == p_zoom)
+	if (zoom_factor == p_zoom)
 		return;
 
-	zoom_minus->set_disabled(zoom == MIN_ZOOM);
-	zoom_plus->set_disabled(zoom == MAX_ZOOM);
+	zoom_minus->set_disabled(zoom_factor == MIN_ZOOM);
+	zoom_plus->set_disabled(zoom_factor == MAX_ZOOM);
 
-	Vector2 sbofs = (Vector2(h_scroll->get_value(), v_scroll->get_value()) + p_center) / zoom;
+	float zoom_scale = get_zoom_scale();
+	Vector2 sbofs = (Vector2(h_scroll->get_value(), v_scroll->get_value()) + p_center) / zoom_scale;
 
-	zoom = p_zoom;
+	zoom_factor = p_zoom;
+	zoom_scale = get_zoom_scale();
 	top_layer->update();
 
 	_update_scroll();
@@ -1454,7 +1469,7 @@ void GraphEdit::set_zoom_custom(float p_zoom, const Vector2 &p_center) {
 
 	if (is_visible_in_tree()) {
 
-		Vector2 ofs = sbofs * zoom - p_center;
+		Vector2 ofs = sbofs * zoom_scale - p_center;
 		h_scroll->set_value(ofs.x);
 		v_scroll->set_value(ofs.y);
 	}
@@ -1462,8 +1477,12 @@ void GraphEdit::set_zoom_custom(float p_zoom, const Vector2 &p_center) {
 	update();
 }
 
-float GraphEdit::get_zoom() const {
-	return zoom;
+float GraphEdit::get_zoom_factor() const {
+	return zoom_factor;
+}
+
+float GraphEdit::get_zoom_scale() const {
+	return pow(ZOOM_SCALE, zoom_factor);
 }
 
 void GraphEdit::set_right_disconnects(bool p_enable) {
@@ -1514,16 +1533,16 @@ Array GraphEdit::_get_connection_list() const {
 
 void GraphEdit::_zoom_minus() {
 
-	set_zoom(zoom / ZOOM_SCALE);
+	set_zoom(zoom_factor - 1);
 }
 void GraphEdit::_zoom_reset() {
 
-	set_zoom(1);
+	set_zoom(0);
 }
 
 void GraphEdit::_zoom_plus() {
 
-	set_zoom(zoom * ZOOM_SCALE);
+	set_zoom(zoom_factor + 1);
 }
 
 void GraphEdit::add_valid_connection_type(int p_type, int p_with_type) {
@@ -1652,7 +1671,8 @@ void GraphEdit::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("is_valid_connection_type", "from_type", "to_type"), &GraphEdit::is_valid_connection_type);
 
 	ClassDB::bind_method(D_METHOD("set_zoom", "p_zoom"), &GraphEdit::set_zoom);
-	ClassDB::bind_method(D_METHOD("get_zoom"), &GraphEdit::get_zoom);
+	ClassDB::bind_method(D_METHOD("get_zoom_factor"), &GraphEdit::get_zoom_factor);
+	ClassDB::bind_method(D_METHOD("get_zoom_scale"), &GraphEdit::get_zoom_scale);
 
 	ClassDB::bind_method(D_METHOD("set_snap", "pixels"), &GraphEdit::set_snap);
 	ClassDB::bind_method(D_METHOD("get_snap"), &GraphEdit::get_snap);
@@ -1698,7 +1718,7 @@ void GraphEdit::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "scroll_offset"), "set_scroll_ofs", "get_scroll_ofs");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "snap_distance"), "set_snap", "get_snap");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "use_snap"), "set_use_snap", "is_using_snap");
-	ADD_PROPERTY(PropertyInfo(Variant::REAL, "zoom"), "set_zoom", "get_zoom");
+	ADD_PROPERTY(PropertyInfo(Variant::REAL, "zoom"), "set_zoom", "get_zoom_factor");
 	ADD_GROUP("Minimap", "minimap");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "minimap_enabled"), "set_minimap_enabled", "is_minimap_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "minimap_size"), "set_minimap_size", "get_minimap_size");
@@ -1764,7 +1784,7 @@ GraphEdit::GraphEdit() {
 	h_scroll->connect("value_changed", this, "_scroll_moved");
 	v_scroll->connect("value_changed", this, "_scroll_moved");
 
-	zoom = 1;
+	zoom_factor = 0;
 
 	zoom_hb = memnew(HBoxContainer);
 	top_layer->add_child(zoom_hb);

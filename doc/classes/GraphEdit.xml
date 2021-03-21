@@ -197,8 +197,8 @@
 		<member name="use_snap" type="bool" setter="set_use_snap" getter="is_using_snap" default="true">
 			If [code]true[/code], enables snapping.
 		</member>
-		<member name="zoom" type="float" setter="set_zoom" getter="get_zoom" default="1.0">
-			The current zoom value.
+		<member name="zoom_factor" type="float" setter="set_zoom" getter="get_zoom_factor" default="0.0">
+			The current zoom factor (0 = scale of 1).
 		</member>
 	</members>
 	<signals>

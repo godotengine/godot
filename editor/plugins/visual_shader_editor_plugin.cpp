@@ -1953,7 +1953,7 @@ void VisualShaderEditor::_paste_nodes() {
 
 	undo_redo->create_action(TTR("Paste Nodes"));
 
-	float scale = graph->get_zoom();
+	float scale = graph->get_zoom_scale();
 
 	_dup_paste_nodes(type, copy_type, copy_nodes_buffer, copy_nodes_excluded_buffer, (graph->get_scroll_ofs() / scale + graph->get_local_mouse_position() / scale - selection_center), false);
 
