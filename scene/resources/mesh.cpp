@@ -244,13 +244,21 @@ Ref<Shape3D> Mesh::create_trimesh_shape() const {
 
 	Vector<Vector3> face_points;
 	face_points.resize(faces.size() * 3);
+	int good_points = 0;
 
 	for (int i = 0; i < face_points.size(); i += 3) {
 		Face3 f = faces.get(i / 3);
+		if (f.is_degenerate()) {
+			continue;
+		}
+
+		good_points += 3;
 		face_points.set(i, f.vertex[0]);
 		face_points.set(i + 1, f.vertex[1]);
 		face_points.set(i + 2, f.vertex[2]);
 	}
+
+	face_points.resize(good_points);
 
 	Ref<ConcavePolygonShape3D> shape = memnew(ConcavePolygonShape3D);
 	shape->set_faces(face_points);
