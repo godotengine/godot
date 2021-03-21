@@ -83,6 +83,7 @@ public:
 
 	IP_Address get_packet_address() const;
 	int get_packet_port() const;
+	int get_local_port() const;
 	void set_dest_address(const IP_Address &p_address, int p_port);
 
 	Error put_packet(const uint8_t *p_buffer, int p_buffer_size) override;

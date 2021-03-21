@@ -67,21 +67,40 @@ void StreamPeerTCP::accept_socket(Ref<NetSocket> p_sock, IP_Address p_host, uint
 	peer_port = p_port;
 }
 
-Error StreamPeerTCP::connect_to_host(const IP_Address &p_host, uint16_t p_port) {
+Error StreamPeerTCP::bind(int p_port, const IP_Address &p_host) {
 	ERR_FAIL_COND_V(!_sock.is_valid(), ERR_UNAVAILABLE);
 	ERR_FAIL_COND_V(_sock->is_open(), ERR_ALREADY_IN_USE);
-	ERR_FAIL_COND_V(!p_host.is_valid(), ERR_INVALID_PARAMETER);
+	ERR_FAIL_COND_V_MSG(p_port < 0 || p_port > 65535, ERR_INVALID_PARAMETER, "The local port number must be between 0 and 65535 (inclusive).");
 
-	Error err;
 	IP::Type ip_type = p_host.is_ipv4() ? IP::TYPE_IPV4 : IP::TYPE_IPV6;
-
-	err = _sock->open(NetSocket::TYPE_TCP, ip_type);
-	ERR_FAIL_COND_V(err != OK, FAILED);
-
+	if (p_host.is_wildcard()) {
+		ip_type = IP::TYPE_ANY;
+	}
+	Error err = _sock->open(NetSocket::TYPE_TCP, ip_type);
+	if (err != OK) {
+		return err;
+	}
 	_sock->set_blocking_enabled(false);
+	return _sock->bind(p_host, p_port);
+}
+
+Error StreamPeerTCP::connect_to_host(const IP_Address &p_host, int p_port) {
+	ERR_FAIL_COND_V(!_sock.is_valid(), ERR_UNAVAILABLE);
+	ERR_FAIL_COND_V(status != STATUS_NONE, ERR_ALREADY_IN_USE);
+	ERR_FAIL_COND_V(!p_host.is_valid(), ERR_INVALID_PARAMETER);
+	ERR_FAIL_COND_V_MSG(p_port < 1 || p_port > 65535, ERR_INVALID_PARAMETER, "The remote port number must be between 1 and 65535 (inclusive).");
+
+	if (!_sock->is_open()) {
+		IP::Type ip_type = p_host.is_ipv4() ? IP::TYPE_IPV4 : IP::TYPE_IPV6;
+		Error err = _sock->open(NetSocket::TYPE_TCP, ip_type);
+		if (err != OK) {
+			return err;
+		}
+		_sock->set_blocking_enabled(false);
+	}
 
 	timeout = OS::get_singleton()->get_ticks_msec() + (((uint64_t)GLOBAL_GET("network/limits/tcp/connect_timeout_seconds")) * 1000);
-	err = _sock->connect_to_host(p_host, p_port);
+	Error err = _sock->connect_to_host(p_host, p_port);
 
 	if (err == OK) {
 		status = STATUS_CONNECTED;
@@ -300,8 +319,14 @@ IP_Address StreamPeerTCP::get_connected_host() const {
 	return peer_host;
 }
 
-uint16_t StreamPeerTCP::get_connected_port() const {
+int StreamPeerTCP::get_connected_port() const {
 	return peer_port;
+}
+
+int StreamPeerTCP::get_local_port() const {
+	uint16_t local_port;
+	_sock->get_socket_address(nullptr, &local_port);
+	return local_port;
 }
 
 Error StreamPeerTCP::_connect(const String &p_address, int p_port) {
@@ -319,11 +344,13 @@ Error StreamPeerTCP::_connect(const String &p_address, int p_port) {
 }
 
 void StreamPeerTCP::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("bind", "port", "host"), &StreamPeerTCP::bind, DEFVAL("*"));
 	ClassDB::bind_method(D_METHOD("connect_to_host", "host", "port"), &StreamPeerTCP::_connect);
 	ClassDB::bind_method(D_METHOD("is_connected_to_host"), &StreamPeerTCP::is_connected_to_host);
 	ClassDB::bind_method(D_METHOD("get_status"), &StreamPeerTCP::get_status);
 	ClassDB::bind_method(D_METHOD("get_connected_host"), &StreamPeerTCP::get_connected_host);
 	ClassDB::bind_method(D_METHOD("get_connected_port"), &StreamPeerTCP::get_connected_port);
+	ClassDB::bind_method(D_METHOD("get_local_port"), &StreamPeerTCP::get_local_port);
 	ClassDB::bind_method(D_METHOD("disconnect_from_host"), &StreamPeerTCP::disconnect_from_host);
 	ClassDB::bind_method(D_METHOD("set_no_delay", "enabled"), &StreamPeerTCP::set_no_delay);
 

@@ -54,7 +54,9 @@ private:
 		ERR_NET_WOULD_BLOCK,
 		ERR_NET_IS_CONNECTED,
 		ERR_NET_IN_PROGRESS,
-		ERR_NET_OTHER
+		ERR_NET_ADDRESS_INVALID_OR_UNAVAILABLE,
+		ERR_NET_UNAUTHORIZED,
+		ERR_NET_OTHER,
 	};
 
 	NetError _get_socket_error() const;
@@ -70,7 +72,7 @@ protected:
 public:
 	static void make_default();
 	static void cleanup();
-	static void _set_ip_port(struct sockaddr_storage *p_addr, IP_Address &r_ip, uint16_t &r_port);
+	static void _set_ip_port(struct sockaddr_storage *p_addr, IP_Address *r_ip, uint16_t *r_port);
 	static size_t _set_addr_storage(struct sockaddr_storage *p_addr, const IP_Address &p_ip, uint16_t p_port, IP::Type p_ip_type);
 
 	virtual Error open(Type p_sock_type, IP::Type &ip_type);
@@ -87,6 +89,7 @@ public:
 
 	virtual bool is_open() const;
 	virtual int get_available_bytes() const;
+	virtual Error get_socket_address(IP_Address *r_ip, uint16_t *r_port) const;
 
 	virtual Error set_broadcasting_enabled(bool p_enabled);
 	virtual void set_blocking_enabled(bool p_enabled);

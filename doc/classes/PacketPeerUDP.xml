@@ -28,6 +28,13 @@
 				[b]Note:[/b] Connecting to the remote peer does not help to protect from malicious attacks like IP spoofing, etc. Think about using an encryption technique like SSL or DTLS if you feel like your application is transferring sensitive information.
 			</description>
 		</method>
+		<method name="get_local_port" qualifiers="const">
+			<return type="int">
+			</return>
+			<description>
+				Returns the local port to which this peer is bound.
+			</description>
+		</method>
 		<method name="get_packet_ip" qualifiers="const">
 			<return type="String">
 			</return>
