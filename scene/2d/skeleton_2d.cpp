@@ -186,7 +186,7 @@ void Bone2D::_notification(int p_what) {
 		cache_transform = tmp_trans;
 	}
 	// Bone2D Editor gizmo drawing:
-#ifdef _MSC_VER
+#ifndef _MSC_VER
 #warning TODO Bone2D gizmo drawing needs to be moved to an editor plugin
 #endif
 	else if (p_what == NOTIFICATION_DRAW) {
@@ -677,9 +677,8 @@ void Skeleton2D::_notification(int p_what) {
 			execute_modifications(get_physics_process_delta_time(), SkeletonModificationStack2D::EXECUTION_MODE::execution_mode_physics_process);
 		}
 	}
-
 #ifdef TOOLS_ENABLED
-	if (p_what == NOTIFICATION_DRAW) {
+	else if (p_what == NOTIFICATION_DRAW) {
 		if (Engine::get_singleton()->is_editor_hint()) {
 			if (modification_stack.is_valid()) {
 				modification_stack->draw_editor_gizmos();

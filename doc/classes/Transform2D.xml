@@ -183,6 +183,8 @@
 			<argument index="0" name="index" type="int">
 			</argument>
 			<description>
+			</description>
+		</method>
 		<method name="looking_at">
 			<return type="Transform2D">
 			</return>
