@@ -54,7 +54,9 @@ private:
 		ERR_NET_WOULD_BLOCK,
 		ERR_NET_IS_CONNECTED,
 		ERR_NET_IN_PROGRESS,
-		ERR_NET_OTHER
+		ERR_NET_ADDRESS_INVALID_OR_UNAVAILABLE,
+		ERR_NET_UNAUTHORIZED,
+		ERR_NET_OTHER,
 	};
 
 	NetError _get_socket_error() const;
@@ -87,6 +89,7 @@ public:
 
 	virtual bool is_open() const;
 	virtual int get_available_bytes() const;
+	virtual Error get_socket_address(IP_Address *r_ip, uint16_t *r_port) const;
 
 	virtual Error set_broadcasting_enabled(bool p_enabled);
 	virtual void set_blocking_enabled(bool p_enabled);

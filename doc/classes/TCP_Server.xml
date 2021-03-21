@@ -51,6 +51,13 @@
 				If a connection is available, returns a StreamPeerTCP with the connection.
 			</description>
 		</method>
+		<method name="get_local_port" qualifiers="const">
+			<return type="int">
+			</return>
+			<description>
+				Returns the local port this server is listening to.
+			</description>
+		</method>
 	</methods>
 	<constants>
 	</constants>

@@ -169,6 +169,13 @@
 				Returns the first pending connection (connected to the appropriate address/port). Will return [code]null[/code] if no new connection is available. See also [method is_connection_available], [method PacketPeerUDP.connect_to_host].
 			</description>
 		</method>
+		<method name="get_local_port" qualifiers="const">
+			<return type="int">
+			</return>
+			<description>
+				Returns the local port this server is listening to.
+			</description>
+		</method>
 	</methods>
 	<members>
 		<member name="max_pending_connections" type="int" setter="set_max_pending_connections" getter="get_max_pending_connections" default="16">

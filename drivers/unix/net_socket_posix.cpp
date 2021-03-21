@@ -187,15 +187,21 @@ NetSocketPosix::NetError NetSocketPosix::_get_socket_error() const {
 #if defined(WINDOWS_ENABLED)
 	int err = WSAGetLastError();
 
+	// More into here https://docs.microsoft.com/en-us/windows/win32/winsock/windows-sockets-error-codes-2
 	if (err == WSAEISCONN)
 		return ERR_NET_IS_CONNECTED;
 	if (err == WSAEINPROGRESS || err == WSAEALREADY)
 		return ERR_NET_IN_PROGRESS;
 	if (err == WSAEWOULDBLOCK)
 		return ERR_NET_WOULD_BLOCK;
+	if (err == WSAEADDRINUSE || err == WSAEADDRNOTAVAIL)
+		return ERR_NET_ADDRESS_INVALID_OR_UNAVAILABLE;
+	if (err == WSAEACCES)
+		return ERR_NET_UNAUTHORIZED;
 	print_verbose("Socket error: " + itos(err));
 	return ERR_NET_OTHER;
 #else
+	// More info here https://man7.org/linux/man-pages/man2/bind.2.html
 	if (errno == EISCONN) {
 		return ERR_NET_IS_CONNECTED;
 	}
@@ -204,6 +210,12 @@ NetSocketPosix::NetError NetSocketPosix::_get_socket_error() const {
 	}
 	if (errno == EAGAIN || errno == EWOULDBLOCK) {
 		return ERR_NET_WOULD_BLOCK;
+	}
+	if (errno == EADDRINUSE || errno == EINVAL || errno == EADDRNOTAVAIL) {
+		return ERR_NET_ADDRESS_INVALID_OR_UNAVAILABLE;
+	}
+	if (errno == EACCES) {
+		return ERR_NET_UNAUTHORIZED;
 	}
 	print_verbose("Socket error: " + itos(errno));
 	return ERR_NET_OTHER;
@@ -384,8 +396,8 @@ Error NetSocketPosix::bind(IP_Address p_addr, uint16_t p_port) {
 	size_t addr_size = _set_addr_storage(&addr, p_addr, p_port, _ip_type);
 
 	if (::bind(_sock, (struct sockaddr *)&addr, addr_size) != 0) {
-		_get_socket_error();
-		print_verbose("Failed to bind socket.");
+		NetError err = _get_socket_error();
+		print_verbose("Failed to bind socket with error '" + String::num_int64(err) + "'.");
 		close();
 		return ERR_UNAVAILABLE;
 	}
@@ -714,6 +726,28 @@ int NetSocketPosix::get_available_bytes() const {
 		return -1;
 	}
 	return len;
+}
+
+Error NetSocketPosix::get_socket_address(IP_Address *r_ip, uint16_t *r_port) const {
+	IP_Address temp_ip;
+	uint16_t temp_port;
+
+	IP_Address &ip_ref = r_ip != nullptr ? *r_ip : temp_ip;
+	uint16_t &port_ref = r_port != nullptr ? *r_port : temp_port;
+
+	ip_ref.clear();
+	port_ref = 0;
+	ERR_FAIL_COND_V(!is_open(), FAILED);
+
+	struct sockaddr_storage saddr;
+	socklen_t len = sizeof(saddr);
+	if (getsockname(_sock, (struct sockaddr *)&saddr, &len) == -1) {
+		print_verbose("Error when checking local socket address.");
+		return FAILED;
+	}
+
+	_set_ip_port(&saddr, ip_ref, port_ref);
+	return OK;
 }
 
 Ref<NetSocket> NetSocketPosix::accept(IP_Address &r_ip, uint16_t &r_port) {

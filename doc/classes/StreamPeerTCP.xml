@@ -16,8 +16,10 @@
 			</argument>
 			<argument index="1" name="port" type="int">
 			</argument>
+			<argument index="2" name="local_port" type="int" default="0">
+			</argument>
 			<description>
-				Connects to the specified [code]host:port[/code] pair. A hostname will be resolved if valid. Returns [constant OK] on success or [constant FAILED] on failure.
+				Connects to the specified [code]host:port[/code] pair. A hostname will be resolved if valid. Returns [constant OK] on success or [constant FAILED] on failure. If [code]local_port[/code] is specified, the provided port will be used as source of the connection, otherwise a port number from the ephemeral port range will be provided; this is useful for some NAT traversal techniques.
 			</description>
 		</method>
 		<method name="disconnect_from_host">
@@ -63,6 +65,13 @@
 			<description>
 				Disables Nagle's algorithm to improve latency for small packets.
 				[b]Note:[/b] For applications that send large packets or need to transfer a lot of data, this can decrease the total available bandwidth.
+			</description>
+		</method>
+		<method name="get_local_port" qualifiers="const">
+			<return type="int">
+			</return>
+			<description>
+				Returns the local port of this peer.
 			</description>
 		</method>
 	</methods>

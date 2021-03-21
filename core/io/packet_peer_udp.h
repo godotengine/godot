@@ -78,11 +78,12 @@ public:
 	Error connect_shared_socket(Ref<NetSocket> p_sock, IP_Address p_ip, uint16_t p_port, UDPServer *ref); // Used by UDPServer
 	void disconnect_shared_socket(); // Used by UDPServer
 	Error store_packet(IP_Address p_ip, uint32_t p_port, uint8_t *p_buf, int p_buf_size); // Used internally and by UDPServer
-	Error connect_to_host(const IP_Address &p_host, int p_port);
+	Error connect_to_host(const IP_Address &p_host, int p_port, int p_local_port = 0);
 	bool is_connected_to_host() const;
 
 	IP_Address get_packet_address() const;
 	int get_packet_port() const;
+	int get_local_port() const;
 	void set_dest_address(const IP_Address &p_address, int p_port);
 
 	Error put_packet(const uint8_t *p_buffer, int p_buffer_size) override;

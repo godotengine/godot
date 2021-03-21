@@ -23,8 +23,10 @@
 			</argument>
 			<argument index="1" name="port" type="int">
 			</argument>
+			<argument index="2" name="local_port" type="int" default="0">
+			</argument>
 			<description>
-				Calling this method connects this UDP peer to the given [code]host[/code]/[code]port[/code] pair. UDP is in reality connectionless, so this option only means that incoming packets from different addresses are automatically discarded, and that outgoing packets are always sent to the connected address (future calls to [method set_dest_address] are not allowed). This method does not send any data to the remote peer, to do that, use [method PacketPeer.put_var] or [method PacketPeer.put_packet] as usual. See also [UDPServer].
+				Calling this method connects this UDP peer to the given [code]host[/code]/[code]port[/code] pair. UDP is in reality connectionless, so this option only means that incoming packets from different addresses are automatically discarded, and that outgoing packets are always sent to the connected address (future calls to [method set_dest_address] are not allowed). This method does not send any data to the remote peer, to do that, use [method PacketPeer.put_var] or [method PacketPeer.put_packet] as usual. See also [UDPServer]. If [code]local_port[/code] is specified, the provided port will be used as source of the connection, otherwise a port number from the ephemeral port range will be provided; this is useful for some NAT traversal techniques.
 				[b]Note:[/b] Connecting to the remote peer does not help to protect from malicious attacks like IP spoofing, etc. Think about using an encryption technique like SSL or DTLS if you feel like your application is transferring sensitive information.
 			</description>
 		</method>
@@ -154,6 +156,13 @@
 		}
 		[/csharp]
 		[/codeblocks]
+			</description>
+		</method>
+		<method name="get_local_port" qualifiers="const">
+			<return type="int">
+			</return>
+			<description>
+				Returns the local port of this peer.
 			</description>
 		</method>
 	</methods>

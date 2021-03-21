@@ -162,6 +162,7 @@ int PacketPeerUDP::get_max_packet_size() const {
 Error PacketPeerUDP::listen(int p_port, const IP_Address &p_bind_address, int p_recv_buffer_size) {
 	ERR_FAIL_COND_V(!_sock.is_valid(), ERR_UNAVAILABLE);
 	ERR_FAIL_COND_V(_sock->is_open(), ERR_ALREADY_IN_USE);
+	ERR_FAIL_COND_V(p_port < 0 || p_port > 65535, ERR_INVALID_PARAMETER);
 	ERR_FAIL_COND_V(!p_bind_address.is_valid() && !p_bind_address.is_wildcard(), ERR_INVALID_PARAMETER);
 
 	Error err;
@@ -206,10 +207,12 @@ void PacketPeerUDP::disconnect_shared_socket() {
 	close();
 }
 
-Error PacketPeerUDP::connect_to_host(const IP_Address &p_host, int p_port) {
+Error PacketPeerUDP::connect_to_host(const IP_Address &p_host, int p_port, int p_local_port) {
 	ERR_FAIL_COND_V(udp_server, ERR_LOCKED);
 	ERR_FAIL_COND_V(!_sock.is_valid(), ERR_UNAVAILABLE);
 	ERR_FAIL_COND_V(!p_host.is_valid(), ERR_INVALID_PARAMETER);
+	ERR_FAIL_COND_V_MSG(p_port < 0 || p_port > 65535, ERR_INVALID_PARAMETER, "The server port number must be between 0 and 65535 (inclusive).");
+	ERR_FAIL_COND_V_MSG(p_local_port < 0 || p_local_port > 65535, ERR_INVALID_PARAMETER, "The local port number must be between 0 and 65535 (inclusive).");
 
 	Error err;
 
@@ -218,6 +221,12 @@ Error PacketPeerUDP::connect_to_host(const IP_Address &p_host, int p_port) {
 		err = _sock->open(NetSocket::TYPE_UDP, ip_type);
 		ERR_FAIL_COND_V(err != OK, ERR_CANT_OPEN);
 		_sock->set_blocking_enabled(false);
+	}
+
+	if (_sock->bind(IP_Address("*"), p_local_port) != OK) {
+		ERR_PRINT("Failed to bind socket.");
+		_sock->close();
+		return FAILED;
 	}
 
 	err = _sock->connect_to_host(p_host, p_port);
@@ -328,6 +337,12 @@ int PacketPeerUDP::get_packet_port() const {
 	return packet_port;
 }
 
+int PacketPeerUDP::get_local_port() const {
+	uint16_t local_port;
+	_sock->get_socket_address(nullptr, &local_port);
+	return local_port;
+}
+
 void PacketPeerUDP::set_dest_address(const IP_Address &p_address, int p_port) {
 	ERR_FAIL_COND_MSG(connected, "Destination address cannot be set for connected sockets");
 	peer_addr = p_address;
@@ -339,10 +354,11 @@ void PacketPeerUDP::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("close"), &PacketPeerUDP::close);
 	ClassDB::bind_method(D_METHOD("wait"), &PacketPeerUDP::wait);
 	ClassDB::bind_method(D_METHOD("is_listening"), &PacketPeerUDP::is_listening);
-	ClassDB::bind_method(D_METHOD("connect_to_host", "host", "port"), &PacketPeerUDP::connect_to_host);
+	ClassDB::bind_method(D_METHOD("connect_to_host", "host", "port", "local_port"), &PacketPeerUDP::connect_to_host, DEFVAL(0));
 	ClassDB::bind_method(D_METHOD("is_connected_to_host"), &PacketPeerUDP::is_connected_to_host);
 	ClassDB::bind_method(D_METHOD("get_packet_ip"), &PacketPeerUDP::_get_packet_ip);
 	ClassDB::bind_method(D_METHOD("get_packet_port"), &PacketPeerUDP::get_packet_port);
+	ClassDB::bind_method(D_METHOD("get_local_port"), &PacketPeerUDP::get_local_port);
 	ClassDB::bind_method(D_METHOD("set_dest_address", "host", "port"), &PacketPeerUDP::_set_dest_address);
 	ClassDB::bind_method(D_METHOD("set_broadcast_enabled", "enabled"), &PacketPeerUDP::set_broadcast_enabled);
 	ClassDB::bind_method(D_METHOD("join_multicast_group", "multicast_address", "interface_name"), &PacketPeerUDP::join_multicast_group);
