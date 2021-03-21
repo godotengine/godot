@@ -32,11 +32,11 @@
 
 class Window;
 
-class FloatingWindow: public Window {
+class FloatingWindow : public Window {
 	GDCLASS(FloatingWindow, Window);
 
-	protected:
-		void _notification(int p_what);
+protected:
+	void _notification(int p_what);
 
 	void _on_window_event(const Ref<InputEvent> &p_event);
 };

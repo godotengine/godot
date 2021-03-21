@@ -29,7 +29,6 @@
 /*************************************************************************/
 
 #include "editor_node.h"
-#include "floating_window.h"
 #include "core/config/project_settings.h"
 #include "core/core_bind.h"
 #include "core/input/input.h"
@@ -47,6 +46,7 @@
 #include "core/string/print_string.h"
 #include "core/string/translation.h"
 #include "core/version.h"
+#include "floating_window.h"
 #include "main/main.h"
 #include "scene/gui/center_container.h"
 #include "scene/gui/control.h"
@@ -389,7 +389,6 @@ void EditorNode::_update_title() {
 
 	DisplayServer::get_singleton()->window_set_title(title);
 }
-
 
 void EditorNode::_unhandled_input(const Ref<InputEvent> &p_event) {
 	Ref<InputEventKey> k = p_event;
