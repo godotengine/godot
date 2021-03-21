@@ -1662,17 +1662,15 @@ void Control::set_global_position(const Point2 &p_point, bool p_keep_offsets) {
 
 void Control::_compute_anchors(Rect2 p_rect, const float p_offsets[4], float (&r_anchors)[4]) {
 	Size2 parent_rect_size = get_parent_anchorable_rect().size;
-	ERR_FAIL_COND(parent_rect_size.x == 0.0);
-	ERR_FAIL_COND(parent_rect_size.y == 0.0);
 
 	float x = p_rect.position.x;
 	if (is_layout_rtl()) {
 		x = parent_rect_size.x - x - p_rect.size.x;
 	}
-	r_anchors[0] = (x - p_offsets[0]) / parent_rect_size.x;
-	r_anchors[1] = (p_rect.position.y - p_offsets[1]) / parent_rect_size.y;
-	r_anchors[2] = (x + p_rect.size.x - p_offsets[2]) / parent_rect_size.x;
-	r_anchors[3] = (p_rect.position.y + p_rect.size.y - p_offsets[3]) / parent_rect_size.y;
+	r_anchors[0] = (parent_rect_size.x == 0) ? 0.0 : (x - p_offsets[0]) / parent_rect_size.x;
+	r_anchors[1] = (parent_rect_size.y == 0) ? 0.0 : (p_rect.position.y - p_offsets[1]) / parent_rect_size.y;
+	r_anchors[2] = (parent_rect_size.x == 0) ? 0.0 : (x + p_rect.size.x - p_offsets[2]) / parent_rect_size.x;
+	r_anchors[3] = (parent_rect_size.y == 0) ? 0.0 : (p_rect.position.y + p_rect.size.y - p_offsets[3]) / parent_rect_size.y;
 }
 
 void Control::_compute_offsets(Rect2 p_rect, const float p_anchors[4], float (&r_offsets)[4]) {
