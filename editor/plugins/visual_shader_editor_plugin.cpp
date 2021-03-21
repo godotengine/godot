@@ -39,6 +39,7 @@
 #include "editor/editor_log.h"
 #include "editor/editor_properties.h"
 #include "editor/editor_scale.h"
+#include "editor/floating_window.h"
 #include "scene/animation/animation_player.h"
 #include "scene/gui/menu_button.h"
 #include "scene/gui/panel.h"
@@ -3421,7 +3422,7 @@ VisualShaderEditor::VisualShaderEditor() {
 	// PREVIEW WINDOW
 	///////////////////////////////////////
 
-	preview_window = memnew(Window);
+	preview_window = memnew(FloatingWindow);
 	preview_window->set_title(TTR("Generated shader code"));
 	preview_window->set_visible(preview_showed);
 	preview_window->connect("close_requested", callable_mp(this, &VisualShaderEditor::_preview_close_requested));
