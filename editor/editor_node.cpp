@@ -29,10 +29,10 @@
 /*************************************************************************/
 
 #include "editor_node.h"
+
 #include "core/config/project_settings.h"
 #include "core/core_bind.h"
 #include "core/input/input.h"
-#include "core/input/input_event.h"
 #include "core/io/config_file.h"
 #include "core/io/image_loader.h"
 #include "core/io/resource_loader.h"
@@ -6028,6 +6028,7 @@ EditorNode::EditorNode() {
 	dock_float->set_focus_mode(Control::FOCUS_NONE);
 	dock_float->set_h_size_flags(Control::SIZE_SHRINK_CENTER);
 	dock_float->connect("pressed", callable_mp(this, &EditorNode::_dock_make_float));
+
 	dock_vb->add_child(dock_float);
 
 	dock_select_popup->set_as_minsize();
