@@ -80,6 +80,7 @@ public:
 	Error store_packet(IP_Address p_ip, uint32_t p_port, uint8_t *p_buf, int p_buf_size); // Used internally and by UDPServer
 	Error connect_to_host(const IP_Address &p_host, int p_port, int p_local_port = 0);
 	bool is_connected_to_host() const;
+	Error get_socket_address(IP_Address *r_ip, uint16_t *r_port) const;
 
 	IP_Address get_packet_address() const;
 	int get_packet_port() const;

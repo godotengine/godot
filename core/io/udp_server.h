@@ -64,6 +64,7 @@ public:
 	void remove_peer(IP_Address p_ip, int p_port);
 	Error listen(uint16_t p_port, const IP_Address &p_bind_address = IP_Address("*"));
 	Error poll();
+	Error get_socket_address(IP_Address *r_ip, uint16_t *r_port) const;
 	int get_local_port() const;
 	bool is_listening() const;
 	bool is_connection_available() const;

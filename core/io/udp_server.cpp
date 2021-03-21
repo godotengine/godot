@@ -117,6 +117,10 @@ Error UDPServer::listen(uint16_t p_port, const IP_Address &p_bind_address) {
 	return OK;
 }
 
+Error UDPServer::get_socket_address(IP_Address *r_ip, uint16_t *r_port) const {
+	return _sock->get_socket_address(r_ip, r_port);
+}
+
 int UDPServer::get_local_port() const {
 	uint16_t local_port;
 	_sock->get_socket_address(nullptr, &local_port);

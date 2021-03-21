@@ -46,6 +46,7 @@
 class ENetGodotSocket {
 public:
 	virtual Error bind(IP_Address p_ip, uint16_t p_port) = 0;
+	virtual Error get_socket_address(IP_Address *r_ip, uint16_t *r_port) = 0;
 	virtual Error sendto(const uint8_t *p_buffer, int p_len, int &r_sent, IP_Address p_ip, uint16_t p_port) = 0;
 	virtual Error recvfrom(uint8_t *p_buffer, int p_len, int &r_read, IP_Address &r_ip, uint16_t &r_port) = 0;
 	virtual int set_option(ENetSocketOption p_option, int p_value) = 0;
@@ -84,6 +85,10 @@ public:
 		port = p_port;
 		bound = true;
 		return sock->bind(address, port);
+	}
+
+	Error get_socket_address(IP_Address *r_ip, uint16_t *r_port) {
+		return sock->get_socket_address(r_ip, r_port);
 	}
 
 	Error sendto(const uint8_t *p_buffer, int p_len, int &r_sent, IP_Address p_ip, uint16_t p_port) {
@@ -175,6 +180,10 @@ public:
 		return udp->listen(p_port, p_ip);
 	}
 
+	Error get_socket_address(IP_Address *r_ip, uint16_t *r_port) {
+		return udp->get_socket_address(r_ip, r_port);
+	}
+
 	Error sendto(const uint8_t *p_buffer, int p_len, int &r_sent, IP_Address p_ip, uint16_t p_port) {
 		if (!connected) {
 			udp->connect_to_host(p_ip, p_port);
@@ -255,6 +264,10 @@ public:
 
 	Error bind(IP_Address p_ip, uint16_t p_port) {
 		return udp_server->listen(p_port, p_ip);
+	}
+
+	Error get_socket_address(IP_Address *r_ip, uint16_t *r_port) {
+		return udp_server->get_socket_address(r_ip, r_port);
 	}
 
 	Error sendto(const uint8_t *p_buffer, int p_len, int &r_sent, IP_Address p_ip, uint16_t p_port) {
@@ -493,13 +506,24 @@ int enet_socket_receive(ENetSocket socket, ENetAddress *address, ENetBuffer *buf
 	return read;
 }
 
+int enet_socket_get_address (ENetSocket socket, ENetAddress * address) {
+	IP_Address ip;
+	uint16_t port;
+	ENetGodotSocket *sock = (ENetGodotSocket *)socket;
+	
+	if (sock->get_socket_address(&ip, &port) != OK) {
+		return -1;
+	}
+
+	enet_address_set_ip(address, ip.get_ipv6(), 16);
+	address->port = port;
+
+	return 0;
+}
+
 // Not implemented
 int enet_socket_wait(ENetSocket socket, enet_uint32 *condition, enet_uint32 timeout) {
 	return 0; // do we need this function?
-}
-
-int enet_socket_get_address(ENetSocket socket, ENetAddress *address) {
-	return -1; // do we need this function?
 }
 
 int enet_socketset_select(ENetSocket maxSocket, ENetSocketSet *readSet, ENetSocketSet *writeSet, enet_uint32 timeout) {

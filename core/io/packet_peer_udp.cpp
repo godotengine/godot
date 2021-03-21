@@ -349,6 +349,10 @@ void PacketPeerUDP::set_dest_address(const IP_Address &p_address, int p_port) {
 	peer_port = p_port;
 }
 
+Error PacketPeerUDP::get_socket_address(IP_Address *r_ip, uint16_t *r_port) const {
+	return _sock->get_socket_address(r_ip, r_port);
+}
+
 void PacketPeerUDP::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("listen", "port", "bind_address", "recv_buf_size"), &PacketPeerUDP::listen, DEFVAL("*"), DEFVAL(65536));
 	ClassDB::bind_method(D_METHOD("close"), &PacketPeerUDP::close);
