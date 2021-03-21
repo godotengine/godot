@@ -33,6 +33,7 @@
 #include "core/config/project_settings.h"
 #include "core/core_bind.h"
 #include "core/input/input.h"
+#include "core/input/input_event.h"
 #include "core/io/config_file.h"
 #include "core/io/image_loader.h"
 #include "core/io/resource_loader.h"
@@ -388,6 +389,32 @@ void EditorNode::_update_title() {
 
 	DisplayServer::get_singleton()->window_set_title(title);
 }
+
+void EditorNode::_on_window_event(const Ref<InputEvent> &p_event, Control *dock) {
+	bool single_window_mode = EditorSettings::get_singleton()->get_setting(
+			"interface/editor/single_window_mode");
+	if (single_window_mode) {
+		Window *window = (Window *)dock->get_parent()->get_parent();
+		gui_base = get_gui_base();
+		Size2 size = gui_base->get_size();
+		print_line("Window size:");
+		print_line(window->get_position());
+		print_line("Gui base size:");
+		print_line(size);
+		Vector2 window_position = window->get_position();
+		Rect2 window_size = window->get_visible_rect();
+		if (size.x < (window_position.x + window_size.size.x)) {
+			window->set_position(Vector2((size.x - window_size.size.x), window_position.y));
+		} else if (window_position.x < 0) {
+			window->set_position(Vector2(0, window_position.y));
+		}
+		if (window_position.y < 0) {
+			window->set_position(Vector2(window_position.x, 20));
+		} else if (size.y < window_position.y) {
+			window->set_position(Vector2(window_position.x, size.y));
+		}
+	}
+};
 
 void EditorNode::_unhandled_input(const Ref<InputEvent> &p_event) {
 	Ref<InputEventKey> k = p_event;
@@ -4119,6 +4146,7 @@ void EditorNode::_dock_make_float() {
 	window->set_position(dock_screen_pos);
 	window->set_transient(true);
 	window->connect("close_requested", callable_mp(this, &EditorNode::_dock_floating_close_request), varray(dock));
+	window->connect("window_input", callable_mp(this, &EditorNode::_on_window_event), varray(dock));
 	window->set_meta("dock_slot", dock_popup_selected);
 	window->set_meta("dock_index", dock_index);
 	gui_base->add_child(window);
@@ -6027,7 +6055,6 @@ EditorNode::EditorNode() {
 	dock_float->set_focus_mode(Control::FOCUS_NONE);
 	dock_float->set_h_size_flags(Control::SIZE_SHRINK_CENTER);
 	dock_float->connect("pressed", callable_mp(this, &EditorNode::_dock_make_float));
-
 	dock_vb->add_child(dock_float);
 
 	dock_select_popup->set_as_minsize();

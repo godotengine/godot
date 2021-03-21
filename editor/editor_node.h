@@ -513,6 +513,8 @@ private:
 
 	bool convert_old;
 
+	void _on_window_event(const Ref<InputEvent> &p_event, Control *dock);
+
 	void _unhandled_input(const Ref<InputEvent> &p_event);
 
 	static void _load_error_notify(void *p_ud, const String &p_text);
