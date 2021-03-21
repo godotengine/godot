@@ -101,47 +101,67 @@ void AnimationTrackEditColor::draw_key_link(int p_index, float p_pixels_sec, int
 	int font_size = get_theme_font_size("font_size", "Label");
 	int fh = (font->get_height(font_size) * 0.8);
 
+	fh /= 3;
+
 	int x_from = p_x + fh / 2 - 1;
 	int x_to = p_next_x - fh / 2 + 1;
-	fh /= 3;
+	x_from = MAX(x_from, p_clip_left);
+	x_to = MIN(x_to, p_clip_right);
+
+	int y_from = (get_size().height - fh) / 2;
 
 	if (x_from > p_clip_right || x_to < p_clip_left) {
 		return;
 	}
 
-	Color color = get_animation()->track_get_key_value(get_track(), p_index);
-	Color color_next = get_animation()->track_get_key_value(get_track(), p_index + 1);
+	Vector<Color> color_samples;
+	color_samples.append(get_animation()->track_get_key_value(get_track(), p_index));
 
-	if (x_from < p_clip_left) {
-		float c = float(p_clip_left - x_from) / (x_to - x_from);
-		color = color.lerp(color_next, c);
-		x_from = p_clip_left;
+	if (get_animation()->track_get_type(get_track()) == Animation::TYPE_VALUE) {
+		if (get_animation()->track_get_interpolation_type(get_track()) != Animation::INTERPOLATION_NEAREST &&
+				(get_animation()->value_track_get_update_mode(get_track()) == Animation::UPDATE_CONTINUOUS ||
+						get_animation()->value_track_get_update_mode(get_track()) == Animation::UPDATE_CAPTURE) &&
+				!Math::is_zero_approx(get_animation()->track_get_key_transition(get_track(), p_index))) {
+			float start_time = get_animation()->track_get_key_time(get_track(), p_index);
+			float end_time = get_animation()->track_get_key_time(get_track(), p_index + 1);
+
+			Color color_next = get_animation()->value_track_interpolate(get_track(), end_time);
+
+			if (!color_samples[0].is_equal_approx(color_next)) {
+				color_samples.resize(1 + (x_to - x_from) / 64); // Make a color sample every 64 px.
+				for (int i = 1; i < color_samples.size(); i++) {
+					float j = i;
+					color_samples.write[i] = get_animation()->value_track_interpolate(
+							get_track(),
+							Math::lerp(start_time, end_time, j / color_samples.size()));
+				}
+			}
+			color_samples.append(color_next);
+		} else {
+			color_samples.append(color_samples[0]);
+		}
+	} else {
+		color_samples.append(get_animation()->track_get_key_value(get_track(), p_index + 1));
 	}
 
-	if (x_to > p_clip_right) {
-		float c = float(p_clip_right - x_from) / (x_to - x_from);
-		color_next = color.lerp(color_next, c);
-		x_to = p_clip_right;
+	for (int i = 0; i < color_samples.size() - 1; i++) {
+		Vector<Vector2> points;
+		Vector<Color> colors;
+
+		points.push_back(Vector2(Math::lerp(x_from, x_to, float(i) / (color_samples.size() - 1)), y_from));
+		colors.push_back(color_samples[i]);
+
+		points.push_back(Vector2(Math::lerp(x_from, x_to, float(i + 1) / (color_samples.size() - 1)), y_from));
+		colors.push_back(color_samples[i + 1]);
+
+		points.push_back(Vector2(Math::lerp(x_from, x_to, float(i + 1) / (color_samples.size() - 1)), y_from + fh));
+		colors.push_back(color_samples[i + 1]);
+
+		points.push_back(Vector2(Math::lerp(x_from, x_to, float(i) / (color_samples.size() - 1)), y_from + fh));
+		colors.push_back(color_samples[i]);
+
+		draw_primitive(points, colors, Vector<Vector2>());
 	}
-
-	int y_from = (get_size().height - fh) / 2;
-
-	Vector<Vector2> points;
-	Vector<Color> colors;
-
-	points.push_back(Vector2(x_from, y_from));
-	colors.push_back(color);
-
-	points.push_back(Vector2(x_to, y_from));
-	colors.push_back(color_next);
-
-	points.push_back(Vector2(x_to, y_from + fh));
-	colors.push_back(color_next);
-
-	points.push_back(Vector2(x_from, y_from + fh));
-	colors.push_back(color);
-
-	draw_primitive(points, colors, Vector<Vector2>());
 }
 
 void AnimationTrackEditColor::draw_key(int p_index, float p_pixels_sec, int p_x, bool p_selected, int p_clip_left, int p_clip_right) {
