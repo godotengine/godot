@@ -378,9 +378,9 @@ void AnimationNodeStateMachineEditor::_state_machine_gui_input(const Ref<InputEv
 
 		if (over_text != over_text_now) {
 			if (over_text_now) {
-				state_machine_draw->set_default_cursor_shape(CURSOR_IBEAM);
+				state_machine_draw->set_mouse_default_cursor_shape(CURSOR_IBEAM);
 			} else {
-				state_machine_draw->set_default_cursor_shape(CURSOR_ARROW);
+				state_machine_draw->set_mouse_default_cursor_shape(CURSOR_ARROW);
 			}
 
 			over_text = over_text_now;
@@ -582,7 +582,7 @@ void AnimationNodeStateMachineEditor::_state_machine_draw() {
 	}
 
 	if (state_machine_draw->has_focus()) {
-		state_machine_draw->draw_rect(Rect2(Point2(), state_machine_draw->get_size()), accent, false);
+		state_machine_draw->draw_rect(Rect2(Point2(), state_machine_draw->get_rect_size()), accent, false);
 	}
 	int sep = 3 * EDSCALE;
 
@@ -801,19 +801,19 @@ void AnimationNodeStateMachineEditor::_state_machine_draw() {
 		}
 	}
 
-	scroll_range.position -= state_machine_draw->get_size();
-	scroll_range.size += state_machine_draw->get_size() * 2.0;
+	scroll_range.position -= state_machine_draw->get_rect_size();
+	scroll_range.size += state_machine_draw->get_rect_size() * 2.0;
 
 	//adjust scrollbars
 	updating = true;
 	h_scroll->set_min(scroll_range.position.x);
 	h_scroll->set_max(scroll_range.position.x + scroll_range.size.x);
-	h_scroll->set_page(state_machine_draw->get_size().x);
+	h_scroll->set_page(state_machine_draw->get_rect_size().x);
 	h_scroll->set_value(state_machine->get_graph_offset().x);
 
 	v_scroll->set_min(scroll_range.position.y);
 	v_scroll->set_max(scroll_range.position.y + scroll_range.size.y);
-	v_scroll->set_page(state_machine_draw->get_size().y);
+	v_scroll->set_page(state_machine_draw->get_rect_size().y);
 	v_scroll->set_value(state_machine->get_graph_offset().y);
 	updating = false;
 
@@ -1278,9 +1278,9 @@ AnimationNodeStateMachineEditor::AnimationNodeStateMachineEditor() {
 	top_hb->add_child(play_mode);
 
 	panel = memnew(PanelContainer);
-	panel->set_clip_contents(true);
+	panel->set_rect_clip_contents(true);
 	add_child(panel);
-	panel->set_v_size_flags(SIZE_EXPAND_FILL);
+	panel->set_size_flags_vertical(SIZE_EXPAND_FILL);
 
 	state_machine_draw = memnew(Control);
 	panel->add_child(state_machine_draw);
@@ -1302,7 +1302,7 @@ AnimationNodeStateMachineEditor::AnimationNodeStateMachineEditor() {
 	h_scroll = memnew(HScrollBar);
 	state_machine_draw->add_child(h_scroll);
 	h_scroll->set_anchors_and_offsets_preset(PRESET_BOTTOM_WIDE);
-	h_scroll->set_offset(SIDE_RIGHT, -v_scroll->get_size().x * EDSCALE);
+	h_scroll->set_offset(SIDE_RIGHT, -v_scroll->get_rect_size().x * EDSCALE);
 	h_scroll->connect("value_changed", callable_mp(this, &AnimationNodeStateMachineEditor::_scroll_changed));
 
 	error_panel = memnew(PanelContainer);
@@ -1313,7 +1313,7 @@ AnimationNodeStateMachineEditor::AnimationNodeStateMachineEditor() {
 
 	undo_redo = EditorNode::get_undo_redo();
 
-	set_custom_minimum_size(Size2(0, 300 * EDSCALE));
+	set_rect_minimum_size(Size2(0, 300 * EDSCALE));
 
 	menu = memnew(PopupMenu);
 	add_child(menu);

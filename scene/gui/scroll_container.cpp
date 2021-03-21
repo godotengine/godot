@@ -248,11 +248,11 @@ void ScrollContainer::_ensure_focused_visible(Control *p_control) {
 		Rect2 other_rect = p_control->get_global_rect();
 		float right_margin = 0.0;
 		if (v_scroll->is_visible()) {
-			right_margin += v_scroll->get_size().x;
+			right_margin += v_scroll->get_rect_size().x;
 		}
 		float bottom_margin = 0.0;
 		if (h_scroll->is_visible()) {
-			bottom_margin += h_scroll->get_size().y;
+			bottom_margin += h_scroll->get_rect_size().y;
 		}
 
 		float diff = MAX(MIN(other_rect.position.y, global_rect.position.y), other_rect.position.y + other_rect.size.y - global_rect.size.y + bottom_margin);
@@ -268,7 +268,7 @@ void ScrollContainer::_ensure_focused_visible(Control *p_control) {
 
 void ScrollContainer::_update_dimensions() {
 	child_max_size = Size2(0, 0);
-	Size2 size = get_size();
+	Size2 size = get_rect_size();
 	Point2 ofs;
 
 	Ref<StyleBox> sb = get_theme_stylebox("bg");
@@ -300,17 +300,17 @@ void ScrollContainer::_update_dimensions() {
 		child_max_size.y = MAX(child_max_size.y, minsize.y);
 
 		Rect2 r = Rect2(-scroll, minsize);
-		if (!scroll_h || (!h_scroll->is_visible_in_tree() && c->get_h_size_flags() & SIZE_EXPAND)) {
+		if (!scroll_h || (!h_scroll->is_visible_in_tree() && c->get_size_flags_horizontal() & SIZE_EXPAND)) {
 			r.position.x = 0;
-			if (c->get_h_size_flags() & SIZE_EXPAND) {
+			if (c->get_size_flags_horizontal() & SIZE_EXPAND) {
 				r.size.width = MAX(size.width, minsize.width);
 			} else {
 				r.size.width = minsize.width;
 			}
 		}
-		if (!scroll_v || (!v_scroll->is_visible_in_tree() && c->get_v_size_flags() & SIZE_EXPAND)) {
+		if (!scroll_v || (!v_scroll->is_visible_in_tree() && c->get_size_flags_vertical() & SIZE_EXPAND)) {
 			r.position.y = 0;
-			if (c->get_v_size_flags() & SIZE_EXPAND) {
+			if (c->get_size_flags_vertical() & SIZE_EXPAND) {
 				r.size.height = MAX(size.height, minsize.height);
 			} else {
 				r.size.height = minsize.height;
@@ -344,7 +344,7 @@ void ScrollContainer::_notification(int p_what) {
 
 	if (p_what == NOTIFICATION_DRAW) {
 		Ref<StyleBox> sb = get_theme_stylebox("bg");
-		draw_style_box(sb, Rect2(Vector2(), get_size()));
+		draw_style_box(sb, Rect2(Vector2(), get_rect_size()));
 
 		update_scrollbars();
 	}
@@ -419,7 +419,7 @@ void ScrollContainer::_notification(int p_what) {
 };
 
 void ScrollContainer::update_scrollbars() {
-	Size2 size = get_size();
+	Size2 size = get_rect_size();
 	Ref<StyleBox> sb = get_theme_stylebox("bg");
 	size -= sb->get_minimum_size();
 
@@ -626,5 +626,5 @@ ScrollContainer::ScrollContainer() {
 
 	deadzone = GLOBAL_GET("gui/common/default_scroll_deadzone");
 
-	set_clip_contents(true);
+	set_rect_clip_contents(true);
 };

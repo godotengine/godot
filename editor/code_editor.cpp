@@ -93,7 +93,7 @@ void FindReplaceBar::_notification(int p_what) {
 		hide_button->set_normal_texture(get_theme_icon("Close", "EditorIcons"));
 		hide_button->set_hover_texture(get_theme_icon("Close", "EditorIcons"));
 		hide_button->set_pressed_texture(get_theme_icon("Close", "EditorIcons"));
-		hide_button->set_custom_minimum_size(hide_button->get_normal_texture()->get_size());
+		hide_button->set_rect_minimum_size(hide_button->get_normal_texture()->get_size());
 	} else if (p_what == NOTIFICATION_VISIBILITY_CHANGED) {
 		set_process_unhandled_input(is_visible_in_tree());
 	} else if (p_what == EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED) {
@@ -102,7 +102,7 @@ void FindReplaceBar::_notification(int p_what) {
 		hide_button->set_normal_texture(get_theme_icon("Close", "EditorIcons"));
 		hide_button->set_hover_texture(get_theme_icon("Close", "EditorIcons"));
 		hide_button->set_pressed_texture(get_theme_icon("Close", "EditorIcons"));
-		hide_button->set_custom_minimum_size(hide_button->get_normal_texture()->get_size());
+		hide_button->set_rect_minimum_size(hide_button->get_normal_texture()->get_size());
 	} else if (p_what == NOTIFICATION_THEME_CHANGED) {
 		matches_label->add_theme_color_override("font_color", results_count > 0 ? get_theme_color("font_color", "Label") : get_theme_color("error_color", "Editor"));
 	}
@@ -606,7 +606,7 @@ FindReplaceBar::FindReplaceBar() {
 	vbc_lineedit = memnew(VBoxContainer);
 	add_child(vbc_lineedit);
 	vbc_lineedit->set_alignment(ALIGN_CENTER);
-	vbc_lineedit->set_h_size_flags(SIZE_EXPAND_FILL);
+	vbc_lineedit->set_size_flags_horizontal(SIZE_EXPAND_FILL);
 	VBoxContainer *vbc_button = memnew(VBoxContainer);
 	add_child(vbc_button);
 	VBoxContainer *vbc_option = memnew(VBoxContainer);
@@ -627,7 +627,7 @@ FindReplaceBar::FindReplaceBar() {
 	// search toolbar
 	search_text = memnew(LineEdit);
 	vbc_lineedit->add_child(search_text);
-	search_text->set_custom_minimum_size(Size2(100 * EDSCALE, 0));
+	search_text->set_rect_minimum_size(Size2(100 * EDSCALE, 0));
 	search_text->connect("text_changed", callable_mp(this, &FindReplaceBar::_search_text_changed));
 	search_text->connect("text_entered", callable_mp(this, &FindReplaceBar::_search_text_entered));
 
@@ -662,7 +662,7 @@ FindReplaceBar::FindReplaceBar() {
 	// replace toolbar
 	replace_text = memnew(LineEdit);
 	vbc_lineedit->add_child(replace_text);
-	replace_text->set_custom_minimum_size(Size2(100 * EDSCALE, 0));
+	replace_text->set_rect_minimum_size(Size2(100 * EDSCALE, 0));
 	replace_text->connect("text_entered", callable_mp(this, &FindReplaceBar::_replace_text_entered));
 
 	replace = memnew(Button);
@@ -685,7 +685,7 @@ FindReplaceBar::FindReplaceBar() {
 	add_child(hide_button);
 	hide_button->set_focus_mode(FOCUS_NONE);
 	hide_button->connect("pressed", callable_mp(this, &FindReplaceBar::_hide_bar));
-	hide_button->set_v_size_flags(SIZE_SHRINK_CENTER);
+	hide_button->set_size_flags_vertical(SIZE_SHRINK_CENTER);
 }
 
 /*** CODE EDITOR ****/
@@ -1455,9 +1455,9 @@ void CodeTextEditor::set_edit_state(const Variant &p_state) {
 void CodeTextEditor::set_error(const String &p_error) {
 	error->set_text(p_error);
 	if (p_error != "") {
-		error->set_default_cursor_shape(CURSOR_POINTING_HAND);
+		error->set_mouse_default_cursor_shape(CURSOR_POINTING_HAND);
 	} else {
-		error->set_default_cursor_shape(CURSOR_ARROW);
+		error->set_mouse_default_cursor_shape(CURSOR_ARROW);
 	}
 }
 
@@ -1708,7 +1708,7 @@ CodeTextEditor::CodeTextEditor() {
 
 	text_editor = memnew(CodeEdit);
 	add_child(text_editor);
-	text_editor->set_v_size_flags(SIZE_EXPAND_FILL);
+	text_editor->set_size_flags_vertical(SIZE_EXPAND_FILL);
 
 	int ot_mode = EditorSettings::get_singleton()->get("interface/editor/code_font_contextual_ligatures");
 	switch (ot_mode) {
@@ -1738,7 +1738,7 @@ CodeTextEditor::CodeTextEditor() {
 	// Added second so it opens at the bottom, so it won't shift the entire text editor when opening.
 	find_replace_bar = memnew(FindReplaceBar);
 	add_child(find_replace_bar);
-	find_replace_bar->set_h_size_flags(SIZE_EXPAND_FILL);
+	find_replace_bar->set_size_flags_horizontal(SIZE_EXPAND_FILL);
 	find_replace_bar->hide();
 
 	find_replace_bar->set_text_edit(text_editor);
@@ -1749,8 +1749,8 @@ CodeTextEditor::CodeTextEditor() {
 
 	status_bar = memnew(HBoxContainer);
 	add_child(status_bar);
-	status_bar->set_h_size_flags(SIZE_EXPAND_FILL);
-	status_bar->set_custom_minimum_size(Size2(0, 24 * EDSCALE)); // Adjust for the height of the warning icon.
+	status_bar->set_size_flags_horizontal(SIZE_EXPAND_FILL);
+	status_bar->set_rect_minimum_size(Size2(0, 24 * EDSCALE)); // Adjust for the height of the warning icon.
 
 	idle = memnew(Timer);
 	add_child(idle);
@@ -1773,14 +1773,14 @@ CodeTextEditor::CodeTextEditor() {
 
 	// Error
 	ScrollContainer *scroll = memnew(ScrollContainer);
-	scroll->set_h_size_flags(SIZE_EXPAND_FILL);
-	scroll->set_v_size_flags(SIZE_EXPAND_FILL);
+	scroll->set_size_flags_horizontal(SIZE_EXPAND_FILL);
+	scroll->set_size_flags_vertical(SIZE_EXPAND_FILL);
 	scroll->set_enable_v_scroll(false);
 	status_bar->add_child(scroll);
 
 	error = memnew(Label);
 	scroll->add_child(error);
-	error->set_v_size_flags(SIZE_EXPAND | SIZE_SHRINK_CENTER);
+	error->set_size_flags_vertical(SIZE_EXPAND | SIZE_SHRINK_CENTER);
 	error->set_mouse_filter(MOUSE_FILTER_STOP);
 	error->connect("gui_input", callable_mp(this, &CodeTextEditor::_error_pressed));
 	find_replace_bar->connect("error", callable_mp(error, &Label::set_text));
@@ -1789,16 +1789,16 @@ CodeTextEditor::CodeTextEditor() {
 	warning_button = memnew(Button);
 	warning_button->set_flat(true);
 	status_bar->add_child(warning_button);
-	warning_button->set_v_size_flags(SIZE_EXPAND | SIZE_SHRINK_CENTER);
-	warning_button->set_default_cursor_shape(CURSOR_POINTING_HAND);
+	warning_button->set_size_flags_vertical(SIZE_EXPAND | SIZE_SHRINK_CENTER);
+	warning_button->set_mouse_default_cursor_shape(CURSOR_POINTING_HAND);
 	warning_button->connect("pressed", callable_mp(this, &CodeTextEditor::_warning_button_pressed));
 	warning_button->set_tooltip(TTR("Warnings"));
 
 	warning_count_label = memnew(Label);
 	status_bar->add_child(warning_count_label);
-	warning_count_label->set_v_size_flags(SIZE_EXPAND | SIZE_SHRINK_CENTER);
+	warning_count_label->set_size_flags_vertical(SIZE_EXPAND | SIZE_SHRINK_CENTER);
 	warning_count_label->set_align(Label::ALIGN_RIGHT);
-	warning_count_label->set_default_cursor_shape(CURSOR_POINTING_HAND);
+	warning_count_label->set_mouse_default_cursor_shape(CURSOR_POINTING_HAND);
 	warning_count_label->set_mouse_filter(MOUSE_FILTER_STOP);
 	warning_count_label->set_tooltip(TTR("Warnings"));
 	warning_count_label->add_theme_color_override("font_color", EditorNode::get_singleton()->get_gui_base()->get_theme_color("warning_color", "Editor"));
@@ -1812,7 +1812,7 @@ CodeTextEditor::CodeTextEditor() {
 	// Line and column
 	line_and_col_txt = memnew(Label);
 	status_bar->add_child(line_and_col_txt);
-	line_and_col_txt->set_v_size_flags(SIZE_EXPAND | SIZE_SHRINK_CENTER);
+	line_and_col_txt->set_size_flags_vertical(SIZE_EXPAND | SIZE_SHRINK_CENTER);
 	line_and_col_txt->add_theme_font_override("font", EditorNode::get_singleton()->get_gui_base()->get_theme_font("status_source", "EditorFonts"));
 	line_and_col_txt->add_theme_font_size_override("font_size", EditorNode::get_singleton()->get_gui_base()->get_theme_font_size("status_source_size", "EditorFonts"));
 	line_and_col_txt->set_tooltip(TTR("Line and column numbers."));

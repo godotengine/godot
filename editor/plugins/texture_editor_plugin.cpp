@@ -44,7 +44,7 @@ void TextureEditor::_notification(int p_what) {
 
 	if (p_what == NOTIFICATION_DRAW) {
 		Ref<Texture2D> checkerboard = get_theme_icon("Checkerboard", "EditorIcons");
-		Size2 size = get_size();
+		Size2 size = get_rect_size();
 
 		draw_texture_rect(checkerboard, Rect2(Point2(), size), true);
 
@@ -132,7 +132,7 @@ void TextureEditor::_bind_methods() {
 
 TextureEditor::TextureEditor() {
 	set_texture_repeat(TextureRepeat::TEXTURE_REPEAT_ENABLED);
-	set_custom_minimum_size(Size2(1, 150));
+	set_rect_minimum_size(Size2(1, 150));
 }
 
 TextureEditor::~TextureEditor() {

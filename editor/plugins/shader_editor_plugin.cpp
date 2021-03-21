@@ -463,7 +463,7 @@ void ShaderEditor::_text_edit_gui_input(const Ref<InputEvent> &ev) {
 		if (mb->get_button_index() == MOUSE_BUTTON_RIGHT && mb->is_pressed()) {
 			int col, row;
 			CodeEdit *tx = shader_editor->get_text_editor();
-			tx->_get_mouse_pos(mb->get_global_position() - tx->get_global_position(), row, col);
+			tx->_get_mouse_pos(mb->get_global_position() - tx->get_rect_global_position(), row, col);
 			tx->set_right_click_moves_caret(EditorSettings::get_singleton()->get("text_editor/cursor/right_click_moves_caret"));
 
 			if (tx->is_right_click_moving_caret()) {
@@ -556,7 +556,7 @@ void ShaderEditor::_make_context_menu(bool p_selection, Vector2 p_position) {
 
 ShaderEditor::ShaderEditor(EditorNode *p_node) {
 	shader_editor = memnew(ShaderTextEditor);
-	shader_editor->set_v_size_flags(SIZE_EXPAND_FILL);
+	shader_editor->set_size_flags_vertical(SIZE_EXPAND_FILL);
 	shader_editor->add_theme_constant_override("separation", 0);
 	shader_editor->set_anchors_and_offsets_preset(Control::PRESET_WIDE);
 
@@ -711,7 +711,7 @@ ShaderEditorPlugin::ShaderEditorPlugin(EditorNode *p_node) {
 	editor = p_node;
 	shader_editor = memnew(ShaderEditor(p_node));
 
-	shader_editor->set_custom_minimum_size(Size2(0, 300) * EDSCALE);
+	shader_editor->set_rect_minimum_size(Size2(0, 300) * EDSCALE);
 	button = editor->add_bottom_panel_item(TTR("Shader"), shader_editor);
 	button->hide();
 

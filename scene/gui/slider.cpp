@@ -62,7 +62,7 @@ void Slider::_gui_input(Ref<InputEvent> p_event) {
 
 				double grab_width = (double)grabber->get_size().width;
 				double grab_height = (double)grabber->get_size().height;
-				double max = orientation == VERTICAL ? get_size().height - grab_height : get_size().width - grab_width;
+				double max = orientation == VERTICAL ? get_rect_size().height - grab_height : get_rect_size().width - grab_width;
 				if (orientation == VERTICAL) {
 					set_as_ratio(1 - (((double)grab.pos - (grab_height / 2.0)) / max));
 				} else {
@@ -88,7 +88,7 @@ void Slider::_gui_input(Ref<InputEvent> p_event) {
 
 	if (mm.is_valid()) {
 		if (grab.active) {
-			Size2i size = get_size();
+			Size2i size = get_rect_size();
 			Ref<Texture2D> grabber = get_theme_icon("grabber");
 			float motion = (orientation == VERTICAL ? mm->get_position().y : mm->get_position().x) - grab.pos;
 			if (orientation == VERTICAL) {
@@ -160,7 +160,7 @@ void Slider::_notification(int p_what) {
 		} break;
 		case NOTIFICATION_DRAW: {
 			RID ci = get_canvas_item();
-			Size2i size = get_size();
+			Size2i size = get_rect_size();
 			Ref<StyleBox> style = get_theme_stylebox("slider");
 			bool highlighted = mouse_inside || has_focus();
 			Ref<StyleBox> grabber_area = get_theme_stylebox(highlighted ? "grabber_area_highlight" : "grabber_area");

@@ -285,7 +285,7 @@ MultiMeshEditor::MultiMeshEditor() {
 
 	surface_source = memnew(LineEdit);
 	hbc->add_child(surface_source);
-	surface_source->set_h_size_flags(SIZE_EXPAND_FILL);
+	surface_source->set_size_flags_horizontal(SIZE_EXPAND_FILL);
 	Button *b = memnew(Button);
 	hbc->add_child(b);
 	b->set_text("..");
@@ -296,7 +296,7 @@ MultiMeshEditor::MultiMeshEditor() {
 	hbc = memnew(HBoxContainer);
 	mesh_source = memnew(LineEdit);
 	hbc->add_child(mesh_source);
-	mesh_source->set_h_size_flags(SIZE_EXPAND_FILL);
+	mesh_source->set_size_flags_horizontal(SIZE_EXPAND_FILL);
 	b = memnew(Button);
 	hbc->add_child(b);
 	b->set_text("..");

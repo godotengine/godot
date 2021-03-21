@@ -568,7 +568,7 @@ ThemeItemEditorDialog::ThemeItemEditorDialog() {
 	add_child(edit_dialog_hs);
 
 	VBoxContainer *edit_dialog_side_vb = memnew(VBoxContainer);
-	edit_dialog_side_vb->set_custom_minimum_size(Size2(200.0, 0.0) * EDSCALE);
+	edit_dialog_side_vb->set_rect_minimum_size(Size2(200.0, 0.0) * EDSCALE);
 	edit_dialog_hs->add_child(edit_dialog_side_vb);
 
 	Label *edit_type_label = memnew(Label);
@@ -576,7 +576,7 @@ ThemeItemEditorDialog::ThemeItemEditorDialog() {
 	edit_dialog_side_vb->add_child(edit_type_label);
 
 	edit_type_list = memnew(ItemList);
-	edit_type_list->set_v_size_flags(Control::SIZE_EXPAND_FILL);
+	edit_type_list->set_size_flags_vertical(Control::SIZE_EXPAND_FILL);
 	edit_dialog_side_vb->add_child(edit_type_list);
 	edit_type_list->connect("item_selected", callable_mp(this, &ThemeItemEditorDialog::_edited_type_selected));
 
@@ -587,7 +587,7 @@ ThemeItemEditorDialog::ThemeItemEditorDialog() {
 	HBoxContainer *edit_add_class = memnew(HBoxContainer);
 	edit_dialog_side_vb->add_child(edit_add_class);
 	edit_add_class_options = memnew(OptionButton);
-	edit_add_class_options->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+	edit_add_class_options->set_size_flags_horizontal(Control::SIZE_EXPAND_FILL);
 	edit_add_class->add_child(edit_add_class_options);
 	Button *edit_add_class_button = memnew(Button);
 	edit_add_class_button->set_text(TTR("Add"));
@@ -601,7 +601,7 @@ ThemeItemEditorDialog::ThemeItemEditorDialog() {
 	HBoxContainer *edit_add_custom = memnew(HBoxContainer);
 	edit_dialog_side_vb->add_child(edit_add_custom);
 	edit_add_custom_value = memnew(LineEdit);
-	edit_add_custom_value->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+	edit_add_custom_value->set_size_flags_horizontal(Control::SIZE_EXPAND_FILL);
 	edit_add_custom->add_child(edit_add_custom_value);
 	Button *edit_add_custom_button = memnew(Button);
 	edit_add_custom_button->set_text(TTR("Add"));
@@ -609,7 +609,7 @@ ThemeItemEditorDialog::ThemeItemEditorDialog() {
 	edit_add_custom_button->connect("pressed", callable_mp(this, &ThemeItemEditorDialog::_add_custom_type));
 
 	VBoxContainer *edit_items_vb = memnew(VBoxContainer);
-	edit_items_vb->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+	edit_items_vb->set_size_flags_horizontal(Control::SIZE_EXPAND_FILL);
 	edit_dialog_hs->add_child(edit_items_vb);
 
 	HBoxContainer *edit_items_toolbar = memnew(HBoxContainer);
@@ -689,7 +689,7 @@ ThemeItemEditorDialog::ThemeItemEditorDialog() {
 	edit_items_remove_all->connect("pressed", callable_mp(this, &ThemeItemEditorDialog::_remove_all_items));
 
 	edit_items_tree = memnew(Tree);
-	edit_items_tree->set_v_size_flags(Control::SIZE_EXPAND_FILL);
+	edit_items_tree->set_size_flags_vertical(Control::SIZE_EXPAND_FILL);
 	edit_items_tree->set_hide_root(true);
 	edit_items_tree->set_columns(1);
 	edit_items_vb->add_child(edit_items_tree);
@@ -1080,15 +1080,15 @@ ThemeEditor::ThemeEditor() {
 	add_child(scroll);
 	scroll->set_enable_v_scroll(true);
 	scroll->set_enable_h_scroll(true);
-	scroll->set_v_size_flags(SIZE_EXPAND_FILL);
+	scroll->set_size_flags_vertical(SIZE_EXPAND_FILL);
 
 	MarginContainer *root_container = memnew(MarginContainer);
 	scroll->add_child(root_container);
 	root_container->set_theme(Theme::get_default());
-	root_container->set_clip_contents(true);
-	root_container->set_custom_minimum_size(Size2(700, 0) * EDSCALE);
-	root_container->set_v_size_flags(SIZE_EXPAND_FILL);
-	root_container->set_h_size_flags(SIZE_EXPAND_FILL);
+	root_container->set_rect_clip_contents(true);
+	root_container->set_rect_minimum_size(Size2(700, 0) * EDSCALE);
+	root_container->set_size_flags_vertical(SIZE_EXPAND_FILL);
+	root_container->set_size_flags_horizontal(SIZE_EXPAND_FILL);
 
 	//// Preview Controls ////
 
@@ -1107,7 +1107,7 @@ ThemeEditor::ThemeEditor() {
 
 	VBoxContainer *first_vb = memnew(VBoxContainer);
 	main_hb->add_child(first_vb);
-	first_vb->set_h_size_flags(SIZE_EXPAND_FILL);
+	first_vb->set_size_flags_horizontal(SIZE_EXPAND_FILL);
 	first_vb->add_theme_constant_override("separation", 10 * EDSCALE);
 
 	first_vb->add_child(memnew(Label("Label")));
@@ -1167,7 +1167,7 @@ ThemeEditor::ThemeEditor() {
 	first_vb->add_child(memnew(ColorPickerButton));
 
 	VBoxContainer *second_vb = memnew(VBoxContainer);
-	second_vb->set_h_size_flags(SIZE_EXPAND_FILL);
+	second_vb->set_size_flags_horizontal(SIZE_EXPAND_FILL);
 	main_hb->add_child(second_vb);
 	second_vb->add_theme_constant_override("separation", 10 * EDSCALE);
 	LineEdit *le = memnew(LineEdit);
@@ -1179,13 +1179,13 @@ ThemeEditor::ThemeEditor() {
 	second_vb->add_child(le);
 	TextEdit *te = memnew(TextEdit);
 	te->set_text("TextEdit");
-	te->set_custom_minimum_size(Size2(0, 100) * EDSCALE);
+	te->set_rect_minimum_size(Size2(0, 100) * EDSCALE);
 	second_vb->add_child(te);
 	second_vb->add_child(memnew(SpinBox));
 
 	HBoxContainer *vhb = memnew(HBoxContainer);
 	second_vb->add_child(vhb);
-	vhb->set_custom_minimum_size(Size2(0, 100) * EDSCALE);
+	vhb->set_rect_minimum_size(Size2(0, 100) * EDSCALE);
 	vhb->add_child(memnew(VSlider));
 	VScrollBar *vsb = memnew(VScrollBar);
 	vsb->set_page(25);
@@ -1194,7 +1194,7 @@ ThemeEditor::ThemeEditor() {
 	VBoxContainer *hvb = memnew(VBoxContainer);
 	vhb->add_child(hvb);
 	hvb->set_alignment(ALIGN_CENTER);
-	hvb->set_h_size_flags(SIZE_EXPAND_FILL);
+	hvb->set_size_flags_horizontal(SIZE_EXPAND_FILL);
 	hvb->add_child(memnew(HSlider));
 	HScrollBar *hsb = memnew(HScrollBar);
 	hsb->set_page(25);
@@ -1208,13 +1208,13 @@ ThemeEditor::ThemeEditor() {
 	hvb->add_child(pb);
 
 	VBoxContainer *third_vb = memnew(VBoxContainer);
-	third_vb->set_h_size_flags(SIZE_EXPAND_FILL);
+	third_vb->set_size_flags_horizontal(SIZE_EXPAND_FILL);
 	third_vb->add_theme_constant_override("separation", 10 * EDSCALE);
 	main_hb->add_child(third_vb);
 
 	TabContainer *tc = memnew(TabContainer);
 	third_vb->add_child(tc);
-	tc->set_custom_minimum_size(Size2(0, 135) * EDSCALE);
+	tc->set_rect_minimum_size(Size2(0, 135) * EDSCALE);
 	Control *tcc = memnew(Control);
 	tcc->set_name(TTR("Tab 1"));
 	tc->add_child(tcc);
@@ -1228,7 +1228,7 @@ ThemeEditor::ThemeEditor() {
 
 	Tree *test_tree = memnew(Tree);
 	third_vb->add_child(test_tree);
-	test_tree->set_custom_minimum_size(Size2(0, 175) * EDSCALE);
+	test_tree->set_rect_minimum_size(Size2(0, 175) * EDSCALE);
 	test_tree->add_theme_constant_override("draw_relationship_lines", 1);
 
 	TreeItem *item = test_tree->create_item();
@@ -1297,7 +1297,7 @@ void ThemeEditorPlugin::make_visible(bool p_visible) {
 ThemeEditorPlugin::ThemeEditorPlugin(EditorNode *p_node) {
 	editor = p_node;
 	theme_editor = memnew(ThemeEditor);
-	theme_editor->set_custom_minimum_size(Size2(0, 200) * EDSCALE);
+	theme_editor->set_rect_minimum_size(Size2(0, 200) * EDSCALE);
 
 	button = editor->add_bottom_panel_item(TTR("Theme"), theme_editor);
 	button->hide();

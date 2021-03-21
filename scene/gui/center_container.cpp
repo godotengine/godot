@@ -71,7 +71,7 @@ bool CenterContainer::is_using_top_left() const {
 
 void CenterContainer::_notification(int p_what) {
 	if (p_what == NOTIFICATION_SORT_CHILDREN) {
-		Size2 size = get_size();
+		Size2 size = get_rect_size();
 		for (int i = 0; i < get_child_count(); i++) {
 			Control *c = Object::cast_to<Control>(get_child(i));
 			if (!c) {

@@ -52,7 +52,7 @@ void OpenTypeFeaturesEditor::_notification(int p_what) {
 		Color base = get_theme_color("accent_color", "Editor");
 
 		button->set_icon(get_theme_icon("Remove", "EditorIcons"));
-		button->set_size(get_theme_icon("Remove", "EditorIcons")->get_size());
+		button->set_rect_size(get_theme_icon("Remove", "EditorIcons")->get_size());
 		spin->set_custom_label_color(true, base);
 	}
 }
@@ -73,7 +73,7 @@ OpenTypeFeaturesEditor::OpenTypeFeaturesEditor() {
 	bc->add_child(spin);
 	add_focusable(spin);
 	spin->connect("value_changed", callable_mp(this, &OpenTypeFeaturesEditor::_value_changed));
-	spin->set_h_size_flags(SIZE_EXPAND_FILL);
+	spin->set_size_flags_horizontal(SIZE_EXPAND_FILL);
 
 	spin->set_min(0);
 	spin->set_max(65536);
@@ -134,7 +134,7 @@ void OpenTypeFeaturesAdd::update_property() {
 }
 
 void OpenTypeFeaturesAdd::_features_menu() {
-	Size2 size = get_size();
+	Size2 size = get_rect_size();
 	menu->set_position(get_screen_position() + Size2(0, size.height * get_global_transform().get_scale().y));
 	menu->popup();
 }
@@ -143,7 +143,7 @@ void OpenTypeFeaturesAdd::_notification(int p_what) {
 	if (p_what == NOTIFICATION_THEME_CHANGED || p_what == NOTIFICATION_ENTER_TREE) {
 		set_label("");
 		button->set_icon(get_theme_icon("Add", "EditorIcons"));
-		button->set_size(get_theme_icon("Add", "EditorIcons")->get_size());
+		button->set_rect_size(get_theme_icon("Add", "EditorIcons")->get_size());
 	}
 }
 

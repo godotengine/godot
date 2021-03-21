@@ -101,7 +101,7 @@ void EditorProperty::emit_changed(const StringName &p_property, const Variant &p
 
 void EditorProperty::_notification(int p_what) {
 	if (p_what == NOTIFICATION_SORT_CHILDREN) {
-		Size2 size = get_size();
+		Size2 size = get_rect_size();
 		Rect2 rect;
 		Rect2 bottom_rect;
 
@@ -219,11 +219,11 @@ void EditorProperty::_notification(int p_what) {
 		Color dark_color = get_theme_color("dark_color_2", "Editor");
 		bool rtl = is_layout_rtl();
 
-		Size2 size = get_size();
+		Size2 size = get_rect_size();
 		if (bottom_editor) {
 			size.height = bottom_editor->get_offset(SIDE_TOP);
 		} else if (label_reference) {
-			size.height = label_reference->get_size().height;
+			size.height = label_reference->get_rect_size().height;
 		}
 
 		Ref<StyleBox> sb;
@@ -693,7 +693,7 @@ void EditorProperty::_gui_input(const Ref<InputEvent> &p_event) {
 	if (me.is_valid()) {
 		Vector2 mpos = me->get_position();
 		if (is_layout_rtl()) {
-			mpos.x = get_size().x - mpos.x;
+			mpos.x = get_rect_size().x - mpos.x;
 		}
 		bool button_left = me->get_button_mask() & MOUSE_BUTTON_MASK_LEFT;
 
@@ -727,7 +727,7 @@ void EditorProperty::_gui_input(const Ref<InputEvent> &p_event) {
 	if (mb.is_valid() && mb->is_pressed() && mb->get_button_index() == MOUSE_BUTTON_LEFT) {
 		Vector2 mpos = mb->get_position();
 		if (is_layout_rtl()) {
-			mpos.x = get_size().x - mpos.x;
+			mpos.x = get_rect_size().x - mpos.x;
 		}
 
 		if (!selected && selectable) {
@@ -1097,7 +1097,7 @@ void EditorInspectorPlugin::_bind_methods() {
 
 void EditorInspectorCategory::_notification(int p_what) {
 	if (p_what == NOTIFICATION_DRAW) {
-		draw_rect(Rect2(Vector2(), get_size()), bg_color);
+		draw_rect(Rect2(Vector2(), get_rect_size()), bg_color);
 		Ref<Font> font = get_theme_font("font", "Tree");
 		int font_size = get_theme_font_size("font_size", "Tree");
 
@@ -1108,15 +1108,15 @@ void EditorInspectorCategory::_notification(int p_what) {
 			w += hs + icon->get_width();
 		}
 
-		int ofs = (get_size().width - w) / 2;
+		int ofs = (get_rect_size().width - w) / 2;
 
 		if (icon.is_valid()) {
-			draw_texture(icon, Point2(ofs, (get_size().height - icon->get_height()) / 2).floor());
+			draw_texture(icon, Point2(ofs, (get_rect_size().height - icon->get_height()) / 2).floor());
 			ofs += hs + icon->get_width();
 		}
 
 		Color color = get_theme_color("font_color", "Tree");
-		draw_string(font, Point2(ofs, font->get_ascent(font_size) + (get_size().height - font->get_height(font_size)) / 2).floor(), label, HALIGN_LEFT, get_size().width, font_size, color);
+		draw_string(font, Point2(ofs, font->get_ascent(font_size) + (get_rect_size().height - font->get_height(font_size)) / 2).floor(), label, HALIGN_LEFT, get_rect_size().width, font_size, color);
 	}
 }
 
@@ -1197,7 +1197,7 @@ void EditorInspectorSection::_notification(int p_what) {
 			}
 		}
 
-		Size2 size = get_size();
+		Size2 size = get_rect_size();
 		Point2 offset;
 		offset.y = font->get_height(font_size);
 		if (arrow.is_valid()) {
@@ -1249,16 +1249,16 @@ void EditorInspectorSection::_notification(int p_what) {
 		}
 		h += get_theme_constant("vseparation", "Tree");
 
-		draw_rect(Rect2(Vector2(), Vector2(get_size().width, h)), bg_color);
+		draw_rect(Rect2(Vector2(), Vector2(get_rect_size().width, h)), bg_color);
 
 		const int arrow_margin = 3;
 		Color color = get_theme_color("font_color", "Tree");
-		float text_width = get_size().width - Math::round((16 + arrow_margin) * EDSCALE);
+		float text_width = get_rect_size().width - Math::round((16 + arrow_margin) * EDSCALE);
 		draw_string(font, Point2(rtl ? 0 : Math::round((16 + arrow_margin) * EDSCALE), font->get_ascent(font_size) + (h - font->get_height(font_size)) / 2).floor(), label, rtl ? HALIGN_RIGHT : HALIGN_LEFT, text_width, font_size, color);
 
 		if (arrow.is_valid()) {
 			if (rtl) {
-				draw_texture(arrow, Point2(get_size().width - arrow->get_width() - Math::round(arrow_margin * EDSCALE), (h - arrow->get_height()) / 2).floor());
+				draw_texture(arrow, Point2(get_rect_size().width - arrow->get_width() - Math::round(arrow_margin * EDSCALE), (h - arrow->get_height()) / 2).floor());
 			} else {
 				draw_texture(arrow, Point2(Math::round(arrow_margin * EDSCALE), (h - arrow->get_height()) / 2).floor());
 			}
@@ -1266,7 +1266,7 @@ void EditorInspectorSection::_notification(int p_what) {
 
 		if (dropping && !vbox->is_visible_in_tree()) {
 			Color accent_color = get_theme_color("accent_color", "Editor");
-			draw_rect(Rect2(Point2(), get_size()), accent_color, false);
+			draw_rect(Rect2(Point2(), get_rect_size()), accent_color, false);
 		}
 	}
 
@@ -2650,7 +2650,7 @@ EditorInspector::EditorInspector() {
 	object = nullptr;
 	undo_redo = nullptr;
 	main_vbox = memnew(VBoxContainer);
-	main_vbox->set_h_size_flags(SIZE_EXPAND_FILL);
+	main_vbox->set_size_flags_horizontal(SIZE_EXPAND_FILL);
 	main_vbox->add_theme_constant_override("separation", 0);
 	add_child(main_vbox);
 	set_enable_h_scroll(false);

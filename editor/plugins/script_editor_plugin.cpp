@@ -3290,14 +3290,14 @@ ScriptEditor::ScriptEditor(EditorNode *p_editor) {
 
 	script_split = memnew(HSplitContainer);
 	main_container->add_child(script_split);
-	script_split->set_v_size_flags(SIZE_EXPAND_FILL);
+	script_split->set_size_flags_vertical(SIZE_EXPAND_FILL);
 
 	list_split = memnew(VSplitContainer);
 	script_split->add_child(list_split);
-	list_split->set_v_size_flags(SIZE_EXPAND_FILL);
+	list_split->set_size_flags_vertical(SIZE_EXPAND_FILL);
 
 	scripts_vbox = memnew(VBoxContainer);
-	scripts_vbox->set_v_size_flags(SIZE_EXPAND_FILL);
+	scripts_vbox->set_size_flags_vertical(SIZE_EXPAND_FILL);
 	list_split->add_child(scripts_vbox);
 
 	filter_scripts = memnew(LineEdit);
@@ -3308,8 +3308,8 @@ ScriptEditor::ScriptEditor(EditorNode *p_editor) {
 
 	script_list = memnew(ItemList);
 	scripts_vbox->add_child(script_list);
-	script_list->set_custom_minimum_size(Size2(150, 60) * EDSCALE); //need to give a bit of limit to avoid it from disappearing
-	script_list->set_v_size_flags(SIZE_EXPAND_FILL);
+	script_list->set_rect_minimum_size(Size2(150, 60) * EDSCALE); //need to give a bit of limit to avoid it from disappearing
+	script_list->set_size_flags_vertical(SIZE_EXPAND_FILL);
 	script_split->set_split_offset(70 * EDSCALE);
 	_sort_list_on_update = true;
 	script_list->connect("gui_input", callable_mp(this, &ScriptEditor::_script_list_gui_input), varray(), CONNECT_DEFERRED);
@@ -3321,8 +3321,8 @@ ScriptEditor::ScriptEditor(EditorNode *p_editor) {
 	context_menu->connect("id_pressed", callable_mp(this, &ScriptEditor::_menu_option));
 
 	overview_vbox = memnew(VBoxContainer);
-	overview_vbox->set_custom_minimum_size(Size2(0, 90));
-	overview_vbox->set_v_size_flags(SIZE_EXPAND_FILL);
+	overview_vbox->set_rect_minimum_size(Size2(0, 90));
+	overview_vbox->set_size_flags_vertical(SIZE_EXPAND_FILL);
 
 	list_split->add_child(overview_vbox);
 	buttons_hbox = memnew(HBoxContainer);
@@ -3330,7 +3330,7 @@ ScriptEditor::ScriptEditor(EditorNode *p_editor) {
 
 	filename = memnew(Label);
 	filename->set_clip_text(true);
-	filename->set_h_size_flags(SIZE_EXPAND_FILL);
+	filename->set_size_flags_horizontal(SIZE_EXPAND_FILL);
 	filename->add_theme_style_override("normal", EditorNode::get_singleton()->get_gui_base()->get_theme_stylebox("normal", "LineEdit"));
 	buttons_hbox->add_child(filename);
 
@@ -3353,21 +3353,21 @@ ScriptEditor::ScriptEditor(EditorNode *p_editor) {
 	overview_vbox->add_child(members_overview);
 
 	members_overview->set_allow_reselect(true);
-	members_overview->set_custom_minimum_size(Size2(0, 60) * EDSCALE); //need to give a bit of limit to avoid it from disappearing
-	members_overview->set_v_size_flags(SIZE_EXPAND_FILL);
+	members_overview->set_rect_minimum_size(Size2(0, 60) * EDSCALE); //need to give a bit of limit to avoid it from disappearing
+	members_overview->set_size_flags_vertical(SIZE_EXPAND_FILL);
 	members_overview->set_allow_rmb_select(true);
 
 	help_overview = memnew(ItemList);
 	overview_vbox->add_child(help_overview);
 	help_overview->set_allow_reselect(true);
-	help_overview->set_custom_minimum_size(Size2(0, 60) * EDSCALE); //need to give a bit of limit to avoid it from disappearing
-	help_overview->set_v_size_flags(SIZE_EXPAND_FILL);
+	help_overview->set_rect_minimum_size(Size2(0, 60) * EDSCALE); //need to give a bit of limit to avoid it from disappearing
+	help_overview->set_size_flags_vertical(SIZE_EXPAND_FILL);
 
 	tab_container = memnew(TabContainer);
 	tab_container->set_tabs_visible(false);
-	tab_container->set_custom_minimum_size(Size2(200, 0) * EDSCALE);
+	tab_container->set_rect_minimum_size(Size2(200, 0) * EDSCALE);
 	script_split->add_child(tab_container);
-	tab_container->set_h_size_flags(SIZE_EXPAND_FILL);
+	tab_container->set_size_flags_horizontal(SIZE_EXPAND_FILL);
 
 	ED_SHORTCUT("script_editor/window_sort", TTR("Sort"));
 	ED_SHORTCUT("script_editor/window_move_up", TTR("Move Up"), KEY_MASK_SHIFT | KEY_MASK_ALT | KEY_UP);
@@ -3527,7 +3527,7 @@ ScriptEditor::ScriptEditor(EditorNode *p_editor) {
 
 		disk_changed_list = memnew(Tree);
 		vbc->add_child(disk_changed_list);
-		disk_changed_list->set_v_size_flags(SIZE_EXPAND_FILL);
+		disk_changed_list->set_size_flags_vertical(SIZE_EXPAND_FILL);
 
 		disk_changed->connect("confirmed", callable_mp(this, &ScriptEditor::_reload_scripts));
 		disk_changed->get_ok_button()->set_text(TTR("Reload"));
@@ -3558,7 +3558,7 @@ ScriptEditor::ScriptEditor(EditorNode *p_editor) {
 	add_child(find_in_files_dialog);
 	find_in_files = memnew(FindInFilesPanel);
 	find_in_files_button = editor->add_bottom_panel_item(TTR("Search Results"), find_in_files);
-	find_in_files->set_custom_minimum_size(Size2(0, 200) * EDSCALE);
+	find_in_files->set_rect_minimum_size(Size2(0, 200) * EDSCALE);
 	find_in_files->connect(FindInFilesPanel::SIGNAL_RESULT_SELECTED, callable_mp(this, &ScriptEditor::_on_find_in_files_result_selected));
 	find_in_files->connect(FindInFilesPanel::SIGNAL_FILES_MODIFIED, callable_mp(this, &ScriptEditor::_on_find_in_files_modified_files));
 	find_in_files->hide();
@@ -3662,7 +3662,7 @@ ScriptEditorPlugin::ScriptEditorPlugin(EditorNode *p_node) {
 	editor = p_node;
 	script_editor = memnew(ScriptEditor(p_node));
 	editor->get_main_control()->add_child(script_editor);
-	script_editor->set_v_size_flags(Control::SIZE_EXPAND_FILL);
+	script_editor->set_size_flags_vertical(Control::SIZE_EXPAND_FILL);
 
 	script_editor->hide();
 

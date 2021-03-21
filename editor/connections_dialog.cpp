@@ -399,11 +399,11 @@ ConnectDialog::ConnectDialog() {
 
 	HBoxContainer *main_hb = memnew(HBoxContainer);
 	vbc->add_child(main_hb);
-	main_hb->set_v_size_flags(Control::SIZE_EXPAND_FILL);
+	main_hb->set_size_flags_vertical(Control::SIZE_EXPAND_FILL);
 
 	VBoxContainer *vbc_left = memnew(VBoxContainer);
 	main_hb->add_child(vbc_left);
-	vbc_left->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+	vbc_left->set_size_flags_horizontal(Control::SIZE_EXPAND_FILL);
 
 	from_signal = memnew(LineEdit);
 	from_signal->set_editable(false);
@@ -426,13 +426,13 @@ ConnectDialog::ConnectDialog() {
 
 	vbc_right = memnew(VBoxContainer);
 	main_hb->add_child(vbc_right);
-	vbc_right->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+	vbc_right->set_size_flags_horizontal(Control::SIZE_EXPAND_FILL);
 	vbc_right->hide();
 
 	HBoxContainer *add_bind_hb = memnew(HBoxContainer);
 
 	type_list = memnew(OptionButton);
-	type_list->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+	type_list->set_size_flags_horizontal(Control::SIZE_EXPAND_FILL);
 	add_bind_hb->add_child(type_list);
 	type_list->add_item("bool", Variant::BOOL);
 	type_list->add_item("int", Variant::INT);
@@ -470,7 +470,7 @@ ConnectDialog::ConnectDialog() {
 	vbc_left->add_margin_child(TTR("Receiver Method:"), dstm_hb);
 
 	dst_method = memnew(LineEdit);
-	dst_method->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+	dst_method->set_size_flags_horizontal(Control::SIZE_EXPAND_FILL);
 	dst_method->connect("text_entered", callable_mp(this, &ConnectDialog::_text_entered));
 	dstm_hb->add_child(dst_method);
 
@@ -480,13 +480,13 @@ ConnectDialog::ConnectDialog() {
 	advanced->connect("pressed", callable_mp(this, &ConnectDialog::_advanced_pressed));
 
 	deferred = memnew(CheckBox);
-	deferred->set_h_size_flags(0);
+	deferred->set_size_flags_horizontal(0);
 	deferred->set_text(TTR("Deferred"));
 	deferred->set_tooltip(TTR("Defers the signal, storing it in a queue and only firing it at idle time."));
 	vbc_right->add_child(deferred);
 
 	oneshot = memnew(CheckBox);
-	oneshot->set_h_size_flags(0);
+	oneshot->set_size_flags_horizontal(0);
 	oneshot->set_text(TTR("Oneshot"));
 	oneshot->set_tooltip(TTR("Disconnects the signal after its first emission."));
 	vbc_right->add_child(oneshot);
@@ -838,7 +838,7 @@ void ConnectionsDock::_rmb_pressed(Vector2 position) {
 		return;
 	}
 
-	Vector2 global_position = tree->get_global_position() + position;
+	Vector2 global_position = tree->get_rect_global_position() + position;
 
 	if (_is_item_signal(*item)) {
 		signal_menu->set_position(global_position);
@@ -1081,7 +1081,7 @@ ConnectionsDock::ConnectionsDock(EditorNode *p_editor) {
 	VBoxContainer *vbc = this;
 
 	search_box = memnew(LineEdit);
-	search_box->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+	search_box->set_size_flags_horizontal(Control::SIZE_EXPAND_FILL);
 	search_box->set_placeholder(TTR("Filter signals"));
 	search_box->set_right_icon(get_theme_icon("Search", "EditorIcons"));
 	search_box->set_clear_button_enabled(true);
@@ -1093,7 +1093,7 @@ ConnectionsDock::ConnectionsDock(EditorNode *p_editor) {
 	tree->set_select_mode(Tree::SELECT_ROW);
 	tree->set_hide_root(true);
 	vbc->add_child(tree);
-	tree->set_v_size_flags(Control::SIZE_EXPAND_FILL);
+	tree->set_size_flags_vertical(Control::SIZE_EXPAND_FILL);
 	tree->set_allow_rmb_select(true);
 
 	connect_button = memnew(Button);

@@ -293,7 +293,7 @@ void TextEdit::Text::move_gutters(int p_from_line, int p_to_line) {
 ////////////////////////////////////////////////////////////////////////////////
 
 void TextEdit::_update_scrollbars() {
-	Size2 size = get_size();
+	Size2 size = get_rect_size();
 	Size2 hmin = h_scroll->get_combined_minimum_size();
 	Size2 vmin = v_scroll->get_combined_minimum_size();
 
@@ -383,7 +383,7 @@ void TextEdit::_click_selection_held() {
 Point2 TextEdit::_get_local_mouse_pos() const {
 	Point2 mp = get_local_mouse_position();
 	if (is_layout_rtl()) {
-		mp.x = get_size().width - mp.x;
+		mp.x = get_rect_size().width - mp.x;
 	}
 	return mp;
 }
@@ -481,7 +481,7 @@ void TextEdit::_update_selection_mode_line() {
 void TextEdit::_update_minimap_click() {
 	Point2 mp = _get_local_mouse_pos();
 
-	int xmargin_end = get_size().width - cache.style_normal->get_margin(SIDE_RIGHT);
+	int xmargin_end = get_rect_size().width - cache.style_normal->get_margin(SIDE_RIGHT);
 	if (!dragging_minimap && (mp.x < xmargin_end - minimap_width || mp.y > xmargin_end)) {
 		minimap_clicked = false;
 		return;
@@ -599,7 +599,7 @@ void TextEdit::_notification(int p_what) {
 				}
 			}
 
-			Size2 size = get_size();
+			Size2 size = get_rect_size();
 			bool rtl = is_layout_rtl();
 			if ((!has_focus() && !menu->has_focus()) || !window_has_focus) {
 				draw_caret = false;
@@ -632,7 +632,7 @@ void TextEdit::_notification(int p_what) {
 			Color color = readonly ? cache.font_readonly_color : cache.font_color;
 
 			if (cache.background_color.a > 0.01) {
-				RenderingServer::get_singleton()->canvas_item_add_rect(ci, Rect2(Point2i(), get_size()), cache.background_color);
+				RenderingServer::get_singleton()->canvas_item_add_rect(ci, Rect2(Point2i(), get_rect_size()), cache.background_color);
 			}
 
 			if (line_length_guidelines) {
@@ -970,7 +970,7 @@ void TextEdit::_notification(int p_what) {
 			}
 
 			int top_limit_y = 0;
-			int bottom_limit_y = get_size().height;
+			int bottom_limit_y = get_rect_size().height;
 			if (readonly) {
 				top_limit_y += cache.style_readonly->get_margin(SIDE_TOP);
 				bottom_limit_y -= cache.style_readonly->get_margin(SIDE_BOTTOM);
@@ -1549,15 +1549,15 @@ void TextEdit::_notification(int p_what) {
 				if (rect_left_border_x < 0) {
 					// Anchor the completion panel to the left
 					completion_rect.position.x = 0;
-				} else if (rect_right_border_x > get_size().width) {
+				} else if (rect_right_border_x > get_rect_size().width) {
 					// Anchor the completion panel to the right
-					completion_rect.position.x = get_size().width - total_width;
+					completion_rect.position.x = get_rect_size().width - total_width;
 				} else {
 					// Let the completion panel float with the cursor
 					completion_rect.position.x = rect_left_border_x;
 				}
 
-				if (cursor_pos.y + row_height + total_height > get_size().height && cursor_pos.y > total_height) {
+				if (cursor_pos.y + row_height + total_height > get_rect_size().height && cursor_pos.y > total_height) {
 					// Completion panel above the cursor line
 					completion_rect.position.y = cursor_pos.y - total_height;
 				} else {
@@ -1704,7 +1704,7 @@ void TextEdit::_notification(int p_what) {
 			if (has_focus()) {
 				if (get_viewport()->get_window_id() != DisplayServer::INVALID_WINDOW_ID && DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_IME)) {
 					DisplayServer::get_singleton()->window_set_ime_active(true, get_viewport()->get_window_id());
-					DisplayServer::get_singleton()->window_set_ime_position(get_global_position() + cursor_pos, get_viewport()->get_window_id());
+					DisplayServer::get_singleton()->window_set_ime_position(get_rect_global_position() + cursor_pos, get_viewport()->get_window_id());
 				}
 			}
 		} break;
@@ -1717,7 +1717,7 @@ void TextEdit::_notification(int p_what) {
 
 			if (get_viewport()->get_window_id() != DisplayServer::INVALID_WINDOW_ID && DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_IME)) {
 				DisplayServer::get_singleton()->window_set_ime_active(true, get_viewport()->get_window_id());
-				DisplayServer::get_singleton()->window_set_ime_position(get_global_position() + _get_cursor_pixel_pos(false), get_viewport()->get_window_id());
+				DisplayServer::get_singleton()->window_set_ime_position(get_rect_global_position() + _get_cursor_pixel_pos(false), get_viewport()->get_window_id());
 			}
 
 			if (DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_VIRTUAL_KEYBOARD) && virtual_keyboard_enabled) {
@@ -2864,7 +2864,7 @@ void TextEdit::_gui_input(const Ref<InputEvent> &p_gui_input) {
 	if (mb.is_valid()) {
 		Vector2i mpos = mb->get_position();
 		if (is_layout_rtl()) {
-			mpos.x = get_size().x - mpos.x;
+			mpos.x = get_rect_size().x - mpos.x;
 		}
 		if (ime_text.length() != 0) {
 			// Ignore mouse clicks in IME input mode.
@@ -3105,7 +3105,7 @@ void TextEdit::_gui_input(const Ref<InputEvent> &p_gui_input) {
 	if (mm.is_valid()) {
 		Vector2i mpos = mm->get_position();
 		if (is_layout_rtl()) {
-			mpos.x = get_size().x - mpos.x;
+			mpos.x = get_rect_size().x - mpos.x;
 		}
 		if (select_identifiers_enabled) {
 			if (!dragging_minimap && !dragging_selection && mm->get_command() && mm->get_button_mask() == 0) {
@@ -3875,10 +3875,10 @@ Size2 TextEdit::get_minimum_size() const {
 }
 
 int TextEdit::_get_control_height() const {
-	int control_height = get_size().height;
+	int control_height = get_rect_size().height;
 	control_height -= cache.style_normal->get_minimum_size().height;
 	if (h_scroll->is_visible_in_tree()) {
-		control_height -= h_scroll->get_size().height;
+		control_height -= h_scroll->get_rect_size().height;
 	}
 	return control_height;
 }
@@ -3963,7 +3963,7 @@ int TextEdit::get_total_visible_rows() const {
 }
 
 void TextEdit::_update_wrap_at(bool p_force) {
-	int new_wrap_at = get_size().width - cache.style_normal->get_minimum_size().width - gutters_width - gutter_padding;
+	int new_wrap_at = get_rect_size().width - cache.style_normal->get_minimum_size().width - gutters_width - gutter_padding;
 	if (draw_minimap) {
 		new_wrap_at -= minimap_width;
 	}
@@ -4006,7 +4006,7 @@ void TextEdit::adjust_viewport_to_cursor() {
 		set_line_as_last_visible(cur_line, cur_wrap);
 	}
 
-	int visible_width = get_size().width - cache.style_normal->get_minimum_size().width - gutters_width - gutter_padding - cache.minimap_width;
+	int visible_width = get_rect_size().width - cache.style_normal->get_minimum_size().width - gutters_width - gutter_padding - cache.minimap_width;
 	if (v_scroll->is_visible_in_tree()) {
 		visible_width -= v_scroll->get_combined_minimum_size().width;
 	}
@@ -4059,7 +4059,7 @@ void TextEdit::center_viewport_to_cursor() {
 	}
 
 	set_line_as_center_visible(cursor.line, get_cursor_wrap_index());
-	int visible_width = get_size().width - cache.style_normal->get_minimum_size().width - gutters_width - gutter_padding - cache.minimap_width;
+	int visible_width = get_rect_size().width - cache.style_normal->get_minimum_size().width - gutters_width - gutter_padding - cache.minimap_width;
 	if (v_scroll->is_visible_in_tree()) {
 		visible_width -= v_scroll->get_combined_minimum_size().width;
 	}
@@ -4437,7 +4437,7 @@ void TextEdit::insert_text_at_cursor(const String &p_text) {
 	update();
 }
 
-Control::CursorShape TextEdit::get_cursor_shape(const Point2 &p_pos) const {
+Control::CursorShape TextEdit::get_mouse_cursor_shape(const Point2 &p_pos) const {
 	if (highlighted_word != String()) {
 		return CURSOR_POINTING_HAND;
 	}
@@ -4467,7 +4467,7 @@ Control::CursorShape TextEdit::get_cursor_shape(const Point2 &p_pos) const {
 		return CURSOR_ARROW;
 	}
 
-	int xmargin_end = get_size().width - cache.style_normal->get_margin(SIDE_RIGHT);
+	int xmargin_end = get_rect_size().width - cache.style_normal->get_margin(SIDE_RIGHT);
 	if (draw_minimap && p_pos.x > xmargin_end - minimap_width && p_pos.x <= xmargin_end) {
 		return CURSOR_ARROW;
 	}
@@ -4480,7 +4480,7 @@ Control::CursorShape TextEdit::get_cursor_shape(const Point2 &p_pos) const {
 		}
 	}
 
-	return get_default_cursor_shape();
+	return get_mouse_default_cursor_shape();
 }
 
 void TextEdit::set_text(String p_text) {
@@ -7071,7 +7071,7 @@ TextEdit::TextEdit() {
 	clear();
 	set_focus_mode(FOCUS_ALL);
 	_update_caches();
-	set_default_cursor_shape(CURSOR_IBEAM);
+	set_mouse_default_cursor_shape(CURSOR_IBEAM);
 
 	text.set_indent_size(indent_size);
 	text.clear();

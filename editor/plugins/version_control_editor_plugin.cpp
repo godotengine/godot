@@ -363,7 +363,7 @@ VersionControlEditorPlugin::VersionControlEditorPlugin() {
 	set_up_dialog->add_child(set_up_vbc);
 
 	set_up_hbc = memnew(HBoxContainer);
-	set_up_hbc->set_h_size_flags(HBoxContainer::SIZE_EXPAND_FILL);
+	set_up_hbc->set_size_flags_horizontal(HBoxContainer::SIZE_EXPAND_FILL);
 	set_up_vbc->add_child(set_up_hbc);
 
 	set_up_vcs_status = memnew(RichTextLabel);
@@ -375,7 +375,7 @@ VersionControlEditorPlugin::VersionControlEditorPlugin() {
 	set_up_hbc->add_child(set_up_vcs_label);
 
 	set_up_choice = memnew(OptionButton);
-	set_up_choice->set_h_size_flags(HBoxContainer::SIZE_EXPAND_FILL);
+	set_up_choice->set_size_flags_horizontal(HBoxContainer::SIZE_EXPAND_FILL);
 	set_up_choice->connect("item_selected", callable_mp(this, &VersionControlEditorPlugin::_selected_a_vcs));
 	set_up_hbc->add_child(set_up_choice);
 
@@ -391,8 +391,8 @@ VersionControlEditorPlugin::VersionControlEditorPlugin() {
 
 	commit_box_vbc = memnew(VBoxContainer);
 	commit_box_vbc->set_alignment(VBoxContainer::ALIGN_BEGIN);
-	commit_box_vbc->set_h_size_flags(VBoxContainer::SIZE_EXPAND_FILL);
-	commit_box_vbc->set_v_size_flags(VBoxContainer::SIZE_EXPAND_FILL);
+	commit_box_vbc->set_size_flags_horizontal(VBoxContainer::SIZE_EXPAND_FILL);
+	commit_box_vbc->set_size_flags_vertical(VBoxContainer::SIZE_EXPAND_FILL);
 	version_commit_dock->add_child(commit_box_vbc);
 
 	stage_tools = memnew(HSplitContainer);
@@ -400,7 +400,7 @@ VersionControlEditorPlugin::VersionControlEditorPlugin() {
 	commit_box_vbc->add_child(stage_tools);
 
 	staging_area_label = memnew(Label);
-	staging_area_label->set_h_size_flags(Label::SIZE_EXPAND_FILL);
+	staging_area_label->set_size_flags_horizontal(Label::SIZE_EXPAND_FILL);
 	staging_area_label->set_text(TTR("Staging area"));
 	stage_tools->add_child(staging_area_label);
 
@@ -412,8 +412,8 @@ VersionControlEditorPlugin::VersionControlEditorPlugin() {
 	stage_tools->add_child(refresh_button);
 
 	stage_files = memnew(Tree);
-	stage_files->set_h_size_flags(Tree::SIZE_EXPAND_FILL);
-	stage_files->set_v_size_flags(Tree::SIZE_EXPAND_FILL);
+	stage_files->set_size_flags_horizontal(Tree::SIZE_EXPAND_FILL);
+	stage_files->set_size_flags_vertical(Tree::SIZE_EXPAND_FILL);
 	stage_files->set_columns(1);
 	stage_files->set_column_title(0, TTR("Changes"));
 	stage_files->set_column_titles_visible(true);
@@ -443,7 +443,7 @@ VersionControlEditorPlugin::VersionControlEditorPlugin() {
 	commit_box_vbc->add_child(stage_buttons);
 
 	stage_selected_button = memnew(Button);
-	stage_selected_button->set_h_size_flags(Button::SIZE_EXPAND_FILL);
+	stage_selected_button->set_size_flags_horizontal(Button::SIZE_EXPAND_FILL);
 	stage_selected_button->set_text(TTR("Stage Selected"));
 	stage_selected_button->connect("pressed", callable_mp(this, &VersionControlEditorPlugin::_stage_selected));
 	stage_buttons->add_child(stage_selected_button);
@@ -456,10 +456,10 @@ VersionControlEditorPlugin::VersionControlEditorPlugin() {
 	commit_box_vbc->add_child(memnew(HSeparator));
 
 	commit_message = memnew(TextEdit);
-	commit_message->set_h_size_flags(Control::SIZE_EXPAND_FILL);
-	commit_message->set_h_grow_direction(Control::GrowDirection::GROW_DIRECTION_BEGIN);
-	commit_message->set_v_grow_direction(Control::GrowDirection::GROW_DIRECTION_END);
-	commit_message->set_custom_minimum_size(Size2(200, 100));
+	commit_message->set_size_flags_horizontal(Control::SIZE_EXPAND_FILL);
+	commit_message->set_grow_horizontal(Control::GrowDirection::GROW_DIRECTION_BEGIN);
+	commit_message->set_grow_vertical(Control::GrowDirection::GROW_DIRECTION_END);
+	commit_message->set_rect_minimum_size(Size2(200, 100));
 	commit_message->set_wrap_enabled(true);
 	commit_message->connect("text_changed", callable_mp(this, &VersionControlEditorPlugin::_update_commit_button));
 	commit_box_vbc->add_child(commit_message);
@@ -475,16 +475,16 @@ VersionControlEditorPlugin::VersionControlEditorPlugin() {
 	commit_box_vbc->add_child(commit_status);
 
 	version_control_dock = memnew(PanelContainer);
-	version_control_dock->set_v_size_flags(Control::SIZE_EXPAND_FILL);
+	version_control_dock->set_size_flags_vertical(Control::SIZE_EXPAND_FILL);
 	version_control_dock->hide();
 
 	diff_vbc = memnew(VBoxContainer);
-	diff_vbc->set_h_size_flags(HBoxContainer::SIZE_FILL);
-	diff_vbc->set_v_size_flags(HBoxContainer::SIZE_FILL);
+	diff_vbc->set_size_flags_horizontal(HBoxContainer::SIZE_FILL);
+	diff_vbc->set_size_flags_vertical(HBoxContainer::SIZE_FILL);
 	version_control_dock->add_child(diff_vbc);
 
 	diff_hbc = memnew(HBoxContainer);
-	diff_hbc->set_h_size_flags(HBoxContainer::SIZE_FILL);
+	diff_hbc->set_size_flags_horizontal(HBoxContainer::SIZE_FILL);
 	diff_vbc->add_child(diff_hbc);
 
 	diff_heading = memnew(Label);
@@ -494,7 +494,7 @@ VersionControlEditorPlugin::VersionControlEditorPlugin() {
 
 	diff_file_name = memnew(Label);
 	diff_file_name->set_text(TTR("No file diff is active"));
-	diff_file_name->set_h_size_flags(Label::SIZE_EXPAND_FILL);
+	diff_file_name->set_size_flags_horizontal(Label::SIZE_EXPAND_FILL);
 	diff_file_name->set_align(Label::ALIGN_RIGHT);
 	diff_hbc->add_child(diff_file_name);
 
@@ -505,8 +505,8 @@ VersionControlEditorPlugin::VersionControlEditorPlugin() {
 	diff_hbc->add_child(diff_refresh_button);
 
 	diff = memnew(RichTextLabel);
-	diff->set_h_size_flags(TextEdit::SIZE_EXPAND_FILL);
-	diff->set_v_size_flags(TextEdit::SIZE_EXPAND_FILL);
+	diff->set_size_flags_horizontal(TextEdit::SIZE_EXPAND_FILL);
+	diff->set_size_flags_vertical(TextEdit::SIZE_EXPAND_FILL);
 	diff->set_selection_enabled(true);
 	diff_vbc->add_child(diff);
 }

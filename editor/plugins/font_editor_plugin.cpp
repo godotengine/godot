@@ -37,10 +37,10 @@ void FontDataPreview::_notification(int p_what) {
 		Color text_color = get_theme_color("font_color", "Label");
 		Color line_color = text_color;
 		line_color.a *= 0.6;
-		Vector2 pos = (get_size() - line->get_size()) / 2;
+		Vector2 pos = (get_rect_size() - line->get_size()) / 2;
 		line->draw(get_canvas_item(), pos, text_color);
 		draw_line(Vector2(0, pos.y + line->get_line_ascent()), Vector2(pos.x - 5, pos.y + line->get_line_ascent()), line_color);
-		draw_line(Vector2(pos.x + line->get_size().x + 5, pos.y + line->get_line_ascent()), Vector2(get_size().x, pos.y + line->get_line_ascent()), line_color);
+		draw_line(Vector2(pos.x + line->get_size().x + 5, pos.y + line->get_line_ascent()), Vector2(get_rect_size().x, pos.y + line->get_line_ascent()), line_color);
 	}
 }
 
@@ -126,30 +126,30 @@ FontDataPreview::FontDataPreview() {
 
 void FontDataEditor::_notification(int p_what) {
 	if (p_what == NOTIFICATION_SORT_CHILDREN) {
-		int split_width = get_name_split_ratio() * get_size().width;
-		button->set_size(Size2(get_theme_icon("Add", "EditorIcons")->get_width(), get_size().height));
+		int split_width = get_name_split_ratio() * get_rect_size().width;
+		button->set_rect_size(Size2(get_theme_icon("Add", "EditorIcons")->get_width(), get_rect_size().height));
 		if (is_layout_rtl()) {
 			if (le != nullptr) {
-				fit_child_in_rect(le, Rect2(Vector2(split_width, 0), Size2(split_width, get_size().height)));
+				fit_child_in_rect(le, Rect2(Vector2(split_width, 0), Size2(split_width, get_rect_size().height)));
 			}
-			fit_child_in_rect(chk, Rect2(Vector2(split_width - chk->get_size().x, 0), Size2(chk->get_size().x, get_size().height)));
-			fit_child_in_rect(button, Rect2(Vector2(0, 0), Size2(button->get_size().width, get_size().height)));
+			fit_child_in_rect(chk, Rect2(Vector2(split_width - chk->get_rect_size().x, 0), Size2(chk->get_rect_size().x, get_rect_size().height)));
+			fit_child_in_rect(button, Rect2(Vector2(0, 0), Size2(button->get_rect_size().width, get_rect_size().height)));
 		} else {
 			if (le != nullptr) {
-				fit_child_in_rect(le, Rect2(Vector2(0, 0), Size2(split_width, get_size().height)));
+				fit_child_in_rect(le, Rect2(Vector2(0, 0), Size2(split_width, get_rect_size().height)));
 			}
-			fit_child_in_rect(chk, Rect2(Vector2(split_width, 0), Size2(chk->get_size().x, get_size().height)));
-			fit_child_in_rect(button, Rect2(Vector2(get_size().width - button->get_size().width, 0), Size2(button->get_size().width, get_size().height)));
+			fit_child_in_rect(chk, Rect2(Vector2(split_width, 0), Size2(chk->get_rect_size().x, get_rect_size().height)));
+			fit_child_in_rect(button, Rect2(Vector2(get_rect_size().width - button->get_rect_size().width, 0), Size2(button->get_rect_size().width, get_rect_size().height)));
 		}
 		update();
 	}
 	if (p_what == NOTIFICATION_DRAW) {
-		int split_width = get_name_split_ratio() * get_size().width;
+		int split_width = get_name_split_ratio() * get_rect_size().width;
 		Color dark_color = get_theme_color("dark_color_2", "Editor");
 		if (is_layout_rtl()) {
-			draw_rect(Rect2(Vector2(0, 0), Size2(split_width, get_size().height)), dark_color);
+			draw_rect(Rect2(Vector2(0, 0), Size2(split_width, get_rect_size().height)), dark_color);
 		} else {
-			draw_rect(Rect2(Vector2(split_width, 0), Size2(split_width, get_size().height)), dark_color);
+			draw_rect(Rect2(Vector2(split_width, 0), Size2(split_width, get_rect_size().height)), dark_color);
 		}
 	}
 	if (p_what == NOTIFICATION_THEME_CHANGED) {
@@ -183,7 +183,7 @@ void FontDataEditor::_bind_methods() {
 void FontDataEditor::init_lang_add() {
 	le = memnew(LineEdit);
 	le->set_placeholder("Language code");
-	le->set_custom_minimum_size(Size2(get_size().width / 2, 0));
+	le->set_rect_minimum_size(Size2(get_rect_size().width / 2, 0));
 	le->set_editable(true);
 	add_child(le);
 
@@ -200,7 +200,7 @@ void FontDataEditor::init_lang_edit() {
 void FontDataEditor::init_script_add() {
 	le = memnew(LineEdit);
 	le->set_placeholder("Script code");
-	le->set_custom_minimum_size(Size2(get_size().width / 2, 0));
+	le->set_rect_minimum_size(Size2(get_rect_size().width / 2, 0));
 	le->set_editable(true);
 	add_child(le);
 

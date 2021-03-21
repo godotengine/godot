@@ -56,15 +56,15 @@ void MenuButton::_unhandled_key_input(Ref<InputEvent> p_event) {
 }
 
 void MenuButton::pressed() {
-	Size2 size = get_size();
+	Size2 size = get_rect_size();
 
 	Point2 gp = get_screen_position();
-	gp.y += get_size().y;
+	gp.y += get_rect_size().y;
 
 	popup->set_position(gp);
 
 	popup->set_size(Size2(size.width, 0));
-	popup->set_parent_rect(Rect2(Point2(gp - popup->get_position()), get_size()));
+	popup->set_parent_rect(Rect2(Point2(gp - popup->get_position()), get_rect_size()));
 	popup->take_mouse_focus();
 	popup->popup();
 }

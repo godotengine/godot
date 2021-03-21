@@ -181,19 +181,19 @@ void TextureButton::_notification(int p_what) {
 							size = texdraw->get_size();
 							break;
 						case STRETCH_SCALE:
-							size = get_size();
+							size = get_rect_size();
 							break;
 						case STRETCH_TILE:
-							size = get_size();
+							size = get_rect_size();
 							_tile = true;
 							break;
 						case STRETCH_KEEP_CENTERED:
-							ofs = (get_size() - texdraw->get_size()) / 2;
+							ofs = (get_rect_size() - texdraw->get_size()) / 2;
 							size = texdraw->get_size();
 							break;
 						case STRETCH_KEEP_ASPECT_CENTERED:
 						case STRETCH_KEEP_ASPECT: {
-							Size2 _size = get_size();
+							Size2 _size = get_rect_size();
 							float tex_width = texdraw->get_width() * _size.height / texdraw->get_height();
 							float tex_height = _size.height;
 
@@ -210,7 +210,7 @@ void TextureButton::_notification(int p_what) {
 							size.height = tex_height;
 						} break;
 						case STRETCH_KEEP_ASPECT_COVERED: {
-							size = get_size();
+							size = get_rect_size();
 							Size2 tex_size = texdraw->get_size();
 							Size2 scale_size(size.width / tex_size.width, size.height / tex_size.height);
 							float scale = scale_size.width > scale_size.height ? scale_size.width : scale_size.height;

@@ -80,7 +80,7 @@ void TabContainer::_gui_input(const Ref<InputEvent> &p_event) {
 
 	if (mb.is_valid() && mb->is_pressed() && mb->get_button_index() == MOUSE_BUTTON_LEFT) {
 		Point2 pos(mb->get_position().x, mb->get_position().y);
-		Size2 size = get_size();
+		Size2 size = get_rect_size();
 
 		// Click must be on tabs in the tab header area.
 		if (pos.y > _get_top_margin()) {
@@ -191,7 +191,7 @@ void TabContainer::_gui_input(const Ref<InputEvent> &p_event) {
 
 	if (mm.is_valid()) {
 		Point2 pos(mm->get_position().x, mm->get_position().y);
-		Size2 size = get_size();
+		Size2 size = get_rect_size();
 
 		// Mouse must be on tabs in the tab header area.
 		if (pos.y > _get_top_margin()) {
@@ -293,7 +293,7 @@ void TabContainer::_notification(int p_what) {
 			Ref<Texture2D> menu = get_theme_icon("menu");
 			Ref<Texture2D> increment = get_theme_icon("increment");
 			Ref<Texture2D> decrement = get_theme_icon("decrement");
-			int header_width = get_size().width - side_margin * 2;
+			int header_width = get_rect_size().width - side_margin * 2;
 
 			// Find the width of the header area.
 			Popup *popup = get_popup();
@@ -328,7 +328,7 @@ void TabContainer::_notification(int p_what) {
 		} break;
 		case NOTIFICATION_DRAW: {
 			RID canvas = get_canvas_item();
-			Size2 size = get_size();
+			Size2 size = get_rect_size();
 			bool rtl = is_layout_rtl();
 
 			// Draw only the tab area if the header is hidden.
@@ -471,7 +471,7 @@ void TabContainer::_notification(int p_what) {
 			if (rtl) {
 				x = 0;
 			} else {
-				x = get_size().width;
+				x = get_rect_size().width;
 			}
 			if (popup) {
 				if (!rtl) {
@@ -929,7 +929,7 @@ int TabContainer::get_tab_idx_at_point(const Point2 &p_point) const {
 		return -1;
 	}
 
-	Size2 size = get_size();
+	Size2 size = get_rect_size();
 	int button_ofs = 0;
 	int px = p_point.x;
 

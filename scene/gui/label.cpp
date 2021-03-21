@@ -80,7 +80,7 @@ int Label::get_line_height(int p_line) const {
 
 void Label::_shape() {
 	Ref<StyleBox> style = get_theme_stylebox("normal", "Label");
-	int width = (get_size().width - style->get_minimum_size().width);
+	int width = (get_rect_size().width - style->get_minimum_size().width);
 
 	if (dirty) {
 		TS->shaped_text_clear(text_rid);
@@ -150,7 +150,7 @@ void Label::_update_visible() {
 	int last_line = MIN(lines_rid.size(), lines_visible + lines_skipped);
 	for (int64_t i = lines_skipped; i < last_line; i++) {
 		minsize.height += TS->shaped_text_get_size(lines_rid[i]).y + font->get_spacing(Font::SPACING_TOP) + font->get_spacing(Font::SPACING_BOTTOM) + line_spacing;
-		if (minsize.height > (get_size().height - style->get_minimum_size().height + line_spacing)) {
+		if (minsize.height > (get_rect_size().height - style->get_minimum_size().height + line_spacing)) {
 			break;
 		}
 	}
@@ -180,7 +180,7 @@ void Label::_notification(int p_what) {
 		RID ci = get_canvas_item();
 
 		Size2 string_size;
-		Size2 size = get_size();
+		Size2 size = get_rect_size();
 		Ref<StyleBox> style = get_theme_stylebox("normal");
 		Ref<Font> font = get_theme_font("font");
 		Color font_color = get_theme_color("font_color");
@@ -192,7 +192,7 @@ void Label::_notification(int p_what) {
 		int shadow_outline_size = get_theme_constant("shadow_outline_size");
 		bool rtl = is_layout_rtl();
 
-		style->draw(ci, Rect2(Point2(0, 0), get_size()));
+		style->draw(ci, Rect2(Point2(0, 0), get_rect_size()));
 
 		float total_h = 0.0;
 		int lines_visible = 0;
@@ -200,7 +200,7 @@ void Label::_notification(int p_what) {
 		// Get number of lines to fit to the height.
 		for (int64_t i = lines_skipped; i < lines_rid.size(); i++) {
 			total_h += TS->shaped_text_get_size(lines_rid[i]).y + font->get_spacing(Font::SPACING_TOP) + font->get_spacing(Font::SPACING_BOTTOM) + line_spacing;
-			if (total_h > (get_size().height - style->get_minimum_size().height + line_spacing)) {
+			if (total_h > (get_rect_size().height - style->get_minimum_size().height + line_spacing)) {
 				break;
 			}
 			lines_visible++;
@@ -399,7 +399,7 @@ int Label::get_visible_line_count() const {
 	float total_h = 0.0;
 	for (int64_t i = lines_skipped; i < lines_rid.size(); i++) {
 		total_h += TS->shaped_text_get_size(lines_rid[i]).y + font->get_spacing(Font::SPACING_TOP) + font->get_spacing(Font::SPACING_BOTTOM) + line_spacing;
-		if (total_h > (get_size().height - style->get_minimum_size().height + line_spacing)) {
+		if (total_h > (get_rect_size().height - style->get_minimum_size().height + line_spacing)) {
 			break;
 		}
 		lines_visible++;
@@ -716,7 +716,7 @@ Label::Label(const String &p_text) {
 
 	set_mouse_filter(MOUSE_FILTER_IGNORE);
 	set_text(p_text);
-	set_v_size_flags(SIZE_SHRINK_CENTER);
+	set_size_flags_vertical(SIZE_SHRINK_CENTER);
 }
 
 Label::~Label() {

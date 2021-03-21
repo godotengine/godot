@@ -75,7 +75,7 @@ public:
 	void set_dragger_visibility(DraggerVisibility p_visibility);
 	DraggerVisibility get_dragger_visibility() const;
 
-	virtual CursorShape get_cursor_shape(const Point2 &p_pos = Point2i()) const override;
+	virtual CursorShape get_mouse_cursor_shape(const Point2 &p_pos = Point2i()) const override;
 
 	virtual Size2 get_minimum_size() const override;
 

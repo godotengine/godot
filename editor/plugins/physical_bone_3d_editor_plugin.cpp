@@ -49,7 +49,7 @@ void PhysicalBone3DEditor::_set_move_joint() {
 PhysicalBone3DEditor::PhysicalBone3DEditor(EditorNode *p_editor) :
 		editor(p_editor) {
 	spatial_editor_hb = memnew(HBoxContainer);
-	spatial_editor_hb->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+	spatial_editor_hb->set_size_flags_horizontal(Control::SIZE_EXPAND_FILL);
 	spatial_editor_hb->set_alignment(BoxContainer::ALIGN_BEGIN);
 	Node3DEditor::get_singleton()->add_control_to_menu_panel(spatial_editor_hb);
 

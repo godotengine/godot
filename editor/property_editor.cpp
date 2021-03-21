@@ -353,12 +353,12 @@ bool CustomPropertyEditor::edit(Object *p_owner, const String &p_name, Variant::
 
 			CheckBox *c = checks20[0];
 			c->set_text("True");
-			checks20gc->set_position(Vector2(4, 4) * EDSCALE);
+			checks20gc->set_rect_position(Vector2(4, 4) * EDSCALE);
 			c->set_pressed(v);
 			c->show();
 
-			checks20gc->set_size(checks20gc->get_minimum_size());
-			set_size(checks20gc->get_position() + checks20gc->get_size() + c->get_size() + Vector2(4, 4) * EDSCALE);
+			checks20gc->set_rect_size(checks20gc->get_minimum_size());
+			set_size(checks20gc->get_rect_position() + checks20gc->get_rect_size() + c->get_rect_size() + Vector2(4, 4) * EDSCALE);
 
 		} break;
 		case Variant::INT:
@@ -461,10 +461,10 @@ bool CustomPropertyEditor::edit(Object *p_owner, const String &p_name, Variant::
 
 				show();
 
-				checks20gc->set_position(Vector2(4, 4) * EDSCALE);
-				checks20gc->set_size(checks20gc->get_minimum_size());
+				checks20gc->set_rect_position(Vector2(4, 4) * EDSCALE);
+				checks20gc->set_rect_size(checks20gc->get_minimum_size());
 
-				set_size(Vector2(4, 4) * EDSCALE + checks20gc->get_position() + checks20gc->get_size());
+				set_size(Vector2(4, 4) * EDSCALE + checks20gc->get_rect_position() + checks20gc->get_rect_size());
 
 			} else if (hint == PROPERTY_HINT_EXP_EASING) {
 				easing_draw->set_anchor_and_offset(SIDE_LEFT, Control::ANCHOR_BEGIN, 5 * EDSCALE);
@@ -1393,7 +1393,7 @@ void CustomPropertyEditor::_drag_easing(const Ref<InputEvent> &p_ev) {
 void CustomPropertyEditor::_draw_easing() {
 	RID ci = easing_draw->get_canvas_item();
 
-	Size2 s = easing_draw->get_size();
+	Size2 s = easing_draw->get_rect_size();
 	Rect2 r(Point2(), s);
 	r = r.grow(3);
 	easing_draw->get_theme_stylebox("normal", "LineEdit")->draw(ci, r);
@@ -1701,9 +1701,9 @@ void CustomPropertyEditor::config_action_buttons(const List<String> &p_strings) 
 	}
 
 	for (int i = 0; i < p_strings.size(); i++) {
-		Size2 btn_m_size = action_buttons[i]->get_size();
-		action_buttons[i]->set_position(Point2(0, height) + Point2(margin_left, margin_top));
-		action_buttons[i]->set_size(Size2(max_width, btn_m_size.height));
+		Size2 btn_m_size = action_buttons[i]->get_rect_size();
+		action_buttons[i]->set_rect_position(Point2(0, height) + Point2(margin_left, margin_top));
+		action_buttons[i]->set_rect_size(Size2(max_width, btn_m_size.height));
 
 		height += btn_m_size.height;
 	}
@@ -1771,7 +1771,7 @@ CustomPropertyEditor::CustomPropertyEditor() {
 		value_label[i]->hide();
 		value_editor[i] = memnew(LineEdit);
 		value_hboxes[hbox_idx]->add_child(value_editor[i]);
-		value_editor[i]->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+		value_editor[i]->set_size_flags_horizontal(Control::SIZE_EXPAND_FILL);
 		value_editor[i]->hide();
 		value_editor[i]->connect("text_entered", callable_mp(this, &CustomPropertyEditor::_modified));
 		value_editor[i]->connect("focus_entered", callable_mp(this, &CustomPropertyEditor::_focus_enter));
@@ -1795,7 +1795,7 @@ CustomPropertyEditor::CustomPropertyEditor() {
 	for (int i = 0; i < 20; i++) {
 		if (i == 5 || i == 15) {
 			Control *space = memnew(Control);
-			space->set_custom_minimum_size(Size2(20, 0) * EDSCALE);
+			space->set_rect_minimum_size(Size2(20, 0) * EDSCALE);
 			checks20gc->add_child(space);
 		}
 
@@ -1853,7 +1853,7 @@ CustomPropertyEditor::CustomPropertyEditor() {
 	easing_draw->hide();
 	easing_draw->connect("draw", callable_mp(this, &CustomPropertyEditor::_draw_easing));
 	easing_draw->connect("gui_input", callable_mp(this, &CustomPropertyEditor::_drag_easing));
-	easing_draw->set_default_cursor_shape(Control::CURSOR_MOVE);
+	easing_draw->set_mouse_default_cursor_shape(Control::CURSOR_MOVE);
 
 	type_button = memnew(MenuButton);
 	add_child(type_button);

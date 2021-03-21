@@ -590,7 +590,7 @@ InputEventConfigurationDialog::InputEventConfigurationDialog() {
 	tab_container = memnew(TabContainer);
 	tab_container->set_tab_align(TabContainer::TabAlign::ALIGN_LEFT);
 	tab_container->set_use_hidden_tabs_for_min_size(true);
-	tab_container->set_v_size_flags(Control::SIZE_EXPAND_FILL);
+	tab_container->set_size_flags_vertical(Control::SIZE_EXPAND_FILL);
 	tab_container->connect("tab_selected", callable_mp(this, &InputEventConfigurationDialog::_tab_selected));
 	main_vbox->add_child(tab_container);
 
@@ -605,20 +605,20 @@ InputEventConfigurationDialog::InputEventConfigurationDialog() {
 
 	VBoxContainer *manual_vbox = memnew(VBoxContainer);
 	manual_vbox->set_name("Manual Selection");
-	manual_vbox->set_v_size_flags(Control::SIZE_EXPAND_FILL);
+	manual_vbox->set_size_flags_vertical(Control::SIZE_EXPAND_FILL);
 	tab_container->add_child(manual_vbox);
 
 	input_list_search = memnew(LineEdit);
-	input_list_search->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+	input_list_search->set_size_flags_horizontal(Control::SIZE_EXPAND_FILL);
 	input_list_search->set_placeholder(TTR("Filter Inputs"));
 	input_list_search->set_clear_button_enabled(true);
 	input_list_search->connect("text_changed", callable_mp(this, &InputEventConfigurationDialog::_search_term_updated));
 	manual_vbox->add_child(input_list_search);
 
 	input_list_tree = memnew(Tree);
-	input_list_tree->set_custom_minimum_size(Size2(0, 100 * EDSCALE)); // Min height for tree
+	input_list_tree->set_rect_minimum_size(Size2(0, 100 * EDSCALE)); // Min height for tree
 	input_list_tree->connect("item_selected", callable_mp(this, &InputEventConfigurationDialog::_input_list_item_selected));
-	input_list_tree->set_v_size_flags(Control::SIZE_EXPAND_FILL);
+	input_list_tree->set_size_flags_vertical(Control::SIZE_EXPAND_FILL);
 	manual_vbox->add_child(input_list_tree);
 
 	input_list_tree->set_hide_root(true);
@@ -636,14 +636,14 @@ InputEventConfigurationDialog::InputEventConfigurationDialog() {
 
 	// Device Selection
 	device_container = memnew(HBoxContainer);
-	device_container->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+	device_container->set_size_flags_horizontal(Control::SIZE_EXPAND_FILL);
 
 	Label *device_label = memnew(Label);
 	device_label->set_text("Device:");
 	device_container->add_child(device_label);
 
 	device_id_option = memnew(OptionButton);
-	device_id_option->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+	device_id_option->set_size_flags_horizontal(Control::SIZE_EXPAND_FILL);
 	device_container->add_child(device_id_option);
 
 	for (int i = -1; i < 8; i++) {
@@ -1108,7 +1108,7 @@ ActionMapEditor::ActionMapEditor() {
 	main_vbox->add_child(top_hbox);
 
 	action_list_search = memnew(LineEdit);
-	action_list_search->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+	action_list_search->set_size_flags_horizontal(Control::SIZE_EXPAND_FILL);
 	action_list_search->set_placeholder(TTR("Filter Actions"));
 	action_list_search->set_clear_button_enabled(true);
 	action_list_search->connect("text_changed", callable_mp(this, &ActionMapEditor::_search_term_updated));
@@ -1122,10 +1122,10 @@ ActionMapEditor::ActionMapEditor() {
 
 	// Adding Action line edit + button
 	add_hbox = memnew(HBoxContainer);
-	add_hbox->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+	add_hbox->set_size_flags_horizontal(Control::SIZE_EXPAND_FILL);
 
 	add_edit = memnew(LineEdit);
-	add_edit->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+	add_edit->set_size_flags_horizontal(Control::SIZE_EXPAND_FILL);
 	add_edit->set_placeholder(TTR("Add New Action"));
 	add_edit->set_clear_button_enabled(true);
 	add_edit->connect("text_entered", callable_mp(this, &ActionMapEditor::_add_action));
@@ -1140,7 +1140,7 @@ ActionMapEditor::ActionMapEditor() {
 
 	// Action Editor Tree
 	action_tree = memnew(Tree);
-	action_tree->set_v_size_flags(Control::SIZE_EXPAND_FILL);
+	action_tree->set_size_flags_vertical(Control::SIZE_EXPAND_FILL);
 	action_tree->set_columns(3);
 	action_tree->set_hide_root(true);
 	action_tree->set_column_titles_visible(true);

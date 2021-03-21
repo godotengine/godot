@@ -54,9 +54,9 @@
 #ifdef TOOLS_ENABLED
 Dictionary Control::_edit_get_state() const {
 	Dictionary s;
-	s["rotation"] = get_rotation();
-	s["scale"] = get_scale();
-	s["pivot"] = get_pivot_offset();
+	s["rotation"] = get_rect_rotation();
+	s["scale"] = get_rect_scale();
+	s["pivot"] = get_rect_pivot_offset();
 	Array anchors;
 	anchors.push_back(get_anchor(SIDE_LEFT));
 	anchors.push_back(get_anchor(SIDE_TOP));
@@ -78,9 +78,9 @@ void Control::_edit_set_state(const Dictionary &p_state) {
 				  !p_state.has("pivot") || !p_state.has("anchors") || !p_state.has("offsets"));
 	Dictionary state = p_state;
 
-	set_rotation(state["rotation"]);
-	set_scale(state["scale"]);
-	set_pivot_offset(state["pivot"]);
+	set_rect_rotation(state["rotation"]);
+	set_rect_scale(state["scale"]);
+	set_rect_pivot_offset(state["pivot"]);
 	Array anchors = state["anchors"];
 	data.anchor[SIDE_LEFT] = anchors[0];
 	data.anchor[SIDE_TOP] = anchors[1];
@@ -97,19 +97,19 @@ void Control::_edit_set_state(const Dictionary &p_state) {
 void Control::_edit_set_position(const Point2 &p_position) {
 #ifdef TOOLS_ENABLED
 	ERR_FAIL_COND_MSG(!Engine::get_singleton()->is_editor_hint(), "This function can only be used from editor plugins.");
-	set_position(p_position, CanvasItemEditor::get_singleton()->is_anchors_mode_enabled() && Object::cast_to<Control>(data.parent));
+	set_rect_position(p_position, CanvasItemEditor::get_singleton()->is_anchors_mode_enabled() && Object::cast_to<Control>(data.parent));
 #else
 	// Unlikely to happen. TODO: enclose all _edit_ functions into TOOLS_ENABLED
-	set_position(p_position);
+	set_rect_position(p_position);
 #endif
 };
 
 Point2 Control::_edit_get_position() const {
-	return get_position();
+	return get_rect_position();
 };
 
 void Control::_edit_set_scale(const Size2 &p_scale) {
-	set_scale(p_scale);
+	set_rect_scale(p_scale);
 }
 
 Size2 Control::_edit_get_scale() const {
@@ -119,17 +119,17 @@ Size2 Control::_edit_get_scale() const {
 void Control::_edit_set_rect(const Rect2 &p_edit_rect) {
 #ifdef TOOLS_ENABLED
 	ERR_FAIL_COND_MSG(!Engine::get_singleton()->is_editor_hint(), "This function can only be used from editor plugins.");
-	set_position((get_position() + get_transform().basis_xform(p_edit_rect.position)).snapped(Vector2(1, 1)), CanvasItemEditor::get_singleton()->is_anchors_mode_enabled());
-	set_size(p_edit_rect.size.snapped(Vector2(1, 1)), CanvasItemEditor::get_singleton()->is_anchors_mode_enabled());
+	set_rect_position((get_rect_position() + get_transform().basis_xform(p_edit_rect.position)).snapped(Vector2(1, 1)), CanvasItemEditor::get_singleton()->is_anchors_mode_enabled());
+	set_rect_size(p_edit_rect.size.snapped(Vector2(1, 1)), CanvasItemEditor::get_singleton()->is_anchors_mode_enabled());
 #else
 	// Unlikely to happen. TODO: enclose all _edit_ functions into TOOLS_ENABLED
-	set_position((get_position() + get_transform().basis_xform(p_edit_rect.position)).snapped(Vector2(1, 1)));
-	set_size(p_edit_rect.size.snapped(Vector2(1, 1)));
+	set_rect_position((get_rect_position() + get_transform().basis_xform(p_edit_rect.position)).snapped(Vector2(1, 1)));
+	set_rect_size(p_edit_rect.size.snapped(Vector2(1, 1)));
 #endif
 }
 
 Rect2 Control::_edit_get_rect() const {
-	return Rect2(Point2(), get_size());
+	return Rect2(Point2(), get_rect_size());
 }
 
 bool Control::_edit_use_rect() const {
@@ -137,11 +137,11 @@ bool Control::_edit_use_rect() const {
 }
 
 void Control::_edit_set_rotation(real_t p_rotation) {
-	set_rotation(p_rotation);
+	set_rect_rotation(p_rotation);
 }
 
 real_t Control::_edit_get_rotation() const {
-	return get_rotation();
+	return get_rect_rotation();
 }
 
 bool Control::_edit_use_rotation() const {
@@ -149,14 +149,14 @@ bool Control::_edit_use_rotation() const {
 }
 
 void Control::_edit_set_pivot(const Point2 &p_pivot) {
-	Vector2 delta_pivot = p_pivot - get_pivot_offset();
+	Vector2 delta_pivot = p_pivot - get_rect_pivot_offset();
 	Vector2 move = Vector2((cos(data.rotation) - 1.0) * delta_pivot.x - sin(data.rotation) * delta_pivot.y, sin(data.rotation) * delta_pivot.x + (cos(data.rotation) - 1.0) * delta_pivot.y);
-	set_position(get_position() + move);
-	set_pivot_offset(p_pivot);
+	set_rect_position(get_rect_position() + move);
+	set_rect_pivot_offset(p_pivot);
 }
 
 Point2 Control::_edit_get_pivot() const {
-	return get_pivot_offset();
+	return get_rect_pivot_offset();
 }
 
 bool Control::_edit_use_pivot() const {
@@ -168,22 +168,22 @@ Size2 Control::_edit_get_minimum_size() const {
 }
 #endif
 
-void Control::set_custom_minimum_size(const Size2 &p_custom) {
-	if (p_custom == data.custom_minimum_size) {
+void Control::set_rect_minimum_size(const Size2 &p_rect_minimum_size) {
+	if (p_rect_minimum_size == data.rect_minimum_size) {
 		return;
 	}
-	data.custom_minimum_size = p_custom;
+	data.rect_minimum_size = p_rect_minimum_size;
 	minimum_size_changed();
 }
 
-Size2 Control::get_custom_minimum_size() const {
-	return data.custom_minimum_size;
+Size2 Control::get_rect_minimum_size() const {
+	return data.rect_minimum_size;
 }
 
 void Control::_update_minimum_size_cache() {
 	Size2 minsize = get_minimum_size();
-	minsize.x = MAX(minsize.x, data.custom_minimum_size.x);
-	minsize.y = MAX(minsize.y, data.custom_minimum_size.y);
+	minsize.x = MAX(minsize.x, data.rect_minimum_size.x);
+	minsize.y = MAX(minsize.y, data.rect_minimum_size.y);
 
 	bool size_changed = false;
 	if (data.minimum_size_cache != minsize) {
@@ -492,7 +492,7 @@ void Control::remove_child_notify(Node *p_child) {
 
 void Control::_update_canvas_item_transform() {
 	Transform2D xform = _get_internal_transform();
-	xform[2] += get_position();
+	xform[2] += get_rect_position();
 
 	RenderingServer::get_singleton()->canvas_item_set_transform(get_canvas_item(), xform);
 }
@@ -598,7 +598,7 @@ void Control::_notification(int p_notification) {
 		} break;
 		case NOTIFICATION_DRAW: {
 			_update_canvas_item_transform();
-			RenderingServer::get_singleton()->canvas_item_set_custom_rect(get_canvas_item(), !data.disable_visibility_clip, Rect2(Point2(), get_size()));
+			RenderingServer::get_singleton()->canvas_item_set_custom_rect(get_canvas_item(), !data.disable_visibility_clip, Rect2(Point2(), get_rect_size()));
 			RenderingServer::get_singleton()->canvas_item_set_clip(get_canvas_item(), data.clip_contents);
 			//emit_signal(SceneStringNames::get_singleton()->draw);
 
@@ -661,9 +661,9 @@ bool Control::has_point(const Point2 &p_point) const {
 	}
 	/*if (has_stylebox("mask")) {
 		Ref<StyleBox> mask = get_stylebox("mask");
-		return mask->test_mask(p_point,Rect2(Point2(),get_size()));
+		return mask->test_mask(p_point,Rect2(Point2(),get_rect_size()));
 	}*/
-	return Rect2(Point2(), get_size()).has_point(p_point);
+	return Rect2(Point2(), get_rect_size()).has_point(p_point);
 }
 
 void Control::set_drag_forwarding(Control *p_target) {
@@ -1246,9 +1246,9 @@ void Control::_size_changed() {
 	Size2 minimum_size = get_combined_minimum_size();
 
 	if (minimum_size.width > new_size_cache.width) {
-		if (data.h_grow == GROW_DIRECTION_BEGIN) {
+		if (data.grow_horizontal == GROW_DIRECTION_BEGIN) {
 			new_pos_cache.x += new_size_cache.width - minimum_size.width;
-		} else if (data.h_grow == GROW_DIRECTION_BOTH) {
+		} else if (data.grow_horizontal == GROW_DIRECTION_BOTH) {
 			new_pos_cache.x += 0.5 * (new_size_cache.width - minimum_size.width);
 		}
 
@@ -1260,9 +1260,9 @@ void Control::_size_changed() {
 	}
 
 	if (minimum_size.height > new_size_cache.height) {
-		if (data.v_grow == GROW_DIRECTION_BEGIN) {
+		if (data.grow_vertical == GROW_DIRECTION_BEGIN) {
 			new_pos_cache.y += new_size_cache.height - minimum_size.height;
-		} else if (data.v_grow == GROW_DIRECTION_BOTH) {
+		} else if (data.grow_vertical == GROW_DIRECTION_BOTH) {
 			new_pos_cache.y += 0.5 * (new_size_cache.height - minimum_size.height);
 		}
 
@@ -1453,7 +1453,7 @@ void Control::set_offsets_preset(LayoutPreset p_preset, LayoutPresetMode p_resiz
 
 	// Calculate the size if the node is not resized
 	Size2 min_size = get_minimum_size();
-	Size2 new_size = get_size();
+	Size2 new_size = get_rect_size();
 	if (p_resize_mode == PRESET_MODE_MINSIZE || p_resize_mode == PRESET_MODE_KEEP_HEIGHT) {
 		new_size.x = min_size.x;
 	}
@@ -1626,13 +1626,13 @@ Size2 Control::get_end() const {
 	return Size2(data.offset[2], data.offset[3]);
 }
 
-Point2 Control::get_global_position() const {
+Point2 Control::get_rect_global_position() const {
 	return get_global_transform().get_origin();
 }
 
 Point2 Control::get_screen_position() const {
 	ERR_FAIL_COND_V(!is_inside_tree(), Point2());
-	Point2 global_pos = get_global_position();
+	Point2 global_pos = get_rect_global_position();
 	Window *w = Object::cast_to<Window>(get_viewport());
 	if (w && !w->is_embedding_subwindows()) {
 		global_pos += w->get_position();
@@ -1641,18 +1641,18 @@ Point2 Control::get_screen_position() const {
 	return global_pos;
 }
 
-void Control::_set_global_position(const Point2 &p_point) {
-	set_global_position(p_point);
+void Control::_set_rect_global_position(const Point2 &p_point) {
+	set_rect_global_position(p_point);
 }
 
-void Control::set_global_position(const Point2 &p_point, bool p_keep_offsets) {
+void Control::set_rect_global_position(const Point2 &p_point, bool p_keep_offsets) {
 	Transform2D inv;
 
 	if (data.parent_canvas_item) {
 		inv = data.parent_canvas_item->get_global_transform().affine_inverse();
 	}
 
-	set_position(inv.xform(p_point), p_keep_offsets);
+	set_rect_position(inv.xform(p_point), p_keep_offsets);
 }
 
 void Control::_compute_anchors(Rect2 p_rect, const real_t p_offsets[4], real_t (&r_anchors)[4]) {
@@ -1683,11 +1683,11 @@ void Control::_compute_offsets(Rect2 p_rect, const real_t p_anchors[4], real_t (
 	r_offsets[3] = p_rect.position.y + p_rect.size.y - (p_anchors[3] * parent_rect_size.y);
 }
 
-void Control::_set_position(const Size2 &p_point) {
-	set_position(p_point);
+void Control::_set_rect_position(const Size2 &p_point) {
+	set_rect_position(p_point);
 }
 
-void Control::set_position(const Size2 &p_point, bool p_keep_offsets) {
+void Control::set_rect_position(const Size2 &p_point, bool p_keep_offsets) {
 	if (p_keep_offsets) {
 		_compute_anchors(Rect2(p_point, data.size_cache), data.offset, data.anchor);
 	} else {
@@ -1707,16 +1707,16 @@ void Control::set_rect(const Rect2 &p_rect) {
 	}
 }
 
-void Control::_set_size(const Size2 &p_size) {
+void Control::_set_rect_size(const Size2 &p_size) {
 #ifdef DEBUG_ENABLED
 	if (data.size_warning) {
 		WARN_PRINT("Adjusting the size of Control nodes before they are fully initialized is unreliable. Consider deferring it with set_deferred().");
 	}
 #endif
-	set_size(p_size);
+	set_rect_size(p_size);
 }
 
-void Control::set_size(const Size2 &p_size, bool p_keep_offsets) {
+void Control::set_rect_size(const Size2 &p_size, bool p_keep_offsets) {
 	Size2 new_size = p_size;
 	Size2 min = get_combined_minimum_size();
 	if (new_size.x < min.x) {
@@ -1734,22 +1734,22 @@ void Control::set_size(const Size2 &p_size, bool p_keep_offsets) {
 	_size_changed();
 }
 
-Size2 Control::get_position() const {
+Size2 Control::get_rect_position() const {
 	return data.pos_cache;
 }
 
-Size2 Control::get_size() const {
+Size2 Control::get_rect_size() const {
 	return data.size_cache;
 }
 
 Rect2 Control::get_global_rect() const {
-	return Rect2(get_global_position(), get_size());
+	return Rect2(get_rect_global_position(), get_rect_size());
 }
 
 Rect2 Control::get_screen_rect() const {
 	ERR_FAIL_COND_V(!is_inside_tree(), Rect2());
 
-	Rect2 r(get_global_position(), get_size());
+	Rect2 r(get_rect_global_position(), get_rect_size());
 
 	Window *w = Object::cast_to<Window>(get_viewport());
 	if (w && !w->is_embedding_subwindows()) {
@@ -1767,11 +1767,11 @@ Rect2 Control::get_window_rect() const {
 }
 
 Rect2 Control::get_rect() const {
-	return Rect2(get_position(), get_size());
+	return Rect2(get_rect_position(), get_rect_size());
 }
 
 Rect2 Control::get_anchorable_rect() const {
-	return Rect2(Point2(), get_size());
+	return Rect2(Point2(), get_rect_size());
 }
 
 void Control::add_theme_icon_override(const StringName &p_name, const Ref<Texture2D> &p_icon) {
@@ -2197,23 +2197,23 @@ Control *Control::make_custom_tooltip(const String &p_text) const {
 	return nullptr;
 }
 
-void Control::set_default_cursor_shape(CursorShape p_shape) {
+void Control::set_mouse_default_cursor_shape(CursorShape p_shape) {
 	ERR_FAIL_INDEX(int(p_shape), CURSOR_MAX);
 
-	data.default_cursor = p_shape;
+	data.mouse_cursor_shape = p_shape;
 }
 
-Control::CursorShape Control::get_default_cursor_shape() const {
-	return data.default_cursor;
+Control::CursorShape Control::get_mouse_default_cursor_shape() const {
+	return data.mouse_cursor_shape;
 }
 
-Control::CursorShape Control::get_cursor_shape(const Point2 &p_pos) const {
-	return data.default_cursor;
+Control::CursorShape Control::get_mouse_cursor_shape(const Point2 &p_pos) const {
+	return data.mouse_cursor_shape;
 }
 
 Transform2D Control::get_transform() const {
 	Transform2D xform = _get_internal_transform();
-	xform[2] += get_position();
+	xform[2] += get_rect_position();
 	return xform;
 }
 
@@ -2287,9 +2287,9 @@ Control *Control::_get_focus_neighbor(Side p_side, int p_count) {
 	Transform2D xform = get_global_transform();
 
 	points[0] = xform.xform(Point2());
-	points[1] = xform.xform(Point2(get_size().x, 0));
-	points[2] = xform.xform(get_size());
-	points[3] = xform.xform(Point2(0, get_size().y));
+	points[1] = xform.xform(Point2(get_rect_size().x, 0));
+	points[2] = xform.xform(get_rect_size());
+	points[3] = xform.xform(Point2(0, get_rect_size().y));
 
 	const Vector2 dir[4] = {
 		Vector2(-1, 0),
@@ -2343,9 +2343,9 @@ void Control::_window_find_focus_neighbor(const Vector2 &p_dir, Node *p_at, cons
 		Transform2D xform = c->get_global_transform();
 
 		points[0] = xform.xform(Point2());
-		points[1] = xform.xform(Point2(c->get_size().x, 0));
-		points[2] = xform.xform(c->get_size());
-		points[3] = xform.xform(Point2(0, c->get_size().y));
+		points[1] = xform.xform(Point2(c->get_rect_size().x, 0));
+		points[2] = xform.xform(c->get_rect_size());
+		points[3] = xform.xform(Point2(0, c->get_rect_size().y));
 
 		real_t min = 1e7;
 
@@ -2387,27 +2387,27 @@ void Control::_window_find_focus_neighbor(const Vector2 &p_dir, Node *p_at, cons
 	}
 }
 
-void Control::set_h_size_flags(int p_flags) {
-	if (data.h_size_flags == p_flags) {
+void Control::set_size_flags_horizontal(int p_flags) {
+	if (data.size_flags_horizontal == p_flags) {
 		return;
 	}
-	data.h_size_flags = p_flags;
+	data.size_flags_horizontal = p_flags;
 	emit_signal(SceneStringNames::get_singleton()->size_flags_changed);
 }
 
-int Control::get_h_size_flags() const {
-	return data.h_size_flags;
+int Control::get_size_flags_horizontal() const {
+	return data.size_flags_horizontal;
 }
 
-void Control::set_v_size_flags(int p_flags) {
-	if (data.v_size_flags == p_flags) {
+void Control::set_size_flags_vertical(int p_flags) {
+	if (data.size_flags_vertical == p_flags) {
 		return;
 	}
-	data.v_size_flags = p_flags;
+	data.size_flags_vertical = p_flags;
 	emit_signal(SceneStringNames::get_singleton()->size_flags_changed);
 }
 
-void Control::set_stretch_ratio(real_t p_ratio) {
+void Control::set_size_flags_stretch_ratio(real_t p_ratio) {
 	if (data.expand == p_ratio) {
 		return;
 	}
@@ -2416,7 +2416,7 @@ void Control::set_stretch_ratio(real_t p_ratio) {
 	emit_signal(SceneStringNames::get_singleton()->size_flags_changed);
 }
 
-real_t Control::get_stretch_ratio() const {
+real_t Control::get_size_flags_stretch_ratio() const {
 	return data.expand;
 }
 
@@ -2461,8 +2461,8 @@ void Control::minimum_size_changed() {
 	MessageQueue::get_singleton()->push_call(this, "_update_minimum_size");
 }
 
-int Control::get_v_size_flags() const {
-	return data.v_size_flags;
+int Control::get_size_flags_vertical() const {
+	return data.size_flags_vertical;
 }
 
 void Control::set_mouse_filter(MouseFilter p_filter) {
@@ -2588,22 +2588,22 @@ Vector<Vector2i> Control::structured_text_parser(StructuredTextParser p_node_typ
 	return ret;
 }
 
-void Control::set_rotation(real_t p_radians) {
+void Control::set_rect_rotation(real_t p_radians) {
 	data.rotation = p_radians;
 	update();
 	_notify_transform();
 }
 
-real_t Control::get_rotation() const {
+real_t Control::get_rect_rotation() const {
 	return data.rotation;
 }
 
-void Control::set_rotation_degrees(real_t p_degrees) {
-	set_rotation(Math::deg2rad(p_degrees));
+void Control::set_rect_rotation_degrees(real_t p_degrees) {
+	set_rect_rotation(Math::deg2rad(p_degrees));
 }
 
-real_t Control::get_rotation_degrees() const {
-	return Math::rad2deg(get_rotation());
+real_t Control::get_rect_rotation_degrees() const {
+	return Math::rad2deg(get_rect_rotation());
 }
 
 void Control::_override_changed() {
@@ -2612,17 +2612,17 @@ void Control::_override_changed() {
 	minimum_size_changed(); // overrides are likely to affect minimum size
 }
 
-void Control::set_pivot_offset(const Vector2 &p_pivot) {
+void Control::set_rect_pivot_offset(const Vector2 &p_pivot) {
 	data.pivot_offset = p_pivot;
 	update();
 	_notify_transform();
 }
 
-Vector2 Control::get_pivot_offset() const {
+Vector2 Control::get_rect_pivot_offset() const {
 	return data.pivot_offset;
 }
 
-void Control::set_scale(const Vector2 &p_scale) {
+void Control::set_rect_scale(const Vector2 &p_scale) {
 	data.scale = p_scale;
 	// Avoid having 0 scale values, can lead to errors in physics and rendering.
 	if (data.scale.x == 0) {
@@ -2635,7 +2635,7 @@ void Control::set_scale(const Vector2 &p_scale) {
 	_notify_transform();
 }
 
-Vector2 Control::get_scale() const {
+Vector2 Control::get_rect_scale() const {
 	return data.scale;
 }
 
@@ -2717,35 +2717,35 @@ TypedArray<String> Control::get_configuration_warnings() const {
 	return warnings;
 }
 
-void Control::set_clip_contents(bool p_clip) {
+void Control::set_rect_clip_contents(bool p_clip) {
 	data.clip_contents = p_clip;
 	update();
 }
 
-bool Control::is_clipping_contents() {
+bool Control::is_rect_clipping_contents() {
 	return data.clip_contents;
 }
 
-void Control::set_h_grow_direction(GrowDirection p_direction) {
+void Control::set_grow_horizontal(GrowDirection p_direction) {
 	ERR_FAIL_INDEX((int)p_direction, 3);
 
-	data.h_grow = p_direction;
+	data.grow_horizontal = p_direction;
 	_size_changed();
 }
 
-Control::GrowDirection Control::get_h_grow_direction() const {
-	return data.h_grow;
+Control::GrowDirection Control::get_grow_horizontal() const {
+	return data.grow_horizontal;
 }
 
-void Control::set_v_grow_direction(GrowDirection p_direction) {
+void Control::set_grow_vertical(GrowDirection p_direction) {
 	ERR_FAIL_INDEX((int)p_direction, 3);
 
-	data.v_grow = p_direction;
+	data.grow_vertical = p_direction;
 	_size_changed();
 }
 
-Control::GrowDirection Control::get_v_grow_direction() const {
-	return data.v_grow;
+Control::GrowDirection Control::get_grow_vertical() const {
+	return data.grow_vertical;
 }
 
 void Control::_bind_methods() {
@@ -2765,29 +2765,29 @@ void Control::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_anchor_and_offset", "side", "anchor", "offset", "push_opposite_anchor"), &Control::set_anchor_and_offset, DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("set_begin", "position"), &Control::set_begin);
 	ClassDB::bind_method(D_METHOD("set_end", "position"), &Control::set_end);
-	ClassDB::bind_method(D_METHOD("set_position", "position", "keep_offsets"), &Control::set_position, DEFVAL(false));
-	ClassDB::bind_method(D_METHOD("_set_position", "position"), &Control::_set_position);
-	ClassDB::bind_method(D_METHOD("set_size", "size", "keep_offsets"), &Control::set_size, DEFVAL(false));
-	ClassDB::bind_method(D_METHOD("_set_size", "size"), &Control::_set_size);
-	ClassDB::bind_method(D_METHOD("set_custom_minimum_size", "size"), &Control::set_custom_minimum_size);
-	ClassDB::bind_method(D_METHOD("set_global_position", "position", "keep_offsets"), &Control::set_global_position, DEFVAL(false));
-	ClassDB::bind_method(D_METHOD("_set_global_position", "position"), &Control::_set_global_position);
-	ClassDB::bind_method(D_METHOD("set_rotation", "radians"), &Control::set_rotation);
-	ClassDB::bind_method(D_METHOD("set_rotation_degrees", "degrees"), &Control::set_rotation_degrees);
-	ClassDB::bind_method(D_METHOD("set_scale", "scale"), &Control::set_scale);
-	ClassDB::bind_method(D_METHOD("set_pivot_offset", "pivot_offset"), &Control::set_pivot_offset);
+	ClassDB::bind_method(D_METHOD("set_rect_position", "position", "keep_offsets"), &Control::set_rect_position, DEFVAL(false));
+	ClassDB::bind_method(D_METHOD("_set_rect_position", "position"), &Control::_set_rect_position);
+	ClassDB::bind_method(D_METHOD("set_rect_size", "size", "keep_offsets"), &Control::set_rect_size, DEFVAL(false));
+	ClassDB::bind_method(D_METHOD("_set_rect_size", "size"), &Control::_set_rect_size);
+	ClassDB::bind_method(D_METHOD("set_rect_minimum_size", "size"), &Control::set_rect_minimum_size);
+	ClassDB::bind_method(D_METHOD("set_rect_global_position", "position", "keep_offsets"), &Control::set_rect_global_position, DEFVAL(false));
+	ClassDB::bind_method(D_METHOD("_set_rect_global_position", "position"), &Control::_set_rect_global_position);
+	ClassDB::bind_method(D_METHOD("set_rect_rotation", "radians"), &Control::set_rect_rotation);
+	ClassDB::bind_method(D_METHOD("set_rect_rotation_degrees", "degrees"), &Control::set_rect_rotation_degrees);
+	ClassDB::bind_method(D_METHOD("set_rect_scale", "scale"), &Control::set_rect_scale);
+	ClassDB::bind_method(D_METHOD("set_rect_pivot_offset", "pivot_offset"), &Control::set_rect_pivot_offset);
 	ClassDB::bind_method(D_METHOD("get_offset", "offset"), &Control::get_offset);
 	ClassDB::bind_method(D_METHOD("get_begin"), &Control::get_begin);
 	ClassDB::bind_method(D_METHOD("get_end"), &Control::get_end);
-	ClassDB::bind_method(D_METHOD("get_position"), &Control::get_position);
-	ClassDB::bind_method(D_METHOD("get_size"), &Control::get_size);
-	ClassDB::bind_method(D_METHOD("get_rotation"), &Control::get_rotation);
-	ClassDB::bind_method(D_METHOD("get_rotation_degrees"), &Control::get_rotation_degrees);
-	ClassDB::bind_method(D_METHOD("get_scale"), &Control::get_scale);
-	ClassDB::bind_method(D_METHOD("get_pivot_offset"), &Control::get_pivot_offset);
-	ClassDB::bind_method(D_METHOD("get_custom_minimum_size"), &Control::get_custom_minimum_size);
+	ClassDB::bind_method(D_METHOD("get_rect_position"), &Control::get_rect_position);
+	ClassDB::bind_method(D_METHOD("get_rect_size"), &Control::get_rect_size);
+	ClassDB::bind_method(D_METHOD("get_rect_rotation"), &Control::get_rect_rotation);
+	ClassDB::bind_method(D_METHOD("get_rect_rotation_degrees"), &Control::get_rect_rotation_degrees);
+	ClassDB::bind_method(D_METHOD("get_rect_scale"), &Control::get_rect_scale);
+	ClassDB::bind_method(D_METHOD("get_rect_pivot_offset"), &Control::get_rect_pivot_offset);
+	ClassDB::bind_method(D_METHOD("get_rect_minimum_size"), &Control::get_rect_minimum_size);
 	ClassDB::bind_method(D_METHOD("get_parent_area_size"), &Control::get_parent_area_size);
-	ClassDB::bind_method(D_METHOD("get_global_position"), &Control::get_global_position);
+	ClassDB::bind_method(D_METHOD("get_rect_global_position"), &Control::get_rect_global_position);
 	ClassDB::bind_method(D_METHOD("get_rect"), &Control::get_rect);
 	ClassDB::bind_method(D_METHOD("get_global_rect"), &Control::get_global_rect);
 	ClassDB::bind_method(D_METHOD("set_focus_mode", "mode"), &Control::set_focus_mode);
@@ -2799,14 +2799,14 @@ void Control::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("find_next_valid_focus"), &Control::find_next_valid_focus);
 	ClassDB::bind_method(D_METHOD("get_focus_owner"), &Control::get_focus_owner);
 
-	ClassDB::bind_method(D_METHOD("set_h_size_flags", "flags"), &Control::set_h_size_flags);
-	ClassDB::bind_method(D_METHOD("get_h_size_flags"), &Control::get_h_size_flags);
+	ClassDB::bind_method(D_METHOD("set_size_flags_horizontal", "flags"), &Control::set_size_flags_horizontal);
+	ClassDB::bind_method(D_METHOD("get_size_flags_horizontal"), &Control::get_size_flags_horizontal);
 
-	ClassDB::bind_method(D_METHOD("set_stretch_ratio", "ratio"), &Control::set_stretch_ratio);
-	ClassDB::bind_method(D_METHOD("get_stretch_ratio"), &Control::get_stretch_ratio);
+	ClassDB::bind_method(D_METHOD("set_size_flags_stretch_ratio", "ratio"), &Control::set_size_flags_stretch_ratio);
+	ClassDB::bind_method(D_METHOD("get_size_flags_stretch_ratio"), &Control::get_size_flags_stretch_ratio);
 
-	ClassDB::bind_method(D_METHOD("set_v_size_flags", "flags"), &Control::set_v_size_flags);
-	ClassDB::bind_method(D_METHOD("get_v_size_flags"), &Control::get_v_size_flags);
+	ClassDB::bind_method(D_METHOD("set_size_flags_vertical", "flags"), &Control::set_size_flags_vertical);
+	ClassDB::bind_method(D_METHOD("get_size_flags_vertical"), &Control::get_size_flags_vertical);
 
 	ClassDB::bind_method(D_METHOD("set_theme", "theme"), &Control::set_theme);
 	ClassDB::bind_method(D_METHOD("get_theme"), &Control::get_theme);
@@ -2848,19 +2848,19 @@ void Control::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("get_parent_control"), &Control::get_parent_control);
 
-	ClassDB::bind_method(D_METHOD("set_h_grow_direction", "direction"), &Control::set_h_grow_direction);
-	ClassDB::bind_method(D_METHOD("get_h_grow_direction"), &Control::get_h_grow_direction);
+	ClassDB::bind_method(D_METHOD("set_grow_horizontal", "direction"), &Control::set_grow_horizontal);
+	ClassDB::bind_method(D_METHOD("get_grow_horizontal"), &Control::get_grow_horizontal);
 
-	ClassDB::bind_method(D_METHOD("set_v_grow_direction", "direction"), &Control::set_v_grow_direction);
-	ClassDB::bind_method(D_METHOD("get_v_grow_direction"), &Control::get_v_grow_direction);
+	ClassDB::bind_method(D_METHOD("set_grow_vertical", "direction"), &Control::set_grow_vertical);
+	ClassDB::bind_method(D_METHOD("get_grow_vertical"), &Control::get_grow_vertical);
 
 	ClassDB::bind_method(D_METHOD("set_tooltip", "tooltip"), &Control::set_tooltip);
 	ClassDB::bind_method(D_METHOD("get_tooltip", "at_position"), &Control::get_tooltip, DEFVAL(Point2()));
 	ClassDB::bind_method(D_METHOD("_get_tooltip"), &Control::_get_tooltip);
 
-	ClassDB::bind_method(D_METHOD("set_default_cursor_shape", "shape"), &Control::set_default_cursor_shape);
-	ClassDB::bind_method(D_METHOD("get_default_cursor_shape"), &Control::get_default_cursor_shape);
-	ClassDB::bind_method(D_METHOD("get_cursor_shape", "position"), &Control::get_cursor_shape, DEFVAL(Point2()));
+	ClassDB::bind_method(D_METHOD("set_mouse_default_cursor_shape", "shape"), &Control::set_mouse_default_cursor_shape);
+	ClassDB::bind_method(D_METHOD("get_mouse_default_cursor_shape"), &Control::get_mouse_default_cursor_shape);
+	ClassDB::bind_method(D_METHOD("get_mouse_cursor_shape", "position"), &Control::get_mouse_cursor_shape, DEFVAL(Point2()));
 
 	ClassDB::bind_method(D_METHOD("set_focus_neighbor", "side", "neighbor"), &Control::set_focus_neighbor);
 	ClassDB::bind_method(D_METHOD("get_focus_neighbor", "side"), &Control::get_focus_neighbor);
@@ -2876,8 +2876,8 @@ void Control::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_mouse_filter", "filter"), &Control::set_mouse_filter);
 	ClassDB::bind_method(D_METHOD("get_mouse_filter"), &Control::get_mouse_filter);
 
-	ClassDB::bind_method(D_METHOD("set_clip_contents", "enable"), &Control::set_clip_contents);
-	ClassDB::bind_method(D_METHOD("is_clipping_contents"), &Control::is_clipping_contents);
+	ClassDB::bind_method(D_METHOD("set_rect_clip_contents", "enable"), &Control::set_rect_clip_contents);
+	ClassDB::bind_method(D_METHOD("is_rect_clipping_contents"), &Control::is_rect_clipping_contents);
 
 	ClassDB::bind_method(D_METHOD("grab_click_focus"), &Control::grab_click_focus);
 
@@ -2921,25 +2921,25 @@ void Control::_bind_methods() {
 	ADD_PROPERTYI(PropertyInfo(Variant::INT, "offset_bottom", PROPERTY_HINT_RANGE, "-4096,4096"), "set_offset", "get_offset", SIDE_BOTTOM);
 
 	ADD_GROUP("Grow Direction", "grow_");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "grow_horizontal", PROPERTY_HINT_ENUM, "Begin,End,Both"), "set_h_grow_direction", "get_h_grow_direction");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "grow_vertical", PROPERTY_HINT_ENUM, "Begin,End,Both"), "set_v_grow_direction", "get_v_grow_direction");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "grow_horizontal", PROPERTY_HINT_ENUM, "Begin,End,Both"), "set_grow_horizontal", "get_grow_horizontal");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "grow_vertical", PROPERTY_HINT_ENUM, "Begin,End,Both"), "set_grow_vertical", "get_grow_vertical");
 
 	ADD_GROUP("Layout Direction", "layout_");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "layout_direction", PROPERTY_HINT_ENUM, "Inherited,Locale,Left-to-right,Right-to-left"), "set_layout_direction", "get_layout_direction");
 
-	ADD_GROUP("Rect", "rect_");
-	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "rect_position", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_EDITOR), "_set_position", "get_position");
-	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "rect_global_position", PROPERTY_HINT_NONE, "", 0), "_set_global_position", "get_global_position");
-	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "rect_size", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_EDITOR), "_set_size", "get_size");
-	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "rect_min_size"), "set_custom_minimum_size", "get_custom_minimum_size");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "rect_rotation", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR), "set_rotation", "get_rotation");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "rect_rotation_degrees", PROPERTY_HINT_RANGE, "-360,360,0.1,or_lesser,or_greater"), "set_rotation_degrees", "get_rotation_degrees");
-	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "rect_scale"), "set_scale", "get_scale");
-	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "rect_pivot_offset"), "set_pivot_offset", "get_pivot_offset");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "rect_clip_content"), "set_clip_contents", "is_clipping_contents");
+	ADD_GROUP("Rectangle", "rect_");
+	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "rect_position", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_EDITOR), "_set_rect_position", "get_rect_position");
+	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "rect_global_position", PROPERTY_HINT_NONE, "", 0), "_set_rect_global_position", "get_rect_global_position");
+	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "rect_size", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_EDITOR), "_set_rect_size", "get_rect_size");
+	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "rect_minimum_size"), "set_rect_minimum_size", "get_rect_minimum_size");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "rect_rotation", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR), "set_rect_rotation", "get_rect_rotation");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "rect_rotation_degrees", PROPERTY_HINT_RANGE, "-360,360,0.1,or_lesser,or_greater"), "set_rect_rotation_degrees", "get_rect_rotation_degrees");
+	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "rect_scale"), "set_rect_scale", "get_rect_scale");
+	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "rect_pivot_offset"), "set_rect_pivot_offset", "get_rect_pivot_offset");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "rect_clip_contents"), "set_rect_clip_contents", "is_rect_clipping_contents");
 
-	ADD_GROUP("Hint", "hint_");
-	ADD_PROPERTY(PropertyInfo(Variant::STRING, "hint_tooltip", PROPERTY_HINT_MULTILINE_TEXT), "set_tooltip", "_get_tooltip");
+	ADD_GROUP("Tooltip", "");
+	ADD_PROPERTY(PropertyInfo(Variant::STRING, "tooltip", PROPERTY_HINT_MULTILINE_TEXT), "set_tooltip", "_get_tooltip");
 
 	ADD_GROUP("Focus", "focus_");
 	ADD_PROPERTYI(PropertyInfo(Variant::NODE_PATH, "focus_neighbor_left", PROPERTY_HINT_NODE_PATH_VALID_TYPES, "Control"), "set_focus_neighbor", "get_focus_neighbor", SIDE_LEFT);
@@ -2952,12 +2952,12 @@ void Control::_bind_methods() {
 
 	ADD_GROUP("Mouse", "mouse_");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "mouse_filter", PROPERTY_HINT_ENUM, "Stop,Pass,Ignore"), "set_mouse_filter", "get_mouse_filter");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "mouse_default_cursor_shape", PROPERTY_HINT_ENUM, "Arrow,Ibeam,Pointing hand,Cross,Wait,Busy,Drag,Can drop,Forbidden,Vertical resize,Horizontal resize,Secondary diagonal resize,Main diagonal resize,Move,Vertical split,Horizontal split,Help"), "set_default_cursor_shape", "get_default_cursor_shape");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "mouse_default_cursor_shape", PROPERTY_HINT_ENUM, "Arrow,Ibeam,Pointing hand,Cross,Wait,Busy,Drag,Can drop,Forbidden,Vertical resize,Horizontal resize,Secondary diagonal resize,Main diagonal resize,Move,Vertical split,Horizontal split,Help"), "set_mouse_default_cursor_shape", "get_mouse_default_cursor_shape");
 
 	ADD_GROUP("Size Flags", "size_flags_");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "size_flags_horizontal", PROPERTY_HINT_FLAGS, "Fill,Expand,Shrink Center,Shrink End"), "set_h_size_flags", "get_h_size_flags");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "size_flags_vertical", PROPERTY_HINT_FLAGS, "Fill,Expand,Shrink Center,Shrink End"), "set_v_size_flags", "get_v_size_flags");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "size_flags_stretch_ratio", PROPERTY_HINT_RANGE, "0,20,0.01,or_greater"), "set_stretch_ratio", "get_stretch_ratio");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "size_flags_horizontal", PROPERTY_HINT_FLAGS, "Fill,Expand,Shrink Center,Shrink End"), "set_size_flags_horizontal", "get_size_flags_horizontal");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "size_flags_vertical", PROPERTY_HINT_FLAGS, "Fill,Expand,Shrink Center,Shrink End"), "set_size_flags_vertical", "get_size_flags_vertical");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "size_flags_stretch_ratio", PROPERTY_HINT_RANGE, "0,20,0.01,or_greater"), "set_size_flags_stretch_ratio", "get_size_flags_stretch_ratio");
 	ADD_GROUP("Theme", "");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "theme", PROPERTY_HINT_RESOURCE_TYPE, "Theme"), "set_theme", "get_theme");
 	ADD_GROUP("", "");

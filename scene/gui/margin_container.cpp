@@ -73,7 +73,7 @@ void MarginContainer::_notification(int p_what) {
 			int margin_right = get_theme_constant("margin_right");
 			int margin_bottom = get_theme_constant("margin_bottom");
 
-			Size2 s = get_size();
+			Size2 s = get_rect_size();
 
 			for (int i = 0; i < get_child_count(); i++) {
 				Control *c = Object::cast_to<Control>(get_child(i));

@@ -137,7 +137,7 @@ RichTextLabel::Item *RichTextLabel::_get_prev_item(Item *p_item, bool p_free) co
 
 Rect2 RichTextLabel::_get_text_rect() {
 	Ref<StyleBox> style = get_theme_stylebox("normal");
-	return Rect2(style->get_offset(), get_size() - style->get_minimum_size());
+	return Rect2(style->get_offset(), get_rect_size() - style->get_minimum_size());
 }
 
 RichTextLabel::Item *RichTextLabel::_get_item_at_pos(RichTextLabel::Item *p_item_from, RichTextLabel::Item *p_item_to, int p_position) {
@@ -702,7 +702,7 @@ int RichTextLabel::_draw_line(ItemFrame *p_frame, int p_line, const Vector2 &p_o
 	l.text_buf->draw_dropcap(ci, p_ofs + ((rtl) ? Vector2() : Vector2(l.offset.x, 0)), l.dc_color);
 
 	int line_count = 0;
-	Size2 ctrl_size = get_size();
+	Size2 ctrl_size = get_rect_size();
 	// Draw text.
 	for (int line = 0; line < l.text_buf->get_line_count(); line++) {
 		RID rid = l.text_buf->get_line_rid(line);
@@ -1096,7 +1096,7 @@ void RichTextLabel::_find_click(ItemFrame *p_frame, const Point2i &p_click, Item
 		*r_outside = true;
 	}
 
-	Size2 size = get_size();
+	Size2 size = get_rect_size();
 	Rect2 text_rect = _get_text_rect();
 
 	int vofs = vscroll->get_value();
@@ -1212,7 +1212,7 @@ float RichTextLabel::_find_click_in_line(ItemFrame *p_frame, int p_line, const V
 											crect.size.x = crect.position.x + crect.size.x;
 											crect.position.x = 0;
 										} else {
-											crect.size.x = get_size().x;
+											crect.size.x = get_rect_size().x;
 										}
 									}
 									if (crect.has_point(p_click)) {
@@ -1233,7 +1233,7 @@ float RichTextLabel::_find_click_in_line(ItemFrame *p_frame, int p_line, const V
 				}
 			}
 		}
-		Rect2 rect = Rect2(p_ofs + off - Vector2(0, TS->shaped_text_get_ascent(rid)), Size2(get_size().x, TS->shaped_text_get_size(rid).y));
+		Rect2 rect = Rect2(p_ofs + off - Vector2(0, TS->shaped_text_get_ascent(rid)), Size2(get_rect_size().x, TS->shaped_text_get_size(rid).y));
 
 		if (rect.has_point(p_click) && !table_hit) {
 			char_pos = TS->shaped_text_hit_test_position(rid, p_click.x - rect.position.x);
@@ -1296,7 +1296,7 @@ void RichTextLabel::_scroll_changed(double) {
 void RichTextLabel::_update_scroll() {
 	int total_height = get_content_height();
 
-	bool exceeds = total_height > get_size().height && scroll_active;
+	bool exceeds = total_height > get_rect_size().height && scroll_active;
 
 	if (exceeds != scroll_visible) {
 		if (exceeds) {
@@ -1384,7 +1384,7 @@ void RichTextLabel::_notification(int p_what) {
 
 			RID ci = get_canvas_item();
 
-			Size2 size = get_size();
+			Size2 size = get_rect_size();
 			Rect2 text_rect = _get_text_rect();
 
 			draw_style_box(get_theme_stylebox("normal"), Rect2(Point2(), size));
@@ -1440,7 +1440,7 @@ void RichTextLabel::_notification(int p_what) {
 	}
 }
 
-Control::CursorShape RichTextLabel::get_cursor_shape(const Point2 &p_pos) const {
+Control::CursorShape RichTextLabel::get_mouse_cursor_shape(const Point2 &p_pos) const {
 	if (!underline_meta) {
 		return CURSOR_ARROW;
 	}
@@ -2060,7 +2060,7 @@ void RichTextLabel::_validate_line_caches(ItemFrame *p_frame) {
 		}
 
 		// Resize lines without reshaping.
-		Size2 size = get_size();
+		Size2 size = get_rect_size();
 		if (fixed_width != -1) {
 			size.width = fixed_width;
 		}
@@ -2095,7 +2095,7 @@ void RichTextLabel::_validate_line_caches(ItemFrame *p_frame) {
 	}
 
 	// Shape invalid lines.
-	Size2 size = get_size();
+	Size2 size = get_rect_size();
 	if (fixed_width != -1) {
 		size.width = fixed_width;
 	}
@@ -4114,7 +4114,7 @@ RichTextLabel::RichTextLabel() {
 	vscroll->set_step(1);
 	vscroll->hide();
 
-	set_clip_contents(true);
+	set_rect_clip_contents(true);
 }
 
 RichTextLabel::~RichTextLabel() {

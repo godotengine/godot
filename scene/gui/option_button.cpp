@@ -75,7 +75,7 @@ void OptionButton::_notification(int p_what) {
 				}
 			}
 
-			Size2 size = get_size();
+			Size2 size = get_rect_size();
 
 			Point2 ofs;
 			if (is_layout_rtl()) {
@@ -115,7 +115,7 @@ void OptionButton::_selected(int p_which) {
 }
 
 void OptionButton::pressed() {
-	Size2 size = get_size();
+	Size2 size = get_rect_size();
 	popup->set_position(get_screen_position() + Size2(0, size.height * get_global_transform().get_scale().y));
 	popup->set_size(Size2(size.width, 0));
 	popup->popup();

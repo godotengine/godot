@@ -1644,7 +1644,7 @@ void TileMapEditor::forward_canvas_draw_over_viewport(Control *p_overlay) {
 	Transform2D xform = CanvasItemEditor::get_singleton()->get_canvas_transform() * node->get_global_transform();
 	Transform2D xform_inv = xform.affine_inverse();
 
-	Size2 screen_size = p_overlay->get_size();
+	Size2 screen_size = p_overlay->get_rect_size();
 	{
 		Rect2 aabb;
 		aabb.position = node->world_to_map(xform_inv.xform(Vector2()));
@@ -2056,14 +2056,14 @@ TileMapEditor::TileMapEditor(EditorNode *p_editor) {
 
 	search_box = memnew(LineEdit);
 	search_box->set_placeholder(TTR("Filter tiles"));
-	search_box->set_h_size_flags(SIZE_EXPAND_FILL);
+	search_box->set_size_flags_horizontal(SIZE_EXPAND_FILL);
 	search_box->connect("text_entered", callable_mp(this, &TileMapEditor::_text_entered));
 	search_box->connect("text_changed", callable_mp(this, &TileMapEditor::_text_changed));
 	search_box->connect("gui_input", callable_mp(this, &TileMapEditor::_sbox_input));
 	add_child(search_box);
 
 	size_slider = memnew(HSlider);
-	size_slider->set_h_size_flags(SIZE_EXPAND_FILL);
+	size_slider->set_size_flags_horizontal(SIZE_EXPAND_FILL);
 	size_slider->set_min(0.1f);
 	size_slider->set_max(4.0f);
 	size_slider->set_step(0.1f);
@@ -2074,14 +2074,14 @@ TileMapEditor::TileMapEditor(EditorNode *p_editor) {
 	int mw = EDITOR_DEF("editors/tile_map/palette_min_width", 80);
 
 	VSplitContainer *palette_container = memnew(VSplitContainer);
-	palette_container->set_v_size_flags(SIZE_EXPAND_FILL);
-	palette_container->set_custom_minimum_size(Size2(mw, 0));
+	palette_container->set_size_flags_vertical(SIZE_EXPAND_FILL);
+	palette_container->set_rect_minimum_size(Size2(mw, 0));
 	add_child(palette_container);
 
 	// Add tile palette.
 	palette = memnew(ItemList);
-	palette->set_h_size_flags(SIZE_EXPAND_FILL);
-	palette->set_v_size_flags(SIZE_EXPAND_FILL);
+	palette->set_size_flags_horizontal(SIZE_EXPAND_FILL);
+	palette->set_size_flags_vertical(SIZE_EXPAND_FILL);
 	palette->set_max_columns(0);
 	palette->set_icon_mode(ItemList::ICON_MODE_TOP);
 	palette->set_max_text_lines(2);
@@ -2098,14 +2098,14 @@ TileMapEditor::TileMapEditor(EditorNode *p_editor) {
 	info_message->set_valign(Label::VALIGN_CENTER);
 	info_message->set_align(Label::ALIGN_CENTER);
 	info_message->set_autowrap(true);
-	info_message->set_custom_minimum_size(Size2(100 * EDSCALE, 0));
+	info_message->set_rect_minimum_size(Size2(100 * EDSCALE, 0));
 	info_message->set_anchors_and_offsets_preset(PRESET_WIDE, PRESET_MODE_KEEP_SIZE, 8 * EDSCALE);
 	palette->add_child(info_message);
 
 	// Add autotile override palette.
 	manual_palette = memnew(ItemList);
-	manual_palette->set_h_size_flags(SIZE_EXPAND_FILL);
-	manual_palette->set_v_size_flags(SIZE_EXPAND_FILL);
+	manual_palette->set_size_flags_horizontal(SIZE_EXPAND_FILL);
+	manual_palette->set_size_flags_vertical(SIZE_EXPAND_FILL);
 	manual_palette->set_max_columns(0);
 	manual_palette->set_icon_mode(ItemList::ICON_MODE_TOP);
 	manual_palette->set_max_text_lines(2);
@@ -2176,7 +2176,7 @@ TileMapEditor::TileMapEditor(EditorNode *p_editor) {
 	// Container to the right of the toolbar.
 	toolbar_right = memnew(HBoxContainer);
 	toolbar_right->hide();
-	toolbar_right->set_h_size_flags(SIZE_EXPAND_FILL);
+	toolbar_right->set_size_flags_horizontal(SIZE_EXPAND_FILL);
 	toolbar_right->set_alignment(BoxContainer::ALIGN_END);
 	CanvasItemEditor::get_singleton()->add_control_to_menu_panel(toolbar_right);
 

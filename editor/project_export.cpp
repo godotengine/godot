@@ -997,12 +997,12 @@ ProjectExportDialog::ProjectExportDialog() {
 	add_child(main_vb);
 	HSplitContainer *hbox = memnew(HSplitContainer);
 	main_vb->add_child(hbox);
-	hbox->set_v_size_flags(Control::SIZE_EXPAND_FILL);
+	hbox->set_size_flags_vertical(Control::SIZE_EXPAND_FILL);
 
 	// Presets list.
 
 	VBoxContainer *preset_vb = memnew(VBoxContainer);
-	preset_vb->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+	preset_vb->set_size_flags_horizontal(Control::SIZE_EXPAND_FILL);
 	hbox->add_child(preset_vb);
 
 	HBoxContainer *preset_hb = memnew(HBoxContainer);
@@ -1016,7 +1016,7 @@ ProjectExportDialog::ProjectExportDialog() {
 	preset_hb->add_child(add_preset);
 	MarginContainer *mc = memnew(MarginContainer);
 	preset_vb->add_child(mc);
-	mc->set_v_size_flags(Control::SIZE_EXPAND_FILL);
+	mc->set_size_flags_vertical(Control::SIZE_EXPAND_FILL);
 	presets = memnew(ItemList);
 #ifndef _MSC_VER
 #warning must reimplement drag forward
@@ -1036,7 +1036,7 @@ ProjectExportDialog::ProjectExportDialog() {
 	// Preset settings.
 
 	VBoxContainer *settings_vb = memnew(VBoxContainer);
-	settings_vb->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+	settings_vb->set_size_flags_horizontal(Control::SIZE_EXPAND_FILL);
 	hbox->add_child(settings_vb);
 
 	name = memnew(LineEdit);
@@ -1061,14 +1061,14 @@ ProjectExportDialog::ProjectExportDialog() {
 	sections->set_tab_align(TabContainer::ALIGN_LEFT);
 	sections->set_use_hidden_tabs_for_min_size(true);
 	settings_vb->add_child(sections);
-	sections->set_v_size_flags(Control::SIZE_EXPAND_FILL);
+	sections->set_size_flags_vertical(Control::SIZE_EXPAND_FILL);
 
 	// Main preset parameters.
 
 	parameters = memnew(EditorInspector);
 	sections->add_child(parameters);
 	parameters->set_name(TTR("Options"));
-	parameters->set_v_size_flags(Control::SIZE_EXPAND_FILL);
+	parameters->set_size_flags_vertical(Control::SIZE_EXPAND_FILL);
 	parameters->connect("property_edited", callable_mp(this, &ProjectExportDialog::_update_parameters));
 	EditorExport::get_singleton()->connect("export_presets_updated", callable_mp(this, &ProjectExportDialog::_force_update_current_preset_parameters));
 
@@ -1090,7 +1090,7 @@ ProjectExportDialog::ProjectExportDialog() {
 	include_label->set_text(TTR("Resources to export:"));
 	resources_vb->add_child(include_label);
 	include_margin = memnew(MarginContainer);
-	include_margin->set_v_size_flags(Control::SIZE_EXPAND_FILL);
+	include_margin->set_size_flags_vertical(Control::SIZE_EXPAND_FILL);
 	resources_vb->add_child(include_margin);
 
 	include_files = memnew(Tree);
@@ -1123,7 +1123,7 @@ ProjectExportDialog::ProjectExportDialog() {
 	custom_features->connect("text_changed", callable_mp(this, &ProjectExportDialog::_custom_features_changed));
 	feature_vb->add_margin_child(TTR("Custom (comma-separated):"), custom_features);
 	custom_feature_display = memnew(RichTextLabel);
-	custom_feature_display->set_v_size_flags(Control::SIZE_EXPAND_FILL);
+	custom_feature_display->set_size_flags_vertical(Control::SIZE_EXPAND_FILL);
 	feature_vb->add_margin_child(TTR("Feature List:"), custom_feature_display, true);
 	sections->add_child(feature_vb);
 
@@ -1249,7 +1249,7 @@ ProjectExportDialog::ProjectExportDialog() {
 
 	LinkButton *download_templates = memnew(LinkButton);
 	download_templates->set_text(TTR("Manage Export Templates"));
-	download_templates->set_v_size_flags(Control::SIZE_SHRINK_CENTER);
+	download_templates->set_size_flags_vertical(Control::SIZE_SHRINK_CENTER);
 	export_templates_error->add_child(download_templates);
 	download_templates->connect("pressed", callable_mp(this, &ProjectExportDialog::_open_export_template_manager));
 

@@ -46,7 +46,7 @@ CurveEditor::CurveEditor() {
 	_has_undo_data = false;
 
 	set_focus_mode(FOCUS_ALL);
-	set_clip_contents(true);
+	set_rect_clip_contents(true);
 
 	_context_menu = memnew(PopupMenu);
 	_context_menu->connect("id_pressed", callable_mp(this, &CurveEditor::on_context_menu_item_selected));
@@ -532,7 +532,7 @@ void CurveEditor::update_view_transform() {
 
 	const Rect2 world_rect = Rect2(Curve::MIN_X, min_y, Curve::MAX_X, max_y - min_y);
 	const Size2 view_margin(margin, margin);
-	const Size2 view_size = get_size() - view_margin * 2;
+	const Size2 view_size = get_rect_size() - view_margin * 2;
 	const Vector2 scale = view_size / world_rect.size;
 
 	Transform2D world_trans;

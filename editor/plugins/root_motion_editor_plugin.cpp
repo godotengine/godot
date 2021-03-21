@@ -248,7 +248,7 @@ EditorPropertyRootMotion::EditorPropertyRootMotion() {
 	add_child(hbc);
 	assign = memnew(Button);
 	assign->set_flat(true);
-	assign->set_h_size_flags(SIZE_EXPAND_FILL);
+	assign->set_size_flags_horizontal(SIZE_EXPAND_FILL);
 	assign->set_clip_text(true);
 	assign->connect("pressed", callable_mp(this, &EditorPropertyRootMotion::_node_assign));
 	hbc->add_child(assign);
@@ -265,7 +265,7 @@ EditorPropertyRootMotion::EditorPropertyRootMotion() {
 
 	filters = memnew(Tree);
 	filter_dialog->add_child(filters);
-	filters->set_v_size_flags(SIZE_EXPAND_FILL);
+	filters->set_size_flags_vertical(SIZE_EXPAND_FILL);
 	filters->set_hide_root(true);
 	filters->connect("item_activated", callable_mp(this, &EditorPropertyRootMotion::_confirmed));
 	//filters->connect("item_edited", this, "_filter_edited");

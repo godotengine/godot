@@ -58,7 +58,7 @@ void MaterialEditor::_notification(int p_what) {
 
 	if (p_what == NOTIFICATION_DRAW) {
 		Ref<Texture2D> checkerboard = get_theme_icon("Checkerboard", "EditorIcons");
-		Size2 size = get_size();
+		Size2 size = get_rect_size();
 
 		draw_texture_rect(checkerboard, Rect2(Point2(), size), true);
 	}
@@ -151,7 +151,7 @@ MaterialEditor::MaterialEditor() {
 	box_mesh.instance();
 	box_instance->set_mesh(box_mesh);
 
-	set_custom_minimum_size(Size2(1, 150) * EDSCALE);
+	set_rect_minimum_size(Size2(1, 150) * EDSCALE);
 
 	HBoxContainer *hb = memnew(HBoxContainer);
 	add_child(hb);

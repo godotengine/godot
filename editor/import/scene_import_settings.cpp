@@ -1054,15 +1054,15 @@ SceneImportSettings::SceneImportSettings() {
 
 	tree_split = memnew(HSplitContainer);
 	main_vb->add_child(tree_split);
-	tree_split->set_v_size_flags(Control::SIZE_EXPAND_FILL);
+	tree_split->set_size_flags_vertical(Control::SIZE_EXPAND_FILL);
 
 	data_mode = memnew(TabContainer);
 	tree_split->add_child(data_mode);
-	data_mode->set_custom_minimum_size(Size2(300 * EDSCALE, 0));
+	data_mode->set_rect_minimum_size(Size2(300 * EDSCALE, 0));
 
 	property_split = memnew(HSplitContainer);
 	tree_split->add_child(property_split);
-	property_split->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+	property_split->set_size_flags_horizontal(Control::SIZE_EXPAND_FILL);
 
 	scene_tree = memnew(Tree);
 	scene_tree->set_name(TTR("Scene"));
@@ -1083,8 +1083,8 @@ SceneImportSettings::SceneImportSettings() {
 	material_tree->set_hide_root(true);
 
 	SubViewportContainer *vp_container = memnew(SubViewportContainer);
-	vp_container->set_h_size_flags(Control::SIZE_EXPAND_FILL);
-	vp_container->set_custom_minimum_size(Size2(10, 10));
+	vp_container->set_size_flags_horizontal(Control::SIZE_EXPAND_FILL);
+	vp_container->set_rect_minimum_size(Size2(10, 10));
 	vp_container->set_stretch(true);
 	vp_container->connect("gui_input", callable_mp(this, &SceneImportSettings::_viewport_input));
 	property_split->add_child(vp_container);
@@ -1145,7 +1145,7 @@ SceneImportSettings::SceneImportSettings() {
 	}
 
 	inspector = memnew(EditorInspector);
-	inspector->set_custom_minimum_size(Size2(300 * EDSCALE, 0));
+	inspector->set_rect_minimum_size(Size2(300 * EDSCALE, 0));
 
 	property_split->add_child(inspector);
 

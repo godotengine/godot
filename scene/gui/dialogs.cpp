@@ -185,18 +185,18 @@ void AcceptDialog::_update_child_rects() {
 			continue;
 		}
 
-		c->set_position(cpos);
-		c->set_size(csize);
+		c->set_rect_position(cpos);
+		c->set_rect_size(csize);
 	}
 
 	cpos.y += csize.y + margin;
 	csize.y = hminsize.y;
 
-	hbc->set_position(cpos);
-	hbc->set_size(csize);
+	hbc->set_rect_position(cpos);
+	hbc->set_rect_size(csize);
 
-	bg->set_position(Point2());
-	bg->set_size(size);
+	bg->set_rect_position(Point2());
+	bg->set_rect_size(size);
 }
 
 Size2 AcceptDialog::_get_contents_minimum_size() const {

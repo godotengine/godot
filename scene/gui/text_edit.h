@@ -600,7 +600,7 @@ public:
 		SEARCH_BACKWARDS = 4
 	};
 
-	virtual CursorShape get_cursor_shape(const Point2 &p_pos = Point2i()) const override;
+	virtual CursorShape get_mouse_cursor_shape(const Point2 &p_pos = Point2i()) const override;
 
 	void _get_mouse_pos(const Point2i &p_mouse, int &r_row, int &r_col) const;
 	void _get_minimap_mouse_row(const Point2i &p_mouse, int &r_row) const;

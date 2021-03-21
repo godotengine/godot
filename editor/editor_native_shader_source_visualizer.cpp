@@ -41,21 +41,21 @@ void EditorNativeShaderSourceVisualizer::_inspect_shader(RID p_shader) {
 	RS::ShaderNativeSourceCode nsc = RS::get_singleton()->shader_get_native_source_code(p_shader);
 
 	versions = memnew(TabContainer);
-	versions->set_v_size_flags(Control::SIZE_EXPAND_FILL);
-	versions->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+	versions->set_size_flags_vertical(Control::SIZE_EXPAND_FILL);
+	versions->set_size_flags_horizontal(Control::SIZE_EXPAND_FILL);
 	for (int i = 0; i < nsc.versions.size(); i++) {
 		TabContainer *vtab = memnew(TabContainer);
 		vtab->set_name("Version " + itos(i));
-		vtab->set_v_size_flags(Control::SIZE_EXPAND_FILL);
-		vtab->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+		vtab->set_size_flags_vertical(Control::SIZE_EXPAND_FILL);
+		vtab->set_size_flags_horizontal(Control::SIZE_EXPAND_FILL);
 		versions->add_child(vtab);
 		for (int j = 0; j < nsc.versions[i].stages.size(); j++) {
 			TextEdit *vtext = memnew(TextEdit);
 			vtext->set_readonly(true);
 			vtext->set_name(nsc.versions[i].stages[j].name);
 			vtext->set_text(nsc.versions[i].stages[j].code);
-			vtext->set_v_size_flags(Control::SIZE_EXPAND_FILL);
-			vtext->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+			vtext->set_size_flags_vertical(Control::SIZE_EXPAND_FILL);
+			vtext->set_size_flags_horizontal(Control::SIZE_EXPAND_FILL);
 			vtab->add_child(vtext);
 		}
 	}

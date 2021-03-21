@@ -665,8 +665,8 @@ CreateDialog::CreateDialog() {
 	hsc->add_child(vsc);
 
 	VBoxContainer *fav_vb = memnew(VBoxContainer);
-	fav_vb->set_custom_minimum_size(Size2(150, 100) * EDSCALE);
-	fav_vb->set_v_size_flags(Control::SIZE_EXPAND_FILL);
+	fav_vb->set_rect_minimum_size(Size2(150, 100) * EDSCALE);
+	fav_vb->set_size_flags_vertical(Control::SIZE_EXPAND_FILL);
 	vsc->add_child(fav_vb);
 
 	favorites = memnew(Tree);
@@ -684,8 +684,8 @@ CreateDialog::CreateDialog() {
 
 	VBoxContainer *rec_vb = memnew(VBoxContainer);
 	vsc->add_child(rec_vb);
-	rec_vb->set_custom_minimum_size(Size2(150, 100) * EDSCALE);
-	rec_vb->set_v_size_flags(Control::SIZE_EXPAND_FILL);
+	rec_vb->set_rect_minimum_size(Size2(150, 100) * EDSCALE);
+	rec_vb->set_size_flags_vertical(Control::SIZE_EXPAND_FILL);
 
 	recent = memnew(ItemList);
 	rec_vb->add_margin_child(TTR("Recent:"), recent, true);
@@ -695,12 +695,12 @@ CreateDialog::CreateDialog() {
 	recent->add_theme_constant_override("draw_guides", 1);
 
 	VBoxContainer *vbc = memnew(VBoxContainer);
-	vbc->set_custom_minimum_size(Size2(300, 0) * EDSCALE);
-	vbc->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+	vbc->set_rect_minimum_size(Size2(300, 0) * EDSCALE);
+	vbc->set_size_flags_horizontal(Control::SIZE_EXPAND_FILL);
 	hsc->add_child(vbc);
 
 	search_box = memnew(LineEdit);
-	search_box->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+	search_box->set_size_flags_horizontal(Control::SIZE_EXPAND_FILL);
 	search_box->connect("text_changed", callable_mp(this, &CreateDialog::_text_changed));
 	search_box->connect("gui_input", callable_mp(this, &CreateDialog::_sbox_input));
 

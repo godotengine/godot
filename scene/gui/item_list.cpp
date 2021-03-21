@@ -558,7 +558,7 @@ void ItemList::_gui_input(const Ref<InputEvent> &p_event) {
 		pos.y += scroll_bar->get_value();
 
 		if (is_layout_rtl()) {
-			pos.x = get_size().width - pos.x;
+			pos.x = get_rect_size().width - pos.x;
 		}
 
 		int closest = -1;
@@ -566,7 +566,7 @@ void ItemList::_gui_input(const Ref<InputEvent> &p_event) {
 		for (int i = 0; i < items.size(); i++) {
 			Rect2 rc = items[i].rect_cache;
 			if (i % current_columns == current_columns - 1) {
-				rc.size.width = get_size().width; //not right but works
+				rc.size.width = get_rect_size().width; //not right but works
 			}
 
 			if (rc.has_point(pos)) {
@@ -872,7 +872,7 @@ void ItemList::_notification(int p_what) {
 		scroll_bar->set_anchor_and_offset(SIDE_TOP, ANCHOR_BEGIN, bg->get_margin(SIDE_TOP));
 		scroll_bar->set_anchor_and_offset(SIDE_BOTTOM, ANCHOR_END, -bg->get_margin(SIDE_BOTTOM));
 
-		Size2 size = get_size();
+		Size2 size = get_rect_size();
 
 		int width = size.width - bg->get_minimum_size().width;
 		if (scroll_bar->is_visible()) {
@@ -1301,7 +1301,7 @@ int ItemList::get_item_at_position(const Point2 &p_pos, bool p_exact) const {
 	pos.y += scroll_bar->get_value();
 
 	if (is_layout_rtl()) {
-		pos.x = get_size().width - pos.x;
+		pos.x = get_rect_size().width - pos.x;
 	}
 
 	int closest = -1;
@@ -1310,7 +1310,7 @@ int ItemList::get_item_at_position(const Point2 &p_pos, bool p_exact) const {
 	for (int i = 0; i < items.size(); i++) {
 		Rect2 rc = items[i].rect_cache;
 		if (i % current_columns == current_columns - 1) {
-			rc.size.width = get_size().width - rc.position.x; //make sure you can still select the last item when clicking past the column
+			rc.size.width = get_rect_size().width - rc.position.x; //make sure you can still select the last item when clicking past the column
 		}
 
 		if (rc.has_point(pos)) {
@@ -1339,7 +1339,7 @@ bool ItemList::is_pos_at_end_of_items(const Point2 &p_pos) const {
 	pos.y += scroll_bar->get_value();
 
 	if (is_layout_rtl()) {
-		pos.x = get_size().width - pos.x;
+		pos.x = get_rect_size().width - pos.x;
 	}
 
 	Rect2 endrect = items[items.size() - 1].rect_cache;
@@ -1634,7 +1634,7 @@ ItemList::ItemList() {
 	scroll_bar->connect("value_changed", callable_mp(this, &ItemList::_scroll_changed));
 
 	set_focus_mode(FOCUS_ALL);
-	set_clip_contents(true);
+	set_rect_clip_contents(true);
 }
 
 ItemList::~ItemList() {

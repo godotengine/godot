@@ -170,7 +170,7 @@ void GPUParticlesCollisionSDFEditorPlugin::_bind_methods() {
 GPUParticlesCollisionSDFEditorPlugin::GPUParticlesCollisionSDFEditorPlugin(EditorNode *p_node) {
 	editor = p_node;
 	bake_hb = memnew(HBoxContainer);
-	bake_hb->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+	bake_hb->set_size_flags_horizontal(Control::SIZE_EXPAND_FILL);
 	bake_hb->hide();
 	bake = memnew(Button);
 	bake->set_flat(true);
@@ -179,7 +179,7 @@ GPUParticlesCollisionSDFEditorPlugin::GPUParticlesCollisionSDFEditorPlugin(Edito
 	bake->connect("pressed", callable_mp(this, &GPUParticlesCollisionSDFEditorPlugin::_bake));
 	bake_hb->add_child(bake);
 	bake_info = memnew(Label);
-	bake_info->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+	bake_info->set_size_flags_horizontal(Control::SIZE_EXPAND_FILL);
 	bake_info->set_clip_text(true);
 	bake_hb->add_child(bake_info);
 

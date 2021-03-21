@@ -194,8 +194,8 @@ EditorHelpSearch::EditorHelpSearch() {
 	vbox->add_child(hbox);
 
 	search_box = memnew(LineEdit);
-	search_box->set_custom_minimum_size(Size2(200, 0) * EDSCALE);
-	search_box->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+	search_box->set_rect_minimum_size(Size2(200, 0) * EDSCALE);
+	search_box->set_size_flags_horizontal(Control::SIZE_EXPAND_FILL);
 	search_box->connect("gui_input", callable_mp(this, &EditorHelpSearch::_search_box_gui_input));
 	search_box->connect("text_changed", callable_mp(this, &EditorHelpSearch::_search_box_text_changed));
 	register_text_enter(search_box);
@@ -219,8 +219,8 @@ EditorHelpSearch::EditorHelpSearch() {
 	hbox->add_child(hierarchy_button);
 
 	filter_combo = memnew(OptionButton);
-	filter_combo->set_custom_minimum_size(Size2(200, 0) * EDSCALE);
-	filter_combo->set_stretch_ratio(0); // Fixed width.
+	filter_combo->set_rect_minimum_size(Size2(200, 0) * EDSCALE);
+	filter_combo->set_size_flags_stretch_ratio(0); // Fixed width.
 	filter_combo->add_item(TTR("Display All"), SEARCH_ALL);
 	filter_combo->add_separator();
 	filter_combo->add_item(TTR("Classes Only"), SEARCH_CLASSES);
@@ -234,13 +234,13 @@ EditorHelpSearch::EditorHelpSearch() {
 
 	// Create the results tree.
 	results_tree = memnew(Tree);
-	results_tree->set_v_size_flags(Control::SIZE_EXPAND_FILL);
+	results_tree->set_size_flags_vertical(Control::SIZE_EXPAND_FILL);
 	results_tree->set_columns(2);
 	results_tree->set_column_title(0, TTR("Name"));
 	results_tree->set_column_title(1, TTR("Member Type"));
 	results_tree->set_column_expand(1, false);
 	results_tree->set_column_min_width(1, 150 * EDSCALE);
-	results_tree->set_custom_minimum_size(Size2(0, 100) * EDSCALE);
+	results_tree->set_rect_minimum_size(Size2(0, 100) * EDSCALE);
 	results_tree->set_hide_root(true);
 	results_tree->set_select_mode(Tree::SELECT_ROW);
 	results_tree->connect("item_activated", callable_mp(this, &EditorHelpSearch::_confirmed));

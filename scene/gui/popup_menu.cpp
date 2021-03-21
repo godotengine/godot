@@ -50,7 +50,7 @@ Size2 PopupMenu::_get_contents_minimum_size() const {
 	int hseparation = get_theme_constant("hseparation");
 
 	Size2 minsize = get_theme_stylebox("panel")->get_minimum_size(); // Accounts for margin in the margin container
-	minsize.x += scroll_container->get_v_scrollbar()->get_size().width * 2; // Adds a buffer so that the scrollbar does not render over the top of content
+	minsize.x += scroll_container->get_v_scrollbar()->get_rect_size().width * 2; // Adds a buffer so that the scrollbar does not render over the top of content
 
 	float max_w = 0.0;
 	float icon_w = 0.0;
@@ -146,14 +146,14 @@ void PopupMenu::_scroll_to_item(int p_item) {
 	ERR_FAIL_COND(p_item < 0);
 
 	// Scroll item into view (upwards)
-	if (items[p_item]._ofs_cache < -control->get_position().y) {
-		int amnt_over = items[p_item]._ofs_cache + control->get_position().y;
+	if (items[p_item]._ofs_cache < -control->get_rect_position().y) {
+		int amnt_over = items[p_item]._ofs_cache + control->get_rect_position().y;
 		scroll_container->set_v_scroll(scroll_container->get_v_scroll() + amnt_over);
 	}
 
 	// Scroll item into view (downwards)
-	if (items[p_item]._ofs_cache + items[p_item]._height_cache > -control->get_position().y + scroll_container->get_size().height) {
-		int amnt_over = items[p_item]._ofs_cache + items[p_item]._height_cache + control->get_position().y - scroll_container->get_size().height;
+	if (items[p_item]._ofs_cache + items[p_item]._height_cache > -control->get_rect_position().y + scroll_container->get_rect_size().height) {
+		int amnt_over = items[p_item]._ofs_cache + items[p_item]._height_cache + control->get_rect_position().y - scroll_container->get_rect_size().height;
 		scroll_container->set_v_scroll(scroll_container->get_v_scroll() + amnt_over);
 	}
 }
@@ -178,7 +178,7 @@ int PopupMenu::_get_mouse_over(const Point2 &p_over) const {
 
 		ofs.y += _get_item_height(i);
 
-		if (p_over.y - control->get_position().y < ofs.y) {
+		if (p_over.y - control->get_rect_position().y < ofs.y) {
 			return i;
 		}
 	}
@@ -201,7 +201,7 @@ void PopupMenu::_activate_submenu(int p_over) {
 	Point2 this_pos = get_position();
 	Rect2 this_rect(this_pos, get_size());
 
-	float scroll_offset = control->get_position().y;
+	float scroll_offset = control->get_rect_position().y;
 
 	Point2 submenu_pos;
 	Size2 submenu_size = submenu_popup->get_size();
@@ -236,7 +236,7 @@ void PopupMenu::_activate_submenu(int p_over) {
 		submenu_pum->add_autohide_area(Rect2(this_rect.position.x, this_rect.position.y, this_rect.size.x, items[p_over]._ofs_cache + scroll_offset + style->get_offset().height - vsep / 2));
 
 		// If there is an area below the submenu item, add an autohide area there.
-		if (items[p_over]._ofs_cache + items[p_over]._height_cache + scroll_offset <= control->get_size().height) {
+		if (items[p_over]._ofs_cache + items[p_over]._height_cache + scroll_offset <= control->get_rect_size().height) {
 			int from = items[p_over]._ofs_cache + items[p_over]._height_cache + scroll_offset + vsep / 2 + style->get_offset().height;
 			submenu_pum->add_autohide_area(Rect2(this_rect.position.x, this_rect.position.y + from, this_rect.size.x, this_rect.size.y - from));
 		}
@@ -344,9 +344,9 @@ void PopupMenu::_gui_input(const Ref<InputEvent> &p_event) {
 	Rect2 item_clickable_area = scroll_container->get_rect();
 	if (scroll_container->get_v_scrollbar()->is_visible_in_tree()) {
 		if (is_layout_rtl()) {
-			item_clickable_area.position.x += scroll_container->get_v_scrollbar()->get_size().width;
+			item_clickable_area.position.x += scroll_container->get_v_scrollbar()->get_rect_size().width;
 		} else {
-			item_clickable_area.size.width -= scroll_container->get_v_scrollbar()->get_size().width;
+			item_clickable_area.size.width -= scroll_container->get_v_scrollbar()->get_rect_size().width;
 		}
 	}
 
@@ -470,7 +470,7 @@ void PopupMenu::_gui_input(const Ref<InputEvent> &p_event) {
 }
 
 void PopupMenu::_draw_items() {
-	control->set_custom_minimum_size(Size2(0, _get_items_total_height()));
+	control->set_rect_minimum_size(Size2(0, _get_items_total_height()));
 	RID ci = control->get_canvas_item();
 
 	Size2 margin_size;
@@ -506,8 +506,8 @@ void PopupMenu::_draw_items() {
 	Color font_hover_color = get_theme_color("font_hover_color");
 	Color font_separator_color = get_theme_color("font_separator_color");
 
-	float scroll_width = scroll_container->get_v_scrollbar()->is_visible_in_tree() ? scroll_container->get_v_scrollbar()->get_size().width : 0;
-	float display_width = control->get_size().width - scroll_width;
+	float scroll_width = scroll_container->get_v_scrollbar()->is_visible_in_tree() ? scroll_container->get_v_scrollbar()->get_rect_size().width : 0;
+	float display_width = control->get_rect_size().width - scroll_width;
 
 	// Find the widest icon and whether any items have a checkbox, and store the offsets for each.
 	float icon_ofs = 0.0;
@@ -581,7 +581,7 @@ void PopupMenu::_draw_items() {
 		if (items[i].checkable_type) {
 			Texture2D *icon = (items[i].checked ? check[items[i].checkable_type - 1] : uncheck[items[i].checkable_type - 1]).ptr();
 			if (rtl) {
-				icon->draw(ci, Size2(control->get_size().width - item_ofs.x - icon->get_width(), item_ofs.y) + Point2(0, Math::floor((h - icon->get_height()) / 2.0)), icon_color);
+				icon->draw(ci, Size2(control->get_rect_size().width - item_ofs.x - icon->get_width(), item_ofs.y) + Point2(0, Math::floor((h - icon->get_height()) / 2.0)), icon_color);
 			} else {
 				icon->draw(ci, item_ofs + Point2(0, Math::floor((h - icon->get_height()) / 2.0)), icon_color);
 			}
@@ -590,7 +590,7 @@ void PopupMenu::_draw_items() {
 		// Icon
 		if (!items[i].icon.is_null()) {
 			if (rtl) {
-				items[i].icon->draw(ci, Size2(control->get_size().width - item_ofs.x - check_ofs - icon_size.width, item_ofs.y) + Point2(0, Math::floor((h - icon_size.height) / 2.0)), icon_color);
+				items[i].icon->draw(ci, Size2(control->get_rect_size().width - item_ofs.x - check_ofs - icon_size.width, item_ofs.y) + Point2(0, Math::floor((h - icon_size.height) / 2.0)), icon_color);
 			} else {
 				items[i].icon->draw(ci, item_ofs + Size2(check_ofs, 0) + Point2(0, Math::floor((h - icon_size.height) / 2.0)), icon_color);
 			}
@@ -620,7 +620,7 @@ void PopupMenu::_draw_items() {
 		} else {
 			item_ofs.x += icon_ofs + check_ofs;
 			if (rtl) {
-				Vector2 text_pos = Size2(control->get_size().width - items[i].text_buf->get_size().width - item_ofs.x, item_ofs.y) + Point2(0, Math::floor((h - items[i].text_buf->get_size().y) / 2.0));
+				Vector2 text_pos = Size2(control->get_rect_size().width - items[i].text_buf->get_size().width - item_ofs.x, item_ofs.y) + Point2(0, Math::floor((h - items[i].text_buf->get_size().y) / 2.0));
 				if (outline_size > 0 && font_outline_color.a > 0) {
 					items[i].text_buf->draw_outline(ci, text_pos, outline_size, font_outline_color);
 				}
@@ -659,7 +659,7 @@ void PopupMenu::_draw_items() {
 void PopupMenu::_draw_background() {
 	Ref<StyleBox> style = get_theme_stylebox("panel");
 	RID ci2 = margin_container->get_canvas_item();
-	style->draw(ci2, Rect2(Point2(), margin_container->get_size()));
+	style->draw(ci2, Rect2(Point2(), margin_container->get_rect_size()));
 }
 
 void PopupMenu::_minimum_lifetime_timeout() {
@@ -1695,15 +1695,15 @@ PopupMenu::PopupMenu() {
 
 	// Scroll Container
 	scroll_container = memnew(ScrollContainer);
-	scroll_container->set_clip_contents(true);
+	scroll_container->set_rect_clip_contents(true);
 	margin_container->add_child(scroll_container);
 
 	// The control which will display the items
 	control = memnew(Control);
-	control->set_clip_contents(false);
+	control->set_rect_clip_contents(false);
 	control->set_anchors_and_offsets_preset(Control::PRESET_WIDE);
-	control->set_h_size_flags(Control::SIZE_EXPAND_FILL);
-	control->set_v_size_flags(Control::SIZE_EXPAND_FILL);
+	control->set_size_flags_horizontal(Control::SIZE_EXPAND_FILL);
+	control->set_size_flags_vertical(Control::SIZE_EXPAND_FILL);
 	scroll_container->add_child(control);
 	control->connect("draw", callable_mp(this, &PopupMenu::_draw_items));
 

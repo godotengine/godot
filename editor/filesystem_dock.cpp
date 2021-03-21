@@ -297,7 +297,7 @@ void FileSystemDock::_update_display_mode(bool p_force) {
 		switch (display_mode) {
 			case DISPLAY_MODE_TREE_ONLY:
 				tree->show();
-				tree->set_v_size_flags(SIZE_EXPAND_FILL);
+				tree->set_size_flags_vertical(SIZE_EXPAND_FILL);
 				if (display_mode == DISPLAY_MODE_TREE_ONLY) {
 					toolbar2_hbc->show();
 				} else {
@@ -310,7 +310,7 @@ void FileSystemDock::_update_display_mode(bool p_force) {
 
 			case DISPLAY_MODE_SPLIT:
 				tree->show();
-				tree->set_v_size_flags(SIZE_EXPAND_FILL);
+				tree->set_size_flags_vertical(SIZE_EXPAND_FILL);
 				tree->ensure_cursor_is_visible();
 				toolbar2_hbc->hide();
 				_update_tree(_compute_uncollapsed_paths());
@@ -2488,7 +2488,7 @@ void FileSystemDock::_tree_rmb_empty(const Vector2 &p_pos) {
 	tree_popup->add_icon_item(get_theme_icon("PackedScene", "EditorIcons"), TTR("New Scene..."), FILE_NEW_SCENE);
 	tree_popup->add_icon_item(get_theme_icon("Script", "EditorIcons"), TTR("New Script..."), FILE_NEW_SCRIPT);
 	tree_popup->add_icon_item(get_theme_icon("Object", "EditorIcons"), TTR("New Resource..."), FILE_NEW_RESOURCE);
-	tree_popup->set_position(tree->get_global_position() + p_pos);
+	tree_popup->set_position(tree->get_rect_global_position() + p_pos);
 	tree_popup->popup();
 }
 
@@ -2515,7 +2515,7 @@ void FileSystemDock::_file_list_rmb_select(int p_item, const Vector2 &p_pos) {
 		file_list_popup->clear();
 		file_list_popup->set_size(Size2(1, 1));
 		_file_and_folders_fill_popup(file_list_popup, paths, searched_string.length() == 0);
-		file_list_popup->set_position(files->get_global_position() + p_pos);
+		file_list_popup->set_position(files->get_rect_global_position() + p_pos);
 		file_list_popup->popup();
 	}
 }
@@ -2535,7 +2535,7 @@ void FileSystemDock::_file_list_rmb_pressed(const Vector2 &p_pos) {
 	file_list_popup->add_icon_item(get_theme_icon("Object", "EditorIcons"), TTR("New Resource..."), FILE_NEW_RESOURCE);
 	file_list_popup->add_separator();
 	file_list_popup->add_icon_item(get_theme_icon("Filesystem", "EditorIcons"), TTR("Open in File Manager"), FILE_SHOW_IN_EXPLORER);
-	file_list_popup->set_position(files->get_global_position() + p_pos);
+	file_list_popup->set_position(files->get_rect_global_position() + p_pos);
 	file_list_popup->popup();
 }
 
@@ -2797,7 +2797,7 @@ FileSystemDock::FileSystemDock(EditorNode *p_editor) {
 
 	current_path = memnew(LineEdit);
 	current_path->set_structured_text_bidi_override(Control::STRUCTURED_TEXT_FILE);
-	current_path->set_h_size_flags(SIZE_EXPAND_FILL);
+	current_path->set_size_flags_horizontal(SIZE_EXPAND_FILL);
 	_set_current_path_text(path);
 	toolbar_hbc->add_child(current_path);
 
@@ -2822,7 +2822,7 @@ FileSystemDock::FileSystemDock(EditorNode *p_editor) {
 	top_vbc->add_child(toolbar2_hbc);
 
 	tree_search_box = memnew(LineEdit);
-	tree_search_box->set_h_size_flags(SIZE_EXPAND_FILL);
+	tree_search_box->set_size_flags_horizontal(SIZE_EXPAND_FILL);
 	tree_search_box->set_placeholder(TTR("Search files"));
 	tree_search_box->connect("text_changed", callable_mp(this, &FileSystemDock::_search_changed), varray(tree_search_box));
 	toolbar2_hbc->add_child(tree_search_box);
@@ -2839,7 +2839,7 @@ FileSystemDock::FileSystemDock(EditorNode *p_editor) {
 	add_child(tree_popup);
 
 	split_box = memnew(VSplitContainer);
-	split_box->set_v_size_flags(SIZE_EXPAND_FILL);
+	split_box->set_size_flags_vertical(SIZE_EXPAND_FILL);
 	add_child(split_box);
 
 	tree = memnew(Tree);
@@ -2848,7 +2848,7 @@ FileSystemDock::FileSystemDock(EditorNode *p_editor) {
 	tree->set_drag_forwarding(this);
 	tree->set_allow_rmb_select(true);
 	tree->set_select_mode(Tree::SELECT_MULTI);
-	tree->set_custom_minimum_size(Size2(0, 15 * EDSCALE));
+	tree->set_rect_minimum_size(Size2(0, 15 * EDSCALE));
 	split_box->add_child(tree);
 
 	tree->connect("item_activated", callable_mp(this, &FileSystemDock::_tree_activate_file));
@@ -2859,14 +2859,14 @@ FileSystemDock::FileSystemDock(EditorNode *p_editor) {
 	tree->connect("gui_input", callable_mp(this, &FileSystemDock::_tree_gui_input));
 
 	file_list_vb = memnew(VBoxContainer);
-	file_list_vb->set_v_size_flags(SIZE_EXPAND_FILL);
+	file_list_vb->set_size_flags_vertical(SIZE_EXPAND_FILL);
 	split_box->add_child(file_list_vb);
 
 	path_hb = memnew(HBoxContainer);
 	file_list_vb->add_child(path_hb);
 
 	file_list_search_box = memnew(LineEdit);
-	file_list_search_box->set_h_size_flags(SIZE_EXPAND_FILL);
+	file_list_search_box->set_size_flags_horizontal(SIZE_EXPAND_FILL);
 	file_list_search_box->set_placeholder(TTR("Search files"));
 	file_list_search_box->connect("text_changed", callable_mp(this, &FileSystemDock::_search_changed), varray(file_list_search_box));
 	path_hb->add_child(file_list_search_box);
@@ -2879,14 +2879,14 @@ FileSystemDock::FileSystemDock(EditorNode *p_editor) {
 	path_hb->add_child(button_file_list_display_mode);
 
 	files = memnew(ItemList);
-	files->set_v_size_flags(SIZE_EXPAND_FILL);
+	files->set_size_flags_vertical(SIZE_EXPAND_FILL);
 	files->set_select_mode(ItemList::SELECT_MULTI);
 	files->set_drag_forwarding(this);
 	files->connect("item_rmb_selected", callable_mp(this, &FileSystemDock::_file_list_rmb_select));
 	files->connect("gui_input", callable_mp(this, &FileSystemDock::_file_list_gui_input));
 	files->connect("multi_selected", callable_mp(this, &FileSystemDock::_file_multi_selected));
 	files->connect("rmb_clicked", callable_mp(this, &FileSystemDock::_file_list_rmb_pressed));
-	files->set_custom_minimum_size(Size2(0, 15 * EDSCALE));
+	files->set_rect_minimum_size(Size2(0, 15 * EDSCALE));
 	files->set_allow_rmb_select(true);
 	file_list_vb->add_child(files);
 

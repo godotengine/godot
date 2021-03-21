@@ -210,7 +210,7 @@ void TextureProgressBar::draw_nine_patch_stretched(const Ref<Texture2D> &p_textu
 	Vector2 bottomright = Vector2(stretch_margin[SIDE_RIGHT], stretch_margin[SIDE_BOTTOM]);
 
 	Rect2 src_rect = Rect2(Point2(), texture_size);
-	Rect2 dst_rect = Rect2(Point2(), get_size());
+	Rect2 dst_rect = Rect2(Point2(), get_rect_size());
 
 	if (p_ratio < 1.0) {
 		// Drawing a partially-filled 9-patch is a little tricky -
@@ -347,7 +347,7 @@ void TextureProgressBar::_notification(int p_what) {
 						case FILL_COUNTER_CLOCKWISE:
 						case FILL_CLOCKWISE_AND_COUNTER_CLOCKWISE: {
 							if (nine_patch_stretch) {
-								s = get_size();
+								s = get_rect_size();
 							}
 
 							float val = get_as_ratio() * rad_max_degrees / 360;
@@ -396,7 +396,7 @@ void TextureProgressBar::_notification(int p_what) {
 								Point2 p;
 
 								if (nine_patch_stretch) {
-									p = get_size();
+									p = get_rect_size();
 								} else {
 									p = progress->get_size();
 								}

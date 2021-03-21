@@ -67,10 +67,10 @@ void GridContainer::_notification(int p_what) {
 					row_minh[row] = ms.height;
 				}
 
-				if (c->get_h_size_flags() & SIZE_EXPAND) {
+				if (c->get_size_flags_horizontal() & SIZE_EXPAND) {
 					col_expanded.insert(col);
 				}
-				if (c->get_v_size_flags() & SIZE_EXPAND) {
+				if (c->get_size_flags_vertical() & SIZE_EXPAND) {
 					row_expanded.insert(row);
 				}
 			}
@@ -81,7 +81,7 @@ void GridContainer::_notification(int p_what) {
 			}
 
 			// Evaluate the remaining space for expanded columns/rows.
-			Size2 remaining_space = get_size();
+			Size2 remaining_space = get_rect_size();
 			for (Map<int, int>::Element *E = col_minw.front(); E; E = E->next()) {
 				if (!col_expanded.has(E->key())) {
 					remaining_space.width -= E->get();
@@ -158,7 +158,7 @@ void GridContainer::_notification(int p_what) {
 
 				if (col == 0) {
 					if (rtl) {
-						col_ofs = get_size().width;
+						col_ofs = get_rect_size().width;
 					} else {
 						col_ofs = 0;
 					}

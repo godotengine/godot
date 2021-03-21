@@ -48,11 +48,11 @@ void BackgroundProgress::_add_task(const String &p_task, const String &p_label, 
 	t.progress->set_max(p_steps);
 	t.progress->set_value(p_steps);
 	Control *ec = memnew(Control);
-	ec->set_h_size_flags(SIZE_EXPAND_FILL);
-	ec->set_v_size_flags(SIZE_EXPAND_FILL);
+	ec->set_size_flags_horizontal(SIZE_EXPAND_FILL);
+	ec->set_size_flags_vertical(SIZE_EXPAND_FILL);
 	t.progress->set_anchors_and_offsets_preset(Control::PRESET_WIDE);
 	ec->add_child(t.progress);
-	ec->set_custom_minimum_size(Size2(80, 5) * EDSCALE);
+	ec->set_rect_minimum_size(Size2(80, 5) * EDSCALE);
 	t.hb->add_child(ec);
 
 	add_child(t.hb);

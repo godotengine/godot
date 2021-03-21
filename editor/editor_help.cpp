@@ -1660,13 +1660,13 @@ void EditorHelp::_bind_methods() {
 }
 
 EditorHelp::EditorHelp() {
-	set_custom_minimum_size(Size2(150 * EDSCALE, 0));
+	set_rect_minimum_size(Size2(150 * EDSCALE, 0));
 
 	EDITOR_DEF("text_editor/help/sort_functions_alphabetically", true);
 
 	class_desc = memnew(RichTextLabel);
 	add_child(class_desc);
-	class_desc->set_v_size_flags(SIZE_EXPAND_FILL);
+	class_desc->set_size_flags_vertical(SIZE_EXPAND_FILL);
 	class_desc->add_theme_color_override("selection_color", get_theme_color("accent_color", "Editor") * Color(1, 1, 1, 0.4));
 
 	class_desc->connect("meta_clicked", callable_mp(this, &EditorHelp::_class_desc_select));
@@ -1752,14 +1752,14 @@ EditorHelpBit::EditorHelpBit() {
 	rich_text->connect("meta_clicked", callable_mp(this, &EditorHelpBit::_meta_clicked));
 	rich_text->add_theme_color_override("selection_color", get_theme_color("accent_color", "Editor") * Color(1, 1, 1, 0.4));
 	rich_text->set_override_selected_font_color(false);
-	set_custom_minimum_size(Size2(0, 70 * EDSCALE));
+	set_rect_minimum_size(Size2(0, 70 * EDSCALE));
 }
 
 FindBar::FindBar() {
 	search_text = memnew(LineEdit);
 	add_child(search_text);
-	search_text->set_custom_minimum_size(Size2(100 * EDSCALE, 0));
-	search_text->set_h_size_flags(SIZE_EXPAND_FILL);
+	search_text->set_rect_minimum_size(Size2(100 * EDSCALE, 0));
+	search_text->set_size_flags_horizontal(SIZE_EXPAND_FILL);
 	search_text->connect("text_changed", callable_mp(this, &FindBar::_search_text_changed));
 	search_text->connect("text_entered", callable_mp(this, &FindBar::_search_text_entered));
 
@@ -1781,7 +1781,7 @@ FindBar::FindBar() {
 
 	Control *space = memnew(Control);
 	add_child(space);
-	space->set_custom_minimum_size(Size2(4, 0) * EDSCALE);
+	space->set_rect_minimum_size(Size2(4, 0) * EDSCALE);
 
 	hide_button = memnew(TextureButton);
 	add_child(hide_button);
@@ -1817,7 +1817,7 @@ void FindBar::_notification(int p_what) {
 			hide_button->set_normal_texture(get_theme_icon("Close", "EditorIcons"));
 			hide_button->set_hover_texture(get_theme_icon("Close", "EditorIcons"));
 			hide_button->set_pressed_texture(get_theme_icon("Close", "EditorIcons"));
-			hide_button->set_custom_minimum_size(hide_button->get_normal_texture()->get_size());
+			hide_button->set_rect_minimum_size(hide_button->get_normal_texture()->get_size());
 			matches_label->add_theme_color_override("font_color", results_count > 0 ? get_theme_color("font_color", "Label") : get_theme_color("error_color", "Editor"));
 		} break;
 		case NOTIFICATION_VISIBILITY_CHANGED: {

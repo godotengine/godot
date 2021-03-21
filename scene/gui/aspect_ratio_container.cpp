@@ -74,7 +74,7 @@ void AspectRatioContainer::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_SORT_CHILDREN: {
 			bool rtl = is_layout_rtl();
-			Size2 size = get_size();
+			Size2 size = get_rect_size();
 			for (int i = 0; i < get_child_count(); i++) {
 				Control *c = Object::cast_to<Control>(get_child(i));
 				if (!c) {

@@ -372,9 +372,9 @@ void MeshInstance3DEditor::_debug_uv_draw() {
 		return;
 	}
 
-	debug_uv->set_clip_contents(true);
-	debug_uv->draw_rect(Rect2(Vector2(), debug_uv->get_size()), Color(0.2, 0.2, 0.0));
-	debug_uv->draw_set_transform(Vector2(), 0, debug_uv->get_size());
+	debug_uv->set_rect_clip_contents(true);
+	debug_uv->draw_rect(Rect2(Vector2(), debug_uv->get_rect_size()), Color(0.2, 0.2, 0.0));
+	debug_uv->draw_set_transform(Vector2(), 0, debug_uv->get_rect_size());
 	debug_uv->draw_multiline(uv_lines, Color(1.0, 0.8, 0.7));
 }
 
@@ -480,7 +480,7 @@ MeshInstance3DEditor::MeshInstance3DEditor() {
 	debug_uv_dialog->set_title(TTR("UV Channel Debug"));
 	add_child(debug_uv_dialog);
 	debug_uv = memnew(Control);
-	debug_uv->set_custom_minimum_size(Size2(600, 600) * EDSCALE);
+	debug_uv->set_rect_minimum_size(Size2(600, 600) * EDSCALE);
 	debug_uv->connect("draw", callable_mp(this, &MeshInstance3DEditor::_debug_uv_draw));
 	debug_uv_dialog->add_child(debug_uv);
 }

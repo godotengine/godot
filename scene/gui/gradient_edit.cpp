@@ -56,7 +56,7 @@ GradientEdit::GradientEdit() {
 
 int GradientEdit::_get_point_from_pos(int x) {
 	int result = -1;
-	int total_w = get_size().width - get_size().height - SPACING;
+	int total_w = get_rect_size().width - get_rect_size().height - SPACING;
 	float min_distance = 1e20;
 	for (int i = 0; i < points.size(); i++) {
 		//Check if we clicked at point
@@ -77,13 +77,13 @@ void GradientEdit::_show_color_picker() {
 	picker->set_pick_color(points[grabbed].color);
 	Size2 minsize = popup->get_contents_minimum_size();
 	bool show_above = false;
-	if (get_global_position().y + get_size().y + minsize.y > get_viewport_rect().size.y) {
+	if (get_rect_global_position().y + get_rect_size().y + minsize.y > get_viewport_rect().size.y) {
 		show_above = true;
 	}
 	if (show_above) {
 		popup->set_position(get_screen_position() - Vector2(0, minsize.y));
 	} else {
-		popup->set_position(get_screen_position() + Vector2(0, get_size().y));
+		popup->set_position(get_screen_position() + Vector2(0, get_rect_size().y));
 	}
 	popup->popup();
 }
@@ -132,7 +132,7 @@ void GradientEdit::_gui_input(const Ref<InputEvent> &p_event) {
 		grabbed = _get_point_from_pos(x);
 
 		if (grabbed != -1) {
-			int total_w = get_size().width - get_size().height - SPACING;
+			int total_w = get_rect_size().width - get_rect_size().height - SPACING;
 			Gradient::Point newPoint = points[grabbed];
 			newPoint.offset = CLAMP(x / float(total_w), 0, 1);
 
@@ -154,7 +154,7 @@ void GradientEdit::_gui_input(const Ref<InputEvent> &p_event) {
 	if (mb.is_valid() && mb->get_button_index() == 1 && mb->is_pressed()) {
 		update();
 		int x = mb->get_position().x;
-		int total_w = get_size().width - get_size().height - SPACING;
+		int total_w = get_rect_size().width - get_rect_size().height - SPACING;
 
 		//Check if color selector was clicked.
 		if (x > total_w + SPACING) {
@@ -228,7 +228,7 @@ void GradientEdit::_gui_input(const Ref<InputEvent> &p_event) {
 	Ref<InputEventMouseMotion> mm = p_event;
 
 	if (mm.is_valid() && grabbing) {
-		int total_w = get_size().width - get_size().height - SPACING;
+		int total_w = get_rect_size().width - get_rect_size().height - SPACING;
 
 		int x = mm->get_position().x;
 
@@ -301,14 +301,14 @@ void GradientEdit::_notification(int p_what) {
 		}
 	}
 	if (p_what == NOTIFICATION_DRAW) {
-		int w = get_size().x;
-		int h = get_size().y;
+		int w = get_rect_size().x;
+		int h = get_rect_size().y;
 
 		if (w == 0 || h == 0) {
 			return; //Safety check. We have division by 'h'. And in any case there is nothing to draw with such size
 		}
 
-		int total_w = get_size().width - get_size().height - SPACING;
+		int total_w = get_rect_size().width - get_rect_size().height - SPACING;
 
 		//Draw checker pattern for ramp
 		_draw_checker(0, 0, total_w, h);

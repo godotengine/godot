@@ -337,8 +337,8 @@ TileSetEditor::TileSetEditor(EditorNode *p_editor) {
 
 	texture_list = memnew(ItemList);
 	left_container->add_child(texture_list);
-	texture_list->set_v_size_flags(SIZE_EXPAND_FILL);
-	texture_list->set_custom_minimum_size(Size2(200, 0));
+	texture_list->set_size_flags_vertical(SIZE_EXPAND_FILL);
+	texture_list->set_rect_minimum_size(Size2(200, 0));
 	texture_list->connect("item_selected", callable_mp(this, &TileSetEditor::_on_texture_list_selected));
 	texture_list->set_drag_forwarding(this);
 
@@ -358,7 +358,7 @@ TileSetEditor::TileSetEditor(EditorNode *p_editor) {
 	tileset_toolbar_buttons[TOOL_TILESET_REMOVE_TEXTURE]->set_tooltip(TTR("Remove selected Texture from TileSet."));
 
 	Control *toolbar_separator = memnew(Control);
-	toolbar_separator->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+	toolbar_separator->set_size_flags_horizontal(Control::SIZE_EXPAND_FILL);
 	tileset_toolbar_container->add_child(toolbar_separator);
 
 	tileset_toolbar_tools = memnew(MenuButton);
@@ -371,7 +371,7 @@ TileSetEditor::TileSetEditor(EditorNode *p_editor) {
 
 	//---------------
 	VBoxContainer *right_container = memnew(VBoxContainer);
-	right_container->set_v_size_flags(SIZE_EXPAND_FILL);
+	right_container->set_size_flags_vertical(SIZE_EXPAND_FILL);
 	add_child(right_container);
 
 	dragging_point = -1;
@@ -379,11 +379,11 @@ TileSetEditor::TileSetEditor(EditorNode *p_editor) {
 	snap_step = Vector2(32, 32);
 	snap_offset = WORKSPACE_MARGIN;
 
-	set_custom_minimum_size(Size2(0, 150));
+	set_rect_minimum_size(Size2(0, 150));
 
 	VBoxContainer *main_vb = memnew(VBoxContainer);
 	right_container->add_child(main_vb);
-	main_vb->set_v_size_flags(SIZE_EXPAND_FILL);
+	main_vb->set_size_flags_vertical(SIZE_EXPAND_FILL);
 
 	HBoxContainer *tool_hb = memnew(HBoxContainer);
 	Ref<ButtonGroup> g(memnew(ButtonGroup));
@@ -404,7 +404,7 @@ TileSetEditor::TileSetEditor(EditorNode *p_editor) {
 	}
 
 	Control *spacer = memnew(Control);
-	spacer->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+	spacer->set_size_flags_horizontal(Control::SIZE_EXPAND_FILL);
 	tool_hb->add_child(spacer);
 	tool_hb->move_child(spacer, WORKSPACE_CREATE_SINGLE);
 
@@ -548,7 +548,7 @@ TileSetEditor::TileSetEditor(EditorNode *p_editor) {
 	spin_priority->set_min(1);
 	spin_priority->set_max(255);
 	spin_priority->set_step(1);
-	spin_priority->set_custom_minimum_size(Size2(100, 0));
+	spin_priority->set_rect_minimum_size(Size2(100, 0));
 	spin_priority->connect("value_changed", callable_mp(this, &TileSetEditor::_on_priority_changed));
 	spin_priority->hide();
 	toolbar->add_child(spin_priority);
@@ -557,7 +557,7 @@ TileSetEditor::TileSetEditor(EditorNode *p_editor) {
 	spin_z_index->set_min(RS::CANVAS_ITEM_Z_MIN);
 	spin_z_index->set_max(RS::CANVAS_ITEM_Z_MAX);
 	spin_z_index->set_step(1);
-	spin_z_index->set_custom_minimum_size(Size2(100, 0));
+	spin_z_index->set_rect_minimum_size(Size2(100, 0));
 	spin_z_index->connect("value_changed", callable_mp(this, &TileSetEditor::_on_z_index_changed));
 	spin_z_index->hide();
 	toolbar->add_child(spin_z_index);
@@ -578,7 +578,7 @@ TileSetEditor::TileSetEditor(EditorNode *p_editor) {
 	toolbar->add_child(tools[TOOL_GRID_SNAP]);
 
 	Control *separator = memnew(Control);
-	separator->set_h_size_flags(SIZE_EXPAND_FILL);
+	separator->set_size_flags_horizontal(SIZE_EXPAND_FILL);
 	toolbar->add_child(separator);
 
 	tools[ZOOM_OUT] = memnew(Button);
@@ -607,17 +607,17 @@ TileSetEditor::TileSetEditor(EditorNode *p_editor) {
 
 	scroll = memnew(ScrollContainer);
 	main_vb->add_child(scroll);
-	scroll->set_v_size_flags(SIZE_EXPAND_FILL);
+	scroll->set_size_flags_vertical(SIZE_EXPAND_FILL);
 	scroll->connect("gui_input", callable_mp(this, &TileSetEditor::_on_scroll_container_input));
-	scroll->set_clip_contents(true);
+	scroll->set_rect_clip_contents(true);
 
 	empty_message = memnew(Label);
 	empty_message->set_text(TTR("Add or select a texture on the left panel to edit the tiles bound to it."));
 	empty_message->set_valign(Label::VALIGN_CENTER);
 	empty_message->set_align(Label::ALIGN_CENTER);
 	empty_message->set_autowrap(true);
-	empty_message->set_custom_minimum_size(Size2(100 * EDSCALE, 0));
-	empty_message->set_v_size_flags(SIZE_EXPAND_FILL);
+	empty_message->set_rect_minimum_size(Size2(100 * EDSCALE, 0));
+	empty_message->set_size_flags_vertical(SIZE_EXPAND_FILL);
 	main_vb->add_child(empty_message);
 
 	workspace_container = memnew(Control);
@@ -757,7 +757,7 @@ void TileSetEditor::_on_texture_list_selected(int p_index) {
 	} else {
 		current_item_index = -1;
 		preview->set_texture(nullptr);
-		workspace->set_custom_minimum_size(Size2i());
+		workspace->set_rect_minimum_size(Size2i());
 		update_workspace_tile_mode();
 	}
 
@@ -1180,7 +1180,7 @@ void TileSetEditor::_on_workspace_overlay_draw() {
 
 			Rect2 region = tileset->tile_get_region(t_id);
 			region.position += WORKSPACE_MARGIN;
-			region.position *= workspace->get_scale().x;
+			region.position *= workspace->get_rect_scale().x;
 			Color c;
 			if (tileset->tile_get_tile_mode(t_id) == TileSet::SINGLE_TILE) {
 				c = COLOR_SINGLE;
@@ -1209,7 +1209,7 @@ void TileSetEditor::_on_workspace_overlay_draw() {
 	Ref<Texture2D> handle = get_theme_icon("EditorHandle", "EditorIcons");
 	if (draw_handles) {
 		for (int i = 0; i < current_shape.size(); i++) {
-			workspace_overlay->draw_texture(handle, current_shape[i] * workspace->get_scale().x - handle->get_size() * 0.5);
+			workspace_overlay->draw_texture(handle, current_shape[i] * workspace->get_rect_scale().x - handle->get_size() * 0.5);
 		}
 	}
 }
@@ -1306,8 +1306,8 @@ void TileSetEditor::_on_workspace_input(const Ref<InputEvent> &p_ie) {
 	if (mm.is_valid()) {
 		if (mm->get_button_mask() & MOUSE_BUTTON_MASK_MIDDLE) {
 			Vector2 dragged(mm->get_relative().x, mm->get_relative().y);
-			scroll->set_h_scroll(scroll->get_h_scroll() - dragged.x * workspace->get_scale().x);
-			scroll->set_v_scroll(scroll->get_v_scroll() - dragged.y * workspace->get_scale().x);
+			scroll->set_h_scroll(scroll->get_h_scroll() - dragged.x * workspace->get_rect_scale().x);
+			scroll->set_v_scroll(scroll->get_v_scroll() - dragged.y * workspace->get_rect_scale().x);
 		}
 	}
 
@@ -1339,16 +1339,16 @@ void TileSetEditor::_on_workspace_input(const Ref<InputEvent> &p_ie) {
 						undo_redo->add_undo_method(tileset.ptr(), "tile_set_region", get_current_tile(), tileset->tile_get_region(get_current_tile()));
 
 						Size2 tile_workspace_size = edited_region.position + edited_region.size + WORKSPACE_MARGIN * 2;
-						Size2 workspace_minsize = workspace->get_custom_minimum_size();
+						Size2 workspace_minsize = workspace->get_rect_minimum_size();
 						// If the new region is bigger, just directly change the workspace size to avoid checking all other tiles.
 						if (tile_workspace_size.x > workspace_minsize.x || tile_workspace_size.y > workspace_minsize.y) {
 							Size2 max_workspace_size = Size2(MAX(tile_workspace_size.x, workspace_minsize.x), MAX(tile_workspace_size.y, workspace_minsize.y));
-							undo_redo->add_do_method(workspace, "set_custom_minimum_size", max_workspace_size);
-							undo_redo->add_undo_method(workspace, "set_custom_minimum_size", workspace_minsize);
-							undo_redo->add_do_method(workspace_container, "set_custom_minimum_size", max_workspace_size);
-							undo_redo->add_undo_method(workspace_container, "set_custom_minimum_size", workspace_minsize);
-							undo_redo->add_do_method(workspace_overlay, "set_custom_minimum_size", max_workspace_size);
-							undo_redo->add_undo_method(workspace_overlay, "set_custom_minimum_size", workspace_minsize);
+							undo_redo->add_do_method(workspace, "set_rect_minimum_size", max_workspace_size);
+							undo_redo->add_undo_method(workspace, "set_rect_minimum_size", workspace_minsize);
+							undo_redo->add_do_method(workspace_container, "set_rect_minimum_size", max_workspace_size);
+							undo_redo->add_undo_method(workspace_container, "set_rect_minimum_size", workspace_minsize);
+							undo_redo->add_do_method(workspace_overlay, "set_rect_minimum_size", max_workspace_size);
+							undo_redo->add_undo_method(workspace_overlay, "set_rect_minimum_size", workspace_minsize);
 						} else if (workspace_minsize.x > get_current_texture()->get_size().x + WORKSPACE_MARGIN.x * 2 || workspace_minsize.y > get_current_texture()->get_size().y + WORKSPACE_MARGIN.y * 2) {
 							undo_redo->add_do_method(this, "update_workspace_minsize");
 							undo_redo->add_undo_method(this, "update_workspace_minsize");
@@ -1381,15 +1381,15 @@ void TileSetEditor::_on_workspace_input(const Ref<InputEvent> &p_ie) {
 						edit_mode = EDITMODE_COLLISION;
 
 						Size2 tile_workspace_size = edited_region.position + edited_region.size + WORKSPACE_MARGIN * 2;
-						Size2 workspace_minsize = workspace->get_custom_minimum_size();
+						Size2 workspace_minsize = workspace->get_rect_minimum_size();
 						if (tile_workspace_size.x > workspace_minsize.x || tile_workspace_size.y > workspace_minsize.y) {
 							Size2 new_workspace_minsize = Size2(MAX(tile_workspace_size.x, workspace_minsize.x), MAX(tile_workspace_size.y, workspace_minsize.y));
-							undo_redo->add_do_method(workspace, "set_custom_minimum_size", new_workspace_minsize);
-							undo_redo->add_undo_method(workspace, "set_custom_minimum_size", workspace_minsize);
-							undo_redo->add_do_method(workspace_container, "set_custom_minimum_size", new_workspace_minsize);
-							undo_redo->add_undo_method(workspace_container, "set_custom_minimum_size", workspace_minsize);
-							undo_redo->add_do_method(workspace_overlay, "set_custom_minimum_size", new_workspace_minsize);
-							undo_redo->add_undo_method(workspace_overlay, "set_custom_minimum_size", workspace_minsize);
+							undo_redo->add_do_method(workspace, "set_rect_minimum_size", new_workspace_minsize);
+							undo_redo->add_undo_method(workspace, "set_rect_minimum_size", workspace_minsize);
+							undo_redo->add_do_method(workspace_container, "set_rect_minimum_size", new_workspace_minsize);
+							undo_redo->add_undo_method(workspace_container, "set_rect_minimum_size", workspace_minsize);
+							undo_redo->add_do_method(workspace_overlay, "set_rect_minimum_size", new_workspace_minsize);
+							undo_redo->add_undo_method(workspace_overlay, "set_rect_minimum_size", workspace_minsize);
 						}
 
 						edited_region = Rect2();
@@ -2433,29 +2433,29 @@ void TileSetEditor::_undo_tile_removal(int p_id) {
 }
 
 void TileSetEditor::_zoom_in() {
-	float scale = workspace->get_scale().x;
+	float scale = workspace->get_rect_scale().x;
 	if (scale < max_scale) {
 		scale *= scale_ratio;
-		workspace->set_scale(Vector2(scale, scale));
-		workspace_container->set_custom_minimum_size(workspace->get_rect().size * scale);
-		workspace_overlay->set_custom_minimum_size(workspace->get_rect().size * scale);
+		workspace->set_rect_scale(Vector2(scale, scale));
+		workspace_container->set_rect_minimum_size(workspace->get_rect().size * scale);
+		workspace_overlay->set_rect_minimum_size(workspace->get_rect().size * scale);
 	}
 }
 
 void TileSetEditor::_zoom_out() {
-	float scale = workspace->get_scale().x;
+	float scale = workspace->get_rect_scale().x;
 	if (scale > min_scale) {
 		scale /= scale_ratio;
-		workspace->set_scale(Vector2(scale, scale));
-		workspace_container->set_custom_minimum_size(workspace->get_rect().size * scale);
-		workspace_overlay->set_custom_minimum_size(workspace->get_rect().size * scale);
+		workspace->set_rect_scale(Vector2(scale, scale));
+		workspace_container->set_rect_minimum_size(workspace->get_rect().size * scale);
+		workspace_overlay->set_rect_minimum_size(workspace->get_rect().size * scale);
 	}
 }
 
 void TileSetEditor::_zoom_reset() {
-	workspace->set_scale(Vector2(1, 1));
-	workspace_container->set_custom_minimum_size(workspace->get_rect().size);
-	workspace_overlay->set_custom_minimum_size(workspace->get_rect().size);
+	workspace->set_rect_scale(Vector2(1, 1));
+	workspace_container->set_rect_minimum_size(workspace->get_rect().size);
+	workspace_overlay->set_rect_minimum_size(workspace->get_rect().size);
 }
 
 void TileSetEditor::draw_highlight_current_tile() {
@@ -2509,16 +2509,16 @@ void TileSetEditor::draw_highlight_subtile(Vector2 coord, const Vector<Vector2> 
 		workspace->draw_rect(Rect2(0, coord.y + size.y, workspace->get_rect().size.x, workspace->get_rect().size.y - size.y - coord.y), shadow_color);
 	}
 
-	coord += Vector2(1, 1) / workspace->get_scale().x;
-	workspace->draw_rect(Rect2(coord, size - Vector2(2, 2) / workspace->get_scale().x), Color(1, 0, 0), false);
+	coord += Vector2(1, 1) / workspace->get_rect_scale().x;
+	workspace->draw_rect(Rect2(coord, size - Vector2(2, 2) / workspace->get_rect_scale().x), Color(1, 0, 0), false);
 	for (int i = 0; i < other_highlighted.size(); i++) {
 		coord = other_highlighted[i];
 		coord.x *= (size.x + spacing);
 		coord.y *= (size.y + spacing);
 		coord += region.position;
 		coord += WORKSPACE_MARGIN;
-		coord += Vector2(1, 1) / workspace->get_scale().x;
-		workspace->draw_rect(Rect2(coord, size - Vector2(2, 2) / workspace->get_scale().x), Color(1, 0.5, 0.5), false);
+		coord += Vector2(1, 1) / workspace->get_rect_scale().x;
+		workspace->draw_rect(Rect2(coord, size - Vector2(2, 2) / workspace->get_rect_scale().x), Color(1, 0.5, 0.5), false);
 	}
 }
 
@@ -2593,7 +2593,7 @@ void TileSetEditor::draw_edited_region_subdivision() const {
 void TileSetEditor::draw_grid_snap() {
 	if (tools[TOOL_GRID_SNAP]->is_pressed()) {
 		Color grid_color = Color(0.4, 0, 1);
-		Size2 s = workspace->get_size();
+		Size2 s = workspace->get_rect_size();
 
 		int width_count = Math::floor((s.width - WORKSPACE_MARGIN.x) / (snap_step.x + snap_separation.x));
 		int height_count = Math::floor((s.height - WORKSPACE_MARGIN.y) / (snap_step.y + snap_separation.y));
@@ -3354,9 +3354,9 @@ void TileSetEditor::update_workspace_minsize() {
 	}
 	delete tiles;
 
-	workspace->set_custom_minimum_size(workspace_min_size + WORKSPACE_MARGIN * 2);
-	workspace_container->set_custom_minimum_size(workspace_min_size * workspace->get_scale() + WORKSPACE_MARGIN * 2);
-	workspace_overlay->set_custom_minimum_size(workspace_min_size * workspace->get_scale() + WORKSPACE_MARGIN * 2);
+	workspace->set_rect_minimum_size(workspace_min_size + WORKSPACE_MARGIN * 2);
+	workspace_container->set_rect_minimum_size(workspace_min_size * workspace->get_rect_scale() + WORKSPACE_MARGIN * 2);
+	workspace_overlay->set_rect_minimum_size(workspace_min_size * workspace->get_rect_scale() + WORKSPACE_MARGIN * 2);
 }
 
 void TileSetEditor::update_edited_region(const Vector2 &end_point) {
@@ -3672,7 +3672,7 @@ TileSetEditorPlugin::TileSetEditorPlugin(EditorNode *p_node) {
 	editor = p_node;
 	tileset_editor = memnew(TileSetEditor(p_node));
 
-	tileset_editor->set_custom_minimum_size(Size2(0, 200) * EDSCALE);
+	tileset_editor->set_rect_minimum_size(Size2(0, 200) * EDSCALE);
 	tileset_editor->hide();
 
 	tileset_editor_button = p_node->add_bottom_panel_item(TTR("TileSet"), tileset_editor);

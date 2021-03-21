@@ -36,7 +36,7 @@
 #include "servers/display_server.h"
 
 EditorDebuggerTree::EditorDebuggerTree() {
-	set_v_size_flags(SIZE_EXPAND_FILL);
+	set_size_flags_vertical(SIZE_EXPAND_FILL);
 	set_allow_rmb_select(true);
 
 	// Popup

@@ -135,7 +135,7 @@ MeshEditor::MeshEditor() {
 	mesh_instance = memnew(MeshInstance3D);
 	rotation->add_child(mesh_instance);
 
-	set_custom_minimum_size(Size2(1, 150) * EDSCALE);
+	set_rect_minimum_size(Size2(1, 150) * EDSCALE);
 
 	HBoxContainer *hb = memnew(HBoxContainer);
 	add_child(hb);

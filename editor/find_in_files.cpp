@@ -309,7 +309,7 @@ FindInFilesDialog::FindInFilesDialog() {
 	gc->add_child(find_label);
 
 	_search_text_line_edit = memnew(LineEdit);
-	_search_text_line_edit->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+	_search_text_line_edit->set_size_flags_horizontal(Control::SIZE_EXPAND_FILL);
 	_search_text_line_edit->connect("text_changed", callable_mp(this, &FindInFilesDialog::_on_search_text_modified));
 	_search_text_line_edit->connect("text_entered", callable_mp(this, &FindInFilesDialog::_on_search_text_entered));
 	gc->add_child(_search_text_line_edit);
@@ -320,7 +320,7 @@ FindInFilesDialog::FindInFilesDialog() {
 	gc->add_child(_replace_label);
 
 	_replace_text_line_edit = memnew(LineEdit);
-	_replace_text_line_edit->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+	_replace_text_line_edit->set_size_flags_horizontal(Control::SIZE_EXPAND_FILL);
 	_replace_text_line_edit->connect("text_entered", callable_mp(this, &FindInFilesDialog::_on_replace_text_entered));
 	_replace_text_line_edit->hide();
 	gc->add_child(_replace_text_line_edit);
@@ -353,7 +353,7 @@ FindInFilesDialog::FindInFilesDialog() {
 		hbc->add_child(prefix_label);
 
 		_folder_line_edit = memnew(LineEdit);
-		_folder_line_edit->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+		_folder_line_edit->set_size_flags_horizontal(Control::SIZE_EXPAND_FILL);
 		hbc->add_child(_folder_line_edit);
 
 		Button *folder_button = memnew(Button);
@@ -570,8 +570,8 @@ FindInFilesPanel::FindInFilesPanel() {
 		hbc->add_child(_search_text_label);
 
 		_progress_bar = memnew(ProgressBar);
-		_progress_bar->set_h_size_flags(SIZE_EXPAND_FILL);
-		_progress_bar->set_v_size_flags(SIZE_SHRINK_CENTER);
+		_progress_bar->set_size_flags_horizontal(SIZE_EXPAND_FILL);
+		_progress_bar->set_size_flags_vertical(SIZE_SHRINK_CENTER);
 		hbc->add_child(_progress_bar);
 		set_progress_visible(false);
 
@@ -596,7 +596,7 @@ FindInFilesPanel::FindInFilesPanel() {
 	_results_display = memnew(Tree);
 	_results_display->add_theme_font_override("font", EditorNode::get_singleton()->get_gui_base()->get_theme_font("source", "EditorFonts"));
 	_results_display->add_theme_font_size_override("font_size", EditorNode::get_singleton()->get_gui_base()->get_theme_font_size("source_size", "EditorFonts"));
-	_results_display->set_v_size_flags(SIZE_EXPAND_FILL);
+	_results_display->set_size_flags_vertical(SIZE_EXPAND_FILL);
 	_results_display->connect("item_selected", callable_mp(this, &FindInFilesPanel::_on_result_selected));
 	_results_display->connect("item_edited", callable_mp(this, &FindInFilesPanel::_on_item_edited));
 	_results_display->set_hide_root(true);
@@ -615,7 +615,7 @@ FindInFilesPanel::FindInFilesPanel() {
 		_replace_container->add_child(replace_label);
 
 		_replace_line_edit = memnew(LineEdit);
-		_replace_line_edit->set_h_size_flags(SIZE_EXPAND_FILL);
+		_replace_line_edit->set_size_flags_horizontal(SIZE_EXPAND_FILL);
 		_replace_line_edit->connect("text_changed", callable_mp(this, &FindInFilesPanel::_on_replace_text_changed));
 		_replace_container->add_child(_replace_line_edit);
 

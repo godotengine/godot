@@ -26,7 +26,7 @@
 			<return type="bool">
 			</return>
 			<description>
-				Virtual method to be implemented by the user. Returns whether [method _gui_input] should not be called for children controls outside this control's rectangle. Input will be clipped to the Rect of this [Control]. Similar to [member rect_clip_content], but doesn't affect visibility.
+				Virtual method to be implemented by the user. Returns whether [method _gui_input] should not be called for children controls outside this control's rectangle. Input will be clipped to the Rect of this [Control]. Similar to [member rect_clip_contents], but doesn't affect visibility.
 				If not overridden, defaults to [code]false[/code].
 			</description>
 		</method>
@@ -34,7 +34,7 @@
 			<return type="Vector2">
 			</return>
 			<description>
-				Virtual method to be implemented by the user. Returns the minimum size for this control. Alternative to [member rect_min_size] for controlling minimum size via code. The actual minimum size will be the max value of these two (in each axis separately).
+				Virtual method to be implemented by the user. Returns the minimum size for this control. Alternative to [member rect_minimum_size] for controlling minimum size via code. The actual minimum size will be the max value of these two (in each axis separately).
 				If not overridden, defaults to [constant Vector2.ZERO].
 			</description>
 		</method>
@@ -72,7 +72,7 @@
 				* control has [member mouse_filter] set to [constant MOUSE_FILTER_IGNORE];
 				* control is obstructed by another [Control] on top of it, which doesn't have [member mouse_filter] set to [constant MOUSE_FILTER_IGNORE];
 				* control's parent has [member mouse_filter] set to [constant MOUSE_FILTER_STOP] or has accepted the event;
-				* it happens outside parent's rectangle and the parent has either [member rect_clip_content] or [method _clips_input] enabled.
+				* it happens outside parent's rectangle and the parent has either [member rect_clip_contents] or [method _clips_input] enabled.
 			</description>
 		</method>
 		<method name="_make_custom_tooltip" qualifiers="virtual">
@@ -81,10 +81,10 @@
 			<argument index="0" name="for_text" type="String">
 			</argument>
 			<description>
-				Virtual method to be implemented by the user. Returns a [Control] node that should be used as a tooltip instead of the default one. The [code]for_text[/code] includes the contents of the [member hint_tooltip] property.
+				Virtual method to be implemented by the user. Returns a [Control] node that should be used as a tooltip instead of the default one. The [code]for_text[/code] includes the contents of the [member tooltip] property.
 				The returned node must be of type [Control] or Control-derived. It can have child nodes of any type. It is freed when the tooltip disappears, so make sure you always provide a new instance (if you want to use a pre-existing node from your scene tree, you can duplicate it and pass the duplicated instance).When [code]null[/code] or a non-Control node is returned, the default tooltip will be used instead.
-				The returned node will be added as child to a [PopupPanel], so you should only provide the contents of that panel. That [PopupPanel] can be themed using [method Theme.set_stylebox] for the type [code]"TooltipPanel"[/code] (see [member hint_tooltip] for an example).
-				[b]Note:[/b] The tooltip is shrunk to minimal size. If you want to ensure it's fully visible, you might want to set its [member rect_min_size] to some non-zero value.
+				The returned node will be added as child to a [PopupPanel], so you should only provide the contents of that panel. That [PopupPanel] can be themed using [method Theme.set_stylebox] for the type [code]"TooltipPanel"[/code] (see [member tooltip] for an example).
+				[b]Note:[/b] The tooltip is shrunk to minimal size. If you want to ensure it's fully visible, you might want to set its [member rect_minimum_size] to some non-zero value.
 				[b]Note:[/b] The node (and any relevant children) should be [member CanvasItem.visible] when returned, otherwise the viewport that instantiates it will not be able to calculate its minimum size reliably.
 				Example of usage with a custom-constructed node:
 				[codeblocks]
@@ -352,16 +352,7 @@
 			<return type="Vector2">
 			</return>
 			<description>
-				Returns combined minimum size from [member rect_min_size] and [method get_minimum_size].
-			</description>
-		</method>
-		<method name="get_cursor_shape" qualifiers="const">
-			<return type="int" enum="Control.CursorShape">
-			</return>
-			<argument index="0" name="position" type="Vector2" default="Vector2( 0, 0 )">
-			</argument>
-			<description>
-				Returns the mouse cursor shape the control displays on mouse hover. See [enum CursorShape].
+				Returns combined minimum size from [member rect_minimum_size] and [method get_minimum_size].
 			</description>
 		</method>
 		<method name="get_drag_data" qualifiers="virtual">
@@ -424,7 +415,16 @@
 			<return type="Vector2">
 			</return>
 			<description>
-				Returns the minimum size for this control. See [member rect_min_size].
+				Returns the minimum size for this control. See [member rect_minimum_size].
+			</description>
+		</method>
+		<method name="get_mouse_cursor_shape" qualifiers="const">
+			<return type="int" enum="Control.CursorShape">
+			</return>
+			<argument index="0" name="position" type="Vector2" default="Vector2( 0, 0 )">
+			</argument>
+			<description>
+				Returns the mouse cursor shape the control displays on mouse hover. See [enum CursorShape].
 			</description>
 		</method>
 		<method name="get_offset" qualifiers="const">
@@ -541,7 +541,7 @@
 			<argument index="0" name="at_position" type="Vector2" default="Vector2( 0, 0 )">
 			</argument>
 			<description>
-				Returns the tooltip, which will appear when the cursor is resting over this control. See [member hint_tooltip].
+				Returns the tooltip, which will appear when the cursor is resting over this control. See [member tooltip].
 			</description>
 		</method>
 		<method name="grab_click_focus">
@@ -719,7 +719,7 @@
 			<return type="void">
 			</return>
 			<description>
-				Invalidates the size cache in this node and in parent nodes up to top_level. Intended to be used with [method get_minimum_size] when the return value is changed. Setting [member rect_min_size] directly calls this method automatically.
+				Invalidates the size cache in this node and in parent nodes up to top_level. Intended to be used with [method get_minimum_size] when the return value is changed. Setting [member rect_minimum_size] directly calls this method automatically.
 			</description>
 		</method>
 		<method name="release_focus">
@@ -972,18 +972,6 @@
 				Sets the anchor for the specified [enum Side] to the [Control] at [code]neighbor[/code] node path. A setter method for [member focus_neighbor_bottom], [member focus_neighbor_left], [member focus_neighbor_right] and [member focus_neighbor_top].
 			</description>
 		</method>
-		<method name="set_global_position">
-			<return type="void">
-			</return>
-			<argument index="0" name="position" type="Vector2">
-			</argument>
-			<argument index="1" name="keep_offsets" type="bool" default="false">
-			</argument>
-			<description>
-				Sets the [member rect_global_position] to given [code]position[/code].
-				If [code]keep_offsets[/code] is [code]true[/code], control's anchors will be updated instead of offsets.
-			</description>
-		</method>
 		<method name="set_offset">
 			<return type="void">
 			</return>
@@ -1010,7 +998,7 @@
 				Use parameter [code]margin[/code] to determine the gap between the [Control] and the edges.
 			</description>
 		</method>
-		<method name="set_position">
+		<method name="set_rect_global_position">
 			<return type="void">
 			</return>
 			<argument index="0" name="position" type="Vector2">
@@ -1018,11 +1006,21 @@
 			<argument index="1" name="keep_offsets" type="bool" default="false">
 			</argument>
 			<description>
-				Sets the [member rect_position] to given [code]position[/code].
+				Sets the [member rect_global_position] to given [code]position[/code].
 				If [code]keep_offsets[/code] is [code]true[/code], control's anchors will be updated instead of offsets.
 			</description>
 		</method>
-		<method name="set_size">
+		<method name="set_rect_position">
+			<return type="void">
+			</return>
+			<argument index="0" name="position" type="Vector2">
+			</argument>
+			<argument index="1" name="keep_offsets" type="bool" default="false">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_rect_size">
 			<return type="void">
 			</return>
 			<argument index="0" name="size" type="Vector2">
@@ -1080,40 +1078,18 @@
 			Tells Godot which node it should give keyboard focus to if the user presses [kbd]Shift + Tab[/kbd] on a keyboard by default. You can change the key by editing the [code]ui_focus_prev[/code] input action.
 			If this property is not set, Godot will select a "best guess" based on surrounding nodes in the scene tree.
 		</member>
-		<member name="grow_horizontal" type="int" setter="set_h_grow_direction" getter="get_h_grow_direction" enum="Control.GrowDirection" default="1">
+		<member name="grow_horizontal" type="int" setter="set_grow_horizontal" getter="get_grow_horizontal" enum="Control.GrowDirection" default="1">
 			Controls the direction on the horizontal axis in which the control should grow if its horizontal minimum size is changed to be greater than its current size, as the control always has to be at least the minimum size.
 		</member>
-		<member name="grow_vertical" type="int" setter="set_v_grow_direction" getter="get_v_grow_direction" enum="Control.GrowDirection" default="1">
+		<member name="grow_vertical" type="int" setter="set_grow_vertical" getter="get_grow_vertical" enum="Control.GrowDirection" default="1">
 			Controls the direction on the vertical axis in which the control should grow if its vertical minimum size is changed to be greater than its current size, as the control always has to be at least the minimum size.
-		</member>
-		<member name="hint_tooltip" type="String" setter="set_tooltip" getter="_get_tooltip" default="&quot;&quot;">
-			Changes the tooltip text. The tooltip appears when the user's mouse cursor stays idle over this control for a few moments, provided that the [member mouse_filter] property is not [constant MOUSE_FILTER_IGNORE]. You can change the time required for the tooltip to appear with [code]gui/timers/tooltip_delay_sec[/code] option in Project Settings.
-			The tooltip popup will use either a default implementation, or a custom one that you can provide by overriding [method _make_custom_tooltip]. The default tooltip includes a [PopupPanel] and [Label] whose theme properties can be customized using [Theme] methods with the [code]"TooltipPanel"[/code] and [code]"TooltipLabel"[/code] respectively. For example:
-			[codeblocks]
-			[gdscript]
-			var style_box = StyleBoxFlat.new()
-			style_box.set_bg_color(Color(1, 1, 0))
-			style_box.set_border_width_all(2)
-			# We assume here that the `theme` property has been assigned a custom Theme beforehand.
-			theme.set_stylebox("panel", "TooltipPanel", style_box)
-			theme.set_color("font_color", "TooltipLabel", Color(0, 1, 1))
-			[/gdscript]
-			[csharp]
-			var styleBox = new StyleBoxFlat();
-			styleBox.SetBgColor(new Color(1, 1, 0));
-			styleBox.SetBorderWidthAll(2);
-			// We assume here that the `Theme` property has been assigned a custom Theme beforehand.
-			Theme.SetStyleBox("panel", "TooltipPanel", styleBox);
-			Theme.SetColor("font_color", "TooltipLabel", new Color(0, 1, 1));
-			[/csharp]
-			[/codeblocks]
 		</member>
 		<member name="layout_direction" type="int" setter="set_layout_direction" getter="get_layout_direction" enum="Control.LayoutDirection" default="0">
 			Controls layout direction and text writing direction. Right-to-left layouts are necessary for certain languages (e.g. Arabic and Hebrew).
 		</member>
-		<member name="mouse_default_cursor_shape" type="int" setter="set_default_cursor_shape" getter="get_default_cursor_shape" enum="Control.CursorShape" default="0">
-			The default cursor shape for this control. Useful for Godot plugins and applications or games that use the system's mouse cursors.
-			[b]Note:[/b] On Linux, shapes may vary depending on the cursor theme of the system.
+		<member name="mouse_default_cursor_shape" type="int" setter="set_mouse_default_cursor_shape" getter="get_mouse_default_cursor_shape" enum="Control.CursorShape" default="0">
+			The default mouse cursor shape for this control. Useful for Godot plugins and applications or games that use the system's mouse cursors.
+			[b]Note:[/b] On Linux, shapes may vary depending on the mouse cursor theme of the system.
 		</member>
 		<member name="mouse_filter" type="int" setter="set_mouse_filter" getter="get_mouse_filter" enum="Control.MouseFilter" default="0">
 			Controls whether the control will be able to receive mouse button input events through [method _gui_input] and how these events should be handled. Also controls whether the control can receive the [signal mouse_entered], and [signal mouse_exited] signals. See the constants to learn what each does.
@@ -1134,46 +1110,68 @@
 			Distance between the node's top edge and its parent control, based on [member anchor_top].
 			Offsets are often controlled by one or multiple parent [Container] nodes, so you should not modify them manually if your node is a direct child of a [Container]. Offsets update automatically when you move or resize the node.
 		</member>
-		<member name="rect_clip_content" type="bool" setter="set_clip_contents" getter="is_clipping_contents" default="false">
+		<member name="rect_clip_contents" type="bool" setter="set_rect_clip_contents" getter="is_rect_clipping_contents" default="false">
 			Enables whether rendering of [CanvasItem] based children should be clipped to this control's rectangle. If [code]true[/code], parts of a child which would be visibly outside of this control's rectangle will not be rendered.
 		</member>
-		<member name="rect_global_position" type="Vector2" setter="_set_global_position" getter="get_global_position">
+		<member name="rect_global_position" type="Vector2" setter="_set_rect_global_position" getter="get_rect_global_position">
 			The node's global position, relative to the world (usually to the top-left corner of the window).
 		</member>
-		<member name="rect_min_size" type="Vector2" setter="set_custom_minimum_size" getter="get_custom_minimum_size" default="Vector2( 0, 0 )">
+		<member name="rect_minimum_size" type="Vector2" setter="set_rect_minimum_size" getter="get_rect_minimum_size" default="Vector2( 0, 0 )">
 			The minimum size of the node's bounding rectangle. If you set it to a value greater than (0, 0), the node's bounding rectangle will always have at least this size, even if its content is smaller. If it's set to (0, 0), the node sizes automatically to fit its content, be it a texture or child nodes.
 		</member>
-		<member name="rect_pivot_offset" type="Vector2" setter="set_pivot_offset" getter="get_pivot_offset" default="Vector2( 0, 0 )">
+		<member name="rect_pivot_offset" type="Vector2" setter="set_rect_pivot_offset" getter="get_rect_pivot_offset" default="Vector2( 0, 0 )">
 			By default, the node's pivot is its top-left corner. When you change its [member rect_scale], it will scale around this pivot. Set this property to [member rect_size] / 2 to center the pivot in the node's rectangle.
 		</member>
-		<member name="rect_position" type="Vector2" setter="_set_position" getter="get_position" default="Vector2( 0, 0 )">
+		<member name="rect_position" type="Vector2" setter="_set_rect_position" getter="get_rect_position" default="Vector2( 0, 0 )">
 			The node's position, relative to its parent. It corresponds to the rectangle's top-left corner. The property is not affected by [member rect_pivot_offset].
 		</member>
-		<member name="rect_rotation" type="float" setter="set_rotation" getter="get_rotation" default="0.0">
+		<member name="rect_rotation" type="float" setter="set_rect_rotation" getter="get_rect_rotation" default="0.0">
 			The node's rotation around its pivot, in radians. See [member rect_pivot_offset] to change the pivot's position.
 		</member>
-		<member name="rect_rotation_degrees" type="float" setter="set_rotation_degrees" getter="get_rotation_degrees" default="0.0">
+		<member name="rect_rotation_degrees" type="float" setter="set_rect_rotation_degrees" getter="get_rect_rotation_degrees" default="0.0">
 			The node's rotation around its pivot, in degrees. See [member rect_pivot_offset] to change the pivot's position.
 		</member>
-		<member name="rect_scale" type="Vector2" setter="set_scale" getter="get_scale" default="Vector2( 1, 1 )">
-			The node's scale, relative to its [member rect_size]. Change this property to scale the node around its [member rect_pivot_offset]. The Control's [member hint_tooltip] will also scale according to this value.
+		<member name="rect_scale" type="Vector2" setter="set_rect_scale" getter="get_rect_scale" default="Vector2( 1, 1 )">
+			The node's scale, relative to its [member rect_size]. Change this property to scale the node around its [member rect_pivot_offset]. The Control's [member tooltip] will also scale according to this value.
 			[b]Note:[/b] This property is mainly intended to be used for animation purposes. Text inside the Control will look pixelated or blurry when the Control is scaled. To support multiple resolutions in your project, use an appropriate viewport stretch mode as described in the [url=https://docs.godotengine.org/en/latest/tutorials/viewports/multiple_resolutions.html]documentation[/url] instead of scaling Controls individually.
 			[b]Note:[/b] If the Control node is a child of a [Container] node, the scale will be reset to [code]Vector2(1, 1)[/code] when the scene is instanced. To set the Control's scale when it's instanced, wait for one frame using [code]yield(get_tree(), "idle_frame")[/code] then set its [member rect_scale] property.
 		</member>
-		<member name="rect_size" type="Vector2" setter="_set_size" getter="get_size" default="Vector2( 0, 0 )">
+		<member name="rect_size" type="Vector2" setter="_set_rect_size" getter="get_rect_size" default="Vector2( 0, 0 )">
 			The size of the node's bounding rectangle, in pixels. [Container] nodes update this property automatically.
 		</member>
-		<member name="size_flags_horizontal" type="int" setter="set_h_size_flags" getter="get_h_size_flags" default="1">
+		<member name="size_flags_horizontal" type="int" setter="set_size_flags_horizontal" getter="get_size_flags_horizontal" default="1">
 			Tells the parent [Container] nodes how they should resize and place the node on the X axis. Use one of the [enum SizeFlags] constants to change the flags. See the constants to learn what each does.
 		</member>
-		<member name="size_flags_stretch_ratio" type="float" setter="set_stretch_ratio" getter="get_stretch_ratio" default="1.0">
+		<member name="size_flags_stretch_ratio" type="float" setter="set_size_flags_stretch_ratio" getter="get_size_flags_stretch_ratio" default="1.0">
 			If the node and at least one of its neighbors uses the [constant SIZE_EXPAND] size flag, the parent [Container] will let it take more or less space depending on this property. If this node has a stretch ratio of 2 and its neighbor a ratio of 1, this node will take two thirds of the available space.
 		</member>
-		<member name="size_flags_vertical" type="int" setter="set_v_size_flags" getter="get_v_size_flags" default="1">
+		<member name="size_flags_vertical" type="int" setter="set_size_flags_vertical" getter="get_size_flags_vertical" default="1">
 			Tells the parent [Container] nodes how they should resize and place the node on the Y axis. Use one of the [enum SizeFlags] constants to change the flags. See the constants to learn what each does.
 		</member>
 		<member name="theme" type="Theme" setter="set_theme" getter="get_theme">
 			Changing this property replaces the current [Theme] resource this node and all its [Control] children use.
+		</member>
+		<member name="tooltip" type="String" setter="set_tooltip" getter="_get_tooltip" default="&quot;&quot;">
+			Changes the tooltip text. The tooltip appears when the user's mouse cursor stays idle over this control for a few moments, provided that the [member mouse_filter] property is not [constant MOUSE_FILTER_IGNORE]. You can change the time required for the tooltip to appear with [code]gui/timers/tooltip_delay_sec[/code] option in Project Settings.
+			The tooltip popup will use either a default implementation, or a custom one that you can provide by overriding [method _make_custom_tooltip]. The default tooltip includes a [PopupPanel] and [Label] whose theme properties can be customized using [Theme] methods with the [code]"TooltipPanel"[/code] and [code]"TooltipLabel"[/code] respectively. For example:
+			[codeblocks]
+			[gdscript]
+			var style_box = StyleBoxFlat.new()
+			style_box.set_bg_color(Color(1, 1, 0))
+			style_box.set_border_width_all(2)
+			# We assume here that the `theme` property has been assigned a custom Theme beforehand.
+			theme.set_stylebox("panel", "TooltipPanel", style_box)
+			theme.set_color("font_color", "TooltipLabel", Color(0, 1, 1))
+			[/gdscript]
+			[csharp]
+			var styleBox = new StyleBoxFlat();
+			styleBox.SetBgColor(new Color(1, 1, 0));
+			styleBox.SetBorderWidthAll(2);
+			// We assume here that the `Theme` property has been assigned a custom Theme beforehand.
+			Theme.SetStyleBox("panel", "TooltipPanel", styleBox);
+			Theme.SetColor("font_color", "TooltipLabel", new Color(0, 1, 1));
+			[/csharp]
+			[/codeblocks]
 		</member>
 	</members>
 	<signals>

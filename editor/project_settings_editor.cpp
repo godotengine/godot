@@ -522,22 +522,22 @@ ProjectSettingsEditor::ProjectSettingsEditor(EditorData *p_data) {
 	VBoxContainer *general_editor = memnew(VBoxContainer);
 	general_editor->set_name(TTR("General"));
 	general_editor->set_alignment(BoxContainer::ALIGN_BEGIN);
-	general_editor->set_v_size_flags(Control::SIZE_EXPAND_FILL);
+	general_editor->set_size_flags_vertical(Control::SIZE_EXPAND_FILL);
 	tab_container->add_child(general_editor);
 
 	VBoxContainer *header = memnew(VBoxContainer);
-	header->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+	header->set_size_flags_horizontal(Control::SIZE_EXPAND_FILL);
 	general_editor->add_child(header);
 
 	{
 		// Search bar.
 		search_bar = memnew(HBoxContainer);
-		search_bar->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+		search_bar->set_size_flags_horizontal(Control::SIZE_EXPAND_FILL);
 		header->add_child(search_bar);
 
 		search_box = memnew(LineEdit);
 		search_box->set_placeholder(TTR("Search"));
-		search_box->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+		search_box->set_size_flags_horizontal(Control::SIZE_EXPAND_FILL);
 		search_bar->add_child(search_box);
 
 		advanced = memnew(CheckButton);
@@ -553,10 +553,10 @@ ProjectSettingsEditor::ProjectSettingsEditor(EditorData *p_data) {
 		header->add_child(advanced_bar);
 
 		HBoxContainer *hbc = advanced_bar;
-		hbc->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+		hbc->set_size_flags_horizontal(Control::SIZE_EXPAND_FILL);
 
 		category_box = memnew(LineEdit);
-		category_box->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+		category_box->set_size_flags_horizontal(Control::SIZE_EXPAND_FILL);
 		category_box->connect("text_changed", callable_mp(this, &ProjectSettingsEditor::_text_field_changed));
 		category_box->set_placeholder(TTR("Category"));
 		hbc->add_child(category_box);
@@ -566,7 +566,7 @@ ProjectSettingsEditor::ProjectSettingsEditor(EditorData *p_data) {
 		hbc->add_child(l);
 
 		property_box = memnew(LineEdit);
-		property_box->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+		property_box->set_size_flags_horizontal(Control::SIZE_EXPAND_FILL);
 		property_box->set_placeholder(TTR("Property"));
 		property_box->connect("text_changed", callable_mp(this, &ProjectSettingsEditor::_text_field_changed));
 		hbc->add_child(property_box);
@@ -576,7 +576,7 @@ ProjectSettingsEditor::ProjectSettingsEditor(EditorData *p_data) {
 		hbc->add_child(l);
 
 		type = memnew(OptionButton);
-		type->set_custom_minimum_size(Size2(100, 0) * EDSCALE);
+		type->set_rect_minimum_size(Size2(100, 0) * EDSCALE);
 		hbc->add_child(type);
 
 		for (int i = 0; i < Variant::VARIANT_MAX; i++) {
@@ -592,7 +592,7 @@ ProjectSettingsEditor::ProjectSettingsEditor(EditorData *p_data) {
 		hbc->add_child(l);
 
 		feature_override = memnew(OptionButton);
-		feature_override->set_custom_minimum_size(Size2(100, 0) * EDSCALE);
+		feature_override->set_rect_minimum_size(Size2(100, 0) * EDSCALE);
 		feature_override->connect("item_selected", callable_mp(this, &ProjectSettingsEditor::_feature_selected));
 		hbc->add_child(feature_override);
 
@@ -609,7 +609,7 @@ ProjectSettingsEditor::ProjectSettingsEditor(EditorData *p_data) {
 
 	inspector = memnew(SectionedInspector);
 	inspector->get_inspector()->set_undo_redo(EditorNode::get_singleton()->get_undo_redo());
-	inspector->set_v_size_flags(Control::SIZE_EXPAND_FILL);
+	inspector->set_size_flags_vertical(Control::SIZE_EXPAND_FILL);
 	inspector->register_search_box(search_box);
 	inspector->get_inspector()->connect("property_selected", callable_mp(this, &ProjectSettingsEditor::_setting_selected));
 	inspector->get_inspector()->connect("property_edited", callable_mp(this, &ProjectSettingsEditor::_setting_edited));
@@ -624,7 +624,7 @@ ProjectSettingsEditor::ProjectSettingsEditor(EditorData *p_data) {
 	restart_container->add_child(restart_hb);
 
 	restart_icon = memnew(TextureRect);
-	restart_icon->set_v_size_flags(Control::SIZE_SHRINK_CENTER);
+	restart_icon->set_size_flags_vertical(Control::SIZE_SHRINK_CENTER);
 	restart_hb->add_child(restart_icon);
 
 	restart_label = memnew(Label);

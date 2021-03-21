@@ -916,7 +916,7 @@ void AnimationPlayerEditor::forward_canvas_force_draw_over_viewport(Control *p_o
 	src_rect.position.y = onion.capture_size.y - (src_rect.position.y + src_rect.size.y);
 	src_rect.size.y *= -1;
 
-	Rect2 dst_rect = Rect2(Point2(), p_overlay->get_size());
+	Rect2 dst_rect = Rect2(Point2(), p_overlay->get_rect_size());
 
 	float alpha_step = 1.0 / (onion.steps + 1);
 
@@ -1549,8 +1549,8 @@ AnimationPlayerEditor::AnimationPlayerEditor(EditorNode *p_editor, AnimationPlay
 
 	frame = memnew(SpinBox);
 	hb->add_child(frame);
-	frame->set_custom_minimum_size(Size2(60, 0));
-	frame->set_stretch_ratio(2);
+	frame->set_rect_minimum_size(Size2(60, 0));
+	frame->set_size_flags_stretch_ratio(2);
 	frame->set_step(0.0001);
 	frame->set_tooltip(TTR("Animation position (in seconds)."));
 
@@ -1558,8 +1558,8 @@ AnimationPlayerEditor::AnimationPlayerEditor(EditorNode *p_editor, AnimationPlay
 
 	scale = memnew(LineEdit);
 	hb->add_child(scale);
-	scale->set_h_size_flags(SIZE_EXPAND_FILL);
-	scale->set_stretch_ratio(1);
+	scale->set_size_flags_horizontal(SIZE_EXPAND_FILL);
+	scale->set_size_flags_stretch_ratio(1);
 	scale->set_tooltip(TTR("Scale animation playback globally for the node."));
 	scale->hide();
 
@@ -1592,7 +1592,7 @@ AnimationPlayerEditor::AnimationPlayerEditor(EditorNode *p_editor, AnimationPlay
 
 	animation = memnew(OptionButton);
 	hb->add_child(animation);
-	animation->set_h_size_flags(SIZE_EXPAND_FILL);
+	animation->set_size_flags_horizontal(SIZE_EXPAND_FILL);
 	animation->set_tooltip(TTR("Display list of animations in player."));
 	animation->set_clip_text(true);
 
@@ -1703,7 +1703,7 @@ AnimationPlayerEditor::AnimationPlayerEditor(EditorNode *p_editor, AnimationPlay
 	set_process_unhandled_key_input(true);
 
 	add_child(track_editor);
-	track_editor->set_v_size_flags(SIZE_EXPAND_FILL);
+	track_editor->set_size_flags_vertical(SIZE_EXPAND_FILL);
 	track_editor->connect("timeline_changed", callable_mp(this, &AnimationPlayerEditor::_animation_key_editor_seek));
 	track_editor->connect("animation_len_changed", callable_mp(this, &AnimationPlayerEditor::_animation_key_editor_anim_len_changed));
 

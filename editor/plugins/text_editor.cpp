@@ -472,7 +472,7 @@ void TextEditor::_text_edit_gui_input(const Ref<InputEvent> &ev) {
 		if (mb->get_button_index() == MOUSE_BUTTON_RIGHT) {
 			int col, row;
 			CodeEdit *tx = code_editor->get_text_editor();
-			tx->_get_mouse_pos(mb->get_global_position() - tx->get_global_position(), row, col);
+			tx->_get_mouse_pos(mb->get_global_position() - tx->get_rect_global_position(), row, col);
 
 			tx->set_right_click_moves_caret(EditorSettings::get_singleton()->get("text_editor/cursor/right_click_moves_caret"));
 			bool can_fold = tx->can_fold(row);
@@ -549,7 +549,7 @@ TextEditor::TextEditor() {
 	code_editor->connect("load_theme_settings", callable_mp(this, &TextEditor::_load_theme_settings));
 	code_editor->connect("validate_script", callable_mp(this, &TextEditor::_validate_script));
 	code_editor->set_anchors_and_offsets_preset(Control::PRESET_WIDE);
-	code_editor->set_v_size_flags(Control::SIZE_EXPAND_FILL);
+	code_editor->set_size_flags_vertical(Control::SIZE_EXPAND_FILL);
 
 	update_settings();
 
