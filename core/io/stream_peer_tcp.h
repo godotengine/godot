@@ -65,10 +65,12 @@ protected:
 public:
 	void accept_socket(Ref<NetSocket> p_sock, IP_Address p_host, uint16_t p_port);
 
-	Error connect_to_host(const IP_Address &p_host, uint16_t p_port);
+	Error bind(int p_port, const IP_Address &p_host);
+	Error connect_to_host(const IP_Address &p_host, int p_port);
 	bool is_connected_to_host() const;
 	IP_Address get_connected_host() const;
-	uint16_t get_connected_port() const;
+	int get_connected_port() const;
+	int get_local_port() const;
 	void disconnect_from_host();
 
 	int get_available_bytes() const override;

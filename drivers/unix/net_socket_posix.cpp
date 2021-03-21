@@ -130,18 +130,23 @@ size_t NetSocketPosix::_set_addr_storage(struct sockaddr_storage *p_addr, const 
 	}
 }
 
-void NetSocketPosix::_set_ip_port(struct sockaddr_storage *p_addr, IP_Address &r_ip, uint16_t &r_port) {
+void NetSocketPosix::_set_ip_port(struct sockaddr_storage *p_addr, IP_Address *r_ip, uint16_t *r_port) {
 	if (p_addr->ss_family == AF_INET) {
 		struct sockaddr_in *addr4 = (struct sockaddr_in *)p_addr;
-		r_ip.set_ipv4((uint8_t *)&(addr4->sin_addr.s_addr));
-
-		r_port = ntohs(addr4->sin_port);
-
+		if (r_ip) {
+			r_ip->set_ipv4((uint8_t *)&(addr4->sin_addr.s_addr));
+		}
+		if (r_port) {
+			*r_port = ntohs(addr4->sin_port);
+		}
 	} else if (p_addr->ss_family == AF_INET6) {
 		struct sockaddr_in6 *addr6 = (struct sockaddr_in6 *)p_addr;
-		r_ip.set_ipv6(addr6->sin6_addr.s6_addr);
-
-		r_port = ntohs(addr6->sin6_port);
+		if (r_ip) {
+			r_ip->set_ipv6(addr6->sin6_addr.s6_addr);
+		}
+		if (r_port) {
+			*r_port = ntohs(addr6->sin6_port);
+		}
 	};
 }
 
@@ -186,13 +191,21 @@ NetSocketPosix::~NetSocketPosix() {
 NetSocketPosix::NetError NetSocketPosix::_get_socket_error() const {
 #if defined(WINDOWS_ENABLED)
 	int err = WSAGetLastError();
-
-	if (err == WSAEISCONN)
+	if (err == WSAEISCONN) {
 		return ERR_NET_IS_CONNECTED;
-	if (err == WSAEINPROGRESS || err == WSAEALREADY)
+	}
+	if (err == WSAEINPROGRESS || err == WSAEALREADY) {
 		return ERR_NET_IN_PROGRESS;
-	if (err == WSAEWOULDBLOCK)
+	}
+	if (err == WSAEWOULDBLOCK) {
 		return ERR_NET_WOULD_BLOCK;
+	}
+	if (err == WSAEADDRINUSE || err == WSAEADDRNOTAVAIL) {
+		return ERR_NET_ADDRESS_INVALID_OR_UNAVAILABLE;
+	}
+	if (err == WSAEACCES) {
+		return ERR_NET_UNAUTHORIZED;
+	}
 	print_verbose("Socket error: " + itos(err));
 	return ERR_NET_OTHER;
 #else
@@ -204,6 +217,12 @@ NetSocketPosix::NetError NetSocketPosix::_get_socket_error() const {
 	}
 	if (errno == EAGAIN || errno == EWOULDBLOCK) {
 		return ERR_NET_WOULD_BLOCK;
+	}
+	if (errno == EADDRINUSE || errno == EINVAL || errno == EADDRNOTAVAIL) {
+		return ERR_NET_ADDRESS_INVALID_OR_UNAVAILABLE;
+	}
+	if (errno == EACCES) {
+		return ERR_NET_UNAUTHORIZED;
 	}
 	print_verbose("Socket error: " + itos(errno));
 	return ERR_NET_OTHER;
@@ -384,8 +403,8 @@ Error NetSocketPosix::bind(IP_Address p_addr, uint16_t p_port) {
 	size_t addr_size = _set_addr_storage(&addr, p_addr, p_port, _ip_type);
 
 	if (::bind(_sock, (struct sockaddr *)&addr, addr_size) != 0) {
-		_get_socket_error();
-		print_verbose("Failed to bind socket.");
+		NetError err = _get_socket_error();
+		print_verbose("Failed to bind socket. Error: " + itos(err));
 		close();
 		return ERR_UNAVAILABLE;
 	}
@@ -716,6 +735,20 @@ int NetSocketPosix::get_available_bytes() const {
 	return len;
 }
 
+Error NetSocketPosix::get_socket_address(IP_Address *r_ip, uint16_t *r_port) const {
+	ERR_FAIL_COND_V(!is_open(), FAILED);
+
+	struct sockaddr_storage saddr;
+	socklen_t len = sizeof(saddr);
+	if (getsockname(_sock, (struct sockaddr *)&saddr, &len) != 0) {
+		_get_socket_error();
+		print_verbose("Error when reading local socket address.");
+		return FAILED;
+	}
+	_set_ip_port(&saddr, r_ip, r_port);
+	return OK;
+}
+
 Ref<NetSocket> NetSocketPosix::accept(IP_Address &r_ip, uint16_t &r_port) {
 	Ref<NetSocket> out;
 	ERR_FAIL_COND_V(!is_open(), out);
@@ -729,7 +762,7 @@ Ref<NetSocket> NetSocketPosix::accept(IP_Address &r_ip, uint16_t &r_port) {
 		return out;
 	}
 
-	_set_ip_port(&their_addr, r_ip, r_port);
+	_set_ip_port(&their_addr, &r_ip, &r_port);
 
 	NetSocketPosix *ns = memnew(NetSocketPosix);
 	ns->_set_socket(fd, _ip_type, _is_stream);

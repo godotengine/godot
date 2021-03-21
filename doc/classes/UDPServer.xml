@@ -123,6 +123,13 @@
 	<tutorials>
 	</tutorials>
 	<methods>
+		<method name="get_local_port" qualifiers="const">
+			<return type="int">
+			</return>
+			<description>
+				Returns the local port this server is listening to.
+			</description>
+		</method>
 		<method name="is_connection_available" qualifiers="const">
 			<return type="bool">
 			</return>
