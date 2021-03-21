@@ -1929,9 +1929,9 @@ void ScriptTextEditor::register_editor() {
 	ED_SHORTCUT("script_text_editor/fold_all_lines", TTR("Fold All Lines"), 0);
 	ED_SHORTCUT("script_text_editor/unfold_all_lines", TTR("Unfold All Lines"), 0);
 #ifdef OSX_ENABLED
-	ED_SHORTCUT("script_text_editor/clone_down", TTR("Clone Down"), KEY_MASK_SHIFT | KEY_MASK_CMD | KEY_C);
+	ED_SHORTCUT("script_text_editor/clone_down", TTR("Duplicate Line"), KEY_MASK_SHIFT | KEY_MASK_CMD | KEY_C);
 #else
-	ED_SHORTCUT("script_text_editor/clone_down", TTR("Clone Down"), KEY_MASK_CMD | KEY_D);
+	ED_SHORTCUT("script_text_editor/clone_down", TTR("Duplicate Line"), KEY_MASK_CMD | KEY_D);
 #endif
 	ED_SHORTCUT("script_text_editor/evaluate_selection", TTR("Evaluate Selection"), KEY_MASK_CMD | KEY_MASK_SHIFT | KEY_E);
 	ED_SHORTCUT("script_text_editor/trim_trailing_whitespace", TTR("Trim Trailing Whitespace"), KEY_MASK_CMD | KEY_MASK_ALT | KEY_T);
