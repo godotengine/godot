@@ -157,7 +157,7 @@ android {
             aidl.srcDirs = ['aidl']
             assets.srcDirs = ['assets']
         }
-        debug.jniLibs.srcDirs = ['libs/debug']
+        debug.jniLibs.srcDirs = ['libs/debug', 'libs/debug/vulkan_validation_layers']
         release.jniLibs.srcDirs = ['libs/release']
     }
 
