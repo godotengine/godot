@@ -524,7 +524,7 @@ Node3D *EditorSceneImporterFBX::_generate_scene(
 	if (state.fbx_bone_map.size() > 0) {
 		// We are using a single skeleton only method here
 		// this is because we really have no concept of skeletons in FBX
-		// their are bones in a scene but they have no specific armature
+		// there are bones in a scene but they have no specific armature
 		// we can detect armatures but the issue lies in the complexity
 		// we opted to merge the entire scene onto one skeleton for now
 		// if we need to change this we have an archive of the old code.
@@ -721,7 +721,7 @@ Node3D *EditorSceneImporterFBX::_generate_scene(
 						bone->bone_name, get_unscaled_transform(cluster->TransformLink().affine_inverse(), state.scale));
 			}
 
-			if (!reparented) {
+			if (!reparented && state.is_blender_fbx) {
 				// remove
 				Node *mesh_parent = mesh->godot_mesh_instance->get_parent();
 				mesh_parent->remove_child(mesh->godot_mesh_instance);
