@@ -256,7 +256,7 @@ Button *AcceptDialog::add_button(const String &p_text, bool p_right, const Strin
 Button *AcceptDialog::add_cancel_button(const String &p_cancel) {
 	String c = p_cancel;
 	if (p_cancel == "") {
-		c = RTR("Cancel");
+		c = TTRC("Cancel");
 	}
 	Button *b = swap_cancel_ok ? add_button(c, true) : add_button(c);
 	b->connect("pressed", callable_mp(this, &AcceptDialog::_cancel_pressed));
@@ -317,13 +317,13 @@ AcceptDialog::AcceptDialog() {
 
 	hbc->add_spacer();
 	ok = memnew(Button);
-	ok->set_text(RTR("OK"));
+	ok->set_text(TTRC("OK"));
 	hbc->add_child(ok);
 	hbc->add_spacer();
 
 	ok->connect("pressed", callable_mp(this, &AcceptDialog::_ok_pressed));
 
-	set_title(RTR("Alert!"));
+	set_title(TTRC("Alert!"));
 
 	connect("window_input", callable_mp(this, &AcceptDialog::_input_from_window));
 }
@@ -342,7 +342,7 @@ Button *ConfirmationDialog::get_cancel_button() {
 }
 
 ConfirmationDialog::ConfirmationDialog() {
-	set_title(RTR("Please Confirm..."));
+	set_title(TTRC("Please Confirm..."));
 #ifdef TOOLS_ENABLED
 	set_min_size(Size2(200, 70) * EDSCALE);
 #endif
