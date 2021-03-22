@@ -51,6 +51,13 @@ class RDPipelineColorBlendState;
 class RenderingDevice : public Object {
 	GDCLASS(RenderingDevice, Object)
 public:
+	enum DeviceFamily {
+		DEVICE_UNKNOWN,
+		DEVICE_OPENGL,
+		DEVICE_VULKAN,
+		DEVICE_DIRECTX
+	};
+
 	enum ShaderStage {
 		SHADER_STAGE_VERTEX,
 		SHADER_STAGE_FRAGMENT,
@@ -70,7 +77,29 @@ public:
 		SHADER_LANGUAGE_HLSL
 	};
 
-	typedef Vector<uint8_t> (*ShaderCompileFunction)(ShaderStage p_stage, const String &p_source_code, ShaderLanguage p_language, String *r_error);
+	enum SubgroupOperations {
+		SUBGROUP_BASIC_BIT = 1,
+		SUBGROUP_VOTE_BIT = 2,
+		SUBGROUP_ARITHMETIC_BIT = 4,
+		SUBGROUP_BALLOT_BIT = 8,
+		SUBGROUP_SHUFFLE_BIT = 16,
+		SUBGROUP_SHUFFLE_RELATIVE_BIT = 32,
+		SUBGROUP_CLUSTERED_BIT = 64,
+		SUBGROUP_QUAD_BIT = 128,
+	};
+
+	struct Capabilities {
+		// main device info
+		DeviceFamily device_family = DEVICE_UNKNOWN;
+		uint32_t version_major = 1.0;
+		uint32_t version_minor = 0.0;
+		// subgroup capabilities
+		uint32_t subgroup_size = 0;
+		uint32_t subgroup_in_shaders = 0; // Set flags using SHADER_STAGE_VERTEX_BIT, SHADER_STAGE_FRAGMENT_BIT, etc.
+		uint32_t subgroup_operations = 0; // Set flags, using SubgroupOperations
+	};
+
+	typedef Vector<uint8_t> (*ShaderCompileFunction)(ShaderStage p_stage, const String &p_source_code, ShaderLanguage p_language, String *r_error, const Capabilities *p_capabilities);
 	typedef Vector<uint8_t> (*ShaderCacheFunction)(ShaderStage p_stage, const String &p_source_code, ShaderLanguage p_language);
 
 private:
@@ -81,6 +110,8 @@ private:
 
 protected:
 	static void _bind_methods();
+
+	Capabilities device_capabilities;
 
 public:
 	//base numeric ID for all types
@@ -596,6 +627,8 @@ public:
 	/****************/
 	/**** SHADER ****/
 	/****************/
+
+	const Capabilities *get_device_capabilities() const { return &device_capabilities; };
 
 	virtual Vector<uint8_t> shader_compile_from_source(ShaderStage p_stage, const String &p_source_code, ShaderLanguage p_language = SHADER_LANGUAGE_GLSL, String *r_error = nullptr, bool p_allow_cache = true);
 

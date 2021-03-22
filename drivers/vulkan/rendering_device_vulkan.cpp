@@ -7834,6 +7834,18 @@ void RenderingDeviceVulkan::_flush(bool p_current_frame) {
 }
 
 void RenderingDeviceVulkan::initialize(VulkanContext *p_context, bool p_local_device) {
+	// get our device capabilities
+	{
+		device_capabilities.version_major = p_context->get_vulkan_major();
+		device_capabilities.version_minor = p_context->get_vulkan_minor();
+
+		// get info about subgroups
+		VulkanContext::SubgroupCapabilities subgroup_capabilities = p_context->get_subgroup_capabilities();
+		device_capabilities.subgroup_size = subgroup_capabilities.size;
+		device_capabilities.subgroup_in_shaders = subgroup_capabilities.supported_stages_flags_rd();
+		device_capabilities.subgroup_operations = subgroup_capabilities.supported_operations_flags_rd();
+	}
+
 	context = p_context;
 	device = p_context->get_device();
 	if (p_local_device) {
@@ -8253,6 +8265,7 @@ RenderingDevice *RenderingDeviceVulkan::create_local_device() {
 }
 
 RenderingDeviceVulkan::RenderingDeviceVulkan() {
+	device_capabilities.device_family = DEVICE_VULKAN;
 }
 
 RenderingDeviceVulkan::~RenderingDeviceVulkan() {

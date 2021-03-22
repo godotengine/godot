@@ -59,7 +59,7 @@ Vector<uint8_t> RenderingDevice::shader_compile_from_source(ShaderStage p_stage,
 
 	ERR_FAIL_COND_V(!compile_function, Vector<uint8_t>());
 
-	return compile_function(p_stage, p_source_code, p_language, r_error);
+	return compile_function(p_stage, p_source_code, p_language, r_error, &device_capabilities);
 }
 
 RID RenderingDevice::_texture_create(const Ref<RDTextureFormat> &p_format, const Ref<RDTextureView> &p_view, const TypedArray<PackedByteArray> &p_data) {
