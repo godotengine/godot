@@ -444,22 +444,18 @@ Node *ResourceImporterScene::_fix_node(Node *p_node, Node *p_root, Map<Ref<Mesh>
 				BoxShape *boxShape = memnew(BoxShape);
 				boxShape->set_extents(Vector3(1, 1, 1));
 				colshape->set_shape(boxShape);
-				colshape->set_name("BoxShape");
 			} else if (empty_draw_type == "SINGLE_ARROW") {
 				RayShape *rayShape = memnew(RayShape);
 				rayShape->set_length(1);
 				colshape->set_shape(rayShape);
-				colshape->set_name("RayShape");
 				Object::cast_to<Spatial>(sb)->rotate_x(Math_PI / 2);
 			} else if (empty_draw_type == "IMAGE") {
 				PlaneShape *planeShape = memnew(PlaneShape);
 				colshape->set_shape(planeShape);
-				colshape->set_name("PlaneShape");
 			} else {
 				SphereShape *sphereShape = memnew(SphereShape);
 				sphereShape->set_radius(1);
 				colshape->set_shape(sphereShape);
-				colshape->set_name("SphereShape");
 			}
 			sb->add_child(colshape);
 			colshape->set_owner(sb->get_owner());
@@ -486,7 +482,6 @@ Node *ResourceImporterScene::_fix_node(Node *p_node, Node *p_root, Map<Ref<Mesh>
 			p_node->replace_by(rigid_body);
 			rigid_body->set_transform(mi->get_transform());
 			p_node = rigid_body;
-			mi->set_name("mesh");
 			mi->set_transform(Transform());
 			rigid_body->add_child(mi);
 			mi->set_owner(rigid_body->get_owner());
@@ -526,7 +521,6 @@ Node *ResourceImporterScene::_fix_node(Node *p_node, Node *p_root, Map<Ref<Mesh>
 
 			if (shapes.size()) {
 				StaticBody *col = memnew(StaticBody);
-				col->set_name("static_collision");
 				mi->add_child(col);
 				col->set_owner(mi->get_owner());
 
@@ -615,7 +609,6 @@ Node *ResourceImporterScene::_fix_node(Node *p_node, Node *p_root, Map<Ref<Mesh>
 
 			if (shapes.size()) {
 				StaticBody *col = memnew(StaticBody);
-				col->set_name("static_collision");
 				p_node->add_child(col);
 				col->set_owner(p_node->get_owner());
 
@@ -1161,7 +1154,6 @@ void ResourceImporterScene::_add_shapes(Node *p_node, const List<Ref<Shape>> &p_
 		cshape->set_shape(E->get());
 		p_node->add_child(cshape);
 
-		cshape->set_name("shape" + itos(idx));
 		cshape->set_owner(p_node->get_owner());
 		idx++;
 	}
