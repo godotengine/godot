@@ -30,7 +30,9 @@
 
 #include "resource_importer_fontdata.h"
 
-#include "core/os/file_access.h"
+#include "fontdata_import_settings.h"
+
+#include "core/io/file_access.h"
 #include "editor/editor_node.h"
 
 String ResourceImporterFontData::get_importer_name() const {
@@ -111,17 +113,27 @@ void ResourceImporterFontData::get_import_options(List<ImportOption> *r_options,
 	r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "extra_spacing_space"), 0));
 }
 
-bool ResourceImporterFontData::_decode_variation(const String &p_token, Map<int32_t, double> *r_variation, int *r_size, int *r_outline_size) const {
+bool ResourceImporterFontData::_decode_variation(const String &p_token, Map<int32_t, double> *r_variation, int *r_size, int *r_outline_size, String *r_rname) {
 	Vector<String> tokens = p_token.split("=");
 	if (tokens.size() == 2) {
-		if (tokens[0] == "size") {
-			*r_size = tokens[1].to_int();
+		if (tokens[0] == "name") {
+			if (r_rname != nullptr) {
+				*r_rname = tokens[1];
+			}
+		} else if (tokens[0] == "size") {
+			if (r_size != nullptr) {
+				*r_size = tokens[1].to_int();
+			}
 		} else if (tokens[0] == "outline_size") {
-			*r_outline_size = tokens[1].to_int();
+			if (r_outline_size != nullptr) {
+				*r_outline_size = tokens[1].to_int();
+			}
 		} else {
-			uint32_t tag = TS->name_to_tag(tokens[0]);
-			double value = tokens[1].to_float();
-			r_variation->insert(tag, value);
+			if (r_variation != nullptr) {
+				int32_t tag = TS->name_to_tag(tokens[0]);
+				double value = tokens[1].to_float();
+				r_variation->insert(tag, value);
+			}
 		}
 		return true;
 	} else {
@@ -130,39 +142,21 @@ bool ResourceImporterFontData::_decode_variation(const String &p_token, Map<int3
 	}
 }
 
-bool ResourceImporterFontData::_decode_range(const String &p_token, bool *r_gl_index, int32_t *r_pos) const {
-	if (p_token.begins_with("G+") || p_token.begins_with("g+")) {
-		// Glyph hex index.
-		if (r_gl_index) {
-			*r_gl_index = true;
-		}
-		if (r_pos) {
-			*r_pos = p_token.substr(2).hex_to_int();
-		}
-		return true;
-	} else if (p_token.begins_with("U+") || p_token.begins_with("u+") || p_token.begins_with("0x")) {
+bool ResourceImporterFontData::_decode_range(const String &p_token, uint32_t *r_pos) {
+	if (p_token.begins_with("U+") || p_token.begins_with("u+") || p_token.begins_with("0x")) {
 		// Unicode character hex index.
-		if (r_gl_index) {
-			*r_gl_index = false;
-		}
 		if (r_pos) {
 			*r_pos = p_token.substr(2).hex_to_int();
 		}
 		return true;
 	} else if (p_token.length() == 3 && p_token[0] == '\'' && p_token[2] == '\'') {
 		// Unicode character.
-		if (r_gl_index) {
-			*r_gl_index = false;
-		}
 		if (r_pos) {
 			*r_pos = p_token.unicode_at(1);
 		}
 		return true;
 	} else if (p_token.is_numeric()) {
 		// Unicode character decimal index.
-		if (r_gl_index) {
-			*r_gl_index = false;
-		}
 		if (r_pos) {
 			*r_pos = p_token.to_int();
 		}
@@ -170,6 +164,13 @@ bool ResourceImporterFontData::_decode_range(const String &p_token, bool *r_gl_i
 	} else {
 		return false;
 	}
+}
+
+bool ResourceImporterFontData::has_advanced_options() const {
+	return true;
+}
+void ResourceImporterFontData::show_advanced_options(const String &p_path) {
+	FontDataImportSettings::get_singleton()->open_settings(p_path);
 }
 
 Error ResourceImporterFontData::import(const String &p_source_file, const String &p_save_path, const Map<StringName, Variant> &p_options, List<String> *r_platform_variants, List<String> *r_gen_files, Variant *r_metadata) {
@@ -259,16 +260,15 @@ Error ResourceImporterFontData::import(const String &p_source_file, const String
 
 	Vector<String> ranges = p_options["preload/ranges"];
 	for (int i = 0; i < ranges.size(); i++) {
-		int32_t start, end;
-		bool gl_start, gl_end;
+		uint32_t start, end;
 		Vector<String> tokens = ranges[i].split("-");
 		if (tokens.size() == 2) {
-			if (!_decode_range(tokens[0], &gl_start, &start) || !_decode_range(tokens[1], &gl_end, &end) || gl_start != gl_end) {
+			if (!_decode_range(tokens[0], &start) || !_decode_range(tokens[1], &end)) {
 				WARN_PRINT("Invalid range: \"" + ranges[i] + "\"");
 				continue;
 			}
 		} else if (tokens.size() == 1) {
-			if (!_decode_range(tokens[0], &gl_start, &start)) {
+			if (!_decode_range(tokens[0], &start)) {
 				WARN_PRINT("Invalid range: \"" + ranges[i] + "\"");
 				continue;
 			}
@@ -278,9 +278,9 @@ Error ResourceImporterFontData::import(const String &p_source_file, const String
 			continue;
 		}
 		// Preload char/glyph ranges for each variations / sizes.
-		for (int32_t c = MIN(start, end); c <= MAX(start, end); c++) {
-			progress.step(TTR("Pre-rendering") + " " + (gl_start ? TTR("glyph") : TTR("character")) + " U+" + String::num_int64(c, 16, true) + " " + TTR("from range") + " '" + ranges[i] + "' (" + itos(i + 1) + " " + TTR("of") + " " + itos(ranges.size()) + ")...", i * 100 / ranges.size());
-			data->preload_range(c, c, gl_start);
+		for (uint32_t c = MIN(start, end); c <= MAX(start, end); c++) {
+			progress.step(TTR("Pre-rendering") + " " + TTR("character") + " U+" + String::num_int64(c, 16) + " " + TTR("from range") + " '" + ranges[i] + "' (" + itos(i + 1) + " " + TTR("of") + " " + itos(ranges.size()) + ")...", i * 100 / ranges.size());
+			data->preload_range(c, c, false);
 		}
 	}
 
