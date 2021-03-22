@@ -38,9 +38,6 @@
 class ResourceImporterFontData : public ResourceImporter {
 	GDCLASS(ResourceImporterFontData, ResourceImporter);
 
-	bool _decode_range(const String &p_token, bool *r_gl_index = nullptr, int32_t *r_pos = nullptr) const;
-	bool _decode_variation(const String &p_token, Map<int32_t, double> *r_variation = nullptr, int *r_size = nullptr, int *r_outline_size = nullptr) const;
-
 	enum Presets {
 		PRESET_MSDF,
 		PRESET_DYNAMIC,
@@ -48,6 +45,9 @@ class ResourceImporterFontData : public ResourceImporter {
 	};
 
 public:
+	static bool _decode_range(const String &p_token, uint32_t *r_pos = nullptr);
+	static bool _decode_variation(const String &p_token, Map<int32_t, double> *r_variation = nullptr, int *r_size = nullptr, int *r_outline_size = nullptr, String *r_rname = nullptr);
+
 	virtual String get_importer_name() const override;
 	virtual String get_visible_name() const override;
 	virtual void get_recognized_extensions(List<String> *p_extensions) const override;
@@ -59,6 +59,9 @@ public:
 
 	virtual void get_import_options(List<ImportOption> *r_options, int p_preset = 0) const override;
 	virtual bool get_option_visibility(const String &p_option, const Map<StringName, Variant> &p_options) const override;
+
+	bool has_advanced_options() const override;
+	void show_advanced_options(const String &p_path) override;
 
 	virtual Error import(const String &p_source_file, const String &p_save_path, const Map<StringName, Variant> &p_options, List<String> *r_platform_variants, List<String> *r_gen_files = nullptr, Variant *r_metadata = nullptr) override;
 

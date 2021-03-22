@@ -90,6 +90,7 @@ class VSplitContainer;
 class Window;
 class SubViewport;
 class SceneImportSettings;
+class FontDataImportSettings;
 
 class EditorNode : public Node {
 	GDCLASS(EditorNode, Node);
@@ -417,6 +418,7 @@ private:
 	EditorResourcePreview *resource_preview;
 	EditorFolding editor_folding;
 
+	FontDataImportSettings *fontdata_import_settings;
 	SceneImportSettings *scene_import_settings;
 	struct BottomPanelItem {
 		String name;
