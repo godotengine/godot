@@ -41,6 +41,20 @@
 #include <vulkan/vulkan.h>
 
 class VulkanContext {
+public:
+	struct SubgroupCapabilities {
+		uint32_t size;
+		VkShaderStageFlags supportedStages;
+		VkSubgroupFeatureFlags supportedOperations;
+		VkBool32 quadOperationsInAllStages;
+
+		uint32_t supported_stages_flags_rd() const;
+		String supported_stages_desc() const;
+		uint32_t supported_operations_flags_rd() const;
+		String supported_operations_desc() const;
+	};
+
+private:
 	enum {
 		MAX_EXTENSIONS = 128,
 		MAX_LAYERS = 64,
@@ -56,6 +70,11 @@ class VulkanContext {
 	VkDevice device = VK_NULL_HANDLE;
 	bool device_initialized = false;
 	bool inst_initialized = false;
+
+	// Vulkan 1.0 doesn't return version info so we assume this by default until we know otherwise
+	uint32_t vulkan_major = 1;
+	uint32_t vulkan_minor = 0;
+	SubgroupCapabilities subgroup_capabilities;
 
 	String device_vendor;
 	String device_name;
@@ -150,8 +169,10 @@ class VulkanContext {
 
 	VkDebugUtilsMessengerEXT dbg_messenger = VK_NULL_HANDLE;
 
+	Error _obtain_vulkan_version();
 	Error _create_validation_layers();
 	Error _initialize_extensions();
+	Error _check_capabilities();
 
 	VkBool32 _check_layers(uint32_t check_count, const char **check_names, uint32_t layer_count, VkLayerProperties *layers);
 	static VKAPI_ATTR VkBool32 VKAPI_CALL _debug_messenger_callback(
@@ -186,6 +207,10 @@ protected:
 	}
 
 public:
+	uint32_t get_vulkan_major() const { return vulkan_major; };
+	uint32_t get_vulkan_minor() const { return vulkan_minor; };
+	SubgroupCapabilities get_subgroup_capabilities() const { return subgroup_capabilities; };
+
 	VkDevice get_device();
 	VkPhysicalDevice get_physical_device();
 	int get_swapchain_image_count() const;

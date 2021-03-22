@@ -34,6 +34,7 @@
 #include "core/config/project_settings.h"
 #include "core/string/ustring.h"
 #include "core/version.h"
+#include "servers/rendering/rendering_device.h"
 
 #include "vk_enum_string_helper.h"
 
@@ -234,6 +235,39 @@ Error VulkanContext::_create_validation_layers() {
 	return OK;
 }
 
+typedef VkResult(VKAPI_PTR *_vkEnumerateInstanceVersion)(uint32_t *);
+
+Error VulkanContext::_obtain_vulkan_version() {
+	// https://www.khronos.org/registry/vulkan/specs/1.2-extensions/man/html/VkApplicationInfo.html#_description
+	// for Vulkan 1.0 vkEnumerateInstanceVersion is not available, including not in the loader we compile against on Android.
+	_vkEnumerateInstanceVersion func = (_vkEnumerateInstanceVersion)vkGetInstanceProcAddr(nullptr, "vkEnumerateInstanceVersion");
+	if (func != nullptr) {
+		uint32_t api_version;
+		VkResult res = func(&api_version);
+		if (res == VK_SUCCESS) {
+			vulkan_major = VK_VERSION_MAJOR(api_version);
+			vulkan_minor = VK_VERSION_MINOR(api_version);
+			uint32_t vulkan_patch = VK_VERSION_PATCH(api_version);
+
+			print_line("Vulkan API " + itos(vulkan_major) + "." + itos(vulkan_minor) + "." + itos(vulkan_patch));
+		} else {
+			// according to the documentation this shouldn't fail with anything except a memory allocation error
+			// in which case we're in deep trouble anyway
+			ERR_FAIL_V(ERR_CANT_CREATE);
+		}
+	} else {
+		print_line("vkEnumerateInstanceVersion not available, assuming Vulkan 1.0");
+	}
+
+	// we don't go above 1.2
+	if ((vulkan_major > 1) || (vulkan_major == 1 && vulkan_minor > 2)) {
+		vulkan_major = 1;
+		vulkan_minor = 2;
+	}
+
+	return OK;
+}
+
 Error VulkanContext::_initialize_extensions() {
 	uint32_t instance_extension_count = 0;
 
@@ -289,12 +323,200 @@ Error VulkanContext::_initialize_extensions() {
 	return OK;
 }
 
+typedef void(VKAPI_PTR *_vkGetPhysicalDeviceProperties2)(VkPhysicalDevice, VkPhysicalDeviceProperties2 *);
+
+uint32_t VulkanContext::SubgroupCapabilities::supported_stages_flags_rd() const {
+	uint32_t flags = 0;
+
+	if (supportedStages & VK_SHADER_STAGE_VERTEX_BIT) {
+		flags += RenderingDevice::ShaderStage::SHADER_STAGE_VERTEX_BIT;
+	}
+	if (supportedStages & VK_SHADER_STAGE_TESSELLATION_CONTROL_BIT) {
+		flags += RenderingDevice::ShaderStage::SHADER_STAGE_TESSELATION_CONTROL_BIT;
+	}
+	if (supportedStages & VK_SHADER_STAGE_TESSELLATION_EVALUATION_BIT) {
+		flags += RenderingDevice::ShaderStage::SHADER_STAGE_TESSELATION_EVALUATION_BIT;
+	}
+	// if (supportedStages & VK_SHADER_STAGE_GEOMETRY_BIT) {
+	// 	flags += RenderingDevice::ShaderStage::SHADER_STAGE_GEOMETRY_BIT;
+	// }
+	if (supportedStages & VK_SHADER_STAGE_FRAGMENT_BIT) {
+		flags += RenderingDevice::ShaderStage::SHADER_STAGE_FRAGMENT_BIT;
+	}
+	if (supportedStages & VK_SHADER_STAGE_COMPUTE_BIT) {
+		flags += RenderingDevice::ShaderStage::SHADER_STAGE_COMPUTE_BIT;
+	}
+
+	return flags;
+}
+
+String VulkanContext::SubgroupCapabilities::supported_stages_desc() const {
+	String res;
+
+	if (supportedStages & VK_SHADER_STAGE_VERTEX_BIT) {
+		res += ", STAGE_VERTEX";
+	}
+	if (supportedStages & VK_SHADER_STAGE_TESSELLATION_CONTROL_BIT) {
+		res += ", STAGE_TESSELLATION_CONTROL";
+	}
+	if (supportedStages & VK_SHADER_STAGE_TESSELLATION_EVALUATION_BIT) {
+		res += ", STAGE_TESSELLATION_EVALUATION";
+	}
+	if (supportedStages & VK_SHADER_STAGE_GEOMETRY_BIT) {
+		res += ", STAGE_GEOMETRY";
+	}
+	if (supportedStages & VK_SHADER_STAGE_FRAGMENT_BIT) {
+		res += ", STAGE_FRAGMENT";
+	}
+	if (supportedStages & VK_SHADER_STAGE_COMPUTE_BIT) {
+		res += ", STAGE_COMPUTE";
+	}
+
+	/* these are not defined on Android GRMBL */
+	if (supportedStages & 0x00000100 /* VK_SHADER_STAGE_RAYGEN_BIT_KHR */) {
+		res += ", STAGE_RAYGEN_KHR";
+	}
+	if (supportedStages & 0x00000200 /* VK_SHADER_STAGE_ANY_HIT_BIT_KHR */) {
+		res += ", STAGE_ANY_HIT_KHR";
+	}
+	if (supportedStages & 0x00000400 /* VK_SHADER_STAGE_CLOSEST_HIT_BIT_KHR */) {
+		res += ", STAGE_CLOSEST_HIT_KHR";
+	}
+	if (supportedStages & 0x00000800 /* VK_SHADER_STAGE_MISS_BIT_KHR */) {
+		res += ", STAGE_MISS_KHR";
+	}
+	if (supportedStages & 0x00001000 /* VK_SHADER_STAGE_INTERSECTION_BIT_KHR */) {
+		res += ", STAGE_INTERSECTION_KHR";
+	}
+	if (supportedStages & 0x00002000 /* VK_SHADER_STAGE_CALLABLE_BIT_KHR */) {
+		res += ", STAGE_CALLABLE_KHR";
+	}
+	if (supportedStages & 0x00000040 /* VK_SHADER_STAGE_TASK_BIT_NV */) {
+		res += ", STAGE_TASK_NV";
+	}
+	if (supportedStages & 0x00000080 /* VK_SHADER_STAGE_MESH_BIT_NV */) {
+		res += ", STAGE_MESH_NV";
+	}
+
+	return res.substr(2); // remove first ", "
+}
+
+uint32_t VulkanContext::SubgroupCapabilities::supported_operations_flags_rd() const {
+	uint32_t flags = 0;
+
+	if (supportedOperations & VK_SUBGROUP_FEATURE_BASIC_BIT) {
+		flags += RenderingDevice::SubgroupOperations::SUBGROUP_BASIC_BIT;
+	}
+	if (supportedOperations & VK_SUBGROUP_FEATURE_VOTE_BIT) {
+		flags += RenderingDevice::SubgroupOperations::SUBGROUP_VOTE_BIT;
+	}
+	if (supportedOperations & VK_SUBGROUP_FEATURE_ARITHMETIC_BIT) {
+		flags += RenderingDevice::SubgroupOperations::SUBGROUP_ARITHMETIC_BIT;
+	}
+	if (supportedOperations & VK_SUBGROUP_FEATURE_BALLOT_BIT) {
+		flags += RenderingDevice::SubgroupOperations::SUBGROUP_BALLOT_BIT;
+	}
+	if (supportedOperations & VK_SUBGROUP_FEATURE_SHUFFLE_BIT) {
+		flags += RenderingDevice::SubgroupOperations::SUBGROUP_SHUFFLE_BIT;
+	}
+	if (supportedOperations & VK_SUBGROUP_FEATURE_SHUFFLE_RELATIVE_BIT) {
+		flags += RenderingDevice::SubgroupOperations::SUBGROUP_SHUFFLE_RELATIVE_BIT;
+	}
+	if (supportedOperations & VK_SUBGROUP_FEATURE_CLUSTERED_BIT) {
+		flags += RenderingDevice::SubgroupOperations::SUBGROUP_CLUSTERED_BIT;
+	}
+	if (supportedOperations & VK_SUBGROUP_FEATURE_QUAD_BIT) {
+		flags += RenderingDevice::SubgroupOperations::SUBGROUP_QUAD_BIT;
+	}
+
+	return flags;
+}
+
+String VulkanContext::SubgroupCapabilities::supported_operations_desc() const {
+	String res;
+
+	if (supportedOperations & VK_SUBGROUP_FEATURE_BASIC_BIT) {
+		res += ", FEATURE_BASIC";
+	}
+	if (supportedOperations & VK_SUBGROUP_FEATURE_VOTE_BIT) {
+		res += ", FEATURE_VOTE";
+	}
+	if (supportedOperations & VK_SUBGROUP_FEATURE_ARITHMETIC_BIT) {
+		res += ", FEATURE_ARITHMETIC";
+	}
+	if (supportedOperations & VK_SUBGROUP_FEATURE_BALLOT_BIT) {
+		res += ", FEATURE_BALLOT";
+	}
+	if (supportedOperations & VK_SUBGROUP_FEATURE_SHUFFLE_BIT) {
+		res += ", FEATURE_SHUFFLE";
+	}
+	if (supportedOperations & VK_SUBGROUP_FEATURE_SHUFFLE_RELATIVE_BIT) {
+		res += ", FEATURE_SHUFFLE_RELATIVE";
+	}
+	if (supportedOperations & VK_SUBGROUP_FEATURE_CLUSTERED_BIT) {
+		res += ", FEATURE_CLUSTERED";
+	}
+	if (supportedOperations & VK_SUBGROUP_FEATURE_QUAD_BIT) {
+		res += ", FEATURE_QUAD";
+	}
+	if (supportedOperations & VK_SUBGROUP_FEATURE_PARTITIONED_BIT_NV) {
+		res += ", FEATURE_PARTITIONED_NV";
+	}
+
+	return res.substr(2); // remove first ", "
+}
+
+Error VulkanContext::_check_capabilities() {
+	// check subgroups
+	// https://www.khronos.org/blog/vulkan-subgroup-tutorial
+	// for Vulkan 1.0 vkGetPhysicalDeviceProperties2 is not available, including not in the loader we compile against on Android.
+	_vkGetPhysicalDeviceProperties2 func = (_vkGetPhysicalDeviceProperties2)vkGetInstanceProcAddr(inst, "vkGetPhysicalDeviceProperties2");
+	if (func != nullptr) {
+		VkPhysicalDeviceSubgroupProperties subgroupProperties;
+		subgroupProperties.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SUBGROUP_PROPERTIES;
+		subgroupProperties.pNext = NULL;
+
+		VkPhysicalDeviceProperties2 physicalDeviceProperties;
+		physicalDeviceProperties.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PROPERTIES_2;
+		physicalDeviceProperties.pNext = &subgroupProperties;
+
+		func(gpu, &physicalDeviceProperties);
+
+		subgroup_capabilities.size = subgroupProperties.subgroupSize;
+		subgroup_capabilities.supportedStages = subgroupProperties.supportedStages;
+		subgroup_capabilities.supportedOperations = subgroupProperties.supportedOperations;
+		// Note: quadOperationsInAllStages will be true if:
+		// - supportedStages has VK_SHADER_STAGE_ALL_GRAPHICS + VK_SHADER_STAGE_COMPUTE_BIT
+		// - supportedOperations has VK_SUBGROUP_FEATURE_QUAD_BIT
+		subgroup_capabilities.quadOperationsInAllStages = subgroupProperties.quadOperationsInAllStages;
+
+		// only output this when debugging?
+		print_line("- Vulkan subgroup size " + itos(subgroup_capabilities.size));
+		print_line("- Vulkan subgroup stages " + subgroup_capabilities.supported_stages_desc());
+		print_line("- Vulkan subgroup supported ops " + subgroup_capabilities.supported_operations_desc());
+		if (subgroup_capabilities.quadOperationsInAllStages) {
+			print_line("- Vulkan subgroup quad operations in all stages");
+		}
+	} else {
+		subgroup_capabilities.size = 0;
+		subgroup_capabilities.supportedStages = 0;
+		subgroup_capabilities.supportedOperations = 0;
+		subgroup_capabilities.quadOperationsInAllStages = false;
+	}
+
+	return OK;
+}
+
 Error VulkanContext::_create_physical_device() {
+	/* obtain version */
+	_obtain_vulkan_version();
+
 	/* Look for validation layers */
 	if (use_validation_layers) {
 		_create_validation_layers();
 	}
 
+	/* initialise extensions */
 	{
 		Error err = _initialize_extensions();
 		if (err != OK) {
@@ -312,7 +534,7 @@ Error VulkanContext::_create_physical_device() {
 		/*applicationVersion*/ 0,
 		/*pEngineName*/ namecs.get_data(),
 		/*engineVersion*/ 0,
-		/*apiVersion*/ VK_API_VERSION_1_0,
+		/*apiVersion*/ VK_MAKE_VERSION(vulkan_major, vulkan_minor, 0)
 	};
 	VkInstanceCreateInfo inst_info = {
 		/*sType*/ VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO,
@@ -560,6 +782,14 @@ Error VulkanContext::_create_physical_device() {
 	GET_INSTANCE_PROC_ADDR(inst, GetPhysicalDeviceSurfaceFormatsKHR);
 	GET_INSTANCE_PROC_ADDR(inst, GetPhysicalDeviceSurfacePresentModesKHR);
 	GET_INSTANCE_PROC_ADDR(inst, GetSwapchainImagesKHR);
+
+	// get info about what our vulkan driver is capable off
+	{
+		Error res = _check_capabilities();
+		if (res != OK) {
+			return res;
+		}
+	}
 
 	return OK;
 }
