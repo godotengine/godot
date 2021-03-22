@@ -151,9 +151,6 @@ private:
 	 */
 	bool enabled_debug_report = false;
 
-	uint32_t enabled_layer_count = 0;
-	const char *enabled_layers[MAX_LAYERS];
-
 	PFN_vkCreateDebugUtilsMessengerEXT CreateDebugUtilsMessengerEXT;
 	PFN_vkDestroyDebugUtilsMessengerEXT DestroyDebugUtilsMessengerEXT;
 	PFN_vkSubmitDebugUtilsMessageEXT SubmitDebugUtilsMessageEXT;
@@ -180,11 +177,10 @@ private:
 	VkDebugReportCallbackEXT dbg_debug_report = VK_NULL_HANDLE;
 
 	Error _obtain_vulkan_version();
-	Error _create_validation_layers();
 	Error _initialize_extensions();
 	Error _check_capabilities();
 
-	VkBool32 _check_layers(uint32_t check_count, const char **check_names, uint32_t layer_count, VkLayerProperties *layers);
+	VkBool32 _check_layers(uint32_t check_count, const char *const *check_names, uint32_t layer_count, VkLayerProperties *layers);
 	static VKAPI_ATTR VkBool32 VKAPI_CALL _debug_messenger_callback(
 			VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity,
 			VkDebugUtilsMessageTypeFlagsEXT messageType,
@@ -217,10 +213,11 @@ private:
 protected:
 	virtual const char *_get_platform_surface_extension() const = 0;
 
-	// Enabled via command line argument.
-	bool use_validation_layers = false;
-
 	virtual Error _window_create(DisplayServer::WindowID p_window_id, VkSurfaceKHR p_surface, int p_width, int p_height);
+
+	virtual bool _use_validation_layers();
+
+	Error _get_preferred_validation_layers(uint32_t *count, const char *const **names);
 
 	VkInstance _get_instance() {
 		return inst;
