@@ -32,6 +32,7 @@
 
 #include "core/config/engine.h"
 #include "scene/resources/texture.h"
+#include "scene/scene_string_names.h"
 
 const float DEFAULT_GIZMO_EXTENTS = 10.0;
 
@@ -44,11 +45,17 @@ void Position2D::_draw_cross() {
 
 #ifdef TOOLS_ENABLED
 Rect2 Position2D::_edit_get_rect() const {
+	if (get_script_instance() && get_script_instance()->has_method(SceneStringNames::get_singleton()->_edit_get_rect))
+		return get_script_instance()->call(SceneStringNames::get_singleton()->_edit_get_rect);
+
 	float extents = get_gizmo_extents();
 	return Rect2(Point2(-extents, -extents), Size2(extents * 2, extents * 2));
 }
 
 bool Position2D::_edit_use_rect() const {
+	if (get_script_instance() && get_script_instance()->has_method(SceneStringNames::get_singleton()->_edit_use_rect))
+		return get_script_instance()->call(SceneStringNames::get_singleton()->_edit_use_rect);
+
 	return false;
 }
 #endif
