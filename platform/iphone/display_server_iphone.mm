@@ -346,6 +346,11 @@ Size2i DisplayServerIPhone::screen_get_size(int p_screen) const {
 	return Size2i(layer.bounds.size.width, layer.bounds.size.height) * screen_get_scale(p_screen);
 }
 
+float DisplayServerIPhone::screen_get_refresh_rate(int p_screen) const {
+	// Most if not all Apple devices have 60hz displays.
+	return 60.0;
+}
+
 Rect2i DisplayServerIPhone::screen_get_usable_rect(int p_screen) const {
 	if (@available(iOS 11, *)) {
 		UIEdgeInsets insets = UIEdgeInsetsZero;

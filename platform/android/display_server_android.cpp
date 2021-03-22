@@ -138,6 +138,11 @@ Size2i DisplayServerAndroid::screen_get_size(int p_screen) const {
 	return OS_Android::get_singleton()->get_display_size();
 }
 
+float DisplayServerAndroid::screen_get_refresh_rate(int p_screen) const {
+	// Most Android devices have 60hz displays.
+	return 60.0;
+}
+
 Rect2i DisplayServerAndroid::screen_get_usable_rect(int p_screen) const {
 	GodotIOJavaWrapper *godot_io_java = OS_Android::get_singleton()->get_godot_io_java();
 	ERR_FAIL_COND_V(!godot_io_java, Rect2i());

@@ -328,6 +328,15 @@ Size2i DisplayServerWindows::screen_get_size(int p_screen) const {
 	return data.size;
 }
 
+float DisplayServerWindows::screen_get_refresh_rate(int p_screen) const {
+	_THREAD_SAFE_METHOD_
+
+	DEVMODE data;
+	memset(&data, 0, sizeof(data));
+	EnumDisplaySettingsA(NULL, ENUM_CURRENT_SETTINGS, &data);
+	return data.dmDisplayFrequency;
+}
+
 static BOOL CALLBACK _MonitorEnumProcUsableSize(HMONITOR hMonitor, HDC hdcMonitor, LPRECT lprcMonitor, LPARAM dwData) {
 	EnumRectData *data = (EnumRectData *)dwData;
 	if (data->count == data->screen) {

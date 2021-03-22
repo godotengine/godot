@@ -742,6 +742,27 @@ Size2i DisplayServerX11::screen_get_size(int p_screen) const {
 	return screen_get_usable_rect(p_screen).size;
 }
 
+float DisplayServerX11::screen_get_refresh_rate(int p_screen) const {
+	_THREAD_SAFE_METHOD_
+
+	if (p_screen == SCREEN_OF_MAIN_WINDOW) {
+		p_screen = window_get_current_screen();
+	}
+
+	//invalid screen?
+	ERR_FAIL_INDEX_V(p_screen, get_screen_count(), 0);
+
+	float refresh_rate = 60.0; //Default to 60 hz if the engine was unable to get the refresh rate.
+
+	if (xrandr_ext_ok) {
+		if (xrr_get_monitors) {
+			XRRScreenConfiguration *conf = XRRGetScreenInfo(x11_display, windows[MAIN_WINDOW_ID].x11_window);
+			refresh_rate = XRRConfigCurrentRate(conf);
+		}
+	}
+	return refresh_rate;
+}
+
 Rect2i DisplayServerX11::screen_get_usable_rect(int p_screen) const {
 	_THREAD_SAFE_METHOD_
 
