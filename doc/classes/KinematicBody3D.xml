@@ -177,7 +177,10 @@
 			Lock the body's Z axis movement.
 		</member>
 		<member name="collision/safe_margin" type="float" setter="set_safe_margin" getter="get_safe_margin" default="0.001">
-			If the body is at least this close to another body, this body will consider them to be colliding.
+			Extra margin used for collision recovery in motion functions (see [method move_and_collide], [method move_and_slide], [method move_and_slide_with_snap]).
+			If the body is at least this close to another body, it will consider them to be colliding and will be pushed away before performing the actual motion.
+			A higher value means it's more flexible for detecting collision, which helps with consistently detecting walls and floors.
+			A lower value forces the collision algorithm to use more exact detection, so it can be used in cases that specifically require precision, e.g at very low scale to avoid visible jittering, or for stability with a stack of kinematic bodies.
 		</member>
 	</members>
 	<constants>
