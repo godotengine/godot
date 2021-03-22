@@ -163,6 +163,35 @@ VKAPI_ATTR VkBool32 VKAPI_CALL VulkanContext::_debug_messenger_callback(
 	return VK_FALSE;
 }
 
+VKAPI_ATTR VkBool32 VKAPI_CALL VulkanContext::_debug_report_callback(
+		VkDebugReportFlagsEXT flags,
+		VkDebugReportObjectTypeEXT objectType,
+		uint64_t object,
+		size_t location,
+		int32_t messageCode,
+		const char *pLayerPrefix,
+		const char *pMessage,
+		void *pUserData) {
+	String debugMessage = String("Vulkan Debug Report: object - ") +
+						  String::num_int64(object) + "\n" + pMessage;
+
+	switch (flags) {
+		case VK_DEBUG_REPORT_DEBUG_BIT_EXT:
+		case VK_DEBUG_REPORT_INFORMATION_BIT_EXT:
+			print_line(debugMessage);
+			break;
+		case VK_DEBUG_REPORT_WARNING_BIT_EXT:
+		case VK_DEBUG_REPORT_PERFORMANCE_WARNING_BIT_EXT:
+			WARN_PRINT(debugMessage);
+			break;
+		case VK_DEBUG_REPORT_ERROR_BIT_EXT:
+			ERR_PRINT(debugMessage);
+			break;
+	}
+
+	return VK_FALSE;
+}
+
 VkBool32 VulkanContext::_check_layers(uint32_t check_count, const char **check_names, uint32_t layer_count, VkLayerProperties *layers) {
 	for (uint32_t i = 0; i < check_count; i++) {
 		VkBool32 found = 0;
@@ -240,6 +269,7 @@ Error VulkanContext::_initialize_extensions() {
 	enabled_extension_count = 0;
 	enabled_layer_count = 0;
 	enabled_debug_utils = false;
+	enabled_debug_report = false;
 	/* Look for instance extensions */
 	VkBool32 surfaceExtFound = 0;
 	VkBool32 platformSurfaceExtFound = 0;
@@ -268,6 +298,7 @@ Error VulkanContext::_initialize_extensions() {
 			if (!strcmp(VK_EXT_DEBUG_REPORT_EXTENSION_NAME, instance_extensions[i].extensionName)) {
 				if (use_validation_layers) {
 					extension_names[enabled_extension_count++] = VK_EXT_DEBUG_REPORT_EXTENSION_NAME;
+					enabled_debug_report = true;
 				}
 			}
 			if (!strcmp(VK_EXT_DEBUG_UTILS_EXTENSION_NAME, instance_extensions[i].extensionName)) {
@@ -331,6 +362,7 @@ Error VulkanContext::_create_physical_device() {
 	   * function to register the final callback.
 	   */
 	VkDebugUtilsMessengerCreateInfoEXT dbg_messenger_create_info;
+	VkDebugReportCallbackCreateInfoEXT dbg_report_callback_create_info{};
 	if (enabled_debug_utils) {
 		// VK_EXT_debug_utils style
 		dbg_messenger_create_info.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_MESSENGER_CREATE_INFO_EXT;
@@ -344,6 +376,16 @@ Error VulkanContext::_create_physical_device() {
 		dbg_messenger_create_info.pfnUserCallback = _debug_messenger_callback;
 		dbg_messenger_create_info.pUserData = this;
 		inst_info.pNext = &dbg_messenger_create_info;
+	} else if (enabled_debug_report) {
+		dbg_report_callback_create_info.sType = VK_STRUCTURE_TYPE_DEBUG_REPORT_CALLBACK_CREATE_INFO_EXT;
+		dbg_report_callback_create_info.flags = VK_DEBUG_REPORT_INFORMATION_BIT_EXT |
+												VK_DEBUG_REPORT_WARNING_BIT_EXT |
+												VK_DEBUG_REPORT_PERFORMANCE_WARNING_BIT_EXT |
+												VK_DEBUG_REPORT_ERROR_BIT_EXT |
+												VK_DEBUG_REPORT_DEBUG_BIT_EXT;
+		dbg_report_callback_create_info.pfnCallback = _debug_report_callback;
+		dbg_report_callback_create_info.pUserData = this;
+		inst_info.pNext = &dbg_report_callback_create_info;
 	}
 
 	uint32_t gpu_count;
@@ -529,6 +571,33 @@ Error VulkanContext::_create_physical_device() {
 				ERR_FAIL_V_MSG(ERR_CANT_CREATE,
 						"CreateDebugUtilsMessengerEXT: unknown failure\n"
 						"CreateDebugUtilsMessengerEXT Failure");
+				ERR_FAIL_V(ERR_CANT_CREATE);
+				break;
+		}
+	} else if (enabled_debug_report) {
+		CreateDebugReportCallbackEXT = (PFN_vkCreateDebugReportCallbackEXT)vkGetInstanceProcAddr(inst, "vkCreateDebugReportCallbackEXT");
+		DebugReportMessageEXT = (PFN_vkDebugReportMessageEXT)vkGetInstanceProcAddr(inst, "vkDebugReportMessageEXT");
+		DestroyDebugReportCallbackEXT = (PFN_vkDestroyDebugReportCallbackEXT)vkGetInstanceProcAddr(inst, "vkDestroyDebugReportCallbackEXT");
+
+		if (nullptr == CreateDebugReportCallbackEXT || nullptr == DebugReportMessageEXT || nullptr == DestroyDebugReportCallbackEXT) {
+			ERR_FAIL_V_MSG(ERR_CANT_CREATE,
+					"GetProcAddr: Failed to init VK_EXT_debug_report\n"
+					"GetProcAddr: Failure");
+		}
+
+		err = CreateDebugReportCallbackEXT(inst, &dbg_report_callback_create_info, nullptr, &dbg_debug_report);
+		switch (err) {
+			case VK_SUCCESS:
+				break;
+			case VK_ERROR_OUT_OF_HOST_MEMORY:
+				ERR_FAIL_V_MSG(ERR_CANT_CREATE,
+						"CreateDebugReportCallbackEXT: out of host memory\n"
+						"CreateDebugReportCallbackEXT Failure");
+				break;
+			default:
+				ERR_FAIL_V_MSG(ERR_CANT_CREATE,
+						"CreateDebugReportCallbackEXT: unknown failure\n"
+						"CreateDebugReportCallbackEXT Failure");
 				ERR_FAIL_V(ERR_CANT_CREATE);
 				break;
 		}
@@ -1707,6 +1776,9 @@ VulkanContext::~VulkanContext() {
 		}
 		if (inst_initialized && enabled_debug_utils) {
 			DestroyDebugUtilsMessengerEXT(inst, dbg_messenger, nullptr);
+		}
+		if (inst_initialized && dbg_debug_report != VK_NULL_HANDLE) {
+			DestroyDebugReportCallbackEXT(inst, dbg_debug_report, nullptr);
 		}
 		vkDestroyDevice(device, nullptr);
 	}

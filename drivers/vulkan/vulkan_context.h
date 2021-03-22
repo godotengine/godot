@@ -126,6 +126,12 @@ class VulkanContext {
 	const char *extension_names[MAX_EXTENSIONS];
 	bool enabled_debug_utils = false;
 
+	/**
+	 * True if VK_EXT_debug_report extension is used. VK_EXT_debug_report is deprecated but it is
+	 * still used if VK_EXT_debug_utils is not available.
+	 */
+	bool enabled_debug_report = false;
+
 	uint32_t enabled_layer_count = 0;
 	const char *enabled_layers[MAX_LAYERS];
 
@@ -136,6 +142,9 @@ class VulkanContext {
 	PFN_vkCmdEndDebugUtilsLabelEXT CmdEndDebugUtilsLabelEXT;
 	PFN_vkCmdInsertDebugUtilsLabelEXT CmdInsertDebugUtilsLabelEXT;
 	PFN_vkSetDebugUtilsObjectNameEXT SetDebugUtilsObjectNameEXT;
+	PFN_vkCreateDebugReportCallbackEXT CreateDebugReportCallbackEXT;
+	PFN_vkDebugReportMessageEXT DebugReportMessageEXT;
+	PFN_vkDestroyDebugReportCallbackEXT DestroyDebugReportCallbackEXT;
 	PFN_vkGetPhysicalDeviceSurfaceSupportKHR fpGetPhysicalDeviceSurfaceSupportKHR;
 	PFN_vkGetPhysicalDeviceSurfaceCapabilitiesKHR fpGetPhysicalDeviceSurfaceCapabilitiesKHR;
 	PFN_vkGetPhysicalDeviceSurfaceFormatsKHR fpGetPhysicalDeviceSurfaceFormatsKHR;
@@ -149,6 +158,7 @@ class VulkanContext {
 	PFN_vkGetPastPresentationTimingGOOGLE fpGetPastPresentationTimingGOOGLE;
 
 	VkDebugUtilsMessengerEXT dbg_messenger = VK_NULL_HANDLE;
+	VkDebugReportCallbackEXT dbg_debug_report = VK_NULL_HANDLE;
 
 	Error _create_validation_layers();
 	Error _initialize_extensions();
@@ -158,6 +168,16 @@ class VulkanContext {
 			VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity,
 			VkDebugUtilsMessageTypeFlagsEXT messageType,
 			const VkDebugUtilsMessengerCallbackDataEXT *pCallbackData,
+			void *pUserData);
+
+	static VKAPI_ATTR VkBool32 VKAPI_CALL _debug_report_callback(
+			VkDebugReportFlagsEXT flags,
+			VkDebugReportObjectTypeEXT objectType,
+			uint64_t object,
+			size_t location,
+			int32_t messageCode,
+			const char *pLayerPrefix,
+			const char *pMessage,
 			void *pUserData);
 
 	Error _create_physical_device();
