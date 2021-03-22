@@ -2836,7 +2836,7 @@ void Node3DEditorViewport::_menu_option(int p_option) {
 		} break;
 		case VIEW_FRONT: {
 			cursor.x_rot = 0;
-			cursor.y_rot = Math_PI;
+			cursor.y_rot = 0;
 			set_message(TTR("Front View."), 2);
 			name = TTR("Front");
 			_set_auto_orthogonal();
@@ -2845,7 +2845,7 @@ void Node3DEditorViewport::_menu_option(int p_option) {
 		} break;
 		case VIEW_REAR: {
 			cursor.x_rot = 0;
-			cursor.y_rot = 0;
+			cursor.y_rot = Math_PI;
 			set_message(TTR("Rear View."), 2);
 			name = TTR("Rear");
 			_set_auto_orthogonal();
