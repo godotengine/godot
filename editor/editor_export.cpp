@@ -874,6 +874,20 @@ Error EditorExportPlatform::export_project_files(const Ref<EditorExportPreset> &
 				continue;
 			}
 
+			String importer_type = config->get_value("remap", "importer");
+
+			if (importer_type == "keep") {
+				//just keep file as-is
+				Vector<uint8_t> array = FileAccess::get_file_as_array(path);
+				err = p_func(p_udata, path, array, idx, total, enc_in_filters, enc_ex_filters, key);
+
+				if (err != OK) {
+					return err;
+				}
+
+				continue;
+			}
+
 			List<String> remaps;
 			config->get_section_keys("remap", &remaps);
 
