@@ -302,10 +302,6 @@ if env_base["target"] == "debug":
     # http://scons.org/doc/production/HTML/scons-user/ch06s04.html
     env_base.SetOption("implicit_cache", 1)
 
-if not env_base["tools"]:
-    # Export templates can't run unit test tool.
-    env_base["tests"] = False
-
 if env_base["no_editor_splash"]:
     env_base.Append(CPPDEFINES=["NO_EDITOR_SPLASH"])
 
