@@ -150,7 +150,6 @@
 			</argument>
 			<description>
 				Overrides the [Color] with given [code]name[/code] in the [member theme] resource the control uses.
-				[b]Note:[/b] Unlike other theme overrides, there is no way to undo a color override without manually assigning the previous color.
 				[b]Example of overriding a label's color and resetting it later:[/b]
 				[codeblocks]
 				[gdscript]
@@ -728,6 +727,60 @@
 			</return>
 			<description>
 				Give up the focus. No other control will be able to receive keyboard input.
+			</description>
+		</method>
+		<method name="remove_theme_color_override">
+			<return type="void">
+			</return>
+			<argument index="0" name="name" type="StringName">
+			</argument>
+			<description>
+				Removes a theme override for a [Color] with the given [code]name[/code].
+			</description>
+		</method>
+		<method name="remove_theme_constant_override">
+			<return type="void">
+			</return>
+			<argument index="0" name="name" type="StringName">
+			</argument>
+			<description>
+				Removes a theme override for a constant with the given [code]name[/code].
+			</description>
+		</method>
+		<method name="remove_theme_font_override">
+			<return type="void">
+			</return>
+			<argument index="0" name="name" type="StringName">
+			</argument>
+			<description>
+				Removes a theme override for a [Font] with the given [code]name[/code].
+			</description>
+		</method>
+		<method name="remove_theme_font_size_override">
+			<return type="void">
+			</return>
+			<argument index="0" name="name" type="StringName">
+			</argument>
+			<description>
+				Removes a theme override for a font size with the given [code]name[/code].
+			</description>
+		</method>
+		<method name="remove_theme_icon_override">
+			<return type="void">
+			</return>
+			<argument index="0" name="name" type="StringName">
+			</argument>
+			<description>
+				Removes a theme override for an icon with the given [code]name[/code].
+			</description>
+		</method>
+		<method name="remove_theme_stylebox_override">
+			<return type="void">
+			</return>
+			<argument index="0" name="name" type="StringName">
+			</argument>
+			<description>
+				Removes a theme override for a [StyleBox] with the given [code]name[/code].
 			</description>
 		</method>
 		<method name="set_anchor">

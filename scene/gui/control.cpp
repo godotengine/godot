@@ -1845,6 +1845,48 @@ void Control::add_theme_constant_override(const StringName &p_name, int p_consta
 	notification(NOTIFICATION_THEME_CHANGED);
 }
 
+void Control::remove_theme_icon_override(const StringName &p_name) {
+	if (data.icon_override.has(p_name)) {
+		data.icon_override[p_name]->disconnect("changed", callable_mp(this, &Control::_override_changed));
+	}
+
+	data.icon_override.erase(p_name);
+	notification(NOTIFICATION_THEME_CHANGED);
+}
+
+void Control::remove_theme_style_override(const StringName &p_name) {
+	if (data.style_override.has(p_name)) {
+		data.style_override[p_name]->disconnect("changed", callable_mp(this, &Control::_override_changed));
+	}
+
+	data.style_override.erase(p_name);
+	notification(NOTIFICATION_THEME_CHANGED);
+}
+
+void Control::remove_theme_font_override(const StringName &p_name) {
+	if (data.font_override.has(p_name)) {
+		data.font_override[p_name]->disconnect("changed", callable_mp(this, &Control::_override_changed));
+	}
+
+	data.font_override.erase(p_name);
+	notification(NOTIFICATION_THEME_CHANGED);
+}
+
+void Control::remove_theme_font_size_override(const StringName &p_name) {
+	data.font_size_override.erase(p_name);
+	notification(NOTIFICATION_THEME_CHANGED);
+}
+
+void Control::remove_theme_color_override(const StringName &p_name) {
+	data.color_override.erase(p_name);
+	notification(NOTIFICATION_THEME_CHANGED);
+}
+
+void Control::remove_theme_constant_override(const StringName &p_name) {
+	data.constant_override.erase(p_name);
+	notification(NOTIFICATION_THEME_CHANGED);
+}
+
 void Control::set_focus_mode(FocusMode p_focus_mode) {
 	ERR_FAIL_INDEX((int)p_focus_mode, 3);
 
@@ -2798,6 +2840,13 @@ void Control::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("add_theme_font_size_override", "name", "font_size"), &Control::add_theme_font_size_override);
 	ClassDB::bind_method(D_METHOD("add_theme_color_override", "name", "color"), &Control::add_theme_color_override);
 	ClassDB::bind_method(D_METHOD("add_theme_constant_override", "name", "constant"), &Control::add_theme_constant_override);
+
+	ClassDB::bind_method(D_METHOD("remove_theme_icon_override", "name"), &Control::remove_theme_icon_override);
+	ClassDB::bind_method(D_METHOD("remove_theme_stylebox_override", "name"), &Control::remove_theme_style_override);
+	ClassDB::bind_method(D_METHOD("remove_theme_font_override", "name"), &Control::remove_theme_font_override);
+	ClassDB::bind_method(D_METHOD("remove_theme_font_size_override", "name"), &Control::remove_theme_font_size_override);
+	ClassDB::bind_method(D_METHOD("remove_theme_color_override", "name"), &Control::remove_theme_color_override);
+	ClassDB::bind_method(D_METHOD("remove_theme_constant_override", "name"), &Control::remove_theme_constant_override);
 
 	ClassDB::bind_method(D_METHOD("get_theme_icon", "name", "node_type"), &Control::get_theme_icon, DEFVAL(""));
 	ClassDB::bind_method(D_METHOD("get_theme_stylebox", "name", "node_type"), &Control::get_theme_stylebox, DEFVAL(""));
