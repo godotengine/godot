@@ -734,7 +734,7 @@
 		<member name="input_devices/pen_tablet/driver" type="String" setter="" getter="">
 			Specifies the tablet driver to use. If left empty, the default driver will be used.
 		</member>
-		<member name="input_devices/pen_tablet/driver.windows" type="String" setter="" getter="">
+		<member name="input_devices/pen_tablet/driver.Windows" type="String" setter="" getter="">
 			Override for [member input_devices/pen_tablet/driver] on Windows.
 		</member>
 		<member name="input_devices/pointing/emulate_mouse_from_touch" type="bool" setter="" getter="" default="true">

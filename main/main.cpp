@@ -1551,8 +1551,8 @@ Error Main::setup2(Thread::ID p_main_tid_override) {
 
 	{
 		GLOBAL_DEF_RST_NOVAL("input_devices/pen_tablet/driver", "");
-		GLOBAL_DEF_RST_NOVAL("input_devices/pen_tablet/driver.windows", "");
-		ProjectSettings::get_singleton()->set_custom_property_info("input_devices/pen_tablet/driver.windows", PropertyInfo(Variant::STRING, "input_devices/pen_tablet/driver.windows", PROPERTY_HINT_ENUM, "wintab,winink"));
+		GLOBAL_DEF_RST_NOVAL("input_devices/pen_tablet/driver.Windows", "");
+		ProjectSettings::get_singleton()->set_custom_property_info("input_devices/pen_tablet/driver.Windows", PropertyInfo(Variant::STRING, "input_devices/pen_tablet/driver.Windows", PROPERTY_HINT_ENUM, "wintab,winink"));
 	}
 
 	if (tablet_driver == "") { // specified in project.godot
