@@ -2798,7 +2798,12 @@ bool Viewport::_sub_windows_forward_input(const Ref<InputEvent> &p_event) {
 
 		Ref<InputEventMouseMotion> mm = p_event;
 		if (mm.is_valid()) {
-			if (gui.subwindow_drag == SUB_WINDOW_DRAG_MOVE) {
+			if (gui.subwindow_drag == SUB_WINDOW_DRAG_START) {
+				gui.subwindow_drag_from = mm->get_position();
+				gui.subwindow_drag_pos = gui.subwindow_focused->get_position();
+			}
+			if (gui.subwindow_drag == SUB_WINDOW_DRAG_MOVE || gui.subwindow_drag == SUB_WINDOW_DRAG_START) {
+				gui.subwindow_drag = SUB_WINDOW_DRAG_MOVE;
 				Vector2 diff = mm->get_position() - gui.subwindow_drag_from;
 				Rect2i new_rect(gui.subwindow_drag_pos + diff, gui.subwindow_focused->get_size());
 
@@ -2912,7 +2917,6 @@ bool Viewport::_sub_windows_forward_input(const Ref<InputEvent> &p_event) {
 		bool click_on_window = false;
 		for (int i = gui.sub_windows.size() - 1; i >= 0; i--) {
 			SubWindow &sw = gui.sub_windows.write[i];
-
 			//clicked inside window?
 
 			Rect2i r = Rect2i(sw.window->get_position(), sw.window->get_size());
@@ -2944,12 +2948,11 @@ bool Viewport::_sub_windows_forward_input(const Ref<InputEvent> &p_event) {
 						gui.subwindow_drag = SUB_WINDOW_DRAG_CLOSE;
 						gui.subwindow_drag_close_inside = true; //starts inside
 						gui.subwindow_drag_close_rect = close_rect;
+					} else if (gui.subwindow_drag != SUB_WINDOW_DRAG_MOVE) {
+						gui.subwindow_drag = SUB_WINDOW_DRAG_START;
 					} else {
 						gui.subwindow_drag = SUB_WINDOW_DRAG_MOVE;
 					}
-
-					gui.subwindow_drag_from = mb->get_position();
-					gui.subwindow_drag_pos = sw.window->get_position();
 
 					_sub_window_update(sw.window);
 				} else {
