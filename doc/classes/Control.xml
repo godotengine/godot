@@ -177,7 +177,7 @@
 			<argument index="1" name="constant" type="int">
 			</argument>
 			<description>
-				Overrides an integer constant with given [code]name[/code] in the [member theme] resource the control uses. If the [code]constant[/code] is [code]0[/code], the override is cleared and the constant from assigned [Theme] is used.
+				Overrides an integer constant with given [code]name[/code] in the [member theme] resource the control uses.
 			</description>
 		</method>
 		<method name="add_theme_font_override">
@@ -188,7 +188,7 @@
 			<argument index="1" name="font" type="Font">
 			</argument>
 			<description>
-				Overrides the font with given [code]name[/code] in the [member theme] resource the control uses. If [code]font[/code] is [code]null[/code] or invalid, the override is cleared and the font from assigned [Theme] is used.
+				Overrides the font with given [code]name[/code] in the [member theme] resource the control uses.
 			</description>
 		</method>
 		<method name="add_theme_font_size_override">
@@ -199,7 +199,7 @@
 			<argument index="1" name="font_size" type="int">
 			</argument>
 			<description>
-				Overrides the font size with given [code]name[/code] in the [member theme] resource the control uses. If [code]font_size[/code] is [code]-1[/code], the override is cleared and the font size from assigned [Theme] is used.
+				Overrides the font size with given [code]name[/code] in the [member theme] resource the control uses.
 			</description>
 		</method>
 		<method name="add_theme_icon_override">
@@ -210,7 +210,7 @@
 			<argument index="1" name="texture" type="Texture2D">
 			</argument>
 			<description>
-				Overrides the icon with given [code]name[/code] in the [member theme] resource the control uses. If [code]icon[/code] is [code]null[/code] or invalid, the override is cleared and the icon from assigned [Theme] is used.
+				Overrides the icon with given [code]name[/code] in the [member theme] resource the control uses.
 			</description>
 		</method>
 		<method name="add_theme_stylebox_override">
@@ -221,7 +221,7 @@
 			<argument index="1" name="stylebox" type="StyleBox">
 			</argument>
 			<description>
-				Overrides the [StyleBox] with given [code]name[/code] in the [member theme] resource the control uses. If [code]stylebox[/code] is empty or invalid, the override is cleared and the [StyleBox] from assigned [Theme] is used.
+				Overrides the [StyleBox] with given [code]name[/code] in the [member theme] resource the control uses.
 				[b]Example of modifying a property in a StyleBox by duplicating it:[/b]
 				[codeblocks]
 				[gdscript]
