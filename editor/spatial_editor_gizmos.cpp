@@ -3056,7 +3056,7 @@ String CollisionObjectGizmoPlugin::get_name() const {
 }
 
 int CollisionObjectGizmoPlugin::get_priority() const {
-	return -1;
+	return -2;
 }
 
 void CollisionObjectGizmoPlugin::redraw(EditorSpatialGizmo *p_gizmo) {
