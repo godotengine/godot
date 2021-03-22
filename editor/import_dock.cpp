@@ -156,6 +156,14 @@ void ImportDock::_update_options(const Ref<ConfigFile> &p_config) {
 
 	params->update();
 	_update_preset_menu();
+
+	if (params->paths.size() == 1 && params->importer->has_advanced_options()) {
+		advanced->show();
+		advanced_spacer->show();
+	} else {
+		advanced->hide();
+		advanced_spacer->hide();
+	}
 }
 
 void ImportDock::set_edit_multiple_paths(const Vector<String> &p_paths) {
@@ -258,6 +266,14 @@ void ImportDock::set_edit_multiple_paths(const Vector<String> &p_paths) {
 	preset->set_disabled(false);
 
 	imported->set_text(vformat(TTR("%d Files"), p_paths.size()));
+
+	if (params->paths.size() == 1 && params->importer->has_advanced_options()) {
+		advanced->show();
+		advanced_spacer->show();
+	} else {
+		advanced->hide();
+		advanced_spacer->hide();
+	}
 }
 
 void ImportDock::_update_preset_menu() {
@@ -422,6 +438,11 @@ void ImportDock::_reimport_and_restart() {
 	EditorNode::get_singleton()->restart_editor();
 }
 
+void ImportDock::_advanced_options() {
+	if (params->paths.size() == 1 && params->importer.is_valid()) {
+		params->importer->show_advanced_options(params->paths[0]);
+	}
+}
 void ImportDock::_reimport() {
 	for (int i = 0; i < params->paths.size(); i++) {
 		Ref<ConfigFile> config;
@@ -531,9 +552,26 @@ ImportDock::ImportDock() {
 	import->set_text(TTR("Reimport"));
 	import->set_disabled(true);
 	import->connect("pressed", callable_mp(this, &ImportDock::_reimport_attempt));
+	if (!DisplayServer::get_singleton()->get_swap_cancel_ok()) {
+		advanced_spacer = hb->add_spacer();
+		advanced = memnew(Button);
+		advanced->set_text(TTR("Advanced..."));
+		hb->add_child(advanced);
+	}
 	hb->add_spacer();
 	hb->add_child(import);
 	hb->add_spacer();
+
+	if (DisplayServer::get_singleton()->get_swap_cancel_ok()) {
+		advanced = memnew(Button);
+		advanced->set_text(TTR("Advanced..."));
+		hb->add_child(advanced);
+		advanced_spacer = hb->add_spacer();
+	}
+
+	advanced->hide();
+	advanced_spacer->hide();
+	advanced->connect("pressed", callable_mp(this, &ImportDock::_advanced_options));
 
 	reimport_confirm = memnew(ConfirmationDialog);
 	reimport_confirm->get_ok_button()->set_text(TTR("Save Scenes, Re-Import, and Restart"));

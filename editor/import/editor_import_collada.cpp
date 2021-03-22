@@ -79,6 +79,9 @@ struct ColladaImport {
 	Vector<int> valid_animated_properties;
 	Map<String, bool> bones_with_animation;
 
+	Set<String> mesh_unique_names;
+	Set<String> material_unique_names;
+
 	Error _populate_skeleton(Skeleton3D *p_skeleton, Collada::Node *p_node, int &r_bone, int p_parent);
 	Error _create_scene_skeletons(Collada::Node *p_node);
 	Error _create_scene(Collada::Node *p_node, Node3D *p_parent);
@@ -326,11 +329,24 @@ Error ColladaImport::_create_material(const String &p_target) {
 
 	Ref<StandardMaterial3D> material = memnew(StandardMaterial3D);
 
+	String base_name;
 	if (src_mat.name != "") {
-		material->set_name(src_mat.name);
+		base_name = src_mat.name;
 	} else if (effect.name != "") {
-		material->set_name(effect.name);
+		base_name = effect.name;
+	} else {
+		base_name = "Material";
 	}
+
+	String name = base_name;
+	int counter = 2;
+	while (material_unique_names.has(name)) {
+		name = base_name + itos(counter++);
+	}
+
+	material_unique_names.insert(name);
+
+	material->set_name(name);
 
 	// DIFFUSE
 
@@ -1128,7 +1144,22 @@ Error ColladaImport::_create_resources(Collada::Node *p_node, bool p_use_compres
 					ERR_FAIL_COND_V(!collada.state.mesh_data_map.has(meshid), ERR_INVALID_DATA);
 					mesh = Ref<EditorSceneImporterMesh>(memnew(EditorSceneImporterMesh));
 					const Collada::MeshData &meshdata = collada.state.mesh_data_map[meshid];
-					mesh->set_name(meshdata.name);
+					String name = meshdata.name;
+					if (name == "") {
+						name = "Mesh";
+					}
+					int counter = 2;
+					while (mesh_unique_names.has(name)) {
+						name = meshdata.name;
+						if (name == "") {
+							name = "Mesh";
+						}
+						name += itos(counter++);
+					}
+
+					mesh_unique_names.insert(name);
+
+					mesh->set_name(name);
 					Error err = _create_mesh_surfaces(morphs.size() == 0, mesh, ng2->material_map, meshdata, apply_xform, bone_remap, skin, morph, morphs, p_use_compression, use_mesh_builtin_materials);
 					ERR_FAIL_COND_V_MSG(err, err, "Cannot create mesh surface.");
 
@@ -1645,16 +1676,23 @@ void EditorSceneImporterCollada::get_extensions(List<String> *r_extensions) cons
 }
 
 Node *EditorSceneImporterCollada::import_scene(const String &p_path, uint32_t p_flags, int p_bake_fps, List<String> *r_missing_deps, Error *r_err) {
+	if (r_err) {
+		*r_err = OK;
+	}
 	ColladaImport state;
 	uint32_t flags = Collada::IMPORT_FLAG_SCENE;
 	if (p_flags & IMPORT_ANIMATION) {
 		flags |= Collada::IMPORT_FLAG_ANIMATION;
 	}
 
-	state.use_mesh_builtin_materials = !(p_flags & IMPORT_MATERIALS_IN_INSTANCES);
+	state.use_mesh_builtin_materials = true;
 	state.bake_fps = p_bake_fps;
 
-	Error err = state.load(p_path, flags, p_flags & EditorSceneImporter::IMPORT_GENERATE_TANGENT_ARRAYS, p_flags & EditorSceneImporter::IMPORT_USE_COMPRESSION);
+	Error err = state.load(p_path, flags, p_flags & EditorSceneImporter::IMPORT_GENERATE_TANGENT_ARRAYS, 0);
+
+	if (r_err) {
+		*r_err = err;
+	}
 
 	ERR_FAIL_COND_V_MSG(err != OK, nullptr, "Cannot load scene from file '" + p_path + "'.");
 
@@ -1674,7 +1712,7 @@ Node *EditorSceneImporterCollada::import_scene(const String &p_path, uint32_t p_
 	}
 
 	if (p_flags & IMPORT_ANIMATION) {
-		state.create_animations(p_flags & IMPORT_ANIMATION_FORCE_ALL_TRACKS_IN_ALL_CLIPS, p_flags & EditorSceneImporter::IMPORT_ANIMATION_KEEP_VALUE_TRACKS);
+		state.create_animations(true, true);
 		AnimationPlayer *ap = memnew(AnimationPlayer);
 		for (int i = 0; i < state.animations.size(); i++) {
 			String name;
@@ -1682,12 +1720,6 @@ Node *EditorSceneImporterCollada::import_scene(const String &p_path, uint32_t p_
 				name = "default";
 			} else {
 				name = state.animations[i]->get_name();
-			}
-
-			if (p_flags & IMPORT_ANIMATION_DETECT_LOOP) {
-				if (name.begins_with("loop") || name.ends_with("loop") || name.begins_with("cycle") || name.ends_with("cycle")) {
-					state.animations.write[i]->set_loop(true);
-				}
 			}
 
 			ap->add_animation(name, state.animations[i]);
@@ -1707,7 +1739,7 @@ Ref<Animation> EditorSceneImporterCollada::import_animation(const String &p_path
 	Error err = state.load(p_path, Collada::IMPORT_FLAG_ANIMATION, p_flags & EditorSceneImporter::IMPORT_GENERATE_TANGENT_ARRAYS);
 	ERR_FAIL_COND_V_MSG(err != OK, RES(), "Cannot load animation from file '" + p_path + "'.");
 
-	state.create_animations(p_flags & EditorSceneImporter::IMPORT_ANIMATION_FORCE_ALL_TRACKS_IN_ALL_CLIPS, p_flags & EditorSceneImporter::IMPORT_ANIMATION_KEEP_VALUE_TRACKS);
+	state.create_animations(true, true);
 	if (state.scene) {
 		memdelete(state.scene);
 	}
@@ -1716,12 +1748,6 @@ Ref<Animation> EditorSceneImporterCollada::import_animation(const String &p_path
 		return Ref<Animation>();
 	}
 	Ref<Animation> anim = state.animations[0];
-	String base = p_path.get_basename().to_lower();
-	if (p_flags & IMPORT_ANIMATION_DETECT_LOOP) {
-		if (base.begins_with("loop") || base.ends_with("loop") || base.begins_with("cycle") || base.ends_with("cycle")) {
-			anim->set_loop(true);
-		}
-	}
 
 	return anim;
 }

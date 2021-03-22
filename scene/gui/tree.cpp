@@ -410,6 +410,14 @@ bool TreeItem::is_collapsed() {
 	return collapsed;
 }
 
+void TreeItem::uncollapse_tree() {
+	TreeItem *t = this;
+	while (t) {
+		t->set_collapsed(false);
+		t = t->parent;
+	}
+}
+
 void TreeItem::set_custom_minimum_height(int p_height) {
 	custom_min_height = p_height;
 	_changed_notify();
@@ -841,6 +849,8 @@ void TreeItem::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_collapsed", "enable"), &TreeItem::set_collapsed);
 	ClassDB::bind_method(D_METHOD("is_collapsed"), &TreeItem::is_collapsed);
+
+	ClassDB::bind_method(D_METHOD("uncollapse_tree"), &TreeItem::uncollapse_tree);
 
 	ClassDB::bind_method(D_METHOD("set_custom_minimum_height", "height"), &TreeItem::set_custom_minimum_height);
 	ClassDB::bind_method(D_METHOD("get_custom_minimum_height"), &TreeItem::get_custom_minimum_height);

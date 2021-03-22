@@ -143,6 +143,8 @@ public:
 	void set_custom_format(int p_index, CustomFormat p_format);
 	CustomFormat get_custom_format(int p_index) const;
 
+	Mesh::PrimitiveType get_primitive() const;
+
 	void begin(Mesh::PrimitiveType p_primitive);
 
 	void set_color(Color p_color);
@@ -171,6 +173,7 @@ public:
 	Vector<int> generate_lod(float p_threshold, int p_target_index_count = 3);
 
 	void set_material(const Ref<Material> &p_material);
+	Ref<Material> get_material() const;
 
 	void clear();
 
