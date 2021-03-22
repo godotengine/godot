@@ -160,8 +160,8 @@ void Polygon2D::_notification(int p_what) {
 			if (invert) {
 				Rect2 bounds;
 				int highest_idx = -1;
-				float highest_y = -1e20;
-				float sum = 0.0;
+				real_t highest_y = -1e20;
+				real_t sum = 0.0;
 
 				for (int i = 0; i < len; i++) {
 					if (i == 0) {
@@ -279,7 +279,7 @@ void Polygon2D::_notification(int p_what) {
 
 				//normalize the weights
 				for (int i = 0; i < vc; i++) {
-					float tw = 0.0;
+					real_t tw = 0.0;
 					for (int j = 0; j < 4; j++) {
 						tw += weightsw[i * 4 + j];
 					}
@@ -432,20 +432,20 @@ Vector2 Polygon2D::get_texture_offset() const {
 	return tex_ofs;
 }
 
-void Polygon2D::set_texture_rotation(float p_rot) {
+void Polygon2D::set_texture_rotation(real_t p_rot) {
 	tex_rot = p_rot;
 	update();
 }
 
-float Polygon2D::get_texture_rotation() const {
+real_t Polygon2D::get_texture_rotation() const {
 	return tex_rot;
 }
 
-void Polygon2D::set_texture_rotation_degrees(float p_rot) {
+void Polygon2D::set_texture_rotation_degrees(real_t p_rot) {
 	set_texture_rotation(Math::deg2rad(p_rot));
 }
 
-float Polygon2D::get_texture_rotation_degrees() const {
+real_t Polygon2D::get_texture_rotation_degrees() const {
 	return Math::rad2deg(get_texture_rotation());
 }
 
@@ -477,12 +477,12 @@ bool Polygon2D::get_antialiased() const {
 	return antialiased;
 }
 
-void Polygon2D::set_invert_border(float p_invert_border) {
+void Polygon2D::set_invert_border(real_t p_invert_border) {
 	invert_border = p_invert_border;
 	update();
 }
 
-float Polygon2D::get_invert_border() const {
+real_t Polygon2D::get_invert_border() const {
 	return invert_border;
 }
 

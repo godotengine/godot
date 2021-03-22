@@ -48,8 +48,8 @@ public:
 	virtual bool _edit_use_rect() const override;
 #endif
 
-	void set_gizmo_extents(float p_extents);
-	float get_gizmo_extents() const;
+	void set_gizmo_extents(real_t p_extents);
+	real_t get_gizmo_extents() const;
 
 	Position2D();
 };

@@ -96,9 +96,9 @@ void Path2D::_notification(int p_what) {
 		}
 
 #ifdef TOOLS_ENABLED
-		const float line_width = 2 * EDSCALE;
+		const real_t line_width = 2 * EDSCALE;
 #else
-		const float line_width = 2;
+		const real_t line_width = 2;
 #endif
 		const Color color = Color(0.5, 0.6, 1.0, 0.7);
 
@@ -164,14 +164,14 @@ void PathFollow2D::_update_transform() {
 		return;
 	}
 
-	float path_length = c->get_baked_length();
+	real_t path_length = c->get_baked_length();
 	if (path_length == 0) {
 		return;
 	}
 	Vector2 pos = c->interpolate_baked(offset, cubic);
 
 	if (rotates) {
-		float ahead = offset + lookahead;
+		real_t ahead = offset + lookahead;
 
 		if (loop && ahead >= path_length) {
 			// If our lookahead will loop, we need to check if the path is closed.
@@ -240,7 +240,7 @@ bool PathFollow2D::get_cubic_interpolation() const {
 
 void PathFollow2D::_validate_property(PropertyInfo &property) const {
 	if (property.name == "offset") {
-		float max = 10000.0;
+		real_t max = 10000.0;
 		if (path && path->get_curve().is_valid()) {
 			max = path->get_curve()->get_baked_length();
 		}
@@ -301,11 +301,11 @@ void PathFollow2D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "lookahead", PROPERTY_HINT_RANGE, "0.001,1024.0,0.001"), "set_lookahead", "get_lookahead");
 }
 
-void PathFollow2D::set_offset(float p_offset) {
+void PathFollow2D::set_offset(real_t p_offset) {
 	offset = p_offset;
 	if (path) {
 		if (path->get_curve().is_valid()) {
-			float path_length = path->get_curve()->get_baked_length();
+			real_t path_length = path->get_curve()->get_baked_length();
 
 			if (loop) {
 				offset = Math::fposmod(offset, path_length);
@@ -321,39 +321,39 @@ void PathFollow2D::set_offset(float p_offset) {
 	}
 }
 
-void PathFollow2D::set_h_offset(float p_h_offset) {
+void PathFollow2D::set_h_offset(real_t p_h_offset) {
 	h_offset = p_h_offset;
 	if (path) {
 		_update_transform();
 	}
 }
 
-float PathFollow2D::get_h_offset() const {
+real_t PathFollow2D::get_h_offset() const {
 	return h_offset;
 }
 
-void PathFollow2D::set_v_offset(float p_v_offset) {
+void PathFollow2D::set_v_offset(real_t p_v_offset) {
 	v_offset = p_v_offset;
 	if (path) {
 		_update_transform();
 	}
 }
 
-float PathFollow2D::get_v_offset() const {
+real_t PathFollow2D::get_v_offset() const {
 	return v_offset;
 }
 
-float PathFollow2D::get_offset() const {
+real_t PathFollow2D::get_offset() const {
 	return offset;
 }
 
-void PathFollow2D::set_unit_offset(float p_unit_offset) {
+void PathFollow2D::set_unit_offset(real_t p_unit_offset) {
 	if (path && path->get_curve().is_valid() && path->get_curve()->get_baked_length()) {
 		set_offset(p_unit_offset * path->get_curve()->get_baked_length());
 	}
 }
 
-float PathFollow2D::get_unit_offset() const {
+real_t PathFollow2D::get_unit_offset() const {
 	if (path && path->get_curve().is_valid() && path->get_curve()->get_baked_length()) {
 		return get_offset() / path->get_curve()->get_baked_length();
 	} else {
@@ -361,11 +361,11 @@ float PathFollow2D::get_unit_offset() const {
 	}
 }
 
-void PathFollow2D::set_lookahead(float p_lookahead) {
+void PathFollow2D::set_lookahead(real_t p_lookahead) {
 	lookahead = p_lookahead;
 }
 
-float PathFollow2D::get_lookahead() const {
+real_t PathFollow2D::get_lookahead() const {
 	return lookahead;
 }
 

@@ -84,21 +84,21 @@ Color Light2D::get_color() const {
 	return color;
 }
 
-void Light2D::set_height(float p_height) {
+void Light2D::set_height(real_t p_height) {
 	height = p_height;
 	RS::get_singleton()->canvas_light_set_height(canvas_light, height);
 }
 
-float Light2D::get_height() const {
+real_t Light2D::get_height() const {
 	return height;
 }
 
-void Light2D::set_energy(float p_energy) {
+void Light2D::set_energy(real_t p_energy) {
 	energy = p_energy;
 	RS::get_singleton()->canvas_light_set_energy(canvas_light, energy);
 }
 
-float Light2D::get_energy() const {
+real_t Light2D::get_energy() const {
 	return energy;
 }
 
@@ -213,12 +213,12 @@ void Light2D::_notification(int p_what) {
 	}
 }
 
-void Light2D::set_shadow_smooth(float p_amount) {
+void Light2D::set_shadow_smooth(real_t p_amount) {
 	shadow_smooth = p_amount;
 	RS::get_singleton()->canvas_light_set_shadow_smooth(canvas_light, shadow_smooth);
 }
 
-float Light2D::get_shadow_smooth() const {
+real_t Light2D::get_shadow_smooth() const {
 	return shadow_smooth;
 }
 
@@ -403,7 +403,7 @@ String PointLight2D::get_configuration_warning() const {
 	return warning;
 }
 
-void PointLight2D::set_texture_scale(float p_scale) {
+void PointLight2D::set_texture_scale(real_t p_scale) {
 	_scale = p_scale;
 	// Avoid having 0 scale values, can lead to errors in physics and rendering.
 	if (_scale == 0) {
@@ -413,7 +413,7 @@ void PointLight2D::set_texture_scale(float p_scale) {
 	item_rect_changed();
 }
 
-float PointLight2D::get_texture_scale() const {
+real_t PointLight2D::get_texture_scale() const {
 	return _scale;
 }
 
@@ -439,12 +439,12 @@ PointLight2D::PointLight2D() {
 
 //////////
 
-void DirectionalLight2D::set_max_distance(float p_distance) {
+void DirectionalLight2D::set_max_distance(real_t p_distance) {
 	max_distance = p_distance;
 	RS::get_singleton()->canvas_light_set_directional_distance(_get_light(), max_distance);
 }
 
-float DirectionalLight2D::get_max_distance() const {
+real_t DirectionalLight2D::get_max_distance() const {
 	return max_distance;
 }
 

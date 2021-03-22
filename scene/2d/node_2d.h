@@ -37,9 +37,9 @@ class Node2D : public CanvasItem {
 	GDCLASS(Node2D, CanvasItem);
 
 	Point2 pos;
-	float angle = 0.0;
+	real_t angle = 0.0;
 	Size2 _scale = Vector2(1, 1);
-	float skew = 0.0;
+	real_t skew = 0.0;
 	int z_index = 0;
 	bool z_relative = true;
 
@@ -65,51 +65,51 @@ public:
 	virtual void _edit_set_scale(const Size2 &p_scale) override;
 	virtual Size2 _edit_get_scale() const override;
 
-	virtual void _edit_set_rotation(float p_rotation) override;
-	virtual float _edit_get_rotation() const override;
+	virtual void _edit_set_rotation(real_t p_rotation) override;
+	virtual real_t _edit_get_rotation() const override;
 	virtual bool _edit_use_rotation() const override;
 
 	virtual void _edit_set_rect(const Rect2 &p_edit_rect) override;
 #endif
 
 	void set_position(const Point2 &p_pos);
-	void set_rotation(float p_radians);
-	void set_rotation_degrees(float p_degrees);
-	void set_skew(float p_radians);
-	void set_skew_degrees(float p_radians);
+	void set_rotation(real_t p_radians);
+	void set_rotation_degrees(real_t p_degrees);
+	void set_skew(real_t p_radians);
+	void set_skew_degrees(real_t p_radians);
 	void set_scale(const Size2 &p_scale);
 
-	void rotate(float p_radians);
-	void move_x(float p_delta, bool p_scaled = false);
-	void move_y(float p_delta, bool p_scaled = false);
+	void rotate(real_t p_radians);
+	void move_x(real_t p_delta, bool p_scaled = false);
+	void move_y(real_t p_delta, bool p_scaled = false);
 	void translate(const Vector2 &p_amount);
 	void global_translate(const Vector2 &p_amount);
 	void apply_scale(const Size2 &p_amount);
 
 	Point2 get_position() const;
-	float get_rotation() const;
-	float get_skew() const;
-	float get_rotation_degrees() const;
-	float get_skew_degrees() const;
+	real_t get_rotation() const;
+	real_t get_skew() const;
+	real_t get_rotation_degrees() const;
+	real_t get_skew_degrees() const;
 	Size2 get_scale() const;
 
 	Point2 get_global_position() const;
-	float get_global_rotation() const;
-	float get_global_rotation_degrees() const;
+	real_t get_global_rotation() const;
+	real_t get_global_rotation_degrees() const;
 	Size2 get_global_scale() const;
 
 	void set_transform(const Transform2D &p_transform);
 	void set_global_transform(const Transform2D &p_transform);
 	void set_global_position(const Point2 &p_pos);
-	void set_global_rotation(float p_radians);
-	void set_global_rotation_degrees(float p_degrees);
+	void set_global_rotation(real_t p_radians);
+	void set_global_rotation_degrees(real_t p_degrees);
 	void set_global_scale(const Size2 &p_scale);
 
 	void set_z_index(int p_z);
 	int get_z_index() const;
 
 	void look_at(const Vector2 &p_pos);
-	float get_angle_to(const Vector2 &p_pos) const;
+	real_t get_angle_to(const Vector2 &p_pos) const;
 
 	Point2 to_local(Point2 p_global) const;
 	Point2 to_global(Point2 p_local) const;
