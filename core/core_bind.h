@@ -648,6 +648,9 @@ public:
 	void set_print_error_messages(bool p_enabled);
 	bool is_printing_error_messages() const;
 
+	Array get_log_buffer() const;
+	Array get_error_buffer() const;
+
 	Engine() { singleton = this; }
 };
 

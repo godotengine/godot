@@ -2181,6 +2181,14 @@ bool Engine::is_editor_hint() const {
 	return ::Engine::get_singleton()->is_editor_hint();
 }
 
+Array Engine::get_log_buffer() const {
+	return ::Engine::get_singleton()->get_log_buffer();
+}
+
+Array Engine::get_error_buffer() const {
+	return ::Engine::get_singleton()->get_error_buffer();
+}
+
 void Engine::set_print_error_messages(bool p_enabled) {
 	::Engine::get_singleton()->set_print_error_messages(p_enabled);
 }
@@ -2232,6 +2240,11 @@ void Engine::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "target_fps"), "set_target_fps", "get_target_fps");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "time_scale"), "set_time_scale", "get_time_scale");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "physics_jitter_fix"), "set_physics_jitter_fix", "get_physics_jitter_fix");
+
+	ADD_SIGNAL(MethodInfo("log_message", PropertyInfo(Variant::INT, "buffered_messages")));
+	ADD_SIGNAL(MethodInfo("error_message", PropertyInfo(Variant::INT, "buffered_messages")));
+	ClassDB::bind_method(D_METHOD("get_log_buffer"), &Engine::get_log_buffer);
+	ClassDB::bind_method(D_METHOD("get_error_buffer"), &Engine::get_error_buffer);
 }
 
 Engine *Engine::singleton = nullptr;

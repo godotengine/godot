@@ -226,6 +226,21 @@ String Engine::get_shader_cache_path() const {
 	return shader_cache_path;
 }
 
+void Engine::set_buffered_logger(BufferedSingletonLogger *p_logger) {
+	buffered_log = p_logger;
+	buffered_log_active = true;
+}
+
+Array Engine::get_log_buffer() {
+	ERR_FAIL_COND_V_MSG(!buffered_log_active, Array(), "The project setting \"logging/buffered_logging/enable_buffered_logging\" must be `true` to get the buffered output log.");
+	return buffered_log->flush_message_buffer();
+}
+
+Array Engine::get_error_buffer() {
+	ERR_FAIL_COND_V_MSG(!buffered_log_active, Array(), "The project setting \"logging/buffered_logging/enable_buffered_logging\" must be `true` to get the buffered error log.");
+	return buffered_log->flush_error_buffer();
+}
+
 Engine *Engine::singleton = nullptr;
 
 Engine *Engine::get_singleton() {

@@ -34,6 +34,14 @@
 				{[code]platinum_sponsors[/code], [code]gold_sponsors[/code], [code]silver_sponsors[/code], [code]bronze_sponsors[/code], [code]mini_sponsors[/code], [code]gold_donors[/code], [code]silver_donors[/code], [code]bronze_donors[/code]}
 			</description>
 		</method>
+		<method name="get_error_buffer" qualifiers="const">
+			<return type="Array">
+			</return>
+			<description>
+				Returns an array of [Dictionary] elements with the standard error logging stream. The error buffer is automatically cleared after calling [method get_error_buffer]. See also [method get_log_buffer].
+				[b]Note:[/b] This method will return an empty array if [member ProjectSettings.logging/buffered_logging/enable_buffered_logging] is [code]false[/code], which is the default.
+			</description>
+		</method>
 		<method name="get_frames_drawn">
 			<return type="int" />
 			<description>
@@ -56,6 +64,14 @@
 			<return type="String" />
 			<description>
 				Returns Godot license text.
+			</description>
+		</method>
+		<method name="get_log_buffer" qualifiers="const">
+			<return type="Array">
+			</return>
+			<description>
+				Returns an array of [Dictionary] elements with the standard output logging stream. The log buffer is automatically cleared after calling [method get_log_buffer]. See also [method get_error_buffer].
+				[b]Note:[/b] This method will return an empty array if [member ProjectSettings.logging/buffered_logging/enable_buffered_logging] is [code]false[/code], which is the default.
 			</description>
 		</method>
 		<method name="get_main_loop" qualifiers="const">
@@ -168,6 +184,24 @@
 			Controls how fast or slow the in-game clock ticks versus the real life one. It defaults to 1.0. A value of 2.0 means the game moves twice as fast as real life, whilst a value of 0.5 means the game moves at half the regular speed.
 		</member>
 	</members>
+	<signals>
+		<signal name="error_message">
+			<argument index="0" name="buffered_messages" type="int">
+			</argument>
+			<description>
+				Emitted when a message is printed to the standard output logging stream. See also [signal log_message].
+				[b]Note:[/b] This signal is only emitted if [member ProjectSettings.logging/buffered_logging/enable_buffered_logging] is [code]true[/code], which is not the default.
+			</description>
+		</signal>
+		<signal name="log_message">
+			<argument index="0" name="buffered_messages" type="int">
+			</argument>
+			<description>
+				Emitted when a message is printed to the standard error logging stream. See also [signal error_message].
+				[b]Note:[/b] This signal is only emitted if [member ProjectSettings.logging/buffered_logging/enable_buffered_logging] is [code]true[/code], which is not the default.
+			</description>
+		</signal>
+	</signals>
 	<constants>
 	</constants>
 </class>

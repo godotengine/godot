@@ -1287,6 +1287,15 @@
 		<member name="layer_names/3d_render/layer_9" type="String" setter="" getter="" default="&quot;&quot;">
 			Optional name for the 3D render layer 9. If left empty, the layer will display as "Layer 9".
 		</member>
+		<member name="logging/buffered_logging/buffer_size" type="int" setter="" getter="" default="100">
+			The buffer size to use when [member logging/buffered_logging/enable_buffered_logging] is enabled. This value is defined in number of [i]messages[/i] printed, not the number of lines or characters.
+		</member>
+		<member name="logging/buffered_logging/enable_buffered_logging" type="bool" setter="" getter="" default="false">
+			If [code]true[/code], allows retrieving standard output and error logging streams using [method Engine.get_log_buffer], [method Engine.get_error_buffer], [signal Engine.log_message], and [signal Engine.error_message]. For example, this can be used to display built-in messages in an in-game console.
+			[b]Note:[/b] The buffer has a limited size which is configured by [member logging/buffered_logging/buffer_size].
+		</member>
+		<member name="memory/limits/command_queue/multithreading_queue_size_kb" type="int" setter="" getter="" default="256">
+		</member>
 		<member name="memory/limits/message_queue/max_size_kb" type="int" setter="" getter="" default="4096">
 			Godot uses a message queue to defer some function calls. If you run out of space on it (you will see an error), you can increase the size here.
 		</member>

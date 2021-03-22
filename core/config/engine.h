@@ -31,6 +31,8 @@
 #ifndef ENGINE_H
 #define ENGINE_H
 
+#include "core/config/project_settings.h"
+#include "core/io/logger.h"
 #include "core/os/main_loop.h"
 #include "core/string/ustring.h"
 #include "core/templates/list.h"
@@ -70,6 +72,9 @@ private:
 	Map<StringName, Object *> singleton_ptrs;
 
 	bool editor_hint = false;
+
+	BufferedSingletonLogger *buffered_log = nullptr;
+	bool buffered_log_active = false;
 
 	static Engine *singleton;
 
@@ -132,6 +137,10 @@ public:
 
 	bool is_abort_on_gpu_errors_enabled() const;
 	bool is_validation_layers_enabled() const;
+
+	Array get_log_buffer();
+	Array get_error_buffer();
+	void set_buffered_logger(BufferedSingletonLogger *p_logger);
 
 	Engine();
 	virtual ~Engine() {}

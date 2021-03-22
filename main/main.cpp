@@ -1168,6 +1168,15 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 		OS::get_singleton()->add_logger(memnew(RotatedFileLogger(base_path, max_files)));
 	}
 
+	GLOBAL_DEF("logging/buffered_logging/enable_buffered_logging", false);
+	GLOBAL_DEF("logging/buffered_logging/buffer_size", 100);
+	if (!project_manager && !editor && GLOBAL_GET("logging/buffered_logging/enable_buffered_logging")) {
+		int buffer_size = GLOBAL_GET("logging/buffered_logging/buffer_size");
+		BufferedSingletonLogger *buffer_logger = memnew(BufferedSingletonLogger(buffer_size));
+		OS::get_singleton()->add_logger(buffer_logger);
+		Engine::get_singleton()->set_buffered_logger(buffer_logger);
+	}
+
 	if (main_args.size() == 0 && String(GLOBAL_GET("application/run/main_scene")) == "") {
 #ifdef TOOLS_ENABLED
 		if (!editor && !project_manager) {
