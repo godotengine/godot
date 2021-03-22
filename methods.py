@@ -646,6 +646,9 @@ def generate_vs_project(env, num_jobs):
                 "-j%s" % num_jobs,
             ]
 
+            if env["tests"]:
+                common_build_postfix.append("tests=yes")
+
             if env["custom_modules"]:
                 common_build_postfix.append("custom_modules=%s" % env["custom_modules"])
 
@@ -658,6 +661,8 @@ def generate_vs_project(env, num_jobs):
         add_to_vs_project(env, env.modules_sources)
         add_to_vs_project(env, env.scene_sources)
         add_to_vs_project(env, env.servers_sources)
+        if env["tests"]:
+            add_to_vs_project(env, env.tests_sources)
         add_to_vs_project(env, env.editor_sources)
 
         for header in glob_recursive("**/*.h"):
