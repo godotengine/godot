@@ -197,9 +197,9 @@ jobs:
       # CI has no audio device, so use the Dummy audio driver to avoid spurious error messages.
       - name: Importing and running project project
         run: |
-          wget2 https://github.com/qarmin/RegressionTestProject/archive/3.2.zip
-          unzip 3.2.zip
-          mv "RegressionTestProject-3.2" "test_project"
+          wget2 https://github.com/qarmin/RegressionTestProject/archive/3.x.zip
+          unzip 3.x.zip
+          mv "RegressionTestProject-3.x" "test_project"
 
           echo "----- Open editor to check for memory leaks -----"
           DRI_PRIME=0 xvfb-run bin/godot.x11.tools.64s --audio-driver Dummy -e -q --path test_project 2>&1 | tee sanitizers_log.txt || true
