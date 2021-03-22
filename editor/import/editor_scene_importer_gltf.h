@@ -424,7 +424,7 @@ class EditorSceneImporterGLTF : public EditorSceneImporter {
 	Error _parse_lights(GLTFState &state);
 	Error _parse_animations(GLTFState &state);
 
-	BoneAttachment *_generate_bone_attachment(GLTFState &state, Skeleton *skeleton, const GLTFNodeIndex node_index);
+	BoneAttachment *_get_or_make_bone_attachment(GLTFState &state, Skeleton *skeleton, Spatial *scene_root, const GLTFNodeIndex node_index);
 	MeshInstance *_generate_mesh_instance(GLTFState &state, Node *scene_parent, const GLTFNodeIndex node_index);
 	Camera *_generate_camera(GLTFState &state, Node *scene_parent, const GLTFNodeIndex node_index);
 	Light *_generate_light(GLTFState &state, Node *scene_parent, const GLTFNodeIndex node_index);

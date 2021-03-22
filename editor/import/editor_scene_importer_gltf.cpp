@@ -2623,17 +2623,26 @@ void EditorSceneImporterGLTF::_assign_scene_names(GLTFState &state) {
 	}
 }
 
-BoneAttachment *EditorSceneImporterGLTF::_generate_bone_attachment(GLTFState &state, Skeleton *skeleton, const GLTFNodeIndex node_index) {
-
+BoneAttachment *EditorSceneImporterGLTF::_get_or_make_bone_attachment(GLTFState &state, Skeleton *skeleton, Spatial *scene_root, const GLTFNodeIndex node_index) {
 	const GLTFNode *gltf_node = state.nodes[node_index];
 	const GLTFNode *bone_node = state.nodes[gltf_node->parent];
 
-	BoneAttachment *bone_attachment = memnew(BoneAttachment);
+	BoneAttachment *bone_attachment = Object::cast_to<BoneAttachment>(state.scene_nodes.find(gltf_node->parent)->get());
+	if (bone_attachment != nullptr) {
+		return bone_attachment;
+	}
+
+	bone_attachment = memnew(BoneAttachment);
 	print_verbose("glTF: Creating bone attachment for: " + gltf_node->name);
 
 	ERR_FAIL_COND_V(!bone_node->joint, nullptr);
 
 	bone_attachment->set_bone_name(bone_node->name);
+	bone_attachment->set_name(bone_node->name);
+	skeleton->add_child(bone_attachment, true); // this enforces name uniqueness
+	bone_attachment->set_owner(scene_root);
+
+	state.scene_nodes.insert(gltf_node->parent, bone_attachment);
 
 	return bone_attachment;
 }
@@ -2767,13 +2776,7 @@ void EditorSceneImporterGLTF::_generate_scene_node(GLTFState &state, Node *scene
 
 	// If we have an active skeleton, and the node is node skinned, we need to create a bone attachment
 	if (current_node == nullptr && active_skeleton != nullptr && gltf_node->skin < 0) {
-		BoneAttachment *bone_attachment = _generate_bone_attachment(state, active_skeleton, node_index);
-
-		scene_parent->add_child(bone_attachment);
-		bone_attachment->set_owner(scene_root);
-
-		// There is no gltf_node that represent this, so just directly create a unique name
-		bone_attachment->set_name(_gen_unique_name(state, "BoneAttachment"));
+		BoneAttachment *bone_attachment = _get_or_make_bone_attachment(state, active_skeleton, scene_root, node_index);
 
 		// We change the scene_parent to our bone attachment now. We do not set current_node because we want to make the node
 		// and attach it to the bone_attachment
