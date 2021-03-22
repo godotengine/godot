@@ -994,9 +994,6 @@ bool SceneTreeEditor::can_drop_data_fw(const Point2 &p_point, const Variant &p_d
 	if (!can_rename) {
 		return false; //not editable tree
 	}
-	if (filter != String()) {
-		return false; //can't rearrange tree with filter turned on
-	}
 
 	Dictionary d = p_data;
 	if (!d.has("type")) {
@@ -1049,7 +1046,7 @@ bool SceneTreeEditor::can_drop_data_fw(const Point2 &p_point, const Variant &p_d
 		}
 	}
 
-	return String(d["type"]) == "nodes";
+	return String(d["type"]) == "nodes" && filter == String();
 }
 
 void SceneTreeEditor::drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from) {
