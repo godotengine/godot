@@ -3531,7 +3531,7 @@ String CollisionObject3DGizmoPlugin::get_gizmo_name() const {
 }
 
 int CollisionObject3DGizmoPlugin::get_priority() const {
-	return -1;
+	return -2;
 }
 
 void CollisionObject3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
