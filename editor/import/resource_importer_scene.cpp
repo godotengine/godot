@@ -382,7 +382,6 @@ Node *ResourceImporterScene::_pre_fix_node(Node *p_node, Node *p_root, Map<Ref<E
 						cshape->set_shape(E->get());
 						col->add_child(cshape);
 
-						cshape->set_name("shape" + itos(idx));
 						cshape->set_owner(col->get_owner());
 						idx++;
 					}
@@ -402,22 +401,18 @@ Node *ResourceImporterScene::_pre_fix_node(Node *p_node, Node *p_root, Map<Ref<E
 				BoxShape3D *boxShape = memnew(BoxShape3D);
 				boxShape->set_size(Vector3(2, 2, 2));
 				colshape->set_shape(boxShape);
-				colshape->set_name("BoxShape3D");
 			} else if (empty_draw_type == "SINGLE_ARROW") {
 				RayShape3D *rayShape = memnew(RayShape3D);
 				rayShape->set_length(1);
 				colshape->set_shape(rayShape);
-				colshape->set_name("RayShape3D");
 				Object::cast_to<Node3D>(sb)->rotate_x(Math_PI / 2);
 			} else if (empty_draw_type == "IMAGE") {
 				WorldMarginShape3D *world_margin_shape = memnew(WorldMarginShape3D);
 				colshape->set_shape(world_margin_shape);
-				colshape->set_name("WorldMarginShape3D");
 			} else {
 				SphereShape3D *sphereShape = memnew(SphereShape3D);
 				sphereShape->set_radius(1);
 				colshape->set_shape(sphereShape);
-				colshape->set_name("SphereShape3D");
 			}
 			sb->add_child(colshape);
 			colshape->set_owner(sb->get_owner());
@@ -444,7 +439,6 @@ Node *ResourceImporterScene::_pre_fix_node(Node *p_node, Node *p_root, Map<Ref<E
 			p_node->replace_by(rigid_body);
 			rigid_body->set_transform(mi->get_transform());
 			p_node = rigid_body;
-			mi->set_name("mesh");
 			mi->set_transform(Transform());
 			rigid_body->add_child(mi);
 			mi->set_owner(rigid_body->get_owner());
@@ -455,7 +449,6 @@ Node *ResourceImporterScene::_pre_fix_node(Node *p_node, Node *p_root, Map<Ref<E
 				cshape->set_shape(E->get());
 				rigid_body->add_child(cshape);
 
-				cshape->set_name("shape" + itos(idx));
 				cshape->set_owner(p_node->get_owner());
 				idx++;
 			}
@@ -493,7 +486,6 @@ Node *ResourceImporterScene::_pre_fix_node(Node *p_node, Node *p_root, Map<Ref<E
 
 			if (shapes.size()) {
 				StaticBody3D *col = memnew(StaticBody3D);
-				col->set_name("static_collision");
 				mi->add_child(col);
 				col->set_owner(mi->get_owner());
 
@@ -503,7 +495,6 @@ Node *ResourceImporterScene::_pre_fix_node(Node *p_node, Node *p_root, Map<Ref<E
 					cshape->set_shape(E->get());
 					col->add_child(cshape);
 
-					cshape->set_name("shape" + itos(idx));
 					cshape->set_owner(p_node->get_owner());
 
 					idx++;
@@ -552,7 +543,6 @@ Node *ResourceImporterScene::_pre_fix_node(Node *p_node, Node *p_root, Map<Ref<E
 
 			if (shapes.size()) {
 				StaticBody3D *col = memnew(StaticBody3D);
-				col->set_name("static_collision");
 				p_node->add_child(col);
 				col->set_owner(p_node->get_owner());
 
@@ -562,7 +552,6 @@ Node *ResourceImporterScene::_pre_fix_node(Node *p_node, Node *p_root, Map<Ref<E
 					cshape->set_shape(E->get());
 					col->add_child(cshape);
 
-					cshape->set_name("shape" + itos(idx));
 					cshape->set_owner(p_node->get_owner());
 					idx++;
 				}
@@ -665,7 +654,6 @@ Node *ResourceImporterScene::_post_fix_node(Node *p_node, Node *p_root, Map<Ref<
 						switch (mesh_physics_mode) {
 							case MESH_PHYSICS_MESH_AND_STATIC_COLLIDER: {
 								StaticBody3D *col = memnew(StaticBody3D);
-								col->set_name("Collider");
 								p_node->add_child(col);
 								base = col;
 							} break;
@@ -675,7 +663,6 @@ Node *ResourceImporterScene::_post_fix_node(Node *p_node, Node *p_root, Map<Ref<
 								p_node->replace_by(rigid_body);
 								rigid_body->set_transform(mi->get_transform());
 								p_node = rigid_body;
-								mi->set_name("mesh");
 								mi->set_transform(Transform());
 								rigid_body->add_child(mi);
 								mi->set_owner(rigid_body->get_owner());
@@ -708,7 +695,6 @@ Node *ResourceImporterScene::_post_fix_node(Node *p_node, Node *p_root, Map<Ref<
 							cshape->set_shape(E->get());
 							base->add_child(cshape);
 
-							cshape->set_name("shape" + itos(idx));
 							cshape->set_owner(base->get_owner());
 							idx++;
 						}
