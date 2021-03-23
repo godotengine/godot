@@ -98,8 +98,6 @@ void BaseButton::_notification(int p_what) {
 	}
 
 	if (p_what == NOTIFICATION_FOCUS_ENTER) {
-
-		status.hovering = true;
 		update();
 	}
 
@@ -107,10 +105,8 @@ void BaseButton::_notification(int p_what) {
 
 		if (status.press_attempt) {
 			status.press_attempt = false;
-			status.hovering = false;
 			update();
 		} else if (status.hovering) {
-			status.hovering = false;
 			update();
 		}
 	}
