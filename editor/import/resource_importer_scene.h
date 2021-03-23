@@ -120,6 +120,7 @@ class ResourceImporterScene : public ResourceImporter {
 
 	void _replace_owner(Node *p_node, Node *p_scene, Node *p_new_owner);
 	void _generate_meshes(Node *p_node, const Dictionary &p_mesh_data, bool p_generate_lods, bool p_create_shadow_meshes, LightBakeMode p_light_bake_mode, float p_lightmap_texel_size, const Vector<uint8_t> &p_src_lightmap_cache, Vector<uint8_t> &r_dst_lightmap_cache);
+	void _add_shapes(Node *p_node, const List<Ref<Shape3D>> &p_shapes);
 
 public:
 	static ResourceImporterScene *get_singleton() { return singleton; }
