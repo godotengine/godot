@@ -34,8 +34,8 @@
 #include "core/os/os.h"
 #include "core/templates/thread_work_pool.h"
 #include "servers/rendering/renderer_compositor.h"
+#include "servers/rendering/renderer_rd/forward_clustered/render_forward_clustered.h"
 #include "servers/rendering/renderer_rd/renderer_canvas_render_rd.h"
-#include "servers/rendering/renderer_rd/renderer_scene_render_forward_clustered.h"
 #include "servers/rendering/renderer_rd/renderer_storage_rd.h"
 
 class RendererCompositorRD : public RendererCompositor {

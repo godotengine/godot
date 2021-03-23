@@ -51,6 +51,7 @@ protected:
 	RendererStorageRD *storage;
 	double time;
 	double time_step = 0;
+	bool low_end = false; // If true GI and Volumetric fog are disabled
 
 	struct RenderBufferData {
 		virtual void configure(RID p_color_buffer, RID p_depth_buffer, int p_width, int p_height, RS::ViewportMSAA p_msaa) = 0;
@@ -383,9 +384,9 @@ private:
 		RID texture; //main texture for rendering to, must be filled after done rendering
 		RID depth_texture; //main depth texture
 
-		RID gi_uniform_set;
 		RendererSceneGIRD::SDFGI *sdfgi = nullptr;
 		VolumetricFog *volumetric_fog = nullptr;
+		RendererSceneGIRD::RenderBuffersGI gi;
 
 		ClusterBuilderRD *cluster_builder = nullptr;
 
@@ -428,9 +429,6 @@ private:
 
 		RID ambient_buffer;
 		RID reflection_buffer;
-		bool using_half_size_gi = false;
-
-		RendererSceneGIRD::RenderBuffersGI gi;
 	};
 
 	/* GI */
@@ -719,7 +717,6 @@ private:
 	*/
 
 	uint32_t max_cluster_elements = 512;
-	bool low_end = false;
 
 	void _render_shadow_pass(RID p_light, RID p_shadow_atlas, int p_pass, const PagedArray<GeometryInstance *> &p_instances, const Plane &p_camera_plane = Plane(), float p_lod_distance_multiplier = 0, float p_screen_lod_threshold = 0.0, bool p_open_pass = true, bool p_close_pass = true, bool p_clear_region = true);
 
@@ -1193,7 +1190,11 @@ public:
 
 	void sdfgi_set_debug_probe_select(const Vector3 &p_position, const Vector3 &p_dir);
 
-	bool is_low_end() const;
+	virtual bool is_low_end() const;
+
+	virtual bool is_dynamic_gi_supported() const;
+	virtual bool is_clustered_enabled() const;
+	virtual bool is_volumetric_supported() const;
 
 	RendererSceneRenderRD(RendererStorageRD *p_storage);
 	~RendererSceneRenderRD();
