@@ -878,12 +878,6 @@ static void _mouseDownEvent(NSEvent *event, int index, int mask, bool pressed) {
 }
 
 - (void)magnifyWithEvent:(NSEvent *)event {
-	Ref<InputEventMagnifyGesture> ev;
-	ev.instance();
-	get_key_modifier_state([event modifierFlags], ev);
-	ev->set_position(get_mouse_pos([event locationInWindow]));
-	ev->set_factor([event magnification] + 1.0);
-	OS_OSX::singleton->push_input(ev);
 }
 
 - (void)viewDidChangeBackingProperties {
@@ -1352,15 +1346,6 @@ inline void sendScrollEvent(int button, double factor, int modifierFlags) {
 }
 
 inline void sendPanEvent(double dx, double dy, int modifierFlags) {
-
-	Ref<InputEventPanGesture> pg;
-	pg.instance();
-
-	get_key_modifier_state(modifierFlags, pg);
-	Vector2 mouse_pos = Vector2(mouse_x, mouse_y);
-	pg->set_position(mouse_pos);
-	pg->set_delta(Vector2(-dx, -dy));
-	OS_OSX::singleton->push_input(pg);
 }
 
 - (void)scrollWheel:(NSEvent *)event {

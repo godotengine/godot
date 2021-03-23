@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="InputEventGesturePan" inherits="InputEventGesture" version="3.2">
+	<brief_description>
+	</brief_description>
+	<description>
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="get_delta" qualifiers="const">
+			<return type="Vector2">
+			</return>
+			<description>
+				Returns relative divided by touches.
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="relative" type="Vector2" setter="set_relative" getter="get_relative" default="Vector2( 0, 0 )">
+			The pan position relative to its start position.
+		</member>
+		<member name="speed" type="Vector2" setter="set_speed" getter="get_speed" default="Vector2( 0, 0 )">
+			The pan speed.
+		</member>
+	</members>
+	<constants>
+	</constants>
+</class>

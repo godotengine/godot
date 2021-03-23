@@ -951,13 +951,13 @@ void Polygon2DEditor::_uv_input(const Ref<InputEvent> &p_input) {
 		}
 	}
 
-	Ref<InputEventMagnifyGesture> magnify_gesture = p_input;
-	if (magnify_gesture.is_valid()) {
+	Ref<InputEventGesturePinch> pinch_gesture = p_input;
+	if (pinch_gesture.is_valid()) {
 
-		uv_zoom->set_value(uv_zoom->get_value() * magnify_gesture->get_factor());
+		uv_zoom->set_value(uv_zoom->get_value() * pinch_gesture->get_factor());
 	}
 
-	Ref<InputEventPanGesture> pan_gesture = p_input;
+	Ref<InputEventGesturePan> pan_gesture = p_input;
 	if (pan_gesture.is_valid()) {
 
 		uv_hscroll->set_value(uv_hscroll->get_value() + uv_hscroll->get_page() * pan_gesture->get_delta().x / 8);

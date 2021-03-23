@@ -199,7 +199,7 @@ void ScrollContainer::_gui_input(const Ref<InputEvent> &p_gui_input) {
 		}
 	}
 
-	Ref<InputEventPanGesture> pan_gesture = p_gui_input;
+	Ref<InputEventGesturePan> pan_gesture = p_gui_input;
 	if (pan_gesture.is_valid()) {
 
 		if (h_scroll->is_visible_in_tree()) {
