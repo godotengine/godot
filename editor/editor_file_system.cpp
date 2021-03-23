@@ -372,6 +372,7 @@ bool EditorFileSystem::_test_for_reimport(const String &p_path, bool p_only_impo
 
 	List<String> to_check;
 
+	String importer_name;
 	String source_file = "";
 	String source_md5 = "";
 	Vector<String> dest_files;
@@ -400,6 +401,8 @@ bool EditorFileSystem::_test_for_reimport(const String &p_path, bool p_only_impo
 				for (int i = 0; i < fa.size(); i++) {
 					to_check.push_back(fa[i]);
 				}
+			} else if (assign == "importer") {
+				importer_name = value;
 			} else if (!p_only_imported_files) {
 				if (assign == "source_file") {
 					source_file = value;
@@ -414,6 +417,10 @@ bool EditorFileSystem::_test_for_reimport(const String &p_path, bool p_only_impo
 	}
 
 	memdelete(f);
+
+	if (importer_name == "keep") {
+		return false; //keep mode, do not reimport
+	}
 
 	// Read the md5's from a separate file (so the import parameters aren't dependent on the file version
 	String base_path = ResourceFormatImporter::get_singleton()->get_import_base_path(p_path);
@@ -1570,6 +1577,10 @@ Error EditorFileSystem::_reimport_group(const String &p_group_file, const Vector
 		source_file_options[p_files[i]] = Map<StringName, Variant>();
 		importer_name = file_importer_name;
 
+		if (importer_name == "keep") {
+			continue; //do nothing
+		}
+
 		Ref<ResourceImporter> importer = ResourceFormatImporter::get_singleton()->get_importer_by_name(importer_name);
 		ERR_FAIL_COND_V(!importer.is_valid(), ERR_FILE_CORRUPT);
 		List<ResourceImporter::ImportOption> options;
@@ -1592,6 +1603,10 @@ Error EditorFileSystem::_reimport_group(const String &p_group_file, const Vector
 		}
 
 		base_paths[p_files[i]] = ResourceFormatImporter::get_singleton()->get_import_base_path(p_files[i]);
+	}
+
+	if (importer_name == "keep") {
+		return OK; // (do nothing)
 	}
 
 	ERR_FAIL_COND_V(importer_name == String(), ERR_UNCONFIGURED);
@@ -1741,6 +1756,16 @@ void EditorFileSystem::_reimport_file(const String &p_file) {
 		late_added_files.insert(p_file); //imported files do not call update_file(), but just in case..
 	}
 
+	if (importer_name == "keep") {
+		//keep files, do nothing.
+		fs->files[cpos]->modified_time = FileAccess::get_modified_time(p_file);
+		fs->files[cpos]->import_modified_time = FileAccess::get_modified_time(p_file + ".import");
+		fs->files[cpos]->deps.clear();
+		fs->files[cpos]->type = "";
+		fs->files[cpos]->import_valid = false;
+		EditorResourcePreview::get_singleton()->check_for_invalidation(p_file);
+		return;
+	}
 	Ref<ResourceImporter> importer;
 	bool load_default = false;
 	//find the importer
