@@ -78,7 +78,7 @@ static Node *_find_script_node(Node *p_edited_scene, Node *p_current_node, const
 #endif
 Node *VisualScriptFunctionCall::_get_base_node() const {
 #ifdef TOOLS_ENABLED
-	Ref<Script> script = get_visual_script();
+	Ref<Script> script = get_container();
 	if (!script.is_valid()) {
 		return nullptr;
 	}
@@ -116,15 +116,21 @@ Node *VisualScriptFunctionCall::_get_base_node() const {
 }
 
 StringName VisualScriptFunctionCall::_get_base_type() const {
-	if (call_mode == CALL_MODE_SELF && get_visual_script().is_valid()) {
-		return get_visual_script()->get_instance_base_type();
-	} else if (call_mode == CALL_MODE_NODE_PATH && get_visual_script().is_valid()) {
+	Ref<Resource> sr = get_container();
+	if (call_mode == CALL_MODE_SELF) {
+		Ref<Script> src = sr;
+		Ref<VisualScriptModule> srcmod = sr;
+		if (src.is_valid()) {
+			return src->get_instance_base_type();
+		} else if (srcmod.is_valid()) {
+			return srcmod->get_instance_base_type();
+		}
+	} else if (call_mode == CALL_MODE_NODE_PATH) {
 		Node *path = _get_base_node();
 		if (path) {
 			return path->get_class();
 		}
 	}
-
 	return base_type;
 }
 
@@ -348,10 +354,11 @@ void VisualScriptFunctionCall::_update_method_cache() {
 			script = node->get_script();
 		}
 	} else if (call_mode == CALL_MODE_SELF) {
-		if (get_visual_script().is_valid()) {
-			type = get_visual_script()->get_instance_base_type();
+		Ref<Script> sr = get_container();
+		if (sr.is_valid()) {
+			type = sr->get_instance_base_type();
 			base_type = type; //cache, too
-			script = get_visual_script();
+			script = sr;
 		}
 
 	} else if (call_mode == CALL_MODE_SINGLETON) {
@@ -557,9 +564,9 @@ void VisualScriptFunctionCall::_validate_property(PropertyInfo &property) const 
 			property.hint = PROPERTY_HINT_METHOD_OF_VARIANT_TYPE;
 			property.hint_string = Variant::get_type_name(basic_type);
 
-		} else if (call_mode == CALL_MODE_SELF && get_visual_script().is_valid()) {
+		} else if (call_mode == CALL_MODE_SELF && get_container().is_valid()) {
 			property.hint = PROPERTY_HINT_METHOD_OF_SCRIPT;
-			property.hint_string = itos(get_visual_script()->get_instance_id());
+			property.hint_string = itos(get_container()->get_instance_id());
 		} else if (call_mode == CALL_MODE_SINGLETON) {
 			Object *obj = Engine::get_singleton()->get_singleton_object(singleton);
 			if (obj) {
@@ -908,7 +915,7 @@ bool VisualScriptPropertySet::has_input_sequence_port() const {
 
 Node *VisualScriptPropertySet::_get_base_node() const {
 #ifdef TOOLS_ENABLED
-	Ref<Script> script = get_visual_script();
+	Ref<Script> script = get_container();
 	if (!script.is_valid()) {
 		return nullptr;
 	}
@@ -947,9 +954,10 @@ Node *VisualScriptPropertySet::_get_base_node() const {
 }
 
 StringName VisualScriptPropertySet::_get_base_type() const {
-	if (call_mode == CALL_MODE_SELF && get_visual_script().is_valid()) {
-		return get_visual_script()->get_instance_base_type();
-	} else if (call_mode == CALL_MODE_NODE_PATH && get_visual_script().is_valid()) {
+	Ref<Script> sr = get_container();
+	if (call_mode == CALL_MODE_SELF && sr.is_valid()) {
+		return sr->get_instance_base_type();
+	} else if (call_mode == CALL_MODE_NODE_PATH && get_container().is_valid()) {
 		Node *path = _get_base_node();
 		if (path) {
 			return path->get_class();
@@ -1055,8 +1063,9 @@ void VisualScriptPropertySet::_update_base_type() {
 			base_type = node->get_class();
 		}
 	} else if (call_mode == CALL_MODE_SELF) {
-		if (get_visual_script().is_valid()) {
-			base_type = get_visual_script()->get_instance_base_type();
+		Ref<Script> sr = get_container();
+		if (sr.is_valid()) {
+			base_type = sr->get_instance_base_type();
 		}
 	}
 }
@@ -1142,10 +1151,11 @@ void VisualScriptPropertySet::_update_cache() {
 				script = node->get_script();
 			}
 		} else if (call_mode == CALL_MODE_SELF) {
-			if (get_visual_script().is_valid()) {
-				type = get_visual_script()->get_instance_base_type();
+			Ref<Script> sr = get_container();
+			if (sr.is_valid()) {
+				type = sr->get_instance_base_type();
 				base_type = type; //cache, too
-				script = get_visual_script();
+				script = get_container();
 			}
 		} else if (call_mode == CALL_MODE_INSTANCE) {
 			type = base_type;
@@ -1302,9 +1312,9 @@ void VisualScriptPropertySet::_validate_property(PropertyInfo &property) const {
 			property.hint = PROPERTY_HINT_PROPERTY_OF_VARIANT_TYPE;
 			property.hint_string = Variant::get_type_name(basic_type);
 
-		} else if (call_mode == CALL_MODE_SELF && get_visual_script().is_valid()) {
+		} else if (call_mode == CALL_MODE_SELF && get_container().is_valid()) {
 			property.hint = PROPERTY_HINT_PROPERTY_OF_SCRIPT;
-			property.hint_string = itos(get_visual_script()->get_instance_id());
+			property.hint_string = itos(get_container()->get_instance_id());
 		} else if (call_mode == CALL_MODE_INSTANCE) {
 			property.hint = PROPERTY_HINT_PROPERTY_OF_BASE_TYPE;
 			property.hint_string = base_type;
@@ -1641,15 +1651,16 @@ void VisualScriptPropertyGet::_update_base_type() {
 			base_type = node->get_class();
 		}
 	} else if (call_mode == CALL_MODE_SELF) {
-		if (get_visual_script().is_valid()) {
-			base_type = get_visual_script()->get_instance_base_type();
+		Ref<Script> sr = get_container();
+		if (sr.is_valid()) {
+			base_type = sr->get_instance_base_type();
 		}
 	}
 }
 
 Node *VisualScriptPropertyGet::_get_base_node() const {
 #ifdef TOOLS_ENABLED
-	Ref<Script> script = get_visual_script();
+	Ref<Script> script = get_container();
 	if (!script.is_valid()) {
 		return nullptr;
 	}
@@ -1688,9 +1699,10 @@ Node *VisualScriptPropertyGet::_get_base_node() const {
 }
 
 StringName VisualScriptPropertyGet::_get_base_type() const {
-	if (call_mode == CALL_MODE_SELF && get_visual_script().is_valid()) {
-		return get_visual_script()->get_instance_base_type();
-	} else if (call_mode == CALL_MODE_NODE_PATH && get_visual_script().is_valid()) {
+	Ref<Script> sr = get_container();
+	if (call_mode == CALL_MODE_SELF && sr.is_valid()) {
+		return sr->get_instance_base_type();
+	} else if (call_mode == CALL_MODE_NODE_PATH && get_container().is_valid()) {
 		Node *path = _get_base_node();
 		if (path) {
 			return path->get_class();
@@ -1813,10 +1825,11 @@ void VisualScriptPropertyGet::_update_cache() {
 				script = node->get_script();
 			}
 		} else if (call_mode == CALL_MODE_SELF) {
-			if (get_visual_script().is_valid()) {
-				type = get_visual_script()->get_instance_base_type();
+			Ref<Script> sr = get_container();
+			if (sr.is_valid()) {
+				type = sr->get_instance_base_type();
 				base_type = type; //cache, too
-				script = get_visual_script();
+				script = get_container();
 			}
 		} else if (call_mode == CALL_MODE_INSTANCE) {
 			type = base_type;
@@ -1980,9 +1993,9 @@ void VisualScriptPropertyGet::_validate_property(PropertyInfo &property) const {
 			property.hint = PROPERTY_HINT_PROPERTY_OF_VARIANT_TYPE;
 			property.hint_string = Variant::get_type_name(basic_type);
 
-		} else if (call_mode == CALL_MODE_SELF && get_visual_script().is_valid()) {
+		} else if (call_mode == CALL_MODE_SELF && get_container().is_valid()) {
 			property.hint = PROPERTY_HINT_PROPERTY_OF_SCRIPT;
-			property.hint_string = itos(get_visual_script()->get_instance_id());
+			property.hint_string = itos(get_container()->get_instance_id());
 		} else if (call_mode == CALL_MODE_INSTANCE) {
 			property.hint = PROPERTY_HINT_PROPERTY_OF_BASE_TYPE;
 			property.hint_string = base_type;
@@ -2213,7 +2226,7 @@ bool VisualScriptEmitSignal::has_input_sequence_port() const {
 }
 
 int VisualScriptEmitSignal::get_input_value_port_count() const {
-	Ref<VisualScript> vs = get_visual_script();
+	Ref<VisualScript> vs = get_container();
 	if (vs.is_valid()) {
 		if (!vs->has_custom_signal(name)) {
 			return 0;
@@ -2234,7 +2247,7 @@ String VisualScriptEmitSignal::get_output_sequence_port_text(int p_port) const {
 }
 
 PropertyInfo VisualScriptEmitSignal::get_input_value_port_info(int p_idx) const {
-	Ref<VisualScript> vs = get_visual_script();
+	Ref<VisualScript> vs = get_container();
 	if (vs.is_valid()) {
 		if (!vs->has_custom_signal(name)) {
 			return PropertyInfo();
@@ -2275,7 +2288,7 @@ void VisualScriptEmitSignal::_validate_property(PropertyInfo &property) const {
 
 		List<StringName> sigs;
 
-		Ref<VisualScript> vs = get_visual_script();
+		Ref<VisualScript> vs = get_container();
 		if (vs.is_valid()) {
 			vs->get_custom_signal_list(&sigs);
 		}

@@ -234,6 +234,10 @@ void AcceptDialog::_custom_action(const String &p_action) {
 	custom_action(p_action);
 }
 
+void AcceptDialog::_focus_exit_cancel() {
+	connect("focus_exited", callable_mp(this, &AcceptDialog::_cancel_pressed));
+}
+
 Button *AcceptDialog::add_button(const String &p_text, bool p_right, const String &p_action) {
 	Button *button = memnew(Button);
 	button->set_text(p_text);

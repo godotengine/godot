@@ -244,7 +244,7 @@ static Node *_find_script_node(Node *p_edited_scene, Node *p_current_node, const
 #endif
 Node *VisualScriptYieldSignal::_get_base_node() const {
 #ifdef TOOLS_ENABLED
-	Ref<Script> script = get_visual_script();
+	Ref<Script> script = get_container();
 	if (!script.is_valid()) {
 		return nullptr;
 	}
@@ -282,9 +282,10 @@ Node *VisualScriptYieldSignal::_get_base_node() const {
 }
 
 StringName VisualScriptYieldSignal::_get_base_type() const {
-	if (call_mode == CALL_MODE_SELF && get_visual_script().is_valid()) {
-		return get_visual_script()->get_instance_base_type();
-	} else if (call_mode == CALL_MODE_NODE_PATH && get_visual_script().is_valid()) {
+	Ref<VisualScript> vs = get_container();
+	if (call_mode == CALL_MODE_SELF && vs.is_valid()) {
+		return vs->get_instance_base_type();
+	} else if (call_mode == CALL_MODE_NODE_PATH && get_container().is_valid()) {
 		Node *path = _get_base_node();
 		if (path) {
 			return path->get_class();
