@@ -30,7 +30,6 @@
 
 // HTTPClient's additional private members in the javascript platform
 
-Error make_request(Method p_method, const String &p_url, const Vector<String> &p_headers, const uint8_t *p_body, int p_body_len);
 static void _parse_headers(int p_len, const char **p_headers, void *p_ref);
 
 int js_id = 0;

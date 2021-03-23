@@ -192,14 +192,16 @@ private:
 
 	static void _bind_methods();
 
+	Error _request_raw(Method p_method, const String &p_url, const Vector<String> &p_headers, const Vector<uint8_t> &p_body);
+	Error _request(Method p_method, const String &p_url, const Vector<String> &p_headers, const String &p_body = String());
+
 public:
 	Error connect_to_host(const String &p_host, int p_port = -1, bool p_ssl = false, bool p_verify_host = true);
 
 	void set_connection(const Ref<StreamPeer> &p_connection);
 	Ref<StreamPeer> get_connection() const;
 
-	Error request_raw(Method p_method, const String &p_url, const Vector<String> &p_headers, const Vector<uint8_t> &p_body);
-	Error request(Method p_method, const String &p_url, const Vector<String> &p_headers, const String &p_body = String());
+	Error request(Method p_method, const String &p_url, const Vector<String> &p_headers, const uint8_t *p_body, int p_body_size);
 
 	void close();
 

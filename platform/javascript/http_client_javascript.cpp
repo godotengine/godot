@@ -105,7 +105,7 @@ Ref<StreamPeer> HTTPClient::get_connection() const {
 	ERR_FAIL_V_MSG(REF(), "Accessing an HTTPClient's StreamPeer is not supported for the HTML5 platform.");
 }
 
-Error HTTPClient::make_request(Method p_method, const String &p_url, const Vector<String> &p_headers, const uint8_t *p_body, int p_body_len) {
+Error HTTPClient::request(Method p_method, const String &p_url, const Vector<String> &p_headers, const uint8_t *p_body, int p_body_len) {
 	ERR_FAIL_INDEX_V(p_method, METHOD_MAX, ERR_INVALID_PARAMETER);
 	ERR_FAIL_COND_V_MSG(p_method == METHOD_TRACE || p_method == METHOD_CONNECT, ERR_UNAVAILABLE, "HTTP methods TRACE and CONNECT are not supported for the HTML5 platform.");
 	ERR_FAIL_COND_V(status != STATUS_CONNECTED, ERR_INVALID_PARAMETER);
@@ -126,21 +126,6 @@ Error HTTPClient::make_request(Method p_method, const String &p_url, const Vecto
 	js_id = godot_js_fetch_create(_methods[p_method], url.utf8().get_data(), c_strings.ptrw(), c_strings.size(), p_body, p_body_len);
 	status = STATUS_REQUESTING;
 	return OK;
-}
-
-Error HTTPClient::request_raw(Method p_method, const String &p_url, const Vector<String> &p_headers, const Vector<uint8_t> &p_body) {
-	if (p_body.is_empty()) {
-		return make_request(p_method, p_url, p_headers, nullptr, 0);
-	}
-	return make_request(p_method, p_url, p_headers, p_body.ptr(), p_body.size());
-}
-
-Error HTTPClient::request(Method p_method, const String &p_url, const Vector<String> &p_headers, const String &p_body) {
-	if (p_body.is_empty()) {
-		return make_request(p_method, p_url, p_headers, nullptr, 0);
-	}
-	const CharString cs = p_body.utf8();
-	return make_request(p_method, p_url, p_headers, (const uint8_t *)cs.get_data(), cs.size() - 1);
 }
 
 void HTTPClient::close() {
