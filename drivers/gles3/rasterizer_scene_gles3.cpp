@@ -4811,7 +4811,7 @@ void RasterizerSceneGLES3::render_shadow(RID p_light, RID p_shadow_atlas, int p_
 
 				for (int i = shadow_cubemaps.size() - 1; i >= 0; i--) {
 					//find appropriate cubemap to render to
-					if (shadow_cubemaps[i].size > shadow_size * 2)
+					if (shadow_cubemaps[i].size > shadow_size)
 						break;
 
 					cubemap_index = i;
@@ -5110,7 +5110,7 @@ void RasterizerSceneGLES3::initialize() {
 
 	shadow_atlas_realloc_tolerance_msec = 500;
 
-	int max_shadow_cubemap_sampler_size = 512;
+	int max_shadow_cubemap_sampler_size = CLAMP(int(next_power_of_2(GLOBAL_GET("rendering/quality/shadow_atlas/size")) >> 1), 256, storage->config.max_cubemap_texture_size);
 
 	int cube_size = max_shadow_cubemap_sampler_size;
 
