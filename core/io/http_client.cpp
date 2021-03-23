@@ -133,7 +133,7 @@ static bool _check_request_url(HTTPClient::Method p_method, const String &p_url)
 	}
 }
 
-Error HTTPClient::request_raw(Method p_method, const String &p_url, const Vector<String> &p_headers, const Vector<uint8_t> &p_body) {
+Error HTTPClient::request(Method p_method, const String &p_url, const Vector<String> &p_headers, const uint8_t *p_body, int p_body_size) {
 	ERR_FAIL_INDEX_V(p_method, METHOD_MAX, ERR_INVALID_PARAMETER);
 	ERR_FAIL_COND_V(!_check_request_url(p_method, p_url), ERR_INVALID_PARAMETER);
 	ERR_FAIL_COND_V(status != STATUS_CONNECTED, ERR_INVALID_PARAMETER);
@@ -141,7 +141,7 @@ Error HTTPClient::request_raw(Method p_method, const String &p_url, const Vector
 
 	String request = String(_methods[p_method]) + " " + p_url + " HTTP/1.1\r\n";
 	bool add_host = true;
-	bool add_clen = p_body.size() > 0;
+	bool add_clen = p_body_size > 0;
 	bool add_uagent = true;
 	bool add_accept = true;
 	for (int i = 0; i < p_headers.size(); i++) {
@@ -168,7 +168,7 @@ Error HTTPClient::request_raw(Method p_method, const String &p_url, const Vector
 		}
 	}
 	if (add_clen) {
-		request += "Content-Length: " + itos(p_body.size()) + "\r\n";
+		request += "Content-Length: " + itos(p_body_size) + "\r\n";
 		// Should it add utf8 encoding?
 	}
 	if (add_uagent) {
@@ -181,80 +181,15 @@ Error HTTPClient::request_raw(Method p_method, const String &p_url, const Vector
 	CharString cs = request.utf8();
 
 	Vector<uint8_t> data;
-	data.resize(cs.length());
-	{
-		uint8_t *data_write = data.ptrw();
-		for (int i = 0; i < cs.length(); i++) {
-			data_write[i] = cs[i];
-		}
+	data.resize(cs.length() + p_body_size);
+	memcpy(data.ptrw(), cs.get_data(), cs.length());
+	if (p_body_size > 0) {
+		memcpy(data.ptrw() + cs.length(), p_body, p_body_size);
 	}
 
-	data.append_array(p_body);
+	// TODO Implement non-blocking requests.
+	Error err = connection->put_data(data.ptr(), data.size());
 
-	const uint8_t *r = data.ptr();
-	Error err = connection->put_data(&r[0], data.size());
-
-	if (err) {
-		close();
-		status = STATUS_CONNECTION_ERROR;
-		return err;
-	}
-
-	status = STATUS_REQUESTING;
-	head_request = p_method == METHOD_HEAD;
-
-	return OK;
-}
-
-Error HTTPClient::request(Method p_method, const String &p_url, const Vector<String> &p_headers, const String &p_body) {
-	ERR_FAIL_INDEX_V(p_method, METHOD_MAX, ERR_INVALID_PARAMETER);
-	ERR_FAIL_COND_V(!_check_request_url(p_method, p_url), ERR_INVALID_PARAMETER);
-	ERR_FAIL_COND_V(status != STATUS_CONNECTED, ERR_INVALID_PARAMETER);
-	ERR_FAIL_COND_V(connection.is_null(), ERR_INVALID_DATA);
-
-	String request = String(_methods[p_method]) + " " + p_url + " HTTP/1.1\r\n";
-	bool add_host = true;
-	bool add_uagent = true;
-	bool add_accept = true;
-	bool add_clen = p_body.length() > 0;
-	for (int i = 0; i < p_headers.size(); i++) {
-		request += p_headers[i] + "\r\n";
-		if (add_host && p_headers[i].findn("Host:") == 0) {
-			add_host = false;
-		}
-		if (add_clen && p_headers[i].findn("Content-Length:") == 0) {
-			add_clen = false;
-		}
-		if (add_uagent && p_headers[i].findn("User-Agent:") == 0) {
-			add_uagent = false;
-		}
-		if (add_accept && p_headers[i].findn("Accept:") == 0) {
-			add_accept = false;
-		}
-	}
-	if (add_host) {
-		if ((ssl && conn_port == PORT_HTTPS) || (!ssl && conn_port == PORT_HTTP)) {
-			// Don't append the standard ports
-			request += "Host: " + conn_host + "\r\n";
-		} else {
-			request += "Host: " + conn_host + ":" + itos(conn_port) + "\r\n";
-		}
-	}
-	if (add_clen) {
-		request += "Content-Length: " + itos(p_body.utf8().length()) + "\r\n";
-		// Should it add utf8 encoding?
-	}
-	if (add_uagent) {
-		request += "User-Agent: GodotEngine/" + String(VERSION_FULL_BUILD) + " (" + OS::get_singleton()->get_name() + ")\r\n";
-	}
-	if (add_accept) {
-		request += "Accept: */*\r\n";
-	}
-	request += "\r\n";
-	request += p_body;
-
-	CharString cs = request.utf8();
-	Error err = connection->put_data((const uint8_t *)cs.ptr(), cs.length());
 	if (err) {
 		close();
 		status = STATUS_CONNECTION_ERROR;
@@ -737,6 +672,16 @@ HTTPClient::~HTTPClient() {}
 
 #endif // #ifndef JAVASCRIPT_ENABLED
 
+Error HTTPClient::_request_raw(Method p_method, const String &p_url, const Vector<String> &p_headers, const Vector<uint8_t> &p_body) {
+	int size = p_body.size();
+	return request(p_method, p_url, p_headers, size > 0 ? p_body.ptr() : nullptr, size);
+}
+
+Error HTTPClient::_request(Method p_method, const String &p_url, const Vector<String> &p_headers, const String &p_body) {
+	int size = p_body.length();
+	return request(p_method, p_url, p_headers, size > 0 ? (const uint8_t *)p_body.utf8().get_data() : nullptr, size);
+}
+
 String HTTPClient::query_string_from_dict(const Dictionary &p_dict) {
 	String query = "";
 	Array keys = p_dict.keys();
@@ -802,8 +747,8 @@ void HTTPClient::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("connect_to_host", "host", "port", "use_ssl", "verify_host"), &HTTPClient::connect_to_host, DEFVAL(-1), DEFVAL(false), DEFVAL(true));
 	ClassDB::bind_method(D_METHOD("set_connection", "connection"), &HTTPClient::set_connection);
 	ClassDB::bind_method(D_METHOD("get_connection"), &HTTPClient::get_connection);
-	ClassDB::bind_method(D_METHOD("request_raw", "method", "url", "headers", "body"), &HTTPClient::request_raw);
-	ClassDB::bind_method(D_METHOD("request", "method", "url", "headers", "body"), &HTTPClient::request, DEFVAL(String()));
+	ClassDB::bind_method(D_METHOD("request_raw", "method", "url", "headers", "body"), &HTTPClient::_request_raw);
+	ClassDB::bind_method(D_METHOD("request", "method", "url", "headers", "body"), &HTTPClient::_request, DEFVAL(String()));
 	ClassDB::bind_method(D_METHOD("close"), &HTTPClient::close);
 
 	ClassDB::bind_method(D_METHOD("has_response"), &HTTPClient::has_response);
