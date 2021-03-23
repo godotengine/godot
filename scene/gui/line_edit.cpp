@@ -222,7 +222,7 @@ void LineEdit::_gui_input(Ref<InputEvent> p_event) {
 			// Ignore mouse clicks in IME input mode.
 			return;
 		}
-		if (b->is_pressed() && b->get_button_index() == BUTTON_RIGHT && context_menu_enabled) {
+		if (b->is_pressed() && b->get_button_index() == MOUSE_BUTTON_RIGHT && context_menu_enabled) {
 			menu->set_position(get_screen_transform().xform(get_local_mouse_position()));
 			menu->set_size(Vector2(1, 1));
 			_generate_context_menu();
@@ -232,7 +232,7 @@ void LineEdit::_gui_input(Ref<InputEvent> p_event) {
 			return;
 		}
 
-		if (b->get_button_index() != BUTTON_LEFT) {
+		if (b->get_button_index() != MOUSE_BUTTON_LEFT) {
 			return;
 		}
 
@@ -327,7 +327,7 @@ void LineEdit::_gui_input(Ref<InputEvent> p_event) {
 			}
 		}
 
-		if (m->get_button_mask() & BUTTON_LEFT) {
+		if (m->get_button_mask() & MOUSE_BUTTON_LEFT) {
 			if (selection.creating) {
 				set_cursor_at_pixel_pos(m->get_position().x);
 				selection_fill_at_cursor();

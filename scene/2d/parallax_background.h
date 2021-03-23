@@ -39,7 +39,7 @@ class ParallaxBackground : public CanvasLayer {
 	GDCLASS(ParallaxBackground, CanvasLayer);
 
 	Point2 offset;
-	float scale = 1.0;
+	real_t scale = 1.0;
 	Point2 base_offset;
 	Point2 base_scale = Vector2(1, 1);
 	Point2 screen_offset;
@@ -61,8 +61,8 @@ public:
 	void set_scroll_offset(const Point2 &p_ofs);
 	Point2 get_scroll_offset() const;
 
-	void set_scroll_scale(float p_scale);
-	float get_scroll_scale() const;
+	void set_scroll_scale(real_t p_scale);
+	real_t get_scroll_scale() const;
 
 	void set_scroll_base_offset(const Point2 &p_ofs);
 	Point2 get_scroll_base_offset() const;

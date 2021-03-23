@@ -171,22 +171,22 @@ private:
 		Size2 last_minimum_size;
 		bool updating_last_minimum_size = false;
 
-		float offset[4] = { 0.0, 0.0, 0.0, 0.0 };
-		float anchor[4] = { ANCHOR_BEGIN, ANCHOR_BEGIN, ANCHOR_BEGIN, ANCHOR_BEGIN };
+		real_t offset[4] = { 0.0, 0.0, 0.0, 0.0 };
+		real_t anchor[4] = { ANCHOR_BEGIN, ANCHOR_BEGIN, ANCHOR_BEGIN, ANCHOR_BEGIN };
 		FocusMode focus_mode = FOCUS_NONE;
 		GrowDirection h_grow = GROW_DIRECTION_END;
 		GrowDirection v_grow = GROW_DIRECTION_END;
 
 		LayoutDirection layout_dir = LAYOUT_DIRECTION_INHERITED;
 
-		float rotation = 0.0;
+		real_t rotation = 0.0;
 		Vector2 scale = Vector2(1, 1);
 		Vector2 pivot_offset;
 		bool size_warning = true;
 
 		int h_size_flags = SIZE_FILL;
 		int v_size_flags = SIZE_FILL;
-		float expand = 1.0;
+		real_t expand = 1.0;
 		Point2 custom_minimum_size;
 
 		MouseFilter mouse_filter = MOUSE_FILTER_STOP;
@@ -224,10 +224,10 @@ private:
 	// used internally
 	Control *_find_control_at_pos(CanvasItem *p_node, const Point2 &p_pos, const Transform2D &p_xform, Transform2D &r_inv_xform);
 
-	void _window_find_focus_neighbor(const Vector2 &p_dir, Node *p_at, const Point2 *p_points, float p_min, float &r_closest_dist, Control **r_closest);
+	void _window_find_focus_neighbor(const Vector2 &p_dir, Node *p_at, const Point2 *p_points, real_t p_min, real_t &r_closest_dist, Control **r_closest);
 	Control *_get_focus_neighbor(Side p_side, int p_count = 0);
 
-	void _set_anchor(Side p_side, float p_anchor);
+	void _set_anchor(Side p_side, real_t p_anchor);
 	void _set_position(const Point2 &p_point);
 	void _set_global_position(const Point2 &p_point);
 	void _set_size(const Size2 &p_size);
@@ -239,8 +239,8 @@ private:
 	void _clear_size_warning();
 	void _update_scroll();
 
-	void _compute_offsets(Rect2 p_rect, const float p_anchors[4], float (&r_offsets)[4]);
-	void _compute_anchors(Rect2 p_rect, const float p_offsets[4], float (&r_anchors)[4]);
+	void _compute_offsets(Rect2 p_rect, const real_t p_anchors[4], real_t (&r_offsets)[4]);
+	void _compute_anchors(Rect2 p_rect, const real_t p_offsets[4], real_t (&r_anchors)[4]);
 
 	void _size_changed();
 	String _get_tooltip() const;
@@ -325,8 +325,8 @@ public:
 	virtual Rect2 _edit_get_rect() const override;
 	virtual bool _edit_use_rect() const override;
 
-	virtual void _edit_set_rotation(float p_rotation) override;
-	virtual float _edit_get_rotation() const override;
+	virtual void _edit_set_rotation(real_t p_rotation) override;
+	virtual real_t _edit_get_rotation() const override;
 	virtual bool _edit_use_rotation() const override;
 
 	virtual void _edit_set_pivot(const Point2 &p_pivot) override;
@@ -364,13 +364,13 @@ public:
 	void set_offsets_preset(LayoutPreset p_preset, LayoutPresetMode p_resize_mode = PRESET_MODE_MINSIZE, int p_margin = 0);
 	void set_anchors_and_offsets_preset(LayoutPreset p_preset, LayoutPresetMode p_resize_mode = PRESET_MODE_MINSIZE, int p_margin = 0);
 
-	void set_anchor(Side p_side, float p_anchor, bool p_keep_offset = true, bool p_push_opposite_anchor = true);
-	float get_anchor(Side p_side) const;
+	void set_anchor(Side p_side, real_t p_anchor, bool p_keep_offset = true, bool p_push_opposite_anchor = true);
+	real_t get_anchor(Side p_side) const;
 
-	void set_offset(Side p_side, float p_value);
-	float get_offset(Side p_side) const;
+	void set_offset(Side p_side, real_t p_value);
+	real_t get_offset(Side p_side) const;
 
-	void set_anchor_and_offset(Side p_side, float p_anchor, float p_pos, bool p_push_opposite_anchor = true);
+	void set_anchor_and_offset(Side p_side, real_t p_anchor, real_t p_pos, bool p_push_opposite_anchor = true);
 
 	void set_begin(const Point2 &p_point); // helper
 	void set_end(const Point2 &p_point); // helper
@@ -395,10 +395,10 @@ public:
 
 	void set_rect(const Rect2 &p_rect); // Reset anchors to begin and set rect, for faster container children sorting.
 
-	void set_rotation(float p_radians);
-	void set_rotation_degrees(float p_degrees);
-	float get_rotation() const;
-	float get_rotation_degrees() const;
+	void set_rotation(real_t p_radians);
+	void set_rotation_degrees(real_t p_degrees);
+	real_t get_rotation() const;
+	real_t get_rotation_degrees() const;
 
 	void set_h_grow_direction(GrowDirection p_direction);
 	GrowDirection get_h_grow_direction() const;
@@ -421,8 +421,8 @@ public:
 	void set_v_size_flags(int p_flags);
 	int get_v_size_flags() const;
 
-	void set_stretch_ratio(float p_ratio);
-	float get_stretch_ratio() const;
+	void set_stretch_ratio(real_t p_ratio);
+	real_t get_stretch_ratio() const;
 
 	void minimum_size_changed();
 

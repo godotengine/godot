@@ -62,7 +62,7 @@ void JoypadLinux::Joypad::reset() {
 	dpad = 0;
 	fd = -1;
 
-	Input::JoyAxis jx;
+	Input::JoyAxisValue jx;
 	jx.min = -1;
 	jx.value = 0.0f;
 	for (int i = 0; i < MAX_ABS; i++) {
@@ -428,10 +428,10 @@ void JoypadLinux::joypad_vibration_stop(int p_id, uint64_t p_timestamp) {
 	joy.ff_effect_timestamp = p_timestamp;
 }
 
-Input::JoyAxis JoypadLinux::axis_correct(const input_absinfo *p_abs, int p_value) const {
+Input::JoyAxisValue JoypadLinux::axis_correct(const input_absinfo *p_abs, int p_value) const {
 	int min = p_abs->minimum;
 	int max = p_abs->maximum;
-	Input::JoyAxis jx;
+	Input::JoyAxisValue jx;
 
 	if (min < 0) {
 		jx.min = -1;
@@ -513,7 +513,7 @@ void JoypadLinux::process_joypads() {
 									return;
 								}
 								if (joy->abs_map[ev.code] != -1 && joy->abs_info[ev.code]) {
-									Input::JoyAxis value = axis_correct(joy->abs_info[ev.code], ev.value);
+									Input::JoyAxisValue value = axis_correct(joy->abs_info[ev.code], ev.value);
 									joy->curr_axis[joy->abs_map[ev.code]] = value;
 								}
 								break;

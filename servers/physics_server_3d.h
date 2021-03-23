@@ -216,6 +216,15 @@ public:
 	PhysicsShapeQueryResult3D();
 };
 
+class RenderingServerHandler {
+public:
+	virtual void set_vertex(int p_vertex_id, const void *p_vector3) = 0;
+	virtual void set_normal(int p_vertex_id, const void *p_vector3) = 0;
+	virtual void set_aabb(const AABB &p_aabb) = 0;
+
+	virtual ~RenderingServerHandler() {}
+};
+
 class PhysicsServer3D : public Object {
 	GDCLASS(PhysicsServer3D, Object);
 
@@ -237,6 +246,7 @@ public:
 		SHAPE_CONVEX_POLYGON, ///< array of planes:"planes"
 		SHAPE_CONCAVE_POLYGON, ///< vector3 array:"triangles" , or Dictionary with "indices" (int array) and "triangles" (Vector3 array)
 		SHAPE_HEIGHTMAP, ///< dict( int:"width", int:"depth",float:"cell_size", float_array:"heights"
+		SHAPE_SOFT_BODY, ///< Used internally, can't be created from the physics server.
 		SHAPE_CUSTOM, ///< Server-Implementation based custom shape, calling shape_create() with this value will result in an error
 	};
 
@@ -522,12 +532,14 @@ public:
 
 	virtual RID soft_body_create() = 0;
 
-	virtual void soft_body_update_rendering_server(RID p_body, class SoftBodyRenderingServerHandler *p_rendering_server_handler) = 0;
+	virtual void soft_body_update_rendering_server(RID p_body, RenderingServerHandler *p_rendering_server_handler) = 0;
 
 	virtual void soft_body_set_space(RID p_body, RID p_space) = 0;
 	virtual RID soft_body_get_space(RID p_body) const = 0;
 
 	virtual void soft_body_set_mesh(RID p_body, const REF &p_mesh) = 0;
+
+	virtual AABB soft_body_get_bounds(RID p_body) const = 0;
 
 	virtual void soft_body_set_collision_layer(RID p_body, uint32_t p_layer) = 0;
 	virtual uint32_t soft_body_get_collision_layer(RID p_body) const = 0;
@@ -543,7 +555,6 @@ public:
 	virtual Variant soft_body_get_state(RID p_body, BodyState p_state) const = 0;
 
 	virtual void soft_body_set_transform(RID p_body, const Transform &p_transform) = 0;
-	virtual Vector3 soft_body_get_vertex_position(RID p_body, int vertex_index) const = 0;
 
 	virtual void soft_body_set_ray_pickable(RID p_body, bool p_enable) = 0;
 
@@ -556,17 +567,8 @@ public:
 	virtual void soft_body_set_linear_stiffness(RID p_body, real_t p_stiffness) = 0;
 	virtual real_t soft_body_get_linear_stiffness(RID p_body) const = 0;
 
-	virtual void soft_body_set_angular_stiffness(RID p_body, real_t p_stiffness) = 0;
-	virtual real_t soft_body_get_angular_stiffness(RID p_body) const = 0;
-
-	virtual void soft_body_set_volume_stiffness(RID p_body, real_t p_stiffness) = 0;
-	virtual real_t soft_body_get_volume_stiffness(RID p_body) const = 0;
-
 	virtual void soft_body_set_pressure_coefficient(RID p_body, real_t p_pressure_coefficient) = 0;
 	virtual real_t soft_body_get_pressure_coefficient(RID p_body) const = 0;
-
-	virtual void soft_body_set_pose_matching_coefficient(RID p_body, real_t p_pose_matching_coefficient) = 0;
-	virtual real_t soft_body_get_pose_matching_coefficient(RID p_body) const = 0;
 
 	virtual void soft_body_set_damping_coefficient(RID p_body, real_t p_damping_coefficient) = 0;
 	virtual real_t soft_body_get_damping_coefficient(RID p_body) const = 0;
@@ -576,8 +578,6 @@ public:
 
 	virtual void soft_body_move_point(RID p_body, int p_point_index, const Vector3 &p_global_position) = 0;
 	virtual Vector3 soft_body_get_point_global_position(RID p_body, int p_point_index) const = 0;
-
-	virtual Vector3 soft_body_get_point_offset(RID p_body, int p_point_index) const = 0;
 
 	virtual void soft_body_remove_all_pinned_points(RID p_body) = 0;
 	virtual void soft_body_pin_point(RID p_body, int p_point_index, bool p_pin) = 0;

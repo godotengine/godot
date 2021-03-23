@@ -359,7 +359,7 @@ void PopupMenu::_gui_input(const Ref<InputEvent> &p_event) {
 		if (b->is_pressed() || (!b->is_pressed() && during_grabbed_click)) {
 			// Allow activating item by releasing the LMB or any that was down when the popup appeared.
 			// However, if button was not held when opening menu, do not allow release to activate item.
-			if (button_idx == BUTTON_LEFT || (initial_button_mask & (1 << (button_idx - 1)))) {
+			if (button_idx == MOUSE_BUTTON_LEFT || (initial_button_mask & (1 << (button_idx - 1)))) {
 				bool was_during_grabbed_click = during_grabbed_click;
 				during_grabbed_click = false;
 				initial_button_mask = 0;
@@ -722,6 +722,7 @@ void PopupMenu::_notification(int p_what) {
 			for (int i = 0; i < items.size(); i++) {
 				items.write[i].xl_text = tr(items[i].text);
 				items.write[i].dirty = true;
+				_shape_item(i);
 			}
 
 			child_controls_changed();

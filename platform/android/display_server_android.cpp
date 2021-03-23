@@ -477,7 +477,7 @@ void DisplayServerAndroid::process_joy_event(DisplayServerAndroid::JoypadEvent p
 			Input::get_singleton()->joy_button(p_event.device, p_event.index, p_event.pressed);
 			break;
 		case JOY_EVENT_AXIS:
-			Input::JoyAxis value;
+			Input::JoyAxisValue value;
 			value.min = -1;
 			value.value = p_event.value;
 			Input::get_singleton()->joy_axis(p_event.device, p_event.index, value);
@@ -741,15 +741,15 @@ void DisplayServerAndroid::process_mouse_event(int input_device, int event_actio
 			ev->set_pressed(true);
 			buttons_state = event_buttons_mask;
 			if (event_vertical_factor > 0) {
-				_wheel_button_click(event_buttons_mask, ev, BUTTON_WHEEL_UP, event_vertical_factor);
+				_wheel_button_click(event_buttons_mask, ev, MOUSE_BUTTON_WHEEL_UP, event_vertical_factor);
 			} else if (event_vertical_factor < 0) {
-				_wheel_button_click(event_buttons_mask, ev, BUTTON_WHEEL_DOWN, -event_vertical_factor);
+				_wheel_button_click(event_buttons_mask, ev, MOUSE_BUTTON_WHEEL_DOWN, -event_vertical_factor);
 			}
 
 			if (event_horizontal_factor > 0) {
-				_wheel_button_click(event_buttons_mask, ev, BUTTON_WHEEL_RIGHT, event_horizontal_factor);
+				_wheel_button_click(event_buttons_mask, ev, MOUSE_BUTTON_WHEEL_RIGHT, event_horizontal_factor);
 			} else if (event_horizontal_factor < 0) {
-				_wheel_button_click(event_buttons_mask, ev, BUTTON_WHEEL_LEFT, -event_horizontal_factor);
+				_wheel_button_click(event_buttons_mask, ev, MOUSE_BUTTON_WHEEL_LEFT, -event_horizontal_factor);
 			}
 		} break;
 	}
@@ -784,16 +784,16 @@ void DisplayServerAndroid::process_double_tap(int event_android_button_mask, Poi
 
 int DisplayServerAndroid::_button_index_from_mask(int button_mask) {
 	switch (button_mask) {
-		case BUTTON_MASK_LEFT:
-			return BUTTON_LEFT;
-		case BUTTON_MASK_RIGHT:
-			return BUTTON_RIGHT;
-		case BUTTON_MASK_MIDDLE:
-			return BUTTON_MIDDLE;
-		case BUTTON_MASK_XBUTTON1:
-			return BUTTON_XBUTTON1;
-		case BUTTON_MASK_XBUTTON2:
-			return BUTTON_XBUTTON2;
+		case MOUSE_BUTTON_MASK_LEFT:
+			return MOUSE_BUTTON_LEFT;
+		case MOUSE_BUTTON_MASK_RIGHT:
+			return MOUSE_BUTTON_RIGHT;
+		case MOUSE_BUTTON_MASK_MIDDLE:
+			return MOUSE_BUTTON_MIDDLE;
+		case MOUSE_BUTTON_MASK_XBUTTON1:
+			return MOUSE_BUTTON_XBUTTON1;
+		case MOUSE_BUTTON_MASK_XBUTTON2:
+			return MOUSE_BUTTON_XBUTTON2;
 		default:
 			return 0;
 	}
@@ -854,19 +854,19 @@ int DisplayServerAndroid::mouse_get_button_state() const {
 int DisplayServerAndroid::_android_button_mask_to_godot_button_mask(int android_button_mask) {
 	int godot_button_mask = 0;
 	if (android_button_mask & AMOTION_EVENT_BUTTON_PRIMARY) {
-		godot_button_mask |= BUTTON_MASK_LEFT;
+		godot_button_mask |= MOUSE_BUTTON_MASK_LEFT;
 	}
 	if (android_button_mask & AMOTION_EVENT_BUTTON_SECONDARY) {
-		godot_button_mask |= BUTTON_MASK_RIGHT;
+		godot_button_mask |= MOUSE_BUTTON_MASK_RIGHT;
 	}
 	if (android_button_mask & AMOTION_EVENT_BUTTON_TERTIARY) {
-		godot_button_mask |= BUTTON_MASK_MIDDLE;
+		godot_button_mask |= MOUSE_BUTTON_MASK_MIDDLE;
 	}
 	if (android_button_mask & AMOTION_EVENT_BUTTON_BACK) {
-		godot_button_mask |= BUTTON_MASK_XBUTTON1;
+		godot_button_mask |= MOUSE_BUTTON_MASK_XBUTTON1;
 	}
 	if (android_button_mask & AMOTION_EVENT_BUTTON_SECONDARY) {
-		godot_button_mask |= BUTTON_MASK_XBUTTON2;
+		godot_button_mask |= MOUSE_BUTTON_MASK_XBUTTON2;
 	}
 
 	return godot_button_mask;

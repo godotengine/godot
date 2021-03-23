@@ -1517,7 +1517,7 @@ void ScriptTextEditor::_text_edit_gui_input(const Ref<InputEvent> &ev) {
 	bool create_menu = false;
 
 	CodeEdit *tx = code_editor->get_text_editor();
-	if (mb.is_valid() && mb->get_button_index() == BUTTON_RIGHT && mb->is_pressed()) {
+	if (mb.is_valid() && mb->get_button_index() == MOUSE_BUTTON_RIGHT && mb->is_pressed()) {
 		local_pos = mb->get_global_position() - tx->get_global_position();
 		create_menu = true;
 	} else if (k.is_valid() && k->get_keycode() == KEY_MENU) {

@@ -232,7 +232,7 @@ void Window::_make_window() {
 	DisplayServer::get_singleton()->window_set_current_screen(current_screen, window_id);
 	DisplayServer::get_singleton()->window_set_max_size(max_size, window_id);
 	DisplayServer::get_singleton()->window_set_min_size(min_size, window_id);
-	DisplayServer::get_singleton()->window_set_title(title, window_id);
+	DisplayServer::get_singleton()->window_set_title(tr(title), window_id);
 	DisplayServer::get_singleton()->window_attach_instance_id(get_instance_id(), window_id);
 
 	_update_window_size();
@@ -759,6 +759,10 @@ void Window::_notification(int p_what) {
 		}
 	}
 
+	if (p_what == NOTIFICATION_TRANSLATION_CHANGED) {
+		child_controls_changed();
+	}
+
 	if (p_what == NOTIFICATION_EXIT_TREE) {
 		if (transient) {
 			_clear_transient();
@@ -893,12 +897,13 @@ void Window::_window_input(const Ref<InputEvent> &p_ev) {
 	}
 
 	if (exclusive_child != nullptr) {
+		/*
 		Window *focus_target = exclusive_child;
 		focus_target->grab_focus();
 		while (focus_target->exclusive_child != nullptr) {
 			focus_target = focus_target->exclusive_child;
 			focus_target->grab_focus();
-		}
+		}*/
 
 		if (!is_embedding_subwindows()) { //not embedding, no need for event
 			return;

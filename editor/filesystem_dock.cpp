@@ -944,8 +944,41 @@ void FileSystemDock::_select_file(const String &p_path, bool p_select_in_favorit
 			fpath = fpath.substr(0, fpath.length() - 1);
 		}
 	} else if (fpath != "Favorites") {
+		if (FileAccess::exists(fpath + ".import")) {
+			Ref<ConfigFile> config;
+			config.instance();
+			Error err = config->load(fpath + ".import");
+			if (err == OK) {
+				if (config->has_section_key("remap", "importer")) {
+					String importer = config->get_value("remap", "importer");
+					if (importer == "keep") {
+						EditorNode::get_singleton()->show_warning(TTR("Importing has been disabled for this file, so it can't be opened for editing."));
+						return;
+					}
+				}
+			}
+		}
+
 		if (ResourceLoader::get_resource_type(fpath) == "PackedScene") {
-			editor->open_request(fpath);
+			bool is_imported = false;
+
+			{
+				List<String> importer_exts;
+				ResourceImporterScene::get_singleton()->get_recognized_extensions(&importer_exts);
+				String extension = fpath.get_extension();
+				for (List<String>::Element *E = importer_exts.front(); E; E = E->next()) {
+					if (extension.nocasecmp_to(E->get())) {
+						is_imported = true;
+						break;
+					}
+				}
+			}
+
+			if (is_imported) {
+				ResourceImporterScene::get_singleton()->show_advanced_options(fpath);
+			} else {
+				editor->open_request(fpath);
+			}
 		} else {
 			editor->load_resource(fpath);
 		}
@@ -2626,7 +2659,10 @@ void FileSystemDock::_update_import_dock() {
 			break;
 		}
 
-		String type = cf->get_value("remap", "type");
+		String type;
+		if (cf->has_section_key("remap", "type")) {
+			type = cf->get_value("remap", "type");
+		}
 		if (import_type == "") {
 			import_type = type;
 		} else if (import_type != type) {

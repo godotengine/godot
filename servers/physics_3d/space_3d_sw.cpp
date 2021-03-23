@@ -47,6 +47,10 @@ _FORCE_INLINE_ static bool _can_collide_with(CollisionObject3DSW *p_object, uint
 		return false;
 	}
 
+	if (p_object->get_type() == CollisionObject3DSW::TYPE_SOFT_BODY && !p_collide_with_bodies) {
+		return false;
+	}
+
 	return true;
 }
 
@@ -332,7 +336,8 @@ bool PhysicsDirectSpaceState3DSW::cast_motion(const RID &p_shape, const Transfor
 			best_first = false;
 			if (col_obj->get_type() == CollisionObject3DSW::TYPE_BODY) {
 				const Body3DSW *body = static_cast<const Body3DSW *>(col_obj);
-				r_info->linear_velocity = body->get_linear_velocity() + (body->get_angular_velocity()).cross(body->get_transform().origin - closest_B);
+				Vector3 rel_vec = closest_B - (body->get_transform().origin + body->get_center_of_mass());
+				r_info->linear_velocity = body->get_linear_velocity() + (body->get_angular_velocity()).cross(rel_vec);
 			}
 		}
 	}
@@ -407,7 +412,7 @@ struct _RestCallbackData {
 	real_t min_allowed_depth;
 };
 
-static void _rest_cbk_result(const Vector3 &p_point_A, const Vector3 &p_point_B, void *p_userdata) {
+static void _rest_cbk_result(const Vector3 &p_point_A, int p_index_A, const Vector3 &p_point_B, int p_index_B, void *p_userdata) {
 	_RestCallbackData *rd = (_RestCallbackData *)p_userdata;
 
 	Vector3 contact_rel = p_point_B - p_point_A;
@@ -478,8 +483,8 @@ bool PhysicsDirectSpaceState3DSW::rest_info(RID p_shape, const Transform &p_shap
 	r_info->rid = rcd.best_object->get_self();
 	if (rcd.best_object->get_type() == CollisionObject3DSW::TYPE_BODY) {
 		const Body3DSW *body = static_cast<const Body3DSW *>(rcd.best_object);
-		r_info->linear_velocity = body->get_linear_velocity() +
-								  (body->get_angular_velocity()).cross(body->get_transform().origin - rcd.best_contact); // * mPos);
+		Vector3 rel_vec = rcd.best_contact - (body->get_transform().origin + body->get_center_of_mass());
+		r_info->linear_velocity = body->get_linear_velocity() + (body->get_angular_velocity()).cross(rel_vec);
 
 	} else {
 		r_info->linear_velocity = Vector3();
@@ -543,6 +548,8 @@ int Space3DSW::_cull_aabb_for_body(Body3DSW *p_body, const AABB &p_aabb) {
 		if (intersection_query_results[i] == p_body) {
 			keep = false;
 		} else if (intersection_query_results[i]->get_type() == CollisionObject3DSW::TYPE_AREA) {
+			keep = false;
+		} else if (intersection_query_results[i]->get_type() == CollisionObject3DSW::TYPE_SOFT_BODY) {
 			keep = false;
 		} else if ((static_cast<Body3DSW *>(intersection_query_results[i])->test_collision_mask(p_body)) == 0) {
 			keep = false;
@@ -684,10 +691,8 @@ int Space3DSW::test_body_ray_separation(Body3DSW *p_body, const Transform &p_tra
 									//result.collider_metadata = col_obj->get_shape_metadata(shape_idx);
 									if (col_obj->get_type() == CollisionObject3DSW::TYPE_BODY) {
 										Body3DSW *body = (Body3DSW *)col_obj;
-
-										Vector3 rel_vec = b - body->get_transform().get_origin();
-										//result.collider_velocity = Vector3(-body->get_angular_velocity() * rel_vec.y, body->get_angular_velocity() * rel_vec.x) + body->get_linear_velocity();
-										result.collider_velocity = body->get_linear_velocity() + (body->get_angular_velocity()).cross(body->get_transform().origin - rel_vec); // * mPos);
+										Vector3 rel_vec = b - (body->get_transform().origin + body->get_center_of_mass());
+										result.collider_velocity = body->get_linear_velocity() + (body->get_angular_velocity()).cross(rel_vec);
 									}
 								}
 							}
@@ -1009,9 +1014,9 @@ bool Space3DSW::test_body_motion(Body3DSW *p_body, const Transform &p_from, cons
 				//r_result->collider_metadata = rcd.best_object->get_shape_metadata(rcd.best_shape);
 
 				const Body3DSW *body = static_cast<const Body3DSW *>(rcd.best_object);
-				//Vector3 rel_vec = r_result->collision_point - body->get_transform().get_origin();
-				//				r_result->collider_velocity = Vector3(-body->get_angular_velocity() * rel_vec.y, body->get_angular_velocity() * rel_vec.x) + body->get_linear_velocity();
-				r_result->collider_velocity = body->get_linear_velocity() + (body->get_angular_velocity()).cross(body->get_transform().origin - rcd.best_contact); // * mPos);
+
+				Vector3 rel_vec = rcd.best_contact - (body->get_transform().origin + body->get_center_of_mass());
+				r_result->collider_velocity = body->get_linear_velocity() + (body->get_angular_velocity()).cross(rel_vec);
 
 				r_result->motion = safe * p_motion;
 				r_result->remainder = p_motion - safe * p_motion;
@@ -1054,14 +1059,23 @@ void *Space3DSW::_broadphase_pair(CollisionObject3DSW *A, int p_subindex_A, Coll
 			Area3DSW *area_b = static_cast<Area3DSW *>(B);
 			Area2Pair3DSW *area2_pair = memnew(Area2Pair3DSW(area_b, p_subindex_B, area, p_subindex_A));
 			return area2_pair;
+		} else if (type_B == CollisionObject3DSW::TYPE_SOFT_BODY) {
+			// Area/Soft Body, not supported.
 		} else {
 			Body3DSW *body = static_cast<Body3DSW *>(B);
 			AreaPair3DSW *area_pair = memnew(AreaPair3DSW(body, p_subindex_B, area, p_subindex_A));
 			return area_pair;
 		}
+	} else if (type_A == CollisionObject3DSW::TYPE_BODY) {
+		if (type_B == CollisionObject3DSW::TYPE_SOFT_BODY) {
+			BodySoftBodyPair3DSW *soft_pair = memnew(BodySoftBodyPair3DSW((Body3DSW *)A, p_subindex_A, (SoftBody3DSW *)B));
+			return soft_pair;
+		} else {
+			BodyPair3DSW *b = memnew(BodyPair3DSW((Body3DSW *)A, p_subindex_A, (Body3DSW *)B, p_subindex_B));
+			return b;
+		}
 	} else {
-		BodyPair3DSW *b = memnew(BodyPair3DSW((Body3DSW *)A, p_subindex_A, (Body3DSW *)B, p_subindex_B));
-		return b;
+		// Soft Body/Soft Body, not supported.
 	}
 
 	return nullptr;
@@ -1142,6 +1156,18 @@ void Space3DSW::area_remove_from_moved_list(SelfList<Area3DSW> *p_area) {
 
 const SelfList<Area3DSW>::List &Space3DSW::get_moved_area_list() const {
 	return area_moved_list;
+}
+
+const SelfList<SoftBody3DSW>::List &Space3DSW::get_active_soft_body_list() const {
+	return active_soft_body_list;
+}
+
+void Space3DSW::soft_body_add_to_active_list(SelfList<SoftBody3DSW> *p_soft_body) {
+	active_soft_body_list.add(p_soft_body);
+}
+
+void Space3DSW::soft_body_remove_from_active_list(SelfList<SoftBody3DSW> *p_soft_body) {
+	active_soft_body_list.remove(p_soft_body);
 }
 
 void Space3DSW::call_queries() {

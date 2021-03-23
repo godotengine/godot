@@ -189,19 +189,19 @@ EM_BOOL DisplayServerJavaScript::mouse_button_callback(int p_event_type, const E
 
 	switch (p_event->button) {
 		case DOM_BUTTON_LEFT:
-			ev->set_button_index(BUTTON_LEFT);
+			ev->set_button_index(MOUSE_BUTTON_LEFT);
 			break;
 		case DOM_BUTTON_MIDDLE:
-			ev->set_button_index(BUTTON_MIDDLE);
+			ev->set_button_index(MOUSE_BUTTON_MIDDLE);
 			break;
 		case DOM_BUTTON_RIGHT:
-			ev->set_button_index(BUTTON_RIGHT);
+			ev->set_button_index(MOUSE_BUTTON_RIGHT);
 			break;
 		case DOM_BUTTON_XBUTTON1:
-			ev->set_button_index(BUTTON_XBUTTON1);
+			ev->set_button_index(MOUSE_BUTTON_XBUTTON1);
 			break;
 		case DOM_BUTTON_XBUTTON2:
-			ev->set_button_index(BUTTON_XBUTTON2);
+			ev->set_button_index(MOUSE_BUTTON_XBUTTON2);
 			break;
 		default:
 			return false;
@@ -461,13 +461,13 @@ EM_BOOL DisplayServerJavaScript::wheel_callback(int p_event_type, const Emscript
 	ev->set_metakey(input->is_key_pressed(KEY_META));
 
 	if (p_event->deltaY < 0)
-		ev->set_button_index(BUTTON_WHEEL_UP);
+		ev->set_button_index(MOUSE_BUTTON_WHEEL_UP);
 	else if (p_event->deltaY > 0)
-		ev->set_button_index(BUTTON_WHEEL_DOWN);
+		ev->set_button_index(MOUSE_BUTTON_WHEEL_DOWN);
 	else if (p_event->deltaX > 0)
-		ev->set_button_index(BUTTON_WHEEL_LEFT);
+		ev->set_button_index(MOUSE_BUTTON_WHEEL_LEFT);
 	else if (p_event->deltaX < 0)
-		ev->set_button_index(BUTTON_WHEEL_RIGHT);
+		ev->set_button_index(MOUSE_BUTTON_WHEEL_RIGHT);
 	else
 		return false;
 
@@ -601,7 +601,7 @@ void DisplayServerJavaScript::process_joypads() {
 			// Buttons 6 and 7 in the standard mapping need to be
 			// axis to be handled as JOY_AXIS_TRIGGER by Godot.
 			if (s_standard && (b == 6 || b == 7)) {
-				Input::JoyAxis joy_axis;
+				Input::JoyAxisValue joy_axis;
 				joy_axis.min = 0;
 				joy_axis.value = value;
 				int a = b == 6 ? JOY_AXIS_TRIGGER_LEFT : JOY_AXIS_TRIGGER_RIGHT;
@@ -611,7 +611,7 @@ void DisplayServerJavaScript::process_joypads() {
 			}
 		}
 		for (int a = 0; a < s_axes_num; a++) {
-			Input::JoyAxis joy_axis;
+			Input::JoyAxisValue joy_axis;
 			joy_axis.min = -1;
 			joy_axis.value = s_axes[a];
 			input->joy_axis(idx, a, joy_axis);

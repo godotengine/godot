@@ -115,7 +115,7 @@ opts.Add(BoolVariable("tools", "Build the tools (a.k.a. the Godot editor)", True
 opts.Add(EnumVariable("target", "Compilation target", "debug", ("debug", "release_debug", "release")))
 opts.Add("arch", "Platform-dependent architecture (arm/arm64/x86/x64/mips/...)", "")
 opts.Add(EnumVariable("bits", "Target platform bits", "default", ("default", "32", "64")))
-opts.Add(EnumVariable("optimize", "Optimization type", "speed", ("speed", "size")))
+opts.Add(EnumVariable("optimize", "Optimization type", "speed", ("speed", "size", "none")))
 opts.Add(BoolVariable("production", "Set defaults to build Godot for use in production", False))
 opts.Add(BoolVariable("use_lto", "Use link-time optimization", False))
 
@@ -301,10 +301,6 @@ if env_base["target"] == "debug":
     # Use cached implicit dependencies by default. Can be overridden by specifying `--implicit-deps-changed` in the command line.
     # http://scons.org/doc/production/HTML/scons-user/ch06s04.html
     env_base.SetOption("implicit_cache", 1)
-
-if not env_base["tools"]:
-    # Export templates can't run unit test tool.
-    env_base["tests"] = False
 
 if env_base["no_editor_splash"]:
     env_base.Append(CPPDEFINES=["NO_EDITOR_SPLASH"])

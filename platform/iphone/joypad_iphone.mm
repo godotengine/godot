@@ -287,7 +287,7 @@ void JoypadIPhone::start_processing() {
 						gamepad.dpad.right.isPressed);
 			};
 
-			Input::JoyAxis jx;
+			Input::JoyAxisValue jx;
 			jx.min = -1;
 			if (element == gamepad.leftThumbstick) {
 				jx.value = gamepad.leftThumbstick.xAxis.value;

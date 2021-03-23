@@ -417,6 +417,7 @@ void FBXMeshData::sanitize_vertex_weights(const ImportState &state) {
 
 	int bind_id = 0;
 	for (const FBXDocParser::Cluster *cluster : fbx_skin->Clusters()) {
+		ERR_CONTINUE_MSG(!state.fbx_bone_map.has(cluster->TargetNode()->ID()), "Missing bone map for cluster target node with id " + uitos(cluster->TargetNode()->ID()) + ".");
 		Ref<FBXBone> bone = state.fbx_bone_map[cluster->TargetNode()->ID()];
 		skeleton_to_skin_bind_id.insert(bone->godot_bone_id, bind_id);
 		bind_id++;
