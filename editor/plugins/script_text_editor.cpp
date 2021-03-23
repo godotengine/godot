@@ -1517,9 +1517,19 @@ void ScriptTextEditor::_text_edit_gui_input(const Ref<InputEvent> &ev) {
 	bool create_menu = false;
 
 	CodeEdit *tx = code_editor->get_text_editor();
-	if (mb.is_valid() && mb->get_button_index() == BUTTON_RIGHT && mb->is_pressed()) {
-		local_pos = mb->get_global_position() - tx->get_global_position();
-		create_menu = true;
+	if (mb.is_valid() && mb->is_pressed()) {
+		switch (mb->get_button_index()) {
+			case BUTTON_RIGHT: {
+				local_pos = mb->get_global_position() - tx->get_global_position();
+				create_menu = true;
+			} break;
+			case BUTTON_XBUTTON1: {
+				ScriptEditor::get_singleton()->_go_to_prev_script();
+			} break;
+			case BUTTON_XBUTTON2: {
+				ScriptEditor::get_singleton()->_go_to_next_script();
+			} break;
+		}
 	} else if (k.is_valid() && k->get_keycode() == KEY_MENU) {
 		local_pos = tx->_get_cursor_pixel_pos();
 		create_menu = true;
