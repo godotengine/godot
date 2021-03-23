@@ -2949,7 +2949,7 @@ bool Viewport::_sub_windows_forward_input(const Ref<InputEvent> &p_event) {
 					}
 
 					gui.subwindow_drag_from = mb->get_position();
-					gui.subwindow_drag_pos = gui.subwindow_focused->get_position();;
+					gui.subwindow_drag_pos = gui.subwindow_focused->get_position();
 
 					_sub_window_update(sw.window);
 				} else {
