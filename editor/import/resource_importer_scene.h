@@ -121,6 +121,7 @@ class ResourceImporterScene : public ResourceImporter {
 	};
 
 	void _replace_owner(Node *p_node, Node *p_scene, Node *p_new_owner);
+	void _add_shapes(Node *p_node, const List<Ref<Shape> > &p_shapes);
 
 public:
 	static ResourceImporterScene *get_singleton() { return singleton; }

@@ -411,17 +411,7 @@ Node *ResourceImporterScene::_fix_node(Node *p_node, Node *p_root, Map<Ref<Mesh>
 					memdelete(p_node);
 					p_node = col;
 
-					int idx = 0;
-					for (List<Ref<Shape> >::Element *E = shapes.front(); E; E = E->next()) {
-
-						CollisionShape *cshape = memnew(CollisionShape);
-						cshape->set_shape(E->get());
-						col->add_child(cshape);
-
-						cshape->set_name("shape" + itos(idx));
-						cshape->set_owner(col->get_owner());
-						idx++;
-					}
+					_add_shapes(col, shapes);
 				}
 			}
 
@@ -485,17 +475,7 @@ Node *ResourceImporterScene::_fix_node(Node *p_node, Node *p_root, Map<Ref<Mesh>
 			rigid_body->add_child(mi);
 			mi->set_owner(rigid_body->get_owner());
 
-			int idx = 0;
-			for (List<Ref<Shape> >::Element *E = shapes.front(); E; E = E->next()) {
-
-				CollisionShape *cshape = memnew(CollisionShape);
-				cshape->set_shape(E->get());
-				rigid_body->add_child(cshape);
-
-				cshape->set_name("shape" + itos(idx));
-				cshape->set_owner(p_node->get_owner());
-				idx++;
-			}
+			_add_shapes(rigid_body, shapes);
 		}
 
 	} else if ((_teststr(name, "col") || (_teststr(name, "convcol"))) && Object::cast_to<MeshInstance>(p_node)) {
@@ -535,18 +515,7 @@ Node *ResourceImporterScene::_fix_node(Node *p_node, Node *p_root, Map<Ref<Mesh>
 				mi->add_child(col);
 				col->set_owner(mi->get_owner());
 
-				int idx = 0;
-				for (List<Ref<Shape> >::Element *E = shapes.front(); E; E = E->next()) {
-
-					CollisionShape *cshape = memnew(CollisionShape);
-					cshape->set_shape(E->get());
-					col->add_child(cshape);
-
-					cshape->set_name("shape" + itos(idx));
-					cshape->set_owner(p_node->get_owner());
-
-					idx++;
-				}
+				_add_shapes(col, shapes);
 			}
 		}
 
@@ -637,17 +606,7 @@ Node *ResourceImporterScene::_fix_node(Node *p_node, Node *p_root, Map<Ref<Mesh>
 				p_node->add_child(col);
 				col->set_owner(p_node->get_owner());
 
-				int idx = 0;
-				for (List<Ref<Shape> >::Element *E = shapes.front(); E; E = E->next()) {
-
-					CollisionShape *cshape = memnew(CollisionShape);
-					cshape->set_shape(E->get());
-					col->add_child(cshape);
-
-					cshape->set_name("shape" + itos(idx));
-					cshape->set_owner(p_node->get_owner());
-					idx++;
-				}
+				_add_shapes(col, shapes);
 			}
 		}
 	}
@@ -1197,6 +1156,19 @@ void ResourceImporterScene::_replace_owner(Node *p_node, Node *p_scene, Node *p_
 	for (int i = 0; i < p_node->get_child_count(); i++) {
 		Node *n = p_node->get_child(i);
 		_replace_owner(n, p_scene, p_new_owner);
+	}
+}
+
+void ResourceImporterScene::_add_shapes(Node *p_node, const List<Ref<Shape> > &p_shapes) {
+	int idx = 0;
+	for (const List<Ref<Shape> >::Element *E = p_shapes.front(); E; E = E->next()) {
+		CollisionShape *cshape = memnew(CollisionShape);
+		cshape->set_shape(E->get());
+		p_node->add_child(cshape);
+
+		cshape->set_name("shape" + itos(idx));
+		cshape->set_owner(p_node->get_owner());
+		idx++;
 	}
 }
 
