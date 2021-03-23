@@ -92,7 +92,6 @@
 #include "editor/filesystem_dock.h"
 #include "editor/import/editor_import_collada.h"
 #include "editor/import/resource_importer_bitmask.h"
-#include "editor/import/resource_importer_csv.h"
 #include "editor/import/resource_importer_csv_translation.h"
 #include "editor/import/resource_importer_image.h"
 #include "editor/import/resource_importer_layered_texture.h"
@@ -5778,10 +5777,6 @@ EditorNode::EditorNode() {
 		Ref<ResourceImporterCSVTranslation> import_csv_translation;
 		import_csv_translation.instance();
 		ResourceFormatImporter::get_singleton()->add_importer(import_csv_translation);
-
-		Ref<ResourceImporterCSV> import_csv;
-		import_csv.instance();
-		ResourceFormatImporter::get_singleton()->add_importer(import_csv);
 
 		Ref<ResourceImporterWAV> import_wav;
 		import_wav.instance();
