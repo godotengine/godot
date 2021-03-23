@@ -561,7 +561,9 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	style_tab_disabled->set_border_color(disabled_color);
 
 	// Editor background
-	theme->set_stylebox("Background", "EditorStyles", make_flat_stylebox(background_color, default_margin_size, default_margin_size, default_margin_size, default_margin_size));
+	Color background_color_opaque = background_color;
+	background_color_opaque.a = 1.0;
+	theme->set_stylebox("Background", "EditorStyles", make_flat_stylebox(background_color_opaque, default_margin_size, default_margin_size, default_margin_size, default_margin_size));
 
 	// Focus
 	Ref<StyleBoxFlat> style_focus = style_default->duplicate();
