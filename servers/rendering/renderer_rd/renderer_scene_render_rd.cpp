@@ -522,9 +522,13 @@ RID RendererSceneRenderRD::reflection_atlas_create() {
 	ra.count = GLOBAL_GET("rendering/reflections/reflection_atlas/reflection_count");
 	ra.size = GLOBAL_GET("rendering/reflections/reflection_atlas/reflection_size");
 
-	ra.cluster_builder = memnew(ClusterBuilderRD);
-	ra.cluster_builder->set_shared(&cluster_builder_shared);
-	ra.cluster_builder->setup(Size2i(ra.size, ra.size), max_cluster_elements, RID(), RID(), RID());
+	if (is_clustered_enabled()) {
+		ra.cluster_builder = memnew(ClusterBuilderRD);
+		ra.cluster_builder->set_shared(&cluster_builder_shared);
+		ra.cluster_builder->setup(Size2i(ra.size, ra.size), max_cluster_elements, RID(), RID(), RID());
+	} else {
+		ra.cluster_builder = nullptr;
+	}
 
 	return reflection_atlas_owner.make_rid(ra);
 }
@@ -537,7 +541,10 @@ void RendererSceneRenderRD::reflection_atlas_set_size(RID p_ref_atlas, int p_ref
 		return; //no changes
 	}
 
-	ra->cluster_builder->setup(Size2i(ra->size, ra->size), max_cluster_elements, RID(), RID(), RID());
+	if (ra->cluster_builder) {
+		// only if we're using our cluster
+		ra->cluster_builder->setup(Size2i(ra->size, ra->size), max_cluster_elements, RID(), RID(), RID());
+	}
 
 	ra->size = p_reflection_size;
 	ra->count = p_reflection_count;
@@ -2124,10 +2131,13 @@ void RendererSceneRenderRD::render_buffers_configure(RID p_render_buffers, RID p
 	rb->msaa = p_msaa;
 	rb->screen_space_aa = p_screen_space_aa;
 	rb->use_debanding = p_use_debanding;
-	if (rb->cluster_builder == nullptr) {
-		rb->cluster_builder = memnew(ClusterBuilderRD);
+
+	if (is_clustered_enabled()) {
+		if (rb->cluster_builder == nullptr) {
+			rb->cluster_builder = memnew(ClusterBuilderRD);
+		}
+		rb->cluster_builder->set_shared(&cluster_builder_shared);
 	}
-	rb->cluster_builder->set_shared(&cluster_builder_shared);
 
 	_free_render_buffer_data(rb);
 
@@ -2170,7 +2180,9 @@ void RendererSceneRenderRD::render_buffers_configure(RID p_render_buffers, RID p
 	rb->data->configure(rb->texture, rb->depth_texture, p_width, p_height, p_msaa);
 	_render_buffers_uniform_set_changed(p_render_buffers);
 
-	rb->cluster_builder->setup(Size2i(p_width, p_height), max_cluster_elements, rb->depth_texture, storage->sampler_rd_get_default(RS::CANVAS_ITEM_TEXTURE_FILTER_NEAREST, RS::CANVAS_ITEM_TEXTURE_REPEAT_DISABLED), rb->texture);
+	if (is_clustered_enabled()) {
+		rb->cluster_builder->setup(Size2i(p_width, p_height), max_cluster_elements, rb->depth_texture, storage->sampler_rd_get_default(RS::CANVAS_ITEM_TEXTURE_FILTER_NEAREST, RS::CANVAS_ITEM_TEXTURE_REPEAT_DISABLED), rb->texture);
+	}
 }
 
 void RendererSceneRenderRD::gi_set_use_half_resolution(bool p_enable) {
@@ -2943,6 +2955,7 @@ void RendererSceneRenderRD::_volumetric_fog_erase(RenderBuffers *rb) {
 }
 
 void RendererSceneRenderRD::_update_volumetric_fog(RID p_render_buffers, RID p_environment, const CameraMatrix &p_cam_projection, const Transform &p_cam_transform, RID p_shadow_atlas, int p_directional_light_count, bool p_use_directional_shadows, int p_positional_light_count, int p_gi_probe_count) {
+	ERR_FAIL_COND(!is_clustered_enabled()); // can't use volumetric fog without clustered
 	RenderBuffers *rb = render_buffers_owner.getornull(p_render_buffers);
 	ERR_FAIL_COND(!rb);
 	RendererSceneEnvironmentRD *env = environment_owner.getornull(p_environment);
@@ -3505,7 +3518,9 @@ void RendererSceneRenderRD::_pre_opaque_render(bool p_use_ssao, bool p_use_gi, R
 				break;
 			}
 		}
-		_update_volumetric_fog(render_state.render_buffers, render_state.environment, render_state.cam_projection, render_state.cam_transform, render_state.shadow_atlas, directional_light_count, directional_shadows, positional_light_count, render_state.gi_probe_count);
+		if (is_volumetric_supported()) {
+			_update_volumetric_fog(render_state.render_buffers, render_state.environment, render_state.cam_projection, render_state.cam_transform, render_state.shadow_atlas, directional_light_count, directional_shadows, positional_light_count, render_state.gi_probe_count);
+		}
 	}
 }
 
@@ -3578,8 +3593,8 @@ void RendererSceneRenderRD::render_scene(RID p_render_buffers, const Transform &
 	}
 
 	if (render_buffers_owner.owns(render_state.render_buffers)) {
-		RenderBuffers *rs_rb = render_buffers_owner.getornull(render_state.render_buffers);
-		current_cluster_builder = rs_rb->cluster_builder;
+		// render_state.render_buffers == p_render_buffers so we can use our already retrieved rb
+		current_cluster_builder = rb->cluster_builder;
 	} else if (reflection_probe_instance_owner.owns(render_state.reflection_probe)) {
 		ReflectionProbeInstance *rpi = reflection_probe_instance_owner.getornull(render_state.reflection_probe);
 		ReflectionAtlas *ra = reflection_atlas_owner.getornull(rpi->atlas);
@@ -3590,7 +3605,7 @@ void RendererSceneRenderRD::render_scene(RID p_render_buffers, const Transform &
 			current_cluster_builder = ra->cluster_builder;
 		}
 	} else {
-		ERR_PRINT("No cluster builder, bug"); //should never happen, will crash
+		ERR_PRINT("No render buffer nor reflection atlas, bug"); //should never happen, will crash
 		current_cluster_builder = nullptr;
 	}
 
@@ -4077,7 +4092,23 @@ int RendererSceneRenderRD::get_max_directional_lights() const {
 }
 
 bool RendererSceneRenderRD::is_low_end() const {
-	return low_end;
+	// by default we switch this on this (may be ignored in some implementations)
+	return GLOBAL_GET("rendering/driver/rd_renderer/use_low_end_renderer");
+}
+
+bool RendererSceneRenderRD::is_dynamic_gi_supported() const {
+	// usable by default (unless low end = true)
+	return true;
+}
+
+bool RendererSceneRenderRD::is_clustered_enabled() const {
+	// used by default.
+	return true;
+}
+
+bool RendererSceneRenderRD::is_volumetric_supported() const {
+	// usable by default (unless low end = true)
+	return true;
 }
 
 RendererSceneRenderRD::RendererSceneRenderRD(RendererStorageRD *p_storage) {
@@ -4091,7 +4122,7 @@ RendererSceneRenderRD::RendererSceneRenderRD(RendererStorageRD *p_storage) {
 
 	uint32_t textures_per_stage = RD::get_singleton()->limit_get(RD::LIMIT_MAX_TEXTURES_PER_SHADER_STAGE);
 
-	low_end = GLOBAL_GET("rendering/driver/rd_renderer/use_low_end_renderer");
+	low_end = is_low_end();
 
 	if (textures_per_stage < 48) {
 		low_end = true;
@@ -4103,7 +4134,7 @@ RendererSceneRenderRD::RendererSceneRenderRD(RendererStorageRD *p_storage) {
 
 	/* GI */
 
-	if (!low_end) {
+	if (!low_end && is_dynamic_gi_supported()) {
 		gi.init(storage, &sky);
 	}
 
@@ -4141,7 +4172,7 @@ RendererSceneRenderRD::RendererSceneRenderRD(RendererStorageRD *p_storage) {
 		cluster.directional_light_buffer = RD::get_singleton()->uniform_buffer_create(directional_light_buffer_size);
 	}
 
-	if (!low_end) {
+	if (!low_end && is_volumetric_supported()) {
 		String defines = "\n#define MAX_DIRECTIONAL_LIGHT_DATA_STRUCTS " + itos(cluster.max_directional_lights) + "\n";
 		Vector<String> volumetric_fog_modes;
 		volumetric_fog_modes.push_back("\n#define MODE_DENSITY\n");
@@ -4188,8 +4219,6 @@ RendererSceneRenderRD::RendererSceneRenderRD(RendererStorageRD *p_storage) {
 	environment_set_volumetric_fog_filter_active(GLOBAL_GET("rendering/environment/volumetric_fog/use_filter"));
 
 	cull_argument.set_page_pool(&cull_argument_pool);
-
-	gi.half_resolution = GLOBAL_GET("rendering/global_illumination/gi/use_half_resolution");
 }
 
 RendererSceneRenderRD::~RendererSceneRenderRD() {

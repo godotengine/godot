@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  renderer_scene_render_forward_clustered.h                            */
+/*  render_forward_clustered.h                                           */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -32,12 +32,17 @@
 #define RENDERING_SERVER_SCENE_RENDER_FORWARD_CLUSTERED_H
 
 #include "core/templates/paged_allocator.h"
+#include "servers/rendering/renderer_rd/forward_clustered/scene_shader_forward_clustered.h"
 #include "servers/rendering/renderer_rd/pipeline_cache_rd.h"
 #include "servers/rendering/renderer_rd/renderer_scene_render_rd.h"
 #include "servers/rendering/renderer_rd/renderer_storage_rd.h"
 #include "servers/rendering/renderer_rd/shaders/scene_forward_clustered.glsl.gen.h"
 
-class RendererSceneRenderForwardClustered : public RendererSceneRenderRD {
+namespace RendererSceneRenderImplementation {
+
+class RenderForwardClustered : public RendererSceneRenderRD {
+	friend SceneShaderForwardClustered;
+
 	enum {
 		SCENE_UNIFORM_SET = 0,
 		RENDER_PASS_UNIFORM_SET = 1,
@@ -63,155 +68,11 @@ class RendererSceneRenderForwardClustered : public RendererSceneRenderRD {
 
 	/* Scene Shader */
 
-	enum ShaderVersion {
-		SHADER_VERSION_DEPTH_PASS,
-		SHADER_VERSION_DEPTH_PASS_DP,
-		SHADER_VERSION_DEPTH_PASS_WITH_NORMAL_AND_ROUGHNESS,
-		SHADER_VERSION_DEPTH_PASS_WITH_NORMAL_AND_ROUGHNESS_AND_GIPROBE,
-		SHADER_VERSION_DEPTH_PASS_WITH_MATERIAL,
-		SHADER_VERSION_DEPTH_PASS_WITH_SDF,
-		SHADER_VERSION_COLOR_PASS,
-		SHADER_VERSION_COLOR_PASS_WITH_FORWARD_GI,
-		SHADER_VERSION_COLOR_PASS_WITH_SEPARATE_SPECULAR,
-		SHADER_VERSION_LIGHTMAP_COLOR_PASS,
-		SHADER_VERSION_LIGHTMAP_COLOR_PASS_WITH_SEPARATE_SPECULAR,
-		SHADER_VERSION_MAX
-	};
-
-	struct {
-		SceneForwardClusteredShaderRD scene_shader;
-		ShaderCompilerRD compiler;
-	} shader;
-
-	/* Material */
-
-	struct ShaderData : public RendererStorageRD::ShaderData {
-		enum BlendMode { //used internally
-			BLEND_MODE_MIX,
-			BLEND_MODE_ADD,
-			BLEND_MODE_SUB,
-			BLEND_MODE_MUL,
-			BLEND_MODE_ALPHA_TO_COVERAGE
-		};
-
-		enum DepthDraw {
-			DEPTH_DRAW_DISABLED,
-			DEPTH_DRAW_OPAQUE,
-			DEPTH_DRAW_ALWAYS
-		};
-
-		enum DepthTest {
-			DEPTH_TEST_DISABLED,
-			DEPTH_TEST_ENABLED
-		};
-
-		enum Cull {
-			CULL_DISABLED,
-			CULL_FRONT,
-			CULL_BACK
-		};
-
-		enum CullVariant {
-			CULL_VARIANT_NORMAL,
-			CULL_VARIANT_REVERSED,
-			CULL_VARIANT_DOUBLE_SIDED,
-			CULL_VARIANT_MAX
-
-		};
-
-		enum AlphaAntiAliasing {
-			ALPHA_ANTIALIASING_OFF,
-			ALPHA_ANTIALIASING_ALPHA_TO_COVERAGE,
-			ALPHA_ANTIALIASING_ALPHA_TO_COVERAGE_AND_TO_ONE
-		};
-
-		bool valid;
-		RID version;
-		uint32_t vertex_input_mask;
-		PipelineCacheRD pipelines[CULL_VARIANT_MAX][RS::PRIMITIVE_MAX][SHADER_VERSION_MAX];
-
-		String path;
-
-		Map<StringName, ShaderLanguage::ShaderNode::Uniform> uniforms;
-		Vector<ShaderCompilerRD::GeneratedCode::Texture> texture_uniforms;
-
-		Vector<uint32_t> ubo_offsets;
-		uint32_t ubo_size;
-
-		String code;
-		Map<StringName, RID> default_texture_params;
-
-		DepthDraw depth_draw;
-		DepthTest depth_test;
-
-		bool uses_point_size;
-		bool uses_alpha;
-		bool uses_blend_alpha;
-		bool uses_alpha_clip;
-		bool uses_depth_pre_pass;
-		bool uses_discard;
-		bool uses_roughness;
-		bool uses_normal;
-
-		bool unshaded;
-		bool uses_vertex;
-		bool uses_sss;
-		bool uses_transmittance;
-		bool uses_screen_texture;
-		bool uses_depth_texture;
-		bool uses_normal_texture;
-		bool uses_time;
-		bool writes_modelview_or_projection;
-		bool uses_world_coordinates;
-
-		uint64_t last_pass = 0;
-		uint32_t index = 0;
-
-		virtual void set_code(const String &p_Code);
-		virtual void set_default_texture_param(const StringName &p_name, RID p_texture);
-		virtual void get_param_list(List<PropertyInfo> *p_param_list) const;
-		void get_instance_param_list(List<RendererStorage::InstanceShaderParam> *p_param_list) const;
-
-		virtual bool is_param_texture(const StringName &p_param) const;
-		virtual bool is_animated() const;
-		virtual bool casts_shadows() const;
-		virtual Variant get_default_parameter(const StringName &p_parameter) const;
-		virtual RS::ShaderNativeSourceCode get_native_source_code() const;
-
-		ShaderData();
-		virtual ~ShaderData();
-	};
-
-	RendererStorageRD::ShaderData *_create_shader_func();
-	static RendererStorageRD::ShaderData *_create_shader_funcs() {
-		return static_cast<RendererSceneRenderForwardClustered *>(singleton)->_create_shader_func();
-	}
-
-	struct MaterialData : public RendererStorageRD::MaterialData {
-		uint64_t last_frame;
-		ShaderData *shader_data;
-		RID uniform_buffer;
-		RID uniform_set;
-		Vector<RID> texture_cache;
-		Vector<uint8_t> ubo_data;
-		uint64_t last_pass = 0;
-		uint32_t index = 0;
-		RID next_pass;
-		uint8_t priority;
-		virtual void set_render_priority(int p_priority);
-		virtual void set_next_pass(RID p_pass);
-		virtual void update_parameters(const Map<StringName, Variant> &p_parameters, bool p_uniform_dirty, bool p_textures_dirty);
-		virtual ~MaterialData();
-	};
-
-	RendererStorageRD::MaterialData *_create_material_func(ShaderData *p_shader);
-	static RendererStorageRD::MaterialData *_create_material_funcs(RendererStorageRD::ShaderData *p_shader) {
-		return static_cast<RendererSceneRenderForwardClustered *>(singleton)->_create_material_func(static_cast<ShaderData *>(p_shader));
-	}
+	SceneShaderForwardClustered scene_shader;
 
 	/* Framebuffer */
 
-	struct RenderBufferDataForward : public RenderBufferData {
+	struct RenderBufferDataForwardClustered : public RenderBufferData {
 		//for rendering, may be MSAAd
 
 		RID color;
@@ -244,13 +105,12 @@ class RendererSceneRenderForwardClustered : public RendererSceneRenderRD {
 		void clear();
 		virtual void configure(RID p_color_buffer, RID p_depth_buffer, int p_width, int p_height, RS::ViewportMSAA p_msaa);
 
-		~RenderBufferDataForward();
+		~RenderBufferDataForwardClustered();
 	};
 
 	virtual RenderBufferData *_create_render_buffer_data();
-	void _allocate_normal_roughness_texture(RenderBufferDataForward *rb);
+	void _allocate_normal_roughness_texture(RenderBufferDataForwardClustered *rb);
 
-	RID shadow_sampler;
 	RID render_base_uniform_set;
 	LocalVector<RID> render_pass_uniform_sets;
 	RID sdfgi_pass_uniform_set;
@@ -258,7 +118,7 @@ class RendererSceneRenderForwardClustered : public RendererSceneRenderRD {
 	uint64_t lightmap_texture_array_version = 0xFFFFFFFF;
 
 	virtual void _base_uniforms_changed();
-	void _render_buffers_clear_uniform_set(RenderBufferDataForward *rb);
+	void _render_buffers_clear_uniform_set(RenderBufferDataForwardClustered *rb);
 	virtual void _render_buffers_uniform_set_changed(RID p_render_buffers);
 	virtual RID _render_buffers_get_normal_texture(RID p_render_buffers);
 
@@ -488,19 +348,7 @@ class RendererSceneRenderForwardClustered : public RendererSceneRenderRD {
 
 	} scene_state;
 
-	static RendererSceneRenderForwardClustered *singleton;
-
-	RID default_shader;
-	RID default_material;
-	RID overdraw_material_shader;
-	RID overdraw_material;
-	RID wireframe_material_shader;
-	RID wireframe_material;
-	RID default_shader_rd;
-	RID default_shader_sdfgi_rd;
-
-	RID default_vec4_xform_buffer;
-	RID default_vec4_xform_uniform_set;
+	static RenderForwardClustered *singleton;
 
 	void _setup_environment(RID p_environment, RID p_render_buffers, const CameraMatrix &p_cam_projection, const Transform &p_cam_transform, RID p_reflection_probe, bool p_no_fog, const Size2i &p_screen_size, uint32_t p_cluster_size, uint32_t p_max_cluster_elements, RID p_shadow_atlas, bool p_flip_y, const Color &p_default_bg_color, float p_znear, float p_zfar, bool p_opaque_render_buffers = false, bool p_pancake_shadows = false, int p_index = 0);
 	void _setup_giprobes(const PagedArray<RID> &p_giprobes);
@@ -578,11 +426,11 @@ class RendererSceneRenderForwardClustered : public RendererSceneRenderRD {
 
 		void *surface = nullptr;
 		RID material_uniform_set;
-		ShaderData *shader = nullptr;
+		SceneShaderForwardClustered::ShaderData *shader = nullptr;
 
 		void *surface_shadow = nullptr;
 		RID material_uniform_set_shadow;
-		ShaderData *shader_shadow = nullptr;
+		SceneShaderForwardClustered::ShaderData *shader_shadow = nullptr;
 
 		GeometryInstanceSurfaceDataCache *next = nullptr;
 		GeometryInstanceForwardClustered *owner = nullptr;
@@ -650,13 +498,11 @@ class RendererSceneRenderForwardClustered : public RendererSceneRenderRD {
 	PagedAllocator<GeometryInstanceSurfaceDataCache> geometry_instance_surface_alloc;
 	PagedAllocator<GeometryInstanceLightmapSH> geometry_instance_lightmap_sh;
 
-	void _geometry_instance_add_surface_with_material(GeometryInstanceForwardClustered *ginstance, uint32_t p_surface, MaterialData *p_material, uint32_t p_material_id, uint32_t p_shader_id, RID p_mesh);
+	void _geometry_instance_add_surface_with_material(GeometryInstanceForwardClustered *ginstance, uint32_t p_surface, SceneShaderForwardClustered::MaterialData *p_material, uint32_t p_material_id, uint32_t p_shader_id, RID p_mesh);
 	void _geometry_instance_add_surface(GeometryInstanceForwardClustered *ginstance, uint32_t p_surface, RID p_material, RID p_mesh);
 	void _geometry_instance_mark_dirty(GeometryInstance *p_geometry_instance);
 	void _geometry_instance_update(GeometryInstance *p_geometry_instance);
 	void _update_dirty_geometry_instances();
-
-	bool low_end = false;
 
 	/* Render List */
 
@@ -760,7 +606,8 @@ public:
 
 	virtual bool free(RID p_rid);
 
-	RendererSceneRenderForwardClustered(RendererStorageRD *p_storage);
-	~RendererSceneRenderForwardClustered();
+	RenderForwardClustered(RendererStorageRD *p_storage);
+	~RenderForwardClustered();
 };
+} // namespace RendererSceneRenderImplementation
 #endif // !RENDERING_SERVER_SCENE_RENDER_FORWARD_CLUSTERED_H

@@ -561,6 +561,9 @@ public:
 		RID full_buffer;
 		RID full_dispatch;
 		RID full_mask;
+
+		RID uniform_set;
+		bool using_half_size_gi = false;
 	};
 
 	struct SDFGIData {

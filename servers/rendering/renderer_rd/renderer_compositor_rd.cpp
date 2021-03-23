@@ -175,5 +175,5 @@ RendererCompositorRD::RendererCompositorRD() {
 
 	storage = memnew(RendererStorageRD);
 	canvas = memnew(RendererCanvasRenderRD(storage));
-	scene = memnew(RendererSceneRenderForwardClustered(storage));
+	scene = memnew(RendererSceneRenderImplementation::RenderForwardClustered(storage));
 }
