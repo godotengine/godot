@@ -1643,24 +1643,24 @@ void AnimationTimelineEdit::_play_position_draw() {
 void AnimationTimelineEdit::_gui_input(const Ref<InputEvent> &p_event) {
 	Ref<InputEventMouseButton> mb = p_event;
 
-	if (mb.is_valid() && mb->is_pressed() && mb->get_button_index() == BUTTON_LEFT && hsize_rect.has_point(mb->get_position())) {
+	if (mb.is_valid() && mb->is_pressed() && mb->get_button_index() == MOUSE_BUTTON_LEFT && hsize_rect.has_point(mb->get_position())) {
 		dragging_hsize = true;
 		dragging_hsize_from = mb->get_position().x;
 		dragging_hsize_at = name_limit;
 	}
 
-	if (mb.is_valid() && !mb->is_pressed() && mb->get_button_index() == BUTTON_LEFT && dragging_hsize) {
+	if (mb.is_valid() && !mb->is_pressed() && mb->get_button_index() == MOUSE_BUTTON_LEFT && dragging_hsize) {
 		dragging_hsize = false;
 	}
 	if (mb.is_valid() && mb->get_position().x > get_name_limit() && mb->get_position().x < (get_size().width - get_buttons_width())) {
-		if (!panning_timeline && mb->get_button_index() == BUTTON_LEFT) {
+		if (!panning_timeline && mb->get_button_index() == MOUSE_BUTTON_LEFT) {
 			int x = mb->get_position().x - get_name_limit();
 
 			float ofs = x / get_zoom_scale() + get_value();
 			emit_signal("timeline_changed", ofs, false);
 			dragging_timeline = true;
 		}
-		if (!dragging_timeline && mb->get_button_index() == BUTTON_MIDDLE) {
+		if (!dragging_timeline && mb->get_button_index() == MOUSE_BUTTON_MIDDLE) {
 			int x = mb->get_position().x - get_name_limit();
 			panning_timeline_from = x / get_zoom_scale();
 			panning_timeline = true;
@@ -1668,11 +1668,11 @@ void AnimationTimelineEdit::_gui_input(const Ref<InputEvent> &p_event) {
 		}
 	}
 
-	if (dragging_timeline && mb.is_valid() && mb->get_button_index() == BUTTON_LEFT && !mb->is_pressed()) {
+	if (dragging_timeline && mb.is_valid() && mb->get_button_index() == MOUSE_BUTTON_LEFT && !mb->is_pressed()) {
 		dragging_timeline = false;
 	}
 
-	if (panning_timeline && mb.is_valid() && mb->get_button_index() == BUTTON_MIDDLE && !mb->is_pressed()) {
+	if (panning_timeline && mb.is_valid() && mb->get_button_index() == MOUSE_BUTTON_MIDDLE && !mb->is_pressed()) {
 		panning_timeline = false;
 	}
 
@@ -2540,7 +2540,7 @@ void AnimationTrackEdit::_gui_input(const Ref<InputEvent> &p_event) {
 	}
 
 	Ref<InputEventMouseButton> mb = p_event;
-	if (mb.is_valid() && mb->is_pressed() && mb->get_button_index() == BUTTON_LEFT) {
+	if (mb.is_valid() && mb->is_pressed() && mb->get_button_index() == MOUSE_BUTTON_LEFT) {
 		Point2 pos = mb->get_position();
 
 		if (check_rect.has_point(pos)) {
@@ -2683,7 +2683,7 @@ void AnimationTrackEdit::_gui_input(const Ref<InputEvent> &p_event) {
 		}
 	}
 
-	if (mb.is_valid() && mb->is_pressed() && mb->get_button_index() == BUTTON_RIGHT) {
+	if (mb.is_valid() && mb->is_pressed() && mb->get_button_index() == MOUSE_BUTTON_RIGHT) {
 		Point2 pos = mb->get_position();
 		if (pos.x >= timeline->get_name_limit() && pos.x <= get_size().width - timeline->get_buttons_width()) {
 			// Can do something with menu too! show insert key.
@@ -2713,7 +2713,7 @@ void AnimationTrackEdit::_gui_input(const Ref<InputEvent> &p_event) {
 		}
 	}
 
-	if (mb.is_valid() && !mb->is_pressed() && mb->get_button_index() == BUTTON_LEFT && clicking_on_name) {
+	if (mb.is_valid() && !mb->is_pressed() && mb->get_button_index() == MOUSE_BUTTON_LEFT && clicking_on_name) {
 		if (!path) {
 			path_popup = memnew(Popup);
 			path_popup->set_wrap_controls(true);
@@ -2735,7 +2735,7 @@ void AnimationTrackEdit::_gui_input(const Ref<InputEvent> &p_event) {
 	}
 
 	if (mb.is_valid() && moving_selection_attempt) {
-		if (!mb->is_pressed() && mb->get_button_index() == BUTTON_LEFT) {
+		if (!mb->is_pressed() && mb->get_button_index() == MOUSE_BUTTON_LEFT) {
 			moving_selection_attempt = false;
 			if (moving_selection) {
 				emit_signal("move_selection_commit");
@@ -2746,7 +2746,7 @@ void AnimationTrackEdit::_gui_input(const Ref<InputEvent> &p_event) {
 			select_single_attempt = -1;
 		}
 
-		if (moving_selection && mb->is_pressed() && mb->get_button_index() == BUTTON_RIGHT) {
+		if (moving_selection && mb->is_pressed() && mb->get_button_index() == MOUSE_BUTTON_RIGHT) {
 			moving_selection_attempt = false;
 			moving_selection = false;
 			emit_signal("move_selection_cancel");
@@ -2754,7 +2754,7 @@ void AnimationTrackEdit::_gui_input(const Ref<InputEvent> &p_event) {
 	}
 
 	Ref<InputEventMouseMotion> mm = p_event;
-	if (mm.is_valid() && mm->get_button_mask() & BUTTON_MASK_LEFT && moving_selection_attempt) {
+	if (mm.is_valid() && mm->get_button_mask() & MOUSE_BUTTON_MASK_LEFT && moving_selection_attempt) {
 		if (!moving_selection) {
 			moving_selection = true;
 			emit_signal("move_selection_begin");
@@ -4955,17 +4955,17 @@ void AnimationTrackEditor::_box_selection_draw() {
 void AnimationTrackEditor::_scroll_input(const Ref<InputEvent> &p_event) {
 	Ref<InputEventMouseButton> mb = p_event;
 
-	if (mb.is_valid() && mb->is_pressed() && mb->get_command() && mb->get_button_index() == BUTTON_WHEEL_UP) {
+	if (mb.is_valid() && mb->is_pressed() && mb->get_command() && mb->get_button_index() == MOUSE_BUTTON_WHEEL_UP) {
 		timeline->get_zoom()->set_value(timeline->get_zoom()->get_value() * 1.05);
 		scroll->accept_event();
 	}
 
-	if (mb.is_valid() && mb->is_pressed() && mb->get_command() && mb->get_button_index() == BUTTON_WHEEL_DOWN) {
+	if (mb.is_valid() && mb->is_pressed() && mb->get_command() && mb->get_button_index() == MOUSE_BUTTON_WHEEL_DOWN) {
 		timeline->get_zoom()->set_value(timeline->get_zoom()->get_value() / 1.05);
 		scroll->accept_event();
 	}
 
-	if (mb.is_valid() && mb->get_button_index() == BUTTON_LEFT) {
+	if (mb.is_valid() && mb->get_button_index() == MOUSE_BUTTON_LEFT) {
 		if (mb->is_pressed()) {
 			box_selecting = true;
 			box_selecting_from = scroll->get_global_transform().xform(mb->get_position());
@@ -4993,12 +4993,12 @@ void AnimationTrackEditor::_scroll_input(const Ref<InputEvent> &p_event) {
 
 	Ref<InputEventMouseMotion> mm = p_event;
 
-	if (mm.is_valid() && mm->get_button_mask() & BUTTON_MASK_MIDDLE) {
+	if (mm.is_valid() && mm->get_button_mask() & MOUSE_BUTTON_MASK_MIDDLE) {
 		timeline->set_value(timeline->get_value() - mm->get_relative().x / timeline->get_zoom_scale());
 	}
 
 	if (mm.is_valid() && box_selecting) {
-		if (!(mm->get_button_mask() & BUTTON_MASK_LEFT)) {
+		if (!(mm->get_button_mask() & MOUSE_BUTTON_MASK_LEFT)) {
 			//no longer
 			box_selection->hide();
 			box_selecting = false;

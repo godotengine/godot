@@ -469,7 +469,7 @@ void TextEditor::_text_edit_gui_input(const Ref<InputEvent> &ev) {
 	Ref<InputEventMouseButton> mb = ev;
 
 	if (mb.is_valid()) {
-		if (mb->get_button_index() == BUTTON_RIGHT) {
+		if (mb->get_button_index() == MOUSE_BUTTON_RIGHT) {
 			int col, row;
 			CodeEdit *tx = code_editor->get_text_editor();
 			tx->_get_mouse_pos(mb->get_global_position() - tx->get_global_position(), row, col);

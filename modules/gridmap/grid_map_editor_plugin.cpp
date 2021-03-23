@@ -615,13 +615,13 @@ bool GridMapEditor::forward_spatial_input_event(Camera3D *p_camera, const Ref<In
 	Ref<InputEventMouseButton> mb = p_event;
 
 	if (mb.is_valid()) {
-		if (mb->get_button_index() == BUTTON_WHEEL_UP && (mb->get_command() || mb->get_shift())) {
+		if (mb->get_button_index() == MOUSE_BUTTON_WHEEL_UP && (mb->get_command() || mb->get_shift())) {
 			if (mb->is_pressed()) {
 				floor->set_value(floor->get_value() + mb->get_factor());
 			}
 
 			return true; // Eaten.
-		} else if (mb->get_button_index() == BUTTON_WHEEL_DOWN && (mb->get_command() || mb->get_shift())) {
+		} else if (mb->get_button_index() == MOUSE_BUTTON_WHEEL_DOWN && (mb->get_command() || mb->get_shift())) {
 			if (mb->is_pressed()) {
 				floor->set_value(floor->get_value() - mb->get_factor());
 			}
@@ -632,7 +632,7 @@ bool GridMapEditor::forward_spatial_input_event(Camera3D *p_camera, const Ref<In
 			Node3DEditorViewport::NavigationScheme nav_scheme = (Node3DEditorViewport::NavigationScheme)EditorSettings::get_singleton()->get("editors/3d/navigation/navigation_scheme").operator int();
 			if ((nav_scheme == Node3DEditorViewport::NAVIGATION_MAYA || nav_scheme == Node3DEditorViewport::NAVIGATION_MODO) && mb->get_alt()) {
 				input_action = INPUT_NONE;
-			} else if (mb->get_button_index() == BUTTON_LEFT) {
+			} else if (mb->get_button_index() == MOUSE_BUTTON_LEFT) {
 				bool can_edit = (node && node->get_mesh_library().is_valid());
 				if (input_action == INPUT_PASTE) {
 					_do_paste();
@@ -647,7 +647,7 @@ bool GridMapEditor::forward_spatial_input_event(Camera3D *p_camera, const Ref<In
 					input_action = INPUT_PAINT;
 					set_items.clear();
 				}
-			} else if (mb->get_button_index() == BUTTON_RIGHT) {
+			} else if (mb->get_button_index() == MOUSE_BUTTON_RIGHT) {
 				if (input_action == INPUT_PASTE) {
 					_clear_clipboard_data();
 					input_action = INPUT_NONE;
@@ -666,7 +666,7 @@ bool GridMapEditor::forward_spatial_input_event(Camera3D *p_camera, const Ref<In
 
 			return do_input_action(p_camera, Point2(mb->get_position().x, mb->get_position().y), true);
 		} else {
-			if ((mb->get_button_index() == BUTTON_RIGHT && input_action == INPUT_ERASE) || (mb->get_button_index() == BUTTON_LEFT && input_action == INPUT_PAINT)) {
+			if ((mb->get_button_index() == MOUSE_BUTTON_RIGHT && input_action == INPUT_ERASE) || (mb->get_button_index() == MOUSE_BUTTON_LEFT && input_action == INPUT_PAINT)) {
 				if (set_items.size()) {
 					undo_redo->create_action(TTR("GridMap Paint"));
 					for (List<SetItem>::Element *E = set_items.front(); E; E = E->next()) {
@@ -685,19 +685,19 @@ bool GridMapEditor::forward_spatial_input_event(Camera3D *p_camera, const Ref<In
 				return set_items.size() > 0;
 			}
 
-			if (mb->get_button_index() == BUTTON_LEFT && input_action == INPUT_SELECT) {
+			if (mb->get_button_index() == MOUSE_BUTTON_LEFT && input_action == INPUT_SELECT) {
 				undo_redo->create_action("GridMap Selection");
 				undo_redo->add_do_method(this, "_set_selection", selection.active, selection.begin, selection.end);
 				undo_redo->add_undo_method(this, "_set_selection", last_selection.active, last_selection.begin, last_selection.end);
 				undo_redo->commit_action();
 			}
 
-			if (mb->get_button_index() == BUTTON_LEFT && input_action != INPUT_NONE) {
+			if (mb->get_button_index() == MOUSE_BUTTON_LEFT && input_action != INPUT_NONE) {
 				set_items.clear();
 				input_action = INPUT_NONE;
 				return true;
 			}
-			if (mb->get_button_index() == BUTTON_RIGHT && (input_action == INPUT_ERASE || input_action == INPUT_PASTE)) {
+			if (mb->get_button_index() == MOUSE_BUTTON_RIGHT && (input_action == INPUT_ERASE || input_action == INPUT_PASTE)) {
 				input_action = INPUT_NONE;
 				return true;
 			}
@@ -811,11 +811,11 @@ void GridMapEditor::_mesh_library_palette_input(const Ref<InputEvent> &p_ie) {
 
 	// Zoom in/out using Ctrl + mouse wheel
 	if (mb.is_valid() && mb->is_pressed() && mb->get_command()) {
-		if (mb->is_pressed() && mb->get_button_index() == BUTTON_WHEEL_UP) {
+		if (mb->is_pressed() && mb->get_button_index() == MOUSE_BUTTON_WHEEL_UP) {
 			size_slider->set_value(size_slider->get_value() + 0.2);
 		}
 
-		if (mb->is_pressed() && mb->get_button_index() == BUTTON_WHEEL_DOWN) {
+		if (mb->is_pressed() && mb->get_button_index() == MOUSE_BUTTON_WHEEL_DOWN) {
 			size_slider->set_value(size_slider->get_value() - 0.2);
 		}
 	}

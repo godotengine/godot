@@ -1308,730 +1308,730 @@
 		<constant name="SPKEY" value="16777216">
 			Keycodes with this bit applied are non-printable.
 		</constant>
-		<constant name="KEY_ESCAPE" value="16777217" enum="KeyList">
+		<constant name="KEY_ESCAPE" value="16777217" enum="Key">
 			Escape key.
 		</constant>
-		<constant name="KEY_TAB" value="16777218" enum="KeyList">
+		<constant name="KEY_TAB" value="16777218" enum="Key">
 			Tab key.
 		</constant>
-		<constant name="KEY_BACKTAB" value="16777219" enum="KeyList">
+		<constant name="KEY_BACKTAB" value="16777219" enum="Key">
 			Shift + Tab key.
 		</constant>
-		<constant name="KEY_BACKSPACE" value="16777220" enum="KeyList">
+		<constant name="KEY_BACKSPACE" value="16777220" enum="Key">
 			Backspace key.
 		</constant>
-		<constant name="KEY_ENTER" value="16777221" enum="KeyList">
+		<constant name="KEY_ENTER" value="16777221" enum="Key">
 			Return key (on the main keyboard).
 		</constant>
-		<constant name="KEY_KP_ENTER" value="16777222" enum="KeyList">
+		<constant name="KEY_KP_ENTER" value="16777222" enum="Key">
 			Enter key on the numeric keypad.
 		</constant>
-		<constant name="KEY_INSERT" value="16777223" enum="KeyList">
+		<constant name="KEY_INSERT" value="16777223" enum="Key">
 			Insert key.
 		</constant>
-		<constant name="KEY_DELETE" value="16777224" enum="KeyList">
+		<constant name="KEY_DELETE" value="16777224" enum="Key">
 			Delete key.
 		</constant>
-		<constant name="KEY_PAUSE" value="16777225" enum="KeyList">
+		<constant name="KEY_PAUSE" value="16777225" enum="Key">
 			Pause key.
 		</constant>
-		<constant name="KEY_PRINT" value="16777226" enum="KeyList">
+		<constant name="KEY_PRINT" value="16777226" enum="Key">
 			Print Screen key.
 		</constant>
-		<constant name="KEY_SYSREQ" value="16777227" enum="KeyList">
+		<constant name="KEY_SYSREQ" value="16777227" enum="Key">
 			System Request key.
 		</constant>
-		<constant name="KEY_CLEAR" value="16777228" enum="KeyList">
+		<constant name="KEY_CLEAR" value="16777228" enum="Key">
 			Clear key.
 		</constant>
-		<constant name="KEY_HOME" value="16777229" enum="KeyList">
+		<constant name="KEY_HOME" value="16777229" enum="Key">
 			Home key.
 		</constant>
-		<constant name="KEY_END" value="16777230" enum="KeyList">
+		<constant name="KEY_END" value="16777230" enum="Key">
 			End key.
 		</constant>
-		<constant name="KEY_LEFT" value="16777231" enum="KeyList">
+		<constant name="KEY_LEFT" value="16777231" enum="Key">
 			Left arrow key.
 		</constant>
-		<constant name="KEY_UP" value="16777232" enum="KeyList">
+		<constant name="KEY_UP" value="16777232" enum="Key">
 			Up arrow key.
 		</constant>
-		<constant name="KEY_RIGHT" value="16777233" enum="KeyList">
+		<constant name="KEY_RIGHT" value="16777233" enum="Key">
 			Right arrow key.
 		</constant>
-		<constant name="KEY_DOWN" value="16777234" enum="KeyList">
+		<constant name="KEY_DOWN" value="16777234" enum="Key">
 			Down arrow key.
 		</constant>
-		<constant name="KEY_PAGEUP" value="16777235" enum="KeyList">
+		<constant name="KEY_PAGEUP" value="16777235" enum="Key">
 			Page Up key.
 		</constant>
-		<constant name="KEY_PAGEDOWN" value="16777236" enum="KeyList">
+		<constant name="KEY_PAGEDOWN" value="16777236" enum="Key">
 			Page Down key.
 		</constant>
-		<constant name="KEY_SHIFT" value="16777237" enum="KeyList">
+		<constant name="KEY_SHIFT" value="16777237" enum="Key">
 			Shift key.
 		</constant>
-		<constant name="KEY_CONTROL" value="16777238" enum="KeyList">
+		<constant name="KEY_CONTROL" value="16777238" enum="Key">
 			Control key.
 		</constant>
-		<constant name="KEY_META" value="16777239" enum="KeyList">
+		<constant name="KEY_META" value="16777239" enum="Key">
 			Meta key.
 		</constant>
-		<constant name="KEY_ALT" value="16777240" enum="KeyList">
+		<constant name="KEY_ALT" value="16777240" enum="Key">
 			Alt key.
 		</constant>
-		<constant name="KEY_CAPSLOCK" value="16777241" enum="KeyList">
+		<constant name="KEY_CAPSLOCK" value="16777241" enum="Key">
 			Caps Lock key.
 		</constant>
-		<constant name="KEY_NUMLOCK" value="16777242" enum="KeyList">
+		<constant name="KEY_NUMLOCK" value="16777242" enum="Key">
 			Num Lock key.
 		</constant>
-		<constant name="KEY_SCROLLLOCK" value="16777243" enum="KeyList">
+		<constant name="KEY_SCROLLLOCK" value="16777243" enum="Key">
 			Scroll Lock key.
 		</constant>
-		<constant name="KEY_F1" value="16777244" enum="KeyList">
+		<constant name="KEY_F1" value="16777244" enum="Key">
 			F1 key.
 		</constant>
-		<constant name="KEY_F2" value="16777245" enum="KeyList">
+		<constant name="KEY_F2" value="16777245" enum="Key">
 			F2 key.
 		</constant>
-		<constant name="KEY_F3" value="16777246" enum="KeyList">
+		<constant name="KEY_F3" value="16777246" enum="Key">
 			F3 key.
 		</constant>
-		<constant name="KEY_F4" value="16777247" enum="KeyList">
+		<constant name="KEY_F4" value="16777247" enum="Key">
 			F4 key.
 		</constant>
-		<constant name="KEY_F5" value="16777248" enum="KeyList">
+		<constant name="KEY_F5" value="16777248" enum="Key">
 			F5 key.
 		</constant>
-		<constant name="KEY_F6" value="16777249" enum="KeyList">
+		<constant name="KEY_F6" value="16777249" enum="Key">
 			F6 key.
 		</constant>
-		<constant name="KEY_F7" value="16777250" enum="KeyList">
+		<constant name="KEY_F7" value="16777250" enum="Key">
 			F7 key.
 		</constant>
-		<constant name="KEY_F8" value="16777251" enum="KeyList">
+		<constant name="KEY_F8" value="16777251" enum="Key">
 			F8 key.
 		</constant>
-		<constant name="KEY_F9" value="16777252" enum="KeyList">
+		<constant name="KEY_F9" value="16777252" enum="Key">
 			F9 key.
 		</constant>
-		<constant name="KEY_F10" value="16777253" enum="KeyList">
+		<constant name="KEY_F10" value="16777253" enum="Key">
 			F10 key.
 		</constant>
-		<constant name="KEY_F11" value="16777254" enum="KeyList">
+		<constant name="KEY_F11" value="16777254" enum="Key">
 			F11 key.
 		</constant>
-		<constant name="KEY_F12" value="16777255" enum="KeyList">
+		<constant name="KEY_F12" value="16777255" enum="Key">
 			F12 key.
 		</constant>
-		<constant name="KEY_F13" value="16777256" enum="KeyList">
+		<constant name="KEY_F13" value="16777256" enum="Key">
 			F13 key.
 		</constant>
-		<constant name="KEY_F14" value="16777257" enum="KeyList">
+		<constant name="KEY_F14" value="16777257" enum="Key">
 			F14 key.
 		</constant>
-		<constant name="KEY_F15" value="16777258" enum="KeyList">
+		<constant name="KEY_F15" value="16777258" enum="Key">
 			F15 key.
 		</constant>
-		<constant name="KEY_F16" value="16777259" enum="KeyList">
+		<constant name="KEY_F16" value="16777259" enum="Key">
 			F16 key.
 		</constant>
-		<constant name="KEY_KP_MULTIPLY" value="16777345" enum="KeyList">
+		<constant name="KEY_KP_MULTIPLY" value="16777345" enum="Key">
 			Multiply (*) key on the numeric keypad.
 		</constant>
-		<constant name="KEY_KP_DIVIDE" value="16777346" enum="KeyList">
+		<constant name="KEY_KP_DIVIDE" value="16777346" enum="Key">
 			Divide (/) key on the numeric keypad.
 		</constant>
-		<constant name="KEY_KP_SUBTRACT" value="16777347" enum="KeyList">
+		<constant name="KEY_KP_SUBTRACT" value="16777347" enum="Key">
 			Subtract (-) key on the numeric keypad.
 		</constant>
-		<constant name="KEY_KP_PERIOD" value="16777348" enum="KeyList">
+		<constant name="KEY_KP_PERIOD" value="16777348" enum="Key">
 			Period (.) key on the numeric keypad.
 		</constant>
-		<constant name="KEY_KP_ADD" value="16777349" enum="KeyList">
+		<constant name="KEY_KP_ADD" value="16777349" enum="Key">
 			Add (+) key on the numeric keypad.
 		</constant>
-		<constant name="KEY_KP_0" value="16777350" enum="KeyList">
+		<constant name="KEY_KP_0" value="16777350" enum="Key">
 			Number 0 on the numeric keypad.
 		</constant>
-		<constant name="KEY_KP_1" value="16777351" enum="KeyList">
+		<constant name="KEY_KP_1" value="16777351" enum="Key">
 			Number 1 on the numeric keypad.
 		</constant>
-		<constant name="KEY_KP_2" value="16777352" enum="KeyList">
+		<constant name="KEY_KP_2" value="16777352" enum="Key">
 			Number 2 on the numeric keypad.
 		</constant>
-		<constant name="KEY_KP_3" value="16777353" enum="KeyList">
+		<constant name="KEY_KP_3" value="16777353" enum="Key">
 			Number 3 on the numeric keypad.
 		</constant>
-		<constant name="KEY_KP_4" value="16777354" enum="KeyList">
+		<constant name="KEY_KP_4" value="16777354" enum="Key">
 			Number 4 on the numeric keypad.
 		</constant>
-		<constant name="KEY_KP_5" value="16777355" enum="KeyList">
+		<constant name="KEY_KP_5" value="16777355" enum="Key">
 			Number 5 on the numeric keypad.
 		</constant>
-		<constant name="KEY_KP_6" value="16777356" enum="KeyList">
+		<constant name="KEY_KP_6" value="16777356" enum="Key">
 			Number 6 on the numeric keypad.
 		</constant>
-		<constant name="KEY_KP_7" value="16777357" enum="KeyList">
+		<constant name="KEY_KP_7" value="16777357" enum="Key">
 			Number 7 on the numeric keypad.
 		</constant>
-		<constant name="KEY_KP_8" value="16777358" enum="KeyList">
+		<constant name="KEY_KP_8" value="16777358" enum="Key">
 			Number 8 on the numeric keypad.
 		</constant>
-		<constant name="KEY_KP_9" value="16777359" enum="KeyList">
+		<constant name="KEY_KP_9" value="16777359" enum="Key">
 			Number 9 on the numeric keypad.
 		</constant>
-		<constant name="KEY_SUPER_L" value="16777260" enum="KeyList">
+		<constant name="KEY_SUPER_L" value="16777260" enum="Key">
 			Left Super key (Windows key).
 		</constant>
-		<constant name="KEY_SUPER_R" value="16777261" enum="KeyList">
+		<constant name="KEY_SUPER_R" value="16777261" enum="Key">
 			Right Super key (Windows key).
 		</constant>
-		<constant name="KEY_MENU" value="16777262" enum="KeyList">
+		<constant name="KEY_MENU" value="16777262" enum="Key">
 			Context menu key.
 		</constant>
-		<constant name="KEY_HYPER_L" value="16777263" enum="KeyList">
+		<constant name="KEY_HYPER_L" value="16777263" enum="Key">
 			Left Hyper key.
 		</constant>
-		<constant name="KEY_HYPER_R" value="16777264" enum="KeyList">
+		<constant name="KEY_HYPER_R" value="16777264" enum="Key">
 			Right Hyper key.
 		</constant>
-		<constant name="KEY_HELP" value="16777265" enum="KeyList">
+		<constant name="KEY_HELP" value="16777265" enum="Key">
 			Help key.
 		</constant>
-		<constant name="KEY_DIRECTION_L" value="16777266" enum="KeyList">
+		<constant name="KEY_DIRECTION_L" value="16777266" enum="Key">
 			Left Direction key.
 		</constant>
-		<constant name="KEY_DIRECTION_R" value="16777267" enum="KeyList">
+		<constant name="KEY_DIRECTION_R" value="16777267" enum="Key">
 			Right Direction key.
 		</constant>
-		<constant name="KEY_BACK" value="16777280" enum="KeyList">
+		<constant name="KEY_BACK" value="16777280" enum="Key">
 			Media back key. Not to be confused with the Back button on an Android device.
 		</constant>
-		<constant name="KEY_FORWARD" value="16777281" enum="KeyList">
+		<constant name="KEY_FORWARD" value="16777281" enum="Key">
 			Media forward key.
 		</constant>
-		<constant name="KEY_STOP" value="16777282" enum="KeyList">
+		<constant name="KEY_STOP" value="16777282" enum="Key">
 			Media stop key.
 		</constant>
-		<constant name="KEY_REFRESH" value="16777283" enum="KeyList">
+		<constant name="KEY_REFRESH" value="16777283" enum="Key">
 			Media refresh key.
 		</constant>
-		<constant name="KEY_VOLUMEDOWN" value="16777284" enum="KeyList">
+		<constant name="KEY_VOLUMEDOWN" value="16777284" enum="Key">
 			Volume down key.
 		</constant>
-		<constant name="KEY_VOLUMEMUTE" value="16777285" enum="KeyList">
+		<constant name="KEY_VOLUMEMUTE" value="16777285" enum="Key">
 			Mute volume key.
 		</constant>
-		<constant name="KEY_VOLUMEUP" value="16777286" enum="KeyList">
+		<constant name="KEY_VOLUMEUP" value="16777286" enum="Key">
 			Volume up key.
 		</constant>
-		<constant name="KEY_BASSBOOST" value="16777287" enum="KeyList">
+		<constant name="KEY_BASSBOOST" value="16777287" enum="Key">
 			Bass Boost key.
 		</constant>
-		<constant name="KEY_BASSUP" value="16777288" enum="KeyList">
+		<constant name="KEY_BASSUP" value="16777288" enum="Key">
 			Bass up key.
 		</constant>
-		<constant name="KEY_BASSDOWN" value="16777289" enum="KeyList">
+		<constant name="KEY_BASSDOWN" value="16777289" enum="Key">
 			Bass down key.
 		</constant>
-		<constant name="KEY_TREBLEUP" value="16777290" enum="KeyList">
+		<constant name="KEY_TREBLEUP" value="16777290" enum="Key">
 			Treble up key.
 		</constant>
-		<constant name="KEY_TREBLEDOWN" value="16777291" enum="KeyList">
+		<constant name="KEY_TREBLEDOWN" value="16777291" enum="Key">
 			Treble down key.
 		</constant>
-		<constant name="KEY_MEDIAPLAY" value="16777292" enum="KeyList">
+		<constant name="KEY_MEDIAPLAY" value="16777292" enum="Key">
 			Media play key.
 		</constant>
-		<constant name="KEY_MEDIASTOP" value="16777293" enum="KeyList">
+		<constant name="KEY_MEDIASTOP" value="16777293" enum="Key">
 			Media stop key.
 		</constant>
-		<constant name="KEY_MEDIAPREVIOUS" value="16777294" enum="KeyList">
+		<constant name="KEY_MEDIAPREVIOUS" value="16777294" enum="Key">
 			Previous song key.
 		</constant>
-		<constant name="KEY_MEDIANEXT" value="16777295" enum="KeyList">
+		<constant name="KEY_MEDIANEXT" value="16777295" enum="Key">
 			Next song key.
 		</constant>
-		<constant name="KEY_MEDIARECORD" value="16777296" enum="KeyList">
+		<constant name="KEY_MEDIARECORD" value="16777296" enum="Key">
 			Media record key.
 		</constant>
-		<constant name="KEY_HOMEPAGE" value="16777297" enum="KeyList">
+		<constant name="KEY_HOMEPAGE" value="16777297" enum="Key">
 			Home page key.
 		</constant>
-		<constant name="KEY_FAVORITES" value="16777298" enum="KeyList">
+		<constant name="KEY_FAVORITES" value="16777298" enum="Key">
 			Favorites key.
 		</constant>
-		<constant name="KEY_SEARCH" value="16777299" enum="KeyList">
+		<constant name="KEY_SEARCH" value="16777299" enum="Key">
 			Search key.
 		</constant>
-		<constant name="KEY_STANDBY" value="16777300" enum="KeyList">
+		<constant name="KEY_STANDBY" value="16777300" enum="Key">
 			Standby key.
 		</constant>
-		<constant name="KEY_OPENURL" value="16777301" enum="KeyList">
+		<constant name="KEY_OPENURL" value="16777301" enum="Key">
 			Open URL / Launch Browser key.
 		</constant>
-		<constant name="KEY_LAUNCHMAIL" value="16777302" enum="KeyList">
+		<constant name="KEY_LAUNCHMAIL" value="16777302" enum="Key">
 			Launch Mail key.
 		</constant>
-		<constant name="KEY_LAUNCHMEDIA" value="16777303" enum="KeyList">
+		<constant name="KEY_LAUNCHMEDIA" value="16777303" enum="Key">
 			Launch Media key.
 		</constant>
-		<constant name="KEY_LAUNCH0" value="16777304" enum="KeyList">
+		<constant name="KEY_LAUNCH0" value="16777304" enum="Key">
 			Launch Shortcut 0 key.
 		</constant>
-		<constant name="KEY_LAUNCH1" value="16777305" enum="KeyList">
+		<constant name="KEY_LAUNCH1" value="16777305" enum="Key">
 			Launch Shortcut 1 key.
 		</constant>
-		<constant name="KEY_LAUNCH2" value="16777306" enum="KeyList">
+		<constant name="KEY_LAUNCH2" value="16777306" enum="Key">
 			Launch Shortcut 2 key.
 		</constant>
-		<constant name="KEY_LAUNCH3" value="16777307" enum="KeyList">
+		<constant name="KEY_LAUNCH3" value="16777307" enum="Key">
 			Launch Shortcut 3 key.
 		</constant>
-		<constant name="KEY_LAUNCH4" value="16777308" enum="KeyList">
+		<constant name="KEY_LAUNCH4" value="16777308" enum="Key">
 			Launch Shortcut 4 key.
 		</constant>
-		<constant name="KEY_LAUNCH5" value="16777309" enum="KeyList">
+		<constant name="KEY_LAUNCH5" value="16777309" enum="Key">
 			Launch Shortcut 5 key.
 		</constant>
-		<constant name="KEY_LAUNCH6" value="16777310" enum="KeyList">
+		<constant name="KEY_LAUNCH6" value="16777310" enum="Key">
 			Launch Shortcut 6 key.
 		</constant>
-		<constant name="KEY_LAUNCH7" value="16777311" enum="KeyList">
+		<constant name="KEY_LAUNCH7" value="16777311" enum="Key">
 			Launch Shortcut 7 key.
 		</constant>
-		<constant name="KEY_LAUNCH8" value="16777312" enum="KeyList">
+		<constant name="KEY_LAUNCH8" value="16777312" enum="Key">
 			Launch Shortcut 8 key.
 		</constant>
-		<constant name="KEY_LAUNCH9" value="16777313" enum="KeyList">
+		<constant name="KEY_LAUNCH9" value="16777313" enum="Key">
 			Launch Shortcut 9 key.
 		</constant>
-		<constant name="KEY_LAUNCHA" value="16777314" enum="KeyList">
+		<constant name="KEY_LAUNCHA" value="16777314" enum="Key">
 			Launch Shortcut A key.
 		</constant>
-		<constant name="KEY_LAUNCHB" value="16777315" enum="KeyList">
+		<constant name="KEY_LAUNCHB" value="16777315" enum="Key">
 			Launch Shortcut B key.
 		</constant>
-		<constant name="KEY_LAUNCHC" value="16777316" enum="KeyList">
+		<constant name="KEY_LAUNCHC" value="16777316" enum="Key">
 			Launch Shortcut C key.
 		</constant>
-		<constant name="KEY_LAUNCHD" value="16777317" enum="KeyList">
+		<constant name="KEY_LAUNCHD" value="16777317" enum="Key">
 			Launch Shortcut D key.
 		</constant>
-		<constant name="KEY_LAUNCHE" value="16777318" enum="KeyList">
+		<constant name="KEY_LAUNCHE" value="16777318" enum="Key">
 			Launch Shortcut E key.
 		</constant>
-		<constant name="KEY_LAUNCHF" value="16777319" enum="KeyList">
+		<constant name="KEY_LAUNCHF" value="16777319" enum="Key">
 			Launch Shortcut F key.
 		</constant>
-		<constant name="KEY_UNKNOWN" value="33554431" enum="KeyList">
+		<constant name="KEY_UNKNOWN" value="33554431" enum="Key">
 			Unknown key.
 		</constant>
-		<constant name="KEY_SPACE" value="32" enum="KeyList">
+		<constant name="KEY_SPACE" value="32" enum="Key">
 			Space key.
 		</constant>
-		<constant name="KEY_EXCLAM" value="33" enum="KeyList">
+		<constant name="KEY_EXCLAM" value="33" enum="Key">
 			! key.
 		</constant>
-		<constant name="KEY_QUOTEDBL" value="34" enum="KeyList">
+		<constant name="KEY_QUOTEDBL" value="34" enum="Key">
 			" key.
 		</constant>
-		<constant name="KEY_NUMBERSIGN" value="35" enum="KeyList">
+		<constant name="KEY_NUMBERSIGN" value="35" enum="Key">
 			# key.
 		</constant>
-		<constant name="KEY_DOLLAR" value="36" enum="KeyList">
+		<constant name="KEY_DOLLAR" value="36" enum="Key">
 			$ key.
 		</constant>
-		<constant name="KEY_PERCENT" value="37" enum="KeyList">
+		<constant name="KEY_PERCENT" value="37" enum="Key">
 			% key.
 		</constant>
-		<constant name="KEY_AMPERSAND" value="38" enum="KeyList">
+		<constant name="KEY_AMPERSAND" value="38" enum="Key">
 			&amp; key.
 		</constant>
-		<constant name="KEY_APOSTROPHE" value="39" enum="KeyList">
+		<constant name="KEY_APOSTROPHE" value="39" enum="Key">
 			' key.
 		</constant>
-		<constant name="KEY_PARENLEFT" value="40" enum="KeyList">
+		<constant name="KEY_PARENLEFT" value="40" enum="Key">
 			( key.
 		</constant>
-		<constant name="KEY_PARENRIGHT" value="41" enum="KeyList">
+		<constant name="KEY_PARENRIGHT" value="41" enum="Key">
 			) key.
 		</constant>
-		<constant name="KEY_ASTERISK" value="42" enum="KeyList">
+		<constant name="KEY_ASTERISK" value="42" enum="Key">
 			* key.
 		</constant>
-		<constant name="KEY_PLUS" value="43" enum="KeyList">
+		<constant name="KEY_PLUS" value="43" enum="Key">
 			+ key.
 		</constant>
-		<constant name="KEY_COMMA" value="44" enum="KeyList">
+		<constant name="KEY_COMMA" value="44" enum="Key">
 			, key.
 		</constant>
-		<constant name="KEY_MINUS" value="45" enum="KeyList">
+		<constant name="KEY_MINUS" value="45" enum="Key">
 			- key.
 		</constant>
-		<constant name="KEY_PERIOD" value="46" enum="KeyList">
+		<constant name="KEY_PERIOD" value="46" enum="Key">
 			. key.
 		</constant>
-		<constant name="KEY_SLASH" value="47" enum="KeyList">
+		<constant name="KEY_SLASH" value="47" enum="Key">
 			/ key.
 		</constant>
-		<constant name="KEY_0" value="48" enum="KeyList">
+		<constant name="KEY_0" value="48" enum="Key">
 			Number 0.
 		</constant>
-		<constant name="KEY_1" value="49" enum="KeyList">
+		<constant name="KEY_1" value="49" enum="Key">
 			Number 1.
 		</constant>
-		<constant name="KEY_2" value="50" enum="KeyList">
+		<constant name="KEY_2" value="50" enum="Key">
 			Number 2.
 		</constant>
-		<constant name="KEY_3" value="51" enum="KeyList">
+		<constant name="KEY_3" value="51" enum="Key">
 			Number 3.
 		</constant>
-		<constant name="KEY_4" value="52" enum="KeyList">
+		<constant name="KEY_4" value="52" enum="Key">
 			Number 4.
 		</constant>
-		<constant name="KEY_5" value="53" enum="KeyList">
+		<constant name="KEY_5" value="53" enum="Key">
 			Number 5.
 		</constant>
-		<constant name="KEY_6" value="54" enum="KeyList">
+		<constant name="KEY_6" value="54" enum="Key">
 			Number 6.
 		</constant>
-		<constant name="KEY_7" value="55" enum="KeyList">
+		<constant name="KEY_7" value="55" enum="Key">
 			Number 7.
 		</constant>
-		<constant name="KEY_8" value="56" enum="KeyList">
+		<constant name="KEY_8" value="56" enum="Key">
 			Number 8.
 		</constant>
-		<constant name="KEY_9" value="57" enum="KeyList">
+		<constant name="KEY_9" value="57" enum="Key">
 			Number 9.
 		</constant>
-		<constant name="KEY_COLON" value="58" enum="KeyList">
+		<constant name="KEY_COLON" value="58" enum="Key">
 			: key.
 		</constant>
-		<constant name="KEY_SEMICOLON" value="59" enum="KeyList">
+		<constant name="KEY_SEMICOLON" value="59" enum="Key">
 			; key.
 		</constant>
-		<constant name="KEY_LESS" value="60" enum="KeyList">
+		<constant name="KEY_LESS" value="60" enum="Key">
 			&lt; key.
 		</constant>
-		<constant name="KEY_EQUAL" value="61" enum="KeyList">
+		<constant name="KEY_EQUAL" value="61" enum="Key">
 			= key.
 		</constant>
-		<constant name="KEY_GREATER" value="62" enum="KeyList">
+		<constant name="KEY_GREATER" value="62" enum="Key">
 			&gt; key.
 		</constant>
-		<constant name="KEY_QUESTION" value="63" enum="KeyList">
+		<constant name="KEY_QUESTION" value="63" enum="Key">
 			? key.
 		</constant>
-		<constant name="KEY_AT" value="64" enum="KeyList">
+		<constant name="KEY_AT" value="64" enum="Key">
 			@ key.
 		</constant>
-		<constant name="KEY_A" value="65" enum="KeyList">
+		<constant name="KEY_A" value="65" enum="Key">
 			A key.
 		</constant>
-		<constant name="KEY_B" value="66" enum="KeyList">
+		<constant name="KEY_B" value="66" enum="Key">
 			B key.
 		</constant>
-		<constant name="KEY_C" value="67" enum="KeyList">
+		<constant name="KEY_C" value="67" enum="Key">
 			C key.
 		</constant>
-		<constant name="KEY_D" value="68" enum="KeyList">
+		<constant name="KEY_D" value="68" enum="Key">
 			D key.
 		</constant>
-		<constant name="KEY_E" value="69" enum="KeyList">
+		<constant name="KEY_E" value="69" enum="Key">
 			E key.
 		</constant>
-		<constant name="KEY_F" value="70" enum="KeyList">
+		<constant name="KEY_F" value="70" enum="Key">
 			F key.
 		</constant>
-		<constant name="KEY_G" value="71" enum="KeyList">
+		<constant name="KEY_G" value="71" enum="Key">
 			G key.
 		</constant>
-		<constant name="KEY_H" value="72" enum="KeyList">
+		<constant name="KEY_H" value="72" enum="Key">
 			H key.
 		</constant>
-		<constant name="KEY_I" value="73" enum="KeyList">
+		<constant name="KEY_I" value="73" enum="Key">
 			I key.
 		</constant>
-		<constant name="KEY_J" value="74" enum="KeyList">
+		<constant name="KEY_J" value="74" enum="Key">
 			J key.
 		</constant>
-		<constant name="KEY_K" value="75" enum="KeyList">
+		<constant name="KEY_K" value="75" enum="Key">
 			K key.
 		</constant>
-		<constant name="KEY_L" value="76" enum="KeyList">
+		<constant name="KEY_L" value="76" enum="Key">
 			L key.
 		</constant>
-		<constant name="KEY_M" value="77" enum="KeyList">
+		<constant name="KEY_M" value="77" enum="Key">
 			M key.
 		</constant>
-		<constant name="KEY_N" value="78" enum="KeyList">
+		<constant name="KEY_N" value="78" enum="Key">
 			N key.
 		</constant>
-		<constant name="KEY_O" value="79" enum="KeyList">
+		<constant name="KEY_O" value="79" enum="Key">
 			O key.
 		</constant>
-		<constant name="KEY_P" value="80" enum="KeyList">
+		<constant name="KEY_P" value="80" enum="Key">
 			P key.
 		</constant>
-		<constant name="KEY_Q" value="81" enum="KeyList">
+		<constant name="KEY_Q" value="81" enum="Key">
 			Q key.
 		</constant>
-		<constant name="KEY_R" value="82" enum="KeyList">
+		<constant name="KEY_R" value="82" enum="Key">
 			R key.
 		</constant>
-		<constant name="KEY_S" value="83" enum="KeyList">
+		<constant name="KEY_S" value="83" enum="Key">
 			S key.
 		</constant>
-		<constant name="KEY_T" value="84" enum="KeyList">
+		<constant name="KEY_T" value="84" enum="Key">
 			T key.
 		</constant>
-		<constant name="KEY_U" value="85" enum="KeyList">
+		<constant name="KEY_U" value="85" enum="Key">
 			U key.
 		</constant>
-		<constant name="KEY_V" value="86" enum="KeyList">
+		<constant name="KEY_V" value="86" enum="Key">
 			V key.
 		</constant>
-		<constant name="KEY_W" value="87" enum="KeyList">
+		<constant name="KEY_W" value="87" enum="Key">
 			W key.
 		</constant>
-		<constant name="KEY_X" value="88" enum="KeyList">
+		<constant name="KEY_X" value="88" enum="Key">
 			X key.
 		</constant>
-		<constant name="KEY_Y" value="89" enum="KeyList">
+		<constant name="KEY_Y" value="89" enum="Key">
 			Y key.
 		</constant>
-		<constant name="KEY_Z" value="90" enum="KeyList">
+		<constant name="KEY_Z" value="90" enum="Key">
 			Z key.
 		</constant>
-		<constant name="KEY_BRACKETLEFT" value="91" enum="KeyList">
+		<constant name="KEY_BRACKETLEFT" value="91" enum="Key">
 			[ key.
 		</constant>
-		<constant name="KEY_BACKSLASH" value="92" enum="KeyList">
+		<constant name="KEY_BACKSLASH" value="92" enum="Key">
 			\ key.
 		</constant>
-		<constant name="KEY_BRACKETRIGHT" value="93" enum="KeyList">
+		<constant name="KEY_BRACKETRIGHT" value="93" enum="Key">
 			] key.
 		</constant>
-		<constant name="KEY_ASCIICIRCUM" value="94" enum="KeyList">
+		<constant name="KEY_ASCIICIRCUM" value="94" enum="Key">
 			^ key.
 		</constant>
-		<constant name="KEY_UNDERSCORE" value="95" enum="KeyList">
+		<constant name="KEY_UNDERSCORE" value="95" enum="Key">
 			_ key.
 		</constant>
-		<constant name="KEY_QUOTELEFT" value="96" enum="KeyList">
+		<constant name="KEY_QUOTELEFT" value="96" enum="Key">
 			` key.
 		</constant>
-		<constant name="KEY_BRACELEFT" value="123" enum="KeyList">
+		<constant name="KEY_BRACELEFT" value="123" enum="Key">
 			{ key.
 		</constant>
-		<constant name="KEY_BAR" value="124" enum="KeyList">
+		<constant name="KEY_BAR" value="124" enum="Key">
 			| key.
 		</constant>
-		<constant name="KEY_BRACERIGHT" value="125" enum="KeyList">
+		<constant name="KEY_BRACERIGHT" value="125" enum="Key">
 			} key.
 		</constant>
-		<constant name="KEY_ASCIITILDE" value="126" enum="KeyList">
+		<constant name="KEY_ASCIITILDE" value="126" enum="Key">
 			~ key.
 		</constant>
-		<constant name="KEY_NOBREAKSPACE" value="160" enum="KeyList">
+		<constant name="KEY_NOBREAKSPACE" value="160" enum="Key">
 			Non-breakable space key.
 		</constant>
-		<constant name="KEY_EXCLAMDOWN" value="161" enum="KeyList">
+		<constant name="KEY_EXCLAMDOWN" value="161" enum="Key">
 			¡ key.
 		</constant>
-		<constant name="KEY_CENT" value="162" enum="KeyList">
+		<constant name="KEY_CENT" value="162" enum="Key">
 			¢ key.
 		</constant>
-		<constant name="KEY_STERLING" value="163" enum="KeyList">
+		<constant name="KEY_STERLING" value="163" enum="Key">
 			£ key.
 		</constant>
-		<constant name="KEY_CURRENCY" value="164" enum="KeyList">
+		<constant name="KEY_CURRENCY" value="164" enum="Key">
 			¤ key.
 		</constant>
-		<constant name="KEY_YEN" value="165" enum="KeyList">
+		<constant name="KEY_YEN" value="165" enum="Key">
 			¥ key.
 		</constant>
-		<constant name="KEY_BROKENBAR" value="166" enum="KeyList">
+		<constant name="KEY_BROKENBAR" value="166" enum="Key">
 			¦ key.
 		</constant>
-		<constant name="KEY_SECTION" value="167" enum="KeyList">
+		<constant name="KEY_SECTION" value="167" enum="Key">
 			§ key.
 		</constant>
-		<constant name="KEY_DIAERESIS" value="168" enum="KeyList">
+		<constant name="KEY_DIAERESIS" value="168" enum="Key">
 			¨ key.
 		</constant>
-		<constant name="KEY_COPYRIGHT" value="169" enum="KeyList">
+		<constant name="KEY_COPYRIGHT" value="169" enum="Key">
 			© key.
 		</constant>
-		<constant name="KEY_ORDFEMININE" value="170" enum="KeyList">
+		<constant name="KEY_ORDFEMININE" value="170" enum="Key">
 			ª key.
 		</constant>
-		<constant name="KEY_GUILLEMOTLEFT" value="171" enum="KeyList">
+		<constant name="KEY_GUILLEMOTLEFT" value="171" enum="Key">
 			« key.
 		</constant>
-		<constant name="KEY_NOTSIGN" value="172" enum="KeyList">
+		<constant name="KEY_NOTSIGN" value="172" enum="Key">
 			¬ key.
 		</constant>
-		<constant name="KEY_HYPHEN" value="173" enum="KeyList">
+		<constant name="KEY_HYPHEN" value="173" enum="Key">
 			Soft hyphen key.
 		</constant>
-		<constant name="KEY_REGISTERED" value="174" enum="KeyList">
+		<constant name="KEY_REGISTERED" value="174" enum="Key">
 			® key.
 		</constant>
-		<constant name="KEY_MACRON" value="175" enum="KeyList">
+		<constant name="KEY_MACRON" value="175" enum="Key">
 			¯ key.
 		</constant>
-		<constant name="KEY_DEGREE" value="176" enum="KeyList">
+		<constant name="KEY_DEGREE" value="176" enum="Key">
 			° key.
 		</constant>
-		<constant name="KEY_PLUSMINUS" value="177" enum="KeyList">
+		<constant name="KEY_PLUSMINUS" value="177" enum="Key">
 			± key.
 		</constant>
-		<constant name="KEY_TWOSUPERIOR" value="178" enum="KeyList">
+		<constant name="KEY_TWOSUPERIOR" value="178" enum="Key">
 			² key.
 		</constant>
-		<constant name="KEY_THREESUPERIOR" value="179" enum="KeyList">
+		<constant name="KEY_THREESUPERIOR" value="179" enum="Key">
 			³ key.
 		</constant>
-		<constant name="KEY_ACUTE" value="180" enum="KeyList">
+		<constant name="KEY_ACUTE" value="180" enum="Key">
 			´ key.
 		</constant>
-		<constant name="KEY_MU" value="181" enum="KeyList">
+		<constant name="KEY_MU" value="181" enum="Key">
 			µ key.
 		</constant>
-		<constant name="KEY_PARAGRAPH" value="182" enum="KeyList">
+		<constant name="KEY_PARAGRAPH" value="182" enum="Key">
 			¶ key.
 		</constant>
-		<constant name="KEY_PERIODCENTERED" value="183" enum="KeyList">
+		<constant name="KEY_PERIODCENTERED" value="183" enum="Key">
 			· key.
 		</constant>
-		<constant name="KEY_CEDILLA" value="184" enum="KeyList">
+		<constant name="KEY_CEDILLA" value="184" enum="Key">
 			¸ key.
 		</constant>
-		<constant name="KEY_ONESUPERIOR" value="185" enum="KeyList">
+		<constant name="KEY_ONESUPERIOR" value="185" enum="Key">
 			¹ key.
 		</constant>
-		<constant name="KEY_MASCULINE" value="186" enum="KeyList">
+		<constant name="KEY_MASCULINE" value="186" enum="Key">
 			º key.
 		</constant>
-		<constant name="KEY_GUILLEMOTRIGHT" value="187" enum="KeyList">
+		<constant name="KEY_GUILLEMOTRIGHT" value="187" enum="Key">
 			» key.
 		</constant>
-		<constant name="KEY_ONEQUARTER" value="188" enum="KeyList">
+		<constant name="KEY_ONEQUARTER" value="188" enum="Key">
 			¼ key.
 		</constant>
-		<constant name="KEY_ONEHALF" value="189" enum="KeyList">
+		<constant name="KEY_ONEHALF" value="189" enum="Key">
 			½ key.
 		</constant>
-		<constant name="KEY_THREEQUARTERS" value="190" enum="KeyList">
+		<constant name="KEY_THREEQUARTERS" value="190" enum="Key">
 			¾ key.
 		</constant>
-		<constant name="KEY_QUESTIONDOWN" value="191" enum="KeyList">
+		<constant name="KEY_QUESTIONDOWN" value="191" enum="Key">
 			¿ key.
 		</constant>
-		<constant name="KEY_AGRAVE" value="192" enum="KeyList">
+		<constant name="KEY_AGRAVE" value="192" enum="Key">
 			À key.
 		</constant>
-		<constant name="KEY_AACUTE" value="193" enum="KeyList">
+		<constant name="KEY_AACUTE" value="193" enum="Key">
 			Á key.
 		</constant>
-		<constant name="KEY_ACIRCUMFLEX" value="194" enum="KeyList">
+		<constant name="KEY_ACIRCUMFLEX" value="194" enum="Key">
 			Â key.
 		</constant>
-		<constant name="KEY_ATILDE" value="195" enum="KeyList">
+		<constant name="KEY_ATILDE" value="195" enum="Key">
 			Ã key.
 		</constant>
-		<constant name="KEY_ADIAERESIS" value="196" enum="KeyList">
+		<constant name="KEY_ADIAERESIS" value="196" enum="Key">
 			Ä key.
 		</constant>
-		<constant name="KEY_ARING" value="197" enum="KeyList">
+		<constant name="KEY_ARING" value="197" enum="Key">
 			Å key.
 		</constant>
-		<constant name="KEY_AE" value="198" enum="KeyList">
+		<constant name="KEY_AE" value="198" enum="Key">
 			Æ key.
 		</constant>
-		<constant name="KEY_CCEDILLA" value="199" enum="KeyList">
+		<constant name="KEY_CCEDILLA" value="199" enum="Key">
 			Ç key.
 		</constant>
-		<constant name="KEY_EGRAVE" value="200" enum="KeyList">
+		<constant name="KEY_EGRAVE" value="200" enum="Key">
 			È key.
 		</constant>
-		<constant name="KEY_EACUTE" value="201" enum="KeyList">
+		<constant name="KEY_EACUTE" value="201" enum="Key">
 			É key.
 		</constant>
-		<constant name="KEY_ECIRCUMFLEX" value="202" enum="KeyList">
+		<constant name="KEY_ECIRCUMFLEX" value="202" enum="Key">
 			Ê key.
 		</constant>
-		<constant name="KEY_EDIAERESIS" value="203" enum="KeyList">
+		<constant name="KEY_EDIAERESIS" value="203" enum="Key">
 			Ë key.
 		</constant>
-		<constant name="KEY_IGRAVE" value="204" enum="KeyList">
+		<constant name="KEY_IGRAVE" value="204" enum="Key">
 			Ì key.
 		</constant>
-		<constant name="KEY_IACUTE" value="205" enum="KeyList">
+		<constant name="KEY_IACUTE" value="205" enum="Key">
 			Í key.
 		</constant>
-		<constant name="KEY_ICIRCUMFLEX" value="206" enum="KeyList">
+		<constant name="KEY_ICIRCUMFLEX" value="206" enum="Key">
 			Î key.
 		</constant>
-		<constant name="KEY_IDIAERESIS" value="207" enum="KeyList">
+		<constant name="KEY_IDIAERESIS" value="207" enum="Key">
 			Ï key.
 		</constant>
-		<constant name="KEY_ETH" value="208" enum="KeyList">
+		<constant name="KEY_ETH" value="208" enum="Key">
 			Ð key.
 		</constant>
-		<constant name="KEY_NTILDE" value="209" enum="KeyList">
+		<constant name="KEY_NTILDE" value="209" enum="Key">
 			Ñ key.
 		</constant>
-		<constant name="KEY_OGRAVE" value="210" enum="KeyList">
+		<constant name="KEY_OGRAVE" value="210" enum="Key">
 			Ò key.
 		</constant>
-		<constant name="KEY_OACUTE" value="211" enum="KeyList">
+		<constant name="KEY_OACUTE" value="211" enum="Key">
 			Ó key.
 		</constant>
-		<constant name="KEY_OCIRCUMFLEX" value="212" enum="KeyList">
+		<constant name="KEY_OCIRCUMFLEX" value="212" enum="Key">
 			Ô key.
 		</constant>
-		<constant name="KEY_OTILDE" value="213" enum="KeyList">
+		<constant name="KEY_OTILDE" value="213" enum="Key">
 			Õ key.
 		</constant>
-		<constant name="KEY_ODIAERESIS" value="214" enum="KeyList">
+		<constant name="KEY_ODIAERESIS" value="214" enum="Key">
 			Ö key.
 		</constant>
-		<constant name="KEY_MULTIPLY" value="215" enum="KeyList">
+		<constant name="KEY_MULTIPLY" value="215" enum="Key">
 			× key.
 		</constant>
-		<constant name="KEY_OOBLIQUE" value="216" enum="KeyList">
+		<constant name="KEY_OOBLIQUE" value="216" enum="Key">
 			Ø key.
 		</constant>
-		<constant name="KEY_UGRAVE" value="217" enum="KeyList">
+		<constant name="KEY_UGRAVE" value="217" enum="Key">
 			Ù key.
 		</constant>
-		<constant name="KEY_UACUTE" value="218" enum="KeyList">
+		<constant name="KEY_UACUTE" value="218" enum="Key">
 			Ú key.
 		</constant>
-		<constant name="KEY_UCIRCUMFLEX" value="219" enum="KeyList">
+		<constant name="KEY_UCIRCUMFLEX" value="219" enum="Key">
 			Û key.
 		</constant>
-		<constant name="KEY_UDIAERESIS" value="220" enum="KeyList">
+		<constant name="KEY_UDIAERESIS" value="220" enum="Key">
 			Ü key.
 		</constant>
-		<constant name="KEY_YACUTE" value="221" enum="KeyList">
+		<constant name="KEY_YACUTE" value="221" enum="Key">
 			Ý key.
 		</constant>
-		<constant name="KEY_THORN" value="222" enum="KeyList">
+		<constant name="KEY_THORN" value="222" enum="Key">
 			Þ key.
 		</constant>
-		<constant name="KEY_SSHARP" value="223" enum="KeyList">
+		<constant name="KEY_SSHARP" value="223" enum="Key">
 			ß key.
 		</constant>
-		<constant name="KEY_DIVISION" value="247" enum="KeyList">
+		<constant name="KEY_DIVISION" value="247" enum="Key">
 			÷ key.
 		</constant>
-		<constant name="KEY_YDIAERESIS" value="255" enum="KeyList">
+		<constant name="KEY_YDIAERESIS" value="255" enum="Key">
 			ÿ key.
 		</constant>
 		<constant name="KEY_CODE_MASK" value="33554431" enum="KeyModifierMask">
@@ -2061,166 +2061,166 @@
 		<constant name="KEY_MASK_GROUP_SWITCH" value="1073741824" enum="KeyModifierMask">
 			Group Switch key mask.
 		</constant>
-		<constant name="BUTTON_LEFT" value="1" enum="ButtonList">
+		<constant name="MOUSE_BUTTON_LEFT" value="1" enum="MouseButton">
 			Left mouse button.
 		</constant>
-		<constant name="BUTTON_RIGHT" value="2" enum="ButtonList">
+		<constant name="MOUSE_BUTTON_RIGHT" value="2" enum="MouseButton">
 			Right mouse button.
 		</constant>
-		<constant name="BUTTON_MIDDLE" value="3" enum="ButtonList">
+		<constant name="MOUSE_BUTTON_MIDDLE" value="3" enum="MouseButton">
 			Middle mouse button.
 		</constant>
-		<constant name="BUTTON_XBUTTON1" value="8" enum="ButtonList">
+		<constant name="MOUSE_BUTTON_XBUTTON1" value="8" enum="MouseButton">
 			Extra mouse button 1 (only present on some mice).
 		</constant>
-		<constant name="BUTTON_XBUTTON2" value="9" enum="ButtonList">
+		<constant name="MOUSE_BUTTON_XBUTTON2" value="9" enum="MouseButton">
 			Extra mouse button 2 (only present on some mice).
 		</constant>
-		<constant name="BUTTON_WHEEL_UP" value="4" enum="ButtonList">
+		<constant name="MOUSE_BUTTON_WHEEL_UP" value="4" enum="MouseButton">
 			Mouse wheel up.
 		</constant>
-		<constant name="BUTTON_WHEEL_DOWN" value="5" enum="ButtonList">
+		<constant name="MOUSE_BUTTON_WHEEL_DOWN" value="5" enum="MouseButton">
 			Mouse wheel down.
 		</constant>
-		<constant name="BUTTON_WHEEL_LEFT" value="6" enum="ButtonList">
+		<constant name="MOUSE_BUTTON_WHEEL_LEFT" value="6" enum="MouseButton">
 			Mouse wheel left button (only present on some mice).
 		</constant>
-		<constant name="BUTTON_WHEEL_RIGHT" value="7" enum="ButtonList">
+		<constant name="MOUSE_BUTTON_WHEEL_RIGHT" value="7" enum="MouseButton">
 			Mouse wheel right button (only present on some mice).
 		</constant>
-		<constant name="BUTTON_MASK_LEFT" value="1" enum="ButtonList">
+		<constant name="MOUSE_BUTTON_MASK_LEFT" value="1" enum="MouseButton">
 			Left mouse button mask.
 		</constant>
-		<constant name="BUTTON_MASK_RIGHT" value="2" enum="ButtonList">
+		<constant name="MOUSE_BUTTON_MASK_RIGHT" value="2" enum="MouseButton">
 			Right mouse button mask.
 		</constant>
-		<constant name="BUTTON_MASK_MIDDLE" value="4" enum="ButtonList">
+		<constant name="MOUSE_BUTTON_MASK_MIDDLE" value="4" enum="MouseButton">
 			Middle mouse button mask.
 		</constant>
-		<constant name="BUTTON_MASK_XBUTTON1" value="128" enum="ButtonList">
+		<constant name="MOUSE_BUTTON_MASK_XBUTTON1" value="128" enum="MouseButton">
 			Extra mouse button 1 mask.
 		</constant>
-		<constant name="BUTTON_MASK_XBUTTON2" value="256" enum="ButtonList">
+		<constant name="MOUSE_BUTTON_MASK_XBUTTON2" value="256" enum="MouseButton">
 			Extra mouse button 2 mask.
 		</constant>
-		<constant name="JOY_BUTTON_INVALID" value="-1" enum="JoyButtonList">
+		<constant name="JOY_BUTTON_INVALID" value="-1" enum="JoyButton">
 			An invalid game controller button.
 		</constant>
-		<constant name="JOY_BUTTON_A" value="0" enum="JoyButtonList">
+		<constant name="JOY_BUTTON_A" value="0" enum="JoyButton">
 			Game controller SDL button A. Corresponds to the bottom action button: Sony Cross, Xbox A, Nintendo B.
 		</constant>
-		<constant name="JOY_BUTTON_B" value="1" enum="JoyButtonList">
+		<constant name="JOY_BUTTON_B" value="1" enum="JoyButton">
 			Game controller SDL button B. Corresponds to the right action button: Sony Circle, Xbox B, Nintendo A.
 		</constant>
-		<constant name="JOY_BUTTON_X" value="2" enum="JoyButtonList">
+		<constant name="JOY_BUTTON_X" value="2" enum="JoyButton">
 			Game controller SDL button X. Corresponds to the left action button: Sony Square, Xbox X, Nintendo Y.
 		</constant>
-		<constant name="JOY_BUTTON_Y" value="3" enum="JoyButtonList">
+		<constant name="JOY_BUTTON_Y" value="3" enum="JoyButton">
 			Game controller SDL button Y. Corresponds to the top action button: Sony Triangle, Xbox Y, Nintendo X.
 		</constant>
-		<constant name="JOY_BUTTON_BACK" value="4" enum="JoyButtonList">
+		<constant name="JOY_BUTTON_BACK" value="4" enum="JoyButton">
 			Game controller SDL back button. Corresponds to the Sony Select, Xbox Back, Nintendo - button.
 		</constant>
-		<constant name="JOY_BUTTON_GUIDE" value="5" enum="JoyButtonList">
+		<constant name="JOY_BUTTON_GUIDE" value="5" enum="JoyButton">
 			Game controller SDL guide button. Corresponds to the Sony PS, Xbox Home button.
 		</constant>
-		<constant name="JOY_BUTTON_START" value="6" enum="JoyButtonList">
+		<constant name="JOY_BUTTON_START" value="6" enum="JoyButton">
 			Game controller SDL start button. Corresponds to the Nintendo + button.
 		</constant>
-		<constant name="JOY_BUTTON_LEFT_STICK" value="7" enum="JoyButtonList">
+		<constant name="JOY_BUTTON_LEFT_STICK" value="7" enum="JoyButton">
 			Game controller SDL left stick button. Corresponds to the Sony L3, Xbox L/LS button.
 		</constant>
-		<constant name="JOY_BUTTON_RIGHT_STICK" value="8" enum="JoyButtonList">
+		<constant name="JOY_BUTTON_RIGHT_STICK" value="8" enum="JoyButton">
 			Game controller SDL right stick button. Corresponds to the Sony R3, Xbox R/RS button.
 		</constant>
-		<constant name="JOY_BUTTON_LEFT_SHOULDER" value="9" enum="JoyButtonList">
+		<constant name="JOY_BUTTON_LEFT_SHOULDER" value="9" enum="JoyButton">
 			Game controller SDL left shoulder button. Corresponds to the Sony L1, Xbox LB button.
 		</constant>
-		<constant name="JOY_BUTTON_RIGHT_SHOULDER" value="10" enum="JoyButtonList">
+		<constant name="JOY_BUTTON_RIGHT_SHOULDER" value="10" enum="JoyButton">
 			Game controller SDL right shoulder button. Corresponds to the Sony R1, Xbox RB button.
 		</constant>
-		<constant name="JOY_BUTTON_DPAD_UP" value="11" enum="JoyButtonList">
+		<constant name="JOY_BUTTON_DPAD_UP" value="11" enum="JoyButton">
 			Game controller D-pad up button.
 		</constant>
-		<constant name="JOY_BUTTON_DPAD_DOWN" value="12" enum="JoyButtonList">
+		<constant name="JOY_BUTTON_DPAD_DOWN" value="12" enum="JoyButton">
 			Game controller D-pad down button.
 		</constant>
-		<constant name="JOY_BUTTON_DPAD_LEFT" value="13" enum="JoyButtonList">
+		<constant name="JOY_BUTTON_DPAD_LEFT" value="13" enum="JoyButton">
 			Game controller D-pad left button.
 		</constant>
-		<constant name="JOY_BUTTON_DPAD_RIGHT" value="14" enum="JoyButtonList">
+		<constant name="JOY_BUTTON_DPAD_RIGHT" value="14" enum="JoyButton">
 			Game controller D-pad right button.
 		</constant>
-		<constant name="JOY_BUTTON_MISC1" value="15" enum="JoyButtonList">
+		<constant name="JOY_BUTTON_MISC1" value="15" enum="JoyButton">
 			Game controller SDL miscellaneous button. Corresponds to Xbox share button, PS5 microphone button, Nintendo capture button.
 		</constant>
-		<constant name="JOY_BUTTON_PADDLE1" value="16" enum="JoyButtonList">
+		<constant name="JOY_BUTTON_PADDLE1" value="16" enum="JoyButton">
 			Game controller SDL paddle 1 button.
 		</constant>
-		<constant name="JOY_BUTTON_PADDLE2" value="17" enum="JoyButtonList">
+		<constant name="JOY_BUTTON_PADDLE2" value="17" enum="JoyButton">
 			Game controller SDL paddle 2 button.
 		</constant>
-		<constant name="JOY_BUTTON_PADDLE3" value="18" enum="JoyButtonList">
+		<constant name="JOY_BUTTON_PADDLE3" value="18" enum="JoyButton">
 			Game controller SDL paddle 3 button.
 		</constant>
-		<constant name="JOY_BUTTON_PADDLE4" value="19" enum="JoyButtonList">
+		<constant name="JOY_BUTTON_PADDLE4" value="19" enum="JoyButton">
 			Game controller SDL paddle 4 button.
 		</constant>
-		<constant name="JOY_BUTTON_TOUCHPAD" value="20" enum="JoyButtonList">
+		<constant name="JOY_BUTTON_TOUCHPAD" value="20" enum="JoyButton">
 			Game controller SDL touchpad button.
 		</constant>
-		<constant name="JOY_BUTTON_SDL_MAX" value="21" enum="JoyButtonList">
+		<constant name="JOY_BUTTON_SDL_MAX" value="21" enum="JoyButton">
 			The number of SDL game controller buttons.
 		</constant>
-		<constant name="JOY_BUTTON_MAX" value="36" enum="JoyButtonList">
+		<constant name="JOY_BUTTON_MAX" value="36" enum="JoyButton">
 			The maximum number of game controller buttons: Android supports up to 36 buttons.
 		</constant>
-		<constant name="JOY_AXIS_INVALID" value="-1" enum="JoyAxisList">
+		<constant name="JOY_AXIS_INVALID" value="-1" enum="JoyAxis">
 			An invalid game controller axis.
 		</constant>
-		<constant name="JOY_AXIS_LEFT_X" value="0" enum="JoyAxisList">
+		<constant name="JOY_AXIS_LEFT_X" value="0" enum="JoyAxis">
 			Game controller left joystick x-axis.
 		</constant>
-		<constant name="JOY_AXIS_LEFT_Y" value="1" enum="JoyAxisList">
+		<constant name="JOY_AXIS_LEFT_Y" value="1" enum="JoyAxis">
 			Game controller left joystick y-axis.
 		</constant>
-		<constant name="JOY_AXIS_RIGHT_X" value="2" enum="JoyAxisList">
+		<constant name="JOY_AXIS_RIGHT_X" value="2" enum="JoyAxis">
 			Game controller right joystick x-axis.
 		</constant>
-		<constant name="JOY_AXIS_RIGHT_Y" value="3" enum="JoyAxisList">
+		<constant name="JOY_AXIS_RIGHT_Y" value="3" enum="JoyAxis">
 			Game controller right joystick y-axis.
 		</constant>
-		<constant name="JOY_AXIS_TRIGGER_LEFT" value="4" enum="JoyAxisList">
+		<constant name="JOY_AXIS_TRIGGER_LEFT" value="4" enum="JoyAxis">
 			Game controller left trigger axis.
 		</constant>
-		<constant name="JOY_AXIS_TRIGGER_RIGHT" value="5" enum="JoyAxisList">
+		<constant name="JOY_AXIS_TRIGGER_RIGHT" value="5" enum="JoyAxis">
 			Game controller right trigger axis.
 		</constant>
-		<constant name="JOY_AXIS_SDL_MAX" value="6" enum="JoyAxisList">
+		<constant name="JOY_AXIS_SDL_MAX" value="6" enum="JoyAxis">
 			The number of SDL game controller axes.
 		</constant>
-		<constant name="JOY_AXIS_MAX" value="10" enum="JoyAxisList">
+		<constant name="JOY_AXIS_MAX" value="10" enum="JoyAxis">
 			The maximum number of game controller axes: OpenVR supports up to 5 Joysticks making a total of 10 axes.
 		</constant>
-		<constant name="MIDI_MESSAGE_NOTE_OFF" value="8" enum="MidiMessageList">
+		<constant name="MIDI_MESSAGE_NOTE_OFF" value="8" enum="MIDIMessage">
 			MIDI note OFF message.
 		</constant>
-		<constant name="MIDI_MESSAGE_NOTE_ON" value="9" enum="MidiMessageList">
+		<constant name="MIDI_MESSAGE_NOTE_ON" value="9" enum="MIDIMessage">
 			MIDI note ON message.
 		</constant>
-		<constant name="MIDI_MESSAGE_AFTERTOUCH" value="10" enum="MidiMessageList">
+		<constant name="MIDI_MESSAGE_AFTERTOUCH" value="10" enum="MIDIMessage">
 			MIDI aftertouch message.
 		</constant>
-		<constant name="MIDI_MESSAGE_CONTROL_CHANGE" value="11" enum="MidiMessageList">
+		<constant name="MIDI_MESSAGE_CONTROL_CHANGE" value="11" enum="MIDIMessage">
 			MIDI control change message.
 		</constant>
-		<constant name="MIDI_MESSAGE_PROGRAM_CHANGE" value="12" enum="MidiMessageList">
+		<constant name="MIDI_MESSAGE_PROGRAM_CHANGE" value="12" enum="MIDIMessage">
 			MIDI program change message.
 		</constant>
-		<constant name="MIDI_MESSAGE_CHANNEL_PRESSURE" value="13" enum="MidiMessageList">
+		<constant name="MIDI_MESSAGE_CHANNEL_PRESSURE" value="13" enum="MIDIMessage">
 			MIDI channel pressure message.
 		</constant>
-		<constant name="MIDI_MESSAGE_PITCH_BEND" value="14" enum="MidiMessageList">
+		<constant name="MIDI_MESSAGE_PITCH_BEND" value="14" enum="MIDIMessage">
 			MIDI pitch bend message.
 		</constant>
 		<constant name="OK" value="0" enum="Error">

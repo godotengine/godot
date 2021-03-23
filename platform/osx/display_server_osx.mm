@@ -829,7 +829,7 @@ static void _mouseDownEvent(DisplayServer::WindowID window_id, NSEvent *event, i
 	mb->set_position(pos);
 	mb->set_global_position(pos);
 	mb->set_button_mask(DS_OSX->last_button_state);
-	if (index == BUTTON_LEFT && pressed) {
+	if (index == MOUSE_BUTTON_LEFT && pressed) {
 		mb->set_doubleclick([event clickCount] == 2);
 	}
 
@@ -842,10 +842,10 @@ static void _mouseDownEvent(DisplayServer::WindowID window_id, NSEvent *event, i
 
 	if (([event modifierFlags] & NSEventModifierFlagControl)) {
 		wd.mouse_down_control = true;
-		_mouseDownEvent(window_id, event, BUTTON_RIGHT, BUTTON_MASK_RIGHT, true);
+		_mouseDownEvent(window_id, event, MOUSE_BUTTON_RIGHT, MOUSE_BUTTON_MASK_RIGHT, true);
 	} else {
 		wd.mouse_down_control = false;
-		_mouseDownEvent(window_id, event, BUTTON_LEFT, BUTTON_MASK_LEFT, true);
+		_mouseDownEvent(window_id, event, MOUSE_BUTTON_LEFT, MOUSE_BUTTON_MASK_LEFT, true);
 	}
 }
 
@@ -858,9 +858,9 @@ static void _mouseDownEvent(DisplayServer::WindowID window_id, NSEvent *event, i
 	DisplayServerOSX::WindowData &wd = DS_OSX->windows[window_id];
 
 	if (wd.mouse_down_control) {
-		_mouseDownEvent(window_id, event, BUTTON_RIGHT, BUTTON_MASK_RIGHT, false);
+		_mouseDownEvent(window_id, event, MOUSE_BUTTON_RIGHT, MOUSE_BUTTON_MASK_RIGHT, false);
 	} else {
-		_mouseDownEvent(window_id, event, BUTTON_LEFT, BUTTON_MASK_LEFT, false);
+		_mouseDownEvent(window_id, event, MOUSE_BUTTON_LEFT, MOUSE_BUTTON_MASK_LEFT, false);
 	}
 }
 
@@ -946,7 +946,7 @@ static void _mouseDownEvent(DisplayServer::WindowID window_id, NSEvent *event, i
 }
 
 - (void)rightMouseDown:(NSEvent *)event {
-	_mouseDownEvent(window_id, event, BUTTON_RIGHT, BUTTON_MASK_RIGHT, true);
+	_mouseDownEvent(window_id, event, MOUSE_BUTTON_RIGHT, MOUSE_BUTTON_MASK_RIGHT, true);
 }
 
 - (void)rightMouseDragged:(NSEvent *)event {
@@ -954,16 +954,16 @@ static void _mouseDownEvent(DisplayServer::WindowID window_id, NSEvent *event, i
 }
 
 - (void)rightMouseUp:(NSEvent *)event {
-	_mouseDownEvent(window_id, event, BUTTON_RIGHT, BUTTON_MASK_RIGHT, false);
+	_mouseDownEvent(window_id, event, MOUSE_BUTTON_RIGHT, MOUSE_BUTTON_MASK_RIGHT, false);
 }
 
 - (void)otherMouseDown:(NSEvent *)event {
 	if ((int)[event buttonNumber] == 2) {
-		_mouseDownEvent(window_id, event, BUTTON_MIDDLE, BUTTON_MASK_MIDDLE, true);
+		_mouseDownEvent(window_id, event, MOUSE_BUTTON_MIDDLE, MOUSE_BUTTON_MASK_MIDDLE, true);
 	} else if ((int)[event buttonNumber] == 3) {
-		_mouseDownEvent(window_id, event, BUTTON_XBUTTON1, BUTTON_MASK_XBUTTON1, true);
+		_mouseDownEvent(window_id, event, MOUSE_BUTTON_XBUTTON1, MOUSE_BUTTON_MASK_XBUTTON1, true);
 	} else if ((int)[event buttonNumber] == 4) {
-		_mouseDownEvent(window_id, event, BUTTON_XBUTTON2, BUTTON_MASK_XBUTTON2, true);
+		_mouseDownEvent(window_id, event, MOUSE_BUTTON_XBUTTON2, MOUSE_BUTTON_MASK_XBUTTON2, true);
 	} else {
 		return;
 	}
@@ -975,11 +975,11 @@ static void _mouseDownEvent(DisplayServer::WindowID window_id, NSEvent *event, i
 
 - (void)otherMouseUp:(NSEvent *)event {
 	if ((int)[event buttonNumber] == 2) {
-		_mouseDownEvent(window_id, event, BUTTON_MIDDLE, BUTTON_MASK_MIDDLE, false);
+		_mouseDownEvent(window_id, event, MOUSE_BUTTON_MIDDLE, MOUSE_BUTTON_MASK_MIDDLE, false);
 	} else if ((int)[event buttonNumber] == 3) {
-		_mouseDownEvent(window_id, event, BUTTON_XBUTTON1, BUTTON_MASK_XBUTTON1, false);
+		_mouseDownEvent(window_id, event, MOUSE_BUTTON_XBUTTON1, MOUSE_BUTTON_MASK_XBUTTON1, false);
 	} else if ((int)[event buttonNumber] == 4) {
-		_mouseDownEvent(window_id, event, BUTTON_XBUTTON2, BUTTON_MASK_XBUTTON2, false);
+		_mouseDownEvent(window_id, event, MOUSE_BUTTON_XBUTTON2, MOUSE_BUTTON_MASK_XBUTTON2, false);
 	} else {
 		return;
 	}
@@ -1558,10 +1558,10 @@ inline void sendPanEvent(DisplayServer::WindowID window_id, double dx, double dy
 		sendPanEvent(window_id, deltaX, deltaY, [event modifierFlags]);
 	} else {
 		if (fabs(deltaX)) {
-			sendScrollEvent(window_id, 0 > deltaX ? BUTTON_WHEEL_RIGHT : BUTTON_WHEEL_LEFT, fabs(deltaX * 0.3), [event modifierFlags]);
+			sendScrollEvent(window_id, 0 > deltaX ? MOUSE_BUTTON_WHEEL_RIGHT : MOUSE_BUTTON_WHEEL_LEFT, fabs(deltaX * 0.3), [event modifierFlags]);
 		}
 		if (fabs(deltaY)) {
-			sendScrollEvent(window_id, 0 < deltaY ? BUTTON_WHEEL_UP : BUTTON_WHEEL_DOWN, fabs(deltaY * 0.3), [event modifierFlags]);
+			sendScrollEvent(window_id, 0 < deltaY ? MOUSE_BUTTON_WHEEL_UP : MOUSE_BUTTON_WHEEL_DOWN, fabs(deltaY * 0.3), [event modifierFlags]);
 		}
 	}
 }

@@ -619,15 +619,15 @@ String InputEventMouseButton::as_text() const {
 	// Button
 	int idx = get_button_index();
 	switch (idx) {
-		case BUTTON_LEFT:
-		case BUTTON_RIGHT:
-		case BUTTON_MIDDLE:
-		case BUTTON_WHEEL_UP:
-		case BUTTON_WHEEL_DOWN:
-		case BUTTON_WHEEL_LEFT:
-		case BUTTON_WHEEL_RIGHT:
-		case BUTTON_XBUTTON1:
-		case BUTTON_XBUTTON2:
+		case MOUSE_BUTTON_LEFT:
+		case MOUSE_BUTTON_RIGHT:
+		case MOUSE_BUTTON_MIDDLE:
+		case MOUSE_BUTTON_WHEEL_UP:
+		case MOUSE_BUTTON_WHEEL_DOWN:
+		case MOUSE_BUTTON_WHEEL_LEFT:
+		case MOUSE_BUTTON_WHEEL_RIGHT:
+		case MOUSE_BUTTON_XBUTTON1:
+		case MOUSE_BUTTON_XBUTTON2:
 			full_string += RTR(_mouse_button_descriptions[idx - 1]); // button index starts from 1, array index starts from 0, so subtract 1
 			break;
 		default:
@@ -651,15 +651,15 @@ String InputEventMouseButton::to_string() {
 	String button_string = itos(idx);
 
 	switch (idx) {
-		case BUTTON_LEFT:
-		case BUTTON_RIGHT:
-		case BUTTON_MIDDLE:
-		case BUTTON_WHEEL_UP:
-		case BUTTON_WHEEL_DOWN:
-		case BUTTON_WHEEL_LEFT:
-		case BUTTON_WHEEL_RIGHT:
-		case BUTTON_XBUTTON1:
-		case BUTTON_XBUTTON2:
+		case MOUSE_BUTTON_LEFT:
+		case MOUSE_BUTTON_RIGHT:
+		case MOUSE_BUTTON_MIDDLE:
+		case MOUSE_BUTTON_WHEEL_UP:
+		case MOUSE_BUTTON_WHEEL_DOWN:
+		case MOUSE_BUTTON_WHEEL_LEFT:
+		case MOUSE_BUTTON_WHEEL_RIGHT:
+		case MOUSE_BUTTON_XBUTTON1:
+		case MOUSE_BUTTON_XBUTTON2:
 			button_string += " (" + RTR(_mouse_button_descriptions[idx - 1]) + ")"; // button index starts from 1, array index starts from 0, so subtract 1
 			break;
 		default:
@@ -761,20 +761,20 @@ String InputEventMouseMotion::to_string() {
 	int button_mask = get_button_mask();
 	String button_mask_string = itos(button_mask);
 	switch (get_button_mask()) {
-		case BUTTON_MASK_LEFT:
-			button_mask_string += " (" + RTR(_mouse_button_descriptions[BUTTON_LEFT - 1]) + ")";
+		case MOUSE_BUTTON_MASK_LEFT:
+			button_mask_string += " (" + RTR(_mouse_button_descriptions[MOUSE_BUTTON_LEFT - 1]) + ")";
 			break;
-		case BUTTON_MASK_MIDDLE:
-			button_mask_string += " (" + RTR(_mouse_button_descriptions[BUTTON_MIDDLE - 1]) + ")";
+		case MOUSE_BUTTON_MASK_MIDDLE:
+			button_mask_string += " (" + RTR(_mouse_button_descriptions[MOUSE_BUTTON_MIDDLE - 1]) + ")";
 			break;
-		case BUTTON_MASK_RIGHT:
-			button_mask_string += " (" + RTR(_mouse_button_descriptions[BUTTON_RIGHT - 1]) + ")";
+		case MOUSE_BUTTON_MASK_RIGHT:
+			button_mask_string += " (" + RTR(_mouse_button_descriptions[MOUSE_BUTTON_RIGHT - 1]) + ")";
 			break;
-		case BUTTON_MASK_XBUTTON1:
-			button_mask_string += " (" + RTR(_mouse_button_descriptions[BUTTON_XBUTTON1 - 1]) + ")";
+		case MOUSE_BUTTON_MASK_XBUTTON1:
+			button_mask_string += " (" + RTR(_mouse_button_descriptions[MOUSE_BUTTON_XBUTTON1 - 1]) + ")";
 			break;
-		case BUTTON_MASK_XBUTTON2:
-			button_mask_string += " (" + RTR(_mouse_button_descriptions[BUTTON_XBUTTON2 - 1]) + ")";
+		case MOUSE_BUTTON_MASK_XBUTTON2:
+			button_mask_string += " (" + RTR(_mouse_button_descriptions[MOUSE_BUTTON_XBUTTON2 - 1]) + ")";
 			break;
 		default:
 			break;

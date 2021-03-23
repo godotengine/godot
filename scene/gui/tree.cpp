@@ -1588,7 +1588,7 @@ int Tree::draw_item(const Point2i &p_pos, const Point2 &p_draw_ofs, const Size2 
 
 					if (p_item->cells[i].custom_button) {
 						if (cache.hover_item == p_item && cache.hover_cell == i) {
-							if (Input::get_singleton()->is_mouse_button_pressed(BUTTON_LEFT)) {
+							if (Input::get_singleton()->is_mouse_button_pressed(MOUSE_BUTTON_LEFT)) {
 								draw_style_box(cache.custom_button_pressed, ir);
 							} else {
 								draw_style_box(cache.custom_button_hover, ir);
@@ -1825,7 +1825,7 @@ Rect2 Tree::search_item_rect(TreeItem *p_from, TreeItem *p_item) {
 }
 
 void Tree::_range_click_timeout() {
-	if (range_item_last && !range_drag_enabled && Input::get_singleton()->is_mouse_button_pressed(BUTTON_LEFT)) {
+	if (range_item_last && !range_drag_enabled && Input::get_singleton()->is_mouse_button_pressed(MOUSE_BUTTON_LEFT)) {
 		Point2 pos = get_local_mouse_position() - cache.bg->get_offset();
 		if (show_column_titles) {
 			pos.y -= _get_title_button_height();
@@ -1843,7 +1843,7 @@ void Tree::_range_click_timeout() {
 
 		propagate_mouse_activated = false; // done from outside, so signal handler can't clear the tree in the middle of emit (which is a common case)
 		blocked++;
-		propagate_mouse_event(pos + cache.offset, 0, 0, false, root, BUTTON_LEFT, mb);
+		propagate_mouse_event(pos + cache.offset, 0, 0, false, root, MOUSE_BUTTON_LEFT, mb);
 		blocked--;
 
 		if (range_click_timer->is_one_shot()) {
@@ -1960,7 +1960,7 @@ int Tree::propagate_mouse_event(const Point2i &p_pos, int x_ofs, int y_ofs, bool
 			col_width -= w + cache.button_margin;
 		}
 
-		if (p_button == BUTTON_LEFT || (p_button == BUTTON_RIGHT && allow_rmb_select)) {
+		if (p_button == MOUSE_BUTTON_LEFT || (p_button == MOUSE_BUTTON_RIGHT && allow_rmb_select)) {
 			/* process selection */
 
 			if (p_doubleclick && (!c.editable || c.mode == TreeItem::CELL_MODE_CUSTOM || c.mode == TreeItem::CELL_MODE_ICON /*|| c.mode==TreeItem::CELL_MODE_CHECK*/)) { //it's confusing for check
@@ -1972,10 +1972,10 @@ int Tree::propagate_mouse_event(const Point2i &p_pos, int x_ofs, int y_ofs, bool
 			}
 
 			if (select_mode == SELECT_MULTI && p_mod->get_command() && c.selectable) {
-				if (!c.selected || p_button == BUTTON_RIGHT) {
+				if (!c.selected || p_button == MOUSE_BUTTON_RIGHT) {
 					p_item->select(col);
 					emit_signal("multi_selected", p_item, col, true);
-					if (p_button == BUTTON_RIGHT) {
+					if (p_button == MOUSE_BUTTON_RIGHT) {
 						emit_signal("item_rmb_selected", get_local_mouse_position());
 					}
 
@@ -1992,21 +1992,21 @@ int Tree::propagate_mouse_event(const Point2i &p_pos, int x_ofs, int y_ofs, bool
 						bool inrange = false;
 
 						select_single_item(p_item, root, col, selected_item, &inrange);
-						if (p_button == BUTTON_RIGHT) {
+						if (p_button == MOUSE_BUTTON_RIGHT) {
 							emit_signal("item_rmb_selected", get_local_mouse_position());
 						}
 					} else {
 						int icount = _count_selected_items(root);
 
-						if (select_mode == SELECT_MULTI && icount > 1 && p_button != BUTTON_RIGHT) {
+						if (select_mode == SELECT_MULTI && icount > 1 && p_button != MOUSE_BUTTON_RIGHT) {
 							single_select_defer = p_item;
 							single_select_defer_column = col;
 						} else {
-							if (p_button != BUTTON_RIGHT || !c.selected) {
+							if (p_button != MOUSE_BUTTON_RIGHT || !c.selected) {
 								select_single_item(p_item, root, col);
 							}
 
-							if (p_button == BUTTON_RIGHT) {
+							if (p_button == MOUSE_BUTTON_RIGHT) {
 								emit_signal("item_rmb_selected", get_local_mouse_position());
 							}
 						}
@@ -2076,7 +2076,7 @@ int Tree::propagate_mouse_event(const Point2i &p_pos, int x_ofs, int y_ofs, bool
 						/* touching the combo */
 						bool up = p_pos.y < (item_h / 2);
 
-						if (p_button == BUTTON_LEFT) {
+						if (p_button == MOUSE_BUTTON_LEFT) {
 							if (range_click_timer->get_time_left() == 0) {
 								range_item_last = p_item;
 								range_up_last = up;
@@ -2093,13 +2093,13 @@ int Tree::propagate_mouse_event(const Point2i &p_pos, int x_ofs, int y_ofs, bool
 
 							item_edited(col, p_item);
 
-						} else if (p_button == BUTTON_RIGHT) {
+						} else if (p_button == MOUSE_BUTTON_RIGHT) {
 							p_item->set_range(col, (up ? c.max : c.min));
 							item_edited(col, p_item);
-						} else if (p_button == BUTTON_WHEEL_UP) {
+						} else if (p_button == MOUSE_BUTTON_WHEEL_UP) {
 							p_item->set_range(col, c.val + c.step);
 							item_edited(col, p_item);
-						} else if (p_button == BUTTON_WHEEL_DOWN) {
+						} else if (p_button == MOUSE_BUTTON_WHEEL_DOWN) {
 							p_item->set_range(col, c.val - c.step);
 							item_edited(col, p_item);
 						}
@@ -2132,14 +2132,14 @@ int Tree::propagate_mouse_event(const Point2i &p_pos, int x_ofs, int y_ofs, bool
 				}
 
 				if (!p_item->cells[col].custom_button || !on_arrow) {
-					item_edited(col, p_item, p_button == BUTTON_LEFT);
+					item_edited(col, p_item, p_button == MOUSE_BUTTON_LEFT);
 				}
 				click_handled = true;
 				return -1;
 			} break;
 		};
 
-		if (!bring_up_editor || p_button != BUTTON_LEFT) {
+		if (!bring_up_editor || p_button != MOUSE_BUTTON_LEFT) {
 			return -1;
 		}
 
@@ -2179,7 +2179,7 @@ int Tree::propagate_mouse_event(const Point2i &p_pos, int x_ofs, int y_ofs, bool
 				item_h += child_h;
 			}
 		}
-		if (p_item == root && p_button == BUTTON_RIGHT) {
+		if (p_item == root && p_button == MOUSE_BUTTON_RIGHT) {
 			emit_signal("empty_rmb", get_local_mouse_position());
 		}
 	}
@@ -2720,7 +2720,7 @@ void Tree::_gui_input(Ref<InputEvent> p_event) {
 		bool rtl = is_layout_rtl();
 
 		if (!b->is_pressed()) {
-			if (b->get_button_index() == BUTTON_LEFT) {
+			if (b->get_button_index() == MOUSE_BUTTON_LEFT) {
 				Point2 pos = b->get_position();
 				if (rtl) {
 					pos.x = get_size().width - pos.x;
@@ -2801,8 +2801,8 @@ void Tree::_gui_input(Ref<InputEvent> p_event) {
 		}
 
 		switch (b->get_button_index()) {
-			case BUTTON_RIGHT:
-			case BUTTON_LEFT: {
+			case MOUSE_BUTTON_RIGHT:
+			case MOUSE_BUTTON_LEFT: {
 				Ref<StyleBox> bg = cache.bg;
 
 				Point2 pos = b->get_position();
@@ -2815,7 +2815,7 @@ void Tree::_gui_input(Ref<InputEvent> p_event) {
 					pos.y -= _get_title_button_height();
 
 					if (pos.y < 0) {
-						if (b->get_button_index() == BUTTON_LEFT) {
+						if (b->get_button_index() == MOUSE_BUTTON_LEFT) {
 							pos.x += cache.offset.x;
 							int len = 0;
 							for (int i = 0; i < columns.size(); i++) {
@@ -2833,7 +2833,7 @@ void Tree::_gui_input(Ref<InputEvent> p_event) {
 					}
 				}
 				if (!root || (!root->get_children() && hide_root)) {
-					if (b->get_button_index() == BUTTON_RIGHT && allow_rmb_select) {
+					if (b->get_button_index() == MOUSE_BUTTON_RIGHT && allow_rmb_select) {
 						emit_signal("empty_tree_rmb_selected", get_local_mouse_position());
 					}
 					break;
@@ -2854,7 +2854,7 @@ void Tree::_gui_input(Ref<InputEvent> p_event) {
 					}
 				}
 
-				if (b->get_button_index() == BUTTON_RIGHT) {
+				if (b->get_button_index() == MOUSE_BUTTON_RIGHT) {
 					break;
 				}
 
@@ -2877,7 +2877,7 @@ void Tree::_gui_input(Ref<InputEvent> p_event) {
 						set_physics_process_internal(true);
 					}
 
-					if (b->get_button_index() == BUTTON_LEFT) {
+					if (b->get_button_index() == MOUSE_BUTTON_LEFT) {
 						if (get_item_at_position(b->get_position()) == nullptr && !b->get_shift() && !b->get_control() && !b->get_command()) {
 							emit_signal("nothing_selected");
 						}
@@ -2890,7 +2890,7 @@ void Tree::_gui_input(Ref<InputEvent> p_event) {
 				}
 
 			} break;
-			case BUTTON_WHEEL_UP: {
+			case MOUSE_BUTTON_WHEEL_UP: {
 				double prev_value = v_scroll->get_value();
 				v_scroll->set_value(v_scroll->get_value() - v_scroll->get_page() * b->get_factor() / 8);
 				if (v_scroll->get_value() != prev_value) {
@@ -2898,7 +2898,7 @@ void Tree::_gui_input(Ref<InputEvent> p_event) {
 				}
 
 			} break;
-			case BUTTON_WHEEL_DOWN: {
+			case MOUSE_BUTTON_WHEEL_DOWN: {
 				double prev_value = v_scroll->get_value();
 				v_scroll->set_value(v_scroll->get_value() + v_scroll->get_page() * b->get_factor() / 8);
 				if (v_scroll->get_value() != prev_value) {
