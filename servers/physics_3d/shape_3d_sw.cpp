@@ -627,7 +627,7 @@ Vector3 CapsuleShape3DSW::get_moment_of_inertia(real_t p_mass) const {
 	return Vector3(
 			(p_mass / 3.0) * (extents.y * extents.y + extents.z * extents.z),
 			(p_mass / 3.0) * (extents.x * extents.x + extents.z * extents.z),
-			(p_mass / 3.0) * (extents.y * extents.y + extents.y * extents.y));
+			(p_mass / 3.0) * (extents.x * extents.x + extents.y * extents.y));
 }
 
 void CapsuleShape3DSW::_setup(real_t p_height, real_t p_radius) {
@@ -807,7 +807,7 @@ Vector3 CylinderShape3DSW::get_moment_of_inertia(real_t p_mass) const {
 	return Vector3(
 			(p_mass / 3.0) * (extents.y * extents.y + extents.z * extents.z),
 			(p_mass / 3.0) * (extents.x * extents.x + extents.z * extents.z),
-			(p_mass / 3.0) * (extents.y * extents.y + extents.y * extents.y));
+			(p_mass / 3.0) * (extents.x * extents.x + extents.y * extents.y));
 }
 
 void CylinderShape3DSW::_setup(real_t p_height, real_t p_radius) {
@@ -1064,7 +1064,7 @@ Vector3 ConvexPolygonShape3DSW::get_moment_of_inertia(real_t p_mass) const {
 	return Vector3(
 			(p_mass / 3.0) * (extents.y * extents.y + extents.z * extents.z),
 			(p_mass / 3.0) * (extents.x * extents.x + extents.z * extents.z),
-			(p_mass / 3.0) * (extents.y * extents.y + extents.y * extents.y));
+			(p_mass / 3.0) * (extents.x * extents.x + extents.y * extents.y));
 }
 
 void ConvexPolygonShape3DSW::_setup(const Vector<Vector3> &p_vertices) {
@@ -1424,7 +1424,7 @@ Vector3 ConcavePolygonShape3DSW::get_moment_of_inertia(real_t p_mass) const {
 	return Vector3(
 			(p_mass / 3.0) * (extents.y * extents.y + extents.z * extents.z),
 			(p_mass / 3.0) * (extents.x * extents.x + extents.z * extents.z),
-			(p_mass / 3.0) * (extents.y * extents.y + extents.y * extents.y));
+			(p_mass / 3.0) * (extents.x * extents.x + extents.y * extents.y));
 }
 
 struct _VolumeSW_BVH_Element {
@@ -1662,7 +1662,7 @@ Vector3 HeightMapShape3DSW::get_moment_of_inertia(real_t p_mass) const {
 	return Vector3(
 			(p_mass / 3.0) * (extents.y * extents.y + extents.z * extents.z),
 			(p_mass / 3.0) * (extents.x * extents.x + extents.z * extents.z),
-			(p_mass / 3.0) * (extents.y * extents.y + extents.y * extents.y));
+			(p_mass / 3.0) * (extents.x * extents.x + extents.y * extents.y));
 }
 
 void HeightMapShape3DSW::_setup(Vector<real_t> p_heights, int p_width, int p_depth, real_t p_cell_size) {
