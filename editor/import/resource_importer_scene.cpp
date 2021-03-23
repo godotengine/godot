@@ -376,15 +376,7 @@ Node *ResourceImporterScene::_pre_fix_node(Node *p_node, Node *p_root, Map<Ref<E
 					memdelete(p_node);
 					p_node = col;
 
-					int idx = 0;
-					for (List<Ref<Shape3D>>::Element *E = shapes.front(); E; E = E->next()) {
-						CollisionShape3D *cshape = memnew(CollisionShape3D);
-						cshape->set_shape(E->get());
-						col->add_child(cshape);
-
-						cshape->set_owner(col->get_owner());
-						idx++;
-					}
+					_add_shapes(col, shapes);
 				}
 			}
 
@@ -443,15 +435,7 @@ Node *ResourceImporterScene::_pre_fix_node(Node *p_node, Node *p_root, Map<Ref<E
 			rigid_body->add_child(mi);
 			mi->set_owner(rigid_body->get_owner());
 
-			int idx = 0;
-			for (List<Ref<Shape3D>>::Element *E = shapes.front(); E; E = E->next()) {
-				CollisionShape3D *cshape = memnew(CollisionShape3D);
-				cshape->set_shape(E->get());
-				rigid_body->add_child(cshape);
-
-				cshape->set_owner(p_node->get_owner());
-				idx++;
-			}
+			_add_shapes(rigid_body, shapes);
 		}
 
 	} else if ((_teststr(name, "col") || (_teststr(name, "convcol"))) && Object::cast_to<EditorSceneImporterMeshNode3D>(p_node)) {
@@ -489,16 +473,7 @@ Node *ResourceImporterScene::_pre_fix_node(Node *p_node, Node *p_root, Map<Ref<E
 				mi->add_child(col);
 				col->set_owner(mi->get_owner());
 
-				int idx = 0;
-				for (List<Ref<Shape3D>>::Element *E = shapes.front(); E; E = E->next()) {
-					CollisionShape3D *cshape = memnew(CollisionShape3D);
-					cshape->set_shape(E->get());
-					col->add_child(cshape);
-
-					cshape->set_owner(p_node->get_owner());
-
-					idx++;
-				}
+				_add_shapes(col, shapes);
 			}
 		}
 
@@ -546,15 +521,7 @@ Node *ResourceImporterScene::_pre_fix_node(Node *p_node, Node *p_root, Map<Ref<E
 				p_node->add_child(col);
 				col->set_owner(p_node->get_owner());
 
-				int idx = 0;
-				for (List<Ref<Shape3D>>::Element *E = shapes.front(); E; E = E->next()) {
-					CollisionShape3D *cshape = memnew(CollisionShape3D);
-					cshape->set_shape(E->get());
-					col->add_child(cshape);
-
-					cshape->set_owner(p_node->get_owner());
-					idx++;
-				}
+				_add_shapes(col, shapes);
 			}
 		}
 	}
@@ -1297,6 +1264,16 @@ void ResourceImporterScene::_generate_meshes(Node *p_node, const Dictionary &p_m
 
 	for (int i = 0; i < p_node->get_child_count(); i++) {
 		_generate_meshes(p_node->get_child(i), p_mesh_data, p_generate_lods, p_create_shadow_meshes, p_light_bake_mode, p_lightmap_texel_size, p_src_lightmap_cache, r_dst_lightmap_cache);
+	}
+}
+
+void ResourceImporterScene::_add_shapes(Node *p_node, const List<Ref<Shape3D>> &p_shapes) {
+	for (const List<Ref<Shape3D>>::Element *E = p_shapes.front(); E; E = E->next()) {
+		CollisionShape3D *cshape = memnew(CollisionShape3D);
+		cshape->set_shape(E->get());
+		p_node->add_child(cshape);
+
+		cshape->set_owner(p_node->get_owner());
 	}
 }
 
