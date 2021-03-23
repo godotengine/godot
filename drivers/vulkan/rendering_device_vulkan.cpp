@@ -1486,7 +1486,7 @@ Error RenderingDeviceVulkan::_staging_buffer_allocate(uint32_t p_amount, uint32_
 				// possible in a single frame
 				if (staging_buffer_blocks[staging_buffer_current].frame_used == frames_drawn) {
 					//guess we did.. ok, let's see if we can insert a new block..
-					if (staging_buffer_blocks.size() * staging_buffer_block_size < staging_buffer_max_size) {
+					if ((uint64_t)staging_buffer_blocks.size() * staging_buffer_block_size < staging_buffer_max_size) {
 						//we can, so we are safe
 						Error err = _insert_staging_block();
 						if (err) {
@@ -1530,7 +1530,7 @@ Error RenderingDeviceVulkan::_staging_buffer_allocate(uint32_t p_amount, uint32_
 			staging_buffer_blocks.write[staging_buffer_current].fill_amount = 0;
 		} else if (staging_buffer_blocks[staging_buffer_current].frame_used > frames_drawn - frame_count) {
 			//this block may still be in use, let's not touch it unless we have to, so.. can we create a new one?
-			if (staging_buffer_blocks.size() * staging_buffer_block_size < staging_buffer_max_size) {
+			if ((uint64_t)staging_buffer_blocks.size() * staging_buffer_block_size < staging_buffer_max_size) {
 				//we are still allowed to create a new block, so let's do that and insert it for current pos
 				Error err = _insert_staging_block();
 				if (err) {
@@ -2566,7 +2566,7 @@ Vector<uint8_t> RenderingDeviceVulkan::_texture_get_data_from_image(Texture *tex
 					for (uint32_t y = 0; y < height; y++) {
 						const uint8_t *rptr = slice_read_ptr + y * layout.rowPitch;
 						uint8_t *wptr = write_ptr + y * pixel_size * width;
-						copymem(wptr, rptr, pixel_size * width);
+						copymem(wptr, rptr, (uint64_t)pixel_size * width);
 					}
 				}
 			}
