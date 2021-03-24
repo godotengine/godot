@@ -1302,7 +1302,7 @@ Node *ResourceImporterScene::pre_import(const String &p_source_file) {
 
 	ERR_FAIL_COND_V(!importer.is_valid(), nullptr);
 
-	Error err;
+	Error err = OK;
 	Node *scene = importer->import_scene(p_source_file, EditorSceneImporter::IMPORT_ANIMATION | EditorSceneImporter::IMPORT_GENERATE_TANGENT_ARRAYS, 15, nullptr, &err);
 	if (!scene || err != OK) {
 		return nullptr;
