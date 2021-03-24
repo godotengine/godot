@@ -1102,7 +1102,7 @@ ProjectSettings::ProjectSettings() {
 	if (Engine::get_singleton()->has_singleton("GodotSharp")) {
 		extensions.push_back("cs");
 	}
-	extensions.push_back("shader");
+	extensions.push_back("gdshader");
 
 	GLOBAL_DEF("editor/run/main_run_args", "");
 
