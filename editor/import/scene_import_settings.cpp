@@ -477,7 +477,7 @@ SceneImportSettings *SceneImportSettings::get_singleton() {
 void SceneImportSettings::_select(Tree *p_from, String p_type, String p_id) {
 	selecting = true;
 
-	if (p_type == "Node") {
+	if (p_type == "Node" && node_map.has(p_id)) {
 		node_selected->hide(); //always hide just in case
 		mesh_preview->hide();
 		if (Object::cast_to<Node3D>(scene)) {
@@ -516,7 +516,7 @@ void SceneImportSettings::_select(Tree *p_from, String p_type, String p_id) {
 				scene_import_settings_data->category = ResourceImporterScene::INTERNAL_IMPORT_CATEGORY_NODE;
 			}
 		}
-	} else if (p_type == "Animation") {
+	} else if (p_type == "Animation" && animation_map.has(p_id)) {
 		node_selected->hide(); //always hide just in case
 		mesh_preview->hide();
 		if (Object::cast_to<Node3D>(scene)) {
@@ -529,13 +529,18 @@ void SceneImportSettings::_select(Tree *p_from, String p_type, String p_id) {
 
 		scene_import_settings_data->settings = &ad.settings;
 		scene_import_settings_data->category = ResourceImporterScene::INTERNAL_IMPORT_CATEGORY_ANIMATION;
-	} else if (p_type == "Mesh") {
+	} else if (p_type == "Mesh" && mesh_map.has(p_id)) {
 		node_selected->hide();
 		if (Object::cast_to<Node3D>(scene)) {
 			Object::cast_to<Node3D>(scene)->hide();
 		}
 
 		MeshData &md = mesh_map[p_id];
+
+		if (md.mesh_node == nullptr) {
+			return;
+		}
+
 		if (p_from != mesh_tree) {
 			md.mesh_node->uncollapse_tree();
 			md.mesh_node->select(0);
@@ -554,7 +559,8 @@ void SceneImportSettings::_select(Tree *p_from, String p_type, String p_id) {
 
 		scene_import_settings_data->settings = &md.settings;
 		scene_import_settings_data->category = ResourceImporterScene::INTERNAL_IMPORT_CATEGORY_MESH;
-	} else if (p_type == "Material") {
+
+	} else if (p_type == "Material" && material_map.has(p_id)) {
 		node_selected->hide();
 		if (Object::cast_to<Node3D>(scene)) {
 			Object::cast_to<Node3D>(scene)->hide();

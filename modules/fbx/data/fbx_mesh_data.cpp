@@ -398,6 +398,8 @@ EditorSceneImporterMeshNode3D *FBXMeshData::create_fbx_mesh(const ImportState &s
 
 	EditorSceneImporterMeshNode3D *godot_mesh = memnew(EditorSceneImporterMeshNode3D);
 	godot_mesh->set_mesh(mesh);
+	godot_mesh->set_name(ImportUtils::FBXNodeToName(model->Name()));
+	mesh->set_name(ImportUtils::FBXNodeToName(model->Name()));
 	return godot_mesh;
 }
 

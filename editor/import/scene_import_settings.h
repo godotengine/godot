@@ -106,10 +106,10 @@ class SceneImportSettings : public ConfirmationDialog {
 	Map<String, MaterialData> material_map;
 
 	struct MeshData {
-		bool has_import_id;
+		bool has_import_id = false;
 		Ref<Mesh> mesh;
-		TreeItem *scene_node;
-		TreeItem *mesh_node;
+		TreeItem *scene_node = nullptr;
+		TreeItem *mesh_node = nullptr;
 
 		float cam_rot_x = -Math_PI / 4;
 		float cam_rot_y = -Math_PI / 4;
