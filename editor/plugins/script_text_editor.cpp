@@ -601,8 +601,7 @@ void ScriptTextEditor::_bookmark_item_pressed(int p_idx) {
 	if (p_idx < 4) { // Any item before the separator.
 		_edit_option(bookmarks_menu->get_item_id(p_idx));
 	} else {
-		code_editor->goto_line(bookmarks_menu->get_item_metadata(p_idx));
-		code_editor->get_text_editor()->call_deferred("center_viewport_to_cursor"); //Need to be deferred, because goto uses call_deferred().
+		code_editor->goto_line_centered(bookmarks_menu->get_item_metadata(p_idx));
 	}
 }
 
@@ -791,7 +790,7 @@ void ScriptTextEditor::_lookup_symbol(const String &p_symbol, int p_row, int p_c
 					emit_signal("request_open_script_at_line", result.script, result.location - 1);
 				} else {
 					emit_signal("request_save_history");
-					_goto_line(result.location - 1);
+					goto_line_centered(result.location - 1);
 				}
 			} break;
 			case ScriptLanguage::LookupResult::RESULT_CLASS: {
