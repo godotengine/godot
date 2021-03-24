@@ -73,8 +73,8 @@ EM_BOOL DisplayServerJavaScript::fullscreen_change_callback(int p_event_type, co
 	// Empty ID is canvas.
 	String target_id = String::utf8(p_event->id);
 	if (target_id.is_empty() || target_id == String::utf8(&(display->canvas_id[1]))) {
-		// This event property is the only reliable data on
-		// browser fullscreen state.
+		/* This event property is the only reliable data on
+		 browser fullscreen state.*/
 		if (p_event->isFullscreen) {
 			display->window_mode = WINDOW_MODE_FULLSCREEN;
 		} else {
@@ -232,8 +232,8 @@ EM_BOOL DisplayServerJavaScript::mouse_button_callback(int p_event_type, const E
 	int mask = input->get_mouse_button_mask();
 	int button_flag = 1 << (ev->get_button_index() - 1);
 	if (ev->is_pressed()) {
-		// Since the event is consumed, focus manually. The containing iframe,
-		// if exists, may not have focus yet, so focus even if already focused.
+		/* Since the event is consumed, focus manually. The containing iframe,
+		 if exists, may not have focus yet, so focus even if already focused.*/
 		focus_canvas();
 		mask |= button_flag;
 	} else if (mask & button_flag) {
@@ -255,8 +255,8 @@ EM_BOOL DisplayServerJavaScript::mousemove_callback(int p_event_type, const Emsc
 	Input *input = Input::get_singleton();
 	int input_mask = input->get_mouse_button_mask();
 	Point2 pos = compute_position_in_canvas(p_event->clientX, p_event->clientY);
-	// For motion outside the canvas, only read mouse movement if dragging
-	// started inside the canvas; imitating desktop app behaviour.
+	/* For motion outside the canvas, only read mouse movement if dragging
+	 started inside the canvas; imitating desktop app behaviour.*/
 	if (!ds->cursor_inside_canvas && !input_mask)
 		return false;
 
@@ -471,8 +471,8 @@ EM_BOOL DisplayServerJavaScript::wheel_callback(int p_event_type, const Emscript
 	else
 		return false;
 
-	// Different browsers give wildly different delta values, and we can't
-	// interpret deltaMode, so use default value for wheel events' factor.
+	/* Different browsers give wildly different delta values, and we can't
+	 interpret deltaMode, so use default value for wheel events' factor.*/
 
 	int button_flag = 1 << (ev->get_button_index() - 1);
 
@@ -774,8 +774,8 @@ DisplayServerJavaScript::DisplayServerJavaScript(const String &p_rendering_drive
 #define SET_EM_WINDOW_CALLBACK(ev, cb)                                                         \
 	result = emscripten_set_##ev##_callback(EMSCRIPTEN_EVENT_TARGET_WINDOW, NULL, false, &cb); \
 	EM_CHECK(ev)
-	// These callbacks from Emscripten's html5.h suffice to access most
-	// JavaScript APIs.
+	/* These callbacks from Emscripten's html5.h suffice to access most
+	 JavaScript APIs.*/
 	SET_EM_CALLBACK(canvas_id, mousedown, mouse_button_callback)
 	SET_EM_WINDOW_CALLBACK(mousemove, mousemove_callback)
 	SET_EM_WINDOW_CALLBACK(mouseup, mouse_button_callback)
@@ -791,8 +791,8 @@ DisplayServerJavaScript::DisplayServerJavaScript(const String &p_rendering_drive
 #undef SET_EM_CALLBACK
 #undef EM_CHECK
 
-	// For APIs that are not (sufficiently) exposed, a
-	// library is used below (implemented in library_godot_display.js).
+	/* For APIs that are not (sufficiently) exposed, a
+	 library is used below (implemented in library_godot_display.js).*/
 	godot_js_display_notification_cb(&send_window_event_callback,
 			WINDOW_EVENT_MOUSE_ENTER,
 			WINDOW_EVENT_MOUSE_EXIT,
