@@ -967,7 +967,7 @@ void FileSystemDock::_select_file(const String &p_path, bool p_select_in_favorit
 				ResourceImporterScene::get_singleton()->get_recognized_extensions(&importer_exts);
 				String extension = fpath.get_extension();
 				for (List<String>::Element *E = importer_exts.front(); E; E = E->next()) {
-					if (extension.nocasecmp_to(E->get())) {
+					if (extension.nocasecmp_to(E->get()) == 0) {
 						is_imported = true;
 						break;
 					}
