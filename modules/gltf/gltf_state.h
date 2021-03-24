@@ -53,6 +53,7 @@ class GLTFState : public Resource {
 	friend class GLTFDocument;
 	friend class PackedSceneGLTF;
 
+	String filename;
 	Dictionary json;
 	int major_version = 0;
 	int minor_version = 0;
