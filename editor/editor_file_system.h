@@ -36,7 +36,9 @@
 #include "core/os/thread_safe.h"
 #include "core/templates/safe_refcount.h"
 #include "core/templates/set.h"
+#include "core/templates/thread_work_pool.h"
 #include "scene/main/node.h"
+
 class FileAccess;
 
 struct EditorProgressBG;
@@ -214,9 +216,11 @@ class EditorFileSystem : public Node {
 
 	struct ImportFile {
 		String path;
+		String importer;
+		bool threaded = false;
 		int order = 0;
 		bool operator<(const ImportFile &p_if) const {
-			return order < p_if.order;
+			return order == p_if.order ? (importer < p_if.importer) : (order < p_if.order);
 		}
 	};
 
@@ -235,6 +239,16 @@ class EditorFileSystem : public Node {
 	void _move_group_files(EditorFileSystemDirectory *efd, const String &p_group_file, const String &p_new_location);
 
 	Set<String> group_file_cache;
+
+	ThreadWorkPool import_threads;
+
+	struct ImportThreadData {
+		const ImportFile *reimport_files;
+		int reimport_from;
+		int max_index = 0;
+	};
+
+	void _reimport_thread(uint32_t p_index, ImportThreadData *p_import_data);
 
 protected:
 	void _notification(int p_what);
