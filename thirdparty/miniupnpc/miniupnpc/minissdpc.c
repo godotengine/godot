@@ -576,7 +576,17 @@ ssdpDiscoverDevices(const char * const deviceTypes[],
  * in order to give this ip to setsockopt(sudp, IPPROTO_IP, IP_MULTICAST_IF) */
 	if(!ipv6) {
 		DWORD ifbestidx;
+#if _WIN32_WINNT >= 0x0600 // _WIN32_WINNT_VISTA
+		// While we don't need IPv6 support, the IPv4 only funciton is not available in UWP apps.
+		SOCKADDR_IN destAddr;
+		memset(&destAddr, 0, sizeof(destAddr));
+		destAddr.sin_family = AF_INET;
+		destAddr.sin_addr.s_addr = inet_addr("223.255.255.255");
+		destAddr.sin_port = 0;
+		if (GetBestInterfaceEx((struct sockaddr *)&destAddr, &ifbestidx) == NO_ERROR) {
+#else
 		if (GetBestInterface(inet_addr("223.255.255.255"), &ifbestidx) == NO_ERROR) {
+#endif
 			DWORD dwRetVal = NO_ERROR;
 			PIP_ADAPTER_ADDRESSES pAddresses = NULL;
 			ULONG outBufLen = 15360;
