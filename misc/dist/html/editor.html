@@ -1,8 +1,10 @@
 <!DOCTYPE html>
-<html xmlns='http://www.w3.org/1999/xhtml' lang='' xml:lang=''>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en">
 <head>
-	<meta charset='utf-8' />
-	<meta name='viewport' content='width=device-width, initial-scale=1, minimum-scale=1, maximum-scale=1, user-scalable=no' />
+	<meta charset="utf-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1, maximum-scale=1, user-scalable=no" />
+	<meta name="author" content="Godot Engine" />
+	<meta name="description" content="Use the Godot Engine editor directly in your web browser, without having to install anything." />
 	<meta name="mobile-web-app-capable" content="yes" />
 	<meta name="apple-mobile-web-app-capable" content="yes" />
 	<meta name="application-name" content="Godot" />
@@ -11,7 +13,14 @@
 	<meta name="msapplication-navbutton-color" content="#478cbf" />
 	<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
 	<meta name="msapplication-starturl" content="/latest" />
-	<link id='-gd-engine-icon' rel='icon' type='image/png' href='favicon.png' />
+	<meta property="og:site_name" content="Godot Engine Web Editor" />
+  	<meta property="og:url" name="twitter:url" content="https://editor.godotengine.org/releases/latest/" />
+	<meta property="og:title" name="twitter:title" content="Free and open source 2D and 3D game engine" />
+	<meta property="og:description" name="twitter:description" content="Use the Godot Engine editor directly in your web browser, without having to install anything." />
+	<meta property="og:image" name="twitter:image" content="https://godotengine.org/themes/godotengine/assets/og_image.png" />
+	<meta property="og:type" content="website" />
+	<meta name="twitter:card" content="summary" />
+	<link id="-gd-engine-icon" rel="icon" type="image/png" href="favicon.png" />
 	<link rel="apple-touch-icon" type="image/png" href="favicon.png" />
 	<link rel="manifest" href="manifest.json" />
 	<title>Godot Engine Web Editor (@GODOT_VERSION@)</title>
@@ -204,8 +213,8 @@
 		<button id="btn-tab-game" class="btn tab-btn" disabled="disabled" onclick="showTab('game')">Game</button>
 		<button id="btn-close-game" class="btn close-btn"  disabled="disabled" onclick="closeGame()">×</button>
 	</div>
-	<div id='tabs'>
-		<div id='tab-loader'>
+	<div id="tabs">
+		<div id="tab-loader">
 			<div style="color: #e0e0e0;" id="persistence">
 				<label for="videoMode" style="display: none;">Select video driver:</label><br />
 				<select id="videoMode" style="display: none;">
@@ -213,7 +222,7 @@
 					<option value="GLES3">WebGL 2</option>
 				</select>
 				<br />
-				<img src="logo.svg" width="1024" height="414" style="width: auto; height: auto; max-width: 85%; max-height: 250px" />
+				<img src="logo.svg" alt="Godot Engine logo" width="1024" height="414" style="width: auto; height: auto; max-width: 85%; max-height: 250px" />
 				<br />
 				@GODOT_VERSION@
 				<br />
@@ -221,7 +230,7 @@
 				<br />
 				<br />
 				<br />
-				<label for="zip-file" style="margin-right: 1rem">Preload project ZIP:</label> <input id="zip-file" type="file" id="files" name="files" style="margin-bottom: 1rem"/>
+				<label for="zip-file" style="margin-right: 1rem">Preload project ZIP:</label> <input id="zip-file" type="file" name="files" style="margin-bottom: 1rem"/>
 				<br />
 <a href="demo.zip">(Try this for example)</a>
 				<br />
@@ -233,21 +242,21 @@
 				<a href="https://docs.godotengine.org/en/latest/tutorials/editor/using_the_web_editor.html">Web editor documentation</a>
 			</div>
 		</div>
-		<div id='tab-editor' style="display: none;">
-			<canvas id='editor-canvas' tabindex="1">
+		<div id="tab-editor" style="display: none;">
+			<canvas id="editor-canvas" tabindex="1">
 				HTML5 canvas appears to be unsupported in the current browser.<br />
 				Please try updating or use a different browser.
 			</canvas>
 		</div>
-		<div id='tab-game' style="display: none;">
-			<canvas id='game-canvas' tabindex="2">
+		<div id="tab-game" style="display: none;">
+			<canvas id="game-canvas" tabindex="2">
 				HTML5 canvas appears to be unsupported in the current browser.<br />
 				Please try updating or use a different browser.
 			</canvas>
 		</div>
-		<div id='tab-status' style="display: none;">
-			<div id='status-progress' style='display: none;' oncontextmenu='event.preventDefault();'><div id ='status-progress-inner'></div></div>
-			<div id='status-indeterminate' style='display: none;' oncontextmenu='event.preventDefault();'>
+		<div id="tab-status" style="display: none;">
+			<div id="status-progress" style="display: none;" oncontextmenu="event.preventDefault();"><div id="status-progress-inner"></div></div>
+			<div id="status-indeterminate" style="display: none;" oncontextmenu="event.preventDefault();">
 				<div></div>
 				<div></div>
 				<div></div>
@@ -257,7 +266,7 @@
 				<div></div>
 				<div></div>
 			</div>
-			<div id='status-notice' class='godot' style='display: none;'></div>
+			<div id="status-notice" class="godot" style="display: none;"></div>
 		</div>
 	</div>
 	<script>
@@ -267,7 +276,7 @@
 			}
 		});
 	</script>
-	<script src='godot.tools.js'></script>
+	<script src="godot.tools.js"></script>
 	<script>//<![CDATA[
 
 		var editor = null;
