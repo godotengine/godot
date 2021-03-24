@@ -30,10 +30,13 @@
 
 #include "geometry_3d.h"
 
+#include "core/math/quick_hull.h"
 #include "core/string/print_string.h"
 
 #include "thirdparty/misc/clipper.hpp"
 #include "thirdparty/misc/polypartition.h"
+
+Geometry3D::ConvexHullFunc Geometry3D::convex_hull_function = nullptr;
 
 void Geometry3D::MeshData::optimize_vertices() {
 	Map<int, int> vtx_remap;
@@ -759,6 +762,13 @@ Geometry3D::MeshData Geometry3D::build_convex_mesh(const Vector<Plane> &p_planes
 	}
 
 	return mesh;
+}
+
+Error Geometry3D::build_convex_hull(const Vector<Vector3> &p_points, Geometry3D::MeshData &r_mesh) {
+	if (!convex_hull_function) {
+		return QuickHull::build(p_points, r_mesh);
+	}
+	return convex_hull_function(p_points, r_mesh);
 }
 
 Vector<Plane> Geometry3D::build_box_planes(const Vector3 &p_extents) {

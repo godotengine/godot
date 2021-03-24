@@ -646,6 +646,7 @@ public:
 	};
 
 	static MeshData build_convex_mesh(const Vector<Plane> &p_planes);
+	static Error build_convex_hull(const Vector<Vector3> &p_points, Geometry3D::MeshData &r_mesh);
 	static Vector<Plane> build_sphere_planes(real_t p_radius, int p_lats, int p_lons, Vector3::Axis p_axis = Vector3::AXIS_Z);
 	static Vector<Plane> build_box_planes(const Vector3 &p_extents);
 	static Vector<Plane> build_cylinder_planes(real_t p_radius, real_t p_height, int p_sides, Vector3::Axis p_axis = Vector3::AXIS_Z);
@@ -916,6 +917,9 @@ public:
 		n.y += n.y >= 0 ? -t : t;
 		return n.normalized();
 	}
+
+	typedef Error (*ConvexHullFunc)(const Vector<Vector3> &, Geometry3D::MeshData &);
+	static ConvexHullFunc convex_hull_function;
 };
 
 #endif // GEOMETRY_3D_H
