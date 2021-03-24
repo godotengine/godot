@@ -346,7 +346,7 @@ void GPUParticlesCollisionSDF::_compute_sdf(ComputeSDFParams *params) {
 	ThreadWorkPool work_pool;
 	work_pool.init();
 	work_pool.begin_work(params->size.z, this, &GPUParticlesCollisionSDF::_compute_sdf_z, params);
-	while (work_pool.get_work_index() < (uint32_t)params->size.z) {
+	while (!work_pool.is_done_dispatching()) {
 		OS::get_singleton()->delay_usec(10000);
 		bake_step_function(work_pool.get_work_index() * 100 / params->size.z, "Baking SDF");
 	}

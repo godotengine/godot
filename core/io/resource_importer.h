@@ -72,6 +72,8 @@ public:
 
 	virtual int get_import_order(const String &p_path) const;
 
+	Error get_import_order_threads_and_importer(const String &p_path, int &r_order, bool &r_can_threads, String &r_importer) const;
+
 	String get_internal_resource_path(const String &p_path) const;
 	void get_internal_resource_path_list(const String &p_path, List<String> *r_paths);
 
@@ -126,6 +128,9 @@ public:
 	virtual String get_option_group_file() const { return String(); }
 
 	virtual Error import(const String &p_source_file, const String &p_save_path, const Map<StringName, Variant> &p_options, List<String> *r_platform_variants, List<String> *r_gen_files = nullptr, Variant *r_metadata = nullptr) = 0;
+	virtual bool can_import_threaded() const { return true; }
+	virtual void import_threaded_begin() {}
+	virtual void import_threaded_end() {}
 
 	virtual Error import_group_file(const String &p_group_file, const Map<String, Map<StringName, Variant>> &p_source_file_options, const Map<String, String> &p_base_paths) { return ERR_UNAVAILABLE; }
 	virtual bool are_import_settings_valid(const String &p_path) const { return true; }
