@@ -175,11 +175,11 @@ void Node::_notification(int p_notification) {
 
 void Node::_propagate_ready() {
 	data.ready_notified = true;
-	data.blocked++;
+	_block();
 	for (int i = 0; i < data.children.size(); i++) {
 		data.children[i]->_propagate_ready();
 	}
-	data.blocked--;
+	_unblock();
 
 	notification(NOTIFICATION_POST_ENTER_TREE);
 
@@ -221,7 +221,7 @@ void Node::_propagate_enter_tree() {
 
 	data.tree->node_added(this);
 
-	data.blocked++;
+	_block();
 	//block while adding children
 
 	for (int i = 0; i < data.children.size(); i++) {
@@ -230,7 +230,7 @@ void Node::_propagate_enter_tree() {
 		}
 	}
 
-	data.blocked--;
+	_unblock();
 
 #ifdef DEBUG_ENABLED
 	SceneDebugger::add_to_cache(data.filename, this);
@@ -239,11 +239,11 @@ void Node::_propagate_enter_tree() {
 }
 
 void Node::_propagate_after_exit_tree() {
-	data.blocked++;
+	_block();
 	for (int i = 0; i < data.children.size(); i++) {
 		data.children[i]->_propagate_after_exit_tree();
 	}
-	data.blocked--;
+	_unblock();
 	emit_signal(SceneStringNames::get_singleton()->tree_exited);
 }
 
@@ -253,13 +253,13 @@ void Node::_propagate_exit_tree() {
 #ifdef DEBUG_ENABLED
 	SceneDebugger::remove_from_cache(data.filename, this);
 #endif
-	data.blocked++;
+	_block();
 
 	for (int i = data.children.size() - 1; i >= 0; i--) {
 		data.children[i]->_propagate_exit_tree();
 	}
 
-	data.blocked--;
+	_unblock();
 
 	if (get_script_instance()) {
 		get_script_instance()->call(SceneStringNames::get_singleton()->_exit_tree);
@@ -316,7 +316,7 @@ void Node::move_child(Node *p_child, int p_pos) {
 		data.tree->tree_changed();
 	}
 
-	data.blocked++;
+	_block();
 	//new pos first
 	for (int i = motion_from; i <= motion_to; i++) {
 		data.children[i]->data.pos = i;
@@ -332,7 +332,7 @@ void Node::move_child(Node *p_child, int p_pos) {
 		}
 	}
 
-	data.blocked--;
+	_unblock();
 }
 
 void Node::raise() {
@@ -1813,19 +1813,19 @@ void Node::_print_tree(const Node *p_node) {
 }
 
 void Node::_propagate_reverse_notification(int p_notification) {
-	data.blocked++;
+	_block();
 	for (int i = data.children.size() - 1; i >= 0; i--) {
 		data.children[i]->_propagate_reverse_notification(p_notification);
 	}
 
 	notification(p_notification, true);
-	data.blocked--;
+	_unblock();
 }
 
 void Node::_propagate_deferred_notification(int p_notification, bool p_reverse) {
 	ERR_FAIL_COND(!is_inside_tree());
 
-	data.blocked++;
+	_block();
 
 	if (!p_reverse) {
 		MessageQueue::get_singleton()->push_notification(this, p_notification);
@@ -1839,21 +1839,21 @@ void Node::_propagate_deferred_notification(int p_notification, bool p_reverse) 
 		MessageQueue::get_singleton()->push_notification(this, p_notification);
 	}
 
-	data.blocked--;
+	_unblock();
 }
 
 void Node::propagate_notification(int p_notification) {
-	data.blocked++;
+	_block();
 	notification(p_notification);
 
 	for (int i = 0; i < data.children.size(); i++) {
 		data.children[i]->propagate_notification(p_notification);
 	}
-	data.blocked--;
+	_unblock();
 }
 
 void Node::propagate_call(const StringName &p_method, const Array &p_args, const bool p_parent_first) {
-	data.blocked++;
+	_block();
 
 	if (p_parent_first && has_method(p_method)) {
 		callv(p_method, p_args);
@@ -1867,7 +1867,7 @@ void Node::propagate_call(const StringName &p_method, const Array &p_args, const
 		callv(p_method, p_args);
 	}
 
-	data.blocked--;
+	_unblock();
 }
 
 void Node::_propagate_replace_owner(Node *p_owner, Node *p_by_owner) {
@@ -1875,11 +1875,11 @@ void Node::_propagate_replace_owner(Node *p_owner, Node *p_by_owner) {
 		set_owner(p_by_owner);
 	}
 
-	data.blocked++;
+	_block();
 	for (int i = 0; i < data.children.size(); i++) {
 		data.children[i]->_propagate_replace_owner(p_owner, p_by_owner);
 	}
-	data.blocked--;
+	_unblock();
 }
 
 int Node::get_index() const {
