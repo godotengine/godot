@@ -346,23 +346,39 @@ void ExtendGDScriptParser::parse_function_symbol(const GDScriptParser::FunctionN
 		r_symbol.detail += " -> " + p_func->return_type.to_string();
 	}
 
-	for (const Map<StringName, LocalVarNode *>::Element *E = p_func->body->variables.front(); E; E = E->next()) {
-		lsp::DocumentSymbol symbol;
-		const GDScriptParser::LocalVarNode *var = E->value();
-		symbol.name = E->key();
-		symbol.kind = lsp::SymbolKind::Variable;
-		symbol.range.start.line = LINE_NUMBER_TO_INDEX(E->get()->line);
-		symbol.range.start.character = E->get()->column;
-		symbol.range.end.line = symbol.range.start.line;
-		symbol.range.end.character = lines[symbol.range.end.line].length();
-		symbol.uri = uri;
-		symbol.script_path = path;
-		symbol.detail = "var " + symbol.name;
-		if (var->datatype.kind != GDScriptParser::DataType::UNRESOLVED) {
-			symbol.detail += ": " + var->datatype.to_string();
+	List<GDScriptParser::BlockNode *> function_blocks;
+	List<GDScriptParser::BlockNode *> block_stack;
+	block_stack.push_back(p_func->body);
+
+	while (!block_stack.empty()) {
+		GDScriptParser::BlockNode *block = block_stack[0];
+		block_stack.pop_front();
+
+		function_blocks.push_back(block);
+		for (const List<GDScriptParser::BlockNode *>::Element *E = block->sub_blocks.front(); E; E = E->next()) {
+			block_stack.push_back(E->get());
 		}
-		symbol.documentation = parse_documentation(line);
-		r_symbol.children.push_back(symbol);
+	}
+
+	for (const List<GDScriptParser::BlockNode *>::Element *B = function_blocks.front(); B; B = B->next()) {
+		for (const Map<StringName, LocalVarNode *>::Element *E = B->get()->variables.front(); E; E = E->next()) {
+			lsp::DocumentSymbol symbol;
+			const GDScriptParser::LocalVarNode *var = E->value();
+			symbol.name = E->key();
+			symbol.kind = lsp::SymbolKind::Variable;
+			symbol.range.start.line = LINE_NUMBER_TO_INDEX(E->get()->line);
+			symbol.range.start.character = E->get()->column;
+			symbol.range.end.line = symbol.range.start.line;
+			symbol.range.end.character = lines[symbol.range.end.line].length();
+			symbol.uri = uri;
+			symbol.script_path = path;
+			symbol.detail = "var " + symbol.name;
+			if (var->datatype.kind != GDScriptParser::DataType::UNRESOLVED) {
+				symbol.detail += ": " + var->datatype.to_string();
+			}
+			symbol.documentation = parse_documentation(line);
+			r_symbol.children.push_back(symbol);
+		}
 	}
 }
 
