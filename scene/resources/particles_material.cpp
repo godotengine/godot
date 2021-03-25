@@ -340,14 +340,21 @@ void ParticlesMaterial::_update_shader() {
 		//initiate velocity spread in 3D
 		code += "			float angle1_rad = rand_from_seed_m1_p1(alt_seed) * spread_rad;\n";
 		code += "			float angle2_rad = rand_from_seed_m1_p1(alt_seed) * spread_rad * (1.0 - flatness);\n";
-		code += "			angle1_rad += direction.z != 0.0 ? atan(direction.x, direction.z) : sign(direction.x) * (pi / 2.0);\n";
-		code += "			angle2_rad += direction.z != 0.0 ? atan(direction.y, abs(direction.z)) : (direction.x != 0.0 ? atan(direction.y, abs(direction.x)) : sign(direction.y) * (pi / 2.0));\n";
 		code += "			vec3 direction_xz = vec3(sin(angle1_rad), 0.0, cos(angle1_rad));\n";
 		code += "			vec3 direction_yz = vec3(0.0, sin(angle2_rad), cos(angle2_rad));\n";
 		code += "			direction_yz.z = direction_yz.z / max(0.0001,sqrt(abs(direction_yz.z))); // better uniform distribution\n";
-		code += "			vec3 vec_direction = vec3(direction_xz.x * direction_yz.z, direction_yz.y, direction_xz.z * direction_yz.z);\n";
-		code += "			vec_direction = normalize(vec_direction);\n";
-		code += "			VELOCITY = vec_direction * initial_linear_velocity * mix(1.0, rand_from_seed(alt_seed), initial_linear_velocity_random);\n";
+		code += "			vec3 spread_direction = vec3(direction_xz.x * direction_yz.z, direction_yz.y, direction_xz.z * direction_yz.z);\n";
+		code += "			vec3 direction_nrm = normalize(direction);\n";
+		code += "			// rotate spread to direction\n";
+		code += "			vec3 binormal = cross(vec3(0.0, 1.0, 0.0), direction_nrm);\n";
+		code += "			if (length(binormal) < 0.0001) {\n";
+		code += "				// direction is parallel to Y. Choose Z as the binormal.\n";
+		code += "				binormal = vec3(0.0, 0.0, 1.0);\n";
+		code += "			}\n";
+		code += "			binormal = normalize(binormal);\n";
+		code += "			vec3 normal = cross(binormal, direction_nrm);\n";
+		code += "			spread_direction = binormal * spread_direction.x + normal * spread_direction.y + direction_nrm * spread_direction.z;\n";
+		code += "			VELOCITY = spread_direction * initial_linear_velocity * mix(1.0, rand_from_seed(alt_seed), initial_linear_velocity_random);\n";
 	}
 	code += "		}\n";
 

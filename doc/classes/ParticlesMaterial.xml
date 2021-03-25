@@ -181,7 +181,7 @@
 			The sphere's radius if [code]emission_shape[/code] is set to [constant EMISSION_SHAPE_SPHERE].
 		</member>
 		<member name="flatness" type="float" setter="set_flatness" getter="get_flatness" default="0.0">
-			Amount of [member spread] in Y/Z plane. A value of [code]1[/code] restricts particles to X/Z plane.
+			Amount of [member spread] along the Y axis.
 		</member>
 		<member name="gravity" type="Vector3" setter="set_gravity" getter="get_gravity" default="Vector3( 0, -9.8, 0 )">
 			Gravity applied to every particle.
@@ -251,7 +251,7 @@
 			Scale randomness ratio.
 		</member>
 		<member name="spread" type="float" setter="set_spread" getter="get_spread" default="45.0">
-			Each particle's initial direction range from [code]+spread[/code] to [code]-spread[/code] degrees. Applied to X/Z plane and Y/Z planes.
+			Each particle's initial direction range from [code]+spread[/code] to [code]-spread[/code] degrees.
 		</member>
 		<member name="sub_emitter_amount_at_end" type="int" setter="set_sub_emitter_amount_at_end" getter="get_sub_emitter_amount_at_end">
 		</member>
