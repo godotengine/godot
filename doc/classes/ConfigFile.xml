@@ -49,6 +49,12 @@
 	<tutorials>
 	</tutorials>
 	<methods>
+		<method name="clear">
+			<return type="void">
+			</return>
+			<description>
+			</description>
+		</method>
 		<method name="erase_section">
 			<return type="void">
 			</return>

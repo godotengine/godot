@@ -1241,6 +1241,14 @@
 				Gets a slider_joint parameter (see [enum SliderJointParam] constants).
 			</description>
 		</method>
+		<method name="soft_body_get_bounds" qualifiers="const">
+			<return type="AABB">
+			</return>
+			<argument index="0" name="body" type="RID">
+			</argument>
+			<description>
+			</description>
+		</method>
 		<method name="space_create">
 			<return type="RID">
 			</return>
@@ -1543,7 +1551,10 @@
 		<constant name="SHAPE_HEIGHTMAP" value="8" enum="ShapeType">
 			The [Shape3D] is a [HeightMapShape3D].
 		</constant>
-		<constant name="SHAPE_CUSTOM" value="9" enum="ShapeType">
+		<constant name="SHAPE_SOFT_BODY" value="9" enum="ShapeType">
+			The [Shape3D] is a [SoftBody3D].
+		</constant>
+		<constant name="SHAPE_CUSTOM" value="10" enum="ShapeType">
 			This constant is used internally by the engine. Any attempt to create this kind of shape results in an error.
 		</constant>
 		<constant name="AREA_PARAM_GRAVITY" value="0" enum="AreaParameter">

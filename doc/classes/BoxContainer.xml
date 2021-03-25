@@ -10,7 +10,7 @@
 	</tutorials>
 	<methods>
 		<method name="add_spacer">
-			<return type="void">
+			<return type="Control">
 			</return>
 			<argument index="0" name="begin" type="bool">
 			</argument>

@@ -60,9 +60,17 @@
 			<description>
 			</description>
 		</method>
+		<method name="get_lightmap_size_hint" qualifiers="const">
+			<return type="Vector2i">
+			</return>
+			<description>
+			</description>
+		</method>
 		<method name="get_mesh">
 			<return type="ArrayMesh">
 			</return>
+			<argument index="0" name="arg0" type="Mesh">
+			</argument>
 			<description>
 			</description>
 		</method>
@@ -146,6 +154,14 @@
 			<return type="void">
 			</return>
 			<argument index="0" name="mode" type="int" enum="Mesh.BlendShapeMode">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_lightmap_size_hint">
+			<return type="void">
+			</return>
+			<argument index="0" name="size" type="Vector2i">
 			</argument>
 			<description>
 			</description>

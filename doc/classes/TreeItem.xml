@@ -741,6 +741,12 @@
 				Sets the given column's tooltip text.
 			</description>
 		</method>
+		<method name="uncollapse_tree">
+			<return type="void">
+			</return>
+			<description>
+			</description>
+		</method>
 	</methods>
 	<members>
 		<member name="collapsed" type="bool" setter="set_collapsed" getter="is_collapsed">
