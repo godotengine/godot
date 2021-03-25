@@ -129,6 +129,11 @@ unsigned int ARVRInterface::get_external_texture_for_eye(ARVRInterface::Eyes p_e
 	return 0;
 };
 
+// optional render to external depth texture which enhances performance on those platforms that require us to submit our end result into special textures.
+unsigned int ARVRInterface::get_external_depth_for_eye(ARVRInterface::Eyes p_eye) {
+	return 0;
+};
+
 /** these will only be implemented on AR interfaces, so we want dummies for VR **/
 bool ARVRInterface::get_anchor_detection_is_enabled() const {
 	return false;
