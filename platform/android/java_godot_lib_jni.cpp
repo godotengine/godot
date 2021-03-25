@@ -324,15 +324,15 @@ JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_joyhat(JNIEnv *env, j
 	int hat = 0;
 	if (p_hat_x != 0) {
 		if (p_hat_x < 0)
-			hat |= Input::HAT_MASK_LEFT;
+			hat |= HatMask::HAT_MASK_LEFT;
 		else
-			hat |= Input::HAT_MASK_RIGHT;
+			hat |= HatMask::HAT_MASK_RIGHT;
 	}
 	if (p_hat_y != 0) {
 		if (p_hat_y < 0)
-			hat |= Input::HAT_MASK_UP;
+			hat |= HatMask::HAT_MASK_UP;
 		else
-			hat |= Input::HAT_MASK_DOWN;
+			hat |= HatMask::HAT_MASK_DOWN;
 	}
 	jevent.hat = hat;
 

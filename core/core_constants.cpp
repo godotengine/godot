@@ -106,10 +106,6 @@ static Vector<_CoreConstant> _global_constants;
 
 VARIANT_ENUM_CAST(Key);
 VARIANT_ENUM_CAST(KeyModifierMask);
-VARIANT_ENUM_CAST(MouseButton);
-VARIANT_ENUM_CAST(JoyButton);
-VARIANT_ENUM_CAST(JoyAxis);
-VARIANT_ENUM_CAST(MIDIMessage);
 
 void register_global_constants() {
 	BIND_CORE_ENUM_CONSTANT(SIDE_LEFT);

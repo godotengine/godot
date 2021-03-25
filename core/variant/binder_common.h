@@ -31,6 +31,7 @@
 #ifndef BINDER_COMMON_H
 #define BINDER_COMMON_H
 
+#include "core/input/input_enums.h"
 #include "core/object/object.h"
 #include "core/templates/list.h"
 #include "core/templates/simple_type.h"
@@ -90,6 +91,12 @@ VARIANT_ENUM_CAST(Error);
 VARIANT_ENUM_CAST(Side);
 VARIANT_ENUM_CAST(ClockDirection);
 VARIANT_ENUM_CAST(Corner);
+VARIANT_ENUM_CAST(HatDir);
+VARIANT_ENUM_CAST(HatMask);
+VARIANT_ENUM_CAST(JoyAxis);
+VARIANT_ENUM_CAST(JoyButton);
+VARIANT_ENUM_CAST(MIDIMessage);
+VARIANT_ENUM_CAST(MouseButton);
 VARIANT_ENUM_CAST(Orientation);
 VARIANT_ENUM_CAST(HAlign);
 VARIANT_ENUM_CAST(VAlign);

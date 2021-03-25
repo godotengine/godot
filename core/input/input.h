@@ -72,22 +72,6 @@ public:
 		CURSOR_MAX
 	};
 
-	enum HatMask {
-		HAT_MASK_CENTER = 0,
-		HAT_MASK_UP = 1,
-		HAT_MASK_RIGHT = 2,
-		HAT_MASK_DOWN = 4,
-		HAT_MASK_LEFT = 8,
-	};
-
-	enum HatDir {
-		HAT_UP,
-		HAT_RIGHT,
-		HAT_DOWN,
-		HAT_LEFT,
-		HAT_MAX,
-	};
-
 	enum {
 		JOYPADS_MAX = 16,
 	};
@@ -149,7 +133,7 @@ private:
 		bool connected = false;
 		bool last_buttons[JOY_BUTTON_MAX] = { false };
 		float last_axis[JOY_AXIS_MAX] = { 0.0f };
-		int last_hat = HAT_MASK_CENTER;
+		int last_hat = HatMask::HAT_MASK_CENTER;
 		int mapping = -1;
 		int hat_current = 0;
 	};

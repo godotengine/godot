@@ -993,21 +993,21 @@ void Input::joy_hat(int p_device, int p_val) {
 
 	JoyEvent map[HAT_MAX];
 
-	map[HAT_UP].type = TYPE_BUTTON;
-	map[HAT_UP].index = JOY_BUTTON_DPAD_UP;
-	map[HAT_UP].value = 0;
+	map[HatDir::HAT_UP].type = TYPE_BUTTON;
+	map[HatDir::HAT_UP].index = JOY_BUTTON_DPAD_UP;
+	map[HatDir::HAT_UP].value = 0;
 
-	map[HAT_RIGHT].type = TYPE_BUTTON;
-	map[HAT_RIGHT].index = JOY_BUTTON_DPAD_RIGHT;
-	map[HAT_RIGHT].value = 0;
+	map[HatDir::HAT_RIGHT].type = TYPE_BUTTON;
+	map[HatDir::HAT_RIGHT].index = JOY_BUTTON_DPAD_RIGHT;
+	map[HatDir::HAT_RIGHT].value = 0;
 
-	map[HAT_DOWN].type = TYPE_BUTTON;
-	map[HAT_DOWN].index = JOY_BUTTON_DPAD_DOWN;
-	map[HAT_DOWN].value = 0;
+	map[HatDir::HAT_DOWN].type = TYPE_BUTTON;
+	map[HatDir::HAT_DOWN].index = JOY_BUTTON_DPAD_DOWN;
+	map[HatDir::HAT_DOWN].value = 0;
 
-	map[HAT_LEFT].type = TYPE_BUTTON;
-	map[HAT_LEFT].index = JOY_BUTTON_DPAD_LEFT;
-	map[HAT_LEFT].value = 0;
+	map[HatDir::HAT_LEFT].type = TYPE_BUTTON;
+	map[HatDir::HAT_LEFT].index = JOY_BUTTON_DPAD_LEFT;
+	map[HatDir::HAT_LEFT].value = 0;
 
 	if (joy.mapping != -1) {
 		_get_mapped_hat_events(map_db[joy.mapping], 0, map);
@@ -1162,17 +1162,17 @@ void Input::_get_mapped_hat_events(const JoyDeviceMapping &mapping, int p_hat, J
 		if (binding.inputType == TYPE_HAT && binding.input.hat.hat == p_hat) {
 			int hat_direction;
 			switch (binding.input.hat.hat_mask) {
-				case HAT_MASK_UP:
-					hat_direction = HAT_UP;
+				case HatMask::HAT_MASK_UP:
+					hat_direction = HatDir::HAT_UP;
 					break;
-				case HAT_MASK_RIGHT:
-					hat_direction = HAT_RIGHT;
+				case HatMask::HAT_MASK_RIGHT:
+					hat_direction = HatDir::HAT_RIGHT;
 					break;
-				case HAT_MASK_DOWN:
-					hat_direction = HAT_DOWN;
+				case HatMask::HAT_MASK_DOWN:
+					hat_direction = HatDir::HAT_DOWN;
 					break;
-				case HAT_MASK_LEFT:
-					hat_direction = HAT_LEFT;
+				case HatMask::HAT_MASK_LEFT:
+					hat_direction = HatDir::HAT_LEFT;
 					break;
 				default:
 					ERR_PRINT_ONCE("Joypad button mapping error.");

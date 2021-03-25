@@ -390,38 +390,38 @@ bool joypad::check_ff_features() {
 static int process_hat_value(int p_min, int p_max, int p_value) {
 	int range = (p_max - p_min + 1);
 	int value = p_value - p_min;
-	int hat_value = Input::HAT_MASK_CENTER;
+	int hat_value = HatMask::HAT_MASK_CENTER;
 	if (range == 4) {
 		value *= 2;
 	}
 
 	switch (value) {
 		case 0:
-			hat_value = Input::HAT_MASK_UP;
+			hat_value = (HatMask)HatMask::HAT_MASK_UP;
 			break;
 		case 1:
-			hat_value = Input::HAT_MASK_UP | Input::HAT_MASK_RIGHT;
+			hat_value = (HatMask)(HatMask::HAT_MASK_UP | HatMask::HAT_MASK_RIGHT);
 			break;
 		case 2:
-			hat_value = Input::HAT_MASK_RIGHT;
+			hat_value = (HatMask)HatMask::HAT_MASK_RIGHT;
 			break;
 		case 3:
-			hat_value = Input::HAT_MASK_DOWN | Input::HAT_MASK_RIGHT;
+			hat_value = (HatMask)(HatMask::HAT_MASK_DOWN | HatMask::HAT_MASK_RIGHT);
 			break;
 		case 4:
-			hat_value = Input::HAT_MASK_DOWN;
+			hat_value = (HatMask)HatMask::HAT_MASK_DOWN;
 			break;
 		case 5:
-			hat_value = Input::HAT_MASK_DOWN | Input::HAT_MASK_LEFT;
+			hat_value = (HatMask)(HatMask::HAT_MASK_DOWN | HatMask::HAT_MASK_LEFT);
 			break;
 		case 6:
-			hat_value = Input::HAT_MASK_LEFT;
+			hat_value = (HatMask)HatMask::HAT_MASK_LEFT;
 			break;
 		case 7:
-			hat_value = Input::HAT_MASK_UP | Input::HAT_MASK_LEFT;
+			hat_value = (HatMask)(HatMask::HAT_MASK_UP | HatMask::HAT_MASK_LEFT);
 			break;
 		default:
-			hat_value = Input::HAT_MASK_CENTER;
+			hat_value = (HatMask)HatMask::HAT_MASK_CENTER;
 			break;
 	}
 	return hat_value;
