@@ -450,7 +450,7 @@ Point2i DisplayServerX11::mouse_get_absolute_position() const {
 	return Vector2i();
 }
 
-int DisplayServerX11::mouse_get_button_state() const {
+MouseButton DisplayServerX11::mouse_get_button_state() const {
 	return last_button_state;
 }
 
@@ -2172,13 +2172,13 @@ void DisplayServerX11::_get_key_modifier_state(unsigned int p_x11_state, Ref<Inp
 	state->set_meta_pressed((p_x11_state & Mod4Mask));
 }
 
-unsigned int DisplayServerX11::_get_mouse_button_state(unsigned int p_x11_button, int p_x11_type) {
-	unsigned int mask = 1 << (p_x11_button - 1);
+MouseButton DisplayServerX11::_get_mouse_button_state(MouseButton p_x11_button, int p_x11_type) {
+	MouseButton mask = MouseButton(1 << (p_x11_button - 1));
 
 	if (p_x11_type == ButtonPress) {
 		last_button_state |= mask;
 	} else {
-		last_button_state &= ~mask;
+		last_button_state &= MouseButton(~mask);
 	}
 
 	return last_button_state;
@@ -3130,11 +3130,11 @@ void DisplayServerX11::process_events() {
 
 				mb->set_window_id(window_id);
 				_get_key_modifier_state(event.xbutton.state, mb);
-				mb->set_button_index(event.xbutton.button);
-				if (mb->get_button_index() == 2) {
-					mb->set_button_index(3);
-				} else if (mb->get_button_index() == 3) {
-					mb->set_button_index(2);
+				mb->set_button_index((MouseButton)event.xbutton.button);
+				if (mb->get_button_index() == MOUSE_BUTTON_RIGHT) {
+					mb->set_button_index(MOUSE_BUTTON_MIDDLE);
+				} else if (mb->get_button_index() == MOUSE_BUTTON_MIDDLE) {
+					mb->set_button_index(MOUSE_BUTTON_RIGHT);
 				}
 				mb->set_button_mask(_get_mouse_button_state(mb->get_button_index(), event.xbutton.type));
 				mb->set_position(Vector2(event.xbutton.x, event.xbutton.y));
@@ -3297,7 +3297,7 @@ void DisplayServerX11::process_events() {
 				if (xi.pressure_supported) {
 					mm->set_pressure(xi.pressure);
 				} else {
-					mm->set_pressure((mouse_get_button_state() & (1 << (MOUSE_BUTTON_LEFT - 1))) ? 1.0f : 0.0f);
+					mm->set_pressure((mouse_get_button_state() & MOUSE_BUTTON_MASK_LEFT) ? 1.0f : 0.0f);
 				}
 				mm->set_tilt(xi.tilt);
 
@@ -3854,8 +3854,6 @@ DisplayServerX11::DisplayServerX11(const String &p_rendering_driver, WindowMode 
 		cursors[i] = None;
 		img[i] = nullptr;
 	}
-
-	last_button_state = 0;
 
 	xmbstring = nullptr;
 

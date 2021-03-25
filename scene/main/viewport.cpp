@@ -644,9 +644,9 @@ void Viewport::_process_picking() {
 			physics_last_mouse_state.meta = mb->is_meta_pressed();
 
 			if (mb->is_pressed()) {
-				physics_last_mouse_state.mouse_mask |= (1 << (mb->get_button_index() - 1));
+				physics_last_mouse_state.mouse_mask |= (MouseButton)(1 << (mb->get_button_index() - 1));
 			} else {
-				physics_last_mouse_state.mouse_mask &= ~(1 << (mb->get_button_index() - 1));
+				physics_last_mouse_state.mouse_mask &= (MouseButton) ~(1 << (mb->get_button_index() - 1));
 
 				// If touch mouse raised, assume we don't know last mouse pos until new events come
 				if (mb->get_device() == InputEvent::DEVICE_ID_TOUCH_MOUSE) {
@@ -2588,7 +2588,7 @@ void Viewport::_drop_mouse_focus() {
 			mb.instantiate();
 			mb->set_position(c->get_local_mouse_position());
 			mb->set_global_position(c->get_local_mouse_position());
-			mb->set_button_index(i + 1);
+			mb->set_button_index(MouseButton(i + 1));
 			mb->set_pressed(false);
 			c->call(SceneStringNames::get_singleton()->_gui_input, mb);
 		}
@@ -2666,7 +2666,7 @@ void Viewport::_post_gui_grab_click_focus() {
 				//send unclick
 
 				mb->set_position(click);
-				mb->set_button_index(i + 1);
+				mb->set_button_index(MouseButton(i + 1));
 				mb->set_pressed(false);
 				gui.mouse_focus->call(SceneStringNames::get_singleton()->_gui_input, mb);
 			}
@@ -2684,7 +2684,7 @@ void Viewport::_post_gui_grab_click_focus() {
 				//send click
 
 				mb->set_position(click);
-				mb->set_button_index(i + 1);
+				mb->set_button_index(MouseButton(i + 1));
 				mb->set_pressed(true);
 				gui.mouse_focus->call_deferred(SceneStringNames::get_singleton()->_gui_input, mb);
 			}

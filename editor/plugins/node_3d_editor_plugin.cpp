@@ -1398,6 +1398,8 @@ void Node3DEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 				}
 
 			} break;
+			default:
+				break;
 		}
 	}
 

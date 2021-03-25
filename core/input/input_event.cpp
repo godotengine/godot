@@ -516,11 +516,11 @@ float InputEventMouseButton::get_factor() const {
 	return factor;
 }
 
-void InputEventMouseButton::set_button_index(int p_index) {
+void InputEventMouseButton::set_button_index(MouseButton p_index) {
 	button_index = p_index;
 }
 
-int InputEventMouseButton::get_button_index() const {
+MouseButton InputEventMouseButton::get_button_index() const {
 	return button_index;
 }
 
@@ -845,11 +845,11 @@ void InputEventMouseMotion::_bind_methods() {
 
 ///////////////////////////////////
 
-void InputEventJoypadMotion::set_axis(int p_axis) {
+void InputEventJoypadMotion::set_axis(JoyAxis p_axis) {
 	axis = p_axis;
 }
 
-int InputEventJoypadMotion::get_axis() const {
+JoyAxis InputEventJoypadMotion::get_axis() const {
 	return axis;
 }
 
@@ -947,11 +947,11 @@ void InputEventJoypadMotion::_bind_methods() {
 
 ///////////////////////////////////
 
-void InputEventJoypadButton::set_button_index(int p_index) {
+void InputEventJoypadButton::set_button_index(JoyButton p_index) {
 	button_index = p_index;
 }
 
-int InputEventJoypadButton::get_button_index() const {
+JoyButton InputEventJoypadButton::get_button_index() const {
 	return button_index;
 }
 
@@ -1046,7 +1046,7 @@ String InputEventJoypadButton::to_string() {
 	return vformat("InputEventJoypadButton: button_index=%d, pressed=%s, pressure=%.2f", button_index, p, pressure);
 }
 
-Ref<InputEventJoypadButton> InputEventJoypadButton::create_reference(int p_btn_index) {
+Ref<InputEventJoypadButton> InputEventJoypadButton::create_reference(JoyButton p_btn_index) {
 	Ref<InputEventJoypadButton> ie;
 	ie.instantiate();
 	ie->set_button_index(p_btn_index);
@@ -1403,11 +1403,11 @@ int InputEventMIDI::get_channel() const {
 	return channel;
 }
 
-void InputEventMIDI::set_message(const int p_message) {
+void InputEventMIDI::set_message(const MIDIMessage p_message) {
 	message = p_message;
 }
 
-int InputEventMIDI::get_message() const {
+MIDIMessage InputEventMIDI::get_message() const {
 	return message;
 }
 

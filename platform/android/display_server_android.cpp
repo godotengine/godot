@@ -410,8 +410,6 @@ DisplayServerAndroid::DisplayServerAndroid(const String &p_rendering_driver, Dis
 
 	keep_screen_on = GLOBAL_GET("display/window/energy_saving/keep_screen_on");
 
-	buttons_state = 0;
-
 #if defined(OPENGL_ENABLED)
 	if (rendering_driver == "opengl") {
 		bool gl_initialization_error = false;
@@ -484,16 +482,16 @@ DisplayServerAndroid::~DisplayServerAndroid() {
 void DisplayServerAndroid::process_joy_event(DisplayServerAndroid::JoypadEvent p_event) {
 	switch (p_event.type) {
 		case JOY_EVENT_BUTTON:
-			Input::get_singleton()->joy_button(p_event.device, p_event.index, p_event.pressed);
+			Input::get_singleton()->joy_button(p_event.device, (JoyButton)p_event.index, p_event.pressed);
 			break;
 		case JOY_EVENT_AXIS:
 			Input::JoyAxisValue value;
 			value.min = -1;
 			value.value = p_event.value;
-			Input::get_singleton()->joy_axis(p_event.device, p_event.index, value);
+			Input::get_singleton()->joy_axis(p_event.device, (JoyAxis)p_event.index, value);
 			break;
 		case JOY_EVENT_HAT:
-			Input::get_singleton()->joy_hat(p_event.device, p_event.hat);
+			Input::get_singleton()->joy_hat(p_event.device, (HatMask)p_event.hat);
 			break;
 		default:
 			return;
@@ -697,7 +695,7 @@ void DisplayServerAndroid::process_hover(int p_type, Point2 p_pos) {
 }
 
 void DisplayServerAndroid::process_mouse_event(int input_device, int event_action, int event_android_buttons_mask, Point2 event_pos, float event_vertical_factor, float event_horizontal_factor) {
-	int event_buttons_mask = _android_button_mask_to_godot_button_mask(event_android_buttons_mask);
+	MouseButton event_buttons_mask = _android_button_mask_to_godot_button_mask(event_android_buttons_mask);
 	switch (event_action) {
 		case AMOTION_EVENT_ACTION_BUTTON_PRESS:
 		case AMOTION_EVENT_ACTION_BUTTON_RELEASE: {
@@ -712,7 +710,7 @@ void DisplayServerAndroid::process_mouse_event(int input_device, int event_actio
 				ev->set_global_position(hover_prev_pos);
 			}
 			ev->set_pressed(event_action == AMOTION_EVENT_ACTION_BUTTON_PRESS);
-			int changed_button_mask = buttons_state ^ event_buttons_mask;
+			MouseButton changed_button_mask = MouseButton(buttons_state ^ event_buttons_mask);
 
 			buttons_state = event_buttons_mask;
 
@@ -765,11 +763,11 @@ void DisplayServerAndroid::process_mouse_event(int input_device, int event_actio
 	}
 }
 
-void DisplayServerAndroid::_wheel_button_click(int event_buttons_mask, const Ref<InputEventMouseButton> &ev, int wheel_button, float factor) {
+void DisplayServerAndroid::_wheel_button_click(MouseButton event_buttons_mask, const Ref<InputEventMouseButton> &ev, MouseButton wheel_button, float factor) {
 	Ref<InputEventMouseButton> evd = ev->duplicate();
 	_set_key_modifier_state(evd);
 	evd->set_button_index(wheel_button);
-	evd->set_button_mask(event_buttons_mask ^ (1 << (wheel_button - 1)));
+	evd->set_button_mask(MouseButton(event_buttons_mask ^ (1 << (wheel_button - 1))));
 	evd->set_factor(factor);
 	Input::get_singleton()->accumulate_input_event(evd);
 	Ref<InputEventMouseButton> evdd = evd->duplicate();
@@ -779,7 +777,7 @@ void DisplayServerAndroid::_wheel_button_click(int event_buttons_mask, const Ref
 }
 
 void DisplayServerAndroid::process_double_tap(int event_android_button_mask, Point2 p_pos) {
-	int event_button_mask = _android_button_mask_to_godot_button_mask(event_android_button_mask);
+	MouseButton event_button_mask = _android_button_mask_to_godot_button_mask(event_android_button_mask);
 	Ref<InputEventMouseButton> ev;
 	ev.instantiate();
 	_set_key_modifier_state(ev);
@@ -792,7 +790,7 @@ void DisplayServerAndroid::process_double_tap(int event_android_button_mask, Poi
 	Input::get_singleton()->accumulate_input_event(ev);
 }
 
-int DisplayServerAndroid::_button_index_from_mask(int button_mask) {
+MouseButton DisplayServerAndroid::_button_index_from_mask(MouseButton button_mask) {
 	switch (button_mask) {
 		case MOUSE_BUTTON_MASK_LEFT:
 			return MOUSE_BUTTON_LEFT;
@@ -805,7 +803,7 @@ int DisplayServerAndroid::_button_index_from_mask(int button_mask) {
 		case MOUSE_BUTTON_MASK_XBUTTON2:
 			return MOUSE_BUTTON_XBUTTON2;
 		default:
-			return 0;
+			return MOUSE_BUTTON_NONE;
 	}
 }
 
@@ -863,12 +861,12 @@ Point2i DisplayServerAndroid::mouse_get_position() const {
 	return hover_prev_pos;
 }
 
-int DisplayServerAndroid::mouse_get_button_state() const {
+MouseButton DisplayServerAndroid::mouse_get_button_state() const {
 	return buttons_state;
 }
 
-int DisplayServerAndroid::_android_button_mask_to_godot_button_mask(int android_button_mask) {
-	int godot_button_mask = 0;
+MouseButton DisplayServerAndroid::_android_button_mask_to_godot_button_mask(int android_button_mask) {
+	MouseButton godot_button_mask = MOUSE_BUTTON_NONE;
 	if (android_button_mask & AMOTION_EVENT_BUTTON_PRIMARY) {
 		godot_button_mask |= MOUSE_BUTTON_MASK_LEFT;
 	}
