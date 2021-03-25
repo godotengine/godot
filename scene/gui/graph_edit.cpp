@@ -1123,7 +1123,7 @@ void GraphEdit::_gui_input(const Ref<InputEvent> &p_ev) {
 				}
 				gn->set_selected(box_selection_mode_additive);
 			} else {
-				bool select = (previus_selected.find(gn) != nullptr);
+				bool select = (previous_selected.find(gn) != nullptr);
 				if (gn->is_selected() && !select) {
 					emit_signal("node_deselected", gn);
 				} else if (!gn->is_selected() && select) {
@@ -1148,7 +1148,7 @@ void GraphEdit::_gui_input(const Ref<InputEvent> &p_ev) {
 						continue;
 					}
 
-					bool select = (previus_selected.find(gn) != nullptr);
+					bool select = (previous_selected.find(gn) != nullptr);
 					if (gn->is_selected() && !select) {
 						emit_signal("node_deselected", gn);
 					} else if (!gn->is_selected() && select) {
@@ -1273,29 +1273,29 @@ void GraphEdit::_gui_input(const Ref<InputEvent> &p_ev) {
 				box_selecting_from = b->get_position();
 				if (b->get_control()) {
 					box_selection_mode_additive = true;
-					previus_selected.clear();
+					previous_selected.clear();
 					for (int i = get_child_count() - 1; i >= 0; i--) {
 						GraphNode *gn2 = Object::cast_to<GraphNode>(get_child(i));
 						if (!gn2 || !gn2->is_selected()) {
 							continue;
 						}
 
-						previus_selected.push_back(gn2);
+						previous_selected.push_back(gn2);
 					}
 				} else if (b->get_shift()) {
 					box_selection_mode_additive = false;
-					previus_selected.clear();
+					previous_selected.clear();
 					for (int i = get_child_count() - 1; i >= 0; i--) {
 						GraphNode *gn2 = Object::cast_to<GraphNode>(get_child(i));
 						if (!gn2 || !gn2->is_selected()) {
 							continue;
 						}
 
-						previus_selected.push_back(gn2);
+						previous_selected.push_back(gn2);
 					}
 				} else {
 					box_selection_mode_additive = true;
-					previus_selected.clear();
+					previous_selected.clear();
 					for (int i = get_child_count() - 1; i >= 0; i--) {
 						GraphNode *gn2 = Object::cast_to<GraphNode>(get_child(i));
 						if (!gn2) {
@@ -1313,7 +1313,7 @@ void GraphEdit::_gui_input(const Ref<InputEvent> &p_ev) {
 		if (b->get_button_index() == BUTTON_LEFT && !b->is_pressed() && box_selecting) {
 			box_selecting = false;
 			box_selecting_rect = Rect2();
-			previus_selected.clear();
+			previous_selected.clear();
 			top_layer->update();
 			minimap->update();
 		}
