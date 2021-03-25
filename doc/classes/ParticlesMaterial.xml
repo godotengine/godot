@@ -180,7 +180,7 @@
 			If [code]true[/code], particles rotate around Y axis by [member angle].
 		</member>
 		<member name="flatness" type="float" setter="set_flatness" getter="get_flatness" default="0.0">
-			Amount of [member spread] in Y/Z plane. A value of [code]1[/code] restricts particles to X/Z plane.
+			Amount of [member spread] along the Y axis.
 		</member>
 		<member name="gravity" type="Vector3" setter="set_gravity" getter="get_gravity" default="Vector3( 0, -9.8, 0 )">
 			Gravity applied to every particle.
@@ -241,7 +241,7 @@
 			Scale randomness ratio.
 		</member>
 		<member name="spread" type="float" setter="set_spread" getter="get_spread" default="45.0">
-			Each particle's initial direction range from [code]+spread[/code] to [code]-spread[/code] degrees. Applied to X/Z plane and Y/Z planes.
+			Each particle's initial direction range from [code]+spread[/code] to [code]-spread[/code] degrees.
 		</member>
 		<member name="tangential_accel" type="float" setter="set_param" getter="get_param" default="0.0">
 			Tangential acceleration applied to each particle. Tangential acceleration is perpendicular to the particle's velocity giving the particles a swirling motion.
