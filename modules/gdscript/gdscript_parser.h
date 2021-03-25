@@ -267,6 +267,7 @@ public:
 			GET_NODE,
 			IDENTIFIER,
 			IF,
+			LAMBDA,
 			LITERAL,
 			MATCH,
 			MATCH_BRANCH,
@@ -789,6 +790,18 @@ public:
 		}
 	};
 
+	struct LambdaNode : public ExpressionNode {
+		FunctionNode *function = nullptr;
+
+		bool has_name() const {
+			return function && function->identifier;
+		}
+
+		LambdaNode() {
+			type = LAMBDA;
+		}
+	};
+
 	struct LiteralNode : public ExpressionNode {
 		Variant value;
 
@@ -1191,6 +1204,8 @@ private:
 	CompletionCall completion_call;
 	List<CompletionCall> completion_call_stack;
 	bool passed_cursor = false;
+	bool in_lambda = false;
+	bool lambda_ended = false; // Marker for when a lambda ends, to apply an end of statement if needed.
 
 	typedef bool (GDScriptParser::*AnnotationAction)(const AnnotationNode *p_annotation, Node *p_target);
 	struct AnnotationInfo {
@@ -1278,10 +1293,11 @@ private:
 
 	GDScriptTokenizer::Token advance();
 	bool match(GDScriptTokenizer::Token::Type p_token_type);
-	bool check(GDScriptTokenizer::Token::Type p_token_type);
+	bool check(GDScriptTokenizer::Token::Type p_token_type) const;
 	bool consume(GDScriptTokenizer::Token::Type p_token_type, const String &p_error_message);
-	bool is_at_end();
-	bool is_statement_end();
+	bool is_at_end() const;
+	bool is_statement_end_token() const;
+	bool is_statement_end() const;
 	void end_statement(const String &p_context);
 	void synchronize();
 	void push_multiline(bool p_state);
@@ -1299,7 +1315,8 @@ private:
 	EnumNode *parse_enum();
 	ParameterNode *parse_parameter();
 	FunctionNode *parse_function();
-	SuiteNode *parse_suite(const String &p_context, SuiteNode *p_suite = nullptr);
+	void parse_function_signature(FunctionNode *p_function, SuiteNode *p_body, const String &p_type);
+	SuiteNode *parse_suite(const String &p_context, SuiteNode *p_suite = nullptr, bool p_for_lambda = false);
 	// Annotations
 	AnnotationNode *parse_annotation(uint32_t p_valid_targets);
 	bool register_annotation(const MethodInfo &p_info, uint32_t p_target_kinds, AnnotationAction p_apply, int p_optional_arguments = 0, bool p_is_vararg = false);
@@ -1354,6 +1371,7 @@ private:
 	ExpressionNode *parse_await(ExpressionNode *p_previous_operand, bool p_can_assign);
 	ExpressionNode *parse_attribute(ExpressionNode *p_previous_operand, bool p_can_assign);
 	ExpressionNode *parse_subscript(ExpressionNode *p_previous_operand, bool p_can_assign);
+	ExpressionNode *parse_lambda(ExpressionNode *p_previous_operand, bool p_can_assign);
 	ExpressionNode *parse_invalid_token(ExpressionNode *p_previous_operand, bool p_can_assign);
 	TypeNode *parse_type(bool p_allow_void = false);
 #ifdef TOOLS_ENABLED
@@ -1415,10 +1433,11 @@ public:
 		void print_expression(ExpressionNode *p_expression);
 		void print_enum(EnumNode *p_enum);
 		void print_for(ForNode *p_for);
-		void print_function(FunctionNode *p_function);
+		void print_function(FunctionNode *p_function, const String &p_context = "Function");
 		void print_get_node(GetNodeNode *p_get_node);
 		void print_if(IfNode *p_if, bool p_is_elif = false);
 		void print_identifier(IdentifierNode *p_identifier);
+		void print_lambda(LambdaNode *p_lambda);
 		void print_literal(LiteralNode *p_literal);
 		void print_match(MatchNode *p_match);
 		void print_match_branch(MatchBranchNode *p_match_branch);

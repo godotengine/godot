@@ -66,7 +66,7 @@ static void test_tokenizer(const String &p_code, const Vector<String> &p_lines) 
 		StringBuilder token;
 		token += " --> "; // Padding for line number.
 
-		for (int l = current.start_line; l <= current.end_line; l++) {
+		for (int l = current.start_line; l <= current.end_line && l <= p_lines.size(); l++) {
 			print_line(vformat("%04d %s", l, p_lines[l - 1]).replace("\t", tab));
 		}
 
