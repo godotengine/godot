@@ -12,7 +12,7 @@
 	<methods>
 	</methods>
 	<members>
-		<member name="axis" type="int" setter="set_axis" getter="get_axis" default="0">
+		<member name="axis" type="int" setter="set_axis" getter="get_axis" enum="JoyAxis" default="0">
 			Axis identifier. Use one of the [enum JoyAxis] axis constants.
 		</member>
 		<member name="axis_value" type="float" setter="set_axis_value" getter="get_axis_value" default="0.0">

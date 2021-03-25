@@ -230,7 +230,7 @@ class InputEventMouseButton : public InputEventMouse {
 	GDCLASS(InputEventMouseButton, InputEventMouse);
 
 	float factor = 1;
-	int button_index = 0;
+	MouseButton button_index = MOUSE_BUTTON_NONE;
 	bool pressed = false; //otherwise released
 	bool double_click = false; //last even less than double click time
 
@@ -241,8 +241,8 @@ public:
 	void set_factor(float p_factor);
 	float get_factor() const;
 
-	void set_button_index(int p_index);
-	int get_button_index() const;
+	void set_button_index(MouseButton p_index);
+	MouseButton get_button_index() const;
 
 	void set_pressed(bool p_pressed);
 	virtual bool is_pressed() const override;
@@ -297,15 +297,15 @@ public:
 
 class InputEventJoypadMotion : public InputEvent {
 	GDCLASS(InputEventJoypadMotion, InputEvent);
-	int axis = 0; ///< Joypad axis
+	JoyAxis axis = (JoyAxis)0; ///< Joypad axis
 	float axis_value = 0; ///< -1 to 1
 
 protected:
 	static void _bind_methods();
 
 public:
-	void set_axis(int p_axis);
-	int get_axis() const;
+	void set_axis(JoyAxis p_axis);
+	JoyAxis get_axis() const;
 
 	void set_axis_value(float p_value);
 	float get_axis_value() const;
@@ -325,15 +325,15 @@ public:
 class InputEventJoypadButton : public InputEvent {
 	GDCLASS(InputEventJoypadButton, InputEvent);
 
-	int button_index = 0;
+	JoyButton button_index = (JoyButton)0;
 	bool pressed = false;
 	float pressure = 0; //0 to 1
 protected:
 	static void _bind_methods();
 
 public:
-	void set_button_index(int p_index);
-	int get_button_index() const;
+	void set_button_index(JoyButton p_index);
+	JoyButton get_button_index() const;
 
 	void set_pressed(bool p_pressed);
 	virtual bool is_pressed() const override;
@@ -349,7 +349,7 @@ public:
 	virtual String as_text() const override;
 	virtual String to_string() override;
 
-	static Ref<InputEventJoypadButton> create_reference(int p_btn_index);
+	static Ref<InputEventJoypadButton> create_reference(JoyButton p_btn_index);
 
 	InputEventJoypadButton() {}
 };
@@ -496,7 +496,7 @@ class InputEventMIDI : public InputEvent {
 	GDCLASS(InputEventMIDI, InputEvent);
 
 	int channel = 0;
-	int message = 0;
+	MIDIMessage message = MIDI_MESSAGE_NONE;
 	int pitch = 0;
 	int velocity = 0;
 	int instrument = 0;
@@ -511,8 +511,8 @@ public:
 	void set_channel(const int p_channel);
 	int get_channel() const;
 
-	void set_message(const int p_message);
-	int get_message() const;
+	void set_message(const MIDIMessage p_message);
+	MIDIMessage get_message() const;
 
 	void set_pitch(const int p_pitch);
 	int get_pitch() const;

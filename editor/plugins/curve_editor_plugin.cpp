@@ -127,6 +127,8 @@ void CurveEditor::on_gui_input(const Ref<InputEvent> &p_event) {
 				case MOUSE_BUTTON_LEFT:
 					_dragging = true;
 					break;
+				default:
+					break;
 			}
 		}
 

@@ -229,8 +229,8 @@ EM_BOOL DisplayServerJavaScript::mouse_button_callback(int p_event_type, const E
 	}
 
 	Input *input = Input::get_singleton();
-	int mask = input->get_mouse_button_mask();
-	int button_flag = 1 << (ev->get_button_index() - 1);
+	MouseButton mask = input->get_mouse_button_mask();
+	MouseButton button_flag = MouseButton(1 << (ev->get_button_index() - 1));
 	if (ev->is_pressed()) {
 		// Since the event is consumed, focus manually. The containing iframe,
 		// if exists, may not have focus yet, so focus even if already focused.
@@ -478,11 +478,11 @@ EM_BOOL DisplayServerJavaScript::wheel_callback(int p_event_type, const Emscript
 	int button_flag = 1 << (ev->get_button_index() - 1);
 
 	ev->set_pressed(true);
-	ev->set_button_mask(input->get_mouse_button_mask() | button_flag);
+	ev->set_button_mask(MouseButton(input->get_mouse_button_mask() | button_flag));
 	input->parse_input_event(ev);
 
 	ev->set_pressed(false);
-	ev->set_button_mask(input->get_mouse_button_mask() & ~button_flag);
+	ev->set_button_mask(MouseButton(input->get_mouse_button_mask() & ~button_flag));
 	input->parse_input_event(ev);
 
 	return true;

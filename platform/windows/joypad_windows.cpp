@@ -330,7 +330,7 @@ void JoypadWindows::process_joypads() {
 		if (joy.state.dwPacketNumber != joy.last_packet) {
 			int button_mask = XINPUT_GAMEPAD_DPAD_UP;
 			for (int j = 0; j <= 16; j++) {
-				input->joy_button(joy.id, j, joy.state.Gamepad.wButtons & button_mask);
+				input->joy_button(joy.id, (JoyButton)j, joy.state.Gamepad.wButtons & button_mask);
 				button_mask = button_mask * 2;
 			}
 
@@ -381,12 +381,12 @@ void JoypadWindows::process_joypads() {
 		for (int j = 0; j < 128; j++) {
 			if (js.rgbButtons[j] & 0x80) {
 				if (!joy->last_buttons[j]) {
-					input->joy_button(joy->id, j, true);
+					input->joy_button(joy->id, (JoyButton)j, true);
 					joy->last_buttons[j] = true;
 				}
 			} else {
 				if (joy->last_buttons[j]) {
-					input->joy_button(joy->id, j, false);
+					input->joy_button(joy->id, (JoyButton)j, false);
 					joy->last_buttons[j] = false;
 				}
 			}
@@ -400,7 +400,7 @@ void JoypadWindows::process_joypads() {
 		for (int j = 0; j < joy->joy_axis.size(); j++) {
 			for (int k = 0; k < count; k++) {
 				if (joy->joy_axis[j] == axes[k]) {
-					input->joy_axis(joy->id, j, axis_correct(values[k]));
+					input->joy_axis(joy->id, (JoyAxis)j, axis_correct(values[k]));
 					break;
 				};
 			};
@@ -410,7 +410,7 @@ void JoypadWindows::process_joypads() {
 }
 
 void JoypadWindows::post_hat(int p_device, DWORD p_dpad) {
-	int dpad_val = 0;
+	HatMask dpad_val = (HatMask)0;
 
 	// Should be -1 when centered, but according to docs:
 	// "Some drivers report the centered position of the POV indicator as 65,535. Determine whether the indicator is centered as follows:

@@ -475,7 +475,7 @@ void JoypadLinux::process_joypads() {
 
 				switch (ev.type) {
 					case EV_KEY:
-						input->joy_button(i, joy->key_map[ev.code], ev.value);
+						input->joy_button(i, (JoyButton)joy->key_map[ev.code], ev.value);
 						break;
 
 					case EV_ABS:
@@ -484,29 +484,29 @@ void JoypadLinux::process_joypads() {
 							case ABS_HAT0X:
 								if (ev.value != 0) {
 									if (ev.value < 0) {
-										joy->dpad = (joy->dpad | HatMask::HAT_MASK_LEFT) & ~HatMask::HAT_MASK_RIGHT;
+										joy->dpad = (HatMask)((joy->dpad | HatMask::HAT_MASK_LEFT) & ~HatMask::HAT_MASK_RIGHT);
 									} else {
-										joy->dpad = (joy->dpad | HatMask::HAT_MASK_RIGHT) & ~HatMask::HAT_MASK_LEFT;
+										joy->dpad = (HatMask)((joy->dpad | HatMask::HAT_MASK_RIGHT) & ~HatMask::HAT_MASK_LEFT);
 									}
 								} else {
 									joy->dpad &= ~(HatMask::HAT_MASK_LEFT | HatMask::HAT_MASK_RIGHT);
 								}
 
-								input->joy_hat(i, joy->dpad);
+								input->joy_hat(i, (HatMask)joy->dpad);
 								break;
 
 							case ABS_HAT0Y:
 								if (ev.value != 0) {
 									if (ev.value < 0) {
-										joy->dpad = (joy->dpad | HatMask::HAT_MASK_UP) & ~HatMask::HAT_MASK_DOWN;
+										joy->dpad = (HatMask)((joy->dpad | HatMask::HAT_MASK_UP) & ~HatMask::HAT_MASK_DOWN);
 									} else {
-										joy->dpad = (joy->dpad | HatMask::HAT_MASK_DOWN) & ~HatMask::HAT_MASK_UP;
+										joy->dpad = (HatMask)((joy->dpad | HatMask::HAT_MASK_DOWN) & ~HatMask::HAT_MASK_UP);
 									}
 								} else {
 									joy->dpad &= ~(HatMask::HAT_MASK_UP | HatMask::HAT_MASK_DOWN);
 								}
 
-								input->joy_hat(i, joy->dpad);
+								input->joy_hat(i, (HatMask)joy->dpad);
 								break;
 
 							default:
@@ -526,7 +526,7 @@ void JoypadLinux::process_joypads() {
 		for (int j = 0; j < MAX_ABS; j++) {
 			int index = joy->abs_map[j];
 			if (index != -1) {
-				input->joy_axis(i, index, joy->curr_axis[index]);
+				input->joy_axis(i, (JoyAxis)index, joy->curr_axis[index]);
 			}
 		}
 		if (len == 0 || (len < 0 && errno != EAGAIN)) {

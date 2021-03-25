@@ -334,7 +334,7 @@ void InputEventConfigurationDialog::_update_input_list() {
 		for (int i = 0; i < JOY_BUTTON_MAX; i++) {
 			Ref<InputEventJoypadButton> joyb;
 			joyb.instantiate();
-			joyb->set_button_index(i);
+			joyb->set_button_index((JoyButton)i);
 			String desc = get_event_text(joyb);
 
 			if (!search_term.is_empty() && desc.findn(search_term) == -1) {
@@ -359,7 +359,7 @@ void InputEventConfigurationDialog::_update_input_list() {
 			int direction = (i & 1) ? 1 : -1;
 			Ref<InputEventJoypadMotion> joym;
 			joym.instantiate();
-			joym->set_axis(axis);
+			joym->set_axis((JoyAxis)axis);
 			joym->set_axis_value(direction);
 			String desc = get_event_text(joym);
 
@@ -482,7 +482,7 @@ void InputEventConfigurationDialog::_input_list_item_selected() {
 			int idx = selected->get_meta("__index");
 			Ref<InputEventMouseButton> mb;
 			mb.instantiate();
-			mb->set_button_index(idx);
+			mb->set_button_index((MouseButton)idx);
 			// Maintain modifier state from checkboxes
 			mb->set_alt_pressed(mod_checkboxes[MOD_ALT]->is_pressed());
 			mb->set_shift_pressed(mod_checkboxes[MOD_SHIFT]->is_pressed());
@@ -495,7 +495,7 @@ void InputEventConfigurationDialog::_input_list_item_selected() {
 		} break;
 		case InputEventConfigurationDialog::INPUT_JOY_BUTTON: {
 			int idx = selected->get_meta("__index");
-			Ref<InputEventJoypadButton> jb = InputEventJoypadButton::create_reference(idx);
+			Ref<InputEventJoypadButton> jb = InputEventJoypadButton::create_reference((JoyButton)idx);
 			_set_event(jb);
 		} break;
 		case InputEventConfigurationDialog::INPUT_JOY_MOTION: {
@@ -504,7 +504,7 @@ void InputEventConfigurationDialog::_input_list_item_selected() {
 
 			Ref<InputEventJoypadMotion> jm;
 			jm.instantiate();
-			jm->set_axis(axis);
+			jm->set_axis((JoyAxis)axis);
 			jm->set_axis_value(value);
 			_set_event(jm);
 		} break;

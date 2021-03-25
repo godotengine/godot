@@ -408,7 +408,7 @@ class DisplayServerWindows : public DisplayServer {
 	bool shift_mem = false;
 	bool control_mem = false;
 	bool meta_mem = false;
-	uint32_t last_button_state = 0;
+	MouseButton last_button_state = MOUSE_BUTTON_NONE;
 	bool use_raw_input = false;
 	bool drop_events = false;
 	bool in_dispatch_input_event = false;
@@ -449,7 +449,7 @@ public:
 
 	virtual void mouse_warp_to_position(const Point2i &p_to);
 	virtual Point2i mouse_get_position() const;
-	virtual int mouse_get_button_state() const;
+	virtual MouseButton mouse_get_button_state() const;
 
 	virtual void clipboard_set(const String &p_text);
 	virtual String clipboard_get() const;

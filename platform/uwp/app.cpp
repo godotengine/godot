@@ -145,7 +145,7 @@ void App::SetWindow(CoreWindow ^ p_window) {
 	Main::setup2();
 }
 
-static int _get_button(Windows::UI::Input::PointerPoint ^ pt) {
+static MouseButton _get_button(Windows::UI::Input::PointerPoint ^ pt) {
 	using namespace Windows::UI::Input;
 
 #if WINAPI_FAMILY == WINAPI_FAMILY_PHONE_APP
@@ -177,7 +177,7 @@ static int _get_button(Windows::UI::Input::PointerPoint ^ pt) {
 	}
 #endif
 
-	return 0;
+	return MOUSE_BUTTON_NONE;
 };
 
 static bool _is_touch(Windows::UI::Input::PointerPoint ^ pointerPoint) {
@@ -241,7 +241,7 @@ static int _get_finger(uint32_t p_touch_id) {
 void App::pointer_event(Windows::UI::Core::CoreWindow ^ sender, Windows::UI::Core::PointerEventArgs ^ args, bool p_pressed, bool p_is_wheel) {
 	Windows::UI::Input::PointerPoint ^ point = args->CurrentPoint;
 	Windows::Foundation::Point pos = _get_pixel_position(window, point->Position, os);
-	int but = _get_button(point);
+	MouseButton but = _get_button(point);
 	if (_is_touch(point)) {
 		Ref<InputEventScreenTouch> screen_touch;
 		screen_touch.instantiate();

@@ -204,7 +204,7 @@ void XRController3D::_notification(int p_what) {
 					// check button states
 					for (int i = 0; i < 16; i++) {
 						bool was_pressed = (button_states & mask) == mask;
-						bool is_pressed = Input::get_singleton()->is_joy_button_pressed(joy_id, i);
+						bool is_pressed = Input::get_singleton()->is_joy_button_pressed(joy_id, (JoyButton)i);
 
 						if (!was_pressed && is_pressed) {
 							emit_signal("button_pressed", i);
@@ -304,7 +304,7 @@ bool XRController3D::is_button_pressed(int p_button) const {
 		return false;
 	};
 
-	return Input::get_singleton()->is_joy_button_pressed(joy_id, p_button);
+	return Input::get_singleton()->is_joy_button_pressed(joy_id, (JoyButton)p_button);
 };
 
 float XRController3D::get_joystick_axis(int p_axis) const {
@@ -313,7 +313,7 @@ float XRController3D::get_joystick_axis(int p_axis) const {
 		return 0.0;
 	};
 
-	return Input::get_singleton()->get_joy_axis(joy_id, p_axis);
+	return Input::get_singleton()->get_joy_axis(joy_id, (JoyAxis)p_axis);
 };
 
 real_t XRController3D::get_rumble() const {

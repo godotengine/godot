@@ -458,17 +458,17 @@ void JoypadOSX::process_joypads() {
 		for (int j = 0; j < joy.axis_elements.size(); j++) {
 			rec_element &elem = joy.axis_elements.write[j];
 			int value = joy.get_hid_element_state(&elem);
-			input->joy_axis(joy.id, j, axis_correct(value, elem.min, elem.max));
+			input->joy_axis(joy.id, (JoyAxis)j, axis_correct(value, elem.min, elem.max));
 		}
 		for (int j = 0; j < joy.button_elements.size(); j++) {
 			int value = joy.get_hid_element_state(&joy.button_elements.write[j]);
-			input->joy_button(joy.id, j, (value >= 1));
+			input->joy_button(joy.id, (JoyButton)j, (value >= 1));
 		}
 		for (int j = 0; j < joy.hat_elements.size(); j++) {
 			rec_element &elem = joy.hat_elements.write[j];
 			int value = joy.get_hid_element_state(&elem);
 			int hat_value = process_hat_value(elem.min, elem.max, value);
-			input->joy_hat(joy.id, hat_value);
+			input->joy_hat(joy.id, (HatMask)hat_value);
 		}
 
 		if (joy.ffservice) {

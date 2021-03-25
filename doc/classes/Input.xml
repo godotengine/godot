@@ -123,7 +123,7 @@
 			</return>
 			<argument index="0" name="device" type="int">
 			</argument>
-			<argument index="1" name="axis" type="int">
+			<argument index="1" name="axis" type="int" enum="JoyAxis">
 			</argument>
 			<description>
 				Returns the current value of the joypad axis at given index (see [enum JoyAxis]).
@@ -252,7 +252,7 @@
 			</return>
 			<argument index="0" name="device" type="int">
 			</argument>
-			<argument index="1" name="button" type="int">
+			<argument index="1" name="button" type="int" enum="JoyButton">
 			</argument>
 			<description>
 				Returns [code]true[/code] if you are pressing the joypad button (see [enum JoyButton]).
@@ -279,7 +279,7 @@
 		<method name="is_mouse_button_pressed" qualifiers="const">
 			<return type="bool">
 			</return>
-			<argument index="0" name="button" type="int">
+			<argument index="0" name="button" type="int" enum="MouseButton">
 			</argument>
 			<description>
 				Returns [code]true[/code] if you are pressing the mouse button specified with [enum MouseButton].
