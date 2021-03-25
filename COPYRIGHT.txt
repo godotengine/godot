@@ -89,6 +89,8 @@ Files: ./servers/physics_3d/gjk_epa.cpp
  ./servers/physics_3d/joints/slider_joint_3d_sw.h
  ./servers/physics_3d/soft_body_3d_sw.cpp
  ./servers/physics_3d/soft_body_3d_sw.h
+ ./servers/physics_3d/shape_3d_sw.cpp
+ ./servers/physics_3d/shape_3d_sw.h
 Comment: Bullet Continuous Collision Detection and Physics Library
 Copyright: 2003-2008, Erwin Coumans
  2007-2021, Juan Linietsky, Ariel Manzur.

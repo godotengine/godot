@@ -81,7 +81,7 @@ public:
 
 	virtual PhysicsServer3D::ShapeType get_type() const = 0;
 
-	_FORCE_INLINE_ AABB get_aabb() const { return aabb; }
+	_FORCE_INLINE_ const AABB &get_aabb() const { return aabb; }
 	_FORCE_INLINE_ bool is_configured() const { return configured; }
 
 	virtual bool is_concave() const { return false; }
@@ -389,21 +389,29 @@ public:
 };
 
 struct HeightMapShape3DSW : public ConcaveShape3DSW {
-	Vector<real_t> heights;
-	int width;
-	int depth;
-	real_t cell_size;
+	Vector<float> heights;
+	int width = 0;
+	int depth = 0;
+	Vector3 local_origin;
 
-	//void _cull_segment(int p_idx,_SegmentCullParams *p_params) const;
-	//void _cull(int p_idx,_CullParams *p_params) const;
+	_FORCE_INLINE_ float _get_height(int p_x, int p_z) const {
+		return heights[(p_z * width) + p_x];
+	}
 
-	void _setup(Vector<real_t> p_heights, int p_width, int p_depth, real_t p_cell_size);
+	_FORCE_INLINE_ void _get_point(int p_x, int p_z, Vector3 &r_point) const {
+		r_point.x = p_x - 0.5 * (width - 1.0);
+		r_point.y = _get_height(p_x, p_z);
+		r_point.z = p_z - 0.5 * (depth - 1.0);
+	}
+
+	void _get_cell(const Vector3 &p_point, int &r_x, int &r_y, int &r_z) const;
+
+	void _setup(const Vector<float> &p_heights, int p_width, int p_depth, real_t p_min_height, real_t p_max_height);
 
 public:
-	Vector<real_t> get_heights() const;
+	Vector<float> get_heights() const;
 	int get_width() const;
 	int get_depth() const;
-	real_t get_cell_size() const;
 
 	virtual PhysicsServer3D::ShapeType get_type() const { return PhysicsServer3D::SHAPE_HEIGHTMAP; }
 
