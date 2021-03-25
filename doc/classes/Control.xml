@@ -895,6 +895,10 @@
 		<member name="mouse_filter" type="int" setter="set_mouse_filter" getter="get_mouse_filter" enum="Control.MouseFilter" default="0">
 			Controls whether the control will be able to receive mouse button input events through [method _gui_input] and how these events should be handled. Also controls whether the control can receive the [signal mouse_entered], and [signal mouse_exited] signals. See the constants to learn what each does.
 		</member>
+		<member name="input_pass_on_modal_close_click" type="bool" setter="set_pass_on_modal_close_click" getter="get_pass_on_modal_close_click" default="true">
+			Enables whether input should propagate when you close the control as modal.
+			If [code]false[/code], stops event handling at the viewport input event handling. The viewport first hides the modal and after marks the input as handled.
+		</member>
 		<member name="rect_clip_content" type="bool" setter="set_clip_contents" getter="is_clipping_contents" default="false">
 			Enables whether rendering of [CanvasItem] based children should be clipped to this control's rectangle. If [code]true[/code], parts of a child which would be visibly outside of this control's rectangle will not be rendered.
 		</member>
