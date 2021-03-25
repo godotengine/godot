@@ -1037,6 +1037,7 @@ public:
 	static Vector<Vector<Vector2> > decompose_polygon_in_convex(Vector<Point2> polygon);
 
 	static MeshData build_convex_mesh(const PoolVector<Plane> &p_planes);
+	static Error build_convex_hull(const Vector<Vector3> &p_points, MeshData &r_mesh);
 	static PoolVector<Plane> build_sphere_planes(real_t p_radius, int p_lats, int p_lons, Vector3::Axis p_axis = Vector3::AXIS_Z);
 	static PoolVector<Plane> build_box_planes(const Vector3 &p_extents);
 	static PoolVector<Plane> build_cylinder_planes(real_t p_radius, real_t p_height, int p_sides, Vector3::Axis p_axis = Vector3::AXIS_Z);
@@ -1052,6 +1053,9 @@ public:
 	static Vector<PackRectsResult> partial_pack_rects(const Vector<Vector2i> &p_sizes, const Size2i &p_atlas_size);
 
 	static Vector<Vector3> compute_convex_mesh_points(const Plane *p_planes, int p_plane_count);
+
+	typedef Error (*ConvexHullFunc)(const Vector<Vector3> &, MeshData &);
+	static ConvexHullFunc convex_hull_function;
 
 private:
 	static Vector<Vector<Point2> > _polypaths_do_operation(PolyBooleanOperation p_op, const Vector<Point2> &p_polypath_a, const Vector<Point2> &p_polypath_b, bool is_a_open = false);

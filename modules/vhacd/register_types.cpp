@@ -29,7 +29,9 @@
 /*************************************************************************/
 
 #include "register_types.h"
+#include "core/math/geometry.h"
 #include "scene/resources/mesh.h"
+#include "thirdparty/vhacd/inc/btConvexHullComputer.h"
 #include "thirdparty/vhacd/public/VHACD.h"
 
 static Vector<Vector<Face3> > convex_decompose(const Vector<Face3> &p_faces) {
@@ -79,10 +81,62 @@ static Vector<Vector<Face3> > convex_decompose(const Vector<Face3> &p_faces) {
 	return ret;
 }
 
+static Error convex_hull(const Vector<Vector3> &p_points, Geometry::MeshData &r_mesh) {
+	// build the convex hull using the convex hull computer from bullet.
+	// simply copies the data over to Godot's types
+
+	r_mesh = Geometry::MeshData(); // clear
+
+	if (p_points.size() == 0) {
+		return FAILED; // matches QuickHull
+	}
+
+	VHACD::btConvexHullComputer ch;
+	ch.compute(&p_points.ptr()[0][0], sizeof(p_points.ptr()[0]), p_points.size(), -1.0, -1.0);
+
+	Geometry::MeshData ret;
+	r_mesh.vertices.resize(ch.vertices.size());
+	for (int i = 0; i < ch.vertices.size(); i++) {
+		r_mesh.vertices.write[i].x = ch.vertices[i].getX();
+		r_mesh.vertices.write[i].y = ch.vertices[i].getY();
+		r_mesh.vertices.write[i].z = ch.vertices[i].getZ();
+	}
+
+	r_mesh.edges.resize(ch.edges.size());
+	for (int i = 0; i < ch.edges.size(); i++) {
+		r_mesh.edges.write[i].a = (&ch.edges[i])->getSourceVertex();
+		r_mesh.edges.write[i].b = (&ch.edges[i])->getTargetVertex();
+	}
+
+	r_mesh.faces.resize(ch.faces.size());
+	for (int i = 0; i < ch.faces.size(); i++) {
+		const VHACD::btConvexHullComputer::Edge *e_start = &ch.edges[ch.faces[i]];
+		const VHACD::btConvexHullComputer::Edge *e = e_start;
+		Geometry::MeshData::Face &face = r_mesh.faces.write[i];
+
+		do {
+			face.indices.push_back(e->getTargetVertex());
+
+			e = e->getNextEdgeOfFace();
+		} while (e != e_start);
+
+		// compute normal
+		if (face.indices.size() >= 3) {
+			face.plane = Plane(r_mesh.vertices[face.indices[0]], r_mesh.vertices[face.indices[2]], r_mesh.vertices[face.indices[1]]);
+		} else {
+			WARN_PRINT("Too few vertices per face.");
+		}
+	}
+
+	return OK;
+}
+
 void register_vhacd_types() {
 	Mesh::convex_composition_function = convex_decompose;
+	Geometry::convex_hull_function = convex_hull;
 }
 
 void unregister_vhacd_types() {
 	Mesh::convex_composition_function = NULL;
+	Geometry::convex_hull_function = NULL;
 }

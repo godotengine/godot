@@ -30,6 +30,7 @@
 
 #include "geometry.h"
 
+#include "core/math/quick_hull.h"
 #include "core/print_string.h"
 
 #include "thirdparty/misc/clipper.hpp"
@@ -38,6 +39,8 @@
 #include "thirdparty/stb_rect_pack/stb_rect_pack.h"
 
 #define SCALE_FACTOR 100000.0 // Based on CMP_EPSILON.
+
+Geometry::ConvexHullFunc Geometry::convex_hull_function = NULL;
 
 // This implementation is very inefficient, commenting unless bugs happen. See the other one.
 /*
@@ -860,6 +863,13 @@ Geometry::MeshData Geometry::build_convex_mesh(const PoolVector<Plane> &p_planes
 	}
 
 	return mesh;
+}
+
+Error Geometry::build_convex_hull(const Vector<Vector3> &p_points, Geometry::MeshData &r_mesh) {
+	if (!convex_hull_function) {
+		return QuickHull::build(p_points, r_mesh);
+	}
+	return convex_hull_function(p_points, r_mesh);
 }
 
 PoolVector<Plane> Geometry::build_box_planes(const Vector3 &p_extents) {
