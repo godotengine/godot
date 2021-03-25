@@ -428,7 +428,7 @@ void RayCast3D::_update_debug_shape_material(bool p_check_collision) {
 		color = get_tree()->get_debug_collisions_color();
 	}
 
-	if (p_check_collision) {
+	if (p_check_collision && collided) {
 		if ((color.get_h() < 0.055 || color.get_h() > 0.945) && color.get_s() > 0.5 && color.get_v() > 0.5) {
 			// If base color is already quite reddish, highlight collision with green color
 			color = Color(0.0, 1.0, 0.0, color.a);
