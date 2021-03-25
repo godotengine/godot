@@ -1312,6 +1312,7 @@ void GraphEdit::_gui_input(const Ref<InputEvent> &p_ev) {
 
 		if (b->get_button_index() == BUTTON_LEFT && !b->is_pressed() && box_selecting) {
 			box_selecting = false;
+			box_selecting_rect = Rect2();
 			previus_selected.clear();
 			top_layer->update();
 			minimap->update();
