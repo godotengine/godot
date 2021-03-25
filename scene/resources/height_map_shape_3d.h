@@ -39,8 +39,8 @@ class HeightMapShape3D : public Shape3D {
 	int map_width = 2;
 	int map_depth = 2;
 	PackedFloat32Array map_data;
-	float min_height = 0.0;
-	float max_height = 0.0;
+	real_t min_height = 0.0;
+	real_t max_height = 0.0;
 
 protected:
 	static void _bind_methods();
