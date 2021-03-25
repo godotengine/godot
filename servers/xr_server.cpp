@@ -311,6 +311,7 @@ Ref<XRInterface> XRServer::get_primary_interface() const {
 };
 
 void XRServer::set_primary_interface(const Ref<XRInterface> &p_primary_interface) {
+	ERR_FAIL_COND(p_primary_interface.is_null());
 	primary_interface = p_primary_interface;
 
 	print_verbose("XR: Primary interface set to: " + primary_interface->get_name());
