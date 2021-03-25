@@ -57,6 +57,8 @@
 #include "drivers/gles3/rasterizer_gles3.h"
 #endif
 
+static const String META_DRIVER_NAME = "driver_name";
+
 static inline String get_project_key_from_path(const String &dir) {
 	return dir.replace("/", "::");
 }
@@ -489,7 +491,7 @@ private:
 				if (mode == MODE_NEW) {
 
 					ProjectSettings::CustomMap initial_settings;
-					if (rasterizer_button_group->get_pressed_button()->get_meta("driver_name") == "GLES3") {
+					if (rasterizer_button_group->get_pressed_button()->get_meta(META_DRIVER_NAME) == "GLES3") {
 						initial_settings["rendering/quality/driver/driver_name"] = "GLES3";
 					} else {
 						initial_settings["rendering/quality/driver/driver_name"] = "GLES2";
@@ -897,8 +899,8 @@ public:
 		rshb->add_child(rvb);
 		Button *rs_button = memnew(CheckBox);
 		rs_button->set_button_group(rasterizer_button_group);
-		rs_button->set_text(TTR("OpenGL ES 3.0"));
-		rs_button->set_meta("driver_name", "GLES3");
+		rs_button->set_text(TTR("OpenGL ES 3.0 / WebGL 2.0"));
+		rs_button->set_meta(META_DRIVER_NAME, "GLES3");
 		rvb->add_child(rs_button);
 		if (gles3_viable) {
 			rs_button->set_pressed(true);
@@ -906,11 +908,16 @@ public:
 			// If GLES3 can't be used, don't let users shoot themselves in the foot.
 			rs_button->set_disabled(true);
 			l = memnew(Label);
-			l->set_text(TTR("Not supported by your GPU drivers."));
+			l->set_text(TTR("Not supported by your GPU hardware\nor drivers."));
 			rvb->add_child(l);
 		}
 		l = memnew(Label);
-		l->set_text(TTR("Higher visual quality\nAll features available\nIncompatible with older hardware\nNot recommended for web games"));
+		l->set_text(
+				String::utf8("•  ") + TTR("Higher visual quality.") +
+				String::utf8("\n•  ") + TTR("All features available.") +
+				String::utf8("\n•  ") + TTR("Incompatible with older hardware.") +
+				String::utf8("\n•  ") + TTR("Not recommended for web games."));
+		l->set_modulate(Color(1, 1, 1, 0.7));
 		rvb->add_child(l);
 
 		rshb->add_child(memnew(VSeparator));
@@ -920,17 +927,30 @@ public:
 		rshb->add_child(rvb);
 		rs_button = memnew(CheckBox);
 		rs_button->set_button_group(rasterizer_button_group);
-		rs_button->set_text(TTR("OpenGL ES 2.0"));
-		rs_button->set_meta("driver_name", "GLES2");
+		rs_button->set_text(TTR("OpenGL ES 2.0 / WebGL 1.0"));
+		rs_button->set_meta(META_DRIVER_NAME, "GLES2");
 		rs_button->set_pressed(!gles3_viable);
 		rvb->add_child(rs_button);
+		if (!gles3_viable) {
+			// GLES3 was unchecked automatically, so check GLES2 instead.
+			rs_button->set_pressed(true);
+		}
 		l = memnew(Label);
-		l->set_text(TTR("Lower visual quality\nSome features not available\nWorks on most hardware\nRecommended for web games"));
+		l->set_text(
+				String::utf8("•  ") + TTR("Lower visual quality.") +
+				String::utf8("\n•  ") + TTR("Some features not available.") +
+				String::utf8("\n•  ") + TTR("Works on most hardware.") +
+				String::utf8("\n•  ") + TTR("Recommended for web games."));
+		l->set_modulate(Color(1, 1, 1, 0.7));
 		rvb->add_child(l);
 
 		l = memnew(Label);
-		l->set_text(TTR("Renderer can be changed later, but scenes may need to be adjusted."));
+		l->set_text(TTR("The renderer can be changed later, but scenes may need to be adjusted."));
+		// Add some extra spacing to separate it from the list above and the buttons below.
+		l->set_custom_minimum_size(Size2(0, 40) * EDSCALE);
 		l->set_align(Label::ALIGN_CENTER);
+		l->set_valign(Label::VALIGN_CENTER);
+		l->set_modulate(Color(1, 1, 1, 0.7));
 		rasterizer_container->add_child(l);
 
 		fdialog = memnew(FileDialog);
