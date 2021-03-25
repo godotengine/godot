@@ -135,7 +135,7 @@ char *wc_to_utf8(const wchar_t *wc) {
 	return ubuf;
 }
 
-int widechar_main(int argc, wchar_t **argv) {
+__declspec(dllexport) int widechar_main(int argc, wchar_t **argv) {
 
 	OS_Windows os(NULL);
 
@@ -169,7 +169,7 @@ int widechar_main(int argc, wchar_t **argv) {
 	return os.get_exit_code();
 };
 
-int _main() {
+__declspec(dllexport) int _main() {
 	LPWSTR *wc_argv;
 	int argc;
 	int result;
@@ -187,7 +187,7 @@ int _main() {
 	return result;
 }
 
-int main(int _argc, char **_argv) {
+__declspec(dllexport) int main(int _argc, char **_argv) {
 	// _argc and _argv are ignored
 	// we are going to use the WideChar version of them instead
 
