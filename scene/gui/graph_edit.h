@@ -150,7 +150,7 @@ private:
 	Point2 box_selecting_from;
 	Point2 box_selecting_to;
 	Rect2 box_selecting_rect;
-	List<GraphNode *> previus_selected;
+	List<GraphNode *> previous_selected;
 
 	bool setting_scroll_ofs;
 	bool right_disconnects;
