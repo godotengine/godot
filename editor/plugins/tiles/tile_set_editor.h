@@ -60,6 +60,7 @@ private:
 	TileDataFloatEditor *tile_data_float_editor = memnew(TileDataFloatEditor);
 	TileDataOcclusionShapeEditor *tile_data_occlusion_shape_editor = memnew(TileDataOcclusionShapeEditor);
 	TileDataCollisionShapeEditor *tile_data_collision_shape_editor = memnew(TileDataCollisionShapeEditor);
+	TileDataTerrainsEditor *tile_data_terrains_editor = memnew(TileDataTerrainsEditor);
 	TileDataNavigationPolygonEditor *tile_data_navigation_polygon_editor = memnew(TileDataNavigationPolygonEditor);
 
 	// -- Sources management --
