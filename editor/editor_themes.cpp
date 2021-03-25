@@ -1262,6 +1262,8 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	// FileDialog
 	theme->set_icon("folder", "FileDialog", theme->get_icon("Folder", "EditorIcons"));
 	theme->set_icon("parent_folder", "FileDialog", theme->get_icon("ArrowUp", "EditorIcons"));
+	theme->set_icon("back_folder", "FileDialog", theme->get_icon("Back", "EditorIcons"));
+	theme->set_icon("forward_folder", "FileDialog", theme->get_icon("Forward", "EditorIcons"));
 	theme->set_icon("reload", "FileDialog", theme->get_icon("Reload", "EditorIcons"));
 	theme->set_icon("toggle_hidden", "FileDialog", theme->get_icon("GuiVisibilityVisible", "EditorIcons"));
 	// Use a different color for folder icons to make them easier to distinguish from files.
