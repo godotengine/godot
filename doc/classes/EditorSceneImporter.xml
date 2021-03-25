@@ -74,21 +74,11 @@
 		</constant>
 		<constant name="IMPORT_ANIMATION" value="2">
 		</constant>
-		<constant name="IMPORT_ANIMATION_DETECT_LOOP" value="4">
+		<constant name="IMPORT_FAIL_ON_MISSING_DEPENDENCIES" value="4">
 		</constant>
-		<constant name="IMPORT_ANIMATION_OPTIMIZE" value="8">
+		<constant name="IMPORT_GENERATE_TANGENT_ARRAYS" value="8">
 		</constant>
-		<constant name="IMPORT_ANIMATION_FORCE_ALL_TRACKS_IN_ALL_CLIPS" value="16">
-		</constant>
-		<constant name="IMPORT_ANIMATION_KEEP_VALUE_TRACKS" value="32">
-		</constant>
-		<constant name="IMPORT_GENERATE_TANGENT_ARRAYS" value="256">
-		</constant>
-		<constant name="IMPORT_FAIL_ON_MISSING_DEPENDENCIES" value="512">
-		</constant>
-		<constant name="IMPORT_MATERIALS_IN_INSTANCES" value="1024">
-		</constant>
-		<constant name="IMPORT_USE_COMPRESSION" value="2048">
+		<constant name="IMPORT_USE_NAMED_SKIN_BINDS" value="16">
 		</constant>
 	</constants>
 </class>

@@ -62,13 +62,6 @@
 				Returns the source file path which got imported (e.g. [code]res://scene.dae[/code]).
 			</description>
 		</method>
-		<method name="get_source_folder" qualifiers="const">
-			<return type="String">
-			</return>
-			<description>
-				Returns the resource folder the imported scene file is located in.
-			</description>
-		</method>
 		<method name="post_import" qualifiers="virtual">
 			<return type="Object">
 			</return>

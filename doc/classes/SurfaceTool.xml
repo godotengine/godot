@@ -189,6 +189,12 @@
 			<description>
 			</description>
 		</method>
+		<method name="get_primitive" qualifiers="const">
+			<return type="int" enum="Mesh.PrimitiveType">
+			</return>
+			<description>
+			</description>
+		</method>
 		<method name="get_skin_weight_count" qualifiers="const">
 			<return type="int" enum="SurfaceTool.SkinWeightCount">
 			</return>

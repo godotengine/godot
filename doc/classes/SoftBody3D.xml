@@ -44,6 +44,12 @@
 				Returns an individual bit on the collision mask.
 			</description>
 		</method>
+		<method name="get_physics_rid" qualifiers="const">
+			<return type="RID">
+			</return>
+			<description>
+			</description>
+		</method>
 		<method name="remove_collision_exception_with">
 			<return type="void">
 			</return>
@@ -85,11 +91,11 @@
 		<member name="collision_mask" type="int" setter="set_collision_mask" getter="get_collision_mask" default="1">
 			The physics layers this SoftBody3D scans for collisions. See [url=https://docs.godotengine.org/en/latest/tutorials/physics/physics_introduction.html#collision-layers-and-masks]Collision layers and masks[/url] in the documentation for more information.
 		</member>
-		<member name="damping_coefficient" type="float" setter="set_damping_coefficient" getter="get_damping_coefficient" default="0.0">
+		<member name="damping_coefficient" type="float" setter="set_damping_coefficient" getter="get_damping_coefficient" default="0.01">
 		</member>
 		<member name="drag_coefficient" type="float" setter="set_drag_coefficient" getter="get_drag_coefficient" default="0.0">
 		</member>
-		<member name="linear_stiffness" type="float" setter="set_linear_stiffness" getter="get_linear_stiffness" default="0.0">
+		<member name="linear_stiffness" type="float" setter="set_linear_stiffness" getter="get_linear_stiffness" default="0.5">
 		</member>
 		<member name="parent_collision_ignore" type="NodePath" setter="set_parent_collision_ignore" getter="get_parent_collision_ignore" default="NodePath(&quot;&quot;)">
 			[NodePath] to a [CollisionObject3D] this SoftBody3D should avoid clipping.
@@ -99,10 +105,10 @@
 		<member name="ray_pickable" type="bool" setter="set_ray_pickable" getter="is_ray_pickable" default="true">
 			If [code]true[/code], the [SoftBody3D] will respond to [RayCast3D]s.
 		</member>
-		<member name="simulation_precision" type="int" setter="set_simulation_precision" getter="get_simulation_precision" default="0">
+		<member name="simulation_precision" type="int" setter="set_simulation_precision" getter="get_simulation_precision" default="5">
 			Increasing this value will improve the resulting simulation, but can affect performance. Use with care.
 		</member>
-		<member name="total_mass" type="float" setter="set_total_mass" getter="get_total_mass" default="0.0">
+		<member name="total_mass" type="float" setter="set_total_mass" getter="get_total_mass" default="1.0">
 			The SoftBody3D's mass.
 		</member>
 	</members>

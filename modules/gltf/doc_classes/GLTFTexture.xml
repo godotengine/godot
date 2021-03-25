@@ -9,7 +9,7 @@
 	<methods>
 	</methods>
 	<members>
-		<member name="src_image" type="int" setter="set_src_image" getter="get_src_image" default="212600976">
+		<member name="src_image" type="int" setter="set_src_image" getter="get_src_image" default="0">
 		</member>
 	</members>
 	<constants>
