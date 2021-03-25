@@ -872,6 +872,9 @@ void GDScriptAnalyzer::resolve_node(GDScriptParser::Node *p_node) {
 		case GDScriptParser::Node::SIGNAL:
 			// Nothing to do.
 			break;
+		case GDScriptParser::Node::LAMBDA:
+			// FIXME: Recurse into lambda.
+			break;
 	}
 }
 
@@ -1489,6 +1492,7 @@ void GDScriptAnalyzer::reduce_expression(GDScriptParser::ExpressionNode *p_expre
 		case GDScriptParser::Node::FOR:
 		case GDScriptParser::Node::FUNCTION:
 		case GDScriptParser::Node::IF:
+		case GDScriptParser::Node::LAMBDA:
 		case GDScriptParser::Node::MATCH:
 		case GDScriptParser::Node::MATCH_BRANCH:
 		case GDScriptParser::Node::PARAMETER:
