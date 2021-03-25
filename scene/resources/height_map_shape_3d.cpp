@@ -44,7 +44,7 @@ Vector<Vector3> HeightMapShape3D::get_debug_mesh_lines() const {
 		const float *r = map_data.ptr();
 
 		// reserve some memory for our points..
-		points.resize(((map_width - 1) * map_depth * 2) + (map_width * (map_depth - 1) * 2));
+		points.resize(((map_width - 1) * map_depth * 2) + (map_width * (map_depth - 1) * 2) + ((map_width - 1) * (map_depth - 1) * 2));
 
 		// now set our points
 		int r_offset = 0;
@@ -62,6 +62,11 @@ Vector<Vector3> HeightMapShape3D::get_debug_mesh_lines() const {
 
 				if (d != map_depth - 1) {
 					points.write[w_offset++] = height;
+					points.write[w_offset++] = Vector3(height.x, r[r_offset + map_width - 1], height.z + 1.0);
+				}
+
+				if ((w != map_width - 1) && (d != map_depth - 1)) {
+					points.write[w_offset++] = Vector3(height.x + 1.0, r[r_offset], height.z);
 					points.write[w_offset++] = Vector3(height.x, r[r_offset + map_width - 1], height.z + 1.0);
 				}
 
