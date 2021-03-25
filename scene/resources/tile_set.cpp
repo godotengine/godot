@@ -477,7 +477,7 @@ void TileSet::tile_set_tile_mode(int p_id, TileMode p_tile_mode) {
 
 TileSet::TileMode TileSet::tile_get_tile_mode(int p_id) const {
 
-	ERR_FAIL_COND_V_MSG(!tile_map.has(p_id), SINGLE_TILE, "Cannot assign tileslot for the cell value.");
+	ERR_FAIL_COND_V_MSG(!tile_map.has(p_id), SINGLE_TILE, "Found no tilemap at the given tile value.");
 	return tile_map[p_id].tile_mode;
 }
 
