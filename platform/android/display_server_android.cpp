@@ -140,9 +140,9 @@ Size2i DisplayServerAndroid::screen_get_size(int p_screen) const {
 
 float DisplayServerAndroid::screen_get_refresh_rate(int p_screen) const {
 	print_line("Test for getting Display.Mode from JNI");
-	JNIEnv *env = OS_Android::get_singleton()->get_godot_io_java().get_jni_env();
+	JNIEnv *env = OS_Android::get_singleton()->get_godot_io_java()->get_jni_env();
 	jclass display_class = env->FindClass("android/view/Display");
-	jmethodID get_mode_id = env->GetMethodID(env, display_class, "getMode", "()Landroid/view/Display/Mode");
+	jmethodID get_mode_id = env->GetMethodID(display_class, "getMode", "()Landroid/view/Display/Mode");
 	if(get_mode_id == 0) {
 		return 60.0;
 	}
