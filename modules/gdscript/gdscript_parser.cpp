@@ -1227,7 +1227,7 @@ void GDScriptParser::parse_function_signature(FunctionNode *p_function, SuiteNod
 			} else {
 				p_function->parameters_indices[parameter->identifier->name] = p_function->parameters.size();
 				p_function->parameters.push_back(parameter);
-				p_body->add_local(parameter);
+				p_body->add_local(parameter, current_function);
 			}
 		} while (match(GDScriptTokenizer::Token::COMMA));
 	}
@@ -1365,6 +1365,7 @@ bool GDScriptParser::register_annotation(const MethodInfo &p_info, uint32_t p_ta
 GDScriptParser::SuiteNode *GDScriptParser::parse_suite(const String &p_context, SuiteNode *p_suite, bool p_for_lambda) {
 	SuiteNode *suite = p_suite != nullptr ? p_suite : alloc_node<SuiteNode>();
 	suite->parent_block = current_suite;
+	suite->parent_function = current_function;
 	current_suite = suite;
 
 	bool multiline = false;
@@ -1401,7 +1402,7 @@ GDScriptParser::SuiteNode *GDScriptParser::parse_suite(const String &p_context, 
 				if (local.type != SuiteNode::Local::UNDEFINED) {
 					push_error(vformat(R"(There is already a %s named "%s" declared in this scope.)", local.get_name(), variable->identifier->name));
 				}
-				current_suite->add_local(variable);
+				current_suite->add_local(variable, current_function);
 				break;
 			}
 			case Node::CONSTANT: {
@@ -1416,7 +1417,7 @@ GDScriptParser::SuiteNode *GDScriptParser::parse_suite(const String &p_context, 
 					}
 					push_error(vformat(R"(There is already a %s named "%s" declared in this scope.)", name, constant->identifier->name));
 				}
-				current_suite->add_local(constant);
+				current_suite->add_local(constant, current_function);
 				break;
 			}
 			default:
@@ -1647,7 +1648,7 @@ GDScriptParser::ForNode *GDScriptParser::parse_for() {
 
 	SuiteNode *suite = alloc_node<SuiteNode>();
 	if (n_for->variable) {
-		suite->add_local(SuiteNode::Local(n_for->variable));
+		suite->add_local(SuiteNode::Local(n_for->variable, current_function));
 	}
 	suite->parent_for = n_for;
 
@@ -1802,7 +1803,7 @@ GDScriptParser::MatchBranchNode *GDScriptParser::parse_match_branch() {
 		branch->patterns[0]->binds.get_key_list(&binds);
 
 		for (List<StringName>::Element *E = binds.front(); E != nullptr; E = E->next()) {
-			SuiteNode::Local local(branch->patterns[0]->binds[E->get()]);
+			SuiteNode::Local local(branch->patterns[0]->binds[E->get()], current_function);
 			suite->add_local(local);
 		}
 	}
@@ -2053,6 +2054,8 @@ GDScriptParser::ExpressionNode *GDScriptParser::parse_identifier(ExpressionNode 
 
 	if (current_suite != nullptr && current_suite->has_local(identifier->name)) {
 		const SuiteNode::Local &declaration = current_suite->get_local(identifier->name);
+
+		identifier->source_function = declaration.source_function;
 		switch (declaration.type) {
 			case SuiteNode::Local::CONSTANT:
 				identifier->source = IdentifierNode::LOCAL_CONSTANT;
@@ -2731,7 +2734,11 @@ GDScriptParser::ExpressionNode *GDScriptParser::parse_preload(ExpressionNode *p_
 
 GDScriptParser::ExpressionNode *GDScriptParser::parse_lambda(ExpressionNode *p_previous_operand, bool p_can_assign) {
 	LambdaNode *lambda = alloc_node<LambdaNode>();
+	lambda->parent_function = current_function;
 	FunctionNode *function = alloc_node<FunctionNode>();
+	function->source_lambda = lambda;
+
+	function->is_static = current_function != nullptr ? current_function->is_static : false;
 
 	if (match(GDScriptTokenizer::Token::IDENTIFIER)) {
 		function->identifier = parse_identifier();
@@ -4024,6 +4031,14 @@ void GDScriptParser::TreePrinter::print_if(IfNode *p_if, bool p_is_elif) {
 
 void GDScriptParser::TreePrinter::print_lambda(LambdaNode *p_lambda) {
 	print_function(p_lambda->function, "Lambda");
+	push_text("| captures [ ");
+	for (const Map<StringName, IdentifierNode *>::Element *E = p_lambda->captures.front(); E; E = E->next()) {
+		push_text(E->key().operator String());
+		if (E->next()) {
+			push_text(" , ");
+		}
+	}
+	push_line(" ]");
 }
 
 void GDScriptParser::TreePrinter::print_literal(LiteralNode *p_literal) {

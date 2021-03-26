@@ -76,6 +76,7 @@ public:
 	struct GetNodeNode;
 	struct IdentifierNode;
 	struct IfNode;
+	struct LambdaNode;
 	struct LiteralNode;
 	struct MatchNode;
 	struct MatchBranchNode;
@@ -729,6 +730,7 @@ public:
 		bool is_coroutine = false;
 		MultiplayerAPI::RPCMode rpc_mode = MultiplayerAPI::RPC_MODE_DISABLED;
 		MethodInfo info;
+		LambdaNode *source_lambda = nullptr;
 #ifdef TOOLS_ENABLED
 		Vector<Variant> default_arg_values;
 		String doc_description;
@@ -772,6 +774,7 @@ public:
 			VariableNode *variable_source;
 			IdentifierNode *bind_source;
 		};
+		FunctionNode *source_function = nullptr;
 
 		int usages = 0; // Useful for binds/iterator variable.
 
@@ -792,6 +795,8 @@ public:
 
 	struct LambdaNode : public ExpressionNode {
 		FunctionNode *function = nullptr;
+		FunctionNode *parent_function = nullptr;
+		Map<StringName, IdentifierNode *> captures;
 
 		bool has_name() const {
 			return function && function->identifier;
@@ -955,6 +960,7 @@ public:
 				IdentifierNode *bind;
 			};
 			StringName name;
+			FunctionNode *source_function = nullptr;
 
 			int start_line = 0, end_line = 0;
 			int start_column = 0, end_column = 0;
@@ -964,10 +970,11 @@ public:
 			String get_name() const;
 
 			Local() {}
-			Local(ConstantNode *p_constant) {
+			Local(ConstantNode *p_constant, FunctionNode *p_source_function) {
 				type = CONSTANT;
 				constant = p_constant;
 				name = p_constant->identifier->name;
+				source_function = p_source_function;
 
 				start_line = p_constant->start_line;
 				end_line = p_constant->end_line;
@@ -976,10 +983,11 @@ public:
 				leftmost_column = p_constant->leftmost_column;
 				rightmost_column = p_constant->rightmost_column;
 			}
-			Local(VariableNode *p_variable) {
+			Local(VariableNode *p_variable, FunctionNode *p_source_function) {
 				type = VARIABLE;
 				variable = p_variable;
 				name = p_variable->identifier->name;
+				source_function = p_source_function;
 
 				start_line = p_variable->start_line;
 				end_line = p_variable->end_line;
@@ -988,10 +996,11 @@ public:
 				leftmost_column = p_variable->leftmost_column;
 				rightmost_column = p_variable->rightmost_column;
 			}
-			Local(ParameterNode *p_parameter) {
+			Local(ParameterNode *p_parameter, FunctionNode *p_source_function) {
 				type = PARAMETER;
 				parameter = p_parameter;
 				name = p_parameter->identifier->name;
+				source_function = p_source_function;
 
 				start_line = p_parameter->start_line;
 				end_line = p_parameter->end_line;
@@ -1000,10 +1009,11 @@ public:
 				leftmost_column = p_parameter->leftmost_column;
 				rightmost_column = p_parameter->rightmost_column;
 			}
-			Local(IdentifierNode *p_identifier) {
+			Local(IdentifierNode *p_identifier, FunctionNode *p_source_function) {
 				type = FOR_VARIABLE;
 				bind = p_identifier;
 				name = p_identifier->name;
+				source_function = p_source_function;
 
 				start_line = p_identifier->start_line;
 				end_line = p_identifier->end_line;
@@ -1028,9 +1038,9 @@ public:
 		bool has_local(const StringName &p_name) const;
 		const Local &get_local(const StringName &p_name) const;
 		template <class T>
-		void add_local(T *p_local) {
+		void add_local(T *p_local, FunctionNode *p_source_function) {
 			locals_indices[p_local->identifier->name] = locals.size();
-			locals.push_back(Local(p_local));
+			locals.push_back(Local(p_local, p_source_function));
 		}
 		void add_local(const Local &p_local) {
 			locals_indices[p_local.name] = locals.size();

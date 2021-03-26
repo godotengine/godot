@@ -42,6 +42,7 @@ class GDScriptAnalyzer {
 	HashMap<String, Ref<GDScriptParserRef>> depended_parsers;
 
 	const GDScriptParser::EnumNode *current_enum = nullptr;
+	List<const GDScriptParser::LambdaNode *> lambda_stack;
 
 	Error resolve_inheritance(GDScriptParser::ClassNode *p_class, bool p_recursive = true);
 	GDScriptParser::DataType resolve_datatype(GDScriptParser::TypeNode *p_type);
@@ -82,6 +83,7 @@ class GDScriptAnalyzer {
 	void reduce_get_node(GDScriptParser::GetNodeNode *p_get_node);
 	void reduce_identifier(GDScriptParser::IdentifierNode *p_identifier, bool can_be_builtin = false);
 	void reduce_identifier_from_base(GDScriptParser::IdentifierNode *p_identifier, GDScriptParser::DataType *p_base = nullptr);
+	void reduce_lambda(GDScriptParser::LambdaNode *p_lambda);
 	void reduce_literal(GDScriptParser::LiteralNode *p_literal);
 	void reduce_preload(GDScriptParser::PreloadNode *p_preload);
 	void reduce_self(GDScriptParser::SelfNode *p_self);
@@ -109,6 +111,7 @@ class GDScriptAnalyzer {
 	void mark_node_unsafe(const GDScriptParser::Node *p_node);
 	bool class_exists(const StringName &p_class) const;
 	Ref<GDScriptParserRef> get_parser_for(const String &p_path);
+	const GDScriptParser::LambdaNode *get_current_lambda() const;
 #ifdef DEBUG_ENABLED
 	bool is_shadowing(GDScriptParser::IdentifierNode *p_local, const String &p_context);
 #endif
