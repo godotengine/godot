@@ -15,7 +15,7 @@ namespace Godot
     /// <see cref="Vector3"/> for the origin (last column).
     ///
     /// For more information, read this documentation article:
-    /// https://docs.godotengine.org/en/latest/tutorials/math/matrices_and_transforms.html
+    /// https://docs.godotengine.org/en/3.3/tutorials/math/matrices_and_transforms.html
     /// </summary>
     [Serializable]
     [StructLayout(LayoutKind.Sequential)]
