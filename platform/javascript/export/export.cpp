@@ -41,6 +41,7 @@ class EditorHTTPServer : public Reference {
 private:
 	Ref<TCP_Server> server;
 	Ref<StreamPeerTCP> connection;
+	Map<String, String> mimes;
 	uint64_t time = 0;
 	uint8_t req_buf[4096];
 	int req_pos = 0;
@@ -54,6 +55,13 @@ private:
 
 public:
 	EditorHTTPServer() {
+		mimes["html"] = "text/html";
+		mimes["js"] = "application/javascript";
+		mimes["json"] = "application/json";
+		mimes["pck"] = "application/octet-stream";
+		mimes["png"] = "image/png";
+		mimes["svg"] = "image/svg";
+		mimes["wasm"] = "application/wasm";
 		server.instance();
 		stop();
 	}
@@ -82,44 +90,12 @@ public:
 		// Wrong protocol
 		ERR_FAIL_COND_MSG(req[0] != "GET" || req[2] != "HTTP/1.1", "Invalid method or HTTP version.");
 
-		const String cache_path = EditorSettings::get_singleton()->get_cache_dir();
-		const String basereq = "/tmp_js_export";
-		String filepath;
-		String ctype;
-		if (req[1] == basereq + ".html") {
-			filepath = cache_path.plus_file(req[1].get_file());
-			ctype = "text/html";
-		} else if (req[1] == basereq + ".js") {
-			filepath = cache_path.plus_file(req[1].get_file());
-			ctype = "application/javascript";
-		} else if (req[1] == basereq + ".audio.worklet.js") {
-			filepath = cache_path.plus_file(req[1].get_file());
-			ctype = "application/javascript";
-		} else if (req[1] == basereq + ".worker.js") {
-			filepath = cache_path.plus_file(req[1].get_file());
-			ctype = "application/javascript";
-		} else if (req[1] == basereq + ".pck") {
-			filepath = cache_path.plus_file(req[1].get_file());
-			ctype = "application/octet-stream";
-		} else if (req[1] == basereq + ".png" || req[1] == "/favicon.png") {
-			// Also allow serving the generated favicon for a smoother loading experience.
-			if (req[1] == "/favicon.png") {
-				filepath = EditorSettings::get_singleton()->get_cache_dir().plus_file("favicon.png");
-			} else {
-				filepath = basereq + ".png";
-			}
-			ctype = "image/png";
-		} else if (req[1] == basereq + ".side.wasm") {
-			filepath = cache_path.plus_file(req[1].get_file());
-			ctype = "application/wasm";
-		} else if (req[1] == basereq + ".wasm") {
-			filepath = cache_path.plus_file(req[1].get_file());
-			ctype = "application/wasm";
-		} else if (req[1].ends_with(".wasm")) {
-			filepath = cache_path.plus_file(req[1].get_file()); // TODO dangerous?
-			ctype = "application/wasm";
-		}
-		if (filepath.is_empty() || !FileAccess::exists(filepath)) {
+		const String req_file = req[1].get_file();
+		const String req_ext = req[1].get_extension();
+		const String cache_path = EditorSettings::get_singleton()->get_cache_dir().plus_file("web");
+		const String filepath = cache_path.plus_file(req_file);
+
+		if (!mimes.has(req_ext) || !FileAccess::exists(filepath)) {
 			String s = "HTTP/1.1 404 Not Found\r\n";
 			s += "Connection: Close\r\n";
 			s += "\r\n";
@@ -127,6 +103,8 @@ public:
 			connection->put_data((const uint8_t *)cs.get_data(), cs.size() - 1);
 			return;
 		}
+		const String ctype = mimes[req_ext];
+
 		FileAccess *f = FileAccess::open(filepath, FileAccess::READ);
 		ERR_FAIL_COND(!f);
 		String s = "HTTP/1.1 200 OK\r\n";
@@ -644,7 +622,16 @@ Error EditorExportPlatformJavaScript::run(const Ref<EditorExportPreset> &p_prese
 		return OK;
 	}
 
-	const String basepath = EditorSettings::get_singleton()->get_cache_dir().plus_file("tmp_js_export");
+	const String dest = EditorSettings::get_singleton()->get_cache_dir().plus_file("web");
+	DirAccessRef da = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
+	if (!da->dir_exists(dest)) {
+		Error err = da->make_dir_recursive(dest);
+		if (err != OK) {
+			EditorNode::get_singleton()->show_warning(TTR("Could not create HTTP server directory:") + "\n" + dest);
+			return err;
+		}
+	}
+	const String basepath = dest.plus_file("tmp_js_export");
 	Error err = export_project(p_preset, true, basepath + ".html", p_debug_flags);
 	if (err != OK) {
 		// Export generates several files, clean them up on failure.
@@ -656,7 +643,7 @@ Error EditorExportPlatformJavaScript::run(const Ref<EditorExportPreset> &p_prese
 		DirAccess::remove_file_or_error(basepath + ".png");
 		DirAccess::remove_file_or_error(basepath + ".side.wasm");
 		DirAccess::remove_file_or_error(basepath + ".wasm");
-		DirAccess::remove_file_or_error(EditorSettings::get_singleton()->get_cache_dir().plus_file("favicon.png"));
+		DirAccess::remove_file_or_error(dest.plus_file("favicon.png"));
 		return err;
 	}
 
@@ -678,7 +665,10 @@ Error EditorExportPlatformJavaScript::run(const Ref<EditorExportPreset> &p_prese
 		server->stop();
 		err = server->listen(bind_port, bind_ip);
 	}
-	ERR_FAIL_COND_V_MSG(err != OK, err, "Unable to start HTTP server.");
+	if (err != OK) {
+		EditorNode::get_singleton()->show_warning(TTR("Error starting HTTP server:") + "\n" + itos(err));
+		return err;
+	}
 
 	OS::get_singleton()->shell_open(String("http://" + bind_host + ":" + itos(bind_port) + "/tmp_js_export.html"));
 	// FIXME: Find out how to clean up export files after running the successfully
