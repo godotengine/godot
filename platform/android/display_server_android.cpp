@@ -148,6 +148,7 @@ float DisplayServerAndroid::screen_get_refresh_rate(int p_screen) const {
 	}
 	else {
 		print_line("Got method id");
+		return -1.0;
 	}
 }
 
