@@ -80,7 +80,7 @@ private:
 	CollisionObject2D *collision_parent;
 	bool use_kinematic;
 	Navigation2D *navigation;
-	bool show_collision = true;
+	bool show_collision = false;
 
 	union PosKey {
 
