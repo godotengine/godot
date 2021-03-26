@@ -100,6 +100,7 @@ private:
 			Ref<Texture> texture;
 			Color color;
 			String tooltip;
+			Variant meta;
 			Button() {
 				id = 0;
 				disabled = false;
@@ -202,6 +203,8 @@ public:
 	int get_icon_max_width(int p_column) const;
 
 	void add_button(int p_column, const Ref<Texture> &p_button, int p_id = -1, bool p_disabled = false, const String &p_tooltip = "");
+	void set_button_metadata(int p_column, int p_idx, const Variant &p_meta);
+	Variant get_button_metadata(int p_column, int p_idx) const;
 	int get_button_count(int p_column) const;
 	String get_button_tooltip(int p_column, int p_idx) const;
 	Ref<Texture> get_button(int p_column, int p_idx) const;

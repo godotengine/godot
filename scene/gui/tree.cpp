@@ -537,6 +537,20 @@ void TreeItem::add_button(int p_column, const Ref<Texture> &p_button, int p_id, 
 	_changed_notify(p_column);
 }
 
+void TreeItem::set_button_metadata(int p_column, int p_idx, const Variant &p_meta) {
+
+	ERR_FAIL_INDEX(p_column, cells.size());
+	ERR_FAIL_INDEX(p_column, cells[p_column].buttons.size());
+	cells.write[p_column].buttons.write[p_idx].meta = p_meta;
+}
+
+Variant TreeItem::get_button_metadata(int p_column, int p_idx) const {
+
+	ERR_FAIL_INDEX_V(p_column, cells.size(), Variant());
+	ERR_FAIL_INDEX_V(p_idx, cells[p_column].buttons.size(), Variant());
+	return cells[p_column].buttons[p_idx].meta;
+}
+
 int TreeItem::get_button_count(int p_column) const {
 
 	ERR_FAIL_INDEX_V(p_column, cells.size(), -1);
@@ -840,6 +854,8 @@ void TreeItem::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("is_custom_set_as_button", "column"), &TreeItem::is_custom_set_as_button);
 
 	ClassDB::bind_method(D_METHOD("add_button", "column", "button", "button_idx", "disabled", "tooltip"), &TreeItem::add_button, DEFVAL(-1), DEFVAL(false), DEFVAL(""));
+	ClassDB::bind_method(D_METHOD("set_button_metadata", "column", "button_idx", "meta"), &TreeItem::set_button_metadata);
+	ClassDB::bind_method(D_METHOD("get_button_metadata", "column", "button_idx"), &TreeItem::get_button_metadata);
 	ClassDB::bind_method(D_METHOD("get_button_count", "column"), &TreeItem::get_button_count);
 	ClassDB::bind_method(D_METHOD("get_button_tooltip", "column", "button_idx"), &TreeItem::get_button_tooltip);
 	ClassDB::bind_method(D_METHOD("get_button", "column", "button_idx"), &TreeItem::get_button);
