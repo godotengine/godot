@@ -47,14 +47,10 @@ class Bone2D : public Node2D {
 	Bone2D *parent_bone = nullptr;
 	Skeleton2D *skeleton = nullptr;
 	Transform2D rest;
-<<<<<<< HEAD
-	real_t default_length = 16.0;
-=======
 
 	bool autocalculate_length_and_angle = true;
 	float length = 16;
 	float bone_angle = 0;
->>>>>>> Initial groundwork (squashed from verbose branch: https://github.com/TwistedTwigleg/godot/tree/GSOC_2020_Working_Branch_2D_IK_VERBOSE_ARCHIVE )
 
 	int skeleton_index = -1;
 
