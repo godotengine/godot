@@ -60,7 +60,10 @@ bool operator!=(const Pair<F, S> &pair, const Pair<F, S> &other) {
 template <class F, class S>
 struct PairSort {
 	bool operator()(const Pair<F, S> &A, const Pair<F, S> &B) const {
-		return A.first < B.first;
+		if (A.first != B.first) {
+			return A.first < B.first;
+		}
+		return A.second < B.second;
 	}
 };
 

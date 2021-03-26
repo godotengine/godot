@@ -66,6 +66,8 @@ SceneStringNames::SceneStringNames() {
 
 	mouse_entered = StaticCString::create("mouse_entered");
 	mouse_exited = StaticCString::create("mouse_exited");
+	mouse_shape_entered = StaticCString::create("mouse_shape_entered");
+	mouse_shape_exited = StaticCString::create("mouse_shape_exited");
 
 	focus_entered = StaticCString::create("focus_entered");
 	focus_exited = StaticCString::create("focus_exited");
@@ -170,6 +172,8 @@ SceneStringNames::SceneStringNames() {
 
 	_mouse_enter = StaticCString::create("_mouse_enter");
 	_mouse_exit = StaticCString::create("_mouse_exit");
+	_mouse_shape_enter = StaticCString::create("_mouse_shape_enter");
+	_mouse_shape_exit = StaticCString::create("_mouse_shape_exit");
 
 	_pressed = StaticCString::create("_pressed");
 	_toggled = StaticCString::create("_toggled");

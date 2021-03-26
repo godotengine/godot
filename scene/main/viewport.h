@@ -32,6 +32,7 @@
 #define VIEWPORT_H
 
 #include "core/math/transform_2d.h"
+#include "core/templates/pair.h"
 #include "scene/main/node.h"
 #include "scene/resources/texture.h"
 #include "scene/resources/world_2d.h"
@@ -271,7 +272,12 @@ private:
 	bool handle_input_locally = true;
 	bool local_input_handled = false;
 
+	// Collider to frame
 	Map<ObjectID, uint64_t> physics_2d_mouseover;
+	// Collider & shape to frame
+	Map<Pair<ObjectID, int>, uint64_t, PairSort<ObjectID, int>> physics_2d_shape_mouseover;
+	// Cleans up colliders corresponding to old frames or all of them.
+	void _cleanup_mouseover_colliders(bool p_clean_all_frames, bool p_paused_only, uint64_t p_frame_reference = 0);
 
 	Ref<World2D> world_2d;
 	Ref<World3D> world_3d;

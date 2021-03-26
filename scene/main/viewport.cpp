@@ -724,7 +724,6 @@ void Viewport::_process_picking() {
 							bool send_event = true;
 							if (is_mouse) {
 								Map<ObjectID, uint64_t>::Element *F = physics_2d_mouseover.find(res[i].collider_id);
-
 								if (!F) {
 									physics_2d_mouseover.insert(res[i].collider_id, frame);
 									co->_mouse_enter();
@@ -734,6 +733,13 @@ void Viewport::_process_picking() {
 									if (mm.is_valid() && mm->get_device() == InputEvent::DEVICE_ID_INTERNAL) {
 										send_event = false;
 									}
+								}
+								Map<Pair<ObjectID, int>, uint64_t, PairSort<ObjectID, int>>::Element *SF = physics_2d_shape_mouseover.find(Pair(res[i].collider_id, res[i].shape));
+								if (!SF) {
+									physics_2d_shape_mouseover.insert(Pair(res[i].collider_id, res[i].shape), frame);
+									co->_mouse_shape_enter(res[i].shape);
+								} else {
+									SF->get() = frame;
 								}
 							}
 
@@ -746,25 +752,7 @@ void Viewport::_process_picking() {
 			}
 
 			if (is_mouse) {
-				List<Map<ObjectID, uint64_t>::Element *> to_erase;
-
-				for (Map<ObjectID, uint64_t>::Element *E = physics_2d_mouseover.front(); E; E = E->next()) {
-					if (E->get() != frame) {
-						Object *o = ObjectDB::get_instance(E->key());
-						if (o) {
-							CollisionObject2D *co = Object::cast_to<CollisionObject2D>(o);
-							if (co) {
-								co->_mouse_exit();
-							}
-						}
-						to_erase.push_back(E);
-					}
-				}
-
-				while (to_erase.size()) {
-					physics_2d_mouseover.erase(to_erase.front()->get());
-					to_erase.pop_front();
-				}
+				_cleanup_mouseover_colliders(false, false, frame);
 			}
 		}
 
@@ -2607,26 +2595,7 @@ void Viewport::_drop_mouse_focus() {
 void Viewport::_drop_physics_mouseover(bool p_paused_only) {
 	physics_has_last_mousepos = false;
 
-	List<Map<ObjectID, uint64_t>::Element *> to_erase;
-
-	for (Map<ObjectID, uint64_t>::Element *E = physics_2d_mouseover.front(); E; E = E->next()) {
-		Object *o = ObjectDB::get_instance(E->key());
-		if (o) {
-			CollisionObject2D *co = Object::cast_to<CollisionObject2D>(o);
-			if (co) {
-				if (p_paused_only && co->can_process()) {
-					continue;
-				}
-				co->_mouse_exit();
-				to_erase.push_back(E);
-			}
-		}
-	}
-
-	while (to_erase.size()) {
-		physics_2d_mouseover.erase(to_erase.front()->get());
-		to_erase.pop_front();
-	}
+	_cleanup_mouseover_colliders(true, p_paused_only);
 
 #ifndef _3D_DISABLED
 	if (physics_object_over.is_valid()) {
@@ -2640,6 +2609,59 @@ void Viewport::_drop_physics_mouseover(bool p_paused_only) {
 		}
 	}
 #endif
+}
+
+void Viewport::_cleanup_mouseover_colliders(bool p_clean_all_frames, bool p_paused_only, uint64_t p_frame_reference) {
+	List<Map<ObjectID, uint64_t>::Element *> to_erase;
+
+	for (Map<ObjectID, uint64_t>::Element *E = physics_2d_mouseover.front(); E; E = E->next()) {
+		if (!p_clean_all_frames && E->get() == p_frame_reference) {
+			continue;
+		}
+
+		Object *o = ObjectDB::get_instance(E->key());
+		if (o) {
+			CollisionObject2D *co = Object::cast_to<CollisionObject2D>(o);
+			if (co) {
+				if (p_clean_all_frames && p_paused_only && co->can_process()) {
+					continue;
+				}
+				co->_mouse_exit();
+			}
+		}
+		to_erase.push_back(E);
+	}
+
+	while (to_erase.size()) {
+		physics_2d_mouseover.erase(to_erase.front()->get());
+		to_erase.pop_front();
+	}
+
+	// Per-shape
+	List<Map<Pair<ObjectID, int>, uint64_t, PairSort<ObjectID, int>>::Element *> shapes_to_erase;
+
+	for (Map<Pair<ObjectID, int>, uint64_t, PairSort<ObjectID, int>>::Element *E = physics_2d_shape_mouseover.front(); E; E = E->next()) {
+		if (!p_clean_all_frames && E->get() == p_frame_reference) {
+			continue;
+		}
+
+		Object *o = ObjectDB::get_instance(E->key().first);
+		if (o) {
+			CollisionObject2D *co = Object::cast_to<CollisionObject2D>(o);
+			if (co) {
+				if (p_clean_all_frames && p_paused_only && co->can_process()) {
+					continue;
+				}
+				co->_mouse_shape_exit(E->key().second);
+			}
+		}
+		shapes_to_erase.push_back(E);
+	}
+
+	while (shapes_to_erase.size()) {
+		physics_2d_shape_mouseover.erase(shapes_to_erase.front()->get());
+		shapes_to_erase.pop_front();
+	}
 }
 
 Control *Viewport::_gui_get_focus_owner() {

@@ -346,6 +346,20 @@ void CollisionObject2D::_mouse_exit() {
 	emit_signal(SceneStringNames::get_singleton()->mouse_exited);
 }
 
+void CollisionObject2D::_mouse_shape_enter(int p_shape) {
+	if (get_script_instance()) {
+		get_script_instance()->call(SceneStringNames::get_singleton()->_mouse_shape_enter, p_shape);
+	}
+	emit_signal(SceneStringNames::get_singleton()->mouse_shape_entered, p_shape);
+}
+
+void CollisionObject2D::_mouse_shape_exit(int p_shape) {
+	if (get_script_instance()) {
+		get_script_instance()->call(SceneStringNames::get_singleton()->_mouse_shape_exit, p_shape);
+	}
+	emit_signal(SceneStringNames::get_singleton()->mouse_shape_exited, p_shape);
+}
+
 void CollisionObject2D::set_only_update_transform_changes(bool p_enable) {
 	only_update_transform_changes = p_enable;
 }
@@ -406,6 +420,8 @@ void CollisionObject2D::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("input_event", PropertyInfo(Variant::OBJECT, "viewport", PROPERTY_HINT_RESOURCE_TYPE, "Node"), PropertyInfo(Variant::OBJECT, "event", PROPERTY_HINT_RESOURCE_TYPE, "InputEvent"), PropertyInfo(Variant::INT, "shape_idx")));
 	ADD_SIGNAL(MethodInfo("mouse_entered"));
 	ADD_SIGNAL(MethodInfo("mouse_exited"));
+	ADD_SIGNAL(MethodInfo("mouse_shape_entered", PropertyInfo(Variant::INT, "shape_idx")));
+	ADD_SIGNAL(MethodInfo("mouse_shape_exited", PropertyInfo(Variant::INT, "shape_idx")));
 
 	ADD_GROUP("Pickable", "input_");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "input_pickable"), "set_pickable", "is_pickable");

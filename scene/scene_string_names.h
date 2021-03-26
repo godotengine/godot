@@ -84,6 +84,8 @@ public:
 
 	StringName mouse_entered;
 	StringName mouse_exited;
+	StringName mouse_shape_entered;
+	StringName mouse_shape_exited;
 	StringName focus_entered;
 	StringName focus_exited;
 
@@ -182,6 +184,8 @@ public:
 
 	StringName _mouse_enter;
 	StringName _mouse_exit;
+	StringName _mouse_shape_enter;
+	StringName _mouse_shape_exit;
 
 	StringName frame_changed;
 

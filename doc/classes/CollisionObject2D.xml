@@ -234,12 +234,26 @@
 		</signal>
 		<signal name="mouse_entered">
 			<description>
-				Emitted when the mouse pointer enters any of this object's shapes. Requires [member input_pickable] to be [code]true[/code] and at least one [code]collision_layer[/code] bit to be set.
+				Emitted when the mouse pointer enters any of this object's shapes. Requires [member input_pickable] to be [code]true[/code] and at least one [member collision_layer] bit to be set. Note that moving between different shapes within a single [CollisionObject2D] won't cause this signal to be emitted.
 			</description>
 		</signal>
 		<signal name="mouse_exited">
 			<description>
-				Emitted when the mouse pointer exits all this object's shapes. Requires [member input_pickable] to be [code]true[/code] and at least one [code]collision_layer[/code] bit to be set.
+				Emitted when the mouse pointer exits all this object's shapes. Requires [member input_pickable] to be [code]true[/code] and at least one [member collision_layer] bit to be set. Note that moving between different shapes within a single [CollisionObject2D] won't cause this signal to be emitted.
+			</description>
+		</signal>
+		<signal name="mouse_shape_entered">
+			<argument index="0" name="shape_idx" type="int">
+			</argument>
+			<description>
+				Emitted when the mouse pointer enters any of this object's shapes or moves from one shape to another. [code]shape_idx[/code] is the child index of the newly entered [Shape2D]. Requires [member input_pickable] to be [code]true[/code] and at least one [member collision_layer] bit to be set.
+			</description>
+		</signal>
+		<signal name="mouse_shape_exited">
+			<argument index="0" name="shape_idx" type="int">
+			</argument>
+			<description>
+				Emitted when the mouse pointer exits any of this object's shapes. [code]shape_idx[/code] is the child index of the exited [Shape2D]. Requires [member input_pickable] to be [code]true[/code] and at least one [member collision_layer] bit to be set.
 			</description>
 		</signal>
 	</signals>
