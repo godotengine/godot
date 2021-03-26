@@ -8,7 +8,7 @@
 		By default, audio is heard from the camera position. This can be changed by adding a [Listener3D] node to the scene and enabling it by calling [method Listener3D.make_current] on it.
 	</description>
 	<tutorials>
-		<link title="Audio streams">https://docs.godotengine.org/en/latest/tutorials/audio/audio_streams.html</link>
+		<link title="Audio streams">https://docs.godotengine.org/en/$DOC_VERSION/tutorials/audio/audio_streams.html</link>
 	</tutorials>
 	<methods>
 		<method name="get_playback_position">

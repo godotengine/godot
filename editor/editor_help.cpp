@@ -32,13 +32,14 @@
 
 #include "core/input/input.h"
 #include "core/os/keyboard.h"
+#include "core/version_generated.gen.h"
 #include "doc_data_compressed.gen.h"
 #include "editor/plugins/script_editor_plugin.h"
 #include "editor_node.h"
 #include "editor_scale.h"
 #include "editor_settings.h"
 
-#define CONTRIBUTE_URL "https://docs.godotengine.org/en/latest/community/contributing/updating_the_class_reference.html"
+#define CONTRIBUTE_URL vformat("https://docs.godotengine.org/en/%s/community/contributing/updating_the_class_reference.html", VERSION_DOC)
 
 DocTools *EditorHelp::doc = nullptr;
 
@@ -425,7 +426,7 @@ void EditorHelp::_update_doc() {
 		class_desc->push_color(text_color);
 		class_desc->push_font(doc_bold_font);
 		class_desc->push_indent(1);
-		_add_text(DTR(cd.brief_description));
+		_add_text(DTR(cd.brief_description).replace("$DOC_VERSION", VERSION_DOC));
 		class_desc->pop();
 		class_desc->pop();
 		class_desc->pop();
@@ -449,7 +450,7 @@ void EditorHelp::_update_doc() {
 		class_desc->push_color(text_color);
 		class_desc->push_font(doc_font);
 		class_desc->push_indent(1);
-		_add_text(DTR(cd.description));
+		_add_text(DTR(cd.description).replace("$DOC_VERSION", VERSION_DOC));
 		class_desc->pop();
 		class_desc->pop();
 		class_desc->pop();
@@ -471,7 +472,7 @@ void EditorHelp::_update_doc() {
 		class_desc->add_newline();
 
 		for (int i = 0; i < cd.tutorials.size(); i++) {
-			const String link = DTR(cd.tutorials[i].link);
+			const String link = DTR(cd.tutorials[i].link).replace("$DOC_VERSION", VERSION_DOC);
 			String linktxt = (cd.tutorials[i].title.is_empty()) ? link : DTR(cd.tutorials[i].title);
 			const int seppos = linktxt.find("//");
 			if (seppos != -1) {
@@ -760,7 +761,7 @@ void EditorHelp::_update_doc() {
 				class_desc->push_font(doc_font);
 				class_desc->add_text("  ");
 				class_desc->push_color(comment_color);
-				_add_text(DTR(cd.theme_properties[i].description));
+				_add_text(DTR(cd.theme_properties[i].description).replace("$DOC_VERSION", VERSION_DOC));
 				class_desc->pop();
 				class_desc->pop();
 			}
@@ -829,7 +830,7 @@ void EditorHelp::_update_doc() {
 				class_desc->push_font(doc_font);
 				class_desc->push_color(comment_color);
 				class_desc->push_indent(1);
-				_add_text(DTR(cd.signals[i].description));
+				_add_text(DTR(cd.signals[i].description).replace("$DOC_VERSION", VERSION_DOC));
 				class_desc->pop(); // indent
 				class_desc->pop();
 				class_desc->pop(); // font
@@ -943,7 +944,7 @@ void EditorHelp::_update_doc() {
 						class_desc->push_color(comment_color);
 						static const char32_t dash[6] = { ' ', ' ', 0x2013 /* en dash */, ' ', ' ', 0 };
 						class_desc->add_text(String(dash));
-						_add_text(DTR(enum_list[i].description));
+						_add_text(DTR(enum_list[i].description).replace("$DOC_VERSION", VERSION_DOC));
 						class_desc->pop();
 						class_desc->pop();
 						if (DTR(enum_list[i].description).find("\n") > 0) {
@@ -1013,7 +1014,7 @@ void EditorHelp::_update_doc() {
 					class_desc->push_color(comment_color);
 					static const char32_t dash[6] = { ' ', ' ', 0x2013 /* en dash */, ' ', ' ', 0 };
 					class_desc->add_text(String(dash));
-					_add_text(DTR(constants[i].description));
+					_add_text(DTR(constants[i].description).replace("$DOC_VERSION", VERSION_DOC));
 					class_desc->pop();
 					class_desc->pop();
 					if (DTR(constants[i].description).find("\n") > 0) {
@@ -1175,7 +1176,7 @@ void EditorHelp::_update_doc() {
 			class_desc->push_font(doc_font);
 			class_desc->push_indent(1);
 			if (!cd.properties[i].description.strip_edges().is_empty()) {
-				_add_text(DTR(cd.properties[i].description));
+				_add_text(DTR(cd.properties[i].description).replace("$DOC_VERSION", VERSION_DOC));
 			} else {
 				class_desc->add_image(get_theme_icon("Error", "EditorIcons"));
 				class_desc->add_text(" ");
@@ -1230,7 +1231,7 @@ void EditorHelp::_update_doc() {
 				class_desc->push_font(doc_font);
 				class_desc->push_indent(1);
 				if (!methods_filtered[i].description.strip_edges().is_empty()) {
-					_add_text(DTR(methods_filtered[i].description));
+					_add_text(DTR(methods_filtered[i].description).replace("$DOC_VERSION", VERSION_DOC));
 				} else {
 					class_desc->add_image(get_theme_icon("Error", "EditorIcons"));
 					class_desc->add_text(" ");

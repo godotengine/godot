@@ -11,7 +11,7 @@
 		With Bullet physics (the default), the center of mass is the RigidBody3D center. With GodotPhysics, the center of mass is the average of the [CollisionShape3D] centers.
 	</description>
 	<tutorials>
-		<link title="Physics introduction">https://docs.godotengine.org/en/latest/tutorials/physics/physics_introduction.html</link>
+		<link title="Physics introduction">https://docs.godotengine.org/en/$DOC_VERSION/tutorials/physics/physics_introduction.html</link>
 		<link title="3D Truck Town Demo">https://godotengine.org/asset-library/asset/524</link>
 		<link title="3D Physics Tests Demo">https://godotengine.org/asset-library/asset/675</link>
 	</tutorials>
