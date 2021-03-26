@@ -159,7 +159,7 @@ int PacketPeerUDP::get_max_packet_size() const {
 	return 512; // uhm maybe not
 }
 
-Error PacketPeerUDP::listen(int p_port, const IP_Address &p_bind_address, int p_recv_buffer_size) {
+Error PacketPeerUDP::bind(int p_port, const IP_Address &p_bind_address, int p_recv_buffer_size) {
 	ERR_FAIL_COND_V(!_sock.is_valid(), ERR_UNAVAILABLE);
 	ERR_FAIL_COND_V(_sock->is_open(), ERR_ALREADY_IN_USE);
 	ERR_FAIL_COND_V(!p_bind_address.is_valid() && !p_bind_address.is_wildcard(), ERR_INVALID_PARAMETER);
@@ -318,7 +318,7 @@ Error PacketPeerUDP::store_packet(IP_Address p_ip, uint32_t p_port, uint8_t *p_b
 	return OK;
 }
 
-bool PacketPeerUDP::is_listening() const {
+bool PacketPeerUDP::is_bound() const {
 	return _sock.is_valid() && _sock->is_open();
 }
 
@@ -343,10 +343,10 @@ void PacketPeerUDP::set_dest_address(const IP_Address &p_address, int p_port) {
 }
 
 void PacketPeerUDP::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("listen", "port", "bind_address", "recv_buf_size"), &PacketPeerUDP::listen, DEFVAL("*"), DEFVAL(65536));
+	ClassDB::bind_method(D_METHOD("bind", "port", "bind_address", "recv_buf_size"), &PacketPeerUDP::bind, DEFVAL("*"), DEFVAL(65536));
 	ClassDB::bind_method(D_METHOD("close"), &PacketPeerUDP::close);
 	ClassDB::bind_method(D_METHOD("wait"), &PacketPeerUDP::wait);
-	ClassDB::bind_method(D_METHOD("is_listening"), &PacketPeerUDP::is_listening);
+	ClassDB::bind_method(D_METHOD("is_bound"), &PacketPeerUDP::is_bound);
 	ClassDB::bind_method(D_METHOD("connect_to_host", "host", "port"), &PacketPeerUDP::connect_to_host);
 	ClassDB::bind_method(D_METHOD("is_connected_to_host"), &PacketPeerUDP::is_connected_to_host);
 	ClassDB::bind_method(D_METHOD("get_packet_ip"), &PacketPeerUDP::_get_packet_ip);
