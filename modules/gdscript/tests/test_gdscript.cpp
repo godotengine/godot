@@ -118,6 +118,18 @@ static void test_parser(const String &p_code, const String &p_script_path, const
 			print_line(vformat("%02d:%02d: %s", error.line, error.column, error.message));
 		}
 	}
+
+	GDScriptAnalyzer analyzer(&parser);
+	analyzer.analyze();
+
+	if (err != OK) {
+		const List<GDScriptParser::ParserError> &errors = parser.get_errors();
+		for (const List<GDScriptParser::ParserError>::Element *E = errors.front(); E != nullptr; E = E->next()) {
+			const GDScriptParser::ParserError &error = E->get();
+			print_line(vformat("%02d:%02d: %s", error.line, error.column, error.message));
+		}
+	}
+
 #ifdef TOOLS_ENABLED
 	GDScriptParser::TreePrinter printer;
 	printer.print_tree(parser);
