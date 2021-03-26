@@ -172,7 +172,7 @@ public:
 	}
 
 	Error bind(IP_Address p_ip, uint16_t p_port) {
-		return udp->listen(p_port, p_ip);
+		return udp->bind(p_port, p_ip);
 	}
 
 	Error sendto(const uint8_t *p_buffer, int p_len, int &r_sent, IP_Address p_ip, uint16_t p_port) {

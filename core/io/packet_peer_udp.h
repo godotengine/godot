@@ -70,10 +70,10 @@ protected:
 public:
 	void set_blocking_mode(bool p_enable);
 
-	Error listen(int p_port, const IP_Address &p_bind_address = IP_Address("*"), int p_recv_buffer_size = 65536);
+	Error bind(int p_port, const IP_Address &p_bind_address = IP_Address("*"), int p_recv_buffer_size = 65536);
 	void close();
 	Error wait();
-	bool is_listening() const;
+	bool is_bound() const;
 
 	Error connect_shared_socket(Ref<NetSocket> p_sock, IP_Address p_ip, uint16_t p_port, UDPServer *ref); // Used by UDPServer
 	void disconnect_shared_socket(); // Used by UDPServer

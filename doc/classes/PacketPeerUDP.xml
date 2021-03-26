@@ -9,11 +9,27 @@
 	<tutorials>
 	</tutorials>
 	<methods>
+		<method name="bind">
+			<return type="int" enum="Error">
+			</return>
+			<argument index="0" name="port" type="int">
+			</argument>
+			<argument index="1" name="bind_address" type="String" default="&quot;*&quot;">
+			</argument>
+			<argument index="2" name="recv_buf_size" type="int" default="65536">
+			</argument>
+			<description>
+				Binds this [PacketPeerUDP] to the specified [code]port[/code] and [code]address[/code] with a buffer size [code]recv_buf_size[/code], allowing it to receive incoming packets.
+				If [code]address[/code] is set to [code]"*"[/code] (default), the peer will be bound on all available addresses (both IPv4 and IPv6).
+				If [code]address[/code] is set to [code]"0.0.0.0"[/code] (for IPv4) or [code]"::"[/code] (for IPv6), the peer will be bound to all available addresses matching that IP type.
+				If [code]address[/code] is set to any valid address (e.g. [code]"192.168.1.101"[/code], [code]"::1"[/code], etc), the peer will only be bound to the interface with that addresses (or fail if no interface with the given address exists).
+			</description>
+		</method>
 		<method name="close">
 			<return type="void">
 			</return>
 			<description>
-				Closes the UDP socket the [PacketPeerUDP] is currently listening on.
+				Closes the [PacketPeerUDP]'s underlying UDP socket.
 			</description>
 		</method>
 		<method name="connect_to_host">
@@ -49,18 +65,18 @@
 				Returns the port of the remote peer that sent the last packet(that was received with [method PacketPeer.get_packet] or [method PacketPeer.get_var]).
 			</description>
 		</method>
+		<method name="is_bound" qualifiers="const">
+			<return type="bool">
+			</return>
+			<description>
+				Returns whether this [PacketPeerUDP] is bound to an address and can receive packets.
+			</description>
+		</method>
 		<method name="is_connected_to_host" qualifiers="const">
 			<return type="bool">
 			</return>
 			<description>
 				Returns [code]true[/code] if the UDP socket is open and has been connected to a remote address. See [method connect_to_host].
-			</description>
-		</method>
-		<method name="is_listening" qualifiers="const">
-			<return type="bool">
-			</return>
-			<description>
-				Returns whether this [PacketPeerUDP] is listening.
 			</description>
 		</method>
 		<method name="join_multicast_group">
@@ -85,22 +101,6 @@
 			</argument>
 			<description>
 				Removes the interface identified by [code]interface_name[/code] from the multicast group specified by [code]multicast_address[/code].
-			</description>
-		</method>
-		<method name="listen">
-			<return type="int" enum="Error">
-			</return>
-			<argument index="0" name="port" type="int">
-			</argument>
-			<argument index="1" name="bind_address" type="String" default="&quot;*&quot;">
-			</argument>
-			<argument index="2" name="recv_buf_size" type="int" default="65536">
-			</argument>
-			<description>
-				Makes this [PacketPeerUDP] listen on the [code]port[/code] binding to [code]bind_address[/code] with a buffer size [code]recv_buf_size[/code].
-				If [code]bind_address[/code] is set to [code]"*"[/code] (default), the peer will listen on all available addresses (both IPv4 and IPv6).
-				If [code]bind_address[/code] is set to [code]"0.0.0.0"[/code] (for IPv4) or [code]"::"[/code] (for IPv6), the peer will listen on all available addresses matching that IP type.
-				If [code]bind_address[/code] is set to any valid address (e.g. [code]"192.168.1.101"[/code], [code]"::1"[/code], etc), the peer will only listen on the interface with that addresses (or fail if no interface with the given address exists).
 			</description>
 		</method>
 		<method name="set_broadcast_enabled">
@@ -129,7 +129,7 @@
 			<return type="int" enum="Error">
 			</return>
 			<description>
-				Waits for a packet to arrive on the listening port. See [method listen].
+				Waits for a packet to arrive on the bound address. See [method bind].
 				[b]Note:[/b] [method wait] can't be interrupted once it has been called. This can be worked around by allowing the other party to send a specific "death pill" packet like this:
 		[codeblocks]
 		[gdscript]
