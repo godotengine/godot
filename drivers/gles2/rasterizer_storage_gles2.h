@@ -1231,12 +1231,14 @@ public:
 			GLuint fbo;
 			GLuint color;
 			GLuint depth;
+			bool depth_owned;
 			RID texture;
 
 			External() :
 					fbo(0),
 					color(0),
-					depth(0) {
+					depth(0),
+					depth_owned(false) {
 			}
 		} external;
 
@@ -1289,7 +1291,8 @@ public:
 	virtual void render_target_set_position(RID p_render_target, int p_x, int p_y);
 	virtual void render_target_set_size(RID p_render_target, int p_width, int p_height);
 	virtual RID render_target_get_texture(RID p_render_target) const;
-	virtual void render_target_set_external_texture(RID p_render_target, unsigned int p_texture_id);
+	virtual uint32_t render_target_get_depth_texture_id(RID p_render_target) const;
+	virtual void render_target_set_external_texture(RID p_render_target, unsigned int p_texture_id, unsigned int p_depth_id);
 
 	virtual void render_target_set_flag(RID p_render_target, RenderTargetFlags p_flag, bool p_value);
 	virtual bool render_target_was_used(RID p_render_target);
