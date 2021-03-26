@@ -1948,7 +1948,7 @@ void EditorExportPlatformPC::set_debug_32(const String &p_file) {
 void EditorExportPlatformPC::get_platform_features(List<String> *r_features) {
 	r_features->push_back("pc"); //all pcs support "pc"
 	r_features->push_back("s3tc"); //all pcs support "s3tc" compression
-	r_features->push_back(get_os_name()); //OS name is a feature
+	r_features->push_back(get_os_name().to_lower()); //OS name is a feature
 }
 
 void EditorExportPlatformPC::resolve_platform_feature_priorities(const Ref<EditorExportPreset> &p_preset, Set<String> &p_features) {

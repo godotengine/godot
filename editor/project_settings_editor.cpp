@@ -222,7 +222,6 @@ void ProjectSettingsEditor::_add_feature_overrides() {
 	presets.insert("standalone");
 	presets.insert("32");
 	presets.insert("64");
-	presets.insert("Server"); // Not available as an export platform yet, so it needs to be added manually
 
 	EditorExport *ee = EditorExport::get_singleton();
 

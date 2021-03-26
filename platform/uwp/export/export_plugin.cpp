@@ -485,7 +485,7 @@ Error EditorExportPlatformUWP::export_project(const Ref<EditorExportPreset> &p_p
 
 void EditorExportPlatformUWP::get_platform_features(List<String> *r_features) {
 	r_features->push_back("pc");
-	r_features->push_back("UWP");
+	r_features->push_back("uwp");
 }
 
 void EditorExportPlatformUWP::resolve_platform_feature_priorities(const Ref<EditorExportPreset> &p_preset, Set<String> &p_features) {

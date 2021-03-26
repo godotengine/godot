@@ -53,7 +53,7 @@ void register_linuxbsd_exporter() {
 	platform->set_debug_32("linux_x11_32_debug");
 	platform->set_release_64("linux_x11_64_release");
 	platform->set_debug_64("linux_x11_64_debug");
-	platform->set_os_name("X11");
+	platform->set_os_name("LinuxBSD");
 	platform->set_chmod_flags(0755);
 	platform->set_fixup_embedded_pck_func(&fixup_embedded_pck);
 

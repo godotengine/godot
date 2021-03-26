@@ -115,7 +115,7 @@ public:
 	virtual void get_platform_features(List<String> *r_features) override {
 		r_features->push_back("pc");
 		r_features->push_back("s3tc");
-		r_features->push_back("macOS");
+		r_features->push_back("macos");
 	}
 
 	virtual void resolve_platform_feature_priorities(const Ref<EditorExportPreset> &p_preset, Set<String> &p_features) override {

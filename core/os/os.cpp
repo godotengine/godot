@@ -357,9 +357,17 @@ void OS::set_has_server_feature_callback(HasServerFeatureCallback p_callback) {
 }
 
 bool OS::has_feature(const String &p_feature) {
-	if (p_feature == get_name()) {
+	// Feature tags are always lowercase for consistency.
+	if (p_feature == get_name().to_lower()) {
 		return true;
 	}
+
+	// Catch-all `linuxbsd` feature tag that matches on both Linux and BSD.
+	// This is the one exposed in the project settings dialog.
+	if (p_feature == "linuxbsd" && (get_name() == "Linux" || get_name() == "FreeBSD" || get_name() == "NetBSD" || get_name() == "OpenBSD" || get_name() == "BSD")) {
+		return true;
+	}
+
 #ifdef DEBUG_ENABLED
 	if (p_feature == "debug") {
 		return true;

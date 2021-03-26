@@ -625,19 +625,19 @@
 		</member>
 		<member name="input/ui_text_backspace_all_to_left" type="Dictionary" setter="" getter="">
 		</member>
-		<member name="input/ui_text_backspace_all_to_left.OSX" type="Dictionary" setter="" getter="">
+		<member name="input/ui_text_backspace_all_to_left.osx" type="Dictionary" setter="" getter="">
 		</member>
 		<member name="input/ui_text_backspace_word" type="Dictionary" setter="" getter="">
 		</member>
-		<member name="input/ui_text_backspace_word.OSX" type="Dictionary" setter="" getter="">
+		<member name="input/ui_text_backspace_word.osx" type="Dictionary" setter="" getter="">
 		</member>
 		<member name="input/ui_text_caret_document_end" type="Dictionary" setter="" getter="">
 		</member>
-		<member name="input/ui_text_caret_document_end.OSX" type="Dictionary" setter="" getter="">
+		<member name="input/ui_text_caret_document_end.osx" type="Dictionary" setter="" getter="">
 		</member>
 		<member name="input/ui_text_caret_document_start" type="Dictionary" setter="" getter="">
 		</member>
-		<member name="input/ui_text_caret_document_start.OSX" type="Dictionary" setter="" getter="">
+		<member name="input/ui_text_caret_document_start.osx" type="Dictionary" setter="" getter="">
 		</member>
 		<member name="input/ui_text_caret_down" type="Dictionary" setter="" getter="">
 		</member>
@@ -645,11 +645,11 @@
 		</member>
 		<member name="input/ui_text_caret_line_end" type="Dictionary" setter="" getter="">
 		</member>
-		<member name="input/ui_text_caret_line_end.OSX" type="Dictionary" setter="" getter="">
+		<member name="input/ui_text_caret_line_end.osx" type="Dictionary" setter="" getter="">
 		</member>
 		<member name="input/ui_text_caret_line_start" type="Dictionary" setter="" getter="">
 		</member>
-		<member name="input/ui_text_caret_line_start.OSX" type="Dictionary" setter="" getter="">
+		<member name="input/ui_text_caret_line_start.osx" type="Dictionary" setter="" getter="">
 		</member>
 		<member name="input/ui_text_caret_page_down" type="Dictionary" setter="" getter="">
 		</member>
@@ -661,11 +661,11 @@
 		</member>
 		<member name="input/ui_text_caret_word_left" type="Dictionary" setter="" getter="">
 		</member>
-		<member name="input/ui_text_caret_word_left.OSX" type="Dictionary" setter="" getter="">
+		<member name="input/ui_text_caret_word_left.osx" type="Dictionary" setter="" getter="">
 		</member>
 		<member name="input/ui_text_caret_word_right" type="Dictionary" setter="" getter="">
 		</member>
-		<member name="input/ui_text_caret_word_right.OSX" type="Dictionary" setter="" getter="">
+		<member name="input/ui_text_caret_word_right.osx" type="Dictionary" setter="" getter="">
 		</member>
 		<member name="input/ui_text_completion_accept" type="Dictionary" setter="" getter="">
 		</member>
@@ -679,11 +679,11 @@
 		</member>
 		<member name="input/ui_text_delete_all_to_right" type="Dictionary" setter="" getter="">
 		</member>
-		<member name="input/ui_text_delete_all_to_right.OSX" type="Dictionary" setter="" getter="">
+		<member name="input/ui_text_delete_all_to_right.osx" type="Dictionary" setter="" getter="">
 		</member>
 		<member name="input/ui_text_delete_word" type="Dictionary" setter="" getter="">
 		</member>
-		<member name="input/ui_text_delete_word.OSX" type="Dictionary" setter="" getter="">
+		<member name="input/ui_text_delete_word.osx" type="Dictionary" setter="" getter="">
 		</member>
 		<member name="input/ui_text_indent" type="Dictionary" setter="" getter="">
 		</member>
@@ -695,11 +695,11 @@
 		</member>
 		<member name="input/ui_text_scroll_down" type="Dictionary" setter="" getter="">
 		</member>
-		<member name="input/ui_text_scroll_down.OSX" type="Dictionary" setter="" getter="">
+		<member name="input/ui_text_scroll_down.osx" type="Dictionary" setter="" getter="">
 		</member>
 		<member name="input/ui_text_scroll_up" type="Dictionary" setter="" getter="">
 		</member>
-		<member name="input/ui_text_scroll_up.OSX" type="Dictionary" setter="" getter="">
+		<member name="input/ui_text_scroll_up.osx" type="Dictionary" setter="" getter="">
 		</member>
 		<member name="input/ui_text_select_all" type="Dictionary" setter="" getter="">
 		</member>
@@ -726,7 +726,7 @@
 		<member name="input_devices/pen_tablet/driver" type="String" setter="" getter="">
 			Specifies the tablet driver to use. If left empty, the default driver will be used.
 		</member>
-		<member name="input_devices/pen_tablet/driver.Windows" type="String" setter="" getter="">
+		<member name="input_devices/pen_tablet/driver.windows" type="String" setter="" getter="">
 			Override for [member input_devices/pen_tablet/driver] on Windows.
 		</member>
 		<member name="input_devices/pointing/emulate_mouse_from_touch" type="bool" setter="" getter="" default="true">

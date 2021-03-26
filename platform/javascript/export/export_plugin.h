@@ -134,7 +134,7 @@ public:
 
 	virtual void get_platform_features(List<String> *r_features) override {
 		r_features->push_back("web");
-		r_features->push_back(get_os_name());
+		r_features->push_back(get_os_name().to_lower());
 	}
 
 	virtual void resolve_platform_feature_priorities(const Ref<EditorExportPreset> &p_preset, Set<String> &p_features) override {
