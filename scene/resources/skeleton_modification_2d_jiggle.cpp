@@ -128,7 +128,7 @@ void SkeletonModification2DJiggle::_get_property_list(List<PropertyInfo> *p_list
 	}
 }
 
-void SkeletonModification2DJiggle::_execute(float delta) {
+void SkeletonModification2DJiggle::_execute(float p_delta) {
 	ERR_FAIL_COND_MSG(!stack || !is_setup || stack->skeleton == nullptr,
 			"Modification is not setup and therefore cannot execute!");
 	if (!enabled) {
@@ -146,11 +146,11 @@ void SkeletonModification2DJiggle::_execute(float delta) {
 	}
 
 	for (int i = 0; i < jiggle_data_chain.size(); i++) {
-		_execute_jiggle_joint(i, target, delta);
+		_execute_jiggle_joint(i, target, p_delta);
 	}
 }
 
-void SkeletonModification2DJiggle::_execute_jiggle_joint(int p_joint_idx, Node2D *target, float delta) {
+void SkeletonModification2DJiggle::_execute_jiggle_joint(int p_joint_idx, Node2D *p_target, float p_delta) {
 	// Adopted from: https://wiki.unity3d.com/index.php/JiggleBone
 	// With modifications by TwistedTwigleg.
 
@@ -171,12 +171,12 @@ void SkeletonModification2DJiggle::_execute_jiggle_joint(int p_joint_idx, Node2D
 	}
 
 	Transform2D operation_bone_trans = operation_bone->get_global_transform();
-	Vector2 target_position = target->get_global_transform().get_origin();
+	Vector2 target_position = p_target->get_global_transform().get_origin();
 
-	jiggle_data_chain.write[p_joint_idx].force = (target_position - jiggle_data_chain[p_joint_idx].dynamic_position) * jiggle_data_chain[p_joint_idx].stiffness * delta;
+	jiggle_data_chain.write[p_joint_idx].force = (target_position - jiggle_data_chain[p_joint_idx].dynamic_position) * jiggle_data_chain[p_joint_idx].stiffness * p_delta;
 
 	if (jiggle_data_chain[p_joint_idx].use_gravity) {
-		jiggle_data_chain.write[p_joint_idx].force += jiggle_data_chain[p_joint_idx].gravity * delta;
+		jiggle_data_chain.write[p_joint_idx].force += jiggle_data_chain[p_joint_idx].gravity * p_delta;
 	}
 
 	jiggle_data_chain.write[p_joint_idx].acceleration = jiggle_data_chain[p_joint_idx].force / jiggle_data_chain[p_joint_idx].mass;

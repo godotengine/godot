@@ -50,7 +50,7 @@ protected:
 public:
 	Ref<SkeletonModificationStack2D> held_modification_stack;
 
-	void _execute(float delta) override;
+	void _execute(float p_delta) override;
 	void _setup_modification(SkeletonModificationStack2D *p_stack) override;
 	void _draw_editor_gizmo() override;
 

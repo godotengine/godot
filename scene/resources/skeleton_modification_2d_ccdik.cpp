@@ -153,7 +153,7 @@ void SkeletonModification2DCCDIK::_get_property_list(List<PropertyInfo> *p_list)
 #endif // TOOLS_ENABLED
 }
 
-void SkeletonModification2DCCDIK::_execute(float delta) {
+void SkeletonModification2DCCDIK::_execute(float p_delta) {
 	ERR_FAIL_COND_MSG(!stack || !is_setup || stack->skeleton == nullptr,
 			"Modification is not setup and therefore cannot execute!");
 	if (!enabled) {
@@ -188,7 +188,7 @@ void SkeletonModification2DCCDIK::_execute(float delta) {
 	}
 }
 
-void SkeletonModification2DCCDIK::_execute_ccdik_joint(int p_joint_idx, Node2D *target, Node2D *tip) {
+void SkeletonModification2DCCDIK::_execute_ccdik_joint(int p_joint_idx, Node2D *p_target, Node2D *p_tip) {
 	CCDIK_Joint_Data2D ccdik_data = ccdik_data_chain[p_joint_idx];
 	if (ccdik_data.bone_idx < 0 || ccdik_data.bone_idx > stack->skeleton->get_bone_count()) {
 		ERR_PRINT_ONCE("2D CCDIK joint: bone index not found!");
@@ -201,12 +201,12 @@ void SkeletonModification2DCCDIK::_execute_ccdik_joint(int p_joint_idx, Node2D *
 	if (ccdik_data.rotate_from_joint) {
 		// To rotate from the joint, simply look at the target!
 		operation_transform.set_rotation(
-				operation_transform.looking_at(target->get_global_transform().get_origin()).get_rotation() - operation_bone->get_bone_angle());
+				operation_transform.looking_at(p_target->get_global_transform().get_origin()).get_rotation() - operation_bone->get_bone_angle());
 	} else {
 		// How to rotate from the tip: get the difference of rotation needed from the tip to the target, from the perspective of the joint.
 		// Because we are only using the offset, we do not need to account for the bone angle of the Bone2D node.
-		float joint_to_tip = operation_transform.get_origin().angle_to_point(tip->get_global_transform().get_origin());
-		float joint_to_target = operation_transform.get_origin().angle_to_point(target->get_global_transform().get_origin());
+		float joint_to_tip = operation_transform.get_origin().angle_to_point(p_tip->get_global_transform().get_origin());
+		float joint_to_target = operation_transform.get_origin().angle_to_point(p_target->get_global_transform().get_origin());
 		operation_transform.set_rotation(
 				operation_transform.get_rotation() + (joint_to_target - joint_to_tip));
 	}

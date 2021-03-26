@@ -67,7 +67,7 @@ public:
 	Vector<Ref<SkeletonModification2D>> modifications = Vector<Ref<SkeletonModification2D>>();
 
 	void setup();
-	void execute(float delta, int p_execution_mode);
+	void execute(float p_delta, int p_execution_mode);
 
 	bool editor_gizmo_dirty = false;
 	void draw_editor_gizmos();

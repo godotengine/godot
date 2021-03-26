@@ -200,7 +200,7 @@
 			<argument index="0" name="use_colliders" type="bool">
 			</argument>
 			<description>
-				When [code]true[/code], the Jiggle modifier will take colliders into account, keeping them from entering into these collision objects.
+				If [code]true[/code], the Jiggle modifier will take colliders into account, keeping them from entering into these collision objects.
 			</description>
 		</method>
 	</methods>

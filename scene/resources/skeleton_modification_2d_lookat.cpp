@@ -104,7 +104,7 @@ void SkeletonModification2DLookAt::_get_property_list(List<PropertyInfo> *p_list
 #endif // TOOLS_ENABLED
 }
 
-void SkeletonModification2DLookAt::_execute(float delta) {
+void SkeletonModification2DLookAt::_execute(float p_delta) {
 	ERR_FAIL_COND_MSG(!stack || !is_setup || stack->skeleton == nullptr,
 			"Modification is not setup and therefore cannot execute!");
 	if (!enabled) {

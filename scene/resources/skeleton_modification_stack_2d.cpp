@@ -86,7 +86,7 @@ void SkeletonModificationStack2D::setup() {
 	}
 }
 
-void SkeletonModificationStack2D::execute(float delta, int p_execution_mode) {
+void SkeletonModificationStack2D::execute(float p_delta, int p_execution_mode) {
 	ERR_FAIL_COND_MSG(!is_setup || skeleton == nullptr || is_queued_for_deletion(),
 			"Modification stack is not properly setup and therefore cannot execute!");
 
@@ -105,7 +105,7 @@ void SkeletonModificationStack2D::execute(float delta, int p_execution_mode) {
 		}
 
 		if (modifications[i]->get_execution_mode() == p_execution_mode) {
-			modifications.get(i)->_execute(delta);
+			modifications.get(i)->_execute(p_delta);
 		}
 	}
 }

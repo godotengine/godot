@@ -68,7 +68,7 @@ private:
 	void update_tip_cache();
 
 	void ccdik_joint_update_bone2d_cache(int p_joint_idx);
-	void _execute_ccdik_joint(int p_joint_idx, Node2D *target, Node2D *tip);
+	void _execute_ccdik_joint(int p_joint_idx, Node2D *p_target, Node2D *p_tip);
 
 protected:
 	static void _bind_methods();
@@ -77,7 +77,7 @@ protected:
 	void _get_property_list(List<PropertyInfo> *p_list) const;
 
 public:
-	void _execute(float delta) override;
+	void _execute(float p_delta) override;
 	void _setup_modification(SkeletonModificationStack2D *p_stack) override;
 	void _draw_editor_gizmo() override;
 

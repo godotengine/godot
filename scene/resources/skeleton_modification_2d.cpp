@@ -43,11 +43,12 @@
 // Modification2D
 ///////////////////////////////////////
 
-void SkeletonModification2D::_execute(float delta) {
-	call("_execute", delta);
+void SkeletonModification2D::_execute(float p_delta) {
+	call("_execute", p_delta);
 
-	if (!enabled)
+	if (!enabled) {
 		return;
+	}
 }
 
 void SkeletonModification2D::_setup_modification(SkeletonModificationStack2D *p_stack) {
@@ -81,52 +82,52 @@ bool SkeletonModification2D::get_enabled() {
 	return enabled;
 }
 
-float SkeletonModification2D::clamp_angle(float angle, float min_bound, float max_bound, bool invert) {
+float SkeletonModification2D::clamp_angle(float p_angle, float p_min_bound, float p_max_bound, bool p_invert) {
 	// Map to the 0 to 360 range (in radians though) instead of the -180 to 180 range.
-	if (angle < 0) {
-		angle = Math_TAU + angle;
+	if (p_angle < 0) {
+		p_angle = Math_TAU + p_angle;
 	}
 
 	// Make min and max in the range of 0 to 360 (in radians), and make sure they are in the right order
-	if (min_bound < 0) {
-		min_bound = Math_TAU + min_bound;
+	if (p_min_bound < 0) {
+		p_min_bound = Math_TAU + p_min_bound;
 	}
-	if (max_bound < 0) {
-		max_bound = Math_TAU + max_bound;
+	if (p_max_bound < 0) {
+		p_max_bound = Math_TAU + p_max_bound;
 	}
-	if (min_bound > max_bound) {
-		float tmp = min_bound;
-		min_bound = max_bound;
-		max_bound = tmp;
+	if (p_min_bound > p_max_bound) {
+		float tmp = p_min_bound;
+		p_min_bound = p_max_bound;
+		p_max_bound = tmp;
 	}
 
 	// Note: May not be the most optimal way to clamp, but it always constraints to the nearest angle.
-	if (invert == false) {
-		if (angle < min_bound || angle > max_bound) {
-			Vector2 min_bound_vec = Vector2(Math::cos(min_bound), Math::sin(min_bound));
-			Vector2 max_bound_vec = Vector2(Math::cos(max_bound), Math::sin(max_bound));
-			Vector2 angle_vec = Vector2(Math::cos(angle), Math::sin(angle));
+	if (p_invert == false) {
+		if (p_angle < p_min_bound || p_angle > p_max_bound) {
+			Vector2 min_bound_vec = Vector2(Math::cos(p_min_bound), Math::sin(p_min_bound));
+			Vector2 max_bound_vec = Vector2(Math::cos(p_max_bound), Math::sin(p_max_bound));
+			Vector2 angle_vec = Vector2(Math::cos(p_angle), Math::sin(p_angle));
 
 			if (angle_vec.distance_squared_to(min_bound_vec) <= angle_vec.distance_squared_to(max_bound_vec)) {
-				angle = min_bound;
+				p_angle = p_min_bound;
 			} else {
-				angle = max_bound;
+				p_angle = p_max_bound;
 			}
 		}
 	} else {
-		if (angle > min_bound && angle < max_bound) {
-			Vector2 min_bound_vec = Vector2(Math::cos(min_bound), Math::sin(min_bound));
-			Vector2 max_bound_vec = Vector2(Math::cos(max_bound), Math::sin(max_bound));
-			Vector2 angle_vec = Vector2(Math::cos(angle), Math::sin(angle));
+		if (p_angle > p_min_bound && p_angle < p_max_bound) {
+			Vector2 min_bound_vec = Vector2(Math::cos(p_min_bound), Math::sin(p_min_bound));
+			Vector2 max_bound_vec = Vector2(Math::cos(p_max_bound), Math::sin(p_max_bound));
+			Vector2 angle_vec = Vector2(Math::cos(p_angle), Math::sin(p_angle));
 
 			if (angle_vec.distance_squared_to(min_bound_vec) <= angle_vec.distance_squared_to(max_bound_vec)) {
-				angle = min_bound;
+				p_angle = p_min_bound;
 			} else {
-				angle = max_bound;
+				p_angle = p_max_bound;
 			}
 		}
 	}
-	return angle;
+	return p_angle;
 }
 
 void SkeletonModification2D::editor_draw_angle_constraints(Bone2D *operation_bone, float min_bound, float max_bound,

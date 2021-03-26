@@ -46,6 +46,8 @@ bool Bone2D::_set(const StringName &p_path, const Variant &p_value) {
 		set_length(p_value);
 	} else if (path.begins_with("bone_angle")) {
 		set_bone_angle(Math::deg2rad(float(p_value)));
+	} else if (path.begins_with("default_length")) {
+		set_length(p_value);
 	}
 
 #ifdef TOOLS_ENABLED
@@ -66,6 +68,8 @@ bool Bone2D::_get(const StringName &p_path, Variant &r_ret) const {
 		r_ret = get_length();
 	} else if (path.begins_with("bone_angle")) {
 		r_ret = Math::rad2deg(get_bone_angle());
+	} else if (path.begins_with("default_length")) {
+		r_ret = get_length();
 	}
 
 #ifdef TOOLS_ENABLED

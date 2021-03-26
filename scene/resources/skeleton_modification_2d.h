@@ -58,7 +58,7 @@ protected:
 	bool _print_execution_error(bool p_condition, String p_message);
 
 public:
-	virtual void _execute(float delta);
+	virtual void _execute(float _delta);
 	virtual void _setup_modification(SkeletonModificationStack2D *p_stack);
 	virtual void _draw_editor_gizmo();
 
@@ -76,8 +76,8 @@ public:
 	void set_execution_mode(int p_mode);
 	int get_execution_mode() const;
 
-	float clamp_angle(float angle, float min_bound, float max_bound, bool invert_clamp = false);
-	void editor_draw_angle_constraints(Bone2D *operation_bone, float min_bound, float max_bound, bool constraint_enabled, bool constraint_in_localspace, bool constraint_inverted);
+	float clamp_angle(float p_angle, float p_min_bound, float p_max_bound, bool p_invert_clamp = false);
+	void editor_draw_angle_constraints(Bone2D *p_operation_bone, float p_min_bound, float p_max_bound, bool p_constraint_enabled, bool p_constraint_in_localspace, bool p_constraint_inverted);
 
 	SkeletonModification2D();
 };

@@ -79,7 +79,7 @@ private:
 	uint32_t collision_mask = 1;
 
 	void jiggle_joint_update_bone2d_cache(int p_joint_idx);
-	void _execute_jiggle_joint(int p_joint_idx, Node2D *target, float delta);
+	void _execute_jiggle_joint(int p_joint_idx, Node2D *p_target, float p_delta);
 	void _update_jiggle_joint_data();
 
 protected:
@@ -89,7 +89,7 @@ protected:
 	void _get_property_list(List<PropertyInfo> *p_list) const;
 
 public:
-	void _execute(float delta) override;
+	void _execute(float p_delta) override;
 	void _setup_modification(SkeletonModificationStack2D *p_stack) override;
 
 	void set_target_node(const NodePath &p_target_node);

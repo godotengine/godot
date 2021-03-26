@@ -73,12 +73,12 @@ void SkeletonModification2DStackHolder::_get_property_list(List<PropertyInfo> *p
 #endif // TOOLS_ENABLED
 }
 
-void SkeletonModification2DStackHolder::_execute(float delta) {
+void SkeletonModification2DStackHolder::_execute(float p_delta) {
 	ERR_FAIL_COND_MSG(!stack || !is_setup || stack->skeleton == nullptr,
 			"Modification is not setup and therefore cannot execute!");
 
 	if (held_modification_stack.is_valid()) {
-		held_modification_stack->execute(delta, execution_mode);
+		held_modification_stack->execute(p_delta, execution_mode);
 	}
 }
 

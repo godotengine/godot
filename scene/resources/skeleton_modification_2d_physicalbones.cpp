@@ -99,7 +99,7 @@ void SkeletonModification2DPhysicalBones::_get_property_list(List<PropertyInfo> 
 	}
 }
 
-void SkeletonModification2DPhysicalBones::_execute(float delta) {
+void SkeletonModification2DPhysicalBones::_execute(float p_delta) {
 	ERR_FAIL_COND_MSG(!stack || !is_setup || stack->skeleton == nullptr,
 			"Modification is not setup and therefore cannot execute!");
 	if (!enabled) {
