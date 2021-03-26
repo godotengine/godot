@@ -1547,8 +1547,9 @@ bool C_PREAMBLE::_prefill_polygon(RasterizerCanvas::Item::CommandPolygon *p_poly
 	int num_inds = p_poly->indices.size();
 
 	// nothing to draw?
-	if (!num_inds)
+	if (!num_inds || !p_poly->points.size()) {
 		return false;
+	}
 
 	// we aren't using indices, so will transform verts more than once .. less efficient.
 	// could be done with a temporary vertex buffer
@@ -1674,6 +1675,13 @@ bool C_PREAMBLE::_prefill_polygon(RasterizerCanvas::Item::CommandPolygon *p_poly
 			int ind = p_poly->indices[n];
 
 			RAST_DEV_DEBUG_ASSERT(ind < p_poly->points.size());
+
+			// recover at runtime from invalid polys (the editor may send invalid polys)
+			if ((unsigned int)ind >= (unsigned int)num_verts) {
+				// will recover as long as there is at least one vertex.
+				// if there are no verts, we will have quick rejected earlier in this function
+				ind = 0;
+			}
 
 			// this could be moved outside the loop
 			if (software_transform) {
@@ -1815,6 +1823,14 @@ PREAMBLE(bool)::_software_skin_poly(RasterizerCanvas::Item::CommandPolygon *p_po
 		int ind = p_poly->indices[n];
 
 		RAST_DEV_DEBUG_ASSERT(ind < num_verts);
+
+		// recover at runtime from invalid polys (the editor may send invalid polys)
+		if ((unsigned int)ind >= (unsigned int)num_verts) {
+			// will recover as long as there is at least one vertex.
+			// if there are no verts, we will have quick rejected earlier in this function
+			ind = 0;
+		}
+
 		const Point2 &pos = pTemps[ind];
 		bvs[n].pos.set(pos.x, pos.y);
 
