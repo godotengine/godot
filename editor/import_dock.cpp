@@ -194,6 +194,10 @@ void ImportDock::set_edit_multiple_paths(const Vector<String> &p_paths) {
 			}
 		}
 
+		if (!config->has_section("params")) {
+			continue;
+		}
+
 		List<String> keys;
 		config->get_section_keys("params", &keys);
 
