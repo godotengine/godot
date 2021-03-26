@@ -509,6 +509,9 @@ void EditorNode::_notification(int p_what) {
 
 			_update_debug_options();
 
+			// Save the project after opening to mark it as last modified.
+			ProjectSettings::get_singleton()->save();
+
 			/* DO NOT LOAD SCENES HERE, WAIT FOR FILE SCANNING AND REIMPORT TO COMPLETE */
 		} break;
 
