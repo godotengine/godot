@@ -40,9 +40,11 @@ class AnimationCache : public Object {
 	struct Path {
 		RES resource;
 		Object *object = nullptr;
-		Skeleton3D *skeleton = nullptr; // haxor
+#ifndef _3D_DISABLED
+		Skeleton3D *skeleton = nullptr;
+		Node3D *node_3d = nullptr;
+#endif // _3D_DISABLED
 		Node *node = nullptr;
-		Node3D *spatial = nullptr;
 
 		int bone_idx = -1;
 		Vector<StringName> subpath;
@@ -67,7 +69,7 @@ protected:
 	static void _bind_methods();
 
 public:
-	void set_track_transform(int p_idx, const Transform &p_transform);
+	void set_track_transform(int p_idx, const Transform3D &p_transform);
 	void set_track_value(int p_idx, const Variant &p_value);
 	void call_track(int p_idx, const StringName &p_method, const Variant **p_args, int p_argcount, Callable::CallError &r_error);
 

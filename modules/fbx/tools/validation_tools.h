@@ -33,9 +33,8 @@
 
 #ifdef TOOLS_ENABLED
 
-#include "core/io/json.h"
-#include "core/os/file_access.h"
-#include "core/string/ustring.h"
+#include "core/io/file_access.h"
+#include "core/string/print_string.h"
 #include "core/templates/local_vector.h"
 #include "core/templates/map.h"
 
@@ -65,8 +64,9 @@ protected:
 			Error err;
 			FileAccess *file = FileAccess::open(path, FileAccess::WRITE, &err);
 			if (!file || err) {
-				if (file)
+				if (file) {
 					memdelete(file);
+				}
 				print_error("ValidationTracker Error - failed to create file - path: %s\n" + path);
 				return;
 			}

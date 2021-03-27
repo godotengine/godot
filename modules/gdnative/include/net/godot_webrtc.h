@@ -37,8 +37,8 @@
 extern "C" {
 #endif
 
-#define GODOT_NET_WEBRTC_API_MAJOR 3
-#define GODOT_NET_WEBRTC_API_MINOR 2
+#define GODOT_NET_WEBRTC_API_MAJOR 4
+#define GODOT_NET_WEBRTC_API_MINOR 0
 
 /* Library Interface (used to set default GDNative WebRTC implementation */
 typedef struct {
@@ -101,6 +101,7 @@ typedef struct {
 	int (*get_max_retransmits)(const void *);
 	const char *(*get_protocol)(const void *);
 	bool (*is_negotiated)(const void *);
+	int (*get_buffered_amount)(const void *);
 
 	godot_error (*poll)(void *);
 	void (*close)(void *);

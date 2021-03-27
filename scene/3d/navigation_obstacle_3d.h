@@ -32,7 +32,6 @@
 #define NAVIGATION_OBSTACLE_H
 
 #include "scene/3d/node_3d.h"
-#include "scene/main/node.h"
 
 class NavigationObstacle3D : public Node {
 	GDCLASS(NavigationObstacle3D, Node);
@@ -52,7 +51,7 @@ public:
 		return agent;
 	}
 
-	virtual String get_configuration_warning() const override;
+	TypedArray<String> get_configuration_warnings() const override;
 
 private:
 	void update_agent_shape();

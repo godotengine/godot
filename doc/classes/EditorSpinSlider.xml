@@ -1,8 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="EditorSpinSlider" inherits="Range" version="4.0">
 	<brief_description>
+		Godot editor's control for editing numeric values.
 	</brief_description>
 	<description>
+		This [Control] node is used in the editor's Inspector dock to allow editing of numeric values. Can be used with [EditorInspectorPlugin] to recreate the same behavior.
 	</description>
 	<tutorials>
 	</tutorials>
@@ -15,6 +17,9 @@
 		<member name="label" type="String" setter="set_label" getter="get_label" default="&quot;&quot;">
 		</member>
 		<member name="read_only" type="bool" setter="set_read_only" getter="is_read_only" default="false">
+		</member>
+		<member name="suffix" type="String" setter="set_suffix" getter="get_suffix" default="&quot;&quot;">
+			The suffix to display after the value (in a faded color). This should generally be a plural word. You may have to use an abbreviation if the suffix is too long to be displayed.
 		</member>
 	</members>
 	<constants>

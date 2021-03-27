@@ -129,7 +129,7 @@ void OS_Unix::initialize_core() {
 
 #ifndef NO_NETWORK
 	NetSocketPosix::make_default();
-	IP_Unix::make_default();
+	IPUnix::make_default();
 #endif
 
 	_setup_clock();
@@ -137,10 +137,6 @@ void OS_Unix::initialize_core() {
 
 void OS_Unix::finalize_core() {
 	NetSocketPosix::cleanup();
-}
-
-void OS_Unix::alert(const String &p_alert, const String &p_title) {
-	fprintf(stderr, "ERROR: %s\n", p_alert.utf8().get_data());
 }
 
 String OS_Unix::get_stdin_string(bool p_block) {
@@ -195,8 +191,8 @@ OS::Time OS_Unix::get_time(bool utc) const {
 	}
 	Time ret;
 	ret.hour = lt.tm_hour;
-	ret.min = lt.tm_min;
-	ret.sec = lt.tm_sec;
+	ret.minute = lt.tm_min;
+	ret.second = lt.tm_sec;
 	get_time_zone_info();
 	return ret;
 }
@@ -396,7 +392,7 @@ String OS_Unix::get_locale() const {
 Error OS_Unix::open_dynamic_library(const String p_path, void *&p_library_handle, bool p_also_set_library_path) {
 	String path = p_path;
 
-	if (FileAccess::exists(path) && path.is_rel_path()) {
+	if (FileAccess::exists(path) && path.is_relative_path()) {
 		// dlopen expects a slash, in this case a leading ./ for it to be interpreted as a relative path,
 		//  otherwise it will end up searching various system directories for the lib instead and finally failing.
 		path = "./" + path;

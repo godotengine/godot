@@ -33,38 +33,52 @@
 
 bool AreaPair2DSW::setup(real_t p_step) {
 	bool result = false;
-
-	if (area->is_shape_set_as_disabled(area_shape) || body->is_shape_set_as_disabled(body_shape)) {
-		result = false;
-	} else if (area->test_collision_mask(body) && CollisionSolver2DSW::solve(body->get_shape(body_shape), body->get_transform() * body->get_shape_transform(body_shape), Vector2(), area->get_shape(area_shape), area->get_transform() * area->get_shape_transform(area_shape), Vector2(), nullptr, this)) {
+	if (area->collides_with(body) && CollisionSolver2DSW::solve(body->get_shape(body_shape), body->get_transform() * body->get_shape_transform(body_shape), Vector2(), area->get_shape(area_shape), area->get_transform() * area->get_shape_transform(area_shape), Vector2(), nullptr, this)) {
 		result = true;
 	}
 
+	process_collision = false;
 	if (result != colliding) {
-		if (result) {
-			if (area->get_space_override_mode() != PhysicsServer2D::AREA_SPACE_OVERRIDE_DISABLED) {
-				body->add_area(area);
-			}
-			if (area->has_monitor_callback()) {
-				area->add_body_to_query(body, body_shape, area_shape);
-			}
-
-		} else {
-			if (area->get_space_override_mode() != PhysicsServer2D::AREA_SPACE_OVERRIDE_DISABLED) {
-				body->remove_area(area);
-			}
-			if (area->has_monitor_callback()) {
-				area->remove_body_from_query(body, body_shape, area_shape);
-			}
+		if (area->get_space_override_mode() != PhysicsServer2D::AREA_SPACE_OVERRIDE_DISABLED) {
+			process_collision = true;
+		} else if (area->has_monitor_callback()) {
+			process_collision = true;
 		}
 
 		colliding = result;
 	}
 
-	return false; //never do any post solving
+	return process_collision;
+}
+
+bool AreaPair2DSW::pre_solve(real_t p_step) {
+	if (!process_collision) {
+		return false;
+	}
+
+	if (colliding) {
+		if (area->get_space_override_mode() != PhysicsServer2D::AREA_SPACE_OVERRIDE_DISABLED) {
+			body->add_area(area);
+		}
+
+		if (area->has_monitor_callback()) {
+			area->add_body_to_query(body, body_shape, area_shape);
+		}
+	} else {
+		if (area->get_space_override_mode() != PhysicsServer2D::AREA_SPACE_OVERRIDE_DISABLED) {
+			body->remove_area(area);
+		}
+
+		if (area->has_monitor_callback()) {
+			area->remove_body_from_query(body, body_shape, area_shape);
+		}
+	}
+
+	return false; // Never do any post solving.
 }
 
 void AreaPair2DSW::solve(real_t p_step) {
+	// Nothing to do.
 }
 
 AreaPair2DSW::AreaPair2DSW(Body2DSW *p_body, int p_body_shape, Area2DSW *p_area, int p_area_shape) {
@@ -72,7 +86,6 @@ AreaPair2DSW::AreaPair2DSW(Body2DSW *p_body, int p_body_shape, Area2DSW *p_area,
 	area = p_area;
 	body_shape = p_body_shape;
 	area_shape = p_area_shape;
-	colliding = false;
 	body->add_constraint(this, 0);
 	area->add_constraint(this);
 	if (p_body->get_mode() == PhysicsServer2D::BODY_MODE_KINEMATIC) { //need to be active to process pair
@@ -96,40 +109,58 @@ AreaPair2DSW::~AreaPair2DSW() {
 //////////////////////////////////
 
 bool Area2Pair2DSW::setup(real_t p_step) {
-	bool result = false;
-	if (area_a->is_shape_set_as_disabled(shape_a) || area_b->is_shape_set_as_disabled(shape_b)) {
-		result = false;
-	} else if (area_a->test_collision_mask(area_b) && CollisionSolver2DSW::solve(area_a->get_shape(shape_a), area_a->get_transform() * area_a->get_shape_transform(shape_a), Vector2(), area_b->get_shape(shape_b), area_b->get_transform() * area_b->get_shape_transform(shape_b), Vector2(), nullptr, this)) {
-		result = true;
+	bool result_a = area_a->collides_with(area_b);
+	bool result_b = area_b->collides_with(area_a);
+	if ((result_a || result_b) && !CollisionSolver2DSW::solve(area_a->get_shape(shape_a), area_a->get_transform() * area_a->get_shape_transform(shape_a), Vector2(), area_b->get_shape(shape_b), area_b->get_transform() * area_b->get_shape_transform(shape_b), Vector2(), nullptr, this)) {
+		result_a = false;
+		result_b = false;
 	}
 
-	if (result != colliding) {
-		if (result) {
-			if (area_b->has_area_monitor_callback() && area_a->is_monitorable()) {
-				area_b->add_area_to_query(area_a, shape_a, shape_b);
-			}
+	bool process_collision = false;
 
-			if (area_a->has_area_monitor_callback() && area_b->is_monitorable()) {
-				area_a->add_area_to_query(area_b, shape_b, shape_a);
-			}
-
-		} else {
-			if (area_b->has_area_monitor_callback() && area_a->is_monitorable()) {
-				area_b->remove_area_from_query(area_a, shape_a, shape_b);
-			}
-
-			if (area_a->has_area_monitor_callback() && area_b->is_monitorable()) {
-				area_a->remove_area_from_query(area_b, shape_b, shape_a);
-			}
+	process_collision_a = false;
+	if (result_a != colliding_a) {
+		if (area_a->has_area_monitor_callback() && area_b->is_monitorable()) {
+			process_collision_a = true;
+			process_collision = true;
 		}
-
-		colliding = result;
+		colliding_a = result_a;
 	}
 
-	return false; //never do any post solving
+	process_collision_b = false;
+	if (result_b != colliding_b) {
+		if (area_b->has_area_monitor_callback() && area_a->is_monitorable()) {
+			process_collision_b = true;
+			process_collision = true;
+		}
+		colliding_b = result_b;
+	}
+
+	return process_collision;
+}
+
+bool Area2Pair2DSW::pre_solve(real_t p_step) {
+	if (process_collision_a) {
+		if (colliding_a) {
+			area_a->add_area_to_query(area_b, shape_b, shape_a);
+		} else {
+			area_a->remove_area_from_query(area_b, shape_b, shape_a);
+		}
+	}
+
+	if (process_collision_b) {
+		if (colliding_b) {
+			area_b->add_area_to_query(area_a, shape_a, shape_b);
+		} else {
+			area_b->remove_area_from_query(area_a, shape_a, shape_b);
+		}
+	}
+
+	return false; // Never do any post solving.
 }
 
 void Area2Pair2DSW::solve(real_t p_step) {
+	// Nothing to do.
 }
 
 Area2Pair2DSW::Area2Pair2DSW(Area2DSW *p_area_a, int p_shape_a, Area2DSW *p_area_b, int p_shape_b) {
@@ -137,19 +168,20 @@ Area2Pair2DSW::Area2Pair2DSW(Area2DSW *p_area_a, int p_shape_a, Area2DSW *p_area
 	area_b = p_area_b;
 	shape_a = p_shape_a;
 	shape_b = p_shape_b;
-	colliding = false;
 	area_a->add_constraint(this);
 	area_b->add_constraint(this);
 }
 
 Area2Pair2DSW::~Area2Pair2DSW() {
-	if (colliding) {
-		if (area_b->has_area_monitor_callback()) {
-			area_b->remove_area_from_query(area_a, shape_a, shape_b);
-		}
-
+	if (colliding_a) {
 		if (area_a->has_area_monitor_callback()) {
 			area_a->remove_area_from_query(area_b, shape_b, shape_a);
+		}
+	}
+
+	if (colliding_b) {
+		if (area_b->has_area_monitor_callback()) {
+			area_b->remove_area_from_query(area_a, shape_a, shape_b);
 		}
 	}
 

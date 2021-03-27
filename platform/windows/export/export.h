@@ -28,4 +28,9 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
+#ifndef WINDOWS_EXPORT_H
+#define WINDOWS_EXPORT_H
+
 void register_windows_exporter();
+
+#endif

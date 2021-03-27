@@ -12,54 +12,48 @@
 	</tutorials>
 	<methods>
 		<method name="exists">
-			<return type="bool">
-			</return>
-			<argument index="0" name="path" type="String">
-			</argument>
-			<argument index="1" name="type_hint" type="String" default="&quot;&quot;">
-			</argument>
+			<return type="bool" />
+			<argument index="0" name="path" type="String" />
+			<argument index="1" name="type_hint" type="String" default="&quot;&quot;" />
 			<description>
 				Returns whether a recognized resource exists for the given [code]path[/code].
 				An optional [code]type_hint[/code] can be used to further specify the [Resource] type that should be handled by the [ResourceFormatLoader]. Anything that inherits from [Resource] can be used as a type hint, for example [Image].
 			</description>
 		</method>
 		<method name="get_dependencies">
-			<return type="PackedStringArray">
-			</return>
-			<argument index="0" name="path" type="String">
-			</argument>
+			<return type="PackedStringArray" />
+			<argument index="0" name="path" type="String" />
 			<description>
 				Returns the dependencies for the resource at the given [code]path[/code].
 			</description>
 		</method>
 		<method name="get_recognized_extensions_for_type">
-			<return type="PackedStringArray">
-			</return>
-			<argument index="0" name="type" type="String">
-			</argument>
+			<return type="PackedStringArray" />
+			<argument index="0" name="type" type="String" />
 			<description>
 				Returns the list of recognized extensions for a resource type.
 			</description>
 		</method>
+		<method name="get_resource_uid">
+			<return type="int" />
+			<argument index="0" name="path" type="String" />
+			<description>
+				Returns the ID associated with a given resource path, or [code]-1[/code] when no such ID exists.
+			</description>
+		</method>
 		<method name="has_cached">
-			<return type="bool">
-			</return>
-			<argument index="0" name="path" type="String">
-			</argument>
+			<return type="bool" />
+			<argument index="0" name="path" type="String" />
 			<description>
 				Returns whether a cached resource is available for the given [code]path[/code].
 				Once a resource has been loaded by the engine, it is cached in memory for faster access, and future calls to the [method load] method will use the cached version. The cached resource can be overridden by using [method Resource.take_over_path] on a new resource for that same path.
 			</description>
 		</method>
 		<method name="load">
-			<return type="Resource">
-			</return>
-			<argument index="0" name="path" type="String">
-			</argument>
-			<argument index="1" name="type_hint" type="String" default="&quot;&quot;">
-			</argument>
-			<argument index="2" name="cache_mode" type="int" enum="ResourceLoader.CacheMode" default="1">
-			</argument>
+			<return type="Resource" />
+			<argument index="0" name="path" type="String" />
+			<argument index="1" name="type_hint" type="String" default="&quot;&quot;" />
+			<argument index="2" name="cache_mode" type="int" enum="ResourceLoader.CacheMode" default="1" />
 			<description>
 				Loads a resource at the given [code]path[/code], caching the result for further access.
 				The registered [ResourceFormatLoader]s are queried sequentially to find the first one which can handle the file's extension, and then attempt loading. If loading fails, the remaining ResourceFormatLoaders are also attempted.
@@ -70,45 +64,34 @@
 			</description>
 		</method>
 		<method name="load_threaded_get">
-			<return type="Resource">
-			</return>
-			<argument index="0" name="path" type="String">
-			</argument>
+			<return type="Resource" />
+			<argument index="0" name="path" type="String" />
 			<description>
 				Returns the resource loaded by [method load_threaded_request].
 				If this is called before the loading thread is done (i.e. [method load_threaded_get_status] is not [constant THREAD_LOAD_LOADED]), the calling thread will be blocked until the resource has finished loading.
 			</description>
 		</method>
 		<method name="load_threaded_get_status">
-			<return type="int" enum="ResourceLoader.ThreadLoadStatus">
-			</return>
-			<argument index="0" name="path" type="String">
-			</argument>
-			<argument index="1" name="progress" type="Array" default="[  ]">
-			</argument>
+			<return type="int" enum="ResourceLoader.ThreadLoadStatus" />
+			<argument index="0" name="path" type="String" />
+			<argument index="1" name="progress" type="Array" default="[]" />
 			<description>
 				Returns the status of a threaded loading operation started with [method load_threaded_request] for the resource at [code]path[/code]. See [enum ThreadLoadStatus] for possible return values.
 				An array variable can optionally be passed via [code]progress[/code], and will return a one-element array containing the percentage of completion of the threaded loading.
 			</description>
 		</method>
 		<method name="load_threaded_request">
-			<return type="int" enum="Error">
-			</return>
-			<argument index="0" name="path" type="String">
-			</argument>
-			<argument index="1" name="type_hint" type="String" default="&quot;&quot;">
-			</argument>
-			<argument index="2" name="use_sub_threads" type="bool" default="false">
-			</argument>
+			<return type="int" enum="Error" />
+			<argument index="0" name="path" type="String" />
+			<argument index="1" name="type_hint" type="String" default="&quot;&quot;" />
+			<argument index="2" name="use_sub_threads" type="bool" default="false" />
 			<description>
 				Loads the resource using threads. If [code]use_sub_threads[/code] is [code]true[/code], multiple threads will be used to load the resource, which makes loading faster, but may affect the main thread (and thus cause game slowdowns).
 			</description>
 		</method>
 		<method name="set_abort_on_missing_resources">
-			<return type="void">
-			</return>
-			<argument index="0" name="abort" type="bool">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="abort" type="bool" />
 			<description>
 				Changes the behavior on missing sub-resources. The default behavior is to abort loading.
 			</description>

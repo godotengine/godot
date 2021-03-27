@@ -241,7 +241,7 @@ MonoBoolean godot_icall_Internal_IsAssembliesReloadingNeeded() {
 
 void godot_icall_Internal_ReloadAssemblies(MonoBoolean p_soft_reload) {
 #ifdef GD_MONO_HOT_RELOAD
-	_GodotSharp::get_singleton()->call_deferred("_reload_assemblies", (bool)p_soft_reload);
+	mono_bind::GodotSharp::get_singleton()->call_deferred(SNAME("_reload_assemblies"), (bool)p_soft_reload);
 #endif
 }
 
@@ -303,6 +303,12 @@ MonoObject *godot_icall_Globals_EditorDef(MonoString *p_setting, MonoObject *p_d
 	String setting = GDMonoMarshal::mono_string_to_godot(p_setting);
 	Variant default_value = GDMonoMarshal::mono_object_to_variant(p_default_value);
 	Variant result = _EDITOR_DEF(setting, default_value, (bool)p_restart_if_changed);
+	return GDMonoMarshal::variant_to_mono_object(result);
+}
+
+MonoObject *godot_icall_Globals_EditorShortcut(MonoString *p_setting) {
+	String setting = GDMonoMarshal::mono_string_to_godot(p_setting);
+	Ref<Shortcut> result = ED_GET_SHORTCUT(setting);
 	return GDMonoMarshal::variant_to_mono_object(result);
 }
 
@@ -380,6 +386,7 @@ void register_editor_internal_calls() {
 	GDMonoUtils::add_internal_call("GodotTools.Internals.Globals::internal_EditorScale", godot_icall_Globals_EditorScale);
 	GDMonoUtils::add_internal_call("GodotTools.Internals.Globals::internal_GlobalDef", godot_icall_Globals_GlobalDef);
 	GDMonoUtils::add_internal_call("GodotTools.Internals.Globals::internal_EditorDef", godot_icall_Globals_EditorDef);
+	GDMonoUtils::add_internal_call("GodotTools.Internals.Globals::internal_EditorShortcut", godot_icall_Globals_EditorShortcut);
 	GDMonoUtils::add_internal_call("GodotTools.Internals.Globals::internal_TTR", godot_icall_Globals_TTR);
 
 	// Utils.OS

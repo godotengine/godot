@@ -58,7 +58,7 @@ int VideoStreamPlaybackTheora::buffer_data() {
 
 #else
 
-	int bytes = file->get_buffer((uint8_t *)buffer, 4096);
+	uint64_t bytes = file->get_buffer((uint8_t *)buffer, 4096);
 	ogg_sync_wrote(&oy, bytes);
 	return (bytes);
 
@@ -108,7 +108,7 @@ void VideoStreamPlaybackTheora::video_write() {
 
 	Ref<Image> img = memnew(Image(size.x, size.y, 0, Image::FORMAT_RGBA8, frame_data)); //zero copy image creation
 
-	texture->update(img, true); //zero copy send to visual server
+	texture->update(img); //zero copy send to visual server
 
 	frames_pending = 1;
 }
@@ -176,7 +176,7 @@ void VideoStreamPlaybackTheora::set_file(const String &p_file) {
 	thread_eof = false;
 	//pre-fill buffer
 	int to_read = ring_buffer.space_left();
-	int read = file->get_buffer(read_buffer.ptr(), to_read);
+	uint64_t read = file->get_buffer(read_buffer.ptr(), to_read);
 	ring_buffer.write(read_buffer.ptr(), read);
 
 	thread.start(_streaming_thread, this);
@@ -225,7 +225,7 @@ void VideoStreamPlaybackTheora::set_file(const String &p_file) {
 			/* identify the codec: try theora */
 			if (!theora_p && th_decode_headerin(&ti, &tc, &ts, &op) >= 0) {
 				/* it is theora */
-				copymem(&to, &test, sizeof(test));
+				memcpy(&to, &test, sizeof(test));
 				theora_p = 1;
 			} else if (!vorbis_p && vorbis_synthesis_headerin(&vi, &vc, &op) >= 0) {
 				/* it is vorbis */
@@ -238,7 +238,7 @@ void VideoStreamPlaybackTheora::set_file(const String &p_file) {
 
 					audio_track_skip--;
 				} else {
-					copymem(&vo, &test, sizeof(test));
+					memcpy(&vo, &test, sizeof(test));
 					vorbis_p = 1;
 				}
 			} else {
@@ -302,7 +302,7 @@ void VideoStreamPlaybackTheora::set_file(const String &p_file) {
 		}
 	}
 
-	/* and now we have it all.  initialize decoders */
+	/* And now we have it all. Initialize decoders. */
 	if (theora_p) {
 		td = th_decode_alloc(&ti, ts);
 		px_fmt = ti.pixel_fmt;
@@ -335,7 +335,7 @@ void VideoStreamPlaybackTheora::set_file(const String &p_file) {
 		size.y = h;
 
 		Ref<Image> img;
-		img.instance();
+		img.instantiate();
 		img->create(w, h, false, Image::FORMAT_RGBA8);
 
 	} else {
@@ -484,10 +484,10 @@ void VideoStreamPlaybackTheora::update(float p_delta) {
 
 					//printf("frame time %f, play time %f, ready %i\n", (float)videobuf_time, get_time(), videobuf_ready);
 
-					/* is it already too old to be useful?  This is only actually
-					 useful cosmetically after a SIGSTOP.  Note that we have to
+					/* is it already too old to be useful? This is only actually
+					 useful cosmetically after a SIGSTOP. Note that we have to
 					 decode the frame even if we don't show it (for now) due to
-					 keyframing.  Soon enough libtheora will be able to deal
+					 keyframing. Soon enough libtheora will be able to deal
 					 with non-keyframe seeks.  */
 
 					if (videobuf_time >= get_time()) {
@@ -603,6 +603,7 @@ float VideoStreamPlaybackTheora::get_playback_position() const {
 };
 
 void VideoStreamPlaybackTheora::seek(float p_time) {
+	WARN_PRINT_ONCE("Seeking in Theora and WebM videos is not implemented yet (it's only supported for GDNative-provided video streams).");
 }
 
 void VideoStreamPlaybackTheora::set_mix_callback(AudioMixCallback p_callback, void *p_userdata) {
@@ -631,8 +632,8 @@ void VideoStreamPlaybackTheora::_streaming_thread(void *ud) {
 		//just fill back the buffer
 		if (!vs->thread_eof) {
 			int to_read = vs->ring_buffer.space_left();
-			if (to_read) {
-				int read = vs->file->get_buffer(vs->read_buffer.ptr(), to_read);
+			if (to_read > 0) {
+				uint64_t read = vs->file->get_buffer(vs->read_buffer.ptr(), to_read);
 				vs->ring_buffer.write(vs->read_buffer.ptr(), read);
 				vs->thread_eof = vs->file->eof_reached();
 			}

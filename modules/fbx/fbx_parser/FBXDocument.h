@@ -37,7 +37,7 @@
 #include "FBXCommon.h"
 #include "FBXParser.h"
 #include "FBXProperties.h"
-#include "core/math/transform.h"
+#include "core/math/transform_3d.h"
 #include "core/math/vector2.h"
 #include "core/math/vector3.h"
 #include "core/string/print_string.h"
@@ -130,7 +130,7 @@ private:
 };
 
 /** Base class for in-memory (DOM) representations of FBX objects */
-class Object {
+class Object : public PropertyTable {
 public:
 	Object(uint64_t id, const ElementPtr element, const std::string &name);
 
@@ -149,9 +149,9 @@ public:
 	}
 
 protected:
-	const ElementPtr element;
+	const ElementPtr element = nullptr;
 	const std::string name;
-	const uint64_t id = 0;
+	const uint64_t id;
 };
 
 /** DOM class for generic FBX NoteAttribute blocks. NoteAttribute's just hold a property table,
@@ -159,22 +159,13 @@ protected:
 class NodeAttribute : public Object {
 public:
 	NodeAttribute(uint64_t id, const ElementPtr element, const Document &doc, const std::string &name);
-
 	virtual ~NodeAttribute();
-
-	const PropertyTable *Props() const {
-		return props;
-	}
-
-private:
-	const PropertyTable *props;
 };
 
 /** DOM base class for FBX camera settings attached to a node */
 class CameraSwitcher : public NodeAttribute {
 public:
 	CameraSwitcher(uint64_t id, const ElementPtr element, const Document &doc, const std::string &name);
-
 	virtual ~CameraSwitcher();
 
 	int CameraID() const {
@@ -190,26 +181,26 @@ public:
 	}
 
 private:
-	int cameraId;
+	int cameraId = 0;
 	std::string cameraName;
 	std::string cameraIndexName;
 };
 
 #define fbx_stringize(a) #a
 
-#define fbx_simple_property(name, type, default_value)                           \
-	type name() const {                                                          \
-		return PropertyGet<type>(Props(), fbx_stringize(name), (default_value)); \
+#define fbx_simple_property(name, type, default_value)                        \
+	type name() const {                                                       \
+		return PropertyGet<type>(this, fbx_stringize(name), (default_value)); \
 	}
 
 // XXX improve logging
-#define fbx_simple_enum_property(name, type, default_value)                                               \
-	type name() const {                                                                                   \
-		const int ival = PropertyGet<int>(Props(), fbx_stringize(name), static_cast<int>(default_value)); \
-		if (ival < 0 || ival >= AI_CONCAT(type, _MAX)) {                                                  \
-			return static_cast<type>(default_value);                                                      \
-		}                                                                                                 \
-		return static_cast<type>(ival);                                                                   \
+#define fbx_simple_enum_property(name, type, default_value)                                            \
+	type name() const {                                                                                \
+		const int ival = PropertyGet<int>(this, fbx_stringize(name), static_cast<int>(default_value)); \
+		if (ival < 0 || ival >= AI_CONCAT(type, _MAX)) {                                               \
+			return static_cast<type>(default_value);                                                   \
+		}                                                                                              \
+		return static_cast<type>(ival);                                                                \
 	}
 
 class FbxPoseNode;
@@ -251,20 +242,19 @@ public:
 		return target_id;
 	}
 
-	Transform GetBindPose() const {
+	Transform3D GetBindPose() const {
 		return transform;
 	}
 
 private:
-	uint64_t target_id;
-	Transform transform;
+	uint64_t target_id = 0;
+	Transform3D transform;
 };
 
 /** DOM base class for FBX cameras attached to a node */
 class Camera : public NodeAttribute {
 public:
 	Camera(uint64_t id, const ElementPtr element, const Document &doc, const std::string &name);
-
 	virtual ~Camera();
 
 	fbx_simple_property(Position, Vector3, Vector3(0, 0, 0));
@@ -380,7 +370,6 @@ public:
 	};
 
 	Model(uint64_t id, const ElementPtr element, const Document &doc, const std::string &name);
-
 	virtual ~Model();
 
 	fbx_simple_property(QuaternionInterpolate, int, 0);
@@ -466,10 +455,6 @@ public:
 		return culling;
 	}
 
-	const PropertyTable *Props() const {
-		return props;
-	}
-
 	/** Get material links */
 	const std::vector<const Material *> &GetMaterials() const {
 		return materials;
@@ -498,13 +483,11 @@ private:
 
 	std::string shading;
 	std::string culling;
-	const PropertyTable *props = nullptr;
 };
 
 class ModelLimbNode : public Model {
 public:
 	ModelLimbNode(uint64_t id, const ElementPtr element, const Document &doc, const std::string &name);
-
 	virtual ~ModelLimbNode();
 };
 
@@ -512,7 +495,6 @@ public:
 class Texture : public Object {
 public:
 	Texture(uint64_t id, const ElementPtr element, const Document &doc, const std::string &name);
-
 	virtual ~Texture();
 
 	const std::string &Type() const {
@@ -539,10 +521,6 @@ public:
 		return uvScaling;
 	}
 
-	const PropertyTable *Props() const {
-		return props;
-	}
-
 	// return a 4-tuple
 	const unsigned int *Crop() const {
 		return crop;
@@ -560,10 +538,8 @@ private:
 	std::string relativeFileName;
 	std::string fileName;
 	std::string alphaSource;
-	const PropertyTable *props = nullptr;
 
 	unsigned int crop[4] = { 0 };
-
 	const Video *media = nullptr;
 };
 
@@ -626,8 +602,8 @@ public:
 
 private:
 	std::vector<const Texture *> textures;
-	BlendMode blendMode;
-	float alpha;
+	BlendMode blendMode = BlendMode::BlendMode_Additive;
+	float alpha = 0;
 };
 
 typedef std::map<std::string, const Texture *> TextureMap;
@@ -656,10 +632,6 @@ public:
 		return relativeFileName;
 	}
 
-	const PropertyTable *Props() const {
-		return props;
-	}
-
 	const uint8_t *Content() const {
 		return content;
 	}
@@ -670,7 +642,7 @@ public:
 
 	uint8_t *RelinquishContent() {
 		uint8_t *ptr = content;
-		content = 0;
+		content = nullptr;
 		return ptr;
 	}
 
@@ -687,7 +659,6 @@ private:
 	std::string type;
 	std::string relativeFileName;
 	std::string fileName;
-	const PropertyTable *props = nullptr;
 
 	uint64_t contentLength = 0;
 	uint8_t *content = nullptr;
@@ -708,10 +679,6 @@ public:
 		return multilayer;
 	}
 
-	const PropertyTable *Props() const {
-		return props;
-	}
-
 	const TextureMap &Textures() const {
 		return textures;
 	}
@@ -722,8 +689,7 @@ public:
 
 private:
 	std::string shading;
-	bool multilayer;
-	const PropertyTable *props;
+	bool multilayer = false;
 
 	TextureMap textures;
 	LayeredTextureMap layeredTextures;
@@ -733,7 +699,7 @@ private:
 typedef std::vector<int64_t> KeyTimeList;
 typedef std::vector<float> KeyValueList;
 
-/** Represents a FBX animation curve (i.e. a 1-dimensional set of keyframes and values therefor) */
+/** Represents a FBX animation curve (i.e. a 1-dimensional set of keyframes and values therefore) */
 class AnimationCurve : public Object {
 public:
 	AnimationCurve(uint64_t id, const ElementPtr element, const std::string &name, const Document &doc);
@@ -791,13 +757,9 @@ public:
 
 	virtual ~AnimationCurveNode();
 
-	const PropertyTable *Props() const {
-		return props;
-	}
-
 	const AnimationMap &Curves() const;
 
-	/** Object the curve is assigned to, this can be NULL if the
+	/** Object the curve is assigned to, this can be nullptr if the
      *  target object has no DOM representation or could not
      *  be read for other reasons.*/
 	Object *Target() const {
@@ -819,7 +781,6 @@ public:
 
 private:
 	Object *target = nullptr;
-	const PropertyTable *props;
 	mutable AnimationMap curves;
 	std::string prop;
 	const Document &doc;
@@ -837,18 +798,12 @@ public:
 	AnimationLayer(uint64_t id, const ElementPtr element, const std::string &name, const Document &doc);
 	virtual ~AnimationLayer();
 
-	const PropertyTable *Props() const {
-		//ai_assert(props.get());
-		return props;
-	}
-
 	/* the optional white list specifies a list of property names for which the caller
     wants animations for. Curves not matching this list will not be added to the
     animation layer. */
 	const AnimationCurveNodeList Nodes(const char *const *target_prop_whitelist = nullptr, size_t whitelist_size = 0) const;
 
 private:
-	const PropertyTable *props;
 	const Document &doc;
 };
 
@@ -863,16 +818,11 @@ public:
 	fbx_simple_property(ReferenceStart, int64_t, 0L);
 	fbx_simple_property(ReferenceStop, int64_t, 0L);
 
-	const PropertyTable *Props() const {
-		return props;
-	}
-
 	const AnimationLayerList &Layers() const {
 		return layers;
 	}
 
 private:
-	const PropertyTable *props = nullptr;
 	AnimationLayerList layers;
 };
 
@@ -881,14 +831,6 @@ class Deformer : public Object {
 public:
 	Deformer(uint64_t id, const ElementPtr element, const Document &doc, const std::string &name);
 	virtual ~Deformer();
-
-	const PropertyTable *Props() const {
-		//ai_assert(props.get());
-		return props;
-	}
-
-private:
-	const PropertyTable *props;
 };
 
 /** Constraints are from Maya they can help us with BoneAttachments :) **/
@@ -896,9 +838,6 @@ class Constraint : public Object {
 public:
 	Constraint(uint64_t id, const ElementPtr element, const Document &doc, const std::string &name);
 	virtual ~Constraint();
-
-private:
-	const PropertyTable *props;
 };
 
 typedef std::vector<float> WeightArray;
@@ -924,7 +863,7 @@ public:
 	}
 
 private:
-	float percent;
+	float percent = 0;
 	WeightArray fullWeights;
 	std::vector<const ShapeGeometry *> shapeGeometries;
 };
@@ -966,11 +905,11 @@ public:
 	}
 
 	/** */
-	const Transform &GetTransform() const {
+	const Transform3D &GetTransform() const {
 		return transform;
 	}
 
-	const Transform &TransformLink() const {
+	const Transform3D &TransformLink() const {
 		return transformLink;
 	}
 
@@ -978,7 +917,7 @@ public:
 		return node;
 	}
 
-	const Transform &TransformAssociateModel() const {
+	const Transform3D &TransformAssociateModel() const {
 		return transformAssociateModel;
 	}
 
@@ -1002,11 +941,11 @@ private:
 	std::vector<float> weights;
 	std::vector<unsigned int> indices;
 
-	Transform transform;
-	Transform transformLink;
-	Transform transformAssociateModel;
+	Transform3D transform;
+	Transform3D transformLink;
+	Transform3D transformAssociateModel;
 	SkinLinkMode link_mode;
-	bool valid_transformAssociateModel;
+	bool valid_transformAssociateModel = false;
 	const Model *node = nullptr;
 };
 
@@ -1037,8 +976,8 @@ public:
 	}
 
 private:
-	float accuracy;
-	SkinType skinType;
+	float accuracy = 0;
+	SkinType skinType = SkinType::Skin_Linear;
 	std::vector<const Cluster *> clusters;
 };
 
@@ -1050,7 +989,7 @@ public:
 
 	// note: a connection ensures that the source and dest objects exist, but
 	// not that they have DOM representations, so the return value of one of
-	// these functions can still be NULL.
+	// these functions can still be nullptr.
 	Object *SourceObject() const;
 	Object *DestinationObject() const;
 
@@ -1087,10 +1026,10 @@ public:
 	}
 
 public:
-	uint64_t insertionOrder;
+	uint64_t insertionOrder = 0;
 	const std::string prop;
 
-	uint64_t src, dest;
+	uint64_t src = 0, dest = 0;
 	const Document &doc;
 };
 
@@ -1105,15 +1044,10 @@ typedef std::multimap<uint64_t, const Connection *> ConnectionMap;
 
 /** DOM class for global document settings, a single instance per document can
  *  be accessed via Document.Globals(). */
-class FileGlobalSettings {
+class FileGlobalSettings : public PropertyTable {
 public:
-	FileGlobalSettings(const Document &doc, const PropertyTable *props);
-
-	~FileGlobalSettings();
-
-	const PropertyTable *Props() const {
-		return props;
-	}
+	FileGlobalSettings(const Document &doc);
+	virtual ~FileGlobalSettings();
 
 	const Document &GetDocument() const {
 		return doc;
@@ -1158,7 +1092,6 @@ public:
 	fbx_simple_property(CustomFrameRate, float, -1.0f);
 
 private:
-	const PropertyTable *props = nullptr;
 	const Document &doc;
 };
 
@@ -1196,7 +1129,7 @@ public:
 		return globals.get();
 	}
 
-	const PropertyTable *GetMetadataProperties() const {
+	const PropertyTable &GetMetadataProperties() const {
 		return metadata_properties;
 	}
 
@@ -1293,7 +1226,7 @@ private:
 	std::vector<uint64_t> materials;
 	std::vector<uint64_t> skins;
 	mutable std::vector<const AnimationStack *> animationStacksResolved;
-	PropertyTable *metadata_properties = nullptr;
+	PropertyTable metadata_properties;
 	std::shared_ptr<FileGlobalSettings> globals = nullptr;
 };
 } // namespace FBXDocParser

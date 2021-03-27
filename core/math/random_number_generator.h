@@ -32,10 +32,10 @@
 #define RANDOM_NUMBER_GENERATOR_H
 
 #include "core/math/random_pcg.h"
-#include "core/object/reference.h"
+#include "core/object/ref_counted.h"
 
-class RandomNumberGenerator : public Reference {
-	GDCLASS(RandomNumberGenerator, Reference);
+class RandomNumberGenerator : public RefCounted {
+	GDCLASS(RandomNumberGenerator, RefCounted);
 
 protected:
 	RandomPCG randbase;

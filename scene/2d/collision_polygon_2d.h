@@ -32,7 +32,6 @@
 #define COLLISION_POLYGON_2D_H
 
 #include "scene/2d/node_2d.h"
-#include "scene/resources/shape_2d.h"
 
 class CollisionObject2D;
 
@@ -78,7 +77,7 @@ public:
 	void set_polygon(const Vector<Point2> &p_polygon);
 	Vector<Point2> get_polygon() const;
 
-	virtual String get_configuration_warning() const override;
+	TypedArray<String> get_configuration_warnings() const override;
 
 	void set_disabled(bool p_disabled);
 	bool is_disabled() const;

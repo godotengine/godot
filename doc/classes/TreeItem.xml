@@ -11,739 +11,644 @@
 	</tutorials>
 	<methods>
 		<method name="add_button">
-			<return type="void">
-			</return>
-			<argument index="0" name="column" type="int">
-			</argument>
-			<argument index="1" name="button" type="Texture2D">
-			</argument>
-			<argument index="2" name="button_idx" type="int" default="-1">
-			</argument>
-			<argument index="3" name="disabled" type="bool" default="false">
-			</argument>
-			<argument index="4" name="tooltip" type="String" default="&quot;&quot;">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="column" type="int" />
+			<argument index="1" name="button" type="Texture2D" />
+			<argument index="2" name="button_idx" type="int" default="-1" />
+			<argument index="3" name="disabled" type="bool" default="false" />
+			<argument index="4" name="tooltip" type="String" default="&quot;&quot;" />
 			<description>
 				Adds a button with [Texture2D] [code]button[/code] at column [code]column[/code]. The [code]button_idx[/code] index is used to identify the button when calling other methods. If not specified, the next available index is used, which may be retrieved by calling [method get_button_count] immediately after this method. Optionally, the button can be [code]disabled[/code] and have a [code]tooltip[/code].
 			</description>
 		</method>
 		<method name="call_recursive" qualifiers="vararg">
-			<return type="Variant">
-			</return>
-			<argument index="0" name="method" type="StringName">
-			</argument>
+			<return type="Variant" />
+			<argument index="0" name="method" type="StringName" />
 			<description>
 				Calls the [code]method[/code] on the actual TreeItem and its children recursively. Pass parameters as a comma separated list.
 			</description>
 		</method>
 		<method name="clear_custom_bg_color">
-			<return type="void">
-			</return>
-			<argument index="0" name="column" type="int">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="column" type="int" />
 			<description>
 				Resets the background color for the given column to default.
 			</description>
 		</method>
 		<method name="clear_custom_color">
-			<return type="void">
-			</return>
-			<argument index="0" name="column" type="int">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="column" type="int" />
 			<description>
 				Resets the color for the given column to default.
 			</description>
 		</method>
 		<method name="clear_opentype_features">
-			<return type="void">
-			</return>
-			<argument index="0" name="column" type="int">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="column" type="int" />
 			<description>
 				Removes all OpenType features.
 			</description>
 		</method>
+		<method name="create_child">
+			<return type="TreeItem" />
+			<argument index="0" name="idx" type="int" default="-1" />
+			<description>
+				Creates an item and adds it as a child.
+				The new item will be inserted as position [code]idx[/code] (the default value [code]-1[/code] means the last position), or it will be the last child if [code]idx[/code] is higher than the child count.
+			</description>
+		</method>
 		<method name="deselect">
-			<return type="void">
-			</return>
-			<argument index="0" name="column" type="int">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="column" type="int" />
 			<description>
 				Deselects the given column.
 			</description>
 		</method>
 		<method name="erase_button">
-			<return type="void">
-			</return>
-			<argument index="0" name="column" type="int">
-			</argument>
-			<argument index="1" name="button_idx" type="int">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="column" type="int" />
+			<argument index="1" name="button_idx" type="int" />
 			<description>
 				Removes the button at index [code]button_idx[/code] in column [code]column[/code].
 			</description>
 		</method>
 		<method name="get_button" qualifiers="const">
-			<return type="Texture2D">
-			</return>
-			<argument index="0" name="column" type="int">
-			</argument>
-			<argument index="1" name="button_idx" type="int">
-			</argument>
+			<return type="Texture2D" />
+			<argument index="0" name="column" type="int" />
+			<argument index="1" name="button_idx" type="int" />
 			<description>
 				Returns the [Texture2D] of the button at index [code]button_idx[/code] in column [code]column[/code].
 			</description>
 		</method>
 		<method name="get_button_count" qualifiers="const">
-			<return type="int">
-			</return>
-			<argument index="0" name="column" type="int">
-			</argument>
+			<return type="int" />
+			<argument index="0" name="column" type="int" />
 			<description>
 				Returns the number of buttons in column [code]column[/code]. May be used to get the most recently added button's index, if no index was specified.
 			</description>
 		</method>
 		<method name="get_button_tooltip" qualifiers="const">
-			<return type="String">
-			</return>
-			<argument index="0" name="column" type="int">
-			</argument>
-			<argument index="1" name="button_idx" type="int">
-			</argument>
+			<return type="String" />
+			<argument index="0" name="column" type="int" />
+			<argument index="1" name="button_idx" type="int" />
 			<description>
 				Returns the tooltip string for the button at index [code]button_idx[/code] in column [code]column[/code].
 			</description>
 		</method>
 		<method name="get_cell_mode" qualifiers="const">
-			<return type="int" enum="TreeItem.TreeCellMode">
-			</return>
-			<argument index="0" name="column" type="int">
-			</argument>
+			<return type="int" enum="TreeItem.TreeCellMode" />
+			<argument index="0" name="column" type="int" />
 			<description>
 				Returns the column's cell mode.
 			</description>
 		</method>
-		<method name="get_children">
-			<return type="TreeItem">
-			</return>
+		<method name="get_child">
+			<return type="TreeItem" />
+			<argument index="0" name="idx" type="int" />
 			<description>
-				Returns the TreeItem's first child item or a null object if there is none.
+				Returns a child item by its index (see [method get_child_count]). This method is often used for iterating all children of an item.
+				Negative indices access the children from the last one.
+			</description>
+		</method>
+		<method name="get_child_count">
+			<return type="int" />
+			<description>
+				Returns the number of child items.
+			</description>
+		</method>
+		<method name="get_children">
+			<return type="Array" />
+			<description>
+				Returns an array of references to the item's children.
 			</description>
 		</method>
 		<method name="get_custom_bg_color" qualifiers="const">
-			<return type="Color">
-			</return>
-			<argument index="0" name="column" type="int">
-			</argument>
+			<return type="Color" />
+			<argument index="0" name="column" type="int" />
 			<description>
 				Returns the custom background color of column [code]column[/code].
 			</description>
 		</method>
 		<method name="get_custom_color" qualifiers="const">
-			<return type="Color">
-			</return>
-			<argument index="0" name="column" type="int">
-			</argument>
+			<return type="Color" />
+			<argument index="0" name="column" type="int" />
 			<description>
 				Returns the custom color of column [code]column[/code].
 			</description>
 		</method>
+		<method name="get_custom_font" qualifiers="const">
+			<return type="Font" />
+			<argument index="0" name="column" type="int" />
+			<description>
+				Returns custom font used to draw text in the column [code]column[/code].
+			</description>
+		</method>
+		<method name="get_custom_font_size" qualifiers="const">
+			<return type="int" />
+			<argument index="0" name="column" type="int" />
+			<description>
+				Returns custom font size used to draw text in the column [code]column[/code].
+			</description>
+		</method>
 		<method name="get_expand_right" qualifiers="const">
-			<return type="bool">
-			</return>
-			<argument index="0" name="column" type="int">
-			</argument>
+			<return type="bool" />
+			<argument index="0" name="column" type="int" />
 			<description>
 				Returns [code]true[/code] if [code]expand_right[/code] is set.
 			</description>
 		</method>
+		<method name="get_first_child" qualifiers="const">
+			<return type="TreeItem" />
+			<description>
+				Returns the TreeItem's first child.
+			</description>
+		</method>
 		<method name="get_icon" qualifiers="const">
-			<return type="Texture2D">
-			</return>
-			<argument index="0" name="column" type="int">
-			</argument>
+			<return type="Texture2D" />
+			<argument index="0" name="column" type="int" />
 			<description>
 				Returns the given column's icon [Texture2D]. Error if no icon is set.
 			</description>
 		</method>
 		<method name="get_icon_max_width" qualifiers="const">
-			<return type="int">
-			</return>
-			<argument index="0" name="column" type="int">
-			</argument>
+			<return type="int" />
+			<argument index="0" name="column" type="int" />
 			<description>
 				Returns the column's icon's maximum width.
 			</description>
 		</method>
 		<method name="get_icon_modulate" qualifiers="const">
-			<return type="Color">
-			</return>
-			<argument index="0" name="column" type="int">
-			</argument>
+			<return type="Color" />
+			<argument index="0" name="column" type="int" />
 			<description>
 				Returns the [Color] modulating the column's icon.
 			</description>
 		</method>
 		<method name="get_icon_region" qualifiers="const">
-			<return type="Rect2">
-			</return>
-			<argument index="0" name="column" type="int">
-			</argument>
+			<return type="Rect2" />
+			<argument index="0" name="column" type="int" />
 			<description>
 				Returns the icon [Texture2D] region as [Rect2].
 			</description>
 		</method>
+		<method name="get_index">
+			<return type="int" />
+			<description>
+				Returns the node's order in the tree. For example, if called on the first child item the position is [code]0[/code].
+			</description>
+		</method>
 		<method name="get_language" qualifiers="const">
-			<return type="String">
-			</return>
-			<argument index="0" name="column" type="int">
-			</argument>
+			<return type="String" />
+			<argument index="0" name="column" type="int" />
 			<description>
 				Returns item's text language code.
 			</description>
 		</method>
 		<method name="get_metadata" qualifiers="const">
-			<return type="Variant">
-			</return>
-			<argument index="0" name="column" type="int">
-			</argument>
+			<return type="Variant" />
+			<argument index="0" name="column" type="int" />
 			<description>
 				Returns the metadata value that was set for the given column using [method set_metadata].
 			</description>
 		</method>
-		<method name="get_next">
-			<return type="TreeItem">
-			</return>
+		<method name="get_next" qualifiers="const">
+			<return type="TreeItem" />
 			<description>
 				Returns the next TreeItem in the tree or a null object if there is none.
 			</description>
 		</method>
 		<method name="get_next_visible">
-			<return type="TreeItem">
-			</return>
-			<argument index="0" name="wrap" type="bool" default="false">
-			</argument>
+			<return type="TreeItem" />
+			<argument index="0" name="wrap" type="bool" default="false" />
 			<description>
 				Returns the next visible TreeItem in the tree or a null object if there is none.
 				If [code]wrap[/code] is enabled, the method will wrap around to the first visible element in the tree when called on the last visible element, otherwise it returns [code]null[/code].
 			</description>
 		</method>
 		<method name="get_opentype_feature" qualifiers="const">
-			<return type="int">
-			</return>
-			<argument index="0" name="column" type="int">
-			</argument>
-			<argument index="1" name="tag" type="String">
-			</argument>
+			<return type="int" />
+			<argument index="0" name="column" type="int" />
+			<argument index="1" name="tag" type="String" />
 			<description>
 				Returns OpenType feature [code]tag[/code] of the item's text.
 			</description>
 		</method>
-		<method name="get_parent">
-			<return type="TreeItem">
-			</return>
+		<method name="get_parent" qualifiers="const">
+			<return type="TreeItem" />
 			<description>
 				Returns the parent TreeItem or a null object if there is none.
 			</description>
 		</method>
 		<method name="get_prev">
-			<return type="TreeItem">
-			</return>
+			<return type="TreeItem" />
 			<description>
 				Returns the previous TreeItem in the tree or a null object if there is none.
 			</description>
 		</method>
 		<method name="get_prev_visible">
-			<return type="TreeItem">
-			</return>
-			<argument index="0" name="wrap" type="bool" default="false">
-			</argument>
+			<return type="TreeItem" />
+			<argument index="0" name="wrap" type="bool" default="false" />
 			<description>
 				Returns the previous visible TreeItem in the tree or a null object if there is none.
 				If [code]wrap[/code] is enabled, the method will wrap around to the last visible element in the tree when called on the first visible element, otherwise it returns [code]null[/code].
 			</description>
 		</method>
 		<method name="get_range" qualifiers="const">
-			<return type="float">
-			</return>
-			<argument index="0" name="column" type="int">
-			</argument>
+			<return type="float" />
+			<argument index="0" name="column" type="int" />
 			<description>
 				Returns the value of a [constant CELL_MODE_RANGE] column.
 			</description>
 		</method>
 		<method name="get_range_config">
-			<return type="Dictionary">
-			</return>
-			<argument index="0" name="column" type="int">
-			</argument>
+			<return type="Dictionary" />
+			<argument index="0" name="column" type="int" />
 			<description>
 				Returns a dictionary containing the range parameters for a given column. The keys are "min", "max", "step", and "expr".
 			</description>
 		</method>
 		<method name="get_structured_text_bidi_override" qualifiers="const">
-			<return type="int" enum="Control.StructuredTextParser">
-			</return>
-			<argument index="0" name="column" type="int">
-			</argument>
+			<return type="int" enum="Control.StructuredTextParser" />
+			<argument index="0" name="column" type="int" />
 			<description>
 			</description>
 		</method>
 		<method name="get_structured_text_bidi_override_options" qualifiers="const">
-			<return type="Array">
-			</return>
-			<argument index="0" name="column" type="int">
-			</argument>
+			<return type="Array" />
+			<argument index="0" name="column" type="int" />
 			<description>
 			</description>
 		</method>
 		<method name="get_suffix" qualifiers="const">
-			<return type="String">
-			</return>
-			<argument index="0" name="column" type="int">
-			</argument>
+			<return type="String" />
+			<argument index="0" name="column" type="int" />
 			<description>
 				Gets the suffix string shown after the column value.
 			</description>
 		</method>
 		<method name="get_text" qualifiers="const">
-			<return type="String">
-			</return>
-			<argument index="0" name="column" type="int">
-			</argument>
+			<return type="String" />
+			<argument index="0" name="column" type="int" />
 			<description>
 				Returns the given column's text.
 			</description>
 		</method>
 		<method name="get_text_align" qualifiers="const">
-			<return type="int" enum="TreeItem.TextAlign">
-			</return>
-			<argument index="0" name="column" type="int">
-			</argument>
+			<return type="int" enum="TreeItem.TextAlign" />
+			<argument index="0" name="column" type="int" />
 			<description>
 				Returns the given column's text alignment.
 			</description>
 		</method>
 		<method name="get_text_direction" qualifiers="const">
-			<return type="int" enum="Control.TextDirection">
-			</return>
-			<argument index="0" name="column" type="int">
-			</argument>
+			<return type="int" enum="Control.TextDirection" />
+			<argument index="0" name="column" type="int" />
 			<description>
 				Returns item's text base writing direction.
 			</description>
 		</method>
 		<method name="get_tooltip" qualifiers="const">
-			<return type="String">
-			</return>
-			<argument index="0" name="column" type="int">
-			</argument>
+			<return type="String" />
+			<argument index="0" name="column" type="int" />
 			<description>
 				Returns the given column's tooltip.
 			</description>
 		</method>
+		<method name="get_tree" qualifiers="const">
+			<return type="Tree" />
+			<description>
+				Returns the [Tree] that owns this TreeItem.
+			</description>
+		</method>
 		<method name="is_button_disabled" qualifiers="const">
-			<return type="bool">
-			</return>
-			<argument index="0" name="column" type="int">
-			</argument>
-			<argument index="1" name="button_idx" type="int">
-			</argument>
+			<return type="bool" />
+			<argument index="0" name="column" type="int" />
+			<argument index="1" name="button_idx" type="int" />
 			<description>
 				Returns [code]true[/code] if the button at index [code]button_idx[/code] for the given column is disabled.
 			</description>
 		</method>
 		<method name="is_checked" qualifiers="const">
-			<return type="bool">
-			</return>
-			<argument index="0" name="column" type="int">
-			</argument>
+			<return type="bool" />
+			<argument index="0" name="column" type="int" />
 			<description>
 				Returns [code]true[/code] if the given column is checked.
 			</description>
 		</method>
 		<method name="is_custom_set_as_button" qualifiers="const">
-			<return type="bool">
-			</return>
-			<argument index="0" name="column" type="int">
-			</argument>
+			<return type="bool" />
+			<argument index="0" name="column" type="int" />
 			<description>
 			</description>
 		</method>
 		<method name="is_editable">
-			<return type="bool">
-			</return>
-			<argument index="0" name="column" type="int">
-			</argument>
+			<return type="bool" />
+			<argument index="0" name="column" type="int" />
 			<description>
 				Returns [code]true[/code] if column [code]column[/code] is editable.
 			</description>
 		</method>
+		<method name="is_indeterminate" qualifiers="const">
+			<return type="bool" />
+			<argument index="0" name="column" type="int" />
+			<description>
+				Returns [code]true[/code] if the given column is indeterminate.
+			</description>
+		</method>
 		<method name="is_selectable" qualifiers="const">
-			<return type="bool">
-			</return>
-			<argument index="0" name="column" type="int">
-			</argument>
+			<return type="bool" />
+			<argument index="0" name="column" type="int" />
 			<description>
 				Returns [code]true[/code] if column [code]column[/code] is selectable.
 			</description>
 		</method>
 		<method name="is_selected">
-			<return type="bool">
-			</return>
-			<argument index="0" name="column" type="int">
-			</argument>
+			<return type="bool" />
+			<argument index="0" name="column" type="int" />
 			<description>
 				Returns [code]true[/code] if column [code]column[/code] is selected.
 			</description>
 		</method>
-		<method name="move_to_bottom">
-			<return type="void">
-			</return>
+		<method name="move_after">
+			<return type="void" />
+			<argument index="0" name="item" type="Object" />
 			<description>
-				Moves this TreeItem to the bottom in the [Tree] hierarchy.
+				Moves this TreeItem right after the given [code]item[/code].
+				[b]Note:[/b] You can't move to the root or move the root.
 			</description>
 		</method>
-		<method name="move_to_top">
-			<return type="void">
-			</return>
+		<method name="move_before">
+			<return type="void" />
+			<argument index="0" name="item" type="Object" />
 			<description>
-				Moves this TreeItem to the top in the [Tree] hierarchy.
+				Moves this TreeItem right before the given [code]item[/code].
+				[b]Note:[/b] You can't move to the root or move the root.
 			</description>
 		</method>
 		<method name="remove_child">
-			<return type="void">
-			</return>
-			<argument index="0" name="child" type="Object">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="child" type="Object" />
 			<description>
 				Removes the given child [TreeItem] and all its children from the [Tree]. Note that it doesn't free the item from memory, so it can be reused later. To completely remove a [TreeItem] use [method Object.free].
 			</description>
 		</method>
 		<method name="select">
-			<return type="void">
-			</return>
-			<argument index="0" name="column" type="int">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="column" type="int" />
 			<description>
 				Selects the column [code]column[/code].
 			</description>
 		</method>
 		<method name="set_button">
-			<return type="void">
-			</return>
-			<argument index="0" name="column" type="int">
-			</argument>
-			<argument index="1" name="button_idx" type="int">
-			</argument>
-			<argument index="2" name="button" type="Texture2D">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="column" type="int" />
+			<argument index="1" name="button_idx" type="int" />
+			<argument index="2" name="button" type="Texture2D" />
 			<description>
 				Sets the given column's button [Texture2D] at index [code]button_idx[/code] to [code]button[/code].
 			</description>
 		</method>
 		<method name="set_button_disabled">
-			<return type="void">
-			</return>
-			<argument index="0" name="column" type="int">
-			</argument>
-			<argument index="1" name="button_idx" type="int">
-			</argument>
-			<argument index="2" name="disabled" type="bool">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="column" type="int" />
+			<argument index="1" name="button_idx" type="int" />
+			<argument index="2" name="disabled" type="bool" />
 			<description>
 				If [code]true[/code], disables the button at index [code]button_idx[/code] in column [code]column[/code].
 			</description>
 		</method>
 		<method name="set_cell_mode">
-			<return type="void">
-			</return>
-			<argument index="0" name="column" type="int">
-			</argument>
-			<argument index="1" name="mode" type="int" enum="TreeItem.TreeCellMode">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="column" type="int" />
+			<argument index="1" name="mode" type="int" enum="TreeItem.TreeCellMode" />
 			<description>
 				Sets the given column's cell mode to [code]mode[/code]. See [enum TreeCellMode] constants.
 			</description>
 		</method>
 		<method name="set_checked">
-			<return type="void">
-			</return>
-			<argument index="0" name="column" type="int">
-			</argument>
-			<argument index="1" name="checked" type="bool">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="column" type="int" />
+			<argument index="1" name="checked" type="bool" />
 			<description>
-				If [code]true[/code], the column [code]column[/code] is checked.
+				If [code]true[/code], the column [code]column[/code] is checked. Clears column's indeterminate status.
 			</description>
 		</method>
 		<method name="set_custom_as_button">
-			<return type="void">
-			</return>
-			<argument index="0" name="column" type="int">
-			</argument>
-			<argument index="1" name="enable" type="bool">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="column" type="int" />
+			<argument index="1" name="enable" type="bool" />
 			<description>
 			</description>
 		</method>
 		<method name="set_custom_bg_color">
-			<return type="void">
-			</return>
-			<argument index="0" name="column" type="int">
-			</argument>
-			<argument index="1" name="color" type="Color">
-			</argument>
-			<argument index="2" name="just_outline" type="bool" default="false">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="column" type="int" />
+			<argument index="1" name="color" type="Color" />
+			<argument index="2" name="just_outline" type="bool" default="false" />
 			<description>
 				Sets the given column's custom background color and whether to just use it as an outline.
 			</description>
 		</method>
 		<method name="set_custom_color">
-			<return type="void">
-			</return>
-			<argument index="0" name="column" type="int">
-			</argument>
-			<argument index="1" name="color" type="Color">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="column" type="int" />
+			<argument index="1" name="color" type="Color" />
 			<description>
 				Sets the given column's custom color.
 			</description>
 		</method>
 		<method name="set_custom_draw">
-			<return type="void">
-			</return>
-			<argument index="0" name="column" type="int">
-			</argument>
-			<argument index="1" name="object" type="Object">
-			</argument>
-			<argument index="2" name="callback" type="StringName">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="column" type="int" />
+			<argument index="1" name="object" type="Object" />
+			<argument index="2" name="callback" type="StringName" />
 			<description>
 				Sets the given column's custom draw callback to [code]callback[/code] method on [code]object[/code].
 				The [code]callback[/code] should accept two arguments: the [TreeItem] that is drawn and its position and size as a [Rect2].
 			</description>
 		</method>
+		<method name="set_custom_font">
+			<return type="void" />
+			<argument index="0" name="column" type="int" />
+			<argument index="1" name="font" type="Font" />
+			<description>
+				Sets custom font used to draw text in the column [code]column[/code].
+			</description>
+		</method>
+		<method name="set_custom_font_size">
+			<return type="void" />
+			<argument index="0" name="column" type="int" />
+			<argument index="1" name="font_size" type="int" />
+			<description>
+				Sets custom font size used to draw text in the column [code]column[/code].
+			</description>
+		</method>
 		<method name="set_editable">
-			<return type="void">
-			</return>
-			<argument index="0" name="column" type="int">
-			</argument>
-			<argument index="1" name="enabled" type="bool">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="column" type="int" />
+			<argument index="1" name="enabled" type="bool" />
 			<description>
 				If [code]true[/code], column [code]column[/code] is editable.
 			</description>
 		</method>
 		<method name="set_expand_right">
-			<return type="void">
-			</return>
-			<argument index="0" name="column" type="int">
-			</argument>
-			<argument index="1" name="enable" type="bool">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="column" type="int" />
+			<argument index="1" name="enable" type="bool" />
 			<description>
 				If [code]true[/code], column [code]column[/code] is expanded to the right.
 			</description>
 		</method>
 		<method name="set_icon">
-			<return type="void">
-			</return>
-			<argument index="0" name="column" type="int">
-			</argument>
-			<argument index="1" name="texture" type="Texture2D">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="column" type="int" />
+			<argument index="1" name="texture" type="Texture2D" />
 			<description>
 				Sets the given column's icon [Texture2D].
 			</description>
 		</method>
 		<method name="set_icon_max_width">
-			<return type="void">
-			</return>
-			<argument index="0" name="column" type="int">
-			</argument>
-			<argument index="1" name="width" type="int">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="column" type="int" />
+			<argument index="1" name="width" type="int" />
 			<description>
 				Sets the given column's icon's maximum width.
 			</description>
 		</method>
 		<method name="set_icon_modulate">
-			<return type="void">
-			</return>
-			<argument index="0" name="column" type="int">
-			</argument>
-			<argument index="1" name="modulate" type="Color">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="column" type="int" />
+			<argument index="1" name="modulate" type="Color" />
 			<description>
 				Modulates the given column's icon with [code]modulate[/code].
 			</description>
 		</method>
 		<method name="set_icon_region">
-			<return type="void">
-			</return>
-			<argument index="0" name="column" type="int">
-			</argument>
-			<argument index="1" name="region" type="Rect2">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="column" type="int" />
+			<argument index="1" name="region" type="Rect2" />
 			<description>
 				Sets the given column's icon's texture region.
 			</description>
 		</method>
+		<method name="set_indeterminate">
+			<return type="void" />
+			<argument index="0" name="column" type="int" />
+			<argument index="1" name="indeterminate" type="bool" />
+			<description>
+				If [code]true[/code], the column [code]column[/code] is marked indeterminate.
+				[b]Note:[/b] If set [code]true[/code] from [code]false[/code], then column is cleared of checked status.
+			</description>
+		</method>
 		<method name="set_language">
-			<return type="void">
-			</return>
-			<argument index="0" name="column" type="int">
-			</argument>
-			<argument index="1" name="language" type="String">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="column" type="int" />
+			<argument index="1" name="language" type="String" />
 			<description>
 				Sets language code of item's text used for line-breaking and text shaping algorithms, if left empty current locale is used instead.
 			</description>
 		</method>
 		<method name="set_metadata">
-			<return type="void">
-			</return>
-			<argument index="0" name="column" type="int">
-			</argument>
-			<argument index="1" name="meta" type="Variant">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="column" type="int" />
+			<argument index="1" name="meta" type="Variant" />
 			<description>
 				Sets the metadata value for the given column, which can be retrieved later using [method get_metadata]. This can be used, for example, to store a reference to the original data.
 			</description>
 		</method>
 		<method name="set_opentype_feature">
-			<return type="void">
-			</return>
-			<argument index="0" name="column" type="int">
-			</argument>
-			<argument index="1" name="tag" type="String">
-			</argument>
-			<argument index="2" name="value" type="int">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="column" type="int" />
+			<argument index="1" name="tag" type="String" />
+			<argument index="2" name="value" type="int" />
 			<description>
 				Sets OpenType feature [code]tag[/code] for the item's text.
 			</description>
 		</method>
 		<method name="set_range">
-			<return type="void">
-			</return>
-			<argument index="0" name="column" type="int">
-			</argument>
-			<argument index="1" name="value" type="float">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="column" type="int" />
+			<argument index="1" name="value" type="float" />
 			<description>
 				Sets the value of a [constant CELL_MODE_RANGE] column.
 			</description>
 		</method>
 		<method name="set_range_config">
-			<return type="void">
-			</return>
-			<argument index="0" name="column" type="int">
-			</argument>
-			<argument index="1" name="min" type="float">
-			</argument>
-			<argument index="2" name="max" type="float">
-			</argument>
-			<argument index="3" name="step" type="float">
-			</argument>
-			<argument index="4" name="expr" type="bool" default="false">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="column" type="int" />
+			<argument index="1" name="min" type="float" />
+			<argument index="2" name="max" type="float" />
+			<argument index="3" name="step" type="float" />
+			<argument index="4" name="expr" type="bool" default="false" />
 			<description>
 				Sets the range of accepted values for a column. The column must be in the [constant CELL_MODE_RANGE] mode.
 				If [code]expr[/code] is [code]true[/code], the edit mode slider will use an exponential scale as with [member Range.exp_edit].
 			</description>
 		</method>
 		<method name="set_selectable">
-			<return type="void">
-			</return>
-			<argument index="0" name="column" type="int">
-			</argument>
-			<argument index="1" name="selectable" type="bool">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="column" type="int" />
+			<argument index="1" name="selectable" type="bool" />
 			<description>
 				If [code]true[/code], the given column is selectable.
 			</description>
 		</method>
 		<method name="set_structured_text_bidi_override">
-			<return type="void">
-			</return>
-			<argument index="0" name="column" type="int">
-			</argument>
-			<argument index="1" name="parser" type="int" enum="Control.StructuredTextParser">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="column" type="int" />
+			<argument index="1" name="parser" type="int" enum="Control.StructuredTextParser" />
 			<description>
 			</description>
 		</method>
 		<method name="set_structured_text_bidi_override_options">
-			<return type="void">
-			</return>
-			<argument index="0" name="column" type="int">
-			</argument>
-			<argument index="1" name="args" type="Array">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="column" type="int" />
+			<argument index="1" name="args" type="Array" />
 			<description>
 			</description>
 		</method>
 		<method name="set_suffix">
-			<return type="void">
-			</return>
-			<argument index="0" name="column" type="int">
-			</argument>
-			<argument index="1" name="text" type="String">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="column" type="int" />
+			<argument index="1" name="text" type="String" />
 			<description>
 				Sets a string to be shown after a column's value (for example, a unit abbreviation).
 			</description>
 		</method>
 		<method name="set_text">
-			<return type="void">
-			</return>
-			<argument index="0" name="column" type="int">
-			</argument>
-			<argument index="1" name="text" type="String">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="column" type="int" />
+			<argument index="1" name="text" type="String" />
 			<description>
 				Sets the given column's text value.
 			</description>
 		</method>
 		<method name="set_text_align">
-			<return type="void">
-			</return>
-			<argument index="0" name="column" type="int">
-			</argument>
-			<argument index="1" name="text_align" type="int" enum="TreeItem.TextAlign">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="column" type="int" />
+			<argument index="1" name="text_align" type="int" enum="TreeItem.TextAlign" />
 			<description>
 				Sets the given column's text alignment. See [enum TextAlign] for possible values.
 			</description>
 		</method>
 		<method name="set_text_direction">
-			<return type="void">
-			</return>
-			<argument index="0" name="column" type="int">
-			</argument>
-			<argument index="1" name="direction" type="int" enum="Control.TextDirection">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="column" type="int" />
+			<argument index="1" name="direction" type="int" enum="Control.TextDirection" />
 			<description>
 				Sets item's text base writing direction.
 			</description>
 		</method>
 		<method name="set_tooltip">
-			<return type="void">
-			</return>
-			<argument index="0" name="column" type="int">
-			</argument>
-			<argument index="1" name="tooltip" type="String">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="column" type="int" />
+			<argument index="1" name="tooltip" type="String" />
 			<description>
 				Sets the given column's tooltip text.
 			</description>
 		</method>
 		<method name="uncollapse_tree">
-			<return type="void">
-			</return>
+			<return type="void" />
 			<description>
 			</description>
 		</method>

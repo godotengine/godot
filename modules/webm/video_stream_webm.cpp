@@ -31,7 +31,7 @@
 #include "video_stream_webm.h"
 
 #include "core/config/project_settings.h"
-#include "core/os/file_access.h"
+#include "core/io/file_access.h"
 #include "core/os/os.h"
 #include "servers/audio_server.h"
 
@@ -62,10 +62,10 @@ public:
 
 	virtual int Read(long long pos, long len, unsigned char *buf) {
 		if (file) {
-			if (file->get_position() != (size_t)pos) {
+			if (file->get_position() != (uint64_t)pos) {
 				file->seek(pos);
 			}
-			if (file->get_buffer(buf, len) == len) {
+			if (file->get_buffer(buf, len) == (uint64_t)len) {
 				return 0;
 			}
 		}
@@ -74,7 +74,7 @@ public:
 
 	virtual int Length(long long *total, long long *available) {
 		if (file) {
-			const size_t len = file->get_len();
+			const uint64_t len = file->get_length();
 			if (total) {
 				*total = len;
 			}
@@ -116,7 +116,7 @@ bool VideoStreamPlaybackWebm::open_file(const String &p_file) {
 
 			frame_data.resize((webm->getWidth() * webm->getHeight()) << 2);
 			Ref<Image> img;
-			img.instance();
+			img.instantiate();
 			img->create(webm->getWidth(), webm->getHeight(), false, Image::FORMAT_RGBA8);
 			texture->create_from_image(img);
 
@@ -194,7 +194,7 @@ float VideoStreamPlaybackWebm::get_playback_position() const {
 }
 
 void VideoStreamPlaybackWebm::seek(float p_time) {
-	//Not implemented
+	WARN_PRINT_ONCE("Seeking in Theora and WebM videos is not implemented yet (it's only supported for GDNative-provided video streams).");
 }
 
 void VideoStreamPlaybackWebm::set_audio_track(int p_idx) {

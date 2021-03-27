@@ -30,8 +30,8 @@
 
 #include "physics_server_2d_sw.h"
 
-#include "broad_phase_2d_basic.h"
-#include "broad_phase_2d_hash_grid.h"
+#include "body_direct_state_2d_sw.h"
+#include "broad_phase_2d_bvh.h"
 #include "collision_solver_2d_sw.h"
 #include "core/config/project_settings.h"
 #include "core/debugger/engine_debugger.h"
@@ -43,11 +43,11 @@
 RID PhysicsServer2DSW::_shape_create(ShapeType p_shape) {
 	Shape2DSW *shape = nullptr;
 	switch (p_shape) {
-		case SHAPE_LINE: {
-			shape = memnew(LineShape2DSW);
+		case SHAPE_WORLD_BOUNDARY: {
+			shape = memnew(WorldBoundaryShape2DSW);
 		} break;
-		case SHAPE_RAY: {
-			shape = memnew(RayShape2DSW);
+		case SHAPE_SEPARATION_RAY: {
+			shape = memnew(SeparationRayShape2DSW);
 		} break;
 		case SHAPE_SEGMENT: {
 			shape = memnew(SegmentShape2DSW);
@@ -79,12 +79,12 @@ RID PhysicsServer2DSW::_shape_create(ShapeType p_shape) {
 	return id;
 }
 
-RID PhysicsServer2DSW::line_shape_create() {
-	return _shape_create(SHAPE_LINE);
+RID PhysicsServer2DSW::world_boundary_shape_create() {
+	return _shape_create(SHAPE_WORLD_BOUNDARY);
 }
 
-RID PhysicsServer2DSW::ray_shape_create() {
-	return _shape_create(SHAPE_RAY);
+RID PhysicsServer2DSW::separation_ray_shape_create() {
+	return _shape_create(SHAPE_SEPARATION_RAY);
 }
 
 RID PhysicsServer2DSW::segment_shape_create() {
@@ -367,7 +367,7 @@ void PhysicsServer2DSW::area_set_shape_disabled(RID p_area, int p_shape, bool p_
 	ERR_FAIL_INDEX(p_shape, area->get_shape_count());
 	FLUSH_QUERY_CHECK(area);
 
-	area->set_shape_as_disabled(p_shape, p_disabled);
+	area->set_shape_disabled(p_shape, p_disabled);
 }
 
 int PhysicsServer2DSW::area_get_shape_count(RID p_area) const {
@@ -664,7 +664,7 @@ void PhysicsServer2DSW::body_set_shape_disabled(RID p_body, int p_shape_idx, boo
 	ERR_FAIL_INDEX(p_shape_idx, body->get_shape_count());
 	FLUSH_QUERY_CHECK(body);
 
-	body->set_shape_as_disabled(p_shape_idx, p_disabled);
+	body->set_shape_disabled(p_shape_idx, p_disabled);
 }
 
 void PhysicsServer2DSW::body_set_shape_as_one_way_collision(RID p_body, int p_shape_idx, bool p_enable, real_t p_margin) {
@@ -743,19 +743,26 @@ uint32_t PhysicsServer2DSW::body_get_collision_mask(RID p_body) const {
 	return body->get_collision_mask();
 };
 
-void PhysicsServer2DSW::body_set_param(RID p_body, BodyParameter p_param, real_t p_value) {
+void PhysicsServer2DSW::body_set_param(RID p_body, BodyParameter p_param, const Variant &p_value) {
 	Body2DSW *body = body_owner.getornull(p_body);
 	ERR_FAIL_COND(!body);
 
 	body->set_param(p_param, p_value);
 };
 
-real_t PhysicsServer2DSW::body_get_param(RID p_body, BodyParameter p_param) const {
+Variant PhysicsServer2DSW::body_get_param(RID p_body, BodyParameter p_param) const {
 	Body2DSW *body = body_owner.getornull(p_body);
 	ERR_FAIL_COND_V(!body, 0);
 
 	return body->get_param(p_param);
 };
+
+void PhysicsServer2DSW::body_reset_mass_properties(RID p_body) {
+	Body2DSW *body = body_owner.getornull(p_body);
+	ERR_FAIL_COND(!body);
+
+	return body->reset_mass_properties();
+}
 
 void PhysicsServer2DSW::body_set_state(RID p_body, BodyState p_state, const Variant &p_variant) {
 	Body2DSW *body = body_owner.getornull(p_body);
@@ -927,10 +934,16 @@ int PhysicsServer2DSW::body_get_max_contacts_reported(RID p_body) const {
 	return body->get_max_contacts_reported();
 }
 
-void PhysicsServer2DSW::body_set_force_integration_callback(RID p_body, Object *p_receiver, const StringName &p_method, const Variant &p_udata) {
+void PhysicsServer2DSW::body_set_state_sync_callback(RID p_body, void *p_instance, BodyStateCallback p_callback) {
 	Body2DSW *body = body_owner.getornull(p_body);
 	ERR_FAIL_COND(!body);
-	body->set_force_integration_callback(p_receiver ? p_receiver->get_instance_id() : ObjectID(), p_method, p_udata);
+	body->set_state_sync_callback(p_instance, p_callback);
+}
+
+void PhysicsServer2DSW::body_set_force_integration_callback(RID p_body, const Callable &p_callable, const Variant &p_udata) {
+	Body2DSW *body = body_owner.getornull(p_body);
+	ERR_FAIL_COND(!body);
+	body->set_force_integration_callback(p_callable, p_udata);
 }
 
 bool PhysicsServer2DSW::body_collide_shape(RID p_body, int p_body_shape, RID p_shape, const Transform2D &p_shape_xform, const Vector2 &p_motion, Vector2 *r_results, int p_result_max, int &r_result_count) {
@@ -947,7 +960,7 @@ void PhysicsServer2DSW::body_set_pickable(RID p_body, bool p_pickable) {
 	body->set_pickable(p_pickable);
 }
 
-bool PhysicsServer2DSW::body_test_motion(RID p_body, const Transform2D &p_from, const Vector2 &p_motion, bool p_infinite_inertia, real_t p_margin, MotionResult *r_result, bool p_exclude_raycast_shapes) {
+bool PhysicsServer2DSW::body_test_motion(RID p_body, const Transform2D &p_from, const Vector2 &p_motion, real_t p_margin, MotionResult *r_result, bool p_collide_separation_ray, const Set<RID> &p_exclude) {
 	Body2DSW *body = body_owner.getornull(p_body);
 	ERR_FAIL_COND_V(!body, false);
 	ERR_FAIL_COND_V(!body->get_space(), false);
@@ -955,32 +968,19 @@ bool PhysicsServer2DSW::body_test_motion(RID p_body, const Transform2D &p_from, 
 
 	_update_shapes();
 
-	return body->get_space()->test_body_motion(body, p_from, p_motion, p_infinite_inertia, p_margin, r_result, p_exclude_raycast_shapes);
-}
-
-int PhysicsServer2DSW::body_test_ray_separation(RID p_body, const Transform2D &p_transform, bool p_infinite_inertia, Vector2 &r_recover_motion, SeparationResult *r_results, int p_result_max, real_t p_margin) {
-	Body2DSW *body = body_owner.getornull(p_body);
-	ERR_FAIL_COND_V(!body, false);
-	ERR_FAIL_COND_V(!body->get_space(), false);
-	ERR_FAIL_COND_V(body->get_space()->is_locked(), false);
-
-	return body->get_space()->test_body_ray_separation(body, p_transform, p_infinite_inertia, r_recover_motion, r_results, p_result_max, p_margin);
+	return body->get_space()->test_body_motion(body, p_from, p_motion, p_margin, r_result, p_collide_separation_ray, p_exclude);
 }
 
 PhysicsDirectBodyState2D *PhysicsServer2DSW::body_get_direct_state(RID p_body) {
 	ERR_FAIL_COND_V_MSG((using_threads && !doing_sync), nullptr, "Body state is inaccessible right now, wait for iteration or physics process notification.");
 
-	if (!body_owner.owns(p_body)) {
-		return nullptr;
-	}
-
 	Body2DSW *body = body_owner.getornull(p_body);
 	ERR_FAIL_COND_V(!body, nullptr);
+
 	ERR_FAIL_COND_V(!body->get_space(), nullptr);
 	ERR_FAIL_COND_V_MSG(body->get_space()->is_locked(), nullptr, "Body state is inaccessible right now, wait for iteration or physics process notification.");
 
-	direct_state->body = body;
-	return direct_state;
+	return body->get_direct_state();
 }
 
 /* JOINT API */
@@ -1238,12 +1238,14 @@ void PhysicsServer2DSW::set_active(bool p_active) {
 	active = p_active;
 };
 
+void PhysicsServer2DSW::set_collision_iterations(int p_iterations) {
+	iterations = p_iterations;
+};
+
 void PhysicsServer2DSW::init() {
 	doing_sync = false;
-	last_step = 0.001;
 	iterations = 8; // 8?
 	stepper = memnew(Step2DSW);
-	direct_state = memnew(PhysicsDirectBodyState2DSW);
 };
 
 void PhysicsServer2DSW::step(real_t p_step) {
@@ -1253,8 +1255,6 @@ void PhysicsServer2DSW::step(real_t p_step) {
 
 	_update_shapes();
 
-	last_step = p_step;
-	PhysicsDirectBodyState2DSW::singleton->step = p_step;
 	island_count = 0;
 	active_objects = 0;
 	collision_pairs = 0;
@@ -1326,7 +1326,6 @@ void PhysicsServer2DSW::end_sync() {
 
 void PhysicsServer2DSW::finish() {
 	memdelete(stepper);
-	memdelete(direct_state);
 };
 
 void PhysicsServer2DSW::_update_shapes() {
@@ -1356,13 +1355,7 @@ PhysicsServer2DSW *PhysicsServer2DSW::singletonsw = nullptr;
 
 PhysicsServer2DSW::PhysicsServer2DSW(bool p_using_threads) {
 	singletonsw = this;
-	BroadPhase2DSW::create_func = BroadPhase2DHashGrid::_create;
-	//BroadPhase2DSW::create_func=BroadPhase2DBasic::_create;
+	BroadPhase2DSW::create_func = BroadPhase2DBVH::_create;
 
-	active = true;
-	island_count = 0;
-	active_objects = 0;
-	collision_pairs = 0;
 	using_threads = p_using_threads;
-	flushing_queries = false;
 };

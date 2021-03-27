@@ -95,7 +95,7 @@ static inline uint32_t hash_djb2_one_float(double p_in, uint32_t p_prev = 5381) 
 	if (p_in == 0.0f) {
 		u.d = 0.0;
 	} else if (Math::is_nan(p_in)) {
-		u.d = Math_NAN;
+		u.d = NAN;
 	} else {
 		u.d = p_in;
 	}
@@ -124,7 +124,7 @@ static inline uint64_t hash_djb2_one_float_64(double p_in, uint64_t p_prev = 538
 	if (p_in == 0.0f) {
 		u.d = 0.0;
 	} else if (Math::is_nan(p_in)) {
-		u.d = Math_NAN;
+		u.d = NAN;
 	} else {
 		u.d = p_in;
 	}

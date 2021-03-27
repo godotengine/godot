@@ -139,7 +139,9 @@ void SubViewportContainer::_notification(int p_what) {
 	}
 }
 
-void SubViewportContainer::_input(const Ref<InputEvent> &p_event) {
+void SubViewportContainer::input(const Ref<InputEvent> &p_event) {
+	ERR_FAIL_COND(p_event.is_null());
+
 	if (Engine::get_singleton()->is_editor_hint()) {
 		return;
 	}
@@ -160,11 +162,13 @@ void SubViewportContainer::_input(const Ref<InputEvent> &p_event) {
 			continue;
 		}
 
-		c->input(ev);
+		c->push_input(ev);
 	}
 }
 
-void SubViewportContainer::_unhandled_input(const Ref<InputEvent> &p_event) {
+void SubViewportContainer::unhandled_input(const Ref<InputEvent> &p_event) {
+	ERR_FAIL_COND(p_event.is_null());
+
 	if (Engine::get_singleton()->is_editor_hint()) {
 		return;
 	}
@@ -185,13 +189,11 @@ void SubViewportContainer::_unhandled_input(const Ref<InputEvent> &p_event) {
 			continue;
 		}
 
-		c->unhandled_input(ev);
+		c->push_unhandled_input(ev);
 	}
 }
 
 void SubViewportContainer::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("_unhandled_input", "event"), &SubViewportContainer::_unhandled_input);
-	ClassDB::bind_method(D_METHOD("_input", "event"), &SubViewportContainer::_input);
 	ClassDB::bind_method(D_METHOD("set_stretch", "enable"), &SubViewportContainer::set_stretch);
 	ClassDB::bind_method(D_METHOD("is_stretch_enabled"), &SubViewportContainer::is_stretch_enabled);
 

@@ -101,20 +101,6 @@ HashMap<int, Vector2> collect_uv(const Vector<VertexData<Vector2>> *p_data, Hash
 	return collection;
 }
 
-typedef int Vertex;
-typedef int SurfaceId;
-typedef int PolygonId;
-typedef int DataIndex;
-
-struct SurfaceData {
-	Ref<SurfaceTool> surface_tool;
-	OrderedHashMap<Vertex, int> lookup_table; // proposed fix is to replace lookup_table[vertex_id] to give the position of the vertices_map[int] index.
-	LocalVector<Vertex> vertices_map; // this must be ordered the same as insertion <-- slow to do find() operation.
-	Ref<Material> material;
-	HashMap<PolygonId, Vector<DataIndex>> surface_polygon_vertex;
-	Array morphs;
-};
-
 EditorSceneImporterMeshNode3D *FBXMeshData::create_fbx_mesh(const ImportState &state, const FBXDocParser::MeshGeometry *p_mesh_geometry, const FBXDocParser::Model *model, bool use_compression) {
 	mesh_geometry = p_mesh_geometry;
 	// todo: make this just use a uint64_t FBX ID this is a copy of our original materials unfortunately.
@@ -225,7 +211,7 @@ EditorSceneImporterMeshNode3D *FBXMeshData::create_fbx_mesh(const ImportState &s
 			const int surface_id = polygon_surfaces[*polygon_id];
 			if (surfaces.has(surface_id) == false) {
 				SurfaceData sd;
-				sd.surface_tool.instance();
+				sd.surface_tool.instantiate();
 				sd.surface_tool->begin(Mesh::PRIMITIVE_TRIANGLES);
 
 				if (surface_id < 0) {
@@ -307,11 +293,9 @@ EditorSceneImporterMeshNode3D *FBXMeshData::create_fbx_mesh(const ImportState &s
 		// Triangulate the various polygons and add the indices.
 		for (const PolygonId *polygon_id = surface->surface_polygon_vertex.next(nullptr); polygon_id != nullptr; polygon_id = surface->surface_polygon_vertex.next(polygon_id)) {
 			const Vector<DataIndex> *indices = surface->surface_polygon_vertex.getptr(*polygon_id);
-
 			triangulate_polygon(
-					surface->surface_tool,
+					surface,
 					*indices,
-					surface->vertices_map,
 					vertices);
 		}
 	}
@@ -332,11 +316,11 @@ EditorSceneImporterMeshNode3D *FBXMeshData::create_fbx_mesh(const ImportState &s
 			Vector3 *normals_ptr = morph_data->normals.ptrw();
 
 			Ref<SurfaceTool> morph_st;
-			morph_st.instance();
+			morph_st.instantiate();
 			morph_st->begin(Mesh::PRIMITIVE_TRIANGLES);
 
 			for (unsigned int vi = 0; vi < surface->vertices_map.size(); vi += 1) {
-				const Vertex vertex = surface->vertices_map[vi];
+				const Vertex &vertex = surface->vertices_map[vi];
 				add_vertex(
 						state,
 						morph_st,
@@ -361,7 +345,7 @@ EditorSceneImporterMeshNode3D *FBXMeshData::create_fbx_mesh(const ImportState &s
 
 	// Phase 6. Compose the mesh and return it.
 	Ref<EditorSceneImporterMesh> mesh;
-	mesh.instance();
+	mesh.instantiate();
 
 	// Add blend shape info.
 	for (const String *morph_name = morphs.next(nullptr); morph_name != nullptr; morph_name = morphs.next(morph_name)) {
@@ -398,6 +382,9 @@ EditorSceneImporterMeshNode3D *FBXMeshData::create_fbx_mesh(const ImportState &s
 
 	EditorSceneImporterMeshNode3D *godot_mesh = memnew(EditorSceneImporterMeshNode3D);
 	godot_mesh->set_mesh(mesh);
+	const String name = ImportUtils::FBXNodeToName(model->Name());
+	godot_mesh->set_name(name); // hurry up compiling >.<
+	mesh->set_name("mesh3d-" + name);
 	return godot_mesh;
 }
 
@@ -446,7 +433,7 @@ void FBXMeshData::sanitize_vertex_weights(const ImportState &state) {
 
 		{
 			// Sort
-			real_t *weights_ptr = vm->weights.ptrw();
+			float *weights_ptr = vm->weights.ptrw();
 			int *bones_ptr = vm->bones.ptrw();
 			for (int i = 0; i < vm->weights.size(); i += 1) {
 				for (int x = i + 1; x < vm->weights.size(); x += 1) {
@@ -462,7 +449,7 @@ void FBXMeshData::sanitize_vertex_weights(const ImportState &state) {
 			// Resize
 			vm->weights.resize(max_vertex_influence_count);
 			vm->bones.resize(max_vertex_influence_count);
-			real_t *weights_ptr = vm->weights.ptrw();
+			float *weights_ptr = vm->weights.ptrw();
 			int *bones_ptr = vm->bones.ptrw();
 			for (int i = initial_size; i < max_vertex_influence_count; i += 1) {
 				weights_ptr[i] = 0.0;
@@ -538,7 +525,7 @@ void FBXMeshData::reorganize_vertices(
 				}
 
 				const Vector3 vert_poly_normal = *nrml_arr->getptr(*pid);
-				if ((this_vert_poly_normal - vert_poly_normal).length_squared() > CMP_EPSILON) {
+				if (!vert_poly_normal.is_equal_approx(this_vert_poly_normal)) {
 					// Yes this polygon need duplication.
 					need_duplication = true;
 					break;
@@ -599,7 +586,7 @@ void FBXMeshData::reorganize_vertices(
 								continue;
 							}
 							const Vector2 vert_poly_uv = *uvs->getptr(*pid);
-							if (((*this_vert_poly_uv) - vert_poly_uv).length_squared() > CMP_EPSILON) {
+							if (!vert_poly_uv.is_equal_approx(*this_vert_poly_uv)) {
 								// Yes this polygon need duplication.
 								need_duplication = true;
 								break;
@@ -816,8 +803,10 @@ void FBXMeshData::add_vertex(
 	p_surface_tool->add_vertex((p_vertices_position[p_vertex] + p_morph_value) * p_scale);
 }
 
-void FBXMeshData::triangulate_polygon(Ref<SurfaceTool> st, Vector<int> p_polygon_vertex, const Vector<Vertex> p_surface_vertex_map, const std::vector<Vector3> &p_vertices) const {
+void FBXMeshData::triangulate_polygon(SurfaceData *surface, const Vector<int> &p_polygon_vertex, const std::vector<Vector3> &p_vertices) const {
+	Ref<SurfaceTool> st(surface->surface_tool);
 	const int polygon_vertex_count = p_polygon_vertex.size();
+	//const Vector<Vertex>& p_surface_vertex_map
 	if (polygon_vertex_count == 1) {
 		// point to triangle
 		st->add_index(p_polygon_vertex[0]);
@@ -856,9 +845,9 @@ void FBXMeshData::triangulate_polygon(Ref<SurfaceTool> st, Vector<int> p_polygon
 			is_simple_convex = true;
 			Vector3 first_vec;
 			for (int i = 0; i < polygon_vertex_count; i += 1) {
-				const Vector3 p1 = p_vertices[p_surface_vertex_map[p_polygon_vertex[i]]];
-				const Vector3 p2 = p_vertices[p_surface_vertex_map[p_polygon_vertex[(i + 1) % polygon_vertex_count]]];
-				const Vector3 p3 = p_vertices[p_surface_vertex_map[p_polygon_vertex[(i + 2) % polygon_vertex_count]]];
+				const Vector3 p1 = p_vertices[surface->vertices_map[p_polygon_vertex[i]]];
+				const Vector3 p2 = p_vertices[surface->vertices_map[p_polygon_vertex[(i + 1) % polygon_vertex_count]]];
+				const Vector3 p3 = p_vertices[surface->vertices_map[p_polygon_vertex[(i + 2) % polygon_vertex_count]]];
 
 				const Vector3 edge1 = p1 - p2;
 				const Vector3 edge2 = p3 - p2;
@@ -893,7 +882,7 @@ void FBXMeshData::triangulate_polygon(Ref<SurfaceTool> st, Vector<int> p_polygon
 
 		std::vector<Vector3> poly_vertices(polygon_vertex_count);
 		for (int i = 0; i < polygon_vertex_count; i += 1) {
-			poly_vertices[i] = p_vertices[p_surface_vertex_map[p_polygon_vertex[i]]];
+			poly_vertices[i] = p_vertices[surface->vertices_map[p_polygon_vertex[i]]];
 		}
 
 		const Vector3 poly_norm = get_poly_normal(poly_vertices);
@@ -956,7 +945,7 @@ void FBXMeshData::triangulate_polygon(Ref<SurfaceTool> st, Vector<int> p_polygon
 		for (List<TPPLPoly>::Element *I = out_poly.front(); I; I = I->next()) {
 			TPPLPoly &tp = I->get();
 
-			ERR_FAIL_COND_MSG(tp.GetNumPoints() != 3, "The triangulator retuned more points, how this is possible?");
+			ERR_FAIL_COND_MSG(tp.GetNumPoints() != 3, "The triangulator returned more points, how this is possible?");
 			// Find Index
 			for (int i = 2; i >= 0; i -= 1) {
 				const Vector2 vertex = tp.GetPoint(i);
@@ -1137,8 +1126,8 @@ HashMap<int, R> FBXMeshData::extract_per_vertex_data(
 					}
 					const int vertex_index = get_vertex_from_polygon_vertex(p_mesh_indices, polygon_vertex_index);
 					ERR_FAIL_COND_V_MSG(vertex_index < 0, (HashMap<int, R>()), "FBX file corrupted: #ERR8");
-					ERR_FAIL_COND_V_MSG(vertex_index >= p_vertex_count, (HashMap<int, R>()), "FBX file seems  corrupted: #ERR9.");
-					ERR_FAIL_COND_V_MSG(p_mapping_data.index[polygon_vertex_index] < 0, (HashMap<int, R>()), "FBX file seems  corrupted: #ERR10.");
+					ERR_FAIL_COND_V_MSG(vertex_index >= p_vertex_count, (HashMap<int, R>()), "FBX file seems corrupted: #ERR9.");
+					ERR_FAIL_COND_V_MSG(p_mapping_data.index[polygon_vertex_index] < 0, (HashMap<int, R>()), "FBX file seems corrupted: #ERR10.");
 					ERR_FAIL_COND_V_MSG(p_mapping_data.index[polygon_vertex_index] >= (int)p_mapping_data.data.size(), (HashMap<int, R>()), "FBX file seems corrupted: #ERR11.");
 					aggregate_vertex_data[vertex_index].push_back({ polygon_id, p_mapping_data.data[p_mapping_data.index[polygon_vertex_index]] });
 				}

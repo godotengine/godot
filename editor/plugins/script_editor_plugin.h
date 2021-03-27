@@ -56,6 +56,9 @@ private:
 protected:
 	static void _bind_methods();
 
+	GDVIRTUAL0RC(String, _get_name)
+	GDVIRTUAL0RC(Array, _get_supported_languages)
+
 public:
 	virtual String _get_name() const;
 	virtual Array _get_supported_languages() const;
@@ -74,13 +77,13 @@ private:
 
 public:
 	virtual void _update_cache() override;
-	virtual Dictionary _get_line_syntax_highlighting(int p_line) override { return highlighter->get_line_syntax_highlighting(p_line); }
+	virtual Dictionary _get_line_syntax_highlighting_impl(int p_line) override { return highlighter->get_line_syntax_highlighting(p_line); }
 
 	virtual String _get_name() const override { return TTR("Standard"); }
 
 	virtual Ref<EditorSyntaxHighlighter> _create() const override;
 
-	EditorStandardSyntaxHighlighter() { highlighter.instance(); }
+	EditorStandardSyntaxHighlighter() { highlighter.instantiate(); }
 };
 
 class EditorPlainTextSyntaxHighlighter : public EditorSyntaxHighlighter {
@@ -152,16 +155,22 @@ public:
 	virtual void tag_saved_version() = 0;
 	virtual void reload(bool p_soft) {}
 	virtual Array get_breakpoints() = 0;
+	virtual void set_breakpoint(int p_line, bool p_enabled) = 0;
+	virtual void clear_breakpoints() = 0;
 	virtual void add_callback(const String &p_function, PackedStringArray p_args) = 0;
 	virtual void update_settings() = 0;
 	virtual void set_debugger_active(bool p_active) = 0;
 	virtual bool can_lose_focus_on_node_selection() { return true; }
+	virtual void update_toggle_scripts_button() {}
 
 	virtual bool show_members_overview() = 0;
 
 	virtual void set_tooltip_request_func(String p_method, Object *p_obj) = 0;
 	virtual Control *get_edit_menu() = 0;
 	virtual void clear_edit_menu() = 0;
+	virtual void set_find_replace_bar(FindReplaceBar *p_bar) = 0;
+
+	virtual Control *get_base_editor() const = 0;
 
 	virtual void validate() = 0;
 
@@ -268,6 +277,7 @@ class ScriptEditor : public PanelContainer {
 	ConfirmationDialog *erase_tab_confirm;
 	ScriptCreateDialog *script_create_dialog;
 	Button *scripts_visible;
+	FindReplaceBar *find_replace_bar;
 
 	String current_theme;
 
@@ -324,6 +334,7 @@ class ScriptEditor : public PanelContainer {
 	void _show_error_dialog(String p_path);
 
 	void _close_tab(int p_idx, bool p_save = true, bool p_history_back = true);
+	void _update_find_replace_bar();
 
 	void _close_current_tab(bool p_save = true);
 	void _close_discard_current_tab(const String &p_str);
@@ -339,6 +350,7 @@ class ScriptEditor : public PanelContainer {
 
 	bool pending_auto_reload;
 	bool auto_reload_running_scripts;
+	void _trigger_live_script_reload();
 	void _live_auto_reload_running_scripts();
 
 	void _update_selected_editor_menu();
@@ -365,6 +377,8 @@ class ScriptEditor : public PanelContainer {
 	void _breaked(bool p_breaked, bool p_can_debug);
 	void _update_window_menu();
 	void _script_created(Ref<Script> p_script);
+	void _set_breakpoint(REF p_scrpt, int p_line, bool p_enabled);
+	void _clear_breakpoints();
 
 	ScriptEditorBase *_get_current_editor() const;
 	Array _get_open_script_editors() const;
@@ -402,7 +416,7 @@ class ScriptEditor : public PanelContainer {
 	bool can_drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from) const;
 	void drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from);
 
-	void _unhandled_key_input(const Ref<InputEvent> &p_event);
+	virtual void unhandled_key_input(const Ref<InputEvent> &p_event) override;
 
 	void _script_list_gui_input(const Ref<InputEvent> &ev);
 	void _make_script_list_context_menu();
@@ -463,6 +477,7 @@ public:
 
 	void get_breakpoints(List<String> *p_breakpoints);
 
+	void save_current_script();
 	void save_all_scripts();
 
 	void set_window_layout(Ref<ConfigFile> p_layout);

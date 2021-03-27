@@ -75,11 +75,14 @@ protected:
 	virtual void pressed();
 	virtual void toggled(bool p_pressed);
 	static void _bind_methods();
-	virtual void _gui_input(Ref<InputEvent> p_event);
-	virtual void _unhandled_key_input(Ref<InputEvent> p_event);
+	virtual void gui_input(const Ref<InputEvent> &p_event) override;
+	virtual void unhandled_key_input(const Ref<InputEvent> &p_event) override;
 	void _notification(int p_what);
 
 	bool _is_focus_owner_in_shorcut_context() const;
+
+	GDVIRTUAL0(_pressed)
+	GDVIRTUAL1(_toggled, bool)
 
 public:
 	enum DrawMode {
@@ -98,7 +101,8 @@ public:
 	bool is_pressing() const; ///< return whether button is pressed (toggled in)
 	bool is_hovered() const;
 
-	void set_pressed(bool p_pressed); ///only works in toggle mode
+	void set_pressed(bool p_pressed); // Only works in toggle mode.
+	void set_pressed_no_signal(bool p_pressed);
 	void set_toggle_mode(bool p_on);
 	bool is_toggle_mode() const;
 

@@ -31,10 +31,10 @@
 #ifndef MESH_INSTANCE_H
 #define MESH_INSTANCE_H
 
-#include "scene/3d/skeleton_3d.h"
 #include "scene/3d/visual_instance_3d.h"
-#include "scene/resources/mesh.h"
-#include "scene/resources/skin.h"
+
+class Skin;
+class SkinReference;
 
 class MeshInstance3D : public GeometryInstance3D {
 	GDCLASS(MeshInstance3D, GeometryInstance3D);
@@ -52,7 +52,7 @@ protected:
 	};
 
 	Map<StringName, BlendShapeTrack> blend_shape_tracks;
-	Vector<Ref<Material>> materials;
+	Vector<Ref<Material>> surface_override_materials;
 
 	void _mesh_changed();
 	void _resolve_skeleton_path();
@@ -75,16 +75,19 @@ public:
 	void set_skeleton_path(const NodePath &p_skeleton);
 	NodePath get_skeleton_path();
 
-	int get_surface_material_count() const;
-	void set_surface_material(int p_surface, const Ref<Material> &p_material);
-	Ref<Material> get_surface_material(int p_surface) const;
+	int get_surface_override_material_count() const;
+	void set_surface_override_material(int p_surface, const Ref<Material> &p_material);
+	Ref<Material> get_surface_override_material(int p_surface) const;
 	Ref<Material> get_active_material(int p_surface) const;
 
 	Node *create_trimesh_collision_node();
 	void create_trimesh_collision();
 
-	Node *create_convex_collision_node();
-	void create_convex_collision();
+	Node *create_convex_collision_node(bool p_clean = true, bool p_simplify = false);
+	void create_convex_collision(bool p_clean = true, bool p_simplify = false);
+
+	Node *create_multiple_convex_collisions_node();
+	void create_multiple_convex_collisions();
 
 	void create_debug_tangents();
 

@@ -98,13 +98,6 @@ void DOMWarning(const std::string &message, const Element *element);
 void DOMWarning(const std::string &message, const std::shared_ptr<Token> token);
 void DOMWarning(const std::string &message, const std::shared_ptr<Element> element);
 
-// fetch a property table and the corresponding property template
-const PropertyTable *GetPropertyTable(const Document &doc,
-		const std::string &templateName,
-		const ElementPtr element,
-		const ScopePtr sc,
-		bool no_warn = false);
-
 // ------------------------------------------------------------------------------------------------
 template <typename T>
 const T *ProcessSimpleConnection(const Connection &con,

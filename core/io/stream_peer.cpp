@@ -108,8 +108,8 @@ Array StreamPeer::_get_partial_data(int p_bytes) {
 	return ret;
 }
 
-void StreamPeer::set_big_endian(bool p_enable) {
-	big_endian = p_enable;
+void StreamPeer::set_big_endian(bool p_big_endian) {
+	big_endian = p_big_endian;
 }
 
 bool StreamPeer::is_big_endian_enabled() const {
@@ -433,7 +433,7 @@ Error StreamPeerBuffer::put_data(const uint8_t *p_data, int p_bytes) {
 	}
 
 	uint8_t *w = data.ptrw();
-	copymem(&w[pointer], p_data, p_bytes);
+	memcpy(&w[pointer], p_data, p_bytes);
 
 	pointer += p_bytes;
 	return OK;
@@ -466,7 +466,7 @@ Error StreamPeerBuffer::get_partial_data(uint8_t *p_buffer, int p_bytes, int &r_
 	}
 
 	const uint8_t *r = data.ptr();
-	copymem(p_buffer, r + pointer, r_received);
+	memcpy(p_buffer, r + pointer, r_received);
 
 	pointer += r_received;
 	// FIXME: return what? OK or ERR_*
@@ -512,7 +512,7 @@ void StreamPeerBuffer::clear() {
 
 Ref<StreamPeerBuffer> StreamPeerBuffer::duplicate() const {
 	Ref<StreamPeerBuffer> spb;
-	spb.instance();
+	spb.instantiate();
 	spb->data = data;
 	return spb;
 }

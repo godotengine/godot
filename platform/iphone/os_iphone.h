@@ -45,9 +45,6 @@
 #include "platform/iphone/vulkan_context_iphone.h"
 #endif
 
-extern void godot_ios_plugins_initialize();
-extern void godot_ios_plugins_deinitialize();
-
 class OSIPhone : public OS_Unix {
 private:
 	static HashMap<String, void *> dynamic_symbol_lookup_table;
@@ -92,12 +89,11 @@ public:
 
 	void start();
 
+	virtual void alert(const String &p_alert, const String &p_title = "ALERT!") override;
+
 	virtual Error open_dynamic_library(const String p_path, void *&p_library_handle, bool p_also_set_library_path = false) override;
 	virtual Error close_dynamic_library(void *p_library_handle) override;
 	virtual Error get_dynamic_library_symbol_handle(void *p_library_handle, const String p_name, void *&p_symbol_handle, bool p_optional = false) override;
-
-	virtual void alert(const String &p_alert,
-			const String &p_title = "ALERT!") override;
 
 	virtual String get_name() const override;
 	virtual String get_model_name() const override;

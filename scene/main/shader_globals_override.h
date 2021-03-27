@@ -31,7 +31,7 @@
 #ifndef SHADER_GLOBALS_OVERRIDE_H
 #define SHADER_GLOBALS_OVERRIDE_H
 
-#include "scene/3d/node_3d.h"
+#include "scene/main/node.h"
 
 class ShaderGlobalsOverride : public Node {
 	GDCLASS(ShaderGlobalsOverride, Node);
@@ -58,7 +58,7 @@ protected:
 	static void _bind_methods();
 
 public:
-	String get_configuration_warning() const override;
+	TypedArray<String> get_configuration_warnings() const override;
 
 	ShaderGlobalsOverride();
 };

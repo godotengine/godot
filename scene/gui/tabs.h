@@ -85,6 +85,7 @@ private:
 	int previous = 0;
 	int _get_top_margin() const;
 	TabAlign tab_align = ALIGN_CENTER;
+	bool clip_tabs = true;
 	int rb_hover = -1;
 	bool rb_pressing = false;
 
@@ -111,7 +112,7 @@ private:
 	void _shape(int p_tab);
 
 protected:
-	void _gui_input(const Ref<InputEvent> &p_event);
+	virtual void gui_input(const Ref<InputEvent> &p_event) override;
 	void _notification(int p_what);
 	static void _bind_methods();
 
@@ -147,6 +148,9 @@ public:
 
 	void set_tab_align(TabAlign p_align);
 	TabAlign get_tab_align() const;
+
+	void set_clip_tabs(bool p_clip_tabs);
+	bool get_clip_tabs() const;
 
 	void move_tab(int from, int to);
 

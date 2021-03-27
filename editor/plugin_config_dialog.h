@@ -36,6 +36,7 @@
 #include "scene/gui/line_edit.h"
 #include "scene/gui/option_button.h"
 #include "scene/gui/text_edit.h"
+#include "scene/gui/texture_rect.h"
 
 class PluginConfigDialog : public ConfirmationDialog {
 	GDCLASS(PluginConfigDialog, ConfirmationDialog);
@@ -48,6 +49,10 @@ class PluginConfigDialog : public ConfirmationDialog {
 	OptionButton *script_option_edit;
 	LineEdit *script_edit;
 	CheckBox *active_edit;
+
+	TextureRect *name_validation;
+	TextureRect *subfolder_validation;
+	TextureRect *script_validation;
 
 	bool _edit_mode;
 

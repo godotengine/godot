@@ -34,8 +34,8 @@
 
 #include "app.h"
 
-#include "core/os/dir_access.h"
-#include "core/os/file_access.h"
+#include "core/io/dir_access.h"
+#include "core/io/file_access.h"
 #include "core/os/keyboard.h"
 #include "main/main.h"
 
@@ -145,7 +145,7 @@ void App::SetWindow(CoreWindow ^ p_window) {
 	Main::setup2();
 }
 
-static int _get_button(Windows::UI::Input::PointerPoint ^ pt) {
+static MouseButton _get_button(Windows::UI::Input::PointerPoint ^ pt) {
 	using namespace Windows::UI::Input;
 
 #if WINAPI_FAMILY == WINAPI_FAMILY_PHONE_APP
@@ -177,7 +177,7 @@ static int _get_button(Windows::UI::Input::PointerPoint ^ pt) {
 	}
 #endif
 
-	return 0;
+	return MOUSE_BUTTON_NONE;
 };
 
 static bool _is_touch(Windows::UI::Input::PointerPoint ^ pointerPoint) {
@@ -241,10 +241,10 @@ static int _get_finger(uint32_t p_touch_id) {
 void App::pointer_event(Windows::UI::Core::CoreWindow ^ sender, Windows::UI::Core::PointerEventArgs ^ args, bool p_pressed, bool p_is_wheel) {
 	Windows::UI::Input::PointerPoint ^ point = args->CurrentPoint;
 	Windows::Foundation::Point pos = _get_pixel_position(window, point->Position, os);
-	int but = _get_button(point);
+	MouseButton but = _get_button(point);
 	if (_is_touch(point)) {
 		Ref<InputEventScreenTouch> screen_touch;
-		screen_touch.instance();
+		screen_touch.instantiate();
 		screen_touch->set_device(0);
 		screen_touch->set_pressed(p_pressed);
 		screen_touch->set_position(Vector2(pos.X, pos.Y));
@@ -256,7 +256,7 @@ void App::pointer_event(Windows::UI::Core::CoreWindow ^ sender, Windows::UI::Cor
 		os->input_event(screen_touch);
 	} else {
 		Ref<InputEventMouseButton> mouse_button;
-		mouse_button.instance();
+		mouse_button.instantiate();
 		mouse_button->set_device(0);
 		mouse_button->set_pressed(p_pressed);
 		mouse_button->set_button_index(but);
@@ -324,7 +324,7 @@ void App::OnPointerMoved(Windows::UI::Core::CoreWindow ^ sender, Windows::UI::Co
 
 	if (_is_touch(point)) {
 		Ref<InputEventScreenDrag> screen_drag;
-		screen_drag.instance();
+		screen_drag.instantiate();
 		screen_drag->set_device(0);
 		screen_drag->set_position(Vector2(pos.X, pos.Y));
 		screen_drag->set_index(_get_finger(point->PointerId));
@@ -333,11 +333,12 @@ void App::OnPointerMoved(Windows::UI::Core::CoreWindow ^ sender, Windows::UI::Co
 		os->input_event(screen_drag);
 	} else {
 		// In case the mouse grabbed, MouseMoved will handle this
-		if (os->get_mouse_mode() == OS::MouseMode::MOUSE_MODE_CAPTURED)
+		if (os->get_mouse_mode() == OS::MouseMode::MOUSE_MODE_CAPTURED) {
 			return;
+		}
 
 		Ref<InputEventMouseMotion> mouse_motion;
-		mouse_motion.instance();
+		mouse_motion.instantiate();
 		mouse_motion->set_device(0);
 		mouse_motion->set_position(Vector2(pos.X, pos.Y));
 		mouse_motion->set_global_position(Vector2(pos.X, pos.Y));
@@ -351,15 +352,16 @@ void App::OnPointerMoved(Windows::UI::Core::CoreWindow ^ sender, Windows::UI::Co
 
 void App::OnMouseMoved(MouseDevice ^ mouse_device, MouseEventArgs ^ args) {
 	// In case the mouse isn't grabbed, PointerMoved will handle this
-	if (os->get_mouse_mode() != OS::MouseMode::MOUSE_MODE_CAPTURED)
+	if (os->get_mouse_mode() != OS::MouseMode::MOUSE_MODE_CAPTURED) {
 		return;
+	}
 
 	Windows::Foundation::Point pos;
 	pos.X = last_mouse_pos.X + args->MouseDelta.X;
 	pos.Y = last_mouse_pos.Y + args->MouseDelta.Y;
 
 	Ref<InputEventMouseMotion> mouse_motion;
-	mouse_motion.instance();
+	mouse_motion.instantiate();
 	mouse_motion->set_device(0);
 	mouse_motion->set_position(Vector2(pos.X, pos.Y));
 	mouse_motion->set_global_position(Vector2(pos.X, pos.Y));
@@ -383,7 +385,7 @@ void App::key_event(Windows::UI::Core::CoreWindow ^ sender, bool p_pressed, Wind
 		ke.type = OS_UWP::KeyEvent::MessageType::KEY_EVENT_MESSAGE;
 		ke.unicode = 0;
 		ke.keycode = KeyMappingWindows::get_keysym((unsigned int)key_args->VirtualKey);
-		ke.physical_keycode = KeyMappingWindows::get_scansym((unsigned int)key_args->KeyStatus.ScanCode);
+		ke.physical_keycode = KeyMappingWindows::get_scansym((unsigned int)key_args->KeyStatus.ScanCode, key_args->KeyStatus.IsExtendedKey);
 		ke.echo = (!p_pressed && !key_args->KeyStatus.IsKeyReleased) || (p_pressed && key_args->KeyStatus.WasKeyDown);
 
 	} else {

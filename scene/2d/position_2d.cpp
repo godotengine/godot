@@ -30,16 +30,44 @@
 
 #include "position_2d.h"
 
-#include "core/config/engine.h"
-#include "scene/resources/texture.h"
-
 const real_t DEFAULT_GIZMO_EXTENTS = 10.0;
 
 void Position2D::_draw_cross() {
-	real_t extents = get_gizmo_extents();
-	// Colors taken from `axis_x_color` and `axis_y_color` (defined in `editor/editor_themes.cpp`)
-	draw_line(Point2(-extents, 0), Point2(+extents, 0), Color(0.96, 0.20, 0.32));
-	draw_line(Point2(0, -extents), Point2(0, +extents), Color(0.53, 0.84, 0.01));
+	const real_t extents = get_gizmo_extents();
+
+	// Add more points to create a "hard stop" in the color gradient.
+	PackedVector2Array points_x;
+	points_x.push_back(Point2(+extents, 0));
+	points_x.push_back(Point2());
+	points_x.push_back(Point2());
+	points_x.push_back(Point2(-extents, 0));
+
+	PackedVector2Array points_y;
+	points_y.push_back(Point2(0, +extents));
+	points_y.push_back(Point2());
+	points_y.push_back(Point2());
+	points_y.push_back(Point2(0, -extents));
+
+	// Use the axis color which is brighter for the positive axis.
+	// Use a darkened axis color for the negative axis.
+	// This makes it possible to see in which direction the Position3D node is rotated
+	// (which can be important depending on how it's used).
+	// Axis colors are taken from `axis_x_color` and `axis_y_color` (defined in `editor/editor_themes.cpp`).
+	PackedColorArray colors_x;
+	const Color color_x = Color(0.96, 0.20, 0.32);
+	colors_x.push_back(color_x);
+	colors_x.push_back(color_x);
+	colors_x.push_back(color_x.lerp(Color(0, 0, 0), 0.5));
+	colors_x.push_back(color_x.lerp(Color(0, 0, 0), 0.5));
+	draw_multiline_colors(points_x, colors_x);
+
+	PackedColorArray colors_y;
+	const Color color_y = Color(0.53, 0.84, 0.01);
+	colors_y.push_back(color_y);
+	colors_y.push_back(color_y);
+	colors_y.push_back(color_y.lerp(Color(0, 0, 0), 0.5));
+	colors_y.push_back(color_y.lerp(Color(0, 0, 0), 0.5));
+	draw_multiline_colors(points_y, colors_y);
 }
 
 #ifdef TOOLS_ENABLED

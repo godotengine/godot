@@ -73,55 +73,55 @@ protected:
 			Body3DSW *B;
 		};
 
-		Body3DSW *_arr[2];
+		Body3DSW *_arr[2] = { nullptr, nullptr };
 	};
 
-	Transform m_frameInA;
-	Transform m_frameInB;
+	Transform3D m_frameInA;
+	Transform3D m_frameInB;
 
 	// linear limits
-	real_t m_lowerLinLimit;
-	real_t m_upperLinLimit;
+	real_t m_lowerLinLimit = 1.0;
+	real_t m_upperLinLimit = -1.0;
 	// angular limits
-	real_t m_lowerAngLimit;
-	real_t m_upperAngLimit;
+	real_t m_lowerAngLimit = 0.0;
+	real_t m_upperAngLimit = 0.0;
 	// softness, restitution and damping for different cases
 	// DirLin - moving inside linear limits
 	// LimLin - hitting linear limit
 	// DirAng - moving inside angular limits
 	// LimAng - hitting angular limit
 	// OrthoLin, OrthoAng - against constraint axis
-	real_t m_softnessDirLin;
-	real_t m_restitutionDirLin;
-	real_t m_dampingDirLin;
-	real_t m_softnessDirAng;
-	real_t m_restitutionDirAng;
-	real_t m_dampingDirAng;
-	real_t m_softnessLimLin;
-	real_t m_restitutionLimLin;
-	real_t m_dampingLimLin;
-	real_t m_softnessLimAng;
-	real_t m_restitutionLimAng;
-	real_t m_dampingLimAng;
-	real_t m_softnessOrthoLin;
-	real_t m_restitutionOrthoLin;
-	real_t m_dampingOrthoLin;
-	real_t m_softnessOrthoAng;
-	real_t m_restitutionOrthoAng;
-	real_t m_dampingOrthoAng;
+	real_t m_softnessDirLin = SLIDER_CONSTRAINT_DEF_SOFTNESS;
+	real_t m_restitutionDirLin = SLIDER_CONSTRAINT_DEF_RESTITUTION;
+	real_t m_dampingDirLin = 0.0;
+	real_t m_softnessDirAng = SLIDER_CONSTRAINT_DEF_SOFTNESS;
+	real_t m_restitutionDirAng = SLIDER_CONSTRAINT_DEF_RESTITUTION;
+	real_t m_dampingDirAng = 0.0;
+	real_t m_softnessLimLin = SLIDER_CONSTRAINT_DEF_SOFTNESS;
+	real_t m_restitutionLimLin = SLIDER_CONSTRAINT_DEF_RESTITUTION;
+	real_t m_dampingLimLin = SLIDER_CONSTRAINT_DEF_DAMPING;
+	real_t m_softnessLimAng = SLIDER_CONSTRAINT_DEF_SOFTNESS;
+	real_t m_restitutionLimAng = SLIDER_CONSTRAINT_DEF_RESTITUTION;
+	real_t m_dampingLimAng = SLIDER_CONSTRAINT_DEF_DAMPING;
+	real_t m_softnessOrthoLin = SLIDER_CONSTRAINT_DEF_SOFTNESS;
+	real_t m_restitutionOrthoLin = SLIDER_CONSTRAINT_DEF_RESTITUTION;
+	real_t m_dampingOrthoLin = SLIDER_CONSTRAINT_DEF_DAMPING;
+	real_t m_softnessOrthoAng = SLIDER_CONSTRAINT_DEF_SOFTNESS;
+	real_t m_restitutionOrthoAng = SLIDER_CONSTRAINT_DEF_RESTITUTION;
+	real_t m_dampingOrthoAng = SLIDER_CONSTRAINT_DEF_DAMPING;
 
 	// for interlal use
-	bool m_solveLinLim;
-	bool m_solveAngLim;
+	bool m_solveLinLim = false;
+	bool m_solveAngLim = false;
 
-	JacobianEntry3DSW m_jacLin[3];
-	real_t m_jacLinDiagABInv[3];
+	JacobianEntry3DSW m_jacLin[3] = {};
+	real_t m_jacLinDiagABInv[3] = {};
 
-	JacobianEntry3DSW m_jacAng[3];
+	JacobianEntry3DSW m_jacAng[3] = {};
 
-	real_t m_timeStep;
-	Transform m_calculatedTransformA;
-	Transform m_calculatedTransformB;
+	real_t m_timeStep = 0.0;
+	Transform3D m_calculatedTransformA;
+	Transform3D m_calculatedTransformB;
 
 	Vector3 m_sliderAxis;
 	Vector3 m_realPivotAInW;
@@ -132,39 +132,36 @@ protected:
 	Vector3 m_relPosA;
 	Vector3 m_relPosB;
 
-	real_t m_linPos;
+	real_t m_linPos = 0.0;
 
-	real_t m_angDepth;
-	real_t m_kAngle;
+	real_t m_angDepth = 0.0;
+	real_t m_kAngle = 0.0;
 
-	bool m_poweredLinMotor;
-	real_t m_targetLinMotorVelocity;
-	real_t m_maxLinMotorForce;
-	real_t m_accumulatedLinMotorImpulse;
+	bool m_poweredLinMotor = false;
+	real_t m_targetLinMotorVelocity = 0.0;
+	real_t m_maxLinMotorForce = 0.0;
+	real_t m_accumulatedLinMotorImpulse = 0.0;
 
-	bool m_poweredAngMotor;
-	real_t m_targetAngMotorVelocity;
-	real_t m_maxAngMotorForce;
-	real_t m_accumulatedAngMotorImpulse;
-
-	//------------------------
-	void initParams();
+	bool m_poweredAngMotor = false;
+	real_t m_targetAngMotorVelocity = 0.0;
+	real_t m_maxAngMotorForce = 0.0;
+	real_t m_accumulatedAngMotorImpulse = 0.0;
 
 public:
 	// constructors
-	SliderJoint3DSW(Body3DSW *rbA, Body3DSW *rbB, const Transform &frameInA, const Transform &frameInB);
+	SliderJoint3DSW(Body3DSW *rbA, Body3DSW *rbB, const Transform3D &frameInA, const Transform3D &frameInB);
 	//SliderJointSW();
 	// overrides
 
 	// access
 	const Body3DSW *getRigidBodyA() const { return A; }
 	const Body3DSW *getRigidBodyB() const { return B; }
-	const Transform &getCalculatedTransformA() const { return m_calculatedTransformA; }
-	const Transform &getCalculatedTransformB() const { return m_calculatedTransformB; }
-	const Transform &getFrameOffsetA() const { return m_frameInA; }
-	const Transform &getFrameOffsetB() const { return m_frameInB; }
-	Transform &getFrameOffsetA() { return m_frameInA; }
-	Transform &getFrameOffsetB() { return m_frameInB; }
+	const Transform3D &getCalculatedTransformA() const { return m_calculatedTransformA; }
+	const Transform3D &getCalculatedTransformB() const { return m_calculatedTransformB; }
+	const Transform3D &getFrameOffsetA() const { return m_frameInA; }
+	const Transform3D &getFrameOffsetB() const { return m_frameInB; }
+	Transform3D &getFrameOffsetA() { return m_frameInA; }
+	Transform3D &getFrameOffsetB() { return m_frameInB; }
 	real_t getLowerLinLimit() { return m_lowerLinLimit; }
 	void setLowerLinLimit(real_t lowerLimit) { m_lowerLinLimit = lowerLimit; }
 	real_t getUpperLinLimit() { return m_upperLinLimit; }
@@ -240,10 +237,10 @@ public:
 	void set_param(PhysicsServer3D::SliderJointParam p_param, real_t p_value);
 	real_t get_param(PhysicsServer3D::SliderJointParam p_param) const;
 
-	bool setup(real_t p_step);
-	void solve(real_t p_step);
+	virtual bool setup(real_t p_step) override;
+	virtual void solve(real_t p_step) override;
 
-	virtual PhysicsServer3D::JointType get_type() const { return PhysicsServer3D::JOINT_TYPE_SLIDER; }
+	virtual PhysicsServer3D::JointType get_type() const override { return PhysicsServer3D::JOINT_TYPE_SLIDER; }
 };
 
 #endif // SLIDER_JOINT_SW_H

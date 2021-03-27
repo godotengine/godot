@@ -108,7 +108,7 @@ Error AudioDriverJavaScript::init() {
 	mix_rate = GLOBAL_GET("audio/driver/mix_rate");
 	int latency = GLOBAL_GET("audio/driver/output_latency");
 
-	channel_count = godot_audio_init(mix_rate, latency, &_state_change_callback, &_latency_update_callback);
+	channel_count = godot_audio_init(&mix_rate, latency, &_state_change_callback, &_latency_update_callback);
 	buffer_length = closest_power_of_2((latency * mix_rate / 1000));
 #ifndef NO_THREADS
 	node = memnew(WorkletNode);

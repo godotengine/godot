@@ -31,9 +31,12 @@
 #ifndef JSON_H
 #define JSON_H
 
-#include "core/object/reference.h"
+#include "core/object/ref_counted.h"
 #include "core/variant/variant.h"
-class JSON {
+
+class JSON : public RefCounted {
+	GDCLASS(JSON, RefCounted);
+
 	enum TokenType {
 		TK_CURLY_BRACKET_OPEN,
 		TK_CURLY_BRACKET_CLOSE,
@@ -60,39 +63,30 @@ class JSON {
 		Variant value;
 	};
 
-	static const char *tk_name[TK_MAX];
+	Variant data;
+	String err_str;
+	int err_line = 0;
 
-	static String _print_var(const Variant &p_var, const String &p_indent, int p_cur_indent, bool p_sort_keys);
+	static const char *tk_name[];
 
+	static String _make_indent(const String &p_indent, int p_size);
+	static String _stringify(const Variant &p_var, const String &p_indent, int p_cur_indent, bool p_sort_keys, Set<const void *> &p_markers, bool p_full_precision = false);
 	static Error _get_token(const char32_t *p_str, int &index, int p_len, Token &r_token, int &line, String &r_err_str);
 	static Error _parse_value(Variant &value, Token &token, const char32_t *p_str, int &index, int p_len, int &line, String &r_err_str);
 	static Error _parse_array(Array &array, const char32_t *p_str, int &index, int p_len, int &line, String &r_err_str);
 	static Error _parse_object(Dictionary &object, const char32_t *p_str, int &index, int p_len, int &line, String &r_err_str);
-
-public:
-	static String print(const Variant &p_var, const String &p_indent = "", bool p_sort_keys = true);
-	static Error parse(const String &p_json, Variant &r_ret, String &r_err_str, int &r_err_line);
-};
-
-class JSONParser : public Reference {
-	GDCLASS(JSONParser, Reference);
-
-	Variant data;
-	String string;
-	String err_text;
-	int err_line = 0;
+	static Error _parse_string(const String &p_json, Variant &r_ret, String &r_err_str, int &r_err_line);
 
 protected:
 	static void _bind_methods();
 
 public:
-	Error parse_string(const String &p_json_string);
-	String get_error_text() const;
-	int get_error_line() const;
-	Variant get_data() const;
+	String stringify(const Variant &p_var, const String &p_indent = "", bool p_sort_keys = true, bool p_full_precision = false);
+	Error parse(const String &p_json_string);
 
-	Error decode_data(const Variant &p_data, const String &p_indent = "", bool p_sort_keys = true);
-	String get_string() const;
+	inline Variant get_data() const { return data; }
+	inline int get_error_line() const { return err_line; }
+	inline String get_error_message() const { return err_str; }
 };
 
 #endif // JSON_H

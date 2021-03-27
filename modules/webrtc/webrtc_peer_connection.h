@@ -34,8 +34,8 @@
 #include "core/io/packet_peer.h"
 #include "modules/webrtc/webrtc_data_channel.h"
 
-class WebRTCPeerConnection : public Reference {
-	GDCLASS(WebRTCPeerConnection, Reference);
+class WebRTCPeerConnection : public RefCounted {
+	GDCLASS(WebRTCPeerConnection, RefCounted);
 
 public:
 	enum ConnectionState {

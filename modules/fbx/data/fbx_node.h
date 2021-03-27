@@ -40,7 +40,7 @@
 class Node3D;
 struct PivotTransform;
 
-struct FBXNode : Reference, ModelAbstraction {
+struct FBXNode : RefCounted, ModelAbstraction {
 	uint64_t current_node_id = 0;
 	String node_name = String();
 	Node3D *godot_node = nullptr;

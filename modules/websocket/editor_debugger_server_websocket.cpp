@@ -48,11 +48,19 @@ void EditorDebuggerServerWebSocket::poll() {
 	server->poll();
 }
 
-Error EditorDebuggerServerWebSocket::start() {
-	int remote_port = (int)EditorSettings::get_singleton()->get("network/debug/remote_port");
-	Vector<String> protocols;
-	protocols.push_back("binary"); // compatibility with EMSCRIPTEN TCP-to-WebSocket layer.
-	return server->listen(remote_port, protocols);
+Error EditorDebuggerServerWebSocket::start(const String &p_uri) {
+	int bind_port = (int)EditorSettings::get_singleton()->get("network/debug/remote_port");
+	String bind_host = EditorSettings::get_singleton()->get("network/debug/remote_host");
+	if (!p_uri.is_empty() && p_uri != "ws://") {
+		String scheme, path;
+		Error err = p_uri.parse_url(scheme, bind_host, bind_port, path);
+		ERR_FAIL_COND_V(err != OK, ERR_INVALID_PARAMETER);
+		ERR_FAIL_COND_V(!bind_host.is_valid_ip_address() && bind_host != "*", ERR_INVALID_PARAMETER);
+	}
+	server->set_bind_ip(bind_host);
+	Vector<String> compatible_protocols;
+	compatible_protocols.push_back("binary"); // compatibility with EMSCRIPTEN TCP-to-WebSocket layer.
+	return server->listen(bind_port, compatible_protocols);
 }
 
 void EditorDebuggerServerWebSocket::stop() {

@@ -30,7 +30,6 @@
 
 #include "parallax_layer.h"
 
-#include "core/config/engine.h"
 #include "parallax_background.h"
 
 void ParallaxLayer::set_motion_scale(const Size2 &p_scale) {
@@ -101,6 +100,10 @@ void ParallaxLayer::_notification(int p_what) {
 			_update_mirroring();
 		} break;
 		case NOTIFICATION_EXIT_TREE: {
+			if (Engine::get_singleton()->is_editor_hint()) {
+				break;
+			}
+
 			set_position(orig_offset);
 			set_scale(orig_scale);
 		} break;
@@ -135,17 +138,14 @@ void ParallaxLayer::set_base_offset_and_scale(const Point2 &p_offset, real_t p_s
 	_update_mirroring();
 }
 
-String ParallaxLayer::get_configuration_warning() const {
-	String warning = Node2D::get_configuration_warning();
+TypedArray<String> ParallaxLayer::get_configuration_warnings() const {
+	TypedArray<String> warnings = Node::get_configuration_warnings();
 
 	if (!Object::cast_to<ParallaxBackground>(get_parent())) {
-		if (!warning.is_empty()) {
-			warning += "\n\n";
-		}
-		warning += TTR("ParallaxLayer node only works when set as child of a ParallaxBackground node.");
+		warnings.push_back(TTR("ParallaxLayer node only works when set as child of a ParallaxBackground node."));
 	}
 
-	return warning;
+	return warnings;
 }
 
 void ParallaxLayer::_bind_methods() {

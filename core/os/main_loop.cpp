@@ -33,11 +33,6 @@
 #include "core/object/script_language.h"
 
 void MainLoop::_bind_methods() {
-	BIND_VMETHOD(MethodInfo("_initialize"));
-	BIND_VMETHOD(MethodInfo(Variant::BOOL, "_physics_process", PropertyInfo(Variant::FLOAT, "delta")));
-	BIND_VMETHOD(MethodInfo(Variant::BOOL, "_process", PropertyInfo(Variant::FLOAT, "delta")));
-	BIND_VMETHOD(MethodInfo("_finalize"));
-
 	BIND_CONSTANT(NOTIFICATION_OS_MEMORY_WARNING);
 	BIND_CONSTANT(NOTIFICATION_TRANSLATION_CHANGED);
 	BIND_CONSTANT(NOTIFICATION_WM_ABOUT);
@@ -50,7 +45,12 @@ void MainLoop::_bind_methods() {
 	BIND_CONSTANT(NOTIFICATION_TEXT_SERVER_CHANGED);
 
 	ADD_SIGNAL(MethodInfo("on_request_permissions_result", PropertyInfo(Variant::STRING, "permission"), PropertyInfo(Variant::BOOL, "granted")));
-};
+
+	GDVIRTUAL_BIND(_initialize);
+	GDVIRTUAL_BIND(_physics_process, "delta");
+	GDVIRTUAL_BIND(_process, "delta");
+	GDVIRTUAL_BIND(_finalize);
+}
 
 void MainLoop::set_initialize_script(const Ref<Script> &p_initialize_script) {
 	initialize_script = p_initialize_script;
@@ -61,30 +61,31 @@ void MainLoop::initialize() {
 		set_script(initialize_script);
 	}
 
-	if (get_script_instance()) {
-		get_script_instance()->call("_initialize");
-	}
+	GDVIRTUAL_CALL(_initialize);
 }
 
-bool MainLoop::physics_process(float p_time) {
-	if (get_script_instance()) {
-		return get_script_instance()->call("_physics_process", p_time);
+bool MainLoop::physics_process(double p_time) {
+	bool quit;
+	if (GDVIRTUAL_CALL(_physics_process, p_time, quit)) {
+		return quit;
 	}
 
 	return false;
 }
 
-bool MainLoop::process(float p_time) {
-	if (get_script_instance()) {
-		return get_script_instance()->call("_process", p_time);
+bool MainLoop::process(double p_time) {
+	bool quit;
+	if (GDVIRTUAL_CALL(_process, p_time, quit)) {
+		return quit;
 	}
 
 	return false;
 }
 
 void MainLoop::finalize() {
+	GDVIRTUAL_CALL(_finalize);
+
 	if (get_script_instance()) {
-		get_script_instance()->call("_finalize");
 		set_script(Variant()); //clear script
 	}
 }

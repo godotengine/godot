@@ -44,9 +44,9 @@ class CallableCustom;
 // is required. It is designed for the standard case (object and method)
 // but can be optimized or customized.
 
+// Enforce 16 bytes with `alignas` to avoid arch-specific alignment issues on x86 vs armv7.
 class Callable {
-	//needs to be max 16 bytes in 64 bits
-	StringName method;
+	alignas(8) StringName method;
 	union {
 		uint64_t object = 0;
 		CallableCustom *custom;
@@ -70,6 +70,8 @@ public:
 	void call(const Variant **p_arguments, int p_argcount, Variant &r_return_value, CallError &r_call_error) const;
 	void call_deferred(const Variant **p_arguments, int p_argcount) const;
 
+	void rpc(int p_id, const Variant **p_arguments, int p_argcount, CallError &r_call_error) const;
+
 	_FORCE_INLINE_ bool is_null() const {
 		return method == StringName() && object == 0;
 	}
@@ -79,6 +81,7 @@ public:
 	_FORCE_INLINE_ bool is_standard() const {
 		return method != StringName();
 	}
+	bool is_valid() const;
 
 	Callable bind(const Variant **p_arguments, int p_argcount) const;
 	Callable unbind(int p_argcount) const;
@@ -124,6 +127,7 @@ public:
 	virtual CompareLessFunc get_compare_less_func() const = 0;
 	virtual ObjectID get_object() const = 0; //must always be able to provide an object
 	virtual void call(const Variant **p_arguments, int p_argcount, Variant &r_return_value, Callable::CallError &r_call_error) const = 0;
+	virtual void rpc(int p_peer_id, const Variant **p_arguments, int p_argcount, Callable::CallError &r_call_error) const;
 	virtual const Callable *get_base_comparator() const;
 
 	CallableCustom();
@@ -135,8 +139,9 @@ public:
 // be put inside a Variant, but it is not
 // used by the engine itself.
 
+// Enforce 16 bytes with `alignas` to avoid arch-specific alignment issues on x86 vs armv7.
 class Signal {
-	StringName name;
+	alignas(8) StringName name;
 	ObjectID object;
 
 public:

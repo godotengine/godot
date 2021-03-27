@@ -8,7 +8,9 @@ def configure(env):
 
 def get_doc_classes():
     return [
-        "NetworkedMultiplayerENet",
+        "ENetMultiplayerPeer",
+        "ENetConnection",
+        "ENetPacketPeer",
     ]
 
 

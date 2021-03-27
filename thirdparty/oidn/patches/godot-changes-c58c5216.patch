@@ -280,28 +280,58 @@ index 8c2de09..ed8328c 100644
  namespace oidn {
  
 diff --git a/core/transfer_function.cpp b/core/transfer_function.cpp
-index 601f814..487f0a9 100644
+index 601f814..ce5deca 100644
 --- a/core/transfer_function.cpp
 +++ b/core/transfer_function.cpp
-@@ -24,6 +24,10 @@ namespace oidn {
-   float AutoexposureNode::autoexposure(const Image& color)
-   {
-     assert(color.format == Format::Float3);
-+// -- GODOT start --
-+// We don't want to mess with TTB and we don't use autoexposure, so we disable this code
-+#if 0
-+// -- GODOT end --
+@@ -38,16 +38,24 @@ namespace oidn {
+     // Compute the average log luminance of the downsampled image
+     using Sum = std::pair<float, int>;
  
-     constexpr float key = 0.18f;
-     constexpr float eps = 1e-8f;
-@@ -89,6 +93,10 @@ namespace oidn {
-       );
+-    Sum sum =
+-      tbb::parallel_reduce(
+-        tbb::blocked_range2d<int>(0, HK, 0, WK),
+-        Sum(0.f, 0),
+-        [&](const tbb::blocked_range2d<int>& r, Sum sum) -> Sum
++    // -- GODOT start --
++    // Sum sum =
++    //   tbb::parallel_reduce(
++    //     tbb::blocked_range2d<int>(0, HK, 0, WK),
++    //     Sum(0.f, 0),
++    //     [&](const tbb::blocked_range2d<int>& r, Sum sum) -> Sum
++    //     {
++    //       // Iterate over blocks
++    //       for (int i = r.rows().begin(); i != r.rows().end(); ++i)
++    //       {
++    //         for (int j = r.cols().begin(); j != r.cols().end(); ++j)
++    //         {
++
++    Sum sum = Sum(0.0f, 0);
++
++    for (int i = 0; i != HK; ++i)
+     {
+-          // Iterate over blocks
+-          for (int i = r.rows().begin(); i != r.rows().end(); ++i)
+-          {
+-            for (int j = r.cols().begin(); j != r.cols().end(); ++j)
++      for (int j = 0; j != WK; ++j)
+       {
+         // Compute the average luminance in the current block
+         const int beginH = int(ptrdiff_t(i)   * H / HK);
+@@ -82,11 +90,12 @@ namespace oidn {
+       }
+     }
+ 
+-          return sum;
+-        },
+-        [](Sum a, Sum b) -> Sum { return Sum(a.first+b.first, a.second+b.second); },
+-        tbb::static_partitioner()
+-      );
++    //     return sum;
++    //   },
++    //   [](Sum a, Sum b) -> Sum { return Sum(a.first+b.first, a.second+b.second); },
++    //   tbb::static_partitioner()
++    // );
++    // -- GODOT end --
  
      return (sum.second > 0) ? (key / exp2(sum.first / float(sum.second))) : 1.f;
-+// -- GODOT start --
-+#endif
-+    return 1.0;
-+// -- GODOT end --
    }
- 
- } // namespace oidn

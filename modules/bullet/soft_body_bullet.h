@@ -104,11 +104,11 @@ public:
 	void destroy_soft_body();
 
 	// Special function. This function has bad performance
-	void set_soft_transform(const Transform &p_transform);
+	void set_soft_transform(const Transform3D &p_transform);
 
 	AABB get_bounds() const;
 
-	void move_all_nodes(const Transform &p_transform);
+	void move_all_nodes(const Transform3D &p_transform);
 	void set_node_position(int node_index, const Vector3 &p_global_position);
 	void set_node_position(int node_index, const btVector3 &p_global_position);
 	void get_node_position(int node_index, Vector3 &r_position) const;

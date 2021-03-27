@@ -52,6 +52,9 @@ void NoiseTexture::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_noise", "noise"), &NoiseTexture::set_noise);
 	ClassDB::bind_method(D_METHOD("get_noise"), &NoiseTexture::get_noise);
 
+	ClassDB::bind_method(D_METHOD("set_noise_offset", "noise_offset"), &NoiseTexture::set_noise_offset);
+	ClassDB::bind_method(D_METHOD("get_noise_offset"), &NoiseTexture::get_noise_offset);
+
 	ClassDB::bind_method(D_METHOD("set_seamless", "seamless"), &NoiseTexture::set_seamless);
 	ClassDB::bind_method(D_METHOD("get_seamless"), &NoiseTexture::get_seamless);
 
@@ -71,6 +74,7 @@ void NoiseTexture::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "as_normal_map"), "set_as_normal_map", "is_normal_map");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "bump_strength", PROPERTY_HINT_RANGE, "0,32,0.1,or_greater"), "set_bump_strength", "get_bump_strength");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "noise", PROPERTY_HINT_RESOURCE_TYPE, "OpenSimplexNoise"), "set_noise", "get_noise");
+	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "noise_offset"), "set_noise_offset", "get_noise_offset");
 }
 
 void NoiseTexture::_validate_property(PropertyInfo &property) const {
@@ -81,9 +85,9 @@ void NoiseTexture::_validate_property(PropertyInfo &property) const {
 	}
 }
 
-void NoiseTexture::_set_texture_data(const Ref<Image> &p_image) {
-	data = p_image;
-	if (data.is_valid()) {
+void NoiseTexture::_set_texture_image(const Ref<Image> &p_image) {
+	image = p_image;
+	if (image.is_valid()) {
 		if (texture.is_valid()) {
 			RID new_texture = RS::get_singleton()->texture_2d_create(p_image);
 			RS::get_singleton()->texture_replace(texture, new_texture);
@@ -95,7 +99,7 @@ void NoiseTexture::_set_texture_data(const Ref<Image> &p_image) {
 }
 
 void NoiseTexture::_thread_done(const Ref<Image> &p_image) {
-	_set_texture_data(p_image);
+	_set_texture_image(p_image);
 	noise_thread.wait_to_finish();
 	if (regen_queued) {
 		noise_thread.start(_thread_function, this);
@@ -105,7 +109,7 @@ void NoiseTexture::_thread_done(const Ref<Image> &p_image) {
 
 void NoiseTexture::_thread_function(void *p_ud) {
 	NoiseTexture *tex = (NoiseTexture *)p_ud;
-	tex->call_deferred("_thread_done", tex->_generate_texture());
+	tex->call_deferred(SNAME("_thread_done"), tex->_generate_texture());
 }
 
 void NoiseTexture::_queue_update() {
@@ -114,7 +118,7 @@ void NoiseTexture::_queue_update() {
 	}
 
 	update_queued = true;
-	call_deferred("_update_texture");
+	call_deferred(SNAME("_update_texture"));
 }
 
 Ref<Image> NoiseTexture::_generate_texture() {
@@ -130,7 +134,7 @@ Ref<Image> NoiseTexture::_generate_texture() {
 	if (seamless) {
 		image = ref_noise->get_seamless_image(size.x);
 	} else {
-		image = ref_noise->get_image(size.x, size.y);
+		image = ref_noise->get_image(size.x, size.y, noise_offset);
 	}
 
 	if (as_normal_map) {
@@ -159,7 +163,7 @@ void NoiseTexture::_update_texture() {
 
 	} else {
 		Ref<Image> image = _generate_texture();
-		_set_texture_data(image);
+		_set_texture_image(image);
 	}
 	update_queued = false;
 }
@@ -183,6 +187,7 @@ Ref<OpenSimplexNoise> NoiseTexture::get_noise() {
 }
 
 void NoiseTexture::set_width(int p_width) {
+	ERR_FAIL_COND(p_width <= 0);
 	if (p_width == size.x) {
 		return;
 	}
@@ -191,10 +196,19 @@ void NoiseTexture::set_width(int p_width) {
 }
 
 void NoiseTexture::set_height(int p_height) {
+	ERR_FAIL_COND(p_height <= 0);
 	if (p_height == size.y) {
 		return;
 	}
 	size.y = p_height;
+	_queue_update();
+}
+
+void NoiseTexture::set_noise_offset(Vector2 p_noise_offset) {
+	if (noise_offset == p_noise_offset) {
+		return;
+	}
+	noise_offset = p_noise_offset;
 	_queue_update();
 }
 
@@ -245,6 +259,10 @@ int NoiseTexture::get_height() const {
 	return size.y;
 }
 
+Vector2 NoiseTexture::get_noise_offset() const {
+	return noise_offset;
+}
+
 RID NoiseTexture::get_rid() const {
 	if (!texture.is_valid()) {
 		texture = RS::get_singleton()->texture_2d_placeholder_create();
@@ -253,6 +271,6 @@ RID NoiseTexture::get_rid() const {
 	return texture;
 }
 
-Ref<Image> NoiseTexture::get_data() const {
-	return data;
+Ref<Image> NoiseTexture::get_image() const {
+	return image;
 }

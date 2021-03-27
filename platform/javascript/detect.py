@@ -29,7 +29,7 @@ def get_opts():
     from SCons.Variables import BoolVariable
 
     return [
-        ("initial_memory", "Initial WASM memory (in MiB)", 16),
+        ("initial_memory", "Initial WASM memory (in MiB)", 32),
         BoolVariable("use_assertions", "Use Emscripten runtime assertions", False),
         BoolVariable("use_thinlto", "Use ThinLTO", False),
         BoolVariable("use_ubsan", "Use Emscripten undefined behavior sanitizer (UBSAN)", False),
@@ -38,7 +38,7 @@ def get_opts():
         BoolVariable("use_safe_heap", "Use Emscripten SAFE_HEAP sanitizer", False),
         # eval() can be a security concern, so it can be disabled.
         BoolVariable("javascript_eval", "Enable JavaScript eval interface", True),
-        BoolVariable("threads_enabled", "Enable WebAssembly Threads support (limited browser support)", False),
+        BoolVariable("threads_enabled", "Enable WebAssembly Threads support (limited browser support)", True),
         BoolVariable("gdnative_enabled", "Enable WebAssembly GDNative support (produces bigger binaries)", False),
         BoolVariable("use_closure_compiler", "Use closure compiler to minimize JavaScript code", False),
     ]
@@ -53,6 +53,7 @@ def get_flags():
         # in this platform. For the available networking methods, the browser
         # manages TLS.
         ("module_mbedtls_enabled", False),
+        ("vulkan", False),
     ]
 
 
@@ -95,8 +96,9 @@ def configure(env):
         if env["initial_memory"] < 64:
             print("Editor build requires at least 64MiB of initial memory. Forcing it.")
             env["initial_memory"] = 64
-    elif env["builtin_icu"]:
         env.Append(CCFLAGS=["-frtti"])
+    elif env["builtin_icu"]:
+        env.Append(CCFLAGS=["-fno-exceptions", "-frtti"])
     else:
         # Disable exceptions and rtti on non-tools (template) builds
         # These flags help keep the file size down.
@@ -128,7 +130,6 @@ def configure(env):
         env.Append(CCFLAGS=["-fsanitize=leak"])
         env.Append(LINKFLAGS=["-fsanitize=leak"])
     if env["use_safe_heap"]:
-        env.Append(CCFLAGS=["-s", "SAFE_HEAP=1"])
         env.Append(LINKFLAGS=["-s", "SAFE_HEAP=1"])
 
     # Closure compiler
@@ -174,7 +175,7 @@ def configure(env):
     # Program() output consists of multiple files, so specify suffixes manually at builder.
     env["PROGSUFFIX"] = ""
     env["LIBPREFIX"] = "lib"
-    env["LIBSUFFIX"] = ".bc"
+    env["LIBSUFFIX"] = ".a"
     env["LIBPREFIXES"] = ["$LIBPREFIX"]
     env["LIBSUFFIXES"] = ["$LIBSUFFIX"]
 
@@ -228,8 +229,8 @@ def configure(env):
     # Allow use to take control of swapping WebGL buffers.
     env.Append(LINKFLAGS=["-s", "OFFSCREEN_FRAMEBUFFER=1"])
 
-    # callMain for manual start.
-    env.Append(LINKFLAGS=["-s", "EXTRA_EXPORTED_RUNTIME_METHODS=['callMain','cwrap']"])
+    # callMain for manual start, cwrap for the mono version.
+    env.Append(LINKFLAGS=["-s", "EXPORTED_RUNTIME_METHODS=['callMain','cwrap']"])
 
     # Add code that allow exiting runtime.
     env.Append(LINKFLAGS=["-s", "EXIT_RUNTIME=1"])
@@ -238,6 +239,6 @@ def configure(env):
     env.Append(
         LINKFLAGS=[
             "-s",
-            "EXPORTED_FUNCTIONS=['_main', '_emscripten_webgl_get_current_context', '_emscripten_webgl_commit_frame', '_emscripten_webgl_create_context']",
+            "EXPORTED_FUNCTIONS=['_main', '_emscripten_webgl_get_current_context']",
         ]
     )

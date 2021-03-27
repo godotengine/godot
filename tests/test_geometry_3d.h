@@ -28,8 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef TEST_3D_GEOMETRY_H
-#define TEST_3D_GEOMETRY_H
+#ifndef TEST_GEOMETRY_3D_H
+#define TEST_GEOMETRY_3D_H
 
 #include "core/math/geometry_3d.h"
 #include "core/math/plane.h"
@@ -38,7 +38,7 @@
 #include "tests/test_macros.h"
 #include "vector"
 
-namespace Test3DGeometry {
+namespace TestGeometry3D {
 TEST_CASE("[Geometry3D] Closest Points Between Segments") {
 	struct Case {
 		Vector3 p_1, p_2, p_3, p_4;
@@ -57,6 +57,7 @@ TEST_CASE("[Geometry3D] Closest Points Between Segments") {
 		CHECK(current_case.got_2.is_equal_approx(current_case.want_2));
 	}
 }
+
 TEST_CASE("[Geometry3D] Closest Distance Between Segments") {
 	struct Case {
 		Vector3 p_1, p_2, p_3, p_4;
@@ -73,6 +74,7 @@ TEST_CASE("[Geometry3D] Closest Distance Between Segments") {
 		CHECK(out == current_case.want);
 	}
 }
+
 TEST_CASE("[Geometry3D] Build Box Planes") {
 	const Vector3 extents = Vector3(5, 5, 20);
 	Vector<Plane> box = Geometry3D::build_box_planes(extents);
@@ -90,6 +92,7 @@ TEST_CASE("[Geometry3D] Build Box Planes") {
 	CHECK(extents.z == box[5].d);
 	CHECK(box[5].normal == Vector3(0, 0, -1));
 }
+
 TEST_CASE("[Geometry3D] Build Capsule Planes") {
 	struct Case {
 		real_t radius, height;
@@ -109,6 +112,7 @@ TEST_CASE("[Geometry3D] Build Capsule Planes") {
 		CHECK(capsule.size() == current_case.want_size);
 	}
 }
+
 TEST_CASE("[Geometry3D] Build Cylinder Planes") {
 	struct Case {
 		real_t radius, height;
@@ -127,6 +131,7 @@ TEST_CASE("[Geometry3D] Build Cylinder Planes") {
 		CHECK(planes.size() == current_case.want_size);
 	}
 }
+
 TEST_CASE("[Geometry3D] Build Sphere Planes") {
 	struct Case {
 		real_t radius;
@@ -145,6 +150,7 @@ TEST_CASE("[Geometry3D] Build Sphere Planes") {
 		CHECK(planes.size() == 63);
 	}
 }
+
 TEST_CASE("[Geometry3D] Build Convex Mesh") {
 	struct Case {
 		Vector<Plane> object;
@@ -166,6 +172,7 @@ TEST_CASE("[Geometry3D] Build Convex Mesh") {
 		CHECK(mesh.vertices.size() == current_case.want_vertices);
 	}
 }
+
 TEST_CASE("[Geometry3D] Clip Polygon") {
 	struct Case {
 		Plane clipping_plane;
@@ -190,6 +197,7 @@ TEST_CASE("[Geometry3D] Clip Polygon") {
 		}
 	}
 }
+
 TEST_CASE("[Geometry3D] Compute Convex Mesh Points") {
 	struct Case {
 		Vector<Plane> mesh;
@@ -215,6 +223,7 @@ TEST_CASE("[Geometry3D] Compute Convex Mesh Points") {
 		CHECK(vectors == current_case.want);
 	}
 }
+
 TEST_CASE("[Geometry3D] Get Closest Point To Segment") {
 	struct Case {
 		Vector3 point;
@@ -235,6 +244,7 @@ TEST_CASE("[Geometry3D] Get Closest Point To Segment") {
 		CHECK(output.is_equal_approx(current_case.want));
 	}
 }
+
 TEST_CASE("[Geometry3D] Plane and Box Overlap") {
 	struct Case {
 		Vector3 normal, max_box;
@@ -254,6 +264,7 @@ TEST_CASE("[Geometry3D] Plane and Box Overlap") {
 		CHECK(overlap == current_case.want);
 	}
 }
+
 TEST_CASE("[Geometry3D] Is Point in Projected Triangle") {
 	struct Case {
 		Vector3 point, v_1, v_2, v_3;
@@ -272,6 +283,7 @@ TEST_CASE("[Geometry3D] Is Point in Projected Triangle") {
 		CHECK(output == current_case.want);
 	}
 }
+
 TEST_CASE("[Geometry3D] Does Ray Intersect Triangle") {
 	struct Case {
 		Vector3 from, direction, v_1, v_2, v_3;
@@ -291,6 +303,7 @@ TEST_CASE("[Geometry3D] Does Ray Intersect Triangle") {
 		CHECK(output == current_case.want);
 	}
 }
+
 TEST_CASE("[Geometry3D] Does Segment Intersect Convex") {
 	struct Case {
 		Vector3 from, to;
@@ -311,6 +324,7 @@ TEST_CASE("[Geometry3D] Does Segment Intersect Convex") {
 		CHECK(output == current_case.want);
 	}
 }
+
 TEST_CASE("[Geometry3D] Segment Intersects Cylinder") {
 	struct Case {
 		Vector3 from, to;
@@ -330,6 +344,7 @@ TEST_CASE("[Geometry3D] Segment Intersects Cylinder") {
 		CHECK(output == current_case.want);
 	}
 }
+
 TEST_CASE("[Geometry3D] Segment Intersects Cylinder") {
 	struct Case {
 		Vector3 from, to, sphere_pos;
@@ -350,6 +365,7 @@ TEST_CASE("[Geometry3D] Segment Intersects Cylinder") {
 		CHECK(output == current_case.want);
 	}
 }
+
 TEST_CASE("[Geometry3D] Segment Intersects Triangle") {
 	struct Case {
 		Vector3 from, to, v_1, v_2, v_3, *result;
@@ -368,6 +384,7 @@ TEST_CASE("[Geometry3D] Segment Intersects Triangle") {
 		CHECK(output == current_case.want);
 	}
 }
+
 TEST_CASE("[Geometry3D] Triangle and Box Overlap") {
 	struct Case {
 		Vector3 box_centre;
@@ -389,6 +406,7 @@ TEST_CASE("[Geometry3D] Triangle and Box Overlap") {
 		CHECK(output == current_case.want);
 	}
 }
+
 TEST_CASE("[Geometry3D] Triangle and Sphere Intersect") {
 	struct Case {
 		Vector<Vector3> triangle;
@@ -413,5 +431,6 @@ TEST_CASE("[Geometry3D] Triangle and Sphere Intersect") {
 		CHECK(output == current_case.want);
 	}
 }
-} // namespace Test3DGeometry
-#endif
+} // namespace TestGeometry3D
+
+#endif // TEST_GEOMETRY_3D_H

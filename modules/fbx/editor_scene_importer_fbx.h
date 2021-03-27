@@ -36,7 +36,6 @@
 #include "data/import_state.h"
 #include "tools/import_utils.h"
 
-#include "core/core_bind.h"
 #include "core/io/resource_importer.h"
 #include "core/string/ustring.h"
 #include "core/templates/local_vector.h"
@@ -128,7 +127,7 @@ public:
 
 	virtual void get_extensions(List<String> *r_extensions) const override;
 	virtual uint32_t get_import_flags() const override;
-	virtual Node3D *import_scene(const String &p_path, uint32_t p_flags, int p_bake_fps, List<String> *r_missing_deps, Error *r_err = NULL) override;
+	virtual Node3D *import_scene(const String &p_path, uint32_t p_flags, int p_bake_fps, List<String> *r_missing_deps, Error *r_err = nullptr) override;
 };
 
 #endif // TOOLS_ENABLED

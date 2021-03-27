@@ -54,8 +54,6 @@ private:
 	real_t gravity_distance_scale = 0.0;
 	real_t linear_damp = 0.1;
 	real_t angular_damp = 1.0;
-	uint32_t collision_mask = 1;
-	uint32_t collision_layer = 1;
 	int priority = 0;
 	bool monitoring = false;
 	bool monitorable = false;
@@ -85,6 +83,7 @@ private:
 	};
 
 	struct BodyState {
+		RID rid;
 		int rc = 0;
 		bool in_tree = false;
 		VSet<ShapePair> shapes;
@@ -116,6 +115,7 @@ private:
 	};
 
 	struct AreaState {
+		RID rid;
 		int rc = 0;
 		bool in_tree = false;
 		VSet<AreaShapePair> shapes;
@@ -162,18 +162,6 @@ public:
 
 	void set_monitorable(bool p_enable);
 	bool is_monitorable() const;
-
-	void set_collision_mask(uint32_t p_mask);
-	uint32_t get_collision_mask() const;
-
-	void set_collision_layer(uint32_t p_layer);
-	uint32_t get_collision_layer() const;
-
-	void set_collision_mask_bit(int p_bit, bool p_value);
-	bool get_collision_mask_bit(int p_bit) const;
-
-	void set_collision_layer_bit(int p_bit, bool p_value);
-	bool get_collision_layer_bit(int p_bit) const;
 
 	TypedArray<Node2D> get_overlapping_bodies() const; //function for script
 	TypedArray<Area2D> get_overlapping_areas() const; //function for script

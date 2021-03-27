@@ -70,7 +70,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ----------------------------------------------------------------------
 */
 
-/** @file Helper class tp perform various byte oder swappings
+/** @file Helper class tp perform various byte order swappings
    (e.g. little to big endian) */
 #ifndef BYTE_SWAPPER_H
 #define BYTE_SWAPPER_H
@@ -264,8 +264,9 @@ struct Getter {
 		le = !le;
 		if (le) {
 			ByteSwapper<T, (sizeof(T) > 1 ? true : false)>()(inout);
-		} else
+		} else {
 			ByteSwapper<T, false>()(inout);
+		}
 	}
 };
 

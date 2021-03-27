@@ -41,11 +41,11 @@ void register_minimp3_types() {
 #ifdef TOOLS_ENABLED
 	if (Engine::get_singleton()->is_editor_hint()) {
 		Ref<ResourceImporterMP3> mp3_import;
-		mp3_import.instance();
+		mp3_import.instantiate();
 		ResourceFormatImporter::get_singleton()->add_importer(mp3_import);
 	}
 #endif
-	ClassDB::register_class<AudioStreamMP3>();
+	GDREGISTER_CLASS(AudioStreamMP3);
 }
 
 void unregister_minimp3_types() {

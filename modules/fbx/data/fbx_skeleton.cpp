@@ -69,7 +69,7 @@ void FBXSkeleton::init_skeleton(const ImportState &state) {
 			// Make sure the bone name is unique.
 			const String bone_name = bone->bone_name;
 			int same_name_count = 0;
-			for (int y = x; y < skeleton_bone_count; y++) {
+			for (int y = x + 1; y < skeleton_bone_count; y++) {
 				Ref<FBXBone> other_bone = skeleton_bones[y];
 				if (other_bone.is_valid()) {
 					if (other_bone->bone_name == bone_name) {

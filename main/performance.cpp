@@ -60,16 +60,12 @@ void Performance::_bind_methods() {
 	BIND_ENUM_CONSTANT(OBJECT_RESOURCE_COUNT);
 	BIND_ENUM_CONSTANT(OBJECT_NODE_COUNT);
 	BIND_ENUM_CONSTANT(OBJECT_ORPHAN_NODE_COUNT);
-	BIND_ENUM_CONSTANT(RENDER_OBJECTS_IN_FRAME);
-	BIND_ENUM_CONSTANT(RENDER_VERTICES_IN_FRAME);
-	BIND_ENUM_CONSTANT(RENDER_MATERIAL_CHANGES_IN_FRAME);
-	BIND_ENUM_CONSTANT(RENDER_SHADER_CHANGES_IN_FRAME);
-	BIND_ENUM_CONSTANT(RENDER_SURFACE_CHANGES_IN_FRAME);
-	BIND_ENUM_CONSTANT(RENDER_DRAW_CALLS_IN_FRAME);
+	BIND_ENUM_CONSTANT(RENDER_TOTAL_OBJECTS_IN_FRAME);
+	BIND_ENUM_CONSTANT(RENDER_TOTAL_PRIMITIVES_IN_FRAME);
+	BIND_ENUM_CONSTANT(RENDER_TOTAL_DRAW_CALLS_IN_FRAME);
 	BIND_ENUM_CONSTANT(RENDER_VIDEO_MEM_USED);
 	BIND_ENUM_CONSTANT(RENDER_TEXTURE_MEM_USED);
-	BIND_ENUM_CONSTANT(RENDER_VERTEX_MEM_USED);
-	BIND_ENUM_CONSTANT(RENDER_USAGE_VIDEO_MEM_TOTAL);
+	BIND_ENUM_CONSTANT(RENDER_BUFFER_MEM_USED);
 	BIND_ENUM_CONSTANT(PHYSICS_2D_ACTIVE_OBJECTS);
 	BIND_ENUM_CONSTANT(PHYSICS_2D_COLLISION_PAIRS);
 	BIND_ENUM_CONSTANT(PHYSICS_2D_ISLAND_COUNT);
@@ -81,7 +77,7 @@ void Performance::_bind_methods() {
 	BIND_ENUM_CONSTANT(MONITOR_MAX);
 }
 
-float Performance::_get_node_count() const {
+int Performance::_get_node_count() const {
 	MainLoop *ml = OS::get_singleton()->get_main_loop();
 	SceneTree *sml = Object::cast_to<SceneTree>(ml);
 	if (!sml) {
@@ -103,16 +99,12 @@ String Performance::get_monitor_name(Monitor p_monitor) const {
 		"object/resources",
 		"object/nodes",
 		"object/orphan_nodes",
-		"raster/objects_drawn",
-		"raster/vertices_drawn",
-		"raster/mat_changes",
-		"raster/shader_changes",
-		"raster/surface_changes",
-		"raster/draw_calls",
+		"raster/total_objects_drawn",
+		"raster/total_primitives_drawn",
+		"raster/total_draw_calls",
 		"video/video_mem",
 		"video/texture_mem",
-		"video/vertex_mem",
-		"video/video_mem_max",
+		"video/buffer_mem",
 		"physics_2d/active_objects",
 		"physics_2d/collision_pairs",
 		"physics_2d/islands",
@@ -126,7 +118,7 @@ String Performance::get_monitor_name(Monitor p_monitor) const {
 	return names[p_monitor];
 }
 
-float Performance::get_monitor(Monitor p_monitor) const {
+double Performance::get_monitor(Monitor p_monitor) const {
 	switch (p_monitor) {
 		case TIME_FPS:
 			return Engine::get_singleton()->get_frames_per_second();
@@ -148,26 +140,18 @@ float Performance::get_monitor(Monitor p_monitor) const {
 			return _get_node_count();
 		case OBJECT_ORPHAN_NODE_COUNT:
 			return Node::orphan_node_count;
-		case RENDER_OBJECTS_IN_FRAME:
-			return RS::get_singleton()->get_render_info(RS::INFO_OBJECTS_IN_FRAME);
-		case RENDER_VERTICES_IN_FRAME:
-			return RS::get_singleton()->get_render_info(RS::INFO_VERTICES_IN_FRAME);
-		case RENDER_MATERIAL_CHANGES_IN_FRAME:
-			return RS::get_singleton()->get_render_info(RS::INFO_MATERIAL_CHANGES_IN_FRAME);
-		case RENDER_SHADER_CHANGES_IN_FRAME:
-			return RS::get_singleton()->get_render_info(RS::INFO_SHADER_CHANGES_IN_FRAME);
-		case RENDER_SURFACE_CHANGES_IN_FRAME:
-			return RS::get_singleton()->get_render_info(RS::INFO_SURFACE_CHANGES_IN_FRAME);
-		case RENDER_DRAW_CALLS_IN_FRAME:
-			return RS::get_singleton()->get_render_info(RS::INFO_DRAW_CALLS_IN_FRAME);
+		case RENDER_TOTAL_OBJECTS_IN_FRAME:
+			return RS::get_singleton()->get_rendering_info(RS::RENDERING_INFO_TOTAL_OBJECTS_IN_FRAME);
+		case RENDER_TOTAL_PRIMITIVES_IN_FRAME:
+			return RS::get_singleton()->get_rendering_info(RS::RENDERING_INFO_TOTAL_PRIMITIVES_IN_FRAME);
+		case RENDER_TOTAL_DRAW_CALLS_IN_FRAME:
+			return RS::get_singleton()->get_rendering_info(RS::RENDERING_INFO_TOTAL_DRAW_CALLS_IN_FRAME);
 		case RENDER_VIDEO_MEM_USED:
-			return RS::get_singleton()->get_render_info(RS::INFO_VIDEO_MEM_USED);
+			return RS::get_singleton()->get_rendering_info(RS::RENDERING_INFO_VIDEO_MEM_USED);
 		case RENDER_TEXTURE_MEM_USED:
-			return RS::get_singleton()->get_render_info(RS::INFO_TEXTURE_MEM_USED);
-		case RENDER_VERTEX_MEM_USED:
-			return RS::get_singleton()->get_render_info(RS::INFO_VERTEX_MEM_USED);
-		case RENDER_USAGE_VIDEO_MEM_TOTAL:
-			return RS::get_singleton()->get_render_info(RS::INFO_USAGE_VIDEO_MEM_TOTAL);
+			return RS::get_singleton()->get_rendering_info(RS::RENDERING_INFO_TEXTURE_MEM_USED);
+		case RENDER_BUFFER_MEM_USED:
+			return RS::get_singleton()->get_rendering_info(RS::RENDERING_INFO_BUFFER_MEM_USED);
 		case PHYSICS_2D_ACTIVE_OBJECTS:
 			return PhysicsServer2D::get_singleton()->get_process_info(PhysicsServer2D::INFO_ACTIVE_OBJECTS);
 		case PHYSICS_2D_COLLISION_PAIRS:
@@ -207,10 +191,6 @@ Performance::MonitorType Performance::get_monitor_type(Monitor p_monitor) const 
 		MONITOR_TYPE_QUANTITY,
 		MONITOR_TYPE_QUANTITY,
 		MONITOR_TYPE_QUANTITY,
-		MONITOR_TYPE_QUANTITY,
-		MONITOR_TYPE_QUANTITY,
-		MONITOR_TYPE_QUANTITY,
-		MONITOR_TYPE_MEMORY,
 		MONITOR_TYPE_MEMORY,
 		MONITOR_TYPE_MEMORY,
 		MONITOR_TYPE_MEMORY,
@@ -227,11 +207,11 @@ Performance::MonitorType Performance::get_monitor_type(Monitor p_monitor) const 
 	return types[p_monitor];
 }
 
-void Performance::set_process_time(float p_pt) {
+void Performance::set_process_time(double p_pt) {
 	_process_time = p_pt;
 }
 
-void Performance::set_physics_process_time(float p_pt) {
+void Performance::set_physics_process_time(double p_pt) {
 	_physics_process_time = p_pt;
 }
 

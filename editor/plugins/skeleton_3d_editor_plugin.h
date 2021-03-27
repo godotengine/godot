@@ -41,7 +41,7 @@ class PhysicalBone3D;
 class Skeleton3DEditorPlugin;
 class Button;
 class CheckBox;
-class EditorPropertyTransform;
+class EditorPropertyTransform3D;
 class EditorPropertyVector3;
 
 class BoneTransformEditor : public VBoxContainer {
@@ -53,7 +53,7 @@ class BoneTransformEditor : public VBoxContainer {
 	EditorPropertyVector3 *rotation_property = nullptr;
 	EditorPropertyVector3 *scale_property = nullptr;
 	EditorInspectorSection *transform_section = nullptr;
-	EditorPropertyTransform *transform_property = nullptr;
+	EditorPropertyTransform3D *transform_property = nullptr;
 
 	Rect2 background_rects[5];
 
@@ -78,11 +78,11 @@ class BoneTransformEditor : public VBoxContainer {
 	// Called when the one of the EditorPropertyVector3 are updated.
 	void _value_changed_vector3(const String p_property_name, const Vector3 p_vector, const StringName p_edited_property_name, const bool p_boolean);
 	// Called when the transform_property is updated.
-	void _value_changed_transform(const String p_property_name, const Transform p_transform, const StringName p_edited_property_name, const bool p_boolean);
+	void _value_changed_transform(const String p_property_name, const Transform3D p_transform, const StringName p_edited_property_name, const bool p_boolean);
 	// Changes the transform to the given transform and updates the UI accordingly.
-	void _change_transform(Transform p_new_transform);
+	void _change_transform(Transform3D p_new_transform);
 	// Creates a Transform using the EditorPropertyVector3 properties.
-	Transform compute_transform_from_vector3s() const;
+	Transform3D compute_transform_from_vector3s() const;
 
 	void update_enabled_checkbox();
 
@@ -98,7 +98,7 @@ public:
 
 	void _update_properties();
 	void _update_custom_pose_properties();
-	void _update_transform_properties(Transform p_transform);
+	void _update_transform_properties(Transform3D p_transform);
 
 	// Can/cannot modify the spinner values for the Transform
 	void set_read_only(const bool p_read_only);
@@ -127,7 +127,7 @@ class Skeleton3DEditor : public VBoxContainer {
 
 	struct BoneInfo {
 		PhysicalBone3D *physical_bone = nullptr;
-		Transform relative_rest; // Relative to skeleton node
+		Transform3D relative_rest; // Relative to skeleton node
 	};
 
 	EditorNode *editor;

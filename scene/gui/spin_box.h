@@ -45,7 +45,7 @@ class SpinBox : public Range {
 	void _range_click_timeout();
 	void _release_mouse();
 
-	void _text_entered(const String &p_string);
+	void _text_submitted(const String &p_string);
 	virtual void _value_changed(double) override;
 	String prefix;
 	String suffix;
@@ -65,7 +65,7 @@ class SpinBox : public Range {
 	inline void _adjust_width_for_icon(const Ref<Texture2D> &icon);
 
 protected:
-	void _gui_input(const Ref<InputEvent> &p_event);
+	virtual void gui_input(const Ref<InputEvent> &p_event) override;
 
 	void _notification(int p_what);
 

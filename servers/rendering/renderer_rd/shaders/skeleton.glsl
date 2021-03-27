@@ -2,7 +2,7 @@
 
 #version 450
 
-VERSION_DEFINES
+#VERSION_DEFINES
 
 layout(local_size_x = 64, local_size_y = 1, local_size_z = 1) in;
 
@@ -74,6 +74,53 @@ void main() {
 
 #ifdef MODE_2D
 	vec2 vertex = uintBitsToFloat(uvec2(src_vertices.data[src_offset + 0], src_vertices.data[src_offset + 1]));
+
+	if (params.has_blend_shape) {
+		float blend_total = 0.0;
+		vec2 blend_vertex = vec2(0.0);
+
+		for (uint i = 0; i < params.blend_shape_count; i++) {
+			float w = blend_shape_weights.data[i];
+			if (abs(w) > 0.0001) {
+				uint base_offset = (params.vertex_count * i + index) * params.vertex_stride;
+
+				blend_vertex += uintBitsToFloat(uvec2(src_blend_shapes.data[base_offset + 0], src_blend_shapes.data[base_offset + 1])) * w;
+
+				base_offset += 2;
+
+				blend_total += w;
+			}
+		}
+
+		if (params.normalized_blend_shapes) {
+			vertex = (1.0 - blend_total) * vertex;
+		}
+
+		vertex += blend_vertex;
+	}
+
+	if (params.has_skeleton) {
+		uint skin_offset = params.skin_stride * index;
+
+		uvec2 bones = uvec2(src_bone_weights.data[skin_offset + 0], src_bone_weights.data[skin_offset + 1]);
+		uvec2 bones_01 = uvec2(bones.x & 0xFFFF, bones.x >> 16) * 3; //pre-add xform offset
+		uvec2 bones_23 = uvec2(bones.y & 0xFFFF, bones.y >> 16) * 3;
+
+		skin_offset += params.skin_weight_offset;
+
+		uvec2 weights = uvec2(src_bone_weights.data[skin_offset + 0], src_bone_weights.data[skin_offset + 1]);
+
+		vec2 weights_01 = unpackUnorm2x16(weights.x);
+		vec2 weights_23 = unpackUnorm2x16(weights.y);
+
+		mat4 m = mat4(bone_transforms.data[bones_01.x], bone_transforms.data[bones_01.x + 1], vec4(0.0, 0.0, 1.0, 0.0), vec4(0.0, 0.0, 0.0, 1.0)) * weights_01.x;
+		m += mat4(bone_transforms.data[bones_01.y], bone_transforms.data[bones_01.y + 1], vec4(0.0, 0.0, 1.0, 0.0), vec4(0.0, 0.0, 0.0, 1.0)) * weights_01.y;
+		m += mat4(bone_transforms.data[bones_23.x], bone_transforms.data[bones_23.x + 1], vec4(0.0, 0.0, 1.0, 0.0), vec4(0.0, 0.0, 0.0, 1.0)) * weights_23.x;
+		m += mat4(bone_transforms.data[bones_23.y], bone_transforms.data[bones_23.y + 1], vec4(0.0, 0.0, 1.0, 0.0), vec4(0.0, 0.0, 0.0, 1.0)) * weights_23.y;
+
+		//reverse order because its transposed
+		vertex = (vec4(vertex, 0.0, 1.0) * m).xy;
+	}
 #else
 	vec3 vertex;
 	vec3 normal;

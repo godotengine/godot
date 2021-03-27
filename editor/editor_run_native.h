@@ -43,13 +43,12 @@ class EditorRunNative : public HBoxContainer {
 	int resume_idx;
 	int resume_platform;
 
-	void _run_native(int p_idx, int p_platform);
-
 protected:
 	static void _bind_methods();
 	void _notification(int p_what);
 
 public:
+	Error run_native(int p_idx, int p_platform);
 	bool is_deploy_debug_remote_enabled() const;
 
 	void resume_run_native();

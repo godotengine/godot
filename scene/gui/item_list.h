@@ -95,6 +95,7 @@ private:
 	SelectMode select_mode = SELECT_SINGLE;
 	IconMode icon_mode = ICON_MODE_LEFT;
 	VScrollBar *scroll_bar;
+	TextParagraph::OverrunBehavior text_overrun_behavior = TextParagraph::OVERRUN_NO_TRIMMING;
 
 	uint64_t search_time_msec = 0;
 	String search_string;
@@ -122,7 +123,6 @@ private:
 	void _set_items(const Array &p_items);
 
 	void _scroll_changed(double);
-	void _gui_input(const Ref<InputEvent> &p_event);
 	void _shape(int p_idx);
 
 protected:
@@ -130,6 +130,8 @@ protected:
 	static void _bind_methods();
 
 public:
+	virtual void gui_input(const Ref<InputEvent> &p_event) override;
+
 	int add_item(const String &p_item, const Ref<Texture2D> &p_texture = Ref<Texture2D>(), bool p_selectable = true);
 	int add_icon_item(const Ref<Texture2D> &p_item, bool p_selectable = true);
 
@@ -181,6 +183,9 @@ public:
 
 	void set_item_custom_fg_color(int p_idx, const Color &p_custom_fg_color);
 	Color get_item_custom_fg_color(int p_idx) const;
+
+	void set_text_overrun_behavior(TextParagraph::OverrunBehavior p_behavior);
+	TextParagraph::OverrunBehavior get_text_overrun_behavior() const;
 
 	void select(int p_idx, bool p_single = true);
 	void deselect(int p_idx);

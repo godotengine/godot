@@ -32,7 +32,6 @@
 #define NAVIGATION_REGION_H
 
 #include "scene/3d/node_3d.h"
-#include "scene/resources/mesh.h"
 #include "scene/resources/navigation_mesh.h"
 
 class NavigationRegion3D : public Node3D {
@@ -66,7 +65,7 @@ public:
 	void bake_navigation_mesh();
 	void _bake_finished(Ref<NavigationMesh> p_nav_mesh);
 
-	String get_configuration_warning() const override;
+	TypedArray<String> get_configuration_warnings() const override;
 
 	NavigationRegion3D();
 	~NavigationRegion3D();

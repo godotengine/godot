@@ -43,13 +43,14 @@ class VisualScriptEditorVariableEdit;
 
 #ifdef TOOLS_ENABLED
 
+// TODO: Maybe this class should be refactored.
+// See https://github.com/godotengine/godot/issues/51913
 class VisualScriptEditor : public ScriptEditorBase {
 	GDCLASS(VisualScriptEditor, ScriptEditorBase);
 
 	enum {
 		TYPE_SEQUENCE = 1000,
 		INDEX_BASE_SEQUENCE = 1024
-
 	};
 
 	enum {
@@ -60,7 +61,7 @@ class VisualScriptEditor : public ScriptEditorBase {
 		EDIT_CUT_NODES,
 		EDIT_PASTE_NODES,
 		EDIT_CREATE_FUNCTION,
-		REFRESH_GRAPH
+		REFRESH_GRAPH,
 	};
 
 	enum PortAction {
@@ -71,7 +72,6 @@ class VisualScriptEditor : public ScriptEditorBase {
 	enum MemberAction {
 		MEMBER_EDIT,
 		MEMBER_REMOVE
-
 	};
 
 	enum MemberType {
@@ -93,6 +93,8 @@ class VisualScriptEditor : public ScriptEditorBase {
 	ConfirmationDialog *function_create_dialog;
 
 	GraphEdit *graph;
+	HBoxContainer *status_bar;
+	Button *toggle_scripts_button;
 
 	VisualScriptEditorSignalEdit *signal_editor;
 
@@ -135,6 +137,7 @@ class VisualScriptEditor : public ScriptEditorBase {
 		Vector<Pair<Variant::Type, String>> args;
 	};
 
+	Map<StringName, Color> node_colors;
 	HashMap<StringName, Ref<StyleBox>> node_styles;
 
 	void _update_graph_connections();
@@ -178,6 +181,9 @@ class VisualScriptEditor : public ScriptEditorBase {
 
 	void connect_data(Ref<VisualScriptNode> vnode_old, Ref<VisualScriptNode> vnode, int new_id);
 
+	NodePath drop_path;
+	Node *drop_node = nullptr;
+	Vector2 drop_position;
 	void _selected_connect_node(const String &p_text, const String &p_category, const bool p_connecting = true);
 	void connect_seq(Ref<VisualScriptNode> vnode_old, Ref<VisualScriptNode> vnode_new, int new_id);
 
@@ -225,13 +231,14 @@ class VisualScriptEditor : public ScriptEditorBase {
 	void _update_node_size(int p_id);
 	void _port_name_focus_out(const Node *p_name_box, int p_id, int p_port, bool is_input);
 
-	Vector2 _get_available_pos(bool centered = true, Vector2 ofs = Vector2()) const;
+	Vector2 _get_pos_in_graph(Vector2 p_point) const;
+	Vector2 _get_available_pos(bool p_centered = true, Vector2 p_pos = Vector2()) const;
 
 	bool node_has_sequence_connections(int p_id);
 
 	void _generic_search(String p_base_type = "", Vector2 pos = Vector2(), bool node_centered = false);
 
-	void _input(const Ref<InputEvent> &p_event);
+	virtual void input(const Ref<InputEvent> &p_event) override;
 	void _graph_gui_input(const Ref<InputEvent> &p_event);
 	void _members_gui_input(const Ref<InputEvent> &p_event);
 	void _fn_name_box_input(const Ref<InputEvent> &p_event);
@@ -268,9 +275,6 @@ class VisualScriptEditor : public ScriptEditorBase {
 	void _graph_ofs_changed(const Vector2 &p_ofs);
 	void _comment_node_resized(const Vector2 &p_new_size, int p_node);
 
-	int selecting_method_id;
-	void _selected_method(const String &p_method, const String &p_type, const bool p_connecting);
-
 	void _draw_color_over_button(Object *obj, Color p_color);
 	void _button_resource_previewed(const String &p_path, const Ref<Texture2D> &p_preview, const Ref<Texture2D> &p_small_preview, Variant p_ud);
 
@@ -278,6 +282,8 @@ class VisualScriptEditor : public ScriptEditorBase {
 
 	void _member_rmb_selected(const Vector2 &p_pos);
 	void _member_option(int p_option);
+
+	void _toggle_scripts_pressed();
 
 protected:
 	void _notification(int p_what);
@@ -309,6 +315,8 @@ public:
 	virtual void tag_saved_version() override;
 	virtual void reload(bool p_soft) override;
 	virtual Array get_breakpoints() override;
+	virtual void set_breakpoint(int p_line, bool p_enable) override{};
+	virtual void clear_breakpoints() override{};
 	virtual void add_callback(const String &p_function, PackedStringArray p_args) override;
 	virtual void update_settings() override;
 	virtual bool show_members_overview() override;
@@ -316,39 +324,45 @@ public:
 	virtual void set_tooltip_request_func(String p_method, Object *p_obj) override;
 	virtual Control *get_edit_menu() override;
 	virtual void clear_edit_menu() override;
+	virtual void set_find_replace_bar(FindReplaceBar *p_bar) override { p_bar->hide(); }; // Not needed here.
 	virtual bool can_lose_focus_on_node_selection() override { return false; }
 	virtual void validate() override;
+
+	virtual Control *get_base_editor() const override;
 
 	static void register_editor();
 
 	static void free_clipboard();
+
+	void update_toggle_scripts_button() override;
 
 	VisualScriptEditor();
 	~VisualScriptEditor();
 };
 
 // Singleton
-class _VisualScriptEditor : public Object {
-	GDCLASS(_VisualScriptEditor, Object);
+class VisualScriptCustomNodes : public Object {
+	GDCLASS(VisualScriptCustomNodes, Object);
 
 	friend class VisualScriptLanguage;
 
 protected:
 	static void _bind_methods();
-	static _VisualScriptEditor *singleton;
+	static VisualScriptCustomNodes *singleton;
 
 	static Map<String, REF> custom_nodes;
 	static Ref<VisualScriptNode> create_node_custom(const String &p_name);
 
 public:
-	static _VisualScriptEditor *get_singleton() { return singleton; }
+	static VisualScriptCustomNodes *get_singleton() { return singleton; }
 
 	void add_custom_node(const String &p_name, const String &p_category, const Ref<Script> &p_script);
 	void remove_custom_node(const String &p_name, const String &p_category);
 
-	_VisualScriptEditor();
-	~_VisualScriptEditor();
+	VisualScriptCustomNodes();
+	~VisualScriptCustomNodes();
 };
+
 #endif
 
 #endif // VISUALSCRIPT_EDITOR_H

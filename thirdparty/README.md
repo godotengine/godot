@@ -8,13 +8,12 @@ readability.
 ## basis_universal
 
 - Upstream: https://github.com/BinomialLLC/basis_universal
-- Version: git (895ee8ee7e04f22267f8d16d46de04d5a01d63ac, 2020)
+- Version: git (ba1c3e40f1d434ebaf9a167b44e9b11d2bf0f765, 2021)
 - License: Apache 2.0
 
 Files extracted from upstream source:
 
-- `.cpp` and `.h` files in root folder except for `basisu_tool.cpp` (contains `main` and can cause link error)
-- `.cpp`, `.h` and `.inc` files in `transcoder/`, keeping folder structure
+- `encoder/` and `transcoder/` folders
 - `LICENSE`
 
 
@@ -32,14 +31,9 @@ Files extracted from upstream source:
 
 ## certs
 
-- Upstream: Mozilla, via https://apps.fedoraproject.org/packages/ca-certificates
-- Version: 2018.2.26 (2018)
+- Upstream: Mozilla, via https://github.com/bagder/ca-bundle
+- Version: git (8b263a18fca98ea371e54227837321c5cdaa1ba7, 2021)
 - License: MPL 2.0
-
-File extracted from a recent Fedora install:
-/etc/pki/ca-trust/extracted/pem/tls-ca-bundle.pem
-(It can't be extracted directly from the package,
-as it's generated on the user's system.)
 
 
 ## cvtt
@@ -60,6 +54,26 @@ Files extracted from upstream source:
 - License: MIT
 
 Extracted from .zip provided. Extracted license and header only.
+
+
+## embree
+
+- Upstream: https://github.com/embree/embree
+- Version: 3.13.0 (7c53133eb21424f7f0ae1e25bf357e358feaf6ab, 2021)
+- License: Apache 2.0
+
+Files extracted from upstream:
+
+- All cpp files listed in `modules/raycast/godot_update_embree.py`
+- All header files in the directories listed in `modules/raycast/godot_update_embree.py`
+
+The `modules/raycast/godot_update_embree.py` script can be used to pull the
+relevant files from the latest Embree release and apply some automatic changes.
+
+Some changes have been made in order to remove exceptions and fix minor build errors.
+They are marked with `// -- GODOT start --` and `// -- GODOT end --`
+comments. Apply the patches in the `patches/` folder when syncing on newer upstream
+commits.
 
 
 ## enet
@@ -86,27 +100,27 @@ It is still possible to build against a system wide ENet but doing so
 will limit its functionality to IPv4 only.
 
 
-## etc2comp
+## etcpak
 
-- Upstream: https://github.com/google/etc2comp
-- Version: git (9cd0f9cae0f32338943699bb418107db61bb66f2, 2017)
-- License: Apache 2.0
+- Upstream: https://github.com/wolfpld/etcpak
+- Version: git (f27daea656ff77671580f838a889e33049430ebd, 2021)
+- License: BSD-3-Clause
 
 Files extracted from upstream source:
 
-- all .cpp and .h files in EtcLib/
-- README.md, LICENSE, AUTHORS
-
-Important: Some files have Godot-made changes.
-They are marked with `// -- GODOT start --` and `// -- GODOT end --`
-comments.
+- Only the files relevant for compression (i.e. `Process*.cpp` and their deps):
+  ```
+  Dither.{cpp,hpp} ForceInline.hpp Math.hpp ProcessCommon.hpp ProcessRGB.{cpp,hpp}
+  ProcessDxtc.{cpp,hpp} Tables.{cpp,hpp} Vector.hpp
+  ```
+- `AUTHORS.txt` and `LICENSE.txt`
 
 
 ## fonts
 
-- `NotoSans*.ttf`, `NotoNaskhArabicUI_Regular.ttf`:
-  * Upstream: https://github.com/googlei18n/noto-fonts
-  * Version: 1.06 (2017)
+- `NotoSans*.ttf`, `NotoNaskhArabicUI_*.ttf`:
+  * Upstream: https://github.com/googlefonts/noto-fonts
+  * Version: v2017-10-24-phase3-second-cleanup
   * License: OFL-1.1
   * Comment: Use UI font variant if available, because it has tight vertical metrics and
     good for UI.
@@ -117,6 +131,10 @@ comments.
 - `DroidSans*.ttf`:
   * Upstream: https://android.googlesource.com/platform/frameworks/base/+/master/data/fonts/
   * Version: ? (pre-2014 commit when DroidSansJapanese.ttf was obsoleted)
+  * License: Apache 2.0
+- `OpenSans_SemiBold.ttf`:
+  * Upstream: https://fonts.google.com/specimen/Open+Sans
+  * Version: 1.10 (downloaded from Google Fonts in February 2021)
   * License: Apache 2.0
 - `Tamsyn*.png`:
   * Upstream: http://www.fial.com/~scott/tamsyn-font/
@@ -186,17 +204,17 @@ Files extracted from upstream source:
 ## icu4c
 
 - Upstream: https://github.com/unicode-org/icu
-- Version: 68.2 (84e1f26ea77152936e70d53178a816dbfbf69989, 2020)
+- Version: 69.1 (0e7b4428866f3133b4abba2d932ee3faa708db1d, 2021)
 - License: Unicode
 
 Files extracted from upstream source:
 
 - the `common` folder
-- `APIChangeReport.md`, `LICENSE`
+- `LICENSE`
 
 Files generated from upstream source:
 
-- the `icudt68l.dat` built with the provided `godot_data.json` config file (see
+- the `icudt69l.dat` built with the provided `godot_data.json` config file (see
   https://github.com/unicode-org/icu/blob/master/docs/userguide/icu_data/buildtool.md
   for instructions)
 
@@ -324,33 +342,36 @@ changes are marked with `// -- GODOT --` comments.
 ## mbedtls
 
 - Upstream: https://tls.mbed.org/
-- Version: 2.16.10 (d61fa61bef06b64132e3490543c81b8ee40fbee3, 2021)
+- Version: 2.16.11 (aa1d4e097342af799ba80dfb13640efef498227c, 2021)
 - License: Apache 2.0
 
 File extracted from upstream release tarball:
 
-- All `*.h` from `include/mbedtls/` to `thirdparty/mbedtls/include/mbedtls/`
-- All `*.c` from `library/` to `thirdparty/mbedtls/library/`
-- LICENSE and apache-2.0.txt files
-- Applied the patch in `thirdparty/mbedtls/patches/1453.diff` (PR 1453).
-  Soon to be merged upstream. Check it out at next update.
+- All `*.h` from `include/mbedtls/` to `thirdparty/mbedtls/include/mbedtls/`.
+- All `*.c` from `library/` to `thirdparty/mbedtls/library/`.
+- `LICENSE` and `apache-2.0.txt` files.
+- Applied the patch in `thirdparty/mbedtls/patches/1453.diff` (upstream PR:
+  https://github.com/ARMmbed/mbedtls/pull/1453).
 - Applied the patch in `thirdparty/mbedtls/patches/padlock.diff`. This disables
   VIA padlock support which defines a symbol `unsupported` which clashes with
   a pre-defined symbol.
-- Added 2 files `godot_core_mbedtls_platform.{c,h}` providing configuration
-  for light bundling with core.
+- Added 2 files `godot_core_mbedtls_platform.c` and `godot_core_mbedtls_config.h`
+  providing configuration for light bundling with core.
 
 
 ## meshoptimizer
 
 - Upstream: https://github.com/zeux/meshoptimizer
-- Version: git (e3f53f66e7a35b9b8764bee478589d79e34fa698, 2021)
+- Version: git (f5d83e879c48f8664783a69b4f50711d27549b66, 2021)
 - License: MIT
 
 Files extracted from upstream repository:
 
 - All files in `src/`.
 - `LICENSE.md`.
+
+An [experimental upstream feature](https://github.com/zeux/meshoptimizer/tree/simplify-attr),
+has been backported, see patch in `patches` directory.
 
 
 ## miniupnpc
@@ -443,18 +464,31 @@ Collection of single-file libraries used in Godot components.
   * Version: git (2f625846a775501fb69456567409a8b12f10ea25, 2012)
   * License: BSD-3-Clause
   * Modifications: use `const char*` instead of `char*` for input string
+- `smolv.h`
+  * Upstream: https://github.com/aras-p/smol-v
+  * Version: git (4b52c165c13763051a18e80ffbc2ee436314ceb2, 2020)
+  * License: Public Domain or MIT
 - `stb_rect_pack.h`
   * Upstream: https://github.com/nothings/stb
   * Version: 1.00 (2bb4a0accd4003c1db4c24533981e01b1adfd656, 2019)
-  * License: Public Domain or Unlicense or MIT
-- `stb_vorbis.c`
-  * Upstream: https://github.com/nothings/stb
-  * Version: 1.20 (314d0a6f9af5af27e585336eecea333e95c5a2d8, 2020)
   * License: Public Domain or Unlicense or MIT
 - `yuv2rgb.h`
   * Upstream: http://wss.co.uk/pinknoise/yuv2rgb/ (to check)
   * Version: ?
   * License: BSD
+
+
+## msdfgen
+
+- Upstream: https://github.com/Chlumsky/msdfgen
+- Version: 1.9.1 (1b3b6b985094e6f12751177490add3ad11dd91a9, 2010)
+- License: MIT
+
+Files extracted from the upstream source:
+
+- `msdfgen.h`
+- Files in `core/` folder.
+- `LICENSE.txt` and `CHANGELOG.md`
 
 
 ## nanosvg
@@ -577,7 +611,7 @@ Godot. Please check the file to know what's new.
 ## spirv-reflect
 
 - Upstream: https://github.com/KhronosGroup/SPIRV-Reflect
-- Version: git (c0ce03a43ca77fedb5abfd1976ae2fd0eeb0e611, 2021)
+- Version: git (272e050728de8d4a4ce9e7101c1244e6ff56e5b0, 2021)
 - License: Apache 2.0
 
 Files extracted from upstream source:
@@ -585,6 +619,11 @@ Files extracted from upstream source:
 - `spirv_reflect.{c,h}`
 - `include` folder
 - `LICENSE`
+
+Some downstream changes have been made and are identified by
+`// -- GODOT begin --` and `// -- GODOT end --` comments.
+They can be reapplied using the patch included in the `patches`
+folder.
 
 
 ## squish
@@ -630,31 +669,40 @@ They can be reapplied using the patches included in the `vhacd`
 folder.
 
 
+## volk
+
+- Upstream: https://github.com/zeux/volk
+- Version: git (d75c007f375f35612dba3de512ac73f10bf9aa0e, 2021)
+- License: MIT
+
+The volk commit should match the version of the Vulkan headers defined below.
+
+Files extracted from upstream source:
+
+- `volk.h`, `volk.c`
+- `LICENSE.md`
+
+
 ## vulkan
 
-- Upstream: https://github.com/KhronosGroup/Vulkan-Loader
-- Version: sdk-1.2.162.0 (7a313093b5c4af964d50a5a64e73d7df6152ea3f, 2020)
+- Upstream: https://github.com/KhronosGroup/Vulkan-Headers
+- Version: sdk-1.2.182.0 (37164a5726f7e6113810f9557903a117498421cf, 2021)
 - License: Apache 2.0
 
 Unless there is a specific reason to package a more recent version, please stick
 to Vulkan SDK releases (prefixed by `sdk-`) for all components.
 
-NOTE: Use `scripts/update_deps.py --ref <version>` in the Loader git repository
-to retrieve the `Vulkan-Headers` repository matching the loader version.
-
 Files extracted from upstream source:
 
-- `Vulkan-Headers/include/` as `include/`
-- All `.c` and `.h` files in `loader/` and `loader/generated/`, put in a common
-  `loader/` folder
+- `include/`
 - `LICENSE.txt`
 
 `vk_enum_string_helper.h` is taken from the matching `Vulkan-ValidationLayers`
 SDK release: https://github.com/KhronosGroup/Vulkan-ValidationLayers/blob/master/layers/generated/vk_enum_string_helper.h
 
 `vk_mem_alloc.h` is taken from https://github.com/GPUOpen-LibrariesAndSDKs/VulkanMemoryAllocator
-Version: 2.3.0 (2019)
-`vk_mem_alloc.cpp` and `android/vk_mem_alloc.cpp` are Godot files and should be preserved on updates.
+Version: 3.0.0-development (2021-06-21), branch `feature-small-buffers`, commit `cfea2f72851f9ee4a399769f18865047b83711f1`
+`vk_mem_alloc.cpp` is a Godot file and should be preserved on updates.
 
 Patches in the `patches` directory should be re-applied after updates.
 
@@ -705,3 +753,4 @@ Files extracted from upstream source:
 
 - lib/{common/,compress/,decompress/,zstd.h}
 - LICENSE
+

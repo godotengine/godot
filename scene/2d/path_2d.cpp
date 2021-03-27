@@ -30,9 +30,7 @@
 
 #include "path_2d.h"
 
-#include "core/config/engine.h"
 #include "core/math/geometry_2d.h"
-#include "scene/scene_string_names.h"
 
 #ifdef TOOLS_ENABLED
 #include "editor/editor_scale.h"
@@ -249,21 +247,16 @@ void PathFollow2D::_validate_property(PropertyInfo &property) const {
 	}
 }
 
-String PathFollow2D::get_configuration_warning() const {
-	if (!is_visible_in_tree() || !is_inside_tree()) {
-		return String();
-	}
+TypedArray<String> PathFollow2D::get_configuration_warnings() const {
+	TypedArray<String> warnings = Node::get_configuration_warnings();
 
-	String warning = Node2D::get_configuration_warning();
-
-	if (!Object::cast_to<Path2D>(get_parent())) {
-		if (!warning.is_empty()) {
-			warning += "\n\n";
+	if (is_visible_in_tree() && is_inside_tree()) {
+		if (!Object::cast_to<Path2D>(get_parent())) {
+			warnings.push_back(TTR("PathFollow2D only works when set as a child of a Path2D node."));
 		}
-		warning += TTR("PathFollow2D only works when set as a child of a Path2D node.");
 	}
 
-	return warning;
+	return warnings;
 }
 
 void PathFollow2D::_bind_methods() {

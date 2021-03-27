@@ -82,7 +82,7 @@ int G6DOFRotationalLimitMotor3DSW::testLimitValue(real_t test_value) {
 
 real_t G6DOFRotationalLimitMotor3DSW::solveAngularLimits(
 		real_t timeStep, Vector3 &axis, real_t jacDiagABInv,
-		Body3DSW *body0, Body3DSW *body1) {
+		Body3DSW *body0, Body3DSW *body1, bool p_body0_dynamic, bool p_body1_dynamic) {
 	if (!needApplyTorques()) {
 		return 0.0f;
 	}
@@ -138,8 +138,10 @@ real_t G6DOFRotationalLimitMotor3DSW::solveAngularLimits(
 
 	Vector3 motorImp = clippedMotorImpulse * axis;
 
-	body0->apply_torque_impulse(motorImp);
-	if (body1) {
+	if (p_body0_dynamic) {
+		body0->apply_torque_impulse(motorImp);
+	}
+	if (body1 && p_body1_dynamic) {
 		body1->apply_torque_impulse(-motorImp);
 	}
 
@@ -154,6 +156,7 @@ real_t G6DOFTranslationalLimitMotor3DSW::solveLinearAxis(
 		real_t jacDiagABInv,
 		Body3DSW *body1, const Vector3 &pointInA,
 		Body3DSW *body2, const Vector3 &pointInB,
+		bool p_body1_dynamic, bool p_body2_dynamic,
 		int limit_index,
 		const Vector3 &axis_normal_on_a,
 		const Vector3 &anchorPos) {
@@ -205,14 +208,18 @@ real_t G6DOFTranslationalLimitMotor3DSW::solveLinearAxis(
 	normalImpulse = m_accumulatedImpulse[limit_index] - oldNormalImpulse;
 
 	Vector3 impulse_vector = axis_normal_on_a * normalImpulse;
-	body1->apply_impulse(impulse_vector, rel_pos1);
-	body2->apply_impulse(-impulse_vector, rel_pos2);
+	if (p_body1_dynamic) {
+		body1->apply_impulse(impulse_vector, rel_pos1);
+	}
+	if (p_body2_dynamic) {
+		body2->apply_impulse(-impulse_vector, rel_pos2);
+	}
 	return normalImpulse;
 }
 
 //////////////////////////// G6DOFTranslationalLimitMotorSW ////////////////////////////////////
 
-Generic6DOFJoint3DSW::Generic6DOFJoint3DSW(Body3DSW *rbA, Body3DSW *rbB, const Transform &frameInA, const Transform &frameInB, bool useLinearReferenceFrameA) :
+Generic6DOFJoint3DSW::Generic6DOFJoint3DSW(Body3DSW *rbA, Body3DSW *rbB, const Transform3D &frameInA, const Transform3D &frameInB, bool useLinearReferenceFrameA) :
 		Joint3DSW(_arr, 2),
 		m_frameInA(frameInA),
 		m_frameInB(frameInB),
@@ -303,6 +310,13 @@ bool Generic6DOFJoint3DSW::testAngularLimitMotor(int axis_index) {
 }
 
 bool Generic6DOFJoint3DSW::setup(real_t p_timestep) {
+	dynamic_A = (A->get_mode() > PhysicsServer3D::BODY_MODE_KINEMATIC);
+	dynamic_B = (B->get_mode() > PhysicsServer3D::BODY_MODE_KINEMATIC);
+
+	if (!dynamic_A && !dynamic_B) {
+		return false;
+	}
+
 	// Clear accumulated impulses for the next simulation step
 	m_linearLimits.m_accumulatedImpulse = Vector3(real_t(0.), real_t(0.), real_t(0.));
 	int i;
@@ -380,6 +394,7 @@ void Generic6DOFJoint3DSW::solve(real_t p_timestep) {
 					jacDiagABInv,
 					A, pointInA,
 					B, pointInB,
+					dynamic_A, dynamic_B,
 					i, linear_axis, m_AnchorPos);
 		}
 	}
@@ -394,7 +409,7 @@ void Generic6DOFJoint3DSW::solve(real_t p_timestep) {
 
 			angularJacDiagABInv = real_t(1.) / m_jacAng[i].getDiagonal();
 
-			m_angularLimits[i].solveAngularLimits(m_timeStep, angular_axis, angularJacDiagABInv, A, B);
+			m_angularLimits[i].solveAngularLimits(m_timeStep, angular_axis, angularJacDiagABInv, A, B, dynamic_A, dynamic_B);
 		}
 	}
 }

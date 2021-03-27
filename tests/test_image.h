@@ -101,8 +101,8 @@ TEST_CASE("[Image] Saving and loading") {
 	Ref<Image> image_bmp = memnew(Image());
 	FileAccessRef f_bmp = FileAccess::open(TestUtils::get_data_path("images/icon.bmp"), FileAccess::READ, &err);
 	PackedByteArray data_bmp;
-	data_bmp.resize(f_bmp->get_len() + 1);
-	f_bmp->get_buffer(data_bmp.ptrw(), f_bmp->get_len());
+	data_bmp.resize(f_bmp->get_length() + 1);
+	f_bmp->get_buffer(data_bmp.ptrw(), f_bmp->get_length());
 	CHECK_MESSAGE(
 			image_bmp->load_bmp_from_buffer(data_bmp) == OK,
 			"The BMP image should load successfully.");
@@ -111,8 +111,8 @@ TEST_CASE("[Image] Saving and loading") {
 	Ref<Image> image_jpg = memnew(Image());
 	FileAccessRef f_jpg = FileAccess::open(TestUtils::get_data_path("images/icon.jpg"), FileAccess::READ, &err);
 	PackedByteArray data_jpg;
-	data_jpg.resize(f_jpg->get_len() + 1);
-	f_jpg->get_buffer(data_jpg.ptrw(), f_jpg->get_len());
+	data_jpg.resize(f_jpg->get_length() + 1);
+	f_jpg->get_buffer(data_jpg.ptrw(), f_jpg->get_length());
 	CHECK_MESSAGE(
 			image_jpg->load_jpg_from_buffer(data_jpg) == OK,
 			"The JPG image should load successfully.");
@@ -121,8 +121,8 @@ TEST_CASE("[Image] Saving and loading") {
 	Ref<Image> image_webp = memnew(Image());
 	FileAccessRef f_webp = FileAccess::open(TestUtils::get_data_path("images/icon.webp"), FileAccess::READ, &err);
 	PackedByteArray data_webp;
-	data_webp.resize(f_webp->get_len() + 1);
-	f_webp->get_buffer(data_webp.ptrw(), f_webp->get_len());
+	data_webp.resize(f_webp->get_length() + 1);
+	f_webp->get_buffer(data_webp.ptrw(), f_webp->get_length());
 	CHECK_MESSAGE(
 			image_webp->load_webp_from_buffer(data_webp) == OK,
 			"The WEBP image should load successfully.");
@@ -131,8 +131,8 @@ TEST_CASE("[Image] Saving and loading") {
 	Ref<Image> image_png = memnew(Image());
 	FileAccessRef f_png = FileAccess::open(TestUtils::get_data_path("images/icon.png"), FileAccess::READ, &err);
 	PackedByteArray data_png;
-	data_png.resize(f_png->get_len() + 1);
-	f_png->get_buffer(data_png.ptrw(), f_png->get_len());
+	data_png.resize(f_png->get_length() + 1);
+	f_png->get_buffer(data_png.ptrw(), f_png->get_length());
 	CHECK_MESSAGE(
 			image_png->load_png_from_buffer(data_png) == OK,
 			"The PNG image should load successfully.");
@@ -141,8 +141,8 @@ TEST_CASE("[Image] Saving and loading") {
 	Ref<Image> image_tga = memnew(Image());
 	FileAccessRef f_tga = FileAccess::open(TestUtils::get_data_path("images/icon.tga"), FileAccess::READ, &err);
 	PackedByteArray data_tga;
-	data_tga.resize(f_tga->get_len() + 1);
-	f_tga->get_buffer(data_tga.ptrw(), f_tga->get_len());
+	data_tga.resize(f_tga->get_length() + 1);
+	f_tga->get_buffer(data_tga.ptrw(), f_tga->get_length());
 	CHECK_MESSAGE(
 			image_tga->load_tga_from_buffer(data_tga) == OK,
 			"The TGA image should load successfully.");

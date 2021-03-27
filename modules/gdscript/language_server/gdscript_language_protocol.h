@@ -28,8 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef GDSCRIPT_PROTOCAL_SERVER_H
-#define GDSCRIPT_PROTOCAL_SERVER_H
+#ifndef GDSCRIPT_LANGUAGE_PROTOCOL_H
+#define GDSCRIPT_LANGUAGE_PROTOCOL_H
 
 #include "core/io/stream_peer.h"
 #include "core/io/stream_peer_tcp.h"
@@ -37,7 +37,13 @@
 #include "gdscript_text_document.h"
 #include "gdscript_workspace.h"
 #include "lsp.hpp"
+
+#include "modules/modules_enabled.gen.h"
+#ifdef MODULE_JSONRPC_ENABLED
 #include "modules/jsonrpc/jsonrpc.h"
+#else
+#error "Can't build GDScript LSP without JSONRPC module."
+#endif
 
 #define LSP_MAX_BUFFER_SIZE 4194304
 #define LSP_MAX_CLIENTS 8
@@ -46,7 +52,7 @@ class GDScriptLanguageProtocol : public JSONRPC {
 	GDCLASS(GDScriptLanguageProtocol, JSONRPC)
 
 private:
-	struct LSPeer : Reference {
+	struct LSPeer : RefCounted {
 		Ref<StreamPeerTCP> connection;
 
 		uint8_t req_buf[LSP_MAX_BUFFER_SIZE];
@@ -69,7 +75,7 @@ private:
 	static GDScriptLanguageProtocol *singleton;
 
 	HashMap<int, Ref<LSPeer>> clients;
-	Ref<TCP_Server> server;
+	Ref<TCPServer> server;
 	int latest_client_id = 0;
 	int next_client_id = 0;
 
@@ -97,7 +103,7 @@ public:
 	_FORCE_INLINE_ bool is_initialized() const { return _initialized; }
 
 	void poll();
-	Error start(int p_port, const IP_Address &p_bind_ip);
+	Error start(int p_port, const IPAddress &p_bind_ip);
 	void stop();
 
 	void notify_client(const String &p_method, const Variant &p_params = Variant(), int p_client_id = -1);
@@ -108,4 +114,4 @@ public:
 	GDScriptLanguageProtocol();
 };
 
-#endif
+#endif // GDSCRIPT_LANGUAGE_PROTOCOL_H

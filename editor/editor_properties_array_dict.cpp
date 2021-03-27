@@ -30,16 +30,18 @@
 
 #include "editor_properties_array_dict.h"
 
+#include "core/input/input.h"
 #include "core/io/marshalls.h"
+#include "editor/editor_node.h"
 #include "editor/editor_scale.h"
 #include "editor_properties.h"
 
 bool EditorPropertyArrayObject::_set(const StringName &p_name, const Variant &p_value) {
-	String pn = p_name;
+	String name = p_name;
 
-	if (pn.begins_with("indices")) {
-		int idx = pn.get_slicec('/', 1).to_int();
-		array.set(idx, p_value);
+	if (name.begins_with("indices")) {
+		int index = name.get_slicec('/', 1).to_int();
+		array.set(index, p_value);
 		return true;
 	}
 
@@ -47,12 +49,12 @@ bool EditorPropertyArrayObject::_set(const StringName &p_name, const Variant &p_
 }
 
 bool EditorPropertyArrayObject::_get(const StringName &p_name, Variant &r_ret) const {
-	String pn = p_name;
+	String name = p_name;
 
-	if (pn.begins_with("indices")) {
-		int idx = pn.get_slicec('/', 1).to_int();
+	if (name.begins_with("indices")) {
+		int index = name.get_slicec('/', 1).to_int();
 		bool valid;
-		r_ret = array.get(idx, &valid);
+		r_ret = array.get(index, &valid);
 		if (r_ret.get_type() == Variant::OBJECT && Object::cast_to<EncodedObjectAsID>(r_ret)) {
 			r_ret = Object::cast_to<EncodedObjectAsID>(r_ret)->get_object_id();
 		}
@@ -77,21 +79,21 @@ EditorPropertyArrayObject::EditorPropertyArrayObject() {
 ///////////////////
 
 bool EditorPropertyDictionaryObject::_set(const StringName &p_name, const Variant &p_value) {
-	String pn = p_name;
+	String name = p_name;
 
-	if (pn == "new_item_key") {
+	if (name == "new_item_key") {
 		new_item_key = p_value;
 		return true;
 	}
 
-	if (pn == "new_item_value") {
+	if (name == "new_item_value") {
 		new_item_value = p_value;
 		return true;
 	}
 
-	if (pn.begins_with("indices")) {
-		int idx = pn.get_slicec('/', 1).to_int();
-		Variant key = dict.get_key_at_index(idx);
+	if (name.begins_with("indices")) {
+		int index = name.get_slicec('/', 1).to_int();
+		Variant key = dict.get_key_at_index(index);
 		dict[key] = p_value;
 		return true;
 	}
@@ -100,21 +102,21 @@ bool EditorPropertyDictionaryObject::_set(const StringName &p_name, const Varian
 }
 
 bool EditorPropertyDictionaryObject::_get(const StringName &p_name, Variant &r_ret) const {
-	String pn = p_name;
+	String name = p_name;
 
-	if (pn == "new_item_key") {
+	if (name == "new_item_key") {
 		r_ret = new_item_key;
 		return true;
 	}
 
-	if (pn == "new_item_value") {
+	if (name == "new_item_value") {
 		r_ret = new_item_value;
 		return true;
 	}
 
-	if (pn.begins_with("indices")) {
-		int idx = pn.get_slicec('/', 1).to_int();
-		Variant key = dict.get_key_at_index(idx);
+	if (name.begins_with("indices")) {
+		int index = name.get_slicec('/', 1).to_int();
+		Variant key = dict.get_key_at_index(index);
 		r_ret = dict[key];
 		if (r_ret.get_type() == Variant::OBJECT && Object::cast_to<EncodedObjectAsID>(r_ret)) {
 			r_ret = Object::cast_to<EncodedObjectAsID>(r_ret)->get_object_id();
@@ -157,13 +159,13 @@ EditorPropertyDictionaryObject::EditorPropertyDictionaryObject() {
 
 void EditorPropertyArray::_property_changed(const String &p_property, Variant p_value, const String &p_name, bool p_changing) {
 	if (p_property.begins_with("indices")) {
-		int idx = p_property.get_slice("/", 1).to_int();
+		int index = p_property.get_slice("/", 1).to_int();
 		Variant array = object->get_array();
-		array.set(idx, p_value);
+		array.set(index, p_value);
 		emit_changed(get_edited_property(), array, "", true);
 
 		if (array.get_type() == Variant::ARRAY) {
-			array = array.call("duplicate"); //dupe, so undo/redo works better
+			array = array.call("duplicate"); // Duplicate, so undo/redo works better.
 		}
 		object->set_array(array);
 	}
@@ -171,7 +173,7 @@ void EditorPropertyArray::_property_changed(const String &p_property, Variant p_
 
 void EditorPropertyArray::_change_type(Object *p_button, int p_index) {
 	Button *button = Object::cast_to<Button>(p_button);
-	changing_type_idx = p_index;
+	changing_type_index = p_index;
 	Rect2 rect = button->get_screen_rect();
 	change_type->set_as_minsize();
 	change_type->set_position(rect.position + rect.size - Vector2(change_type->get_contents_minimum_size().x, 0));
@@ -180,7 +182,7 @@ void EditorPropertyArray::_change_type(Object *p_button, int p_index) {
 
 void EditorPropertyArray::_change_type_menu(int p_index) {
 	if (p_index == Variant::VARIANT_MAX) {
-		_remove_pressed(changing_type_idx);
+		_remove_pressed(changing_type_index);
 		return;
 	}
 
@@ -188,12 +190,12 @@ void EditorPropertyArray::_change_type_menu(int p_index) {
 	Callable::CallError ce;
 	Variant::construct(Variant::Type(p_index), value, nullptr, 0, ce);
 	Variant array = object->get_array();
-	array.set(changing_type_idx, value);
+	array.set(changing_type_index, value);
 
 	emit_changed(get_edited_property(), array, "", true);
 
 	if (array.get_type() == Variant::ARRAY) {
-		array = array.call("duplicate"); //dupe, so undo/redo works better
+		array = array.call("duplicate"); // Duplicate, so undo/redo works better.
 	}
 
 	object->set_array(array);
@@ -201,7 +203,7 @@ void EditorPropertyArray::_change_type_menu(int p_index) {
 }
 
 void EditorPropertyArray::_object_id_selected(const StringName &p_property, ObjectID p_id) {
-	emit_signal("object_id_selected", p_property, p_id);
+	emit_signal(SNAME("object_id_selected"), p_property, p_id);
 }
 
 void EditorPropertyArray::update_property() {
@@ -213,7 +215,7 @@ void EditorPropertyArray::update_property() {
 			arrtype = "Array";
 		} break;
 
-		// arrays
+		// Arrays.
 		case Variant::PACKED_BYTE_ARRAY: {
 			arrtype = "PackedByteArray";
 		} break;
@@ -256,7 +258,12 @@ void EditorPropertyArray::update_property() {
 		return;
 	}
 
-	edit->set_text(arrtype + " (size " + itos(array.call("size")) + ")");
+	int size = array.call("size");
+	int pages = MAX(0, size - 1) / page_length + 1;
+	page_index = MIN(page_index, pages - 1);
+	int offset = page_index * page_length;
+
+	edit->set_text(arrtype + " (size " + itos(size) + ")");
 
 	bool unfolded = get_edited_object()->editor_is_section_unfolded(get_edited_property());
 	if (edit->is_pressed() != unfolded) {
@@ -270,50 +277,50 @@ void EditorPropertyArray::update_property() {
 			vbox = memnew(VBoxContainer);
 			add_child(vbox);
 			set_bottom_editor(vbox);
-			HBoxContainer *hbc = memnew(HBoxContainer);
-			vbox->add_child(hbc);
+
+			HBoxContainer *hbox = memnew(HBoxContainer);
+			vbox->add_child(hbox);
+
 			Label *label = memnew(Label(TTR("Size: ")));
 			label->set_h_size_flags(SIZE_EXPAND_FILL);
-			hbc->add_child(label);
-			length = memnew(EditorSpinSlider);
-			length->set_step(1);
-			length->set_max(1000000);
-			length->set_h_size_flags(SIZE_EXPAND_FILL);
-			hbc->add_child(length);
-			length->connect("value_changed", callable_mp(this, &EditorPropertyArray::_length_changed));
+			hbox->add_child(label);
 
-			page_hb = memnew(HBoxContainer);
-			vbox->add_child(page_hb);
+			size_slider = memnew(EditorSpinSlider);
+			size_slider->set_step(1);
+			size_slider->set_max(1000000);
+			size_slider->set_h_size_flags(SIZE_EXPAND_FILL);
+			size_slider->connect("value_changed", callable_mp(this, &EditorPropertyArray::_length_changed));
+			hbox->add_child(size_slider);
+
+			page_hbox = memnew(HBoxContainer);
+			vbox->add_child(page_hbox);
+
 			label = memnew(Label(TTR("Page: ")));
 			label->set_h_size_flags(SIZE_EXPAND_FILL);
-			page_hb->add_child(label);
-			page = memnew(EditorSpinSlider);
-			page->set_step(1);
-			page_hb->add_child(page);
-			page->set_h_size_flags(SIZE_EXPAND_FILL);
-			page->connect("value_changed", callable_mp(this, &EditorPropertyArray::_page_changed));
+			page_hbox->add_child(label);
+
+			page_slider = memnew(EditorSpinSlider);
+			page_slider->set_step(1);
+			page_slider->set_h_size_flags(SIZE_EXPAND_FILL);
+			page_slider->connect("value_changed", callable_mp(this, &EditorPropertyArray::_page_changed));
+			page_hbox->add_child(page_slider);
 		} else {
-			//bye bye children of the box
-			while (vbox->get_child_count() > 2) {
-				vbox->get_child(2)->queue_delete(); // button still needed after pressed is called
-				vbox->remove_child(vbox->get_child(2));
+			// Bye bye children of the box.
+			for (int i = vbox->get_child_count() - 1; i >= 2; i--) {
+				Node *child = vbox->get_child(i);
+				if (child == reorder_selected_element_hbox) {
+					continue; // Don't remove the property that the user is moving.
+				}
+
+				child->queue_delete(); // Button still needed after pressed is called.
+				vbox->remove_child(child);
 			}
 		}
 
-		int len = array.call("size");
-
-		length->set_value(len);
-
-		int pages = MAX(0, len - 1) / page_len + 1;
-
-		page->set_max(pages);
-		page_idx = MIN(page_idx, pages - 1);
-		page->set_value(page_idx);
-		page_hb->set_visible(pages > 1);
-
-		int offset = page_idx * page_len;
-
-		int amount = MIN(len - offset, page_len);
+		size_slider->set_value(size);
+		page_slider->set_max(pages);
+		page_slider->set_value(page_index);
+		page_hbox->set_visible(pages > 1);
 
 		if (array.get_type() == Variant::ARRAY) {
 			array = array.call("duplicate");
@@ -321,7 +328,31 @@ void EditorPropertyArray::update_property() {
 
 		object->set_array(array);
 
+		int amount = MIN(size - offset, page_length);
 		for (int i = 0; i < amount; i++) {
+			bool reorder_is_from_current_page = reorder_from_index / page_length == page_index;
+			if (reorder_is_from_current_page && i == reorder_from_index % page_length) {
+				// Don't duplicate the property that the user is moving.
+				continue;
+			}
+			if (!reorder_is_from_current_page && i == reorder_to_index % page_length) {
+				// Don't create the property the moving property will take the place of,
+				// e.g. (if page_length == 20) don't create element 20 if dragging an item from
+				// the first page to the second page because element 20 would become element 19.
+				continue;
+			}
+
+			HBoxContainer *hbox = memnew(HBoxContainer);
+			vbox->add_child(hbox);
+
+			Button *reorder_button = memnew(Button);
+			reorder_button->set_icon(get_theme_icon(SNAME("TripleBar"), SNAME("EditorIcons")));
+			reorder_button->set_default_cursor_shape(Control::CURSOR_MOVE);
+			reorder_button->connect("gui_input", callable_mp(this, &EditorPropertyArray::_reorder_button_gui_input));
+			reorder_button->connect("button_down", callable_mp(this, &EditorPropertyArray::_reorder_button_down), varray(i + offset));
+			reorder_button->connect("button_up", callable_mp(this, &EditorPropertyArray::_reorder_button_up));
+			hbox->add_child(reorder_button);
+
 			String prop_name = "indices/" + itos(i + offset);
 
 			EditorProperty *prop = nullptr;
@@ -337,7 +368,7 @@ void EditorPropertyArray::update_property() {
 				editor->setup("Object");
 				prop = editor;
 			} else {
-				prop = EditorInspector::instantiate_property_editor(nullptr, value_type, "", subtype_hint, subtype_hint_string, 0);
+				prop = EditorInspector::instantiate_property_editor(nullptr, value_type, "", subtype_hint, subtype_hint_string, PROPERTY_USAGE_NONE);
 			}
 
 			prop->set_object_and_property(object.ptr(), prop_name);
@@ -346,27 +377,27 @@ void EditorPropertyArray::update_property() {
 			prop->connect("property_changed", callable_mp(this, &EditorPropertyArray::_property_changed));
 			prop->connect("object_id_selected", callable_mp(this, &EditorPropertyArray::_object_id_selected));
 			prop->set_h_size_flags(SIZE_EXPAND_FILL);
-
-			HBoxContainer *hb = memnew(HBoxContainer);
-
-			vbox->add_child(hb);
-			hb->add_child(prop);
+			hbox->add_child(prop);
 
 			bool is_untyped_array = array.get_type() == Variant::ARRAY && subtype == Variant::NIL;
 
 			if (is_untyped_array) {
 				Button *edit = memnew(Button);
-				edit->set_icon(get_theme_icon("Edit", "EditorIcons"));
-				hb->add_child(edit);
+				edit->set_icon(get_theme_icon(SNAME("Edit"), SNAME("EditorIcons")));
+				hbox->add_child(edit);
 				edit->connect("pressed", callable_mp(this, &EditorPropertyArray::_change_type), varray(edit, i + offset));
 			} else {
 				Button *remove = memnew(Button);
-				remove->set_icon(get_theme_icon("Remove", "EditorIcons"));
+				remove->set_icon(get_theme_icon(SNAME("Remove"), SNAME("EditorIcons")));
 				remove->connect("pressed", callable_mp(this, &EditorPropertyArray::_remove_pressed), varray(i + offset));
-				hb->add_child(remove);
+				hbox->add_child(remove);
 			}
 
 			prop->update_property();
+		}
+
+		if (reorder_to_index % page_length > 0) {
+			vbox->move_child(vbox->get_child(2), reorder_to_index % page_length + 2);
 		}
 
 		updating = false;
@@ -384,18 +415,13 @@ void EditorPropertyArray::_remove_pressed(int p_index) {
 	Variant array = object->get_array();
 	array.call("remove", p_index);
 
-	if (array.get_type() == Variant::ARRAY) {
-		array = array.call("duplicate");
-	}
-
 	emit_changed(get_edited_property(), array, "", false);
-	object->set_array(array);
 	update_property();
 }
 
 void EditorPropertyArray::_button_draw() {
 	if (dropping) {
-		Color color = get_theme_color("accent_color", "Editor");
+		Color color = get_theme_color(SNAME("accent_color"), SNAME("Editor"));
 		edit->draw_rect(Rect2(Point2(), edit->get_size()), color, false);
 	}
 }
@@ -414,14 +440,14 @@ bool EditorPropertyArray::_is_drop_valid(const Dictionary &p_drag_data) const {
 
 			for (int j = 0; j < allowed_type.get_slice_count(","); j++) {
 				String at = allowed_type.get_slice(",", j).strip_edges();
-				// Fail if one of the files is not of allowed type
+				// Fail if one of the files is not of allowed type.
 				if (!ClassDB::is_parent_class(ftype, at)) {
 					return false;
 				}
 			}
 		}
 
-		// If no files fail, drop is valid
+		// If no files fail, drop is valid.
 		return true;
 	}
 
@@ -442,13 +468,13 @@ void EditorPropertyArray::drop_data_fw(const Point2 &p_point, const Variant &p_d
 
 		Variant array = object->get_array();
 
-		// Handle the case where array is not initialised yet
+		// Handle the case where array is not initialised yet.
 		if (!array.is_array()) {
 			Callable::CallError ce;
 			Variant::construct(array_type, array, nullptr, 0, ce);
 		}
 
-		// Loop the file array and add to existing array
+		// Loop the file array and add to existing array.
 		for (int i = 0; i < files.size(); i++) {
 			String file = files[i];
 
@@ -504,7 +530,7 @@ void EditorPropertyArray::_page_changed(double p_page) {
 	if (updating) {
 		return;
 	}
-	page_idx = p_page;
+	page_index = p_page;
 	update_property();
 }
 
@@ -530,10 +556,10 @@ void EditorPropertyArray::_length_changed(double p_page) {
 				}
 			}
 		}
-		array = array.call("duplicate"); //dupe, so undo/redo works better
+		array = array.call("duplicate"); // Duplicate, so undo/redo works better.
 	} else {
 		int size = array.call("size");
-		// Pool*Array don't initialize their elements, have to do it manually
+		// Pool*Array don't initialize their elements, have to do it manually.
 		for (int i = previous_size; i < size; i++) {
 			Callable::CallError ce;
 			Variant r;
@@ -550,6 +576,8 @@ void EditorPropertyArray::_length_changed(double p_page) {
 void EditorPropertyArray::setup(Variant::Type p_array_type, const String &p_hint_string) {
 	array_type = p_array_type;
 
+	// The format of p_hint_string is:
+	// subType/subTypeHint:nextSubtype ... etc.
 	if (array_type == Variant::ARRAY && !p_hint_string.is_empty()) {
 		int hint_subtype_separator = p_hint_string.find(":");
 		if (hint_subtype_separator >= 0) {
@@ -566,16 +594,82 @@ void EditorPropertyArray::setup(Variant::Type p_array_type, const String &p_hint
 	}
 }
 
+void EditorPropertyArray::_reorder_button_gui_input(const Ref<InputEvent> &p_event) {
+	if (reorder_from_index < 0) {
+		return;
+	}
+
+	Ref<InputEventMouseMotion> mm = p_event;
+	if (mm.is_valid()) {
+		Variant array = object->get_array();
+		int size = array.call("size");
+
+		if ((reorder_to_index == 0 && mm->get_relative().y < 0.0f) || (reorder_to_index == size - 1 && mm->get_relative().y > 0.0f)) {
+			return;
+		}
+
+		reorder_mouse_y_delta += mm->get_relative().y;
+		float required_y_distance = 20.0f * EDSCALE;
+		if (ABS(reorder_mouse_y_delta) > required_y_distance) {
+			int direction = reorder_mouse_y_delta > 0.0f ? 1 : -1;
+			reorder_mouse_y_delta -= required_y_distance * direction;
+
+			reorder_to_index += direction;
+			if ((direction < 0 && reorder_to_index % page_length == page_length - 1) || (direction > 0 && reorder_to_index % page_length == 0)) {
+				// Automatically move to the next/previous page.
+				page_slider->set_value(page_index + direction);
+			}
+			vbox->move_child(reorder_selected_element_hbox, reorder_to_index % page_length + 2);
+			// Ensure the moving element is visible.
+			EditorNode::get_singleton()->get_inspector()->ensure_control_visible(reorder_selected_element_hbox);
+		}
+	}
+}
+
+void EditorPropertyArray::_reorder_button_down(int p_index) {
+	reorder_from_index = p_index;
+	reorder_to_index = p_index;
+	reorder_selected_element_hbox = Object::cast_to<HBoxContainer>(vbox->get_child(p_index % page_length + 2));
+	reorder_selected_button = Object::cast_to<Button>(reorder_selected_element_hbox->get_child(0));
+	// Ideally it'd to be able to show the mouse but I had issues with
+	// Control's `mouse_exit()`/`mouse_entered()` signals not getting called.
+	Input::get_singleton()->set_mouse_mode(Input::MOUSE_MODE_CAPTURED);
+}
+
+void EditorPropertyArray::_reorder_button_up() {
+	if (reorder_from_index != reorder_to_index) {
+		// Move the element.
+		Variant array = object->get_array();
+
+		Variant value_to_move = array.get(reorder_from_index);
+		array.call("remove", reorder_from_index);
+		array.call("insert", reorder_to_index, value_to_move);
+
+		emit_changed(get_edited_property(), array, "", false);
+		object->set_array(array);
+		update_property();
+	}
+
+	reorder_from_index = -1;
+	reorder_to_index = -1;
+	reorder_mouse_y_delta = 0.0f;
+
+	Input::get_singleton()->set_mouse_mode(Input::MOUSE_MODE_VISIBLE);
+	reorder_selected_button->warp_mouse(reorder_selected_button->get_size() / 2.0f);
+
+	reorder_selected_element_hbox = nullptr;
+	reorder_selected_button = nullptr;
+}
+
 void EditorPropertyArray::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("can_drop_data_fw"), &EditorPropertyArray::can_drop_data_fw);
-	ClassDB::bind_method(D_METHOD("drop_data_fw"), &EditorPropertyArray::drop_data_fw);
+	ClassDB::bind_method(D_METHOD("_can_drop_data_fw"), &EditorPropertyArray::can_drop_data_fw);
+	ClassDB::bind_method(D_METHOD("_drop_data_fw"), &EditorPropertyArray::drop_data_fw);
 }
 
 EditorPropertyArray::EditorPropertyArray() {
-	object.instance();
-	page_len = int(EDITOR_GET("interface/inspector/max_array_dictionary_items_per_page"));
+	object.instantiate();
+	page_length = int(EDITOR_GET("interface/inspector/max_array_dictionary_items_per_page"));
 	edit = memnew(Button);
-	edit->set_flat(true);
 	edit->set_h_size_flags(SIZE_EXPAND_FILL);
 	edit->set_clip_text(true);
 	edit->connect("pressed", callable_mp(this, &EditorPropertyArray::_edit_pressed));
@@ -585,8 +679,8 @@ EditorPropertyArray::EditorPropertyArray() {
 	add_child(edit);
 	add_focusable(edit);
 	vbox = nullptr;
-	page = nullptr;
-	length = nullptr;
+	page_slider = nullptr;
+	size_slider = nullptr;
 	updating = false;
 	change_type = memnew(PopupMenu);
 	add_child(change_type);
@@ -598,7 +692,7 @@ EditorPropertyArray::EditorPropertyArray() {
 	}
 	change_type->add_separator();
 	change_type->add_item(TTR("Remove Item"), Variant::VARIANT_MAX);
-	changing_type_idx = -1;
+	changing_type_index = -1;
 
 	subtype = Variant::NIL;
 	subtype_hint = PROPERTY_HINT_NONE;
@@ -615,14 +709,14 @@ void EditorPropertyDictionary::_property_changed(const String &p_property, Varia
 	} else if (p_property == "new_item_value") {
 		object->set_new_item_value(p_value);
 	} else if (p_property.begins_with("indices")) {
-		int idx = p_property.get_slice("/", 1).to_int();
+		int index = p_property.get_slice("/", 1).to_int();
 		Dictionary dict = object->get_dict();
-		Variant key = dict.get_key_at_index(idx);
+		Variant key = dict.get_key_at_index(index);
 		dict[key] = p_value;
 
 		emit_changed(get_edited_property(), dict, "", true);
 
-		dict = dict.duplicate(); //dupe, so undo/redo works better
+		dict = dict.duplicate(); // Duplicate, so undo/redo works better\.
 		object->set_dict(dict);
 	}
 }
@@ -634,7 +728,7 @@ void EditorPropertyDictionary::_change_type(Object *p_button, int p_index) {
 	change_type->set_as_minsize();
 	change_type->set_position(rect.position + rect.size - Vector2(change_type->get_contents_minimum_size().x, 0));
 	change_type->popup();
-	changing_type_idx = p_index;
+	changing_type_index = p_index;
 }
 
 void EditorPropertyDictionary::_add_key_value() {
@@ -651,17 +745,17 @@ void EditorPropertyDictionary::_add_key_value() {
 
 	emit_changed(get_edited_property(), dict, "", false);
 
-	dict = dict.duplicate(); //dupe, so undo/redo works better
+	dict = dict.duplicate(); // Duplicate, so undo/redo works better.
 	object->set_dict(dict);
 	update_property();
 }
 
 void EditorPropertyDictionary::_change_type_menu(int p_index) {
-	if (changing_type_idx < 0) {
+	if (changing_type_index < 0) {
 		Variant value;
 		Callable::CallError ce;
 		Variant::construct(Variant::Type(p_index), value, nullptr, 0, ce);
-		if (changing_type_idx == -1) {
+		if (changing_type_index == -1) {
 			object->set_new_item_key(value);
 		} else {
 			object->set_new_item_value(value);
@@ -676,16 +770,16 @@ void EditorPropertyDictionary::_change_type_menu(int p_index) {
 		Variant value;
 		Callable::CallError ce;
 		Variant::construct(Variant::Type(p_index), value, nullptr, 0, ce);
-		Variant key = dict.get_key_at_index(changing_type_idx);
+		Variant key = dict.get_key_at_index(changing_type_index);
 		dict[key] = value;
 	} else {
-		Variant key = dict.get_key_at_index(changing_type_idx);
+		Variant key = dict.get_key_at_index(changing_type_index);
 		dict.erase(key);
 	}
 
 	emit_changed(get_edited_property(), dict, "", false);
 
-	dict = dict.duplicate(); //dupe, so undo/redo works better
+	dict = dict.duplicate(); // Duplicate, so undo/redo works better\.
 	object->set_dict(dict);
 	update_property();
 }
@@ -694,7 +788,7 @@ void EditorPropertyDictionary::update_property() {
 	Variant updated_val = get_edited_object()->get(get_edited_property());
 
 	if (updated_val.get_type() == Variant::NIL) {
-		edit->set_text("Dictionary (Nil)"); //This provides symmetry with the array property.
+		edit->set_text("Dictionary (Nil)"); // This provides symmetry with the array property.
 		edit->set_pressed(false);
 		if (vbox) {
 			set_bottom_editor(nullptr);
@@ -721,16 +815,16 @@ void EditorPropertyDictionary::update_property() {
 			add_child(vbox);
 			set_bottom_editor(vbox);
 
-			page_hb = memnew(HBoxContainer);
-			vbox->add_child(page_hb);
+			page_hbox = memnew(HBoxContainer);
+			vbox->add_child(page_hbox);
 			Label *label = memnew(Label(TTR("Page: ")));
 			label->set_h_size_flags(SIZE_EXPAND_FILL);
-			page_hb->add_child(label);
-			page = memnew(EditorSpinSlider);
-			page->set_step(1);
-			page_hb->add_child(page);
-			page->set_h_size_flags(SIZE_EXPAND_FILL);
-			page->connect("value_changed", callable_mp(this, &EditorPropertyDictionary::_page_changed));
+			page_hbox->add_child(label);
+			page_slider = memnew(EditorSpinSlider);
+			page_slider->set_step(1);
+			page_hbox->add_child(page_slider);
+			page_slider->set_h_size_flags(SIZE_EXPAND_FILL);
+			page_slider->connect("value_changed", callable_mp(this, &EditorPropertyDictionary::_page_changed));
 		} else {
 			// Queue children for deletion, deleting immediately might cause errors.
 			for (int i = 1; i < vbox->get_child_count(); i++) {
@@ -738,18 +832,18 @@ void EditorPropertyDictionary::update_property() {
 			}
 		}
 
-		int len = dict.size();
+		int size = dict.size();
 
-		int pages = MAX(0, len - 1) / page_len + 1;
+		int pages = MAX(0, size - 1) / page_length + 1;
 
-		page->set_max(pages);
-		page_idx = MIN(page_idx, pages - 1);
-		page->set_value(page_idx);
-		page_hb->set_visible(pages > 1);
+		page_slider->set_max(pages);
+		page_index = MIN(page_index, pages - 1);
+		page_slider->set_value(page_index);
+		page_hbox->set_visible(pages > 1);
 
-		int offset = page_idx * page_len;
+		int offset = page_index * page_length;
 
-		int amount = MIN(len - offset, page_len);
+		int amount = MIN(size - offset, page_length);
 
 		dict = dict.duplicate();
 
@@ -781,7 +875,7 @@ void EditorPropertyDictionary::update_property() {
 
 				} break;
 
-				// atomic types
+				// Atomic types.
 				case Variant::BOOL: {
 					prop = memnew(EditorPropertyCheck);
 
@@ -802,7 +896,7 @@ void EditorPropertyDictionary::update_property() {
 
 				} break;
 
-				// math types
+				// Math types.
 				case Variant::VECTOR2: {
 					EditorPropertyVector2 *editor = memnew(EditorPropertyVector2);
 					editor->setup(-100000, 100000, 0.001, true);
@@ -851,8 +945,8 @@ void EditorPropertyDictionary::update_property() {
 					prop = editor;
 
 				} break;
-				case Variant::QUAT: {
-					EditorPropertyQuat *editor = memnew(EditorPropertyQuat);
+				case Variant::QUATERNION: {
+					EditorPropertyQuaternion *editor = memnew(EditorPropertyQuaternion);
 					editor->setup(-100000, 100000, 0.001, true);
 					prop = editor;
 
@@ -869,14 +963,14 @@ void EditorPropertyDictionary::update_property() {
 					prop = editor;
 
 				} break;
-				case Variant::TRANSFORM: {
-					EditorPropertyTransform *editor = memnew(EditorPropertyTransform);
+				case Variant::TRANSFORM3D: {
+					EditorPropertyTransform3D *editor = memnew(EditorPropertyTransform3D);
 					editor->setup(-100000, 100000, 0.001, true);
 					prop = editor;
 
 				} break;
 
-				// misc types
+				// Miscellaneous types.
 				case Variant::COLOR: {
 					prop = memnew(EditorPropertyColor);
 
@@ -903,7 +997,7 @@ void EditorPropertyDictionary::update_property() {
 
 					} else {
 						EditorPropertyResource *editor = memnew(EditorPropertyResource);
-						editor->setup("Resource");
+						editor->setup(object.ptr(), prop_name, "Resource");
 						prop = editor;
 					}
 
@@ -918,7 +1012,7 @@ void EditorPropertyDictionary::update_property() {
 					prop = editor;
 				} break;
 
-				// arrays
+				// Arrays.
 				case Variant::PACKED_BYTE_ARRAY: {
 					EditorPropertyArray *editor = memnew(EditorPropertyArray);
 					editor->setup(Variant::PACKED_BYTE_ARRAY);
@@ -972,11 +1066,11 @@ void EditorPropertyDictionary::update_property() {
 				PanelContainer *pc = memnew(PanelContainer);
 				vbox->add_child(pc);
 				Ref<StyleBoxFlat> flat;
-				flat.instance();
+				flat.instantiate();
 				for (int j = 0; j < 4; j++) {
 					flat->set_default_margin(Side(j), 2 * EDSCALE);
 				}
-				flat->set_bg_color(get_theme_color("prop_subsection", "Editor"));
+				flat->set_bg_color(get_theme_color(SNAME("prop_subsection"), SNAME("Editor")));
 
 				pc->add_theme_style_override("panel", flat);
 				add_vbox = memnew(VBoxContainer);
@@ -1002,17 +1096,17 @@ void EditorPropertyDictionary::update_property() {
 			prop->connect("property_changed", callable_mp(this, &EditorPropertyDictionary::_property_changed));
 			prop->connect("object_id_selected", callable_mp(this, &EditorPropertyDictionary::_object_id_selected));
 
-			HBoxContainer *hb = memnew(HBoxContainer);
+			HBoxContainer *hbox = memnew(HBoxContainer);
 			if (add_vbox) {
-				add_vbox->add_child(hb);
+				add_vbox->add_child(hbox);
 			} else {
-				vbox->add_child(hb);
+				vbox->add_child(hbox);
 			}
-			hb->add_child(prop);
+			hbox->add_child(prop);
 			prop->set_h_size_flags(SIZE_EXPAND_FILL);
 			Button *edit = memnew(Button);
-			edit->set_icon(get_theme_icon("Edit", "EditorIcons"));
-			hb->add_child(edit);
+			edit->set_icon(get_theme_icon(SNAME("Edit"), SNAME("EditorIcons")));
+			hbox->add_child(edit);
 			edit->connect("pressed", callable_mp(this, &EditorPropertyDictionary::_change_type), varray(edit, change_index));
 
 			prop->update_property();
@@ -1037,7 +1131,7 @@ void EditorPropertyDictionary::update_property() {
 }
 
 void EditorPropertyDictionary::_object_id_selected(const StringName &p_property, ObjectID p_id) {
-	emit_signal("object_id_selected", p_property, p_id);
+	emit_signal(SNAME("object_id_selected"), p_property, p_id);
 }
 
 void EditorPropertyDictionary::_notification(int p_what) {
@@ -1059,7 +1153,7 @@ void EditorPropertyDictionary::_page_changed(double p_page) {
 	if (updating) {
 		return;
 	}
-	page_idx = p_page;
+	page_index = p_page;
 	update_property();
 }
 
@@ -1067,10 +1161,9 @@ void EditorPropertyDictionary::_bind_methods() {
 }
 
 EditorPropertyDictionary::EditorPropertyDictionary() {
-	object.instance();
-	page_len = int(EDITOR_GET("interface/inspector/max_array_dictionary_items_per_page"));
+	object.instantiate();
+	page_length = int(EDITOR_GET("interface/inspector/max_array_dictionary_items_per_page"));
 	edit = memnew(Button);
-	edit->set_flat(true);
 	edit->set_h_size_flags(SIZE_EXPAND_FILL);
 	edit->set_clip_text(true);
 	edit->connect("pressed", callable_mp(this, &EditorPropertyDictionary::_edit_pressed));
@@ -1078,7 +1171,7 @@ EditorPropertyDictionary::EditorPropertyDictionary() {
 	add_child(edit);
 	add_focusable(edit);
 	vbox = nullptr;
-	page = nullptr;
+	page_slider = nullptr;
 	updating = false;
 	change_type = memnew(PopupMenu);
 	add_child(change_type);
@@ -1090,5 +1183,5 @@ EditorPropertyDictionary::EditorPropertyDictionary() {
 	}
 	change_type->add_separator();
 	change_type->add_item(TTR("Remove Item"), Variant::VARIANT_MAX);
-	changing_type_idx = -1;
+	changing_type_index = -1;
 }

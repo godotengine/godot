@@ -50,32 +50,27 @@ private:
 	RID self;
 	ObjectID instance_id;
 	ObjectID canvas_instance_id;
-	bool pickable;
+	bool pickable = true;
 
 	struct Shape {
 		Transform2D xform;
 		Transform2D xform_inv;
-		BroadPhase2DSW::ID bpid;
+		BroadPhase2DSW::ID bpid = 0;
 		Rect2 aabb_cache; //for rayqueries
-		Shape2DSW *shape;
+		Shape2DSW *shape = nullptr;
 		Variant metadata;
-		bool disabled;
-		bool one_way_collision;
-		real_t one_way_collision_margin;
-		Shape() {
-			disabled = false;
-			one_way_collision = false;
-			one_way_collision_margin = 0;
-		}
+		bool disabled = false;
+		bool one_way_collision = false;
+		real_t one_way_collision_margin = 0.0;
 	};
 
 	Vector<Shape> shapes;
-	Space2DSW *space;
+	Space2DSW *space = nullptr;
 	Transform2D transform;
 	Transform2D inv_transform;
-	uint32_t collision_mask;
-	uint32_t collision_layer;
-	bool _static;
+	uint32_t collision_mask = 1;
+	uint32_t collision_layer = 1;
+	bool _static = true;
 
 	SelfList<CollisionObject2DSW> pending_shape_update_list;
 
@@ -118,10 +113,6 @@ public:
 	void set_shape_metadata(int p_index, const Variant &p_metadata);
 
 	_FORCE_INLINE_ int get_shape_count() const { return shapes.size(); }
-	_FORCE_INLINE_ bool is_shape_disabled(int p_index) const {
-		CRASH_BAD_INDEX(p_index, shapes.size());
-		return shapes[p_index].disabled;
-	}
 	_FORCE_INLINE_ Shape2DSW *get_shape(int p_index) const {
 		CRASH_BAD_INDEX(p_index, shapes.size());
 		return shapes[p_index].shape;
@@ -143,13 +134,13 @@ public:
 		return shapes[p_index].metadata;
 	}
 
-	_FORCE_INLINE_ Transform2D get_transform() const { return transform; }
-	_FORCE_INLINE_ Transform2D get_inv_transform() const { return inv_transform; }
+	_FORCE_INLINE_ const Transform2D &get_transform() const { return transform; }
+	_FORCE_INLINE_ const Transform2D &get_inv_transform() const { return inv_transform; }
 	_FORCE_INLINE_ Space2DSW *get_space() const { return space; }
 
-	void set_shape_as_disabled(int p_idx, bool p_disabled);
-	_FORCE_INLINE_ bool is_shape_set_as_disabled(int p_idx) const {
-		CRASH_BAD_INDEX(p_idx, shapes.size());
+	void set_shape_disabled(int p_idx, bool p_disabled);
+	_FORCE_INLINE_ bool is_shape_disabled(int p_idx) const {
+		ERR_FAIL_INDEX_V(p_idx, shapes.size(), false);
 		return shapes[p_idx].disabled;
 	}
 
@@ -190,7 +181,11 @@ public:
 	void set_pickable(bool p_pickable) { pickable = p_pickable; }
 	_FORCE_INLINE_ bool is_pickable() const { return pickable; }
 
-	_FORCE_INLINE_ bool test_collision_mask(CollisionObject2DSW *p_other) const {
+	_FORCE_INLINE_ bool collides_with(CollisionObject2DSW *p_other) const {
+		return p_other->collision_layer & collision_mask;
+	}
+
+	_FORCE_INLINE_ bool interacts_with(CollisionObject2DSW *p_other) const {
 		return collision_layer & p_other->collision_mask || p_other->collision_layer & collision_mask;
 	}
 

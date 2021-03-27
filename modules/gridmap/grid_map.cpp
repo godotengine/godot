@@ -151,32 +151,40 @@ uint32_t GridMap::get_collision_mask() const {
 	return collision_mask;
 }
 
-void GridMap::set_collision_mask_bit(int p_bit, bool p_value) {
+void GridMap::set_collision_layer_value(int p_layer_number, bool p_value) {
+	ERR_FAIL_COND_MSG(p_layer_number < 1, "Collision layer number must be between 1 and 32 inclusive.");
+	ERR_FAIL_COND_MSG(p_layer_number > 32, "Collision layer number must be between 1 and 32 inclusive.");
+	uint32_t collision_layer = get_collision_layer();
+	if (p_value) {
+		collision_layer |= 1 << (p_layer_number - 1);
+	} else {
+		collision_layer &= ~(1 << (p_layer_number - 1));
+	}
+	set_collision_layer(collision_layer);
+}
+
+bool GridMap::get_collision_layer_value(int p_layer_number) const {
+	ERR_FAIL_COND_V_MSG(p_layer_number < 1, false, "Collision layer number must be between 1 and 32 inclusive.");
+	ERR_FAIL_COND_V_MSG(p_layer_number > 32, false, "Collision layer number must be between 1 and 32 inclusive.");
+	return get_collision_layer() & (1 << (p_layer_number - 1));
+}
+
+void GridMap::set_collision_mask_value(int p_layer_number, bool p_value) {
+	ERR_FAIL_COND_MSG(p_layer_number < 1, "Collision layer number must be between 1 and 32 inclusive.");
+	ERR_FAIL_COND_MSG(p_layer_number > 32, "Collision layer number must be between 1 and 32 inclusive.");
 	uint32_t mask = get_collision_mask();
 	if (p_value) {
-		mask |= 1 << p_bit;
+		mask |= 1 << (p_layer_number - 1);
 	} else {
-		mask &= ~(1 << p_bit);
+		mask &= ~(1 << (p_layer_number - 1));
 	}
 	set_collision_mask(mask);
 }
 
-bool GridMap::get_collision_mask_bit(int p_bit) const {
-	return get_collision_mask() & (1 << p_bit);
-}
-
-void GridMap::set_collision_layer_bit(int p_bit, bool p_value) {
-	uint32_t mask = get_collision_layer();
-	if (p_value) {
-		mask |= 1 << p_bit;
-	} else {
-		mask &= ~(1 << p_bit);
-	}
-	set_collision_layer(mask);
-}
-
-bool GridMap::get_collision_layer_bit(int p_bit) const {
-	return get_collision_layer() & (1 << p_bit);
+bool GridMap::get_collision_mask_value(int p_layer_number) const {
+	ERR_FAIL_COND_V_MSG(p_layer_number < 1, false, "Collision layer number must be between 1 and 32 inclusive.");
+	ERR_FAIL_COND_V_MSG(p_layer_number > 32, false, "Collision layer number must be between 1 and 32 inclusive.");
+	return get_collision_mask() & (1 << (p_layer_number - 1));
 }
 
 void GridMap::set_bake_navigation(bool p_bake_navigation) {
@@ -217,7 +225,7 @@ void GridMap::set_cell_size(const Vector3 &p_size) {
 	ERR_FAIL_COND(p_size.x < 0.001 || p_size.y < 0.001 || p_size.z < 0.001);
 	cell_size = p_size;
 	_recreate_octant_data();
-	emit_signal("cell_size_changed", cell_size);
+	emit_signal(SNAME("cell_size_changed"), cell_size);
 }
 
 Vector3 GridMap::get_cell_size() const {
@@ -442,7 +450,7 @@ bool GridMap::_octant_update(const OctantKey &p_key) {
 	 * and set said multimesh bounding box to one containing all cells which have this item
 	 */
 
-	Map<int, List<Pair<Transform, IndexKey>>> multimesh_items;
+	Map<int, List<Pair<Transform3D, IndexKey>>> multimesh_items;
 
 	for (Set<IndexKey>::Element *E = g.cells.front(); E; E = E->next()) {
 		ERR_CONTINUE(!cell_map.has(E->get()));
@@ -455,7 +463,7 @@ bool GridMap::_octant_update(const OctantKey &p_key) {
 		Vector3 cellpos = Vector3(E->get().x, E->get().y, E->get().z);
 		Vector3 ofs = _get_offset();
 
-		Transform xform;
+		Transform3D xform;
 
 		xform.basis.set_orthogonal_index(c.rot);
 		xform.set_origin(cellpos * cell_size + ofs);
@@ -463,11 +471,11 @@ bool GridMap::_octant_update(const OctantKey &p_key) {
 		if (baked_meshes.size() == 0) {
 			if (mesh_library->get_item_mesh(c.item).is_valid()) {
 				if (!multimesh_items.has(c.item)) {
-					multimesh_items[c.item] = List<Pair<Transform, IndexKey>>();
+					multimesh_items[c.item] = List<Pair<Transform3D, IndexKey>>();
 				}
 
-				Pair<Transform, IndexKey> p;
-				p.first = xform;
+				Pair<Transform3D, IndexKey> p;
+				p.first = xform * mesh_library->get_item_mesh_transform(c.item);
 				p.second = E->get();
 				multimesh_items[c.item].push_back(p);
 			}
@@ -507,7 +515,7 @@ bool GridMap::_octant_update(const OctantKey &p_key) {
 
 	//update multimeshes, only if not baked
 	if (baked_meshes.size() == 0) {
-		for (Map<int, List<Pair<Transform, IndexKey>>>::Element *E = multimesh_items.front(); E; E = E->next()) {
+		for (Map<int, List<Pair<Transform3D, IndexKey>>>::Element *E = multimesh_items.front(); E; E = E->next()) {
 			Octant::MultimeshInstance mmi;
 
 			RID mm = RS::get_singleton()->multimesh_create();
@@ -515,14 +523,14 @@ bool GridMap::_octant_update(const OctantKey &p_key) {
 			RS::get_singleton()->multimesh_set_mesh(mm, mesh_library->get_item_mesh(E->key())->get_rid());
 
 			int idx = 0;
-			for (List<Pair<Transform, IndexKey>>::Element *F = E->get().front(); F; F = F->next()) {
-				RS::get_singleton()->multimesh_instance_set_transform(mm, idx, F->get().first);
+			for (const Pair<Transform3D, IndexKey> &F : E->get()) {
+				RS::get_singleton()->multimesh_instance_set_transform(mm, idx, F.first);
 #ifdef TOOLS_ENABLED
 
 				Octant::MultimeshInstance::Item it;
 				it.index = idx;
-				it.transform = F->get().first;
-				it.key = F->get().second;
+				it.transform = F.first;
+				it.key = F.second;
 				mmi.items.push_back(it);
 #endif
 
@@ -668,7 +676,7 @@ void GridMap::_notification(int p_what) {
 
 		} break;
 		case NOTIFICATION_TRANSFORM_CHANGED: {
-			Transform new_xform = get_global_transform();
+			Transform3D new_xform = get_global_transform();
 			if (new_xform == last_transform) {
 				break;
 			}
@@ -682,7 +690,6 @@ void GridMap::_notification(int p_what) {
 			for (int i = 0; i < baked_meshes.size(); i++) {
 				RS::get_singleton()->instance_set_transform(baked_meshes[i].instance, get_global_transform());
 			}
-
 		} break;
 		case NOTIFICATION_EXIT_WORLD: {
 			for (Map<OctantKey, Octant *>::Element *E = octant_map.front(); E; E = E->next()) {
@@ -777,7 +784,7 @@ void GridMap::_update_octants_callback() {
 
 	while (to_delete.front()) {
 		octant_map.erase(to_delete.front()->get());
-		to_delete.pop_back();
+		to_delete.pop_front();
 	}
 
 	_update_visibility();
@@ -791,11 +798,11 @@ void GridMap::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_collision_mask", "mask"), &GridMap::set_collision_mask);
 	ClassDB::bind_method(D_METHOD("get_collision_mask"), &GridMap::get_collision_mask);
 
-	ClassDB::bind_method(D_METHOD("set_collision_mask_bit", "bit", "value"), &GridMap::set_collision_mask_bit);
-	ClassDB::bind_method(D_METHOD("get_collision_mask_bit", "bit"), &GridMap::get_collision_mask_bit);
+	ClassDB::bind_method(D_METHOD("set_collision_mask_value", "layer_number", "value"), &GridMap::set_collision_mask_value);
+	ClassDB::bind_method(D_METHOD("get_collision_mask_value", "layer_number"), &GridMap::get_collision_mask_value);
 
-	ClassDB::bind_method(D_METHOD("set_collision_layer_bit", "bit", "value"), &GridMap::set_collision_layer_bit);
-	ClassDB::bind_method(D_METHOD("get_collision_layer_bit", "bit"), &GridMap::get_collision_layer_bit);
+	ClassDB::bind_method(D_METHOD("set_collision_layer_value", "layer_number", "value"), &GridMap::set_collision_layer_value);
+	ClassDB::bind_method(D_METHOD("get_collision_layer_value", "layer_number"), &GridMap::get_collision_layer_value);
 
 	ClassDB::bind_method(D_METHOD("set_bake_navigation", "bake_navigation"), &GridMap::set_bake_navigation);
 	ClassDB::bind_method(D_METHOD("is_baking_navigation"), &GridMap::is_baking_navigation);
@@ -930,7 +937,7 @@ Array GridMap::get_meshes() {
 
 		Vector3 cellpos = Vector3(ik.x, ik.y, ik.z);
 
-		Transform xform;
+		Transform3D xform;
 
 		xform.basis.set_orthogonal_index(E->get().rot);
 
@@ -984,7 +991,7 @@ void GridMap::make_baked_meshes(bool p_gen_lightmap_uv, float p_lightmap_uv_texe
 		Vector3 cellpos = Vector3(key.x, key.y, key.z);
 		Vector3 ofs = _get_offset();
 
-		Transform xform;
+		Transform3D xform;
 
 		xform.basis.set_orthogonal_index(E->get().rot);
 		xform.set_origin(cellpos * cell_size + ofs);
@@ -1009,7 +1016,7 @@ void GridMap::make_baked_meshes(bool p_gen_lightmap_uv, float p_lightmap_uv_texe
 			Ref<Material> surf_mat = mesh->surface_get_material(i);
 			if (!mat_map.has(surf_mat)) {
 				Ref<SurfaceTool> st;
-				st.instance();
+				st.instantiate();
 				st->begin(Mesh::PRIMITIVE_TRIANGLES);
 				st->set_material(surf_mat);
 				mat_map[surf_mat] = st;
@@ -1021,7 +1028,7 @@ void GridMap::make_baked_meshes(bool p_gen_lightmap_uv, float p_lightmap_uv_texe
 
 	for (Map<OctantKey, Map<Ref<Material>, Ref<SurfaceTool>>>::Element *E = surface_map.front(); E; E = E->next()) {
 		Ref<ArrayMesh> mesh;
-		mesh.instance();
+		mesh.instantiate();
 		for (Map<Ref<Material>, Ref<SurfaceTool>>::Element *F = E->get().front(); F; F = F->next()) {
 			F->get()->commit(mesh);
 		}
@@ -1053,7 +1060,7 @@ Array GridMap::get_bake_meshes() {
 	Array arr;
 	for (int i = 0; i < baked_meshes.size(); i++) {
 		arr.push_back(baked_meshes[i].mesh);
-		arr.push_back(Transform());
+		arr.push_back(Transform3D());
 	}
 
 	return arr;

@@ -70,8 +70,7 @@ void GDAPI godot_nativescript_register_class(void *p_gdnative_handle, const char
 
 		const NativeScriptDesc *b = desc.base_data;
 		while (b) {
-			desc.rpc_count += b->rpc_count;
-			desc.rset_count += b->rset_count;
+			desc.rpc_methods.append_array(b->rpc_methods);
 			b = b->base_data;
 		}
 
@@ -94,8 +93,6 @@ void GDAPI godot_nativescript_register_tool_class(void *p_gdnative_handle, const
 	desc.destroy_func = p_destroy_func;
 	desc.is_tool = true;
 	desc.base = p_base;
-	desc.rpc_count = 0;
-	desc.rset_count = 0;
 
 	if (classes->has(p_base)) {
 		desc.base_data = &(*classes)[p_base];
@@ -103,8 +100,7 @@ void GDAPI godot_nativescript_register_tool_class(void *p_gdnative_handle, const
 
 		const NativeScriptDesc *b = desc.base_data;
 		while (b) {
-			desc.rpc_count += b->rpc_count;
-			desc.rset_count += b->rset_count;
+			desc.rpc_methods.append_array(b->rpc_methods);
 			b = b->base_data;
 		}
 
@@ -126,13 +122,16 @@ void GDAPI godot_nativescript_register_method(void *p_gdnative_handle, const cha
 	method.method = p_method;
 	method.rpc_mode = p_attr.rpc_type;
 	method.rpc_method_id = UINT16_MAX;
-	if (p_attr.rpc_type != GODOT_METHOD_RPC_MODE_DISABLED) {
-		method.rpc_method_id = E->get().rpc_count;
-		E->get().rpc_count += 1;
-	}
 	method.info = MethodInfo(p_function_name);
 
 	E->get().methods.insert(p_function_name, method);
+
+	if (p_attr.rpc_type != GODOT_METHOD_RPC_MODE_DISABLED) {
+		Multiplayer::RPCConfig nd;
+		nd.name = String(p_name);
+		nd.rpc_mode = Multiplayer::RPCMode(p_attr.rpc_type);
+		E->get().rpc_methods.push_back(nd);
+	}
 }
 
 void GDAPI godot_nativescript_register_property(void *p_gdnative_handle, const char *p_name, const char *p_path, godot_nativescript_property_attributes *p_attr, godot_nativescript_property_set_func p_set_func, godot_nativescript_property_get_func p_get_func) {
@@ -144,11 +143,6 @@ void GDAPI godot_nativescript_register_property(void *p_gdnative_handle, const c
 	NativeScriptDesc::Property property;
 	property.default_value = *(Variant *)&p_attr->default_value;
 	property.getter = p_get_func;
-	property.rset_mode = p_attr->rset_type;
-	if (p_attr->rset_type != GODOT_METHOD_RPC_MODE_DISABLED) {
-		property.rset_property_id = E->get().rset_count;
-		E->get().rset_count += 1;
-	}
 	property.setter = p_set_func;
 	property.info = PropertyInfo((Variant::Type)p_attr->type,
 			p_path,
@@ -338,7 +332,7 @@ void GDAPI godot_nativescript_unregister_instance_binding_data_functions(int p_i
 }
 
 void GDAPI *godot_nativescript_get_instance_binding_data(int p_idx, godot_object *p_object) {
-	return NativeScriptLanguage::get_singleton()->get_instance_binding_data(p_idx, (Object *)p_object);
+	return nullptr;
 }
 
 void GDAPI godot_nativescript_profiling_add_data(const char *p_signature, uint64_t p_time) {

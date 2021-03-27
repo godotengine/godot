@@ -110,7 +110,7 @@ btEmptyShape *ShapeBullet::create_shape_empty() {
 	return bulletnew(btEmptyShape);
 }
 
-btStaticPlaneShape *ShapeBullet::create_shape_plane(const btVector3 &planeNormal, btScalar planeConstant) {
+btStaticPlaneShape *ShapeBullet::create_shape_world_boundary(const btVector3 &planeNormal, btScalar planeConstant) {
 	return bulletnew(btStaticPlaneShape(planeNormal, planeConstant));
 }
 
@@ -142,7 +142,7 @@ btScaledBvhTriangleMeshShape *ShapeBullet::create_shape_concave(btBvhTriangleMes
 	}
 }
 
-btHeightfieldTerrainShape *ShapeBullet::create_shape_height_field(Vector<real_t> &p_heights, int p_width, int p_depth, real_t p_min_height, real_t p_max_height) {
+btHeightfieldTerrainShape *ShapeBullet::create_shape_height_field(Vector<float> &p_heights, int p_width, int p_depth, real_t p_min_height, real_t p_max_height) {
 	const btScalar ignoredHeightScale(1);
 	const int YAxis = 1; // 0=X, 1=Y, 2=Z
 	const bool flipQuadEdges = false;
@@ -164,32 +164,32 @@ btRayShape *ShapeBullet::create_shape_ray(real_t p_length, bool p_slips_on_slope
 	return r;
 }
 
-/* PLANE */
+/* World boundary */
 
-PlaneShapeBullet::PlaneShapeBullet() :
+WorldBoundaryShapeBullet::WorldBoundaryShapeBullet() :
 		ShapeBullet() {}
 
-void PlaneShapeBullet::set_data(const Variant &p_data) {
+void WorldBoundaryShapeBullet::set_data(const Variant &p_data) {
 	setup(p_data);
 }
 
-Variant PlaneShapeBullet::get_data() const {
+Variant WorldBoundaryShapeBullet::get_data() const {
 	return plane;
 }
 
-PhysicsServer3D::ShapeType PlaneShapeBullet::get_type() const {
-	return PhysicsServer3D::SHAPE_PLANE;
+PhysicsServer3D::ShapeType WorldBoundaryShapeBullet::get_type() const {
+	return PhysicsServer3D::SHAPE_WORLD_BOUNDARY;
 }
 
-void PlaneShapeBullet::setup(const Plane &p_plane) {
+void WorldBoundaryShapeBullet::setup(const Plane &p_plane) {
 	plane = p_plane;
 	notifyShapeChanged();
 }
 
-btCollisionShape *PlaneShapeBullet::create_bt_shape(const btVector3 &p_implicit_scale, real_t p_extra_edge) {
+btCollisionShape *WorldBoundaryShapeBullet::create_bt_shape(const btVector3 &p_implicit_scale, real_t p_extra_edge) {
 	btVector3 btPlaneNormal;
 	G_TO_B(plane.normal, btPlaneNormal);
-	return prepare(PlaneShapeBullet::create_shape_plane(btPlaneNormal, plane.d));
+	return prepare(WorldBoundaryShapeBullet::create_shape_world_boundary(btPlaneNormal, plane.d));
 }
 
 /* Sphere */
@@ -480,17 +480,10 @@ void HeightMapShapeBullet::set_data(const Variant &p_data) {
 	ERR_FAIL_COND_MSG(l_width < 2, "Map width must be at least 2.");
 	ERR_FAIL_COND_MSG(l_depth < 2, "Map depth must be at least 2.");
 
-	// TODO This code will need adjustments if real_t is set to `double`,
-	// because that precision is unnecessary for a heightmap and Bullet doesn't support it...
-
-	Vector<real_t> l_heights;
+	Vector<float> l_heights;
 	Variant l_heights_v = d["heights"];
 
-#ifdef REAL_T_IS_DOUBLE
-	if (l_heights_v.get_type() == Variant::PACKED_FLOAT64_ARRAY) {
-#else
 	if (l_heights_v.get_type() == Variant::PACKED_FLOAT32_ARRAY) {
-#endif
 		// Ready-to-use heights can be passed
 
 		l_heights = l_heights_v;
@@ -511,9 +504,9 @@ void HeightMapShapeBullet::set_data(const Variant &p_data) {
 
 		l_heights.resize(l_image->get_width() * l_image->get_height());
 
-		real_t *w = l_heights.ptrw();
+		float *w = l_heights.ptrw();
 		const uint8_t *r = im_data.ptr();
-		real_t *rp = (real_t *)r;
+		float *rp = (float *)r;
 		// At this point, `rp` could be used directly for Bullet, but I don't know how safe it would be.
 
 		for (int i = 0; i < l_heights.size(); ++i) {
@@ -521,11 +514,7 @@ void HeightMapShapeBullet::set_data(const Variant &p_data) {
 		}
 
 	} else {
-#ifdef REAL_T_IS_DOUBLE
-		ERR_FAIL_MSG("Expected PackedFloat64Array or float Image.");
-#else
 		ERR_FAIL_MSG("Expected PackedFloat32Array or float Image.");
-#endif
 	}
 
 	ERR_FAIL_COND(l_width <= 0);
@@ -534,11 +523,11 @@ void HeightMapShapeBullet::set_data(const Variant &p_data) {
 
 	// Compute min and max heights if not specified.
 	if (!d.has("min_height") && !d.has("max_height")) {
-		const real_t *r = l_heights.ptr();
+		const float *r = l_heights.ptr();
 		int heights_size = l_heights.size();
 
 		for (int i = 0; i < heights_size; ++i) {
-			real_t h = r[i];
+			float h = r[i];
 
 			if (h < l_min_height) {
 				l_min_height = h;
@@ -559,7 +548,7 @@ PhysicsServer3D::ShapeType HeightMapShapeBullet::get_type() const {
 	return PhysicsServer3D::SHAPE_HEIGHTMAP;
 }
 
-void HeightMapShapeBullet::setup(Vector<real_t> &p_heights, int p_width, int p_depth, real_t p_min_height, real_t p_max_height) {
+void HeightMapShapeBullet::setup(Vector<float> &p_heights, int p_width, int p_depth, real_t p_min_height, real_t p_max_height) {
 	// TODO cell size must be tweaked using localScaling, which is a shared property for all Bullet shapes
 
 	// If this array is resized outside of here, it should be preserved due to CoW

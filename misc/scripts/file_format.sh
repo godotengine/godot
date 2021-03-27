@@ -20,6 +20,9 @@ while IFS= read -rd '' f; do
         continue
     elif [[ "$f" == *"sln" ]]; then
         continue
+    elif [[ "$f" == *".out" ]]; then
+        # GDScript integration testing files.
+        continue
     elif [[ "$f" == *"patch" ]]; then
         continue
     elif [[ "$f" == *"pot" ]]; then
@@ -42,7 +45,7 @@ while IFS= read -rd '' f; do
     perl -i -ple 's/\s*$//g' "$f"
 done
 
-git diff > patch.patch
+git diff --color > patch.patch
 
 # If no patch has been generated all is OK, clean up, and exit.
 if [ ! -s patch.patch ] ; then

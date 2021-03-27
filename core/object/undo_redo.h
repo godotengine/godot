@@ -32,7 +32,7 @@
 #define UNDO_REDO_H
 
 #include "core/object/class_db.h"
-#include "core/object/reference.h"
+#include "core/object/ref_counted.h"
 
 class UndoRedo : public Object {
 	GDCLASS(UndoRedo, Object);
@@ -61,7 +61,7 @@ private:
 		};
 
 		Type type;
-		Ref<Reference> ref;
+		Ref<RefCounted> ref;
 		ObjectID object;
 		StringName name;
 		Variant args[VARIANT_ARG_MAX];
@@ -121,8 +121,8 @@ public:
 	String get_action_name(int p_id);
 	void clear_history(bool p_increase_version = true);
 
-	bool has_undo();
-	bool has_redo();
+	bool has_undo() const;
+	bool has_redo() const;
 
 	uint64_t get_version() const;
 

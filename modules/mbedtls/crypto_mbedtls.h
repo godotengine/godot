@@ -119,6 +119,7 @@ public:
 	virtual PackedByteArray finish();
 
 	HMACContextMbedTLS() {}
+	~HMACContextMbedTLS();
 };
 
 class CryptoMbedTLS : public Crypto {

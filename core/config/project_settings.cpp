@@ -30,19 +30,17 @@
 
 #include "project_settings.h"
 
-#include "core/core_bind.h"
+#include "core/core_bind.h" // For Compression enum.
 #include "core/core_string_names.h"
 #include "core/input/input_map.h"
+#include "core/io/dir_access.h"
+#include "core/io/file_access.h"
 #include "core/io/file_access_network.h"
 #include "core/io/file_access_pack.h"
 #include "core/io/marshalls.h"
-#include "core/os/dir_access.h"
-#include "core/os/file_access.h"
 #include "core/os/keyboard.h"
 #include "core/os/os.h"
 #include "core/variant/variant_parser.h"
-
-#include <zlib.h>
 
 ProjectSettings *ProjectSettings::singleton = nullptr;
 
@@ -62,7 +60,7 @@ String ProjectSettings::localize_path(const String &p_path) const {
 	}
 
 	if (p_path.begins_with("res://") || p_path.begins_with("user://") ||
-			(p_path.is_abs_path() && !p_path.begins_with(resource_path))) {
+			(p_path.is_absolute_path() && !p_path.begins_with(resource_path))) {
 		return p_path.simplify_path();
 	}
 
@@ -248,7 +246,7 @@ struct _VCSort {
 	String name;
 	Variant::Type type;
 	int order;
-	int flags;
+	uint32_t flags;
 
 	bool operator<(const _VCSort &p_vcs) const { return order == p_vcs.order ? name < p_vcs.name : order < p_vcs.order; }
 };
@@ -467,16 +465,17 @@ Error ProjectSettings::_setup(const String &p_path, const String &p_main_pack, b
 	d->change_dir(p_path);
 
 	String current_dir = d->get_current_dir();
-	String candidate = current_dir;
 	bool found = false;
 	Error err;
 
 	while (true) {
+		// Set the resource path early so things can be resolved when loading.
+		resource_path = current_dir;
+		resource_path = resource_path.replace("\\", "/"); // Windows path to Unix path just in case.
 		err = _load_settings_text_or_binary(current_dir.plus_file("project.godot"), current_dir.plus_file("project.binary"));
 		if (err == OK) {
 			// Optional, we don't mind if it fails.
 			_load_settings_text(current_dir.plus_file("override.cfg"));
-			candidate = current_dir;
 			found = true;
 			break;
 		}
@@ -493,8 +492,6 @@ Error ProjectSettings::_setup(const String &p_path, const String &p_main_pack, b
 		}
 	}
 
-	resource_path = candidate;
-	resource_path = resource_path.replace("\\", "/"); // Windows path to Unix path just in case.
 	memdelete(d);
 
 	if (!found) {
@@ -703,17 +700,14 @@ Error ProjectSettings::_save_settings_binary(const String &p_file, const Map<Str
 	int count = 0;
 
 	for (Map<String, List<String>>::Element *E = props.front(); E; E = E->next()) {
-		for (List<String>::Element *F = E->get().front(); F; F = F->next()) {
-			count++;
-		}
+		count += E->get().size();
 	}
 
 	if (p_custom_features != String()) {
 		file->store_32(count + 1);
 		//store how many properties are saved, add one for custom featuers, which must always go first
 		String key = CoreStringNames::get_singleton()->_custom_features;
-		file->store_32(key.length());
-		file->store_string(key);
+		file->store_pascal_string(key);
 
 		int len;
 		err = encode_variant(p_custom_features, nullptr, len, false);
@@ -738,8 +732,7 @@ Error ProjectSettings::_save_settings_binary(const String &p_file, const Map<Str
 	}
 
 	for (Map<String, List<String>>::Element *E = props.front(); E; E = E->next()) {
-		for (List<String>::Element *F = E->get().front(); F; F = F->next()) {
-			String key = F->get();
+		for (String &key : E->get()) {
 			if (E->key() != "") {
 				key = E->key() + "/" + key;
 			}
@@ -750,8 +743,7 @@ Error ProjectSettings::_save_settings_binary(const String &p_file, const Map<Str
 				value = get(key);
 			}
 
-			file->store_32(key.length());
-			file->store_string(key);
+			file->store_pascal_string(key);
 
 			int len;
 			err = encode_variant(value, nullptr, len, true);
@@ -808,8 +800,8 @@ Error ProjectSettings::_save_settings_text(const String &p_file, const Map<Strin
 		if (E->key() != "") {
 			file->store_string("[" + E->key() + "]\n\n");
 		}
-		for (List<String>::Element *F = E->get().front(); F; F = F->next()) {
-			String key = F->get();
+		for (const String &F : E->get()) {
+			String key = F;
 			if (E->key() != "") {
 				key = E->key() + "/" + key;
 			}
@@ -822,7 +814,7 @@ Error ProjectSettings::_save_settings_text(const String &p_file, const Map<Strin
 
 			String vstr;
 			VariantWriter::write_to_string(value, vstr);
-			file->store_string(F->get().property_name_encode() + "=" + vstr + "\n");
+			file->store_string(F.property_name_encode() + "=" + vstr + "\n");
 		}
 	}
 
@@ -936,11 +928,11 @@ Vector<String> ProjectSettings::get_optimizer_presets() const {
 	ProjectSettings::get_singleton()->get_property_list(&pi);
 	Vector<String> names;
 
-	for (List<PropertyInfo>::Element *E = pi.front(); E; E = E->next()) {
-		if (!E->get().name.begins_with("optimizer_presets/")) {
+	for (const PropertyInfo &E : pi) {
+		if (!E.name.begins_with("optimizer_presets/")) {
 			continue;
 		}
-		names.push_back(E->get().name.get_slicec('/', 1));
+		names.push_back(E.name.get_slicec('/', 1));
 	}
 
 	names.sort();
@@ -1014,7 +1006,7 @@ bool ProjectSettings::has_custom_feature(const String &p_feature) const {
 	return custom_features.has(p_feature);
 }
 
-Map<StringName, ProjectSettings::AutoloadInfo> ProjectSettings::get_autoload_list() const {
+OrderedHashMap<StringName, ProjectSettings::AutoloadInfo> ProjectSettings::get_autoload_list() const {
 	return autoloads;
 }
 
@@ -1103,7 +1095,9 @@ ProjectSettings::ProjectSettings() {
 	if (Engine::get_singleton()->has_singleton("GodotSharp")) {
 		extensions.push_back("cs");
 	}
-	extensions.push_back("shader");
+	extensions.push_back("gdshader");
+
+	GLOBAL_DEF("editor/run/main_run_args", "");
 
 	GLOBAL_DEF("editor/script/search_in_file_extensions", extensions);
 	custom_prop_info["editor/script/search_in_file_extensions"] = PropertyInfo(Variant::PACKED_STRING_ARRAY, "editor/script/search_in_file_extensions");
@@ -1113,7 +1107,10 @@ ProjectSettings::ProjectSettings() {
 
 	_add_builtin_input_map();
 
-	custom_prop_info["display/window/handheld/orientation"] = PropertyInfo(Variant::STRING, "display/window/handheld/orientation", PROPERTY_HINT_ENUM, "landscape,portrait,reverse_landscape,reverse_portrait,sensor_landscape,sensor_portrait,sensor");
+	// Keep the enum values in sync with the `DisplayServer::ScreenOrientation` enum.
+	custom_prop_info["display/window/handheld/orientation"] = PropertyInfo(Variant::INT, "display/window/handheld/orientation", PROPERTY_HINT_ENUM, "Landscape,Portrait,Reverse Landscape,Reverse Portrait,Sensor Landscape,Sensor Portrait,Sensor");
+	// Keep the enum values in sync with the `DisplayServer::VSyncMode` enum.
+	custom_prop_info["display/window/vsync/vsync_mode"] = PropertyInfo(Variant::INT, "display/window/vsync/vsync_mode", PROPERTY_HINT_ENUM, "Disabled,Enabled,Adaptive,Mailbox");
 	custom_prop_info["rendering/driver/threads/thread_model"] = PropertyInfo(Variant::INT, "rendering/driver/threads/thread_model", PROPERTY_HINT_ENUM, "Single-Unsafe,Single-Safe,Multi-Threaded");
 	GLOBAL_DEF("physics/2d/run_on_thread", false);
 	GLOBAL_DEF("physics/3d/run_on_thread", false);

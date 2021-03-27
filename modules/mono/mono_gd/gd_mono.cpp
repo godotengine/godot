@@ -39,8 +39,8 @@
 
 #include "core/config/project_settings.h"
 #include "core/debugger/engine_debugger.h"
-#include "core/os/dir_access.h"
-#include "core/os/file_access.h"
+#include "core/io/dir_access.h"
+#include "core/io/file_access.h"
 #include "core/os/os.h"
 #include "core/os/thread.h"
 
@@ -73,7 +73,7 @@
 #endif
 
 // TODO:
-// This has turn into a gigantic mess. There's too much going on here. Too much #ifdef as well.
+// This has turned into a gigantic mess. There's too much going on here. Too much #ifdef as well.
 // It's just painful to read... It needs to be re-structured. Please, clean this up, future me.
 
 GDMono *GDMono::singleton = nullptr;
@@ -100,8 +100,8 @@ void gd_mono_setup_runtime_main_args() {
 	main_args.write[0] = execpath.ptrw();
 
 	int i = 1;
-	for (List<String>::Element *E = cmdline_args.front(); E; E = E->next()) {
-		CharString &stored = cmdline_args_utf8.push_back(E->get().utf8())->get();
+	for (const String &E : cmdline_args) {
+		CharString &stored = cmdline_args_utf8.push_back(E.utf8())->get();
 		main_args.write[i] = stored.ptrw();
 		i++;
 	}
@@ -119,11 +119,11 @@ void gd_mono_profiler_init() {
 
 	const String env_var_name = "MONO_ENV_OPTIONS";
 	if (OS::get_singleton()->has_environment(env_var_name)) {
-		const auto mono_env_ops = OS::get_singleton()->get_environment(env_var_name);
+		const String mono_env_ops = OS::get_singleton()->get_environment(env_var_name);
 		// Usually MONO_ENV_OPTIONS looks like:   --profile=jb:prof=timeline,ctl=remote,host=127.0.0.1:55467
 		const String prefix = "--profile=";
 		if (mono_env_ops.begins_with(prefix)) {
-			const auto ops = mono_env_ops.substr(prefix.length(), mono_env_ops.length());
+			const String ops = mono_env_ops.substr(prefix.length(), mono_env_ops.length());
 			mono_profiler_load(ops.utf8());
 		}
 	}
@@ -691,7 +691,7 @@ static bool try_get_cached_api_hash_for(const String &p_api_assemblies_dir, bool
 	}
 
 	Ref<ConfigFile> cfg;
-	cfg.instance();
+	cfg.instantiate();
 	Error cfg_err = cfg->load(cached_api_hash_path);
 	ERR_FAIL_COND_V(cfg_err != OK, false);
 
@@ -717,7 +717,7 @@ static void create_cached_api_hash_for(const String &p_api_assemblies_dir) {
 	String cached_api_hash_path = p_api_assemblies_dir.plus_file("api_hash_cache.cfg");
 
 	Ref<ConfigFile> cfg;
-	cfg.instance();
+	cfg.instantiate();
 
 	cfg->set_value("core", "modified_time", FileAccess::get_modified_time(core_api_assembly_path));
 	cfg->set_value("editor", "modified_time", FileAccess::get_modified_time(editor_api_assembly_path));
@@ -1335,23 +1335,25 @@ GDMono::~GDMono() {
 	singleton = nullptr;
 }
 
-_GodotSharp *_GodotSharp::singleton = nullptr;
+namespace mono_bind {
 
-void _GodotSharp::attach_thread() {
+GodotSharp *GodotSharp::singleton = nullptr;
+
+void GodotSharp::attach_thread() {
 	GDMonoUtils::attach_current_thread();
 }
 
-void _GodotSharp::detach_thread() {
+void GodotSharp::detach_thread() {
 	GDMonoUtils::detach_current_thread();
 }
 
-int32_t _GodotSharp::get_domain_id() {
+int32_t GodotSharp::get_domain_id() {
 	MonoDomain *domain = mono_domain_get();
 	ERR_FAIL_NULL_V(domain, -1);
 	return mono_domain_get_id(domain);
 }
 
-int32_t _GodotSharp::get_scripts_domain_id() {
+int32_t GodotSharp::get_scripts_domain_id() {
 	ERR_FAIL_NULL_V_MSG(GDMono::get_singleton(),
 			-1, "The Mono runtime is not initialized");
 	MonoDomain *domain = GDMono::get_singleton()->get_scripts_domain();
@@ -1359,21 +1361,21 @@ int32_t _GodotSharp::get_scripts_domain_id() {
 	return mono_domain_get_id(domain);
 }
 
-bool _GodotSharp::is_scripts_domain_loaded() {
+bool GodotSharp::is_scripts_domain_loaded() {
 	return GDMono::get_singleton() != nullptr &&
 		   GDMono::get_singleton()->is_runtime_initialized() &&
 		   GDMono::get_singleton()->get_scripts_domain() != nullptr;
 }
 
-bool _GodotSharp::_is_domain_finalizing_for_unload(int32_t p_domain_id) {
+bool GodotSharp::_is_domain_finalizing_for_unload(int32_t p_domain_id) {
 	return is_domain_finalizing_for_unload(p_domain_id);
 }
 
-bool _GodotSharp::is_domain_finalizing_for_unload(int32_t p_domain_id) {
+bool GodotSharp::is_domain_finalizing_for_unload(int32_t p_domain_id) {
 	return is_domain_finalizing_for_unload(mono_domain_get_by_id(p_domain_id));
 }
 
-bool _GodotSharp::is_domain_finalizing_for_unload(MonoDomain *p_domain) {
+bool GodotSharp::is_domain_finalizing_for_unload(MonoDomain *p_domain) {
 	GDMono *gd_mono = GDMono::get_singleton();
 
 	ERR_FAIL_COND_V_MSG(!gd_mono || !gd_mono->is_runtime_initialized(),
@@ -1388,15 +1390,15 @@ bool _GodotSharp::is_domain_finalizing_for_unload(MonoDomain *p_domain) {
 	return mono_domain_is_unloading(p_domain);
 }
 
-bool _GodotSharp::is_runtime_shutting_down() {
+bool GodotSharp::is_runtime_shutting_down() {
 	return mono_runtime_is_shutting_down();
 }
 
-bool _GodotSharp::is_runtime_initialized() {
+bool GodotSharp::is_runtime_initialized() {
 	return GDMono::get_singleton() != nullptr && GDMono::get_singleton()->is_runtime_initialized();
 }
 
-void _GodotSharp::_reload_assemblies(bool p_soft_reload) {
+void GodotSharp::_reload_assemblies(bool p_soft_reload) {
 #ifdef GD_MONO_HOT_RELOAD
 	CRASH_COND(CSharpLanguage::get_singleton() == nullptr);
 	// This method may be called more than once with `call_deferred`, so we need to check
@@ -1407,24 +1409,26 @@ void _GodotSharp::_reload_assemblies(bool p_soft_reload) {
 #endif
 }
 
-void _GodotSharp::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("attach_thread"), &_GodotSharp::attach_thread);
-	ClassDB::bind_method(D_METHOD("detach_thread"), &_GodotSharp::detach_thread);
+void GodotSharp::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("attach_thread"), &GodotSharp::attach_thread);
+	ClassDB::bind_method(D_METHOD("detach_thread"), &GodotSharp::detach_thread);
 
-	ClassDB::bind_method(D_METHOD("get_domain_id"), &_GodotSharp::get_domain_id);
-	ClassDB::bind_method(D_METHOD("get_scripts_domain_id"), &_GodotSharp::get_scripts_domain_id);
-	ClassDB::bind_method(D_METHOD("is_scripts_domain_loaded"), &_GodotSharp::is_scripts_domain_loaded);
-	ClassDB::bind_method(D_METHOD("is_domain_finalizing_for_unload", "domain_id"), &_GodotSharp::_is_domain_finalizing_for_unload);
+	ClassDB::bind_method(D_METHOD("get_domain_id"), &GodotSharp::get_domain_id);
+	ClassDB::bind_method(D_METHOD("get_scripts_domain_id"), &GodotSharp::get_scripts_domain_id);
+	ClassDB::bind_method(D_METHOD("is_scripts_domain_loaded"), &GodotSharp::is_scripts_domain_loaded);
+	ClassDB::bind_method(D_METHOD("is_domain_finalizing_for_unload", "domain_id"), &GodotSharp::_is_domain_finalizing_for_unload);
 
-	ClassDB::bind_method(D_METHOD("is_runtime_shutting_down"), &_GodotSharp::is_runtime_shutting_down);
-	ClassDB::bind_method(D_METHOD("is_runtime_initialized"), &_GodotSharp::is_runtime_initialized);
-	ClassDB::bind_method(D_METHOD("_reload_assemblies"), &_GodotSharp::_reload_assemblies);
+	ClassDB::bind_method(D_METHOD("is_runtime_shutting_down"), &GodotSharp::is_runtime_shutting_down);
+	ClassDB::bind_method(D_METHOD("is_runtime_initialized"), &GodotSharp::is_runtime_initialized);
+	ClassDB::bind_method(D_METHOD("_reload_assemblies"), &GodotSharp::_reload_assemblies);
 }
 
-_GodotSharp::_GodotSharp() {
+GodotSharp::GodotSharp() {
 	singleton = this;
 }
 
-_GodotSharp::~_GodotSharp() {
+GodotSharp::~GodotSharp() {
 	singleton = nullptr;
 }
+
+} // namespace mono_bind

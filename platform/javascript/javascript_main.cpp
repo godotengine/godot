@@ -66,6 +66,11 @@ void main_loop_callback() {
 
 	int target_fps = Engine::get_singleton()->get_target_fps();
 	if (target_fps > 0) {
+		if (current_ticks - target_ticks > 1000000) {
+			// When the window loses focus, we stop getting updates and accumulate delay.
+			// For this reason, if the difference is too big, we reset target ticks to the current ticks.
+			target_ticks = current_ticks;
+		}
 		target_ticks += (uint64_t)(1000000 / target_fps);
 	}
 	if (os->main_loop_iterate()) {
@@ -92,7 +97,7 @@ extern EMSCRIPTEN_KEEPALIVE int godot_js_main(int argc, char *argv[]) {
 	if (Main::is_project_manager() && FileAccess::exists("/tmp/preload.zip")) {
 		PackedStringArray ps;
 		ps.push_back("/tmp/preload.zip");
-		os->get_main_loop()->emit_signal("files_dropped", ps, -1);
+		os->get_main_loop()->emit_signal(SNAME("files_dropped"), ps, -1);
 	}
 #endif
 	emscripten_set_main_loop(main_loop_callback, -1, false);

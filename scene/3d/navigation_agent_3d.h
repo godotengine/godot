@@ -31,7 +31,6 @@
 #ifndef NAVIGATION_AGENT_H
 #define NAVIGATION_AGENT_H
 
-#include "core/templates/vector.h"
 #include "scene/main/node.h"
 
 class Node3D;
@@ -143,10 +142,11 @@ public:
 	void set_velocity(Vector3 p_velocity);
 	void _avoidance_done(Vector3 p_new_velocity);
 
-	virtual String get_configuration_warning() const override;
+	TypedArray<String> get_configuration_warnings() const override;
 
 private:
 	void update_navigation();
+	void _check_distance_to_target();
 };
 
 #endif

@@ -44,10 +44,10 @@ void RendererCanvasCull::_render_canvas_item_tree(RID p_to_render_target, Canvas
 	memset(z_last_list, 0, z_range * sizeof(RendererCanvasRender::Item *));
 
 	for (int i = 0; i < p_child_item_count; i++) {
-		_cull_canvas_item(p_child_items[i].item, p_transform, p_clip_rect, Color(1, 1, 1, 1), 0, z_list, z_last_list, nullptr, nullptr);
+		_cull_canvas_item(p_child_items[i].item, p_transform, p_clip_rect, Color(1, 1, 1, 1), 0, z_list, z_last_list, nullptr, nullptr, true);
 	}
 	if (p_canvas_item) {
-		_cull_canvas_item(p_canvas_item, p_transform, p_clip_rect, Color(1, 1, 1, 1), 0, z_list, z_last_list, nullptr, nullptr);
+		_cull_canvas_item(p_canvas_item, p_transform, p_clip_rect, Color(1, 1, 1, 1), 0, z_list, z_last_list, nullptr, nullptr, true);
 	}
 
 	RendererCanvasRender::Item *list = nullptr;
@@ -97,14 +97,124 @@ void _collect_ysort_children(RendererCanvasCull::Item *p_canvas_item, Transform2
 	}
 }
 
-void _mark_ysort_dirty(RendererCanvasCull::Item *ysort_owner, RID_PtrOwner<RendererCanvasCull::Item, true> &canvas_item_owner) {
+void _mark_ysort_dirty(RendererCanvasCull::Item *ysort_owner, RID_Owner<RendererCanvasCull::Item, true> &canvas_item_owner) {
 	do {
 		ysort_owner->ysort_children_count = -1;
 		ysort_owner = canvas_item_owner.owns(ysort_owner->parent) ? canvas_item_owner.getornull(ysort_owner->parent) : nullptr;
 	} while (ysort_owner && ysort_owner->sort_y);
 }
 
-void RendererCanvasCull::_cull_canvas_item(Item *p_canvas_item, const Transform2D &p_transform, const Rect2 &p_clip_rect, const Color &p_modulate, int p_z, RendererCanvasRender::Item **z_list, RendererCanvasRender::Item **z_last_list, Item *p_canvas_clip, Item *p_material_owner) {
+void RendererCanvasCull::_attach_canvas_item_for_draw(RendererCanvasCull::Item *ci, RendererCanvasCull::Item *p_canvas_clip, RendererCanvasRender::Item **z_list, RendererCanvasRender::Item **z_last_list, const Transform2D &xform, const Rect2 &p_clip_rect, Rect2 global_rect, const Color &modulate, int p_z, RendererCanvasCull::Item *p_material_owner, bool use_canvas_group, RendererCanvasRender::Item *canvas_group_from, const Transform2D &p_xform) {
+	if (ci->copy_back_buffer) {
+		ci->copy_back_buffer->screen_rect = xform.xform(ci->copy_back_buffer->rect).intersection(p_clip_rect);
+	}
+
+	if (use_canvas_group) {
+		int zidx = p_z - RS::CANVAS_ITEM_Z_MIN;
+		if (canvas_group_from == nullptr) {
+			// no list before processing this item, means must put stuff in group from the beginning of list.
+			canvas_group_from = z_list[zidx];
+		} else {
+			// there was a list before processing, so begin group from this one.
+			canvas_group_from = canvas_group_from->next;
+		}
+
+		if (canvas_group_from) {
+			// Has a place to begin the group from!
+
+			//compute a global rect (in global coords) for children in the same z layer
+			Rect2 rect_accum;
+			RendererCanvasRender::Item *c = canvas_group_from;
+			while (c) {
+				if (c == canvas_group_from) {
+					rect_accum = c->global_rect_cache;
+				} else {
+					rect_accum = rect_accum.merge(c->global_rect_cache);
+				}
+
+				c = c->next;
+			}
+
+			// We have two choices now, if user has drawn something, we must assume users wants to draw the "mask", so compute the size based on this.
+			// If nothing has been drawn, we just take it over and draw it ourselves.
+			if (ci->canvas_group->fit_empty && (ci->commands == nullptr ||
+													   (ci->commands->next == nullptr && ci->commands->type == RendererCanvasCull::Item::Command::TYPE_RECT && (static_cast<RendererCanvasCull::Item::CommandRect *>(ci->commands)->flags & RendererCanvasRender::CANVAS_RECT_IS_GROUP)))) {
+				// No commands, or sole command is the one used to draw, so we (re)create the draw command.
+				ci->clear();
+
+				if (rect_accum == Rect2()) {
+					rect_accum.size = Size2(1, 1);
+				}
+
+				rect_accum = rect_accum.grow(ci->canvas_group->fit_margin);
+
+				//draw it?
+				RendererCanvasRender::Item::CommandRect *crect = ci->alloc_command<RendererCanvasRender::Item::CommandRect>();
+
+				crect->flags = RendererCanvasRender::CANVAS_RECT_IS_GROUP; // so we can recognize it later
+				crect->rect = xform.affine_inverse().xform(rect_accum);
+				crect->modulate = Color(1, 1, 1, 1);
+
+				//the global rect is used to do the copying, so update it
+				global_rect = rect_accum.grow(ci->canvas_group->clear_margin); //grow again by clear margin
+				global_rect.position += p_clip_rect.position;
+			} else {
+				global_rect.position -= p_clip_rect.position;
+
+				global_rect = global_rect.merge(rect_accum); //must use both rects for this
+				global_rect = global_rect.grow(ci->canvas_group->clear_margin); //grow by clear margin
+
+				global_rect.position += p_clip_rect.position;
+			}
+
+			// Very important that this is cleared after used in RendererCanvasRender to avoid
+			// potential crashes.
+			canvas_group_from->canvas_group_owner = ci;
+		}
+	}
+
+	if (((ci->commands != nullptr || ci->visibility_notifier) && p_clip_rect.intersects(global_rect, true)) || ci->vp_render || ci->copy_back_buffer) {
+		//something to draw?
+
+		if (ci->update_when_visible) {
+			RenderingServerDefault::redraw_request();
+		}
+
+		if (ci->commands != nullptr) {
+			ci->final_transform = xform;
+			ci->final_modulate = Color(modulate.r * ci->self_modulate.r, modulate.g * ci->self_modulate.g, modulate.b * ci->self_modulate.b, modulate.a * ci->self_modulate.a);
+			ci->global_rect_cache = global_rect;
+			ci->global_rect_cache.position -= p_clip_rect.position;
+			ci->light_masked = false;
+
+			int zidx = p_z - RS::CANVAS_ITEM_Z_MIN;
+
+			if (z_last_list[zidx]) {
+				z_last_list[zidx]->next = ci;
+				z_last_list[zidx] = ci;
+
+			} else {
+				z_list[zidx] = ci;
+				z_last_list[zidx] = ci;
+			}
+
+			ci->z_final = p_z;
+
+			ci->next = nullptr;
+		}
+
+		if (ci->visibility_notifier) {
+			if (!ci->visibility_notifier->visible_element.in_list()) {
+				visibility_notifier_list.add(&ci->visibility_notifier->visible_element);
+				ci->visibility_notifier->just_visible = true;
+			}
+
+			ci->visibility_notifier->visible_in_frame = RSG::rasterizer->get_frame_number();
+		}
+	}
+}
+
+void RendererCanvasCull::_cull_canvas_item(Item *p_canvas_item, const Transform2D &p_transform, const Rect2 &p_clip_rect, const Color &p_modulate, int p_z, RendererCanvasRender::Item **z_list, RendererCanvasRender::Item **z_last_list, Item *p_canvas_clip, Item *p_material_owner, bool allow_y_sort) {
 	Item *ci = p_canvas_item;
 
 	if (!ci->visible) {
@@ -117,6 +227,13 @@ void RendererCanvasCull::_cull_canvas_item(Item *p_canvas_item, const Transform2
 	}
 
 	Rect2 rect = ci->get_rect();
+
+	if (ci->visibility_notifier) {
+		if (ci->visibility_notifier->area.size != Vector2()) {
+			rect = rect.merge(ci->visibility_notifier->area);
+		}
+	}
+
 	Transform2D xform = ci->xform;
 	if (snapping_2d_transforms_to_pixel) {
 		xform.elements[2] = xform.elements[2].floor();
@@ -156,150 +273,63 @@ void RendererCanvasCull::_cull_canvas_item(Item *p_canvas_item, const Transform2
 		ci->final_clip_owner = p_canvas_clip;
 	}
 
-	if (ci->sort_y) {
-		if (ci->ysort_children_count == -1) {
-			ci->ysort_children_count = 0;
-			_collect_ysort_children(ci, Transform2D(), p_material_owner, nullptr, ci->ysort_children_count);
-		}
-
-		child_item_count = ci->ysort_children_count;
-		child_items = (Item **)alloca(child_item_count * sizeof(Item *));
-
-		int i = 0;
-		_collect_ysort_children(ci, Transform2D(), p_material_owner, child_items, i);
-
-		SortArray<Item *, ItemPtrSort> sorter;
-		sorter.sort(child_items, child_item_count);
-	}
-
 	if (ci->z_relative) {
 		p_z = CLAMP(p_z + ci->z_index, RS::CANVAS_ITEM_Z_MIN, RS::CANVAS_ITEM_Z_MAX);
 	} else {
 		p_z = ci->z_index;
 	}
 
-	RendererCanvasRender::Item *canvas_group_from = nullptr;
-	bool use_canvas_group = ci->canvas_group != nullptr && (ci->canvas_group->fit_empty || ci->commands != nullptr);
-	if (use_canvas_group) {
-		int zidx = p_z - RS::CANVAS_ITEM_Z_MIN;
-		canvas_group_from = z_last_list[zidx];
-	}
-
-	for (int i = 0; i < child_item_count; i++) {
-		if ((!child_items[i]->behind && !use_canvas_group) || (ci->sort_y && child_items[i]->sort_y)) {
-			continue;
-		}
-		if (ci->sort_y) {
-			_cull_canvas_item(child_items[i], xform * child_items[i]->ysort_xform, p_clip_rect, modulate, p_z, z_list, z_last_list, (Item *)ci->final_clip_owner, (Item *)child_items[i]->material_owner);
-		} else {
-			_cull_canvas_item(child_items[i], xform, p_clip_rect, modulate, p_z, z_list, z_last_list, (Item *)ci->final_clip_owner, p_material_owner);
-		}
-	}
-
-	if (ci->copy_back_buffer) {
-		ci->copy_back_buffer->screen_rect = xform.xform(ci->copy_back_buffer->rect).intersection(p_clip_rect);
-	}
-
-	if (use_canvas_group) {
-		int zidx = p_z - RS::CANVAS_ITEM_Z_MIN;
-		if (canvas_group_from == nullptr) {
-			// no list before processing this item, means must put stuff in group from the beginning of list.
-			canvas_group_from = z_list[zidx];
-		} else {
-			// there was a list before processing, so begin group from this one.
-			canvas_group_from = canvas_group_from->next;
-		}
-
-		if (canvas_group_from) {
-			// Has a place to begin the group from!
-
-			//compute a global rect (in global coords) for children in the same z layer
-			Rect2 rect_accum;
-			RendererCanvasRender::Item *c = canvas_group_from;
-			while (c) {
-				if (c == canvas_group_from) {
-					rect_accum = c->global_rect_cache;
-				} else {
-					rect_accum = rect_accum.merge(c->global_rect_cache);
-				}
-
-				c = c->next;
+	if (ci->sort_y) {
+		if (allow_y_sort) {
+			if (ci->ysort_children_count == -1) {
+				ci->ysort_children_count = 0;
+				_collect_ysort_children(ci, Transform2D(), p_material_owner, nullptr, ci->ysort_children_count);
 			}
 
-			// We have two choices now, if user has drawn something, we must assume users wants to draw the "mask", so compute the size based on this.
-			// If nothing has been drawn, we just take it over and draw it ourselves.
-			if (ci->canvas_group->fit_empty && (ci->commands == nullptr ||
-													   (ci->commands->next == nullptr && ci->commands->type == Item::Command::TYPE_RECT && (static_cast<Item::CommandRect *>(ci->commands)->flags & RendererCanvasRender::CANVAS_RECT_IS_GROUP)))) {
-				// No commands, or sole command is the one used to draw, so we (re)create the draw command.
-				ci->clear();
+			child_item_count = ci->ysort_children_count + 1;
+			child_items = (Item **)alloca(child_item_count * sizeof(Item *));
 
-				if (rect_accum == Rect2()) {
-					rect_accum.size = Size2(1, 1);
-				}
+			child_items[0] = ci;
+			int i = 1;
+			_collect_ysort_children(ci, Transform2D(), p_material_owner, child_items, i);
+			ci->ysort_xform = ci->xform.affine_inverse();
 
-				rect_accum = rect_accum.grow(ci->canvas_group->fit_margin);
+			SortArray<Item *, ItemPtrSort> sorter;
+			sorter.sort(child_items, child_item_count);
 
-				//draw it?
-				RendererCanvasRender::Item::CommandRect *crect = ci->alloc_command<RendererCanvasRender::Item::CommandRect>();
-
-				crect->flags = RendererCanvasRender::CANVAS_RECT_IS_GROUP; // so we can recognize it later
-				crect->rect = xform.affine_inverse().xform(rect_accum);
-				crect->modulate = Color(1, 1, 1, 1);
-
-				//the global rect is used to do the copying, so update it
-				global_rect = rect_accum.grow(ci->canvas_group->clear_margin); //grow again by clear margin
-				global_rect.position += p_clip_rect.position;
-			} else {
-				global_rect.position -= p_clip_rect.position;
-
-				global_rect = global_rect.merge(rect_accum); //must use both rects for this
-				global_rect = global_rect.grow(ci->canvas_group->clear_margin); //grow by clear margin
-
-				global_rect.position += p_clip_rect.position;
+			for (i = 0; i < child_item_count; i++) {
+				_cull_canvas_item(child_items[i], xform * child_items[i]->ysort_xform, p_clip_rect, modulate, p_z, z_list, z_last_list, (Item *)ci->final_clip_owner, (Item *)child_items[i]->material_owner, false);
+			}
+		} else {
+			RendererCanvasRender::Item *canvas_group_from = nullptr;
+			bool use_canvas_group = ci->canvas_group != nullptr && (ci->canvas_group->fit_empty || ci->commands != nullptr);
+			if (use_canvas_group) {
+				int zidx = p_z - RS::CANVAS_ITEM_Z_MIN;
+				canvas_group_from = z_last_list[zidx];
 			}
 
-			// Very important that this is cleared after used in RendererCanvasRender to avoid
-			// potential crashes.
-			canvas_group_from->canvas_group_owner = ci;
+			_attach_canvas_item_for_draw(ci, p_canvas_clip, z_list, z_last_list, xform, p_clip_rect, global_rect, modulate, p_z, p_material_owner, use_canvas_group, canvas_group_from, xform);
 		}
-	}
-
-	if (ci->update_when_visible) {
-		RenderingServerDefault::redraw_request();
-	}
-
-	if ((ci->commands != nullptr && p_clip_rect.intersects(global_rect, true)) || ci->vp_render || ci->copy_back_buffer) {
-		//something to draw?
-		ci->final_transform = xform;
-		ci->final_modulate = Color(modulate.r * ci->self_modulate.r, modulate.g * ci->self_modulate.g, modulate.b * ci->self_modulate.b, modulate.a * ci->self_modulate.a);
-		ci->global_rect_cache = global_rect;
-		ci->global_rect_cache.position -= p_clip_rect.position;
-		ci->light_masked = false;
-
-		int zidx = p_z - RS::CANVAS_ITEM_Z_MIN;
-
-		if (z_last_list[zidx]) {
-			z_last_list[zidx]->next = ci;
-			z_last_list[zidx] = ci;
-
-		} else {
-			z_list[zidx] = ci;
-			z_last_list[zidx] = ci;
+	} else {
+		RendererCanvasRender::Item *canvas_group_from = nullptr;
+		bool use_canvas_group = ci->canvas_group != nullptr && (ci->canvas_group->fit_empty || ci->commands != nullptr);
+		if (use_canvas_group) {
+			int zidx = p_z - RS::CANVAS_ITEM_Z_MIN;
+			canvas_group_from = z_last_list[zidx];
 		}
 
-		ci->z_final = p_z;
-
-		ci->next = nullptr;
-	}
-
-	for (int i = 0; i < child_item_count; i++) {
-		if (child_items[i]->behind || use_canvas_group || (ci->sort_y && child_items[i]->sort_y)) {
-			continue;
+		for (int i = 0; i < child_item_count; i++) {
+			if (!child_items[i]->behind && !use_canvas_group) {
+				continue;
+			}
+			_cull_canvas_item(child_items[i], xform, p_clip_rect, modulate, p_z, z_list, z_last_list, (Item *)ci->final_clip_owner, p_material_owner, true);
 		}
-		if (ci->sort_y) {
-			_cull_canvas_item(child_items[i], xform * child_items[i]->ysort_xform, p_clip_rect, modulate, p_z, z_list, z_last_list, (Item *)ci->final_clip_owner, (Item *)child_items[i]->material_owner);
-		} else {
-			_cull_canvas_item(child_items[i], xform, p_clip_rect, modulate, p_z, z_list, z_last_list, (Item *)ci->final_clip_owner, p_material_owner);
+		_attach_canvas_item_for_draw(ci, p_canvas_clip, z_list, z_last_list, xform, p_clip_rect, global_rect, modulate, p_z, p_material_owner, use_canvas_group, canvas_group_from, xform);
+		for (int i = 0; i < child_item_count; i++) {
+			if (child_items[i]->behind || use_canvas_group) {
+				continue;
+			}
+			_cull_canvas_item(child_items[i], xform, p_clip_rect, modulate, p_z, z_list, z_last_list, (Item *)ci->final_clip_owner, p_material_owner, true);
 		}
 	}
 }
@@ -362,8 +392,7 @@ RID RendererCanvasCull::canvas_allocate() {
 	return canvas_owner.allocate_rid();
 }
 void RendererCanvasCull::canvas_initialize(RID p_rid) {
-	Canvas *canvas = memnew(Canvas);
-	canvas_owner.initialize_rid(p_rid, canvas);
+	canvas_owner.initialize_rid(p_rid);
 }
 
 void RendererCanvasCull::canvas_set_item_mirroring(RID p_canvas, RID p_item, const Point2 &p_mirroring) {
@@ -399,8 +428,7 @@ RID RendererCanvasCull::canvas_item_allocate() {
 	return canvas_item_owner.allocate_rid();
 }
 void RendererCanvasCull::canvas_item_initialize(RID p_rid) {
-	Item *canvas_item = memnew(Item);
-	canvas_item_owner.initialize_rid(p_rid, canvas_item);
+	canvas_item_owner.initialize_rid(p_rid);
 }
 
 void RendererCanvasCull::canvas_item_set_parent(RID p_item, RID p_parent) {
@@ -611,17 +639,19 @@ void RendererCanvasCull::canvas_item_add_polyline(RID p_item, const Vector<Point
 
 			j2 = j + 1;
 
-			Vector2 tangent = ((t + prev_t).normalized()) * p_width * 0.5;
+			Vector2 dir = (t + prev_t).normalized();
+			Vector2 tangent = dir * p_width * 0.5;
+			Vector2 border = dir * 2.0;
 			Vector2 pos = p_points[i];
 
 			points_ptr[j] = pos + tangent;
 			points_ptr[j2] = pos - tangent;
 
-			points_top_ptr[j] = pos + tangent + tangent;
+			points_top_ptr[j] = pos + tangent + border;
 			points_top_ptr[j2] = pos + tangent;
 
 			points_bottom_ptr[j] = pos - tangent;
-			points_bottom_ptr[j2] = pos - tangent - tangent;
+			points_bottom_ptr[j2] = pos - tangent - border;
 
 			if (i < p_colors.size()) {
 				color = p_colors[i];
@@ -776,6 +806,40 @@ void RendererCanvasCull::canvas_item_add_texture_rect(RID p_item, const Rect2 &p
 	rect->texture = p_texture;
 }
 
+void RendererCanvasCull::canvas_item_add_msdf_texture_rect_region(RID p_item, const Rect2 &p_rect, RID p_texture, const Rect2 &p_src_rect, const Color &p_modulate, int p_outline_size, float p_px_range) {
+	Item *canvas_item = canvas_item_owner.getornull(p_item);
+	ERR_FAIL_COND(!canvas_item);
+
+	Item::CommandRect *rect = canvas_item->alloc_command<Item::CommandRect>();
+	ERR_FAIL_COND(!rect);
+	rect->modulate = p_modulate;
+	rect->rect = p_rect;
+
+	rect->texture = p_texture;
+
+	rect->source = p_src_rect;
+	rect->flags = RendererCanvasRender::CANVAS_RECT_REGION | RendererCanvasRender::CANVAS_RECT_MSDF;
+
+	if (p_rect.size.x < 0) {
+		rect->flags |= RendererCanvasRender::CANVAS_RECT_FLIP_H;
+		rect->rect.size.x = -rect->rect.size.x;
+	}
+	if (p_src_rect.size.x < 0) {
+		rect->flags ^= RendererCanvasRender::CANVAS_RECT_FLIP_H;
+		rect->source.size.x = -rect->source.size.x;
+	}
+	if (p_rect.size.y < 0) {
+		rect->flags |= RendererCanvasRender::CANVAS_RECT_FLIP_V;
+		rect->rect.size.y = -rect->rect.size.y;
+	}
+	if (p_src_rect.size.y < 0) {
+		rect->flags ^= RendererCanvasRender::CANVAS_RECT_FLIP_V;
+		rect->source.size.y = -rect->source.size.y;
+	}
+	rect->outline = p_outline_size;
+	rect->px_range = p_px_range;
+}
+
 void RendererCanvasCull::canvas_item_add_texture_rect_region(RID p_item, const Rect2 &p_rect, RID p_texture, const Rect2 &p_src_rect, const Color &p_modulate, bool p_transpose, bool p_clip_uv) {
 	Item *canvas_item = canvas_item_owner.getornull(p_item);
 	ERR_FAIL_COND(!canvas_item);
@@ -923,10 +987,15 @@ void RendererCanvasCull::canvas_item_add_set_transform(RID p_item, const Transfo
 void RendererCanvasCull::canvas_item_add_mesh(RID p_item, const RID &p_mesh, const Transform2D &p_transform, const Color &p_modulate, RID p_texture) {
 	Item *canvas_item = canvas_item_owner.getornull(p_item);
 	ERR_FAIL_COND(!canvas_item);
+	ERR_FAIL_COND(!p_mesh.is_valid());
 
 	Item::CommandMesh *m = canvas_item->alloc_command<Item::CommandMesh>();
 	ERR_FAIL_COND(!m);
 	m->mesh = p_mesh;
+	if (canvas_item->skeleton.is_valid()) {
+		m->mesh_instance = RSG::storage->mesh_instance_create(p_mesh);
+		RSG::storage->mesh_instance_set_skeleton(m->mesh_instance, canvas_item->skeleton);
+	}
 
 	m->texture = p_texture;
 
@@ -968,6 +1037,18 @@ void RendererCanvasCull::canvas_item_add_clip_ignore(RID p_item, bool p_ignore) 
 	ci->ignore = p_ignore;
 }
 
+void RendererCanvasCull::canvas_item_add_animation_slice(RID p_item, double p_animation_length, double p_slice_begin, double p_slice_end, double p_offset) {
+	Item *canvas_item = canvas_item_owner.getornull(p_item);
+	ERR_FAIL_COND(!canvas_item);
+
+	Item::CommandAnimationSlice *as = canvas_item->alloc_command<Item::CommandAnimationSlice>();
+	ERR_FAIL_COND(!as);
+	as->animation_length = p_animation_length;
+	as->slice_begin = p_slice_begin;
+	as->slice_end = p_slice_end;
+	as->offset = p_offset;
+}
+
 void RendererCanvasCull::canvas_item_set_sort_children_by_y(RID p_item, bool p_enable) {
 	Item *canvas_item = canvas_item_owner.getornull(p_item);
 	ERR_FAIL_COND(!canvas_item);
@@ -996,8 +1077,30 @@ void RendererCanvasCull::canvas_item_set_z_as_relative_to_parent(RID p_item, boo
 void RendererCanvasCull::canvas_item_attach_skeleton(RID p_item, RID p_skeleton) {
 	Item *canvas_item = canvas_item_owner.getornull(p_item);
 	ERR_FAIL_COND(!canvas_item);
-
+	if (canvas_item->skeleton == p_skeleton) {
+		return;
+	}
 	canvas_item->skeleton = p_skeleton;
+
+	Item::Command *c = canvas_item->commands;
+
+	while (c) {
+		if (c->type == Item::Command::TYPE_MESH) {
+			Item::CommandMesh *cm = static_cast<Item::CommandMesh *>(c);
+			if (canvas_item->skeleton.is_valid()) {
+				if (cm->mesh_instance.is_null()) {
+					cm->mesh_instance = RSG::storage->mesh_instance_create(cm->mesh);
+				}
+				RSG::storage->mesh_instance_set_skeleton(cm->mesh_instance, canvas_item->skeleton);
+			} else {
+				if (cm->mesh_instance.is_valid()) {
+					RSG::storage->free(cm->mesh_instance);
+					cm->mesh_instance = RID();
+				}
+			}
+		}
+		c = c->next;
+	}
 }
 
 void RendererCanvasCull::canvas_item_set_copy_to_backbuffer(RID p_item, bool p_enable, const Rect2 &p_rect) {
@@ -1057,6 +1160,26 @@ void RendererCanvasCull::canvas_item_set_use_parent_material(RID p_item, bool p_
 	canvas_item->use_parent_material = p_enable;
 }
 
+void RendererCanvasCull::canvas_item_set_visibility_notifier(RID p_item, bool p_enable, const Rect2 &p_area, const Callable &p_enter_callable, const Callable &p_exit_callable) {
+	Item *canvas_item = canvas_item_owner.getornull(p_item);
+	ERR_FAIL_COND(!canvas_item);
+
+	if (p_enable) {
+		if (!canvas_item->visibility_notifier) {
+			canvas_item->visibility_notifier = visibility_notifier_allocator.alloc();
+		}
+		canvas_item->visibility_notifier->area = p_area;
+		canvas_item->visibility_notifier->enter_callable = p_enter_callable;
+		canvas_item->visibility_notifier->exit_callable = p_exit_callable;
+
+	} else {
+		if (canvas_item->visibility_notifier) {
+			visibility_notifier_allocator.free(canvas_item->visibility_notifier);
+			canvas_item->visibility_notifier = nullptr;
+		}
+	}
+}
+
 void RendererCanvasCull::canvas_item_set_canvas_group_mode(RID p_item, RS::CanvasGroupMode p_mode, float p_clear_margin, bool p_fit_empty, float p_fit_margin, bool p_blur_mipmaps) {
 	Item *canvas_item = canvas_item_owner.getornull(p_item);
 	ERR_FAIL_COND(!canvas_item);
@@ -1082,9 +1205,9 @@ RID RendererCanvasCull::canvas_light_allocate() {
 	return canvas_light_owner.allocate_rid();
 }
 void RendererCanvasCull::canvas_light_initialize(RID p_rid) {
-	RendererCanvasRender::Light *clight = memnew(RendererCanvasRender::Light);
+	canvas_light_owner.initialize_rid(p_rid);
+	RendererCanvasRender::Light *clight = canvas_light_owner.getornull(p_rid);
 	clight->light_internal = RSG::canvas_render->light_create();
-	return canvas_light_owner.initialize_rid(p_rid, clight);
 }
 
 void RendererCanvasCull::canvas_light_set_mode(RID p_light, RS::CanvasLightMode p_mode) {
@@ -1278,9 +1401,7 @@ RID RendererCanvasCull::canvas_light_occluder_allocate() {
 	return canvas_light_occluder_owner.allocate_rid();
 }
 void RendererCanvasCull::canvas_light_occluder_initialize(RID p_rid) {
-	RendererCanvasRender::LightOccluderInstance *occluder = memnew(RendererCanvasRender::LightOccluderInstance);
-
-	return canvas_light_occluder_owner.initialize_rid(p_rid, occluder);
+	return canvas_light_occluder_owner.initialize_rid(p_rid);
 }
 
 void RendererCanvasCull::canvas_light_occluder_attach_to_canvas(RID p_occluder, RID p_canvas) {
@@ -1362,9 +1483,9 @@ RID RendererCanvasCull::canvas_occluder_polygon_allocate() {
 	return canvas_light_occluder_polygon_owner.allocate_rid();
 }
 void RendererCanvasCull::canvas_occluder_polygon_initialize(RID p_rid) {
-	LightOccluderPolygon *occluder_poly = memnew(LightOccluderPolygon);
+	canvas_light_occluder_polygon_owner.initialize_rid(p_rid);
+	LightOccluderPolygon *occluder_poly = canvas_light_occluder_polygon_owner.getornull(p_rid);
 	occluder_poly->occluder = RSG::canvas_render->occluder_polygon_create();
-	return canvas_light_occluder_polygon_owner.initialize_rid(p_rid, occluder_poly);
 }
 
 void RendererCanvasCull::canvas_occluder_polygon_set_shape(RID p_occluder_polygon, const Vector<Vector2> &p_shape, bool p_closed) {
@@ -1439,6 +1560,44 @@ void RendererCanvasCull::canvas_item_set_default_texture_repeat(RID p_item, RS::
 	ci->texture_repeat = p_repeat;
 }
 
+void RendererCanvasCull::update_visibility_notifiers() {
+	SelfList<Item::VisibilityNotifierData> *E = visibility_notifier_list.first();
+	while (E) {
+		SelfList<Item::VisibilityNotifierData> *N = E->next();
+
+		Item::VisibilityNotifierData *visibility_notifier = E->self();
+		if (visibility_notifier->just_visible) {
+			visibility_notifier->just_visible = false;
+
+			if (!visibility_notifier->enter_callable.is_null()) {
+				if (RSG::threaded) {
+					visibility_notifier->enter_callable.call_deferred(nullptr, 0);
+				} else {
+					Callable::CallError ce;
+					Variant ret;
+					visibility_notifier->enter_callable.call(nullptr, 0, ret, ce);
+				}
+			}
+		} else {
+			if (visibility_notifier->visible_in_frame != RSG::rasterizer->get_frame_number()) {
+				visibility_notifier_list.remove(E);
+
+				if (!visibility_notifier->exit_callable.is_null()) {
+					if (RSG::threaded) {
+						visibility_notifier->exit_callable.call_deferred(nullptr, 0);
+					} else {
+						Callable::CallError ce;
+						Variant ret;
+						visibility_notifier->exit_callable.call(nullptr, 0, ret, ce);
+					}
+				}
+			}
+		}
+
+		E = N;
+	}
+}
+
 bool RendererCanvasCull::free(RID p_rid) {
 	if (canvas_owner.owns(p_rid)) {
 		Canvas *canvas = canvas_owner.getornull(p_rid);
@@ -1469,8 +1628,6 @@ bool RendererCanvasCull::free(RID p_rid) {
 
 		canvas_owner.free(p_rid);
 
-		memdelete(canvas);
-
 	} else if (canvas_item_owner.owns(p_rid)) {
 		Item *canvas_item = canvas_item_owner.getornull(p_rid);
 		ERR_FAIL_COND_V(!canvas_item, true);
@@ -1493,6 +1650,10 @@ bool RendererCanvasCull::free(RID p_rid) {
 			canvas_item->child_items[i]->parent = RID();
 		}
 
+		if (canvas_item->visibility_notifier != nullptr) {
+			visibility_notifier_allocator.free(canvas_item->visibility_notifier);
+		}
+
 		/*
 		if (canvas_item->material) {
 			canvas_item->material->owners.erase(canvas_item);
@@ -1500,8 +1661,6 @@ bool RendererCanvasCull::free(RID p_rid) {
 		*/
 
 		canvas_item_owner.free(p_rid);
-
-		memdelete(canvas_item);
 
 	} else if (canvas_light_owner.owns(p_rid)) {
 		RendererCanvasRender::Light *canvas_light = canvas_light_owner.getornull(p_rid);
@@ -1517,7 +1676,6 @@ bool RendererCanvasCull::free(RID p_rid) {
 		RSG::canvas_render->free(canvas_light->light_internal);
 
 		canvas_light_owner.free(p_rid);
-		memdelete(canvas_light);
 
 	} else if (canvas_light_occluder_owner.owns(p_rid)) {
 		RendererCanvasRender::LightOccluderInstance *occluder = canvas_light_occluder_owner.getornull(p_rid);
@@ -1536,7 +1694,6 @@ bool RendererCanvasCull::free(RID p_rid) {
 		}
 
 		canvas_light_occluder_owner.free(p_rid);
-		memdelete(occluder);
 
 	} else if (canvas_light_occluder_polygon_owner.owns(p_rid)) {
 		LightOccluderPolygon *occluder_poly = canvas_light_occluder_polygon_owner.getornull(p_rid);
@@ -1549,7 +1706,6 @@ bool RendererCanvasCull::free(RID p_rid) {
 		}
 
 		canvas_light_occluder_polygon_owner.free(p_rid);
-		memdelete(occluder_poly);
 	} else {
 		return false;
 	}

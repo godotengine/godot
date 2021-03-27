@@ -42,9 +42,11 @@ class Main {
 	static uint32_t frame;
 	static bool force_redraw_requested;
 	static int iterating;
+	static bool agile_input_event_flushing;
 
 public:
 	static bool is_project_manager();
+	static bool is_cmdline_tool();
 	static int test_entrypoint(int argc, char *argv[], bool &tests_need_run);
 	static Error setup(const char *execpath, int argc, char *argv[], bool p_second_phase = true);
 	static Error setup2(Thread::ID p_main_tid_override = 0);

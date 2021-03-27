@@ -60,46 +60,46 @@ class HingeJoint3DSW : public Joint3DSW {
 			Body3DSW *B;
 		};
 
-		Body3DSW *_arr[2];
+		Body3DSW *_arr[2] = {};
 	};
 
 	JacobianEntry3DSW m_jac[3]; //3 orthogonal linear constraints
 	JacobianEntry3DSW m_jacAng[3]; //2 orthogonal angular constraints+ 1 for limit/motor
 
-	Transform m_rbAFrame; // constraint axii. Assumes z is hinge axis.
-	Transform m_rbBFrame;
+	Transform3D m_rbAFrame; // constraint axii. Assumes z is hinge axis.
+	Transform3D m_rbBFrame;
 
-	real_t m_motorTargetVelocity;
-	real_t m_maxMotorImpulse;
+	real_t m_motorTargetVelocity = 0.0;
+	real_t m_maxMotorImpulse = 0.0;
 
-	real_t m_limitSoftness;
-	real_t m_biasFactor;
-	real_t m_relaxationFactor;
+	real_t m_limitSoftness = 0.9;
+	real_t m_biasFactor = 0.3;
+	real_t m_relaxationFactor = 1.0;
 
-	real_t m_lowerLimit;
-	real_t m_upperLimit;
+	real_t m_lowerLimit = Math_PI;
+	real_t m_upperLimit = -Math_PI;
 
-	real_t m_kHinge;
+	real_t m_kHinge = 0.0;
 
-	real_t m_limitSign;
-	real_t m_correction;
+	real_t m_limitSign = 0.0;
+	real_t m_correction = 0.0;
 
-	real_t m_accLimitImpulse;
+	real_t m_accLimitImpulse = 0.0;
 
-	real_t tau;
+	real_t tau = 0.3;
 
-	bool m_useLimit;
-	bool m_angularOnly;
-	bool m_enableAngularMotor;
-	bool m_solveLimit;
+	bool m_useLimit = false;
+	bool m_angularOnly = false;
+	bool m_enableAngularMotor = false;
+	bool m_solveLimit = false;
 
-	real_t m_appliedImpulse;
+	real_t m_appliedImpulse = 0.0;
 
 public:
-	virtual PhysicsServer3D::JointType get_type() const { return PhysicsServer3D::JOINT_TYPE_HINGE; }
+	virtual PhysicsServer3D::JointType get_type() const override { return PhysicsServer3D::JOINT_TYPE_HINGE; }
 
-	virtual bool setup(real_t p_step);
-	virtual void solve(real_t p_step);
+	virtual bool setup(real_t p_step) override;
+	virtual void solve(real_t p_step) override;
 
 	real_t get_hinge_angle();
 
@@ -109,7 +109,7 @@ public:
 	void set_flag(PhysicsServer3D::HingeJointFlag p_flag, bool p_value);
 	bool get_flag(PhysicsServer3D::HingeJointFlag p_flag) const;
 
-	HingeJoint3DSW(Body3DSW *rbA, Body3DSW *rbB, const Transform &frameA, const Transform &frameB);
+	HingeJoint3DSW(Body3DSW *rbA, Body3DSW *rbB, const Transform3D &frameA, const Transform3D &frameB);
 	HingeJoint3DSW(Body3DSW *rbA, Body3DSW *rbB, const Vector3 &pivotInA, const Vector3 &pivotInB, const Vector3 &axisInA, const Vector3 &axisInB);
 };
 

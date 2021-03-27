@@ -17,7 +17,7 @@
 		</member>
 		<member name="instrument" type="int" setter="set_instrument" getter="get_instrument" default="0">
 		</member>
-		<member name="message" type="int" setter="set_message" getter="get_message" default="0">
+		<member name="message" type="int" setter="set_message" getter="get_message" enum="MIDIMessage" default="0">
 		</member>
 		<member name="pitch" type="int" setter="set_pitch" getter="get_pitch" default="0">
 		</member>

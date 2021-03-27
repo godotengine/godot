@@ -43,7 +43,7 @@ class SceneTreeEditor : public Control {
 
 	EditorSelection *editor_selection;
 
-	enum {
+	enum SceneTreeEditorButton {
 		BUTTON_SUBSCENE = 0,
 		BUTTON_VISIBILITY = 1,
 		BUTTON_SCRIPT = 2,
@@ -156,6 +156,8 @@ public:
 	void set_connecting_signal(bool p_enable);
 
 	Tree *get_scene_tree() { return tree; }
+
+	void update_warning();
 
 	SceneTreeEditor(bool p_label = true, bool p_can_rename = false, bool p_can_open_instance = false);
 	~SceneTreeEditor();

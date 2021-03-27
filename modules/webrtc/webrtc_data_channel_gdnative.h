@@ -60,6 +60,7 @@ public:
 	virtual int get_max_retransmits() const override;
 	virtual String get_protocol() const override;
 	virtual bool is_negotiated() const override;
+	virtual int get_buffered_amount() const override;
 
 	virtual Error poll() override;
 	virtual void close() override;

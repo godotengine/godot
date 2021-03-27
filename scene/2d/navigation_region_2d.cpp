@@ -30,7 +30,6 @@
 
 #include "navigation_region_2d.h"
 
-#include "core/config/engine.h"
 #include "core/core_string_names.h"
 #include "core/math/geometry_2d.h"
 #include "core/os/mutex.h"
@@ -169,7 +168,7 @@ Ref<NavigationMesh> NavigationPolygon::get_mesh() {
 	MutexLock lock(navmesh_generation);
 
 	if (navmesh.is_null()) {
-		navmesh.instance();
+		navmesh.instantiate();
 		Vector<Vector3> verts;
 		{
 			verts.resize(get_vertices().size());
@@ -455,7 +454,7 @@ void NavigationRegion2D::_notification(int p_what) {
 				// Draw the region
 				Transform2D xform = get_global_transform();
 				const NavigationServer2D *ns = NavigationServer2D::get_singleton();
-				float radius = ns->map_get_edge_connection_margin(get_world_2d()->get_navigation_map()) / 2.0;
+				real_t radius = ns->map_get_edge_connection_margin(get_world_2d()->get_navigation_map()) / 2.0;
 				for (int i = 0; i < ns->region_get_connections_count(region); i++) {
 					// Two main points
 					Vector2 a = ns->region_get_connection_pathway_start(region, i);
@@ -465,7 +464,7 @@ void NavigationRegion2D::_notification(int p_what) {
 					draw_line(a, b, doors_color);
 
 					// Draw a circle to illustrate the margins.
-					float angle = (b - a).angle();
+					real_t angle = (b - a).angle();
 					draw_arc(a, radius, angle + Math_PI / 2.0, angle - Math_PI / 2.0 + Math_TAU, 10, doors_color);
 					draw_arc(b, radius, angle - Math_PI / 2.0, angle + Math_PI / 2.0, 10, doors_color);
 				}
@@ -491,7 +490,7 @@ void NavigationRegion2D::set_navigation_polygon(const Ref<NavigationPolygon> &p_
 	}
 	_navpoly_changed();
 
-	update_configuration_warning();
+	update_configuration_warnings();
 }
 
 Ref<NavigationPolygon> NavigationRegion2D::get_navigation_polygon() const {
@@ -509,21 +508,16 @@ void NavigationRegion2D::_map_changed(RID p_map) {
 	}
 }
 
-String NavigationRegion2D::get_configuration_warning() const {
-	if (!is_visible_in_tree() || !is_inside_tree()) {
-		return String();
-	}
+TypedArray<String> NavigationRegion2D::get_configuration_warnings() const {
+	TypedArray<String> warnings = Node2D::get_configuration_warnings();
 
-	String warning = Node2D::get_configuration_warning();
-
-	if (!navpoly.is_valid()) {
-		if (!warning.is_empty()) {
-			warning += "\n\n";
+	if (is_visible_in_tree() && is_inside_tree()) {
+		if (!navpoly.is_valid()) {
+			warnings.push_back(TTR("A NavigationMesh resource must be set or created for this node to work. Please set a property or draw a polygon."));
 		}
-		warning += TTR("A NavigationPolygon resource must be set or created for this node to work. Please set a property or draw a polygon.");
 	}
 
-	return warning;
+	return warnings;
 }
 
 void NavigationRegion2D::_bind_methods() {

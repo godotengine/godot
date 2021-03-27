@@ -46,6 +46,7 @@ private:
 	jclass cls;
 
 	jmethodID _open_URI = 0;
+	jmethodID _get_cache_dir = 0;
 	jmethodID _get_data_dir = 0;
 	jmethodID _get_locale = 0;
 	jmethodID _get_model = 0;
@@ -65,6 +66,7 @@ public:
 	jobject get_instance();
 
 	Error open_uri(const String &p_uri);
+	String get_cache_dir();
 	String get_user_data_dir();
 	String get_locale();
 	String get_model();
@@ -78,7 +80,7 @@ public:
 	void set_vk_height(int p_height);
 	void set_screen_orientation(int p_orient);
 	int get_screen_orientation();
-	String get_system_dir(int p_dir);
+	String get_system_dir(int p_dir, bool p_shared_storage);
 };
 
 #endif /* !JAVA_GODOT_IO_WRAPPER_H */

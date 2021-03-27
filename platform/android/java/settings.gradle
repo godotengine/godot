@@ -4,3 +4,6 @@ rootProject.name = "Godot"
 include ':app'
 include ':lib'
 include ':nativeSrcsConfigs'
+
+include ':assetPacks:installTime'
+project(':assetPacks:installTime').projectDir = file("app/assetPacks/installTime")

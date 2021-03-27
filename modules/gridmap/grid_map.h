@@ -89,7 +89,7 @@ class GridMap : public Node3D {
 	struct Octant {
 		struct NavMesh {
 			RID region;
-			Transform xform;
+			Transform3D xform;
 		};
 
 		struct MultimeshInstance {
@@ -97,7 +97,7 @@ class GridMap : public Node3D {
 			RID multimesh;
 			struct Item {
 				int index = 0;
-				Transform transform;
+				Transform3D transform;
 				IndexKey key;
 			};
 
@@ -137,7 +137,7 @@ class GridMap : public Node3D {
 	bool bake_navigation = false;
 	uint32_t navigation_layers = 1;
 
-	Transform last_transform;
+	Transform3D last_transform;
 
 	bool _in_tree = false;
 	Vector3 cell_size = Vector3(2, 2, 2);
@@ -217,11 +217,11 @@ public:
 	void set_collision_mask(uint32_t p_mask);
 	uint32_t get_collision_mask() const;
 
-	void set_collision_layer_bit(int p_bit, bool p_value);
-	bool get_collision_layer_bit(int p_bit) const;
+	void set_collision_layer_value(int p_layer_number, bool p_value);
+	bool get_collision_layer_value(int p_layer_number) const;
 
-	void set_collision_mask_bit(int p_bit, bool p_value);
-	bool get_collision_mask_bit(int p_bit) const;
+	void set_collision_mask_value(int p_layer_number, bool p_value);
+	bool get_collision_mask_value(int p_layer_number) const;
 
 	void set_bake_navigation(bool p_bake_navigation);
 	bool is_baking_navigation();

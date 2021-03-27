@@ -19,8 +19,11 @@
     <application
         android:label="@string/godot_project_name_string"
         android:allowBackup="false"
-        tools:ignore="GoogleAppIndexingWarning"
-        android:icon="@mipmap/icon" >
+        android:icon="@mipmap/icon"
+        android:isGame="true"
+        android:hasFragileUserData="false"
+        android:requestLegacyExternalStorage="false"
+        tools:ignore="GoogleAppIndexingWarning" >
 
         <!-- Records the version of the Godot editor used for building -->
         <meta-data
@@ -29,11 +32,6 @@
 
         <!-- The following metadata values are replaced when Godot exports, modifying them here has no effect. -->
         <!-- Do these changes in the export preset. Adding new ones is fine. -->
-
-        <!-- XR mode metadata. This is modified by the exporter based on the selected xr mode. DO NOT CHANGE the values here. -->
-        <meta-data
-            android:name="xr_mode_metadata_name"
-            android:value="xr_mode_metadata_value" />
 
         <activity
             android:name=".GodotApp"
@@ -45,12 +43,16 @@
             android:resizeableActivity="false"
             tools:ignore="UnusedAttribute" >
 
-            <!-- Focus awareness metadata is updated at export time if the user enables it in the 'Xr Features' section. -->
-            <meta-data android:name="com.oculus.vr.focusaware" android:value="false" />
+            <!-- Focus awareness metadata is removed at export time if the xr mode is not VR. -->
+            <meta-data android:name="com.oculus.vr.focusaware" android:value="true" />
 
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
+
+                <!-- Enable access to OpenXR on Oculus mobile devices, no-op on other Android
+                platforms. -->
+                <category android:name="com.oculus.intent.category.VR" />
             </intent-filter>
         </activity>
 

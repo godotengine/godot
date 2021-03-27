@@ -72,6 +72,9 @@ const GodotConfig = {
 			GodotConfig.persistent_drops = !!p_opts['persistentDrops'];
 			GodotConfig.on_execute = p_opts['onExecute'];
 			GodotConfig.on_exit = p_opts['onExit'];
+			if (p_opts['focusCanvas']) {
+				GodotConfig.canvas.focus();
+			}
 		},
 
 		locate_file: function (file) {
@@ -103,7 +106,7 @@ autoAddDeps(GodotConfig, '$GodotConfig');
 mergeInto(LibraryManager.library, GodotConfig);
 
 const GodotFS = {
-	$GodotFS__deps: ['$FS', '$IDBFS', '$GodotRuntime'],
+	$GodotFS__deps: ['$ERRNO_CODES', '$FS', '$IDBFS', '$GodotRuntime'],
 	$GodotFS__postset: [
 		'Module["initFS"] = GodotFS.init;',
 		'Module["copyToFS"] = GodotFS.copy_to_fs;',
@@ -303,6 +306,23 @@ const GodotOS = {
 	godot_js_os_hw_concurrency_get__sig: 'i',
 	godot_js_os_hw_concurrency_get: function () {
 		return navigator.hardwareConcurrency || 1;
+	},
+
+	godot_js_os_download_buffer__sig: 'viiii',
+	godot_js_os_download_buffer: function (p_ptr, p_size, p_name, p_mime) {
+		const buf = GodotRuntime.heapSlice(HEAP8, p_ptr, p_size);
+		const name = GodotRuntime.parseString(p_name);
+		const mime = GodotRuntime.parseString(p_mime);
+		const blob = new Blob([buf], { type: mime });
+		const url = window.URL.createObjectURL(blob);
+		const a = document.createElement('a');
+		a.href = url;
+		a.download = name;
+		a.style.display = 'none';
+		document.body.appendChild(a);
+		a.click();
+		a.remove();
+		window.URL.revokeObjectURL(url);
 	},
 };
 

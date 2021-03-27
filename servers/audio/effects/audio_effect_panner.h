@@ -54,7 +54,7 @@ protected:
 	static void _bind_methods();
 
 public:
-	Ref<AudioEffectInstance> instance() override;
+	Ref<AudioEffectInstance> instantiate() override;
 	void set_pan(float p_cpanume);
 	float get_pan() const;
 

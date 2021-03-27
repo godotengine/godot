@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="ResourceFormatLoader" inherits="Reference" version="4.0">
+<class name="ResourceFormatLoader" inherits="RefCounted" version="4.0">
 	<brief_description>
 		Loads a specific resource type from a file.
 	</brief_description>
@@ -11,68 +11,64 @@
 	<tutorials>
 	</tutorials>
 	<methods>
-		<method name="get_dependencies" qualifiers="virtual">
-			<return type="void">
-			</return>
-			<argument index="0" name="path" type="String">
-			</argument>
-			<argument index="1" name="add_types" type="String">
-			</argument>
+		<method name="_exists" qualifiers="virtual const">
+			<return type="bool" />
+			<argument index="0" name="path" type="String" />
+			<description>
+			</description>
+		</method>
+		<method name="_get_dependencies" qualifiers="virtual const">
+			<return type="PackedStringArray" />
+			<argument index="0" name="path" type="String" />
+			<argument index="1" name="add_types" type="bool" />
 			<description>
 				If implemented, gets the dependencies of a given resource. If [code]add_types[/code] is [code]true[/code], paths should be appended [code]::TypeName[/code], where [code]TypeName[/code] is the class name of the dependency.
 				[b]Note:[/b] Custom resource types defined by scripts aren't known by the [ClassDB], so you might just return [code]"Resource"[/code] for them.
 			</description>
 		</method>
-		<method name="get_recognized_extensions" qualifiers="virtual">
-			<return type="PackedStringArray">
-			</return>
+		<method name="_get_recognized_extensions" qualifiers="virtual const">
+			<return type="PackedStringArray" />
 			<description>
 				Gets the list of extensions for files this loader is able to read.
 			</description>
 		</method>
-		<method name="get_resource_type" qualifiers="virtual">
-			<return type="String">
-			</return>
-			<argument index="0" name="path" type="String">
-			</argument>
+		<method name="_get_resource_type" qualifiers="virtual const">
+			<return type="String" />
+			<argument index="0" name="path" type="String" />
 			<description>
 				Gets the class name of the resource associated with the given path. If the loader cannot handle it, it should return [code]""[/code].
 				[b]Note:[/b] Custom resource types defined by scripts aren't known by the [ClassDB], so you might just return [code]"Resource"[/code] for them.
 			</description>
 		</method>
-		<method name="handles_type" qualifiers="virtual">
-			<return type="bool">
-			</return>
-			<argument index="0" name="typename" type="StringName">
-			</argument>
+		<method name="_get_resource_uid" qualifiers="virtual const">
+			<return type="int" />
+			<argument index="0" name="path" type="String" />
+			<description>
+			</description>
+		</method>
+		<method name="_handles_type" qualifiers="virtual const">
+			<return type="bool" />
+			<argument index="0" name="type" type="StringName" />
 			<description>
 				Tells which resource class this loader can load.
 				[b]Note:[/b] Custom resource types defined by scripts aren't known by the [ClassDB], so you might just handle [code]"Resource"[/code] for them.
 			</description>
 		</method>
-		<method name="load" qualifiers="virtual">
-			<return type="Variant">
-			</return>
-			<argument index="0" name="path" type="String">
-			</argument>
-			<argument index="1" name="original_path" type="String">
-			</argument>
-			<argument index="2" name="use_sub_threads" type="bool">
-			</argument>
-			<argument index="3" name="cache_mode" type="int">
-			</argument>
+		<method name="_load" qualifiers="virtual const">
+			<return type="Variant" />
+			<argument index="0" name="path" type="String" />
+			<argument index="1" name="original_path" type="String" />
+			<argument index="2" name="use_sub_threads" type="bool" />
+			<argument index="3" name="cache_mode" type="int" />
 			<description>
 				Loads a resource when the engine finds this loader to be compatible. If the loaded resource is the result of an import, [code]original_path[/code] will target the source file. Returns a [Resource] object on success, or an [enum Error] constant in case of failure.
 				The [code]cache_mode[/code] property defines whether and how the cache should be used or updated when loading the resource. See [enum CacheMode] for details.
 			</description>
 		</method>
-		<method name="rename_dependencies" qualifiers="virtual">
-			<return type="int">
-			</return>
-			<argument index="0" name="path" type="String">
-			</argument>
-			<argument index="1" name="renames" type="String">
-			</argument>
+		<method name="_rename_dependencies" qualifiers="virtual const">
+			<return type="int" />
+			<argument index="0" name="path" type="String" />
+			<argument index="1" name="renames" type="Dictionary" />
 			<description>
 				If implemented, renames dependencies within the given resource and saves it. [code]renames[/code] is a dictionary [code]{ String =&gt; String }[/code] mapping old dependency paths to new paths.
 				Returns [constant OK] on success, or an [enum Error] constant in case of failure.

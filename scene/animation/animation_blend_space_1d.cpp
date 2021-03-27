@@ -47,14 +47,14 @@ void AnimationNodeBlendSpace1D::_validate_property(PropertyInfo &property) const
 		String left = property.name.get_slicec('/', 0);
 		int idx = left.get_slicec('_', 2).to_int();
 		if (idx >= blend_points_used) {
-			property.usage = 0;
+			property.usage = PROPERTY_USAGE_NONE;
 		}
 	}
 	AnimationRootNode::_validate_property(property);
 }
 
 void AnimationNodeBlendSpace1D::_tree_changed() {
-	emit_signal("tree_changed");
+	emit_signal(SNAME("tree_changed"));
 }
 
 void AnimationNodeBlendSpace1D::_bind_methods() {
@@ -120,7 +120,7 @@ void AnimationNodeBlendSpace1D::add_blend_point(const Ref<AnimationRootNode> &p_
 	blend_points[p_at_index].node->connect("tree_changed", callable_mp(this, &AnimationNodeBlendSpace1D::_tree_changed), varray(), CONNECT_REFERENCE_COUNTED);
 
 	blend_points_used++;
-	emit_signal("tree_changed");
+	emit_signal(SNAME("tree_changed"));
 }
 
 void AnimationNodeBlendSpace1D::set_blend_point_position(int p_point, float p_position) {
@@ -140,7 +140,7 @@ void AnimationNodeBlendSpace1D::set_blend_point_node(int p_point, const Ref<Anim
 	blend_points[p_point].node = p_node;
 	blend_points[p_point].node->connect("tree_changed", callable_mp(this, &AnimationNodeBlendSpace1D::_tree_changed), varray(), CONNECT_REFERENCE_COUNTED);
 
-	emit_signal("tree_changed");
+	emit_signal(SNAME("tree_changed"));
 }
 
 float AnimationNodeBlendSpace1D::get_blend_point_position(int p_point) const {
@@ -164,7 +164,7 @@ void AnimationNodeBlendSpace1D::remove_blend_point(int p_point) {
 	}
 
 	blend_points_used--;
-	emit_signal("tree_changed");
+	emit_signal(SNAME("tree_changed"));
 }
 
 int AnimationNodeBlendSpace1D::get_blend_point_count() const {
@@ -219,7 +219,7 @@ void AnimationNodeBlendSpace1D::_add_blend_point(int p_index, const Ref<Animatio
 	}
 }
 
-float AnimationNodeBlendSpace1D::process(float p_time, bool p_seek) {
+double AnimationNodeBlendSpace1D::process(double p_time, bool p_seek) {
 	if (blend_points_used == 0) {
 		return 0.0;
 	}
@@ -229,7 +229,7 @@ float AnimationNodeBlendSpace1D::process(float p_time, bool p_seek) {
 		return blend_node(blend_points[0].name, blend_points[0].node, p_time, p_seek, 1.0, FILTER_IGNORE, false);
 	}
 
-	float blend_pos = get_parameter(blend_position);
+	double blend_pos = get_parameter(blend_position);
 
 	float weights[MAX_BLEND_POINTS] = {};
 

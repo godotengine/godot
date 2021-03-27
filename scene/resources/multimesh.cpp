@@ -50,7 +50,7 @@ void MultiMesh::_set_transform_array(const Vector<Vector3> &p_array) {
 	const Vector3 *r = xforms.ptr();
 
 	for (int i = 0; i < len / 4; i++) {
-		Transform t;
+		Transform3D t;
 		t.basis[0] = r[i * 4 + 0];
 		t.basis[1] = r[i * 4 + 1];
 		t.basis[2] = r[i * 4 + 2];
@@ -75,7 +75,7 @@ Vector<Vector3> MultiMesh::_get_transform_array() const {
 	Vector3 *w = xforms.ptrw();
 
 	for (int i = 0; i < instance_count; i++) {
-		Transform t = get_instance_transform(i);
+		Transform3D t = get_instance_transform(i);
 		w[i * 4 + 0] = t.basis[0];
 		w[i * 4 + 1] = t.basis[1];
 		w[i * 4 + 2] = t.basis[2];
@@ -236,7 +236,7 @@ int MultiMesh::get_visible_instance_count() const {
 	return visible_instance_count;
 }
 
-void MultiMesh::set_instance_transform(int p_instance, const Transform &p_transform) {
+void MultiMesh::set_instance_transform(int p_instance, const Transform3D &p_transform) {
 	RenderingServer::get_singleton()->multimesh_instance_set_transform(multimesh, p_instance, p_transform);
 }
 
@@ -244,7 +244,7 @@ void MultiMesh::set_instance_transform_2d(int p_instance, const Transform2D &p_t
 	RenderingServer::get_singleton()->multimesh_instance_set_transform_2d(multimesh, p_instance, p_transform);
 }
 
-Transform MultiMesh::get_instance_transform(int p_instance) const {
+Transform3D MultiMesh::get_instance_transform(int p_instance) const {
 	return RenderingServer::get_singleton()->multimesh_instance_get_transform(multimesh, p_instance);
 }
 
@@ -349,10 +349,10 @@ void MultiMesh::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_set_custom_data_array"), &MultiMesh::_set_custom_data_array);
 	ClassDB::bind_method(D_METHOD("_get_custom_data_array"), &MultiMesh::_get_custom_data_array);
 
-	ADD_PROPERTY(PropertyInfo(Variant::PACKED_VECTOR3_ARRAY, "transform_array", PROPERTY_HINT_NONE, "", 0), "_set_transform_array", "_get_transform_array");
-	ADD_PROPERTY(PropertyInfo(Variant::PACKED_VECTOR2_ARRAY, "transform_2d_array", PROPERTY_HINT_NONE, "", 0), "_set_transform_2d_array", "_get_transform_2d_array");
-	ADD_PROPERTY(PropertyInfo(Variant::PACKED_COLOR_ARRAY, "color_array", PROPERTY_HINT_NONE, "", 0), "_set_color_array", "_get_color_array");
-	ADD_PROPERTY(PropertyInfo(Variant::PACKED_COLOR_ARRAY, "custom_data_array", PROPERTY_HINT_NONE, "", 0), "_set_custom_data_array", "_get_custom_data_array");
+	ADD_PROPERTY(PropertyInfo(Variant::PACKED_VECTOR3_ARRAY, "transform_array", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NONE), "_set_transform_array", "_get_transform_array");
+	ADD_PROPERTY(PropertyInfo(Variant::PACKED_VECTOR2_ARRAY, "transform_2d_array", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NONE), "_set_transform_2d_array", "_get_transform_2d_array");
+	ADD_PROPERTY(PropertyInfo(Variant::PACKED_COLOR_ARRAY, "color_array", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NONE), "_set_color_array", "_get_color_array");
+	ADD_PROPERTY(PropertyInfo(Variant::PACKED_COLOR_ARRAY, "custom_data_array", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NONE), "_set_custom_data_array", "_get_custom_data_array");
 #endif
 
 	BIND_ENUM_CONSTANT(TRANSFORM_2D);

@@ -35,8 +35,8 @@
 #include "core/object/class_db.h"
 #include "core/templates/ring_buffer.h"
 
-class PacketPeer : public Reference {
-	GDCLASS(PacketPeer, Reference);
+class PacketPeer : public RefCounted {
+	GDCLASS(PacketPeer, RefCounted);
 
 	Variant _bnd_get_var(bool p_allow_objects = false);
 

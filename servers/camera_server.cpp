@@ -99,6 +99,8 @@ Ref<CameraFeed> CameraServer::get_feed_by_id(int p_id) {
 };
 
 void CameraServer::add_feed(const Ref<CameraFeed> &p_feed) {
+	ERR_FAIL_COND(p_feed.is_null());
+
 	// add our feed
 	feeds.push_back(p_feed);
 
@@ -108,7 +110,7 @@ void CameraServer::add_feed(const Ref<CameraFeed> &p_feed) {
 #endif
 
 	// let whomever is interested know
-	emit_signal("camera_feed_added", p_feed->get_id());
+	emit_signal(SNAME("camera_feed_added"), p_feed->get_id());
 };
 
 void CameraServer::remove_feed(const Ref<CameraFeed> &p_feed) {
@@ -125,7 +127,7 @@ void CameraServer::remove_feed(const Ref<CameraFeed> &p_feed) {
 			feeds.remove(i);
 
 			// let whomever is interested know
-			emit_signal("camera_feed_removed", feed_id);
+			emit_signal(SNAME("camera_feed_removed"), feed_id);
 			return;
 		};
 	};

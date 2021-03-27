@@ -32,8 +32,6 @@
 #define XR_NODES_H
 
 #include "scene/3d/camera_3d.h"
-#include "scene/3d/node_3d.h"
-#include "scene/resources/mesh.h"
 #include "servers/xr/xr_positional_tracker.h"
 
 /**
@@ -50,11 +48,11 @@ protected:
 	void _notification(int p_what);
 
 public:
-	String get_configuration_warning() const override;
+	TypedArray<String> get_configuration_warnings() const override;
 
 	virtual Vector3 project_local_ray_normal(const Point2 &p_pos) const override;
 	virtual Point2 unproject_position(const Vector3 &p_pos) const override;
-	virtual Vector3 project_position(const Point2 &p_point, float p_z_depth) const override;
+	virtual Vector3 project_position(const Point2 &p_point, real_t p_z_depth) const override;
 	virtual Vector<Plane> get_frustum() const override;
 
 	XRCamera3D() {}
@@ -97,7 +95,7 @@ public:
 
 	Ref<Mesh> get_mesh() const;
 
-	String get_configuration_warning() const override;
+	TypedArray<String> get_configuration_warnings() const override;
 
 	XRController3D() {}
 	~XRController3D() {}
@@ -133,7 +131,7 @@ public:
 
 	Ref<Mesh> get_mesh() const;
 
-	String get_configuration_warning() const override;
+	TypedArray<String> get_configuration_warnings() const override;
 
 	XRAnchor3D() {}
 	~XRAnchor3D() {}
@@ -158,13 +156,13 @@ protected:
 	static void _bind_methods();
 
 public:
-	String get_configuration_warning() const override;
+	TypedArray<String> get_configuration_warnings() const override;
 
 	void set_tracked_camera(XRCamera3D *p_tracked_camera);
 	void clear_tracked_camera_if(XRCamera3D *p_tracked_camera);
 
-	float get_world_scale() const;
-	void set_world_scale(float p_world_scale);
+	real_t get_world_scale() const;
+	void set_world_scale(real_t p_world_scale);
 
 	XROrigin3D() {}
 	~XROrigin3D() {}

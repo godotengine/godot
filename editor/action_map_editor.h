@@ -78,11 +78,11 @@ private:
 		MOD_ALT,
 		MOD_SHIFT,
 		MOD_COMMAND,
-		MOD_CONTROL,
+		MOD_CTRL,
 		MOD_META,
 		MOD_MAX
 	};
-	String mods[MOD_MAX] = { "Alt", "Shift", "Command", "Control", "Meta" };
+	String mods[MOD_MAX] = { "Alt", "Shift", "Command", "Ctrl", "Metakey" };
 
 	CheckBox *mod_checkboxes[MOD_MAX];
 	CheckBox *store_command_checkbox;
@@ -156,11 +156,10 @@ private:
 
 	// Filtering and Adding actions
 
-	bool show_uneditable;
-	CheckBox *show_uneditable_actions_checkbox;
+	bool show_builtin_actions;
+	CheckButton *show_builtin_actions_checkbutton;
 	LineEdit *action_list_search;
 
-	bool allow_editing_actions;
 	HBoxContainer *add_hbox;
 	LineEdit *add_edit;
 
@@ -190,10 +189,7 @@ public:
 	void update_action_list(const Vector<ActionInfo> &p_action_infos = Vector<ActionInfo>());
 	void show_message(const String &p_message);
 
-	void set_show_uneditable(bool p_show);
-	void set_allow_editing_actions(bool p_allow);
-
-	void set_toggle_editable_label(const String &p_label);
+	void set_show_builtin_actions(bool p_show);
 
 	void use_external_search_box(LineEdit *p_searchbox);
 

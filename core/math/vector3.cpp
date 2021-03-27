@@ -32,47 +32,57 @@
 
 #include "core/math/basis.h"
 
-void Vector3::rotate(const Vector3 &p_axis, real_t p_phi) {
+void Vector3::rotate(const Vector3 &p_axis, const real_t p_phi) {
 	*this = Basis(p_axis, p_phi).xform(*this);
 }
 
-Vector3 Vector3::rotated(const Vector3 &p_axis, real_t p_phi) const {
+Vector3 Vector3::rotated(const Vector3 &p_axis, const real_t p_phi) const {
 	Vector3 r = *this;
 	r.rotate(p_axis, p_phi);
 	return r;
 }
 
-void Vector3::set_axis(int p_axis, real_t p_value) {
+void Vector3::set_axis(const int p_axis, const real_t p_value) {
 	ERR_FAIL_INDEX(p_axis, 3);
 	coord[p_axis] = p_value;
 }
 
-real_t Vector3::get_axis(int p_axis) const {
+real_t Vector3::get_axis(const int p_axis) const {
 	ERR_FAIL_INDEX_V(p_axis, 3, 0);
 	return operator[](p_axis);
 }
 
-int Vector3::min_axis() const {
-	return x < y ? (x < z ? 0 : 2) : (y < z ? 1 : 2);
+Vector3 Vector3::clamp(const Vector3 &p_min, const Vector3 &p_max) const {
+	return Vector3(
+			CLAMP(x, p_min.x, p_max.x),
+			CLAMP(y, p_min.y, p_max.y),
+			CLAMP(z, p_min.z, p_max.z));
 }
 
-int Vector3::max_axis() const {
-	return x < y ? (y < z ? 2 : 1) : (x < z ? 2 : 0);
-}
-
-void Vector3::snap(Vector3 p_step) {
+void Vector3::snap(const Vector3 p_step) {
 	x = Math::snapped(x, p_step.x);
 	y = Math::snapped(y, p_step.y);
 	z = Math::snapped(z, p_step.z);
 }
 
-Vector3 Vector3::snapped(Vector3 p_step) const {
+Vector3 Vector3::snapped(const Vector3 p_step) const {
 	Vector3 v = *this;
 	v.snap(p_step);
 	return v;
 }
 
-Vector3 Vector3::cubic_interpolate(const Vector3 &p_b, const Vector3 &p_pre_a, const Vector3 &p_post_b, real_t p_weight) const {
+Vector3 Vector3::limit_length(const real_t p_len) const {
+	const real_t l = length();
+	Vector3 v = *this;
+	if (l > 0 && p_len < l) {
+		v /= l;
+		v *= p_len;
+	}
+
+	return v;
+}
+
+Vector3 Vector3::cubic_interpolate(const Vector3 &p_b, const Vector3 &p_pre_a, const Vector3 &p_post_b, const real_t p_weight) const {
 	Vector3 p0 = p_pre_a;
 	Vector3 p1 = *this;
 	Vector3 p2 = p_b;
@@ -105,16 +115,10 @@ Basis Vector3::outer(const Vector3 &p_b) const {
 	return Basis(row0, row1, row2);
 }
 
-Basis Vector3::to_diagonal_matrix() const {
-	return Basis(x, 0, 0,
-			0, y, 0,
-			0, 0, z);
-}
-
 bool Vector3::is_equal_approx(const Vector3 &p_v) const {
 	return Math::is_equal_approx(x, p_v.x) && Math::is_equal_approx(y, p_v.y) && Math::is_equal_approx(z, p_v.z);
 }
 
 Vector3::operator String() const {
-	return (rtos(x) + ", " + rtos(y) + ", " + rtos(z));
+	return "(" + String::num_real(x, false) + ", " + String::num_real(y, false) + ", " + String::num_real(z, false) + ")";
 }

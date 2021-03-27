@@ -157,8 +157,9 @@ RES ResourceFormatLoaderCrypto::load(const String &p_path, const String &p_origi
 		return key;
 	} else if (el == "pub") {
 		CryptoKey *key = CryptoKey::create();
-		if (key)
+		if (key) {
 			key->load(p_path, true);
+		}
 		return key;
 	}
 	return nullptr;

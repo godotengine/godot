@@ -34,6 +34,7 @@
 #include "core/os/os.h"
 
 #include "tests/test_macros.h"
+#include "tests/test_tools.h"
 
 TEST_SUITE("Validate tests") {
 	TEST_CASE("Always pass") {
@@ -84,7 +85,7 @@ TEST_SUITE("Validate tests") {
 		Plane plane(Vector3(1, 1, 1), 1.0);
 		INFO(plane);
 
-		Quat quat(Vector3(0.5, 1.0, 2.0));
+		Quaternion quat(Vector3(0.5, 1.0, 2.0));
 		INFO(quat);
 
 		AABB aabb(Vector3(), Vector3(100, 100, 100));
@@ -93,7 +94,7 @@ TEST_SUITE("Validate tests") {
 		Basis basis(quat);
 		INFO(basis);
 
-		Transform trans(basis);
+		Transform3D trans(basis);
 		INFO(trans);
 
 		Color color(1, 0.5, 0.2, 0.3);
@@ -181,6 +182,17 @@ TEST_SUITE("Validate tests") {
 
 		// doctest string concatenation.
 		CHECK_MESSAGE(true, var, " ", vec2, " ", rect2, " ", color);
+	}
+	TEST_CASE("Detect error messages") {
+		ErrorDetector ed;
+
+		REQUIRE_FALSE(ed.has_error);
+
+		ERR_PRINT_OFF;
+		ERR_PRINT("Still waiting for Godot!");
+		ERR_PRINT_ON;
+
+		REQUIRE(ed.has_error);
 	}
 }
 

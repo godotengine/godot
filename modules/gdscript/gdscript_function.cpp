@@ -94,8 +94,7 @@ struct _GDFKCS {
 void GDScriptFunction::debug_get_stack_member_state(int p_line, List<Pair<StringName, int>> *r_stackvars) const {
 	int oc = 0;
 	Map<StringName, _GDFKC> sdmap;
-	for (const List<StackDebug>::Element *E = stack_debug.front(); E; E = E->next()) {
-		const StackDebug &sd = E->get();
+	for (const StackDebug &sd : stack_debug) {
 		if (sd.line > p_line) {
 			break;
 		}
@@ -131,10 +130,10 @@ void GDScriptFunction::debug_get_stack_member_state(int p_line, List<Pair<String
 
 	stackpositions.sort();
 
-	for (List<_GDFKCS>::Element *E = stackpositions.front(); E; E = E->next()) {
+	for (_GDFKCS &E : stackpositions) {
 		Pair<StringName, int> p;
-		p.first = E->get().id;
-		p.second = E->get().pos;
+		p.first = E.id;
+		p.second = E.pos;
 		r_stackvars->push_back(p);
 	}
 }
@@ -150,6 +149,10 @@ GDScriptFunction::GDScriptFunction() {
 }
 
 GDScriptFunction::~GDScriptFunction() {
+	for (int i = 0; i < lambdas.size(); i++) {
+		memdelete(lambdas[i]);
+	}
+
 #ifdef DEBUG_ENABLED
 
 	MutexLock lock(GDScriptLanguage::get_singleton()->lock);
@@ -258,9 +261,9 @@ Variant GDScriptFunctionState::resume(const Variant &p_arg) {
 
 	if (completed) {
 		if (first_state.is_valid()) {
-			first_state->emit_signal("completed", ret);
+			first_state->emit_signal(SNAME("completed"), ret);
 		} else {
-			emit_signal("completed", ret);
+			emit_signal(SNAME("completed"), ret);
 		}
 
 #ifdef DEBUG_ENABLED

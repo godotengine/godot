@@ -39,7 +39,7 @@ POTGenerator *POTGenerator::singleton = nullptr;
 
 #ifdef DEBUG_POT
 void POTGenerator::_print_all_translation_strings() {
-	for (auto E = all_translation_strings.front(); E; E = E.next()) {
+	for (OrderedHashMap<String, Vector<POTGenerator::MsgidData>>::Element E = all_translation_strings.front(); E; E = E.next()) {
 		Vector<MsgidData> v_md = all_translation_strings[E.key()];
 		for (int i = 0; i < v_md.size(); i++) {
 			print_line("++++++");
@@ -108,7 +108,6 @@ void POTGenerator::_write_to_pot(const String &p_file) {
 	const String header =
 			"# LANGUAGE translation for " + project_name + " for the following files:\n" + extracted_files +
 			"#\n"
-			"#\n"
 			"# FIRST AUTHOR < EMAIL @ADDRESS>, YEAR.\n"
 			"#\n"
 			"#, fuzzy\n"
@@ -116,8 +115,9 @@ void POTGenerator::_write_to_pot(const String &p_file) {
 			"msgstr \"\"\n"
 			"\"Project-Id-Version: " +
 			project_name + "\\n\"\n"
+						   "\"MIME-Version: 1.0\\n\"\n"
 						   "\"Content-Type: text/plain; charset=UTF-8\\n\"\n"
-						   "\"Content-Transfer-Encoding: 8-bit\\n\"\n\n";
+						   "\"Content-Transfer-Encoding: 8-bit\\n\"\n";
 
 	file->store_string(header);
 
@@ -128,6 +128,9 @@ void POTGenerator::_write_to_pot(const String &p_file) {
 			String context = v_msgid_data[i].ctx;
 			String plural = v_msgid_data[i].plural;
 			const Set<String> &locations = v_msgid_data[i].locations;
+
+			// Put the blank line at the start, to avoid a double at the end when closing the file.
+			file->store_line("");
 
 			// Write file locations.
 			for (Set<String>::Element *E = locations.front(); E; E = E->next()) {
@@ -142,13 +145,13 @@ void POTGenerator::_write_to_pot(const String &p_file) {
 			// Write msgid.
 			_write_msgid(file, msgid, false);
 
-			// Write msgid_plural
+			// Write msgid_plural.
 			if (!plural.is_empty()) {
 				_write_msgid(file, plural, true);
 				file->store_line("msgstr[0] \"\"");
-				file->store_line("msgstr[1] \"\"\n");
+				file->store_line("msgstr[1] \"\"");
 			} else {
-				file->store_line("msgstr \"\"\n");
+				file->store_line("msgstr \"\"");
 			}
 		}
 	}

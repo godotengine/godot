@@ -39,35 +39,15 @@ WebSocketMultiplayerPeer::~WebSocketMultiplayerPeer() {
 	_clear();
 }
 
-int WebSocketMultiplayerPeer::_gen_unique_id() const {
-	uint32_t hash = 0;
-
-	while (hash == 0 || hash == 1) {
-		hash = hash_djb2_one_32(
-				(uint32_t)OS::get_singleton()->get_ticks_usec());
-		hash = hash_djb2_one_32(
-				(uint32_t)OS::get_singleton()->get_unix_time(), hash);
-		hash = hash_djb2_one_32(
-				(uint32_t)OS::get_singleton()->get_data_path().hash64(), hash);
-		hash = hash_djb2_one_32(
-				(uint32_t)((uint64_t)this), hash); //rely on aslr heap
-		hash = hash_djb2_one_32(
-				(uint32_t)((uint64_t)&hash), hash); //rely on aslr stack
-		hash = hash & 0x7FFFFFFF; // make it compatible with unsigned, since negative id is used for exclusion
-	}
-
-	return hash;
-}
-
 void WebSocketMultiplayerPeer::_clear() {
 	_peer_map.clear();
 	if (_current_packet.data != nullptr) {
 		memfree(_current_packet.data);
 	}
 
-	for (List<Packet>::Element *E = _incoming_packets.front(); E; E = E->next()) {
-		memfree(E->get().data);
-		E->get().data = nullptr;
+	for (Packet &E : _incoming_packets) {
+		memfree(E.data);
+		E.data = nullptr;
 	}
 
 	_incoming_packets.clear();
@@ -99,6 +79,8 @@ Error WebSocketMultiplayerPeer::get_packet(const uint8_t **r_buffer, int &r_buff
 		_current_packet.data = nullptr;
 	}
 
+	ERR_FAIL_COND_V(_incoming_packets.size() == 0, ERR_UNAVAILABLE);
+
 	_current_packet = _incoming_packets.front()->get();
 	_incoming_packets.pop_front();
 
@@ -121,15 +103,23 @@ Error WebSocketMultiplayerPeer::put_packet(const uint8_t *p_buffer, int p_buffer
 }
 
 //
-// NetworkedMultiplayerPeer
+// MultiplayerPeer
 //
-void WebSocketMultiplayerPeer::set_transfer_mode(TransferMode p_mode) {
+void WebSocketMultiplayerPeer::set_transfer_channel(int p_channel) {
+	// Websocket does not have channels.
+}
+
+int WebSocketMultiplayerPeer::get_transfer_channel() const {
+	return 0;
+}
+
+void WebSocketMultiplayerPeer::set_transfer_mode(Multiplayer::TransferMode p_mode) {
 	// Websocket uses TCP, reliable
 }
 
-NetworkedMultiplayerPeer::TransferMode WebSocketMultiplayerPeer::get_transfer_mode() const {
+Multiplayer::TransferMode WebSocketMultiplayerPeer::get_transfer_mode() const {
 	// Websocket uses TCP, reliable
-	return TRANSFER_MODE_RELIABLE;
+	return Multiplayer::TRANSFER_MODE_RELIABLE;
 }
 
 void WebSocketMultiplayerPeer::set_target_peer(int p_target_peer) {
@@ -168,10 +158,10 @@ Vector<uint8_t> WebSocketMultiplayerPeer::_make_pkt(uint8_t p_type, int32_t p_fr
 	out.resize(PROTO_SIZE + p_data_size);
 
 	uint8_t *w = out.ptrw();
-	copymem(&w[0], &p_type, 1);
-	copymem(&w[1], &p_from, 4);
-	copymem(&w[5], &p_to, 4);
-	copymem(&w[PROTO_SIZE], p_data, p_data_size);
+	memcpy(&w[0], &p_type, 1);
+	memcpy(&w[1], &p_from, 4);
+	memcpy(&w[5], &p_to, 4);
+	memcpy(&w[PROTO_SIZE], p_data, p_data_size);
 
 	return out;
 }
@@ -211,9 +201,9 @@ void WebSocketMultiplayerPeer::_store_pkt(int32_t p_source, int32_t p_dest, cons
 	packet.size = p_data_size;
 	packet.source = p_source;
 	packet.destination = p_dest;
-	copymem(packet.data, &p_data[PROTO_SIZE], p_data_size);
+	memcpy(packet.data, &p_data[PROTO_SIZE], p_data_size);
 	_incoming_packets.push_back(packet);
-	emit_signal("peer_packet", p_source);
+	emit_signal(SNAME("peer_packet"), p_source);
 }
 
 Error WebSocketMultiplayerPeer::_server_relay(int32_t p_from, int32_t p_to, const uint8_t *p_buffer, uint32_t p_buffer_size) {
@@ -263,9 +253,9 @@ void WebSocketMultiplayerPeer::_process_multiplayer(Ref<WebSocketPeer> p_peer, u
 	uint8_t type = 0;
 	uint32_t from = 0;
 	int32_t to = 0;
-	copymem(&type, in_buffer, 1);
-	copymem(&from, &in_buffer[1], 4);
-	copymem(&to, &in_buffer[5], 4);
+	memcpy(&type, in_buffer, 1);
+	memcpy(&from, &in_buffer[1], 4);
+	memcpy(&to, &in_buffer[5], 4);
 
 	if (is_server()) { // Server can resend
 
@@ -299,20 +289,20 @@ void WebSocketMultiplayerPeer::_process_multiplayer(Ref<WebSocketPeer> p_peer, u
 		// System message
 		ERR_FAIL_COND(data_size < 4);
 		int id = 0;
-		copymem(&id, &in_buffer[PROTO_SIZE], 4);
+		memcpy(&id, &in_buffer[PROTO_SIZE], 4);
 
 		switch (type) {
 			case SYS_ADD: // Add peer
 				_peer_map[id] = Ref<WebSocketPeer>();
-				emit_signal("peer_connected", id);
+				emit_signal(SNAME("peer_connected"), id);
 				if (id == 1) { // We just connected to the server
-					emit_signal("connection_succeeded");
+					emit_signal(SNAME("connection_succeeded"));
 				}
 				break;
 
 			case SYS_DEL: // Remove peer
 				_peer_map.erase(id);
-				emit_signal("peer_disconnected", id);
+				emit_signal(SNAME("peer_disconnected"), id);
 				break;
 			case SYS_ID: // Hello, server assigned ID
 				_peer_id = id;

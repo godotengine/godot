@@ -39,12 +39,13 @@
 #include "editor/import/editor_import_plugin.h"
 #include "editor/import/resource_importer_scene.h"
 #include "editor/script_create_dialog.h"
+#include "scene/3d/camera_3d.h"
 #include "scene/main/node.h"
 #include "scene/resources/texture.h"
-
 class EditorNode;
 class Node3D;
 class Camera3D;
+class EditorCommandPalette;
 class EditorSelection;
 class EditorExport;
 class EditorSettings;
@@ -54,6 +55,7 @@ class EditorNode3DGizmoPlugin;
 class EditorResourcePreview;
 class EditorFileSystem;
 class EditorToolAddons;
+class EditorPaths;
 class FileSystemDock;
 class ScriptEditor;
 
@@ -71,6 +73,7 @@ public:
 
 	Control *get_editor_main_control();
 	void edit_resource(const Ref<Resource> &p_resource);
+	void edit_node(Node *p_node);
 	void open_scene_from_path(const String &scene_path);
 	void reload_scene_from_path(const String &scene_path);
 
@@ -85,6 +88,8 @@ public:
 	Array get_open_scenes() const;
 	ScriptEditor *get_script_editor();
 
+	EditorCommandPalette *get_command_palette() const;
+
 	void select_file(const String &p_file);
 	String get_selected_path() const;
 	String get_current_path() const;
@@ -94,12 +99,14 @@ public:
 	EditorSelection *get_selection();
 	//EditorImportExport *get_import_export();
 	Ref<EditorSettings> get_editor_settings();
+	EditorPaths *get_editor_paths();
 	EditorResourcePreview *get_resource_previewer();
 	EditorFileSystem *get_resource_file_system();
 
 	FileSystemDock *get_file_system_dock();
 
 	Control *get_base_control();
+	float get_editor_scale() const;
 
 	void set_plugin_enabled(const String &p_plugin, bool p_enabled);
 	bool is_plugin_enabled(const String &p_plugin) const;
@@ -109,7 +116,7 @@ public:
 	Error save_scene();
 	void save_scene_as(const String &p_scene, bool p_with_preview = true);
 
-	Vector<Ref<Texture2D>> make_mesh_previews(const Vector<Ref<Mesh>> &p_meshes, Vector<Transform> *p_transforms, int p_preview_size);
+	Vector<Ref<Texture2D>> make_mesh_previews(const Vector<Ref<Mesh>> &p_meshes, Vector<Transform3D> *p_transforms, int p_preview_size);
 
 	void set_main_screen_editor(const String &p_name);
 	void set_distraction_free_mode(bool p_enter);
@@ -140,6 +147,30 @@ protected:
 
 	void add_custom_type(const String &p_type, const String &p_base, const Ref<Script> &p_script, const Ref<Texture2D> &p_icon);
 	void remove_custom_type(const String &p_type);
+
+	GDVIRTUAL1R(bool, _forward_canvas_gui_input, Ref<InputEvent>)
+	GDVIRTUAL1(_forward_canvas_draw_over_viewport, Control *)
+	GDVIRTUAL1(_forward_canvas_force_draw_over_viewport, Control *)
+	GDVIRTUAL2R(bool, _forward_3d_gui_input, Camera3D *, Ref<InputEvent>)
+	GDVIRTUAL1(_forward_3d_draw_over_viewport, Control *)
+	GDVIRTUAL1(_forward_3d_force_draw_over_viewport, Control *)
+	GDVIRTUAL0RC(String, _get_plugin_name)
+	GDVIRTUAL0RC(Ref<Texture2D>, _get_plugin_icon)
+	GDVIRTUAL0RC(bool, _has_main_screen)
+	GDVIRTUAL1(_make_visible, bool)
+	GDVIRTUAL1(_edit, Variant)
+	GDVIRTUAL1RC(bool, _handles, Variant)
+	GDVIRTUAL0RC(Dictionary, _get_state)
+	GDVIRTUAL1(_set_state, Dictionary)
+	GDVIRTUAL0(_clear)
+	GDVIRTUAL0(_save_external_data)
+	GDVIRTUAL0(_apply_changes)
+	GDVIRTUAL0RC(Vector<String>, _get_breakpoints)
+	GDVIRTUAL1(_set_window_layout, Ref<ConfigFile>)
+	GDVIRTUAL1(_get_window_layout, Ref<ConfigFile>)
+	GDVIRTUAL0R(bool, _build)
+	GDVIRTUAL0(_enable_plugin)
+	GDVIRTUAL0(_disable_plugin)
 
 public:
 	enum CustomControlContainer {
@@ -222,6 +253,9 @@ public:
 
 	EditorInterface *get_editor_interface();
 	ScriptCreateDialog *get_script_create_dialog();
+
+	void add_undo_redo_inspector_hook_callback(Callable p_callable);
+	void remove_undo_redo_inspector_hook_callback(Callable p_callable);
 
 	int update_overlays() const;
 

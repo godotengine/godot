@@ -84,6 +84,8 @@ public:
 
 	StringName mouse_entered;
 	StringName mouse_exited;
+	StringName mouse_shape_entered;
+	StringName mouse_shape_exited;
 	StringName focus_entered;
 	StringName focus_exited;
 
@@ -96,6 +98,7 @@ public:
 	StringName animation_started;
 
 	StringName pose_updated;
+	StringName bone_pose_changed;
 
 	StringName body_shape_entered;
 	StringName body_entered;
@@ -107,9 +110,6 @@ public:
 
 	StringName _body_inout;
 	StringName _area_inout;
-
-	StringName _get_gizmo_geometry;
-	StringName _can_gizmo_scale;
 
 	StringName _physics_process;
 	StringName _process;
@@ -129,7 +129,6 @@ public:
 	StringName _update_scroll;
 	StringName _update_xform;
 
-	StringName _clips_input;
 	StringName _structured_text_parser;
 
 	StringName _proxgroup_add;
@@ -138,10 +137,10 @@ public:
 	StringName grouped;
 	StringName ungrouped;
 
-	StringName has_point;
-	StringName get_drag_data;
-	StringName can_drop_data;
-	StringName drop_data;
+	StringName _has_point;
+	StringName _get_drag_data;
+	StringName _can_drop_data;
+	StringName _drop_data;
 
 	StringName screen_entered;
 	StringName screen_exited;
@@ -155,6 +154,7 @@ public:
 
 	StringName _spatial_editor_group;
 	StringName _request_gizmo;
+	StringName _clear_subgizmo_selection;
 
 	StringName offset;
 	StringName unit_offset;
@@ -182,8 +182,11 @@ public:
 
 	StringName _mouse_enter;
 	StringName _mouse_exit;
+	StringName _mouse_shape_enter;
+	StringName _mouse_shape_exit;
 
 	StringName frame_changed;
+	StringName texture_changed;
 
 	StringName playback_speed;
 	StringName playback_active;
@@ -216,10 +219,6 @@ public:
 	StringName use_in_baked_light;
 	StringName use_dynamic_gi;
 #endif
-	enum {
-		MAX_MATERIALS = 32
-	};
-	StringName mesh_materials[MAX_MATERIALS];
 };
 
 #endif // SCENE_STRING_NAMES_H

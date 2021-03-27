@@ -18,11 +18,11 @@
 		var texture = load("res://icon.png")
 		$Sprite2D.texture = texture
 		[/codeblock]
-		This is because images have to be imported as [StreamTexture2D] first to be loaded with [method @GDScript.load]. If you'd still like to load an image file just like any other [Resource], import it as an [Image] resource instead, and then load it normally using the [method @GDScript.load] method.
-		But do note that the image data can still be retrieved from an imported texture as well using the [method Texture2D.get_data] method, which returns a copy of the data:
+		This is because images have to be imported as a [StreamTexture2D] first to be loaded with [method @GDScript.load]. If you'd still like to load an image file just like any other [Resource], import it as an [Image] resource instead, and then load it normally using the [method @GDScript.load] method.
+		[b]Note:[/b] The image can be retrieved from an imported texture using the [method Texture2D.get_image] method, which returns a copy of the image:
 		[codeblock]
 		var texture = load("res://icon.png")
-		var image : Image = texture.get_data()
+		var image : Image = texture.get_image()
 		[/codeblock]
 		An [ImageTexture] is not meant to be operated from within the editor interface directly, and is mostly useful for rendering images on screen dynamically via code. If you need to generate images procedurally from within the editor, consider saving and importing images as custom texture resources implementing a new [EditorImportPlugin].
 		[b]Note:[/b] The maximum texture size is 16384×16384 pixels due to graphics hardware limitations.
@@ -32,39 +32,30 @@
 	</tutorials>
 	<methods>
 		<method name="create_from_image">
-			<return type="void">
-			</return>
-			<argument index="0" name="image" type="Image">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="image" type="Image" />
 			<description>
 				Initializes the texture by allocating and setting the data from an [Image].
 			</description>
 		</method>
 		<method name="get_format" qualifiers="const">
-			<return type="int" enum="Image.Format">
-			</return>
+			<return type="int" enum="Image.Format" />
 			<description>
 				Returns the format of the texture, one of [enum Image.Format].
 			</description>
 		</method>
 		<method name="set_size_override">
-			<return type="void">
-			</return>
-			<argument index="0" name="size" type="Vector2">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="size" type="Vector2" />
 			<description>
 				Resizes the texture to the specified dimensions.
 			</description>
 		</method>
 		<method name="update">
-			<return type="void">
-			</return>
-			<argument index="0" name="image" type="Image">
-			</argument>
-			<argument index="1" name="immediate" type="bool" default="false">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="image" type="Image" />
 			<description>
-				Replaces the texture's data with a new [Image]. If [code]immediate[/code] is [code]true[/code], it will take effect immediately after the call.
+				Replaces the texture's data with a new [Image].
 				[b]Note:[/b] The texture has to be initialized first with the [method create_from_image] method before it can be updated. The new image dimensions, format, and mipmaps configuration should match the existing texture's image configuration, otherwise it has to be re-created with the [method create_from_image] method.
 				Use this method over [method create_from_image] if you need to update the texture frequently, which is faster than allocating additional memory for a new texture each time.
 			</description>

@@ -100,8 +100,8 @@ Vector<String> SpriteFrames::_get_animation_list() const {
 	Vector<String> ret;
 	List<StringName> al;
 	get_animation_list(&al);
-	for (List<StringName>::Element *E = al.front(); E; E = E->next()) {
-		ret.push_back(E->get());
+	for (const StringName &E : al) {
+		ret.push_back(E);
 	}
 
 	return ret;
@@ -122,14 +122,14 @@ Vector<String> SpriteFrames::get_animation_names() const {
 	return names;
 }
 
-void SpriteFrames::set_animation_speed(const StringName &p_anim, float p_fps) {
+void SpriteFrames::set_animation_speed(const StringName &p_anim, double p_fps) {
 	ERR_FAIL_COND_MSG(p_fps < 0, "Animation speed cannot be negative (" + itos(p_fps) + ").");
 	Map<StringName, Anim>::Element *E = animations.find(p_anim);
 	ERR_FAIL_COND_MSG(!E, "Animation '" + String(p_anim) + "' doesn't exist.");
 	E->get().speed = p_fps;
 }
 
-float SpriteFrames::get_animation_speed(const StringName &p_anim) const {
+double SpriteFrames::get_animation_speed(const StringName &p_anim) const {
 	const Map<StringName, Anim>::Element *E = animations.find(p_anim);
 	ERR_FAIL_COND_V_MSG(!E, 0, "Animation '" + String(p_anim) + "' doesn't exist.");
 	return E->get().speed;
@@ -228,7 +228,7 @@ void SpriteFrames::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_set_frames"), &SpriteFrames::_set_frames);
 	ClassDB::bind_method(D_METHOD("_get_frames"), &SpriteFrames::_get_frames);
 
-	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "frames", PROPERTY_HINT_NONE, "", 0), "_set_frames", "_get_frames"); //compatibility
+	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "frames", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NONE), "_set_frames", "_get_frames"); //compatibility
 
 	ClassDB::bind_method(D_METHOD("_set_animations"), &SpriteFrames::_set_animations);
 	ClassDB::bind_method(D_METHOD("_get_animations"), &SpriteFrames::_get_animations);

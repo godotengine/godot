@@ -31,12 +31,12 @@
 #ifndef MULTIPLAYER_PEER_GDNATIVE_H
 #define MULTIPLAYER_PEER_GDNATIVE_H
 
-#include "core/io/networked_multiplayer_peer.h"
+#include "core/multiplayer/multiplayer_peer.h"
 #include "modules/gdnative/gdnative.h"
 #include "modules/gdnative/include/net/godot_net.h"
 
-class MultiplayerPeerGDNative : public NetworkedMultiplayerPeer {
-	GDCLASS(MultiplayerPeerGDNative, NetworkedMultiplayerPeer);
+class MultiplayerPeerGDNative : public MultiplayerPeer {
+	GDCLASS(MultiplayerPeerGDNative, MultiplayerPeer);
 
 protected:
 	static void _bind_methods();
@@ -55,9 +55,11 @@ public:
 	virtual int get_max_packet_size() const override;
 	virtual int get_available_packet_count() const override;
 
-	/* Specific to NetworkedMultiplayerPeer */
-	virtual void set_transfer_mode(TransferMode p_mode) override;
-	virtual TransferMode get_transfer_mode() const override;
+	/* Specific to MultiplayerPeer */
+	virtual void set_transfer_channel(int p_channel) override;
+	virtual int get_transfer_channel() const override;
+	virtual void set_transfer_mode(Multiplayer::TransferMode p_mode) override;
+	virtual Multiplayer::TransferMode get_transfer_mode() const override;
 	virtual void set_target_peer(int p_peer_id) override;
 
 	virtual int get_packet_peer() const override;

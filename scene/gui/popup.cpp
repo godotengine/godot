@@ -71,7 +71,8 @@ void Popup::_notification(int p_what) {
 				_initialize_visible_parents();
 			} else {
 				_deinitialize_visible_parents();
-				emit_signal("popup_hide");
+				emit_signal(SNAME("popup_hide"));
+				popped_up = false;
 			}
 
 		} break;
@@ -103,9 +104,9 @@ void Popup::_close_pressed() {
 
 	_deinitialize_visible_parents();
 
-	call_deferred("hide");
+	call_deferred(SNAME("hide"));
 
-	emit_signal("cancelled");
+	emit_signal(SNAME("cancelled"));
 }
 
 void Popup::set_as_minsize() {
@@ -254,5 +255,5 @@ void PopupPanel::_notification(int p_what) {
 
 PopupPanel::PopupPanel() {
 	panel = memnew(Panel);
-	add_child(panel);
+	add_child(panel, false, INTERNAL_MODE_FRONT);
 }

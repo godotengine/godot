@@ -36,11 +36,11 @@
 #include "editor_scale.h"
 
 void EditorHelpSearch::_update_icons() {
-	search_box->set_right_icon(results_tree->get_theme_icon("Search", "EditorIcons"));
+	search_box->set_right_icon(results_tree->get_theme_icon(SNAME("Search"), SNAME("EditorIcons")));
 	search_box->set_clear_button_enabled(true);
-	search_box->add_theme_icon_override("right_icon", results_tree->get_theme_icon("Search", "EditorIcons"));
-	case_sensitive_button->set_icon(results_tree->get_theme_icon("MatchCase", "EditorIcons"));
-	hierarchy_button->set_icon(results_tree->get_theme_icon("ClassList", "EditorIcons"));
+	search_box->add_theme_icon_override("right_icon", results_tree->get_theme_icon(SNAME("Search"), SNAME("EditorIcons")));
+	case_sensitive_button->set_icon(results_tree->get_theme_icon(SNAME("MatchCase"), SNAME("EditorIcons")));
+	hierarchy_button->set_icon(results_tree->get_theme_icon(SNAME("ClassList"), SNAME("EditorIcons")));
 
 	if (is_visible()) {
 		_update_results();
@@ -71,9 +71,11 @@ void EditorHelpSearch::_search_box_gui_input(const Ref<InputEvent> &p_event) {
 			case KEY_DOWN:
 			case KEY_PAGEUP:
 			case KEY_PAGEDOWN: {
-				results_tree->call("_gui_input", key);
+				results_tree->gui_input(key);
 				search_box->accept_event();
 			} break;
+			default:
+				break;
 		}
 	}
 }
@@ -95,7 +97,7 @@ void EditorHelpSearch::_confirmed() {
 	// Activate the script editor and emit the signal with the documentation link to display.
 	EditorNode::get_singleton()->set_visible_editor(EditorNode::EDITOR_SCRIPT);
 
-	emit_signal("go_to_help", item->get_metadata(0));
+	emit_signal(SNAME("go_to_help"), item->get_metadata(0));
 
 	hide();
 }
@@ -104,7 +106,7 @@ void EditorHelpSearch::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_VISIBILITY_CHANGED: {
 			if (!is_visible()) {
-				results_tree->call_deferred("clear"); // Wait for the Tree's mouse event propagation.
+				results_tree->call_deferred(SNAME("clear")); // Wait for the Tree's mouse event propagation.
 				get_ok_button()->set_disabled(true);
 				EditorSettings::get_singleton()->set_project_metadata("dialog_bounds", "search_help", Rect2(get_position(), get_size()));
 			}
@@ -123,7 +125,7 @@ void EditorHelpSearch::_notification(int p_what) {
 				if (search->work()) {
 					// Search done.
 
-					// Only point to the perfect match if it's a new search, and not just reopening a old one.
+					// Only point to the match if it's a new search, and not just reopening a old one.
 					if (!old_search) {
 						results_tree->ensure_cursor_is_visible();
 					} else {
@@ -237,9 +239,11 @@ EditorHelpSearch::EditorHelpSearch() {
 	results_tree->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 	results_tree->set_columns(2);
 	results_tree->set_column_title(0, TTR("Name"));
+	results_tree->set_column_clip_content(0, true);
 	results_tree->set_column_title(1, TTR("Member Type"));
 	results_tree->set_column_expand(1, false);
-	results_tree->set_column_min_width(1, 150 * EDSCALE);
+	results_tree->set_column_custom_minimum_width(1, 150 * EDSCALE);
+	results_tree->set_column_clip_content(1, true);
 	results_tree->set_custom_minimum_size(Size2(0, 100) * EDSCALE);
 	results_tree->set_hide_root(true);
 	results_tree->set_select_mode(Tree::SELECT_ROW);
@@ -310,6 +314,7 @@ bool EditorHelpSearch::Runner::_phase_match_classes_init() {
 	iterator_doc = EditorHelp::get_doc_data()->class_list.front();
 	matches.clear();
 	matched_item = nullptr;
+	match_highest_score = 0;
 
 	return true;
 }
@@ -333,7 +338,7 @@ bool EditorHelpSearch::Runner::_phase_match_classes() {
 				for (int i = 0; i < class_doc.methods.size(); i++) {
 					String method_name = (search_flags & SEARCH_CASE_SENSITIVE) ? class_doc.methods[i].name : class_doc.methods[i].name.to_lower();
 					if (method_name.find(term) > -1 ||
-							(term.begins_with(".") && method_name.begins_with(term.right(1))) ||
+							(term.begins_with(".") && method_name.begins_with(term.substr(1))) ||
 							(term.ends_with("(") && method_name.ends_with(term.left(term.length() - 1).strip_edges())) ||
 							(term.begins_with(".") && term.ends_with("(") && method_name == term.substr(1, term.length() - 2).strip_edges())) {
 						match.methods.push_back(const_cast<DocData::MethodDoc *>(&class_doc.methods[i]));
@@ -364,7 +369,7 @@ bool EditorHelpSearch::Runner::_phase_match_classes() {
 			if (search_flags & SEARCH_THEME_ITEMS) {
 				for (int i = 0; i < class_doc.theme_properties.size(); i++) {
 					if (_match_string(term, class_doc.theme_properties[i].name)) {
-						match.theme_properties.push_back(const_cast<DocData::PropertyDoc *>(&class_doc.theme_properties[i]));
+						match.theme_properties.push_back(const_cast<DocData::ThemeItemDoc *>(&class_doc.theme_properties[i]));
 					}
 				}
 			}
@@ -460,16 +465,20 @@ bool EditorHelpSearch::Runner::_match_string(const String &p_term, const String 
 }
 
 void EditorHelpSearch::Runner::_match_item(TreeItem *p_item, const String &p_text) {
-	if (!matched_item) {
-		if (search_flags & SEARCH_CASE_SENSITIVE) {
-			if (p_text.casecmp_to(term) == 0) {
-				matched_item = p_item;
-			}
-		} else {
-			if (p_text.nocasecmp_to(term) == 0) {
-				matched_item = p_item;
-			}
-		}
+	float inverse_length = 1.f / float(p_text.length());
+
+	// Favor types where search term is a substring close to the start of the type.
+	float w = 0.5f;
+	int pos = p_text.findn(term);
+	float score = (pos > -1) ? 1.0f - w * MIN(1, 3 * pos * inverse_length) : MAX(0.f, .9f - w);
+
+	// Favor shorter items: they resemble the search term more.
+	w = 0.1f;
+	score *= (1 - w) + w * (term.length() * inverse_length);
+
+	if (match_highest_score == 0 || score > match_highest_score) {
+		matched_item = p_item;
+		match_highest_score = score;
 	}
 }
 
@@ -499,7 +508,7 @@ TreeItem *EditorHelpSearch::Runner::_create_class_item(TreeItem *p_parent, const
 	if (ui_service->has_theme_icon(p_doc->name, "EditorIcons")) {
 		icon = ui_service->get_theme_icon(p_doc->name, "EditorIcons");
 	} else if (ClassDB::class_exists(p_doc->name) && ClassDB::is_parent_class(p_doc->name, "Object")) {
-		icon = ui_service->get_theme_icon("Object", "EditorIcons");
+		icon = ui_service->get_theme_icon(SNAME("Object"), SNAME("EditorIcons"));
 	}
 	String tooltip = p_doc->brief_description.strip_edges();
 
@@ -564,7 +573,7 @@ TreeItem *EditorHelpSearch::Runner::_create_property_item(TreeItem *p_parent, co
 	return _create_member_item(p_parent, p_class_doc->name, "MemberProperty", p_doc->name, p_doc->name, TTRC("Property"), "property", tooltip);
 }
 
-TreeItem *EditorHelpSearch::Runner::_create_theme_property_item(TreeItem *p_parent, const DocData::ClassDoc *p_class_doc, const DocData::PropertyDoc *p_doc) {
+TreeItem *EditorHelpSearch::Runner::_create_theme_property_item(TreeItem *p_parent, const DocData::ClassDoc *p_class_doc, const DocData::ThemeItemDoc *p_doc) {
 	String tooltip = p_doc->type + " " + p_class_doc->name + "." + p_doc->name;
 	return _create_member_item(p_parent, p_class_doc->name, "MemberTheme", p_doc->name, p_doc->name, TTRC("Theme Property"), "theme_item", tooltip);
 }
@@ -573,10 +582,10 @@ TreeItem *EditorHelpSearch::Runner::_create_member_item(TreeItem *p_parent, cons
 	Ref<Texture2D> icon;
 	String text;
 	if (search_flags & SEARCH_SHOW_HIERARCHY) {
-		icon = ui_service->get_theme_icon(p_icon, "EditorIcons");
+		icon = ui_service->get_theme_icon(p_icon, SNAME("EditorIcons"));
 		text = p_text;
 	} else {
-		icon = ui_service->get_theme_icon(p_icon, "EditorIcons");
+		icon = ui_service->get_theme_icon(p_icon, SNAME("EditorIcons"));
 		/*// In flat mode, show the class icon.
 if (ui_service->has_icon(p_class_name, "EditorIcons"))
 icon = ui_service->get_icon(p_class_name, "EditorIcons");
@@ -614,6 +623,6 @@ EditorHelpSearch::Runner::Runner(Control *p_icon_service, Tree *p_results_tree, 
 		results_tree(p_results_tree),
 		term((p_search_flags & SEARCH_CASE_SENSITIVE) == 0 ? p_term.strip_edges().to_lower() : p_term.strip_edges()),
 		search_flags(p_search_flags),
-		empty_icon(ui_service->get_theme_icon("ArrowRight", "EditorIcons")),
-		disabled_color(ui_service->get_theme_color("disabled_font_color", "Editor")) {
+		empty_icon(ui_service->get_theme_icon(SNAME("ArrowRight"), SNAME("EditorIcons"))),
+		disabled_color(ui_service->get_theme_color(SNAME("disabled_font_color"), SNAME("Editor"))) {
 }

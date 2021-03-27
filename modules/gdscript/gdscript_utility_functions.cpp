@@ -298,7 +298,7 @@ struct GDScriptUtilityFunctionsDefinitions {
 					sname.push_back(p->name);
 					p = p->_owner;
 				}
-				sname.invert();
+				sname.reverse();
 
 				if (!p->path.is_resource_file()) {
 					r_error.error = Callable::CallError::CALL_ERROR_INVALID_ARGUMENT;
@@ -706,8 +706,8 @@ bool GDScriptUtilityFunctions::function_exists(const StringName &p_function) {
 }
 
 void GDScriptUtilityFunctions::get_function_list(List<StringName> *r_functions) {
-	for (const List<StringName>::Element *E = utility_function_name_table.front(); E; E = E->next()) {
-		r_functions->push_back(E->get());
+	for (const StringName &E : utility_function_name_table) {
+		r_functions->push_back(E);
 	}
 }
 

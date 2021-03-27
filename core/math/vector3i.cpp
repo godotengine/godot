@@ -30,12 +30,12 @@
 
 #include "vector3i.h"
 
-void Vector3i::set_axis(int p_axis, int32_t p_value) {
+void Vector3i::set_axis(const int p_axis, const int32_t p_value) {
 	ERR_FAIL_INDEX(p_axis, 3);
 	coord[p_axis] = p_value;
 }
 
-int32_t Vector3i::get_axis(int p_axis) const {
+int32_t Vector3i::get_axis(const int p_axis) const {
 	ERR_FAIL_INDEX_V(p_axis, 3, 0);
 	return operator[](p_axis);
 }
@@ -48,6 +48,13 @@ int Vector3i::max_axis() const {
 	return x < y ? (y < z ? 2 : 1) : (x < z ? 2 : 0);
 }
 
+Vector3i Vector3i::clamp(const Vector3i &p_min, const Vector3i &p_max) const {
+	return Vector3i(
+			CLAMP(x, p_min.x, p_max.x),
+			CLAMP(y, p_min.y, p_max.y),
+			CLAMP(z, p_min.z, p_max.z));
+}
+
 Vector3i::operator String() const {
-	return (itos(x) + ", " + itos(y) + ", " + itos(z));
+	return "(" + itos(x) + ", " + itos(y) + ", " + itos(z) + ")";
 }

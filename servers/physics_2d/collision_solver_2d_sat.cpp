@@ -34,11 +34,11 @@
 
 struct _CollectorCallback2D {
 	CollisionSolver2DSW::CallbackResult callback;
-	void *userdata;
-	bool swap;
-	bool collided;
+	void *userdata = nullptr;
+	bool swap = false;
+	bool collided = false;
 	Vector2 normal;
-	Vector2 *sep_axis;
+	Vector2 *sep_axis = nullptr;
 
 	_FORCE_INLINE_ void call(const Vector2 &p_point_A, const Vector2 &p_point_B) {
 		/*
@@ -75,9 +75,9 @@ _FORCE_INLINE_ static void _generate_contacts_point_edge(const Vector2 *p_points
 }
 
 struct _generate_contacts_Pair {
-	bool a;
-	int idx;
-	real_t d;
+	bool a = false;
+	int idx = 0;
+	real_t d = 0.0;
 	_FORCE_INLINE_ bool operator<(const _generate_contacts_Pair &l) const { return d < l.d; }
 };
 
@@ -146,10 +146,10 @@ static void _generate_contacts_from_supports(const Vector2 *p_points_A, int p_po
 		}
 	};
 
-	int pointcount_B;
-	int pointcount_A;
-	const Vector2 *points_A;
-	const Vector2 *points_B;
+	int pointcount_B = 0;
+	int pointcount_A = 0;
+	const Vector2 *points_A = nullptr;
+	const Vector2 *points_B = nullptr;
 
 	if (p_point_count_A > p_point_count_B) {
 		//swap
@@ -177,18 +177,20 @@ static void _generate_contacts_from_supports(const Vector2 *p_points_A, int p_po
 
 template <class ShapeA, class ShapeB, bool castA = false, bool castB = false, bool withMargin = false>
 class SeparatorAxisTest2D {
-	const ShapeA *shape_A;
-	const ShapeB *shape_B;
-	const Transform2D *transform_A;
-	const Transform2D *transform_B;
-	real_t best_depth;
+	const ShapeA *shape_A = nullptr;
+	const ShapeB *shape_B = nullptr;
+	const Transform2D *transform_A = nullptr;
+	const Transform2D *transform_B = nullptr;
+	real_t best_depth = 1e15;
 	Vector2 best_axis;
-	int best_axis_count;
-	int best_axis_index;
+#ifdef DEBUG_ENABLED
+	int best_axis_count = 0;
+	int best_axis_index = -1;
+#endif
 	Vector2 motion_A;
 	Vector2 motion_B;
-	real_t margin_A;
-	real_t margin_B;
+	real_t margin_A = 0.0;
+	real_t margin_B = 0.0;
 	_CollectorCallback2D *callback;
 
 public:
@@ -364,19 +366,13 @@ public:
 	_FORCE_INLINE_ SeparatorAxisTest2D(const ShapeA *p_shape_A, const Transform2D &p_transform_a, const ShapeB *p_shape_B, const Transform2D &p_transform_b, _CollectorCallback2D *p_collector, const Vector2 &p_motion_A = Vector2(), const Vector2 &p_motion_B = Vector2(), real_t p_margin_A = 0, real_t p_margin_B = 0) {
 		margin_A = p_margin_A;
 		margin_B = p_margin_B;
-		best_depth = 1e15;
 		shape_A = p_shape_A;
 		shape_B = p_shape_B;
 		transform_A = &p_transform_a;
 		transform_B = &p_transform_b;
 		motion_A = p_motion_A;
 		motion_B = p_motion_B;
-
 		callback = p_collector;
-#ifdef DEBUG_ENABLED
-		best_axis_count = 0;
-		best_axis_index = -1;
-#endif
 	}
 };
 
@@ -560,16 +556,18 @@ static void _collision_segment_capsule(const Shape2DSW *p_a, const Transform2D &
 		return;
 	}
 
-	if (TEST_POINT(p_transform_a.xform(segment_A->get_a()), (p_transform_b.get_origin() + p_transform_b.elements[1] * capsule_B->get_height() * 0.5))) {
+	real_t capsule_dir = capsule_B->get_height() * 0.5 - capsule_B->get_radius();
+
+	if (TEST_POINT(p_transform_a.xform(segment_A->get_a()), (p_transform_b.get_origin() + p_transform_b.elements[1] * capsule_dir))) {
 		return;
 	}
-	if (TEST_POINT(p_transform_a.xform(segment_A->get_a()), (p_transform_b.get_origin() + p_transform_b.elements[1] * capsule_B->get_height() * -0.5))) {
+	if (TEST_POINT(p_transform_a.xform(segment_A->get_a()), (p_transform_b.get_origin() - p_transform_b.elements[1] * capsule_dir))) {
 		return;
 	}
-	if (TEST_POINT(p_transform_a.xform(segment_A->get_b()), (p_transform_b.get_origin() + p_transform_b.elements[1] * capsule_B->get_height() * 0.5))) {
+	if (TEST_POINT(p_transform_a.xform(segment_A->get_b()), (p_transform_b.get_origin() + p_transform_b.elements[1] * capsule_dir))) {
 		return;
 	}
-	if (TEST_POINT(p_transform_a.xform(segment_A->get_b()), (p_transform_b.get_origin() + p_transform_b.elements[1] * capsule_B->get_height() * -0.5))) {
+	if (TEST_POINT(p_transform_a.xform(segment_A->get_b()), (p_transform_b.get_origin() - p_transform_b.elements[1] * capsule_dir))) {
 		return;
 	}
 
@@ -715,11 +713,13 @@ static void _collision_circle_capsule(const Shape2DSW *p_a, const Transform2D &p
 		return;
 	}
 
+	real_t capsule_dir = capsule_B->get_height() * 0.5 - capsule_B->get_radius();
+
 	//capsule endpoints
-	if (TEST_POINT(p_transform_a.get_origin(), (p_transform_b.get_origin() + p_transform_b.elements[1] * capsule_B->get_height() * 0.5))) {
+	if (TEST_POINT(p_transform_a.get_origin(), (p_transform_b.get_origin() + p_transform_b.elements[1] * capsule_dir))) {
 		return;
 	}
-	if (TEST_POINT(p_transform_a.get_origin(), (p_transform_b.get_origin() + p_transform_b.elements[1] * capsule_B->get_height() * -0.5))) {
+	if (TEST_POINT(p_transform_a.get_origin(), (p_transform_b.get_origin() - p_transform_b.elements[1] * capsule_dir))) {
 		return;
 	}
 
@@ -864,9 +864,11 @@ static void _collision_rectangle_capsule(const Shape2DSW *p_a, const Transform2D
 
 	Transform2D boxinv = p_transform_a.affine_inverse();
 
+	real_t capsule_dir = capsule_B->get_height() * 0.5 - capsule_B->get_radius();
+
 	for (int i = 0; i < 2; i++) {
 		{
-			Vector2 capsule_endpoint = p_transform_b.get_origin() + p_transform_b.elements[1] * capsule_B->get_height() * (i == 0 ? 0.5 : -0.5);
+			Vector2 capsule_endpoint = p_transform_b.get_origin() + p_transform_b.elements[1] * capsule_dir;
 
 			if (!separator.test_axis(rectangle_A->get_circle_axis(p_transform_a, boxinv, capsule_endpoint))) {
 				return;
@@ -874,7 +876,7 @@ static void _collision_rectangle_capsule(const Shape2DSW *p_a, const Transform2D
 		}
 
 		if (castA) {
-			Vector2 capsule_endpoint = p_transform_b.get_origin() + p_transform_b.elements[1] * capsule_B->get_height() * (i == 0 ? 0.5 : -0.5);
+			Vector2 capsule_endpoint = p_transform_b.get_origin() + p_transform_b.elements[1] * capsule_dir;
 			capsule_endpoint -= p_motion_a;
 
 			if (!separator.test_axis(rectangle_A->get_circle_axis(p_transform_a, boxinv, capsule_endpoint))) {
@@ -883,7 +885,7 @@ static void _collision_rectangle_capsule(const Shape2DSW *p_a, const Transform2D
 		}
 
 		if (castB) {
-			Vector2 capsule_endpoint = p_transform_b.get_origin() + p_transform_b.elements[1] * capsule_B->get_height() * (i == 0 ? 0.5 : -0.5);
+			Vector2 capsule_endpoint = p_transform_b.get_origin() + p_transform_b.elements[1] * capsule_dir;
 			capsule_endpoint += p_motion_b;
 
 			if (!separator.test_axis(rectangle_A->get_circle_axis(p_transform_a, boxinv, capsule_endpoint))) {
@@ -892,7 +894,7 @@ static void _collision_rectangle_capsule(const Shape2DSW *p_a, const Transform2D
 		}
 
 		if (castA && castB) {
-			Vector2 capsule_endpoint = p_transform_b.get_origin() + p_transform_b.elements[1] * capsule_B->get_height() * (i == 0 ? 0.5 : -0.5);
+			Vector2 capsule_endpoint = p_transform_b.get_origin() + p_transform_b.elements[1] * capsule_dir;
 			capsule_endpoint -= p_motion_a;
 			capsule_endpoint += p_motion_b;
 
@@ -900,6 +902,8 @@ static void _collision_rectangle_capsule(const Shape2DSW *p_a, const Transform2D
 				return;
 			}
 		}
+
+		capsule_dir *= -1.0;
 	}
 
 	separator.generate_contacts();
@@ -994,16 +998,22 @@ static void _collision_capsule_capsule(const Shape2DSW *p_a, const Transform2D &
 
 	//capsule endpoints
 
+	real_t capsule_dir_A = capsule_A->get_height() * 0.5 - capsule_A->get_radius();
 	for (int i = 0; i < 2; i++) {
-		Vector2 capsule_endpoint_A = p_transform_a.get_origin() + p_transform_a.elements[1] * capsule_A->get_height() * (i == 0 ? 0.5 : -0.5);
+		Vector2 capsule_endpoint_A = p_transform_a.get_origin() + p_transform_a.elements[1] * capsule_dir_A;
 
+		real_t capsule_dir_B = capsule_B->get_height() * 0.5 - capsule_B->get_radius();
 		for (int j = 0; j < 2; j++) {
-			Vector2 capsule_endpoint_B = p_transform_b.get_origin() + p_transform_b.elements[1] * capsule_B->get_height() * (j == 0 ? 0.5 : -0.5);
+			Vector2 capsule_endpoint_B = p_transform_b.get_origin() + p_transform_b.elements[1] * capsule_dir_B;
 
 			if (TEST_POINT(capsule_endpoint_A, capsule_endpoint_B)) {
 				return;
 			}
+
+			capsule_dir_B *= -1.0;
 		}
+
+		capsule_dir_A *= -1.0;
 	}
 
 	separator.generate_contacts();
@@ -1034,12 +1044,15 @@ static void _collision_capsule_convex_polygon(const Shape2DSW *p_a, const Transf
 	for (int i = 0; i < convex_B->get_point_count(); i++) {
 		Vector2 cpoint = p_transform_b.xform(convex_B->get_point(i));
 
+		real_t capsule_dir = capsule_A->get_height() * 0.5 - capsule_A->get_radius();
 		for (int j = 0; j < 2; j++) {
-			Vector2 capsule_endpoint_A = p_transform_a.get_origin() + p_transform_a.elements[1] * capsule_A->get_height() * (j == 0 ? 0.5 : -0.5);
+			Vector2 capsule_endpoint_A = p_transform_a.get_origin() + p_transform_a.elements[1] * capsule_dir;
 
 			if (TEST_POINT(capsule_endpoint_A, cpoint)) {
 				return;
 			}
+
+			capsule_dir *= -1.0;
 		}
 
 		if (!separator.test_axis(convex_B->get_xformed_segment_normal(p_transform_b, i))) {
@@ -1097,14 +1110,14 @@ static void _collision_convex_polygon_convex_polygon(const Shape2DSW *p_a, const
 bool sat_2d_calculate_penetration(const Shape2DSW *p_shape_A, const Transform2D &p_transform_A, const Vector2 &p_motion_A, const Shape2DSW *p_shape_B, const Transform2D &p_transform_B, const Vector2 &p_motion_B, CollisionSolver2DSW::CallbackResult p_result_callback, void *p_userdata, bool p_swap, Vector2 *sep_axis, real_t p_margin_A, real_t p_margin_B) {
 	PhysicsServer2D::ShapeType type_A = p_shape_A->get_type();
 
-	ERR_FAIL_COND_V(type_A == PhysicsServer2D::SHAPE_LINE, false);
-	//ERR_FAIL_COND_V(type_A==PhysicsServer2D::SHAPE_RAY,false);
+	ERR_FAIL_COND_V(type_A == PhysicsServer2D::SHAPE_WORLD_BOUNDARY, false);
+	ERR_FAIL_COND_V(type_A == PhysicsServer2D::SHAPE_SEPARATION_RAY, false);
 	ERR_FAIL_COND_V(p_shape_A->is_concave(), false);
 
 	PhysicsServer2D::ShapeType type_B = p_shape_B->get_type();
 
-	ERR_FAIL_COND_V(type_B == PhysicsServer2D::SHAPE_LINE, false);
-	//ERR_FAIL_COND_V(type_B==PhysicsServer2D::SHAPE_RAY,false);
+	ERR_FAIL_COND_V(type_B == PhysicsServer2D::SHAPE_WORLD_BOUNDARY, false);
+	ERR_FAIL_COND_V(type_B == PhysicsServer2D::SHAPE_SEPARATION_RAY, false);
 	ERR_FAIL_COND_V(p_shape_B->is_concave(), false);
 
 	static const CollisionFunc collision_table[5][5] = {

@@ -30,11 +30,6 @@
 
 #include "spring_arm_3d.h"
 
-#include "core/config/engine.h"
-#include "scene/3d/collision_object_3d.h"
-#include "scene/resources/sphere_shape_3d.h"
-#include "servers/physics_server_3d.h"
-
 void SpringArm3D::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE:
@@ -84,7 +79,7 @@ real_t SpringArm3D::get_length() const {
 
 void SpringArm3D::set_length(real_t p_length) {
 	if (is_inside_tree() && (Engine::get_singleton()->is_editor_hint() || get_tree()->is_debugging_collisions_hint())) {
-		update_gizmo();
+		update_gizmos();
 	}
 
 	spring_length = p_length;
@@ -153,7 +148,7 @@ void SpringArm3D::process_spring() {
 	}
 
 	current_spring_length = spring_length * motion_delta;
-	Transform childs_transform;
+	Transform3D childs_transform;
 	childs_transform.origin = get_global_transform().origin + cast_direction * (spring_length * motion_delta);
 
 	for (int i = get_child_count() - 1; 0 <= i; --i) {

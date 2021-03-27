@@ -32,6 +32,8 @@
 #define FBX_MESH_DATA_H
 
 #include "core/templates/hash_map.h"
+#include "core/templates/local_vector.h"
+#include "core/templates/ordered_hash_map.h"
 #include "editor/import/resource_importer_scene.h"
 #include "editor/import/scene_importer_mesh_node_3d.h"
 #include "scene/3d/mesh_instance_3d.h"
@@ -47,8 +49,22 @@ struct FBXMeshData;
 struct FBXBone;
 struct ImportState;
 
+typedef int Vertex;
+typedef int SurfaceId;
+typedef int PolygonId;
+typedef int DataIndex;
+
+struct SurfaceData {
+	Ref<SurfaceTool> surface_tool;
+	OrderedHashMap<Vertex, int> lookup_table; // proposed fix is to replace lookup_table[vertex_id] to give the position of the vertices_map[int] index.
+	LocalVector<Vertex> vertices_map; // this must be ordered the same as insertion <-- slow to do find() operation.
+	Ref<Material> material;
+	HashMap<PolygonId, Vector<DataIndex>> surface_polygon_vertex;
+	Array morphs;
+};
+
 struct VertexWeightMapping {
-	Vector<real_t> weights;
+	Vector<float> weights;
 	Vector<int> bones;
 	// This extra vector is used because the bone id is computed in a second step.
 	// TODO Get rid of this extra step is a good idea.
@@ -62,7 +78,7 @@ struct VertexData {
 };
 
 // Caches mesh information and instantiates meshes for you using helper functions.
-struct FBXMeshData : Reference {
+struct FBXMeshData : RefCounted {
 	struct MorphVertexData {
 		// TODO we have only these??
 		/// Each element is a vertex. Not supposed to be void.
@@ -127,7 +143,7 @@ private:
 			const Vector3 &p_morph_value = Vector3(),
 			const Vector3 &p_morph_normal = Vector3());
 
-	void triangulate_polygon(Ref<SurfaceTool> st, Vector<int> p_polygon_vertex, Vector<int> p_surface_vertex_map, const std::vector<Vector3> &p_vertices) const;
+	void triangulate_polygon(SurfaceData *surface, const Vector<int> &p_polygon_vertex, const std::vector<Vector3> &p_vertices) const;
 
 	/// This function is responsible to convert the FBX polygon vertex to
 	/// vertex index.
@@ -140,7 +156,7 @@ private:
 	/// [0, 2, 1, 3, 4]
 	/// The negative values are computed using this formula: `(-value) - 1`
 	///
-	/// Returns the vertex index from the poligon vertex.
+	/// Returns the vertex index from the polygon vertex.
 	/// Returns -1 if `p_index` is invalid.
 	int get_vertex_from_polygon_vertex(const std::vector<int> &p_face_indices, int p_index) const;
 

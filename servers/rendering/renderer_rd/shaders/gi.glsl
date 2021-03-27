@@ -2,7 +2,7 @@
 
 #version 450
 
-VERSION_DEFINES
+#VERSION_DEFINES
 
 layout(local_size_x = 8, local_size_y = 8, local_size_z = 1) in;
 
@@ -35,7 +35,7 @@ layout(set = 0, binding = 11) uniform texture2DArray lightprobe_texture;
 
 layout(set = 0, binding = 12) uniform texture2D depth_buffer;
 layout(set = 0, binding = 13) uniform texture2D normal_roughness_buffer;
-layout(set = 0, binding = 14) uniform utexture2D giprobe_buffer;
+layout(set = 0, binding = 14) uniform utexture2D voxel_gi_buffer;
 
 layout(set = 0, binding = 15, std140) uniform SDFGI {
 	vec3 grid_size;
@@ -65,9 +65,9 @@ layout(set = 0, binding = 15, std140) uniform SDFGI {
 }
 sdfgi;
 
-#define MAX_GI_PROBES 8
+#define MAX_VOXEL_GI_INSTANCES 8
 
-struct GIProbeData {
+struct VoxelGIData {
 	mat4 xform;
 	vec3 bounds;
 	float dynamic_range;
@@ -77,18 +77,18 @@ struct GIProbeData {
 	bool blend_ambient;
 	uint texture_slot;
 
-	float anisotropy_strength;
-	float ambient_occlusion;
-	float ambient_occlusion_size;
+	uint pad0;
+	uint pad1;
+	uint pad2;
 	uint mipmaps;
 };
 
-layout(set = 0, binding = 16, std140) uniform GIProbes {
-	GIProbeData data[MAX_GI_PROBES];
+layout(set = 0, binding = 16, std140) uniform VoxelGIs {
+	VoxelGIData data[MAX_VOXEL_GI_INSTANCES];
 }
-gi_probes;
+voxel_gi_instances;
 
-layout(set = 0, binding = 17) uniform texture3D gi_probe_textures[MAX_GI_PROBES];
+layout(set = 0, binding = 17) uniform texture3D voxel_gi_textures[MAX_VOXEL_GI_INSTANCES];
 
 layout(push_constant, binding = 0, std430) uniform Params {
 	ivec2 screen_size;
@@ -98,7 +98,7 @@ layout(push_constant, binding = 0, std430) uniform Params {
 	vec4 proj_info;
 
 	vec3 ao_color;
-	uint max_giprobes;
+	uint max_voxel_gi_instances;
 
 	bool high_quality_vct;
 	bool orthogonal;
@@ -155,7 +155,7 @@ vec3 reconstruct_position(ivec2 screen_pos) {
 	return pos;
 }
 
-void sdfgi_probe_process(uint cascade, vec3 cascade_pos, vec3 cam_pos, vec3 cam_normal, vec3 cam_specular_normal, float roughness, out vec3 diffuse_light, out vec3 specular_light) {
+void sdfvoxel_gi_process(uint cascade, vec3 cascade_pos, vec3 cam_pos, vec3 cam_normal, vec3 cam_specular_normal, float roughness, out vec3 diffuse_light, out vec3 specular_light) {
 	cascade_pos += cam_normal * sdfgi.normal_bias;
 
 	vec3 base_pos = floor(cascade_pos);
@@ -293,7 +293,7 @@ void sdfgi_process(vec3 vertex, vec3 normal, vec3 reflection, float roughness, o
 
 		float blend;
 		vec3 diffuse, specular;
-		sdfgi_probe_process(cascade, cascade_pos, cam_pos, cam_normal, reflection, roughness, diffuse, specular);
+		sdfvoxel_gi_process(cascade, cascade_pos, cam_pos, cam_normal, reflection, roughness, diffuse, specular);
 
 		{
 			//process blend
@@ -323,7 +323,7 @@ void sdfgi_process(vec3 vertex, vec3 normal, vec3 reflection, float roughness, o
 			} else {
 				vec3 diffuse2, specular2;
 				cascade_pos = (cam_pos - sdfgi.cascades[cascade + 1].position) * sdfgi.cascades[cascade + 1].to_probe;
-				sdfgi_probe_process(cascade + 1, cascade_pos, cam_pos, cam_normal, reflection, roughness, diffuse2, specular2);
+				sdfvoxel_gi_process(cascade + 1, cascade_pos, cam_pos, cam_normal, reflection, roughness, diffuse2, specular2);
 				diffuse = mix(diffuse, diffuse2, blend);
 				specular = mix(specular, specular2, blend);
 			}
@@ -494,26 +494,26 @@ vec4 voxel_cone_trace_45_degrees(texture3D probe, vec3 cell_size, vec3 pos, vec3
 	return color;
 }
 
-void gi_probe_compute(uint index, vec3 position, vec3 normal, vec3 ref_vec, mat3 normal_xform, float roughness, inout vec4 out_spec, inout vec4 out_diff, inout float out_blend) {
-	position = (gi_probes.data[index].xform * vec4(position, 1.0)).xyz;
-	ref_vec = normalize((gi_probes.data[index].xform * vec4(ref_vec, 0.0)).xyz);
-	normal = normalize((gi_probes.data[index].xform * vec4(normal, 0.0)).xyz);
+void voxel_gi_compute(uint index, vec3 position, vec3 normal, vec3 ref_vec, mat3 normal_xform, float roughness, inout vec4 out_spec, inout vec4 out_diff, inout float out_blend) {
+	position = (voxel_gi_instances.data[index].xform * vec4(position, 1.0)).xyz;
+	ref_vec = normalize((voxel_gi_instances.data[index].xform * vec4(ref_vec, 0.0)).xyz);
+	normal = normalize((voxel_gi_instances.data[index].xform * vec4(normal, 0.0)).xyz);
 
-	position += normal * gi_probes.data[index].normal_bias;
+	position += normal * voxel_gi_instances.data[index].normal_bias;
 
 	//this causes corrupted pixels, i have no idea why..
-	if (any(bvec2(any(lessThan(position, vec3(0.0))), any(greaterThan(position, gi_probes.data[index].bounds))))) {
+	if (any(bvec2(any(lessThan(position, vec3(0.0))), any(greaterThan(position, voxel_gi_instances.data[index].bounds))))) {
 		return;
 	}
 
-	mat3 dir_xform = mat3(gi_probes.data[index].xform) * normal_xform;
+	mat3 dir_xform = mat3(voxel_gi_instances.data[index].xform) * normal_xform;
 
-	vec3 blendv = abs(position / gi_probes.data[index].bounds * 2.0 - 1.0);
+	vec3 blendv = abs(position / voxel_gi_instances.data[index].bounds * 2.0 - 1.0);
 	float blend = clamp(1.0 - max(blendv.x, max(blendv.y, blendv.z)), 0.0, 1.0);
 	//float blend=1.0;
 
-	float max_distance = length(gi_probes.data[index].bounds);
-	vec3 cell_size = 1.0 / gi_probes.data[index].bounds;
+	float max_distance = length(voxel_gi_instances.data[index].bounds);
+	vec3 cell_size = 1.0 / voxel_gi_instances.data[index].bounds;
 
 	//irradiance
 
@@ -534,7 +534,7 @@ void gi_probe_compute(uint index, vec3 position, vec3 normal, vec3 ref_vec, mat3
 
 		for (uint i = 0; i < cone_dir_count; i++) {
 			vec3 dir = normalize(dir_xform * cone_dirs[i]);
-			light += cone_weights[i] * voxel_cone_trace(gi_probe_textures[index], cell_size, position, dir, cone_angle_tan, max_distance, gi_probes.data[index].bias);
+			light += cone_weights[i] * voxel_cone_trace(voxel_gi_textures[index], cell_size, position, dir, cone_angle_tan, max_distance, voxel_gi_instances.data[index].bias);
 		}
 	} else {
 		const uint cone_dir_count = 4;
@@ -547,42 +547,21 @@ void gi_probe_compute(uint index, vec3 position, vec3 normal, vec3 ref_vec, mat3
 		float cone_weights[cone_dir_count] = float[](0.25, 0.25, 0.25, 0.25);
 		for (int i = 0; i < cone_dir_count; i++) {
 			vec3 dir = normalize(dir_xform * cone_dirs[i]);
-			light += cone_weights[i] * voxel_cone_trace_45_degrees(gi_probe_textures[index], cell_size, position, dir, max_distance, gi_probes.data[index].bias);
+			light += cone_weights[i] * voxel_cone_trace_45_degrees(voxel_gi_textures[index], cell_size, position, dir, max_distance, voxel_gi_instances.data[index].bias);
 		}
 	}
 
-	if (gi_probes.data[index].ambient_occlusion > 0.001) {
-		float size = 1.0 + gi_probes.data[index].ambient_occlusion_size * 7.0;
-
-		float taps, blend;
-		blend = modf(size, taps);
-		float ao = 0.0;
-		for (float i = 1.0; i <= taps; i++) {
-			vec3 ofs = (position + normal * (i * 0.5 + 1.0)) * cell_size;
-			ao += textureLod(sampler3D(gi_probe_textures[index], linear_sampler_with_mipmaps), ofs, i - 1.0).a * i;
-		}
-
-		if (blend > 0.001) {
-			vec3 ofs = (position + normal * ((taps + 1.0) * 0.5 + 1.0)) * cell_size;
-			ao += textureLod(sampler3D(gi_probe_textures[index], linear_sampler_with_mipmaps), ofs, taps).a * (taps + 1.0) * blend;
-		}
-
-		ao = 1.0 - min(1.0, ao);
-
-		light.rgb = mix(params.ao_color, light.rgb, mix(1.0, ao, gi_probes.data[index].ambient_occlusion));
-	}
-
-	light.rgb *= gi_probes.data[index].dynamic_range;
-	if (!gi_probes.data[index].blend_ambient) {
+	light.rgb *= voxel_gi_instances.data[index].dynamic_range;
+	if (!voxel_gi_instances.data[index].blend_ambient) {
 		light.a = 1.0;
 	}
 
 	out_diff += light * blend;
 
 	//radiance
-	vec4 irr_light = voxel_cone_trace(gi_probe_textures[index], cell_size, position, ref_vec, tan(roughness * 0.5 * M_PI * 0.99), max_distance, gi_probes.data[index].bias);
-	irr_light.rgb *= gi_probes.data[index].dynamic_range;
-	if (!gi_probes.data[index].blend_ambient) {
+	vec4 irr_light = voxel_cone_trace(voxel_gi_textures[index], cell_size, position, ref_vec, tan(roughness * 0.5 * M_PI * 0.99), max_distance, voxel_gi_instances.data[index].bias);
+	irr_light.rgb *= voxel_gi_instances.data[index].dynamic_range;
+	if (!voxel_gi_instances.data[index].blend_ambient) {
 		irr_light.a = 1.0;
 	}
 
@@ -614,9 +593,9 @@ void process_gi(ivec2 pos, vec3 vertex, inout vec4 ambient_light, inout vec4 ref
 		sdfgi_process(vertex, normal, reflection, roughness, ambient_light, reflection_light);
 #endif
 
-#ifdef USE_GIPROBES
+#ifdef USE_VOXEL_GI_INSTANCES
 		{
-			uvec2 giprobe_tex = texelFetch(usampler2D(giprobe_buffer, linear_sampler), pos, 0).rg;
+			uvec2 voxel_gi_tex = texelFetch(usampler2D(voxel_gi_buffer, linear_sampler), pos, 0).rg;
 			roughness *= roughness;
 			//find arbitrary tangent and bitangent, then build a matrix
 			vec3 v0 = abs(normal.z) < 0.999 ? vec3(0.0, 0.0, 1.0) : vec3(0.0, 1.0, 0.0);
@@ -628,9 +607,9 @@ void process_gi(ivec2 pos, vec3 vertex, inout vec4 ambient_light, inout vec4 ref
 			vec4 spec_accum = vec4(0.0);
 			float blend_accum = 0.0;
 
-			for (uint i = 0; i < params.max_giprobes; i++) {
-				if (any(equal(uvec2(i), giprobe_tex))) {
-					gi_probe_compute(i, vertex, normal, reflection, normal_mat, roughness, spec_accum, amb_accum, blend_accum);
+			for (uint i = 0; i < params.max_voxel_gi_instances; i++) {
+				if (any(equal(uvec2(i), voxel_gi_tex))) {
+					voxel_gi_compute(i, vertex, normal, reflection, normal_mat, roughness, spec_accum, amb_accum, blend_accum);
 				}
 			}
 			if (blend_accum > 0.0) {

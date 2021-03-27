@@ -33,6 +33,7 @@
 
 #include "scene/3d/node_3d.h"
 #include "scene/resources/shape_3d.h"
+
 class CollisionObject3D;
 class CollisionShape3D : public Node3D {
 	GDCLASS(CollisionShape3D, Node3D);
@@ -47,8 +48,6 @@ class CollisionShape3D : public Node3D {
 	bool disabled = false;
 
 protected:
-	void _shape_changed();
-
 	void _update_in_shape_owner(bool p_xform_only = false);
 
 protected:
@@ -64,7 +63,7 @@ public:
 	void set_disabled(bool p_disabled);
 	bool is_disabled() const;
 
-	String get_configuration_warning() const override;
+	TypedArray<String> get_configuration_warnings() const override;
 
 	CollisionShape3D();
 	~CollisionShape3D();

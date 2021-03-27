@@ -31,10 +31,10 @@
 #ifndef STREAM_PEER_H
 #define STREAM_PEER_H
 
-#include "core/object/reference.h"
+#include "core/object/ref_counted.h"
 
-class StreamPeer : public Reference {
-	GDCLASS(StreamPeer, Reference);
+class StreamPeer : public RefCounted {
+	GDCLASS(StreamPeer, RefCounted);
 	OBJ_CATEGORY("Networking");
 
 protected:
@@ -58,7 +58,7 @@ public:
 
 	virtual int get_available_bytes() const = 0;
 
-	void set_big_endian(bool p_enable);
+	void set_big_endian(bool p_big_endian);
 	bool is_big_endian_enabled() const;
 
 	void put_8(int8_t p_val);

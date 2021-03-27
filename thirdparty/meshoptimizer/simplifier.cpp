@@ -20,6 +20,8 @@
 #define TRACESTATS(i) (void)0
 #endif
 
+#define ATTRIBUTES 8
+
 // This work is based on:
 // Michael Garland and Paul S. Heckbert. Surface simplification using quadric error metrics. 1997
 // Michael Garland. Quadric-based polygonal surface simplification. 1999
@@ -118,8 +120,13 @@ struct PositionHasher
 	{
 		const unsigned int* key = reinterpret_cast<const unsigned int*>(vertex_positions + index * vertex_stride_float);
 
+		// scramble bits to make sure that integer coordinates have entropy in lower bits
+		unsigned int x = key[0] ^ (key[0] >> 17);
+		unsigned int y = key[1] ^ (key[1] >> 17);
+		unsigned int z = key[2] ^ (key[2] >> 17);
+
 		// Optimized Spatial Hashing for Collision Detection of Deformable Objects
-		return (key[0] * 73856093) ^ (key[1] * 19349663) ^ (key[2] * 83492791);
+		return (x * 73856093) ^ (y * 19349663) ^ (z * 83492791);
 	}
 
 	bool equal(unsigned int lhs, unsigned int rhs) const
@@ -131,7 +138,7 @@ struct PositionHasher
 static size_t hashBuckets2(size_t count)
 {
 	size_t buckets = 1;
-	while (buckets < count)
+	while (buckets < count + count / 4)
 		buckets *= 2;
 
 	return buckets;
@@ -358,6 +365,10 @@ static void classifyVertices(unsigned char* result, unsigned int* loop, unsigned
 struct Vector3
 {
 	float x, y, z;
+
+#if ATTRIBUTES
+	float a[ATTRIBUTES];
+#endif
 };
 
 static float rescalePositions(Vector3* result, const float* vertex_positions_data, size_t vertex_count, size_t vertex_positions_stride)
@@ -414,6 +425,13 @@ struct Quadric
 	float a10, a20, a21;
 	float b0, b1, b2, c;
 	float w;
+
+#if ATTRIBUTES
+	float gx[ATTRIBUTES];
+	float gy[ATTRIBUTES];
+	float gz[ATTRIBUTES];
+	float gw[ATTRIBUTES];
+#endif
 };
 
 struct Collapse
@@ -456,6 +474,16 @@ static void quadricAdd(Quadric& Q, const Quadric& R)
 	Q.b2 += R.b2;
 	Q.c += R.c;
 	Q.w += R.w;
+
+#if ATTRIBUTES
+	for (int k = 0; k < ATTRIBUTES; ++k)
+	{
+		Q.gx[k] += R.gx[k];
+		Q.gy[k] += R.gy[k];
+		Q.gz[k] += R.gz[k];
+		Q.gw[k] += R.gw[k];
+	}
+#endif
 }
 
 static float quadricError(const Quadric& Q, const Vector3& v)
@@ -481,6 +509,17 @@ static float quadricError(const Quadric& Q, const Vector3& v)
 	r += ry * v.y;
 	r += rz * v.z;
 
+#if ATTRIBUTES
+	// see quadricUpdateAttributes for general derivation; here we need to add the parts of (eval(pos) - attr)^2 that depend on attr
+	for (int k = 0; k < ATTRIBUTES; ++k)
+	{
+		float a = v.a[k];
+
+		r += a * a * Q.w;
+		r -= 2 * a * (v.x * Q.gx[k] + v.y * Q.gy[k] + v.z * Q.gz[k] + Q.gw[k]);
+	}
+#endif
+
 	float s = Q.w == 0.f ? 0.f : 1.f / Q.w;
 
 	return fabsf(r) * s;
@@ -504,6 +543,13 @@ static void quadricFromPlane(Quadric& Q, float a, float b, float c, float d, flo
 	Q.b2 = c * dw;
 	Q.c = d * dw;
 	Q.w = w;
+
+#if ATTRIBUTES
+	memset(Q.gx, 0, sizeof(Q.gx));
+	memset(Q.gy, 0, sizeof(Q.gy));
+	memset(Q.gz, 0, sizeof(Q.gz));
+	memset(Q.gw, 0, sizeof(Q.gw));
+#endif
 }
 
 static void quadricFromPoint(Quadric& Q, float x, float y, float z, float w)
@@ -556,6 +602,84 @@ static void quadricFromTriangleEdge(Quadric& Q, const Vector3& p0, const Vector3
 	quadricFromPlane(Q, normal.x, normal.y, normal.z, -distance, length * weight);
 }
 
+#if ATTRIBUTES
+static void quadricUpdateAttributes(Quadric& Q, const Vector3& p0, const Vector3& p1, const Vector3& p2, float w)
+{
+	// for each attribute we want to encode the following function into the quadric:
+	// (eval(pos) - attr)^2
+	// where eval(pos) interpolates attribute across the triangle like so:
+	// eval(pos) = pos.x * gx + pos.y * gy + pos.z * gz + gw
+	// where gx/gy/gz/gw are gradients
+	Vector3 p10 = {p1.x - p0.x, p1.y - p0.y, p1.z - p0.z};
+	Vector3 p20 = {p2.x - p0.x, p2.y - p0.y, p2.z - p0.z};
+
+	// we compute gradients using barycentric coordinates; barycentric coordinates can be computed as follows:
+	// v = (d11 * d20 - d01 * d21) / denom
+	// w = (d00 * d21 - d01 * d20) / denom
+	// u = 1 - v - w
+	// here v0, v1 are triangle edge vectors, v2 is a vector from point to triangle corner, and dij = dot(vi, vj)
+	const Vector3& v0 = p10;
+	const Vector3& v1 = p20;
+	float d00 = v0.x * v0.x + v0.y * v0.y + v0.z * v0.z;
+	float d01 = v0.x * v1.x + v0.y * v1.y + v0.z * v1.z;
+	float d11 = v1.x * v1.x + v1.y * v1.y + v1.z * v1.z;
+	float denom = d00 * d11 - d01 * d01;
+	float denomr = denom == 0 ? 0.f : 1.f / denom;
+
+	// precompute gradient factors
+	// these are derived by directly computing derivative of eval(pos) = a0 * u + a1 * v + a2 * w and factoring out common factors that are shared between attributes
+	float gx1 = (d11 * v0.x - d01 * v1.x) * denomr;
+	float gx2 = (d00 * v1.x - d01 * v0.x) * denomr;
+	float gy1 = (d11 * v0.y - d01 * v1.y) * denomr;
+	float gy2 = (d00 * v1.y - d01 * v0.y) * denomr;
+	float gz1 = (d11 * v0.z - d01 * v1.z) * denomr;
+	float gz2 = (d00 * v1.z - d01 * v0.z) * denomr;
+
+	for (int k = 0; k < ATTRIBUTES; ++k)
+	{
+		float a0 = p0.a[k], a1 = p1.a[k], a2 = p2.a[k];
+
+		// compute gradient of eval(pos) for x/y/z/w
+		// the formulas below are obtained by directly computing derivative of eval(pos) = a0 * u + a1 * v + a2 * w
+		float gx = gx1 * (a1 - a0) + gx2 * (a2 - a0);
+		float gy = gy1 * (a1 - a0) + gy2 * (a2 - a0);
+		float gz = gz1 * (a1 - a0) + gz2 * (a2 - a0);
+		float gw = a0 - p0.x * gx - p0.y * gy - p0.z * gz;
+
+		// quadric encodes (eval(pos)-attr)^2; this means that the resulting expansion needs to compute, for example, pos.x * pos.y * K
+		// since quadrics already encode factors for pos.x * pos.y, we can accumulate almost everything in basic quadric fields
+		Q.a00 += w * (gx * gx);
+		Q.a11 += w * (gy * gy);
+		Q.a22 += w * (gz * gz);
+
+		Q.a10 += w * (gy * gx);
+		Q.a20 += w * (gz * gx);
+		Q.a21 += w * (gz * gy);
+
+		Q.b0 += w * (gx * gw);
+		Q.b1 += w * (gy * gw);
+		Q.b2 += w * (gz * gw);
+
+		Q.c += w * (gw * gw);
+
+		// the only remaining sum components are ones that depend on attr; these will be addded during error evaluation, see quadricError
+		Q.gx[k] = w * gx;
+		Q.gy[k] = w * gy;
+		Q.gz[k] = w * gz;
+		Q.gw[k] = w * gw;
+
+#if TRACE > 2
+		printf("attr%d: %e %e %e\n",
+			k,
+			(gx * p0.x + gy * p0.y + gz * p0.z + gw - a0),
+			(gx * p1.x + gy * p1.y + gz * p1.z + gw - a1),
+			(gx * p2.x + gy * p2.y + gz * p2.z + gw - a2)
+			);
+#endif
+	}
+}
+#endif
+
 static void fillFaceQuadrics(Quadric* vertex_quadrics, const unsigned int* indices, size_t index_count, const Vector3* vertex_positions, const unsigned int* remap)
 {
 	for (size_t i = 0; i < index_count; i += 3)
@@ -567,6 +691,9 @@ static void fillFaceQuadrics(Quadric* vertex_quadrics, const unsigned int* indic
 		Quadric Q;
 		quadricFromTriangle(Q, vertex_positions[i0], vertex_positions[i1], vertex_positions[i2], 1.f);
 
+#if ATTRIBUTES
+		quadricUpdateAttributes(Q, vertex_positions[i0], vertex_positions[i1], vertex_positions[i2], Q.w);
+#endif
 		quadricAdd(vertex_quadrics[remap[i0]], Q);
 		quadricAdd(vertex_quadrics[remap[i1]], Q);
 		quadricAdd(vertex_quadrics[remap[i2]], Q);
@@ -1038,7 +1165,7 @@ struct IdHasher
 
 struct TriangleHasher
 {
-	unsigned int* indices;
+	const unsigned int* indices;
 
 	size_t hash(unsigned int i) const
 	{
@@ -1253,19 +1380,26 @@ static float interpolate(float y, float x0, float y0, float x1, float y1, float 
 } // namespace meshopt
 
 #ifndef NDEBUG
-unsigned char* meshopt_simplifyDebugKind = 0;
-unsigned int* meshopt_simplifyDebugLoop = 0;
-unsigned int* meshopt_simplifyDebugLoopBack = 0;
+// Note: this is only exposed for debug visualization purposes; do *not* use these in debug builds
+MESHOPTIMIZER_API unsigned char* meshopt_simplifyDebugKind = 0;
+MESHOPTIMIZER_API unsigned int* meshopt_simplifyDebugLoop = 0;
+MESHOPTIMIZER_API unsigned int* meshopt_simplifyDebugLoopBack = 0;
 #endif
 
 size_t meshopt_simplify(unsigned int* destination, const unsigned int* indices, size_t index_count, const float* vertex_positions_data, size_t vertex_count, size_t vertex_positions_stride, size_t target_index_count, float target_error, float* out_result_error)
 {
+	return meshopt_simplifyWithAttributes(destination, indices, index_count, vertex_positions_data, vertex_count, vertex_positions_stride, target_index_count, target_error, out_result_error, 0, 0, 0);
+}
+
+size_t meshopt_simplifyWithAttributes(unsigned int* destination, const unsigned int* indices, size_t index_count, const float* vertex_data, size_t vertex_count, size_t vertex_stride, size_t target_index_count, float target_error, float* out_result_error, const float* attributes, const float* attribute_weights, size_t attribute_count)
+{
 	using namespace meshopt;
 
 	assert(index_count % 3 == 0);
-	assert(vertex_positions_stride > 0 && vertex_positions_stride <= 256);
-	assert(vertex_positions_stride % sizeof(float) == 0);
+	assert(vertex_stride > 0 && vertex_stride <= 256);
+	assert(vertex_stride % sizeof(float) == 0);
 	assert(target_index_count <= index_count);
+	assert(attribute_count <= ATTRIBUTES);
 
 	meshopt_Allocator allocator;
 
@@ -1279,7 +1413,7 @@ size_t meshopt_simplify(unsigned int* destination, const unsigned int* indices, 
 	// build position remap that maps each vertex to the one with identical position
 	unsigned int* remap = allocator.allocate<unsigned int>(vertex_count);
 	unsigned int* wedge = allocator.allocate<unsigned int>(vertex_count);
-	buildPositionRemap(remap, wedge, vertex_positions_data, vertex_count, vertex_positions_stride, allocator);
+	buildPositionRemap(remap, wedge, vertex_data, vertex_count, vertex_stride, allocator);
 
 	// classify vertices; vertex kind determines collapse rules, see kCanCollapse
 	unsigned char* vertex_kind = allocator.allocate<unsigned char>(vertex_count);
@@ -1303,7 +1437,21 @@ size_t meshopt_simplify(unsigned int* destination, const unsigned int* indices, 
 #endif
 
 	Vector3* vertex_positions = allocator.allocate<Vector3>(vertex_count);
-	rescalePositions(vertex_positions, vertex_positions_data, vertex_count, vertex_positions_stride);
+	rescalePositions(vertex_positions, vertex_data, vertex_count, vertex_stride);
+
+#if ATTRIBUTES
+	for (size_t i = 0; i < vertex_count; ++i)
+	{
+		memset(vertex_positions[i].a, 0, sizeof(vertex_positions[i].a));
+
+		for (size_t k = 0; k < attribute_count; ++k)
+		{
+			float a = attributes[i * attribute_count + k];
+
+			vertex_positions[i].a[k] = a * attribute_weights[k];
+		}
+	}
+#endif
 
 	Quadric* vertex_quadrics = allocator.allocate<Quadric>(vertex_count);
 	memset(vertex_quadrics, 0, vertex_count * sizeof(Quadric));
@@ -1395,7 +1543,9 @@ size_t meshopt_simplify(unsigned int* destination, const unsigned int* indices, 
 
 	// result_error is quadratic; we need to remap it back to linear
 	if (out_result_error)
+	{
 		*out_result_error = sqrtf(result_error);
+	}
 
 	return result_count;
 }

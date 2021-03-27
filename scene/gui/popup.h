@@ -35,6 +35,8 @@
 
 #include "core/templates/local_vector.h"
 
+class Panel;
+
 class Popup : public Window {
 	GDCLASS(Popup, Window);
 

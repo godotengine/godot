@@ -83,7 +83,7 @@ public:
 		ERR_FAIL_COND(!threads); //never initialized
 		ERR_FAIL_COND(current_work != nullptr);
 
-		index.store(0);
+		index.store(0, std::memory_order_release);
 
 		Work<C, M, U> *w = memnew((Work<C, M, U>));
 		w->instance = p_instance;
@@ -104,8 +104,15 @@ public:
 		return current_work != nullptr;
 	}
 
+	bool is_done_dispatching() const {
+		ERR_FAIL_COND_V(current_work == nullptr, true);
+		return index.load(std::memory_order_acquire) >= current_work->max_elements;
+	}
+
 	uint32_t get_work_index() const {
-		return index;
+		ERR_FAIL_COND_V(current_work == nullptr, 0);
+		uint32_t idx = index.load(std::memory_order_acquire);
+		return MIN(idx, current_work->max_elements);
 	}
 
 	void end_work() {

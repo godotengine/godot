@@ -10,65 +10,48 @@
 	</tutorials>
 	<methods>
 		<method name="get_expand_margin_size" qualifiers="const">
-			<return type="float">
-			</return>
-			<argument index="0" name="margin" type="int" enum="Side">
-			</argument>
+			<return type="float" />
+			<argument index="0" name="margin" type="int" enum="Side" />
 			<description>
 				Returns the expand margin size of the specified [enum Side].
 			</description>
 		</method>
 		<method name="get_margin_size" qualifiers="const">
-			<return type="float">
-			</return>
-			<argument index="0" name="margin" type="int" enum="Side">
-			</argument>
+			<return type="float" />
+			<argument index="0" name="margin" type="int" enum="Side" />
 			<description>
 				Returns the margin size of the specified [enum Side].
 			</description>
 		</method>
 		<method name="set_expand_margin_all">
-			<return type="void">
-			</return>
-			<argument index="0" name="size" type="float">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="size" type="float" />
 			<description>
 				Sets the expand margin to [code]size[/code] pixels for all margins.
 			</description>
 		</method>
 		<method name="set_expand_margin_individual">
-			<return type="void">
-			</return>
-			<argument index="0" name="size_left" type="float">
-			</argument>
-			<argument index="1" name="size_top" type="float">
-			</argument>
-			<argument index="2" name="size_right" type="float">
-			</argument>
-			<argument index="3" name="size_bottom" type="float">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="size_left" type="float" />
+			<argument index="1" name="size_top" type="float" />
+			<argument index="2" name="size_right" type="float" />
+			<argument index="3" name="size_bottom" type="float" />
 			<description>
 				Sets the expand margin for each margin to [code]size_left[/code], [code]size_top[/code], [code]size_right[/code], and [code]size_bottom[/code] pixels.
 			</description>
 		</method>
 		<method name="set_expand_margin_size">
-			<return type="void">
-			</return>
-			<argument index="0" name="margin" type="int" enum="Side">
-			</argument>
-			<argument index="1" name="size" type="float">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="margin" type="int" enum="Side" />
+			<argument index="1" name="size" type="float" />
 			<description>
 				Sets the expand margin to [code]size[/code] pixels for the specified [enum Side].
 			</description>
 		</method>
 		<method name="set_margin_size">
-			<return type="void">
-			</return>
-			<argument index="0" name="margin" type="int" enum="Side">
-			</argument>
-			<argument index="1" name="size" type="float">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="margin" type="int" enum="Side" />
+			<argument index="1" name="size" type="float" />
 			<description>
 				Sets the margin to [code]size[/code] pixels for the specified [enum Side].
 			</description>
@@ -116,10 +99,10 @@
 			A higher value means more of the source texture is considered to be part of the top border of the 3×3 box.
 			This is also the value used as fallback for [member StyleBox.content_margin_top] if it is negative.
 		</member>
-		<member name="modulate_color" type="Color" setter="set_modulate" getter="get_modulate" default="Color( 1, 1, 1, 1 )">
+		<member name="modulate_color" type="Color" setter="set_modulate" getter="get_modulate" default="Color(1, 1, 1, 1)">
 			Modulates the color of the texture when this style box is drawn.
 		</member>
-		<member name="region_rect" type="Rect2" setter="set_region_rect" getter="get_region_rect" default="Rect2( 0, 0, 0, 0 )">
+		<member name="region_rect" type="Rect2" setter="set_region_rect" getter="get_region_rect" default="Rect2(0, 0, 0, 0)">
 			Species a sub-region of the texture to use.
 			This is equivalent to first wrapping the texture in an [AtlasTexture] with the same region.
 		</member>
@@ -127,13 +110,6 @@
 			The texture to use when drawing this style box.
 		</member>
 	</members>
-	<signals>
-		<signal name="texture_changed">
-			<description>
-				Emitted when the stylebox's texture is changed.
-			</description>
-		</signal>
-	</signals>
 	<constants>
 		<constant name="AXIS_STRETCH_MODE_STRETCH" value="0" enum="AxisStretchMode">
 			Stretch the stylebox's texture. This results in visible distortion unless the texture size matches the stylebox's size perfectly.

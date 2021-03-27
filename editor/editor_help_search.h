@@ -83,7 +83,7 @@ public:
 	EditorHelpSearch();
 };
 
-class EditorHelpSearch::Runner : public Reference {
+class EditorHelpSearch::Runner : public RefCounted {
 	enum Phase {
 		PHASE_MATCH_CLASSES_INIT,
 		PHASE_MATCH_CLASSES,
@@ -103,7 +103,7 @@ class EditorHelpSearch::Runner : public Reference {
 		Vector<DocData::MethodDoc *> signals;
 		Vector<DocData::ConstantDoc *> constants;
 		Vector<DocData::PropertyDoc *> properties;
-		Vector<DocData::PropertyDoc *> theme_properties;
+		Vector<DocData::ThemeItemDoc *> theme_properties;
 
 		bool required() {
 			return name || methods.size() || signals.size() || constants.size() || properties.size() || theme_properties.size();
@@ -124,6 +124,7 @@ class EditorHelpSearch::Runner : public Reference {
 	TreeItem *root_item = nullptr;
 	Map<String, TreeItem *> class_items;
 	TreeItem *matched_item = nullptr;
+	float match_highest_score = 0;
 
 	bool _is_class_disabled_by_feature_profile(const StringName &p_class);
 
@@ -144,7 +145,7 @@ class EditorHelpSearch::Runner : public Reference {
 	TreeItem *_create_signal_item(TreeItem *p_parent, const DocData::ClassDoc *p_class_doc, const DocData::MethodDoc *p_doc);
 	TreeItem *_create_constant_item(TreeItem *p_parent, const DocData::ClassDoc *p_class_doc, const DocData::ConstantDoc *p_doc);
 	TreeItem *_create_property_item(TreeItem *p_parent, const DocData::ClassDoc *p_class_doc, const DocData::PropertyDoc *p_doc);
-	TreeItem *_create_theme_property_item(TreeItem *p_parent, const DocData::ClassDoc *p_class_doc, const DocData::PropertyDoc *p_doc);
+	TreeItem *_create_theme_property_item(TreeItem *p_parent, const DocData::ClassDoc *p_class_doc, const DocData::ThemeItemDoc *p_doc);
 	TreeItem *_create_member_item(TreeItem *p_parent, const String &p_class_name, const String &p_icon, const String &p_name, const String &p_text, const String &p_type, const String &p_metatype, const String &p_tooltip);
 
 public:

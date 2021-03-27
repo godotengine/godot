@@ -35,6 +35,8 @@
 #include "core/os/spin_lock.h"
 #include "core/typedefs.h"
 
+#include <type_traits>
+
 template <class T, bool thread_safe = false>
 class PagedAllocator {
 	T **page_pool = nullptr;
@@ -48,7 +50,8 @@ class PagedAllocator {
 	SpinLock spin_lock;
 
 public:
-	T *alloc() {
+	template <class... Args>
+	T *alloc(const Args &&...p_args) {
 		if (thread_safe) {
 			spin_lock.lock();
 		}
@@ -73,7 +76,7 @@ public:
 		if (thread_safe) {
 			spin_lock.unlock();
 		}
-		memnew_placement(alloc, T);
+		memnew_placement(alloc, T(p_args...));
 		return alloc;
 	}
 
@@ -89,8 +92,10 @@ public:
 		allocs_available++;
 	}
 
-	void reset() {
-		ERR_FAIL_COND(allocs_available < pages_allocated * page_size);
+	void reset(bool p_allow_unfreed = false) {
+		if (!p_allow_unfreed || !std::is_trivially_destructible<T>::value) {
+			ERR_FAIL_COND(allocs_available < pages_allocated * page_size);
+		}
 		if (pages_allocated) {
 			for (uint32_t i = 0; i < pages_allocated; i++) {
 				memfree(page_pool[i]);

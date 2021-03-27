@@ -2,13 +2,13 @@
 
 #version 450
 
-VERSION_DEFINES
+#VERSION_DEFINES
 
 /* Do not use subgroups here, seems there is not much advantage and causes glitches
+#if defined(has_GL_KHR_shader_subgroup_ballot) && defined(has_GL_KHR_shader_subgroup_arithmetic)
 #extension GL_KHR_shader_subgroup_ballot: enable
 #extension GL_KHR_shader_subgroup_arithmetic: enable
 
-#if defined(GL_KHR_shader_subgroup_ballot) && defined(GL_KHR_shader_subgroup_arithmetic)
 #define USE_SUBGROUPS
 #endif
 */
@@ -26,6 +26,7 @@ layout(local_size_x = 4, local_size_y = 4, local_size_z = 4) in;
 #endif
 
 #include "cluster_data_inc.glsl"
+#include "light_data_inc.glsl"
 
 #define M_PI 3.14159265359
 
@@ -71,9 +72,9 @@ layout(rgba16f, set = 0, binding = 9) uniform restrict writeonly image3D dest_ma
 
 layout(set = 0, binding = 10) uniform sampler shadow_sampler;
 
-#define MAX_GI_PROBES 8
+#define MAX_VOXEL_GI_INSTANCES 8
 
-struct GIProbeData {
+struct VoxelGIData {
 	mat4 xform;
 	vec3 bounds;
 	float dynamic_range;
@@ -89,12 +90,12 @@ struct GIProbeData {
 	uint mipmaps;
 };
 
-layout(set = 0, binding = 11, std140) uniform GIProbes {
-	GIProbeData data[MAX_GI_PROBES];
+layout(set = 0, binding = 11, std140) uniform VoxelGIs {
+	VoxelGIData data[MAX_VOXEL_GI_INSTANCES];
 }
-gi_probes;
+voxel_gi_instances;
 
-layout(set = 0, binding = 12) uniform texture3D gi_probe_textures[MAX_GI_PROBES];
+layout(set = 0, binding = 12) uniform texture3D voxel_gi_textures[MAX_VOXEL_GI_INSTANCES];
 
 layout(set = 0, binding = 13) uniform sampler linear_sampler_with_mipmaps;
 
@@ -103,7 +104,7 @@ layout(set = 0, binding = 13) uniform sampler linear_sampler_with_mipmaps;
 // SDFGI Integration on set 1
 #define SDFGI_MAX_CASCADES 8
 
-struct SDFGIProbeCascadeData {
+struct SDFVoxelGICascadeData {
 	vec3 position;
 	float to_probe;
 	ivec3 probe_world_offset;
@@ -134,7 +135,7 @@ layout(set = 1, binding = 0, std140) uniform SDFGI {
 	vec3 cascade_probe_size;
 	uint pad5;
 
-	SDFGIProbeCascadeData cascades[SDFGI_MAX_CASCADES];
+	SDFVoxelGICascadeData cascades[SDFGI_MAX_CASCADES];
 }
 sdfgi;
 
@@ -161,7 +162,7 @@ layout(set = 0, binding = 14, std140) uniform Params {
 
 	float detail_spread;
 	float gi_inject;
-	uint max_gi_probes;
+	uint max_voxel_gi_instances;
 	uint cluster_type_size;
 
 	vec2 screen_size;
@@ -532,21 +533,21 @@ void main() {
 
 	vec3 world_pos = mat3(params.cam_rotation) * view_pos;
 
-	for (uint i = 0; i < params.max_gi_probes; i++) {
-		vec3 position = (gi_probes.data[i].xform * vec4(world_pos, 1.0)).xyz;
+	for (uint i = 0; i < params.max_voxel_gi_instances; i++) {
+		vec3 position = (voxel_gi_instances.data[i].xform * vec4(world_pos, 1.0)).xyz;
 
 		//this causes corrupted pixels, i have no idea why..
-		if (all(bvec2(all(greaterThanEqual(position, vec3(0.0))), all(lessThan(position, gi_probes.data[i].bounds))))) {
-			position /= gi_probes.data[i].bounds;
+		if (all(bvec2(all(greaterThanEqual(position, vec3(0.0))), all(lessThan(position, voxel_gi_instances.data[i].bounds))))) {
+			position /= voxel_gi_instances.data[i].bounds;
 
 			vec4 light = vec4(0.0);
-			for (uint j = 0; j < gi_probes.data[i].mipmaps; j++) {
-				vec4 slight = textureLod(sampler3D(gi_probe_textures[i], linear_sampler_with_mipmaps), position, float(j));
+			for (uint j = 0; j < voxel_gi_instances.data[i].mipmaps; j++) {
+				vec4 slight = textureLod(sampler3D(voxel_gi_textures[i], linear_sampler_with_mipmaps), position, float(j));
 				float a = (1.0 - light.a);
 				light += a * slight;
 			}
 
-			light.rgb *= gi_probes.data[i].dynamic_range * params.gi_inject;
+			light.rgb *= voxel_gi_instances.data[i].dynamic_range * params.gi_inject;
 
 			total_light += light.rgb;
 		}

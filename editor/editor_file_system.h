@@ -31,12 +31,14 @@
 #ifndef EDITOR_FILE_SYSTEM_H
 #define EDITOR_FILE_SYSTEM_H
 
-#include "core/os/dir_access.h"
+#include "core/io/dir_access.h"
 #include "core/os/thread.h"
 #include "core/os/thread_safe.h"
 #include "core/templates/safe_refcount.h"
 #include "core/templates/set.h"
+#include "core/templates/thread_work_pool.h"
 #include "scene/main/node.h"
+
 class FileAccess;
 
 struct EditorProgressBG;
@@ -53,6 +55,7 @@ class EditorFileSystemDirectory : public Object {
 	struct FileInfo {
 		String file;
 		StringName type;
+		ResourceUID::ID uid = ResourceUID::INVALID_ID;
 		uint64_t modified_time = 0;
 		uint64_t import_modified_time = 0;
 		bool import_valid = false;
@@ -100,6 +103,8 @@ public:
 	int find_file_index(const String &p_file) const;
 	int find_dir_index(const String &p_dir) const;
 
+	void force_update();
+
 	EditorFileSystemDirectory();
 	~EditorFileSystemDirectory();
 };
@@ -144,7 +149,6 @@ class EditorFileSystem : public Node {
 
 	void _scan_filesystem();
 
-	Set<String> late_added_files; //keep track of files that were added, these will be re-scanned
 	Set<String> late_update_files;
 
 	void _save_late_updated_files();
@@ -156,6 +160,7 @@ class EditorFileSystem : public Node {
 	/* Used for reading the filesystem cache file */
 	struct FileCache {
 		String type;
+		ResourceUID::ID uid = ResourceUID::INVALID_ID;
 		uint64_t modification_time = 0;
 		uint64_t import_modification_time = 0;
 		Vector<String> deps;
@@ -214,9 +219,11 @@ class EditorFileSystem : public Node {
 
 	struct ImportFile {
 		String path;
+		String importer;
+		bool threaded = false;
 		int order = 0;
 		bool operator<(const ImportFile &p_if) const {
-			return order < p_if.order;
+			return order == p_if.order ? (importer < p_if.importer) : (order < p_if.order);
 		}
 	};
 
@@ -235,6 +242,20 @@ class EditorFileSystem : public Node {
 	void _move_group_files(EditorFileSystemDirectory *efd, const String &p_group_file, const String &p_new_location);
 
 	Set<String> group_file_cache;
+
+	ThreadWorkPool import_threads;
+
+	struct ImportThreadData {
+		const ImportFile *reimport_files;
+		int reimport_from;
+		int max_index = 0;
+	};
+
+	void _reimport_thread(uint32_t p_index, ImportThreadData *p_import_data);
+
+	static ResourceUID::ID _resource_saver_get_resource_id_for_path(const String &p_path, bool p_generate);
+
+	bool _scan_extensions();
 
 protected:
 	void _notification(int p_what);

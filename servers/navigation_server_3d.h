@@ -106,7 +106,7 @@ public:
 	virtual uint32_t region_get_layers(RID p_region) const = 0;
 
 	/// Set the global transformation of this region.
-	virtual void region_set_transform(RID p_region, Transform p_transform) const = 0;
+	virtual void region_set_transform(RID p_region, Transform3D p_transform) const = 0;
 
 	/// Set the navigation mesh of this region.
 	virtual void region_set_navmesh(RID p_region, Ref<NavigationMesh> p_nav_mesh) const = 0;

@@ -47,8 +47,6 @@ bool godotContactAddedCallback(btManifoldPoint &cp, const btCollisionObjectWrapp
 
 /// This class is required to implement custom collision behaviour in the broadphase
 struct GodotFilterCallback : public btOverlapFilterCallback {
-	static bool test_collision_filters(uint32_t body0_collision_layer, uint32_t body0_collision_mask, uint32_t body1_collision_layer, uint32_t body1_collision_mask);
-
 	// return true when pairs need collision
 	virtual bool needBroadphaseCollision(btBroadphaseProxy *proxy0, btBroadphaseProxy *proxy1) const;
 };
@@ -102,11 +100,13 @@ public:
 struct GodotKinClosestConvexResultCallback : public btCollisionWorld::ClosestConvexResultCallback {
 public:
 	const RigidBodyBullet *m_self_object;
+	const Set<RID> *m_exclude;
 	const bool m_infinite_inertia;
 
-	GodotKinClosestConvexResultCallback(const btVector3 &convexFromWorld, const btVector3 &convexToWorld, const RigidBodyBullet *p_self_object, bool p_infinite_inertia) :
+	GodotKinClosestConvexResultCallback(const btVector3 &convexFromWorld, const btVector3 &convexToWorld, const RigidBodyBullet *p_self_object, bool p_infinite_inertia, const Set<RID> *p_exclude) :
 			btCollisionWorld::ClosestConvexResultCallback(convexFromWorld, convexToWorld),
 			m_self_object(p_self_object),
+			m_exclude(p_exclude),
 			m_infinite_inertia(p_infinite_inertia) {}
 
 	virtual bool needsCollision(btBroadphaseProxy *proxy0) const;

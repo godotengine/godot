@@ -136,7 +136,7 @@ void SoftBodyBullet::destroy_soft_body() {
 	bt_soft_body = nullptr;
 }
 
-void SoftBodyBullet::set_soft_transform(const Transform &p_transform) {
+void SoftBodyBullet::set_soft_transform(const Transform3D &p_transform) {
 	reset_all_node_positions();
 	move_all_nodes(p_transform);
 }
@@ -159,7 +159,7 @@ AABB SoftBodyBullet::get_bounds() const {
 	return aabb;
 }
 
-void SoftBodyBullet::move_all_nodes(const Transform &p_transform) {
+void SoftBodyBullet::move_all_nodes(const Transform3D &p_transform) {
 	if (!bt_soft_body) {
 		return;
 	}

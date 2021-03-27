@@ -28,6 +28,11 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
+// Define PLATFORM_CUSTOM_THREAD_H in platform_config.h
+// Overriding the platform implementation is required in some proprietary platforms
+#ifdef PLATFORM_CUSTOM_THREAD_H
+#include PLATFORM_CUSTOM_THREAD_H
+#else
 #ifndef THREAD_H
 #define THREAD_H
 
@@ -116,3 +121,4 @@ public:
 };
 
 #endif // THREAD_H
+#endif // PLATFORM_CUSTOM_THREAD_H

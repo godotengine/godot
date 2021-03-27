@@ -2,15 +2,23 @@
 
 #version 450
 
-VERSION_DEFINES
+#VERSION_DEFINES
+
+#define MAX_VIEWS 2
+
+#if defined(USE_MULTIVIEW) && defined(has_VK_KHR_multiview)
+#extension GL_EXT_multiview : enable
+#endif
 
 layout(location = 0) out vec2 uv_interp;
 
 layout(push_constant, binding = 1, std430) uniform Params {
 	mat3 orientation;
-	vec4 proj;
+	vec4 projections[MAX_VIEWS];
 	vec4 position_multiplier;
 	float time;
+	float luminance_multiplier;
+	float pad[2];
 }
 params;
 
@@ -24,17 +32,33 @@ void main() {
 
 #version 450
 
-VERSION_DEFINES
+#VERSION_DEFINES
+
+#ifdef USE_MULTIVIEW
+#ifdef has_VK_KHR_multiview
+#extension GL_EXT_multiview : enable
+#define ViewIndex gl_ViewIndex
+#else // has_VK_KHR_multiview
+// !BAS! This needs to become an input once we implement our fallback!
+#define ViewIndex 0
+#endif // has_VK_KHR_multiview
+#else // USE_MULTIVIEW
+// Set to zero, not supported in non stereo
+#define ViewIndex 0
+#endif //USE_MULTIVIEW
 
 #define M_PI 3.14159265359
+#define MAX_VIEWS 2
 
 layout(location = 0) in vec2 uv_interp;
 
 layout(push_constant, binding = 1, std430) uniform Params {
 	mat3 orientation;
-	vec4 proj;
+	vec4 projections[MAX_VIEWS];
 	vec4 position_multiplier;
-	float time; //TODO consider adding vec2 screen res, and float radiance size
+	float time;
+	float luminance_multiplier;
+	float pad[2];
 }
 params;
 
@@ -85,16 +109,11 @@ struct DirectionalLightData {
 layout(set = 0, binding = 3, std140) uniform DirectionalLights {
 	DirectionalLightData data[MAX_DIRECTIONAL_LIGHT_DATA_STRUCTS];
 }
-
 directional_lights;
 
-#ifdef USE_MATERIAL_UNIFORMS
+#ifdef MATERIAL_UNIFORMS_USED
 layout(set = 1, binding = 0, std140) uniform MaterialUniforms{
-	/* clang-format off */
-
-MATERIAL_UNIFORMS
-
-	/* clang-format on */
+#MATERIAL_UNIFORMS
 } material;
 #endif
 
@@ -127,11 +146,7 @@ layout(set = 3, binding = 0) uniform texture3D volumetric_fog_texture;
 #define AT_QUARTER_RES_PASS false
 #endif
 
-/* clang-format off */
-
-FRAGMENT_SHADER_GLOBALS
-
-/* clang-format on */
+#GLOBALS
 
 layout(location = 0) out vec4 frag_color;
 
@@ -162,8 +177,8 @@ vec4 fog_process(vec3 view, vec3 sky_color) {
 void main() {
 	vec3 cube_normal;
 	cube_normal.z = -1.0;
-	cube_normal.x = (cube_normal.z * (-uv_interp.x - params.proj.x)) / params.proj.y;
-	cube_normal.y = -(cube_normal.z * (-uv_interp.y - params.proj.z)) / params.proj.w;
+	cube_normal.x = (cube_normal.z * (-uv_interp.x - params.projections[ViewIndex].x)) / params.projections[ViewIndex].y;
+	cube_normal.y = -(cube_normal.z * (-uv_interp.y - params.projections[ViewIndex].z)) / params.projections[ViewIndex].w;
 	cube_normal = mat3(params.orientation) * cube_normal;
 	cube_normal.z = -cube_normal.z;
 	cube_normal = normalize(cube_normal);
@@ -188,36 +203,24 @@ void main() {
 	vec3 inverted_cube_normal = cube_normal;
 	inverted_cube_normal.z *= -1.0;
 #ifdef USES_HALF_RES_COLOR
-	half_res_color = texture(samplerCube(half_res, material_samplers[SAMPLER_LINEAR_WITH_MIPMAPS_CLAMP]), inverted_cube_normal);
+	half_res_color = texture(samplerCube(half_res, material_samplers[SAMPLER_LINEAR_WITH_MIPMAPS_CLAMP]), inverted_cube_normal) * params.luminance_multiplier;
 #endif
 #ifdef USES_QUARTER_RES_COLOR
-	quarter_res_color = texture(samplerCube(quarter_res, material_samplers[SAMPLER_LINEAR_WITH_MIPMAPS_CLAMP]), inverted_cube_normal);
+	quarter_res_color = texture(samplerCube(quarter_res, material_samplers[SAMPLER_LINEAR_WITH_MIPMAPS_CLAMP]), inverted_cube_normal) * params.luminance_multiplier;
 #endif
 #else
 #ifdef USES_HALF_RES_COLOR
-	half_res_color = textureLod(sampler2D(half_res, material_samplers[SAMPLER_LINEAR_CLAMP]), uv, 0.0);
+	half_res_color = textureLod(sampler2D(half_res, material_samplers[SAMPLER_LINEAR_CLAMP]), uv, 0.0) * params.luminance_multiplier;
 #endif
 #ifdef USES_QUARTER_RES_COLOR
-	quarter_res_color = textureLod(sampler2D(quarter_res, material_samplers[SAMPLER_LINEAR_CLAMP]), uv, 0.0);
+	quarter_res_color = textureLod(sampler2D(quarter_res, material_samplers[SAMPLER_LINEAR_CLAMP]), uv, 0.0) * params.luminance_multiplier;
 #endif
 #endif
 
-// unused, just here to make our compiler happy, make sure we don't execute any light code the user adds in..
-#ifndef REALLYINCLUDETHIS
 	{
-		/* clang-format off */
 
-LIGHT_SHADER_CODE
+#CODE : SKY
 
-		/* clang-format on */
-	}
-#endif
-	{
-		/* clang-format off */
-
-FRAGMENT_SHADER_CODE
-
-		/* clang-format on */
 	}
 
 	frag_color.rgb = color * params.position_multiplier.w;
@@ -247,4 +250,7 @@ FRAGMENT_SHADER_CODE
 	if (!AT_CUBEMAP_PASS && !AT_HALF_RES_PASS && !AT_QUARTER_RES_PASS) {
 		frag_color.a = 0.0;
 	}
+
+	// For mobile renderer we're dividing by 2.0 as we're using a UNORM buffer
+	frag_color.rgb = frag_color.rgb / params.luminance_multiplier;
 }

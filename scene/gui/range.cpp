@@ -30,22 +30,19 @@
 
 #include "range.h"
 
-String Range::get_configuration_warning() const {
-	String warning = Control::get_configuration_warning();
+TypedArray<String> Range::get_configuration_warnings() const {
+	TypedArray<String> warnings = Node::get_configuration_warnings();
 
 	if (shared->exp_ratio && shared->min <= 0) {
-		if (!warning.is_empty()) {
-			warning += "\n\n";
-		}
-		warning += TTR("If \"Exp Edit\" is enabled, \"Min Value\" must be greater than 0.");
+		warnings.push_back(TTR("If \"Exp Edit\" is enabled, \"Min Value\" must be greater than 0."));
 	}
 
-	return warning;
+	return warnings;
 }
 
 void Range::_value_changed_notify() {
 	_value_changed(shared->val);
-	emit_signal("value_changed", shared->val);
+	emit_signal(SNAME("value_changed"), shared->val);
 	update();
 }
 
@@ -60,7 +57,7 @@ void Range::Shared::emit_value_changed() {
 }
 
 void Range::_changed_notify(const char *p_what) {
-	emit_signal("changed");
+	emit_signal(SNAME("changed"));
 	update();
 }
 
@@ -106,7 +103,7 @@ void Range::set_min(double p_min) {
 
 	shared->emit_changed("min");
 
-	update_configuration_warning();
+	update_configuration_warnings();
 }
 
 void Range::set_max(double p_max) {
@@ -181,7 +178,6 @@ double Range::get_as_ratio() const {
 		double v = Math::log(value) / Math::log((double)2);
 
 		return CLAMP((v - exp_min) / (exp_max - exp_min), 0, 1);
-
 	} else {
 		float value = CLAMP(get_value(), shared->min, shared->max);
 		return CLAMP((value - get_min()) / (get_max() - get_min()), 0, 1);
@@ -269,7 +265,7 @@ void Range::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "step"), "set_step", "get_step");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "page"), "set_page", "get_page");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "value"), "set_value", "get_value");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "ratio", PROPERTY_HINT_RANGE, "0,1,0.01", 0), "set_as_ratio", "get_as_ratio");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "ratio", PROPERTY_HINT_RANGE, "0,1,0.01", PROPERTY_USAGE_NONE), "set_as_ratio", "get_as_ratio");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "exp_edit"), "set_exp_ratio", "is_ratio_exp");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "rounded"), "set_use_rounded_values", "is_using_rounded_values");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "allow_greater"), "set_allow_greater", "is_greater_allowed");
@@ -287,7 +283,7 @@ bool Range::is_using_rounded_values() const {
 void Range::set_exp_ratio(bool p_enable) {
 	shared->exp_ratio = p_enable;
 
-	update_configuration_warning();
+	update_configuration_warnings();
 }
 
 bool Range::is_ratio_exp() const {

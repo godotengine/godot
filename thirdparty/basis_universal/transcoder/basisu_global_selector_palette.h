@@ -1,5 +1,7 @@
 // basisu_global_selector_palette.h
-// Copyright (C) 2019 Binomial LLC. All Rights Reserved.
+// Copyright (C) 2019-2021 Binomial LLC. All Rights Reserved.
+// 
+// TODO: NONE of this is used in .basis/.ktx2 files. It will be deleted soon.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -609,7 +611,7 @@ namespace basist
 		uint8_t m_selectors[16];
 	};
 
-	typedef std::vector<etc1_selector_palette_entry> etc1_selector_palette_entry_vec;
+	typedef basisu::vector<etc1_selector_palette_entry> etc1_selector_palette_entry_vec;
 
 	extern const uint32_t g_global_selector_cb[];
 	extern const uint32_t g_global_selector_cb_size;
@@ -628,7 +630,7 @@ namespace basist
 		void set(uint32_t palette_index, const etc1_global_palette_entry_modifier &modifier) { m_palette_index = palette_index; m_modifier = modifier; }
 	};
 
-	typedef std::vector<etc1_global_selector_codebook_entry_id> etc1_global_selector_codebook_entry_id_vec;
+	typedef basisu::vector<etc1_global_selector_codebook_entry_id> etc1_global_selector_codebook_entry_id_vec;
 
 	class etc1_global_selector_codebook
 	{

@@ -38,6 +38,8 @@
 class Basis;
 
 struct Vector3 {
+	static const int AXIS_COUNT = 3;
+
 	enum Axis {
 		AXIS_X,
 		AXIS_Y,
@@ -54,19 +56,28 @@ struct Vector3 {
 		real_t coord[3] = { 0 };
 	};
 
-	_FORCE_INLINE_ const real_t &operator[](int p_axis) const {
+	_FORCE_INLINE_ const real_t &operator[](const int p_axis) const {
 		return coord[p_axis];
 	}
 
-	_FORCE_INLINE_ real_t &operator[](int p_axis) {
+	_FORCE_INLINE_ real_t &operator[](const int p_axis) {
 		return coord[p_axis];
 	}
 
-	void set_axis(int p_axis, real_t p_value);
-	real_t get_axis(int p_axis) const;
+	void set_axis(const int p_axis, const real_t p_value);
+	real_t get_axis(const int p_axis) const;
 
-	int min_axis() const;
-	int max_axis() const;
+	_FORCE_INLINE_ void set_all(const real_t p_value) {
+		x = y = z = p_value;
+	}
+
+	_FORCE_INLINE_ int min_axis() const {
+		return x < y ? (x < z ? 0 : 2) : (y < z ? 1 : 2);
+	}
+
+	_FORCE_INLINE_ int max_axis() const {
+		return x < y ? (y < z ? 2 : 1) : (x < z ? 2 : 0);
+	}
 
 	_FORCE_INLINE_ real_t length() const;
 	_FORCE_INLINE_ real_t length_squared() const;
@@ -75,32 +86,33 @@ struct Vector3 {
 	_FORCE_INLINE_ Vector3 normalized() const;
 	_FORCE_INLINE_ bool is_normalized() const;
 	_FORCE_INLINE_ Vector3 inverse() const;
+	Vector3 limit_length(const real_t p_len = 1.0) const;
 
 	_FORCE_INLINE_ void zero();
 
-	void snap(Vector3 p_val);
-	Vector3 snapped(Vector3 p_val) const;
+	void snap(const Vector3 p_val);
+	Vector3 snapped(const Vector3 p_val) const;
 
-	void rotate(const Vector3 &p_axis, real_t p_phi);
-	Vector3 rotated(const Vector3 &p_axis, real_t p_phi) const;
+	void rotate(const Vector3 &p_axis, const real_t p_phi);
+	Vector3 rotated(const Vector3 &p_axis, const real_t p_phi) const;
 
 	/* Static Methods between 2 vector3s */
 
-	_FORCE_INLINE_ Vector3 lerp(const Vector3 &p_to, real_t p_weight) const;
-	_FORCE_INLINE_ Vector3 slerp(const Vector3 &p_to, real_t p_weight) const;
-	Vector3 cubic_interpolate(const Vector3 &p_b, const Vector3 &p_pre_a, const Vector3 &p_post_b, real_t p_weight) const;
+	_FORCE_INLINE_ Vector3 lerp(const Vector3 &p_to, const real_t p_weight) const;
+	_FORCE_INLINE_ Vector3 slerp(const Vector3 &p_to, const real_t p_weight) const;
+	Vector3 cubic_interpolate(const Vector3 &p_b, const Vector3 &p_pre_a, const Vector3 &p_post_b, const real_t p_weight) const;
 	Vector3 move_toward(const Vector3 &p_to, const real_t p_delta) const;
 
 	_FORCE_INLINE_ Vector3 cross(const Vector3 &p_b) const;
 	_FORCE_INLINE_ real_t dot(const Vector3 &p_b) const;
 	Basis outer(const Vector3 &p_b) const;
-	Basis to_diagonal_matrix() const;
 
 	_FORCE_INLINE_ Vector3 abs() const;
 	_FORCE_INLINE_ Vector3 floor() const;
 	_FORCE_INLINE_ Vector3 sign() const;
 	_FORCE_INLINE_ Vector3 ceil() const;
 	_FORCE_INLINE_ Vector3 round() const;
+	Vector3 clamp(const Vector3 &p_min, const Vector3 &p_max) const;
 
 	_FORCE_INLINE_ real_t distance_to(const Vector3 &p_to) const;
 	_FORCE_INLINE_ real_t distance_squared_to(const Vector3 &p_to) const;
@@ -130,10 +142,10 @@ struct Vector3 {
 	_FORCE_INLINE_ Vector3 &operator/=(const Vector3 &p_v);
 	_FORCE_INLINE_ Vector3 operator/(const Vector3 &p_v) const;
 
-	_FORCE_INLINE_ Vector3 &operator*=(real_t p_scalar);
-	_FORCE_INLINE_ Vector3 operator*(real_t p_scalar) const;
-	_FORCE_INLINE_ Vector3 &operator/=(real_t p_scalar);
-	_FORCE_INLINE_ Vector3 operator/(real_t p_scalar) const;
+	_FORCE_INLINE_ Vector3 &operator*=(const real_t p_scalar);
+	_FORCE_INLINE_ Vector3 operator*(const real_t p_scalar) const;
+	_FORCE_INLINE_ Vector3 &operator/=(const real_t p_scalar);
+	_FORCE_INLINE_ Vector3 operator/(const real_t p_scalar) const;
 
 	_FORCE_INLINE_ Vector3 operator-() const;
 
@@ -155,7 +167,7 @@ struct Vector3 {
 		y = p_ivec.y;
 		z = p_ivec.z;
 	}
-	_FORCE_INLINE_ Vector3(real_t p_x, real_t p_y, real_t p_z) {
+	_FORCE_INLINE_ Vector3(const real_t p_x, const real_t p_y, const real_t p_z) {
 		x = p_x;
 		y = p_y;
 		z = p_z;
@@ -195,14 +207,14 @@ Vector3 Vector3::round() const {
 	return Vector3(Math::round(x), Math::round(y), Math::round(z));
 }
 
-Vector3 Vector3::lerp(const Vector3 &p_to, real_t p_weight) const {
+Vector3 Vector3::lerp(const Vector3 &p_to, const real_t p_weight) const {
 	return Vector3(
 			x + (p_weight * (p_to.x - x)),
 			y + (p_weight * (p_to.y - y)),
 			z + (p_weight * (p_to.z - z)));
 }
 
-Vector3 Vector3::slerp(const Vector3 &p_to, real_t p_weight) const {
+Vector3 Vector3::slerp(const Vector3 &p_to, const real_t p_weight) const {
 	real_t theta = angle_to(p_to);
 	return rotated(cross(p_to).normalized(), theta * p_weight);
 }
@@ -290,29 +302,41 @@ Vector3 Vector3::operator/(const Vector3 &p_v) const {
 	return Vector3(x / p_v.x, y / p_v.y, z / p_v.z);
 }
 
-Vector3 &Vector3::operator*=(real_t p_scalar) {
+Vector3 &Vector3::operator*=(const real_t p_scalar) {
 	x *= p_scalar;
 	y *= p_scalar;
 	z *= p_scalar;
 	return *this;
 }
 
-_FORCE_INLINE_ Vector3 operator*(real_t p_scalar, const Vector3 &p_vec) {
+_FORCE_INLINE_ Vector3 operator*(const float p_scalar, const Vector3 &p_vec) {
 	return p_vec * p_scalar;
 }
 
-Vector3 Vector3::operator*(real_t p_scalar) const {
+_FORCE_INLINE_ Vector3 operator*(const double p_scalar, const Vector3 &p_vec) {
+	return p_vec * p_scalar;
+}
+
+_FORCE_INLINE_ Vector3 operator*(const int32_t p_scalar, const Vector3 &p_vec) {
+	return p_vec * p_scalar;
+}
+
+_FORCE_INLINE_ Vector3 operator*(const int64_t p_scalar, const Vector3 &p_vec) {
+	return p_vec * p_scalar;
+}
+
+Vector3 Vector3::operator*(const real_t p_scalar) const {
 	return Vector3(x * p_scalar, y * p_scalar, z * p_scalar);
 }
 
-Vector3 &Vector3::operator/=(real_t p_scalar) {
+Vector3 &Vector3::operator/=(const real_t p_scalar) {
 	x /= p_scalar;
 	y /= p_scalar;
 	z /= p_scalar;
 	return *this;
 }
 
-Vector3 Vector3::operator/(real_t p_scalar) const {
+Vector3 Vector3::operator/(const real_t p_scalar) const {
 	return Vector3(x / p_scalar, y / p_scalar, z / p_scalar);
 }
 
@@ -412,7 +436,7 @@ Vector3 Vector3::normalized() const {
 
 bool Vector3::is_normalized() const {
 	// use length_squared() instead of length() to avoid sqrt(), makes it more stringent.
-	return Math::is_equal_approx(length_squared(), 1.0, UNIT_EPSILON);
+	return Math::is_equal_approx(length_squared(), 1, (real_t)UNIT_EPSILON);
 }
 
 Vector3 Vector3::inverse() const {

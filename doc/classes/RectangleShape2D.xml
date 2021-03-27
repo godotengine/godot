@@ -13,7 +13,7 @@
 	<methods>
 	</methods>
 	<members>
-		<member name="size" type="Vector2" setter="set_size" getter="get_size" default="Vector2( 20, 20 )">
+		<member name="size" type="Vector2" setter="set_size" getter="get_size" default="Vector2(20, 20)">
 			The rectangle's width and height.
 		</member>
 	</members>

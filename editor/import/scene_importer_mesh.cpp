@@ -30,7 +30,10 @@
 
 #include "scene_importer_mesh.h"
 
+#include "core/math/math_defs.h"
 #include "scene/resources/surface_tool.h"
+
+#include <cstdint>
 
 void EditorSceneImporterMesh::add_blend_shape(const String &p_name) {
 	ERR_FAIL_COND(surfaces.size() > 0);
@@ -54,13 +57,14 @@ Mesh::BlendShapeMode EditorSceneImporterMesh::get_blend_shape_mode() const {
 	return blend_shape_mode;
 }
 
-void EditorSceneImporterMesh::add_surface(Mesh::PrimitiveType p_primitive, const Array &p_arrays, const Array &p_blend_shapes, const Dictionary &p_lods, const Ref<Material> &p_material, const String &p_name) {
+void EditorSceneImporterMesh::add_surface(Mesh::PrimitiveType p_primitive, const Array &p_arrays, const Array &p_blend_shapes, const Dictionary &p_lods, const Ref<Material> &p_material, const String &p_name, const uint32_t p_flags) {
 	ERR_FAIL_COND(p_blend_shapes.size() != blend_shapes.size());
 	ERR_FAIL_COND(p_arrays.size() != Mesh::ARRAY_MAX);
 	Surface s;
 	s.primitive = p_primitive;
 	s.arrays = p_arrays;
 	s.name = p_name;
+	s.flags = p_flags;
 
 	Vector<Vector3> vertex_array = p_arrays[Mesh::ARRAY_VERTEX];
 	int vertex_count = vertex_array.size();
@@ -78,11 +82,11 @@ void EditorSceneImporterMesh::add_surface(Mesh::PrimitiveType p_primitive, const
 
 	List<Variant> lods;
 	p_lods.get_key_list(&lods);
-	for (List<Variant>::Element *E = lods.front(); E; E = E->next()) {
-		ERR_CONTINUE(!E->get().is_num());
+	for (const Variant &E : lods) {
+		ERR_CONTINUE(!E.is_num());
 		Surface::LOD lod;
-		lod.distance = E->get();
-		lod.indices = p_lods[E->get()];
+		lod.distance = E;
+		lod.indices = p_lods[E];
 		ERR_CONTINUE(lod.indices.size() == 0);
 		s.lods.push_back(lod);
 	}
@@ -109,6 +113,12 @@ String EditorSceneImporterMesh::get_surface_name(int p_surface) const {
 	ERR_FAIL_INDEX_V(p_surface, surfaces.size(), String());
 	return surfaces[p_surface].name;
 }
+void EditorSceneImporterMesh::set_surface_name(int p_surface, const String &p_name) {
+	ERR_FAIL_INDEX(p_surface, surfaces.size());
+	surfaces.write[p_surface].name = p_name;
+	mesh.unref();
+}
+
 Array EditorSceneImporterMesh::get_surface_blend_shape_arrays(int p_surface, int p_blend_shape) const {
 	ERR_FAIL_INDEX_V(p_surface, surfaces.size(), Array());
 	ERR_FAIL_INDEX_V(p_blend_shape, surfaces[p_surface].blend_shape_data.size(), Array());
@@ -131,6 +141,11 @@ float EditorSceneImporterMesh::get_surface_lod_size(int p_surface, int p_lod) co
 	return surfaces[p_surface].lods[p_lod].distance;
 }
 
+uint32_t EditorSceneImporterMesh::get_surface_format(int p_surface) const {
+	ERR_FAIL_INDEX_V(p_surface, surfaces.size(), 0);
+	return surfaces[p_surface].flags;
+}
+
 Ref<Material> EditorSceneImporterMesh::get_surface_material(int p_surface) const {
 	ERR_FAIL_INDEX_V(p_surface, surfaces.size(), Ref<Material>());
 	return surfaces[p_surface].material;
@@ -139,6 +154,19 @@ Ref<Material> EditorSceneImporterMesh::get_surface_material(int p_surface) const
 void EditorSceneImporterMesh::set_surface_material(int p_surface, const Ref<Material> &p_material) {
 	ERR_FAIL_INDEX(p_surface, surfaces.size());
 	surfaces.write[p_surface].material = p_material;
+	mesh.unref();
+}
+
+Basis EditorSceneImporterMesh::compute_rotation_matrix_from_ortho_6d(Vector3 p_x_raw, Vector3 p_y_raw) {
+	Vector3 x = p_x_raw.normalized();
+	Vector3 z = x.cross(p_y_raw);
+	z = z.normalized();
+	Vector3 y = z.cross(x);
+	Basis basis;
+	basis.set_axis(Vector3::AXIS_X, x);
+	basis.set_axis(Vector3::AXIS_Y, y);
+	basis.set_axis(Vector3::AXIS_Z, z);
+	return basis;
 }
 
 void EditorSceneImporterMesh::generate_lods() {
@@ -149,6 +177,9 @@ void EditorSceneImporterMesh::generate_lods() {
 		return;
 	}
 	if (!SurfaceTool::simplify_sloppy_func) {
+		return;
+	}
+	if (!SurfaceTool::simplify_with_attrib_func) {
 		return;
 	}
 
@@ -163,59 +194,63 @@ void EditorSceneImporterMesh::generate_lods() {
 		if (indices.size() == 0) {
 			continue; //no lods if no indices
 		}
+		Vector<Vector3> normals = surfaces[i].arrays[RS::ARRAY_NORMAL];
 		uint32_t vertex_count = vertices.size();
 		const Vector3 *vertices_ptr = vertices.ptr();
-
-		int min_indices = 10;
-		int index_target = indices.size() / 2;
-		print_line("Total indices: " + itos(indices.size()));
-		float mesh_scale = SurfaceTool::simplify_scale_func((const float *)vertices_ptr, vertex_count, sizeof(Vector3));
-		const float target_error = 1e-3f;
-		float abs_target_error = target_error / mesh_scale;
+		Vector<float> attributes;
+		Vector<float> normal_weights;
+		int32_t attribute_count = 6;
+		if (normals.size()) {
+			attributes.resize(normals.size() * attribute_count);
+			for (int32_t normal_i = 0; normal_i < normals.size(); normal_i++) {
+				Basis basis;
+				basis.set_euler(normals[normal_i]);
+				Vector3 basis_x = basis.get_axis(0);
+				Vector3 basis_y = basis.get_axis(1);
+				basis = compute_rotation_matrix_from_ortho_6d(basis_x, basis_y);
+				basis_x = basis.get_axis(0);
+				basis_y = basis.get_axis(1);
+				attributes.write[normal_i * attribute_count + 0] = basis_x.x;
+				attributes.write[normal_i * attribute_count + 1] = basis_x.y;
+				attributes.write[normal_i * attribute_count + 2] = basis_x.z;
+				attributes.write[normal_i * attribute_count + 3] = basis_y.x;
+				attributes.write[normal_i * attribute_count + 4] = basis_y.y;
+				attributes.write[normal_i * attribute_count + 5] = basis_y.z;
+			}
+			normal_weights.resize(vertex_count);
+			for (int32_t weight_i = 0; weight_i < normal_weights.size(); weight_i++) {
+				normal_weights.write[weight_i] = 1.0;
+			}
+		} else {
+			attribute_count = 0;
+		}
+		const int min_indices = 10;
+		const float error_tolerance = 1.44224'95703; // Cube root of 3
+		const float threshold = 1.0 / error_tolerance;
+		int index_target = indices.size() * threshold;
+		float max_mesh_error_percentage = 1e0f;
+		float mesh_error = 0.0f;
+		float scale = SurfaceTool::simplify_scale_func((const float *)vertices_ptr, vertex_count, sizeof(Vector3));
 		while (index_target > min_indices) {
-			float error;
 			Vector<int> new_indices;
 			new_indices.resize(indices.size());
-			size_t new_len = SurfaceTool::simplify_func((unsigned int *)new_indices.ptrw(), (const unsigned int *)indices.ptr(), indices.size(), (const float *)vertices_ptr, vertex_count, sizeof(Vector3), index_target, abs_target_error, &error);
-			if ((int)new_len > (index_target * 120 / 100)) {
-				// Attribute discontinuities break normals.
-				bool is_sloppy = false;
-				if (is_sloppy) {
-					abs_target_error = target_error / mesh_scale;
-					index_target = new_len;
-					while (index_target > min_indices) {
-						Vector<int> sloppy_new_indices;
-						sloppy_new_indices.resize(indices.size());
-						new_len = SurfaceTool::simplify_sloppy_func((unsigned int *)sloppy_new_indices.ptrw(), (const unsigned int *)indices.ptr(), indices.size(), (const float *)vertices_ptr, vertex_count, sizeof(Vector3), index_target, abs_target_error, &error);
-						if ((int)new_len > (index_target * 120 / 100)) {
-							break; // 20 percent tolerance
-						}
-						sloppy_new_indices.resize(new_len);
-						Surface::LOD lod;
-						lod.distance = error * mesh_scale;
-						abs_target_error = lod.distance;
-						if (Math::is_equal_approx(abs_target_error, 0.0f)) {
-							return;
-						}
-						lod.indices = sloppy_new_indices;
-						print_line("Lod " + itos(surfaces.write[i].lods.size()) + " shoot for " + itos(index_target / 3) + " triangles, got " + itos(new_len / 3) + " triangles. Distance " + rtos(lod.distance) + ". Use simplify sloppy.");
-						surfaces.write[i].lods.push_back(lod);
-						index_target /= 2;
-					}
-				}
-				break; // 20 percent tolerance
+			size_t new_len = SurfaceTool::simplify_with_attrib_func((unsigned int *)new_indices.ptrw(), (const unsigned int *)indices.ptr(), indices.size(), (const float *)vertices_ptr, vertex_count, sizeof(Vector3), index_target, max_mesh_error_percentage, &mesh_error, (float *)attributes.ptrw(), normal_weights.ptrw(), attribute_count);
+			if ((int)new_len > (index_target * error_tolerance)) {
+				break;
+			}
+			Surface::LOD lod;
+			lod.distance = mesh_error * scale;
+			if (Math::is_zero_approx(mesh_error)) {
+				break;
+			}
+			if (new_len <= 0) {
+				break;
 			}
 			new_indices.resize(new_len);
-			Surface::LOD lod;
-			lod.distance = error * mesh_scale;
-			abs_target_error = lod.distance;
-			if (Math::is_equal_approx(abs_target_error, 0.0f)) {
-				return;
-			}
 			lod.indices = new_indices;
-			print_line("Lod " + itos(surfaces.write[i].lods.size()) + " shoot for " + itos(index_target / 3) + " triangles, got " + itos(new_len / 3) + " triangles. Distance " + rtos(lod.distance));
+			print_line("Lod " + itos(surfaces.write[i].lods.size()) + " begin with " + itos(indices.size() / 3) + " triangles and shoot for " + itos(index_target / 3) + " triangles. Got " + itos(new_len / 3) + " triangles. Lod screen ratio " + rtos(lod.distance));
 			surfaces.write[i].lods.push_back(lod);
-			index_target /= 2;
+			index_target *= threshold;
 		}
 	}
 }
@@ -224,7 +259,7 @@ bool EditorSceneImporterMesh::has_mesh() const {
 	return mesh.is_valid();
 }
 
-Ref<ArrayMesh> EditorSceneImporterMesh::get_mesh(const Ref<Mesh> &p_base) {
+Ref<ArrayMesh> EditorSceneImporterMesh::get_mesh(const Ref<ArrayMesh> &p_base) {
 	ERR_FAIL_COND_V(surfaces.size() == 0, Ref<ArrayMesh>());
 
 	if (mesh.is_null()) {
@@ -232,7 +267,7 @@ Ref<ArrayMesh> EditorSceneImporterMesh::get_mesh(const Ref<Mesh> &p_base) {
 			mesh = p_base;
 		}
 		if (mesh.is_null()) {
-			mesh.instance();
+			mesh.instantiate();
 		}
 		mesh->set_name(get_name());
 		if (has_meta("import_id")) {
@@ -256,7 +291,7 @@ Ref<ArrayMesh> EditorSceneImporterMesh::get_mesh(const Ref<Mesh> &p_base) {
 				}
 			}
 
-			mesh->add_surface_from_arrays(surfaces[i].primitive, surfaces[i].arrays, bs_data, lods);
+			mesh->add_surface_from_arrays(surfaces[i].primitive, surfaces[i].arrays, bs_data, lods, surfaces[i].flags);
 			if (surfaces[i].material.is_valid()) {
 				mesh->surface_set_material(mesh->get_surface_count() - 1, surfaces[i].material);
 			}
@@ -301,7 +336,7 @@ void EditorSceneImporterMesh::create_shadow_mesh() {
 		}
 	}
 
-	shadow_mesh.instance();
+	shadow_mesh.instantiate();
 
 	for (int i = 0; i < surfaces.size(); i++) {
 		LocalVector<int> vertex_remap;
@@ -371,7 +406,7 @@ void EditorSceneImporterMesh::create_shadow_mesh() {
 			}
 		}
 
-		shadow_mesh->add_surface(surfaces[i].primitive, new_surface, Array(), lods, Ref<Material>(), surfaces[i].name);
+		shadow_mesh->add_surface(surfaces[i].primitive, new_surface, Array(), lods, Ref<Material>(), surfaces[i].name, surfaces[i].flags);
 	}
 }
 
@@ -409,7 +444,11 @@ void EditorSceneImporterMesh::_set_data(const Dictionary &p_data) {
 			if (s.has("material")) {
 				material = s["material"];
 			}
-			add_surface(prim, arr, blend_shapes, lods, material, name);
+			uint32_t flags = 0;
+			if (s.has("flags")) {
+				flags = s["flags"];
+			}
+			add_surface(prim, arr, blend_shapes, lods, material, name, flags);
 		}
 	}
 }
@@ -444,6 +483,10 @@ Dictionary EditorSceneImporterMesh::_get_data() const {
 
 		if (surfaces[i].name != String()) {
 			d["name"] = surfaces[i].name;
+		}
+
+		if (surfaces[i].flags != 0) {
+			d["flags"] = surfaces[i].flags;
 		}
 
 		surface_arr.push_back(d);
@@ -481,36 +524,47 @@ Vector<Face3> EditorSceneImporterMesh::get_faces() const {
 	return faces;
 }
 
-Vector<Ref<Shape3D>> EditorSceneImporterMesh::convex_decompose() const {
-	ERR_FAIL_COND_V(!Mesh::convex_composition_function, Vector<Ref<Shape3D>>());
+Vector<Ref<Shape3D>> EditorSceneImporterMesh::convex_decompose(const Mesh::ConvexDecompositionSettings &p_settings) const {
+	ERR_FAIL_COND_V(!Mesh::convex_decomposition_function, Vector<Ref<Shape3D>>());
 
 	const Vector<Face3> faces = get_faces();
+	int face_count = faces.size();
 
-	Vector<Vector<Face3>> decomposed = Mesh::convex_composition_function(faces);
+	Vector<Vector3> vertices;
+	uint32_t vertex_count = 0;
+	vertices.resize(face_count * 3);
+	Vector<uint32_t> indices;
+	indices.resize(face_count * 3);
+	{
+		Map<Vector3, uint32_t> vertex_map;
+		Vector3 *vertex_w = vertices.ptrw();
+		uint32_t *index_w = indices.ptrw();
+		for (int i = 0; i < face_count; i++) {
+			for (int j = 0; j < 3; j++) {
+				const Vector3 &vertex = faces[i].vertex[j];
+				Map<Vector3, uint32_t>::Element *found_vertex = vertex_map.find(vertex);
+				uint32_t index;
+				if (found_vertex) {
+					index = found_vertex->get();
+				} else {
+					index = ++vertex_count;
+					vertex_map[vertex] = index;
+					vertex_w[index] = vertex;
+				}
+				index_w[i * 3 + j] = index;
+			}
+		}
+	}
+	vertices.resize(vertex_count);
+
+	Vector<Vector<Vector3>> decomposed = Mesh::convex_decomposition_function((real_t *)vertices.ptr(), vertex_count, indices.ptr(), face_count, p_settings, nullptr);
 
 	Vector<Ref<Shape3D>> ret;
 
 	for (int i = 0; i < decomposed.size(); i++) {
-		Set<Vector3> points;
-		for (int j = 0; j < decomposed[i].size(); j++) {
-			points.insert(decomposed[i][j].vertex[0]);
-			points.insert(decomposed[i][j].vertex[1]);
-			points.insert(decomposed[i][j].vertex[2]);
-		}
-
-		Vector<Vector3> convex_points;
-		convex_points.resize(points.size());
-		{
-			Vector3 *w = convex_points.ptrw();
-			int idx = 0;
-			for (Set<Vector3>::Element *E = points.front(); E; E = E->next()) {
-				w[idx++] = E->get();
-			}
-		}
-
 		Ref<ConvexPolygonShape3D> shape;
-		shape.instance();
-		shape->set_points(convex_points);
+		shape.instantiate();
+		shape->set_points(decomposed[i]);
 		ret.push_back(shape);
 	}
 
@@ -568,7 +622,7 @@ Ref<NavigationMesh> EditorSceneImporterMesh::create_navigation_mesh() {
 	}
 
 	Ref<NavigationMesh> nm;
-	nm.instance();
+	nm.instantiate();
 	nm->set_vertices(vertices);
 
 	Vector<int> v3;
@@ -583,7 +637,7 @@ Ref<NavigationMesh> EditorSceneImporterMesh::create_navigation_mesh() {
 	return nm;
 }
 
-extern bool (*array_mesh_lightmap_unwrap_callback)(float p_texel_size, const float *p_vertices, const float *p_normals, int p_vertex_count, const int *p_indices, int p_index_count, float **r_uv, int **r_vertex, int *r_vertex_count, int **r_index, int *r_index_count, int *r_size_hint_x, int *r_size_hint_y, int *&r_cache_data, unsigned int &r_cache_size, bool &r_used_cache);
+extern bool (*array_mesh_lightmap_unwrap_callback)(float p_texel_size, const float *p_vertices, const float *p_normals, int p_vertex_count, const int *p_indices, int p_index_count, const uint8_t *p_cache_data, bool *r_use_cache, uint8_t **r_mesh_cache, int *r_mesh_cache_size, float **r_uv, int **r_vertex, int *r_vertex_count, int **r_index, int *r_index_count, int *r_size_hint_x, int *r_size_hint_y);
 
 struct EditorSceneImporterMeshLightmapSurface {
 	Ref<Material> material;
@@ -593,22 +647,24 @@ struct EditorSceneImporterMeshLightmapSurface {
 	String name;
 };
 
-Error EditorSceneImporterMesh::lightmap_unwrap_cached(int *&r_cache_data, unsigned int &r_cache_size, bool &r_used_cache, const Transform &p_base_transform, float p_texel_size) {
+Error EditorSceneImporterMesh::lightmap_unwrap_cached(const Transform3D &p_base_transform, float p_texel_size, const Vector<uint8_t> &p_src_cache, Vector<uint8_t> &r_dst_cache) {
 	ERR_FAIL_COND_V(!array_mesh_lightmap_unwrap_callback, ERR_UNCONFIGURED);
 	ERR_FAIL_COND_V_MSG(blend_shapes.size() != 0, ERR_UNAVAILABLE, "Can't unwrap mesh with blend shapes.");
 
-	Vector<float> vertices;
-	Vector<float> normals;
-	Vector<int> indices;
-	Vector<float> uv;
-	Vector<Pair<int, int>> uv_indices;
+	LocalVector<float> vertices;
+	LocalVector<float> normals;
+	LocalVector<int> indices;
+	LocalVector<float> uv;
+	LocalVector<Pair<int, int>> uv_indices;
 
 	Vector<EditorSceneImporterMeshLightmapSurface> lightmap_surfaces;
 
 	// Keep only the scale
-	Transform transform = p_base_transform;
-	transform.origin = Vector3();
-	transform.looking_at(Vector3(1, 0, 0), Vector3(0, 1, 0));
+	Basis basis = p_base_transform.get_basis();
+	Vector3 scale = Vector3(basis.get_axis(0).length(), basis.get_axis(1).length(), basis.get_axis(2).length());
+
+	Transform3D transform;
+	transform.scale(scale);
 
 	Basis normal_basis = transform.basis.inverse().transposed();
 
@@ -623,15 +679,10 @@ Error EditorSceneImporterMesh::lightmap_unwrap_cached(int *&r_cache_data, unsign
 
 		SurfaceTool::create_vertex_array_from_triangle_arrays(arrays, s.vertices, &s.format);
 
-		Vector<Vector3> rvertices = arrays[Mesh::ARRAY_VERTEX];
+		PackedVector3Array rvertices = arrays[Mesh::ARRAY_VERTEX];
 		int vc = rvertices.size();
-		const Vector3 *r = rvertices.ptr();
 
-		Vector<Vector3> rnormals = arrays[Mesh::ARRAY_NORMAL];
-
-		ERR_FAIL_COND_V_MSG(rnormals.size() == 0, ERR_UNAVAILABLE, "Normals are required for lightmap unwrap.");
-
-		const Vector3 *rn = rnormals.ptr();
+		PackedVector3Array rnormals = arrays[Mesh::ARRAY_NORMAL];
 
 		int vertex_ofs = vertices.size() / 3;
 
@@ -640,24 +691,29 @@ Error EditorSceneImporterMesh::lightmap_unwrap_cached(int *&r_cache_data, unsign
 		uv_indices.resize(vertex_ofs + vc);
 
 		for (int j = 0; j < vc; j++) {
-			Vector3 v = transform.xform(r[j]);
-			Vector3 n = normal_basis.xform(rn[j]).normalized();
+			Vector3 v = transform.xform(rvertices[j]);
+			Vector3 n = normal_basis.xform(rnormals[j]).normalized();
 
-			vertices.write[(j + vertex_ofs) * 3 + 0] = v.x;
-			vertices.write[(j + vertex_ofs) * 3 + 1] = v.y;
-			vertices.write[(j + vertex_ofs) * 3 + 2] = v.z;
-			normals.write[(j + vertex_ofs) * 3 + 0] = n.x;
-			normals.write[(j + vertex_ofs) * 3 + 1] = n.y;
-			normals.write[(j + vertex_ofs) * 3 + 2] = n.z;
-			uv_indices.write[j + vertex_ofs] = Pair<int, int>(i, j);
+			vertices[(j + vertex_ofs) * 3 + 0] = v.x;
+			vertices[(j + vertex_ofs) * 3 + 1] = v.y;
+			vertices[(j + vertex_ofs) * 3 + 2] = v.z;
+			normals[(j + vertex_ofs) * 3 + 0] = n.x;
+			normals[(j + vertex_ofs) * 3 + 1] = n.y;
+			normals[(j + vertex_ofs) * 3 + 2] = n.z;
+			uv_indices[j + vertex_ofs] = Pair<int, int>(i, j);
 		}
 
-		Vector<int> rindices = arrays[Mesh::ARRAY_INDEX];
+		PackedInt32Array rindices = arrays[Mesh::ARRAY_INDEX];
 		int ic = rindices.size();
 
+		float eps = 1.19209290e-7F; // Taken from xatlas.h
 		if (ic == 0) {
 			for (int j = 0; j < vc / 3; j++) {
-				if (Face3(r[j * 3 + 0], r[j * 3 + 1], r[j * 3 + 2]).is_degenerate()) {
+				Vector3 p0 = transform.xform(rvertices[j * 3 + 0]);
+				Vector3 p1 = transform.xform(rvertices[j * 3 + 1]);
+				Vector3 p2 = transform.xform(rvertices[j * 3 + 2]);
+
+				if ((p0 - p1).length_squared() < eps || (p1 - p2).length_squared() < eps || (p2 - p0).length_squared() < eps) {
 					continue;
 				}
 
@@ -667,15 +723,18 @@ Error EditorSceneImporterMesh::lightmap_unwrap_cached(int *&r_cache_data, unsign
 			}
 
 		} else {
-			const int *ri = rindices.ptr();
-
 			for (int j = 0; j < ic / 3; j++) {
-				if (Face3(r[ri[j * 3 + 0]], r[ri[j * 3 + 1]], r[ri[j * 3 + 2]]).is_degenerate()) {
+				Vector3 p0 = transform.xform(rvertices[rindices[j * 3 + 0]]);
+				Vector3 p1 = transform.xform(rvertices[rindices[j * 3 + 1]]);
+				Vector3 p2 = transform.xform(rvertices[rindices[j * 3 + 2]]);
+
+				if ((p0 - p1).length_squared() < eps || (p1 - p2).length_squared() < eps || (p2 - p0).length_squared() < eps) {
 					continue;
 				}
-				indices.push_back(vertex_ofs + ri[j * 3 + 0]);
-				indices.push_back(vertex_ofs + ri[j * 3 + 1]);
-				indices.push_back(vertex_ofs + ri[j * 3 + 2]);
+
+				indices.push_back(vertex_ofs + rindices[j * 3 + 0]);
+				indices.push_back(vertex_ofs + rindices[j * 3 + 1]);
+				indices.push_back(vertex_ofs + rindices[j * 3 + 2]);
 			}
 		}
 
@@ -684,6 +743,9 @@ Error EditorSceneImporterMesh::lightmap_unwrap_cached(int *&r_cache_data, unsign
 
 	//unwrap
 
+	bool use_cache = true; // Used to request cache generation and to know if cache was used
+	uint8_t *gen_cache;
+	int gen_cache_size;
 	float *gen_uvs;
 	int *gen_vertices;
 	int *gen_indices;
@@ -692,7 +754,7 @@ Error EditorSceneImporterMesh::lightmap_unwrap_cached(int *&r_cache_data, unsign
 	int size_x;
 	int size_y;
 
-	bool ok = array_mesh_lightmap_unwrap_callback(p_texel_size, vertices.ptr(), normals.ptr(), vertices.size() / 3, indices.ptr(), indices.size(), &gen_uvs, &gen_vertices, &gen_vertex_count, &gen_indices, &gen_index_count, &size_x, &size_y, r_cache_data, r_cache_size, r_used_cache);
+	bool ok = array_mesh_lightmap_unwrap_callback(p_texel_size, vertices.ptr(), normals.ptr(), vertices.size() / 3, indices.ptr(), indices.size(), p_src_cache.ptr(), &use_cache, &gen_cache, &gen_cache_size, &gen_uvs, &gen_vertices, &gen_vertex_count, &gen_indices, &gen_index_count, &size_x, &size_y);
 
 	if (!ok) {
 		return ERR_CANT_CREATE;
@@ -702,11 +764,11 @@ Error EditorSceneImporterMesh::lightmap_unwrap_cached(int *&r_cache_data, unsign
 	clear();
 
 	//create surfacetools for each surface..
-	Vector<Ref<SurfaceTool>> surfaces_tools;
+	LocalVector<Ref<SurfaceTool>> surfaces_tools;
 
 	for (int i = 0; i < lightmap_surfaces.size(); i++) {
 		Ref<SurfaceTool> st;
-		st.instance();
+		st.instantiate();
 		st->begin(Mesh::PRIMITIVE_TRIANGLES);
 		st->set_material(lightmap_surfaces[i].material);
 		st->set_meta("name", lightmap_surfaces[i].name);
@@ -714,11 +776,12 @@ Error EditorSceneImporterMesh::lightmap_unwrap_cached(int *&r_cache_data, unsign
 	}
 
 	print_verbose("Mesh: Gen indices: " + itos(gen_index_count));
+
 	//go through all indices
 	for (int i = 0; i < gen_index_count; i += 3) {
-		ERR_FAIL_INDEX_V(gen_vertices[gen_indices[i + 0]], uv_indices.size(), ERR_BUG);
-		ERR_FAIL_INDEX_V(gen_vertices[gen_indices[i + 1]], uv_indices.size(), ERR_BUG);
-		ERR_FAIL_INDEX_V(gen_vertices[gen_indices[i + 2]], uv_indices.size(), ERR_BUG);
+		ERR_FAIL_INDEX_V(gen_vertices[gen_indices[i + 0]], (int)uv_indices.size(), ERR_BUG);
+		ERR_FAIL_INDEX_V(gen_vertices[gen_indices[i + 1]], (int)uv_indices.size(), ERR_BUG);
+		ERR_FAIL_INDEX_V(gen_vertices[gen_indices[i + 2]], (int)uv_indices.size(), ERR_BUG);
 
 		ERR_FAIL_COND_V(uv_indices[gen_vertices[gen_indices[i + 0]]].first != uv_indices[gen_vertices[gen_indices[i + 1]]].first || uv_indices[gen_vertices[gen_indices[i + 0]]].first != uv_indices[gen_vertices[gen_indices[i + 2]]].first, ERR_BUG);
 
@@ -728,49 +791,54 @@ Error EditorSceneImporterMesh::lightmap_unwrap_cached(int *&r_cache_data, unsign
 			SurfaceTool::Vertex v = lightmap_surfaces[surface].vertices[uv_indices[gen_vertices[gen_indices[i + j]]].second];
 
 			if (lightmap_surfaces[surface].format & Mesh::ARRAY_FORMAT_COLOR) {
-				surfaces_tools.write[surface]->set_color(v.color);
+				surfaces_tools[surface]->set_color(v.color);
 			}
 			if (lightmap_surfaces[surface].format & Mesh::ARRAY_FORMAT_TEX_UV) {
-				surfaces_tools.write[surface]->set_uv(v.uv);
+				surfaces_tools[surface]->set_uv(v.uv);
 			}
 			if (lightmap_surfaces[surface].format & Mesh::ARRAY_FORMAT_NORMAL) {
-				surfaces_tools.write[surface]->set_normal(v.normal);
+				surfaces_tools[surface]->set_normal(v.normal);
 			}
 			if (lightmap_surfaces[surface].format & Mesh::ARRAY_FORMAT_TANGENT) {
 				Plane t;
 				t.normal = v.tangent;
 				t.d = v.binormal.dot(v.normal.cross(v.tangent)) < 0 ? -1 : 1;
-				surfaces_tools.write[surface]->set_tangent(t);
+				surfaces_tools[surface]->set_tangent(t);
 			}
 			if (lightmap_surfaces[surface].format & Mesh::ARRAY_FORMAT_BONES) {
-				surfaces_tools.write[surface]->set_bones(v.bones);
+				surfaces_tools[surface]->set_bones(v.bones);
 			}
 			if (lightmap_surfaces[surface].format & Mesh::ARRAY_FORMAT_WEIGHTS) {
-				surfaces_tools.write[surface]->set_weights(v.weights);
+				surfaces_tools[surface]->set_weights(v.weights);
 			}
 
 			Vector2 uv2(gen_uvs[gen_indices[i + j] * 2 + 0], gen_uvs[gen_indices[i + j] * 2 + 1]);
-			surfaces_tools.write[surface]->set_uv2(uv2);
+			surfaces_tools[surface]->set_uv2(uv2);
 
-			surfaces_tools.write[surface]->add_vertex(v.vertex);
+			surfaces_tools[surface]->add_vertex(v.vertex);
 		}
 	}
 
 	//generate surfaces
-
-	for (int i = 0; i < surfaces_tools.size(); i++) {
-		surfaces_tools.write[i]->index();
-		Array arrays = surfaces_tools.write[i]->commit_to_arrays();
-		add_surface(surfaces_tools.write[i]->get_primitive(), arrays, Array(), Dictionary(), surfaces_tools.write[i]->get_material(), surfaces_tools.write[i]->get_meta("name"));
+	for (unsigned int i = 0; i < surfaces_tools.size(); i++) {
+		surfaces_tools[i]->index();
+		Array arrays = surfaces_tools[i]->commit_to_arrays();
+		add_surface(surfaces_tools[i]->get_primitive(), arrays, Array(), Dictionary(), surfaces_tools[i]->get_material(), surfaces_tools[i]->get_meta("name"));
 	}
 
 	set_lightmap_size_hint(Size2(size_x, size_y));
 
-	if (!r_used_cache) {
-		//free stuff
-		::free(gen_vertices);
-		::free(gen_indices);
-		::free(gen_uvs);
+	if (gen_cache_size > 0) {
+		r_dst_cache.resize(gen_cache_size);
+		memcpy(r_dst_cache.ptrw(), gen_cache, gen_cache_size);
+		memfree(gen_cache);
+	}
+
+	if (!use_cache) {
+		// Cache was not used, free the buffers
+		memfree(gen_vertices);
+		memfree(gen_indices);
+		memfree(gen_uvs);
 	}
 
 	return OK;
@@ -792,7 +860,7 @@ void EditorSceneImporterMesh::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_blend_shape_mode", "mode"), &EditorSceneImporterMesh::set_blend_shape_mode);
 	ClassDB::bind_method(D_METHOD("get_blend_shape_mode"), &EditorSceneImporterMesh::get_blend_shape_mode);
 
-	ClassDB::bind_method(D_METHOD("add_surface", "primitive", "arrays", "blend_shapes", "lods", "material", "name"), &EditorSceneImporterMesh::add_surface, DEFVAL(Array()), DEFVAL(Dictionary()), DEFVAL(Ref<Material>()), DEFVAL(String()));
+	ClassDB::bind_method(D_METHOD("add_surface", "primitive", "arrays", "blend_shapes", "lods", "material", "name", "flags"), &EditorSceneImporterMesh::add_surface, DEFVAL(Array()), DEFVAL(Dictionary()), DEFVAL(Ref<Material>()), DEFVAL(String()), DEFVAL(0));
 
 	ClassDB::bind_method(D_METHOD("get_surface_count"), &EditorSceneImporterMesh::get_surface_count);
 	ClassDB::bind_method(D_METHOD("get_surface_primitive_type", "surface_idx"), &EditorSceneImporterMesh::get_surface_primitive_type);
@@ -803,8 +871,12 @@ void EditorSceneImporterMesh::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_surface_lod_size", "surface_idx", "lod_idx"), &EditorSceneImporterMesh::get_surface_lod_size);
 	ClassDB::bind_method(D_METHOD("get_surface_lod_indices", "surface_idx", "lod_idx"), &EditorSceneImporterMesh::get_surface_lod_indices);
 	ClassDB::bind_method(D_METHOD("get_surface_material", "surface_idx"), &EditorSceneImporterMesh::get_surface_material);
+	ClassDB::bind_method(D_METHOD("get_surface_format", "surface_idx"), &EditorSceneImporterMesh::get_surface_format);
 
-	ClassDB::bind_method(D_METHOD("get_mesh"), &EditorSceneImporterMesh::get_mesh);
+	ClassDB::bind_method(D_METHOD("set_surface_name", "surface_idx", "name"), &EditorSceneImporterMesh::set_surface_name);
+	ClassDB::bind_method(D_METHOD("set_surface_material", "surface_idx", "material"), &EditorSceneImporterMesh::set_surface_material);
+
+	ClassDB::bind_method(D_METHOD("get_mesh", "base_mesh"), &EditorSceneImporterMesh::get_mesh, DEFVAL(Ref<ArrayMesh>()));
 	ClassDB::bind_method(D_METHOD("clear"), &EditorSceneImporterMesh::clear);
 
 	ClassDB::bind_method(D_METHOD("_set_data", "data"), &EditorSceneImporterMesh::_set_data);

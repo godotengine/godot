@@ -37,8 +37,8 @@
 #include "scene/resources/animation.h"
 
 #ifdef TOOLS_ENABLED
-class AnimatedValuesBackup : public Reference {
-	GDCLASS(AnimatedValuesBackup, Reference);
+class AnimatedValuesBackup : public RefCounted {
+	GDCLASS(AnimatedValuesBackup, RefCounted);
 
 	struct Entry {
 		Object *object = nullptr;
@@ -93,14 +93,16 @@ private:
 		uint32_t id = 0;
 		RES resource;
 		Node *node = nullptr;
-		Node3D *spatial = nullptr;
 		Node2D *node_2d = nullptr;
+#ifndef _3D_DISABLED
+		Node3D *node_3d = nullptr;
 		Skeleton3D *skeleton = nullptr;
+#endif // _3D_DISABLED
 		int bone_idx = -1;
 		// accumulated transforms
 
 		Vector3 loc_accum;
-		Quat rot_accum;
+		Quaternion rot_accum;
 		Vector3 scale_accum;
 		uint64_t accum_pass = 0;
 
@@ -213,13 +215,13 @@ private:
 
 	NodePath root;
 
-	void _animation_process_animation(AnimationData *p_anim, float p_time, float p_delta, float p_interp, bool p_is_current = true, bool p_seeked = false, bool p_started = false);
+	void _animation_process_animation(AnimationData *p_anim, double p_time, double p_delta, float p_interp, bool p_is_current = true, bool p_seeked = false, bool p_started = false);
 
 	void _ensure_node_caches(AnimationData *p_anim, Node *p_root_override = nullptr);
-	void _animation_process_data(PlaybackData &cd, float p_delta, float p_blend, bool p_seeked, bool p_started);
-	void _animation_process2(float p_delta, bool p_started);
+	void _animation_process_data(PlaybackData &cd, double p_delta, float p_blend, bool p_seeked, bool p_started);
+	void _animation_process2(double p_delta, bool p_started);
 	void _animation_update_transforms();
-	void _animation_process(float p_delta);
+	void _animation_process(double p_delta);
 
 	void _node_removed(Node *p_node);
 	void _stop_playing_caches();
@@ -304,8 +306,8 @@ public:
 	void set_method_call_mode(AnimationMethodCallMode p_mode);
 	AnimationMethodCallMode get_method_call_mode() const;
 
-	void seek(float p_time, bool p_update = false);
-	void seek_delta(float p_time, float p_delta);
+	void seek(double p_time, bool p_update = false);
+	void seek_delta(double p_time, float p_delta);
 	float get_current_animation_position() const;
 	float get_current_animation_length() const;
 

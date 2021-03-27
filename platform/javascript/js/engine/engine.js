@@ -101,19 +101,23 @@ const Engine = (function () {
 				}
 				const me = this;
 				function doInit(promise) {
-					return promise.then(function (response) {
-						return Godot(me.config.getModuleConfig(loadPath, new Response(response.clone().body, { 'headers': [['content-type', 'application/wasm']] })));
-					}).then(function (module) {
-						const paths = me.config.persistentPaths;
-						return module['initFS'](paths).then(function (err) {
-							return Promise.resolve(module);
+					// Care! Promise chaining is bogus with old emscripten versions.
+					// This caused a regression with the Mono build (which uses an older emscripten version).
+					// Make sure to test that when refactoring.
+					return new Promise(function (resolve, reject) {
+						promise.then(function (response) {
+							const cloned = new Response(response.clone().body, { 'headers': [['content-type', 'application/wasm']] });
+							Godot(me.config.getModuleConfig(loadPath, cloned)).then(function (module) {
+								const paths = me.config.persistentPaths;
+								module['initFS'](paths).then(function (err) {
+									me.rtenv = module;
+									if (me.config.unloadAfterInit) {
+										Engine.unload();
+									}
+									resolve();
+								});
+							});
 						});
-					}).then(function (module) {
-						me.rtenv = module;
-						if (me.config.unloadAfterInit) {
-							Engine.unload();
-						}
-						return Promise.resolve();
 					});
 				}
 				preloader.setProgressFunc(this.config.onProgress);

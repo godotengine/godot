@@ -32,7 +32,7 @@
 
 #include <stdlib.h> // abort
 
-#include "core/os/dir_access.h"
+#include "core/io/dir_access.h"
 #include "core/os/os.h"
 
 #include "../godotsharp_dirs.h"
@@ -161,8 +161,8 @@ void GDMonoLog::initialize() {
 		OS::Time time_now = OS::get_singleton()->get_time();
 
 		String log_file_name = str_format("%04d-%02d-%02d_%02d.%02d.%02d",
-				date_now.year, date_now.month, date_now.day,
-				time_now.hour, time_now.min, time_now.sec);
+				(int)date_now.year, (int)date_now.month, (int)date_now.day,
+				(int)time_now.hour, (int)time_now.minute, (int)time_now.second);
 
 		log_file_name += str_format("_%d", OS::get_singleton()->get_process_id());
 

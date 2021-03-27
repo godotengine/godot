@@ -34,7 +34,6 @@
 #include "core/io/image_loader.h"
 #include "core/io/resource_loader.h"
 #include "core/math/math_funcs.h"
-#include "core/os/copymem.h"
 #include "core/string/print_string.h"
 #include "core/templates/hash_map.h"
 
@@ -1429,16 +1428,23 @@ void Image::flip_x() {
 	}
 }
 
+/// Get mipmap size and offset.
 int Image::_get_dst_image_size(int p_width, int p_height, Format p_format, int &r_mipmaps, int p_mipmaps, int *r_mm_width, int *r_mm_height) {
+	// Data offset in mipmaps (including the original texture).
 	int size = 0;
+
 	int w = p_width;
 	int h = p_height;
+
+	// Current mipmap index in the loop below. p_mipmaps is the target mipmap index.
+	// In this function, mipmap 0 represents the first mipmap instead of the original texture.
 	int mm = 0;
 
 	int pixsize = get_format_pixel_size(p_format);
 	int pixshift = get_format_pixel_rshift(p_format);
 	int block = get_format_block_size(p_format);
-	//technically, you can still compress up to 1 px no matter the format, so commenting this
+
+	// Technically, you can still compress up to 1 px no matter the format, so commenting this.
 	//int minw, minh;
 	//get_format_min_pixel_size(p_format, minw, minh);
 	int minw = 1, minh = 1;
@@ -1454,17 +1460,6 @@ int Image::_get_dst_image_size(int p_width, int p_height, Format p_format, int &
 
 		size += s;
 
-		if (r_mm_width) {
-			*r_mm_width = bw;
-		}
-		if (r_mm_height) {
-			*r_mm_height = bh;
-		}
-
-		if (p_mipmaps >= 0 && mm == p_mipmaps) {
-			break;
-		}
-
 		if (p_mipmaps >= 0) {
 			w = MAX(minw, w >> 1);
 			h = MAX(minh, h >> 1);
@@ -1475,6 +1470,21 @@ int Image::_get_dst_image_size(int p_width, int p_height, Format p_format, int &
 			w = MAX(minw, w >> 1);
 			h = MAX(minh, h >> 1);
 		}
+
+		// Set mipmap size.
+		// It might be necessary to put this after the minimum mipmap size check because of the possible occurrence of "1 >> 1".
+		if (r_mm_width) {
+			*r_mm_width = bw >> 1;
+		}
+		if (r_mm_height) {
+			*r_mm_height = bh >> 1;
+		}
+
+		// Reach target mipmap.
+		if (p_mipmaps >= 0 && mm == p_mipmaps) {
+			break;
+		}
+
 		mm++;
 	}
 
@@ -1537,7 +1547,7 @@ void Image::shrink_x2() {
 			uint8_t *w = new_img.ptrw();
 			const uint8_t *r = data.ptr();
 
-			copymem(w, &r[ofs], new_size);
+			memcpy(w, &r[ofs], new_size);
 		}
 
 		width = MAX(width / 2, 1);
@@ -1932,10 +1942,10 @@ Error Image::generate_mipmap_roughness(RoughnessChannel p_roughness_channel, con
 
 
 			uint8_t* wr = imgdata.ptrw();
-			copymem(wr.ptr(), ptr, size);
+			memcpy(wr.ptr(), ptr, size);
 			wr = uint8_t*();
 			Ref<Image> im;
-			im.instance();
+			im.instantiate();
 			im->create(w, h, false, format, imgdata);
 			im->save_png("res://mipmap_" + itos(i) + ".png");
 		}
@@ -1975,6 +1985,7 @@ void Image::create(int p_width, int p_height, bool p_use_mipmaps, Format p_forma
 	ERR_FAIL_COND_MSG(p_width > MAX_WIDTH, "Image width cannot be greater than " + itos(MAX_WIDTH) + ".");
 	ERR_FAIL_COND_MSG(p_height > MAX_HEIGHT, "Image height cannot be greater than " + itos(MAX_HEIGHT) + ".");
 	ERR_FAIL_COND_MSG(p_width * p_height > MAX_PIXELS, "Too many pixels for image, maximum is " + itos(MAX_PIXELS));
+	ERR_FAIL_INDEX_MSG(p_format, FORMAT_MAX, "Image format out of range, please see Image's Format enum.");
 
 	int mm = 0;
 	int size = _get_dst_image_size(p_width, p_height, p_format, mm, p_use_mipmaps ? -1 : 0);
@@ -1982,7 +1993,7 @@ void Image::create(int p_width, int p_height, bool p_use_mipmaps, Format p_forma
 
 	{
 		uint8_t *w = data.ptrw();
-		zeromem(w, size);
+		memset(w, 0, size);
 	}
 
 	width = p_width;
@@ -1997,6 +2008,7 @@ void Image::create(int p_width, int p_height, bool p_use_mipmaps, Format p_forma
 	ERR_FAIL_COND_MSG(p_width > MAX_WIDTH, "Image width cannot be greater than " + itos(MAX_WIDTH) + ".");
 	ERR_FAIL_COND_MSG(p_height > MAX_HEIGHT, "Image height cannot be greater than " + itos(MAX_HEIGHT) + ".");
 	ERR_FAIL_COND_MSG(p_width * p_height > MAX_PIXELS, "Too many pixels for image, maximum is " + itos(MAX_PIXELS));
+	ERR_FAIL_INDEX_MSG(p_format, FORMAT_MAX, "Image format out of range, please see Image's Format enum.");
 
 	int mm;
 	int size = _get_dst_image_size(p_width, p_height, p_format, mm, p_use_mipmaps ? -1 : 0);
@@ -2368,6 +2380,8 @@ Error Image::decompress() {
 }
 
 Error Image::compress(CompressMode p_mode, CompressSource p_source, float p_lossy_quality) {
+	ERR_FAIL_INDEX_V_MSG(p_mode, COMPRESS_MAX, ERR_INVALID_PARAMETER, "Invalid compress mode.");
+	ERR_FAIL_INDEX_V_MSG(p_source, COMPRESS_SOURCE_MAX, ERR_INVALID_PARAMETER, "Invalid compress source.");
 	return compress_from_channels(p_mode, detect_used_channels(p_source), p_lossy_quality);
 }
 
@@ -2392,6 +2406,9 @@ Error Image::compress_from_channels(CompressMode p_mode, UsedChannels p_channels
 		case COMPRESS_BPTC: {
 			ERR_FAIL_COND_V(!_image_compress_bptc_func, ERR_UNAVAILABLE);
 			_image_compress_bptc_func(this, p_lossy_quality, p_channels);
+		} break;
+		case COMPRESS_MAX: {
+			ERR_FAIL_V(ERR_INVALID_PARAMETER);
 		} break;
 	}
 
@@ -2719,10 +2736,11 @@ void (*Image::_image_decompress_bptc)(Image *) = nullptr;
 void (*Image::_image_decompress_etc1)(Image *) = nullptr;
 void (*Image::_image_decompress_etc2)(Image *) = nullptr;
 
-Vector<uint8_t> (*Image::lossy_packer)(const Ref<Image> &, float) = nullptr;
-Ref<Image> (*Image::lossy_unpacker)(const Vector<uint8_t> &) = nullptr;
-Vector<uint8_t> (*Image::lossless_packer)(const Ref<Image> &) = nullptr;
-Ref<Image> (*Image::lossless_unpacker)(const Vector<uint8_t> &) = nullptr;
+Vector<uint8_t> (*Image::webp_lossy_packer)(const Ref<Image> &, float) = nullptr;
+Vector<uint8_t> (*Image::webp_lossless_packer)(const Ref<Image> &) = nullptr;
+Ref<Image> (*Image::webp_unpacker)(const Vector<uint8_t> &) = nullptr;
+Vector<uint8_t> (*Image::png_packer)(const Ref<Image> &) = nullptr;
+Ref<Image> (*Image::png_unpacker)(const Vector<uint8_t> &) = nullptr;
 Vector<uint8_t> (*Image::basis_universal_packer)(const Ref<Image> &, Image::UsedChannels) = nullptr;
 Ref<Image> (*Image::basis_universal_unpacker)(const Vector<uint8_t> &) = nullptr;
 
@@ -2986,6 +3004,8 @@ void Image::set_pixel(int p_x, int p_y, const Color &p_color) {
 }
 
 void Image::adjust_bcs(float p_brightness, float p_contrast, float p_saturation) {
+	ERR_FAIL_COND_MSG(!_can_modify(format), "Cannot adjust_bcs in compressed or custom image formats.");
+
 	uint8_t *w = data.ptrw();
 	uint32_t pixel_size = get_format_pixel_size(format);
 	uint32_t pixel_count = data.size() / pixel_size;
@@ -3269,7 +3289,7 @@ Ref<Image> Image::rgbe_to_srgb() {
 	ERR_FAIL_COND_V(format != FORMAT_RGBE9995, Ref<Image>());
 
 	Ref<Image> new_image;
-	new_image.instance();
+	new_image.instantiate();
 	new_image->create(width, height, false, Image::FORMAT_RGB8);
 
 	for (int row = 0; row < height; row++) {
@@ -3295,11 +3315,11 @@ Ref<Image> Image::get_image_from_mipmap(int p_mipamp) const {
 	{
 		uint8_t *wr = new_data.ptrw();
 		const uint8_t *rd = data.ptr();
-		copymem(wr, rd + ofs, size);
+		memcpy(wr, rd + ofs, size);
 	}
 
 	Ref<Image> image;
-	image.instance();
+	image.instantiate();
 	image->width = w;
 	image->height = h;
 	image->format = format;
@@ -3616,11 +3636,11 @@ Image::Image(const uint8_t *p_mem_png_jpg, int p_len) {
 
 Ref<Resource> Image::duplicate(bool p_subresources) const {
 	Ref<Image> copy;
-	copy.instance();
+	copy.instantiate();
 	copy->_copy_internals_from(*this);
 	return copy;
 }
 
 void Image::set_as_black() {
-	zeromem(data.ptrw(), data.size());
+	memset(data.ptrw(), 0, data.size());
 }

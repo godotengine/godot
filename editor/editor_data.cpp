@@ -31,9 +31,9 @@
 #include "editor_data.h"
 
 #include "core/config/project_settings.h"
+#include "core/io/dir_access.h"
+#include "core/io/file_access.h"
 #include "core/io/resource_loader.h"
-#include "core/os/dir_access.h"
-#include "core/os/file_access.h"
 #include "editor_node.h"
 #include "editor_settings.h"
 #include "scene/resources/packed_scene.h"
@@ -83,7 +83,7 @@ void EditorHistory::cleanup_history() {
 void EditorHistory::_add_object(ObjectID p_object, const String &p_property, int p_level_change, bool p_inspector_only) {
 	Object *obj = ObjectDB::get_instance(p_object);
 	ERR_FAIL_COND(!obj);
-	Reference *r = Object::cast_to<Reference>(obj);
+	RefCounted *r = Object::cast_to<RefCounted>(obj);
 	Obj o;
 	if (r) {
 		o.ref = REF(r);
@@ -299,13 +299,13 @@ void EditorData::copy_object_params(Object *p_object) {
 	List<PropertyInfo> pinfo;
 	p_object->get_property_list(&pinfo);
 
-	for (List<PropertyInfo>::Element *E = pinfo.front(); E; E = E->next()) {
-		if (!(E->get().usage & PROPERTY_USAGE_EDITOR) || E->get().name == "script" || E->get().name == "scripts") {
+	for (const PropertyInfo &E : pinfo) {
+		if (!(E.usage & PROPERTY_USAGE_EDITOR) || E.name == "script" || E.name == "scripts") {
 			continue;
 		}
 
 		PropertyData pd;
-		pd.name = E->get().name;
+		pd.name = E.name;
 		pd.value = p_object->get(pd.name);
 		clipboard.push_back(pd);
 	}
@@ -404,9 +404,9 @@ void EditorData::restore_editor_global_states() {
 void EditorData::paste_object_params(Object *p_object) {
 	ERR_FAIL_NULL(p_object);
 	undo_redo.create_action(TTR("Paste Params"));
-	for (List<PropertyData>::Element *E = clipboard.front(); E; E = E->next()) {
-		String name = E->get().name;
-		undo_redo.add_do_property(p_object, name, E->get().value);
+	for (const PropertyData &E : clipboard) {
+		String name = E.name;
+		undo_redo.add_do_property(p_object, name, E.value);
 		undo_redo.add_undo_property(p_object, name, p_object->get(name));
 	}
 	undo_redo.commit_action();
@@ -424,6 +424,33 @@ bool EditorData::call_build() {
 
 UndoRedo &EditorData::get_undo_redo() {
 	return undo_redo;
+}
+
+void EditorData::add_undo_redo_inspector_hook_callback(Callable p_callable) {
+	undo_redo_callbacks.push_back(p_callable);
+}
+
+void EditorData::remove_undo_redo_inspector_hook_callback(Callable p_callable) {
+	undo_redo_callbacks.erase(p_callable);
+}
+
+const Vector<Callable> EditorData::get_undo_redo_inspector_hook_callback() {
+	return undo_redo_callbacks;
+}
+
+void EditorData::add_move_array_element_function(const StringName &p_class, Callable p_callable) {
+	move_element_functions.insert(p_class, p_callable);
+}
+
+void EditorData::remove_move_array_element_function(const StringName &p_class) {
+	move_element_functions.erase(p_class);
+}
+
+Callable EditorData::get_move_array_element_function(const StringName &p_class) const {
+	if (move_element_functions.has(p_class)) {
+		return move_element_functions[p_class];
+	}
+	return Callable();
 }
 
 void EditorData::remove_editor_plugin(EditorPlugin *p_plugin) {
@@ -464,7 +491,7 @@ Variant EditorData::instance_custom_type(const String &p_type, const String &p_i
 			if (get_custom_types()[p_inherits][i].name == p_type) {
 				Ref<Script> script = get_custom_types()[p_inherits][i].script;
 
-				Variant ob = ClassDB::instance(p_inherits);
+				Variant ob = ClassDB::instantiate(p_inherits);
 				ERR_FAIL_COND_V(!ob, Variant());
 				Node *n = Object::cast_to<Node>(ob);
 				if (n) {
@@ -539,6 +566,10 @@ void EditorData::remove_scene(int p_idx) {
 		current_edited_scene--;
 	}
 
+	if (edited_scene[p_idx].path != String()) {
+		ScriptEditor::get_singleton()->close_builtin_scripts_from_scene(edited_scene[p_idx].path);
+	}
+
 	edited_scene.remove(p_idx);
 }
 
@@ -591,7 +622,7 @@ bool EditorData::check_and_update_scene(int p_idx) {
 
 	if (must_reload) {
 		Ref<PackedScene> pscene;
-		pscene.instance();
+		pscene.instantiate();
 
 		EditorProgress ep("update_scene", TTR("Updating Scene"), 2);
 		ep.step(TTR("Storing local changes..."), 0);
@@ -599,13 +630,13 @@ bool EditorData::check_and_update_scene(int p_idx) {
 		Error err = pscene->pack(edited_scene[p_idx].root);
 		ERR_FAIL_COND_V(err != OK, false);
 		ep.step(TTR("Updating scene..."), 1);
-		Node *new_scene = pscene->instance(PackedScene::GEN_EDIT_STATE_MAIN);
+		Node *new_scene = pscene->instantiate(PackedScene::GEN_EDIT_STATE_MAIN);
 		ERR_FAIL_COND_V(!new_scene, false);
 
 		//transfer selection
 		List<Node *> new_selection;
-		for (List<Node *>::Element *E = edited_scene.write[p_idx].selection.front(); E; E = E->next()) {
-			NodePath p = edited_scene[p_idx].root->get_path_to(E->get());
+		for (const Node *E : edited_scene.write[p_idx].selection) {
+			NodePath p = edited_scene[p_idx].root->get_path_to(E);
 			Node *new_node = new_scene->get_node(p);
 			if (new_node) {
 				new_selection.push_back(new_node);
@@ -829,8 +860,8 @@ Dictionary EditorData::restore_edited_scene_state(EditorSelection *p_selection, 
 	p_history->history = es.history_stored;
 
 	p_selection->clear();
-	for (List<Node *>::Element *E = es.selection.front(); E; E = E->next()) {
-		p_selection->add_node(E->get());
+	for (Node *E : es.selection) {
+		p_selection->add_node(E);
 	}
 	set_editor_states(es.editor_states);
 
@@ -896,7 +927,7 @@ StringName EditorData::script_class_get_base(const String &p_class) const {
 
 Variant EditorData::script_class_instance(const String &p_class) {
 	if (ScriptServer::is_global_class(p_class)) {
-		Variant obj = ClassDB::instance(ScriptServer::get_global_class_native_base(p_class));
+		Variant obj = ClassDB::instantiate(ScriptServer::get_global_class_native_base(p_class));
 		if (obj) {
 			Ref<Script> script = script_class_load_script(p_class);
 			if (script.is_valid()) {
@@ -952,9 +983,9 @@ void EditorData::script_class_save_icon_paths() {
 	_script_class_icon_paths.get_key_list(&keys);
 
 	Dictionary d;
-	for (List<StringName>::Element *E = keys.front(); E; E = E->next()) {
-		if (ScriptServer::is_global_class(E->get())) {
-			d[E->get()] = _script_class_icon_paths[E->get()];
+	for (const StringName &E : keys) {
+		if (ScriptServer::is_global_class(E)) {
+			d[E] = _script_class_icon_paths[E];
 		}
 	}
 
@@ -984,8 +1015,8 @@ void EditorData::script_class_load_icon_paths() {
 		List<Variant> keys;
 		d.get_key_list(&keys);
 
-		for (List<Variant>::Element *E = keys.front(); E; E = E->next()) {
-			String name = E->get().operator String();
+		for (const Variant &E : keys) {
+			String name = E.operator String();
 			_script_class_icon_paths[name] = d[name];
 
 			String path = ScriptServer::get_global_class_path(name);
@@ -1026,8 +1057,8 @@ void EditorSelection::add_node(Node *p_node) {
 	changed = true;
 	nl_changed = true;
 	Object *meta = nullptr;
-	for (List<Object *>::Element *E = editor_plugins.front(); E; E = E->next()) {
-		meta = E->get()->call("_get_editor_data", p_node);
+	for (Object *E : editor_plugins) {
+		meta = E->call("_get_editor_data", p_node);
 		if (meta) {
 			break;
 		}
@@ -1036,7 +1067,7 @@ void EditorSelection::add_node(Node *p_node) {
 
 	p_node->connect("tree_exiting", callable_mp(this, &EditorSelection::_node_removed), varray(p_node), CONNECT_ONESHOT);
 
-	//emit_signal("selection_changed");
+	//emit_signal(SNAME("selection_changed"));
 }
 
 void EditorSelection::remove_node(Node *p_node) {
@@ -1054,7 +1085,7 @@ void EditorSelection::remove_node(Node *p_node) {
 	}
 	selection.erase(p_node);
 	p_node->disconnect("tree_exiting", callable_mp(this, &EditorSelection::_node_removed));
-	//emit_signal("selection_changed");
+	//emit_signal(SNAME("selection_changed"));
 }
 
 bool EditorSelection::is_selected(Node *p_node) const {
@@ -1064,8 +1095,8 @@ bool EditorSelection::is_selected(Node *p_node) const {
 Array EditorSelection::_get_transformable_selected_nodes() {
 	Array ret;
 
-	for (List<Node *>::Element *E = selected_node_list.front(); E; E = E->next()) {
-		ret.push_back(E->get());
+	for (const Node *E : selected_node_list) {
+		ret.push_back(E);
 	}
 
 	return ret;
@@ -1132,12 +1163,12 @@ void EditorSelection::update() {
 	changed = false;
 	if (!emitted) {
 		emitted = true;
-		call_deferred("_emit_change");
+		call_deferred(SNAME("_emit_change"));
 	}
 }
 
 void EditorSelection::_emit_change() {
-	emit_signal("selection_changed");
+	emit_signal(SNAME("selection_changed"));
 	emitted = false;
 }
 

@@ -35,10 +35,10 @@
 static Ref<ResourceFormatLoaderWebm> resource_loader_webm;
 
 void register_webm_types() {
-	resource_loader_webm.instance();
+	resource_loader_webm.instantiate();
 	ResourceLoader::add_resource_format_loader(resource_loader_webm, true);
 
-	ClassDB::register_class<VideoStreamWebm>();
+	GDREGISTER_CLASS(VideoStreamWebm);
 }
 
 void unregister_webm_types() {

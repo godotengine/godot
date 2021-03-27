@@ -56,15 +56,15 @@ public:
 	static Basis EulerToBasis(FBXDocParser::Model::RotOrder mode, const Vector3 &p_rotation);
 
 	/// Converts rotation order vector (in rad) to quaternion.
-	static Quat EulerToQuaternion(FBXDocParser::Model::RotOrder mode, const Vector3 &p_rotation);
+	static Quaternion EulerToQuaternion(FBXDocParser::Model::RotOrder mode, const Vector3 &p_rotation);
 
 	/// Converts basis into rotation order vector (in rad).
 	static Vector3 BasisToEuler(FBXDocParser::Model::RotOrder mode, const Basis &p_rotation);
 
 	/// Converts quaternion into rotation order vector (in rad).
-	static Vector3 QuaternionToEuler(FBXDocParser::Model::RotOrder mode, const Quat &p_rotation);
+	static Vector3 QuaternionToEuler(FBXDocParser::Model::RotOrder mode, const Quaternion &p_rotation);
 
-	static void debug_xform(String name, const Transform &t) {
+	static void debug_xform(String name, const Transform3D &t) {
 		print_verbose(name + " " + t.origin + " rotation: " + (t.basis.get_euler() * (180 / Math_PI)));
 	}
 
@@ -137,15 +137,15 @@ public:
 
 	static Vector3 safe_import_vector3(const Vector3 &p_vec) {
 		Vector3 vector = p_vec;
-		if (Math::is_equal_approx(0, vector.x)) {
+		if (Math::is_zero_approx(vector.x)) {
 			vector.x = 0;
 		}
 
-		if (Math::is_equal_approx(0, vector.y)) {
+		if (Math::is_zero_approx(vector.y)) {
 			vector.y = 0;
 		}
 
-		if (Math::is_equal_approx(0, vector.z)) {
+		if (Math::is_zero_approx(vector.z)) {
 			vector.z = 0;
 		}
 		return vector;
@@ -267,7 +267,7 @@ public:
 	  */
 	// static void set_texture_mapping_mode(aiTextureMapMode *map_mode, Ref<ImageTexture> texture) {
 	// 	ERR_FAIL_COND(texture.is_null());
-	// 	ERR_FAIL_COND(map_mode == NULL);
+	// 	ERR_FAIL_COND(map_mode == nullptr);
 	// 	aiTextureMapMode tex_mode = map_mode[0];
 
 	// 	int32_t flags = Texture::FLAGS_DEFAULT;
@@ -317,7 +317,7 @@ public:
 	// 		}
 	// 	} else {
 	// 		Ref<Image> img;
-	// 		img.instance();
+	// 		img.instantiate();
 	// 		PoolByteArray arr;
 	// 		uint32_t size = tex->mWidth * tex->mHeight;
 	// 		arr.resize(size);
@@ -339,7 +339,7 @@ public:
 	// } else {
 	// 	Ref<Texture> texture = ResourceLoader::load(p_path);
 	// 	ERR_FAIL_COND_V(texture.is_null(), Ref<Image>());
-	// 	Ref<Image> image = texture->get_data();
+	// 	Ref<Image> image = texture->get_image();
 	// 	ERR_FAIL_COND_V(image.is_null(), Ref<Image>());
 	// 	state.path_to_image_cache.insert(p_path, image);
 	// 	return image;
@@ -362,7 +362,7 @@ public:
 	// 	if (found) {
 	// 		image_state.raw_image = AssimpUtils::load_image(state, state.assimp_scene, path);
 	// 		if (image_state.raw_image.is_valid()) {
-	// 			image_state.texture.instance();
+	// 			image_state.texture.instantiate();
 	// 			image_state.texture->create_from_image(image_state.raw_image);
 	// 			image_state.texture->set_storage(ImageTexture::STORAGE_COMPRESS_LOSSY);
 	// 			return true;
@@ -382,7 +382,7 @@ public:
 	// 		String &path,
 	// 		AssimpImageData &image_state) {
 	// 	aiString ai_filename = aiString();
-	// 	if (AI_SUCCESS == ai_material->GetTexture(texture_type, 0, &ai_filename, NULL, NULL, NULL, NULL, image_state.map_mode)) {
+	// 	if (AI_SUCCESS == ai_material->GetTexture(texture_type, 0, &ai_filename, nullptr, nullptr, nullptr, nullptr, image_state.map_mode)) {
 	// 		return CreateAssimpTexture(state, ai_filename, filename, path, image_state);
 	// 	}
 
@@ -391,7 +391,7 @@ public:
 };
 
 // Apply the transforms so the basis will have scale 1.
-Transform get_unscaled_transform(const Transform &p_initial, real_t p_scale);
+Transform3D get_unscaled_transform(const Transform3D &p_initial, real_t p_scale);
 
 /// Uses the Newell's method to compute any polygon normal.
 /// The polygon must be at least size of 3 or bigger.

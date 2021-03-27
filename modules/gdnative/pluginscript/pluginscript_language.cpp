@@ -30,7 +30,7 @@
 
 // Godot imports
 #include "core/config/project_settings.h"
-#include "core/os/file_access.h"
+#include "core/io/file_access.h"
 #include "core/os/os.h"
 // PluginScript imports
 #include "pluginscript_language.h"
@@ -77,6 +77,10 @@ void PluginScriptLanguage::get_reserved_words(List<String> *p_words) const {
 	}
 }
 
+bool PluginScriptLanguage::is_control_flow_keyword(String p_keyword) const {
+	return false;
+}
+
 void PluginScriptLanguage::get_comment_delimiters(List<String> *p_delimiters) const {
 	if (_desc.comment_delimiters) {
 		const char **w = _desc.comment_delimiters;
@@ -108,19 +112,28 @@ Ref<Script> PluginScriptLanguage::get_template(const String &p_class_name, const
 	return script;
 }
 
-bool PluginScriptLanguage::validate(const String &p_script, int &r_line_error, int &r_col_error, String &r_test_error, const String &p_path, List<String> *r_functions, List<ScriptLanguage::Warning> *r_warnings, Set<int> *r_safe_lines) const {
+bool PluginScriptLanguage::validate(const String &p_script, const String &p_path, List<String> *r_functions, List<ScriptLanguage::ScriptError> *r_errors, List<ScriptLanguage::Warning> *r_warnings, Set<int> *r_safe_lines) const {
 	PackedStringArray functions;
+	Array errors;
 	if (_desc.validate) {
 		bool ret = _desc.validate(
 				_data,
 				(godot_string *)&p_script,
-				&r_line_error,
-				&r_col_error,
-				(godot_string *)&r_test_error,
 				(godot_string *)&p_path,
-				(godot_packed_string_array *)&functions);
+				(godot_packed_string_array *)&functions,
+				(godot_array *)&errors);
 		for (int i = 0; i < functions.size(); i++) {
 			r_functions->push_back(functions[i]);
+		}
+		if (r_errors) {
+			for (int i = 0; i < errors.size(); i++) {
+				Dictionary error = errors[i];
+				ScriptLanguage::ScriptError e;
+				e.line = error["line"];
+				e.column = error["column"];
+				e.message = error["message"];
+				r_errors->push_back(e);
+			}
 		}
 		return ret;
 	}

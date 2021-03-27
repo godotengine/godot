@@ -47,9 +47,9 @@ void Container::add_child_notify(Node *p_child) {
 		return;
 	}
 
-	control->connect("size_flags_changed", callable_mp(this, &Container::queue_sort));
-	control->connect("minimum_size_changed", callable_mp(this, &Container::_child_minsize_changed));
-	control->connect("visibility_changed", callable_mp(this, &Container::_child_minsize_changed));
+	control->connect(SNAME("size_flags_changed"), callable_mp(this, &Container::queue_sort));
+	control->connect(SNAME("minimum_size_changed"), callable_mp(this, &Container::_child_minsize_changed));
+	control->connect(SNAME("visibility_changed"), callable_mp(this, &Container::_child_minsize_changed));
 
 	minimum_size_changed();
 	queue_sort();
@@ -159,16 +159,14 @@ void Container::_notification(int p_what) {
 	}
 }
 
-String Container::get_configuration_warning() const {
-	String warning = Control::get_configuration_warning();
+TypedArray<String> Container::get_configuration_warnings() const {
+	TypedArray<String> warnings = Control::get_configuration_warnings();
 
 	if (get_class() == "Container" && get_script().is_null()) {
-		if (!warning.is_empty()) {
-			warning += "\n\n";
-		}
-		warning += TTR("Container by itself serves no purpose unless a script configures its children placement behavior.\nIf you don't intend to add a script, use a plain Control node instead.");
+		warnings.push_back(TTR("Container by itself serves no purpose unless a script configures its children placement behavior.\nIf you don't intend to add a script, use a plain Control node instead."));
 	}
-	return warning;
+
+	return warnings;
 }
 
 void Container::_bind_methods() {

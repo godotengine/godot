@@ -30,7 +30,7 @@
 
 #include "test_shader_lang.h"
 
-#include "core/os/file_access.h"
+#include "core/io/file_access.h"
 #include "core/os/main_loop.h"
 #include "core/os/os.h"
 
@@ -344,7 +344,7 @@ MainLoop *test() {
 	Set<String> types;
 	types.insert("spatial");
 
-	Error err = sl.compile(code, dt, rm, types, nullptr);
+	Error err = sl.compile(code, dt, rm, ShaderLanguage::VaryingFunctionNames(), types, nullptr);
 
 	if (err) {
 		print_line("Error at line: " + rtos(sl.get_error_line()) + ": " + sl.get_error_text());

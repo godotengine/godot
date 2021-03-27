@@ -31,6 +31,7 @@
 #include "version_control_editor_plugin.h"
 
 #include "core/object/script_language.h"
+#include "core/os/keyboard.h"
 #include "editor/editor_file_system.h"
 #include "editor/editor_node.h"
 #include "editor/editor_scale.h"
@@ -164,7 +165,7 @@ void VersionControlEditorPlugin::_refresh_stage_area() {
 					_refresh_file_diff();
 				}
 			}
-			commit_status->set_text("New changes detected");
+			commit_status->set_text(TTR("New changes detected"));
 		}
 	} else {
 		WARN_PRINT("No VCS addon is initialized. Select a Version Control Addon from Project menu.");
@@ -180,15 +181,15 @@ void VersionControlEditorPlugin::_stage_selected() {
 	staged_files_count = 0;
 	TreeItem *root = stage_files->get_root();
 	if (root) {
-		TreeItem *file_entry = root->get_children();
+		TreeItem *file_entry = root->get_first_child();
 		while (file_entry) {
 			if (file_entry->is_checked(0)) {
 				EditorVCSInterface::get_singleton()->stage_file(file_entry->get_metadata(0));
-				file_entry->set_icon_modulate(0, EditorNode::get_singleton()->get_gui_base()->get_theme_color("success_color", "Editor"));
+				file_entry->set_icon_modulate(0, EditorNode::get_singleton()->get_gui_base()->get_theme_color(SNAME("success_color"), SNAME("Editor")));
 				staged_files_count++;
 			} else {
 				EditorVCSInterface::get_singleton()->unstage_file(file_entry->get_metadata(0));
-				file_entry->set_icon_modulate(0, EditorNode::get_singleton()->get_gui_base()->get_theme_color("error_color", "Editor"));
+				file_entry->set_icon_modulate(0, EditorNode::get_singleton()->get_gui_base()->get_theme_color(SNAME("error_color"), SNAME("Editor")));
 			}
 
 			file_entry = file_entry->get_next();
@@ -207,10 +208,10 @@ void VersionControlEditorPlugin::_stage_all() {
 	staged_files_count = 0;
 	TreeItem *root = stage_files->get_root();
 	if (root) {
-		TreeItem *file_entry = root->get_children();
+		TreeItem *file_entry = root->get_first_child();
 		while (file_entry) {
 			EditorVCSInterface::get_singleton()->stage_file(file_entry->get_metadata(0));
-			file_entry->set_icon_modulate(0, EditorNode::get_singleton()->get_gui_base()->get_theme_color("success_color", "Editor"));
+			file_entry->set_icon_modulate(0, EditorNode::get_singleton()->get_gui_base()->get_theme_color(SNAME("success_color"), SNAME("Editor")));
 			file_entry->set_checked(0, true);
 			staged_files_count++;
 
@@ -235,16 +236,16 @@ void VersionControlEditorPlugin::_display_file_diff(String p_file_path) {
 	diff_file_name->set_text(p_file_path);
 
 	diff->clear();
-	diff->push_font(EditorNode::get_singleton()->get_gui_base()->get_theme_font("source", "EditorFonts"));
+	diff->push_font(EditorNode::get_singleton()->get_gui_base()->get_theme_font(SNAME("source"), SNAME("EditorFonts")));
 	for (int i = 0; i < diff_content.size(); i++) {
 		Dictionary line_result = diff_content[i];
 
 		if (line_result["status"] == "+") {
-			diff->push_color(EditorNode::get_singleton()->get_gui_base()->get_theme_color("success_color", "Editor"));
+			diff->push_color(EditorNode::get_singleton()->get_gui_base()->get_theme_color(SNAME("success_color"), SNAME("Editor")));
 		} else if (line_result["status"] == "-") {
-			diff->push_color(EditorNode::get_singleton()->get_gui_base()->get_theme_color("error_color", "Editor"));
+			diff->push_color(EditorNode::get_singleton()->get_gui_base()->get_theme_color(SNAME("error_color"), SNAME("Editor")));
 		} else {
-			diff->push_color(EditorNode::get_singleton()->get_gui_base()->get_theme_color("font_color", "Label"));
+			diff->push_color(EditorNode::get_singleton()->get_gui_base()->get_theme_color(SNAME("font_color"), SNAME("Label")));
 		}
 
 		diff->add_text((String)line_result["content"]);
@@ -270,9 +271,9 @@ void VersionControlEditorPlugin::_clear_file_diff() {
 void VersionControlEditorPlugin::_update_stage_status() {
 	String status;
 	if (staged_files_count == 1) {
-		status = "Stage contains 1 file";
+		status = TTR("Stage contains 1 file");
 	} else {
-		status = "Stage contains " + String::num_int64(staged_files_count) + " files";
+		status = vformat(TTR("Stage contains %d files"), staged_files_count);
 	}
 	commit_status->set_text(status);
 }
@@ -280,9 +281,9 @@ void VersionControlEditorPlugin::_update_stage_status() {
 void VersionControlEditorPlugin::_update_commit_status() {
 	String status;
 	if (staged_files_count == 1) {
-		status = "Committed 1 file";
+		status = TTR("Committed 1 file");
 	} else {
-		status = "Committed " + String::num_int64(staged_files_count) + " files ";
+		status = vformat(TTR("Committed %d files"), staged_files_count);
 	}
 	commit_status->set_text(status);
 	staged_files_count = 0;
@@ -290,6 +291,29 @@ void VersionControlEditorPlugin::_update_commit_status() {
 
 void VersionControlEditorPlugin::_update_commit_button() {
 	commit_button->set_disabled(commit_message->get_text().strip_edges() == "");
+}
+
+void VersionControlEditorPlugin::_commit_message_gui_input(const Ref<InputEvent> &p_event) {
+	if (!commit_message->has_focus()) {
+		return;
+	}
+	if (commit_message->get_text().strip_edges().is_empty()) {
+		// Do not allow empty commit messages.
+		return;
+	}
+	const Ref<InputEventKey> k = p_event;
+
+	if (k.is_valid() && k->is_pressed()) {
+		if (ED_IS_SHORTCUT("version_control/commit", p_event)) {
+			if (staged_files_count == 0) {
+				// Stage all files only when no files were previously staged.
+				_stage_all();
+			}
+			_send_commit_msg();
+			commit_message->accept_event();
+			return;
+		}
+	}
 }
 
 void VersionControlEditorPlugin::register_editor() {
@@ -407,7 +431,7 @@ VersionControlEditorPlugin::VersionControlEditorPlugin() {
 	refresh_button = memnew(Button);
 	refresh_button->set_tooltip(TTR("Detect new changes"));
 	refresh_button->set_text(TTR("Refresh"));
-	refresh_button->set_icon(EditorNode::get_singleton()->get_gui_base()->get_theme_icon("Reload", "EditorIcons"));
+	refresh_button->set_icon(EditorNode::get_singleton()->get_gui_base()->get_theme_icon(SNAME("Reload"), SNAME("EditorIcons")));
 	refresh_button->connect("pressed", callable_mp(this, &VersionControlEditorPlugin::_refresh_stage_area));
 	stage_tools->add_child(refresh_button);
 
@@ -432,11 +456,11 @@ VersionControlEditorPlugin::VersionControlEditorPlugin() {
 	change_type_to_strings[CHANGE_TYPE_DELETED] = TTR("Deleted");
 	change_type_to_strings[CHANGE_TYPE_TYPECHANGE] = TTR("Typechange");
 
-	change_type_to_color[CHANGE_TYPE_NEW] = EditorNode::get_singleton()->get_gui_base()->get_theme_color("success_color", "Editor");
-	change_type_to_color[CHANGE_TYPE_MODIFIED] = EditorNode::get_singleton()->get_gui_base()->get_theme_color("warning_color", "Editor");
-	change_type_to_color[CHANGE_TYPE_RENAMED] = EditorNode::get_singleton()->get_gui_base()->get_theme_color("disabled_font_color", "Editor");
-	change_type_to_color[CHANGE_TYPE_DELETED] = EditorNode::get_singleton()->get_gui_base()->get_theme_color("error_color", "Editor");
-	change_type_to_color[CHANGE_TYPE_TYPECHANGE] = EditorNode::get_singleton()->get_gui_base()->get_theme_color("font_color", "Editor");
+	change_type_to_color[CHANGE_TYPE_NEW] = EditorNode::get_singleton()->get_gui_base()->get_theme_color(SNAME("success_color"), SNAME("Editor"));
+	change_type_to_color[CHANGE_TYPE_MODIFIED] = EditorNode::get_singleton()->get_gui_base()->get_theme_color(SNAME("warning_color"), SNAME("Editor"));
+	change_type_to_color[CHANGE_TYPE_RENAMED] = EditorNode::get_singleton()->get_gui_base()->get_theme_color(SNAME("disabled_font_color"), SNAME("Editor"));
+	change_type_to_color[CHANGE_TYPE_DELETED] = EditorNode::get_singleton()->get_gui_base()->get_theme_color(SNAME("error_color"), SNAME("Editor"));
+	change_type_to_color[CHANGE_TYPE_TYPECHANGE] = EditorNode::get_singleton()->get_gui_base()->get_theme_color(SNAME("font_color"), SNAME("Editor"));
 
 	stage_buttons = memnew(HSplitContainer);
 	stage_buttons->set_dragger_visibility(SplitContainer::DRAGGER_HIDDEN_COLLAPSED);
@@ -460,9 +484,11 @@ VersionControlEditorPlugin::VersionControlEditorPlugin() {
 	commit_message->set_h_grow_direction(Control::GrowDirection::GROW_DIRECTION_BEGIN);
 	commit_message->set_v_grow_direction(Control::GrowDirection::GROW_DIRECTION_END);
 	commit_message->set_custom_minimum_size(Size2(200, 100));
-	commit_message->set_wrap_enabled(true);
+	commit_message->set_line_wrapping_mode(TextEdit::LineWrappingMode::LINE_WRAPPING_BOUNDARY);
 	commit_message->connect("text_changed", callable_mp(this, &VersionControlEditorPlugin::_update_commit_button));
+	commit_message->connect("gui_input", callable_mp(this, &VersionControlEditorPlugin::_commit_message_gui_input));
 	commit_box_vbc->add_child(commit_message);
+	ED_SHORTCUT("version_control/commit", TTR("Commit"), KEY_MASK_CMD | KEY_ENTER);
 
 	commit_button = memnew(Button);
 	commit_button->set_text(TTR("Commit Changes"));
@@ -476,6 +502,7 @@ VersionControlEditorPlugin::VersionControlEditorPlugin() {
 
 	version_control_dock = memnew(PanelContainer);
 	version_control_dock->set_v_size_flags(Control::SIZE_EXPAND_FILL);
+	version_control_dock->set_custom_minimum_size(Size2(0, 300) * EDSCALE);
 	version_control_dock->hide();
 
 	diff_vbc = memnew(VBoxContainer);
@@ -500,7 +527,7 @@ VersionControlEditorPlugin::VersionControlEditorPlugin() {
 
 	diff_refresh_button = memnew(Button);
 	diff_refresh_button->set_tooltip(TTR("Detect changes in file diff"));
-	diff_refresh_button->set_icon(EditorNode::get_singleton()->get_gui_base()->get_theme_icon("Reload", "EditorIcons"));
+	diff_refresh_button->set_icon(EditorNode::get_singleton()->get_gui_base()->get_theme_icon(SNAME("Reload"), SNAME("EditorIcons")));
 	diff_refresh_button->connect("pressed", callable_mp(this, &VersionControlEditorPlugin::_refresh_file_diff));
 	diff_hbc->add_child(diff_refresh_button);
 

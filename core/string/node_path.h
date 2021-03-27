@@ -66,8 +66,6 @@ public:
 
 	void prepend_period();
 
-	NodePath get_parent() const;
-
 	_FORCE_INLINE_ uint32_t hash() const {
 		if (!data) {
 			return 0;

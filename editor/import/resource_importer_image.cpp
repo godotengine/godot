@@ -30,9 +30,9 @@
 
 #include "resource_importer_image.h"
 
+#include "core/io/file_access.h"
 #include "core/io/image_loader.h"
 #include "core/io/resource_saver.h"
-#include "core/os/file_access.h"
 #include "scene/resources/texture.h"
 
 String ResourceImporterImage::get_importer_name() const {
@@ -75,7 +75,7 @@ Error ResourceImporterImage::import(const String &p_source_file, const String &p
 
 	ERR_FAIL_COND_V_MSG(!f, ERR_CANT_OPEN, "Cannot open file from path '" + p_source_file + "'.");
 
-	size_t len = f->get_len();
+	uint64_t len = f->get_length();
 
 	Vector<uint8_t> data;
 	data.resize(len);

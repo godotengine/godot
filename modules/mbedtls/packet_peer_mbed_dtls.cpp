@@ -31,8 +31,8 @@
 #include "packet_peer_mbed_dtls.h"
 #include "mbedtls/platform_util.h"
 
+#include "core/io/file_access.h"
 #include "core/io/stream_peer_ssl.h"
-#include "core/os/file_access.h"
 
 int PacketPeerMbedDTLS::bio_send(void *ctx, const unsigned char *buf, size_t len) {
 	if (buf == nullptr || len <= 0) {
@@ -74,7 +74,7 @@ int PacketPeerMbedDTLS::bio_recv(void *ctx, unsigned char *buf, size_t len) {
 	if (err != OK) {
 		return MBEDTLS_ERR_SSL_INTERNAL_ERROR;
 	}
-	copymem(buf, buffer, buffer_size);
+	memcpy(buf, buffer, buffer_size);
 	return buffer_size;
 }
 
@@ -87,10 +87,10 @@ void PacketPeerMbedDTLS::_cleanup() {
 int PacketPeerMbedDTLS::_set_cookie() {
 	// Setup DTLS session cookie for this client
 	uint8_t client_id[18];
-	IP_Address addr = base->get_packet_address();
+	IPAddress addr = base->get_packet_address();
 	uint16_t port = base->get_packet_port();
-	copymem(client_id, addr.get_ipv6(), 16);
-	copymem(&client_id[16], (uint8_t *)&port, 2);
+	memcpy(client_id, addr.get_ipv6(), 16);
+	memcpy(&client_id[16], (uint8_t *)&port, 2);
 	return mbedtls_ssl_set_client_transport_id(ssl_ctx->get_context(), client_id, 18);
 }
 
@@ -245,7 +245,7 @@ int PacketPeerMbedDTLS::get_max_packet_size() const {
 }
 
 PacketPeerMbedDTLS::PacketPeerMbedDTLS() {
-	ssl_ctx.instance();
+	ssl_ctx.instantiate();
 }
 
 PacketPeerMbedDTLS::~PacketPeerMbedDTLS() {

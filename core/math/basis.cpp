@@ -31,7 +31,6 @@
 #include "basis.h"
 
 #include "core/math/math_funcs.h"
-#include "core/os/copymem.h"
 #include "core/string/print_string.h"
 
 #define cofac(row1, col1, row2, col2) \
@@ -110,7 +109,7 @@ bool Basis::is_diagonal() const {
 }
 
 bool Basis::is_rotation() const {
-	return Math::is_equal_approx(determinant(), 1, UNIT_EPSILON) && is_orthogonal();
+	return Math::is_equal_approx(determinant(), 1, (real_t)UNIT_EPSILON) && is_orthogonal();
 }
 
 #ifdef MATH_CHECKS
@@ -208,6 +207,10 @@ Basis Basis::transposed() const {
 	return tr;
 }
 
+Basis Basis::from_scale(const Vector3 &p_scale) {
+	return Basis(p_scale.x, 0, 0, 0, p_scale.y, 0, 0, 0, p_scale.z);
+}
+
 // Multiplies the matrix from left by the scaling matrix: M -> S.M
 // See the comment for Basis::rotated for further explanation.
 void Basis::scale(const Vector3 &p_scale) {
@@ -247,10 +250,7 @@ void Basis::make_scale_uniform() {
 }
 
 Basis Basis::scaled_local(const Vector3 &p_scale) const {
-	Basis b;
-	b.set_diagonal(p_scale);
-
-	return (*this) * b;
+	return (*this) * Basis::from_scale(p_scale);
 }
 
 Vector3 Basis::get_scale_abs() const {
@@ -346,12 +346,12 @@ void Basis::rotate(const Vector3 &p_euler) {
 	*this = rotated(p_euler);
 }
 
-Basis Basis::rotated(const Quat &p_quat) const {
-	return Basis(p_quat) * (*this);
+Basis Basis::rotated(const Quaternion &p_quaternion) const {
+	return Basis(p_quaternion) * (*this);
 }
 
-void Basis::rotate(const Quat &p_quat) {
-	*this = rotated(p_quat);
+void Basis::rotate(const Quaternion &p_quaternion) {
+	*this = rotated(p_quaternion);
 }
 
 Vector3 Basis::get_rotation_euler() const {
@@ -368,7 +368,7 @@ Vector3 Basis::get_rotation_euler() const {
 	return m.get_euler();
 }
 
-Quat Basis::get_rotation_quat() const {
+Quaternion Basis::get_rotation_quaternion() const {
 	// Assumes that the matrix can be decomposed into a proper rotation and scaling matrix as M = R.S,
 	// and returns the Euler angles corresponding to the rotation part, complementing get_scale().
 	// See the comment in get_scale() for further information.
@@ -379,7 +379,19 @@ Quat Basis::get_rotation_quat() const {
 		m.scale(Vector3(-1, -1, -1));
 	}
 
-	return m.get_quat();
+	return m.get_quaternion();
+}
+
+void Basis::rotate_to_align(Vector3 p_start_direction, Vector3 p_end_direction) {
+	// Takes two vectors and rotates the basis from the first vector to the second vector.
+	// Adopted from: https://gist.github.com/kevinmoran/b45980723e53edeb8a5a43c49f134724
+	const Vector3 axis = p_start_direction.cross(p_end_direction).normalized();
+	if (axis.length_squared() != 0) {
+		real_t dot = p_start_direction.dot(p_end_direction);
+		dot = CLAMP(dot, -1.0, 1.0);
+		const real_t angle_rads = Math::acos(dot);
+		set_axis_angle(axis, angle_rads);
+	}
 }
 
 void Basis::get_rotation_axis_angle(Vector3 &p_axis, real_t &p_angle) const {
@@ -757,23 +769,14 @@ bool Basis::operator!=(const Basis &p_matrix) const {
 }
 
 Basis::operator String() const {
-	String mtx;
-	for (int i = 0; i < 3; i++) {
-		for (int j = 0; j < 3; j++) {
-			if (i != 0 || j != 0) {
-				mtx += ", ";
-			}
-
-			mtx += rtos(elements[j][i]); //matrix is stored transposed for performance, so print it transposed
-		}
-	}
-
-	return mtx;
+	return "[X: " + get_axis(0).operator String() +
+		   ", Y: " + get_axis(1).operator String() +
+		   ", Z: " + get_axis(2).operator String() + "]";
 }
 
-Quat Basis::get_quat() const {
+Quaternion Basis::get_quaternion() const {
 #ifdef MATH_CHECKS
-	ERR_FAIL_COND_V_MSG(!is_rotation(), Quat(), "Basis must be normalized in order to be casted to a Quaternion. Use get_rotation_quat() or call orthonormalized() instead.");
+	ERR_FAIL_COND_V_MSG(!is_rotation(), Quaternion(), "Basis must be normalized in order to be casted to a Quaternion. Use get_rotation_quaternion() or call orthonormalized() if the Basis contains linearly independent vectors.");
 #endif
 	/* Allow getting a quaternion from an unnormalized transform */
 	Basis m = *this;
@@ -804,7 +807,7 @@ Quat Basis::get_quat() const {
 		temp[k] = (m.elements[k][i] + m.elements[i][k]) * s;
 	}
 
-	return Quat(temp[0], temp[1], temp[2], temp[3]);
+	return Quaternion(temp[0], temp[1], temp[2], temp[3]);
 }
 
 static const Basis _ortho_bases[24] = {
@@ -946,13 +949,13 @@ void Basis::get_axis_angle(Vector3 &r_axis, real_t &r_angle) const {
 	r_angle = angle;
 }
 
-void Basis::set_quat(const Quat &p_quat) {
-	real_t d = p_quat.length_squared();
+void Basis::set_quaternion(const Quaternion &p_quaternion) {
+	real_t d = p_quaternion.length_squared();
 	real_t s = 2.0 / d;
-	real_t xs = p_quat.x * s, ys = p_quat.y * s, zs = p_quat.z * s;
-	real_t wx = p_quat.w * xs, wy = p_quat.w * ys, wz = p_quat.w * zs;
-	real_t xx = p_quat.x * xs, xy = p_quat.x * ys, xz = p_quat.x * zs;
-	real_t yy = p_quat.y * ys, yz = p_quat.y * zs, zz = p_quat.z * zs;
+	real_t xs = p_quaternion.x * s, ys = p_quaternion.y * s, zs = p_quaternion.z * s;
+	real_t wx = p_quaternion.w * xs, wy = p_quaternion.w * ys, wz = p_quaternion.w * zs;
+	real_t xx = p_quaternion.x * xs, xy = p_quaternion.x * ys, xz = p_quaternion.x * zs;
+	real_t yy = p_quaternion.y * ys, yz = p_quaternion.y * zs, zz = p_quaternion.z * zs;
 	set(1.0 - (yy + zz), xy - wz, xz + wy,
 			xy + wz, 1.0 - (xx + zz), yz - wx,
 			xz - wy, yz + wx, 1.0 - (xx + yy));
@@ -989,21 +992,23 @@ void Basis::set_axis_angle(const Vector3 &p_axis, real_t p_phi) {
 }
 
 void Basis::set_axis_angle_scale(const Vector3 &p_axis, real_t p_phi, const Vector3 &p_scale) {
-	set_diagonal(p_scale);
+	_set_diagonal(p_scale);
 	rotate(p_axis, p_phi);
 }
 
 void Basis::set_euler_scale(const Vector3 &p_euler, const Vector3 &p_scale) {
-	set_diagonal(p_scale);
+	_set_diagonal(p_scale);
 	rotate(p_euler);
 }
 
-void Basis::set_quat_scale(const Quat &p_quat, const Vector3 &p_scale) {
-	set_diagonal(p_scale);
-	rotate(p_quat);
+void Basis::set_quaternion_scale(const Quaternion &p_quaternion, const Vector3 &p_scale) {
+	_set_diagonal(p_scale);
+	rotate(p_quaternion);
 }
 
-void Basis::set_diagonal(const Vector3 &p_diag) {
+// This also sets the non-diagonal elements to 0, which is misleading from the
+// name, so we want this method to be private. Use `from_scale` externally.
+void Basis::_set_diagonal(const Vector3 &p_diag) {
 	elements[0][0] = p_diag.x;
 	elements[0][1] = 0;
 	elements[0][2] = 0;
@@ -1019,8 +1024,8 @@ void Basis::set_diagonal(const Vector3 &p_diag) {
 
 Basis Basis::slerp(const Basis &p_to, const real_t &p_weight) const {
 	//consider scale
-	Quat from(*this);
-	Quat to(p_to);
+	Quaternion from(*this);
+	Quaternion to(p_to);
 
 	Basis b(from.slerp(to, p_weight));
 	b.elements[0] *= Math::lerp(elements[0].length(), p_to.elements[0].length(), p_weight);
@@ -1138,4 +1143,22 @@ void Basis::rotate_sh(real_t *p_values) {
 	p_values[6] = d2 * s_scale_dst2;
 	p_values[7] = -d3;
 	p_values[8] = d4 * s_scale_dst4;
+}
+
+Basis Basis::looking_at(const Vector3 &p_target, const Vector3 &p_up) {
+#ifdef MATH_CHECKS
+	ERR_FAIL_COND_V_MSG(p_target.is_equal_approx(Vector3()), Basis(), "The target vector can't be zero.");
+	ERR_FAIL_COND_V_MSG(p_up.is_equal_approx(Vector3()), Basis(), "The up vector can't be zero.");
+#endif
+	Vector3 v_z = -p_target.normalized();
+	Vector3 v_x = p_up.cross(v_z);
+#ifdef MATH_CHECKS
+	ERR_FAIL_COND_V_MSG(v_x.is_equal_approx(Vector3()), Basis(), "The target vector and up vector can't be parallel to each other.");
+#endif
+	v_x.normalize();
+	Vector3 v_y = v_z.cross(v_x);
+
+	Basis basis;
+	basis.set(v_x, v_y, v_z);
+	return basis;
 }

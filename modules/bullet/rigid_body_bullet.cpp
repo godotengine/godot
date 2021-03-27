@@ -106,12 +106,22 @@ Vector3 BulletPhysicsDirectBodyState3D::get_angular_velocity() const {
 	return body->get_angular_velocity();
 }
 
-void BulletPhysicsDirectBodyState3D::set_transform(const Transform &p_transform) {
+void BulletPhysicsDirectBodyState3D::set_transform(const Transform3D &p_transform) {
 	body->set_transform(p_transform);
 }
 
-Transform BulletPhysicsDirectBodyState3D::get_transform() const {
+Transform3D BulletPhysicsDirectBodyState3D::get_transform() const {
 	return body->get_transform();
+}
+
+Vector3 BulletPhysicsDirectBodyState3D::get_velocity_at_local_position(const Vector3 &p_position) const {
+	btVector3 local_position;
+	G_TO_B(p_position, local_position);
+
+	Vector3 velocity;
+	B_TO_G(body->btBody->getVelocityInLocalPoint(local_position), velocity);
+
+	return velocity;
 }
 
 void BulletPhysicsDirectBodyState3D::add_central_force(const Vector3 &p_force) {
@@ -268,7 +278,7 @@ RigidBodyBullet::RigidBodyBullet() :
 	reload_shapes();
 	setupBulletCollisionObject(btBody);
 
-	set_mode(PhysicsServer3D::BODY_MODE_RIGID);
+	set_mode(PhysicsServer3D::BODY_MODE_DYNAMIC);
 	reload_axis_lock();
 
 	areasWhereIam.resize(maxAreasWhereIam);
@@ -346,16 +356,17 @@ void RigidBodyBullet::dispatch_callbacks() {
 
 		Variant variantBodyDirect = bodyDirect;
 
-		Object *obj = ObjectDB::get_instance(force_integration_callback->id);
+		Object *obj = force_integration_callback->callable.get_object();
 		if (!obj) {
 			// Remove integration callback
-			set_force_integration_callback(ObjectID(), StringName());
+			set_force_integration_callback(Callable());
 		} else {
 			const Variant *vp[2] = { &variantBodyDirect, &force_integration_callback->udata };
 
 			Callable::CallError responseCallError;
 			int argc = (force_integration_callback->udata.get_type() == Variant::NIL) ? 1 : 2;
-			obj->call(force_integration_callback->method, vp, argc, responseCallError);
+			Variant rv;
+			force_integration_callback->callable.call(vp, argc, rv, responseCallError);
 		}
 	}
 
@@ -371,16 +382,15 @@ void RigidBodyBullet::dispatch_callbacks() {
 	previousActiveState = btBody->isActive();
 }
 
-void RigidBodyBullet::set_force_integration_callback(ObjectID p_id, const StringName &p_method, const Variant &p_udata) {
+void RigidBodyBullet::set_force_integration_callback(const Callable &p_callable, const Variant &p_udata) {
 	if (force_integration_callback) {
 		memdelete(force_integration_callback);
 		force_integration_callback = nullptr;
 	}
 
-	if (p_id.is_valid()) {
+	if (p_callable.get_object()) {
 		force_integration_callback = memnew(ForceIntegrationCallback);
-		force_integration_callback->id = p_id;
-		force_integration_callback->method = p_method;
+		force_integration_callback->callable = p_callable;
 		force_integration_callback->udata = p_udata;
 	}
 }
@@ -531,14 +541,14 @@ void RigidBodyBullet::set_mode(PhysicsServer3D::BodyMode p_mode) {
 			reload_axis_lock();
 			_internal_set_mass(0);
 			break;
-		case PhysicsServer3D::BODY_MODE_RIGID:
-			mode = PhysicsServer3D::BODY_MODE_RIGID;
+		case PhysicsServer3D::BODY_MODE_DYNAMIC:
+			mode = PhysicsServer3D::BODY_MODE_DYNAMIC;
 			reload_axis_lock();
 			_internal_set_mass(0 == mass ? 1 : mass);
 			scratch_space_override_modificator();
 			break;
-		case PhysicsServer3D::BODY_MODE_CHARACTER:
-			mode = PhysicsServer3D::BODY_MODE_CHARACTER;
+		case PhysicsServer3D::MODE_DYNAMIC_LOCKED:
+			mode = PhysicsServer3D::MODE_DYNAMIC_LOCKED;
 			reload_axis_lock();
 			_internal_set_mass(0 == mass ? 1 : mass);
 			scratch_space_override_modificator();
@@ -711,7 +721,7 @@ bool RigidBodyBullet::is_axis_locked(PhysicsServer3D::BodyAxis p_axis) const {
 
 void RigidBodyBullet::reload_axis_lock() {
 	btBody->setLinearFactor(btVector3(btScalar(!is_axis_locked(PhysicsServer3D::BODY_AXIS_LINEAR_X)), btScalar(!is_axis_locked(PhysicsServer3D::BODY_AXIS_LINEAR_Y)), btScalar(!is_axis_locked(PhysicsServer3D::BODY_AXIS_LINEAR_Z))));
-	if (PhysicsServer3D::BODY_MODE_CHARACTER == mode) {
+	if (PhysicsServer3D::MODE_DYNAMIC_LOCKED == mode) {
 		/// When character angular is always locked
 		btBody->setAngularFactor(btVector3(0., 0., 0.));
 	} else {
@@ -1006,7 +1016,7 @@ void RigidBodyBullet::_internal_set_mass(real_t p_mass) {
 	// Rigidbody is dynamic if and only if mass is non Zero, otherwise static
 	const bool isDynamic = p_mass != 0.f;
 	if (isDynamic) {
-		if (PhysicsServer3D::BODY_MODE_RIGID != mode && PhysicsServer3D::BODY_MODE_CHARACTER != mode) {
+		if (PhysicsServer3D::BODY_MODE_DYNAMIC != mode && PhysicsServer3D::MODE_DYNAMIC_LOCKED != mode) {
 			return;
 		}
 
@@ -1015,7 +1025,7 @@ void RigidBodyBullet::_internal_set_mass(real_t p_mass) {
 			mainShape->calculateLocalInertia(p_mass, localInertia);
 		}
 
-		if (PhysicsServer3D::BODY_MODE_RIGID == mode) {
+		if (PhysicsServer3D::BODY_MODE_DYNAMIC == mode) {
 			btBody->setCollisionFlags(clearedCurrentFlags); // Just set the flags without Kin and Static
 		} else {
 			btBody->setCollisionFlags(clearedCurrentFlags | btCollisionObject::CF_CHARACTER_OBJECT);

@@ -37,7 +37,7 @@
 	@author Juan Linietsky <reduzio@gmail.com>
  * Generic Pool Allocator.
  * This is a generic memory pool allocator, with locking, compacting and alignment. (@TODO alignment)
- * It used as a standard way to manage alloction in a specific region of memory, such as texture memory,
+ * It used as a standard way to manage allocation in a specific region of memory, such as texture memory,
  * audio sample memory, or just any kind of memory overall.
  * (@TODO) abstraction should be greater, because in many platforms, you need to manage a nonreachable memory.
 */

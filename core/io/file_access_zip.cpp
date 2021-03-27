@@ -32,8 +32,7 @@
 
 #include "file_access_zip.h"
 
-#include "core/os/copymem.h"
-#include "core/os/file_access.h"
+#include "core/io/file_access.h"
 
 ZipArchive *ZipArchive::instance = nullptr;
 
@@ -44,14 +43,14 @@ static void *godot_open(void *data, const char *p_fname, int mode) {
 		return nullptr;
 	}
 
-	FileAccess *f = (FileAccess *)data;
-	f->open(p_fname, FileAccess::READ);
+	FileAccess *f = FileAccess::open(p_fname, FileAccess::READ);
+	ERR_FAIL_COND_V(!f, nullptr);
 
-	return f->is_open() ? data : nullptr;
+	return f;
 }
 
 static uLong godot_read(void *data, void *fdata, void *buf, uLong size) {
-	FileAccess *f = (FileAccess *)data;
+	FileAccess *f = (FileAccess *)fdata;
 	f->get_buffer((uint8_t *)buf, size);
 	return size;
 }
@@ -61,20 +60,20 @@ static uLong godot_write(voidpf opaque, voidpf stream, const void *buf, uLong si
 }
 
 static long godot_tell(voidpf opaque, voidpf stream) {
-	FileAccess *f = (FileAccess *)opaque;
+	FileAccess *f = (FileAccess *)stream;
 	return f->get_position();
 }
 
 static long godot_seek(voidpf opaque, voidpf stream, uLong offset, int origin) {
-	FileAccess *f = (FileAccess *)opaque;
+	FileAccess *f = (FileAccess *)stream;
 
-	int pos = offset;
+	uint64_t pos = offset;
 	switch (origin) {
 		case ZLIB_FILEFUNC_SEEK_CUR:
 			pos = f->get_position() + offset;
 			break;
 		case ZLIB_FILEFUNC_SEEK_END:
-			pos = f->get_len() + offset;
+			pos = f->get_length() + offset;
 			break;
 		default:
 			break;
@@ -85,13 +84,17 @@ static long godot_seek(voidpf opaque, voidpf stream, uLong offset, int origin) {
 }
 
 static int godot_close(voidpf opaque, voidpf stream) {
-	FileAccess *f = (FileAccess *)opaque;
-	f->close();
+	FileAccess *f = (FileAccess *)stream;
+	if (f) {
+		f->close();
+		memdelete(f);
+		f = nullptr;
+	}
 	return 0;
 }
 
 static int godot_testerror(voidpf opaque, voidpf stream) {
-	FileAccess *f = (FileAccess *)opaque;
+	FileAccess *f = (FileAccess *)stream;
 	return f->get_error() != OK ? 1 : 0;
 }
 
@@ -106,23 +109,18 @@ static void godot_free(voidpf opaque, voidpf address) {
 
 void ZipArchive::close_handle(unzFile p_file) const {
 	ERR_FAIL_COND_MSG(!p_file, "Cannot close a file if none is open.");
-	FileAccess *f = (FileAccess *)unzGetOpaque(p_file);
 	unzCloseCurrentFile(p_file);
 	unzClose(p_file);
-	memdelete(f);
 }
 
 unzFile ZipArchive::get_file_handle(String p_file) const {
 	ERR_FAIL_COND_V_MSG(!file_exists(p_file), nullptr, "File '" + p_file + " doesn't exist.");
 	File file = files[p_file];
 
-	FileAccess *f = FileAccess::open(packages[file.package].filename, FileAccess::READ);
-	ERR_FAIL_COND_V_MSG(!f, nullptr, "Cannot open file '" + packages[file.package].filename + "'.");
-
 	zlib_filefunc_def io;
-	zeromem(&io, sizeof(io));
+	memset(&io, 0, sizeof(io));
 
-	io.opaque = f;
+	io.opaque = nullptr;
 	io.zopen_file = godot_open;
 	io.zread_file = godot_read;
 	io.zwrite_file = godot_write;
@@ -136,7 +134,7 @@ unzFile ZipArchive::get_file_handle(String p_file) const {
 	io.free_mem = godot_free;
 
 	unzFile pkg = unzOpen2(packages[file.package].filename.utf8().get_data(), &io);
-	ERR_FAIL_COND_V(!pkg, nullptr);
+	ERR_FAIL_COND_V_MSG(!pkg, nullptr, "Cannot open file '" + packages[file.package].filename + "'.");
 	int unz_err = unzGoToFilePos(pkg, &file.file_pos);
 	if (unz_err != UNZ_OK || unzOpenCurrentFile(pkg) != UNZ_OK) {
 		unzClose(pkg);
@@ -146,8 +144,7 @@ unzFile ZipArchive::get_file_handle(String p_file) const {
 	return pkg;
 }
 
-bool ZipArchive::try_open_pack(const String &p_path, bool p_replace_files, size_t p_offset = 0) {
-	//printf("opening zip pack %s, %i, %i\n", p_name.utf8().get_data(), p_name.extension().nocasecmp_to("zip"), p_name.extension().nocasecmp_to("pcz"));
+bool ZipArchive::try_open_pack(const String &p_path, bool p_replace_files, uint64_t p_offset = 0) {
 	// load with offset feature only supported for PCK files
 	ERR_FAIL_COND_V_MSG(p_offset != 0, false, "Invalid PCK data. Note that loading files with a non-zero offset isn't supported with ZIP archives.");
 
@@ -156,12 +153,9 @@ bool ZipArchive::try_open_pack(const String &p_path, bool p_replace_files, size_
 	}
 
 	zlib_filefunc_def io;
+	memset(&io, 0, sizeof(io));
 
-	FileAccess *fa = FileAccess::open(p_path, FileAccess::READ);
-	if (!fa) {
-		return false;
-	}
-	io.opaque = fa;
+	io.opaque = nullptr;
 	io.zopen_file = godot_open;
 	io.zread_file = godot_read;
 	io.zwrite_file = godot_write;
@@ -232,9 +226,7 @@ ZipArchive::ZipArchive() {
 
 ZipArchive::~ZipArchive() {
 	for (int i = 0; i < packages.size(); i++) {
-		FileAccess *f = (FileAccess *)unzGetOpaque(packages[i].zfile);
 		unzClose(packages[i].zfile);
-		memdelete(f);
 	}
 
 	packages.clear();
@@ -270,22 +262,23 @@ bool FileAccessZip::is_open() const {
 	return zfile != nullptr;
 }
 
-void FileAccessZip::seek(size_t p_position) {
+void FileAccessZip::seek(uint64_t p_position) {
 	ERR_FAIL_COND(!zfile);
+
 	unzSeekCurrentFile(zfile, p_position);
 }
 
 void FileAccessZip::seek_end(int64_t p_position) {
 	ERR_FAIL_COND(!zfile);
-	unzSeekCurrentFile(zfile, get_len() + p_position);
+	unzSeekCurrentFile(zfile, get_length() + p_position);
 }
 
-size_t FileAccessZip::get_position() const {
+uint64_t FileAccessZip::get_position() const {
 	ERR_FAIL_COND_V(!zfile, 0);
 	return unztell(zfile);
 }
 
-size_t FileAccessZip::get_len() const {
+uint64_t FileAccessZip::get_length() const {
 	ERR_FAIL_COND_V(!zfile, 0);
 	return file_info.uncompressed_size;
 }
@@ -302,17 +295,17 @@ uint8_t FileAccessZip::get_8() const {
 	return ret;
 }
 
-int FileAccessZip::get_buffer(uint8_t *p_dst, int p_length) const {
+uint64_t FileAccessZip::get_buffer(uint8_t *p_dst, uint64_t p_length) const {
 	ERR_FAIL_COND_V(!p_dst && p_length > 0, -1);
-	ERR_FAIL_COND_V(p_length < 0, -1);
 	ERR_FAIL_COND_V(!zfile, -1);
+
 	at_eof = unzeof(zfile);
 	if (at_eof) {
 		return 0;
 	}
-	int read = unzReadCurrentFile(zfile, p_dst, p_length);
+	int64_t read = unzReadCurrentFile(zfile, p_dst, p_length);
 	ERR_FAIL_COND_V(read < 0, read);
-	if (read < p_length) {
+	if ((uint64_t)read < p_length) {
 		at_eof = true;
 	}
 	return read;

@@ -55,46 +55,13 @@ public:
 
 /*************************************************************************/
 
-class FontDataEditor : public EditorProperty {
-	GDCLASS(FontDataEditor, EditorProperty);
-
-	LineEdit *le = nullptr;
-	CheckBox *chk = nullptr;
-	Button *button = nullptr;
-
-	void toggle_lang(bool p_pressed);
-	void toggle_script(bool p_pressed);
-	void add_lang();
-	void add_script();
-	void remove_lang();
-	void remove_script();
-
-protected:
-	void _notification(int p_what);
-
-	static void _bind_methods();
-
-public:
-	virtual Size2 get_minimum_size() const override;
-	virtual void update_property() override;
-
-	void init_lang_add();
-	void init_lang_edit();
-	void init_script_add();
-	void init_script_edit();
-
-	FontDataEditor();
-};
-
-/*************************************************************************/
-
 class EditorInspectorPluginFont : public EditorInspectorPlugin {
 	GDCLASS(EditorInspectorPluginFont, EditorInspectorPlugin);
 
 public:
 	virtual bool can_handle(Object *p_object) override;
 	virtual void parse_begin(Object *p_object) override;
-	virtual bool parse_property(Object *p_object, Variant::Type p_type, const String &p_path, PropertyHint p_hint, const String &p_hint_text, int p_usage, bool p_wide) override;
+	virtual bool parse_property(Object *p_object, const Variant::Type p_type, const String &p_path, const PropertyHint p_hint, const String &p_hint_text, const uint32_t p_usage, const bool p_wide = false) override;
 };
 
 /*************************************************************************/

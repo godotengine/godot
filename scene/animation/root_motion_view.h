@@ -32,21 +32,23 @@
 #define ROOT_MOTION_VIEW_H
 
 #include "scene/3d/visual_instance_3d.h"
-
+#include "scene/resources/immediate_mesh.h"
 class RootMotionView : public VisualInstance3D {
 	GDCLASS(RootMotionView, VisualInstance3D);
 
 public:
-	RID immediate;
+	Ref<ImmediateMesh> immediate;
 	NodePath path;
-	float cell_size = 1.0;
-	float radius = 10.0;
+	real_t cell_size = 1.0;
+	real_t radius = 10.0;
 	bool use_in_game = false;
 	Color color = Color(0.5, 0.5, 1.0);
 	bool first = true;
 	bool zero_y = true;
 
-	Transform accumulated;
+	Ref<Material> immediate_material;
+
+	Transform3D accumulated;
 
 private:
 	void _notification(int p_what);

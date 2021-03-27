@@ -30,7 +30,6 @@
 
 #include "animated_sprite_2d.h"
 
-#include "core/os/os.h"
 #include "scene/main/viewport.h"
 #include "scene/scene_string_names.h"
 
@@ -123,7 +122,7 @@ void AnimatedSprite2D::_validate_property(PropertyInfo &property) const {
 			}
 
 			property.hint_string += String(E->get());
-			if (animation == E->get()) {
+			if (animation == E) {
 				current_found = true;
 			}
 		}
@@ -159,12 +158,12 @@ void AnimatedSprite2D::_notification(int p_what) {
 				return;
 			}
 
-			float speed = frames->get_animation_speed(animation) * speed_scale;
+			double speed = frames->get_animation_speed(animation) * speed_scale;
 			if (speed == 0) {
 				return; //do nothing
 			}
 
-			float remaining = get_process_delta_time();
+			double remaining = get_process_delta_time();
 
 			while (remaining) {
 				if (timeout <= 0) {
@@ -205,7 +204,7 @@ void AnimatedSprite2D::_notification(int p_what) {
 					emit_signal(SceneStringNames::get_singleton()->frame_changed);
 				}
 
-				float to_process = MIN(timeout, remaining);
+				double to_process = MIN(timeout, remaining);
 				remaining -= to_process;
 				timeout -= to_process;
 			}
@@ -272,7 +271,7 @@ void AnimatedSprite2D::set_sprite_frames(const Ref<SpriteFrames> &p_frames) {
 	notify_property_list_changed();
 	_reset_timeout();
 	update();
-	update_configuration_warning();
+	update_configuration_warnings();
 }
 
 Ref<SpriteFrames> AnimatedSprite2D::get_sprite_frames() const {
@@ -310,8 +309,8 @@ int AnimatedSprite2D::get_frame() const {
 	return frame;
 }
 
-void AnimatedSprite2D::set_speed_scale(float p_speed_scale) {
-	float elapsed = _get_frame_duration() - timeout;
+void AnimatedSprite2D::set_speed_scale(double p_speed_scale) {
+	double elapsed = _get_frame_duration() - timeout;
 
 	speed_scale = MAX(p_speed_scale, 0.0f);
 
@@ -320,7 +319,7 @@ void AnimatedSprite2D::set_speed_scale(float p_speed_scale) {
 	timeout -= elapsed;
 }
 
-float AnimatedSprite2D::get_speed_scale() const {
+double AnimatedSprite2D::get_speed_scale() const {
 	return speed_scale;
 }
 
@@ -382,12 +381,11 @@ bool AnimatedSprite2D::_is_playing() const {
 }
 
 void AnimatedSprite2D::play(const StringName &p_animation, const bool p_backwards) {
-	ERR_FAIL_NULL_MSG(frames, "Can't play AnimatedSprite2D without a valid SpriteFrames resource.");
 	backwards = p_backwards;
 
 	if (p_animation) {
 		set_animation(p_animation);
-		if (backwards && get_frame() == 0) {
+		if (frames.is_valid() && backwards && get_frame() == 0) {
 			set_frame(frames->get_frame_count(p_animation) - 1);
 		}
 	}
@@ -403,9 +401,9 @@ bool AnimatedSprite2D::is_playing() const {
 	return playing;
 }
 
-float AnimatedSprite2D::_get_frame_duration() {
+double AnimatedSprite2D::_get_frame_duration() {
 	if (frames.is_valid() && frames->has_animation(animation)) {
-		float speed = frames->get_animation_speed(animation) * speed_scale;
+		double speed = frames->get_animation_speed(animation) * speed_scale;
 		if (speed > 0) {
 			return 1.0 / speed;
 		}
@@ -441,17 +439,14 @@ StringName AnimatedSprite2D::get_animation() const {
 	return animation;
 }
 
-String AnimatedSprite2D::get_configuration_warning() const {
-	String warning = Node2D::get_configuration_warning();
+TypedArray<String> AnimatedSprite2D::get_configuration_warnings() const {
+	TypedArray<String> warnings = Node::get_configuration_warnings();
 
 	if (frames.is_null()) {
-		if (!warning.is_empty()) {
-			warning += "\n\n";
-		}
-		warning += TTR("A SpriteFrames resource must be created or set in the \"Frames\" property in order for AnimatedSprite to display frames.");
+		warnings.push_back(TTR("A SpriteFrames resource must be created or set in the \"Frames\" property in order for AnimatedSprite to display frames."));
 	}
 
-	return warning;
+	return warnings;
 }
 
 void AnimatedSprite2D::_bind_methods() {

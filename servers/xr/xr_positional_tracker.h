@@ -43,8 +43,8 @@
 	This is where potentially additional AR/VR interfaces may be active as there are AR/VR SDKs that solely deal with positional tracking.
 */
 
-class XRPositionalTracker : public Object {
-	GDCLASS(XRPositionalTracker, Object);
+class XRPositionalTracker : public RefCounted {
+	GDCLASS(XRPositionalTracker, RefCounted);
 	_THREAD_SAFE_CLASS_
 
 public:
@@ -93,7 +93,7 @@ public:
 	void set_mesh(const Ref<Mesh> &p_mesh);
 	Ref<Mesh> get_mesh() const;
 
-	Transform get_transform(bool p_adjust_by_reference_frame) const;
+	Transform3D get_transform(bool p_adjust_by_reference_frame) const;
 
 	XRPositionalTracker();
 	~XRPositionalTracker() {}

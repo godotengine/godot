@@ -37,5 +37,8 @@
 		<constant name="OP_MIN" value="6" enum="Operator">
 			Returns the lesser of two numbers. Translates to [code]max(a, b)[/code] in the Godot Shader Language.
 		</constant>
+		<constant name="OP_ENUM_SIZE" value="7" enum="Operator">
+			Represents the size of the [enum Operator] enum.
+		</constant>
 	</constants>
 </class>

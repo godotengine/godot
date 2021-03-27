@@ -41,25 +41,25 @@ protected:
 	struct Contact {
 		Vector3 position;
 		Vector3 normal;
-		int index_A, index_B;
+		int index_A = 0, index_B = 0;
 		Vector3 local_A, local_B;
-		real_t acc_normal_impulse; // accumulated normal impulse (Pn)
+		real_t acc_normal_impulse = 0.0; // accumulated normal impulse (Pn)
 		Vector3 acc_tangent_impulse; // accumulated tangent impulse (Pt)
-		real_t acc_bias_impulse; // accumulated normal impulse for position bias (Pnb)
-		real_t acc_bias_impulse_center_of_mass; // accumulated normal impulse for position bias applied to com
-		real_t mass_normal;
-		real_t bias;
-		real_t bounce;
+		real_t acc_bias_impulse = 0.0; // accumulated normal impulse for position bias (Pnb)
+		real_t acc_bias_impulse_center_of_mass = 0.0; // accumulated normal impulse for position bias applied to com
+		real_t mass_normal = 0.0;
+		real_t bias = 0.0;
+		real_t bounce = 0.0;
 
-		real_t depth;
-		bool active;
+		real_t depth = 0.0;
+		bool active = false;
 		Vector3 rA, rB; // Offset in world orientation with respect to center of mass
 	};
 
 	Vector3 sep_axis;
-	bool collided;
+	bool collided = false;
 
-	Space3DSW *space;
+	Space3DSW *space = nullptr;
 
 	BodyContact3DSW(Body3DSW **p_body_ptr = nullptr, int p_body_count = 0) :
 			Constraint3DSW(p_body_ptr, p_body_count) {
@@ -77,37 +77,48 @@ class BodyPair3DSW : public BodyContact3DSW {
 			Body3DSW *B;
 		};
 
-		Body3DSW *_arr[2];
+		Body3DSW *_arr[2] = { nullptr, nullptr };
 	};
 
-	int shape_A;
-	int shape_B;
+	int shape_A = 0;
+	int shape_B = 0;
+
+	bool collide_A = false;
+	bool collide_B = false;
+
+	bool report_contacts_only = false;
 
 	Vector3 offset_B; //use local A coordinates to avoid numerical issues on collision detection
 
 	Contact contacts[MAX_CONTACTS];
-	int contact_count;
+	int contact_count = 0;
 
 	static void _contact_added_callback(const Vector3 &p_point_A, int p_index_A, const Vector3 &p_point_B, int p_index_B, void *p_userdata);
 
 	void contact_added_callback(const Vector3 &p_point_A, int p_index_A, const Vector3 &p_point_B, int p_index_B);
 
 	void validate_contacts();
-	bool _test_ccd(real_t p_step, Body3DSW *p_A, int p_shape_A, const Transform &p_xform_A, Body3DSW *p_B, int p_shape_B, const Transform &p_xform_B);
+	bool _test_ccd(real_t p_step, Body3DSW *p_A, int p_shape_A, const Transform3D &p_xform_A, Body3DSW *p_B, int p_shape_B, const Transform3D &p_xform_B);
 
 public:
-	bool setup(real_t p_step);
-	void solve(real_t p_step);
+	virtual bool setup(real_t p_step) override;
+	virtual bool pre_solve(real_t p_step) override;
+	virtual void solve(real_t p_step) override;
 
 	BodyPair3DSW(Body3DSW *p_A, int p_shape_A, Body3DSW *p_B, int p_shape_B);
 	~BodyPair3DSW();
 };
 
 class BodySoftBodyPair3DSW : public BodyContact3DSW {
-	Body3DSW *body;
-	SoftBody3DSW *soft_body;
+	Body3DSW *body = nullptr;
+	SoftBody3DSW *soft_body = nullptr;
 
-	int body_shape;
+	int body_shape = 0;
+
+	bool body_collides = false;
+	bool soft_body_collides = false;
+
+	bool report_contacts_only = false;
 
 	LocalVector<Contact> contacts;
 
@@ -118,8 +129,12 @@ class BodySoftBodyPair3DSW : public BodyContact3DSW {
 	void validate_contacts();
 
 public:
-	bool setup(real_t p_step);
-	void solve(real_t p_step);
+	virtual bool setup(real_t p_step) override;
+	virtual bool pre_solve(real_t p_step) override;
+	virtual void solve(real_t p_step) override;
+
+	virtual SoftBody3DSW *get_soft_body_ptr(int p_index) const override { return soft_body; }
+	virtual int get_soft_body_count() const override { return 1; }
 
 	BodySoftBodyPair3DSW(Body3DSW *p_A, int p_shape_A, SoftBody3DSW *p_B);
 	~BodySoftBodyPair3DSW();

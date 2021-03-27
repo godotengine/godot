@@ -50,8 +50,8 @@ TEST_CASE("[AABB] Constructor methods") {
 
 TEST_CASE("[AABB] String conversion") {
 	CHECK_MESSAGE(
-			String(AABB(Vector3(-1.5, 2, -2.5), Vector3(4, 5, 6))) == "-1.5, 2, -2.5 - 4, 5, 6",
-			"The string representation shouild match the expected value.");
+			String(AABB(Vector3(-1.5, 2, -2.5), Vector3(4, 5, 6))) == "[P: (-1.5, 2, -2.5), S: (4, 5, 6)]",
+			"The string representation should match the expected value.");
 }
 
 TEST_CASE("[AABB] Basic getters") {
@@ -278,24 +278,24 @@ TEST_CASE("[AABB] Get endpoints") {
 TEST_CASE("[AABB] Get longest/shortest axis") {
 	const AABB aabb = AABB(Vector3(-1.5, 2, -2.5), Vector3(4, 5, 6));
 	CHECK_MESSAGE(
-			aabb.get_longest_axis().is_equal_approx(Vector3(0, 0, 1)),
+			aabb.get_longest_axis() == Vector3(0, 0, 1),
 			"get_longest_axis() should return the expected value.");
 	CHECK_MESSAGE(
 			aabb.get_longest_axis_index() == Vector3::AXIS_Z,
-			"get_longest_axis() should return the expected value.");
+			"get_longest_axis_index() should return the expected value.");
 	CHECK_MESSAGE(
-			Math::is_equal_approx(aabb.get_longest_axis_size(), 6),
-			"get_longest_axis() should return the expected value.");
+			aabb.get_longest_axis_size() == 6,
+			"get_longest_axis_size() should return the expected value.");
 
 	CHECK_MESSAGE(
-			aabb.get_shortest_axis().is_equal_approx(Vector3(1, 0, 0)),
+			aabb.get_shortest_axis() == Vector3(1, 0, 0),
 			"get_shortest_axis() should return the expected value.");
 	CHECK_MESSAGE(
 			aabb.get_shortest_axis_index() == Vector3::AXIS_X,
-			"get_shortest_axis() should return the expected value.");
+			"get_shortest_axis_index() should return the expected value.");
 	CHECK_MESSAGE(
-			Math::is_equal_approx(aabb.get_shortest_axis_size(), 4),
-			"get_shortest_axis() should return the expected value.");
+			aabb.get_shortest_axis_size() == 4,
+			"get_shortest_axis_size() should return the expected value.");
 }
 
 #ifndef _MSC_VER

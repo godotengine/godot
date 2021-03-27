@@ -13,7 +13,10 @@
 	<methods>
 	</methods>
 	<members>
-		<member name="size" type="Vector2" setter="set_size" getter="get_size" default="Vector2( 1, 1 )">
+		<member name="center_offset" type="Vector3" setter="set_center_offset" getter="get_center_offset" default="Vector3(0, 0, 0)">
+			Offset of the generated Quad. Useful for particles.
+		</member>
+		<member name="size" type="Vector2" setter="set_size" getter="get_size" default="Vector2(1, 1)">
 			Size on the X and Y axes.
 		</member>
 	</members>

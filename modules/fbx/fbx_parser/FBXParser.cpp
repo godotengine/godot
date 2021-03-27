@@ -74,15 +74,15 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *  @brief Implementation of the FBX parser and the rudimentary DOM that we use
  */
 
-#include "thirdparty/zlib/zlib.h"
 #include <stdlib.h> /* strtol */
+#include <zlib.h>
 
 #include "ByteSwapper.h"
 #include "FBXParseTools.h"
 #include "FBXParser.h"
 #include "FBXTokenizer.h"
 #include "core/math/math_defs.h"
-#include "core/math/transform.h"
+#include "core/math/transform_3d.h"
 #include "core/math/vector3.h"
 #include "core/string/print_string.h"
 
@@ -131,6 +131,8 @@ Element::Element(const TokenPtr key_token, Parser &parser) :
 
 			if (!n) {
 				print_error("unexpected end of file, expected bracket, comma or key" + String(parser.LastToken()->StringContents().c_str()));
+				parser.corrupt = true;
+				return;
 			}
 
 			const TokenType ty = n->Type();
@@ -143,6 +145,8 @@ Element::Element(const TokenPtr key_token, Parser &parser) :
 
 			if (ty != TokenType_OPEN_BRACKET && ty != TokenType_CLOSE_BRACKET && ty != TokenType_COMMA && ty != TokenType_KEY) {
 				print_error("unexpected token; expected bracket, comma or key" + String(n->StringContents().c_str()));
+				parser.corrupt = true;
+				return;
 			}
 		}
 
@@ -150,11 +154,17 @@ Element::Element(const TokenPtr key_token, Parser &parser) :
 			compound = new_Scope(parser);
 			parser.scopes.push_back(compound);
 
+			if (parser.corrupt) {
+				return;
+			}
+
 			// current token should be a TOK_CLOSE_BRACKET
 			n = parser.CurrentToken();
 
 			if (n && n->Type() != TokenType_CLOSE_BRACKET) {
 				print_error("expected closing bracket" + String(n->StringContents().c_str()));
+				parser.corrupt = true;
+				return;
 			}
 
 			parser.AdvanceToNextToken();
@@ -173,22 +183,31 @@ Scope::Scope(Parser &parser, bool topLevel) {
 		TokenPtr t = parser.CurrentToken();
 		if (t->Type() != TokenType_OPEN_BRACKET) {
 			print_error("expected open bracket" + String(t->StringContents().c_str()));
+			parser.corrupt = true;
+			return;
 		}
 	}
 
 	TokenPtr n = parser.AdvanceToNextToken();
 	if (n == nullptr) {
 		print_error("unexpected end of file");
+		parser.corrupt = true;
+		return;
 	}
 
 	// note: empty scopes are allowed
 	while (n && n->Type() != TokenType_CLOSE_BRACKET) {
 		if (n->Type() != TokenType_KEY) {
 			print_error("unexpected token, expected TOK_KEY" + String(n->StringContents().c_str()));
+			parser.corrupt = true;
+			return;
 		}
 
 		const std::string str = n->StringContents();
 
+		if (parser.corrupt) {
+			return;
+		}
 		// std::multimap<std::string, ElementPtr> (key and value)
 		elements.insert(ElementMap::value_type(str, new_Element(n, parser)));
 
@@ -216,7 +235,7 @@ Scope::~Scope() {
 
 // ------------------------------------------------------------------------------------------------
 Parser::Parser(const TokenList &tokens, bool is_binary) :
-		tokens(tokens), last(), current(), cursor(tokens.begin()), is_binary(is_binary) {
+		corrupt(false), tokens(tokens), cursor(tokens.begin()), is_binary(is_binary) {
 	root = new_Scope(*this, true);
 	scopes.push_back(root);
 }
@@ -556,7 +575,7 @@ void ReadBinaryDataArray(char type, uint32_t count, const char *&data, const cha
 		std::copy(data, end, buff.begin());
 	} else if (encmode == 1) {
 		// zlib/deflate, next comes ZIP head (0x78 0x01)
-		// see http://www.ietf.org/rfc/rfc1950.txt
+		// see https://www.ietf.org/rfc/rfc1950.txt
 
 		z_stream zstream;
 		zstream.opaque = Z_NULL;
@@ -1138,7 +1157,7 @@ void ParseVectorDataArray(std::vector<int64_t> &out, const ElementPtr el) {
 }
 
 // ------------------------------------------------------------------------------------------------
-Transform ReadMatrix(const ElementPtr element) {
+Transform3D ReadMatrix(const ElementPtr element) {
 	std::vector<float> values;
 	ParseVectorDataArray(values, element);
 
@@ -1148,12 +1167,12 @@ Transform ReadMatrix(const ElementPtr element) {
 
 	// clean values to prevent any IBM damage on inverse() / affine_inverse()
 	for (float &value : values) {
-		if (::Math::is_equal_approx(0, value)) {
+		if (::Math::is_zero_approx(value)) {
 			value = 0;
 		}
 	}
 
-	Transform xform;
+	Transform3D xform;
 	Basis basis;
 
 	basis.set(
@@ -1187,7 +1206,7 @@ std::string ParseTokenAsString(const TokenPtr t) {
 
 // ------------------------------------------------------------------------------------------------
 // extract a required element from a scope, abort if the element cannot be found
-ElementPtr GetRequiredElement(const ScopePtr sc, const std::string &index, const ElementPtr element /*= NULL*/) {
+ElementPtr GetRequiredElement(const ScopePtr sc, const std::string &index, const ElementPtr element /*= nullptr*/) {
 	const ElementPtr el = sc->GetElement(index);
 	TokenPtr token = el->KeyToken();
 	ERR_FAIL_COND_V(!token, nullptr);
@@ -1208,7 +1227,7 @@ bool HasElement(const ScopePtr sc, const std::string &index) {
 
 // ------------------------------------------------------------------------------------------------
 // extract a required element from a scope, abort if the element cannot be found
-ElementPtr GetOptionalElement(const ScopePtr sc, const std::string &index, const ElementPtr element /*= NULL*/) {
+ElementPtr GetOptionalElement(const ScopePtr sc, const std::string &index, const ElementPtr element /*= nullptr*/) {
 	const ElementPtr el = sc->GetElement(index);
 	return el;
 }
@@ -1228,6 +1247,21 @@ ScopePtr GetRequiredScope(const ElementPtr el) {
 	}
 
 	ERR_FAIL_V_MSG(nullptr, "Invalid element supplied to parser");
+}
+
+// ------------------------------------------------------------------------------------------------
+// extract optional compound scope
+ScopePtr GetOptionalScope(const ElementPtr el) {
+	if (el) {
+		ScopePtr s = el->Compound();
+		TokenPtr token = el->KeyToken();
+
+		if (token && s) {
+			return s;
+		}
+	}
+
+	return nullptr;
 }
 
 // ------------------------------------------------------------------------------------------------

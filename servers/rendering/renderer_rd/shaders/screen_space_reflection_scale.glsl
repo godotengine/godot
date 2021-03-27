@@ -2,7 +2,7 @@
 
 #version 450
 
-VERSION_DEFINES
+#VERSION_DEFINES
 
 layout(local_size_x = 8, local_size_y = 8, local_size_z = 1) in;
 
@@ -36,12 +36,12 @@ void main() {
 	float divisor = 0.0;
 	vec4 color;
 	float depth;
-	vec3 normal;
+	vec4 normal;
 
 	if (params.filtered) {
 		color = vec4(0.0);
 		depth = 0.0;
-		normal = vec3(0.0);
+		normal = vec4(0.0);
 
 		for (int i = 0; i < 4; i++) {
 			ivec2 ofs = ssC << 1;
@@ -53,7 +53,9 @@ void main() {
 			}
 			color += texelFetch(source_ssr, ofs, 0);
 			float d = texelFetch(source_depth, ofs, 0).r;
-			normal += texelFetch(source_normal, ofs, 0).xyz * 2.0 - 1.0;
+			vec4 nr = texelFetch(source_normal, ofs, 0);
+			normal.xyz += nr.xyz * 2.0 - 1.0;
+			normal.w += nr.w;
 
 			d = d * 2.0 - 1.0;
 			if (params.orthogonal) {
@@ -66,11 +68,12 @@ void main() {
 
 		color /= 4.0;
 		depth /= 4.0;
-		normal = normalize(normal / 4.0) * 0.5 + 0.5;
+		normal.xyz = normalize(normal.xyz / 4.0) * 0.5 + 0.5;
+		normal.w /= 4.0;
 	} else {
 		color = texelFetch(source_ssr, ssC << 1, 0);
 		depth = texelFetch(source_depth, ssC << 1, 0).r;
-		normal = texelFetch(source_normal, ssC << 1, 0).xyz;
+		normal = texelFetch(source_normal, ssC << 1, 0);
 
 		depth = depth * 2.0 - 1.0;
 		if (params.orthogonal) {
@@ -83,5 +86,5 @@ void main() {
 
 	imageStore(dest_ssr, ssC, color);
 	imageStore(dest_depth, ssC, vec4(depth));
-	imageStore(dest_normal, ssC, vec4(normal, 0.0));
+	imageStore(dest_normal, ssC, normal);
 }

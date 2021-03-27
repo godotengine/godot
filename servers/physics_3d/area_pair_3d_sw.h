@@ -34,17 +34,20 @@
 #include "area_3d_sw.h"
 #include "body_3d_sw.h"
 #include "constraint_3d_sw.h"
+#include "soft_body_3d_sw.h"
 
 class AreaPair3DSW : public Constraint3DSW {
 	Body3DSW *body;
 	Area3DSW *area;
 	int body_shape;
 	int area_shape;
-	bool colliding;
+	bool colliding = false;
+	bool process_collision = false;
 
 public:
-	bool setup(real_t p_step);
-	void solve(real_t p_step);
+	virtual bool setup(real_t p_step) override;
+	virtual bool pre_solve(real_t p_step) override;
+	virtual void solve(real_t p_step) override;
 
 	AreaPair3DSW(Body3DSW *p_body, int p_body_shape, Area3DSW *p_area, int p_area_shape);
 	~AreaPair3DSW();
@@ -55,14 +58,35 @@ class Area2Pair3DSW : public Constraint3DSW {
 	Area3DSW *area_b;
 	int shape_a;
 	int shape_b;
-	bool colliding;
+	bool colliding_a = false;
+	bool colliding_b = false;
+	bool process_collision_a = false;
+	bool process_collision_b = false;
 
 public:
-	bool setup(real_t p_step);
-	void solve(real_t p_step);
+	virtual bool setup(real_t p_step) override;
+	virtual bool pre_solve(real_t p_step) override;
+	virtual void solve(real_t p_step) override;
 
 	Area2Pair3DSW(Area3DSW *p_area_a, int p_shape_a, Area3DSW *p_area_b, int p_shape_b);
 	~Area2Pair3DSW();
+};
+
+class AreaSoftBodyPair3DSW : public Constraint3DSW {
+	SoftBody3DSW *soft_body;
+	Area3DSW *area;
+	int soft_body_shape;
+	int area_shape;
+	bool colliding = false;
+	bool process_collision = false;
+
+public:
+	virtual bool setup(real_t p_step) override;
+	virtual bool pre_solve(real_t p_step) override;
+	virtual void solve(real_t p_step) override;
+
+	AreaSoftBodyPair3DSW(SoftBody3DSW *p_sof_body, int p_soft_body_shape, Area3DSW *p_area, int p_area_shape);
+	~AreaSoftBodyPair3DSW();
 };
 
 #endif // AREA_PAIR__SW_H

@@ -74,10 +74,8 @@ public:
 protected:
 	void _notification(int p_what);
 
-	static void _bind_methods();
-
 private:
-	void on_gui_input(const Ref<InputEvent> &p_event);
+	virtual void gui_input(const Ref<InputEvent> &p_event) override;
 	void on_preset_item_selected(int preset_id);
 	void _curve_changed();
 	void on_context_menu_item_selected(int action_id);

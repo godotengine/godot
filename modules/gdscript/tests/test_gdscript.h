@@ -31,7 +31,10 @@
 #ifndef TEST_GDSCRIPT_H
 #define TEST_GDSCRIPT_H
 
-namespace TestGDScript {
+#include "gdscript_test_runner.h"
+#include "tests/test_macros.h"
+
+namespace GDScriptTests {
 
 enum TestType {
 	TEST_TOKENIZER,
@@ -41,6 +44,7 @@ enum TestType {
 };
 
 void test(TestType p_type);
-} // namespace TestGDScript
+
+} // namespace GDScriptTests
 
 #endif // TEST_GDSCRIPT_H

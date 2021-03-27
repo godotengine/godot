@@ -291,7 +291,7 @@ public:
 	}
 
 	/**
-	 * Same as get, except it can return nullptr  when item was not found.
+	 * Same as get, except it can return nullptr when item was not found.
 	 * This is mainly used for speed purposes.
 	 */
 
@@ -324,7 +324,7 @@ public:
 	}
 
 	/**
-	 * Same as get, except it can return nullptr  when item was not found.
+	 * Same as get, except it can return nullptr when item was not found.
 	 * This version is custom, will take a hash and a custom key (that should support operator==()
 	 */
 
@@ -443,7 +443,7 @@ public:
 
 	/**
 	 * Get the next key to p_key, and the first key if p_key is null.
-	 * Returns a pointer to the next key if found, nullptr  otherwise.
+	 * Returns a pointer to the next key if found, nullptr otherwise.
 	 * Adding/Removing elements while iterating will, of course, have unexpected results, don't do it.
 	 *
 	 * Example:

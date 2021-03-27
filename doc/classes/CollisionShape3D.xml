@@ -14,17 +14,14 @@
 	</tutorials>
 	<methods>
 		<method name="make_convex_from_siblings">
-			<return type="void">
-			</return>
+			<return type="void" />
 			<description>
 				Sets the collision shape's shape to the addition of all its convexed [MeshInstance3D] siblings geometry.
 			</description>
 		</method>
 		<method name="resource_changed">
-			<return type="void">
-			</return>
-			<argument index="0" name="resource" type="Resource">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="resource" type="Resource" />
 			<description>
 				If this method exists within a script it will be called whenever the shape resource has been modified.
 			</description>

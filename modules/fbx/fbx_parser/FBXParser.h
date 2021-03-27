@@ -81,7 +81,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <memory>
 
 #include "core/math/color.h"
-#include "core/math/transform.h"
+#include "core/math/transform_3d.h"
 #include "core/math/vector2.h"
 #include "core/math/vector3.h"
 
@@ -160,7 +160,7 @@ public:
 	}
 
 	ElementPtr FindElementCaseInsensitive(const std::string &elementName) const {
-		for (auto element = elements.begin(); element != elements.end(); ++element) {
+		for (FBXDocParser::ElementMap::const_iterator element = elements.begin(); element != elements.end(); ++element) {
 			if (element->first.compare(elementName)) {
 				return element->second;
 			}
@@ -199,6 +199,10 @@ public:
 		return is_binary;
 	}
 
+	bool IsCorrupt() const {
+		return corrupt;
+	}
+
 private:
 	friend class Scope;
 	friend class Element;
@@ -208,6 +212,7 @@ private:
 	TokenPtr CurrentToken() const;
 
 private:
+	bool corrupt = false;
 	ScopeList scopes;
 	const TokenList &tokens;
 
@@ -249,6 +254,8 @@ bool HasElement(const ScopePtr sc, const std::string &index);
 // extract a required element from a scope, abort if the element cannot be found
 ElementPtr GetRequiredElement(const ScopePtr sc, const std::string &index, const ElementPtr element = nullptr);
 ScopePtr GetRequiredScope(const ElementPtr el); // New in 2020. (less likely to destroy application)
+ScopePtr GetOptionalScope(const ElementPtr el); // New in 2021. (even LESS likely to destroy application now)
+
 ElementPtr GetOptionalElement(const ScopePtr sc, const std::string &index, const ElementPtr element = nullptr);
 // extract required compound scope
 ScopePtr GetRequiredScope(const ElementPtr el);
@@ -257,7 +264,7 @@ TokenPtr GetRequiredToken(const ElementPtr el, unsigned int index);
 
 // ------------------------------------------------------------------------------------------------
 // read a 4x4 matrix from an array of 16 floats
-Transform ReadMatrix(const ElementPtr element);
+Transform3D ReadMatrix(const ElementPtr element);
 } // namespace FBXDocParser
 
 #endif // FBX_PARSER_H

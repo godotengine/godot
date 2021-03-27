@@ -40,15 +40,13 @@
 #include "core/io/stream_peer_tcp.h"
 #include "core/io/tcp_server.h"
 
-#define WSL_SERVER_TIMEOUT 1000
-
 class WSLServer : public WebSocketServer {
 	GDCIIMPL(WSLServer, WebSocketServer);
 
 private:
-	class PendingPeer : public Reference {
+	class PendingPeer : public RefCounted {
 	private:
-		bool _parse_request(const Vector<String> p_protocols);
+		bool _parse_request(const Vector<String> p_protocols, String &r_resource_name);
 
 	public:
 		Ref<StreamPeerTCP> tcp;
@@ -64,7 +62,7 @@ private:
 		CharString response;
 		int response_sent = 0;
 
-		Error do_handshake(const Vector<String> p_protocols);
+		Error do_handshake(const Vector<String> p_protocols, uint64_t p_timeout, String &r_resource_name);
 	};
 
 	int _in_buf_size = DEF_BUF_SHIFT;
@@ -73,7 +71,7 @@ private:
 	int _out_pkt_size = DEF_PKT_SHIFT;
 
 	List<Ref<PendingPeer>> _pending;
-	Ref<TCP_Server> _server;
+	Ref<TCPServer> _server;
 	Vector<String> _protocols;
 
 public:
@@ -84,7 +82,7 @@ public:
 	int get_max_packet_size() const;
 	bool has_peer(int p_id) const;
 	Ref<WebSocketPeer> get_peer(int p_id) const;
-	IP_Address get_peer_address(int p_peer_id) const;
+	IPAddress get_peer_address(int p_peer_id) const;
 	int get_peer_port(int p_peer_id) const;
 	void disconnect_peer(int p_peer_id, int p_code = 1000, String p_reason = "");
 	virtual void poll();

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="XMLParser" inherits="Reference" version="4.0">
+<class name="XMLParser" inherits="RefCounted" version="4.0">
 	<brief_description>
 		Low-level class for creating parsers for [url=https://en.wikipedia.org/wiki/XML]XML[/url] files.
 	</brief_description>
@@ -10,136 +10,111 @@
 	</tutorials>
 	<methods>
 		<method name="get_attribute_count" qualifiers="const">
-			<return type="int">
-			</return>
+			<return type="int" />
 			<description>
 				Gets the amount of attributes in the current element.
 			</description>
 		</method>
 		<method name="get_attribute_name" qualifiers="const">
-			<return type="String">
-			</return>
-			<argument index="0" name="idx" type="int">
-			</argument>
+			<return type="String" />
+			<argument index="0" name="idx" type="int" />
 			<description>
 				Gets the name of the attribute specified by the index in [code]idx[/code] argument.
 			</description>
 		</method>
 		<method name="get_attribute_value" qualifiers="const">
-			<return type="String">
-			</return>
-			<argument index="0" name="idx" type="int">
-			</argument>
+			<return type="String" />
+			<argument index="0" name="idx" type="int" />
 			<description>
 				Gets the value of the attribute specified by the index in [code]idx[/code] argument.
 			</description>
 		</method>
 		<method name="get_current_line" qualifiers="const">
-			<return type="int">
-			</return>
+			<return type="int" />
 			<description>
 				Gets the current line in the parsed file (currently not implemented).
 			</description>
 		</method>
 		<method name="get_named_attribute_value" qualifiers="const">
-			<return type="String">
-			</return>
-			<argument index="0" name="name" type="String">
-			</argument>
+			<return type="String" />
+			<argument index="0" name="name" type="String" />
 			<description>
 				Gets the value of a certain attribute of the current element by name. This will raise an error if the element has no such attribute.
 			</description>
 		</method>
 		<method name="get_named_attribute_value_safe" qualifiers="const">
-			<return type="String">
-			</return>
-			<argument index="0" name="name" type="String">
-			</argument>
+			<return type="String" />
+			<argument index="0" name="name" type="String" />
 			<description>
 				Gets the value of a certain attribute of the current element by name. This will return an empty [String] if the attribute is not found.
 			</description>
 		</method>
 		<method name="get_node_data" qualifiers="const">
-			<return type="String">
-			</return>
+			<return type="String" />
 			<description>
 				Gets the contents of a text node. This will raise an error in any other type of node.
 			</description>
 		</method>
 		<method name="get_node_name" qualifiers="const">
-			<return type="String">
-			</return>
+			<return type="String" />
 			<description>
 				Gets the name of the current element node. This will raise an error if the current node type is neither [constant NODE_ELEMENT] nor [constant NODE_ELEMENT_END].
 			</description>
 		</method>
 		<method name="get_node_offset" qualifiers="const">
-			<return type="int">
-			</return>
+			<return type="int" />
 			<description>
 				Gets the byte offset of the current node since the beginning of the file or buffer.
 			</description>
 		</method>
 		<method name="get_node_type">
-			<return type="int" enum="XMLParser.NodeType">
-			</return>
+			<return type="int" enum="XMLParser.NodeType" />
 			<description>
 				Gets the type of the current node. Compare with [enum NodeType] constants.
 			</description>
 		</method>
 		<method name="has_attribute" qualifiers="const">
-			<return type="bool">
-			</return>
-			<argument index="0" name="name" type="String">
-			</argument>
+			<return type="bool" />
+			<argument index="0" name="name" type="String" />
 			<description>
 				Check whether the current element has a certain attribute.
 			</description>
 		</method>
 		<method name="is_empty" qualifiers="const">
-			<return type="bool">
-			</return>
+			<return type="bool" />
 			<description>
 				Check whether the current element is empty (this only works for completely empty tags, e.g. [code]&lt;element \&gt;[/code]).
 			</description>
 		</method>
 		<method name="open">
-			<return type="int" enum="Error">
-			</return>
-			<argument index="0" name="file" type="String">
-			</argument>
+			<return type="int" enum="Error" />
+			<argument index="0" name="file" type="String" />
 			<description>
 				Opens an XML file for parsing. This returns an error code.
 			</description>
 		</method>
 		<method name="open_buffer">
-			<return type="int" enum="Error">
-			</return>
-			<argument index="0" name="buffer" type="PackedByteArray">
-			</argument>
+			<return type="int" enum="Error" />
+			<argument index="0" name="buffer" type="PackedByteArray" />
 			<description>
 				Opens an XML raw buffer for parsing. This returns an error code.
 			</description>
 		</method>
 		<method name="read">
-			<return type="int" enum="Error">
-			</return>
+			<return type="int" enum="Error" />
 			<description>
 				Reads the next node of the file. This returns an error code.
 			</description>
 		</method>
 		<method name="seek">
-			<return type="int" enum="Error">
-			</return>
-			<argument index="0" name="position" type="int">
-			</argument>
+			<return type="int" enum="Error" />
+			<argument index="0" name="position" type="int" />
 			<description>
 				Moves the buffer cursor to a certain offset (since the beginning) and read the next node there. This returns an error code.
 			</description>
 		</method>
 		<method name="skip_section">
-			<return type="void">
-			</return>
+			<return type="void" />
 			<description>
 				Skips the current section. If the node contains other elements, they will be ignored and the cursor will go to the closing of the current element.
 			</description>

@@ -274,22 +274,31 @@ void Area2DSW::call_queries() {
 	}
 }
 
+void Area2DSW::compute_gravity(const Vector2 &p_position, Vector2 &r_gravity) const {
+	if (is_gravity_point()) {
+		const real_t gravity_distance_scale = get_gravity_distance_scale();
+		Vector2 v = get_transform().xform(get_gravity_vector()) - p_position;
+		if (gravity_distance_scale > 0) {
+			const real_t v_length = v.length();
+			if (v_length > 0) {
+				const real_t v_scaled = v_length * gravity_distance_scale;
+				r_gravity = (v.normalized() * (get_gravity() / (v_scaled * v_scaled)));
+			} else {
+				r_gravity = Vector2();
+			}
+		} else {
+			r_gravity = v.normalized() * get_gravity();
+		}
+	} else {
+		r_gravity = get_gravity_vector() * get_gravity();
+	}
+}
+
 Area2DSW::Area2DSW() :
 		CollisionObject2DSW(TYPE_AREA),
 		monitor_query_list(this),
 		moved_list(this) {
 	_set_static(true); //areas are not active by default
-	space_override_mode = PhysicsServer2D::AREA_SPACE_OVERRIDE_DISABLED;
-	gravity = 9.80665;
-	gravity_vector = Vector2(0, -1);
-	gravity_is_point = false;
-	gravity_distance_scale = 0;
-	point_attenuation = 1;
-
-	angular_damp = 1.0;
-	linear_damp = 0.1;
-	priority = 0;
-	monitorable = false;
 }
 
 Area2DSW::~Area2DSW() {

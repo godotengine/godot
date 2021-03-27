@@ -75,7 +75,7 @@ class ResourcePreloaderEditor : public PanelContainer {
 
 protected:
 	void _notification(int p_what);
-	void _gui_input(Ref<InputEvent> p_event);
+
 	static void _bind_methods();
 
 public:

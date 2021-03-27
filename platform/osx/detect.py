@@ -24,19 +24,13 @@ def get_opts():
     return [
         ("osxcross_sdk", "OSXCross SDK version", "darwin16"),
         ("MACOS_SDK_PATH", "Path to the macOS SDK", ""),
-        BoolVariable(
-            "use_static_mvk",
-            "Link MoltenVK statically as Level-0 driver (better portability) or use Vulkan ICD loader (enables"
-            " validation layers)",
-            False,
-        ),
+        ("VULKAN_SDK_PATH", "Path to the Vulkan SDK", ""),
         EnumVariable("macports_clang", "Build using Clang from MacPorts", "no", ("no", "5.0", "devel")),
         BoolVariable("debug_symbols", "Add debugging symbols to release/release_debug builds", True),
         BoolVariable("separate_debug_symbols", "Create a separate file containing debugging symbols", False),
         BoolVariable("use_ubsan", "Use LLVM/GCC compiler undefined behavior sanitizer (UBSAN)", False),
-        BoolVariable("use_asan", "Use LLVM/GCC compiler address sanitizer (ASAN))", False),
-        BoolVariable("use_lsan", "Use LLVM/GCC compiler leak sanitizer (LSAN))", False),
-        BoolVariable("use_tsan", "Use LLVM/GCC compiler thread sanitizer (TSAN))", False),
+        BoolVariable("use_asan", "Use LLVM/GCC compiler address sanitizer (ASAN)", False),
+        BoolVariable("use_tsan", "Use LLVM/GCC compiler thread sanitizer (TSAN)", False),
     ]
 
 
@@ -132,20 +126,21 @@ def configure(env):
         env["AS"] = basecmd + "as"
         env.Append(CPPDEFINES=["__MACPORTS__"])  # hack to fix libvpx MM256_BROADCASTSI128_SI256 define
 
-    if env["use_ubsan"] or env["use_asan"] or env["use_lsan"] or env["use_tsan"]:
+    if env["use_ubsan"] or env["use_asan"] or env["use_tsan"]:
         env.extra_suffix += "s"
 
         if env["use_ubsan"]:
-            env.Append(CCFLAGS=["-fsanitize=undefined"])
+            env.Append(
+                CCFLAGS=[
+                    "-fsanitize=undefined,shift,shift-exponent,integer-divide-by-zero,unreachable,vla-bound,null,return,signed-integer-overflow,bounds,float-divide-by-zero,float-cast-overflow,nonnull-attribute,returns-nonnull-attribute,bool,enum,vptr,pointer-overflow,builtin"
+                ]
+            )
             env.Append(LINKFLAGS=["-fsanitize=undefined"])
+            env.Append(CCFLAGS=["-fsanitize=nullability-return,nullability-arg,function,nullability-assign"])
 
         if env["use_asan"]:
-            env.Append(CCFLAGS=["-fsanitize=address"])
+            env.Append(CCFLAGS=["-fsanitize=address,pointer-subtract,pointer-compare"])
             env.Append(LINKFLAGS=["-fsanitize=address"])
-
-        if env["use_lsan"]:
-            env.Append(CCFLAGS=["-fsanitize=leak"])
-            env.Append(LINKFLAGS=["-fsanitize=leak"])
 
         if env["use_tsan"]:
             env.Append(CCFLAGS=["-fsanitize=thread"])
@@ -187,12 +182,10 @@ def configure(env):
     )
     env.Append(LIBS=["pthread", "z"])
 
-    env.Append(CPPDEFINES=["VULKAN_ENABLED"])
-    env.Append(LINKFLAGS=["-framework", "Metal", "-framework", "QuartzCore", "-framework", "IOSurface"])
-    if env["use_static_mvk"]:
-        env.Append(LINKFLAGS=["-framework", "MoltenVK"])
-        env["builtin_vulkan"] = False
-    elif not env["builtin_vulkan"]:
-        env.Append(LIBS=["vulkan"])
+    if env["vulkan"]:
+        env.Append(CPPDEFINES=["VULKAN_ENABLED"])
+        env.Append(LINKFLAGS=["-framework", "Metal", "-framework", "QuartzCore", "-framework", "IOSurface"])
+        if not env["use_volk"]:
+            env.Append(LINKFLAGS=["-L$VULKAN_SDK_PATH/MoltenVK/MoltenVK.xcframework/macos-arm64_x86_64/", "-lMoltenVK"])
 
     # env.Append(CPPDEFINES=['GLES_ENABLED', 'OPENGL_ENABLED'])

@@ -47,7 +47,7 @@ public:
 
 private:
 	YieldMode yield_mode;
-	float wait_time;
+	double wait_time;
 
 protected:
 	virtual void _validate_property(PropertyInfo &property) const override;
@@ -73,10 +73,10 @@ public:
 	void set_yield_mode(YieldMode p_mode);
 	YieldMode get_yield_mode();
 
-	void set_wait_time(float p_time);
-	float get_wait_time();
+	void set_wait_time(double p_time);
+	double get_wait_time();
 
-	virtual VisualScriptNodeInstance *instance(VisualScriptInstance *p_instance) override;
+	virtual VisualScriptNodeInstance *instantiate(VisualScriptInstance *p_instance) override;
 
 	VisualScriptYield();
 };
@@ -135,7 +135,7 @@ public:
 	void set_call_mode(CallMode p_mode);
 	CallMode get_call_mode() const;
 
-	virtual VisualScriptNodeInstance *instance(VisualScriptInstance *p_instance) override;
+	virtual VisualScriptNodeInstance *instantiate(VisualScriptInstance *p_instance) override;
 
 	VisualScriptYieldSignal();
 };

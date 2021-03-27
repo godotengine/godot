@@ -36,22 +36,36 @@
 
 /*************************************************************************/
 
-class TextParagraph : public Reference {
-	GDCLASS(TextParagraph, Reference);
+class TextParagraph : public RefCounted {
+	GDCLASS(TextParagraph, RefCounted);
 
+public:
+	enum OverrunBehavior {
+		OVERRUN_NO_TRIMMING,
+		OVERRUN_TRIM_CHAR,
+		OVERRUN_TRIM_WORD,
+		OVERRUN_TRIM_ELLIPSIS,
+		OVERRUN_TRIM_WORD_ELLIPSIS,
+	};
+
+private:
 	RID dropcap_rid;
 	int dropcap_lines = 0;
 	Rect2 dropcap_margins;
 
 	RID rid;
-	Vector<RID> lines;
+	Vector<RID> lines_rid;
 	int spacing_top = 0;
 	int spacing_bottom = 0;
 
-	bool dirty_lines = true;
+	bool lines_dirty = true;
 
 	float width = -1.0;
+	int max_lines_visible = -1;
+
 	uint8_t flags = TextServer::BREAK_MANDATORY | TextServer::BREAK_WORD_BOUND | TextServer::JUSTIFICATION_WORD_BOUND | TextServer::JUSTIFICATION_KASHIDA;
+	OverrunBehavior overrun_behavior = OVERRUN_NO_TRIMMING;
+
 	HAlign align = HALIGN_LEFT;
 
 	Vector<float> tab_stops;
@@ -86,8 +100,8 @@ public:
 	void clear_dropcap();
 
 	bool add_string(const String &p_text, const Ref<Font> &p_fonts, int p_size, const Dictionary &p_opentype_features = Dictionary(), const String &p_language = "");
-	bool add_object(Variant p_key, const Size2 &p_size, VAlign p_inline_align = VALIGN_CENTER, int p_length = 1);
-	bool resize_object(Variant p_key, const Size2 &p_size, VAlign p_inline_align = VALIGN_CENTER);
+	bool add_object(Variant p_key, const Size2 &p_size, InlineAlign p_inline_align = INLINE_ALIGN_CENTER, int p_length = 1);
+	bool resize_object(Variant p_key, const Size2 &p_size, InlineAlign p_inline_align = INLINE_ALIGN_CENTER);
 
 	void set_align(HAlign p_align);
 	HAlign get_align() const;
@@ -97,8 +111,14 @@ public:
 	void set_flags(uint8_t p_flags);
 	uint8_t get_flags() const;
 
+	void set_text_overrun_behavior(OverrunBehavior p_behavior);
+	OverrunBehavior get_text_overrun_behavior() const;
+
 	void set_width(float p_width);
 	float get_width() const;
+
+	void set_max_lines_visible(int p_lines);
+	int get_max_lines_visible() const;
 
 	Size2 get_non_wraped_size() const;
 
@@ -115,6 +135,9 @@ public:
 	Vector2i get_line_range(int p_line) const;
 	float get_line_underline_position(int p_line) const;
 	float get_line_underline_thickness(int p_line) const;
+
+	int get_spacing_top() const;
+	int get_spacing_bottom() const;
 
 	Size2 get_dropcap_size() const;
 	int get_dropcap_lines() const;
@@ -136,5 +159,7 @@ public:
 	TextParagraph();
 	~TextParagraph();
 };
+
+VARIANT_ENUM_CAST(TextParagraph::OverrunBehavior);
 
 #endif // TEXT_PARAGRAPH_H

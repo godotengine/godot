@@ -37,12 +37,12 @@
 #define collision_solver sat_calculate_penetration
 //#define collision_solver gjk_epa_calculate_penetration
 
-bool CollisionSolver3DSW::solve_static_plane(const Shape3DSW *p_shape_A, const Transform &p_transform_A, const Shape3DSW *p_shape_B, const Transform &p_transform_B, CallbackResult p_result_callback, void *p_userdata, bool p_swap_result) {
-	const PlaneShape3DSW *plane = static_cast<const PlaneShape3DSW *>(p_shape_A);
-	if (p_shape_B->get_type() == PhysicsServer3D::SHAPE_PLANE) {
+bool CollisionSolver3DSW::solve_static_world_boundary(const Shape3DSW *p_shape_A, const Transform3D &p_transform_A, const Shape3DSW *p_shape_B, const Transform3D &p_transform_B, CallbackResult p_result_callback, void *p_userdata, bool p_swap_result) {
+	const WorldBoundaryShape3DSW *world_boundary = static_cast<const WorldBoundaryShape3DSW *>(p_shape_A);
+	if (p_shape_B->get_type() == PhysicsServer3D::SHAPE_WORLD_BOUNDARY) {
 		return false;
 	}
-	Plane p = p_transform_A.xform(plane->get_plane());
+	Plane p = p_transform_A.xform(world_boundary->get_plane());
 
 	static const int max_supports = 16;
 	Vector3 supports[max_supports];
@@ -89,14 +89,14 @@ bool CollisionSolver3DSW::solve_static_plane(const Shape3DSW *p_shape_A, const T
 	return found;
 }
 
-bool CollisionSolver3DSW::solve_ray(const Shape3DSW *p_shape_A, const Transform &p_transform_A, const Shape3DSW *p_shape_B, const Transform &p_transform_B, CallbackResult p_result_callback, void *p_userdata, bool p_swap_result) {
-	const RayShape3DSW *ray = static_cast<const RayShape3DSW *>(p_shape_A);
+bool CollisionSolver3DSW::solve_separation_ray(const Shape3DSW *p_shape_A, const Transform3D &p_transform_A, const Shape3DSW *p_shape_B, const Transform3D &p_transform_B, CallbackResult p_result_callback, void *p_userdata, bool p_swap_result, real_t p_margin) {
+	const SeparationRayShape3DSW *ray = static_cast<const SeparationRayShape3DSW *>(p_shape_A);
 
 	Vector3 from = p_transform_A.origin;
-	Vector3 to = from + p_transform_A.basis.get_axis(2) * ray->get_length();
+	Vector3 to = from + p_transform_A.basis.get_axis(2) * (ray->get_length() + p_margin);
 	Vector3 support_A = to;
 
-	Transform ai = p_transform_B.affine_inverse();
+	Transform3D ai = p_transform_B.affine_inverse();
 
 	from = ai.xform(from);
 	to = ai.xform(to);
@@ -106,8 +106,18 @@ bool CollisionSolver3DSW::solve_ray(const Shape3DSW *p_shape_A, const Transform 
 		return false;
 	}
 
+	// Discard contacts when the ray is fully contained inside the shape.
+	if (n == Vector3()) {
+		return false;
+	}
+
+	// Discard contacts in the wrong direction.
+	if (n.dot(from - to) < CMP_EPSILON) {
+		return false;
+	}
+
 	Vector3 support_B = p_transform_B.xform(p);
-	if (ray->get_slips_on_slope()) {
+	if (ray->get_slide_on_slope()) {
 		Vector3 global_n = ai.basis.xform_inv(n).normalized();
 		support_B = support_A + (support_B - support_A).length() * global_n;
 	}
@@ -135,6 +145,10 @@ void CollisionSolver3DSW::soft_body_contact_callback(const Vector3 &p_point_A, i
 
 	++cinfo.contact_count;
 
+	if (!cinfo.result_callback) {
+		return;
+	}
+
 	if (cinfo.swap_result) {
 		cinfo.result_callback(p_point_B, cinfo.node_index, p_point_A, p_index_A, cinfo.userdata);
 	} else {
@@ -146,8 +160,8 @@ struct _SoftBodyQueryInfo {
 	SoftBody3DSW *soft_body = nullptr;
 	const Shape3DSW *shape_A = nullptr;
 	const Shape3DSW *shape_B = nullptr;
-	Transform transform_A;
-	Transform node_transform;
+	Transform3D transform_A;
+	Transform3D node_transform;
 	_SoftBodyContactCollisionInfo contact_info;
 #ifdef DEBUG_ENABLED
 	int node_query_count = 0;
@@ -160,21 +174,21 @@ bool CollisionSolver3DSW::soft_body_query_callback(uint32_t p_node_index, void *
 
 	Vector3 node_position = query_cinfo.soft_body->get_node_position(p_node_index);
 
-	Transform transform_B;
+	Transform3D transform_B;
 	transform_B.origin = query_cinfo.node_transform.xform(node_position);
 
 	query_cinfo.contact_info.node_index = p_node_index;
-	solve_static(query_cinfo.shape_A, query_cinfo.transform_A, query_cinfo.shape_B, transform_B, soft_body_contact_callback, &query_cinfo.contact_info);
+	bool collided = solve_static(query_cinfo.shape_A, query_cinfo.transform_A, query_cinfo.shape_B, transform_B, soft_body_contact_callback, &query_cinfo.contact_info);
 
 #ifdef DEBUG_ENABLED
 	++query_cinfo.node_query_count;
 #endif
 
-	// Continue with the query.
-	return false;
+	// Stop at first collision if contacts are not needed.
+	return (collided && !query_cinfo.contact_info.result_callback);
 }
 
-void CollisionSolver3DSW::soft_body_concave_callback(void *p_userdata, Shape3DSW *p_convex) {
+bool CollisionSolver3DSW::soft_body_concave_callback(void *p_userdata, Shape3DSW *p_convex) {
 	_SoftBodyQueryInfo &query_cinfo = *(_SoftBodyQueryInfo *)(p_userdata);
 
 	query_cinfo.shape_A = p_convex;
@@ -196,16 +210,21 @@ void CollisionSolver3DSW::soft_body_concave_callback(void *p_userdata, Shape3DSW
 
 	query_cinfo.soft_body->query_aabb(shape_aabb, soft_body_query_callback, &query_cinfo);
 
+	bool collided = (query_cinfo.contact_info.contact_count > 0);
+
 #ifdef DEBUG_ENABLED
 	++query_cinfo.convex_query_count;
 #endif
+
+	// Stop at first collision if contacts are not needed.
+	return (collided && !query_cinfo.contact_info.result_callback);
 }
 
-bool CollisionSolver3DSW::solve_soft_body(const Shape3DSW *p_shape_A, const Transform &p_transform_A, const Shape3DSW *p_shape_B, const Transform &p_transform_B, CallbackResult p_result_callback, void *p_userdata, bool p_swap_result) {
+bool CollisionSolver3DSW::solve_soft_body(const Shape3DSW *p_shape_A, const Transform3D &p_transform_A, const Shape3DSW *p_shape_B, const Transform3D &p_transform_B, CallbackResult p_result_callback, void *p_userdata, bool p_swap_result) {
 	const SoftBodyShape3DSW *soft_body_shape_B = static_cast<const SoftBodyShape3DSW *>(p_shape_B);
 
 	SoftBody3DSW *soft_body = soft_body_shape_B->get_soft_body();
-	const Transform &world_to_local = soft_body->get_inv_transform();
+	const Transform3D &world_to_local = soft_body->get_inv_transform();
 
 	const real_t collision_margin = soft_body->get_collision_margin();
 
@@ -257,9 +276,9 @@ bool CollisionSolver3DSW::solve_soft_body(const Shape3DSW *p_shape_A, const Tran
 }
 
 struct _ConcaveCollisionInfo {
-	const Transform *transform_A;
+	const Transform3D *transform_A;
 	const Shape3DSW *shape_A;
-	const Transform *transform_B;
+	const Transform3D *transform_B;
 	CollisionSolver3DSW::CallbackResult result_callback;
 	void *userdata;
 	bool swap_result;
@@ -272,20 +291,23 @@ struct _ConcaveCollisionInfo {
 	Vector3 close_A, close_B;
 };
 
-void CollisionSolver3DSW::concave_callback(void *p_userdata, Shape3DSW *p_convex) {
+bool CollisionSolver3DSW::concave_callback(void *p_userdata, Shape3DSW *p_convex) {
 	_ConcaveCollisionInfo &cinfo = *(_ConcaveCollisionInfo *)(p_userdata);
 	cinfo.aabb_tests++;
 
 	bool collided = collision_solver(cinfo.shape_A, *cinfo.transform_A, p_convex, *cinfo.transform_B, cinfo.result_callback, cinfo.userdata, cinfo.swap_result, nullptr, cinfo.margin_A, cinfo.margin_B);
 	if (!collided) {
-		return;
+		return false;
 	}
 
 	cinfo.collided = true;
 	cinfo.collisions++;
+
+	// Stop at first collision if contacts are not needed.
+	return !cinfo.result_callback;
 }
 
-bool CollisionSolver3DSW::solve_concave(const Shape3DSW *p_shape_A, const Transform &p_transform_A, const Shape3DSW *p_shape_B, const Transform &p_transform_B, CallbackResult p_result_callback, void *p_userdata, bool p_swap_result, real_t p_margin_A, real_t p_margin_B) {
+bool CollisionSolver3DSW::solve_concave(const Shape3DSW *p_shape_A, const Transform3D &p_transform_A, const Shape3DSW *p_shape_B, const Transform3D &p_transform_B, CallbackResult p_result_callback, void *p_userdata, bool p_swap_result, real_t p_margin_A, real_t p_margin_B) {
 	const ConcaveShape3DSW *concave_B = static_cast<const ConcaveShape3DSW *>(p_shape_B);
 
 	_ConcaveCollisionInfo cinfo;
@@ -302,7 +324,7 @@ bool CollisionSolver3DSW::solve_concave(const Shape3DSW *p_shape_A, const Transf
 
 	cinfo.aabb_tests = 0;
 
-	Transform rel_transform = p_transform_A;
+	Transform3D rel_transform = p_transform_A;
 	rel_transform.origin -= p_transform_B.origin;
 
 	//quickly compute a local AABB
@@ -329,7 +351,7 @@ bool CollisionSolver3DSW::solve_concave(const Shape3DSW *p_shape_A, const Transf
 	return cinfo.collided;
 }
 
-bool CollisionSolver3DSW::solve_static(const Shape3DSW *p_shape_A, const Transform &p_transform_A, const Shape3DSW *p_shape_B, const Transform &p_transform_B, CallbackResult p_result_callback, void *p_userdata, Vector3 *r_sep_axis, real_t p_margin_A, real_t p_margin_B) {
+bool CollisionSolver3DSW::solve_static(const Shape3DSW *p_shape_A, const Transform3D &p_transform_A, const Shape3DSW *p_shape_B, const Transform3D &p_transform_B, CallbackResult p_result_callback, void *p_userdata, Vector3 *r_sep_axis, real_t p_margin_A, real_t p_margin_B) {
 	PhysicsServer3D::ShapeType type_A = p_shape_A->get_type();
 	PhysicsServer3D::ShapeType type_B = p_shape_B->get_type();
 	bool concave_A = p_shape_A->is_concave();
@@ -343,11 +365,11 @@ bool CollisionSolver3DSW::solve_static(const Shape3DSW *p_shape_A, const Transfo
 		swap = true;
 	}
 
-	if (type_A == PhysicsServer3D::SHAPE_PLANE) {
-		if (type_B == PhysicsServer3D::SHAPE_PLANE) {
+	if (type_A == PhysicsServer3D::SHAPE_WORLD_BOUNDARY) {
+		if (type_B == PhysicsServer3D::SHAPE_WORLD_BOUNDARY) {
 			return false;
 		}
-		if (type_B == PhysicsServer3D::SHAPE_RAY) {
+		if (type_B == PhysicsServer3D::SHAPE_SEPARATION_RAY) {
 			return false;
 		}
 		if (type_B == PhysicsServer3D::SHAPE_SOFT_BODY) {
@@ -355,20 +377,20 @@ bool CollisionSolver3DSW::solve_static(const Shape3DSW *p_shape_A, const Transfo
 		}
 
 		if (swap) {
-			return solve_static_plane(p_shape_B, p_transform_B, p_shape_A, p_transform_A, p_result_callback, p_userdata, true);
+			return solve_static_world_boundary(p_shape_B, p_transform_B, p_shape_A, p_transform_A, p_result_callback, p_userdata, true);
 		} else {
-			return solve_static_plane(p_shape_A, p_transform_A, p_shape_B, p_transform_B, p_result_callback, p_userdata, false);
+			return solve_static_world_boundary(p_shape_A, p_transform_A, p_shape_B, p_transform_B, p_result_callback, p_userdata, false);
 		}
 
-	} else if (type_A == PhysicsServer3D::SHAPE_RAY) {
-		if (type_B == PhysicsServer3D::SHAPE_RAY) {
+	} else if (type_A == PhysicsServer3D::SHAPE_SEPARATION_RAY) {
+		if (type_B == PhysicsServer3D::SHAPE_SEPARATION_RAY) {
 			return false;
 		}
 
 		if (swap) {
-			return solve_ray(p_shape_B, p_transform_B, p_shape_A, p_transform_A, p_result_callback, p_userdata, true);
+			return solve_separation_ray(p_shape_B, p_transform_B, p_shape_A, p_transform_A, p_result_callback, p_userdata, true, p_margin_B);
 		} else {
-			return solve_ray(p_shape_A, p_transform_A, p_shape_B, p_transform_B, p_result_callback, p_userdata, false);
+			return solve_separation_ray(p_shape_A, p_transform_A, p_shape_B, p_transform_B, p_result_callback, p_userdata, false, p_margin_A);
 		}
 
 	} else if (type_B == PhysicsServer3D::SHAPE_SOFT_BODY) {
@@ -399,19 +421,18 @@ bool CollisionSolver3DSW::solve_static(const Shape3DSW *p_shape_A, const Transfo
 	}
 }
 
-void CollisionSolver3DSW::concave_distance_callback(void *p_userdata, Shape3DSW *p_convex) {
+bool CollisionSolver3DSW::concave_distance_callback(void *p_userdata, Shape3DSW *p_convex) {
 	_ConcaveCollisionInfo &cinfo = *(_ConcaveCollisionInfo *)(p_userdata);
 	cinfo.aabb_tests++;
-	if (cinfo.collided) {
-		return;
-	}
 
 	Vector3 close_A, close_B;
 	cinfo.collided = !gjk_epa_calculate_distance(cinfo.shape_A, *cinfo.transform_A, p_convex, *cinfo.transform_B, close_A, close_B);
 
 	if (cinfo.collided) {
-		return;
+		// No need to process any more result.
+		return true;
 	}
+
 	if (!cinfo.tested || close_A.distance_squared_to(close_B) < cinfo.close_A.distance_squared_to(cinfo.close_B)) {
 		cinfo.close_A = close_A;
 		cinfo.close_B = close_B;
@@ -419,14 +440,15 @@ void CollisionSolver3DSW::concave_distance_callback(void *p_userdata, Shape3DSW 
 	}
 
 	cinfo.collisions++;
+	return false;
 }
 
-bool CollisionSolver3DSW::solve_distance_plane(const Shape3DSW *p_shape_A, const Transform &p_transform_A, const Shape3DSW *p_shape_B, const Transform &p_transform_B, Vector3 &r_point_A, Vector3 &r_point_B) {
-	const PlaneShape3DSW *plane = static_cast<const PlaneShape3DSW *>(p_shape_A);
-	if (p_shape_B->get_type() == PhysicsServer3D::SHAPE_PLANE) {
+bool CollisionSolver3DSW::solve_distance_world_boundary(const Shape3DSW *p_shape_A, const Transform3D &p_transform_A, const Shape3DSW *p_shape_B, const Transform3D &p_transform_B, Vector3 &r_point_A, Vector3 &r_point_B) {
+	const WorldBoundaryShape3DSW *world_boundary = static_cast<const WorldBoundaryShape3DSW *>(p_shape_A);
+	if (p_shape_B->get_type() == PhysicsServer3D::SHAPE_WORLD_BOUNDARY) {
 		return false;
 	}
-	Plane p = p_transform_A.xform(plane->get_plane());
+	Plane p = p_transform_A.xform(world_boundary->get_plane());
 
 	static const int max_supports = 16;
 	Vector3 supports[max_supports];
@@ -473,14 +495,14 @@ bool CollisionSolver3DSW::solve_distance_plane(const Shape3DSW *p_shape_A, const
 	return collided;
 }
 
-bool CollisionSolver3DSW::solve_distance(const Shape3DSW *p_shape_A, const Transform &p_transform_A, const Shape3DSW *p_shape_B, const Transform &p_transform_B, Vector3 &r_point_A, Vector3 &r_point_B, const AABB &p_concave_hint, Vector3 *r_sep_axis) {
+bool CollisionSolver3DSW::solve_distance(const Shape3DSW *p_shape_A, const Transform3D &p_transform_A, const Shape3DSW *p_shape_B, const Transform3D &p_transform_B, Vector3 &r_point_A, Vector3 &r_point_B, const AABB &p_concave_hint, Vector3 *r_sep_axis) {
 	if (p_shape_A->is_concave()) {
 		return false;
 	}
 
-	if (p_shape_B->get_type() == PhysicsServer3D::SHAPE_PLANE) {
+	if (p_shape_B->get_type() == PhysicsServer3D::SHAPE_WORLD_BOUNDARY) {
 		Vector3 a, b;
-		bool col = solve_distance_plane(p_shape_B, p_transform_B, p_shape_A, p_transform_A, a, b);
+		bool col = solve_distance_world_boundary(p_shape_B, p_transform_B, p_shape_A, p_transform_A, a, b);
 		r_point_A = b;
 		r_point_B = a;
 		return !col;
@@ -504,7 +526,7 @@ bool CollisionSolver3DSW::solve_distance(const Shape3DSW *p_shape_A, const Trans
 		cinfo.aabb_tests = 0;
 		cinfo.tested = false;
 
-		Transform rel_transform = p_transform_A;
+		Transform3D rel_transform = p_transform_A;
 		rel_transform.origin -= p_transform_B.origin;
 
 		//quickly compute a local AABB

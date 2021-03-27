@@ -30,8 +30,7 @@
 
 #include "shader_globals_override.h"
 
-#include "core/core_string_names.h"
-#include "scene/main/window.h"
+#include "scene/3d/node_3d.h"
 #include "scene/scene_string_names.h"
 
 StringName *ShaderGlobalsOverride::_remap(const StringName &p_name) const {
@@ -63,7 +62,12 @@ bool ShaderGlobalsOverride::_set(const StringName &p_name, const Variant &p_valu
 		if (o) {
 			o->override = p_value;
 			if (active) {
-				RS::get_singleton()->global_variable_set_override(*r, p_value);
+				if (o->override.get_type() == Variant::OBJECT) {
+					RID tex_rid = p_value;
+					RS::get_singleton()->global_variable_set_override(*r, tex_rid);
+				} else {
+					RS::get_singleton()->global_variable_set_override(*r, p_value);
+				}
 			}
 			o->in_use = p_value.get_type() != Variant::NIL;
 			return true;
@@ -169,7 +173,7 @@ void ShaderGlobalsOverride::_get_property_list(List<PropertyInfo> *p_list) const
 				pinfo.type = Variant::TRANSFORM2D;
 			} break;
 			case RS::GLOBAL_VAR_TYPE_TRANSFORM: {
-				pinfo.type = Variant::TRANSFORM;
+				pinfo.type = Variant::TRANSFORM3D;
 			} break;
 			case RS::GLOBAL_VAR_TYPE_MAT4: {
 				pinfo.type = Variant::PACKED_INT32_ARRAY;
@@ -228,11 +232,16 @@ void ShaderGlobalsOverride::_activate() {
 		while ((K = overrides.next(K))) {
 			Override *o = overrides.getptr(*K);
 			if (o->in_use && o->override.get_type() != Variant::NIL) {
-				RS::get_singleton()->global_variable_set_override(*K, o->override);
+				if (o->override.get_type() == Variant::OBJECT) {
+					RID tex_rid = o->override;
+					RS::get_singleton()->global_variable_set_override(*K, tex_rid);
+				} else {
+					RS::get_singleton()->global_variable_set_override(*K, o->override);
+				}
 			}
 		}
 
-		update_configuration_warning(); //may have activated
+		update_configuration_warnings(); //may have activated
 	}
 }
 
@@ -260,17 +269,14 @@ void ShaderGlobalsOverride::_notification(int p_what) {
 	}
 }
 
-String ShaderGlobalsOverride::get_configuration_warning() const {
-	String warning = Node::get_configuration_warning();
+TypedArray<String> ShaderGlobalsOverride::get_configuration_warnings() const {
+	TypedArray<String> warnings = Node::get_configuration_warnings();
 
 	if (!active) {
-		if (!warning.is_empty()) {
-			warning += "\n\n";
-		}
-		warning += TTR("ShaderGlobalsOverride is not active because another node of the same type is in the scene.");
+		warnings.push_back(TTR("ShaderGlobalsOverride is not active because another node of the same type is in the scene."));
 	}
 
-	return warning;
+	return warnings;
 }
 
 void ShaderGlobalsOverride::_bind_methods() {

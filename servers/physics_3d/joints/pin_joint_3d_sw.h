@@ -60,24 +60,24 @@ class PinJoint3DSW : public Joint3DSW {
 			Body3DSW *B;
 		};
 
-		Body3DSW *_arr[2];
+		Body3DSW *_arr[2] = {};
 	};
 
-	real_t m_tau; //bias
-	real_t m_damping;
-	real_t m_impulseClamp;
-	real_t m_appliedImpulse;
+	real_t m_tau = 0.3; //bias
+	real_t m_damping = 1.0;
+	real_t m_impulseClamp = 0.0;
+	real_t m_appliedImpulse = 0.0;
 
-	JacobianEntry3DSW m_jac[3]; //3 orthogonal linear constraints
+	JacobianEntry3DSW m_jac[3] = {}; //3 orthogonal linear constraints
 
 	Vector3 m_pivotInA;
 	Vector3 m_pivotInB;
 
 public:
-	virtual PhysicsServer3D::JointType get_type() const { return PhysicsServer3D::JOINT_TYPE_PIN; }
+	virtual PhysicsServer3D::JointType get_type() const override { return PhysicsServer3D::JOINT_TYPE_PIN; }
 
-	virtual bool setup(real_t p_step);
-	virtual void solve(real_t p_step);
+	virtual bool setup(real_t p_step) override;
+	virtual void solve(real_t p_step) override;
 
 	void set_param(PhysicsServer3D::PinJointParam p_param, real_t p_value);
 	real_t get_param(PhysicsServer3D::PinJointParam p_param) const;

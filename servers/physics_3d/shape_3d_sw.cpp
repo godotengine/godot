@@ -30,9 +30,27 @@
 
 #include "shape_3d_sw.h"
 
+#include "core/io/image.h"
+#include "core/math/convex_hull.h"
 #include "core/math/geometry_3d.h"
-#include "core/math/quick_hull.h"
 #include "core/templates/sort_array.h"
+
+// HeightMapShape3DSW is based on Bullet btHeightfieldTerrainShape.
+
+/*
+Bullet Continuous Collision Detection and Physics Library
+Copyright (c) 2003-2009 Erwin Coumans  http://bulletphysics.org
+
+This software is provided 'as-is', without any express or implied warranty.
+In no event will the authors be held liable for any damages arising from the use of this software.
+Permission is granted to anyone to use this software for any purpose,
+including commercial applications, and to alter it and redistribute it freely,
+subject to the following restrictions:
+
+1. The origin of this software must not be misrepresented; you must not claim that you wrote the original software. If you use this software in a product, an acknowledgment in the product documentation would be appreciated but is not required.
+2. Altered source versions must be plainly marked as such, and must not be misrepresented as being the original software.
+3. This notice may not be removed or altered from any source distribution.
+*/
 
 #define _EDGE_IS_VALID_SUPPORT_THRESHOLD 0.0002
 #define _FACE_IS_VALID_SUPPORT_THRESHOLD 0.9998
@@ -83,30 +101,25 @@ const Map<ShapeOwner3DSW *, int> &Shape3DSW::get_owners() const {
 	return owners;
 }
 
-Shape3DSW::Shape3DSW() {
-	custom_bias = 0;
-	configured = false;
-}
-
 Shape3DSW::~Shape3DSW() {
 	ERR_FAIL_COND(owners.size());
 }
 
-Plane PlaneShape3DSW::get_plane() const {
+Plane WorldBoundaryShape3DSW::get_plane() const {
 	return plane;
 }
 
-void PlaneShape3DSW::project_range(const Vector3 &p_normal, const Transform &p_transform, real_t &r_min, real_t &r_max) const {
+void WorldBoundaryShape3DSW::project_range(const Vector3 &p_normal, const Transform3D &p_transform, real_t &r_min, real_t &r_max) const {
 	// gibberish, a plane is infinity
 	r_min = -1e7;
 	r_max = 1e7;
 }
 
-Vector3 PlaneShape3DSW::get_support(const Vector3 &p_normal) const {
+Vector3 WorldBoundaryShape3DSW::get_support(const Vector3 &p_normal) const {
 	return p_normal * 1e15;
 }
 
-bool PlaneShape3DSW::intersect_segment(const Vector3 &p_begin, const Vector3 &p_end, Vector3 &r_result, Vector3 &r_normal) const {
+bool WorldBoundaryShape3DSW::intersect_segment(const Vector3 &p_begin, const Vector3 &p_end, Vector3 &r_result, Vector3 &r_normal) const {
 	bool inters = plane.intersects_segment(p_begin, p_end, &r_result);
 	if (inters) {
 		r_normal = plane.normal;
@@ -114,11 +127,11 @@ bool PlaneShape3DSW::intersect_segment(const Vector3 &p_begin, const Vector3 &p_
 	return inters;
 }
 
-bool PlaneShape3DSW::intersect_point(const Vector3 &p_point) const {
+bool WorldBoundaryShape3DSW::intersect_point(const Vector3 &p_point) const {
 	return plane.distance_to(p_point) < 0;
 }
 
-Vector3 PlaneShape3DSW::get_closest_point_to(const Vector3 &p_point) const {
+Vector3 WorldBoundaryShape3DSW::get_closest_point_to(const Vector3 &p_point) const {
 	if (plane.is_point_over(p_point)) {
 		return plane.project(p_point);
 	} else {
@@ -126,43 +139,43 @@ Vector3 PlaneShape3DSW::get_closest_point_to(const Vector3 &p_point) const {
 	}
 }
 
-Vector3 PlaneShape3DSW::get_moment_of_inertia(real_t p_mass) const {
-	return Vector3(); //wtf
+Vector3 WorldBoundaryShape3DSW::get_moment_of_inertia(real_t p_mass) const {
+	return Vector3(); // not applicable.
 }
 
-void PlaneShape3DSW::_setup(const Plane &p_plane) {
+void WorldBoundaryShape3DSW::_setup(const Plane &p_plane) {
 	plane = p_plane;
 	configure(AABB(Vector3(-1e4, -1e4, -1e4), Vector3(1e4 * 2, 1e4 * 2, 1e4 * 2)));
 }
 
-void PlaneShape3DSW::set_data(const Variant &p_data) {
+void WorldBoundaryShape3DSW::set_data(const Variant &p_data) {
 	_setup(p_data);
 }
 
-Variant PlaneShape3DSW::get_data() const {
+Variant WorldBoundaryShape3DSW::get_data() const {
 	return plane;
 }
 
-PlaneShape3DSW::PlaneShape3DSW() {
+WorldBoundaryShape3DSW::WorldBoundaryShape3DSW() {
 }
 
 //
 
-real_t RayShape3DSW::get_length() const {
+real_t SeparationRayShape3DSW::get_length() const {
 	return length;
 }
 
-bool RayShape3DSW::get_slips_on_slope() const {
-	return slips_on_slope;
+bool SeparationRayShape3DSW::get_slide_on_slope() const {
+	return slide_on_slope;
 }
 
-void RayShape3DSW::project_range(const Vector3 &p_normal, const Transform &p_transform, real_t &r_min, real_t &r_max) const {
+void SeparationRayShape3DSW::project_range(const Vector3 &p_normal, const Transform3D &p_transform, real_t &r_min, real_t &r_max) const {
 	// don't think this will be even used
 	r_min = 0;
 	r_max = 1;
 }
 
-Vector3 RayShape3DSW::get_support(const Vector3 &p_normal) const {
+Vector3 SeparationRayShape3DSW::get_support(const Vector3 &p_normal) const {
 	if (p_normal.z > 0) {
 		return Vector3(0, 0, length);
 	} else {
@@ -170,7 +183,7 @@ Vector3 RayShape3DSW::get_support(const Vector3 &p_normal) const {
 	}
 }
 
-void RayShape3DSW::get_supports(const Vector3 &p_normal, int p_max, Vector3 *r_supports, int &r_amount, FeatureType &r_type) const {
+void SeparationRayShape3DSW::get_supports(const Vector3 &p_normal, int p_max, Vector3 *r_supports, int &r_amount, FeatureType &r_type) const {
 	if (Math::abs(p_normal.z) < _EDGE_IS_VALID_SUPPORT_THRESHOLD) {
 		r_amount = 2;
 		r_type = FEATURE_EDGE;
@@ -187,15 +200,15 @@ void RayShape3DSW::get_supports(const Vector3 &p_normal, int p_max, Vector3 *r_s
 	}
 }
 
-bool RayShape3DSW::intersect_segment(const Vector3 &p_begin, const Vector3 &p_end, Vector3 &r_result, Vector3 &r_normal) const {
+bool SeparationRayShape3DSW::intersect_segment(const Vector3 &p_begin, const Vector3 &p_end, Vector3 &r_result, Vector3 &r_normal) const {
 	return false; //simply not possible
 }
 
-bool RayShape3DSW::intersect_point(const Vector3 &p_point) const {
+bool SeparationRayShape3DSW::intersect_point(const Vector3 &p_point) const {
 	return false; //simply not possible
 }
 
-Vector3 RayShape3DSW::get_closest_point_to(const Vector3 &p_point) const {
+Vector3 SeparationRayShape3DSW::get_closest_point_to(const Vector3 &p_point) const {
 	Vector3 s[2] = {
 		Vector3(0, 0, 0),
 		Vector3(0, 0, length)
@@ -204,32 +217,29 @@ Vector3 RayShape3DSW::get_closest_point_to(const Vector3 &p_point) const {
 	return Geometry3D::get_closest_point_to_segment(p_point, s);
 }
 
-Vector3 RayShape3DSW::get_moment_of_inertia(real_t p_mass) const {
+Vector3 SeparationRayShape3DSW::get_moment_of_inertia(real_t p_mass) const {
 	return Vector3();
 }
 
-void RayShape3DSW::_setup(real_t p_length, bool p_slips_on_slope) {
+void SeparationRayShape3DSW::_setup(real_t p_length, bool p_slide_on_slope) {
 	length = p_length;
-	slips_on_slope = p_slips_on_slope;
+	slide_on_slope = p_slide_on_slope;
 	configure(AABB(Vector3(0, 0, 0), Vector3(0.1, 0.1, length)));
 }
 
-void RayShape3DSW::set_data(const Variant &p_data) {
+void SeparationRayShape3DSW::set_data(const Variant &p_data) {
 	Dictionary d = p_data;
-	_setup(d["length"], d["slips_on_slope"]);
+	_setup(d["length"], d["slide_on_slope"]);
 }
 
-Variant RayShape3DSW::get_data() const {
+Variant SeparationRayShape3DSW::get_data() const {
 	Dictionary d;
 	d["length"] = length;
-	d["slips_on_slope"] = slips_on_slope;
+	d["slide_on_slope"] = slide_on_slope;
 	return d;
 }
 
-RayShape3DSW::RayShape3DSW() {
-	length = 1;
-	slips_on_slope = false;
-}
+SeparationRayShape3DSW::SeparationRayShape3DSW() {}
 
 /********** SPHERE *************/
 
@@ -237,7 +247,7 @@ real_t SphereShape3DSW::get_radius() const {
 	return radius;
 }
 
-void SphereShape3DSW::project_range(const Vector3 &p_normal, const Transform &p_transform, real_t &r_min, real_t &r_max) const {
+void SphereShape3DSW::project_range(const Vector3 &p_normal, const Transform3D &p_transform, real_t &r_min, real_t &r_max) const {
 	real_t d = p_normal.dot(p_transform.origin);
 
 	// figure out scale at point
@@ -293,13 +303,11 @@ Variant SphereShape3DSW::get_data() const {
 	return radius;
 }
 
-SphereShape3DSW::SphereShape3DSW() {
-	radius = 0;
-}
+SphereShape3DSW::SphereShape3DSW() {}
 
 /********** BOX *************/
 
-void BoxShape3DSW::project_range(const Vector3 &p_normal, const Transform &p_transform, real_t &r_min, real_t &r_max) const {
+void BoxShape3DSW::project_range(const Vector3 &p_normal, const Transform3D &p_transform, real_t &r_min, real_t &r_max) const {
 	// no matter the angle, the box is mirrored anyway
 	Vector3 local_normal = p_transform.basis.xform_inv(p_normal);
 
@@ -484,17 +492,16 @@ Variant BoxShape3DSW::get_data() const {
 	return half_extents;
 }
 
-BoxShape3DSW::BoxShape3DSW() {
-}
+BoxShape3DSW::BoxShape3DSW() {}
 
 /********** CAPSULE *************/
 
-void CapsuleShape3DSW::project_range(const Vector3 &p_normal, const Transform &p_transform, real_t &r_min, real_t &r_max) const {
+void CapsuleShape3DSW::project_range(const Vector3 &p_normal, const Transform3D &p_transform, real_t &r_min, real_t &r_max) const {
 	Vector3 n = p_transform.basis.xform_inv(p_normal).normalized();
-	real_t h = (n.y > 0) ? height : -height;
+	real_t h = height * 0.5 - radius;
 
 	n *= radius;
-	n.y += h * 0.5;
+	n.y += (n.y > 0) ? h : -h;
 
 	r_max = p_normal.dot(p_transform.xform(n));
 	r_min = p_normal.dot(p_transform.xform(-n));
@@ -503,10 +510,10 @@ void CapsuleShape3DSW::project_range(const Vector3 &p_normal, const Transform &p
 Vector3 CapsuleShape3DSW::get_support(const Vector3 &p_normal) const {
 	Vector3 n = p_normal;
 
-	real_t h = (n.y > 0) ? height : -height;
+	real_t h = height * 0.5 - radius;
 
 	n *= radius;
-	n.y += h * 0.5;
+	n.y += (n.y > 0) ? h : -h;
 	return n;
 }
 
@@ -524,15 +531,15 @@ void CapsuleShape3DSW::get_supports(const Vector3 &p_normal, int p_max, Vector3 
 		r_amount = 2;
 		r_type = FEATURE_EDGE;
 		r_supports[0] = n;
-		r_supports[0].y += height * 0.5;
+		r_supports[0].y += height * 0.5 - radius;
 		r_supports[1] = n;
-		r_supports[1].y -= height * 0.5;
+		r_supports[1].y -= height * 0.5 - radius;
 
 	} else {
-		real_t h = (d > 0) ? height : -height;
+		real_t h = height * 0.5 - radius;
 
 		n *= radius;
-		n.y += h * 0.5;
+		n.y += (d > 0) ? h : -h;
 		r_amount = 1;
 		r_type = FEATURE_POINT;
 		*r_supports = n;
@@ -551,7 +558,7 @@ bool CapsuleShape3DSW::intersect_segment(const Vector3 &p_begin, const Vector3 &
 
 	// test against cylinder and spheres :-|
 
-	collided = Geometry3D::segment_intersects_cylinder(p_begin, p_end, height, radius, &auxres, &auxn, 1);
+	collided = Geometry3D::segment_intersects_cylinder(p_begin, p_end, height - radius * 2.0, radius, &auxres, &auxn, 1);
 
 	if (collided) {
 		real_t d = norm.dot(auxres);
@@ -563,7 +570,7 @@ bool CapsuleShape3DSW::intersect_segment(const Vector3 &p_begin, const Vector3 &
 		}
 	}
 
-	collided = Geometry3D::segment_intersects_sphere(p_begin, p_end, Vector3(0, height * 0.5, 0), radius, &auxres, &auxn);
+	collided = Geometry3D::segment_intersects_sphere(p_begin, p_end, Vector3(0, height * 0.5 - radius, 0), radius, &auxres, &auxn);
 
 	if (collided) {
 		real_t d = norm.dot(auxres);
@@ -575,7 +582,7 @@ bool CapsuleShape3DSW::intersect_segment(const Vector3 &p_begin, const Vector3 &
 		}
 	}
 
-	collided = Geometry3D::segment_intersects_sphere(p_begin, p_end, Vector3(0, height * -0.5, 0), radius, &auxres, &auxn);
+	collided = Geometry3D::segment_intersects_sphere(p_begin, p_end, Vector3(0, height * -0.5 + radius, 0), radius, &auxres, &auxn);
 
 	if (collided) {
 		real_t d = norm.dot(auxres);
@@ -596,19 +603,19 @@ bool CapsuleShape3DSW::intersect_segment(const Vector3 &p_begin, const Vector3 &
 }
 
 bool CapsuleShape3DSW::intersect_point(const Vector3 &p_point) const {
-	if (Math::abs(p_point.y) < height * 0.5) {
+	if (Math::abs(p_point.y) < height * 0.5 - radius) {
 		return Vector3(p_point.x, 0, p_point.z).length() < radius;
 	} else {
 		Vector3 p = p_point;
-		p.y = Math::abs(p.y) - height * 0.5;
+		p.y = Math::abs(p.y) - height * 0.5 + radius;
 		return p.length() < radius;
 	}
 }
 
 Vector3 CapsuleShape3DSW::get_closest_point_to(const Vector3 &p_point) const {
 	Vector3 s[2] = {
-		Vector3(0, -height * 0.5, 0),
-		Vector3(0, height * 0.5, 0),
+		Vector3(0, -height * 0.5 + radius, 0),
+		Vector3(0, height * 0.5 - radius, 0),
 	};
 
 	Vector3 p = Geometry3D::get_closest_point_to_segment(p_point, s);
@@ -633,7 +640,7 @@ Vector3 CapsuleShape3DSW::get_moment_of_inertia(real_t p_mass) const {
 void CapsuleShape3DSW::_setup(real_t p_height, real_t p_radius) {
 	height = p_height;
 	radius = p_radius;
-	configure(AABB(Vector3(-radius, -height * 0.5 - radius, -radius), Vector3(radius * 2, height + radius * 2.0, radius * 2)));
+	configure(AABB(Vector3(-radius, -height * 0.5, -radius), Vector3(radius * 2, height, radius * 2)));
 }
 
 void CapsuleShape3DSW::set_data(const Variant &p_data) {
@@ -650,13 +657,11 @@ Variant CapsuleShape3DSW::get_data() const {
 	return d;
 }
 
-CapsuleShape3DSW::CapsuleShape3DSW() {
-	height = radius = 0;
-}
+CapsuleShape3DSW::CapsuleShape3DSW() {}
 
 /********** CYLINDER *************/
 
-void CylinderShape3DSW::project_range(const Vector3 &p_normal, const Transform &p_transform, real_t &r_min, real_t &r_max) const {
+void CylinderShape3DSW::project_range(const Vector3 &p_normal, const Transform3D &p_transform, real_t &r_min, real_t &r_max) const {
 	Vector3 cylinder_axis = p_transform.basis.get_axis(1).normalized();
 	real_t axis_dot = cylinder_axis.dot(p_normal);
 
@@ -830,13 +835,11 @@ Variant CylinderShape3DSW::get_data() const {
 	return d;
 }
 
-CylinderShape3DSW::CylinderShape3DSW() {
-	height = radius = 0;
-}
+CylinderShape3DSW::CylinderShape3DSW() {}
 
 /********** CONVEX POLYGON *************/
 
-void ConvexPolygonShape3DSW::project_range(const Vector3 &p_normal, const Transform &p_transform, real_t &r_min, real_t &r_max) const {
+void ConvexPolygonShape3DSW::project_range(const Vector3 &p_normal, const Transform3D &p_transform, real_t &r_min, real_t &r_max) const {
 	int vertex_count = mesh.vertices.size();
 	if (vertex_count == 0) {
 		return;
@@ -890,6 +893,9 @@ void ConvexPolygonShape3DSW::get_supports(const Vector3 &p_normal, int p_max, Ve
 
 	const Vector3 *vertices = mesh.vertices.ptr();
 	int vc = mesh.vertices.size();
+
+	r_amount = 0;
+	ERR_FAIL_COND_MSG(vc == 0, "Convex polygon shape has no vertices.");
 
 	//find vertex first
 	real_t max = 0;
@@ -1068,9 +1074,9 @@ Vector3 ConvexPolygonShape3DSW::get_moment_of_inertia(real_t p_mass) const {
 }
 
 void ConvexPolygonShape3DSW::_setup(const Vector<Vector3> &p_vertices) {
-	Error err = QuickHull::build(p_vertices, mesh);
+	Error err = ConvexHullComputer::convex_hull(p_vertices, mesh);
 	if (err != OK) {
-		ERR_PRINT("Failed to build QuickHull");
+		ERR_PRINT("Failed to build convex hull");
 	}
 
 	AABB _aabb;
@@ -1099,7 +1105,7 @@ ConvexPolygonShape3DSW::ConvexPolygonShape3DSW() {
 
 /********** FACE POLYGON *************/
 
-void FaceShape3DSW::project_range(const Vector3 &p_normal, const Transform &p_transform, real_t &r_min, real_t &r_max) const {
+void FaceShape3DSW::project_range(const Vector3 &p_normal, const Transform3D &p_transform, real_t &r_min, real_t &r_max) const {
 	for (int i = 0; i < 3; i++) {
 		Vector3 v = p_transform.xform(vertex[i]);
 		real_t d = p_normal.dot(v);
@@ -1229,7 +1235,7 @@ Vector<Vector3> ConcavePolygonShape3DSW::get_faces() const {
 	return rfaces;
 }
 
-void ConcavePolygonShape3DSW::project_range(const Vector3 &p_normal, const Transform &p_transform, real_t &r_min, real_t &r_max) const {
+void ConcavePolygonShape3DSW::project_range(const Vector3 &p_normal, const Transform3D &p_transform, real_t &r_min, real_t &r_max) const {
 	int count = vertices.size();
 	if (count == 0) {
 		r_min = 0;
@@ -1361,11 +1367,11 @@ Vector3 ConcavePolygonShape3DSW::get_closest_point_to(const Vector3 &p_point) co
 	return Vector3();
 }
 
-void ConcavePolygonShape3DSW::_cull(int p_idx, _CullParams *p_params) const {
+bool ConcavePolygonShape3DSW::_cull(int p_idx, _CullParams *p_params) const {
 	const BVH *bvh = &p_params->bvh[p_idx];
 
 	if (!p_params->aabb.intersects(bvh->aabb)) {
-		return;
+		return false;
 	}
 
 	if (bvh->face_index >= 0) {
@@ -1375,20 +1381,27 @@ void ConcavePolygonShape3DSW::_cull(int p_idx, _CullParams *p_params) const {
 		face->vertex[0] = p_params->vertices[f->indices[0]];
 		face->vertex[1] = p_params->vertices[f->indices[1]];
 		face->vertex[2] = p_params->vertices[f->indices[2]];
-		p_params->callback(p_params->userdata, face);
-
+		if (p_params->callback(p_params->userdata, face)) {
+			return true;
+		}
 	} else {
 		if (bvh->left >= 0) {
-			_cull(bvh->left, p_params);
+			if (_cull(bvh->left, p_params)) {
+				return true;
+			}
 		}
 
 		if (bvh->right >= 0) {
-			_cull(bvh->right, p_params);
+			if (_cull(bvh->right, p_params)) {
+				return true;
+			}
 		}
 	}
+
+	return false;
 }
 
-void ConcavePolygonShape3DSW::cull(const AABB &p_local_aabb, Callback p_callback, void *p_userdata) const {
+void ConcavePolygonShape3DSW::cull(const AABB &p_local_aabb, QueryCallback p_callback, void *p_userdata) const {
 	// make matrix local to concave
 	if (faces.size() == 0) {
 		return;
@@ -1626,11 +1639,7 @@ int HeightMapShape3DSW::get_depth() const {
 	return depth;
 }
 
-real_t HeightMapShape3DSW::get_cell_size() const {
-	return cell_size;
-}
-
-void HeightMapShape3DSW::project_range(const Vector3 &p_normal, const Transform &p_transform, real_t &r_min, real_t &r_max) const {
+void HeightMapShape3DSW::project_range(const Vector3 &p_normal, const Transform3D &p_transform, real_t &r_min, real_t &r_max) const {
 	//not very useful, but not very used either
 	p_transform.xform(get_aabb()).project_range_in_plane(Plane(p_normal, 0), r_min, r_max);
 }
@@ -1640,7 +1649,292 @@ Vector3 HeightMapShape3DSW::get_support(const Vector3 &p_normal) const {
 	return get_aabb().get_support(p_normal);
 }
 
+struct _HeightmapSegmentCullParams {
+	Vector3 from;
+	Vector3 to;
+	Vector3 dir;
+
+	Vector3 result;
+	Vector3 normal;
+
+	const HeightMapShape3DSW *heightmap = nullptr;
+	FaceShape3DSW *face = nullptr;
+};
+
+struct _HeightmapGridCullState {
+	real_t length = 0.0;
+	real_t length_flat = 0.0;
+
+	real_t dist = 0.0;
+	real_t prev_dist = 0.0;
+
+	int x = 0;
+	int z = 0;
+};
+
+_FORCE_INLINE_ bool _heightmap_face_cull_segment(_HeightmapSegmentCullParams &p_params) {
+	Vector3 res;
+	Vector3 normal;
+	if (p_params.face->intersect_segment(p_params.from, p_params.to, res, normal)) {
+		p_params.result = res;
+		p_params.normal = normal;
+		return true;
+	}
+
+	return false;
+}
+
+_FORCE_INLINE_ bool _heightmap_cell_cull_segment(_HeightmapSegmentCullParams &p_params, const _HeightmapGridCullState &p_state) {
+	// First triangle.
+	p_params.heightmap->_get_point(p_state.x, p_state.z, p_params.face->vertex[0]);
+	p_params.heightmap->_get_point(p_state.x + 1, p_state.z, p_params.face->vertex[1]);
+	p_params.heightmap->_get_point(p_state.x, p_state.z + 1, p_params.face->vertex[2]);
+	p_params.face->normal = Plane(p_params.face->vertex[0], p_params.face->vertex[1], p_params.face->vertex[2]).normal;
+	if (_heightmap_face_cull_segment(p_params)) {
+		return true;
+	}
+
+	// Second triangle.
+	p_params.face->vertex[0] = p_params.face->vertex[1];
+	p_params.heightmap->_get_point(p_state.x + 1, p_state.z + 1, p_params.face->vertex[1]);
+	p_params.face->normal = Plane(p_params.face->vertex[0], p_params.face->vertex[1], p_params.face->vertex[2]).normal;
+	if (_heightmap_face_cull_segment(p_params)) {
+		return true;
+	}
+
+	return false;
+}
+
+_FORCE_INLINE_ bool _heightmap_chunk_cull_segment(_HeightmapSegmentCullParams &p_params, const _HeightmapGridCullState &p_state) {
+	const HeightMapShape3DSW::Range &chunk = p_params.heightmap->_get_bounds_chunk(p_state.x, p_state.z);
+
+	Vector3 enter_pos;
+	Vector3 exit_pos;
+
+	if (p_state.length_flat > CMP_EPSILON) {
+		real_t flat_to_3d = p_state.length / p_state.length_flat;
+		real_t enter_param = p_state.prev_dist * flat_to_3d;
+		real_t exit_param = p_state.dist * flat_to_3d;
+		enter_pos = p_params.from + p_params.dir * enter_param;
+		exit_pos = p_params.from + p_params.dir * exit_param;
+	} else {
+		// Consider the ray vertical.
+		// (though we shouldn't reach this often because there is an early check up-front)
+		enter_pos = p_params.from;
+		exit_pos = p_params.to;
+	}
+
+	// Transform positions to heightmap space.
+	enter_pos *= HeightMapShape3DSW::BOUNDS_CHUNK_SIZE;
+	exit_pos *= HeightMapShape3DSW::BOUNDS_CHUNK_SIZE;
+
+	// We did enter the flat projection of the AABB,
+	// but we have to check if we intersect it on the vertical axis.
+	if ((enter_pos.y > chunk.max) && (exit_pos.y > chunk.max)) {
+		return false;
+	}
+	if ((enter_pos.y < chunk.min) && (exit_pos.y < chunk.min)) {
+		return false;
+	}
+
+	return p_params.heightmap->_intersect_grid_segment(_heightmap_cell_cull_segment, enter_pos, exit_pos, p_params.heightmap->width, p_params.heightmap->depth, p_params.heightmap->local_origin, p_params.result, p_params.normal);
+}
+
+template <typename ProcessFunction>
+bool HeightMapShape3DSW::_intersect_grid_segment(ProcessFunction &p_process, const Vector3 &p_begin, const Vector3 &p_end, int p_width, int p_depth, const Vector3 &offset, Vector3 &r_point, Vector3 &r_normal) const {
+	Vector3 delta = (p_end - p_begin);
+	real_t length = delta.length();
+
+	if (length < CMP_EPSILON) {
+		return false;
+	}
+
+	Vector3 local_begin = p_begin + offset;
+
+	FaceShape3DSW face;
+	face.backface_collision = false;
+
+	_HeightmapSegmentCullParams params;
+	params.from = p_begin;
+	params.to = p_end;
+	params.dir = delta / length;
+	params.heightmap = this;
+	params.face = &face;
+
+	_HeightmapGridCullState state;
+
+	// Perform grid query from projected ray.
+	Vector2 ray_dir_flat(delta.x, delta.z);
+	state.length = length;
+	state.length_flat = ray_dir_flat.length();
+
+	if (state.length_flat < CMP_EPSILON) {
+		ray_dir_flat = Vector2();
+	} else {
+		ray_dir_flat /= state.length_flat;
+	}
+
+	const int x_step = (ray_dir_flat.x > CMP_EPSILON) ? 1 : ((ray_dir_flat.x < -CMP_EPSILON) ? -1 : 0);
+	const int z_step = (ray_dir_flat.y > CMP_EPSILON) ? 1 : ((ray_dir_flat.y < -CMP_EPSILON) ? -1 : 0);
+
+	const real_t infinite = 1e20;
+	const real_t delta_x = (x_step != 0) ? 1.f / Math::abs(ray_dir_flat.x) : infinite;
+	const real_t delta_z = (z_step != 0) ? 1.f / Math::abs(ray_dir_flat.y) : infinite;
+
+	real_t cross_x; // At which value of `param` we will cross a x-axis lane?
+	real_t cross_z; // At which value of `param` we will cross a z-axis lane?
+
+	// X initialization.
+	if (x_step != 0) {
+		if (x_step == 1) {
+			cross_x = (Math::ceil(local_begin.x) - local_begin.x) * delta_x;
+		} else {
+			cross_x = (local_begin.x - Math::floor(local_begin.x)) * delta_x;
+		}
+	} else {
+		cross_x = infinite; // Will never cross on X.
+	}
+
+	// Z initialization.
+	if (z_step != 0) {
+		if (z_step == 1) {
+			cross_z = (Math::ceil(local_begin.z) - local_begin.z) * delta_z;
+		} else {
+			cross_z = (local_begin.z - Math::floor(local_begin.z)) * delta_z;
+		}
+	} else {
+		cross_z = infinite; // Will never cross on Z.
+	}
+
+	int x = Math::floor(local_begin.x);
+	int z = Math::floor(local_begin.z);
+
+	// Workaround cases where the ray starts at an integer position.
+	if (Math::is_zero_approx(cross_x)) {
+		cross_x += delta_x;
+		// If going backwards, we should ignore the position we would get by the above flooring,
+		// because the ray is not heading in that direction.
+		if (x_step == -1) {
+			x -= 1;
+		}
+	}
+
+	if (Math::is_zero_approx(cross_z)) {
+		cross_z += delta_z;
+		if (z_step == -1) {
+			z -= 1;
+		}
+	}
+
+	// Start inside the grid.
+	int x_start = MAX(MIN(x, p_width - 2), 0);
+	int z_start = MAX(MIN(z, p_depth - 2), 0);
+
+	// Adjust initial cross values.
+	cross_x += delta_x * x_step * (x_start - x);
+	cross_z += delta_z * z_step * (z_start - z);
+
+	x = x_start;
+	z = z_start;
+
+	while (true) {
+		state.prev_dist = state.dist;
+		state.x = x;
+		state.z = z;
+
+		if (cross_x < cross_z) {
+			// X lane.
+			x += x_step;
+			// Assign before advancing the param,
+			// to be in sync with the initialization step.
+			state.dist = cross_x;
+			cross_x += delta_x;
+		} else {
+			// Z lane.
+			z += z_step;
+			state.dist = cross_z;
+			cross_z += delta_z;
+		}
+
+		if (state.dist > state.length_flat) {
+			state.dist = state.length_flat;
+			if (p_process(params, state)) {
+				r_point = params.result;
+				r_normal = params.normal;
+				return true;
+			}
+			break;
+		}
+
+		if (p_process(params, state)) {
+			r_point = params.result;
+			r_normal = params.normal;
+			return true;
+		}
+
+		// Stop when outside the grid.
+		if ((x < 0) || (z < 0) || (x >= p_width - 1) || (z >= p_depth - 1)) {
+			break;
+		}
+	}
+
+	return false;
+}
+
 bool HeightMapShape3DSW::intersect_segment(const Vector3 &p_begin, const Vector3 &p_end, Vector3 &r_point, Vector3 &r_normal) const {
+	if (heights.is_empty()) {
+		return false;
+	}
+
+	Vector3 local_begin = p_begin + local_origin;
+	Vector3 local_end = p_end + local_origin;
+
+	// Quantize the ray begin/end.
+	int begin_x = Math::floor(local_begin.x);
+	int begin_z = Math::floor(local_begin.z);
+	int end_x = Math::floor(local_end.x);
+	int end_z = Math::floor(local_end.z);
+
+	if ((begin_x == end_x) && (begin_z == end_z)) {
+		// Simple case for rays that don't traverse the grid horizontally.
+		// Just perform a test on the given cell.
+		FaceShape3DSW face;
+		face.backface_collision = false;
+
+		_HeightmapSegmentCullParams params;
+		params.from = p_begin;
+		params.to = p_end;
+		params.dir = (p_end - p_begin).normalized();
+
+		params.heightmap = this;
+		params.face = &face;
+
+		_HeightmapGridCullState state;
+		state.x = MAX(MIN(begin_x, width - 2), 0);
+		state.z = MAX(MIN(begin_z, depth - 2), 0);
+		if (_heightmap_cell_cull_segment(params, state)) {
+			r_point = params.result;
+			r_normal = params.normal;
+			return true;
+		}
+	} else if (bounds_grid.is_empty()) {
+		// Process all cells intersecting the flat projection of the ray.
+		return _intersect_grid_segment(_heightmap_cell_cull_segment, p_begin, p_end, width, depth, local_origin, r_point, r_normal);
+	} else {
+		Vector3 ray_diff = (p_end - p_begin);
+		real_t length_flat_sqr = ray_diff.x * ray_diff.x + ray_diff.z * ray_diff.z;
+		if (length_flat_sqr < BOUNDS_CHUNK_SIZE * BOUNDS_CHUNK_SIZE) {
+			// Don't use chunks, the ray is too short in the plane.
+			return _intersect_grid_segment(_heightmap_cell_cull_segment, p_begin, p_end, width, depth, local_origin, r_point, r_normal);
+		} else {
+			// The ray is long, run raycast on a higher-level grid.
+			Vector3 bounds_from = p_begin / BOUNDS_CHUNK_SIZE;
+			Vector3 bounds_to = p_end / BOUNDS_CHUNK_SIZE;
+			Vector3 bounds_offset = local_origin / BOUNDS_CHUNK_SIZE;
+			return _intersect_grid_segment(_heightmap_chunk_cull_segment, bounds_from, bounds_to, bounds_grid_width, bounds_grid_depth, bounds_offset, r_point, r_normal);
+		}
+	}
+
 	return false;
 }
 
@@ -1652,7 +1946,70 @@ Vector3 HeightMapShape3DSW::get_closest_point_to(const Vector3 &p_point) const {
 	return Vector3();
 }
 
-void HeightMapShape3DSW::cull(const AABB &p_local_aabb, Callback p_callback, void *p_userdata) const {
+void HeightMapShape3DSW::_get_cell(const Vector3 &p_point, int &r_x, int &r_y, int &r_z) const {
+	const AABB &aabb = get_aabb();
+
+	Vector3 pos_local = aabb.position + local_origin;
+
+	Vector3 clamped_point(p_point);
+	clamped_point.x = CLAMP(p_point.x, pos_local.x, pos_local.x + aabb.size.x);
+	clamped_point.y = CLAMP(p_point.y, pos_local.y, pos_local.y + aabb.size.y);
+	clamped_point.z = CLAMP(p_point.z, pos_local.z, pos_local.x + aabb.size.z);
+
+	r_x = (clamped_point.x < 0.0) ? (clamped_point.x - 0.5) : (clamped_point.x + 0.5);
+	r_y = (clamped_point.y < 0.0) ? (clamped_point.y - 0.5) : (clamped_point.y + 0.5);
+	r_z = (clamped_point.z < 0.0) ? (clamped_point.z - 0.5) : (clamped_point.z + 0.5);
+}
+
+void HeightMapShape3DSW::cull(const AABB &p_local_aabb, QueryCallback p_callback, void *p_userdata) const {
+	if (heights.is_empty()) {
+		return;
+	}
+
+	AABB local_aabb = p_local_aabb;
+	local_aabb.position += local_origin;
+
+	// Quantize the aabb, and adjust the start/end ranges.
+	int aabb_min[3];
+	int aabb_max[3];
+	_get_cell(local_aabb.position, aabb_min[0], aabb_min[1], aabb_min[2]);
+	_get_cell(local_aabb.position + local_aabb.size, aabb_max[0], aabb_max[1], aabb_max[2]);
+
+	// Expand the min/max quantized values.
+	// This is to catch the case where the input aabb falls between grid points.
+	for (int i = 0; i < 3; ++i) {
+		aabb_min[i]--;
+		aabb_max[i]++;
+	}
+
+	int start_x = MAX(0, aabb_min[0]);
+	int end_x = MIN(width - 1, aabb_max[0]);
+	int start_z = MAX(0, aabb_min[2]);
+	int end_z = MIN(depth - 1, aabb_max[2]);
+
+	FaceShape3DSW face;
+	face.backface_collision = true;
+
+	for (int z = start_z; z < end_z; z++) {
+		for (int x = start_x; x < end_x; x++) {
+			// First triangle.
+			_get_point(x, z, face.vertex[0]);
+			_get_point(x + 1, z, face.vertex[1]);
+			_get_point(x, z + 1, face.vertex[2]);
+			face.normal = Plane(face.vertex[0], face.vertex[1], face.vertex[2]).normal;
+			if (p_callback(p_userdata, &face)) {
+				return;
+			}
+
+			// Second triangle.
+			face.vertex[0] = face.vertex[1];
+			_get_point(x + 1, z + 1, face.vertex[1]);
+			face.normal = Plane(face.vertex[0], face.vertex[1], face.vertex[2]).normal;
+			if (p_callback(p_userdata, &face)) {
+				return;
+			}
+		}
+	}
 }
 
 Vector3 HeightMapShape3DSW::get_moment_of_inertia(real_t p_mass) const {
@@ -1665,58 +2022,181 @@ Vector3 HeightMapShape3DSW::get_moment_of_inertia(real_t p_mass) const {
 			(p_mass / 3.0) * (extents.x * extents.x + extents.y * extents.y));
 }
 
-void HeightMapShape3DSW::_setup(Vector<real_t> p_heights, int p_width, int p_depth, real_t p_cell_size) {
+void HeightMapShape3DSW::_build_accelerator() {
+	bounds_grid.clear();
+
+	bounds_grid_width = width / BOUNDS_CHUNK_SIZE;
+	bounds_grid_depth = depth / BOUNDS_CHUNK_SIZE;
+
+	if (width % BOUNDS_CHUNK_SIZE > 0) {
+		++bounds_grid_width; // In case terrain size isn't dividable by chunk size.
+	}
+
+	if (depth % BOUNDS_CHUNK_SIZE > 0) {
+		++bounds_grid_depth;
+	}
+
+	uint32_t bound_grid_size = (uint32_t)(bounds_grid_width * bounds_grid_depth);
+
+	if (bound_grid_size < 2) {
+		// Grid is empty or just one chunk.
+		return;
+	}
+
+	bounds_grid.resize(bound_grid_size);
+
+	// Compute min and max height for all chunks.
+	for (int cz = 0; cz < bounds_grid_depth; ++cz) {
+		int z0 = cz * BOUNDS_CHUNK_SIZE;
+
+		for (int cx = 0; cx < bounds_grid_width; ++cx) {
+			int x0 = cx * BOUNDS_CHUNK_SIZE;
+
+			Range r;
+
+			r.min = _get_height(x0, z0);
+			r.max = r.min;
+
+			// Compute min and max height for this chunk.
+			// We have to include one extra cell to account for neighbors.
+			// Here is why:
+			// Say we have a flat terrain, and a plateau that fits a chunk perfectly.
+			//
+			//   Left        Right
+			// 0---0---0---1---1---1
+			// |   |   |   |   |   |
+			// 0---0---0---1---1---1
+			// |   |   |   |   |   |
+			// 0---0---0---1---1---1
+			//           x
+			//
+			// If the AABB for the Left chunk did not share vertices with the Right,
+			// then we would fail collision tests at x due to a gap.
+			//
+			int z_max = MIN(z0 + BOUNDS_CHUNK_SIZE + 1, depth);
+			int x_max = MIN(x0 + BOUNDS_CHUNK_SIZE + 1, width);
+			for (int z = z0; z < z_max; ++z) {
+				for (int x = x0; x < x_max; ++x) {
+					real_t height = _get_height(x, z);
+					if (height < r.min) {
+						r.min = height;
+					} else if (height > r.max) {
+						r.max = height;
+					}
+				}
+			}
+
+			bounds_grid[cx + cz * bounds_grid_width] = r;
+		}
+	}
+}
+
+void HeightMapShape3DSW::_setup(const Vector<real_t> &p_heights, int p_width, int p_depth, real_t p_min_height, real_t p_max_height) {
 	heights = p_heights;
 	width = p_width;
 	depth = p_depth;
-	cell_size = p_cell_size;
 
-	const real_t *r = heights.ptr();
-
+	// Initialize aabb.
 	AABB aabb;
+	aabb.position = Vector3(0.0, p_min_height, 0.0);
+	aabb.size = Vector3(p_width - 1, p_max_height - p_min_height, p_depth - 1);
 
-	for (int i = 0; i < depth; i++) {
-		for (int j = 0; j < width; j++) {
-			real_t h = r[i * width + j];
+	// Initialize origin as the aabb center.
+	local_origin = aabb.position + 0.5 * aabb.size;
+	local_origin.y = 0.0;
 
-			Vector3 pos(j * cell_size, h, i * cell_size);
-			if (i == 0 || j == 0) {
-				aabb.position = pos;
-			} else {
-				aabb.expand_to(pos);
-			}
-		}
-	}
+	aabb.position -= local_origin;
+
+	_build_accelerator();
 
 	configure(aabb);
 }
 
 void HeightMapShape3DSW::set_data(const Variant &p_data) {
 	ERR_FAIL_COND(p_data.get_type() != Variant::DICTIONARY);
+
 	Dictionary d = p_data;
 	ERR_FAIL_COND(!d.has("width"));
 	ERR_FAIL_COND(!d.has("depth"));
-	ERR_FAIL_COND(!d.has("cell_size"));
 	ERR_FAIL_COND(!d.has("heights"));
 
 	int width = d["width"];
 	int depth = d["depth"];
-	real_t cell_size = d["cell_size"];
-	Vector<real_t> heights = d["heights"];
 
-	ERR_FAIL_COND(width <= 0);
-	ERR_FAIL_COND(depth <= 0);
-	ERR_FAIL_COND(cell_size <= CMP_EPSILON);
-	ERR_FAIL_COND(heights.size() != (width * depth));
-	_setup(heights, width, depth, cell_size);
+	ERR_FAIL_COND(width <= 0.0);
+	ERR_FAIL_COND(depth <= 0.0);
+
+	Variant heights_variant = d["heights"];
+	Vector<real_t> heights_buffer;
+#ifdef REAL_T_IS_DOUBLE
+	if (heights_variant.get_type() == Variant::PACKED_FLOAT64_ARRAY) {
+#else
+	if (heights_variant.get_type() == Variant::PACKED_FLOAT32_ARRAY) {
+#endif
+		// Ready-to-use heights can be passed.
+		heights_buffer = heights_variant;
+	} else if (heights_variant.get_type() == Variant::OBJECT) {
+		// If an image is passed, we have to convert it.
+		// This would be expensive to do with a script, so it's nice to have it here.
+		Ref<Image> image = heights_variant;
+		ERR_FAIL_COND(image.is_null());
+		ERR_FAIL_COND(image->get_format() != Image::FORMAT_RF);
+
+		PackedByteArray im_data = image->get_data();
+		heights_buffer.resize(image->get_width() * image->get_height());
+
+		real_t *w = heights_buffer.ptrw();
+		real_t *rp = (real_t *)im_data.ptr();
+		for (int i = 0; i < heights_buffer.size(); ++i) {
+			w[i] = rp[i];
+		}
+	} else {
+#ifdef REAL_T_IS_DOUBLE
+		ERR_FAIL_MSG("Expected PackedFloat64Array or float Image.");
+#else
+		ERR_FAIL_MSG("Expected PackedFloat32Array or float Image.");
+#endif
+	}
+
+	// Compute min and max heights or use precomputed values.
+	real_t min_height = 0.0;
+	real_t max_height = 0.0;
+	if (d.has("min_height") && d.has("max_height")) {
+		min_height = d["min_height"];
+		max_height = d["max_height"];
+	} else {
+		int heights_size = heights.size();
+		for (int i = 0; i < heights_size; ++i) {
+			real_t h = heights[i];
+			if (h < min_height) {
+				min_height = h;
+			} else if (h > max_height) {
+				max_height = h;
+			}
+		}
+	}
+
+	ERR_FAIL_COND(min_height > max_height);
+
+	ERR_FAIL_COND(heights_buffer.size() != (width * depth));
+
+	// If specified, min and max height will be used as precomputed values.
+	_setup(heights_buffer, width, depth, min_height, max_height);
 }
 
 Variant HeightMapShape3DSW::get_data() const {
-	ERR_FAIL_V(Variant());
+	Dictionary d;
+	d["width"] = width;
+	d["depth"] = depth;
+
+	const AABB &aabb = get_aabb();
+	d["min_height"] = aabb.position.y;
+	d["max_height"] = aabb.position.y + aabb.size.y;
+
+	d["heights"] = heights;
+
+	return d;
 }
 
 HeightMapShape3DSW::HeightMapShape3DSW() {
-	width = 0;
-	depth = 0;
-	cell_size = 0;
 }
