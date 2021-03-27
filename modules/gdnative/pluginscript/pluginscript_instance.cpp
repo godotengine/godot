@@ -93,6 +93,13 @@ void PluginScriptInstance::notification(int p_notification) {
 	_desc->notification(_data, p_notification);
 }
 
+String PluginScriptInstance::to_string(bool *r_valid) {
+	godot_string ret = _desc->to_string(_data, r_valid);
+	String str_ret = *(String *)&ret;
+	godot_string_destroy(&ret);
+	return str_ret;
+}
+
 Vector<ScriptNetData> PluginScriptInstance::get_rpc_methods() const {
 	return _script->get_rpc_methods();
 }

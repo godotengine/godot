@@ -56,6 +56,7 @@ typedef struct {
 			int p_argcount, godot_variant_call_error *r_error);
 
 	void (*notification)(godot_pluginscript_instance_data *p_data, int p_notification);
+	godot_string (*to_string)(godot_pluginscript_instance_data *p_data, godot_bool *r_valid);
 
 	//this is used by script languages that keep a reference counter of their own
 	//you can make make Ref<> not die when it reaches zero, so deleting the reference
