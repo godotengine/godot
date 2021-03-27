@@ -127,9 +127,9 @@ Error Array::resize(int p_new_size) {
 	return _p->array.resize(p_new_size);
 }
 
-void Array::insert(int p_pos, const Variant &p_value) {
+Error Array::insert(int p_pos, const Variant &p_value) {
 
-	_p->array.insert(p_pos, p_value);
+	return _p->array.insert(p_pos, p_value);
 }
 
 void Array::erase(const Variant &p_value) {
