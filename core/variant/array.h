@@ -72,7 +72,7 @@ public:
 	void append_array(const Array &p_array);
 	Error resize(int p_new_size);
 
-	void insert(int p_pos, const Variant &p_value);
+	Error insert(int p_pos, const Variant &p_value);
 	void remove(int p_pos);
 
 	Variant front() const;

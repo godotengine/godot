@@ -202,9 +202,9 @@ Error Array::resize(int p_new_size) {
 	return _p->array.resize(p_new_size);
 }
 
-void Array::insert(int p_pos, const Variant &p_value) {
-	ERR_FAIL_COND(!_p->typed.validate(p_value, "insert"));
-	_p->array.insert(p_pos, p_value);
+Error Array::insert(int p_pos, const Variant &p_value) {
+	ERR_FAIL_COND_V(!_p->typed.validate(p_value, "insert"), ERR_INVALID_PARAMETER);
+	return _p->array.insert(p_pos, p_value);
 }
 
 void Array::erase(const Variant &p_value) {
