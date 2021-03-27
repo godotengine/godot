@@ -2425,8 +2425,10 @@ ProjectManager::ProjectManager() {
 		// Define a minimum window size to prevent UI elements from overlapping or being cut off
 		DisplayServer::get_singleton()->window_set_min_size(Size2(750, 420) * EDSCALE);
 
-		// TODO: Resize windows on hiDPI displays on Windows and Linux and remove the line below
-		DisplayServer::get_singleton()->window_set_size(DisplayServer::get_singleton()->window_get_size() * MAX(1, EDSCALE));
+		// TODO: Resize windows on hiDPI displays on Windows and Linux and remove the lines below
+		float scale_factor = MAX(1, EDSCALE);
+		Vector2i window_size = DisplayServer::get_singleton()->window_get_size();
+		DisplayServer::get_singleton()->window_set_size(Vector2i(window_size.x * scale_factor, window_size.y * scale_factor));
 	}
 
 	// TRANSLATORS: This refers to the application where users manage their Godot projects.
