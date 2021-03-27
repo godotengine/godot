@@ -14,7 +14,7 @@
 		<member name="gradient" type="Gradient" setter="set_gradient" getter="get_gradient">
 			The [Gradient] that will be used to fill the texture.
 		</member>
-		<member name="width" type="int" setter="set_width" getter="get_width" default="2048">
+		<member name="width" type="int" setter="set_width" getter="get_width" default="64">
 			The number of color samples that will be obtained from the [Gradient].
 		</member>
 	</members>

@@ -644,7 +644,7 @@ class CurveTexture : public Texture2D {
 private:
 	mutable RID _texture;
 	Ref<Curve> _curve;
-	int _width = 2048;
+	int _width = 64;
 
 	void _update();
 
@@ -697,7 +697,7 @@ private:
 	Ref<Gradient> gradient;
 	bool update_pending = false;
 	RID texture;
-	int width = 2048;
+	int width = 64;
 
 	void _queue_update();
 	void _update();
