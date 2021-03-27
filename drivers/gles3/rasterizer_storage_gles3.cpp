@@ -7446,6 +7446,13 @@ void RasterizerStorageGLES3::render_target_set_use_debanding(RID p_render_target
 	rt->use_debanding = p_debanding;
 }
 
+void RasterizerStorageGLES3::render_target_set_sharpen_intensity(RID p_render_target, float p_intensity) {
+	RenderTarget *rt = render_target_owner.getornull(p_render_target);
+	ERR_FAIL_COND(!rt);
+
+	rt->sharpen_intensity = p_intensity;
+}
+
 /* CANVAS SHADOW */
 
 RID RasterizerStorageGLES3::canvas_light_shadow_buffer_create(int p_width) {

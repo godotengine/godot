@@ -98,6 +98,10 @@ uniform vec3 bcs;
 uniform vec2 pixel_size;
 #endif
 
+#ifdef USE_SHARPENING
+uniform float sharpen_intensity;
+#endif
+
 #ifdef USE_COLOR_CORRECTION
 uniform sampler2D color_correction; //texunit:1
 #endif

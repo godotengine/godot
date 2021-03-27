@@ -5366,10 +5366,21 @@ void RasterizerStorageGLES2::render_target_set_use_debanding(RID p_render_target
 	ERR_FAIL_COND(!rt);
 
 	if (p_debanding) {
-		WARN_PRINT_ONCE("Debanding is not supported in the GLES2 backend. Switch to the GLES3 backend and make sure HDR is enabled.");
+		WARN_PRINT_ONCE("Debanding is not supported in the GLES2 backend. To use debanding, switch to the GLES3 backend and make sure HDR is enabled.");
 	}
 
 	rt->use_debanding = p_debanding;
+}
+
+void RasterizerStorageGLES2::render_target_set_sharpen_intensity(RID p_render_target, float p_intensity) {
+	RenderTarget *rt = render_target_owner.getornull(p_render_target);
+	ERR_FAIL_COND(!rt);
+
+	if (p_intensity >= 0.001) {
+		WARN_PRINT_ONCE("Sharpening is not supported in the GLES2 backend. To use sharpening, switch to the GLES3 backend.");
+	}
+
+	rt->sharpen_intensity = p_intensity;
 }
 
 /* CANVAS SHADOW */
