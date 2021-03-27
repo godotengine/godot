@@ -62,6 +62,7 @@
 #include "test_object.h"
 #include "test_ordered_hash_map.h"
 #include "test_paged_array.h"
+#include "test_path_3d.h"
 #include "test_pck_packer.h"
 #include "test_physics_2d.h"
 #include "test_physics_3d.h"
