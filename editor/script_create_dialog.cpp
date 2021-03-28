@@ -87,8 +87,8 @@ void ScriptCreateDialog::_path_hbox_sorted() {
 
 		// First set cursor to the end of line to scroll LineEdit view
 		// to the right and then set the actual cursor position.
-		file_path->set_cursor_position(file_path->get_text().length());
-		file_path->set_cursor_position(filename_start_pos);
+		file_path->set_caret_column(file_path->get_text().length());
+		file_path->set_caret_column(filename_start_pos);
 
 		file_path->grab_focus();
 	}
@@ -557,7 +557,7 @@ void ScriptCreateDialog::_file_selected(const String &p_file) {
 		String filename = p.get_file().get_basename();
 		int select_start = p.rfind(filename);
 		file_path->select(select_start, select_start + filename.length());
-		file_path->set_cursor_position(select_start + filename.length());
+		file_path->set_caret_column(select_start + filename.length());
 		file_path->grab_focus();
 	}
 }

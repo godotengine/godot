@@ -1801,7 +1801,7 @@ void FindBar::popup_search() {
 
 	if (!search_text->get_text().is_empty()) {
 		search_text->select_all();
-		search_text->set_cursor_position(search_text->get_text().length());
+		search_text->set_caret_column(search_text->get_text().length());
 		if (grabbed_focus) {
 			_search();
 		}
