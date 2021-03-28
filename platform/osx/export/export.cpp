@@ -135,7 +135,7 @@ void EditorExportPlatformOSX::get_export_options(List<ExportOption> *r_options) 
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "privacy/microphone_usage_description", PROPERTY_HINT_PLACEHOLDER_TEXT, "Provide a message if you need to use the microphone"), ""));
 
 #ifdef OSX_ENABLED
-	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "codesign/enable"), false));
+	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "codesign/enable"), true));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "codesign/identity", PROPERTY_HINT_PLACEHOLDER_TEXT, "Type: Name (ID)"), ""));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "codesign/timestamp"), true));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "codesign/hardened_runtime"), true));
@@ -420,7 +420,11 @@ Error EditorExportPlatformOSX::_code_sign(const Ref<EditorExportPreset> &p_prese
 	}
 
 	args.push_back("-s");
-	args.push_back(p_preset->get("codesign/identity"));
+	if (p_preset->get("codesign/identity") == "") {
+		args.push_back("-");
+	} else {
+		args.push_back(p_preset->get("codesign/identity"));
+	}
 
 	args.push_back("-v"); /* provide some more feedback */
 
