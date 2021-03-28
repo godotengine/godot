@@ -77,7 +77,7 @@ public:
 
 	virtual bool has_alpha() const override;
 
-	virtual Ref<Image> get_data() const override;
+	virtual Ref<Image> get_image() const override;
 
 	ViewportTexture();
 	~ViewportTexture();

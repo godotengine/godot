@@ -131,7 +131,7 @@ bool ViewportTexture::has_alpha() const {
 	return false;
 }
 
-Ref<Image> ViewportTexture::get_data() const {
+Ref<Image> ViewportTexture::get_image() const {
 	ERR_FAIL_COND_V_MSG(!vp, Ref<Image>(), "Viewport Texture must be set to use it.");
 	return RS::get_singleton()->texture_2d_get(vp->texture_rid);
 }

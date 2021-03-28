@@ -1511,9 +1511,9 @@ bool CanvasTexture::has_alpha() const {
 	}
 }
 
-Ref<Image> CanvasTexture::get_data() const {
+Ref<Image> CanvasTexture::get_image() const {
 	if (diffuse_texture.is_valid()) {
-		return diffuse_texture->get_data();
+		return diffuse_texture->get_image();
 	} else {
 		return Ref<Image>();
 	}
