@@ -356,8 +356,8 @@ public:
 	int count(const String &p_string, int p_from = 0, int p_to = 0) const;
 	int countn(const String &p_string, int p_from = 0, int p_to = 0) const;
 
-	String left(int p_pos) const;
-	String right(int p_pos) const;
+	String left(int p_count) const;
+	String right(int p_count) const;
 	String dedent() const;
 	String strip_edges(bool left = true, bool right = true) const;
 	String strip_escapes() const;

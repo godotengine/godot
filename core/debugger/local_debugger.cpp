@@ -183,7 +183,7 @@ void LocalDebugger::debug(bool p_can_continue, bool p_is_error_breakpoint) {
 						print_line("Error: Unknown option " + key);
 					} else {
 						// Allow explicit tab character
-						String value = key_value.right(value_pos + 1).replace("\\t", "\t");
+						String value = key_value.substr(value_pos + 1).replace("\\t", "\t");
 
 						options[key] = value;
 					}
@@ -348,7 +348,7 @@ Pair<String, int> LocalDebugger::to_breakpoint(const String &p_line) {
 	}
 
 	breakpoint.first = script_debugger->breakpoint_find_source(breakpoint_part.left(last_colon).strip_edges());
-	breakpoint.second = breakpoint_part.right(last_colon).strip_edges().to_int();
+	breakpoint.second = breakpoint_part.substr(last_colon).strip_edges().to_int();
 
 	return breakpoint;
 }

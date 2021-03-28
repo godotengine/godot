@@ -3432,7 +3432,7 @@ bool TilesetEditorContext::_set(const StringName &p_name, const Variant &p_value
 		tileset_editor->_set_snap_sep(snap);
 		return true;
 	} else if (p_name.operator String().left(5) == "tile_") {
-		String name2 = p_name.operator String().right(5);
+		String name2 = p_name.operator String().substr(5);
 		bool v = false;
 
 		if (tileset_editor->get_current_tile() < 0 || tileset.is_null()) {
@@ -3496,7 +3496,7 @@ bool TilesetEditorContext::_get(const StringName &p_name, Variant &r_ret) const 
 		r_ret = tileset_editor->snap_separation;
 		v = true;
 	} else if (name.left(5) == "tile_") {
-		name = name.right(5);
+		name = name.substr(5);
 
 		if (tileset_editor->get_current_tile() < 0 || tileset.is_null()) {
 			return false;

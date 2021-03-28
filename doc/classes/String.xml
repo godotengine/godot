@@ -394,10 +394,10 @@
 		<method name="left" qualifiers="const">
 			<return type="String">
 			</return>
-			<argument index="0" name="position" type="int">
+			<argument index="0" name="count" type="int">
 			</argument>
 			<description>
-				Returns a number of characters from the left of the string.
+				Returns the first [code]count[/code] characters from the beginning of the string. Equivalent to [code]substr(0, count)[/code].
 			</description>
 		</method>
 		<method name="length" qualifiers="const">
@@ -669,7 +669,7 @@
 			<argument index="0" name="position" type="int">
 			</argument>
 			<description>
-				Returns the right side of the string from a given position.
+				Returns the last [code]count[/code] characters from the end of the string. Equivalent to [code]substr(length() - count)[/code].
 			</description>
 		</method>
 		<method name="rpad" qualifiers="const">

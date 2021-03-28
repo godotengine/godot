@@ -69,7 +69,7 @@ bool TileSet::_set(const StringName &p_name, const Variant &p_value) {
 			tile_set_tile_mode(id, AUTO_TILE);
 		}
 	} else if (what.left(9) == "autotile/") {
-		what = what.right(9);
+		what = what.substr(9);
 		if (what == "bitmask_mode") {
 			autotile_set_bitmask_mode(id, (BitmaskMode)((int)p_value));
 		} else if (what == "icon_coordinate") {
@@ -235,7 +235,7 @@ bool TileSet::_get(const StringName &p_name, Variant &r_ret) const {
 	} else if (what == "tile_mode") {
 		r_ret = tile_get_tile_mode(id);
 	} else if (what.left(9) == "autotile/") {
-		what = what.right(9);
+		what = what.substr(9);
 		if (what == "bitmask_mode") {
 			r_ret = autotile_get_bitmask_mode(id);
 		} else if (what == "icon_coordinate") {

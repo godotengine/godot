@@ -1240,8 +1240,7 @@ TEST_CASE("[String] Trim") {
 
 TEST_CASE("[String] Right/Left") {
 	String s = "aaaTestbbb";
-	//                ^
-	CHECK(s.right(6) == "tbbb");
+	CHECK(s.right(6) == "estbbb");
 	CHECK(s.left(6) == "aaaTes");
 }
 

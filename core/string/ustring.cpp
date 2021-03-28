@@ -3317,14 +3317,14 @@ String String::format(const Variant &values, String placeholder) const {
 				if (value_arr.size() == 2) {
 					Variant v_key = value_arr[0];
 					String key = v_key;
-					if (key.left(1) == "\"" && key.right(key.length() - 1) == "\"") {
+					if (key.left(1) == "\"" && key.right(1) == "\"") {
 						key = key.substr(1, key.length() - 2);
 					}
 
 					Variant v_val = value_arr[1];
 					String val = v_val;
 
-					if (val.left(1) == "\"" && val.right(val.length() - 1) == "\"") {
+					if (val.left(1) == "\"" && val.right(1) == "\"") {
 						val = val.substr(1, val.length() - 2);
 					}
 
@@ -3336,7 +3336,7 @@ String String::format(const Variant &values, String placeholder) const {
 				Variant v_val = values_arr[i];
 				String val = v_val;
 
-				if (val.left(1) == "\"" && val.right(val.length() - 1) == "\"") {
+				if (val.left(1) == "\"" && val.right(1) == "\"") {
 					val = val.substr(1, val.length() - 2);
 				}
 
@@ -3356,11 +3356,11 @@ String String::format(const Variant &values, String placeholder) const {
 			String key = E->get();
 			String val = d[E->get()];
 
-			if (key.left(1) == "\"" && key.right(key.length() - 1) == "\"") {
+			if (key.left(1) == "\"" && key.right(1) == "\"") {
 				key = key.substr(1, key.length() - 2);
 			}
 
-			if (val.left(1) == "\"" && val.right(val.length() - 1) == "\"") {
+			if (val.left(1) == "\"" && val.right(1) == "\"") {
 				val = val.substr(1, val.length() - 2);
 			}
 
@@ -3463,28 +3463,28 @@ String String::repeat(int p_count) const {
 	return new_string;
 }
 
-String String::left(int p_pos) const {
-	if (p_pos <= 0) {
+String String::left(int p_count) const {
+	if (p_count <= 0) {
 		return "";
 	}
 
-	if (p_pos >= length()) {
+	if (p_count >= length()) {
 		return *this;
 	}
 
-	return substr(0, p_pos);
+	return substr(0, p_count);
 }
 
-String String::right(int p_pos) const {
-	if (p_pos >= length()) {
-		return "";
-	}
-
-	if (p_pos <= 0) {
+String String::right(int p_count) const {
+	if (p_count >= length()) {
 		return *this;
 	}
 
-	return substr(p_pos, (length() - p_pos));
+	if (p_count <= 0) {
+		return "";
+	}
+
+	return substr(length() - p_count);
 }
 
 char32_t String::unicode_at(int p_idx) const {
