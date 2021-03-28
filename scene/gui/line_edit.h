@@ -103,9 +103,9 @@ private:
 	PopupMenu *menu_dir = nullptr;
 	PopupMenu *menu_ctl = nullptr;
 
-	bool mid_grapheme_caret_enabled = false;
+	bool caret_mid_grapheme_enabled = false;
 
-	int cursor_pos = 0;
+	int caret_column = 0;
 	int scroll_offset = 0;
 	int max_length = 0; // 0 for no maximum.
 
@@ -131,7 +131,7 @@ private:
 	struct Selection {
 		int begin = 0;
 		int end = 0;
-		int cursor_start = 0;
+		int start_column = 0;
 		bool enabled = false;
 		bool creating = false;
 		bool doubleclick = false;
@@ -140,7 +140,7 @@ private:
 	} selection;
 
 	struct TextOperation {
-		int cursor_pos = 0;
+		int caret_column = 0;
 		int scroll_offset = 0;
 		int cached_width = 0;
 		String text;
@@ -175,12 +175,12 @@ private:
 	void shift_selection_check_pre(bool);
 	void shift_selection_check_post(bool);
 
-	void selection_fill_at_cursor();
+	void selection_fill_at_caret();
 	void set_scroll_offset(int p_pos);
 	int get_scroll_offset() const;
 
-	void set_cursor_at_pixel_pos(int p_x);
-	Vector2i get_cursor_pixel_pos();
+	void set_caret_at_pixel_pos(int p_x);
+	Vector2i get_caret_pixel_pos();
 
 	void _reset_caret_blink_timer();
 	void _toggle_draw_caret();
@@ -191,10 +191,10 @@ private:
 	void _editor_settings_changed();
 
 	void _swap_current_input_direction();
-	void _move_cursor_left(bool p_select, bool p_move_by_word = false);
-	void _move_cursor_right(bool p_select, bool p_move_by_word = false);
-	void _move_cursor_start(bool p_select);
-	void _move_cursor_end(bool p_select);
+	void _move_caret_left(bool p_select, bool p_move_by_word = false);
+	void _move_caret_right(bool p_select, bool p_move_by_word = false);
+	void _move_caret_start(bool p_select);
+	void _move_caret_end(bool p_select);
 	void _backspace(bool p_word = false, bool p_all_to_left = false);
 	void _delete(bool p_word = false, bool p_all_to_right = false);
 
@@ -259,26 +259,26 @@ public:
 	void set_placeholder_alpha(float p_alpha);
 	float get_placeholder_alpha() const;
 
-	void set_cursor_position(int p_pos);
-	int get_cursor_position() const;
+	void set_caret_column(int p_column);
+	int get_caret_column() const;
 
 	void set_max_length(int p_max_length);
 	int get_max_length() const;
 
-	void append_at_cursor(String p_text);
+	void insert_text_at_caret(String p_text);
 	void clear();
 
-	void set_mid_grapheme_caret_enabled(const bool p_enabled);
-	bool get_mid_grapheme_caret_enabled() const;
+	void set_caret_mid_grapheme_enabled(const bool p_enabled);
+	bool is_caret_mid_grapheme_enabled() const;
 
-	bool cursor_get_blink_enabled() const;
-	void cursor_set_blink_enabled(const bool p_enabled);
+	bool is_caret_blink_enabled() const;
+	void set_caret_blink_enabled(const bool p_enabled);
 
-	float cursor_get_blink_speed() const;
-	void cursor_set_blink_speed(const float p_speed);
+	float get_caret_blink_speed() const;
+	void set_caret_blink_speed(const float p_speed);
 
-	bool cursor_get_force_displayed() const;
-	void cursor_set_force_displayed(const bool p_enabled);
+	void set_caret_force_displayed(const bool p_enabled);
+	bool is_caret_force_displayed() const;
 
 	void copy_text();
 	void cut_text();
@@ -297,8 +297,8 @@ public:
 
 	virtual Size2 get_minimum_size() const override;
 
-	void set_expand_to_text_length(bool p_enabled);
-	bool get_expand_to_text_length() const;
+	void set_expand_to_text_length_enabled(bool p_enabled);
+	bool is_expand_to_text_length_enabled() const;
 
 	void set_clear_button_enabled(bool p_enabled);
 	bool is_clear_button_enabled() const;

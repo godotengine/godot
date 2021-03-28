@@ -698,7 +698,7 @@ AnimationNodeBlendSpace1DEditor::AnimationNodeBlendSpace1DEditor() {
 		max_value->set_step(0.01);
 
 		label_value = memnew(LineEdit);
-		label_value->set_expand_to_text_length(true);
+		label_value->set_expand_to_text_length_enabled(true);
 
 		// now add
 

@@ -3695,7 +3695,7 @@ VisualShaderEditor::VisualShaderEditor() {
 
 	comment_title_change_popup = memnew(PopupPanel);
 	comment_title_change_edit = memnew(LineEdit);
-	comment_title_change_edit->set_expand_to_text_length(true);
+	comment_title_change_edit->set_expand_to_text_length_enabled(true);
 	comment_title_change_edit->connect("text_changed", callable_mp(this, &VisualShaderEditor::_comment_title_text_changed));
 	comment_title_change_edit->connect("text_entered", callable_mp(this, &VisualShaderEditor::_comment_title_text_entered));
 	comment_title_change_popup->add_child(comment_title_change_edit);
