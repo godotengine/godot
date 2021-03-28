@@ -2101,6 +2101,8 @@ void GDScriptAnalyzer::reduce_call(GDScriptParser::CallNode *p_call, bool is_awa
 
 		if (is_self && parser->current_function != nullptr && parser->current_function->is_static && !is_static) {
 			push_error(vformat(R"*(Cannot call non-static function "%s()" from static function "%s()".)*", p_call->function_name, parser->current_function->identifier->name), p_call->callee);
+		} else if (is_self && !is_static && !lambda_stack.is_empty()) {
+			push_error(vformat(R"*(Cannot call non-static function "%s()" from a lambda function.)*", p_call->function_name), p_call->callee);
 		}
 
 		call_type = return_type;
@@ -2223,6 +2225,8 @@ void GDScriptAnalyzer::reduce_get_node(GDScriptParser::GetNodeNode *p_get_node) 
 
 	if (!ClassDB::is_parent_class(GDScriptParser::get_real_class_name(parser->current_class->base_type.native_type), result.native_type)) {
 		push_error(R"*(Cannot use shorthand "get_node()" notation ("$") on a class that isn't a node.)*", p_get_node);
+	} else if (!lambda_stack.is_empty()) {
+		push_error(R"*(Cannot use shorthand "get_node()" notation ("$") inside a lambda. Use a captured variable instead.)*", p_get_node);
 	}
 
 	p_get_node->set_datatype(result);
@@ -2613,6 +2617,30 @@ void GDScriptAnalyzer::reduce_lambda(GDScriptParser::LambdaNode *p_lambda) {
 	}
 
 	resolve_suite(p_lambda->function->body);
+
+	int captures_amount = p_lambda->captures.size();
+	if (captures_amount > 0) {
+		// Create space for lambda parameters.
+		// At the beginning to not mess with optional parameters.
+		int param_count = p_lambda->function->parameters.size();
+		p_lambda->function->parameters.resize(param_count + captures_amount);
+		for (int i = param_count - 1; i >= 0; i--) {
+			p_lambda->function->parameters.write[i + captures_amount] = p_lambda->function->parameters[i];
+			p_lambda->function->parameters_indices[p_lambda->function->parameters[i]->identifier->name] = i + captures_amount;
+		}
+
+		// Add captures as extra parameters at the beginning.
+		for (int i = 0; i < p_lambda->captures.size(); i++) {
+			GDScriptParser::IdentifierNode *capture = p_lambda->captures[i];
+			GDScriptParser::ParameterNode *capture_param = parser->alloc_node<GDScriptParser::ParameterNode>();
+			capture_param->identifier = capture;
+			capture_param->usages = capture->usages;
+			capture_param->set_datatype(capture->get_datatype());
+
+			p_lambda->function->parameters.write[i] = capture_param;
+			p_lambda->function->parameters_indices[capture->name] = i;
+		}
+	}
 
 	lambda_stack.pop_back();
 	parser->current_function = previous_function;
@@ -3575,13 +3603,6 @@ Ref<GDScriptParserRef> GDScriptAnalyzer::get_parser_for(const String &p_path) {
 	}
 
 	return ref;
-}
-
-const GDScriptParser::LambdaNode *GDScriptAnalyzer::get_current_lambda() const {
-	if (lambda_stack.size()) {
-		return lambda_stack.back()->get();
-	}
-	return nullptr;
 }
 
 Error GDScriptAnalyzer::resolve_inheritance() {

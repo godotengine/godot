@@ -33,6 +33,7 @@
 #include "core/core_string_names.h"
 #include "core/os/os.h"
 #include "gdscript.h"
+#include "gdscript_lambda_callable.h"
 
 Variant *GDScriptFunction::_get_variant(int p_address, GDScriptInstance *p_instance, Variant *p_stack, String &r_error) const {
 	int address = p_address & ADDR_MASK;
@@ -232,6 +233,7 @@ String GDScriptFunction::_get_call_error(const Callable::CallError &p_err, const
 		&&OPCODE_CALL_PTRCALL_PACKED_COLOR_ARRAY,    \
 		&&OPCODE_AWAIT,                              \
 		&&OPCODE_AWAIT_RESUME,                       \
+		&&OPCODE_CREATE_LAMBDA,                      \
 		&&OPCODE_JUMP,                               \
 		&&OPCODE_JUMP_IF,                            \
 		&&OPCODE_JUMP_IF_NOT,                        \
@@ -1452,13 +1454,17 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 				if (err.error != Callable::CallError::CALL_OK) {
 					String methodstr = *methodname;
 					String basestr = _get_var_type(base);
+					bool is_callable = false;
 
 					if (methodstr == "call") {
-						if (argc >= 1) {
+						if (argc >= 1 && base->get_type() != Variant::CALLABLE) {
 							methodstr = String(*argptrs[0]) + " (via call)";
 							if (err.error == Callable::CallError::CALL_ERROR_INVALID_ARGUMENT) {
 								err.argument += 1;
 							}
+						} else {
+							methodstr = base->operator String() + " (Callable)";
+							is_callable = true;
 						}
 					} else if (methodstr == "free") {
 						if (err.error == Callable::CallError::CALL_ERROR_INVALID_METHOD) {
@@ -1478,7 +1484,7 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 							}
 						}
 					}
-					err_text = _get_call_error(err, "function '" + methodstr + "' in base '" + basestr + "'", (const Variant **)argptrs);
+					err_text = _get_call_error(err, "function '" + methodstr + (is_callable ? "" : "' in base '" + basestr) + "'", (const Variant **)argptrs);
 					OPCODE_BREAK;
 				}
 #endif
@@ -2054,6 +2060,34 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 				GET_INSTRUCTION_ARG(result, 0);
 				*result = p_state->result;
 				ip += 2;
+			}
+			DISPATCH_OPCODE;
+
+			OPCODE(OPCODE_CREATE_LAMBDA) {
+				CHECK_SPACE(2 + instr_arg_count);
+
+				ip += instr_arg_count;
+
+				int captures_count = _code_ptr[ip + 1];
+				GD_ERR_BREAK(captures_count < 0);
+
+				int lambda_index = _code_ptr[ip + 2];
+				GD_ERR_BREAK(lambda_index < 0 || lambda_index >= _lambdas_count);
+				GDScriptFunction *lambda = _lambdas_ptr[lambda_index];
+
+				Vector<Variant> captures;
+				captures.resize(captures_count);
+				for (int i = 0; i < captures_count; i++) {
+					GET_INSTRUCTION_ARG(arg, i);
+					captures.write[i] = *arg;
+				}
+
+				GDScriptLambdaCallable *callable = memnew(GDScriptLambdaCallable(Ref<GDScript>(script), lambda, captures));
+
+				GET_INSTRUCTION_ARG(result, captures_count);
+				*result = Callable(callable);
+
+				ip += 3;
 			}
 			DISPATCH_OPCODE;
 

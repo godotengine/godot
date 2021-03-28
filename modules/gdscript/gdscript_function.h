@@ -301,6 +301,7 @@ public:
 		OPCODE_CALL_PTRCALL_PACKED_COLOR_ARRAY,
 		OPCODE_AWAIT,
 		OPCODE_AWAIT_RESUME,
+		OPCODE_CREATE_LAMBDA,
 		OPCODE_JUMP,
 		OPCODE_JUMP_IF,
 		OPCODE_JUMP_IF_NOT,
@@ -459,6 +460,8 @@ private:
 	const GDScriptUtilityFunctions::FunctionPtr *_gds_utilities_ptr = nullptr;
 	int _methods_count = 0;
 	MethodBind **_methods_ptr = nullptr;
+	int _lambdas_count = 0;
+	GDScriptFunction **_lambdas_ptr = nullptr;
 	const int *_code_ptr = nullptr;
 	int _code_size = 0;
 	int _argument_count = 0;
@@ -488,6 +491,7 @@ private:
 	Vector<Variant::ValidatedUtilityFunction> utilities;
 	Vector<GDScriptUtilityFunctions::FunctionPtr> gds_utilities;
 	Vector<MethodBind *> methods;
+	Vector<GDScriptFunction *> lambdas;
 	Vector<int> code;
 	Vector<GDScriptDataType> argument_types;
 	GDScriptDataType return_type;

@@ -150,6 +150,10 @@ GDScriptFunction::GDScriptFunction() {
 }
 
 GDScriptFunction::~GDScriptFunction() {
+	for (int i = 0; i < lambdas.size(); i++) {
+		memdelete(lambdas[i]);
+	}
+
 #ifdef DEBUG_ENABLED
 
 	MutexLock lock(GDScriptLanguage::get_singleton()->lock);
