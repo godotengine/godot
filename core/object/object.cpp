@@ -1355,7 +1355,7 @@ void Object::_disconnect(const StringName &p_signal, const Callable &p_callable,
 
 	if (!p_force) {
 		slot->reference_count--; // by default is zero, if it was not referenced it will go below it
-		if (slot->reference_count >= 0) {
+		if (slot->reference_count > 0) {
 			return;
 		}
 	}
