@@ -383,6 +383,18 @@ GDScriptFunction *GDScriptByteCodeGenerator::write_end() {
 		function->_methods_count = 0;
 	}
 
+	if (lambdas_map.size()) {
+		function->lambdas.resize(lambdas_map.size());
+		function->_lambdas_ptr = function->lambdas.ptrw();
+		function->_lambdas_count = lambdas_map.size();
+		for (const Map<GDScriptFunction *, int>::Element *E = lambdas_map.front(); E; E = E->next()) {
+			function->lambdas.write[E->get()] = E->key();
+		}
+	} else {
+		function->_lambdas_ptr = nullptr;
+		function->_lambdas_count = 0;
+	}
+
 	if (debug_stack) {
 		function->stack_debug = stack_debug;
 	}
@@ -1116,6 +1128,17 @@ void GDScriptByteCodeGenerator::write_call_script_function(const Address &p_targ
 	append(p_target);
 	append(p_arguments.size());
 	append(p_function_name);
+}
+
+void GDScriptByteCodeGenerator::write_lambda(const Address &p_target, GDScriptFunction *p_function, const Vector<Address> &p_captures) {
+	append(GDScriptFunction::OPCODE_CREATE_LAMBDA, 1 + p_captures.size());
+	for (int i = 0; i < p_captures.size(); i++) {
+		append(p_captures[i]);
+	}
+
+	append(p_target);
+	append(p_captures.size());
+	append(p_function);
 }
 
 void GDScriptByteCodeGenerator::write_construct(const Address &p_target, Variant::Type p_type, const Vector<Address> &p_arguments) {

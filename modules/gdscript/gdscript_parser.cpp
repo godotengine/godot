@@ -4032,11 +4032,11 @@ void GDScriptParser::TreePrinter::print_if(IfNode *p_if, bool p_is_elif) {
 void GDScriptParser::TreePrinter::print_lambda(LambdaNode *p_lambda) {
 	print_function(p_lambda->function, "Lambda");
 	push_text("| captures [ ");
-	for (const Map<StringName, IdentifierNode *>::Element *E = p_lambda->captures.front(); E; E = E->next()) {
-		push_text(E->key().operator String());
-		if (E->next()) {
+	for (int i = 0; i < p_lambda->captures.size(); i++) {
+		if (i > 0) {
 			push_text(" , ");
 		}
+		push_text(p_lambda->captures[i]->name.operator String());
 	}
 	push_line(" ]");
 }

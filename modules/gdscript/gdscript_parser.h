@@ -796,7 +796,8 @@ public:
 	struct LambdaNode : public ExpressionNode {
 		FunctionNode *function = nullptr;
 		FunctionNode *parent_function = nullptr;
-		Map<StringName, IdentifierNode *> captures;
+		Vector<IdentifierNode *> captures;
+		Map<StringName, int> captures_indices;
 
 		bool has_name() const {
 			return function && function->identifier;

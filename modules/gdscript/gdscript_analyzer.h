@@ -111,7 +111,6 @@ class GDScriptAnalyzer {
 	void mark_node_unsafe(const GDScriptParser::Node *p_node);
 	bool class_exists(const StringName &p_class) const;
 	Ref<GDScriptParserRef> get_parser_for(const String &p_path);
-	const GDScriptParser::LambdaNode *get_current_lambda() const;
 #ifdef DEBUG_ENABLED
 	bool is_shadowing(GDScriptParser::IdentifierNode *p_local, const String &p_context);
 #endif

@@ -128,7 +128,7 @@ class GDScriptCompiler {
 	GDScriptCodeGenerator::Address _parse_match_pattern(CodeGen &codegen, Error &r_error, const GDScriptParser::PatternNode *p_pattern, const GDScriptCodeGenerator::Address &p_value_addr, const GDScriptCodeGenerator::Address &p_type_addr, const GDScriptCodeGenerator::Address &p_previous_test, bool p_is_first, bool p_is_nested);
 	void _add_locals_in_block(CodeGen &codegen, const GDScriptParser::SuiteNode *p_block);
 	Error _parse_block(CodeGen &codegen, const GDScriptParser::SuiteNode *p_block, bool p_add_locals = true);
-	Error _parse_function(GDScript *p_script, const GDScriptParser::ClassNode *p_class, const GDScriptParser::FunctionNode *p_func, bool p_for_ready = false);
+	GDScriptFunction *_parse_function(Error &r_error, GDScript *p_script, const GDScriptParser::ClassNode *p_class, const GDScriptParser::FunctionNode *p_func, bool p_for_ready = false, bool p_for_lambda = false);
 	Error _parse_setter_getter(GDScript *p_script, const GDScriptParser::ClassNode *p_class, const GDScriptParser::VariableNode *p_variable, bool p_is_setter);
 	Error _parse_class_level(GDScript *p_script, const GDScriptParser::ClassNode *p_class, bool p_keep_state);
 	Error _parse_class_blocks(GDScript *p_script, const GDScriptParser::ClassNode *p_class, bool p_keep_state);
