@@ -43,7 +43,7 @@ class NoiseTexture : public Texture2D {
 	GDCLASS(NoiseTexture, Texture2D);
 
 private:
-	Ref<Image> data;
+	Ref<Image> image;
 
 	Thread noise_thread;
 
@@ -66,7 +66,7 @@ private:
 	void _queue_update();
 	Ref<Image> _generate_texture();
 	void _update_texture();
-	void _set_texture_data(const Ref<Image> &p_image);
+	void _set_texture_image(const Ref<Image> &p_image);
 
 protected:
 	static void _bind_methods();
@@ -94,7 +94,7 @@ public:
 	virtual RID get_rid() const override;
 	virtual bool has_alpha() const override { return false; }
 
-	virtual Ref<Image> get_data() const override;
+	virtual Ref<Image> get_image() const override;
 
 	NoiseTexture();
 	virtual ~NoiseTexture();

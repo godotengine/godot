@@ -2821,7 +2821,7 @@ Error GLTFDocument::_serialize_images(Ref<GLTFState> state, const String &p_path
 
 		ERR_CONTINUE(state->images[i].is_null());
 
-		Ref<Image> image = state->images[i]->get_data();
+		Ref<Image> image = state->images[i]->get_image();
 		ERR_CONTINUE(image.is_null());
 
 		if (p_path.to_lower().ends_with("glb")) {
@@ -2838,7 +2838,7 @@ Error GLTFDocument::_serialize_images(Ref<GLTFState> state, const String &p_path
 			Vector<uint8_t> buffer;
 			Ref<ImageTexture> img_tex = image;
 			if (img_tex.is_valid()) {
-				image = img_tex->get_data();
+				image = img_tex->get_image();
 			}
 			Error err = PNGDriverCommon::image_to_png(image, buffer);
 			ERR_FAIL_COND_V_MSG(err, err, "Can't convert image to PNG.");
@@ -3068,7 +3068,7 @@ GLTFTextureIndex GLTFDocument::_set_texture(Ref<GLTFState> state, Ref<Texture2D>
 	ERR_FAIL_COND_V(p_texture.is_null(), -1);
 	Ref<GLTFTexture> gltf_texture;
 	gltf_texture.instance();
-	ERR_FAIL_COND_V(p_texture->get_data().is_null(), -1);
+	ERR_FAIL_COND_V(p_texture->get_image().is_null(), -1);
 	GLTFImageIndex gltf_src_image_i = state->images.size();
 	state->images.push_back(p_texture);
 	gltf_texture->set_src_image(gltf_src_image_i);
@@ -3115,7 +3115,7 @@ Error GLTFDocument::_serialize_materials(Ref<GLTFState> state) {
 				Ref<Texture2D> albedo_texture = material->get_texture(BaseMaterial3D::TEXTURE_ALBEDO);
 				GLTFTextureIndex gltf_texture_index = -1;
 
-				if (albedo_texture.is_valid() && albedo_texture->get_data().is_valid()) {
+				if (albedo_texture.is_valid() && albedo_texture->get_image().is_valid()) {
 					albedo_texture->set_name(material->get_name() + "_albedo");
 					gltf_texture_index = _set_texture(state, albedo_texture);
 				}
@@ -3128,9 +3128,9 @@ Error GLTFDocument::_serialize_materials(Ref<GLTFState> state) {
 
 			mr["metallicFactor"] = material->get_metallic();
 			mr["roughnessFactor"] = material->get_roughness();
-			bool has_roughness = material->get_texture(BaseMaterial3D::TEXTURE_ROUGHNESS).is_valid() && material->get_texture(BaseMaterial3D::TEXTURE_ROUGHNESS)->get_data().is_valid();
+			bool has_roughness = material->get_texture(BaseMaterial3D::TEXTURE_ROUGHNESS).is_valid() && material->get_texture(BaseMaterial3D::TEXTURE_ROUGHNESS)->get_image().is_valid();
 			bool has_ao = material->get_feature(BaseMaterial3D::FEATURE_AMBIENT_OCCLUSION) && material->get_texture(BaseMaterial3D::TEXTURE_AMBIENT_OCCLUSION).is_valid();
-			bool has_metalness = material->get_texture(BaseMaterial3D::TEXTURE_METALLIC).is_valid() && material->get_texture(BaseMaterial3D::TEXTURE_METALLIC)->get_data().is_valid();
+			bool has_metalness = material->get_texture(BaseMaterial3D::TEXTURE_METALLIC).is_valid() && material->get_texture(BaseMaterial3D::TEXTURE_METALLIC)->get_image().is_valid();
 			if (has_ao || has_roughness || has_metalness) {
 				Dictionary mrt;
 				Ref<Texture2D> roughness_texture = material->get_texture(BaseMaterial3D::TEXTURE_ROUGHNESS);
@@ -3149,10 +3149,10 @@ Error GLTFDocument::_serialize_materials(Ref<GLTFState> state) {
 				if (has_ao) {
 					height = ao_texture->get_height();
 					width = ao_texture->get_width();
-					ao_image = ao_texture->get_data();
+					ao_image = ao_texture->get_image();
 					Ref<ImageTexture> img_tex = ao_image;
 					if (img_tex.is_valid()) {
-						ao_image = img_tex->get_data();
+						ao_image = img_tex->get_image();
 					}
 					if (ao_image->is_compressed()) {
 						ao_image->decompress();
@@ -3162,10 +3162,10 @@ Error GLTFDocument::_serialize_materials(Ref<GLTFState> state) {
 				if (has_roughness) {
 					height = roughness_texture->get_height();
 					width = roughness_texture->get_width();
-					roughness_image = roughness_texture->get_data();
+					roughness_image = roughness_texture->get_image();
 					Ref<ImageTexture> img_tex = roughness_image;
 					if (img_tex.is_valid()) {
-						roughness_image = img_tex->get_data();
+						roughness_image = img_tex->get_image();
 					}
 					if (roughness_image->is_compressed()) {
 						roughness_image->decompress();
@@ -3175,17 +3175,17 @@ Error GLTFDocument::_serialize_materials(Ref<GLTFState> state) {
 				if (has_metalness) {
 					height = metallic_texture->get_height();
 					width = metallic_texture->get_width();
-					metallness_image = metallic_texture->get_data();
+					metallness_image = metallic_texture->get_image();
 					Ref<ImageTexture> img_tex = metallness_image;
 					if (img_tex.is_valid()) {
-						metallness_image = img_tex->get_data();
+						metallness_image = img_tex->get_image();
 					}
 					if (metallness_image->is_compressed()) {
 						metallness_image->decompress();
 					}
 				}
 				Ref<Texture2D> albedo_texture = material->get_texture(BaseMaterial3D::TEXTURE_ALBEDO);
-				if (albedo_texture.is_valid() && albedo_texture->get_data().is_valid()) {
+				if (albedo_texture.is_valid() && albedo_texture->get_image().is_valid()) {
 					height = albedo_texture->get_height();
 					width = albedo_texture->get_width();
 				}
@@ -3266,10 +3266,10 @@ Error GLTFDocument::_serialize_materials(Ref<GLTFState> state) {
 			{
 				Ref<Texture2D> normal_texture = material->get_texture(BaseMaterial3D::TEXTURE_NORMAL);
 				// Code for uncompressing RG normal maps
-				Ref<Image> img = normal_texture->get_data();
+				Ref<Image> img = normal_texture->get_image();
 				Ref<ImageTexture> img_tex = img;
 				if (img_tex.is_valid()) {
-					img = img_tex->get_data();
+					img = img_tex->get_image();
 				}
 				img->decompress();
 				img->convert(Image::FORMAT_RGBA8);
@@ -3288,7 +3288,7 @@ Error GLTFDocument::_serialize_materials(Ref<GLTFState> state) {
 			}
 			Ref<Texture2D> normal_texture = material->get_texture(BaseMaterial3D::TEXTURE_NORMAL);
 			GLTFTextureIndex gltf_texture_index = -1;
-			if (tex.is_valid() && tex->get_data().is_valid()) {
+			if (tex.is_valid() && tex->get_image().is_valid()) {
 				tex->set_name(material->get_name() + "_normal");
 				gltf_texture_index = _set_texture(state, tex);
 			}
@@ -3311,7 +3311,7 @@ Error GLTFDocument::_serialize_materials(Ref<GLTFState> state) {
 			Dictionary et;
 			Ref<Texture2D> emission_texture = material->get_texture(BaseMaterial3D::TEXTURE_EMISSION);
 			GLTFTextureIndex gltf_texture_index = -1;
-			if (emission_texture.is_valid() && emission_texture->get_data().is_valid()) {
+			if (emission_texture.is_valid() && emission_texture->get_image().is_valid()) {
 				emission_texture->set_name(material->get_name() + "_emission");
 				gltf_texture_index = _set_texture(state, emission_texture);
 			}
@@ -3370,7 +3370,7 @@ Error GLTFDocument::_parse_materials(Ref<GLTFState> state) {
 				if (diffuse_texture_dict.has("index")) {
 					Ref<Texture2D> diffuse_texture = _get_texture(state, diffuse_texture_dict["index"]);
 					if (diffuse_texture.is_valid()) {
-						spec_gloss->diffuse_img = diffuse_texture->get_data();
+						spec_gloss->diffuse_img = diffuse_texture->get_image();
 						material->set_texture(BaseMaterial3D::TEXTURE_ALBEDO, diffuse_texture);
 					}
 				}
@@ -3398,7 +3398,7 @@ Error GLTFDocument::_parse_materials(Ref<GLTFState> state) {
 				if (spec_gloss_texture.has("index")) {
 					const Ref<Texture2D> orig_texture = _get_texture(state, spec_gloss_texture["index"]);
 					if (orig_texture.is_valid()) {
-						spec_gloss->spec_gloss_img = orig_texture->get_data();
+						spec_gloss->spec_gloss_img = orig_texture->get_image();
 					}
 				}
 			}

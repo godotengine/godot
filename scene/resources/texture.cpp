@@ -71,7 +71,7 @@ void Texture2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("draw", "canvas_item", "position", "modulate", "transpose"), &Texture2D::draw, DEFVAL(Color(1, 1, 1)), DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("draw_rect", "canvas_item", "rect", "tile", "modulate", "transpose"), &Texture2D::draw_rect, DEFVAL(Color(1, 1, 1)), DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("draw_rect_region", "canvas_item", "rect", "src_rect", "modulate", "transpose", "clip_uv"), &Texture2D::draw_rect_region, DEFVAL(Color(1, 1, 1)), DEFVAL(false), DEFVAL(true));
-	ClassDB::bind_method(D_METHOD("get_data"), &Texture2D::get_data);
+	ClassDB::bind_method(D_METHOD("get_image"), &Texture2D::get_image);
 
 	ADD_GROUP("", "");
 }
@@ -116,7 +116,7 @@ bool ImageTexture::_set(const StringName &p_name, const Variant &p_value) {
 
 bool ImageTexture::_get(const StringName &p_name, Variant &r_ret) const {
 	if (p_name == "image") {
-		r_ret = get_data();
+		r_ret = get_image();
 	} else if (p_name == "size") {
 		r_ret = Size2(w, h);
 	} else {
@@ -200,7 +200,7 @@ void ImageTexture::_resource_path_changed() {
 	String path = get_path();
 }
 
-Ref<Image> ImageTexture::get_data() const {
+Ref<Image> ImageTexture::get_image() const {
 	if (image_stored) {
 		return RenderingServer::get_singleton()->texture_2d_get(texture);
 	} else {
@@ -251,7 +251,7 @@ void ImageTexture::draw_rect_region(RID p_canvas_item, const Rect2 &p_rect, cons
 
 bool ImageTexture::is_pixel_opaque(int p_x, int p_y) const {
 	if (!alpha_cache.is_valid()) {
-		Ref<Image> img = get_data();
+		Ref<Image> img = get_image();
 		if (img.is_valid()) {
 			if (img->is_compressed()) { //must decompress, if compressed
 				Ref<Image> decom = img->duplicate();
@@ -661,7 +661,7 @@ bool StreamTexture2D::has_alpha() const {
 	return false;
 }
 
-Ref<Image> StreamTexture2D::get_data() const {
+Ref<Image> StreamTexture2D::get_image() const {
 	if (texture.is_valid()) {
 		return RS::get_singleton()->texture_2d_get(texture);
 	} else {
@@ -671,7 +671,7 @@ Ref<Image> StreamTexture2D::get_data() const {
 
 bool StreamTexture2D::is_pixel_opaque(int p_x, int p_y) const {
 	if (!alpha_cache.is_valid()) {
-		Ref<Image> img = get_data();
+		Ref<Image> img = get_image();
 		if (img.is_valid()) {
 			if (img->is_compressed()) { //must decompress, if compressed
 				Ref<Image> decom = img->duplicate();
@@ -1495,7 +1495,7 @@ Ref<Texture2D> LargeTexture::get_piece_texture(int p_idx) const {
 Ref<Image> LargeTexture::to_image() const {
 	Ref<Image> img = memnew(Image(this->get_width(), this->get_height(), false, Image::FORMAT_RGBA8));
 	for (int i = 0; i < pieces.size(); i++) {
-		Ref<Image> src_img = pieces[i].texture->get_data();
+		Ref<Image> src_img = pieces[i].texture->get_image();
 		img->blit_rect(src_img, Rect2(0, 0, src_img->get_width(), src_img->get_height()), pieces[i].offset);
 	}
 
@@ -1782,7 +1782,7 @@ int GradientTexture::get_width() const {
 	return width;
 }
 
-Ref<Image> GradientTexture::get_data() const {
+Ref<Image> GradientTexture::get_image() const {
 	if (!texture.is_valid()) {
 		return Ref<Image>();
 	}
@@ -2031,14 +2031,14 @@ bool AnimatedTexture::has_alpha() const {
 	return frames[current_frame].texture->has_alpha();
 }
 
-Ref<Image> AnimatedTexture::get_data() const {
+Ref<Image> AnimatedTexture::get_image() const {
 	RWLockRead r(rw_lock);
 
 	if (!frames[current_frame].texture.is_valid()) {
 		return Ref<Image>();
 	}
 
-	return frames[current_frame].texture->get_data();
+	return frames[current_frame].texture->get_image();
 }
 
 bool AnimatedTexture::is_pixel_opaque(int p_x, int p_y) const {
@@ -2543,7 +2543,7 @@ uint32_t CameraTexture::get_flags() const {
 	return 0;
 }
 
-Ref<Image> CameraTexture::get_data() const {
+Ref<Image> CameraTexture::get_image() const {
 	// not (yet) supported
 	return Ref<Image>();
 }

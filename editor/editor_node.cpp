@@ -1381,14 +1381,14 @@ void EditorNode::_save_scene_with_preview(String p_file, int p_idx) {
 		} else if (c3d < c2d) {
 			Ref<ViewportTexture> viewport_texture = scene_root->get_texture();
 			if (viewport_texture->get_width() > 0 && viewport_texture->get_height() > 0) {
-				img = viewport_texture->get_data();
+				img = viewport_texture->get_image();
 			}
 		} else {
 			// The 3D editor may be disabled as a feature, but scenes can still be opened.
 			// This check prevents the preview from regenerating in case those scenes are then saved.
 			Ref<EditorFeatureProfile> profile = feature_profile_manager->get_current_profile();
 			if (profile.is_valid() && !profile->is_feature_disabled(EditorFeatureProfile::FEATURE_3D)) {
-				img = Node3DEditor::get_singleton()->get_editor_viewport(0)->get_viewport_node()->get_texture()->get_data();
+				img = Node3DEditor::get_singleton()->get_editor_viewport(0)->get_viewport_node()->get_texture()->get_image();
 			}
 		}
 
@@ -2835,7 +2835,7 @@ void EditorNode::_save_screenshot(NodePath p_path) {
 	ERR_FAIL_COND_MSG(!viewport, "Cannot get editor main control viewport.");
 	Ref<ViewportTexture> texture = viewport->get_texture();
 	ERR_FAIL_COND_MSG(texture.is_null(), "Cannot get editor main control viewport texture.");
-	Ref<Image> img = texture->get_data();
+	Ref<Image> img = texture->get_image();
 	ERR_FAIL_COND_MSG(img.is_null(), "Cannot get editor main control viewport texture image.");
 	Error error = img->save_png(p_path);
 	ERR_FAIL_COND_MSG(error != OK, "Cannot save screenshot to file '" + p_path + "'.");
@@ -5108,8 +5108,8 @@ Variant EditorNode::drag_resource(const Ref<Resource> &p_res, Control *p_from) {
 
 	{
 		//todo make proper previews
-		Ref<ImageTexture> pic = gui_base->get_theme_icon("FileBigThumb", "EditorIcons");
-		Ref<Image> img = pic->get_data();
+		Ref<ImageTexture> texture = gui_base->get_theme_icon("FileBigThumb", "EditorIcons");
+		Ref<Image> img = texture->get_image();
 		img = img->duplicate();
 		img->resize(48, 48); //meh
 		Ref<ImageTexture> resized_pic = Ref<ImageTexture>(memnew(ImageTexture));

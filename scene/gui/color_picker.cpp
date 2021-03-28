@@ -682,7 +682,7 @@ void ColorPicker::_screen_input(const Ref<InputEvent> &p_event) {
 			return;
 		}
 
-		Ref<Image> img = r->get_texture()->get_data();
+		Ref<Image> img = r->get_texture()->get_image();
 		if (img.is_valid() && !img->is_empty()) {
 			Vector2 ofs = mev->get_global_position() - r->get_visible_rect().get_position();
 			Color c = img->get_pixel(ofs.x, r->get_visible_rect().size.height - ofs.y);

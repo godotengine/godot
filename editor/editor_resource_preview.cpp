@@ -174,7 +174,7 @@ void EditorResourcePreview::_generate_preview(Ref<ImageTexture> &r_texture, Ref<
 		}
 
 		if (!r_small_texture.is_valid() && r_texture.is_valid() && preview_generators[i]->generate_small_preview_automatically()) {
-			Ref<Image> small_image = r_texture->get_data();
+			Ref<Image> small_image = r_texture->get_image();
 			small_image = small_image->duplicate();
 			small_image->resize(small_thumbnail_size, small_thumbnail_size, Image::INTERPOLATE_CUBIC);
 			r_small_texture.instance();

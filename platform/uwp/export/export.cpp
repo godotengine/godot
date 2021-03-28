@@ -855,33 +855,33 @@ class EditorExportPlatformUWP : public EditorExportPlatform {
 
 	Vector<uint8_t> _get_image_data(const Ref<EditorExportPreset> &p_preset, const String &p_path) {
 		Vector<uint8_t> data;
-		StreamTexture2D *image = nullptr;
+		StreamTexture2D *texture = nullptr;
 
 		if (p_path.find("StoreLogo") != -1) {
-			image = p_preset->get("images/store_logo").is_zero() ? nullptr : Object::cast_to<StreamTexture2D>(((Object *)p_preset->get("images/store_logo")));
+			texture = p_preset->get("images/store_logo").is_zero() ? nullptr : Object::cast_to<StreamTexture2D>(((Object *)p_preset->get("images/store_logo")));
 		} else if (p_path.find("Square44x44Logo") != -1) {
-			image = p_preset->get("images/square44x44_logo").is_zero() ? nullptr : Object::cast_to<StreamTexture2D>(((Object *)p_preset->get("images/square44x44_logo")));
+			texture = p_preset->get("images/square44x44_logo").is_zero() ? nullptr : Object::cast_to<StreamTexture2D>(((Object *)p_preset->get("images/square44x44_logo")));
 		} else if (p_path.find("Square71x71Logo") != -1) {
-			image = p_preset->get("images/square71x71_logo").is_zero() ? nullptr : Object::cast_to<StreamTexture2D>(((Object *)p_preset->get("images/square71x71_logo")));
+			texture = p_preset->get("images/square71x71_logo").is_zero() ? nullptr : Object::cast_to<StreamTexture2D>(((Object *)p_preset->get("images/square71x71_logo")));
 		} else if (p_path.find("Square150x150Logo") != -1) {
-			image = p_preset->get("images/square150x150_logo").is_zero() ? nullptr : Object::cast_to<StreamTexture2D>(((Object *)p_preset->get("images/square150x150_logo")));
+			texture = p_preset->get("images/square150x150_logo").is_zero() ? nullptr : Object::cast_to<StreamTexture2D>(((Object *)p_preset->get("images/square150x150_logo")));
 		} else if (p_path.find("Square310x310Logo") != -1) {
-			image = p_preset->get("images/square310x310_logo").is_zero() ? nullptr : Object::cast_to<StreamTexture2D>(((Object *)p_preset->get("images/square310x310_logo")));
+			texture = p_preset->get("images/square310x310_logo").is_zero() ? nullptr : Object::cast_to<StreamTexture2D>(((Object *)p_preset->get("images/square310x310_logo")));
 		} else if (p_path.find("Wide310x150Logo") != -1) {
-			image = p_preset->get("images/wide310x150_logo").is_zero() ? nullptr : Object::cast_to<StreamTexture2D>(((Object *)p_preset->get("images/wide310x150_logo")));
+			texture = p_preset->get("images/wide310x150_logo").is_zero() ? nullptr : Object::cast_to<StreamTexture2D>(((Object *)p_preset->get("images/wide310x150_logo")));
 		} else if (p_path.find("SplashScreen") != -1) {
-			image = p_preset->get("images/splash_screen").is_zero() ? nullptr : Object::cast_to<StreamTexture2D>(((Object *)p_preset->get("images/splash_screen")));
+			texture = p_preset->get("images/splash_screen").is_zero() ? nullptr : Object::cast_to<StreamTexture2D>(((Object *)p_preset->get("images/splash_screen")));
 		} else {
 			ERR_PRINT("Unable to load logo");
 		}
 
-		if (!image) {
+		if (!texture) {
 			return data;
 		}
 
 		String tmp_path = EditorSettings::get_singleton()->get_cache_dir().plus_file("uwp_tmp_logo.png");
 
-		Error err = image->get_data()->save_png(tmp_path);
+		Error err = texture->get_image()->save_png(tmp_path);
 
 		if (err != OK) {
 			String err_string = "Couldn't save temp logo file.";
