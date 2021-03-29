@@ -46,6 +46,7 @@
 class ENetGodotSocket {
 public:
 	virtual Error bind(IP_Address p_ip, uint16_t p_port) = 0;
+	virtual Error get_socket_address(IP_Address *r_ip, uint16_t *r_port) = 0;
 	virtual Error sendto(const uint8_t *p_buffer, int p_len, int &r_sent, IP_Address p_ip, uint16_t p_port) = 0;
 	virtual Error recvfrom(uint8_t *p_buffer, int p_len, int &r_read, IP_Address &r_ip, uint16_t &r_port) = 0;
 	virtual int set_option(ENetSocketOption p_option, int p_value) = 0;
@@ -64,8 +65,7 @@ class ENetUDP : public ENetGodotSocket {
 
 private:
 	Ref<NetSocket> sock;
-	IP_Address address;
-	uint16_t port = 0;
+	IP_Address local_address;
 	bool bound = false;
 
 public:
@@ -80,10 +80,13 @@ public:
 	}
 
 	Error bind(IP_Address p_ip, uint16_t p_port) {
-		address = p_ip;
-		port = p_port;
+		local_address = p_ip;
 		bound = true;
-		return sock->bind(address, port);
+		return sock->bind(p_ip, p_port);
+	}
+
+	Error get_socket_address(IP_Address *r_ip, uint16_t *r_port) {
+		return sock->get_socket_address(r_ip, r_port);
 	}
 
 	Error sendto(const uint8_t *p_buffer, int p_len, int &r_sent, IP_Address p_ip, uint16_t p_port) {
@@ -142,6 +145,7 @@ public:
 
 	void close() {
 		sock->close();
+		local_address.clear();
 	}
 };
 
@@ -153,6 +157,7 @@ class ENetDTLSClient : public ENetGodotSocket {
 	bool verify = false;
 	String for_hostname;
 	Ref<X509Certificate> cert;
+	IP_Address local_address;
 
 public:
 	ENetDTLSClient(ENetUDP *p_base, Ref<X509Certificate> p_cert, bool p_verify, String p_for_hostname) {
@@ -161,9 +166,11 @@ public:
 		cert = p_cert;
 		udp.instance();
 		dtls = Ref<PacketPeerDTLS>(PacketPeerDTLS::create());
-		p_base->close();
 		if (p_base->bound) {
-			bind(p_base->address, p_base->port);
+			uint16_t port;
+			p_base->get_socket_address(&local_address, &port);
+			p_base->close();
+			bind(local_address, port);
 		}
 	}
 
@@ -172,7 +179,17 @@ public:
 	}
 
 	Error bind(IP_Address p_ip, uint16_t p_port) {
+		local_address = p_ip;
 		return udp->bind(p_port, p_ip);
+	}
+
+	Error get_socket_address(IP_Address *r_ip, uint16_t *r_port) {
+		if (!udp->is_bound()) {
+			return ERR_UNCONFIGURED;
+		}
+		*r_ip = local_address;
+		*r_port = udp->get_local_port();
+		return OK;
 	}
 
 	Error sendto(const uint8_t *p_buffer, int p_len, int &r_sent, IP_Address p_ip, uint16_t p_port) {
@@ -233,13 +250,16 @@ class ENetDTLSServer : public ENetGodotSocket {
 	Ref<UDPServer> udp_server;
 	Map<String, Ref<PacketPeerDTLS>> peers;
 	int last_service = 0;
+	IP_Address local_address;
 
 public:
 	ENetDTLSServer(ENetUDP *p_base, Ref<CryptoKey> p_key, Ref<X509Certificate> p_cert) {
 		udp_server.instance();
-		p_base->close();
 		if (p_base->bound) {
-			bind(p_base->address, p_base->port);
+			uint16_t port;
+			p_base->get_socket_address(&local_address, &port);
+			p_base->close();
+			bind(local_address, port);
 		}
 		server = Ref<DTLSServer>(DTLSServer::create());
 		server->setup(p_key, p_cert);
@@ -254,7 +274,17 @@ public:
 	}
 
 	Error bind(IP_Address p_ip, uint16_t p_port) {
+		local_address = p_ip;
 		return udp_server->listen(p_port, p_ip);
+	}
+
+	Error get_socket_address(IP_Address *r_ip, uint16_t *r_port) {
+		if (!udp_server->is_listening()) {
+			return ERR_UNCONFIGURED;
+		}
+		*r_ip = local_address;
+		*r_port = udp_server->get_local_port();
+		return OK;
 	}
 
 	Error sendto(const uint8_t *p_buffer, int p_len, int &r_sent, IP_Address p_ip, uint16_t p_port) {
@@ -341,6 +371,7 @@ public:
 		peers.clear();
 		udp_server->stop();
 		server->stop();
+		local_address.clear();
 	}
 };
 
@@ -493,13 +524,24 @@ int enet_socket_receive(ENetSocket socket, ENetAddress *address, ENetBuffer *buf
 	return read;
 }
 
+int enet_socket_get_address (ENetSocket socket, ENetAddress * address) {
+	IP_Address ip;
+	uint16_t port;
+	ENetGodotSocket *sock = (ENetGodotSocket *)socket;
+
+	if (sock->get_socket_address(&ip, &port) != OK) {
+		return -1;
+	}
+
+	enet_address_set_ip(address, ip.get_ipv6(), 16);
+	address->port = port;
+
+	return 0;
+}
+
 // Not implemented
 int enet_socket_wait(ENetSocket socket, enet_uint32 *condition, enet_uint32 timeout) {
 	return 0; // do we need this function?
-}
-
-int enet_socket_get_address(ENetSocket socket, ENetAddress *address) {
-	return -1; // do we need this function?
 }
 
 int enet_socketset_select(ENetSocket maxSocket, ENetSocketSet *readSet, ENetSocketSet *writeSet, enet_uint32 timeout) {
