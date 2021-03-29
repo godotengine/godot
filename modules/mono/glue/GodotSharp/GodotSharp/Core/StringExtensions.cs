@@ -97,6 +97,36 @@ namespace Godot
             return b;
         }
 
+        /// <summary>
+        /// Converts a string containing a binary number into an integer.
+        /// Binary strings can either be prefixed with `0b` or not,
+        /// and they can also start with a `-` before the optional prefix.
+        /// </summary>
+        /// <param name="instance">The string to convert.</param>
+        /// <returns>The converted string.</returns>
+        public static int BinToInt(this string instance)
+        {
+            if (instance.Length == 0)
+            {
+                return 0;
+            }
+
+            int sign = 1;
+
+            if (instance[0] == '-')
+            {
+                sign = -1;
+                instance = instance.Substring(1);
+            }
+
+            if (instance.StartsWith("0b"))
+            {
+                instance = instance.Substring(2);
+            }
+
+            return sign * Convert.ToInt32(instance, 2);;
+        }
+
         // <summary>
         // Return the amount of substrings in string.
         // </summary>
@@ -322,6 +352,15 @@ namespace Godot
             return instance.IndexOf(what, from, caseSensitive ? StringComparison.Ordinal : StringComparison.OrdinalIgnoreCase);
         }
 
+        /// <summary>Find the first occurrence of a char. Optionally, the search starting position can be passed.</summary>
+        /// <returns>The first instance of the char, or -1 if not found.</returns>
+        public static int Find(this string instance, char what, int from = 0, bool caseSensitive = true)
+        {
+            // TODO: Could be more efficient if we get a char version of `IndexOf`.
+            // See https://github.com/dotnet/runtime/issues/44116
+            return instance.IndexOf(what.ToString(), from, caseSensitive ? StringComparison.Ordinal : StringComparison.OrdinalIgnoreCase);
+        }
+
         /// <summary>Find the last occurrence of a substring.</summary>
         /// <returns>The starting position of the substring, or -1 if not found.</returns>
         public static int FindLast(this string instance, string what, bool caseSensitive = true)
@@ -423,25 +462,81 @@ namespace Godot
         }
 
         // <summary>
-        // Hash the string and return a 32 bits integer.
+        // Hash the string and return a 32 bits unsigned integer.
         // </summary>
-        public static int Hash(this string instance)
+        public static uint Hash(this string instance)
         {
-            int index = 0;
-            int hashv = 5381;
-            int c;
+            uint hash = 5381;
 
-            while ((c = instance[index++]) != 0)
-                hashv = (hashv << 5) + hashv + c; // hash * 33 + c
+            foreach(uint c in instance)
+            {
+                hash = (hash << 5) + hash + c; // hash * 33 + c
+            }
 
-            return hashv;
+            return hash;
         }
 
-        // <summary>
-        // Convert a string containing an hexadecimal number into an int.
-        // </summary>
+        /// <summary>
+        /// Returns a hexadecimal representation of this byte as a string.
+        /// </summary>
+        /// <param name="b">The byte to encode.</param>
+        /// <returns>The hexadecimal representation of this byte.</returns>
+        internal static string HexEncode(this byte b)
+        {
+            var ret = string.Empty;
+
+            for (int i = 0; i < 2; i++)
+            {
+                char c;
+                int lv = b & 0xF;
+
+                if (lv < 10)
+                {
+                    c = (char)('0' + lv);
+                }
+                else
+                {
+                    c = (char)('a' + lv - 10);
+                }
+
+                b >>= 4;
+                ret = c + ret;
+            }
+
+            return ret;
+        }
+
+        /// <summary>
+        /// Returns a hexadecimal representation of this byte array as a string.
+        /// </summary>
+        /// <param name="bytes">The byte array to encode.</param>
+        /// <returns>The hexadecimal representation of this byte array.</returns>
+        public static string HexEncode(this byte[] bytes)
+        {
+            var ret = string.Empty;
+
+            foreach (byte b in bytes)
+            {
+                ret += b.HexEncode();
+            }
+
+            return ret;
+        }
+
+        /// <summary>
+        /// Converts a string containing a hexadecimal number into an integer.
+        /// Hexadecimal strings can either be prefixed with `0x` or not,
+        /// and they can also start with a `-` before the optional prefix.
+        /// </summary>
+        /// <param name="instance">The string to convert.</param>
+        /// <returns>The converted string.</returns>
         public static int HexToInt(this string instance)
         {
+            if (instance.Length == 0)
+            {
+                return 0;
+            }
+
             int sign = 1;
 
             if (instance[0] == '-')
@@ -450,10 +545,12 @@ namespace Godot
                 instance = instance.Substring(1);
             }
 
-            if (!instance.StartsWith("0x"))
-                return 0;
+            if (instance.StartsWith("0x"))
+            {
+                instance = instance.Substring(2);
+            }
 
-            return sign * int.Parse(instance.Substring(2), NumberStyles.HexNumber);
+            return sign * int.Parse(instance, NumberStyles.HexNumber);
         }
 
         // <summary>
@@ -659,6 +756,33 @@ namespace Godot
         }
 
         /// <summary>
+        /// Returns a copy of the string with characters removed from the left.
+        /// </summary>
+        /// <param name="instance">The string to remove characters from.</param>
+        /// <param name="chars">The characters to be removed.</param>
+        /// <returns>A copy of the string with characters removed from the left.</returns>
+        public static string LStrip(this string instance, string chars)
+        {
+            int len = instance.Length;
+            int beg;
+
+            for (beg = 0; beg < len; beg++)
+            {
+                if (chars.Find(instance[beg]) == -1)
+                {
+                    break;
+                }
+            }
+
+            if (beg == 0)
+            {
+                return instance;
+            }
+
+            return instance.Substr(beg, len - beg);
+        }
+
+        /// <summary>
         /// Do a simple expression match, where '*' matches zero or more arbitrary characters and '?' matches any single character except '.'.
         /// </summary>
         private static bool ExprMatch(this string instance, string expr, bool caseSensitive)
@@ -809,22 +933,6 @@ namespace Godot
         }
 
         // <summary>
-        // Decode a percent-encoded string. See [method percent_encode].
-        // </summary>
-        public static string PercentDecode(this string instance)
-        {
-            return Uri.UnescapeDataString(instance);
-        }
-
-        // <summary>
-        // Percent-encode a string. This is meant to encode parameters in a URL when sending a HTTP GET request and bodies of form-urlencoded POST request.
-        // </summary>
-        public static string PercentEncode(this string instance)
-        {
-            return Uri.EscapeDataString(instance);
-        }
-
-        // <summary>
         // If the string is a path, this concatenates [code]file[/code] at the end of the string as a subpath. E.g. [code]"this/is".plus_file("path") == "this/is/path"[/code].
         // </summary>
         public static string PlusFile(this string instance, string file)
@@ -884,6 +992,33 @@ namespace Godot
                 return string.Empty;
 
             return instance.Substring(pos, instance.Length - pos);
+        }
+
+        /// <summary>
+        /// Returns a copy of the string with characters removed from the right.
+        /// </summary>
+        /// <param name="instance">The string to remove characters from.</param>
+        /// <param name="chars">The characters to be removed.</param>
+        /// <returns>A copy of the string with characters removed from the right.</returns>
+        public static string RStrip(this string instance, string chars)
+        {
+            int len = instance.Length;
+            int end;
+
+            for (end = len - 1; end >= 0; end--)
+            {
+                if (chars.Find(instance[end]) == -1)
+                {
+                    break;
+                }
+            }
+
+            if (end == len - 1)
+            {
+                return instance;
+            }
+
+            return instance.Substr(0, end + 1);
         }
 
         public static byte[] SHA256Buffer(this string instance)
@@ -1057,6 +1192,33 @@ namespace Godot
         public static byte[] ToUTF8(this string instance)
         {
             return Encoding.UTF8.GetBytes(instance);
+        }
+
+        /// <summary>
+        /// Decodes a string in URL encoded format. This is meant to
+        /// decode parameters in a URL when receiving an HTTP request.
+        /// This mostly wraps around `System.Uri.UnescapeDataString()`,
+        /// but also handles `+`.
+        /// See <see cref="URIEncode"/> for encoding.
+        /// </summary>
+        /// <param name="instance">The string to decode.</param>
+        /// <returns>The unescaped string.</returns>
+        public static string URIDecode(this string instance)
+        {
+            return Uri.UnescapeDataString(instance.Replace("+", "%20"));
+        }
+
+        /// <summary>
+        /// Encodes a string to URL friendly format. This is meant to
+        /// encode parameters in a URL when sending an HTTP request.
+        /// This wraps around `System.Uri.EscapeDataString()`.
+        /// See <see cref="URIDecode"/> for decoding.
+        /// </summary>
+        /// <param name="instance">The string to encode.</param>
+        /// <returns>The escaped string.</returns>
+        public static string URIEncode(this string instance)
+        {
+            return Uri.EscapeDataString(instance);
         }
 
         // <summary>

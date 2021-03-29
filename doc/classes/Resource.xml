@@ -4,7 +4,8 @@
 		Base class for all resources.
 	</brief_description>
 	<description>
-		Resource is the base class for all Godot-specific resource types, serving primarily as data containers. Unlike [Object]s, they are reference-counted and freed when no longer in use. They are also cached once loaded from disk, so that any further attempts to load a resource from a given path will return the same reference (all this in contrast to a [Node], which is not reference-counted and can be instanced from disk as many times as desired). Resources can be saved externally on disk or bundled into another object, such as a [Node] or another resource.
+		Resource is the base class for all Godot-specific resource types, serving primarily as data containers. Since they inherit from [Reference], resources are reference-counted and freed when no longer in use. They are also cached once loaded from disk, so that any further attempts to load a resource from a given path will return the same reference (all this in contrast to a [Node], which is not reference-counted and can be instanced from disk as many times as desired). Resources can be saved externally on disk or bundled into another object, such as a [Node] or another resource.
+		[b]Note:[/b] In C#, resources will not be freed instantly after they are no longer in use. Instead, garbage collection will run periodically and will free resources that are no longer in use. This means that unused resources will linger on for a while before being removed.
 	</description>
 	<tutorials>
 		<link title="Resources">https://docs.godotengine.org/en/latest/getting_started/step_by_step/resources.html</link>
@@ -26,6 +27,19 @@
 			<description>
 				Duplicates the resource, returning a new resource. By default, sub-resources are shared between resource copies for efficiency. This can be changed by passing [code]true[/code] to the [code]subresources[/code] argument which will copy the subresources.
 				[b]Note:[/b] If [code]subresources[/code] is [code]true[/code], this method will only perform a shallow copy. Nested resources within subresources will not be duplicated and will still be shared.
+			</description>
+		</method>
+		<method name="emit_changed">
+			<return type="void">
+			</return>
+			<description>
+				Emits the [signal changed] signal.
+				If external objects which depend on this resource should be updated, this method must be called manually whenever the state of this resource has changed (such as modification of properties).
+				The method is equivalent to:
+				[codeblock]
+				emit_signal("changed")
+				[/codeblock]
+				[b]Note:[/b] This method is called automatically for built-in resources.
 			</description>
 		</method>
 		<method name="get_local_scene" qualifiers="const">
@@ -65,7 +79,7 @@
 			If [code]true[/code], the resource will be made unique in each instance of its local scene. It can thus be modified in a scene instance without impacting other instances of that same scene.
 		</member>
 		<member name="resource_name" type="String" setter="set_name" getter="get_name" default="&quot;&quot;">
-			The name of the resource. This is an optional identifier.
+			The name of the resource. This is an optional identifier. If [member resource_name] is not empty, its value will be displayed to represent the current resource in the editor inspector. For built-in scripts, the [member resource_name] will be displayed as the tab name in the script editor.
 		</member>
 		<member name="resource_path" type="String" setter="set_path" getter="get_path" default="&quot;&quot;">
 			The path to the resource. In case it has its own file, it will return its filepath. If it's tied to the scene, it will return the scene's path, followed by the resource's index.
@@ -75,6 +89,7 @@
 		<signal name="changed">
 			<description>
 				Emitted whenever the resource changes.
+				[b]Note:[/b] This signal is not emitted automatically for custom resources, which means that you need to create a setter and emit the signal yourself.
 			</description>
 		</signal>
 	</signals>

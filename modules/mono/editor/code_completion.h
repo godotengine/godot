@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -46,11 +46,11 @@ enum class CompletionKind {
 	THEME_COLORS,
 	THEME_CONSTANTS,
 	THEME_FONTS,
+	THEME_FONT_SIZES,
 	THEME_STYLES
 };
 
 PackedStringArray get_code_completion(CompletionKind p_kind, const String &p_script_file);
-
 } // namespace gdmono
 
 #endif // CODE_COMPLETION_H

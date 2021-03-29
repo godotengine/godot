@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -86,9 +86,9 @@ RES _ResourceLoader::load_threaded_get(const String &p_path) {
 	return res;
 }
 
-RES _ResourceLoader::load(const String &p_path, const String &p_type_hint, bool p_no_cache) {
+RES _ResourceLoader::load(const String &p_path, const String &p_type_hint, CacheMode p_cache_mode) {
 	Error err = OK;
-	RES ret = ResourceLoader::load(p_path, p_type_hint, p_no_cache, &err);
+	RES ret = ResourceLoader::load(p_path, p_type_hint, ResourceFormatLoader::CacheMode(p_cache_mode), &err);
 
 	ERR_FAIL_COND_V_MSG(err != OK, ret, "Error loading resource: '" + p_path + "'.");
 	return ret;
@@ -135,7 +135,7 @@ void _ResourceLoader::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("load_threaded_get_status", "path", "progress"), &_ResourceLoader::load_threaded_get_status, DEFVAL(Array()));
 	ClassDB::bind_method(D_METHOD("load_threaded_get", "path"), &_ResourceLoader::load_threaded_get);
 
-	ClassDB::bind_method(D_METHOD("load", "path", "type_hint", "no_cache"), &_ResourceLoader::load, DEFVAL(""), DEFVAL(false));
+	ClassDB::bind_method(D_METHOD("load", "path", "type_hint", "cache_mode"), &_ResourceLoader::load, DEFVAL(""), DEFVAL(CACHE_MODE_REUSE));
 	ClassDB::bind_method(D_METHOD("get_recognized_extensions_for_type", "type"), &_ResourceLoader::get_recognized_extensions_for_type);
 	ClassDB::bind_method(D_METHOD("set_abort_on_missing_resources", "abort"), &_ResourceLoader::set_abort_on_missing_resources);
 	ClassDB::bind_method(D_METHOD("get_dependencies", "path"), &_ResourceLoader::get_dependencies);
@@ -146,6 +146,10 @@ void _ResourceLoader::_bind_methods() {
 	BIND_ENUM_CONSTANT(THREAD_LOAD_IN_PROGRESS);
 	BIND_ENUM_CONSTANT(THREAD_LOAD_FAILED);
 	BIND_ENUM_CONSTANT(THREAD_LOAD_LOADED);
+
+	BIND_ENUM_CONSTANT(CACHE_MODE_IGNORE);
+	BIND_ENUM_CONSTANT(CACHE_MODE_REUSE);
+	BIND_ENUM_CONSTANT(CACHE_MODE_REPLACE);
 }
 
 ////// _ResourceSaver //////
@@ -228,24 +232,32 @@ Error _OS::shell_open(String p_uri) {
 	return OS::get_singleton()->shell_open(p_uri);
 }
 
-int _OS::execute(const String &p_path, const Vector<String> &p_arguments, bool p_blocking, Array p_output, bool p_read_stderr) {
-	OS::ProcessID pid = -2;
-	int exitcode = 0;
+int _OS::execute(const String &p_path, const Vector<String> &p_arguments, Array r_output, bool p_read_stderr) {
 	List<String> args;
 	for (int i = 0; i < p_arguments.size(); i++) {
 		args.push_back(p_arguments[i]);
 	}
 	String pipe;
-	Error err = OS::get_singleton()->execute(p_path, args, p_blocking, &pid, &pipe, &exitcode, p_read_stderr);
-	p_output.clear();
-	p_output.push_back(pipe);
+	int exitcode = 0;
+	Error err = OS::get_singleton()->execute(p_path, args, &pipe, &exitcode, p_read_stderr);
+	r_output.push_back(pipe);
 	if (err != OK) {
 		return -1;
-	} else if (p_blocking) {
-		return exitcode;
-	} else {
-		return pid;
 	}
+	return exitcode;
+}
+
+int _OS::create_process(const String &p_path, const Vector<String> &p_arguments) {
+	List<String> args;
+	for (int i = 0; i < p_arguments.size(); i++) {
+		args.push_back(p_arguments[i]);
+	}
+	OS::ProcessID pid = 0;
+	Error err = OS::get_singleton()->create_process(p_path, args, &pid);
+	if (err != OK) {
+		return -1;
+	}
+	return pid;
 }
 
 Error _OS::kill(int p_pid) {
@@ -262,6 +274,10 @@ bool _OS::has_environment(const String &p_var) const {
 
 String _OS::get_environment(const String &p_var) const {
 	return OS::get_singleton()->get_environment(p_var);
+}
+
+bool _OS::set_environment(const String &p_var, const String &p_value) const {
+	return OS::get_singleton()->set_environment(p_var, p_value);
 }
 
 String _OS::get_name() const {
@@ -290,6 +306,10 @@ Error _OS::set_thread_name(const String &p_name) {
 	return Thread::set_name(p_name);
 }
 
+Thread::ID _OS::get_thread_caller_id() const {
+	return Thread::get_caller_id();
+};
+
 bool _OS::has_feature(const String &p_feature) const {
 	return OS::get_singleton()->has_feature(p_feature);
 }
@@ -300,18 +320,6 @@ uint64_t _OS::get_static_memory_usage() const {
 
 uint64_t _OS::get_static_memory_peak_usage() const {
 	return OS::get_singleton()->get_static_memory_peak_usage();
-}
-
-int _OS::get_exit_code() const {
-	return OS::get_singleton()->get_exit_code();
-}
-
-void _OS::set_exit_code(int p_code) {
-	if (p_code < 0 || p_code > 125) {
-		WARN_PRINT("For portability reasons, the exit code should be set between 0 and 125 (inclusive).");
-	}
-
-	OS::get_singleton()->set_exit_code(p_code);
 }
 
 /**
@@ -365,6 +373,9 @@ Dictionary _OS::get_time(bool utc) const {
  * @return epoch calculated
  */
 int64_t _OS::get_unix_time_from_datetime(Dictionary datetime) const {
+	// if datetime is an empty Dictionary throws an error
+	ERR_FAIL_COND_V_MSG(datetime.is_empty(), 0, "Invalid datetime Dictionary: Dictionary is empty");
+
 	// Bunch of conversion constants
 	static const unsigned int SECONDS_PER_MINUTE = 60;
 	static const unsigned int MINUTES_PER_HOUR = 60;
@@ -503,11 +514,19 @@ double _OS::get_unix_time() const {
 	return OS::get_singleton()->get_unix_time();
 }
 
-void _OS::delay_usec(uint32_t p_usec) const {
+/** This method uses a signed argument for better error reporting as it's used from the scripting API. */
+void _OS::delay_usec(int p_usec) const {
+	ERR_FAIL_COND_MSG(
+			p_usec < 0,
+			vformat("Can't sleep for %d microseconds. The delay provided must be greater than or equal to 0 microseconds.", p_usec));
 	OS::get_singleton()->delay_usec(p_usec);
 }
 
-void _OS::delay_msec(uint32_t p_msec) const {
+/** This method uses a signed argument for better error reporting as it's used from the scripting API. */
+void _OS::delay_msec(int p_msec) const {
+	ERR_FAIL_COND_MSG(
+			p_msec < 0,
+			vformat("Can't sleep for %d milliseconds. The delay provided must be greater than or equal to 0 milliseconds.", p_msec));
 	OS::get_singleton()->delay_usec(int64_t(p_msec) * 1000);
 }
 
@@ -542,15 +561,15 @@ void _OS::dump_memory_to_file(const String &p_file) {
 struct _OSCoreBindImg {
 	String path;
 	Size2 size;
-	int fmt;
+	int fmt = 0;
 	ObjectID id;
-	int vram;
+	int vram = 0;
 	bool operator<(const _OSCoreBindImg &p_img) const { return vram == p_img.vram ? id < p_img.id : vram > p_img.vram; }
 };
 
 void _OS::print_all_textures_by_size() {
 	List<_OSCoreBindImg> imgs;
-	int total = 0;
+	uint64_t total = 0;
 	{
 		List<Ref<Resource>> rsrc;
 		ResourceCache::get_cached_resources(&rsrc);
@@ -587,10 +606,7 @@ void _OS::print_resources_by_type(const Vector<String> &p_types) {
 	List<Ref<Resource>> resources;
 	ResourceCache::get_cached_resources(&resources);
 
-	List<Ref<Resource>> rsrc;
-	ResourceCache::get_cached_resources(&rsrc);
-
-	for (List<Ref<Resource>>::Element *E = rsrc.front(); E; E = E->next()) {
+	for (List<Ref<Resource>>::Element *E = resources.front(); E; E = E->next()) {
 		Ref<Resource> r = E->get();
 
 		bool found = false;
@@ -668,22 +684,6 @@ String _OS::get_unique_id() const {
 	return OS::get_singleton()->get_unique_id();
 }
 
-int _OS::get_tablet_driver_count() const {
-	return OS::get_singleton()->get_tablet_driver_count();
-}
-
-String _OS::get_tablet_driver_name(int p_driver) const {
-	return OS::get_singleton()->get_tablet_driver_name(p_driver);
-}
-
-String _OS::get_current_tablet_driver() const {
-	return OS::get_singleton()->get_current_tablet_driver();
-}
-
-void _OS::set_current_tablet_driver(const String &p_driver) {
-	OS::get_singleton()->set_current_tablet_driver(p_driver);
-}
-
 _OS *_OS::singleton = nullptr;
 
 void _OS::_bind_methods() {
@@ -700,13 +700,15 @@ void _OS::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_processor_count"), &_OS::get_processor_count);
 
 	ClassDB::bind_method(D_METHOD("get_executable_path"), &_OS::get_executable_path);
-	ClassDB::bind_method(D_METHOD("execute", "path", "arguments", "blocking", "output", "read_stderr"), &_OS::execute, DEFVAL(true), DEFVAL(Array()), DEFVAL(false));
+	ClassDB::bind_method(D_METHOD("execute", "path", "arguments", "output", "read_stderr"), &_OS::execute, DEFVAL(Array()), DEFVAL(false));
+	ClassDB::bind_method(D_METHOD("create_process", "path", "arguments"), &_OS::create_process);
 	ClassDB::bind_method(D_METHOD("kill", "pid"), &_OS::kill);
 	ClassDB::bind_method(D_METHOD("shell_open", "uri"), &_OS::shell_open);
 	ClassDB::bind_method(D_METHOD("get_process_id"), &_OS::get_process_id);
 
-	ClassDB::bind_method(D_METHOD("get_environment", "environment"), &_OS::get_environment);
-	ClassDB::bind_method(D_METHOD("has_environment", "environment"), &_OS::has_environment);
+	ClassDB::bind_method(D_METHOD("get_environment", "variable"), &_OS::get_environment);
+	ClassDB::bind_method(D_METHOD("set_environment", "variable", "value"), &_OS::set_environment);
+	ClassDB::bind_method(D_METHOD("has_environment", "variable"), &_OS::has_environment);
 
 	ClassDB::bind_method(D_METHOD("get_name"), &_OS::get_name);
 	ClassDB::bind_method(D_METHOD("get_cmdline_args"), &_OS::get_cmdline_args);
@@ -718,9 +720,6 @@ void _OS::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_unix_time"), &_OS::get_unix_time);
 	ClassDB::bind_method(D_METHOD("get_datetime_from_unix_time", "unix_time_val"), &_OS::get_datetime_from_unix_time);
 	ClassDB::bind_method(D_METHOD("get_unix_time_from_datetime", "datetime"), &_OS::get_unix_time_from_datetime);
-
-	ClassDB::bind_method(D_METHOD("get_exit_code"), &_OS::get_exit_code);
-	ClassDB::bind_method(D_METHOD("set_exit_code", "code"), &_OS::set_exit_code);
 
 	ClassDB::bind_method(D_METHOD("delay_usec", "usec"), &_OS::delay_usec);
 	ClassDB::bind_method(D_METHOD("delay_msec", "msec"), &_OS::delay_msec);
@@ -758,6 +757,7 @@ void _OS::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_use_file_access_save_and_swap", "enabled"), &_OS::set_use_file_access_save_and_swap);
 
 	ClassDB::bind_method(D_METHOD("set_thread_name", "name"), &_OS::set_thread_name);
+	ClassDB::bind_method(D_METHOD("get_thread_caller_id"), &_OS::get_thread_caller_id);
 
 	ClassDB::bind_method(D_METHOD("has_feature", "tag_name"), &_OS::has_feature);
 
@@ -765,19 +765,11 @@ void _OS::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("request_permissions"), &_OS::request_permissions);
 	ClassDB::bind_method(D_METHOD("get_granted_permissions"), &_OS::get_granted_permissions);
 
-	ClassDB::bind_method(D_METHOD("get_tablet_driver_count"), &_OS::get_tablet_driver_count);
-	ClassDB::bind_method(D_METHOD("get_tablet_driver_name", "idx"), &_OS::get_tablet_driver_name);
-	ClassDB::bind_method(D_METHOD("get_current_tablet_driver"), &_OS::get_current_tablet_driver);
-	ClassDB::bind_method(D_METHOD("set_current_tablet_driver", "name"), &_OS::set_current_tablet_driver);
-
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "exit_code"), "set_exit_code", "get_exit_code");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "low_processor_usage_mode"), "set_low_processor_usage_mode", "is_in_low_processor_usage_mode");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "low_processor_usage_mode_sleep_usec"), "set_low_processor_usage_mode_sleep_usec", "get_low_processor_usage_mode_sleep_usec");
-	ADD_PROPERTY(PropertyInfo(Variant::STRING, "tablet_driver"), "set_current_tablet_driver", "get_current_tablet_driver");
 
 	// Those default values need to be specified for the docs generator,
 	// to avoid using values from the documentation writer's own OS instance.
-	ADD_PROPERTY_DEFAULT("tablet_driver", "");
 	ADD_PROPERTY_DEFAULT("exit_code", 0);
 	ADD_PROPERTY_DEFAULT("low_processor_usage_mode", false);
 	ADD_PROPERTY_DEFAULT("low_processor_usage_mode_sleep_usec", 6900);
@@ -1239,6 +1231,11 @@ Error _File::open(const String &p_path, ModeFlags p_mode_flags) {
 	return err;
 }
 
+void _File::flush() {
+	ERR_FAIL_COND_MSG(!f, "File must be opened before flushing.");
+	f->flush();
+}
+
 void _File::close() {
 	if (f) {
 		memdelete(f);
@@ -1380,9 +1377,9 @@ Vector<String> _File::get_csv_line(const String &p_delim) const {
 	return f->get_csv_line(p_delim);
 }
 
-/**< use this for files WRITTEN in _big_ endian machines (ie, amiga/mac)
+/**< use this for files WRITTEN in _big_ endian machines (i.e. amiga/mac)
  * It's not about the current CPU type but file formats.
- * this flags get reset to false (little endian) on each open
+ * These flags get reset to false (little endian) on each open
  */
 
 void _File::set_endian_swap(bool p_swap) {
@@ -1532,6 +1529,7 @@ void _File::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("open_compressed", "path", "mode_flags", "compression_mode"), &_File::open_compressed, DEFVAL(0));
 
 	ClassDB::bind_method(D_METHOD("open", "path", "flags"), &_File::open);
+	ClassDB::bind_method(D_METHOD("flush"), &_File::flush);
 	ClassDB::bind_method(D_METHOD("close"), &_File::close);
 	ClassDB::bind_method(D_METHOD("get_path"), &_File::get_path);
 	ClassDB::bind_method(D_METHOD("get_path_absolute"), &_File::get_path_absolute);
@@ -1969,7 +1967,7 @@ void _Thread::_start_func(void *ud) {
 }
 
 Error _Thread::start(Object *p_instance, const StringName &p_method, const Variant &p_userdata, Priority p_priority) {
-	ERR_FAIL_COND_V_MSG(active, ERR_ALREADY_IN_USE, "Thread already started.");
+	ERR_FAIL_COND_V_MSG(active.is_set(), ERR_ALREADY_IN_USE, "Thread already started.");
 	ERR_FAIL_COND_V(!p_instance, ERR_INVALID_PARAMETER);
 	ERR_FAIL_COND_V(p_method == StringName(), ERR_INVALID_PARAMETER);
 	ERR_FAIL_INDEX_V(p_priority, PRIORITY_MAX, ERR_INVALID_PARAMETER);
@@ -1978,49 +1976,33 @@ Error _Thread::start(Object *p_instance, const StringName &p_method, const Varia
 	target_method = p_method;
 	target_instance = p_instance;
 	userdata = p_userdata;
-	active = true;
+	active.set();
 
 	Ref<_Thread> *ud = memnew(Ref<_Thread>(this));
 
 	Thread::Settings s;
 	s.priority = (Thread::Priority)p_priority;
-	thread = Thread::create(_start_func, ud, s);
-	if (!thread) {
-		active = false;
-		target_method = StringName();
-		target_instance = nullptr;
-		userdata = Variant();
-		return ERR_CANT_CREATE;
-	}
+	thread.start(_start_func, ud, s);
 
 	return OK;
 }
 
 String _Thread::get_id() const {
-	if (!thread) {
-		return String();
-	}
-
-	return itos(thread->get_id());
+	return itos(thread.get_id());
 }
 
 bool _Thread::is_active() const {
-	return active;
+	return active.is_set();
 }
 
 Variant _Thread::wait_to_finish() {
-	ERR_FAIL_COND_V_MSG(!thread, Variant(), "Thread must exist to wait for its completion.");
-	ERR_FAIL_COND_V_MSG(!active, Variant(), "Thread must be active to wait for its completion.");
-	Thread::wait_to_finish(thread);
+	ERR_FAIL_COND_V_MSG(!active.is_set(), Variant(), "Thread must be active to wait for its completion.");
+	thread.wait_to_finish();
 	Variant r = ret;
-	active = false;
+	active.clear();
 	target_method = StringName();
 	target_instance = nullptr;
 	userdata = Variant();
-	if (thread) {
-		memdelete(thread);
-	}
-	thread = nullptr;
 
 	return r;
 }
@@ -2034,10 +2016,6 @@ void _Thread::_bind_methods() {
 	BIND_ENUM_CONSTANT(PRIORITY_LOW);
 	BIND_ENUM_CONSTANT(PRIORITY_NORMAL);
 	BIND_ENUM_CONSTANT(PRIORITY_HIGH);
-}
-
-_Thread::~_Thread() {
-	ERR_FAIL_COND_MSG(active, "Reference to a Thread object was lost while the thread is still running...");
 }
 
 ////// _ClassDB //////
@@ -2278,8 +2256,8 @@ uint64_t _Engine::get_physics_frames() const {
 	return Engine::get_singleton()->get_physics_frames();
 }
 
-uint64_t _Engine::get_idle_frames() const {
-	return Engine::get_singleton()->get_idle_frames();
+uint64_t _Engine::get_process_frames() const {
+	return Engine::get_singleton()->get_process_frames();
 }
 
 void _Engine::set_time_scale(float p_scale) {
@@ -2358,7 +2336,7 @@ void _Engine::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_frames_drawn"), &_Engine::get_frames_drawn);
 	ClassDB::bind_method(D_METHOD("get_frames_per_second"), &_Engine::get_frames_per_second);
 	ClassDB::bind_method(D_METHOD("get_physics_frames"), &_Engine::get_physics_frames);
-	ClassDB::bind_method(D_METHOD("get_idle_frames"), &_Engine::get_idle_frames);
+	ClassDB::bind_method(D_METHOD("get_process_frames"), &_Engine::get_process_frames);
 
 	ClassDB::bind_method(D_METHOD("get_main_loop"), &_Engine::get_main_loop);
 

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -117,7 +117,7 @@ void ShaderTextEditor::_load_theme_settings() {
 	get_text_editor()->add_theme_color_override("line_number_color", line_number_color);
 	get_text_editor()->add_theme_color_override("caret_color", caret_color);
 	get_text_editor()->add_theme_color_override("caret_background_color", caret_background_color);
-	get_text_editor()->add_theme_color_override("font_color_selected", text_selected_color);
+	get_text_editor()->add_theme_color_override("font_selected_color", text_selected_color);
 	get_text_editor()->add_theme_color_override("selection_color", selection_color);
 	get_text_editor()->add_theme_color_override("brace_mismatch_color", brace_mismatch_color);
 	get_text_editor()->add_theme_color_override("current_line_color", current_line_color);
@@ -282,7 +282,7 @@ void ShaderEditor::_menu_option(int p_option) {
 			}
 
 			CodeEdit *tx = shader_editor->get_text_editor();
-			tx->indent_left();
+			tx->indent_selected_lines_left();
 
 		} break;
 		case EDIT_INDENT_RIGHT: {
@@ -291,7 +291,7 @@ void ShaderEditor::_menu_option(int p_option) {
 			}
 
 			CodeEdit *tx = shader_editor->get_text_editor();
-			tx->indent_right();
+			tx->indent_selected_lines_right();
 
 		} break;
 		case EDIT_DELETE_LINE: {
@@ -339,7 +339,7 @@ void ShaderEditor::_menu_option(int p_option) {
 			shader_editor->remove_all_bookmarks();
 		} break;
 		case HELP_DOCS: {
-			OS::get_singleton()->shell_open("https://docs.godotengine.org/en/stable/tutorials/shading/shading_reference/index.html");
+			OS::get_singleton()->shell_open("https://docs.godotengine.org/en/latest/tutorials/shaders/shader_reference/index.html");
 		} break;
 	}
 	if (p_option != SEARCH_FIND && p_option != SEARCH_REPLACE && p_option != SEARCH_GOTO_LINE) {
@@ -372,7 +372,6 @@ void ShaderEditor::_bind_methods() {
 void ShaderEditor::ensure_select_current() {
 	/*
 	if (tab_container->get_child_count() && tab_container->get_current_tab()>=0) {
-
 		ShaderTextEditor *ste = Object::cast_to<ShaderTextEditor>(tab_container->get_child(tab_container->get_current_tab()));
 		if (!ste)
 			return;
@@ -406,7 +405,7 @@ void ShaderEditor::_check_for_external_edit() {
 }
 
 void ShaderEditor::_reload_shader_from_disk() {
-	Ref<Shader> rel_shader = ResourceLoader::load(shader->get_path(), shader->get_class(), true);
+	Ref<Shader> rel_shader = ResourceLoader::load(shader->get_path(), shader->get_class(), ResourceFormatLoader::CACHE_MODE_IGNORE);
 	ERR_FAIL_COND(!rel_shader.is_valid());
 
 	shader->set_code(rel_shader->get_code());
@@ -461,7 +460,7 @@ void ShaderEditor::_text_edit_gui_input(const Ref<InputEvent> &ev) {
 	Ref<InputEventMouseButton> mb = ev;
 
 	if (mb.is_valid()) {
-		if (mb->get_button_index() == BUTTON_RIGHT && mb->is_pressed()) {
+		if (mb->get_button_index() == MOUSE_BUTTON_RIGHT && mb->is_pressed()) {
 			int col, row;
 			CodeEdit *tx = shader_editor->get_text_editor();
 			tx->_get_mouse_pos(mb->get_global_position() - tx->get_global_position(), row, col);
@@ -534,15 +533,15 @@ void ShaderEditor::_bookmark_item_pressed(int p_idx) {
 void ShaderEditor::_make_context_menu(bool p_selection, Vector2 p_position) {
 	context_menu->clear();
 	if (p_selection) {
-		context_menu->add_shortcut(ED_GET_SHORTCUT("script_text_editor/cut"), EDIT_CUT);
-		context_menu->add_shortcut(ED_GET_SHORTCUT("script_text_editor/copy"), EDIT_COPY);
+		context_menu->add_shortcut(ED_GET_SHORTCUT("ui_cut"), EDIT_CUT);
+		context_menu->add_shortcut(ED_GET_SHORTCUT("ui_copy"), EDIT_COPY);
 	}
 
-	context_menu->add_shortcut(ED_GET_SHORTCUT("script_text_editor/paste"), EDIT_PASTE);
+	context_menu->add_shortcut(ED_GET_SHORTCUT("ui_paste"), EDIT_PASTE);
 	context_menu->add_separator();
-	context_menu->add_shortcut(ED_GET_SHORTCUT("script_text_editor/select_all"), EDIT_SELECT_ALL);
-	context_menu->add_shortcut(ED_GET_SHORTCUT("script_text_editor/undo"), EDIT_UNDO);
-	context_menu->add_shortcut(ED_GET_SHORTCUT("script_text_editor/redo"), EDIT_REDO);
+	context_menu->add_shortcut(ED_GET_SHORTCUT("ui_text_select_all"), EDIT_SELECT_ALL);
+	context_menu->add_shortcut(ED_GET_SHORTCUT("ui_undo"), EDIT_UNDO);
+	context_menu->add_shortcut(ED_GET_SHORTCUT("ui_redo"), EDIT_REDO);
 
 	context_menu->add_separator();
 	context_menu->add_shortcut(ED_GET_SHORTCUT("script_text_editor/indent_left"), EDIT_INDENT_LEFT);
@@ -559,7 +558,7 @@ ShaderEditor::ShaderEditor(EditorNode *p_node) {
 	shader_editor = memnew(ShaderTextEditor);
 	shader_editor->set_v_size_flags(SIZE_EXPAND_FILL);
 	shader_editor->add_theme_constant_override("separation", 0);
-	shader_editor->set_anchors_and_margins_preset(Control::PRESET_WIDE);
+	shader_editor->set_anchors_and_offsets_preset(Control::PRESET_WIDE);
 
 	shader_editor->connect("script_changed", callable_mp(this, &ShaderEditor::apply_shaders));
 	EditorSettings::get_singleton()->connect("settings_changed", callable_mp(this, &ShaderEditor::_editor_settings_changed));
@@ -582,17 +581,18 @@ ShaderEditor::ShaderEditor(EditorNode *p_node) {
 	HBoxContainer *hbc = memnew(HBoxContainer);
 
 	edit_menu = memnew(MenuButton);
+	edit_menu->set_shortcut_context(this);
 	edit_menu->set_text(TTR("Edit"));
 	edit_menu->set_switch_on_hover(true);
 
-	edit_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("script_text_editor/undo"), EDIT_UNDO);
-	edit_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("script_text_editor/redo"), EDIT_REDO);
+	edit_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("ui_undo"), EDIT_UNDO);
+	edit_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("ui_redo"), EDIT_REDO);
 	edit_menu->get_popup()->add_separator();
-	edit_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("script_text_editor/cut"), EDIT_CUT);
-	edit_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("script_text_editor/copy"), EDIT_COPY);
-	edit_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("script_text_editor/paste"), EDIT_PASTE);
+	edit_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("ui_cut"), EDIT_CUT);
+	edit_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("ui_copy"), EDIT_COPY);
+	edit_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("ui_paste"), EDIT_PASTE);
 	edit_menu->get_popup()->add_separator();
-	edit_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("script_text_editor/select_all"), EDIT_SELECT_ALL);
+	edit_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("ui_text_select_all"), EDIT_SELECT_ALL);
 	edit_menu->get_popup()->add_separator();
 	edit_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("script_text_editor/move_up"), EDIT_MOVE_LINE_UP);
 	edit_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("script_text_editor/move_down"), EDIT_MOVE_LINE_DOWN);
@@ -602,10 +602,11 @@ ShaderEditor::ShaderEditor(EditorNode *p_node) {
 	edit_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("script_text_editor/toggle_comment"), EDIT_TOGGLE_COMMENT);
 	edit_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("script_text_editor/clone_down"), EDIT_CLONE_DOWN);
 	edit_menu->get_popup()->add_separator();
-	edit_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("script_text_editor/complete_symbol"), EDIT_COMPLETE);
+	edit_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("ui_text_completion_query"), EDIT_COMPLETE);
 	edit_menu->get_popup()->connect("id_pressed", callable_mp(this, &ShaderEditor::_menu_option));
 
 	search_menu = memnew(MenuButton);
+	search_menu->set_shortcut_context(this);
 	search_menu->set_text(TTR("Search"));
 	search_menu->set_switch_on_hover(true);
 
@@ -616,6 +617,7 @@ ShaderEditor::ShaderEditor(EditorNode *p_node) {
 	search_menu->get_popup()->connect("id_pressed", callable_mp(this, &ShaderEditor::_menu_option));
 
 	MenuButton *goto_menu = memnew(MenuButton);
+	goto_menu->set_shortcut_context(this);
 	goto_menu->set_text(TTR("Go To"));
 	goto_menu->set_switch_on_hover(true);
 	goto_menu->get_popup()->connect("id_pressed", callable_mp(this, &ShaderEditor::_menu_option));
@@ -659,7 +661,7 @@ ShaderEditor::ShaderEditor(EditorNode *p_node) {
 	vbc->add_child(dl);
 
 	disk_changed->connect("confirmed", callable_mp(this, &ShaderEditor::_reload_shader_from_disk));
-	disk_changed->get_ok()->set_text(TTR("Reload"));
+	disk_changed->get_ok_button()->set_text(TTR("Reload"));
 
 	disk_changed->add_button(TTR("Resave"), !DisplayServer::get_singleton()->get_swap_cancel_ok(), "resave");
 	disk_changed->connect("custom_action", callable_mp(this, &ShaderEditor::save_external_data));
@@ -712,6 +714,8 @@ ShaderEditorPlugin::ShaderEditorPlugin(EditorNode *p_node) {
 	shader_editor->set_custom_minimum_size(Size2(0, 300) * EDSCALE);
 	button = editor->add_bottom_panel_item(TTR("Shader"), shader_editor);
 	button->hide();
+
+	_2d = false;
 }
 
 ShaderEditorPlugin::~ShaderEditorPlugin() {

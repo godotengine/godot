@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -47,8 +47,8 @@ private:
 	Vector<uint8_t> key;
 	bool writing = false;
 	FileAccess *file = nullptr;
-	size_t base;
-	size_t length;
+	size_t base = 0;
+	size_t length = 0;
 	Vector<uint8_t> data;
 	mutable int pos = 0;
 	mutable bool eofed = false;

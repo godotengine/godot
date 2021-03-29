@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -39,6 +39,60 @@
 #include "core/templates/local_vector.h"
 #include "core/templates/oa_hash_map.h"
 
+template <class T>
+struct PtrConstruct {};
+
+#define MAKE_PTRCONSTRUCT(m_type)                                                  \
+	template <>                                                                    \
+	struct PtrConstruct<m_type> {                                                  \
+		_FORCE_INLINE_ static void construct(const m_type &p_value, void *p_ptr) { \
+			memnew_placement(p_ptr, m_type(p_value));                              \
+		}                                                                          \
+	};
+
+MAKE_PTRCONSTRUCT(bool);
+MAKE_PTRCONSTRUCT(int64_t);
+MAKE_PTRCONSTRUCT(double);
+MAKE_PTRCONSTRUCT(String);
+MAKE_PTRCONSTRUCT(Vector2);
+MAKE_PTRCONSTRUCT(Vector2i);
+MAKE_PTRCONSTRUCT(Rect2);
+MAKE_PTRCONSTRUCT(Rect2i);
+MAKE_PTRCONSTRUCT(Vector3);
+MAKE_PTRCONSTRUCT(Vector3i);
+MAKE_PTRCONSTRUCT(Transform2D);
+MAKE_PTRCONSTRUCT(Plane);
+MAKE_PTRCONSTRUCT(Quat);
+MAKE_PTRCONSTRUCT(AABB);
+MAKE_PTRCONSTRUCT(Basis);
+MAKE_PTRCONSTRUCT(Transform);
+MAKE_PTRCONSTRUCT(Color);
+MAKE_PTRCONSTRUCT(StringName);
+MAKE_PTRCONSTRUCT(NodePath);
+MAKE_PTRCONSTRUCT(RID);
+
+template <>
+struct PtrConstruct<Object *> {
+	_FORCE_INLINE_ static void construct(Object *p_value, void *p_ptr) {
+		*((Object **)p_ptr) = p_value;
+	}
+};
+
+MAKE_PTRCONSTRUCT(Callable);
+MAKE_PTRCONSTRUCT(Signal);
+MAKE_PTRCONSTRUCT(Dictionary);
+MAKE_PTRCONSTRUCT(Array);
+MAKE_PTRCONSTRUCT(PackedByteArray);
+MAKE_PTRCONSTRUCT(PackedInt32Array);
+MAKE_PTRCONSTRUCT(PackedInt64Array);
+MAKE_PTRCONSTRUCT(PackedFloat32Array);
+MAKE_PTRCONSTRUCT(PackedFloat64Array);
+MAKE_PTRCONSTRUCT(PackedStringArray);
+MAKE_PTRCONSTRUCT(PackedVector2Array);
+MAKE_PTRCONSTRUCT(PackedVector3Array);
+MAKE_PTRCONSTRUCT(PackedColorArray);
+MAKE_PTRCONSTRUCT(Variant);
+
 template <class T, class... P>
 class VariantConstructor {
 	template <size_t... Is>
@@ -59,7 +113,7 @@ class VariantConstructor {
 
 	template <size_t... Is>
 	static _FORCE_INLINE_ void ptr_construct_helper(void *base, const void **p_args, IndexSequence<Is...>) {
-		PtrToArg<T>::encode(T(PtrToArg<P>::convert(p_args[Is])...), base);
+		PtrConstruct<T>::construct(T(PtrToArg<P>::convert(p_args[Is])...), base);
 	}
 
 public:
@@ -69,9 +123,9 @@ public:
 		construct_helper(*VariantGetInternalPtr<T>::get_ptr(&r_ret), p_args, r_error, BuildIndexSequence<sizeof...(P)>{});
 	}
 
-	static void validated_construct(Variant &r_ret, const Variant **p_args) {
-		VariantTypeChanger<T>::change(&r_ret);
-		validated_construct_helper(*VariantGetInternalPtr<T>::get_ptr(&r_ret), p_args, BuildIndexSequence<sizeof...(P)>{});
+	static void validated_construct(Variant *r_ret, const Variant **p_args) {
+		VariantTypeChanger<T>::change(r_ret);
+		validated_construct_helper(*VariantGetInternalPtr<T>::get_ptr(r_ret), p_args, BuildIndexSequence<sizeof...(P)>{});
 	}
 	static void ptr_construct(void *base, const void **p_args) {
 		ptr_construct_helper(base, p_args, BuildIndexSequence<sizeof...(P)>{});
@@ -107,12 +161,12 @@ public:
 		}
 	}
 
-	static void validated_construct(Variant &r_ret, const Variant **p_args) {
-		VariantInternal::clear(&r_ret);
-		VariantInternal::object_assign(&r_ret, p_args[0]);
+	static void validated_construct(Variant *r_ret, const Variant **p_args) {
+		VariantInternal::clear(r_ret);
+		VariantInternal::object_assign(r_ret, p_args[0]);
 	}
 	static void ptr_construct(void *base, const void **p_args) {
-		PtrToArg<Object *>::encode(PtrToArg<Object *>::convert(p_args[0]), base);
+		PtrConstruct<Object *>::construct(PtrToArg<Object *>::convert(p_args[0]), base);
 	}
 
 	static int get_argument_count() {
@@ -141,12 +195,12 @@ public:
 		VariantInternal::object_assign_null(&r_ret);
 	}
 
-	static void validated_construct(Variant &r_ret, const Variant **p_args) {
-		VariantInternal::clear(&r_ret);
-		VariantInternal::object_assign_null(&r_ret);
+	static void validated_construct(Variant *r_ret, const Variant **p_args) {
+		VariantInternal::clear(r_ret);
+		VariantInternal::object_assign_null(r_ret);
 	}
 	static void ptr_construct(void *base, const void **p_args) {
-		PtrToArg<Object *>::encode(nullptr, base);
+		PtrConstruct<Object *>::construct(nullptr, base);
 	}
 
 	static int get_argument_count() {
@@ -194,12 +248,12 @@ public:
 		*VariantGetInternalPtr<Callable>::get_ptr(&r_ret) = Callable(object_id, method);
 	}
 
-	static void validated_construct(Variant &r_ret, const Variant **p_args) {
-		VariantTypeChanger<Callable>::change(&r_ret);
-		*VariantGetInternalPtr<Callable>::get_ptr(&r_ret) = Callable(VariantInternal::get_object_id(p_args[0]), *VariantGetInternalPtr<StringName>::get_ptr(p_args[1]));
+	static void validated_construct(Variant *r_ret, const Variant **p_args) {
+		VariantTypeChanger<Callable>::change(r_ret);
+		*VariantGetInternalPtr<Callable>::get_ptr(r_ret) = Callable(VariantInternal::get_object_id(p_args[0]), *VariantGetInternalPtr<StringName>::get_ptr(p_args[1]));
 	}
 	static void ptr_construct(void *base, const void **p_args) {
-		PtrToArg<Callable>::encode(Callable(PtrToArg<Object *>::convert(p_args[0]), PtrToArg<StringName>::convert(p_args[1])), base);
+		PtrConstruct<Callable>::construct(Callable(PtrToArg<Object *>::convert(p_args[0]), PtrToArg<StringName>::convert(p_args[1])), base);
 	}
 
 	static int get_argument_count() {
@@ -251,12 +305,12 @@ public:
 		*VariantGetInternalPtr<Signal>::get_ptr(&r_ret) = Signal(object_id, method);
 	}
 
-	static void validated_construct(Variant &r_ret, const Variant **p_args) {
-		VariantTypeChanger<Signal>::change(&r_ret);
-		*VariantGetInternalPtr<Signal>::get_ptr(&r_ret) = Signal(VariantInternal::get_object_id(p_args[0]), *VariantGetInternalPtr<StringName>::get_ptr(p_args[1]));
+	static void validated_construct(Variant *r_ret, const Variant **p_args) {
+		VariantTypeChanger<Signal>::change(r_ret);
+		*VariantGetInternalPtr<Signal>::get_ptr(r_ret) = Signal(VariantInternal::get_object_id(p_args[0]), *VariantGetInternalPtr<StringName>::get_ptr(p_args[1]));
 	}
 	static void ptr_construct(void *base, const void **p_args) {
-		PtrToArg<Signal>::encode(Signal(PtrToArg<Object *>::convert(p_args[0]), PtrToArg<StringName>::convert(p_args[1])), base);
+		PtrConstruct<Signal>::construct(Signal(PtrToArg<Object *>::convert(p_args[0]), PtrToArg<StringName>::convert(p_args[1])), base);
 	}
 
 	static int get_argument_count() {
@@ -298,9 +352,9 @@ public:
 		}
 	}
 
-	static void validated_construct(Variant &r_ret, const Variant **p_args) {
-		VariantTypeChanger<Array>::change(&r_ret);
-		Array &dst_arr = *VariantGetInternalPtr<Array>::get_ptr(&r_ret);
+	static void validated_construct(Variant *r_ret, const Variant **p_args) {
+		VariantTypeChanger<Array>::change(r_ret);
+		Array &dst_arr = *VariantGetInternalPtr<Array>::get_ptr(r_ret);
 		const T &src_arr = *VariantGetInternalPtr<T>::get_ptr(p_args[0]);
 
 		int size = src_arr.size();
@@ -319,7 +373,7 @@ public:
 			dst_arr[i] = src_arr[i];
 		}
 
-		PtrToArg<Array>::encode(dst_arr, base);
+		PtrConstruct<Array>::construct(dst_arr, base);
 	}
 
 	static int get_argument_count() {
@@ -357,10 +411,10 @@ public:
 		}
 	}
 
-	static void validated_construct(Variant &r_ret, const Variant **p_args) {
-		VariantTypeChanger<T>::change(&r_ret);
+	static void validated_construct(Variant *r_ret, const Variant **p_args) {
+		VariantTypeChanger<T>::change(r_ret);
 		const Array &src_arr = *VariantGetInternalPtr<Array>::get_ptr(p_args[0]);
-		T &dst_arr = *VariantGetInternalPtr<T>::get_ptr(&r_ret);
+		T &dst_arr = *VariantGetInternalPtr<T>::get_ptr(r_ret);
 
 		int size = src_arr.size();
 		dst_arr.resize(size);
@@ -378,7 +432,7 @@ public:
 			dst_arr.write[i] = src_arr[i];
 		}
 
-		PtrToArg<T>::encode(dst_arr, base);
+		PtrConstruct<T>::construct(dst_arr, base);
 	}
 
 	static int get_argument_count() {
@@ -408,11 +462,11 @@ public:
 		VariantInternal::clear(&r_ret);
 	}
 
-	static void validated_construct(Variant &r_ret, const Variant **p_args) {
-		VariantInternal::clear(&r_ret);
+	static void validated_construct(Variant *r_ret, const Variant **p_args) {
+		VariantInternal::clear(r_ret);
 	}
 	static void ptr_construct(void *base, const void **p_args) {
-		PtrToArg<Variant>::encode(Variant(), base);
+		PtrConstruct<Variant>::construct(Variant(), base);
 	}
 
 	static int get_argument_count() {
@@ -436,11 +490,11 @@ public:
 		r_error.error = Callable::CallError::CALL_OK;
 	}
 
-	static void validated_construct(Variant &r_ret, const Variant **p_args) {
-		VariantTypeChanger<T>::change_and_reset(&r_ret);
+	static void validated_construct(Variant *r_ret, const Variant **p_args) {
+		VariantTypeChanger<T>::change_and_reset(r_ret);
 	}
 	static void ptr_construct(void *base, const void **p_args) {
-		PtrToArg<T>::encode(T(), base);
+		PtrConstruct<T>::construct(T(), base);
 	}
 
 	static int get_argument_count() {
@@ -463,8 +517,8 @@ public:
 		r_error.error = Callable::CallError::CALL_OK;
 	}
 
-	static void validated_construct(Variant &r_ret, const Variant **p_args) {
-		VariantInternal::clear(&r_ret);
+	static void validated_construct(Variant *r_ret, const Variant **p_args) {
+		VariantInternal::clear(r_ret);
 	}
 	static void ptr_construct(void *base, const void **p_args) {
 		ERR_FAIL_MSG("can't ptrcall nil constructor");
@@ -491,12 +545,12 @@ public:
 		r_error.error = Callable::CallError::CALL_OK;
 	}
 
-	static void validated_construct(Variant &r_ret, const Variant **p_args) {
-		VariantInternal::clear(&r_ret);
-		VariantInternal::object_assign_null(&r_ret);
+	static void validated_construct(Variant *r_ret, const Variant **p_args) {
+		VariantInternal::clear(r_ret);
+		VariantInternal::object_assign_null(r_ret);
 	}
 	static void ptr_construct(void *base, const void **p_args) {
-		PtrToArg<Object *>::encode(nullptr, base);
+		PtrConstruct<Object *>::construct(nullptr, base);
 	}
 
 	static int get_argument_count() {
@@ -634,6 +688,8 @@ void Variant::_register_variant_constructors() {
 	add_constructor<VariantConstructor<Color, Color, double>>(sarray("from", "alpha"));
 	add_constructor<VariantConstructor<Color, double, double, double>>(sarray("r", "g", "b"));
 	add_constructor<VariantConstructor<Color, double, double, double, double>>(sarray("r", "g", "b", "a"));
+	add_constructor<VariantConstructor<Color, String>>(sarray("code"));
+	add_constructor<VariantConstructor<Color, String, double>>(sarray("code", "alpha"));
 
 	add_constructor<VariantConstructNoArgs<StringName>>(sarray());
 	add_constructor<VariantConstructor<StringName, StringName>>(sarray("from"));
@@ -717,6 +773,7 @@ void Variant::_unregister_variant_constructors() {
 }
 
 void Variant::construct(Variant::Type p_type, Variant &base, const Variant **p_args, int p_argcount, Callable::CallError &r_error) {
+	ERR_FAIL_INDEX(p_type, Variant::VARIANT_MAX);
 	uint32_t s = construct_data[p_type].size();
 	for (uint32_t i = 0; i < s; i++) {
 		int argc = construct_data[p_type][i].argument_count;
@@ -777,18 +834,23 @@ String Variant::get_constructor_argument_name(Variant::Type p_type, int p_constr
 	return construct_data[p_type][p_constructor].arg_names[p_argument];
 }
 
-void VariantInternal::object_assign(Variant *v, const Variant *o) {
-	if (o->_get_obj().obj && o->_get_obj().id.is_reference()) {
-		Reference *reference = static_cast<Reference *>(o->_get_obj().obj);
-		if (!reference->reference()) {
-			v->_get_obj().obj = nullptr;
-			v->_get_obj().id = ObjectID();
-			return;
+void VariantInternal::object_assign(Variant *v, const Object *o) {
+	if (o) {
+		if (o->is_reference()) {
+			Reference *reference = const_cast<Reference *>(static_cast<const Reference *>(o));
+			if (!reference->init_ref()) {
+				v->_get_obj().obj = nullptr;
+				v->_get_obj().id = ObjectID();
+				return;
+			}
 		}
-	}
 
-	v->_get_obj().obj = const_cast<Object *>(o->_get_obj().obj);
-	v->_get_obj().id = o->_get_obj().id;
+		v->_get_obj().obj = const_cast<Object *>(o);
+		v->_get_obj().id = o->get_instance_id();
+	} else {
+		v->_get_obj().obj = nullptr;
+		v->_get_obj().id = ObjectID();
+	}
 }
 
 void Variant::get_constructor_list(Type p_type, List<MethodInfo> *r_list) {

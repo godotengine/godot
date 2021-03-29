@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -38,6 +38,7 @@
 #include "gdscript_analyzer.h"
 #include "gdscript_cache.h"
 #include "gdscript_tokenizer.h"
+#include "gdscript_utility_functions.h"
 
 #ifdef TESTS_ENABLED
 #include "tests/test_gdscript.h"
@@ -84,7 +85,7 @@ public:
 			return;
 		}
 
-		// TODO: Readd compiled GDScript on export.
+		// TODO: Re-add compiled GDScript on export.
 		return;
 	}
 };
@@ -112,7 +113,6 @@ static void _editor_init() {
 
 void register_gdscript_types() {
 	ClassDB::register_class<GDScript>();
-	ClassDB::register_virtual_class<GDScriptFunctionState>();
 
 	script_language_gd = memnew(GDScriptLanguage);
 	ScriptServer::register_language(script_language_gd);
@@ -131,6 +131,8 @@ void register_gdscript_types() {
 	gdscript_translation_parser_plugin.instance();
 	EditorTranslationParser::get_singleton()->add_parser(gdscript_translation_parser_plugin, EditorTranslationParser::STANDARD);
 #endif // TOOLS_ENABLED
+
+	GDScriptUtilityFunctions::register_functions();
 }
 
 void unregister_gdscript_types() {
@@ -157,6 +159,7 @@ void unregister_gdscript_types() {
 
 	GDScriptParser::cleanup();
 	GDScriptAnalyzer::cleanup();
+	GDScriptUtilityFunctions::unregister_functions();
 }
 
 #ifdef TESTS_ENABLED

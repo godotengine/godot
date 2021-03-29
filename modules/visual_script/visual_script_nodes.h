@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -99,6 +99,8 @@ public:
 
 	virtual VisualScriptNodeInstance *instance(VisualScriptInstance *p_instance) override;
 
+	virtual void reset_state() override;
+
 	VisualScriptFunction();
 };
 
@@ -134,6 +136,8 @@ protected:
 	static void _bind_methods();
 
 public:
+	virtual void reset_state() override;
+
 	virtual bool is_output_port_editable() const;
 	virtual bool is_output_port_name_editable() const;
 	virtual bool is_output_port_type_editable() const;

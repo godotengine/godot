@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -43,7 +43,6 @@
 #include "dir_access_jandroid.h"
 #include "display_server_android.h"
 #include "file_access_android.h"
-#include "file_access_jandroid.h"
 #include "jni_utils.h"
 #include "main/main.h"
 #include "net_socket_android.h"
@@ -88,15 +87,11 @@ JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_initialize(JNIEnv *en
 	godot_java = new GodotJavaWrapper(env, activity, godot_instance);
 	godot_io_java = new GodotIOJavaWrapper(env, godot_java->get_member_object("io", "Lorg/godotengine/godot/GodotIO;", env));
 
-	ThreadAndroid::make_default(jvm);
-#ifdef USE_JAVA_FILE_ACCESS
-	FileAccessJAndroid::setup(godot_io_java->get_instance());
-#else
+	init_thread_jandroid(jvm, env);
 
 	jobject amgr = env->NewGlobalRef(p_asset_manager);
 
 	FileAccessAndroid::asset_manager = AAssetManager_fromJava(env, amgr);
-#endif
 
 	DirAccessJAndroid::setup(godot_io_java->get_instance());
 	AudioDriverAndroid::setup(godot_io_java->get_instance());
@@ -124,7 +119,7 @@ JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_ondestroy(JNIEnv *env
 }
 
 JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_setup(JNIEnv *env, jclass clazz, jobjectArray p_cmdline) {
-	ThreadAndroid::setup_thread();
+	setup_android_thread();
 
 	const char **cmdline = nullptr;
 	jstring *j_cmdline = nullptr;
@@ -132,9 +127,11 @@ JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_setup(JNIEnv *env, jc
 	if (p_cmdline) {
 		cmdlen = env->GetArrayLength(p_cmdline);
 		if (cmdlen) {
-			cmdline = (const char **)malloc((cmdlen + 1) * sizeof(const char *));
+			cmdline = (const char **)memalloc((cmdlen + 1) * sizeof(const char *));
+			ERR_FAIL_NULL_MSG(cmdline, "Out of memory.");
 			cmdline[cmdlen] = nullptr;
-			j_cmdline = (jstring *)malloc(cmdlen * sizeof(jstring));
+			j_cmdline = (jstring *)memalloc(cmdlen * sizeof(jstring));
+			ERR_FAIL_NULL_MSG(j_cmdline, "Out of memory.");
 
 			for (int i = 0; i < cmdlen; i++) {
 				jstring string = (jstring)env->GetObjectArrayElement(p_cmdline, i);
@@ -152,13 +149,13 @@ JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_setup(JNIEnv *env, jc
 			for (int i = 0; i < cmdlen; ++i) {
 				env->ReleaseStringUTFChars(j_cmdline[i], cmdline[i]);
 			}
-			free(j_cmdline);
+			memfree(j_cmdline);
 		}
-		free(cmdline);
+		memfree(cmdline);
 	}
 
 	if (err != OK) {
-		return; //should exit instead and print the error
+		return; // should exit instead and print the error
 	}
 
 	java_class_wrapper = memnew(JavaClassWrapper(godot_java->get_activity()));
@@ -211,7 +208,7 @@ JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_step(JNIEnv *env, jcl
 		return;
 
 	if (step == 0) {
-		// Since Godot is initialized on the UI thread, _main_thread_id was set to that thread's id,
+		// Since Godot is initialized on the UI thread, main_thread_id was set to that thread's id,
 		// but for Godot purposes, the main thread is the one running the game loop
 		Main::setup2(Thread::get_caller_id());
 		++step;
@@ -220,9 +217,10 @@ JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_step(JNIEnv *env, jcl
 
 	if (step == 1) {
 		if (!Main::start()) {
-			return; //should exit instead and print the error
+			return; // should exit instead and print the error
 		}
 
+		godot_java->on_godot_setup_completed(env);
 		os_android->main_loop_begin();
 		godot_java->on_godot_main_loop_started(env);
 		++step;
@@ -251,9 +249,8 @@ void touch_preprocessing(JNIEnv *env, jclass clazz, jint input_device, jint ev, 
 		tp.id = (int)p[0];
 		points.push_back(tp);
 	}
-
-	if ((input_device & AINPUT_SOURCE_MOUSE) == AINPUT_SOURCE_MOUSE) {
-		DisplayServerAndroid::get_singleton()->process_mouse_event(ev, buttons_mask, points[0].pos, vertical_factor, horizontal_factor);
+	if ((input_device & AINPUT_SOURCE_MOUSE) == AINPUT_SOURCE_MOUSE || (input_device & AINPUT_SOURCE_MOUSE_RELATIVE) == AINPUT_SOURCE_MOUSE_RELATIVE) {
+		DisplayServerAndroid::get_singleton()->process_mouse_event(input_device, ev, buttons_mask, points[0].pos, vertical_factor, horizontal_factor);
 	} else {
 		DisplayServerAndroid::get_singleton()->process_touch(ev, pointer, points);
 	}
@@ -388,7 +385,7 @@ JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_focusout(JNIEnv *env,
 }
 
 JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_audio(JNIEnv *env, jclass clazz) {
-	ThreadAndroid::setup_thread();
+	setup_android_thread();
 	AudioDriverAndroid::thread_func(env);
 }
 

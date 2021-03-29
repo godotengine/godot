@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -146,6 +146,8 @@ void Step3DSW::step(Space3DSW *p_space, real_t p_delta, int p_iterations) {
 
 	const SelfList<Body3DSW>::List *body_list = &p_space->get_active_body_list();
 
+	const SelfList<SoftBody3DSW>::List *soft_body_list = &p_space->get_active_soft_body_list();
+
 	/* INTEGRATE FORCES */
 
 	uint64_t profile_begtime = OS::get_singleton()->get_ticks_usec();
@@ -157,6 +159,15 @@ void Step3DSW::step(Space3DSW *p_space, real_t p_delta, int p_iterations) {
 	while (b) {
 		b->self()->integrate_forces(p_delta);
 		b = b->next();
+		active_count++;
+	}
+
+	/* UPDATE SOFT BODY MOTION */
+
+	const SelfList<SoftBody3DSW> *sb = soft_body_list->first();
+	while (sb) {
+		sb->self()->predict_motion(p_delta);
+		sb = sb->next();
 		active_count++;
 	}
 
@@ -212,6 +223,20 @@ void Step3DSW::step(Space3DSW *p_space, real_t p_delta, int p_iterations) {
 			constraint_island_list = c;
 		}
 		p_space->area_remove_from_moved_list((SelfList<Area3DSW> *)aml.first()); //faster to remove here
+	}
+
+	sb = soft_body_list->first();
+	while (sb) {
+		for (const Set<Constraint3DSW *>::Element *E = sb->self()->get_constraints().front(); E; E = E->next()) {
+			Constraint3DSW *c = E->get();
+			if (c->get_island_step() == _step)
+				continue;
+			c->set_island_step(_step);
+			c->set_island_next(NULL);
+			c->set_island_list_next(constraint_island_list);
+			constraint_island_list = c;
+		}
+		sb = sb->next();
 	}
 
 	{ //profile
@@ -270,6 +295,14 @@ void Step3DSW::step(Space3DSW *p_space, real_t p_delta, int p_iterations) {
 			_check_suspend(bi, p_delta);
 			bi = bi->get_island_list_next();
 		}
+	}
+
+	/* UPDATE SOFT BODY CONSTRAINTS */
+
+	sb = soft_body_list->first();
+	while (sb) {
+		sb->self()->solve_constraints(p_delta);
+		sb = sb->next();
 	}
 
 	{ //profile

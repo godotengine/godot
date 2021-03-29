@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -32,6 +32,8 @@
 #define ERROR_MACROS_H
 
 #include "core/typedefs.h"
+
+#include "core/templates/safe_refcount.h"
 
 class String;
 
@@ -577,10 +579,10 @@ void _err_print_index_error(const char *p_function, const char *p_file, int p_li
  */
 #define WARN_DEPRECATED                                                                                                                                    \
 	if (true) {                                                                                                                                            \
-		static volatile bool warning_shown = false;                                                                                                        \
-		if (!warning_shown) {                                                                                                                              \
+		static SafeFlag warning_shown;                                                                                                                     \
+		if (!warning_shown.is_set()) {                                                                                                                     \
 			_err_print_error(FUNCTION_STR, __FILE__, __LINE__, "This method has been deprecated and will be removed in the future.", ERR_HANDLER_WARNING); \
-			warning_shown = true;                                                                                                                          \
+			warning_shown.set();                                                                                                                           \
 		}                                                                                                                                                  \
 	} else                                                                                                                                                 \
 		((void)0)
@@ -590,10 +592,10 @@ void _err_print_index_error(const char *p_function, const char *p_file, int p_li
  */
 #define WARN_DEPRECATED_MSG(m_msg)                                                                                                                                           \
 	if (true) {                                                                                                                                                              \
-		static volatile bool warning_shown = false;                                                                                                                          \
-		if (!warning_shown) {                                                                                                                                                \
+		static SafeFlag warning_shown;                                                                                                                                       \
+		if (!warning_shown.is_set()) {                                                                                                                                       \
 			_err_print_error(FUNCTION_STR, __FILE__, __LINE__, "This method has been deprecated and will be removed in the future.", DEBUG_STR(m_msg), ERR_HANDLER_WARNING); \
-			warning_shown = true;                                                                                                                                            \
+			warning_shown.set();                                                                                                                                             \
 		}                                                                                                                                                                    \
 	} else                                                                                                                                                                   \
 		((void)0)

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -33,48 +33,54 @@
 
 #include "scene/gui/container.h"
 #include "scene/gui/popup.h"
+#include "scene/resources/text_line.h"
+
 class TabContainer : public Container {
 	GDCLASS(TabContainer, Container);
 
 public:
 	enum TabAlign {
-
 		ALIGN_LEFT,
 		ALIGN_CENTER,
 		ALIGN_RIGHT
 	};
 
 private:
-	int first_tab_cache;
-	int tabs_ofs_cache;
-	int last_tab_cache;
-	int current;
-	int previous;
-	bool tabs_visible;
-	bool buttons_visible_cache;
-	bool menu_hovered;
-	int highlight_arrow;
-	TabAlign align;
+	int first_tab_cache = 0;
+	int tabs_ofs_cache = 0;
+	int last_tab_cache = 0;
+	int current = 0;
+	int previous = 0;
+	bool tabs_visible = true;
+	bool all_tabs_in_front = false;
+	bool buttons_visible_cache = false;
+	bool menu_hovered = false;
+	int highlight_arrow = -1;
+	TabAlign align = ALIGN_CENTER;
 	Control *_get_tab(int p_idx) const;
 	int _get_top_margin() const;
 	mutable ObjectID popup_obj_id;
-	bool drag_to_rearrange_enabled;
-	bool use_hidden_tabs_for_min_size;
-	int tabs_rearrange_group;
+	bool drag_to_rearrange_enabled = false;
+	bool use_hidden_tabs_for_min_size = false;
+	int tabs_rearrange_group = -1;
 
+	Vector<Ref<TextLine>> text_buf;
 	Vector<Control *> _get_tabs() const;
 	int _get_tab_width(int p_index) const;
+	bool _theme_changing = false;
 	void _on_theme_changed();
 	void _repaint();
 	void _on_mouse_exited();
 	void _update_current_tab();
 	void _draw_tab(Ref<StyleBox> &p_tab_style, Color &p_font_color, int p_index, float p_x);
+	void _refresh_texts();
 
 protected:
 	void _child_renamed_callback();
 	void _gui_input(const Ref<InputEvent> &p_event);
 	void _notification(int p_what);
 	virtual void add_child_notify(Node *p_child) override;
+	virtual void move_child_notify(Node *p_child) override;
 	virtual void remove_child_notify(Node *p_child) override;
 
 	Variant get_drag_data(const Point2 &p_point) override;
@@ -90,6 +96,9 @@ public:
 
 	void set_tabs_visible(bool p_visible);
 	bool are_tabs_visible() const;
+
+	void set_all_tabs_in_front(bool p_is_front);
+	bool is_all_tabs_in_front() const;
 
 	void set_tab_title(int p_tab, const String &p_title);
 	String get_tab_title(int p_tab) const;

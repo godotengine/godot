@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -47,7 +47,7 @@
 #import <dlfcn.h>
 
 #if defined(VULKAN_ENABLED)
-#include "servers/rendering/rasterizer_rd/rasterizer_rd.h"
+#include "servers/rendering/renderer_rd/renderer_compositor_rd.h"
 #import <QuartzCore/CAMetalLayer.h>
 #include <vulkan/vulkan_metal.h>
 #endif
@@ -144,12 +144,10 @@ void OSIPhone::deinitialize_modules() {
 }
 
 void OSIPhone::set_main_loop(MainLoop *p_main_loop) {
-	godot_ios_plugins_initialize();
-
 	main_loop = p_main_loop;
 
 	if (main_loop) {
-		main_loop->init();
+		main_loop->initialize();
 	}
 }
 
@@ -159,7 +157,7 @@ MainLoop *OSIPhone::get_main_loop() const {
 
 void OSIPhone::delete_main_loop() {
 	if (main_loop) {
-		main_loop->finish();
+		main_loop->finalize();
 		memdelete(main_loop);
 	};
 
@@ -179,6 +177,8 @@ bool OSIPhone::iterate() {
 }
 
 void OSIPhone::start() {
+	godot_ios_plugins_initialize();
+
 	Main::start();
 
 	if (joypad_iphone) {

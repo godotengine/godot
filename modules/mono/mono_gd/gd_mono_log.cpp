@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -160,13 +160,13 @@ void GDMonoLog::initialize() {
 		OS::Date date_now = OS::get_singleton()->get_date();
 		OS::Time time_now = OS::get_singleton()->get_time();
 
-		String log_file_name = str_format("%d_%02d_%02d %02d.%02d.%02d",
+		String log_file_name = str_format("%04d-%02d-%02d_%02d.%02d.%02d",
 				date_now.year, date_now.month, date_now.day,
 				time_now.hour, time_now.min, time_now.sec);
 
-		log_file_name += str_format(" (%d)", OS::get_singleton()->get_process_id());
+		log_file_name += str_format("_%d", OS::get_singleton()->get_process_id());
 
-		log_file_name += ".txt";
+		log_file_name += ".log";
 
 		log_file_path = logs_dir.plus_file(log_file_name);
 
@@ -189,8 +189,6 @@ void GDMonoLog::initialize() {
 
 GDMonoLog::GDMonoLog() {
 	singleton = this;
-
-	log_level_id = -1;
 }
 
 GDMonoLog::~GDMonoLog() {

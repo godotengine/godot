@@ -11,7 +11,6 @@ def configure(env):
     if platform not in supported_platforms:
         raise RuntimeError("This module does not currently support building for this platform")
 
-    env.use_ptrcall = True
     env.add_module_version_string("mono")
 
     from SCons.Script import BoolVariable, PathVariable, Variables, Help
@@ -24,6 +23,14 @@ def configure(env):
         PathVariable(
             "mono_prefix",
             "Path to the Mono installation directory for the target platform and architecture",
+            "",
+            PathVariable.PathAccept,
+        )
+    )
+    envvars.Add(
+        PathVariable(
+            "mono_bcl",
+            "Path to a custom Mono BCL (Base Class Library) directory for the target platform",
             "",
             PathVariable.PathAccept,
         )

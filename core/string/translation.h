@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -110,7 +110,9 @@ public:
 	static String standardize_locale(const String &p_locale);
 	static String get_language_code(const String &p_locale);
 
+	String get_tool_locale();
 	void set_tool_translation(const Ref<Translation> &p_translation);
+	Ref<Translation> get_tool_translation() const;
 	StringName tool_translate(const StringName &p_message, const StringName &p_context = "") const;
 	StringName tool_translate_plural(const StringName &p_message, const StringName &p_message_plural, int p_n, const StringName &p_context = "") const;
 	void set_doc_translation(const Ref<Translation> &p_translation);

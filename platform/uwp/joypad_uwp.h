@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -58,21 +58,12 @@ private:
 	struct ControllerDevice {
 		Windows::Gaming::Input::IGameController ^ controller_reference;
 
-		int id;
-		bool connected;
-		ControllerType type;
-		float ff_timestamp;
-		float ff_end_timestamp;
-		bool vibrating;
-
-		ControllerDevice() {
-			id = -1;
-			connected = false;
-			type = ControllerType::GAMEPAD_CONTROLLER;
-			ff_timestamp = 0.0f;
-			ff_end_timestamp = 0.0f;
-			vibrating = false;
-		}
+		int id = -1;
+		bool connected = false;
+		ControllerType type = ControllerType::GAMEPAD_CONTROLLER;
+		float ff_timestamp = 0;
+		float ff_end_timestamp = 0;
+		bool vibrating = false;
 	};
 
 	ControllerDevice controllers[MAX_CONTROLLERS];
@@ -82,7 +73,7 @@ private:
 	void OnGamepadAdded(Platform::Object ^ sender, Windows::Gaming::Input::Gamepad ^ value);
 	void OnGamepadRemoved(Platform::Object ^ sender, Windows::Gaming::Input::Gamepad ^ value);
 
-	InputDefault::JoyAxis axis_correct(double p_val, bool p_negate = false, bool p_trigger = false) const;
+	InputDefault::JoyAxisValue axis_correct(double p_val, bool p_negate = false, bool p_trigger = false) const;
 	void joypad_vibration_start(int p_device, float p_weak_magnitude, float p_strong_magnitude, float p_duration, uint64_t p_timestamp);
 	void joypad_vibration_stop(int p_device, uint64_t p_timestamp);
 };

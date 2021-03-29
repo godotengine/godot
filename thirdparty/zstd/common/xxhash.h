@@ -55,7 +55,7 @@ extern "C" {
 /* ****************************
 *  Definitions
 ******************************/
-#include <stddef.h>   /* size_t */
+#include "zstd_deps.h"
 typedef enum { XXH_OK=0, XXH_ERROR } XXH_errorcode;
 
 

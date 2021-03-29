@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -128,7 +128,7 @@ private:
 
 	struct ObjData {
 		ObjectID id;
-		Object *obj;
+		Object *obj = nullptr;
 	};
 
 	/* array helpers */
@@ -356,7 +356,7 @@ public:
 	operator Vector<Vector2>() const;
 
 	// some core type enums to convert to
-	operator Margin() const;
+	operator Side() const;
 	operator Orientation() const;
 
 	operator IP_Address() const;
@@ -370,7 +370,6 @@ public:
 #ifdef NEED_LONG_INT
 	Variant(signed long p_long); // real one
 	Variant(unsigned long p_long);
-//Variant(long unsigned int p_long);
 #endif
 	Variant(signed short p_short); // real one
 	Variant(unsigned short p_short);
@@ -426,7 +425,6 @@ public:
 
 	// If this changes the table in variant_op must be updated
 	enum Operator {
-
 		//comparison
 		OP_EQUAL,
 		OP_NOT_EQUAL,
@@ -472,10 +470,8 @@ public:
 	static Variant::Type get_operator_return_type(Operator p_operator, Type p_type_a, Type p_type_b);
 	typedef void (*ValidatedOperatorEvaluator)(const Variant *left, const Variant *right, Variant *r_ret);
 	static ValidatedOperatorEvaluator get_validated_operator_evaluator(Operator p_operator, Type p_type_a, Type p_type_b);
-#ifdef PTRCALL_ENABLED
 	typedef void (*PTROperatorEvaluator)(const void *left, const void *right, void *r_ret);
 	static PTROperatorEvaluator get_ptr_operator_evaluator(Operator p_operator, Type p_type_a, Type p_type_b);
-#endif
 
 	void zero();
 	Variant duplicate(bool deep = false) const;
@@ -499,11 +495,15 @@ public:
 	static bool has_builtin_method_return_value(Variant::Type p_type, const StringName &p_method);
 	static Variant::Type get_builtin_method_return_type(Variant::Type p_type, const StringName &p_method);
 	static bool is_builtin_method_const(Variant::Type p_type, const StringName &p_method);
+	static bool is_builtin_method_static(Variant::Type p_type, const StringName &p_method);
 	static bool is_builtin_method_vararg(Variant::Type p_type, const StringName &p_method);
 	static void get_builtin_method_list(Variant::Type p_type, List<StringName> *p_list);
+	static int get_builtin_method_count(Variant::Type p_type);
 
 	void call(const StringName &p_method, const Variant **p_args, int p_argcount, Variant &r_ret, Callable::CallError &r_error);
 	Variant call(const StringName &p_method, const Variant &p_arg1 = Variant(), const Variant &p_arg2 = Variant(), const Variant &p_arg3 = Variant(), const Variant &p_arg4 = Variant(), const Variant &p_arg5 = Variant());
+
+	static void call_static(Variant::Type p_type, const StringName &p_method, const Variant **p_args, int p_argcount, Variant &r_ret, Callable::CallError &r_error);
 
 	static String get_call_error_text(const StringName &p_method, const Variant **p_argptrs, int p_argcount, const Callable::CallError &ce);
 	static String get_call_error_text(Object *p_base, const StringName &p_method, const Variant **p_argptrs, int p_argcount, const Callable::CallError &ce);
@@ -515,7 +515,7 @@ public:
 
 	/* Constructors */
 
-	typedef void (*ValidatedConstructor)(Variant &r_base, const Variant **p_args);
+	typedef void (*ValidatedConstructor)(Variant *r_base, const Variant **p_args);
 	typedef void (*PTRConstructor)(void *base, const void **p_args);
 
 	static int get_constructor_count(Variant::Type p_type);
@@ -539,6 +539,7 @@ public:
 	static bool has_member(Variant::Type p_type, const StringName &p_member);
 	static Variant::Type get_member_type(Variant::Type p_type, const StringName &p_member);
 	static void get_member_list(Type p_type, List<StringName> *r_members);
+	static int get_member_count(Type p_type);
 
 	static ValidatedSetter get_member_validated_setter(Variant::Type p_type, const StringName &p_member);
 	static ValidatedGetter get_member_validated_getter(Variant::Type p_type, const StringName &p_member);
@@ -554,8 +555,8 @@ public:
 	static bool has_indexing(Variant::Type p_type);
 	static Variant::Type get_indexed_element_type(Variant::Type p_type);
 
-	typedef void (*ValidatedIndexedSetter)(Variant *base, int64_t index, const Variant *value, bool &oob);
-	typedef void (*ValidatedIndexedGetter)(const Variant *base, int64_t index, Variant *value, bool &oob);
+	typedef void (*ValidatedIndexedSetter)(Variant *base, int64_t index, const Variant *value, bool *oob);
+	typedef void (*ValidatedIndexedGetter)(const Variant *base, int64_t index, Variant *value, bool *oob);
 
 	static ValidatedIndexedSetter get_member_validated_indexed_setter(Variant::Type p_type);
 	static ValidatedIndexedGetter get_member_validated_indexed_getter(Variant::Type p_type);
@@ -575,9 +576,9 @@ public:
 
 	static bool is_keyed(Variant::Type p_type);
 
-	typedef void (*ValidatedKeyedSetter)(Variant *base, const Variant *key, const Variant *value, bool &valid);
-	typedef void (*ValidatedKeyedGetter)(const Variant *base, const Variant *key, Variant *value, bool &valid);
-	typedef bool (*ValidatedKeyedChecker)(const Variant *base, const Variant *key, bool &valid);
+	typedef void (*ValidatedKeyedSetter)(Variant *base, const Variant *key, const Variant *value, bool *valid);
+	typedef void (*ValidatedKeyedGetter)(const Variant *base, const Variant *key, Variant *value, bool *valid);
+	typedef bool (*ValidatedKeyedChecker)(const Variant *base, const Variant *key, bool *valid);
 
 	static ValidatedKeyedSetter get_member_validated_keyed_setter(Variant::Type p_type);
 	static ValidatedKeyedGetter get_member_validated_keyed_getter(Variant::Type p_type);
@@ -632,6 +633,7 @@ public:
 	static bool is_utility_function_vararg(const StringName &p_name);
 
 	static void get_utility_function_list(List<StringName> *r_functions);
+	static int get_utility_function_count();
 
 	//argsVariant call()
 
@@ -646,6 +648,7 @@ public:
 
 	void static_assign(const Variant &p_variant);
 	static void get_constants_for_type(Variant::Type p_type, List<StringName> *p_constants);
+	static int get_constants_count_for_type(Variant::Type p_type);
 	static bool has_constant(Variant::Type p_type, const StringName &p_value);
 	static Variant get_constant_value(Variant::Type p_type, const StringName &p_value, bool *r_valid = nullptr);
 

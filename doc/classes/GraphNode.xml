@@ -6,7 +6,7 @@
 	<description>
 		A GraphNode is a container. Each GraphNode can have several input and output slots, sometimes referred to as ports, allowing connections between GraphNodes. To add a slot to GraphNode, add any [Control]-derived child node to it.
 		After adding at least one child to GraphNode new sections will be automatically created in the Inspector called 'Slot'. When 'Slot' is expanded you will see list with index number for each slot. You can click on each of them to expand further.
-		In the Inspector you can enable (show) or disable (hide) slots. By default all slots are disabled so you may not see any slots on your GraphNode initially. You can assign a type to each slot. Only slots of the same type will be able to connect to each other. You can also assign colors to slots. A tuple of input and output slots is defined for each GUI element included in the GraphNode. Input connections are on the left and output connections are on the right side of GraphNode. Only enabled slots are counted as connections.
+		In the Inspector you can enable (show) or disable (hide) slots. By default, all slots are disabled so you may not see any slots on your GraphNode initially. You can assign a type to each slot. Only slots of the same type will be able to connect to each other. You can also assign colors to slots. A tuple of input and output slots is defined for each GUI element included in the GraphNode. Input connections are on the left and output connections are on the right side of GraphNode. Only enabled slots are counted as connections.
 	</description>
 	<tutorials>
 	</tutorials>
@@ -16,6 +16,13 @@
 			</return>
 			<description>
 				Disables all input and output slots of the GraphNode.
+			</description>
+		</method>
+		<method name="clear_opentype_features">
+			<return type="void">
+			</return>
+			<description>
+				Removes all OpenType features.
 			</description>
 		</method>
 		<method name="clear_slot">
@@ -95,6 +102,15 @@
 				Returns the type of the output connection [code]idx[/code].
 			</description>
 		</method>
+		<method name="get_opentype_feature" qualifiers="const">
+			<return type="int">
+			</return>
+			<argument index="0" name="tag" type="String">
+			</argument>
+			<description>
+				Returns OpenType feature [code]tag[/code].
+			</description>
+		</method>
 		<method name="get_slot_color_left" qualifiers="const">
 			<return type="Color">
 			</return>
@@ -149,6 +165,17 @@
 				Returns [code]true[/code] if right (output) slot [code]idx[/code] is enabled, [code]false[/code] otherwise.
 			</description>
 		</method>
+		<method name="set_opentype_feature">
+			<return type="void">
+			</return>
+			<argument index="0" name="tag" type="String">
+			</argument>
+			<argument index="1" name="value" type="int">
+			</argument>
+			<description>
+				Sets OpenType feature [code]tag[/code]. More info: [url=https://docs.microsoft.com/en-us/typography/opentype/spec/featuretags]OpenType feature tags[/url].
+			</description>
+		</method>
 		<method name="set_slot">
 			<return type="void">
 			</return>
@@ -184,13 +211,16 @@
 		<member name="comment" type="bool" setter="set_comment" getter="is_comment" default="false">
 			If [code]true[/code], the GraphNode is a comment node.
 		</member>
-		<member name="mouse_filter" type="int" setter="set_mouse_filter" getter="get_mouse_filter" override="true" enum="Control.MouseFilter" default="0" />
-		<member name="offset" type="Vector2" setter="set_offset" getter="get_offset" default="Vector2( 0, 0 )">
-			The offset of the GraphNode, relative to the scroll offset of the [GraphEdit].
-			[b]Note:[/b] You cannot use position directly, as [GraphEdit] is a [Container].
+		<member name="language" type="String" setter="set_language" getter="get_language" default="&quot;&quot;">
+			Language code used for line-breaking and text shaping algorithms, if left empty current locale is used instead.
 		</member>
+		<member name="mouse_filter" type="int" setter="set_mouse_filter" getter="get_mouse_filter" override="true" enum="Control.MouseFilter" default="0" />
 		<member name="overlay" type="int" setter="set_overlay" getter="get_overlay" enum="GraphNode.Overlay" default="0">
 			Sets the overlay shown above the GraphNode. See [enum Overlay].
+		</member>
+		<member name="position_offset" type="Vector2" setter="set_position_offset" getter="get_position_offset" default="Vector2( 0, 0 )">
+			The offset of the GraphNode, relative to the scroll offset of the [GraphEdit].
+			[b]Note:[/b] You cannot use position offset directly, as [GraphEdit] is a [Container].
 		</member>
 		<member name="resizable" type="bool" setter="set_resizable" getter="is_resizable" default="false">
 			If [code]true[/code], the user can resize the GraphNode.
@@ -202,6 +232,9 @@
 		<member name="show_close" type="bool" setter="set_show_close_button" getter="is_close_button_visible" default="false">
 			If [code]true[/code], the close button will be visible.
 			[b]Note:[/b] Pressing it will only emit the [signal close_request] signal, the GraphNode needs to be removed manually.
+		</member>
+		<member name="text_direction" type="int" setter="set_text_direction" getter="get_text_direction" enum="Control.TextDirection" default="0">
+			Base text writing direction.
 		</member>
 		<member name="title" type="String" setter="set_title" getter="get_title" default="&quot;&quot;">
 			The text displayed in the GraphNode's title bar.
@@ -222,7 +255,7 @@
 				Emitted when the GraphNode is dragged.
 			</description>
 		</signal>
-		<signal name="offset_changed">
+		<signal name="position_offset_changed">
 			<description>
 				Emitted when the GraphNode is moved.
 			</description>
@@ -237,6 +270,13 @@
 			</argument>
 			<description>
 				Emitted when the GraphNode is requested to be resized. Happens on dragging the resizer handle (see [member resizable]).
+			</description>
+		</signal>
+		<signal name="slot_updated">
+			<argument index="0" name="idx" type="int">
+			</argument>
+			<description>
+				Emitted when any GraphNode's slot is updated.
 			</description>
 		</signal>
 	</signals>

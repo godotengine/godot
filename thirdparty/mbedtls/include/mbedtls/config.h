@@ -1747,6 +1747,23 @@
 //#define MBEDTLS_SSL_TRUNCATED_HMAC_COMPAT
 
 /**
+ * \def MBEDTLS_TEST_HOOKS
+ *
+ * Enable features for invasive testing such as introspection functions and
+ * hooks for fault injection. This enables additional unit tests.
+ *
+ * Merely enabling this feature should not change the behavior of the product.
+ * It only adds new code, and new branching points where the default behavior
+ * is the same as when this feature is disabled.
+ * However, this feature increases the attack surface: there is an added
+ * risk of vulnerabilities, and more gadgets that can make exploits easier.
+ * Therefore this feature must never be enabled in production.
+ *
+ * Uncomment to enable invasive tests.
+ */
+//#define MBEDTLS_TEST_HOOKS
+
+/**
  * \def MBEDTLS_THREADING_ALT
  *
  * Provide your own alternate threading implementation.
@@ -3128,7 +3145,7 @@
  */
 
 /* MPI / BIGNUM options */
-//#define MBEDTLS_MPI_WINDOW_SIZE            6 /**< Maximum windows size used. */
+//#define MBEDTLS_MPI_WINDOW_SIZE            6 /**< Maximum window size used. */
 //#define MBEDTLS_MPI_MAX_SIZE            1024 /**< Maximum number of bytes for usable MPIs. */
 
 /* CTR_DRBG options */

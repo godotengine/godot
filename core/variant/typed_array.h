@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -120,8 +120,6 @@ MAKE_TYPED_ARRAY(Vector<Vector2>, Variant::PACKED_VECTOR2_ARRAY)
 MAKE_TYPED_ARRAY(Vector<Vector3>, Variant::PACKED_VECTOR3_ARRAY)
 MAKE_TYPED_ARRAY(Vector<Color>, Variant::PACKED_COLOR_ARRAY)
 
-#ifdef PTRCALL_ENABLED
-
 template <class T>
 struct PtrToArg<TypedArray<T>> {
 	_FORCE_INLINE_ static TypedArray<T> convert(const void *p_ptr) {
@@ -139,8 +137,6 @@ struct PtrToArg<const TypedArray<T> &> {
 		return TypedArray<T>(*reinterpret_cast<const Array *>(p_ptr));
 	}
 };
-
-#endif // PTRCALL_ENABLED
 
 #ifdef DEBUG_METHODS_ENABLED
 

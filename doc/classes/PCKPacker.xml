@@ -5,12 +5,20 @@
 	</brief_description>
 	<description>
 		The [PCKPacker] is used to create packages that can be loaded into a running project using [method ProjectSettings.load_resource_pack].
-		[codeblock]
+		[codeblocks]
+		[gdscript]
 		var packer = PCKPacker.new()
 		packer.pck_start("test.pck")
 		packer.add_file("res://text.txt", "text.txt")
 		packer.flush()
-		[/codeblock]
+		[/gdscript]
+		[csharp]
+		var packer = new PCKPacker();
+		packer.PckStart("test.pck");
+		packer.AddFile("res://text.txt", "text.txt");
+		packer.Flush();
+		[/csharp]
+		[/codeblocks]
 		The above [PCKPacker] creates package [code]test.pck[/code], then adds a file named [code]text.txt[/code] at the root of the package.
 	</description>
 	<tutorials>

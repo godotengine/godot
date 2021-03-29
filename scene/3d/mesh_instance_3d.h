@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -44,15 +44,11 @@ protected:
 	Ref<Skin> skin;
 	Ref<Skin> skin_internal;
 	Ref<SkinReference> skin_ref;
-	NodePath skeleton_path;
+	NodePath skeleton_path = NodePath("..");
 
 	struct BlendShapeTrack {
-		int idx;
-		float value;
-		BlendShapeTrack() {
-			idx = 0;
-			value = 0;
-		}
+		int idx = 0;
+		float value = 0.0;
 	};
 
 	Map<StringName, BlendShapeTrack> blend_shape_tracks;

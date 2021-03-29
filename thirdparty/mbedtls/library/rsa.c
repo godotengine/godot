@@ -520,6 +520,9 @@ void mbedtls_rsa_init( mbedtls_rsa_context *ctx,
     mbedtls_rsa_set_padding( ctx, padding, hash_id );
 
 #if defined(MBEDTLS_THREADING_C)
+    /* Set ctx->ver to nonzero to indicate that the mutex has been
+     * initialized and will need to be freed. */
+    ctx->ver = 1;
     mbedtls_mutex_init( &ctx->mutex );
 #endif
 }
@@ -567,9 +570,6 @@ int mbedtls_rsa_gen_key( mbedtls_rsa_context *ctx,
     RSA_VALIDATE_RET( ctx != NULL );
     RSA_VALIDATE_RET( f_rng != NULL );
 
-    if( nbits < 128 || exponent < 3 || nbits % 2 != 0 )
-        return( MBEDTLS_ERR_RSA_BAD_INPUT_DATA );
-
     /*
      * If the modulus is 1024 bit long or shorter, then the security strength of
      * the RSA algorithm is less than or equal to 80 bits and therefore an error
@@ -581,6 +581,12 @@ int mbedtls_rsa_gen_key( mbedtls_rsa_context *ctx,
     mbedtls_mpi_init( &H );
     mbedtls_mpi_init( &G );
     mbedtls_mpi_init( &L );
+
+    if( nbits < 128 || exponent < 3 || nbits % 2 != 0 )
+    {
+        ret = MBEDTLS_ERR_RSA_BAD_INPUT_DATA;
+        goto cleanup;
+    }
 
     /*
      * find primes P and Q with Q < P so that:
@@ -659,7 +665,9 @@ cleanup:
     if( ret != 0 )
     {
         mbedtls_rsa_free( ctx );
-        return( MBEDTLS_ERR_RSA_KEY_GEN_FAILED + ret );
+        if( ( -ret & ~0x7f ) == 0 )
+            ret = MBEDTLS_ERR_RSA_KEY_GEN_FAILED + ret;
+        return( ret );
     }
 
     return( 0 );
@@ -841,15 +849,14 @@ static int rsa_prepare_blinding( mbedtls_rsa_context *ctx,
          * which one, we just loop and choose new values for both of them.
          * (Each iteration succeeds with overwhelming probability.) */
         ret = mbedtls_mpi_inv_mod( &ctx->Vi, &ctx->Vi, &ctx->N );
-        if( ret == MBEDTLS_ERR_MPI_NOT_ACCEPTABLE )
-            continue;
-        if( ret != 0 )
+        if( ret != 0 && ret != MBEDTLS_ERR_MPI_NOT_ACCEPTABLE )
             goto cleanup;
 
-        /* Finish the computation of Vf^-1 = R * (R Vf)^-1 */
-        MBEDTLS_MPI_CHK( mbedtls_mpi_mul_mpi( &ctx->Vi, &ctx->Vi, &R ) );
-        MBEDTLS_MPI_CHK( mbedtls_mpi_mod_mpi( &ctx->Vi, &ctx->Vi, &ctx->N ) );
-    } while( 0 );
+    } while( ret == MBEDTLS_ERR_MPI_NOT_ACCEPTABLE );
+
+    /* Finish the computation of Vf^-1 = R * (R Vf)^-1 */
+    MBEDTLS_MPI_CHK( mbedtls_mpi_mul_mpi( &ctx->Vi, &ctx->Vi, &R ) );
+    MBEDTLS_MPI_CHK( mbedtls_mpi_mod_mpi( &ctx->Vi, &ctx->Vi, &ctx->N ) );
 
     /* Blinding value: Vi = Vf^(-e) mod N
      * (Vi already contains Vf^-1 at this point) */
@@ -1107,10 +1114,10 @@ cleanup:
     mbedtls_mpi_free( &C );
     mbedtls_mpi_free( &I );
 
-    if( ret != 0 )
+    if( ret != 0 && ret >= -0x007f )
         return( MBEDTLS_ERR_RSA_PRIVATE_FAILED + ret );
 
-    return( 0 );
+    return( ret );
 }
 
 #if defined(MBEDTLS_PKCS1_V21)
@@ -2503,7 +2510,6 @@ int mbedtls_rsa_copy( mbedtls_rsa_context *dst, const mbedtls_rsa_context *src )
     RSA_VALIDATE_RET( dst != NULL );
     RSA_VALIDATE_RET( src != NULL );
 
-    dst->ver = src->ver;
     dst->len = src->len;
 
     MBEDTLS_MPI_CHK( mbedtls_mpi_copy( &dst->N, &src->N ) );
@@ -2562,7 +2568,12 @@ void mbedtls_rsa_free( mbedtls_rsa_context *ctx )
 #endif /* MBEDTLS_RSA_NO_CRT */
 
 #if defined(MBEDTLS_THREADING_C)
-    mbedtls_mutex_free( &ctx->mutex );
+    /* Free the mutex, but only if it hasn't been freed already. */
+    if( ctx->ver != 0 )
+    {
+        mbedtls_mutex_free( &ctx->mutex );
+        ctx->ver = 0;
+    }
 #endif
 }
 

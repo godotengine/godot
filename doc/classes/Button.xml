@@ -34,12 +34,40 @@
 		[/codeblocks]
 		Buttons (like all Control nodes) can also be created in the editor, but some situations may require creating them from code.
 		See also [BaseButton] which contains common properties and methods associated with this node.
+		[b]Note:[/b] Buttons do not interpret touch input and therefore don't support multitouch, since mouse emulation can only press one button at a given time. Use [TouchScreenButton] for buttons that trigger gameplay movement or actions, as [TouchScreenButton] supports multitouch.
 	</description>
 	<tutorials>
 		<link title="2D Dodge The Creeps Demo">https://godotengine.org/asset-library/asset/515</link>
 		<link title="OS Test Demo">https://godotengine.org/asset-library/asset/677</link>
 	</tutorials>
 	<methods>
+		<method name="clear_opentype_features">
+			<return type="void">
+			</return>
+			<description>
+				Removes all OpenType features.
+			</description>
+		</method>
+		<method name="get_opentype_feature" qualifiers="const">
+			<return type="int">
+			</return>
+			<argument index="0" name="tag" type="String">
+			</argument>
+			<description>
+				Returns OpenType feature [code]tag[/code].
+			</description>
+		</method>
+		<method name="set_opentype_feature">
+			<return type="void">
+			</return>
+			<argument index="0" name="tag" type="String">
+			</argument>
+			<argument index="1" name="value" type="int">
+			</argument>
+			<description>
+				Sets OpenType feature [code]tag[/code]. More info: [url=https://docs.microsoft.com/en-us/typography/opentype/spec/featuretags]OpenType feature tags[/url].
+			</description>
+		</method>
 	</methods>
 	<members>
 		<member name="align" type="int" setter="set_text_align" getter="get_text_align" enum="Button.TextAlign" default="1">
@@ -57,8 +85,14 @@
 		<member name="icon" type="Texture2D" setter="set_button_icon" getter="get_button_icon">
 			Button's icon, if text is present the icon will be placed before the text.
 		</member>
+		<member name="language" type="String" setter="set_language" getter="get_language" default="&quot;&quot;">
+			Language code used for line-breaking and text shaping algorithms, if left empty current locale is used instead.
+		</member>
 		<member name="text" type="String" setter="set_text" getter="get_text" default="&quot;&quot;">
 			The button's text that will be displayed inside the button's area.
+		</member>
+		<member name="text_direction" type="int" setter="set_text_direction" getter="get_text_direction" enum="Control.TextDirection" default="0">
+			Base text writing direction.
 		</member>
 	</members>
 	<constants>
@@ -85,14 +119,23 @@
 		<theme_item name="font_color" type="Color" default="Color( 0.88, 0.88, 0.88, 1 )">
 			Default text [Color] of the [Button].
 		</theme_item>
-		<theme_item name="font_color_disabled" type="Color" default="Color( 0.9, 0.9, 0.9, 0.2 )">
+		<theme_item name="font_disabled_color" type="Color" default="Color( 0.9, 0.9, 0.9, 0.2 )">
 			Text [Color] used when the [Button] is disabled.
 		</theme_item>
-		<theme_item name="font_color_hover" type="Color" default="Color( 0.94, 0.94, 0.94, 1 )">
+		<theme_item name="font_hover_color" type="Color" default="Color( 0.94, 0.94, 0.94, 1 )">
 			Text [Color] used when the [Button] is being hovered.
 		</theme_item>
-		<theme_item name="font_color_pressed" type="Color" default="Color( 1, 1, 1, 1 )">
+		<theme_item name="font_hover_pressed_color" type="Color" default="Color( 1, 1, 1, 1 )">
+			Text [Color] used when the [Button] is being hovered and pressed.
+		</theme_item>
+		<theme_item name="font_outline_color" type="Color" default="Color( 1, 1, 1, 1 )">
+			The tint of text outline of the [Button].
+		</theme_item>
+		<theme_item name="font_pressed_color" type="Color" default="Color( 1, 1, 1, 1 )">
 			Text [Color] used when the [Button] is being pressed.
+		</theme_item>
+		<theme_item name="font_size" type="int">
+			Font size of the [Button]'s text.
 		</theme_item>
 		<theme_item name="hover" type="StyleBox">
 			[StyleBox] used when the [Button] is being hovered.
@@ -100,8 +143,26 @@
 		<theme_item name="hseparation" type="int" default="2">
 			The horizontal space between [Button]'s icon and text.
 		</theme_item>
+		<theme_item name="icon_disabled_color" type="Color" default="Color( 1, 1, 1, 1 )">
+			Icon modulate [Color] used when the [Button] is disabled.
+		</theme_item>
+		<theme_item name="icon_hover_color" type="Color" default="Color( 1, 1, 1, 1 )">
+			Icon modulate [Color] used when the [Button] is being hovered.
+		</theme_item>
+		<theme_item name="icon_hover_pressed_color" type="Color" default="Color( 1, 1, 1, 1 )">
+			Icon modulate [Color] used when the [Button] is being hovered and pressed.
+		</theme_item>
+		<theme_item name="icon_normal_color" type="Color" default="Color( 1, 1, 1, 1 )">
+			Default icon modulate [Color] of the [Button].
+		</theme_item>
+		<theme_item name="icon_pressed_color" type="Color" default="Color( 1, 1, 1, 1 )">
+			Icon modulate [Color] used when the [Button] is being pressed.
+		</theme_item>
 		<theme_item name="normal" type="StyleBox">
 			Default [StyleBox] for the [Button].
+		</theme_item>
+		<theme_item name="outline_size" type="int" default="0">
+			The size of the text outline.
 		</theme_item>
 		<theme_item name="pressed" type="StyleBox">
 			[StyleBox] used when the [Button] is being pressed.

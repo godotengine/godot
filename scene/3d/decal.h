@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -49,21 +49,22 @@ public:
 
 private:
 	RID decal;
-	Vector3 extents;
+	Vector3 extents = Vector3(1, 1, 1);
 	Ref<Texture2D> textures[TEXTURE_MAX];
-	float emission_energy;
-	float albedo_mix;
-	Color modulate;
-	uint32_t cull_mask;
-	float normal_fade;
-	float upper_fade;
-	float lower_fade;
-	bool distance_fade_enabled;
-	float distance_fade_begin;
-	float distance_fade_length;
+	float emission_energy = 1.0;
+	float albedo_mix = 1.0;
+	Color modulate = Color(1, 1, 1, 1);
+	uint32_t cull_mask = (1 << 20) - 1;
+	float normal_fade = 0.0;
+	float upper_fade = 0.3;
+	float lower_fade = 0.3;
+	bool distance_fade_enabled = false;
+	float distance_fade_begin = 10.0;
+	float distance_fade_length = 1.0;
 
 protected:
 	static void _bind_methods();
+	void _validate_property(PropertyInfo &property) const override;
 
 public:
 	void set_extents(const Vector3 &p_extents);

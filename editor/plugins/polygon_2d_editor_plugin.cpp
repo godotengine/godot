@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -86,8 +86,8 @@ void Polygon2DEditor::_notification(int p_what) {
 			b_snap_enable->set_icon(get_theme_icon("SnapGrid", "EditorIcons"));
 			uv_icon_zoom->set_texture(get_theme_icon("Zoom", "EditorIcons"));
 
-			uv_vscroll->set_anchors_and_margins_preset(PRESET_RIGHT_WIDE);
-			uv_hscroll->set_anchors_and_margins_preset(PRESET_BOTTOM_WIDE);
+			uv_vscroll->set_anchors_and_offsets_preset(PRESET_RIGHT_WIDE);
+			uv_hscroll->set_anchors_and_offsets_preset(PRESET_BOTTOM_WIDE);
 		} break;
 		case NOTIFICATION_VISIBILITY_CHANGED: {
 			if (!is_visible()) {
@@ -447,7 +447,7 @@ void Polygon2DEditor::_uv_input(const Ref<InputEvent> &p_input) {
 	Ref<InputEventMouseButton> mb = p_input;
 
 	if (mb.is_valid()) {
-		if (mb->get_button_index() == BUTTON_LEFT) {
+		if (mb->get_button_index() == MOUSE_BUTTON_LEFT) {
 			if (mb->is_pressed()) {
 				uv_drag_from = snap_point(Vector2(mb->get_position().x, mb->get_position().y));
 				uv_drag = true;
@@ -759,7 +759,7 @@ void Polygon2DEditor::_uv_input(const Ref<InputEvent> &p_input) {
 					bone_painting = false;
 				}
 			}
-		} else if (mb->get_button_index() == BUTTON_RIGHT && mb->is_pressed()) {
+		} else if (mb->get_button_index() == MOUSE_BUTTON_RIGHT && mb->is_pressed()) {
 			_cancel_editing();
 
 			if (bone_painting) {
@@ -768,9 +768,9 @@ void Polygon2DEditor::_uv_input(const Ref<InputEvent> &p_input) {
 
 			uv_edit_draw->update();
 
-		} else if (mb->get_button_index() == BUTTON_WHEEL_UP && mb->is_pressed()) {
+		} else if (mb->get_button_index() == MOUSE_BUTTON_WHEEL_UP && mb->is_pressed()) {
 			uv_zoom->set_value(uv_zoom->get_value() / (1 - (0.1 * mb->get_factor())));
-		} else if (mb->get_button_index() == BUTTON_WHEEL_DOWN && mb->is_pressed()) {
+		} else if (mb->get_button_index() == MOUSE_BUTTON_WHEEL_DOWN && mb->is_pressed()) {
 			uv_zoom->set_value(uv_zoom->get_value() * (1 - (0.1 * mb->get_factor())));
 		}
 	}
@@ -778,7 +778,7 @@ void Polygon2DEditor::_uv_input(const Ref<InputEvent> &p_input) {
 	Ref<InputEventMouseMotion> mm = p_input;
 
 	if (mm.is_valid()) {
-		if ((mm->get_button_mask() & BUTTON_MASK_MIDDLE) || Input::get_singleton()->is_key_pressed(KEY_SPACE)) {
+		if ((mm->get_button_mask() & MOUSE_BUTTON_MASK_MIDDLE) || Input::get_singleton()->is_key_pressed(KEY_SPACE)) {
 			Vector2 drag(mm->get_relative().x, mm->get_relative().y);
 			uv_hscroll->set_value(uv_hscroll->get_value() - drag.x);
 			uv_vscroll->set_value(uv_vscroll->get_value() - drag.y);
@@ -1052,8 +1052,6 @@ void Polygon2DEditor::_uv_draw() {
 		if (i < uv_draw_max /*&& polygons.size() == 0 &&  polygon_create.size() == 0*/) { //if using or creating polygons, do not show outline (will show polygons instead)
 			uv_edit_draw->draw_line(mtx.xform(uvs[i]), mtx.xform(next_point), poly_line_color, Math::round(EDSCALE));
 		}
-
-		rect.expand_to(mtx.basis_xform(uvs[i]));
 	}
 
 	for (int i = 0; i < polygons.size(); i++) {
@@ -1160,8 +1158,8 @@ void Polygon2DEditor::_uv_draw() {
 		uv_edit_draw->draw_circle(bone_paint_pos, bone_paint_radius->get_value() * EDSCALE, Color(1, 1, 1, 0.1));
 	}
 
-	rect.position -= uv_edit_draw->get_size();
-	rect.size += uv_edit_draw->get_size() * 2.0;
+	rect.position = -uv_edit_draw->get_size();
+	rect.size = uv_edit_draw->get_size() * 2.0 + base_tex->get_size() * uv_draw_zoom;
 
 	updating_uv_scroll = true;
 
@@ -1189,8 +1187,8 @@ void Polygon2DEditor::_uv_draw() {
 	Size2 vmin = uv_vscroll->get_combined_minimum_size();
 
 	// Avoid scrollbar overlapping.
-	uv_hscroll->set_anchor_and_margin(MARGIN_RIGHT, ANCHOR_END, uv_vscroll->is_visible() ? -vmin.width : 0);
-	uv_vscroll->set_anchor_and_margin(MARGIN_BOTTOM, ANCHOR_END, uv_hscroll->is_visible() ? -hmin.height : 0);
+	uv_hscroll->set_anchor_and_offset(SIDE_RIGHT, ANCHOR_END, uv_vscroll->is_visible() ? -vmin.width : 0);
+	uv_vscroll->set_anchor_and_offset(SIDE_BOTTOM, ANCHOR_END, uv_hscroll->is_visible() ? -hmin.height : 0);
 
 	updating_uv_scroll = false;
 }

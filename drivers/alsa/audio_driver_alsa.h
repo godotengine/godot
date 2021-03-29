@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -37,10 +37,10 @@
 #include "core/os/thread.h"
 #include "servers/audio_server.h"
 
-#include <alsa/asoundlib.h>
+#include "asound-so_wrap.h"
 
 class AudioDriverALSA : public AudioDriver {
-	Thread *thread = nullptr;
+	Thread thread;
 	Mutex mutex;
 
 	snd_pcm_t *pcm_handle = nullptr;
@@ -56,17 +56,17 @@ class AudioDriverALSA : public AudioDriver {
 
 	static void thread_func(void *p_udata);
 
-	unsigned int mix_rate;
+	unsigned int mix_rate = 0;
 	SpeakerMode speaker_mode;
 
 	snd_pcm_uframes_t buffer_frames;
 	snd_pcm_uframes_t buffer_size;
 	snd_pcm_uframes_t period_size;
-	int channels;
+	int channels = 0;
 
-	bool active;
-	bool thread_exited;
-	mutable bool exit_thread;
+	bool active = false;
+	bool thread_exited = false;
+	mutable bool exit_thread = false;
 
 public:
 	const char *get_name() const {

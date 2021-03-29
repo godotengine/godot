@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -40,7 +40,7 @@ class StringBuffer {
 	int string_length = 0;
 
 	_FORCE_INLINE_ char32_t *current_buffer_ptr() {
-		return static_cast<String &>(buffer).empty() ? short_buffer : buffer.ptrw();
+		return static_cast<String &>(buffer).is_empty() ? short_buffer : buffer.ptrw();
 	}
 
 public:
@@ -122,7 +122,7 @@ StringBuffer<SHORT_BUFFER_SIZE> &StringBuffer<SHORT_BUFFER_SIZE>::reserve(int p_
 		return *this;
 	}
 
-	bool need_copy = string_length > 0 && buffer.empty();
+	bool need_copy = string_length > 0 && buffer.is_empty();
 	buffer.resize(next_power_of_2(p_size));
 	if (need_copy) {
 		memcpy(buffer.ptrw(), short_buffer, string_length * sizeof(char32_t));
@@ -139,7 +139,7 @@ int StringBuffer<SHORT_BUFFER_SIZE>::length() const {
 template <int SHORT_BUFFER_SIZE>
 String StringBuffer<SHORT_BUFFER_SIZE>::as_string() {
 	current_buffer_ptr()[string_length] = '\0';
-	if (buffer.empty()) {
+	if (buffer.is_empty()) {
 		return String(short_buffer);
 	} else {
 		buffer.resize(string_length + 1);

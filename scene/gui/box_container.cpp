@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -33,9 +33,9 @@
 #include "margin_container.h"
 
 struct _MinSizeCache {
-	int min_size;
-	bool will_stretch;
-	int final_size;
+	int min_size = 0;
+	bool will_stretch = false;
+	int final_size = 0;
 };
 
 void BoxContainer::_resort() {
@@ -44,12 +44,13 @@ void BoxContainer::_resort() {
 	Size2i new_size = get_size();
 
 	int sep = get_theme_constant("separation"); //,vertical?"VBoxContainer":"HBoxContainer");
+	bool rtl = is_layout_rtl();
 
 	bool first = true;
 	int children_count = 0;
 	int stretch_min = 0;
 	int stretch_avail = 0;
-	float stretch_ratio_total = 0;
+	float stretch_ratio_total = 0.0;
 	Map<Control *, _MinSizeCache> min_size_cache;
 
 	for (int i = 0; i < get_child_count(); i++) {
@@ -104,7 +105,7 @@ void BoxContainer::_resort() {
 
 		has_stretched = true;
 		bool refit_successful = true; //assume refit-test will go well
-		float error = 0; // Keep track of accumulated error in pixels
+		float error = 0.0; // Keep track of accumulated error in pixels
 
 		for (int i = 0; i < get_child_count(); i++) {
 			Control *c = Object::cast_to<Control>(get_child(i));
@@ -152,22 +153,53 @@ void BoxContainer::_resort() {
 
 	int ofs = 0;
 	if (!has_stretched) {
-		switch (align) {
-			case ALIGN_BEGIN:
-				break;
-			case ALIGN_CENTER:
-				ofs = stretch_diff / 2;
-				break;
-			case ALIGN_END:
-				ofs = stretch_diff;
-				break;
+		if (!vertical) {
+			switch (align) {
+				case ALIGN_BEGIN:
+					if (rtl) {
+						ofs = stretch_diff;
+					}
+					break;
+				case ALIGN_CENTER:
+					ofs = stretch_diff / 2;
+					break;
+				case ALIGN_END:
+					if (!rtl) {
+						ofs = stretch_diff;
+					}
+					break;
+			}
+		} else {
+			switch (align) {
+				case ALIGN_BEGIN:
+					break;
+				case ALIGN_CENTER:
+					ofs = stretch_diff / 2;
+					break;
+				case ALIGN_END:
+					ofs = stretch_diff;
+					break;
+			}
 		}
 	}
 
 	first = true;
 	int idx = 0;
 
-	for (int i = 0; i < get_child_count(); i++) {
+	int start;
+	int end;
+	int delta;
+	if (!rtl || vertical) {
+		start = 0;
+		end = get_child_count();
+		delta = +1;
+	} else {
+		start = get_child_count() - 1;
+		end = -1;
+		delta = -1;
+	}
+
+	for (int i = start; i != end; i += delta) {
 		Control *c = Object::cast_to<Control>(get_child(i));
 		if (!c || !c->is_visible_in_tree()) {
 			continue;
@@ -265,6 +297,10 @@ void BoxContainer::_notification(int p_what) {
 		case NOTIFICATION_THEME_CHANGED: {
 			minimum_size_changed();
 		} break;
+		case NOTIFICATION_TRANSLATION_CHANGED:
+		case NOTIFICATION_LAYOUT_DIRECTION_CHANGED: {
+			queue_sort();
+		} break;
 	}
 }
 
@@ -277,7 +313,7 @@ BoxContainer::AlignMode BoxContainer::get_alignment() const {
 	return align;
 }
 
-void BoxContainer::add_spacer(bool p_begin) {
+Control *BoxContainer::add_spacer(bool p_begin) {
 	Control *c = memnew(Control);
 	c->set_mouse_filter(MOUSE_FILTER_PASS); //allow spacer to pass mouse events
 
@@ -291,11 +327,12 @@ void BoxContainer::add_spacer(bool p_begin) {
 	if (p_begin) {
 		move_child(c, 0);
 	}
+
+	return c;
 }
 
 BoxContainer::BoxContainer(bool p_vertical) {
 	vertical = p_vertical;
-	align = ALIGN_BEGIN;
 }
 
 void BoxContainer::_bind_methods() {

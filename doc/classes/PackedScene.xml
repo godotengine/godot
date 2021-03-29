@@ -5,17 +5,26 @@
 	</brief_description>
 	<description>
 		A simplified interface to a scene file. Provides access to operations and checks that can be performed on the scene resource itself.
-		Can be used to save a node to a file. When saving, the node as well as all the node it owns get saved (see [code]owner[/code] property on [Node]).
+		Can be used to save a node to a file. When saving, the node as well as all the nodes it owns get saved (see [code]owner[/code] property on [Node]).
 		[b]Note:[/b] The node doesn't need to own itself.
 		[b]Example of loading a saved scene:[/b]
-		[codeblock]
-		# Use `load()` instead of `preload()` if the path isn't known at compile-time.
+		[codeblocks]
+		[gdscript]
+		# Use load() instead of preload() if the path isn't known at compile-time.
 		var scene = preload("res://scene.tscn").instance()
 		# Add the node as a child of the node the script is attached to.
 		add_child(scene)
-		[/codeblock]
+		[/gdscript]
+		[csharp]
+		// C# has no preload, so you have to always use ResourceLoader.Load&lt;PackedScene&gt;().
+		var scene = ResourceLoader.Load&lt;PackedScene&gt;("res://scene.tscn").Instance();
+		// Add the node as a child of the node the script is attached to.
+		AddChild(scene);
+		[/csharp]
+		[/codeblocks]
 		[b]Example of saving a node with different owners:[/b] The following example creates 3 objects: [code]Node2D[/code] ([code]node[/code]), [code]RigidBody2D[/code] ([code]rigid[/code]) and [code]CollisionObject2D[/code] ([code]collision[/code]). [code]collision[/code] is a child of [code]rigid[/code] which is a child of [code]node[/code]. Only [code]rigid[/code] is owned by [code]node[/code] and [code]pack[/code] will therefore only save those two nodes, but not [code]collision[/code].
-		[codeblock]
+		[codeblocks]
+		[gdscript]
 		# Create the objects.
 		var node = Node2D.new()
 		var rigid = RigidBody2D.new()
@@ -27,15 +36,41 @@
 
 		# Change owner of `rigid`, but not of `collision`.
 		rigid.owner = node
-
 		var scene = PackedScene.new()
+
 		# Only `node` and `rigid` are now packed.
 		var result = scene.pack(node)
 		if result == OK:
-		    var error = ResourceSaver.save("res://path/name.scn", scene)  # Or "user://..."
+		    var error = ResourceSaver.save("res://path/name.tscn", scene)  # Or "user://..."
 		    if error != OK:
 		        push_error("An error occurred while saving the scene to disk.")
-		[/codeblock]
+		[/gdscript]
+		[csharp]
+		// Create the objects.
+		var node = new Node2D();
+		var rigid = new RigidBody2D();
+		var collision = new CollisionShape2D();
+
+		// Create the object hierarchy.
+		rigid.AddChild(collision);
+		node.AddChild(rigid);
+
+		// Change owner of `rigid`, but not of `collision`.
+		rigid.Owner = node;
+		var scene = new PackedScene();
+
+		// Only `node` and `rigid` are now packed.
+		Error result = scene.Pack(node);
+		if (result == Error.Ok)
+		{
+		    Error error = ResourceSaver.Save("res://path/name.tscn", scene); // Or "user://..."
+		    if (error != Error.Ok)
+		    {
+		        GD.PushError("An error occurred while saving the scene to disk.");
+		    }
+		}
+		[/csharp]
+		[/codeblocks]
 	</description>
 	<tutorials>
 		<link title="2D Role Playing Game Demo">https://godotengine.org/asset-library/asset/520</link>

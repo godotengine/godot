@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -55,10 +55,10 @@ MonoAssemblyName *new_mono_assembly_name() {
 
 struct AssemblyRefInfo {
 	String name;
-	uint16_t major;
-	uint16_t minor;
-	uint16_t build;
-	uint16_t revision;
+	uint16_t major = 0;
+	uint16_t minor = 0;
+	uint16_t build = 0;
+	uint16_t revision = 0;
 };
 
 AssemblyRefInfo get_assemblyref_name(MonoImage *p_image, int index) {
@@ -141,5 +141,4 @@ Error get_exported_assembly_dependencies(const Dictionary &p_initial_assemblies,
 
 	return OK;
 }
-
 } // namespace GodotSharpExport

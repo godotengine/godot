@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -46,9 +46,9 @@
 
 class GDMonoLog {
 #ifdef GD_MONO_LOG_ENABLED
-	int log_level_id;
+	int log_level_id = -1;
 
-	FileAccess *log_file;
+	FileAccess *log_file = nullptr;
 	String log_file_path;
 
 	bool _try_create_logs_dir(const String &p_logs_dir);

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -48,18 +48,10 @@ Error gd_mono_connect_signal_awaiter(Object *p_source, const StringName &p_signa
 }
 
 bool SignalAwaiterCallable::compare_equal(const CallableCustom *p_a, const CallableCustom *p_b) {
+	// Only called if both instances are of type SignalAwaiterCallable. Static cast is safe.
 	const SignalAwaiterCallable *a = static_cast<const SignalAwaiterCallable *>(p_a);
 	const SignalAwaiterCallable *b = static_cast<const SignalAwaiterCallable *>(p_b);
-
-	if (a->target_id != b->target_id) {
-		return false;
-	}
-
-	if (a->signal != b->signal) {
-		return false;
-	}
-
-	return true;
+	return a->awaiter_handle.handle == b->awaiter_handle.handle;
 }
 
 bool SignalAwaiterCallable::compare_less(const CallableCustom *p_a, const CallableCustom *p_b) {
@@ -109,11 +101,15 @@ void SignalAwaiterCallable::call(const Variant **p_arguments, int p_argcount, Va
 			"Resumed after await, but class instance is gone.");
 #endif
 
-	MonoArray *signal_args = mono_array_new(mono_domain_get(), CACHED_CLASS_RAW(MonoObject), p_argcount);
+	MonoArray *signal_args = nullptr;
 
-	for (int i = 0; i < p_argcount; i++) {
-		MonoObject *boxed = GDMonoMarshal::variant_to_mono_object(*p_arguments[i]);
-		mono_array_setref(signal_args, i, boxed);
+	if (p_argcount > 0) {
+		signal_args = mono_array_new(mono_domain_get(), CACHED_CLASS_RAW(MonoObject), p_argcount);
+
+		for (int i = 0; i < p_argcount; i++) {
+			MonoObject *boxed = GDMonoMarshal::variant_to_mono_object(*p_arguments[i]);
+			mono_array_setref(signal_args, i, boxed);
+		}
 	}
 
 	MonoObject *awaiter = awaiter_handle.get_target();

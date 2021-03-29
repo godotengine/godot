@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -179,6 +179,24 @@ bool GridMap::get_collision_layer_bit(int p_bit) const {
 	return get_collision_layer() & (1 << p_bit);
 }
 
+void GridMap::set_bake_navigation(bool p_bake_navigation) {
+	bake_navigation = p_bake_navigation;
+	_recreate_octant_data();
+}
+
+bool GridMap::is_baking_navigation() {
+	return bake_navigation;
+}
+
+void GridMap::set_navigation_layers(uint32_t p_layers) {
+	navigation_layers = p_layers;
+	_recreate_octant_data();
+}
+
+uint32_t GridMap::get_navigation_layers() {
+	return navigation_layers;
+}
+
 void GridMap::set_mesh_library(const Ref<MeshLibrary> &p_mesh_library) {
 	if (!mesh_library.is_null()) {
 		mesh_library->unregister_owner(this);
@@ -189,7 +207,6 @@ void GridMap::set_mesh_library(const Ref<MeshLibrary> &p_mesh_library) {
 	}
 
 	_recreate_octant_data();
-	_change_notify("mesh_library");
 }
 
 Ref<MeshLibrary> GridMap::get_mesh_library() const {
@@ -286,7 +303,8 @@ void GridMap::set_cell_item(const Vector3i &p_position, int p_item, int p_rot) {
 		//create octant because it does not exist
 		Octant *g = memnew(Octant);
 		g->dirty = true;
-		g->static_body = PhysicsServer3D::get_singleton()->body_create(PhysicsServer3D::BODY_MODE_STATIC);
+		g->static_body = PhysicsServer3D::get_singleton()->body_create();
+		PhysicsServer3D::get_singleton()->body_set_mode(g->static_body, PhysicsServer3D::BODY_MODE_STATIC);
 		PhysicsServer3D::get_singleton()->body_attach_object_instance_id(g->static_body, get_instance_id());
 		PhysicsServer3D::get_singleton()->body_set_collision_layer(g->static_body, collision_layer);
 		PhysicsServer3D::get_singleton()->body_set_collision_mask(g->static_body, collision_mask);
@@ -474,13 +492,15 @@ bool GridMap::_octant_update(const OctantKey &p_key) {
 			Octant::NavMesh nm;
 			nm.xform = xform * mesh_library->get_item_navmesh_transform(c.item);
 
-			if (navigation) {
+			if (bake_navigation) {
 				RID region = NavigationServer3D::get_singleton()->region_create();
+				NavigationServer3D::get_singleton()->region_set_layers(region, navigation_layers);
 				NavigationServer3D::get_singleton()->region_set_navmesh(region, navmesh);
-				NavigationServer3D::get_singleton()->region_set_transform(region, navigation->get_global_transform() * nm.xform);
-				NavigationServer3D::get_singleton()->region_set_map(region, navigation->get_rid());
+				NavigationServer3D::get_singleton()->region_set_transform(region, get_global_transform() * mesh_library->get_item_navmesh_transform(c.item));
+				NavigationServer3D::get_singleton()->region_set_map(region, get_world_3d()->get_navigation_map());
 				nm.region = region;
 			}
+
 			g.navmesh_ids[E->get()] = nm;
 		}
 	}
@@ -491,7 +511,7 @@ bool GridMap::_octant_update(const OctantKey &p_key) {
 			Octant::MultimeshInstance mmi;
 
 			RID mm = RS::get_singleton()->multimesh_create();
-			RS::get_singleton()->multimesh_allocate(mm, E->get().size(), RS::MULTIMESH_TRANSFORM_3D);
+			RS::get_singleton()->multimesh_allocate_data(mm, E->get().size(), RS::MULTIMESH_TRANSFORM_3D);
 			RS::get_singleton()->multimesh_set_mesh(mm, mesh_library->get_item_mesh(E->key())->get_rid());
 
 			int idx = 0;
@@ -564,15 +584,17 @@ void GridMap::_octant_enter_world(const OctantKey &p_key) {
 		RS::get_singleton()->instance_set_transform(g.multimesh_instances[i].instance, get_global_transform());
 	}
 
-	if (navigation && mesh_library.is_valid()) {
+	if (bake_navigation && mesh_library.is_valid()) {
 		for (Map<IndexKey, Octant::NavMesh>::Element *F = g.navmesh_ids.front(); F; F = F->next()) {
 			if (cell_map.has(F->key()) && F->get().region.is_valid() == false) {
 				Ref<NavigationMesh> nm = mesh_library->get_item_navmesh(cell_map[F->key()].item);
 				if (nm.is_valid()) {
 					RID region = NavigationServer3D::get_singleton()->region_create();
+					NavigationServer3D::get_singleton()->region_set_layers(region, navigation_layers);
 					NavigationServer3D::get_singleton()->region_set_navmesh(region, nm);
-					NavigationServer3D::get_singleton()->region_set_transform(region, navigation->get_global_transform() * F->get().xform);
-					NavigationServer3D::get_singleton()->region_set_map(region, navigation->get_rid());
+					NavigationServer3D::get_singleton()->region_set_transform(region, get_global_transform() * F->get().xform);
+					NavigationServer3D::get_singleton()->region_set_map(region, get_world_3d()->get_navigation_map());
+
 					F->get().region = region;
 				}
 			}
@@ -594,12 +616,10 @@ void GridMap::_octant_exit_world(const OctantKey &p_key) {
 		RS::get_singleton()->instance_set_scenario(g.multimesh_instances[i].instance, RID());
 	}
 
-	if (navigation) {
-		for (Map<IndexKey, Octant::NavMesh>::Element *F = g.navmesh_ids.front(); F; F = F->next()) {
-			if (F->get().region.is_valid()) {
-				NavigationServer3D::get_singleton()->free(F->get().region);
-				F->get().region = RID();
-			}
+	for (Map<IndexKey, Octant::NavMesh>::Element *F = g.navmesh_ids.front(); F; F = F->next()) {
+		if (F->get().region.is_valid()) {
+			NavigationServer3D::get_singleton()->free(F->get().region);
+			F->get().region = RID();
 		}
 	}
 }
@@ -635,16 +655,6 @@ void GridMap::_octant_clean_up(const OctantKey &p_key) {
 void GridMap::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_ENTER_WORLD: {
-			Node3D *c = this;
-			while (c) {
-				navigation = Object::cast_to<Navigation3D>(c);
-				if (navigation) {
-					break;
-				}
-
-				c = Object::cast_to<Node3D>(c->get_parent());
-			}
-
 			last_transform = get_global_transform();
 
 			for (Map<OctantKey, Octant *>::Element *E = octant_map.front(); E; E = E->next()) {
@@ -679,8 +689,6 @@ void GridMap::_notification(int p_what) {
 				_octant_exit_world(E->key());
 			}
 
-			navigation = nullptr;
-
 			//_queue_octants_dirty(MAP_DIRTY_INSTANCES|MAP_DIRTY_TRANSFORMS);
 			//_update_octants_callback();
 			//_update_area_instances();
@@ -700,14 +708,16 @@ void GridMap::_update_visibility() {
 		return;
 	}
 
-	_change_notify("visible");
-
 	for (Map<OctantKey, Octant *>::Element *e = octant_map.front(); e; e = e->next()) {
 		Octant *octant = e->value();
 		for (int i = 0; i < octant->multimesh_instances.size(); i++) {
 			const Octant::MultimeshInstance &mi = octant->multimesh_instances[i];
 			RS::get_singleton()->instance_set_visible(mi.instance, is_visible_in_tree());
 		}
+	}
+
+	for (int i = 0; i < baked_meshes.size(); i++) {
+		RS::get_singleton()->instance_set_visible(baked_meshes[i].instance, is_visible_in_tree());
 	}
 }
 
@@ -787,6 +797,12 @@ void GridMap::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_collision_layer_bit", "bit", "value"), &GridMap::set_collision_layer_bit);
 	ClassDB::bind_method(D_METHOD("get_collision_layer_bit", "bit"), &GridMap::get_collision_layer_bit);
 
+	ClassDB::bind_method(D_METHOD("set_bake_navigation", "bake_navigation"), &GridMap::set_bake_navigation);
+	ClassDB::bind_method(D_METHOD("is_baking_navigation"), &GridMap::is_baking_navigation);
+
+	ClassDB::bind_method(D_METHOD("set_navigation_layers", "layers"), &GridMap::set_navigation_layers);
+	ClassDB::bind_method(D_METHOD("get_navigation_layers"), &GridMap::get_navigation_layers);
+
 	ClassDB::bind_method(D_METHOD("set_mesh_library", "mesh_library"), &GridMap::set_mesh_library);
 	ClassDB::bind_method(D_METHOD("get_mesh_library"), &GridMap::get_mesh_library);
 
@@ -840,6 +856,9 @@ void GridMap::_bind_methods() {
 	ADD_GROUP("Collision", "collision_");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "collision_layer", PROPERTY_HINT_LAYERS_3D_PHYSICS), "set_collision_layer", "get_collision_layer");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "collision_mask", PROPERTY_HINT_LAYERS_3D_PHYSICS), "set_collision_mask", "get_collision_mask");
+	ADD_GROUP("Navigation", "");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "bake_navigation"), "set_bake_navigation", "is_baking_navigation");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "navigation_layers", PROPERTY_HINT_LAYERS_3D_NAVIGATION), "set_navigation_layers", "get_navigation_layers");
 
 	BIND_CONSTANT(INVALID_CELL_ITEM);
 
@@ -1046,26 +1065,7 @@ RID GridMap::get_bake_mesh_instance(int p_idx) {
 }
 
 GridMap::GridMap() {
-	collision_layer = 1;
-	collision_mask = 1;
-
-	cell_size = Vector3(2, 2, 2);
-	octant_size = 8;
-	awaiting_update = false;
-	_in_tree = false;
-	center_x = true;
-	center_y = true;
-	center_z = true;
-
-	clip = false;
-	clip_floor = 0;
-	clip_axis = Vector3::AXIS_Z;
-	clip_above = true;
-	cell_scale = 1.0;
-
-	navigation = nullptr;
 	set_notify_transform(true);
-	recreating_octants = false;
 }
 
 GridMap::~GridMap() {

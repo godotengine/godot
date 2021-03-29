@@ -58,7 +58,7 @@
 			If [code]true[/code], the light's effect is reversed, darkening areas and casting bright shadows.
 		</member>
 		<member name="light_projector" type="Texture2D" setter="set_projector" getter="get_projector">
-			[Texture2D] projected by light. [member shadow_enabled] must be on for the projector to work. Light projectors make the light appear as if it is shining through a colored but transparent object, almost like light shining through stained glass.
+			[Texture2D] projected by light. [member shadow_enabled] must be on for the projector to work. Light projectors make the light appear as if it is shining through a colored but transparent object, almost like light shining through stained-glass.
 		</member>
 		<member name="light_size" type="float" setter="set_param" getter="get_param" default="0.0">
 			The size of the light in Godot units. Only available for [OmniLight3D]s and [SpotLight3D]s. Increasing this value will make the light fade out slower and shadows appear blurrier. This can be used to simulate area lights to an extent.
@@ -78,7 +78,7 @@
 		<member name="shadow_enabled" type="bool" setter="set_shadow" getter="has_shadow" default="false">
 			If [code]true[/code], the light will cast shadows.
 		</member>
-		<member name="shadow_fog_fade" type="float" setter="set_param" getter="get_param" default="1.0">
+		<member name="shadow_fog_fade" type="float" setter="set_param" getter="get_param" default="0.1">
 		</member>
 		<member name="shadow_normal_bias" type="float" setter="set_param" getter="get_param" default="2.0">
 			Offsets the lookup into the shadow map by the object's normal. This can be used to reduce self-shadowing artifacts without using [member shadow_bias]. In practice, this value should be tweaked along with [member shadow_bias] to reduce artifacts as much as possible.

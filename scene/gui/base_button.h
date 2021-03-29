@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -45,20 +45,21 @@ public:
 	};
 
 private:
-	int button_mask;
-	bool toggle_mode;
-	bool shortcut_in_tooltip;
-	bool keep_pressed_outside;
+	int button_mask = MOUSE_BUTTON_MASK_LEFT;
+	bool toggle_mode = false;
+	bool shortcut_in_tooltip = true;
+	bool keep_pressed_outside = false;
 	Ref<Shortcut> shortcut;
+	ObjectID shortcut_context;
 
-	ActionMode action_mode;
+	ActionMode action_mode = ACTION_MODE_BUTTON_RELEASE;
 	struct Status {
-		bool pressed;
-		bool hovering;
-		bool press_attempt;
-		bool pressing_inside;
+		bool pressed = false;
+		bool hovering = false;
+		bool press_attempt = false;
+		bool pressing_inside = false;
 
-		bool disabled;
+		bool disabled = false;
 
 	} status;
 
@@ -75,8 +76,10 @@ protected:
 	virtual void toggled(bool p_pressed);
 	static void _bind_methods();
 	virtual void _gui_input(Ref<InputEvent> p_event);
-	virtual void _unhandled_input(Ref<InputEvent> p_event);
+	virtual void _unhandled_key_input(Ref<InputEvent> p_event);
 	void _notification(int p_what);
+
+	bool _is_focus_owner_in_shorcut_context() const;
 
 public:
 	enum DrawMode {
@@ -121,6 +124,9 @@ public:
 
 	void set_button_group(const Ref<ButtonGroup> &p_group);
 	Ref<ButtonGroup> get_button_group() const;
+
+	void set_shortcut_context(Node *p_node);
+	Node *get_shortcut_context() const;
 
 	BaseButton();
 	~BaseButton();

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -293,11 +293,11 @@ void GPUParticlesCollisionSDF::_find_closest_distance(const Vector3 &p_pos, cons
 									SGN(cb.cross(nor).dot(pb)) +
 									SGN(ac.cross(nor).dot(pc)) <
 							2.0) ?
-							MIN(MIN(
+							  MIN(MIN(
 										Vector3_dot2(ba * CLAMP(ba.dot(pa) / Vector3_dot2(ba), 0.0, 1.0) - pa),
 										Vector3_dot2(cb * CLAMP(cb.dot(pb) / Vector3_dot2(cb), 0.0, 1.0) - pb)),
 									Vector3_dot2(ac * CLAMP(ac.dot(pc) / Vector3_dot2(ac), 0.0, 1.0) - pc)) :
-							nor.dot(pa) * nor.dot(pa) / Vector3_dot2(nor));
+							  nor.dot(pa) * nor.dot(pa) / Vector3_dot2(nor));
 
 			closest_distance = MIN(closest_distance, inside_d);
 		}

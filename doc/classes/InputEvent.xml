@@ -35,6 +35,8 @@
 			</return>
 			<argument index="0" name="action" type="StringName">
 			</argument>
+			<argument index="1" name="exact_match" type="bool" default="false">
+			</argument>
 			<description>
 				Returns a value between 0.0 and 1.0 depending on the given actions' state. Useful for getting the value of events of type [InputEventJoypadMotion].
 			</description>
@@ -43,6 +45,8 @@
 			<return type="bool">
 			</return>
 			<argument index="0" name="action" type="StringName">
+			</argument>
+			<argument index="1" name="exact_match" type="bool" default="false">
 			</argument>
 			<description>
 				Returns [code]true[/code] if this input event matches a pre-defined action of any type.
@@ -55,6 +59,8 @@
 			</argument>
 			<argument index="1" name="allow_echo" type="bool" default="false">
 			</argument>
+			<argument index="2" name="exact_match" type="bool" default="false">
+			</argument>
 			<description>
 				Returns [code]true[/code] if the given action is being pressed (and is not an echo event for [InputEventKey] events, unless [code]allow_echo[/code] is [code]true[/code]). Not relevant for events of type [InputEventMouseMotion] or [InputEventScreenDrag].
 			</description>
@@ -63,6 +69,8 @@
 			<return type="bool">
 			</return>
 			<argument index="0" name="action" type="StringName">
+			</argument>
+			<argument index="1" name="exact_match" type="bool" default="false">
 			</argument>
 			<description>
 				Returns [code]true[/code] if the given action is released (i.e. not pressed). Not relevant for events of type [InputEventMouseMotion] or [InputEventScreenDrag].

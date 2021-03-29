@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -199,7 +199,7 @@ void Area2DSW::set_monitorable(bool p_monitorable) {
 }
 
 void Area2DSW::call_queries() {
-	if (monitor_callback_id.is_valid() && !monitored_bodies.empty()) {
+	if (monitor_callback_id.is_valid() && !monitored_bodies.is_empty()) {
 		Variant res[5];
 		Variant *resptr[5];
 		for (int i = 0; i < 5; i++) {
@@ -215,7 +215,9 @@ void Area2DSW::call_queries() {
 
 		for (Map<BodyKey, BodyState>::Element *E = monitored_bodies.front(); E;) {
 			if (E->get().state == 0) { // Nothing happened
-				E = E->next();
+				Map<BodyKey, BodyState>::Element *next = E->next();
+				monitored_bodies.erase(E);
+				E = next;
 				continue;
 			}
 
@@ -234,7 +236,7 @@ void Area2DSW::call_queries() {
 		}
 	}
 
-	if (area_monitor_callback_id.is_valid() && !monitored_areas.empty()) {
+	if (area_monitor_callback_id.is_valid() && !monitored_areas.is_empty()) {
 		Variant res[5];
 		Variant *resptr[5];
 		for (int i = 0; i < 5; i++) {
@@ -250,7 +252,9 @@ void Area2DSW::call_queries() {
 
 		for (Map<BodyKey, BodyState>::Element *E = monitored_areas.front(); E;) {
 			if (E->get().state == 0) { // Nothing happened
-				E = E->next();
+				Map<BodyKey, BodyState>::Element *next = E->next();
+				monitored_areas.erase(E);
+				E = next;
 				continue;
 			}
 

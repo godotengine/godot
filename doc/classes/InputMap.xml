@@ -100,6 +100,8 @@
 			</argument>
 			<argument index="1" name="action" type="StringName">
 			</argument>
+			<argument index="2" name="exact_match" type="bool" default="false">
+			</argument>
 			<description>
 				Returns [code]true[/code] if the given event is part of an existing action. This method ignores keyboard modifiers if the given [InputEvent] is not pressed (for proper release detection). See [method action_has_event] if you don't want this behavior.
 			</description>
@@ -120,7 +122,7 @@
 				Returns [code]true[/code] if the [InputMap] has a registered action with the given name.
 			</description>
 		</method>
-		<method name="load_from_globals">
+		<method name="load_from_project_settings">
 			<return type="void">
 			</return>
 			<description>

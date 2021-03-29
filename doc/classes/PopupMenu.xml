@@ -205,8 +205,11 @@
 			</return>
 			<argument index="0" name="label" type="String" default="&quot;&quot;">
 			</argument>
+			<argument index="1" name="id" type="int" default="-1">
+			</argument>
 			<description>
-				Adds a separator between items. Separators also occupy an index.
+				Adds a separator between items. Separators also occupy an index, which you can set by using the [code]id[/code] parameter.
+				A [code]label[/code] can optionally be provided, which will appear at the center of the separator.
 			</description>
 		</method>
 		<method name="add_shortcut">
@@ -242,6 +245,15 @@
 			</return>
 			<description>
 				Removes all items from the [PopupMenu].
+			</description>
+		</method>
+		<method name="clear_item_opentype_features">
+			<return type="void">
+			</return>
+			<argument index="0" name="idx" type="int">
+			</argument>
+			<description>
+				Removes all OpenType features form the item's text.
 			</description>
 		</method>
 		<method name="get_current_index" qualifiers="const">
@@ -293,6 +305,15 @@
 				Returns the index of the item containing the specified [code]id[/code]. Index is automatically assigned to each item by the engine. Index can not be set manually.
 			</description>
 		</method>
+		<method name="get_item_language" qualifiers="const">
+			<return type="String">
+			</return>
+			<argument index="0" name="idx" type="int">
+			</argument>
+			<description>
+				Returns item's text language code.
+			</description>
+		</method>
 		<method name="get_item_metadata" qualifiers="const">
 			<return type="Variant">
 			</return>
@@ -300,6 +321,17 @@
 			</argument>
 			<description>
 				Returns the metadata of the specified item, which might be of any type. You can set it with [method set_item_metadata], which provides a simple way of assigning context data to items.
+			</description>
+		</method>
+		<method name="get_item_opentype_feature" qualifiers="const">
+			<return type="int">
+			</return>
+			<argument index="0" name="idx" type="int">
+			</argument>
+			<argument index="1" name="tag" type="String">
+			</argument>
+			<description>
+				Returns OpenType feature [code]tag[/code] of the item's text.
 			</description>
 		</method>
 		<method name="get_item_shortcut" qualifiers="const">
@@ -327,6 +359,15 @@
 			</argument>
 			<description>
 				Returns the text of the item at index [code]idx[/code].
+			</description>
+		</method>
+		<method name="get_item_text_direction" qualifiers="const">
+			<return type="int" enum="Control.TextDirection">
+			</return>
+			<argument index="0" name="idx" type="int">
+			</argument>
+			<description>
+				Returns item's text base writing direction.
 			</description>
 		</method>
 		<method name="get_item_tooltip" qualifiers="const">
@@ -494,6 +535,17 @@
 				Sets the [code]id[/code] of the item at index [code]idx[/code].
 			</description>
 		</method>
+		<method name="set_item_language">
+			<return type="void">
+			</return>
+			<argument index="0" name="idx" type="int">
+			</argument>
+			<argument index="1" name="language" type="String">
+			</argument>
+			<description>
+				Sets language code of item's text used for line-breaking and text shaping algorithms, if left empty current locale is used instead.
+			</description>
+		</method>
 		<method name="set_item_metadata">
 			<return type="void">
 			</return>
@@ -513,7 +565,20 @@
 			<argument index="1" name="state" type="int">
 			</argument>
 			<description>
-				Sets the state of an multistate item. See [method add_multistate_item] for details.
+				Sets the state of a multistate item. See [method add_multistate_item] for details.
+			</description>
+		</method>
+		<method name="set_item_opentype_feature">
+			<return type="void">
+			</return>
+			<argument index="0" name="idx" type="int">
+			</argument>
+			<argument index="1" name="tag" type="String">
+			</argument>
+			<argument index="2" name="value" type="int">
+			</argument>
+			<description>
+				Sets OpenType feature [code]tag[/code] for the item's text. More info: [url=https://docs.microsoft.com/en-us/typography/opentype/spec/featuretags]OpenType feature tags[/url].
 			</description>
 		</method>
 		<method name="set_item_shortcut">
@@ -562,6 +627,17 @@
 				Sets the text of the item at index [code]idx[/code].
 			</description>
 		</method>
+		<method name="set_item_text_direction">
+			<return type="void">
+			</return>
+			<argument index="0" name="idx" type="int">
+			</argument>
+			<argument index="1" name="direction" type="int" enum="Control.TextDirection">
+			</argument>
+			<description>
+				Sets item's text base writing direction.
+			</description>
+		</method>
 		<method name="set_item_tooltip">
 			<return type="void">
 			</return>
@@ -588,13 +664,13 @@
 			<argument index="0" name="idx" type="int">
 			</argument>
 			<description>
-				Cycle to the next state of an multistate item. See [method add_multistate_item] for details.
+				Cycle to the next state of a multistate item. See [method add_multistate_item] for details.
 			</description>
 		</method>
 	</methods>
 	<members>
 		<member name="allow_search" type="bool" setter="set_allow_search" getter="get_allow_search" default="true">
-			If [code]true[/code], allows to navigate [PopupMenu] with letter keys.
+			If [code]true[/code], allows navigating [PopupMenu] with letter keys.
 		</member>
 		<member name="hide_on_checkable_item_selection" type="bool" setter="set_hide_on_checkable_item_selection" getter="is_hide_on_checkable_item_selection" default="true">
 			If [code]true[/code], hides the [PopupMenu] when a checkbox or radio button is selected.
@@ -641,17 +717,26 @@
 		<theme_item name="font" type="Font">
 			[Font] used for the menu items.
 		</theme_item>
+		<theme_item name="font_accelerator_color" type="Color" default="Color( 0.7, 0.7, 0.7, 0.8 )">
+			The text [Color] used for shortcuts and accelerators that show next to the menu item name when defined. See [method get_item_accelerator] for more info on accelerators.
+		</theme_item>
 		<theme_item name="font_color" type="Color" default="Color( 0.88, 0.88, 0.88, 1 )">
 			The default text [Color] for menu items' names.
 		</theme_item>
-		<theme_item name="font_color_accel" type="Color" default="Color( 0.7, 0.7, 0.7, 0.8 )">
-			The text [Color] used for shortcuts and accelerators that show next to the menu item name when defined. See [method get_item_accelerator] for more info on accelerators.
-		</theme_item>
-		<theme_item name="font_color_disabled" type="Color" default="Color( 0.4, 0.4, 0.4, 0.8 )">
+		<theme_item name="font_disabled_color" type="Color" default="Color( 0.4, 0.4, 0.4, 0.8 )">
 			[Color] used for disabled menu items' text.
 		</theme_item>
-		<theme_item name="font_color_hover" type="Color" default="Color( 0.88, 0.88, 0.88, 1 )">
+		<theme_item name="font_hover_color" type="Color" default="Color( 0.88, 0.88, 0.88, 1 )">
 			[Color] used for the hovered text.
+		</theme_item>
+		<theme_item name="font_outline_color" type="Color" default="Color( 1, 1, 1, 1 )">
+			The tint of text outline of the menu item.
+		</theme_item>
+		<theme_item name="font_separator_color" type="Color" default="Color( 0.88, 0.88, 0.88, 1 )">
+			[Color] used for labeled separators' text. See [method add_separator].
+		</theme_item>
+		<theme_item name="font_size" type="int">
+			Font size of the menu items.
 		</theme_item>
 		<theme_item name="hover" type="StyleBox">
 			[StyleBox] displayed when the [PopupMenu] item is hovered.
@@ -659,11 +744,18 @@
 		<theme_item name="hseparation" type="int" default="4">
 			The horizontal space between the item's name and the shortcut text/submenu arrow.
 		</theme_item>
+		<theme_item name="item_end_padding" type="int" default="2">
+		</theme_item>
+		<theme_item name="item_start_padding" type="int" default="2">
+		</theme_item>
 		<theme_item name="labeled_separator_left" type="StyleBox">
 			[StyleBox] for the left side of labeled separator. See [method add_separator].
 		</theme_item>
 		<theme_item name="labeled_separator_right" type="StyleBox">
 			[StyleBox] for the right side of labeled separator. See [method add_separator].
+		</theme_item>
+		<theme_item name="outline_size" type="int" default="0">
+			The size of the item text outline.
 		</theme_item>
 		<theme_item name="panel" type="StyleBox">
 			Default [StyleBox] of the [PopupMenu] items.
@@ -681,7 +773,10 @@
 			[StyleBox] used for the separators. See [method add_separator].
 		</theme_item>
 		<theme_item name="submenu" type="Texture2D">
-			[Texture2D] icon for the submenu arrow.
+			[Texture2D] icon for the submenu arrow (for left-to-right layouts).
+		</theme_item>
+		<theme_item name="submenu_mirrored" type="Texture2D">
+			[Texture2D] icon for the submenu arrow (for right-to-left layouts).
 		</theme_item>
 		<theme_item name="unchecked" type="Texture2D">
 			[Texture2D] icon for the unchecked checkbox items.

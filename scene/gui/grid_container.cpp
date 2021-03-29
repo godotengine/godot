@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -141,6 +141,7 @@ void GridContainer::_notification(int p_what) {
 			// Finally, fit the nodes.
 			int col_expand = col_expanded.size() > 0 ? remaining_space.width / col_expanded.size() : 0;
 			int row_expand = row_expanded.size() > 0 ? remaining_space.height / row_expanded.size() : 0;
+			bool rtl = is_layout_rtl();
 
 			int col_ofs = 0;
 			int row_ofs = 0;
@@ -156,23 +157,36 @@ void GridContainer::_notification(int p_what) {
 				valid_controls_index++;
 
 				if (col == 0) {
-					col_ofs = 0;
+					if (rtl) {
+						col_ofs = get_size().width;
+					} else {
+						col_ofs = 0;
+					}
 					if (row > 0) {
 						row_ofs += (row_expanded.has(row - 1) ? row_expand : row_minh[row - 1]) + vsep;
 					}
 				}
 
-				Point2 p(col_ofs, row_ofs);
-				Size2 s(col_expanded.has(col) ? col_expand : col_minw[col], row_expanded.has(row) ? row_expand : row_minh[row]);
-
-				fit_child_in_rect(c, Rect2(p, s));
-
-				col_ofs += s.width + hsep;
+				if (rtl) {
+					Size2 s(col_expanded.has(col) ? col_expand : col_minw[col], row_expanded.has(row) ? row_expand : row_minh[row]);
+					Point2 p(col_ofs - s.width, row_ofs);
+					fit_child_in_rect(c, Rect2(p, s));
+					col_ofs -= s.width + hsep;
+				} else {
+					Point2 p(col_ofs, row_ofs);
+					Size2 s(col_expanded.has(col) ? col_expand : col_minw[col], row_expanded.has(row) ? row_expand : row_minh[row]);
+					fit_child_in_rect(c, Rect2(p, s));
+					col_ofs += s.width + hsep;
+				}
 			}
 
 		} break;
 		case NOTIFICATION_THEME_CHANGED: {
 			minimum_size_changed();
+		} break;
+		case NOTIFICATION_TRANSLATION_CHANGED:
+		case NOTIFICATION_LAYOUT_DIRECTION_CHANGED: {
+			queue_sort();
 		} break;
 	}
 }
@@ -247,6 +261,4 @@ Size2 GridContainer::get_minimum_size() const {
 	return ms;
 }
 
-GridContainer::GridContainer() {
-	columns = 1;
-}
+GridContainer::GridContainer() {}

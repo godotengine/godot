@@ -1,6 +1,6 @@
 # Finnish translation of the Godot Engine editor
-# Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.
-# Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).
+# Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.
+# Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).
 # This file is distributed under the same license as the Godot source code.
 # basse <basse@roiske.org>, 2017.
 # Bastian Salmela <bastian.salmela@gmail.com>, 2017, 2018.
@@ -8,14 +8,14 @@
 # Jarmo Riikonen <amatrelan@gmail.com>, 2017.
 # Nuutti Varvikko <nvarvikko@gmail.com>, 2018.
 # Sami Lehtilä <sami.lehtila@gmail.com>, 2018.
-# Tapani Niemi <tapani.niemi@kapsi.fi>, 2018, 2019, 2020.
+# Tapani Niemi <tapani.niemi@kapsi.fi>, 2018, 2019, 2020, 2021.
 # Tuomas Lähteenmäki <lahtis@gmail.com>, 2019.
 # Matti Niskanen <matti.t.niskanen@gmail.com>, 2020.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2020-10-03 15:29+0000\n"
+"PO-Revision-Date: 2021-03-10 22:14+0000\n"
 "Last-Translator: Tapani Niemi <tapani.niemi@kapsi.fi>\n"
 "Language-Team: Finnish <https://hosted.weblate.org/projects/godot-engine/"
 "godot/fi/>\n"
@@ -24,7 +24,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 4.3-dev\n"
+"X-Generator: Weblate 4.5.2-dev\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -648,7 +648,7 @@ msgstr "Valitse kopioitavat raidat"
 #: editor/plugins/animation_player_editor_plugin.cpp
 #: editor/plugins/script_text_editor.cpp
 #: editor/plugins/sprite_frames_editor_plugin.cpp editor/property_editor.cpp
-#: scene/gui/line_edit.cpp scene/gui/text_edit.cpp
+#: editor/scene_tree_dock.cpp scene/gui/line_edit.cpp scene/gui/text_edit.cpp
 msgid "Copy"
 msgstr "Kopioi"
 
@@ -1029,18 +1029,25 @@ msgid "Owners Of:"
 msgstr "Omistajat kohteelle:"
 
 #: editor/dependency_editor.cpp
-msgid "Remove selected files from the project? (Can't be restored)"
-msgstr "Poista valitut tiedostot projektista? (Ei voida palauttaa)"
+msgid ""
+"Remove selected files from the project? (no undo)\n"
+"You can find the removed files in the system trash to restore them."
+msgstr ""
+"Poista valitut tiedostot projektista? (ei voida kumota)\n"
+"Löydät poistetut tiedostot järjestelmän roskakorista, mikäli haluat "
+"palauttaa ne."
 
 #: editor/dependency_editor.cpp
 msgid ""
 "The files being removed are required by other resources in order for them to "
 "work.\n"
-"Remove them anyway? (no undo)"
+"Remove them anyway? (no undo)\n"
+"You can find the removed files in the system trash to restore them."
 msgstr ""
-"Poistettavaksi merkittyjä tiedostoja tarvitaan muiden resurssien "
-"toimivuuteen.\n"
-"Poistetaanko silti? (ei mahdollisuutta kumota)"
+"Poistettavia tiedostoja tarvitaan muiden resurssien toimivuuteen.\n"
+"Poistetaanko silti? (ei voida kumota)\n"
+"Löydät poistetut tiedostot järjestelmän roskakorista, mikäli haluat "
+"palauttaa ne."
 
 #: editor/dependency_editor.cpp
 msgid "Cannot remove:"
@@ -1084,7 +1091,7 @@ msgstr "Irrallisten resurssien hallinta"
 
 #: editor/dependency_editor.cpp editor/editor_audio_buses.cpp
 #: editor/editor_file_dialog.cpp editor/editor_node.cpp
-#: editor/filesystem_dock.cpp editor/plugins/item_list_editor_plugin.cpp
+#: editor/plugins/item_list_editor_plugin.cpp
 #: editor/plugins/sprite_frames_editor_plugin.cpp editor/project_export.cpp
 #: editor/project_settings_editor.cpp editor/scene_tree_dock.cpp
 msgid "Delete"
@@ -1595,34 +1602,31 @@ msgstr ""
 "Enabled' asetus."
 
 #: editor/editor_export.cpp
-#, fuzzy
 msgid ""
 "Target platform requires 'PVRTC' texture compression for GLES2. Enable "
 "'Import Pvrtc' in Project Settings."
 msgstr ""
-"GLES2 tarvitsee kohdealustalla 'ETC' tekstuuripakkausta. Kytke 'Import Etc' "
-"päälle projektin asetuksista."
+"GLES2 tarvitsee kohdealustalla 'PVRTC' tekstuuripakkausta. Kytke 'Import "
+"Pvrtc' päälle projektin asetuksista."
 
 #: editor/editor_export.cpp
-#, fuzzy
 msgid ""
 "Target platform requires 'ETC2' or 'PVRTC' texture compression for GLES3. "
 "Enable 'Import Etc 2' or 'Import Pvrtc' in Project Settings."
 msgstr ""
-"GLES3 tarvitsee kohdealustalla 'ETC' tekstuuripakkausta. Kytke 'Import Etc "
-"2' päälle projektin asetuksista."
+"GLES3 tarvitsee kohdealustalla 'ETC2' tai 'PVRTC' tekstuuripakkausta. Kytke "
+"'Import Etc 2' tai 'Import Pvrtc' päälle projektin asetuksista."
 
 #: editor/editor_export.cpp
-#, fuzzy
 msgid ""
 "Target platform requires 'PVRTC' texture compression for the driver fallback "
 "to GLES2.\n"
 "Enable 'Import Pvrtc' in Project Settings, or disable 'Driver Fallback "
 "Enabled'."
 msgstr ""
-"GLES2 vara-ajuri tarvitsee kohdealustalla 'ETC' tekstuuripakkausta.\n"
-"Kytke 'Import Etc' päälle projektin asetuksista tai poista 'Driver Fallback "
-"Enabled' asetus."
+"GLES2 vara-ajuri tarvitsee kohdealustalla 'PVRTC' tekstuuripakkausta.\n"
+"Kytke 'Import Pvrtc' päälle projektin asetuksista tai poista 'Driver "
+"Fallback Enabled' asetus."
 
 #: editor/editor_export.cpp platform/android/export/export.cpp
 #: platform/iphone/export/export.cpp platform/javascript/export/export.cpp
@@ -1853,8 +1857,8 @@ msgid "Open a File or Directory"
 msgstr "Avaa tiedosto tai hakemisto"
 
 #: editor/editor_file_dialog.cpp editor/editor_node.cpp
-#: editor/editor_properties.cpp editor/inspector_dock.cpp
-#: editor/plugins/animation_player_editor_plugin.cpp
+#: editor/editor_properties.cpp editor/import_defaults_editor.cpp
+#: editor/inspector_dock.cpp editor/plugins/animation_player_editor_plugin.cpp
 #: editor/plugins/script_editor_plugin.cpp scene/gui/file_dialog.cpp
 msgid "Save"
 msgstr "Tallenna"
@@ -1944,10 +1948,6 @@ msgstr "Esikatselu:"
 #: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
 msgid "File:"
 msgstr "Tiedosto:"
-
-#: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
-msgid "Must use a valid extension."
-msgstr "Käytä sopivaa tiedostopäätettä."
 
 #: editor/editor_file_system.cpp
 msgid "ScanSources"
@@ -2305,19 +2305,29 @@ msgid "Error saving TileSet!"
 msgstr "Virhe tallennettaessa laattavalikoimaa!"
 
 #: editor/editor_node.cpp
-msgid "Error trying to save layout!"
-msgstr "Virhe tallennettaessa asettelua!"
+msgid ""
+"An error occurred while trying to save the editor layout.\n"
+"Make sure the editor's user data path is writable."
+msgstr ""
+"Editorin asettelua tallentaessa tapahtui virhe.\n"
+"Varmista, että editorin käyttäjädatapolku on kirjoituskelpoinen."
 
 #: editor/editor_node.cpp
-msgid "Default editor layout overridden."
-msgstr "Editorin oletusasettelu ylikirjoitettu."
+msgid ""
+"Default editor layout overridden.\n"
+"To restore the Default layout to its base settings, use the Delete Layout "
+"option and delete the Default layout."
+msgstr ""
+"Ylikirjoitettiin editorin oletusasettelu.\n"
+"Palauttaaksesi oletusasettelun alkuperäisiin asetuksiinsa, käytä Poista "
+"asettelu -valintaa ja poista oletusasettelu."
 
 #: editor/editor_node.cpp
 msgid "Layout name not found!"
 msgstr "Asettelun nimeä ei löytynyt!"
 
 #: editor/editor_node.cpp
-msgid "Restored default layout to base settings."
+msgid "Restored the Default layout to its base settings."
 msgstr "Palautettiin oletusasettelu alkuperäisiin asetuksiinsa."
 
 #: editor/editor_node.cpp
@@ -2373,6 +2383,10 @@ msgid "There is no defined scene to run."
 msgstr "Suoritettavaa skeneä ei ole määritetty."
 
 #: editor/editor_node.cpp
+msgid "Save scene before running..."
+msgstr "Tallenna skene ennen ajamista..."
+
+#: editor/editor_node.cpp
 msgid "Could not start subprocess!"
 msgstr "Aliprosessia ei voitu käynnistää!"
 
@@ -2415,18 +2429,6 @@ msgstr "Skenen tallentaminen edellyttää, että sillä on juurisolmu."
 #: editor/editor_node.cpp
 msgid "Save Scene As..."
 msgstr "Tallenna skene nimellä..."
-
-#: editor/editor_node.cpp
-msgid "No"
-msgstr "Ei"
-
-#: editor/editor_node.cpp
-msgid "Yes"
-msgstr "Kyllä"
-
-#: editor/editor_node.cpp
-msgid "This scene has never been saved. Save before running?"
-msgstr "Tätä skeneä ei ole koskaan tallennettu. Tallenna ennen suorittamista?"
 
 #: editor/editor_node.cpp editor/scene_tree_dock.cpp
 msgid "This operation can't be done without a scene."
@@ -2478,6 +2480,10 @@ msgid "Quit"
 msgstr "Lopeta"
 
 #: editor/editor_node.cpp
+msgid "Yes"
+msgstr "Kyllä"
+
+#: editor/editor_node.cpp
 msgid "Exit the editor?"
 msgstr "Poistu editorista?"
 
@@ -2524,8 +2530,8 @@ msgid "Unable to enable addon plugin at: '%s' parsing of config failed."
 msgstr "Lisäosan '%s' aktivointi epäonnistui, virheellinen asetustiedosto."
 
 #: editor/editor_node.cpp
-msgid "Unable to find script field for addon plugin at: 'res://addons/%s'."
-msgstr "Skriptikenttää ei löytynyt lisäosan tiedostosta: 'res://addons/%s'."
+msgid "Unable to find script field for addon plugin at: '%s'."
+msgstr "Skriptikenttää ei löytynyt lisäosan tiedostosta: '%s'."
 
 #: editor/editor_node.cpp
 msgid "Unable to load addon script from path: '%s'."
@@ -2951,14 +2957,6 @@ msgid "Help"
 msgstr "Ohje"
 
 #: editor/editor_node.cpp editor/plugins/script_editor_plugin.cpp
-#: editor/plugins/script_text_editor.cpp
-#: editor/plugins/shader_editor_plugin.cpp editor/plugins/text_editor.cpp
-#: editor/plugins/visual_shader_editor_plugin.cpp editor/project_manager.cpp
-#: editor/project_settings_editor.cpp editor/settings_config_dialog.cpp
-msgid "Search"
-msgstr "Hae"
-
-#: editor/editor_node.cpp editor/plugins/script_editor_plugin.cpp
 #: editor/plugins/shader_editor_plugin.cpp
 msgid "Online Docs"
 msgstr "Dokumentaatio"
@@ -3121,6 +3119,24 @@ msgstr "Yhdistä olemassaolevaan"
 #: editor/editor_node.cpp
 msgid "Open & Run a Script"
 msgstr "Avaa ja suorita skripti"
+
+#: editor/editor_node.cpp
+msgid ""
+"The following files are newer on disk.\n"
+"What action should be taken?"
+msgstr ""
+"Seuraavat tiedostot ovat uudempia levyllä.\n"
+"Mikä toimenpide tulisi suorittaa?"
+
+#: editor/editor_node.cpp editor/plugins/script_editor_plugin.cpp
+#: editor/plugins/shader_editor_plugin.cpp
+msgid "Reload"
+msgstr "Lataa uudelleen"
+
+#: editor/editor_node.cpp editor/plugins/script_editor_plugin.cpp
+#: editor/plugins/shader_editor_plugin.cpp
+msgid "Resave"
+msgstr "Tallenna uudelleen"
 
 #: editor/editor_node.cpp
 msgid "New Inherited"
@@ -3334,7 +3350,7 @@ msgstr "Tee yksilölliseksi"
 #: editor/plugins/script_text_editor.cpp
 #: editor/plugins/sprite_frames_editor_plugin.cpp
 #: editor/plugins/tile_map_editor_plugin.cpp editor/property_editor.cpp
-#: scene/gui/line_edit.cpp scene/gui/text_edit.cpp
+#: editor/scene_tree_dock.cpp scene/gui/line_edit.cpp scene/gui/text_edit.cpp
 msgid "Paste"
 msgstr "Liitä"
 
@@ -3686,6 +3702,22 @@ msgid "Name contains invalid characters."
 msgstr "Nimi sisältää virheellisiä kirjainmerkkejä."
 
 #: editor/filesystem_dock.cpp
+msgid ""
+"The following files or folders conflict with items in the target location "
+"'%s':\n"
+"\n"
+"%s\n"
+"\n"
+"Do you wish to overwrite them?"
+msgstr ""
+"Seuraavat tiedostot tai kansiot ovat ristiriidassa kohdesijainnissa '%s' "
+"olevien kanssa:\n"
+"\n"
+"%s\n"
+"\n"
+"Haluatko ylikirjoittaa ne?"
+
+#: editor/filesystem_dock.cpp
 msgid "Renaming file:"
 msgstr "Nimetään tiedosto uudelleen:"
 
@@ -3733,14 +3765,6 @@ msgstr "Muokkaa riippuvuuksia..."
 msgid "View Owners..."
 msgstr "Tarkastele omistajia..."
 
-#: editor/filesystem_dock.cpp editor/plugins/animation_player_editor_plugin.cpp
-msgid "Rename..."
-msgstr "Nimeä uudelleen..."
-
-#: editor/filesystem_dock.cpp
-msgid "Duplicate..."
-msgstr "Kahdenna..."
-
 #: editor/filesystem_dock.cpp
 msgid "Move To..."
 msgstr "Siirrä..."
@@ -3768,11 +3792,16 @@ msgid "Collapse All"
 msgstr "Tiivistä kaikki"
 
 #: editor/filesystem_dock.cpp
-#: editor/plugins/animation_tree_player_editor_plugin.cpp
-#: editor/project_manager.cpp editor/rename_dialog.cpp
-#: editor/scene_tree_dock.cpp
-msgid "Rename"
-msgstr "Nimeä uudelleen"
+msgid "Duplicate..."
+msgstr "Kahdenna..."
+
+#: editor/filesystem_dock.cpp
+msgid "Move to Trash"
+msgstr "Siirrä roskakoriin"
+
+#: editor/filesystem_dock.cpp editor/plugins/animation_player_editor_plugin.cpp
+msgid "Rename..."
+msgstr "Nimeä uudelleen..."
 
 #: editor/filesystem_dock.cpp
 msgid "Previous Folder/File"
@@ -3807,8 +3836,11 @@ msgid "Move"
 msgstr "Siirrä"
 
 #: editor/filesystem_dock.cpp
-msgid "There is already file or folder with the same name in this location."
-msgstr "Tästä sijainnista löytyy jo samanniminen tiedosto tai kansio."
+#: editor/plugins/animation_tree_player_editor_plugin.cpp
+#: editor/project_manager.cpp editor/rename_dialog.cpp
+#: editor/scene_tree_dock.cpp
+msgid "Rename"
+msgstr "Nimeä uudelleen"
 
 #: editor/filesystem_dock.cpp
 msgid "Overwrite"
@@ -3876,8 +3908,16 @@ msgid "Searching..."
 msgstr "Haetaan..."
 
 #: editor/find_in_files.cpp
-msgid "Search complete"
-msgstr "Haku valmis"
+msgid "%d match in %d file."
+msgstr "%d osuma %d tiedostossa."
+
+#: editor/find_in_files.cpp
+msgid "%d matches in %d file."
+msgstr "%d osumaa %d tiedostossa."
+
+#: editor/find_in_files.cpp
+msgid "%d matches in %d files."
+msgstr "%d osumaa %d tiedostossa."
 
 #: editor/groups_editor.cpp
 msgid "Add to Group"
@@ -4014,6 +4054,18 @@ msgstr ""
 #: editor/import/resource_importer_scene.cpp
 msgid "Saving..."
 msgstr "Tallennetaan..."
+
+#: editor/import_defaults_editor.cpp
+msgid "Select Importer"
+msgstr "Valitse tuoja"
+
+#: editor/import_defaults_editor.cpp
+msgid "Importer:"
+msgstr "Tuoja:"
+
+#: editor/import_defaults_editor.cpp
+msgid "Reset to Defaults"
+msgstr "Palauta oletusarvoihin"
 
 #: editor/import_dock.cpp
 msgid "%d Files"
@@ -4984,8 +5036,8 @@ msgid "Got:"
 msgstr "Saatiin:"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
-msgid "Failed sha256 hash check"
-msgstr "sha256-hajautusarvon tarkistus epäonnistui"
+msgid "Failed SHA-256 hash check"
+msgstr "SHA-256 hajautusarvon tarkistus epäonnistui"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Asset Download Error:"
@@ -5088,7 +5140,6 @@ msgid "Sort:"
 msgstr "Lajittele:"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
-#: editor/project_settings_editor.cpp
 msgid "Category:"
 msgstr "Kategoria:"
 
@@ -5119,12 +5170,10 @@ msgstr "Assettien zip-tiedosto"
 #: editor/plugins/baked_lightmap_editor_plugin.cpp
 msgid ""
 "Can't determine a save path for lightmap images.\n"
-"Save your scene (for images to be saved in the same dir), or pick a save "
-"path from the BakedLightmap properties."
+"Save your scene and try again."
 msgstr ""
 "Lightmap-kuvien tallennuspolun määrittäminen ei onnistu.\n"
-"Tallenna skenesi (jotta kuvat tallentuisivat samaan hakemistoon), tai "
-"valitse tallennuspolku BakedLightmapin asetuksista."
+"Tallenna skenesi ja yritä uudelleen."
 
 #: editor/plugins/baked_lightmap_editor_plugin.cpp
 msgid ""
@@ -5141,8 +5190,33 @@ msgstr ""
 "kirjoituskelpoinen."
 
 #: editor/plugins/baked_lightmap_editor_plugin.cpp
+msgid "Failed determining lightmap size. Maximum lightmap size too small?"
+msgstr ""
+"Lightmapin koon määrittäminen epäonnistui. Suurin lightmapin koko liian "
+"pieni?"
+
+#: editor/plugins/baked_lightmap_editor_plugin.cpp
+msgid ""
+"Some mesh is invalid. Make sure the UV2 channel values are contained within "
+"the [0.0,1.0] square region."
+msgstr ""
+"Jokin mesh on virheellinen. Varmista, että UV2-kanavan arvot ovat [0.0, 1.0] "
+"välisen neliön alueella."
+
+#: editor/plugins/baked_lightmap_editor_plugin.cpp
+msgid ""
+"Godot editor was built without ray tracing support, lightmaps can't be baked."
+msgstr ""
+"Godot-editori on käännetty ilman ray tracing -tukea, joten lightmappeja ei "
+"voi kehittää."
+
+#: editor/plugins/baked_lightmap_editor_plugin.cpp
 msgid "Bake Lightmaps"
 msgstr "Kehitä Lightmapit"
+
+#: editor/plugins/baked_lightmap_editor_plugin.cpp
+msgid "Select lightmap bake file:"
+msgstr "Valitse lightmapin kehitystiedosto:"
 
 #: editor/plugins/camera_editor_plugin.cpp
 #: editor/plugins/spatial_editor_plugin.cpp
@@ -5211,50 +5285,43 @@ msgstr "Luo vaaka- ja pystysuorat apuviivat"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Set CanvasItem \"%s\" Pivot Offset to (%d, %d)"
-msgstr ""
+msgstr "Aseta CanvasItem \"%s\" keskiöksi (%d, %d)"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Rotate %d CanvasItems"
-msgstr "Kierrä CanvasItemiä"
+msgstr "Kierrä %d CanvasItemiä"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Rotate CanvasItem \"%s\" to %d degrees"
-msgstr "Kierrä CanvasItemiä"
+msgstr "Kierrä CanvasItem \"%s\":ä %d astetta"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Move CanvasItem \"%s\" Anchor"
-msgstr "Siirrä CanvasItemiä"
+msgstr "Siirrä CanvasItem \"%s\":n ankkuri"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Scale Node2D \"%s\" to (%s, %s)"
-msgstr ""
+msgstr "Skaalaa Node2D \"%s\" kokoon (%s, %s)"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Resize Control \"%s\" to (%d, %d)"
-msgstr ""
+msgstr "Muuta Control \"%s\" kokoon (%d, %d)"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Scale %d CanvasItems"
-msgstr "Skaalaa CanvasItemiä"
+msgstr "Skaalaa %d CanvasItemiä"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Scale CanvasItem \"%s\" to (%s, %s)"
-msgstr "Skaalaa CanvasItemiä"
+msgstr "Skaalaa CanvasItem \"%s\" kokoon (%s, %s)"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Move %d CanvasItems"
-msgstr "Siirrä CanvasItemiä"
+msgstr "Siirrä %d CanvasItemiä"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Move CanvasItem \"%s\" to (%d, %d)"
-msgstr "Siirrä CanvasItemiä"
+msgstr "Siirrä CanvasItem \"%s\" koordinaattiin (%d, %d)"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid ""
@@ -6245,6 +6312,10 @@ msgstr ""
 "Piste voidaan asettaa ainoastaan ParticlesMaterial käsittelyn materiaaliin"
 
 #: editor/plugins/particles_2d_editor_plugin.cpp
+msgid "Convert to CPUParticles2D"
+msgstr "Muunna CPUParticles2D solmuksi"
+
+#: editor/plugins/particles_2d_editor_plugin.cpp
 #: editor/plugins/particles_editor_plugin.cpp
 msgid "Generation Time (sec):"
 msgstr "Luontiaika (s):"
@@ -6304,10 +6375,6 @@ msgstr "Luodaan AABB"
 #: editor/plugins/particles_editor_plugin.cpp
 msgid "Generate Visibility AABB"
 msgstr "Kartoita näkyvä alue"
-
-#: editor/plugins/particles_editor_plugin.cpp
-msgid "Generate AABB"
-msgstr "Luo AABB"
 
 #: editor/plugins/path_2d_editor_plugin.cpp
 msgid "Remove Point from Curve"
@@ -6535,18 +6602,16 @@ msgid "Move Points"
 msgstr "Siirrä pisteitä"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
-#, fuzzy
 msgid "Command: Rotate"
-msgstr "Vedä: Kierrä"
+msgstr "Komentonäppäin: Kierrä"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
 msgid "Shift: Move All"
 msgstr "Shift: Siirrä kaikkia"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
-#, fuzzy
 msgid "Shift+Command: Scale"
-msgstr "Shift+Ctrl: Skaalaa"
+msgstr "Shift+komentonäppäin: Skaalaa"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
 msgid "Ctrl: Rotate"
@@ -6594,14 +6659,12 @@ msgid "Radius:"
 msgstr "Säde:"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
-#, fuzzy
 msgid "Copy Polygon to UV"
-msgstr "Luo polygoni ja UV"
+msgstr "Kopioi polygoni UV:hen"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
-#, fuzzy
 msgid "Copy UV to Polygon"
-msgstr "Muunna Polygon2D solmuksi"
+msgstr "Kopioi UV Polygon solmulle"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
 msgid "Clear UV"
@@ -6904,6 +6967,14 @@ msgstr "Sulje dokumentaatio"
 msgid "Run"
 msgstr "Suorita"
 
+#: editor/plugins/script_editor_plugin.cpp
+#: editor/plugins/script_text_editor.cpp
+#: editor/plugins/shader_editor_plugin.cpp editor/plugins/text_editor.cpp
+#: editor/plugins/visual_shader_editor_plugin.cpp editor/project_manager.cpp
+#: editor/project_settings_editor.cpp editor/settings_config_dialog.cpp
+msgid "Search"
+msgstr "Hae"
+
 #: editor/plugins/script_editor_plugin.cpp editor/script_editor_debugger.cpp
 msgid "Step Into"
 msgstr "Siirry sisään"
@@ -6956,16 +7027,6 @@ msgid ""
 msgstr ""
 "Seuraavat tiedostot ovat uudempia levyllä.\n"
 "Mikä toimenpide tulisi suorittaa?:"
-
-#: editor/plugins/script_editor_plugin.cpp
-#: editor/plugins/shader_editor_plugin.cpp
-msgid "Reload"
-msgstr "Lataa uudelleen"
-
-#: editor/plugins/script_editor_plugin.cpp
-#: editor/plugins/shader_editor_plugin.cpp
-msgid "Resave"
-msgstr "Tallenna uudelleen"
 
 #: editor/plugins/script_editor_plugin.cpp editor/script_editor_debugger.cpp
 msgid "Debugger"
@@ -7061,8 +7122,8 @@ msgstr "Keskeytyskohdat"
 msgid "Go To"
 msgstr "Mene"
 
-#: editor/plugins/script_text_editor.cpp scene/gui/line_edit.cpp
-#: scene/gui/text_edit.cpp
+#: editor/plugins/script_text_editor.cpp editor/scene_tree_dock.cpp
+#: scene/gui/line_edit.cpp scene/gui/text_edit.cpp
 msgid "Cut"
 msgstr "Leikkaa"
 
@@ -7283,6 +7344,10 @@ msgstr "Nyökkäys (pitch)"
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Yaw"
 msgstr "Käännös (yaw)"
+
+#: editor/plugins/spatial_editor_plugin.cpp
+msgid "Size"
+msgstr "Koko"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Objects Drawn"
@@ -8149,13 +8214,12 @@ msgid "Paint Tile"
 msgstr "Maalaa laatta"
 
 #: editor/plugins/tile_map_editor_plugin.cpp
-#, fuzzy
 msgid ""
 "Shift+LMB: Line Draw\n"
 "Shift+Command+LMB: Rectangle Paint"
 msgstr ""
-"Shift+Hiiren vasen: Piirrä viiva\n"
-"Shift+Ctrl+Hiiren vasen: Suorakaidemaalaus"
+"Shift+Hiiren vasen: Viivanpiirto\n"
+"Shift+Komentonäppäin+Hiiren vasen: Suorakaidemaalaus"
 
 #: editor/plugins/tile_map_editor_plugin.cpp
 msgid ""
@@ -8310,8 +8374,20 @@ msgid "Create a new rectangle."
 msgstr "Luo uusi suorakulmio."
 
 #: editor/plugins/tile_set_editor_plugin.cpp
+msgid "New Rectangle"
+msgstr "Uusi suorakaide"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Create a new polygon."
 msgstr "Luo uusi polygoni."
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+msgid "New Polygon"
+msgstr "Uusi polygoni"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+msgid "Delete Selected Shape"
+msgstr "Poista valittu muoto"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Keep polygon inside region Rect."
@@ -8520,10 +8596,6 @@ msgid "Error"
 msgstr "Virhe"
 
 #: editor/plugins/version_control_editor_plugin.cpp
-msgid "No commit message was provided"
-msgstr "Muutosviestiä ei annettu"
-
-#: editor/plugins/version_control_editor_plugin.cpp
 msgid "No files added to stage"
 msgstr "Tiedostoja ei ole lisätty valmisteluun"
 
@@ -8578,10 +8650,6 @@ msgstr "Valmistele valitut"
 #: editor/plugins/version_control_editor_plugin.cpp
 msgid "Stage All"
 msgstr "Valmistele kaikki"
-
-#: editor/plugins/version_control_editor_plugin.cpp
-msgid "Add a commit message"
-msgstr "Lisää muutosviesti"
 
 #: editor/plugins/version_control_editor_plugin.cpp
 msgid "Commit Changes"
@@ -8683,9 +8751,8 @@ msgid "Add Node to Visual Shader"
 msgstr "Lisää solmu Visual Shaderiin"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
-#, fuzzy
 msgid "Node(s) Moved"
-msgstr "Solmu siirretty"
+msgstr "Solmu(t) siirretty"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Duplicate Nodes"
@@ -8705,9 +8772,8 @@ msgid "Visual Shader Input Type Changed"
 msgstr "Visual Shaderin syötteen tyyppi vaihdettu"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
-#, fuzzy
 msgid "UniformRef Name Changed"
-msgstr "Aseta uniformin nimi"
+msgstr "UniformRef nimi muutettu"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Vertex"
@@ -9420,7 +9486,7 @@ msgstr ""
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "A reference to an existing uniform."
-msgstr ""
+msgstr "Viittaus olemassa olevaan uniformiin."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "(Fragment/Light mode only) Scalar derivative function."
@@ -9789,6 +9855,10 @@ msgid "OpenGL ES 3.0"
 msgstr "OpenGL ES 3.0"
 
 #: editor/project_manager.cpp
+msgid "Not supported by your GPU drivers."
+msgstr "Ei ole tuettu asennettujen GPU-ajureiden kanssa."
+
+#: editor/project_manager.cpp
 msgid ""
 "Higher visual quality\n"
 "All features available\n"
@@ -9960,6 +10030,10 @@ msgstr "Projektinhallinta"
 #: editor/project_manager.cpp
 msgid "Projects"
 msgstr "Projektit"
+
+#: editor/project_manager.cpp
+msgid "Loading, please wait..."
+msgstr "Ladataan, hetkinen..."
 
 #: editor/project_manager.cpp
 msgid "Last Modified"
@@ -10331,6 +10405,10 @@ msgstr "Automaattilataus"
 msgid "Plugins"
 msgstr "Liitännäiset"
 
+#: editor/project_settings_editor.cpp
+msgid "Import Defaults"
+msgstr "Lataa oletusarvot"
+
 #: editor/property_editor.cpp
 msgid "Preset..."
 msgstr "Esiasetus..."
@@ -10580,6 +10658,14 @@ msgid "Instance Child Scene"
 msgstr "Luo aliskenen ilmentymä"
 
 #: editor/scene_tree_dock.cpp
+msgid "Can't paste root node into the same scene."
+msgstr "Juurisolmua ei voida liittää samaan skeneen."
+
+#: editor/scene_tree_dock.cpp
+msgid "Paste Node(s)"
+msgstr "Liitä solmu(t)"
+
+#: editor/scene_tree_dock.cpp
 msgid "Detach Script"
 msgstr "Irrota skripti"
 
@@ -10707,6 +10793,10 @@ msgstr "Ei voida suorittaa solmuille, joista nykyinen skene periytyy!"
 #: editor/scene_tree_dock.cpp
 msgid "Attach Script"
 msgstr "Liitä skripti"
+
+#: editor/scene_tree_dock.cpp
+msgid "Cut Node(s)"
+msgstr "Leikkaa solmu(t)"
 
 #: editor/scene_tree_dock.cpp
 msgid "Remove Node(s)"
@@ -11519,6 +11609,34 @@ msgid "Give a MeshLibrary resource to this GridMap to use its meshes."
 msgstr ""
 "Anna MeshLibrary resurssi tälle GridMap solmulle käyttääksesi sen meshejä."
 
+#: modules/lightmapper_cpu/lightmapper_cpu.cpp
+msgid "Begin Bake"
+msgstr "Aloita kehitys"
+
+#: modules/lightmapper_cpu/lightmapper_cpu.cpp
+msgid "Preparing data structures"
+msgstr "Valmistellaan tietorakenteita"
+
+#: modules/lightmapper_cpu/lightmapper_cpu.cpp
+msgid "Generate buffers"
+msgstr "Luo puskurit"
+
+#: modules/lightmapper_cpu/lightmapper_cpu.cpp
+msgid "Direct lighting"
+msgstr "Suora valaistus"
+
+#: modules/lightmapper_cpu/lightmapper_cpu.cpp
+msgid "Indirect lighting"
+msgstr "Epäsuora valaistus"
+
+#: modules/lightmapper_cpu/lightmapper_cpu.cpp
+msgid "Post processing"
+msgstr "Jälkikäsittely"
+
+#: modules/lightmapper_cpu/lightmapper_cpu.cpp
+msgid "Plotting lightmaps"
+msgstr "Piirretään lightmappeja"
+
 #: modules/mono/csharp_script.cpp
 msgid "Class name can't be a reserved keyword"
 msgstr "Luokan nimi ei voi olla varattu avainsana"
@@ -12031,12 +12149,16 @@ msgid "Select device from the list"
 msgstr "Valitse laite listasta"
 
 #: platform/android/export/export.cpp
-msgid "ADB executable not configured in the Editor Settings."
-msgstr "ADB käynnistystiedostoa ei ole määritetty editorin asetuksissa."
+msgid "Unable to find the 'apksigner' tool."
+msgstr "'apksigner' työkalua ei löydy."
 
 #: platform/android/export/export.cpp
-msgid "OpenJDK jarsigner not configured in the Editor Settings."
-msgstr "OpenJDK jarsigner ei ole määritettynä editorin asetuksissa."
+msgid ""
+"Android build template not installed in the project. Install it from the "
+"Project menu."
+msgstr ""
+"Android-käännösmallia ei ole asennettu projektiin. Asenna se Projekti-"
+"valikosta."
 
 #: platform/android/export/export.cpp
 msgid "Debug keystore not configured in the Editor Settings nor in the preset."
@@ -12048,24 +12170,33 @@ msgid "Release keystore incorrectly configured in the export preset."
 msgstr "Release keystore on konfiguroitu väärin viennin esiasetuksissa."
 
 #: platform/android/export/export.cpp
-msgid "Custom build requires a valid Android SDK path in Editor Settings."
-msgstr ""
-"Mukautettu käännös edellyttää kelvollista Android SDK -polkua editorin "
-"asetuksissa."
+msgid "A valid Android SDK path is required in Editor Settings."
+msgstr "Editorin asetuksiin tarvitaan kelvollinen Android SDK -polku."
 
 #: platform/android/export/export.cpp
-msgid "Invalid Android SDK path for custom build in Editor Settings."
-msgstr ""
-"Virheellinen Android SDK -polku mukautettu käännöstä varten editorin "
-"asetuksissa."
+msgid "Invalid Android SDK path in Editor Settings."
+msgstr "Editorin asetuksissa on virheellinen Android SDK -polku."
 
 #: platform/android/export/export.cpp
-msgid ""
-"Android build template not installed in the project. Install it from the "
-"Project menu."
+msgid "Missing 'platform-tools' directory!"
+msgstr "'platform-tools' hakemisto puuttuu!"
+
+#: platform/android/export/export.cpp
+msgid "Unable to find Android SDK platform-tools' adb command."
+msgstr "Android SDK platform-tools adb-komentoa ei löydy."
+
+#: platform/android/export/export.cpp
+msgid "Please check in the Android SDK directory specified in Editor Settings."
 msgstr ""
-"Android-käännösmallia ei ole asennettu projektiin. Asenna se Projekti-"
-"valikosta."
+"Ole hyvä ja tarkista editorin asetuksissa määritelty Android SDK -hakemisto."
+
+#: platform/android/export/export.cpp
+msgid "Missing 'build-tools' directory!"
+msgstr "'build-tools' hakemisto puuttuu!"
+
+#: platform/android/export/export.cpp
+msgid "Unable to find Android SDK build-tools' apksigner command."
+msgstr "Android SDK build-tools apksigner-komentoa ei löydy."
 
 #: platform/android/export/export.cpp
 msgid "Invalid public key for APK expansion."
@@ -12114,18 +12245,23 @@ msgstr ""
 #: platform/android/export/export.cpp
 msgid "\"Export AAB\" is only valid when \"Use Custom Build\" is enabled."
 msgstr ""
+"\"Export AAB\" on käyttökelpoinen vain, kun \"Use Custom Build\" asetus on "
+"päällä."
 
 #: platform/android/export/export.cpp
 msgid "Invalid filename! Android App Bundle requires the *.aab extension."
 msgstr ""
+"Virheellinen tiedostonimi! Android App Bundle tarvitsee *.aab "
+"tiedostopäätteen."
 
 #: platform/android/export/export.cpp
 msgid "APK Expansion not compatible with Android App Bundle."
-msgstr ""
+msgstr "APK Expansion ei ole yhteensopiva Android App Bundlen kanssa."
 
 #: platform/android/export/export.cpp
 msgid "Invalid filename! Android APK requires the *.apk extension."
 msgstr ""
+"Virheellinen tiedostonimi! Android APK tarvitsee *.apk tiedostopäätteen."
 
 #: platform/android/export/export.cpp
 msgid ""
@@ -12162,13 +12298,15 @@ msgstr ""
 
 #: platform/android/export/export.cpp
 msgid "Moving output"
-msgstr ""
+msgstr "Siirretään tulostetta"
 
 #: platform/android/export/export.cpp
 msgid ""
 "Unable to copy and rename export file, check gradle project directory for "
 "outputs."
 msgstr ""
+"Vientitiedoston kopiointi ja uudelleennimeäminen ei onnistu, tarkista "
+"tulosteet gradle-projektin hakemistosta."
 
 #: platform/iphone/export/export.cpp
 msgid "Identifier is missing."
@@ -12321,6 +12459,18 @@ msgstr ""
 msgid "An empty CollisionPolygon2D has no effect on collision."
 msgstr "Tyhjällä CollisionPolygon2D solmulla ei ole vaikutusta törmäyksessä."
 
+#: scene/2d/collision_polygon_2d.cpp
+msgid "Invalid polygon. At least 3 points are needed in 'Solids' build mode."
+msgstr ""
+"Virheellinen polygoni. 'Solids' luontitilassa tarvitaan ainakin kolme "
+"pistettä."
+
+#: scene/2d/collision_polygon_2d.cpp
+msgid "Invalid polygon. At least 2 points are needed in 'Segments' build mode."
+msgstr ""
+"Virheellinen polygoni. 'Segments' luontitilassa tarvitaan ainakin kaksi "
+"pistettä."
+
 #: scene/2d/collision_shape_2d.cpp
 msgid ""
 "CollisionShape2D only serves to provide a collision shape to a "
@@ -12355,6 +12505,26 @@ msgid ""
 msgstr ""
 "CPUParticles2D animaatio edellyttää CanvasItemMaterial käyttöä niin että "
 "\"Particles Animation\" on kytketty päälle."
+
+#: scene/2d/joints_2d.cpp
+msgid "Node A and Node B must be PhysicsBody2Ds"
+msgstr "Solmujen A ja B tulee olla PhysicsBody2D tyyppisiä"
+
+#: scene/2d/joints_2d.cpp
+msgid "Node A must be a PhysicsBody2D"
+msgstr "Solmun A tulee olla PhysicsBody2D"
+
+#: scene/2d/joints_2d.cpp
+msgid "Node B must be a PhysicsBody2D"
+msgstr "Solmun B tulee olla PhysicsBody2D"
+
+#: scene/2d/joints_2d.cpp
+msgid "Joint is not connected to two PhysicsBody2Ds"
+msgstr "Liitos ei ole yhdistetty kahteen PhysicsBody2D solmuun"
+
+#: scene/2d/joints_2d.cpp
+msgid "Node A and Node B must be different PhysicsBody2Ds"
+msgstr "Solmujen A ja B tulee olla eri PhysicsBody2D solmut"
 
 #: scene/2d/light_2d.cpp
 msgid ""
@@ -12511,28 +12681,28 @@ msgid "ARVROrigin requires an ARVRCamera child node."
 msgstr "ARVROrigin solmu tarvitsee ARVRCamera alisolmun."
 
 #: scene/3d/baked_lightmap.cpp
-msgid "%d%%"
-msgstr "%d%%"
+msgid "Finding meshes and lights"
+msgstr "Etsitään meshejä ja valoja"
 
 #: scene/3d/baked_lightmap.cpp
-msgid "(Time Left: %d:%02d s)"
-msgstr "(Aikaa jäljellä: %d:%02d s)"
+msgid "Preparing geometry (%d/%d)"
+msgstr "Valmistellaan geometriaa (%d/%d)"
 
 #: scene/3d/baked_lightmap.cpp
-msgid "Plotting Meshes: "
-msgstr "Piirretään meshejä: "
+msgid "Preparing environment"
+msgstr "Valmistellaan ympäristöä"
 
 #: scene/3d/baked_lightmap.cpp
-msgid "Plotting Lights:"
-msgstr "Piirretään valoja:"
-
-#: scene/3d/baked_lightmap.cpp scene/3d/gi_probe.cpp
-msgid "Finishing Plot"
-msgstr "Viimeistellään piirto"
+msgid "Generating capture"
+msgstr "Luodaan kaappausta"
 
 #: scene/3d/baked_lightmap.cpp
-msgid "Lighting Meshes: "
-msgstr "Valaistaan meshejä: "
+msgid "Saving lightmaps"
+msgstr "Tallennetaan lightmappeja"
+
+#: scene/3d/baked_lightmap.cpp
+msgid "Done"
+msgstr "Valmis"
 
 #: scene/3d/collision_object.cpp
 msgid ""
@@ -12608,17 +12778,16 @@ msgid "Plotting Meshes"
 msgstr "Piirretään meshejä"
 
 #: scene/3d/gi_probe.cpp
+msgid "Finishing Plot"
+msgstr "Viimeistellään piirto"
+
+#: scene/3d/gi_probe.cpp
 msgid ""
 "GIProbes are not supported by the GLES2 video driver.\n"
 "Use a BakedLightmap instead."
 msgstr ""
 "GIProbe ei ole tuettu GLES2 näyttöajurissa.\n"
 "Käytä sen sijaan BakedLightmap resurssia."
-
-#: scene/3d/interpolated_camera.cpp
-msgid ""
-"InterpolatedCamera has been deprecated and will be removed in Godot 4.0."
-msgstr "InterpolatedCamera on vanhentunut ja poistetaan Godot 4.0 versiossa."
 
 #: scene/3d/light.cpp
 msgid "A SpotLight with an angle wider than 90 degrees cannot cast shadows."
@@ -12685,6 +12854,26 @@ msgstr ""
 "Fysiikkamoottori ylikirjoittaa RigidBody kokomuutokset (hahmo- tai "
 "jäykkätilassa) ajon aikana.\n"
 "Muuta sen sijaan solmun alla olevia törmäysmuotoja."
+
+#: scene/3d/physics_joint.cpp
+msgid "Node A and Node B must be PhysicsBodies"
+msgstr "Solmujen A ja B tulee olla PhysicsBody tyyppisiä"
+
+#: scene/3d/physics_joint.cpp
+msgid "Node A must be a PhysicsBody"
+msgstr "Solmun A tulee olla PhysicsBody"
+
+#: scene/3d/physics_joint.cpp
+msgid "Node B must be a PhysicsBody"
+msgstr "Solmun B tulee olla PhysicsBody"
+
+#: scene/3d/physics_joint.cpp
+msgid "Joint is not connected to any PhysicsBodies"
+msgstr "Liitos ei ole yhdistetty mihinkään PhysicsBody solmuun"
+
+#: scene/3d/physics_joint.cpp
+msgid "Node A and Node B must be different PhysicsBodies"
+msgstr "Solmujen A ja B tulee olla eri PhysicsBody solmut"
 
 #: scene/3d/remote_transform.cpp
 msgid ""
@@ -12846,6 +13035,14 @@ msgstr "Huomio!"
 msgid "Please Confirm..."
 msgstr "Ole hyvä ja vahvista..."
 
+#: scene/gui/file_dialog.cpp
+msgid "Must use a valid extension."
+msgstr "Käytä sopivaa tiedostopäätettä."
+
+#: scene/gui/graph_edit.cpp
+msgid "Enable grid minimap."
+msgstr "Käytä ruudukon pienoiskarttaa."
+
 #: scene/gui/popup.cpp
 msgid ""
 "Popups will hide by default unless you call popup() or any of the popup*() "
@@ -12900,6 +13097,14 @@ msgstr ""
 "Näyttöruudun koko on oltava suurempi kuin 0, jotta mitään renderöidään."
 
 #: scene/resources/visual_shader_nodes.cpp
+msgid ""
+"The sampler port is connected but not used. Consider changing the source to "
+"'SamplerPort'."
+msgstr ""
+"Näytteistysportti on yhdistetty mutta ei käytössä. Harkitse lähteen "
+"vaihtamista 'SamplerPort' asetukseen."
+
+#: scene/resources/visual_shader_nodes.cpp
 msgid "Invalid source for preview."
 msgstr "Virheellinen lähde esikatselulle."
 
@@ -12926,6 +13131,68 @@ msgstr "Varying tyypin voi sijoittaa vain vertex-funktiossa."
 #: servers/visual/shader_language.cpp
 msgid "Constants cannot be modified."
 msgstr "Vakioita ei voi muokata."
+
+#~ msgid ""
+#~ "InterpolatedCamera has been deprecated and will be removed in Godot 4.0."
+#~ msgstr ""
+#~ "InterpolatedCamera on vanhentunut ja poistetaan Godot 4.0 versiossa."
+
+#~ msgid "No"
+#~ msgstr "Ei"
+
+#~ msgid "This scene has never been saved. Save before running?"
+#~ msgstr ""
+#~ "Tätä skeneä ei ole koskaan tallennettu. Tallenna ennen suorittamista?"
+
+#~ msgid "ADB executable not configured in the Editor Settings."
+#~ msgstr "ADB käynnistystiedostoa ei ole määritetty editorin asetuksissa."
+
+#~ msgid "OpenJDK jarsigner not configured in the Editor Settings."
+#~ msgstr "OpenJDK jarsigner ei ole määritettynä editorin asetuksissa."
+
+#~ msgid "Custom build requires a valid Android SDK path in Editor Settings."
+#~ msgstr ""
+#~ "Mukautettu käännös edellyttää kelvollista Android SDK -polkua editorin "
+#~ "asetuksissa."
+
+#~ msgid "%d%%"
+#~ msgstr "%d%%"
+
+#~ msgid "(Time Left: %d:%02d s)"
+#~ msgstr "(Aikaa jäljellä: %d:%02d s)"
+
+#~ msgid "Plotting Meshes: "
+#~ msgstr "Piirretään meshejä: "
+
+#~ msgid "Lighting Meshes: "
+#~ msgstr "Valaistaan meshejä: "
+
+#~ msgid "Search complete"
+#~ msgstr "Haku valmis"
+
+#~ msgid "No commit message was provided"
+#~ msgstr "Muutosviestiä ei annettu"
+
+#~ msgid "Add a commit message"
+#~ msgstr "Lisää muutosviesti"
+
+#~ msgid "There is already file or folder with the same name in this location."
+#~ msgstr "Tästä sijainnista löytyy jo samanniminen tiedosto tai kansio."
+
+#~ msgid "Aligning APK..."
+#~ msgstr "Tasataan APK:ta..."
+
+#~ msgid "Unable to complete APK alignment."
+#~ msgstr "APK:n tasausta ei saatu suoritettua loppuun."
+
+#~ msgid "Unable to delete unaligned APK."
+#~ msgstr "Tasaamattoman APK:n poisto ei onnistu."
+
+#~ msgid "Error trying to save layout!"
+#~ msgstr "Virhe tallennettaessa asettelua!"
+
+#~ msgid "Default editor layout overridden."
+#~ msgstr "Editorin oletusasettelu ylikirjoitettu."
 
 #~ msgid "Move pivot"
 #~ msgstr "Siirrä keskikohtaa"
@@ -13252,9 +13519,6 @@ msgstr "Vakioita ei voi muokata."
 
 #~ msgid "Failed to save solution."
 #~ msgstr "Ratkaisun tallennus epäonnistui."
-
-#~ msgid "Done"
-#~ msgstr "Valmis"
 
 #~ msgid "Failed to create C# project."
 #~ msgstr "C# projektin luonti epäonnistui."

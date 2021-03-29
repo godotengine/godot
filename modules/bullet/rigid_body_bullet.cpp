@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -56,11 +56,11 @@ Vector3 BulletPhysicsDirectBodyState3D::get_total_gravity() const {
 	return gVec;
 }
 
-float BulletPhysicsDirectBodyState3D::get_total_angular_damp() const {
+real_t BulletPhysicsDirectBodyState3D::get_total_angular_damp() const {
 	return body->btBody->getAngularDamping();
 }
 
-float BulletPhysicsDirectBodyState3D::get_total_linear_damp() const {
+real_t BulletPhysicsDirectBodyState3D::get_total_linear_damp() const {
 	return body->btBody->getLinearDamping();
 }
 
@@ -74,7 +74,7 @@ Basis BulletPhysicsDirectBodyState3D::get_principal_inertia_axes() const {
 	return Basis();
 }
 
-float BulletPhysicsDirectBodyState3D::get_inverse_mass() const {
+real_t BulletPhysicsDirectBodyState3D::get_inverse_mass() const {
 	return body->btBody->getInvMass();
 }
 
@@ -158,7 +158,7 @@ Vector3 BulletPhysicsDirectBodyState3D::get_contact_local_normal(int p_contact_i
 	return body->collisions[p_contact_idx].hitNormal;
 }
 
-float BulletPhysicsDirectBodyState3D::get_contact_impulse(int p_contact_idx) const {
+real_t BulletPhysicsDirectBodyState3D::get_contact_impulse(int p_contact_idx) const {
 	return body->collisions[p_contact_idx].appliedImpulse;
 }
 
@@ -322,10 +322,8 @@ void RigidBodyBullet::set_space(SpaceBullet *p_space) {
 	if (space) {
 		can_integrate_forces = false;
 		isScratchedSpaceOverrideModificator = false;
-
-		// Remove all eventual constraints
-		assert_no_constraints();
-
+		// Remove any constraints
+		space->remove_rigid_body_constraints(this);
 		// Remove this object form the physics world
 		space->remove_rigid_body(this);
 	}
@@ -414,7 +412,7 @@ void RigidBodyBullet::on_collision_checker_end() {
 	isTransformChanged = btBody->isActive() && !btBody->isStaticOrKinematicObject();
 }
 
-bool RigidBodyBullet::add_collision_object(RigidBodyBullet *p_otherObject, const Vector3 &p_hitWorldLocation, const Vector3 &p_hitLocalLocation, const Vector3 &p_hitNormal, const float &p_appliedImpulse, int p_other_shape_index, int p_local_shape_index) {
+bool RigidBodyBullet::add_collision_object(RigidBodyBullet *p_otherObject, const Vector3 &p_hitWorldLocation, const Vector3 &p_hitLocalLocation, const Vector3 &p_hitNormal, const real_t &p_appliedImpulse, int p_other_shape_index, int p_local_shape_index) {
 	if (collisionsCount >= maxCollisionsDetection) {
 		return false;
 	}
@@ -441,12 +439,6 @@ bool RigidBodyBullet::was_colliding(RigidBodyBullet *p_other_object) {
 		}
 	}
 	return false;
-}
-
-void RigidBodyBullet::assert_no_constraints() {
-	if (btBody->getNumConstraintRefs()) {
-		WARN_PRINT("A body with a joints is destroyed. Please check the implementation in order to destroy the joint before the body.");
-	}
 }
 
 void RigidBodyBullet::set_activation_state(bool p_active) {
@@ -523,7 +515,7 @@ real_t RigidBodyBullet::get_param(PhysicsServer3D::BodyParameter p_param) const 
 }
 
 void RigidBodyBullet::set_mode(PhysicsServer3D::BodyMode p_mode) {
-	// This is necessary to block force_integration untile next move
+	// This is necessary to block force_integration until next move
 	can_integrate_forces = false;
 	destroy_kinematic_utilities();
 	// The mode change is relevant to its mass
@@ -718,12 +710,12 @@ bool RigidBodyBullet::is_axis_locked(PhysicsServer3D::BodyAxis p_axis) const {
 }
 
 void RigidBodyBullet::reload_axis_lock() {
-	btBody->setLinearFactor(btVector3(float(!is_axis_locked(PhysicsServer3D::BODY_AXIS_LINEAR_X)), float(!is_axis_locked(PhysicsServer3D::BODY_AXIS_LINEAR_Y)), float(!is_axis_locked(PhysicsServer3D::BODY_AXIS_LINEAR_Z))));
+	btBody->setLinearFactor(btVector3(btScalar(!is_axis_locked(PhysicsServer3D::BODY_AXIS_LINEAR_X)), btScalar(!is_axis_locked(PhysicsServer3D::BODY_AXIS_LINEAR_Y)), btScalar(!is_axis_locked(PhysicsServer3D::BODY_AXIS_LINEAR_Z))));
 	if (PhysicsServer3D::BODY_MODE_CHARACTER == mode) {
 		/// When character angular is always locked
 		btBody->setAngularFactor(btVector3(0., 0., 0.));
 	} else {
-		btBody->setAngularFactor(btVector3(float(!is_axis_locked(PhysicsServer3D::BODY_AXIS_ANGULAR_X)), float(!is_axis_locked(PhysicsServer3D::BODY_AXIS_ANGULAR_Y)), float(!is_axis_locked(PhysicsServer3D::BODY_AXIS_ANGULAR_Z))));
+		btBody->setAngularFactor(btVector3(btScalar(!is_axis_locked(PhysicsServer3D::BODY_AXIS_ANGULAR_X)), btScalar(!is_axis_locked(PhysicsServer3D::BODY_AXIS_ANGULAR_Y)), btScalar(!is_axis_locked(PhysicsServer3D::BODY_AXIS_ANGULAR_Z))));
 	}
 }
 
@@ -733,7 +725,7 @@ void RigidBodyBullet::set_continuous_collision_detection(bool p_enable) {
 		// 1 meter in one simulation frame
 		btBody->setCcdMotionThreshold(1e-7);
 
-		/// Calculate using the rule writte below the CCD swept sphere radius
+		/// Calculate using the rule write below the CCD swept sphere radius
 		///     CCD works on an embedded sphere of radius, make sure this radius
 		///     is embedded inside the convex objects, preferably smaller:
 		///     for an object of dimensions 1 meter, try 0.2
@@ -744,7 +736,7 @@ void RigidBodyBullet::set_continuous_collision_detection(bool p_enable) {
 		}
 		btBody->setCcdSweptSphereRadius(radius * 0.2);
 	} else {
-		btBody->setCcdMotionThreshold(10000.0);
+		btBody->setCcdMotionThreshold(0.);
 		btBody->setCcdSweptSphereRadius(0.);
 	}
 }
@@ -824,7 +816,7 @@ void RigidBodyBullet::reload_shapes() {
 	btBody->updateInertiaTensor();
 
 	reload_kinematic_shapes();
-	set_continuous_collision_detection(btBody->getCcdMotionThreshold() < 9998.0);
+	set_continuous_collision_detection(is_continuous_collision_detection_enabled());
 	reload_body();
 }
 

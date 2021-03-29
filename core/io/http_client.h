@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -41,7 +41,6 @@ class HTTPClient : public Reference {
 
 public:
 	enum ResponseCode {
-
 		// 1xx informational
 		RESPONSE_CONTINUE = 100,
 		RESPONSE_SWITCHING_PROTOCOLS = 101,
@@ -116,7 +115,6 @@ public:
 	};
 
 	enum Method {
-
 		METHOD_GET,
 		METHOD_HEAD,
 		METHOD_POST,
@@ -131,7 +129,6 @@ public:
 	};
 
 	enum Status {
-
 		STATUS_DISCONNECTED,
 		STATUS_RESOLVING, // Resolving hostname (if passed a hostname)
 		STATUS_CANT_RESOLVE,
@@ -150,7 +147,6 @@ private:
 	static const int HOST_MIN_LEN = 4;
 
 	enum Port {
-
 		PORT_HTTP = 80,
 		PORT_HTTPS = 443,
 

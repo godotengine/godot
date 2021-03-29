@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -41,12 +41,17 @@
 
 class ShaderLanguage {
 public:
+	struct TkPos {
+		int char_idx;
+		int tk_line;
+	};
+
 	enum TokenType {
 		TK_EMPTY,
 		TK_IDENTIFIER,
 		TK_TRUE,
 		TK_FALSE,
-		TK_REAL_CONSTANT,
+		TK_FLOAT_CONSTANT,
 		TK_INT_CONSTANT,
 		TK_TYPE_VOID,
 		TK_TYPE_BOOL,
@@ -414,6 +419,7 @@ public:
 		StringName name;
 		Node *index_expression = nullptr;
 		Node *call_expression = nullptr;
+		Node *assign_expression = nullptr;
 		bool is_const = false;
 
 		virtual DataType get_datatype() const { return datatype_cache; }
@@ -437,6 +443,7 @@ public:
 		DataType datatype = TYPE_VOID;
 		String struct_name;
 		bool is_const = false;
+		Node *size_expression = nullptr;
 
 		struct Declaration {
 			StringName name;
@@ -496,6 +503,7 @@ public:
 			int line; //for completion
 			int array_size;
 			bool is_const;
+			ConstantNode::Value value;
 		};
 
 		Map<StringName, Variable> variables;
@@ -519,13 +527,14 @@ public:
 		DataType basetype = TYPE_VOID;
 		bool basetype_const = false;
 		StringName base_struct_name;
-		DataPrecision precision;
+		DataPrecision precision = PRECISION_DEFAULT;
 		DataType datatype = TYPE_VOID;
 		int array_size = 0;
 		StringName struct_name;
 		StringName name;
 		Node *owner = nullptr;
 		Node *index_expression = nullptr;
+		Node *assign_expression = nullptr;
 		bool has_swizzling_duplicates = false;
 
 		virtual DataType get_datatype() const { return datatype; }
@@ -594,10 +603,21 @@ public:
 		};
 
 		struct Varying {
+			enum Stage {
+				STAGE_UNKNOWN,
+				STAGE_VERTEX, // transition stage to STAGE_VERTEX_TO_FRAGMENT or STAGE_VERTEX_TO_LIGHT, emits error if they are not used
+				STAGE_FRAGMENT, // transition stage to STAGE_FRAGMENT_TO_LIGHT, emits error if it's not used
+				STAGE_VERTEX_TO_FRAGMENT,
+				STAGE_VERTEX_TO_LIGHT,
+				STAGE_FRAGMENT_TO_LIGHT,
+			};
+
+			Stage stage = STAGE_UNKNOWN;
 			DataType type = TYPE_VOID;
 			DataInterpolation interpolation = INTERPOLATION_FLAT;
 			DataPrecision precision = PRECISION_DEFAULT;
 			int array_size = 0;
+			TkPos tkpos;
 
 			Varying() {}
 		};
@@ -774,11 +794,7 @@ private:
 	int tk_line;
 
 	StringName current_function;
-
-	struct TkPos {
-		int char_idx;
-		int tk_line;
-	};
+	bool last_const = false;
 
 	TkPos _get_tkpos() {
 		TkPos tkp;
@@ -819,7 +835,7 @@ private:
 		IDENTIFIER_CONSTANT,
 	};
 
-	bool _find_identifier(const BlockNode *p_block, bool p_allow_reassign, const FunctionInfo &p_function_info, const StringName &p_identifier, DataType *r_data_type = nullptr, IdentifierType *r_type = nullptr, bool *r_is_const = nullptr, int *r_array_size = nullptr, StringName *r_struct_name = nullptr);
+	bool _find_identifier(const BlockNode *p_block, bool p_allow_reassign, const FunctionInfo &p_function_info, const StringName &p_identifier, DataType *r_data_type = nullptr, IdentifierType *r_type = nullptr, bool *r_is_const = nullptr, int *r_array_size = nullptr, StringName *r_struct_name = nullptr, ConstantNode::Value *r_constant_value = nullptr);
 	bool _is_operator_assign(Operator p_op) const;
 	bool _validate_assign(Node *p_node, const FunctionInfo &p_function_info, String *r_message = nullptr);
 	bool _validate_operator(OperatorNode *p_op, DataType *r_ret_type = nullptr);
@@ -859,8 +875,11 @@ private:
 	bool _parse_function_arguments(BlockNode *p_block, const FunctionInfo &p_function_info, OperatorNode *p_func, int *r_complete_arg = nullptr);
 	bool _propagate_function_call_sampler_uniform_settings(StringName p_name, int p_argument, TextureFilter p_filter, TextureRepeat p_repeat);
 	bool _propagate_function_call_sampler_builtin_reference(StringName p_name, int p_argument, const StringName &p_builtin);
+	bool _validate_varying_assign(ShaderNode::Varying &p_varying, String *r_message);
+	bool _validate_varying_using(ShaderNode::Varying &p_varying, String *r_message);
 
 	Node *_parse_expression(BlockNode *p_block, const FunctionInfo &p_function_info);
+	Node *_parse_array_constructor(BlockNode *p_block, const FunctionInfo &p_function_info, DataType p_type, const StringName &p_struct_name, int p_array_size);
 	ShaderLanguage::Node *_reduce_expression(BlockNode *p_block, ShaderLanguage::Node *p_node);
 
 	Node *_parse_and_reduce_expression(BlockNode *p_block, const FunctionInfo &p_function_info);

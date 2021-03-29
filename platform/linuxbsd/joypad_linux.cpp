@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -32,13 +32,14 @@
 
 #include "joypad_linux.h"
 
+#include <dirent.h>
 #include <errno.h>
 #include <fcntl.h>
 #include <linux/input.h>
 #include <unistd.h>
 
 #ifdef UDEV_ENABLED
-#include <libudev.h>
+#include "libudev-so_wrap.h"
 #endif
 
 #define LONG_BITS (sizeof(long) * 8)
@@ -48,15 +49,6 @@
 #ifdef UDEV_ENABLED
 static const char *ignore_str = "/dev/input/js";
 #endif
-
-JoypadLinux::Joypad::Joypad() {
-	fd = -1;
-	dpad = 0;
-	devpath = "";
-	for (int i = 0; i < MAX_ABS; i++) {
-		abs_info[i] = nullptr;
-	}
-}
 
 JoypadLinux::Joypad::~Joypad() {
 	for (int i = 0; i < MAX_ABS; i++) {
@@ -70,7 +62,7 @@ void JoypadLinux::Joypad::reset() {
 	dpad = 0;
 	fd = -1;
 
-	Input::JoyAxis jx;
+	Input::JoyAxisValue jx;
 	jx.min = -1;
 	jx.value = 0.0f;
 	for (int i = 0; i < MAX_ABS; i++) {
@@ -80,15 +72,28 @@ void JoypadLinux::Joypad::reset() {
 }
 
 JoypadLinux::JoypadLinux(Input *in) {
-	exit_udev = false;
+#ifdef UDEV_ENABLED
+#ifdef DEBUG_ENABLED
+	int dylibloader_verbose = 1;
+#else
+	int dylibloader_verbose = 0;
+#endif
+	use_udev = initialize_libudev(dylibloader_verbose) == 0;
+	if (use_udev) {
+		print_verbose("JoypadLinux: udev enabled and loaded successfully.");
+	} else {
+		print_verbose("JoypadLinux: udev enabled, but couldn't be loaded. Falling back to /dev/input to detect joypads.");
+	}
+#else
+	print_verbose("JoypadLinux: udev disabled, parsing /dev/input to detect joypads.");
+#endif
 	input = in;
-	joy_thread = Thread::create(joy_thread_func, this);
+	joy_thread.start(joy_thread_func, this);
 }
 
 JoypadLinux::~JoypadLinux() {
-	exit_udev = true;
-	Thread::wait_to_finish(joy_thread);
-	memdelete(joy_thread);
+	exit_monitor.set();
+	joy_thread.wait_to_finish();
 	close_joypad();
 }
 
@@ -101,11 +106,20 @@ void JoypadLinux::joy_thread_func(void *p_user) {
 
 void JoypadLinux::run_joypad_thread() {
 #ifdef UDEV_ENABLED
-	udev *_udev = udev_new();
-	ERR_FAIL_COND(!_udev);
-	enumerate_joypads(_udev);
-	monitor_joypads(_udev);
-	udev_unref(_udev);
+	if (use_udev) {
+		udev *_udev = udev_new();
+		if (!_udev) {
+			use_udev = false;
+			ERR_PRINT("Failed getting an udev context, falling back to parsing /dev/input.");
+			monitor_joypads();
+		} else {
+			enumerate_joypads(_udev);
+			monitor_joypads(_udev);
+			udev_unref(_udev);
+		}
+	} else {
+		monitor_joypads();
+	}
 #else
 	monitor_joypads();
 #endif
@@ -146,7 +160,7 @@ void JoypadLinux::monitor_joypads(udev *p_udev) {
 	udev_monitor_enable_receiving(mon);
 	int fd = udev_monitor_get_fd(mon);
 
-	while (!exit_udev) {
+	while (!exit_monitor.is_set()) {
 		fd_set fds;
 		struct timeval tv;
 		int ret;
@@ -188,17 +202,27 @@ void JoypadLinux::monitor_joypads(udev *p_udev) {
 #endif
 
 void JoypadLinux::monitor_joypads() {
-	while (!exit_udev) {
+	while (!exit_monitor.is_set()) {
 		{
 			MutexLock lock(joy_mutex);
 
-			for (int i = 0; i < 32; i++) {
+			DIR *input_directory;
+			input_directory = opendir("/dev/input");
+			if (input_directory) {
+				struct dirent *current;
 				char fname[64];
-				sprintf(fname, "/dev/input/event%d", i);
-				if (attached_devices.find(fname) == -1) {
-					open_joypad(fname);
+
+				while ((current = readdir(input_directory)) != NULL) {
+					if (strncmp(current->d_name, "event", 5) != 0) {
+						continue;
+					}
+					sprintf(fname, "/dev/input/%.*s", 16, current->d_name);
+					if (attached_devices.find(fname) == -1) {
+						open_joypad(fname);
+					}
 				}
 			}
+			closedir(input_directory);
 		}
 		usleep(1000000); // 1s
 	}
@@ -404,10 +428,10 @@ void JoypadLinux::joypad_vibration_stop(int p_id, uint64_t p_timestamp) {
 	joy.ff_effect_timestamp = p_timestamp;
 }
 
-Input::JoyAxis JoypadLinux::axis_correct(const input_absinfo *p_abs, int p_value) const {
+Input::JoyAxisValue JoypadLinux::axis_correct(const input_absinfo *p_abs, int p_value) const {
 	int min = p_abs->minimum;
 	int max = p_abs->maximum;
-	Input::JoyAxis jx;
+	Input::JoyAxisValue jx;
 
 	if (min < 0) {
 		jx.min = -1;
@@ -459,9 +483,9 @@ void JoypadLinux::process_joypads() {
 							case ABS_HAT0X:
 								if (ev.value != 0) {
 									if (ev.value < 0) {
-										joy->dpad |= Input::HAT_MASK_LEFT;
+										joy->dpad = (joy->dpad | Input::HAT_MASK_LEFT) & ~Input::HAT_MASK_RIGHT;
 									} else {
-										joy->dpad |= Input::HAT_MASK_RIGHT;
+										joy->dpad = (joy->dpad | Input::HAT_MASK_RIGHT) & ~Input::HAT_MASK_LEFT;
 									}
 								} else {
 									joy->dpad &= ~(Input::HAT_MASK_LEFT | Input::HAT_MASK_RIGHT);
@@ -473,9 +497,9 @@ void JoypadLinux::process_joypads() {
 							case ABS_HAT0Y:
 								if (ev.value != 0) {
 									if (ev.value < 0) {
-										joy->dpad |= Input::HAT_MASK_UP;
+										joy->dpad = (joy->dpad | Input::HAT_MASK_UP) & ~Input::HAT_MASK_DOWN;
 									} else {
-										joy->dpad |= Input::HAT_MASK_DOWN;
+										joy->dpad = (joy->dpad | Input::HAT_MASK_DOWN) & ~Input::HAT_MASK_UP;
 									}
 								} else {
 									joy->dpad &= ~(Input::HAT_MASK_UP | Input::HAT_MASK_DOWN);
@@ -489,7 +513,7 @@ void JoypadLinux::process_joypads() {
 									return;
 								}
 								if (joy->abs_map[ev.code] != -1 && joy->abs_info[ev.code]) {
-									Input::JoyAxis value = axis_correct(joy->abs_info[ev.code], ev.value);
+									Input::JoyAxisValue value = axis_correct(joy->abs_info[ev.code], ev.value);
 									joy->curr_axis[joy->abs_map[ev.code]] = value;
 								}
 								break;

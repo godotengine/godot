@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -65,7 +65,7 @@ int UPNPDevice::add_port_mapping(int port, int port_internal, String desc, Strin
 			itos(port).utf8().get_data(),
 			itos(port_internal).utf8().get_data(),
 			igd_our_addr.utf8().get_data(),
-			desc.empty() ? nullptr : desc.utf8().get_data(),
+			desc.is_empty() ? nullptr : desc.utf8().get_data(),
 			proto.utf8().get_data(),
 			nullptr, // Remote host, always nullptr as IGDs don't support it
 			duration > 0 ? itos(duration).utf8().get_data() : nullptr);

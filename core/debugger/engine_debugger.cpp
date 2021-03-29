@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -117,9 +117,9 @@ void EngineDebugger::line_poll() {
 	poll_every++;
 }
 
-void EngineDebugger::iteration(uint64_t p_frame_ticks, uint64_t p_idle_ticks, uint64_t p_physics_ticks, float p_physics_frame_time) {
+void EngineDebugger::iteration(uint64_t p_frame_ticks, uint64_t p_process_ticks, uint64_t p_physics_ticks, float p_physics_frame_time) {
 	frame_time = USEC_TO_SEC(p_frame_ticks);
-	idle_time = USEC_TO_SEC(p_idle_ticks);
+	process_time = USEC_TO_SEC(p_process_ticks);
 	physics_time = USEC_TO_SEC(p_physics_ticks);
 	physics_frame_time = p_physics_frame_time;
 	// Notify tick to running profilers
@@ -128,14 +128,14 @@ void EngineDebugger::iteration(uint64_t p_frame_ticks, uint64_t p_idle_ticks, ui
 		if (!p.active || !p.tick) {
 			continue;
 		}
-		p.tick(p.data, frame_time, idle_time, physics_time, physics_frame_time);
+		p.tick(p.data, frame_time, process_time, physics_time, physics_frame_time);
 	}
 	singleton->poll_events(true);
 }
 
 void EngineDebugger::initialize(const String &p_uri, bool p_skip_breakpoints, Vector<String> p_breakpoints) {
 	register_uri_handler("tcp://", RemoteDebuggerPeerTCP::create); // TCP is the default protocol. Platforms/modules can add more.
-	if (p_uri.empty()) {
+	if (p_uri.is_empty()) {
 		return;
 	}
 	if (p_uri == "local://") {
@@ -192,7 +192,7 @@ void EngineDebugger::deinitialize() {
 		singleton = nullptr;
 	}
 
-	// Clear profilers/captuers/protocol handlers.
+	// Clear profilers/captures/protocol handlers.
 	profilers.clear();
 	captures.clear();
 	protocols.clear();

@@ -32,17 +32,16 @@ namespace {
 static const int config_compressed_size = %d;
 static const int config_uncompressed_size = %d;
 static const unsigned char config_compressed_data[] = { %s };
-
 } // namespace
 
 String get_godot_android_mono_config() {
 	Vector<uint8_t> data;
 	data.resize(config_uncompressed_size);
 	uint8_t* w = data.ptrw();
-	Compression::decompress(w.ptr(), config_uncompressed_size, config_compressed_data,
+	Compression::decompress(w, config_uncompressed_size, config_compressed_data,
 			config_compressed_size, Compression::MODE_DEFLATE);
 	String s;
-	if (s.parse_utf8((const char *)w.ptr(), data.size())) {
+	if (s.parse_utf8((const char *)w, data.size())) {
 		ERR_FAIL_V(String());
 	}
 	return s;

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -108,7 +108,7 @@ MaterialEditor::MaterialEditor() {
 	vc = memnew(SubViewportContainer);
 	vc->set_stretch(true);
 	add_child(vc);
-	vc->set_anchors_and_margins_preset(PRESET_WIDE);
+	vc->set_anchors_and_offsets_preset(PRESET_WIDE);
 	viewport = memnew(SubViewport);
 	Ref<World3D> world_3d;
 	world_3d.instance();
@@ -155,7 +155,7 @@ MaterialEditor::MaterialEditor() {
 
 	HBoxContainer *hb = memnew(HBoxContainer);
 	add_child(hb);
-	hb->set_anchors_and_margins_preset(Control::PRESET_WIDE, Control::PRESET_MODE_MINSIZE, 2);
+	hb->set_anchors_and_offsets_preset(Control::PRESET_WIDE, Control::PRESET_MODE_MINSIZE, 2);
 
 	VBoxContainer *vb_shape = memnew(VBoxContainer);
 	hb->add_child(vb_shape);

@@ -137,6 +137,9 @@
 		</method>
 	</methods>
 	<members>
+		<member name="all_tabs_in_front" type="bool" setter="set_all_tabs_in_front" getter="is_all_tabs_in_front" default="false">
+			If [code]true[/code], all tabs are drawn in front of the panel. If [code]false[/code], inactive tabs are drawn behind the panel.
+		</member>
 		<member name="current_tab" type="int" setter="set_current_tab" getter="get_current_tab" default="0">
 			The current tab index. When set, this index's [Control] node's [code]visible[/code] property is set to [code]true[/code] and all others are set to [code]false[/code].
 		</member>
@@ -195,14 +198,20 @@
 		<theme_item name="font" type="Font">
 			The font used to draw tab names.
 		</theme_item>
-		<theme_item name="font_color_bg" type="Color" default="Color( 0.69, 0.69, 0.69, 1 )">
-			Font color of inactive tabs.
-		</theme_item>
-		<theme_item name="font_color_disabled" type="Color" default="Color( 0.9, 0.9, 0.9, 0.2 )">
+		<theme_item name="font_disabled_color" type="Color" default="Color( 0.9, 0.9, 0.9, 0.2 )">
 			Font color of disabled tabs.
 		</theme_item>
-		<theme_item name="font_color_fg" type="Color" default="Color( 0.94, 0.94, 0.94, 1 )">
+		<theme_item name="font_outline_color" type="Color" default="Color( 1, 1, 1, 1 )">
+			The tint of text outline of the tab name.
+		</theme_item>
+		<theme_item name="font_selected_color" type="Color" default="Color( 0.94, 0.94, 0.94, 1 )">
 			Font color of the currently selected tab.
+		</theme_item>
+		<theme_item name="font_size" type="int">
+			Font size of the tab names.
+		</theme_item>
+		<theme_item name="font_unselected_color" type="Color" default="Color( 0.69, 0.69, 0.69, 1 )">
+			Font color of the other, unselected tabs.
 		</theme_item>
 		<theme_item name="icon_separation" type="int" default="4">
 			Space between tab's name and its icon.
@@ -219,20 +228,23 @@
 		<theme_item name="menu_highlight" type="Texture2D">
 			The icon for the menu button (see [method set_popup]) when it's being hovered with the cursor.
 		</theme_item>
+		<theme_item name="outline_size" type="int" default="0">
+			The size of the tab text outline.
+		</theme_item>
 		<theme_item name="panel" type="StyleBox">
 			The style for the background fill.
 		</theme_item>
 		<theme_item name="side_margin" type="int" default="8">
 			The space at the left and right edges of the tab bar.
 		</theme_item>
-		<theme_item name="tab_bg" type="StyleBox">
-			The style of inactive tabs.
-		</theme_item>
 		<theme_item name="tab_disabled" type="StyleBox">
 			The style of disabled tabs.
 		</theme_item>
-		<theme_item name="tab_fg" type="StyleBox">
+		<theme_item name="tab_selected" type="StyleBox">
 			The style of the currently selected tab.
+		</theme_item>
+		<theme_item name="tab_unselected" type="StyleBox">
+			The style of the other, unselected tabs.
 		</theme_item>
 	</theme_items>
 </class>

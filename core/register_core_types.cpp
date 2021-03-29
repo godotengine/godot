@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -68,7 +68,7 @@
 #include "core/object/class_db.h"
 #include "core/object/undo_redo.h"
 #include "core/os/main_loop.h"
-#include "core/string/compressed_translation.h"
+#include "core/string/optimized_translation.h"
 #include "core/string/translation.h"
 
 static Ref<ResourceFormatSaverBinary> resource_saver_binary;
@@ -103,7 +103,6 @@ void register_core_types() {
 	static_assert(sizeof(Callable) <= 16);
 
 	ObjectDB::setup();
-	ResourceCache::setup();
 
 	StringName::setup();
 	ResourceLoader::initialize();
@@ -168,6 +167,7 @@ void register_core_types() {
 	ClassDB::register_class<AESContext>();
 	ClassDB::register_custom_instance_class<X509Certificate>();
 	ClassDB::register_custom_instance_class<CryptoKey>();
+	ClassDB::register_custom_instance_class<HMACContext>();
 	ClassDB::register_custom_instance_class<Crypto>();
 	ClassDB::register_custom_instance_class<StreamPeerSSL>();
 
@@ -183,7 +183,7 @@ void register_core_types() {
 	ClassDB::register_class<MultiplayerAPI>();
 	ClassDB::register_class<MainLoop>();
 	ClassDB::register_class<Translation>();
-	ClassDB::register_class<PHashTranslation>();
+	ClassDB::register_class<OptimizedTranslation>();
 	ClassDB::register_class<UndoRedo>();
 	ClassDB::register_class<HTTPClient>();
 	ClassDB::register_class<TriangleMesh>();

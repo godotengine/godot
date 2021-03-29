@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -45,27 +45,27 @@ class EditorProfiler : public VBoxContainer {
 
 public:
 	struct Metric {
-		bool valid;
+		bool valid = false;
 
-		int frame_number;
-		float frame_time;
-		float idle_time;
-		float physics_time;
-		float physics_frame_time;
+		int frame_number = 0;
+		float frame_time = 0;
+		float idle_time = 0;
+		float physics_time = 0;
+		float physics_frame_time = 0;
 
 		struct Category {
 			StringName signature;
 			String name;
-			float total_time; //total for category
+			float total_time = 0; //total for category
 
 			struct Item {
 				StringName signature;
 				String name;
 				String script;
-				int line;
-				float self;
-				float total;
-				int calls;
+				int line = 0;
+				float self = 0;
+				float total = 0;
+				int calls = 0;
 			};
 
 			Vector<Item> items;
@@ -75,11 +75,6 @@ public:
 
 		Map<StringName, Category *> category_ptrs;
 		Map<StringName, Category::Item *> item_ptrs;
-
-		Metric() {
-			valid = false;
-			frame_number = 0;
-		}
 	};
 
 	enum DisplayMode {

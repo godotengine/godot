@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -31,6 +31,7 @@
 #ifndef SETTINGS_CONFIG_DIALOG_H
 #define SETTINGS_CONFIG_DIALOG_H
 
+#include "editor/action_map_editor.h"
 #include "editor/editor_sectioned_inspector.h"
 #include "editor_inspector.h"
 #include "scene/gui/dialogs.h"
@@ -52,16 +53,28 @@ class EditorSettingsDialog : public AcceptDialog {
 	LineEdit *shortcut_search_box;
 	SectionedInspector *inspector;
 
+	enum ShortcutButton {
+		SHORTCUT_EDIT,
+		SHORTCUT_ERASE,
+		SHORTCUT_REVERT
+	};
+
+	int button_idx;
+	int current_action_event_index = -1;
+	bool editing_action = false;
+	String current_action;
+	Array current_action_events;
+	PopupMenu *action_popup;
+
 	Timer *timer;
 
 	UndoRedo *undo_redo;
-	Tree *shortcuts;
 
-	ConfirmationDialog *press_a_key;
-	Label *press_a_key_label;
-	Ref<InputEventKey> last_wait_for_key;
-	String shortcut_configured;
+	// Shortcuts
 	String shortcut_filter;
+	Tree *shortcuts;
+	InputEventConfigurationDialog *shortcut_editor;
+	String shortcut_being_edited;
 
 	virtual void cancel_pressed() override;
 	virtual void ok_pressed() override;
@@ -74,19 +87,19 @@ class EditorSettingsDialog : public AcceptDialog {
 	void _notification(int p_what);
 	void _update_icons();
 
-	void _press_a_key_confirm();
-	void _wait_for_key(const Ref<InputEvent> &p_event);
+	void _event_config_confirmed();
+
+	void _update_builtin_action(const String &p_name, const Array &p_events);
 
 	void _tabs_tab_changed(int p_tab);
 	void _focus_current_search_box();
-
-	void _clear_shortcut_search_box();
-	void _clear_search_box();
 
 	void _filter_shortcuts(const String &p_filter);
 
 	void _update_shortcuts();
 	void _shortcut_button_pressed(Object *p_item, int p_column, int p_idx);
+
+	void _builtin_action_popup_index_pressed(int p_index);
 
 	static void _undo_redo_callback(void *p_self, const String &p_name);
 

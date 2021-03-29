@@ -45,8 +45,8 @@
 		<constant name="CLEAR_MODE_NEVER" value="1" enum="ClearMode">
 			Never clear the render target.
 		</constant>
-		<constant name="CLEAR_MODE_ONLY_NEXT_FRAME" value="2" enum="ClearMode">
-			Clear the render target next frame, then switch to [constant CLEAR_MODE_NEVER].
+		<constant name="CLEAR_MODE_ONCE" value="2" enum="ClearMode">
+			Clear the render target on the next frame, then switch to [constant CLEAR_MODE_NEVER].
 		</constant>
 		<constant name="UPDATE_DISABLED" value="0" enum="UpdateMode">
 			Do not update the render target.
@@ -58,7 +58,7 @@
 			Update the render target only when it is visible. This is the default value.
 		</constant>
 		<constant name="UPDATE_WHEN_PARENT_VISIBLE" value="3" enum="UpdateMode">
-			Update the render target only when the its parent is visible.
+			Update the render target only when its parent is visible.
 		</constant>
 		<constant name="UPDATE_ALWAYS" value="4" enum="UpdateMode">
 			Always update the render target.

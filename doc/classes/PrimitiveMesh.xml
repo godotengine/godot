@@ -4,7 +4,7 @@
 		Base class for all primitive meshes. Handles applying a [Material] to a primitive mesh.
 	</brief_description>
 	<description>
-		Base class for all primitive meshes. Handles applying a [Material] to a primitive mesh. Examples include [CapsuleMesh], [CubeMesh], [CylinderMesh], [PlaneMesh], [PrismMesh], [QuadMesh], and [SphereMesh].
+		Base class for all primitive meshes. Handles applying a [Material] to a primitive mesh. Examples include [BoxMesh], [CapsuleMesh], [CylinderMesh], [PlaneMesh], [PrismMesh], [QuadMesh], and [SphereMesh].
 	</description>
 	<tutorials>
 	</tutorials>
@@ -14,17 +14,24 @@
 			</return>
 			<description>
 				Returns mesh arrays used to constitute surface of [Mesh]. The result can be passed to [method ArrayMesh.add_surface_from_arrays] to create a new surface. For example:
-				[codeblock]
-				var c := CylinderMesh.new()
-				var arr_mesh := ArrayMesh.new()
+				[codeblocks]
+				[gdscript]
+				var c = CylinderMesh.new()
+				var arr_mesh = ArrayMesh.new()
 				arr_mesh.add_surface_from_arrays(Mesh.PRIMITIVE_TRIANGLES, c.get_mesh_arrays())
-				[/codeblock]
+				[/gdscript]
+				[csharp]
+				var c = new CylinderMesh();
+				var arrMesh = new ArrayMesh();
+				arrMesh.AddSurfaceFromArrays(Mesh.PrimitiveType.Triangles, c.GetMeshArrays());
+				[/csharp]
+				[/codeblocks]
 			</description>
 		</method>
 	</methods>
 	<members>
 		<member name="custom_aabb" type="AABB" setter="set_custom_aabb" getter="get_custom_aabb" default="AABB( 0, 0, 0, 0, 0, 0 )">
-			Overrides the [AABB] with one defined by user for use with frustum culling. Especially useful to avoid unnexpected culling when  using a shader to offset vertices.
+			Overrides the [AABB] with one defined by user for use with frustum culling. Especially useful to avoid unexpected culling when  using a shader to offset vertices.
 		</member>
 		<member name="flip_faces" type="bool" setter="set_flip_faces" getter="get_flip_faces" default="false">
 			If set, the order of the vertices in each triangle are reversed resulting in the backside of the mesh being drawn.

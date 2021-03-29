@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -42,8 +42,21 @@
 
 void draw_margin_line(Control *edit_draw, Vector2 from, Vector2 to) {
 	Vector2 line = (to - from).normalized() * 10;
+
+	// Draw a translucent background line to make the foreground line visible on any background.
+	edit_draw->draw_line(
+			from,
+			to,
+			EditorNode::get_singleton()->get_theme_base()->get_theme_color("mono_color", "Editor").inverted() * Color(1, 1, 1, 0.5),
+			Math::round(2 * EDSCALE));
+
 	while ((to - from).length_squared() > 200) {
-		edit_draw->draw_line(from, from + line, EditorNode::get_singleton()->get_theme_base()->get_theme_color("mono_color", "Editor"), 2);
+		edit_draw->draw_line(
+				from,
+				from + line,
+				EditorNode::get_singleton()->get_theme_base()->get_theme_color("mono_color", "Editor"),
+				Math::round(2 * EDSCALE));
+
 		from += line * 2;
 	}
 }
@@ -177,7 +190,7 @@ void TextureRegionEditor::_region_draw() {
 		}
 
 		ofs = (endpoints[next] - endpoints[i]) / 2;
-		ofs += (endpoints[next] - endpoints[i]).tangent().normalized() * (select_handle->get_size().width / 2);
+		ofs += (endpoints[next] - endpoints[i]).orthogonal().normalized() * (select_handle->get_size().width / 2);
 
 		if (snap_mode != SNAP_AUTOSLICE) {
 			edit_draw->draw_texture(select_handle, (endpoints[i] + ofs - (select_handle->get_size() / 2)).floor() - draw_ofs * draw_zoom);
@@ -217,23 +230,23 @@ void TextureRegionEditor::_region_draw() {
 	Size2 vmin = vscroll->get_combined_minimum_size();
 
 	// Avoid scrollbar overlapping.
-	hscroll->set_anchor_and_margin(MARGIN_RIGHT, ANCHOR_END, vscroll->is_visible() ? -vmin.width : 0);
-	vscroll->set_anchor_and_margin(MARGIN_BOTTOM, ANCHOR_END, hscroll->is_visible() ? -hmin.height : 0);
+	hscroll->set_anchor_and_offset(SIDE_RIGHT, ANCHOR_END, vscroll->is_visible() ? -vmin.width : 0);
+	vscroll->set_anchor_and_offset(SIDE_BOTTOM, ANCHOR_END, hscroll->is_visible() ? -hmin.height : 0);
 
 	updating_scroll = false;
 
 	if (node_ninepatch || obj_styleBox.is_valid()) {
 		float margins[4] = { 0 };
 		if (node_ninepatch) {
-			margins[0] = node_ninepatch->get_patch_margin(MARGIN_TOP);
-			margins[1] = node_ninepatch->get_patch_margin(MARGIN_BOTTOM);
-			margins[2] = node_ninepatch->get_patch_margin(MARGIN_LEFT);
-			margins[3] = node_ninepatch->get_patch_margin(MARGIN_RIGHT);
+			margins[0] = node_ninepatch->get_patch_margin(SIDE_TOP);
+			margins[1] = node_ninepatch->get_patch_margin(SIDE_BOTTOM);
+			margins[2] = node_ninepatch->get_patch_margin(SIDE_LEFT);
+			margins[3] = node_ninepatch->get_patch_margin(SIDE_RIGHT);
 		} else if (obj_styleBox.is_valid()) {
-			margins[0] = obj_styleBox->get_margin_size(MARGIN_TOP);
-			margins[1] = obj_styleBox->get_margin_size(MARGIN_BOTTOM);
-			margins[2] = obj_styleBox->get_margin_size(MARGIN_LEFT);
-			margins[3] = obj_styleBox->get_margin_size(MARGIN_RIGHT);
+			margins[0] = obj_styleBox->get_margin_size(SIDE_TOP);
+			margins[1] = obj_styleBox->get_margin_size(SIDE_BOTTOM);
+			margins[2] = obj_styleBox->get_margin_size(SIDE_LEFT);
+			margins[3] = obj_styleBox->get_margin_size(SIDE_RIGHT);
 		}
 
 		Vector2 pos[4] = {
@@ -272,21 +285,21 @@ void TextureRegionEditor::_region_input(const Ref<InputEvent> &p_input) {
 
 	Ref<InputEventMouseButton> mb = p_input;
 	if (mb.is_valid()) {
-		if (mb->get_button_index() == BUTTON_LEFT) {
+		if (mb->get_button_index() == MOUSE_BUTTON_LEFT) {
 			if (mb->is_pressed()) {
 				if (node_ninepatch || obj_styleBox.is_valid()) {
 					edited_margin = -1;
 					float margins[4] = { 0 };
 					if (node_ninepatch) {
-						margins[0] = node_ninepatch->get_patch_margin(MARGIN_TOP);
-						margins[1] = node_ninepatch->get_patch_margin(MARGIN_BOTTOM);
-						margins[2] = node_ninepatch->get_patch_margin(MARGIN_LEFT);
-						margins[3] = node_ninepatch->get_patch_margin(MARGIN_RIGHT);
+						margins[0] = node_ninepatch->get_patch_margin(SIDE_TOP);
+						margins[1] = node_ninepatch->get_patch_margin(SIDE_BOTTOM);
+						margins[2] = node_ninepatch->get_patch_margin(SIDE_LEFT);
+						margins[3] = node_ninepatch->get_patch_margin(SIDE_RIGHT);
 					} else if (obj_styleBox.is_valid()) {
-						margins[0] = obj_styleBox->get_margin_size(MARGIN_TOP);
-						margins[1] = obj_styleBox->get_margin_size(MARGIN_BOTTOM);
-						margins[2] = obj_styleBox->get_margin_size(MARGIN_LEFT);
-						margins[3] = obj_styleBox->get_margin_size(MARGIN_RIGHT);
+						margins[0] = obj_styleBox->get_margin_size(SIDE_TOP);
+						margins[1] = obj_styleBox->get_margin_size(SIDE_BOTTOM);
+						margins[2] = obj_styleBox->get_margin_size(SIDE_LEFT);
+						margins[3] = obj_styleBox->get_margin_size(SIDE_RIGHT);
 					}
 
 					Vector2 pos[4] = {
@@ -395,13 +408,13 @@ void TextureRegionEditor::_region_input(const Ref<InputEvent> &p_input) {
 			} else if (drag) {
 				if (edited_margin >= 0) {
 					undo_redo->create_action(TTR("Set Margin"));
-					static Margin m[4] = { MARGIN_TOP, MARGIN_BOTTOM, MARGIN_LEFT, MARGIN_RIGHT };
+					static Side side[4] = { SIDE_TOP, SIDE_BOTTOM, SIDE_LEFT, SIDE_RIGHT };
 					if (node_ninepatch) {
-						undo_redo->add_do_method(node_ninepatch, "set_patch_margin", m[edited_margin], node_ninepatch->get_patch_margin(m[edited_margin]));
-						undo_redo->add_undo_method(node_ninepatch, "set_patch_margin", m[edited_margin], prev_margin);
+						undo_redo->add_do_method(node_ninepatch, "set_patch_margin", side[edited_margin], node_ninepatch->get_patch_margin(side[edited_margin]));
+						undo_redo->add_undo_method(node_ninepatch, "set_patch_margin", side[edited_margin], prev_margin);
 					} else if (obj_styleBox.is_valid()) {
-						undo_redo->add_do_method(obj_styleBox.ptr(), "set_margin_size", m[edited_margin], obj_styleBox->get_margin_size(m[edited_margin]));
-						undo_redo->add_undo_method(obj_styleBox.ptr(), "set_margin_size", m[edited_margin], prev_margin);
+						undo_redo->add_do_method(obj_styleBox.ptr(), "set_margin_size", side[edited_margin], obj_styleBox->get_margin_size(side[edited_margin]));
+						undo_redo->add_undo_method(obj_styleBox.ptr(), "set_margin_size", side[edited_margin], prev_margin);
 						obj_styleBox->emit_signal(CoreStringNames::get_singleton()->changed);
 					}
 					edited_margin = -1;
@@ -434,16 +447,16 @@ void TextureRegionEditor::_region_input(const Ref<InputEvent> &p_input) {
 				creating = false;
 			}
 
-		} else if (mb->get_button_index() == BUTTON_RIGHT && mb->is_pressed()) {
+		} else if (mb->get_button_index() == MOUSE_BUTTON_RIGHT && mb->is_pressed()) {
 			if (drag) {
 				drag = false;
 				if (edited_margin >= 0) {
-					static Margin m[4] = { MARGIN_TOP, MARGIN_BOTTOM, MARGIN_LEFT, MARGIN_RIGHT };
+					static Side side[4] = { SIDE_TOP, SIDE_BOTTOM, SIDE_LEFT, SIDE_RIGHT };
 					if (node_ninepatch) {
-						node_ninepatch->set_patch_margin(m[edited_margin], prev_margin);
+						node_ninepatch->set_patch_margin(side[edited_margin], prev_margin);
 					}
 					if (obj_styleBox.is_valid()) {
-						obj_styleBox->set_margin_size(m[edited_margin], prev_margin);
+						obj_styleBox->set_margin_size(side[edited_margin], prev_margin);
 					}
 					edited_margin = -1;
 				} else {
@@ -453,9 +466,9 @@ void TextureRegionEditor::_region_input(const Ref<InputEvent> &p_input) {
 					drag_index = -1;
 				}
 			}
-		} else if (mb->get_button_index() == BUTTON_WHEEL_UP && mb->is_pressed()) {
+		} else if (mb->get_button_index() == MOUSE_BUTTON_WHEEL_UP && mb->is_pressed()) {
 			_zoom_on_position(draw_zoom * ((0.95 + (0.05 * mb->get_factor())) / 0.95), mb->get_position());
-		} else if (mb->get_button_index() == BUTTON_WHEEL_DOWN && mb->is_pressed()) {
+		} else if (mb->get_button_index() == MOUSE_BUTTON_WHEEL_DOWN && mb->is_pressed()) {
 			_zoom_on_position(draw_zoom * (1 - (0.05 * mb->get_factor())), mb->get_position());
 		}
 	}
@@ -463,35 +476,56 @@ void TextureRegionEditor::_region_input(const Ref<InputEvent> &p_input) {
 	Ref<InputEventMouseMotion> mm = p_input;
 
 	if (mm.is_valid()) {
-		if (mm->get_button_mask() & BUTTON_MASK_MIDDLE || Input::get_singleton()->is_key_pressed(KEY_SPACE)) {
+		if (mm->get_button_mask() & MOUSE_BUTTON_MASK_MIDDLE || Input::get_singleton()->is_key_pressed(KEY_SPACE)) {
 			Vector2 dragged(mm->get_relative().x / draw_zoom, mm->get_relative().y / draw_zoom);
 			hscroll->set_value(hscroll->get_value() - dragged.x);
 			vscroll->set_value(vscroll->get_value() - dragged.y);
-
 		} else if (drag) {
 			if (edited_margin >= 0) {
 				float new_margin = 0;
-				if (edited_margin == 0) {
-					new_margin = prev_margin + (mm->get_position().y - drag_from.y) / draw_zoom;
-				} else if (edited_margin == 1) {
-					new_margin = prev_margin - (mm->get_position().y - drag_from.y) / draw_zoom;
-				} else if (edited_margin == 2) {
-					new_margin = prev_margin + (mm->get_position().x - drag_from.x) / draw_zoom;
-				} else if (edited_margin == 3) {
-					new_margin = prev_margin - (mm->get_position().x - drag_from.x) / draw_zoom;
+
+				if (snap_mode != SNAP_GRID) {
+					if (edited_margin == 0) {
+						new_margin = prev_margin + (mm->get_position().y - drag_from.y) / draw_zoom;
+					} else if (edited_margin == 1) {
+						new_margin = prev_margin - (mm->get_position().y - drag_from.y) / draw_zoom;
+					} else if (edited_margin == 2) {
+						new_margin = prev_margin + (mm->get_position().x - drag_from.x) / draw_zoom;
+					} else if (edited_margin == 3) {
+						new_margin = prev_margin - (mm->get_position().x - drag_from.x) / draw_zoom;
+					} else {
+						ERR_PRINT("Unexpected edited_margin");
+					}
+
+					if (snap_mode == SNAP_PIXEL) {
+						new_margin = Math::round(new_margin);
+					}
 				} else {
-					ERR_PRINT("Unexpected edited_margin");
+					Vector2 pos_snapped = snap_point(mtx.affine_inverse().xform(mm->get_position()));
+					Rect2 rect_rounded = Rect2(rect.position.round(), rect.size.round());
+
+					if (edited_margin == 0) {
+						new_margin = pos_snapped.y - rect_rounded.position.y;
+					} else if (edited_margin == 1) {
+						new_margin = rect_rounded.size.y + rect_rounded.position.y - pos_snapped.y;
+					} else if (edited_margin == 2) {
+						new_margin = pos_snapped.x - rect_rounded.position.x;
+					} else if (edited_margin == 3) {
+						new_margin = rect_rounded.size.x + rect_rounded.position.x - pos_snapped.x;
+					} else {
+						ERR_PRINT("Unexpected edited_margin");
+					}
 				}
 
 				if (new_margin < 0) {
 					new_margin = 0;
 				}
-				static Margin m[4] = { MARGIN_TOP, MARGIN_BOTTOM, MARGIN_LEFT, MARGIN_RIGHT };
+				static Side side[4] = { SIDE_TOP, SIDE_BOTTOM, SIDE_LEFT, SIDE_RIGHT };
 				if (node_ninepatch) {
-					node_ninepatch->set_patch_margin(m[edited_margin], new_margin);
+					node_ninepatch->set_patch_margin(side[edited_margin], new_margin);
 				}
 				if (obj_styleBox.is_valid()) {
-					obj_styleBox->set_margin_size(m[edited_margin], new_margin);
+					obj_styleBox->set_margin_size(side[edited_margin], new_margin);
 				}
 			} else {
 				Vector2 new_pos = mtx.affine_inverse().xform(mm->get_position());
@@ -772,8 +806,8 @@ void TextureRegionEditor::_notification(int p_what) {
 			zoom_reset->set_icon(get_theme_icon("ZoomReset", "EditorIcons"));
 			zoom_in->set_icon(get_theme_icon("ZoomMore", "EditorIcons"));
 
-			vscroll->set_anchors_and_margins_preset(PRESET_RIGHT_WIDE);
-			hscroll->set_anchors_and_margins_preset(PRESET_BOTTOM_WIDE);
+			vscroll->set_anchors_and_offsets_preset(PRESET_RIGHT_WIDE);
+			hscroll->set_anchors_and_offsets_preset(PRESET_BOTTOM_WIDE);
 		} break;
 		case NOTIFICATION_VISIBILITY_CHANGED: {
 			if (snap_mode == SNAP_AUTOSLICE && is_visible() && autoslice_is_dirty) {
@@ -829,19 +863,19 @@ Sprite2D *TextureRegionEditor::get_sprite() {
 
 void TextureRegionEditor::edit(Object *p_obj) {
 	if (node_sprite) {
-		node_sprite->remove_change_receptor(this);
+		node_sprite->disconnect("changed", callable_mp(this, &TextureRegionEditor::_texture_changed));
 	}
 	if (node_sprite_3d) {
-		node_sprite_3d->remove_change_receptor(this);
+		node_sprite_3d->disconnect("changed", callable_mp(this, &TextureRegionEditor::_texture_changed));
 	}
 	if (node_ninepatch) {
-		node_ninepatch->remove_change_receptor(this);
+		node_ninepatch->disconnect("changed", callable_mp(this, &TextureRegionEditor::_texture_changed));
 	}
 	if (obj_styleBox.is_valid()) {
-		obj_styleBox->remove_change_receptor(this);
+		obj_styleBox->disconnect("changed", callable_mp(this, &TextureRegionEditor::_texture_changed));
 	}
 	if (atlas_tex.is_valid()) {
-		atlas_tex->remove_change_receptor(this);
+		atlas_tex->disconnect("changed", callable_mp(this, &TextureRegionEditor::_texture_changed));
 	}
 	if (p_obj) {
 		node_sprite = Object::cast_to<Sprite2D>(p_obj);
@@ -853,7 +887,7 @@ void TextureRegionEditor::edit(Object *p_obj) {
 		if (Object::cast_to<AtlasTexture>(p_obj)) {
 			atlas_tex = Ref<AtlasTexture>(Object::cast_to<AtlasTexture>(p_obj));
 		}
-		p_obj->add_change_receptor(this);
+		p_obj->connect("changed", callable_mp(this, &TextureRegionEditor::_texture_changed));
 		_edit_region();
 	} else {
 		node_sprite = nullptr;
@@ -863,7 +897,7 @@ void TextureRegionEditor::edit(Object *p_obj) {
 		atlas_tex = Ref<AtlasTexture>(nullptr);
 	}
 	edit_draw->update();
-	if ((node_sprite && !node_sprite->is_region()) || (node_sprite_3d && !node_sprite_3d->is_region())) {
+	if ((node_sprite && !node_sprite->is_region_enabled()) || (node_sprite_3d && !node_sprite_3d->is_region_enabled())) {
 		set_process(true);
 	}
 	if (!p_obj) {
@@ -871,14 +905,11 @@ void TextureRegionEditor::edit(Object *p_obj) {
 	}
 }
 
-void TextureRegionEditor::_changed_callback(Object *p_changed, const char *p_prop) {
+void TextureRegionEditor::_texture_changed() {
 	if (!is_visible()) {
 		return;
 	}
-	String prop = p_prop;
-	if (prop == "atlas" || prop == "texture" || prop == "region") {
-		_edit_region();
-	}
+	_edit_region();
 }
 
 void TextureRegionEditor::_edit_region() {
@@ -1084,7 +1115,7 @@ void TextureRegionEditorPlugin::_editor_visiblity_changed() {
 void TextureRegionEditorPlugin::make_visible(bool p_visible) {
 	if (p_visible) {
 		texture_region_button->show();
-		bool is_node_configured = region_editor->is_stylebox() || region_editor->is_atlas_texture() || region_editor->is_ninepatch() || (region_editor->get_sprite() && region_editor->get_sprite()->is_region()) || (region_editor->get_sprite_3d() && region_editor->get_sprite_3d()->is_region());
+		bool is_node_configured = region_editor->is_stylebox() || region_editor->is_atlas_texture() || region_editor->is_ninepatch() || (region_editor->get_sprite() && region_editor->get_sprite()->is_region_enabled()) || (region_editor->get_sprite_3d() && region_editor->get_sprite_3d()->is_region_enabled());
 		if ((is_node_configured && !manually_hidden) || texture_region_button->is_pressed()) {
 			editor->make_bottom_panel_item_visible(region_editor);
 		}

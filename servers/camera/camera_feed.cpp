@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -184,9 +184,10 @@ CameraFeed::~CameraFeed() {
 #endif
 }
 
-void CameraFeed::set_RGB_img(Ref<Image> p_rgb_img) {
+void CameraFeed::set_RGB_img(const Ref<Image> &p_rgb_img) {
 // FIXME: Disabled during Vulkan refactoring, should be ported.
 #if 0
+	ERR_FAIL_COND(p_rgb_img.is_null());
 	if (active) {
 		RenderingServer *vs = RenderingServer::get_singleton();
 
@@ -207,9 +208,10 @@ void CameraFeed::set_RGB_img(Ref<Image> p_rgb_img) {
 #endif
 }
 
-void CameraFeed::set_YCbCr_img(Ref<Image> p_ycbcr_img) {
+void CameraFeed::set_YCbCr_img(const Ref<Image> &p_ycbcr_img) {
 // FIXME: Disabled during Vulkan refactoring, should be ported.
 #if 0
+	ERR_FAIL_COND(p_ycbcr_img.is_null());
 	if (active) {
 		RenderingServer *vs = RenderingServer::get_singleton();
 
@@ -230,9 +232,11 @@ void CameraFeed::set_YCbCr_img(Ref<Image> p_ycbcr_img) {
 #endif
 }
 
-void CameraFeed::set_YCbCr_imgs(Ref<Image> p_y_img, Ref<Image> p_cbcr_img) {
+void CameraFeed::set_YCbCr_imgs(const Ref<Image> &p_y_img, const Ref<Image> &p_cbcr_img) {
 // FIXME: Disabled during Vulkan refactoring, should be ported.
 #if 0
+	ERR_FAIL_COND(p_y_img.is_null());
+	ERR_FAIL_COND(p_cbcr_img.is_null());
 	if (active) {
 		RenderingServer *vs = RenderingServer::get_singleton();
 

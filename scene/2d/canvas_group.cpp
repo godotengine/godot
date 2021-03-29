@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -30,7 +30,7 @@
 
 #include "canvas_group.h"
 
-void CanvasGroup::set_fit_margin(float p_fit_margin) {
+void CanvasGroup::set_fit_margin(real_t p_fit_margin) {
 	ERR_FAIL_COND(p_fit_margin < 0.0);
 
 	fit_margin = p_fit_margin;
@@ -39,11 +39,11 @@ void CanvasGroup::set_fit_margin(float p_fit_margin) {
 	update();
 }
 
-float CanvasGroup::get_fit_margin() const {
+real_t CanvasGroup::get_fit_margin() const {
 	return fit_margin;
 }
 
-void CanvasGroup::set_clear_margin(float p_clear_margin) {
+void CanvasGroup::set_clear_margin(real_t p_clear_margin) {
 	ERR_FAIL_COND(p_clear_margin < 0.0);
 
 	clear_margin = p_clear_margin;
@@ -52,7 +52,7 @@ void CanvasGroup::set_clear_margin(float p_clear_margin) {
 	update();
 }
 
-float CanvasGroup::get_clear_margin() const {
+real_t CanvasGroup::get_clear_margin() const {
 	return clear_margin;
 }
 
@@ -84,4 +84,5 @@ CanvasGroup::CanvasGroup() {
 	set_fit_margin(10.0); //sets things
 }
 CanvasGroup::~CanvasGroup() {
+	RS::get_singleton()->canvas_item_set_canvas_group_mode(get_canvas_item(), RS::CANVAS_GROUP_MODE_DISABLED);
 }

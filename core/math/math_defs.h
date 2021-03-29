@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -66,35 +66,31 @@ enum ClockDirection {
 };
 
 enum Orientation {
-
 	HORIZONTAL,
 	VERTICAL
 };
 
 enum HAlign {
-
 	HALIGN_LEFT,
 	HALIGN_CENTER,
-	HALIGN_RIGHT
+	HALIGN_RIGHT,
+	HALIGN_FILL,
 };
 
 enum VAlign {
-
 	VALIGN_TOP,
 	VALIGN_CENTER,
 	VALIGN_BOTTOM
 };
 
-enum Margin {
-
-	MARGIN_LEFT,
-	MARGIN_TOP,
-	MARGIN_RIGHT,
-	MARGIN_BOTTOM
+enum Side {
+	SIDE_LEFT,
+	SIDE_TOP,
+	SIDE_RIGHT,
+	SIDE_BOTTOM
 };
 
 enum Corner {
-
 	CORNER_TOP_LEFT,
 	CORNER_TOP_RIGHT,
 	CORNER_BOTTOM_RIGHT,

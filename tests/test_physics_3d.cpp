@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -59,7 +59,7 @@ class TestPhysics3DMainLoop : public MainLoop {
 
 	RID character;
 
-	float ofs_x, ofs_y;
+	real_t ofs_x, ofs_y;
 
 	Point2 joy_direction;
 
@@ -86,7 +86,9 @@ protected:
 		PhysicsServer3D *ps = PhysicsServer3D::get_singleton();
 
 		RID mesh_instance = vs->instance_create2(type_mesh_map[p_shape], scenario);
-		RID body = ps->body_create(p_body, !p_active_default);
+		RID body = ps->body_create();
+		ps->body_set_mode(body, p_body);
+		ps->body_set_state(body, PhysicsServer3D::BODY_STATE_SLEEPING, !p_active_default);
 		ps->body_set_space(body, space);
 		ps->body_set_param(body, PhysicsServer3D::BODY_PARAM_BOUNCE, 0.0);
 		//todo set space
@@ -108,21 +110,23 @@ protected:
 		RID world_margin_shape = ps->shape_create(PhysicsServer3D::SHAPE_PLANE);
 		ps->shape_set_data(world_margin_shape, p_plane);
 
-		RID b = ps->body_create(PhysicsServer3D::BODY_MODE_STATIC);
+		RID b = ps->body_create();
+		ps->body_set_mode(b, PhysicsServer3D::BODY_MODE_STATIC);
+
 		ps->body_set_space(b, space);
 		//todo set space
 		ps->body_add_shape(b, world_margin_shape);
 		return b;
 	}
 
-	void configure_body(RID p_body, float p_mass, float p_friction, float p_bounce) {
+	void configure_body(RID p_body, real_t p_mass, real_t p_friction, real_t p_bounce) {
 		PhysicsServer3D *ps = PhysicsServer3D::get_singleton();
 		ps->body_set_param(p_body, PhysicsServer3D::BODY_PARAM_MASS, p_mass);
 		ps->body_set_param(p_body, PhysicsServer3D::BODY_PARAM_FRICTION, p_friction);
 		ps->body_set_param(p_body, PhysicsServer3D::BODY_PARAM_BOUNCE, p_bounce);
 	}
 
-	void init_shapes() {
+	void initialize_shapes() {
 		RenderingServer *vs = RenderingServer::get_singleton();
 		PhysicsServer3D *ps = PhysicsServer3D::get_singleton();
 
@@ -183,8 +187,10 @@ protected:
 		RenderingServer *vs = RenderingServer::get_singleton();
 		PhysicsServer3D *ps = PhysicsServer3D::get_singleton();
 		RID trimesh_shape = ps->shape_create(PhysicsServer3D::SHAPE_CONCAVE_POLYGON);
-		ps->shape_set_data(trimesh_shape, p_faces);
-		p_faces = ps->shape_get_data(trimesh_shape); // optimized one
+		Dictionary trimesh_params;
+		trimesh_params["faces"] = p_faces;
+		trimesh_params["backface_collision"] = false;
+		ps->shape_set_data(trimesh_shape, trimesh_params);
 		Vector<Vector3> normals; // for drawing
 		for (int i = 0; i < p_faces.size() / 3; i++) {
 			Plane p(p_faces[i * 3 + 0], p_faces[i * 3 + 1], p_faces[i * 3 + 2]);
@@ -202,7 +208,8 @@ protected:
 
 		RID triins = vs->instance_create2(trimesh_mesh, scenario);
 
-		RID tribody = ps->body_create(PhysicsServer3D::BODY_MODE_STATIC);
+		RID tribody = ps->body_create();
+		ps->body_set_mode(tribody, PhysicsServer3D::BODY_MODE_STATIC);
 		ps->body_set_space(tribody, space);
 		//todo set space
 		ps->body_add_shape(tribody, trimesh_shape);
@@ -211,8 +218,8 @@ protected:
 		vs->instance_set_transform(triins, tritrans);
 	}
 
-	void make_grid(int p_width, int p_height, float p_cellsize, float p_cellheight, const Transform &p_xform = Transform()) {
-		Vector<Vector<float>> grid;
+	void make_grid(int p_width, int p_height, real_t p_cellsize, real_t p_cellheight, const Transform &p_xform = Transform()) {
+		Vector<Vector<real_t>> grid;
 
 		grid.resize(p_width);
 
@@ -253,8 +260,8 @@ public:
 		}
 
 		if (mm.is_valid() && mm->get_button_mask() & 1) {
-			float y = -mm->get_relative().y / 20.0;
-			float x = mm->get_relative().x / 20.0;
+			real_t y = -mm->get_relative().y / 20.0;
+			real_t x = mm->get_relative().x / 20.0;
 
 			if (mover.is_valid()) {
 				PhysicsServer3D *ps = PhysicsServer3D::get_singleton();
@@ -269,9 +276,9 @@ public:
 	virtual void request_quit() {
 		quit = true;
 	}
-	virtual void init() override {
+	virtual void initialize() override {
 		ofs_x = ofs_y = 0;
-		init_shapes();
+		initialize_shapes();
 
 		PhysicsServer3D *ps = PhysicsServer3D::get_singleton();
 		space = ps->space_create();
@@ -310,9 +317,9 @@ public:
 		test_fall();
 		quit = false;
 	}
-	virtual bool iteration(float p_time) override {
+	virtual bool physics_process(float p_time) override {
 		if (mover.is_valid()) {
-			static float joy_speed = 10;
+			static real_t joy_speed = 10;
 			PhysicsServer3D *ps = PhysicsServer3D::get_singleton();
 			Transform t = ps->body_get_state(mover, PhysicsServer3D::BODY_STATE_TRANSFORM);
 			t.origin += Vector3(joy_speed * joy_direction.x * p_time, -joy_speed * joy_direction.y * p_time, 0);
@@ -328,7 +335,7 @@ public:
 
 		return quit;
 	}
-	virtual void finish() override {
+	virtual void finalize() override {
 	}
 
 	void test_joint() {
@@ -358,7 +365,8 @@ public:
 		ps->shape_set_data(capsule_shape, capsule_params);
 
 		RID mesh_instance = vs->instance_create2(capsule_mesh, scenario);
-		character = ps->body_create(PhysicsServer3D::BODY_MODE_CHARACTER);
+		character = ps->body_create();
+		ps->body_set_mode(character, PhysicsServer3D::BODY_MODE_CHARACTER);
 		ps->body_set_space(character, space);
 		//todo add space
 		ps->body_add_shape(character, capsule_shape);
@@ -396,7 +404,7 @@ public:
 		create_static_plane(Plane(Vector3(0, 1, 0), -1));
 	}
 
-	virtual bool idle(float p_time) override {
+	virtual bool process(float p_time) override {
 		return false;
 	}
 
@@ -409,5 +417,4 @@ namespace TestPhysics3D {
 MainLoop *test() {
 	return memnew(TestPhysics3DMainLoop);
 }
-
 } // namespace TestPhysics3D

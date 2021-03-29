@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -53,7 +53,8 @@ void WindowsTerminalLogger::logv(const char *p_format, va_list p_list, bool p_er
 	if (wlen < 0)
 		return;
 
-	wchar_t *wbuf = (wchar_t *)malloc((len + 1) * sizeof(wchar_t));
+	wchar_t *wbuf = (wchar_t *)memalloc((len + 1) * sizeof(wchar_t));
+	ERR_FAIL_NULL_MSG(wbuf, "Out of memory.");
 	MultiByteToWideChar(CP_UTF8, 0, buf, len, wbuf, wlen);
 	wbuf[wlen] = 0;
 
@@ -62,7 +63,7 @@ void WindowsTerminalLogger::logv(const char *p_format, va_list p_list, bool p_er
 	else
 		wprintf(L"%ls", wbuf);
 
-	free(wbuf);
+	memfree(wbuf);
 
 #ifdef DEBUG_ENABLED
 	fflush(stdout);

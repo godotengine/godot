@@ -20,7 +20,7 @@ extern "C" {
 #define HUF_H_298734234
 
 /* *** Dependencies *** */
-#include <stddef.h>    /* size_t */
+#include "zstd_deps.h"    /* size_t */
 
 
 /* *** library symbols visibility *** */
@@ -111,6 +111,8 @@ HUF_PUBLIC_API size_t HUF_compress4X_wksp (void* dst, size_t dstCapacity,
 
 /* *** Dependencies *** */
 #include "mem.h"   /* U32 */
+#define FSE_STATIC_LINKING_ONLY
+#include "fse.h"
 
 
 /* *** Constants *** */
@@ -133,12 +135,16 @@ HUF_PUBLIC_API size_t HUF_compress4X_wksp (void* dst, size_t dstCapacity,
 #define HUF_COMPRESSBOUND(size) (HUF_CTABLEBOUND + HUF_BLOCKBOUND(size))   /* Macro version, useful for static allocation */
 
 /* static allocation of HUF's Compression Table */
+/* this is a private definition, just exposed for allocation and strict aliasing purpose. never EVER access its members directly */
+struct HUF_CElt_s {
+  U16  val;
+  BYTE nbBits;
+};   /* typedef'd to HUF_CElt */
+typedef struct HUF_CElt_s HUF_CElt;   /* consider it an incomplete type */
 #define HUF_CTABLE_SIZE_U32(maxSymbolValue)   ((maxSymbolValue)+1)   /* Use tables of U32, for proper alignment */
 #define HUF_CTABLE_SIZE(maxSymbolValue)       (HUF_CTABLE_SIZE_U32(maxSymbolValue) * sizeof(U32))
 #define HUF_CREATE_STATIC_CTABLE(name, maxSymbolValue) \
-    U32 name##hb[HUF_CTABLE_SIZE_U32(maxSymbolValue)]; \
-    void* name##hv = &(name##hb); \
-    HUF_CElt* name = (HUF_CElt*)(name##hv)   /* no final ; */
+    HUF_CElt name[HUF_CTABLE_SIZE_U32(maxSymbolValue)] /* no final ; */
 
 /* static allocation of HUF's DTable */
 typedef U32 HUF_DTable;
@@ -184,7 +190,6 @@ size_t HUF_decompress4X2_DCtx_wksp(HUF_DTable* dctx, void* dst, size_t dstSize, 
  *  or to save and regenerate 'CTable' using external methods.
  */
 unsigned HUF_optimalTableLog(unsigned maxTableLog, size_t srcSize, unsigned maxSymbolValue);
-typedef struct HUF_CElt_s HUF_CElt;   /* incomplete type */
 size_t HUF_buildCTable (HUF_CElt* CTable, const unsigned* count, unsigned maxSymbolValue, unsigned maxNbBits);   /* @return : maxNbBits; CTable and count can overlap. In which case, CTable will overwrite count content */
 size_t HUF_writeCTable (void* dst, size_t maxDstSize, const HUF_CElt* CTable, unsigned maxSymbolValue, unsigned huffLog);
 size_t HUF_compress4X_usingCTable(void* dst, size_t dstSize, const void* src, size_t srcSize, const HUF_CElt* CTable);
@@ -225,6 +230,19 @@ size_t HUF_buildCTable_wksp (HUF_CElt* tree,
 size_t HUF_readStats(BYTE* huffWeight, size_t hwSize,
                      U32* rankStats, U32* nbSymbolsPtr, U32* tableLogPtr,
                      const void* src, size_t srcSize);
+
+/*! HUF_readStats_wksp() :
+ * Same as HUF_readStats() but takes an external workspace which must be
+ * 4-byte aligned and its size must be >= HUF_READ_STATS_WORKSPACE_SIZE.
+ * If the CPU has BMI2 support, pass bmi2=1, otherwise pass bmi2=0.
+ */
+#define HUF_READ_STATS_WORKSPACE_SIZE_U32 FSE_DECOMPRESS_WKSP_SIZE_U32(6, HUF_TABLELOG_MAX-1)
+#define HUF_READ_STATS_WORKSPACE_SIZE (HUF_READ_STATS_WORKSPACE_SIZE_U32 * sizeof(unsigned))
+size_t HUF_readStats_wksp(BYTE* huffWeight, size_t hwSize,
+                          U32* rankStats, U32* nbSymbolsPtr, U32* tableLogPtr,
+                          const void* src, size_t srcSize,
+                          void* workspace, size_t wkspSize,
+                          int bmi2);
 
 /** HUF_readCTable() :
  *  Loading a CTable saved with HUF_writeCTable() */
@@ -332,6 +350,9 @@ size_t HUF_decompress1X1_DCtx_wksp_bmi2(HUF_DTable* dctx, void* dst, size_t dstS
 #endif
 size_t HUF_decompress4X_usingDTable_bmi2(void* dst, size_t maxDstSize, const void* cSrc, size_t cSrcSize, const HUF_DTable* DTable, int bmi2);
 size_t HUF_decompress4X_hufOnly_wksp_bmi2(HUF_DTable* dctx, void* dst, size_t dstSize, const void* cSrc, size_t cSrcSize, void* workSpace, size_t wkspSize, int bmi2);
+#ifndef HUF_FORCE_DECOMPRESS_X2
+size_t HUF_readDTableX1_wksp_bmi2(HUF_DTable* DTable, const void* src, size_t srcSize, void* workSpace, size_t wkspSize, int bmi2);
+#endif
 
 #endif /* HUF_STATIC_LINKING_ONLY */
 

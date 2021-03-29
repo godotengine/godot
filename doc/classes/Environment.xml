@@ -43,8 +43,8 @@
 		<member name="adjustment_brightness" type="float" setter="set_adjustment_brightness" getter="get_adjustment_brightness" default="1.0">
 			The global brightness value of the rendered scene. Effective only if [code]adjustment_enabled[/code] is [code]true[/code].
 		</member>
-		<member name="adjustment_color_correction" type="Texture2D" setter="set_adjustment_color_correction" getter="get_adjustment_color_correction">
-			Applies the provided [Texture2D] resource to affect the global color aspect of the rendered scene. Effective only if [code]adjustment_enabled[/code] is [code]true[/code].
+		<member name="adjustment_color_correction" type="Texture" setter="set_adjustment_color_correction" getter="get_adjustment_color_correction">
+			The [Texture2D] or [Texture3D] lookup table (LUT) to use for the built-in post-process color grading. Can use a [GradientTexture] for a 1-dimensional LUT, or a [Texture3D] for a more complex LUT. Effective only if [code]adjustment_enabled[/code] is [code]true[/code].
 		</member>
 		<member name="adjustment_contrast" type="float" setter="set_adjustment_contrast" getter="get_adjustment_contrast" default="1.0">
 			The global contrast value of the rendered scene (default value is 1). Effective only if [code]adjustment_enabled[/code] is [code]true[/code].
@@ -169,11 +169,15 @@
 		</member>
 		<member name="reflected_light_source" type="int" setter="set_reflection_source" getter="get_reflection_source" enum="Environment.ReflectionSource" default="0">
 		</member>
+		<member name="sdfgi_bounce_feedback" type="float" setter="set_sdfgi_bounce_feedback" getter="get_sdfgi_bounce_feedback" default="0.0">
+		</member>
 		<member name="sdfgi_cascade0_distance" type="float" setter="set_sdfgi_cascade0_distance" getter="get_sdfgi_cascade0_distance" default="12.8">
 		</member>
 		<member name="sdfgi_cascades" type="int" setter="set_sdfgi_cascades" getter="get_sdfgi_cascades" enum="Environment.SDFGICascades" default="1">
 		</member>
 		<member name="sdfgi_enabled" type="bool" setter="set_sdfgi_enabled" getter="is_sdfgi_enabled" default="false">
+			If [code]true[/code], enables signed distance field global illumination.
+			[b]Note:[/b] Meshes should have sufficiently thick walls to avoid light leaks (avoid one-sided walls). For interior levels, enclose your level geometry in a sufficiently large box and bridge the loops to close the mesh.
 		</member>
 		<member name="sdfgi_energy" type="float" setter="set_sdfgi_energy" getter="get_sdfgi_energy" default="1.0">
 		</member>
@@ -186,8 +190,6 @@
 		<member name="sdfgi_probe_bias" type="float" setter="set_sdfgi_probe_bias" getter="get_sdfgi_probe_bias" default="1.1">
 		</member>
 		<member name="sdfgi_read_sky_light" type="bool" setter="set_sdfgi_read_sky_light" getter="is_sdfgi_reading_sky_light" default="false">
-		</member>
-		<member name="sdfgi_use_multi_bounce" type="bool" setter="set_sdfgi_use_multi_bounce" getter="is_sdfgi_using_multi_bounce" default="false">
 		</member>
 		<member name="sdfgi_use_occlusion" type="bool" setter="set_sdfgi_use_occlusion" getter="is_sdfgi_using_occlusion" default="false">
 		</member>
@@ -218,26 +220,29 @@
 		<member name="ssao_ao_channel_affect" type="float" setter="set_ssao_ao_channel_affect" getter="get_ssao_ao_channel_affect" default="0.0">
 			The screen-space ambient occlusion intensity on materials that have an AO texture defined. Values higher than [code]0[/code] will make the SSAO effect visible in areas darkened by AO textures.
 		</member>
-		<member name="ssao_bias" type="float" setter="set_ssao_bias" getter="get_ssao_bias" default="0.01">
-			The screen-space ambient occlusion bias. This should be kept high enough to prevent "smooth" curves from being affected by ambient occlusion.
-		</member>
-		<member name="ssao_blur" type="int" setter="set_ssao_blur" getter="get_ssao_blur" enum="Environment.SSAOBlur" default="3">
-			The screen-space ambient occlusion blur quality. See [enum SSAOBlur] for possible values.
-		</member>
-		<member name="ssao_edge_sharpness" type="float" setter="set_ssao_edge_sharpness" getter="get_ssao_edge_sharpness" default="4.0">
-			The screen-space ambient occlusion edge sharpness.
+		<member name="ssao_detail" type="float" setter="set_ssao_detail" getter="get_ssao_detail" default="0.5">
+			Sets the strength of the additional level of detail for the screen-space ambient occlusion effect. A high value makes the detail pass more prominent, but it may contribute to aliasing in your final image.
 		</member>
 		<member name="ssao_enabled" type="bool" setter="set_ssao_enabled" getter="is_ssao_enabled" default="false">
-			If [code]true[/code], the screen-space ambient occlusion effect is enabled. This darkens objects' corners and cavities to simulate ambient light not reaching the entire object as in real life. This works well for small, dynamic objects, but baked lighting or ambient occlusion textures will do a better job at displaying ambient occlusion on large static objects. This is a costly effect and should be disabled first when running into performance issues.
+			If [code]true[/code], the screen-space ambient occlusion effect is enabled. This darkens objects' corners and cavities to simulate ambient light not reaching the entire object as in real life. This works well for small, dynamic objects, but baked lighting or ambient occlusion textures will do a better job at displaying ambient occlusion on large static objects. Godot uses a form of SSAO called Adaptive Screen Space Ambient Occlusion which is itself a form of Horizon Based Ambient Occlusion.
 		</member>
-		<member name="ssao_intensity" type="float" setter="set_ssao_intensity" getter="get_ssao_intensity" default="1.0">
-			The primary screen-space ambient occlusion intensity. See also [member ssao_radius].
+		<member name="ssao_horizon" type="float" setter="set_ssao_horizon" getter="get_ssao_horizon" default="0.06">
+			The threshold for considering whether a given point on a surface is occluded or not represented as an angle from the horizon mapped into the [code]0.0-1.0[/code] range. A value of [code]1.0[/code] results in no occlusion.
+		</member>
+		<member name="ssao_intensity" type="float" setter="set_ssao_intensity" getter="get_ssao_intensity" default="2.0">
+			The primary screen-space ambient occlusion intensity. Acts as a multiplier for the screen-space ambient occlusion effect. A higher value results in darker occlusion.
 		</member>
 		<member name="ssao_light_affect" type="float" setter="set_ssao_direct_light_affect" getter="get_ssao_direct_light_affect" default="0.0">
 			The screen-space ambient occlusion intensity in direct light. In real life, ambient occlusion only applies to indirect light, which means its effects can't be seen in direct light. Values higher than [code]0[/code] will make the SSAO effect visible in direct light.
 		</member>
+		<member name="ssao_power" type="float" setter="set_ssao_power" getter="get_ssao_power" default="1.5">
+			The distribution of occlusion. A higher value results in darker occlusion, similar to [member ssao_intensity], but with a sharper falloff.
+		</member>
 		<member name="ssao_radius" type="float" setter="set_ssao_radius" getter="get_ssao_radius" default="1.0">
-			The primary screen-space ambient occlusion radius.
+			The distance at which objects can occlude each other when calculating screen-space ambient occlusion. Higher values will result in occlusion over a greater distance at the cost of performance and quality.
+		</member>
+		<member name="ssao_sharpness" type="float" setter="set_ssao_sharpness" getter="get_ssao_sharpness" default="0.98">
+			Sharpness refers to the amount that the screen-space ambient occlusion effect is allowed to blur over the edges of objects. Setting too high will result in aliasing around the edges of objects. Setting too low will make object edges appear blurry.
 		</member>
 		<member name="tonemap_exposure" type="float" setter="set_tonemap_exposure" getter="get_tonemap_exposure" default="1.0">
 			The default exposure used for tonemapping.
@@ -262,12 +267,14 @@
 		</member>
 		<member name="volumetric_fog_light_energy" type="float" setter="set_volumetric_fog_light_energy" getter="get_volumetric_fog_light_energy" default="1.0">
 		</member>
-		<member name="volumetric_fog_shadow_filter" type="int" setter="set_volumetric_fog_shadow_filter" getter="get_volumetric_fog_shadow_filter" enum="Environment.VolumetricFogShadowFilter" default="1">
+		<member name="volumetric_fog_temporal_reprojection_amount" type="float" setter="set_volumetric_fog_temporal_reprojection_amount" getter="get_volumetric_fog_temporal_reprojection_amount" default="0.9">
+		</member>
+		<member name="volumetric_fog_temporal_reprojection_enabled" type="bool" setter="set_volumetric_fog_temporal_reprojection_enabled" getter="is_volumetric_fog_temporal_reprojection_enabled" default="true">
 		</member>
 	</members>
 	<constants>
 		<constant name="BG_CLEAR_COLOR" value="0" enum="BGMode">
-			Clears the background using the clear color defined in [member ProjectSettings.rendering/environment/default_clear_color].
+			Clears the background using the clear color defined in [member ProjectSettings.rendering/environment/defaults/default_clear_color].
 		</constant>
 		<constant name="BG_COLOR" value="1" enum="BGMode">
 			Clears the background using a custom clear color.
@@ -334,18 +341,6 @@
 		</constant>
 		<constant name="GLOW_BLEND_MODE_MIX" value="4" enum="GlowBlendMode">
 			Mixes the glow with the underlying color to avoid increasing brightness as much while still maintaining a glow effect.
-		</constant>
-		<constant name="SSAO_BLUR_DISABLED" value="0" enum="SSAOBlur">
-			No blur for the screen-space ambient occlusion effect (fastest).
-		</constant>
-		<constant name="SSAO_BLUR_1x1" value="1" enum="SSAOBlur">
-			1×1 blur for the screen-space ambient occlusion effect.
-		</constant>
-		<constant name="SSAO_BLUR_2x2" value="2" enum="SSAOBlur">
-			2×2 blur for the screen-space ambient occlusion effect.
-		</constant>
-		<constant name="SSAO_BLUR_3x3" value="3" enum="SSAOBlur">
-			3×3 blur for the screen-space ambient occlusion effect. Increases the radius of the blur for a smoother look, but can result in checkerboard-like artifacts.
 		</constant>
 		<constant name="SDFGI_CASCADES_4" value="0" enum="SDFGICascades">
 		</constant>

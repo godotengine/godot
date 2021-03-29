@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -35,9 +35,9 @@
 extern "C" {
 #endif
 
-#include <stdint.h>
+#include <gdnative/math_defs.h>
 
-#define GODOT_QUAT_SIZE 16
+#define GODOT_QUAT_SIZE (sizeof(godot_real_t) * 4)
 
 #ifndef GODOT_CORE_API_GODOT_QUAT_TYPE_DEFINED
 #define GODOT_CORE_API_GODOT_QUAT_TYPE_DEFINED
@@ -46,70 +46,12 @@ typedef struct {
 } godot_quat;
 #endif
 
-// reduce extern "C" nesting for VS2013
-#ifdef __cplusplus
-}
-#endif
-
 #include <gdnative/gdnative.h>
-#include <gdnative/vector3.h>
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
-void GDAPI godot_quat_new(godot_quat *r_dest, const godot_real p_x, const godot_real p_y, const godot_real p_z, const godot_real p_w);
-void GDAPI godot_quat_new_with_axis_angle(godot_quat *r_dest, const godot_vector3 *p_axis, const godot_real p_angle);
-void GDAPI godot_quat_new_with_basis(godot_quat *r_dest, const godot_basis *p_basis);
-void GDAPI godot_quat_new_with_euler(godot_quat *r_dest, const godot_vector3 *p_euler);
-
-godot_real GDAPI godot_quat_get_x(const godot_quat *p_self);
-void GDAPI godot_quat_set_x(godot_quat *p_self, const godot_real val);
-
-godot_real GDAPI godot_quat_get_y(const godot_quat *p_self);
-void GDAPI godot_quat_set_y(godot_quat *p_self, const godot_real val);
-
-godot_real GDAPI godot_quat_get_z(const godot_quat *p_self);
-void GDAPI godot_quat_set_z(godot_quat *p_self, const godot_real val);
-
-godot_real GDAPI godot_quat_get_w(const godot_quat *p_self);
-void GDAPI godot_quat_set_w(godot_quat *p_self, const godot_real val);
-
-godot_string GDAPI godot_quat_as_string(const godot_quat *p_self);
-
-godot_real GDAPI godot_quat_length(const godot_quat *p_self);
-
-godot_real GDAPI godot_quat_length_squared(const godot_quat *p_self);
-
-godot_quat GDAPI godot_quat_normalized(const godot_quat *p_self);
-
-godot_bool GDAPI godot_quat_is_normalized(const godot_quat *p_self);
-
-godot_quat GDAPI godot_quat_inverse(const godot_quat *p_self);
-
-godot_real GDAPI godot_quat_dot(const godot_quat *p_self, const godot_quat *p_b);
-
-godot_vector3 GDAPI godot_quat_xform(const godot_quat *p_self, const godot_vector3 *p_v);
-
-godot_quat GDAPI godot_quat_slerp(const godot_quat *p_self, const godot_quat *p_b, const godot_real p_t);
-
-godot_quat GDAPI godot_quat_slerpni(const godot_quat *p_self, const godot_quat *p_b, const godot_real p_t);
-
-godot_quat GDAPI godot_quat_cubic_slerp(const godot_quat *p_self, const godot_quat *p_b, const godot_quat *p_pre_a, const godot_quat *p_post_b, const godot_real p_t);
-
-godot_quat GDAPI godot_quat_operator_multiply(const godot_quat *p_self, const godot_real p_b);
-
-godot_quat GDAPI godot_quat_operator_add(const godot_quat *p_self, const godot_quat *p_b);
-
-godot_quat GDAPI godot_quat_operator_subtract(const godot_quat *p_self, const godot_quat *p_b);
-
-godot_quat GDAPI godot_quat_operator_divide(const godot_quat *p_self, const godot_real p_b);
-
-godot_bool GDAPI godot_quat_operator_equal(const godot_quat *p_self, const godot_quat *p_b);
-
-godot_quat GDAPI godot_quat_operator_neg(const godot_quat *p_self);
-
-void GDAPI godot_quat_set_axis_angle(godot_quat *p_self, const godot_vector3 *p_axis, const godot_real p_angle);
+void GDAPI godot_quat_new(godot_quat *p_self);
+void GDAPI godot_quat_new_copy(godot_quat *r_dest, const godot_quat *p_src);
+godot_real_t GDAPI *godot_quat_operator_index(godot_quat *p_self, godot_int p_index);
+const godot_real_t GDAPI *godot_quat_operator_index_const(const godot_quat *p_self, godot_int p_index);
 
 #ifdef __cplusplus
 }

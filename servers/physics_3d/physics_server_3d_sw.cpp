@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -43,47 +43,63 @@
 #define FLUSH_QUERY_CHECK(m_object) \
 	ERR_FAIL_COND_MSG(m_object->get_space() && flushing_queries, "Can't change this state while flushing queries. Use call_deferred() or set_deferred() to change monitoring state instead.");
 
-RID PhysicsServer3DSW::shape_create(ShapeType p_shape) {
-	Shape3DSW *shape = nullptr;
-	switch (p_shape) {
-		case SHAPE_PLANE: {
-			shape = memnew(PlaneShape3DSW);
-		} break;
-		case SHAPE_RAY: {
-			shape = memnew(RayShape3DSW);
-		} break;
-		case SHAPE_SPHERE: {
-			shape = memnew(SphereShape3DSW);
-		} break;
-		case SHAPE_BOX: {
-			shape = memnew(BoxShape3DSW);
-		} break;
-		case SHAPE_CAPSULE: {
-			shape = memnew(CapsuleShape3DSW);
-		} break;
-		case SHAPE_CYLINDER: {
-			ERR_FAIL_V_MSG(RID(), "CylinderShape3D is not supported in GodotPhysics3D. Please switch to Bullet in the Project Settings.");
-		} break;
-		case SHAPE_CONVEX_POLYGON: {
-			shape = memnew(ConvexPolygonShape3DSW);
-		} break;
-		case SHAPE_CONCAVE_POLYGON: {
-			shape = memnew(ConcavePolygonShape3DSW);
-		} break;
-		case SHAPE_HEIGHTMAP: {
-			shape = memnew(HeightMapShape3DSW);
-		} break;
-		case SHAPE_CUSTOM: {
-			ERR_FAIL_V(RID());
-
-		} break;
-	}
-
-	RID id = shape_owner.make_rid(shape);
-	shape->set_self(id);
-
-	return id;
-};
+RID PhysicsServer3DSW::plane_shape_create() {
+	Shape3DSW *shape = memnew(PlaneShape3DSW);
+	RID rid = shape_owner.make_rid(shape);
+	shape->set_self(rid);
+	return rid;
+}
+RID PhysicsServer3DSW::ray_shape_create() {
+	Shape3DSW *shape = memnew(RayShape3DSW);
+	RID rid = shape_owner.make_rid(shape);
+	shape->set_self(rid);
+	return rid;
+}
+RID PhysicsServer3DSW::sphere_shape_create() {
+	Shape3DSW *shape = memnew(SphereShape3DSW);
+	RID rid = shape_owner.make_rid(shape);
+	shape->set_self(rid);
+	return rid;
+}
+RID PhysicsServer3DSW::box_shape_create() {
+	Shape3DSW *shape = memnew(BoxShape3DSW);
+	RID rid = shape_owner.make_rid(shape);
+	shape->set_self(rid);
+	return rid;
+}
+RID PhysicsServer3DSW::capsule_shape_create() {
+	Shape3DSW *shape = memnew(CapsuleShape3DSW);
+	RID rid = shape_owner.make_rid(shape);
+	shape->set_self(rid);
+	return rid;
+}
+RID PhysicsServer3DSW::cylinder_shape_create() {
+	Shape3DSW *shape = memnew(CylinderShape3DSW);
+	RID rid = shape_owner.make_rid(shape);
+	shape->set_self(rid);
+	return rid;
+}
+RID PhysicsServer3DSW::convex_polygon_shape_create() {
+	Shape3DSW *shape = memnew(ConvexPolygonShape3DSW);
+	RID rid = shape_owner.make_rid(shape);
+	shape->set_self(rid);
+	return rid;
+}
+RID PhysicsServer3DSW::concave_polygon_shape_create() {
+	Shape3DSW *shape = memnew(ConcavePolygonShape3DSW);
+	RID rid = shape_owner.make_rid(shape);
+	shape->set_self(rid);
+	return rid;
+}
+RID PhysicsServer3DSW::heightmap_shape_create() {
+	Shape3DSW *shape = memnew(HeightMapShape3DSW);
+	RID rid = shape_owner.make_rid(shape);
+	shape->set_self(rid);
+	return rid;
+}
+RID PhysicsServer3DSW::custom_shape_create() {
+	ERR_FAIL_V(RID());
+}
 
 void PhysicsServer3DSW::shape_set_data(RID p_shape, const Variant &p_data) {
 	Shape3DSW *shape = shape_owner.getornull(p_shape);
@@ -174,7 +190,7 @@ real_t PhysicsServer3DSW::space_get_param(RID p_space, SpaceParameter p_param) c
 PhysicsDirectSpaceState3D *PhysicsServer3DSW::space_get_direct_state(RID p_space) {
 	Space3DSW *space = space_owner.getornull(p_space);
 	ERR_FAIL_COND_V(!space, nullptr);
-	ERR_FAIL_COND_V_MSG(!doing_sync || space->is_locked(), nullptr, "Space state is inaccessible right now, wait for iteration or physics process notification.");
+	ERR_FAIL_COND_V_MSG((using_threads && !doing_sync) || space->is_locked(), nullptr, "Space state is inaccessible right now, wait for iteration or physics process notification.");
 
 	return space->get_direct_state();
 }
@@ -413,13 +429,6 @@ void PhysicsServer3DSW::area_set_ray_pickable(RID p_area, bool p_enable) {
 	area->set_ray_pickable(p_enable);
 }
 
-bool PhysicsServer3DSW::area_is_ray_pickable(RID p_area) const {
-	Area3DSW *area = area_owner.getornull(p_area);
-	ERR_FAIL_COND_V(!area, false);
-
-	return area->is_ray_pickable();
-}
-
 void PhysicsServer3DSW::area_set_area_monitor_callback(RID p_area, Object *p_receiver, const StringName &p_method) {
 	Area3DSW *area = area_owner.getornull(p_area);
 	ERR_FAIL_COND(!area);
@@ -429,14 +438,8 @@ void PhysicsServer3DSW::area_set_area_monitor_callback(RID p_area, Object *p_rec
 
 /* BODY API */
 
-RID PhysicsServer3DSW::body_create(BodyMode p_mode, bool p_init_sleeping) {
+RID PhysicsServer3DSW::body_create() {
 	Body3DSW *body = memnew(Body3DSW);
-	if (p_mode != BODY_MODE_RIGID) {
-		body->set_mode(p_mode);
-	}
-	if (p_init_sleeping) {
-		body->set_state(BODY_STATE_SLEEPING, p_init_sleeping);
-	}
 	RID rid = body_owner.make_rid(body);
 	body->set_self(rid);
 	return rid;
@@ -608,9 +611,18 @@ uint32_t PhysicsServer3DSW::body_get_collision_mask(RID p_body) const {
 
 void PhysicsServer3DSW::body_attach_object_instance_id(RID p_body, ObjectID p_id) {
 	Body3DSW *body = body_owner.getornull(p_body);
-	ERR_FAIL_COND(!body);
+	if (body) {
+		body->set_instance_id(p_id);
+		return;
+	}
 
-	body->set_instance_id(p_id);
+	SoftBody3DSW *soft_body = soft_body_owner.getornull(p_body);
+	if (soft_body) {
+		soft_body->set_instance_id(p_id);
+		return;
+	}
+
+	ERR_FAIL_MSG("Invalid ID.");
 };
 
 ObjectID PhysicsServer3DSW::body_get_object_instance_id(RID p_body) const {
@@ -857,12 +869,6 @@ void PhysicsServer3DSW::body_set_ray_pickable(RID p_body, bool p_enable) {
 	body->set_ray_pickable(p_enable);
 }
 
-bool PhysicsServer3DSW::body_is_ray_pickable(RID p_body) const {
-	Body3DSW *body = body_owner.getornull(p_body);
-	ERR_FAIL_COND_V(!body, false);
-	return body->is_ray_pickable();
-}
-
 bool PhysicsServer3DSW::body_test_motion(RID p_body, const Transform &p_from, const Vector3 &p_motion, bool p_infinite_inertia, MotionResult *r_result, bool p_exclude_raycast_shapes) {
 	Body3DSW *body = body_owner.getornull(p_body);
 	ERR_FAIL_COND_V(!body, false);
@@ -874,7 +880,7 @@ bool PhysicsServer3DSW::body_test_motion(RID p_body, const Transform &p_from, co
 	return body->get_space()->test_body_motion(body, p_from, p_motion, p_infinite_inertia, body->get_kinematic_margin(), r_result, p_exclude_raycast_shapes);
 }
 
-int PhysicsServer3DSW::body_test_ray_separation(RID p_body, const Transform &p_transform, bool p_infinite_inertia, Vector3 &r_recover_motion, SeparationResult *r_results, int p_result_max, float p_margin) {
+int PhysicsServer3DSW::body_test_ray_separation(RID p_body, const Transform &p_transform, bool p_infinite_inertia, Vector3 &r_recover_motion, SeparationResult *r_results, int p_result_max, real_t p_margin) {
 	Body3DSW *body = body_owner.getornull(p_body);
 	ERR_FAIL_COND_V(!body, false);
 	ERR_FAIL_COND_V(!body->get_space(), false);
@@ -886,40 +892,324 @@ int PhysicsServer3DSW::body_test_ray_separation(RID p_body, const Transform &p_t
 }
 
 PhysicsDirectBodyState3D *PhysicsServer3DSW::body_get_direct_state(RID p_body) {
+	ERR_FAIL_COND_V_MSG((using_threads && !doing_sync), nullptr, "Body state is inaccessible right now, wait for iteration or physics process notification.");
+
 	Body3DSW *body = body_owner.getornull(p_body);
 	ERR_FAIL_COND_V(!body, nullptr);
-	ERR_FAIL_COND_V_MSG(!doing_sync || body->get_space()->is_locked(), nullptr, "Body state is inaccessible right now, wait for iteration or physics process notification.");
+	ERR_FAIL_COND_V_MSG(body->get_space()->is_locked(), nullptr, "Body state is inaccessible right now, wait for iteration or physics process notification.");
 
 	direct_state->body = body;
 	return direct_state;
 }
 
-/* JOINT API */
+/* SOFT BODY */
 
-RID PhysicsServer3DSW::joint_create_pin(RID p_body_A, const Vector3 &p_local_A, RID p_body_B, const Vector3 &p_local_B) {
-	Body3DSW *body_A = body_owner.getornull(p_body_A);
-	ERR_FAIL_COND_V(!body_A, RID());
+RID PhysicsServer3DSW::soft_body_create() {
+	SoftBody3DSW *soft_body = memnew(SoftBody3DSW);
+	RID rid = soft_body_owner.make_rid(soft_body);
+	soft_body->set_self(rid);
+	return rid;
+}
 
-	if (!p_body_B.is_valid()) {
-		ERR_FAIL_COND_V(!body_A->get_space(), RID());
-		p_body_B = body_A->get_space()->get_static_global_body();
+void PhysicsServer3DSW::soft_body_update_rendering_server(RID p_body, RenderingServerHandler *p_rendering_server_handler) {
+	SoftBody3DSW *soft_body = soft_body_owner.getornull(p_body);
+	ERR_FAIL_COND(!soft_body);
+
+	soft_body->update_rendering_server(p_rendering_server_handler);
+}
+
+void PhysicsServer3DSW::soft_body_set_space(RID p_body, RID p_space) {
+	SoftBody3DSW *soft_body = soft_body_owner.getornull(p_body);
+	ERR_FAIL_COND(!soft_body);
+
+	Space3DSW *space = nullptr;
+	if (p_space.is_valid()) {
+		space = space_owner.getornull(p_space);
+		ERR_FAIL_COND(!space);
 	}
 
-	Body3DSW *body_B = body_owner.getornull(p_body_B);
-	ERR_FAIL_COND_V(!body_B, RID());
+	if (soft_body->get_space() == space) {
+		return;
+	}
 
-	ERR_FAIL_COND_V(body_A == body_B, RID());
+	soft_body->set_space(space);
+}
 
-	Joint3DSW *joint = memnew(PinJoint3DSW(body_A, p_local_A, body_B, p_local_B));
+RID PhysicsServer3DSW::soft_body_get_space(RID p_body) const {
+	SoftBody3DSW *soft_body = soft_body_owner.getornull(p_body);
+	ERR_FAIL_COND_V(!soft_body, RID());
+
+	Space3DSW *space = soft_body->get_space();
+	if (!space) {
+		return RID();
+	}
+	return space->get_self();
+}
+
+void PhysicsServer3DSW::soft_body_set_collision_layer(RID p_body, uint32_t p_layer) {
+	SoftBody3DSW *soft_body = soft_body_owner.getornull(p_body);
+	ERR_FAIL_COND(!soft_body);
+
+	soft_body->set_collision_layer(p_layer);
+}
+
+uint32_t PhysicsServer3DSW::soft_body_get_collision_layer(RID p_body) const {
+	SoftBody3DSW *soft_body = soft_body_owner.getornull(p_body);
+	ERR_FAIL_COND_V(!soft_body, 0);
+
+	return soft_body->get_collision_layer();
+}
+
+void PhysicsServer3DSW::soft_body_set_collision_mask(RID p_body, uint32_t p_mask) {
+	SoftBody3DSW *soft_body = soft_body_owner.getornull(p_body);
+	ERR_FAIL_COND(!soft_body);
+
+	soft_body->set_collision_mask(p_mask);
+}
+
+uint32_t PhysicsServer3DSW::soft_body_get_collision_mask(RID p_body) const {
+	SoftBody3DSW *soft_body = soft_body_owner.getornull(p_body);
+	ERR_FAIL_COND_V(!soft_body, 0);
+
+	return soft_body->get_collision_mask();
+}
+
+void PhysicsServer3DSW::soft_body_add_collision_exception(RID p_body, RID p_body_b) {
+	SoftBody3DSW *soft_body = soft_body_owner.getornull(p_body);
+	ERR_FAIL_COND(!soft_body);
+
+	soft_body->add_exception(p_body_b);
+}
+
+void PhysicsServer3DSW::soft_body_remove_collision_exception(RID p_body, RID p_body_b) {
+	SoftBody3DSW *soft_body = soft_body_owner.getornull(p_body);
+	ERR_FAIL_COND(!soft_body);
+
+	soft_body->remove_exception(p_body_b);
+}
+
+void PhysicsServer3DSW::soft_body_get_collision_exceptions(RID p_body, List<RID> *p_exceptions) {
+	SoftBody3DSW *soft_body = soft_body_owner.getornull(p_body);
+	ERR_FAIL_COND(!soft_body);
+
+	for (int i = 0; i < soft_body->get_exceptions().size(); i++) {
+		p_exceptions->push_back(soft_body->get_exceptions()[i]);
+	}
+}
+
+void PhysicsServer3DSW::soft_body_set_state(RID p_body, BodyState p_state, const Variant &p_variant) {
+	SoftBody3DSW *soft_body = soft_body_owner.getornull(p_body);
+	ERR_FAIL_COND(!soft_body);
+
+	soft_body->set_state(p_state, p_variant);
+}
+
+Variant PhysicsServer3DSW::soft_body_get_state(RID p_body, BodyState p_state) const {
+	SoftBody3DSW *soft_body = soft_body_owner.getornull(p_body);
+	ERR_FAIL_COND_V(!soft_body, Variant());
+
+	return soft_body->get_state(p_state);
+}
+
+void PhysicsServer3DSW::soft_body_set_transform(RID p_body, const Transform &p_transform) {
+	SoftBody3DSW *soft_body = soft_body_owner.getornull(p_body);
+	ERR_FAIL_COND(!soft_body);
+
+	soft_body->set_state(BODY_STATE_TRANSFORM, p_transform);
+}
+
+void PhysicsServer3DSW::soft_body_set_ray_pickable(RID p_body, bool p_enable) {
+	SoftBody3DSW *soft_body = soft_body_owner.getornull(p_body);
+	ERR_FAIL_COND(!soft_body);
+
+	soft_body->set_ray_pickable(p_enable);
+}
+
+void PhysicsServer3DSW::soft_body_set_simulation_precision(RID p_body, int p_simulation_precision) {
+	SoftBody3DSW *soft_body = soft_body_owner.getornull(p_body);
+	ERR_FAIL_COND(!soft_body);
+
+	soft_body->set_iteration_count(p_simulation_precision);
+}
+
+int PhysicsServer3DSW::soft_body_get_simulation_precision(RID p_body) const {
+	SoftBody3DSW *soft_body = soft_body_owner.getornull(p_body);
+	ERR_FAIL_COND_V(!soft_body, 0.f);
+
+	return soft_body->get_iteration_count();
+}
+
+void PhysicsServer3DSW::soft_body_set_total_mass(RID p_body, real_t p_total_mass) {
+	SoftBody3DSW *soft_body = soft_body_owner.getornull(p_body);
+	ERR_FAIL_COND(!soft_body);
+
+	soft_body->set_total_mass(p_total_mass);
+}
+
+real_t PhysicsServer3DSW::soft_body_get_total_mass(RID p_body) const {
+	SoftBody3DSW *soft_body = soft_body_owner.getornull(p_body);
+	ERR_FAIL_COND_V(!soft_body, 0.f);
+
+	return soft_body->get_total_mass();
+}
+
+void PhysicsServer3DSW::soft_body_set_linear_stiffness(RID p_body, real_t p_stiffness) {
+	SoftBody3DSW *soft_body = soft_body_owner.getornull(p_body);
+	ERR_FAIL_COND(!soft_body);
+
+	soft_body->set_linear_stiffness(p_stiffness);
+}
+
+real_t PhysicsServer3DSW::soft_body_get_linear_stiffness(RID p_body) const {
+	SoftBody3DSW *soft_body = soft_body_owner.getornull(p_body);
+	ERR_FAIL_COND_V(!soft_body, 0.f);
+
+	return soft_body->get_linear_stiffness();
+}
+
+void PhysicsServer3DSW::soft_body_set_pressure_coefficient(RID p_body, real_t p_pressure_coefficient) {
+	SoftBody3DSW *soft_body = soft_body_owner.getornull(p_body);
+	ERR_FAIL_COND(!soft_body);
+
+	soft_body->set_pressure_coefficient(p_pressure_coefficient);
+}
+
+real_t PhysicsServer3DSW::soft_body_get_pressure_coefficient(RID p_body) const {
+	SoftBody3DSW *soft_body = soft_body_owner.getornull(p_body);
+	ERR_FAIL_COND_V(!soft_body, 0.f);
+
+	return soft_body->get_pressure_coefficient();
+}
+
+void PhysicsServer3DSW::soft_body_set_damping_coefficient(RID p_body, real_t p_damping_coefficient) {
+	SoftBody3DSW *soft_body = soft_body_owner.getornull(p_body);
+	ERR_FAIL_COND(!soft_body);
+
+	soft_body->set_damping_coefficient(p_damping_coefficient);
+}
+
+real_t PhysicsServer3DSW::soft_body_get_damping_coefficient(RID p_body) const {
+	SoftBody3DSW *soft_body = soft_body_owner.getornull(p_body);
+	ERR_FAIL_COND_V(!soft_body, 0.f);
+
+	return soft_body->get_damping_coefficient();
+}
+
+void PhysicsServer3DSW::soft_body_set_drag_coefficient(RID p_body, real_t p_drag_coefficient) {
+	SoftBody3DSW *soft_body = soft_body_owner.getornull(p_body);
+	ERR_FAIL_COND(!soft_body);
+
+	soft_body->set_drag_coefficient(p_drag_coefficient);
+}
+
+real_t PhysicsServer3DSW::soft_body_get_drag_coefficient(RID p_body) const {
+	SoftBody3DSW *soft_body = soft_body_owner.getornull(p_body);
+	ERR_FAIL_COND_V(!soft_body, 0.f);
+
+	return soft_body->get_drag_coefficient();
+}
+
+void PhysicsServer3DSW::soft_body_set_mesh(RID p_body, const REF &p_mesh) {
+	SoftBody3DSW *soft_body = soft_body_owner.getornull(p_body);
+	ERR_FAIL_COND(!soft_body);
+
+	soft_body->set_mesh(p_mesh);
+}
+
+AABB PhysicsServer3DSW::soft_body_get_bounds(RID p_body) const {
+	SoftBody3DSW *soft_body = soft_body_owner.getornull(p_body);
+	ERR_FAIL_COND_V(!soft_body, AABB());
+
+	return soft_body->get_bounds();
+}
+
+void PhysicsServer3DSW::soft_body_move_point(RID p_body, int p_point_index, const Vector3 &p_global_position) {
+	SoftBody3DSW *soft_body = soft_body_owner.getornull(p_body);
+	ERR_FAIL_COND(!soft_body);
+
+	soft_body->set_vertex_position(p_point_index, p_global_position);
+}
+
+Vector3 PhysicsServer3DSW::soft_body_get_point_global_position(RID p_body, int p_point_index) const {
+	SoftBody3DSW *soft_body = soft_body_owner.getornull(p_body);
+	ERR_FAIL_COND_V(!soft_body, Vector3());
+
+	return soft_body->get_vertex_position(p_point_index);
+}
+
+void PhysicsServer3DSW::soft_body_remove_all_pinned_points(RID p_body) {
+	SoftBody3DSW *soft_body = soft_body_owner.getornull(p_body);
+	ERR_FAIL_COND(!soft_body);
+
+	soft_body->unpin_all_vertices();
+}
+
+void PhysicsServer3DSW::soft_body_pin_point(RID p_body, int p_point_index, bool p_pin) {
+	SoftBody3DSW *soft_body = soft_body_owner.getornull(p_body);
+	ERR_FAIL_COND(!soft_body);
+
+	if (p_pin) {
+		soft_body->pin_vertex(p_point_index);
+	} else {
+		soft_body->unpin_vertex(p_point_index);
+	}
+}
+
+bool PhysicsServer3DSW::soft_body_is_point_pinned(RID p_body, int p_point_index) const {
+	SoftBody3DSW *soft_body = soft_body_owner.getornull(p_body);
+	ERR_FAIL_COND_V(!soft_body, false);
+
+	return soft_body->is_vertex_pinned(p_point_index);
+}
+
+/* JOINT API */
+
+RID PhysicsServer3DSW::joint_create() {
+	Joint3DSW *joint = memnew(Joint3DSW);
 	RID rid = joint_owner.make_rid(joint);
 	joint->set_self(rid);
 	return rid;
 }
 
+void PhysicsServer3DSW::joint_clear(RID p_joint) {
+	Joint3DSW *joint = joint_owner.getornull(p_joint);
+	if (joint->get_type() != JOINT_TYPE_MAX) {
+		Joint3DSW *empty_joint = memnew(Joint3DSW);
+		empty_joint->copy_settings_from(joint);
+
+		joint_owner.replace(p_joint, empty_joint);
+		memdelete(joint);
+	}
+}
+
+void PhysicsServer3DSW::joint_make_pin(RID p_joint, RID p_body_A, const Vector3 &p_local_A, RID p_body_B, const Vector3 &p_local_B) {
+	Body3DSW *body_A = body_owner.getornull(p_body_A);
+	ERR_FAIL_COND(!body_A);
+
+	if (!p_body_B.is_valid()) {
+		ERR_FAIL_COND(!body_A->get_space());
+		p_body_B = body_A->get_space()->get_static_global_body();
+	}
+
+	Body3DSW *body_B = body_owner.getornull(p_body_B);
+	ERR_FAIL_COND(!body_B);
+
+	ERR_FAIL_COND(body_A == body_B);
+
+	Joint3DSW *prev_joint = joint_owner.getornull(p_joint);
+	ERR_FAIL_COND(prev_joint == nullptr);
+
+	Joint3DSW *joint = memnew(PinJoint3DSW(body_A, p_local_A, body_B, p_local_B));
+
+	joint->copy_settings_from(prev_joint);
+	joint_owner.replace(p_joint, joint);
+	memdelete(prev_joint);
+}
+
 void PhysicsServer3DSW::pin_joint_set_param(RID p_joint, PinJointParam p_param, real_t p_value) {
 	Joint3DSW *joint = joint_owner.getornull(p_joint);
 	ERR_FAIL_COND(!joint);
-	ERR_FAIL_COND(joint->get_type() != JOINT_PIN);
+	ERR_FAIL_COND(joint->get_type() != JOINT_TYPE_PIN);
 	PinJoint3DSW *pin_joint = static_cast<PinJoint3DSW *>(joint);
 	pin_joint->set_param(p_param, p_value);
 }
@@ -927,7 +1217,7 @@ void PhysicsServer3DSW::pin_joint_set_param(RID p_joint, PinJointParam p_param, 
 real_t PhysicsServer3DSW::pin_joint_get_param(RID p_joint, PinJointParam p_param) const {
 	Joint3DSW *joint = joint_owner.getornull(p_joint);
 	ERR_FAIL_COND_V(!joint, 0);
-	ERR_FAIL_COND_V(joint->get_type() != JOINT_PIN, 0);
+	ERR_FAIL_COND_V(joint->get_type() != JOINT_TYPE_PIN, 0);
 	PinJoint3DSW *pin_joint = static_cast<PinJoint3DSW *>(joint);
 	return pin_joint->get_param(p_param);
 }
@@ -935,7 +1225,7 @@ real_t PhysicsServer3DSW::pin_joint_get_param(RID p_joint, PinJointParam p_param
 void PhysicsServer3DSW::pin_joint_set_local_a(RID p_joint, const Vector3 &p_A) {
 	Joint3DSW *joint = joint_owner.getornull(p_joint);
 	ERR_FAIL_COND(!joint);
-	ERR_FAIL_COND(joint->get_type() != JOINT_PIN);
+	ERR_FAIL_COND(joint->get_type() != JOINT_TYPE_PIN);
 	PinJoint3DSW *pin_joint = static_cast<PinJoint3DSW *>(joint);
 	pin_joint->set_pos_a(p_A);
 }
@@ -943,7 +1233,7 @@ void PhysicsServer3DSW::pin_joint_set_local_a(RID p_joint, const Vector3 &p_A) {
 Vector3 PhysicsServer3DSW::pin_joint_get_local_a(RID p_joint) const {
 	Joint3DSW *joint = joint_owner.getornull(p_joint);
 	ERR_FAIL_COND_V(!joint, Vector3());
-	ERR_FAIL_COND_V(joint->get_type() != JOINT_PIN, Vector3());
+	ERR_FAIL_COND_V(joint->get_type() != JOINT_TYPE_PIN, Vector3());
 	PinJoint3DSW *pin_joint = static_cast<PinJoint3DSW *>(joint);
 	return pin_joint->get_position_a();
 }
@@ -951,7 +1241,7 @@ Vector3 PhysicsServer3DSW::pin_joint_get_local_a(RID p_joint) const {
 void PhysicsServer3DSW::pin_joint_set_local_b(RID p_joint, const Vector3 &p_B) {
 	Joint3DSW *joint = joint_owner.getornull(p_joint);
 	ERR_FAIL_COND(!joint);
-	ERR_FAIL_COND(joint->get_type() != JOINT_PIN);
+	ERR_FAIL_COND(joint->get_type() != JOINT_TYPE_PIN);
 	PinJoint3DSW *pin_joint = static_cast<PinJoint3DSW *>(joint);
 	pin_joint->set_pos_b(p_B);
 }
@@ -959,55 +1249,63 @@ void PhysicsServer3DSW::pin_joint_set_local_b(RID p_joint, const Vector3 &p_B) {
 Vector3 PhysicsServer3DSW::pin_joint_get_local_b(RID p_joint) const {
 	Joint3DSW *joint = joint_owner.getornull(p_joint);
 	ERR_FAIL_COND_V(!joint, Vector3());
-	ERR_FAIL_COND_V(joint->get_type() != JOINT_PIN, Vector3());
+	ERR_FAIL_COND_V(joint->get_type() != JOINT_TYPE_PIN, Vector3());
 	PinJoint3DSW *pin_joint = static_cast<PinJoint3DSW *>(joint);
 	return pin_joint->get_position_b();
 }
 
-RID PhysicsServer3DSW::joint_create_hinge(RID p_body_A, const Transform &p_frame_A, RID p_body_B, const Transform &p_frame_B) {
+void PhysicsServer3DSW::joint_make_hinge(RID p_joint, RID p_body_A, const Transform &p_frame_A, RID p_body_B, const Transform &p_frame_B) {
 	Body3DSW *body_A = body_owner.getornull(p_body_A);
-	ERR_FAIL_COND_V(!body_A, RID());
+	ERR_FAIL_COND(!body_A);
 
 	if (!p_body_B.is_valid()) {
-		ERR_FAIL_COND_V(!body_A->get_space(), RID());
+		ERR_FAIL_COND(!body_A->get_space());
 		p_body_B = body_A->get_space()->get_static_global_body();
 	}
 
 	Body3DSW *body_B = body_owner.getornull(p_body_B);
-	ERR_FAIL_COND_V(!body_B, RID());
+	ERR_FAIL_COND(!body_B);
 
-	ERR_FAIL_COND_V(body_A == body_B, RID());
+	ERR_FAIL_COND(body_A == body_B);
+
+	Joint3DSW *prev_joint = joint_owner.getornull(p_joint);
+	ERR_FAIL_COND(prev_joint == nullptr);
 
 	Joint3DSW *joint = memnew(HingeJoint3DSW(body_A, body_B, p_frame_A, p_frame_B));
-	RID rid = joint_owner.make_rid(joint);
-	joint->set_self(rid);
-	return rid;
+
+	joint->copy_settings_from(prev_joint);
+	joint_owner.replace(p_joint, joint);
+	memdelete(prev_joint);
 }
 
-RID PhysicsServer3DSW::joint_create_hinge_simple(RID p_body_A, const Vector3 &p_pivot_A, const Vector3 &p_axis_A, RID p_body_B, const Vector3 &p_pivot_B, const Vector3 &p_axis_B) {
+void PhysicsServer3DSW::joint_make_hinge_simple(RID p_joint, RID p_body_A, const Vector3 &p_pivot_A, const Vector3 &p_axis_A, RID p_body_B, const Vector3 &p_pivot_B, const Vector3 &p_axis_B) {
 	Body3DSW *body_A = body_owner.getornull(p_body_A);
-	ERR_FAIL_COND_V(!body_A, RID());
+	ERR_FAIL_COND(!body_A);
 
 	if (!p_body_B.is_valid()) {
-		ERR_FAIL_COND_V(!body_A->get_space(), RID());
+		ERR_FAIL_COND(!body_A->get_space());
 		p_body_B = body_A->get_space()->get_static_global_body();
 	}
 
 	Body3DSW *body_B = body_owner.getornull(p_body_B);
-	ERR_FAIL_COND_V(!body_B, RID());
+	ERR_FAIL_COND(!body_B);
 
-	ERR_FAIL_COND_V(body_A == body_B, RID());
+	ERR_FAIL_COND(body_A == body_B);
+
+	Joint3DSW *prev_joint = joint_owner.getornull(p_joint);
+	ERR_FAIL_COND(prev_joint == nullptr);
 
 	Joint3DSW *joint = memnew(HingeJoint3DSW(body_A, body_B, p_pivot_A, p_pivot_B, p_axis_A, p_axis_B));
-	RID rid = joint_owner.make_rid(joint);
-	joint->set_self(rid);
-	return rid;
+
+	joint->copy_settings_from(prev_joint);
+	joint_owner.replace(p_joint, joint);
+	memdelete(prev_joint);
 }
 
 void PhysicsServer3DSW::hinge_joint_set_param(RID p_joint, HingeJointParam p_param, real_t p_value) {
 	Joint3DSW *joint = joint_owner.getornull(p_joint);
 	ERR_FAIL_COND(!joint);
-	ERR_FAIL_COND(joint->get_type() != JOINT_HINGE);
+	ERR_FAIL_COND(joint->get_type() != JOINT_TYPE_HINGE);
 	HingeJoint3DSW *hinge_joint = static_cast<HingeJoint3DSW *>(joint);
 	hinge_joint->set_param(p_param, p_value);
 }
@@ -1015,7 +1313,7 @@ void PhysicsServer3DSW::hinge_joint_set_param(RID p_joint, HingeJointParam p_par
 real_t PhysicsServer3DSW::hinge_joint_get_param(RID p_joint, HingeJointParam p_param) const {
 	Joint3DSW *joint = joint_owner.getornull(p_joint);
 	ERR_FAIL_COND_V(!joint, 0);
-	ERR_FAIL_COND_V(joint->get_type() != JOINT_HINGE, 0);
+	ERR_FAIL_COND_V(joint->get_type() != JOINT_TYPE_HINGE, 0);
 	HingeJoint3DSW *hinge_joint = static_cast<HingeJoint3DSW *>(joint);
 	return hinge_joint->get_param(p_param);
 }
@@ -1023,7 +1321,7 @@ real_t PhysicsServer3DSW::hinge_joint_get_param(RID p_joint, HingeJointParam p_p
 void PhysicsServer3DSW::hinge_joint_set_flag(RID p_joint, HingeJointFlag p_flag, bool p_value) {
 	Joint3DSW *joint = joint_owner.getornull(p_joint);
 	ERR_FAIL_COND(!joint);
-	ERR_FAIL_COND(joint->get_type() != JOINT_HINGE);
+	ERR_FAIL_COND(joint->get_type() != JOINT_TYPE_HINGE);
 	HingeJoint3DSW *hinge_joint = static_cast<HingeJoint3DSW *>(joint);
 	hinge_joint->set_flag(p_flag, p_value);
 }
@@ -1031,7 +1329,7 @@ void PhysicsServer3DSW::hinge_joint_set_flag(RID p_joint, HingeJointFlag p_flag,
 bool PhysicsServer3DSW::hinge_joint_get_flag(RID p_joint, HingeJointFlag p_flag) const {
 	Joint3DSW *joint = joint_owner.getornull(p_joint);
 	ERR_FAIL_COND_V(!joint, false);
-	ERR_FAIL_COND_V(joint->get_type() != JOINT_HINGE, false);
+	ERR_FAIL_COND_V(joint->get_type() != JOINT_TYPE_HINGE, false);
 	HingeJoint3DSW *hinge_joint = static_cast<HingeJoint3DSW *>(joint);
 	return hinge_joint->get_flag(p_flag);
 }
@@ -1077,34 +1375,38 @@ bool PhysicsServer3DSW::joint_is_disabled_collisions_between_bodies(RID p_joint)
 
 PhysicsServer3DSW::JointType PhysicsServer3DSW::joint_get_type(RID p_joint) const {
 	Joint3DSW *joint = joint_owner.getornull(p_joint);
-	ERR_FAIL_COND_V(!joint, JOINT_PIN);
+	ERR_FAIL_COND_V(!joint, JOINT_TYPE_PIN);
 	return joint->get_type();
 }
 
-RID PhysicsServer3DSW::joint_create_slider(RID p_body_A, const Transform &p_local_frame_A, RID p_body_B, const Transform &p_local_frame_B) {
+void PhysicsServer3DSW::joint_make_slider(RID p_joint, RID p_body_A, const Transform &p_local_frame_A, RID p_body_B, const Transform &p_local_frame_B) {
 	Body3DSW *body_A = body_owner.getornull(p_body_A);
-	ERR_FAIL_COND_V(!body_A, RID());
+	ERR_FAIL_COND(!body_A);
 
 	if (!p_body_B.is_valid()) {
-		ERR_FAIL_COND_V(!body_A->get_space(), RID());
+		ERR_FAIL_COND(!body_A->get_space());
 		p_body_B = body_A->get_space()->get_static_global_body();
 	}
 
 	Body3DSW *body_B = body_owner.getornull(p_body_B);
-	ERR_FAIL_COND_V(!body_B, RID());
+	ERR_FAIL_COND(!body_B);
 
-	ERR_FAIL_COND_V(body_A == body_B, RID());
+	ERR_FAIL_COND(body_A == body_B);
+
+	Joint3DSW *prev_joint = joint_owner.getornull(p_joint);
+	ERR_FAIL_COND(prev_joint == nullptr);
 
 	Joint3DSW *joint = memnew(SliderJoint3DSW(body_A, body_B, p_local_frame_A, p_local_frame_B));
-	RID rid = joint_owner.make_rid(joint);
-	joint->set_self(rid);
-	return rid;
+
+	joint->copy_settings_from(prev_joint);
+	joint_owner.replace(p_joint, joint);
+	memdelete(prev_joint);
 }
 
 void PhysicsServer3DSW::slider_joint_set_param(RID p_joint, SliderJointParam p_param, real_t p_value) {
 	Joint3DSW *joint = joint_owner.getornull(p_joint);
 	ERR_FAIL_COND(!joint);
-	ERR_FAIL_COND(joint->get_type() != JOINT_SLIDER);
+	ERR_FAIL_COND(joint->get_type() != JOINT_TYPE_SLIDER);
 	SliderJoint3DSW *slider_joint = static_cast<SliderJoint3DSW *>(joint);
 	slider_joint->set_param(p_param, p_value);
 }
@@ -1112,35 +1414,39 @@ void PhysicsServer3DSW::slider_joint_set_param(RID p_joint, SliderJointParam p_p
 real_t PhysicsServer3DSW::slider_joint_get_param(RID p_joint, SliderJointParam p_param) const {
 	Joint3DSW *joint = joint_owner.getornull(p_joint);
 	ERR_FAIL_COND_V(!joint, 0);
-	ERR_FAIL_COND_V(joint->get_type() != JOINT_CONE_TWIST, 0);
+	ERR_FAIL_COND_V(joint->get_type() != JOINT_TYPE_CONE_TWIST, 0);
 	SliderJoint3DSW *slider_joint = static_cast<SliderJoint3DSW *>(joint);
 	return slider_joint->get_param(p_param);
 }
 
-RID PhysicsServer3DSW::joint_create_cone_twist(RID p_body_A, const Transform &p_local_frame_A, RID p_body_B, const Transform &p_local_frame_B) {
+void PhysicsServer3DSW::joint_make_cone_twist(RID p_joint, RID p_body_A, const Transform &p_local_frame_A, RID p_body_B, const Transform &p_local_frame_B) {
 	Body3DSW *body_A = body_owner.getornull(p_body_A);
-	ERR_FAIL_COND_V(!body_A, RID());
+	ERR_FAIL_COND(!body_A);
 
 	if (!p_body_B.is_valid()) {
-		ERR_FAIL_COND_V(!body_A->get_space(), RID());
+		ERR_FAIL_COND(!body_A->get_space());
 		p_body_B = body_A->get_space()->get_static_global_body();
 	}
 
 	Body3DSW *body_B = body_owner.getornull(p_body_B);
-	ERR_FAIL_COND_V(!body_B, RID());
+	ERR_FAIL_COND(!body_B);
 
-	ERR_FAIL_COND_V(body_A == body_B, RID());
+	ERR_FAIL_COND(body_A == body_B);
+
+	Joint3DSW *prev_joint = joint_owner.getornull(p_joint);
+	ERR_FAIL_COND(prev_joint == nullptr);
 
 	Joint3DSW *joint = memnew(ConeTwistJoint3DSW(body_A, body_B, p_local_frame_A, p_local_frame_B));
-	RID rid = joint_owner.make_rid(joint);
-	joint->set_self(rid);
-	return rid;
+
+	joint->copy_settings_from(prev_joint);
+	joint_owner.replace(p_joint, joint);
+	memdelete(prev_joint);
 }
 
 void PhysicsServer3DSW::cone_twist_joint_set_param(RID p_joint, ConeTwistJointParam p_param, real_t p_value) {
 	Joint3DSW *joint = joint_owner.getornull(p_joint);
 	ERR_FAIL_COND(!joint);
-	ERR_FAIL_COND(joint->get_type() != JOINT_CONE_TWIST);
+	ERR_FAIL_COND(joint->get_type() != JOINT_TYPE_CONE_TWIST);
 	ConeTwistJoint3DSW *cone_twist_joint = static_cast<ConeTwistJoint3DSW *>(joint);
 	cone_twist_joint->set_param(p_param, p_value);
 }
@@ -1148,43 +1454,47 @@ void PhysicsServer3DSW::cone_twist_joint_set_param(RID p_joint, ConeTwistJointPa
 real_t PhysicsServer3DSW::cone_twist_joint_get_param(RID p_joint, ConeTwistJointParam p_param) const {
 	Joint3DSW *joint = joint_owner.getornull(p_joint);
 	ERR_FAIL_COND_V(!joint, 0);
-	ERR_FAIL_COND_V(joint->get_type() != JOINT_CONE_TWIST, 0);
+	ERR_FAIL_COND_V(joint->get_type() != JOINT_TYPE_CONE_TWIST, 0);
 	ConeTwistJoint3DSW *cone_twist_joint = static_cast<ConeTwistJoint3DSW *>(joint);
 	return cone_twist_joint->get_param(p_param);
 }
 
-RID PhysicsServer3DSW::joint_create_generic_6dof(RID p_body_A, const Transform &p_local_frame_A, RID p_body_B, const Transform &p_local_frame_B) {
+void PhysicsServer3DSW::joint_make_generic_6dof(RID p_joint, RID p_body_A, const Transform &p_local_frame_A, RID p_body_B, const Transform &p_local_frame_B) {
 	Body3DSW *body_A = body_owner.getornull(p_body_A);
-	ERR_FAIL_COND_V(!body_A, RID());
+	ERR_FAIL_COND(!body_A);
 
 	if (!p_body_B.is_valid()) {
-		ERR_FAIL_COND_V(!body_A->get_space(), RID());
+		ERR_FAIL_COND(!body_A->get_space());
 		p_body_B = body_A->get_space()->get_static_global_body();
 	}
 
 	Body3DSW *body_B = body_owner.getornull(p_body_B);
-	ERR_FAIL_COND_V(!body_B, RID());
+	ERR_FAIL_COND(!body_B);
 
-	ERR_FAIL_COND_V(body_A == body_B, RID());
+	ERR_FAIL_COND(body_A == body_B);
+
+	Joint3DSW *prev_joint = joint_owner.getornull(p_joint);
+	ERR_FAIL_COND(prev_joint == nullptr);
 
 	Joint3DSW *joint = memnew(Generic6DOFJoint3DSW(body_A, body_B, p_local_frame_A, p_local_frame_B, true));
-	RID rid = joint_owner.make_rid(joint);
-	joint->set_self(rid);
-	return rid;
+
+	joint->copy_settings_from(prev_joint);
+	joint_owner.replace(p_joint, joint);
+	memdelete(prev_joint);
 }
 
 void PhysicsServer3DSW::generic_6dof_joint_set_param(RID p_joint, Vector3::Axis p_axis, G6DOFJointAxisParam p_param, real_t p_value) {
 	Joint3DSW *joint = joint_owner.getornull(p_joint);
 	ERR_FAIL_COND(!joint);
-	ERR_FAIL_COND(joint->get_type() != JOINT_6DOF);
+	ERR_FAIL_COND(joint->get_type() != JOINT_TYPE_6DOF);
 	Generic6DOFJoint3DSW *generic_6dof_joint = static_cast<Generic6DOFJoint3DSW *>(joint);
 	generic_6dof_joint->set_param(p_axis, p_param, p_value);
 }
 
-real_t PhysicsServer3DSW::generic_6dof_joint_get_param(RID p_joint, Vector3::Axis p_axis, G6DOFJointAxisParam p_param) {
+real_t PhysicsServer3DSW::generic_6dof_joint_get_param(RID p_joint, Vector3::Axis p_axis, G6DOFJointAxisParam p_param) const {
 	Joint3DSW *joint = joint_owner.getornull(p_joint);
 	ERR_FAIL_COND_V(!joint, 0);
-	ERR_FAIL_COND_V(joint->get_type() != JOINT_6DOF, 0);
+	ERR_FAIL_COND_V(joint->get_type() != JOINT_TYPE_6DOF, 0);
 	Generic6DOFJoint3DSW *generic_6dof_joint = static_cast<Generic6DOFJoint3DSW *>(joint);
 	return generic_6dof_joint->get_param(p_axis, p_param);
 }
@@ -1192,15 +1502,15 @@ real_t PhysicsServer3DSW::generic_6dof_joint_get_param(RID p_joint, Vector3::Axi
 void PhysicsServer3DSW::generic_6dof_joint_set_flag(RID p_joint, Vector3::Axis p_axis, G6DOFJointAxisFlag p_flag, bool p_enable) {
 	Joint3DSW *joint = joint_owner.getornull(p_joint);
 	ERR_FAIL_COND(!joint);
-	ERR_FAIL_COND(joint->get_type() != JOINT_6DOF);
+	ERR_FAIL_COND(joint->get_type() != JOINT_TYPE_6DOF);
 	Generic6DOFJoint3DSW *generic_6dof_joint = static_cast<Generic6DOFJoint3DSW *>(joint);
 	generic_6dof_joint->set_flag(p_axis, p_flag, p_enable);
 }
 
-bool PhysicsServer3DSW::generic_6dof_joint_get_flag(RID p_joint, Vector3::Axis p_axis, G6DOFJointAxisFlag p_flag) {
+bool PhysicsServer3DSW::generic_6dof_joint_get_flag(RID p_joint, Vector3::Axis p_axis, G6DOFJointAxisFlag p_flag) const {
 	Joint3DSW *joint = joint_owner.getornull(p_joint);
 	ERR_FAIL_COND_V(!joint, false);
-	ERR_FAIL_COND_V(joint->get_type() != JOINT_6DOF, false);
+	ERR_FAIL_COND_V(joint->get_type() != JOINT_TYPE_6DOF, false);
 	Generic6DOFJoint3DSW *generic_6dof_joint = static_cast<Generic6DOFJoint3DSW *>(joint);
 	return generic_6dof_joint->get_flag(p_axis, p_flag);
 }
@@ -1237,7 +1547,13 @@ void PhysicsServer3DSW::free(RID p_rid) {
 
 		body_owner.free(p_rid);
 		memdelete(body);
+	} else if (soft_body_owner.owns(p_rid)) {
+		SoftBody3DSW *soft_body = soft_body_owner.getornull(p_rid);
 
+		soft_body->set_space(nullptr);
+
+		soft_body_owner.free(p_rid);
+		memdelete(soft_body);
 	} else if (area_owner.owns(p_rid)) {
 		Area3DSW *area = area_owner.getornull(p_rid);
 
@@ -1271,9 +1587,6 @@ void PhysicsServer3DSW::free(RID p_rid) {
 	} else if (joint_owner.owns(p_rid)) {
 		Joint3DSW *joint = joint_owner.getornull(p_rid);
 
-		for (int i = 0; i < joint->get_body_count(); i++) {
-			joint->get_body_ptr()[i]->remove_constraint(joint);
-		}
 		joint_owner.free(p_rid);
 		memdelete(joint);
 
@@ -1287,7 +1600,6 @@ void PhysicsServer3DSW::set_active(bool p_active) {
 };
 
 void PhysicsServer3DSW::init() {
-	doing_sync = true;
 	last_step = 0.001;
 	iterations = 8; // 8?
 	stepper = memnew(Step3DSW);
@@ -1302,8 +1614,6 @@ void PhysicsServer3DSW::step(real_t p_step) {
 	}
 
 	_update_shapes();
-
-	doing_sync = false;
 
 	last_step = p_step;
 	PhysicsDirectBodyState3DSW::singleton->step = p_step;
@@ -1320,14 +1630,16 @@ void PhysicsServer3DSW::step(real_t p_step) {
 #endif
 }
 
+void PhysicsServer3DSW::sync() {
+	doing_sync = true;
+};
+
 void PhysicsServer3DSW::flush_queries() {
 #ifndef _3D_DISABLED
 
 	if (!active) {
 		return;
 	}
-
-	doing_sync = true;
 
 	flushing_queries = true;
 
@@ -1375,6 +1687,10 @@ void PhysicsServer3DSW::flush_queries() {
 #endif
 };
 
+void PhysicsServer3DSW::end_sync() {
+	doing_sync = false;
+};
+
 void PhysicsServer3DSW::finish() {
 	memdelete(stepper);
 	memdelete(direct_state);
@@ -1403,7 +1719,7 @@ void PhysicsServer3DSW::_update_shapes() {
 	}
 }
 
-void PhysicsServer3DSW::_shape_col_cbk(const Vector3 &p_point_A, const Vector3 &p_point_B, void *p_userdata) {
+void PhysicsServer3DSW::_shape_col_cbk(const Vector3 &p_point_A, int p_index_A, const Vector3 &p_point_B, int p_index_B, void *p_userdata) {
 	CollCbkData *cbk = (CollCbkData *)p_userdata;
 
 	if (cbk->max == 0) {
@@ -1436,14 +1752,15 @@ void PhysicsServer3DSW::_shape_col_cbk(const Vector3 &p_point_A, const Vector3 &
 	}
 }
 
-PhysicsServer3DSW *PhysicsServer3DSW::singleton = nullptr;
-PhysicsServer3DSW::PhysicsServer3DSW() {
-	singleton = this;
+PhysicsServer3DSW *PhysicsServer3DSW::singletonsw = nullptr;
+PhysicsServer3DSW::PhysicsServer3DSW(bool p_using_threads) {
+	singletonsw = this;
 	BroadPhase3DSW::create_func = BroadPhaseOctree::_create;
 	island_count = 0;
 	active_objects = 0;
 	collision_pairs = 0;
-
+	using_threads = p_using_threads;
 	active = true;
 	flushing_queries = false;
+	doing_sync = false;
 };

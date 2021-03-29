@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -38,7 +38,6 @@ class Label : public Control {
 
 public:
 	enum Align {
-
 		ALIGN_LEFT,
 		ALIGN_CENTER,
 		ALIGN_RIGHT,
@@ -46,7 +45,6 @@ public:
 	};
 
 	enum VAlign {
-
 		VALIGN_TOP,
 		VALIGN_CENTER,
 		VALIGN_BOTTOM,
@@ -61,39 +59,37 @@ private:
 	bool autowrap = false;
 	bool clip = false;
 	Size2 minsize;
-	int line_count = 0;
 	bool uppercase = false;
 
-	int get_longest_line_width() const;
+	bool lines_dirty = true;
+	bool dirty = true;
+	RID text_rid;
+	Vector<RID> lines_rid;
 
-	struct WordCache {
-		enum {
-			CHAR_NEWLINE = -1,
-			CHAR_WRAPLINE = -2
-		};
-		int char_pos = 0; // if -1, then newline
-		int word_len = 0;
-		int pixel_width = 0;
-		int space_count = 0;
-		WordCache *next = nullptr;
-	};
+	Dictionary opentype_features;
+	String language;
+	TextDirection text_direction = TEXT_DIRECTION_AUTO;
+	Control::StructuredTextParser st_parser = STRUCTURED_TEXT_DEFAULT;
+	Array st_args;
 
-	bool word_cache_dirty = true;
-	void regenerate_word_cache();
+	float percent_visible = 1.0;
 
-	float percent_visible = 1;
-
-	WordCache *word_cache = nullptr;
-	int total_char_cache = 0;
 	int visible_chars = -1;
 	int lines_skipped = 0;
 	int max_lines_visible = -1;
+
+	void _update_visible();
+	void _shape();
 
 protected:
 	void _notification(int p_what);
 
 	static void _bind_methods();
-	// bind helpers
+
+	bool _set(const StringName &p_name, const Variant &p_value);
+	bool _get(const StringName &p_name, Variant &r_ret) const;
+	void _get_property_list(List<PropertyInfo> *p_list) const;
+
 public:
 	virtual Size2 get_minimum_size() const override;
 
@@ -105,6 +101,22 @@ public:
 
 	void set_text(const String &p_string);
 	String get_text() const;
+
+	void set_text_direction(TextDirection p_text_direction);
+	TextDirection get_text_direction() const;
+
+	void set_opentype_feature(const String &p_name, int p_value);
+	int get_opentype_feature(const String &p_name) const;
+	void clear_opentype_features();
+
+	void set_language(const String &p_language);
+	String get_language() const;
+
+	void set_structured_text_bidi_override(Control::StructuredTextParser p_parser);
+	Control::StructuredTextParser get_structured_text_bidi_override() const;
+
+	void set_structured_text_bidi_override_options(Array p_args);
+	Array get_structured_text_bidi_override_options() const;
 
 	void set_autowrap(bool p_autowrap);
 	bool has_autowrap() const;
@@ -128,7 +140,7 @@ public:
 	void set_max_lines_visible(int p_lines);
 	int get_max_lines_visible() const;
 
-	int get_line_height() const;
+	int get_line_height(int p_line = -1) const;
 	int get_line_count() const;
 	int get_visible_line_count() const;
 

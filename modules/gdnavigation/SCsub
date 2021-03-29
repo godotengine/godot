@@ -5,6 +5,10 @@ Import("env_modules")
 
 env_navigation = env_modules.Clone()
 
+# Thirdparty source files
+
+thirdparty_obj = []
+
 # Recast Thirdparty source files
 if env["builtin_recast"]:
     thirdparty_dir = "#thirdparty/recastnavigation/Recast/"
@@ -23,28 +27,37 @@ if env["builtin_recast"]:
     ]
     thirdparty_sources = [thirdparty_dir + file for file in thirdparty_sources]
 
-    env_navigation.Prepend(CPPPATH=[thirdparty_dir + "/Include"])
+    env_navigation.Prepend(CPPPATH=[thirdparty_dir + "Include"])
 
     env_thirdparty = env_navigation.Clone()
     env_thirdparty.disable_warnings()
-    env_thirdparty.add_source_files(env.modules_sources, thirdparty_sources)
-
+    env_thirdparty.add_source_files(thirdparty_obj, thirdparty_sources)
 
 # RVO Thirdparty source files
 if env["builtin_rvo2"]:
-    thirdparty_dir = "#thirdparty/rvo2"
+    thirdparty_dir = "#thirdparty/rvo2/"
     thirdparty_sources = [
-        "/src/Agent.cpp",
-        "/src/KdTree.cpp",
+        "Agent.cpp",
+        "KdTree.cpp",
     ]
     thirdparty_sources = [thirdparty_dir + file for file in thirdparty_sources]
 
-    env_navigation.Prepend(CPPPATH=[thirdparty_dir + "/src"])
+    env_navigation.Prepend(CPPPATH=[thirdparty_dir])
 
     env_thirdparty = env_navigation.Clone()
     env_thirdparty.disable_warnings()
-    env_thirdparty.add_source_files(env.modules_sources, thirdparty_sources)
+    env_thirdparty.add_source_files(thirdparty_obj, thirdparty_sources)
+
+
+env.modules_sources += thirdparty_obj
 
 
 # Godot source files
-env_navigation.add_source_files(env.modules_sources, "*.cpp")
+
+module_obj = []
+
+env_navigation.add_source_files(module_obj, "*.cpp")
+env.modules_sources += module_obj
+
+# Needed to force rebuilding the module files when the thirdparty library is updated.
+env.Depends(module_obj, thirdparty_obj)

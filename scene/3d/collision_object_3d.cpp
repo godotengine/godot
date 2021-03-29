@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -30,6 +30,8 @@
 
 #include "collision_object_3d.h"
 
+#include "core/config/engine.h"
+#include "mesh_instance_3d.h"
 #include "scene/scene_string_names.h"
 #include "servers/physics_server_3d.h"
 
@@ -110,6 +112,42 @@ void CollisionObject3D::_update_pickable() {
 	}
 }
 
+void CollisionObject3D::_update_debug_shapes() {
+	for (Set<uint32_t>::Element *shapedata_idx = debug_shapes_to_update.front(); shapedata_idx; shapedata_idx = shapedata_idx->next()) {
+		if (shapes.has(shapedata_idx->get())) {
+			ShapeData &shapedata = shapes[shapedata_idx->get()];
+			for (int i = 0; i < shapedata.shapes.size(); i++) {
+				ShapeData::ShapeBase &s = shapedata.shapes.write[i];
+				if (s.debug_shape) {
+					s.debug_shape->queue_delete();
+					s.debug_shape = nullptr;
+				}
+				if (s.shape.is_null() || shapedata.disabled) {
+					continue;
+				}
+
+				Ref<Mesh> mesh = s.shape->get_debug_mesh();
+				MeshInstance3D *mi = memnew(MeshInstance3D);
+				mi->set_transform(shapedata.xform);
+				mi->set_mesh(mesh);
+				add_child(mi);
+				mi->force_update_transform();
+				s.debug_shape = mi;
+			}
+		}
+	}
+	debug_shapes_to_update.clear();
+}
+
+void CollisionObject3D::_update_shape_data(uint32_t p_owner) {
+	if (is_inside_tree() && get_tree()->is_debugging_collisions_hint() && !Engine::get_singleton()->is_editor_hint()) {
+		if (debug_shapes_to_update.is_empty()) {
+			call_deferred("_update_debug_shapes");
+		}
+		debug_shapes_to_update.insert(p_owner);
+	}
+}
+
 void CollisionObject3D::set_ray_pickable(bool p_ray_pickable) {
 	ray_pickable = p_ray_pickable;
 	_update_pickable();
@@ -140,6 +178,8 @@ void CollisionObject3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("shape_owner_remove_shape", "owner_id", "shape_id"), &CollisionObject3D::shape_owner_remove_shape);
 	ClassDB::bind_method(D_METHOD("shape_owner_clear_shapes", "owner_id"), &CollisionObject3D::shape_owner_clear_shapes);
 	ClassDB::bind_method(D_METHOD("shape_find_owner", "shape_index"), &CollisionObject3D::shape_find_owner);
+
+	ClassDB::bind_method(D_METHOD("_update_debug_shapes"), &CollisionObject3D::_update_debug_shapes);
 
 	BIND_VMETHOD(MethodInfo("_input_event", PropertyInfo(Variant::OBJECT, "camera"), PropertyInfo(Variant::OBJECT, "event", PROPERTY_HINT_RESOURCE_TYPE, "InputEvent"), PropertyInfo(Variant::VECTOR3, "click_position"), PropertyInfo(Variant::VECTOR3, "click_normal"), PropertyInfo(Variant::INT, "shape_idx")));
 
@@ -188,6 +228,7 @@ void CollisionObject3D::shape_owner_set_disabled(uint32_t p_owner, bool p_disabl
 			PhysicsServer3D::get_singleton()->body_set_shape_disabled(rid, sd.shapes[i].index, p_disabled);
 		}
 	}
+	_update_shape_data(p_owner);
 }
 
 bool CollisionObject3D::is_shape_owner_disabled(uint32_t p_owner) const {
@@ -223,6 +264,8 @@ void CollisionObject3D::shape_owner_set_transform(uint32_t p_owner, const Transf
 			PhysicsServer3D::get_singleton()->body_set_shape_transform(rid, sd.shapes[i].index, p_transform);
 		}
 	}
+
+	_update_shape_data(p_owner);
 }
 
 Transform CollisionObject3D::shape_owner_get_transform(uint32_t p_owner) const {
@@ -245,6 +288,7 @@ void CollisionObject3D::shape_owner_add_shape(uint32_t p_owner, const Ref<Shape3
 	ShapeData::ShapeBase s;
 	s.index = total_subshapes;
 	s.shape = p_shape;
+
 	if (area) {
 		PhysicsServer3D::get_singleton()->area_add_shape(rid, p_shape->get_rid(), sd.xform, sd.disabled);
 	} else {
@@ -253,6 +297,8 @@ void CollisionObject3D::shape_owner_add_shape(uint32_t p_owner, const Ref<Shape3
 	sd.shapes.push_back(s);
 
 	total_subshapes++;
+
+	_update_shape_data(p_owner);
 }
 
 int CollisionObject3D::shape_owner_get_shape_count(uint32_t p_owner) const {
@@ -279,11 +325,17 @@ void CollisionObject3D::shape_owner_remove_shape(uint32_t p_owner, int p_shape) 
 	ERR_FAIL_COND(!shapes.has(p_owner));
 	ERR_FAIL_INDEX(p_shape, shapes[p_owner].shapes.size());
 
-	int index_to_remove = shapes[p_owner].shapes[p_shape].index;
+	const ShapeData::ShapeBase &s = shapes[p_owner].shapes[p_shape];
+	int index_to_remove = s.index;
+
 	if (area) {
 		PhysicsServer3D::get_singleton()->area_remove_shape(rid, index_to_remove);
 	} else {
 		PhysicsServer3D::get_singleton()->body_remove_shape(rid, index_to_remove);
+	}
+
+	if (s.debug_shape) {
+		s.debug_shape->queue_delete();
 	}
 
 	shapes[p_owner].shapes.remove(p_shape);
@@ -325,10 +377,7 @@ uint32_t CollisionObject3D::shape_find_owner(int p_shape_index) const {
 CollisionObject3D::CollisionObject3D(RID p_rid, bool p_area) {
 	rid = p_rid;
 	area = p_area;
-	capture_input_on_drag = false;
-	ray_pickable = true;
 	set_notify_transform(true);
-	total_subshapes = 0;
 
 	if (p_area) {
 		PhysicsServer3D::get_singleton()->area_attach_object_instance_id(rid, get_instance_id());
@@ -349,8 +398,8 @@ bool CollisionObject3D::get_capture_input_on_drag() const {
 String CollisionObject3D::get_configuration_warning() const {
 	String warning = Node3D::get_configuration_warning();
 
-	if (shapes.empty()) {
-		if (!warning.empty()) {
+	if (shapes.is_empty()) {
+		if (!warning.is_empty()) {
 			warning += "\n\n";
 		}
 		warning += TTR("This node has no shape, so it can't collide or interact with other objects.\nConsider adding a CollisionShape3D or CollisionPolygon3D as a child to define its shape.");
@@ -360,8 +409,6 @@ String CollisionObject3D::get_configuration_warning() const {
 }
 
 CollisionObject3D::CollisionObject3D() {
-	capture_input_on_drag = false;
-	ray_pickable = true;
 	set_notify_transform(true);
 	//owner=
 

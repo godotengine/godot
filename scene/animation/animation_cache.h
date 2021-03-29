@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -39,31 +39,23 @@ class AnimationCache : public Object {
 
 	struct Path {
 		RES resource;
-		Object *object;
-		Skeleton3D *skeleton; // haxor
-		Node *node;
-		Node3D *spatial;
+		Object *object = nullptr;
+		Skeleton3D *skeleton = nullptr; // haxor
+		Node *node = nullptr;
+		Node3D *spatial = nullptr;
 
-		int bone_idx;
+		int bone_idx = -1;
 		Vector<StringName> subpath;
-		bool valid;
-		Path() {
-			object = nullptr;
-			skeleton = nullptr;
-			node = nullptr;
-			bone_idx = -1;
-			valid = false;
-			spatial = nullptr;
-		}
+		bool valid = false;
 	};
 
 	Set<Node *> connected_nodes;
 	Vector<Path> path_cache;
 
-	Node *root;
+	Node *root = nullptr;
 	Ref<Animation> animation;
-	bool cache_dirty;
-	bool cache_valid;
+	bool cache_dirty = true;
+	bool cache_valid = false;
 
 	void _node_exit_tree(Node *p_node);
 

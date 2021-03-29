@@ -73,7 +73,7 @@
 			The texture's drawing offset.
 		</member>
 		<member name="opacity" type="float" setter="set_opacity" getter="get_opacity" default="1.0">
-			The objects visibility on a scale from [code]0[/code] fully invisible to [code]1[/code] fully visible.
+			The objects' visibility on a scale from [code]0[/code] fully invisible to [code]1[/code] fully visible.
 		</member>
 		<member name="pixel_size" type="float" setter="set_pixel_size" getter="get_pixel_size" default="0.01">
 			The size of one pixel's width on the sprite to scale it in 3D.
@@ -102,7 +102,7 @@
 			This mode performs standard alpha blending. It can display translucent areas, but transparency sorting issues may be visible when multiple transparent materials are overlapping.
 		</constant>
 		<constant name="ALPHA_CUT_DISCARD" value="1" enum="AlphaCutMode">
-			This mode only allows fully transparent or fully opaque pixels. Harsh edges will be visible unless some form of screen-space antialiasing is enabled (see [member ProjectSettings.rendering/quality/screen_filters/screen_space_aa]). On the bright side, this mode doesn't suffer from transparency sorting issues when multiple transparent materials are overlapping. This mode is also known as [i]alpha testing[/i] or [i]1-bit transparency[/i].
+			This mode only allows fully transparent or fully opaque pixels. Harsh edges will be visible unless some form of screen-space antialiasing is enabled (see [member ProjectSettings.rendering/anti_aliasing/quality/screen_space_aa]). On the bright side, this mode doesn't suffer from transparency sorting issues when multiple transparent materials are overlapping. This mode is also known as [i]alpha testing[/i] or [i]1-bit transparency[/i].
 		</constant>
 		<constant name="ALPHA_CUT_OPAQUE_PREPASS" value="2" enum="AlphaCutMode">
 			This mode draws fully opaque pixels in the depth prepass. This is slower than [constant ALPHA_CUT_DISABLED] or [constant ALPHA_CUT_DISCARD], but it allows displaying translucent areas and smooth edges while using proper sorting.

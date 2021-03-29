@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -124,18 +124,18 @@ private:
 
 private:
 	Vector<Vector2> _points;
-	LineJointMode _joint_mode;
-	LineCapMode _begin_cap_mode;
-	LineCapMode _end_cap_mode;
-	float _width;
+	LineJointMode _joint_mode = LINE_JOINT_SHARP;
+	LineCapMode _begin_cap_mode = LINE_CAP_NONE;
+	LineCapMode _end_cap_mode = LINE_CAP_NONE;
+	float _width = 10.0;
 	Ref<Curve> _curve;
-	Color _default_color;
+	Color _default_color = Color(1, 1, 1);
 	Ref<Gradient> _gradient;
 	Ref<Texture2D> _texture;
-	LineTextureMode _texture_mode;
-	float _sharp_limit;
-	int _round_precision;
-	bool _antialiased;
+	LineTextureMode _texture_mode = LINE_TEXTURE_NONE;
+	float _sharp_limit = 2.f;
+	int _round_precision = 8;
+	bool _antialiased = false;
 };
 
 #endif // LINE2D_H

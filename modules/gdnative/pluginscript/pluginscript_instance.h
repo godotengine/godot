@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -44,10 +44,10 @@ class PluginScriptInstance : public ScriptInstance {
 
 private:
 	Ref<PluginScript> _script;
-	Object *_owner;
+	Object *_owner = nullptr;
 	Variant _owner_variant;
-	godot_pluginscript_instance_data *_data;
-	const godot_pluginscript_instance_desc *_desc;
+	godot_pluginscript_instance_data *_data = nullptr;
+	const godot_pluginscript_instance_desc *_desc = nullptr;
 
 public:
 	_FORCE_INLINE_ Object *get_owner() { return _owner; }
@@ -63,6 +63,7 @@ public:
 	virtual Variant call(const StringName &p_method, const Variant **p_args, int p_argcount, Callable::CallError &r_error);
 
 	virtual void notification(int p_notification);
+	virtual String to_string(bool *r_valid);
 
 	virtual Ref<Script> get_script() const;
 

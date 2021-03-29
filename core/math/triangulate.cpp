@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -97,7 +97,7 @@ bool Triangulate::snip(const Vector<Vector2> &p_contour, int u, int v, int w, in
 
 	// It can happen that the triangulation ends up with three aligned vertices to deal with.
 	// In this scenario, making the check below strict may reject the possibility of
-	// forming a last triangle with these aligned vertices, preventing the triangulatiom
+	// forming a last triangle with these aligned vertices, preventing the triangulation
 	// from completing.
 	// To avoid that we allow zero-area triangles if all else failed.
 	float threshold = relaxed ? -CMP_EPSILON : CMP_EPSILON;

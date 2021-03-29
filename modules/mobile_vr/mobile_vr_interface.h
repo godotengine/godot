@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -51,19 +51,21 @@ class MobileVRInterface : public XRInterface {
 	GDCLASS(MobileVRInterface, XRInterface);
 
 private:
-	bool initialized;
+	bool initialized = false;
 	Basis orientation;
-	float eye_height;
-	uint64_t last_ticks;
 
-	real_t intraocular_dist;
-	real_t display_width;
-	real_t display_to_lens;
-	real_t oversample;
+	// Just set some defaults for these. At some point we need to look at adding a lookup table for common device + headset combos and/or support reading cardboard QR codes
+	float eye_height = 1.85;
+	uint64_t last_ticks = 0;
+
+	real_t intraocular_dist = 6.0;
+	real_t display_width = 14.5;
+	real_t display_to_lens = 4.0;
+	real_t oversample = 1.5;
 
 	//@TODO not yet used, these are needed in our distortion shader...
-	real_t k1;
-	real_t k2;
+	real_t k1 = 0.215;
+	real_t k2 = 0.215;
 
 	/*
 		logic for processing our sensor data, this was originally in our positional tracker logic but I think
@@ -73,9 +75,9 @@ private:
 	Vector3 scale_magneto(const Vector3 &p_magnetometer);
 	Basis combine_acc_mag(const Vector3 &p_grav, const Vector3 &p_magneto);
 
-	int mag_count;
-	bool has_gyro;
-	bool sensor_first;
+	int mag_count = 0;
+	bool has_gyro = false;
+	bool sensor_first = false;
 	Vector3 last_accerometer_data;
 	Vector3 last_magnetometer_data;
 	Vector3 mag_current_min;

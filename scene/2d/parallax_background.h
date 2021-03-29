@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -39,15 +39,15 @@ class ParallaxBackground : public CanvasLayer {
 	GDCLASS(ParallaxBackground, CanvasLayer);
 
 	Point2 offset;
-	float scale;
+	real_t scale = 1.0;
 	Point2 base_offset;
-	Point2 base_scale;
+	Point2 base_scale = Vector2(1, 1);
 	Point2 screen_offset;
 	String group_name;
 	Point2 limit_begin;
 	Point2 limit_end;
 	Point2 final_offset;
-	bool ignore_camera_zoom;
+	bool ignore_camera_zoom = false;
 
 	void _update_scroll();
 
@@ -61,8 +61,8 @@ public:
 	void set_scroll_offset(const Point2 &p_ofs);
 	Point2 get_scroll_offset() const;
 
-	void set_scroll_scale(float p_scale);
-	float get_scroll_scale() const;
+	void set_scroll_scale(real_t p_scale);
+	real_t get_scroll_scale() const;
 
 	void set_scroll_base_offset(const Point2 &p_ofs);
 	Point2 get_scroll_base_offset() const;

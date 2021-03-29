@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -305,6 +305,7 @@ void ParticlesMaterial::_update_shader() {
 		code += "	ivec2 emission_tex_size = textureSize(emission_texture_points, 0);\n";
 		code += "	ivec2 emission_tex_ofs = ivec2(point % emission_tex_size.x, point / emission_tex_size.x);\n";
 	}
+	code += "	float tv = 0.0;\n";
 	code += "	if (RESTART) {\n";
 
 	if (tex_parameters[PARAM_ANGLE].is_valid()) {
@@ -329,7 +330,7 @@ void ParticlesMaterial::_update_shader() {
 		code += "			float tex_linear_velocity = 0.0;\n";
 	}
 
-	if (flags[FLAG_DISABLE_Z]) {
+	if (particle_flags[PARTICLE_FLAG_DISABLE_Z]) {
 		code += "			float angle1_rad = rand_from_seed_m1_p1(alt_seed) * spread_rad;\n";
 		code += "			angle1_rad += direction.x != 0.0 ? atan(direction.y, direction.x) : sign(direction.y) * (pi / 2.0);\n";
 		code += "			vec3 rot = vec3(cos(angle1_rad), sin(angle1_rad), 0.0);\n";
@@ -339,14 +340,21 @@ void ParticlesMaterial::_update_shader() {
 		//initiate velocity spread in 3D
 		code += "			float angle1_rad = rand_from_seed_m1_p1(alt_seed) * spread_rad;\n";
 		code += "			float angle2_rad = rand_from_seed_m1_p1(alt_seed) * spread_rad * (1.0 - flatness);\n";
-		code += "			angle1_rad += direction.z != 0.0 ? atan(direction.x, direction.z) : sign(direction.x) * (pi / 2.0);\n";
-		code += "			angle2_rad += direction.z != 0.0 ? atan(direction.y, abs(direction.z)) : (direction.x != 0.0 ? atan(direction.y, abs(direction.x)) : sign(direction.y) * (pi / 2.0));\n";
 		code += "			vec3 direction_xz = vec3(sin(angle1_rad), 0.0, cos(angle1_rad));\n";
 		code += "			vec3 direction_yz = vec3(0.0, sin(angle2_rad), cos(angle2_rad));\n";
 		code += "			direction_yz.z = direction_yz.z / max(0.0001,sqrt(abs(direction_yz.z))); // better uniform distribution\n";
-		code += "			vec3 vec_direction = vec3(direction_xz.x * direction_yz.z, direction_yz.y, direction_xz.z * direction_yz.z);\n";
-		code += "			vec_direction = normalize(vec_direction);\n";
-		code += "			VELOCITY = vec_direction * initial_linear_velocity * mix(1.0, rand_from_seed(alt_seed), initial_linear_velocity_random);\n";
+		code += "			vec3 spread_direction = vec3(direction_xz.x * direction_yz.z, direction_yz.y, direction_xz.z * direction_yz.z);\n";
+		code += "			vec3 direction_nrm = normalize(direction);\n";
+		code += "			// rotate spread to direction\n";
+		code += "			vec3 binormal = cross(vec3(0.0, 1.0, 0.0), direction_nrm);\n";
+		code += "			if (length(binormal) < 0.0001) {\n";
+		code += "				// direction is parallel to Y. Choose Z as the binormal.\n";
+		code += "				binormal = vec3(0.0, 0.0, 1.0);\n";
+		code += "			}\n";
+		code += "			binormal = normalize(binormal);\n";
+		code += "			vec3 normal = cross(binormal, direction_nrm);\n";
+		code += "			spread_direction = binormal * spread_direction.x + normal * spread_direction.y + direction_nrm * spread_direction.z;\n";
+		code += "			VELOCITY = spread_direction * initial_linear_velocity * mix(1.0, rand_from_seed(alt_seed), initial_linear_velocity_random);\n";
 	}
 	code += "		}\n";
 
@@ -377,7 +385,7 @@ void ParticlesMaterial::_update_shader() {
 			code += "			TRANSFORM[3].xyz = texelFetch(emission_texture_points, emission_tex_ofs, 0).xyz;\n";
 
 			if (emission_shape == EMISSION_SHAPE_DIRECTED_POINTS) {
-				if (flags[FLAG_DISABLE_Z]) {
+				if (particle_flags[PARTICLE_FLAG_DISABLE_Z]) {
 					code += "			mat2 rotm;";
 					code += "			rotm[0] = texelFetch(emission_texture_normal, emission_tex_ofs, 0).xy;\n";
 					code += "			rotm[1] = rotm[0].yx * vec2(1.0, -1.0);\n";
@@ -398,7 +406,7 @@ void ParticlesMaterial::_update_shader() {
 
 	code += "			if (RESTART_VELOCITY) VELOCITY = (EMISSION_TRANSFORM * vec4(VELOCITY, 0.0)).xyz;\n";
 	code += "			TRANSFORM = EMISSION_TRANSFORM * TRANSFORM;\n";
-	if (flags[FLAG_DISABLE_Z]) {
+	if (particle_flags[PARTICLE_FLAG_DISABLE_Z]) {
 		code += "			VELOCITY.z = 0.0;\n";
 		code += "			TRANSFORM[3].z = 0.0;\n";
 	}
@@ -407,71 +415,72 @@ void ParticlesMaterial::_update_shader() {
 	code += "	} else {\n";
 
 	code += "		CUSTOM.y += DELTA / LIFETIME;\n";
+	code += "		tv = CUSTOM.y / CUSTOM.w;\n";
 	if (tex_parameters[PARAM_INITIAL_LINEAR_VELOCITY].is_valid()) {
-		code += "		float tex_linear_velocity = textureLod(linear_velocity_texture, vec2(CUSTOM.y, 0.0), 0.0).r;\n";
+		code += "		float tex_linear_velocity = textureLod(linear_velocity_texture, vec2(tv, 0.0), 0.0).r;\n";
 	} else {
 		code += "		float tex_linear_velocity = 0.0;\n";
 	}
 
-	if (flags[FLAG_DISABLE_Z]) {
+	if (particle_flags[PARTICLE_FLAG_DISABLE_Z]) {
 		if (tex_parameters[PARAM_ORBIT_VELOCITY].is_valid()) {
-			code += "		float tex_orbit_velocity = textureLod(orbit_velocity_texture, vec2(CUSTOM.y, 0.0), 0.0).r;\n";
+			code += "		float tex_orbit_velocity = textureLod(orbit_velocity_texture, vec2(tv, 0.0), 0.0).r;\n";
 		} else {
 			code += "		float tex_orbit_velocity = 0.0;\n";
 		}
 	}
 
 	if (tex_parameters[PARAM_ANGULAR_VELOCITY].is_valid()) {
-		code += "		float tex_angular_velocity = textureLod(angular_velocity_texture, vec2(CUSTOM.y, 0.0), 0.0).r;\n";
+		code += "		float tex_angular_velocity = textureLod(angular_velocity_texture, vec2(tv, 0.0), 0.0).r;\n";
 	} else {
 		code += "		float tex_angular_velocity = 0.0;\n";
 	}
 
 	if (tex_parameters[PARAM_LINEAR_ACCEL].is_valid()) {
-		code += "		float tex_linear_accel = textureLod(linear_accel_texture, vec2(CUSTOM.y, 0.0), 0.0).r;\n";
+		code += "		float tex_linear_accel = textureLod(linear_accel_texture, vec2(tv, 0.0), 0.0).r;\n";
 	} else {
 		code += "		float tex_linear_accel = 0.0;\n";
 	}
 
 	if (tex_parameters[PARAM_RADIAL_ACCEL].is_valid()) {
-		code += "		float tex_radial_accel = textureLod(radial_accel_texture, vec2(CUSTOM.y, 0.0), 0.0).r;\n";
+		code += "		float tex_radial_accel = textureLod(radial_accel_texture, vec2(tv, 0.0), 0.0).r;\n";
 	} else {
 		code += "		float tex_radial_accel = 0.0;\n";
 	}
 
 	if (tex_parameters[PARAM_TANGENTIAL_ACCEL].is_valid()) {
-		code += "		float tex_tangent_accel = textureLod(tangent_accel_texture, vec2(CUSTOM.y, 0.0), 0.0).r;\n";
+		code += "		float tex_tangent_accel = textureLod(tangent_accel_texture, vec2(tv, 0.0), 0.0).r;\n";
 	} else {
 		code += "		float tex_tangent_accel = 0.0;\n";
 	}
 
 	if (tex_parameters[PARAM_DAMPING].is_valid()) {
-		code += "		float tex_damping = textureLod(damping_texture, vec2(CUSTOM.y, 0.0), 0.0).r;\n";
+		code += "		float tex_damping = textureLod(damping_texture, vec2(tv, 0.0), 0.0).r;\n";
 	} else {
 		code += "		float tex_damping = 0.0;\n";
 	}
 
 	if (tex_parameters[PARAM_ANGLE].is_valid()) {
-		code += "		float tex_angle = textureLod(angle_texture, vec2(CUSTOM.y, 0.0), 0.0).r;\n";
+		code += "		float tex_angle = textureLod(angle_texture, vec2(tv, 0.0), 0.0).r;\n";
 	} else {
 		code += "		float tex_angle = 0.0;\n";
 	}
 
 	if (tex_parameters[PARAM_ANIM_SPEED].is_valid()) {
-		code += "		float tex_anim_speed = textureLod(anim_speed_texture, vec2(CUSTOM.y, 0.0), 0.0).r;\n";
+		code += "		float tex_anim_speed = textureLod(anim_speed_texture, vec2(tv, 0.0), 0.0).r;\n";
 	} else {
 		code += "		float tex_anim_speed = 0.0;\n";
 	}
 
 	if (tex_parameters[PARAM_ANIM_OFFSET].is_valid()) {
-		code += "		float tex_anim_offset = textureLod(anim_offset_texture, vec2(CUSTOM.y, 0.0), 0.0).r;\n";
+		code += "		float tex_anim_offset = textureLod(anim_offset_texture, vec2(tv, 0.0), 0.0).r;\n";
 	} else {
 		code += "		float tex_anim_offset = 0.0;\n";
 	}
 
 	code += "		vec3 force = gravity;\n";
 	code += "		vec3 pos = TRANSFORM[3].xyz;\n";
-	if (flags[FLAG_DISABLE_Z]) {
+	if (particle_flags[PARTICLE_FLAG_DISABLE_Z]) {
 		code += "		pos.z = 0.0;\n";
 	}
 	code += "		// apply linear acceleration\n";
@@ -481,7 +490,7 @@ void ParticlesMaterial::_update_shader() {
 	code += "		vec3 diff = pos - org;\n";
 	code += "		force += length(diff) > 0.0 ? normalize(diff) * (radial_accel + tex_radial_accel) * mix(1.0, rand_from_seed(alt_seed), radial_accel_random) : vec3(0.0);\n";
 	code += "		// apply tangential acceleration;\n";
-	if (flags[FLAG_DISABLE_Z]) {
+	if (particle_flags[PARTICLE_FLAG_DISABLE_Z]) {
 		code += "		force += length(diff.yx) > 0.0 ? vec3(normalize(diff.yx * vec2(-1.0, 1.0)), 0.0) * ((tangent_accel + tex_tangent_accel) * mix(1.0, rand_from_seed(alt_seed), tangent_accel_random)) : vec3(0.0);\n";
 
 	} else {
@@ -495,7 +504,7 @@ void ParticlesMaterial::_update_shader() {
 	code += "		// apply attractor forces\n";
 	code += "		VELOCITY += force * DELTA;\n";
 	code += "		// orbit velocity\n";
-	if (flags[FLAG_DISABLE_Z]) {
+	if (particle_flags[PARTICLE_FLAG_DISABLE_Z]) {
 		code += "		float orbit_amount = (orbit_velocity + tex_orbit_velocity) * mix(1.0, rand_from_seed(alt_seed), orbit_velocity_random);\n";
 		code += "		if (orbit_amount != 0.0) {\n";
 		code += "		     float ang = orbit_amount * DELTA * pi * 2.0;\n";
@@ -526,13 +535,13 @@ void ParticlesMaterial::_update_shader() {
 	// apply color
 	// apply hue rotation
 	if (tex_parameters[PARAM_SCALE].is_valid()) {
-		code += "	float tex_scale = textureLod(scale_texture, vec2(CUSTOM.y, 0.0), 0.0).r;\n";
+		code += "	float tex_scale = textureLod(scale_texture, vec2(tv, 0.0), 0.0).r;\n";
 	} else {
 		code += "	float tex_scale = 1.0;\n";
 	}
 
 	if (tex_parameters[PARAM_HUE_VARIATION].is_valid()) {
-		code += "	float tex_hue_variation = textureLod(hue_variation_texture, vec2(CUSTOM.y, 0.0), 0.0).r;\n";
+		code += "	float tex_hue_variation = textureLod(hue_variation_texture, vec2(tv, 0.0), 0.0).r;\n";
 	} else {
 		code += "	float tex_hue_variation = 0.0;\n";
 	}
@@ -553,7 +562,7 @@ void ParticlesMaterial::_update_shader() {
 	code += "			vec4(1.250, -1.050, -0.203, 0.0),\n";
 	code += "			vec4(0.000, 0.000, 0.000, 0.0)) * hue_rot_s;\n";
 	if (color_ramp.is_valid()) {
-		code += "	COLOR = hue_rot_mat * textureLod(color_ramp, vec2(CUSTOM.y, 0.0), 0.0);\n";
+		code += "	COLOR = hue_rot_mat * textureLod(color_ramp, vec2(tv, 0.0), 0.0);\n";
 	} else {
 		code += "	COLOR = hue_rot_mat * color_value;\n";
 	}
@@ -562,8 +571,8 @@ void ParticlesMaterial::_update_shader() {
 	}
 	code += "\n";
 
-	if (flags[FLAG_DISABLE_Z]) {
-		if (flags[FLAG_ALIGN_Y_TO_VELOCITY]) {
+	if (particle_flags[PARTICLE_FLAG_DISABLE_Z]) {
+		if (particle_flags[PARTICLE_FLAG_ALIGN_Y_TO_VELOCITY]) {
 			code += "	if (length(VELOCITY) > 0.0) {\n";
 			code += "		TRANSFORM[1].xyz = normalize(VELOCITY);\n";
 			code += "	} else {\n";
@@ -579,7 +588,7 @@ void ParticlesMaterial::_update_shader() {
 
 	} else {
 		// orient particle Y towards velocity
-		if (flags[FLAG_ALIGN_Y_TO_VELOCITY]) {
+		if (particle_flags[PARTICLE_FLAG_ALIGN_Y_TO_VELOCITY]) {
 			code += "	if (length(VELOCITY) > 0.0) {\n";
 			code += "		TRANSFORM[1].xyz = normalize(VELOCITY);\n";
 			code += "	} else {\n";
@@ -598,7 +607,7 @@ void ParticlesMaterial::_update_shader() {
 			code += "	TRANSFORM[2].xyz = normalize(TRANSFORM[2].xyz);\n";
 		}
 		// turn particle by rotation in Y
-		if (flags[FLAG_ROTATE_Y]) {
+		if (particle_flags[PARTICLE_FLAG_ROTATE_Y]) {
 			code += "	TRANSFORM = TRANSFORM * mat4(vec4(cos(CUSTOM.x), 0.0, -sin(CUSTOM.x), 0.0), vec4(0.0, 1.0, 0.0, 0.0), vec4(sin(CUSTOM.x), 0.0, cos(CUSTOM.x), 0.0), vec4(0.0, 0.0, 0.0, 1.0));\n";
 		}
 	}
@@ -611,7 +620,7 @@ void ParticlesMaterial::_update_shader() {
 	code += "	TRANSFORM[0].xyz *= base_scale;\n";
 	code += "	TRANSFORM[1].xyz *= base_scale;\n";
 	code += "	TRANSFORM[2].xyz *= base_scale;\n";
-	if (flags[FLAG_DISABLE_Z]) {
+	if (particle_flags[PARTICLE_FLAG_DISABLE_Z]) {
 		code += "	VELOCITY.z = 0.0;\n";
 		code += "	TRANSFORM[3].z = 0.0;\n";
 	}
@@ -646,7 +655,7 @@ void ParticlesMaterial::_update_shader() {
 		code += "	for(int i=0;i<emit_count;i++) {\n";
 		code += "		uint flags = FLAG_EMIT_POSITION|FLAG_EMIT_ROT_SCALE;\n";
 		code += "		if (sub_emitter_keep_velocity) flags|=FLAG_EMIT_VELOCITY;\n";
-		code += "		emit_particle(TRANSFORM,VELOCITY,vec4(0.0),vec4(0.0),flags);\n";
+		code += "		emit_subparticle(TRANSFORM,VELOCITY,vec4(0.0),vec4(0.0),flags);\n";
 		code += "	}";
 	}
 
@@ -909,31 +918,31 @@ void ParticlesMaterial::set_color_ramp(const Ref<Texture2D> &p_texture) {
 	color_ramp = p_texture;
 	RenderingServer::get_singleton()->material_set_param(_get_material(), shader_names->color_ramp, p_texture);
 	_queue_shader_change();
-	_change_notify();
+	notify_property_list_changed();
 }
 
 Ref<Texture2D> ParticlesMaterial::get_color_ramp() const {
 	return color_ramp;
 }
 
-void ParticlesMaterial::set_flag(Flags p_flag, bool p_enable) {
-	ERR_FAIL_INDEX(p_flag, FLAG_MAX);
-	flags[p_flag] = p_enable;
+void ParticlesMaterial::set_particle_flag(ParticleFlags p_particle_flag, bool p_enable) {
+	ERR_FAIL_INDEX(p_particle_flag, PARTICLE_FLAG_MAX);
+	particle_flags[p_particle_flag] = p_enable;
 	_queue_shader_change();
-	if (p_flag == FLAG_DISABLE_Z) {
-		_change_notify();
+	if (p_particle_flag == PARTICLE_FLAG_DISABLE_Z) {
+		notify_property_list_changed();
 	}
 }
 
-bool ParticlesMaterial::get_flag(Flags p_flag) const {
-	ERR_FAIL_INDEX_V(p_flag, FLAG_MAX, false);
-	return flags[p_flag];
+bool ParticlesMaterial::get_particle_flag(ParticleFlags p_particle_flag) const {
+	ERR_FAIL_INDEX_V(p_particle_flag, PARTICLE_FLAG_MAX, false);
+	return particle_flags[p_particle_flag];
 }
 
 void ParticlesMaterial::set_emission_shape(EmissionShape p_shape) {
 	ERR_FAIL_INDEX(p_shape, EMISSION_SHAPE_MAX);
 	emission_shape = p_shape;
-	_change_notify();
+	notify_property_list_changed();
 	_queue_shader_change();
 }
 
@@ -1056,7 +1065,7 @@ void ParticlesMaterial::_validate_property(PropertyInfo &property) const {
 		property.usage = 0;
 	}
 
-	if (property.name.begins_with("orbit_") && !flags[FLAG_DISABLE_Z]) {
+	if (property.name.begins_with("orbit_") && !particle_flags[PARTICLE_FLAG_DISABLE_Z]) {
 		property.usage = 0;
 	}
 }
@@ -1064,7 +1073,7 @@ void ParticlesMaterial::_validate_property(PropertyInfo &property) const {
 void ParticlesMaterial::set_sub_emitter_mode(SubEmitterMode p_sub_emitter_mode) {
 	sub_emitter_mode = p_sub_emitter_mode;
 	_queue_shader_change();
-	_change_notify();
+	notify_property_list_changed();
 }
 
 ParticlesMaterial::SubEmitterMode ParticlesMaterial::get_sub_emitter_mode() const {
@@ -1073,7 +1082,7 @@ ParticlesMaterial::SubEmitterMode ParticlesMaterial::get_sub_emitter_mode() cons
 
 void ParticlesMaterial::set_sub_emitter_frequency(float p_frequency) {
 	sub_emitter_frequency = p_frequency;
-	RenderingServer::get_singleton()->material_set_param(_get_material(), shader_names->sub_emitter_frequency, 1.0 / p_frequency); //pas delta instead of frequency, since its easier to compute
+	RenderingServer::get_singleton()->material_set_param(_get_material(), shader_names->sub_emitter_frequency, 1.0 / p_frequency); //pass delta instead of frequency, since its easier to compute
 }
 float ParticlesMaterial::get_sub_emitter_frequency() const {
 	return sub_emitter_frequency;
@@ -1170,8 +1179,8 @@ void ParticlesMaterial::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_color_ramp", "ramp"), &ParticlesMaterial::set_color_ramp);
 	ClassDB::bind_method(D_METHOD("get_color_ramp"), &ParticlesMaterial::get_color_ramp);
 
-	ClassDB::bind_method(D_METHOD("set_flag", "flag", "enable"), &ParticlesMaterial::set_flag);
-	ClassDB::bind_method(D_METHOD("get_flag", "flag"), &ParticlesMaterial::get_flag);
+	ClassDB::bind_method(D_METHOD("set_particle_flag", "particle_flag", "enable"), &ParticlesMaterial::set_particle_flag);
+	ClassDB::bind_method(D_METHOD("get_particle_flag", "particle_flag"), &ParticlesMaterial::get_particle_flag);
 
 	ClassDB::bind_method(D_METHOD("set_emission_shape", "shape"), &ParticlesMaterial::set_emission_shape);
 	ClassDB::bind_method(D_METHOD("get_emission_shape"), &ParticlesMaterial::get_emission_shape);
@@ -1238,10 +1247,10 @@ void ParticlesMaterial::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "emission_normal_texture", PROPERTY_HINT_RESOURCE_TYPE, "Texture2D"), "set_emission_normal_texture", "get_emission_normal_texture");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "emission_color_texture", PROPERTY_HINT_RESOURCE_TYPE, "Texture2D"), "set_emission_color_texture", "get_emission_color_texture");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "emission_point_count", PROPERTY_HINT_RANGE, "0,1000000,1"), "set_emission_point_count", "get_emission_point_count");
-	ADD_GROUP("Flags", "flag_");
-	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "flag_align_y"), "set_flag", "get_flag", FLAG_ALIGN_Y_TO_VELOCITY);
-	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "flag_rotate_y"), "set_flag", "get_flag", FLAG_ROTATE_Y);
-	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "flag_disable_z"), "set_flag", "get_flag", FLAG_DISABLE_Z);
+	ADD_GROUP("ParticleFlags", "particle_flag_");
+	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "particle_flag_align_y"), "set_particle_flag", "get_particle_flag", PARTICLE_FLAG_ALIGN_Y_TO_VELOCITY);
+	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "particle_flag_rotate_y"), "set_particle_flag", "get_particle_flag", PARTICLE_FLAG_ROTATE_Y);
+	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "particle_flag_disable_z"), "set_particle_flag", "get_particle_flag", PARTICLE_FLAG_DISABLE_Z);
 	ADD_GROUP("Direction", "");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "direction"), "set_direction", "get_direction");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "spread", PROPERTY_HINT_RANGE, "0,180,0.01"), "set_spread", "get_spread");
@@ -1327,10 +1336,10 @@ void ParticlesMaterial::_bind_methods() {
 	BIND_ENUM_CONSTANT(PARAM_ANIM_OFFSET);
 	BIND_ENUM_CONSTANT(PARAM_MAX);
 
-	BIND_ENUM_CONSTANT(FLAG_ALIGN_Y_TO_VELOCITY);
-	BIND_ENUM_CONSTANT(FLAG_ROTATE_Y);
-	BIND_ENUM_CONSTANT(FLAG_DISABLE_Z);
-	BIND_ENUM_CONSTANT(FLAG_MAX);
+	BIND_ENUM_CONSTANT(PARTICLE_FLAG_ALIGN_Y_TO_VELOCITY);
+	BIND_ENUM_CONSTANT(PARTICLE_FLAG_ROTATE_Y);
+	BIND_ENUM_CONSTANT(PARTICLE_FLAG_DISABLE_Z);
+	BIND_ENUM_CONSTANT(PARTICLE_FLAG_MAX);
 
 	BIND_ENUM_CONSTANT(EMISSION_SHAPE_POINT);
 	BIND_ENUM_CONSTANT(EMISSION_SHAPE_SPHERE);
@@ -1368,7 +1377,6 @@ ParticlesMaterial::ParticlesMaterial() :
 	set_emission_box_extents(Vector3(1, 1, 1));
 	set_gravity(Vector3(0, -9.8, 0));
 	set_lifetime_randomness(0);
-	emission_point_count = 1;
 
 	set_sub_emitter_mode(SUB_EMITTER_DISABLED);
 	set_sub_emitter_frequency(4);
@@ -1385,13 +1393,12 @@ ParticlesMaterial::ParticlesMaterial() :
 		set_param_randomness(Parameter(i), 0);
 	}
 
-	for (int i = 0; i < FLAG_MAX; i++) {
-		flags[i] = false;
+	for (int i = 0; i < PARTICLE_FLAG_MAX; i++) {
+		particle_flags[i] = false;
 	}
 
 	set_color(Color(1, 1, 1, 1));
 
-	current_key.key = 0;
 	current_key.invalid_key = 1;
 
 	_queue_shader_change();

@@ -1044,7 +1044,7 @@ static inline void sub32( uint32_t *dst, uint32_t src, signed char *carry )
     STORE32; i++;                               \
     cur = c > 0 ? c : 0; STORE32;               \
     cur = 0; while( ++i < MAX32 ) { STORE32; }  \
-    if( c < 0 ) fix_negative( N, c, &C, bits );
+    if( c < 0 ) MBEDTLS_MPI_CHK( fix_negative( N, c, &C, bits ) );
 
 /*
  * If the result is negative, we get it in the form

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -47,7 +47,7 @@ void AudioStreamPlaybackOGGVorbis::_mix_internal(AudioFrame *p_buffer, int p_fra
 		int mixed = stb_vorbis_get_samples_float_interleaved(ogg_stream, 2, buffer, todo * 2);
 		if (vorbis_stream->channels == 1 && mixed > 0) {
 			//mix mono to stereo
-			for (int i = start_buffer; i < mixed; i++) {
+			for (int i = start_buffer; i < start_buffer + mixed; i++) {
 				p_buffer[i].r = p_buffer[i].l;
 			}
 		}
@@ -124,7 +124,10 @@ AudioStreamPlaybackOGGVorbis::~AudioStreamPlaybackOGGVorbis() {
 Ref<AudioStreamPlayback> AudioStreamOGGVorbis::instance_playback() {
 	Ref<AudioStreamPlaybackOGGVorbis> ovs;
 
-	ERR_FAIL_COND_V(data == nullptr, ovs);
+	ERR_FAIL_COND_V_MSG(data == nullptr, ovs,
+			"This AudioStreamOGGVorbis does not have an audio file assigned "
+			"to it. AudioStreamOGGVorbis should not be created from the "
+			"inspector or with `.new()`. Instead, load an audio file.");
 
 	ovs.instance();
 	ovs->vorbis_stream = Ref<AudioStreamOGGVorbis>(this);
@@ -260,16 +263,7 @@ void AudioStreamOGGVorbis::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "loop_offset"), "set_loop_offset", "get_loop_offset");
 }
 
-AudioStreamOGGVorbis::AudioStreamOGGVorbis() {
-	data = nullptr;
-	data_len = 0;
-	length = 0;
-	sample_rate = 1;
-	channels = 1;
-	loop_offset = 0;
-	decode_mem_size = 0;
-	loop = false;
-}
+AudioStreamOGGVorbis::AudioStreamOGGVorbis() {}
 
 AudioStreamOGGVorbis::~AudioStreamOGGVorbis() {
 	clear_data();

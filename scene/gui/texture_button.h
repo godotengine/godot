@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -54,15 +54,15 @@ private:
 	Ref<Texture2D> disabled;
 	Ref<Texture2D> focused;
 	Ref<BitMap> click_mask;
-	bool expand;
-	StretchMode stretch_mode;
+	bool expand = false;
+	StretchMode stretch_mode = STRETCH_SCALE;
 
 	Rect2 _texture_region;
 	Rect2 _position_rect;
-	bool _tile;
+	bool _tile = false;
 
-	bool hflip;
-	bool vflip;
+	bool hflip = false;
+	bool vflip = false;
 
 protected:
 	virtual Size2 get_minimum_size() const override;

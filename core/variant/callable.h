@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -62,9 +62,9 @@ public:
 			CALL_ERROR_TOO_FEW_ARGUMENTS, // expected is number of arguments
 			CALL_ERROR_INSTANCE_IS_NULL,
 		};
-		Error error;
-		int argument;
-		int expected;
+		Error error = Error::CALL_OK;
+		int argument = 0;
+		int expected = 0;
 	};
 
 	void call(const Variant **p_arguments, int p_argcount, Variant &r_return_value, CallError &r_call_error) const;

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -108,7 +108,7 @@ class AppxPackager {
 
 	struct BlockHash {
 		String base64_hash;
-		size_t compressed_size;
+		size_t compressed_size = 0;
 	};
 
 	struct FileMeta {
@@ -120,12 +120,10 @@ class AppxPackager {
 		Vector<BlockHash> hashes;
 		uLong file_crc32 = 0;
 		ZPOS64_T zip_offset = 0;
-
-		FileMeta() {}
 	};
 
 	String progress_task;
-	FileAccess *package;
+	FileAccess *package = nullptr;
 
 	Set<String> mime_types;
 
@@ -643,7 +641,7 @@ class EditorExportPlatformUWP : public EditorExportPlatform {
 	};
 
 	bool _valid_resource_name(const String &p_name) const {
-		if (p_name.empty()) {
+		if (p_name.is_empty()) {
 			return false;
 		}
 		if (p_name.ends_with(".")) {
@@ -689,7 +687,7 @@ class EditorExportPlatformUWP : public EditorExportPlatform {
 	}
 
 	bool _valid_bgcolor(const String &p_color) const {
-		if (p_color.empty()) {
+		if (p_color.is_empty()) {
 			return true;
 		}
 		if (p_color.begins_with("#") && p_color.is_valid_html_color()) {
@@ -762,10 +760,10 @@ class EditorExportPlatformUWP : public EditorExportPlatform {
 		result = result.replace("$version_string$", version);
 
 		Platform arch = (Platform)(int)p_preset->get("architecture/target");
-		String architecture = arch == ARM ? "arm" : arch == X86 ? "x86" : "x64";
+		String architecture = arch == ARM ? "arm" : (arch == X86 ? "x86" : "x64");
 		result = result.replace("$architecture$", architecture);
 
-		result = result.replace("$display_name$", String(p_preset->get("package/display_name")).empty() ? (String)ProjectSettings::get_singleton()->get("application/config/name") : String(p_preset->get("package/display_name")));
+		result = result.replace("$display_name$", String(p_preset->get("package/display_name")).is_empty() ? (String)ProjectSettings::get_singleton()->get("application/config/name") : String(p_preset->get("package/display_name")));
 
 		result = result.replace("$publisher_display_name$", p_preset->get("package/publisher_display_name"));
 		result = result.replace("$app_description$", p_preset->get("package/description"));
@@ -784,7 +782,7 @@ class EditorExportPlatformUWP : public EditorExportPlatform {
 		}
 
 		String show_name_on_tiles = "";
-		if (!name_on_tiles.empty()) {
+		if (!name_on_tiles.is_empty()) {
 			show_name_on_tiles = "<uap:ShowNameOnTiles>\n" + name_on_tiles + "        </uap:ShowNameOnTiles>";
 		}
 
@@ -805,7 +803,7 @@ class EditorExportPlatformUWP : public EditorExportPlatform {
 		}
 
 		String rotation_preference = "";
-		if (!rotations.empty()) {
+		if (!rotations.is_empty()) {
 			rotation_preference = "<uap:InitialRotationPreference>\n" + rotations + "        </uap:InitialRotationPreference>";
 		}
 
@@ -839,7 +837,7 @@ class EditorExportPlatformUWP : public EditorExportPlatform {
 		}
 
 		String capabilities_string = "<Capabilities />";
-		if (!capabilities_elements.empty()) {
+		if (!capabilities_elements.is_empty()) {
 			capabilities_string = "<Capabilities>\n" + capabilities_elements + "  </Capabilities>";
 		}
 
@@ -1004,6 +1002,9 @@ public:
 	}
 
 	virtual void get_export_options(List<ExportOption> *r_options) override {
+		r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "custom_template/debug", PROPERTY_HINT_GLOBAL_FILE, "*.zip"), ""));
+		r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "custom_template/release", PROPERTY_HINT_GLOBAL_FILE, "*.zip"), ""));
+
 		r_options->push_back(ExportOption(PropertyInfo(Variant::INT, "architecture/target", PROPERTY_HINT_ENUM, "arm,x86,x64"), 1));
 
 		r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "command_line/extra_args"), ""));
@@ -1044,9 +1045,6 @@ public:
 		r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "tiles/show_name_on_square150x150"), false));
 		r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "tiles/show_name_on_wide310x150"), false));
 		r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "tiles/show_name_on_square310x310"), false));
-
-		r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "custom_template/debug", PROPERTY_HINT_GLOBAL_FILE, "*.zip"), ""));
-		r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "custom_template/release", PROPERTY_HINT_GLOBAL_FILE, "*.zip"), ""));
 
 		// Capabilities
 		const char **basic = uwp_capabilities;
@@ -1413,7 +1411,7 @@ public:
 		args.push_back(cert_pass);
 		args.push_back(p_path);
 
-		OS::get_singleton()->execute(signtool_path, args, true);
+		OS::get_singleton()->execute(signtool_path, args);
 #endif // WINDOWS_ENABLED
 
 		return OK;

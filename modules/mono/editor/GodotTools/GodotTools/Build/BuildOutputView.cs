@@ -2,6 +2,7 @@ using Godot;
 using System;
 using Godot.Collections;
 using GodotTools.Internals;
+using JetBrains.Annotations;
 using File = GodotTools.Utils.File;
 using Path = System.IO.Path;
 
@@ -25,6 +26,9 @@ namespace GodotTools.Build
         private ItemList issuesList;
         private TextEdit buildLog;
         private PopupMenu issuesListContextMenu;
+
+        private readonly object pendingBuildLogTextLock = new object();
+        [NotNull] private string pendingBuildLogText = string.Empty;
 
         [Signal] public event Action BuildStateChanged;
 
@@ -240,16 +244,34 @@ namespace GodotTools.Build
             EmitSignal(nameof(BuildStateChanged));
         }
 
+        private void UpdateBuildLogText()
+        {
+            lock (pendingBuildLogTextLock)
+            {
+                buildLog.Text += pendingBuildLogText;
+                pendingBuildLogText = string.Empty;
+                ScrollToLastNonEmptyLogLine();
+            }
+        }
+
         private void StdOutputReceived(string text)
         {
-            buildLog.Text += text + "\n";
-            ScrollToLastNonEmptyLogLine();
+            lock (pendingBuildLogTextLock)
+            {
+                if (pendingBuildLogText.Length == 0)
+                    CallDeferred(nameof(UpdateBuildLogText));
+                pendingBuildLogText += text + "\n";
+            }
         }
 
         private void StdErrorReceived(string text)
         {
-            buildLog.Text += text + "\n";
-            ScrollToLastNonEmptyLogLine();
+            lock (pendingBuildLogTextLock)
+            {
+                if (pendingBuildLogText.Length == 0)
+                    CallDeferred(nameof(UpdateBuildLogText));
+                pendingBuildLogText += text + "\n";
+            }
         }
 
         private void ScrollToLastNonEmptyLogLine()
@@ -377,12 +399,14 @@ namespace GodotTools.Build
             BuildManager.BuildStarted += BuildStarted;
             BuildManager.BuildFinished += BuildFinished;
             // StdOutput/Error can be received from different threads, so we need to use CallDeferred
-            BuildManager.StdOutputReceived += line => CallDeferred(nameof(StdOutputReceived), line);
-            BuildManager.StdErrorReceived += line => CallDeferred(nameof(StdErrorReceived), line);
+            BuildManager.StdOutputReceived += StdOutputReceived;
+            BuildManager.StdErrorReceived += StdErrorReceived;
         }
 
         public void OnBeforeSerialize()
         {
+            // In case it didn't update yet. We don't want to have to serialize any pending output.
+            UpdateBuildLogText();
         }
 
         public void OnAfterDeserialize()

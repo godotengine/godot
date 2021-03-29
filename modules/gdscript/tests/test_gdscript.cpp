@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -118,10 +118,10 @@ static void test_parser(const String &p_code, const String &p_script_path, const
 			print_line(vformat("%02d:%02d: %s", error.line, error.column, error.message));
 		}
 	}
-
+#ifdef TOOLS_ENABLED
 	GDScriptParser::TreePrinter printer;
-
 	printer.print_tree(parser);
+#endif
 }
 
 static void test_compiler(const String &p_code, const String &p_script_path, const Vector<String> &p_lines) {
@@ -175,8 +175,9 @@ static void test_compiler(const String &p_code, const String &p_script_path, con
 			signature += func->get_argument_name(i);
 		}
 		print_line(signature + ")");
-
+#ifdef TOOLS_ENABLED
 		func->disassemble(p_lines);
+#endif
 		print_line("");
 		print_line("");
 	}
@@ -239,7 +240,7 @@ void init_autoloads() {
 void test(TestType p_type) {
 	List<String> cmdlargs = OS::get_singleton()->get_cmdline_args();
 
-	if (cmdlargs.empty()) {
+	if (cmdlargs.is_empty()) {
 		return;
 	}
 
@@ -303,5 +304,4 @@ void test(TestType p_type) {
 	ScriptServer::finish_languages();
 	memdelete(packed_data);
 }
-
 } // namespace TestGDScript

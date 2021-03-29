@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -111,8 +111,6 @@ bool PhysicsBody2D::get_collision_layer_bit(int p_bit) const {
 PhysicsBody2D::PhysicsBody2D(PhysicsServer2D::BodyMode p_mode) :
 		CollisionObject2D(PhysicsServer2D::get_singleton()->body_create(), false) {
 	PhysicsServer2D::get_singleton()->body_set_mode(get_rid(), p_mode);
-	collision_layer = 1;
-	collision_mask = 1;
 	set_pickable(false);
 }
 
@@ -197,7 +195,6 @@ void StaticBody2D::_bind_methods() {
 
 StaticBody2D::StaticBody2D() :
 		PhysicsBody2D(PhysicsServer2D::BODY_MODE_STATIC) {
-	constant_angular_velocity = 0;
 }
 
 StaticBody2D::~StaticBody2D() {
@@ -301,7 +298,7 @@ void RigidBody2D::_body_inout(int p_status, ObjectID p_instance, int p_body_shap
 
 		bool in_scene = E->get().in_scene;
 
-		if (E->get().shapes.empty()) {
+		if (E->get().shapes.is_empty()) {
 			if (node) {
 				node->disconnect(SceneStringNames::get_singleton()->tree_entered, callable_mp(this, &RigidBody2D::_body_enter_tree));
 				node->disconnect(SceneStringNames::get_singleton()->tree_exiting, callable_mp(this, &RigidBody2D::_body_exit_tree));
@@ -320,11 +317,11 @@ void RigidBody2D::_body_inout(int p_status, ObjectID p_instance, int p_body_shap
 
 struct _RigidBody2DInOut {
 	ObjectID id;
-	int shape;
-	int local_shape;
+	int shape = 0;
+	int local_shape = 0;
 };
 
-bool RigidBody2D::_test_motion(const Vector2 &p_motion, bool p_infinite_inertia, float p_margin, const Ref<PhysicsTestMotionResult2D> &p_result) {
+bool RigidBody2D::_test_motion(const Vector2 &p_motion, bool p_infinite_inertia, real_t p_margin, const Ref<PhysicsTestMotionResult2D> &p_result) {
 	PhysicsServer2D::MotionResult *r = nullptr;
 	if (p_result.is_valid()) {
 		r = p_result->get_result_ptr();
@@ -414,13 +411,13 @@ void RigidBody2D::_direct_state_changed(Object *p_state) {
 			}
 		}
 
-		//process remotions
+		//process removals
 
 		for (int i = 0; i < toremove_count; i++) {
 			_body_inout(0, toremove[i].body_id, toremove[i].pair.body_shape, toremove[i].pair.local_shape);
 		}
 
-		//process aditions
+		//process additions
 
 		for (int i = 0; i < toadd_count; i++) {
 			_body_inout(1, toadd[i].id, toadd[i].shape, toadd[i].local_shape);
@@ -460,8 +457,6 @@ RigidBody2D::Mode RigidBody2D::get_mode() const {
 void RigidBody2D::set_mass(real_t p_mass) {
 	ERR_FAIL_COND(p_mass <= 0);
 	mass = p_mass;
-	_change_notify("mass");
-	_change_notify("weight");
 	PhysicsServer2D::get_singleton()->body_set_param(get_rid(), PhysicsServer2D::BODY_PARAM_MASS, mass);
 }
 
@@ -476,14 +471,6 @@ void RigidBody2D::set_inertia(real_t p_inertia) {
 
 real_t RigidBody2D::get_inertia() const {
 	return PhysicsServer2D::get_singleton()->body_get_param(get_rid(), PhysicsServer2D::BODY_PARAM_INERTIA);
-}
-
-void RigidBody2D::set_weight(real_t p_weight) {
-	set_mass(p_weight / (real_t(GLOBAL_DEF("physics/2d/default_gravity", 98)) / 10));
-}
-
-real_t RigidBody2D::get_weight() const {
-	return mass * (real_t(GLOBAL_DEF("physics/2d/default_gravity", 98)) / 10);
 }
 
 void RigidBody2D::set_physics_material_override(const Ref<PhysicsMaterial> &p_physics_material_override) {
@@ -621,7 +608,7 @@ void RigidBody2D::apply_impulse(const Vector2 &p_impulse, const Vector2 &p_posit
 	PhysicsServer2D::get_singleton()->body_apply_impulse(get_rid(), p_impulse, p_position);
 }
 
-void RigidBody2D::apply_torque_impulse(float p_torque) {
+void RigidBody2D::apply_torque_impulse(real_t p_torque) {
 	PhysicsServer2D::get_singleton()->body_apply_torque_impulse(get_rid(), p_torque);
 }
 
@@ -633,11 +620,11 @@ Vector2 RigidBody2D::get_applied_force() const {
 	return PhysicsServer2D::get_singleton()->body_get_applied_force(get_rid());
 };
 
-void RigidBody2D::set_applied_torque(const float p_torque) {
+void RigidBody2D::set_applied_torque(const real_t p_torque) {
 	PhysicsServer2D::get_singleton()->body_set_applied_torque(get_rid(), p_torque);
 };
 
-float RigidBody2D::get_applied_torque() const {
+real_t RigidBody2D::get_applied_torque() const {
 	return PhysicsServer2D::get_singleton()->body_get_applied_torque(get_rid());
 };
 
@@ -649,7 +636,7 @@ void RigidBody2D::add_force(const Vector2 &p_force, const Vector2 &p_position) {
 	PhysicsServer2D::get_singleton()->body_add_force(get_rid(), p_force, p_position);
 }
 
-void RigidBody2D::add_torque(const float p_torque) {
+void RigidBody2D::add_torque(const real_t p_torque) {
 	PhysicsServer2D::get_singleton()->body_add_torque(get_rid(), p_torque);
 }
 
@@ -734,7 +721,7 @@ String RigidBody2D::get_configuration_warning() const {
 	String warning = CollisionObject2D::get_configuration_warning();
 
 	if ((get_mode() == MODE_RIGID || get_mode() == MODE_CHARACTER) && (ABS(t.elements[0].length() - 1.0) > 0.05 || ABS(t.elements[1].length() - 1.0) > 0.05)) {
-		if (!warning.empty()) {
+		if (!warning.is_empty()) {
 			warning += "\n\n";
 		}
 		warning += TTR("Size changes to RigidBody2D (in character or rigid modes) will be overridden by the physics engine when running.\nChange the size in children collision shapes instead.");
@@ -752,9 +739,6 @@ void RigidBody2D::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("get_inertia"), &RigidBody2D::get_inertia);
 	ClassDB::bind_method(D_METHOD("set_inertia", "inertia"), &RigidBody2D::set_inertia);
-
-	ClassDB::bind_method(D_METHOD("set_weight", "weight"), &RigidBody2D::set_weight);
-	ClassDB::bind_method(D_METHOD("get_weight"), &RigidBody2D::get_weight);
 
 	ClassDB::bind_method(D_METHOD("set_physics_material_override", "physics_material_override"), &RigidBody2D::set_physics_material_override);
 	ClassDB::bind_method(D_METHOD("get_physics_material_override"), &RigidBody2D::get_physics_material_override);
@@ -818,7 +802,6 @@ void RigidBody2D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "mode", PROPERTY_HINT_ENUM, "Rigid,Static,Character,Kinematic"), "set_mode", "get_mode");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "mass", PROPERTY_HINT_EXP_RANGE, "0.01,65535,0.01"), "set_mass", "get_mass");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "inertia", PROPERTY_HINT_EXP_RANGE, "0.01,65535,0.01", 0), "set_inertia", "get_inertia");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "weight", PROPERTY_HINT_EXP_RANGE, "0.01,65535,0.01", PROPERTY_USAGE_EDITOR), "set_weight", "get_weight");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "physics_material_override", PROPERTY_HINT_RESOURCE_TYPE, "PhysicsMaterial"), "set_physics_material_override", "get_physics_material_override");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "gravity_scale", PROPERTY_HINT_RANGE, "-128,128,0.01"), "set_gravity_scale", "get_gravity_scale");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "custom_integrator"), "set_use_custom_integrator", "is_using_custom_integrator");
@@ -855,25 +838,6 @@ void RigidBody2D::_bind_methods() {
 
 RigidBody2D::RigidBody2D() :
 		PhysicsBody2D(PhysicsServer2D::BODY_MODE_RIGID) {
-	mode = MODE_RIGID;
-
-	mass = 1;
-
-	gravity_scale = 1;
-	linear_damp = -1;
-	angular_damp = -1;
-
-	max_contacts_reported = 0;
-	state = nullptr;
-
-	angular_velocity = 0;
-	sleeping = false;
-	ccd_mode = CCD_MODE_DISABLED;
-
-	custom_integrator = false;
-	contact_monitor = nullptr;
-	can_sleep = true;
-
 	PhysicsServer2D::get_singleton()->body_set_force_integration_callback(get_rid(), this, "_direct_state_changed");
 }
 
@@ -920,7 +884,7 @@ bool KinematicBody2D::separate_raycast_shapes(bool p_infinite_inertia, Collision
 	Vector2 recover;
 	int hits = PhysicsServer2D::get_singleton()->body_test_ray_separation(get_rid(), gt, p_infinite_inertia, recover, sep_res, 8, margin);
 	int deepest = -1;
-	float deepest_depth;
+	real_t deepest_depth;
 	for (int i = 0; i < hits; i++) {
 		if (deepest == -1 || sep_res[i].collision_depth > deepest_depth) {
 			deepest = i;
@@ -980,7 +944,7 @@ bool KinematicBody2D::move_and_collide(const Vector2 &p_motion, bool p_infinite_
 //so, if you pass 45 as limit, avoid numerical precision errors when angle is 45.
 #define FLOOR_ANGLE_THRESHOLD 0.01
 
-Vector2 KinematicBody2D::move_and_slide(const Vector2 &p_linear_velocity, const Vector2 &p_up_direction, bool p_stop_on_slope, int p_max_slides, float p_floor_max_angle, bool p_infinite_inertia) {
+Vector2 KinematicBody2D::move_and_slide(const Vector2 &p_linear_velocity, const Vector2 &p_up_direction, bool p_stop_on_slope, int p_max_slides, real_t p_floor_max_angle, bool p_infinite_inertia) {
 	Vector2 body_velocity = p_linear_velocity;
 	Vector2 body_velocity_normal = body_velocity.normalized();
 	Vector2 up_direction = p_up_direction.normalized();
@@ -1071,7 +1035,7 @@ Vector2 KinematicBody2D::move_and_slide(const Vector2 &p_linear_velocity, const 
 	return body_velocity;
 }
 
-Vector2 KinematicBody2D::move_and_slide_with_snap(const Vector2 &p_linear_velocity, const Vector2 &p_snap, const Vector2 &p_up_direction, bool p_stop_on_slope, int p_max_slides, float p_floor_max_angle, bool p_infinite_inertia) {
+Vector2 KinematicBody2D::move_and_slide_with_snap(const Vector2 &p_linear_velocity, const Vector2 &p_snap, const Vector2 &p_up_direction, bool p_stop_on_slope, int p_max_slides, real_t p_floor_max_angle, bool p_infinite_inertia) {
 	Vector2 up_direction = p_up_direction.normalized();
 	bool was_on_floor = on_floor;
 
@@ -1137,11 +1101,11 @@ bool KinematicBody2D::test_move(const Transform2D &p_from, const Vector2 &p_moti
 	return PhysicsServer2D::get_singleton()->body_test_motion(get_rid(), p_from, p_motion, p_infinite_inertia, margin);
 }
 
-void KinematicBody2D::set_safe_margin(float p_margin) {
+void KinematicBody2D::set_safe_margin(real_t p_margin) {
 	margin = p_margin;
 }
 
-float KinematicBody2D::get_safe_margin() const {
+real_t KinematicBody2D::get_safe_margin() const {
 	return margin;
 }
 
@@ -1233,8 +1197,8 @@ void KinematicBody2D::_notification(int p_what) {
 
 void KinematicBody2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("move_and_collide", "rel_vec", "infinite_inertia", "exclude_raycast_shapes", "test_only"), &KinematicBody2D::_move, DEFVAL(true), DEFVAL(true), DEFVAL(false));
-	ClassDB::bind_method(D_METHOD("move_and_slide", "linear_velocity", "up_direction", "stop_on_slope", "max_slides", "floor_max_angle", "infinite_inertia"), &KinematicBody2D::move_and_slide, DEFVAL(Vector2(0, 0)), DEFVAL(false), DEFVAL(4), DEFVAL(Math::deg2rad((float)45)), DEFVAL(true));
-	ClassDB::bind_method(D_METHOD("move_and_slide_with_snap", "linear_velocity", "snap", "up_direction", "stop_on_slope", "max_slides", "floor_max_angle", "infinite_inertia"), &KinematicBody2D::move_and_slide_with_snap, DEFVAL(Vector2(0, 0)), DEFVAL(false), DEFVAL(4), DEFVAL(Math::deg2rad((float)45)), DEFVAL(true));
+	ClassDB::bind_method(D_METHOD("move_and_slide", "linear_velocity", "up_direction", "stop_on_slope", "max_slides", "floor_max_angle", "infinite_inertia"), &KinematicBody2D::move_and_slide, DEFVAL(Vector2(0, 0)), DEFVAL(false), DEFVAL(4), DEFVAL(Math::deg2rad((real_t)45.0)), DEFVAL(true));
+	ClassDB::bind_method(D_METHOD("move_and_slide_with_snap", "linear_velocity", "snap", "up_direction", "stop_on_slope", "max_slides", "floor_max_angle", "infinite_inertia"), &KinematicBody2D::move_and_slide_with_snap, DEFVAL(Vector2(0, 0)), DEFVAL(false), DEFVAL(4), DEFVAL(Math::deg2rad((real_t)45.0)), DEFVAL(true));
 
 	ClassDB::bind_method(D_METHOD("test_move", "from", "rel_vec", "infinite_inertia"), &KinematicBody2D::test_move, DEFVAL(true));
 

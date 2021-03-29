@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -32,6 +32,7 @@
 #define GDSCRIPT_TOKENIZER_H
 
 #include "core/templates/list.h"
+#include "core/templates/map.h"
 #include "core/templates/set.h"
 #include "core/templates/vector.h"
 #include "core/variant/variant.h"
@@ -177,9 +178,23 @@ public:
 		}
 
 		Token() {
-			type = EMPTY;
 		}
 	};
+
+#ifdef TOOLS_ENABLED
+	struct CommentData {
+		String comment;
+		bool new_line = false;
+		CommentData() {}
+		CommentData(const String &p_comment, bool p_new_line) {
+			comment = p_comment;
+			new_line = p_new_line;
+		}
+	};
+	const Map<int, CommentData> &get_comments() const {
+		return comments;
+	}
+#endif // TOOLS_ENABLED
 
 private:
 	String source;
@@ -207,10 +222,14 @@ private:
 	int position = 0;
 	int length = 0;
 
+#ifdef TOOLS_ENABLED
+	Map<int, CommentData> comments;
+#endif // TOOLS_ENABLED
+
 	_FORCE_INLINE_ bool _is_at_end() { return position >= length; }
 	_FORCE_INLINE_ char32_t _peek(int p_offset = 0) { return position + p_offset >= 0 && position + p_offset < length ? _current[p_offset] : '\0'; }
 	int indent_level() const { return indent_stack.size(); }
-	bool has_error() const { return !error_stack.empty(); }
+	bool has_error() const { return !error_stack.is_empty(); }
 	Token pop_error();
 	char32_t _advance();
 	void _skip_whitespace();

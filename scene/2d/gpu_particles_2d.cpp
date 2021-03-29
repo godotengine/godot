@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -101,7 +101,6 @@ void GPUParticles2D::set_visibility_rect(const Rect2 &p_visibility_rect) {
 
 	RS::get_singleton()->particles_set_custom_aabb(particles, aabb);
 
-	_change_notify("visibility_rect");
 	update();
 }
 
@@ -127,9 +126,9 @@ void GPUParticles2D::_update_particle_emission_transform() {
 void GPUParticles2D::set_process_material(const Ref<Material> &p_material) {
 	process_material = p_material;
 	Ref<ParticlesMaterial> pm = p_material;
-	if (pm.is_valid() && !pm->get_flag(ParticlesMaterial::FLAG_DISABLE_Z) && pm->get_gravity() == Vector3(0, -9.8, 0)) {
+	if (pm.is_valid() && !pm->get_particle_flag(ParticlesMaterial::PARTICLE_FLAG_DISABLE_Z) && pm->get_gravity() == Vector3(0, -9.8, 0)) {
 		// Likely a new (3D) material, modify it to match 2D space
-		pm->set_flag(ParticlesMaterial::FLAG_DISABLE_Z, true);
+		pm->set_particle_flag(ParticlesMaterial::PARTICLE_FLAG_DISABLE_Z, true);
 		pm->set_gravity(Vector3(0, 98, 0));
 	}
 	RID material_rid;
@@ -305,7 +304,7 @@ void GPUParticles2D::_notification(int p_what) {
 
 	if (p_what == NOTIFICATION_INTERNAL_PROCESS) {
 		if (one_shot && !is_emitting()) {
-			_change_notify();
+			notify_property_list_changed();
 			set_process_internal(false);
 		}
 	}

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -61,11 +61,11 @@ public:
 		PARAM_MAX
 	};
 
-	enum Flags {
-		FLAG_ALIGN_Y_TO_VELOCITY,
-		FLAG_ROTATE_Y,
-		FLAG_DISABLE_Z,
-		FLAG_MAX
+	enum ParticleFlags {
+		PARTICLE_FLAG_ALIGN_Y_TO_VELOCITY,
+		PARTICLE_FLAG_ROTATE_Y,
+		PARTICLE_FLAG_DISABLE_Z,
+		PARTICLE_FLAG_MAX
 	};
 
 	enum EmissionShape {
@@ -90,7 +90,7 @@ private:
 		struct {
 			uint32_t texture_mask : 16;
 			uint32_t texture_color : 1;
-			uint32_t flags : 4;
+			uint32_t particle_flags : 4;
 			uint32_t emission_shape : 2;
 			uint32_t invalid_key : 1;
 			uint32_t has_emission_color : 1;
@@ -100,7 +100,7 @@ private:
 			uint32_t collision_scale : 1;
 		};
 
-		uint32_t key;
+		uint32_t key = 0;
 
 		bool operator<(const MaterialKey &p_key) const {
 			return key < p_key.key;
@@ -109,7 +109,7 @@ private:
 
 	struct ShaderData {
 		RID shader;
-		int users;
+		int users = 0;
 	};
 
 	static Map<MaterialKey, ShaderData> shader_map;
@@ -124,9 +124,9 @@ private:
 				mk.texture_mask |= (1 << i);
 			}
 		}
-		for (int i = 0; i < FLAG_MAX; i++) {
-			if (flags[i]) {
-				mk.flags |= (1 << i);
+		for (int i = 0; i < PARTICLE_FLAG_MAX; i++) {
+			if (particle_flags[i]) {
+				mk.particle_flags |= (1 << i);
 			}
 		}
 
@@ -227,7 +227,7 @@ private:
 	Color color;
 	Ref<Texture2D> color_ramp;
 
-	bool flags[FLAG_MAX];
+	bool particle_flags[PARTICLE_FLAG_MAX];
 
 	EmissionShape emission_shape;
 	float emission_sphere_radius;
@@ -235,7 +235,7 @@ private:
 	Ref<Texture2D> emission_point_texture;
 	Ref<Texture2D> emission_normal_texture;
 	Ref<Texture2D> emission_color_texture;
-	int emission_point_count;
+	int emission_point_count = 1;
 
 	bool anim_loop;
 
@@ -284,8 +284,8 @@ public:
 	void set_color_ramp(const Ref<Texture2D> &p_texture);
 	Ref<Texture2D> get_color_ramp() const;
 
-	void set_flag(Flags p_flag, bool p_enable);
-	bool get_flag(Flags p_flag) const;
+	void set_particle_flag(ParticleFlags p_particle_flag, bool p_enable);
+	bool get_particle_flag(ParticleFlags p_particle_flag) const;
 
 	void set_emission_shape(EmissionShape p_shape);
 	void set_emission_sphere_radius(float p_radius);
@@ -340,7 +340,7 @@ public:
 	void set_sub_emitter_keep_velocity(bool p_enable);
 	bool get_sub_emitter_keep_velocity() const;
 
-	RID get_shader_rid() const;
+	virtual RID get_shader_rid() const override;
 
 	virtual Shader::Mode get_shader_mode() const override;
 
@@ -349,7 +349,7 @@ public:
 };
 
 VARIANT_ENUM_CAST(ParticlesMaterial::Parameter)
-VARIANT_ENUM_CAST(ParticlesMaterial::Flags)
+VARIANT_ENUM_CAST(ParticlesMaterial::ParticleFlags)
 VARIANT_ENUM_CAST(ParticlesMaterial::EmissionShape)
 VARIANT_ENUM_CAST(ParticlesMaterial::SubEmitterMode)
 

@@ -33,17 +33,23 @@
 		<theme_item name="font_color" type="Color" default="Color( 0.88, 0.88, 0.88, 1 )">
 			The [CheckButton] text's font color.
 		</theme_item>
-		<theme_item name="font_color_disabled" type="Color" default="Color( 0.9, 0.9, 0.9, 0.2 )">
+		<theme_item name="font_disabled_color" type="Color" default="Color( 0.9, 0.9, 0.9, 0.2 )">
 			The [CheckButton] text's font color when it's disabled.
 		</theme_item>
-		<theme_item name="font_color_hover" type="Color" default="Color( 0.94, 0.94, 0.94, 1 )">
+		<theme_item name="font_hover_color" type="Color" default="Color( 0.94, 0.94, 0.94, 1 )">
 			The [CheckButton] text's font color when it's hovered.
 		</theme_item>
-		<theme_item name="font_color_hover_pressed" type="Color" default="Color( 1, 1, 1, 1 )">
+		<theme_item name="font_hover_pressed_color" type="Color" default="Color( 1, 1, 1, 1 )">
 			The [CheckButton] text's font color when it's hovered and pressed.
 		</theme_item>
-		<theme_item name="font_color_pressed" type="Color" default="Color( 1, 1, 1, 1 )">
+		<theme_item name="font_outline_color" type="Color" default="Color( 1, 1, 1, 1 )">
+			The tint of text outline of the [CheckButton].
+		</theme_item>
+		<theme_item name="font_pressed_color" type="Color" default="Color( 1, 1, 1, 1 )">
 			The [CheckButton] text's font color when it's pressed.
+		</theme_item>
+		<theme_item name="font_size" type="int">
+			Font size of the [CheckButton]'s text.
 		</theme_item>
 		<theme_item name="hover" type="StyleBox">
 			The [StyleBox] to display as a background when the [CheckButton] is hovered.
@@ -58,16 +64,31 @@
 			The [StyleBox] to display as a background.
 		</theme_item>
 		<theme_item name="off" type="Texture2D">
-			The icon to display when the [CheckButton] is unchecked.
+			The icon to display when the [CheckButton] is unchecked (for left-to-right layouts).
 		</theme_item>
 		<theme_item name="off_disabled" type="Texture2D">
-			The icon to display when the [CheckButton] is unchecked and disabled.
+			The icon to display when the [CheckButton] is unchecked and disabled (for left-to-right layouts).
+		</theme_item>
+		<theme_item name="off_disabled_mirrored" type="Texture2D">
+			The icon to display when the [CheckButton] is unchecked and disabled (for right-to-left layouts).
+		</theme_item>
+		<theme_item name="off_mirrored" type="Texture2D">
+			The icon to display when the [CheckButton] is unchecked (for right-to-left layouts).
 		</theme_item>
 		<theme_item name="on" type="Texture2D">
-			The icon to display when the [CheckButton] is checked.
+			The icon to display when the [CheckButton] is checked (for left-to-right layouts).
 		</theme_item>
 		<theme_item name="on_disabled" type="Texture2D">
-			The icon to display when the [CheckButton] is checked and disabled.
+			The icon to display when the [CheckButton] is checked and disabled (for left-to-right layouts).
+		</theme_item>
+		<theme_item name="on_disabled_mirrored" type="Texture2D">
+			The icon to display when the [CheckButton] is checked and disabled (for right-to-left layouts).
+		</theme_item>
+		<theme_item name="on_mirrored" type="Texture2D">
+			The icon to display when the [CheckButton] is checked (for right-to-left layouts).
+		</theme_item>
+		<theme_item name="outline_size" type="int" default="0">
+			The size of the text outline.
 		</theme_item>
 		<theme_item name="pressed" type="StyleBox">
 			The [StyleBox] to display as a background when the [CheckButton] is pressed.

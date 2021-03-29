@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -33,16 +33,16 @@
 
 #include "core/os/memory.h"
 #include "core/os/semaphore.h"
+#include "core/os/thread.h"
 
 #include <atomic>
-#include <thread>
 
 class ThreadWorkPool {
 	std::atomic<uint32_t> index;
 
 	struct BaseWork {
-		std::atomic<uint32_t> *index;
-		uint32_t max_elements;
+		std::atomic<uint32_t> *index = nullptr;
+		uint32_t max_elements = 0;
 		virtual void work() = 0;
 		virtual ~BaseWork() = default;
 	};
@@ -64,7 +64,7 @@ class ThreadWorkPool {
 	};
 
 	struct ThreadData {
-		std::thread *thread;
+		Thread thread;
 		Semaphore start;
 		Semaphore completed;
 		std::atomic<bool> exit;
@@ -75,7 +75,7 @@ class ThreadWorkPool {
 	uint32_t thread_count = 0;
 	BaseWork *current_work = nullptr;
 
-	static void _thread_function(ThreadData *p_thread);
+	static void _thread_function(void *p_user);
 
 public:
 	template <class C, class M, class U>
@@ -125,6 +125,7 @@ public:
 		end_work();
 	}
 
+	_FORCE_INLINE_ int get_thread_count() const { return thread_count; }
 	void init(int p_thread_count = -1);
 	void finish();
 	~ThreadWorkPool();

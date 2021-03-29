@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -37,35 +37,35 @@
 class CollisionObject3D : public Node3D {
 	GDCLASS(CollisionObject3D, Node3D);
 
-	bool area;
+	bool area = false;
 
 	RID rid;
 
 	struct ShapeData {
-		Object *owner;
+		Object *owner = nullptr;
 		Transform xform;
 		struct ShapeBase {
+			Node *debug_shape = nullptr;
 			Ref<Shape3D> shape;
-			int index;
+			int index = 0;
 		};
 
 		Vector<ShapeBase> shapes;
-		bool disabled;
-
-		ShapeData() {
-			disabled = false;
-			owner = nullptr;
-		}
+		bool disabled = false;
 	};
 
-	int total_subshapes;
+	int total_subshapes = 0;
 
 	Map<uint32_t, ShapeData> shapes;
 
-	bool capture_input_on_drag;
-	bool ray_pickable;
+	bool capture_input_on_drag = false;
+	bool ray_pickable = true;
+
+	Set<uint32_t> debug_shapes_to_update;
 
 	void _update_pickable();
+
+	void _update_shape_data(uint32_t p_owner);
 
 protected:
 	CollisionObject3D(RID p_rid, bool p_area);
@@ -76,6 +76,8 @@ protected:
 	virtual void _input_event(Node *p_camera, const Ref<InputEvent> &p_input_event, const Vector3 &p_pos, const Vector3 &p_normal, int p_shape);
 	virtual void _mouse_enter();
 	virtual void _mouse_exit();
+
+	void _update_debug_shapes();
 
 public:
 	uint32_t create_shape_owner(Object *p_owner);

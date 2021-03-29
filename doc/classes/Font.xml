@@ -1,34 +1,75 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="Font" inherits="Resource" version="4.0">
 	<brief_description>
-		Internationalized font and text drawing support.
+		Font class is set of font data sources used to draw text.
 	</brief_description>
 	<description>
-		Font contains a Unicode-compatible character set, as well as the ability to draw it with variable width, ascent, descent and kerning. For creating fonts from TTF files (or other font formats), see the editor support for fonts.
-		[b]Note:[/b] If a DynamicFont doesn't contain a character used in a string, the character in question will be replaced with codepoint [code]0xfffd[/code] if it's available in the DynamicFont. If this replacement character isn't available in the DynamicFont, the character will be hidden without displaying any replacement character in the string.
-		[b]Note:[/b] If a BitmapFont doesn't contain a character used in a string, the character in question will be hidden without displaying any replacement character in the string.
+		Font contains a set of glyphs to represent Unicode characters, as well as the ability to draw it with variable width, ascent, descent and kerning.
+		[b]Note:[/b] A character is a symbol that represents an item (letter, digit etc.) in an abstract way.
+		[b]Note:[/b] A glyph is a bitmap or shape used to draw a one or more characters in a context-dependent manner. Glyph indices are bound to the specific font data source.
+		[b]Note:[/b] If a non of the font data sources contain glyphs for a character used in a string, the character in question will be replaced with a box displaying its hexadecimal code.
+		[codeblocks]
+		[gdscript]
+		var font = Font.new()
+		font.add_data(load("res://BarlowCondensed-Bold.ttf"))
+		$"Label".set("custom_fonts/font", font)
+		$"Label".set("custom_fonts/font_size", 64)
+		[/gdscript]
+		[csharp]
+		var font = new Font();
+		font.AddData(ResourceLoader.Load&lt;FontData&gt;("res://BarlowCondensed-Bold.ttf"));
+		GetNode("Label").Set("custom_fonts/font", font);
+		GetNode("Label").Set("custom_font_sizes/font_size", 64);
+		[/csharp]
+		[/codeblocks]
+		To control font substitution priority use [FontData] language and script support.
+		Use language overrides to use same [Font] stack for multiple languages:
+		[codeblocks]
+		[gdscript]
+		# Use Naskh font for Persian and Nastaʼlīq font for Urdu text.
+		var font_data_fa = load("res://NotoNaskhArabicUI_Regular.ttf");
+		font_data_fa.set_language_support_override("fa", true);
+		font_data_fa.set_language_support_override("ur", false);
+
+		var font_data_ur = load("res://NotoNastaliqUrdu_Regular.ttf");
+		font_data_ur.set_language_support_override("fa", false);
+		font_data_ur.set_language_support_override("ur", true);
+		[/gdscript]
+		[csharp]
+		// Use Naskh font for Persian and Nastaʼlīq font for Urdu text.
+		var fontDataFA = ResourceLoader.Load&lt;FontData&gt;("res://NotoNaskhArabicUI_Regular.ttf");
+		fontDataFA.SetLanguageSupportOverride("fa", true);
+		fontDataFA.SetLanguageSupportOverride("ur", false);
+
+		var fontDataUR = ResourceLoader.Load&lt;FontData&gt;("res://NotoNastaliqUrdu_Regular.ttf");
+		fontDataUR.SetLanguageSupportOverride("fa", false);
+		fontDataUR.SetLanguageSupportOverride("ur", true);
+		[/csharp]
+		[/codeblocks]
+		Use script overrides to specify supported scripts for bitmap font or for less common scripts not directly supported by TrueType format:
+		[codeblocks]
+		[gdscript]
+		# Use specified font for Egyptian hieroglyphs.
+		var font_data = load("res://unifont.ttf");
+		font_data.set_script_support_override("Egyp", true);
+		[/gdscript]
+		[csharp]
+		// Use specified font for Egyptian hieroglyphs.
+		var fontData = ResourceLoader.Load&lt;FontData&gt;("res://unifont.ttf");
+		fontData.SetScriptSupportOverride("Egyp", true);
+		[/csharp]
+		[/codeblocks]
 	</description>
 	<tutorials>
 	</tutorials>
 	<methods>
-		<method name="draw" qualifiers="const">
+		<method name="add_data">
 			<return type="void">
 			</return>
-			<argument index="0" name="canvas_item" type="RID">
-			</argument>
-			<argument index="1" name="position" type="Vector2">
-			</argument>
-			<argument index="2" name="string" type="String">
-			</argument>
-			<argument index="3" name="modulate" type="Color" default="Color( 1, 1, 1, 1 )">
-			</argument>
-			<argument index="4" name="clip_w" type="int" default="-1">
-			</argument>
-			<argument index="5" name="outline_modulate" type="Color" default="Color( 1, 1, 1, 1 )">
+			<argument index="0" name="data" type="FontData">
 			</argument>
 			<description>
-				Draw [code]string[/code] into a canvas item using the font at a given position, with [code]modulate[/code] color, and optionally clipping the width. [code]position[/code] specifies the baseline, not the top. To draw from the top, [i]ascent[/i] must be added to the Y axis.
-				See also [method CanvasItem.draw_string].
+				Add font data source to the set.
 			</description>
 		</method>
 		<method name="draw_char" qualifiers="const">
@@ -36,25 +77,91 @@
 			</return>
 			<argument index="0" name="canvas_item" type="RID">
 			</argument>
-			<argument index="1" name="position" type="Vector2">
+			<argument index="1" name="pos" type="Vector2">
 			</argument>
 			<argument index="2" name="char" type="int">
 			</argument>
-			<argument index="3" name="next" type="int" default="-1">
+			<argument index="3" name="next" type="int" default="0">
 			</argument>
-			<argument index="4" name="modulate" type="Color" default="Color( 1, 1, 1, 1 )">
+			<argument index="4" name="size" type="int" default="-1">
 			</argument>
-			<argument index="5" name="outline" type="bool" default="false">
+			<argument index="5" name="modulate" type="Color" default="Color( 1, 1, 1, 1 )">
+			</argument>
+			<argument index="6" name="outline_size" type="int" default="0">
+			</argument>
+			<argument index="7" name="outline_modulate" type="Color" default="Color( 1, 1, 1, 0 )">
 			</argument>
 			<description>
-				Draw character [code]char[/code] into a canvas item using the font at a given position, with [code]modulate[/code] color, and optionally kerning if [code]next[/code] is passed. clipping the width. [code]position[/code] specifies the baseline, not the top. To draw from the top, [i]ascent[/i] must be added to the Y axis. The width used by the character is returned, making this function useful for drawing strings character by character.
+				Draw a single Unicode character [code]char[/code] into a canvas item using the font, at a given position, with [code]modulate[/code] color, and optionally kerning if [code]next[/code] is passed. [code]position[/code] specifies the baseline, not the top. To draw from the top, [i]ascent[/i] must be added to the Y axis.
+				[b]Note:[/b] Do not use this function to draw strings character by character, use [method draw_string] or [TextLine] instead.
+			</description>
+		</method>
+		<method name="draw_multiline_string" qualifiers="const">
+			<return type="void">
+			</return>
+			<argument index="0" name="canvas_item" type="RID">
+			</argument>
+			<argument index="1" name="pos" type="Vector2">
+			</argument>
+			<argument index="2" name="text" type="String">
+			</argument>
+			<argument index="3" name="align" type="int" enum="HAlign" default="0">
+			</argument>
+			<argument index="4" name="width" type="float" default="-1">
+			</argument>
+			<argument index="5" name="max_lines" type="int" default="-1">
+			</argument>
+			<argument index="6" name="size" type="int" default="-1">
+			</argument>
+			<argument index="7" name="modulate" type="Color" default="Color( 1, 1, 1, 1 )">
+			</argument>
+			<argument index="8" name="outline_size" type="int" default="0">
+			</argument>
+			<argument index="9" name="outline_modulate" type="Color" default="Color( 1, 1, 1, 0 )">
+			</argument>
+			<argument index="10" name="flags" type="int" default="51">
+			</argument>
+			<description>
+				Breaks [code]text[/code] to the lines using rules specified by [code]flags[/code] and draws it into a canvas item using the font, at a given position, with [code]modulate[/code] color, optionally clipping the width and aligning horizontally. [code]position[/code] specifies the baseline of the first line, not the top. To draw from the top, [i]ascent[/i] must be added to the Y axis.
+				See also [method CanvasItem.draw_multiline_string].
+			</description>
+		</method>
+		<method name="draw_string" qualifiers="const">
+			<return type="void">
+			</return>
+			<argument index="0" name="canvas_item" type="RID">
+			</argument>
+			<argument index="1" name="pos" type="Vector2">
+			</argument>
+			<argument index="2" name="text" type="String">
+			</argument>
+			<argument index="3" name="align" type="int" enum="HAlign" default="0">
+			</argument>
+			<argument index="4" name="width" type="float" default="-1">
+			</argument>
+			<argument index="5" name="size" type="int" default="-1">
+			</argument>
+			<argument index="6" name="modulate" type="Color" default="Color( 1, 1, 1, 1 )">
+			</argument>
+			<argument index="7" name="outline_size" type="int" default="0">
+			</argument>
+			<argument index="8" name="outline_modulate" type="Color" default="Color( 1, 1, 1, 0 )">
+			</argument>
+			<argument index="9" name="flags" type="int" default="3">
+			</argument>
+			<description>
+				Draw [code]text[/code] into a canvas item using the font, at a given position, with [code]modulate[/code] color, optionally clipping the width and aligning horizontally. [code]position[/code] specifies the baseline, not the top. To draw from the top, [i]ascent[/i] must be added to the Y axis.
+				See also [method CanvasItem.draw_string].
 			</description>
 		</method>
 		<method name="get_ascent" qualifiers="const">
 			<return type="float">
 			</return>
+			<argument index="0" name="size" type="int" default="-1">
+			</argument>
 			<description>
-				Returns the font ascent (number of pixels above the baseline).
+				Returns the average font ascent (number of pixels above the baseline).
+				[b]Note:[/b] Real ascent of the string is context-dependent and can be significantly different from the value returned by this function. Use it only as rough estimate (e.g. as the ascent of empty line).
 			</description>
 		</method>
 		<method name="get_char_size" qualifiers="const">
@@ -64,65 +171,177 @@
 			</argument>
 			<argument index="1" name="next" type="int" default="0">
 			</argument>
+			<argument index="2" name="size" type="int" default="-1">
+			</argument>
 			<description>
 				Returns the size of a character, optionally taking kerning into account if the next character is provided.
+				[b]Note:[/b] Do not use this function to calculate width of the string character by character, use [method get_string_size] or [TextLine] instead. The height returned is the font height (see also [method get_height]) and has no relation to the glyph height.
+			</description>
+		</method>
+		<method name="get_data" qualifiers="const">
+			<return type="FontData">
+			</return>
+			<argument index="0" name="idx" type="int">
+			</argument>
+			<description>
+				Returns the font data source at index [code]idx[/code]. If the index does not exist, returns [code]null[/code].
+			</description>
+		</method>
+		<method name="get_data_count" qualifiers="const">
+			<return type="int">
+			</return>
+			<description>
+				Returns the number of font data sources.
 			</description>
 		</method>
 		<method name="get_descent" qualifiers="const">
 			<return type="float">
 			</return>
+			<argument index="0" name="size" type="int" default="-1">
+			</argument>
 			<description>
-				Returns the font descent (number of pixels below the baseline).
+				Returns the average font descent (number of pixels below the baseline).
+				[b]Note:[/b] Real descent of the string is context-dependent and can be significantly different from the value returned by this function. Use it only as rough estimate (e.g. as the descent of empty line).
 			</description>
 		</method>
 		<method name="get_height" qualifiers="const">
 			<return type="float">
 			</return>
+			<argument index="0" name="size" type="int" default="-1">
+			</argument>
 			<description>
-				Returns the total font height (ascent plus descent) in pixels.
+				Returns the total average font height (ascent plus descent) in pixels.
+				[b]Note:[/b] Real height of the string is context-dependent and can be significantly different from the value returned by this function. Use it only as rough estimate (e.g. as the height of empty line).
+			</description>
+		</method>
+		<method name="get_multiline_string_size" qualifiers="const">
+			<return type="Vector2">
+			</return>
+			<argument index="0" name="text" type="String">
+			</argument>
+			<argument index="1" name="width" type="float" default="-1">
+			</argument>
+			<argument index="2" name="size" type="int" default="-1">
+			</argument>
+			<argument index="3" name="flags" type="int" default="48">
+			</argument>
+			<description>
+				Returns the size of a bounding box of a string broken into the lines, taking kerning and advance into account.
+				See also [method draw_multiline_string].
+			</description>
+		</method>
+		<method name="get_spacing" qualifiers="const">
+			<return type="int">
+			</return>
+			<argument index="0" name="type" type="int">
+			</argument>
+			<description>
+				Returns the spacing for the given [code]type[/code] (see [enum SpacingType]).
 			</description>
 		</method>
 		<method name="get_string_size" qualifiers="const">
 			<return type="Vector2">
 			</return>
-			<argument index="0" name="string" type="String">
+			<argument index="0" name="text" type="String">
+			</argument>
+			<argument index="1" name="size" type="int" default="-1">
 			</argument>
 			<description>
-				Returns the size of a string, taking kerning and advance into account.
+				Returns the size of a bounding box of a string, taking kerning and advance into account.
+				[b]Note:[/b] Real height of the string is context-dependent and can be significantly different from the value returned by [method get_height].
+				See also [method draw_string].
 			</description>
 		</method>
-		<method name="get_wordwrap_string_size" qualifiers="const">
-			<return type="Vector2">
+		<method name="get_supported_chars" qualifiers="const">
+			<return type="String">
 			</return>
-			<argument index="0" name="string" type="String">
-			</argument>
-			<argument index="1" name="width" type="float">
-			</argument>
 			<description>
-				Returns the size that the string would have with word wrapping enabled with a fixed [code]width[/code].
+				Returns a string containing all the characters available in the font.
+				If a given character is included in more than one font data source, it appears only once in the returned string.
 			</description>
 		</method>
-		<method name="has_outline" qualifiers="const">
+		<method name="get_underline_position" qualifiers="const">
+			<return type="float">
+			</return>
+			<argument index="0" name="size" type="int" default="-1">
+			</argument>
+			<description>
+				Return average pixel offset of the underline below the baseline.
+				[b]Note:[/b] Real underline position of the string is context-dependent and can be significantly different from the value returned by this function. Use it only as rough estimate.
+			</description>
+		</method>
+		<method name="get_underline_thickness" qualifiers="const">
+			<return type="float">
+			</return>
+			<argument index="0" name="size" type="int" default="-1">
+			</argument>
+			<description>
+				Return average thickness of the underline.
+				[b]Note:[/b] Real underline thickness of the string is context-dependent and can be significantly different from the value returned by this function. Use it only as rough estimate.
+			</description>
+		</method>
+		<method name="has_char" qualifiers="const">
 			<return type="bool">
 			</return>
+			<argument index="0" name="char" type="int">
+			</argument>
 			<description>
-				Returns [code]true[/code] if the font has an outline.
+				Return [code]true[/code] if a Unicode [code]char[/code] is available in the font.
 			</description>
 		</method>
-		<method name="is_distance_field_hint" qualifiers="const">
-			<return type="bool">
+		<method name="remove_data">
+			<return type="void">
 			</return>
+			<argument index="0" name="idx" type="int">
+			</argument>
 			<description>
+				Removes the font data source at index [code]idx[/code]. If the index does not exist, nothing happens.
+			</description>
+		</method>
+		<method name="set_data">
+			<return type="void">
+			</return>
+			<argument index="0" name="idx" type="int">
+			</argument>
+			<argument index="1" name="data" type="FontData">
+			</argument>
+			<description>
+				Sets the font data source at index [code]idx[/code]. If the index does not exist, nothing happens.
+			</description>
+		</method>
+		<method name="set_spacing">
+			<return type="void">
+			</return>
+			<argument index="0" name="type" type="int">
+			</argument>
+			<argument index="1" name="value" type="int">
+			</argument>
+			<description>
+				Sets the spacing for [code]type[/code] (see [enum SpacingType]) to [code]value[/code] in pixels (not relative to the font size).
 			</description>
 		</method>
 		<method name="update_changes">
 			<return type="void">
 			</return>
 			<description>
-				After editing a font (changing size, ascent, char rects, etc.). Call this function to propagate changes to controls that might use it.
+				After editing a font (changing data sources, etc.). Call this function to propagate changes to controls that might use it.
 			</description>
 		</method>
 	</methods>
+	<members>
+		<member name="extra_spacing_bottom" type="int" setter="set_spacing" getter="get_spacing" default="0">
+			Extra spacing at the bottom of the line in pixels.
+		</member>
+		<member name="extra_spacing_top" type="int" setter="set_spacing" getter="get_spacing" default="0">
+			Extra spacing at the top of the line in pixels.
+		</member>
+	</members>
 	<constants>
+		<constant name="SPACING_TOP" value="0" enum="SpacingType">
+			Spacing at the top of the line.
+		</constant>
+		<constant name="SPACING_BOTTOM" value="1" enum="SpacingType">
+			Spacing at the bottom of the line.
+		</constant>
 	</constants>
 </class>

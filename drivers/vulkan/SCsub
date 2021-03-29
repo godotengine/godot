@@ -2,7 +2,7 @@
 
 Import("env")
 
-env.add_source_files(env.drivers_sources, "*.cpp")
+thirdparty_obj = []
 
 # FIXME: Refactor all this to reduce code duplication.
 if env["platform"] == "android":
@@ -22,7 +22,8 @@ if env["platform"] == "android":
 
     thirdparty_dir = "#thirdparty/vulkan"
     vma_sources = [thirdparty_dir + "/android/vk_mem_alloc.cpp"]
-    env_thirdparty.add_source_files(env.drivers_sources, vma_sources)
+    env_thirdparty.add_source_files(thirdparty_obj, vma_sources)
+
 elif env["platform"] == "iphone":
     # Use bundled Vulkan headers
     thirdparty_dir = "#thirdparty/vulkan"
@@ -33,7 +34,8 @@ elif env["platform"] == "iphone":
     env_thirdparty.disable_warnings()
 
     vma_sources = [thirdparty_dir + "/vk_mem_alloc.cpp"]
-    env_thirdparty.add_source_files(env.drivers_sources, vma_sources)
+    env_thirdparty.add_source_files(thirdparty_obj, vma_sources)
+
 elif env["builtin_vulkan"]:
     # Use bundled Vulkan headers
     thirdparty_dir = "#thirdparty/vulkan"
@@ -98,8 +100,9 @@ elif env["builtin_vulkan"]:
             env_thirdparty.AppendUnique(CPPDEFINES=["HAVE_SECURE_GETENV"])
 
     loader_sources = [thirdparty_dir + "/loader/" + file for file in loader_sources]
-    env_thirdparty.add_source_files(env.drivers_sources, loader_sources)
-    env_thirdparty.add_source_files(env.drivers_sources, vma_sources)
+    env_thirdparty.add_source_files(thirdparty_obj, loader_sources)
+    env_thirdparty.add_source_files(thirdparty_obj, vma_sources)
+
 else:  # Always build VMA.
     thirdparty_dir = "#thirdparty/vulkan"
     env.Prepend(CPPPATH=[thirdparty_dir])
@@ -109,4 +112,18 @@ else:  # Always build VMA.
     env_thirdparty.disable_warnings()
     vma_sources = [thirdparty_dir + "/vk_mem_alloc.cpp"]
 
-    env_thirdparty.add_source_files(env.drivers_sources, vma_sources)
+    env_thirdparty.add_source_files(thirdparty_obj, vma_sources)
+
+
+env.drivers_sources += thirdparty_obj
+
+
+# Godot source files
+
+driver_obj = []
+
+env.add_source_files(driver_obj, "*.cpp")
+env.drivers_sources += driver_obj
+
+# Needed to force rebuilding the driver files when the thirdparty code is updated.
+env.Depends(driver_obj, thirdparty_obj)

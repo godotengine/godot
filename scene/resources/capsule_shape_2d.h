@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -36,8 +36,8 @@
 class CapsuleShape2D : public Shape2D {
 	GDCLASS(CapsuleShape2D, Shape2D);
 
-	real_t height;
-	real_t radius;
+	real_t height = 20.0;
+	real_t radius = 10.0;
 
 	void _update_shape();
 	Vector<Vector2> _get_points() const;

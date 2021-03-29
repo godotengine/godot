@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -43,7 +43,7 @@
 #include "scene/gui/panel_container.h"
 #include "scene/gui/scroll_container.h"
 #include "scene/gui/slider.h"
-#include "scene/gui/texture_progress.h"
+#include "scene/gui/texture_progress_bar.h"
 #include "scene/gui/texture_rect.h"
 #include "scene/gui/tree.h"
 
@@ -61,13 +61,13 @@ class EditorAudioBus : public PanelContainer {
 	static const int CHANNELS_MAX = 4;
 
 	struct {
-		bool prev_active;
+		bool prev_active = false;
 
-		float peak_l;
-		float peak_r;
+		float peak_l = 0;
+		float peak_r = 0;
 
-		TextureProgress *vu_l;
-		TextureProgress *vu_r;
+		TextureProgressBar *vu_l = nullptr;
+		TextureProgressBar *vu_r = nullptr;
 	} channel[CHANNELS_MAX];
 
 	OptionButton *send;
@@ -91,7 +91,7 @@ class EditorAudioBus : public PanelContainer {
 	mutable bool hovering_drop;
 
 	void _gui_input(const Ref<InputEvent> &p_event);
-	void _unhandled_key_input(Ref<InputEvent> p_event);
+	void _effects_gui_input(Ref<InputEvent> p_event);
 	void _bus_popup_pressed(int p_option);
 
 	void _name_changed(const String &p_new_name);
@@ -214,9 +214,9 @@ class EditorAudioMeterNotches : public Control {
 
 private:
 	struct AudioNotch {
-		float relative_position;
-		float db_value;
-		bool render_db_value;
+		float relative_position = 0;
+		float db_value = 0;
+		bool render_db_value = false;
 
 		_FORCE_INLINE_ AudioNotch(float r_pos, float db_v, bool rndr_val) {
 			relative_position = r_pos;

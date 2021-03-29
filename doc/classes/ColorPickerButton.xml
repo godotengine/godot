@@ -73,14 +73,20 @@
 		<theme_item name="font_color" type="Color" default="Color( 1, 1, 1, 1 )">
 			Default text [Color] of the [ColorPickerButton].
 		</theme_item>
-		<theme_item name="font_color_disabled" type="Color" default="Color( 0.9, 0.9, 0.9, 0.3 )">
+		<theme_item name="font_disabled_color" type="Color" default="Color( 0.9, 0.9, 0.9, 0.3 )">
 			Text [Color] used when the [ColorPickerButton] is disabled.
 		</theme_item>
-		<theme_item name="font_color_hover" type="Color" default="Color( 1, 1, 1, 1 )">
+		<theme_item name="font_hover_color" type="Color" default="Color( 1, 1, 1, 1 )">
 			Text [Color] used when the [ColorPickerButton] is being hovered.
 		</theme_item>
-		<theme_item name="font_color_pressed" type="Color" default="Color( 0.8, 0.8, 0.8, 1 )">
+		<theme_item name="font_outline_color" type="Color" default="Color( 1, 1, 1, 1 )">
+			The tint of text outline of the [ColorPickerButton].
+		</theme_item>
+		<theme_item name="font_pressed_color" type="Color" default="Color( 0.8, 0.8, 0.8, 1 )">
 			Text [Color] used when the [ColorPickerButton] is being pressed.
+		</theme_item>
+		<theme_item name="font_size" type="int">
+			Font size of the [ColorPickerButton]'s text.
 		</theme_item>
 		<theme_item name="hover" type="StyleBox">
 			[StyleBox] used when the [ColorPickerButton] is being hovered.
@@ -90,6 +96,9 @@
 		</theme_item>
 		<theme_item name="normal" type="StyleBox">
 			Default [StyleBox] for the [ColorPickerButton].
+		</theme_item>
+		<theme_item name="outline_size" type="int" default="0">
+			The size of the text outline.
 		</theme_item>
 		<theme_item name="pressed" type="StyleBox">
 			[StyleBox] used when the [ColorPickerButton] is being pressed.

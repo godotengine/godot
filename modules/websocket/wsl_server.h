@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -53,26 +53,24 @@ private:
 	public:
 		Ref<StreamPeerTCP> tcp;
 		Ref<StreamPeer> connection;
-		bool use_ssl;
+		bool use_ssl = false;
 
-		int time;
-		uint8_t req_buf[WSL_MAX_HEADER_SIZE];
-		int req_pos;
+		int time = 0;
+		uint8_t req_buf[WSL_MAX_HEADER_SIZE] = {};
+		int req_pos = 0;
 		String key;
 		String protocol;
-		bool has_request;
+		bool has_request = false;
 		CharString response;
-		int response_sent;
-
-		PendingPeer();
+		int response_sent = 0;
 
 		Error do_handshake(const Vector<String> p_protocols);
 	};
 
-	int _in_buf_size;
-	int _in_pkt_size;
-	int _out_buf_size;
-	int _out_pkt_size;
+	int _in_buf_size = DEF_BUF_SHIFT;
+	int _in_pkt_size = DEF_PKT_SHIFT;
+	int _out_buf_size = DEF_BUF_SHIFT;
+	int _out_pkt_size = DEF_PKT_SHIFT;
 
 	List<Ref<PendingPeer>> _pending;
 	Ref<TCP_Server> _server;

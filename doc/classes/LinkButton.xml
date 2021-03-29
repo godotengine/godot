@@ -10,11 +10,51 @@
 	<tutorials>
 	</tutorials>
 	<methods>
+		<method name="clear_opentype_features">
+			<return type="void">
+			</return>
+			<description>
+				Removes all OpenType features.
+			</description>
+		</method>
+		<method name="get_opentype_feature" qualifiers="const">
+			<return type="int">
+			</return>
+			<argument index="0" name="tag" type="String">
+			</argument>
+			<description>
+				Returns OpenType feature [code]tag[/code].
+			</description>
+		</method>
+		<method name="set_opentype_feature">
+			<return type="void">
+			</return>
+			<argument index="0" name="tag" type="String">
+			</argument>
+			<argument index="1" name="value" type="int">
+			</argument>
+			<description>
+				Returns OpenType feature [code]tag[/code]. More info: [url=https://docs.microsoft.com/en-us/typography/opentype/spec/featuretags]OpenType feature tags[/url].
+			</description>
+		</method>
 	</methods>
 	<members>
+		<member name="focus_mode" type="int" setter="set_focus_mode" getter="get_focus_mode" override="true" enum="Control.FocusMode" default="0" />
+		<member name="language" type="String" setter="set_language" getter="get_language" default="&quot;&quot;">
+			Language code used for line-breaking and text shaping algorithms, if left empty current locale is used instead.
+		</member>
 		<member name="mouse_default_cursor_shape" type="int" setter="set_default_cursor_shape" getter="get_default_cursor_shape" override="true" enum="Control.CursorShape" default="2" />
+		<member name="structured_text_bidi_override" type="int" setter="set_structured_text_bidi_override" getter="get_structured_text_bidi_override" enum="Control.StructuredTextParser" default="0">
+			Set BiDi algorithm override for the structured text.
+		</member>
+		<member name="structured_text_bidi_override_options" type="Array" setter="set_structured_text_bidi_override_options" getter="get_structured_text_bidi_override_options" default="[  ]">
+			Set additional options for BiDi override.
+		</member>
 		<member name="text" type="String" setter="set_text" getter="get_text" default="&quot;&quot;">
 			The button's text that will be displayed inside the button's area.
+		</member>
+		<member name="text_direction" type="int" setter="set_text_direction" getter="get_text_direction" enum="Control.TextDirection" default="0">
+			Base text writing direction.
 		</member>
 		<member name="underline" type="int" setter="set_underline_mode" getter="get_underline_mode" enum="LinkButton.UnderlineMode" default="0">
 			Determines when to show the underline. See [enum UnderlineMode] for options.
@@ -41,11 +81,20 @@
 		<theme_item name="font_color" type="Color" default="Color( 0.88, 0.88, 0.88, 1 )">
 			Default text [Color] of the [LinkButton].
 		</theme_item>
-		<theme_item name="font_color_hover" type="Color" default="Color( 0.94, 0.94, 0.94, 1 )">
+		<theme_item name="font_hover_color" type="Color" default="Color( 0.94, 0.94, 0.94, 1 )">
 			Text [Color] used when the [LinkButton] is being hovered.
 		</theme_item>
-		<theme_item name="font_color_pressed" type="Color" default="Color( 1, 1, 1, 1 )">
+		<theme_item name="font_outline_color" type="Color" default="Color( 1, 1, 1, 1 )">
+			The tint of text outline of the [LinkButton].
+		</theme_item>
+		<theme_item name="font_pressed_color" type="Color" default="Color( 1, 1, 1, 1 )">
 			Text [Color] used when the [LinkButton] is being pressed.
+		</theme_item>
+		<theme_item name="font_size" type="int">
+			Font size of the [LinkButton]'s text.
+		</theme_item>
+		<theme_item name="outline_size" type="int" default="0">
+			The size of the text outline.
 		</theme_item>
 		<theme_item name="underline_spacing" type="int" default="2">
 			The vertical space between the baseline of text and the underline.

@@ -12,11 +12,13 @@
 	<methods>
 	</methods>
 	<members>
-		<member name="light_mask" type="int" setter="set_occluder_light_mask" getter="get_occluder_light_mask" default="1">
-			The LightOccluder2D's light mask. The LightOccluder2D will cast shadows only from Light2D(s) that have the same light mask(s).
-		</member>
 		<member name="occluder" type="OccluderPolygon2D" setter="set_occluder_polygon" getter="get_occluder_polygon">
 			The [OccluderPolygon2D] used to compute the shadow.
+		</member>
+		<member name="occluder_light_mask" type="int" setter="set_occluder_light_mask" getter="get_occluder_light_mask" default="1">
+			The LightOccluder2D's occluder light mask. The LightOccluder2D will cast shadows only from Light2D(s) that have the same light mask(s).
+		</member>
+		<member name="sdf_collision" type="bool" setter="set_as_sdf_collision" getter="is_set_as_sdf_collision" default="true">
 		</member>
 	</members>
 	<constants>

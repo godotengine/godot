@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -39,6 +39,7 @@
 #import <CoreMotion/CoreMotion.h>
 
 static const int max_touches = 8;
+static const float earth_gravity = 9.80665;
 
 @interface GodotView () {
 	UITouch *godot_touches[max_touches];
@@ -120,6 +121,7 @@ static const int max_touches = 8;
 	[self stopRendering];
 
 	self.renderer = nil;
+	self.delegate = nil;
 
 	if (self.renderingLayer) {
 		[self.renderingLayer removeFromSuperlayer];
@@ -239,6 +241,14 @@ static const int max_touches = 8;
 
 	if ([self.renderer setupView:self]) {
 		return;
+	}
+
+	if (self.delegate) {
+		BOOL delegateFinishedSetup = [self.delegate godotViewFinishedSetup:self];
+
+		if (!delegateFinishedSetup) {
+			return;
+		}
 	}
 
 	[self handleMotion];
@@ -393,9 +403,18 @@ static const int max_touches = 8;
 	// https://developer.apple.com/reference/coremotion/cmmotionmanager?language=objc
 
 	// Apple splits our accelerometer date into a gravity and user movement
-	// component. We add them back together
+	// component. We add them back together.
 	CMAcceleration gravity = self.motionManager.deviceMotion.gravity;
 	CMAcceleration acceleration = self.motionManager.deviceMotion.userAcceleration;
+
+	// To be consistent with Android we convert the unit of measurement from g (Earth's gravity)
+	// to m/s^2.
+	gravity.x *= earth_gravity;
+	gravity.y *= earth_gravity;
+	gravity.z *= earth_gravity;
+	acceleration.x *= earth_gravity;
+	acceleration.y *= earth_gravity;
+	acceleration.z *= earth_gravity;
 
 	///@TODO We don't seem to be getting data here, is my device broken or
 	/// is this code incorrect?

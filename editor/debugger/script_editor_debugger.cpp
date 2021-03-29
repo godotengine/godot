@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -343,7 +343,7 @@ void ScriptEditorDebugger::_parse_message(const String &p_msg, const Array &p_da
 		DebuggerMarshalls::ResourceUsage usage;
 		usage.deserialize(p_data);
 
-		int total = 0;
+		uint64_t total = 0;
 
 		for (List<DebuggerMarshalls::ResourceInfo>::Element *E = usage.infos.front(); E; E = E->next()) {
 			TreeItem *it = vmem_tree->create_item(root);
@@ -487,17 +487,20 @@ void ScriptEditorDebugger::_parse_message(const String &p_msg, const Array &p_da
 		error->set_text_align(0, TreeItem::ALIGN_LEFT);
 
 		String error_title;
-		// Include method name, when given, in error title.
-		if (!oe.source_func.empty()) {
+		if (oe.callstack.size() > 0) {
+			// If available, use the script's stack in the error title.
+			error_title = oe.callstack[oe.callstack.size() - 1].func + ": ";
+		} else if (!oe.source_func.is_empty()) {
+			// Otherwise try to use the C++ source function.
 			error_title += oe.source_func + ": ";
 		}
 		// If we have a (custom) error message, use it as title, and add a C++ Error
 		// item with the original error condition.
-		error_title += oe.error_descr.empty() ? oe.error : oe.error_descr;
+		error_title += oe.error_descr.is_empty() ? oe.error : oe.error_descr;
 		error->set_text(1, error_title);
 		tooltip += " " + error_title + "\n";
 
-		if (!oe.error_descr.empty()) {
+		if (!oe.error_descr.is_empty()) {
 			// Add item for C++ error condition.
 			TreeItem *cpp_cond = error_tree->create_item(error);
 			cpp_cond->set_text(0, "<" + TTR("C++ Error") + ">");
@@ -513,7 +516,7 @@ void ScriptEditorDebugger::_parse_message(const String &p_msg, const Array &p_da
 
 		// Source of the error.
 		String source_txt = (source_is_project_file ? oe.source_file.get_file() : oe.source_file) + ":" + itos(oe.source_line);
-		if (!oe.source_func.empty()) {
+		if (!oe.source_func.is_empty()) {
 			source_txt += " @ " + oe.source_func + "()";
 		}
 
@@ -528,9 +531,6 @@ void ScriptEditorDebugger::_parse_message(const String &p_msg, const Array &p_da
 			error->set_metadata(0, source_meta);
 			cpp_source->set_metadata(0, source_meta);
 		}
-
-		error->set_tooltip(0, tooltip);
-		error->set_tooltip(1, tooltip);
 
 		// Format stack trace.
 		// stack_items_count is the number of elements to parse, with 3 items per frame
@@ -548,9 +548,16 @@ void ScriptEditorDebugger::_parse_message(const String &p_msg, const Array &p_da
 				stack_trace->set_text(0, "<" + TTR("Stack Trace") + ">");
 				stack_trace->set_text_align(0, TreeItem::ALIGN_LEFT);
 				error->set_metadata(0, meta);
+				tooltip += TTR("Stack Trace:") + "\n";
 			}
-			stack_trace->set_text(1, infos[i].file.get_file() + ":" + itos(infos[i].line) + " @ " + infos[i].func + "()");
+
+			String frame_txt = infos[i].file.get_file() + ":" + itos(infos[i].line) + " @ " + infos[i].func + "()";
+			tooltip += frame_txt + "\n";
+			stack_trace->set_text(1, frame_txt);
 		}
+
+		error->set_tooltip(0, tooltip);
+		error->set_tooltip(1, tooltip);
 
 		if (oe.warning) {
 			warning_count++;
@@ -795,8 +802,8 @@ void ScriptEditorDebugger::_notification(int p_what) {
 						msg.push_back(true);
 						msg.push_back(cam->get_fov());
 					}
-					msg.push_back(cam->get_znear());
-					msg.push_back(cam->get_zfar());
+					msg.push_back(cam->get_near());
+					msg.push_back(cam->get_far());
 					_put_msg("scene:override_camera_3D:transform", msg);
 				}
 			}

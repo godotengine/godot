@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -34,7 +34,7 @@
 // JNIEnv is only valid within the thread it belongs to, in a multi threading environment
 // we can't cache it.
 // For GodotIO we call all access methods from our thread and we thus get a valid JNIEnv
-// from ThreadAndroid.
+// from get_jni_env().
 
 GodotIOJavaWrapper::GodotIOJavaWrapper(JNIEnv *p_env, jobject p_godot_io_instance) {
 	godot_io_instance = p_env->NewGlobalRef(p_godot_io_instance);
@@ -72,7 +72,8 @@ jobject GodotIOJavaWrapper::get_instance() {
 
 Error GodotIOJavaWrapper::open_uri(const String &p_uri) {
 	if (_open_URI) {
-		JNIEnv *env = ThreadAndroid::get_env();
+		JNIEnv *env = get_jni_env();
+		ERR_FAIL_COND_V(env == nullptr, ERR_UNAVAILABLE);
 		jstring jStr = env->NewStringUTF(p_uri.utf8().get_data());
 		return env->CallIntMethod(godot_io_instance, _open_URI, jStr) ? ERR_CANT_OPEN : OK;
 	} else {
@@ -82,7 +83,8 @@ Error GodotIOJavaWrapper::open_uri(const String &p_uri) {
 
 String GodotIOJavaWrapper::get_user_data_dir() {
 	if (_get_data_dir) {
-		JNIEnv *env = ThreadAndroid::get_env();
+		JNIEnv *env = get_jni_env();
+		ERR_FAIL_COND_V(env == nullptr, String());
 		jstring s = (jstring)env->CallObjectMethod(godot_io_instance, _get_data_dir);
 		return jstring_to_string(s, env);
 	} else {
@@ -92,7 +94,8 @@ String GodotIOJavaWrapper::get_user_data_dir() {
 
 String GodotIOJavaWrapper::get_locale() {
 	if (_get_locale) {
-		JNIEnv *env = ThreadAndroid::get_env();
+		JNIEnv *env = get_jni_env();
+		ERR_FAIL_COND_V(env == nullptr, String());
 		jstring s = (jstring)env->CallObjectMethod(godot_io_instance, _get_locale);
 		return jstring_to_string(s, env);
 	} else {
@@ -102,7 +105,8 @@ String GodotIOJavaWrapper::get_locale() {
 
 String GodotIOJavaWrapper::get_model() {
 	if (_get_model) {
-		JNIEnv *env = ThreadAndroid::get_env();
+		JNIEnv *env = get_jni_env();
+		ERR_FAIL_COND_V(env == nullptr, String());
 		jstring s = (jstring)env->CallObjectMethod(godot_io_instance, _get_model);
 		return jstring_to_string(s, env);
 	} else {
@@ -112,7 +116,8 @@ String GodotIOJavaWrapper::get_model() {
 
 int GodotIOJavaWrapper::get_screen_dpi() {
 	if (_get_screen_DPI) {
-		JNIEnv *env = ThreadAndroid::get_env();
+		JNIEnv *env = get_jni_env();
+		ERR_FAIL_COND_V(env == nullptr, 160);
 		return env->CallIntMethod(godot_io_instance, _get_screen_DPI);
 	} else {
 		return 160;
@@ -121,7 +126,8 @@ int GodotIOJavaWrapper::get_screen_dpi() {
 
 void GodotIOJavaWrapper::screen_get_usable_rect(int (&p_rect_xywh)[4]) {
 	if (_screen_get_usable_rect) {
-		JNIEnv *env = ThreadAndroid::get_env();
+		JNIEnv *env = get_jni_env();
+		ERR_FAIL_COND(env == nullptr);
 		jintArray returnArray = (jintArray)env->CallObjectMethod(godot_io_instance, _screen_get_usable_rect);
 		ERR_FAIL_COND(env->GetArrayLength(returnArray) != 4);
 		jint *arrayBody = env->GetIntArrayElements(returnArray, JNI_FALSE);
@@ -134,7 +140,8 @@ void GodotIOJavaWrapper::screen_get_usable_rect(int (&p_rect_xywh)[4]) {
 
 String GodotIOJavaWrapper::get_unique_id() {
 	if (_get_unique_id) {
-		JNIEnv *env = ThreadAndroid::get_env();
+		JNIEnv *env = get_jni_env();
+		ERR_FAIL_COND_V(env == nullptr, String());
 		jstring s = (jstring)env->CallObjectMethod(godot_io_instance, _get_unique_id);
 		return jstring_to_string(s, env);
 	} else {
@@ -148,7 +155,8 @@ bool GodotIOJavaWrapper::has_vk() {
 
 void GodotIOJavaWrapper::show_vk(const String &p_existing, bool p_multiline, int p_max_input_length, int p_cursor_start, int p_cursor_end) {
 	if (_show_keyboard) {
-		JNIEnv *env = ThreadAndroid::get_env();
+		JNIEnv *env = get_jni_env();
+		ERR_FAIL_COND(env == nullptr);
 		jstring jStr = env->NewStringUTF(p_existing.utf8().get_data());
 		env->CallVoidMethod(godot_io_instance, _show_keyboard, jStr, p_multiline, p_max_input_length, p_cursor_start, p_cursor_end);
 	}
@@ -156,21 +164,24 @@ void GodotIOJavaWrapper::show_vk(const String &p_existing, bool p_multiline, int
 
 void GodotIOJavaWrapper::hide_vk() {
 	if (_hide_keyboard) {
-		JNIEnv *env = ThreadAndroid::get_env();
+		JNIEnv *env = get_jni_env();
+		ERR_FAIL_COND(env == nullptr);
 		env->CallVoidMethod(godot_io_instance, _hide_keyboard);
 	}
 }
 
 void GodotIOJavaWrapper::set_screen_orientation(int p_orient) {
 	if (_set_screen_orientation) {
-		JNIEnv *env = ThreadAndroid::get_env();
+		JNIEnv *env = get_jni_env();
+		ERR_FAIL_COND(env == nullptr);
 		env->CallVoidMethod(godot_io_instance, _set_screen_orientation, p_orient);
 	}
 }
 
 int GodotIOJavaWrapper::get_screen_orientation() {
 	if (_get_screen_orientation) {
-		JNIEnv *env = ThreadAndroid::get_env();
+		JNIEnv *env = get_jni_env();
+		ERR_FAIL_COND_V(env == nullptr, 0);
 		return env->CallIntMethod(godot_io_instance, _get_screen_orientation);
 	} else {
 		return 0;
@@ -179,7 +190,8 @@ int GodotIOJavaWrapper::get_screen_orientation() {
 
 String GodotIOJavaWrapper::get_system_dir(int p_dir) {
 	if (_get_system_dir) {
-		JNIEnv *env = ThreadAndroid::get_env();
+		JNIEnv *env = get_jni_env();
+		ERR_FAIL_COND_V(env == nullptr, String("."));
 		jstring s = (jstring)env->CallObjectMethod(godot_io_instance, _get_system_dir, p_dir);
 		return jstring_to_string(s, env);
 	} else {
@@ -187,14 +199,14 @@ String GodotIOJavaWrapper::get_system_dir(int p_dir) {
 	}
 }
 
-// volatile because it can be changed from non-main thread and we need to
+// SafeNumeric because it can be changed from non-main thread and we need to
 // ensure the change is immediately visible to other threads.
-static volatile int virtual_keyboard_height;
+static SafeNumeric<int> virtual_keyboard_height;
 
 int GodotIOJavaWrapper::get_vk_height() {
-	return virtual_keyboard_height;
+	return virtual_keyboard_height.get();
 }
 
 void GodotIOJavaWrapper::set_vk_height(int p_height) {
-	virtual_keyboard_height = p_height;
+	virtual_keyboard_height.set(p_height);
 }

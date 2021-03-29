@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -115,22 +115,22 @@ void CurveEditor::on_gui_input(const Ref<InputEvent> &p_event) {
 			}
 
 			switch (mb.get_button_index()) {
-				case BUTTON_RIGHT:
+				case MOUSE_BUTTON_RIGHT:
 					_context_click_pos = mpos;
 					open_context_menu(get_global_transform().xform(mpos));
 					break;
 
-				case BUTTON_MIDDLE:
+				case MOUSE_BUTTON_MIDDLE:
 					remove_point(_hover_point);
 					break;
 
-				case BUTTON_LEFT:
+				case MOUSE_BUTTON_LEFT:
 					_dragging = true;
 					break;
 			}
 		}
 
-		if (!mb.is_pressed() && _dragging && mb.get_button_index() == BUTTON_LEFT) {
+		if (!mb.is_pressed() && _dragging && mb.get_button_index() == MOUSE_BUTTON_LEFT) {
 			_dragging = false;
 			if (_has_undo_data) {
 				UndoRedo &ur = *EditorNode::get_singleton()->get_undo_redo();
@@ -353,8 +353,8 @@ void CurveEditor::open_context_menu(Vector2 pos) {
 				_context_menu->add_check_item(TTR("Linear"), CONTEXT_LINEAR);
 
 				bool is_linear = _selected_tangent == TANGENT_LEFT ?
-										 _curve_ref->get_point_left_mode(_selected_point) == Curve::TANGENT_LINEAR :
-										 _curve_ref->get_point_right_mode(_selected_point) == Curve::TANGENT_LINEAR;
+										   _curve_ref->get_point_left_mode(_selected_point) == Curve::TANGENT_LINEAR :
+										   _curve_ref->get_point_right_mode(_selected_point) == Curve::TANGENT_LINEAR;
 
 				_context_menu->set_item_checked(_context_menu->get_item_index(CONTEXT_LINEAR), is_linear);
 
@@ -518,7 +518,9 @@ void CurveEditor::set_hover_point_index(int index) {
 
 void CurveEditor::update_view_transform() {
 	Ref<Font> font = get_theme_font("font", "Label");
-	const real_t margin = font->get_height() + 2 * EDSCALE;
+	int font_size = get_theme_font_size("font_size", "Label");
+
+	const real_t margin = font->get_height(font_size) + 2 * EDSCALE;
 
 	float min_y = 0;
 	float max_y = 1;
@@ -662,18 +664,19 @@ void CurveEditor::_draw() {
 	draw_set_transform_matrix(Transform2D());
 
 	Ref<Font> font = get_theme_font("font", "Label");
-	float font_height = font->get_height();
+	int font_size = get_theme_font_size("font_size", "Label");
+	float font_height = font->get_height(font_size);
 	Color text_color = get_theme_color("font_color", "Editor");
 
 	{
 		// X axis
 		float y = curve.get_min_value();
 		Vector2 off(0, font_height - 1);
-		draw_string(font, get_view_pos(Vector2(0, y)) + off, "0.0", text_color);
-		draw_string(font, get_view_pos(Vector2(0.25, y)) + off, "0.25", text_color);
-		draw_string(font, get_view_pos(Vector2(0.5, y)) + off, "0.5", text_color);
-		draw_string(font, get_view_pos(Vector2(0.75, y)) + off, "0.75", text_color);
-		draw_string(font, get_view_pos(Vector2(1, y)) + off, "1.0", text_color);
+		draw_string(font, get_view_pos(Vector2(0, y)) + off, "0.0", HALIGN_LEFT, -1, font_size, text_color);
+		draw_string(font, get_view_pos(Vector2(0.25, y)) + off, "0.25", HALIGN_LEFT, -1, font_size, text_color);
+		draw_string(font, get_view_pos(Vector2(0.5, y)) + off, "0.5", HALIGN_LEFT, -1, font_size, text_color);
+		draw_string(font, get_view_pos(Vector2(0.75, y)) + off, "0.75", HALIGN_LEFT, -1, font_size, text_color);
+		draw_string(font, get_view_pos(Vector2(1, y)) + off, "1.0", HALIGN_LEFT, -1, font_size, text_color);
 	}
 
 	{
@@ -682,9 +685,9 @@ void CurveEditor::_draw() {
 		float m1 = 0.5 * (curve.get_min_value() + curve.get_max_value());
 		float m2 = curve.get_max_value();
 		Vector2 off(1, -1);
-		draw_string(font, get_view_pos(Vector2(0, m0)) + off, String::num(m0, 2), text_color);
-		draw_string(font, get_view_pos(Vector2(0, m1)) + off, String::num(m1, 2), text_color);
-		draw_string(font, get_view_pos(Vector2(0, m2)) + off, String::num(m2, 3), text_color);
+		draw_string(font, get_view_pos(Vector2(0, m0)) + off, String::num(m0, 2), HALIGN_LEFT, -1, font_size, text_color);
+		draw_string(font, get_view_pos(Vector2(0, m1)) + off, String::num(m1, 2), HALIGN_LEFT, -1, font_size, text_color);
+		draw_string(font, get_view_pos(Vector2(0, m2)) + off, String::num(m2, 3), HALIGN_LEFT, -1, font_size, text_color);
 	}
 
 	// Draw tangents for current point
@@ -744,10 +747,10 @@ void CurveEditor::_draw() {
 
 	if (_selected_point > 0 && _selected_point + 1 < curve.get_point_count()) {
 		text_color.a *= 0.4;
-		draw_string(font, Vector2(50 * EDSCALE, font_height), TTR("Hold Shift to edit tangents individually"), text_color);
+		draw_string(font, Vector2(50 * EDSCALE, font_height), TTR("Hold Shift to edit tangents individually"), HALIGN_LEFT, -1, font_size, text_color);
 	} else if (curve.get_point_count() == 0) {
 		text_color.a *= 0.4;
-		draw_string(font, Vector2(50 * EDSCALE, font_height), TTR("Right click to add point"), text_color);
+		draw_string(font, Vector2(50 * EDSCALE, font_height), TTR("Right click to add point"), HALIGN_LEFT, -1, font_size, text_color);
 	}
 }
 

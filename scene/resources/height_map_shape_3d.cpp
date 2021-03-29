@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -107,8 +107,6 @@ void HeightMapShape3D::set_map_width(int p_new) {
 
 		_update_shape();
 		notify_change_to_owners();
-		_change_notify("map_width");
-		_change_notify("map_data");
 	}
 }
 
@@ -133,8 +131,6 @@ void HeightMapShape3D::set_map_depth(int p_new) {
 
 		_update_shape();
 		notify_change_to_owners();
-		_change_notify("map_depth");
-		_change_notify("map_data");
 	}
 }
 
@@ -171,7 +167,6 @@ void HeightMapShape3D::set_map_data(PackedFloat32Array p_new) {
 
 	_update_shape();
 	notify_change_to_owners();
-	_change_notify("map_data");
 }
 
 PackedFloat32Array HeightMapShape3D::get_map_data() const {
@@ -193,16 +188,12 @@ void HeightMapShape3D::_bind_methods() {
 
 HeightMapShape3D::HeightMapShape3D() :
 		Shape3D(PhysicsServer3D::get_singleton()->shape_create(PhysicsServer3D::SHAPE_HEIGHTMAP)) {
-	map_width = 2;
-	map_depth = 2;
 	map_data.resize(map_width * map_depth);
 	real_t *w = map_data.ptrw();
 	w[0] = 0.0;
 	w[1] = 0.0;
 	w[2] = 0.0;
 	w[3] = 0.0;
-	min_height = 0.0;
-	max_height = 0.0;
 
 	_update_shape();
 }

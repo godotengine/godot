@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -37,6 +37,7 @@ class Variant;
 class ArrayPrivate;
 class Object;
 class StringName;
+class Callable;
 
 class Array {
 	mutable ArrayPrivate *_p;
@@ -57,7 +58,7 @@ public:
 	const Variant &get(int p_idx) const;
 
 	int size() const;
-	bool empty() const;
+	bool is_empty() const;
 	void clear();
 
 	bool operator==(const Array &p_array) const;
@@ -78,10 +79,10 @@ public:
 	Variant back() const;
 
 	void sort();
-	void sort_custom(Object *p_obj, const StringName &p_function);
+	void sort_custom(Callable p_callable);
 	void shuffle();
 	int bsearch(const Variant &p_value, bool p_before = true);
-	int bsearch_custom(const Variant &p_value, Object *p_obj, const StringName &p_function, bool p_before = true);
+	int bsearch_custom(const Variant &p_value, Callable p_callable, bool p_before = true);
 	void invert();
 
 	int find(const Variant &p_value, int p_from = 0) const;

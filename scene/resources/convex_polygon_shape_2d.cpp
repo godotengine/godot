@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -72,9 +72,18 @@ void ConvexPolygonShape2D::_bind_methods() {
 }
 
 void ConvexPolygonShape2D::draw(const RID &p_to_rid, const Color &p_color) {
+	if (points.size() < 3) {
+		return;
+	}
+
 	Vector<Color> col;
 	col.push_back(p_color);
 	RenderingServer::get_singleton()->canvas_item_add_polygon(p_to_rid, points, col);
+	if (is_collision_outline_enabled()) {
+		RenderingServer::get_singleton()->canvas_item_add_polyline(p_to_rid, points, col);
+		// Draw the last segment as it's not drawn by `canvas_item_add_polyline()`.
+		RenderingServer::get_singleton()->canvas_item_add_line(p_to_rid, points[points.size() - 1], points[0], p_color);
+	}
 }
 
 Rect2 ConvexPolygonShape2D::get_rect() const {
@@ -91,7 +100,7 @@ Rect2 ConvexPolygonShape2D::get_rect() const {
 }
 
 real_t ConvexPolygonShape2D::get_enclosing_radius() const {
-	real_t r = 0;
+	real_t r = 0.0;
 	for (int i(0); i < get_points().size(); i++) {
 		r = MAX(get_points()[i].length_squared(), r);
 	}

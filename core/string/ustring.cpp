@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -209,7 +209,6 @@ void CharString::copy_from(const char *p_cstr) {
 /*  String                                                               */
 /*************************************************************************/
 
-//TODO: move to TextServer
 //kind of poor should be rewritten properly
 String String::word_wrap(int p_chars_per_line) const {
 	int from = 0;
@@ -428,12 +427,12 @@ String operator+(char32_t p_chr, const String &p_str) {
 }
 
 String &String::operator+=(const String &p_str) {
-	if (empty()) {
+	if (is_empty()) {
 		*this = p_str;
 		return *this;
 	}
 
-	if (p_str.empty()) {
+	if (p_str.is_empty()) {
 		return *this;
 	}
 
@@ -520,7 +519,7 @@ bool String::operator==(const char *p_str) const {
 	if (length() != len) {
 		return false;
 	}
-	if (empty()) {
+	if (is_empty()) {
 		return true;
 	}
 
@@ -559,7 +558,7 @@ bool String::operator==(const char32_t *p_str) const {
 	if (length() != len) {
 		return false;
 	}
-	if (empty()) {
+	if (is_empty()) {
 		return true;
 	}
 
@@ -581,7 +580,7 @@ bool String::operator==(const String &p_str) const {
 	if (length() != p_str.length()) {
 		return false;
 	}
-	if (empty()) {
+	if (is_empty()) {
 		return true;
 	}
 
@@ -606,7 +605,7 @@ bool String::operator==(const StrRange &p_str_range) const {
 	if (length() != len) {
 		return false;
 	}
-	if (empty()) {
+	if (is_empty()) {
 		return true;
 	}
 
@@ -679,20 +678,20 @@ bool String::operator>=(const String &p_str) const {
 }
 
 bool String::operator<(const char *p_str) const {
-	if (empty() && p_str[0] == 0) {
+	if (is_empty() && p_str[0] == 0) {
 		return false;
 	}
-	if (empty()) {
+	if (is_empty()) {
 		return true;
 	}
 	return is_str_less(get_data(), p_str);
 }
 
 bool String::operator<(const wchar_t *p_str) const {
-	if (empty() && p_str[0] == 0) {
+	if (is_empty() && p_str[0] == 0) {
 		return false;
 	}
-	if (empty()) {
+	if (is_empty()) {
 		return true;
 	}
 
@@ -706,10 +705,10 @@ bool String::operator<(const wchar_t *p_str) const {
 }
 
 bool String::operator<(const char32_t *p_str) const {
-	if (empty() && p_str[0] == 0) {
+	if (is_empty() && p_str[0] == 0) {
 		return false;
 	}
-	if (empty()) {
+	if (is_empty()) {
 		return true;
 	}
 
@@ -721,13 +720,13 @@ bool String::operator<(const String &p_str) const {
 }
 
 signed char String::nocasecmp_to(const String &p_str) const {
-	if (empty() && p_str.empty()) {
+	if (is_empty() && p_str.is_empty()) {
 		return 0;
 	}
-	if (empty()) {
+	if (is_empty()) {
 		return -1;
 	}
-	if (p_str.empty()) {
+	if (p_str.is_empty()) {
 		return 1;
 	}
 
@@ -753,13 +752,13 @@ signed char String::nocasecmp_to(const String &p_str) const {
 }
 
 signed char String::casecmp_to(const String &p_str) const {
-	if (empty() && p_str.empty()) {
+	if (is_empty() && p_str.is_empty()) {
 		return 0;
 	}
-	if (empty()) {
+	if (is_empty()) {
 		return -1;
 	}
-	if (p_str.empty()) {
+	if (p_str.is_empty()) {
 		return 1;
 	}
 
@@ -950,10 +949,10 @@ String String::get_with_code_lines() const {
 }
 
 int String::get_slice_count(String p_splitter) const {
-	if (empty()) {
+	if (is_empty()) {
 		return 0;
 	}
-	if (p_splitter.empty()) {
+	if (p_splitter.is_empty()) {
 		return 0;
 	}
 
@@ -969,7 +968,7 @@ int String::get_slice_count(String p_splitter) const {
 }
 
 String String::get_slice(String p_splitter, int p_slice) const {
-	if (empty() || p_splitter.empty()) {
+	if (is_empty() || p_splitter.is_empty()) {
 		return "";
 	}
 
@@ -1009,7 +1008,7 @@ String String::get_slice(String p_splitter, int p_slice) const {
 }
 
 String String::get_slicec(char32_t p_splitter, int p_slice) const {
-	if (empty()) {
+	if (is_empty()) {
 		return String();
 	}
 
@@ -1410,8 +1409,9 @@ String String::num(double p_num, int p_decimals) {
 				if (digit == MAX_DIGITS) //no point in going to infinite
 					break;
 
-				if ((dec - (double)((int)dec)) < 1e-6)
+				if (dec - (double)((int)dec) < 1e-6) {
 					break;
+				}
 			}
 
 			if (digit == p_decimals)
@@ -1764,7 +1764,7 @@ bool String::parse_utf8(const char *p_utf8, int p_len) {
 
 		if (skip) {
 			_UNICERROR("no space left");
-			return true; //not enough spac
+			return true; //not enough space
 		}
 	}
 
@@ -2097,8 +2097,9 @@ String::String(const StrRange &p_range) {
 	copy_from(p_range.c_str, p_range.len);
 }
 
-int64_t String::hex_to_int(bool p_with_prefix) const {
-	if (p_with_prefix && length() < 3) {
+int64_t String::hex_to_int() const {
+	int len = length();
+	if (len == 0) {
 		return 0;
 	}
 
@@ -2110,10 +2111,7 @@ int64_t String::hex_to_int(bool p_with_prefix) const {
 		s++;
 	}
 
-	if (p_with_prefix) {
-		if (s[0] != '0' || s[1] != 'x') {
-			return 0;
-		}
+	if (len > 2 && s[0] == '0' && s[1] == 'x') {
 		s += 2;
 	}
 
@@ -2140,8 +2138,9 @@ int64_t String::hex_to_int(bool p_with_prefix) const {
 	return hex * sign;
 }
 
-int64_t String::bin_to_int(bool p_with_prefix) const {
-	if (p_with_prefix && length() < 3) {
+int64_t String::bin_to_int() const {
+	int len = length();
+	if (len == 0) {
 		return 0;
 	}
 
@@ -2153,10 +2152,7 @@ int64_t String::bin_to_int(bool p_with_prefix) const {
 		s++;
 	}
 
-	if (p_with_prefix) {
-		if (s[0] != '0' || s[1] != 'b') {
-			return 0;
-		}
+	if (len > 2 && s[0] == '0' && s[1] == 'b') {
 		s += 2;
 	}
 
@@ -2586,7 +2582,7 @@ int64_t String::to_int(const char32_t *p_str, int p_len, bool p_clamp) {
 }
 
 double String::to_float() const {
-	if (empty()) {
+	if (is_empty()) {
 		return 0;
 	}
 	return built_in_strtod<char32_t>(get_data());
@@ -2768,7 +2764,7 @@ String String::substr(int p_from, int p_chars) const {
 		p_chars = length() - p_from;
 	}
 
-	if (empty() || p_from < 0 || p_from >= length() || p_chars <= 0) {
+	if (is_empty() || p_from < 0 || p_from >= length() || p_chars <= 0) {
 		return "";
 	}
 
@@ -3075,35 +3071,47 @@ int String::rfindn(const String &p_str, int p_from) const {
 }
 
 bool String::ends_with(const String &p_string) const {
-	int pos = rfind(p_string);
-	if (pos == -1) {
-		return false;
-	}
-	return pos + p_string.length() == length();
-}
-
-bool String::begins_with(const String &p_string) const {
-	if (p_string.length() > length()) {
-		return false;
-	}
-
 	int l = p_string.length();
+	if (l > length()) {
+		return false;
+	}
+
 	if (l == 0) {
 		return true;
 	}
 
-	const char32_t *src = &p_string[0];
-	const char32_t *str = &operator[](0);
+	const char32_t *p = &p_string[0];
+	const char32_t *s = &operator[](length() - l);
 
-	int i = 0;
-	for (; i < l; i++) {
-		if (src[i] != str[i]) {
+	for (int i = 0; i < l; i++) {
+		if (p[i] != s[i]) {
 			return false;
 		}
 	}
 
-	// only if i == l the p_string matches the beginning
-	return i == l;
+	return true;
+}
+
+bool String::begins_with(const String &p_string) const {
+	int l = p_string.length();
+	if (l > length()) {
+		return false;
+	}
+
+	if (l == 0) {
+		return true;
+	}
+
+	const char32_t *p = &p_string[0];
+	const char32_t *s = &operator[](0);
+
+	for (int i = 0; i < l; i++) {
+		if (p[i] != s[i]) {
+			return false;
+		}
+	}
+
+	return true;
 }
 
 bool String::begins_with(const char *p_string) const {
@@ -3143,7 +3151,7 @@ bool String::is_quoted() const {
 }
 
 int String::_count(const String &p_string, int p_from, int p_to, bool p_case_insensitive) const {
-	if (p_string.empty()) {
+	if (p_string.is_empty()) {
 		return 0;
 	}
 	int len = length();
@@ -3251,8 +3259,8 @@ float String::similarity(const String &p_string) const {
 	int src_size = src_bigrams.size();
 	int tgt_size = tgt_bigrams.size();
 
-	double sum = src_size + tgt_size;
-	double inter = 0;
+	int sum = src_size + tgt_size;
+	int inter = 0;
 	for (int i = 0; i < src_size; i++) {
 		for (int j = 0; j < tgt_size; j++) {
 			if (src_bigrams[i] == tgt_bigrams[j]) {
@@ -3479,7 +3487,7 @@ String String::right(int p_pos) const {
 	return substr(p_pos, (length() - p_pos));
 }
 
-char32_t String::ord_at(int p_idx) const {
+char32_t String::unicode_at(int p_idx) const {
 	ERR_FAIL_INDEX_V(p_idx, length(), 0);
 	return operator[](p_idx);
 }
@@ -3751,7 +3759,7 @@ bool String::is_valid_string() const {
 	return valid;
 }
 
-String String::http_escape() const {
+String String::uri_encode() const {
 	const CharString temp = utf8();
 	String res;
 	for (int i = 0; i < temp.length(); ++i) {
@@ -3775,23 +3783,25 @@ String String::http_escape() const {
 	return res;
 }
 
-String String::http_unescape() const {
+String String::uri_decode() const {
 	String res;
 	for (int i = 0; i < length(); ++i) {
-		if (ord_at(i) == '%' && i + 2 < length()) {
-			char32_t ord1 = ord_at(i + 1);
+		if (unicode_at(i) == '%' && i + 2 < length()) {
+			char32_t ord1 = unicode_at(i + 1);
 			if ((ord1 >= '0' && ord1 <= '9') || (ord1 >= 'A' && ord1 <= 'Z')) {
-				char32_t ord2 = ord_at(i + 2);
+				char32_t ord2 = unicode_at(i + 2);
 				if ((ord2 >= '0' && ord2 <= '9') || (ord2 >= 'A' && ord2 <= 'Z')) {
 					char bytes[3] = { (char)ord1, (char)ord2, 0 };
 					res += (char)strtol(bytes, nullptr, 16);
 					i += 2;
 				}
 			} else {
-				res += ord_at(i);
+				res += unicode_at(i);
 			}
+		} else if (unicode_at(i) == '+') {
+			res += ' ';
 		} else {
-			res += ord_at(i);
+			res += unicode_at(i);
 		}
 	}
 	return String::utf8(res.ascii());
@@ -3864,7 +3874,6 @@ String String::xml_escape(bool p_escape_quotes) const {
 	}
 	/*
 for (int i=1;i<32;i++) {
-
 	char chr[2]={i,0};
 	str=str.replace(chr,"&#"+String::num(i)+";");
 }*/
@@ -3879,25 +3888,55 @@ static _FORCE_INLINE_ int _xml_unescape(const char32_t *p_src, int p_src_len, ch
 
 			if (p_src_len >= 4 && p_src[1] == '#') {
 				char32_t c = 0;
-
-				for (int i = 2; i < p_src_len; i++) {
-					eat = i + 1;
-					char32_t ct = p_src[i];
-					if (ct == ';') {
-						break;
-					} else if (ct >= '0' && ct <= '9') {
-						ct = ct - '0';
-					} else if (ct >= 'a' && ct <= 'f') {
-						ct = (ct - 'a') + 10;
-					} else if (ct >= 'A' && ct <= 'F') {
-						ct = (ct - 'A') + 10;
-					} else {
-						continue;
+				bool overflow = false;
+				if (p_src[2] == 'x') {
+					// Hex entity &#x<num>;
+					for (int i = 3; i < p_src_len; i++) {
+						eat = i + 1;
+						char32_t ct = p_src[i];
+						if (ct == ';') {
+							break;
+						} else if (ct >= '0' && ct <= '9') {
+							ct = ct - '0';
+						} else if (ct >= 'a' && ct <= 'f') {
+							ct = (ct - 'a') + 10;
+						} else if (ct >= 'A' && ct <= 'F') {
+							ct = (ct - 'A') + 10;
+						} else {
+							break;
+						}
+						if (c > (UINT32_MAX >> 4)) {
+							overflow = true;
+							break;
+						}
+						c <<= 4;
+						c |= ct;
 					}
-					c <<= 4;
-					c |= ct;
+				} else {
+					// Decimal entity &#<num>;
+					for (int i = 2; i < p_src_len; i++) {
+						eat = i + 1;
+						char32_t ct = p_src[i];
+						if (ct == ';' || ct < '0' || ct > '9') {
+							break;
+						}
+					}
+					if (p_src[eat - 1] == ';') {
+						int64_t val = String::to_int(p_src + 2, eat - 3);
+						if (val > 0 && val <= UINT32_MAX) {
+							c = (char32_t)val;
+						} else {
+							overflow = true;
+						}
+					}
 				}
 
+				// Value must be non-zero, in the range of char32_t,
+				// actually end with ';'. If invalid, leave the entity as-is
+				if (c == '\0' || overflow || p_src[eat - 1] != ';') {
+					eat = 1;
+					c = *p_src;
+				}
 				if (p_dst) {
 					*p_dst = c;
 				}
@@ -4243,11 +4282,11 @@ bool String::is_valid_ip_address() const {
 		Vector<String> ip = split(":");
 		for (int i = 0; i < ip.size(); i++) {
 			String n = ip[i];
-			if (n.empty()) {
+			if (n.is_empty()) {
 				continue;
 			}
 			if (n.is_valid_hex_number(false)) {
-				int64_t nint = n.hex_to_int(false);
+				int64_t nint = n.hex_to_int();
 				if (nint < 0 || nint > 0xffff) {
 					return false;
 				}
@@ -4287,7 +4326,10 @@ bool String::is_rel_path() const {
 }
 
 String String::get_base_dir() const {
-	int basepos = find("://");
+	int basepos = find(":/");
+	if (basepos == -1) {
+		basepos = find(":\\");
+	}
 	String rs;
 	String base;
 	if (basepos != -1) {
@@ -4330,70 +4372,13 @@ String String::get_extension() const {
 }
 
 String String::plus_file(const String &p_file) const {
-	if (empty()) {
+	if (is_empty()) {
 		return p_file;
 	}
 	if (operator[](length() - 1) == '/' || (p_file.size() > 0 && p_file.operator[](0) == '/')) {
 		return *this + p_file;
 	}
 	return *this + "/" + p_file;
-}
-
-String String::percent_encode() const {
-	CharString cs = utf8();
-	String encoded;
-	for (int i = 0; i < cs.length(); i++) {
-		uint8_t c = cs[i];
-		if ((c >= 'A' && c <= 'Z') || (c >= 'a' && c <= 'z') || (c >= '0' && c <= '9') || c == '-' || c == '_' || c == '~' || c == '.') {
-			char p[2] = { (char)c, 0 };
-			encoded += p;
-		} else {
-			char p[4] = { '%', 0, 0, 0 };
-			static const char hex[16] = { '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd', 'e', 'f' };
-
-			p[1] = hex[c >> 4];
-			p[2] = hex[c & 0xF];
-			encoded += p;
-		}
-	}
-
-	return encoded;
-}
-
-String String::percent_decode() const {
-	CharString pe;
-
-	CharString cs = utf8();
-	for (int i = 0; i < cs.length(); i++) {
-		uint8_t c = cs[i];
-		if (c == '%' && i < length() - 2) {
-			uint8_t a = LOWERCASE(cs[i + 1]);
-			uint8_t b = LOWERCASE(cs[i + 2]);
-
-			if (a >= '0' && a <= '9') {
-				c = (a - '0') << 4;
-			} else if (a >= 'a' && a <= 'f') {
-				c = (a - 'a' + 10) << 4;
-			} else {
-				continue;
-			}
-
-			uint8_t d = 0;
-
-			if (b >= '0' && b <= '9') {
-				d = (b - '0');
-			} else if (b >= 'a' && b <= 'f') {
-				d = (b - 'a' + 10);
-			} else {
-				continue;
-			}
-			c += d;
-			i += 2;
-		}
-		pe += c;
-	}
-
-	return String::utf8(pe.ptr());
 }
 
 String String::property_name_encode() const {
@@ -4407,6 +4392,18 @@ String String::property_name_encode() const {
 	}
 	// Keep as is
 	return *this;
+}
+
+// Changes made to the set of invalid characters must also be reflected in the String documentation.
+const String String::invalid_node_name_characters = ". : @ / \"";
+
+String String::validate_node_name() const {
+	Vector<String> chars = String::invalid_node_name_characters.split(" ");
+	String name = this->replace(chars[0], "");
+	for (int i = 1; i < chars.size(); i++) {
+		name = name.replace(chars[i], "");
+	}
+	return name;
 }
 
 String String::get_basename() const {
@@ -4483,7 +4480,7 @@ String String::sprintf(const Array &values, bool *error) const {
 	for (; *self; self++) {
 		const char32_t c = *self;
 
-		if (in_format) { // We have % - lets see what else we get.
+		if (in_format) { // We have % - let's see what else we get.
 			switch (c) {
 				case '%': { // Replace %% with %
 					formatted += chr(c);
@@ -4759,7 +4756,7 @@ String String::unquote() const {
 
 Vector<uint8_t> String::to_ascii_buffer() const {
 	const String *s = this;
-	if (s->empty()) {
+	if (s->is_empty()) {
 		return Vector<uint8_t>();
 	}
 	CharString charstr = s->ascii();
@@ -4775,7 +4772,7 @@ Vector<uint8_t> String::to_ascii_buffer() const {
 
 Vector<uint8_t> String::to_utf8_buffer() const {
 	const String *s = this;
-	if (s->empty()) {
+	if (s->is_empty()) {
 		return Vector<uint8_t>();
 	}
 	CharString charstr = s->utf8();
@@ -4791,13 +4788,13 @@ Vector<uint8_t> String::to_utf8_buffer() const {
 
 Vector<uint8_t> String::to_utf16_buffer() const {
 	const String *s = this;
-	if (s->empty()) {
+	if (s->is_empty()) {
 		return Vector<uint8_t>();
 	}
 	Char16String charstr = s->utf16();
 
 	Vector<uint8_t> retval;
-	size_t len = charstr.length() * 2;
+	size_t len = charstr.length() * sizeof(char16_t);
 	retval.resize(len);
 	uint8_t *w = retval.ptrw();
 	copymem(w, (const void *)charstr.ptr(), len);
@@ -4807,12 +4804,12 @@ Vector<uint8_t> String::to_utf16_buffer() const {
 
 Vector<uint8_t> String::to_utf32_buffer() const {
 	const String *s = this;
-	if (s->empty()) {
+	if (s->is_empty()) {
 		return Vector<uint8_t>();
 	}
 
 	Vector<uint8_t> retval;
-	size_t len = s->length() * 4;
+	size_t len = s->length() * sizeof(char32_t);
 	retval.resize(len);
 	uint8_t *w = retval.ptrw();
 	copymem(w, (const void *)s->ptr(), len);

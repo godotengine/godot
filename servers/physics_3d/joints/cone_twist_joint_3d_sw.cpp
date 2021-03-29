@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -92,9 +92,9 @@ ConeTwistJoint3DSW::ConeTwistJoint3DSW(Body3DSW *rbA, Body3DSW *rbB, const Trans
 	m_rbAFrame = rbAFrame;
 	m_rbBFrame = rbBFrame;
 
-	m_swingSpan1 = Math_PI / 4.0;
-	m_swingSpan2 = Math_PI / 4.0;
-	m_twistSpan = Math_PI * 2;
+	m_swingSpan1 = Math_TAU / 8.0;
+	m_swingSpan2 = Math_TAU / 8.0;
+	m_twistSpan = Math_TAU;
 	m_biasFactor = 0.3f;
 	m_relaxationFactor = 1.0f;
 

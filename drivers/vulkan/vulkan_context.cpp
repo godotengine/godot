@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -55,10 +55,29 @@ VKAPI_ATTR VkBool32 VKAPI_CALL VulkanContext::_debug_messenger_callback(
 		return VK_FALSE;
 	}
 	// This needs to be ignored because Validator is wrong here.
+	if (strstr(pCallbackData->pMessage, "Invalid SPIR-V binary version 1.3") != nullptr) {
+		return VK_FALSE;
+	}
+	// This needs to be ignored because Validator is wrong here.
+	if (strstr(pCallbackData->pMessage, "Shader requires flag") != nullptr) {
+		return VK_FALSE;
+	}
+
+	// This needs to be ignored because Validator is wrong here.
 	if (strstr(pCallbackData->pMessage, "SPIR-V module not valid: Pointer operand") != nullptr &&
 			strstr(pCallbackData->pMessage, "must be a memory object") != nullptr) {
 		return VK_FALSE;
 	}
+	/*
+	// This is a valid warning because its illegal in Vulkan, but in practice it should work according to VK_KHR_maintenance2
+	if (strstr(pCallbackData->pMessage, "VK_FORMAT_E5B9G9R9_UFLOAT_PACK32 with tiling VK_IMAGE_TILING_OPTIMAL does not support usage that includes VK_IMAGE_USAGE_STORAGE_BIT") != nullptr) {
+		return VK_FALSE;
+	}
+
+	if (strstr(pCallbackData->pMessage, "VK_FORMAT_R4G4B4A4_UNORM_PACK16 with tiling VK_IMAGE_TILING_OPTIMAL does not support usage that includes VK_IMAGE_USAGE_STORAGE_BIT") != nullptr) {
+		return VK_FALSE;
+	}
+*/
 	// Workaround for Vulkan-Loader usability bug: https://github.com/KhronosGroup/Vulkan-Loader/issues/262.
 	if (strstr(pCallbackData->pMessage, "wrong ELF class: ELFCLASS32") != nullptr) {
 		return VK_FALSE;
@@ -216,23 +235,23 @@ Error VulkanContext::_create_validation_layers() {
 }
 
 Error VulkanContext::_initialize_extensions() {
-	VkResult err;
 	uint32_t instance_extension_count = 0;
 
 	enabled_extension_count = 0;
 	enabled_layer_count = 0;
+	enabled_debug_utils = false;
 	/* Look for instance extensions */
 	VkBool32 surfaceExtFound = 0;
 	VkBool32 platformSurfaceExtFound = 0;
 	memset(extension_names, 0, sizeof(extension_names));
 
-	err = vkEnumerateInstanceExtensionProperties(nullptr, &instance_extension_count, nullptr);
-	ERR_FAIL_COND_V(err, ERR_CANT_CREATE);
+	VkResult err = vkEnumerateInstanceExtensionProperties(nullptr, &instance_extension_count, nullptr);
+	ERR_FAIL_COND_V(err != VK_SUCCESS && err != VK_INCOMPLETE, ERR_CANT_CREATE);
 
 	if (instance_extension_count > 0) {
 		VkExtensionProperties *instance_extensions = (VkExtensionProperties *)malloc(sizeof(VkExtensionProperties) * instance_extension_count);
 		err = vkEnumerateInstanceExtensionProperties(nullptr, &instance_extension_count, instance_extensions);
-		if (err) {
+		if (err != VK_SUCCESS && err != VK_INCOMPLETE) {
 			free(instance_extensions);
 			ERR_FAIL_V(ERR_CANT_CREATE);
 		}
@@ -252,9 +271,8 @@ Error VulkanContext::_initialize_extensions() {
 				}
 			}
 			if (!strcmp(VK_EXT_DEBUG_UTILS_EXTENSION_NAME, instance_extensions[i].extensionName)) {
-				if (use_validation_layers) {
-					extension_names[enabled_extension_count++] = VK_EXT_DEBUG_UTILS_EXTENSION_NAME;
-				}
+				extension_names[enabled_extension_count++] = VK_EXT_DEBUG_UTILS_EXTENSION_NAME;
+				enabled_debug_utils = true;
 			}
 			if (enabled_extension_count >= MAX_EXTENSIONS) {
 				free(instance_extensions);
@@ -302,7 +320,7 @@ Error VulkanContext::_create_physical_device() {
 		/*flags*/ 0,
 		/*pApplicationInfo*/ &app,
 		/*enabledLayerCount*/ enabled_layer_count,
-		/*ppEnabledLayerNames*/ (const char *const *)instance_validation_layers,
+		/*ppEnabledLayerNames*/ (const char *const *)enabled_layers,
 		/*enabledExtensionCount*/ enabled_extension_count,
 		/*ppEnabledExtensionNames*/ (const char *const *)extension_names,
 	};
@@ -313,7 +331,7 @@ Error VulkanContext::_create_physical_device() {
 	   * function to register the final callback.
 	   */
 	VkDebugUtilsMessengerCreateInfoEXT dbg_messenger_create_info;
-	if (use_validation_layers) {
+	if (enabled_debug_utils) {
 		// VK_EXT_debug_utils style
 		dbg_messenger_create_info.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_MESSENGER_CREATE_INFO_EXT;
 		dbg_messenger_create_info.pNext = nullptr;
@@ -362,7 +380,8 @@ Error VulkanContext::_create_physical_device() {
 		ERR_FAIL_V(ERR_CANT_CREATE);
 	}
 	/* for now, just grab the first physical device */
-	gpu = physical_devices[0];
+	uint32_t device_index = 0;
+	gpu = physical_devices[device_index];
 	free(physical_devices);
 
 	/* Look for device extensions */
@@ -370,6 +389,40 @@ Error VulkanContext::_create_physical_device() {
 	VkBool32 swapchainExtFound = 0;
 	enabled_extension_count = 0;
 	memset(extension_names, 0, sizeof(extension_names));
+
+	/* Get identifier properties */
+	vkGetPhysicalDeviceProperties(gpu, &gpu_props);
+
+	static const struct {
+		uint32_t id;
+		const char *name;
+	} vendor_names[] = {
+		{ 0x1002, "AMD" },
+		{ 0x1010, "ImgTec" },
+		{ 0x10DE, "NVIDIA" },
+		{ 0x13B5, "ARM" },
+		{ 0x5143, "Qualcomm" },
+		{ 0x8086, "INTEL" },
+		{ 0, nullptr },
+	};
+	device_name = gpu_props.deviceName;
+	pipeline_cache_id = String::hex_encode_buffer(gpu_props.pipelineCacheUUID, VK_UUID_SIZE);
+	pipeline_cache_id += "-driver-" + itos(gpu_props.driverVersion);
+	{
+		device_vendor = "Unknown";
+		uint32_t vendor_idx = 0;
+		while (vendor_names[vendor_idx].name != nullptr) {
+			if (gpu_props.vendorID == vendor_names[vendor_idx].id) {
+				device_vendor = vendor_names[vendor_idx].name;
+				break;
+			}
+			vendor_idx++;
+		}
+	}
+#ifdef DEBUG_ENABLED
+	print_line("Using Vulkan Device #" + itos(device_index) + ": " + device_vendor + " - " + device_name);
+#endif
+	device_api_version = gpu_props.apiVersion;
 
 	err = vkEnumerateDeviceExtensionProperties(gpu, nullptr, &device_extension_count, nullptr);
 	ERR_FAIL_COND_V(err, ERR_CANT_CREATE);
@@ -437,7 +490,7 @@ Error VulkanContext::_create_physical_device() {
 			" extension.\n\nDo you have a compatible Vulkan installable client driver (ICD) installed?\n"
 			"vkCreateInstance Failure");
 
-	if (use_validation_layers) {
+	if (enabled_debug_utils) {
 		// Setup VK_EXT_debug_utils function pointers always (we use them for
 		// debug labels and names).
 		CreateDebugUtilsMessengerEXT =
@@ -480,7 +533,6 @@ Error VulkanContext::_create_physical_device() {
 				break;
 		}
 	}
-	vkGetPhysicalDeviceProperties(gpu, &gpu_props);
 
 	/* Call with NULL data to get count */
 	vkGetPhysicalDeviceQueueFamilyProperties(gpu, &queue_family_count, nullptr);
@@ -493,6 +545,8 @@ Error VulkanContext::_create_physical_device() {
 	//  If app has specific feature requirements it should check supported
 	//  features based on this query
 	vkGetPhysicalDeviceFeatures(gpu, &physical_device_features);
+
+	physical_device_features.robustBufferAccess = false; //turn off robust buffer access, which can hamper performance on some hardware
 
 #define GET_INSTANCE_PROC_ADDR(inst, entrypoint)                                            \
 	{                                                                                       \
@@ -545,6 +599,7 @@ Error VulkanContext::_create_device() {
 	}
 	err = vkCreateDevice(gpu, &sdevice, nullptr, &device);
 	ERR_FAIL_COND_V(err, ERR_CANT_CREATE);
+
 	return OK;
 }
 
@@ -1010,7 +1065,6 @@ Error VulkanContext::_update_swap_chain(Window *window) {
 
 	{
 		const VkAttachmentDescription attachment = {
-
 			/*flags*/ 0,
 			/*format*/ format,
 			/*samples*/ VK_SAMPLE_COUNT_1_BIT,
@@ -1259,13 +1313,13 @@ Error VulkanContext::swap_buffers() {
 		DemoUpdateTargetIPD(demo);
 
 		// Note: a real application would position its geometry to that it's in
-		// the correct locatoin for when the next image is presented.  It might
+		// the correct location for when the next image is presented.  It might
 		// also wait, so that there's less latency between any input and when
 		// the next image is rendered/presented.  This demo program is so
 		// simple that it doesn't do either of those.
 	}
 #endif
-	// Wait for the image acquired semaphore to be signaled to ensure
+	// Wait for the image acquired semaphore to be signalled to ensure
 	// that the image won't be rendered to until the presentation
 	// engine has fully released ownership to the application, and it is
 	// okay to render to the image.
@@ -1331,7 +1385,7 @@ Error VulkanContext::swap_buffers() {
 		ERR_FAIL_COND_V(err, ERR_CANT_CREATE);
 	}
 
-	// If we are using separate queues we have to wait for image ownership,
+	// If we are using separate queues, we have to wait for image ownership,
 	// otherwise wait for draw complete
 	VkPresentInfoKHR present = {
 		/*sType*/ VK_STRUCTURE_TYPE_PRESENT_INFO_KHR,
@@ -1567,6 +1621,70 @@ void VulkanContext::local_device_free(RID p_local_device) {
 	local_device_owner.free(p_local_device);
 }
 
+void VulkanContext::command_begin_label(VkCommandBuffer p_command_buffer, String p_label_name, const Color p_color) {
+	if (!enabled_debug_utils) {
+		return;
+	}
+
+	CharString cs = p_label_name.utf8().get_data();
+	VkDebugUtilsLabelEXT label;
+	label.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_LABEL_EXT;
+	label.pNext = nullptr;
+	label.pLabelName = cs.get_data();
+	label.color[0] = p_color[0];
+	label.color[1] = p_color[1];
+	label.color[2] = p_color[2];
+	label.color[3] = p_color[3];
+	CmdBeginDebugUtilsLabelEXT(p_command_buffer, &label);
+}
+
+void VulkanContext::command_insert_label(VkCommandBuffer p_command_buffer, String p_label_name, const Color p_color) {
+	if (!enabled_debug_utils) {
+		return;
+	}
+	CharString cs = p_label_name.utf8().get_data();
+	VkDebugUtilsLabelEXT label;
+	label.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_LABEL_EXT;
+	label.pNext = nullptr;
+	label.pLabelName = cs.get_data();
+	label.color[0] = p_color[0];
+	label.color[1] = p_color[1];
+	label.color[2] = p_color[2];
+	label.color[3] = p_color[3];
+	CmdInsertDebugUtilsLabelEXT(p_command_buffer, &label);
+}
+
+void VulkanContext::command_end_label(VkCommandBuffer p_command_buffer) {
+	if (!enabled_debug_utils) {
+		return;
+	}
+	CmdEndDebugUtilsLabelEXT(p_command_buffer);
+}
+
+void VulkanContext::set_object_name(VkObjectType p_object_type, uint64_t p_object_handle, String p_object_name) {
+	if (!enabled_debug_utils) {
+		return;
+	}
+	CharString obj_data = p_object_name.utf8();
+	VkDebugUtilsObjectNameInfoEXT name_info;
+	name_info.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_OBJECT_NAME_INFO_EXT;
+	name_info.pNext = nullptr;
+	name_info.objectType = p_object_type;
+	name_info.objectHandle = p_object_handle;
+	name_info.pObjectName = obj_data.get_data();
+	SetDebugUtilsObjectNameEXT(device, &name_info);
+}
+
+String VulkanContext::get_device_vendor_name() const {
+	return device_vendor;
+}
+String VulkanContext::get_device_name() const {
+	return device_name;
+}
+String VulkanContext::get_device_pipeline_cache_uuid() const {
+	return pipeline_cache_id;
+}
+
 VulkanContext::VulkanContext() {
 	use_validation_layers = Engine::get_singleton()->is_validation_layers_enabled();
 
@@ -1587,7 +1705,7 @@ VulkanContext::~VulkanContext() {
 				vkDestroySemaphore(device, image_ownership_semaphores[i], nullptr);
 			}
 		}
-		if (inst_initialized && use_validation_layers) {
+		if (inst_initialized && enabled_debug_utils) {
 			DestroyDebugUtilsMessengerEXT(inst, dbg_messenger, nullptr);
 		}
 		vkDestroyDevice(device, nullptr);

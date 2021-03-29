@@ -26,7 +26,6 @@
 		<member name="steering" type="float" setter="set_steering" getter="get_steering" default="0.0">
 			The steering angle for the vehicle. Setting this to a non-zero value will result in the vehicle turning when it's moving. Wheels that have [member VehicleWheel3D.use_as_steering] set to [code]true[/code] will automatically be rotated.
 		</member>
-		<member name="weight" type="float" setter="set_weight" getter="get_weight" override="true" default="392.0" />
 	</members>
 	<constants>
 	</constants>

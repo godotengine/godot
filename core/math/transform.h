@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -51,8 +51,8 @@ public:
 	void rotate(const Vector3 &p_axis, real_t p_phi);
 	void rotate_basis(const Vector3 &p_axis, real_t p_phi);
 
-	void set_look_at(const Vector3 &p_eye, const Vector3 &p_target, const Vector3 &p_up);
-	Transform looking_at(const Vector3 &p_target, const Vector3 &p_up) const;
+	void set_look_at(const Vector3 &p_eye, const Vector3 &p_target, const Vector3 &p_up = Vector3(0, 1, 0));
+	Transform looking_at(const Vector3 &p_target, const Vector3 &p_up = Vector3(0, 1, 0)) const;
 
 	void scale(const Vector3 &p_scale);
 	Transform scaled(const Vector3 &p_scale) const;
@@ -144,8 +144,8 @@ _FORCE_INLINE_ Plane Transform::xform(const Plane &p_plane) const {
 _FORCE_INLINE_ Plane Transform::xform_inv(const Plane &p_plane) const {
 	Vector3 point = p_plane.normal * p_plane.d;
 	Vector3 point_dir = point + p_plane.normal;
-	xform_inv(point);
-	xform_inv(point_dir);
+	point = xform_inv(point);
+	point_dir = xform_inv(point_dir);
 
 	Vector3 normal = point_dir - point;
 	normal.normalize();

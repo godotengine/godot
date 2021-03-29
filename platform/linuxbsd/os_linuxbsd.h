@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -39,11 +39,11 @@
 #include "drivers/unix/os_unix.h"
 #include "joypad_linux.h"
 #include "servers/audio_server.h"
-#include "servers/rendering/rasterizer.h"
+#include "servers/rendering/renderer_compositor.h"
 #include "servers/rendering_server.h"
 
 class OS_LinuxBSD : public OS_Unix {
-	virtual void delete_main_loop();
+	virtual void delete_main_loop() override;
 
 	bool force_quit;
 
@@ -68,36 +68,36 @@ class OS_LinuxBSD : public OS_Unix {
 	MainLoop *main_loop;
 
 protected:
-	virtual void initialize();
-	virtual void finalize();
+	virtual void initialize() override;
+	virtual void finalize() override;
 
-	virtual void initialize_joypads();
+	virtual void initialize_joypads() override;
 
-	virtual void set_main_loop(MainLoop *p_main_loop);
+	virtual void set_main_loop(MainLoop *p_main_loop) override;
 
 public:
-	virtual String get_name() const;
+	virtual String get_name() const override;
 
-	virtual MainLoop *get_main_loop() const;
+	virtual MainLoop *get_main_loop() const override;
 
-	virtual String get_config_path() const;
-	virtual String get_data_path() const;
-	virtual String get_cache_path() const;
+	virtual String get_config_path() const override;
+	virtual String get_data_path() const override;
+	virtual String get_cache_path() const override;
 
-	virtual String get_system_dir(SystemDir p_dir) const;
+	virtual String get_system_dir(SystemDir p_dir) const override;
 
-	virtual Error shell_open(String p_uri);
+	virtual Error shell_open(String p_uri) override;
 
-	virtual String get_unique_id() const;
+	virtual String get_unique_id() const override;
 
-	virtual bool _check_internal_feature_support(const String &p_feature);
+	virtual bool _check_internal_feature_support(const String &p_feature) override;
 
 	void run();
 
-	void disable_crash_handler();
-	bool is_disable_crash_handler() const;
+	virtual void disable_crash_handler() override;
+	virtual bool is_disable_crash_handler() const override;
 
-	virtual Error move_to_trash(const String &p_path);
+	virtual Error move_to_trash(const String &p_path) override;
 
 	OS_LinuxBSD();
 };

@@ -15,13 +15,16 @@
 		<member name="camera_effects" type="CameraEffects" setter="set_camera_effects" getter="get_camera_effects">
 		</member>
 		<member name="direct_space_state" type="PhysicsDirectSpaceState3D" setter="" getter="get_direct_space_state">
-			Direct access to the world's physics 3D space state. Used for querying current and potential collisions. Must only be accessed from within [code]_physics_process(delta)[/code].
+			Direct access to the world's physics 3D space state. Used for querying current and potential collisions.
 		</member>
 		<member name="environment" type="Environment" setter="set_environment" getter="get_environment">
 			The World3D's [Environment].
 		</member>
 		<member name="fallback_environment" type="Environment" setter="set_fallback_environment" getter="get_fallback_environment">
 			The World3D's fallback_environment will be used if the World3D's [Environment] fails or is missing.
+		</member>
+		<member name="navigation_map" type="RID" setter="" getter="get_navigation_map">
+			The [RID] of this world's navigation map. Used by the [NavigationServer3D].
 		</member>
 		<member name="scenario" type="RID" setter="" getter="get_scenario">
 			The World3D's visual scenario.

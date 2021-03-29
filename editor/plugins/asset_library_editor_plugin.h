@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -89,10 +89,10 @@ class EditorAssetLibraryItemDescription : public ConfirmationDialog {
 	PanelContainer *previews_bg;
 
 	struct Preview {
-		int id;
-		bool is_video;
+		int id = 0;
+		bool is_video = false;
 		String video_link;
-		Button *button;
+		Button *button = nullptr;
 		Ref<Texture2D> image;
 	};
 
@@ -176,6 +176,7 @@ class EditorAssetLibrary : public PanelContainer {
 
 	void _asset_open();
 	void _asset_file_selected(const String &p_file);
+	void _update_repository_options();
 
 	PanelContainer *library_scroll_bg;
 	ScrollContainer *library_scroll;
@@ -234,12 +235,12 @@ class EditorAssetLibrary : public PanelContainer {
 	};
 
 	struct ImageQueue {
-		bool active;
-		int queue_id;
-		ImageType image_type;
-		int image_index;
+		bool active = false;
+		int queue_id = 0;
+		ImageType image_type = ImageType::IMAGE_QUEUE_ICON;
+		int image_index = 0;
 		String image_url;
-		HTTPRequest *request;
+		HTTPRequest *request = nullptr;
 		ObjectID target;
 	};
 
@@ -298,7 +299,7 @@ class EditorAssetLibrary : public PanelContainer {
 protected:
 	static void _bind_methods();
 	void _notification(int p_what);
-	void _unhandled_input(const Ref<InputEvent> &p_event);
+	void _unhandled_key_input(const Ref<InputEvent> &p_event);
 
 public:
 	void disable_community_support();

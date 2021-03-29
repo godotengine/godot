@@ -13,9 +13,13 @@ android {
     compileSdkVersion versions.compileSdk
     buildToolsVersion versions.buildTools
 
+    ndkVersion versions.ndkVersion
+
     defaultConfig {
         minSdkVersion versions.minSdk
         targetSdkVersion versions.targetSdk
+
+        manifestPlaceholders = [godotLibraryVersion: getGodotLibraryVersion()]
     }
 
     compileOptions {
@@ -32,8 +36,10 @@ android {
         exclude 'META-INF/LICENSE'
         exclude 'META-INF/NOTICE'
 
-        // Should be uncommented for development purpose within Android Studio
-        // doNotStrip '**/*.so'
+        // 'doNotStrip' is enabled for development within Android Studio
+        if (shouldNotStrip()) {
+            doNotStrip '**/*.so'
+        }
     }
 
     sourceSets {
@@ -68,7 +74,7 @@ android {
         File sconsExecutableFile = null
         def sconsName = "scons"
         def sconsExts = (org.gradle.internal.os.OperatingSystem.current().isWindows()
-            ? [".bat", ".exe"]
+            ? [".bat", ".cmd", ".ps1", ".exe"]
             : [""])
         logger.lifecycle("Looking for $sconsName executable path")
         for (ext in sconsExts) {

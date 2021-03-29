@@ -6,6 +6,7 @@ env_crypto = env.Clone()
 
 is_builtin = env["builtin_mbedtls"]
 has_module = env["module_mbedtls_enabled"]
+thirdparty_obj = []
 
 if is_builtin or not has_module:
     # Use our headers for builtin or if the module is not going to be compiled.
@@ -35,6 +36,16 @@ if not has_module:
         "godot_core_mbedtls_platform.c",
     ]
     thirdparty_mbedtls_sources = [thirdparty_mbedtls_dir + file for file in thirdparty_mbedtls_sources]
-    env_thirdparty.add_source_files(env.core_sources, thirdparty_mbedtls_sources)
+    env_thirdparty.add_source_files(thirdparty_obj, thirdparty_mbedtls_sources)
+    env.core_sources += thirdparty_obj
 
-env_crypto.add_source_files(env.core_sources, "*.cpp")
+
+# Godot source files
+
+core_obj = []
+
+env_crypto.add_source_files(core_obj, "*.cpp")
+env.core_sources += core_obj
+
+# Needed to force rebuilding the core files when the thirdparty library is updated.
+env.Depends(core_obj, thirdparty_obj)

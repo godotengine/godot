@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -57,9 +57,6 @@ private:
 	double last_click_ms = 0;
 	int last_click_button_index = -1;
 
-	int last_width = 0;
-	int last_height = 0;
-
 	bool swap_cancel_ok = false;
 
 	// utilities
@@ -78,6 +75,8 @@ private:
 	static EM_BOOL keypress_callback(int p_event_type, const EmscriptenKeyboardEvent *p_event, void *p_user_data);
 	static EM_BOOL keyup_callback(int p_event_type, const EmscriptenKeyboardEvent *p_event, void *p_user_data);
 
+	static void vk_input_text_callback(const char *p_text, int p_cursor);
+
 	static EM_BOOL mousemove_callback(int p_event_type, const EmscriptenMouseEvent *p_event, void *p_user_data);
 	static EM_BOOL mouse_button_callback(int p_event_type, const EmscriptenMouseEvent *p_event, void *p_user_data);
 
@@ -86,7 +85,7 @@ private:
 	static EM_BOOL touch_press_callback(int p_event_type, const EmscriptenTouchEvent *p_event, void *p_user_data);
 	static EM_BOOL touchmove_callback(int p_event_type, const EmscriptenTouchEvent *p_event, void *p_user_data);
 
-	static EM_BOOL gamepad_change_callback(int p_event_type, const EmscriptenGamepadEvent *p_event, void *p_user_data);
+	static void gamepad_callback(int p_index, int p_connected, const char *p_id, const char *p_guid);
 	void process_joypads();
 
 	static Vector<String> get_rendering_drivers_func();
@@ -136,6 +135,10 @@ public:
 	Size2i screen_get_size(int p_screen = SCREEN_OF_MAIN_WINDOW) const override;
 	Rect2i screen_get_usable_rect(int p_screen = SCREEN_OF_MAIN_WINDOW) const override;
 	int screen_get_dpi(int p_screen = SCREEN_OF_MAIN_WINDOW) const override;
+	float screen_get_scale(int p_screen = SCREEN_OF_MAIN_WINDOW) const override;
+
+	void virtual_keyboard_show(const String &p_existing_text, const Rect2 &p_screen_rect = Rect2(), bool p_multiline = false, int p_max_input_length = -1, int p_cursor_start = -1, int p_cursor_end = -1) override;
+	void virtual_keyboard_hide() override;
 
 	// windows
 	Vector<DisplayServer::WindowID> get_window_list() const override;

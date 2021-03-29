@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -155,7 +155,7 @@ void AudioStreamPreviewGenerator::_preview_thread(void *p_preview) {
 
 	preview->playback->stop();
 
-	preview->generating = false;
+	preview->generating.clear();
 }
 
 Ref<AudioStreamPreview> AudioStreamPreviewGenerator::generate_preview(const Ref<AudioStream> &p_stream) {
@@ -172,7 +172,7 @@ Ref<AudioStreamPreview> AudioStreamPreviewGenerator::generate_preview(const Ref<
 	Preview *preview = &previews[p_stream->get_instance_id()];
 	preview->base_stream = p_stream;
 	preview->playback = preview->base_stream->instance_playback();
-	preview->generating = true;
+	preview->generating.set();
 	preview->id = p_stream->get_instance_id();
 
 	float len_s = preview->base_stream->get_length();
@@ -197,7 +197,8 @@ Ref<AudioStreamPreview> AudioStreamPreviewGenerator::generate_preview(const Ref<
 	preview->preview->length = len_s;
 
 	if (preview->playback.is_valid()) {
-		preview->thread = Thread::create(_preview_thread, preview);
+		preview->thread = memnew(Thread);
+		preview->thread->start(_preview_thread, preview);
 	}
 
 	return preview->preview;
@@ -216,9 +217,10 @@ void AudioStreamPreviewGenerator::_notification(int p_what) {
 	if (p_what == NOTIFICATION_PROCESS) {
 		List<ObjectID> to_erase;
 		for (Map<ObjectID, Preview>::Element *E = previews.front(); E; E = E->next()) {
-			if (!E->get().generating) {
+			if (!E->get().generating.is_set()) {
 				if (E->get().thread) {
-					Thread::wait_to_finish(E->get().thread);
+					E->get().thread->wait_to_finish();
+					memdelete(E->get().thread);
 					E->get().thread = nullptr;
 				}
 				if (!ObjectDB::get_instance(E->key())) { //no longer in use, get rid of preview

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -43,7 +43,6 @@ void VisualInstance3D::_update_visibility() {
 		return;
 	}
 
-	_change_notify("visible");
 	RS::get_singleton()->instance_set_visible(get_instance(), is_visible_in_tree());
 }
 
@@ -135,7 +134,6 @@ RID VisualInstance3D::get_base() const {
 VisualInstance3D::VisualInstance3D() {
 	instance = RenderingServer::get_singleton()->instance_create();
 	RenderingServer::get_singleton()->instance_attach_object_instance_id(instance, get_instance_id());
-	layers = 1;
 	set_notify_transform(true);
 }
 
@@ -278,6 +276,16 @@ float GeometryInstance3D::get_extra_cull_margin() const {
 	return extra_cull_margin;
 }
 
+void GeometryInstance3D::set_lod_bias(float p_bias) {
+	ERR_FAIL_COND(p_bias < 0.0);
+	lod_bias = p_bias;
+	RS::get_singleton()->instance_geometry_set_lod_bias(get_instance(), lod_bias);
+}
+
+float GeometryInstance3D::get_lod_bias() const {
+	return lod_bias;
+}
+
 void GeometryInstance3D::set_shader_instance_uniform(const StringName &p_uniform, const Variant &p_value) {
 	if (p_value.get_type() == Variant::NIL) {
 		Variant def_value = RS::get_singleton()->instance_geometry_get_shader_parameter_default_value(get_instance(), p_uniform);
@@ -361,6 +369,9 @@ void GeometryInstance3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_gi_mode", "mode"), &GeometryInstance3D::set_gi_mode);
 	ClassDB::bind_method(D_METHOD("get_gi_mode"), &GeometryInstance3D::get_gi_mode);
 
+	ClassDB::bind_method(D_METHOD("set_lod_bias", "bias"), &GeometryInstance3D::set_lod_bias);
+	ClassDB::bind_method(D_METHOD("get_lod_bias"), &GeometryInstance3D::get_lod_bias);
+
 	ClassDB::bind_method(D_METHOD("set_custom_aabb", "aabb"), &GeometryInstance3D::set_custom_aabb);
 
 	ClassDB::bind_method(D_METHOD("get_aabb"), &GeometryInstance3D::get_aabb);
@@ -369,6 +380,7 @@ void GeometryInstance3D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "material_override", PROPERTY_HINT_RESOURCE_TYPE, "ShaderMaterial,StandardMaterial3D", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_DEFERRED_SET_RESOURCE), "set_material_override", "get_material_override");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "cast_shadow", PROPERTY_HINT_ENUM, "Off,On,Double-Sided,Shadows Only"), "set_cast_shadows_setting", "get_cast_shadows_setting");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "extra_cull_margin", PROPERTY_HINT_RANGE, "0,16384,0.01"), "set_extra_cull_margin", "get_extra_cull_margin");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "lod_bias", PROPERTY_HINT_RANGE, "0.001,128,0.001"), "set_lod_bias", "get_lod_bias");
 	ADD_GROUP("Global Illumination", "gi_");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "gi_mode", PROPERTY_HINT_ENUM, "Disabled,Baked,Dynamic"), "set_gi_mode", "get_gi_mode");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "gi_lightmap_scale", PROPERTY_HINT_ENUM, "1x,2x,4x,8x"), "set_lightmap_scale", "get_lightmap_scale");
@@ -398,15 +410,5 @@ void GeometryInstance3D::_bind_methods() {
 }
 
 GeometryInstance3D::GeometryInstance3D() {
-	lod_min_distance = 0;
-	lod_max_distance = 0;
-	lod_min_hysteresis = 0;
-	lod_max_hysteresis = 0;
-
-	gi_mode = GI_MODE_DISABLED;
-	lightmap_scale = LIGHTMAP_SCALE_1X;
-
-	shadow_casting_setting = SHADOW_CASTING_SETTING_ON;
-	extra_cull_margin = 0;
 	//RS::get_singleton()->instance_geometry_set_baked_light_texture_index(get_instance(),0);
 }

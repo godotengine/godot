@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -43,8 +43,8 @@
 #include "joypad_windows.h"
 #include "key_mapping_windows.h"
 #include "servers/audio_server.h"
-#include "servers/rendering/rasterizer.h"
-#include "servers/rendering/rasterizer_rd/rasterizer_rd.h"
+#include "servers/rendering/renderer_compositor.h"
+#include "servers/rendering/renderer_rd/renderer_compositor_rd.h"
 #include "servers/rendering_server.h"
 
 #ifdef XAUDIO2_ENABLED
@@ -264,7 +264,6 @@ class DisplayServerWindows : public DisplayServer {
 
 	_THREAD_SAFE_CLASS_
 
-public:
 	// WinTab API
 	static bool wintab_available;
 	static WTOpenPtr wintab_WTOpen;
@@ -279,8 +278,9 @@ public:
 	static GetPointerPenInfoPtr win8p_GetPointerPenInfo;
 
 	void _update_tablet_ctx(const String &p_old_driver, const String &p_new_driver);
+	String tablet_driver;
+	Vector<String> tablet_drivers;
 
-private:
 	void GetMaskBitmaps(HBITMAP hSourceBitmap, COLORREF clrTransparent, OUT HBITMAP &hAndMaskBitmap, OUT HBITMAP &hXorMaskBitmap);
 
 	enum {
@@ -339,6 +339,14 @@ private:
 		bool no_focus = false;
 		bool window_has_focus = false;
 
+		// Used to transfer data between events using timer.
+		WPARAM saved_wparam;
+		LPARAM saved_lparam;
+
+		// Timers.
+		uint32_t move_timer_id = 0U;
+		uint32_t focus_timer_id = 0U;
+
 		HANDLE wtctx;
 		LOGCONTEXTW wtlc;
 		int min_pressure;
@@ -387,8 +395,6 @@ private:
 
 	WindowID last_focused_window = INVALID_WINDOW_ID;
 
-	uint32_t move_timer_id;
-
 	HCURSOR hCursor;
 
 	WNDPROC user_proc = nullptr;
@@ -411,19 +417,20 @@ private:
 	WNDCLASSEXW wc;
 
 	HCURSOR cursors[CURSOR_MAX] = { nullptr };
-	CursorShape cursor_shape;
+	CursorShape cursor_shape = CursorShape::CURSOR_ARROW;
 	Map<CursorShape, Vector<Variant>> cursors_cache;
 
 	void _drag_event(WindowID p_window, float p_x, float p_y, int idx);
 	void _touch_event(WindowID p_window, bool p_pressed, float p_x, float p_y, int idx);
 
-	void _update_window_style(WindowID p_window, bool p_repaint = true, bool p_maximized = false);
+	void _update_window_style(WindowID p_window, bool p_repaint = true);
 	void _update_window_mouse_passthrough(WindowID p_window);
 
 	void _update_real_mouse_position(WindowID p_window);
 
 	void _set_mouse_mode_impl(MouseMode p_mode);
 
+	void _process_activate_event(WindowID p_window_id, WPARAM wParam, LPARAM lParam);
 	void _process_key_events();
 
 	static void _dispatch_input_events(const Ref<InputEvent> &p_event);
@@ -534,6 +541,11 @@ public:
 	virtual void keyboard_set_current_layout(int p_index);
 	virtual String keyboard_get_layout_language(int p_index) const;
 	virtual String keyboard_get_layout_name(int p_index) const;
+
+	virtual int tablet_get_driver_count() const;
+	virtual String tablet_get_driver_name(int p_driver) const;
+	virtual String tablet_get_current_driver() const;
+	virtual void tablet_set_current_driver(const String &p_driver);
 
 	virtual void process_events();
 

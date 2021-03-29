@@ -19,13 +19,6 @@
 				If active, returns the name of the associated controller if provided by the AR/VR SDK used.
 			</description>
 		</method>
-		<method name="get_hand" qualifiers="const">
-			<return type="int" enum="XRPositionalTracker.TrackerHand">
-			</return>
-			<description>
-				Returns the hand holding this controller, if known. See [enum XRPositionalTracker.TrackerHand].
-			</description>
-		</method>
 		<method name="get_is_active" qualifiers="const">
 			<return type="bool">
 			</return>
@@ -56,13 +49,20 @@
 				If provided by the [XRInterface], this returns a mesh associated with the controller. This can be used to visualize the controller.
 			</description>
 		</method>
+		<method name="get_tracker_hand" qualifiers="const">
+			<return type="int" enum="XRPositionalTracker.TrackerHand">
+			</return>
+			<description>
+				Returns the hand holding this controller, if known. See [enum XRPositionalTracker.TrackerHand].
+			</description>
+		</method>
 		<method name="is_button_pressed" qualifiers="const">
 			<return type="bool">
 			</return>
 			<argument index="0" name="button" type="int">
 			</argument>
 			<description>
-				Returns [code]true[/code] if the button at index [code]button[/code] is pressed. See [enum JoyButtonList].
+				Returns [code]true[/code] if the button at index [code]button[/code] is pressed. See [enum JoyButton].
 			</description>
 		</method>
 	</methods>
@@ -86,7 +86,7 @@
 				Emitted when a button on this controller is pressed.
 			</description>
 		</signal>
-		<signal name="button_release">
+		<signal name="button_released">
 			<argument index="0" name="button" type="int">
 			</argument>
 			<description>

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -30,6 +30,7 @@
 
 #include "register_types.h"
 
+#include "image_compress_pvrtc.h"
 #include "texture_loader_pvr.h"
 
 static Ref<ResourceFormatPVR> resource_loader_pvr;
@@ -37,6 +38,8 @@ static Ref<ResourceFormatPVR> resource_loader_pvr;
 void register_pvr_types() {
 	resource_loader_pvr.instance();
 	ResourceLoader::add_resource_format_loader(resource_loader_pvr);
+
+	_register_pvrtc_compress_func();
 }
 
 void unregister_pvr_types() {

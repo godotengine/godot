@@ -6,15 +6,25 @@
 	<description>
 		SpinBox is a numerical input text field. It allows entering integers and floats.
 		[b]Example:[/b]
-		[codeblock]
+		[codeblocks]
+		[gdscript]
 		var spin_box = SpinBox.new()
 		add_child(spin_box)
 		var line_edit = spin_box.get_line_edit()
 		line_edit.context_menu_enabled = false
 		spin_box.align = LineEdit.ALIGN_RIGHT
-		[/codeblock]
+		[/gdscript]
+		[csharp]
+		var spinBox = new SpinBox();
+		AddChild(spinBox);
+		var lineEdit = spinBox.GetLineEdit();
+		lineEdit.ContextMenuEnabled = false;
+		spinBox.Align = LineEdit.AlignEnum.Right;
+		[/csharp]
+		[/codeblocks]
 		The above code will create a [SpinBox], disable context menu on it and set the text alignment to right.
 		See [Range] class for more options over the [SpinBox].
+		[b]Note:[/b] [SpinBox] relies on an underlying [LineEdit] node. To theme a [SpinBox]'s background, add theme items for [LineEdit] and customize them.
 	</description>
 	<tutorials>
 	</tutorials>

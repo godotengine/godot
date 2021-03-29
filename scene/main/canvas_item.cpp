@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -203,7 +203,7 @@ CanvasItemMaterial::LightMode CanvasItemMaterial::get_light_mode() const {
 void CanvasItemMaterial::set_particles_animation(bool p_particles_anim) {
 	particles_animation = p_particles_anim;
 	_queue_shader_change();
-	_change_notify();
+	notify_property_list_changed();
 }
 
 bool CanvasItemMaterial::get_particles_animation() const {
@@ -292,15 +292,10 @@ void CanvasItemMaterial::_bind_methods() {
 
 CanvasItemMaterial::CanvasItemMaterial() :
 		element(this) {
-	blend_mode = BLEND_MODE_MIX;
-	light_mode = LIGHT_MODE_NORMAL;
-	particles_animation = false;
-
 	set_particles_anim_h_frames(1);
 	set_particles_anim_v_frames(1);
 	set_particles_anim_loop(false);
 
-	current_key.key = 0;
 	current_key.invalid_key = 1;
 	_queue_shader_change();
 }
@@ -364,7 +359,7 @@ void CanvasItem::_propagate_visibility_changed(bool p_visible) {
 	if (p_visible) {
 		update(); //todo optimize
 	} else {
-		emit_signal(SceneStringNames::get_singleton()->hide);
+		emit_signal(SceneStringNames::get_singleton()->hidden);
 	}
 	_block();
 
@@ -392,7 +387,6 @@ void CanvasItem::show() {
 	}
 
 	_propagate_visibility_changed(true);
-	_change_notify("visible");
 }
 
 void CanvasItem::hide() {
@@ -408,7 +402,6 @@ void CanvasItem::hide() {
 	}
 
 	_propagate_visibility_changed(false);
-	_change_notify("visible");
 }
 
 CanvasItem *CanvasItem::current_item_drawn = nullptr;
@@ -736,39 +729,39 @@ void CanvasItem::item_rect_changed(bool p_size_changed) {
 	emit_signal(SceneStringNames::get_singleton()->item_rect_changed);
 }
 
-void CanvasItem::draw_line(const Point2 &p_from, const Point2 &p_to, const Color &p_color, float p_width) {
+void CanvasItem::draw_line(const Point2 &p_from, const Point2 &p_to, const Color &p_color, real_t p_width) {
 	ERR_FAIL_COND_MSG(!drawing, "Drawing is only allowed inside NOTIFICATION_DRAW, _draw() function or 'draw' signal.");
 
 	RenderingServer::get_singleton()->canvas_item_add_line(canvas_item, p_from, p_to, p_color, p_width);
 }
 
-void CanvasItem::draw_polyline(const Vector<Point2> &p_points, const Color &p_color, float p_width) {
+void CanvasItem::draw_polyline(const Vector<Point2> &p_points, const Color &p_color, real_t p_width, bool p_antialiased) {
 	ERR_FAIL_COND_MSG(!drawing, "Drawing is only allowed inside NOTIFICATION_DRAW, _draw() function or 'draw' signal.");
 
 	Vector<Color> colors;
 	colors.push_back(p_color);
-	RenderingServer::get_singleton()->canvas_item_add_polyline(canvas_item, p_points, colors, p_width);
+	RenderingServer::get_singleton()->canvas_item_add_polyline(canvas_item, p_points, colors, p_width, p_antialiased);
 }
 
-void CanvasItem::draw_polyline_colors(const Vector<Point2> &p_points, const Vector<Color> &p_colors, float p_width) {
+void CanvasItem::draw_polyline_colors(const Vector<Point2> &p_points, const Vector<Color> &p_colors, real_t p_width, bool p_antialiased) {
 	ERR_FAIL_COND_MSG(!drawing, "Drawing is only allowed inside NOTIFICATION_DRAW, _draw() function or 'draw' signal.");
 
-	RenderingServer::get_singleton()->canvas_item_add_polyline(canvas_item, p_points, p_colors, p_width);
+	RenderingServer::get_singleton()->canvas_item_add_polyline(canvas_item, p_points, p_colors, p_width, p_antialiased);
 }
 
-void CanvasItem::draw_arc(const Vector2 &p_center, float p_radius, float p_start_angle, float p_end_angle, int p_point_count, const Color &p_color, float p_width) {
+void CanvasItem::draw_arc(const Vector2 &p_center, real_t p_radius, real_t p_start_angle, real_t p_end_angle, int p_point_count, const Color &p_color, real_t p_width, bool p_antialiased) {
 	Vector<Point2> points;
 	points.resize(p_point_count);
-	const float delta_angle = p_end_angle - p_start_angle;
+	const real_t delta_angle = p_end_angle - p_start_angle;
 	for (int i = 0; i < p_point_count; i++) {
-		float theta = (i / (p_point_count - 1.0f)) * delta_angle + p_start_angle;
+		real_t theta = (i / (p_point_count - 1.0f)) * delta_angle + p_start_angle;
 		points.set(i, p_center + Vector2(Math::cos(theta), Math::sin(theta)) * p_radius);
 	}
 
-	draw_polyline(points, p_color, p_width);
+	draw_polyline(points, p_color, p_width, p_antialiased);
 }
 
-void CanvasItem::draw_multiline(const Vector<Point2> &p_points, const Color &p_color, float p_width) {
+void CanvasItem::draw_multiline(const Vector<Point2> &p_points, const Color &p_color, real_t p_width) {
 	ERR_FAIL_COND_MSG(!drawing, "Drawing is only allowed inside NOTIFICATION_DRAW, _draw() function or 'draw' signal.");
 
 	Vector<Color> colors;
@@ -776,13 +769,13 @@ void CanvasItem::draw_multiline(const Vector<Point2> &p_points, const Color &p_c
 	RenderingServer::get_singleton()->canvas_item_add_multiline(canvas_item, p_points, colors, p_width);
 }
 
-void CanvasItem::draw_multiline_colors(const Vector<Point2> &p_points, const Vector<Color> &p_colors, float p_width) {
+void CanvasItem::draw_multiline_colors(const Vector<Point2> &p_points, const Vector<Color> &p_colors, real_t p_width) {
 	ERR_FAIL_COND_MSG(!drawing, "Drawing is only allowed inside NOTIFICATION_DRAW, _draw() function or 'draw' signal.");
 
 	RenderingServer::get_singleton()->canvas_item_add_multiline(canvas_item, p_points, p_colors, p_width);
 }
 
-void CanvasItem::draw_rect(const Rect2 &p_rect, const Color &p_color, bool p_filled, float p_width) {
+void CanvasItem::draw_rect(const Rect2 &p_rect, const Color &p_color, bool p_filled, real_t p_width) {
 	ERR_FAIL_COND_MSG(!drawing, "Drawing is only allowed inside NOTIFICATION_DRAW, _draw() function or 'draw' signal.");
 
 	if (p_filled) {
@@ -794,7 +787,7 @@ void CanvasItem::draw_rect(const Rect2 &p_rect, const Color &p_color, bool p_fil
 	} else {
 		// Thick lines are offset depending on their width to avoid partial overlapping.
 		// Thin lines don't require an offset, so don't apply one in this case
-		float offset;
+		real_t offset;
 		if (p_width >= 2) {
 			offset = p_width / 2.0;
 		} else {
@@ -828,7 +821,7 @@ void CanvasItem::draw_rect(const Rect2 &p_rect, const Color &p_color, bool p_fil
 	}
 }
 
-void CanvasItem::draw_circle(const Point2 &p_pos, float p_radius, const Color &p_color) {
+void CanvasItem::draw_circle(const Point2 &p_pos, real_t p_radius, const Color &p_color) {
 	ERR_FAIL_COND_MSG(!drawing, "Drawing is only allowed inside NOTIFICATION_DRAW, _draw() function or 'draw' signal.");
 
 	RenderingServer::get_singleton()->canvas_item_add_circle(canvas_item, p_pos, p_radius, p_color);
@@ -863,14 +856,14 @@ void CanvasItem::draw_style_box(const Ref<StyleBox> &p_style_box, const Rect2 &p
 	p_style_box->draw(canvas_item, p_rect);
 }
 
-void CanvasItem::draw_primitive(const Vector<Point2> &p_points, const Vector<Color> &p_colors, const Vector<Point2> &p_uvs, Ref<Texture2D> p_texture, float p_width) {
+void CanvasItem::draw_primitive(const Vector<Point2> &p_points, const Vector<Color> &p_colors, const Vector<Point2> &p_uvs, Ref<Texture2D> p_texture, real_t p_width) {
 	ERR_FAIL_COND_MSG(!drawing, "Drawing is only allowed inside NOTIFICATION_DRAW, _draw() function or 'draw' signal.");
 
 	RID rid = p_texture.is_valid() ? p_texture->get_rid() : RID();
 	RenderingServer::get_singleton()->canvas_item_add_primitive(canvas_item, p_points, p_colors, p_uvs, rid, p_width);
 }
 
-void CanvasItem::draw_set_transform(const Point2 &p_offset, float p_rot, const Size2 &p_scale) {
+void CanvasItem::draw_set_transform(const Point2 &p_offset, real_t p_rot, const Size2 &p_scale) {
 	ERR_FAIL_COND_MSG(!drawing, "Drawing is only allowed inside NOTIFICATION_DRAW, _draw() function or 'draw' signal.");
 
 	Transform2D xform(p_rot, p_offset);
@@ -914,23 +907,24 @@ void CanvasItem::draw_multimesh(const Ref<MultiMesh> &p_multimesh, const Ref<Tex
 	RenderingServer::get_singleton()->canvas_item_add_multimesh(canvas_item, p_multimesh->get_rid(), texture_rid);
 }
 
-void CanvasItem::draw_string(const Ref<Font> &p_font, const Point2 &p_pos, const String &p_text, const Color &p_modulate, int p_clip_w) {
+void CanvasItem::draw_string(const Ref<Font> &p_font, const Point2 &p_pos, const String &p_text, HAlign p_align, real_t p_width, int p_size, const Color &p_modulate, int p_outline_size, const Color &p_outline_modulate, uint8_t p_flags) const {
 	ERR_FAIL_COND_MSG(!drawing, "Drawing is only allowed inside NOTIFICATION_DRAW, _draw() function or 'draw' signal.");
-
 	ERR_FAIL_COND(p_font.is_null());
-	p_font->draw(canvas_item, p_pos, p_text, p_modulate, p_clip_w);
+	p_font->draw_string(canvas_item, p_pos, p_text, p_align, p_width, p_size, p_modulate, p_outline_size, p_outline_modulate, p_flags);
 }
 
-float CanvasItem::draw_char(const Ref<Font> &p_font, const Point2 &p_pos, const String &p_char, const String &p_next, const Color &p_modulate) {
-	ERR_FAIL_COND_V_MSG(!drawing, 0, "Drawing is only allowed inside NOTIFICATION_DRAW, _draw() function or 'draw' signal.");
+void CanvasItem::draw_multiline_string(const Ref<Font> &p_font, const Point2 &p_pos, const String &p_text, HAlign p_align, real_t p_width, int p_max_lines, int p_size, const Color &p_modulate, int p_outline_size, const Color &p_outline_modulate, uint8_t p_flags) const {
+	ERR_FAIL_COND_MSG(!drawing, "Drawing is only allowed inside NOTIFICATION_DRAW, _draw() function or 'draw' signal.");
+	ERR_FAIL_COND(p_font.is_null());
+	p_font->draw_multiline_string(canvas_item, p_pos, p_text, p_align, p_width, p_max_lines, p_size, p_modulate, p_outline_size, p_outline_modulate, p_flags);
+}
 
-	ERR_FAIL_COND_V(p_char.length() != 1, 0);
-	ERR_FAIL_COND_V(p_font.is_null(), 0);
+real_t CanvasItem::draw_char(const Ref<Font> &p_font, const Point2 &p_pos, const String &p_char, const String &p_next, int p_size, const Color &p_modulate, int p_outline_size, const Color &p_outline_modulate) const {
+	ERR_FAIL_COND_V_MSG(!drawing, 0.f, "Drawing is only allowed inside NOTIFICATION_DRAW, _draw() function or 'draw' signal.");
+	ERR_FAIL_COND_V(p_font.is_null(), 0.f);
+	ERR_FAIL_COND_V(p_char.length() != 1, 0.f);
 
-	if (p_font->has_outline()) {
-		p_font->draw_char(canvas_item, p_pos, p_char[0], p_next.get_data()[0], Color(1, 1, 1), true);
-	}
-	return p_font->draw_char(canvas_item, p_pos, p_char[0], p_next.get_data()[0], p_modulate);
+	return p_font->draw_char(canvas_item, p_pos, p_char[0], p_next.get_data()[0], p_size, p_modulate, p_outline_size, p_outline_modulate);
 }
 
 void CanvasItem::_notify_transform(CanvasItem *p_node) {
@@ -1039,7 +1033,7 @@ void CanvasItem::set_material(const Ref<Material> &p_material) {
 		rid = material->get_rid();
 	}
 	RS::get_singleton()->canvas_item_set_material(canvas_item, rid);
-	_change_notify(); //properties for material exposed
+	notify_property_list_changed(); //properties for material exposed
 }
 
 void CanvasItem::set_use_parent_material(bool p_use_parent_material) {
@@ -1144,9 +1138,9 @@ void CanvasItem::_bind_methods() {
 	//ClassDB::bind_method(D_METHOD("get_transform"),&CanvasItem::get_transform);
 
 	ClassDB::bind_method(D_METHOD("draw_line", "from", "to", "color", "width"), &CanvasItem::draw_line, DEFVAL(1.0));
-	ClassDB::bind_method(D_METHOD("draw_polyline", "points", "color", "width"), &CanvasItem::draw_polyline, DEFVAL(1.0));
-	ClassDB::bind_method(D_METHOD("draw_polyline_colors", "points", "colors", "width"), &CanvasItem::draw_polyline_colors, DEFVAL(1.0));
-	ClassDB::bind_method(D_METHOD("draw_arc", "center", "radius", "start_angle", "end_angle", "point_count", "color", "width"), &CanvasItem::draw_arc, DEFVAL(1.0));
+	ClassDB::bind_method(D_METHOD("draw_polyline", "points", "color", "width", "antialiased"), &CanvasItem::draw_polyline, DEFVAL(1.0), DEFVAL(false));
+	ClassDB::bind_method(D_METHOD("draw_polyline_colors", "points", "colors", "width", "antialiased"), &CanvasItem::draw_polyline_colors, DEFVAL(1.0), DEFVAL(false));
+	ClassDB::bind_method(D_METHOD("draw_arc", "center", "radius", "start_angle", "end_angle", "point_count", "color", "width", "antialiased"), &CanvasItem::draw_arc, DEFVAL(1.0), DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("draw_multiline", "points", "color", "width"), &CanvasItem::draw_multiline, DEFVAL(1.0));
 	ClassDB::bind_method(D_METHOD("draw_multiline_colors", "points", "colors", "width"), &CanvasItem::draw_multiline_colors, DEFVAL(1.0));
 	ClassDB::bind_method(D_METHOD("draw_rect", "rect", "color", "filled", "width"), &CanvasItem::draw_rect, DEFVAL(true), DEFVAL(1.0));
@@ -1158,11 +1152,11 @@ void CanvasItem::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("draw_primitive", "points", "colors", "uvs", "texture", "width"), &CanvasItem::draw_primitive, DEFVAL(Ref<Texture2D>()), DEFVAL(1.0));
 	ClassDB::bind_method(D_METHOD("draw_polygon", "points", "colors", "uvs", "texture"), &CanvasItem::draw_polygon, DEFVAL(PackedVector2Array()), DEFVAL(Ref<Texture2D>()));
 	ClassDB::bind_method(D_METHOD("draw_colored_polygon", "points", "color", "uvs", "texture"), &CanvasItem::draw_colored_polygon, DEFVAL(PackedVector2Array()), DEFVAL(Ref<Texture2D>()));
-	ClassDB::bind_method(D_METHOD("draw_string", "font", "position", "text", "modulate", "clip_w"), &CanvasItem::draw_string, DEFVAL(Color(1, 1, 1, 1)), DEFVAL(-1));
-	ClassDB::bind_method(D_METHOD("draw_char", "font", "position", "char", "next", "modulate"), &CanvasItem::draw_char, DEFVAL(Color(1, 1, 1, 1)));
+	ClassDB::bind_method(D_METHOD("draw_string", "font", "pos", "text", "align", "width", "size", "modulate", "outline_size", "outline_modulate", "flags"), &CanvasItem::draw_string, DEFVAL(HALIGN_LEFT), DEFVAL(-1), DEFVAL(-1), DEFVAL(Color(1, 1, 1)), DEFVAL(0), DEFVAL(Color(1, 1, 1, 0)), DEFVAL(TextServer::JUSTIFICATION_KASHIDA | TextServer::JUSTIFICATION_WORD_BOUND));
+	ClassDB::bind_method(D_METHOD("draw_multiline_string", "font", "pos", "text", "align", "width", "max_lines", "size", "modulate", "outline_size", "outline_modulate", "flags"), &CanvasItem::draw_multiline_string, DEFVAL(HALIGN_LEFT), DEFVAL(-1), DEFVAL(-1), DEFVAL(-1), DEFVAL(Color(1, 1, 1)), DEFVAL(0), DEFVAL(Color(1, 1, 1, 0)), DEFVAL(TextServer::BREAK_MANDATORY | TextServer::BREAK_WORD_BOUND | TextServer::JUSTIFICATION_KASHIDA | TextServer::JUSTIFICATION_WORD_BOUND));
+	ClassDB::bind_method(D_METHOD("draw_char", "font", "pos", "char", "next", "size", "modulate", "outline_size", "outline_modulate"), &CanvasItem::draw_char, DEFVAL(""), DEFVAL(-1), DEFVAL(Color(1, 1, 1)), DEFVAL(0), DEFVAL(Color(1, 1, 1, 0)));
 	ClassDB::bind_method(D_METHOD("draw_mesh", "mesh", "texture", "transform", "modulate"), &CanvasItem::draw_mesh, DEFVAL(Transform2D()), DEFVAL(Color(1, 1, 1, 1)));
 	ClassDB::bind_method(D_METHOD("draw_multimesh", "multimesh", "texture"), &CanvasItem::draw_multimesh);
-
 	ClassDB::bind_method(D_METHOD("draw_set_transform", "position", "rotation", "scale"), &CanvasItem::draw_set_transform, DEFVAL(0.0), DEFVAL(Size2(1.0, 1.0)));
 	ClassDB::bind_method(D_METHOD("draw_set_transform_matrix", "xform"), &CanvasItem::draw_set_transform_matrix);
 	ClassDB::bind_method(D_METHOD("get_transform"), &CanvasItem::get_transform);
@@ -1226,7 +1220,7 @@ void CanvasItem::_bind_methods() {
 
 	ADD_SIGNAL(MethodInfo("draw"));
 	ADD_SIGNAL(MethodInfo("visibility_changed"));
-	ADD_SIGNAL(MethodInfo("hide"));
+	ADD_SIGNAL(MethodInfo("hidden"));
 	ADD_SIGNAL(MethodInfo("item_rect_changed"));
 
 	BIND_CONSTANT(NOTIFICATION_TRANSFORM_CHANGED);
@@ -1345,7 +1339,7 @@ void CanvasItem::set_texture_filter(TextureFilter p_texture_filter) {
 	}
 	texture_filter = p_texture_filter;
 	_update_texture_filter_changed(true);
-	_change_notify();
+	notify_property_list_changed();
 }
 
 CanvasItem::TextureFilter CanvasItem::get_texture_filter() const {
@@ -1385,7 +1379,7 @@ void CanvasItem::set_texture_repeat(TextureRepeat p_texture_repeat) {
 	}
 	texture_repeat = p_texture_repeat;
 	_update_texture_repeat_changed(true);
-	_change_notify();
+	notify_property_list_changed();
 }
 
 void CanvasItem::set_clip_children(bool p_enabled) {
@@ -1410,30 +1404,7 @@ CanvasItem::TextureRepeat CanvasItem::get_texture_repeat() const {
 
 CanvasItem::CanvasItem() :
 		xform_change(this) {
-	window = nullptr;
 	canvas_item = RenderingServer::get_singleton()->canvas_item_create();
-	visible = true;
-	pending_update = false;
-	modulate = Color(1, 1, 1, 1);
-	self_modulate = Color(1, 1, 1, 1);
-	top_level = false;
-	first_draw = false;
-	drawing = false;
-	behind = false;
-	clip_children = false;
-	block_transform_notify = false;
-	canvas_layer = nullptr;
-	use_parent_material = false;
-	global_invalid = true;
-	notify_local_transform = false;
-	notify_transform = false;
-	light_mask = 1;
-	texture_repeat = TEXTURE_REPEAT_PARENT_NODE;
-	texture_filter = TEXTURE_FILTER_PARENT_NODE;
-	texture_filter_cache = RS::CANVAS_ITEM_TEXTURE_FILTER_LINEAR;
-	texture_repeat_cache = RS::CANVAS_ITEM_TEXTURE_REPEAT_DISABLED;
-
-	C = nullptr;
 }
 
 CanvasItem::~CanvasItem() {
@@ -1470,6 +1441,7 @@ void CanvasTexture::set_specular_texture(const Ref<Texture2D> &p_specular) {
 	RID tex_rid = specular_texture.is_valid() ? specular_texture->get_rid() : RID();
 	RS::get_singleton()->canvas_texture_set_channel(canvas_texture, RS::CANVAS_TEXTURE_CHANNEL_SPECULAR, tex_rid);
 }
+
 Ref<Texture2D> CanvasTexture::get_specular_texture() const {
 	return specular_texture;
 }
@@ -1478,15 +1450,17 @@ void CanvasTexture::set_specular_color(const Color &p_color) {
 	specular = p_color;
 	RS::get_singleton()->canvas_texture_set_shading_parameters(canvas_texture, specular, shininess);
 }
+
 Color CanvasTexture::get_specular_color() const {
 	return specular;
 }
 
-void CanvasTexture::set_specular_shininess(float p_shininess) {
+void CanvasTexture::set_specular_shininess(real_t p_shininess) {
 	shininess = p_shininess;
 	RS::get_singleton()->canvas_texture_set_shading_parameters(canvas_texture, specular, shininess);
 }
-float CanvasTexture::get_specular_shininess() const {
+
+real_t CanvasTexture::get_specular_shininess() const {
 	return shininess;
 }
 

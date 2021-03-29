@@ -49,10 +49,10 @@
 		<method name="get_particle_flag" qualifiers="const">
 			<return type="bool">
 			</return>
-			<argument index="0" name="flag" type="int" enum="CPUParticles3D.Flags">
+			<argument index="0" name="particle_flag" type="int" enum="CPUParticles3D.ParticleFlags">
 			</argument>
 			<description>
-				Returns the enabled state of the given flag (see [enum Flags] for options).
+				Returns the enabled state of the given particle flag (see [enum ParticleFlags] for options).
 			</description>
 		</method>
 		<method name="restart">
@@ -98,12 +98,12 @@
 		<method name="set_particle_flag">
 			<return type="void">
 			</return>
-			<argument index="0" name="flag" type="int" enum="CPUParticles3D.Flags">
+			<argument index="0" name="particle_flag" type="int" enum="CPUParticles3D.ParticleFlags">
 			</argument>
 			<argument index="1" name="enable" type="bool">
 			</argument>
 			<description>
-				Enables or disables the given flag (see [enum Flags] for options).
+				Enables or disables the given particle flag (see [enum ParticleFlags] for options).
 			</description>
 		</method>
 	</methods>
@@ -195,15 +195,6 @@
 		<member name="fixed_fps" type="int" setter="set_fixed_fps" getter="get_fixed_fps" default="0">
 			The particle system's frame rate is fixed to a value. For instance, changing the value to 2 will make the particles render at 2 frames per second. Note this does not slow down the particle system itself.
 		</member>
-		<member name="flag_align_y" type="bool" setter="set_particle_flag" getter="get_particle_flag" default="false">
-			Align Y axis of particle with the direction of its velocity.
-		</member>
-		<member name="flag_disable_z" type="bool" setter="set_particle_flag" getter="get_particle_flag" default="false">
-			If [code]true[/code], particles will not move on the z axis.
-		</member>
-		<member name="flag_rotate_y" type="bool" setter="set_particle_flag" getter="get_particle_flag" default="false">
-			If [code]true[/code], particles rotate around Y axis by [member angle].
-		</member>
 		<member name="flatness" type="float" setter="set_flatness" getter="get_flatness" default="0.0">
 			Amount of [member spread] in Y/Z plane. A value of [code]1[/code] restricts particles to X/Z plane.
 		</member>
@@ -254,13 +245,22 @@
 		</member>
 		<member name="orbit_velocity" type="float" setter="set_param" getter="get_param">
 			Orbital velocity applied to each particle. Makes the particles circle around origin in the local XY plane. Specified in number of full rotations around origin per second.
-			This property is only available when [member flag_disable_z] is [code]true[/code].
+			This property is only available when [member particle_flag_disable_z] is [code]true[/code].
 		</member>
 		<member name="orbit_velocity_curve" type="Curve" setter="set_param_curve" getter="get_param_curve">
 			Each particle's orbital velocity will vary along this [Curve].
 		</member>
 		<member name="orbit_velocity_random" type="float" setter="set_param_randomness" getter="get_param_randomness">
 			Orbital velocity randomness ratio.
+		</member>
+		<member name="particle_flag_align_y" type="bool" setter="set_particle_flag" getter="get_particle_flag" default="false">
+			Align Y axis of particle with the direction of its velocity.
+		</member>
+		<member name="particle_flag_disable_z" type="bool" setter="set_particle_flag" getter="get_particle_flag" default="false">
+			If [code]true[/code], particles will not move on the Z axis.
+		</member>
+		<member name="particle_flag_rotate_y" type="bool" setter="set_particle_flag" getter="get_particle_flag" default="false">
+			If [code]true[/code], particles rotate around Y axis by [member angle].
 		</member>
 		<member name="preprocess" type="float" setter="set_pre_process_time" getter="get_pre_process_time" default="0.0">
 			Particle system starts as if it had already run for this many seconds.
@@ -351,17 +351,17 @@
 		<constant name="PARAM_MAX" value="12" enum="Parameter">
 			Represents the size of the [enum Parameter] enum.
 		</constant>
-		<constant name="FLAG_ALIGN_Y_TO_VELOCITY" value="0" enum="Flags">
-			Use with [method set_particle_flag] to set [member flag_align_y].
+		<constant name="PARTICLE_FLAG_ALIGN_Y_TO_VELOCITY" value="0" enum="ParticleFlags">
+			Use with [method set_particle_flag] to set [member particle_flag_align_y].
 		</constant>
-		<constant name="FLAG_ROTATE_Y" value="1" enum="Flags">
-			Use with [method set_particle_flag] to set [member flag_rotate_y].
+		<constant name="PARTICLE_FLAG_ROTATE_Y" value="1" enum="ParticleFlags">
+			Use with [method set_particle_flag] to set [member particle_flag_rotate_y].
 		</constant>
-		<constant name="FLAG_DISABLE_Z" value="2" enum="Flags">
-			Use with [method set_particle_flag] to set [member flag_disable_z].
+		<constant name="PARTICLE_FLAG_DISABLE_Z" value="2" enum="ParticleFlags">
+			Use with [method set_particle_flag] to set [member particle_flag_disable_z].
 		</constant>
-		<constant name="FLAG_MAX" value="3" enum="Flags">
-			Represents the size of the [enum Flags] enum.
+		<constant name="PARTICLE_FLAG_MAX" value="3" enum="ParticleFlags">
+			Represents the size of the [enum ParticleFlags] enum.
 		</constant>
 		<constant name="EMISSION_SHAPE_POINT" value="0" enum="EmissionShape">
 			All particles will be emitted from a single point.

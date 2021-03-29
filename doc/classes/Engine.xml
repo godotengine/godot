@@ -41,7 +41,7 @@
 			<return type="int">
 			</return>
 			<description>
-				Returns the total number of frames drawn. If the render loop is disabled with [code]--disable-render-loop[/code] via command line, this returns [code]0[/code]. See also [method get_idle_frames].
+				Returns the total number of frames drawn. If the render loop is disabled with [code]--disable-render-loop[/code] via command line, this returns [code]0[/code]. See also [method get_process_frames].
 			</description>
 		</method>
 		<method name="get_frames_per_second" qualifiers="const">
@@ -49,13 +49,6 @@
 			</return>
 			<description>
 				Returns the frames per second of the running game.
-			</description>
-		</method>
-		<method name="get_idle_frames" qualifiers="const">
-			<return type="int">
-			</return>
-			<description>
-				Returns the total number of frames passed since engine initialization which is advanced on each [b]idle frame[/b], regardless of whether the render loop is enabled. See also [method get_frames_drawn].
 			</description>
 		</method>
 		<method name="get_license_info" qualifiers="const">
@@ -91,6 +84,13 @@
 			</return>
 			<description>
 				Returns the fraction through the current physics tick we are at the time of rendering the frame. This can be used to implement fixed timestep interpolation.
+			</description>
+		</method>
+		<method name="get_process_frames" qualifiers="const">
+			<return type="int">
+			</return>
+			<description>
+				Returns the total number of frames passed since engine initialization which is advanced on each [b]process frame[/b], regardless of whether the render loop is enabled. See also [method get_frames_drawn].
 			</description>
 		</method>
 		<method name="get_singleton" qualifiers="const">
@@ -162,7 +162,7 @@
 			The number of fixed iterations per second. This controls how often physics simulation and [method Node._physics_process] methods are run. This value should generally always be set to [code]60[/code] or above, as Godot doesn't interpolate the physics step. As a result, values lower than [code]60[/code] will look stuttery. This value can be increased to make input more reactive or work around tunneling issues, but keep in mind doing so will increase CPU usage.
 		</member>
 		<member name="physics_jitter_fix" type="float" setter="set_physics_jitter_fix" getter="get_physics_jitter_fix" default="0.5">
-			Controls how much physics ticks are synchronized with real time. For 0 or less, the ticks are synchronized. Such values are recommended for network games, where clock synchronization matters. Higher values cause higher deviation of in-game clock and real clock, but allows to smooth out framerate jitters. The default value of 0.5 should be fine for most; values above 2 could cause the game to react to dropped frames with a noticeable delay and are not recommended.
+			Controls how much physics ticks are synchronized with real time. For 0 or less, the ticks are synchronized. Such values are recommended for network games, where clock synchronization matters. Higher values cause higher deviation of in-game clock and real clock, but allows smoothing out framerate jitters. The default value of 0.5 should be fine for most; values above 2 could cause the game to react to dropped frames with a noticeable delay and are not recommended.
 		</member>
 		<member name="target_fps" type="int" setter="set_target_fps" getter="get_target_fps" default="0">
 			The desired frames per second. If the hardware cannot keep up, this setting may not be respected. A value of 0 means no limit.

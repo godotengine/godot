@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -31,6 +31,7 @@
 #ifndef AUDIO_STREAM_PLAYER_H
 #define AUDIO_STREAM_PLAYER_H
 
+#include "core/templates/safe_refcount.h"
 #include "scene/main/node.h"
 #include "servers/audio/audio_stream.h"
 
@@ -49,22 +50,22 @@ private:
 	Ref<AudioStream> stream;
 	Vector<AudioFrame> mix_buffer;
 	Vector<AudioFrame> fadeout_buffer;
-	bool use_fadeout;
+	bool use_fadeout = false;
 
-	volatile float setseek;
-	volatile bool active;
-	volatile bool setstop;
-	volatile bool stop_has_priority;
+	SafeNumeric<float> setseek{ -1.0 };
+	SafeFlag active;
+	SafeFlag setstop;
+	SafeFlag stop_has_priority;
 
-	float mix_volume_db;
-	float pitch_scale;
-	float volume_db;
-	bool autoplay;
-	bool stream_paused;
-	bool stream_paused_fade;
+	float mix_volume_db = 0.0;
+	float pitch_scale = 1.0;
+	float volume_db = 0.0;
+	bool autoplay = false;
+	bool stream_paused = false;
+	bool stream_paused_fade = false;
 	StringName bus;
 
-	MixTarget mix_target;
+	MixTarget mix_target = MIX_TARGET_STEREO;
 
 	void _mix_internal(bool p_fadeout);
 	void _mix_audio();

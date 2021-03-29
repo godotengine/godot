@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -506,7 +506,7 @@ Variant Object::get(const StringName &p_name, bool *r_valid) const {
 }
 
 void Object::set_indexed(const Vector<StringName> &p_names, const Variant &p_value, bool *r_valid) {
-	if (p_names.empty()) {
+	if (p_names.is_empty()) {
 		if (r_valid) {
 			*r_valid = false;
 		}
@@ -561,11 +561,11 @@ void Object::set_indexed(const Vector<StringName> &p_names, const Variant &p_val
 	set(p_names[0], value_stack.back()->get(), r_valid);
 	value_stack.pop_back();
 
-	ERR_FAIL_COND(!value_stack.empty());
+	ERR_FAIL_COND(!value_stack.is_empty());
 }
 
 Variant Object::get_indexed(const Vector<StringName> &p_names, bool *r_valid) const {
-	if (p_names.empty()) {
+	if (p_names.is_empty()) {
 		if (r_valid) {
 			*r_valid = false;
 		}
@@ -596,13 +596,10 @@ void Object::get_property_list(List<PropertyInfo> *p_list, bool p_reversed) cons
 
 	_get_property_listv(p_list, p_reversed);
 
-	if (!is_class("Script")) { // can still be set, but this is for userfriendlyness
-#ifdef TOOLS_ENABLED
-		p_list->push_back(PropertyInfo(Variant::NIL, "Script", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_GROUP));
-#endif
+	if (!is_class("Script")) { // can still be set, but this is for user-friendliness
 		p_list->push_back(PropertyInfo(Variant::OBJECT, "script", PROPERTY_HINT_RESOURCE_TYPE, "Script", PROPERTY_USAGE_DEFAULT));
 	}
-	if (!metadata.empty()) {
+	if (!metadata.is_empty()) {
 		p_list->push_back(PropertyInfo(Variant::DICTIONARY, "__meta__", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR | PROPERTY_USAGE_INTERNAL));
 	}
 	if (script_instance && !p_reversed) {
@@ -811,25 +808,6 @@ String Object::to_string() {
 	return "[" + get_class() + ":" + itos(get_instance_id()) + "]";
 }
 
-void Object::_changed_callback(Object *p_changed, const char *p_prop) {
-}
-
-void Object::add_change_receptor(Object *p_receptor) {
-	change_receptors.insert(p_receptor);
-}
-
-void Object::remove_change_receptor(Object *p_receptor) {
-	change_receptors.erase(p_receptor);
-}
-
-void Object::property_list_changed_notify() {
-	_change_notify();
-}
-
-void Object::cancel_delete() {
-	_predelete_ok = true;
-}
-
 void Object::set_script_and_instance(const Variant &p_script, ScriptInstance *p_instance) {
 	//this function is not meant to be used in any of these ways
 	ERR_FAIL_COND(p_script.is_null());
@@ -863,7 +841,7 @@ void Object::set_script(const Variant &p_script) {
 		}
 	}
 
-	_change_notify(); //scripts may add variables, so refresh is desired
+	notify_property_list_changed(); //scripts may add variables, so refresh is desired
 	emit_signal(CoreStringNames::get_singleton()->script_changed);
 }
 
@@ -1096,7 +1074,7 @@ Error Object::emit_signal(const StringName &p_name, const Variant **p_args, int 
 		}
 	}
 
-	while (!disconnect_data.empty()) {
+	while (!disconnect_data.is_empty()) {
 		const _ObjectSignalDisconnectData &dd = disconnect_data.front()->get();
 
 		_disconnect(dd.signal, dd.callable);
@@ -1269,10 +1247,6 @@ void Object::get_signals_connected_to_this(List<Connection> *p_connections) cons
 	}
 }
 
-Error Object::connect_compat(const StringName &p_signal, Object *p_to_object, const StringName &p_to_method, const Vector<Variant> &p_binds, uint32_t p_flags) {
-	return connect(p_signal, Callable(p_to_object, p_to_method), p_binds, p_flags);
-}
-
 Error Object::connect(const StringName &p_signal, const Callable &p_callable, const Vector<Variant> &p_binds, uint32_t p_flags) {
 	ERR_FAIL_COND_V(p_callable.is_null(), ERR_INVALID_PARAMETER);
 
@@ -1334,10 +1308,6 @@ Error Object::connect(const StringName &p_signal, const Callable &p_callable, co
 	return OK;
 }
 
-bool Object::is_connected_compat(const StringName &p_signal, Object *p_to_object, const StringName &p_to_method) const {
-	return is_connected(p_signal, Callable(p_to_object, p_to_method));
-}
-
 bool Object::is_connected(const StringName &p_signal, const Callable &p_callable) const {
 	ERR_FAIL_COND_V(p_callable.is_null(), false);
 	const SignalData *s = signal_map.getptr(p_signal);
@@ -1361,10 +1331,6 @@ bool Object::is_connected(const StringName &p_signal, const Callable &p_callable
 	//return (E!=nullptr );
 }
 
-void Object::disconnect_compat(const StringName &p_signal, Object *p_to_object, const StringName &p_to_method) {
-	_disconnect(p_signal, Callable(p_to_object, p_to_method));
-}
-
 void Object::disconnect(const StringName &p_signal, const Callable &p_callable) {
 	_disconnect(p_signal, p_callable);
 }
@@ -1376,7 +1342,12 @@ void Object::_disconnect(const StringName &p_signal, const Callable &p_callable,
 	ERR_FAIL_COND(!target_object);
 
 	SignalData *s = signal_map.getptr(p_signal);
-	ERR_FAIL_COND_MSG(!s, vformat("Nonexistent signal '%s' in %s.", p_signal, to_string()));
+	if (!s) {
+		bool signal_is_valid = ClassDB::has_signal(get_class_name(), p_signal) ||
+							   (!script.is_null() && Ref<Script>(script)->has_script_signal(p_signal));
+		ERR_FAIL_COND_MSG(signal_is_valid, "Attempt to disconnect a nonexistent connection from '" + to_string() + "'. signal: '" + p_signal + "', callable: '" + p_callable + "'.");
+	}
+	ERR_FAIL_COND_MSG(!s, vformat("Disconnecting nonexistent signal '%s' in %s.", p_signal, to_string()));
 
 	ERR_FAIL_COND_MSG(!s->slot_map.has(*p_callable.get_base_comparator()), "Disconnecting nonexistent signal '" + p_signal + "', callable: " + p_callable + ".");
 
@@ -1392,7 +1363,7 @@ void Object::_disconnect(const StringName &p_signal, const Callable &p_callable,
 	target_object->connections.erase(slot->cE);
 	s->slot_map.erase(*p_callable.get_base_comparator());
 
-	if (s->slot_map.empty() && ClassDB::has_signal(get_class_name(), p_signal)) {
+	if (s->slot_map.is_empty() && ClassDB::has_signal(get_class_name(), p_signal)) {
 		//not user signal, delete
 		signal_map.erase(p_signal);
 	}
@@ -1510,6 +1481,10 @@ void Object::clear_internal_resource_paths() {
 	}
 }
 
+void Object::notify_property_list_changed() {
+	emit_signal(CoreStringNames::get_singleton()->property_list_changed);
+}
+
 void Object::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_class"), &Object::get_class);
 	ClassDB::bind_method(D_METHOD("is_class", "class"), &Object::is_class);
@@ -1576,7 +1551,7 @@ void Object::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_block_signals", "enable"), &Object::set_block_signals);
 	ClassDB::bind_method(D_METHOD("is_blocking_signals"), &Object::is_blocking_signals);
-	ClassDB::bind_method(D_METHOD("property_list_changed_notify"), &Object::property_list_changed_notify);
+	ClassDB::bind_method(D_METHOD("notify_property_list_changed"), &Object::notify_property_list_changed);
 
 	ClassDB::bind_method(D_METHOD("set_message_translation", "enable"), &Object::set_message_translation);
 	ClassDB::bind_method(D_METHOD("can_translate_messages"), &Object::can_translate_messages);
@@ -1588,6 +1563,7 @@ void Object::_bind_methods() {
 	ClassDB::add_virtual_method("Object", MethodInfo("free"), false);
 
 	ADD_SIGNAL(MethodInfo("script_changed"));
+	ADD_SIGNAL(MethodInfo("property_list_changed"));
 
 	BIND_VMETHOD(MethodInfo("_notification", PropertyInfo(Variant::INT, "what")));
 	BIND_VMETHOD(MethodInfo(Variant::BOOL, "_set", PropertyInfo(Variant::STRING_NAME, "property"), PropertyInfo(Variant::NIL, "value")));
@@ -1695,7 +1671,7 @@ Variant::Type Object::get_static_property_type_indexed(const Vector<StringName> 
 
 	for (int i = 1; i < p_path.size(); i++) {
 		if (check.get_type() == Variant::OBJECT || check.get_type() == Variant::DICTIONARY || check.get_type() == Variant::ARRAY) {
-			// We cannot be sure about the type of properties this types can have
+			// We cannot be sure about the type of properties this type can have
 			if (r_valid) {
 				*r_valid = false;
 			}
@@ -1743,15 +1719,15 @@ void *Object::get_script_instance_binding(int p_script_language_index) {
 	ERR_FAIL_INDEX_V(p_script_language_index, MAX_SCRIPT_INSTANCE_BINDINGS, nullptr);
 #endif
 
-	//it's up to the script language to make this thread safe, if the function is called twice due to threads being out of syncro
+	//it's up to the script language to make this thread safe, if the function is called twice due to threads being out of sync
 	//just return the same pointer.
 	//if you want to put a big lock in the entire function and keep allocated pointers in a map or something, feel free to do it
-	//as it should not really affect performance much (won't be called too often), as in far most caes the condition below will be false afterwards
+	//as it should not really affect performance much (won't be called too often), as in far most cases the condition below will be false afterwards
 
 	if (!_script_instance_bindings[p_script_language_index]) {
 		void *script_data = ScriptServer::get_language(p_script_language_index)->alloc_instance_binding_data(this);
 		if (script_data) {
-			atomic_increment(&instance_binding_count);
+			instance_binding_count.increment();
 			_script_instance_bindings[p_script_language_index] = script_data;
 		}
 	}
@@ -1844,9 +1820,13 @@ void postinitialize_handler(Object *p_object) {
 
 void ObjectDB::debug_objects(DebugFunc p_func) {
 	spin_lock.lock();
-	for (uint32_t i = 0; i < slot_count; i++) {
-		uint32_t slot = object_slots[i].next_free;
-		p_func(object_slots[slot].object);
+
+	for (uint32_t i = 0, count = slot_count; i < slot_max && count != 0; i++) {
+		if (object_slots[i].validator) {
+			p_func(object_slots[i].object);
+
+			count--;
+		}
 	}
 	spin_lock.unlock();
 }
@@ -1958,20 +1938,23 @@ void ObjectDB::cleanup() {
 			MethodBind *resource_get_path = ClassDB::get_method("Resource", "get_path");
 			Callable::CallError call_error;
 
-			for (uint32_t i = 0; i < slot_count; i++) {
-				uint32_t slot = object_slots[i].next_free;
-				Object *obj = object_slots[slot].object;
+			for (uint32_t i = 0, count = slot_count; i < slot_max && count != 0; i++) {
+				if (object_slots[i].validator) {
+					Object *obj = object_slots[i].object;
 
-				String extra_info;
-				if (obj->is_class("Node")) {
-					extra_info = " - Node name: " + String(node_get_name->call(obj, nullptr, 0, call_error));
-				}
-				if (obj->is_class("Resource")) {
-					extra_info = " - Resource path: " + String(resource_get_path->call(obj, nullptr, 0, call_error));
-				}
+					String extra_info;
+					if (obj->is_class("Node")) {
+						extra_info = " - Node name: " + String(node_get_name->call(obj, nullptr, 0, call_error));
+					}
+					if (obj->is_class("Resource")) {
+						extra_info = " - Resource path: " + String(resource_get_path->call(obj, nullptr, 0, call_error));
+					}
 
-				uint64_t id = uint64_t(slot) | (uint64_t(object_slots[slot].validator) << OBJECTDB_VALIDATOR_BITS) | (object_slots[slot].is_reference ? OBJECTDB_REFERENCE_BIT : 0);
-				print_line("Leaked instance: " + String(obj->get_class()) + ":" + itos(id) + extra_info);
+					uint64_t id = uint64_t(i) | (uint64_t(object_slots[i].validator) << OBJECTDB_VALIDATOR_BITS) | (object_slots[i].is_reference ? OBJECTDB_REFERENCE_BIT : 0);
+					print_line("Leaked instance: " + String(obj->get_class()) + ":" + itos(id) + extra_info);
+
+					count--;
+				}
 			}
 			print_line("Hint: Leaked instances typically happen when nodes are removed from the scene tree (with `remove_child()`) but not freed (with `free()` or `queue_free()`).");
 		}

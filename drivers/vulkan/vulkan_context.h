@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -47,31 +47,36 @@ class VulkanContext {
 		FRAME_LAG = 2
 	};
 
-	VkInstance inst;
-	VkSurfaceKHR surface;
-	VkPhysicalDevice gpu;
+	VkInstance inst = VK_NULL_HANDLE;
+	VkSurfaceKHR surface = VK_NULL_HANDLE;
+	VkPhysicalDevice gpu = VK_NULL_HANDLE;
 	VkPhysicalDeviceProperties gpu_props;
-	uint32_t queue_family_count;
+	uint32_t queue_family_count = 0;
 	VkQueueFamilyProperties *queue_props = nullptr;
-	VkDevice device;
+	VkDevice device = VK_NULL_HANDLE;
 	bool device_initialized = false;
 	bool inst_initialized = false;
+
+	String device_vendor;
+	String device_name;
+	String pipeline_cache_id;
+	uint32_t device_api_version = 0;
 
 	bool buffers_prepared = false;
 
 	// Present queue.
 	bool queues_initialized = false;
-	uint32_t graphics_queue_family_index;
-	uint32_t present_queue_family_index;
-	bool separate_present_queue;
-	VkQueue graphics_queue;
-	VkQueue present_queue;
+	uint32_t graphics_queue_family_index = 0;
+	uint32_t present_queue_family_index = 0;
+	bool separate_present_queue = false;
+	VkQueue graphics_queue = VK_NULL_HANDLE;
+	VkQueue present_queue = VK_NULL_HANDLE;
 	VkColorSpaceKHR color_space;
 	VkFormat format;
 	VkSemaphore image_acquired_semaphores[FRAME_LAG];
 	VkSemaphore draw_complete_semaphores[FRAME_LAG];
 	VkSemaphore image_ownership_semaphores[FRAME_LAG];
-	int frame_index;
+	int frame_index = 0;
 	VkFence fences[FRAME_LAG];
 	VkPhysicalDeviceMemoryProperties memory_properties;
 	VkPhysicalDeviceFeatures physical_device_features;
@@ -91,14 +96,14 @@ class VulkanContext {
 		uint32_t current_buffer = 0;
 		int width = 0;
 		int height = 0;
-		VkCommandPool present_cmd_pool; // For separate present queue.
+		VkCommandPool present_cmd_pool = VK_NULL_HANDLE; // For separate present queue.
 		VkRenderPass render_pass = VK_NULL_HANDLE;
 	};
 
 	struct LocalDevice {
 		bool waiting = false;
-		VkDevice device;
-		VkQueue queue;
+		VkDevice device = VK_NULL_HANDLE;
+		VkQueue queue = VK_NULL_HANDLE;
 	};
 
 	RID_Owner<LocalDevice, true> local_device_owner;
@@ -108,7 +113,7 @@ class VulkanContext {
 
 	// Commands.
 
-	bool prepared;
+	bool prepared = false;
 
 	Vector<VkCommandBuffer> command_buffer_queue;
 	int command_buffer_count = 1;
@@ -119,8 +124,8 @@ class VulkanContext {
 	bool VK_GOOGLE_display_timing_enabled = true;
 	uint32_t enabled_extension_count = 0;
 	const char *extension_names[MAX_EXTENSIONS];
+	bool enabled_debug_utils = false;
 
-	const char **instance_validation_layers = nullptr;
 	uint32_t enabled_layer_count = 0;
 	const char *enabled_layers[MAX_LAYERS];
 
@@ -143,7 +148,7 @@ class VulkanContext {
 	PFN_vkGetRefreshCycleDurationGOOGLE fpGetRefreshCycleDurationGOOGLE;
 	PFN_vkGetPastPresentationTimingGOOGLE fpGetPastPresentationTimingGOOGLE;
 
-	VkDebugUtilsMessengerEXT dbg_messenger;
+	VkDebugUtilsMessengerEXT dbg_messenger = VK_NULL_HANDLE;
 
 	Error _create_validation_layers();
 	Error _initialize_extensions();
@@ -209,6 +214,15 @@ public:
 	Error prepare_buffers();
 	Error swap_buffers();
 	Error initialize();
+
+	void command_begin_label(VkCommandBuffer p_command_buffer, String p_label_name, const Color p_color);
+	void command_insert_label(VkCommandBuffer p_command_buffer, String p_label_name, const Color p_color);
+	void command_end_label(VkCommandBuffer p_command_buffer);
+	void set_object_name(VkObjectType p_object_type, uint64_t p_object_handle, String p_object_name);
+
+	String get_device_vendor_name() const;
+	String get_device_name() const;
+	String get_device_pipeline_cache_uuid() const;
 
 	VulkanContext();
 	virtual ~VulkanContext();

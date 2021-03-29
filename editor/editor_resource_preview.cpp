@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -206,8 +206,8 @@ void EditorResourcePreview::_generate_preview(Ref<ImageTexture> &r_texture, Ref<
 }
 
 void EditorResourcePreview::_thread() {
-	exited = false;
-	while (!exit) {
+	exited.clear();
+	while (!exit.is_set()) {
 		preview_sem.wait();
 		preview_mutex.lock();
 
@@ -326,7 +326,7 @@ void EditorResourcePreview::_thread() {
 			preview_mutex.unlock();
 		}
 	}
-	exited = true;
+	exited.set();
 }
 
 void EditorResourcePreview::queue_edited_resource_preview(const Ref<Resource> &p_res, Object *p_receiver, const StringName &p_receiver_func, const Variant &p_userdata) {
@@ -424,30 +424,25 @@ void EditorResourcePreview::check_for_invalidation(const String &p_path) {
 }
 
 void EditorResourcePreview::start() {
-	ERR_FAIL_COND_MSG(thread, "Thread already started.");
-	thread = Thread::create(_thread_func, this);
+	ERR_FAIL_COND_MSG(thread.is_started(), "Thread already started.");
+	thread.start(_thread_func, this);
 }
 
 void EditorResourcePreview::stop() {
-	if (thread) {
-		exit = true;
+	if (thread.is_started()) {
+		exit.set();
 		preview_sem.post();
-		while (!exited) {
+		while (!exited.is_set()) {
 			OS::get_singleton()->delay_usec(10000);
 			RenderingServer::get_singleton()->sync(); //sync pending stuff, as thread may be blocked on visual server
 		}
-		Thread::wait_to_finish(thread);
-		memdelete(thread);
-		thread = nullptr;
+		thread.wait_to_finish();
 	}
 }
 
 EditorResourcePreview::EditorResourcePreview() {
-	thread = nullptr;
 	singleton = this;
 	order = 0;
-	exit = false;
-	exited = false;
 }
 
 EditorResourcePreview::~EditorResourcePreview() {

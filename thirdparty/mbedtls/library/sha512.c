@@ -243,8 +243,11 @@ int mbedtls_internal_sha512_process( mbedtls_sha512_context *ctx,
                                      const unsigned char data[128] )
 {
     int i;
-    uint64_t temp1, temp2, W[80];
-    uint64_t A, B, C, D, E, F, G, H;
+    struct
+    {
+        uint64_t temp1, temp2, W[80];
+        uint64_t A, B, C, D, E, F, G, H;
+    } local;
 
     SHA512_VALIDATE_RET( ctx != NULL );
     SHA512_VALIDATE_RET( (const unsigned char *)data != NULL );
@@ -261,56 +264,67 @@ int mbedtls_internal_sha512_process( mbedtls_sha512_context *ctx,
 #define F0(x,y,z) (((x) & (y)) | ((z) & ((x) | (y))))
 #define F1(x,y,z) ((z) ^ ((x) & ((y) ^ (z))))
 
-#define P(a,b,c,d,e,f,g,h,x,K)                                  \
-    do                                                          \
-    {                                                           \
-        temp1 = (h) + S3(e) + F1((e),(f),(g)) + (K) + (x);      \
-        temp2 = S2(a) + F0((a),(b),(c));                        \
-        (d) += temp1; (h) = temp1 + temp2;                      \
+#define P(a,b,c,d,e,f,g,h,x,K)                                      \
+    do                                                              \
+    {                                                               \
+        local.temp1 = (h) + S3(e) + F1((e),(f),(g)) + (K) + (x);    \
+        local.temp2 = S2(a) + F0((a),(b),(c));                      \
+        (d) += local.temp1; (h) = local.temp1 + local.temp2;        \
     } while( 0 )
 
     for( i = 0; i < 16; i++ )
     {
-        GET_UINT64_BE( W[i], data, i << 3 );
+        GET_UINT64_BE( local.W[i], data, i << 3 );
     }
 
     for( ; i < 80; i++ )
     {
-        W[i] = S1(W[i -  2]) + W[i -  7] +
-               S0(W[i - 15]) + W[i - 16];
+        local.W[i] = S1(local.W[i -  2]) + local.W[i -  7] +
+                     S0(local.W[i - 15]) + local.W[i - 16];
     }
 
-    A = ctx->state[0];
-    B = ctx->state[1];
-    C = ctx->state[2];
-    D = ctx->state[3];
-    E = ctx->state[4];
-    F = ctx->state[5];
-    G = ctx->state[6];
-    H = ctx->state[7];
+    local.A = ctx->state[0];
+    local.B = ctx->state[1];
+    local.C = ctx->state[2];
+    local.D = ctx->state[3];
+    local.E = ctx->state[4];
+    local.F = ctx->state[5];
+    local.G = ctx->state[6];
+    local.H = ctx->state[7];
     i = 0;
 
     do
     {
-        P( A, B, C, D, E, F, G, H, W[i], K[i] ); i++;
-        P( H, A, B, C, D, E, F, G, W[i], K[i] ); i++;
-        P( G, H, A, B, C, D, E, F, W[i], K[i] ); i++;
-        P( F, G, H, A, B, C, D, E, W[i], K[i] ); i++;
-        P( E, F, G, H, A, B, C, D, W[i], K[i] ); i++;
-        P( D, E, F, G, H, A, B, C, W[i], K[i] ); i++;
-        P( C, D, E, F, G, H, A, B, W[i], K[i] ); i++;
-        P( B, C, D, E, F, G, H, A, W[i], K[i] ); i++;
+        P( local.A, local.B, local.C, local.D, local.E,
+           local.F, local.G, local.H, local.W[i], K[i] ); i++;
+        P( local.H, local.A, local.B, local.C, local.D,
+           local.E, local.F, local.G, local.W[i], K[i] ); i++;
+        P( local.G, local.H, local.A, local.B, local.C,
+           local.D, local.E, local.F, local.W[i], K[i] ); i++;
+        P( local.F, local.G, local.H, local.A, local.B,
+           local.C, local.D, local.E, local.W[i], K[i] ); i++;
+        P( local.E, local.F, local.G, local.H, local.A,
+           local.B, local.C, local.D, local.W[i], K[i] ); i++;
+        P( local.D, local.E, local.F, local.G, local.H,
+           local.A, local.B, local.C, local.W[i], K[i] ); i++;
+        P( local.C, local.D, local.E, local.F, local.G,
+           local.H, local.A, local.B, local.W[i], K[i] ); i++;
+        P( local.B, local.C, local.D, local.E, local.F,
+           local.G, local.H, local.A, local.W[i], K[i] ); i++;
     }
     while( i < 80 );
 
-    ctx->state[0] += A;
-    ctx->state[1] += B;
-    ctx->state[2] += C;
-    ctx->state[3] += D;
-    ctx->state[4] += E;
-    ctx->state[5] += F;
-    ctx->state[6] += G;
-    ctx->state[7] += H;
+    ctx->state[0] += local.A;
+    ctx->state[1] += local.B;
+    ctx->state[2] += local.C;
+    ctx->state[3] += local.D;
+    ctx->state[4] += local.E;
+    ctx->state[5] += local.F;
+    ctx->state[6] += local.G;
+    ctx->state[7] += local.H;
+
+    /* Zeroise buffers and variables to clear sensitive data from memory. */
+    mbedtls_platform_zeroize( &local, sizeof( local ) );
 
     return( 0 );
 }

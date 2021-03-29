@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -70,9 +70,11 @@ public:
 	MainLoop *get_main_loop() const override;
 	bool main_loop_iterate();
 
-	Error execute(const String &p_path, const List<String> &p_arguments, bool p_blocking = true, ProcessID *r_child_id = nullptr, String *r_pipe = nullptr, int *r_exitcode = nullptr, bool read_stderr = false, Mutex *p_pipe_mutex = nullptr) override;
+	Error execute(const String &p_path, const List<String> &p_arguments, String *r_pipe = nullptr, int *r_exitcode = nullptr, bool read_stderr = false, Mutex *p_pipe_mutex = nullptr) override;
+	Error create_process(const String &p_path, const List<String> &p_arguments, ProcessID *r_child_id = nullptr) override;
 	Error kill(const ProcessID &p_pid) override;
 	int get_process_id() const override;
+	int get_processor_count() const override;
 
 	String get_executable_path() const override;
 	Error shell_open(String p_uri) override;
@@ -87,6 +89,7 @@ public:
 	String get_user_data_dir() const override;
 
 	bool is_userfs_persistent() const override;
+	Error open_dynamic_library(const String p_path, void *&p_library_handle, bool p_also_set_library_path) override;
 
 	void resume_audio();
 

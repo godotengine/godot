@@ -37,11 +37,20 @@
 			<description>
 				Returns a [KinematicCollision2D], which contains information about a collision that occurred during the last call to [method move_and_slide] or [method move_and_slide_with_snap]. Since the body can collide several times in a single call to [method move_and_slide], you must specify the index of the collision in the range 0 to ([method get_slide_count] - 1).
 				[b]Example usage:[/b]
-				[codeblock]
+				[codeblocks]
+				[gdscript]
 				for i in get_slide_count():
 				    var collision = get_slide_collision(i)
 				    print("Collided with: ", collision.collider.name)
-				[/codeblock]
+				[/gdscript]
+				[csharp]
+				for (int i = 0; i &lt; GetSlideCount(); i++)
+				{
+				    KinematicCollision2D collision = GetSlideCollision(i);
+				    GD.Print("Collided with: ", (collision.Collider as Node).Name);
+				}
+				[/csharp]
+				[/codeblocks]
 			</description>
 		</method>
 		<method name="get_slide_count" qualifiers="const">
@@ -153,7 +162,10 @@
 	</methods>
 	<members>
 		<member name="collision/safe_margin" type="float" setter="set_safe_margin" getter="get_safe_margin" default="0.08">
-			If the body is at least this close to another body, this body will consider them to be colliding.
+			Extra margin used for collision recovery in motion functions (see [method move_and_collide], [method move_and_slide], [method move_and_slide_with_snap]).
+			If the body is at least this close to another body, it will consider them to be colliding and will be pushed away before performing the actual motion.
+			A higher value means it's more flexible for detecting collision, which helps with consistently detecting walls and floors.
+			A lower value forces the collision algorithm to use more exact detection, so it can be used in cases that specifically require precision, e.g at very low scale to avoid visible jittering, or for stability with a stack of kinematic bodies.
 		</member>
 		<member name="motion/sync_to_physics" type="bool" setter="set_sync_to_physics" getter="is_sync_to_physics_enabled" default="false">
 			If [code]true[/code], the body's movement will be synchronized to the physics frame. This is useful when animating movement via [AnimationPlayer], for example on moving platforms. Do [b]not[/b] use together with [method move_and_slide] or [method move_and_collide] functions.

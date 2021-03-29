@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -35,6 +35,7 @@
 #include "scene/gui/popup.h"
 #include "scene/gui/scroll_container.h"
 #include "scene/gui/shortcut.h"
+#include "scene/resources/text_line.h"
 
 class PopupMenu : public Popup {
 	GDCLASS(PopupMenu, Popup);
@@ -43,27 +44,35 @@ class PopupMenu : public Popup {
 		Ref<Texture2D> icon;
 		String text;
 		String xl_text;
-		bool checked;
+		Ref<TextLine> text_buf;
+		Ref<TextLine> accel_text_buf;
+
+		Dictionary opentype_features;
+		String language;
+		Control::TextDirection text_direction = Control::TEXT_DIRECTION_AUTO;
+
+		bool checked = false;
 		enum {
 			CHECKABLE_TYPE_NONE,
 			CHECKABLE_TYPE_CHECK_BOX,
 			CHECKABLE_TYPE_RADIO_BUTTON,
 		} checkable_type;
-		int max_states;
-		int state;
-		bool separator;
-		bool disabled;
-		int id;
+		int max_states = 0;
+		int state = 0;
+		bool separator = false;
+		bool disabled = false;
+		bool dirty = true;
+		int id = 0;
 		Variant metadata;
 		String submenu;
 		String tooltip;
-		uint32_t accel;
-		int _ofs_cache;
-		int _height_cache;
-		int h_ofs;
+		uint32_t accel = 0;
+		int _ofs_cache = 0;
+		int _height_cache = 0;
+		int h_ofs = 0;
 		Ref<Shortcut> shortcut;
-		bool shortcut_is_global;
-		bool shortcut_is_disabled;
+		bool shortcut_is_global = false;
+		bool shortcut_is_disabled = false;
 
 		// Returns (0,0) if icon is null.
 		Size2 get_icon_size() const {
@@ -71,44 +80,41 @@ class PopupMenu : public Popup {
 		}
 
 		Item() {
-			checked = false;
+			text_buf.instance();
+			accel_text_buf.instance();
 			checkable_type = CHECKABLE_TYPE_NONE;
-			separator = false;
-			max_states = 0;
-			state = 0;
-			accel = 0;
-			disabled = false;
-			_ofs_cache = 0;
-			_height_cache = 0;
-			h_ofs = 0;
-			shortcut_is_global = false;
-			shortcut_is_disabled = false;
 		}
 	};
 
+	bool close_allowed = false;
+
+	Timer *minimum_lifetime_timer = nullptr;
 	Timer *submenu_timer;
 	List<Rect2> autohide_areas;
 	Vector<Item> items;
-	int initial_button_mask;
-	bool during_grabbed_click;
-	int mouse_over;
-	int submenu_over;
+	int initial_button_mask = 0;
+	bool during_grabbed_click = false;
+	int mouse_over = -1;
+	int submenu_over = -1;
 	Rect2 parent_rect;
-	String _get_accel_text(int p_item) const;
+	String _get_accel_text(const Item &p_item) const;
 	int _get_mouse_over(const Point2 &p_over) const;
 	virtual Size2 _get_contents_minimum_size() const override;
 
+	int _get_item_height(int p_item) const;
 	int _get_items_total_height() const;
 	void _scroll_to_item(int p_item);
 
+	void _shape_item(int p_item);
+
 	void _gui_input(const Ref<InputEvent> &p_event);
-	void _activate_submenu(int over);
+	void _activate_submenu(int p_over);
 	void _submenu_timeout();
 
 	uint64_t popup_time_msec = 0;
-	bool hide_on_item_selection;
-	bool hide_on_checkable_item_selection;
-	bool hide_on_multistate_item_selection;
+	bool hide_on_item_selection = true;
+	bool hide_on_checkable_item_selection = true;
+	bool hide_on_multistate_item_selection = false;
 	Vector2 moved;
 
 	Array _get_items() const;
@@ -119,9 +125,9 @@ class PopupMenu : public Popup {
 	void _ref_shortcut(Ref<Shortcut> p_sc);
 	void _unref_shortcut(Ref<Shortcut> p_sc);
 
-	bool allow_search;
-	uint64_t search_time_msec;
-	String search_string;
+	bool allow_search = true;
+	uint64_t search_time_msec = 0;
+	String search_string = "";
 
 	MarginContainer *margin_container;
 	ScrollContainer *scroll_container;
@@ -129,6 +135,9 @@ class PopupMenu : public Popup {
 
 	void _draw_items();
 	void _draw_background();
+
+	void _minimum_lifetime_timeout();
+	void _close_pressed();
 
 protected:
 	friend class MenuButton;
@@ -155,6 +164,11 @@ public:
 	void add_submenu_item(const String &p_label, const String &p_submenu, int p_id = -1);
 
 	void set_item_text(int p_idx, const String &p_text);
+
+	void set_item_text_direction(int p_idx, Control::TextDirection p_text_direction);
+	void set_item_opentype_feature(int p_idx, const String &p_name, int p_value);
+	void clear_item_opentype_features(int p_idx);
+	void set_item_language(int p_idx, const String &p_language);
 	void set_item_icon(int p_idx, const Ref<Texture2D> &p_icon);
 	void set_item_checked(int p_idx, bool p_checked);
 	void set_item_id(int p_idx, int p_id);
@@ -175,6 +189,9 @@ public:
 	void toggle_item_checked(int p_idx);
 
 	String get_item_text(int p_idx) const;
+	Control::TextDirection get_item_text_direction(int p_idx) const;
+	int get_item_opentype_feature(int p_idx, const String &p_name) const;
+	String get_item_language(int p_idx) const;
 	int get_item_idx_from_text(const String &text) const;
 	Ref<Texture2D> get_item_icon(int p_idx) const;
 	bool is_item_checked(int p_idx) const;
@@ -200,7 +217,7 @@ public:
 
 	void remove_item(int p_idx);
 
-	void add_separator(const String &p_text = String());
+	void add_separator(const String &p_text = String(), int p_id = -1);
 
 	void clear();
 

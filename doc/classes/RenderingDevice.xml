@@ -7,6 +7,30 @@
 	<tutorials>
 	</tutorials>
 	<methods>
+		<method name="barrier">
+			<return type="void">
+			</return>
+			<argument index="0" name="from" type="int" default="7">
+			</argument>
+			<argument index="1" name="to" type="int" default="7">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="buffer_clear">
+			<return type="int" enum="Error">
+			</return>
+			<argument index="0" name="buffer" type="RID">
+			</argument>
+			<argument index="1" name="offset" type="int">
+			</argument>
+			<argument index="2" name="size_bytes" type="int">
+			</argument>
+			<argument index="3" name="post_barrier" type="int" default="7">
+			</argument>
+			<description>
+			</description>
+		</method>
 		<method name="buffer_get_data">
 			<return type="PackedByteArray">
 			</return>
@@ -26,7 +50,7 @@
 			</argument>
 			<argument index="3" name="data" type="PackedByteArray">
 			</argument>
-			<argument index="4" name="sync_with_draw" type="bool" default="true">
+			<argument index="4" name="post_barrier" type="int" default="7">
 			</argument>
 			<description>
 			</description>
@@ -35,8 +59,6 @@
 			<return type="void">
 			</return>
 			<argument index="0" name="name" type="String">
-			</argument>
-			<argument index="1" name="sync_to_draw" type="bool">
 			</argument>
 			<description>
 			</description>
@@ -52,6 +74,8 @@
 		<method name="compute_list_begin">
 			<return type="int">
 			</return>
+			<argument index="0" name="allow_draw_overlap" type="bool" default="false">
+			</argument>
 			<description>
 			</description>
 		</method>
@@ -94,6 +118,8 @@
 		<method name="compute_list_end">
 			<return type="void">
 			</return>
+			<argument index="0" name="post_barrier" type="int" default="7">
+			</argument>
 			<description>
 			</description>
 		</method>
@@ -128,6 +154,32 @@
 		<method name="create_local_device">
 			<return type="RenderingDevice">
 			</return>
+			<description>
+			</description>
+		</method>
+		<method name="draw_command_begin_label">
+			<return type="void">
+			</return>
+			<argument index="0" name="name" type="String">
+			</argument>
+			<argument index="1" name="color" type="Color">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="draw_command_end_label">
+			<return type="void">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="draw_command_insert_label">
+			<return type="void">
+			</return>
+			<argument index="0" name="name" type="String">
+			</argument>
+			<argument index="1" name="color" type="Color">
+			</argument>
 			<description>
 			</description>
 		</method>
@@ -272,6 +324,8 @@
 		<method name="draw_list_end">
 			<return type="void">
 			</return>
+			<argument index="0" name="post_barrier" type="int" default="7">
+			</argument>
 			<description>
 			</description>
 		</method>
@@ -302,7 +356,9 @@
 			</return>
 			<argument index="0" name="size" type="Vector2i">
 			</argument>
-			<argument index="1" name="validate_with_format" type="int" default="-1">
+			<argument index="1" name="samples" type="int" enum="RenderingDevice.TextureSamples" default="0">
+			</argument>
+			<argument index="2" name="validate_with_format" type="int" default="-1">
 			</argument>
 			<description>
 			</description>
@@ -318,7 +374,7 @@
 		<method name="framebuffer_format_create_empty">
 			<return type="int">
 			</return>
-			<argument index="0" name="size" type="Vector2i">
+			<argument index="0" name="samples" type="int" enum="RenderingDevice.TextureSamples" default="0">
 			</argument>
 			<description>
 			</description>
@@ -344,6 +400,12 @@
 			</return>
 			<argument index="0" name="rid" type="RID">
 			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="full_barrier">
+			<return type="void">
+			</return>
 			<description>
 			</description>
 		</method>
@@ -383,6 +445,24 @@
 			<description>
 			</description>
 		</method>
+		<method name="get_device_name" qualifiers="const">
+			<return type="String">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_device_pipeline_cache_uuid" qualifiers="const">
+			<return type="String">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_device_vendor_name" qualifiers="const">
+			<return type="String">
+			</return>
+			<description>
+			</description>
+		</method>
 		<method name="get_frame_delay" qualifiers="const">
 			<return type="int">
 			</return>
@@ -410,7 +490,7 @@
 			</argument>
 			<argument index="2" name="data" type="PackedByteArray" default="PackedByteArray(  )">
 			</argument>
-			<argument index="3" name="arg3" type="bool" default="false">
+			<argument index="3" name="use_restart_indices" type="bool" default="false">
 			</argument>
 			<description>
 			</description>
@@ -481,6 +561,16 @@
 			<return type="int">
 			</return>
 			<argument index="0" name="screen" type="int" default="0">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_resource_name">
+			<return type="void">
+			</return>
+			<argument index="0" name="id" type="RID">
+			</argument>
+			<argument index="1" name="name" type="String">
 			</argument>
 			<description>
 			</description>
@@ -562,7 +652,7 @@
 			</argument>
 			<argument index="5" name="layer_count" type="int">
 			</argument>
-			<argument index="6" name="sync_with_draw" type="bool" default="false">
+			<argument index="6" name="post_barrier" type="int" default="7">
 			</argument>
 			<description>
 			</description>
@@ -588,7 +678,7 @@
 			</argument>
 			<argument index="8" name="dst_layer" type="int">
 			</argument>
-			<argument index="9" name="sync_with_draw" type="bool" default="false">
+			<argument index="9" name="post_barrier" type="int" default="7">
 			</argument>
 			<description>
 			</description>
@@ -674,7 +764,7 @@
 			</argument>
 			<argument index="1" name="to_texture" type="RID">
 			</argument>
-			<argument index="2" name="sync_with_draw" type="bool" default="false">
+			<argument index="2" name="post_barrier" type="int" default="7">
 			</argument>
 			<description>
 			</description>
@@ -688,7 +778,7 @@
 			</argument>
 			<argument index="2" name="data" type="PackedByteArray">
 			</argument>
-			<argument index="3" name="sync_with_draw" type="bool" default="false">
+			<argument index="3" name="post_barrier" type="int" default="7">
 			</argument>
 			<description>
 			</description>
@@ -730,6 +820,8 @@
 			</argument>
 			<argument index="1" name="data" type="PackedByteArray" default="PackedByteArray(  )">
 			</argument>
+			<argument index="2" name="use_as_storage" type="bool" default="false">
+			</argument>
 			<description>
 			</description>
 		</method>
@@ -743,6 +835,16 @@
 		</method>
 	</methods>
 	<constants>
+		<constant name="BARRIER_MASK_RASTER" value="1">
+		</constant>
+		<constant name="BARRIER_MASK_COMPUTE" value="2">
+		</constant>
+		<constant name="BARRIER_MASK_TRANSFER" value="4">
+		</constant>
+		<constant name="BARRIER_MASK_ALL" value="7">
+		</constant>
+		<constant name="BARRIER_MASK_NO_BARRIER" value="8">
+		</constant>
 		<constant name="DATA_FORMAT_R4G4_UNORM_PACK8" value="0" enum="DataFormat">
 		</constant>
 		<constant name="DATA_FORMAT_R4G4B4A4_UNORM_PACK16" value="1" enum="DataFormat">
@@ -1505,13 +1607,17 @@
 		</constant>
 		<constant name="INITIAL_ACTION_CLEAR" value="0" enum="InitialAction">
 		</constant>
-		<constant name="INITIAL_ACTION_KEEP" value="1" enum="InitialAction">
+		<constant name="INITIAL_ACTION_CLEAR_REGION" value="1" enum="InitialAction">
 		</constant>
-		<constant name="INITIAL_ACTION_DROP" value="2" enum="InitialAction">
+		<constant name="INITIAL_ACTION_CLEAR_REGION_CONTINUE" value="2" enum="InitialAction">
 		</constant>
-		<constant name="INITIAL_ACTION_CONTINUE" value="3" enum="InitialAction">
+		<constant name="INITIAL_ACTION_KEEP" value="3" enum="InitialAction">
 		</constant>
-		<constant name="INITIAL_ACTION_MAX" value="4" enum="InitialAction">
+		<constant name="INITIAL_ACTION_DROP" value="4" enum="InitialAction">
+		</constant>
+		<constant name="INITIAL_ACTION_CONTINUE" value="5" enum="InitialAction">
+		</constant>
+		<constant name="INITIAL_ACTION_MAX" value="6" enum="InitialAction">
 		</constant>
 		<constant name="FINAL_ACTION_READ" value="0" enum="FinalAction">
 		</constant>

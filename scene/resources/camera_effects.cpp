@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -41,7 +41,7 @@ RID CameraEffects::get_rid() const {
 void CameraEffects::set_dof_blur_far_enabled(bool p_enabled) {
 	dof_blur_far_enabled = p_enabled;
 	_update_dof_blur();
-	_change_notify();
+	notify_property_list_changed();
 }
 
 bool CameraEffects::is_dof_blur_far_enabled() const {
@@ -69,7 +69,7 @@ float CameraEffects::get_dof_blur_far_transition() const {
 void CameraEffects::set_dof_blur_near_enabled(bool p_enabled) {
 	dof_blur_near_enabled = p_enabled;
 	_update_dof_blur();
-	_change_notify();
+	notify_property_list_changed();
 }
 
 bool CameraEffects::is_dof_blur_near_enabled() const {
@@ -120,6 +120,7 @@ void CameraEffects::_update_dof_blur() {
 void CameraEffects::set_override_exposure_enabled(bool p_enabled) {
 	override_exposure_enabled = p_enabled;
 	_update_override_exposure();
+	notify_property_list_changed();
 }
 
 bool CameraEffects::is_override_exposure_enabled() const {
@@ -143,6 +144,14 @@ void CameraEffects::_update_override_exposure() {
 }
 
 // Private methods, constructor and destructor
+
+void CameraEffects::_validate_property(PropertyInfo &property) const {
+	if ((!dof_blur_far_enabled && (property.name == "dof_blur_far_distance" || property.name == "dof_blur_far_transition")) ||
+			(!dof_blur_near_enabled && (property.name == "dof_blur_near_distance" || property.name == "dof_blur_near_transition")) ||
+			(!override_exposure_enabled && property.name == "override_exposure")) {
+		property.usage = PROPERTY_USAGE_NOEDITOR;
+	}
+}
 
 void CameraEffects::_bind_methods() {
 	// DOF blur

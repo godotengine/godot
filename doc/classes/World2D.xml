@@ -16,7 +16,10 @@
 			The [RID] of this world's canvas resource. Used by the [RenderingServer] for 2D drawing.
 		</member>
 		<member name="direct_space_state" type="PhysicsDirectSpaceState2D" setter="" getter="get_direct_space_state">
-			Direct access to the world's physics 2D space state. Used for querying current and potential collisions. Must only be accessed from the main thread within [code]_physics_process(delta)[/code].
+			Direct access to the world's physics 2D space state. Used for querying current and potential collisions. When using multi-threaded physics, access is limited to [code]_physics_process(delta)[/code] in the main thread.
+		</member>
+		<member name="navigation_map" type="RID" setter="" getter="get_navigation_map">
+			The [RID] of this world's navigation map. Used by the [NavigationServer2D].
 		</member>
 		<member name="space" type="RID" setter="" getter="get_space">
 			The [RID] of this world's physics space resource. Used by the [PhysicsServer2D] for 2D physics, treating it as both a space and an area.

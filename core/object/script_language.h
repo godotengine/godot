@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -31,6 +31,7 @@
 #ifndef SCRIPT_LANGUAGE_H
 #define SCRIPT_LANGUAGE_H
 
+#include "core/doc_data.h"
 #include "core/io/multiplayer_api.h"
 #include "core/io/resource.h"
 #include "core/templates/map.h"
@@ -57,7 +58,6 @@ struct SortNetData {
 
 class ScriptServer {
 	enum {
-
 		MAX_LANGUAGES = 16
 	};
 
@@ -145,6 +145,10 @@ public:
 	virtual String get_source_code() const = 0;
 	virtual void set_source_code(const String &p_code) = 0;
 	virtual Error reload(bool p_keep_state = false) = 0;
+
+#ifdef TOOLS_ENABLED
+	virtual const Vector<DocData::ClassDoc> &get_documentation() const = 0;
+#endif // TOOLS_ENABLED
 
 	virtual bool has_method(const StringName &p_method) const = 0;
 	virtual MethodInfo get_method_info(const StringName &p_method) const = 0;
@@ -270,8 +274,6 @@ class ScriptCodeCompletionCache {
 	static ScriptCodeCompletionCache *singleton;
 
 public:
-	virtual RES get_cached_resource(const String &p_path) = 0;
-
 	static ScriptCodeCompletionCache *get_singleton() { return singleton; }
 
 	ScriptCodeCompletionCache();
@@ -311,7 +313,8 @@ public:
 	virtual Script *create_script() const = 0;
 	virtual bool has_named_classes() const = 0;
 	virtual bool supports_builtin_mode() const = 0;
-	virtual bool can_inherit_from_file() { return false; }
+	virtual bool supports_documentation() const { return false; }
+	virtual bool can_inherit_from_file() const { return false; }
 	virtual int find_function(const String &p_function, const String &p_code) const = 0;
 	virtual String make_function(const String &p_class, const String &p_name, const PackedStringArray &p_args) const = 0;
 	virtual Error open_in_external_editor(const Ref<Script> &p_script, int p_line, int p_col) { return ERR_UNAVAILABLE; }

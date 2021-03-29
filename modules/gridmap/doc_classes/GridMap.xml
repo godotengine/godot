@@ -8,6 +8,7 @@
 		GridMaps use a [MeshLibrary] which contains a list of tiles. Each tile is a mesh with materials plus optional collision and navigation shapes.
 		A GridMap contains a collection of cells. Each grid cell refers to a tile in the [MeshLibrary]. All cells in the map have the same dimensions.
 		Internally, a GridMap is split into a sparse collection of octants for efficient rendering and physics processing. Every octant has the same dimensions and can contain several cells.
+		[b]Note:[/b] GridMap doesn't extend [VisualInstance3D] and therefore can't be hidden or cull masked based on [member VisualInstance3D.layers]. If you make a light not affect the first layer, the whole GridMap won't be lit by the light in question.
 	</description>
 	<tutorials>
 		<link title="Using gridmaps">https://docs.godotengine.org/en/latest/tutorials/3d/using_gridmaps.html</link>
@@ -40,6 +41,7 @@
 			<return type="Array">
 			</return>
 			<description>
+				Returns an array of [ArrayMesh]es and [Transform] references of all bake meshes that exist within the current GridMap.
 			</description>
 		</method>
 		<method name="get_cell_item" qualifiers="const">
@@ -182,6 +184,9 @@
 		</method>
 	</methods>
 	<members>
+		<member name="bake_navigation" type="bool" setter="set_bake_navigation" getter="is_baking_navigation" default="false">
+			If [code]true[/code], this GridMap bakes a navigation region.
+		</member>
 		<member name="cell_center_x" type="bool" setter="set_center_x" getter="get_center_x" default="true">
 			If [code]true[/code], grid items are centered on the X axis.
 		</member>
@@ -211,6 +216,9 @@
 		</member>
 		<member name="mesh_library" type="MeshLibrary" setter="set_mesh_library" getter="get_mesh_library">
 			The assigned [MeshLibrary].
+		</member>
+		<member name="navigation_layers" type="int" setter="set_navigation_layers" getter="get_navigation_layers" default="1">
+			The navigation layers the GridMap generates its navigable regions in.
 		</member>
 	</members>
 	<signals>

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -32,8 +32,6 @@
 #include "scene/scene_string_names.h"
 
 #include "core/math/geometry_3d.h"
-
-#define ANIM_MIN_LENGTH 0.001
 
 bool Animation::_set(const StringName &p_name, const Variant &p_value) {
 	String name = p_name;
@@ -582,6 +580,10 @@ void Animation::_get_property_list(List<PropertyInfo> *p_list) const {
 	}
 }
 
+void Animation::reset_state() {
+	clear();
+}
+
 int Animation::add_track(TrackType p_type, int p_at_pos) {
 	if (p_at_pos < 0 || p_at_pos >= tracks.size()) {
 		p_at_pos = tracks.size();
@@ -721,7 +723,6 @@ bool Animation::track_get_interpolation_loop_wrap(int p_track) const {
 /*
 template<class T>
 int Animation::_insert_pos(float p_time, T& p_keys) {
-
 	// simple, linear time inset that should be fast enough in reality.
 
 	int idx=p_keys.size();
@@ -734,14 +735,12 @@ int Animation::_insert_pos(float p_time, T& p_keys) {
 			p_keys.insert(idx,T());
 			return idx;
 		} else if (p_keys[idx-1].time == p_time) {
-
 			// condition for replacing.
 			return idx-1;
 		}
 
 		idx--;
 	}
-
 }
 
 */
@@ -813,8 +812,8 @@ int Animation::transform_track_insert_key(int p_track, float p_time, const Vecto
 	return ret;
 }
 
-void Animation::track_remove_key_at_position(int p_track, float p_pos) {
-	int idx = track_find_key(p_track, p_pos, true);
+void Animation::track_remove_key_at_time(int p_track, float p_time) {
+	int idx = track_find_key(p_track, p_time, true);
 	ERR_FAIL_COND(idx < 0);
 	track_remove_key(p_track, idx);
 }
@@ -1609,7 +1608,7 @@ T Animation::_interpolate(const Vector<TKey<T>> &p_keys, float p_time, Interpola
 
 	bool result = true;
 	int next = 0;
-	float c = 0;
+	float c = 0.0;
 	// prepare for all cases of interpolation
 
 	if (loop && p_loop_wrap) {
@@ -2283,8 +2282,8 @@ float Animation::bezier_track_interpolate(int p_track, float p_time) const {
 	int iterations = 10;
 
 	float duration = bt->values[idx + 1].time - bt->values[idx].time; // time duration between our two keyframes
-	float low = 0; // 0% of the current animation segment
-	float high = 1; // 100% of the current animation segment
+	float low = 0.0; // 0% of the current animation segment
+	float high = 1.0; // 100% of the current animation segment
 	float middle;
 
 	Vector2 start(0, bt->values[idx].value.value);
@@ -2611,7 +2610,7 @@ void Animation::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("transform_track_insert_key", "track_idx", "time", "location", "rotation", "scale"), &Animation::transform_track_insert_key);
 	ClassDB::bind_method(D_METHOD("track_insert_key", "track_idx", "time", "key", "transition"), &Animation::track_insert_key, DEFVAL(1));
 	ClassDB::bind_method(D_METHOD("track_remove_key", "track_idx", "key_idx"), &Animation::track_remove_key);
-	ClassDB::bind_method(D_METHOD("track_remove_key_at_position", "track_idx", "position"), &Animation::track_remove_key_at_position);
+	ClassDB::bind_method(D_METHOD("track_remove_key_at_time", "track_idx", "time"), &Animation::track_remove_key_at_time);
 	ClassDB::bind_method(D_METHOD("track_set_key_value", "track_idx", "key", "value"), &Animation::track_set_key_value);
 	ClassDB::bind_method(D_METHOD("track_set_key_transition", "track_idx", "key_idx", "transition"), &Animation::track_set_key_transition);
 	ClassDB::bind_method(D_METHOD("track_set_key_time", "track_idx", "key_idx", "time"), &Animation::track_set_key_time);
@@ -2739,7 +2738,7 @@ bool Animation::_transform_track_optimize_key(const TKey<TransformKey> &t0, cons
 			real_t d = Geometry3D::get_closest_point_to_segment(v1, s).distance_to(v1);
 
 			if (d > pd.length() * p_alowed_linear_err) {
-				return false; //beyond allowed error for colinearity
+				return false; //beyond allowed error for collinearity
 			}
 
 			if (p_norm != Vector3() && Math::acos(pd.normalized().dot(p_norm)) > p_alowed_angular_err) {
@@ -2829,7 +2828,7 @@ bool Animation::_transform_track_optimize_key(const TKey<TransformKey> &t0, cons
 			real_t d = Geometry3D::get_closest_point_to_segment(v1, s).distance_to(v1);
 
 			if (d > pd.length() * p_alowed_linear_err) {
-				return false; //beyond allowed error for colinearity
+				return false; //beyond allowed error for collinearity
 			}
 
 			t[2] = (d1 - d0) / (d2 - d0);
@@ -2841,7 +2840,7 @@ bool Animation::_transform_track_optimize_key(const TKey<TransformKey> &t0, cons
 		erase = true;
 	} else {
 		erase = true;
-		real_t lt = -1;
+		real_t lt = -1.0;
 		for (int j = 0; j < 3; j++) {
 			//search for t on first, one must be it
 			if (t[j] != -1) {
@@ -2924,11 +2923,7 @@ void Animation::optimize(float p_allowed_linear_err, float p_allowed_angular_err
 	}
 }
 
-Animation::Animation() {
-	step = 0.1;
-	loop = false;
-	length = 1;
-}
+Animation::Animation() {}
 
 Animation::~Animation() {
 	for (int i = 0; i < tracks.size(); i++) {

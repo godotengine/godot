@@ -104,7 +104,7 @@ namespace GodotTools.Ides.Rider
             if (line >= 0)
             {
                 args.Add("--line");
-                args.Add(line.ToString());
+                args.Add((line + 1).ToString()); // https://github.com/JetBrains/godot-support/issues/61
             }
             args.Add(scriptPath);
             try

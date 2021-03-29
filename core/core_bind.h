@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -40,6 +40,7 @@
 #include "core/os/os.h"
 #include "core/os/semaphore.h"
 #include "core/os/thread.h"
+#include "core/templates/safe_refcount.h"
 
 class _ResourceLoader : public Object {
 	GDCLASS(_ResourceLoader, Object);
@@ -56,13 +57,19 @@ public:
 		THREAD_LOAD_LOADED
 	};
 
+	enum CacheMode {
+		CACHE_MODE_IGNORE, //resource and subresources do not use path cache, no path is set into resource.
+		CACHE_MODE_REUSE, //resource and subresources use patch cache, reuse existing loaded resources instead of loading from disk when available
+		CACHE_MODE_REPLACE, //resource and and subresource use path cache, but replace existing loaded resources when available with information from disk
+	};
+
 	static _ResourceLoader *get_singleton() { return singleton; }
 
 	Error load_threaded_request(const String &p_path, const String &p_type_hint = "", bool p_use_sub_threads = false);
 	ThreadLoadStatus load_threaded_get_status(const String &p_path, Array r_progress = Array());
 	RES load_threaded_get(const String &p_path);
 
-	RES load(const String &p_path, const String &p_type_hint = "", bool p_no_cache = false);
+	RES load(const String &p_path, const String &p_type_hint = "", CacheMode p_cache_mode = CACHE_MODE_REUSE);
 	Vector<String> get_recognized_extensions_for_type(const String &p_type);
 	void set_abort_on_missing_resources(bool p_abort);
 	PackedStringArray get_dependencies(const String &p_path);
@@ -73,6 +80,7 @@ public:
 };
 
 VARIANT_ENUM_CAST(_ResourceLoader::ThreadLoadStatus);
+VARIANT_ENUM_CAST(_ResourceLoader::CacheMode);
 
 class _ResourceSaver : public Object {
 	GDCLASS(_ResourceSaver, Object);
@@ -83,7 +91,6 @@ protected:
 
 public:
 	enum SaverFlags {
-
 		FLAG_RELATIVE_PATHS = 1,
 		FLAG_BUNDLE_RESOURCES = 2,
 		FLAG_CHANGE_PATH = 4,
@@ -156,8 +163,8 @@ public:
 	int get_low_processor_usage_mode_sleep_usec() const;
 
 	String get_executable_path() const;
-	int execute(const String &p_path, const Vector<String> &p_arguments, bool p_blocking = true, Array p_output = Array(), bool p_read_stderr = false);
-
+	int execute(const String &p_path, const Vector<String> &p_arguments, Array r_output = Array(), bool p_read_stderr = false);
+	int create_process(const String &p_path, const Vector<String> &p_arguments);
 	Error kill(int p_pid);
 	Error shell_open(String p_uri);
 
@@ -165,6 +172,7 @@ public:
 
 	bool has_environment(const String &p_var) const;
 	String get_environment(const String &p_var) const;
+	bool set_environment(const String &p_var, const String &p_value) const;
 
 	String get_name() const;
 	Vector<String> get_cmdline_args();
@@ -191,8 +199,6 @@ public:
 
 	void set_use_file_access_save_and_swap(bool p_enable);
 
-	int get_exit_code() const;
-	void set_exit_code(int p_code);
 	Dictionary get_date(bool utc) const;
 	Dictionary get_time(bool utc) const;
 	Dictionary get_datetime(bool utc) const;
@@ -204,8 +210,8 @@ public:
 	uint64_t get_static_memory_usage() const;
 	uint64_t get_static_memory_peak_usage() const;
 
-	void delay_usec(uint32_t p_usec) const;
-	void delay_msec(uint32_t p_msec) const;
+	void delay_usec(int p_usec) const;
+	void delay_msec(int p_msec) const;
 	uint32_t get_ticks_msec() const;
 	uint64_t get_ticks_usec() const;
 
@@ -233,17 +239,13 @@ public:
 	String get_user_data_dir() const;
 
 	Error set_thread_name(const String &p_name);
+	Thread::ID get_thread_caller_id() const;
 
 	bool has_feature(const String &p_feature) const;
 
 	bool request_permission(const String &p_name);
 	bool request_permissions();
 	Vector<String> get_granted_permissions() const;
-
-	int get_tablet_driver_count() const;
-	String get_tablet_driver_name(int p_driver) const;
-	String get_current_tablet_driver() const;
-	void set_current_tablet_driver(const String &p_driver);
 
 	static _OS *get_singleton() { return singleton; }
 
@@ -361,7 +363,6 @@ protected:
 
 public:
 	enum ModeFlags {
-
 		READ = 1,
 		WRITE = 2,
 		READ_WRITE = 3,
@@ -380,6 +381,7 @@ public:
 	Error open_compressed(const String &p_path, ModeFlags p_mode_flags, CompressionMode p_compress_mode = COMPRESSION_FASTLZ);
 
 	Error open(const String &p_path, ModeFlags p_mode_flags); // open a file.
+	void flush(); // Flush a file (write its buffer to disk).
 	void close(); // Close a file.
 	bool is_open() const; // True when file is open.
 
@@ -494,8 +496,8 @@ public:
 	virtual ~_Directory();
 
 private:
-	bool _list_skip_navigational;
-	bool _list_skip_hidden;
+	bool _list_skip_navigational = false;
+	bool _list_skip_hidden = false;
 };
 
 class _Marshalls : public Object {
@@ -552,16 +554,15 @@ class _Thread : public Reference {
 protected:
 	Variant ret;
 	Variant userdata;
-	volatile bool active = false;
+	SafeFlag active;
 	Object *target_instance = nullptr;
 	StringName target_method;
-	Thread *thread = nullptr;
+	Thread thread;
 	static void _bind_methods();
 	static void _start_func(void *ud);
 
 public:
 	enum Priority {
-
 		PRIORITY_LOW,
 		PRIORITY_NORMAL,
 		PRIORITY_HIGH,
@@ -572,9 +573,6 @@ public:
 	String get_id() const;
 	bool is_active() const;
 	Variant wait_to_finish();
-
-	_Thread() {}
-	~_Thread();
 };
 
 VARIANT_ENUM_CAST(_Thread::Priority);
@@ -638,7 +636,7 @@ public:
 
 	float get_frames_per_second() const;
 	uint64_t get_physics_frames() const;
-	uint64_t get_idle_frames() const;
+	uint64_t get_process_frames() const;
 
 	int get_frames_drawn();
 

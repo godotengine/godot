@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="VisualShaderNodeClamp" inherits="VisualShaderNode" version="4.0">
+	<brief_description>
+		Clamps a value within the visual shader graph.
+	</brief_description>
+	<description>
+		Constrains a value to lie between [code]min[/code] and [code]max[/code] values.
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+	</methods>
+	<members>
+		<member name="op_type" type="int" setter="set_op_type" getter="get_op_type" enum="VisualShaderNodeClamp.OpType" default="0">
+			A type of operands and returned value.
+		</member>
+	</members>
+	<constants>
+		<constant name="OP_TYPE_FLOAT" value="0" enum="OpType">
+			A floating-point scalar.
+		</constant>
+		<constant name="OP_TYPE_INT" value="1" enum="OpType">
+			An integer scalar.
+		</constant>
+		<constant name="OP_TYPE_VECTOR" value="2" enum="OpType">
+			A vector type.
+		</constant>
+		<constant name="OP_TYPE_MAX" value="3" enum="OpType">
+			Represents the size of the [enum OpType] enum.
+		</constant>
+	</constants>
+</class>

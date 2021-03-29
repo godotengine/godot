@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -158,7 +158,7 @@ int TranslationPO::_get_plural_index(int p_n) const {
 void TranslationPO::_cache_plural_tests(const String &p_plural_rule) {
 	// Some examples of p_plural_rule passed in can have the form:
 	// "n==0 ? 0 : n==1 ? 1 : n==2 ? 2 : n%100>=3 && n%100<=10 ? 3 : n%100>=11 && n%100<=99 ? 4 : 5" (Arabic)
-	// "n >= 2" (French) // When evaluating the last, esp careful with this one.
+	// "n >= 2" (French) // When evaluating the last, especially careful with this one.
 	// "n != 1" (English)
 	int first_ques_mark = p_plural_rule.find("?");
 	if (first_ques_mark == -1) {
@@ -230,7 +230,7 @@ StringName TranslationPO::get_message(const StringName &p_src_text, const String
 	if (!translation_map.has(p_context) || !translation_map[p_context].has(p_src_text)) {
 		return StringName();
 	}
-	ERR_FAIL_COND_V_MSG(translation_map[p_context][p_src_text].empty(), StringName(), "Source text \"" + String(p_src_text) + "\" is registered but doesn't have a translation. Please report this bug.");
+	ERR_FAIL_COND_V_MSG(translation_map[p_context][p_src_text].is_empty(), StringName(), "Source text \"" + String(p_src_text) + "\" is registered but doesn't have a translation. Please report this bug.");
 
 	return translation_map[p_context][p_src_text][0];
 }
@@ -246,7 +246,7 @@ StringName TranslationPO::get_plural_message(const StringName &p_src_text, const
 	if (!translation_map.has(p_context) || !translation_map[p_context].has(p_src_text)) {
 		return StringName();
 	}
-	ERR_FAIL_COND_V_MSG(translation_map[p_context][p_src_text].empty(), StringName(), "Source text \"" + String(p_src_text) + "\" is registered but doesn't have a translation. Please report this bug.");
+	ERR_FAIL_COND_V_MSG(translation_map[p_context][p_src_text].is_empty(), StringName(), "Source text \"" + String(p_src_text) + "\" is registered but doesn't have a translation. Please report this bug.");
 
 	if (translation_map[p_context][p_src_text].size() == 1) {
 		WARN_PRINT("Source string \"" + String(p_src_text) + "\" doesn't have plural translations. Use singular translation API for such as tr(), TTR() to translate \"" + String(p_src_text) + "\"");
@@ -275,7 +275,7 @@ void TranslationPO::erase_message(const StringName &p_src_text, const StringName
 }
 
 void TranslationPO::get_message_list(List<StringName> *r_messages) const {
-	// PHashTranslation uses this function to get the list of msgid.
+	// OptimizedTranslation uses this function to get the list of msgid.
 	// Return all the keys of translation_map under "" context.
 
 	List<StringName> context_l;

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -79,6 +79,11 @@ public:
 		TOOL_MAX
 	};
 
+	enum AddNodeOption {
+		ADD_NODE,
+		ADD_INSTANCE,
+	};
+
 private:
 	EditorNode *editor;
 
@@ -119,23 +124,23 @@ private:
 		UNLOCK_SELECTED,
 		GROUP_SELECTED,
 		UNGROUP_SELECTED,
-		ANCHORS_AND_MARGINS_PRESET_TOP_LEFT,
-		ANCHORS_AND_MARGINS_PRESET_TOP_RIGHT,
-		ANCHORS_AND_MARGINS_PRESET_BOTTOM_LEFT,
-		ANCHORS_AND_MARGINS_PRESET_BOTTOM_RIGHT,
-		ANCHORS_AND_MARGINS_PRESET_CENTER_LEFT,
-		ANCHORS_AND_MARGINS_PRESET_CENTER_RIGHT,
-		ANCHORS_AND_MARGINS_PRESET_CENTER_TOP,
-		ANCHORS_AND_MARGINS_PRESET_CENTER_BOTTOM,
-		ANCHORS_AND_MARGINS_PRESET_CENTER,
-		ANCHORS_AND_MARGINS_PRESET_TOP_WIDE,
-		ANCHORS_AND_MARGINS_PRESET_LEFT_WIDE,
-		ANCHORS_AND_MARGINS_PRESET_RIGHT_WIDE,
-		ANCHORS_AND_MARGINS_PRESET_BOTTOM_WIDE,
-		ANCHORS_AND_MARGINS_PRESET_VCENTER_WIDE,
-		ANCHORS_AND_MARGINS_PRESET_HCENTER_WIDE,
-		ANCHORS_AND_MARGINS_PRESET_WIDE,
-		ANCHORS_AND_MARGINS_PRESET_KEEP_RATIO,
+		ANCHORS_AND_OFFSETS_PRESET_TOP_LEFT,
+		ANCHORS_AND_OFFSETS_PRESET_TOP_RIGHT,
+		ANCHORS_AND_OFFSETS_PRESET_BOTTOM_LEFT,
+		ANCHORS_AND_OFFSETS_PRESET_BOTTOM_RIGHT,
+		ANCHORS_AND_OFFSETS_PRESET_CENTER_LEFT,
+		ANCHORS_AND_OFFSETS_PRESET_CENTER_RIGHT,
+		ANCHORS_AND_OFFSETS_PRESET_CENTER_TOP,
+		ANCHORS_AND_OFFSETS_PRESET_CENTER_BOTTOM,
+		ANCHORS_AND_OFFSETS_PRESET_CENTER,
+		ANCHORS_AND_OFFSETS_PRESET_TOP_WIDE,
+		ANCHORS_AND_OFFSETS_PRESET_LEFT_WIDE,
+		ANCHORS_AND_OFFSETS_PRESET_RIGHT_WIDE,
+		ANCHORS_AND_OFFSETS_PRESET_BOTTOM_WIDE,
+		ANCHORS_AND_OFFSETS_PRESET_VCENTER_WIDE,
+		ANCHORS_AND_OFFSETS_PRESET_HCENTER_WIDE,
+		ANCHORS_AND_OFFSETS_PRESET_WIDE,
+		ANCHORS_AND_OFFSETS_PRESET_KEEP_RATIO,
 		ANCHORS_PRESET_TOP_LEFT,
 		ANCHORS_PRESET_TOP_RIGHT,
 		ANCHORS_PRESET_BOTTOM_LEFT,
@@ -152,22 +157,22 @@ private:
 		ANCHORS_PRESET_VCENTER_WIDE,
 		ANCHORS_PRESET_HCENTER_WIDE,
 		ANCHORS_PRESET_WIDE,
-		MARGINS_PRESET_TOP_LEFT,
-		MARGINS_PRESET_TOP_RIGHT,
-		MARGINS_PRESET_BOTTOM_LEFT,
-		MARGINS_PRESET_BOTTOM_RIGHT,
-		MARGINS_PRESET_CENTER_LEFT,
-		MARGINS_PRESET_CENTER_RIGHT,
-		MARGINS_PRESET_CENTER_TOP,
-		MARGINS_PRESET_CENTER_BOTTOM,
-		MARGINS_PRESET_CENTER,
-		MARGINS_PRESET_TOP_WIDE,
-		MARGINS_PRESET_LEFT_WIDE,
-		MARGINS_PRESET_RIGHT_WIDE,
-		MARGINS_PRESET_BOTTOM_WIDE,
-		MARGINS_PRESET_VCENTER_WIDE,
-		MARGINS_PRESET_HCENTER_WIDE,
-		MARGINS_PRESET_WIDE,
+		OFFSETS_PRESET_TOP_LEFT,
+		OFFSETS_PRESET_TOP_RIGHT,
+		OFFSETS_PRESET_BOTTOM_LEFT,
+		OFFSETS_PRESET_BOTTOM_RIGHT,
+		OFFSETS_PRESET_CENTER_LEFT,
+		OFFSETS_PRESET_CENTER_RIGHT,
+		OFFSETS_PRESET_CENTER_TOP,
+		OFFSETS_PRESET_CENTER_BOTTOM,
+		OFFSETS_PRESET_CENTER,
+		OFFSETS_PRESET_TOP_WIDE,
+		OFFSETS_PRESET_LEFT_WIDE,
+		OFFSETS_PRESET_RIGHT_WIDE,
+		OFFSETS_PRESET_BOTTOM_WIDE,
+		OFFSETS_PRESET_VCENTER_WIDE,
+		OFFSETS_PRESET_HCENTER_WIDE,
+		OFFSETS_PRESET_WIDE,
 		ANIM_INSERT_KEY,
 		ANIM_INSERT_KEY_EXISTING,
 		ANIM_INSERT_POS,
@@ -284,13 +289,14 @@ private:
 
 	bool ruler_tool_active;
 	Point2 ruler_tool_origin;
+	Point2 node_create_position;
 
 	MenuOption last_option;
 
 	struct _SelectResult {
-		CanvasItem *item;
-		float z_index;
-		bool has_z;
+		CanvasItem *item = nullptr;
+		float z_index = 0;
+		bool has_z = true;
 		_FORCE_INLINE_ bool operator<(const _SelectResult &p_rr) const {
 			return has_z && p_rr.has_z ? p_rr.z_index < z_index : p_rr.has_z;
 		}
@@ -308,8 +314,6 @@ private:
 		Transform2D xform;
 		float length = 0.f;
 		uint64_t last_pass = 0;
-
-		BoneList() {}
 	};
 
 	uint64_t bone_last_frame;
@@ -331,7 +335,7 @@ private:
 	struct PoseClipboard {
 		Vector2 pos;
 		Vector2 scale;
-		float rot;
+		float rot = 0;
 		ObjectID id;
 	};
 	List<PoseClipboard> pose_clipboard;
@@ -378,6 +382,7 @@ private:
 	Button *key_auto_insert_button;
 
 	PopupMenu *selection_menu;
+	PopupMenu *add_node_menu;
 
 	Control *top_ruler;
 	Control *left_ruler;
@@ -438,6 +443,9 @@ private:
 	void _snap_changed();
 	void _selection_result_pressed(int);
 	void _selection_menu_hide();
+	void _add_node_pressed(int p_result);
+	void _node_created(Node *p_node);
+	void _reset_create_position();
 
 	UndoRedo *undo_redo;
 	bool _build_bones_list(Node *p_node);
@@ -456,9 +464,9 @@ private:
 
 	void _unhandled_key_input(const Ref<InputEvent> &p_ev);
 
-	void _draw_text_at_position(Point2 p_position, String p_string, Margin p_side);
-	void _draw_margin_at_position(int p_value, Point2 p_position, Margin p_side);
-	void _draw_percentage_at_position(float p_value, Point2 p_position, Margin p_side);
+	void _draw_text_at_position(Point2 p_position, String p_string, Side p_side);
+	void _draw_margin_at_position(int p_value, Point2 p_position, Side p_side);
+	void _draw_percentage_at_position(float p_value, Point2 p_position, Side p_side);
 	void _draw_straight_line(Point2 p_from, Point2 p_to, Color p_color);
 
 	void _draw_smart_snapping();
@@ -521,9 +529,9 @@ private:
 			const Node *p_current);
 
 	void _set_anchors_preset(Control::LayoutPreset p_preset);
-	void _set_margins_preset(Control::LayoutPreset p_preset);
-	void _set_anchors_and_margins_preset(Control::LayoutPreset p_preset);
-	void _set_anchors_and_margins_to_keep_ratio();
+	void _set_offsets_preset(Control::LayoutPreset p_preset);
+	void _set_anchors_and_offsets_preset(Control::LayoutPreset p_preset);
+	void _set_anchors_and_offsets_to_keep_ratio();
 
 	void _button_toggle_anchor_mode(bool p_status);
 

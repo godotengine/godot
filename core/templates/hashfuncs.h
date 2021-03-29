@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -112,6 +112,24 @@ static inline uint32_t make_uint32_t(T p_in) {
 	_u._u32 = 0;
 	_u.t = p_in;
 	return _u._u32;
+}
+
+static inline uint64_t hash_djb2_one_float_64(double p_in, uint64_t p_prev = 5381) {
+	union {
+		double d;
+		uint64_t i;
+	} u;
+
+	// Normalize +/- 0.0 and NaN values so they hash the same.
+	if (p_in == 0.0f) {
+		u.d = 0.0;
+	} else if (Math::is_nan(p_in)) {
+		u.d = Math_NAN;
+	} else {
+		u.d = p_in;
+	}
+
+	return ((p_prev << 5) + p_prev) + u.i;
 }
 
 static inline uint64_t hash_djb2_one_64(uint64_t p_in, uint64_t p_prev = 5381) {

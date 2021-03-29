@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -234,7 +234,6 @@ PropertyInfo VisualScriptFunctionCall::get_output_value_port_info(int p_idx) con
 
 		/*MethodBind *mb = ClassDB::get_method(_get_base_type(),function);
 		if (mb) {
-
 			ret = mb->get_argument_info(-1);
 		} else {*/
 
@@ -282,7 +281,7 @@ void VisualScriptFunctionCall::set_basic_type(Variant::Type p_type) {
 	}
 	basic_type = p_type;
 
-	_change_notify();
+	notify_property_list_changed();
 	ports_changed_notify();
 }
 
@@ -296,7 +295,7 @@ void VisualScriptFunctionCall::set_base_type(const StringName &p_type) {
 	}
 
 	base_type = p_type;
-	_change_notify();
+	notify_property_list_changed();
 	ports_changed_notify();
 }
 
@@ -310,7 +309,7 @@ void VisualScriptFunctionCall::set_base_script(const String &p_path) {
 	}
 
 	base_script = p_path;
-	_change_notify();
+	notify_property_list_changed();
 	ports_changed_notify();
 }
 
@@ -329,7 +328,7 @@ void VisualScriptFunctionCall::set_singleton(const StringName &p_type) {
 		base_type = obj->get_class();
 	}
 
-	_change_notify();
+	notify_property_list_changed();
 	ports_changed_notify();
 }
 
@@ -426,7 +425,7 @@ void VisualScriptFunctionCall::set_function(const StringName &p_type) {
 		_update_method_cache();
 	}
 
-	_change_notify();
+	notify_property_list_changed();
 	ports_changed_notify();
 }
 
@@ -440,7 +439,7 @@ void VisualScriptFunctionCall::set_base_path(const NodePath &p_type) {
 	}
 
 	base_path = p_type;
-	_change_notify();
+	notify_property_list_changed();
 	ports_changed_notify();
 }
 
@@ -454,7 +453,7 @@ void VisualScriptFunctionCall::set_call_mode(CallMode p_mode) {
 	}
 
 	call_mode = p_mode;
-	_change_notify();
+	notify_property_list_changed();
 	ports_changed_notify();
 }
 
@@ -477,7 +476,7 @@ void VisualScriptFunctionCall::set_rpc_call_mode(VisualScriptFunctionCall::RPCCa
 	}
 	rpc_call_mode = p_mode;
 	ports_changed_notify();
-	_change_notify();
+	notify_property_list_changed();
 }
 
 VisualScriptFunctionCall::RPCCallMode VisualScriptFunctionCall::get_rpc_call_mode() const {
@@ -548,7 +547,7 @@ void VisualScriptFunctionCall::_validate_property(PropertyInfo &property) const 
 		} else {
 			Node *bnode = _get_base_node();
 			if (bnode) {
-				property.hint_string = bnode->get_path(); //convert to loong string
+				property.hint_string = bnode->get_path(); //convert to long string
 			}
 		}
 	}
@@ -1068,7 +1067,7 @@ void VisualScriptPropertySet::set_basic_type(Variant::Type p_type) {
 	}
 	basic_type = p_type;
 
-	_change_notify();
+	notify_property_list_changed();
 	_update_base_type();
 	ports_changed_notify();
 }
@@ -1083,7 +1082,7 @@ void VisualScriptPropertySet::set_base_type(const StringName &p_type) {
 	}
 
 	base_type = p_type;
-	_change_notify();
+	notify_property_list_changed();
 	ports_changed_notify();
 }
 
@@ -1097,7 +1096,7 @@ void VisualScriptPropertySet::set_base_script(const String &p_path) {
 	}
 
 	base_script = p_path;
-	_change_notify();
+	notify_property_list_changed();
 	ports_changed_notify();
 }
 
@@ -1192,7 +1191,7 @@ void VisualScriptPropertySet::set_property(const StringName &p_type) {
 	property = p_type;
 	index = StringName();
 	_update_cache();
-	_change_notify();
+	notify_property_list_changed();
 	ports_changed_notify();
 }
 
@@ -1207,7 +1206,7 @@ void VisualScriptPropertySet::set_base_path(const NodePath &p_type) {
 
 	base_path = p_type;
 	_update_base_type();
-	_change_notify();
+	notify_property_list_changed();
 	ports_changed_notify();
 }
 
@@ -1222,7 +1221,7 @@ void VisualScriptPropertySet::set_call_mode(CallMode p_mode) {
 
 	call_mode = p_mode;
 	_update_base_type();
-	_change_notify();
+	notify_property_list_changed();
 	ports_changed_notify();
 }
 
@@ -1244,7 +1243,7 @@ void VisualScriptPropertySet::set_index(const StringName &p_type) {
 	}
 	index = p_type;
 	_update_cache();
-	_change_notify();
+	notify_property_list_changed();
 	ports_changed_notify();
 }
 
@@ -1260,7 +1259,7 @@ void VisualScriptPropertySet::set_assign_op(AssignOp p_op) {
 
 	assign_op = p_op;
 	_update_cache();
-	_change_notify();
+	notify_property_list_changed();
 	ports_changed_notify();
 }
 
@@ -1293,7 +1292,7 @@ void VisualScriptPropertySet::_validate_property(PropertyInfo &property) const {
 		} else {
 			Node *bnode = _get_base_node();
 			if (bnode) {
-				property.hint_string = bnode->get_path(); //convert to loong string
+				property.hint_string = bnode->get_path(); //convert to long string
 			}
 		}
 	}
@@ -1761,7 +1760,7 @@ void VisualScriptPropertyGet::set_base_type(const StringName &p_type) {
 	}
 
 	base_type = p_type;
-	_change_notify();
+	notify_property_list_changed();
 	ports_changed_notify();
 }
 
@@ -1775,7 +1774,7 @@ void VisualScriptPropertyGet::set_base_script(const String &p_path) {
 	}
 
 	base_script = p_path;
-	_change_notify();
+	notify_property_list_changed();
 	ports_changed_notify();
 }
 
@@ -1872,7 +1871,7 @@ void VisualScriptPropertyGet::set_property(const StringName &p_type) {
 	property = p_type;
 
 	_update_cache();
-	_change_notify();
+	notify_property_list_changed();
 	ports_changed_notify();
 }
 
@@ -1886,7 +1885,7 @@ void VisualScriptPropertyGet::set_base_path(const NodePath &p_type) {
 	}
 
 	base_path = p_type;
-	_change_notify();
+	notify_property_list_changed();
 	_update_base_type();
 	ports_changed_notify();
 }
@@ -1901,7 +1900,7 @@ void VisualScriptPropertyGet::set_call_mode(CallMode p_mode) {
 	}
 
 	call_mode = p_mode;
-	_change_notify();
+	notify_property_list_changed();
 	_update_base_type();
 	ports_changed_notify();
 }
@@ -1916,7 +1915,7 @@ void VisualScriptPropertyGet::set_basic_type(Variant::Type p_type) {
 	}
 	basic_type = p_type;
 
-	_change_notify();
+	notify_property_list_changed();
 	ports_changed_notify();
 }
 
@@ -1938,7 +1937,7 @@ void VisualScriptPropertyGet::set_index(const StringName &p_type) {
 	}
 	index = p_type;
 	_update_cache();
-	_change_notify();
+	notify_property_list_changed();
 	ports_changed_notify();
 }
 
@@ -1971,7 +1970,7 @@ void VisualScriptPropertyGet::_validate_property(PropertyInfo &property) const {
 		} else {
 			Node *bnode = _get_base_node();
 			if (bnode) {
-				property.hint_string = bnode->get_path(); //convert to loong string
+				property.hint_string = bnode->get_path(); //convert to long string
 			}
 		}
 	}
@@ -2262,7 +2261,7 @@ void VisualScriptEmitSignal::set_signal(const StringName &p_type) {
 
 	name = p_type;
 
-	_change_notify();
+	notify_property_list_changed();
 	ports_changed_notify();
 }
 

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -69,7 +69,7 @@ protected:
 public:
 	static EditorInterface *get_singleton() { return singleton; }
 
-	Control *get_editor_viewport();
+	Control *get_editor_main_control();
 	void edit_resource(const Ref<Resource> &p_resource);
 	void open_scene_from_path(const String &scene_path);
 	void reload_scene_from_path(const String &scene_path);
@@ -130,7 +130,11 @@ class EditorPlugin : public Node {
 
 	String last_main_screen_name;
 
+	void _editor_project_settings_changed();
+
 protected:
+	void _notification(int p_what);
+
 	static void _bind_methods();
 	UndoRedo &get_undo_redo() { return *undo_redo; }
 
@@ -174,7 +178,7 @@ public:
 	void remove_control_from_docks(Control *p_control);
 	void remove_control_from_bottom_panel(Control *p_control);
 
-	void add_tool_menu_item(const String &p_name, Object *p_handler, const String &p_callback, const Variant &p_ud = Variant());
+	void add_tool_menu_item(const String &p_name, const Callable &p_callable);
 	void add_tool_submenu_item(const String &p_name, Object *p_submenu);
 	void remove_tool_menu_item(const String &p_name);
 

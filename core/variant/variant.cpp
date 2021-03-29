@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -912,11 +912,11 @@ bool Variant::is_zero() const {
 
 		} break;
 		case DICTIONARY: {
-			return reinterpret_cast<const Dictionary *>(_data._mem)->empty();
+			return reinterpret_cast<const Dictionary *>(_data._mem)->is_empty();
 
 		} break;
 		case ARRAY: {
-			return reinterpret_cast<const Array *>(_data._mem)->empty();
+			return reinterpret_cast<const Array *>(_data._mem)->is_empty();
 
 		} break;
 
@@ -2023,7 +2023,7 @@ Variant::operator Color() const {
 	if (type == COLOR) {
 		return *reinterpret_cast<const Color *>(_data._mem);
 	} else if (type == STRING) {
-		return Color::html(operator String());
+		return Color(operator String());
 	} else if (type == INT) {
 		return Color::hex(operator int());
 	} else {
@@ -2338,8 +2338,8 @@ Variant::operator Vector<StringName>() const {
 	return to;
 }
 
-Variant::operator Margin() const {
-	return (Margin) operator int();
+Variant::operator Side() const {
+	return (Side) operator int();
 }
 
 Variant::operator Orientation() const {

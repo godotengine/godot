@@ -23,7 +23,7 @@ subject to the following restrictions:
 #include "BulletDynamics/ConstraintSolver/btGeneric6DofSpring2Constraint.h"
 
 btMultiBodySphericalJointMotor::btMultiBodySphericalJointMotor(btMultiBody* body, int link, btScalar maxMotorImpulse)
-	: btMultiBodyConstraint(body, body, link, body->getLink(link).m_parent, 3, true),
+	: btMultiBodyConstraint(body, body, link, body->getLink(link).m_parent, 3, true, MULTIBODY_CONSTRAINT_SPHERICAL_MOTOR),
 	m_desiredVelocity(0, 0, 0),
 	m_desiredPosition(0,0,0,1),
 	m_kd(1.),

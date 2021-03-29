@@ -5,6 +5,7 @@
 	</brief_description>
 	<description>
 		Node for 2D tile-based maps. Tilemaps use a [TileSet] which contain a list of tiles (textures plus optional collision, navigation, and/or occluder shapes) which are used to create grid-based maps.
+		When doing physics queries against the tilemap, the cell coordinates are encoded as [code]metadata[/code] for each detected collision shape returned by methods such as [method PhysicsDirectSpaceState2D.intersect_shape], [method PhysicsDirectBodyState2D.get_contact_collider_shape_metadata] etc.
 	</description>
 	<tutorials>
 		<link title="Using Tilemaps">https://docs.godotengine.org/en/latest/tutorials/2d/using_tilemaps.html</link>
@@ -143,7 +144,7 @@
 			<argument index="1" name="ignore_half_ofs" type="bool" default="false">
 			</argument>
 			<description>
-				Returns the global position corresponding to the given tilemap (grid-based) coordinates.
+				Returns the local position corresponding to the given tilemap (grid-based) coordinates.
 				Optionally, the tilemap's half offset can be ignored.
 			</description>
 		</method>
@@ -171,12 +172,22 @@
 				[b]Note:[/b] Data such as navigation polygons and collision shapes are not immediately updated for performance reasons.
 				If you need these to be immediately updated, you can call [method update_dirty_quadrants].
 				Overriding this method also overrides it internally, allowing custom logic to be implemented when tiles are placed/removed:
-				[codeblock]
+				[codeblocks]
+				[gdscript]
 				func set_cell(x, y, tile, flip_x=false, flip_y=false, transpose=false, autotile_coord=Vector2())
 				    # Write your custom logic here.
 				    # To call the default method:
 				    .set_cell(x, y, tile, flip_x, flip_y, transpose, autotile_coord)
-				[/codeblock]
+				[/gdscript]
+				[csharp]
+				public void SetCell(int x, int y, int tile, bool flipX = false, bool flipY = false, bool transpose = false, Vector2 autotileCoord = new Vector2())
+				{
+				    // Write your custom logic here.
+				    // To call the default method:
+				    base.SetCell(x, y, tile, flipX, flipY, transpose, autotileCoord);
+				}
+				[/csharp]
+				[/codeblocks]
 			</description>
 		</method>
 		<method name="set_cellv">
@@ -261,6 +272,9 @@
 		</method>
 	</methods>
 	<members>
+		<member name="bake_navigation" type="bool" setter="set_bake_navigation" getter="is_baking_navigation" default="false">
+			If [code]true[/code], this TileMap bakes a navigation region.
+		</member>
 		<member name="cell_clip_uv" type="bool" setter="set_clip_uv" getter="get_clip_uv" default="false">
 			If [code]true[/code], the cell's UVs will be clipped.
 		</member>

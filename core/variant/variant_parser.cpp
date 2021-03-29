@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -381,7 +381,6 @@ Error VariantParser::get_token(Stream *p_stream, Token &r_token, int &line, Stri
 						r_token.value = num.as_int();
 					}
 					return OK;
-
 				} else if ((cchar >= 'A' && cchar <= 'Z') || (cchar >= 'a' && cchar <= 'z') || cchar == '_') {
 					StringBuffer<> id;
 					bool first = true;
@@ -508,8 +507,8 @@ Error VariantParser::parse_value(Token &token, Variant &value, Stream *p_stream,
 		} else if (id == "nan") {
 			value = Math_NAN;
 		} else if (id == "Vector2") {
-			Vector<float> args;
-			Error err = _parse_construct<float>(p_stream, args, line, r_err_str);
+			Vector<real_t> args;
+			Error err = _parse_construct<real_t>(p_stream, args, line, r_err_str);
 			if (err) {
 				return err;
 			}
@@ -534,8 +533,8 @@ Error VariantParser::parse_value(Token &token, Variant &value, Stream *p_stream,
 
 			value = Vector2i(args[0], args[1]);
 		} else if (id == "Rect2") {
-			Vector<float> args;
-			Error err = _parse_construct<float>(p_stream, args, line, r_err_str);
+			Vector<real_t> args;
+			Error err = _parse_construct<real_t>(p_stream, args, line, r_err_str);
 			if (err) {
 				return err;
 			}
@@ -560,8 +559,8 @@ Error VariantParser::parse_value(Token &token, Variant &value, Stream *p_stream,
 
 			value = Rect2i(args[0], args[1], args[2], args[3]);
 		} else if (id == "Vector3") {
-			Vector<float> args;
-			Error err = _parse_construct<float>(p_stream, args, line, r_err_str);
+			Vector<real_t> args;
+			Error err = _parse_construct<real_t>(p_stream, args, line, r_err_str);
 			if (err) {
 				return err;
 			}
@@ -586,8 +585,8 @@ Error VariantParser::parse_value(Token &token, Variant &value, Stream *p_stream,
 
 			value = Vector3i(args[0], args[1], args[2]);
 		} else if (id == "Transform2D" || id == "Matrix32") { //compatibility
-			Vector<float> args;
-			Error err = _parse_construct<float>(p_stream, args, line, r_err_str);
+			Vector<real_t> args;
+			Error err = _parse_construct<real_t>(p_stream, args, line, r_err_str);
 			if (err) {
 				return err;
 			}
@@ -603,8 +602,8 @@ Error VariantParser::parse_value(Token &token, Variant &value, Stream *p_stream,
 			m[2] = Vector2(args[4], args[5]);
 			value = m;
 		} else if (id == "Plane") {
-			Vector<float> args;
-			Error err = _parse_construct<float>(p_stream, args, line, r_err_str);
+			Vector<real_t> args;
+			Error err = _parse_construct<real_t>(p_stream, args, line, r_err_str);
 			if (err) {
 				return err;
 			}
@@ -616,8 +615,8 @@ Error VariantParser::parse_value(Token &token, Variant &value, Stream *p_stream,
 
 			value = Plane(args[0], args[1], args[2], args[3]);
 		} else if (id == "Quat") {
-			Vector<float> args;
-			Error err = _parse_construct<float>(p_stream, args, line, r_err_str);
+			Vector<real_t> args;
+			Error err = _parse_construct<real_t>(p_stream, args, line, r_err_str);
 			if (err) {
 				return err;
 			}
@@ -629,8 +628,8 @@ Error VariantParser::parse_value(Token &token, Variant &value, Stream *p_stream,
 
 			value = Quat(args[0], args[1], args[2], args[3]);
 		} else if (id == "AABB" || id == "Rect3") {
-			Vector<float> args;
-			Error err = _parse_construct<float>(p_stream, args, line, r_err_str);
+			Vector<real_t> args;
+			Error err = _parse_construct<real_t>(p_stream, args, line, r_err_str);
 			if (err) {
 				return err;
 			}
@@ -642,8 +641,8 @@ Error VariantParser::parse_value(Token &token, Variant &value, Stream *p_stream,
 
 			value = AABB(Vector3(args[0], args[1], args[2]), Vector3(args[3], args[4], args[5]));
 		} else if (id == "Basis" || id == "Matrix3") { //compatibility
-			Vector<float> args;
-			Error err = _parse_construct<float>(p_stream, args, line, r_err_str);
+			Vector<real_t> args;
+			Error err = _parse_construct<real_t>(p_stream, args, line, r_err_str);
 			if (err) {
 				return err;
 			}
@@ -655,8 +654,8 @@ Error VariantParser::parse_value(Token &token, Variant &value, Stream *p_stream,
 
 			value = Basis(args[0], args[1], args[2], args[3], args[4], args[5], args[6], args[7], args[8]);
 		} else if (id == "Transform") {
-			Vector<float> args;
-			Error err = _parse_construct<float>(p_stream, args, line, r_err_str);
+			Vector<real_t> args;
+			Error err = _parse_construct<real_t>(p_stream, args, line, r_err_str);
 			if (err) {
 				return err;
 			}
@@ -743,6 +742,8 @@ Error VariantParser::parse_value(Token &token, Variant &value, Stream *p_stream,
 				return ERR_PARSE_ERROR;
 			}
 
+			REF ref = REF(Object::cast_to<Reference>(obj));
+
 			get_token(p_stream, token, line, r_err_str);
 			if (token.type != TK_COMMA) {
 				r_err_str = "Expected ',' after object type";
@@ -767,12 +768,7 @@ Error VariantParser::parse_value(Token &token, Variant &value, Stream *p_stream,
 					}
 
 					if (token2.type == TK_PARENTHESIS_CLOSE) {
-						Reference *reference = Object::cast_to<Reference>(obj);
-						if (reference) {
-							value = REF(reference);
-						} else {
-							value = obj;
-						}
+						value = ref.is_valid() ? Variant(ref) : Variant(obj);
 						return OK;
 					}
 
@@ -1009,8 +1005,8 @@ Error VariantParser::parse_value(Token &token, Variant &value, Stream *p_stream,
 
 			value = arr;
 		} else if (id == "PackedVector2Array" || id == "PoolVector2Array" || id == "Vector2Array") {
-			Vector<float> args;
-			Error err = _parse_construct<float>(p_stream, args, line, r_err_str);
+			Vector<real_t> args;
+			Error err = _parse_construct<real_t>(p_stream, args, line, r_err_str);
 			if (err) {
 				return err;
 			}
@@ -1027,8 +1023,8 @@ Error VariantParser::parse_value(Token &token, Variant &value, Stream *p_stream,
 
 			value = arr;
 		} else if (id == "PackedVector3Array" || id == "PoolVector3Array" || id == "Vector3Array") {
-			Vector<float> args;
-			Error err = _parse_construct<float>(p_stream, args, line, r_err_str);
+			Vector<real_t> args;
+			Error err = _parse_construct<real_t>(p_stream, args, line, r_err_str);
 			if (err) {
 				return err;
 			}

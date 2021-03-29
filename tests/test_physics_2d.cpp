@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -216,10 +216,10 @@ protected:
 		if (mm.is_valid()) {
 			Point2 p = mm->get_position();
 
-			if (mm->get_button_mask() & BUTTON_MASK_LEFT) {
+			if (mm->get_button_mask() & MOUSE_BUTTON_MASK_LEFT) {
 				ray_to = p;
 				_do_ray_query();
-			} else if (mm->get_button_mask() & BUTTON_MASK_RIGHT) {
+			} else if (mm->get_button_mask() & MOUSE_BUTTON_MASK_RIGHT) {
 				ray_from = p;
 				_do_ray_query();
 			}
@@ -315,7 +315,7 @@ protected:
 	}
 
 public:
-	virtual void init() override {
+	virtual void initialize() override {
 		RenderingServer *vs = RenderingServer::get_singleton();
 		PhysicsServer2D *ps = PhysicsServer2D::get_singleton();
 
@@ -389,10 +389,10 @@ public:
 		//_add_plane(Vector2(-1,0).normalized(),-600);
 	}
 
-	virtual bool idle(float p_time) override {
+	virtual bool process(float p_time) override {
 		return false;
 	}
-	virtual void finish() override {
+	virtual void finalize() override {
 	}
 
 	TestPhysics2DMainLoop() {}
@@ -403,5 +403,4 @@ namespace TestPhysics2D {
 MainLoop *test() {
 	return memnew(TestPhysics2DMainLoop);
 }
-
 } // namespace TestPhysics2D

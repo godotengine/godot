@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -35,6 +35,7 @@
 #include "core/object/script_language.h"
 #include "core/templates/hashfuncs.h"
 #include "core/templates/vector.h"
+#include "core/variant/callable.h"
 #include "core/variant/variant.h"
 
 class ArrayPrivate {
@@ -86,8 +87,8 @@ int Array::size() const {
 	return _p->array.size();
 }
 
-bool Array::empty() const {
-	return _p->array.empty();
+bool Array::is_empty() const {
+	return _p->array.is_empty();
 }
 
 void Array::clear() {
@@ -140,7 +141,7 @@ uint32_t Array::hash() const {
 
 void Array::_assign(const Array &p_array) {
 	if (_p->typed.type != Variant::OBJECT && _p->typed.type == p_array._p->typed.type) {
-		//same type or untyped, just reference, shuold be fine
+		//same type or untyped, just reference, should be fine
 		_ref(p_array);
 	} else if (_p->typed.type == Variant::NIL) { //from typed to untyped, must copy, but this is cheap anyway
 		_p->array = p_array._p->array;
@@ -318,7 +319,7 @@ Array Array::slice(int p_begin, int p_end, int p_step, bool p_deep) const { // l
 
 	ERR_FAIL_COND_V_MSG(p_step == 0, new_arr, "Array slice step size cannot be zero.");
 
-	if (empty()) { // Don't try to slice empty arrays.
+	if (is_empty()) { // Don't try to slice empty arrays.
 		return new_arr;
 	}
 	if (p_step > 0) {
@@ -371,25 +372,22 @@ void Array::sort() {
 }
 
 struct _ArrayVariantSortCustom {
-	Object *obj;
-	StringName func;
+	Callable func;
 
 	_FORCE_INLINE_ bool operator()(const Variant &p_l, const Variant &p_r) const {
 		const Variant *args[2] = { &p_l, &p_r };
 		Callable::CallError err;
-		bool res = obj->call(func, args, 2, err);
-		if (err.error != Callable::CallError::CALL_OK) {
-			res = false;
-		}
+		Variant res;
+		func.call(args, 2, res, err);
+		ERR_FAIL_COND_V_MSG(err.error != Callable::CallError::CALL_OK, false,
+				"Error calling sorting method: " + Variant::get_callable_error_text(func, args, 1, err));
 		return res;
 	}
 };
-void Array::sort_custom(Object *p_obj, const StringName &p_function) {
-	ERR_FAIL_NULL(p_obj);
 
+void Array::sort_custom(Callable p_callable) {
 	SortArray<Variant, _ArrayVariantSortCustom, true> avs;
-	avs.compare.obj = p_obj;
-	avs.compare.func = p_function;
+	avs.compare.func = p_callable;
 	avs.sort(_p->array.ptrw(), _p->array.size());
 }
 
@@ -438,13 +436,11 @@ int Array::bsearch(const Variant &p_value, bool p_before) {
 	return bisect(_p->array, p_value, p_before, _ArrayVariantSort());
 }
 
-int Array::bsearch_custom(const Variant &p_value, Object *p_obj, const StringName &p_function, bool p_before) {
+int Array::bsearch_custom(const Variant &p_value, Callable p_callable, bool p_before) {
 	ERR_FAIL_COND_V(!_p->typed.validate(p_value, "custom binary search"), -1);
-	ERR_FAIL_NULL_V(p_obj, 0);
 
 	_ArrayVariantSortCustom less;
-	less.obj = p_obj;
-	less.func = p_function;
+	less.func = p_callable;
 
 	return bisect(_p->array, p_value, p_before, less);
 }
@@ -459,7 +455,7 @@ void Array::push_front(const Variant &p_value) {
 }
 
 Variant Array::pop_back() {
-	if (!_p->array.empty()) {
+	if (!_p->array.is_empty()) {
 		int n = _p->array.size() - 1;
 		Variant ret = _p->array.get(n);
 		_p->array.resize(n);
@@ -469,7 +465,7 @@ Variant Array::pop_back() {
 }
 
 Variant Array::pop_front() {
-	if (!_p->array.empty()) {
+	if (!_p->array.is_empty()) {
 		Variant ret = _p->array.get(0);
 		_p->array.remove(0);
 		return ret;

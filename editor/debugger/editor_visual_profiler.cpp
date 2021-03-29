@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -114,9 +114,9 @@ String EditorVisualProfiler::_get_time_as_text(float p_time) {
 	int dmode = display_mode->get_selected();
 
 	if (dmode == DISPLAY_FRAME_TIME) {
-		return rtos(p_time) + "ms";
+		return TS->format_number(rtos(p_time)) + " " + RTR("ms");
 	} else if (dmode == DISPLAY_FRAME_PERCENT) {
-		return String::num(p_time * 100 / graph_limit, 2) + "%";
+		return TS->format_number(String::num(p_time * 100 / graph_limit, 2)) + " " + TS->percent_sign();
 	}
 
 	return "err";
@@ -423,8 +423,12 @@ void EditorVisualProfiler::_clear_pressed() {
 }
 
 void EditorVisualProfiler::_notification(int p_what) {
-	if (p_what == NOTIFICATION_ENTER_TREE) {
-		activate->set_icon(get_theme_icon("Play", "EditorIcons"));
+	if (p_what == NOTIFICATION_ENTER_TREE || p_what == NOTIFICATION_LAYOUT_DIRECTION_CHANGED || p_what == NOTIFICATION_TRANSLATION_CHANGED) {
+		if (is_layout_rtl()) {
+			activate->set_icon(get_theme_icon("PlayBackwards", "EditorIcons"));
+		} else {
+			activate->set_icon(get_theme_icon("Play", "EditorIcons"));
+		}
 		clear_button->set_icon(get_theme_icon("Clear", "EditorIcons"));
 	}
 }
@@ -434,6 +438,7 @@ void EditorVisualProfiler::_graph_tex_draw() {
 		return;
 	}
 	Ref<Font> font = get_theme_font("font", "Label");
+	int font_size = get_theme_font_size("font_size", "Label");
 	if (seeking) {
 		int max_frames = frame_metrics.size();
 		int frame = cursor_metric_edit->get_value() - (frame_metrics[last_metric].frame_number - max_frames + 1);
@@ -457,7 +462,7 @@ void EditorVisualProfiler::_graph_tex_draw() {
 		graph->draw_line(Vector2(0, frame_y), Vector2(half_width, frame_y), Color(1, 1, 1, 0.3));
 
 		String limit_str = String::num(graph_limit, 2);
-		graph->draw_string(font, Vector2(half_width - font->get_string_size(limit_str).x - 2, frame_y - 2), limit_str, Color(1, 1, 1, 0.6));
+		graph->draw_string(font, Vector2(half_width - font->get_string_size(limit_str, font_size).x - 2, frame_y - 2), limit_str, HALIGN_LEFT, -1, font_size, Color(1, 1, 1, 0.6));
 	}
 
 	if (graph_height_gpu > 0) {
@@ -468,15 +473,14 @@ void EditorVisualProfiler::_graph_tex_draw() {
 		graph->draw_line(Vector2(half_width, frame_y), Vector2(graph->get_size().x, frame_y), Color(1, 1, 1, 0.3));
 
 		String limit_str = String::num(graph_limit, 2);
-		graph->draw_string(font, Vector2(half_width * 2 - font->get_string_size(limit_str).x - 2, frame_y - 2), limit_str, Color(1, 1, 1, 0.6));
+		graph->draw_string(font, Vector2(half_width * 2 - font->get_string_size(limit_str, font_size).x - 2, frame_y - 2), limit_str, HALIGN_LEFT, -1, font_size, Color(1, 1, 1, 0.6));
 	}
 
-	graph->draw_string(font, Vector2(font->get_string_size("X").x, font->get_ascent() + 2), "CPU:", Color(1, 1, 1, 0.8));
-	graph->draw_string(font, Vector2(font->get_string_size("X").x + graph->get_size().width / 2, font->get_ascent() + 2), "GPU:", Color(1, 1, 1, 0.8));
+	graph->draw_string(font, Vector2(font->get_string_size("X", font_size).x, font->get_ascent(font_size) + 2), "CPU:", HALIGN_LEFT, -1, font_size, Color(1, 1, 1, 0.8));
+	graph->draw_string(font, Vector2(font->get_string_size("X", font_size).x + graph->get_size().width / 2, font->get_ascent(font_size) + 2), "GPU:", HALIGN_LEFT, -1, font_size, Color(1, 1, 1, 0.8));
 
 	/*
 	if (hover_metric != -1 && frame_metrics[hover_metric].valid) {
-
 		int max_frames = frame_metrics.size();
 		int frame = frame_metrics[hover_metric].frame_number - (frame_metrics[last_metric].frame_number - max_frames + 1);
 		if (frame < 0)
@@ -513,7 +517,7 @@ void EditorVisualProfiler::_graph_tex_input(const Ref<InputEvent> &p_ev) {
 	Ref<InputEventMouseMotion> mm = p_ev;
 
 	if (
-			(mb.is_valid() && mb->get_button_index() == BUTTON_LEFT && mb->is_pressed()) ||
+			(mb.is_valid() && mb->get_button_index() == MOUSE_BUTTON_LEFT && mb->is_pressed()) ||
 			(mm.is_valid())) {
 		int half_w = graph->get_size().width / 2;
 		int x = me->get_position().x;
@@ -545,7 +549,7 @@ void EditorVisualProfiler::_graph_tex_input(const Ref<InputEvent> &p_ev) {
 			hover_metric = -1;
 		}
 
-		if (mb.is_valid() || mm->get_button_mask() & BUTTON_MASK_LEFT) {
+		if (mb.is_valid() || mm->get_button_mask() & MOUSE_BUTTON_MASK_LEFT) {
 			//cursor_metric=x;
 			updating_frame = true;
 
@@ -662,7 +666,7 @@ bool EditorVisualProfiler::is_profiling() {
 Vector<Vector<String>> EditorVisualProfiler::get_data_as_csv() const {
 	Vector<Vector<String>> res;
 #if 0
-	if (frame_metrics.empty()) {
+	if (frame_metrics.is_empty()) {
 		return res;
 	}
 
@@ -671,7 +675,6 @@ Vector<Vector<String>> EditorVisualProfiler::get_data_as_csv() const {
 	const Vector<EditorFrameProfiler::Metric::Category> &categories = frame_metrics[0].categories;
 
 	for (int j = 0; j < categories.size(); j++) {
-
 		const EditorFrameProfiler::Metric::Category &c = categories[j];
 		signatures.push_back(c.signature);
 
@@ -688,7 +691,6 @@ Vector<Vector<String>> EditorVisualProfiler::get_data_as_csv() const {
 	int index = last_metric;
 
 	for (int i = 0; i < frame_metrics.size(); i++) {
-
 		++index;
 
 		if (index >= frame_metrics.size()) {
@@ -702,7 +704,6 @@ Vector<Vector<String>> EditorVisualProfiler::get_data_as_csv() const {
 		const Vector<EditorFrameProfiler::Metric::Category> &frame_cat = frame_metrics[index].categories;
 
 		for (int j = 0; j < frame_cat.size(); j++) {
-
 			const EditorFrameProfiler::Metric::Category &c = frame_cat[j];
 			values.write[it++] = String::num_real(c.total_time);
 

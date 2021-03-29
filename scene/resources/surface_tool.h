@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -31,8 +31,8 @@
 #ifndef SURFACE_TOOL_H
 #define SURFACE_TOOL_H
 
+#include "core/templates/local_vector.h"
 #include "scene/resources/mesh.h"
-
 #include "thirdparty/misc/mikktspace.h"
 
 class SurfaceTool : public Reference {
@@ -49,11 +49,39 @@ public:
 		Vector2 uv2;
 		Vector<int> bones;
 		Vector<float> weights;
+		Color custom[RS::ARRAY_CUSTOM_COUNT];
+		uint32_t smooth_group = 0;
 
 		bool operator==(const Vertex &p_vertex) const;
 
 		Vertex() {}
 	};
+
+	enum CustomFormat {
+		CUSTOM_RGBA8_UNORM = RS::ARRAY_CUSTOM_RGBA8_UNORM,
+		CUSTOM_RGBA8_SNORM = RS::ARRAY_CUSTOM_RGBA8_SNORM,
+		CUSTOM_RG_HALF = RS::ARRAY_CUSTOM_RG_HALF,
+		CUSTOM_RGBA_HALF = RS::ARRAY_CUSTOM_RGBA_HALF,
+		CUSTOM_R_FLOAT = RS::ARRAY_CUSTOM_R_FLOAT,
+		CUSTOM_RG_FLOAT = RS::ARRAY_CUSTOM_RG_FLOAT,
+		CUSTOM_RGB_FLOAT = RS::ARRAY_CUSTOM_RGB_FLOAT,
+		CUSTOM_RGBA_FLOAT = RS::ARRAY_CUSTOM_RGBA_FLOAT,
+		CUSTOM_MAX = RS::ARRAY_CUSTOM_MAX
+	};
+
+	enum SkinWeightCount {
+		SKIN_4_WEIGHTS,
+		SKIN_8_WEIGHTS
+	};
+
+	typedef void (*OptimizeVertexCacheFunc)(unsigned int *destination, const unsigned int *indices, size_t index_count, size_t vertex_count);
+	static OptimizeVertexCacheFunc optimize_vertex_cache_func;
+	typedef size_t (*SimplifyFunc)(unsigned int *destination, const unsigned int *indices, size_t index_count, const float *vertex_positions, size_t vertex_count, size_t vertex_positions_stride, size_t target_index_count, float target_error, float *r_error);
+	static SimplifyFunc simplify_func;
+	typedef float (*SimplifyScaleFunc)(const float *vertex_positions, size_t vertex_count, size_t vertex_positions_stride);
+	static SimplifyScaleFunc simplify_scale_func;
+	typedef size_t (*SimplifySloppyFunc)(unsigned int *destination, const unsigned int *indices, size_t index_count, const float *vertex_positions_data, size_t vertex_count, size_t vertex_positions_stride, size_t target_index_count, float target_error, float *out_result_error);
+	static SimplifySloppyFunc simplify_sloppy_func;
 
 private:
 	struct VertexHasher {
@@ -61,22 +89,21 @@ private:
 	};
 
 	struct WeightSort {
-		int index;
-		float weight;
+		int index = 0;
+		float weight = 0.0;
 		bool operator<(const WeightSort &p_right) const {
 			return weight < p_right.weight;
 		}
 	};
 
-	bool begun;
-	bool first;
-	Mesh::PrimitiveType primitive;
-	int format;
+	bool begun = false;
+	bool first = false;
+	Mesh::PrimitiveType primitive = Mesh::PRIMITIVE_LINES;
+	uint32_t format = 0;
 	Ref<Material> material;
 	//arrays
-	List<Vertex> vertex_array;
-	List<int> index_array;
-	Map<int, bool> smooth_groups;
+	LocalVector<Vertex> vertex_array;
+	LocalVector<int> index_array;
 
 	//memory
 	Color last_color;
@@ -86,9 +113,16 @@ private:
 	Vector<int> last_bones;
 	Vector<float> last_weights;
 	Plane last_tangent;
+	uint32_t last_smooth_group = 0;
 
-	void _create_list_from_arrays(Array arr, List<Vertex> *r_vertex, List<int> *r_index, int &lformat);
-	void _create_list(const Ref<Mesh> &p_existing, int p_surface, List<Vertex> *r_vertex, List<int> *r_index, int &lformat);
+	SkinWeightCount skin_weights = SKIN_4_WEIGHTS;
+
+	Color last_custom[RS::ARRAY_CUSTOM_COUNT];
+
+	CustomFormat last_custom_format[RS::ARRAY_CUSTOM_COUNT];
+
+	void _create_list_from_arrays(Array arr, LocalVector<Vertex> *r_vertex, LocalVector<int> *r_index, uint32_t &lformat);
+	void _create_list(const Ref<Mesh> &p_existing, int p_surface, LocalVector<Vertex> *r_vertex, LocalVector<int> *r_index, uint32_t &lformat);
 
 	//mikktspace callbacks
 	static int mikktGetNumFaces(const SMikkTSpaceContext *pContext);
@@ -103,17 +137,27 @@ protected:
 	static void _bind_methods();
 
 public:
+	void set_skin_weight_count(SkinWeightCount p_weights);
+	SkinWeightCount get_skin_weight_count() const;
+
+	void set_custom_format(int p_index, CustomFormat p_format);
+	CustomFormat get_custom_format(int p_index) const;
+
+	Mesh::PrimitiveType get_primitive() const;
+
 	void begin(Mesh::PrimitiveType p_primitive);
 
+	void set_color(Color p_color);
+	void set_normal(const Vector3 &p_normal);
+	void set_tangent(const Plane &p_tangent);
+	void set_uv(const Vector2 &p_uv);
+	void set_uv2(const Vector2 &p_uv2);
+	void set_custom(int p_index, const Color &p_custom);
+	void set_bones(const Vector<int> &p_bones);
+	void set_weights(const Vector<float> &p_weights);
+	void set_smooth_group(uint32_t p_group);
+
 	void add_vertex(const Vector3 &p_vertex);
-	void add_color(Color p_color);
-	void add_normal(const Vector3 &p_normal);
-	void add_tangent(const Plane &p_tangent);
-	void add_uv(const Vector2 &p_uv);
-	void add_uv2(const Vector2 &p_uv2);
-	void add_bones(const Vector<int> &p_bones);
-	void add_weights(const Vector<float> &p_weights);
-	void add_smooth_group(bool p_smooth);
 
 	void add_triangle_fan(const Vector<Vector3> &p_vertices, const Vector<Vector2> &p_uvs = Vector<Vector2>(), const Vector<Color> &p_colors = Vector<Color>(), const Vector<Vector2> &p_uv2s = Vector<Vector2>(), const Vector<Vector3> &p_normals = Vector<Vector3>(), const Vector<Plane> &p_tangents = Vector<Plane>());
 
@@ -124,21 +168,29 @@ public:
 	void generate_normals(bool p_flip = false);
 	void generate_tangents();
 
+	void optimize_indices_for_cache();
+	float get_max_axis_length() const;
+	Vector<int> generate_lod(float p_threshold, int p_target_index_count = 3);
+
 	void set_material(const Ref<Material> &p_material);
+	Ref<Material> get_material() const;
 
 	void clear();
 
-	List<Vertex> &get_vertex_array() { return vertex_array; }
+	LocalVector<Vertex> &get_vertex_array() { return vertex_array; }
 
 	void create_from_triangle_arrays(const Array &p_arrays);
-	static Vector<Vertex> create_vertex_array_from_triangle_arrays(const Array &p_arrays);
+	static void create_vertex_array_from_triangle_arrays(const Array &p_arrays, LocalVector<Vertex> &ret, uint32_t *r_format = nullptr);
 	Array commit_to_arrays();
 	void create_from(const Ref<Mesh> &p_existing, int p_surface);
 	void create_from_blend_shape(const Ref<Mesh> &p_existing, int p_surface, const String &p_blend_shape_name);
 	void append_from(const Ref<Mesh> &p_existing, int p_surface, const Transform &p_xform);
-	Ref<ArrayMesh> commit(const Ref<ArrayMesh> &p_existing = Ref<ArrayMesh>(), uint32_t p_flags = Mesh::ARRAY_COMPRESS_DEFAULT);
+	Ref<ArrayMesh> commit(const Ref<ArrayMesh> &p_existing = Ref<ArrayMesh>(), uint32_t p_flags = 0);
 
 	SurfaceTool();
 };
+
+VARIANT_ENUM_CAST(SurfaceTool::CustomFormat)
+VARIANT_ENUM_CAST(SurfaceTool::SkinWeightCount)
 
 #endif

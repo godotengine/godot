@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -126,7 +126,7 @@ bool Callable::operator==(const Callable &p_callable) const {
 	if (custom_a == custom_b) {
 		if (custom_a) {
 			if (custom == p_callable.custom) {
-				return true; //same pointer, dont even compare
+				return true; //same pointer, don't even compare
 			}
 
 			CallableCustom::CompareEqualFunc eq_a = custom->get_compare_equal_func();
@@ -155,7 +155,7 @@ bool Callable::operator<(const Callable &p_callable) const {
 	if (custom_a == custom_b) {
 		if (custom_a) {
 			if (custom == p_callable.custom) {
-				return false; //same pointer, dont even compare
+				return false; //same pointer, don't even compare
 			}
 
 			CallableCustom::CompareLessFunc less_a = custom->get_compare_less_func();

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -243,8 +243,11 @@ HashMap<StringName, StringName> ClassDB::resource_base_extensions;
 HashMap<StringName, StringName> ClassDB::compat_classes;
 
 bool ClassDB::_is_parent_class(const StringName &p_class, const StringName &p_inherits) {
-	StringName inherits = p_class;
+	if (!classes.has(p_class)) {
+		return false;
+	}
 
+	StringName inherits = p_class;
 	while (inherits.operator String().length()) {
 		if (inherits == p_inherits) {
 			return true;
@@ -374,7 +377,7 @@ uint64_t ClassDB::get_api_hash(APIType p_api) {
 			while ((k = t->method_map.next(k))) {
 				String name = k->operator String();
 
-				ERR_CONTINUE(name.empty());
+				ERR_CONTINUE(name.is_empty());
 
 				if (name[0] == '_') {
 					continue; // Ignore non-virtual methods that start with an underscore
@@ -978,10 +981,11 @@ void ClassDB::add_property_subgroup(StringName p_class, const String &p_name, co
 	type->property_list.push_back(PropertyInfo(Variant::NIL, p_name, PROPERTY_HINT_NONE, p_prefix, PROPERTY_USAGE_SUBGROUP));
 }
 
+// NOTE: For implementation simplicity reasons, this method doesn't allow setters to have optional arguments at the end.
 void ClassDB::add_property(StringName p_class, const PropertyInfo &p_pinfo, const StringName &p_setter, const StringName &p_getter, int p_index) {
-	lock->read_lock();
+	lock.read_lock();
 	ClassInfo *type = classes.getptr(p_class);
-	lock->read_unlock();
+	lock.read_unlock();
 
 	ERR_FAIL_COND(!type);
 
@@ -1537,11 +1541,7 @@ Variant ClassDB::class_get_default_property_value(const StringName &p_class, con
 	return var;
 }
 
-RWLock *ClassDB::lock = nullptr;
-
-void ClassDB::init() {
-	lock = RWLock::create();
-}
+RWLock ClassDB::lock;
 
 void ClassDB::cleanup_defaults() {
 	default_values.clear();
@@ -1564,8 +1564,6 @@ void ClassDB::cleanup() {
 	classes.clear();
 	resource_base_extensions.clear();
 	compat_classes.clear();
-
-	memdelete(lock);
 }
 
 //

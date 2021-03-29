@@ -19,7 +19,7 @@
 		    print("Initialized:")
 		    print("  Starting time: %s" % str(time_elapsed))
 
-		func _idle(delta):
+		func _process(delta):
 		    time_elapsed += delta
 		    # Return true to end the main loop.
 		    return quit
@@ -51,16 +51,6 @@
 				Called before the program exits.
 			</description>
 		</method>
-		<method name="_idle" qualifiers="virtual">
-			<return type="bool">
-			</return>
-			<argument index="0" name="delta" type="float">
-			</argument>
-			<description>
-				Called each idle frame with the time since the last idle frame as argument (in seconds). Equivalent to [method Node._process].
-				If implemented, the method must return a boolean value. [code]true[/code] ends the main loop, while [code]false[/code] lets it proceed to the next frame.
-			</description>
-		</method>
 		<method name="_initialize" qualifiers="virtual">
 			<return type="void">
 			</return>
@@ -68,13 +58,23 @@
 				Called once during initialization.
 			</description>
 		</method>
-		<method name="_iteration" qualifiers="virtual">
+		<method name="_physics_process" qualifiers="virtual">
 			<return type="bool">
 			</return>
 			<argument index="0" name="delta" type="float">
 			</argument>
 			<description>
-				Called each physics frame with the time since the last physics frame as argument (in seconds). Equivalent to [method Node._physics_process].
+				Called each physics frame with the time since the last physics frame as argument ([code]delta[/code], in seconds). Equivalent to [method Node._physics_process].
+				If implemented, the method must return a boolean value. [code]true[/code] ends the main loop, while [code]false[/code] lets it proceed to the next frame.
+			</description>
+		</method>
+		<method name="_process" qualifiers="virtual">
+			<return type="bool">
+			</return>
+			<argument index="0" name="delta" type="float">
+			</argument>
+			<description>
+				Called each process (idle) frame with the time since the last process frame as argument (in seconds). Equivalent to [method Node._process].
 				If implemented, the method must return a boolean value. [code]true[/code] ends the main loop, while [code]false[/code] lets it proceed to the next frame.
 			</description>
 		</method>
@@ -125,6 +125,9 @@
 		<constant name="NOTIFICATION_APPLICATION_FOCUS_OUT" value="2017">
 			Notification received from the OS when the application is defocused, i.e. when changing the focus from any open window of the Godot instance to the OS desktop or a thirdparty application.
 			Implemented on desktop platforms.
+		</constant>
+		<constant name="NOTIFICATION_TEXT_SERVER_CHANGED" value="2018">
+			Notification received when text server is changed.
 		</constant>
 	</constants>
 </class>

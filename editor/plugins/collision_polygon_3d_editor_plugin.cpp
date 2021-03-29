@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -142,7 +142,7 @@ bool CollisionPolygon3DEditor::forward_spatial_gui_input(Camera3D *p_camera, con
 
 		switch (mode) {
 			case MODE_CREATE: {
-				if (mb->get_button_index() == BUTTON_LEFT && mb->is_pressed()) {
+				if (mb->get_button_index() == MOUSE_BUTTON_LEFT && mb->is_pressed()) {
 					if (!wip_active) {
 						wip.clear();
 						wip.push_back(cpoint);
@@ -166,14 +166,14 @@ bool CollisionPolygon3DEditor::forward_spatial_gui_input(Camera3D *p_camera, con
 							return true;
 						}
 					}
-				} else if (mb->get_button_index() == BUTTON_RIGHT && mb->is_pressed() && wip_active) {
+				} else if (mb->get_button_index() == MOUSE_BUTTON_RIGHT && mb->is_pressed() && wip_active) {
 					_wip_close();
 				}
 
 			} break;
 
 			case MODE_EDIT: {
-				if (mb->get_button_index() == BUTTON_LEFT) {
+				if (mb->get_button_index() == MOUSE_BUTTON_LEFT) {
 					if (mb->is_pressed()) {
 						if (mb->get_control()) {
 							if (poly.size() < 3) {
@@ -267,7 +267,7 @@ bool CollisionPolygon3DEditor::forward_spatial_gui_input(Camera3D *p_camera, con
 						}
 					}
 				}
-				if (mb->get_button_index() == BUTTON_RIGHT && mb->is_pressed() && edited_point == -1) {
+				if (mb->get_button_index() == MOUSE_BUTTON_RIGHT && mb->is_pressed() && edited_point == -1) {
 					int closest_idx = -1;
 					Vector2 closest_pos;
 					real_t closest_dist = 1e10;
@@ -301,7 +301,7 @@ bool CollisionPolygon3DEditor::forward_spatial_gui_input(Camera3D *p_camera, con
 	Ref<InputEventMouseMotion> mm = p_event;
 
 	if (mm.is_valid()) {
-		if (edited_point != -1 && (wip_active || mm->get_button_mask() & BUTTON_MASK_LEFT)) {
+		if (edited_point != -1 && (wip_active || mm->get_button_mask() & MOUSE_BUTTON_MASK_LEFT)) {
 			Vector2 gpoint = mm->get_position();
 
 			Vector3 ray_from = p_camera->project_ray_origin(gpoint);

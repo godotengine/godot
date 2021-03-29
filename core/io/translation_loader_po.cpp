@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -70,7 +70,7 @@ RES TranslationLoaderPO::load_translation(FileAccess *f, Error *r_error) {
 		is_eof = f->eof_reached();
 
 		// If we reached last line and it's not a content line, break, otherwise let processing that last loop
-		if (is_eof && l.empty()) {
+		if (is_eof && l.is_empty()) {
 			if (status == STATUS_READING_ID || status == STATUS_READING_CONTEXT || (status == STATUS_READING_PLURAL && plural_index != plural_forms - 1)) {
 				memdelete(f);
 				ERR_FAIL_V_MSG(RES(), "Unexpected EOF while reading PO file at: " + path + ":" + itos(line));
@@ -194,7 +194,7 @@ RES TranslationLoaderPO::load_translation(FileAccess *f, Error *r_error) {
 		l = l.substr(1, l.length());
 		// Find final quote, ignoring escaped ones (\").
 		// The escape_next logic is necessary to properly parse things like \\"
-		// where the blackslash is the one being escaped, not the quote.
+		// where the backslash is the one being escaped, not the quote.
 		int end_pos = -1;
 		bool escape_next = false;
 		for (int i = 0; i < l.length(); i++) {
@@ -277,7 +277,7 @@ RES TranslationLoaderPO::load_translation(FileAccess *f, Error *r_error) {
 	return translation;
 }
 
-RES TranslationLoaderPO::load(const String &p_path, const String &p_original_path, Error *r_error, bool p_use_sub_threads, float *r_progress, bool p_no_cache) {
+RES TranslationLoaderPO::load(const String &p_path, const String &p_original_path, Error *r_error, bool p_use_sub_threads, float *r_progress, CacheMode p_cache_mode) {
 	if (r_error) {
 		*r_error = ERR_CANT_OPEN;
 	}

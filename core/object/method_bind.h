@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -34,7 +34,6 @@
 #include "core/variant/binder_common.h"
 
 enum MethodFlags {
-
 	METHOD_FLAG_NORMAL = 1,
 	METHOD_FLAG_EDITOR = 2,
 	METHOD_FLAG_NOSCRIPT = 4,
@@ -43,6 +42,7 @@ enum MethodFlags {
 	METHOD_FLAG_VIRTUAL = 32,
 	METHOD_FLAG_FROM_SCRIPT = 64,
 	METHOD_FLAG_VARARG = 128,
+	METHOD_FLAG_STATIC = 256,
 	METHOD_FLAGS_DEFAULT = METHOD_FLAG_NORMAL,
 };
 
@@ -124,10 +124,7 @@ public:
 	_FORCE_INLINE_ int get_argument_count() const { return argument_count; };
 
 	virtual Variant call(Object *p_object, const Variant **p_args, int p_arg_count, Callable::CallError &r_error) = 0;
-
-#ifdef PTRCALL_ENABLED
 	virtual void ptrcall(Object *p_object, const void **p_args, void *r_ret) = 0;
-#endif
 
 	StringName get_name() const;
 	void set_name(const StringName &p_name);
@@ -206,11 +203,9 @@ public:
 #endif
 	}
 
-#ifdef PTRCALL_ENABLED
 	virtual void ptrcall(Object *p_object, const void **p_args, void *r_ret) {
-		ERR_FAIL(); //can't call
-	} //todo
-#endif
+		ERR_FAIL(); // Can't call.
+	}
 
 	void set_method(NativeCall p_method) { call_method = p_method; }
 	virtual bool is_const() const { return false; }
@@ -290,7 +285,6 @@ public:
 		return Variant();
 	}
 
-#ifdef PTRCALL_ENABLED
 	virtual void ptrcall(Object *p_object, const void **p_args, void *r_ret) {
 #ifdef TYPED_METHOD_BIND
 		call_with_ptr_args<T, P...>(static_cast<T *>(p_object), method, p_args);
@@ -298,7 +292,6 @@ public:
 		call_with_ptr_args<MB_T, P...>((MB_T *)(p_object), method, p_args);
 #endif
 	}
-#endif
 
 	MethodBindT(void (MB_T::*p_method)(P...)) {
 		method = p_method;
@@ -371,7 +364,6 @@ public:
 		return Variant();
 	}
 
-#ifdef PTRCALL_ENABLED
 	virtual void ptrcall(Object *p_object, const void **p_args, void *r_ret) {
 #ifdef TYPED_METHOD_BIND
 		call_with_ptr_argsc<T, P...>(static_cast<T *>(p_object), method, p_args);
@@ -379,7 +371,6 @@ public:
 		call_with_ptr_argsc<MB_T, P...>((MB_T *)(p_object), method, p_args);
 #endif
 	}
-#endif
 
 	MethodBindTC(void (MB_T::*p_method)(P...) const) {
 		method = p_method;
@@ -463,7 +454,6 @@ public:
 		return ret;
 	}
 
-#ifdef PTRCALL_ENABLED
 	virtual void ptrcall(Object *p_object, const void **p_args, void *r_ret) {
 #ifdef TYPED_METHOD_BIND
 		call_with_ptr_args_ret<T, R, P...>(static_cast<T *>(p_object), method, p_args, r_ret);
@@ -471,7 +461,6 @@ public:
 		call_with_ptr_args_ret<MB_T, R, P...>((MB_T *)(p_object), method, p_args, r_ret);
 #endif
 	}
-#endif
 
 	MethodBindTR(R (MB_T::*p_method)(P...)) {
 		method = p_method;
@@ -556,7 +545,6 @@ public:
 		return ret;
 	}
 
-#ifdef PTRCALL_ENABLED
 	virtual void ptrcall(Object *p_object, const void **p_args, void *r_ret) {
 #ifdef TYPED_METHOD_BIND
 		call_with_ptr_args_retc<T, R, P...>(static_cast<T *>(p_object), method, p_args, r_ret);
@@ -564,7 +552,6 @@ public:
 		call_with_ptr_args_retc<MB_T, R, P...>((MB_T *)(p_object), method, p_args, r_ret);
 #endif
 	}
-#endif
 
 	MethodBindTRC(R (MB_T::*p_method)(P...) const) {
 		method = p_method;

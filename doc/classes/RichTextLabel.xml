@@ -6,6 +6,7 @@
 	<description>
 		Rich text can contain custom text, fonts, images and some basic formatting. The label manages these as an internal tag stack. It also adapts itself to given width/heights.
 		[b]Note:[/b] Assignments to [member bbcode_text] clear the tag stack and reconstruct it from the property's contents. Any edits made to [member bbcode_text] will erase previous edits made from other manual sources such as [method append_bbcode] and the [code]push_*[/code] / [method pop] methods.
+		[b]Note:[/b] RichTextLabel doesn't support entangled BBCode tags. For example, instead of using [code][b]bold[i]bold italic[/b]italic[/i][/code], use [code][b]bold[i]bold italic[/i][/b][i]italic[/i][/code].
 		[b]Note:[/b] Unlike [Label], RichTextLabel doesn't have a [i]property[/i] to horizontally align text to the center. Instead, enable [member bbcode_enabled] and surround the text in a [code][center][/code] tag as follows: [code][center]Example[/center][/code]. There is currently no built-in way to vertically align text either, but this can be emulated by relying on anchors/containers and the [member fit_content_height] property.
 	</description>
 	<tutorials>
@@ -24,6 +25,8 @@
 			<argument index="2" name="height" type="int" default="0">
 			</argument>
 			<argument index="3" name="color" type="Color" default="Color( 1, 1, 1, 1 )">
+			</argument>
+			<argument index="4" name="inline_align" type="int" enum="VAlign" default="0">
 			</argument>
 			<description>
 				Adds an image's opening and closing tags to the tag stack, optionally providing a [code]width[/code] and [code]height[/code] to resize the image and a [code]color[/code] to tint the image.
@@ -67,7 +70,35 @@
 			<return type="int">
 			</return>
 			<description>
-				Returns the total number of newlines in the tag stack's text tags. Considers wrapped text as one line.
+				Returns the total number of lines in the text. Wrapped text is counted as multiple lines.
+			</description>
+		</method>
+		<method name="get_paragraph_count" qualifiers="const">
+			<return type="int">
+			</return>
+			<description>
+				Returns the total number of paragraphs (newlines or [code]p[/code] tags in the tag stack's text tags). Considers wrapped text as one paragraph.
+			</description>
+		</method>
+		<method name="get_selected_text" qualifiers="const">
+			<return type="String">
+			</return>
+			<description>
+				Returns the current selection text. Does not include BBCodes.
+			</description>
+		</method>
+		<method name="get_selection_from" qualifiers="const">
+			<return type="int">
+			</return>
+			<description>
+				Returns the current selection first character index if a selection is active, [code]-1[/code] otherwise. Does not include BBCodes.
+			</description>
+		</method>
+		<method name="get_selection_to" qualifiers="const">
+			<return type="int">
+			</return>
+			<description>
+				Returns the current selection last character index if a selection is active, [code]-1[/code] otherwise. Does not include BBCodes.
 			</description>
 		</method>
 		<method name="get_total_character_count" qualifiers="const">
@@ -89,6 +120,13 @@
 			</return>
 			<description>
 				Returns the number of visible lines.
+			</description>
+		</method>
+		<method name="get_visible_paragraph_count" qualifiers="const">
+			<return type="int">
+			</return>
+			<description>
+				Returns the number of visible paragraphs. A paragraph is considered visible if at least one of its lines is visible.
 			</description>
 		</method>
 		<method name="install_effect">
@@ -132,15 +170,6 @@
 				Terminates the current tag. Use after [code]push_*[/code] methods to close BBCodes manually. Does not need to follow [code]add_*[/code] methods.
 			</description>
 		</method>
-		<method name="push_align">
-			<return type="void">
-			</return>
-			<argument index="0" name="align" type="int" enum="RichTextLabel.Align">
-			</argument>
-			<description>
-				Adds an [code][align][/code] tag based on the given [code]align[/code] value. See [enum Align] for possible values.
-			</description>
-		</method>
 		<method name="push_bold">
 			<return type="void">
 			</return>
@@ -171,6 +200,27 @@
 				Adds a [code][color][/code] tag to the tag stack.
 			</description>
 		</method>
+		<method name="push_dropcap">
+			<return type="void">
+			</return>
+			<argument index="0" name="string" type="String">
+			</argument>
+			<argument index="1" name="font" type="Font">
+			</argument>
+			<argument index="2" name="size" type="int">
+			</argument>
+			<argument index="3" name="dropcap_margins" type="Rect2" default="Rect2( 0, 0, 0, 0 )">
+			</argument>
+			<argument index="4" name="color" type="Color" default="Color( 1, 1, 1, 1 )">
+			</argument>
+			<argument index="5" name="outline_size" type="int" default="0">
+			</argument>
+			<argument index="6" name="outline_color" type="Color" default="Color( 0, 0, 0, 0 )">
+			</argument>
+			<description>
+				Adds a [code][dropcap][/code] tag to the tag stack. Drop cap (dropped capital) is a decorative element at the beginning of a paragraph that is larger than the rest of the text.
+			</description>
+		</method>
 		<method name="push_font">
 			<return type="void">
 			</return>
@@ -178,6 +228,24 @@
 			</argument>
 			<description>
 				Adds a [code][font][/code] tag to the tag stack. Overrides default fonts for its duration.
+			</description>
+		</method>
+		<method name="push_font_features">
+			<return type="void">
+			</return>
+			<argument index="0" name="opentype_features" type="Dictionary">
+			</argument>
+			<description>
+				Adds a [code][ot_feature][/code] tag to the tag stack. Overrides default OpenType font feature for its duration.
+			</description>
+		</method>
+		<method name="push_font_size">
+			<return type="void">
+			</return>
+			<argument index="0" name="font_size" type="int">
+			</argument>
+			<description>
+				Adds a [code][font_size][/code] tag to the tag stack. Overrides default font size for its duration.
 			</description>
 		</method>
 		<method name="push_indent">
@@ -199,10 +267,14 @@
 		<method name="push_list">
 			<return type="void">
 			</return>
-			<argument index="0" name="type" type="int" enum="RichTextLabel.ListType">
+			<argument index="0" name="level" type="int">
+			</argument>
+			<argument index="1" name="type" type="int" enum="RichTextLabel.ListType">
+			</argument>
+			<argument index="2" name="capitalize" type="bool">
 			</argument>
 			<description>
-				Adds a [code][list][/code] tag to the tag stack. Similar to the BBCodes [code][ol][/code] or [code][ul][/code], but supports more list types. Not fully implemented!
+				Adds [code][ol][/code] or [code][ul][/code] tag to the tag stack. Multiplies [code]level[/code] by current [member tab_size] to determine new margin length.
 			</description>
 		</method>
 		<method name="push_meta">
@@ -228,6 +300,39 @@
 				Adds a [code][font][/code] tag with a normal font to the tag stack.
 			</description>
 		</method>
+		<method name="push_outline_color">
+			<return type="void">
+			</return>
+			<argument index="0" name="color" type="Color">
+			</argument>
+			<description>
+				Adds a [code][outline_color][/code] tag to the tag stack. Adds text outline for its duration.
+			</description>
+		</method>
+		<method name="push_outline_size">
+			<return type="void">
+			</return>
+			<argument index="0" name="outline_size" type="int">
+			</argument>
+			<description>
+				Adds a [code][outline_size][/code] tag to the tag stack. Overrides default text outline size for its duration.
+			</description>
+		</method>
+		<method name="push_paragraph">
+			<return type="void">
+			</return>
+			<argument index="0" name="align" type="int" enum="RichTextLabel.Align">
+			</argument>
+			<argument index="1" name="base_direction" type="int" enum="Control.TextDirection" default="0">
+			</argument>
+			<argument index="2" name="language" type="String" default="&quot;&quot;">
+			</argument>
+			<argument index="3" name="st_parser" type="int" enum="Control.StructuredTextParser" default="0">
+			</argument>
+			<description>
+				Adds a [code][p][/code] tag to the tag stack.
+			</description>
+		</method>
 		<method name="push_strikethrough">
 			<return type="void">
 			</return>
@@ -240,8 +345,10 @@
 			</return>
 			<argument index="0" name="columns" type="int">
 			</argument>
+			<argument index="1" name="inline_align" type="int" enum="VAlign" default="0">
+			</argument>
 			<description>
-				Adds a [code][table=columns][/code] tag to the tag stack.
+				Adds a [code][table=columns,inline_align][/code] tag to the tag stack.
 			</description>
 		</method>
 		<method name="push_underline">
@@ -268,6 +375,55 @@
 			</argument>
 			<description>
 				Scrolls the window's top line to match [code]line[/code].
+			</description>
+		</method>
+		<method name="scroll_to_paragraph">
+			<return type="void">
+			</return>
+			<argument index="0" name="paragraph" type="int">
+			</argument>
+			<description>
+				Scrolls the window's top line to match first line of the [code]paragraph[/code].
+			</description>
+		</method>
+		<method name="set_cell_border_color">
+			<return type="void">
+			</return>
+			<argument index="0" name="color" type="Color">
+			</argument>
+			<description>
+				Sets color of a table cell border.
+			</description>
+		</method>
+		<method name="set_cell_padding">
+			<return type="void">
+			</return>
+			<argument index="0" name="padding" type="Rect2">
+			</argument>
+			<description>
+				Sets inner padding of a table cell.
+			</description>
+		</method>
+		<method name="set_cell_row_background_color">
+			<return type="void">
+			</return>
+			<argument index="0" name="odd_row_bg" type="Color">
+			</argument>
+			<argument index="1" name="even_row_bg" type="Color">
+			</argument>
+			<description>
+				Sets color of a table cell. Separate colors for alternating rows can be specified.
+			</description>
+		</method>
+		<method name="set_cell_size_override">
+			<return type="void">
+			</return>
+			<argument index="0" name="min_size" type="Vector2">
+			</argument>
+			<argument index="1" name="max_size" type="Vector2">
+			</argument>
+			<description>
+				Sets minimum and maximum size overrides for a table cell.
 			</description>
 		</method>
 		<method name="set_table_column_expand">
@@ -302,6 +458,9 @@
 			If [code]true[/code], the label's height will be automatically updated to fit its content.
 			[b]Note:[/b] This property is used as a workaround to fix issues with [RichTextLabel] in [Container]s, but it's unreliable in some cases and will be removed in future versions.
 		</member>
+		<member name="language" type="String" setter="set_language" getter="get_language" default="&quot;&quot;">
+			Language code used for line-breaking and text shaping algorithms, if left empty current locale is used instead.
+		</member>
 		<member name="meta_underlined" type="bool" setter="set_meta_underline" getter="is_meta_underlined" default="true">
 			If [code]true[/code], the label underlines meta tags such as [code][url]{text}[/url][/code].
 		</member>
@@ -322,6 +481,12 @@
 		<member name="selection_enabled" type="bool" setter="set_selection_enabled" getter="is_selection_enabled" default="false">
 			If [code]true[/code], the label allows text selection.
 		</member>
+		<member name="structured_text_bidi_override" type="int" setter="set_structured_text_bidi_override" getter="get_structured_text_bidi_override" enum="Control.StructuredTextParser" default="0">
+			Set BiDi algorithm override for the structured text.
+		</member>
+		<member name="structured_text_bidi_override_options" type="Array" setter="set_structured_text_bidi_override_options" getter="get_structured_text_bidi_override_options" default="[  ]">
+			Set additional options for BiDi override.
+		</member>
 		<member name="tab_size" type="int" setter="set_tab_size" getter="get_tab_size" default="4">
 			The number of spaces associated with a single tab length. Does not affect [code]\t[/code] in text tags, only indent tags.
 		</member>
@@ -329,8 +494,12 @@
 			The raw text of the label.
 			When set, clears the tag stack and adds a raw text tag to the top of it. Does not parse BBCodes. Does not modify [member bbcode_text].
 		</member>
+		<member name="text_direction" type="int" setter="set_text_direction" getter="get_text_direction" enum="Control.TextDirection" default="0">
+			Base text writing direction.
+		</member>
 		<member name="visible_characters" type="int" setter="set_visible_characters" getter="get_visible_characters" default="-1">
 			The restricted number of characters to display in the label. If [code]-1[/code], all characters will be displayed.
+			[b]Note:[/b] Setting this property updates [member percent_visible] based on current [method get_total_character_count].
 		</member>
 	</members>
 	<signals>
@@ -375,7 +544,10 @@
 		<constant name="LIST_LETTERS" value="1" enum="ListType">
 			Each list item has a letter marker.
 		</constant>
-		<constant name="LIST_DOTS" value="2" enum="ListType">
+		<constant name="LIST_ROMAN" value="2" enum="ListType">
+			Each list item has a roman number marker.
+		</constant>
+		<constant name="LIST_DOTS" value="3" enum="ListType">
 			Each list item has a filled circle marker.
 		</constant>
 		<constant name="ITEM_FRAME" value="0" enum="ItemType">
@@ -388,41 +560,57 @@
 		</constant>
 		<constant name="ITEM_FONT" value="4" enum="ItemType">
 		</constant>
-		<constant name="ITEM_COLOR" value="5" enum="ItemType">
+		<constant name="ITEM_FONT_SIZE" value="5" enum="ItemType">
 		</constant>
-		<constant name="ITEM_UNDERLINE" value="6" enum="ItemType">
+		<constant name="ITEM_FONT_FEATURES" value="6" enum="ItemType">
 		</constant>
-		<constant name="ITEM_STRIKETHROUGH" value="7" enum="ItemType">
+		<constant name="ITEM_COLOR" value="7" enum="ItemType">
 		</constant>
-		<constant name="ITEM_ALIGN" value="8" enum="ItemType">
+		<constant name="ITEM_OUTLINE_SIZE" value="8" enum="ItemType">
 		</constant>
-		<constant name="ITEM_INDENT" value="9" enum="ItemType">
+		<constant name="ITEM_OUTLINE_COLOR" value="9" enum="ItemType">
 		</constant>
-		<constant name="ITEM_LIST" value="10" enum="ItemType">
+		<constant name="ITEM_UNDERLINE" value="10" enum="ItemType">
 		</constant>
-		<constant name="ITEM_TABLE" value="11" enum="ItemType">
+		<constant name="ITEM_STRIKETHROUGH" value="11" enum="ItemType">
 		</constant>
-		<constant name="ITEM_FADE" value="12" enum="ItemType">
+		<constant name="ITEM_PARAGRAPH" value="12" enum="ItemType">
 		</constant>
-		<constant name="ITEM_SHAKE" value="13" enum="ItemType">
+		<constant name="ITEM_INDENT" value="13" enum="ItemType">
 		</constant>
-		<constant name="ITEM_WAVE" value="14" enum="ItemType">
+		<constant name="ITEM_LIST" value="14" enum="ItemType">
 		</constant>
-		<constant name="ITEM_TORNADO" value="15" enum="ItemType">
+		<constant name="ITEM_TABLE" value="15" enum="ItemType">
 		</constant>
-		<constant name="ITEM_RAINBOW" value="16" enum="ItemType">
+		<constant name="ITEM_FADE" value="16" enum="ItemType">
 		</constant>
-		<constant name="ITEM_CUSTOMFX" value="18" enum="ItemType">
+		<constant name="ITEM_SHAKE" value="17" enum="ItemType">
 		</constant>
-		<constant name="ITEM_META" value="17" enum="ItemType">
+		<constant name="ITEM_WAVE" value="18" enum="ItemType">
+		</constant>
+		<constant name="ITEM_TORNADO" value="19" enum="ItemType">
+		</constant>
+		<constant name="ITEM_RAINBOW" value="20" enum="ItemType">
+		</constant>
+		<constant name="ITEM_META" value="21" enum="ItemType">
+		</constant>
+		<constant name="ITEM_DROPCAP" value="22" enum="ItemType">
+		</constant>
+		<constant name="ITEM_CUSTOMFX" value="23" enum="ItemType">
 		</constant>
 	</constants>
 	<theme_items>
 		<theme_item name="bold_font" type="Font">
 			The font used for bold text.
 		</theme_item>
+		<theme_item name="bold_font_size" type="int">
+			The font size used for bold text.
+		</theme_item>
 		<theme_item name="bold_italics_font" type="Font">
 			The font used for bold italics text.
+		</theme_item>
+		<theme_item name="bold_italics_font_size" type="int">
+			The font size used for bold italics text.
 		</theme_item>
 		<theme_item name="default_color" type="Color" default="Color( 1, 1, 1, 1 )">
 			The default text color.
@@ -430,14 +618,20 @@
 		<theme_item name="focus" type="StyleBox">
 			The background The background used when the [RichTextLabel] is focused.
 		</theme_item>
-		<theme_item name="font_color_selected" type="Color" default="Color( 0.49, 0.49, 0.49, 1 )">
+		<theme_item name="font_outline_color" type="Color" default="Color( 1, 1, 1, 1 )">
+			The default tint of text outline.
+		</theme_item>
+		<theme_item name="font_selected_color" type="Color" default="Color( 0, 0, 0, 1 )">
 			The color of selected text, used when [member selection_enabled] is [code]true[/code].
 		</theme_item>
-		<theme_item name="font_color_shadow" type="Color" default="Color( 0, 0, 0, 0 )">
+		<theme_item name="font_shadow_color" type="Color" default="Color( 0, 0, 0, 0 )">
 			The color of the font's shadow.
 		</theme_item>
 		<theme_item name="italics_font" type="Font">
 			The font used for italics text.
+		</theme_item>
+		<theme_item name="italics_font_size" type="int">
+			The font size used for italics text.
 		</theme_item>
 		<theme_item name="line_separation" type="int" default="1">
 			The vertical space between lines.
@@ -445,11 +639,20 @@
 		<theme_item name="mono_font" type="Font">
 			The font used for monospace text.
 		</theme_item>
+		<theme_item name="mono_font_size" type="int">
+			The font size used for monospace text.
+		</theme_item>
 		<theme_item name="normal" type="StyleBox">
 			The normal background for the [RichTextLabel].
 		</theme_item>
 		<theme_item name="normal_font" type="Font">
 			The default text font.
+		</theme_item>
+		<theme_item name="normal_font_size" type="int">
+			The default text font size.
+		</theme_item>
+		<theme_item name="outline_size" type="int" default="0">
+			The size of the text outline.
 		</theme_item>
 		<theme_item name="selection_color" type="Color" default="Color( 0.1, 0.1, 1, 0.8 )">
 			The color of the selection box.
@@ -463,8 +666,17 @@
 		<theme_item name="shadow_offset_y" type="int" default="1">
 			The vertical offset of the font's shadow.
 		</theme_item>
+		<theme_item name="table_border" type="Color" default="Color( 0, 0, 0, 0 )">
+			The default cell border color.
+		</theme_item>
+		<theme_item name="table_even_row_bg" type="Color" default="Color( 0, 0, 0, 0 )">
+			The default background color for even rows.
+		</theme_item>
 		<theme_item name="table_hseparation" type="int" default="3">
 			The horizontal separation of elements in a table.
+		</theme_item>
+		<theme_item name="table_odd_row_bg" type="Color" default="Color( 0, 0, 0, 0 )">
+			The default background color for odd rows.
 		</theme_item>
 		<theme_item name="table_vseparation" type="int" default="3">
 			The vertical separation of elements in a table.

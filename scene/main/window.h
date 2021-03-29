@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -69,6 +69,13 @@ public:
 		CONTENT_SCALE_ASPECT_EXPAND,
 	};
 
+	enum LayoutDirection {
+		LAYOUT_DIRECTION_INHERITED,
+		LAYOUT_DIRECTION_LOCALE,
+		LAYOUT_DIRECTION_LTR,
+		LAYOUT_DIRECTION_RTL
+	};
+
 	enum {
 		DEFAULT_WINDOW_SIZE = 100,
 	};
@@ -83,7 +90,7 @@ private:
 	mutable Size2i min_size;
 	mutable Size2i max_size;
 	mutable Mode mode = MODE_WINDOWED;
-	mutable bool flags[FLAG_MAX];
+	mutable bool flags[FLAG_MAX] = {};
 	bool visible = true;
 	bool focused = false;
 
@@ -94,11 +101,13 @@ private:
 	bool updating_child_controls = false;
 	bool clamp_to_embedder = false;
 
+	LayoutDirection layout_dir = LAYOUT_DIRECTION_INHERITED;
+
 	void _update_child_controls();
 
 	Size2i content_scale_size;
-	ContentScaleMode content_scale_mode;
-	ContentScaleAspect content_scale_aspect;
+	ContentScaleMode content_scale_mode = CONTENT_SCALE_MODE_DISABLED;
+	ContentScaleAspect content_scale_aspect = CONTENT_SCALE_ASPECT_IGNORE;
 
 	void _make_window();
 	void _clear_window();
@@ -147,10 +156,9 @@ protected:
 
 public:
 	enum {
-
 		NOTIFICATION_VISIBILITY_CHANGED = 30,
 		NOTIFICATION_POST_POPUP = 31,
-		NOTIFICATION_THEME_CHANGED = 32,
+		NOTIFICATION_THEME_CHANGED = 32
 	};
 
 	void set_title(const String &p_title);
@@ -238,19 +246,23 @@ public:
 	void grab_focus();
 	bool has_focus() const;
 
+	void set_layout_direction(LayoutDirection p_direction);
+	LayoutDirection get_layout_direction() const;
+	bool is_layout_rtl() const;
+
 	Rect2i get_usable_parent_rect() const;
 
 	Ref<Texture2D> get_theme_icon(const StringName &p_name, const StringName &p_type = StringName()) const;
-	Ref<Shader> get_theme_shader(const StringName &p_name, const StringName &p_type = StringName()) const;
 	Ref<StyleBox> get_theme_stylebox(const StringName &p_name, const StringName &p_type = StringName()) const;
 	Ref<Font> get_theme_font(const StringName &p_name, const StringName &p_type = StringName()) const;
+	int get_theme_font_size(const StringName &p_name, const StringName &p_type = StringName()) const;
 	Color get_theme_color(const StringName &p_name, const StringName &p_type = StringName()) const;
 	int get_theme_constant(const StringName &p_name, const StringName &p_type = StringName()) const;
 
 	bool has_theme_icon(const StringName &p_name, const StringName &p_type = StringName()) const;
-	bool has_theme_shader(const StringName &p_name, const StringName &p_type = StringName()) const;
 	bool has_theme_stylebox(const StringName &p_name, const StringName &p_type = StringName()) const;
 	bool has_theme_font(const StringName &p_name, const StringName &p_type = StringName()) const;
+	bool has_theme_font_size(const StringName &p_name, const StringName &p_type = StringName()) const;
 	bool has_theme_color(const StringName &p_name, const StringName &p_type = StringName()) const;
 	bool has_theme_constant(const StringName &p_name, const StringName &p_type = StringName()) const;
 
@@ -265,5 +277,6 @@ VARIANT_ENUM_CAST(Window::Mode);
 VARIANT_ENUM_CAST(Window::Flags);
 VARIANT_ENUM_CAST(Window::ContentScaleMode);
 VARIANT_ENUM_CAST(Window::ContentScaleAspect);
+VARIANT_ENUM_CAST(Window::LayoutDirection);
 
 #endif // WINDOW_H

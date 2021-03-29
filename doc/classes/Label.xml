@@ -11,6 +11,13 @@
 		<link title="2D Dodge The Creeps Demo">https://godotengine.org/asset-library/asset/515</link>
 	</tutorials>
 	<methods>
+		<method name="clear_opentype_features">
+			<return type="void">
+			</return>
+			<description>
+				Removes all OpenType features.
+			</description>
+		</method>
 		<method name="get_line_count" qualifiers="const">
 			<return type="int">
 			</return>
@@ -21,8 +28,21 @@
 		<method name="get_line_height" qualifiers="const">
 			<return type="int">
 			</return>
+			<argument index="0" name="line" type="int" default="-1">
+			</argument>
 			<description>
-				Returns the font size in pixels.
+				Returns the height of the line [code]line[/code].
+				If [code]line[/code] is set to [code]-1[/code], returns the biggest line height.
+				If there're no lines returns font size in pixels.
+			</description>
+		</method>
+		<method name="get_opentype_feature" qualifiers="const">
+			<return type="int">
+			</return>
+			<argument index="0" name="tag" type="String">
+			</argument>
+			<description>
+				Returns OpenType feature [code]tag[/code].
 			</description>
 		</method>
 		<method name="get_total_character_count" qualifiers="const">
@@ -39,6 +59,17 @@
 				Returns the number of lines shown. Useful if the [Label]'s height cannot currently display all lines.
 			</description>
 		</method>
+		<method name="set_opentype_feature">
+			<return type="void">
+			</return>
+			<argument index="0" name="tag" type="String">
+			</argument>
+			<argument index="1" name="value" type="int">
+			</argument>
+			<description>
+				Returns OpenType feature [code]tag[/code]. More info: [url=https://docs.microsoft.com/en-us/typography/opentype/spec/featuretags]OpenType feature tags[/url].
+			</description>
+		</method>
 	</methods>
 	<members>
 		<member name="align" type="int" setter="set_align" getter="get_align" enum="Label.Align" default="0">
@@ -49,6 +80,9 @@
 		</member>
 		<member name="clip_text" type="bool" setter="set_clip_text" getter="is_clipping_text" default="false">
 			If [code]true[/code], the Label only shows the text that fits inside its bounding rectangle. It also lets you scale the node down freely.
+		</member>
+		<member name="language" type="String" setter="set_language" getter="get_language" default="&quot;&quot;">
+			Language code used for line-breaking and text shaping algorithms, if left empty current locale is used instead.
 		</member>
 		<member name="lines_skipped" type="int" setter="set_lines_skipped" getter="get_lines_skipped" default="0">
 			The node ignores the first [code]lines_skipped[/code] lines before it starts to display text.
@@ -61,8 +95,17 @@
 			Limits the amount of visible characters. If you set [code]percent_visible[/code] to 0.5, only up to half of the text's characters will display on screen. Useful to animate the text in a dialog box.
 		</member>
 		<member name="size_flags_vertical" type="int" setter="set_v_size_flags" getter="get_v_size_flags" override="true" default="4" />
+		<member name="structured_text_bidi_override" type="int" setter="set_structured_text_bidi_override" getter="get_structured_text_bidi_override" enum="Control.StructuredTextParser" default="0">
+			Set BiDi algorithm override for the structured text.
+		</member>
+		<member name="structured_text_bidi_override_options" type="Array" setter="set_structured_text_bidi_override_options" getter="get_structured_text_bidi_override_options" default="[  ]">
+			Set additional options for BiDi override.
+		</member>
 		<member name="text" type="String" setter="set_text" getter="get_text" default="&quot;&quot;">
 			The text to display on screen.
+		</member>
+		<member name="text_direction" type="int" setter="set_text_direction" getter="get_text_direction" enum="Control.TextDirection" default="0">
+			Base text writing direction.
 		</member>
 		<member name="uppercase" type="bool" setter="set_uppercase" getter="is_uppercase" default="false">
 			If [code]true[/code], all the text displays as UPPERCASE.
@@ -85,7 +128,7 @@
 			Align rows to the right.
 		</constant>
 		<constant name="ALIGN_FILL" value="3" enum="Align">
-			Expand row whitespaces to fit the width.
+			Expand row to fit the width.
 		</constant>
 		<constant name="VALIGN_TOP" value="0" enum="VAlign">
 			Align the whole text to the top.
@@ -107,11 +150,14 @@
 		<theme_item name="font_color" type="Color" default="Color( 1, 1, 1, 1 )">
 			Default text [Color] of the [Label].
 		</theme_item>
-		<theme_item name="font_color_shadow" type="Color" default="Color( 0, 0, 0, 0 )">
+		<theme_item name="font_outline_color" type="Color" default="Color( 1, 1, 1, 1 )">
+			The tint of [Font]'s outline.
+		</theme_item>
+		<theme_item name="font_shadow_color" type="Color" default="Color( 0, 0, 0, 0 )">
 			[Color] of the text's shadow effect.
 		</theme_item>
-		<theme_item name="font_outline_modulate" type="Color" default="Color( 1, 1, 1, 1 )">
-			The tint of [Font]'s outline. See [member DynamicFont.outline_color].
+		<theme_item name="font_size" type="int">
+			Font size of the [Label]'s text.
 		</theme_item>
 		<theme_item name="line_spacing" type="int" default="3">
 			Vertical space between lines in multiline [Label].
@@ -119,14 +165,17 @@
 		<theme_item name="normal" type="StyleBox">
 			Background [StyleBox] for the [Label].
 		</theme_item>
-		<theme_item name="shadow_as_outline" type="int" default="0">
-			Boolean value. If set to 1 ([code]true[/code]), the shadow will be displayed around the whole text as an outline.
+		<theme_item name="outline_size" type="int" default="0">
+			Text outline size.
 		</theme_item>
 		<theme_item name="shadow_offset_x" type="int" default="1">
 			The horizontal offset of the text's shadow.
 		</theme_item>
 		<theme_item name="shadow_offset_y" type="int" default="1">
 			The vertical offset of the text's shadow.
+		</theme_item>
+		<theme_item name="shadow_outline_size" type="int" default="1">
+			Shadow outline size. If set to 1 or greater, the shadow will be displayed around the whole text as an outline.
 		</theme_item>
 	</theme_items>
 </class>

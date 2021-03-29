@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -53,28 +53,30 @@ private:
 	};
 
 	struct Joypad {
-		Input::JoyAxis curr_axis[MAX_ABS];
+		Input::JoyAxisValue curr_axis[MAX_ABS];
 		int key_map[MAX_KEY];
 		int abs_map[MAX_ABS];
-		int dpad;
-		int fd;
+		int dpad = 0;
+		int fd = -1;
 
 		String devpath;
-		input_absinfo *abs_info[MAX_ABS];
+		input_absinfo *abs_info[MAX_ABS] = {};
 
-		bool force_feedback;
-		int ff_effect_id;
-		uint64_t ff_effect_timestamp;
+		bool force_feedback = false;
+		int ff_effect_id = 0;
+		uint64_t ff_effect_timestamp = 0;
 
-		Joypad();
 		~Joypad();
 		void reset();
 	};
 
-	bool exit_udev;
+#ifdef UDEV_ENABLED
+	bool use_udev = false;
+#endif
+	SafeFlag exit_monitor;
 	Mutex joy_mutex;
-	Thread *joy_thread;
-	Input *input;
+	Thread joy_thread;
+	Input *input = nullptr;
 	Joypad joypads[JOYPADS_MAX];
 	Vector<String> attached_devices;
 
@@ -95,7 +97,7 @@ private:
 	void joypad_vibration_start(int p_id, float p_weak_magnitude, float p_strong_magnitude, float p_duration, uint64_t p_timestamp);
 	void joypad_vibration_stop(int p_id, uint64_t p_timestamp);
 
-	Input::JoyAxis axis_correct(const input_absinfo *p_abs, int p_value) const;
+	Input::JoyAxisValue axis_correct(const input_absinfo *p_abs, int p_value) const;
 };
 
 #endif

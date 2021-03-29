@@ -9,7 +9,7 @@
 		Canvas items are drawn in tree order. By default, children are on top of their parents so a root [CanvasItem] will be drawn behind everything. This behavior can be changed on a per-item basis.
 		A [CanvasItem] can also be hidden, which will also hide its children. It provides many ways to change parameters such as modulation (for itself and its children) and self modulation (only for itself), as well as its blend mode.
 		Ultimately, a transform notification can be requested, which will notify the node that its global position changed in case the parent tree changed.
-		[b]Note:[/b] Unless otherwise specified, all methods that have angle parameters must have angles specified as [i]radians[/i]. To convert degrees to radians, use [method @GDScript.deg2rad].
+		[b]Note:[/b] Unless otherwise specified, all methods that have angle parameters must have angles specified as [i]radians[/i]. To convert degrees to radians, use [method @GlobalScope.deg2rad].
 	</description>
 	<tutorials>
 		<link title="Viewport and canvas transforms">https://docs.godotengine.org/en/latest/tutorials/2d/2d_transforms.html</link>
@@ -41,22 +41,30 @@
 			</argument>
 			<argument index="6" name="width" type="float" default="1.0">
 			</argument>
+			<argument index="7" name="antialiased" type="bool" default="false">
+			</argument>
 			<description>
 				Draws an arc between the given angles. The larger the value of [code]point_count[/code], the smoother the curve.
 			</description>
 		</method>
-		<method name="draw_char">
+		<method name="draw_char" qualifiers="const">
 			<return type="float">
 			</return>
 			<argument index="0" name="font" type="Font">
 			</argument>
-			<argument index="1" name="position" type="Vector2">
+			<argument index="1" name="pos" type="Vector2">
 			</argument>
 			<argument index="2" name="char" type="String">
 			</argument>
-			<argument index="3" name="next" type="String">
+			<argument index="3" name="next" type="String" default="&quot;&quot;">
 			</argument>
-			<argument index="4" name="modulate" type="Color" default="Color( 1, 1, 1, 1 )">
+			<argument index="4" name="size" type="int" default="-1">
+			</argument>
+			<argument index="5" name="modulate" type="Color" default="Color( 1, 1, 1, 1 )">
+			</argument>
+			<argument index="6" name="outline_size" type="int" default="0">
+			</argument>
+			<argument index="7" name="outline_modulate" type="Color" default="Color( 1, 1, 1, 0 )">
 			</argument>
 			<description>
 				Draws a string character using a custom font. Returns the advance, depending on the character width and kerning with an optional next character.
@@ -146,6 +154,35 @@
 				Draws multiple, parallel lines with a uniform [code]width[/code] and segment-by-segment coloring. Colors assigned to line segments match by index between [code]points[/code] and [code]colors[/code].
 			</description>
 		</method>
+		<method name="draw_multiline_string" qualifiers="const">
+			<return type="void">
+			</return>
+			<argument index="0" name="font" type="Font">
+			</argument>
+			<argument index="1" name="pos" type="Vector2">
+			</argument>
+			<argument index="2" name="text" type="String">
+			</argument>
+			<argument index="3" name="align" type="int" enum="HAlign" default="0">
+			</argument>
+			<argument index="4" name="width" type="float" default="-1">
+			</argument>
+			<argument index="5" name="max_lines" type="int" default="-1">
+			</argument>
+			<argument index="6" name="size" type="int" default="-1">
+			</argument>
+			<argument index="7" name="modulate" type="Color" default="Color( 1, 1, 1, 1 )">
+			</argument>
+			<argument index="8" name="outline_size" type="int" default="0">
+			</argument>
+			<argument index="9" name="outline_modulate" type="Color" default="Color( 1, 1, 1, 0 )">
+			</argument>
+			<argument index="10" name="flags" type="int" default="51">
+			</argument>
+			<description>
+				Breaks [code]text[/code] to the lines and draws it using the specified [code]font[/code] at the [code]position[/code] (top-left corner). The text will have its color multiplied by [code]modulate[/code]. If [code]clip_w[/code] is greater than or equal to 0, the text will be clipped if it exceeds the specified width.
+			</description>
+		</method>
 		<method name="draw_multimesh">
 			<return type="void">
 			</return>
@@ -181,6 +218,8 @@
 			</argument>
 			<argument index="2" name="width" type="float" default="1.0">
 			</argument>
+			<argument index="3" name="antialiased" type="bool" default="false">
+			</argument>
 			<description>
 				Draws interconnected line segments with a uniform [code]color[/code] and [code]width[/code].
 			</description>
@@ -193,6 +232,8 @@
 			<argument index="1" name="colors" type="PackedColorArray">
 			</argument>
 			<argument index="2" name="width" type="float" default="1.0">
+			</argument>
+			<argument index="3" name="antialiased" type="bool" default="false">
 			</argument>
 			<description>
 				Draws interconnected line segments with a uniform [code]width[/code] and segment-by-segment coloring. Colors assigned to line segments match by index between [code]points[/code] and [code]colors[/code].
@@ -253,21 +294,31 @@
 				Sets a custom transform for drawing via matrix. Anything drawn afterwards will be transformed by this.
 			</description>
 		</method>
-		<method name="draw_string">
+		<method name="draw_string" qualifiers="const">
 			<return type="void">
 			</return>
 			<argument index="0" name="font" type="Font">
 			</argument>
-			<argument index="1" name="position" type="Vector2">
+			<argument index="1" name="pos" type="Vector2">
 			</argument>
 			<argument index="2" name="text" type="String">
 			</argument>
-			<argument index="3" name="modulate" type="Color" default="Color( 1, 1, 1, 1 )">
+			<argument index="3" name="align" type="int" enum="HAlign" default="0">
 			</argument>
-			<argument index="4" name="clip_w" type="int" default="-1">
+			<argument index="4" name="width" type="float" default="-1">
+			</argument>
+			<argument index="5" name="size" type="int" default="-1">
+			</argument>
+			<argument index="6" name="modulate" type="Color" default="Color( 1, 1, 1, 1 )">
+			</argument>
+			<argument index="7" name="outline_size" type="int" default="0">
+			</argument>
+			<argument index="8" name="outline_modulate" type="Color" default="Color( 1, 1, 1, 0 )">
+			</argument>
+			<argument index="9" name="flags" type="int" default="3">
 			</argument>
 			<description>
-				Draws [code]text[/code] using the specified [code]font[/code] at the [code]position[/code] (top-left corner). The text will have its color multiplied by [code]modulate[/code]. If [code]clip_w[/code] is greater than or equal to 0, the text will be clipped if it exceeds the specified width.
+				Draws [code]text[/code] using the specified [code]font[/code] at the [code]position[/code] (bottom-left corner using the baseline of the font). The text will have its color multiplied by [code]modulate[/code]. If [code]clip_w[/code] is greater than or equal to 0, the text will be clipped if it exceeds the specified width.
 				[b]Example using the default project font:[/b]
 				[codeblocks]
 				[gdscript]
@@ -275,17 +326,19 @@
 				# `default_font` declaration to a member variable assigned in `_ready()`
 				# so the Control is only created once.
 				var default_font = Control.new().get_font("font")
-				draw_string(default_font, Vector2(64, 64), "Hello world")
+				var default_font_size = Control.new().get_font_size("font_size")
+				draw_string(default_font, Vector2(64, 64), "Hello world", HALIGN_LEFT, -1, font_size)
 				[/gdscript]
 				[csharp]
 				// If using this method in a script that redraws constantly, move the
 				// `default_font` declaration to a member variable assigned in `_ready()`
 				// so the Control is only created once.
 				Font defaultFont = new Control().GetFont("font");
-				DrawString(defaultFont, new Vector2(64, 64), "Hello world");
+				int defaultFontSize = new Control().GetFontSize("font_size");
+				DrawString(defaultFont, new Vector2(64, 64), "Hello world", HALIGN_LEFT, -1, defaultFontSize);
 				[/csharp]
 				[/codeblocks]
-				See also [method Font.draw].
+				See also [method Font.draw_string].
 			</description>
 		</method>
 		<method name="draw_style_box">
@@ -555,7 +608,7 @@
 				Emitted when the [CanvasItem] must redraw. This can only be connected realtime, as deferred will not allow drawing.
 			</description>
 		</signal>
-		<signal name="hide">
+		<signal name="hidden">
 			<description>
 				Emitted when becoming hidden.
 			</description>

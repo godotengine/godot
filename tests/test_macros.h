@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -40,6 +40,15 @@
 
 // The test is skipped with this, run pending tests with `--test --no-skip`.
 #define TEST_CASE_PENDING(name) TEST_CASE(name *doctest::skip())
+
+// The test case is marked as failed, but does not fail the entire test run.
+#define TEST_CASE_MAY_FAIL(name) TEST_CASE(name *doctest::may_fail())
+
+// Provide aliases to conform with Godot naming conventions (see error macros).
+#define TEST_COND(cond, ...) DOCTEST_CHECK_FALSE_MESSAGE(cond, __VA_ARGS__)
+#define TEST_FAIL(cond, ...) DOCTEST_FAIL(cond, __VA_ARGS__)
+#define TEST_FAIL_COND(cond, ...) DOCTEST_REQUIRE_FALSE_MESSAGE(cond, __VA_ARGS__)
+#define TEST_FAIL_COND_WARN(cond, ...) DOCTEST_WARN_FALSE_MESSAGE(cond, __VA_ARGS__)
 
 // Temporarily disable error prints to test failure paths.
 // This allows to avoid polluting the test summary with error messages.

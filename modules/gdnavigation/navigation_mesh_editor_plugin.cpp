@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -142,7 +142,7 @@ void NavigationMeshEditorPlugin::make_visible(bool p_visible) {
 NavigationMeshEditorPlugin::NavigationMeshEditorPlugin(EditorNode *p_node) {
 	editor = p_node;
 	navigation_mesh_editor = memnew(NavigationMeshEditor);
-	editor->get_viewport()->add_child(navigation_mesh_editor);
+	editor->get_main_control()->add_child(navigation_mesh_editor);
 	add_control_to_container(CONTAINER_SPATIAL_EDITOR_MENU, navigation_mesh_editor->bake_hbox);
 	navigation_mesh_editor->hide();
 	navigation_mesh_editor->bake_hbox->hide();

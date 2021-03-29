@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -46,16 +46,16 @@ class DirAccessWindows : public DirAccess {
 		MAX_DRIVES = 26
 	};
 
-	DirAccessWindowsPrivate *p;
+	DirAccessWindowsPrivate *p = nullptr;
 	/* Windows stuff */
 
-	char drives[MAX_DRIVES]; // a-z:
-	int drive_count;
+	char drives[MAX_DRIVES] = { 0 }; // a-z:
+	int drive_count = 0;
 
 	String current_dir;
 
-	bool _cisdir;
-	bool _cishidden;
+	bool _cisdir = false;
+	bool _cishidden = false;
 
 public:
 	virtual Error list_dir_begin(); ///< This starts dir listing

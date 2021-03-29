@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -132,7 +132,7 @@ real_t G6DOFRotationalLimitMotor3DSW::solveAngularLimits(
 
 	real_t oldaccumImpulse = m_accumulatedImpulse;
 	real_t sum = oldaccumImpulse + clippedMotorImpulse;
-	m_accumulatedImpulse = sum > hi ? real_t(0.) : sum < lo ? real_t(0.) : sum;
+	m_accumulatedImpulse = sum > hi ? real_t(0.) : (sum < lo ? real_t(0.) : sum);
 
 	clippedMotorImpulse = m_accumulatedImpulse - oldaccumImpulse;
 
@@ -201,7 +201,7 @@ real_t G6DOFTranslationalLimitMotor3DSW::solveLinearAxis(
 
 	real_t oldNormalImpulse = m_accumulatedImpulse[limit_index];
 	real_t sum = oldNormalImpulse + normalImpulse;
-	m_accumulatedImpulse[limit_index] = sum > hi ? real_t(0.) : sum < lo ? real_t(0.) : sum;
+	m_accumulatedImpulse[limit_index] = sum > hi ? real_t(0.) : (sum < lo ? real_t(0.) : sum);
 	normalImpulse = m_accumulatedImpulse[limit_index] - oldNormalImpulse;
 
 	Vector3 impulse_vector = axis_normal_on_a * normalImpulse;
@@ -253,7 +253,6 @@ void Generic6DOFJoint3DSW::calculateAngleInfo() {
 	/*
 	if(m_debugDrawer)
 	{
-
 		char buff[300];
 		sprintf(buff,"\n X: %.2f ; Y: %.2f ; Z: %.2f ",
 		m_calculatedAxisAngleDiff[0],

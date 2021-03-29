@@ -20,9 +20,6 @@ android {
     packagingOptions {
         exclude 'META-INF/LICENSE'
         exclude 'META-INF/NOTICE'
-
-        // Should be uncommented for development purpose within Android Studio
-        // doNotStrip '**/*.so'
     }
 
     sourceSets {
@@ -30,6 +27,8 @@ android {
             manifest.srcFile 'AndroidManifest.xml'
         }
     }
+
+    ndkVersion versions.ndkVersion
 
     externalNativeBuild {
         cmake {

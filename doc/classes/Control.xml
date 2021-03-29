@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="Control" inherits="CanvasItem" version="4.0">
 	<brief_description>
-		All user interface nodes inherit from Control. A control's anchors and margins adapt its position and size relative to its parent.
+		All user interface nodes inherit from Control. A control's anchors and offsets adapt its position and size relative to its parent.
 	</brief_description>
 	<description>
-		Base class for all UI-related nodes. [Control] features a bounding rectangle that defines its extents, an anchor position relative to its parent control or the current viewport, and margins that represent an offset to the anchor. The margins update automatically when the node, any of its parents, or the screen size change.
-		For more information on Godot's UI system, anchors, margins, and containers, see the related tutorials in the manual. To build flexible UIs, you'll need a mix of UI elements that inherit from [Control] and [Container] nodes.
+		Base class for all UI-related nodes. [Control] features a bounding rectangle that defines its extents, an anchor position relative to its parent control or the current viewport, and offsets relative to the anchor. The offsets update automatically when the node, any of its parents, or the screen size change.
+		For more information on Godot's UI system, anchors, offsets, and containers, see the related tutorials in the manual. To build flexible UIs, you'll need a mix of UI elements that inherit from [Control] and [Container] nodes.
 		[b]User Interface nodes and input[/b]
 		Godot sends input events to the scene's root node first, by calling [method Node._input]. [method Node._input] forwards the event down the node tree to the nodes under the mouse cursor, or on keyboard focus. To do so, it calls [code]MainLoop._input_event[/code].
 		[b]FIXME:[/b] No longer valid after DisplayServer split and Input refactoring.
@@ -16,8 +16,9 @@
 		[b]Note:[/b] Theme items are [i]not[/i] [Object] properties. This means you can't access their values using [method Object.get] and [method Object.set]. Instead, use the [code]get_theme_*[/code] and [code]add_theme_*_override[/code] methods provided by this class.
 	</description>
 	<tutorials>
-		<link title="GUI tutorial index">https://docs.godotengine.org/en/latest/tutorials/gui/index.html</link>
+		<link title="GUI tutorial index">https://docs.godotengine.org/en/latest/tutorials/ui/index.html</link>
 		<link title="Custom drawing in 2D">https://docs.godotengine.org/en/latest/tutorials/2d/custom_drawing_in_2d.html</link>
+		<link title="Control node gallery">https://docs.godotengine.org/en/latest/tutorials/ui/control_node_gallery.html</link>
 		<link title="All GUI Demos">https://github.com/godotengine/godot-demo-projects/tree/master/gui</link>
 	</tutorials>
 	<methods>
@@ -49,7 +50,7 @@
 				[gdscript]
 				func _gui_input(event):
 				    if event is InputEventMouseButton:
-				        if event.button_index == BUTTON_LEFT and event.pressed:
+				        if event.button_index == MOUSE_BUTTON_LEFT and event.pressed:
 				            print("I've been clicked D:")
 				[/gdscript]
 				[csharp]
@@ -121,6 +122,18 @@
 				[/codeblocks]
 			</description>
 		</method>
+		<method name="_structured_text_parser" qualifiers="virtual">
+			<return type="void">
+			</return>
+			<argument index="0" name="args" type="Array">
+			</argument>
+			<argument index="1" name="text" type="String">
+			</argument>
+			<description>
+				User defined BiDi algorithm override function.
+				Return [code]Array[/code] of [code]Vector2i[/code] text ranges, in the left-to-right order. Ranges should cover full source [code]text[/code] without overlaps. BiDi algorithm will be used on each range separately.
+			</description>
+		</method>
 		<method name="accept_event">
 			<return type="void">
 			</return>
@@ -179,6 +192,17 @@
 				Overrides the font with given [code]name[/code] in the [member theme] resource the control uses. If [code]font[/code] is [code]null[/code] or invalid, the override is cleared and the font from assigned [Theme] is used.
 			</description>
 		</method>
+		<method name="add_theme_font_size_override">
+			<return type="void">
+			</return>
+			<argument index="0" name="name" type="StringName">
+			</argument>
+			<argument index="1" name="font_size" type="int">
+			</argument>
+			<description>
+				Overrides the font size with given [code]name[/code] in the [member theme] resource the control uses. If [code]font_size[/code] is [code]-1[/code], the override is cleared and the font size from assigned [Theme] is used.
+			</description>
+		</method>
 		<method name="add_theme_icon_override">
 			<return type="void">
 			</return>
@@ -188,17 +212,6 @@
 			</argument>
 			<description>
 				Overrides the icon with given [code]name[/code] in the [member theme] resource the control uses. If [code]icon[/code] is [code]null[/code] or invalid, the override is cleared and the icon from assigned [Theme] is used.
-			</description>
-		</method>
-		<method name="add_theme_shader_override">
-			<return type="void">
-			</return>
-			<argument index="0" name="name" type="StringName">
-			</argument>
-			<argument index="1" name="shader" type="Shader">
-			</argument>
-			<description>
-				Overrides the [Shader] with given [code]name[/code] in the [member theme] resource the control uses. If [code]shader[/code] is [code]null[/code] or invalid, the override is cleared and the shader from assigned [Theme] is used.
 			</description>
 		</method>
 		<method name="add_theme_stylebox_override">
@@ -294,6 +307,20 @@
 				[/codeblocks]
 			</description>
 		</method>
+		<method name="find_next_valid_focus" qualifiers="const">
+			<return type="Control">
+			</return>
+			<description>
+				Finds the next (below in the tree) [Control] that can receive the focus.
+			</description>
+		</method>
+		<method name="find_prev_valid_focus" qualifiers="const">
+			<return type="Control">
+			</return>
+			<description>
+				Finds the previous (above in the tree) [Control] that can receive the focus.
+			</description>
+		</method>
 		<method name="force_drag">
 			<return type="void">
 			</return>
@@ -309,17 +336,17 @@
 		<method name="get_anchor" qualifiers="const">
 			<return type="float">
 			</return>
-			<argument index="0" name="margin" type="int" enum="Margin">
+			<argument index="0" name="side" type="int" enum="Side">
 			</argument>
 			<description>
-				Returns the anchor identified by [code]margin[/code] constant from [enum Margin] enum. A getter method for [member anchor_bottom], [member anchor_left], [member anchor_right] and [member anchor_top].
+				Returns the anchor for the specified [enum Side]. A getter method for [member anchor_bottom], [member anchor_left], [member anchor_right] and [member anchor_top].
 			</description>
 		</method>
 		<method name="get_begin" qualifiers="const">
 			<return type="Vector2">
 			</return>
 			<description>
-				Returns [member margin_left] and [member margin_top]. See also [member rect_position].
+				Returns [member offset_left] and [member offset_top]. See also [member rect_position].
 			</description>
 		</method>
 		<method name="get_combined_minimum_size" qualifiers="const">
@@ -368,16 +395,16 @@
 			<return type="Vector2">
 			</return>
 			<description>
-				Returns [member margin_right] and [member margin_bottom].
+				Returns [member offset_right] and [member offset_bottom].
 			</description>
 		</method>
-		<method name="get_focus_neighbour" qualifiers="const">
+		<method name="get_focus_neighbor" qualifiers="const">
 			<return type="NodePath">
 			</return>
-			<argument index="0" name="margin" type="int" enum="Margin">
+			<argument index="0" name="side" type="int" enum="Side">
 			</argument>
 			<description>
-				Returns the focus neighbour identified by [code]margin[/code] constant from [enum Margin] enum. A getter method for [member focus_neighbour_bottom], [member focus_neighbour_left], [member focus_neighbour_right] and [member focus_neighbour_top].
+				Returns the focus neighbor for the specified [enum Side]. A getter method for [member focus_neighbor_bottom], [member focus_neighbor_left], [member focus_neighbor_right] and [member focus_neighbor_top].
 			</description>
 		</method>
 		<method name="get_focus_owner" qualifiers="const">
@@ -394,20 +421,20 @@
 				Returns the position and size of the control relative to the top-left corner of the screen. See [member rect_position] and [member rect_size].
 			</description>
 		</method>
-		<method name="get_margin" qualifiers="const">
-			<return type="float">
-			</return>
-			<argument index="0" name="margin" type="int" enum="Margin">
-			</argument>
-			<description>
-				Returns the anchor identified by [code]margin[/code] constant from [enum Margin] enum. A getter method for [member margin_bottom], [member margin_left], [member margin_right] and [member margin_top].
-			</description>
-		</method>
 		<method name="get_minimum_size" qualifiers="const">
 			<return type="Vector2">
 			</return>
 			<description>
 				Returns the minimum size for this control. See [member rect_min_size].
+			</description>
+		</method>
+		<method name="get_offset" qualifiers="const">
+			<return type="float">
+			</return>
+			<argument index="0" name="offset" type="int" enum="Side">
+			</argument>
+			<description>
+				Returns the anchor for the specified [enum Side]. A getter method for [member offset_bottom], [member offset_left], [member offset_right] and [member offset_top].
 			</description>
 		</method>
 		<method name="get_parent_area_size" qualifiers="const">
@@ -431,22 +458,15 @@
 				Returns the position and size of the control relative to the top-left corner of the parent Control. See [member rect_position] and [member rect_size].
 			</description>
 		</method>
-		<method name="get_rotation" qualifiers="const">
-			<return type="float">
-			</return>
-			<description>
-				Returns the rotation (in radians).
-			</description>
-		</method>
 		<method name="get_theme_color" qualifiers="const">
 			<return type="Color">
 			</return>
 			<argument index="0" name="name" type="StringName">
 			</argument>
-			<argument index="1" name="type" type="StringName" default="&quot;&quot;">
+			<argument index="1" name="node_type" type="StringName" default="&quot;&quot;">
 			</argument>
 			<description>
-				Returns a color from assigned [Theme] with given [code]name[/code] and associated with [Control] of given [code]type[/code].
+				Returns a color from assigned [Theme] with given [code]name[/code] and associated with [Control] of given [code]node_type[/code].
 				[codeblocks]
 				[gdscript]
 				func _ready():
@@ -466,10 +486,10 @@
 			</return>
 			<argument index="0" name="name" type="StringName">
 			</argument>
-			<argument index="1" name="type" type="StringName" default="&quot;&quot;">
+			<argument index="1" name="node_type" type="StringName" default="&quot;&quot;">
 			</argument>
 			<description>
-				Returns a constant from assigned [Theme] with given [code]name[/code] and associated with [Control] of given [code]type[/code].
+				Returns a constant from assigned [Theme] with given [code]name[/code] and associated with [Control] of given [code]node_type[/code].
 			</description>
 		</method>
 		<method name="get_theme_font" qualifiers="const">
@@ -477,10 +497,21 @@
 			</return>
 			<argument index="0" name="name" type="StringName">
 			</argument>
-			<argument index="1" name="type" type="StringName" default="&quot;&quot;">
+			<argument index="1" name="node_type" type="StringName" default="&quot;&quot;">
 			</argument>
 			<description>
-				Returns a font from assigned [Theme] with given [code]name[/code] and associated with [Control] of given [code]type[/code].
+				Returns a font from assigned [Theme] with given [code]name[/code] and associated with [Control] of given [code]node_type[/code].
+			</description>
+		</method>
+		<method name="get_theme_font_size" qualifiers="const">
+			<return type="int">
+			</return>
+			<argument index="0" name="name" type="StringName">
+			</argument>
+			<argument index="1" name="node_type" type="StringName" default="&quot;&quot;">
+			</argument>
+			<description>
+				Returns a font size from assigned [Theme] with given [code]name[/code] and associated with [Control] of given [code]type[/code].
 			</description>
 		</method>
 		<method name="get_theme_icon" qualifiers="const">
@@ -488,10 +519,10 @@
 			</return>
 			<argument index="0" name="name" type="StringName">
 			</argument>
-			<argument index="1" name="type" type="StringName" default="&quot;&quot;">
+			<argument index="1" name="node_type" type="StringName" default="&quot;&quot;">
 			</argument>
 			<description>
-				Returns an icon from assigned [Theme] with given [code]name[/code] and associated with [Control] of given [code]type[/code].
+				Returns an icon from assigned [Theme] with given [code]name[/code] and associated with [Control] of given [code]node_type[/code].
 			</description>
 		</method>
 		<method name="get_theme_stylebox" qualifiers="const">
@@ -499,10 +530,10 @@
 			</return>
 			<argument index="0" name="name" type="StringName">
 			</argument>
-			<argument index="1" name="type" type="StringName" default="&quot;&quot;">
+			<argument index="1" name="node_type" type="StringName" default="&quot;&quot;">
 			</argument>
 			<description>
-				Returns a [StyleBox] from assigned [Theme] with given [code]name[/code] and associated with [Control] of given [code]type[/code].
+				Returns a [StyleBox] from assigned [Theme] with given [code]name[/code] and associated with [Control] of given [code]node_type[/code].
 			</description>
 		</method>
 		<method name="get_tooltip" qualifiers="const">
@@ -563,10 +594,10 @@
 			</return>
 			<argument index="0" name="name" type="StringName">
 			</argument>
-			<argument index="1" name="type" type="StringName" default="&quot;&quot;">
+			<argument index="1" name="node_type" type="StringName" default="&quot;&quot;">
 			</argument>
 			<description>
-				Returns [code]true[/code] if [Color] with given [code]name[/code] and associated with [Control] of given [code]type[/code] exists in assigned [Theme].
+				Returns [code]true[/code] if [Color] with given [code]name[/code] and associated with [Control] of given [code]node_type[/code] exists in assigned [Theme].
 			</description>
 		</method>
 		<method name="has_theme_color_override" qualifiers="const">
@@ -583,10 +614,10 @@
 			</return>
 			<argument index="0" name="name" type="StringName">
 			</argument>
-			<argument index="1" name="type" type="StringName" default="&quot;&quot;">
+			<argument index="1" name="node_type" type="StringName" default="&quot;&quot;">
 			</argument>
 			<description>
-				Returns [code]true[/code] if constant with given [code]name[/code] and associated with [Control] of given [code]type[/code] exists in assigned [Theme].
+				Returns [code]true[/code] if constant with given [code]name[/code] and associated with [Control] of given [code]node_type[/code] exists in assigned [Theme].
 			</description>
 		</method>
 		<method name="has_theme_constant_override" qualifiers="const">
@@ -603,10 +634,10 @@
 			</return>
 			<argument index="0" name="name" type="StringName">
 			</argument>
-			<argument index="1" name="type" type="StringName" default="&quot;&quot;">
+			<argument index="1" name="node_type" type="StringName" default="&quot;&quot;">
 			</argument>
 			<description>
-				Returns [code]true[/code] if font with given [code]name[/code] and associated with [Control] of given [code]type[/code] exists in assigned [Theme].
+				Returns [code]true[/code] if font with given [code]name[/code] and associated with [Control] of given [code]node_type[/code] exists in assigned [Theme].
 			</description>
 		</method>
 		<method name="has_theme_font_override" qualifiers="const">
@@ -618,15 +649,35 @@
 				Returns [code]true[/code] if font with given [code]name[/code] has a valid override in this [Control] node.
 			</description>
 		</method>
+		<method name="has_theme_font_size" qualifiers="const">
+			<return type="bool">
+			</return>
+			<argument index="0" name="name" type="StringName">
+			</argument>
+			<argument index="1" name="node_type" type="StringName" default="&quot;&quot;">
+			</argument>
+			<description>
+				Returns [code]true[/code] if font size with given [code]name[/code] and associated with [Control] of given [code]type[/code] exists in assigned [Theme].
+			</description>
+		</method>
+		<method name="has_theme_font_size_override" qualifiers="const">
+			<return type="bool">
+			</return>
+			<argument index="0" name="name" type="StringName">
+			</argument>
+			<description>
+				Returns [code]true[/code] if font size with given [code]name[/code] has a valid override in this [Control] node.
+			</description>
+		</method>
 		<method name="has_theme_icon" qualifiers="const">
 			<return type="bool">
 			</return>
 			<argument index="0" name="name" type="StringName">
 			</argument>
-			<argument index="1" name="type" type="StringName" default="&quot;&quot;">
+			<argument index="1" name="node_type" type="StringName" default="&quot;&quot;">
 			</argument>
 			<description>
-				Returns [code]true[/code] if icon with given [code]name[/code] and associated with [Control] of given [code]type[/code] exists in assigned [Theme].
+				Returns [code]true[/code] if icon with given [code]name[/code] and associated with [Control] of given [code]node_type[/code] exists in assigned [Theme].
 			</description>
 		</method>
 		<method name="has_theme_icon_override" qualifiers="const">
@@ -638,24 +689,15 @@
 				Returns [code]true[/code] if icon with given [code]name[/code] has a valid override in this [Control] node.
 			</description>
 		</method>
-		<method name="has_theme_shader_override" qualifiers="const">
-			<return type="bool">
-			</return>
-			<argument index="0" name="name" type="StringName">
-			</argument>
-			<description>
-				Returns [code]true[/code] if [Shader] with given [code]name[/code] has a valid override in this [Control] node.
-			</description>
-		</method>
 		<method name="has_theme_stylebox" qualifiers="const">
 			<return type="bool">
 			</return>
 			<argument index="0" name="name" type="StringName">
 			</argument>
-			<argument index="1" name="type" type="StringName" default="&quot;&quot;">
+			<argument index="1" name="node_type" type="StringName" default="&quot;&quot;">
 			</argument>
 			<description>
-				Returns [code]true[/code] if [StyleBox] with given [code]name[/code] and associated with [Control] of given [code]type[/code] exists in assigned [Theme].
+				Returns [code]true[/code] if [StyleBox] with given [code]name[/code] and associated with [Control] of given [code]node_type[/code] exists in assigned [Theme].
 			</description>
 		</method>
 		<method name="has_theme_stylebox_override" qualifiers="const">
@@ -665,6 +707,13 @@
 			</argument>
 			<description>
 				Returns [code]true[/code] if [StyleBox] with given [code]name[/code] has a valid override in this [Control] node.
+			</description>
+		</method>
+		<method name="is_layout_rtl" qualifiers="const">
+			<return type="bool">
+			</return>
+			<description>
+				Returns [code]true[/code] if layout is right-to-left.
 			</description>
 		</method>
 		<method name="minimum_size_changed">
@@ -684,24 +733,24 @@
 		<method name="set_anchor">
 			<return type="void">
 			</return>
-			<argument index="0" name="margin" type="int" enum="Margin">
+			<argument index="0" name="side" type="int" enum="Side">
 			</argument>
 			<argument index="1" name="anchor" type="float">
 			</argument>
-			<argument index="2" name="keep_margin" type="bool" default="false">
+			<argument index="2" name="keep_offset" type="bool" default="false">
 			</argument>
 			<argument index="3" name="push_opposite_anchor" type="bool" default="true">
 			</argument>
 			<description>
-				Sets the anchor identified by [code]margin[/code] constant from [enum Margin] enum to value [code]anchor[/code]. A setter method for [member anchor_bottom], [member anchor_left], [member anchor_right] and [member anchor_top].
-				If [code]keep_margin[/code] is [code]true[/code], margins aren't updated after this operation.
+				Sets the anchor for the specified [enum Side] to [code]anchor[/code]. A setter method for [member anchor_bottom], [member anchor_left], [member anchor_right] and [member anchor_top].
+				If [code]keep_offset[/code] is [code]true[/code], offsets aren't updated after this operation.
 				If [code]push_opposite_anchor[/code] is [code]true[/code] and the opposite anchor overlaps this anchor, the opposite one will have its value overridden. For example, when setting left anchor to 1 and the right anchor has value of 0.5, the right anchor will also get value of 1. If [code]push_opposite_anchor[/code] was [code]false[/code], the left anchor would get value 0.5.
 			</description>
 		</method>
-		<method name="set_anchor_and_margin">
+		<method name="set_anchor_and_offset">
 			<return type="void">
 			</return>
-			<argument index="0" name="margin" type="int" enum="Margin">
+			<argument index="0" name="side" type="int" enum="Side">
 			</argument>
 			<argument index="1" name="anchor" type="float">
 			</argument>
@@ -710,10 +759,10 @@
 			<argument index="3" name="push_opposite_anchor" type="bool" default="false">
 			</argument>
 			<description>
-				Works the same as [method set_anchor], but instead of [code]keep_margin[/code] argument and automatic update of margin, it allows to set the margin offset yourself (see [method set_margin]).
+				Works the same as [method set_anchor], but instead of [code]keep_offset[/code] argument and automatic update of offset, it allows to set the offset yourself (see [method set_offset]).
 			</description>
 		</method>
-		<method name="set_anchors_and_margins_preset">
+		<method name="set_anchors_and_offsets_preset">
 			<return type="void">
 			</return>
 			<argument index="0" name="preset" type="int" enum="Control.LayoutPreset">
@@ -723,7 +772,7 @@
 			<argument index="2" name="margin" type="int" default="0">
 			</argument>
 			<description>
-				Sets both anchor preset and margin preset. See [method set_anchors_preset] and [method set_margins_preset].
+				Sets both anchor preset and offset preset. See [method set_anchors_preset] and [method set_offsets_preset].
 			</description>
 		</method>
 		<method name="set_anchors_preset">
@@ -731,11 +780,11 @@
 			</return>
 			<argument index="0" name="preset" type="int" enum="Control.LayoutPreset">
 			</argument>
-			<argument index="1" name="keep_margins" type="bool" default="false">
+			<argument index="1" name="keep_offsets" type="bool" default="false">
 			</argument>
 			<description>
 				Sets the anchors to a [code]preset[/code] from [enum Control.LayoutPreset] enum. This is code equivalent of using the Layout menu in 2D editor.
-				If [code]keep_margins[/code] is [code]true[/code], control's position will also be updated.
+				If [code]keep_offsets[/code] is [code]true[/code], control's position will also be updated.
 			</description>
 		</method>
 		<method name="set_begin">
@@ -744,7 +793,7 @@
 			<argument index="0" name="position" type="Vector2">
 			</argument>
 			<description>
-				Sets [member margin_left] and [member margin_top] at the same time. Equivalent of changing [member rect_position].
+				Sets [member offset_left] and [member offset_top] at the same time. Equivalent of changing [member rect_position].
 			</description>
 		</method>
 		<method name="set_drag_forwarding">
@@ -820,7 +869,7 @@
 			<argument index="0" name="control" type="Control">
 			</argument>
 			<description>
-				Shows the given control at the mouse pointer. A good time to call this method is in [method get_drag_data]. The control must not be in the scene tree.
+				Shows the given control at the mouse pointer. A good time to call this method is in [method get_drag_data]. The control must not be in the scene tree. You should not free the control, and you should not keep a reference to the control beyond the duration of the drag. It will be deleted automatically after the drag has ended.
 				[codeblocks]
 				[gdscript]
 				export (Color, RGBA) var color = Color(1, 0, 0, 1)
@@ -856,18 +905,18 @@
 			<argument index="0" name="position" type="Vector2">
 			</argument>
 			<description>
-				Sets [member margin_right] and [member margin_bottom] at the same time.
+				Sets [member offset_right] and [member offset_bottom] at the same time.
 			</description>
 		</method>
-		<method name="set_focus_neighbour">
+		<method name="set_focus_neighbor">
 			<return type="void">
 			</return>
-			<argument index="0" name="margin" type="int" enum="Margin">
+			<argument index="0" name="side" type="int" enum="Side">
 			</argument>
-			<argument index="1" name="neighbour" type="NodePath">
+			<argument index="1" name="neighbor" type="NodePath">
 			</argument>
 			<description>
-				Sets the anchor identified by [code]margin[/code] constant from [enum Margin] enum to [Control] at [code]neighbor[/code] node path. A setter method for [member focus_neighbour_bottom], [member focus_neighbour_left], [member focus_neighbour_right] and [member focus_neighbour_top].
+				Sets the anchor for the specified [enum Side] to the [Control] at [code]neighbor[/code] node path. A setter method for [member focus_neighbor_bottom], [member focus_neighbor_left], [member focus_neighbor_right] and [member focus_neighbor_top].
 			</description>
 		</method>
 		<method name="set_global_position">
@@ -875,25 +924,25 @@
 			</return>
 			<argument index="0" name="position" type="Vector2">
 			</argument>
-			<argument index="1" name="keep_margins" type="bool" default="false">
+			<argument index="1" name="keep_offsets" type="bool" default="false">
 			</argument>
 			<description>
 				Sets the [member rect_global_position] to given [code]position[/code].
-				If [code]keep_margins[/code] is [code]true[/code], control's anchors will be updated instead of margins.
+				If [code]keep_offsets[/code] is [code]true[/code], control's anchors will be updated instead of offsets.
 			</description>
 		</method>
-		<method name="set_margin">
+		<method name="set_offset">
 			<return type="void">
 			</return>
-			<argument index="0" name="margin" type="int" enum="Margin">
+			<argument index="0" name="side" type="int" enum="Side">
 			</argument>
 			<argument index="1" name="offset" type="float">
 			</argument>
 			<description>
-				Sets the margin identified by [code]margin[/code] constant from [enum Margin] enum to given [code]offset[/code]. A setter method for [member margin_bottom], [member margin_left], [member margin_right] and [member margin_top].
+				Sets the offset for the specified [enum Side] to [code]offset[/code]. A setter method for [member offset_bottom], [member offset_left], [member offset_right] and [member offset_top].
 			</description>
 		</method>
-		<method name="set_margins_preset">
+		<method name="set_offsets_preset">
 			<return type="void">
 			</return>
 			<argument index="0" name="preset" type="int" enum="Control.LayoutPreset">
@@ -903,7 +952,7 @@
 			<argument index="2" name="margin" type="int" default="0">
 			</argument>
 			<description>
-				Sets the margins to a [code]preset[/code] from [enum Control.LayoutPreset] enum. This is code equivalent of using the Layout menu in 2D editor.
+				Sets the offsets to a [code]preset[/code] from [enum Control.LayoutPreset] enum. This is code equivalent of using the Layout menu in 2D editor.
 				Use parameter [code]resize_mode[/code] with constants from [enum Control.LayoutPresetMode] to better determine the resulting size of the [Control]. Constant size will be ignored if used with presets that change size, e.g. [code]PRESET_LEFT_WIDE[/code].
 				Use parameter [code]margin[/code] to determine the gap between the [Control] and the edges.
 			</description>
@@ -913,20 +962,11 @@
 			</return>
 			<argument index="0" name="position" type="Vector2">
 			</argument>
-			<argument index="1" name="keep_margins" type="bool" default="false">
+			<argument index="1" name="keep_offsets" type="bool" default="false">
 			</argument>
 			<description>
 				Sets the [member rect_position] to given [code]position[/code].
-				If [code]keep_margins[/code] is [code]true[/code], control's anchors will be updated instead of margins.
-			</description>
-		</method>
-		<method name="set_rotation">
-			<return type="void">
-			</return>
-			<argument index="0" name="radians" type="float">
-			</argument>
-			<description>
-				Sets the rotation (in radians).
+				If [code]keep_offsets[/code] is [code]true[/code], control's anchors will be updated instead of offsets.
 			</description>
 		</method>
 		<method name="set_size">
@@ -934,11 +974,11 @@
 			</return>
 			<argument index="0" name="size" type="Vector2">
 			</argument>
-			<argument index="1" name="keep_margins" type="bool" default="false">
+			<argument index="1" name="keep_offsets" type="bool" default="false">
 			</argument>
 			<description>
 				Sets the size (see [member rect_size]).
-				If [code]keep_margins[/code] is [code]true[/code], control's anchors will be updated instead of margins.
+				If [code]keep_offsets[/code] is [code]true[/code], control's anchors will be updated instead of offsets.
 			</description>
 		</method>
 		<method name="warp_mouse">
@@ -953,30 +993,30 @@
 	</methods>
 	<members>
 		<member name="anchor_bottom" type="float" setter="_set_anchor" getter="get_anchor" default="0.0">
-			Anchors the bottom edge of the node to the origin, the center, or the end of its parent control. It changes how the bottom margin updates when the node moves or changes size. You can use one of the [enum Anchor] constants for convenience.
+			Anchors the bottom edge of the node to the origin, the center, or the end of its parent control. It changes how the bottom offset updates when the node moves or changes size. You can use one of the [enum Anchor] constants for convenience.
 		</member>
 		<member name="anchor_left" type="float" setter="_set_anchor" getter="get_anchor" default="0.0">
-			Anchors the left edge of the node to the origin, the center or the end of its parent control. It changes how the left margin updates when the node moves or changes size. You can use one of the [enum Anchor] constants for convenience.
+			Anchors the left edge of the node to the origin, the center or the end of its parent control. It changes how the left offset updates when the node moves or changes size. You can use one of the [enum Anchor] constants for convenience.
 		</member>
 		<member name="anchor_right" type="float" setter="_set_anchor" getter="get_anchor" default="0.0">
-			Anchors the right edge of the node to the origin, the center or the end of its parent control. It changes how the right margin updates when the node moves or changes size. You can use one of the [enum Anchor] constants for convenience.
+			Anchors the right edge of the node to the origin, the center or the end of its parent control. It changes how the right offset updates when the node moves or changes size. You can use one of the [enum Anchor] constants for convenience.
 		</member>
 		<member name="anchor_top" type="float" setter="_set_anchor" getter="get_anchor" default="0.0">
-			Anchors the top edge of the node to the origin, the center or the end of its parent control. It changes how the top margin updates when the node moves or changes size. You can use  one of the [enum Anchor] constants for convenience.
+			Anchors the top edge of the node to the origin, the center or the end of its parent control. It changes how the top offset updates when the node moves or changes size. You can use  one of the [enum Anchor] constants for convenience.
 		</member>
 		<member name="focus_mode" type="int" setter="set_focus_mode" getter="get_focus_mode" enum="Control.FocusMode" default="0">
 			The focus access mode for the control (None, Click or All). Only one Control can be focused at the same time, and it will receive keyboard signals.
 		</member>
-		<member name="focus_neighbour_bottom" type="NodePath" setter="set_focus_neighbour" getter="get_focus_neighbour" default="NodePath(&quot;&quot;)">
+		<member name="focus_neighbor_bottom" type="NodePath" setter="set_focus_neighbor" getter="get_focus_neighbor" default="NodePath(&quot;&quot;)">
 			Tells Godot which node it should give keyboard focus to if the user presses the down arrow on the keyboard or down on a gamepad by default. You can change the key by editing the [code]ui_down[/code] input action. The node must be a [Control]. If this property is not set, Godot will give focus to the closest [Control] to the bottom of this one.
 		</member>
-		<member name="focus_neighbour_left" type="NodePath" setter="set_focus_neighbour" getter="get_focus_neighbour" default="NodePath(&quot;&quot;)">
+		<member name="focus_neighbor_left" type="NodePath" setter="set_focus_neighbor" getter="get_focus_neighbor" default="NodePath(&quot;&quot;)">
 			Tells Godot which node it should give keyboard focus to if the user presses the left arrow on the keyboard or left on a gamepad by default. You can change the key by editing the [code]ui_left[/code] input action. The node must be a [Control]. If this property is not set, Godot will give focus to the closest [Control] to the left of this one.
 		</member>
-		<member name="focus_neighbour_right" type="NodePath" setter="set_focus_neighbour" getter="get_focus_neighbour" default="NodePath(&quot;&quot;)">
+		<member name="focus_neighbor_right" type="NodePath" setter="set_focus_neighbor" getter="get_focus_neighbor" default="NodePath(&quot;&quot;)">
 			Tells Godot which node it should give keyboard focus to if the user presses the right arrow on the keyboard or right on a gamepad  by default. You can change the key by editing the [code]ui_right[/code] input action. The node must be a [Control]. If this property is not set, Godot will give focus to the closest [Control] to the bottom of this one.
 		</member>
-		<member name="focus_neighbour_top" type="NodePath" setter="set_focus_neighbour" getter="get_focus_neighbour" default="NodePath(&quot;&quot;)">
+		<member name="focus_neighbor_top" type="NodePath" setter="set_focus_neighbor" getter="get_focus_neighbor" default="NodePath(&quot;&quot;)">
 			Tells Godot which node it should give keyboard focus to if the user presses the top arrow on the keyboard or top on a gamepad by default. You can change the key by editing the [code]ui_top[/code] input action. The node must be a [Control]. If this property is not set, Godot will give focus to the closest [Control] to the bottom of this one.
 		</member>
 		<member name="focus_next" type="NodePath" setter="set_focus_next" getter="get_focus_next" default="NodePath(&quot;&quot;)">
@@ -1015,21 +1055,8 @@
 			[/csharp]
 			[/codeblocks]
 		</member>
-		<member name="margin_bottom" type="float" setter="set_margin" getter="get_margin" default="0.0">
-			Distance between the node's bottom edge and its parent control, based on [member anchor_bottom].
-			Margins are often controlled by one or multiple parent [Container] nodes, so you should not modify them manually if your node is a direct child of a [Container]. Margins update automatically when you move or resize the node.
-		</member>
-		<member name="margin_left" type="float" setter="set_margin" getter="get_margin" default="0.0">
-			Distance between the node's left edge and its parent control, based on [member anchor_left].
-			Margins are often controlled by one or multiple parent [Container] nodes, so you should not modify them manually if your node is a direct child of a [Container]. Margins update automatically when you move or resize the node.
-		</member>
-		<member name="margin_right" type="float" setter="set_margin" getter="get_margin" default="0.0">
-			Distance between the node's right edge and its parent control, based on [member anchor_right].
-			Margins are often controlled by one or multiple parent [Container] nodes, so you should not modify them manually if your node is a direct child of a [Container]. Margins update automatically when you move or resize the node.
-		</member>
-		<member name="margin_top" type="float" setter="set_margin" getter="get_margin" default="0.0">
-			Distance between the node's top edge and its parent control, based on [member anchor_top].
-			Margins are often controlled by one or multiple parent [Container] nodes, so you should not modify them manually if your node is a direct child of a [Container]. Margins update automatically when you move or resize the node.
+		<member name="layout_direction" type="int" setter="set_layout_direction" getter="get_layout_direction" enum="Control.LayoutDirection" default="0">
+			Controls layout direction and text writing direction. Right-to-left layouts are necessary for certain languages (e.g. Arabic and Hebrew).
 		</member>
 		<member name="mouse_default_cursor_shape" type="int" setter="set_default_cursor_shape" getter="get_default_cursor_shape" enum="Control.CursorShape" default="0">
 			The default cursor shape for this control. Useful for Godot plugins and applications or games that use the system's mouse cursors.
@@ -1037,6 +1064,22 @@
 		</member>
 		<member name="mouse_filter" type="int" setter="set_mouse_filter" getter="get_mouse_filter" enum="Control.MouseFilter" default="0">
 			Controls whether the control will be able to receive mouse button input events through [method _gui_input] and how these events should be handled. Also controls whether the control can receive the [signal mouse_entered], and [signal mouse_exited] signals. See the constants to learn what each does.
+		</member>
+		<member name="offset_bottom" type="float" setter="set_offset" getter="get_offset" default="0.0">
+			Distance between the node's bottom edge and its parent control, based on [member anchor_bottom].
+			Offsets are often controlled by one or multiple parent [Container] nodes, so you should not modify them manually if your node is a direct child of a [Container]. Offsets update automatically when you move or resize the node.
+		</member>
+		<member name="offset_left" type="float" setter="set_offset" getter="get_offset" default="0.0">
+			Distance between the node's left edge and its parent control, based on [member anchor_left].
+			Offsets are often controlled by one or multiple parent [Container] nodes, so you should not modify them manually if your node is a direct child of a [Container]. Offsets update automatically when you move or resize the node.
+		</member>
+		<member name="offset_right" type="float" setter="set_offset" getter="get_offset" default="0.0">
+			Distance between the node's right edge and its parent control, based on [member anchor_right].
+			Offsets are often controlled by one or multiple parent [Container] nodes, so you should not modify them manually if your node is a direct child of a [Container]. Offsets update automatically when you move or resize the node.
+		</member>
+		<member name="offset_top" type="float" setter="set_offset" getter="get_offset" default="0.0">
+			Distance between the node's top edge and its parent control, based on [member anchor_top].
+			Offsets are often controlled by one or multiple parent [Container] nodes, so you should not modify them manually if your node is a direct child of a [Container]. Offsets update automatically when you move or resize the node.
 		</member>
 		<member name="rect_clip_content" type="bool" setter="set_clip_contents" getter="is_clipping_contents" default="false">
 			Enables whether rendering of [CanvasItem] based children should be clipped to this control's rectangle. If [code]true[/code], parts of a child which would be visibly outside of this control's rectangle will not be rendered.
@@ -1053,7 +1096,10 @@
 		<member name="rect_position" type="Vector2" setter="_set_position" getter="get_position" default="Vector2( 0, 0 )">
 			The node's position, relative to its parent. It corresponds to the rectangle's top-left corner. The property is not affected by [member rect_pivot_offset].
 		</member>
-		<member name="rect_rotation" type="float" setter="set_rotation_degrees" getter="get_rotation_degrees" default="0.0">
+		<member name="rect_rotation" type="float" setter="set_rotation" getter="get_rotation" default="0.0">
+			The node's rotation around its pivot, in radians. See [member rect_pivot_offset] to change the pivot's position.
+		</member>
+		<member name="rect_rotation_degrees" type="float" setter="set_rotation_degrees" getter="get_rotation_degrees" default="0.0">
 			The node's rotation around its pivot, in degrees. See [member rect_pivot_offset] to change the pivot's position.
 		</member>
 		<member name="rect_scale" type="Vector2" setter="set_scale" getter="get_scale" default="Vector2( 1, 1 )">
@@ -1068,7 +1114,7 @@
 			Tells the parent [Container] nodes how they should resize and place the node on the X axis. Use one of the [enum SizeFlags] constants to change the flags. See the constants to learn what each does.
 		</member>
 		<member name="size_flags_stretch_ratio" type="float" setter="set_stretch_ratio" getter="get_stretch_ratio" default="1.0">
-			If the node and at least one of its neighbours uses the [constant SIZE_EXPAND] size flag, the parent [Container] will let it take more or less space depending on this property. If this node has a stretch ratio of 2 and its neighbour a ratio of 1, this node will take two thirds of the available space.
+			If the node and at least one of its neighbors uses the [constant SIZE_EXPAND] size flag, the parent [Container] will let it take more or less space depending on this property. If this node has a stretch ratio of 2 and its neighbor a ratio of 1, this node will take two thirds of the available space.
 		</member>
 		<member name="size_flags_vertical" type="int" setter="set_v_size_flags" getter="get_v_size_flags" default="1">
 			Tells the parent [Container] nodes how they should resize and place the node on the Y axis. Use one of the [enum SizeFlags] constants to change the flags. See the constants to learn what each does.
@@ -1159,6 +1205,9 @@
 		<constant name="NOTIFICATION_SCROLL_END" value="48">
 			Sent when this node is inside a [ScrollContainer] which has stopped being scrolled.
 		</constant>
+		<constant name="NOTIFICATION_LAYOUT_DIRECTION_CHANGED" value="49">
+			Sent when control layout direction is changed.
+		</constant>
 		<constant name="CURSOR_ARROW" value="0" enum="CursorShape">
 			Show the system's arrow mouse cursor when the user hovers the node. Use with [member mouse_default_cursor_shape].
 		</constant>
@@ -1238,16 +1287,16 @@
 			Snap all 4 anchors to the center of the parent control's bounds. Use with [method set_anchors_preset].
 		</constant>
 		<constant name="PRESET_LEFT_WIDE" value="9" enum="LayoutPreset">
-			Snap all 4 anchors to the left edge of the parent control. The left margin becomes relative to the left edge and the top margin relative to the top left corner of the node's parent. Use with [method set_anchors_preset].
+			Snap all 4 anchors to the left edge of the parent control. The left offset becomes relative to the left edge and the top offset relative to the top left corner of the node's parent. Use with [method set_anchors_preset].
 		</constant>
 		<constant name="PRESET_TOP_WIDE" value="10" enum="LayoutPreset">
-			Snap all 4 anchors to the top edge of the parent control. The left margin becomes relative to the top left corner, the top margin relative to the top edge, and the right margin relative to the top right corner of the node's parent. Use with [method set_anchors_preset].
+			Snap all 4 anchors to the top edge of the parent control. The left offset becomes relative to the top left corner, the top offset relative to the top edge, and the right offset relative to the top right corner of the node's parent. Use with [method set_anchors_preset].
 		</constant>
 		<constant name="PRESET_RIGHT_WIDE" value="11" enum="LayoutPreset">
-			Snap all 4 anchors to the right edge of the parent control. The right margin becomes relative to the right edge and the top margin relative to the top right corner of the node's parent. Use with [method set_anchors_preset].
+			Snap all 4 anchors to the right edge of the parent control. The right offset becomes relative to the right edge and the top offset relative to the top right corner of the node's parent. Use with [method set_anchors_preset].
 		</constant>
 		<constant name="PRESET_BOTTOM_WIDE" value="12" enum="LayoutPreset">
-			Snap all 4 anchors to the bottom edge of the parent control. The left margin becomes relative to the bottom left corner, the bottom margin relative to the bottom edge, and the right margin relative to the bottom right corner of the node's parent. Use with [method set_anchors_preset].
+			Snap all 4 anchors to the bottom edge of the parent control. The left offset becomes relative to the bottom left corner, the bottom offset relative to the bottom edge, and the right offset relative to the bottom right corner of the node's parent. Use with [method set_anchors_preset].
 		</constant>
 		<constant name="PRESET_VCENTER_WIDE" value="13" enum="LayoutPreset">
 			Snap all 4 anchors to a vertical line that cuts the parent control in half. Use with [method set_anchors_preset].
@@ -1256,7 +1305,7 @@
 			Snap all 4 anchors to a horizontal line that cuts the parent control in half. Use with [method set_anchors_preset].
 		</constant>
 		<constant name="PRESET_WIDE" value="15" enum="LayoutPreset">
-			Snap all 4 anchors to the respective corners of the parent control. Set all 4 margins to 0 after you applied this preset and the [Control] will fit its parent control. This is equivalent to the "Full Rect" layout option in the editor. Use with [method set_anchors_preset].
+			Snap all 4 anchors to the respective corners of the parent control. Set all 4 offsets to 0 after you applied this preset and the [Control] will fit its parent control. This is equivalent to the "Full Rect" layout option in the editor. Use with [method set_anchors_preset].
 		</constant>
 		<constant name="PRESET_MODE_MINSIZE" value="0" enum="LayoutPresetMode">
 			The control will be resized to its minimum size.
@@ -1308,6 +1357,52 @@
 		</constant>
 		<constant name="ANCHOR_END" value="1" enum="Anchor">
 			Snaps one of the 4 anchor's sides to the end of the node's [code]Rect[/code], in the bottom right. Use it with one of the [code]anchor_*[/code] member variables, like [member anchor_left]. To change all 4 anchors at once, use [method set_anchors_preset].
+		</constant>
+		<constant name="LAYOUT_DIRECTION_INHERITED" value="0" enum="LayoutDirection">
+			Automatic layout direction, determined from the parent control layout direction.
+		</constant>
+		<constant name="LAYOUT_DIRECTION_LOCALE" value="1" enum="LayoutDirection">
+			Automatic layout direction, determined from the current locale.
+		</constant>
+		<constant name="LAYOUT_DIRECTION_LTR" value="2" enum="LayoutDirection">
+			Left-to-right layout direction.
+		</constant>
+		<constant name="LAYOUT_DIRECTION_RTL" value="3" enum="LayoutDirection">
+			Right-to-left layout direction.
+		</constant>
+		<constant name="TEXT_DIRECTION_INHERITED" value="3" enum="TextDirection">
+			Text writing direction is the same as layout direction.
+		</constant>
+		<constant name="TEXT_DIRECTION_AUTO" value="0" enum="TextDirection">
+			Automatic text writing direction, determined from the current locale and text content.
+		</constant>
+		<constant name="TEXT_DIRECTION_LTR" value="1" enum="TextDirection">
+			Left-to-right text writing direction.
+		</constant>
+		<constant name="TEXT_DIRECTION_RTL" value="2" enum="TextDirection">
+			Right-to-left text writing direction.
+		</constant>
+		<constant name="STRUCTURED_TEXT_DEFAULT" value="0" enum="StructuredTextParser">
+			Use default behavior. Same as [code]STRUCTURED_TEXT_NONE[/code] unless specified otherwise in the control description.
+		</constant>
+		<constant name="STRUCTURED_TEXT_URI" value="1" enum="StructuredTextParser">
+			BiDi override for URI.
+		</constant>
+		<constant name="STRUCTURED_TEXT_FILE" value="2" enum="StructuredTextParser">
+			BiDi override for file path.
+		</constant>
+		<constant name="STRUCTURED_TEXT_EMAIL" value="3" enum="StructuredTextParser">
+			BiDi override for email.
+		</constant>
+		<constant name="STRUCTURED_TEXT_LIST" value="4" enum="StructuredTextParser">
+			BiDi override for lists.
+			Structured text options: list separator [code]String[/code].
+		</constant>
+		<constant name="STRUCTURED_TEXT_NONE" value="5" enum="StructuredTextParser">
+			Use default Unicode BiDi algorithm.
+		</constant>
+		<constant name="STRUCTURED_TEXT_CUSTOM" value="6" enum="StructuredTextParser">
+			User defined structured text BiDi override function.
 		</constant>
 	</constants>
 </class>

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -35,7 +35,6 @@
 
 class ProximityGroup3D : public Node3D {
 	GDCLASS(ProximityGroup3D, Node3D);
-	OBJ_CATEGORY("3D");
 
 public:
 	enum DispatchMode {
@@ -43,25 +42,25 @@ public:
 		MODE_SIGNAL,
 	};
 
-public:
-	void clear_groups();
-	void update_groups();
-
-	void _notification(int p_what);
-
-	DispatchMode dispatch_mode = MODE_PROXY;
-
+private:
 	Map<StringName, uint32_t> groups;
+
 	String group_name;
+	DispatchMode dispatch_mode = MODE_PROXY;
+	Vector3 grid_radius = Vector3(1, 1, 1);
 
 	float cell_size = 1.0;
-	Vector3 grid_radius = Vector3(1, 1, 1);
 	uint32_t group_version = 0;
 
-	void add_groups(int *p_cell, String p_base, int p_depth);
+	void _clear_groups();
+	void _update_groups();
+	void _add_groups(int *p_cell, String p_base, int p_depth);
 	void _new_group(StringName p_name);
 
-	void _proximity_group_broadcast(String p_name, Variant p_params);
+	void _proximity_group_broadcast(String p_method, Variant p_parameters);
+
+protected:
+	void _notification(int p_what);
 
 	static void _bind_methods();
 
@@ -75,7 +74,7 @@ public:
 	void set_grid_radius(const Vector3 &p_radius);
 	Vector3 get_grid_radius() const;
 
-	void broadcast(String p_name, Variant p_params);
+	void broadcast(String p_method, Variant p_parameters);
 
 	ProximityGroup3D();
 	~ProximityGroup3D() {}
@@ -83,4 +82,4 @@ public:
 
 VARIANT_ENUM_CAST(ProximityGroup3D::DispatchMode);
 
-#endif
+#endif // PROXIMITY_GROUP_H

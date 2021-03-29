@@ -31,7 +31,7 @@
 	<members>
 		<member name="binding" type="int" setter="set_binding" getter="get_binding" default="0">
 		</member>
-		<member name="type" type="int" setter="set_type" getter="get_type" enum="RenderingDevice.UniformType" default="3">
+		<member name="uniform_type" type="int" setter="set_uniform_type" getter="get_uniform_type" enum="RenderingDevice.UniformType" default="3">
 		</member>
 	</members>
 	<constants>

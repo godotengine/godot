@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -47,11 +47,11 @@ public:
 private:
 	Ref<Mesh> mesh;
 	RID multimesh;
-	TransformFormat transform_format;
-	bool use_colors;
-	bool use_custom_data;
-	int instance_count;
-	int visible_instance_count;
+	TransformFormat transform_format = TRANSFORM_2D;
+	bool use_colors = false;
+	bool use_custom_data = false;
+	int instance_count = 0;
+	int visible_instance_count = -1;
 
 protected:
 	static void _bind_methods();

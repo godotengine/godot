@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -73,7 +73,7 @@ DisplayServerIPhone::DisplayServerIPhone(const String &p_rendering_driver, Displ
 			//        return ERR_UNAVAILABLE;
 		}
 
-		//    rendering_server = memnew(RenderingServerRaster);
+		//    rendering_server = memnew(RenderingServerDefault);
 		//    // FIXME: Reimplement threaded rendering
 		//    if (get_render_thread_mode() != RENDER_THREAD_UNSAFE) {
 		//        rendering_server = memnew(RenderingServerWrapMT(rendering_server,
@@ -118,7 +118,7 @@ DisplayServerIPhone::DisplayServerIPhone(const String &p_rendering_driver, Displ
 		rendering_device_vulkan = memnew(RenderingDeviceVulkan);
 		rendering_device_vulkan->initialize(context_vulkan);
 
-		RasterizerRD::make_current();
+		RendererCompositorRD::make_current();
 	}
 #endif
 

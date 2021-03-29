@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -189,7 +189,7 @@ String RemoteTransform2D::get_configuration_warning() const {
 	String warning = Node2D::get_configuration_warning();
 
 	if (!has_node(remote_node) || !Object::cast_to<Node2D>(get_node(remote_node))) {
-		if (!warning.empty()) {
+		if (!warning.is_empty()) {
 			warning += "\n\n";
 		}
 		warning += TTR("Path property must point to a valid Node2D node to work.");
@@ -223,10 +223,5 @@ void RemoteTransform2D::_bind_methods() {
 }
 
 RemoteTransform2D::RemoteTransform2D() {
-	use_global_coordinates = true;
-	update_remote_position = true;
-	update_remote_rotation = true;
-	update_remote_scale = true;
-
 	set_notify_transform(true);
 }

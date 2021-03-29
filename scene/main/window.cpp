@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -32,8 +32,9 @@
 
 #include "core/debugger/engine_debugger.h"
 #include "core/os/keyboard.h"
+#include "core/string/translation.h"
 #include "scene/gui/control.h"
-#include "scene/resources/dynamic_font.h"
+#include "scene/resources/font.h"
 #include "scene/scene_string_names.h"
 
 void Window::set_title(const String &p_title) {
@@ -231,7 +232,7 @@ void Window::_make_window() {
 	DisplayServer::get_singleton()->window_set_current_screen(current_screen, window_id);
 	DisplayServer::get_singleton()->window_set_max_size(max_size, window_id);
 	DisplayServer::get_singleton()->window_set_min_size(min_size, window_id);
-	DisplayServer::get_singleton()->window_set_title(title, window_id);
+	DisplayServer::get_singleton()->window_set_title(tr(title), window_id);
 	DisplayServer::get_singleton()->window_attach_instance_id(get_instance_id(), window_id);
 
 	_update_window_size();
@@ -659,9 +660,8 @@ void Window::_update_viewport_size() {
 		if (!use_font_oversampling) {
 			font_oversampling = 1.0;
 		}
-		if (DynamicFontAtSize::font_oversampling != font_oversampling) {
-			DynamicFontAtSize::font_oversampling = font_oversampling;
-			DynamicFont::update_oversampling();
+		if (TS->font_get_oversampling() != font_oversampling) {
+			TS->font_set_oversampling(font_oversampling);
 		}
 	}
 
@@ -759,6 +759,10 @@ void Window::_notification(int p_what) {
 		}
 	}
 
+	if (p_what == NOTIFICATION_TRANSLATION_CHANGED) {
+		child_controls_changed();
+	}
+
 	if (p_what == NOTIFICATION_EXIT_TREE) {
 		if (transient) {
 			_clear_transient();
@@ -826,6 +830,9 @@ bool Window::is_using_font_oversampling() const {
 }
 
 DisplayServer::WindowID Window::get_window_id() const {
+	if (embedder) {
+		return parent->get_window_id();
+	}
 	return window_id;
 }
 
@@ -881,10 +888,6 @@ bool Window::_can_consume_input_events() const {
 }
 
 void Window::_window_input(const Ref<InputEvent> &p_ev) {
-	if (Engine::get_singleton()->is_editor_hint() && (Object::cast_to<InputEventJoypadButton>(p_ev.ptr()) || Object::cast_to<InputEventJoypadMotion>(*p_ev))) {
-		return; //avoid joy input on editor
-	}
-
 	if (EngineDebugger::is_active()) {
 		//quit from game window using F8
 		Ref<InputEventKey> k = p_ev;
@@ -894,12 +897,13 @@ void Window::_window_input(const Ref<InputEvent> &p_ev) {
 	}
 
 	if (exclusive_child != nullptr) {
+		/*
 		Window *focus_target = exclusive_child;
 		focus_target->grab_focus();
 		while (focus_target->exclusive_child != nullptr) {
 			focus_target = focus_target->exclusive_child;
 			focus_target->grab_focus();
-		}
+		}*/
 
 		if (!is_embedding_subwindows()) { //not embedding, no need for event
 			return;
@@ -1039,6 +1043,9 @@ void Window::popup_centered_ratio(float p_ratio) {
 void Window::popup(const Rect2i &p_screen_rect) {
 	emit_signal("about_to_popup");
 
+	// Update window size to calculate the actual window size based on contents minimum size and minimum size.
+	_update_window_size();
+
 	if (p_screen_rect != Rect2i()) {
 		set_position(p_screen_rect.position);
 		set_size(p_screen_rect.size);
@@ -1167,11 +1174,6 @@ Ref<Texture2D> Window::get_theme_icon(const StringName &p_name, const StringName
 	return Control::get_icons(theme_owner, theme_owner_window, p_name, type);
 }
 
-Ref<Shader> Window::get_theme_shader(const StringName &p_name, const StringName &p_type) const {
-	StringName type = p_type ? p_type : get_class_name();
-	return Control::get_shaders(theme_owner, theme_owner_window, p_name, type);
-}
-
 Ref<StyleBox> Window::get_theme_stylebox(const StringName &p_name, const StringName &p_type) const {
 	StringName type = p_type ? p_type : get_class_name();
 	return Control::get_styleboxs(theme_owner, theme_owner_window, p_name, type);
@@ -1180,6 +1182,11 @@ Ref<StyleBox> Window::get_theme_stylebox(const StringName &p_name, const StringN
 Ref<Font> Window::get_theme_font(const StringName &p_name, const StringName &p_type) const {
 	StringName type = p_type ? p_type : get_class_name();
 	return Control::get_fonts(theme_owner, theme_owner_window, p_name, type);
+}
+
+int Window::get_theme_font_size(const StringName &p_name, const StringName &p_type) const {
+	StringName type = p_type ? p_type : get_class_name();
+	return Control::get_font_sizes(theme_owner, theme_owner_window, p_name, type);
 }
 
 Color Window::get_theme_color(const StringName &p_name, const StringName &p_type) const {
@@ -1197,11 +1204,6 @@ bool Window::has_theme_icon(const StringName &p_name, const StringName &p_type) 
 	return Control::has_icons(theme_owner, theme_owner_window, p_name, type);
 }
 
-bool Window::has_theme_shader(const StringName &p_name, const StringName &p_type) const {
-	StringName type = p_type ? p_type : get_class_name();
-	return Control::has_shaders(theme_owner, theme_owner_window, p_name, type);
-}
-
 bool Window::has_theme_stylebox(const StringName &p_name, const StringName &p_type) const {
 	StringName type = p_type ? p_type : get_class_name();
 	return Control::has_styleboxs(theme_owner, theme_owner_window, p_name, type);
@@ -1210,6 +1212,11 @@ bool Window::has_theme_stylebox(const StringName &p_name, const StringName &p_ty
 bool Window::has_theme_font(const StringName &p_name, const StringName &p_type) const {
 	StringName type = p_type ? p_type : get_class_name();
 	return Control::has_fonts(theme_owner, theme_owner_window, p_name, type);
+}
+
+bool Window::has_theme_font_size(const StringName &p_name, const StringName &p_type) const {
+	StringName type = p_type ? p_type : get_class_name();
+	return Control::has_font_sizes(theme_owner, theme_owner_window, p_name, type);
 }
 
 bool Window::has_theme_color(const StringName &p_name, const StringName &p_type) const {
@@ -1266,6 +1273,40 @@ bool Window::is_clamped_to_embedder() const {
 	return clamp_to_embedder;
 }
 
+void Window::set_layout_direction(Window::LayoutDirection p_direction) {
+	ERR_FAIL_INDEX((int)p_direction, 4);
+
+	layout_dir = p_direction;
+	propagate_notification(Control::NOTIFICATION_LAYOUT_DIRECTION_CHANGED);
+}
+
+Window::LayoutDirection Window::get_layout_direction() const {
+	return layout_dir;
+}
+
+bool Window::is_layout_rtl() const {
+	if (layout_dir == LAYOUT_DIRECTION_INHERITED) {
+		Window *parent = Object::cast_to<Window>(get_parent());
+		if (parent) {
+			return parent->is_layout_rtl();
+		} else {
+			if (GLOBAL_GET("internationalization/rendering/force_right_to_left_layout_direction")) {
+				return true;
+			}
+			String locale = TranslationServer::get_singleton()->get_tool_locale();
+			return TS->is_locale_right_to_left(locale);
+		}
+	} else if (layout_dir == LAYOUT_DIRECTION_LOCALE) {
+		if (GLOBAL_GET("internationalization/rendering/force_right_to_left_layout_direction")) {
+			return true;
+		}
+		String locale = TranslationServer::get_singleton()->get_tool_locale();
+		return TS->is_locale_right_to_left(locale);
+	} else {
+		return (layout_dir == LAYOUT_DIRECTION_RTL);
+	}
+}
+
 void Window::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_title", "title"), &Window::set_title);
 	ClassDB::bind_method(D_METHOD("get_title"), &Window::get_title);
@@ -1315,8 +1356,8 @@ void Window::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("has_focus"), &Window::has_focus);
 	ClassDB::bind_method(D_METHOD("grab_focus"), &Window::grab_focus);
 
-	ClassDB::bind_method(D_METHOD("set_ime_active"), &Window::set_ime_active);
-	ClassDB::bind_method(D_METHOD("set_ime_position"), &Window::set_ime_position);
+	ClassDB::bind_method(D_METHOD("set_ime_active", "active"), &Window::set_ime_active);
+	ClassDB::bind_method(D_METHOD("set_ime_position", "position"), &Window::set_ime_position);
 
 	ClassDB::bind_method(D_METHOD("is_embedded"), &Window::is_embedded);
 
@@ -1344,14 +1385,20 @@ void Window::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_theme_icon", "name", "type"), &Window::get_theme_icon, DEFVAL(""));
 	ClassDB::bind_method(D_METHOD("get_theme_stylebox", "name", "type"), &Window::get_theme_stylebox, DEFVAL(""));
 	ClassDB::bind_method(D_METHOD("get_theme_font", "name", "type"), &Window::get_theme_font, DEFVAL(""));
+	ClassDB::bind_method(D_METHOD("get_theme_font_size", "name", "type"), &Window::get_theme_font_size, DEFVAL(""));
 	ClassDB::bind_method(D_METHOD("get_theme_color", "name", "type"), &Window::get_theme_color, DEFVAL(""));
 	ClassDB::bind_method(D_METHOD("get_theme_constant", "name", "type"), &Window::get_theme_constant, DEFVAL(""));
 
 	ClassDB::bind_method(D_METHOD("has_theme_icon", "name", "type"), &Window::has_theme_icon, DEFVAL(""));
 	ClassDB::bind_method(D_METHOD("has_theme_stylebox", "name", "type"), &Window::has_theme_stylebox, DEFVAL(""));
 	ClassDB::bind_method(D_METHOD("has_theme_font", "name", "type"), &Window::has_theme_font, DEFVAL(""));
+	ClassDB::bind_method(D_METHOD("has_theme_font_size", "name", "type"), &Window::has_theme_font_size, DEFVAL(""));
 	ClassDB::bind_method(D_METHOD("has_theme_color", "name", "type"), &Window::has_theme_color, DEFVAL(""));
 	ClassDB::bind_method(D_METHOD("has_theme_constant", "name", "type"), &Window::has_theme_constant, DEFVAL(""));
+
+	ClassDB::bind_method(D_METHOD("set_layout_direction", "direction"), &Window::set_layout_direction);
+	ClassDB::bind_method(D_METHOD("get_layout_direction"), &Window::get_layout_direction);
+	ClassDB::bind_method(D_METHOD("is_layout_rtl"), &Window::is_layout_rtl);
 
 	ClassDB::bind_method(D_METHOD("popup", "rect"), &Window::popup, DEFVAL(Rect2i()));
 	ClassDB::bind_method(D_METHOD("popup_on_parent", "parent_rect"), &Window::popup_on_parent);
@@ -1418,14 +1465,14 @@ void Window::_bind_methods() {
 	BIND_ENUM_CONSTANT(CONTENT_SCALE_ASPECT_KEEP_WIDTH);
 	BIND_ENUM_CONSTANT(CONTENT_SCALE_ASPECT_KEEP_HEIGHT);
 	BIND_ENUM_CONSTANT(CONTENT_SCALE_ASPECT_EXPAND);
+
+	BIND_ENUM_CONSTANT(LAYOUT_DIRECTION_INHERITED);
+	BIND_ENUM_CONSTANT(LAYOUT_DIRECTION_LOCALE);
+	BIND_ENUM_CONSTANT(LAYOUT_DIRECTION_LTR);
+	BIND_ENUM_CONSTANT(LAYOUT_DIRECTION_RTL);
 }
 
 Window::Window() {
-	for (int i = 0; i < FLAG_MAX; i++) {
-		flags[i] = false;
-	}
-	content_scale_mode = CONTENT_SCALE_MODE_DISABLED;
-	content_scale_aspect = CONTENT_SCALE_ASPECT_IGNORE;
 	RS::get_singleton()->viewport_set_update_mode(get_viewport_rid(), RS::VIEWPORT_UPDATE_DISABLED);
 }
 

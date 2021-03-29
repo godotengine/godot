@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -34,9 +34,11 @@
 #include "core/math/quick_hull.h"
 #include "core/templates/sort_array.h"
 
-#define _POINT_SNAP 0.001953125
 #define _EDGE_IS_VALID_SUPPORT_THRESHOLD 0.0002
 #define _FACE_IS_VALID_SUPPORT_THRESHOLD 0.9998
+
+#define _CYLINDER_EDGE_IS_VALID_SUPPORT_THRESHOLD 0.002
+#define _CYLINDER_FACE_IS_VALID_SUPPORT_THRESHOLD 0.999
 
 void Shape3DSW::configure(const AABB &p_aabb) {
 	aabb = p_aabb;
@@ -50,7 +52,8 @@ void Shape3DSW::configure(const AABB &p_aabb) {
 Vector3 Shape3DSW::get_support(const Vector3 &p_normal) const {
 	Vector3 res;
 	int amnt;
-	get_supports(p_normal, 1, &res, amnt);
+	FeatureType type;
+	get_supports(p_normal, 1, &res, amnt, type);
 	return res;
 }
 
@@ -167,16 +170,19 @@ Vector3 RayShape3DSW::get_support(const Vector3 &p_normal) const {
 	}
 }
 
-void RayShape3DSW::get_supports(const Vector3 &p_normal, int p_max, Vector3 *r_supports, int &r_amount) const {
+void RayShape3DSW::get_supports(const Vector3 &p_normal, int p_max, Vector3 *r_supports, int &r_amount, FeatureType &r_type) const {
 	if (Math::abs(p_normal.z) < _EDGE_IS_VALID_SUPPORT_THRESHOLD) {
 		r_amount = 2;
+		r_type = FEATURE_EDGE;
 		r_supports[0] = Vector3(0, 0, 0);
 		r_supports[1] = Vector3(0, 0, length);
 	} else if (p_normal.z > 0) {
 		r_amount = 1;
+		r_type = FEATURE_POINT;
 		*r_supports = Vector3(0, 0, length);
 	} else {
 		r_amount = 1;
+		r_type = FEATURE_POINT;
 		*r_supports = Vector3(0, 0, 0);
 	}
 }
@@ -246,9 +252,10 @@ Vector3 SphereShape3DSW::get_support(const Vector3 &p_normal) const {
 	return p_normal * radius;
 }
 
-void SphereShape3DSW::get_supports(const Vector3 &p_normal, int p_max, Vector3 *r_supports, int &r_amount) const {
+void SphereShape3DSW::get_supports(const Vector3 &p_normal, int p_max, Vector3 *r_supports, int &r_amount, FeatureType &r_type) const {
 	*r_supports = p_normal * radius;
 	r_amount = 1;
+	r_type = FEATURE_POINT;
 }
 
 bool SphereShape3DSW::intersect_segment(const Vector3 &p_begin, const Vector3 &p_end, Vector3 &r_result, Vector3 &r_normal) const {
@@ -261,7 +268,7 @@ bool SphereShape3DSW::intersect_point(const Vector3 &p_point) const {
 
 Vector3 SphereShape3DSW::get_closest_point_to(const Vector3 &p_point) const {
 	Vector3 p = p_point;
-	float l = p.length();
+	real_t l = p.length();
 	if (l < radius) {
 		return p_point;
 	}
@@ -312,7 +319,7 @@ Vector3 BoxShape3DSW::get_support(const Vector3 &p_normal) const {
 	return point;
 }
 
-void BoxShape3DSW::get_supports(const Vector3 &p_normal, int p_max, Vector3 *r_supports, int &r_amount) const {
+void BoxShape3DSW::get_supports(const Vector3 &p_normal, int p_max, Vector3 *r_supports, int &r_amount, FeatureType &r_type) const {
 	static const int next[3] = { 1, 2, 0 };
 	static const int next2[3] = { 2, 0, 1 };
 
@@ -325,6 +332,7 @@ void BoxShape3DSW::get_supports(const Vector3 &p_normal, int p_max, Vector3 *r_s
 
 			bool neg = dot < 0;
 			r_amount = 4;
+			r_type = FEATURE_FACE;
 
 			Vector3 point;
 			point[i] = half_extents[i];
@@ -333,7 +341,6 @@ void BoxShape3DSW::get_supports(const Vector3 &p_normal, int p_max, Vector3 *r_s
 			int i_n2 = next2[i];
 
 			static const real_t sign[4][2] = {
-
 				{ -1.0, 1.0 },
 				{ 1.0, 1.0 },
 				{ 1.0, -1.0 },
@@ -363,6 +370,7 @@ void BoxShape3DSW::get_supports(const Vector3 &p_normal, int p_max, Vector3 *r_s
 
 		if (Math::abs(p_normal.dot(axis)) < _EDGE_IS_VALID_SUPPORT_THRESHOLD) {
 			r_amount = 2;
+			r_type = FEATURE_EDGE;
 
 			int i_n = next[i];
 			int i_n2 = next2[i];
@@ -390,6 +398,7 @@ void BoxShape3DSW::get_supports(const Vector3 &p_normal, int p_max, Vector3 *r_s
 			(p_normal.z < 0) ? -half_extents.z : half_extents.z);
 
 	r_amount = 1;
+	r_type = FEATURE_POINT;
 	r_supports[0] = point;
 }
 
@@ -430,7 +439,7 @@ Vector3 BoxShape3DSW::get_closest_point_to(const Vector3 &p_point) const {
 	}
 
 	//check segments
-	float min_distance = 1e20;
+	real_t min_distance = 1e20;
 	Vector3 closest_vertex = half_extents * p_point.sign();
 	Vector3 s[2] = {
 		closest_vertex,
@@ -443,7 +452,7 @@ Vector3 BoxShape3DSW::get_closest_point_to(const Vector3 &p_point) const {
 
 		Vector3 closest_edge = Geometry3D::get_closest_point_to_segment(p_point, s);
 
-		float d = p_point.distance_to(closest_edge);
+		real_t d = p_point.distance_to(closest_edge);
 		if (d < min_distance) {
 			min_point = closest_edge;
 			min_distance = d;
@@ -482,10 +491,10 @@ BoxShape3DSW::BoxShape3DSW() {
 
 void CapsuleShape3DSW::project_range(const Vector3 &p_normal, const Transform &p_transform, real_t &r_min, real_t &r_max) const {
 	Vector3 n = p_transform.basis.xform_inv(p_normal).normalized();
-	real_t h = (n.z > 0) ? height : -height;
+	real_t h = (n.y > 0) ? height : -height;
 
 	n *= radius;
-	n.z += h * 0.5;
+	n.y += h * 0.5;
 
 	r_max = p_normal.dot(p_transform.xform(n));
 	r_min = p_normal.dot(p_transform.xform(-n));
@@ -494,36 +503,38 @@ void CapsuleShape3DSW::project_range(const Vector3 &p_normal, const Transform &p
 Vector3 CapsuleShape3DSW::get_support(const Vector3 &p_normal) const {
 	Vector3 n = p_normal;
 
-	real_t h = (n.z > 0) ? height : -height;
+	real_t h = (n.y > 0) ? height : -height;
 
 	n *= radius;
-	n.z += h * 0.5;
+	n.y += h * 0.5;
 	return n;
 }
 
-void CapsuleShape3DSW::get_supports(const Vector3 &p_normal, int p_max, Vector3 *r_supports, int &r_amount) const {
+void CapsuleShape3DSW::get_supports(const Vector3 &p_normal, int p_max, Vector3 *r_supports, int &r_amount, FeatureType &r_type) const {
 	Vector3 n = p_normal;
 
-	real_t d = n.z;
+	real_t d = n.y;
 
 	if (Math::abs(d) < _EDGE_IS_VALID_SUPPORT_THRESHOLD) {
 		// make it flat
-		n.z = 0.0;
+		n.y = 0.0;
 		n.normalize();
 		n *= radius;
 
 		r_amount = 2;
+		r_type = FEATURE_EDGE;
 		r_supports[0] = n;
-		r_supports[0].z += height * 0.5;
+		r_supports[0].y += height * 0.5;
 		r_supports[1] = n;
-		r_supports[1].z -= height * 0.5;
+		r_supports[1].y -= height * 0.5;
 
 	} else {
 		real_t h = (d > 0) ? height : -height;
 
 		n *= radius;
-		n.z += h * 0.5;
+		n.y += h * 0.5;
 		r_amount = 1;
+		r_type = FEATURE_POINT;
 		*r_supports = n;
 	}
 }
@@ -540,7 +551,7 @@ bool CapsuleShape3DSW::intersect_segment(const Vector3 &p_begin, const Vector3 &
 
 	// test against cylinder and spheres :-|
 
-	collided = Geometry3D::segment_intersects_cylinder(p_begin, p_end, height, radius, &auxres, &auxn);
+	collided = Geometry3D::segment_intersects_cylinder(p_begin, p_end, height, radius, &auxres, &auxn, 1);
 
 	if (collided) {
 		real_t d = norm.dot(auxres);
@@ -552,7 +563,7 @@ bool CapsuleShape3DSW::intersect_segment(const Vector3 &p_begin, const Vector3 &
 		}
 	}
 
-	collided = Geometry3D::segment_intersects_sphere(p_begin, p_end, Vector3(0, 0, height * 0.5), radius, &auxres, &auxn);
+	collided = Geometry3D::segment_intersects_sphere(p_begin, p_end, Vector3(0, height * 0.5, 0), radius, &auxres, &auxn);
 
 	if (collided) {
 		real_t d = norm.dot(auxres);
@@ -564,7 +575,7 @@ bool CapsuleShape3DSW::intersect_segment(const Vector3 &p_begin, const Vector3 &
 		}
 	}
 
-	collided = Geometry3D::segment_intersects_sphere(p_begin, p_end, Vector3(0, 0, height * -0.5), radius, &auxres, &auxn);
+	collided = Geometry3D::segment_intersects_sphere(p_begin, p_end, Vector3(0, height * -0.5, 0), radius, &auxres, &auxn);
 
 	if (collided) {
 		real_t d = norm.dot(auxres);
@@ -585,19 +596,19 @@ bool CapsuleShape3DSW::intersect_segment(const Vector3 &p_begin, const Vector3 &
 }
 
 bool CapsuleShape3DSW::intersect_point(const Vector3 &p_point) const {
-	if (Math::abs(p_point.z) < height * 0.5) {
-		return Vector3(p_point.x, p_point.y, 0).length() < radius;
+	if (Math::abs(p_point.y) < height * 0.5) {
+		return Vector3(p_point.x, 0, p_point.z).length() < radius;
 	} else {
 		Vector3 p = p_point;
-		p.z = Math::abs(p.z) - height * 0.5;
+		p.y = Math::abs(p.y) - height * 0.5;
 		return p.length() < radius;
 	}
 }
 
 Vector3 CapsuleShape3DSW::get_closest_point_to(const Vector3 &p_point) const {
 	Vector3 s[2] = {
-		Vector3(0, 0, -height * 0.5),
-		Vector3(0, 0, height * 0.5),
+		Vector3(0, -height * 0.5, 0),
+		Vector3(0, height * 0.5, 0),
 	};
 
 	Vector3 p = Geometry3D::get_closest_point_to_segment(p_point, s);
@@ -616,13 +627,13 @@ Vector3 CapsuleShape3DSW::get_moment_of_inertia(real_t p_mass) const {
 	return Vector3(
 			(p_mass / 3.0) * (extents.y * extents.y + extents.z * extents.z),
 			(p_mass / 3.0) * (extents.x * extents.x + extents.z * extents.z),
-			(p_mass / 3.0) * (extents.y * extents.y + extents.y * extents.y));
+			(p_mass / 3.0) * (extents.x * extents.x + extents.y * extents.y));
 }
 
 void CapsuleShape3DSW::_setup(real_t p_height, real_t p_radius) {
 	height = p_height;
 	radius = p_radius;
-	configure(AABB(Vector3(-radius, -radius, -height * 0.5 - radius), Vector3(radius * 2, radius * 2, height + radius * 2.0)));
+	configure(AABB(Vector3(-radius, -height * 0.5 - radius, -radius), Vector3(radius * 2, height + radius * 2.0, radius * 2)));
 }
 
 void CapsuleShape3DSW::set_data(const Variant &p_data) {
@@ -640,6 +651,186 @@ Variant CapsuleShape3DSW::get_data() const {
 }
 
 CapsuleShape3DSW::CapsuleShape3DSW() {
+	height = radius = 0;
+}
+
+/********** CYLINDER *************/
+
+void CylinderShape3DSW::project_range(const Vector3 &p_normal, const Transform &p_transform, real_t &r_min, real_t &r_max) const {
+	Vector3 cylinder_axis = p_transform.basis.get_axis(1).normalized();
+	real_t axis_dot = cylinder_axis.dot(p_normal);
+
+	Vector3 local_normal = p_transform.basis.xform_inv(p_normal);
+	real_t scale = local_normal.length();
+	real_t scaled_radius = radius * scale;
+	real_t scaled_height = height * scale;
+
+	real_t length;
+	if (Math::abs(axis_dot) > 1.0) {
+		length = scaled_height * 0.5;
+	} else {
+		length = Math::abs(axis_dot * scaled_height * 0.5) + scaled_radius * Math::sqrt(1.0 - axis_dot * axis_dot);
+	}
+
+	real_t distance = p_normal.dot(p_transform.origin);
+
+	r_min = distance - length;
+	r_max = distance + length;
+}
+
+Vector3 CylinderShape3DSW::get_support(const Vector3 &p_normal) const {
+	Vector3 n = p_normal;
+	real_t h = (n.y > 0) ? height : -height;
+	real_t s = Math::sqrt(n.x * n.x + n.z * n.z);
+	if (Math::is_zero_approx(s)) {
+		n.x = radius;
+		n.y = h * 0.5;
+		n.z = 0.0;
+	} else {
+		real_t d = radius / s;
+		n.x = n.x * d;
+		n.y = h * 0.5;
+		n.z = n.z * d;
+	}
+
+	return n;
+}
+
+void CylinderShape3DSW::get_supports(const Vector3 &p_normal, int p_max, Vector3 *r_supports, int &r_amount, FeatureType &r_type) const {
+	real_t d = p_normal.y;
+	if (Math::abs(d) > _CYLINDER_FACE_IS_VALID_SUPPORT_THRESHOLD) {
+		real_t h = (d > 0) ? height : -height;
+
+		Vector3 n = p_normal;
+		n.x = 0.0;
+		n.z = 0.0;
+		n.y = h * 0.5;
+
+		r_amount = 3;
+		r_type = FEATURE_CIRCLE;
+		r_supports[0] = n;
+		r_supports[1] = n;
+		r_supports[1].x += radius;
+		r_supports[2] = n;
+		r_supports[2].z += radius;
+	} else if (Math::abs(d) < _CYLINDER_EDGE_IS_VALID_SUPPORT_THRESHOLD) {
+		// make it flat
+		Vector3 n = p_normal;
+		n.y = 0.0;
+		n.normalize();
+		n *= radius;
+
+		r_amount = 2;
+		r_type = FEATURE_EDGE;
+		r_supports[0] = n;
+		r_supports[0].y += height * 0.5;
+		r_supports[1] = n;
+		r_supports[1].y -= height * 0.5;
+	} else {
+		r_amount = 1;
+		r_type = FEATURE_POINT;
+		r_supports[0] = get_support(p_normal);
+		return;
+
+		Vector3 n = p_normal;
+		real_t h = n.y * Math::sqrt(0.25 * height * height + radius * radius);
+		if (Math::abs(h) > 1.0) {
+			// Top or bottom surface.
+			n.y = (n.y > 0.0) ? height * 0.5 : -height * 0.5;
+		} else {
+			// Lateral surface.
+			n.y = height * 0.5 * h;
+		}
+
+		real_t s = Math::sqrt(n.x * n.x + n.z * n.z);
+		if (Math::is_zero_approx(s)) {
+			n.x = 0.0;
+			n.z = 0.0;
+		} else {
+			real_t scaled_radius = radius / s;
+			n.x = n.x * scaled_radius;
+			n.z = n.z * scaled_radius;
+		}
+
+		r_supports[0] = n;
+	}
+}
+
+bool CylinderShape3DSW::intersect_segment(const Vector3 &p_begin, const Vector3 &p_end, Vector3 &r_result, Vector3 &r_normal) const {
+	return Geometry3D::segment_intersects_cylinder(p_begin, p_end, height, radius, &r_result, &r_normal, 1);
+}
+
+bool CylinderShape3DSW::intersect_point(const Vector3 &p_point) const {
+	if (Math::abs(p_point.y) < height * 0.5) {
+		return Vector3(p_point.x, 0, p_point.z).length() < radius;
+	}
+	return false;
+}
+
+Vector3 CylinderShape3DSW::get_closest_point_to(const Vector3 &p_point) const {
+	if (Math::absf(p_point.y) > height * 0.5) {
+		// Project point to top disk.
+		real_t dir = p_point.y > 0.0 ? 1.0 : -1.0;
+		Vector3 circle_pos(0.0, dir * height * 0.5, 0.0);
+		Plane circle_plane(circle_pos, Vector3(0.0, dir, 0.0));
+		Vector3 proj_point = circle_plane.project(p_point);
+
+		// Clip position.
+		Vector3 delta_point_1 = proj_point - circle_pos;
+		real_t dist_point_1 = delta_point_1.length_squared();
+		if (!Math::is_zero_approx(dist_point_1)) {
+			dist_point_1 = Math::sqrt(dist_point_1);
+			proj_point = circle_pos + delta_point_1 * MIN(dist_point_1, radius) / dist_point_1;
+		}
+
+		return proj_point;
+	} else {
+		Vector3 s[2] = {
+			Vector3(0, -height * 0.5, 0),
+			Vector3(0, height * 0.5, 0),
+		};
+
+		Vector3 p = Geometry3D::get_closest_point_to_segment(p_point, s);
+
+		if (p.distance_to(p_point) < radius) {
+			return p_point;
+		}
+
+		return p + (p_point - p).normalized() * radius;
+	}
+}
+
+Vector3 CylinderShape3DSW::get_moment_of_inertia(real_t p_mass) const {
+	// use bad AABB approximation
+	Vector3 extents = get_aabb().size * 0.5;
+
+	return Vector3(
+			(p_mass / 3.0) * (extents.y * extents.y + extents.z * extents.z),
+			(p_mass / 3.0) * (extents.x * extents.x + extents.z * extents.z),
+			(p_mass / 3.0) * (extents.x * extents.x + extents.y * extents.y));
+}
+
+void CylinderShape3DSW::_setup(real_t p_height, real_t p_radius) {
+	height = p_height;
+	radius = p_radius;
+	configure(AABB(Vector3(-radius, -height * 0.5, -radius), Vector3(radius * 2.0, height, radius * 2.0)));
+}
+
+void CylinderShape3DSW::set_data(const Variant &p_data) {
+	Dictionary d = p_data;
+	ERR_FAIL_COND(!d.has("radius"));
+	ERR_FAIL_COND(!d.has("height"));
+	_setup(d["height"], d["radius"]);
+}
+
+Variant CylinderShape3DSW::get_data() const {
+	Dictionary d;
+	d["radius"] = radius;
+	d["height"] = height;
+	return d;
+}
+
+CylinderShape3DSW::CylinderShape3DSW() {
 	height = radius = 0;
 }
 
@@ -690,7 +881,7 @@ Vector3 ConvexPolygonShape3DSW::get_support(const Vector3 &p_normal) const {
 	return vrts[vert_support_idx];
 }
 
-void ConvexPolygonShape3DSW::get_supports(const Vector3 &p_normal, int p_max, Vector3 *r_supports, int &r_amount) const {
+void ConvexPolygonShape3DSW::get_supports(const Vector3 &p_normal, int p_max, Vector3 *r_supports, int &r_amount, FeatureType &r_type) const {
 	const Geometry3D::MeshData::Face *faces = mesh.faces.ptr();
 	int fc = mesh.faces.size();
 
@@ -735,6 +926,7 @@ void ConvexPolygonShape3DSW::get_supports(const Vector3 &p_normal, int p_max, Ve
 				r_supports[j] = vertices[ind[j]];
 			}
 			r_amount = m;
+			r_type = FEATURE_FACE;
 			return;
 		}
 	}
@@ -744,6 +936,7 @@ void ConvexPolygonShape3DSW::get_supports(const Vector3 &p_normal, int p_max, Ve
 		dot = ABS(dot);
 		if (dot < _EDGE_IS_VALID_SUPPORT_THRESHOLD && (edges[i].a == vtx || edges[i].b == vtx)) {
 			r_amount = 2;
+			r_type = FEATURE_EDGE;
 			r_supports[0] = vertices[edges[i].a];
 			r_supports[1] = vertices[edges[i].b];
 			return;
@@ -752,6 +945,7 @@ void ConvexPolygonShape3DSW::get_supports(const Vector3 &p_normal, int p_max, Ve
 
 	r_supports[0] = vertices[vtx];
 	r_amount = 1;
+	r_type = FEATURE_POINT;
 }
 
 bool ConvexPolygonShape3DSW::intersect_segment(const Vector3 &p_begin, const Vector3 &p_end, Vector3 &r_result, Vector3 &r_normal) const {
@@ -840,7 +1034,7 @@ Vector3 ConvexPolygonShape3DSW::get_closest_point_to(const Vector3 &p_point) con
 		return p_point;
 	}
 
-	float min_distance = 1e20;
+	real_t min_distance = 1e20;
 	Vector3 min_point;
 
 	//check edges
@@ -853,7 +1047,7 @@ Vector3 ConvexPolygonShape3DSW::get_closest_point_to(const Vector3 &p_point) con
 		};
 
 		Vector3 closest = Geometry3D::get_closest_point_to_segment(p_point, s);
-		float d = closest.distance_to(p_point);
+		real_t d = closest.distance_to(p_point);
 		if (d < min_distance) {
 			min_distance = d;
 			min_point = closest;
@@ -870,7 +1064,7 @@ Vector3 ConvexPolygonShape3DSW::get_moment_of_inertia(real_t p_mass) const {
 	return Vector3(
 			(p_mass / 3.0) * (extents.y * extents.y + extents.z * extents.z),
 			(p_mass / 3.0) * (extents.x * extents.x + extents.z * extents.z),
-			(p_mass / 3.0) * (extents.y * extents.y + extents.y * extents.y));
+			(p_mass / 3.0) * (extents.x * extents.x + extents.y * extents.y));
 }
 
 void ConvexPolygonShape3DSW::_setup(const Vector<Vector3> &p_vertices) {
@@ -936,12 +1130,13 @@ Vector3 FaceShape3DSW::get_support(const Vector3 &p_normal) const {
 	return vertex[vert_support_idx];
 }
 
-void FaceShape3DSW::get_supports(const Vector3 &p_normal, int p_max, Vector3 *r_supports, int &r_amount) const {
+void FaceShape3DSW::get_supports(const Vector3 &p_normal, int p_max, Vector3 *r_supports, int &r_amount, FeatureType &r_type) const {
 	Vector3 n = p_normal;
 
 	/** TEST FACE AS SUPPORT **/
-	if (normal.dot(n) > _FACE_IS_VALID_SUPPORT_THRESHOLD) {
+	if (Math::abs(normal.dot(n)) > _FACE_IS_VALID_SUPPORT_THRESHOLD) {
 		r_amount = 3;
+		r_type = FEATURE_FACE;
 		for (int i = 0; i < 3; i++) {
 			r_supports[i] = vertex[i];
 		}
@@ -975,6 +1170,7 @@ void FaceShape3DSW::get_supports(const Vector3 &p_normal, int p_max, Vector3 *r_
 		dot = ABS(dot);
 		if (dot < _EDGE_IS_VALID_SUPPORT_THRESHOLD) {
 			r_amount = 2;
+			r_type = FEATURE_EDGE;
 			r_supports[0] = vertex[i];
 			r_supports[1] = vertex[nx];
 			return;
@@ -982,6 +1178,7 @@ void FaceShape3DSW::get_supports(const Vector3 &p_normal, int p_max, Vector3 *r_
 	}
 
 	r_amount = 1;
+	r_type = FEATURE_POINT;
 	r_supports[0] = vertex[vert_support_idx];
 }
 
@@ -990,7 +1187,11 @@ bool FaceShape3DSW::intersect_segment(const Vector3 &p_begin, const Vector3 &p_e
 	if (c) {
 		r_normal = Plane(vertex[0], vertex[1], vertex[2]).normal;
 		if (r_normal.dot(p_end - p_begin) > 0) {
-			r_normal = -r_normal;
+			if (backface_collision) {
+				r_normal = -r_normal;
+			} else {
+				c = false;
+			}
 		}
 	}
 
@@ -1088,30 +1289,24 @@ void ConcavePolygonShape3DSW::_cull_segment(int p_idx, _SegmentCullParams *p_par
 	}
 
 	if (bvh->face_index >= 0) {
-		Vector3 res;
-		Vector3 vertices[3] = {
-			p_params->vertices[p_params->faces[bvh->face_index].indices[0]],
-			p_params->vertices[p_params->faces[bvh->face_index].indices[1]],
-			p_params->vertices[p_params->faces[bvh->face_index].indices[2]]
-		};
+		const Face *f = &p_params->faces[bvh->face_index];
+		FaceShape3DSW *face = p_params->face;
+		face->normal = f->normal;
+		face->vertex[0] = p_params->vertices[f->indices[0]];
+		face->vertex[1] = p_params->vertices[f->indices[1]];
+		face->vertex[2] = p_params->vertices[f->indices[2]];
 
-		if (Geometry3D::segment_intersects_triangle(
-					p_params->from,
-					p_params->to,
-					vertices[0],
-					vertices[1],
-					vertices[2],
-					&res)) {
+		Vector3 res;
+		Vector3 normal;
+		if (face->intersect_segment(p_params->from, p_params->to, res, normal)) {
 			real_t d = p_params->dir.dot(res) - p_params->dir.dot(p_params->from);
-			//TODO, seems segmen/triangle intersection is broken :(
-			if (d > 0 && d < p_params->min_d) {
+			if ((d > 0) && (d < p_params->min_d)) {
 				p_params->min_d = d;
 				p_params->result = res;
-				p_params->normal = Plane(vertices[0], vertices[1], vertices[2]).normal;
+				p_params->normal = normal;
 				p_params->collisions++;
 			}
 		}
-
 	} else {
 		if (bvh->left >= 0) {
 			_cull_segment(bvh->left, p_params);
@@ -1132,17 +1327,20 @@ bool ConcavePolygonShape3DSW::intersect_segment(const Vector3 &p_begin, const Ve
 	const Vector3 *vr = vertices.ptr();
 	const BVH *br = bvh.ptr();
 
+	FaceShape3DSW face;
+	face.backface_collision = backface_collision;
+
 	_SegmentCullParams params;
 	params.from = p_begin;
 	params.to = p_end;
-	params.collisions = 0;
 	params.dir = (p_end - p_begin).normalized();
 
 	params.faces = fr;
 	params.vertices = vr;
 	params.bvh = br;
 
-	params.min_d = 1e20;
+	params.face = &face;
+
 	// cull
 	_cull_segment(0, &params);
 
@@ -1204,6 +1402,7 @@ void ConcavePolygonShape3DSW::cull(const AABB &p_local_aabb, Callback p_callback
 	const BVH *br = bvh.ptr();
 
 	FaceShape3DSW face; // use this to send in the callback
+	face.backface_collision = backface_collision;
 
 	_CullParams params;
 	params.aabb = local_aabb;
@@ -1225,7 +1424,7 @@ Vector3 ConcavePolygonShape3DSW::get_moment_of_inertia(real_t p_mass) const {
 	return Vector3(
 			(p_mass / 3.0) * (extents.y * extents.y + extents.z * extents.z),
 			(p_mass / 3.0) * (extents.x * extents.x + extents.z * extents.z),
-			(p_mass / 3.0) * (extents.y * extents.y + extents.y * extents.y));
+			(p_mass / 3.0) * (extents.x * extents.x + extents.y * extents.y));
 }
 
 struct _VolumeSW_BVH_Element {
@@ -1335,7 +1534,7 @@ void ConcavePolygonShape3DSW::_fill_bvh(_VolumeSW_BVH *p_bvh_tree, BVH *p_bvh_ar
 	memdelete(p_bvh_tree);
 }
 
-void ConcavePolygonShape3DSW::_setup(Vector<Vector3> p_faces) {
+void ConcavePolygonShape3DSW::_setup(const Vector<Vector3> &p_faces, bool p_backface_collision) {
 	int src_face_count = p_faces.size();
 	if (src_face_count == 0) {
 		configure(AABB());
@@ -1390,15 +1589,24 @@ void ConcavePolygonShape3DSW::_setup(Vector<Vector3> p_faces) {
 	int idx = 0;
 	_fill_bvh(bvh_tree, bvh_arrayw2, idx);
 
+	backface_collision = p_backface_collision;
+
 	configure(_aabb); // this type of shape has no margin
 }
 
 void ConcavePolygonShape3DSW::set_data(const Variant &p_data) {
-	_setup(p_data);
+	Dictionary d = p_data;
+	ERR_FAIL_COND(!d.has("faces"));
+
+	_setup(d["faces"], d["backface_collision"]);
 }
 
 Variant ConcavePolygonShape3DSW::get_data() const {
-	return get_faces();
+	Dictionary d;
+	d["faces"] = get_faces();
+	d["backface_collision"] = backface_collision;
+
+	return d;
 }
 
 ConcavePolygonShape3DSW::ConcavePolygonShape3DSW() {
@@ -1454,7 +1662,7 @@ Vector3 HeightMapShape3DSW::get_moment_of_inertia(real_t p_mass) const {
 	return Vector3(
 			(p_mass / 3.0) * (extents.y * extents.y + extents.z * extents.z),
 			(p_mass / 3.0) * (extents.x * extents.x + extents.z * extents.z),
-			(p_mass / 3.0) * (extents.y * extents.y + extents.y * extents.y));
+			(p_mass / 3.0) * (extents.x * extents.x + extents.y * extents.y));
 }
 
 void HeightMapShape3DSW::_setup(Vector<real_t> p_heights, int p_width, int p_depth, real_t p_cell_size) {

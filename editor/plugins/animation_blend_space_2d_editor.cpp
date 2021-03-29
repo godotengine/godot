@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -79,7 +79,7 @@ void AnimationNodeBlendSpace2DEditor::_blend_space_gui_input(const Ref<InputEven
 
 	Ref<InputEventMouseButton> mb = p_event;
 
-	if (mb.is_valid() && mb->is_pressed() && ((tool_select->is_pressed() && mb->get_button_index() == BUTTON_RIGHT) || (mb->get_button_index() == BUTTON_LEFT && tool_create->is_pressed()))) {
+	if (mb.is_valid() && mb->is_pressed() && ((tool_select->is_pressed() && mb->get_button_index() == MOUSE_BUTTON_RIGHT) || (mb->get_button_index() == MOUSE_BUTTON_LEFT && tool_create->is_pressed()))) {
 		menu->clear();
 		animations_menu->clear();
 		animations_to_add.clear();
@@ -129,12 +129,12 @@ void AnimationNodeBlendSpace2DEditor::_blend_space_gui_input(const Ref<InputEven
 		add_point_pos += blend_space->get_min_space();
 
 		if (snap->is_pressed()) {
-			add_point_pos.x = Math::stepify(add_point_pos.x, blend_space->get_snap().x);
-			add_point_pos.y = Math::stepify(add_point_pos.y, blend_space->get_snap().y);
+			add_point_pos.x = Math::snapped(add_point_pos.x, blend_space->get_snap().x);
+			add_point_pos.y = Math::snapped(add_point_pos.y, blend_space->get_snap().y);
 		}
 	}
 
-	if (mb.is_valid() && mb->is_pressed() && tool_select->is_pressed() && mb->get_button_index() == BUTTON_LEFT) {
+	if (mb.is_valid() && mb->is_pressed() && tool_select->is_pressed() && mb->get_button_index() == MOUSE_BUTTON_LEFT) {
 		blend_space_draw->update(); //update anyway
 		//try to see if a point can be selected
 		selected_point = -1;
@@ -174,7 +174,7 @@ void AnimationNodeBlendSpace2DEditor::_blend_space_gui_input(const Ref<InputEven
 		}
 	}
 
-	if (mb.is_valid() && mb->is_pressed() && tool_triangle->is_pressed() && mb->get_button_index() == BUTTON_LEFT) {
+	if (mb.is_valid() && mb->is_pressed() && tool_triangle->is_pressed() && mb->get_button_index() == MOUSE_BUTTON_LEFT) {
 		blend_space_draw->update(); //update anyway
 		//try to see if a point can be selected
 		selected_point = -1;
@@ -209,14 +209,14 @@ void AnimationNodeBlendSpace2DEditor::_blend_space_gui_input(const Ref<InputEven
 		}
 	}
 
-	if (mb.is_valid() && !mb->is_pressed() && dragging_selected_attempt && mb->get_button_index() == BUTTON_LEFT) {
+	if (mb.is_valid() && !mb->is_pressed() && dragging_selected_attempt && mb->get_button_index() == MOUSE_BUTTON_LEFT) {
 		if (dragging_selected) {
 			//move
 			Vector2 point = blend_space->get_blend_point_position(selected_point);
 			point += drag_ofs;
 			if (snap->is_pressed()) {
-				point.x = Math::stepify(point.x, blend_space->get_snap().x);
-				point.y = Math::stepify(point.y, blend_space->get_snap().y);
+				point.x = Math::snapped(point.x, blend_space->get_snap().x);
+				point.y = Math::snapped(point.y, blend_space->get_snap().y);
 			}
 
 			updating = true;
@@ -236,7 +236,7 @@ void AnimationNodeBlendSpace2DEditor::_blend_space_gui_input(const Ref<InputEven
 		blend_space_draw->update();
 	}
 
-	if (mb.is_valid() && mb->is_pressed() && tool_blend->is_pressed() && mb->get_button_index() == BUTTON_LEFT) {
+	if (mb.is_valid() && mb->is_pressed() && tool_blend->is_pressed() && mb->get_button_index() == MOUSE_BUTTON_LEFT) {
 		Vector2 blend_pos = (mb->get_position() / blend_space_draw->get_size());
 		blend_pos.y = 1.0 - blend_pos.y;
 		blend_pos *= (blend_space->get_max_space() - blend_space->get_min_space());
@@ -270,7 +270,7 @@ void AnimationNodeBlendSpace2DEditor::_blend_space_gui_input(const Ref<InputEven
 		blend_space_draw->update();
 	}
 
-	if (mm.is_valid() && tool_blend->is_pressed() && mm->get_button_mask() & BUTTON_MASK_LEFT) {
+	if (mm.is_valid() && tool_blend->is_pressed() && mm->get_button_mask() & MOUSE_BUTTON_MASK_LEFT) {
 		Vector2 blend_pos = (mm->get_position() / blend_space_draw->get_size());
 		blend_pos.y = 1.0 - blend_pos.y;
 		blend_pos *= (blend_space->get_max_space() - blend_space->get_min_space());
@@ -396,6 +396,7 @@ void AnimationNodeBlendSpace2DEditor::_blend_space_draw() {
 	Color linecolor_soft = linecolor;
 	linecolor_soft.a *= 0.5;
 	Ref<Font> font = get_theme_font("font", "Label");
+	int font_size = get_theme_font_size("font_size", "Label");
 	Ref<Texture2D> icon = get_theme_icon("KeyValue", "EditorIcons");
 	Ref<Texture2D> icon_selected = get_theme_icon("KeySelected", "EditorIcons");
 
@@ -412,14 +413,14 @@ void AnimationNodeBlendSpace2DEditor::_blend_space_draw() {
 	if (blend_space->get_min_space().y < 0) {
 		int y = (blend_space->get_max_space().y / (blend_space->get_max_space().y - blend_space->get_min_space().y)) * s.height;
 		blend_space_draw->draw_line(Point2(0, y), Point2(5 * EDSCALE, y), linecolor);
-		blend_space_draw->draw_string(font, Point2(2 * EDSCALE, y - font->get_height() + font->get_ascent()), "0", linecolor);
+		blend_space_draw->draw_string(font, Point2(2 * EDSCALE, y - font->get_height(font_size) + font->get_ascent(font_size)), "0", HALIGN_LEFT, -1, font_size, linecolor);
 		blend_space_draw->draw_line(Point2(5 * EDSCALE, y), Point2(s.width, y), linecolor_soft);
 	}
 
 	if (blend_space->get_min_space().x < 0) {
 		int x = (-blend_space->get_min_space().x / (blend_space->get_max_space().x - blend_space->get_min_space().x)) * s.width;
 		blend_space_draw->draw_line(Point2(x, s.height - 1), Point2(x, s.height - 5 * EDSCALE), linecolor);
-		blend_space_draw->draw_string(font, Point2(x + 2 * EDSCALE, s.height - 2 * EDSCALE - font->get_height() + font->get_ascent()), "0", linecolor);
+		blend_space_draw->draw_string(font, Point2(x + 2 * EDSCALE, s.height - 2 * EDSCALE - font->get_height(font_size) + font->get_ascent(font_size)), "0", HALIGN_LEFT, -1, font_size, linecolor);
 		blend_space_draw->draw_line(Point2(x, s.height - 5 * EDSCALE), Point2(x, 0), linecolor_soft);
 	}
 
@@ -466,8 +467,8 @@ void AnimationNodeBlendSpace2DEditor::_blend_space_draw() {
 			if (dragging_selected && selected_point == point_idx) {
 				point += drag_ofs;
 				if (snap->is_pressed()) {
-					point.x = Math::stepify(point.x, blend_space->get_snap().x);
-					point.y = Math::stepify(point.y, blend_space->get_snap().y);
+					point.x = Math::snapped(point.x, blend_space->get_snap().x);
+					point.y = Math::snapped(point.y, blend_space->get_snap().y);
 				}
 			}
 			point = (point - blend_space->get_min_space()) / (blend_space->get_max_space() - blend_space->get_min_space());
@@ -502,8 +503,8 @@ void AnimationNodeBlendSpace2DEditor::_blend_space_draw() {
 		if (dragging_selected && selected_point == i) {
 			point += drag_ofs;
 			if (snap->is_pressed()) {
-				point.x = Math::stepify(point.x, blend_space->get_snap().x);
-				point.y = Math::stepify(point.y, blend_space->get_snap().y);
+				point.x = Math::snapped(point.x, blend_space->get_snap().x);
+				point.y = Math::snapped(point.y, blend_space->get_snap().y);
 			}
 		}
 		point = (point - blend_space->get_min_space()) / (blend_space->get_max_space() - blend_space->get_min_space());
@@ -701,8 +702,8 @@ void AnimationNodeBlendSpace2DEditor::_update_edited_point_pos() {
 		if (dragging_selected) {
 			pos += drag_ofs;
 			if (snap->is_pressed()) {
-				pos.x = Math::stepify(pos.x, blend_space->get_snap().x);
-				pos.y = Math::stepify(pos.y, blend_space->get_snap().y);
+				pos.x = Math::snapped(pos.x, blend_space->get_snap().x);
+				pos.y = Math::snapped(pos.y, blend_space->get_snap().y);
 			}
 		}
 		updating = true;

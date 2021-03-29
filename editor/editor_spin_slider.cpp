@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -37,13 +37,13 @@
 
 String EditorSpinSlider::get_tooltip(const Point2 &p_pos) const {
 	if (grabber->is_visible()) {
-		return rtos(get_value()) + "\n\n" + TTR("Hold Ctrl to round to integers. Hold Shift for more precise changes.");
+		return TS->format_number(rtos(get_value())) + "\n\n" + TTR("Hold Ctrl to round to integers. Hold Shift for more precise changes.");
 	}
-	return rtos(get_value());
+	return TS->format_number(rtos(get_value()));
 }
 
 String EditorSpinSlider::get_text_value() const {
-	return String::num(get_value(), Math::range_step_decimals(get_step()));
+	return TS->format_number(String::num(get_value(), Math::range_step_decimals(get_step())));
 }
 
 void EditorSpinSlider::_gui_input(const Ref<InputEvent> &p_event) {
@@ -53,7 +53,7 @@ void EditorSpinSlider::_gui_input(const Ref<InputEvent> &p_event) {
 
 	Ref<InputEventMouseButton> mb = p_event;
 	if (mb.is_valid()) {
-		if (mb->get_button_index() == BUTTON_LEFT) {
+		if (mb->get_button_index() == MOUSE_BUTTON_LEFT) {
 			if (mb->is_pressed()) {
 				if (updown_offset != -1 && mb->get_position().x > updown_offset) {
 					//there is an updown, so use it.
@@ -84,7 +84,7 @@ void EditorSpinSlider::_gui_input(const Ref<InputEvent> &p_event) {
 					grabbing_spinner_attempt = false;
 				}
 			}
-		} else if (mb->get_button_index() == BUTTON_WHEEL_UP || mb->get_button_index() == BUTTON_WHEEL_DOWN) {
+		} else if (mb->get_button_index() == MOUSE_BUTTON_WHEEL_UP || mb->get_button_index() == MOUSE_BUTTON_WHEEL_DOWN) {
 			if (grabber->is_visible()) {
 				call_deferred("update");
 			}
@@ -146,17 +146,17 @@ void EditorSpinSlider::_grabber_gui_input(const Ref<InputEvent> &p_event) {
 
 	if (grabbing_grabber) {
 		if (mb.is_valid()) {
-			if (mb->get_button_index() == BUTTON_WHEEL_UP) {
+			if (mb->get_button_index() == MOUSE_BUTTON_WHEEL_UP) {
 				set_value(get_value() + get_step());
 				mousewheel_over_grabber = true;
-			} else if (mb->get_button_index() == BUTTON_WHEEL_DOWN) {
+			} else if (mb->get_button_index() == MOUSE_BUTTON_WHEEL_DOWN) {
 				set_value(get_value() - get_step());
 				mousewheel_over_grabber = true;
 			}
 		}
 	}
 
-	if (mb.is_valid() && mb->get_button_index() == BUTTON_LEFT) {
+	if (mb.is_valid() && mb->get_button_index() == MOUSE_BUTTON_LEFT) {
 		if (mb->is_pressed()) {
 			grabbing_grabber = true;
 			if (!mousewheel_over_grabber) {
@@ -175,7 +175,9 @@ void EditorSpinSlider::_grabber_gui_input(const Ref<InputEvent> &p_event) {
 			return;
 		}
 
-		float grabbing_ofs = (grabber->get_transform().xform(mm->get_position()).x - grabbing_from) / float(grabber_range);
+		float scale_x = get_global_transform_with_canvas().get_scale().x;
+		ERR_FAIL_COND(Math::is_zero_approx(scale_x));
+		float grabbing_ofs = (grabber->get_transform().xform(mm->get_position()).x - grabbing_from) / float(grabber_range) / scale_x;
 		set_as_ratio(grabbing_ratio + grabbing_ofs);
 		update();
 	}
@@ -202,7 +204,7 @@ void EditorSpinSlider::_notification(int p_what) {
 		// EditorSpinSliders with a label have more space on the left, so add an
 		// higher margin to match the location where the text begins.
 		// The margin values below were determined by empirical testing.
-		stylebox->set_default_margin(MARGIN_LEFT, (get_label() != String() ? 23 : 16) * EDSCALE);
+		stylebox->set_default_margin(SIDE_LEFT, (get_label() != String() ? 23 : 16) * EDSCALE);
 		value_input->add_theme_style_override("normal", stylebox);
 	}
 
@@ -214,10 +216,11 @@ void EditorSpinSlider::_notification(int p_what) {
 			draw_style_box(sb, Rect2(Vector2(), get_size()));
 		}
 		Ref<Font> font = get_theme_font("font", "LineEdit");
+		int font_size = get_theme_font_size("font_size", "LineEdit");
 		int sep_base = 4 * EDSCALE;
 		int sep = sep_base + sb->get_offset().x; //make it have the same margin on both sides, looks better
 
-		int string_width = font->get_string_size(label).width;
+		int string_width = font->get_string_size(label, font_size).width;
 		int number_width = get_size().width - sb->get_minimum_size().width - string_width - sep;
 
 		Ref<Texture2D> updown = get_theme_icon("updown", "SpinBox");
@@ -228,7 +231,7 @@ void EditorSpinSlider::_notification(int p_what) {
 
 		String numstr = get_text_value();
 
-		int vofs = (get_size().height - font->get_height()) / 2 + font->get_ascent();
+		int vofs = (get_size().height - font->get_height(font_size)) / 2 + font->get_ascent(font_size);
 
 		Color fc = get_theme_color("font_color", "LineEdit");
 		Color lc;
@@ -248,14 +251,14 @@ void EditorSpinSlider::_notification(int p_what) {
 			draw_style_box(focus, Rect2(Vector2(), get_size()));
 		}
 
-		draw_string(font, Vector2(Math::round(sb->get_offset().x), vofs), label, lc * Color(1, 1, 1, 0.5));
+		draw_string(font, Vector2(Math::round(sb->get_offset().x), vofs), label, HALIGN_LEFT, -1, font_size, lc * Color(1, 1, 1, 0.5));
 
-		draw_string(font, Vector2(Math::round(sb->get_offset().x + string_width + sep), vofs), numstr, fc, number_width);
+		draw_string(font, Vector2(Math::round(sb->get_offset().x + string_width + sep), vofs), numstr, HALIGN_LEFT, number_width, font_size, fc);
 
 		if (get_step() == 1) {
 			Ref<Texture2D> updown2 = get_theme_icon("updown", "SpinBox");
 			int updown_vofs = (get_size().height - updown2->get_height()) / 2;
-			updown_offset = get_size().width - sb->get_margin(MARGIN_RIGHT) - updown2->get_width();
+			updown_offset = get_size().width - sb->get_margin(SIDE_RIGHT) - updown2->get_width();
 			Color c(1, 1, 1);
 			if (hover_updown) {
 				c *= Color(1.2, 1.2, 1.2);
@@ -299,8 +302,10 @@ void EditorSpinSlider::_notification(int p_what) {
 					grabber->set_texture(grabber_tex);
 				}
 
+				Vector2 scale = get_global_transform_with_canvas().get_scale();
+				grabber->set_scale(scale);
 				grabber->set_size(Size2(0, 0));
-				grabber->set_position(get_global_position() + grabber_rect.position + grabber_rect.size * 0.5 - grabber->get_size() * 0.5);
+				grabber->set_position(get_global_position() + (grabber_rect.position + grabber_rect.size * 0.5 - grabber->get_size() * 0.5) * scale);
 
 				if (mousewheel_over_grabber) {
 					Input::get_singleton()->warp_mouse_position(grabber->get_position() + grabber_rect.size);
@@ -330,9 +335,10 @@ void EditorSpinSlider::_notification(int p_what) {
 Size2 EditorSpinSlider::get_minimum_size() const {
 	Ref<StyleBox> sb = get_theme_stylebox("normal", "LineEdit");
 	Ref<Font> font = get_theme_font("font", "LineEdit");
+	int font_size = get_theme_font_size("font_size", "LineEdit");
 
 	Size2 ms = sb->get_minimum_size();
-	ms.height += font->get_height();
+	ms.height += font->get_height(font_size);
 
 	return ms;
 }
@@ -360,7 +366,7 @@ void EditorSpinSlider::_evaluate_input_text() {
 	// This prevents using functions like `pow()`, but using functions
 	// in EditorSpinSlider is a barely known (and barely used) feature.
 	// Instead, we'd rather support German/French keyboard layouts out of the box.
-	const String text = value_input->get_text().replace(",", ".");
+	const String text = TS->parse_number(value_input->get_text().replace(",", "."));
 
 	Ref<Expression> expr;
 	expr.instance();
@@ -498,7 +504,7 @@ EditorSpinSlider::EditorSpinSlider() {
 	value_input = memnew(LineEdit);
 	value_input_popup->add_child(value_input);
 	value_input_popup->set_wrap_controls(true);
-	value_input->set_anchors_and_margins_preset(PRESET_WIDE);
+	value_input->set_anchors_and_offsets_preset(PRESET_WIDE);
 	value_input_popup->connect("popup_hide", callable_mp(this, &EditorSpinSlider::_value_input_closed));
 	value_input->connect("text_entered", callable_mp(this, &EditorSpinSlider::_value_input_entered));
 	value_input->connect("focus_exited", callable_mp(this, &EditorSpinSlider::_value_focus_exited));

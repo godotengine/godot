@@ -249,6 +249,15 @@ float quick_hash(vec2 pos) {
 	return fract(sin(dot(pos * 19.19, vec2(49.5791, 97.413))) * 49831.189237);
 }
 
+float get_omni_attenuation(float distance, float inv_range, float decay) {
+	float nd = distance * inv_range;
+	nd *= nd;
+	nd *= nd; // nd^4
+	nd = max(1.0 - nd, 0.0);
+	nd *= nd; // nd^2
+	return nd * pow(max(distance, 0.0001), -decay);
+}
+
 void main() {
 #ifdef MODE_LIGHT_PROBES
 	int probe_index = int(gl_GlobalInvocationID.x);
@@ -300,17 +309,20 @@ void main() {
 
 			d /= lights.data[i].range;
 
-			attenuation = pow(max(1.0 - d, 0.0), lights.data[i].attenuation);
+			attenuation = get_omni_attenuation(d, 1.0 / lights.data[i].range, lights.data[i].attenuation);
 
 			if (lights.data[i].type == LIGHT_TYPE_SPOT) {
 				vec3 rel = normalize(position - light_pos);
-				float angle = acos(dot(rel, lights.data[i].direction));
-				if (angle > lights.data[i].spot_angle) {
+				float cos_spot_angle = lights.data[i].cos_spot_angle;
+				float cos_angle = dot(rel, lights.data[i].direction);
+
+				if (cos_angle < cos_spot_angle) {
 					continue; //invisible, dont try
 				}
 
-				float d = clamp(angle / lights.data[i].spot_angle, 0, 1);
-				attenuation *= pow(1.0 - d, lights.data[i].spot_attenuation);
+				float scos = max(cos_angle, cos_spot_angle);
+				float spot_rim = max(0.0001, (1.0 - scos) / (1.0 - cos_spot_angle));
+				attenuation *= 1.0 - pow(spot_rim, lights.data[i].inv_spot_attenuation);
 			}
 		}
 

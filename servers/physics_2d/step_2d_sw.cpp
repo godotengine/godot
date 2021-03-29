@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -36,8 +36,8 @@ void Step2DSW::_populate_island(Body2DSW *p_body, Body2DSW **p_island, Constrain
 	p_body->set_island_next(*p_island);
 	*p_island = p_body;
 
-	for (Map<Constraint2DSW *, int>::Element *E = p_body->get_constraint_map().front(); E; E = E->next()) {
-		Constraint2DSW *c = (Constraint2DSW *)E->key();
+	for (const List<Pair<Constraint2DSW *, int>>::Element *E = p_body->get_constraint_list().front(); E; E = E->next()) {
+		Constraint2DSW *c = (Constraint2DSW *)E->get().first;
 		if (c->get_island_step() == _step) {
 			continue; //already processed
 		}
@@ -46,7 +46,7 @@ void Step2DSW::_populate_island(Body2DSW *p_body, Body2DSW **p_island, Constrain
 		*p_constraint_island = c;
 
 		for (int i = 0; i < c->get_body_count(); i++) {
-			if (i == E->get()) {
+			if (i == E->get().second) {
 				continue;
 			}
 			Body2DSW *b = c->get_body_ptr()[i];

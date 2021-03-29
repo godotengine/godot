@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -49,11 +49,7 @@ Variant ArrayPropertyEdit::get_array() const {
 }
 
 void ArrayPropertyEdit::_notif_change() {
-	_change_notify();
-}
-
-void ArrayPropertyEdit::_notif_changev(const String &p_v) {
-	_change_notify(p_v.utf8().get_data());
+	notify_property_list_changed();
 }
 
 void ArrayPropertyEdit::_set_size(int p_size) {
@@ -120,7 +116,7 @@ bool ArrayPropertyEdit::_set(const StringName &p_name, const Variant &p_value) {
 		}
 		if (pn == "array/page") {
 			page = p_value;
-			_change_notify();
+			notify_property_list_changed();
 			return true;
 		}
 
@@ -159,8 +155,6 @@ bool ArrayPropertyEdit::_set(const StringName &p_name, const Variant &p_value) {
 			ur->create_action(TTR("Change Array Value"));
 			ur->add_do_method(this, "_set_value", idx, p_value);
 			ur->add_undo_method(this, "_set_value", idx, value);
-			ur->add_do_method(this, "_notif_changev", p_name);
-			ur->add_undo_method(this, "_notif_changev", p_name);
 			ur->commit_action();
 			return true;
 		}
@@ -259,7 +253,7 @@ void ArrayPropertyEdit::edit(Object *p_obj, const StringName &p_prop, const Stri
 	obj = p_obj->get_instance_id();
 	default_type = p_deftype;
 
-	if (!p_hint_string.empty()) {
+	if (!p_hint_string.is_empty()) {
 		int hint_subtype_separator = p_hint_string.find(":");
 		if (hint_subtype_separator >= 0) {
 			String subtype_string = p_hint_string.substr(0, hint_subtype_separator);
@@ -288,7 +282,6 @@ void ArrayPropertyEdit::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_set_size"), &ArrayPropertyEdit::_set_size);
 	ClassDB::bind_method(D_METHOD("_set_value"), &ArrayPropertyEdit::_set_value);
 	ClassDB::bind_method(D_METHOD("_notif_change"), &ArrayPropertyEdit::_notif_change);
-	ClassDB::bind_method(D_METHOD("_notif_changev"), &ArrayPropertyEdit::_notif_changev);
 	ClassDB::bind_method(D_METHOD("_dont_undo_redo"), &ArrayPropertyEdit::_dont_undo_redo);
 }
 

@@ -111,10 +111,10 @@ namespace Godot
         }
 
         /// <summary>
-        /// Returns the minimum angle to the given vector, in radians.
+        /// Returns the unsigned minimum angle to the given vector, in radians.
         /// </summary>
         /// <param name="to">The other vector to compare this vector to.</param>
-        /// <returns>The angle between the two vectors, in radians.</returns>
+        /// <returns>The unsigned angle between the two vectors, in radians.</returns>
         public real_t AngleTo(Vector3 to)
         {
             return Mathf.Atan2(Cross(to).Length(), Dot(to));
@@ -161,15 +161,16 @@ namespace Godot
         /// <param name="b">The destination vector.</param>
         /// <param name="preA">A vector before this vector.</param>
         /// <param name="postB">A vector after `b`.</param>
-        /// <param name="t">A value on the range of 0.0 to 1.0, representing the amount of interpolation.</param>
+        /// <param name="weight">A value on the range of 0.0 to 1.0, representing the amount of interpolation.</param>
         /// <returns>The interpolated vector.</returns>
-        public Vector3 CubicInterpolate(Vector3 b, Vector3 preA, Vector3 postB, real_t t)
+        public Vector3 CubicInterpolate(Vector3 b, Vector3 preA, Vector3 postB, real_t weight)
         {
             Vector3 p0 = preA;
             Vector3 p1 = this;
             Vector3 p2 = b;
             Vector3 p3 = postB;
 
+            real_t t = weight;
             real_t t2 = t * t;
             real_t t3 = t2 * t;
 
@@ -468,6 +469,23 @@ namespace Godot
         }
 
         /// <summary>
+        /// Returns the signed angle to the given vector, in radians.
+        /// The sign of the angle is positive in a counter-clockwise
+        /// direction and negative in a clockwise direction when viewed
+        /// from the side specified by the `axis`.
+        /// </summary>
+        /// <param name="to">The other vector to compare this vector to.</param>
+        /// <param name="axis">The reference axis to use for the angle sign.</param>
+        /// <returns>The signed angle between the two vectors, in radians.</returns>
+        public real_t SignedAngleTo(Vector3 to, Vector3 axis)
+        {
+            Vector3 crossTo = Cross(to);
+            real_t unsignedAngle = Mathf.Atan2(crossTo.Length(), Dot(to));
+            real_t sign = crossTo.Dot(axis);
+            return (sign < 0) ? -unsignedAngle : unsignedAngle;
+        }
+
+        /// <summary>
         /// Returns the result of the spherical linear interpolation between
         /// this vector and `to` by amount `weight`.
         ///
@@ -512,9 +530,9 @@ namespace Godot
         {
             return new Vector3
             (
-                Mathf.Stepify(x, step.x),
-                Mathf.Stepify(y, step.y),
-                Mathf.Stepify(z, step.z)
+                Mathf.Snapped(x, step.x),
+                Mathf.Snapped(y, step.y),
+                Mathf.Snapped(z, step.z)
             );
         }
 

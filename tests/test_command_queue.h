@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -122,8 +122,8 @@ public:
 	int message_count_to_read = 0;
 	bool exit_threads = false;
 
-	Thread *reader_thread = nullptr;
-	Thread *writer_thread = nullptr;
+	Thread reader_thread;
+	Thread writer_thread;
 
 	int func1_count = 0;
 
@@ -221,20 +221,16 @@ public:
 	}
 
 	void init_threads() {
-		reader_thread = Thread::create(&SharedThreadState::static_reader_thread_loop, this);
-		writer_thread = Thread::create(&SharedThreadState::static_writer_thread_loop, this);
+		reader_thread.start(&SharedThreadState::static_reader_thread_loop, this);
+		writer_thread.start(&SharedThreadState::static_writer_thread_loop, this);
 	}
 	void destroy_threads() {
 		exit_threads = true;
 		reader_threadwork.main_start_work();
 		writer_threadwork.main_start_work();
 
-		Thread::wait_to_finish(reader_thread);
-		memdelete(reader_thread);
-		reader_thread = nullptr;
-		Thread::wait_to_finish(writer_thread);
-		memdelete(writer_thread);
-		writer_thread = nullptr;
+		reader_thread.wait_to_finish();
+		writer_thread.wait_to_finish();
 	}
 };
 
@@ -474,7 +470,6 @@ TEST_CASE("[Stress][CommandQueue] Stress test command queue") {
 	ProjectSettings::get_singleton()->set_setting(COMMAND_QUEUE_SETTING,
 			ProjectSettings::get_singleton()->property_get_revert(COMMAND_QUEUE_SETTING));
 }
-
 } // namespace TestCommandQueue
 
 #endif // !defined(NO_THREADS)

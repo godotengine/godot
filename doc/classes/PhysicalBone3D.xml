@@ -91,7 +91,7 @@
 			The body's bounciness. Values range from [code]0[/code] (no bounce) to [code]1[/code] (full bounciness).
 		</member>
 		<member name="can_sleep" type="bool" setter="set_can_sleep" getter="is_able_to_sleep" default="true">
-			If [code]true[/code], the body is deactivated when there is no movement, so it will not take part in the simulation until it is awaken by an external force.
+			If [code]true[/code], the body is deactivated when there is no movement, so it will not take part in the simulation until it is awakened by an external force.
 		</member>
 		<member name="friction" type="float" setter="set_friction" getter="get_friction" default="1.0">
 			The body's friction, from [code]0[/code] (frictionless) to [code]1[/code] (max friction).
@@ -116,9 +116,6 @@
 		</member>
 		<member name="mass" type="float" setter="set_mass" getter="get_mass" default="1.0">
 			The body's mass.
-		</member>
-		<member name="weight" type="float" setter="set_weight" getter="get_weight" default="9.8">
-			The body's weight based on its mass and the global 3D gravity. Global values are set in [b]Project &gt; Project Settings &gt; Physics &gt; 3d[/b].
 		</member>
 	</members>
 	<constants>

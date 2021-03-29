@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -221,7 +221,7 @@ String GDScriptTokenizer::get_token_name(Token::Type p_token_type) {
 
 void GDScriptTokenizer::set_source_code(const String &p_source_code) {
 	source = p_source_code;
-	if (source.empty()) {
+	if (source.is_empty()) {
 		_source = U"";
 	} else {
 		_source = source.ptr();
@@ -287,7 +287,7 @@ void GDScriptTokenizer::push_paren(char32_t p_char) {
 }
 
 bool GDScriptTokenizer::pop_paren(char32_t p_expected) {
-	if (paren_stack.empty()) {
+	if (paren_stack.is_empty()) {
 		return false;
 	}
 	char32_t actual = paren_stack.back()->get();
@@ -405,7 +405,7 @@ void GDScriptTokenizer::push_error(const Token &p_error) {
 }
 
 GDScriptTokenizer::Token GDScriptTokenizer::make_paren_error(char32_t p_paren) {
-	if (paren_stack.empty()) {
+	if (paren_stack.is_empty()) {
 		return make_error(vformat("Closing \"%c\" doesn't have an opening counterpart.", p_paren));
 	}
 	Token error = make_error(vformat("Closing \"%c\" doesn't match the opening \"%c\".", p_paren, paren_stack.back()->get()));
@@ -898,6 +898,9 @@ GDScriptTokenizer::Token GDScriptTokenizer::string() {
 					_advance();
 					_advance();
 					break;
+				} else {
+					// Not a multiline string termination, add consumed quote.
+					result += quote_char;
 				}
 			} else {
 				// Ended single-line string.
@@ -1014,9 +1017,17 @@ void GDScriptTokenizer::check_indent() {
 		}
 		if (_peek() == '#') {
 			// Comment. Advance to the next line.
+#ifdef TOOLS_ENABLED
+			String comment;
+			while (_peek() != '\n' && !_is_at_end()) {
+				comment += _advance();
+			}
+			comments[line] = CommentData(comment, true);
+#else
 			while (_peek() != '\n' && !_is_at_end()) {
 				_advance();
 			}
+#endif // TOOLS_ENABLED
 			if (_is_at_end()) {
 				// Reached the end with an empty line, so just dedent as much as needed.
 				pending_indents -= indent_level();
@@ -1125,18 +1136,26 @@ void GDScriptTokenizer::_skip_whitespace() {
 				newline(!is_bol); // Don't create new line token if line is empty.
 				check_indent();
 				break;
-			case '#':
+			case '#': {
 				// Comment.
+#ifdef TOOLS_ENABLED
+				String comment;
+				while (_peek() != '\n' && !_is_at_end()) {
+					comment += _advance();
+				}
+				comments[line] = CommentData(comment, is_bol);
+#else
 				while (_peek() != '\n' && !_is_at_end()) {
 					_advance();
 				}
+#endif // TOOLS_ENABLED
 				if (_is_at_end()) {
 					return;
 				}
 				_advance(); // Consume '\n'
 				newline(!is_bol);
 				check_indent();
-				break;
+			} break;
 			default:
 				return;
 		}
@@ -1153,7 +1172,7 @@ GDScriptTokenizer::Token GDScriptTokenizer::scan() {
 	if (pending_newline) {
 		pending_newline = false;
 		if (!multiline_mode) {
-			// Don't return newline tokens on multine mode.
+			// Don't return newline tokens on multiline mode.
 			return last_newline;
 		}
 	}

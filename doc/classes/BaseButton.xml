@@ -49,7 +49,7 @@
 		</member>
 		<member name="button_mask" type="int" setter="set_button_mask" getter="get_button_mask" default="1">
 			Binary mask to choose which mouse buttons this button will respond to.
-			To allow both left-click and right-click, use [code]BUTTON_MASK_LEFT | BUTTON_MASK_RIGHT[/code].
+			To allow both left-click and right-click, use [code]MOUSE_BUTTON_MASK_LEFT | MOUSE_BUTTON_MASK_RIGHT[/code].
 		</member>
 		<member name="disabled" type="bool" setter="set_disabled" getter="is_disabled" default="false">
 			If [code]true[/code], the button is in disabled state and can't be clicked or toggled.
@@ -64,6 +64,9 @@
 		</member>
 		<member name="shortcut" type="Shortcut" setter="set_shortcut" getter="get_shortcut">
 			[Shortcut] associated to the button.
+		</member>
+		<member name="shortcut_context" type="Node" setter="set_shortcut_context" getter="get_shortcut_context">
+			The [Node] which must be a parent of the focused GUI [Control] for the shortcut to be activated. If [code]null[/code], the shortcut can be activated when any control is focused (a global shortcut). This allows shortcuts to be accepted only when the user has a certain area of the GUI focused.
 		</member>
 		<member name="shortcut_in_tooltip" type="bool" setter="set_shortcut_in_tooltip" getter="is_shortcut_in_tooltip_enabled" default="true">
 			If [code]true[/code], the button will add information about its shortcut in the tooltip.

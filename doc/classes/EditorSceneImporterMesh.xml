@@ -1,0 +1,176 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="EditorSceneImporterMesh" inherits="Resource" version="4.0">
+	<brief_description>
+	</brief_description>
+	<description>
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="add_blend_shape">
+			<return type="void">
+			</return>
+			<argument index="0" name="name" type="String">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="add_surface">
+			<return type="void">
+			</return>
+			<argument index="0" name="primitive" type="int" enum="Mesh.PrimitiveType">
+			</argument>
+			<argument index="1" name="arrays" type="Array">
+			</argument>
+			<argument index="2" name="blend_shapes" type="Array" default="[  ]">
+			</argument>
+			<argument index="3" name="lods" type="Dictionary" default="{
+}">
+			</argument>
+			<argument index="4" name="material" type="Material" default="null">
+			</argument>
+			<argument index="5" name="name" type="String" default="&quot;&quot;">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="clear">
+			<return type="void">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_blend_shape_count" qualifiers="const">
+			<return type="int">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_blend_shape_mode" qualifiers="const">
+			<return type="int" enum="Mesh.BlendShapeMode">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_blend_shape_name" qualifiers="const">
+			<return type="String">
+			</return>
+			<argument index="0" name="blend_shape_idx" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_lightmap_size_hint" qualifiers="const">
+			<return type="Vector2i">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_mesh">
+			<return type="ArrayMesh">
+			</return>
+			<argument index="0" name="arg0" type="Mesh">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_surface_arrays" qualifiers="const">
+			<return type="Array">
+			</return>
+			<argument index="0" name="surface_idx" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_surface_blend_shape_arrays" qualifiers="const">
+			<return type="Array">
+			</return>
+			<argument index="0" name="surface_idx" type="int">
+			</argument>
+			<argument index="1" name="blend_shape_idx" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_surface_count" qualifiers="const">
+			<return type="int">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_surface_lod_count" qualifiers="const">
+			<return type="int">
+			</return>
+			<argument index="0" name="surface_idx" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_surface_lod_indices" qualifiers="const">
+			<return type="PackedInt32Array">
+			</return>
+			<argument index="0" name="surface_idx" type="int">
+			</argument>
+			<argument index="1" name="lod_idx" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_surface_lod_size" qualifiers="const">
+			<return type="float">
+			</return>
+			<argument index="0" name="surface_idx" type="int">
+			</argument>
+			<argument index="1" name="lod_idx" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_surface_material" qualifiers="const">
+			<return type="Material">
+			</return>
+			<argument index="0" name="surface_idx" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_surface_name" qualifiers="const">
+			<return type="String">
+			</return>
+			<argument index="0" name="surface_idx" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_surface_primitive_type">
+			<return type="int" enum="Mesh.PrimitiveType">
+			</return>
+			<argument index="0" name="surface_idx" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_blend_shape_mode">
+			<return type="void">
+			</return>
+			<argument index="0" name="mode" type="int" enum="Mesh.BlendShapeMode">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_lightmap_size_hint">
+			<return type="void">
+			</return>
+			<argument index="0" name="size" type="Vector2i">
+			</argument>
+			<description>
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="_data" type="Dictionary" setter="_set_data" getter="_get_data" default="{&quot;surfaces&quot;: [  ]}">
+		</member>
+	</members>
+	<constants>
+	</constants>
+</class>

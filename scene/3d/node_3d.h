@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -65,32 +65,32 @@ class Node3D : public Node {
 		mutable Transform global_transform;
 		mutable Transform local_transform;
 		mutable Vector3 rotation;
-		mutable Vector3 scale;
+		mutable Vector3 scale = Vector3(1, 1, 1);
 
-		mutable int dirty;
+		mutable int dirty = DIRTY_NONE;
 
-		Viewport *viewport;
+		Viewport *viewport = nullptr;
 
-		bool top_level_active;
-		bool top_level;
-		bool inside_world;
+		bool top_level_active = false;
+		bool top_level = false;
+		bool inside_world = false;
 
-		int children_lock;
-		Node3D *parent;
+		int children_lock = 0;
+		Node3D *parent = nullptr;
 		List<Node3D *> children;
-		List<Node3D *>::Element *C;
+		List<Node3D *>::Element *C = nullptr;
 
-		bool ignore_notification;
-		bool notify_local_transform;
-		bool notify_transform;
+		bool ignore_notification = false;
+		bool notify_local_transform = false;
+		bool notify_transform = false;
 
-		bool visible;
-		bool disable_scale;
+		bool visible = true;
+		bool disable_scale = false;
 
 #ifdef TOOLS_ENABLED
 		Ref<Node3DGizmo> gizmo;
-		bool gizmo_disabled;
-		bool gizmo_dirty;
+		bool gizmo_disabled = false;
+		bool gizmo_dirty = false;
 #endif
 
 	} data;
@@ -111,7 +111,6 @@ protected:
 
 public:
 	enum {
-
 		NOTIFICATION_TRANSFORM_CHANGED = SceneTree::NOTIFICATION_TRANSFORM_CHANGED,
 		NOTIFICATION_ENTER_WORLD = 41,
 		NOTIFICATION_EXIT_WORLD = 42,
@@ -174,8 +173,8 @@ public:
 	void global_scale(const Vector3 &p_scale);
 	void global_translate(const Vector3 &p_offset);
 
-	void look_at(const Vector3 &p_target, const Vector3 &p_up);
-	void look_at_from_position(const Vector3 &p_pos, const Vector3 &p_target, const Vector3 &p_up);
+	void look_at(const Vector3 &p_target, const Vector3 &p_up = Vector3(0, 1, 0));
+	void look_at_from_position(const Vector3 &p_pos, const Vector3 &p_target, const Vector3 &p_up = Vector3(0, 1, 0));
 
 	Vector3 to_local(Vector3 p_global) const;
 	Vector3 to_global(Vector3 p_local) const;
@@ -198,7 +197,6 @@ public:
 	void force_update_transform();
 
 	Node3D();
-	~Node3D();
 };
 
 #endif // NODE_3D_H

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -32,7 +32,7 @@
 
 #include "core/io/resource_saver.h"
 #include "core/os/file_access.h"
-#include "core/string/compressed_translation.h"
+#include "core/string/optimized_translation.h"
 #include "core/string/translation.h"
 
 String ResourceImporterCSVTranslation::get_importer_name() const {
@@ -126,7 +126,7 @@ Error ResourceImporterCSVTranslation::import(const String &p_source_file, const 
 		Ref<Translation> xlt = translations[i];
 
 		if (compress) {
-			Ref<PHashTranslation> cxl = memnew(PHashTranslation);
+			Ref<OptimizedTranslation> cxl = memnew(OptimizedTranslation);
 			cxl->generate(xlt);
 			xlt = cxl;
 		}

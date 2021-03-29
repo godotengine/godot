@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -69,11 +69,11 @@ enum DDSFormat {
 
 struct DDSFormatInfo {
 	const char *name;
-	bool compressed;
-	bool palette;
-	uint32_t divisor;
-	uint32_t block_size;
-	Image::Format format;
+	bool compressed = false;
+	bool palette = false;
+	uint32_t divisor = 0;
+	uint32_t block_size = 0;
+	Image::Format format = Image::Format::FORMAT_BPTC_RGBA;
 };
 
 static const DDSFormatInfo dds_format_info[DDS_MAX] = {
@@ -94,7 +94,7 @@ static const DDSFormatInfo dds_format_info[DDS_MAX] = {
 	{ "GRAYSCALE_ALPHA", false, false, 1, 2, Image::FORMAT_LA8 }
 };
 
-RES ResourceFormatDDS::load(const String &p_path, const String &p_original_path, Error *r_error, bool p_use_sub_threads, float *r_progress, bool p_no_cache) {
+RES ResourceFormatDDS::load(const String &p_path, const String &p_original_path, Error *r_error, bool p_use_sub_threads, float *r_progress, CacheMode p_cache_mode) {
 	if (r_error) {
 		*r_error = ERR_CANT_OPEN;
 	}
@@ -373,7 +373,6 @@ RES ResourceFormatDDS::load(const String &p_path, const String &p_original_path,
 				int colcount = size/4;
 
 				for(int i=0;i<colcount;i++) {
-
 					uint8_t r = wb[i*4+1];
 					uint8_t g = wb[i*4+2];
 					uint8_t b = wb[i*4+3];
@@ -392,7 +391,6 @@ RES ResourceFormatDDS::load(const String &p_path, const String &p_original_path,
 				int colcount = size/3;
 
 				for(int i=0;i<colcount;i++) {
-
 					SWAP( wb[i*3+0],wb[i*3+2] );
 				}*/
 			} break;

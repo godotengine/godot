@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -173,7 +173,7 @@ String find_msbuild_tools_path() {
 
 	String output;
 	int exit_code;
-	OS::get_singleton()->execute(vswhere_path, vswhere_args, true, nullptr, &output, &exit_code);
+	OS::get_singleton()->execute(vswhere_path, vswhere_args, &output, &exit_code);
 
 	if (exit_code == 0) {
 		Vector<String> lines = output.split("\n");
@@ -188,7 +188,7 @@ String find_msbuild_tools_path() {
 				if (key == "installationPath") {
 					String val = line.substr(sep_idx + 1, line.length()).strip_edges();
 
-					ERR_BREAK(val.empty());
+					ERR_BREAK(val.is_empty());
 
 					if (!val.ends_with("\\")) {
 						val += "\\";
@@ -225,7 +225,6 @@ cleanup:
 
 	return msbuild_tools_path;
 }
-
 } // namespace MonoRegUtils
 
 #endif // WINDOWS_ENABLED

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -288,7 +288,7 @@ void NodePath::simplify() {
 		if (data->path[i].operator String() == ".") {
 			data->path.remove(i);
 			i--;
-		} else if (data->path[i].operator String() == ".." && i > 0 && data->path[i - 1].operator String() != "." && data->path[i - 1].operator String() != "..") {
+		} else if (i > 0 && data->path[i].operator String() == ".." && data->path[i - 1].operator String() != "." && data->path[i - 1].operator String() != "..") {
 			//remove both
 			data->path.remove(i - 1);
 			data->path.remove(i - 1);
