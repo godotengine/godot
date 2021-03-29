@@ -49,6 +49,7 @@ const String godot_project_name_xml_string = R"(<?xml version="1.0" encoding="ut
 static const int XR_MODE_REGULAR = 0;
 static const int XR_MODE_OVR = 1;
 static const int XR_MODE_OPENXR = 2;
+static const int XR_MODE_ARCORE = 3;
 
 // Supported XR hand tracking modes.
 static const int XR_HAND_TRACKING_NONE = 0;

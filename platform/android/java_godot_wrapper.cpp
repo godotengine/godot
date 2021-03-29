@@ -85,6 +85,7 @@ GodotJavaWrapper::GodotJavaWrapper(JNIEnv *p_env, jobject p_activity, jobject p_
 	_begin_benchmark_measure = p_env->GetMethodID(godot_class, "beginBenchmarkMeasure", "(Ljava/lang/String;)V");
 	_end_benchmark_measure = p_env->GetMethodID(godot_class, "endBenchmarkMeasure", "(Ljava/lang/String;)V");
 	_dump_benchmark = p_env->GetMethodID(godot_class, "dumpBenchmark", "(Ljava/lang/String;)V");
+	_get_display_rotation = p_env->GetMethodID(godot_class, "getDisplayRotation", "()I");
 
 	// get some Activity method pointers...
 	_get_class_loader = p_env->GetMethodID(activity_class, "getClassLoader", "()Ljava/lang/ClassLoader;");
@@ -414,5 +415,14 @@ void GodotJavaWrapper::dump_benchmark(const String &benchmark_file) {
 		ERR_FAIL_NULL(env);
 		jstring j_benchmark_file = env->NewStringUTF(benchmark_file.utf8().get_data());
 		env->CallVoidMethod(godot_instance, _dump_benchmark, j_benchmark_file);
+	}
+}
+
+int GodotJavaWrapper::get_display_rotation() {
+	if (_get_display_rotation) {
+		JNIEnv *env = get_jni_env();
+		return env->CallIntMethod(godot_instance, _get_display_rotation);
+	} else {
+		return 0;
 	}
 }

@@ -48,6 +48,7 @@ JNIEnv *GDAPI godot_android_get_env();
 jobject GDAPI godot_android_get_activity();
 jobject GDAPI godot_android_get_surface();
 bool GDAPI godot_android_is_activity_resumed();
+int GDAPI godot_android_get_display_rotation();
 
 #ifdef __cplusplus
 }

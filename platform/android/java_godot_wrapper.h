@@ -79,6 +79,7 @@ private:
 	jmethodID _begin_benchmark_measure = nullptr;
 	jmethodID _end_benchmark_measure = nullptr;
 	jmethodID _dump_benchmark = nullptr;
+	jmethodID _get_display_rotation = nullptr;
 
 public:
 	GodotJavaWrapper(JNIEnv *p_env, jobject p_activity, jobject p_godot_instance);
@@ -119,6 +120,7 @@ public:
 	void begin_benchmark_measure(const String &p_label);
 	void end_benchmark_measure(const String &p_label);
 	void dump_benchmark(const String &benchmark_file);
+	int get_display_rotation();
 };
 
 #endif // JAVA_GODOT_WRAPPER_H
