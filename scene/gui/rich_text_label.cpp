@@ -760,7 +760,7 @@ int RichTextLabel::_draw_line(ItemFrame *p_frame, int p_line, const Vector2 &p_o
 
 		//draw_rect(Rect2(p_ofs + off, TS->shaped_text_get_size(rid)), Color(1,0,0), false, 2); //DEBUG_RECTS
 
-		off.y += TS->shaped_text_get_ascent(rid);
+		off.y += TS->shaped_text_get_ascent(rid) + l.text_buf->get_spacing_top();
 		// Draw inlined objects.
 		Array objects = TS->shaped_text_get_objects(rid);
 		for (int i = 0; i < objects.size(); i++) {
@@ -1079,7 +1079,7 @@ int RichTextLabel::_draw_line(ItemFrame *p_frame, int p_line, const Vector2 &p_o
 				off.x += glyphs[i].advance;
 			}
 		}
-		off.y += TS->shaped_text_get_descent(rid);
+		off.y += TS->shaped_text_get_descent(rid) + l.text_buf->get_spacing_bottom();
 	}
 
 	return line_count;
@@ -1174,7 +1174,7 @@ float RichTextLabel::_find_click_in_line(ItemFrame *p_frame, int p_line, const V
 			} break;
 		}
 
-		off.y += TS->shaped_text_get_ascent(rid);
+		off.y += TS->shaped_text_get_ascent(rid) + l.text_buf->get_spacing_top();
 
 		Array objects = TS->shaped_text_get_objects(rid);
 		for (int i = 0; i < objects.size(); i++) {
@@ -1238,7 +1238,7 @@ float RichTextLabel::_find_click_in_line(ItemFrame *p_frame, int p_line, const V
 		if (rect.has_point(p_click) && !table_hit) {
 			char_pos = TS->shaped_text_hit_test_position(rid, p_click.x - rect.position.x);
 		}
-		off.y += TS->shaped_text_get_descent(rid);
+		off.y += TS->shaped_text_get_descent(rid) + l.text_buf->get_spacing_bottom();
 	}
 
 	if (char_pos >= 0) {
@@ -3999,14 +3999,16 @@ void RichTextLabel::set_fixed_size_to_width(int p_width) {
 }
 
 Size2 RichTextLabel::get_minimum_size() const {
-	Size2 size(0, 0);
+	Ref<StyleBox> style = get_theme_stylebox("normal");
+	Size2 size = style->get_minimum_size();
+
 	if (fixed_width != -1) {
-		size.x = fixed_width;
+		size.x += fixed_width;
 	}
 
 	if (fixed_width != -1 || fit_content_height) {
 		const_cast<RichTextLabel *>(this)->_validate_line_caches(main);
-		size.y = get_content_height();
+		size.y += get_content_height();
 	}
 
 	return size;
