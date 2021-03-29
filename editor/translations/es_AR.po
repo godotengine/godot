@@ -3708,6 +3708,11 @@ msgstr ""
 "reimportá manualmente."
 
 #: editor/filesystem_dock.cpp
+msgid ""
+"Importing has been disabled for this file, so it can't be opened for editing."
+msgstr ""
+
+#: editor/filesystem_dock.cpp
 msgid "Cannot move/rename resources root."
 msgstr "No se puede mover/renombrar la raiz de recursos."
 
@@ -4106,6 +4111,10 @@ msgstr "Importador:"
 #: editor/import_defaults_editor.cpp
 msgid "Reset to Defaults"
 msgstr "Restablecer Valores Por Defecto"
+
+#: editor/import_dock.cpp
+msgid "Keep File (No Import)"
+msgstr ""
 
 #: editor/import_dock.cpp
 msgid "%d Files"

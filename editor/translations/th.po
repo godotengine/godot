@@ -3603,6 +3603,11 @@ msgid "Status: Import of file failed. Please fix file and reimport manually."
 msgstr "สถานะ: นำเข้าไฟล์ล้มเหลว กรุณาแก้ไขไฟล์และนำเข้าใหม่"
 
 #: editor/filesystem_dock.cpp
+msgid ""
+"Importing has been disabled for this file, so it can't be opened for editing."
+msgstr ""
+
+#: editor/filesystem_dock.cpp
 msgid "Cannot move/rename resources root."
 msgstr "ไม่สามารถย้าย/เปลี่ยนชื่อโฟลเดอร์ราก"
 
@@ -4001,6 +4006,10 @@ msgstr "นำเข้า"
 #, fuzzy
 msgid "Reset to Defaults"
 msgstr "โหลดค่าเริ่มต้น"
+
+#: editor/import_dock.cpp
+msgid "Keep File (No Import)"
+msgstr ""
 
 #: editor/import_dock.cpp
 msgid "%d Files"

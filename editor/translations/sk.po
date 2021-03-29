@@ -3655,6 +3655,11 @@ msgstr ""
 "Status:Import súboru zlihal. Prosím opravte súbor a manuálne reimportujte."
 
 #: editor/filesystem_dock.cpp
+msgid ""
+"Importing has been disabled for this file, so it can't be opened for editing."
+msgstr ""
+
+#: editor/filesystem_dock.cpp
 msgid "Cannot move/rename resources root."
 msgstr "Nedá sa presunúť/premenovať \"resources root\"."
 
@@ -4054,6 +4059,10 @@ msgstr "Import"
 #, fuzzy
 msgid "Reset to Defaults"
 msgstr "Načítať predvolené"
+
+#: editor/import_dock.cpp
+msgid "Keep File (No Import)"
+msgstr ""
 
 #: editor/import_dock.cpp
 msgid "%d Files"

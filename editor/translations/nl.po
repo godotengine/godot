@@ -3726,6 +3726,11 @@ msgstr ""
 "handmatig."
 
 #: editor/filesystem_dock.cpp
+msgid ""
+"Importing has been disabled for this file, so it can't be opened for editing."
+msgstr ""
+
+#: editor/filesystem_dock.cpp
 msgid "Cannot move/rename resources root."
 msgstr "Kan de hoofdmap voor bronnen niet verplaatsen of van naam veranderen."
 
@@ -4127,6 +4132,10 @@ msgstr "Importeren"
 #, fuzzy
 msgid "Reset to Defaults"
 msgstr "Laad standaard"
+
+#: editor/import_dock.cpp
+msgid "Keep File (No Import)"
+msgstr ""
 
 #: editor/import_dock.cpp
 msgid "%d Files"

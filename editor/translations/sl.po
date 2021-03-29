@@ -3794,6 +3794,11 @@ msgstr ""
 "Stanje: Uvoz datoteke ni uspel. Popravi datoteko in ponovno ročno uvozi."
 
 #: editor/filesystem_dock.cpp
+msgid ""
+"Importing has been disabled for this file, so it can't be opened for editing."
+msgstr ""
+
+#: editor/filesystem_dock.cpp
 msgid "Cannot move/rename resources root."
 msgstr "Ni mogoče premakniti/preimenovati osnovne vire."
 
@@ -4223,6 +4228,10 @@ msgstr "Uvozi"
 #, fuzzy
 msgid "Reset to Defaults"
 msgstr "Naložite Prevzeto"
+
+#: editor/import_dock.cpp
+msgid "Keep File (No Import)"
+msgstr ""
 
 #: editor/import_dock.cpp
 #, fuzzy

@@ -3674,6 +3674,11 @@ msgstr ""
 "znovu ručně."
 
 #: editor/filesystem_dock.cpp
+msgid ""
+"Importing has been disabled for this file, so it can't be opened for editing."
+msgstr ""
+
+#: editor/filesystem_dock.cpp
 msgid "Cannot move/rename resources root."
 msgstr "Nelze přesunout/přejmenovat kořen zdrojů."
 
@@ -4075,6 +4080,10 @@ msgstr "Import"
 #, fuzzy
 msgid "Reset to Defaults"
 msgstr "Načíst výchozí"
+
+#: editor/import_dock.cpp
+msgid "Keep File (No Import)"
+msgstr ""
 
 #: editor/import_dock.cpp
 msgid "%d Files"

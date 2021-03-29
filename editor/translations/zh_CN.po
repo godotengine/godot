@@ -81,7 +81,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Chinese (Simplified) (Godot Engine)\n"
 "POT-Creation-Date: 2018-01-20 12:15+0200\n"
-"PO-Revision-Date: 2021-03-16 10:40+0000\n"
+"PO-Revision-Date: 2021-03-21 12:25+0000\n"
 "Last-Translator: Haoyu Qiu <timothyqiu32@gmail.com>\n"
 "Language-Team: Chinese (Simplified) <https://hosted.weblate.org/projects/"
 "godot-engine/godot/zh_Hans/>\n"
@@ -790,7 +790,7 @@ msgstr "标准"
 
 #: editor/code_editor.cpp editor/plugins/script_editor_plugin.cpp
 msgid "Toggle Scripts Panel"
-msgstr "开启／关闭脚本面板"
+msgstr "切换脚本面板"
 
 #: editor/code_editor.cpp editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/texture_region_editor_plugin.cpp
@@ -3660,6 +3660,11 @@ msgid "Status: Import of file failed. Please fix file and reimport manually."
 msgstr "状态：导入文件失败。请手动修复文件后重新导入。"
 
 #: editor/filesystem_dock.cpp
+msgid ""
+"Importing has been disabled for this file, so it can't be opened for editing."
+msgstr ""
+
+#: editor/filesystem_dock.cpp
 msgid "Cannot move/rename resources root."
 msgstr "无法移动或重命名根资源。"
 
@@ -4055,6 +4060,10 @@ msgstr "导入器："
 #: editor/import_defaults_editor.cpp
 msgid "Reset to Defaults"
 msgstr "重置为默认值"
+
+#: editor/import_dock.cpp
+msgid "Keep File (No Import)"
+msgstr ""
 
 #: editor/import_dock.cpp
 msgid "%d Files"

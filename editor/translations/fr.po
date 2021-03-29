@@ -82,7 +82,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2021-01-22 10:21+0000\n"
+"PO-Revision-Date: 2021-03-21 12:25+0000\n"
 "Last-Translator: Pierre Caye <pierrecaye@laposte.net>\n"
 "Language-Team: French <https://hosted.weblate.org/projects/godot-engine/"
 "godot/fr/>\n"
@@ -91,7 +91,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n > 1;\n"
-"X-Generator: Weblate 4.5-dev\n"
+"X-Generator: Weblate 4.5.2-dev\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -3779,6 +3779,13 @@ msgstr ""
 "le réimporter manuellement."
 
 #: editor/filesystem_dock.cpp
+msgid ""
+"Importing has been disabled for this file, so it can't be opened for editing."
+msgstr ""
+"L'importation a été désactivée pour ce fichier, il ne peut donc pas être "
+"ouvert dans l'éditeur."
+
+#: editor/filesystem_dock.cpp
 msgid "Cannot move/rename resources root."
 msgstr "Impossible de déplacer / renommer les ressources root."
 
@@ -4178,6 +4185,10 @@ msgstr "Importeur :"
 #: editor/import_defaults_editor.cpp
 msgid "Reset to Defaults"
 msgstr "Réinitialiser"
+
+#: editor/import_dock.cpp
+msgid "Keep File (No Import)"
+msgstr "Conserver le fichier (non importé)"
 
 #: editor/import_dock.cpp
 msgid "%d Files"
@@ -12648,10 +12659,14 @@ msgstr "Un CollisionPolygon2D vide n'a pas d'effet sur les collisions."
 #: scene/2d/collision_polygon_2d.cpp
 msgid "Invalid polygon. At least 3 points are needed in 'Solids' build mode."
 msgstr ""
+"Polygone non valide. Il doit avoir au moins trois points en mode de "
+"construction 'Solide'."
 
 #: scene/2d/collision_polygon_2d.cpp
 msgid "Invalid polygon. At least 2 points are needed in 'Segments' build mode."
 msgstr ""
+"Polygone non valide. Il doit y avoir au moins 2 points en mode de "
+"construction 'Segments'."
 
 #: scene/2d/collision_shape_2d.cpp
 msgid ""

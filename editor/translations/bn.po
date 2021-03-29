@@ -3872,6 +3872,11 @@ msgstr ""
 "ইম্পোর্ট করুন।"
 
 #: editor/filesystem_dock.cpp
+msgid ""
+"Importing has been disabled for this file, so it can't be opened for editing."
+msgstr ""
+
+#: editor/filesystem_dock.cpp
 #, fuzzy
 msgid "Cannot move/rename resources root."
 msgstr "ফন্টের উৎস লোড/প্রসেস করা সম্ভব হচ্ছে না।"
@@ -4321,6 +4326,10 @@ msgstr "ইম্পোর্ট"
 #, fuzzy
 msgid "Reset to Defaults"
 msgstr "প্রাথমিক sRGB ব্যবহার করুন"
+
+#: editor/import_dock.cpp
+msgid "Keep File (No Import)"
+msgstr ""
 
 #: editor/import_dock.cpp
 #, fuzzy

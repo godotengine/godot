@@ -51,7 +51,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2021-03-10 22:14+0000\n"
+"PO-Revision-Date: 2021-03-24 23:44+0000\n"
 "Last-Translator: Tomek <kobewi4e@gmail.com>\n"
 "Language-Team: Polish <https://hosted.weblate.org/projects/godot-engine/"
 "godot/pl/>\n"
@@ -3702,6 +3702,11 @@ msgstr ""
 "zaimportować ręcznie."
 
 #: editor/filesystem_dock.cpp
+msgid ""
+"Importing has been disabled for this file, so it can't be opened for editing."
+msgstr ""
+
+#: editor/filesystem_dock.cpp
 msgid "Cannot move/rename resources root."
 msgstr "Nie można przenieść/zmienić nazwy korzenia zasobów."
 
@@ -4102,6 +4107,10 @@ msgstr "Importer:"
 #: editor/import_defaults_editor.cpp
 msgid "Reset to Defaults"
 msgstr "Resetuj do domyślnych"
+
+#: editor/import_dock.cpp
+msgid "Keep File (No Import)"
+msgstr ""
 
 #: editor/import_dock.cpp
 msgid "%d Files"
@@ -10446,7 +10455,7 @@ msgstr "Wtyczki"
 
 #: editor/project_settings_editor.cpp
 msgid "Import Defaults"
-msgstr "Importuj domyślne"
+msgstr "Domyślny import"
 
 #: editor/property_editor.cpp
 msgid "Preset..."

@@ -3646,6 +3646,11 @@ msgstr ""
 "स्थिति: फाइल का आयात विफल रहा। कृपया फाइल को ठीक करें और मैन्युअल रूप से पुनर्आयात करें।"
 
 #: editor/filesystem_dock.cpp
+msgid ""
+"Importing has been disabled for this file, so it can't be opened for editing."
+msgstr ""
+
+#: editor/filesystem_dock.cpp
 msgid "Cannot move/rename resources root."
 msgstr "संसाधनों की जड़ को स्थानांतरित/नाम नहीं दे सकते ।"
 
@@ -4049,6 +4054,10 @@ msgstr "इंपोर्ट"
 #, fuzzy
 msgid "Reset to Defaults"
 msgstr "प्रायिक लोड कीजिये"
+
+#: editor/import_dock.cpp
+msgid "Keep File (No Import)"
+msgstr ""
 
 #: editor/import_dock.cpp
 msgid "%d Files"

@@ -3646,6 +3646,11 @@ msgid "Status: Import of file failed. Please fix file and reimport manually."
 msgstr "מצב: ייבוא הקובץ נכשל. נא לתקן את הקובץ ולייבא מחדש ידנית."
 
 #: editor/filesystem_dock.cpp
+msgid ""
+"Importing has been disabled for this file, so it can't be opened for editing."
+msgstr ""
+
+#: editor/filesystem_dock.cpp
 msgid "Cannot move/rename resources root."
 msgstr "לא ניתן להעביר/לשנות שם למקור של משאבים."
 
@@ -4069,6 +4074,10 @@ msgstr "ייבוא"
 #, fuzzy
 msgid "Reset to Defaults"
 msgstr "טעינת בררת המחדל"
+
+#: editor/import_dock.cpp
+msgid "Keep File (No Import)"
+msgstr ""
 
 #: editor/import_dock.cpp
 msgid "%d Files"

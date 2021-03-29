@@ -3610,6 +3610,11 @@ msgid "Status: Import of file failed. Please fix file and reimport manually."
 msgstr "狀態：檔案匯入失敗。請修正檔案並手動重新匯入。"
 
 #: editor/filesystem_dock.cpp
+msgid ""
+"Importing has been disabled for this file, so it can't be opened for editing."
+msgstr ""
+
+#: editor/filesystem_dock.cpp
 msgid "Cannot move/rename resources root."
 msgstr "無法移動或重新命名根資源。"
 
@@ -4005,6 +4010,10 @@ msgstr "匯入程式："
 #: editor/import_defaults_editor.cpp
 msgid "Reset to Defaults"
 msgstr "重設為預設"
+
+#: editor/import_dock.cpp
+msgid "Keep File (No Import)"
+msgstr ""
 
 #: editor/import_dock.cpp
 msgid "%d Files"
