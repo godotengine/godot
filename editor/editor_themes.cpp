@@ -91,7 +91,7 @@ static Ref<Texture2D> flip_icon(Ref<Texture2D> p_texture, bool p_flip_y = false,
 	}
 
 	Ref<ImageTexture> texture(memnew(ImageTexture));
-	Ref<Image> img = p_texture->get_data();
+	Ref<Image> img = p_texture->get_image();
 	img = img->duplicate();
 
 	if (p_flip_y) {

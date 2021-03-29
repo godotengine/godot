@@ -80,9 +80,9 @@
 			</return>
 			<description>
 				Returns the viewport's texture.
-				[b]Note:[/b] Due to the way OpenGL works, the resulting [ViewportTexture] is flipped vertically. You can use [method Image.flip_y] on the result of [method Texture2D.get_data] to flip it back, for example:
+				[b]Note:[/b] Due to the way OpenGL works, the resulting [ViewportTexture] is flipped vertically. You can use [method Image.flip_y] on the result of [method Texture2D.get_image] to flip it back, for example:
 				[codeblock]
-				var img = get_viewport().get_texture().get_data()
+				var img = get_viewport().get_texture().get_image()
 				img.flip_y()
 				[/codeblock]
 			</description>

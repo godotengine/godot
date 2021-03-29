@@ -117,8 +117,8 @@ void AnimationPlayerEditor::_notification(int p_what) {
 			autoplay_icon = get_theme_icon("AutoPlay", "EditorIcons");
 			reset_icon = get_theme_icon("Reload", "EditorIcons");
 			{
-				Ref<Image> autoplay_img = autoplay_icon->get_data();
-				Ref<Image> reset_img = reset_icon->get_data();
+				Ref<Image> autoplay_img = autoplay_icon->get_image();
+				Ref<Image> reset_img = reset_icon->get_image();
 				Ref<Image> autoplay_reset_img;
 				Size2 icon_size = Size2(autoplay_img->get_width(), autoplay_img->get_height());
 				autoplay_reset_img.instance();

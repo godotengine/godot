@@ -88,7 +88,7 @@ Ref<Texture2D> EditorTexturePreviewPlugin::generate(const RES &p_from, const Siz
 			return Ref<Texture2D>();
 		}
 
-		Ref<Image> atlas = tex->get_data();
+		Ref<Image> atlas = tex->get_image();
 		if (!atlas.is_valid()) {
 			return Ref<Texture2D>();
 		}
@@ -99,7 +99,7 @@ Ref<Texture2D> EditorTexturePreviewPlugin::generate(const RES &p_from, const Siz
 	} else {
 		Ref<Texture2D> tex = p_from;
 		if (tex.is_valid()) {
-			img = tex->get_data();
+			img = tex->get_image();
 			if (img.is_valid()) {
 				img = img->duplicate();
 			}

@@ -171,7 +171,7 @@ void Sprite2DEditor::_update_mesh_data() {
 		return;
 	}
 
-	Ref<Image> image = texture->get_data();
+	Ref<Image> image = texture->get_image();
 	ERR_FAIL_COND(image.is_null());
 
 	if (image->is_compressed()) {

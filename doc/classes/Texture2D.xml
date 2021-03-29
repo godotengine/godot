@@ -63,7 +63,7 @@
 				Draws a part of the texture using a [CanvasItem] with the [RenderingServer] API.
 			</description>
 		</method>
-		<method name="get_data" qualifiers="const">
+		<method name="get_image" qualifiers="const">
 			<return type="Image">
 			</return>
 			<description>

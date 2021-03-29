@@ -41,7 +41,7 @@ Error ResourceSaverPNG::save(const String &p_path, const RES &p_resource, uint32
 	ERR_FAIL_COND_V_MSG(!texture.is_valid(), ERR_INVALID_PARAMETER, "Can't save invalid texture as PNG.");
 	ERR_FAIL_COND_V_MSG(!texture->get_width(), ERR_INVALID_PARAMETER, "Can't save empty texture as PNG.");
 
-	Ref<Image> img = texture->get_data();
+	Ref<Image> img = texture->get_image();
 
 	Error err = save_image(p_path, img);
 

@@ -144,8 +144,8 @@ void EditorAssetLibraryItemDescription::set_image(int p_type, int p_index, const
 			for (int i = 0; i < preview_images.size(); i++) {
 				if (preview_images[i].id == p_index) {
 					if (preview_images[i].is_video) {
-						Ref<Image> overlay = previews->get_theme_icon("PlayOverlay", "EditorIcons")->get_data();
-						Ref<Image> thumbnail = p_image->get_data();
+						Ref<Image> overlay = previews->get_theme_icon("PlayOverlay", "EditorIcons")->get_image();
+						Ref<Image> thumbnail = p_image->get_image();
 						thumbnail = thumbnail->duplicate();
 						Point2 overlay_pos = Point2((thumbnail->get_width() - overlay->get_width()) / 2, (thumbnail->get_height() - overlay->get_height()) / 2);
 
