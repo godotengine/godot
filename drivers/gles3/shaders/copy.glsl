@@ -62,6 +62,11 @@ void main() {
 /* clang-format off */
 [fragment]
 
+#ifdef USE_EXTERNAL_SAMPLER
+// Leave the ifdef so we have this define, for now the extension is loaded through custom defines
+// #extension GL_OES_EGL_image_external_essl3 : require
+#endif
+
 #define M_PI 3.14159265359
 
 #if !defined(USE_GLES_OVER_GL)
@@ -94,6 +99,8 @@ uniform samplerCube source_cube; //texunit:0
 uniform sampler3D source_3d; //texunit:0
 #elif defined(USE_TEXTURE2DARRAY)
 uniform sampler2DArray source_2d_array; //texunit:0
+#elif defined(USE_EXTERNAL_SAMPLER)
+uniform samplerExternalOES source;
 #else
 uniform sampler2D source; //texunit:0
 #endif
@@ -190,8 +197,8 @@ void main() {
 	vec4 color = textureLod(source_2d_array, vec3(uv_interp, layer), 0.0);
 #elif defined(SEP_CBCR_TEXTURE)
 	vec4 color;
-	color.r = textureLod(source, uv_interp, 0.0).r;
-	color.gb = textureLod(CbCr, uv_interp, 0.0).rg - vec2(0.5, 0.5);
+	color.r = texture(source, uv_interp).r;
+	color.gb = texture(CbCr, uv_interp).rg - vec2(0.5, 0.5);
 	color.a = 1.0;
 #else
 #ifdef USE_LOD

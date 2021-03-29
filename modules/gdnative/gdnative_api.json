@@ -6424,7 +6424,23 @@
         "major": 1,
         "minor": 1
       },
-      "next": null,
+      "next": {
+        "name": "android",
+        "type": "ANDROID",
+        "version": {
+          "major": 1,
+          "minor": 2
+        },
+        "next": null,
+        "api": [
+          {
+            "name": "godot_android_get_display_rotation",
+            "return_type": "int",
+            "arguments": [
+            ]
+          }
+        ]
+      },
       "api": [
         {
           "name": "godot_android_get_env",
