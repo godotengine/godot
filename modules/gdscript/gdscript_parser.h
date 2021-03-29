@@ -94,7 +94,12 @@ public:
 	struct VariableNode;
 	struct WhileNode;
 
-	struct DataType {
+	class DataType {
+	private:
+		// Private access so we can control memory management.
+		DataType *container_element_type = nullptr;
+
+	public:
 		enum Kind {
 			BUILTIN,
 			NATIVE,
@@ -104,7 +109,6 @@ public:
 			ENUM_VALUE, // Value from enumeration.
 			VARIANT, // Can be any type.
 			UNRESOLVED,
-			// TODO: Enum
 		};
 		Kind kind = UNRESOLVED;
 
@@ -135,6 +139,26 @@ public:
 		_FORCE_INLINE_ bool is_variant() const { return kind == VARIANT || kind == UNRESOLVED; }
 		_FORCE_INLINE_ bool is_hard_type() const { return type_source > INFERRED; }
 		String to_string() const;
+
+		_FORCE_INLINE_ void set_container_element_type(const DataType &p_type) {
+			container_element_type = memnew(DataType(p_type));
+		}
+
+		_FORCE_INLINE_ DataType get_container_element_type() const {
+			ERR_FAIL_COND_V(container_element_type == nullptr, DataType());
+			return *container_element_type;
+		}
+
+		_FORCE_INLINE_ bool has_container_element_type() const {
+			return container_element_type != nullptr;
+		}
+
+		_FORCE_INLINE_ void unset_container_element_type() {
+			if (container_element_type) {
+				memdelete(container_element_type);
+			};
+			container_element_type = nullptr;
+		}
 
 		bool operator==(const DataType &p_other) const {
 			if (type_source == UNDETECTED || p_other.type_source == UNDETECTED) {
@@ -172,6 +196,37 @@ public:
 
 		bool operator!=(const DataType &p_other) const {
 			return !(this->operator==(p_other));
+		}
+
+		DataType &operator=(const DataType &p_other) {
+			kind = p_other.kind;
+			type_source = p_other.type_source;
+			is_constant = p_other.is_constant;
+			is_meta_type = p_other.is_meta_type;
+			is_coroutine = p_other.is_coroutine;
+			builtin_type = p_other.builtin_type;
+			native_type = p_other.native_type;
+			enum_type = p_other.enum_type;
+			script_type = p_other.script_type;
+			script_path = p_other.script_path;
+			class_type = p_other.class_type;
+			method_info = p_other.method_info;
+			enum_values = p_other.enum_values;
+			unset_container_element_type();
+			if (p_other.has_container_element_type()) {
+				set_container_element_type(p_other.get_container_element_type());
+			}
+			return *this;
+		}
+
+		DataType() = default;
+
+		DataType(const DataType &p_other) {
+			*this = p_other;
+		}
+
+		~DataType() {
+			unset_container_element_type();
 		}
 	};
 
@@ -987,6 +1042,7 @@ public:
 
 	struct TypeNode : public Node {
 		Vector<IdentifierNode *> type_chain;
+		TypeNode *container_type = nullptr;
 
 		TypeNode() {
 			type = TYPE;
