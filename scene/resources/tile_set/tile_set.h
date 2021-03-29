@@ -39,14 +39,6 @@
 #include "scene/resources/packed_scene.h"
 #include "scene/resources/physics_material.h"
 
-#include "tile_set_atlas_plugin.h"
-#include "tile_set_atlas_plugin_navigation.h"
-#include "tile_set_atlas_plugin_physics.h"
-#include "tile_set_atlas_plugin_rendering.h"
-#include "tile_set_atlas_plugin_terrain.h"
-
-class TileMap;
-
 #ifndef DISABLE_DEPRECATED
 #include "scene/2d/light_occluder_2d.h"
 #include "scene/2d/navigation_region_2d.h"
@@ -54,6 +46,392 @@ class TileMap;
 #include "scene/resources/shape_2d.h"
 #include "scene/resources/texture.h"
 #endif
+
+class TileMap;
+class TileSetSource;
+class TileSetAtlasSource;
+class TileData;
+
+// Forward-declare the plugins.
+class TileSetPlugin;
+class TileSetAtlasPluginRendering;
+class TileSetAtlasPluginPhysics;
+class TileSetAtlasPluginNavigation;
+class TileSetAtlasPluginTerrain;
+
+class TileSet : public Resource {
+	GDCLASS(TileSet, Resource);
+
+#ifndef DISABLE_DEPRECATED
+private:
+	struct CompatibilityShapeData {
+		Vector2i autotile_coords;
+		bool one_way;
+		float one_way_margin;
+		Ref<Shape2D> shape;
+		Transform2D transform;
+	};
+
+	struct CompatibilityTileData {
+		String name;
+		Ref<Texture2D> texture;
+		Vector2 tex_offset;
+		Ref<ShaderMaterial> material;
+		Rect2 region;
+		int tile_mode;
+		Color modulate;
+
+		// Atlas or autotiles data
+		int autotile_bitmask_mode;
+		Vector2 autotile_icon_coordinate;
+		Size2i autotile_tile_size = Size2i(16, 16);
+
+		int autotile_spacing;
+		Map<Vector2i, int> autotile_bitmask_flags;
+		Map<Vector2i, Ref<OccluderPolygon2D>> autotile_occluder_map;
+		Map<Vector2i, Ref<NavigationPolygon>> autotile_navpoly_map;
+		Map<Vector2i, int> autotile_priority_map;
+		Map<Vector2i, int> autotile_z_index_map;
+
+		Vector<CompatibilityShapeData *> shapes = Vector<CompatibilityShapeData *>();
+		Ref<OccluderPolygon2D> occluder;
+		Vector2 occluder_offset;
+		Ref<NavigationPolygon> navigation;
+		Vector2 navigation_offset;
+		int z_index;
+	};
+
+	Map<int, CompatibilityTileData *> compatibility_data = Map<int, CompatibilityTileData *>();
+	Map<int, int> compatibility_source_mapping = Map<int, int>();
+
+private:
+	void compatibility_conversion();
+
+public:
+	int compatibility_get_source_for_tile_id(int p_old_source) {
+		return compatibility_source_mapping[p_old_source];
+	};
+
+#endif // DISABLE_DEPRECATED
+
+public:
+	enum CellNeighbor {
+		CELL_NEIGHBOR_RIGHT_SIDE = 0,
+		CELL_NEIGHBOR_BOTTOM_RIGHT_SIDE,
+		CELL_NEIGHBOR_BOTTOM_SIDE,
+		CELL_NEIGHBOR_BOTTOM_LEFT_SIDE,
+		CELL_NEIGHBOR_LEFT_SIDE,
+		CELL_NEIGHBOR_TOP_LEFT_SIDE,
+		CELL_NEIGHBOR_TOP_SIDE,
+		CELL_NEIGHBOR_TOP_RIGHT_SIDE,
+		CELL_NEIGHBOR_RIGHT_CORNER,
+		CELL_NEIGHBOR_BOTTOM_RIGHT_CORNER,
+		CELL_NEIGHBOR_BOTTOM_CORNER,
+		CELL_NEIGHBOR_BOTTOM_LEFT_CORNER,
+		CELL_NEIGHBOR_LEFT_CORNER,
+		CELL_NEIGHBOR_TOP_LEFT_CORNER,
+		CELL_NEIGHBOR_TOP_CORNER,
+		CELL_NEIGHBOR_TOP_RIGHT_CORNER,
+		CELL_NEIGHBOR_MAX,
+	};
+
+	enum TileShape {
+		TILE_SHAPE_SQUARE,
+		TILE_SHAPE_ISOMETRIC,
+		TILE_SHAPE_HALF_OFFSET_SQUARE,
+		TILE_SHAPE_HEXAGON,
+	};
+
+	enum TileLayout {
+		TILE_LAYOUT_STACKED,
+		TILE_LAYOUT_STACKED_OFFSET,
+		TILE_LAYOUT_STAIRS_RIGHT,
+		TILE_LAYOUT_STAIRS_DOWN,
+		TILE_LAYOUT_DIAMOND_RIGHT,
+		TILE_LAYOUT_DIAMOND_DOWN,
+	};
+
+	enum TileOffsetAxis {
+		TILE_OFFSET_AXIS_HORIZONTAL,
+		TILE_OFFSET_AXIS_VERTICAL,
+	};
+
+public:
+	struct PackedSceneSource {
+		Ref<PackedScene> scene;
+		Vector2 offset;
+	};
+
+protected:
+	bool _set(const StringName &p_name, const Variant &p_value);
+	bool _get(const StringName &p_name, Variant &r_ret) const;
+	void _get_property_list(List<PropertyInfo> *p_list) const;
+
+private:
+	// --- TileSet data ---
+	// Basic shape and layout.
+	TileShape tile_shape = TILE_SHAPE_SQUARE;
+	TileLayout tile_layout = TILE_LAYOUT_STACKED;
+	TileOffsetAxis tile_offset_axis = TILE_OFFSET_AXIS_HORIZONTAL;
+	Size2i tile_size = Size2i(16, 16); //Size2(64, 64);
+	Vector2 tile_skew = Vector2(0, 0);
+
+	// Rendering.
+	bool y_sorting = false;
+	bool uv_clipping = false;
+	struct OcclusionLayer {
+		uint32_t light_mask = 1;
+		bool sdf_collision = false;
+	};
+	Vector<OcclusionLayer> occlusion_layers;
+
+	// Physics
+	struct PhysicsLayer {
+		uint32_t collision_layer = 1;
+		uint32_t collision_mask = 1;
+		Ref<PhysicsMaterial> physics_material;
+	};
+	Vector<PhysicsLayer> physics_layers;
+
+	// Terrains
+	struct Terrain {
+		String name;
+		Color color;
+	};
+	Vector<Terrain> terrains;
+
+	// Navigation
+	struct Navigationlayer {
+		uint32_t layers = 1;
+	};
+	Vector<Navigationlayer> navigation_layers;
+
+	// CustomData
+	struct CustomDataLayer {
+		String name;
+		Variant::Type type;
+	};
+	Vector<CustomDataLayer> custom_data_layers;
+	Map<String, int> custom_data_layers_by_name;
+
+	// Per Atlas source data.
+	Map<int, Ref<TileSetSource>> sources;
+	Vector<int> source_ids;
+	int next_source_id = 0;
+	// ---------------------
+
+	// Plugins themselves.
+	Vector<TileSetPlugin *> tile_set_plugins_vector;
+
+	void _compute_next_source_id();
+	void _source_changed();
+
+protected:
+	static void _bind_methods();
+
+public:
+	// --- Plugins ---
+	Vector<TileSetPlugin *> get_tile_set_atlas_plugins() const;
+
+	// --- Accessors for TileSet data ---
+
+	// -- Shape and layout --
+	void set_tile_shape(TileShape p_shape);
+	TileShape get_tile_shape() const;
+	void set_tile_layout(TileLayout p_layout);
+	TileLayout get_tile_layout() const;
+	void set_tile_offset_axis(TileOffsetAxis p_alignment);
+	TileOffsetAxis get_tile_offset_axis() const;
+	void set_tile_size(Size2i p_size);
+	Size2i get_tile_size() const;
+	void set_tile_skew(Vector2 p_skew);
+	Vector2 get_tile_skew() const;
+
+	// -- Sources management --
+	int get_next_source_id() const;
+	int get_source_count() const;
+	int get_source_id(int p_index) const;
+	int add_source(Ref<TileSetAtlasSource> p_tile_atlas_source, int p_source_id_override = -1);
+	void set_source_id(int p_source_id, int p_new_id);
+	void remove_source(int p_source_id);
+	bool has_source(int p_source_id) const;
+	Ref<TileSetSource> get_source(int p_source_id) const;
+
+	// Rendering
+	void set_y_sorting(bool p_y_sort);
+	bool is_y_sorting() const;
+
+	void set_uv_clipping(bool p_uv_clipping);
+	bool is_uv_clipping() const;
+
+	void set_occlusion_layers_count(int p_occlusion_layers_count);
+	int get_occlusion_layers_count() const;
+	void set_occlusion_layer_light_mask(int p_layer_index, int p_light_mask);
+	int get_occlusion_layer_light_mask(int p_layer_index) const;
+	void set_occlusion_layer_sdf_collision(int p_layer_index, int p_sdf_collision);
+	bool get_occlusion_layer_sdf_collision(int p_layer_index) const;
+
+	// Physics
+	void set_physics_layers_count(int p_physics_layers_count);
+	int get_physics_layers_count() const;
+	void set_physics_layer_collision_layer(int p_layer_index, uint32_t p_layer);
+	uint32_t get_physics_layer_collision_layer(int p_layer_index) const;
+	void set_physics_layer_collision_mask(int p_layer_index, uint32_t p_mask);
+	uint32_t get_physics_layer_collision_mask(int p_layer_index) const;
+	void set_physics_layer_physics_material(int p_layer_index, Ref<PhysicsMaterial> p_physics_material);
+	Ref<PhysicsMaterial> get_physics_layer_physics_material(int p_layer_index) const;
+
+	// Terrains
+	void set_terrains_count(int p_terrains_layers_count);
+	int get_terrains_count() const;
+	void set_terrain_name(int p_terrain_index, String p_name);
+	String get_terrain_name(int p_terrain_index) const;
+	void set_terrain_color(int p_terrain_index, Color p_color);
+	Color get_terrain_color(int p_terrain_index) const;
+
+	// Navigation
+	void set_navigation_layers_count(int p_navigation_layers_count);
+	int get_navigation_layers_count() const;
+	void set_navigation_layer_layers(int p_layer_index, uint32_t p_layers);
+	uint32_t get_navigation_layer_layers(int p_layer_index) const;
+
+	// Custom data
+	void set_custom_data_layers_count(int p_custom_data_layers_count);
+	int get_custom_data_layers_count() const;
+	int get_custom_data_layer_by_name(String p_value) const;
+	void set_custom_data_name(int p_layer_id, String p_value);
+	String get_custom_data_name(int p_layer_id) const;
+	void set_custom_data_type(int p_layer_id, Variant::Type p_value);
+	Variant::Type get_custom_data_type(int p_layer_id) const;
+
+	// Helpers
+	void draw_tile_shape(CanvasItem *p_canvas_item, Rect2 p_region, Color p_color, bool p_filled = false, Ref<Texture2D> p_texture = Ref<Texture2D>());
+	Vector2i get_tile_effective_texture_offset(int p_atlas_source_id, Vector2i p_atlas_coords, int p_alternative_tile) const;
+
+	virtual void reset_state() override;
+
+	TileSet();
+	~TileSet();
+
+public:
+	static void _append_property_list_with_prefix(const StringName &p_name, List<PropertyInfo> *p_to_prepend, List<PropertyInfo> *p_list);
+};
+
+class TileSetSource : public Resource {
+	GDCLASS(TileSetSource, Resource);
+
+protected:
+	const TileSet *tile_set = nullptr;
+
+public:
+	// Not exposed.
+	virtual void set_tile_set(const TileSet *p_tile_set);
+	virtual void notify_tile_data_properties_should_change(){};
+	virtual void reset_state() override{};
+
+	// Tiles.
+	virtual int get_tiles_count() const = 0;
+	virtual Vector2i get_tile_id(int tile_index) const = 0;
+	virtual bool has_tile(Vector2i p_atlas_coords) const = 0;
+
+	// Alternative tiles.
+	virtual int get_alternative_tiles_count(const Vector2i p_atlas_coords) const = 0;
+	virtual int get_alternative_tile_id(const Vector2i p_atlas_coords, int p_index) const = 0;
+	virtual bool has_alternative_tile(const Vector2i p_atlas_coords, int p_alternative_tile) const = 0;
+};
+
+class TileSetAtlasSource : public TileSetSource {
+	GDCLASS(TileSetAtlasSource, TileSetSource);
+
+public:
+	static const Vector2i INVALID_ATLAS_COORDS; // Vector2i(-1, -1);
+	static const int INVALID_TILE_ALTERNATIVE; // -1;
+
+	struct TileAlternativesData {
+		Vector2i size_in_atlas = Vector2i(1, 1);
+		Vector2i texture_offset;
+		Map<int, TileData *> alternatives;
+		Vector<int> alternatives_ids;
+		int next_alternative_id = 1;
+	};
+
+private:
+	Ref<Texture2D> texture;
+	Vector2i margins;
+	Vector2i separation;
+	Size2i texture_region_size = Size2i(16, 16);
+
+	// TODO: maybe move to plugin structures ?
+	Vector2i base_texture_offset;
+
+	Map<Vector2i, TileAlternativesData> tiles;
+	Vector<Vector2i> tiles_ids;
+	Map<Vector2i, Vector2i> _coords_mapping_cache; // Maps any coordinate to the including tile
+
+	TileData *_get_atlas_tile_data(Vector2i p_atlas_coords, int p_alternative_tile);
+	const TileData *_get_atlas_tile_data(Vector2i p_atlas_coords, int p_alternative_tile) const;
+
+	void _compute_next_alternative_id(const Vector2i p_atlas_coords);
+
+protected:
+	bool _set(const StringName &p_name, const Variant &p_value);
+	bool _get(const StringName &p_name, Variant &r_ret) const;
+	void _get_property_list(List<PropertyInfo> *p_list) const;
+
+	static void _bind_methods();
+
+public:
+	// Not exposed.
+	virtual void set_tile_set(const TileSet *p_tile_set) override;
+	virtual void notify_tile_data_properties_should_change() override;
+	virtual void reset_state() override;
+
+	// Base properties.
+	void set_texture(Ref<Texture2D> p_texture);
+	Ref<Texture2D> get_texture() const;
+	void set_margins(Vector2i p_margins);
+	Vector2i get_margins() const;
+	void set_separation(Vector2i p_separation);
+	Vector2i get_separation() const;
+	void set_texture_region_size(Vector2i p_tile_size);
+	Vector2i get_texture_region_size() const;
+	void set_base_texture_offset(Vector2i p_base_texture_offset);
+	Vector2i get_base_texture_offset() const;
+
+	// Base tiles.
+	void create_tile(const Vector2i p_atlas_coords, const Vector2i p_size = Vector2i(1, 1)); // Create a tile if it does not exists, or add alternative tile if it does.
+	void remove_tile(Vector2i p_atlas_coords); // Remove a tile. If p_tile_key.alternative_tile if different from 0, remove the alternative
+	virtual bool has_tile(Vector2i p_atlas_coords) const override;
+	bool can_move_tile_in_atlas(Vector2i p_atlas_coords, Vector2i p_new_atlas_coords = INVALID_ATLAS_COORDS, Vector2i p_new_size = Vector2i(-1, -1)) const;
+	void move_tile_in_atlas(Vector2i p_atlas_coords, Vector2i p_new_atlas_coords = INVALID_ATLAS_COORDS, Vector2i p_new_size = Vector2i(-1, -1));
+	Vector2i get_tile_size_in_atlas(Vector2i p_atlas_coords) const;
+
+	virtual int get_tiles_count() const override;
+	virtual Vector2i get_tile_id(int p_index) const override;
+
+	Vector2i get_tile_at_coords(Vector2i p_atlas_coords) const;
+
+	// Alternative tiles.
+	int create_alternative_tile(const Vector2i p_atlas_coords, int p_alternative_id_override = -1);
+	void remove_alternative_tile(const Vector2i p_atlas_coords, int p_alternative_tile);
+	void set_alternative_tile_id(const Vector2i p_atlas_coords, int p_alternative_tile, int p_new_id);
+	virtual bool has_alternative_tile(const Vector2i p_atlas_coords, int p_alternative_tile) const override;
+	int get_next_alternative_tile_id(const Vector2i p_atlas_coords) const;
+
+	virtual int get_alternative_tiles_count(const Vector2i p_atlas_coords) const override;
+	virtual int get_alternative_tile_id(const Vector2i p_atlas_coords, int p_index) const override;
+
+	// Get data associated to a tile.
+	Object *get_tile_data(const Vector2i p_atlas_coords, int p_alternative_tile) const;
+
+	// Helpers.
+	Vector2i get_atlas_grid_size() const;
+	bool has_tiles_outside_texture();
+	void clear_tiles_outside_texture();
+	Rect2i get_tile_texture_region(Vector2i p_atlas_coords) const;
+
+	~TileSetAtlasSource();
+};
 
 class TileData : public Object {
 	GDCLASS(TileData, Object);
@@ -63,25 +441,6 @@ public:
 		TERRAIN_MODE_MATCH_CORNERS_AND_SIDES = 0,
 		TERRAIN_MODE_MATCH_CORNERS,
 		TERRAIN_MODE_MATCH_SIDES,
-	};
-
-	enum TerrainPeeringBit {
-		TERRAIN_PEERING_BIT_RIGHT_SIDE = 0,
-		TERRAIN_PEERING_BIT_BOTTOM_RIGHT_SIDE,
-		TERRAIN_PEERING_BIT_BOTTOM_SIDE,
-		TERRAIN_PEERING_BIT_BOTTOM_LEFT_SIDE,
-		TERRAIN_PEERING_BIT_LEFT_SIDE,
-		TERRAIN_PEERING_BIT_TOP_LEFT_SIDE,
-		TERRAIN_PEERING_BIT_TOP_SIDE,
-		TERRAIN_PEERING_BIT_TOP_RIGHT_SIDE,
-		TERRAIN_PEERING_BIT_RIGHT_CORNER,
-		TERRAIN_PEERING_BIT_BOTTOM_RIGHT_CORNER,
-		TERRAIN_PEERING_BIT_BOTTOM_CORNER,
-		TERRAIN_PEERING_BIT_BOTTOM_LEFT_CORNER,
-		TERRAIN_PEERING_BIT_LEFT_CORNER,
-		TERRAIN_PEERING_BIT_TOP_LEFT_CORNER,
-		TERRAIN_PEERING_BIT_TOP_CORNER,
-		TERRAIN_PEERING_BIT_TOP_RIGHT_CORNER,
 	};
 
 private:
@@ -179,8 +538,8 @@ public:
 	TerrainMode get_terrain_mode() const;
 	void set_terrain(int p_terrain_id);
 	int get_terrain() const;
-	void set_peering_bit_terrain(TerrainPeeringBit p_peering_bit, int p_terrain_id);
-	int get_peering_bit_terrain(TerrainPeeringBit p_peering_bit) const;
+	void set_peering_bit_terrain(TileSet::CellNeighbor p_peering_bit, int p_terrain_id);
+	int get_peering_bit_terrain(TileSet::CellNeighbor p_peering_bit) const;
 
 	// Navigation
 	void set_navigation_polygon(int p_layer_id, Ref<NavigationPolygon> p_navigation_polygon);
@@ -197,362 +556,15 @@ public:
 	Variant get_custom_data_by_layer_id(int p_layer_id) const;
 };
 
-class TileSetSource : public Resource {
-	GDCLASS(TileSetSource, Resource);
-
-protected:
-	const TileSet *tile_set = nullptr;
-
-public:
-	// Not exposed.
-	virtual void set_tile_set(const TileSet *p_tile_set);
-	virtual void notify_tile_data_properties_should_change(){};
-	virtual void reset_state() override{};
-
-	// Tiles checks.
-	virtual bool has_tile(Vector2i p_atlas_coords) const = 0;
-	virtual bool has_alternative_tile(const Vector2i p_atlas_coords, int p_alternative_tile) const = 0;
-};
-
-class TileSetAtlasSource : public TileSetSource {
-	GDCLASS(TileSetAtlasSource, TileSetSource);
-
-public:
-	static const Vector2i INVALID_ATLAS_COORDS; // Vector2i(-1, -1);
-	static const int INVALID_TILE_ALTERNATIVE; // -1;
-
-	struct TileAlternativesData {
-		Vector2i size_in_atlas = Vector2i(1, 1);
-		Vector2i texture_offset;
-		Map<int, TileData *> alternatives;
-		Vector<int> alternatives_ids;
-		int next_alternative_id = 1;
-	};
-
-private:
-	Ref<Texture2D> texture;
-	Vector2i margins;
-	Vector2i separation;
-	Size2i texture_region_size = Size2i(16, 16);
-
-	// TODO: maybe move to plugin structures ?
-	Vector2i base_texture_offset;
-
-	Map<Vector2i, TileAlternativesData> tiles;
-	Vector<Vector2i> tiles_ids;
-	Map<Vector2i, Vector2i> _coords_mapping_cache; // Maps any coordinate to the including tile
-
-	TileData *_get_atlas_tile_data(Vector2i p_atlas_coords, int p_alternative_tile);
-	const TileData *_get_atlas_tile_data(Vector2i p_atlas_coords, int p_alternative_tile) const;
-
-	void _compute_next_alternative_id(const Vector2i p_atlas_coords);
-
-protected:
-	bool _set(const StringName &p_name, const Variant &p_value);
-	bool _get(const StringName &p_name, Variant &r_ret) const;
-	void _get_property_list(List<PropertyInfo> *p_list) const;
-
-	static void _bind_methods();
-
-public:
-	// Not exposed.
-	virtual void set_tile_set(const TileSet *p_tile_set) override;
-	virtual void notify_tile_data_properties_should_change() override;
-	virtual void reset_state() override;
-
-	// Base properties.
-	void set_texture(Ref<Texture2D> p_texture);
-	Ref<Texture2D> get_texture() const;
-	void set_margins(Vector2i p_margins);
-	Vector2i get_margins() const;
-	void set_separation(Vector2i p_separation);
-	Vector2i get_separation() const;
-	void set_texture_region_size(Vector2i p_tile_size);
-	Vector2i get_texture_region_size() const;
-	void set_base_texture_offset(Vector2i p_base_texture_offset);
-	Vector2i get_base_texture_offset() const;
-
-	// Base tiles.
-	void create_tile(const Vector2i p_atlas_coords, const Vector2i p_size = Vector2i(1, 1)); // Create a tile if it does not exists, or add alternative tile if it does.
-	void remove_tile(Vector2i p_atlas_coords); // Remove a tile. If p_tile_key.alternative_tile if different from 0, remove the alternative
-	virtual bool has_tile(Vector2i p_atlas_coords) const override;
-	bool can_move_tile_in_atlas(Vector2i p_atlas_coords, Vector2i p_new_atlas_coords = INVALID_ATLAS_COORDS, Vector2i p_new_size = Vector2i(-1, -1)) const;
-	void move_tile_in_atlas(Vector2i p_atlas_coords, Vector2i p_new_atlas_coords = INVALID_ATLAS_COORDS, Vector2i p_new_size = Vector2i(-1, -1));
-	Vector2i get_tile_size_in_atlas(Vector2i p_atlas_coords) const;
-
-	int get_tiles_count() const;
-	Vector2i get_tile_id(int p_index) const;
-
-	Vector2i get_tile_at_coords(Vector2i p_atlas_coords) const;
-
-	// Alternative tiles.
-	int create_alternative_tile(const Vector2i p_atlas_coords, int p_alternative_id_override = -1);
-	void remove_alternative_tile(const Vector2i p_atlas_coords, int p_alternative_tile);
-	void set_alternative_tile_id(const Vector2i p_atlas_coords, int p_alternative_tile, int p_new_id);
-	virtual bool has_alternative_tile(const Vector2i p_atlas_coords, int p_alternative_tile) const override;
-	int get_next_alternative_tile_id(const Vector2i p_atlas_coords) const;
-
-	int get_alternative_tiles_count(const Vector2i p_atlas_coords) const;
-	int get_alternative_tile_id(const Vector2i p_atlas_coords, int p_index) const;
-
-	// Get data associated to a tile.
-	Object *get_tile_data(const Vector2i p_atlas_coords, int p_alternative_tile) const;
-
-	// Helpers.
-	Vector2i get_atlas_grid_size() const;
-	bool has_tiles_outside_texture();
-	void clear_tiles_outside_texture();
-	Rect2i get_tile_texture_region(Vector2i p_atlas_coords) const;
-
-	~TileSetAtlasSource();
-};
-
-class TileSet : public Resource {
-	GDCLASS(TileSet, Resource);
-
-#ifndef DISABLE_DEPRECATED
-private:
-	struct CompatibilityShapeData {
-		Vector2i autotile_coords;
-		bool one_way;
-		float one_way_margin;
-		Ref<Shape2D> shape;
-		Transform2D transform;
-	};
-
-	struct CompatibilityTileData {
-		String name;
-		Ref<Texture2D> texture;
-		Vector2 tex_offset;
-		Ref<ShaderMaterial> material;
-		Rect2 region;
-		int tile_mode;
-		Color modulate;
-
-		// Atlas or autotiles data
-		int autotile_bitmask_mode;
-		Vector2 autotile_icon_coordinate;
-		Size2i autotile_tile_size = Size2i(16, 16);
-
-		int autotile_spacing;
-		Map<Vector2i, int> autotile_bitmask_flags;
-		Map<Vector2i, Ref<OccluderPolygon2D>> autotile_occluder_map;
-		Map<Vector2i, Ref<NavigationPolygon>> autotile_navpoly_map;
-		Map<Vector2i, int> autotile_priority_map;
-		Map<Vector2i, int> autotile_z_index_map;
-
-		Vector<CompatibilityShapeData *> shapes = Vector<CompatibilityShapeData *>();
-		Ref<OccluderPolygon2D> occluder;
-		Vector2 occluder_offset;
-		Ref<NavigationPolygon> navigation;
-		Vector2 navigation_offset;
-		int z_index;
-	};
-
-	Map<int, CompatibilityTileData *> compatibility_data = Map<int, CompatibilityTileData *>();
-	Map<int, int> compatibility_source_mapping = Map<int, int>();
-
-private:
-	void compatibility_conversion();
-
-public:
-	int compatibility_get_source_for_tile_id(int p_old_source) {
-		return compatibility_source_mapping[p_old_source];
-	};
-
-#endif // DISABLE_DEPRECATED
-
-public:
-	enum TileShape {
-		TILE_SHAPE_SQUARE,
-		TILE_SHAPE_ISOMETRIC,
-		TILE_SHAPE_HALF_OFFSET_SQUARE,
-		TILE_SHAPE_HEXAGON,
-	};
-
-	enum TileLayout {
-		TILE_LAYOUT_STACKED,
-		TILE_LAYOUT_STACKED_OFFSET,
-		TILE_LAYOUT_STAIRS_RIGHT,
-		TILE_LAYOUT_STAIRS_DOWN,
-		TILE_LAYOUT_DIAMOND_RIGHT,
-		TILE_LAYOUT_DIAMOND_DOWN,
-	};
-
-	enum TileOffsetAxis {
-		TILE_OFFSET_AXIS_HORIZONTAL,
-		TILE_OFFSET_AXIS_VERTICAL,
-	};
-
-public:
-	struct PackedSceneSource {
-		Ref<PackedScene> scene;
-		Vector2 offset;
-	};
-
-protected:
-	bool _set(const StringName &p_name, const Variant &p_value);
-	bool _get(const StringName &p_name, Variant &r_ret) const;
-	void _get_property_list(List<PropertyInfo> *p_list) const;
-
-private:
-	// --- TileSet data ---
-	// Basic shape and layout.
-	TileShape tile_shape = TILE_SHAPE_SQUARE;
-	TileLayout tile_layout = TILE_LAYOUT_STACKED;
-	TileOffsetAxis tile_offset_axis = TILE_OFFSET_AXIS_HORIZONTAL;
-	Size2i tile_size = Size2i(16, 16); //Size2(64, 64);
-	Vector2 tile_skew = Vector2(0, 0);
-
-	// Rendering.
-	bool y_sorting = false;
-	bool uv_clipping = false;
-	struct OcclusionLayer {
-		uint32_t light_mask = 1;
-		bool sdf_collision = false;
-	};
-	Vector<OcclusionLayer> occlusion_layers;
-
-	// Physics
-	struct PhysicsLayer {
-		uint32_t collision_layer = 1;
-		uint32_t collision_mask = 1;
-		Ref<PhysicsMaterial> physics_material;
-	};
-	Vector<PhysicsLayer> physics_layers;
-
-	// Terrains
-	struct Terrain {
-		String name;
-		Color color;
-	};
-	Vector<Terrain> terrains;
-
-	// Navigation
-	struct Navigationlayer {
-		uint32_t layers = 1;
-	};
-	Vector<Navigationlayer> navigation_layers;
-
-	// CustomData
-	struct CustomDataLayer {
-		String name;
-		Variant::Type type;
-	};
-	Vector<CustomDataLayer> custom_data_layers;
-	Map<String, int> custom_data_layers_by_name;
-
-	// Per Atlas source data.
-	Map<int, Ref<TileSetSource>> sources;
-	Vector<int> source_ids;
-	int next_source_id = 0;
-	// ---------------------
-
-	// Plugins themselves.
-	TileSetAtlasPluginRendering tile_set_plugin_rendering;
-
-	TileSetAtlasPluginPhysics tile_set_plugin_physics;
-	TileSetAtlasPluginNavigation tile_set_plugin_navigation;
-	//TileSetAtlasPluginTerrain tile_set_plugin_terrain;
-
-	Vector<TileSetPlugin *> tile_set_plugins_vector;
-
-	void _compute_next_source_id();
-	void _source_changed();
-
-protected:
-	static void _bind_methods();
-
-public:
-	// --- Plugins ---
-	Vector<TileSetPlugin *> get_tile_set_atlas_plugins() const;
-
-	// --- Accessors for TileSet data ---
-
-	// -- Shape and layout --
-	void set_tile_shape(TileShape p_shape);
-	TileShape get_tile_shape() const;
-	void set_tile_layout(TileLayout p_layout);
-	TileLayout get_tile_layout() const;
-	void set_tile_offset_axis(TileOffsetAxis p_alignment);
-	TileOffsetAxis get_tile_offset_axis() const;
-	void set_tile_size(Size2i p_size);
-	Size2i get_tile_size() const;
-	void set_tile_skew(Vector2 p_skew);
-	Vector2 get_tile_skew() const;
-
-	// -- Sources management --
-	int get_next_source_id() const;
-	int get_source_count() const;
-	int get_source_id(int p_index) const;
-	int add_source(Ref<TileSetAtlasSource> p_tile_atlas_source, int p_source_id_override = -1);
-	void set_source_id(int p_source_id, int p_new_id);
-	void remove_source(int p_source_id);
-	bool has_source(int p_source_id) const;
-	Ref<TileSetSource> get_source(int p_source_id) const;
-
-	// Rendering
-	void set_y_sorting(bool p_y_sort);
-	bool is_y_sorting() const;
-
-	void set_uv_clipping(bool p_uv_clipping);
-	bool is_uv_clipping() const;
-
-	void set_occlusion_layers_count(int p_occlusion_layers_count);
-	int get_occlusion_layers_count() const;
-	void set_occlusion_layer_light_mask(int p_layer_index, int p_light_mask);
-	int get_occlusion_layer_light_mask(int p_layer_index) const;
-	void set_occlusion_layer_sdf_collision(int p_layer_index, int p_sdf_collision);
-	bool get_occlusion_layer_sdf_collision(int p_layer_index) const;
-
-	// Physics
-	void set_physics_layers_count(int p_physics_layers_count);
-	int get_physics_layers_count() const;
-	void set_physics_layer_collision_layer(int p_layer_index, uint32_t p_layer);
-	uint32_t get_physics_layer_collision_layer(int p_layer_index) const;
-	void set_physics_layer_collision_mask(int p_layer_index, uint32_t p_mask);
-	uint32_t get_physics_layer_collision_mask(int p_layer_index) const;
-	void set_physics_layer_physics_material(int p_layer_index, Ref<PhysicsMaterial> p_physics_material);
-	Ref<PhysicsMaterial> get_physics_layer_physics_material(int p_layer_index) const;
-
-	// Terrains
-	void set_terrains_count(int p_terrains_layers_count);
-	int get_terrains_count() const;
-	void set_terrain_name(int p_terrain_index, String p_name);
-	String get_terrain_name(int p_terrain_index) const;
-	void set_terrain_color(int p_terrain_index, Color p_color);
-	Color get_terrain_color(int p_terrain_index) const;
-
-	// Navigation
-	void set_navigation_layers_count(int p_navigation_layers_count);
-	int get_navigation_layers_count() const;
-	void set_navigation_layer_layers(int p_layer_index, uint32_t p_layers);
-	uint32_t get_navigation_layer_layers(int p_layer_index) const;
-
-	// Custom data
-	void set_custom_data_layers_count(int p_custom_data_layers_count);
-	int get_custom_data_layers_count() const;
-	int get_custom_data_layer_by_name(String p_value) const;
-	void set_custom_data_name(int p_layer_id, String p_value);
-	String get_custom_data_name(int p_layer_id) const;
-	void set_custom_data_type(int p_layer_id, Variant::Type p_value);
-	Variant::Type get_custom_data_type(int p_layer_id) const;
-
-	// Helpers
-	void draw_tile_shape(CanvasItem *p_canvas_item, Rect2 p_region, Color p_color, bool p_filled = false, Ref<Texture2D> p_texture = Ref<Texture2D>());
-	Vector2i get_tile_effective_texture_offset(int p_atlas_source_id, Vector2i p_atlas_coords, int p_alternative_tile) const;
-
-	virtual void reset_state() override;
-
-	TileSet();
-	~TileSet();
-
-public:
-	static void _append_property_list_with_prefix(const StringName &p_name, List<PropertyInfo> *p_to_prepend, List<PropertyInfo> *p_list);
-};
+// Include the plugins
+#include "tile_set_atlas_plugin.h"
+#include "tile_set_atlas_plugin_navigation.h"
+#include "tile_set_atlas_plugin_physics.h"
+#include "tile_set_atlas_plugin_rendering.h"
+#include "tile_set_atlas_plugin_terrain.h"
 
 VARIANT_ENUM_CAST(TileData::TerrainMode);
-VARIANT_ENUM_CAST(TileData::TerrainPeeringBit);
+VARIANT_ENUM_CAST(TileSet::CellNeighbor);
 VARIANT_ENUM_CAST(TileSet::TileShape);
 VARIANT_ENUM_CAST(TileSet::TileLayout);
 VARIANT_ENUM_CAST(TileSet::TileOffsetAxis);

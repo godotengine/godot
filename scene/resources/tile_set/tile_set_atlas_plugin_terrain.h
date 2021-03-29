@@ -31,45 +31,33 @@
 #ifndef TILE_SET_ATLAS_PLUGIN_TERRAIN_H
 #define TILE_SET_ATLAS_PLUGIN_TERRAIN_H
 
+#include "tile_set_atlas_plugin.h"
+
+#include "scene/resources/tile_set/tile_set.h"
+
 class TileMap;
+class TileData;
 
-// Tile data
-struct TerrainLayerTileData {
-	Map<Vector2i, bool> bitmask; // TODO
-};
+class TileSetAtlasPluginTerrain : public TileSetPlugin {
+	GDCLASS(TileSetAtlasPluginTerrain, TileSetPlugin);
 
-struct TerrainTileData {
-	Vector<TerrainLayerTileData> terrains;
-};
+private:
+	static void _draw_square_corner_or_side_terrain_bit(CanvasItem *p_canvas_item, Color p_color, Vector2i p_size, TileSet::CellNeighbor p_bit);
+	static void _draw_square_corner_terrain_bit(CanvasItem *p_canvas_item, Color p_color, Vector2i p_size, TileSet::CellNeighbor p_bit);
+	static void _draw_square_side_terrain_bit(CanvasItem *p_canvas_item, Color p_color, Vector2i p_size, TileSet::CellNeighbor p_bit);
 
-// TilSet data
-enum TerrainBitmaskMode {
-	BITMASK_2x2,
-	BITMASK_3x3,
-	BITMASK_3x3_MINIMAL
-};
+	static void _draw_isometric_corner_or_side_terrain_bit(CanvasItem *p_canvas_item, Color p_color, Vector2i p_size, TileSet::CellNeighbor p_bit);
+	static void _draw_isometric_corner_terrain_bit(CanvasItem *p_canvas_item, Color p_color, Vector2i p_size, TileSet::CellNeighbor p_bit);
+	static void _draw_isometric_side_terrain_bit(CanvasItem *p_canvas_item, Color p_color, Vector2i p_size, TileSet::CellNeighbor p_bit);
 
-struct TerrainTypeLayerData {
-	String name;
-	Ref<Texture2D> icon;
-	Rect2i icon_region;
-};
-
-struct TerrainsLayerData {
-	TerrainBitmaskMode bitmask_mode = BITMASK_2x2;
-	Vector<TerrainTypeLayerData> terrains;
-};
-
-struct TerrainsTileSetData {
-	Vector<TerrainsLayerData> layers;
-};
-
-/*
-class TileSetAtlasPluginTerrain : public Resource {
-	GDCLASS(TileSetAtlasPluginTerrain, Resource);
+	static void _draw_half_offset_corner_or_side_terrain_bit(CanvasItem *p_canvas_item, Color p_color, Vector2i p_size, TileSet::CellNeighbor p_bit, float p_overlap, TileSet::TileOffsetAxis p_offset_axis);
+	static void _draw_half_offset_corner_terrain_bit(CanvasItem *p_canvas_item, Color p_color, Vector2i p_size, TileSet::CellNeighbor p_bit, float p_overlap, TileSet::TileOffsetAxis p_offset_axis);
+	static void _draw_half_offset_side_terrain_bit(CanvasItem *p_canvas_item, Color p_color, Vector2i p_size, TileSet::CellNeighbor p_bit, float p_overlap, TileSet::TileOffsetAxis p_offset_axis);
 
 public:
-    virtual void tilemap_notification(const TileMap * p_tile_map, int p_what);
+	//virtual void tilemap_notification(const TileMap * p_tile_map, int p_what);
+
+	static void draw_terrains(CanvasItem *p_canvas_item, Transform2D p_transform, TileSet *p_tile_set, const TileData *p_tile_data);
 };
-*/
+
 #endif // TILE_SET_ATLAS_PLUGIN_TERRAIN_H

@@ -47,7 +47,7 @@ private:
 	bool tileset_changed_needs_update = false;
 	bool has_mouse = false;
 
-	// --- TileSet ---
+	// Tiles
 	Label *missing_tileset_label;
 	TabContainer *tileset_tabs_container;
 	HSplitContainer *atlas_sources_split_container;
@@ -85,7 +85,12 @@ private:
 	void _tile_alternatives_control_mouse_exited();
 	void _tile_alternatives_control_gui_input(const Ref<InputEvent> &p_event);
 
-	// --- TileMap ---
+	// Terrains
+	Vector<Set<TileMapCell>> per_terrain_tiles;
+	ItemList *tilemap_tab_terrains_list;
+	void _update_terrains();
+
+	// TileMap
 	ObjectID tile_map_id;
 
 	HBoxContainer *tilemap_toolbar;

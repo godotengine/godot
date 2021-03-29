@@ -264,6 +264,8 @@ public:
 	Vector2 map_to_world(const Vector2 &p_pos) const;
 	Vector2i world_to_map(const Vector2 &p_pos) const;
 
+	Vector2i get_neighbor_cell(const Vector2i &p_coords, TileSet::CellNeighbor p_cell_neighbor) const;
+
 	TypedArray<Vector2i> get_used_cells() const;
 	Rect2 get_used_rect(); // Not const because of cache
 

@@ -321,21 +321,12 @@ TileSetEditor::TileSetEditor() {
 
 	set_process_internal(true);
 
-	// TileData editors setup.
-
-	// Tab container
-	TabContainer *tab_container = memnew(TabContainer);
-	tab_container->set_h_size_flags(SIZE_EXPAND_FILL);
-	tab_container->set_v_size_flags(SIZE_EXPAND_FILL);
-	tab_container->set_tab_align(TabContainer::ALIGN_LEFT);
-	add_child(tab_container);
-
 	// Split container.
 	HSplitContainer *split_container = memnew(HSplitContainer);
 	split_container->set_name(TTR("Tiles"));
 	split_container->set_h_size_flags(SIZE_EXPAND_FILL);
 	split_container->set_v_size_flags(SIZE_EXPAND_FILL);
-	tab_container->add_child(split_container);
+	add_child(split_container);
 
 	// Sources list.
 	VBoxContainer *split_container_left_side = memnew(VBoxContainer);
@@ -386,43 +377,6 @@ TileSetEditor::TileSetEditor() {
 	tile_set_atlas_source_editor->connect("source_id_changed", callable_mp(this, &TileSetEditor::_update_atlas_sources_list));
 	split_container->add_child(tile_set_atlas_source_editor);
 	tile_set_atlas_source_editor->hide();
-
-	// Terrains editor.
-	Control *terrains_editor = memnew(Control);
-	terrains_editor->set_name(TTR("Terrains"));
-	terrains_editor->set_h_size_flags(SIZE_EXPAND_FILL);
-	terrains_editor->set_v_size_flags(SIZE_EXPAND_FILL);
-	tab_container->add_child(terrains_editor);
-
-	tab_container->set_tab_disabled(1, true);
-
-	/*
-	TabContainer *tileset_tabs_container = memnew(TabContainer);
-	tileset_tabs_container->set_v_size_flags(SIZE_EXPAND_FILL);
-	tileset_tabs_container->set_tab_align(TabContainer::ALIGN_LEFT);
-	add_child(tileset_tabs_container);
-
-
-	// - Layers tab -
-	Control *tileset_tab_tileset_layers = memnew(Control);
-	tileset_tab_tileset_layers->set_name("Tileset layers");
-	tileset_tabs_container->add_child(tileset_tab_tileset_layers);
-
-	// - Properties tab -
-	Control *tileset_tab_tile_properties = memnew(Control);
-	tileset_tab_tile_properties->set_name("Tile properties");
-	tileset_tabs_container->add_child(tileset_tab_tile_properties);
-
-	// - Scenes tab -
-	Control *tileset_tab_scenes = memnew(Control);
-	tileset_tab_scenes->set_name("Scenes");
-	tileset_tabs_container->add_child(tileset_tab_scenes);
-
-	// Disable unused tabs.
-	tileset_tabs_container->set_tab_disabled(1, true);
-	tileset_tabs_container->set_tab_disabled(2, true);
-	tileset_tabs_container->set_tab_disabled(3, true);
-*/
 }
 
 TileSetEditor::~TileSetEditor() {

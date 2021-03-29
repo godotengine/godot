@@ -66,6 +66,7 @@ void TileMapEditor::_notification(int p_what) {
 				_update_bottom_panel();
 				_update_tile_set_atlas_sources_list();
 				_update_atlas_view();
+				_update_terrains();
 				CanvasItemEditor::get_singleton()->update_viewport();
 				tileset_changed_needs_update = false;
 			}
@@ -1722,6 +1723,117 @@ void TileMapEditor::_tile_alternatives_control_gui_input(const Ref<InputEvent> &
 	}
 }
 
+void TileMapEditor::_update_terrains() {
+	per_terrain_tiles.clear();
+	tilemap_tab_terrains_list->clear();
+
+	TileMap *tile_map = Object::cast_to<TileMap>(ObjectDB::get_instance(tile_map_id));
+	if (!tile_map) {
+		return;
+	}
+
+	Ref<TileSet> tile_set = tile_map->get_tileset();
+	if (!tile_set.is_valid()) {
+		return;
+	}
+
+	// Group tiles per terrain.
+	per_terrain_tiles.resize(tile_set->get_terrains_count());
+	for (int source_index = 0; source_index < tile_set->get_source_count(); source_index++) {
+		int source_id = tile_set->get_source_id(source_index);
+		Ref<TileSetSource> source = tile_set->get_source(source_id);
+
+		Ref<TileSetAtlasSource> atlas_source = source;
+		if (atlas_source.is_valid()) {
+			for (int tile_index = 0; tile_index < source->get_tiles_count(); tile_index++) {
+				Vector2i tile_id = source->get_tile_id(tile_index);
+				for (int alternative_index = 0; alternative_index < source->get_alternative_tiles_count(tile_id); alternative_index++) {
+					int alternative_id = source->get_alternative_tile_id(tile_id, alternative_index);
+
+					TileData *tile_data = Object::cast_to<TileData>(atlas_source->get_tile_data(tile_id, alternative_id));
+
+					// Central terrain bit.
+					int terrain = tile_data->get_terrain();
+					if (terrain >= 0 && terrain < per_terrain_tiles.size()) {
+						TileMapCell c;
+						c.source_id = source_id;
+						c.set_atlas_coords(tile_id);
+						c.alternative_tile = alternative_id;
+						per_terrain_tiles.write[terrain].insert(c);
+						continue;
+					}
+
+					// Other bits.
+					for (int i = 0; i < TileSet::CELL_NEIGHBOR_MAX; i++) {
+						terrain = tile_data->get_peering_bit_terrain((TileSet::CellNeighbor)i);
+						if (terrain >= 0 && terrain < per_terrain_tiles.size()) {
+							TileMapCell c;
+							c.source_id = source_id;
+							c.set_atlas_coords(tile_id);
+							c.alternative_tile = alternative_id;
+							per_terrain_tiles.write[terrain].insert(c);
+							break;
+						}
+					}
+				}
+			}
+		}
+	}
+
+	// Fill in the terrain list.
+	for (int terrain_index = 0; terrain_index < tile_set->get_terrains_count(); terrain_index++) {
+		// Compute the cell used for terrain preview (whenever possible).
+		TileMapCell c;
+		int max_bit_count = -1;
+		for (Set<TileMapCell>::Element *E = per_terrain_tiles[terrain_index].front(); E; E = E->next()) {
+			Ref<TileSetSource> source = tile_set->get_source(E->get().source_id);
+
+			Ref<TileSetAtlasSource> atlas_source = source;
+			if (atlas_source.is_valid()) {
+				TileData *tile_data = Object::cast_to<TileData>(atlas_source->get_tile_data(E->get().get_atlas_coords(), E->get().alternative_tile));
+				int count = 0;
+				if (tile_data->get_terrain() == terrain_index) {
+					for (int peering_bit = 0; peering_bit < TileSet::CELL_NEIGHBOR_MAX; peering_bit++) {
+						if (tile_data->get_peering_bit_terrain((TileSet::CellNeighbor)peering_bit) == terrain_index) {
+							count++;
+						}
+					}
+					if (count > max_bit_count) {
+						c = E->get();
+						max_bit_count = count;
+					}
+				}
+			}
+		}
+
+		// Get the preview.
+		Ref<Texture2D> icon;
+		Rect2 region;
+		if (max_bit_count >= 0) {
+			Ref<TileSetSource> source = tile_set->get_source(c.source_id);
+
+			Ref<TileSetAtlasSource> atlas_source = source;
+			if (atlas_source.is_valid()) {
+				icon = atlas_source->get_texture();
+				region = atlas_source->get_tile_texture_region(c.get_atlas_coords());
+			}
+		} else {
+			Ref<Image> image;
+			image.instance();
+			image->create(1, 1, false, Image::FORMAT_RGBA8);
+			image->set_pixel(0, 0, tile_set->get_terrain_color(terrain_index));
+			Ref<ImageTexture> image_texture;
+			image_texture.instance();
+			image_texture->create_from_image(image);
+			icon = image_texture;
+		}
+
+		// Add the item to the terrain list.
+		tilemap_tab_terrains_list->add_item(tile_set->get_terrain_name(terrain_index), icon);
+		tilemap_tab_terrains_list->set_item_icon_region(terrain_index, region);
+	}
+}
+
 void TileMapEditor::_set_tile_map_selection(const TypedArray<Vector2i> &p_selection) {
 	tile_map_selection.clear();
 	for (int i = 0; i < p_selection.size(); i++) {
@@ -1948,14 +2060,18 @@ TileMapEditor::TileMapEditor() {
 	_update_bottom_panel();
 
 	// -- Terrains tab --
-	ItemList *tilemap_tab_terrains = memnew(ItemList);
+	HSplitContainer *tilemap_tab_terrains = memnew(HSplitContainer);
 	tilemap_tab_terrains->set_name("Terrains");
 	tilemap_tab_terrains->set_h_size_flags(SIZE_EXPAND_FILL);
 	tilemap_tab_terrains->set_v_size_flags(SIZE_EXPAND_FILL);
 	tileset_tabs_container->add_child(tilemap_tab_terrains);
 
-	// Disable unused tabs.
-	tileset_tabs_container->set_tab_disabled(1, true);
+	tilemap_tab_terrains_list = memnew(ItemList);
+	tilemap_tab_terrains_list->set_fixed_icon_size(Size2i(30, 30) * EDSCALE);
+	tilemap_tab_terrains_list->set_h_size_flags(SIZE_EXPAND_FILL);
+	tilemap_tab_terrains_list->set_stretch_ratio(0.25);
+	tilemap_tab_terrains_list->set_custom_minimum_size(Size2i(70, 0) * EDSCALE);
+	tilemap_tab_terrains->add_child(tilemap_tab_terrains_list);
 }
 
 TileMapEditor::~TileMapEditor() {

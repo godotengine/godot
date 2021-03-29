@@ -105,19 +105,6 @@ public:
 class TileDataTerrainsEditor : public TileDataEditor {
 	GDCLASS(TileDataTerrainsEditor, TileDataEditor);
 
-private:
-	void _draw_square_corner_or_side_terrain_bit(CanvasItem *p_canvas_item, Color p_color, Vector2i p_size, TileData::TerrainPeeringBit p_bit);
-	void _draw_square_corner_terrain_bit(CanvasItem *p_canvas_item, Color p_color, Vector2i p_size, TileData::TerrainPeeringBit p_bit);
-	void _draw_square_side_terrain_bit(CanvasItem *p_canvas_item, Color p_color, Vector2i p_size, TileData::TerrainPeeringBit p_bit);
-
-	void _draw_isometric_corner_or_side_terrain_bit(CanvasItem *p_canvas_item, Color p_color, Vector2i p_size, TileData::TerrainPeeringBit p_bit);
-	void _draw_isometric_corner_terrain_bit(CanvasItem *p_canvas_item, Color p_color, Vector2i p_size, TileData::TerrainPeeringBit p_bit);
-	void _draw_isometric_side_terrain_bit(CanvasItem *p_canvas_item, Color p_color, Vector2i p_size, TileData::TerrainPeeringBit p_bit);
-
-	void _draw_half_offset_corner_or_side_terrain_bit(CanvasItem *p_canvas_item, Color p_color, Vector2i p_size, TileData::TerrainPeeringBit p_bit, float p_overlap, TileSet::TileOffsetAxis p_offset_axis);
-	void _draw_half_offset_corner_terrain_bit(CanvasItem *p_canvas_item, Color p_color, Vector2i p_size, TileData::TerrainPeeringBit p_bit, float p_overlap, TileSet::TileOffsetAxis p_offset_axis);
-	void _draw_half_offset_side_terrain_bit(CanvasItem *p_canvas_item, Color p_color, Vector2i p_size, TileData::TerrainPeeringBit p_bit, float p_overlap, TileSet::TileOffsetAxis p_offset_axis);
-
 public:
 	virtual void draw_over_tile(CanvasItem *p_canvas_item, Transform2D p_transform, TileSet *p_tile_set, int p_atlas_source_id, Vector2i p_atlas_coords, int p_alternative_tile, String p_property) override;
 };
