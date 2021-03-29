@@ -320,7 +320,8 @@ godot_int GDAPI godot_arvr_add_controller(char *p_device_name, godot_int p_hand,
 	InputDefault *input = (InputDefault *)Input::get_singleton();
 	ERR_FAIL_NULL_V(input, 0);
 
-	ARVRPositionalTracker *new_tracker = memnew(ARVRPositionalTracker);
+	Ref<ARVRPositionalTracker> new_tracker;
+	new_tracker.instance();
 	new_tracker->set_name(p_device_name);
 	new_tracker->set_type(ARVRServer::TRACKER_CONTROLLER);
 	if (p_hand == 1) {
@@ -359,8 +360,8 @@ void GDAPI godot_arvr_remove_controller(godot_int p_controller_id) {
 	InputDefault *input = (InputDefault *)Input::get_singleton();
 	ERR_FAIL_NULL(input);
 
-	ARVRPositionalTracker *remove_tracker = arvr_server->find_by_type_and_id(ARVRServer::TRACKER_CONTROLLER, p_controller_id);
-	if (remove_tracker != NULL) {
+	Ref<ARVRPositionalTracker> remove_tracker = arvr_server->find_by_type_and_id(ARVRServer::TRACKER_CONTROLLER, p_controller_id);
+	if (remove_tracker.is_valid()) {
 		// unset our joystick if applicable
 		int joyid = remove_tracker->get_joy_id();
 		if (joyid != -1) {
@@ -370,7 +371,7 @@ void GDAPI godot_arvr_remove_controller(godot_int p_controller_id) {
 
 		// remove our tracker from our server
 		arvr_server->remove_tracker(remove_tracker);
-		memdelete(remove_tracker);
+		remove_tracker.unref();
 	}
 }
 
@@ -378,8 +379,8 @@ void GDAPI godot_arvr_set_controller_transform(godot_int p_controller_id, godot_
 	ARVRServer *arvr_server = ARVRServer::get_singleton();
 	ERR_FAIL_NULL(arvr_server);
 
-	ARVRPositionalTracker *tracker = arvr_server->find_by_type_and_id(ARVRServer::TRACKER_CONTROLLER, p_controller_id);
-	if (tracker != NULL) {
+	Ref<ARVRPositionalTracker> tracker = arvr_server->find_by_type_and_id(ARVRServer::TRACKER_CONTROLLER, p_controller_id);
+	if (tracker.is_valid()) {
 		Transform *transform = (Transform *)p_transform;
 		if (p_tracks_orientation) {
 			tracker->set_orientation(transform->basis);
@@ -397,8 +398,8 @@ void GDAPI godot_arvr_set_controller_button(godot_int p_controller_id, godot_int
 	InputDefault *input = (InputDefault *)Input::get_singleton();
 	ERR_FAIL_NULL(input);
 
-	ARVRPositionalTracker *tracker = arvr_server->find_by_type_and_id(ARVRServer::TRACKER_CONTROLLER, p_controller_id);
-	if (tracker != NULL) {
+	Ref<ARVRPositionalTracker> tracker = arvr_server->find_by_type_and_id(ARVRServer::TRACKER_CONTROLLER, p_controller_id);
+	if (tracker.is_valid()) {
 		int joyid = tracker->get_joy_id();
 		if (joyid != -1) {
 			input->joy_button(joyid, p_button, p_is_pressed);
@@ -413,8 +414,8 @@ void GDAPI godot_arvr_set_controller_axis(godot_int p_controller_id, godot_int p
 	InputDefault *input = (InputDefault *)Input::get_singleton();
 	ERR_FAIL_NULL(input);
 
-	ARVRPositionalTracker *tracker = arvr_server->find_by_type_and_id(ARVRServer::TRACKER_CONTROLLER, p_controller_id);
-	if (tracker != NULL) {
+	Ref<ARVRPositionalTracker> tracker = arvr_server->find_by_type_and_id(ARVRServer::TRACKER_CONTROLLER, p_controller_id);
+	if (tracker.is_valid()) {
 		int joyid = tracker->get_joy_id();
 		if (joyid != -1) {
 			InputDefault::JoyAxis jx;
@@ -429,8 +430,8 @@ godot_real GDAPI godot_arvr_get_controller_rumble(godot_int p_controller_id) {
 	ARVRServer *arvr_server = ARVRServer::get_singleton();
 	ERR_FAIL_NULL_V(arvr_server, 0.0);
 
-	ARVRPositionalTracker *tracker = arvr_server->find_by_type_and_id(ARVRServer::TRACKER_CONTROLLER, p_controller_id);
-	if (tracker != NULL) {
+	Ref<ARVRPositionalTracker> tracker = arvr_server->find_by_type_and_id(ARVRServer::TRACKER_CONTROLLER, p_controller_id);
+	if (tracker.is_valid()) {
 		return tracker->get_rumble();
 	}
 
