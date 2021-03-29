@@ -3714,6 +3714,11 @@ msgid "Status: Import of file failed. Please fix file and reimport manually."
 msgstr "Estat: No s'ha pogut importar. Corregiu el fitxer i torneu a importar."
 
 #: editor/filesystem_dock.cpp
+msgid ""
+"Importing has been disabled for this file, so it can't be opened for editing."
+msgstr ""
+
+#: editor/filesystem_dock.cpp
 msgid "Cannot move/rename resources root."
 msgstr "No es pot moure/reanomenar l'arrel dels recursos."
 
@@ -4119,6 +4124,10 @@ msgstr "Importa"
 #, fuzzy
 msgid "Reset to Defaults"
 msgstr "Carrega Valors predeterminats"
+
+#: editor/import_dock.cpp
+msgid "Keep File (No Import)"
+msgstr ""
 
 #: editor/import_dock.cpp
 msgid "%d Files"

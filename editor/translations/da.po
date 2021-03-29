@@ -22,7 +22,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2021-03-16 10:40+0000\n"
+"PO-Revision-Date: 2021-03-20 04:18+0000\n"
 "Last-Translator: snakatk <snaqii@live.dk>\n"
 "Language-Team: Danish <https://hosted.weblate.org/projects/godot-engine/"
 "godot/da/>\n"
@@ -406,7 +406,7 @@ msgstr "Anim Indsæt Nøgle"
 #: editor/animation_track_editor.cpp
 #, fuzzy
 msgid "Change Animation Step"
-msgstr "Ændre Animation Navn:"
+msgstr "Ændre animationsskridt"
 
 #: editor/animation_track_editor.cpp
 #, fuzzy
@@ -549,7 +549,7 @@ msgstr "Grupper spor efter node eller vis dem som almindelig liste."
 #: editor/animation_track_editor.cpp
 #, fuzzy
 msgid "Snap:"
-msgstr "Trin: "
+msgstr "Trin:"
 
 #: editor/animation_track_editor.cpp
 msgid "Animation step value."
@@ -595,8 +595,9 @@ msgid "Duplicate Selection"
 msgstr "Duplikér Valgte"
 
 #: editor/animation_track_editor.cpp
+#, fuzzy
 msgid "Duplicate Transposed"
-msgstr "Duplicate transposed"
+msgstr "Duplikér Transposed"
 
 #: editor/animation_track_editor.cpp
 msgid "Delete Selection"
@@ -673,7 +674,7 @@ msgstr "Skalaforhold:"
 #: editor/animation_track_editor.cpp
 #, fuzzy
 msgid "Select Tracks to Copy"
-msgstr "Vælg spor til kopiering:"
+msgstr "Vælg spor til kopiering"
 
 #: editor/animation_track_editor.cpp editor/editor_log.cpp
 #: editor/editor_properties.cpp
@@ -690,9 +691,8 @@ msgid "Select All/None"
 msgstr "Vælg Node"
 
 #: editor/animation_track_editor_plugins.cpp
-#, fuzzy
 msgid "Add Audio Track Clip"
-msgstr "Lydklip:"
+msgstr "Tilføj lydspor klip"
 
 #: editor/animation_track_editor_plugins.cpp
 msgid "Change Audio Track Clip Start Offset"
@@ -798,7 +798,7 @@ msgstr "Metode i target Node skal angives!"
 #: editor/connections_dialog.cpp
 #, fuzzy
 msgid "Method name must be a valid identifier."
-msgstr "Navnet er ikke et gyldigt id:"
+msgstr "Metodenavnet er ikke et gyldigt id."
 
 #: editor/connections_dialog.cpp
 #, fuzzy
@@ -856,7 +856,7 @@ msgstr "Ekstra Call Argumenter:"
 #: editor/connections_dialog.cpp
 #, fuzzy
 msgid "Receiver Method:"
-msgstr "Vælg Method"
+msgstr "Modtager Metode:"
 
 #: editor/connections_dialog.cpp
 #, fuzzy
@@ -936,9 +936,8 @@ msgid "Connect a Signal to a Method"
 msgstr "Forbind Signal: "
 
 #: editor/connections_dialog.cpp
-#, fuzzy
 msgid "Edit Connection:"
-msgstr "Redigere Forbindelse: "
+msgstr "Redigér Forbindelse:"
 
 #: editor/connections_dialog.cpp
 msgid "Are you sure you want to remove all connections from the \"%s\" signal?"
@@ -1082,14 +1081,15 @@ msgid "Owners Of:"
 msgstr "Ejere af:"
 
 #: editor/dependency_editor.cpp
-#, fuzzy
 msgid ""
 "Remove selected files from the project? (no undo)\n"
 "You can find the removed files in the system trash to restore them."
-msgstr "Fjern de valgte filer fra projektet? (ej fortrydes)"
+msgstr ""
+"Fjern de valgte filer fra projektet? (ej fortrydes)\n"
+"Du kan finde de fjernede filer i systemets skraldespand for at genoprette "
+"dem."
 
 #: editor/dependency_editor.cpp
-#, fuzzy
 msgid ""
 "The files being removed are required by other resources in order for them to "
 "work.\n"
@@ -1097,7 +1097,9 @@ msgid ""
 "You can find the removed files in the system trash to restore them."
 msgstr ""
 "De filer der fjernes er nødvendige for, at andre ressourcer kan fungere.\n"
-"Fjern dem alligevel? (ej fortrydes)"
+"Fjern dem alligevel? (ej fortrydes)\n"
+"Du kan finde de fjernede filer i systemets skraldespand for at genoprette "
+"dem."
 
 #: editor/dependency_editor.cpp
 msgid "Cannot remove:"
@@ -1129,7 +1131,7 @@ msgstr "Fejl ved indlæsning!"
 
 #: editor/dependency_editor.cpp
 msgid "Permanently delete %d item(s)? (No undo!)"
-msgstr "Slette %d styk(s) permanent? (ej fortryd)"
+msgstr "Slet %d styk(s) permanent? (ej fortrydes)"
 
 #: editor/dependency_editor.cpp
 #, fuzzy
@@ -1204,14 +1206,12 @@ msgid "Gold Sponsors"
 msgstr "Guld Sponsorer"
 
 #: editor/editor_about.cpp
-#, fuzzy
 msgid "Silver Sponsors"
-msgstr "Sølv Donorer"
+msgstr "Sølv Sponsorer"
 
 #: editor/editor_about.cpp
-#, fuzzy
 msgid "Bronze Sponsors"
-msgstr "Bronze Donorer"
+msgstr "Bronze Sponsorer"
 
 #: editor/editor_about.cpp
 msgid "Mini Sponsors"
@@ -1238,22 +1238,21 @@ msgid "License"
 msgstr "Licens"
 
 #: editor/editor_about.cpp
-#, fuzzy
 msgid "Third-party Licenses"
-msgstr "Tredjeparts Licens"
+msgstr "Tredjepartslicenser"
 
 #: editor/editor_about.cpp
-#, fuzzy
 msgid ""
 "Godot Engine relies on a number of third-party free and open source "
 "libraries, all compatible with the terms of its MIT license. The following "
 "is an exhaustive list of all such third-party components with their "
 "respective copyright statements and license terms."
 msgstr ""
-"Godot Engine er afhængig af en række tredjeparts biblioteker som er gratis  "
+"Godot Engine er afhængig af en række tredjepartsbiblioteker, som er gratis "
 "og open source. Alle bibliotekerne er kompatible med vilkårene i MIT-"
-"licensen. Følgende er en udtømmende liste over alle sådanne tredjeparts "
-"komponenter med deres respektive ophavsretlige udsagn og licensbetingelser."
+"licensen. Følgende er en udtømmende liste over alle sådanne "
+"tredjepartskomponenter med deres respektive ophavsretlige udsagn og "
+"licensbetingelser."
 
 #: editor/editor_about.cpp
 msgid "All Components"
@@ -1268,9 +1267,8 @@ msgid "Licenses"
 msgstr "Licenser"
 
 #: editor/editor_asset_installer.cpp editor/project_manager.cpp
-#, fuzzy
 msgid "Error opening package file, not in ZIP format."
-msgstr "Fejl ved åbning af pakke fil, ikke i zip format."
+msgstr "Fejl ved åbning af pakkefil, ikke i ZIP-format."
 
 #: editor/editor_asset_installer.cpp
 #, fuzzy
@@ -1286,9 +1284,8 @@ msgid "The following files failed extraction from package:"
 msgstr "De følgende filer kunne ikke trækkes ud af pakken:"
 
 #: editor/editor_asset_installer.cpp
-#, fuzzy
 msgid "And %s more files."
-msgstr "%d flere filer"
+msgstr "Og %s flere filer."
 
 #: editor/editor_asset_installer.cpp editor/project_manager.cpp
 msgid "Package installed successfully!"
@@ -1380,7 +1377,7 @@ msgstr "Bus muligheder"
 #: editor/editor_audio_buses.cpp editor/filesystem_dock.cpp
 #: editor/plugins/animation_player_editor_plugin.cpp editor/scene_tree_dock.cpp
 msgid "Duplicate"
-msgstr "Duplikere"
+msgstr "Duplikér"
 
 #: editor/editor_audio_buses.cpp
 msgid "Reset Volume"
@@ -1431,12 +1428,10 @@ msgid "Open Audio Bus Layout"
 msgstr "Åben Audio Bus Layout"
 
 #: editor/editor_audio_buses.cpp
-#, fuzzy
 msgid "There is no '%s' file."
 msgstr "Der er ingen '%s' fil."
 
 #: editor/editor_audio_buses.cpp editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Layout"
 msgstr "Layout"
 
@@ -1454,9 +1449,8 @@ msgid "Add Bus"
 msgstr "Tilføj Bus"
 
 #: editor/editor_audio_buses.cpp
-#, fuzzy
 msgid "Add a new Audio Bus to this layout."
-msgstr "Gem Audio Bus Layout Som..."
+msgstr "Tilføj en ny Audio Bus til dette layout."
 
 #: editor/editor_audio_buses.cpp editor/editor_properties.cpp
 #: editor/plugins/animation_player_editor_plugin.cpp editor/property_editor.cpp
@@ -1550,9 +1544,8 @@ msgid "Rearrange Autoloads"
 msgstr "Flytte om på Autoloads"
 
 #: editor/editor_autoload_settings.cpp
-#, fuzzy
 msgid "Can't add autoload:"
-msgstr "Kan ikke tilføje autoload:"
+msgstr "Autoload kan ikke tilføjes:"
 
 #: editor/editor_autoload_settings.cpp
 msgid "Add AutoLoad"
@@ -1604,9 +1597,8 @@ msgid "[unsaved]"
 msgstr "[ikke gemt]"
 
 #: editor/editor_dir_dialog.cpp
-#, fuzzy
 msgid "Please select a base directory first."
-msgstr "Vælg en basis mappe først"
+msgstr "Vælg en basismappe først."
 
 #: editor/editor_dir_dialog.cpp
 msgid "Choose a Directory"
@@ -1639,16 +1631,14 @@ msgid "Storing File:"
 msgstr "Lagrings Fil:"
 
 #: editor/editor_export.cpp
-#, fuzzy
 msgid "No export template found at the expected path:"
-msgstr "Ingen eksporterings-skabelon fundet ved den forventede sti:"
+msgstr "Ingen eksporterings-skabelon fundet på den forventede sti:"
 
 #: editor/editor_export.cpp
 msgid "Packing"
 msgstr "Pakker"
 
 #: editor/editor_export.cpp
-#, fuzzy
 msgid ""
 "Target platform requires 'ETC' texture compression for GLES2. Enable 'Import "
 "Etc' in Project Settings."
@@ -1657,7 +1647,6 @@ msgstr ""
 "i Projektindstillingerne."
 
 #: editor/editor_export.cpp
-#, fuzzy
 msgid ""
 "Target platform requires 'ETC2' texture compression for GLES3. Enable "
 "'Import Etc 2' in Project Settings."
@@ -1672,18 +1661,25 @@ msgid ""
 "Enable 'Import Etc' in Project Settings, or disable 'Driver Fallback "
 "Enabled'."
 msgstr ""
+"Målplatform kræver 'ETC' teksturkomprimering for driver fallback til GLES2.\n"
+"Aktivér 'Import Etc' i Projektindstillingerne, eller deaktivér 'Driver "
+"Fallback Aktiveret'."
 
 #: editor/editor_export.cpp
 msgid ""
 "Target platform requires 'PVRTC' texture compression for GLES2. Enable "
 "'Import Pvrtc' in Project Settings."
 msgstr ""
+"Målplatform kræver 'PVRTC' teksturkomprimering for GLES2. Aktivér 'Import "
+"Pvrtc' i Projektindstillingerne."
 
 #: editor/editor_export.cpp
 msgid ""
 "Target platform requires 'ETC2' or 'PVRTC' texture compression for GLES3. "
 "Enable 'Import Etc 2' or 'Import Pvrtc' in Project Settings."
 msgstr ""
+"Målplatformen kræver 'ETC2' eller 'PVRTC' teksturkomprimering for GLES3. "
+"Aktivér 'Import Etc 2' eller 'Import Pvrtc' i Projektindstillingerne."
 
 #: editor/editor_export.cpp
 msgid ""
@@ -1692,12 +1688,16 @@ msgid ""
 "Enable 'Import Pvrtc' in Project Settings, or disable 'Driver Fallback "
 "Enabled'."
 msgstr ""
+"Målplatform kræver 'PVRTC' teksturkomprimering for driver fallback til "
+"GLES2.\n"
+"Aktivér 'Import Pvrtc' i Projektindstillingerne, eller deaktivér 'Driver "
+"Fallback Aktiveret'."
 
 #: editor/editor_export.cpp platform/android/export/export.cpp
 #: platform/iphone/export/export.cpp platform/javascript/export/export.cpp
 #: platform/osx/export/export.cpp platform/uwp/export/export.cpp
 msgid "Custom debug template not found."
-msgstr "Brugerdefineret debug skabelonfil ikke fundet:"
+msgstr "Brugerdefineret debug skabelonfil ikke fundet."
 
 #: editor/editor_export.cpp platform/android/export/export.cpp
 #: platform/iphone/export/export.cpp platform/javascript/export/export.cpp
@@ -1711,7 +1711,7 @@ msgstr "Skabelonfil ikke fundet:"
 
 #: editor/editor_export.cpp
 msgid "On 32-bit exports the embedded PCK cannot be bigger than 4 GiB."
-msgstr ""
+msgstr "Den indlejrede PCK kan ikke overstige 4 GiB ved 32-bit eksport."
 
 #: editor/editor_feature_profile.cpp
 #, fuzzy
@@ -1797,7 +1797,7 @@ msgstr "Funktions Liste:"
 #: editor/editor_feature_profile.cpp
 #, fuzzy
 msgid "Enabled Classes:"
-msgstr "Søg Classes"
+msgstr "Aktiverede Classes:"
 
 #: editor/editor_feature_profile.cpp
 msgid "File '%s' format is invalid, import aborted."
@@ -2074,14 +2074,13 @@ msgid "Inherited by:"
 msgstr "Arvet af:"
 
 #: editor/editor_help.cpp
-#, fuzzy
 msgid "Description"
-msgstr "Beskrivelse:"
+msgstr "Beskrivelse"
 
 #: editor/editor_help.cpp
 #, fuzzy
 msgid "Online Tutorials"
-msgstr "Online Undervisning:"
+msgstr "Online Vejledninger"
 
 #: editor/editor_help.cpp
 msgid "Properties"
@@ -2092,9 +2091,8 @@ msgid "override:"
 msgstr ""
 
 #: editor/editor_help.cpp
-#, fuzzy
 msgid "default:"
-msgstr "Standard"
+msgstr "standardindstilling:"
 
 #: editor/editor_help.cpp
 msgid "Methods"
@@ -2117,9 +2115,8 @@ msgid "Property Descriptions"
 msgstr "Egenskab beskrivelser"
 
 #: editor/editor_help.cpp
-#, fuzzy
 msgid "(value)"
-msgstr "Værdi:"
+msgstr "(værdi)"
 
 #: editor/editor_help.cpp
 msgid ""
@@ -2880,7 +2877,7 @@ msgstr "Projekt Indstillinger"
 #: editor/editor_node.cpp editor/plugins/version_control_editor_plugin.cpp
 #, fuzzy
 msgid "Version Control"
-msgstr "Version:"
+msgstr "Versionskontrol"
 
 #: editor/editor_node.cpp editor/plugins/version_control_editor_plugin.cpp
 msgid "Set Up Version Control"
@@ -3773,12 +3770,15 @@ msgid "Favorites"
 msgstr "Favoritter"
 
 #: editor/filesystem_dock.cpp
-#, fuzzy
 msgid "Status: Import of file failed. Please fix file and reimport manually."
 msgstr ""
-"\n"
 "Status: Import af filen fejlede. Venligst reparer filen og genimporter "
 "manuelt."
+
+#: editor/filesystem_dock.cpp
+msgid ""
+"Importing has been disabled for this file, so it can't be opened for editing."
+msgstr ""
 
 #: editor/filesystem_dock.cpp
 msgid "Cannot move/rename resources root."
@@ -4217,6 +4217,10 @@ msgstr "Importer"
 #, fuzzy
 msgid "Reset to Defaults"
 msgstr "Indlæs Default"
+
+#: editor/import_dock.cpp
+msgid "Keep File (No Import)"
+msgstr ""
 
 #: editor/import_dock.cpp
 msgid "%d Files"
@@ -9994,9 +9998,8 @@ msgid "Export All"
 msgstr "Eksporter"
 
 #: editor/project_export.cpp editor/project_manager.cpp
-#, fuzzy
 msgid "ZIP File"
-msgstr " Filer"
+msgstr "ZIP-Fil"
 
 #: editor/project_export.cpp
 msgid "Godot Game Pack"

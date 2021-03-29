@@ -3664,6 +3664,11 @@ msgstr ""
 "요."
 
 #: editor/filesystem_dock.cpp
+msgid ""
+"Importing has been disabled for this file, so it can't be opened for editing."
+msgstr ""
+
+#: editor/filesystem_dock.cpp
 msgid "Cannot move/rename resources root."
 msgstr "리소스 루트를 옮기거나 이름을 바꿀 수 없습니다."
 
@@ -4061,6 +4066,10 @@ msgstr "임포터:"
 #: editor/import_defaults_editor.cpp
 msgid "Reset to Defaults"
 msgstr "기본값으로 재설정"
+
+#: editor/import_dock.cpp
+msgid "Keep File (No Import)"
+msgstr ""
 
 #: editor/import_dock.cpp
 msgid "%d Files"
