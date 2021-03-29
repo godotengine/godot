@@ -77,7 +77,7 @@ public:
 
 private:
 	Vector<Ref<XRInterface>> interfaces;
-	Vector<XRPositionalTracker *> trackers;
+	Vector<Ref<XRPositionalTracker>> trackers;
 
 	Ref<XRInterface> primary_interface; /* we'll identify one interface as primary, this will be used by our viewports */
 
@@ -167,11 +167,11 @@ public:
 	*/
 	bool is_tracker_id_in_use_for_type(TrackerType p_tracker_type, int p_tracker_id) const;
 	int get_free_tracker_id_for_type(TrackerType p_tracker_type);
-	void add_tracker(XRPositionalTracker *p_tracker);
-	void remove_tracker(XRPositionalTracker *p_tracker);
+	void add_tracker(Ref<XRPositionalTracker> p_tracker);
+	void remove_tracker(Ref<XRPositionalTracker> p_tracker);
 	int get_tracker_count() const;
-	XRPositionalTracker *get_tracker(int p_index) const;
-	XRPositionalTracker *find_by_type_and_id(TrackerType p_tracker_type, int p_tracker_id) const;
+	Ref<XRPositionalTracker> get_tracker(int p_index) const;
+	Ref<XRPositionalTracker> find_by_type_and_id(TrackerType p_tracker_type, int p_tracker_id) const;
 
 	uint64_t get_last_process_usec();
 	uint64_t get_last_commit_usec();

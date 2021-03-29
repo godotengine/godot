@@ -190,8 +190,8 @@ void XRController3D::_notification(int p_what) {
 			ERR_FAIL_NULL(xr_server);
 
 			// find the tracker for our controller
-			XRPositionalTracker *tracker = xr_server->find_by_type_and_id(XRServer::TRACKER_CONTROLLER, controller_id);
-			if (tracker == nullptr) {
+			Ref<XRPositionalTracker> tracker = xr_server->find_by_type_and_id(XRServer::TRACKER_CONTROLLER, controller_id);
+			if (!tracker.is_valid()) {
 				// this controller is currently turned off
 				is_active = false;
 				button_states = 0;
@@ -277,8 +277,8 @@ String XRController3D::get_controller_name() const {
 	XRServer *xr_server = XRServer::get_singleton();
 	ERR_FAIL_NULL_V(xr_server, String());
 
-	XRPositionalTracker *tracker = xr_server->find_by_type_and_id(XRServer::TRACKER_CONTROLLER, controller_id);
-	if (tracker == nullptr) {
+	Ref<XRPositionalTracker> tracker = xr_server->find_by_type_and_id(XRServer::TRACKER_CONTROLLER, controller_id);
+	if (!tracker.is_valid()) {
 		return String("Not connected");
 	};
 
@@ -290,8 +290,8 @@ int XRController3D::get_joystick_id() const {
 	XRServer *xr_server = XRServer::get_singleton();
 	ERR_FAIL_NULL_V(xr_server, 0);
 
-	XRPositionalTracker *tracker = xr_server->find_by_type_and_id(XRServer::TRACKER_CONTROLLER, controller_id);
-	if (tracker == nullptr) {
+	Ref<XRPositionalTracker> tracker = xr_server->find_by_type_and_id(XRServer::TRACKER_CONTROLLER, controller_id);
+	if (!tracker.is_valid()) {
 		// No tracker? no joystick id... (0 is our first joystick)
 		return -1;
 	};
@@ -322,8 +322,8 @@ real_t XRController3D::get_rumble() const {
 	XRServer *xr_server = XRServer::get_singleton();
 	ERR_FAIL_NULL_V(xr_server, 0.0);
 
-	XRPositionalTracker *tracker = xr_server->find_by_type_and_id(XRServer::TRACKER_CONTROLLER, controller_id);
-	if (tracker == nullptr) {
+	Ref<XRPositionalTracker> tracker = xr_server->find_by_type_and_id(XRServer::TRACKER_CONTROLLER, controller_id);
+	if (!tracker.is_valid()) {
 		return 0.0;
 	};
 
@@ -335,8 +335,8 @@ void XRController3D::set_rumble(real_t p_rumble) {
 	XRServer *xr_server = XRServer::get_singleton();
 	ERR_FAIL_NULL(xr_server);
 
-	XRPositionalTracker *tracker = xr_server->find_by_type_and_id(XRServer::TRACKER_CONTROLLER, controller_id);
-	if (tracker != nullptr) {
+	Ref<XRPositionalTracker> tracker = xr_server->find_by_type_and_id(XRServer::TRACKER_CONTROLLER, controller_id);
+	if (tracker.is_valid()) {
 		tracker->set_rumble(p_rumble);
 	};
 };
@@ -354,8 +354,8 @@ XRPositionalTracker::TrackerHand XRController3D::get_tracker_hand() const {
 	XRServer *xr_server = XRServer::get_singleton();
 	ERR_FAIL_NULL_V(xr_server, XRPositionalTracker::TRACKER_HAND_UNKNOWN);
 
-	XRPositionalTracker *tracker = xr_server->find_by_type_and_id(XRServer::TRACKER_CONTROLLER, controller_id);
-	if (tracker == nullptr) {
+	Ref<XRPositionalTracker> tracker = xr_server->find_by_type_and_id(XRServer::TRACKER_CONTROLLER, controller_id);
+	if (!tracker.is_valid()) {
 		return XRPositionalTracker::TRACKER_HAND_UNKNOWN;
 	};
 
@@ -404,8 +404,8 @@ void XRAnchor3D::_notification(int p_what) {
 			ERR_FAIL_NULL(xr_server);
 
 			// find the tracker for our anchor
-			XRPositionalTracker *tracker = xr_server->find_by_type_and_id(XRServer::TRACKER_ANCHOR, anchor_id);
-			if (tracker == nullptr) {
+			Ref<XRPositionalTracker> tracker = xr_server->find_by_type_and_id(XRServer::TRACKER_ANCHOR, anchor_id);
+			if (!tracker.is_valid()) {
 				// this anchor is currently not available
 				is_active = false;
 			} else {
@@ -475,8 +475,8 @@ String XRAnchor3D::get_anchor_name() const {
 	XRServer *xr_server = XRServer::get_singleton();
 	ERR_FAIL_NULL_V(xr_server, String());
 
-	XRPositionalTracker *tracker = xr_server->find_by_type_and_id(XRServer::TRACKER_ANCHOR, anchor_id);
-	if (tracker == nullptr) {
+	Ref<XRPositionalTracker> tracker = xr_server->find_by_type_and_id(XRServer::TRACKER_ANCHOR, anchor_id);
+	if (!tracker.is_valid()) {
 		return String("Not connected");
 	};
 
