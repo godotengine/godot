@@ -98,6 +98,9 @@ void TextParagraph::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_line_underline_position", "line"), &TextParagraph::get_line_underline_position);
 	ClassDB::bind_method(D_METHOD("get_line_underline_thickness", "line"), &TextParagraph::get_line_underline_thickness);
 
+	ClassDB::bind_method(D_METHOD("get_spacing_top"), &TextParagraph::get_spacing_top);
+	ClassDB::bind_method(D_METHOD("get_spacing_bottom"), &TextParagraph::get_spacing_bottom);
+
 	ClassDB::bind_method(D_METHOD("get_dropcap_size"), &TextParagraph::get_dropcap_size);
 	ClassDB::bind_method(D_METHOD("get_dropcap_lines"), &TextParagraph::get_dropcap_lines);
 
@@ -264,6 +267,14 @@ bool TextParagraph::add_string(const String &p_text, const Ref<Font> &p_fonts, i
 	spacing_bottom = p_fonts->get_spacing(Font::SPACING_BOTTOM);
 	dirty_lines = true;
 	return res;
+}
+
+int TextParagraph::get_spacing_top() const {
+	return spacing_top;
+}
+
+int TextParagraph::get_spacing_bottom() const {
+	return spacing_bottom;
 }
 
 void TextParagraph::_set_bidi_override(const Array &p_override) {

@@ -289,6 +289,20 @@
 				Returns the size of the bounding box of the paragraph.
 			</description>
 		</method>
+		<method name="get_spacing_bottom" qualifiers="const">
+			<return type="int">
+			</return>
+			<description>
+				Returns extra spacing at the bottom of the line. See [member Font.extra_spacing_bottom].
+			</description>
+		</method>
+		<method name="get_spacing_top" qualifiers="const">
+			<return type="int">
+			</return>
+			<description>
+				Returns extra spacing at the top of the line. See [member Font.extra_spacing_top].
+			</description>
+		</method>
 		<method name="hit_test" qualifiers="const">
 			<return type="int">
 			</return>
