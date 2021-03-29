@@ -2626,6 +2626,8 @@
 		<constant name="METHOD_FLAG_FROM_SCRIPT" value="64" enum="MethodFlags">
 			Deprecated method flag, unused.
 		</constant>
+		<constant name="METHOD_FLAG_VARARG" value="128" enum="MethodFlags">
+		</constant>
 		<constant name="METHOD_FLAG_STATIC" value="256" enum="MethodFlags">
 		</constant>
 		<constant name="METHOD_FLAG_OBJECT_CORE" value="512" enum="MethodFlags">
