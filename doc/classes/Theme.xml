@@ -278,7 +278,7 @@
 			</description>
 		</method>
 		<method name="get_theme_item" qualifiers="const">
-			<return type="StyleBox">
+			<return type="Variant">
 			</return>
 			<argument index="0" name="data_type" type="int" enum="Theme.DataType">
 			</argument>
