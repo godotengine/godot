@@ -128,7 +128,7 @@ class EditorPlugin : public Node {
 	bool input_event_forwarding_always_enabled = false;
 	bool force_draw_over_forwarding_enabled = false;
 
-	String last_main_screen_name;
+	EditorPlugin *last_main_screen;
 
 	void _editor_project_settings_changed();
 
@@ -188,7 +188,7 @@ public:
 	void set_force_draw_over_forwarding_enabled();
 	bool is_force_draw_over_forwarding_enabled() { return force_draw_over_forwarding_enabled; }
 
-	void notify_main_screen_changed(const String &screen_name);
+	void notify_main_screen_changed(EditorPlugin *screen);
 	void notify_scene_changed(const Node *scn_root);
 	void notify_scene_closed(const String &scene_filepath);
 	void notify_resource_saved(const Ref<Resource> &p_resource);

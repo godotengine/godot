@@ -520,13 +520,13 @@ void EditorPlugin::notify_scene_changed(const Node *scn_root) {
 	emit_signal("scene_changed", scn_root);
 }
 
-void EditorPlugin::notify_main_screen_changed(const String &screen_name) {
-	if (screen_name == last_main_screen_name) {
+void EditorPlugin::notify_main_screen_changed(EditorPlugin *screen) {
+	if (screen == last_main_screen) {
 		return;
 	}
 
-	emit_signal("main_screen_changed", screen_name);
-	last_main_screen_name = screen_name;
+	emit_signal("main_screen_changed", screen ? screen->get_name() : String());
+	last_main_screen = screen;
 }
 
 void EditorPlugin::notify_scene_closed(const String &scene_filepath) {
