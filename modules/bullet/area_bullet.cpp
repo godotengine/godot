@@ -40,7 +40,7 @@
 #include <btBulletCollisionCommon.h>
 
 /**
-	@author AndreaCatania
+	@author AndreaCatania && sboronczyk
 */
 
 AreaBullet::AreaBullet() :
@@ -59,9 +59,13 @@ AreaBullet::AreaBullet() :
 
 AreaBullet::~AreaBullet() {
 	// signal are handled by godot, so just clear without notify
+	//thread issue
+
 	for (int i = overlappingObjects.size() - 1; 0 <= i; --i) {
-		overlappingObjects[i].object->on_exit_area(this);
+		OverlappingObjectData &otherObj = overlappingObjects.write[i];
+		otherObj.object->on_exit_area(this);
 	}
+
 }
 
 void AreaBullet::dispatch_callbacks() {

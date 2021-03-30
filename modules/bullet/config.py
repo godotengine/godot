@@ -1,6 +1,6 @@
 def can_build(env, platform):
     # API Changed and bullet is disabled at the moment
-    return False
+    return True
 
 
 def configure(env):

@@ -32,6 +32,7 @@
 #define CONSTRAINT_BULLET_H
 
 #include "bullet_utilities.h"
+#include "core/os/os.h"
 #include "rid_bullet.h"
 
 #include <BulletDynamics/ConstraintSolver/btTypedConstraint.h>

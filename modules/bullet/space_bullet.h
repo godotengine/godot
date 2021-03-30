@@ -70,10 +70,8 @@ extern ContactAddedCallback gContactAddedCallback;
 class BulletPhysicsDirectSpaceState : public PhysicsDirectSpaceState3D {
 	GDCLASS(BulletPhysicsDirectSpaceState, PhysicsDirectSpaceState3D);
 
-private:
-	SpaceBullet *space;
-
 public:
+	SpaceBullet *space;
 	BulletPhysicsDirectSpaceState(SpaceBullet *p_space);
 
 	virtual int intersect_point(const Vector3 &p_point, ShapeResult *r_results, int p_result_max, const Set<RID> &p_exclude = Set<RID>(), uint32_t p_collision_mask = 0xFFFFFFFF, bool p_collide_with_bodies = true, bool p_collide_with_areas = false) override;
@@ -87,6 +85,10 @@ public:
 };
 
 class SpaceBullet : public RIDBullet {
+
+	RID static_global_body;
+	AreaBullet *area;
+
 	friend class AreaBullet;
 	friend void onBulletTickCallback(btDynamicsWorld *world, btScalar timeStep);
 	friend class BulletPhysicsDirectSpaceState;
@@ -111,6 +113,7 @@ class SpaceBullet : public RIDBullet {
 	real_t angular_damp = 0.0;
 
 	Vector<AreaBullet *> areas;
+	bool locked = false;
 
 	Vector<Vector3> contactDebug;
 	int contactDebugCount = 0;
@@ -124,6 +127,10 @@ public:
 	real_t get_delta_time() { return delta_time; }
 	void step(real_t p_delta_time);
 
+	bool is_locked() const;
+	void lock();
+	void unlock();
+
 	_FORCE_INLINE_ btBroadphaseInterface *get_broadphase() const { return broadphase; }
 	_FORCE_INLINE_ btDefaultCollisionConfiguration *get_collision_configuration() const { return collisionConfiguration; }
 	_FORCE_INLINE_ btCollisionDispatcher *get_dispatcher() const { return dispatcher; }
@@ -131,6 +138,12 @@ public:
 	_FORCE_INLINE_ btDiscreteDynamicsWorld *get_dynamic_world() const { return dynamicsWorld; }
 	_FORCE_INLINE_ btSoftBodyWorldInfo *get_soft_body_world_info() const { return soft_body_world_info; }
 	_FORCE_INLINE_ bool is_using_soft_world() { return soft_body_world_info; }
+
+	void set_default_area(AreaBullet *p_area) { area = p_area; }
+	AreaBullet *get_default_area() const { return area; }
+
+	void set_static_global_body(RID p_body) { static_global_body = p_body; }
+	RID get_static_global_body() { return static_global_body; }
 
 	/// Used to set some parameters to Bullet world
 	/// @param p_param:
