@@ -117,8 +117,7 @@ class Body2DSW : public CollisionObject2DSW {
 	int contact_count;
 
 	struct ForceIntegrationCallback {
-		ObjectID id;
-		StringName method;
+		Callable callable;
 		Variant callback_udata;
 	};
 
@@ -131,7 +130,7 @@ class Body2DSW : public CollisionObject2DSW {
 	friend class PhysicsDirectBodyState2DSW; // i give up, too many functions to expose
 
 public:
-	void set_force_integration_callback(ObjectID p_id, const StringName &p_method, const Variant &p_udata = Variant());
+	void set_force_integration_callback(const Callable &p_callable, const Variant &p_udata = Variant());
 
 	_FORCE_INLINE_ void add_area(Area2DSW *p_area) {
 		int index = areas.find(AreaCMP(p_area));

@@ -274,6 +274,7 @@ struct _RigidBodyInOut {
 void RigidBody3D::_direct_state_changed(Object *p_state) {
 #ifdef DEBUG_ENABLED
 	state = Object::cast_to<PhysicsDirectBodyState3D>(p_state);
+	ERR_FAIL_NULL_MSG(state, "Method '_direct_state_changed' must receive a valid PhysicsDirectBodyState3D object as argument");
 #else
 	state = (PhysicsDirectBodyState3D *)p_state; //trust it
 #endif
@@ -712,8 +713,6 @@ void RigidBody3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_can_sleep", "able_to_sleep"), &RigidBody3D::set_can_sleep);
 	ClassDB::bind_method(D_METHOD("is_able_to_sleep"), &RigidBody3D::is_able_to_sleep);
 
-	ClassDB::bind_method(D_METHOD("_direct_state_changed"), &RigidBody3D::_direct_state_changed);
-
 	ClassDB::bind_method(D_METHOD("set_axis_lock", "axis", "lock"), &RigidBody3D::set_axis_lock);
 	ClassDB::bind_method(D_METHOD("get_axis_lock", "axis"), &RigidBody3D::get_axis_lock);
 
@@ -759,7 +758,7 @@ void RigidBody3D::_bind_methods() {
 
 RigidBody3D::RigidBody3D() :
 		PhysicsBody3D(PhysicsServer3D::BODY_MODE_RIGID) {
-	PhysicsServer3D::get_singleton()->body_set_force_integration_callback(get_rid(), this, "_direct_state_changed");
+	PhysicsServer3D::get_singleton()->body_set_force_integration_callback(get_rid(), callable_mp(this, &RigidBody3D::_direct_state_changed));
 }
 
 RigidBody3D::~RigidBody3D() {
@@ -1093,8 +1092,6 @@ void KinematicBody3D::_notification(int p_what) {
 }
 
 void KinematicBody3D::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("_direct_state_changed"), &KinematicBody3D::_direct_state_changed);
-
 	ClassDB::bind_method(D_METHOD("move_and_collide", "rel_vec", "infinite_inertia", "exclude_raycast_shapes", "test_only"), &KinematicBody3D::_move, DEFVAL(true), DEFVAL(true), DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("move_and_slide", "linear_velocity", "up_direction", "stop_on_slope", "max_slides", "floor_max_angle", "infinite_inertia"), &KinematicBody3D::move_and_slide, DEFVAL(Vector3(0, 0, 0)), DEFVAL(false), DEFVAL(4), DEFVAL(Math::deg2rad((real_t)45.0)), DEFVAL(true));
 	ClassDB::bind_method(D_METHOD("move_and_slide_with_snap", "linear_velocity", "snap", "up_direction", "stop_on_slope", "max_slides", "floor_max_angle", "infinite_inertia"), &KinematicBody3D::move_and_slide_with_snap, DEFVAL(Vector3(0, 0, 0)), DEFVAL(false), DEFVAL(4), DEFVAL(Math::deg2rad((real_t)45.0)), DEFVAL(true));
@@ -1127,6 +1124,7 @@ void KinematicBody3D::_bind_methods() {
 void KinematicBody3D::_direct_state_changed(Object *p_state) {
 #ifdef DEBUG_ENABLED
 	PhysicsDirectBodyState3D *state = Object::cast_to<PhysicsDirectBodyState3D>(p_state);
+	ERR_FAIL_NULL_MSG(state, "Method '_direct_state_changed' must receive a valid PhysicsDirectBodyState3D object as argument");
 #else
 	PhysicsDirectBodyState3D *state = (PhysicsDirectBodyState3D *)p_state; //trust it
 #endif
@@ -1138,7 +1136,7 @@ void KinematicBody3D::_direct_state_changed(Object *p_state) {
 KinematicBody3D::KinematicBody3D() :
 		PhysicsBody3D(PhysicsServer3D::BODY_MODE_KINEMATIC) {
 	set_safe_margin(0.001);
-	PhysicsServer3D::get_singleton()->body_set_force_integration_callback(get_rid(), this, "_direct_state_changed");
+	PhysicsServer3D::get_singleton()->body_set_force_integration_callback(get_rid(), callable_mp(this, &KinematicBody3D::_direct_state_changed));
 }
 
 KinematicBody3D::~KinematicBody3D() {
@@ -1977,6 +1975,7 @@ void PhysicalBone3D::_direct_state_changed(Object *p_state) {
 
 #ifdef DEBUG_ENABLED
 	state = Object::cast_to<PhysicsDirectBodyState3D>(p_state);
+	ERR_FAIL_NULL_MSG(state, "Method '_direct_state_changed' must receive a valid PhysicsDirectBodyState3D object as argument");
 #else
 	state = (PhysicsDirectBodyState3D *)p_state; //trust it
 #endif
@@ -1998,8 +1997,6 @@ void PhysicalBone3D::_direct_state_changed(Object *p_state) {
 void PhysicalBone3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("apply_central_impulse", "impulse"), &PhysicalBone3D::apply_central_impulse);
 	ClassDB::bind_method(D_METHOD("apply_impulse", "impulse", "position"), &PhysicalBone3D::apply_impulse, Vector3());
-
-	ClassDB::bind_method(D_METHOD("_direct_state_changed"), &PhysicalBone3D::_direct_state_changed);
 
 	ClassDB::bind_method(D_METHOD("set_joint_type", "joint_type"), &PhysicalBone3D::set_joint_type);
 	ClassDB::bind_method(D_METHOD("get_joint_type"), &PhysicalBone3D::get_joint_type);
@@ -2479,7 +2476,7 @@ void PhysicalBone3D::_start_physics_simulation() {
 	PhysicsServer3D::get_singleton()->body_set_mode(get_rid(), PhysicsServer3D::BODY_MODE_RIGID);
 	PhysicsServer3D::get_singleton()->body_set_collision_layer(get_rid(), get_collision_layer());
 	PhysicsServer3D::get_singleton()->body_set_collision_mask(get_rid(), get_collision_mask());
-	PhysicsServer3D::get_singleton()->body_set_force_integration_callback(get_rid(), this, "_direct_state_changed");
+	PhysicsServer3D::get_singleton()->body_set_force_integration_callback(get_rid(), callable_mp(this, &PhysicalBone3D::_direct_state_changed));
 	set_as_top_level(true);
 	_internal_simulate_physics = true;
 }
@@ -2498,7 +2495,7 @@ void PhysicalBone3D::_stop_physics_simulation() {
 		PhysicsServer3D::get_singleton()->body_set_collision_mask(get_rid(), 0);
 	}
 	if (_internal_simulate_physics) {
-		PhysicsServer3D::get_singleton()->body_set_force_integration_callback(get_rid(), nullptr, "");
+		PhysicsServer3D::get_singleton()->body_set_force_integration_callback(get_rid(), Callable());
 		parent_skeleton->set_bone_global_pose_override(bone_id, Transform(), 0.0, false);
 		set_as_top_level(false);
 		_internal_simulate_physics = false;

@@ -824,10 +824,10 @@ bool BulletPhysicsServer3D::body_is_omitting_force_integration(RID p_body) const
 	return body->get_omit_forces_integration();
 }
 
-void BulletPhysicsServer3D::body_set_force_integration_callback(RID p_body, Object *p_receiver, const StringName &p_method, const Variant &p_udata) {
+void BulletPhysicsServer3D::body_set_force_integration_callback(RID p_body, const Callable &p_callable, const Variant &p_udata) {
 	RigidBodyBullet *body = rigid_body_owner.getornull(p_body);
 	ERR_FAIL_COND(!body);
-	body->set_force_integration_callback(p_receiver ? p_receiver->get_instance_id() : ObjectID(), p_method, p_udata);
+	body->set_force_integration_callback(p_callable, p_udata);
 }
 
 void BulletPhysicsServer3D::body_set_ray_pickable(RID p_body, bool p_enable) {

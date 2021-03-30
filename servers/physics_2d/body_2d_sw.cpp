@@ -591,16 +591,17 @@ void Body2DSW::call_queries() {
 		Variant v = dbs;
 		const Variant *vp[2] = { &v, &fi_callback->callback_udata };
 
-		Object *obj = ObjectDB::get_instance(fi_callback->id);
+		Object *obj = fi_callback->callable.get_object();
 		if (!obj) {
-			set_force_integration_callback(ObjectID(), StringName());
+			set_force_integration_callback(Callable());
 		} else {
 			Callable::CallError ce;
+			Variant rv;
 			if (fi_callback->callback_udata.get_type() != Variant::NIL) {
-				obj->call(fi_callback->method, vp, 2, ce);
+				fi_callback->callable.call(vp, 2, rv, ce);
 
 			} else {
-				obj->call(fi_callback->method, vp, 1, ce);
+				fi_callback->callable.call(vp, 1, rv, ce);
 			}
 		}
 	}
@@ -625,16 +626,15 @@ bool Body2DSW::sleep_test(real_t p_step) {
 	}
 }
 
-void Body2DSW::set_force_integration_callback(ObjectID p_id, const StringName &p_method, const Variant &p_udata) {
+void Body2DSW::set_force_integration_callback(const Callable &p_callable, const Variant &p_udata) {
 	if (fi_callback) {
 		memdelete(fi_callback);
 		fi_callback = nullptr;
 	}
 
-	if (p_id.is_valid()) {
+	if (p_callable.get_object()) {
 		fi_callback = memnew(ForceIntegrationCallback);
-		fi_callback->id = p_id;
-		fi_callback->method = p_method;
+		fi_callback->callable = p_callable;
 		fi_callback->callback_udata = p_udata;
 	}
 }
