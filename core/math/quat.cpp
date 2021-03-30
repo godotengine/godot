@@ -55,10 +55,13 @@ Vector3 Quat::get_euler_yxz() const {
 }
 
 void Quat::operator*=(const Quat &p_q) {
-	x = w * p_q.x + x * p_q.w + y * p_q.z - z * p_q.y;
-	y = w * p_q.y + y * p_q.w + z * p_q.x - x * p_q.z;
-	z = w * p_q.z + z * p_q.w + x * p_q.y - y * p_q.x;
+	real_t xx = w * p_q.x + x * p_q.w + y * p_q.z - z * p_q.y;
+	real_t yy = w * p_q.y + y * p_q.w + z * p_q.x - x * p_q.z;
+	real_t zz = w * p_q.z + z * p_q.w + x * p_q.y - y * p_q.x;
 	w = w * p_q.w - x * p_q.x - y * p_q.y - z * p_q.z;
+	x = xx;
+	y = yy;
+	z = zz;
 }
 
 Quat Quat::operator*(const Quat &p_q) const {
