@@ -46,6 +46,10 @@ public:
 	JointBullet();
 	virtual ~JointBullet();
 
-	virtual PhysicsServer3D::JointType get_type() const = 0;
+	void copy_settings_from(JointBullet *p_joint) {
+		set_self(p_joint->get_self());
+	}
+
+	virtual PhysicsServer3D::JointType get_type() const { return PhysicsServer3D::JOINT_TYPE_MAX; }
 };
 #endif

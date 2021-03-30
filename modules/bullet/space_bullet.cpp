@@ -60,9 +60,12 @@
 
 BulletPhysicsDirectSpaceState::BulletPhysicsDirectSpaceState(SpaceBullet *p_space) :
 		PhysicsDirectSpaceState3D(),
-		space(p_space) {}
+		space(p_space) {
+}
 
 int BulletPhysicsDirectSpaceState::intersect_point(const Vector3 &p_point, ShapeResult *r_results, int p_result_max, const Set<RID> &p_exclude, uint32_t p_collision_mask, bool p_collide_with_bodies, bool p_collide_with_areas) {
+	ERR_FAIL_COND_V(space->locked, false);
+
 	if (p_result_max <= 0) {
 		return 0;
 	}
@@ -86,6 +89,8 @@ int BulletPhysicsDirectSpaceState::intersect_point(const Vector3 &p_point, Shape
 }
 
 bool BulletPhysicsDirectSpaceState::intersect_ray(const Vector3 &p_from, const Vector3 &p_to, RayResult &r_result, const Set<RID> &p_exclude, uint32_t p_collision_mask, bool p_collide_with_bodies, bool p_collide_with_areas, bool p_pick_ray) {
+	ERR_FAIL_COND_V(space->locked, false);
+
 	btVector3 btVec_from;
 	btVector3 btVec_to;
 
@@ -122,7 +127,7 @@ int BulletPhysicsDirectSpaceState::intersect_shape(const RID &p_shape, const Tra
 		return 0;
 	}
 
-	ShapeBullet *shape = space->get_physics_server()->get_shape_owner()->getornull(p_shape);
+	ShapeBullet *shape = BulletPhysicsServer3D::singletonbullet->shape_owner.getornull(p_shape);
 	ERR_FAIL_COND_V(!shape, 0);
 
 	btCollisionShape *btShape = shape->create_bt_shape(p_xform.basis.get_scale_abs(), p_margin);
@@ -158,7 +163,7 @@ bool BulletPhysicsDirectSpaceState::cast_motion(const RID &p_shape, const Transf
 	btVector3 bt_motion;
 	G_TO_B(p_motion, bt_motion);
 
-	ShapeBullet *shape = space->get_physics_server()->get_shape_owner()->getornull(p_shape);
+	ShapeBullet *shape = BulletPhysicsServer3D::singletonbullet->shape_owner.getornull(p_shape);
 	ERR_FAIL_COND_V(!shape, false);
 
 	btCollisionShape *btShape = shape->create_bt_shape(p_xform.basis.get_scale(), p_margin);
@@ -218,8 +223,8 @@ bool BulletPhysicsDirectSpaceState::collide_shape(RID p_shape, const Transform &
 	if (p_result_max <= 0) {
 		return false;
 	}
+	ShapeBullet *shape = BulletPhysicsServer3D::singletonbullet->shape_owner.getornull(p_shape);
 
-	ShapeBullet *shape = space->get_physics_server()->get_shape_owner()->getornull(p_shape);
 	ERR_FAIL_COND_V(!shape, false);
 
 	btCollisionShape *btShape = shape->create_bt_shape(p_shape_xform.basis.get_scale_abs(), p_margin);
@@ -251,7 +256,7 @@ bool BulletPhysicsDirectSpaceState::collide_shape(RID p_shape, const Transform &
 }
 
 bool BulletPhysicsDirectSpaceState::rest_info(RID p_shape, const Transform &p_shape_xform, real_t p_margin, ShapeRestInfo *r_info, const Set<RID> &p_exclude, uint32_t p_collision_mask, bool p_collide_with_bodies, bool p_collide_with_areas) {
-	ShapeBullet *shape = space->get_physics_server()->get_shape_owner()->getornull(p_shape);
+	ShapeBullet *shape = BulletPhysicsServer3D::singletonbullet->shape_owner.getornull(p_shape);
 	ERR_FAIL_COND_V(!shape, false);
 
 	btCollisionShape *btShape = shape->create_bt_shape(p_shape_xform.basis.get_scale_abs(), p_margin);
@@ -289,7 +294,8 @@ bool BulletPhysicsDirectSpaceState::rest_info(RID p_shape, const Transform &p_sh
 }
 
 Vector3 BulletPhysicsDirectSpaceState::get_closest_point_to_object_volume(RID p_object, const Vector3 p_point) const {
-	RigidCollisionObjectBullet *rigid_object = space->get_physics_server()->get_rigid_collision_object(p_object);
+	RigidCollisionObjectBullet *rigid_object = BulletPhysicsServer3D::singletonbullet->get_rigid_collision_object(p_object);
+
 	ERR_FAIL_COND_V(!rigid_object, Vector3());
 
 	btVector3 out_closest_point(0, 0, 0);
@@ -344,8 +350,20 @@ Vector3 BulletPhysicsDirectSpaceState::get_closest_point_to_object_volume(RID p_
 SpaceBullet::SpaceBullet() {
 	create_empty_world(GLOBAL_DEF("physics/3d/active_soft_world", true));
 	direct_access = memnew(BulletPhysicsDirectSpaceState(this));
+	direct_access->space = this;
 }
 
+void SpaceBullet::lock() {
+	locked = true;
+}
+
+void SpaceBullet::unlock() {
+	locked = false;
+}
+
+bool SpaceBullet::is_locked() const {
+	return locked;
+}
 SpaceBullet::~SpaceBullet() {
 	memdelete(direct_access);
 	destroy_world();

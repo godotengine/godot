@@ -46,7 +46,7 @@ public:
 	/// Reference frame is A
 	SliderJointBullet(RigidBodyBullet *rbA, RigidBodyBullet *rbB, const Transform &frameInA, const Transform &frameInB);
 
-	virtual PhysicsServer3D::JointType get_type() const { return PhysicsServer3D::JOINT_SLIDER; }
+	virtual PhysicsServer3D::JointType get_type() const { return PhysicsServer3D::JointType::JOINT_TYPE_SLIDER; }
 
 	const RigidBodyBullet *getRigidBodyA() const;
 	const RigidBodyBullet *getRigidBodyB() const;
