@@ -285,6 +285,8 @@ public:
 
 	bool has_feature(const String &p_feature);
 
+	virtual bool is_sandboxed() const;
+
 	void set_has_server_feature_callback(HasServerFeatureCallback p_callback);
 
 	void set_restart_on_exit(bool p_restart, const List<String> &p_restart_arguments);
@@ -294,6 +296,7 @@ public:
 	virtual bool request_permission(const String &p_name) { return true; }
 	virtual bool request_permissions() { return true; }
 	virtual Vector<String> get_granted_permissions() const { return Vector<String>(); }
+	virtual void revoke_granted_permissions() {}
 
 	virtual void process_and_drop_events() {}
 	OS();

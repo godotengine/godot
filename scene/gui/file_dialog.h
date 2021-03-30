@@ -105,6 +105,7 @@ private:
 
 	static bool default_show_hidden_files;
 	bool show_hidden_files = false;
+	bool use_native_dialog = false;
 
 	bool invalidated = true;
 
@@ -133,6 +134,7 @@ private:
 	void _update_drives();
 
 	void _unhandled_input(const Ref<InputEvent> &p_event);
+	void _native_dialog_cb(bool p_ok, const Vector<String> &p_files);
 
 	bool _is_open_should_be_disabled();
 
@@ -145,6 +147,8 @@ protected:
 	static void _bind_methods();
 	//bind helpers
 public:
+	virtual void popup(const Rect2i &p_rect = Rect2i()) override;
+
 	void popup_file_dialog();
 	void clear_filters();
 	void add_filter(const String &p_filter);
@@ -163,6 +167,9 @@ public:
 
 	void set_mode_overrides_title(bool p_override);
 	bool is_mode_overriding_title() const;
+
+	void set_use_native_dialog(bool p_native);
+	bool get_use_native_dialog() const;
 
 	void set_file_mode(FileMode p_mode);
 	FileMode get_file_mode() const;
