@@ -403,6 +403,7 @@ void InputDefault::_parse_input_event_impl(const Ref<InputEvent> &p_event, bool 
 			motion_event->set_relative(sd->get_relative());
 			motion_event->set_speed(sd->get_speed());
 			motion_event->set_button_mask(mouse_button_mask);
+			motion_event->set_pressure(1.f);
 
 			_parse_input_event_impl(motion_event, true);
 		}
