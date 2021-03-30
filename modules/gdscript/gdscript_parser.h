@@ -132,7 +132,7 @@ public:
 		ClassNode *class_type = nullptr;
 
 		MethodInfo method_info; // For callable/signals.
-		HashMap<StringName, int> enum_values; // For enums.
+		Map<StringName, int> enum_values; // For enums.
 
 		_FORCE_INLINE_ bool is_set() const { return kind != UNRESOLVED; }
 		_FORCE_INLINE_ bool has_no_type() const { return type_source == UNDETECTED; }
@@ -1369,6 +1369,7 @@ public:
 	ClassNode *get_tree() const { return head; }
 	bool is_tool() const { return _is_tool; }
 	static Variant::Type get_builtin_type(const StringName &p_type);
+	static StringName get_real_class_name(const StringName &p_source);
 
 	CompletionContext get_completion_context() const { return completion_context; }
 	CompletionCall get_completion_call() const { return completion_call; }

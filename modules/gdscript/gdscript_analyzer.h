@@ -120,8 +120,6 @@ public:
 	Error analyze();
 
 	GDScriptAnalyzer(GDScriptParser *p_parser);
-
-	static void cleanup();
 };
 
 #endif // GDSCRIPT_ANALYZER_H
