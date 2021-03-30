@@ -884,7 +884,7 @@ static void _mouseDownEvent(DisplayServer::WindowID window_id, NSEvent *event, i
 		return;
 	}
 
-	if (DS_OSX->mouse_mode == DisplayServer::MOUSE_MODE_CONFINED) {
+	if (DS_OSX->mouse_mode == DisplayServer::MOUSE_MODE_CONFINED || DS_OSX->mouse_mode == DisplayServer::MOUSE_MODE_CONFINED_HIDDEN) {
 		// Discard late events
 		if (([event timestamp]) < DS_OSX->last_warp) {
 			return;
@@ -2106,7 +2106,12 @@ void DisplayServerOSX::mouse_set_mode(MouseMode p_mode) {
 	} else if (p_mode == MOUSE_MODE_CONFINED) {
 		CGDisplayShowCursor(kCGDirectMainDisplay);
 		CGAssociateMouseAndMouseCursorPosition(false);
-	} else {
+	} else if (p_mode == MOUSE_MODE_CONFINED_HIDDEN) {
+		if (mouse_mode == MOUSE_MODE_VISIBLE || mouse_mode == MOUSE_MODE_CONFINED) {
+			CGDisplayHideCursor(kCGDirectMainDisplay);
+		}
+		CGAssociateMouseAndMouseCursorPosition(false);
+	} else { // MOUSE_MODE_VISIBLE
 		CGDisplayShowCursor(kCGDirectMainDisplay);
 		CGAssociateMouseAndMouseCursorPosition(true);
 	}
@@ -2143,7 +2148,7 @@ void DisplayServerOSX::mouse_warp_to_position(const Point2i &p_to) {
 		CGEventSourceSetLocalEventsSuppressionInterval(lEventRef, 0.0);
 		CGAssociateMouseAndMouseCursorPosition(false);
 		CGWarpMouseCursorPosition(lMouseWarpPos);
-		if (mouse_mode != MOUSE_MODE_CONFINED) {
+		if (mouse_mode != MOUSE_MODE_CONFINED && mouse_mode != MOUSE_MODE_CONFINED_HIDDEN) {
 			CGAssociateMouseAndMouseCursorPosition(true);
 		}
 	}
