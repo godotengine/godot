@@ -1169,64 +1169,96 @@ Ref<Theme> Window::get_theme() const {
 	return theme;
 }
 
-Ref<Texture2D> Window::get_theme_icon(const StringName &p_name, const StringName &p_type) const {
-	StringName type = p_type ? p_type : get_class_name();
-	return Control::get_icons(theme_owner, theme_owner_window, p_name, type);
+void Window::set_theme_custom_type(const StringName &p_theme_type) {
+	theme_custom_type = p_theme_type;
+	Control::_propagate_theme_changed(this, theme_owner, theme_owner_window);
 }
 
-Ref<StyleBox> Window::get_theme_stylebox(const StringName &p_name, const StringName &p_type) const {
-	StringName type = p_type ? p_type : get_class_name();
-	return Control::get_styleboxs(theme_owner, theme_owner_window, p_name, type);
+StringName Window::get_theme_custom_type() const {
+	return theme_custom_type;
 }
 
-Ref<Font> Window::get_theme_font(const StringName &p_name, const StringName &p_type) const {
-	StringName type = p_type ? p_type : get_class_name();
-	return Control::get_fonts(theme_owner, theme_owner_window, p_name, type);
+void Window::_get_theme_type_dependencies(const StringName &p_theme_type, List<StringName> *p_list) const {
+	if (p_theme_type == StringName() || p_theme_type == get_class_name() || p_theme_type == theme_custom_type) {
+		if (theme_custom_type != StringName()) {
+			p_list->push_back(theme_custom_type);
+		}
+		Theme::get_type_dependencies(get_class_name(), p_list);
+	} else {
+		Theme::get_type_dependencies(p_theme_type, p_list);
+	}
 }
 
-int Window::get_theme_font_size(const StringName &p_name, const StringName &p_type) const {
-	StringName type = p_type ? p_type : get_class_name();
-	return Control::get_font_sizes(theme_owner, theme_owner_window, p_name, type);
+Ref<Texture2D> Window::get_theme_icon(const StringName &p_name, const StringName &p_theme_type) const {
+	List<StringName> theme_types;
+	_get_theme_type_dependencies(p_theme_type, &theme_types);
+	return Control::get_theme_item_in_types<Ref<Texture2D>>(theme_owner, theme_owner_window, Theme::DATA_TYPE_ICON, p_name, theme_types);
 }
 
-Color Window::get_theme_color(const StringName &p_name, const StringName &p_type) const {
-	StringName type = p_type ? p_type : get_class_name();
-	return Control::get_colors(theme_owner, theme_owner_window, p_name, type);
+Ref<StyleBox> Window::get_theme_stylebox(const StringName &p_name, const StringName &p_theme_type) const {
+	List<StringName> theme_types;
+	_get_theme_type_dependencies(p_theme_type, &theme_types);
+	return Control::get_theme_item_in_types<Ref<StyleBox>>(theme_owner, theme_owner_window, Theme::DATA_TYPE_STYLEBOX, p_name, theme_types);
 }
 
-int Window::get_theme_constant(const StringName &p_name, const StringName &p_type) const {
-	StringName type = p_type ? p_type : get_class_name();
-	return Control::get_constants(theme_owner, theme_owner_window, p_name, type);
+Ref<Font> Window::get_theme_font(const StringName &p_name, const StringName &p_theme_type) const {
+	List<StringName> theme_types;
+	_get_theme_type_dependencies(p_theme_type, &theme_types);
+	return Control::get_theme_item_in_types<Ref<Font>>(theme_owner, theme_owner_window, Theme::DATA_TYPE_FONT, p_name, theme_types);
 }
 
-bool Window::has_theme_icon(const StringName &p_name, const StringName &p_type) const {
-	StringName type = p_type ? p_type : get_class_name();
-	return Control::has_icons(theme_owner, theme_owner_window, p_name, type);
+int Window::get_theme_font_size(const StringName &p_name, const StringName &p_theme_type) const {
+	List<StringName> theme_types;
+	_get_theme_type_dependencies(p_theme_type, &theme_types);
+	return Control::get_theme_item_in_types<int>(theme_owner, theme_owner_window, Theme::DATA_TYPE_FONT_SIZE, p_name, theme_types);
 }
 
-bool Window::has_theme_stylebox(const StringName &p_name, const StringName &p_type) const {
-	StringName type = p_type ? p_type : get_class_name();
-	return Control::has_styleboxs(theme_owner, theme_owner_window, p_name, type);
+Color Window::get_theme_color(const StringName &p_name, const StringName &p_theme_type) const {
+	List<StringName> theme_types;
+	_get_theme_type_dependencies(p_theme_type, &theme_types);
+	return Control::get_theme_item_in_types<Color>(theme_owner, theme_owner_window, Theme::DATA_TYPE_COLOR, p_name, theme_types);
 }
 
-bool Window::has_theme_font(const StringName &p_name, const StringName &p_type) const {
-	StringName type = p_type ? p_type : get_class_name();
-	return Control::has_fonts(theme_owner, theme_owner_window, p_name, type);
+int Window::get_theme_constant(const StringName &p_name, const StringName &p_theme_type) const {
+	List<StringName> theme_types;
+	_get_theme_type_dependencies(p_theme_type, &theme_types);
+	return Control::get_theme_item_in_types<int>(theme_owner, theme_owner_window, Theme::DATA_TYPE_CONSTANT, p_name, theme_types);
 }
 
-bool Window::has_theme_font_size(const StringName &p_name, const StringName &p_type) const {
-	StringName type = p_type ? p_type : get_class_name();
-	return Control::has_font_sizes(theme_owner, theme_owner_window, p_name, type);
+bool Window::has_theme_icon(const StringName &p_name, const StringName &p_theme_type) const {
+	List<StringName> theme_types;
+	_get_theme_type_dependencies(p_theme_type, &theme_types);
+	return Control::has_theme_item_in_types(theme_owner, theme_owner_window, Theme::DATA_TYPE_ICON, p_name, theme_types);
 }
 
-bool Window::has_theme_color(const StringName &p_name, const StringName &p_type) const {
-	StringName type = p_type ? p_type : get_class_name();
-	return Control::has_colors(theme_owner, theme_owner_window, p_name, type);
+bool Window::has_theme_stylebox(const StringName &p_name, const StringName &p_theme_type) const {
+	List<StringName> theme_types;
+	_get_theme_type_dependencies(p_theme_type, &theme_types);
+	return Control::has_theme_item_in_types(theme_owner, theme_owner_window, Theme::DATA_TYPE_STYLEBOX, p_name, theme_types);
 }
 
-bool Window::has_theme_constant(const StringName &p_name, const StringName &p_type) const {
-	StringName type = p_type ? p_type : get_class_name();
-	return Control::has_constants(theme_owner, theme_owner_window, p_name, type);
+bool Window::has_theme_font(const StringName &p_name, const StringName &p_theme_type) const {
+	List<StringName> theme_types;
+	_get_theme_type_dependencies(p_theme_type, &theme_types);
+	return Control::has_theme_item_in_types(theme_owner, theme_owner_window, Theme::DATA_TYPE_FONT, p_name, theme_types);
+}
+
+bool Window::has_theme_font_size(const StringName &p_name, const StringName &p_theme_type) const {
+	List<StringName> theme_types;
+	_get_theme_type_dependencies(p_theme_type, &theme_types);
+	return Control::has_theme_item_in_types(theme_owner, theme_owner_window, Theme::DATA_TYPE_FONT_SIZE, p_name, theme_types);
+}
+
+bool Window::has_theme_color(const StringName &p_name, const StringName &p_theme_type) const {
+	List<StringName> theme_types;
+	_get_theme_type_dependencies(p_theme_type, &theme_types);
+	return Control::has_theme_item_in_types(theme_owner, theme_owner_window, Theme::DATA_TYPE_COLOR, p_name, theme_types);
+}
+
+bool Window::has_theme_constant(const StringName &p_name, const StringName &p_theme_type) const {
+	List<StringName> theme_types;
+	_get_theme_type_dependencies(p_theme_type, &theme_types);
+	return Control::has_theme_item_in_types(theme_owner, theme_owner_window, Theme::DATA_TYPE_CONSTANT, p_name, theme_types);
 }
 
 Rect2i Window::get_parent_rect() const {
@@ -1382,19 +1414,22 @@ void Window::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_theme", "theme"), &Window::set_theme);
 	ClassDB::bind_method(D_METHOD("get_theme"), &Window::get_theme);
 
-	ClassDB::bind_method(D_METHOD("get_theme_icon", "name", "type"), &Window::get_theme_icon, DEFVAL(""));
-	ClassDB::bind_method(D_METHOD("get_theme_stylebox", "name", "type"), &Window::get_theme_stylebox, DEFVAL(""));
-	ClassDB::bind_method(D_METHOD("get_theme_font", "name", "type"), &Window::get_theme_font, DEFVAL(""));
-	ClassDB::bind_method(D_METHOD("get_theme_font_size", "name", "type"), &Window::get_theme_font_size, DEFVAL(""));
-	ClassDB::bind_method(D_METHOD("get_theme_color", "name", "type"), &Window::get_theme_color, DEFVAL(""));
-	ClassDB::bind_method(D_METHOD("get_theme_constant", "name", "type"), &Window::get_theme_constant, DEFVAL(""));
+	ClassDB::bind_method(D_METHOD("set_theme_custom_type", "theme_type"), &Window::set_theme_custom_type);
+	ClassDB::bind_method(D_METHOD("get_theme_custom_type"), &Window::get_theme_custom_type);
 
-	ClassDB::bind_method(D_METHOD("has_theme_icon", "name", "type"), &Window::has_theme_icon, DEFVAL(""));
-	ClassDB::bind_method(D_METHOD("has_theme_stylebox", "name", "type"), &Window::has_theme_stylebox, DEFVAL(""));
-	ClassDB::bind_method(D_METHOD("has_theme_font", "name", "type"), &Window::has_theme_font, DEFVAL(""));
-	ClassDB::bind_method(D_METHOD("has_theme_font_size", "name", "type"), &Window::has_theme_font_size, DEFVAL(""));
-	ClassDB::bind_method(D_METHOD("has_theme_color", "name", "type"), &Window::has_theme_color, DEFVAL(""));
-	ClassDB::bind_method(D_METHOD("has_theme_constant", "name", "type"), &Window::has_theme_constant, DEFVAL(""));
+	ClassDB::bind_method(D_METHOD("get_theme_icon", "name", "theme_type"), &Window::get_theme_icon, DEFVAL(""));
+	ClassDB::bind_method(D_METHOD("get_theme_stylebox", "name", "theme_type"), &Window::get_theme_stylebox, DEFVAL(""));
+	ClassDB::bind_method(D_METHOD("get_theme_font", "name", "theme_type"), &Window::get_theme_font, DEFVAL(""));
+	ClassDB::bind_method(D_METHOD("get_theme_font_size", "name", "theme_type"), &Window::get_theme_font_size, DEFVAL(""));
+	ClassDB::bind_method(D_METHOD("get_theme_color", "name", "theme_type"), &Window::get_theme_color, DEFVAL(""));
+	ClassDB::bind_method(D_METHOD("get_theme_constant", "name", "theme_type"), &Window::get_theme_constant, DEFVAL(""));
+
+	ClassDB::bind_method(D_METHOD("has_theme_icon", "name", "theme_type"), &Window::has_theme_icon, DEFVAL(""));
+	ClassDB::bind_method(D_METHOD("has_theme_stylebox", "name", "theme_type"), &Window::has_theme_stylebox, DEFVAL(""));
+	ClassDB::bind_method(D_METHOD("has_theme_font", "name", "theme_type"), &Window::has_theme_font, DEFVAL(""));
+	ClassDB::bind_method(D_METHOD("has_theme_font_size", "name", "theme_type"), &Window::has_theme_font_size, DEFVAL(""));
+	ClassDB::bind_method(D_METHOD("has_theme_color", "name", "theme_type"), &Window::has_theme_color, DEFVAL(""));
+	ClassDB::bind_method(D_METHOD("has_theme_constant", "name", "theme_type"), &Window::has_theme_constant, DEFVAL(""));
 
 	ClassDB::bind_method(D_METHOD("set_layout_direction", "direction"), &Window::set_layout_direction);
 	ClassDB::bind_method(D_METHOD("get_layout_direction"), &Window::get_layout_direction);
@@ -1428,8 +1463,9 @@ void Window::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2I, "content_scale_size"), "set_content_scale_size", "get_content_scale_size");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "content_scale_mode", PROPERTY_HINT_ENUM, "Disabled,CanvasItems,Viewport"), "set_content_scale_mode", "get_content_scale_mode");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "content_scale_aspect", PROPERTY_HINT_ENUM, "Ignore,Keep,KeepWidth,KeepHeight,Expand"), "set_content_scale_aspect", "get_content_scale_aspect");
-	ADD_GROUP("Theme", "");
+	ADD_GROUP("Theme", "theme_");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "theme", PROPERTY_HINT_RESOURCE_TYPE, "Theme"), "set_theme", "get_theme");
+	ADD_PROPERTY(PropertyInfo(Variant::STRING, "theme_custom_type"), "set_theme_custom_type", "get_theme_custom_type");
 
 	ADD_SIGNAL(MethodInfo("window_input", PropertyInfo(Variant::OBJECT, "event", PROPERTY_HINT_RESOURCE_TYPE, "InputEvent")));
 	ADD_SIGNAL(MethodInfo("files_dropped", PropertyInfo(Variant::PACKED_STRING_ARRAY, "files")));
