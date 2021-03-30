@@ -2308,7 +2308,7 @@ void PopupMenu::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("menu_changed"));
 }
 
-void PopupMenu::popup(const Rect2 &p_bounds) {
+void PopupMenu::popup(const Rect2i &p_bounds) {
 	moved = Vector2();
 	popup_time_msec = OS::get_singleton()->get_ticks_msec();
 	Popup::popup(p_bounds);
