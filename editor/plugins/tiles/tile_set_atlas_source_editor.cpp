@@ -545,7 +545,7 @@ void TileSetAtlasSourceEditor::_tile_atlas_control_gui_input(const Ref<InputEven
 	Ref<InputEventMouseButton> mb = p_event;
 	if (mb.is_valid()) {
 		Vector2 mouse_local_pos = tile_atlas_control->get_local_mouse_position();
-		if (mb->get_button_index() == BUTTON_LEFT) {
+		if (mb->get_button_index() == MOUSE_BUTTON_LEFT) {
 			if (mb->is_pressed()) {
 				// Left click pressed.
 				if (tools_button_group->get_pressed_button() == tool_add_remove_button) {
@@ -696,7 +696,7 @@ void TileSetAtlasSourceEditor::_tile_atlas_control_gui_input(const Ref<InputEven
 			alternative_tiles_control_unscaled->update();
 			tile_atlas_view->update();
 			return;
-		} else if (mb->get_button_index() == BUTTON_RIGHT) {
+		} else if (mb->get_button_index() == MOUSE_BUTTON_RIGHT) {
 			if (mb->is_pressed()) {
 				// Right click pressed.
 
@@ -1163,7 +1163,7 @@ void TileSetAtlasSourceEditor::_tile_alternatives_control_gui_input(const Ref<In
 		drag_type = DRAG_TYPE_NONE;
 
 		Vector2 mouse_local_pos = alternative_tiles_control->get_local_mouse_position();
-		if (mb->get_button_index() == BUTTON_LEFT) {
+		if (mb->get_button_index() == MOUSE_BUTTON_LEFT) {
 			if (mb->is_pressed()) {
 				// Left click pressed.
 				if (tools_button_group->get_pressed_button() == tool_select_button) {
@@ -1175,7 +1175,7 @@ void TileSetAtlasSourceEditor::_tile_alternatives_control_gui_input(const Ref<In
 					_update_tile_id_label();
 				}
 			}
-		} else if (mb->get_button_index() == BUTTON_RIGHT) {
+		} else if (mb->get_button_index() == MOUSE_BUTTON_RIGHT) {
 			if (mb->is_pressed()) {
 				// Right click pressed
 				Vector3 tile = tile_atlas_view->get_alternative_tile_at_pos(mouse_local_pos);

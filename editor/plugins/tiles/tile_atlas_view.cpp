@@ -45,7 +45,7 @@ void TileAtlasView::_gui_input(const Ref<InputEvent> &p_event) {
 
 	Ref<InputEventMouseButton> b = p_event;
 	if (b.is_valid()) {
-		if (ctrl && b->is_pressed() && b->get_button_index() == BUTTON_WHEEL_DOWN) {
+		if (ctrl && b->is_pressed() && b->get_button_index() == MOUSE_BUTTON_WHEEL_DOWN) {
 			// Zoom out
 			zoom_widget->set_zoom_by_increments(-2);
 			emit_signal("transform_changed", zoom_widget->get_zoom(), Vector2(scroll_container->get_h_scroll(), scroll_container->get_v_scroll()));
@@ -53,7 +53,7 @@ void TileAtlasView::_gui_input(const Ref<InputEvent> &p_event) {
 			accept_event();
 		}
 
-		if (ctrl && b->is_pressed() && b->get_button_index() == BUTTON_WHEEL_UP) {
+		if (ctrl && b->is_pressed() && b->get_button_index() == MOUSE_BUTTON_WHEEL_UP) {
 			// Zoom in
 			zoom_widget->set_zoom_by_increments(2);
 			emit_signal("transform_changed", zoom_widget->get_zoom(), Vector2(scroll_container->get_h_scroll(), scroll_container->get_v_scroll()));
