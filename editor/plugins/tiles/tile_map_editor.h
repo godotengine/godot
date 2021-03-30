@@ -38,90 +38,55 @@
 
 #include "editor/editor_node.h"
 
-class TileMapEditor : public VBoxContainer {
-	GDCLASS(TileMapEditor, VBoxContainer);
+class TileMapEditorPlugin : public VBoxContainer {
+public:
+	virtual Control *get_toolbar() const {
+		return memnew(Control);
+	};
+	virtual bool forward_canvas_gui_input(const Ref<InputEvent> &p_event) { return false; };
+	virtual void forward_canvas_draw_over_viewport(Control *p_overlay){};
+	virtual void tile_set_changed(){};
+	virtual void edit(ObjectID p_tile_map_id){};
+};
+
+class TileMapEditorTilesPlugin : public TileMapEditorPlugin {
+	GDCLASS(TileMapEditorTilesPlugin, TileMapEditorPlugin);
 
 private:
 	UndoRedo *undo_redo = EditorNode::get_undo_redo();
-
-	bool tileset_changed_needs_update = false;
-	bool has_mouse = false;
-
-	// Tiles
-	Label *missing_tileset_label;
-	TabContainer *tileset_tabs_container;
-	HSplitContainer *atlas_sources_split_container;
-	Label *missing_source_label;
-	void _update_bottom_panel();
-
-	ItemList *sources_list;
-	TileAtlasView *tile_atlas_view;
-	Ref<Texture2D> missing_texture_texture;
-	void _update_tile_set_atlas_sources_list();
-	void _update_atlas_view();
-
-	void _update_fix_selected_and_hovered();
-
-	bool tile_set_dragging_selection = false;
-	Vector2i tile_set_drag_start_mouse_pos;
-	TileMapCell hovered_tile;
-
-	Set<Vector2i> tile_map_selection;
-	Set<TileMapCell> tile_set_selection;
-	TileMapPattern *selection_pattern = memnew(TileMapPattern);
-	TileMapPattern *tile_map_clipboard = memnew(TileMapPattern);
-
-	void _update_selection_pattern_from_tilemap_selection();
-	void _update_selection_pattern_from_tileset_selection();
-	void _update_tileset_selection_from_selection_pattern();
-
-	Control *tile_atlas_control;
-	void _tile_atlas_control_mouse_exited();
-	void _tile_atlas_control_gui_input(const Ref<InputEvent> &p_event);
-	void _tile_atlas_control_draw();
-
-	Control *alternative_tiles_control;
-	void _tile_alternatives_control_draw();
-	void _tile_alternatives_control_mouse_exited();
-	void _tile_alternatives_control_gui_input(const Ref<InputEvent> &p_event);
-
-	// Terrains
-	Vector<Set<TileMapCell>> per_terrain_tiles;
-	ItemList *tilemap_tab_terrains_list;
-	void _update_terrains();
-
-	// TileMap
 	ObjectID tile_map_id;
+	virtual void edit(ObjectID p_tile_map_id) override;
 
-	HBoxContainer *tilemap_toolbar;
+	// Toolbar.
+	HBoxContainer *toolbar;
 
-	Ref<ButtonGroup> tilemap_tool_buttons_group;
-	Button *tilemap_select_tool_button;
-	Button *tilemap_paint_tool_button;
-	Button *tilemap_line_tool_button;
-	Button *tilemap_rect_tool_button;
-	Button *tilemap_bucket_tool_button;
-	Button *tilemap_picker_button;
+	Ref<ButtonGroup> tool_buttons_group;
+	Button *select_tool_button;
+	Button *paint_tool_button;
+	Button *line_tool_button;
+	Button *rect_tool_button;
+	Button *bucket_tool_button;
+	Button *picker_button;
 
-	HBoxContainer *tilemap_tools_settings;
-	VSeparator *tilemap_tools_settings_vsep;
-	Button *tilemap_erase_button;
-	CheckBox *tilemap_bucket_continuous_checkbox;
+	HBoxContainer *tools_settings;
+	VSeparator *tools_settings_vsep;
+	Button *erase_button;
+	CheckBox *bucket_continuous_checkbox;
 
-	VSeparator *tilemap_tools_settings_vsep_2;
-	CheckBox *tilemap_random_tile_checkbox;
+	VSeparator *tools_settings_vsep_2;
+	CheckBox *random_tile_checkbox;
 	float scattering = 0.0;
-	Label *tilemap_scatter_label;
-	SpinBox *tilemap_scatter_spinbox;
+	Label *scatter_label;
+	SpinBox *scatter_spinbox;
 	void _on_random_tile_checkbox_toggled(bool p_pressed);
 	void _on_scattering_spinbox_changed(double p_value);
 
 	void _update_toolbar();
 
-	Ref<Texture2D> missing_tile_texture;
-	Ref<Texture2D> warning_pattern_texture;
+	// Tilemap editing.
+	bool has_mouse = false;
+	void _mouse_exited_viewport();
 
-	bool tile_map_dragging_selection = false;
 	enum DragType {
 		DRAG_TYPE_NONE = 0,
 		DRAG_TYPE_SELECT,
@@ -138,22 +103,138 @@ private:
 	Vector2 drag_last_mouse_pos;
 	Map<Vector2i, TileMapCell> drag_modified;
 
-	void _mouse_exited_viewport();
-
-	Vector<Vector2i> _get_line(Vector2i p_from_cell, Vector2i p_to_cell);
 	TileMapCell _pick_random_tile(const TileMapPattern *p_pattern);
 	Map<Vector2i, TileMapCell> _draw_line(Vector2 p_start_drag_mouse_pos, Vector2 p_from_mouse_pos, Vector2i p_to_mouse_pos);
 	Map<Vector2i, TileMapCell> _draw_rect(Vector2i p_start_mouse_pos, Vector2i p_end_mouse_pos);
 	Map<Vector2i, TileMapCell> _draw_bucket_fill(Vector2i p_coords, bool p_contiguous);
 
+	// Selection system.
+	Set<Vector2i> tile_map_selection;
+	TileMapPattern *tile_map_clipboard = memnew(TileMapPattern);
+	TileMapPattern *selection_pattern = memnew(TileMapPattern);
 	void _set_tile_map_selection(const TypedArray<Vector2i> &p_selection);
 	TypedArray<Vector2i> _get_tile_map_selection() const;
 
-	void _tile_map_changed();
+	Set<TileMapCell> tile_set_selection;
+
+	void _update_selection_pattern_from_tilemap_selection();
+	void _update_selection_pattern_from_tileset_selection();
+	void _update_tileset_selection_from_selection_pattern();
+	void _update_fix_selected_and_hovered();
+
+	// Bottom panel.
+	bool tile_set_dragging_selection = false;
+	Vector2i tile_set_drag_start_mouse_pos;
+
+	Label *missing_source_label;
+	HSplitContainer *atlas_sources_split_container;
+
+	ItemList *sources_list;
+	TileAtlasView *tile_atlas_view;
+	Ref<Texture2D> missing_texture_texture;
+	void _update_tile_set_sources_list();
+	void _update_atlas_view();
+
+	void _update_bottom_panel();
+
+	TileMapCell hovered_tile;
+
+	Control *tile_atlas_control;
+	void _tile_atlas_control_mouse_exited();
+	void _tile_atlas_control_gui_input(const Ref<InputEvent> &p_event);
+	void _tile_atlas_control_draw();
+
+	Control *alternative_tiles_control;
+	void _tile_alternatives_control_draw();
+	void _tile_alternatives_control_mouse_exited();
+	void _tile_alternatives_control_gui_input(const Ref<InputEvent> &p_event);
+
+	// Update callback
+	virtual void tile_set_changed() override;
 
 protected:
 	void _notification(int p_what);
 	static void _bind_methods();
+
+public:
+	virtual Control *get_toolbar() const override;
+	virtual bool forward_canvas_gui_input(const Ref<InputEvent> &p_event) override;
+	virtual void forward_canvas_draw_over_viewport(Control *p_overlay) override;
+
+	TileMapEditorTilesPlugin();
+	~TileMapEditorTilesPlugin();
+};
+
+class TileMapEditorTerrainsPlugin : public TileMapEditorPlugin {
+	GDCLASS(TileMapEditorTerrainsPlugin, TileMapEditorPlugin);
+
+private:
+	// UndoRedo *undo_redo = EditorNode::get_undo_redo();
+	ObjectID tile_map_id;
+	virtual void edit(ObjectID p_tile_map_id) override;
+
+	// Toolbar.
+	HBoxContainer *toolbar;
+
+	Ref<ButtonGroup> tool_buttons_group;
+	Button *paint_tool_button;
+
+	HBoxContainer *tools_settings;
+	VSeparator *tools_settings_vsep;
+	Button *picker_button;
+	Button *erase_button;
+
+	void _update_toolbar();
+
+	// Bottom panel.
+	Vector<Set<TileMapCell>> per_terrain_tiles;
+	ItemList *tilemap_tab_terrains_list;
+	void _update_terrains();
+
+	// Update callback
+	virtual void tile_set_changed() override;
+
+protected:
+	void _notification(int p_what);
+	//	static void _bind_methods();
+
+public:
+	virtual Control *get_toolbar() const override;
+	//	virtual bool forward_canvas_gui_input(const Ref<InputEvent> &p_event) override;
+	//	virtual void forward_canvas_draw_over_viewport(Control *p_overlay) override;
+
+	TileMapEditorTerrainsPlugin();
+	~TileMapEditorTerrainsPlugin();
+};
+
+class TileMapEditor : public VBoxContainer {
+	GDCLASS(TileMapEditor, VBoxContainer);
+
+private:
+	bool tileset_changed_needs_update = false;
+	ObjectID tile_map_id;
+
+	// Vector to keep plugins.
+	Vector<TileMapEditorPlugin *> tile_map_editor_plugins;
+
+	// Toolbar.
+	HBoxContainer *tilemap_toolbar;
+
+	// Bottom panel
+	Label *missing_tileset_label;
+	TabContainer *tileset_tabs_container;
+	void _update_bottom_panel();
+
+	// TileMap
+	Ref<Texture2D> missing_tile_texture;
+	Ref<Texture2D> warning_pattern_texture;
+
+	// CallBack
+	void _tile_map_changed();
+	void _tab_changed(int p_tab_changed);
+
+protected:
+	void _notification(int p_what);
 	void _draw_shape(Control *p_control, Rect2 p_region, TileSet::TileShape p_shape, TileSet::TileOffsetAxis p_offset_axis, Color p_color);
 
 public:
@@ -165,6 +246,9 @@ public:
 
 	TileMapEditor();
 	~TileMapEditor();
+
+	// Static functions.
+	static Vector<Vector2i> get_line(TileMap *p_tile_map, Vector2i p_from_cell, Vector2i p_to_cell);
 };
 
 #endif // TILE_MAP_EDITOR_PLUGIN_H
