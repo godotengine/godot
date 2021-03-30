@@ -254,6 +254,9 @@
 		</method>
 	</methods>
 	<members>
+		<member name="clip_tabs" type="bool" setter="set_clip_tabs" getter="get_clip_tabs" default="true">
+			If [code]true[/code], tabs overflowing this node's width will be hidden, displaying two navigation buttons instead. Otherwise, this node's minimum size is updated so that all tabs are visible.
+		</member>
 		<member name="current_tab" type="int" setter="set_current_tab" getter="get_current_tab" default="0">
 			Select tab at index [code]tab_idx[/code].
 		</member>
