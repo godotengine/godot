@@ -2566,6 +2566,8 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 					windows[window_id].preserve_window_size = false;
 					window_set_size(Size2(windows[window_id].width, windows[window_id].height), window_id);
 				}
+			} else {
+				windows[window_id].preserve_window_size = true;
 			}
 
 			if (!windows[window_id].rect_changed_callback.is_null()) {
