@@ -360,7 +360,7 @@ void DisplayServerX11::mouse_set_mode(MouseMode p_mode) {
 		return;
 	}
 
-	if (mouse_mode == MOUSE_MODE_CAPTURED || mouse_mode == MOUSE_MODE_CONFINED) {
+	if (mouse_mode == MOUSE_MODE_CAPTURED || mouse_mode == MOUSE_MODE_CONFINED || mouse_mode == MOUSE_MODE_CONFINED_HIDDEN) {
 		XUngrabPointer(x11_display, CurrentTime);
 	}
 
@@ -376,7 +376,7 @@ void DisplayServerX11::mouse_set_mode(MouseMode p_mode) {
 	}
 	mouse_mode = p_mode;
 
-	if (mouse_mode == MOUSE_MODE_CAPTURED || mouse_mode == MOUSE_MODE_CONFINED) {
+	if (mouse_mode == MOUSE_MODE_CAPTURED || mouse_mode == MOUSE_MODE_CONFINED || mouse_mode == MOUSE_MODE_CONFINED_HIDDEN) {
 		//flush pending motion events
 		_flush_mouse_motion();
 		WindowData &main_window = windows[MAIN_WINDOW_ID];
@@ -2766,7 +2766,7 @@ void DisplayServerX11::process_events() {
 	do_mouse_warp = false;
 
 	// Is the current mouse mode one where it needs to be grabbed.
-	bool mouse_mode_grab = mouse_mode == MOUSE_MODE_CAPTURED || mouse_mode == MOUSE_MODE_CONFINED;
+	bool mouse_mode_grab = mouse_mode == MOUSE_MODE_CAPTURED || mouse_mode == MOUSE_MODE_CONFINED || mouse_mode == MOUSE_MODE_CONFINED_HIDDEN;
 
 	xi.pressure = 0;
 	xi.tilt = Vector2();
@@ -3030,7 +3030,7 @@ void DisplayServerX11::process_events() {
 					for (Map<WindowID, WindowData>::Element *E = windows.front(); E; E = E->next()) {
 						if (mouse_mode == MOUSE_MODE_CONFINED) {
 							XUndefineCursor(x11_display, E->get().x11_window);
-						} else if (mouse_mode == MOUSE_MODE_CAPTURED) { // or re-hide it in captured mode
+						} else if (mouse_mode == MOUSE_MODE_CAPTURED || mouse_mode == MOUSE_MODE_CONFINED_HIDDEN) { // Or re-hide it.
 							XDefineCursor(x11_display, E->get().x11_window, null_cursor);
 						}
 
