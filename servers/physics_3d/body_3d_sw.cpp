@@ -693,15 +693,16 @@ void Body3DSW::call_queries() {
 
 		Variant v = dbs;
 
-		Object *obj = ObjectDB::get_instance(fi_callback->id);
+		Object *obj = fi_callback->callable.get_object();
 		if (!obj) {
-			set_force_integration_callback(ObjectID(), StringName());
+			set_force_integration_callback(Callable());
 		} else {
 			const Variant *vp[2] = { &v, &fi_callback->udata };
 
 			Callable::CallError ce;
 			int argc = (fi_callback->udata.get_type() == Variant::NIL) ? 1 : 2;
-			obj->call(fi_callback->method, vp, argc, ce);
+			Variant rv;
+			fi_callback->callable.call(vp, argc, rv, ce);
 		}
 	}
 }
@@ -725,16 +726,15 @@ bool Body3DSW::sleep_test(real_t p_step) {
 	}
 }
 
-void Body3DSW::set_force_integration_callback(ObjectID p_id, const StringName &p_method, const Variant &p_udata) {
+void Body3DSW::set_force_integration_callback(const Callable &p_callable, const Variant &p_udata) {
 	if (fi_callback) {
 		memdelete(fi_callback);
 		fi_callback = nullptr;
 	}
 
-	if (p_id.is_valid()) {
+	if (p_callable.get_object()) {
 		fi_callback = memnew(ForceIntegrationCallback);
-		fi_callback->id = p_id;
-		fi_callback->method = p_method;
+		fi_callback->callable = p_callable;
 		fi_callback->udata = p_udata;
 	}
 }
