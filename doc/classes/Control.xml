@@ -462,10 +462,10 @@
 			</return>
 			<argument index="0" name="name" type="StringName">
 			</argument>
-			<argument index="1" name="node_type" type="StringName" default="&quot;&quot;">
+			<argument index="1" name="theme_type" type="StringName" default="&quot;&quot;">
 			</argument>
 			<description>
-				Returns a color from assigned [Theme] with given [code]name[/code] and associated with [Control] of given [code]node_type[/code].
+				Returns a color from assigned [Theme] with given [code]name[/code] and associated with [Control] of given [code]theme_type[/code].
 				[codeblocks]
 				[gdscript]
 				func _ready():
@@ -485,10 +485,10 @@
 			</return>
 			<argument index="0" name="name" type="StringName">
 			</argument>
-			<argument index="1" name="node_type" type="StringName" default="&quot;&quot;">
+			<argument index="1" name="theme_type" type="StringName" default="&quot;&quot;">
 			</argument>
 			<description>
-				Returns a constant from assigned [Theme] with given [code]name[/code] and associated with [Control] of given [code]node_type[/code].
+				Returns a constant from assigned [Theme] with given [code]name[/code] and associated with [Control] of given [code]theme_type[/code].
 			</description>
 		</method>
 		<method name="get_theme_font" qualifiers="const">
@@ -496,10 +496,10 @@
 			</return>
 			<argument index="0" name="name" type="StringName">
 			</argument>
-			<argument index="1" name="node_type" type="StringName" default="&quot;&quot;">
+			<argument index="1" name="theme_type" type="StringName" default="&quot;&quot;">
 			</argument>
 			<description>
-				Returns a font from assigned [Theme] with given [code]name[/code] and associated with [Control] of given [code]node_type[/code].
+				Returns a font from assigned [Theme] with given [code]name[/code] and associated with [Control] of given [code]theme_type[/code].
 			</description>
 		</method>
 		<method name="get_theme_font_size" qualifiers="const">
@@ -507,10 +507,10 @@
 			</return>
 			<argument index="0" name="name" type="StringName">
 			</argument>
-			<argument index="1" name="node_type" type="StringName" default="&quot;&quot;">
+			<argument index="1" name="theme_type" type="StringName" default="&quot;&quot;">
 			</argument>
 			<description>
-				Returns a font size from assigned [Theme] with given [code]name[/code] and associated with [Control] of given [code]type[/code].
+				Returns a font size from assigned [Theme] with given [code]name[/code] and associated with [Control] of given [code]theme_type[/code].
 			</description>
 		</method>
 		<method name="get_theme_icon" qualifiers="const">
@@ -518,10 +518,10 @@
 			</return>
 			<argument index="0" name="name" type="StringName">
 			</argument>
-			<argument index="1" name="node_type" type="StringName" default="&quot;&quot;">
+			<argument index="1" name="theme_type" type="StringName" default="&quot;&quot;">
 			</argument>
 			<description>
-				Returns an icon from assigned [Theme] with given [code]name[/code] and associated with [Control] of given [code]node_type[/code].
+				Returns an icon from assigned [Theme] with given [code]name[/code] and associated with [Control] of given [code]theme_type[/code].
 			</description>
 		</method>
 		<method name="get_theme_stylebox" qualifiers="const">
@@ -529,10 +529,10 @@
 			</return>
 			<argument index="0" name="name" type="StringName">
 			</argument>
-			<argument index="1" name="node_type" type="StringName" default="&quot;&quot;">
+			<argument index="1" name="theme_type" type="StringName" default="&quot;&quot;">
 			</argument>
 			<description>
-				Returns a [StyleBox] from assigned [Theme] with given [code]name[/code] and associated with [Control] of given [code]node_type[/code].
+				Returns a [StyleBox] from assigned [Theme] with given [code]name[/code] and associated with [Control] of given [code]theme_type[/code].
 			</description>
 		</method>
 		<method name="get_tooltip" qualifiers="const">
@@ -593,10 +593,10 @@
 			</return>
 			<argument index="0" name="name" type="StringName">
 			</argument>
-			<argument index="1" name="node_type" type="StringName" default="&quot;&quot;">
+			<argument index="1" name="theme_type" type="StringName" default="&quot;&quot;">
 			</argument>
 			<description>
-				Returns [code]true[/code] if [Color] with given [code]name[/code] and associated with [Control] of given [code]node_type[/code] exists in assigned [Theme].
+				Returns [code]true[/code] if [Color] with given [code]name[/code] and associated with [Control] of given [code]theme_type[/code] exists in assigned [Theme].
 			</description>
 		</method>
 		<method name="has_theme_color_override" qualifiers="const">
@@ -613,10 +613,10 @@
 			</return>
 			<argument index="0" name="name" type="StringName">
 			</argument>
-			<argument index="1" name="node_type" type="StringName" default="&quot;&quot;">
+			<argument index="1" name="theme_type" type="StringName" default="&quot;&quot;">
 			</argument>
 			<description>
-				Returns [code]true[/code] if constant with given [code]name[/code] and associated with [Control] of given [code]node_type[/code] exists in assigned [Theme].
+				Returns [code]true[/code] if constant with given [code]name[/code] and associated with [Control] of given [code]theme_type[/code] exists in assigned [Theme].
 			</description>
 		</method>
 		<method name="has_theme_constant_override" qualifiers="const">
@@ -633,10 +633,10 @@
 			</return>
 			<argument index="0" name="name" type="StringName">
 			</argument>
-			<argument index="1" name="node_type" type="StringName" default="&quot;&quot;">
+			<argument index="1" name="theme_type" type="StringName" default="&quot;&quot;">
 			</argument>
 			<description>
-				Returns [code]true[/code] if font with given [code]name[/code] and associated with [Control] of given [code]node_type[/code] exists in assigned [Theme].
+				Returns [code]true[/code] if font with given [code]name[/code] and associated with [Control] of given [code]theme_type[/code] exists in assigned [Theme].
 			</description>
 		</method>
 		<method name="has_theme_font_override" qualifiers="const">
@@ -653,10 +653,10 @@
 			</return>
 			<argument index="0" name="name" type="StringName">
 			</argument>
-			<argument index="1" name="node_type" type="StringName" default="&quot;&quot;">
+			<argument index="1" name="theme_type" type="StringName" default="&quot;&quot;">
 			</argument>
 			<description>
-				Returns [code]true[/code] if font size with given [code]name[/code] and associated with [Control] of given [code]type[/code] exists in assigned [Theme].
+				Returns [code]true[/code] if font size with given [code]name[/code] and associated with [Control] of given [code]theme_type[/code] exists in assigned [Theme].
 			</description>
 		</method>
 		<method name="has_theme_font_size_override" qualifiers="const">
@@ -673,10 +673,10 @@
 			</return>
 			<argument index="0" name="name" type="StringName">
 			</argument>
-			<argument index="1" name="node_type" type="StringName" default="&quot;&quot;">
+			<argument index="1" name="theme_type" type="StringName" default="&quot;&quot;">
 			</argument>
 			<description>
-				Returns [code]true[/code] if icon with given [code]name[/code] and associated with [Control] of given [code]node_type[/code] exists in assigned [Theme].
+				Returns [code]true[/code] if icon with given [code]name[/code] and associated with [Control] of given [code]theme_type[/code] exists in assigned [Theme].
 			</description>
 		</method>
 		<method name="has_theme_icon_override" qualifiers="const">
@@ -693,10 +693,10 @@
 			</return>
 			<argument index="0" name="name" type="StringName">
 			</argument>
-			<argument index="1" name="node_type" type="StringName" default="&quot;&quot;">
+			<argument index="1" name="theme_type" type="StringName" default="&quot;&quot;">
 			</argument>
 			<description>
-				Returns [code]true[/code] if [StyleBox] with given [code]name[/code] and associated with [Control] of given [code]node_type[/code] exists in assigned [Theme].
+				Returns [code]true[/code] if [StyleBox] with given [code]name[/code] and associated with [Control] of given [code]theme_type[/code] exists in assigned [Theme].
 			</description>
 		</method>
 		<method name="has_theme_stylebox_override" qualifiers="const">
@@ -1173,7 +1173,12 @@
 			Tells the parent [Container] nodes how they should resize and place the node on the Y axis. Use one of the [enum SizeFlags] constants to change the flags. See the constants to learn what each does.
 		</member>
 		<member name="theme" type="Theme" setter="set_theme" getter="get_theme">
-			Changing this property replaces the current [Theme] resource this node and all its [Control] children use.
+			The [Theme] resource this node and all its [Control] children use. If a child node has its own [Theme] resource set, theme items are merged with child's definitions having higher priority.
+		</member>
+		<member name="theme_custom_type" type="StringName" setter="set_theme_custom_type" getter="get_theme_custom_type" default="@&quot;&quot;">
+			The type name used by this [Control] to look up its own theme items. By default, the class name of the node is used (e.g. [code]Button[/code] for the [Button] control), as well as the class names of all parent classes (in order of inheritance). Setting this property gives the highest priority to the type of the specified name, then falls back on the class names.
+			[b]Note:[/b] To look up [Control]'s own items use various [code]get_theme_*[/code] methods without specifying [code]theme_type[/code].
+			[b]Note:[/b] Theme items are looked for in the tree order, from branch to root, where each [Control] node is checked for its [member theme] property. The earliest match against any type/class name is returned. The project-level Theme and the default Theme are checked last.
 		</member>
 	</members>
 	<signals>
