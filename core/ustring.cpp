@@ -3451,9 +3451,9 @@ String String::http_escape() const {
 		} else {
 			char h_Val[3];
 #if defined(__GNUC__) || defined(_MSC_VER)
-			snprintf(h_Val, 3, "%hhX", ord);
+			snprintf(h_Val, 3, "%02hhX", ord);
 #else
-			sprintf(h_Val, "%hhX", ord);
+			sprintf(h_Val, "%02hhX", ord);
 #endif
 			res += "%";
 			res += h_Val;
