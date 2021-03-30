@@ -277,7 +277,7 @@ Ref<StandardMaterial3D> FBXMaterial::import_material(ImportState &state) {
 	}
 
 	/// ALL below is related to properties
-	for (FBXDocParser::LazyPropertyMap::value_type iter : material->Props()->GetLazyProperties()) {
+	for (FBXDocParser::LazyPropertyMap::value_type iter : material->GetLazyProperties()) {
 		const std::string name = iter.first;
 
 		if (name.empty()) {
@@ -317,7 +317,7 @@ Ref<StandardMaterial3D> FBXMaterial::import_material(ImportState &state) {
 
 		ERR_CONTINUE_MSG(desc == PROPERTY_DESC_NOT_FOUND, "The FBX material parameter: `" + String(name.c_str()) + "` was not recognized. Please open an issue so we can add the support to it.");
 
-		const FBXDocParser::PropertyTable *tbl = material->Props();
+		const FBXDocParser::PropertyTable *tbl = material;
 		FBXDocParser::PropertyPtr prop = tbl->Get(name);
 
 		ERR_CONTINUE_MSG(prop == nullptr, "This file may be corrupted because is not possible to extract the material parameter: " + String(name.c_str()));

@@ -33,7 +33,7 @@
 #include "tools/import_utils.h"
 
 void PivotTransform::ReadTransformChain() {
-	const FBXDocParser::PropertyTable *props = fbx_model->Props();
+	const FBXDocParser::PropertyTable *props = fbx_model;
 	const FBXDocParser::Model::RotOrder &rot = fbx_model->RotationOrder();
 	const FBXDocParser::TransformInheritance &inheritType = fbx_model->InheritType();
 	inherit_type = inheritType; // copy the inherit type we need it in the second step.

@@ -199,6 +199,10 @@ public:
 		return is_binary;
 	}
 
+	bool IsCorrupt() const {
+		return corrupt;
+	}
+
 private:
 	friend class Scope;
 	friend class Element;
@@ -208,6 +212,7 @@ private:
 	TokenPtr CurrentToken() const;
 
 private:
+	bool corrupt = false;
 	ScopeList scopes;
 	const TokenList &tokens;
 
@@ -249,6 +254,8 @@ bool HasElement(const ScopePtr sc, const std::string &index);
 // extract a required element from a scope, abort if the element cannot be found
 ElementPtr GetRequiredElement(const ScopePtr sc, const std::string &index, const ElementPtr element = nullptr);
 ScopePtr GetRequiredScope(const ElementPtr el); // New in 2020. (less likely to destroy application)
+ScopePtr GetOptionalScope(const ElementPtr el); // New in 2021. (even LESS likely to destroy application now)
+
 ElementPtr GetOptionalElement(const ScopePtr sc, const std::string &index, const ElementPtr element = nullptr);
 // extract required compound scope
 ScopePtr GetRequiredScope(const ElementPtr el);

@@ -187,7 +187,7 @@ typedef std::vector<TokenPtr> TokenList;
  * @param output_tokens Receives a list of all tokens in the input data.
  * @param input_buffer Textual input buffer to be processed, 0-terminated.
  * @print_error if something goes wrong */
-void Tokenize(TokenList &output_tokens, const char *input, size_t length);
+void Tokenize(TokenList &output_tokens, const char *input, size_t length, bool &corrupt);
 
 /** Tokenizer function for binary FBX files.
  *
@@ -197,7 +197,7 @@ void Tokenize(TokenList &output_tokens, const char *input, size_t length);
  * @param input_buffer Binary input buffer to be processed.
  * @param length Length of input buffer, in bytes. There is no 0-terminal.
  * @print_error if something goes wrong */
-void TokenizeBinary(TokenList &output_tokens, const char *input, size_t length);
+void TokenizeBinary(TokenList &output_tokens, const char *input, size_t length, bool &corrupt);
 } // namespace FBXDocParser
 
 #endif // FBX_TOKENIZER_H

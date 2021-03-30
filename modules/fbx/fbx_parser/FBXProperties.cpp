@@ -145,19 +145,33 @@ std::string PeekPropertyName(const Element &element) {
 } // namespace
 
 // ------------------------------------------------------------------------------------------------
-PropertyTable::PropertyTable() {
+PropertyTable::PropertyTable() :
+		element(nullptr) {
+}
+
+// Is used when dealing with FBX Objects not metadata.
+PropertyTable::PropertyTable(const ElementPtr element) :
+		element(element) {
+	Setup(element);
 }
 
 // ------------------------------------------------------------------------------------------------
-PropertyTable::PropertyTable(const PropertyTable *templateProps) :
-		templateProps(templateProps), element() {
+PropertyTable::~PropertyTable() {
+	for (PropertyMap::value_type &v : props) {
+		delete v.second;
+	}
 }
 
-// ------------------------------------------------------------------------------------------------
-PropertyTable::PropertyTable(const ElementPtr element, const PropertyTable *templateProps) :
-		templateProps(templateProps), element(element) {
-	const ScopePtr scope = GetRequiredScope(element);
-	ERR_FAIL_COND(!scope);
+void PropertyTable::Setup(ElementPtr ptr) {
+	const ScopePtr sc = GetRequiredScope(ptr);
+	const ElementPtr Properties70 = sc->GetElement("Properties70");
+	const ScopePtr scope = GetOptionalScope(Properties70);
+
+	// no scope, no care.
+	if (!scope) {
+		return; // NOTE: this is not an error this is actually a Object, without properties, here we will nullptr it.
+	}
+
 	for (const ElementMap::value_type &v : scope->Elements()) {
 		if (v.first != "P") {
 			DOMWarning("expected only P elements in property table", v.second);
@@ -182,13 +196,6 @@ PropertyTable::PropertyTable(const ElementPtr element, const PropertyTable *temp
 }
 
 // ------------------------------------------------------------------------------------------------
-PropertyTable::~PropertyTable() {
-	for (PropertyMap::value_type &v : props) {
-		delete v.second;
-	}
-}
-
-// ------------------------------------------------------------------------------------------------
 PropertyPtr PropertyTable::Get(const std::string &name) const {
 	PropertyMap::const_iterator it = props.find(name);
 	if (it == props.end()) {
@@ -203,10 +210,6 @@ PropertyPtr PropertyTable::Get(const std::string &name) const {
 
 		if (it == props.end()) {
 			// check property template
-			if (templateProps) {
-				return templateProps->Get(name);
-			}
-
 			return nullptr;
 		}
 	}

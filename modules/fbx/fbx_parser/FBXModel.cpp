@@ -98,16 +98,11 @@ Model::Model(uint64_t id, const ElementPtr element, const Document &doc, const s
 		culling = ParseTokenAsString(GetRequiredToken(Culling, 0));
 	}
 
-	props = GetPropertyTable(doc, "Model.FbxNode", element, sc);
 	ResolveLinks(element, doc);
 }
 
 // ------------------------------------------------------------------------------------------------
 Model::~Model() {
-	if (props != nullptr) {
-		delete props;
-		props = nullptr;
-	}
 }
 
 ModelLimbNode::ModelLimbNode(uint64_t id, const ElementPtr element, const Document &doc, const std::string &name) :

@@ -131,6 +131,8 @@ Element::Element(const TokenPtr key_token, Parser &parser) :
 
 			if (!n) {
 				print_error("unexpected end of file, expected bracket, comma or key" + String(parser.LastToken()->StringContents().c_str()));
+				parser.corrupt = true;
+				return;
 			}
 
 			const TokenType ty = n->Type();
@@ -143,6 +145,8 @@ Element::Element(const TokenPtr key_token, Parser &parser) :
 
 			if (ty != TokenType_OPEN_BRACKET && ty != TokenType_CLOSE_BRACKET && ty != TokenType_COMMA && ty != TokenType_KEY) {
 				print_error("unexpected token; expected bracket, comma or key" + String(n->StringContents().c_str()));
+				parser.corrupt = true;
+				return;
 			}
 		}
 
@@ -150,11 +154,17 @@ Element::Element(const TokenPtr key_token, Parser &parser) :
 			compound = new_Scope(parser);
 			parser.scopes.push_back(compound);
 
+			if (parser.corrupt) {
+				return;
+			}
+
 			// current token should be a TOK_CLOSE_BRACKET
 			n = parser.CurrentToken();
 
 			if (n && n->Type() != TokenType_CLOSE_BRACKET) {
 				print_error("expected closing bracket" + String(n->StringContents().c_str()));
+				parser.corrupt = true;
+				return;
 			}
 
 			parser.AdvanceToNextToken();
@@ -173,22 +183,31 @@ Scope::Scope(Parser &parser, bool topLevel) {
 		TokenPtr t = parser.CurrentToken();
 		if (t->Type() != TokenType_OPEN_BRACKET) {
 			print_error("expected open bracket" + String(t->StringContents().c_str()));
+			parser.corrupt = true;
+			return;
 		}
 	}
 
 	TokenPtr n = parser.AdvanceToNextToken();
 	if (n == nullptr) {
 		print_error("unexpected end of file");
+		parser.corrupt = true;
+		return;
 	}
 
 	// note: empty scopes are allowed
 	while (n && n->Type() != TokenType_CLOSE_BRACKET) {
 		if (n->Type() != TokenType_KEY) {
 			print_error("unexpected token, expected TOK_KEY" + String(n->StringContents().c_str()));
+			parser.corrupt = true;
+			return;
 		}
 
 		const std::string str = n->StringContents();
 
+		if (parser.corrupt) {
+			return;
+		}
 		// std::multimap<std::string, ElementPtr> (key and value)
 		elements.insert(ElementMap::value_type(str, new_Element(n, parser)));
 
@@ -216,7 +235,7 @@ Scope::~Scope() {
 
 // ------------------------------------------------------------------------------------------------
 Parser::Parser(const TokenList &tokens, bool is_binary) :
-		tokens(tokens), cursor(tokens.begin()), is_binary(is_binary) {
+		corrupt(false), tokens(tokens), cursor(tokens.begin()), is_binary(is_binary) {
 	root = new_Scope(*this, true);
 	scopes.push_back(root);
 }
@@ -1228,6 +1247,21 @@ ScopePtr GetRequiredScope(const ElementPtr el) {
 	}
 
 	ERR_FAIL_V_MSG(nullptr, "Invalid element supplied to parser");
+}
+
+// ------------------------------------------------------------------------------------------------
+// extract optional compound scope
+ScopePtr GetOptionalScope(const ElementPtr el) {
+	if (el) {
+		ScopePtr s = el->Compound();
+		TokenPtr token = el->KeyToken();
+
+		if (token && s) {
+			return s;
+		}
+	}
+
+	return nullptr;
 }
 
 // ------------------------------------------------------------------------------------------------

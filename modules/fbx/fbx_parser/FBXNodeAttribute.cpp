@@ -84,16 +84,7 @@ using namespace Util;
 
 // ------------------------------------------------------------------------------------------------
 NodeAttribute::NodeAttribute(uint64_t id, const ElementPtr element, const Document &doc, const std::string &name) :
-		Object(id, element, name), props() {
-	const ScopePtr sc = GetRequiredScope(element);
-
-	const std::string &classname = ParseTokenAsString(GetRequiredToken(element, 2));
-
-	// hack on the deriving type but Null/LimbNode attributes are the only case in which
-	// the property table is by design absent and no warning should be generated
-	// for it.
-	const bool is_null_or_limb = !strcmp(classname.c_str(), "Null") || !strcmp(classname.c_str(), "LimbNode");
-	props = GetPropertyTable(doc, "NodeAttribute.Fbx" + classname, element, sc, is_null_or_limb);
+		Object(id, element, name) {
 }
 
 // ------------------------------------------------------------------------------------------------

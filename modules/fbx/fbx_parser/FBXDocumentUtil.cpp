@@ -137,36 +137,5 @@ void DOMWarning(const std::string &message, const std::shared_ptr<Element> eleme
 	print_verbose("[FBX-DOM] warning:" + String(message.c_str()));
 }
 
-// ------------------------------------------------------------------------------------------------
-// fetch a property table and the corresponding property template
-const PropertyTable *GetPropertyTable(const Document &doc,
-		const std::string &templateName,
-		const ElementPtr element,
-		const ScopePtr sc,
-		bool no_warn /*= false*/) {
-	// todo: make this an abstraction
-	const ElementPtr Properties70 = sc->GetElement("Properties70");
-	const PropertyTable *templateProps = static_cast<const PropertyTable *>(nullptr);
-
-	if (templateName.length()) {
-		PropertyTemplateMap::const_iterator it = doc.Templates().find(templateName);
-		if (it != doc.Templates().end()) {
-			templateProps = (*it).second;
-		}
-	}
-
-	if (!Properties70 || !Properties70->Compound()) {
-		if (!no_warn) {
-			DOMWarning("property table (Properties70) not found", element);
-		}
-		if (templateProps) {
-			return new const PropertyTable(templateProps);
-		} else {
-			return new const PropertyTable();
-		}
-	}
-
-	return new PropertyTable(Properties70, templateProps);
-}
 } // namespace Util
 } // namespace FBXDocParser

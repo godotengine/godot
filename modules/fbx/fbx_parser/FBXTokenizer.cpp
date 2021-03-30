@@ -141,7 +141,7 @@ void ProcessDataToken(TokenList &output_tokens, const char *&start, const char *
 } // namespace
 
 // ------------------------------------------------------------------------------------------------
-void Tokenize(TokenList &output_tokens, const char *input, size_t length) {
+void Tokenize(TokenList &output_tokens, const char *input, size_t length, bool &corrupt) {
 	// line and column numbers numbers are one-based
 	unsigned int line = 1;
 	unsigned int column = 1;
@@ -185,6 +185,8 @@ void Tokenize(TokenList &output_tokens, const char *input, size_t length) {
 			case '\"':
 				if (token_begin) {
 					TokenizeError("unexpected double-quote", line, column);
+					corrupt = true;
+					return;
 				}
 				token_begin = cur;
 				in_double_quotes = true;
