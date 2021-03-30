@@ -644,11 +644,11 @@ void GDScriptAnalyzer::resolve_class_interface(GDScriptParser::ClassNode *p_clas
 				GDScriptParser::DataType datatype = member.constant->get_datatype();
 				if (member.constant->initializer) {
 					if (member.constant->initializer->type == GDScriptParser::Node::ARRAY) {
-						GDScriptParser::ArrayNode *array = static_cast<GDScriptParser::ArrayNode *>(member.variable->initializer);
+						GDScriptParser::ArrayNode *array = static_cast<GDScriptParser::ArrayNode *>(member.constant->initializer);
 						const_fold_array(array);
 
 						// Can only infer typed array if it has elements.
-						if (array->elements.size() > 0 || (member.variable->datatype_specifier != nullptr && specified_type.has_container_element_type())) {
+						if (array->elements.size() > 0 || (member.constant->datatype_specifier != nullptr && specified_type.has_container_element_type())) {
 							update_array_literal_element_type(specified_type, array);
 						}
 					} else if (member.constant->initializer->type == GDScriptParser::Node::DICTIONARY) {
