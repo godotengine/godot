@@ -38,6 +38,8 @@
 #include "scene/gui/line_edit.h"
 #include "scene/gui/tree.h"
 
+class EditorHelpBit;
+
 class CreateDialog : public ConfirmationDialog {
 	GDCLASS(CreateDialog, ConfirmationDialog);
 

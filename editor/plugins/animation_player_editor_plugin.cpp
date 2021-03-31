@@ -1479,7 +1479,7 @@ void AnimationPlayerEditor::_stop_onion_skinning() {
 }
 
 void AnimationPlayerEditor::_pin_pressed() {
-	EditorNode::get_singleton()->get_scene_tree_dock()->get_tree_editor()->update_tree();
+	EditorDocks::get_singleton()->get_scene_tree_dock()->get_tree_editor()->update_tree();
 }
 
 void AnimationPlayerEditor::_bind_methods() {

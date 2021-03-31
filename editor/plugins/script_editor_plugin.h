@@ -172,6 +172,7 @@ public:
 
 typedef ScriptEditorBase *(*CreateScriptEditorFunc)(const RES &p_resource);
 
+class EditorNode;
 class EditorScriptCodeCompletionCache;
 class FindInFilesDialog;
 class FindInFilesPanel;

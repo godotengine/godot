@@ -37,6 +37,7 @@
 #include "editor/editor_folding.h"
 #include "editor/editor_native_shader_source_visualizer.h"
 #include "editor/editor_run.h"
+#include "editor/editor_singletons.h"
 #include "editor/inspector_dock.h"
 #include "editor/property_editor.h"
 #include "editor/scene_tree_dock.h"
@@ -61,16 +62,15 @@ class EditorFileServer;
 class EditorInspector;
 class EditorLayoutsDialog;
 class EditorLog;
-class EditorPlugin;
 class EditorPluginList;
 class EditorQuickOpen;
 class EditorResourcePreview;
 class EditorRunNative;
 class EditorSettingsDialog;
 class ExportTemplateManager;
+class FileDialog;
 class FileSystemDock;
 class HSplitContainer;
-class ImportDock;
 class MenuButton;
 class NodeDock;
 class OrphanResourcesDialog;
@@ -288,11 +288,6 @@ private:
 	Ref<Theme> theme;
 
 	PopupMenu *recent_scenes;
-	SceneTreeDock *scene_tree_dock;
-	InspectorDock *inspector_dock;
-	NodeDock *node_dock;
-	ImportDock *import_dock;
-	FileSystemDock *filesystem_dock;
 	EditorRunNative *run_native;
 
 	ConfirmationDialog *confirmation;
@@ -432,8 +427,6 @@ private:
 	ConfirmationDialog *disk_changed;
 
 	void _bottom_panel_raise_toggled(bool);
-
-	EditorInterface *editor_interface;
 
 	void _bottom_panel_switch(bool p_enable, int p_idx);
 
@@ -691,9 +684,9 @@ public:
 	EditorPluginList *get_editor_plugins_over() { return editor_plugins_over; }
 	EditorPluginList *get_editor_plugins_force_over() { return editor_plugins_force_over; }
 	EditorPluginList *get_editor_plugins_force_input_forwarding() { return editor_plugins_force_input_forwarding; }
-	EditorInspector *get_inspector() { return inspector_dock->get_inspector(); }
-	Container *get_inspector_dock_addon_area() { return inspector_dock->get_addon_area(); }
-	ScriptCreateDialog *get_script_create_dialog() { return scene_tree_dock->get_script_create_dialog(); }
+	EditorInspector *get_inspector() { return EditorDocks::get_singleton()->get_inspector_dock()->get_inspector(); }
+	Container *get_inspector_dock_addon_area() { return EditorDocks::get_singleton()->get_inspector_dock()->get_addon_area(); }
+	ScriptCreateDialog *get_script_create_dialog() { return EditorDocks::get_singleton()->get_scene_tree_dock()->get_script_create_dialog(); }
 
 	ProjectSettingsEditor *get_project_settings() { return project_settings; }
 
@@ -717,8 +710,8 @@ public:
 	bool is_addon_plugin_enabled(const String &p_addon) const;
 
 	void edit_node(Node *p_node);
-	void edit_resource(const Ref<Resource> &p_resource) { inspector_dock->edit_resource(p_resource); };
-	void open_resource(const String &p_type) { inspector_dock->open_resource(p_type); };
+	void edit_resource(const Ref<Resource> &p_resource) { EditorDocks::get_singleton()->get_inspector_dock()->edit_resource(p_resource); };
+	void open_resource(const String &p_type) { EditorDocks::get_singleton()->get_inspector_dock()->open_resource(p_type); };
 
 	void save_resource_in_path(const Ref<Resource> &p_resource, const String &p_path);
 	void save_resource(const Ref<Resource> &p_resource);
@@ -770,10 +763,6 @@ public:
 
 	void request_instance_scene(const String &p_path);
 	void request_instance_scenes(const Vector<String> &p_files);
-	FileSystemDock *get_filesystem_dock();
-	ImportDock *get_import_dock();
-	SceneTreeDock *get_scene_tree_dock();
-	InspectorDock *get_inspector_dock();
 	static UndoRedo *get_undo_redo() { return &singleton->editor_data.get_undo_redo(); }
 
 	EditorSelection *get_editor_selection() { return editor_selection; }
@@ -861,7 +850,7 @@ public:
 
 	void edit_current() { _edit_current(); };
 
-	void update_keying() const { inspector_dock->update_keying(); };
+	void update_keying() const { EditorDocks::get_singleton()->get_inspector_dock()->update_keying(); };
 	bool has_scenes_in_session();
 
 	int execute_and_show_output(const String &p_title, const String &p_path, const List<String> &p_arguments, bool p_close_on_ok = true, bool p_close_on_errors = false);

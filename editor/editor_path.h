@@ -34,6 +34,8 @@
 #include "editor_data.h"
 #include "scene/gui/menu_button.h"
 
+class EditorHistory;
+
 class EditorPath : public MenuButton {
 	GDCLASS(EditorPath, MenuButton);
 

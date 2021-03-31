@@ -57,8 +57,6 @@ void NodeDock::_notification(int p_what) {
 	}
 }
 
-NodeDock *NodeDock::singleton = nullptr;
-
 void NodeDock::update_lists() {
 	connections->update_tree();
 }
@@ -85,8 +83,6 @@ void NodeDock::set_node(Node *p_node) {
 }
 
 NodeDock::NodeDock() {
-	singleton = this;
-
 	set_name("Node");
 	mode_hb = memnew(HBoxContainer);
 	add_child(mode_hb);

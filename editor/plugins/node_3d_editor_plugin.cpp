@@ -2411,7 +2411,7 @@ void Node3DEditorViewport::_notification(int p_what) {
 
 		_update_freelook(delta);
 
-		Node *scene_root = editor->get_scene_tree_dock()->get_editor_data()->get_edited_scene_root();
+		Node *scene_root = EditorDocks::get_singleton()->get_scene_tree_dock()->get_editor_data()->get_edited_scene_root();
 		if (previewing_cinema && scene_root != nullptr) {
 			Camera3D *cam = scene_root->get_viewport()->get_camera();
 			if (cam != nullptr && cam != previewing) {
@@ -3960,7 +3960,7 @@ Node3DEditorViewport::Node3DEditorViewport(Node3DEditor *p_spatial_editor, Edito
 
 	index = p_index;
 	editor = p_editor;
-	editor_data = editor->get_scene_tree_dock()->get_editor_data();
+	editor_data = EditorDocks::get_singleton()->get_scene_tree_dock()->get_editor_data();
 	editor_selection = editor->get_editor_selection();
 	undo_redo = editor->get_undo_redo();
 
@@ -6281,7 +6281,7 @@ void Node3DEditor::_notification(int p_what) {
 
 		get_tree()->connect("node_removed", callable_mp(this, &Node3DEditor::_node_removed));
 		get_tree()->connect("node_added", callable_mp(this, &Node3DEditor::_node_added));
-		EditorNode::get_singleton()->get_scene_tree_dock()->get_tree_editor()->connect("node_changed", callable_mp(this, &Node3DEditor::_refresh_menu_icons));
+		EditorDocks::get_singleton()->get_scene_tree_dock()->get_tree_editor()->connect("node_changed", callable_mp(this, &Node3DEditor::_refresh_menu_icons));
 		editor_selection->connect("selection_changed", callable_mp(this, &Node3DEditor::_refresh_menu_icons));
 
 		editor->connect("stop_pressed", callable_mp(this, &Node3DEditor::_update_camera_override_button), make_binds(false));
@@ -7338,7 +7338,7 @@ Node3DEditorPlugin::Node3DEditorPlugin(EditorNode *p_node) {
 	editor->get_main_control()->add_child(spatial_editor);
 
 	spatial_editor->hide();
-	spatial_editor->connect("transform_key_request", Callable(editor->get_inspector_dock(), "_transform_keyed"));
+	spatial_editor->connect("transform_key_request", Callable(EditorDocks::get_singleton()->get_inspector_dock(), "_transform_keyed"));
 }
 
 Node3DEditorPlugin::~Node3DEditorPlugin() {

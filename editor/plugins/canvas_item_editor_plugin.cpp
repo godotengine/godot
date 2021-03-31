@@ -1033,9 +1033,9 @@ void CanvasItemEditor::_selection_menu_hide() {
 
 void CanvasItemEditor::_add_node_pressed(int p_result) {
 	if (p_result == AddNodeOption::ADD_NODE) {
-		editor->get_scene_tree_dock()->open_add_child_dialog();
+		EditorDocks::get_singleton()->get_scene_tree_dock()->open_add_child_dialog();
 	} else if (p_result == AddNodeOption::ADD_INSTANCE) {
-		editor->get_scene_tree_dock()->open_instance_child_dialog();
+		EditorDocks::get_singleton()->get_scene_tree_dock()->open_instance_child_dialog();
 	}
 }
 
@@ -5684,8 +5684,8 @@ CanvasItemEditor::CanvasItemEditor(EditorNode *p_editor) {
 	editor_selection->connect("selection_changed", callable_mp((CanvasItem *)this, &CanvasItem::update));
 	editor_selection->connect("selection_changed", callable_mp(this, &CanvasItemEditor::_selection_changed));
 
-	editor->get_scene_tree_dock()->connect("node_created", callable_mp(this, &CanvasItemEditor::_node_created));
-	editor->get_scene_tree_dock()->connect("add_node_used", callable_mp(this, &CanvasItemEditor::_reset_create_position));
+	EditorDocks::get_singleton()->get_scene_tree_dock()->connect("node_created", callable_mp(this, &CanvasItemEditor::_node_created));
+	EditorDocks::get_singleton()->get_scene_tree_dock()->connect("add_node_used", callable_mp(this, &CanvasItemEditor::_reset_create_position));
 
 	editor->call_deferred("connect", "play_pressed", Callable(this, "_update_override_camera_button"), make_binds(true));
 	editor->call_deferred("connect", "stop_pressed", Callable(this, "_update_override_camera_button"), make_binds(false));
@@ -6083,8 +6083,8 @@ CanvasItemEditor::CanvasItemEditor(EditorNode *p_editor) {
 
 	add_node_menu = memnew(PopupMenu);
 	add_child(add_node_menu);
-	add_node_menu->add_icon_item(editor->get_scene_tree_dock()->get_theme_icon("Add", "EditorIcons"), TTR("Add Node Here"));
-	add_node_menu->add_icon_item(editor->get_scene_tree_dock()->get_theme_icon("Instance", "EditorIcons"), TTR("Instance Scene Here"));
+	add_node_menu->add_icon_item(EditorDocks::get_singleton()->get_scene_tree_dock()->get_theme_icon("Add", "EditorIcons"), TTR("Add Node Here"));
+	add_node_menu->add_icon_item(EditorDocks::get_singleton()->get_scene_tree_dock()->get_theme_icon("Instance", "EditorIcons"), TTR("Instance Scene Here"));
 	add_node_menu->connect("id_pressed", callable_mp(this, &CanvasItemEditor::_add_node_pressed));
 
 	multiply_grid_step_shortcut = ED_SHORTCUT("canvas_item_editor/multiply_grid_step", TTR("Multiply grid step by 2"), KEY_KP_MULTIPLY);
@@ -6561,7 +6561,7 @@ CanvasItemEditorViewport::CanvasItemEditorViewport(EditorNode *p_node, CanvasIte
 
 	target_node = nullptr;
 	editor = p_node;
-	editor_data = editor->get_scene_tree_dock()->get_editor_data();
+	editor_data = EditorDocks::get_singleton()->get_scene_tree_dock()->get_editor_data();
 	canvas_item_editor = p_canvas_item_editor;
 	preview_node = memnew(Node2D);
 

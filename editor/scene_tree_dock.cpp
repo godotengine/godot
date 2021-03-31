@@ -2019,7 +2019,7 @@ void SceneTreeDock::_delete_confirm(bool p_cut) {
 	// Fixes the EditorHistory from still offering deleted notes
 	EditorHistory *editor_history = EditorNode::get_singleton()->get_editor_history();
 	editor_history->cleanup_history();
-	EditorNode::get_singleton()->get_inspector_dock()->call("_prepare_history");
+	EditorDocks::get_singleton()->get_inspector_dock()->call("_prepare_history");
 }
 
 void SceneTreeDock::_update_script_button() {

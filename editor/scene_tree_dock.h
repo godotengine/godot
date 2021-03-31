@@ -49,6 +49,7 @@
 #include "scene_tree_editor.h"
 
 class EditorNode;
+class EditorData;
 
 class SceneTreeDock : public VBoxContainer {
 	GDCLASS(SceneTreeDock, VBoxContainer);

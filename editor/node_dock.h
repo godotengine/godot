@@ -52,8 +52,6 @@ protected:
 	void _notification(int p_what);
 
 public:
-	static NodeDock *singleton;
-
 	void set_node(Node *p_node);
 
 	void show_groups();

@@ -2697,11 +2697,11 @@ void FileSystemDock::_update_import_dock() {
 	}
 
 	if (imports.size() == 0) {
-		EditorNode::get_singleton()->get_import_dock()->clear();
+		EditorDocks::get_singleton()->get_import_dock()->clear();
 	} else if (imports.size() == 1) {
-		EditorNode::get_singleton()->get_import_dock()->set_edit_path(imports[0]);
+		EditorDocks::get_singleton()->get_import_dock()->set_edit_path(imports[0]);
 	} else {
-		EditorNode::get_singleton()->get_import_dock()->set_edit_multiple_paths(imports);
+		EditorDocks::get_singleton()->get_import_dock()->set_edit_multiple_paths(imports);
 	}
 
 	import_dock_needs_update = false;

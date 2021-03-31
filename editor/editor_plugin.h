@@ -34,7 +34,9 @@
 #include "core/io/config_file.h"
 #include "core/object/undo_redo.h"
 #include "editor/debugger/editor_debugger_node.h"
+#include "editor/editor_export.h"
 #include "editor/editor_inspector.h"
+#include "editor/editor_singletons.h"
 #include "editor/editor_translation_parser.h"
 #include "editor/import/editor_import_plugin.h"
 #include "editor/import/resource_importer_scene.h"
@@ -43,87 +45,13 @@
 #include "scene/resources/texture.h"
 
 class EditorNode;
-class Node3D;
-class Camera3D;
-class EditorSelection;
-class EditorExport;
-class EditorSettings;
-class EditorImportPlugin;
-class EditorExportPlugin;
+class EditorInterface;
+class EditorDocks;
 class EditorNode3DGizmoPlugin;
-class EditorResourcePreview;
-class EditorFileSystem;
-class EditorToolAddons;
-class EditorPaths;
-class FileSystemDock;
-class ScriptEditor;
-
-class EditorInterface : public Node {
-	GDCLASS(EditorInterface, Node);
-
-protected:
-	static void _bind_methods();
-	static EditorInterface *singleton;
-
-	Array _make_mesh_previews(const Array &p_meshes, int p_preview_size);
-
-public:
-	static EditorInterface *get_singleton() { return singleton; }
-
-	Control *get_editor_main_control();
-	void edit_resource(const Ref<Resource> &p_resource);
-	void edit_node(Node *p_node);
-	void open_scene_from_path(const String &scene_path);
-	void reload_scene_from_path(const String &scene_path);
-
-	void play_main_scene();
-	void play_current_scene();
-	void play_custom_scene(const String &scene_path);
-	void stop_playing_scene();
-	bool is_playing_scene() const;
-	String get_playing_scene() const;
-
-	Node *get_edited_scene_root();
-	Array get_open_scenes() const;
-	ScriptEditor *get_script_editor();
-
-	void select_file(const String &p_file);
-	String get_selected_path() const;
-	String get_current_path() const;
-
-	void inspect_object(Object *p_obj, const String &p_for_property = String(), bool p_inspector_only = false);
-
-	EditorSelection *get_selection();
-	//EditorImportExport *get_import_export();
-	Ref<EditorSettings> get_editor_settings();
-	EditorPaths *get_editor_paths();
-	EditorResourcePreview *get_resource_previewer();
-	EditorFileSystem *get_resource_file_system();
-
-	FileSystemDock *get_file_system_dock();
-
-	Control *get_base_control();
-	float get_editor_scale() const;
-
-	void set_plugin_enabled(const String &p_plugin, bool p_enabled);
-	bool is_plugin_enabled(const String &p_plugin) const;
-
-	EditorInspector *get_inspector() const;
-
-	Error save_scene();
-	void save_scene_as(const String &p_scene, bool p_with_preview = true);
-
-	Vector<Ref<Texture2D>> make_mesh_previews(const Vector<Ref<Mesh>> &p_meshes, Vector<Transform> *p_transforms, int p_preview_size);
-
-	void set_main_screen_editor(const String &p_name);
-	void set_distraction_free_mode(bool p_enter);
-	bool is_distraction_free_mode_enabled() const;
-
-	EditorInterface();
-};
 
 class EditorPlugin : public Node {
 	GDCLASS(EditorPlugin, Node);
+
 	friend class EditorData;
 	UndoRedo *undo_redo = nullptr;
 
@@ -225,10 +153,8 @@ public:
 	virtual bool build(); // builds with external tools. Returns true if safe to continue running scene.
 
 	EditorInterface *get_editor_interface();
+	EditorDocks *get_editor_docks();
 	ScriptCreateDialog *get_script_create_dialog();
-
-	void add_undo_redo_inspector_hook_callback(Callable p_callable);
-	void remove_undo_redo_inspector_hook_callback(Callable p_callable);
 
 	int update_overlays() const;
 
