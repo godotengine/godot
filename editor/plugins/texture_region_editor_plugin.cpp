@@ -863,19 +863,19 @@ Sprite2D *TextureRegionEditor::get_sprite() {
 
 void TextureRegionEditor::edit(Object *p_obj) {
 	if (node_sprite) {
-		node_sprite->disconnect("changed", callable_mp(this, &TextureRegionEditor::_texture_changed));
+		node_sprite->disconnect("texture_changed", callable_mp(this, &TextureRegionEditor::_texture_changed));
 	}
 	if (node_sprite_3d) {
-		node_sprite_3d->disconnect("changed", callable_mp(this, &TextureRegionEditor::_texture_changed));
+		node_sprite_3d->disconnect("texture_changed", callable_mp(this, &TextureRegionEditor::_texture_changed));
 	}
 	if (node_ninepatch) {
-		node_ninepatch->disconnect("changed", callable_mp(this, &TextureRegionEditor::_texture_changed));
+		node_ninepatch->disconnect("texture_changed", callable_mp(this, &TextureRegionEditor::_texture_changed));
 	}
 	if (obj_styleBox.is_valid()) {
-		obj_styleBox->disconnect("changed", callable_mp(this, &TextureRegionEditor::_texture_changed));
+		obj_styleBox->disconnect("texture_changed", callable_mp(this, &TextureRegionEditor::_texture_changed));
 	}
 	if (atlas_tex.is_valid()) {
-		atlas_tex->disconnect("changed", callable_mp(this, &TextureRegionEditor::_texture_changed));
+		atlas_tex->disconnect("texture_changed", callable_mp(this, &TextureRegionEditor::_texture_changed));
 	}
 	if (p_obj) {
 		node_sprite = Object::cast_to<Sprite2D>(p_obj);
@@ -887,7 +887,7 @@ void TextureRegionEditor::edit(Object *p_obj) {
 		if (Object::cast_to<AtlasTexture>(p_obj)) {
 			atlas_tex = Ref<AtlasTexture>(Object::cast_to<AtlasTexture>(p_obj));
 		}
-		p_obj->connect("changed", callable_mp(this, &TextureRegionEditor::_texture_changed));
+		p_obj->connect("texture_changed", callable_mp(this, &TextureRegionEditor::_texture_changed));
 		_edit_region();
 	} else {
 		node_sprite = nullptr;
