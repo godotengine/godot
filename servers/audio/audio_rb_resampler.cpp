@@ -176,8 +176,8 @@ Error AudioRBResampler::setup(int p_channels, int p_src_mix_rate, int p_target_m
 		rb_bits = desired_rb_bits;
 		rb_len = (1 << rb_bits);
 		rb_mask = rb_len - 1;
-		rb = memnew_arr(float, rb_len *p_channels);
-		read_buf = memnew_arr(float, rb_len *p_channels);
+		rb = memnew_arr(float, (size_t)rb_len *p_channels);
+		read_buf = memnew_arr(float, (size_t)rb_len *p_channels);
 	}
 
 	src_mix_rate = p_src_mix_rate;

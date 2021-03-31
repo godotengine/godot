@@ -239,7 +239,7 @@ bool Sprite2D::is_region_filter_clip_enabled() const {
 }
 
 void Sprite2D::set_frame(int p_frame) {
-	ERR_FAIL_INDEX(p_frame, vframes * hframes);
+	ERR_FAIL_INDEX(p_frame, (int64_t)vframes * hframes);
 
 	if (frame != p_frame) {
 		item_rect_changed();
