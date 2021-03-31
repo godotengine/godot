@@ -1947,7 +1947,7 @@ void TileMapEditor::_notification(int p_what) {
 		case NOTIFICATION_INTERNAL_PROCESS:
 			if (is_visible_in_tree() && tileset_changed_needs_update) {
 				_update_bottom_panel();
-				tile_map_editor_plugins[tileset_tabs_container->get_current_tab()]->tile_set_changed();
+				tile_map_editor_plugins[tabs->get_current_tab()]->tile_set_changed();
 				CanvasItemEditor::get_singleton()->update_viewport();
 				tileset_changed_needs_update = false;
 			}
@@ -1964,7 +1964,9 @@ void TileMapEditor::_update_bottom_panel() {
 
 	// Update the visibility of controls.
 	missing_tileset_label->set_visible(!tile_set.is_valid());
-	tileset_tabs_container->set_visible(tile_set.is_valid());
+	for (int i = 0; i < tile_map_editor_plugins.size(); i++) {
+		tile_map_editor_plugins[i]->set_visible(i == tabs->get_current_tab());
+	}
 }
 
 Vector<Vector2i> TileMapEditor::get_line(TileMap *p_tile_map, Vector2i p_from_cell, Vector2i p_to_cell) {
@@ -2046,20 +2048,25 @@ void TileMapEditor::_tile_map_changed() {
 
 void TileMapEditor::_tab_changed(int p_tab_id) {
 	// Make the plugin edit the correct tilemap.
-	tile_map_editor_plugins[tileset_tabs_container->get_current_tab()]->edit(tile_map_id);
+	tile_map_editor_plugins[tabs->get_current_tab()]->edit(tile_map_id);
 
 	// Update toolbar.
 	for (int i = 0; i < tile_map_editor_plugins.size(); i++) {
 		tile_map_editor_plugins[i]->get_toolbar()->set_visible(i == p_tab_id);
 	}
 
+	// Update visible panel.
+	for (int i = 0; i < tile_map_editor_plugins.size(); i++) {
+		tile_map_editor_plugins[i]->set_visible(i == tabs->get_current_tab());
+	}
+
 	// Graphical update.
-	tile_map_editor_plugins[tileset_tabs_container->get_current_tab()]->update();
+	tile_map_editor_plugins[tabs->get_current_tab()]->update();
 	CanvasItemEditor::get_singleton()->update_viewport();
 }
 
 bool TileMapEditor::forward_canvas_gui_input(const Ref<InputEvent> &p_event) {
-	return tile_map_editor_plugins[tileset_tabs_container->get_current_tab()]->forward_canvas_gui_input(p_event);
+	return tile_map_editor_plugins[tabs->get_current_tab()]->forward_canvas_gui_input(p_event);
 }
 
 void TileMapEditor::forward_canvas_draw_over_viewport(Control *p_overlay) {
@@ -2174,7 +2181,7 @@ void TileMapEditor::forward_canvas_draw_over_viewport(Control *p_overlay) {
 	}*/
 
 	// Draw the plugins.
-	tile_map_editor_plugins[tileset_tabs_container->get_current_tab()]->forward_canvas_draw_over_viewport(p_overlay);
+	tile_map_editor_plugins[tabs->get_current_tab()]->forward_canvas_draw_over_viewport(p_overlay);
 }
 
 void TileMapEditor::edit(TileMap *p_tile_map) {
@@ -2201,7 +2208,7 @@ void TileMapEditor::edit(TileMap *p_tile_map) {
 	}
 
 	// Call the plugins.
-	tile_map_editor_plugins[tileset_tabs_container->get_current_tab()]->edit(tile_map_id);
+	tile_map_editor_plugins[tabs->get_current_tab()]->edit(tile_map_id);
 
 	_tile_map_changed();
 }
@@ -2213,9 +2220,19 @@ TileMapEditor::TileMapEditor() {
 	tile_map_editor_plugins.push_back(memnew(TileMapEditorTilesPlugin));
 	tile_map_editor_plugins.push_back(memnew(TileMapEditorTerrainsPlugin));
 
+	// Tabs.
+	tabs = memnew(Tabs);
+	tabs->set_clip_tabs(false);
+	for (int i = 0; i < tile_map_editor_plugins.size(); i++) {
+		tabs->add_tab(tile_map_editor_plugins[i]->get_name());
+	}
+	tabs->connect("tab_changed", callable_mp(this, &TileMapEditor::_tab_changed));
+
 	// --- TileMap toolbar ---
 	tilemap_toolbar = memnew(HBoxContainer);
-	tilemap_toolbar->add_child(memnew(VSeparator));
+	//tilemap_toolbar->add_child(memnew(VSeparator));
+	tilemap_toolbar->add_child(tabs);
+	//tilemap_toolbar->add_child(memnew(VSeparator));
 	for (int i = 0; i < tile_map_editor_plugins.size(); i++) {
 		tile_map_editor_plugins[i]->get_toolbar()->hide();
 		tilemap_toolbar->add_child(tile_map_editor_plugins[i]->get_toolbar());
@@ -2230,16 +2247,11 @@ TileMapEditor::TileMapEditor() {
 	missing_tileset_label->hide();
 	add_child(missing_tileset_label);
 
-	tileset_tabs_container = memnew(TabContainer);
-	tileset_tabs_container->set_v_size_flags(SIZE_EXPAND_FILL);
-	tileset_tabs_container->set_tab_align(TabContainer::ALIGN_LEFT);
-	tileset_tabs_container->connect("tab_changed", callable_mp(this, &TileMapEditor::_tab_changed));
-	add_child(tileset_tabs_container);
-
 	for (int i = 0; i < tile_map_editor_plugins.size(); i++) {
-		tileset_tabs_container->add_child(tile_map_editor_plugins[i]);
+		add_child(tile_map_editor_plugins[i]);
 		tile_map_editor_plugins[i]->set_h_size_flags(SIZE_EXPAND_FILL);
 		tile_map_editor_plugins[i]->set_v_size_flags(SIZE_EXPAND_FILL);
+		tile_map_editor_plugins[i]->set_visible(i == 0);
 	}
 
 	_tab_changed(0);

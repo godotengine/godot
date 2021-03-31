@@ -35,6 +35,7 @@
 
 #include "scene/2d/tile_map.h"
 #include "scene/gui/box_container.h"
+#include "scene/gui/tabs.h"
 
 #include "editor/editor_node.h"
 
@@ -222,7 +223,7 @@ private:
 
 	// Bottom panel
 	Label *missing_tileset_label;
-	TabContainer *tileset_tabs_container;
+	Tabs *tabs;
 	void _update_bottom_panel();
 
 	// TileMap
