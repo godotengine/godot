@@ -459,6 +459,13 @@ public:
 	void add_theme_color_override(const StringName &p_name, const Color &p_color);
 	void add_theme_constant_override(const StringName &p_name, int p_constant);
 
+	void remove_theme_icon_override(const StringName &p_name);
+	void remove_theme_style_override(const StringName &p_name);
+	void remove_theme_font_override(const StringName &p_name);
+	void remove_theme_font_size_override(const StringName &p_name);
+	void remove_theme_color_override(const StringName &p_name);
+	void remove_theme_constant_override(const StringName &p_name);
+
 	Ref<Texture2D> get_theme_icon(const StringName &p_name, const StringName &p_node_type = StringName()) const;
 	Ref<StyleBox> get_theme_stylebox(const StringName &p_name, const StringName &p_node_type = StringName()) const;
 	Ref<Font> get_theme_font(const StringName &p_name, const StringName &p_node_type = StringName()) const;

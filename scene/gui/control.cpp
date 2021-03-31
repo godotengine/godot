@@ -323,7 +323,6 @@ bool Control::_get(const StringName &p_name, Variant &r_ret) const {
 		r_ret = data.color_override.has(name) ? Variant(data.color_override[name]) : Variant();
 	} else if (sname.begins_with("custom_constants/")) {
 		String name = sname.get_slicec('/', 1);
-
 		r_ret = data.constant_override.has(name) ? Variant(data.constant_override[name]) : Variant();
 	} else {
 		return false;
@@ -1776,53 +1775,38 @@ Rect2 Control::get_anchorable_rect() const {
 }
 
 void Control::add_theme_icon_override(const StringName &p_name, const Ref<Texture2D> &p_icon) {
+	ERR_FAIL_COND(!p_icon.is_valid());
+
 	if (data.icon_override.has(p_name)) {
 		data.icon_override[p_name]->disconnect("changed", callable_mp(this, &Control::_override_changed));
 	}
 
-	// clear if "null" is passed instead of an icon
-	if (p_icon.is_null()) {
-		data.icon_override.erase(p_name);
-	} else {
-		data.icon_override[p_name] = p_icon;
-		if (data.icon_override[p_name].is_valid()) {
-			data.icon_override[p_name]->connect("changed", callable_mp(this, &Control::_override_changed), Vector<Variant>(), CONNECT_REFERENCE_COUNTED);
-		}
-	}
+	data.icon_override[p_name] = p_icon;
+	data.icon_override[p_name]->connect("changed", callable_mp(this, &Control::_override_changed), Vector<Variant>(), CONNECT_REFERENCE_COUNTED);
 	notification(NOTIFICATION_THEME_CHANGED);
 }
 
 void Control::add_theme_style_override(const StringName &p_name, const Ref<StyleBox> &p_style) {
+	ERR_FAIL_COND(!p_style.is_valid());
+
 	if (data.style_override.has(p_name)) {
 		data.style_override[p_name]->disconnect("changed", callable_mp(this, &Control::_override_changed));
 	}
 
-	// clear if "null" is passed instead of a style
-	if (p_style.is_null()) {
-		data.style_override.erase(p_name);
-	} else {
-		data.style_override[p_name] = p_style;
-		if (data.style_override[p_name].is_valid()) {
-			data.style_override[p_name]->connect("changed", callable_mp(this, &Control::_override_changed), Vector<Variant>(), CONNECT_REFERENCE_COUNTED);
-		}
-	}
+	data.style_override[p_name] = p_style;
+	data.style_override[p_name]->connect("changed", callable_mp(this, &Control::_override_changed), Vector<Variant>(), CONNECT_REFERENCE_COUNTED);
 	notification(NOTIFICATION_THEME_CHANGED);
 }
 
 void Control::add_theme_font_override(const StringName &p_name, const Ref<Font> &p_font) {
+	ERR_FAIL_COND(!p_font.is_valid());
+
 	if (data.font_override.has(p_name)) {
 		data.font_override[p_name]->disconnect("changed", callable_mp(this, &Control::_override_changed));
 	}
 
-	// clear if "null" is passed instead of a font
-	if (p_font.is_null()) {
-		data.font_override.erase(p_name);
-	} else {
-		data.font_override[p_name] = p_font;
-		if (data.font_override[p_name].is_valid()) {
-			data.font_override[p_name]->connect("changed", callable_mp(this, &Control::_override_changed), Vector<Variant>(), CONNECT_REFERENCE_COUNTED);
-		}
-	}
+	data.font_override[p_name] = p_font;
+	data.font_override[p_name]->connect("changed", callable_mp(this, &Control::_override_changed), Vector<Variant>(), CONNECT_REFERENCE_COUNTED);
 	notification(NOTIFICATION_THEME_CHANGED);
 }
 
@@ -1838,6 +1822,48 @@ void Control::add_theme_color_override(const StringName &p_name, const Color &p_
 
 void Control::add_theme_constant_override(const StringName &p_name, int p_constant) {
 	data.constant_override[p_name] = p_constant;
+	notification(NOTIFICATION_THEME_CHANGED);
+}
+
+void Control::remove_theme_icon_override(const StringName &p_name) {
+	if (data.icon_override.has(p_name)) {
+		data.icon_override[p_name]->disconnect("changed", callable_mp(this, &Control::_override_changed));
+	}
+
+	data.icon_override.erase(p_name);
+	notification(NOTIFICATION_THEME_CHANGED);
+}
+
+void Control::remove_theme_style_override(const StringName &p_name) {
+	if (data.style_override.has(p_name)) {
+		data.style_override[p_name]->disconnect("changed", callable_mp(this, &Control::_override_changed));
+	}
+
+	data.style_override.erase(p_name);
+	notification(NOTIFICATION_THEME_CHANGED);
+}
+
+void Control::remove_theme_font_override(const StringName &p_name) {
+	if (data.font_override.has(p_name)) {
+		data.font_override[p_name]->disconnect("changed", callable_mp(this, &Control::_override_changed));
+	}
+
+	data.font_override.erase(p_name);
+	notification(NOTIFICATION_THEME_CHANGED);
+}
+
+void Control::remove_theme_font_size_override(const StringName &p_name) {
+	data.font_size_override.erase(p_name);
+	notification(NOTIFICATION_THEME_CHANGED);
+}
+
+void Control::remove_theme_color_override(const StringName &p_name) {
+	data.color_override.erase(p_name);
+	notification(NOTIFICATION_THEME_CHANGED);
+}
+
+void Control::remove_theme_constant_override(const StringName &p_name) {
+	data.constant_override.erase(p_name);
 	notification(NOTIFICATION_THEME_CHANGED);
 }
 
@@ -2794,6 +2820,13 @@ void Control::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("add_theme_font_size_override", "name", "font_size"), &Control::add_theme_font_size_override);
 	ClassDB::bind_method(D_METHOD("add_theme_color_override", "name", "color"), &Control::add_theme_color_override);
 	ClassDB::bind_method(D_METHOD("add_theme_constant_override", "name", "constant"), &Control::add_theme_constant_override);
+
+	ClassDB::bind_method(D_METHOD("remove_theme_icon_override", "name"), &Control::remove_theme_icon_override);
+	ClassDB::bind_method(D_METHOD("remove_theme_stylebox_override", "name"), &Control::remove_theme_style_override);
+	ClassDB::bind_method(D_METHOD("remove_theme_font_override", "name"), &Control::remove_theme_font_override);
+	ClassDB::bind_method(D_METHOD("remove_theme_font_size_override", "name"), &Control::remove_theme_font_size_override);
+	ClassDB::bind_method(D_METHOD("remove_theme_color_override", "name"), &Control::remove_theme_color_override);
+	ClassDB::bind_method(D_METHOD("remove_theme_constant_override", "name"), &Control::remove_theme_constant_override);
 
 	ClassDB::bind_method(D_METHOD("get_theme_icon", "name", "node_type"), &Control::get_theme_icon, DEFVAL(""));
 	ClassDB::bind_method(D_METHOD("get_theme_stylebox", "name", "node_type"), &Control::get_theme_stylebox, DEFVAL(""));
