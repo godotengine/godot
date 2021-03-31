@@ -204,6 +204,8 @@ void Navigation2D::_navpoly_unlink(int p_id) {
 
 int Navigation2D::navpoly_add(const Ref<NavigationPolygon> &p_mesh, const Transform2D &p_xform, Object *p_owner) {
 
+	ERR_FAIL_COND_V(p_mesh.is_null(), -1);
+
 	int id = last_id++;
 	NavMesh nm;
 	nm.linked = false;
