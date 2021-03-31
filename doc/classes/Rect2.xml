@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="Rect2" version="3.2">
+<class name="Rect2" version="3.3">
 	<brief_description>
 		2D axis-aligned bounding box.
 	</brief_description>
@@ -9,9 +9,9 @@
 		The 3D counterpart to [Rect2] is [AABB].
 	</description>
 	<tutorials>
-		<link title="Math tutorial index">https://docs.godotengine.org/en/3.2/tutorials/math/index.html</link>
-		<link title="Vector math">https://docs.godotengine.org/en/3.2/tutorials/math/vector_math.html</link>
-		<link title="Advanced vector math">https://docs.godotengine.org/en/3.2/tutorials/math/vectors_advanced.html</link>
+		<link title="Math tutorial index">https://docs.godotengine.org/en/3.3/tutorials/math/index.html</link>
+		<link title="Vector math">https://docs.godotengine.org/en/3.3/tutorials/math/vector_math.html</link>
+		<link title="Advanced vector math">https://docs.godotengine.org/en/3.3/tutorials/math/vectors_advanced.html</link>
 	</tutorials>
 	<methods>
 		<method name="Rect2">
@@ -171,7 +171,7 @@
 			Beginning corner. Typically has values lower than [member end].
 		</member>
 		<member name="size" type="Vector2" setter="" getter="" default="Vector2( 0, 0 )">
-			Size from [member position] to [member end]. Typically all components are positive.
+			Size from [member position] to [member end]. Typically, all components are positive.
 			If the size is negative, you can use [method abs] to fix it.
 		</member>
 	</members>

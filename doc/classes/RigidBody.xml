@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="RigidBody" inherits="PhysicsBody" version="3.2">
+<class name="RigidBody" inherits="PhysicsBody" version="3.3">
 	<brief_description>
 		Physics Body whose position is determined through physics simulation in 3D space.
 	</brief_description>
@@ -11,7 +11,7 @@
 		With Bullet physics (the default), the center of mass is the RigidBody3D center. With GodotPhysics, the center of mass is the average of the [CollisionShape] centers.
 	</description>
 	<tutorials>
-		<link title="Physics introduction">https://docs.godotengine.org/en/3.2/tutorials/physics/physics_introduction.html</link>
+		<link title="Physics introduction">https://docs.godotengine.org/en/3.3/tutorials/physics/physics_introduction.html</link>
 		<link title="3D Truck Town Demo">https://godotengine.org/asset-library/asset/524</link>
 		<link title="3D Physics Tests Demo">https://godotengine.org/asset-library/asset/675</link>
 	</tutorials>

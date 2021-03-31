@@ -67,7 +67,6 @@ env_embree.Append(
     CPPFLAGS=[
         "-DEMBREE_TARGET_SSE2",
         "-DEMBREE_LOWEST_ISA",
-        "-msse2",
         "-DTASKING_INTERNAL",
         "-DNDEBUG",
         "-D__SSE2__",
@@ -76,7 +75,7 @@ env_embree.Append(
 )
 
 if not env_embree.msvc:
-    env_embree.Append(CPPFLAGS=["-mxsave"])
+    env_embree.Append(CPPFLAGS=["-msse2", "-mxsave"])
     if env["platform"] == "windows":
         env_embree.Append(CPPFLAGS=["-mstackrealign"])
 

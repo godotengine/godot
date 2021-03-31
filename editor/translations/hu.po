@@ -3663,6 +3663,11 @@ msgstr ""
 "újra manuálisan."
 
 #: editor/filesystem_dock.cpp
+msgid ""
+"Importing has been disabled for this file, so it can't be opened for editing."
+msgstr ""
+
+#: editor/filesystem_dock.cpp
 msgid "Cannot move/rename resources root."
 msgstr "Az erőforrások gyökere nem mozgatható vagy átnevezhető."
 
@@ -4061,6 +4066,10 @@ msgstr "Importálás"
 #, fuzzy
 msgid "Reset to Defaults"
 msgstr "Alapértelmezett Betöltése"
+
+#: editor/import_dock.cpp
+msgid "Keep File (No Import)"
+msgstr ""
 
 #: editor/import_dock.cpp
 msgid "%d Files"

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="AnimationNodeStateMachinePlayback" inherits="Resource" version="3.2">
+<class name="AnimationNodeStateMachinePlayback" inherits="Resource" version="3.3">
 	<brief_description>
 		Playback control for [AnimationNodeStateMachine].
 	</brief_description>
@@ -12,7 +12,7 @@
 		[/codeblock]
 	</description>
 	<tutorials>
-		<link>https://docs.godotengine.org/en/3.2/tutorials/animation/animation_tree.html</link>
+		<link>https://docs.godotengine.org/en/3.3/tutorials/animation/animation_tree.html</link>
 	</tutorials>
 	<methods>
 		<method name="get_current_length" qualifiers="const">

@@ -4811,7 +4811,7 @@ void RasterizerSceneGLES3::render_shadow(RID p_light, RID p_shadow_atlas, int p_
 
 				for (int i = shadow_cubemaps.size() - 1; i >= 0; i--) {
 					//find appropriate cubemap to render to
-					if (shadow_cubemaps[i].size > shadow_size * 2)
+					if (shadow_cubemaps[i].size > shadow_size)
 						break;
 
 					cubemap_index = i;
@@ -4961,6 +4961,11 @@ bool RasterizerSceneGLES3::free(RID p_rid) {
 
 		LightInstance *light_instance = light_instance_owner.getptr(p_rid);
 
+		// Make sure first_directional_light is invalidated
+		if (p_rid == first_directional_light) {
+			first_directional_light = RID();
+		}
+
 		//remove from shadow atlases..
 		for (Set<RID>::Element *E = light_instance->shadow_atlases.front(); E; E = E->next()) {
 			ShadowAtlas *shadow_atlas = shadow_atlas_owner.get(E->get());
@@ -5105,7 +5110,7 @@ void RasterizerSceneGLES3::initialize() {
 
 	shadow_atlas_realloc_tolerance_msec = 500;
 
-	int max_shadow_cubemap_sampler_size = 512;
+	int max_shadow_cubemap_sampler_size = CLAMP(int(next_power_of_2(GLOBAL_GET("rendering/quality/shadow_atlas/size")) >> 1), 256, storage->config.max_cubemap_texture_size);
 
 	int cube_size = max_shadow_cubemap_sampler_size;
 

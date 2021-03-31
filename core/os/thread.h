@@ -66,7 +66,6 @@ private:
 	static uint64_t _thread_id_hash(const std::thread::id &p_t);
 
 	ID id = _thread_id_hash(std::thread::id());
-	static thread_local ID caller_id;
 	std::thread thread;
 
 	static void callback(Thread *p_self, const Settings &p_settings, Thread::Callback p_callback, void *p_userdata);
@@ -87,7 +86,7 @@ public:
 #if !defined(NO_THREADS)
 	_FORCE_INLINE_ ID get_id() const { return id; }
 	// get the ID of the caller thread
-	_FORCE_INLINE_ static ID get_caller_id() { return caller_id; }
+	static ID get_caller_id();
 	// get the ID of the main thread
 	_FORCE_INLINE_ static ID get_main_id() { return main_thread_id; }
 
@@ -98,7 +97,6 @@ public:
 	///< waits until thread is finished, and deallocates it.
 	void wait_to_finish();
 
-	Thread();
 	~Thread();
 #else
 	_FORCE_INLINE_ ID get_id() const { return 0; }

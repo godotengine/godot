@@ -11,12 +11,13 @@
 # KostasMSC <kargyris@athtech.gr>, 2020.
 # lawfulRobot <czavantias@gmail.com>, 2020.
 # Michalis <michalisntovas@yahoo.gr>, 2021.
+# leriaz <leriaz@live.com>, 2021.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2021-03-03 15:50+0000\n"
-"Last-Translator: Michalis <michalisntovas@yahoo.gr>\n"
+"PO-Revision-Date: 2021-03-29 21:57+0000\n"
+"Last-Translator: leriaz <leriaz@live.com>\n"
 "Language-Team: Greek <https://hosted.weblate.org/projects/godot-engine/godot/"
 "el/>\n"
 "Language: el\n"
@@ -24,7 +25,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 4.5.1-dev\n"
+"X-Generator: Weblate 4.6-dev\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -825,7 +826,7 @@ msgstr "Μέθοδος Δέκτη:"
 
 #: editor/connections_dialog.cpp
 msgid "Advanced"
-msgstr "Για Προχωρημένους"
+msgstr "Για προχωρημένους"
 
 #: editor/connections_dialog.cpp
 msgid "Deferred"
@@ -1041,11 +1042,13 @@ msgid "Owners Of:"
 msgstr "Ιδιοκτήτες του:"
 
 #: editor/dependency_editor.cpp
-#, fuzzy
 msgid ""
 "Remove selected files from the project? (no undo)\n"
 "You can find the removed files in the system trash to restore them."
-msgstr "Αφαίρεση επιλεγμένων αρχείων από το έργο; (Αδυναμία αναίρεσης)"
+msgstr ""
+"Αφαίρεση επιλεγμένων αρχείων από το έργο; (Αδυναμία αναίρεσης)\n"
+"Μπορείτε να βρείτε τα διεγραμμένα αρχεία στον κάδο ανακύκλωσης για να τα "
+"επαναφέρετε."
 
 #: editor/dependency_editor.cpp
 #, fuzzy
@@ -3700,6 +3703,11 @@ msgstr ""
 "επανεισάγετε το χειροκίνητα."
 
 #: editor/filesystem_dock.cpp
+msgid ""
+"Importing has been disabled for this file, so it can't be opened for editing."
+msgstr ""
+
+#: editor/filesystem_dock.cpp
 msgid "Cannot move/rename resources root."
 msgstr "Δεν ήταν δυνατή η μετακίνηση/μετονομασία του πηγαίου καταλόγου."
 
@@ -4102,6 +4110,10 @@ msgstr "Εισαγωγή"
 #, fuzzy
 msgid "Reset to Defaults"
 msgstr "Χρήση προεπιλεγμένου sRGB"
+
+#: editor/import_dock.cpp
+msgid "Keep File (No Import)"
+msgstr ""
 
 #: editor/import_dock.cpp
 msgid "%d Files"

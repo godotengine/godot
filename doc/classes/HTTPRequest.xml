@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="HTTPRequest" inherits="Node" version="3.2">
+<class name="HTTPRequest" inherits="Node" version="3.3">
 	<brief_description>
 		A node with the ability to send HTTP(S) requests.
 	</brief_description>
@@ -68,8 +68,8 @@
 		[b]Note:[/b] SSL/TLS support is currently limited to TLS 1.0, TLS 1.1, and TLS 1.2. Attempting to connect to a TLS 1.3-only server will return an error.
 	</description>
 	<tutorials>
-		<link>https://docs.godotengine.org/en/3.2/tutorials/networking/http_request_class.html</link>
-		<link>https://docs.godotengine.org/en/3.2/tutorials/networking/ssl_certificates.html</link>
+		<link>https://docs.godotengine.org/en/3.3/tutorials/networking/http_request_class.html</link>
+		<link>https://docs.godotengine.org/en/3.3/tutorials/networking/ssl_certificates.html</link>
 	</tutorials>
 	<methods>
 		<method name="cancel_request">

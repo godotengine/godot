@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="Shape" inherits="Resource" version="3.2">
+<class name="Shape" inherits="Resource" version="3.3">
 	<brief_description>
 		Base class for all 3D shape resources.
 	</brief_description>
@@ -7,14 +7,14 @@
 		Base class for all 3D shape resources. Nodes that inherit from this can be used as shapes for a [PhysicsBody] or [Area] objects.
 	</description>
 	<tutorials>
-		<link>https://docs.godotengine.org/en/3.2/tutorials/physics/physics_introduction.html</link>
+		<link>https://docs.godotengine.org/en/3.3/tutorials/physics/physics_introduction.html</link>
 	</tutorials>
 	<methods>
 	</methods>
 	<members>
 		<member name="margin" type="float" setter="set_margin" getter="get_margin" default="0.04">
 			The collision margin for the shape. Used in Bullet Physics only.
-			Collision margins allows collision detection to be more efficient by adding an extra shell around shapes. Collision algorithms are more expensive when objects overlap by more than their margin, so a higher value for margins is better for performance, at the cost of accuracy around edges as it makes them less sharp.
+			Collision margins allow collision detection to be more efficient by adding an extra shell around shapes. Collision algorithms are more expensive when objects overlap by more than their margin, so a higher value for margins is better for performance, at the cost of accuracy around edges as it makes them less sharp.
 		</member>
 	</members>
 	<constants>

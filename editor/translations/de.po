@@ -3758,6 +3758,11 @@ msgstr ""
 "Status: Dateiimport fehlgeschlagen. Manuelle Reparatur und Neuimport nötig."
 
 #: editor/filesystem_dock.cpp
+msgid ""
+"Importing has been disabled for this file, so it can't be opened for editing."
+msgstr ""
+
+#: editor/filesystem_dock.cpp
 msgid "Cannot move/rename resources root."
 msgstr "Ressourcen-Wurzel kann nicht verschoben oder umbenannt werden."
 
@@ -4158,6 +4163,10 @@ msgstr "Importer:"
 #: editor/import_defaults_editor.cpp
 msgid "Reset to Defaults"
 msgstr "Auf Standardwerte zurücksetzen"
+
+#: editor/import_dock.cpp
+msgid "Keep File (No Import)"
+msgstr ""
 
 #: editor/import_dock.cpp
 msgid "%d Files"

@@ -3984,6 +3984,11 @@ msgstr ""
 "сами."
 
 #: editor/filesystem_dock.cpp
+msgid ""
+"Importing has been disabled for this file, so it can't be opened for editing."
+msgstr ""
+
+#: editor/filesystem_dock.cpp
 msgid "Cannot move/rename resources root."
 msgstr "Не могу померити/преименовати  корен ресурса."
 
@@ -4429,6 +4434,10 @@ msgstr "Увоз"
 #, fuzzy
 msgid "Reset to Defaults"
 msgstr "Учитај уобичајено"
+
+#: editor/import_dock.cpp
+msgid "Keep File (No Import)"
+msgstr ""
 
 #: editor/import_dock.cpp
 #, fuzzy

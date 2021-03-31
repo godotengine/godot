@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="AnimationTreePlayer" inherits="Node" version="3.2">
+<class name="AnimationTreePlayer" inherits="Node" version="3.3">
 	<brief_description>
 		[i]Deprecated.[/i] Animation player that uses a node graph for blending animations. Superseded by [AnimationTree].
 	</brief_description>
@@ -9,7 +9,7 @@
 		See [AnimationTree] for a more full-featured replacement of this node.
 	</description>
 	<tutorials>
-		<link>https://docs.godotengine.org/en/3.2/tutorials/animation/animation_tree.html</link>
+		<link>https://docs.godotengine.org/en/3.3/tutorials/animation/animation_tree.html</link>
 	</tutorials>
 	<methods>
 		<method name="add_node">

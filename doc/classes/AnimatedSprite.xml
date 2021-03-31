@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="AnimatedSprite" inherits="Node2D" version="3.2">
+<class name="AnimatedSprite" inherits="Node2D" version="3.3">
 	<brief_description>
 		Sprite node that can use multiple textures for animation.
 	</brief_description>
@@ -8,7 +8,7 @@
 		[b]Note:[/b] You can associate a set of normal maps by creating additional [SpriteFrames] resources with a [code]_normal[/code] suffix. For example, having 2 [SpriteFrames] resources [code]run[/code] and [code]run_normal[/code] will make it so the [code]run[/code] animation uses the normal map.
 	</description>
 	<tutorials>
-		<link title="2D Sprite animation">https://docs.godotengine.org/en/3.2/tutorials/2d/2d_sprite_animation.html</link>
+		<link title="2D Sprite animation">https://docs.godotengine.org/en/3.3/tutorials/2d/2d_sprite_animation.html</link>
 		<link title="2D Dodge The Creeps Demo">https://godotengine.org/asset-library/asset/515</link>
 	</tutorials>
 	<methods>

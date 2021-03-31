@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="InputEventJoypadMotion" inherits="InputEvent" version="3.2">
+<class name="InputEventJoypadMotion" inherits="InputEvent" version="3.3">
 	<brief_description>
 		Input event type for gamepad joysticks and other motions. For buttons, see [code]InputEventJoypadButton[/code].
 	</brief_description>
@@ -7,7 +7,7 @@
 		Stores information about joystick motions. One [InputEventJoypadMotion] represents one axis at a time.
 	</description>
 	<tutorials>
-		<link>https://docs.godotengine.org/en/3.2/tutorials/inputs/inputevent.html</link>
+		<link>https://docs.godotengine.org/en/3.3/tutorials/inputs/inputevent.html</link>
 	</tutorials>
 	<methods>
 	</methods>

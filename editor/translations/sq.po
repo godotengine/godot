@@ -3733,6 +3733,11 @@ msgstr ""
 "importoje manualisht."
 
 #: editor/filesystem_dock.cpp
+msgid ""
+"Importing has been disabled for this file, so it can't be opened for editing."
+msgstr ""
+
+#: editor/filesystem_dock.cpp
 msgid "Cannot move/rename resources root."
 msgstr "Nuk mund të leviz/riemërtoj rrenjën e resurseve."
 
@@ -4146,6 +4151,10 @@ msgstr "Importo"
 #, fuzzy
 msgid "Reset to Defaults"
 msgstr "Ngarko të Parazgjedhur"
+
+#: editor/import_dock.cpp
+msgid "Keep File (No Import)"
+msgstr ""
 
 #: editor/import_dock.cpp
 #, fuzzy

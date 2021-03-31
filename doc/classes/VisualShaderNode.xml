@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="VisualShaderNode" inherits="Resource" version="3.2">
+<class name="VisualShaderNode" inherits="Resource" version="3.3">
 	<brief_description>
 		Base class for nodes in a visual shader graph.
 	</brief_description>
 	<description>
 	</description>
 	<tutorials>
-		<link>https://docs.godotengine.org/en/3.2/tutorials/shading/visual_shaders.html</link>
+		<link>https://docs.godotengine.org/en/3.3/tutorials/shading/visual_shaders.html</link>
 	</tutorials>
 	<methods>
 		<method name="get_default_input_values" qualifiers="const">

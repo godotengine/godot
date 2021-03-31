@@ -82,6 +82,7 @@ public:
 	virtual CameraMatrix get_projection_for_eye(ARVRInterface::Eyes p_eye, real_t p_aspect, real_t p_z_near, real_t p_z_far);
 
 	virtual unsigned int get_external_texture_for_eye(ARVRInterface::Eyes p_eye);
+	virtual unsigned int get_external_depth_for_eye(ARVRInterface::Eyes p_eye);
 	virtual void commit_for_eye(ARVRInterface::Eyes p_eye, RID p_render_target, const Rect2 &p_screen_rect);
 
 	virtual void process();

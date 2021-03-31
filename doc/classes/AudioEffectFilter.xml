@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="AudioEffectFilter" inherits="AudioEffect" version="3.2">
+<class name="AudioEffectFilter" inherits="AudioEffect" version="3.3">
 	<brief_description>
 		Adds a filter to the audio bus.
 	</brief_description>
@@ -7,7 +7,7 @@
 		Allows frequencies other than the [member cutoff_hz] to pass.
 	</description>
 	<tutorials>
-		<link title="Audio buses">https://docs.godotengine.org/en/3.2/tutorials/audio/audio_buses.html</link>
+		<link title="Audio buses">https://docs.godotengine.org/en/3.3/tutorials/audio/audio_buses.html</link>
 	</tutorials>
 	<methods>
 	</methods>

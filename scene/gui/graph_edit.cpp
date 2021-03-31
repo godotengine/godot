@@ -181,7 +181,12 @@ void GraphEditMinimap::_gui_input(const Ref<InputEvent> &p_ev) {
 		accept_event();
 	} else if (mm.is_valid() && is_pressing) {
 		if (is_resizing) {
-			ge->set_minimap_size(ge->get_minimap_size() - mm->get_relative());
+			// Prevent setting minimap wider than GraphEdit
+			Vector2 new_minimap_size;
+			new_minimap_size.x = MIN(get_size().x - mm->get_relative().x, ge->get_size().x - 2.0 * minimap_padding.x);
+			new_minimap_size.y = MIN(get_size().y - mm->get_relative().y, ge->get_size().y - 2.0 * minimap_padding.y);
+			ge->set_minimap_size(new_minimap_size);
+
 			update();
 		} else {
 			Vector2 click_position = _convert_to_graph_position(mm->get_position() - minimap_padding) - graph_padding;
@@ -1150,7 +1155,7 @@ void GraphEdit::_gui_input(const Ref<InputEvent> &p_ev) {
 				}
 				gn->set_selected(box_selection_mode_additive);
 			} else {
-				bool select = (previus_selected.find(gn) != NULL);
+				bool select = (previous_selected.find(gn) != NULL);
 				if (gn->is_selected() && !select) {
 					emit_signal("node_unselected", gn);
 				} else if (!gn->is_selected() && select) {
@@ -1176,7 +1181,7 @@ void GraphEdit::_gui_input(const Ref<InputEvent> &p_ev) {
 					if (!gn)
 						continue;
 
-					bool select = (previus_selected.find(gn) != NULL);
+					bool select = (previous_selected.find(gn) != NULL);
 					if (gn->is_selected() && !select) {
 						emit_signal("node_unselected", gn);
 					} else if (!gn->is_selected() && select) {
@@ -1297,29 +1302,29 @@ void GraphEdit::_gui_input(const Ref<InputEvent> &p_ev) {
 				box_selecting_from = b->get_position();
 				if (b->get_control()) {
 					box_selection_mode_additive = true;
-					previus_selected.clear();
+					previous_selected.clear();
 					for (int i = get_child_count() - 1; i >= 0; i--) {
 
 						GraphNode *gn2 = Object::cast_to<GraphNode>(get_child(i));
 						if (!gn2 || !gn2->is_selected())
 							continue;
 
-						previus_selected.push_back(gn2);
+						previous_selected.push_back(gn2);
 					}
 				} else if (b->get_shift()) {
 					box_selection_mode_additive = false;
-					previus_selected.clear();
+					previous_selected.clear();
 					for (int i = get_child_count() - 1; i >= 0; i--) {
 
 						GraphNode *gn2 = Object::cast_to<GraphNode>(get_child(i));
 						if (!gn2 || !gn2->is_selected())
 							continue;
 
-						previus_selected.push_back(gn2);
+						previous_selected.push_back(gn2);
 					}
 				} else {
 					box_selection_mode_additive = true;
-					previus_selected.clear();
+					previous_selected.clear();
 					for (int i = get_child_count() - 1; i >= 0; i--) {
 
 						GraphNode *gn2 = Object::cast_to<GraphNode>(get_child(i));
@@ -1336,7 +1341,8 @@ void GraphEdit::_gui_input(const Ref<InputEvent> &p_ev) {
 
 		if (b->get_button_index() == BUTTON_LEFT && !b->is_pressed() && box_selecting) {
 			box_selecting = false;
-			previus_selected.clear();
+			box_selecting_rect = Rect2();
+			previous_selected.clear();
 			top_layer->update();
 			minimap->update();
 		}

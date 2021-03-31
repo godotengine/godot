@@ -1951,7 +1951,7 @@ void Viewport::_gui_input_event(Ref<InputEvent> p_event) {
 						top->_modal_stack_remove();
 						top->hide();
 
-						if (!top->pass_on_modal_close_click()) {
+						if (!top->get_pass_on_modal_close_click()) {
 							is_handled = true;
 						}
 					} else {

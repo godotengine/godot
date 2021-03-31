@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="InputEventScreenTouch" inherits="InputEvent" version="3.2">
+<class name="InputEventScreenTouch" inherits="InputEvent" version="3.3">
 	<brief_description>
 		Input event type for screen touch events.
 		(only available on mobile devices)
@@ -8,7 +8,7 @@
 		Stores multi-touch press/release information. Supports touch press, touch release and [member index] for multi-touch count and order.
 	</description>
 	<tutorials>
-		<link>https://docs.godotengine.org/en/3.2/tutorials/inputs/inputevent.html</link>
+		<link>https://docs.godotengine.org/en/3.3/tutorials/inputs/inputevent.html</link>
 	</tutorials>
 	<methods>
 	</methods>

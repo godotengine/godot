@@ -6459,7 +6459,32 @@
         "major": 1,
         "minor": 1
       },
-      "next": null,
+      "next": {
+        "name": "arvr",
+        "type": "ARVR",
+        "version": {
+          "major": 1,
+          "minor": 2
+        },
+        "next": null,
+        "api": [
+          {
+            "name": "godot_arvr_set_interface",
+            "return_type": "void",
+            "arguments": [
+              ["godot_object *", "p_arvr_interface"],
+              ["const godot_arvr_interface_gdnative *", "p_gdn_interface"]
+            ]
+          },
+          {
+            "name": "godot_arvr_get_depthid",
+            "return_type": "godot_int",
+            "arguments": [
+              ["godot_rid *", "p_render_target"]
+            ]
+          }
+        ]
+      },
       "api": [
         {
           "name": "godot_arvr_register_interface",

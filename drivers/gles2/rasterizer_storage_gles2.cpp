@@ -1117,6 +1117,7 @@ void RasterizerStorageGLES2::texture_debug_usage(List<VS::TextureInfo> *r_info) 
 		if (!t)
 			continue;
 		VS::TextureInfo tinfo;
+		tinfo.texture = E->get();
 		tinfo.path = t->path;
 		tinfo.format = t->format;
 		tinfo.width = t->alloc_width;
@@ -5172,7 +5173,14 @@ void RasterizerStorageGLES2::_render_target_clear(RenderTarget *rt) {
 		texture_owner.free(rt->external.texture);
 		memdelete(t);
 
+		if (rt->external.depth != 0 && rt->external.depth_owned) {
+			glDeleteRenderbuffers(1, &rt->external.depth);
+		}
+
 		rt->external.fbo = 0;
+		rt->external.color = 0;
+		rt->external.depth = 0;
+		rt->external.depth_owned = false;
 	}
 
 	if (rt->depth) {
@@ -5297,7 +5305,19 @@ RID RasterizerStorageGLES2::render_target_get_texture(RID p_render_target) const
 	}
 }
 
-void RasterizerStorageGLES2::render_target_set_external_texture(RID p_render_target, unsigned int p_texture_id) {
+uint32_t RasterizerStorageGLES2::render_target_get_depth_texture_id(RID p_render_target) const {
+
+	RenderTarget *rt = render_target_owner.getornull(p_render_target);
+	ERR_FAIL_COND_V(!rt, 0);
+
+	if (rt->external.depth == 0) {
+		return rt->depth;
+	} else {
+		return rt->external.depth;
+	}
+}
+
+void RasterizerStorageGLES2::render_target_set_external_texture(RID p_render_target, unsigned int p_texture_id, unsigned int p_depth_id) {
 	RenderTarget *rt = render_target_owner.getornull(p_render_target);
 	ERR_FAIL_COND(!rt);
 
@@ -5307,7 +5327,7 @@ void RasterizerStorageGLES2::render_target_set_external_texture(RID p_render_tar
 			glDeleteFramebuffers(1, &rt->external.fbo);
 
 			// and this
-			if (rt->external.depth != 0) {
+			if (rt->external.depth != 0 && rt->external.depth_owned) {
 				glDeleteRenderbuffers(1, &rt->external.depth);
 			}
 
@@ -5387,14 +5407,30 @@ void RasterizerStorageGLES2::render_target_set_external_texture(RID p_render_tar
 			// On any other hardware these two modes are ignored and we do not have any MSAA,
 			// the normal MSAA modes need to be used to enable our two pass approach
 
+			// If we created a depth buffer before and we're now passed one, we need to clear it out
+			if (rt->external.depth != 0 && rt->external.depth_owned && p_depth_id != 0) {
+				glDeleteRenderbuffers(1, &rt->external.depth);
+				rt->external.depth_owned = false;
+				rt->external.depth = 0;
+			}
+
+			if (!rt->external.depth_owned) {
+				rt->external.depth = p_depth_id;
+			}
+
 			static const int msaa_value[] = { 2, 4 };
 			int msaa = msaa_value[rt->msaa - VS::VIEWPORT_MSAA_EXT_2X];
 
 			if (rt->external.depth == 0) {
+				rt->external.depth_owned = true;
+
 				// create a multisample depth buffer, we're not reusing Godots because Godot's didn't get created..
 				glGenRenderbuffers(1, &rt->external.depth);
 				glBindRenderbuffer(GL_RENDERBUFFER, rt->external.depth);
 				glRenderbufferStorageMultisample(GL_RENDERBUFFER, msaa, config.depth_buffer_internalformat, rt->width, rt->height);
+				glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, rt->external.depth);
+			} else if (!rt->external.depth_owned) {
+				// we make an exception here, external plugin MUST make sure this is a proper multisample render buffer!
 				glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, rt->external.depth);
 			}
 
@@ -5404,11 +5440,20 @@ void RasterizerStorageGLES2::render_target_set_external_texture(RID p_render_tar
 		} else
 #endif
 		{
+			// if MSAA as on before, clear our render buffer
+			if (rt->external.depth != 0 && rt->external.depth_owned) {
+				glDeleteRenderbuffers(1, &rt->external.depth);
+			}
+			rt->external.depth_owned = false;
+			rt->external.depth = p_depth_id;
+
 			// set our texture as the destination for our framebuffer
 			glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, p_texture_id, 0);
 
 			// seeing we're rendering into this directly, better also use our depth buffer, just use our existing one :)
-			if (config.support_depth_texture) {
+			if (rt->external.depth != 0) {
+				glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, rt->external.depth, 0);
+			} else if (config.support_depth_texture) {
 				glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, rt->depth, 0);
 			} else {
 				glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, rt->depth);
@@ -6217,6 +6262,7 @@ void RasterizerStorageGLES2::initialize() {
 	glGetIntegerv(GL_MAX_VERTEX_TEXTURE_IMAGE_UNITS, &config.max_vertex_texture_image_units);
 	glGetIntegerv(GL_MAX_COMBINED_TEXTURE_IMAGE_UNITS, &config.max_texture_image_units);
 	glGetIntegerv(GL_MAX_TEXTURE_SIZE, &config.max_texture_size);
+	glGetIntegerv(GL_MAX_CUBE_MAP_TEXTURE_SIZE, &config.max_cubemap_texture_size);
 	glGetIntegerv(GL_MAX_VIEWPORT_DIMS, config.max_viewport_dimensions);
 
 	// the use skeleton software path should be used if either float texture is not supported,

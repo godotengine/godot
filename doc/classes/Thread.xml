@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="Thread" inherits="Reference" version="3.2">
+<class name="Thread" inherits="Reference" version="3.3">
 	<brief_description>
 		A unit of execution in a process.
 	</brief_description>
@@ -8,8 +8,8 @@
 		[b]Note:[/b] Breakpoints won't break on code if it's running in a thread. This is a current limitation of the GDScript debugger.
 	</description>
 	<tutorials>
-		<link title="Using multiple threads">https://docs.godotengine.org/en/3.2/tutorials/threads/using_multiple_threads.html</link>
-		<link title="Thread-safe APIs">https://docs.godotengine.org/en/3.2/tutorials/threads/thread_safe_apis.html</link>
+		<link title="Using multiple threads">https://docs.godotengine.org/en/3.3/tutorials/threads/using_multiple_threads.html</link>
+		<link title="Thread-safe APIs">https://docs.godotengine.org/en/3.3/tutorials/threads/thread_safe_apis.html</link>
 		<link title="3D Voxel Demo">https://godotengine.org/asset-library/asset/676</link>
 	</tutorials>
 	<methods>

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="MeshInstance2D" inherits="Node2D" version="3.2">
+<class name="MeshInstance2D" inherits="Node2D" version="3.3">
 	<brief_description>
 		Node used for displaying a [Mesh] in 2D.
 	</brief_description>
@@ -7,7 +7,7 @@
 		Node used for displaying a [Mesh] in 2D. Can be constructed from an existing [Sprite] via a tool in the editor toolbar. Select "Sprite" then "Convert to Mesh2D", select settings in popup and press "Create Mesh2D".
 	</description>
 	<tutorials>
-		<link>https://docs.godotengine.org/en/3.2/tutorials/2d/2d_meshes.html</link>
+		<link>https://docs.godotengine.org/en/3.3/tutorials/2d/2d_meshes.html</link>
 	</tutorials>
 	<methods>
 	</methods>

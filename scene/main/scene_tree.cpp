@@ -460,6 +460,7 @@ void SceneTree::input_event(const Ref<InputEvent> &p_event) {
 }
 
 void SceneTree::init() {
+	ERR_FAIL_COND(!root);
 	initialized = true;
 	root->_set_tree(this);
 	MainLoop::init();

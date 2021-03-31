@@ -96,7 +96,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2021-03-16 10:40+0000\n"
+"PO-Revision-Date: 2021-03-16 15:25+0000\n"
 "Last-Translator: Danil Alexeev <danil@alexeev.xyz>\n"
 "Language-Team: Russian <https://hosted.weblate.org/projects/godot-engine/"
 "godot/ru/>\n"
@@ -3564,7 +3564,7 @@ msgstr "(Текущий)"
 
 #: editor/export_template_manager.cpp
 msgid "Retrieving mirrors, please wait..."
-msgstr "Получение зеркал, пожалуйста, подождите..."
+msgstr "Получение зеркал, пожалуйста, ждите..."
 
 #: editor/export_template_manager.cpp
 msgid "Remove template version '%s'?"
@@ -3756,6 +3756,11 @@ msgstr ""
 "переимпортируйте вручную."
 
 #: editor/filesystem_dock.cpp
+msgid ""
+"Importing has been disabled for this file, so it can't be opened for editing."
+msgstr ""
+
+#: editor/filesystem_dock.cpp
 msgid "Cannot move/rename resources root."
 msgstr "Нельзя переместить/переименовать корень."
 
@@ -3919,7 +3924,7 @@ msgid ""
 "Please Wait..."
 msgstr ""
 "Сканирование файлов,\n"
-"пожалуйста, подождите..."
+"пожалуйста, ждите..."
 
 #: editor/filesystem_dock.cpp
 msgid "Move"
@@ -4154,6 +4159,10 @@ msgstr "Импортёр:"
 #: editor/import_defaults_editor.cpp
 msgid "Reset to Defaults"
 msgstr "Сбросить настройки"
+
+#: editor/import_dock.cpp
+msgid "Keep File (No Import)"
+msgstr ""
 
 #: editor/import_dock.cpp
 msgid "%d Files"

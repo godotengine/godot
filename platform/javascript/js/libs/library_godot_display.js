@@ -858,7 +858,7 @@ const GodotDisplay = {
 		const notif = [p_enter, p_exit, p_in, p_out];
 		['mouseover', 'mouseleave', 'focus', 'blur'].forEach(function (evt_name, idx) {
 			GodotDisplayListeners.add(canvas, evt_name, function () {
-				func.bind(null, notif[idx]);
+				func(notif[idx]);
 			}, true);
 		});
 	},

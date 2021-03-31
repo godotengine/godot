@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="CPUParticles2D" inherits="Node2D" version="3.2">
+<class name="CPUParticles2D" inherits="Node2D" version="3.3">
 	<brief_description>
 		CPU-based 2D particle emitter.
 	</brief_description>
@@ -9,7 +9,7 @@
 		[b]Note:[/b] Unlike [Particles2D], the visibility rect is generated on-the-fly and doesn't need to be configured by the user.
 	</description>
 	<tutorials>
-		<link>https://docs.godotengine.org/en/3.2/tutorials/2d/particle_systems_2d.html</link>
+		<link>https://docs.godotengine.org/en/3.3/tutorials/2d/particle_systems_2d.html</link>
 	</tutorials>
 	<methods>
 		<method name="convert_from_particles">

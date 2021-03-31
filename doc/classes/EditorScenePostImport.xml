@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="EditorScenePostImport" inherits="Reference" version="3.2">
+<class name="EditorScenePostImport" inherits="Reference" version="3.3">
 	<brief_description>
 		Post-processes scenes after import.
 	</brief_description>
@@ -26,7 +26,7 @@
 		[/codeblock]
 	</description>
 	<tutorials>
-		<link>https://docs.godotengine.org/en/3.2/getting_started/workflow/assets/importing_scenes.html#custom-script</link>
+		<link>https://docs.godotengine.org/en/3.3/getting_started/workflow/assets/importing_scenes.html#custom-script</link>
 	</tutorials>
 	<methods>
 		<method name="get_source_file" qualifiers="const">

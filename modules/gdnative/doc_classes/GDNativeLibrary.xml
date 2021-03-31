@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="GDNativeLibrary" inherits="Resource" version="3.2">
+<class name="GDNativeLibrary" inherits="Resource" version="3.3">
 	<brief_description>
 		An external library containing functions or script classes to use in Godot.
 	</brief_description>
@@ -7,8 +7,8 @@
 		A GDNative library can implement [NativeScript]s, global functions to call with the [GDNative] class, or low-level engine extensions through interfaces such as [ARVRInterfaceGDNative]. The library must be compiled for each platform and architecture that the project will run on.
 	</description>
 	<tutorials>
-		<link>https://docs.godotengine.org/en/3.2/tutorials/plugins/gdnative/gdnative-c-example.html</link>
-		<link>https://docs.godotengine.org/en/3.2/tutorials/plugins/gdnative/gdnative-cpp-example.html</link>
+		<link>https://docs.godotengine.org/en/3.3/tutorials/plugins/gdnative/gdnative-c-example.html</link>
+		<link>https://docs.godotengine.org/en/3.3/tutorials/plugins/gdnative/gdnative-cpp-example.html</link>
 	</tutorials>
 	<methods>
 		<method name="get_current_dependencies" qualifiers="const">

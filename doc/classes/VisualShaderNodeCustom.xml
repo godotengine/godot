@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="VisualShaderNodeCustom" inherits="VisualShaderNode" version="3.2">
+<class name="VisualShaderNodeCustom" inherits="VisualShaderNode" version="3.3">
 	<brief_description>
 		Virtual class to define custom [VisualShaderNode]s for use in the Visual Shader Editor.
 	</brief_description>
@@ -13,14 +13,14 @@
 		[/codeblock]
 	</description>
 	<tutorials>
-		<link>https://docs.godotengine.org/en/3.2/tutorials/plugins/editor/visual_shader_plugins.html</link>
+		<link>https://docs.godotengine.org/en/3.3/tutorials/plugins/editor/visual_shader_plugins.html</link>
 	</tutorials>
 	<methods>
 		<method name="_get_category" qualifiers="virtual">
 			<return type="String">
 			</return>
 			<description>
-				Override this method to define the category of the associated custom node in the Visual Shader Editor's members dialog.
+				Override this method to define the category of the associated custom node in the Visual Shader Editor's members dialog. The path may look like [code]"MyGame/MyFunctions/Noise"[/code].
 				Defining this method is [b]optional[/b]. If not overridden, the node will be filed under the "Custom" category.
 			</description>
 		</method>

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="AnimationNodeBlendSpace2D" inherits="AnimationRootNode" version="3.2">
+<class name="AnimationNodeBlendSpace2D" inherits="AnimationRootNode" version="3.3">
 	<brief_description>
 		Blends linearly between three [AnimationNode] of any type placed in a 2D space.
 	</brief_description>
@@ -9,7 +9,7 @@
 		You can add vertices to the blend space with [method add_blend_point] and automatically triangulate it by setting [member auto_triangles] to [code]true[/code]. Otherwise, use [method add_triangle] and [method remove_triangle] to create up the blend space by hand.
 	</description>
 	<tutorials>
-		<link title="AnimationTree">https://docs.godotengine.org/en/3.2/tutorials/animation/animation_tree.html</link>
+		<link title="AnimationTree">https://docs.godotengine.org/en/3.3/tutorials/animation/animation_tree.html</link>
 		<link title="Third Person Shooter Demo">https://godotengine.org/asset-library/asset/678</link>
 	</tutorials>
 	<methods>

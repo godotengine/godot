@@ -3722,6 +3722,11 @@ msgstr ""
 "aktarın."
 
 #: editor/filesystem_dock.cpp
+msgid ""
+"Importing has been disabled for this file, so it can't be opened for editing."
+msgstr ""
+
+#: editor/filesystem_dock.cpp
 msgid "Cannot move/rename resources root."
 msgstr "Kaynakların kökü taşınamaz/yeniden adlandırılamaz."
 
@@ -4122,6 +4127,10 @@ msgstr "İçe Aktar"
 #: editor/import_defaults_editor.cpp
 msgid "Reset to Defaults"
 msgstr "Varsayılanlara dön"
+
+#: editor/import_dock.cpp
+msgid "Keep File (No Import)"
+msgstr ""
 
 #: editor/import_dock.cpp
 msgid "%d Files"

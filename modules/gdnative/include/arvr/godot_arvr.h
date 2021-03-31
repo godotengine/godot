@@ -42,7 +42,7 @@ extern "C" {
 
 // Use these to populate version in your plugin
 #define GODOTVR_API_MAJOR 1
-#define GODOTVR_API_MINOR 1
+#define GODOTVR_API_MINOR 2
 
 typedef struct {
 	godot_gdnative_api_version version; /* version of our API */
@@ -65,6 +65,8 @@ typedef struct {
 	godot_int (*get_external_texture_for_eye)(void *, godot_int);
 	void (*notification)(void *, godot_int);
 	godot_int (*get_camera_feed_id)(void *);
+	// only in 1.2 onwards
+	godot_int (*get_external_depth_for_eye)(void *, godot_int);
 } godot_arvr_interface_gdnative;
 
 void GDAPI godot_arvr_register_interface(const godot_arvr_interface_gdnative *p_interface);
@@ -84,6 +86,10 @@ void GDAPI godot_arvr_set_controller_transform(godot_int p_controller_id, godot_
 void GDAPI godot_arvr_set_controller_button(godot_int p_controller_id, godot_int p_button, godot_bool p_is_pressed);
 void GDAPI godot_arvr_set_controller_axis(godot_int p_controller_id, godot_int p_axis, godot_real p_value, godot_bool p_can_be_negative);
 godot_real GDAPI godot_arvr_get_controller_rumble(godot_int p_controller_id);
+
+// ARVR 1.2 functions
+void GDAPI godot_arvr_set_interface(godot_object *p_arvr_interface, const godot_arvr_interface_gdnative *p_gdn_interface);
+godot_int GDAPI godot_arvr_get_depthid(godot_rid *p_render_target);
 
 #ifdef __cplusplus
 }

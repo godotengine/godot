@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="Shape2D" inherits="Resource" version="3.2">
+<class name="Shape2D" inherits="Resource" version="3.3">
 	<brief_description>
 		Base class for all 2D shapes.
 	</brief_description>
@@ -7,7 +7,7 @@
 		Base class for all 2D shapes. All 2D shape types inherit from this.
 	</description>
 	<tutorials>
-		<link>https://docs.godotengine.org/en/3.2/tutorials/physics/physics_introduction.html</link>
+		<link>https://docs.godotengine.org/en/3.3/tutorials/physics/physics_introduction.html</link>
 	</tutorials>
 	<methods>
 		<method name="collide">

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="CanvasItem" inherits="Node" version="3.2">
+<class name="CanvasItem" inherits="Node" version="3.3">
 	<brief_description>
 		Base class of anything 2D.
 	</brief_description>
@@ -12,8 +12,8 @@
 		[b]Note:[/b] Unless otherwise specified, all methods that have angle parameters must have angles specified as [i]radians[/i]. To convert degrees to radians, use [method @GDScript.deg2rad].
 	</description>
 	<tutorials>
-		<link title="Viewport and canvas transforms">https://docs.godotengine.org/en/3.2/tutorials/2d/2d_transforms.html</link>
-		<link title="Custom drawing in 2D">https://docs.godotengine.org/en/3.2/tutorials/2d/custom_drawing_in_2d.html</link>
+		<link title="Viewport and canvas transforms">https://docs.godotengine.org/en/3.3/tutorials/2d/2d_transforms.html</link>
+		<link title="Custom drawing in 2D">https://docs.godotengine.org/en/3.3/tutorials/2d/custom_drawing_in_2d.html</link>
 		<link title="Audio Spectrum Demo">https://godotengine.org/asset-library/asset/528</link>
 	</tutorials>
 	<methods>

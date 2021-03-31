@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="Transform2D" version="3.2">
+<class name="Transform2D" version="3.3">
 	<brief_description>
 		2D transformation (2×3 matrix).
 	</brief_description>
@@ -8,8 +8,8 @@
 		For more information, read the "Matrices and transforms" documentation article.
 	</description>
 	<tutorials>
-		<link title="Math tutorial index">https://docs.godotengine.org/en/3.2/tutorials/math/index.html</link>
-		<link title="Matrices and transforms">https://docs.godotengine.org/en/3.2/tutorials/math/matrices_and_transforms.html</link>
+		<link title="Math tutorial index">https://docs.godotengine.org/en/3.3/tutorials/math/index.html</link>
+		<link title="Matrices and transforms">https://docs.godotengine.org/en/3.3/tutorials/math/matrices_and_transforms.html</link>
 		<link title="Matrix Transform Demo">https://godotengine.org/asset-library/asset/584</link>
 		<link title="2.5D Demo">https://godotengine.org/asset-library/asset/583</link>
 	</tutorials>

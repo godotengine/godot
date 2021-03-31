@@ -416,7 +416,7 @@ public:
 	MouseFilter get_mouse_filter() const;
 
 	void set_pass_on_modal_close_click(bool p_pass_on);
-	bool pass_on_modal_close_click() const;
+	bool get_pass_on_modal_close_click() const;
 
 	/* SKINNING */
 

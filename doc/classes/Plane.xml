@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="Plane" version="3.2">
+<class name="Plane" version="3.3">
 	<brief_description>
 		Plane in hessian form.
 	</brief_description>
@@ -7,7 +7,7 @@
 		Plane represents a normalized plane equation. Basically, "normal" is the normal of the plane (a,b,c normalized), and "d" is the distance from the origin to the plane (in the direction of "normal"). "Over" or "Above" the plane is considered the side of the plane towards where the normal is pointing.
 	</description>
 	<tutorials>
-		<link>https://docs.godotengine.org/en/3.2/tutorials/math/index.html</link>
+		<link>https://docs.godotengine.org/en/3.3/tutorials/math/index.html</link>
 	</tutorials>
 	<methods>
 		<method name="Plane">

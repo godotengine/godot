@@ -318,6 +318,7 @@ Ref<ARVRInterface> ARVRServer::get_primary_interface() const {
 };
 
 void ARVRServer::set_primary_interface(const Ref<ARVRInterface> &p_primary_interface) {
+	ERR_FAIL_COND(p_primary_interface.is_null());
 	primary_interface = p_primary_interface;
 
 	print_verbose("ARVR: Primary interface set to: " + primary_interface->get_name());

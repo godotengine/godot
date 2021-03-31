@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="Translation" inherits="Resource" version="3.2">
+<class name="Translation" inherits="Resource" version="3.3">
 	<brief_description>
 		Language Translation.
 	</brief_description>
@@ -7,8 +7,8 @@
 		Translations are resources that can be loaded and unloaded on demand. They map a string to another string.
 	</description>
 	<tutorials>
-		<link>https://docs.godotengine.org/en/3.2/tutorials/i18n/internationalizing_games.html</link>
-		<link>https://docs.godotengine.org/en/3.2/tutorials/i18n/locales.html</link>
+		<link>https://docs.godotengine.org/en/3.3/tutorials/i18n/internationalizing_games.html</link>
+		<link>https://docs.godotengine.org/en/3.3/tutorials/i18n/locales.html</link>
 	</tutorials>
 	<methods>
 		<method name="add_message">

@@ -112,11 +112,12 @@
 # Lucas Castro <castroclucas@gmail.com>, 2021.
 # Ricardo Zamarrenho Carvalho Correa <ricardozcc17@gmail.com>, 2021.
 # Diego dos Reis Macedo <diego_dragon97@hotmail.com>, 2021.
+# Lucas E. <lukas.ed45@gmail.com>, 2021.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: 2016-05-30\n"
-"PO-Revision-Date: 2021-03-10 22:14+0000\n"
+"PO-Revision-Date: 2021-03-24 23:44+0000\n"
 "Last-Translator: Renato Rotenberg <renato.rotenberg@gmail.com>\n"
 "Language-Team: Portuguese (Brazil) <https://hosted.weblate.org/projects/"
 "godot-engine/godot/pt_BR/>\n"
@@ -2635,23 +2636,24 @@ msgstr ""
 "falhou."
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Unable to find script field for addon plugin at: '%s'."
 msgstr ""
-"Não foi possível encontrar o campo de script para o plugin em: 'res://addons/"
-"%s'."
+"Não foi possível localizar a área do script para o complemento do plugin em: "
+"'%s'."
 
 #: editor/editor_node.cpp
 msgid "Unable to load addon script from path: '%s'."
-msgstr "Não foi possível carregar o script complementar do caminho: '%s'."
+msgstr ""
+"Não foi possível localizar a área do script para o complemento do plugin em: "
+"'%s'."
 
 #: editor/editor_node.cpp
 msgid ""
 "Unable to load addon script from path: '%s' There seems to be an error in "
 "the code, please check the syntax."
 msgstr ""
-"Não foi possível carregar o script complementar do caminho: '%s' Parece "
-"haver um erro no código, por favor verifique a sintaxe."
+"Não foi possível localizar a área do script para o complemento do plugin em: "
+"'%s'."
 
 #: editor/editor_node.cpp
 msgid ""
@@ -3785,6 +3787,11 @@ msgstr ""
 "reimporte manualmente."
 
 #: editor/filesystem_dock.cpp
+msgid ""
+"Importing has been disabled for this file, so it can't be opened for editing."
+msgstr ""
+
+#: editor/filesystem_dock.cpp
 msgid "Cannot move/rename resources root."
 msgstr "Impossível mover/renomear raiz dos recursos."
 
@@ -4173,19 +4180,20 @@ msgid "Saving..."
 msgstr "Salvando..."
 
 #: editor/import_defaults_editor.cpp
-#, fuzzy
 msgid "Select Importer"
-msgstr "Modo de Seleção"
+msgstr "Selecione o arquivo para importar"
 
 #: editor/import_defaults_editor.cpp
-#, fuzzy
 msgid "Importer:"
-msgstr "Importar"
+msgstr "Importar:"
 
 #: editor/import_defaults_editor.cpp
-#, fuzzy
 msgid "Reset to Defaults"
-msgstr "Usar sRGB Padrão"
+msgstr "Redefinir para os padrões"
+
+#: editor/import_dock.cpp
+msgid "Keep File (No Import)"
+msgstr ""
 
 #: editor/import_dock.cpp
 msgid "%d Files"
@@ -5159,9 +5167,8 @@ msgid "Got:"
 msgstr "Obtido:"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
-#, fuzzy
 msgid "Failed SHA-256 hash check"
-msgstr "Falha na verificação da hash sha256"
+msgstr "Falha na verificação do hash SHA-256"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Asset Download Error:"
@@ -5336,7 +5343,7 @@ msgstr ""
 
 #: editor/plugins/baked_lightmap_editor_plugin.cpp
 msgid "Bake Lightmaps"
-msgstr "Bake Lightmaps"
+msgstr "Faça mapas de luz"
 
 #: editor/plugins/baked_lightmap_editor_plugin.cpp
 msgid "Select lightmap bake file:"
@@ -7446,7 +7453,7 @@ msgstr "Escala: "
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Translating: "
-msgstr "Transladando: "
+msgstr "Transladar: "
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Rotating %s degrees."
@@ -8892,7 +8899,7 @@ msgstr "Tipo de Entrada de Shader Visual Alterado"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "UniformRef Name Changed"
-msgstr "UniformRef Name foi altearado"
+msgstr "Ref. Uniforme Nome alterado"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Vertex"
@@ -10500,7 +10507,7 @@ msgstr "Remapeamentos por Localidade:"
 
 #: editor/project_settings_editor.cpp
 msgid "Locale"
-msgstr "Locale"
+msgstr "Localizar"
 
 #: editor/project_settings_editor.cpp
 msgid "Locales Filter"
@@ -10531,9 +10538,8 @@ msgid "Plugins"
 msgstr "Plugins"
 
 #: editor/project_settings_editor.cpp
-#, fuzzy
 msgid "Import Defaults"
-msgstr "Carregar Padrão"
+msgstr "Importar padrões"
 
 #: editor/property_editor.cpp
 msgid "Preset..."
@@ -10545,11 +10551,11 @@ msgstr "Zero"
 
 #: editor/property_editor.cpp
 msgid "Easing In-Out"
-msgstr "Easing In-Out"
+msgstr "Facilitar Entrada-Saída"
 
 #: editor/property_editor.cpp
 msgid "Easing Out-In"
-msgstr "Easing Out-In"
+msgstr "Facilitar Saída-Entrada"
 
 #: editor/property_editor.cpp
 msgid "File..."
@@ -11750,12 +11756,10 @@ msgid "Indirect lighting"
 msgstr "Iluminação indireta"
 
 #: modules/lightmapper_cpu/lightmapper_cpu.cpp
-#, fuzzy
 msgid "Post processing"
 msgstr "Pós-processamento"
 
 #: modules/lightmapper_cpu/lightmapper_cpu.cpp
-#, fuzzy
 msgid "Plotting lightmaps"
 msgstr "Traçando mapas de luz"
 
@@ -12826,9 +12830,8 @@ msgid "Generating capture"
 msgstr "Gerando captura"
 
 #: scene/3d/baked_lightmap.cpp
-#, fuzzy
 msgid "Saving lightmaps"
-msgstr "Salvando mapas  de luz"
+msgstr "Salvando mapas de luz"
 
 #: scene/3d/baked_lightmap.cpp
 msgid "Done"

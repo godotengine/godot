@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="InputEvent" inherits="Resource" version="3.2">
+<class name="InputEvent" inherits="Resource" version="3.3">
 	<brief_description>
 		Generic input event.
 	</brief_description>
@@ -7,8 +7,8 @@
 		Base class of all sort of input event. See [method Node._input].
 	</description>
 	<tutorials>
-		<link title="InputEvent">https://docs.godotengine.org/en/3.2/tutorials/inputs/inputevent.html</link>
-		<link title="Viewport and canvas transforms">https://docs.godotengine.org/en/3.2/tutorials/2d/2d_transforms.html</link>
+		<link title="InputEvent">https://docs.godotengine.org/en/3.3/tutorials/inputs/inputevent.html</link>
+		<link title="Viewport and canvas transforms">https://docs.godotengine.org/en/3.3/tutorials/2d/2d_transforms.html</link>
 		<link title="2D Dodge The Creeps Demo">https://godotengine.org/asset-library/asset/515</link>
 		<link title="3D Voxel Demo">https://godotengine.org/asset-library/asset/676</link>
 	</tutorials>
