@@ -1238,6 +1238,22 @@ StringName ArrayMesh::get_blend_shape_name(int p_index) const {
 	return blend_shapes[p_index];
 }
 
+void ArrayMesh::set_blend_shape_name(int p_index, const StringName &p_name) {
+	ERR_FAIL_INDEX(p_index, blend_shapes.size());
+
+	StringName name = p_name;
+	int found = blend_shapes.find(name);
+	if (found != -1 && found != p_index) {
+		int count = 2;
+		do {
+			name = String(p_name) + " " + itos(count);
+			count++;
+		} while (blend_shapes.find(name) != -1);
+	}
+
+	blend_shapes.write[p_index] = name;
+}
+
 void ArrayMesh::clear_blend_shapes() {
 	ERR_FAIL_COND_MSG(surfaces.size(), "Can't set shape key count if surfaces are already created.");
 
@@ -1590,6 +1606,7 @@ void ArrayMesh::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("add_blend_shape", "name"), &ArrayMesh::add_blend_shape);
 	ClassDB::bind_method(D_METHOD("get_blend_shape_count"), &ArrayMesh::get_blend_shape_count);
 	ClassDB::bind_method(D_METHOD("get_blend_shape_name", "index"), &ArrayMesh::get_blend_shape_name);
+	ClassDB::bind_method(D_METHOD("set_blend_shape_name", "index", "name"), &ArrayMesh::set_blend_shape_name);
 	ClassDB::bind_method(D_METHOD("clear_blend_shapes"), &ArrayMesh::clear_blend_shapes);
 	ClassDB::bind_method(D_METHOD("set_blend_shape_mode", "mode"), &ArrayMesh::set_blend_shape_mode);
 	ClassDB::bind_method(D_METHOD("get_blend_shape_mode"), &ArrayMesh::get_blend_shape_mode);
