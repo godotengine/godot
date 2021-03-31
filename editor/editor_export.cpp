@@ -730,6 +730,12 @@ Error EditorExportPlatform::export_project_files(const Ref<EditorExportPreset> &
 	if (p_preset->get_export_filter() == EditorExportPreset::EXPORT_ALL_RESOURCES) {
 		//find stuff
 		_export_find_resources(EditorFileSystem::get_singleton()->get_filesystem(), paths);
+	} else if (p_preset->get_export_filter() == EditorExportPreset::EXCLUDE_SELECTED_RESOURCES) {
+		_export_find_resources(EditorFileSystem::get_singleton()->get_filesystem(), paths);
+		Vector<String> files = p_preset->get_files_to_export();
+		for (int i = 0; i < files.size(); i++) {
+			paths.erase(files[i]);
+		}
 	} else {
 		bool scenes_only = p_preset->get_export_filter() == EditorExportPreset::EXPORT_SELECTED_SCENES;
 
@@ -1394,6 +1400,10 @@ void EditorExport::_save() {
 				config->set_value(section, "export_filter", "resources");
 				save_files = true;
 			} break;
+			case EditorExportPreset::EXCLUDE_SELECTED_RESOURCES: {
+				config->set_value(section, "export_filter", "exclude");
+				save_files = true;
+			} break;
 		}
 
 		if (save_files) {
@@ -1571,6 +1581,9 @@ void EditorExport::load_config() {
 			get_files = true;
 		} else if (export_filter == "resources") {
 			preset->set_export_filter(EditorExportPreset::EXPORT_SELECTED_RESOURCES);
+			get_files = true;
+		} else if (export_filter == "exclude") {
+			preset->set_export_filter(EditorExportPreset::EXCLUDE_SELECTED_RESOURCES);
 			get_files = true;
 		}
 
