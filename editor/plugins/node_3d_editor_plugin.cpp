@@ -4503,7 +4503,12 @@ void _update_all_gizmos(Node *p_node) {
 
 void Node3DEditor::update_all_gizmos(Node *p_node) {
 	if (!p_node) {
-		p_node = SceneTree::get_singleton()->get_root();
+		if (SceneTree::get_singleton()) {
+			p_node = SceneTree::get_singleton()->get_root();
+		} else {
+			// No scene tree, so nothing to update.
+			return;
+		}
 	}
 	_update_all_gizmos(p_node);
 }
