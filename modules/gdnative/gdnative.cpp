@@ -148,6 +148,7 @@ void GDNativeLibrary::_get_property_list(List<PropertyInfo> *p_list) const {
 }
 
 void GDNativeLibrary::set_config_file(Ref<ConfigFile> p_config_file) {
+	ERR_FAIL_COND(p_config_file.is_null());
 
 	set_singleton(p_config_file->get_value("general", "singleton", default_singleton));
 	set_load_once(p_config_file->get_value("general", "load_once", default_load_once));
