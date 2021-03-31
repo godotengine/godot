@@ -1156,20 +1156,29 @@ void ProjectSettingsEditor::_copy_to_platform(int p_which) {
 }
 
 void ProjectSettingsEditor::add_translation(const String &p_translation) {
-	_translation_add(p_translation);
+	PoolStringArray translations;
+	translations.push_back(p_translation);
+	_translation_add(translations);
 }
 
-void ProjectSettingsEditor::_translation_add(const String &p_path) {
+void ProjectSettingsEditor::_translation_add(const PoolStringArray &p_paths) {
 	PoolStringArray translations = ProjectSettings::get_singleton()->get("locale/translations");
+	for (int i = 0; i < p_paths.size(); i++) {
+		bool duplicate = false;
+		for (int j = 0; j < translations.size(); j++) {
+			if (translations[j] == p_paths[i]) {
+				duplicate = true;
+				break;
+			}
+		}
 
-	for (int i = 0; i < translations.size(); i++) {
-		if (translations[i] == p_path) {
-			return; //exists
+		// Don't add duplicate translation paths.
+		if (!duplicate) {
+			translations.push_back(p_paths[i]);
 		}
 	}
 
-	translations.push_back(p_path);
-	undo_redo->create_action(TTR("Add Translation"));
+	undo_redo->create_action(vformat(TTR("Add %d Translations"), p_paths.size()));
 	undo_redo->add_do_property(ProjectSettings::get_singleton(), "locale/translations", translations);
 	undo_redo->add_undo_property(ProjectSettings::get_singleton(), "locale/translations", ProjectSettings::get_singleton()->get("locale/translations"));
 	undo_redo->add_do_method(this, "_update_translations");
@@ -1209,7 +1218,7 @@ void ProjectSettingsEditor::_translation_res_file_open() {
 	translation_res_file_open->popup_centered_ratio();
 }
 
-void ProjectSettingsEditor::_translation_res_add(const String &p_path) {
+void ProjectSettingsEditor::_translation_res_add(const PoolStringArray &p_paths) {
 	Variant prev;
 	Dictionary remaps;
 
@@ -1218,13 +1227,14 @@ void ProjectSettingsEditor::_translation_res_add(const String &p_path) {
 		prev = remaps;
 	}
 
-	if (remaps.has(p_path)) {
-		return; //pointless already has it
+	for (int i = 0; i < p_paths.size(); i++) {
+		if (!remaps.has(p_paths[i])) {
+			// Don't overwrite with an empty remap array if an array already exists for the given path.
+			remaps[p_paths[i]] = PoolStringArray();
+		}
 	}
 
-	remaps[p_path] = PoolStringArray();
-
-	undo_redo->create_action(TTR("Add Remapped Path"));
+	undo_redo->create_action(vformat(TTR("Translation Resource Remap: Add %d Path(s)"), p_paths.size()));
 	undo_redo->add_do_property(ProjectSettings::get_singleton(), "locale/translation_remaps", remaps);
 	undo_redo->add_undo_property(ProjectSettings::get_singleton(), "locale/translation_remaps", prev);
 	undo_redo->add_do_method(this, "_update_translations");
@@ -1237,7 +1247,7 @@ void ProjectSettingsEditor::_translation_res_add(const String &p_path) {
 void ProjectSettingsEditor::_translation_res_option_file_open() {
 	translation_res_option_file_open->popup_centered_ratio();
 }
-void ProjectSettingsEditor::_translation_res_option_add(const String &p_path) {
+void ProjectSettingsEditor::_translation_res_option_add(const PoolStringArray &p_paths) {
 	ERR_FAIL_COND(!ProjectSettings::get_singleton()->has_setting("locale/translation_remaps"));
 
 	Dictionary remaps = ProjectSettings::get_singleton()->get("locale/translation_remaps");
@@ -1249,10 +1259,12 @@ void ProjectSettingsEditor::_translation_res_option_add(const String &p_path) {
 
 	ERR_FAIL_COND(!remaps.has(key));
 	PoolStringArray r = remaps[key];
-	r.push_back(p_path + ":" + "en");
+	for (int i = 0; i < p_paths.size(); i++) {
+		r.push_back(p_paths[i] + ":" + "en");
+	}
 	remaps[key] = r;
 
-	undo_redo->create_action(TTR("Resource Remap Add Remap"));
+	undo_redo->create_action(vformat(TTR("Translation Resource Remap: Add %d Remap(s)"), p_paths.size()));
 	undo_redo->add_do_property(ProjectSettings::get_singleton(), "locale/translation_remaps", remaps);
 	undo_redo->add_undo_property(ProjectSettings::get_singleton(), "locale/translation_remaps", ProjectSettings::get_singleton()->get("locale/translation_remaps"));
 	undo_redo->add_do_method(this, "_update_translations");
@@ -1996,8 +2008,8 @@ ProjectSettingsEditor::ProjectSettingsEditor(EditorData *p_data) {
 
 		translation_file_open = memnew(EditorFileDialog);
 		add_child(translation_file_open);
-		translation_file_open->set_mode(EditorFileDialog::MODE_OPEN_FILE);
-		translation_file_open->connect("file_selected", this, "_translation_add");
+		translation_file_open->set_mode(EditorFileDialog::MODE_OPEN_FILES);
+		translation_file_open->connect("files_selected", this, "_translation_add");
 	}
 
 	{
@@ -2022,8 +2034,8 @@ ProjectSettingsEditor::ProjectSettingsEditor(EditorData *p_data) {
 
 		translation_res_file_open = memnew(EditorFileDialog);
 		add_child(translation_res_file_open);
-		translation_res_file_open->set_mode(EditorFileDialog::MODE_OPEN_FILE);
-		translation_res_file_open->connect("file_selected", this, "_translation_res_add");
+		translation_res_file_open->set_mode(EditorFileDialog::MODE_OPEN_FILES);
+		translation_res_file_open->connect("files_selected", this, "_translation_res_add");
 
 		thb = memnew(HBoxContainer);
 		tvb->add_child(thb);
@@ -2052,8 +2064,8 @@ ProjectSettingsEditor::ProjectSettingsEditor(EditorData *p_data) {
 
 		translation_res_option_file_open = memnew(EditorFileDialog);
 		add_child(translation_res_option_file_open);
-		translation_res_option_file_open->set_mode(EditorFileDialog::MODE_OPEN_FILE);
-		translation_res_option_file_open->connect("file_selected", this, "_translation_res_option_add");
+		translation_res_option_file_open->set_mode(EditorFileDialog::MODE_OPEN_FILES);
+		translation_res_option_file_open->connect("files_selected", this, "_translation_res_option_add");
 	}
 
 	{
