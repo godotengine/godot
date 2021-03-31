@@ -488,7 +488,7 @@
 		</member>
 		<member name="display/window/handheld/orientation" type="int" setter="" getter="" default="0">
 			The default screen orientation to use on mobile devices. See [enum DisplayServer.ScreenOrientation] for possible values.
-			[b]Note:[/b] When set to a portrait orientation, this project setting does not flip the project resolution's width and height automatically. Instead, you have to set [member display/window/size/width] and [member display/window/size/height] accordingly.
+			[b]Note:[/b] When set to a portrait orientation, this project setting does not flip the project resolution's width and height automatically. Instead, you have to set [member display/window/size/viewport_width] and [member display/window/size/viewport_height] accordingly.
 		</member>
 		<member name="display/window/ios/hide_home_indicator" type="bool" setter="" getter="" default="true">
 			If [code]true[/code], the home indicator is hidden automatically. This only affects iOS devices without a physical home button.
@@ -506,21 +506,23 @@
 			Regardless of the platform, enabling fullscreen will change the window size to match the monitor's size. Therefore, make sure your project supports [url=$DOCS_URL/tutorials/rendering/multiple_resolutions.html]multiple resolutions[/url] when enabling fullscreen mode.
 			[b]Note:[/b] This setting is ignored on iOS, Android, and HTML5.
 		</member>
-		<member name="display/window/size/height" type="int" setter="" getter="" default="600">
-			Sets the game's main viewport height. On desktop platforms, this is the default window size. Stretch mode settings also use this as a reference when enabled.
-		</member>
 		<member name="display/window/size/resizable" type="bool" setter="" getter="" default="true">
 			Allows the window to be resizable by default.
 			[b]Note:[/b] This setting is ignored on iOS and Android.
 		</member>
-		<member name="display/window/size/test_height" type="int" setter="" getter="" default="0">
-			If greater than zero, overrides the window height when running the game. Useful for testing stretch modes.
+		<member name="display/window/size/viewport_height" type="int" setter="" getter="" default="600">
+			Sets the game's main viewport height. On desktop platforms, this is also the initial window height.
 		</member>
-		<member name="display/window/size/test_width" type="int" setter="" getter="" default="0">
-			If greater than zero, overrides the window width when running the game. Useful for testing stretch modes.
+		<member name="display/window/size/viewport_width" type="int" setter="" getter="" default="1024">
+			Sets the game's main viewport width. On desktop platforms, this is also the initial window width.
 		</member>
-		<member name="display/window/size/width" type="int" setter="" getter="" default="1024">
-			Sets the game's main viewport width. On desktop platforms, this is the default window size. Stretch mode settings also use this as a reference when enabled.
+		<member name="display/window/size/window_height_override" type="int" setter="" getter="" default="0">
+			On desktop platforms, sets the game's initial window height.
+			[b]Note:[/b] By default, or when set to 0, the initial window height is the [member display/window/size/viewport_height]. This setting is ignored on iOS, Android, and HTML5.
+		</member>
+		<member name="display/window/size/window_width_override" type="int" setter="" getter="" default="0">
+			On desktop platforms, sets the game's initial window width.
+			[b]Note:[/b] By default, or when set to 0, the initial window width is the viewport [member display/window/size/viewport_width]. This setting is ignored on iOS, Android, and HTML5.
 		</member>
 		<member name="display/window/vsync/vsync_mode" type="int" setter="" getter="" default="1">
 			Sets the VSync mode for the main game window.
