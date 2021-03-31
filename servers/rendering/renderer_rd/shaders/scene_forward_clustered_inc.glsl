@@ -3,7 +3,7 @@
 
 #define MAX_GI_PROBES 8
 
-#if defined(GL_KHR_shader_subgroup_ballot) && defined(GL_KHR_shader_subgroup_arithmetic)
+#if defined(has_GL_KHR_shader_subgroup_ballot) && defined(has_GL_KHR_shader_subgroup_arithmetic)
 
 #extension GL_KHR_shader_subgroup_ballot : enable
 #extension GL_KHR_shader_subgroup_arithmetic : enable
