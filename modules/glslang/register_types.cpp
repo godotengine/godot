@@ -37,7 +37,7 @@
 #include <glslang/Include/Types.h>
 #include <glslang/Public/ShaderLang.h>
 
-static Vector<uint8_t> _compile_shader_glsl(RenderingDevice::ShaderStage p_stage, const String &p_source_code, RenderingDevice::ShaderLanguage p_language, String *r_error) {
+static Vector<uint8_t> _compile_shader_glsl(RenderingDevice::ShaderStage p_stage, const String &p_source_code, RenderingDevice::ShaderLanguage p_language, String *r_error, const RenderingDevice::Capabilities *p_capabilities) {
 	Vector<uint8_t> ret;
 
 	ERR_FAIL_COND_V(p_language == RenderingDevice::SHADER_LANGUAGE_HLSL, ret);
@@ -51,19 +51,74 @@ static Vector<uint8_t> _compile_shader_glsl(RenderingDevice::ShaderStage p_stage
 	};
 
 	int ClientInputSemanticsVersion = 100; // maps to, say, #define VULKAN 100
+	bool check_subgroup_support = true; // assume we support subgroups
 
-	glslang::EShTargetClientVersion VulkanClientVersion = glslang::EShTargetVulkan_1_0;
-	glslang::EShTargetLanguageVersion TargetVersion = glslang::EShTargetSpv_1_3;
+	glslang::EShTargetClientVersion ClientVersion = glslang::EShTargetVulkan_1_2;
+	glslang::EShTargetLanguageVersion TargetVersion = glslang::EShTargetSpv_1_5;
 	glslang::TShader::ForbidIncluder includer;
+
+	if (p_capabilities->device_family == RenderingDevice::DeviceFamily::DEVICE_VULKAN) {
+		if (p_capabilities->version_major == 1 && p_capabilities->version_minor == 0) {
+			ClientVersion = glslang::EShTargetVulkan_1_0;
+			TargetVersion = glslang::EShTargetSpv_1_0;
+			check_subgroup_support = false; // subgroups are not supported in Vulkan 1.0
+		} else if (p_capabilities->version_major == 1 && p_capabilities->version_minor == 1) {
+			ClientVersion = glslang::EShTargetVulkan_1_1;
+			TargetVersion = glslang::EShTargetSpv_1_3;
+		} else {
+			// use defaults
+		}
+	} else {
+		// once we support other backends we'll need to do something here
+		if (r_error) {
+			(*r_error) = "GLSLANG - Unsupported device family";
+		}
+		return ret;
+	}
 
 	glslang::TShader shader(stages[p_stage]);
 	CharString cs = p_source_code.ascii();
 	const char *cs_strings = cs.get_data();
+	std::string preamble = "";
 
 	shader.setStrings(&cs_strings, 1);
 	shader.setEnvInput(glslang::EShSourceGlsl, stages[p_stage], glslang::EShClientVulkan, ClientInputSemanticsVersion);
-	shader.setEnvClient(glslang::EShClientVulkan, VulkanClientVersion);
+	shader.setEnvClient(glslang::EShClientVulkan, ClientVersion);
 	shader.setEnvTarget(glslang::EShTargetSpv, TargetVersion);
+
+	if (check_subgroup_support) {
+		uint32_t stage_bit = 1 << p_stage;
+
+		if ((p_capabilities->subgroup_in_shaders & stage_bit) == stage_bit) {
+			// stage supports subgroups
+			preamble += "#define has_GL_KHR_shader_subgroup_basic 1\n";
+			if (p_capabilities->subgroup_operations & RenderingDevice::SUBGROUP_VOTE_BIT) {
+				preamble += "#define has_GL_KHR_shader_subgroup_vote 1\n";
+			}
+			if (p_capabilities->subgroup_operations & RenderingDevice::SUBGROUP_ARITHMETIC_BIT) {
+				preamble += "#define has_GL_KHR_shader_subgroup_arithmetic 1\n";
+			}
+			if (p_capabilities->subgroup_operations & RenderingDevice::SUBGROUP_BALLOT_BIT) {
+				preamble += "#define has_GL_KHR_shader_subgroup_ballot 1\n";
+			}
+			if (p_capabilities->subgroup_operations & RenderingDevice::SUBGROUP_SHUFFLE_BIT) {
+				preamble += "#define has_GL_KHR_shader_subgroup_shuffle 1\n";
+			}
+			if (p_capabilities->subgroup_operations & RenderingDevice::SUBGROUP_SHUFFLE_RELATIVE_BIT) {
+				preamble += "#define has_GL_KHR_shader_subgroup_shuffle_relative 1\n";
+			}
+			if (p_capabilities->subgroup_operations & RenderingDevice::SUBGROUP_CLUSTERED_BIT) {
+				preamble += "#define has_GL_KHR_shader_subgroup_clustered 1\n";
+			}
+			if (p_capabilities->subgroup_operations & RenderingDevice::SUBGROUP_QUAD_BIT) {
+				preamble += "#define has_GL_KHR_shader_subgroup_quad 1\n";
+			}
+		}
+	}
+
+	if (preamble != "") {
+		shader.setPreamble(preamble.c_str());
+	}
 
 	EShMessages messages = (EShMessages)(EShMsgSpvRules | EShMsgVulkanRules);
 	const int DefaultVersion = 100;
