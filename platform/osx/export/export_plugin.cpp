@@ -95,6 +95,7 @@ void EditorExportPlatformOSX::get_export_options(List<ExportOption> *r_options) 
 	r_options->push_back(ExportOption(PropertyInfo(Variant::INT, "codesign/entitlements/app_sandbox/files_pictures", PROPERTY_HINT_ENUM, "No,Read-only,Read-write"), 0));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::INT, "codesign/entitlements/app_sandbox/files_music", PROPERTY_HINT_ENUM, "No,Read-only,Read-write"), 0));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::INT, "codesign/entitlements/app_sandbox/files_movies", PROPERTY_HINT_ENUM, "No,Read-only,Read-write"), 0));
+	r_options->push_back(ExportOption(PropertyInfo(Variant::ARRAY, "codesign/entitlements/app_sandbox/helper_executables", PROPERTY_HINT_ARRAY_TYPE, itos(Variant::STRING) + "/" + itos(PROPERTY_HINT_GLOBAL_FILE) + ":"), Array()));
 
 	r_options->push_back(ExportOption(PropertyInfo(Variant::PACKED_STRING_ARRAY, "codesign/custom_options"), PackedStringArray()));
 
@@ -535,6 +536,8 @@ Error EditorExportPlatformOSX::export_project(const Ref<EditorExportPreset> &p_p
 		err = ERR_CANT_CREATE;
 	}
 
+	Array helpers = p_preset->get("codesign/entitlements/app_sandbox/helper_executables");
+
 	// Create our folder structure.
 	if (err == OK) {
 		print_line("Creating " + tmp_app_path_name + "/Contents/MacOS");
@@ -544,6 +547,11 @@ Error EditorExportPlatformOSX::export_project(const Ref<EditorExportPreset> &p_p
 	if (err == OK) {
 		print_line("Creating " + tmp_app_path_name + "/Contents/Frameworks");
 		err = tmp_app_dir->make_dir_recursive(tmp_app_path_name + "/Contents/Frameworks");
+	}
+
+	if ((err == OK) && helpers.size() > 0) {
+		print_line("Creating " + tmp_app_path_name + "/Contents/Helpers");
+		err = tmp_app_dir->make_dir_recursive(tmp_app_path_name + "/Contents/Helpers");
 	}
 
 	if (err == OK) {
@@ -688,6 +696,7 @@ Error EditorExportPlatformOSX::export_project(const Ref<EditorExportPreset> &p_p
 		bool sign_enabled = p_preset->get("codesign/enable");
 
 		String ent_path = p_preset->get("codesign/entitlements/custom_file");
+		String hlp_ent_path = EditorPaths::get_singleton()->get_cache_dir().plus_file(pkg_name + "_helper.entitlements");
 		if (sign_enabled && (ent_path == "")) {
 			ent_path = EditorPaths::get_singleton()->get_cache_dir().plus_file(pkg_name + ".entitlements");
 
@@ -819,10 +828,43 @@ Error EditorExportPlatformOSX::export_project(const Ref<EditorExportPreset> &p_p
 			} else {
 				err = ERR_CANT_CREATE;
 			}
+
+			if ((err == OK) && helpers.size() > 0) {
+				ent_f = FileAccess::open(hlp_ent_path, FileAccess::WRITE);
+				if (ent_f) {
+					ent_f->store_line("<?xml version=\"1.0\" encoding=\"UTF-8\"?>");
+					ent_f->store_line("<!DOCTYPE plist PUBLIC \"-//Apple//DTD PLIST 1.0//EN\" \"http://www.apple.com/DTDs/PropertyList-1.0.dtd\">");
+					ent_f->store_line("<plist version=\"1.0\">");
+					ent_f->store_line("<dict>");
+					ent_f->store_line("<key>com.apple.security.app-sandbox</key>");
+					ent_f->store_line("<true/>");
+					ent_f->store_line("<key>com.apple.security.inherit</key>");
+					ent_f->store_line("<true/>");
+					ent_f->store_line("</dict>");
+					ent_f->store_line("</plist>");
+
+					ent_f->close();
+					memdelete(ent_f);
+				} else {
+					err = ERR_CANT_CREATE;
+				}
+			}
+		}
+
+		if ((err == OK) && helpers.size() > 0) {
+			DirAccessRef da = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
+			for (int i = 0; i < helpers.size(); i++) {
+				String hlp_path = helpers[i];
+				err = da->copy(hlp_path, tmp_app_path_name + "/Contents/Helpers/" + hlp_path.get_file());
+				if (err == OK && sign_enabled) {
+					err = _code_sign(p_preset, tmp_app_path_name + "/Contents/Helpers/" + hlp_path.get_file(), hlp_ent_path);
+				}
+				FileAccess::set_unix_permissions(tmp_app_path_name + "/Contents/Helpers/" + hlp_path.get_file(), 0755);
+			}
 		}
 
 		if (err == OK) {
-			DirAccess *da = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
+			DirAccessRef da = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
 			for (int i = 0; i < shared_objects.size(); i++) {
 				String src_path = ProjectSettings::get_singleton()->globalize_path(shared_objects[i].path);
 				if (da->dir_exists(src_path)) {
@@ -842,7 +884,6 @@ Error EditorExportPlatformOSX::export_project(const Ref<EditorExportPreset> &p_p
 					err = _code_sign(p_preset, tmp_app_path_name + "/Contents/Frameworks/" + src_path.get_file(), ent_path);
 				}
 			}
-			memdelete(da);
 		}
 
 		if (sign_enabled) {
@@ -903,6 +944,9 @@ Error EditorExportPlatformOSX::export_project(const Ref<EditorExportPreset> &p_p
 			err = _notarize(p_preset, p_path);
 		}
 
+		// Clean up temporary entitlements files.
+		DirAccess::remove_file_or_error(hlp_ent_path);
+
 		// Clean up temporary .app dir.
 		tmp_app_dir->change_dir(tmp_app_path_name);
 		tmp_app_dir->erase_contents_recursive();
@@ -916,7 +960,7 @@ Error EditorExportPlatformOSX::export_project(const Ref<EditorExportPreset> &p_p
 void EditorExportPlatformOSX::_zip_folder_recursive(zipFile &p_zip, const String &p_root_path, const String &p_folder, const String &p_pkg_name) {
 	String dir = p_root_path.plus_file(p_folder);
 
-	DirAccess *da = DirAccess::open(dir);
+	DirAccessRef da = DirAccess::open(dir);
 	da->list_dir_begin();
 	String f;
 	while ((f = da->get_next()) != "") {
@@ -967,7 +1011,7 @@ void EditorExportPlatformOSX::_zip_folder_recursive(zipFile &p_zip, const String
 		} else if (da->current_is_dir()) {
 			_zip_folder_recursive(p_zip, p_root_path, p_folder.plus_file(f), p_pkg_name);
 		} else {
-			bool is_executable = (p_folder.ends_with("MacOS") && (f == p_pkg_name));
+			bool is_executable = (p_folder.ends_with("MacOS") && (f == p_pkg_name)) || p_folder.ends_with("Helpers");
 
 			OS::Time time = OS::get_singleton()->get_time();
 			OS::Date date = OS::get_singleton()->get_date();
@@ -1012,7 +1056,6 @@ void EditorExportPlatformOSX::_zip_folder_recursive(zipFile &p_zip, const String
 		}
 	}
 	da->list_dir_end();
-	memdelete(da);
 }
 
 bool EditorExportPlatformOSX::can_export(const Ref<EditorExportPreset> &p_preset, String &r_error, bool &r_missing_templates) const {
