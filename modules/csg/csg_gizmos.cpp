@@ -297,14 +297,15 @@ void CSGShape3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 	p_gizmo->clear();
 
 	Ref<Material> material;
-	switch (cs->get_operation()) {
-		case CSGShape3D::OPERATION_UNION:
+	CSGTool::Operation op = static_cast<CSGTool::Operation>(cs->get_operation());
+	switch (op) {
+		case CSGTool::OPERATION_UNION:
 			material = get_material("shape_union_material", p_gizmo);
 			break;
-		case CSGShape3D::OPERATION_INTERSECTION:
+		case CSGTool::OPERATION_INTERSECTION:
 			material = get_material("shape_intersection_material", p_gizmo);
 			break;
-		case CSGShape3D::OPERATION_SUBTRACTION:
+		case CSGTool::OPERATION_SUBTRACTION:
 			material = get_material("shape_subtraction_material", p_gizmo);
 			break;
 	}
@@ -340,14 +341,14 @@ void CSGShape3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 		mesh->add_surface_from_arrays(Mesh::PRIMITIVE_TRIANGLES, array);
 
 		Ref<Material> solid_material;
-		switch (cs->get_operation()) {
-			case CSGShape3D::OPERATION_UNION:
+		switch (op) {
+			case CSGTool::OPERATION_UNION:
 				solid_material = get_material("shape_union_solid_material", p_gizmo);
 				break;
-			case CSGShape3D::OPERATION_INTERSECTION:
+			case CSGTool::OPERATION_INTERSECTION:
 				solid_material = get_material("shape_intersection_solid_material", p_gizmo);
 				break;
-			case CSGShape3D::OPERATION_SUBTRACTION:
+			case CSGTool::OPERATION_SUBTRACTION:
 				solid_material = get_material("shape_subtraction_solid_material", p_gizmo);
 				break;
 		}

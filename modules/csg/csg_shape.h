@@ -33,27 +33,25 @@
 
 #define CSGJS_HEADER_ONLY
 
-#include "csg.h"
+#include "csg_tool.h"
 #include "scene/3d/visual_instance_3d.h"
-#include "scene/resources/concave_polygon_shape_3d.h"
-#include "thirdparty/misc/mikktspace.h"
 
 class CSGShape3D : public GeometryInstance3D {
 	GDCLASS(CSGShape3D, GeometryInstance3D);
 
 public:
+	// This is very ugly
 	enum Operation {
-		OPERATION_UNION,
-		OPERATION_INTERSECTION,
-		OPERATION_SUBTRACTION,
-
+		OPERATION_UNION = CSGTool::OPERATION_UNION,
+		OPERATION_INTERSECTION = CSGTool::OPERATION_INTERSECTION,
+		OPERATION_SUBTRACTION = CSGTool::OPERATION_SUBTRACTION,
 	};
 
 private:
 	Operation operation = OPERATION_UNION;
 	CSGShape3D *parent = nullptr;
 
-	CSGBrush *brush = nullptr;
+	Ref<CSGTool> csg_tool;
 
 	AABB node_aabb;
 
@@ -70,49 +68,17 @@ private:
 
 	Ref<ArrayMesh> root_mesh;
 
-	struct Vector3Hasher {
-		_ALWAYS_INLINE_ uint32_t hash(const Vector3 &p_vec3) const {
-			uint32_t h = hash_djb2_one_float(p_vec3.x);
-			h = hash_djb2_one_float(p_vec3.y, h);
-			h = hash_djb2_one_float(p_vec3.z, h);
-			return h;
-		}
-	};
-
-	struct ShapeUpdateSurface {
-		Vector<Vector3> vertices;
-		Vector<Vector3> normals;
-		Vector<Vector2> uvs;
-		Vector<float> tans;
-		Ref<Material> material;
-		int last_added = 0;
-
-		Vector3 *verticesw = nullptr;
-		Vector3 *normalsw = nullptr;
-		Vector2 *uvsw = nullptr;
-		float *tansw = nullptr;
-	};
-
-	//mikktspace callbacks
-	static int mikktGetNumFaces(const SMikkTSpaceContext *pContext);
-	static int mikktGetNumVerticesOfFace(const SMikkTSpaceContext *pContext, const int iFace);
-	static void mikktGetPosition(const SMikkTSpaceContext *pContext, float fvPosOut[], const int iFace, const int iVert);
-	static void mikktGetNormal(const SMikkTSpaceContext *pContext, float fvNormOut[], const int iFace, const int iVert);
-	static void mikktGetTexCoord(const SMikkTSpaceContext *pContext, float fvTexcOut[], const int iFace, const int iVert);
-	static void mikktSetTSpaceDefault(const SMikkTSpaceContext *pContext, const float fvTangent[], const float fvBiTangent[], const float fMagS, const float fMagT,
-			const tbool bIsOrientationPreserving, const int iFace, const int iVert);
-
 	void _update_shape();
 
 protected:
 	void _notification(int p_what);
-	virtual CSGBrush *_build_brush() = 0;
+	virtual CSGBrush _build_brush() = 0;
 	void _make_dirty();
 
 	static void _bind_methods();
 
 	friend class CSGCombiner3D;
-	CSGBrush *_get_brush();
+	CSGBrush _get_brush();
 
 	virtual void _validate_property(PropertyInfo &property) const override;
 
@@ -122,7 +88,7 @@ public:
 	void set_operation(Operation p_operation);
 	Operation get_operation() const;
 
-	virtual Vector<Vector3> get_brush_faces();
+	virtual Vector<Vector3> get_brush_faces() const;
 
 	virtual AABB get_aabb() const override;
 	virtual Vector<Face3> get_faces(uint32_t p_usage_flags) const override;
@@ -150,16 +116,14 @@ public:
 
 	bool is_root_shape() const;
 	CSGShape3D();
-	~CSGShape3D();
 };
 
-VARIANT_ENUM_CAST(CSGShape3D::Operation)
+VARIANT_ENUM_CAST(CSGShape3D::Operation);
 
 class CSGCombiner3D : public CSGShape3D {
 	GDCLASS(CSGCombiner3D, CSGShape3D);
 
-private:
-	virtual CSGBrush *_build_brush() override;
+	virtual CSGBrush _build_brush() override;
 
 public:
 	CSGCombiner3D();
@@ -168,27 +132,32 @@ public:
 class CSGPrimitive3D : public CSGShape3D {
 	GDCLASS(CSGPrimitive3D, CSGShape3D);
 
-private:
-	bool invert_faces;
-
 protected:
-	CSGBrush *_create_brush_from_arrays(const Vector<Vector3> &p_vertices, const Vector<Vector2> &p_uv, const Vector<bool> &p_smooth, const Vector<Ref<Material>> &p_materials);
+	virtual CSGBrush _build_brush() override;
+	virtual Ref<CSGPrimitiveShape3D> get_csg_primitive() const = 0;
 	static void _bind_methods();
 
 public:
 	void set_invert_faces(bool p_invert);
-	bool is_inverting_faces();
+	bool is_inverting_faces() const;
 
-	CSGPrimitive3D();
+	void set_smooth_faces(bool p_smooth_faces);
+	bool get_smooth_faces() const;
+
+	void set_material(const Ref<Material> &p_material);
+	Ref<Material> get_material() const;
+
+	CSGPrimitive3D() {}
 };
 
 class CSGMesh3D : public CSGPrimitive3D {
 	GDCLASS(CSGMesh3D, CSGPrimitive3D);
 
-	virtual CSGBrush *_build_brush() override;
+	virtual Ref<CSGPrimitiveShape3D> get_csg_primitive() const override {
+		return csg_primitive;
+	}
 
-	Ref<Mesh> mesh;
-	Ref<Material> material;
+	Ref<CSGMeshShape3D> csg_primitive;
 
 	void _mesh_changed();
 
@@ -197,21 +166,19 @@ protected:
 
 public:
 	void set_mesh(const Ref<Mesh> &p_mesh);
-	Ref<Mesh> get_mesh();
+	Ref<Mesh> get_mesh() const;
 
-	void set_material(const Ref<Material> &p_material);
-	Ref<Material> get_material() const;
+	CSGMesh3D();
 };
 
 class CSGSphere3D : public CSGPrimitive3D {
 	GDCLASS(CSGSphere3D, CSGPrimitive3D);
-	virtual CSGBrush *_build_brush() override;
 
-	Ref<Material> material;
-	bool smooth_faces;
-	float radius;
-	int radial_segments;
-	int rings;
+	virtual Ref<CSGPrimitiveShape3D> get_csg_primitive() const override {
+		return csg_primitive;
+	}
+
+	Ref<CSGSphereShape3D> csg_primitive;
 
 protected:
 	static void _bind_methods();
@@ -226,21 +193,17 @@ public:
 	void set_rings(const int p_rings);
 	int get_rings() const;
 
-	void set_material(const Ref<Material> &p_material);
-	Ref<Material> get_material() const;
-
-	void set_smooth_faces(bool p_smooth_faces);
-	bool get_smooth_faces() const;
-
 	CSGSphere3D();
 };
 
 class CSGBox3D : public CSGPrimitive3D {
 	GDCLASS(CSGBox3D, CSGPrimitive3D);
-	virtual CSGBrush *_build_brush() override;
 
-	Ref<Material> material;
-	Vector3 size = Vector3(2, 2, 2);
+	virtual Ref<CSGPrimitiveShape3D> get_csg_primitive() const override {
+		return csg_primitive;
+	}
+
+	Ref<CSGBoxShape3D> csg_primitive;
 
 protected:
 	static void _bind_methods();
@@ -249,22 +212,17 @@ public:
 	void set_size(const Vector3 &p_size);
 	Vector3 get_size() const;
 
-	void set_material(const Ref<Material> &p_material);
-	Ref<Material> get_material() const;
-
-	CSGBox3D() {}
+	CSGBox3D();
 };
 
 class CSGCylinder3D : public CSGPrimitive3D {
 	GDCLASS(CSGCylinder3D, CSGPrimitive3D);
-	virtual CSGBrush *_build_brush() override;
 
-	Ref<Material> material;
-	float radius;
-	float height;
-	int sides;
-	bool cone;
-	bool smooth_faces;
+	virtual Ref<CSGPrimitiveShape3D> get_csg_primitive() const override {
+		return csg_primitive;
+	}
+
+	Ref<CSGCylinderShape3D> csg_primitive;
 
 protected:
 	static void _bind_methods();
@@ -282,25 +240,17 @@ public:
 	void set_cone(const bool p_cone);
 	bool is_cone() const;
 
-	void set_smooth_faces(bool p_smooth_faces);
-	bool get_smooth_faces() const;
-
-	void set_material(const Ref<Material> &p_material);
-	Ref<Material> get_material() const;
-
 	CSGCylinder3D();
 };
 
 class CSGTorus3D : public CSGPrimitive3D {
 	GDCLASS(CSGTorus3D, CSGPrimitive3D);
-	virtual CSGBrush *_build_brush() override;
 
-	Ref<Material> material;
-	float inner_radius;
-	float outer_radius;
-	int sides;
-	int ring_sides;
-	bool smooth_faces;
+	virtual Ref<CSGPrimitiveShape3D> get_csg_primitive() const override {
+		return csg_primitive;
+	}
+
+	Ref<CSGTorusShape3D> csg_primitive;
 
 protected:
 	static void _bind_methods();
@@ -318,12 +268,6 @@ public:
 	void set_ring_sides(const int p_ring_sides);
 	int get_ring_sides() const;
 
-	void set_smooth_faces(bool p_smooth_faces);
-	bool get_smooth_faces() const;
-
-	void set_material(const Ref<Material> &p_material);
-	Ref<Material> get_material() const;
-
 	CSGTorus3D();
 };
 
@@ -331,41 +275,32 @@ class CSGPolygon3D : public CSGPrimitive3D {
 	GDCLASS(CSGPolygon3D, CSGPrimitive3D);
 
 public:
+	// This is very ugly
 	enum Mode {
-		MODE_DEPTH,
-		MODE_SPIN,
-		MODE_PATH
+		MODE_DEPTH = CSGPolygonShape3D::MODE_DEPTH,
+		MODE_SPIN = CSGPolygonShape3D::MODE_SPIN,
+		MODE_PATH = CSGPolygonShape3D::MODE_PATH
 	};
 
+	// and this too
 	enum PathRotation {
-		PATH_ROTATION_POLYGON,
-		PATH_ROTATION_PATH,
-		PATH_ROTATION_PATH_FOLLOW,
+		PATH_ROTATION_POLYGON = CSGPolygonShape3D::PATH_ROTATION_POLYGON,
+		PATH_ROTATION_PATH = CSGPolygonShape3D::PATH_ROTATION_PATH,
+		PATH_ROTATION_PATH_FOLLOW = CSGPolygonShape3D::PATH_ROTATION_PATH_FOLLOW,
 	};
 
 private:
-	virtual CSGBrush *_build_brush() override;
+	virtual Ref<CSGPrimitiveShape3D> get_csg_primitive() const override {
+		return csg_primitive;
+	}
 
-	Vector<Vector2> polygon;
-	Ref<Material> material;
+	Ref<CSGPolygonShape3D> csg_primitive;
 
-	Mode mode;
-
-	float depth;
-
-	float spin_degrees;
-	int spin_sides;
+	virtual CSGBrush _build_brush() override;
 
 	NodePath path_node;
-	float path_interval;
-	PathRotation path_rotation;
-	bool path_local;
-
-	Node *path_cache;
-
-	bool smooth_faces;
-	bool path_continuous_u;
-	bool path_joined;
+	Node *path_cache = nullptr;
+	bool path_local = false;
 
 	bool _is_editable_3d_polygon() const;
 	bool _has_editable_3d_polygon_no_depth() const;
@@ -411,12 +346,6 @@ public:
 
 	void set_path_joined(bool p_enable);
 	bool is_path_joined() const;
-
-	void set_smooth_faces(bool p_smooth_faces);
-	bool get_smooth_faces() const;
-
-	void set_material(const Ref<Material> &p_material);
-	Ref<Material> get_material() const;
 
 	CSGPolygon3D();
 };

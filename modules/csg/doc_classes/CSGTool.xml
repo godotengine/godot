@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="CSGTool" inherits="Reference" version="4.0">
+	<brief_description>
+	</brief_description>
+	<description>
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="add_primitive">
+			<return type="void">
+			</return>
+			<argument index="0" name="primitive" type="CSGPrimitiveShape3D">
+			</argument>
+			<argument index="1" name="operation" type="int" enum="CSGTool.Operation" default="0">
+			</argument>
+			<argument index="2" name="xform" type="Transform" default="Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0 )">
+			</argument>
+			<argument index="3" name="vertex_snap" type="float" default="0.001">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="commit">
+			<return type="ArrayMesh">
+			</return>
+			<argument index="0" name="existing" type="ArrayMesh" default="null">
+			</argument>
+			<argument index="1" name="generate_tangents" type="bool" default="false">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="create_trimesh_shape" qualifiers="const">
+			<return type="ConcavePolygonShape3D">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_aabb" qualifiers="const">
+			<return type="AABB">
+			</return>
+			<description>
+			</description>
+		</method>
+	</methods>
+	<constants>
+		<constant name="OPERATION_UNION" value="0" enum="Operation">
+			Geometry of both primitives is merged, intersecting geometry is removed.
+		</constant>
+		<constant name="OPERATION_INTERSECTION" value="1" enum="Operation">
+			Only intersecting geometry remains, the rest is removed.
+		</constant>
+		<constant name="OPERATION_SUBTRACTION" value="2" enum="Operation">
+			The second shape is subtracted from the first, leaving a dent with its shape.
+		</constant>
+	</constants>
+</class>
