@@ -1748,7 +1748,7 @@ void ProjectSettingsEditor::_input_map_helper_timer_timeout() {
                device_index->select(i * 2 + 1);
             }
          }
-         _last_axis_reading[i] = axisValue;
+         _last_axis_reading[i] = axisValue;comm
       }
       return;
    }
