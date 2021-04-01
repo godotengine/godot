@@ -276,7 +276,7 @@ void GDScript::_get_script_property_list(List<PropertyInfo> *r_list, bool p_incl
 		}
 
 		msort.sort();
-		msort.invert();
+		msort.reverse();
 		for (int i = 0; i < msort.size(); i++) {
 			props.push_front(sptr->member_info[msort[i].name]);
 		}
@@ -1502,7 +1502,7 @@ void GDScriptInstance::get_property_list(List<PropertyInfo> *p_properties) const
 		}
 
 		msort.sort();
-		msort.invert();
+		msort.reverse();
 		for (int i = 0; i < msort.size(); i++) {
 			props.push_front(sptr->member_info[msort[i].name]);
 		}

@@ -41,7 +41,7 @@ bool ConvexPolygonShape2D::_edit_is_selected_on_click(const Point2 &p_point, dou
 void ConvexPolygonShape2D::_update_shape() {
 	Vector<Vector2> final_points = points;
 	if (Geometry2D::is_polygon_clockwise(final_points)) { //needs to be counter clockwise
-		final_points.invert();
+		final_points.reverse();
 	}
 	PhysicsServer2D::get_singleton()->shape_set_data(get_rid(), final_points);
 	emit_changed();

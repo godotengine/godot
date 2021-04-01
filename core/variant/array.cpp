@@ -446,8 +446,8 @@ int Array::bsearch_custom(const Variant &p_value, Callable p_callable, bool p_be
 	return bisect(_p->array, p_value, p_before, less);
 }
 
-void Array::invert() {
-	_p->array.invert();
+void Array::reverse() {
+	_p->array.reverse();
 }
 
 void Array::push_front(const Variant &p_value) {

@@ -281,7 +281,7 @@ bool AnimationNodeStateMachinePlayback::_travel(AnimationNodeStateMachine *p_sta
 		at = cost_map[at].prev;
 	}
 
-	path.invert();
+	path.reverse();
 
 	return true;
 }

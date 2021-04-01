@@ -1690,7 +1690,7 @@ NodePath Node::get_path_to(const Node *p_node) const {
 		n = n->data.parent;
 	}
 
-	path.invert();
+	path.reverse();
 
 	return NodePath(path, false);
 }
@@ -1711,7 +1711,7 @@ NodePath Node::get_path() const {
 		n = n->data.parent;
 	}
 
-	path.invert();
+	path.reverse();
 
 	data.path_cache = memnew(NodePath(path, true));
 
