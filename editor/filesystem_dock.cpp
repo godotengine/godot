@@ -2756,10 +2756,13 @@ FileSystemDock::FileSystemDock(EditorNode *p_editor) {
 	ED_SHORTCUT("filesystem_dock/duplicate", TTR("Duplicate..."), KEY_MASK_CMD | KEY_D);
 
 #if defined(WINDOWS_ENABLED)
-	// TRANSLATORS: This string is only used on Windows, as it refers to the system trash
-	// as "Recycle Bin" instead of "Trash". Make sure to use the translation of "Recycle Bin"
-	// recommended by Microsoft for the target language.
-	ED_SHORTCUT("filesystem_dock/delete", TTR("Move to Recycle Bin"), KEY_DELETE);
+	// Note that the "Delete" action is actually responsible for moving files
+	// to "Recycle Bin" by default instead of deleting files altogether, so we
+	// use "Delete" term here rather than more explicit "Move to Recycle Bin",
+	// otherwise this will break user expectations in terms of discoverability.
+	// Once Microsoft decides to rename it to "Move to Recycle Bin", then it's
+	// safe to rename it in Godot as well.
+	ED_SHORTCUT("filesystem_dock/delete", TTR("Delete"), KEY_DELETE);
 #elif defined(OSX_ENABLED)
 	// TRANSLATORS: This string is only used on macOS, as it refers to the system trash
 	// as "Bin" instead of "Trash". Make sure to use the translation of "Bin"
