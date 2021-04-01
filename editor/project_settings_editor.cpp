@@ -1700,7 +1700,8 @@ void ProjectSettingsEditor::_toggle_search_bar(bool p_pressed) {
 		search_box->clear();
 		search_bar->hide();
 		add_prop_bar->show();
-	}
+	}<<<<<<< HEAD
+
 }
 
 void ProjectSettingsEditor::set_plugins_page() {
@@ -1748,7 +1749,7 @@ void ProjectSettingsEditor::_input_map_helper_timer_timeout() {
                device_index->select(i * 2 + 1);
             }
          }
-         _last_axis_reading[i] = axisValue;comm
+         _last_axis_reading[i] = axisValue;
       }
       return;
    }
