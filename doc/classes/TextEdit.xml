@@ -26,11 +26,11 @@
 				Returns if the given line is foldable, that is, it has indented lines right below it.
 			</description>
 		</method>
-		<method name="center_viewport_to_cursor">
+		<method name="center_viewport_at_caret">
 			<return type="void">
 			</return>
 			<description>
-				Centers the viewport on the line the editing cursor is at. This also resets the [member scroll_horizontal] value to [code]0[/code].
+				Centers the viewport on the line the caret is at. This also resets the [member scroll_horizontal] value to [code]0[/code].
 			</description>
 		</method>
 		<method name="clear_opentype_features">
@@ -52,49 +52,6 @@
 			</return>
 			<description>
 				Copy's the current text selection.
-			</description>
-		</method>
-		<method name="cursor_get_column" qualifiers="const">
-			<return type="int">
-			</return>
-			<description>
-				Returns the column the editing cursor is at.
-			</description>
-		</method>
-		<method name="cursor_get_line" qualifiers="const">
-			<return type="int">
-			</return>
-			<description>
-				Returns the line the editing cursor is at.
-			</description>
-		</method>
-		<method name="cursor_set_column">
-			<return type="void">
-			</return>
-			<argument index="0" name="column" type="int">
-			</argument>
-			<argument index="1" name="adjust_viewport" type="bool" default="true">
-			</argument>
-			<description>
-				Moves the cursor at the specified [code]column[/code] index.
-				If [code]adjust_viewport[/code] is set to [code]true[/code], the viewport will center at the cursor position after the move occurs.
-			</description>
-		</method>
-		<method name="cursor_set_line">
-			<return type="void">
-			</return>
-			<argument index="0" name="line" type="int">
-			</argument>
-			<argument index="1" name="adjust_viewport" type="bool" default="true">
-			</argument>
-			<argument index="2" name="can_be_hidden" type="bool" default="true">
-			</argument>
-			<argument index="3" name="wrap_index" type="int" default="0">
-			</argument>
-			<description>
-				Moves the cursor at the specified [code]line[/code] index.
-				If [code]adjust_viewport[/code] is set to [code]true[/code], the viewport will center at the cursor position after the move occurs.
-				If [code]can_be_hidden[/code] is set to [code]true[/code], the specified [code]line[/code] can be hidden using [method set_line_as_hidden].
 			</description>
 		</method>
 		<method name="cut">
@@ -125,6 +82,20 @@
 			</argument>
 			<description>
 				Folds the given line, if possible (see [method can_fold]).
+			</description>
+		</method>
+		<method name="get_caret_column" qualifiers="const">
+			<return type="int">
+			</return>
+			<description>
+				Returns the column the caret (text cursor) is at.
+			</description>
+		</method>
+		<method name="get_caret_line" qualifiers="const">
+			<return type="int">
+			</return>
+			<description>
+				Returns the line the caret (text cursor) is at.
 			</description>
 		</method>
 		<method name="get_gutter_count" qualifiers="const">
@@ -282,20 +253,20 @@
 				Returns the selection end line.
 			</description>
 		</method>
-		<method name="get_word_under_cursor" qualifiers="const">
+		<method name="get_word_at_caret" qualifiers="const">
 			<return type="String">
 			</return>
 			<description>
-				Returns a [String] text with the word under the caret (text cursor) location.
+				Returns a [String] text with the word at the caret position.
 			</description>
 		</method>
-		<method name="insert_text_at_cursor">
+		<method name="insert_text_at_caret">
 			<return type="void">
 			</return>
 			<argument index="0" name="text" type="String">
 			</argument>
 			<description>
-				Insert the specified text at the cursor position.
+				Insert the specified text at the caret position.
 			</description>
 		</method>
 		<method name="is_folded" qualifiers="const">
@@ -444,6 +415,35 @@
 			<description>
 				Select all the text.
 				If [member selecting_enabled] is [code]false[/code], no selection will occur.
+			</description>
+		</method>
+		<method name="set_caret_column">
+			<return type="void">
+			</return>
+			<argument index="0" name="column" type="int">
+			</argument>
+			<argument index="1" name="adjust_viewport" type="bool" default="true">
+			</argument>
+			<description>
+				Moves the caret to the specified [code]column[/code].
+				If [code]adjust_viewport[/code] is set to [code]true[/code], the viewport will center at the caret position after the move occurs.
+			</description>
+		</method>
+		<method name="set_caret_line">
+			<return type="void">
+			</return>
+			<argument index="0" name="line" type="int">
+			</argument>
+			<argument index="1" name="adjust_viewport" type="bool" default="true">
+			</argument>
+			<argument index="2" name="can_be_hidden" type="bool" default="true">
+			</argument>
+			<argument index="3" name="wrap_index" type="int" default="0">
+			</argument>
+			<description>
+				Moves the caret to the specified [code]line[/code].
+				If [code]adjust_viewport[/code] is set to [code]true[/code], the viewport will center at the caret position after the move occurs.
+				If [code]can_be_hidden[/code] is set to [code]true[/code], the specified [code]line[/code] can be hidden using [method set_line_as_hidden].
 			</description>
 		</method>
 		<method name="set_gutter_clickable">
@@ -657,23 +657,23 @@
 		</method>
 	</methods>
 	<members>
-		<member name="caret_blink" type="bool" setter="cursor_set_blink_enabled" getter="cursor_get_blink_enabled" default="false">
-			If [code]true[/code], the caret (visual cursor) blinks.
+		<member name="caret_blink" type="bool" setter="set_caret_blink_enabled" getter="is_caret_blink_enabled" default="false">
+			If [code]true[/code], the caret (text cursor) blinks.
 		</member>
-		<member name="caret_blink_speed" type="float" setter="cursor_set_blink_speed" getter="cursor_get_blink_speed" default="0.65">
+		<member name="caret_blink_speed" type="float" setter="set_caret_blink_speed" getter="get_caret_blink_speed" default="0.65">
 			Duration (in seconds) of a caret's blinking cycle.
 		</member>
-		<member name="caret_block_mode" type="bool" setter="cursor_set_block_mode" getter="cursor_is_block_mode" default="false">
+		<member name="caret_block_mode" type="bool" setter="set_caret_block_mode_enabled" getter="is_caret_block_mode_enabled" default="false">
 			If [code]true[/code], the caret displays as a rectangle.
 			If [code]false[/code], the caret displays as a bar.
 		</member>
-		<member name="caret_mid_grapheme" type="bool" setter="set_mid_grapheme_caret_enabled" getter="get_mid_grapheme_caret_enabled" default="false">
+		<member name="caret_mid_grapheme" type="bool" setter="set_caret_mid_grapheme_enabled" getter="is_caret_mid_grapheme_enabled" default="false">
 			Allow moving caret, selecting and removing the individual composite character components.
 			Note: [kbd]Backspace[/kbd] is always removing individual composite character components.
 		</member>
-		<member name="caret_moving_by_right_click" type="bool" setter="set_right_click_moves_caret" getter="is_right_click_moving_caret" default="true">
-			If [code]true[/code], a right-click moves the cursor at the mouse position before displaying the context menu.
-			If [code]false[/code], the context menu disregards mouse location.
+		<member name="caret_moves_with_right_click" type="bool" setter="set_caret_moves_with_right_click_enabled" getter="is_caret_moves_with_right_click_enabled" default="true">
+			If [code]true[/code], a right-click moves the caret to the mouse position before displaying the context menu.
+			If [code]false[/code], the context menu disregards the mouse location.
 		</member>
 		<member name="context_menu_enabled" type="bool" setter="set_context_menu_enabled" getter="is_context_menu_enabled" default="true">
 			If [code]true[/code], a right-click displays the context menu.
@@ -695,7 +695,7 @@
 			If [code]true[/code], all occurrences of the selected text will be highlighted.
 		</member>
 		<member name="highlight_current_line" type="bool" setter="set_highlight_current_line" getter="is_highlight_current_line_enabled" default="false">
-			If [code]true[/code], the line containing the cursor is highlighted.
+			If [code]true[/code], the line containing the caret (text cursor) is highlighted.
 		</member>
 		<member name="language" type="String" setter="set_language" getter="get_language" default="&quot;&quot;">
 			Language code used for line-breaking and text shaping algorithms, if left empty current locale is used instead.
@@ -755,9 +755,9 @@
 		</member>
 	</members>
 	<signals>
-		<signal name="cursor_changed">
+		<signal name="caret_changed">
 			<description>
-				Emitted when the cursor changes.
+				Emitted when the caret changes.
 			</description>
 		</signal>
 		<signal name="gutter_added">
@@ -843,7 +843,7 @@
 			Copies the selected text.
 		</constant>
 		<constant name="MENU_PASTE" value="2" enum="MenuItems">
-			Pastes the clipboard text over the selected text (or at the cursor's position).
+			Pastes the clipboard text over the selected text (or at the caret's position).
 		</constant>
 		<constant name="MENU_CLEAR" value="3" enum="MenuItems">
 			Erases the whole [TextEdit] text.

@@ -66,14 +66,14 @@ void ShaderTextEditor::reload_text() {
 	ERR_FAIL_COND(shader.is_null());
 
 	CodeEdit *te = get_text_editor();
-	int column = te->cursor_get_column();
-	int row = te->cursor_get_line();
+	int column = te->get_caret_column();
+	int row = te->get_caret_line();
 	int h = te->get_h_scroll();
 	int v = te->get_v_scroll();
 
 	te->set_text(shader->get_code());
-	te->cursor_set_line(row);
-	te->cursor_set_column(column);
+	te->set_caret_line(row);
+	te->set_caret_column(column);
 	te->set_h_scroll(h);
 	te->set_v_scroll(v);
 
@@ -464,9 +464,9 @@ void ShaderEditor::_text_edit_gui_input(const Ref<InputEvent> &ev) {
 			int col, row;
 			CodeEdit *tx = shader_editor->get_text_editor();
 			tx->_get_mouse_pos(mb->get_global_position() - tx->get_global_position(), row, col);
-			tx->set_right_click_moves_caret(EditorSettings::get_singleton()->get("text_editor/cursor/right_click_moves_caret"));
+			tx->set_caret_moves_with_right_click_enabled(EditorSettings::get_singleton()->get("text_editor/caret/moves_with_right_click"));
 
-			if (tx->is_right_click_moving_caret()) {
+			if (tx->is_caret_moves_with_right_click_enabled()) {
 				if (tx->is_selection_active()) {
 					int from_line = tx->get_selection_from_line();
 					int to_line = tx->get_selection_to_line();
@@ -479,8 +479,8 @@ void ShaderEditor::_text_edit_gui_input(const Ref<InputEvent> &ev) {
 					}
 				}
 				if (!tx->is_selection_active()) {
-					tx->cursor_set_line(row, true, false);
-					tx->cursor_set_column(col);
+					tx->set_caret_line(row, true, false);
+					tx->set_caret_column(col);
 				}
 			}
 			_make_context_menu(tx->is_selection_active(), get_local_mouse_position());
@@ -490,7 +490,7 @@ void ShaderEditor::_text_edit_gui_input(const Ref<InputEvent> &ev) {
 	Ref<InputEventKey> k = ev;
 	if (k.is_valid() && k->is_pressed() && k->get_keycode() == KEY_MENU) {
 		CodeEdit *tx = shader_editor->get_text_editor();
-		_make_context_menu(tx->is_selection_active(), (get_global_transform().inverse() * tx->get_global_transform()).xform(tx->_get_cursor_pixel_pos()));
+		_make_context_menu(tx->is_selection_active(), (get_global_transform().inverse() * tx->get_global_transform()).xform(tx->_get_caret_pixel_pos()));
 		context_menu->grab_focus();
 	}
 }

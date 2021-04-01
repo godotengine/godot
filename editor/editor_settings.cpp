@@ -557,13 +557,13 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 	_initial_set("text_editor/tools/create_signal_callbacks", true);
 	_initial_set("text_editor/tools/sort_members_outline_alphabetically", false);
 
-	// Cursor
-	_initial_set("text_editor/cursor/scroll_past_end_of_file", false);
-	_initial_set("text_editor/cursor/block_caret", false);
-	_initial_set("text_editor/cursor/caret_blink", true);
-	_initial_set("text_editor/cursor/caret_blink_speed", 0.5);
-	hints["text_editor/cursor/caret_blink_speed"] = PropertyInfo(Variant::FLOAT, "text_editor/cursor/caret_blink_speed", PROPERTY_HINT_RANGE, "0.1, 10, 0.01");
-	_initial_set("text_editor/cursor/right_click_moves_caret", true);
+	// Caret
+	_initial_set("text_editor/caret/scroll_past_end_of_file", false);
+	_initial_set("text_editor/caret/block_mode_enabled", false);
+	_initial_set("text_editor/caret/blink_enabled", true);
+	_initial_set("text_editor/caret/blink_speed", 0.5);
+	hints["text_editor/caret/blink_speed"] = PropertyInfo(Variant::FLOAT, "text_editor/caret/blink_speed", PROPERTY_HINT_RANGE, "0.1, 10, 0.01");
+	_initial_set("text_editor/caret/moves_with_right_click", true);
 
 	// Completion
 	_initial_set("text_editor/completion/idle_parse_delay", 2.0);
