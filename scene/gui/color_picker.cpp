@@ -784,7 +784,7 @@ ColorPicker::ColorPicker() :
 	btn_pick = memnew(ToolButton);
 	hb_smpl->add_child(btn_pick);
 	btn_pick->set_toggle_mode(true);
-	btn_pick->set_tooltip(TTR("Pick a color from the editor window."));
+	btn_pick->set_tooltip(RTR("Pick a color from the editor window."));
 	btn_pick->connect("pressed", this, "_screen_pick_pressed");
 
 	VBoxContainer *vbl = memnew(VBoxContainer);
@@ -831,12 +831,12 @@ ColorPicker::ColorPicker() :
 
 	btn_hsv = memnew(CheckButton);
 	hhb->add_child(btn_hsv);
-	btn_hsv->set_text(TTR("HSV"));
+	btn_hsv->set_text(RTR("HSV"));
 	btn_hsv->connect("toggled", this, "set_hsv_mode");
 
 	btn_raw = memnew(CheckButton);
 	hhb->add_child(btn_raw);
-	btn_raw->set_text(TTR("Raw"));
+	btn_raw->set_text(RTR("Raw"));
 	btn_raw->connect("toggled", this, "set_raw_mode");
 
 	text_type = memnew(Button);
@@ -884,7 +884,7 @@ ColorPicker::ColorPicker() :
 	add_child(preset_container2);
 	bt_add_preset = memnew(Button);
 	preset_container2->add_child(bt_add_preset);
-	bt_add_preset->set_tooltip(TTR("Add current color as a preset."));
+	bt_add_preset->set_tooltip(RTR("Add current color as a preset."));
 	bt_add_preset->connect("pressed", this, "_add_preset_pressed");
 }
 
