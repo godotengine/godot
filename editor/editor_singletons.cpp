@@ -31,8 +31,24 @@
 #include "editor_singletons.h"
 
 #include "editor/editor_node.h"
+#include "editor/editor_log.h"
+#include "editor/editor_audio_buses.h"
+#include "editor/find_in_files.h"
+#include "editor/filesystem_dock.h"
 #include "editor/import_dock.h"
 #include "editor/node_dock.h"
+#include "editor/plugins/animation_player_editor_plugin.h"
+#include "editor/plugins/animation_tree_editor_plugin.h"
+#include "editor/plugins/editor_debugger_plugin.h"
+#include "editor/plugins/resource_preloader_editor_plugin.h"
+#include "editor/plugins/shader_editor_plugin.h"
+#include "editor/plugins/shader_file_editor_plugin.h"
+#include "editor/plugins/sprite_frames_editor_plugin.h"
+#include "editor/plugins/texture_region_editor_plugin.h"
+#include "editor/plugins/theme_editor_plugin.h"
+#include "editor/plugins/tile_set_editor_plugin.h"
+#include "editor/plugins/visual_shader_editor_plugin.h"
+
 #include "main/main.h"
 
 Array EditorInterface::_make_mesh_previews(const Array &p_meshes, int p_preview_size) {
@@ -141,59 +157,59 @@ Vector<Ref<Texture2D>> EditorInterface::make_mesh_previews(const Vector<Ref<Mesh
 }
 
 void EditorInterface::set_main_screen_editor(const String &p_name) {
-	EditorNode::get_singleton()->select_editor_by_name(p_name);
+	editor->select_editor_by_name(p_name);
 }
 
 Control *EditorInterface::get_editor_main_control() {
-	return EditorNode::get_singleton()->get_main_control();
+	return editor->get_main_control();
 }
 
 void EditorInterface::edit_resource(const Ref<Resource> &p_resource) {
-	EditorNode::get_singleton()->edit_resource(p_resource);
+	editor->edit_resource(p_resource);
 }
 
 void EditorInterface::open_scene_from_path(const String &scene_path) {
-	if (EditorNode::get_singleton()->is_changing_scene()) {
+	if (editor->is_changing_scene()) {
 		return;
 	}
 
-	EditorNode::get_singleton()->open_request(scene_path);
+	editor->open_request(scene_path);
 }
 
 void EditorInterface::reload_scene_from_path(const String &scene_path) {
-	if (EditorNode::get_singleton()->is_changing_scene()) {
+	if (editor->is_changing_scene()) {
 		return;
 	}
 
-	EditorNode::get_singleton()->reload_scene(scene_path);
+	editor->reload_scene(scene_path);
 }
 
 void EditorInterface::play_main_scene() {
-	EditorNode::get_singleton()->run_play();
+	editor->run_play();
 }
 
 void EditorInterface::play_current_scene() {
-	EditorNode::get_singleton()->run_play_current();
+	editor->run_play_current();
 }
 
 void EditorInterface::play_custom_scene(const String &scene_path) {
-	EditorNode::get_singleton()->run_play_custom(scene_path);
+	editor->run_play_custom(scene_path);
 }
 
 void EditorInterface::stop_playing_scene() {
-	EditorNode::get_singleton()->run_stop();
+	editor->run_stop();
 }
 
 bool EditorInterface::is_playing_scene() const {
-	return EditorNode::get_singleton()->is_run_playing();
+	return editor->is_run_playing();
 }
 
 String EditorInterface::get_playing_scene() const {
-	return EditorNode::get_singleton()->get_run_playing_scene();
+	return editor->get_run_playing_scene();
 }
 
 Node *EditorInterface::get_edited_scene_root() {
-	return EditorNode::get_singleton()->get_edited_scene();
+	return editor->get_edited_scene();
 }
 
 Array EditorInterface::get_open_scenes() const {
@@ -227,7 +243,7 @@ String EditorInterface::get_current_path() const {
 }
 
 void EditorInterface::inspect_object(Object *p_obj, const String &p_for_property, bool p_inspector_only) {
-	EditorNode::get_singleton()->push_item(p_obj, p_for_property, p_inspector_only);
+	editor->push_item(p_obj, p_for_property, p_inspector_only);
 }
 
 EditorFileSystem *EditorInterface::get_resource_file_system() {
@@ -235,7 +251,7 @@ EditorFileSystem *EditorInterface::get_resource_file_system() {
 }
 
 EditorSelection *EditorInterface::get_selection() {
-	return EditorNode::get_singleton()->get_editor_selection();
+	return editor->get_editor_selection();
 }
 
 Ref<EditorSettings> EditorInterface::get_editor_settings() {
@@ -247,7 +263,7 @@ EditorResourcePreview *EditorInterface::get_resource_previewer() {
 }
 
 Control *EditorInterface::get_base_control() {
-	return EditorNode::get_singleton()->get_gui_base();
+	return editor->get_gui_base();
 }
 
 float EditorInterface::get_editor_scale() const {
@@ -255,15 +271,15 @@ float EditorInterface::get_editor_scale() const {
 }
 
 void EditorInterface::set_plugin_enabled(const String &p_plugin, bool p_enabled) {
-	EditorNode::get_singleton()->set_addon_plugin_enabled(p_plugin, p_enabled, true);
+	editor->set_addon_plugin_enabled(p_plugin, p_enabled, true);
 }
 
 bool EditorInterface::is_plugin_enabled(const String &p_plugin) const {
-	return EditorNode::get_singleton()->is_addon_plugin_enabled(p_plugin);
+	return editor->is_addon_plugin_enabled(p_plugin);
 }
 
 EditorInspector *EditorInterface::get_inspector() const {
-	return EditorNode::get_singleton()->get_inspector();
+	return editor->get_inspector();
 }
 
 Error EditorInterface::save_scene() {
@@ -279,15 +295,15 @@ Error EditorInterface::save_scene() {
 }
 
 void EditorInterface::save_scene_as(const String &p_scene, bool p_with_preview) {
-	EditorNode::get_singleton()->save_scene_to_path(p_scene, p_with_preview);
+	editor->save_scene_to_path(p_scene, p_with_preview);
 }
 
 void EditorInterface::set_distraction_free_mode(bool p_enter) {
-	EditorNode::get_singleton()->set_distraction_free_mode(p_enter);
+	editor->set_distraction_free_mode(p_enter);
 }
 
 bool EditorInterface::is_distraction_free_mode_enabled() const {
-	return EditorNode::get_singleton()->is_distraction_free_mode_enabled();
+	return editor->is_distraction_free_mode_enabled();
 }
 
 EditorInterface *EditorInterface::singleton = nullptr;
@@ -333,8 +349,9 @@ void EditorInterface::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "distraction_free_mode"), "set_distraction_free_mode", "is_distraction_free_mode_enabled");
 }
 
-EditorInterface::EditorInterface() {
+EditorInterface::EditorInterface(EditorNode *p_editor) {
 	singleton = this;
+	editor = p_editor;
 }
 
 ///////////////////////////////////////////
@@ -363,6 +380,16 @@ ImportDock *EditorDocks::get_import_dock() {
 	return import_dock;
 }
 
+void EditorDocks::add_control(DockSlot p_slot, Control *p_control) {
+	ERR_FAIL_NULL(p_control);
+	editor->add_control_to_dock(EditorNode::DockSlot(p_slot), p_control);
+}
+
+void EditorDocks::remove_control(Control *p_control) {
+	ERR_FAIL_NULL(p_control);
+	editor->remove_control_from_dock(p_control);
+}
+
 void EditorDocks::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_scene_tree_dock"), &EditorDocks::get_scene_tree_dock);
 	ClassDB::bind_method(D_METHOD("get_filesystem_dock"), &EditorDocks::get_filesystem_dock);
@@ -370,10 +397,214 @@ void EditorDocks::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_connection_dock"), &EditorDocks::get_connection_dock);
 	ClassDB::bind_method(D_METHOD("get_inspector_dock"), &EditorDocks::get_inspector_dock);
 	ClassDB::bind_method(D_METHOD("get_import_dock"), &EditorDocks::get_import_dock);
+
+	ClassDB::bind_method(D_METHOD("add_control", "slot", "control"), &EditorDocks::add_control);
+	ClassDB::bind_method(D_METHOD("remove_control", "control"), &EditorDocks::remove_control);
+
+	BIND_ENUM_CONSTANT(DOCK_SLOT_LEFT_UL);
+	BIND_ENUM_CONSTANT(DOCK_SLOT_LEFT_BL);
+	BIND_ENUM_CONSTANT(DOCK_SLOT_LEFT_UR);
+	BIND_ENUM_CONSTANT(DOCK_SLOT_LEFT_BR);
+	BIND_ENUM_CONSTANT(DOCK_SLOT_RIGHT_UL);
+	BIND_ENUM_CONSTANT(DOCK_SLOT_RIGHT_BL);
+	BIND_ENUM_CONSTANT(DOCK_SLOT_RIGHT_UR);
+	BIND_ENUM_CONSTANT(DOCK_SLOT_RIGHT_BR);
+	BIND_ENUM_CONSTANT(DOCK_SLOT_MAX);
+}
+
+void EditorDocks::set_version_control_dock(VBoxContainer *p_dock) {
+	ERR_FAIL_COND(!version_control_dock);
+	version_control_dock = p_dock;
 }
 
 EditorDocks *EditorDocks::singleton = nullptr;
 
-EditorDocks::EditorDocks() {
+EditorDocks::EditorDocks(EditorNode *p_editor) {
 	singleton = this;
+	editor = p_editor;
+}
+
+///////////////////////////////////////////
+
+void EditorBottomPanels::set_output_panel(EditorLog *p_panel) {
+	ERR_FAIL_COND(output_panel);
+	output_panel = p_panel;
+}
+
+void EditorBottomPanels::set_audio_panel(EditorAudioBuses *p_panel) {
+	ERR_FAIL_COND(audio_panel);
+	audio_panel = p_panel;
+}
+
+void EditorBottomPanels::set_animation_panel(AnimationPlayerEditor *p_panel) {
+	ERR_FAIL_COND(animation_panel);
+	animation_panel = p_panel;
+}
+
+void EditorBottomPanels::set_animation_tree_panel(AnimationTreeEditor *p_panel) {
+	ERR_FAIL_COND(animation_tree_panel);
+	animation_tree_panel = p_panel;
+}
+
+void EditorBottomPanels::set_debugger_panel(EditorDebuggerNode *p_panel) {
+	ERR_FAIL_COND(debugger_panel);
+	debugger_panel = p_panel;
+}
+
+void EditorBottomPanels::set_resource_preloader_panel(ResourcePreloaderEditor *p_panel) {
+	ERR_FAIL_COND(resource_preloader_panel);
+	resource_preloader_panel = p_panel;
+}
+
+void EditorBottomPanels::set_find_in_files_panel(FindInFilesPanel *p_panel) {
+	ERR_FAIL_COND(find_in_files_panel);
+	find_in_files_panel = p_panel;
+}
+
+void EditorBottomPanels::set_shader_panel(ShaderEditor *p_panel) {
+	ERR_FAIL_COND(shader_panel);
+	shader_panel = p_panel;
+}
+
+void EditorBottomPanels::set_shader_file_panel(ShaderFileEditor *p_panel) {
+	ERR_FAIL_COND(shader_file_panel);
+	shader_file_panel = p_panel;
+}
+
+void EditorBottomPanels::set_sprite_frames_panel(SpriteFramesEditor *p_panel) {
+	ERR_FAIL_COND(sprite_frames_panel);
+	sprite_frames_panel = p_panel;
+}
+
+void EditorBottomPanels::set_texture_region_panel(TextureRegionEditor *p_panel) {
+	ERR_FAIL_COND(texture_region_panel);
+	texture_region_panel = p_panel;
+}
+
+void EditorBottomPanels::set_theme_panel(ThemeEditor *p_panel) {
+	ERR_FAIL_COND(theme_panel);
+	theme_panel = p_panel;
+}
+
+void EditorBottomPanels::set_tileset_panel(TileSetEditor *p_panel) {
+	ERR_FAIL_COND(tileset_panel);
+	tileset_panel = p_panel;
+}
+
+void EditorBottomPanels::set_version_control_panel(PanelContainer *p_panel) {
+	ERR_FAIL_COND(version_control_panel);
+	version_control_panel = p_panel;
+}
+
+void EditorBottomPanels::set_visual_shader_panel(VisualShaderEditor *p_panel) {
+	ERR_FAIL_COND(visual_shader_panel);
+	visual_shader_panel = p_panel;
+}
+
+EditorLog *EditorBottomPanels::get_output_panel() {
+	return output_panel;
+}
+
+EditorAudioBuses *EditorBottomPanels::get_audio_panel() {
+	return audio_panel;
+}
+
+AnimationPlayerEditor *EditorBottomPanels::get_animation_panel() {
+	return animation_panel;
+}
+
+AnimationTreeEditor *EditorBottomPanels::get_animation_tree_panel() {
+	return animation_tree_panel;
+}
+
+EditorDebuggerNode *EditorBottomPanels::get_debugger_panel() {
+	return debugger_panel;
+}
+
+ResourcePreloaderEditor *EditorBottomPanels::get_resource_preloader_panel() {
+	return resource_preloader_panel;
+}
+
+FindInFilesPanel *EditorBottomPanels::get_find_in_files_panel() {
+	return find_in_files_panel;
+}
+
+ShaderEditor *EditorBottomPanels::get_shader_panel() {
+	return shader_panel;
+}
+
+ShaderFileEditor *EditorBottomPanels::get_shader_file_panel() {
+	return shader_file_panel;
+}
+
+SpriteFramesEditor *EditorBottomPanels::get_sprite_frames_panel() {
+	return sprite_frames_panel;
+}
+
+TextureRegionEditor *EditorBottomPanels::get_texture_region_panel() {
+	return texture_region_panel;
+}
+
+ThemeEditor *EditorBottomPanels::get_theme_panel() {
+	return theme_panel;
+}
+
+TileSetEditor *EditorBottomPanels::get_tileset_panel() {
+	return tileset_panel;
+}
+
+PanelContainer *EditorBottomPanels::get_version_control_panel() {
+	return version_control_panel;
+}
+
+VisualShaderEditor *EditorBottomPanels::get_visual_shader_panel() {
+	return visual_shader_panel;
+}
+
+Button *EditorBottomPanels::add_control(const String p_title, Control *p_control) {
+	ERR_FAIL_NULL_V(p_control, nullptr);
+	return editor->add_bottom_panel_item(p_title, p_control);
+}
+
+void EditorBottomPanels::remove_control(Control *p_control) {
+	ERR_FAIL_NULL(p_control);
+	editor->remove_bottom_panel_item(p_control);
+}
+
+void EditorBottomPanels::make_bottom_panel_item_visible(Control *p_item) {
+	editor->make_bottom_panel_item_visible(p_item);
+}
+
+void EditorBottomPanels::hide_bottom_panel() {
+	editor->hide_bottom_panel();
+}
+
+void EditorBottomPanels::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("get_output_panel"), &EditorBottomPanels::get_output_panel);
+	ClassDB::bind_method(D_METHOD("get_audio_panel"), &EditorBottomPanels::get_audio_panel);
+	ClassDB::bind_method(D_METHOD("get_animation_panel"), &EditorBottomPanels::get_animation_panel);
+	ClassDB::bind_method(D_METHOD("get_animation_tree_panel"), &EditorBottomPanels::get_animation_tree_panel);
+	ClassDB::bind_method(D_METHOD("get_debugger_panel"), &EditorBottomPanels::get_debugger_panel);
+	ClassDB::bind_method(D_METHOD("get_resource_preloader_panel"), &EditorBottomPanels::get_resource_preloader_panel);
+	ClassDB::bind_method(D_METHOD("get_find_in_files_panel"), &EditorBottomPanels::get_find_in_files_panel);
+	ClassDB::bind_method(D_METHOD("get_shader_panel"), &EditorBottomPanels::get_shader_panel);
+	ClassDB::bind_method(D_METHOD("get_sprite_frames_panel"), &EditorBottomPanels::get_sprite_frames_panel);
+	ClassDB::bind_method(D_METHOD("get_texture_region_panel"), &EditorBottomPanels::get_texture_region_panel);
+	ClassDB::bind_method(D_METHOD("get_theme_panel"), &EditorBottomPanels::get_theme_panel);
+	ClassDB::bind_method(D_METHOD("get_tileset_panel"), &EditorBottomPanels::get_tileset_panel);
+	ClassDB::bind_method(D_METHOD("get_version_control_panel"), &EditorBottomPanels::get_version_control_panel);
+	ClassDB::bind_method(D_METHOD("get_visual_shader_panel"), &EditorBottomPanels::get_visual_shader_panel);
+
+	ClassDB::bind_method(D_METHOD("add_control", "title", "control"), &EditorBottomPanels::add_control);
+	ClassDB::bind_method(D_METHOD("remove_control", "control"), &EditorBottomPanels::remove_control);
+
+	ClassDB::bind_method(D_METHOD("make_bottom_panel_item_visible", "control"), &EditorBottomPanels::make_bottom_panel_item_visible);
+	ClassDB::bind_method(D_METHOD("hide_bottom_panel"), &EditorBottomPanels::hide_bottom_panel);
+}
+
+EditorBottomPanels *EditorBottomPanels::singleton = nullptr;
+
+EditorBottomPanels::EditorBottomPanels(EditorNode *p_editor) {
+	singleton = this;
+	editor = p_editor;
 }

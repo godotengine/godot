@@ -70,6 +70,7 @@ private:
 	HashMap<ChangeType, String> change_type_to_strings;
 	HashMap<ChangeType, Color> change_type_to_color;
 
+	// TODO: create a dedicated class
 	VBoxContainer *version_commit_dock;
 	VBoxContainer *commit_box_vbc;
 	HSplitContainer *stage_tools;

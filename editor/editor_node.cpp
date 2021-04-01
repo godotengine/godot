@@ -3748,6 +3748,7 @@ void EditorNode::register_editor_types() {
 	ClassDB::register_class<EditorSyntaxHighlighter>();
 	ClassDB::register_virtual_class<EditorInterface>();
 	ClassDB::register_virtual_class<EditorDocks>();
+	ClassDB::register_virtual_class<EditorBottomPanels>();
 	ClassDB::register_class<EditorExportPlugin>();
 	ClassDB::register_class<EditorResourceConversionPlugin>();
 	ClassDB::register_class<EditorSceneImporter>();
@@ -3764,6 +3765,7 @@ void EditorNode::register_editor_types() {
 	ClassDB::register_class<EditorSceneImporterMeshNode3D>();
 
 	ClassDB::register_virtual_class<FileSystemDock>();
+	ClassDB::register_virtual_class<SceneTreeDock>();
 
 	// FIXME: Is this stuff obsolete, or should it be ported to new APIs?
 	ClassDB::register_class<EditorScenePostImport>();
@@ -6730,9 +6732,10 @@ EditorNode::EditorNode() {
 
 	// Initialize singletons before adding plugins
 
-	EditorInterface *editor_interface = memnew(EditorInterface);
+	EditorInterface *editor_interface = memnew(EditorInterface(this));
 	add_child(editor_interface);
-	EditorDocks *editor_docks = memnew(EditorDocks);
+
+	EditorDocks *editor_docks = memnew(EditorDocks(this));
 	add_child(editor_docks);
 	editor_docks->scene_tree_dock = scene_tree_dock;
 	editor_docks->filesystem_dock = filesystem_dock;
@@ -6740,6 +6743,10 @@ EditorNode::EditorNode() {
 	//	editor_docks->connection_dock = node_dock->connections;
 	editor_docks->inspector_dock = inspector_dock;
 	editor_docks->import_dock = import_dock;
+
+	EditorBottomPanels *editor_bottom_panels = memnew(EditorBottomPanels(this));
+	EditorBottomPanels::get_singleton()->set_output_panel(log);
+	add_child(editor_bottom_panels);
 
 	//plugin stuff
 

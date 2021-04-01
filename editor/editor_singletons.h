@@ -31,13 +31,11 @@
 #ifndef EDITOR_SINGLETONS_H
 #define EDITOR_SINGLETONS_H
 
-#include "editor/editor_resource_preview.h"
-//#include "editor/scene_tree_dock.h"
-//#include "editor/inspector_dock.h"
-//#include "editor/node_dock.h"
 #include "editor/editor_file_system.h"
 #include "editor/editor_inspector.h"
-#include "editor/filesystem_dock.h"
+#include "editor/editor_resource_preview.h"
+#include "scene/gui/button.h"
+#include "scene/gui/panel_container.h"
 #include "scene/main/node.h"
 
 class ScriptEditor;
@@ -49,12 +47,30 @@ class InspectorDock;
 class ImportDock;
 class FileSystemDock;
 
+class EditorAudioBuses;
+class EditorLog;
+class AnimationPlayerEditor;
+class AnimationTreeEditor;
+class EditorDebuggerNode;
+class ResourcePreloaderEditor;
+class FindInFilesPanel;
+class ShaderEditor;
+class ShaderFileEditor;
+class SpriteFramesEditor;
+class TextureRegionEditor;
+class ThemeEditor;
+class TileSetEditor;
+class VisualShaderEditor;
+
+class EditorNode;
 class EditorData;
 class EditorSelection;
 class EditorSettings;
 
 class EditorInterface : public Node {
 	GDCLASS(EditorInterface, Node);
+
+	EditorNode *editor;
 
 protected:
 	static void _bind_methods();
@@ -110,20 +126,40 @@ public:
 	void set_distraction_free_mode(bool p_enter);
 	bool is_distraction_free_mode_enabled() const;
 
-	EditorInterface();
+	EditorInterface(EditorNode *p_editor);
 };
 
 class EditorDocks : public Node {
 	GDCLASS(EditorDocks, Node);
 
+	EditorNode *editor;
+
+public:
+	enum DockSlot {
+		DOCK_SLOT_LEFT_UL,
+		DOCK_SLOT_LEFT_BL,
+		DOCK_SLOT_LEFT_UR,
+		DOCK_SLOT_LEFT_BR,
+		DOCK_SLOT_RIGHT_UL,
+		DOCK_SLOT_RIGHT_BL,
+		DOCK_SLOT_RIGHT_UR,
+		DOCK_SLOT_RIGHT_BR,
+		DOCK_SLOT_MAX
+	};
+
+private:
 	friend class EditorNode;
 
+	// Editor node added
 	SceneTreeDock *scene_tree_dock = nullptr;
 	FileSystemDock *filesystem_dock = nullptr;
 	NodeDock *node_dock = nullptr;
 	ConnectionsDock *connection_dock = nullptr;
 	InspectorDock *inspector_dock = nullptr;
 	ImportDock *import_dock = nullptr;
+
+	// Plugin added
+	VBoxContainer *version_control_dock = nullptr;
 
 protected:
 	static void _bind_methods();
@@ -132,17 +168,96 @@ protected:
 public:
 	static EditorDocks *get_singleton() { return singleton; }
 
+	// Internal setters
+	void set_version_control_dock(VBoxContainer *p_dock);
+
+	// Getters
 	SceneTreeDock *get_scene_tree_dock();
 	FileSystemDock *get_filesystem_dock();
 	NodeDock *get_node_dock();
 	ConnectionsDock *get_connection_dock();
 	InspectorDock *get_inspector_dock();
 	ImportDock *get_import_dock();
+	VBoxContainer *get_version_control_dock();
 
-	void add_dock(String p_name, Control p_control);
-	void remove_dock(String p_name);
+	// Modifiers
+	void add_control(DockSlot p_slot, Control *p_control);
+	void remove_control(Control *p_control);
 
-	EditorDocks();
+	EditorDocks(EditorNode *p_editor);
+};
+
+VARIANT_ENUM_CAST(EditorDocks::DockSlot);
+
+class EditorBottomPanels : public Node {
+	GDCLASS(EditorBottomPanels, Node);
+
+	EditorNode *editor;
+
+	EditorLog *output_panel = nullptr;
+	EditorAudioBuses *audio_panel = nullptr;
+	AnimationPlayerEditor *animation_panel = nullptr;
+	AnimationTreeEditor *animation_tree_panel = nullptr;
+	EditorDebuggerNode *debugger_panel = nullptr;
+	ResourcePreloaderEditor *resource_preloader_panel = nullptr;
+	FindInFilesPanel *find_in_files_panel = nullptr;
+	ShaderEditor *shader_panel = nullptr;
+	ShaderFileEditor *shader_file_panel = nullptr;
+	SpriteFramesEditor *sprite_frames_panel = nullptr;
+	TextureRegionEditor *texture_region_panel = nullptr;
+	ThemeEditor *theme_panel = nullptr;
+	TileSetEditor *tileset_panel = nullptr;
+	PanelContainer *version_control_panel = nullptr;
+	VisualShaderEditor *visual_shader_panel = nullptr;
+
+protected:
+	static void _bind_methods();
+	static EditorBottomPanels *singleton;
+
+public:
+	static EditorBottomPanels *get_singleton() { return singleton; }
+
+	// Internal setters
+	void set_output_panel(EditorLog *p_panel);
+	void set_audio_panel(EditorAudioBuses *p_panel);
+	void set_animation_panel(AnimationPlayerEditor *p_panel);
+	void set_animation_tree_panel(AnimationTreeEditor *p_panel);
+	void set_debugger_panel(EditorDebuggerNode *p_panel);
+	void set_resource_preloader_panel(ResourcePreloaderEditor *p_panel);
+	void set_find_in_files_panel(FindInFilesPanel *p_panel);
+	void set_shader_panel(ShaderEditor *p_panel);
+	void set_shader_file_panel(ShaderFileEditor *p_panel);
+	void set_sprite_frames_panel(SpriteFramesEditor *p_panel);
+	void set_texture_region_panel(TextureRegionEditor *p_panel);
+	void set_theme_panel(ThemeEditor *p_panel);
+	void set_tileset_panel(TileSetEditor *p_panel);
+	void set_version_control_panel(PanelContainer *p_panel);
+	void set_visual_shader_panel(VisualShaderEditor *p_panel);
+
+	// Getters
+	EditorLog *get_output_panel();
+	EditorAudioBuses *get_audio_panel();
+	AnimationPlayerEditor *get_animation_panel();
+	AnimationTreeEditor *get_animation_tree_panel();
+	EditorDebuggerNode *get_debugger_panel();
+	ResourcePreloaderEditor *get_resource_preloader_panel();
+	FindInFilesPanel *get_find_in_files_panel();
+	ShaderEditor *get_shader_panel();
+	ShaderFileEditor *get_shader_file_panel();
+	SpriteFramesEditor *get_sprite_frames_panel();
+	TextureRegionEditor *get_texture_region_panel();
+	ThemeEditor *get_theme_panel();
+	TileSetEditor *get_tileset_panel();
+	PanelContainer *get_version_control_panel();
+	VisualShaderEditor *get_visual_shader_panel();
+
+	// Modifiers
+	Button *add_control(const String p_title, Control *p_control);
+	void remove_control(Control *p_control);
+	void make_bottom_panel_item_visible(Control *p_item);
+	void hide_bottom_panel();
+
+	EditorBottomPanels(EditorNode *p_editor);
 };
 
 #endif // EDITOR_SINGLETONS_H

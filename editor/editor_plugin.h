@@ -89,26 +89,10 @@ public:
 		CONTAINER_PROJECT_SETTING_TAB_RIGHT,
 	};
 
-	enum DockSlot {
-		DOCK_SLOT_LEFT_UL,
-		DOCK_SLOT_LEFT_BL,
-		DOCK_SLOT_LEFT_UR,
-		DOCK_SLOT_LEFT_BR,
-		DOCK_SLOT_RIGHT_UL,
-		DOCK_SLOT_RIGHT_BL,
-		DOCK_SLOT_RIGHT_UR,
-		DOCK_SLOT_RIGHT_BR,
-		DOCK_SLOT_MAX
-	};
-
 	//TODO: send a resource for editing to the editor node?
 
 	void add_control_to_container(CustomControlContainer p_location, Control *p_control);
 	void remove_control_from_container(CustomControlContainer p_location, Control *p_control);
-	Button *add_control_to_bottom_panel(Control *p_control, const String &p_title);
-	void add_control_to_dock(DockSlot p_slot, Control *p_control);
-	void remove_control_from_docks(Control *p_control);
-	void remove_control_from_bottom_panel(Control *p_control);
 
 	void add_tool_menu_item(const String &p_name, const Callable &p_callable);
 	void add_tool_submenu_item(const String &p_name, Object *p_submenu);
@@ -154,14 +138,12 @@ public:
 
 	EditorInterface *get_editor_interface();
 	EditorDocks *get_editor_docks();
+	EditorBottomPanels *get_editor_bottom_panels();
 	ScriptCreateDialog *get_script_create_dialog();
 
 	int update_overlays() const;
 
 	void queue_save_layout();
-
-	void make_bottom_panel_item_visible(Control *p_item);
-	void hide_bottom_panel();
 
 	virtual void restore_global_state();
 	virtual void save_global_state();
@@ -198,7 +180,6 @@ public:
 };
 
 VARIANT_ENUM_CAST(EditorPlugin::CustomControlContainer);
-VARIANT_ENUM_CAST(EditorPlugin::DockSlot);
 
 typedef EditorPlugin *(*EditorPluginCreateFunc)(EditorNode *);
 

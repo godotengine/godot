@@ -52,26 +52,6 @@ void EditorPlugin::remove_autoload_singleton(const String &p_name) {
 	EditorNode::get_singleton()->get_project_settings()->get_autoload_settings()->autoload_remove(p_name);
 }
 
-Button *EditorPlugin::add_control_to_bottom_panel(Control *p_control, const String &p_title) {
-	ERR_FAIL_NULL_V(p_control, nullptr);
-	return EditorNode::get_singleton()->add_bottom_panel_item(p_title, p_control);
-}
-
-void EditorPlugin::add_control_to_dock(DockSlot p_slot, Control *p_control) {
-	ERR_FAIL_NULL(p_control);
-	EditorNode::get_singleton()->add_control_to_dock(EditorNode::DockSlot(p_slot), p_control);
-}
-
-void EditorPlugin::remove_control_from_docks(Control *p_control) {
-	ERR_FAIL_NULL(p_control);
-	EditorNode::get_singleton()->remove_control_from_dock(p_control);
-}
-
-void EditorPlugin::remove_control_from_bottom_panel(Control *p_control) {
-	ERR_FAIL_NULL(p_control);
-	EditorNode::get_singleton()->remove_bottom_panel_item(p_control);
-}
-
 void EditorPlugin::add_control_to_container(CustomControlContainer p_location, Control *p_control) {
 	ERR_FAIL_NULL(p_control);
 
@@ -484,20 +464,16 @@ void EditorPlugin::queue_save_layout() {
 	EditorNode::get_singleton()->save_layout();
 }
 
-void EditorPlugin::make_bottom_panel_item_visible(Control *p_item) {
-	EditorNode::get_singleton()->make_bottom_panel_item_visible(p_item);
-}
-
-void EditorPlugin::hide_bottom_panel() {
-	EditorNode::get_singleton()->hide_bottom_panel();
-}
-
 EditorInterface *EditorPlugin::get_editor_interface() {
 	return EditorInterface::get_singleton();
 }
 
 EditorDocks *EditorPlugin::get_editor_docks() {
 	return EditorDocks::get_singleton();
+}
+
+EditorBottomPanels *EditorPlugin::get_editor_bottom_panels() {
+	return EditorBottomPanels::get_singleton();
 }
 
 ScriptCreateDialog *EditorPlugin::get_script_create_dialog() {
@@ -526,10 +502,6 @@ void EditorPlugin::_notification(int p_what) {
 
 void EditorPlugin::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("add_control_to_container", "container", "control"), &EditorPlugin::add_control_to_container);
-	ClassDB::bind_method(D_METHOD("add_control_to_bottom_panel", "control", "title"), &EditorPlugin::add_control_to_bottom_panel);
-	ClassDB::bind_method(D_METHOD("add_control_to_dock", "slot", "control"), &EditorPlugin::add_control_to_dock);
-	ClassDB::bind_method(D_METHOD("remove_control_from_docks", "control"), &EditorPlugin::remove_control_from_docks);
-	ClassDB::bind_method(D_METHOD("remove_control_from_bottom_panel", "control"), &EditorPlugin::remove_control_from_bottom_panel);
 	ClassDB::bind_method(D_METHOD("remove_control_from_container", "container", "control"), &EditorPlugin::remove_control_from_container);
 	ClassDB::bind_method(D_METHOD("add_tool_menu_item", "name", "callable"), &EditorPlugin::add_tool_menu_item);
 	ClassDB::bind_method(D_METHOD("add_tool_submenu_item", "name", "submenu"), &EditorPlugin::add_tool_submenu_item);
@@ -541,9 +513,6 @@ void EditorPlugin::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("remove_autoload_singleton", "name"), &EditorPlugin::remove_autoload_singleton);
 
 	ClassDB::bind_method(D_METHOD("update_overlays"), &EditorPlugin::update_overlays);
-
-	ClassDB::bind_method(D_METHOD("make_bottom_panel_item_visible", "item"), &EditorPlugin::make_bottom_panel_item_visible);
-	ClassDB::bind_method(D_METHOD("hide_bottom_panel"), &EditorPlugin::hide_bottom_panel);
 
 	ClassDB::bind_method(D_METHOD("get_undo_redo"), &EditorPlugin::_get_undo_redo);
 	ClassDB::bind_method(D_METHOD("queue_save_layout"), &EditorPlugin::queue_save_layout);
@@ -564,6 +533,7 @@ void EditorPlugin::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("get_editor_interface"), &EditorPlugin::get_editor_interface);
 	ClassDB::bind_method(D_METHOD("get_editor_docks"), &EditorPlugin::get_editor_docks);
+	ClassDB::bind_method(D_METHOD("get_editor_bottom_panels"), &EditorPlugin::get_editor_bottom_panels);
 	ClassDB::bind_method(D_METHOD("get_script_create_dialog"), &EditorPlugin::get_script_create_dialog);
 	ClassDB::bind_method(D_METHOD("add_debugger_plugin", "script"), &EditorPlugin::add_debugger_plugin);
 	ClassDB::bind_method(D_METHOD("remove_debugger_plugin", "script"), &EditorPlugin::remove_debugger_plugin);
@@ -610,16 +580,6 @@ void EditorPlugin::_bind_methods() {
 	BIND_ENUM_CONSTANT(CONTAINER_PROPERTY_EDITOR_BOTTOM);
 	BIND_ENUM_CONSTANT(CONTAINER_PROJECT_SETTING_TAB_LEFT);
 	BIND_ENUM_CONSTANT(CONTAINER_PROJECT_SETTING_TAB_RIGHT);
-
-	BIND_ENUM_CONSTANT(DOCK_SLOT_LEFT_UL);
-	BIND_ENUM_CONSTANT(DOCK_SLOT_LEFT_BL);
-	BIND_ENUM_CONSTANT(DOCK_SLOT_LEFT_UR);
-	BIND_ENUM_CONSTANT(DOCK_SLOT_LEFT_BR);
-	BIND_ENUM_CONSTANT(DOCK_SLOT_RIGHT_UL);
-	BIND_ENUM_CONSTANT(DOCK_SLOT_RIGHT_BL);
-	BIND_ENUM_CONSTANT(DOCK_SLOT_RIGHT_UR);
-	BIND_ENUM_CONSTANT(DOCK_SLOT_RIGHT_BR);
-	BIND_ENUM_CONSTANT(DOCK_SLOT_MAX);
 }
 
 EditorPluginCreateFunc EditorPlugins::creation_funcs[MAX_CREATE_FUNCS];

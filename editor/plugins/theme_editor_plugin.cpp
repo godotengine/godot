@@ -2166,11 +2166,11 @@ void ThemeEditorPlugin::make_visible(bool p_visible) {
 	if (p_visible) {
 		theme_editor->set_process(true);
 		button->show();
-		editor->make_bottom_panel_item_visible(theme_editor);
+		EditorBottomPanels::get_singleton()->make_bottom_panel_item_visible(theme_editor);
 	} else {
 		theme_editor->set_process(false);
 		if (theme_editor->is_visible_in_tree()) {
-			editor->hide_bottom_panel();
+			EditorBottomPanels::get_singleton()->hide_bottom_panel();
 		}
 
 		button->hide();
@@ -2182,6 +2182,7 @@ ThemeEditorPlugin::ThemeEditorPlugin(EditorNode *p_node) {
 	theme_editor = memnew(ThemeEditor);
 	theme_editor->set_custom_minimum_size(Size2(0, 200) * EDSCALE);
 
-	button = editor->add_bottom_panel_item(TTR("Theme"), theme_editor);
+	button = EditorBottomPanels::get_singleton()->add_control(TTR("Theme"), theme_editor);
+	EditorBottomPanels::get_singleton()->set_theme_panel(theme_editor);
 	button->hide();
 }

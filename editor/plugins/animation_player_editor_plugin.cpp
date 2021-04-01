@@ -673,7 +673,7 @@ void AnimationPlayerEditor::set_state(const Dictionary &p_state) {
 		if (Object::cast_to<AnimationPlayer>(n) && EditorNode::get_singleton()->get_editor_selection()->is_selected(n)) {
 			player = Object::cast_to<AnimationPlayer>(n);
 			_update_player();
-			editor->make_bottom_panel_item_visible(this);
+			EditorBottomPanels::get_singleton()->make_bottom_panel_item_visible(this);
 			set_process(true);
 			ensure_visibility();
 
@@ -1783,7 +1783,7 @@ bool AnimationPlayerEditorPlugin::handles(Object *p_object) const {
 
 void AnimationPlayerEditorPlugin::make_visible(bool p_visible) {
 	if (p_visible) {
-		editor->make_bottom_panel_item_visible(anim_editor);
+		EditorBottomPanels::get_singleton()->make_bottom_panel_item_visible(anim_editor);
 		anim_editor->set_process(true);
 		anim_editor->ensure_visibility();
 	}
@@ -1793,7 +1793,8 @@ AnimationPlayerEditorPlugin::AnimationPlayerEditorPlugin(EditorNode *p_node) {
 	editor = p_node;
 	anim_editor = memnew(AnimationPlayerEditor(editor, this));
 	anim_editor->set_undo_redo(EditorNode::get_undo_redo());
-	editor->add_bottom_panel_item(TTR("Animation"), anim_editor);
+	EditorBottomPanels::get_singleton()->add_control(TTR("Animation"), anim_editor);
+	EditorBottomPanels::get_singleton()->set_animation_panel(anim_editor);
 }
 
 AnimationPlayerEditorPlugin::~AnimationPlayerEditorPlugin() {
