@@ -10,6 +10,10 @@ precision highp float;
 precision highp int;
 #endif
 
+#if defined(ENSURE_CORRECT_NORMALS)
+#define INVERSE_USED
+#endif
+
 /* clang-format on */
 #include "stdlib.glsl"
 /* clang-format off */
@@ -365,7 +369,12 @@ void main() {
 
 #if !defined(SKIP_TRANSFORM_USED) && defined(VERTEX_WORLD_COORDS_USED)
 	vertex = world_matrix * vertex;
+#if defined(ENSURE_CORRECT_NORMALS)
+	mat3 normal_matrix = mat3(transpose(inverse(world_matrix)));
+	normal = normal_matrix * normal;
+#else
 	normal = normalize((world_matrix * vec4(normal, 0.0)).xyz);
+#endif
 #if defined(ENABLE_TANGENT_INTERP) || defined(ENABLE_NORMALMAP)
 
 	tangent = normalize((world_matrix * vec4(tangent, 0.0)).xyz);
@@ -439,7 +448,12 @@ VERTEX_SHADER_CODE
 	// use local coordinates
 #if !defined(SKIP_TRANSFORM_USED) && !defined(VERTEX_WORLD_COORDS_USED)
 	vertex = modelview * vertex;
+#if defined(ENSURE_CORRECT_NORMALS)
+	mat3 normal_matrix = mat3(transpose(inverse(modelview)));
+	normal = normal_matrix * normal;
+#else
 	normal = normalize((modelview * vec4(normal, 0.0)).xyz);
+#endif
 
 #if defined(ENABLE_TANGENT_INTERP) || defined(ENABLE_NORMALMAP)
 	tangent = normalize((modelview * vec4(tangent, 0.0)).xyz);

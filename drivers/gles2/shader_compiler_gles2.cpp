@@ -1073,9 +1073,7 @@ ShaderCompilerGLES2::ShaderCompilerGLES2() {
 
 	actions[VS::SHADER_SPATIAL].render_mode_defines["skip_vertex_transform"] = "#define SKIP_TRANSFORM_USED\n";
 	actions[VS::SHADER_SPATIAL].render_mode_defines["world_vertex_coords"] = "#define VERTEX_WORLD_COORDS_USED\n";
-
-	// Defined in GLES3, could be implemented in GLES2 too if there's a need for it
-	//actions[VS::SHADER_SPATIAL].render_mode_defines["ensure_correct_normals"] = "#define ENSURE_CORRECT_NORMALS\n";
+	actions[VS::SHADER_SPATIAL].render_mode_defines["ensure_correct_normals"] = "#define ENSURE_CORRECT_NORMALS\n";
 	// Defined in GLES3, might not be possible in GLES2 as gl_FrontFacing is not available
 	//actions[VS::SHADER_SPATIAL].render_mode_defines["cull_front"] = "#define DO_SIDE_CHECK\n";
 	//actions[VS::SHADER_SPATIAL].render_mode_defines["cull_disabled"] = "#define DO_SIDE_CHECK\n";
