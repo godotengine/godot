@@ -353,7 +353,7 @@
 		</member>
 		<member name="subsurf_scatter_transmittance_texture" type="Texture2D" setter="set_texture" getter="get_texture">
 		</member>
-		<member name="texture_filter" type="int" setter="set_texture_filter" getter="get_texture_filter" enum="BaseMaterial3D.TextureFilter" default="3">
+		<member name="texture_filter" type="int" setter="set_texture_filter" getter="get_texture_filter" enum="BaseMaterial3D.TextureFilter" default="5">
 			Filter flags for the texture. See [enum TextureFilter] for options.
 		</member>
 		<member name="texture_repeat" type="bool" setter="set_flag" getter="get_flag" default="true">
