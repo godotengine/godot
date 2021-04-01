@@ -105,6 +105,7 @@ public:
 			list.push_back("dmg");
 		}
 		list.push_back("zip");
+		list.push_back("app");
 		return list;
 	}
 	virtual Error export_project(const Ref<EditorExportPreset> &p_preset, bool p_debug, const String &p_path, int p_flags = 0) override;
@@ -606,11 +607,26 @@ Error EditorExportPlatformOSX::export_project(const Ref<EditorExportPreset> &p_p
 
 	pkg_name = OS::get_singleton()->get_safe_dir_name(pkg_name);
 
-	String export_format = use_dmg() && p_path.ends_with("dmg") ? "dmg" : "zip";
+	String export_format;
+	if (use_dmg() && p_path.ends_with("dmg")) {
+		export_format = "dmg";
+	} else if (p_path.ends_with("zip")) {
+		export_format = "zip";
+	} else if (p_path.ends_with("app")) {
+		export_format = "app";
+	} else {
+		EditorNode::add_io_error("Invalid export format");
+		return ERR_CANT_CREATE;
+	}
 
 	// Create our application bundle.
 	String tmp_app_dir_name = pkg_name + ".app";
-	String tmp_app_path_name = EditorPaths::get_singleton()->get_cache_dir().plus_file(tmp_app_dir_name);
+	String tmp_app_path_name;
+	if (export_format == "app") {
+		tmp_app_path_name = p_path;
+	} else {
+		tmp_app_path_name = EditorPaths::get_singleton()->get_cache_dir().plus_file(tmp_app_dir_name);
+	}
 	print_line("Exporting to " + tmp_app_path_name);
 
 	Error err = OK;
@@ -618,6 +634,12 @@ Error EditorExportPlatformOSX::export_project(const Ref<EditorExportPreset> &p_p
 	DirAccessRef tmp_app_dir = DirAccess::create_for_path(tmp_app_path_name);
 	if (!tmp_app_dir) {
 		err = ERR_CANT_CREATE;
+	}
+
+	if (DirAccess::exists(tmp_app_dir_name)) {
+		if (tmp_app_dir->change_dir(tmp_app_path_name) == OK) {
+			tmp_app_dir->erase_contents_recursive();
+		}
 	}
 
 	// Create our folder structure.
@@ -945,7 +967,7 @@ Error EditorExportPlatformOSX::export_project(const Ref<EditorExportPreset> &p_p
 				}
 				err = _code_sign(p_preset, p_path, ent_path);
 			}
-		} else {
+		} else if (export_format == "zip") {
 			// Create ZIP.
 			if (err == OK) {
 				if (ep.step("Making ZIP", 3)) {
@@ -966,7 +988,7 @@ Error EditorExportPlatformOSX::export_project(const Ref<EditorExportPreset> &p_p
 		}
 
 		bool noto_enabled = p_preset->get("notarization/enable");
-		if (err == OK && noto_enabled) {
+		if (err == OK && noto_enabled && (export_format != "app")) {
 			if (ep.step("Sending archive for notarization", 4)) {
 				return ERR_SKIP;
 			}
@@ -974,10 +996,13 @@ Error EditorExportPlatformOSX::export_project(const Ref<EditorExportPreset> &p_p
 		}
 
 		// Clean up temporary .app dir.
-		tmp_app_dir->change_dir(tmp_app_path_name);
-		tmp_app_dir->erase_contents_recursive();
-		tmp_app_dir->change_dir("..");
-		tmp_app_dir->remove(tmp_app_dir_name);
+		if (export_format != "app") {
+			if (tmp_app_dir->change_dir(tmp_app_path_name) == OK) {
+				tmp_app_dir->erase_contents_recursive();
+				tmp_app_dir->change_dir("..");
+				tmp_app_dir->remove(tmp_app_dir_name);
+			}
+		}
 	}
 
 	return err;
