@@ -267,7 +267,7 @@ private:
 	uint32_t saved_version = 0;
 
 	int max_chars = 0;
-	bool readonly = true; // Initialise to opposite first, so we get past the early-out in set_readonly.
+	bool editable = false; // Initialise to opposite first, so we get past the early-out in set_editable.
 	bool indent_using_spaces = false;
 	int indent_size = 4;
 	String space_indent = "    ";
@@ -711,8 +711,8 @@ public:
 	int get_selection_line() const;
 	int get_selection_column() const;
 
-	void set_readonly(bool p_readonly);
-	bool is_readonly() const;
+	void set_editable(bool p_editable);
+	bool is_editable() const;
 
 	void set_max_chars(int p_max_chars);
 	int get_max_chars() const;
