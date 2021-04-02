@@ -81,10 +81,16 @@
 			<description>
 				Returns the viewport's texture.
 				[b]Note:[/b] Due to the way OpenGL works, the resulting [ViewportTexture] is flipped vertically. You can use [method Image.flip_y] on the result of [method Texture2D.get_image] to flip it back, for example:
-				[codeblock]
+				[codeblocks]
+				[gdscript]
 				var img = get_viewport().get_texture().get_image()
 				img.flip_y()
-				[/codeblock]
+				[/gdscript]
+				[csharp]
+				Image img = GetViewport().GetTexture().GetImage();
+				img.FlipY();
+				[/csharp]
+				[/codeblocks]
 			</description>
 		</method>
 		<method name="get_viewport_rid" qualifiers="const">
