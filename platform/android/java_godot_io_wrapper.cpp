@@ -126,7 +126,7 @@ int GodotIOJavaWrapper::get_screen_dpi() {
 }
 
 float GodotIOJavaWrapper::get_screen_refresh_rate() {
-	if(_get_refresh_rate) {
+	if (_get_refresh_rate) {
 		JNIEnv *env = get_jni_env();
 		ERR_FAIL_COND_V(env == nullptr, 60.0);
 		return env->CallFloatMethod(godot_io_instance, _get_refresh_rate);
