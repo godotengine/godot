@@ -903,6 +903,8 @@ void RasterizerCanvasGLES3::render_batches(Item::Command *const *p_commands, Ite
 								amount = multi_mesh->size;
 							}
 
+							glVertexAttrib4f(VS::ARRAY_COLOR, 1.0, 1.0, 1.0, 1.0);
+
 							for (int j = 0; j < mesh_data->surfaces.size(); j++) {
 								RasterizerStorageGLES3::Surface *s = mesh_data->surfaces[j];
 								// materials are ignored in 2D meshes, could be added but many things (ie, lighting mode, reading from screen, etc) would break as they are not meant be set up at this point of drawing
