@@ -567,7 +567,6 @@
 			</argument>
 			<description>
 				Return's the screen refresh rate.
-				[b]Note:[/b] On macOS and iPhone, this will always be 60.
 			</description>
 		</method>
 		<method name="screen_get_scale" qualifiers="const">
