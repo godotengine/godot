@@ -32,6 +32,7 @@
 
 #include "core/global_constants.h"
 #include "core/input_map.h"
+#include "core/os/input.h"
 #include "core/os/keyboard.h"
 #include "core/project_settings.h"
 #include "core/translation.h"
@@ -81,6 +82,8 @@ static const char *_axis_names[JOY_AXIS_MAX * 2] = {
 	"", " (L2)",
 	"", " (R2)"
 };
+
+float _last_axis_reading[JOY_AXIS_MAX] = { 0.0f };
 
 void ProjectSettingsEditor::_unhandled_input(const Ref<InputEvent> &p_event) {
 
@@ -259,6 +262,8 @@ void ProjectSettingsEditor::_device_input_add() {
 	Dictionary action = old_val.duplicate();
 	Array events = action["events"];
 
+	joypad_capture_timer->stop();
+
 	switch (add_type) {
 
 		case INPUT_MOUSE_BUTTON: {
@@ -344,6 +349,10 @@ void ProjectSettingsEditor::_device_input_add() {
 	undo_redo->commit_action();
 
 	_show_last_added(ie, name);
+}
+
+void ProjectSettingsEditor::_device_input_cancel() {
+	joypad_capture_timer->stop();
 }
 
 void ProjectSettingsEditor::_set_current_device(int i_device) {
@@ -476,6 +485,7 @@ void ProjectSettingsEditor::_add_item(int p_item, Ref<InputEvent> p_exiting_even
 		case INPUT_MOUSE_BUTTON: {
 
 			device_index_label->set_text(TTR("Mouse Button Index:"));
+			capture_button->set_visible(false);
 			device_index->clear();
 			device_index->add_item(TTR("Left Button"));
 			device_index->add_item(TTR("Right Button"));
@@ -502,6 +512,8 @@ void ProjectSettingsEditor::_add_item(int p_item, Ref<InputEvent> p_exiting_even
 		case INPUT_JOY_MOTION: {
 
 			device_index_label->set_text(TTR("Joypad Axis Index:"));
+			capture_button->set_visible(true);
+			capture_button->set_pressed(false);
 			device_index->clear();
 			for (int i = 0; i < JOY_AXIS_MAX * 2; i++) {
 
@@ -519,11 +531,16 @@ void ProjectSettingsEditor::_add_item(int p_item, Ref<InputEvent> p_exiting_even
 				_set_current_device(0);
 				device_input->get_ok()->set_text(TTR("Add"));
 			}
+			for (int i = 0; i < JOY_AXIS_MAX; ++i) {
+				_last_axis_reading[i] = Input::get_singleton()->get_joy_axis(_get_current_device(), i);
+			}
 
 		} break;
 		case INPUT_JOY_BUTTON: {
 
 			device_index_label->set_text(TTR("Joypad Button Index:"));
+			capture_button->set_visible(true);
+			capture_button->set_pressed(false);
 			device_index->clear();
 
 			for (int i = 0; i < JOY_BUTTON_MAX; i++) {
@@ -1713,6 +1730,38 @@ void ProjectSettingsEditor::_editor_restart_close() {
 	restart_container->hide();
 }
 
+void ProjectSettingsEditor::_joypad_capture_timeout() {
+	if (add_type == INPUT_JOY_BUTTON) {
+		for (int i = 0; i < JOY_BUTTON_MAX; i++) {
+			if (Input::get_singleton()->is_joy_button_pressed(_get_current_device(), i)) {
+				device_index->select(i);
+				break;
+			}
+		}
+		return;
+	} else if (add_type == INPUT_JOY_MOTION) {
+		for (int i = 0; i < JOY_AXIS_MAX; i++) {
+			float axisValue = Input::get_singleton()->get_joy_axis(_get_current_device(), i);
+			if (ABS(axisValue - _last_axis_reading[i]) > 0.1f) {
+				if (axisValue < -0.75f) {
+					device_index->select(i * 2);
+				} else if (axisValue > 0.75f) {
+					device_index->select(i * 2 + 1);
+				}
+			}
+			_last_axis_reading[i] = axisValue;
+		}
+		return;
+	}
+}
+
+void ProjectSettingsEditor::_capture_button_toggled(bool pressed) {
+	if (pressed)
+		joypad_capture_timer->start();
+	else
+		joypad_capture_timer->stop();
+}
+
 void ProjectSettingsEditor::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("_unhandled_input"), &ProjectSettingsEditor::_unhandled_input);
@@ -1761,6 +1810,10 @@ void ProjectSettingsEditor::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_editor_restart_request"), &ProjectSettingsEditor::_editor_restart_request);
 	ClassDB::bind_method(D_METHOD("_editor_restart"), &ProjectSettingsEditor::_editor_restart);
 	ClassDB::bind_method(D_METHOD("_editor_restart_close"), &ProjectSettingsEditor::_editor_restart_close);
+
+	ClassDB::bind_method(D_METHOD("_device_input_cancel"), &ProjectSettingsEditor::_device_input_cancel);
+	ClassDB::bind_method(D_METHOD("_joypad_capture_timeout"), &ProjectSettingsEditor::_joypad_capture_timeout);
+	ClassDB::bind_method(D_METHOD("_capture_button_toggled"), &ProjectSettingsEditor::_capture_button_toggled);
 
 	ClassDB::bind_method(D_METHOD("get_tabs"), &ProjectSettingsEditor::get_tabs);
 
@@ -1955,6 +2008,12 @@ ProjectSettingsEditor::ProjectSettingsEditor(EditorData *p_data) {
 	press_a_key->set_focus_mode(FOCUS_ALL);
 	add_child(press_a_key);
 
+	joypad_capture_timer = memnew(Timer);
+	add_child(joypad_capture_timer);
+	joypad_capture_timer->set_one_shot(false);
+	joypad_capture_timer->set_wait_time(.1);
+	joypad_capture_timer->connect("timeout", this, "_joypad_capture_timeout");
+
 	l = memnew(Label);
 	l->set_text(TTR("Press a Key..."));
 	l->set_anchors_and_margins_preset(Control::PRESET_WIDE);
@@ -1971,12 +2030,18 @@ ProjectSettingsEditor::ProjectSettingsEditor(EditorData *p_data) {
 	add_child(device_input);
 	device_input->get_ok()->set_text(TTR("Add"));
 	device_input->connect("confirmed", this, "_device_input_add");
+	device_input->get_cancel()->connect("pressed", this, "_device_input_cancel");
 
-	hbc = memnew(HBoxContainer);
-	device_input->add_child(hbc);
+	vbc = memnew(VBoxContainer);
+	device_input->add_child(vbc);
+
+	HBoxContainer *row_1 = memnew(HBoxContainer);
+	vbc->add_child(row_1);
+	HBoxContainer *row_2 = memnew(HBoxContainer);
+	vbc->add_child(row_2);
 
 	VBoxContainer *vbc_left = memnew(VBoxContainer);
-	hbc->add_child(vbc_left);
+	row_1->add_child(vbc_left);
 
 	l = memnew(Label);
 	l->set_text(TTR("Device:"));
@@ -1989,7 +2054,7 @@ ProjectSettingsEditor::ProjectSettingsEditor(EditorData *p_data) {
 	vbc_left->add_child(device_id);
 
 	VBoxContainer *vbc_right = memnew(VBoxContainer);
-	hbc->add_child(vbc_right);
+	row_1->add_child(vbc_right);
 	vbc_right->set_h_size_flags(SIZE_EXPAND_FILL);
 
 	l = memnew(Label);
@@ -2001,6 +2066,13 @@ ProjectSettingsEditor::ProjectSettingsEditor(EditorData *p_data) {
 	device_index->set_clip_text(true);
 
 	vbc_right->add_child(device_index);
+
+	capture_button = memnew(CheckButton);
+	capture_button->set_text(TTR("Capture"));
+	capture_button->set_h_size_flags(SIZE_SHRINK_CENTER);
+	capture_button->set_visible(false);
+	capture_button->connect("toggled", this, "_capture_button_toggled");
+	vbc_right->add_child(capture_button);
 
 	setting = false;
 
