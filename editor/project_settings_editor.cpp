@@ -1743,9 +1743,12 @@ void ProjectSettingsEditor::_joypad_capture_timeout() {
 		for (int i = 0; i < JOY_AXIS_MAX; i++) {
 			float axisValue = Input::get_singleton()->get_joy_axis(_get_current_device(), i);
 			if (ABS(axisValue - _last_axis_reading[i]) > 0.1f) {
-				if (axisValue < -0.75f) {
+				// Only choose the axis if it has been pushed almost all the way through.
+				const float axis_threshold = 0.75;
+				
+				if (axisValue < -axis_threshold) {
 					device_index->select(i * 2);
-				} else if (axisValue > 0.75f) {
+				} else if (axisValue > axis_threshold) {
 					device_index->select(i * 2 + 1);
 				}
 			}
