@@ -99,6 +99,8 @@ Ref<CameraFeed> CameraServer::get_feed_by_id(int p_id) {
 };
 
 void CameraServer::add_feed(const Ref<CameraFeed> &p_feed) {
+	ERR_FAIL_COND(p_feed.is_null());
+
 	// add our feed
 	feeds.push_back(p_feed);
 
