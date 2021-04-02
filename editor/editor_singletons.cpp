@@ -30,17 +30,21 @@
 
 #include "editor_singletons.h"
 
-#include "editor/editor_node.h"
-#include "editor/editor_log.h"
 #include "editor/editor_audio_buses.h"
-#include "editor/find_in_files.h"
+#include "editor/editor_log.h"
+#include "editor/editor_node.h"
 #include "editor/filesystem_dock.h"
+#include "editor/find_in_files.h"
 #include "editor/import_dock.h"
 #include "editor/node_dock.h"
 #include "editor/plugins/animation_player_editor_plugin.h"
 #include "editor/plugins/animation_tree_editor_plugin.h"
+#include "editor/plugins/asset_library_editor_plugin.h"
+#include "editor/plugins/canvas_item_editor_plugin.h"
 #include "editor/plugins/editor_debugger_plugin.h"
+#include "editor/plugins/node_3d_editor_plugin.h"
 #include "editor/plugins/resource_preloader_editor_plugin.h"
+#include "editor/plugins/script_editor_plugin.h"
 #include "editor/plugins/shader_editor_plugin.h"
 #include "editor/plugins/shader_file_editor_plugin.h"
 #include "editor/plugins/sprite_frames_editor_plugin.h"
@@ -226,10 +230,6 @@ Array EditorInterface::get_open_scenes() const {
 	return ret;
 }
 
-ScriptEditor *EditorInterface::get_script_editor() {
-	return ScriptEditor::get_singleton();
-}
-
 void EditorInterface::select_file(const String &p_file) {
 	EditorDocks::get_singleton()->get_filesystem_dock()->select_file(p_file);
 }
@@ -312,7 +312,6 @@ void EditorInterface::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("inspect_object", "object", "for_property", "inspector_only"), &EditorInterface::inspect_object, DEFVAL(String()), DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("get_selection"), &EditorInterface::get_selection);
 	ClassDB::bind_method(D_METHOD("get_editor_settings"), &EditorInterface::get_editor_settings);
-	ClassDB::bind_method(D_METHOD("get_script_editor"), &EditorInterface::get_script_editor);
 	ClassDB::bind_method(D_METHOD("get_base_control"), &EditorInterface::get_base_control);
 	ClassDB::bind_method(D_METHOD("get_editor_scale"), &EditorInterface::get_editor_scale);
 	ClassDB::bind_method(D_METHOD("edit_resource", "resource"), &EditorInterface::edit_resource);
@@ -605,6 +604,72 @@ void EditorBottomPanels::_bind_methods() {
 EditorBottomPanels *EditorBottomPanels::singleton = nullptr;
 
 EditorBottomPanels::EditorBottomPanels(EditorNode *p_editor) {
+	singleton = this;
+	editor = p_editor;
+}
+
+///////////////////////////////////////////
+
+void EditorWorkspaces::set_canvas_item_workspace(CanvasItemEditor *p_panel) {
+	ERR_FAIL_COND(canvas_item_workspace);
+	canvas_item_workspace = p_panel;
+}
+
+void EditorWorkspaces::set_node_3d_workspace(Node3DEditor *p_panel) {
+	ERR_FAIL_COND(node_3d_workspace);
+	node_3d_workspace = p_panel;
+}
+
+void EditorWorkspaces::set_script_workspace(ScriptEditor *p_panel) {
+	ERR_FAIL_COND(script_workspace);
+	script_workspace = p_panel;
+}
+
+void EditorWorkspaces::set_asset_library_workspace(EditorAssetLibrary *p_panel) {
+	ERR_FAIL_COND(asset_library_workspace);
+	asset_library_workspace = p_panel;
+}
+
+CanvasItemEditor *EditorWorkspaces::get_canvas_item_workspace() {
+	return canvas_item_workspace;
+}
+
+Node3DEditor *EditorWorkspaces::get_node_3d_workspace() {
+	return node_3d_workspace;
+}
+
+ScriptEditor *EditorWorkspaces::get_script_workspace() {
+	return script_workspace;
+}
+
+EditorAssetLibrary *EditorWorkspaces::get_asset_library_workspace() {
+	return asset_library_workspace;
+}
+
+void EditorWorkspaces::add_control(Control *p_control) {
+	ERR_FAIL_NULL(p_control);
+	ERR_FAIL_COND(p_control->get_parent());
+	editor->get_main_control()->add_child(p_control);
+}
+
+void EditorWorkspaces::remove_control(Control *p_control) {
+	ERR_FAIL_COND(p_control->get_parent() != editor->get_main_control());
+	p_control->get_parent()->remove_child(p_control);
+}
+
+void EditorWorkspaces::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("get_canvas_item_workspace"), &EditorWorkspaces::get_canvas_item_workspace);
+	ClassDB::bind_method(D_METHOD("get_node_3d_workspace"), &EditorWorkspaces::get_node_3d_workspace);
+	ClassDB::bind_method(D_METHOD("get_script_workspace"), &EditorWorkspaces::get_script_workspace);
+	ClassDB::bind_method(D_METHOD("get_asset_library_workspace"), &EditorWorkspaces::get_asset_library_workspace);
+
+	ClassDB::bind_method(D_METHOD("add_control", "title", "control"), &EditorWorkspaces::add_control);
+	ClassDB::bind_method(D_METHOD("remove_control", "control"), &EditorWorkspaces::remove_control);
+}
+
+EditorWorkspaces *EditorWorkspaces::singleton = nullptr;
+
+EditorWorkspaces::EditorWorkspaces(EditorNode *p_editor) {
 	singleton = this;
 	editor = p_editor;
 }

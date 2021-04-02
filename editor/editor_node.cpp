@@ -3749,6 +3749,7 @@ void EditorNode::register_editor_types() {
 	ClassDB::register_virtual_class<EditorInterface>();
 	ClassDB::register_virtual_class<EditorDocks>();
 	ClassDB::register_virtual_class<EditorBottomPanels>();
+	ClassDB::register_virtual_class<EditorWorkspaces>();
 	ClassDB::register_class<EditorExportPlugin>();
 	ClassDB::register_class<EditorResourceConversionPlugin>();
 	ClassDB::register_class<EditorSceneImporter>();
@@ -6748,6 +6749,9 @@ EditorNode::EditorNode() {
 	EditorBottomPanels::get_singleton()->set_output_panel(log);
 	add_child(editor_bottom_panels);
 
+	EditorWorkspaces *editor_workspaces = memnew(EditorWorkspaces(this));
+	add_child(editor_workspaces);
+
 	//plugin stuff
 
 	add_editor_plugin(memnew(DebuggerEditorPlugin(this, debug_menu)));
@@ -6786,7 +6790,7 @@ EditorNode::EditorNode() {
 	TextEditor::register_editor();
 
 	if (StreamPeerSSL::is_available()) {
-		add_editor_plugin(memnew(AssetLibraryEditorPlugin(this)));
+		add_editor_plugin(memnew(AssetLibraryEditorPlugin));
 	} else {
 		WARN_PRINT("Asset Library not available, as it requires SSL to work.");
 	}

@@ -38,30 +38,6 @@
 #include "scene/gui/panel_container.h"
 #include "scene/main/node.h"
 
-class ScriptEditor;
-
-class SceneTreeDock;
-class NodeDock;
-class ConnectionsDock;
-class InspectorDock;
-class ImportDock;
-class FileSystemDock;
-
-class EditorAudioBuses;
-class EditorLog;
-class AnimationPlayerEditor;
-class AnimationTreeEditor;
-class EditorDebuggerNode;
-class ResourcePreloaderEditor;
-class FindInFilesPanel;
-class ShaderEditor;
-class ShaderFileEditor;
-class SpriteFramesEditor;
-class TextureRegionEditor;
-class ThemeEditor;
-class TileSetEditor;
-class VisualShaderEditor;
-
 class EditorNode;
 class EditorData;
 class EditorSelection;
@@ -95,7 +71,6 @@ public:
 
 	Node *get_edited_scene_root();
 	Array get_open_scenes() const;
-	ScriptEditor *get_script_editor();
 
 	void select_file(const String &p_file);
 	String get_selected_path() const;
@@ -129,10 +104,15 @@ public:
 	EditorInterface(EditorNode *p_editor);
 };
 
+class SceneTreeDock;
+class NodeDock;
+class ConnectionsDock;
+class InspectorDock;
+class ImportDock;
+class FileSystemDock;
+
 class EditorDocks : public Node {
 	GDCLASS(EditorDocks, Node);
-
-	EditorNode *editor;
 
 public:
 	enum DockSlot {
@@ -150,7 +130,9 @@ public:
 private:
 	friend class EditorNode;
 
-	// Editor node added
+	EditorNode *editor;
+
+	// EditorNode added
 	SceneTreeDock *scene_tree_dock = nullptr;
 	FileSystemDock *filesystem_dock = nullptr;
 	NodeDock *node_dock = nullptr;
@@ -188,6 +170,21 @@ public:
 };
 
 VARIANT_ENUM_CAST(EditorDocks::DockSlot);
+
+class EditorAudioBuses;
+class EditorLog;
+class AnimationPlayerEditor;
+class AnimationTreeEditor;
+class EditorDebuggerNode;
+class ResourcePreloaderEditor;
+class FindInFilesPanel;
+class ShaderEditor;
+class ShaderFileEditor;
+class SpriteFramesEditor;
+class TextureRegionEditor;
+class ThemeEditor;
+class TileSetEditor;
+class VisualShaderEditor;
 
 class EditorBottomPanels : public Node {
 	GDCLASS(EditorBottomPanels, Node);
@@ -258,6 +255,47 @@ public:
 	void hide_bottom_panel();
 
 	EditorBottomPanels(EditorNode *p_editor);
+};
+
+class CanvasItemEditor;
+class Node3DEditor;
+class ScriptEditor;
+class EditorAssetLibrary;
+
+class EditorWorkspaces : public Node {
+	GDCLASS(EditorWorkspaces, Node);
+
+	EditorNode *editor;
+
+	CanvasItemEditor *canvas_item_workspace = nullptr;
+	Node3DEditor *node_3d_workspace = nullptr;
+	ScriptEditor *script_workspace = nullptr;
+	EditorAssetLibrary *asset_library_workspace = nullptr;
+
+protected:
+	static void _bind_methods();
+	static EditorWorkspaces *singleton;
+
+public:
+	static EditorWorkspaces *get_singleton() { return singleton; }
+
+	// Internal setters
+	void set_canvas_item_workspace(CanvasItemEditor *p_panel);
+	void set_node_3d_workspace(Node3DEditor *p_panel);
+	void set_script_workspace(ScriptEditor *p_panel);
+	void set_asset_library_workspace(EditorAssetLibrary *p_panel);
+
+	// Getters
+	CanvasItemEditor *get_canvas_item_workspace();
+	Node3DEditor *get_node_3d_workspace();
+	ScriptEditor *get_script_workspace();
+	EditorAssetLibrary *get_asset_library_workspace();
+
+	// Modifiers
+	void add_control(Control *p_control);
+	void remove_control(Control *p_control);
+
+	EditorWorkspaces(EditorNode *p_editor);
 };
 
 #endif // EDITOR_SINGLETONS_H

@@ -7335,8 +7335,8 @@ Node3DEditorPlugin::Node3DEditorPlugin(EditorNode *p_node) {
 	editor = p_node;
 	spatial_editor = memnew(Node3DEditor(p_node));
 	spatial_editor->set_v_size_flags(Control::SIZE_EXPAND_FILL);
-	editor->get_main_control()->add_child(spatial_editor);
-
+	EditorWorkspaces::get_singleton()->add_control(spatial_editor);
+	EditorWorkspaces::get_singleton()->set_node_3d_workspace(spatial_editor);
 	spatial_editor->hide();
 	spatial_editor->connect("transform_key_request", Callable(EditorDocks::get_singleton()->get_inspector_dock(), "_transform_keyed"));
 }

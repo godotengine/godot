@@ -139,6 +139,8 @@ public:
 	EditorInterface *get_editor_interface();
 	EditorDocks *get_editor_docks();
 	EditorBottomPanels *get_editor_bottom_panels();
+	EditorWorkspaces *get_editor_workspaces();
+
 	ScriptCreateDialog *get_script_create_dialog();
 
 	int update_overlays() const;
