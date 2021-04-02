@@ -2830,6 +2830,9 @@ RenderingServer::RenderingServer() {
 	GLOBAL_DEF_RST("rendering/textures/default_filters/anisotropic_filtering_level", 2);
 	ProjectSettings::get_singleton()->set_custom_property_info("rendering/textures/default_filters/anisotropic_filtering_level", PropertyInfo(Variant::INT, "rendering/textures/default_filters/anisotropic_filtering_level", PROPERTY_HINT_ENUM, "Disabled (Fastest),2x (Faster),4x (Fast),8x (Average),16x (Slow)"));
 
+	GLOBAL_DEF_RST("rendering/quality/default_filters/mipmap_lod_bias", 0.0);
+	ProjectSettings::get_singleton()->set_custom_property_info("rendering/quality/default_filters/mipmap_lod_bias", PropertyInfo(Variant::FLOAT, "rendering/quality/default_filters/mipmap_lod_bias", PROPERTY_HINT_RANGE, "-16,16,0.01"));
+
 	GLOBAL_DEF("rendering/camera/depth_of_field/depth_of_field_bokeh_shape", 1);
 	ProjectSettings::get_singleton()->set_custom_property_info("rendering/camera/depth_of_field/depth_of_field_bokeh_shape", PropertyInfo(Variant::INT, "rendering/camera/depth_of_field/depth_of_field_bokeh_shape", PROPERTY_HINT_ENUM, "Box (Fast),Hexagon (Average),Circle (Slowest)"));
 	GLOBAL_DEF("rendering/camera/depth_of_field/depth_of_field_bokeh_quality", 1);
