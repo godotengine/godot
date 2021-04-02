@@ -139,17 +139,10 @@ Size2i DisplayServerAndroid::screen_get_size(int p_screen) const {
 }
 
 float DisplayServerAndroid::screen_get_refresh_rate(int p_screen) const {
-	print_line("Test for getting Display.Mode from JNI");
-	JNIEnv *env = get_jni_env();
-	jclass display_class = env->FindClass("android/view/Display");
-	jmethodID get_mode_id = env->GetMethodID(display_class, "getMode", "()Landroid/view/Display/Mode");
-	if(get_mode_id == 0) {
-		return 60.0;
-	}
-	else {
-		print_line("Got method id");
-		return -1.0;
-	}
+	GodotIOJavaWrapper *godot_io_java = OS_Android::get_singleton()->get_godot_io_java();
+	ERR_FAIL_COND_V(!godot_io_java, 60.0);
+
+	return godot_io_java->get_screen_refresh_rate();
 }
 
 Rect2i DisplayServerAndroid::screen_get_usable_rect(int p_screen) const {
