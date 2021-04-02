@@ -48,11 +48,10 @@ void InputMap::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("action_set_deadzone", "action", "deadzone"), &InputMap::action_set_deadzone);
 	ClassDB::bind_method(D_METHOD("action_get_deadzone", "action"), &InputMap::action_get_deadzone);
 	ClassDB::bind_method(D_METHOD("action_add_event", "action", "event"), &InputMap::action_add_event);
-	ClassDB::bind_method(D_METHOD("action_has_event", "action", "event"), &InputMap::action_has_event);
+	ClassDB::bind_method(D_METHOD("action_has_event", "action", "event", "exact_match"), &InputMap::action_has_event, DEFVAL(true));
 	ClassDB::bind_method(D_METHOD("action_erase_event", "action", "event"), &InputMap::action_erase_event);
 	ClassDB::bind_method(D_METHOD("action_erase_events", "action"), &InputMap::action_erase_events);
 	ClassDB::bind_method(D_METHOD("action_get_events", "action"), &InputMap::_action_get_events);
-	ClassDB::bind_method(D_METHOD("event_is_action", "event", "action", "exact_match"), &InputMap::event_is_action, DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("load_from_project_settings"), &InputMap::load_from_project_settings);
 }
 
@@ -126,13 +125,13 @@ List<StringName> InputMap::get_actions() const {
 	return actions;
 }
 
-List<Ref<InputEvent>>::Element *InputMap::_find_event(Action &p_action, const Ref<InputEvent> &p_event, bool p_exact_match, bool *r_pressed, float *r_strength, float *r_raw_strength) const {
+List<Ref<InputEvent>>::Element *InputMap::_find_event(Action &p_action, const Ref<InputEvent> &p_event, bool p_exact_match) const {
 	ERR_FAIL_COND_V(!p_event.is_valid(), nullptr);
 
 	for (List<Ref<InputEvent>>::Element *E = p_action.inputs.front(); E; E = E->next()) {
 		int device = E->get()->get_device();
 		if (device == ALL_DEVICES || device == p_event->get_device()) {
-			if (E->get()->action_match(p_event, p_exact_match, p_action.deadzone, r_pressed, r_strength, r_raw_strength)) {
+			if (E->get()->action_match(p_event, p_exact_match)) {
 				return E;
 			}
 		}
@@ -167,9 +166,9 @@ void InputMap::action_add_event(const StringName &p_action, const Ref<InputEvent
 	input_map[p_action].inputs.push_back(p_event);
 }
 
-bool InputMap::action_has_event(const StringName &p_action, const Ref<InputEvent> &p_event) {
+bool InputMap::action_has_event(const StringName &p_action, const Ref<InputEvent> &p_event, bool p_exact_match) {
 	ERR_FAIL_COND_V_MSG(!input_map.has(p_action), false, suggest_actions(p_action));
-	return (_find_event(input_map[p_action], p_event, true) != nullptr);
+	return (_find_event(input_map[p_action], p_event, p_exact_match) != nullptr);
 }
 
 void InputMap::action_erase_event(const StringName &p_action, const Ref<InputEvent> &p_event) {
@@ -211,32 +210,93 @@ const List<Ref<InputEvent>> *InputMap::action_get_events(const StringName &p_act
 	return &E.get().inputs;
 }
 
-bool InputMap::event_is_action(const Ref<InputEvent> &p_event, const StringName &p_action, bool p_exact_match) const {
-	return event_get_action_status(p_event, p_action, p_exact_match);
+bool InputMap::is_action_pressed(const StringName &p_action) const {
+	Action action = input_map.find(p_action).get();
+	for (List<Ref<InputEvent>>::Element *E = action.inputs.front(); E; E = E->next()) {
+		const Ref<InputEvent> action_event = E->get();
+		if (action_event->is_pressed()) {
+			return true;
+		}
+	}
+	return false;
+}
+
+float InputMap::get_action_strength(const StringName &p_action) const {
+	float action_strength = 0.0f;
+	Action action = input_map.find(p_action).get();
+	for (List<Ref<InputEvent>>::Element *E = action.inputs.front(); E; E = E->next()) {
+		const Ref<InputEvent> action_event = E->get();
+		float action_event_strength = action_event->get_strength(action.deadzone);
+		if (action_event_strength > action_strength) {
+			action_strength = action_event_strength;
+		}
+	}
+	return action_strength;
+}
+
+float InputMap::get_action_raw_strength(const StringName &p_action) const {
+	float action_strength = 0.0f;
+	Action action = input_map.find(p_action).get();
+	for (List<Ref<InputEvent>>::Element *E = action.inputs.front(); E; E = E->next()) {
+		const Ref<InputEvent> action_event = E->get();
+		float action_event_strength = action_event->get_strength();
+		if (action_event_strength > action_strength) {
+			action_strength = action_event_strength;
+		}
+	}
+	return action_strength;
+}
+
+List<StringName> InputMap::update_actions_with_event(const Ref<InputEvent> &p_event) {
+	List<StringName> actions_with_event = List<StringName>();
+	for (OrderedHashMap<StringName, Action>::Element E = input_map.front(); E; E = E.next()) {
+		StringName action_name = E.key();
+		for (List<Ref<InputEvent>>::Element *EE = E.get().inputs.front(); EE; EE = EE->next()) {
+			Ref<InputEvent> action_event = EE->get();
+			int device = action_event->get_device();
+			if (device == ALL_DEVICES || device == p_event->get_device()) {
+				if (action_event->action_match(p_event, false)) {
+					actions_with_event.push_back(action_name);
+					action_event->copy_action_values(p_event);
+				}
+			}
+		}
+	}
+	return actions_with_event;
 }
 
 bool InputMap::event_get_action_status(const Ref<InputEvent> &p_event, const StringName &p_action, bool p_exact_match, bool *r_pressed, float *r_strength, float *r_raw_strength) const {
 	OrderedHashMap<StringName, Action>::Element E = input_map.find(p_action);
 	ERR_FAIL_COND_V_MSG(!E, false, suggest_actions(p_action));
 
+	Action action = E.get();
+	Ref<InputEvent> event;
 	Ref<InputEventAction> input_event_action = p_event;
 	if (input_event_action.is_valid()) {
-		const bool pressed = input_event_action->is_pressed();
-		if (r_pressed != nullptr) {
-			*r_pressed = pressed;
+		if (input_event_action->get_action() != p_action) {
+			return false;
 		}
-		const float strength = pressed ? input_event_action->get_strength() : 0.0f;
-		if (r_strength != nullptr) {
-			*r_strength = strength;
+		event = input_event_action;
+	} else {
+		List<Ref<InputEvent>>::Element *EE = _find_event(action, p_event, p_exact_match);
+		if (EE == nullptr) {
+			return false;
 		}
-		if (r_raw_strength != nullptr) {
-			*r_raw_strength = strength;
-		}
-		return input_event_action->get_action() == p_action;
+		event = EE->get();
+		event->copy_action_values(p_event);
 	}
 
-	List<Ref<InputEvent>>::Element *event = _find_event(E.get(), p_event, p_exact_match, r_pressed, r_strength, r_raw_strength);
-	return event != nullptr;
+	if (r_pressed != nullptr) {
+		*r_pressed = event->is_pressed();
+	}
+	if (r_strength != nullptr) {
+		*r_strength = event->get_strength(action.deadzone);
+	}
+	if (r_raw_strength != nullptr) {
+		*r_raw_strength = event->get_strength(0.0f);
+	}
+
+	return true;
 }
 
 const OrderedHashMap<StringName, InputMap::Action> &InputMap::get_action_map() const {

@@ -2184,6 +2184,15 @@
 		<constant name="JOY_AXIS_MAX" value="10" enum="JoyAxis">
 			The maximum number of game controller axes: OpenVR supports up to 5 Joysticks making a total of 10 axes.
 		</constant>
+		<constant name="NEGATIVE_HALF_AXIS" value="-1" enum="JoyAxisRange">
+			Joystick negative half-axis range from [code]-1.0[/code] to [code]0.0[/code].
+		</constant>
+		<constant name="FULL_AXIS" value="0" enum="JoyAxisRange">
+			Joystick full axis range from [code]-1.0[/code] to [code]1.0[/code].
+		</constant>
+		<constant name="POSITIVE_HALF_AXIS" value="1" enum="JoyAxisRange">
+			Joystick positive half-axis range from [code]0.0[/code] to [code]1.0[/code].
+		</constant>
 		<constant name="MIDI_MESSAGE_NONE" value="0" enum="MIDIMessage">
 			Enum value which doesn't correspond to any MIDI message. This is used to initialize [enum MIDIMessage] properties with a generic state.
 		</constant>

@@ -636,22 +636,21 @@ void Input::_parse_input_event_impl(const Ref<InputEvent> &p_event, bool p_is_em
 		}
 	}
 
-	for (OrderedHashMap<StringName, InputMap::Action>::ConstElement E = InputMap::get_singleton()->get_action_map().front(); E; E = E.next()) {
-		if (InputMap::get_singleton()->event_is_action(p_event, E.key())) {
-			// If not echo and action pressed state has changed
-			if (!p_event->is_echo() && is_action_pressed(E.key(), false) != p_event->is_action_pressed(E.key())) {
-				Action action;
-				action.physics_frame = Engine::get_singleton()->get_physics_frames();
-				action.process_frame = Engine::get_singleton()->get_process_frames();
-				action.pressed = p_event->is_action_pressed(E.key());
-				action.strength = 0.0f;
-				action.raw_strength = 0.0f;
-				action.exact = InputMap::get_singleton()->event_is_action(p_event, E.key(), true);
-				action_state[E.key()] = action;
-			}
-			action_state[E.key()].strength = p_event->get_action_strength(E.key());
-			action_state[E.key()].raw_strength = p_event->get_action_raw_strength(E.key());
+	InputMap *input_map = InputMap::get_singleton();
+	List<StringName> actions_with_event = input_map->update_actions_with_event(p_event);
+	for (List<StringName>::Element *E = actions_with_event.front(); E; E = E->next()) {
+		StringName action_name = E->get();
+		Action &action = action_state[action_name];
+		if (!p_event->is_echo() && is_action_pressed(action_name, false) != input_map->is_action_pressed(action_name)) {
+			action.physics_frame = Engine::get_singleton()->get_physics_frames();
+			action.process_frame = Engine::get_singleton()->get_process_frames();
+			action.pressed = input_map->is_action_pressed(action_name);
+			action.strength = 0.0f;
+			action.raw_strength = 0.0f;
+			action.exact = InputMap::get_singleton()->action_has_event(action_name, p_event, true);
 		}
+		action.strength = input_map->get_action_strength(action_name);
+		action.raw_strength = input_map->get_action_raw_strength(action_name);
 	}
 
 	if (event_dispatch_function) {
@@ -1083,13 +1082,13 @@ Input::JoyEvent Input::_get_mapped_button_event(const JoyDeviceMapping &mapping,
 				case TYPE_AXIS:
 					event.index = (int)binding.output.axis.axis;
 					switch (binding.output.axis.range) {
-						case POSITIVE_HALF_AXIS:
+						case JoyAxisRange::POSITIVE_HALF_AXIS:
 							event.value = 1;
 							break;
-						case NEGATIVE_HALF_AXIS:
+						case JoyAxisRange::NEGATIVE_HALF_AXIS:
 							event.value = -1;
 							break;
-						case FULL_AXIS:
+						case JoyAxisRange::FULL_AXIS:
 							// It doesn't make sense for a button to map to a full axis,
 							// but keeping as a default for a trigger with a positive half-axis.
 							event.value = 1;
@@ -1115,19 +1114,19 @@ Input::JoyEvent Input::_get_mapped_axis_event(const JoyDeviceMapping &mapping, J
 			if (binding.input.axis.invert) {
 				value = -value;
 			}
-			if (binding.input.axis.range == FULL_AXIS ||
-					(binding.input.axis.range == POSITIVE_HALF_AXIS && value > 0) ||
-					(binding.input.axis.range == NEGATIVE_HALF_AXIS && value < 0)) {
+			if (binding.input.axis.range == JoyAxisRange::FULL_AXIS ||
+					(binding.input.axis.range == JoyAxisRange::POSITIVE_HALF_AXIS && value > 0) ||
+					(binding.input.axis.range == JoyAxisRange::NEGATIVE_HALF_AXIS && value < 0)) {
 				event.type = binding.outputType;
 				float shifted_positive_value = 0;
 				switch (binding.input.axis.range) {
-					case POSITIVE_HALF_AXIS:
+					case JoyAxisRange::POSITIVE_HALF_AXIS:
 						shifted_positive_value = value;
 						break;
-					case NEGATIVE_HALF_AXIS:
+					case JoyAxisRange::NEGATIVE_HALF_AXIS:
 						shifted_positive_value = value + 1;
 						break;
-					case FULL_AXIS:
+					case JoyAxisRange::FULL_AXIS:
 						shifted_positive_value = (value + 1) / 2;
 						break;
 				}
@@ -1135,13 +1134,13 @@ Input::JoyEvent Input::_get_mapped_axis_event(const JoyDeviceMapping &mapping, J
 					case TYPE_BUTTON:
 						event.index = (int)binding.output.button;
 						switch (binding.input.axis.range) {
-							case POSITIVE_HALF_AXIS:
+							case JoyAxisRange::POSITIVE_HALF_AXIS:
 								event.value = shifted_positive_value;
 								break;
-							case NEGATIVE_HALF_AXIS:
+							case JoyAxisRange::NEGATIVE_HALF_AXIS:
 								event.value = 1 - shifted_positive_value;
 								break;
-							case FULL_AXIS:
+							case JoyAxisRange::FULL_AXIS:
 								// It doesn't make sense for a full axis to map to a button,
 								// but keeping as a default for a trigger with a positive half-axis.
 								event.value = (shifted_positive_value * 2) - 1;
@@ -1153,13 +1152,13 @@ Input::JoyEvent Input::_get_mapped_axis_event(const JoyDeviceMapping &mapping, J
 						event.value = value;
 						if (binding.output.axis.range != binding.input.axis.range) {
 							switch (binding.output.axis.range) {
-								case POSITIVE_HALF_AXIS:
+								case JoyAxisRange::POSITIVE_HALF_AXIS:
 									event.value = shifted_positive_value;
 									break;
-								case NEGATIVE_HALF_AXIS:
+								case JoyAxisRange::NEGATIVE_HALF_AXIS:
 									event.value = shifted_positive_value - 1;
 									break;
-								case FULL_AXIS:
+								case JoyAxisRange::FULL_AXIS:
 									event.value = (shifted_positive_value * 2) - 1;
 									break;
 							}
@@ -1205,13 +1204,13 @@ void Input::_get_mapped_hat_events(const JoyDeviceMapping &mapping, HatDir p_hat
 				case TYPE_AXIS:
 					r_events[(size_t)hat_direction].index = (int)binding.output.axis.axis;
 					switch (binding.output.axis.range) {
-						case POSITIVE_HALF_AXIS:
+						case JoyAxisRange::POSITIVE_HALF_AXIS:
 							r_events[(size_t)hat_direction].value = 1;
 							break;
-						case NEGATIVE_HALF_AXIS:
+						case JoyAxisRange::NEGATIVE_HALF_AXIS:
 							r_events[(size_t)hat_direction].value = -1;
 							break;
-						case FULL_AXIS:
+						case JoyAxisRange::FULL_AXIS:
 							// It doesn't make sense for a hat direction to map to a full axis,
 							// but keeping as a default for a trigger with a positive half-axis.
 							r_events[(size_t)hat_direction].value = 1;
@@ -1273,24 +1272,24 @@ void Input::parse_mapping(String p_mapping) {
 			continue;
 		}
 
-		JoyAxisRange output_range = FULL_AXIS;
+		JoyAxisRange output_range = JoyAxisRange::FULL_AXIS;
 		if (output[0] == '+' || output[0] == '-') {
 			ERR_CONTINUE_MSG(output.length() < 2,
 					vformat("Invalid output entry \"%s\" in mapping:\n%s", entry[idx], p_mapping));
 			if (output[0] == '+') {
-				output_range = POSITIVE_HALF_AXIS;
+				output_range = JoyAxisRange::POSITIVE_HALF_AXIS;
 			} else if (output[0] == '-') {
-				output_range = NEGATIVE_HALF_AXIS;
+				output_range = JoyAxisRange::NEGATIVE_HALF_AXIS;
 			}
 			output = output.substr(1);
 		}
 
-		JoyAxisRange input_range = FULL_AXIS;
+		JoyAxisRange input_range = JoyAxisRange::FULL_AXIS;
 		if (input[0] == '+') {
-			input_range = POSITIVE_HALF_AXIS;
+			input_range = JoyAxisRange::POSITIVE_HALF_AXIS;
 			input = input.substr(1);
 		} else if (input[0] == '-') {
-			input_range = NEGATIVE_HALF_AXIS;
+			input_range = JoyAxisRange::NEGATIVE_HALF_AXIS;
 			input = input.substr(1);
 		}
 		bool invert_axis = false;

@@ -150,12 +150,6 @@ private:
 		TYPE_MAX,
 	};
 
-	enum JoyAxisRange {
-		NEGATIVE_HALF_AXIS = -1,
-		FULL_AXIS = 0,
-		POSITIVE_HALF_AXIS = 1
-	};
-
 	struct JoyEvent {
 		int type;
 		int index; // Can be either JoyAxis or JoyButton.

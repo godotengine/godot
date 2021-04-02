@@ -141,7 +141,7 @@ void InputEventConfigurationDialog::_set_event(const Ref<InputEvent> &p_event) {
 						while (input_item) {
 							bool key_match = k.is_valid() && (Variant(k->get_keycode()) == input_item->get_meta("__keycode") || Variant(k->get_physical_keycode()) == input_item->get_meta("__keycode"));
 							bool joyb_match = joyb.is_valid() && Variant(joyb->get_button_index()) == input_item->get_meta("__index");
-							bool joym_match = joym.is_valid() && Variant(joym->get_axis()) == input_item->get_meta("__axis") && joym->get_axis_value() == (float)input_item->get_meta("__value");
+							bool joym_match = joym.is_valid() && Variant(joym->get_axis()) == input_item->get_meta("__axis") && joym->get_axis_range() == (JoyAxisRange)(int)input_item->get_meta("__direction");
 							bool mb_match = mb.is_valid() && Variant(mb->get_button_index()) == input_item->get_meta("__index");
 							if (key_match || joyb_match || joym_match || mb_match) {
 								category->set_collapsed(false);
@@ -379,7 +379,7 @@ void InputEventConfigurationDialog::_update_input_list() {
 			Ref<InputEventJoypadMotion> joym;
 			joym.instantiate();
 			joym->set_axis((JoyAxis)axis);
-			joym->set_axis_value(direction);
+			joym->set_axis_range((JoyAxisRange)direction);
 			String desc = get_event_text(joym);
 
 			if (!search_term.is_empty() && desc.findn(search_term) == -1) {
@@ -389,7 +389,7 @@ void InputEventConfigurationDialog::_update_input_list() {
 			TreeItem *item = input_list_tree->create_item(joya_root);
 			item->set_text(0, desc);
 			item->set_meta("__axis", i >> 1);
-			item->set_meta("__value", (i & 1) ? 1 : -1);
+			item->set_meta("__direction", direction);
 		}
 	}
 }
@@ -519,12 +519,12 @@ void InputEventConfigurationDialog::_input_list_item_selected() {
 		} break;
 		case InputEventConfigurationDialog::INPUT_JOY_MOTION: {
 			JoyAxis axis = (JoyAxis)(int)selected->get_meta("__axis");
-			int value = selected->get_meta("__value");
+			int direction = selected->get_meta("__direction");
 
 			Ref<InputEventJoypadMotion> jm;
 			jm.instantiate();
 			jm->set_axis(axis);
-			jm->set_axis_value(value);
+			jm->set_axis_range((JoyAxisRange)direction);
 			_set_event(jm);
 		} break;
 	}

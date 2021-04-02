@@ -59,6 +59,12 @@ enum class JoyAxis {
 	MAX = 10, // OpenVR supports up to 5 Joysticks making a total of 10 axes.
 };
 
+enum class JoyAxisRange {
+	NEGATIVE_HALF_AXIS = -1,
+	FULL_AXIS = 0,
+	POSITIVE_HALF_AXIS = 1
+};
+
 enum class JoyButton {
 	INVALID = -1,
 	A = 0,

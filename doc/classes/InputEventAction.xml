@@ -11,15 +11,21 @@
 		<link title="2D Dodge The Creeps Demo">https://godotengine.org/asset-library/asset/515</link>
 		<link title="3D Voxel Demo">https://godotengine.org/asset-library/asset/676</link>
 	</tutorials>
+	<methods>
+		<method name="set_strength">
+			<return type="void" />
+			<argument index="0" name="strength" type="float" />
+			<description>
+				Sets the action's strength between 0 and 1. The event strength allows faking analog joypad motion events, by specifying how strongly the joypad axis is bent or pressed.
+			</description>
+		</method>
+	</methods>
 	<members>
 		<member name="action" type="StringName" setter="set_action" getter="get_action" default="&amp;&quot;&quot;">
 			The action's name. Actions are accessed via this [String].
 		</member>
 		<member name="pressed" type="bool" setter="set_pressed" getter="is_pressed" default="false">
 			If [code]true[/code], the action's state is pressed. If [code]false[/code], the action's state is released.
-		</member>
-		<member name="strength" type="float" setter="set_strength" getter="get_strength" default="1.0">
-			The action's strength between 0 and 1. This value is considered as equal to 0 if pressed is [code]false[/code]. The event strength allows faking analog joypad motion events, by specifying how strongly the joypad axis is bent or pressed.
 		</member>
 	</members>
 </class>

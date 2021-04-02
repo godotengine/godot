@@ -130,7 +130,7 @@ protected:
 	static void _bind_methods();
 
 public:
-	static const int CONFIG_VERSION = 5;
+	static const int CONFIG_VERSION = 6;
 
 	void set_setting(const String &p_setting, const Variant &p_value);
 	Variant get_setting(const String &p_setting) const;
