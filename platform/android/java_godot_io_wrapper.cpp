@@ -52,7 +52,7 @@ GodotIOJavaWrapper::GodotIOJavaWrapper(JNIEnv *p_env, jobject p_godot_io_instanc
 		_get_locale = p_env->GetMethodID(cls, "getLocale", "()Ljava/lang/String;");
 		_get_model = p_env->GetMethodID(cls, "getModel", "()Ljava/lang/String;");
 		_get_screen_DPI = p_env->GetMethodID(cls, "getScreenDPI", "()I");
-		_get_refresh_rate = p_env->GetMethodID(env->FindClass("android/view/Display"), "getRefreshRate", "()F");
+		_get_refresh_rate = p_env->GetMethodID(p_env->FindClass("android/view/Display"), "getRefreshRate", "()F");
 		_screen_get_usable_rect = p_env->GetMethodID(cls, "screenGetUsableRect", "()[I"),
 		_get_unique_id = p_env->GetMethodID(cls, "getUniqueID", "()Ljava/lang/String;");
 		_show_keyboard = p_env->GetMethodID(cls, "showKeyboard", "(Ljava/lang/String;ZIII)V");
