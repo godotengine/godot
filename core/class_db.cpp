@@ -1018,6 +1018,7 @@ void ClassDB::get_property_list(StringName p_class, List<PropertyInfo> *p_list, 
 	}
 }
 bool ClassDB::set_property(Object *p_object, const StringName &p_property, const Variant &p_value, bool *r_valid) {
+	ERR_FAIL_NULL_V(p_object, false);
 
 	ClassInfo *type = classes.getptr(p_object->get_class_name());
 	ClassInfo *check = type;
@@ -1064,6 +1065,7 @@ bool ClassDB::set_property(Object *p_object, const StringName &p_property, const
 	return false;
 }
 bool ClassDB::get_property(Object *p_object, const StringName &p_property, Variant &r_value) {
+	ERR_FAIL_NULL_V(p_object, false);
 
 	ClassInfo *type = classes.getptr(p_object->get_class_name());
 	ClassInfo *check = type;
