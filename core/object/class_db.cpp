@@ -1095,6 +1095,8 @@ bool ClassDB::get_property_info(StringName p_class, StringName p_property, Prope
 }
 
 bool ClassDB::set_property(Object *p_object, const StringName &p_property, const Variant &p_value, bool *r_valid) {
+	ERR_FAIL_NULL_V(p_object, false);
+
 	ClassInfo *type = classes.getptr(p_object->get_class_name());
 	ClassInfo *check = type;
 	while (check) {
@@ -1142,6 +1144,8 @@ bool ClassDB::set_property(Object *p_object, const StringName &p_property, const
 }
 
 bool ClassDB::get_property(Object *p_object, const StringName &p_property, Variant &r_value) {
+	ERR_FAIL_NULL_V(p_object, false);
+
 	ClassInfo *type = classes.getptr(p_object->get_class_name());
 	ClassInfo *check = type;
 	while (check) {
