@@ -791,10 +791,10 @@ Vector<DisplayServer::WindowID> DisplayServerX11::get_window_list() const {
 	return ret;
 }
 
-DisplayServer::WindowID DisplayServerX11::create_sub_window(WindowMode p_mode, VSyncMode p_vsync_mode, uint32_t p_flags, const Rect2i &p_rect) {
+DisplayServer::WindowID DisplayServerX11::create_sub_window(WindowMode p_mode, VSyncMode p_vsync_mode, uint32_t p_flags, const Rect2i &p_rect, const WindowID p_parent) {
 	_THREAD_SAFE_METHOD_
 
-	WindowID id = _create_window(p_mode, p_vsync_mode, p_flags, p_rect);
+	WindowID id = _create_window(p_mode, p_vsync_mode, p_flags, p_rect, p_parent);
 	for (int i = 0; i < WINDOW_FLAG_MAX; i++) {
 		if (p_flags & (1 << i)) {
 			window_set_flag(WindowFlags(i), true, id);
@@ -824,6 +824,29 @@ void DisplayServerX11::delete_sub_window(WindowID p_id) {
 
 	DEBUG_LOG_X11("delete_sub_window: %lu (%u) \n", wd.x11_window, p_id);
 
+	Vector<WindowID> ids;
+	for (Map<WindowID, WindowData>::Element *W=windows.front(); W; W = W->next()) {
+		if (W->value().parent == p_id) {
+			ids.push_back(W->key());
+		}
+	}
+
+	for (int i = 0; i < ids.size(); ++i) {
+		// Let's be nice to windows and let them execute the kill
+		_send_window_event(windows[ids[i]], WINDOW_EVENT_CLOSE_REQUEST);
+		// Fun ended here. The window should close itself, but it may do it deferred, so we have to ensure it is not deleted, until it requests so (and prevent a crash)
+		if (windows.has(ids[i])) {
+			// We add the child window to the parent of the deleted window, so it will survive the deletion (but really should close itself) and don't cause crashes
+			WindowData& sw = windows[ids[i]];
+			Window child;
+			Window parent = wd.is_child ? windows[wd.parent].x11_window : windows[MAIN_WINDOW_ID].x11_window;
+			XTranslateCoordinates(x11_display, wd.x11_window, parent, sw.position.x, sw.position.y, &sw.position.x, &sw.position.y, &child);
+			XReparentWindow(x11_display, sw.x11_window, parent, sw.position.x, sw.position.y);
+			sw.parent = wd.parent;
+			sw.is_child = wd.is_child;
+		}
+	}
+	
 	while (wd.transient_children.size()) {
 		window_set_transient(wd.transient_children.front()->get(), INVALID_WINDOW_ID);
 	}
@@ -831,7 +854,7 @@ void DisplayServerX11::delete_sub_window(WindowID p_id) {
 	if (wd.transient_parent != INVALID_WINDOW_ID) {
 		window_set_transient(p_id, INVALID_WINDOW_ID);
 	}
-
+	
 #ifdef VULKAN_ENABLED
 	if (rendering_driver == "vulkan") {
 		context_vulkan->window_destroy(p_id);
@@ -1127,8 +1150,8 @@ void DisplayServerX11::window_set_position(const Point2i &p_position, WindowID p
 	Point2i position = p_position;
 	int x = 0;
 	int y = 0;
-	if (p_window != MAIN_WINDOW_ID) {
-		Window parent = windows[MAIN_WINDOW_ID].x11_window; // replace with GetParent (however this may work)
+	if (wd.is_child) {
+		Window parent = windows[wd.parent].x11_window;
 		Window child;
 		XTranslateCoordinates(x11_display, DefaultRootWindow(x11_display), parent, position.x, position.y, &position.x, &position.y, &child);
 	}
@@ -1583,7 +1606,7 @@ DisplayServer::WindowMode DisplayServerX11::window_get_mode(WindowID p_window) c
 		unsigned long len;
 		unsigned long remaining;
 		unsigned char *data = nullptr;
-
+		
 		int result = XGetWindowProperty(
 				x11_display,
 				wd.x11_window,
@@ -2098,7 +2121,7 @@ DisplayServerX11::Property DisplayServerX11::_read_property(Display *p_display, 
 			if (ret != nullptr) {
 				XFree(ret);
 			}
-
+			
 			XGetWindowProperty(p_display, p_window, p_property, 0, read_bytes, False, AnyPropertyType,
 					&actual_type, &actual_format, &nitems, &bytes_after,
 					&ret);
@@ -2559,8 +2582,7 @@ void DisplayServerX11::_window_changed(XEvent *event) {
 		//the position in xconfigure is not useful here, obtain it manually
 		int x, y;
 		Window child;
-		Window parent = (window_id == MAIN_WINDOW_ID) ? DefaultRootWindow(x11_display) : windows[MAIN_WINDOW_ID].x11_window;
-		XTranslateCoordinates(x11_display, wd.x11_window, parent, 0, 0, &x, &y, &child);
+		XTranslateCoordinates(x11_display, wd.x11_window, wd.is_child ? windows[wd.parent].x11_window : DefaultRootWindow(x11_display), 0, 0, &x, &y, &child);
 		new_rect.position.x = x;
 		new_rect.position.y = y;
 
@@ -3646,7 +3668,7 @@ DisplayServer *DisplayServerX11::create_func(const String &p_rendering_driver, W
 	return ds;
 }
 
-DisplayServerX11::WindowID DisplayServerX11::_create_window(WindowMode p_mode, VSyncMode p_vsync_mode, uint32_t p_flags, const Rect2i &p_rect) {
+DisplayServerX11::WindowID DisplayServerX11::_create_window(WindowMode p_mode, VSyncMode p_vsync_mode, uint32_t p_flags, const Rect2i &p_rect, const WindowID p_parent_window_id) {
 	//Create window
 	WindowID id = window_id_counter++;
 	WindowData &wd = windows[id];
@@ -3656,9 +3678,11 @@ DisplayServerX11::WindowID DisplayServerX11::_create_window(WindowMode p_mode, V
 	XVisualInfo vInfoTemplate = {};
 	vInfoTemplate.screen = DefaultScreen(x11_display);
 	XVisualInfo *visualInfo = XGetVisualInfo(x11_display, visualMask, &vInfoTemplate, &numberOfVisuals);
-	Window parent = (id == MAIN_WINDOW_ID || !(p_flags & WINDOW_FLAG_BORDERLESS_BIT)) ? RootWindow(x11_display, visualInfo->screen) : windows[MAIN_WINDOW_ID].x11_window;
-
-	Colormap colormap = XCreateColormap(x11_display, parent, visualInfo->visual, AllocNone);
+	wd.parent = p_flags & WINDOW_FLAG_BORDERLESS_BIT ? p_parent_window_id : INVALID_WINDOW_ID;
+	wd.is_child = INVALID_WINDOW_ID != wd.parent;
+	Window parent_window = wd.is_child ? windows[wd.parent].x11_window : RootWindow(x11_display, vInfoTemplate.screen);
+	
+	Colormap colormap = XCreateColormap(x11_display, parent_window, visualInfo->visual, AllocNone);
 
 	XSetWindowAttributes windowAttributes = {};
 	windowAttributes.colormap = colormap;
@@ -3673,8 +3697,8 @@ DisplayServerX11::WindowID DisplayServerX11::_create_window(WindowMode p_mode, V
 	if ((id != MAIN_WINDOW_ID) && (p_flags & WINDOW_FLAG_BORDERLESS_BIT)) {
 		wd.menu_type = true;
 		Window child;
-		XTranslateCoordinates(x11_display, DefaultRootWindow(x11_display), parent, rect.position.x, rect.position.y, &rect.position.x, &rect.position.y, &child);
-		XTranslateCoordinates(x11_display, DefaultRootWindow(x11_display), parent, rect.size.x, rect.size.y, &rect.size.x, &rect.size.y, &child);
+		XTranslateCoordinates(x11_display, DefaultRootWindow(x11_display), parent_window, rect.position.x, rect.position.y, &rect.position.x, &rect.position.y, &child);
+		XTranslateCoordinates(x11_display, DefaultRootWindow(x11_display), parent_window, rect.size.x, rect.size.y, &rect.size.x, &rect.size.y, &child);
 	}
 
 	if (p_flags & WINDOW_FLAG_NO_FOCUS_BIT) {
@@ -3694,7 +3718,7 @@ DisplayServerX11::WindowID DisplayServerX11::_create_window(WindowMode p_mode, V
 	}
 
 	{
-		wd.x11_window = XCreateWindow(x11_display, parent, rect.position.x, rect.position.y, rect.size.width > 0 ? rect.size.width : 1, rect.size.height > 0 ? rect.size.height : 1, 0, visualInfo->depth, InputOutput, visualInfo->visual, valuemask, &windowAttributes);
+		wd.x11_window = XCreateWindow(x11_display, parent_window, rect.position.x, rect.position.y, rect.size.width > 0 ? rect.size.width : 1, rect.size.height > 0 ? rect.size.height : 1, 0, visualInfo->depth, InputOutput, visualInfo->visual, valuemask, &windowAttributes);
 
 		// Enable receiving notification when the window is initialized (MapNotify)
 		// so the focus can be set at the right time.
@@ -4088,7 +4112,7 @@ DisplayServerX11::DisplayServerX11(const String &p_rendering_driver, WindowMode 
 	Point2i window_position(
 			(screen_get_size(0).width - p_resolution.width) / 2,
 			(screen_get_size(0).height - p_resolution.height) / 2);
-	WindowID main_window = _create_window(p_mode, p_vsync_mode, p_flags, Rect2i(window_position, p_resolution));
+	WindowID main_window = _create_window(p_mode, p_vsync_mode, p_flags, Rect2i(window_position, p_resolution), INVALID_WINDOW_ID);
 	if (main_window == INVALID_WINDOW_ID) {
 		r_error = ERR_CANT_CREATE;
 		return;
