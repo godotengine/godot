@@ -46,7 +46,11 @@ _FORCE_INLINE_ bool is_linebreak(char32_t p_char) {
 }
 
 _FORCE_INLINE_ bool is_punct(char32_t p_char) {
-	return (p_char >= 0x0020 && p_char <= 0x002F) || (p_char >= 0x003A && p_char <= 0x0040) || (p_char >= 0x005B && p_char <= 0x0060) || (p_char >= 0x007B && p_char <= 0x007E) || (p_char >= 0x2000 && p_char <= 0x206F) || (p_char >= 0x3000 && p_char <= 0x303F);
+	return (p_char >= 0x0020 && p_char <= 0x002F) || (p_char >= 0x003A && p_char <= 0x0040) || (p_char >= 0x005B && p_char <= 0x005E) || (p_char == 0x0060) || (p_char >= 0x007B && p_char <= 0x007E) || (p_char >= 0x2000 && p_char <= 0x206F) || (p_char >= 0x3000 && p_char <= 0x303F);
+}
+
+_FORCE_INLINE_ bool is_underscore(char32_t p_char) {
+	return (p_char == 0x005F);
 }
 
 /*************************************************************************/
@@ -1107,6 +1111,9 @@ bool TextServerFallback::shaped_text_update_breaks(RID p_shaped) {
 			char32_t c = sd->text[sd->glyphs[i].start];
 			if (is_punct(c)) {
 				sd->glyphs.write[i].flags |= GRAPHEME_IS_PUNCTUATION;
+			}
+			if (is_underscore(c)) {
+				sd->glyphs.write[i].flags |= GRAPHEME_IS_UNDERSCORE;
 			}
 			if (is_whitespace(c) && !is_linebreak(c)) {
 				sd->glyphs.write[i].flags |= GRAPHEME_IS_SPACE;
