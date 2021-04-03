@@ -1,22 +1,5 @@
 const Preloader = /** @constructor */ function () { // eslint-disable-line no-unused-vars
 	function getTrackedResponse(response, load_status) {
-		let clen = 0;
-		let compressed = false;
-		response.headers.forEach(function (value, header) {
-			const h = header.toLowerCase().trim();
-			// We can't accurately compute compressed stream length.
-			if (h === 'content-encoding') {
-				compressed = true;
-			} else if (h === 'content-length') {
-				const length = parseInt(value, 10);
-				if (!Number.isNaN(length) && length > 0) {
-					clen = length;
-				}
-			}
-		});
-		if (!compressed && clen) {
-			load_status.total = clen;
-		}
 		function onloadprogress(reader, controller) {
 			return reader.read().then(function (result) {
 				if (load_status.done) {

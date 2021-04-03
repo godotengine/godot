@@ -49,25 +49,14 @@ const GodotFetch = {
 			if (!obj) {
 				return;
 			}
-			let size = -1;
-			let compressed = false;
 			let chunked = false;
 			response.headers.forEach(function (value, header) {
 				const v = value.toLowerCase().trim();
 				const h = header.toLowerCase().trim();
-				if (h === 'content-encoding') {
-					compressed = true;
-					size = -1;
-				} else if (h === 'content-length') {
-					const len = Number.parseInt(value, 10);
-					if (!Number.isNaN(len) && !compressed) {
-						size = len;
-					}
-				} else if (h === 'transfer-encoding' && v === 'chunked') {
+				if (h === 'transfer-encoding' && v === 'chunked') {
 					chunked = true;
 				}
 			});
-			obj.bodySize = size;
 			obj.status = response.status;
 			obj.response = response;
 			obj.reader = response.body.getReader();
