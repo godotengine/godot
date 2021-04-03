@@ -2121,11 +2121,11 @@ bool C_PREAMBLE::_prefill_rect(RasterizerCanvas::Item::CommandRect *rect, FillSt
 
 			// apply to an x axis
 			// the x axis and y axis can be taken directly from the transform (no need to xform identity vectors)
-			Vector2 x_axis(tr.elements[0][0], tr.elements[1][0]);
+			Vector2 x_axis(tr.elements[0][0], tr.elements[0][1]);
 
 			// have to do a y axis to check for scaling flips
 			// this is hassle and extra slowness. We could only allow flips via the flags.
-			Vector2 y_axis(tr.elements[0][1], tr.elements[1][1]);
+			Vector2 y_axis(tr.elements[1][0], tr.elements[1][1]);
 
 			// has the x / y axis flipped due to scaling?
 			float cross = x_axis.cross(y_axis);
