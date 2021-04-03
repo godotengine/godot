@@ -48,12 +48,17 @@ void XRServer::_bind_methods() {
 
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "world_scale"), "set_world_scale", "get_world_scale");
 
+	ClassDB::bind_method(D_METHOD("add_interface", "interface"), &XRServer::add_interface);
+	ClassDB::bind_method(D_METHOD("clear_primary_interface_if", "interface"), &XRServer::clear_primary_interface_if);
 	ClassDB::bind_method(D_METHOD("get_interface_count"), &XRServer::get_interface_count);
+	ClassDB::bind_method(D_METHOD("remove_interface", "interface"), &XRServer::remove_interface);
 	ClassDB::bind_method(D_METHOD("get_interface", "idx"), &XRServer::get_interface);
 	ClassDB::bind_method(D_METHOD("get_interfaces"), &XRServer::get_interfaces);
 	ClassDB::bind_method(D_METHOD("find_interface", "name"), &XRServer::find_interface);
 	ClassDB::bind_method(D_METHOD("get_tracker_count"), &XRServer::get_tracker_count);
 	ClassDB::bind_method(D_METHOD("get_tracker", "idx"), &XRServer::get_tracker);
+	ClassDB::bind_method(D_METHOD("add_tracker", "tracker"), &XRServer::add_tracker);
+	ClassDB::bind_method(D_METHOD("remove_tracker", "tracker"), &XRServer::remove_tracker);
 
 	ClassDB::bind_method(D_METHOD("get_primary_interface"), &XRServer::get_primary_interface);
 	ClassDB::bind_method(D_METHOD("set_primary_interface", "interface"), &XRServer::set_primary_interface);
@@ -260,15 +265,15 @@ int XRServer::get_free_tracker_id_for_type(TrackerType p_tracker_type) {
 	return tracker_id;
 };
 
-void XRServer::add_tracker(XRPositionalTracker *p_tracker) {
-	ERR_FAIL_NULL(p_tracker);
+void XRServer::add_tracker(Ref<XRPositionalTracker> p_tracker) {
+	ERR_FAIL_COND(p_tracker.is_null());
 
 	trackers.push_back(p_tracker);
 	emit_signal("tracker_added", p_tracker->get_tracker_name(), p_tracker->get_tracker_type(), p_tracker->get_tracker_id());
 };
 
-void XRServer::remove_tracker(XRPositionalTracker *p_tracker) {
-	ERR_FAIL_NULL(p_tracker);
+void XRServer::remove_tracker(Ref<XRPositionalTracker> p_tracker) {
+	ERR_FAIL_COND(p_tracker.is_null());
 
 	int idx = -1;
 	for (int i = 0; i < trackers.size(); i++) {
@@ -288,14 +293,14 @@ int XRServer::get_tracker_count() const {
 	return trackers.size();
 };
 
-XRPositionalTracker *XRServer::get_tracker(int p_index) const {
-	ERR_FAIL_INDEX_V(p_index, trackers.size(), nullptr);
+Ref<XRPositionalTracker> XRServer::get_tracker(int p_index) const {
+	ERR_FAIL_INDEX_V(p_index, trackers.size(), Ref<XRPositionalTracker>());
 
 	return trackers[p_index];
 };
 
-XRPositionalTracker *XRServer::find_by_type_and_id(TrackerType p_tracker_type, int p_tracker_id) const {
-	ERR_FAIL_COND_V(p_tracker_id == 0, nullptr);
+Ref<XRPositionalTracker> XRServer::find_by_type_and_id(TrackerType p_tracker_type, int p_tracker_id) const {
+	ERR_FAIL_COND_V(p_tracker_id == 0, Ref<XRPositionalTracker>());
 
 	for (int i = 0; i < trackers.size(); i++) {
 		if (trackers[i]->get_tracker_type() == p_tracker_type && trackers[i]->get_tracker_id() == p_tracker_id) {
@@ -303,7 +308,7 @@ XRPositionalTracker *XRServer::find_by_type_and_id(TrackerType p_tracker_type, i
 		};
 	};
 
-	return nullptr;
+	return Ref<XRPositionalTracker>();
 };
 
 Ref<XRInterface> XRServer::get_primary_interface() const {

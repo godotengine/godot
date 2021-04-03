@@ -10,6 +10,24 @@
 		<link title="VR tutorial index">https://docs.godotengine.org/en/latest/tutorials/vr/index.html</link>
 	</tutorials>
 	<methods>
+		<method name="add_interface">
+			<return type="void">
+			</return>
+			<argument index="0" name="interface" type="XRInterface">
+			</argument>
+			<description>
+				Registers an [XRInterface] object.
+			</description>
+		</method>
+		<method name="add_tracker">
+			<return type="void">
+			</return>
+			<argument index="0" name="tracker" type="XRPositionalTracker">
+			</argument>
+			<description>
+				Registers a new [XRPositionalTracker] that tracks a spatial location in real space.
+			</description>
+		</method>
 		<method name="center_on_hmd">
 			<return type="void">
 			</return>
@@ -24,6 +42,15 @@
 				This method allows you to center your tracker on the location of the HMD. It will take the current location of the HMD and use that to adjust all your tracking data; in essence, realigning the real world to your player's current position in the game world.
 				For this method to produce usable results, tracking information must be available. This often takes a few frames after starting your game.
 				You should call this method after a few seconds have passed. For instance, when the user requests a realignment of the display holding a designated button on a controller for a short period of time, or when implementing a teleport mechanism.
+			</description>
+		</method>
+		<method name="clear_primary_interface_if">
+			<return type="void">
+			</return>
+			<argument index="0" name="interface" type="XRInterface">
+			</argument>
+			<description>
+				Clears our current primary interface if it is set to the provided interface.
 			</description>
 		</method>
 		<method name="find_interface" qualifiers="const">
@@ -107,6 +134,24 @@
 			</return>
 			<description>
 				Returns the number of trackers currently registered.
+			</description>
+		</method>
+		<method name="remove_interface">
+			<return type="void">
+			</return>
+			<argument index="0" name="interface" type="XRInterface">
+			</argument>
+			<description>
+				Removes this interface.
+			</description>
+		</method>
+		<method name="remove_tracker">
+			<return type="void">
+			</return>
+			<argument index="0" name="tracker" type="XRPositionalTracker">
+			</argument>
+			<description>
+				Removes this positional tracker.
 			</description>
 		</method>
 	</methods>

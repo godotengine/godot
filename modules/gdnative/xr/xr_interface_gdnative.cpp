@@ -301,7 +301,8 @@ godot_int GDAPI godot_xr_add_controller(char *p_device_name, godot_int p_hand, g
 	Input *input = Input::get_singleton();
 	ERR_FAIL_NULL_V(input, 0);
 
-	XRPositionalTracker *new_tracker = memnew(XRPositionalTracker);
+	Ref<XRPositionalTracker> new_tracker;
+	new_tracker.instance();
 	new_tracker->set_tracker_name(p_device_name);
 	new_tracker->set_tracker_type(XRServer::TRACKER_CONTROLLER);
 	if (p_hand == 1) {
@@ -340,8 +341,8 @@ void GDAPI godot_xr_remove_controller(godot_int p_controller_id) {
 	Input *input = Input::get_singleton();
 	ERR_FAIL_NULL(input);
 
-	XRPositionalTracker *remove_tracker = xr_server->find_by_type_and_id(XRServer::TRACKER_CONTROLLER, p_controller_id);
-	if (remove_tracker != nullptr) {
+	Ref<XRPositionalTracker> remove_tracker = xr_server->find_by_type_and_id(XRServer::TRACKER_CONTROLLER, p_controller_id);
+	if (remove_tracker.is_valid()) {
 		// unset our joystick if applicable
 		int joyid = remove_tracker->get_joy_id();
 		if (joyid != -1) {
@@ -351,7 +352,7 @@ void GDAPI godot_xr_remove_controller(godot_int p_controller_id) {
 
 		// remove our tracker from our server
 		xr_server->remove_tracker(remove_tracker);
-		memdelete(remove_tracker);
+		remove_tracker.unref();
 	}
 }
 
@@ -359,8 +360,8 @@ void GDAPI godot_xr_set_controller_transform(godot_int p_controller_id, godot_tr
 	XRServer *xr_server = XRServer::get_singleton();
 	ERR_FAIL_NULL(xr_server);
 
-	XRPositionalTracker *tracker = xr_server->find_by_type_and_id(XRServer::TRACKER_CONTROLLER, p_controller_id);
-	if (tracker != nullptr) {
+	Ref<XRPositionalTracker> tracker = xr_server->find_by_type_and_id(XRServer::TRACKER_CONTROLLER, p_controller_id);
+	if (tracker.is_valid()) {
 		Transform *transform = (Transform *)p_transform;
 		if (p_tracks_orientation) {
 			tracker->set_orientation(transform->basis);
@@ -378,8 +379,8 @@ void GDAPI godot_xr_set_controller_button(godot_int p_controller_id, godot_int p
 	Input *input = Input::get_singleton();
 	ERR_FAIL_NULL(input);
 
-	XRPositionalTracker *tracker = xr_server->find_by_type_and_id(XRServer::TRACKER_CONTROLLER, p_controller_id);
-	if (tracker != nullptr) {
+	Ref<XRPositionalTracker> tracker = xr_server->find_by_type_and_id(XRServer::TRACKER_CONTROLLER, p_controller_id);
+	if (tracker.is_valid()) {
 		int joyid = tracker->get_joy_id();
 		if (joyid != -1) {
 			input->joy_button(joyid, p_button, p_is_pressed);
@@ -394,8 +395,8 @@ void GDAPI godot_xr_set_controller_axis(godot_int p_controller_id, godot_int p_a
 	Input *input = Input::get_singleton();
 	ERR_FAIL_NULL(input);
 
-	XRPositionalTracker *tracker = xr_server->find_by_type_and_id(XRServer::TRACKER_CONTROLLER, p_controller_id);
-	if (tracker != nullptr) {
+	Ref<XRPositionalTracker> tracker = xr_server->find_by_type_and_id(XRServer::TRACKER_CONTROLLER, p_controller_id);
+	if (tracker.is_valid()) {
 		int joyid = tracker->get_joy_id();
 		if (joyid != -1) {
 			Input::JoyAxisValue jx;
@@ -410,8 +411,8 @@ godot_float GDAPI godot_xr_get_controller_rumble(godot_int p_controller_id) {
 	XRServer *xr_server = XRServer::get_singleton();
 	ERR_FAIL_NULL_V(xr_server, 0.0);
 
-	XRPositionalTracker *tracker = xr_server->find_by_type_and_id(XRServer::TRACKER_CONTROLLER, p_controller_id);
-	if (tracker != nullptr) {
+	Ref<XRPositionalTracker> tracker = xr_server->find_by_type_and_id(XRServer::TRACKER_CONTROLLER, p_controller_id);
+	if (tracker.is_valid()) {
 		return tracker->get_rumble();
 	}
 
