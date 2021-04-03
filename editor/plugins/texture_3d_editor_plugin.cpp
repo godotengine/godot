@@ -208,5 +208,5 @@ void EditorInspectorPlugin3DTexture::parse_begin(Object *p_object) {
 Texture3DEditorPlugin::Texture3DEditorPlugin(EditorNode *p_node) {
 	Ref<EditorInspectorPlugin3DTexture> plugin;
 	plugin.instance();
-	add_inspector_plugin(plugin);
+	EditorPluginInterfaces::get_singleton()->add_inspector_plugin(plugin);
 }

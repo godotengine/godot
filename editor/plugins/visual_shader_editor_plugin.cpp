@@ -3632,7 +3632,7 @@ void VisualShaderEditor::_visibility_changed() {
 void VisualShaderEditor::_bind_methods() {
 	ClassDB::bind_method("_update_graph", &VisualShaderEditor::_update_graph);
 	ClassDB::bind_method("_update_options_menu", &VisualShaderEditor::_update_options_menu);
-	ClassDB::bind_method("_add_node", &VisualShaderEditor::_add_node);
+	//ClassDB::bind_method("_add_node", &VisualShaderEditor::_add_node);
 	ClassDB::bind_method("_node_changed", &VisualShaderEditor::_node_changed);
 	ClassDB::bind_method("_input_select_item", &VisualShaderEditor::_input_select_item);
 	ClassDB::bind_method("_uniform_select_item", &VisualShaderEditor::_uniform_select_item);

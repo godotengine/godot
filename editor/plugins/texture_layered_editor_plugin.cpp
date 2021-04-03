@@ -272,5 +272,5 @@ void EditorInspectorPluginLayeredTexture::parse_begin(Object *p_object) {
 TextureLayeredEditorPlugin::TextureLayeredEditorPlugin(EditorNode *p_node) {
 	Ref<EditorInspectorPluginLayeredTexture> plugin;
 	plugin.instance();
-	add_inspector_plugin(plugin);
+	EditorPluginInterfaces::get_singleton()->add_inspector_plugin(plugin);
 }

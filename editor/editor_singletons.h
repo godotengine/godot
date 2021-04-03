@@ -39,7 +39,6 @@
 #include "scene/main/node.h"
 
 class EditorNode;
-class EditorData;
 class EditorSelection;
 class EditorSettings;
 
@@ -265,6 +264,8 @@ class EditorAssetLibrary;
 class EditorWorkspaces : public Node {
 	GDCLASS(EditorWorkspaces, Node);
 
+	friend class EditorPluginInterfaces;
+
 	EditorNode *editor;
 
 	CanvasItemEditor *canvas_item_workspace = nullptr;
@@ -296,6 +297,46 @@ public:
 	void remove_control(Control *p_control);
 
 	EditorWorkspaces(EditorNode *p_editor);
+};
+
+class EditorTranslationParserPlugin;
+class EditorImportPlugin;
+class EditorExportPlugin;
+class EditorNode3DGizmoPlugin;
+class EditorSceneImporter;
+
+class EditorPluginInterfaces : public Node {
+	GDCLASS(EditorPluginInterfaces, Node);
+
+protected:
+	static void _bind_methods();
+	static EditorPluginInterfaces *singleton;
+
+public:
+	static EditorPluginInterfaces *get_singleton() { return singleton; }
+
+	void add_debugger_plugin(const Ref<Script> &p_script);
+	void remove_debugger_plugin(const Ref<Script> &p_script);
+
+	void add_translation_parser_plugin(const Ref<EditorTranslationParserPlugin> &p_parser);
+	void remove_translation_parser_plugin(const Ref<EditorTranslationParserPlugin> &p_parser);
+
+	void add_import_plugin(const Ref<EditorImportPlugin> &p_importer);
+	void remove_import_plugin(const Ref<EditorImportPlugin> &p_importer);
+
+	void add_export_plugin(const Ref<EditorExportPlugin> &p_exporter);
+	void remove_export_plugin(const Ref<EditorExportPlugin> &p_exporter);
+
+	void add_spatial_gizmo_plugin(const Ref<EditorNode3DGizmoPlugin> &p_gizmo_plugin);
+	void remove_spatial_gizmo_plugin(const Ref<EditorNode3DGizmoPlugin> &p_gizmo_plugin);
+
+	void add_inspector_plugin(const Ref<EditorInspectorPlugin> &p_plugin);
+	void remove_inspector_plugin(const Ref<EditorInspectorPlugin> &p_plugin);
+
+	void add_scene_import_plugin(const Ref<EditorSceneImporter> &p_importer);
+	void remove_scene_import_plugin(const Ref<EditorSceneImporter> &p_importer);
+
+	EditorPluginInterfaces();
 };
 
 #endif // EDITOR_SINGLETONS_H

@@ -663,7 +663,7 @@ void EditorWorkspaces::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_script_workspace"), &EditorWorkspaces::get_script_workspace);
 	ClassDB::bind_method(D_METHOD("get_asset_library_workspace"), &EditorWorkspaces::get_asset_library_workspace);
 
-	ClassDB::bind_method(D_METHOD("add_control", "title", "control"), &EditorWorkspaces::add_control);
+	ClassDB::bind_method(D_METHOD("add_control", "control"), &EditorWorkspaces::add_control);
 	ClassDB::bind_method(D_METHOD("remove_control", "control"), &EditorWorkspaces::remove_control);
 }
 
@@ -672,4 +672,77 @@ EditorWorkspaces *EditorWorkspaces::singleton = nullptr;
 EditorWorkspaces::EditorWorkspaces(EditorNode *p_editor) {
 	singleton = this;
 	editor = p_editor;
+}
+
+///////////////////////////////////////////
+
+void EditorPluginInterfaces::add_translation_parser_plugin(const Ref<EditorTranslationParserPlugin> &p_parser) {
+	EditorTranslationParser::get_singleton()->add_parser(p_parser, EditorTranslationParser::CUSTOM);
+}
+
+void EditorPluginInterfaces::remove_translation_parser_plugin(const Ref<EditorTranslationParserPlugin> &p_parser) {
+	EditorTranslationParser::get_singleton()->remove_parser(p_parser, EditorTranslationParser::CUSTOM);
+}
+
+void EditorPluginInterfaces::add_import_plugin(const Ref<EditorImportPlugin> &p_importer) {
+	ResourceFormatImporter::get_singleton()->add_importer(p_importer);
+	EditorFileSystem::get_singleton()->call_deferred("scan");
+}
+
+void EditorPluginInterfaces::remove_import_plugin(const Ref<EditorImportPlugin> &p_importer) {
+	ResourceFormatImporter::get_singleton()->remove_importer(p_importer);
+	EditorFileSystem::get_singleton()->call_deferred("scan");
+}
+
+void EditorPluginInterfaces::add_export_plugin(const Ref<EditorExportPlugin> &p_exporter) {
+	EditorExport::get_singleton()->add_export_plugin(p_exporter);
+}
+
+void EditorPluginInterfaces::remove_export_plugin(const Ref<EditorExportPlugin> &p_exporter) {
+	EditorExport::get_singleton()->remove_export_plugin(p_exporter);
+}
+
+void EditorPluginInterfaces::add_spatial_gizmo_plugin(const Ref<EditorNode3DGizmoPlugin> &p_gizmo_plugin) {
+	EditorWorkspaces::singleton->node_3d_workspace->add_gizmo_plugin(p_gizmo_plugin);
+}
+
+void EditorPluginInterfaces::remove_spatial_gizmo_plugin(const Ref<EditorNode3DGizmoPlugin> &p_gizmo_plugin) {
+	EditorWorkspaces::singleton->node_3d_workspace->remove_gizmo_plugin(p_gizmo_plugin);
+}
+
+void EditorPluginInterfaces::add_inspector_plugin(const Ref<EditorInspectorPlugin> &p_plugin) {
+	EditorInspector::add_inspector_plugin(p_plugin);
+}
+
+void EditorPluginInterfaces::remove_inspector_plugin(const Ref<EditorInspectorPlugin> &p_plugin) {
+	EditorInspector::remove_inspector_plugin(p_plugin);
+}
+
+void EditorPluginInterfaces::add_scene_import_plugin(const Ref<EditorSceneImporter> &p_importer) {
+	ResourceImporterScene::get_singleton()->add_importer(p_importer);
+}
+
+void EditorPluginInterfaces::remove_scene_import_plugin(const Ref<EditorSceneImporter> &p_importer) {
+	ResourceImporterScene::get_singleton()->remove_importer(p_importer);
+}
+
+void EditorPluginInterfaces::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("add_translation_parser_plugin", "parser"), &EditorPluginInterfaces::add_translation_parser_plugin);
+	ClassDB::bind_method(D_METHOD("remove_translation_parser_plugin", "parser"), &EditorPluginInterfaces::remove_translation_parser_plugin);
+	ClassDB::bind_method(D_METHOD("add_import_plugin", "importer"), &EditorPluginInterfaces::add_import_plugin);
+	ClassDB::bind_method(D_METHOD("remove_import_plugin", "importer"), &EditorPluginInterfaces::remove_import_plugin);
+	ClassDB::bind_method(D_METHOD("add_scene_import_plugin", "scene_importer"), &EditorPluginInterfaces::add_scene_import_plugin);
+	ClassDB::bind_method(D_METHOD("remove_scene_import_plugin", "scene_importer"), &EditorPluginInterfaces::remove_scene_import_plugin);
+	ClassDB::bind_method(D_METHOD("add_export_plugin", "plugin"), &EditorPluginInterfaces::add_export_plugin);
+	ClassDB::bind_method(D_METHOD("remove_export_plugin", "plugin"), &EditorPluginInterfaces::remove_export_plugin);
+	ClassDB::bind_method(D_METHOD("add_spatial_gizmo_plugin", "plugin"), &EditorPluginInterfaces::add_spatial_gizmo_plugin);
+	ClassDB::bind_method(D_METHOD("remove_spatial_gizmo_plugin", "plugin"), &EditorPluginInterfaces::remove_spatial_gizmo_plugin);
+	ClassDB::bind_method(D_METHOD("add_inspector_plugin", "plugin"), &EditorPluginInterfaces::add_inspector_plugin);
+	ClassDB::bind_method(D_METHOD("remove_inspector_plugin", "plugin"), &EditorPluginInterfaces::remove_inspector_plugin);
+}
+
+EditorPluginInterfaces *EditorPluginInterfaces::singleton = nullptr;
+
+EditorPluginInterfaces::EditorPluginInterfaces() {
+	singleton = this;
 }

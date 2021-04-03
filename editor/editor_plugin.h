@@ -140,6 +140,7 @@ public:
 	EditorDocks *get_editor_docks();
 	EditorBottomPanels *get_editor_bottom_panels();
 	EditorWorkspaces *get_editor_workspaces();
+	EditorPluginInterfaces *get_editor_plugin_interfaces();
 
 	ScriptCreateDialog *get_script_create_dialog();
 
@@ -150,29 +151,8 @@ public:
 	virtual void restore_global_state();
 	virtual void save_global_state();
 
-	void add_translation_parser_plugin(const Ref<EditorTranslationParserPlugin> &p_parser);
-	void remove_translation_parser_plugin(const Ref<EditorTranslationParserPlugin> &p_parser);
-
-	void add_import_plugin(const Ref<EditorImportPlugin> &p_importer);
-	void remove_import_plugin(const Ref<EditorImportPlugin> &p_importer);
-
-	void add_export_plugin(const Ref<EditorExportPlugin> &p_exporter);
-	void remove_export_plugin(const Ref<EditorExportPlugin> &p_exporter);
-
-	void add_spatial_gizmo_plugin(const Ref<EditorNode3DGizmoPlugin> &p_gizmo_plugin);
-	void remove_spatial_gizmo_plugin(const Ref<EditorNode3DGizmoPlugin> &p_gizmo_plugin);
-
-	void add_inspector_plugin(const Ref<EditorInspectorPlugin> &p_plugin);
-	void remove_inspector_plugin(const Ref<EditorInspectorPlugin> &p_plugin);
-
-	void add_scene_import_plugin(const Ref<EditorSceneImporter> &p_importer);
-	void remove_scene_import_plugin(const Ref<EditorSceneImporter> &p_importer);
-
 	void add_autoload_singleton(const String &p_name, const String &p_path);
 	void remove_autoload_singleton(const String &p_name);
-
-	void add_debugger_plugin(const Ref<Script> &p_script);
-	void remove_debugger_plugin(const Ref<Script> &p_script);
 
 	void enable_plugin();
 	void disable_plugin();

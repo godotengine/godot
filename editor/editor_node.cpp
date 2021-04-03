@@ -94,6 +94,7 @@
 #include "editor/editor_translation_parser.h"
 #include "editor/export_template_manager.h"
 #include "editor/filesystem_dock.h"
+#include "editor/find_in_files.h"
 #include "editor/import/editor_import_collada.h"
 #include "editor/import/resource_importer_bitmask.h"
 #include "editor/import/resource_importer_csv_translation.h"
@@ -3730,31 +3731,62 @@ void EditorNode::register_editor_types() {
 
 	ClassDB::register_class<EditorPaths>();
 	ClassDB::register_class<EditorPlugin>();
+	ClassDB::register_class<EditorScript>();
+
+	ClassDB::register_virtual_class<EditorInterface>();
+	ClassDB::register_virtual_class<EditorDocks>();
+	ClassDB::register_virtual_class<EditorBottomPanels>();
+	ClassDB::register_virtual_class<EditorWorkspaces>();
+	ClassDB::register_virtual_class<EditorPluginInterfaces>();
+
+	ClassDB::register_virtual_class<SceneTreeDock>();
+	ClassDB::register_virtual_class<NodeDock>();
+	ClassDB::register_virtual_class<ConnectionsDock>();
+	ClassDB::register_virtual_class<InspectorDock>();
+	ClassDB::register_virtual_class<ImportDock>();
+	ClassDB::register_virtual_class<FileSystemDock>();
+
+	ClassDB::register_virtual_class<EditorAudioBuses>();
+	ClassDB::register_virtual_class<EditorLog>();
+	ClassDB::register_virtual_class<AnimationPlayerEditor>();
+	ClassDB::register_virtual_class<AnimationTreeEditor>();
+	ClassDB::register_virtual_class<EditorDebuggerNode>();
+	ClassDB::register_virtual_class<ResourcePreloaderEditor>();
+	ClassDB::register_virtual_class<FindInFilesPanel>();
+	ClassDB::register_virtual_class<ShaderEditor>();
+	ClassDB::register_virtual_class<ShaderFileEditor>();
+	ClassDB::register_virtual_class<SpriteFramesEditor>();
+	ClassDB::register_virtual_class<TextureRegionEditor>();
+	ClassDB::register_virtual_class<ThemeEditor>();
+	ClassDB::register_virtual_class<TileSetEditor>();
+	ClassDB::register_virtual_class<VisualShaderEditor>();
+
+	ClassDB::register_virtual_class<CanvasItemEditor>();
+	ClassDB::register_virtual_class<Node3DEditor>();
+	ClassDB::register_virtual_class<ScriptEditor>();
+	ClassDB::register_virtual_class<EditorAssetLibrary>();
+
 	ClassDB::register_class<EditorTranslationParserPlugin>();
 	ClassDB::register_class<EditorImportPlugin>();
-	ClassDB::register_class<EditorScript>();
+	ClassDB::register_class<EditorExportPlugin>();
+	ClassDB::register_class<EditorNode3DGizmoPlugin>();
+	ClassDB::register_class<EditorInspectorPlugin>();
+	ClassDB::register_class<EditorSceneImporter>();
+	ClassDB::register_class<EditorDebuggerPlugin>();
+
 	ClassDB::register_class<EditorSelection>();
 	ClassDB::register_class<EditorFileDialog>();
 	ClassDB::register_virtual_class<EditorSettings>();
 	ClassDB::register_class<EditorNode3DGizmo>();
-	ClassDB::register_class<EditorNode3DGizmoPlugin>();
 	ClassDB::register_virtual_class<EditorResourcePreview>();
 	ClassDB::register_class<EditorResourcePreviewGenerator>();
 	ClassDB::register_virtual_class<EditorFileSystem>();
 	ClassDB::register_class<EditorFileSystemDirectory>();
 	ClassDB::register_class<EditorVCSInterface>();
-	ClassDB::register_virtual_class<ScriptEditor>();
 	ClassDB::register_virtual_class<ScriptEditorBase>();
 	ClassDB::register_class<EditorSyntaxHighlighter>();
-	ClassDB::register_virtual_class<EditorInterface>();
-	ClassDB::register_virtual_class<EditorDocks>();
-	ClassDB::register_virtual_class<EditorBottomPanels>();
-	ClassDB::register_virtual_class<EditorWorkspaces>();
-	ClassDB::register_class<EditorExportPlugin>();
 	ClassDB::register_class<EditorResourceConversionPlugin>();
-	ClassDB::register_class<EditorSceneImporter>();
 	ClassDB::register_class<EditorInspector>();
-	ClassDB::register_class<EditorInspectorPlugin>();
 	ClassDB::register_class<EditorProperty>();
 	ClassDB::register_class<AnimationTrackEditPlugin>();
 	ClassDB::register_class<ScriptCreateDialog>();
@@ -3764,14 +3796,11 @@ void EditorNode::register_editor_types() {
 	ClassDB::register_class<EditorScriptPicker>();
 	ClassDB::register_class<EditorSceneImporterMesh>();
 	ClassDB::register_class<EditorSceneImporterMeshNode3D>();
-
-	ClassDB::register_virtual_class<FileSystemDock>();
-	ClassDB::register_virtual_class<SceneTreeDock>();
+	ClassDB::register_virtual_class<SceneTreeEditor>();
 
 	// FIXME: Is this stuff obsolete, or should it be ported to new APIs?
 	ClassDB::register_class<EditorScenePostImport>();
 	//ClassDB::register_type<EditorImportExport>();
-	ClassDB::register_class<EditorDebuggerPlugin>();
 }
 
 void EditorNode::unregister_editor_types() {
