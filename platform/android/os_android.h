@@ -121,6 +121,9 @@ public:
 
 	void vibrate_handheld(int p_duration_ms) override;
 
+	virtual void start_gps_tracker(int p_time_ms, int p_distance) override;
+	virtual void stop_gps_tracker() override;
+
 	virtual bool _check_internal_feature_support(const String &p_feature) override;
 	OS_Android(GodotJavaWrapper *p_godot_java, GodotIOJavaWrapper *p_godot_io_java, bool p_use_apk_expansion);
 	~OS_Android();

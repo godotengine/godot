@@ -138,6 +138,16 @@ public class GodotLib {
 	public static native void gyroscope(float x, float y, float z);
 
 	/**
+	 * Forward location from the main thread to the GL thread.
+	 */
+	public static native void location(float lat, float lng);
+
+	/**
+	 * Forward altitude from the main thread to the GL thread.
+	 */
+	public static native void altitude(float alt);
+
+	/**
 	 * Forward regular key events from the main thread to the GL thread.
 	 */
 	public static native void key(int p_keycode, int p_scancode, int p_unicode_char, boolean p_pressed);

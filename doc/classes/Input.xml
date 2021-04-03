@@ -76,6 +76,14 @@
 				Returns a value between 0 and 1 representing the intensity of the given action. In a joypad, for example, the further away the axis (analog sticks or L2, R2 triggers) is from the dead zone, the closer the value will be to 1. If the action is mapped to a control that has no axis as the keyboard, the value returned will be 0 or 1.
 			</description>
 		</method>
+		<method name="get_altitude" qualifiers="const">
+			<return type="float">
+			</return>
+			<description>
+				If a GPS tracker is running, returns the device's altitude above the WGS84 ellipsoid.
+				[b]Note:[/b] This method only works on Android.
+			</description>
+		</method>
 		<method name="get_axis" qualifiers="const">
 			<return type="float">
 			</return>
@@ -170,6 +178,14 @@
 			</return>
 			<description>
 				Returns the mouse speed for the last time the cursor was moved, and this until the next frame where the mouse moves. This means that even if the mouse is not moving, this function will still return the value of the last motion.
+			</description>
+		</method>
+		<method name="get_location" qualifiers="const">
+			<return type="Vector2">
+			</return>
+			<description>
+				If a GPS tracker is running, returns the device's latitude and longitude.
+				[b]Note:[/b] This method only works on Android.
 			</description>
 		</method>
 		<method name="get_magnetometer" qualifiers="const">
@@ -381,6 +397,19 @@
 				Input accumulation is enabled by default. It can be disabled to get slightly more precise/reactive input at the cost of increased CPU usage. In applications where drawing freehand lines is required, input accumulation should generally be disabled while the user is drawing the line to get results that closely follow the actual input.
 			</description>
 		</method>
+		<method name="start_gps_tracker">
+			<return type="void">
+			</return>
+			<argument index="0" name="time_ms" type="int">
+			</argument>
+			<argument index="1" name="distance" type="int">
+			</argument>
+			<description>
+				Starts a GPS tracker, which is necessary for calling [code]get_location()[/code] and [code]get_altitude[/code]. The minimum time between location updates is given by [code]time_ms[/code]. [code]distance[/code] specifies the minimum distance in meters the device has to move before a new location fix is provided. Note that these parameters do not ensure an update every [code]time_ms[/code] milliseconds, as that is device-dependent.
+				If a GPS tracker is already running, calling this method again will restart it using the new time and distance parameters.
+				[b]Note:[/b] This method only works on Android.
+			</description>
+		</method>
 		<method name="start_joy_vibration">
 			<return type="void">
 			</return>
@@ -395,6 +424,14 @@
 			<description>
 				Starts to vibrate the joypad. Joypads usually come with two rumble motors, a strong and a weak one. [code]weak_magnitude[/code] is the strength of the weak motor (between 0 and 1) and [code]strong_magnitude[/code] is the strength of the strong motor (between 0 and 1). [code]duration[/code] is the duration of the effect in seconds (a duration of 0 will try to play the vibration indefinitely).
 				[b]Note:[/b] Not every hardware is compatible with long effect durations; it is recommended to restart an effect if it has to be played for more than a few seconds.
+			</description>
+		</method>
+		<method name="stop_gps_tracker">
+			<return type="void">
+			</return>
+			<description>
+				Stops the GPS tracker if running.
+				[b]Note:[/b] This method only works on Android.
 			</description>
 		</method>
 		<method name="stop_joy_vibration">

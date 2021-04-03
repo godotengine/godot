@@ -76,6 +76,8 @@ GodotJavaWrapper::GodotJavaWrapper(JNIEnv *p_env, jobject p_activity, jobject p_
 	_get_input_fallback_mapping = p_env->GetMethodID(godot_class, "getInputFallbackMapping", "()Ljava/lang/String;");
 	_on_godot_setup_completed = p_env->GetMethodID(godot_class, "onGodotSetupCompleted", "()V");
 	_on_godot_main_loop_started = p_env->GetMethodID(godot_class, "onGodotMainLoopStarted", "()V");
+	_start_gps_tracker = p_env->GetMethodID(godot_class, "startGpsTracker", "(II)V");
+	_stop_gps_tracker = p_env->GetMethodID(godot_class, "stopGpsTracker", "()V");
 
 	// get some Activity method pointers...
 	_get_class_loader = p_env->GetMethodID(activity_class, "getClassLoader", "()Ljava/lang/ClassLoader;");
@@ -329,5 +331,23 @@ void GodotJavaWrapper::vibrate(int p_duration_ms) {
 		ERR_FAIL_COND(env == nullptr);
 
 		env->CallVoidMethod(godot_instance, _vibrate, p_duration_ms);
+	}
+}
+
+void GodotJavaWrapper::start_gps_tracker(int p_time_ms, int p_distance) {
+	if (_start_gps_tracker) {
+		JNIEnv *env = get_jni_env();
+		ERR_FAIL_COND(env == nullptr);
+
+		env->CallVoidMethod(godot_instance, _start_gps_tracker, p_time_ms, p_distance);
+	}
+}
+
+void GodotJavaWrapper::stop_gps_tracker() {
+	if (_stop_gps_tracker) {
+		JNIEnv *env = get_jni_env();
+		ERR_FAIL_COND(env == nullptr);
+
+		env->CallVoidMethod(godot_instance, _stop_gps_tracker);
 	}
 }

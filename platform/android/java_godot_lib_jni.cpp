@@ -68,6 +68,8 @@ static Vector3 accelerometer;
 static Vector3 gravity;
 static Vector3 magnetometer;
 static Vector3 gyroscope;
+static Vector2 location;
+static float altitude;
 
 extern "C" {
 
@@ -230,6 +232,8 @@ JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_step(JNIEnv *env, jcl
 	DisplayServerAndroid::get_singleton()->process_gravity(gravity);
 	DisplayServerAndroid::get_singleton()->process_magnetometer(magnetometer);
 	DisplayServerAndroid::get_singleton()->process_gyroscope(gyroscope);
+	DisplayServerAndroid::get_singleton()->process_location(location);
+	DisplayServerAndroid::get_singleton()->process_altitude(altitude);
 
 	if (os_android->main_loop_iterate()) {
 		godot_java->force_quit(env);
@@ -368,6 +372,14 @@ JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_magnetometer(JNIEnv *
 
 JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_gyroscope(JNIEnv *env, jclass clazz, jfloat x, jfloat y, jfloat z) {
 	gyroscope = Vector3(x, y, z);
+}
+
+JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_location(JNIEnv *env, jclass clazz, jfloat lat, jfloat lng) {
+	location = Vector2(lat, lng);
+}
+
+JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_altitude(JNIEnv *env, jclass clazz, jfloat alt) {
+	altitude = alt;
 }
 
 JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_focusin(JNIEnv *env, jclass clazz) {

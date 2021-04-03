@@ -825,6 +825,14 @@ void DisplayServerAndroid::process_gyroscope(const Vector3 &p_gyroscope) {
 	Input::get_singleton()->set_gyroscope(p_gyroscope);
 }
 
+void DisplayServerAndroid::process_location(const Vector2 &p_location) {
+	Input::get_singleton()->set_location(p_location);
+}
+
+void DisplayServerAndroid::process_altitude(float p_altitude) {
+	Input::get_singleton()->set_altitude(p_altitude);
+}
+
 void DisplayServerAndroid::mouse_set_mode(MouseMode p_mode) {
 	if (mouse_mode == p_mode) {
 		return;

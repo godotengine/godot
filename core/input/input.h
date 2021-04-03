@@ -109,6 +109,8 @@ private:
 	Vector3 accelerometer;
 	Vector3 magnetometer;
 	Vector3 gyroscope;
+	Vector2 location;
+	float altitude;
 	Vector2 mouse_pos;
 	int64_t mouse_window = 0;
 
@@ -285,6 +287,11 @@ public:
 	Vector3 get_magnetometer() const;
 	Vector3 get_gyroscope() const;
 
+	void start_gps_tracker(int p_time_ms = 10000, int p_distance = 10);
+	void stop_gps_tracker();
+	Vector2 get_location() const;
+	float get_altitude() const;
+
 	Point2 get_mouse_position() const;
 	Point2 get_last_mouse_speed() const;
 	int get_mouse_button_mask() const;
@@ -298,6 +305,8 @@ public:
 	void set_accelerometer(const Vector3 &p_accel);
 	void set_magnetometer(const Vector3 &p_magnetometer);
 	void set_gyroscope(const Vector3 &p_gyroscope);
+	void set_location(const Vector2 &p_location);
+	void set_altitude(float p_altitude);
 	void set_joy_axis(int p_device, int p_axis, float p_value);
 
 	void start_joy_vibration(int p_device, float p_weak_magnitude, float p_strong_magnitude, float p_duration = 0);

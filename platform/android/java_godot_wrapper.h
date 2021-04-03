@@ -68,6 +68,8 @@ private:
 	jmethodID _get_input_fallback_mapping = 0;
 	jmethodID _on_godot_setup_completed = 0;
 	jmethodID _on_godot_main_loop_started = 0;
+	jmethodID _start_gps_tracker = 0;
+	jmethodID _stop_gps_tracker = 0;
 	jmethodID _get_class_loader = 0;
 
 public:
@@ -99,6 +101,8 @@ public:
 	jobject get_surface();
 	bool is_activity_resumed();
 	void vibrate(int p_duration_ms);
+	void start_gps_tracker(int p_time_ms, int p_distance);
+	void stop_gps_tracker();
 	String get_input_fallback_mapping();
 };
 

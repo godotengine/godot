@@ -296,6 +296,10 @@ public:
 	virtual Vector<String> get_granted_permissions() const { return Vector<String>(); }
 
 	virtual void process_and_drop_events() {}
+
+	virtual void start_gps_tracker(int p_time_ms, int p_distance);
+	virtual void stop_gps_tracker();
+
 	OS();
 	virtual ~OS();
 };

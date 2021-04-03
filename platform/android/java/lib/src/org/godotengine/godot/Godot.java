@@ -62,9 +62,13 @@ import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
+import android.location.Location;
+import android.location.LocationListener;
+import android.location.LocationManager;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
+import android.os.Looper;
 import android.os.Messenger;
 import android.os.VibrationEffect;
 import android.os.Vibrator;
@@ -108,7 +112,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Locale;
 
-public class Godot extends Fragment implements SensorEventListener, IDownloaderClient {
+public class Godot extends Fragment implements SensorEventListener, LocationListener, IDownloaderClient {
 	private IStub mDownloaderClientStub;
 	private TextView mStatusText;
 	private TextView mProgressFraction;
@@ -170,6 +174,8 @@ public class Godot extends Fragment implements SensorEventListener, IDownloaderC
 	private Sensor mGravity;
 	private Sensor mMagnetometer;
 	private Sensor mGyroscope;
+
+	private LocationManager mLocationManager;
 
 	public static GodotIO io;
 	public static GodotNetUtils netUtils;
@@ -504,6 +510,7 @@ public class Godot extends Fragment implements SensorEventListener, IDownloaderC
 		mSensorManager.registerListener(this, mMagnetometer, SensorManager.SENSOR_DELAY_GAME);
 		mGyroscope = mSensorManager.getDefaultSensor(Sensor.TYPE_GYROSCOPE);
 		mSensorManager.registerListener(this, mGyroscope, SensorManager.SENSOR_DELAY_GAME);
+		mLocationManager = (LocationManager)activity.getSystemService(Context.LOCATION_SERVICE);
 
 		GodotLib.initialize(activity, this, activity.getAssets(), use_apk_expansion);
 
@@ -817,6 +824,52 @@ public class Godot extends Fragment implements SensorEventListener, IDownloaderC
 			});
 		}
 	}
+
+	/**
+	 * Used by the native code (java_godot_wrapper.h) to start GPS tracking
+	 */
+	@Keep
+	private void startGpsTracker(int time, int distance) {
+		final Activity activity = getActivity();
+		mLocationManager.removeUpdates(this);
+		try {
+			mLocationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER,
+					time, distance, this, Looper.getMainLooper());
+			// Trigger a location change event upon initialization
+			if (mLocationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)) {
+				Location lastLocation = mLocationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
+				if (lastLocation != null) {
+					onLocationChanged(lastLocation);
+				}
+			}
+		}
+		catch (SecurityException e) {
+			// Fail silently
+		}
+	}
+
+	/**
+	 * Used by the native code (java_godot_wrapper.h) to stop GPS tracking
+	 */
+	@Keep
+	private void stopGpsTracker() {
+		mLocationManager.removeUpdates(this);
+	}
+
+	@Override
+	public void onLocationChanged(Location location) {
+		GodotLib.location((float)location.getLatitude(), (float)location.getLongitude());
+		GodotLib.altitude((float)location.getAltitude());
+	}
+
+	@Override
+	public void onProviderDisabled(String provider) { }
+
+	@Override
+	public void onProviderEnabled(String provider) { }
+
+	@Override
+	public void onStatusChanged(String provider, int status, Bundle extras) { }
 
 	@Override
 	public final void onAccuracyChanged(Sensor sensor, int accuracy) {

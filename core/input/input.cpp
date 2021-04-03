@@ -121,6 +121,10 @@ void Input::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_accelerometer"), &Input::get_accelerometer);
 	ClassDB::bind_method(D_METHOD("get_magnetometer"), &Input::get_magnetometer);
 	ClassDB::bind_method(D_METHOD("get_gyroscope"), &Input::get_gyroscope);
+	ClassDB::bind_method(D_METHOD("start_gps_tracker", "time_ms", "distance"), &Input::start_gps_tracker);
+	ClassDB::bind_method(D_METHOD("stop_gps_tracker"), &Input::stop_gps_tracker);
+	ClassDB::bind_method(D_METHOD("get_location"), &Input::get_location);
+	ClassDB::bind_method(D_METHOD("get_altitude"), &Input::get_altitude);
 	ClassDB::bind_method(D_METHOD("get_last_mouse_speed"), &Input::get_last_mouse_speed);
 	ClassDB::bind_method(D_METHOD("get_mouse_button_mask"), &Input::get_mouse_button_mask);
 	ClassDB::bind_method(D_METHOD("set_mouse_mode", "mode"), &Input::set_mouse_mode);
@@ -460,6 +464,24 @@ Vector3 Input::get_gyroscope() const {
 	return gyroscope;
 }
 
+void Input::start_gps_tracker(int p_time_ms, int p_distance) {
+	OS::get_singleton()->start_gps_tracker(p_time_ms, p_distance);
+}
+
+void Input::stop_gps_tracker() {
+	OS::get_singleton()->stop_gps_tracker();
+}
+
+Vector2 Input::get_location() const {
+	_THREAD_SAFE_METHOD_
+	return location;
+}
+
+float Input::get_altitude() const {
+	_THREAD_SAFE_METHOD_
+	return altitude;
+}
+
 void Input::parse_input_event(const Ref<InputEvent> &p_event) {
 	_parse_input_event_impl(p_event, false);
 }
@@ -698,6 +720,18 @@ void Input::set_gyroscope(const Vector3 &p_gyroscope) {
 	_THREAD_SAFE_METHOD_
 
 	gyroscope = p_gyroscope;
+}
+
+void Input::set_location(const Vector2 &p_location) {
+	_THREAD_SAFE_METHOD_
+
+	location = p_location;
+}
+
+void Input::set_altitude(float p_altitude) {
+	_THREAD_SAFE_METHOD_
+
+	altitude = p_altitude;
 }
 
 void Input::set_mouse_position(const Point2 &p_posf) {

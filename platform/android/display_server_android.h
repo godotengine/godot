@@ -172,6 +172,8 @@ public:
 	void process_gravity(const Vector3 &p_gravity);
 	void process_magnetometer(const Vector3 &p_magnetometer);
 	void process_gyroscope(const Vector3 &p_gyroscope);
+	void process_location(const Vector2 &p_location);
+	void process_altitude(float p_altitude);
 	void process_touch(int p_event, int p_pointer, const Vector<TouchPos> &p_points);
 	void process_hover(int p_type, Point2 p_pos);
 	void process_mouse_event(int input_device, int event_action, int event_android_buttons_mask, Point2 event_pos, float event_vertical_factor = 0, float event_horizontal_factor = 0);

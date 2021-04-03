@@ -275,6 +275,14 @@ void OS_Android::vibrate_handheld(int p_duration_ms) {
 	godot_java->vibrate(p_duration_ms);
 }
 
+void OS_Android::start_gps_tracker(int p_time_ms, int p_distance) {
+	godot_java->start_gps_tracker(p_time_ms, p_distance);
+}
+
+void OS_Android::stop_gps_tracker() {
+	godot_java->stop_gps_tracker();
+}
+
 bool OS_Android::_check_internal_feature_support(const String &p_feature) {
 	if (p_feature == "mobile") {
 		return true;

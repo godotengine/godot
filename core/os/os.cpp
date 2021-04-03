@@ -532,6 +532,14 @@ void OS::add_frame_delay(bool p_can_draw) {
 	}
 }
 
+void OS::start_gps_tracker(int p_time_ms, int p_distance) {
+	WARN_PRINT("start_gps_tracker only works with Android");
+}
+
+void OS::stop_gps_tracker() {
+	WARN_PRINT("stop_gps_tracker only works with Android");
+}
+
 OS::OS() {
 	singleton = this;
 
