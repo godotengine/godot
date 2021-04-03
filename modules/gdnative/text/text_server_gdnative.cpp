@@ -555,15 +555,15 @@ Vector<Vector2i> TextServerGDNative::shaped_text_get_line_breaks(RID p_shaped, f
 	}
 }
 
-Vector<Vector2i> TextServerGDNative::shaped_text_get_word_breaks(RID p_shaped) const {
+Vector<Vector2i> TextServerGDNative::shaped_text_get_word_breaks(RID p_shaped, int p_grapheme_flags) const {
 	ERR_FAIL_COND_V(interface == nullptr, Vector<Vector2i>());
 	if (interface->shaped_text_get_word_breaks != nullptr) {
-		godot_packed_vector2i_array result = interface->shaped_text_get_word_breaks(data, (godot_rid *)&p_shaped);
+		godot_packed_vector2i_array result = interface->shaped_text_get_word_breaks(data, (godot_rid *)&p_shaped, p_grapheme_flags);
 		Vector<Vector2i> breaks = *(Vector<Vector2i> *)&result;
 		godot_packed_vector2i_array_destroy(&result);
 		return breaks;
 	} else {
-		return TextServer::shaped_text_get_word_breaks(p_shaped);
+		return TextServer::shaped_text_get_word_breaks(p_shaped, p_grapheme_flags);
 	}
 }
 

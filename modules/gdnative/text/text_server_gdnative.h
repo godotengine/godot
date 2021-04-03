@@ -178,7 +178,7 @@ public:
 	virtual Vector<Glyph> shaped_text_sort_logical(RID p_shaped) override;
 	virtual Vector<Vector2i> shaped_text_get_line_breaks_adv(RID p_shaped, const Vector<float> &p_width, int p_start = 0, bool p_once = true, uint8_t /*TextBreakFlag*/ p_break_flags = BREAK_MANDATORY | BREAK_WORD_BOUND) const override;
 	virtual Vector<Vector2i> shaped_text_get_line_breaks(RID p_shaped, float p_width, int p_start = 0, uint8_t p_break_flags = BREAK_MANDATORY | BREAK_WORD_BOUND) const override;
-	virtual Vector<Vector2i> shaped_text_get_word_breaks(RID p_shaped) const override;
+	virtual Vector<Vector2i> shaped_text_get_word_breaks(RID p_shaped, int p_grapheme_flags = GRAPHEME_IS_SPACE | GRAPHEME_IS_PUNCTUATION) const override;
 	virtual Array shaped_text_get_objects(RID p_shaped) const override;
 	virtual Rect2 shaped_text_get_object_rect(RID p_shaped, Variant p_key) const override;
 
