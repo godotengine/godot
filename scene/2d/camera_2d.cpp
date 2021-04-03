@@ -290,7 +290,15 @@ void Camera2D::_notification(int p_what) {
 				Transform2D inv_transform = get_global_transform().affine_inverse(); // undo global space
 
 				for (int i = 0; i < 4; i++) {
-					draw_line(inv_transform.xform(screen_endpoints[i]), inv_transform.xform(screen_endpoints[(i + 1) % 4]), area_axis_color, area_axis_width);
+					Vector2 from = inv_transform.xform(screen_endpoints[i]);
+					Vector2 to = inv_transform.xform(screen_endpoints[(i + 1) % 4]);
+
+					draw_line(from, to, area_axis_color, area_axis_width);
+
+					// Draw an extra rectangle with line width as one to handle flicker when zoomed out.
+					if (is_current()) {
+						draw_line(from, to, area_axis_color, 1);
+					}
 				}
 			}
 
@@ -313,6 +321,11 @@ void Camera2D::_notification(int p_what) {
 
 				for (int i = 0; i < 4; i++) {
 					draw_line(limit_points[i], limit_points[(i + 1) % 4], limit_drawing_color, limit_drawing_width);
+
+					// Draw an extra rectangle with line width as one to handle flicker when zoomed out.
+					if (is_current()) {
+						draw_line(limit_points[i], limit_points[(i + 1) % 4], limit_drawing_color, 1);
+					}
 				}
 			}
 
@@ -337,7 +350,15 @@ void Camera2D::_notification(int p_what) {
 				Transform2D inv_transform = get_global_transform().affine_inverse(); // undo global space
 
 				for (int i = 0; i < 4; i++) {
-					draw_line(inv_transform.xform(margin_endpoints[i]), inv_transform.xform(margin_endpoints[(i + 1) % 4]), margin_drawing_color, margin_drawing_width);
+					Vector2 from = inv_transform.xform(margin_endpoints[i]);
+					Vector2 to = inv_transform.xform(margin_endpoints[(i + 1) % 4]);
+
+					draw_line(from, to, margin_drawing_color, margin_drawing_width);
+
+					// Draw an extra rectangle with line width as one to handle flicker when zoomed out.
+					if (is_current()) {
+						draw_line(from, to, margin_drawing_color, 3);
+					}
 				}
 			}
 		} break;
