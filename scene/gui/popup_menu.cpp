@@ -192,6 +192,7 @@ void PopupMenu::_activate_submenu(int p_over) {
 	Popup *submenu_popup = Object::cast_to<Popup>(n);
 	ERR_FAIL_COND_MSG(!submenu_popup, "Item subnode is not a Popup: " + items[p_over].submenu + ".");
 	if (submenu_popup->is_visible()) {
+		print_line("visible");
 		return; //already visible!
 	}
 
@@ -819,7 +820,8 @@ void PopupMenu::_notification(int p_what) {
 			}
 		} break;
 		case NOTIFICATION_WM_WINDOW_FOCUS_OUT: {
-			hide();
+			print_line(".kxsjybfsl,dhbfskdj,fbvxsy,dkhfbsxdhfbdsk,jhfbsjhsjbsdjdndfx,jdhfds");
+			//hide();
 		} break;
 	}
 }

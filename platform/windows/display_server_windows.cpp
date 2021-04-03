@@ -37,6 +37,7 @@
 #include "scene/resources/texture.h"
 
 #include <avrt.h>
+#include <iostream>
 
 #ifdef DEBUG_ENABLED
 static String format_error_message(DWORD id) {
@@ -473,10 +474,10 @@ DisplayServer::WindowID DisplayServerWindows::get_window_at_screen_position(cons
 	return INVALID_WINDOW_ID;
 }
 
-DisplayServer::WindowID DisplayServerWindows::create_sub_window(WindowMode p_mode, VSyncMode p_vsync_mode, uint32_t p_flags, const Rect2i &p_rect) {
+DisplayServer::WindowID DisplayServerWindows::create_sub_window(WindowMode p_mode, VSyncMode p_vsync_mode, uint32_t p_flags, const Rect2i &p_rect, const WindowID p_parent_window) {
 	_THREAD_SAFE_METHOD_
 
-	WindowID window_id = _create_window(p_mode, p_vsync_mode, p_flags, p_rect);
+	WindowID window_id = _create_window(p_mode, p_vsync_mode, p_flags, p_rect, p_parent_window);
 	ERR_FAIL_COND_V_MSG(window_id == INVALID_WINDOW_ID, INVALID_WINDOW_ID, "Failed to create sub window.");
 
 	WindowData &wd = windows[window_id];
@@ -709,9 +710,8 @@ void DisplayServerWindows::window_set_position(const Point2i &p_position, Window
 	AdjustWindowRectEx(&rect, style, false, exStyle);
 
 	HWND parent = GetParent(wd.hWnd);
-	if (parent) {
-		ScreenToClient(parent, (POINT *)&rect.left);
-		ScreenToClient(parent, (POINT *)&rect.right);
+	if (parent && wd.is_child) {
+		_constrain_child_window_size(parent, &rect);
 	}
 
 	MoveWindow(wd.hWnd, rect.left, rect.top, rect.right - rect.left, rect.bottom - rect.top, TRUE);
@@ -832,9 +832,12 @@ void DisplayServerWindows::window_set_size(const Size2i p_size, WindowID p_windo
 	RECT rect;
 	GetWindowRect(wd.hWnd, &rect);
 	HWND parent = GetParent(wd.hWnd);
-	if (parent) {
-		ScreenToClient(parent, (POINT *)&rect.left);
-		ScreenToClient(parent, (POINT *)&rect.right);
+	if (parent && wd.is_child) {
+		rect.bottom = rect.top + h;
+		rect.right = rect.left + w;
+		_constrain_child_window_size(parent, &rect);
+		h = rect.bottom - rect.top;
+		w = rect.right - rect.left;
 	}
 	if (!wd.borderless) {
 		RECT crect;
@@ -888,7 +891,7 @@ Size2i DisplayServerWindows::window_get_real_size(WindowID p_window) const {
 
 void DisplayServerWindows::_get_window_style(bool p_main_window, bool p_fullscreen, bool p_borderless, bool p_resizable, bool p_maximized, bool p_no_activate_focus, DWORD &r_style, DWORD &r_style_ex) {
 	r_style = 0;
-	r_style_ex = WS_EX_WINDOWEDGE;
+	r_style_ex = WS_EX_WINDOWEDGE | WS_EX_CONTROLPARENT;
 	if (p_main_window) {
 		r_style_ex |= WS_EX_APPWINDOW;
 	} else {
@@ -928,6 +931,7 @@ void DisplayServerWindows::_update_window_style(WindowID p_window, bool p_repain
 	DWORD style_ex = 0;
 
 	_get_window_style(p_window == MAIN_WINDOW_ID, wd.fullscreen, wd.borderless, wd.resizable, wd.maximized, wd.no_focus, style, style_ex);
+	wd.is_child = style & WS_CHILD;
 
 	SetWindowLongPtr(wd.hWnd, GWL_STYLE, style);
 	SetWindowLongPtr(wd.hWnd, GWL_EXSTYLE, style_ex);
@@ -938,9 +942,8 @@ void DisplayServerWindows::_update_window_style(WindowID p_window, bool p_repain
 		RECT rect;
 		GetWindowRect(wd.hWnd, &rect);
 		HWND parent = GetParent(wd.hWnd);
-		if (parent) {
-			ScreenToClient(parent, (POINT *)&rect.left);
-			ScreenToClient(parent, (POINT *)&rect.right);
+		if (parent && wd.is_child) {
+			_constrain_child_window_size(parent, &rect);
 		}
 		MoveWindow(wd.hWnd, rect.left, rect.top, rect.right - rect.left, rect.bottom - rect.top, TRUE);
 	}
@@ -1807,6 +1810,17 @@ void DisplayServerWindows::_dispatch_input_event(const Ref<InputEvent> &p_event)
 
 	Ref<InputEventFromWindow> event_from_window = p_event;
 	if (event_from_window.is_valid() && event_from_window->get_window_id() != INVALID_WINDOW_ID) {
+		//send to all windows, that request to always get input and have no focus
+		for (Map<WindowID, WindowData>::Element *E = windows.front(); E; E = E->next()) {
+			if (E->key() == event_from_window->get_window_id() || E->key() == MAIN_WINDOW_ID || (!E->get().input_without_focus)) {
+				continue;
+			}
+			Callable callable = E->get().input_event_callback;
+			if (callable.is_null()) {
+				continue;
+			}
+			callable.call((const Variant **)&evp, 1, ret, ce);
+		}
 		{
 			//send to a window
 			if (!windows.has(event_from_window->get_window_id())) {
@@ -1817,17 +1831,6 @@ void DisplayServerWindows::_dispatch_input_event(const Ref<InputEvent> &p_event)
 			if (callable.is_null()) {
 				in_dispatch_input_event = false;
 				return;
-			}
-			callable.call((const Variant **)&evp, 1, ret, ce);
-		}
-		//send to all windows, that request to always get input and have no focus
-		for (Map<WindowID, WindowData>::Element *E = windows.front(); E; E = E->next()) {
-			if (E->key() == event_from_window->get_window_id() || E->key() == MAIN_WINDOW_ID || (!E->get().input_without_focus)) {
-				continue;
-			}
-			Callable callable = E->get().input_event_callback;
-			if (callable.is_null()) {
-				continue;
 			}
 			callable.call((const Variant **)&evp, 1, ret, ce);
 		}
@@ -3013,7 +3016,43 @@ void DisplayServerWindows::_update_tablet_ctx(const String &p_old_driver, const 
 	}
 }
 
-DisplayServer::WindowID DisplayServerWindows::_create_window(WindowMode p_mode, VSyncMode p_vsync_mode, uint32_t p_flags, const Rect2i &p_rect) {
+void DisplayServerWindows::_constrain_child_window_size(HWND p_parent, RECT *r_rect) {
+	MapWindowPoints(GetParent(p_parent), p_parent, (LPPOINT)r_rect, sizeof(RECT) / sizeof(POINT));
+	RECT parent_rect;
+	GetClientRect(p_parent, &parent_rect);
+	// First, try to move the window.
+	if (r_rect->top < 0) {
+		r_rect->top = 0;
+		r_rect->bottom -= r_rect->top;
+	} else if (r_rect->bottom > parent_rect.bottom) {
+		r_rect->top -= r_rect->bottom - parent_rect.bottom;
+		r_rect->bottom = parent_rect.bottom;
+	}
+
+	if (r_rect->left < 0) {
+		r_rect->left = 0;
+		r_rect->right -= r_rect->left;
+	} else if (r_rect->right > parent_rect.right) {
+		r_rect->left -= r_rect->right - parent_rect.right;
+		r_rect->right = parent_rect.right;
+	}
+
+	// Now clip the window
+	if (r_rect->top < 0) {
+		r_rect->top = 0;
+	}
+	if (r_rect->bottom > parent_rect.bottom) {
+		r_rect->bottom = parent_rect.bottom;
+	}
+	if (r_rect->left < 0) {
+		r_rect->left = 0;
+	}
+	if (r_rect->right > parent_rect.right) {
+		r_rect->right = parent_rect.right;
+	}
+}
+
+DisplayServer::WindowID DisplayServerWindows::_create_window(WindowMode p_mode, VSyncMode p_vsync_mode, uint32_t p_flags, const Rect2i &p_rect, const WindowID p_parent_window_id) {
 	DWORD dwExStyle;
 	DWORD dwStyle;
 
@@ -3051,11 +3090,14 @@ DisplayServer::WindowID DisplayServerWindows::_create_window(WindowMode p_mode, 
 
 	WindowID id = window_id_counter;
 	WindowData &wd = windows[id];
-	if (id != MAIN_WINDOW_ID && (p_flags & WINDOW_FLAG_BORDERLESS_BIT)) {
+	HWND parent_window = nullptr;
+	if (p_parent_window_id != INVALID_WINDOW_ID) {
 		// We have child windows here, so we need to ensure they use local coordinates
-		HWND main_window = windows[MAIN_WINDOW_ID].hWnd;
-		ScreenToClient(main_window, (POINT *)&WindowRect.left);
-		ScreenToClient(main_window, (POINT *)&WindowRect.right);
+		wd.is_child = (p_flags & WINDOW_FLAG_BORDERLESS_BIT);
+		parent_window = windows[p_parent_window_id].hWnd;
+		if (wd.is_child) {
+			_constrain_child_window_size(parent_window, &WindowRect);
+		}
 		wd.input_without_focus = true; // This is perhaps only a workaround (works (only) without in X11). On X11 Input is propagated to the receiving child window and every parent.
 	}
 
@@ -3070,7 +3112,7 @@ DisplayServer::WindowID DisplayServerWindows::_create_window(WindowMode p_mode, 
 				WindowRect.top,
 				WindowRect.right - WindowRect.left,
 				WindowRect.bottom - WindowRect.top,
-				id == MAIN_WINDOW_ID ? nullptr : windows[MAIN_WINDOW_ID].hWnd, nullptr, hInstance, nullptr);
+				parent_window, nullptr, hInstance, nullptr);
 		if (!wd.hWnd) {
 			MessageBoxW(nullptr, L"Window Creation Error.", L"ERROR", MB_OK | MB_ICONEXCLAMATION);
 			windows.erase(id);
@@ -3337,7 +3379,7 @@ DisplayServerWindows::DisplayServerWindows(const String &p_rendering_driver, Win
 			(screen_get_size(0).width - p_resolution.width) / 2,
 			(screen_get_size(0).height - p_resolution.height) / 2);
 
-	WindowID main_window = _create_window(p_mode, p_vsync_mode, 0, Rect2i(window_position, p_resolution));
+	WindowID main_window = _create_window(p_mode, p_vsync_mode, 0, Rect2i(window_position, p_resolution), INVALID_WINDOW_ID);
 	ERR_FAIL_COND_MSG(main_window == INVALID_WINDOW_ID, "Failed to create main window.");
 
 	for (int i = 0; i < WINDOW_FLAG_MAX; i++) {

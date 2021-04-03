@@ -328,6 +328,7 @@ class DisplayServerWindows : public DisplayServer {
 		bool preserve_window_size = false;
 		bool pre_fs_valid = false;
 		RECT pre_fs_rect;
+		bool is_child = false;
 		bool maximized = false;
 		bool minimized = false;
 		bool fullscreen = false;
@@ -390,7 +391,8 @@ class DisplayServerWindows : public DisplayServer {
 
 	JoypadWindows *joypad;
 
-	WindowID _create_window(WindowMode p_mode, VSyncMode p_vsync_mode, uint32_t p_flags, const Rect2i &p_rect);
+	void _constrain_child_window_size(HWND p_parent, RECT *r_rect);
+	WindowID _create_window(WindowMode p_mode, VSyncMode p_vsync_mode, uint32_t p_flags, const Rect2i &p_rect, const WindowID p_parent_window_id);
 	WindowID window_id_counter = MAIN_WINDOW_ID;
 	Map<WindowID, WindowData> windows;
 
@@ -468,7 +470,7 @@ public:
 
 	virtual Vector<DisplayServer::WindowID> get_window_list() const override;
 
-	virtual WindowID create_sub_window(WindowMode p_mode, VSyncMode p_vsync_mode, uint32_t p_flags, const Rect2i &p_rect = Rect2i()) override;
+	virtual WindowID create_sub_window(WindowMode p_mode, VSyncMode p_vsync_mode, uint32_t p_flags, const Rect2i &p_rect = Rect2i(), const WindowID p_parent_window = MAIN_WINDOW_ID) override;
 	virtual void show_window(WindowID p_window) override;
 	virtual void delete_sub_window(WindowID p_window) override;
 
