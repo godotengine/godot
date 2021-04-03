@@ -393,9 +393,10 @@ void EditorSettingsDialog::_shortcut_button_pressed(Object *p_item, int p_column
 	TreeItem *ti = Object::cast_to<TreeItem>(p_item);
 	ERR_FAIL_COND(!ti);
 
+	button_idx = p_idx;
+
 	if (ti->get_metadata(0) == "Common") {
 		// Editing a Built-in action, which can have multiple bindings.
-		button_idx = p_idx;
 		editing_action = true;
 		current_action = ti->get_text(0);
 
