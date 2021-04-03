@@ -2794,23 +2794,25 @@ void Node3DEditorViewport::_update_freelook(real_t delta) {
 
 	// Use actions from the inputmap, as this is the only way to reliably detect input in this method.
 	// See #54469 for more discussion and explanation.
+	// Always allow using the arrow keys (+ Space and Ctrl) for freelook.
+	// This provides a good default layout for both right-handed and left-handed users out of the box.
 	Input *inp = Input::get_singleton();
-	if (inp->is_action_pressed("spatial_editor/freelook_left")) {
+	if (Input::get_singleton()->is_key_pressed(KEY_LEFT) || inp->is_action_pressed("spatial_editor/freelook_left")) {
 		direction -= right;
 	}
-	if (inp->is_action_pressed("spatial_editor/freelook_right")) {
+	if (Input::get_singleton()->is_key_pressed(KEY_RIGHT) || inp->is_action_pressed("spatial_editor/freelook_right")) {
 		direction += right;
 	}
-	if (inp->is_action_pressed("spatial_editor/freelook_forward")) {
+	if (Input::get_singleton()->is_key_pressed(KEY_UP) || inp->is_action_pressed("spatial_editor/freelook_forward")) {
 		direction += forward;
 	}
-	if (inp->is_action_pressed("spatial_editor/freelook_backwards")) {
+	if (Input::get_singleton()->is_key_pressed(KEY_DOWN) || inp->is_action_pressed("spatial_editor/freelook_backwards")) {
 		direction -= forward;
 	}
-	if (inp->is_action_pressed("spatial_editor/freelook_up")) {
+	if (Input::get_singleton()->is_key_pressed(KEY_SPACE) || inp->is_action_pressed("spatial_editor/freelook_up")) {
 		direction += up;
 	}
-	if (inp->is_action_pressed("spatial_editor/freelook_down")) {
+	if (Input::get_singleton()->is_key_pressed(KEY_CONTROL) || inp->is_action_pressed("spatial_editor/freelook_down")) {
 		direction -= up;
 	}
 
