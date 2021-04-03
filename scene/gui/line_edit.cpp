@@ -155,6 +155,7 @@ void LineEdit::_backspace(bool p_word, bool p_all_to_left) {
 		for (int i = words.size() - 1; i >= 0; i--) {
 			if (words[i].x < cc) {
 				cc = words[i].x;
+				break;
 			}
 		}
 
@@ -202,6 +203,7 @@ void LineEdit::_delete(bool p_word, bool p_all_to_right) {
 		}
 
 		delete_text(caret_column, cc);
+		set_caret_column(caret_column);
 	} else {
 		if (caret_mid_grapheme_enabled) {
 			set_caret_column(caret_column + 1);
