@@ -472,6 +472,14 @@ private:
 	void _unpair(BVHHandle p_from, BVHHandle p_to) {
 		tree._handle_sort(p_from, p_to);
 
+		typename BVHTREE_CLASS::ItemExtra &exa = tree._extra[p_from.id()];
+		typename BVHTREE_CLASS::ItemExtra &exb = tree._extra[p_to.id()];
+
+		// if the userdata is the same, no collisions should occur
+		if ((exa.userdata == exb.userdata) && exa.userdata) {
+			return;
+		}
+
 		typename BVHTREE_CLASS::ItemPairs &pairs_from = tree._pairs[p_from.id()];
 		typename BVHTREE_CLASS::ItemPairs &pairs_to = tree._pairs[p_to.id()];
 
@@ -480,9 +488,6 @@ private:
 
 		// callback
 		if (unpair_callback) {
-
-			typename BVHTREE_CLASS::ItemExtra &exa = tree._extra[p_from.id()];
-			typename BVHTREE_CLASS::ItemExtra &exb = tree._extra[p_to.id()];
 
 			unpair_callback(pair_callback_userdata, p_from, exa.userdata, exa.subindex, p_to, exb.userdata, exb.subindex, ud_from);
 		}
@@ -544,6 +549,14 @@ private:
 		// only have to do this oneway, lower ID then higher ID
 		tree._handle_sort(p_ha, p_hb);
 
+		const typename BVHTREE_CLASS::ItemExtra &exa = _get_extra(p_ha);
+		const typename BVHTREE_CLASS::ItemExtra &exb = _get_extra(p_hb);
+
+		// if the userdata is the same, no collisions should occur
+		if ((exa.userdata == exb.userdata) && exa.userdata) {
+			return;
+		}
+
 		typename BVHTREE_CLASS::ItemPairs &p_from = tree._pairs[p_ha.id()];
 		typename BVHTREE_CLASS::ItemPairs &p_to = tree._pairs[p_hb.id()];
 
@@ -561,9 +574,6 @@ private:
 		void *callback_userdata = nullptr;
 
 		if (pair_callback) {
-			const typename BVHTREE_CLASS::ItemExtra &exa = _get_extra(p_ha);
-			const typename BVHTREE_CLASS::ItemExtra &exb = _get_extra(p_hb);
-
 			callback_userdata = pair_callback(pair_callback_userdata, p_ha, exa.userdata, exa.subindex, p_hb, exb.userdata, exb.subindex);
 		}
 
