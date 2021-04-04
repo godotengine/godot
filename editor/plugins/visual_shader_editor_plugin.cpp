@@ -2627,7 +2627,7 @@ void VisualShaderEditor::_graph_gui_input(const Ref<InputEvent> &p_event) {
 						selected_constants.insert(id);
 					}
 					VisualShaderNodeUniform *uniform_node = Object::cast_to<VisualShaderNodeUniform>(node.ptr());
-					if (uniform_node != nullptr) {
+					if (uniform_node != nullptr && uniform_node->is_convertible_to_constant()) {
 						selected_uniforms.insert(id);
 					}
 				}

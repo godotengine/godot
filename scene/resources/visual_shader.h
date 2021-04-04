@@ -421,6 +421,7 @@ public:
 	bool is_global_code_generated() const;
 
 	virtual bool is_qualifier_supported(Qualifier p_qual) const = 0;
+	virtual bool is_convertible_to_constant() const = 0;
 
 	virtual Vector<StringName> get_editable_properties() const override;
 	virtual String get_warning(Shader::Mode p_mode, VisualShader::Type p_type) const override;
