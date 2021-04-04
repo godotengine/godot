@@ -63,18 +63,18 @@
 				Draws a part of the texture using a [CanvasItem] with the [RenderingServer] API.
 			</description>
 		</method>
-		<method name="get_image" qualifiers="const">
-			<return type="Image">
-			</return>
-			<description>
-				Returns an [Image] that is a copy of data from this [Texture2D]. [Image]s can be accessed and manipulated directly.
-			</description>
-		</method>
 		<method name="get_height" qualifiers="const">
 			<return type="int">
 			</return>
 			<description>
 				Returns the texture height.
+			</description>
+		</method>
+		<method name="get_image" qualifiers="const">
+			<return type="Image">
+			</return>
+			<description>
+				Returns an [Image] that is a copy of data from this [Texture2D]. [Image]s can be accessed and manipulated directly.
 			</description>
 		</method>
 		<method name="get_size" qualifiers="const">

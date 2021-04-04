@@ -245,6 +245,16 @@
 				[b]Note[/b]: The pose transform needs to be in bone space. Use [method world_transform_to_bone_transform] to convert a world transform, like one you can get from a [Node3D], to bone space.
 			</description>
 		</method>
+		<method name="set_bone_name">
+			<return type="void">
+			</return>
+			<argument index="0" name="bone_idx" type="int">
+			</argument>
+			<argument index="1" name="name" type="String">
+			</argument>
+			<description>
+			</description>
+		</method>
 		<method name="set_bone_parent">
 			<return type="void">
 			</return>
