@@ -328,13 +328,6 @@
 				[b]Note:[/b] On large arrays, this method will be slower if the inserted element is close to the beginning of the array (index 0). This is because all elements placed after the newly inserted element have to be reindexed.
 			</description>
 		</method>
-		<method name="reverse">
-			<return type="void">
-			</return>
-			<description>
-				Reverses the order of the elements in the array.
-			</description>
-		</method>
 		<method name="is_empty" qualifiers="const">
 			<return type="bool">
 			</return>
@@ -472,6 +465,13 @@
 			</argument>
 			<description>
 				Resizes the array to contain a different number of elements. If the array size is smaller, elements are cleared, if bigger, new elements are [code]null[/code].
+			</description>
+		</method>
+		<method name="reverse">
+			<return type="void">
+			</return>
+			<description>
+				Reverses the order of the elements in the array.
 			</description>
 		</method>
 		<method name="rfind" qualifiers="const">
