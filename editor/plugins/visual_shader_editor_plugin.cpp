@@ -2607,6 +2607,7 @@ void VisualShaderEditor::_graph_gui_input(const Ref<InputEvent> &p_event) {
 	if (mb.is_valid() && mb->is_pressed() && mb->get_button_index() == MOUSE_BUTTON_RIGHT) {
 		selected_constants.clear();
 		selected_uniforms.clear();
+		selected_comment = -1;
 
 		List<int> to_change;
 		for (int i = 0; i < graph->get_child_count(); i++) {
@@ -2658,6 +2659,10 @@ void VisualShaderEditor::_graph_gui_input(const Ref<InputEvent> &p_event) {
 			if (temp != -1) {
 				popup_menu->remove_item(temp);
 			}
+			temp = popup_menu->get_item_index(NodeMenuOptions::SEPARATOR3);
+			if (temp != -1) {
+				popup_menu->remove_item(temp);
+			}
 			temp = popup_menu->get_item_index(NodeMenuOptions::SET_COMMENT_TITLE);
 			if (temp != -1) {
 				popup_menu->remove_item(temp);
@@ -2674,7 +2679,7 @@ void VisualShaderEditor::_graph_gui_input(const Ref<InputEvent> &p_event) {
 			}
 
 			if (selected_constants.size() > 0 || selected_uniforms.size() > 0) {
-				popup_menu->add_separator("", NodeMenuOptions::SEPARATOR2);
+				popup_menu->add_separator("", NodeMenuOptions::SEPARATOR3);
 
 				if (selected_constants.size() > 0) {
 					popup_menu->add_item(TTR("Convert Constant(s) to Uniform(s)"), NodeMenuOptions::CONVERT_CONSTANTS_TO_UNIFORMS);
