@@ -5159,7 +5159,6 @@ void CanvasItemEditor::_focus_selection(int p_op) {
 			rect = rect.merge(canvas_item_rect);
 		}
 	};
-	if (count == 0) return;
 
 	if (p_op == VIEW_CENTER_TO_SELECTION) {
 
