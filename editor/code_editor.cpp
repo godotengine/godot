@@ -142,7 +142,7 @@ bool FindReplaceBar::_search(uint32_t p_flags, int p_from_line, int p_from_col) 
 	bool found = text_editor->search(text, p_flags, p_from_line, p_from_col, line, col);
 
 	if (found) {
-		if (!preserve_cursor) {
+		if (!preserve_cursor && !is_selection_only()) {
 			text_editor->unfold_line(line);
 			text_editor->cursor_set_line(line, false);
 			text_editor->cursor_set_column(col + text.length(), false);
