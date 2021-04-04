@@ -3152,7 +3152,7 @@ void TextEdit::_gui_input(const Ref<InputEvent> &p_gui_input) {
 
 	if (k.is_valid()) {
 		// Ctrl + Hover symbols
-#ifdef OSX_ENABLED
+#ifdef APPLE_STYLE_KEYS
 		if (k->get_keycode() == KEY_META) {
 #else
 		if (k->get_keycode() == KEY_CONTROL) {
