@@ -1759,6 +1759,8 @@ void NativeScriptLanguage::unregister_script(NativeScript *script) {
 						C->get().destroy_func.free_func(C->get().destroy_func.method_data);
 					}
 				}
+
+				library_classes.erase(script->lib_path);
 			}
 
 			Map<String, Ref<GDNative>>::Element *G = library_gdnatives.find(script->lib_path);
