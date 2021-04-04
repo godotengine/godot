@@ -687,7 +687,6 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 	_initial_set("editors/2d/bone_outline_color", Color(0.35, 0.35, 0.35, 0.5));
 	_initial_set("editors/2d/bone_outline_size", 2);
 	_initial_set("editors/2d/viewport_border_color", Color(0.4, 0.4, 1.0, 0.4));
-	_initial_set("editors/2d/constrain_editor_view", true);
 
 	// Panning
 	// Enum should be in sync with ControlScheme in ViewPanner.
