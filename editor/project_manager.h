@@ -116,6 +116,7 @@ class ProjectManager : public Control {
 	void _files_dropped(PackedStringArray p_files, int p_screen);
 
 	void _on_order_option_changed(int p_idx);
+	void _on_tab_changed(int p_tab);
 	void _on_search_term_changed(const String &p_term);
 
 protected:
