@@ -3744,6 +3744,10 @@ bool VisualShaderNodeFloatUniform::is_qualifier_supported(Qualifier p_qual) cons
 	return true; // all qualifiers are supported
 }
 
+bool VisualShaderNodeFloatUniform::is_convertible_to_constant() const {
+	return true; // conversion is allowed
+}
+
 Vector<StringName> VisualShaderNodeFloatUniform::get_editable_properties() const {
 	Vector<StringName> props = VisualShaderNodeUniform::get_editable_properties();
 	props.push_back("hint");
@@ -3911,6 +3915,10 @@ bool VisualShaderNodeIntUniform::is_qualifier_supported(Qualifier p_qual) const 
 	return true; // all qualifiers are supported
 }
 
+bool VisualShaderNodeIntUniform::is_convertible_to_constant() const {
+	return true; // conversion is allowed
+}
+
 Vector<StringName> VisualShaderNodeIntUniform::get_editable_properties() const {
 	Vector<StringName> props = VisualShaderNodeUniform::get_editable_properties();
 	props.push_back("hint");
@@ -4019,6 +4027,10 @@ bool VisualShaderNodeBooleanUniform::is_qualifier_supported(Qualifier p_qual) co
 	return true; // all qualifiers are supported
 }
 
+bool VisualShaderNodeBooleanUniform::is_convertible_to_constant() const {
+	return true; // conversion is allowed
+}
+
 Vector<StringName> VisualShaderNodeBooleanUniform::get_editable_properties() const {
 	Vector<StringName> props = VisualShaderNodeUniform::get_editable_properties();
 	props.push_back("default_value_enabled");
@@ -4111,6 +4123,10 @@ void VisualShaderNodeColorUniform::_bind_methods() {
 
 bool VisualShaderNodeColorUniform::is_qualifier_supported(Qualifier p_qual) const {
 	return true; // all qualifiers are supported
+}
+
+bool VisualShaderNodeColorUniform::is_convertible_to_constant() const {
+	return true; // conversion is allowed
 }
 
 Vector<StringName> VisualShaderNodeColorUniform::get_editable_properties() const {
@@ -4207,6 +4223,10 @@ bool VisualShaderNodeVec3Uniform::is_use_prop_slots() const {
 
 bool VisualShaderNodeVec3Uniform::is_qualifier_supported(Qualifier p_qual) const {
 	return true; // all qualifiers are supported
+}
+
+bool VisualShaderNodeVec3Uniform::is_convertible_to_constant() const {
+	return true; // conversion is allowed
 }
 
 Vector<StringName> VisualShaderNodeVec3Uniform::get_editable_properties() const {
@@ -4307,6 +4327,10 @@ bool VisualShaderNodeTransformUniform::is_use_prop_slots() const {
 
 bool VisualShaderNodeTransformUniform::is_qualifier_supported(Qualifier p_qual) const {
 	return true; // all qualifiers are supported
+}
+
+bool VisualShaderNodeTransformUniform::is_convertible_to_constant() const {
+	return true; // conversion is allowed
 }
 
 Vector<StringName> VisualShaderNodeTransformUniform::get_editable_properties() const {
@@ -4492,6 +4516,10 @@ bool VisualShaderNodeTextureUniform::is_qualifier_supported(Qualifier p_qual) co
 			return false;
 	}
 	return false;
+}
+
+bool VisualShaderNodeTextureUniform::is_convertible_to_constant() const {
+	return false; // conversion is not allowed
 }
 
 VisualShaderNodeTextureUniform::VisualShaderNodeTextureUniform() {
