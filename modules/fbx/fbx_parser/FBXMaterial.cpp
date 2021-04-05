@@ -267,10 +267,10 @@ LayeredTexture::LayeredTexture(uint64_t id, const ElementPtr element, const Docu
 	ElementPtr BlendModes = sc->GetElement("BlendModes");
 	ElementPtr Alphas = sc->GetElement("Alphas");
 
-	if (BlendModes != 0) {
+	if (BlendModes != nullptr) {
 		blendMode = (BlendMode)ParseTokenAsInt(GetRequiredToken(BlendModes, 0));
 	}
-	if (Alphas != 0) {
+	if (Alphas != nullptr) {
 		alpha = ParseTokenAsFloat(GetRequiredToken(Alphas, 0));
 	}
 }

@@ -94,7 +94,7 @@ Node3D *EditorSceneImporterFBX::import_scene(const String &p_path, uint32_t p_fl
 	Error err;
 	FileAccessRef f = FileAccess::open(p_path, FileAccess::READ, &err);
 
-	ERR_FAIL_COND_V(!f, NULL);
+	ERR_FAIL_COND_V(!f, nullptr);
 
 	{
 		PackedByteArray data;
@@ -334,7 +334,7 @@ Node3D *EditorSceneImporterFBX::_generate_scene(
 	ImportState state;
 	state.is_blender_fbx = p_is_blender_fbx;
 	state.path = p_path;
-	state.animation_player = NULL;
+	state.animation_player = nullptr;
 
 	// create new root node for scene
 	Node3D *scene_root = memnew(Node3D);

@@ -454,7 +454,7 @@ void HTTPRequest::_request_done(int p_status, int p_code, const PackedStringArra
 		is_compressed = false;
 	}
 
-	const PackedByteArray *data = NULL;
+	const PackedByteArray *data = nullptr;
 
 	if (accept_gzip && is_compressed && p_data.size() > 0) {
 		// Decompress request body

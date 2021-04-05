@@ -550,7 +550,7 @@ Error EditorExportPlatformJavaScript::export_project(const Ref<EditorExportPrese
 		if (f) {
 			file_sizes[pck_path.get_file()] = (uint64_t)f->get_len();
 			memdelete(f);
-			f = NULL;
+			f = nullptr;
 		}
 		_fix_html(html, p_preset, p_path.get_file().get_basename(), p_debug, p_flags, shared_objects, file_sizes);
 		f = FileAccess::open(p_path, FileAccess::WRITE);

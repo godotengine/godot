@@ -505,7 +505,7 @@ Error VulkanContext::_check_capabilities() {
 	if (func != nullptr) {
 		VkPhysicalDeviceSubgroupProperties subgroupProperties;
 		subgroupProperties.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SUBGROUP_PROPERTIES;
-		subgroupProperties.pNext = NULL;
+		subgroupProperties.pNext = nullptr;
 
 		VkPhysicalDeviceProperties2 physicalDeviceProperties;
 		physicalDeviceProperties.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PROPERTIES_2;

@@ -278,7 +278,7 @@ private:
 public:
 	// Methods
 	void clear();
-	bool is_empty() const { return (0 == bvh_root); }
+	bool is_empty() const { return (nullptr == bvh_root); }
 	void optimize_bottom_up();
 	void optimize_top_down(int bu_threshold = 128);
 	void optimize_incremental(int passes);

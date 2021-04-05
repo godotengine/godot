@@ -2012,7 +2012,7 @@ int DisplayServerX11::keyboard_get_layout_count() const {
 		XkbGetNames(x11_display, XkbSymbolsNameMask, kbd);
 
 		const Atom *groups = kbd->names->groups;
-		if (kbd->ctrls != NULL) {
+		if (kbd->ctrls != nullptr) {
 			_group_count = kbd->ctrls->num_groups;
 		} else {
 			while (_group_count < XkbNumKbdGroups && groups[_group_count] != None) {
@@ -2046,7 +2046,7 @@ String DisplayServerX11::keyboard_get_layout_language(int p_index) const {
 
 		int _group_count = 0;
 		const Atom *groups = kbd->names->groups;
-		if (kbd->ctrls != NULL) {
+		if (kbd->ctrls != nullptr) {
 			_group_count = kbd->ctrls->num_groups;
 		} else {
 			while (_group_count < XkbNumKbdGroups && groups[_group_count] != None) {
@@ -2085,7 +2085,7 @@ String DisplayServerX11::keyboard_get_layout_name(int p_index) const {
 
 		int _group_count = 0;
 		const Atom *groups = kbd->names->groups;
-		if (kbd->ctrls != NULL) {
+		if (kbd->ctrls != nullptr) {
 			_group_count = kbd->ctrls->num_groups;
 		} else {
 			while (_group_count < XkbNumKbdGroups && groups[_group_count] != None) {
@@ -2684,7 +2684,7 @@ bool DisplayServerX11::_wait_for_events() const {
 	tv.tv_sec = 1;
 
 	// Wait for next event or timeout.
-	int num_ready_fds = select(x11_fd + 1, &in_fds, NULL, NULL, &tv);
+	int num_ready_fds = select(x11_fd + 1, &in_fds, nullptr, nullptr, &tv);
 
 	if (num_ready_fds > 0) {
 		// Event received.
