@@ -93,7 +93,7 @@ using namespace Util;
 
 // ------------------------------------------------------------------------------------------------
 LazyObject::LazyObject(uint64_t id, const ElementPtr element, const Document &doc) :
-		doc(doc), element(element), id(id), flags() {
+		doc(doc), element(element), id(id) {
 	// empty
 }
 
@@ -252,7 +252,7 @@ FileGlobalSettings::~FileGlobalSettings() {
 
 // ------------------------------------------------------------------------------------------------
 Document::Document(const Parser &parser, const ImportSettings &settings) :
-		settings(settings), parser(parser), SafeToImport(false) {
+		settings(settings), parser(parser) {
 	// Cannot use array default initialization syntax because vc8 fails on it
 	for (unsigned int &timeStamp : creationTimeStamp) {
 		timeStamp = 0;

@@ -691,21 +691,21 @@ private:
 	};
 
 	struct Particles {
-		bool inactive;
-		float inactive_time;
-		bool emitting;
-		bool one_shot;
-		int amount;
-		float lifetime;
-		float pre_process_time;
-		float explosiveness;
-		float randomness;
-		bool restart_request;
-		AABB custom_aabb;
-		bool use_local_coords;
+		bool inactive = true;
+		float inactive_time = 0.0;
+		bool emitting = false;
+		bool one_shot = false;
+		int amount = 0;
+		float lifetime = 1.0;
+		float pre_process_time = 0.0;
+		float explosiveness = 0.0;
+		float randomness = 0.0;
+		bool restart_request = false;
+		AABB custom_aabb = AABB(Vector3(-4, -4, -4), Vector3(8, 8, 8));
+		bool use_local_coords = true;
 		RID process_material;
 
-		RS::ParticlesDrawOrder draw_order;
+		RS::ParticlesDrawOrder draw_order = RS::PARTICLES_DRAW_ORDER_INDEX;
 
 		Vector<RID> draw_passes;
 
@@ -730,21 +730,21 @@ private:
 
 		RID sub_emitter;
 
-		float phase;
-		float prev_phase;
-		uint64_t prev_ticks;
-		uint32_t random_seed;
+		float phase = 0.0;
+		float prev_phase = 0.0;
+		uint64_t prev_ticks = 0;
+		uint32_t random_seed = 0;
 
-		uint32_t cycle_number;
+		uint32_t cycle_number = 0;
 
-		float speed_scale;
+		float speed_scale = 1.0;
 
-		int fixed_fps;
-		bool fractional_delta;
-		float frame_remainder;
-		float collision_base_size;
+		int fixed_fps = 0;
+		bool fractional_delta = false;
+		float frame_remainder = 0;
+		float collision_base_size = 0.01;
 
-		bool clear;
+		bool clear = true;
 
 		bool force_sub_emit = false;
 
@@ -756,31 +756,6 @@ private:
 		RID emission_storage_buffer;
 
 		Set<RID> collisions;
-
-		Particles() :
-				inactive(true),
-				inactive_time(0.0),
-				emitting(false),
-				one_shot(false),
-				amount(0),
-				lifetime(1.0),
-				pre_process_time(0.0),
-				explosiveness(0.0),
-				randomness(0.0),
-				restart_request(false),
-				custom_aabb(AABB(Vector3(-4, -4, -4), Vector3(8, 8, 8))),
-				use_local_coords(true),
-				draw_order(RS::PARTICLES_DRAW_ORDER_INDEX),
-				prev_ticks(0),
-				random_seed(0),
-				cycle_number(0),
-				speed_scale(1.0),
-				fixed_fps(0),
-				fractional_delta(false),
-				frame_remainder(0),
-				collision_base_size(0.01),
-				clear(true) {
-		}
 
 		Dependency dependency;
 
