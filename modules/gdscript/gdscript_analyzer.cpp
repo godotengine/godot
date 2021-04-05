@@ -2065,6 +2065,12 @@ void GDScriptAnalyzer::reduce_call(GDScriptParser::CallNode *p_call, bool is_awa
 		is_self = true;
 	} else if (callee_type == GDScriptParser::Node::SUBSCRIPT) {
 		GDScriptParser::SubscriptNode *subscript = static_cast<GDScriptParser::SubscriptNode *>(p_call->callee);
+		if (subscript->base == nullptr) {
+			// Invalid syntax, error already set on parser.
+			p_call->set_datatype(call_type);
+			mark_node_unsafe(p_call);
+			return;
+		}
 		if (!subscript->is_attribute) {
 			// Invalid call. Error already sent in parser.
 			// TODO: Could check if Callable here.
