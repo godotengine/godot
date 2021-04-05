@@ -67,7 +67,7 @@ private:
 		VisualShader::Type type = VisualShader::Type::TYPE_MAX;
 		VisualShaderNode *visual_node = nullptr;
 		GraphNode *graph_node = nullptr;
-		bool preview_visible = 0;
+		bool preview_visible = false;
 		int preview_pos = 0;
 		Map<int, InputPort> input_ports;
 		Map<int, Port> output_ports;

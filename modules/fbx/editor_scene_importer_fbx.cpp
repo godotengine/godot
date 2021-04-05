@@ -628,7 +628,7 @@ Node3D *EditorSceneImporterFBX::_generate_scene(
 						mesh_data_precached->mesh_node = fbx_node;
 
 						// mesh node, mesh id
-						mesh_node = mesh_data_precached->create_fbx_mesh(state, mesh_geometry, fbx_node->fbx_model, 0);
+						mesh_node = mesh_data_precached->create_fbx_mesh(state, mesh_geometry, fbx_node->fbx_model, false);
 						if (!state.MeshNodes.has(mesh_id)) {
 							state.MeshNodes.insert(mesh_id, fbx_node);
 						}
