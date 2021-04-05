@@ -1882,6 +1882,8 @@ void ProjectManager::_update_project_buttons() {
 }
 
 void ProjectManager::_unhandled_key_input(const Ref<InputEvent> &p_ev) {
+	ERR_FAIL_COND(p_ev.is_null());
+
 	Ref<InputEventKey> k = p_ev;
 
 	if (k.is_valid()) {

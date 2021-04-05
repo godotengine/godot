@@ -215,6 +215,8 @@ void LineEdit::_delete(bool p_word, bool p_all_to_right) {
 }
 
 void LineEdit::_gui_input(Ref<InputEvent> p_event) {
+	ERR_FAIL_COND(p_event.is_null());
+
 	Ref<InputEventMouseButton> b = p_event;
 
 	if (b.is_valid()) {

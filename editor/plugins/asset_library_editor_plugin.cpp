@@ -606,6 +606,8 @@ void EditorAssetLibrary::_update_repository_options() {
 }
 
 void EditorAssetLibrary::_unhandled_key_input(const Ref<InputEvent> &p_event) {
+	ERR_FAIL_COND(p_event.is_null());
+
 	const Ref<InputEventKey> key = p_event;
 
 	if (key.is_valid() && key->is_pressed()) {

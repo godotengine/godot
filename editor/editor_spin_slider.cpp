@@ -47,6 +47,8 @@ String EditorSpinSlider::get_text_value() const {
 }
 
 void EditorSpinSlider::_gui_input(const Ref<InputEvent> &p_event) {
+	ERR_FAIL_COND(p_event.is_null());
+
 	if (read_only) {
 		return;
 	}
