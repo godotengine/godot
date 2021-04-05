@@ -109,6 +109,8 @@ void FindReplaceBar::_notification(int p_what) {
 }
 
 void FindReplaceBar::_unhandled_input(const Ref<InputEvent> &p_event) {
+	ERR_FAIL_COND(p_event.is_null());
+
 	Ref<InputEventKey> k = p_event;
 	if (!k.is_valid() || !k->is_pressed()) {
 		return;
@@ -691,6 +693,8 @@ FindReplaceBar::FindReplaceBar() {
 // This function should be used to handle shortcuts that could otherwise
 // be handled too late if they weren't handled here.
 void CodeTextEditor::_input(const Ref<InputEvent> &event) {
+	ERR_FAIL_COND(event.is_null());
+
 	const Ref<InputEventKey> key_event = event;
 	if (!key_event.is_valid() || !key_event->is_pressed() || !text_editor->has_focus()) {
 		return;

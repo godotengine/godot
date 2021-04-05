@@ -252,6 +252,8 @@ void PopupMenu::_submenu_timeout() {
 }
 
 void PopupMenu::_gui_input(const Ref<InputEvent> &p_event) {
+	ERR_FAIL_COND(p_event.is_null());
+
 	if (p_event->is_action("ui_down") && p_event->is_pressed()) {
 		int search_from = mouse_over + 1;
 		if (search_from >= items.size()) {

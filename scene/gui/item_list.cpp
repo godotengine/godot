@@ -530,6 +530,8 @@ Size2 ItemList::Item::get_icon_size() const {
 }
 
 void ItemList::_gui_input(const Ref<InputEvent> &p_event) {
+	ERR_FAIL_COND(p_event.is_null());
+
 	double prev_scroll = scroll_bar->get_value();
 
 	Ref<InputEventMouseMotion> mm = p_event;

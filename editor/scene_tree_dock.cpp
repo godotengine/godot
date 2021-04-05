@@ -61,6 +61,8 @@ void SceneTreeDock::_quick_open() {
 }
 
 void SceneTreeDock::_input(Ref<InputEvent> p_event) {
+	ERR_FAIL_COND(p_event.is_null());
+
 	Ref<InputEventMouseButton> mb = p_event;
 
 	if (mb.is_valid() && !mb->is_pressed() && mb->get_button_index() == MOUSE_BUTTON_LEFT) {
@@ -69,6 +71,8 @@ void SceneTreeDock::_input(Ref<InputEvent> p_event) {
 }
 
 void SceneTreeDock::_unhandled_key_input(Ref<InputEvent> p_event) {
+	ERR_FAIL_COND(p_event.is_null());
+
 	if (get_focus_owner() && get_focus_owner()->is_text_field()) {
 		return;
 	}

@@ -140,6 +140,8 @@ void SubViewportContainer::_notification(int p_what) {
 }
 
 void SubViewportContainer::_input(const Ref<InputEvent> &p_event) {
+	ERR_FAIL_COND(p_event.is_null());
+
 	if (Engine::get_singleton()->is_editor_hint()) {
 		return;
 	}
@@ -165,6 +167,8 @@ void SubViewportContainer::_input(const Ref<InputEvent> &p_event) {
 }
 
 void SubViewportContainer::_unhandled_input(const Ref<InputEvent> &p_event) {
+	ERR_FAIL_COND(p_event.is_null());
+
 	if (Engine::get_singleton()->is_editor_hint()) {
 		return;
 	}
