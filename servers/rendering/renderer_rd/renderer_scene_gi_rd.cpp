@@ -2992,6 +2992,7 @@ void RendererSceneGIRD::init(RendererStorageRD *p_storage, RendererSceneSkyRD *p
 		}
 	}
 	default_giprobe_buffer = RD::get_singleton()->uniform_buffer_create(sizeof(GIProbeData) * MAX_GIPROBES);
+	half_resolution = GLOBAL_GET("rendering/global_illumination/gi/use_half_resolution");
 }
 
 void RendererSceneGIRD::free() {
@@ -3097,10 +3098,10 @@ void RendererSceneGIRD::setup_giprobes(RID p_render_buffers, const Transform &p_
 	}
 
 	if (giprobes_changed) {
-		if (RD::get_singleton()->uniform_set_is_valid(rb->gi_uniform_set)) {
-			RD::get_singleton()->free(rb->gi_uniform_set);
+		if (RD::get_singleton()->uniform_set_is_valid(rb->gi.uniform_set)) {
+			RD::get_singleton()->free(rb->gi.uniform_set);
 		}
-		rb->gi_uniform_set = RID();
+		rb->gi.uniform_set = RID();
 		if (rb->volumetric_fog) {
 			if (RD::get_singleton()->uniform_set_is_valid(rb->volumetric_fog->uniform_set)) {
 				RD::get_singleton()->free(rb->volumetric_fog->uniform_set);
@@ -3125,7 +3126,7 @@ void RendererSceneGIRD::process_gi(RID p_render_buffers, RID p_normal_roughness_
 	ERR_FAIL_COND(rb == nullptr);
 	RendererSceneEnvironmentRD *env = p_scene_render->environment_owner.getornull(p_environment);
 
-	if (rb->ambient_buffer.is_null() || rb->using_half_size_gi != half_resolution) {
+	if (rb->ambient_buffer.is_null() || rb->gi.using_half_size_gi != half_resolution) {
 		if (rb->ambient_buffer.is_valid()) {
 			RD::get_singleton()->free(rb->ambient_buffer);
 			RD::get_singleton()->free(rb->reflection_buffer);
@@ -3142,7 +3143,7 @@ void RendererSceneGIRD::process_gi(RID p_render_buffers, RID p_normal_roughness_
 		tf.usage_bits = RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_STORAGE_BIT;
 		rb->reflection_buffer = RD::get_singleton()->texture_create(tf, RD::TextureView());
 		rb->ambient_buffer = RD::get_singleton()->texture_create(tf, RD::TextureView());
-		rb->using_half_size_gi = half_resolution;
+		rb->gi.using_half_size_gi = half_resolution;
 
 		p_scene_render->_render_buffers_uniform_set_changed(p_render_buffers);
 	}
@@ -3187,7 +3188,7 @@ void RendererSceneGIRD::process_gi(RID p_render_buffers, RID p_normal_roughness_
 	push_constant.cam_rotation[10] = p_transform.basis[2][2];
 	push_constant.cam_rotation[11] = 0;
 
-	if (rb->gi_uniform_set.is_null() || !RD::get_singleton()->uniform_set_is_valid(rb->gi_uniform_set)) {
+	if (rb->gi.uniform_set.is_null() || !RD::get_singleton()->uniform_set_is_valid(rb->gi.uniform_set)) {
 		Vector<RD::Uniform> uniforms;
 		{
 			RD::Uniform u;
@@ -3340,22 +3341,22 @@ void RendererSceneGIRD::process_gi(RID p_render_buffers, RID p_normal_roughness_
 			uniforms.push_back(u);
 		}
 
-		rb->gi_uniform_set = RD::get_singleton()->uniform_set_create(uniforms, shader.version_get_shader(shader_version, 0), 0);
+		rb->gi.uniform_set = RD::get_singleton()->uniform_set_create(uniforms, shader.version_get_shader(shader_version, 0), 0);
 	}
 
 	Mode mode;
 
-	if (rb->using_half_size_gi) {
+	if (rb->gi.using_half_size_gi) {
 		mode = (use_sdfgi && use_giprobes) ? MODE_HALF_RES_COMBINED : (use_sdfgi ? MODE_HALF_RES_SDFGI : MODE_HALF_RES_GIPROBE);
 	} else {
 		mode = (use_sdfgi && use_giprobes) ? MODE_COMBINED : (use_sdfgi ? MODE_SDFGI : MODE_GIPROBE);
 	}
 	RD::ComputeListID compute_list = RD::get_singleton()->compute_list_begin(true);
 	RD::get_singleton()->compute_list_bind_compute_pipeline(compute_list, pipelines[mode]);
-	RD::get_singleton()->compute_list_bind_uniform_set(compute_list, rb->gi_uniform_set, 0);
+	RD::get_singleton()->compute_list_bind_uniform_set(compute_list, rb->gi.uniform_set, 0);
 	RD::get_singleton()->compute_list_set_push_constant(compute_list, &push_constant, sizeof(PushConstant));
 
-	if (rb->using_half_size_gi) {
+	if (rb->gi.using_half_size_gi) {
 		RD::get_singleton()->compute_list_dispatch_threads(compute_list, rb->width >> 1, rb->height >> 1, 1);
 	} else {
 		RD::get_singleton()->compute_list_dispatch_threads(compute_list, rb->width, rb->height, 1);
