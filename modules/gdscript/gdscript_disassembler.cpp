@@ -774,6 +774,39 @@ void GDScriptFunction::disassemble(const Vector<String> &p_code_lines) const {
 
 				incr = 2;
 			} break;
+			case OPCODE_RETURN_TYPED_BUILTIN: {
+				text += "return typed builtin (";
+				text += Variant::get_type_name((Variant::Type)_code_ptr[ip + 2]);
+				text += ") ";
+				text += DADDR(1);
+
+				incr += 3;
+			} break;
+			case OPCODE_RETURN_TYPED_ARRAY: {
+				text += "return typed array ";
+				text += DADDR(1);
+
+				incr += 5;
+			} break;
+			case OPCODE_RETURN_TYPED_NATIVE: {
+				text += "return typed native (";
+				text += DADDR(2);
+				text += ") ";
+				text += DADDR(1);
+
+				incr += 3;
+			} break;
+			case OPCODE_RETURN_TYPED_SCRIPT: {
+				Variant script = _constants_ptr[_code_ptr[ip + 2]];
+				Script *sc = Object::cast_to<Script>(script.operator Object *());
+
+				text += "return typed script (";
+				text += sc->get_path();
+				text += ") ";
+				text += DADDR(1);
+
+				incr += 3;
+			} break;
 
 #define DISASSEMBLE_ITERATE(m_type)      \
 	case OPCODE_ITERATE_##m_type: {      \
