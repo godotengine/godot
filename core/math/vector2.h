@@ -311,6 +311,22 @@ struct Vector2i {
 	Vector2i sign() const { return Vector2i(SGN(x), SGN(y)); }
 	Vector2i abs() const { return Vector2i(ABS(x), ABS(y)); }
 
+	real_t angle() const;
+	real_t angle_to(const Vector2i &p_vector2i) const;
+	real_t angle_to_point(const Vector2i &p_vector2i) const;
+	int cross(const Vector2i &p_other) const;
+	real_t distance_to(const Vector2i &p_vector2i) const;
+	int distance_squared_to(const Vector2i &p_vector2i) const;
+	int dot(const Vector2i &p_other) const;
+	real_t length() const;
+	int length_squared() const;
+	Vector2i posmodv(const Vector2i &p_modv) const;
+	Vector2i snapped(const Vector2i &p_by) const;
+
+	Vector2i orthogonal() const {
+		return Vector2i(y, -x);
+	}
+
 	operator String() const { return String::num(x) + ", " + String::num(y); }
 
 	operator Vector2() const { return Vector2(x, y); }

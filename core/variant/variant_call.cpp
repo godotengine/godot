@@ -1168,6 +1168,18 @@ static void _register_variant_builtin_methods() {
 	bind_method(Vector2i, aspect, sarray(), varray());
 	bind_method(Vector2i, sign, sarray(), varray());
 	bind_method(Vector2i, abs, sarray(), varray());
+	bind_method(Vector2i, angle, sarray(), varray());
+	bind_method(Vector2i, angle_to, sarray("to"), varray());
+	bind_method(Vector2i, angle_to_point, sarray("to"), varray());
+	bind_method(Vector2i, dot, sarray("with"), varray());
+	bind_method(Vector2i, orthogonal, sarray(), varray());
+	bind_method(Vector2i, posmodv, sarray("modv"), varray());
+	bind_method(Vector2i, distance_to, sarray("to"), varray());
+	bind_method(Vector2i, distance_squared_to, sarray("to"), varray());
+	bind_method(Vector2i, length, sarray(), varray());
+	bind_method(Vector2i, length_squared, sarray(), varray());
+	bind_method(Vector2i, cross, sarray("with"), varray());
+	bind_method(Vector2i, snapped, sarray("step"), varray());
 
 	/* Rect2 */
 
