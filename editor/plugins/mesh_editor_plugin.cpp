@@ -33,6 +33,8 @@
 #include "editor/editor_scale.h"
 
 void MeshEditor::_gui_input(Ref<InputEvent> p_event) {
+	ERR_FAIL_COND(p_event.is_null());
+
 	Ref<InputEventMouseMotion> mm = p_event;
 	if (mm.is_valid() && mm->get_button_mask() & MOUSE_BUTTON_MASK_LEFT) {
 		rot_x -= mm->get_relative().y * 0.01;

@@ -154,6 +154,8 @@ Vector2 GraphEditMinimap::_convert_to_graph_position(const Vector2 &p_position) 
 }
 
 void GraphEditMinimap::_gui_input(const Ref<InputEvent> &p_ev) {
+	ERR_FAIL_COND(p_ev.is_null());
+
 	if (!ge->is_minimap_enabled()) {
 		return;
 	}
@@ -1066,6 +1068,8 @@ void GraphEdit::set_selected(Node *p_child) {
 }
 
 void GraphEdit::_gui_input(const Ref<InputEvent> &p_ev) {
+	ERR_FAIL_COND(p_ev.is_null());
+
 	Ref<InputEventMouseMotion> mm = p_ev;
 	if (mm.is_valid() && (mm->get_button_mask() & MOUSE_BUTTON_MASK_MIDDLE || (mm->get_button_mask() & MOUSE_BUTTON_MASK_LEFT && Input::get_singleton()->is_key_pressed(KEY_SPACE)))) {
 		h_scroll->set_value(h_scroll->get_value() - mm->get_relative().x);

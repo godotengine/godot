@@ -185,6 +185,8 @@ void ViewportRotationControl::_get_sorted_axis(Vector<Axis2D> &r_axis) {
 }
 
 void ViewportRotationControl::_gui_input(Ref<InputEvent> p_event) {
+	ERR_FAIL_COND(p_event.is_null());
+
 	const Ref<InputEventMouseButton> mb = p_event;
 	if (mb.is_valid() && mb->get_button_index() == MOUSE_BUTTON_LEFT) {
 		Vector2 pos = mb->get_position();
@@ -4192,6 +4194,8 @@ Node3DEditorViewport::~Node3DEditorViewport() {
 //////////////////////////////////////////////////////////////
 
 void Node3DEditorViewportContainer::_gui_input(const Ref<InputEvent> &p_event) {
+	ERR_FAIL_COND(p_event.is_null());
+
 	Ref<InputEventMouseButton> mb = p_event;
 
 	if (mb.is_valid() && mb->get_button_index() == MOUSE_BUTTON_LEFT) {
@@ -6159,6 +6163,8 @@ void Node3DEditor::snap_selected_nodes_to_floor() {
 }
 
 void Node3DEditor::_unhandled_key_input(Ref<InputEvent> p_event) {
+	ERR_FAIL_COND(p_event.is_null());
+
 	if (!is_visible_in_tree()) {
 		return;
 	}

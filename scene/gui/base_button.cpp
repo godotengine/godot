@@ -53,6 +53,8 @@ void BaseButton::_unpress_group() {
 }
 
 void BaseButton::_gui_input(Ref<InputEvent> p_event) {
+	ERR_FAIL_COND(p_event.is_null());
+
 	if (status.disabled) { // no interaction with disabled button
 		return;
 	}
@@ -323,6 +325,8 @@ Ref<Shortcut> BaseButton::get_shortcut() const {
 }
 
 void BaseButton::_unhandled_key_input(Ref<InputEvent> p_event) {
+	ERR_FAIL_COND(p_event.is_null());
+
 	if (!_is_focus_owner_in_shorcut_context()) {
 		return;
 	}

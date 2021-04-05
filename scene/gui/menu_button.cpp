@@ -34,6 +34,8 @@
 #include "scene/main/window.h"
 
 void MenuButton::_unhandled_key_input(Ref<InputEvent> p_event) {
+	ERR_FAIL_COND(p_event.is_null());
+
 	if (!_is_focus_owner_in_shorcut_context()) {
 		return;
 	}

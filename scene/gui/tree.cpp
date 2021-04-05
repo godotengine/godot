@@ -2402,6 +2402,8 @@ void Tree::_go_down() {
 }
 
 void Tree::_gui_input(Ref<InputEvent> p_event) {
+	ERR_FAIL_COND(p_event.is_null());
+
 	Ref<InputEventKey> k = p_event;
 
 	bool is_command = k.is_valid() && k->get_command();

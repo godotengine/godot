@@ -189,6 +189,8 @@ String TouchScreenButton::get_action() const {
 }
 
 void TouchScreenButton::_input(const Ref<InputEvent> &p_event) {
+	ERR_FAIL_COND(p_event.is_null());
+
 	if (!get_tree()) {
 		return;
 	}

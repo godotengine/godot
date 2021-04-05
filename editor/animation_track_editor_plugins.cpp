@@ -1036,6 +1036,8 @@ void AnimationTrackEditTypeAudio::drop_data(const Point2 &p_point, const Variant
 }
 
 void AnimationTrackEditTypeAudio::_gui_input(const Ref<InputEvent> &p_event) {
+	ERR_FAIL_COND(p_event.is_null());
+
 	Ref<InputEventMouseMotion> mm = p_event;
 	if (!len_resizing && mm.is_valid()) {
 		bool use_hsize_cursor = false;

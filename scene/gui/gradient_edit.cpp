@@ -92,6 +92,8 @@ GradientEdit::~GradientEdit() {
 }
 
 void GradientEdit::_gui_input(const Ref<InputEvent> &p_event) {
+	ERR_FAIL_COND(p_event.is_null());
+
 	Ref<InputEventKey> k = p_event;
 
 	if (k.is_valid() && k->is_pressed() && k->get_keycode() == KEY_DELETE && grabbed != -1) {

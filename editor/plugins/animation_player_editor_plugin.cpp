@@ -1219,6 +1219,8 @@ void AnimationPlayerEditor::_onion_skinning_menu(int p_option) {
 }
 
 void AnimationPlayerEditor::_unhandled_key_input(const Ref<InputEvent> &p_ev) {
+	ERR_FAIL_COND(p_ev.is_null());
+
 	Ref<InputEventKey> k = p_ev;
 	if (is_visible_in_tree() && k.is_valid() && k->is_pressed() && !k->is_echo() && !k->get_alt() && !k->get_control() && !k->get_metakey()) {
 		switch (k->get_keycode()) {

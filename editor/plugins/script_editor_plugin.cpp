@@ -2706,6 +2706,8 @@ void ScriptEditor::drop_data_fw(const Point2 &p_point, const Variant &p_data, Co
 }
 
 void ScriptEditor::_unhandled_key_input(const Ref<InputEvent> &p_event) {
+	ERR_FAIL_COND(p_event.is_null());
+
 	if (!is_visible_in_tree() || !p_event->is_pressed() || p_event->is_echo()) {
 		return;
 	}

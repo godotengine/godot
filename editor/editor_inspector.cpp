@@ -682,6 +682,8 @@ bool EditorProperty::is_selected() const {
 }
 
 void EditorProperty::_gui_input(const Ref<InputEvent> &p_event) {
+	ERR_FAIL_COND(p_event.is_null());
+
 	if (property == StringName()) {
 		return;
 	}
@@ -1354,6 +1356,8 @@ void EditorInspectorSection::setup(const String &p_section, const String &p_labe
 }
 
 void EditorInspectorSection::_gui_input(const Ref<InputEvent> &p_event) {
+	ERR_FAIL_COND(p_event.is_null());
+
 	if (!foldable) {
 		return;
 	}

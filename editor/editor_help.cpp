@@ -1908,6 +1908,8 @@ void FindBar::_hide_bar() {
 }
 
 void FindBar::_unhandled_input(const Ref<InputEvent> &p_event) {
+	ERR_FAIL_COND(p_event.is_null());
+
 	Ref<InputEventKey> k = p_event;
 	if (k.is_valid()) {
 		if (k->is_pressed() && (rich_text_label->has_focus() || is_a_parent_of(get_focus_owner()))) {

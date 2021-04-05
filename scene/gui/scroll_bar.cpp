@@ -42,6 +42,8 @@ void ScrollBar::set_can_focus_by_default(bool p_can_focus) {
 }
 
 void ScrollBar::_gui_input(Ref<InputEvent> p_event) {
+	ERR_FAIL_COND(p_event.is_null());
+
 	Ref<InputEventMouseMotion> m = p_event;
 	if (!m.is_valid() || drag.active) {
 		emit_signal("scrolling");

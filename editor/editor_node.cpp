@@ -390,6 +390,8 @@ void EditorNode::_update_title() {
 }
 
 void EditorNode::_unhandled_input(const Ref<InputEvent> &p_event) {
+	ERR_FAIL_COND(p_event.is_null());
+
 	Ref<InputEventKey> k = p_event;
 	if (k.is_valid() && k->is_pressed() && !k->is_echo()) {
 		EditorPlugin *old_editor = editor_plugin_screen;

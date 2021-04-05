@@ -96,6 +96,8 @@ void FileDialog::_notification(int p_what) {
 }
 
 void FileDialog::_unhandled_input(const Ref<InputEvent> &p_event) {
+	ERR_FAIL_COND(p_event.is_null());
+
 	Ref<InputEventKey> k = p_event;
 	if (k.is_valid() && has_focus()) {
 		if (k->is_pressed()) {

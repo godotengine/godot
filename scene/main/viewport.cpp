@@ -3067,6 +3067,7 @@ void Viewport::input(const Ref<InputEvent> &p_event, bool p_local_coords) {
 }
 
 void Viewport::unhandled_input(const Ref<InputEvent> &p_event, bool p_local_coords) {
+	ERR_FAIL_COND(p_event.is_null());
 	ERR_FAIL_COND(!is_inside_tree());
 
 	if (disable_input || !_can_consume_input_events()) {

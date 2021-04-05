@@ -2854,6 +2854,8 @@ void TextEdit::_get_minimap_mouse_row(const Point2i &p_mouse, int &r_row) const 
 }
 
 void TextEdit::_gui_input(const Ref<InputEvent> &p_gui_input) {
+	ERR_FAIL_COND(p_gui_input.is_null());
+
 	double prev_v_scroll = v_scroll->get_value();
 	double prev_h_scroll = h_scroll->get_value();
 

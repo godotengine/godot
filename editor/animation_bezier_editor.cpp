@@ -602,6 +602,8 @@ void AnimationBezierTrackEdit::_select_at_anim(const Ref<Animation> &p_anim, int
 }
 
 void AnimationBezierTrackEdit::_gui_input(const Ref<InputEvent> &p_event) {
+	ERR_FAIL_COND(p_event.is_null());
+
 	if (p_event->is_pressed()) {
 		if (ED_GET_SHORTCUT("animation_editor/duplicate_selection")->is_shortcut(p_event)) {
 			duplicate_selection();
