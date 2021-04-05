@@ -993,14 +993,37 @@ Error VulkanContext::_initialize_queues(VkSurfaceKHR surface) {
 	// supported format will be returned.
 	if (formatCount == 1 && surfFormats[0].format == VK_FORMAT_UNDEFINED) {
 		format = VK_FORMAT_B8G8R8A8_UNORM;
+		color_space = surfFormats[0].colorSpace;
 	} else {
+		// These should be ordered with the ones we want to use on top and fallback modes further down
+		// we want an 32bit RGBA unsigned normalised buffer or similar
+		const VkFormat allowed_formats[] = {
+			VK_FORMAT_B8G8R8A8_UNORM,
+			VK_FORMAT_R8G8B8A8_UNORM
+		};
+		uint32_t allowed_formats_count = sizeof(allowed_formats) / sizeof(VkFormat);
+
 		if (formatCount < 1) {
 			free(surfFormats);
 			ERR_FAIL_V_MSG(ERR_CANT_CREATE, "formatCount less than 1");
 		}
-		format = surfFormats[0].format;
+
+		// Find the first format that we support
+		format = VK_FORMAT_UNDEFINED;
+		for (uint32_t af = 0; af < allowed_formats_count && format == VK_FORMAT_UNDEFINED; af++) {
+			for (uint32_t sf = 0; sf < formatCount && format == VK_FORMAT_UNDEFINED; sf++) {
+				if (surfFormats[sf].format == allowed_formats[af]) {
+					format = surfFormats[sf].format;
+					color_space = surfFormats[sf].colorSpace;
+				}
+			}
+		}
+
+		if (format == VK_FORMAT_UNDEFINED) {
+			free(surfFormats);
+			ERR_FAIL_V_MSG(ERR_CANT_CREATE, "No usable surface format found.");
+		}
 	}
-	color_space = surfFormats[0].colorSpace;
 
 	free(surfFormats);
 
