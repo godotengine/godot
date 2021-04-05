@@ -1968,8 +1968,9 @@ Node *Node::get_deepest_editable_node(Node *p_start_node) const {
 	Node *node = p_start_node;
 
 	while (iterated_item->get_owner() && iterated_item->get_owner() != this) {
-		if (!is_editable_instance(iterated_item->get_owner()))
+		if (!is_editable_instance(iterated_item->get_owner())) {
 			node = iterated_item->get_owner();
+		}
 
 		iterated_item = iterated_item->get_owner();
 	}

@@ -891,8 +891,9 @@ struct VariantIndexedSetGet_Array {
 	static void ptr_get(const void *base, int64_t index, void *member) {
 		/* avoid ptrconvert for performance*/
 		const Array &v = *reinterpret_cast<const Array *>(base);
-		if (index < 0)
+		if (index < 0) {
 			index += v.size();
+		}
 		OOB_TEST(index, v.size());
 		PtrToArg<Variant>::encode(v[index], member);
 	}
@@ -925,8 +926,9 @@ struct VariantIndexedSetGet_Array {
 	static void ptr_set(void *base, int64_t index, const void *member) {
 		/* avoid ptrconvert for performance*/
 		Array &v = *reinterpret_cast<Array *>(base);
-		if (index < 0)
+		if (index < 0) {
 			index += v.size();
+		}
 		OOB_TEST(index, v.size());
 		v.set(index, PtrToArg<Variant>::convert(member));
 	}

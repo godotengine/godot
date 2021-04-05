@@ -4692,10 +4692,11 @@ void RendererStorageRD::update_particles() {
 
 		if (particles->clear && particles->pre_process_time > 0.0) {
 			float frame_time;
-			if (particles->fixed_fps > 0)
+			if (particles->fixed_fps > 0) {
 				frame_time = 1.0 / particles->fixed_fps;
-			else
+			} else {
 				frame_time = 1.0 / 30.0;
+			}
 
 			float todo = particles->pre_process_time;
 
@@ -4731,10 +4732,11 @@ void RendererStorageRD::update_particles() {
 			particles->frame_remainder = todo;
 
 		} else {
-			if (zero_time_scale)
+			if (zero_time_scale) {
 				_particles_process(particles, 0.0);
-			else
+			} else {
 				_particles_process(particles, RendererCompositorRD::singleton->get_frame_delta_time());
+			}
 		}
 
 		//copy particles to instance buffer

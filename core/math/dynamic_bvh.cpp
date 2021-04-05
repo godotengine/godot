@@ -113,8 +113,9 @@ DynamicBVH::Node *DynamicBVH::_remove_leaf(Node *leaf) {
 				prev->volume = prev->childs[0]->volume.merge(prev->childs[1]->volume);
 				if (pb.is_not_equal_to(prev->volume)) {
 					prev = prev->parent;
-				} else
+				} else {
 					break;
+				}
 			}
 			return (prev ? prev : bvh_root);
 		} else {
@@ -262,10 +263,11 @@ DynamicBVH::Node *DynamicBVH::_node_sort(Node *n, Node *&r) {
 		Node *s = p->childs[j];
 		Node *q = p->parent;
 		ERR_FAIL_COND_V(n != p->childs[i], nullptr);
-		if (q)
+		if (q) {
 			q->childs[p->get_index_in_parent()] = n;
-		else
+		} else {
 			r = n;
+		}
 		s->parent = n;
 		p->parent = n;
 		n->parent = q;
@@ -307,8 +309,9 @@ void DynamicBVH::optimize_top_down(int bu_threshold) {
 }
 
 void DynamicBVH::optimize_incremental(int passes) {
-	if (passes < 0)
+	if (passes < 0) {
 		passes = total_leaves;
+	}
 	if (bvh_root && (passes > 0)) {
 		do {
 			Node *node = bvh_root;
@@ -345,8 +348,9 @@ void DynamicBVH::_update(Node *leaf, int lookahead) {
 			for (int i = 0; (i < lookahead) && root->parent; ++i) {
 				root = root->parent;
 			}
-		} else
+		} else {
 			root = bvh_root;
+		}
 	}
 	_insert_leaf(root, leaf);
 }
@@ -370,8 +374,9 @@ bool DynamicBVH::update(const ID &p_id, const AABB &p_box) {
 			for (int i = 0; (i < lkhd) && base->parent; ++i) {
 				base = base->parent;
 			}
-		} else
+		} else {
 			base = bvh_root;
+		}
 	}
 	leaf->volume = volume;
 	_insert_leaf(base, leaf);

@@ -649,14 +649,16 @@ public:
 				Color color = get_theme_color("highlight_color", "Editor");
 				for (int i = 0; i < 2; i++) {
 					Point2 ofs(4, vofs);
-					if (i == 1)
+					if (i == 1) {
 						ofs.y += bsize + 1;
+					}
 
 					ofs += rect.position;
 					for (int j = 0; j < 10; j++) {
 						Point2 o = ofs + Point2(j * (bsize + 1), 0);
-						if (j >= 5)
+						if (j >= 5) {
 							o.x += 1;
+						}
 
 						const int idx = i * 10 + j;
 						const bool on = value & (1 << idx);

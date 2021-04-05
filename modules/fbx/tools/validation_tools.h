@@ -65,8 +65,9 @@ protected:
 			Error err;
 			FileAccess *file = FileAccess::open(path, FileAccess::WRITE, &err);
 			if (!file || err) {
-				if (file)
+				if (file) {
 					memdelete(file);
+				}
 				print_error("ValidationTracker Error - failed to create file - path: %s\n" + path);
 				return;
 			}

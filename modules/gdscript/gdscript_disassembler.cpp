@@ -393,8 +393,9 @@ void GDScriptFunction::disassemble(const Vector<String> &p_code_lines) const {
 
 				text += Variant::get_type_name(t) + "(";
 				for (int i = 0; i < argc; i++) {
-					if (i > 0)
+					if (i > 0) {
 						text += ", ";
+					}
 					text += DADDR(i + 1);
 				}
 				text += ")";
@@ -410,8 +411,9 @@ void GDScriptFunction::disassemble(const Vector<String> &p_code_lines) const {
 
 				text += "<unkown type>(";
 				for (int i = 0; i < argc; i++) {
-					if (i > 0)
+					if (i > 0) {
 						text += ", ";
+					}
 					text += DADDR(i + 1);
 				}
 				text += ")";
@@ -425,8 +427,9 @@ void GDScriptFunction::disassemble(const Vector<String> &p_code_lines) const {
 				text += " = [";
 
 				for (int i = 0; i < argc; i++) {
-					if (i > 0)
+					if (i > 0) {
 						text += ", ";
+					}
 					text += DADDR(1 + i);
 				}
 
@@ -458,8 +461,9 @@ void GDScriptFunction::disassemble(const Vector<String> &p_code_lines) const {
 				text += " = [";
 
 				for (int i = 0; i < argc; i++) {
-					if (i > 0)
+					if (i > 0) {
 						text += ", ";
+					}
 					text += DADDR(1 + i);
 				}
 
@@ -474,8 +478,9 @@ void GDScriptFunction::disassemble(const Vector<String> &p_code_lines) const {
 				text += " = {";
 
 				for (int i = 0; i < argc; i++) {
-					if (i > 0)
+					if (i > 0) {
 						text += ", ";
+					}
 					text += DADDR(1 + i * 2 + 0);
 					text += ": ";
 					text += DADDR(1 + i * 2 + 1);
@@ -509,8 +514,9 @@ void GDScriptFunction::disassemble(const Vector<String> &p_code_lines) const {
 				text += "(";
 
 				for (int i = 0; i < argc; i++) {
-					if (i > 0)
+					if (i > 0) {
 						text += ", ";
+					}
 					text += DADDR(1 + i);
 				}
 				text += ")";
@@ -539,8 +545,9 @@ void GDScriptFunction::disassemble(const Vector<String> &p_code_lines) const {
 				text += "(";
 
 				for (int i = 0; i < argc; i++) {
-					if (i > 0)
+					if (i > 0) {
 						text += ", ";
+					}
 					text += DADDR(1 + i);
 				}
 				text += ")";
@@ -559,8 +566,9 @@ void GDScriptFunction::disassemble(const Vector<String> &p_code_lines) const {
 				text += "(";
 
 				for (int i = 0; i < argc; i++) {
-					if (i > 0)
+					if (i > 0) {
 						text += ", ";
+					}
 					text += DADDR(1 + i);
 				}
 				text += ")";
@@ -636,8 +644,9 @@ void GDScriptFunction::disassemble(const Vector<String> &p_code_lines) const {
 				text += "(";
 
 				for (int i = 0; i < argc; i++) {
-					if (i > 0)
+					if (i > 0) {
 						text += ", ";
+					}
 					text += DADDR(1 + i);
 				}
 				text += ")";
@@ -654,8 +663,9 @@ void GDScriptFunction::disassemble(const Vector<String> &p_code_lines) const {
 				text += "(";
 
 				for (int i = 0; i < argc; i++) {
-					if (i > 0)
+					if (i > 0) {
 						text += ", ";
+					}
 					text += DADDR(1 + i);
 				}
 				text += ")";
@@ -672,8 +682,9 @@ void GDScriptFunction::disassemble(const Vector<String> &p_code_lines) const {
 				text += "(";
 
 				for (int i = 0; i < argc; i++) {
-					if (i > 0)
+					if (i > 0) {
 						text += ", ";
+					}
 					text += DADDR(1 + i);
 				}
 				text += ")";
@@ -690,8 +701,9 @@ void GDScriptFunction::disassemble(const Vector<String> &p_code_lines) const {
 				text += "(";
 
 				for (int i = 0; i < argc; i++) {
-					if (i > 0)
+					if (i > 0) {
 						text += ", ";
+					}
 					text += DADDR(1 + i);
 				}
 				text += ")";
@@ -708,8 +720,9 @@ void GDScriptFunction::disassemble(const Vector<String> &p_code_lines) const {
 				text += "(";
 
 				for (int i = 0; i < argc; i++) {
-					if (i > 0)
+					if (i > 0) {
 						text += ", ";
+					}
 					text += DADDR(1 + i);
 				}
 				text += ")";

@@ -6932,10 +6932,11 @@ Error ShaderLanguage::_parse_shader(const Map<StringName, FunctionInfo> &p_funct
 											decl.initializer.push_back(n);
 											break;
 										} else {
-											if (curly)
+											if (curly) {
 												_set_error("Expected '}' or ','");
-											else
+											} else {
 												_set_error("Expected ')' or ','");
+											}
 											return ERR_PARSE_ERROR;
 										}
 									}
@@ -6962,8 +6963,9 @@ Error ShaderLanguage::_parse_shader(const Map<StringName, FunctionInfo> &p_funct
 							} else {
 								//variable created with assignment! must parse an expression
 								Node *expr = _parse_and_reduce_expression(nullptr, FunctionInfo());
-								if (!expr)
+								if (!expr) {
 									return ERR_PARSE_ERROR;
+								}
 								if (expr->type == Node::TYPE_OPERATOR && ((OperatorNode *)expr)->op == OP_CALL) {
 									_set_error("Expected constant expression after '='");
 									return ERR_PARSE_ERROR;

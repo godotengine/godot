@@ -784,8 +784,9 @@ ScriptInstance *VisualScript::instance_create(Object *p_this) {
 		variables.get_key_list(&keys);
 
 		for (const List<StringName>::Element *E = keys.front(); E; E = E->next()) {
-			if (!variables[E->get()]._export)
+			if (!variables[E->get()]._export) {
 				continue;
+			}
 
 			PropertyInfo p = variables[E->get()].info;
 			p.name = String(E->get());
@@ -2085,10 +2086,11 @@ void VisualScriptInstance::create(const Ref<VisualScript> &p_script, Object *p_o
 
 					StringName var_name;
 
-					if (Object::cast_to<VisualScriptLocalVar>(*node))
+					if (Object::cast_to<VisualScriptLocalVar>(*node)) {
 						var_name = String(Object::cast_to<VisualScriptLocalVar>(*node)->get_var_name()).strip_edges();
-					else
+					} else {
 						var_name = String(Object::cast_to<VisualScriptLocalVarSet>(*node)->get_var_name()).strip_edges();
+					}
 
 					if (!local_var_indices.has(var_name)) {
 						local_var_indices[var_name] = function.max_stack;

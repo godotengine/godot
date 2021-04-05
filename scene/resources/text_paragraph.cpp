@@ -620,11 +620,13 @@ int TextParagraph::hit_test(const Point2 &p_coords) const {
 	const_cast<TextParagraph *>(this)->_shape_lines();
 	Vector2 ofs;
 	if (TS->shaped_text_get_orientation(rid) == TextServer::ORIENTATION_HORIZONTAL) {
-		if (ofs.y < 0)
+		if (ofs.y < 0) {
 			return 0;
+		}
 	} else {
-		if (ofs.x < 0)
+		if (ofs.x < 0) {
 			return 0;
+		}
 	}
 	for (int i = 0; i < lines.size(); i++) {
 		if (TS->shaped_text_get_orientation(lines[i]) == TextServer::ORIENTATION_HORIZONTAL) {
