@@ -1688,7 +1688,7 @@ Node *EditorSceneImporterCollada::import_scene(const String &p_path, uint32_t p_
 	state.use_mesh_builtin_materials = true;
 	state.bake_fps = p_bake_fps;
 
-	Error err = state.load(p_path, flags, p_flags & EditorSceneImporter::IMPORT_GENERATE_TANGENT_ARRAYS, 0);
+	Error err = state.load(p_path, flags, p_flags & EditorSceneImporter::IMPORT_GENERATE_TANGENT_ARRAYS, false);
 
 	if (r_err) {
 		*r_err = err;

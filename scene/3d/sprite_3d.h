@@ -203,8 +203,8 @@ class AnimatedSprite3D : public SpriteBase3D {
 
 	float timeout = 0.0;
 
-	bool hflip = 1;
-	bool vflip = 1;
+	bool hflip = true;
+	bool vflip = true;
 
 	Color modulate;
 
