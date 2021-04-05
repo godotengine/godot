@@ -557,8 +557,15 @@ void EditorAssetLibrary::_notification(int p_what) {
 			error_label->raise();
 		} break;
 		case NOTIFICATION_VISIBILITY_CHANGED: {
-			if (is_visible() && initial_loading) {
-				_repository_changed(0); // Update when shown for the first time.
+			if (is_visible()) {
+				// Focus the search box automatically when switching to the Templates tab (in the Project Manager)
+				// or switching to the AssetLib tab (in the editor).
+				// The Project Manager's project filter box is automatically focused in the project manager code.
+				filter->grab_focus();
+
+				if (initial_loading) {
+					_repository_changed(0); // Update when shown for the first time.
+				}
 			}
 		} break;
 		case NOTIFICATION_PROCESS: {
@@ -1332,6 +1339,11 @@ EditorAssetLibrary::EditorAssetLibrary(bool p_templates_only) {
 	library_main->add_theme_constant_override("separation", 10 * EDSCALE);
 
 	filter = memnew(LineEdit);
+	if (templates_only) {
+		filter->set_placeholder(TTR("Search templates, projects, and demos"));
+	} else {
+		filter->set_placeholder(TTR("Search assets (excluding templates, projects, and demos)"));
+	}
 	search_hb->add_child(filter);
 	filter->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	filter->connect("text_changed", callable_mp(this, &EditorAssetLibrary::_search_text_changed));
