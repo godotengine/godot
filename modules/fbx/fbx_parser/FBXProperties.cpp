@@ -145,8 +145,7 @@ std::string PeekPropertyName(const Element &element) {
 } // namespace
 
 // ------------------------------------------------------------------------------------------------
-PropertyTable::PropertyTable() :
-		templateProps(), element() {
+PropertyTable::PropertyTable() {
 }
 
 // ------------------------------------------------------------------------------------------------
