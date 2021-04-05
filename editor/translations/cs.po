@@ -19,17 +19,18 @@
 # Emil Jiří Tywoniak <emil.tywoniak@gmail.com>, 2020, 2021.
 # Filip Vincůrek <vincurek.f@gmail.com>, 2020.
 # Ondrej Pavelka <ondrej.pavelka@outlook.com>, 2020.
-# Zbyněk <zbynek.fiala@gmail.com>, 2020.
+# Zbyněk <zbynek.fiala@gmail.com>, 2020, 2021.
 # Daniel Kříž <Daniel.kriz@protonmail.com>, 2020.
 # VladimirBlazek <vblazek042@gmail.com>, 2020.
 # kubajz22 <til.jakubesko@seznam.cz>, 2020.
 # Václav Blažej <vaclavblazej@seznam.cz>, 2020, 2021.
+# ProfJack <profjackcz@gmail.com>, 2021.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2021-03-08 15:33+0000\n"
-"Last-Translator: Václav Blažej <vaclavblazej@seznam.cz>\n"
+"PO-Revision-Date: 2021-04-05 14:28+0000\n"
+"Last-Translator: ProfJack <profjackcz@gmail.com>\n"
 "Language-Team: Czech <https://hosted.weblate.org/projects/godot-engine/godot/"
 "cs/>\n"
 "Language: cs\n"
@@ -37,7 +38,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=3; plural=(n==1) ? 0 : (n>=2 && n<=4) ? 1 : 2;\n"
-"X-Generator: Weblate 4.5.1\n"
+"X-Generator: Weblate 4.6-dev\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -354,7 +355,7 @@ msgstr "Změnit režim interpolace animace"
 
 #: editor/animation_track_editor.cpp
 msgid "Change Animation Loop Mode"
-msgstr "Změnit režim smyčky animace"
+msgstr "Změnit mód smyčky animace"
 
 #: editor/animation_track_editor.cpp
 msgid "Remove Anim Track"
@@ -3677,6 +3678,7 @@ msgstr ""
 msgid ""
 "Importing has been disabled for this file, so it can't be opened for editing."
 msgstr ""
+"Importování tohoto souboru bylo zakázáno, takže jej nelze otevřít pro úpravy."
 
 #: editor/filesystem_dock.cpp
 msgid "Cannot move/rename resources root."
@@ -4067,23 +4069,20 @@ msgid "Saving..."
 msgstr "Ukládání..."
 
 #: editor/import_defaults_editor.cpp
-#, fuzzy
 msgid "Select Importer"
-msgstr "Režim výběru"
+msgstr "Vybrat Importér"
 
 #: editor/import_defaults_editor.cpp
-#, fuzzy
 msgid "Importer:"
-msgstr "Import"
+msgstr "Importér:"
 
 #: editor/import_defaults_editor.cpp
-#, fuzzy
 msgid "Reset to Defaults"
-msgstr "Načíst výchozí"
+msgstr "Obnovit výchozí"
 
 #: editor/import_dock.cpp
 msgid "Keep File (No Import)"
-msgstr ""
+msgstr "Zachovat soubor (bez importu)"
 
 #: editor/import_dock.cpp
 msgid "%d Files"
@@ -5092,11 +5091,11 @@ msgstr "Stahování tohoto assetu právě probíhá!"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Recently Updated"
-msgstr "Naposledy upravené"
+msgstr "Nedávno aktualizované"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Least Recently Updated"
-msgstr "Naposledy neupravené"
+msgstr "Dlouho neaktualizované"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Name (A-Z)"
@@ -5184,7 +5183,7 @@ msgid ""
 "Can't determine a save path for lightmap images.\n"
 "Save your scene and try again."
 msgstr ""
-"Nelze určit cestu uložení pro světelnou mapu obrázku.\n"
+"Nelze určit cestu pro uložení obrázků světelné mapy.\n"
 "Uložte scénu (obrázky se uloží do stejného adresáře) nebo vyberte cestu pro "
 "uložení z vlastnosti BakedLightmap."
 
@@ -7349,9 +7348,8 @@ msgid "Yaw"
 msgstr "Náklon"
 
 #: editor/plugins/spatial_editor_plugin.cpp
-#, fuzzy
 msgid "Size"
-msgstr "Velikost: "
+msgstr "Velikost"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Objects Drawn"
@@ -10399,7 +10397,6 @@ msgid "Plugins"
 msgstr "Pluginy"
 
 #: editor/project_settings_editor.cpp
-#, fuzzy
 msgid "Import Defaults"
 msgstr "Načíst výchozí"
 
@@ -10651,9 +10648,8 @@ msgid "Instance Child Scene"
 msgstr "Přidat instanci scény"
 
 #: editor/scene_tree_dock.cpp
-#, fuzzy
 msgid "Can't paste root node into the same scene."
-msgstr "Nelze manipulovat s uzly z cizí scény!"
+msgstr "Nelze vložit kořenový uzel do stejné scény."
 
 #: editor/scene_tree_dock.cpp
 msgid "Paste Node(s)"
@@ -11621,7 +11617,7 @@ msgstr "Následné zpracování"
 #: modules/lightmapper_cpu/lightmapper_cpu.cpp
 #, fuzzy
 msgid "Plotting lightmaps"
-msgstr "Vykreslení světel:"
+msgstr "Vykreslování světelných map"
 
 #: modules/mono/csharp_script.cpp
 msgid "Class name can't be a reserved keyword"
@@ -12436,11 +12432,11 @@ msgstr "Prázdný CollisionPolygon2D nemá při kolizi žádný efekt."
 
 #: scene/2d/collision_polygon_2d.cpp
 msgid "Invalid polygon. At least 3 points are needed in 'Solids' build mode."
-msgstr ""
+msgstr "Chybný polygon. Alespoň 3 body jsou potřeba v 'Solids' build módu."
 
 #: scene/2d/collision_polygon_2d.cpp
 msgid "Invalid polygon. At least 2 points are needed in 'Segments' build mode."
-msgstr ""
+msgstr "Chybný polygon. Alespoň 2 body jsou potřeba v 'Segments' build módu."
 
 #: scene/2d/collision_shape_2d.cpp
 msgid ""
@@ -13059,6 +13055,8 @@ msgid ""
 "The sampler port is connected but not used. Consider changing the source to "
 "'SamplerPort'."
 msgstr ""
+"Sampler port je připojen, ale není použitý. Zvažte změnu zdroje na "
+"'SamplerPort'."
 
 #: scene/resources/visual_shader_nodes.cpp
 msgid "Invalid source for preview."

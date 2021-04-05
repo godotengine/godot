@@ -16,12 +16,13 @@
 # Revolution <revosw@gmail.com>, 2019.
 # Petter Reinholdtsen <pere-weblate@hungry.com>, 2019, 2020.
 # Patrick Sletvold <patricksletvold@hotmail.com>, 2021.
+# Kristoffer <kskau93@gmail.com>, 2021.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2021-02-27 00:47+0000\n"
-"Last-Translator: Anonymous <GentleSaucepan@protonmail.com>\n"
+"PO-Revision-Date: 2021-03-31 03:53+0000\n"
+"Last-Translator: Kristoffer <kskau93@gmail.com>\n"
 "Language-Team: Norwegian Bokmål <https://hosted.weblate.org/projects/godot-"
 "engine/godot/nb_NO/>\n"
 "Language: nb\n"
@@ -29,7 +30,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 4.5\n"
+"X-Generator: Weblate 4.6-dev\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -663,7 +664,7 @@ msgstr "Velg spor å kopiere"
 #: editor/plugins/sprite_frames_editor_plugin.cpp editor/property_editor.cpp
 #: editor/scene_tree_dock.cpp scene/gui/line_edit.cpp scene/gui/text_edit.cpp
 msgid "Copy"
-msgstr "Lim inn"
+msgstr "Kopier"
 
 #: editor/animation_track_editor.cpp
 #, fuzzy
@@ -1591,7 +1592,7 @@ msgstr "Velg en Mappe"
 #: editor/filesystem_dock.cpp editor/project_manager.cpp
 #: scene/gui/file_dialog.cpp
 msgid "Create Folder"
-msgstr "Lag mappe"
+msgstr "Lag Mappe"
 
 #: editor/editor_dir_dialog.cpp editor/editor_file_dialog.cpp
 #: editor/editor_plugin_settings.cpp editor/filesystem_dock.cpp
@@ -1706,9 +1707,8 @@ msgid "3D Editor"
 msgstr "Redigeringsverktøy"
 
 #: editor/editor_feature_profile.cpp
-#, fuzzy
 msgid "Script Editor"
-msgstr "Åpne SkriptEditor"
+msgstr "Skript Redigeringsverktøy"
 
 #: editor/editor_feature_profile.cpp
 msgid "Asset Library"
@@ -1724,9 +1724,8 @@ msgid "Node Dock"
 msgstr "Flytt Modus"
 
 #: editor/editor_feature_profile.cpp
-#, fuzzy
 msgid "FileSystem Dock"
-msgstr "FilSystem"
+msgstr "FilSystem Panel"
 
 #: editor/editor_feature_profile.cpp
 #, fuzzy
@@ -1882,7 +1881,7 @@ msgstr "Kutt Noder"
 
 #: editor/editor_file_dialog.cpp editor/filesystem_dock.cpp
 msgid "Copy Path"
-msgstr "Kopier Sti"
+msgstr "Kopier Bane"
 
 #: editor/editor_file_dialog.cpp editor/filesystem_dock.cpp
 #, fuzzy
@@ -1941,27 +1940,27 @@ msgstr "Lagre ei fil"
 
 #: editor/editor_file_dialog.cpp
 msgid "Go Back"
-msgstr "Gå tilbake"
+msgstr "Gå Tilbake"
 
 #: editor/editor_file_dialog.cpp
 msgid "Go Forward"
-msgstr "Gå framover"
+msgstr "Gå Fremover"
 
 #: editor/editor_file_dialog.cpp
 msgid "Go Up"
-msgstr "Gå oppover"
+msgstr "Gå Oppover"
 
 #: editor/editor_file_dialog.cpp
 msgid "Toggle Hidden Files"
-msgstr "Veksle visning av skjulte filer"
+msgstr "Veksle Visning av Skjulte Filer"
 
 #: editor/editor_file_dialog.cpp
 msgid "Toggle Favorite"
-msgstr "Veksle favorittmerkering"
+msgstr "Veksle Favorittmarkering"
 
 #: editor/editor_file_dialog.cpp
 msgid "Toggle Mode"
-msgstr "Veksle modus"
+msgstr "Veksle Modus"
 
 #: editor/editor_file_dialog.cpp
 msgid "Focus Path"
@@ -2132,7 +2131,7 @@ msgstr ""
 #: editor/editor_help_search.cpp editor/editor_node.cpp
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Search Help"
-msgstr "Søk hjelp"
+msgstr "Søk Hjelp"
 
 #: editor/editor_help_search.cpp
 msgid "Case Sensitive"
@@ -2244,7 +2243,7 @@ msgstr "Tøm"
 
 #: editor/editor_log.cpp
 msgid "Clear Output"
-msgstr "Nullstill resultat"
+msgstr "Nullstill Resultat"
 
 #: editor/editor_network_profiler.cpp editor/editor_node.cpp
 #: editor/editor_profiler.cpp
@@ -2619,9 +2618,8 @@ msgid "Close Scene"
 msgstr "Lukk Scene"
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Reopen Closed Scene"
-msgstr "Lukk Scene"
+msgstr "Gjenåpne Lukket Scene"
 
 #: editor/editor_node.cpp
 #, fuzzy
@@ -2842,9 +2840,8 @@ msgid "Save Scene"
 msgstr "Lagre Scene"
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Save All Scenes"
-msgstr "Lagre alle Scener"
+msgstr "Lagre Alle Scener"
 
 #: editor/editor_node.cpp
 msgid "Convert To..."
@@ -3036,9 +3033,8 @@ msgid "Editor Layout"
 msgstr "Redigeringsverktøy Layout"
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Take Screenshot"
-msgstr "Lagre Scene"
+msgstr "Ta Skjermbilde"
 
 #: editor/editor_node.cpp
 msgid "Screenshots are stored in the Editor Data/Settings Folder."
@@ -3046,7 +3042,7 @@ msgstr "Skjermavbildninger lagres i redigeringsdata/innstillingsmappen."
 
 #: editor/editor_node.cpp
 msgid "Toggle Fullscreen"
-msgstr "Skru av/på Fullskjerm"
+msgstr "Veksle Fullskjerm"
 
 #: editor/editor_node.cpp
 #, fuzzy
@@ -3119,7 +3115,7 @@ msgstr ""
 
 #: editor/editor_node.cpp
 msgid "Pause Scene"
-msgstr "Sett scenen på pause"
+msgstr "Sett Scenen På Pause"
 
 #: editor/editor_node.cpp
 msgid "Stop the scene."
@@ -3180,9 +3176,8 @@ msgid "Inspector"
 msgstr "Inspektør"
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Expand Bottom Panel"
-msgstr "Utvid alle"
+msgstr "Utvid Nederste Panel"
 
 #: editor/editor_node.cpp
 msgid "Output"
@@ -3282,7 +3277,7 @@ msgstr "Åpne 3D-redigeringsverktøy"
 
 #: editor/editor_node.cpp
 msgid "Open Script Editor"
-msgstr "Åpne SkriptEditor"
+msgstr "Åpne Skriptredigeringsverktøy"
 
 #: editor/editor_node.cpp editor/project_manager.cpp
 msgid "Open Asset Library"
@@ -4014,9 +4009,8 @@ msgid "Create Script"
 msgstr "Opprett skript"
 
 #: editor/find_in_files.cpp editor/plugins/script_editor_plugin.cpp
-#, fuzzy
 msgid "Find in Files"
-msgstr "%d flere filer"
+msgstr "Finn i Filer"
 
 #: editor/find_in_files.cpp
 #, fuzzy
@@ -5766,9 +5760,8 @@ msgstr ""
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/texture_region_editor_plugin.cpp
 #: editor/plugins/tile_set_editor_plugin.cpp scene/gui/graph_edit.cpp
-#, fuzzy
 msgid "Zoom Reset"
-msgstr "Zoom Ut"
+msgstr "Zoom Resett"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/spatial_editor_plugin.cpp
@@ -5804,9 +5797,8 @@ msgstr "Roter Modus"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/spatial_editor_plugin.cpp
-#, fuzzy
 msgid "Scale Mode"
-msgstr "Velg Modus"
+msgstr "Skaler Modus"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/spatial_editor_plugin.cpp
@@ -5827,9 +5819,8 @@ msgid "Pan Mode"
 msgstr "Panorerings-Modus"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Ruler Mode"
-msgstr "Velg Modus"
+msgstr "Linjal Modus"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #, fuzzy
@@ -5837,9 +5828,8 @@ msgid "Toggle smart snapping."
 msgstr "Slå av/på snapping"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Use Smart Snap"
-msgstr "Bruk Snap"
+msgstr "Bruk Smart Snap"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #, fuzzy
@@ -5847,9 +5837,8 @@ msgid "Toggle grid snapping."
 msgstr "Slå av/på snapping"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Use Grid Snap"
-msgstr "Bruk Snap"
+msgstr "Bruk Rutenett Snap"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #, fuzzy
@@ -5957,13 +5946,12 @@ msgid "View"
 msgstr "Visning"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Always Show Grid"
-msgstr "Vis Rutenett"
+msgstr "Alltid Vis Rutenett"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Show Helpers"
-msgstr "Vis hjelpere"
+msgstr "Vis Hjelpere"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Show Rulers"
@@ -5971,7 +5959,7 @@ msgstr "Vis linjaler"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Show Guides"
-msgstr "Vis veiledere"
+msgstr "Vis Veiledere"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #, fuzzy
@@ -6045,7 +6033,7 @@ msgstr "Kopier Pose"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Clear Pose"
-msgstr "Fjern Pose"
+msgstr "Fjern Posering"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Multiply grid step by 2"
@@ -6056,9 +6044,8 @@ msgid "Divide grid step by 2"
 msgstr "Del rutenett-steg med 2"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Pan View"
-msgstr "Bakvisning"
+msgstr "Panoreringsvisning"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Add %s"
@@ -7188,12 +7175,12 @@ msgstr "%s-klassereferanse"
 #: editor/plugins/script_editor_plugin.cpp
 #: editor/plugins/script_text_editor.cpp
 msgid "Find Next"
-msgstr "Finn neste"
+msgstr "Finn Neste"
 
 #: editor/plugins/script_editor_plugin.cpp
 #: editor/plugins/script_text_editor.cpp
 msgid "Find Previous"
-msgstr "Finn forrige"
+msgstr "Finn Forrige"
 
 #: editor/plugins/script_editor_plugin.cpp
 #, fuzzy
@@ -7243,13 +7230,12 @@ msgid "Open..."
 msgstr "Åpne"
 
 #: editor/plugins/script_editor_plugin.cpp
-#, fuzzy
 msgid "Reopen Closed Script"
-msgstr "Kjør Skript"
+msgstr "Gjenåpne Lukket Skript"
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Save All"
-msgstr "Lagre Alle"
+msgstr "Lagre Alt"
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Soft Reload Script"
@@ -7260,9 +7246,8 @@ msgid "Copy Script Path"
 msgstr "Kopier Skript-Sti"
 
 #: editor/plugins/script_editor_plugin.cpp
-#, fuzzy
 msgid "History Previous"
-msgstr "Finn forrige"
+msgstr "Historie Forrige"
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "History Next"
@@ -7308,7 +7293,7 @@ msgstr "Søk"
 
 #: editor/plugins/script_editor_plugin.cpp editor/script_editor_debugger.cpp
 msgid "Step Into"
-msgstr "Tre inn i"
+msgstr "Tre Inn I"
 
 #: editor/plugins/script_editor_plugin.cpp editor/script_editor_debugger.cpp
 msgid "Step Over"
@@ -7403,9 +7388,8 @@ msgid "Line"
 msgstr "Linje:"
 
 #: editor/plugins/script_text_editor.cpp
-#, fuzzy
 msgid "Go to Function"
-msgstr "Fjern Funksjon"
+msgstr "Gå til Funksjon"
 
 #: editor/plugins/script_text_editor.cpp
 msgid "Only resources from filesystem can be dropped."
@@ -7430,7 +7414,7 @@ msgstr ""
 
 #: editor/plugins/script_text_editor.cpp editor/plugins/text_editor.cpp
 msgid "Uppercase"
-msgstr "Store versaler"
+msgstr "Store bokstaver"
 
 #: editor/plugins/script_text_editor.cpp editor/plugins/text_editor.cpp
 msgid "Lowercase"
@@ -7470,9 +7454,8 @@ msgid "Select All"
 msgstr "Velg Alle"
 
 #: editor/plugins/script_text_editor.cpp
-#, fuzzy
 msgid "Delete Line"
-msgstr "Slett Valgte"
+msgstr "Slett Linje"
 
 #: editor/plugins/script_text_editor.cpp
 msgid "Indent Left"
@@ -7484,12 +7467,11 @@ msgstr "Innrykk Høyre"
 
 #: editor/plugins/script_text_editor.cpp
 msgid "Toggle Comment"
-msgstr "Veksle kommentar"
+msgstr "Veksle Kommentar"
 
 #: editor/plugins/script_text_editor.cpp
-#, fuzzy
 msgid "Fold/Unfold Line"
-msgstr "Slett Valgte"
+msgstr "Veksle Linjebretting"
 
 #: editor/plugins/script_text_editor.cpp
 msgid "Fold All Lines"
@@ -7501,34 +7483,31 @@ msgstr "Brett ut alle linjer"
 
 #: editor/plugins/script_text_editor.cpp
 msgid "Clone Down"
-msgstr "Klon nedover"
+msgstr "Klon Nedover"
 
 #: editor/plugins/script_text_editor.cpp
 msgid "Complete Symbol"
 msgstr ""
 
 #: editor/plugins/script_text_editor.cpp
-#, fuzzy
 msgid "Evaluate Selection"
-msgstr "Skaler Utvalg"
+msgstr "Evaluer Seleksjon"
 
 #: editor/plugins/script_text_editor.cpp
 msgid "Trim Trailing Whitespace"
 msgstr ""
 
 #: editor/plugins/script_text_editor.cpp
-#, fuzzy
 msgid "Convert Indent to Spaces"
-msgstr "Konverter til store versaler"
+msgstr "Konverter Innrykk til Mellomrom"
 
 #: editor/plugins/script_text_editor.cpp
-#, fuzzy
 msgid "Convert Indent to Tabs"
-msgstr "Konverter til store versaler"
+msgstr "Konverter Inrykk til Tabs"
 
 #: editor/plugins/script_text_editor.cpp
 msgid "Auto Indent"
-msgstr "Automatisk innrykk"
+msgstr "Automatisk Innrykk"
 
 #: editor/plugins/script_text_editor.cpp
 #, fuzzy
@@ -7540,19 +7519,16 @@ msgid "Contextual Help"
 msgstr ""
 
 #: editor/plugins/script_text_editor.cpp
-#, fuzzy
 msgid "Toggle Bookmark"
-msgstr "Veksle kommentar"
+msgstr "Veksle Bokmerke"
 
 #: editor/plugins/script_text_editor.cpp
-#, fuzzy
 msgid "Go to Next Bookmark"
-msgstr "Gå til Neste Steg"
+msgstr "Gå til Neste Bokmerke"
 
 #: editor/plugins/script_text_editor.cpp
-#, fuzzy
 msgid "Go to Previous Bookmark"
-msgstr "Gå til tidligere redigert dokument."
+msgstr "Gå til Forrige Bokmerke"
 
 #: editor/plugins/script_text_editor.cpp
 #, fuzzy
@@ -7584,9 +7560,8 @@ msgid "Go to Next Breakpoint"
 msgstr "Gå til Neste Steg"
 
 #: editor/plugins/script_text_editor.cpp
-#, fuzzy
 msgid "Go to Previous Breakpoint"
-msgstr "Gå til tidligere redigert dokument."
+msgstr "Gå til Forrige Steg"
 
 #: editor/plugins/shader_editor_plugin.cpp
 msgid ""
@@ -7959,7 +7934,7 @@ msgstr "Høyrevisning"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Switch Perspective/Orthogonal View"
-msgstr "Bytt perspektiv/ortogonal fremvisning"
+msgstr "Bytt Perspektiv/Ortogonal Fremvisning"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Insert Animation Key"
@@ -7983,9 +7958,8 @@ msgid "Transform"
 msgstr ""
 
 #: editor/plugins/spatial_editor_plugin.cpp
-#, fuzzy
 msgid "Snap Object to Floor"
-msgstr "Snap til rutenett"
+msgstr "Snap Objekt til Gulv"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Transform Dialog..."
@@ -8538,9 +8512,8 @@ msgid "Theme File"
 msgstr "Tema"
 
 #: editor/plugins/tile_map_editor_plugin.cpp
-#, fuzzy
 msgid "Erase Selection"
-msgstr "Fjern Utvalg"
+msgstr "Fjern Seleksjon"
 
 #: editor/plugins/tile_map_editor_plugin.cpp
 #, fuzzy
@@ -8549,9 +8522,8 @@ msgstr "Ugyldig navn."
 
 #: editor/plugins/tile_map_editor_plugin.cpp
 #: modules/gridmap/grid_map_editor_plugin.cpp
-#, fuzzy
 msgid "Cut Selection"
-msgstr "Plasser Utvalg I Midten"
+msgstr "Klipp ut Seleksjon"
 
 #: editor/plugins/tile_map_editor_plugin.cpp
 msgid "Paint TileMap"
@@ -8574,9 +8546,8 @@ msgid "Erase TileMap"
 msgstr ""
 
 #: editor/plugins/tile_map_editor_plugin.cpp
-#, fuzzy
 msgid "Find Tile"
-msgstr "Finn neste"
+msgstr "Finn Flis"
 
 #: editor/plugins/tile_map_editor_plugin.cpp
 msgid "Transpose"
@@ -8621,14 +8592,12 @@ msgid "Pick Tile"
 msgstr ""
 
 #: editor/plugins/tile_map_editor_plugin.cpp
-#, fuzzy
 msgid "Rotate Left"
-msgstr "Roter Modus"
+msgstr "Roter til Venstre"
 
 #: editor/plugins/tile_map_editor_plugin.cpp
-#, fuzzy
 msgid "Rotate Right"
-msgstr "Roter Polygon"
+msgstr "Roter til Høyre"
 
 #: editor/plugins/tile_map_editor_plugin.cpp
 msgid "Flip Horizontally"
@@ -8639,9 +8608,8 @@ msgid "Flip Vertically"
 msgstr ""
 
 #: editor/plugins/tile_map_editor_plugin.cpp
-#, fuzzy
 msgid "Clear Transform"
-msgstr "Anim Forandre Omforming"
+msgstr "Nullstill Transformasjon"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 #, fuzzy
@@ -8676,18 +8644,16 @@ msgid "New Atlas"
 msgstr "Ny %s"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-#, fuzzy
 msgid "Next Coordinate"
-msgstr "Neste skript"
+msgstr "Neste Koordinat"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Select the next shape, subtile, or Tile."
 msgstr ""
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-#, fuzzy
 msgid "Previous Coordinate"
-msgstr "Forrige skript"
+msgstr "Forrige Koordinat"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Select the previous shape, subtile, or Tile."
@@ -8709,9 +8675,8 @@ msgid "Occlusion"
 msgstr "Rediger Poly"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-#, fuzzy
 msgid "Navigation"
-msgstr "Animasjonsnode"
+msgstr "Navigasjon"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 #, fuzzy
@@ -8729,44 +8694,36 @@ msgid "Z Index"
 msgstr "Panorerings-Modus"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-#, fuzzy
 msgid "Region Mode"
-msgstr "Roter Modus"
+msgstr "Region Modus"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-#, fuzzy
 msgid "Collision Mode"
-msgstr "Animasjonsnode"
+msgstr "Kollisjon Modus"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-#, fuzzy
 msgid "Occlusion Mode"
-msgstr "Rediger Poly"
+msgstr "Okklusjon Modus"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-#, fuzzy
 msgid "Navigation Mode"
-msgstr "Animasjonsnode"
+msgstr "Navigasjon Modus"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-#, fuzzy
 msgid "Bitmask Mode"
-msgstr "Roter Modus"
+msgstr "Bitmaske Modus"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-#, fuzzy
 msgid "Priority Mode"
-msgstr "Eksporter Prosjekt"
+msgstr "Prioritet Modus"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-#, fuzzy
 msgid "Icon Mode"
-msgstr "Panorerings-Modus"
+msgstr "Ikon Modus"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-#, fuzzy
 msgid "Z Index Mode"
-msgstr "Panorerings-Modus"
+msgstr "Z Indeks Modus"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Copy bitmask."
@@ -9058,9 +9015,8 @@ msgid "Detect new changes"
 msgstr "Lag ny %s"
 
 #: editor/plugins/version_control_editor_plugin.cpp
-#, fuzzy
 msgid "Changes"
-msgstr "Forandre"
+msgstr "Endringer"
 
 #: editor/plugins/version_control_editor_plugin.cpp
 msgid "Modified"
@@ -10025,7 +9981,7 @@ msgstr "Ressurser"
 
 #: editor/project_export.cpp
 msgid "Export all resources in the project"
-msgstr "Eksporter alle ressurser til prosjektet"
+msgstr "Eksporter alle ressurser i prosjektet"
 
 #: editor/project_export.cpp
 msgid "Export selected scenes (and dependencies)"
@@ -10033,7 +9989,7 @@ msgstr "Eksporter valgte scener (og avhengigheter)"
 
 #: editor/project_export.cpp
 msgid "Export selected resources (and dependencies)"
-msgstr "Exporter valgte ressurs (og avhengigheter)"
+msgstr "Exporter valgte ressurser (og avhengigheter)"
 
 #: editor/project_export.cpp
 msgid "Export Mode:"
@@ -10057,7 +10013,7 @@ msgstr ""
 
 #: editor/project_export.cpp
 msgid "Features"
-msgstr ""
+msgstr "Egenskaper"
 
 #: editor/project_export.cpp
 msgid "Custom (comma-separated):"
@@ -10855,9 +10811,8 @@ msgid "Select Method"
 msgstr ""
 
 #: editor/rename_dialog.cpp editor/scene_tree_dock.cpp
-#, fuzzy
 msgid "Batch Rename"
-msgstr "Endre navn"
+msgstr "Endre Navn på Parti"
 
 #: editor/rename_dialog.cpp
 msgid "Replace:"
@@ -11276,9 +11231,8 @@ msgid "Save Branch as Scene"
 msgstr ""
 
 #: editor/scene_tree_dock.cpp editor/script_editor_debugger.cpp
-#, fuzzy
 msgid "Copy Node Path"
-msgstr "Kopier Noder"
+msgstr "Kopier Node-bane"
 
 #: editor/scene_tree_dock.cpp
 msgid "Delete (No Confirm)"
@@ -12488,24 +12442,20 @@ msgid "Copy Nodes"
 msgstr "Kopier Noder"
 
 #: modules/visual_script/visual_script_editor.cpp
-#, fuzzy
 msgid "Cut Nodes"
-msgstr "Kutt Noder"
+msgstr "Klipp ut Noder"
 
 #: modules/visual_script/visual_script_editor.cpp
-#, fuzzy
 msgid "Make Function"
-msgstr "Fjern Funksjon"
+msgstr "Lag Funksjon"
 
 #: modules/visual_script/visual_script_editor.cpp
-#, fuzzy
 msgid "Refresh Graph"
-msgstr "Oppdater"
+msgstr "Oppdater Graf"
 
 #: modules/visual_script/visual_script_editor.cpp
-#, fuzzy
 msgid "Edit Member"
-msgstr "Medlemmer"
+msgstr "Rediger Medlem"
 
 #: modules/visual_script/visual_script_flow_control.cpp
 msgid "Input type not iterable: "
