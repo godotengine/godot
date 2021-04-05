@@ -4,7 +4,7 @@
 # This file is distributed under the same license as the Godot source code.
 # Kaveeta Vivatchai <goodytong@gmail.com>, 2017.
 # Poommetee Ketson (Noshyaar) <poommetee@protonmail.com>, 2017-2018.
-# Thanachart Monpassorn <nunf_2539@hotmail.com>, 2020.
+# Thanachart Monpassorn <nunf_2539@hotmail.com>, 2020, 2021.
 # Anonymous <noreply@weblate.org>, 2020.
 # Lon3r <mptube.p@gmail.com>, 2020.
 # Kongfa Warorot <gongpha@hotmail.com>, 2020, 2021.
@@ -12,8 +12,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2021-02-15 10:51+0000\n"
-"Last-Translator: Kongfa Warorot <gongpha@hotmail.com>\n"
+"PO-Revision-Date: 2021-04-05 14:28+0000\n"
+"Last-Translator: Thanachart Monpassorn <nunf_2539@hotmail.com>\n"
 "Language-Team: Thai <https://hosted.weblate.org/projects/godot-engine/godot/"
 "th/>\n"
 "Language: th\n"
@@ -21,7 +21,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Weblate 4.5-dev\n"
+"X-Generator: Weblate 4.6-dev\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -2489,9 +2489,8 @@ msgid "Unable to enable addon plugin at: '%s' parsing of config failed."
 msgstr "ไม่สามารถเปิดใช้งานปลั๊กอิน: '%s'"
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Unable to find script field for addon plugin at: '%s'."
-msgstr "ไม่พบชื่อสคริปต์ในปลั๊กอิน: 'res://addons/%s'"
+msgstr "ไม่พบไฟล์สคริปต์สำหรับปลั๊กอินที่: '%s'."
 
 #: editor/editor_node.cpp
 msgid "Unable to load addon script from path: '%s'."
@@ -3069,13 +3068,12 @@ msgid "Open & Run a Script"
 msgstr "เปิดและรันสคริปต์"
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid ""
 "The following files are newer on disk.\n"
 "What action should be taken?"
 msgstr ""
-"ไฟล์ต่อไปนี้ในดิสก์ใหม่กว่า\n"
-"จะทำอย่างไรต่อไป?:"
+"ไฟล์เหล่านี้มีความใหม่กว่าบนดิสก์\n"
+"ต้องจะทำอย่างไรต่อไป?"
 
 #: editor/editor_node.cpp editor/plugins/script_editor_plugin.cpp
 #: editor/plugins/shader_editor_plugin.cpp
@@ -3605,7 +3603,7 @@ msgstr "สถานะ: นำเข้าไฟล์ล้มเหลว ก
 #: editor/filesystem_dock.cpp
 msgid ""
 "Importing has been disabled for this file, so it can't be opened for editing."
-msgstr ""
+msgstr "การนำเข้าไฟล์นี้ถูกปิด, ดังนั้นจึงไม่สามารถเปิดเพื่อแก้ไขใดๆได้"
 
 #: editor/filesystem_dock.cpp
 msgid "Cannot move/rename resources root."
@@ -3993,23 +3991,20 @@ msgid "Saving..."
 msgstr "กำลังบันทึก..."
 
 #: editor/import_defaults_editor.cpp
-#, fuzzy
 msgid "Select Importer"
-msgstr "โหมดเลือก"
+msgstr "เลือกตัวนำเข้า"
 
 #: editor/import_defaults_editor.cpp
-#, fuzzy
 msgid "Importer:"
-msgstr "นำเข้า"
+msgstr "ตัวนำเข้า:"
 
 #: editor/import_defaults_editor.cpp
-#, fuzzy
 msgid "Reset to Defaults"
-msgstr "โหลดค่าเริ่มต้น"
+msgstr "รีเซ็ตเป็นค่าเริ่มต้น"
 
 #: editor/import_dock.cpp
 msgid "Keep File (No Import)"
-msgstr ""
+msgstr "เก็บไฟล์ (ไม่นำเข้า)"
 
 #: editor/import_dock.cpp
 msgid "%d Files"
@@ -4966,9 +4961,8 @@ msgid "Got:"
 msgstr "ที่ได้รับ:"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
-#, fuzzy
 msgid "Failed SHA-256 hash check"
-msgstr "ผิดพลาดในการตรวจสอบแฮช SHA256"
+msgstr "ผิดพลาดในการตรวจสอบแฮช SHA-256"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Asset Download Error:"
@@ -5099,13 +5093,12 @@ msgid "Assets ZIP File"
 msgstr "ทรัพยากรไฟล์ ZIP"
 
 #: editor/plugins/baked_lightmap_editor_plugin.cpp
-#, fuzzy
 msgid ""
 "Can't determine a save path for lightmap images.\n"
 "Save your scene and try again."
 msgstr ""
-"ไม่สามารถเลือกตำแหน่งที่จะบันทึกภาพ lightmap\n"
-"กรุณาบันทึกฉาก (เพื่อบันทึกภาพในโฟลเดอร์เดียวกัน) หรือระบุตำแหน่งในคุณสมบัติของ BakedLightmap"
+"ไม่สามารถกำหนดตำแหน่งการบันทึกสำหรับภาพ lightmap\n"
+"ลองบันทึกฉากของคุณแล้วลองอีกครั้ง"
 
 #: editor/plugins/baked_lightmap_editor_plugin.cpp
 msgid ""
@@ -5120,27 +5113,28 @@ msgstr "ผิดพลาดขณะสร้างภาพ lightmap กร�
 
 #: editor/plugins/baked_lightmap_editor_plugin.cpp
 msgid "Failed determining lightmap size. Maximum lightmap size too small?"
-msgstr ""
+msgstr "การกำหนดขนาด lightmap ล้มเหลว ขนาด lightmap สูงสุดเล็กเกินไป?"
 
 #: editor/plugins/baked_lightmap_editor_plugin.cpp
 msgid ""
 "Some mesh is invalid. Make sure the UV2 channel values are contained within "
 "the [0.0,1.0] square region."
-msgstr ""
+msgstr "mesh บางส่วนไม่ถูกต้อง ตรวจสอบให้แน่ใจว่าค่า UV2 อยู่ในพื้นที่สี่เหลี่ยม [0.0,1.0]"
 
 #: editor/plugins/baked_lightmap_editor_plugin.cpp
 msgid ""
 "Godot editor was built without ray tracing support, lightmaps can't be baked."
 msgstr ""
+"เอดิเตอร์ Godot ถูกสร้างโดยไม่ได้สนับสนุน ray tracing ดังนั้นจึงไม่สามารถ bake lightmaps "
+"ได้"
 
 #: editor/plugins/baked_lightmap_editor_plugin.cpp
 msgid "Bake Lightmaps"
 msgstr "สร้าง Lightmaps"
 
 #: editor/plugins/baked_lightmap_editor_plugin.cpp
-#, fuzzy
 msgid "Select lightmap bake file:"
-msgstr "เลือกไฟล์เทมเพลต"
+msgstr "เลือกไฟล์ bake ของ lightmap :"
 
 #: editor/plugins/camera_editor_plugin.cpp
 #: editor/plugins/spatial_editor_plugin.cpp
@@ -6220,9 +6214,8 @@ msgid "Can only set point into a ParticlesMaterial process material"
 msgstr "สามารถกำหนดจุดให้แก่ ParticlesMaterial เท่านั้น"
 
 #: editor/plugins/particles_2d_editor_plugin.cpp
-#, fuzzy
 msgid "Convert to CPUParticles2D"
-msgstr "แปลงเป็น CPUParticles"
+msgstr "แปลงเป็น CPUParticles2D"
 
 #: editor/plugins/particles_2d_editor_plugin.cpp
 #: editor/plugins/particles_editor_plugin.cpp
@@ -7247,9 +7240,8 @@ msgid "Yaw"
 msgstr "Yaw"
 
 #: editor/plugins/spatial_editor_plugin.cpp
-#, fuzzy
 msgid "Size"
-msgstr "ขนาด: "
+msgstr "ขนาด"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Objects Drawn"
@@ -9885,9 +9877,8 @@ msgid "Projects"
 msgstr "โปรเจกต์"
 
 #: editor/project_manager.cpp
-#, fuzzy
 msgid "Loading, please wait..."
-msgstr "กำลังเรียกข้อมูล โปรดรอ..."
+msgstr "กำลังโหลด โปรดรอ..."
 
 #: editor/project_manager.cpp
 msgid "Last Modified"
@@ -10255,9 +10246,8 @@ msgid "Plugins"
 msgstr "ปลั๊กอิน"
 
 #: editor/project_settings_editor.cpp
-#, fuzzy
 msgid "Import Defaults"
-msgstr "โหลดค่าเริ่มต้น"
+msgstr "นำเข้าค่าเริ่มต้น"
 
 #: editor/property_editor.cpp
 msgid "Preset..."
@@ -10506,12 +10496,10 @@ msgid "Instance Child Scene"
 msgstr "อินสแตนซ์ฉากลูก"
 
 #: editor/scene_tree_dock.cpp
-#, fuzzy
 msgid "Can't paste root node into the same scene."
-msgstr "ทำกับโหนดของฉากอื่นไม่ได้!"
+msgstr "ไม่สามารถวางโหนดรากในฉากเดียวกัน"
 
 #: editor/scene_tree_dock.cpp
-#, fuzzy
 msgid "Paste Node(s)"
 msgstr "วางโหนด"
 
@@ -10641,7 +10629,6 @@ msgid "Attach Script"
 msgstr "แนบสคริปต์"
 
 #: editor/scene_tree_dock.cpp
-#, fuzzy
 msgid "Cut Node(s)"
 msgstr "ตัดโหนด"
 
@@ -11446,36 +11433,31 @@ msgstr "มอบทรัพยากร MeshLibrary ให้กับ GridMap
 
 #: modules/lightmapper_cpu/lightmapper_cpu.cpp
 msgid "Begin Bake"
-msgstr ""
+msgstr "เริ่มต้น Bake"
 
 #: modules/lightmapper_cpu/lightmapper_cpu.cpp
 msgid "Preparing data structures"
-msgstr ""
+msgstr "กำลังเตรียมโครงสร้างข้อมูล"
 
 #: modules/lightmapper_cpu/lightmapper_cpu.cpp
-#, fuzzy
 msgid "Generate buffers"
-msgstr "สร้าง AABB"
+msgstr "สร้างบัฟเฟอร์"
 
 #: modules/lightmapper_cpu/lightmapper_cpu.cpp
-#, fuzzy
 msgid "Direct lighting"
-msgstr "ทิศทาง"
+msgstr "lighting แบบตรง"
 
 #: modules/lightmapper_cpu/lightmapper_cpu.cpp
-#, fuzzy
 msgid "Indirect lighting"
-msgstr "ย่อหน้าขวา"
+msgstr "lighting แบบอ้อม"
 
 #: modules/lightmapper_cpu/lightmapper_cpu.cpp
-#, fuzzy
 msgid "Post processing"
 msgstr "หลังประมวลผล"
 
 #: modules/lightmapper_cpu/lightmapper_cpu.cpp
-#, fuzzy
 msgid "Plotting lightmaps"
-msgstr "วางแนวแสง:"
+msgstr "กำลังพล็อต lightmaps"
 
 #: modules/mono/csharp_script.cpp
 msgid "Class name can't be a reserved keyword"
@@ -11975,9 +11957,8 @@ msgid "Select device from the list"
 msgstr "เลือกอุปกรณ์จากรายชื่อ"
 
 #: platform/android/export/export.cpp
-#, fuzzy
 msgid "Unable to find the 'apksigner' tool."
-msgstr "ไม่สามารถหา zipalign tool"
+msgstr "ไม่สามารถหาเครื่องมือ 'apksigner'"
 
 #: platform/android/export/export.cpp
 msgid ""
@@ -11994,14 +11975,12 @@ msgid "Release keystore incorrectly configured in the export preset."
 msgstr "Release keystore กำหนดค่าไว้อย่างไม่ถูกต้องในพรีเซ็ตสำหรับการส่งออก"
 
 #: platform/android/export/export.cpp
-#, fuzzy
 msgid "A valid Android SDK path is required in Editor Settings."
-msgstr "ที่อยู่ Android SDK ผิดพลาดสำหรับการสร้างแบบกำหนดเองในการตั้งค่าเอดิเตอร์"
+msgstr "ต้องการที่อยู่ของ Android SDK ที่ถูกต้อง ในการตั้งค่าเอดิเตอร์"
 
 #: platform/android/export/export.cpp
-#, fuzzy
 msgid "Invalid Android SDK path in Editor Settings."
-msgstr "ที่อยู่ Android SDK ผิดพลาดสำหรับการสร้างแบบกำหนดเองในการตั้งค่าเอดิเตอร์"
+msgstr "ที่อยู่ Android SDK ไม่ถูกต้องในตั้งค่าของเอดิเตอร์"
 
 #: platform/android/export/export.cpp
 msgid "Missing 'platform-tools' directory!"
@@ -12009,12 +11988,11 @@ msgstr "ไดเร็กทอรี 'platform-tools' หายไป!"
 
 #: platform/android/export/export.cpp
 msgid "Unable to find Android SDK platform-tools' adb command."
-msgstr ""
+msgstr "ไม่พบคำสั่ง adb ของ Android SDK platform-tools"
 
 #: platform/android/export/export.cpp
-#, fuzzy
 msgid "Please check in the Android SDK directory specified in Editor Settings."
-msgstr "ที่อยู่ Android SDK ผิดพลาดสำหรับการสร้างแบบกำหนดเองในการตั้งค่าเอดิเตอร์"
+msgstr "โปรดตรวจสอบในไดเร็กทอรี Android SDK ที่ระบุใตัวตั้งค่าของเอดิเตอร์"
 
 #: platform/android/export/export.cpp
 msgid "Missing 'build-tools' directory!"
@@ -12022,7 +12000,7 @@ msgstr "ไดเร็กทอรี 'build-tools' หายไป!"
 
 #: platform/android/export/export.cpp
 msgid "Unable to find Android SDK build-tools' apksigner command."
-msgstr ""
+msgstr "ไม่พบคำสั่ง apksigner ของ Android SDK build-tools"
 
 #: platform/android/export/export.cpp
 msgid "Invalid public key for APK expansion."
@@ -12270,11 +12248,11 @@ msgstr "CollisionPolygon2D ที่ว่างเปล่าจะไม่�
 
 #: scene/2d/collision_polygon_2d.cpp
 msgid "Invalid polygon. At least 3 points are needed in 'Solids' build mode."
-msgstr ""
+msgstr "โพลีกอนไม่ถูกต้อง ต้องมีอย่างน้อย 3 จุด ในโหมดการสร้างแบบ 'Solids'"
 
 #: scene/2d/collision_polygon_2d.cpp
 msgid "Invalid polygon. At least 2 points are needed in 'Segments' build mode."
-msgstr ""
+msgstr "โพลีกอนไม่ถูกต้อง ต้องมีอย่างน้อย 2 จุด ในโหมดการสร้างแบบ 'Segments'"
 
 #: scene/2d/collision_shape_2d.cpp
 msgid ""
@@ -12463,27 +12441,23 @@ msgstr "ARVROrigin จำเป็นต้องมี ARVRCamera เป็น�
 
 #: scene/3d/baked_lightmap.cpp
 msgid "Finding meshes and lights"
-msgstr ""
+msgstr "กำลังหา meshes และ lights"
 
 #: scene/3d/baked_lightmap.cpp
-#, fuzzy
 msgid "Preparing geometry (%d/%d)"
-msgstr "วิเคราะห์พื้นผิว..."
+msgstr "กำลังเตรียมรูปเรขาคณิต (%d/%d)"
 
 #: scene/3d/baked_lightmap.cpp
-#, fuzzy
 msgid "Preparing environment"
-msgstr "แสดงสภาพแวดล้อม"
+msgstr "กำลังเตรียมสภาพแวดล้อม"
 
 #: scene/3d/baked_lightmap.cpp
-#, fuzzy
 msgid "Generating capture"
-msgstr "กำลังสร้าง Lightmaps"
+msgstr "กำลังสร้าง capture"
 
 #: scene/3d/baked_lightmap.cpp
-#, fuzzy
 msgid "Saving lightmaps"
-msgstr "กำลังสร้าง Lightmaps"
+msgstr "กำลังบันทึก lightmaps"
 
 #: scene/3d/baked_lightmap.cpp
 msgid "Done"
@@ -12855,7 +12829,7 @@ msgstr "ขนาดวิวพอร์ตจะต้องมากกว่
 msgid ""
 "The sampler port is connected but not used. Consider changing the source to "
 "'SamplerPort'."
-msgstr ""
+msgstr "พอร์ตตัวอย่างเชื่อมต่ออยู่แต่ไม่ได้ใช้ ควรที่จะเปลี่ยนเป็น \"SamplerPort\""
 
 #: scene/resources/visual_shader_nodes.cpp
 msgid "Invalid source for preview."
