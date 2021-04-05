@@ -3228,8 +3228,9 @@ Viewport::ScreenSpaceAA Viewport::get_screen_space_aa() const {
 }
 
 void Viewport::set_use_debanding(bool p_use_debanding) {
-	if (use_debanding == p_use_debanding)
+	if (use_debanding == p_use_debanding) {
 		return;
+	}
 	use_debanding = p_use_debanding;
 	RS::get_singleton()->viewport_set_use_debanding(viewport, p_use_debanding);
 }

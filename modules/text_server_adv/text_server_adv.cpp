@@ -1832,8 +1832,9 @@ _FORCE_INLINE_ int _generate_kashida_justification_opportunies(const String &p_d
 				}
 			}
 		}
-		if (!is_transparent(c))
+		if (!is_transparent(c)) {
 			pc = c;
+		}
 		i++;
 	}
 

@@ -88,7 +88,7 @@ using namespace Util;
 
 // ------------------------------------------------------------------------------------------------
 Geometry::Geometry(uint64_t id, const ElementPtr element, const std::string &name, const Document &doc) :
-		Object(id, element, name), skin() {
+		Object(id, element, name) {
 	const std::vector<const Connection *> &conns = doc.GetConnectionsByDestinationSequenced(ID(), "Deformer");
 	for (const Connection *con : conns) {
 		const Skin *sk = ProcessSimpleConnection<Skin>(*con, false, "Skin -> Geometry", element);

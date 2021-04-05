@@ -784,8 +784,9 @@ ScriptInstance *VisualScript::instance_create(Object *p_this) {
 		variables.get_key_list(&keys);
 
 		for (const List<StringName>::Element *E = keys.front(); E; E = E->next()) {
-			if (!variables[E->get()]._export)
+			if (!variables[E->get()]._export) {
 				continue;
+			}
 
 			PropertyInfo p = variables[E->get()].info;
 			p.name = String(E->get());
@@ -2050,12 +2051,12 @@ void VisualScriptInstance::create(const Ref<VisualScript> &p_script, Object *p_o
 
 				instance->id = F->get();
 				instance->input_port_count = node->get_input_value_port_count();
-				instance->input_ports = NULL;
+				instance->input_ports = nullptr;
 				instance->output_port_count = node->get_output_value_port_count();
-				instance->output_ports = NULL;
+				instance->output_ports = nullptr;
 				instance->sequence_output_count = node->get_output_sequence_port_count();
 				instance->sequence_index = function.node_count++;
-				instance->sequence_outputs = NULL;
+				instance->sequence_outputs = nullptr;
 				instance->pass_idx = -1;
 
 				if (instance->input_port_count) {
@@ -2075,7 +2076,7 @@ void VisualScriptInstance::create(const Ref<VisualScript> &p_script, Object *p_o
 				if (instance->sequence_output_count) {
 					instance->sequence_outputs = memnew_arr(VisualScriptNodeInstance *, instance->sequence_output_count);
 					for (int i = 0; i < instance->sequence_output_count; i++) {
-						instance->sequence_outputs[i] = NULL; // If it remains null, flow ends here.
+						instance->sequence_outputs[i] = nullptr; // If it remains null, flow ends here.
 					}
 				}
 
@@ -2085,10 +2086,11 @@ void VisualScriptInstance::create(const Ref<VisualScript> &p_script, Object *p_o
 
 					StringName var_name;
 
-					if (Object::cast_to<VisualScriptLocalVar>(*node))
+					if (Object::cast_to<VisualScriptLocalVar>(*node)) {
 						var_name = String(Object::cast_to<VisualScriptLocalVar>(*node)->get_var_name()).strip_edges();
-					else
+					} else {
 						var_name = String(Object::cast_to<VisualScriptLocalVarSet>(*node)->get_var_name()).strip_edges();
+					}
 
 					if (!local_var_indices.has(var_name)) {
 						local_var_indices[var_name] = function.max_stack;

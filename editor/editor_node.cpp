@@ -1379,7 +1379,7 @@ void EditorNode::_save_scene_with_preview(String p_file, int p_idx) {
 		// which would result in an invalid texture.
 		if (c3d == 0 && c2d == 0) {
 			img.instance();
-			img->create(1, 1, 0, Image::FORMAT_RGB8);
+			img->create(1, 1, false, Image::FORMAT_RGB8);
 		} else if (c3d < c2d) {
 			Ref<ViewportTexture> viewport_texture = scene_root->get_texture();
 			if (viewport_texture->get_width() > 0 && viewport_texture->get_height() > 0) {

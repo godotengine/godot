@@ -167,16 +167,18 @@ void BoneTransformEditor::_notification(int p_what) {
 }
 
 void BoneTransformEditor::_value_changed(const double p_value) {
-	if (updating)
+	if (updating) {
 		return;
+	}
 
 	Transform tform = compute_transform_from_vector3s();
 	_change_transform(tform);
 }
 
 void BoneTransformEditor::_value_changed_vector3(const String p_property_name, const Vector3 p_vector, const StringName p_edited_property_name, const bool p_boolean) {
-	if (updating)
+	if (updating) {
 		return;
+	}
 	Transform tform = compute_transform_from_vector3s();
 	_change_transform(tform);
 }
@@ -194,8 +196,9 @@ Transform BoneTransformEditor::compute_transform_from_vector3s() const {
 }
 
 void BoneTransformEditor::_value_changed_transform(const String p_property_name, const Transform p_transform, const StringName p_edited_property_name, const bool p_boolean) {
-	if (updating)
+	if (updating) {
 		return;
+	}
 	_change_transform(p_transform);
 }
 
@@ -222,11 +225,13 @@ void BoneTransformEditor::update_enabled_checkbox() {
 }
 
 void BoneTransformEditor::_update_properties() {
-	if (updating)
+	if (updating) {
 		return;
+	}
 
-	if (skeleton == nullptr)
+	if (skeleton == nullptr) {
 		return;
+	}
 
 	updating = true;
 
@@ -235,11 +240,13 @@ void BoneTransformEditor::_update_properties() {
 }
 
 void BoneTransformEditor::_update_custom_pose_properties() {
-	if (updating)
+	if (updating) {
 		return;
+	}
 
-	if (skeleton == nullptr)
+	if (skeleton == nullptr) {
 		return;
+	}
 
 	updating = true;
 
@@ -287,14 +294,16 @@ void BoneTransformEditor::set_toggle_enabled(const bool p_enabled) {
 }
 
 void BoneTransformEditor::_key_button_pressed() {
-	if (skeleton == nullptr)
+	if (skeleton == nullptr) {
 		return;
+	}
 
 	const BoneId bone_id = property.get_slicec('/', 1).to_int();
 	const String name = skeleton->get_bone_name(bone_id);
 
-	if (name.is_empty())
+	if (name.is_empty()) {
 		return;
+	}
 
 	// Need to normalize the basis before you key it
 	Transform tform = compute_transform_from_vector3s();
@@ -405,8 +414,9 @@ PhysicalBone3D *Skeleton3DEditor::create_physical_bone(int bone_id, int bone_chi
 Variant Skeleton3DEditor::get_drag_data_fw(const Point2 &p_point, Control *p_from) {
 	TreeItem *selected = joint_tree->get_selected();
 
-	if (!selected)
+	if (!selected) {
 		return Variant();
+	}
 
 	Ref<Texture> icon = selected->get_icon(0);
 
@@ -431,27 +441,32 @@ Variant Skeleton3DEditor::get_drag_data_fw(const Point2 &p_point, Control *p_fro
 
 bool Skeleton3DEditor::can_drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from) const {
 	TreeItem *target = joint_tree->get_item_at_position(p_point);
-	if (!target)
+	if (!target) {
 		return false;
+	}
 
 	const String path = target->get_metadata(0);
-	if (!path.begins_with("bones/"))
+	if (!path.begins_with("bones/")) {
 		return false;
+	}
 
 	TreeItem *selected = Object::cast_to<TreeItem>(Dictionary(p_data)["node"]);
-	if (target == selected)
+	if (target == selected) {
 		return false;
+	}
 
 	const String path2 = target->get_metadata(0);
-	if (!path2.begins_with("bones/"))
+	if (!path2.begins_with("bones/")) {
 		return false;
+	}
 
 	return true;
 }
 
 void Skeleton3DEditor::drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from) {
-	if (!can_drop_data_fw(p_point, p_data, p_from))
+	if (!can_drop_data_fw(p_point, p_data, p_from)) {
 		return;
+	}
 
 	TreeItem *target = joint_tree->get_item_at_position(p_point);
 	TreeItem *selected = Object::cast_to<TreeItem>(Dictionary(p_data)["node"]);
@@ -510,19 +525,23 @@ void Skeleton3DEditor::_joint_tree_rmb_select(const Vector2 &p_pos) {
 }
 
 void Skeleton3DEditor::_update_properties() {
-	if (rest_editor)
+	if (rest_editor) {
 		rest_editor->_update_properties();
-	if (pose_editor)
+	}
+	if (pose_editor) {
 		pose_editor->_update_properties();
-	if (custom_pose_editor)
+	}
+	if (custom_pose_editor) {
 		custom_pose_editor->_update_custom_pose_properties();
+	}
 }
 
 void Skeleton3DEditor::update_joint_tree() {
 	joint_tree->clear();
 
-	if (skeleton == nullptr)
+	if (skeleton == nullptr) {
 		return;
+	}
 
 	TreeItem *root = joint_tree->create_item();
 

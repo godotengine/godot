@@ -6825,7 +6825,7 @@ Error ShaderLanguage::_parse_shader(const Map<StringName, FunctionInfo> &p_funct
 										} else {
 											_set_tkpos(pos2);
 
-											Node *n = _parse_and_reduce_expression(NULL, FunctionInfo());
+											Node *n = _parse_and_reduce_expression(nullptr, FunctionInfo());
 											if (!n || n->type != Node::TYPE_CONSTANT || n->get_datatype() != TYPE_INT) {
 												_set_error("Expected single integer constant > 0");
 												return ERR_PARSE_ERROR;
@@ -6906,7 +6906,7 @@ Error ShaderLanguage::_parse_shader(const Map<StringName, FunctionInfo> &p_funct
 
 								if (tk.type == TK_PARENTHESIS_OPEN || curly) { // initialization
 									while (true) {
-										Node *n = _parse_and_reduce_expression(NULL, FunctionInfo());
+										Node *n = _parse_and_reduce_expression(nullptr, FunctionInfo());
 										if (!n) {
 											return ERR_PARSE_ERROR;
 										}
@@ -6932,10 +6932,11 @@ Error ShaderLanguage::_parse_shader(const Map<StringName, FunctionInfo> &p_funct
 											decl.initializer.push_back(n);
 											break;
 										} else {
-											if (curly)
+											if (curly) {
 												_set_error("Expected '}' or ','");
-											else
+											} else {
 												_set_error("Expected ')' or ','");
+											}
 											return ERR_PARSE_ERROR;
 										}
 									}
@@ -6961,9 +6962,10 @@ Error ShaderLanguage::_parse_shader(const Map<StringName, FunctionInfo> &p_funct
 								constant.initializer = static_cast<ConstantNode *>(expr);
 							} else {
 								//variable created with assignment! must parse an expression
-								Node *expr = _parse_and_reduce_expression(NULL, FunctionInfo());
-								if (!expr)
+								Node *expr = _parse_and_reduce_expression(nullptr, FunctionInfo());
+								if (!expr) {
 									return ERR_PARSE_ERROR;
+								}
 								if (expr->type == Node::TYPE_OPERATOR && ((OperatorNode *)expr)->op == OP_CALL) {
 									_set_error("Expected constant expression after '='");
 									return ERR_PARSE_ERROR;

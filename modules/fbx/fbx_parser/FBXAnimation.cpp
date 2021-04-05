@@ -130,7 +130,7 @@ AnimationCurve::~AnimationCurve() {
 AnimationCurveNode::AnimationCurveNode(uint64_t id, const ElementPtr element, const std::string &name,
 		const Document &doc, const char *const *target_prop_whitelist /*= NULL*/,
 		size_t whitelist_size /*= 0*/) :
-		Object(id, element, name), target(), doc(doc) {
+		Object(id, element, name), doc(doc) {
 	const ScopePtr sc = GetRequiredScope(element);
 
 	// find target node

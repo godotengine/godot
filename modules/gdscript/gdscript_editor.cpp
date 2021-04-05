@@ -1037,7 +1037,7 @@ static void _find_identifiers(GDScriptParser::CompletionContext &p_context, bool
 	static const char *_keywords[] = {
 		"false", "PI", "TAU", "INF", "NAN", "self", "true", "breakpoint", "tool", "super",
 		"break", "continue", "pass", "return",
-		0
+		nullptr
 	};
 
 	const char **kw = _keywords;
@@ -1050,7 +1050,7 @@ static void _find_identifiers(GDScriptParser::CompletionContext &p_context, bool
 	static const char *_keywords_with_space[] = {
 		"and", "in", "not", "or", "as", "class", "extends", "is", "func", "signal", "await",
 		"const", "enum", "static", "var", "if", "elif", "else", "for", "match", "while",
-		0
+		nullptr
 	};
 
 	const char **kws = _keywords_with_space;
@@ -1063,7 +1063,7 @@ static void _find_identifiers(GDScriptParser::CompletionContext &p_context, bool
 
 	static const char *_keywords_with_args[] = {
 		"assert", "preload",
-		0
+		nullptr
 	};
 
 	const char **kwa = _keywords_with_args;
@@ -2892,7 +2892,7 @@ static Error _lookup_symbol_from_base(const GDScriptParser::DataType &p_base, co
 					v = v_ref;
 				} else {
 					Callable::CallError err;
-					Variant::construct(base_type.builtin_type, v, NULL, 0, err);
+					Variant::construct(base_type.builtin_type, v, nullptr, 0, err);
 					if (err.error != Callable::CallError::CALL_OK) {
 						break;
 					}

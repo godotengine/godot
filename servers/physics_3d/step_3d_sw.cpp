@@ -229,10 +229,11 @@ void Step3DSW::step(Space3DSW *p_space, real_t p_delta, int p_iterations) {
 	while (sb) {
 		for (const Set<Constraint3DSW *>::Element *E = sb->self()->get_constraints().front(); E; E = E->next()) {
 			Constraint3DSW *c = E->get();
-			if (c->get_island_step() == _step)
+			if (c->get_island_step() == _step) {
 				continue;
+			}
 			c->set_island_step(_step);
-			c->set_island_next(NULL);
+			c->set_island_next(nullptr);
 			c->set_island_list_next(constraint_island_list);
 			constraint_island_list = c;
 		}

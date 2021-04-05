@@ -75,10 +75,12 @@ ScriptIterator::ScriptIterator(const String &p_string, int p_start, int p_length
 					while (paren_sp >= 0 && paren_stack[paren_sp].pair_index != paired_ch) {
 						paren_sp -= 1;
 					}
-					if (paren_sp < start_sp)
+					if (paren_sp < start_sp) {
 						start_sp = paren_sp;
-					if (paren_sp >= 0)
+					}
+					if (paren_sp >= 0) {
 						sc = paren_stack[paren_sp].script_code;
+					}
 				}
 			}
 

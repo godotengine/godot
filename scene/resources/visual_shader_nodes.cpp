@@ -4660,16 +4660,18 @@ String VisualShaderNodeTexture2DArrayUniform::generate_global(Shader::Mode p_mod
 
 	switch (texture_type) {
 		case TYPE_DATA:
-			if (color_default == COLOR_DEFAULT_BLACK)
+			if (color_default == COLOR_DEFAULT_BLACK) {
 				code += " : hint_black;\n";
-			else
+			} else {
 				code += ";\n";
+			}
 			break;
 		case TYPE_COLOR:
-			if (color_default == COLOR_DEFAULT_BLACK)
+			if (color_default == COLOR_DEFAULT_BLACK) {
 				code += " : hint_black_albedo;\n";
-			else
+			} else {
 				code += " : hint_albedo;\n";
+			}
 			break;
 		case TYPE_NORMAL_MAP:
 			code += " : hint_normal;\n";
@@ -4728,16 +4730,18 @@ String VisualShaderNodeTexture3DUniform::generate_global(Shader::Mode p_mode, Vi
 
 	switch (texture_type) {
 		case TYPE_DATA:
-			if (color_default == COLOR_DEFAULT_BLACK)
+			if (color_default == COLOR_DEFAULT_BLACK) {
 				code += " : hint_black;\n";
-			else
+			} else {
 				code += ";\n";
+			}
 			break;
 		case TYPE_COLOR:
-			if (color_default == COLOR_DEFAULT_BLACK)
+			if (color_default == COLOR_DEFAULT_BLACK) {
 				code += " : hint_black_albedo;\n";
-			else
+			} else {
 				code += " : hint_albedo;\n";
+			}
 			break;
 		case TYPE_NORMAL_MAP:
 			code += " : hint_normal;\n";

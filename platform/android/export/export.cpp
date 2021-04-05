@@ -2262,8 +2262,9 @@ public:
 				CharString command_line_argument = command_line_strings[i].utf8();
 				int base = r_command_line_flags.size();
 				int length = command_line_argument.length();
-				if (length == 0)
+				if (length == 0) {
 					continue;
+				}
 				r_command_line_flags.resize(base + 4 + length);
 				encode_uint32(length, &r_command_line_flags.write[base]);
 				copymem(&r_command_line_flags.write[base + 4], command_line_argument.ptr(), length);
@@ -2484,7 +2485,7 @@ public:
 			_clear_assets_directory();
 			if (!apk_expansion) {
 				print_verbose("Exporting project files..");
-				err = export_project_files(p_preset, rename_and_store_file_in_gradle_project, NULL, ignore_so_file);
+				err = export_project_files(p_preset, rename_and_store_file_in_gradle_project, nullptr, ignore_so_file);
 				if (err != OK) {
 					EditorNode::add_io_error("Could not export project files to gradle project\n");
 					return err;
@@ -2615,10 +2616,11 @@ public:
 		}
 		// This is the start of the Legacy build system
 		print_verbose("Starting legacy build system..");
-		if (p_debug)
+		if (p_debug) {
 			src_apk = p_preset->get("custom_template/debug");
-		else
+		} else {
 			src_apk = p_preset->get("custom_template/release");
+		}
 		src_apk = src_apk.strip_edges();
 		if (src_apk == "") {
 			if (p_debug) {
@@ -2813,11 +2815,11 @@ public:
 		zipOpenNewFileInZip(unaligned_apk,
 				"assets/_cl_",
 				&zipfi,
-				NULL,
+				nullptr,
 				0,
-				NULL,
+				nullptr,
 				0,
-				NULL,
+				nullptr,
 				0, // No compress (little size gain and potentially slower startup)
 				Z_DEFAULT_COMPRESSION);
 		zipWriteInFileInZip(unaligned_apk, command_line_flags.ptr(), command_line_flags.size());

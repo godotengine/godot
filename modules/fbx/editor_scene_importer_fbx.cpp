@@ -94,7 +94,7 @@ Node3D *EditorSceneImporterFBX::import_scene(const String &p_path, uint32_t p_fl
 	Error err;
 	FileAccessRef f = FileAccess::open(p_path, FileAccess::READ, &err);
 
-	ERR_FAIL_COND_V(!f, NULL);
+	ERR_FAIL_COND_V(!f, nullptr);
 
 	{
 		PackedByteArray data;
@@ -260,8 +260,9 @@ T EditorSceneImporterFBX::_interpolate_track(const Vector<float> &p_times, const
 	//could use binary search, worth it?
 	int idx = -1;
 	for (int i = 0; i < p_times.size(); i++) {
-		if (p_times[i] > p_time)
+		if (p_times[i] > p_time) {
 			break;
+		}
 		idx++;
 	}
 
@@ -334,7 +335,7 @@ Node3D *EditorSceneImporterFBX::_generate_scene(
 	ImportState state;
 	state.is_blender_fbx = p_is_blender_fbx;
 	state.path = p_path;
-	state.animation_player = NULL;
+	state.animation_player = nullptr;
 
 	// create new root node for scene
 	Node3D *scene_root = memnew(Node3D);
@@ -610,8 +611,9 @@ Node3D *EditorSceneImporterFBX::_generate_scene(
 				for (const FBXDocParser::Geometry *mesh : geometry) {
 					print_verbose("[doc] [" + itos(mesh->ID()) + "] mesh: " + fbx_node->node_name);
 
-					if (mesh == nullptr)
+					if (mesh == nullptr) {
 						continue;
+					}
 
 					const FBXDocParser::MeshGeometry *mesh_geometry = dynamic_cast<const FBXDocParser::MeshGeometry *>(mesh);
 					if (mesh_geometry) {
@@ -628,7 +630,7 @@ Node3D *EditorSceneImporterFBX::_generate_scene(
 						mesh_data_precached->mesh_node = fbx_node;
 
 						// mesh node, mesh id
-						mesh_node = mesh_data_precached->create_fbx_mesh(state, mesh_geometry, fbx_node->fbx_model, 0);
+						mesh_node = mesh_data_precached->create_fbx_mesh(state, mesh_geometry, fbx_node->fbx_model, false);
 						if (!state.MeshNodes.has(mesh_id)) {
 							state.MeshNodes.insert(mesh_id, fbx_node);
 						}

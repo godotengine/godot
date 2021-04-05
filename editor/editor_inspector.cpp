@@ -2570,9 +2570,9 @@ void EditorInspector::_update_script_class_properties(const Object &p_object, Li
 	}
 
 	// Script Variables -> to insert: NodeC..B..A -> bottom (insert_here)
-	List<PropertyInfo>::Element *script_variables = NULL;
-	List<PropertyInfo>::Element *bottom = NULL;
-	List<PropertyInfo>::Element *insert_here = NULL;
+	List<PropertyInfo>::Element *script_variables = nullptr;
+	List<PropertyInfo>::Element *bottom = nullptr;
+	List<PropertyInfo>::Element *insert_here = nullptr;
 	for (List<PropertyInfo>::Element *E = r_list.front(); E; E = E->next()) {
 		PropertyInfo &pi = E->get();
 		if (pi.name != "Script Variables") {
