@@ -30,12 +30,13 @@
 # Habib Rohman <revolusi147id@gmail.com>, 2020.
 # Hanz <hanzhaxors@gmail.com>, 2021.
 # Reza Almanda <rezaalmanda27@gmail.com>, 2021.
+# Naufal Adriansyah <naufaladrn90@gmail.com>, 2021.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2021-03-29 21:57+0000\n"
-"Last-Translator: Hanz <hanzhaxors@gmail.com>\n"
+"PO-Revision-Date: 2021-04-05 14:28+0000\n"
+"Last-Translator: Naufal Adriansyah <naufaladrn90@gmail.com>\n"
 "Language-Team: Indonesian <https://hosted.weblate.org/projects/godot-engine/"
 "godot/id/>\n"
 "Language: id\n"
@@ -3693,6 +3694,8 @@ msgstr ""
 msgid ""
 "Importing has been disabled for this file, so it can't be opened for editing."
 msgstr ""
+"Mengimpor telah didisable untuk berkas ini, jadi itu tidak bisa dibuka untuk "
+"disunting."
 
 #: editor/filesystem_dock.cpp
 msgid "Cannot move/rename resources root."
@@ -4096,7 +4099,7 @@ msgstr "Kembalikan ke Nilai Baku"
 
 #: editor/import_dock.cpp
 msgid "Keep File (No Import)"
-msgstr ""
+msgstr "Simpan Berkas (Tanpa Impor)"
 
 #: editor/import_dock.cpp
 msgid "%d Files"

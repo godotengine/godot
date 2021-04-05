@@ -36,8 +36,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2021-03-08 15:33+0000\n"
-"Last-Translator: Wataru Onuki <bettawat@yahoo.co.jp>\n"
+"PO-Revision-Date: 2021-04-01 02:04+0000\n"
+"Last-Translator: nitenook <admin@alterbaum.net>\n"
 "Language-Team: Japanese <https://hosted.weblate.org/projects/godot-engine/"
 "godot/ja/>\n"
 "Language: ja\n"
@@ -45,7 +45,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Weblate 4.5.1\n"
+"X-Generator: Weblate 4.6-dev\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -11258,7 +11258,7 @@ msgstr "グラフを表示するには、リストからアイテムを1つ以�
 
 #: editor/script_editor_debugger.cpp
 msgid "List of Video Memory Usage by Resource:"
-msgstr "リソースによるビデオメモリーの使用一覧:"
+msgstr "リソースによるビデオメモリーの消費量一覧:"
 
 #: editor/script_editor_debugger.cpp
 msgid "Total:"
@@ -11282,7 +11282,7 @@ msgstr "フォーマット"
 
 #: editor/script_editor_debugger.cpp
 msgid "Usage"
-msgstr "使用法"
+msgstr "消費量"
 
 #: editor/script_editor_debugger.cpp
 msgid "Misc"

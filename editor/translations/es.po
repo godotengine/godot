@@ -63,7 +63,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2021-03-10 22:14+0000\n"
+"PO-Revision-Date: 2021-03-31 03:53+0000\n"
 "Last-Translator: Javier Ocampos <xavier.ocampos@gmail.com>\n"
 "Language-Team: Spanish <https://hosted.weblate.org/projects/godot-engine/"
 "godot/es/>\n"
@@ -72,7 +72,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 4.5.2-dev\n"
+"X-Generator: Weblate 4.6-dev\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -211,7 +211,7 @@ msgstr "Cambiar Transformación de la Animación"
 
 #: editor/animation_track_editor.cpp
 msgid "Anim Change Keyframe Value"
-msgstr "Cambiar Valor de la Clave de Animación"
+msgstr "Cambiar Valor de Fotogramas Clave de Animación"
 
 #: editor/animation_track_editor.cpp
 msgid "Anim Change Call"
@@ -219,7 +219,7 @@ msgstr "Cambiar Llamada de Animación"
 
 #: editor/animation_track_editor.cpp
 msgid "Anim Multi Change Keyframe Time"
-msgstr "Cambiar Tiempo de Múltiples Keyframes de Animación"
+msgstr "Cambiar Tiempo de Múltiples Fotogramas Clave de Animación"
 
 #: editor/animation_track_editor.cpp
 msgid "Anim Multi Change Transition"
@@ -231,7 +231,7 @@ msgstr "Cambiar Múltiples Transforms de Animación"
 
 #: editor/animation_track_editor.cpp
 msgid "Anim Multi Change Keyframe Value"
-msgstr "Cambiar Valor de Múltiples Keyframes de Animación"
+msgstr "Cambiar Valor de Múltiples Fotogramas Clave de Animación"
 
 #: editor/animation_track_editor.cpp
 msgid "Anim Multi Change Call"
@@ -272,7 +272,7 @@ msgstr "Pista de Reproducción de Animación"
 
 #: editor/animation_track_editor.cpp
 msgid "Animation length (frames)"
-msgstr "Duración de la animación (frames)"
+msgstr "Duración de la animación (fotogramas)"
 
 #: editor/animation_track_editor.cpp
 msgid "Animation length (seconds)"
@@ -3314,7 +3314,7 @@ msgstr "Medida:"
 
 #: editor/editor_profiler.cpp
 msgid "Frame Time (sec)"
-msgstr "Duración de Frame (seg)"
+msgstr "Duración de Fotogramas (seg)"
 
 #: editor/editor_profiler.cpp
 msgid "Average Time (sec)"
@@ -3322,11 +3322,11 @@ msgstr "Tiempo Promedio (seg)"
 
 #: editor/editor_profiler.cpp
 msgid "Frame %"
-msgstr "Frame %"
+msgstr "Fotograma %"
 
 #: editor/editor_profiler.cpp
 msgid "Physics Frame %"
-msgstr "Frames de Física %"
+msgstr "Fotogramas de Física %"
 
 #: editor/editor_profiler.cpp
 msgid "Inclusive"
@@ -3338,7 +3338,7 @@ msgstr "Propio"
 
 #: editor/editor_profiler.cpp
 msgid "Frame #:"
-msgstr "Frame #:"
+msgstr "Fotograma #:"
 
 #: editor/editor_profiler.cpp
 msgid "Time"
@@ -3759,6 +3759,8 @@ msgstr ""
 msgid ""
 "Importing has been disabled for this file, so it can't be opened for editing."
 msgstr ""
+"Se ha desactivado la importación de este archivo, por lo que no se puede "
+"abrir para editarlo."
 
 #: editor/filesystem_dock.cpp
 msgid "Cannot move/rename resources root."
@@ -4163,7 +4165,7 @@ msgstr "Restablecer Valores por Defecto"
 
 #: editor/import_dock.cpp
 msgid "Keep File (No Import)"
-msgstr ""
+msgstr "Mantener Archivo (No Importar)"
 
 #: editor/import_dock.cpp
 msgid "%d Files"
@@ -5805,7 +5807,7 @@ msgstr "Centrar Selección"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Frame Selection"
-msgstr "Encuadrar Selección"
+msgstr "Seleccionar Fotogramas"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Preview Canvas Scale"
@@ -7954,15 +7956,15 @@ msgstr "Configuración:"
 
 #: editor/plugins/sprite_frames_editor_plugin.cpp
 msgid "No Frames Selected"
-msgstr "No hay Frames Seleccionados"
+msgstr "No hay Fotogramas Seleccionados"
 
 #: editor/plugins/sprite_frames_editor_plugin.cpp
 msgid "Add %d Frame(s)"
-msgstr "Añadir %d Frame(s)"
+msgstr "Añadir %d Fotograma(s)"
 
 #: editor/plugins/sprite_frames_editor_plugin.cpp
 msgid "Add Frame"
-msgstr "Añadir Frame"
+msgstr "Añadir Fotograma"
 
 #: editor/plugins/sprite_frames_editor_plugin.cpp
 msgid "Unable to load images"
@@ -7970,7 +7972,7 @@ msgstr "No se pueden cargar las imágenes"
 
 #: editor/plugins/sprite_frames_editor_plugin.cpp
 msgid "ERROR: Couldn't load frame resource!"
-msgstr "ERROR: ¡No se pudo cargar el recurso de frames!"
+msgstr "ERROR: ¡No se pudo cargar el recurso de fotogramas!"
 
 #: editor/plugins/sprite_frames_editor_plugin.cpp
 msgid "Resource clipboard is empty or not a texture!"
@@ -7978,7 +7980,7 @@ msgstr "¡El portapapeles de recursos esta vacío o no es una textura!"
 
 #: editor/plugins/sprite_frames_editor_plugin.cpp
 msgid "Paste Frame"
-msgstr "Pegar Frame"
+msgstr "Pegar Fotograma"
 
 #: editor/plugins/sprite_frames_editor_plugin.cpp
 msgid "Add Empty"
@@ -7994,7 +7996,7 @@ msgstr "(vacío)"
 
 #: editor/plugins/sprite_frames_editor_plugin.cpp
 msgid "Move Frame"
-msgstr "Mover Frame"
+msgstr "Mover Fotograma"
 
 #: editor/plugins/sprite_frames_editor_plugin.cpp
 msgid "Animations:"
@@ -8014,7 +8016,7 @@ msgstr "Loop"
 
 #: editor/plugins/sprite_frames_editor_plugin.cpp
 msgid "Animation Frames:"
-msgstr "Frames de Animación:"
+msgstr "Fotogramas de Animación:"
 
 #: editor/plugins/sprite_frames_editor_plugin.cpp
 msgid "Add a Texture from File"
@@ -8022,7 +8024,7 @@ msgstr "Añadir Textura desde Archivo"
 
 #: editor/plugins/sprite_frames_editor_plugin.cpp
 msgid "Add Frames from a Sprite Sheet"
-msgstr "Añadir Frames desde un Sprite Sheet"
+msgstr "Añadir Fotogramas desde un Sprite Sheet"
 
 #: editor/plugins/sprite_frames_editor_plugin.cpp
 msgid "Insert Empty (Before)"
@@ -8042,7 +8044,7 @@ msgstr "Mover (Después)"
 
 #: editor/plugins/sprite_frames_editor_plugin.cpp
 msgid "Select Frames"
-msgstr "Seleccionar Frames"
+msgstr "Seleccionar Fotogramas"
 
 #: editor/plugins/sprite_frames_editor_plugin.cpp
 msgid "Horizontal:"
@@ -8054,11 +8056,11 @@ msgstr "Vertical:"
 
 #: editor/plugins/sprite_frames_editor_plugin.cpp
 msgid "Select/Clear All Frames"
-msgstr "Seleccionar/Limpiar Todos los Frames"
+msgstr "Seleccionar/Limpiar Todos los Fotogramas"
 
 #: editor/plugins/sprite_frames_editor_plugin.cpp
 msgid "Create Frames from Sprite Sheet"
-msgstr "Crear Frames a partir de Sprite Sheet"
+msgstr "Crear Fotogramas a partir de un Sprite Sheet"
 
 #: editor/plugins/sprite_frames_editor_plugin.cpp
 msgid "SpriteFrames"
@@ -11333,7 +11335,7 @@ msgstr "Inspeccionar Instancia Siguiente"
 
 #: editor/script_editor_debugger.cpp
 msgid "Stack Frames"
-msgstr "Frames del Stack"
+msgstr "Fotogramas Apilados"
 
 #: editor/script_editor_debugger.cpp
 msgid "Profiler"
@@ -12570,7 +12572,7 @@ msgid ""
 "order for AnimatedSprite to display frames."
 msgstr ""
 "Se debe crear o establecer un recurso SpriteFrames en la propiedad \"Frames"
-"\" para que AnimatedSprite pueda mostrar frames."
+"\" para que AnimatedSprite pueda mostrar los fotogramas."
 
 #: scene/2d/canvas_modulate.cpp
 msgid ""
@@ -13055,7 +13057,7 @@ msgid ""
 "order for AnimatedSprite3D to display frames."
 msgstr ""
 "Se debe crear o establecer un recurso SpriteFrames en la propiedad \"Frames"
-"\" para que AnimatedSprite3D pueda mostrar frames."
+"\" para que AnimatedSprite3D pueda mostrar los fotogramas."
 
 #: scene/3d/vehicle_body.cpp
 msgid ""
