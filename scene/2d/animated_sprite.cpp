@@ -605,12 +605,11 @@ bool AnimatedSprite::_is_playing() const {
 }
 
 void AnimatedSprite::play(const StringName &p_animation, const bool p_backwards) {
-	ERR_FAIL_COND_MSG(!frames.is_valid(), "Can't play AnimatedSprite without a valid SpriteFrames resource.");
 	backwards = p_backwards;
 
 	if (p_animation) {
 		set_animation(p_animation);
-		if (backwards && get_frame() == 0)
+		if (frames.is_valid() && backwards && get_frame() == 0)
 			set_frame(frames->get_frame_count(p_animation) - 1);
 	}
 
