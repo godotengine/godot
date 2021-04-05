@@ -2050,12 +2050,12 @@ void VisualScriptInstance::create(const Ref<VisualScript> &p_script, Object *p_o
 
 				instance->id = F->get();
 				instance->input_port_count = node->get_input_value_port_count();
-				instance->input_ports = NULL;
+				instance->input_ports = nullptr;
 				instance->output_port_count = node->get_output_value_port_count();
-				instance->output_ports = NULL;
+				instance->output_ports = nullptr;
 				instance->sequence_output_count = node->get_output_sequence_port_count();
 				instance->sequence_index = function.node_count++;
-				instance->sequence_outputs = NULL;
+				instance->sequence_outputs = nullptr;
 				instance->pass_idx = -1;
 
 				if (instance->input_port_count) {
@@ -2075,7 +2075,7 @@ void VisualScriptInstance::create(const Ref<VisualScript> &p_script, Object *p_o
 				if (instance->sequence_output_count) {
 					instance->sequence_outputs = memnew_arr(VisualScriptNodeInstance *, instance->sequence_output_count);
 					for (int i = 0; i < instance->sequence_output_count; i++) {
-						instance->sequence_outputs[i] = NULL; // If it remains null, flow ends here.
+						instance->sequence_outputs[i] = nullptr; // If it remains null, flow ends here.
 					}
 				}
 

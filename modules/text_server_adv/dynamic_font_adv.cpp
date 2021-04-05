@@ -231,7 +231,7 @@ Dictionary DynamicFontDataAdvanced::get_feature_list() const {
 
 	Dictionary out;
 	// Read feature flags.
-	unsigned int count = hb_ot_layout_table_get_feature_tags(hb_font_get_face(fds->hb_handle), HB_OT_TAG_GSUB, 0, NULL, NULL);
+	unsigned int count = hb_ot_layout_table_get_feature_tags(hb_font_get_face(fds->hb_handle), HB_OT_TAG_GSUB, 0, nullptr, nullptr);
 	if (count != 0) {
 		hb_tag_t *feature_tags = (hb_tag_t *)memalloc(count * sizeof(hb_tag_t));
 		hb_ot_layout_table_get_feature_tags(hb_font_get_face(fds->hb_handle), HB_OT_TAG_GSUB, 0, &count, feature_tags);
@@ -240,7 +240,7 @@ Dictionary DynamicFontDataAdvanced::get_feature_list() const {
 		}
 		memfree(feature_tags);
 	}
-	count = hb_ot_layout_table_get_feature_tags(hb_font_get_face(fds->hb_handle), HB_OT_TAG_GPOS, 0, NULL, NULL);
+	count = hb_ot_layout_table_get_feature_tags(hb_font_get_face(fds->hb_handle), HB_OT_TAG_GPOS, 0, nullptr, nullptr);
 	if (count != 0) {
 		hb_tag_t *feature_tags = (hb_tag_t *)memalloc(count * sizeof(hb_tag_t));
 		hb_ot_layout_table_get_feature_tags(hb_font_get_face(fds->hb_handle), HB_OT_TAG_GPOS, 0, &count, feature_tags);
@@ -639,7 +639,7 @@ bool DynamicFontDataAdvanced::is_script_supported(uint32_t p_script) const {
 	DataAtSize *fds = const_cast<DynamicFontDataAdvanced *>(this)->get_data_for_size(base_size);
 	ERR_FAIL_COND_V(fds == nullptr, false);
 
-	unsigned int count = hb_ot_layout_table_get_script_tags(hb_font_get_face(fds->hb_handle), HB_OT_TAG_GSUB, 0, NULL, NULL);
+	unsigned int count = hb_ot_layout_table_get_script_tags(hb_font_get_face(fds->hb_handle), HB_OT_TAG_GSUB, 0, nullptr, nullptr);
 	if (count != 0) {
 		hb_tag_t *script_tags = (hb_tag_t *)memalloc(count * sizeof(hb_tag_t));
 		hb_ot_layout_table_get_script_tags(hb_font_get_face(fds->hb_handle), HB_OT_TAG_GSUB, 0, &count, script_tags);
@@ -651,7 +651,7 @@ bool DynamicFontDataAdvanced::is_script_supported(uint32_t p_script) const {
 		}
 		memfree(script_tags);
 	}
-	count = hb_ot_layout_table_get_script_tags(hb_font_get_face(fds->hb_handle), HB_OT_TAG_GPOS, 0, NULL, NULL);
+	count = hb_ot_layout_table_get_script_tags(hb_font_get_face(fds->hb_handle), HB_OT_TAG_GPOS, 0, nullptr, nullptr);
 	if (count != 0) {
 		hb_tag_t *script_tags = (hb_tag_t *)memalloc(count * sizeof(hb_tag_t));
 		hb_ot_layout_table_get_script_tags(hb_font_get_face(fds->hb_handle), HB_OT_TAG_GPOS, 0, &count, script_tags);

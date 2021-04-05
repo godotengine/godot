@@ -61,7 +61,7 @@ DynamicBVH::Node *DynamicBVH::_create_node_with_volume(Node *p_parent, const Vol
 void DynamicBVH::_insert_leaf(Node *p_root, Node *p_leaf) {
 	if (!bvh_root) {
 		bvh_root = p_leaf;
-		p_leaf->parent = 0;
+		p_leaf->parent = nullptr;
 	} else {
 		if (!p_root->is_leaf()) {
 			do {
@@ -71,7 +71,7 @@ void DynamicBVH::_insert_leaf(Node *p_root, Node *p_leaf) {
 			} while (!p_root->is_leaf());
 		}
 		Node *prev = p_root->parent;
-		Node *node = _create_node_with_volume(prev, p_leaf->volume.merge(p_root->volume), 0);
+		Node *node = _create_node_with_volume(prev, p_leaf->volume.merge(p_root->volume), nullptr);
 		if (prev) {
 			prev->childs[p_root->get_index_in_parent()] = node;
 			node->childs[0] = p_root;
@@ -85,7 +85,7 @@ void DynamicBVH::_insert_leaf(Node *p_root, Node *p_leaf) {
 					break;
 				}
 				node = prev;
-			} while (0 != (prev = node->parent));
+			} while (nullptr != (prev = node->parent));
 		} else {
 			node->childs[0] = p_root;
 			p_root->parent = node;
@@ -98,8 +98,8 @@ void DynamicBVH::_insert_leaf(Node *p_root, Node *p_leaf) {
 
 DynamicBVH::Node *DynamicBVH::_remove_leaf(Node *leaf) {
 	if (leaf == bvh_root) {
-		bvh_root = 0;
-		return (0);
+		bvh_root = nullptr;
+		return (nullptr);
 	} else {
 		Node *parent = leaf->parent;
 		Node *prev = parent->parent;
@@ -119,7 +119,7 @@ DynamicBVH::Node *DynamicBVH::_remove_leaf(Node *leaf) {
 			return (prev ? prev : bvh_root);
 		} else {
 			bvh_root = sibling;
-			sibling->parent = 0;
+			sibling->parent = nullptr;
 			_delete_node(parent);
 			return (bvh_root);
 		}

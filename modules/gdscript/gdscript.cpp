@@ -2301,7 +2301,7 @@ GDScriptLanguage::~GDScriptLanguage() {
 		script->unreference();
 	}
 
-	singleton = NULL;
+	singleton = nullptr;
 }
 
 void GDScriptLanguage::add_orphan_subclass(const String &p_qualified_name, const ObjectID &p_subclass) {
