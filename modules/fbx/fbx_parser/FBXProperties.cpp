@@ -215,8 +215,9 @@ DirectPropertyMap PropertyTable::GetUnparsedProperties() const {
 	// Loop through all the lazy properties (which is all the properties)
 	for (const LazyPropertyMap::value_type &element : lazyProps) {
 		// Skip parsed properties
-		if (props.end() != props.find(element.first))
+		if (props.end() != props.find(element.first)) {
 			continue;
+		}
 
 		// Read the element's value.
 		// Wrap the naked pointer (since the call site is required to acquire ownership)
@@ -224,8 +225,9 @@ DirectPropertyMap PropertyTable::GetUnparsedProperties() const {
 		Property *prop = ReadTypedProperty(element.second);
 
 		// Element could not be read. Skip it.
-		if (!prop)
+		if (!prop) {
 			continue;
+		}
 
 		// Add to result
 		result[element.first] = prop;

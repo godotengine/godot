@@ -3022,8 +3022,9 @@ void RendererSceneRenderForwardClustered::_geometry_instance_update(GeometryInst
 
 			for (int j = 0; j < draw_passes; j++) {
 				RID mesh = storage->particles_get_draw_pass_mesh(ginstance->data->base, j);
-				if (!mesh.is_valid())
+				if (!mesh.is_valid()) {
 					continue;
+				}
 
 				const RID *materials = nullptr;
 				uint32_t surface_count;

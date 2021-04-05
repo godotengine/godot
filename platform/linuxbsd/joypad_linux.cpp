@@ -185,10 +185,11 @@ void JoypadLinux::monitor_joypads(udev *p_udev) {
 				if (devnode) {
 					String devnode_str = devnode;
 					if (devnode_str.find(ignore_str) == -1) {
-						if (action == "add")
+						if (action == "add") {
 							open_joypad(devnode);
-						else if (String(action) == "remove")
+						} else if (String(action) == "remove") {
 							close_joypad(get_joy_from_path(devnode));
+						}
 					}
 				}
 

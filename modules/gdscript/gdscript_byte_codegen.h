@@ -163,64 +163,72 @@ class GDScriptByteCodeGenerator : public GDScriptCodeGenerator {
 	}
 
 	int get_constant_pos(const Variant &p_constant) {
-		if (constant_map.has(p_constant))
+		if (constant_map.has(p_constant)) {
 			return constant_map[p_constant];
+		}
 		int pos = constant_map.size();
 		constant_map[p_constant] = pos;
 		return pos;
 	}
 
 	int get_operation_pos(const Variant::ValidatedOperatorEvaluator p_operation) {
-		if (operator_func_map.has(p_operation))
+		if (operator_func_map.has(p_operation)) {
 			return operator_func_map[p_operation];
+		}
 		int pos = operator_func_map.size();
 		operator_func_map[p_operation] = pos;
 		return pos;
 	}
 
 	int get_setter_pos(const Variant::ValidatedSetter p_setter) {
-		if (setters_map.has(p_setter))
+		if (setters_map.has(p_setter)) {
 			return setters_map[p_setter];
+		}
 		int pos = setters_map.size();
 		setters_map[p_setter] = pos;
 		return pos;
 	}
 
 	int get_getter_pos(const Variant::ValidatedGetter p_getter) {
-		if (getters_map.has(p_getter))
+		if (getters_map.has(p_getter)) {
 			return getters_map[p_getter];
+		}
 		int pos = getters_map.size();
 		getters_map[p_getter] = pos;
 		return pos;
 	}
 
 	int get_keyed_setter_pos(const Variant::ValidatedKeyedSetter p_keyed_setter) {
-		if (keyed_setters_map.has(p_keyed_setter))
+		if (keyed_setters_map.has(p_keyed_setter)) {
 			return keyed_setters_map[p_keyed_setter];
+		}
 		int pos = keyed_setters_map.size();
 		keyed_setters_map[p_keyed_setter] = pos;
 		return pos;
 	}
 
 	int get_keyed_getter_pos(const Variant::ValidatedKeyedGetter p_keyed_getter) {
-		if (keyed_getters_map.has(p_keyed_getter))
+		if (keyed_getters_map.has(p_keyed_getter)) {
 			return keyed_getters_map[p_keyed_getter];
+		}
 		int pos = keyed_getters_map.size();
 		keyed_getters_map[p_keyed_getter] = pos;
 		return pos;
 	}
 
 	int get_indexed_setter_pos(const Variant::ValidatedIndexedSetter p_indexed_setter) {
-		if (indexed_setters_map.has(p_indexed_setter))
+		if (indexed_setters_map.has(p_indexed_setter)) {
 			return indexed_setters_map[p_indexed_setter];
+		}
 		int pos = indexed_setters_map.size();
 		indexed_setters_map[p_indexed_setter] = pos;
 		return pos;
 	}
 
 	int get_indexed_getter_pos(const Variant::ValidatedIndexedGetter p_indexed_getter) {
-		if (indexed_getters_map.has(p_indexed_getter))
+		if (indexed_getters_map.has(p_indexed_getter)) {
 			return indexed_getters_map[p_indexed_getter];
+		}
 		int pos = indexed_getters_map.size();
 		indexed_getters_map[p_indexed_getter] = pos;
 		return pos;
@@ -272,8 +280,9 @@ class GDScriptByteCodeGenerator : public GDScriptCodeGenerator {
 	}
 
 	void alloc_stack(int p_level) {
-		if (p_level >= stack_max)
+		if (p_level >= stack_max) {
 			stack_max = p_level + 1;
+		}
 	}
 
 	int increase_stack() {
@@ -283,8 +292,9 @@ class GDScriptByteCodeGenerator : public GDScriptCodeGenerator {
 	}
 
 	void alloc_ptrcall(int p_params) {
-		if (p_params >= ptrcall_max)
+		if (p_params >= ptrcall_max) {
 			ptrcall_max = p_params;
+		}
 	}
 
 	int address_of(const Address &p_address) {
