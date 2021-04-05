@@ -382,12 +382,11 @@ bool AnimatedSprite2D::_is_playing() const {
 }
 
 void AnimatedSprite2D::play(const StringName &p_animation, const bool p_backwards) {
-	ERR_FAIL_NULL_MSG(frames, "Can't play AnimatedSprite2D without a valid SpriteFrames resource.");
 	backwards = p_backwards;
 
 	if (p_animation) {
 		set_animation(p_animation);
-		if (backwards && get_frame() == 0) {
+		if (frames.is_valid() && backwards && get_frame() == 0) {
 			set_frame(frames->get_frame_count(p_animation) - 1);
 		}
 	}
