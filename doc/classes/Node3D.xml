@@ -285,6 +285,9 @@
 		</method>
 	</methods>
 	<members>
+		<member name="basis" type="Basis" setter="set_basis" getter="get_basis" default="Basis(1, 0, 0, 0, 1, 0, 0, 0, 1)">
+			Local space [Basis] of this node, with respect to the parent node. This is the same as [code]transform.basis[/code].
+		</member>
 		<member name="gizmo" type="Node3DGizmo" setter="set_gizmo" getter="get_gizmo">
 			The [Node3DGizmo] for this node. Used for example in [EditorNode3DGizmo] as custom visualization and editing handles in Editor.
 		</member>
