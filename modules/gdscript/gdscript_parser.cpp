@@ -2545,7 +2545,7 @@ GDScriptParser::ExpressionNode *GDScriptParser::parse_attribute(ExpressionNode *
 
 	if (for_completion) {
 		bool is_builtin = false;
-		if (p_previous_operand->type == Node::IDENTIFIER) {
+		if (p_previous_operand && p_previous_operand->type == Node::IDENTIFIER) {
 			const IdentifierNode *id = static_cast<const IdentifierNode *>(p_previous_operand);
 			Variant::Type builtin_type = get_builtin_type(id->name);
 			if (builtin_type < Variant::VARIANT_MAX) {
