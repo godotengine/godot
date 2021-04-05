@@ -1993,11 +1993,13 @@ void EditorPropertyTransform2D::setup(double p_min, double p_max, double p_step,
 
 EditorPropertyTransform2D::EditorPropertyTransform2D(bool p_include_origin) {
 	GridContainer *g = memnew(GridContainer);
-	g->set_columns(p_include_origin ? 3 : 2);
+	g->set_columns(2);
 	add_child(g);
 
 	static const char *desc[6] = { "xx", "xy", "xo", "yx", "yy", "yo" };
-	for (int i = 0; i < 6; i++) {
+	static const int indices[6] = { 0, 1, 3, 4, 2, 5 };
+	for (int j = 0; j < 6; j++) {
+		int i = indices[j];
 		spin[i] = memnew(EditorSpinSlider);
 		spin[i]->set_label(desc[i]);
 		spin[i]->set_flat(true);
@@ -2163,11 +2165,13 @@ void EditorPropertyTransform3D::setup(double p_min, double p_max, double p_step,
 
 EditorPropertyTransform3D::EditorPropertyTransform3D() {
 	GridContainer *g = memnew(GridContainer);
-	g->set_columns(4);
+	g->set_columns(3);
 	add_child(g);
 
 	static const char *desc[12] = { "xx", "xy", "xz", "xo", "yx", "yy", "yz", "yo", "zx", "zy", "zz", "zo" };
-	for (int i = 0; i < 12; i++) {
+	static const int indices[12] = { 0, 1, 2, 4, 5, 6, 8, 9, 10, 3, 7, 11 };
+	for (int j = 0; j < 12; j++) {
+		int i = indices[j];
 		spin[i] = memnew(EditorSpinSlider);
 		spin[i]->set_label(desc[i]);
 		spin[i]->set_flat(true);
