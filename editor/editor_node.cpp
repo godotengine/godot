@@ -389,23 +389,36 @@ void EditorNode::_update_title() {
 	DisplayServer::get_singleton()->window_set_title(title);
 }
 
-void EditorNode::_unhandled_input(const Ref<InputEvent> &p_event) {
+void EditorNode::_input(const Ref<InputEvent> &p_event) {
 	ERR_FAIL_COND(p_event.is_null());
 
-	Ref<InputEventKey> k = p_event;
+	const Ref<InputEventKey> k = p_event;
 	if (k.is_valid() && k->is_pressed() && !k->is_echo()) {
-		EditorPlugin *old_editor = editor_plugin_screen;
-
+		// Handle the next tab/previous tab shortcuts here so that they always work.
+		// Otherwise, with the default shortcuts, the script editor or GUI keyboard focus
+		// will handle the input and ignore the shortcuts defined here.
+		// Changing scenes too fast can cause the editor to lock up, so ignore echo events.
 		if (ED_IS_SHORTCUT("editor/next_tab", p_event)) {
 			int next_tab = editor_data.get_edited_scene() + 1;
 			next_tab %= editor_data.get_edited_scene_count();
 			_scene_tab_changed(next_tab);
+			get_viewport()->set_input_as_handled();
 		}
 		if (ED_IS_SHORTCUT("editor/prev_tab", p_event)) {
 			int next_tab = editor_data.get_edited_scene() - 1;
 			next_tab = next_tab >= 0 ? next_tab : editor_data.get_edited_scene_count() - 1;
 			_scene_tab_changed(next_tab);
+			get_viewport()->set_input_as_handled();
 		}
+	}
+}
+
+void EditorNode::_unhandled_input(const Ref<InputEvent> &p_event) {
+	ERR_FAIL_COND(p_event.is_null());
+
+	const Ref<InputEventKey> k = p_event;
+	if (k.is_valid() && k->is_pressed() && !k->is_echo()) {
+		EditorPlugin *old_editor = editor_plugin_screen;
 		if (ED_IS_SHORTCUT("editor/filter_files", p_event)) {
 			filesystem_dock->focus_on_filter();
 		}
@@ -5527,6 +5540,7 @@ void EditorNode::_bind_methods() {
 	ClassDB::bind_method("_editor_select", &EditorNode::_editor_select);
 	ClassDB::bind_method("_node_renamed", &EditorNode::_node_renamed);
 	ClassDB::bind_method("edit_node", &EditorNode::edit_node);
+	ClassDB::bind_method("_input", &EditorNode::_input);
 	ClassDB::bind_method("_unhandled_input", &EditorNode::_unhandled_input);
 
 	ClassDB::bind_method(D_METHOD("push_item", "object", "property", "inspector_only"), &EditorNode::push_item, DEFVAL(""), DEFVAL(false));
@@ -6919,6 +6933,7 @@ EditorNode::EditorNode() {
 	editor_data.restore_editor_global_states();
 	convert_old = false;
 	opening_prev = false;
+	set_process_input(true);
 	set_process_unhandled_input(true);
 	_playing_edited = false;
 
