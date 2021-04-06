@@ -811,7 +811,7 @@ Error OS_JavaScript::initialize(const VideoMode &p_desired, int p_video_driver, 
 
 	while (true) {
 		if (gles3) {
-			if (RasterizerGLES3::is_viable() == OK) {
+			if (godot_js_display_has_webgl(2) && RasterizerGLES3::is_viable() == OK) {
 				attributes.majorVersion = 2;
 				RasterizerGLES3::register_config();
 				RasterizerGLES3::make_current();
@@ -827,7 +827,7 @@ Error OS_JavaScript::initialize(const VideoMode &p_desired, int p_video_driver, 
 				}
 			}
 		} else {
-			if (RasterizerGLES2::is_viable() == OK) {
+			if (godot_js_display_has_webgl(1) && RasterizerGLES2::is_viable() == OK) {
 				attributes.majorVersion = 1;
 				RasterizerGLES2::register_config();
 				RasterizerGLES2::make_current();
