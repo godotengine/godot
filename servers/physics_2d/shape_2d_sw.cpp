@@ -502,6 +502,7 @@ Variant CapsuleShape2DSW::get_data() const {
 void ConvexPolygonShape2DSW::get_supports(const Vector2 &p_normal, Vector2 *r_supports, int &r_amount) const {
 	int support_idx = -1;
 	real_t d = -1e10;
+	r_amount = 0;
 
 	for (int i = 0; i < point_count; i++) {
 		//test point
@@ -520,7 +521,7 @@ void ConvexPolygonShape2DSW::get_supports(const Vector2 &p_normal, Vector2 *r_su
 		}
 	}
 
-	ERR_FAIL_COND(support_idx == -1);
+	ERR_FAIL_COND_MSG(support_idx == -1, "Convex polygon shape support not found.");
 
 	r_amount = 1;
 	r_supports[0] = points[support_idx].pos;
