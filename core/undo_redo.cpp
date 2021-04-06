@@ -247,7 +247,7 @@ bool UndoRedo::has_uncommitted_action() const {
 	return action_level > 0;
 }
 
-void UndoRedo::commit_action() {
+void UndoRedo::commit_action(bool p_apply_redo) {
 
 	ERR_FAIL_COND(action_level <= 0);
 	action_level--;
@@ -260,7 +260,13 @@ void UndoRedo::commit_action() {
 	}
 
 	committing++;
-	redo(); // perform action
+	if (p_apply_redo) {
+		redo(); // perform action
+	} else {
+		current_action++;
+		version++;
+		emit_signal("version_changed");
+	}
 	committing--;
 	if (callback && actions.size() > 0) {
 		callback(callback_ud, actions[actions.size() - 1].name);
@@ -525,7 +531,7 @@ Variant UndoRedo::_add_undo_method(const Variant **p_args, int p_argcount, Varia
 void UndoRedo::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("create_action", "name", "merge_mode"), &UndoRedo::create_action, DEFVAL(MERGE_DISABLE));
-	ClassDB::bind_method(D_METHOD("commit_action"), &UndoRedo::commit_action);
+	ClassDB::bind_method(D_METHOD("commit_action", "apply_redo"), &UndoRedo::commit_action, DEFVAL(true));
 	// FIXME: Typo in "commiting", fix in 4.0 when breaking compat.
 	ClassDB::bind_method(D_METHOD("is_commiting_action"), &UndoRedo::is_committing_action);
 	ClassDB::bind_method(D_METHOD("has_uncommitted_action"), &UndoRedo::has_uncommitted_action);

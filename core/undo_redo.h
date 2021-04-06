@@ -112,7 +112,7 @@ public:
 
 	bool has_uncommitted_action() const;
 	bool is_committing_action() const;
-	void commit_action();
+	void commit_action(bool p_apply_redo = true);
 
 	bool redo();
 	bool undo();
