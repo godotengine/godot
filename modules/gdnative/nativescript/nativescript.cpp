@@ -1727,44 +1727,48 @@ void NativeScriptLanguage::unregister_script(NativeScript *script) {
 		if (S->get().size() == 0) {
 			library_script_users.erase(S);
 
-			Map<String, Map<StringName, NativeScriptDesc>>::Element *L = library_classes.find(script->lib_path);
-			if (L) {
-				Map<StringName, NativeScriptDesc> classes = L->get();
-
-				for (Map<StringName, NativeScriptDesc>::Element *C = classes.front(); C; C = C->next()) {
-					// free property stuff first
-					for (OrderedHashMap<StringName, NativeScriptDesc::Property>::Element P = C->get().properties.front(); P; P = P.next()) {
-						if (P.get().getter.free_func) {
-							P.get().getter.free_func(P.get().getter.method_data);
-						}
-
-						if (P.get().setter.free_func) {
-							P.get().setter.free_func(P.get().setter.method_data);
-						}
-					}
-
-					// free method stuff
-					for (Map<StringName, NativeScriptDesc::Method>::Element *M = C->get().methods.front(); M; M = M->next()) {
-						if (M->get().method.free_func) {
-							M->get().method.free_func(M->get().method.method_data);
-						}
-					}
-
-					// free constructor/destructor
-					if (C->get().create_func.free_func) {
-						C->get().create_func.free_func(C->get().create_func.method_data);
-					}
-
-					if (C->get().destroy_func.free_func) {
-						C->get().destroy_func.free_func(C->get().destroy_func.method_data);
-					}
-				}
-
-				library_classes.erase(script->lib_path);
-			}
-
 			Map<String, Ref<GDNative>>::Element *G = library_gdnatives.find(script->lib_path);
 			if (G && G->get()->get_library()->is_reloadable()) {
+				// ONLY if the library is marked as reloadable, and no more instances of its scripts exist do we unload the library
+
+				// First remove meta data related to the library
+				Map<String, Map<StringName, NativeScriptDesc>>::Element *L = library_classes.find(script->lib_path);
+				if (L) {
+					Map<StringName, NativeScriptDesc> classes = L->get();
+
+					for (Map<StringName, NativeScriptDesc>::Element *C = classes.front(); C; C = C->next()) {
+						// free property stuff first
+						for (OrderedHashMap<StringName, NativeScriptDesc::Property>::Element P = C->get().properties.front(); P; P = P.next()) {
+							if (P.get().getter.free_func) {
+								P.get().getter.free_func(P.get().getter.method_data);
+							}
+
+							if (P.get().setter.free_func) {
+								P.get().setter.free_func(P.get().setter.method_data);
+							}
+						}
+
+						// free method stuff
+						for (Map<StringName, NativeScriptDesc::Method>::Element *M = C->get().methods.front(); M; M = M->next()) {
+							if (M->get().method.free_func) {
+								M->get().method.free_func(M->get().method.method_data);
+							}
+						}
+
+						// free constructor/destructor
+						if (C->get().create_func.free_func) {
+							C->get().create_func.free_func(C->get().create_func.method_data);
+						}
+
+						if (C->get().destroy_func.free_func) {
+							C->get().destroy_func.free_func(C->get().destroy_func.method_data);
+						}
+					}
+
+					library_classes.erase(script->lib_path);
+				}
+
+				// now unload the library
 				G->get()->terminate();
 				library_gdnatives.erase(G);
 			}
