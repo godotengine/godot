@@ -693,6 +693,10 @@ bool ConcavePolygonShape2DSW::contains_point(const Vector2 &p_point) const {
 }
 
 bool ConcavePolygonShape2DSW::intersect_segment(const Vector2 &p_begin, const Vector2 &p_end, Vector2 &r_point, Vector2 &r_normal) const {
+	if (segments.size() == 0 || points.size() == 0) {
+		return false;
+	}
+
 	uint32_t *stack = (uint32_t *)alloca(sizeof(int) * bvh_depth);
 
 	enum {
