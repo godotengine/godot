@@ -1973,7 +1973,7 @@ void TextEdit::backspace_at_cursor() {
 		}
 	}
 
-	cursor_set_line(prev_line, true, true);
+	cursor_set_line(prev_line, false, true);
 	cursor_set_column(prev_column);
 }
 
@@ -2207,7 +2207,7 @@ void TextEdit::_new_line(bool p_split_current_line, bool p_above) {
 	if (!p_split_current_line) {
 		if (p_above) {
 			if (cursor.line > 0) {
-				cursor_set_line(cursor.line - 1);
+				cursor_set_line(cursor.line - 1, false);
 				cursor_set_column(text[cursor.line].length());
 			} else {
 				cursor_set_column(0);
@@ -2223,7 +2223,7 @@ void TextEdit::_new_line(bool p_split_current_line, bool p_above) {
 	if (first_line) {
 		cursor_set_line(0);
 	} else if (brace_indent) {
-		cursor_set_line(cursor.line - 1);
+		cursor_set_line(cursor.line - 1, false);
 		cursor_set_column(text[cursor.line].length());
 	}
 	end_complex_operation();
@@ -2573,7 +2573,7 @@ void TextEdit::_backspace(bool p_word, bool p_all_to_left) {
 
 		_remove_text(line, column, cursor.line, cursor.column);
 
-		cursor_set_line(line);
+		cursor_set_line(line, false);
 		cursor_set_column(column);
 	} else {
 		// One character.
@@ -2640,7 +2640,7 @@ void TextEdit::_delete_selection() {
 		selection.active = false;
 		update();
 		_remove_text(selection.from_line, selection.from_column, selection.to_line, selection.to_column);
-		cursor_set_line(selection.from_line, true, false);
+		cursor_set_line(selection.from_line, false, false);
 		cursor_set_column(selection.from_column);
 		update();
 	}
@@ -3851,7 +3851,7 @@ void TextEdit::_insert_text_at_cursor(const String &p_text) {
 	int new_column, new_line;
 	_insert_text(cursor.line, cursor.column, p_text, &new_line, &new_column);
 	_update_scrollbars();
-	cursor_set_line(new_line);
+	cursor_set_line(new_line, false);
 	cursor_set_column(new_column);
 
 	update();
@@ -4425,7 +4425,7 @@ int TextEdit::get_column_x_offset_for_line(int p_char, int p_line) const {
 
 void TextEdit::insert_text_at_cursor(const String &p_text) {
 	if (selection.active) {
-		cursor_set_line(selection.from_line);
+		cursor_set_line(selection.from_line, false);
 		cursor_set_column(selection.from_column);
 
 		_remove_text(selection.from_line, selection.from_column, selection.to_line, selection.to_column);
@@ -5042,7 +5042,7 @@ void TextEdit::cut() {
 		DisplayServer::get_singleton()->clipboard_set(clipboard);
 
 		_remove_text(selection.from_line, selection.from_column, selection.to_line, selection.to_column);
-		cursor_set_line(selection.from_line); // Set afterwards else it causes the view to be offset.
+		cursor_set_line(selection.from_line, false); // Set afterwards else it causes the view to be offset.
 		cursor_set_column(selection.from_column);
 
 		selection.active = false;
@@ -5078,7 +5078,7 @@ void TextEdit::paste() {
 		selection.active = false;
 		selection.selecting_mode = SelectionMode::SELECTION_MODE_NONE;
 		_remove_text(selection.from_line, selection.from_column, selection.to_line, selection.to_column);
-		cursor_set_line(selection.from_line);
+		cursor_set_line(selection.from_line, false);
 		cursor_set_column(selection.from_column);
 
 	} else if (!cut_copy_line.is_empty() && cut_copy_line == clipboard) {
@@ -5817,11 +5817,11 @@ void TextEdit::undo() {
 
 	_update_scrollbars();
 	if (undo_stack_pos->get().type == TextOperation::TYPE_REMOVE) {
-		cursor_set_line(undo_stack_pos->get().to_line);
+		cursor_set_line(undo_stack_pos->get().to_line, false);
 		cursor_set_column(undo_stack_pos->get().to_column);
 		_cancel_code_hint();
 	} else {
-		cursor_set_line(undo_stack_pos->get().from_line);
+		cursor_set_line(undo_stack_pos->get().from_line, false);
 		cursor_set_column(undo_stack_pos->get().from_column);
 	}
 	update();
@@ -5856,7 +5856,7 @@ void TextEdit::redo() {
 	}
 
 	_update_scrollbars();
-	cursor_set_line(undo_stack_pos->get().to_line);
+	cursor_set_line(undo_stack_pos->get().to_line, false);
 	cursor_set_column(undo_stack_pos->get().to_column);
 	undo_stack_pos = undo_stack_pos->next();
 	update();
