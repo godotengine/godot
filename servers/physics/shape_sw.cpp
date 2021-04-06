@@ -959,6 +959,9 @@ void ConvexPolygonShapeSW::get_supports(const Vector3 &p_normal, int p_max, Vect
 	const Vector3 *vertices = mesh.vertices.ptr();
 	int vc = mesh.vertices.size();
 
+	r_amount = 0;
+	ERR_FAIL_COND_MSG(vc == 0, "Convex polygon shape has no vertices.");
+
 	//find vertex first
 	real_t max = 0;
 	int vtx = 0;
