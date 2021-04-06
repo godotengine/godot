@@ -2014,6 +2014,8 @@ Error GDScriptCompiler::_parse_setter_getter(GDScript *p_script, const GDScriptP
 		func_name = "@" + p_variable->identifier->name + "_getter";
 	}
 
+	codegen.function_name = func_name;
+
 	GDScriptDataType return_type;
 	if (p_is_setter) {
 		return_type.has_type = true;
