@@ -60,6 +60,8 @@ class OS {
 	bool _allow_layered = false;
 	bool _use_vsync;
 	bool _vsync_via_compositor;
+	bool _stdout_enabled = true;
+	bool _stderr_enabled = true;
 
 	char *last_error;
 
@@ -218,6 +220,11 @@ public:
 
 	bool is_stdout_verbose() const;
 	bool is_stdout_debug_enabled() const;
+
+	bool is_stdout_enabled() const;
+	bool is_stderr_enabled() const;
+	void set_stdout_enabled(bool p_enabled);
+	void set_stderr_enabled(bool p_enabled);
 
 	virtual void disable_crash_handler() {}
 	virtual bool is_disable_crash_handler() const { return false; }
