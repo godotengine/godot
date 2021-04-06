@@ -1323,9 +1323,9 @@ void GraphEdit::_gui_input(const Ref<InputEvent> &p_ev) {
 		}
 
 		if (b->get_button_index() == MOUSE_BUTTON_WHEEL_UP && Input::get_singleton()->is_key_pressed(KEY_CONTROL)) {
-			set_zoom(zoom * ZOOM_SCALE);
+			set_zoom_custom(zoom * ZOOM_SCALE, b->get_position());
 		} else if (b->get_button_index() == MOUSE_BUTTON_WHEEL_DOWN && Input::get_singleton()->is_key_pressed(KEY_CONTROL)) {
-			set_zoom(zoom / ZOOM_SCALE);
+			set_zoom_custom(zoom / ZOOM_SCALE, b->get_position());
 		} else if (b->get_button_index() == MOUSE_BUTTON_WHEEL_UP && !Input::get_singleton()->is_key_pressed(KEY_SHIFT)) {
 			v_scroll->set_value(v_scroll->get_value() - v_scroll->get_page() * b->get_factor() / 8);
 		} else if (b->get_button_index() == MOUSE_BUTTON_WHEEL_DOWN && !Input::get_singleton()->is_key_pressed(KEY_SHIFT)) {
