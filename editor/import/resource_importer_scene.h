@@ -33,6 +33,7 @@
 
 #include "core/io/resource_importer.h"
 #include "scene/3d/node_3d.h"
+#include "scene/3d/scene_importer_mesh_node_3d.h"
 #include "scene/resources/animation.h"
 #include "scene/resources/mesh.h"
 #include "scene/resources/shape_3d.h"

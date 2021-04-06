@@ -33,14 +33,15 @@
 
 #include "gltf_animation.h"
 
-#include "editor/import/scene_importer_mesh_node_3d.h"
 #include "scene/3d/bone_attachment_3d.h"
 #include "scene/3d/light_3d.h"
 #include "scene/3d/mesh_instance_3d.h"
 #include "scene/3d/node_3d.h"
+#include "scene/3d/scene_importer_mesh_node_3d.h"
 #include "scene/3d/skeleton_3d.h"
 #include "scene/animation/animation_player.h"
 #include "scene/resources/material.h"
+#include "scene/resources/scene_importer_mesh.h"
 #include "scene/resources/texture.h"
 
 #include "modules/modules_enabled.gen.h"
@@ -270,16 +271,17 @@ private:
 	Error _parse_lights(Ref<GLTFState> state);
 	Error _parse_animations(Ref<GLTFState> state);
 	Error _serialize_animations(Ref<GLTFState> state);
+	EditorSceneImporterMeshNode3D *_generate_importer_mesh_3d(Ref<GLTFState>, Node *, GLTFNodeIndex, bool p_importer_mesh);
 	BoneAttachment3D *_generate_bone_attachment(Ref<GLTFState> state,
 			Skeleton3D *skeleton,
 			const GLTFNodeIndex node_index,
 			const GLTFNodeIndex bone_index);
-	EditorSceneImporterMeshNode3D *_generate_mesh_instance(Ref<GLTFState> state, Node *scene_parent, const GLTFNodeIndex node_index);
+	EditorSceneImporterMeshNode3D *_generate_mesh_instance(Ref<GLTFState> state, Node *scene_parent, const GLTFNodeIndex node_index, bool p_importer_mesh);
 	Camera3D *_generate_camera(Ref<GLTFState> state, Node *scene_parent,
 			const GLTFNodeIndex node_index);
 	Node3D *_generate_light(Ref<GLTFState> state, Node *scene_parent, const GLTFNodeIndex node_index);
 	Node3D *_generate_spatial(Ref<GLTFState> state, Node *scene_parent,
-			const GLTFNodeIndex node_index);
+			const GLTFNodeIndex node_index, bool p_importer_mesh);
 	void _assign_scene_names(Ref<GLTFState> state);
 	template <class T>
 	T _interpolate_track(const Vector<float> &p_times, const Vector<T> &p_values,
@@ -374,11 +376,10 @@ private:
 	static float get_max_component(const Color &p_color);
 
 public:
+	void _generate_scene_node(Ref<GLTFState> state, Node *scene_parent, Node3D *scene_root, const GLTFNodeIndex node_index, bool p_importer_mesh);
 	void _process_mesh_instances(Ref<GLTFState> state, Node *scene_root);
-	void _generate_scene_node(Ref<GLTFState> state, Node *scene_parent,
-			Node3D *scene_root,
-			const GLTFNodeIndex node_index);
-	void _generate_skeleton_bone_node(Ref<GLTFState> state, Node *scene_parent, Node3D *scene_root, const GLTFNodeIndex node_index);
+	MeshInstance3D *_generate_mesh_instance_3d(Ref<GLTFState> state, Node *scene_parent, const GLTFNodeIndex node_index, bool p_importer_mesh);
+	void _generate_skeleton_bone_node(Ref<GLTFState> state, Node *scene_parent, Node3D *scene_root, const GLTFNodeIndex node_index, bool p_importer_mesh);
 	void _import_animation(Ref<GLTFState> state, AnimationPlayer *ap,
 			const GLTFAnimationIndex index, const int bake_fps);
 	GLTFMeshIndex _convert_mesh_instance(Ref<GLTFState> state,
@@ -443,6 +444,7 @@ public:
 			String p_animation_track_name);
 	Error serialize(Ref<GLTFState> state, Node *p_root, const String &p_path);
 	Error parse(Ref<GLTFState> state, String p_paths, bool p_read_binary = false);
+	Error parse_buffers(Ref<GLTFState> state, const PackedByteArray &p_bytes);
 };
 
 #endif // GLTF_DOCUMENT_H

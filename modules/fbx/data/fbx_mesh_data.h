@@ -35,8 +35,8 @@
 #include "core/templates/local_vector.h"
 #include "core/templates/ordered_hash_map.h"
 #include "editor/import/resource_importer_scene.h"
-#include "editor/import/scene_importer_mesh_node_3d.h"
 #include "scene/3d/mesh_instance_3d.h"
+#include "scene/3d/scene_importer_mesh_node_3d.h"
 #include "scene/resources/surface_tool.h"
 
 #include "fbx_bone.h"

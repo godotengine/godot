@@ -31,8 +31,8 @@
 #ifndef EDITOR_SCENE_IMPORTER_MESH_NODE_3D_H
 #define EDITOR_SCENE_IMPORTER_MESH_NODE_3D_H
 
-#include "editor/import/scene_importer_mesh.h"
 #include "scene/3d/node_3d.h"
+#include "scene/resources/scene_importer_mesh.h"
 #include "scene/resources/skin.h"
 
 class EditorSceneImporterMesh;

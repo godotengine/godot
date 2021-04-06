@@ -33,10 +33,10 @@
 #include "core/error/error_list.h"
 #include "core/error/error_macros.h"
 #include "core/math/transform_3d.h"
-#include "editor/import/scene_importer_mesh_node_3d.h"
 #include "resource_importer_scene.h"
 #include "scene/3d/mesh_instance_3d.h"
 #include "scene/3d/node_3d.h"
+#include "scene/3d/scene_importer_mesh_node_3d.h"
 #include "scene/3d/skeleton_3d.h"
 #include "scene/animation/animation_player.h"
 

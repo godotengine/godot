@@ -113,7 +113,6 @@
 #include "editor/import/resource_importer_texture_atlas.h"
 #include "editor/import/resource_importer_wav.h"
 #include "editor/import/scene_import_settings.h"
-#include "editor/import/scene_importer_mesh_node_3d.h"
 #include "editor/import_dock.h"
 #include "editor/multi_node_edit.h"
 #include "editor/node_dock.h"
@@ -190,6 +189,7 @@
 #include "editor/quick_open.h"
 #include "editor/register_exporters.h"
 #include "editor/settings_config_dialog.h"
+#include "scene/3d/scene_importer_mesh_node_3d.h"
 
 #include <stdio.h>
 #include <stdlib.h>

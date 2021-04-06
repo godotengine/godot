@@ -29,7 +29,7 @@
 /*************************************************************************/
 
 #include "gltf_mesh.h"
-#include "editor/import/scene_importer_mesh.h"
+#include "scene/resources/scene_importer_mesh.h"
 
 void GLTFMesh::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_mesh"), &GLTFMesh::get_mesh);
