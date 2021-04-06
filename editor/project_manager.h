@@ -67,7 +67,11 @@ class ProjectManager : public Control {
 
 	FileDialog *scan_dir;
 	ConfirmationDialog *language_restart_ask;
+
 	ConfirmationDialog *erase_ask;
+	Label *erase_ask_label;
+	CheckBox *delete_project_contents;
+
 	ConfirmationDialog *erase_missing_ask;
 	ConfirmationDialog *multi_open_ask;
 	ConfirmationDialog *multi_run_ask;
