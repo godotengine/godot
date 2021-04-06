@@ -39,6 +39,7 @@ bool JavaClass::_call_method(JavaObject *p_instance, const StringName &p_method,
 		return false;
 
 	JNIEnv *env = get_jni_env();
+	ERR_FAIL_COND_V(env == nullptr, false);
 
 	MethodInfo *method = NULL;
 	for (List<MethodInfo>::Element *E = M->get().front(); E; E = E->next()) {
@@ -1049,6 +1050,7 @@ Ref<JavaClass> JavaClassWrapper::wrap(const String &p_class) {
 		return class_cache[p_class];
 
 	JNIEnv *env = get_jni_env();
+	ERR_FAIL_COND_V(env == nullptr, Ref<JavaClass>());
 
 	jclass bclass = env->FindClass(p_class.utf8().get_data());
 	ERR_FAIL_COND_V(!bclass, Ref<JavaClass>());
@@ -1243,6 +1245,7 @@ JavaClassWrapper::JavaClassWrapper(jobject p_activity) {
 	singleton = this;
 
 	JNIEnv *env = get_jni_env();
+	ERR_FAIL_COND(env == nullptr);
 
 	jclass activityClass = env->FindClass("android/app/Activity");
 	jmethodID getClassLoader = env->GetMethodID(activityClass, "getClassLoader", "()Ljava/lang/ClassLoader;");
