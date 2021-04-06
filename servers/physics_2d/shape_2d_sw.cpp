@@ -581,6 +581,7 @@ bool ConvexPolygonShape2DSW::intersect_segment(const Vector2 &p_begin, const Vec
 }
 
 real_t ConvexPolygonShape2DSW::get_moment_of_inertia(real_t p_mass, const Size2 &p_scale) const {
+	ERR_FAIL_COND_V_MSG(point_count == 0, 0, "Convex polygon shape has no points.");
 	Rect2 aabb;
 	aabb.position = points[0].pos * p_scale;
 	for (int i = 0; i < point_count; i++) {
