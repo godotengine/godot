@@ -243,11 +243,15 @@ bool UndoRedo::is_committing_action() const {
 	return committing > 0;
 }
 
+bool UndoRedo::has_uncommitted_action() const {
+	return action_level > 0;
+}
+
 void UndoRedo::commit_action() {
 
 	ERR_FAIL_COND(action_level <= 0);
 	action_level--;
-	if (action_level > 0)
+	if (has_uncommitted_action())
 		return; //still nested
 
 	if (merging) {
@@ -327,7 +331,7 @@ void UndoRedo::_process_operation_list(List<Operation>::Element *E) {
 
 bool UndoRedo::redo() {
 
-	ERR_FAIL_COND_V(action_level > 0, false);
+	ERR_FAIL_COND_V(has_uncommitted_action(), false);
 
 	if ((current_action + 1) >= actions.size())
 		return false; //nothing to redo
@@ -343,7 +347,7 @@ bool UndoRedo::redo() {
 
 bool UndoRedo::undo() {
 
-	ERR_FAIL_COND_V(action_level > 0, false);
+	ERR_FAIL_COND_V(has_uncommitted_action(), false);
 	if (current_action < 0)
 		return false; //nothing to redo
 	_process_operation_list(actions.write[current_action].undo_ops.front());
@@ -356,7 +360,7 @@ bool UndoRedo::undo() {
 
 void UndoRedo::clear_history(bool p_increase_version) {
 
-	ERR_FAIL_COND(action_level > 0);
+	ERR_FAIL_COND(has_uncommitted_action());
 	_discard_redo();
 
 	while (actions.size())
@@ -370,7 +374,7 @@ void UndoRedo::clear_history(bool p_increase_version) {
 
 String UndoRedo::get_current_action_name() const {
 
-	ERR_FAIL_COND_V(action_level > 0, "");
+	ERR_FAIL_COND_V(has_uncommitted_action(), "");
 	if (current_action < 0)
 		return "";
 	return actions[current_action].name;
@@ -513,7 +517,7 @@ void UndoRedo::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("commit_action"), &UndoRedo::commit_action);
 	// FIXME: Typo in "commiting", fix in 4.0 when breaking compat.
 	ClassDB::bind_method(D_METHOD("is_commiting_action"), &UndoRedo::is_committing_action);
-
+	ClassDB::bind_method(D_METHOD("has_uncommitted_action"), &UndoRedo::has_uncommitted_action);
 	{
 		MethodInfo mi;
 		mi.name = "add_do_method";

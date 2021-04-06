@@ -110,6 +110,7 @@ public:
 	void add_do_reference(Object *p_object);
 	void add_undo_reference(Object *p_object);
 
+	bool has_uncommitted_action() const;
 	bool is_committing_action() const;
 	void commit_action();
 
