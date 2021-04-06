@@ -71,6 +71,7 @@ extern int godot_js_display_fullscreen_exit();
 extern void godot_js_display_compute_position(int p_x, int p_y, int32_t *r_x, int32_t *r_y);
 extern void godot_js_display_window_title_set(const char *p_text);
 extern void godot_js_display_window_icon_set(const uint8_t *p_ptr, int p_len);
+extern int godot_js_display_has_webgl(int p_version);
 
 // Display clipboard
 extern int godot_js_display_clipboard_set(const char *p_text);
