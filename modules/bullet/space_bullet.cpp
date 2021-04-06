@@ -1235,6 +1235,10 @@ bool SpaceBullet::recover_from_penetration(RigidBodyBullet *p_body, const btTran
 			continue;
 		}
 
+		if (kin_shape.shape->getShapeType() == EMPTY_SHAPE_PROXYTYPE) {
+			continue;
+		}
+
 		btTransform shape_transform = p_body_position * kin_shape.transform;
 		shape_transform.getOrigin() += r_delta_recover_movement;
 
