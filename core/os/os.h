@@ -52,6 +52,7 @@ class OS {
 	int low_processor_usage_mode_sleep_usec = 10000;
 	bool _verbose_stdout = false;
 	bool _debug_stdout = false;
+	bool _single_window = false;
 	String _local_clipboard;
 	bool _no_window = false;
 	int _exit_code = EXIT_FAILURE; // unexpected exit is marked as failure
@@ -218,6 +219,8 @@ public:
 
 	bool is_stdout_verbose() const;
 	bool is_stdout_debug_enabled() const;
+
+	bool is_single_window() const;
 
 	virtual void disable_crash_handler() {}
 	virtual bool is_disable_crash_handler() const { return false; }
