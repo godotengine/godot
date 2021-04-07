@@ -115,19 +115,22 @@ void ColorPicker::_update_controls() {
 
 	if (raw_mode_enabled) {
 		for (int i = 0; i < 3; i++) {
-			scroll[i]->add_theme_icon_override("grabber", Ref<Texture2D>());
-			scroll[i]->add_theme_icon_override("grabber_highlight", Ref<Texture2D>());
-			scroll[i]->add_theme_style_override("slider", Ref<StyleBox>());
-			scroll[i]->add_theme_style_override("grabber_area", Ref<StyleBox>());
-			scroll[i]->add_theme_style_override("grabber_area_highlight", Ref<StyleBox>());
+			scroll[i]->remove_theme_icon_override("grabber");
+			scroll[i]->remove_theme_icon_override("grabber_highlight");
+			scroll[i]->remove_theme_style_override("slider");
+			scroll[i]->remove_theme_style_override("grabber_area");
+			scroll[i]->remove_theme_style_override("grabber_area_highlight");
 		}
 	} else {
-		for (int i = 0; i < 3; i++) {
-			scroll[i]->add_theme_icon_override("grabber", get_theme_icon("bar_arrow"));
-			scroll[i]->add_theme_icon_override("grabber_highlight", get_theme_icon("bar_arrow"));
-			scroll[i]->add_theme_style_override("slider", Ref<StyleBoxEmpty>(memnew(StyleBoxEmpty)));
-			scroll[i]->add_theme_style_override("grabber_area", Ref<StyleBoxEmpty>(memnew(StyleBoxEmpty)));
-			scroll[i]->add_theme_style_override("grabber_area_highlight", Ref<StyleBoxEmpty>(memnew(StyleBoxEmpty)));
+		Ref<StyleBoxEmpty> style_box_empty(memnew(StyleBoxEmpty));
+		Ref<Texture2D> bar_arrow = get_theme_icon("bar_arrow");
+
+		for (int i = 0; i < 4; i++) {
+			scroll[i]->add_theme_icon_override("grabber", bar_arrow);
+			scroll[i]->add_theme_icon_override("grabber_highlight", bar_arrow);
+			scroll[i]->add_theme_style_override("slider", style_box_empty);
+			scroll[i]->add_theme_style_override("grabber_area", style_box_empty);
+			scroll[i]->add_theme_style_override("grabber_area_highlight", style_box_empty);
 		}
 	}
 
@@ -887,12 +890,8 @@ ColorPicker::ColorPicker() :
 
 		vbr->add_child(hbc);
 	}
+
 	labels[3]->set_text("A");
-	scroll[3]->add_theme_icon_override("grabber", get_theme_icon("bar_arrow"));
-	scroll[3]->add_theme_icon_override("grabber_highlight", get_theme_icon("bar_arrow"));
-	scroll[3]->add_theme_style_override("slider", Ref<StyleBoxEmpty>(memnew(StyleBoxEmpty)));
-	scroll[3]->add_theme_style_override("grabber_area", Ref<StyleBoxEmpty>(memnew(StyleBoxEmpty)));
-	scroll[3]->add_theme_style_override("grabber_area_highlight", Ref<StyleBoxEmpty>(memnew(StyleBoxEmpty)));
 
 	HBoxContainer *hhb = memnew(HBoxContainer);
 	vbr->add_child(hhb);
