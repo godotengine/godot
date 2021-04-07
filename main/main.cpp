@@ -390,6 +390,8 @@ Error Main::test_setup() {
 	register_core_types();
 	register_core_driver_types();
 
+	packed_data = memnew(PackedData);
+
 	globals = memnew(ProjectSettings);
 
 	GLOBAL_DEF("debug/settings/crash_handler/message",
@@ -458,6 +460,9 @@ void Main::test_cleanup() {
 	}
 	if (globals) {
 		memdelete(globals);
+	}
+	if (packed_data) {
+		memdelete(packed_data);
 	}
 	if (engine) {
 		memdelete(engine);
