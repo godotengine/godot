@@ -467,16 +467,17 @@ Error ProjectSettings::_setup(const String &p_path, const String &p_main_pack, b
 	d->change_dir(p_path);
 
 	String current_dir = d->get_current_dir();
-	String candidate = current_dir;
 	bool found = false;
 	Error err;
 
 	while (true) {
+		// Set the resource path early so things can be resolved when loading.
+		resource_path = current_dir;
+		resource_path = resource_path.replace("\\", "/"); // Windows path to Unix path just in case.
 		err = _load_settings_text_or_binary(current_dir.plus_file("project.godot"), current_dir.plus_file("project.binary"));
 		if (err == OK) {
 			// Optional, we don't mind if it fails.
 			_load_settings_text(current_dir.plus_file("override.cfg"));
-			candidate = current_dir;
 			found = true;
 			break;
 		}
@@ -493,8 +494,6 @@ Error ProjectSettings::_setup(const String &p_path, const String &p_main_pack, b
 		}
 	}
 
-	resource_path = candidate;
-	resource_path = resource_path.replace("\\", "/"); // Windows path to Unix path just in case.
 	memdelete(d);
 
 	if (!found) {
