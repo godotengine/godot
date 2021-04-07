@@ -875,6 +875,13 @@ void CSharpLanguage::reload_assemblies(bool p_soft_reload) {
 	// As scripts are going to be reloaded, must proceed without locking here
 
 	for (Ref<CSharpScript> &script : scripts) {
+		// If someone removes a script from a node, deletes the script, builds, adds a script to the
+		// same node, then builds again, the script might have no path and also no script_class. In
+		// that case, we can't (and don't need to) reload it.
+		if (script->get_path().is_empty() && !script->script_class) {
+			continue;
+		}
+
 		to_reload.push_back(script);
 
 		if (script->get_path().is_empty()) {
