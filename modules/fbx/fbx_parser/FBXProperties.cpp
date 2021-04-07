@@ -149,6 +149,11 @@ PropertyTable::PropertyTable() {
 }
 
 // ------------------------------------------------------------------------------------------------
+PropertyTable::PropertyTable(const PropertyTable *templateProps) :
+		templateProps(templateProps), element() {
+}
+
+// ------------------------------------------------------------------------------------------------
 PropertyTable::PropertyTable(const ElementPtr element, const PropertyTable *templateProps) :
 		templateProps(templateProps), element(element) {
 	const ScopePtr scope = GetRequiredScope(element);
