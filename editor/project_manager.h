@@ -31,6 +31,7 @@
 #ifndef PROJECT_MANAGER_H
 #define PROJECT_MANAGER_H
 
+#include "editor/editor_about.h"
 #include "editor/plugins/asset_library_editor_plugin.h"
 #include "scene/gui/dialogs.h"
 #include "scene/gui/file_dialog.h"
@@ -62,6 +63,7 @@ class ProjectManager : public Control {
 	Button *rename_btn;
 	Button *erase_btn;
 	Button *erase_missing_btn;
+	Button *about_btn;
 
 	EditorAssetLibrary *asset_library;
 
@@ -78,6 +80,7 @@ class ProjectManager : public Control {
 	ConfirmationDialog *multi_scan_ask;
 	ConfirmationDialog *ask_update_settings;
 	ConfirmationDialog *open_templates;
+	EditorAbout *about;
 
 	HBoxContainer *settings_hb;
 
@@ -100,6 +103,7 @@ class ProjectManager : public Control {
 	void _erase_missing_projects();
 	void _erase_project_confirm();
 	void _erase_missing_projects_confirm();
+	void _show_about();
 	void _update_project_buttons();
 	void _language_selected(int p_id);
 	void _restart_confirm();
