@@ -203,7 +203,7 @@ public:
 	SceneShaderForwardClustered();
 	~SceneShaderForwardClustered();
 
-	void init(RendererStorageRD *p_storage, const String p_defines, bool p_is_low_end);
+	void init(RendererStorageRD *p_storage, const String p_defines);
 };
 
 } // namespace RendererSceneRenderImplementation
