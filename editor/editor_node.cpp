@@ -4891,6 +4891,16 @@ void EditorNode::_scene_tab_input(const Ref<InputEvent> &p_input) {
 			scene_tabs_context_menu->set_position(mb->get_global_position());
 			scene_tabs_context_menu->popup();
 		}
+		if (mb->get_button_index() == MOUSE_BUTTON_WHEEL_UP && mb->is_pressed()) {
+			int previous_tab = editor_data.get_edited_scene() - 1;
+			previous_tab = previous_tab >= 0 ? previous_tab : editor_data.get_edited_scene_count() - 1;
+			_scene_tab_changed(previous_tab);
+		}
+		if (mb->get_button_index() == MOUSE_BUTTON_WHEEL_DOWN && mb->is_pressed()) {
+			int next_tab = editor_data.get_edited_scene() + 1;
+			next_tab %= editor_data.get_edited_scene_count();
+			_scene_tab_changed(next_tab);
+		}
 	}
 }
 
