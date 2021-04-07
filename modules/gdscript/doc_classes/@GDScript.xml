@@ -1112,7 +1112,7 @@
 				[codeblock]
 				sqrt(9) # Returns 3
 				[/codeblock]
-				[b]Note:[/b]Negative values of [code]s[/code] return NaN. If you need negative inputs, use [code]System.Numerics.Complex[/code] in C#.
+				[b]Note:[/b] Negative values of [code]s[/code] return NaN. If you need negative inputs, use [code]System.Numerics.Complex[/code] in C#.
 			</description>
 		</method>
 		<method name="step_decimals">
