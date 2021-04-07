@@ -870,6 +870,15 @@ void LineEdit::delete_char() {
 
 void LineEdit::delete_text(int p_from_column, int p_to_column) {
 
+	p_from_column = MAX(0, p_from_column);
+	p_to_column = MIN(p_to_column, text.size());
+
+	if (p_from_column >= p_to_column) {
+
+		// Nothing to do
+		return;
+	}
+	
 	undo_text = text;
 
 	if (text.size() > 0) {
