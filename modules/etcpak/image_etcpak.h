@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  register_types.cpp                                                   */
+/*  image_etcpak.h                                                       */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,11 +28,24 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#include "register_types.h"
-#include "image_compress_squish.h"
+#ifndef IMAGE_ETCPAK_H
+#define IMAGE_ETCPAK_H
 
-void register_squish_types() {
-	Image::_image_decompress_bc = image_decompress_squish;
-}
+#include "core/io/image.h"
 
-void unregister_squish_types() {}
+enum class EtcpakType {
+	ETCPAK_TYPE_ETC1,
+	ETCPAK_TYPE_ETC2,
+	ETCPAK_TYPE_ETC2_ALPHA,
+	ETCPAK_TYPE_ETC2_RA_AS_RG,
+	ETCPAK_TYPE_DXT1,
+	ETCPAK_TYPE_DXT5,
+	ETCPAK_TYPE_DXT5_RA_AS_RG,
+};
+
+void _compress_etcpak(EtcpakType p_compresstype, Image *p_img, float p_lossy_quality, bool force_etc1_format, Image::UsedChannels p_channels);
+void _compress_etc1(Image *p_img, float p_lossy_quality);
+void _compress_etc2(Image *p_img, float p_lossy_quality, Image::UsedChannels p_source);
+void _compress_bc(Image *p_img, float p_lossy_quality, Image::UsedChannels p_source);
+
+#endif // IMAGE_ETCPAK_H
