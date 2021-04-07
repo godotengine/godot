@@ -1745,8 +1745,8 @@ static bool _guess_identifier_type(GDScriptParser::CompletionContext &p_context,
 								return true;
 							}
 						}
-						base_type = base_type.class_type->base_type;
 					}
+					base_type = base_type.class_type->base_type;
 					break;
 				case GDScriptParser::DataType::NATIVE: {
 					if (id_type.is_set() && !id_type.is_variant()) {
