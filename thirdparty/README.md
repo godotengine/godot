@@ -86,21 +86,19 @@ It is still possible to build against a system wide ENet but doing so
 will limit its functionality to IPv4 only.
 
 
-## etc2comp
+## etcpak
 
-- Upstream: https://github.com/google/etc2comp
-- Version: git (9cd0f9cae0f32338943699bb418107db61bb66f2, 2017)
-- License: Apache 2.0
+- Upstream: https://github.com/wolfpld/etcpak
+- Version: git (403d38b3f1cb347c196d845d0a05e44a00d17169, 2021)
+- License: BSD-3-Clause
+
+Important: Some Godot-made changes, see `patches` folders.
 
 Files extracted from upstream source:
 
-- all .cpp and .h files in EtcLib/
-- README.md, LICENSE, AUTHORS
-
-Important: Some files have Godot-made changes.
-They are marked with `// -- GODOT start --` and `// -- GODOT end --`
-comments.
-
+- All `.cpp` and `.hpp` files in the root folder except `Application.cpp`.
+- `lz4` folder.
+- `AUTHORS.txt` and `LICENSE.txt`
 
 ## fonts
 

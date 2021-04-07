@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  register_types.cpp                                                   */
+/*  register_types.h                                                     */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,11 +28,5 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#include "register_types.h"
-#include "image_compress_squish.h"
-
-void register_squish_types() {
-	Image::_image_decompress_bc = image_decompress_squish;
-}
-
-void unregister_squish_types() {}
+void register_etcpak_types();
+void unregister_etcpak_types();

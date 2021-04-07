@@ -29,10 +29,14 @@
 /*************************************************************************/
 
 #include "register_types.h"
-#include "image_compress_squish.h"
 
-void register_squish_types() {
-	Image::_image_decompress_bc = image_decompress_squish;
+#include "image_etcpak.h"
+
+void register_etcpak_types() {
+	Image::_image_compress_etc1_func = _compress_etc1;
+	Image::_image_compress_etc2_func = _compress_etc2;
+	Image::_image_compress_bc_func = _compress_bc;
 }
 
-void unregister_squish_types() {}
+void unregister_etcpak_types() {
+}

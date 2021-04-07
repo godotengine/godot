@@ -134,10 +134,10 @@ Comment: ENet
 Copyright: 2002-2020, Lee Salzman
 License: Expat
 
-Files: ./thirdparty/etc2comp/
-Comment: Etc2Comp
-Copyright: 2015, Etc2Comp Authors
-License: Apache-2.0
+Files: ./thirdparty/etcpak/
+Comment: etcpak
+Copyright: 2013-2021, Bartosz Taudul
+License: BSD-3-clause
 
 Files: ./thirdparty/fonts/DroidSans*.ttf
 Comment: DroidSans font
