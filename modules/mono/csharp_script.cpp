@@ -783,6 +783,12 @@ void CSharpLanguage::reload_assemblies(bool p_soft_reload) {
 
 	for (List<Ref<CSharpScript>>::Element *E = scripts.front(); E; E = E->next()) {
 		Ref<CSharpScript> &script = E->get();
+		// If someone removes a script from a node, deletes the script, builds, adds a script to the
+		// same node, then builds again, the script might have no path and also no script_class. In
+		// that case, we can't (and don't need to) reload it.
+		if (script->get_path().empty() && !script->script_class) {
+			continue;
+		}
 
 		to_reload.push_back(script);
 
