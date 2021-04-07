@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  test_gdscript.h                                                      */
+/*  gdscript_test_runner_suite.h                                         */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,23 +28,26 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef TEST_GDSCRIPT_H
-#define TEST_GDSCRIPT_H
+#ifndef GDSCRIPT_TEST_RUNNER_SUITE_H
+#define GDSCRIPT_TEST_RUNNER_SUITE_H
 
 #include "gdscript_test_runner.h"
 #include "tests/test_macros.h"
 
 namespace GDScriptTests {
 
-enum TestType {
-	TEST_TOKENIZER,
-	TEST_PARSER,
-	TEST_COMPILER,
-	TEST_BYTECODE,
-};
-
-void test(TestType p_type);
+TEST_SUITE("[Modules][GDScript]") {
+	// GDScript 2.0 is still under heavy construction.
+	// Allow the tests to fail, but do not ignore errors during development.
+	// Update the scripts and expected output as needed.
+	TEST_CASE("Script compilation and runtime") {
+		GDScriptTestRunner runner("modules/gdscript/tests/scripts", true);
+		int fail_count = runner.run_tests();
+		INFO("Make sure `*.out` files have expected results.");
+		REQUIRE_MESSAGE(fail_count == 0, "All GDScript tests should pass.");
+	}
+}
 
 } // namespace GDScriptTests
 
-#endif // TEST_GDSCRIPT_H
+#endif // GDSCRIPT_TEST_RUNNER_SUITE_H

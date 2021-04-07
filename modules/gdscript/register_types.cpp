@@ -163,19 +163,19 @@ void unregister_gdscript_types() {
 
 #ifdef TESTS_ENABLED
 void test_tokenizer() {
-	TestGDScript::test(TestGDScript::TestType::TEST_TOKENIZER);
+	GDScriptTests::test(GDScriptTests::TestType::TEST_TOKENIZER);
 }
 
 void test_parser() {
-	TestGDScript::test(TestGDScript::TestType::TEST_PARSER);
+	GDScriptTests::test(GDScriptTests::TestType::TEST_PARSER);
 }
 
 void test_compiler() {
-	TestGDScript::test(TestGDScript::TestType::TEST_COMPILER);
+	GDScriptTests::test(GDScriptTests::TestType::TEST_COMPILER);
 }
 
 void test_bytecode() {
-	TestGDScript::test(TestGDScript::TestType::TEST_BYTECODE);
+	GDScriptTests::test(GDScriptTests::TestType::TEST_BYTECODE);
 }
 
 REGISTER_TEST_COMMAND("gdscript-tokenizer", &test_tokenizer);
