@@ -17,6 +17,7 @@
 			</argument>
 			<description>
 				Adds a node to the selection.
+				[b]Note:[/b] The newly selected node will not be automatically edited in the inspector. If you want to edit a node, use [method EditorInterface.edit_node].
 			</description>
 		</method>
 		<method name="clear">

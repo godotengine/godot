@@ -71,6 +71,7 @@ public:
 
 	Control *get_editor_main_control();
 	void edit_resource(const Ref<Resource> &p_resource);
+	void edit_node(Node *p_node);
 	void open_scene_from_path(const String &scene_path);
 	void reload_scene_from_path(const String &scene_path);
 

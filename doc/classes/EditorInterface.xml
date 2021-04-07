@@ -10,6 +10,15 @@
 	<tutorials>
 	</tutorials>
 	<methods>
+		<method name="edit_node">
+			<return type="void">
+			</return>
+			<argument index="0" name="node" type="Node">
+			</argument>
+			<description>
+				Edits the given [Node]. The node will be also selected if it's inside the scene tree.
+			</description>
+		</method>
 		<method name="edit_resource">
 			<return type="void">
 			</return>
