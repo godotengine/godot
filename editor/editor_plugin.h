@@ -141,6 +141,7 @@ public:
 	EditorBottomPanels *get_editor_bottom_panels();
 	EditorWorkspaces *get_editor_workspaces();
 	EditorPluginInterfaces *get_editor_plugin_interfaces();
+	EditorTopBars *get_editor_top_bars();
 
 	ScriptCreateDialog *get_script_create_dialog();
 

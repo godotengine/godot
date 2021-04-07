@@ -684,10 +684,9 @@ public:
 	EditorPluginList *get_editor_plugins_over() { return editor_plugins_over; }
 	EditorPluginList *get_editor_plugins_force_over() { return editor_plugins_force_over; }
 	EditorPluginList *get_editor_plugins_force_input_forwarding() { return editor_plugins_force_input_forwarding; }
-	EditorInspector *get_inspector() { return EditorDocks::get_singleton()->get_inspector_dock()->get_inspector(); }
-	Container *get_inspector_dock_addon_area() { return EditorDocks::get_singleton()->get_inspector_dock()->get_addon_area(); }
-	ScriptCreateDialog *get_script_create_dialog() { return EditorDocks::get_singleton()->get_scene_tree_dock()->get_script_create_dialog(); }
-
+	EditorInspector *get_inspector() { return EditorDocks::singleton->inspector_dock->get_inspector(); }
+	Container *get_inspector_dock_addon_area() { return EditorDocks::singleton->inspector_dock->get_addon_area(); }
+	ScriptCreateDialog *get_script_create_dialog() { return EditorDocks::singleton->scene_tree_dock->get_script_create_dialog(); }
 	ProjectSettingsEditor *get_project_settings() { return project_settings; }
 
 	static void add_editor_plugin(EditorPlugin *p_editor, bool p_config_changed = false);

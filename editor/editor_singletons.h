@@ -39,6 +39,7 @@
 #include "scene/main/node.h"
 
 class EditorNode;
+class EditorPlugin;
 class EditorSelection;
 class EditorSettings;
 
@@ -82,7 +83,6 @@ public:
 	Ref<EditorSettings> get_editor_settings();
 	EditorResourcePreview *get_resource_previewer();
 	EditorFileSystem *get_resource_file_system();
-
 	Control *get_base_control();
 	float get_editor_scale() const;
 
@@ -291,6 +291,7 @@ public:
 	Node3DEditor *get_node_3d_workspace();
 	ScriptEditor *get_script_workspace();
 	EditorAssetLibrary *get_asset_library_workspace();
+	EditorPlugin *get_current_workspace();
 
 	// Modifiers
 	void add_control(Control *p_control);
@@ -337,6 +338,31 @@ public:
 	void remove_scene_import_plugin(const Ref<EditorSceneImporter> &p_importer);
 
 	EditorPluginInterfaces();
+};
+
+class EditorTopBars : public Node {
+	GDCLASS(EditorTopBars, Node);
+
+	friend class EditorNode;
+
+	EditorNode *editor;
+
+	HBoxContainer *main_menu_bar = nullptr;
+	HBoxContainer *workspaces_bar = nullptr;
+	HBoxContainer *playtest_bar = nullptr;
+	HBoxContainer *video_driver_bar = nullptr;
+
+protected:
+	static void _bind_methods();
+	static EditorTopBars *singleton;
+
+public:
+	static EditorTopBars *get_singleton() { return singleton; }
+	HBoxContainer *get_main_menu_bar();
+	HBoxContainer *get_workspaces_bar();
+	HBoxContainer *get_playtest_bar();
+
+	EditorTopBars(EditorNode *p_editor);
 };
 
 #endif // EDITOR_SINGLETONS_H

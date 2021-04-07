@@ -3738,6 +3738,7 @@ void EditorNode::register_editor_types() {
 	ClassDB::register_virtual_class<EditorBottomPanels>();
 	ClassDB::register_virtual_class<EditorWorkspaces>();
 	ClassDB::register_virtual_class<EditorPluginInterfaces>();
+	ClassDB::register_virtual_class<EditorTopBars>();
 
 	ClassDB::register_virtual_class<SceneTreeDock>();
 	ClassDB::register_virtual_class<NodeDock>();
@@ -6780,6 +6781,12 @@ EditorNode::EditorNode() {
 
 	EditorWorkspaces *editor_workspaces = memnew(EditorWorkspaces(this));
 	add_child(editor_workspaces);
+
+	EditorTopBars *editor_top_bars = memnew(EditorTopBars(this));
+	editor_top_bars->main_menu_bar = left_menu_hb;
+	editor_top_bars->workspaces_bar = main_editor_button_vb;
+	editor_top_bars->playtest_bar = play_hb;
+	editor_top_bars->video_driver_bar = right_menu_hb;
 
 	//plugin stuff
 

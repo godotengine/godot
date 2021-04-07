@@ -426,6 +426,14 @@ EditorBottomPanels *EditorPlugin::get_editor_bottom_panels() {
 	return EditorBottomPanels::get_singleton();
 }
 
+EditorPluginInterfaces *EditorPlugin::get_editor_plugin_interfaces() {
+	return EditorPluginInterfaces::get_singleton();
+}
+
+EditorTopBars *EditorPlugin::get_editor_top_bars() {
+	return EditorTopBars::get_singleton();
+}
+
 ScriptCreateDialog *EditorPlugin::get_script_create_dialog() {
 	return EditorNode::get_singleton()->get_script_create_dialog();
 }
@@ -464,6 +472,9 @@ void EditorPlugin::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_editor_interface"), &EditorPlugin::get_editor_interface);
 	ClassDB::bind_method(D_METHOD("get_editor_docks"), &EditorPlugin::get_editor_docks);
 	ClassDB::bind_method(D_METHOD("get_editor_bottom_panels"), &EditorPlugin::get_editor_bottom_panels);
+	ClassDB::bind_method(D_METHOD("get_editor_plugin_interfaces"), &EditorPlugin::get_editor_plugin_interfaces);
+	ClassDB::bind_method(D_METHOD("get_editor_top_bars"), &EditorPlugin::get_editor_top_bars);
+
 	ClassDB::bind_method(D_METHOD("get_script_create_dialog"), &EditorPlugin::get_script_create_dialog);
 
 	ClassDB::add_virtual_method(get_class_static(), MethodInfo(Variant::BOOL, "forward_canvas_gui_input", PropertyInfo(Variant::OBJECT, "event", PROPERTY_HINT_RESOURCE_TYPE, "InputEvent")));

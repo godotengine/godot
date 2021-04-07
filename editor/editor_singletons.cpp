@@ -646,6 +646,10 @@ EditorAssetLibrary *EditorWorkspaces::get_asset_library_workspace() {
 	return asset_library_workspace;
 }
 
+EditorPlugin *EditorWorkspaces::get_current_workspace() {
+	return editor->get_editor_plugin_screen();
+}
+
 void EditorWorkspaces::add_control(Control *p_control) {
 	ERR_FAIL_NULL(p_control);
 	ERR_FAIL_COND(p_control->get_parent());
@@ -744,5 +748,32 @@ void EditorPluginInterfaces::_bind_methods() {
 EditorPluginInterfaces *EditorPluginInterfaces::singleton = nullptr;
 
 EditorPluginInterfaces::EditorPluginInterfaces() {
+	singleton = this;
+}
+
+///////////////////////////////////////////
+
+HBoxContainer *EditorTopBars::get_main_menu_bar() {
+	return main_menu_bar;
+}
+
+HBoxContainer *EditorTopBars::get_workspaces_bar() {
+	return workspaces_bar;
+}
+
+HBoxContainer *EditorTopBars::get_playtest_bar() {
+	return playtest_bar;
+}
+
+void EditorTopBars::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("get_main_menu_bar"), &EditorTopBars::get_main_menu_bar);
+	ClassDB::bind_method(D_METHOD("get_workspaces_bar"), &EditorTopBars::get_workspaces_bar);
+	ClassDB::bind_method(D_METHOD("get_playtest_bar"), &EditorTopBars::get_playtest_bar);
+}
+
+EditorTopBars *EditorTopBars::singleton = nullptr;
+
+EditorTopBars::EditorTopBars(EditorNode *p_editor) {
+	editor = p_editor;
 	singleton = this;
 }
