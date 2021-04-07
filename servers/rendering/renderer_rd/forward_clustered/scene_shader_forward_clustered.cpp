@@ -544,7 +544,7 @@ SceneShaderForwardClustered::~SceneShaderForwardClustered() {
 	storage->free(default_material);
 }
 
-void SceneShaderForwardClustered::init(RendererStorageRD *p_storage, const String p_defines, bool p_is_low_end) {
+void SceneShaderForwardClustered::init(RendererStorageRD *p_storage, const String p_defines) {
 	storage = p_storage;
 
 	{
@@ -562,6 +562,7 @@ void SceneShaderForwardClustered::init(RendererStorageRD *p_storage, const Strin
 		shader_versions.push_back("\n#define MODE_MULTIPLE_RENDER_TARGETS\n#define USE_LIGHTMAP\n");
 		shader.initialize(shader_versions, p_defines);
 
+		/*
 		if (p_is_low_end) {
 			//disable the high end versions
 			shader.set_variant_enabled(SHADER_VERSION_DEPTH_PASS_WITH_NORMAL_AND_ROUGHNESS, false);
@@ -571,6 +572,7 @@ void SceneShaderForwardClustered::init(RendererStorageRD *p_storage, const Strin
 			shader.set_variant_enabled(SHADER_VERSION_COLOR_PASS_WITH_SEPARATE_SPECULAR, false);
 			shader.set_variant_enabled(SHADER_VERSION_LIGHTMAP_COLOR_PASS_WITH_SEPARATE_SPECULAR, false);
 		}
+		*/
 	}
 
 	storage->shader_set_data_request_function(RendererStorageRD::SHADER_TYPE_3D, _create_shader_funcs);
@@ -764,9 +766,7 @@ void SceneShaderForwardClustered::init(RendererStorageRD *p_storage, const Strin
 
 		MaterialData *md = (MaterialData *)storage->material_get_data(default_material, RendererStorageRD::SHADER_TYPE_3D);
 		default_shader_rd = shader.version_get_shader(md->shader_data->version, SHADER_VERSION_COLOR_PASS);
-		if (!p_is_low_end) {
-			default_shader_sdfgi_rd = shader.version_get_shader(md->shader_data->version, SHADER_VERSION_DEPTH_PASS_WITH_SDF);
-		}
+		default_shader_sdfgi_rd = shader.version_get_shader(md->shader_data->version, SHADER_VERSION_DEPTH_PASS_WITH_SDF);
 	}
 
 	{

@@ -941,7 +941,7 @@ void RenderForwardClustered::_fill_render_list(RenderListType p_render_list, con
 					uses_lightmap = true;
 				}
 
-			} else if (!low_end) {
+			} else {
 				if (p_using_opaque_gi) {
 					flags |= INSTANCE_DATA_FLAG_USE_GI_BUFFERS;
 				}
@@ -1133,7 +1133,7 @@ void RenderForwardClustered::_render_scene(RID p_render_buffer, const Transform 
 
 		opaque_framebuffer = render_buffer->color_fb;
 
-		if (!low_end && p_gi_probes.size() > 0) {
+		if (p_gi_probes.size() > 0) {
 			using_giprobe = true;
 		}
 
@@ -1212,7 +1212,7 @@ void RenderForwardClustered::_render_scene(RID p_render_buffer, const Transform 
 
 	RD::get_singleton()->draw_command_end_label();
 
-	bool using_sss = !low_end && render_buffer && scene_state.used_sss && sub_surface_scattering_get_quality() != RS::SUB_SURFACE_SCATTERING_QUALITY_DISABLED;
+	bool using_sss = render_buffer && scene_state.used_sss && sub_surface_scattering_get_quality() != RS::SUB_SURFACE_SCATTERING_QUALITY_DISABLED;
 
 	if (using_sss) {
 		using_separate_specular = true;
@@ -1296,7 +1296,7 @@ void RenderForwardClustered::_render_scene(RID p_render_buffer, const Transform 
 
 	bool debug_giprobes = get_debug_draw_mode() == RS::VIEWPORT_DEBUG_DRAW_GI_PROBE_ALBEDO || get_debug_draw_mode() == RS::VIEWPORT_DEBUG_DRAW_GI_PROBE_LIGHTING || get_debug_draw_mode() == RS::VIEWPORT_DEBUG_DRAW_GI_PROBE_EMISSION;
 	bool debug_sdfgi_probes = get_debug_draw_mode() == RS::VIEWPORT_DEBUG_DRAW_SDFGI_PROBES;
-	bool depth_pre_pass = !low_end && depth_framebuffer.is_valid();
+	bool depth_pre_pass = depth_framebuffer.is_valid();
 
 	bool using_ssao = depth_pre_pass && p_render_buffer.is_valid() && p_environment.is_valid() && environment_is_ssao_enabled(p_environment);
 	bool continue_depth = false;
@@ -1903,7 +1903,7 @@ void RenderForwardClustered::_update_render_base_uniform_set() {
 			uniforms.push_back(u);
 		}
 
-		if (!low_end) {
+		{
 			RD::Uniform u;
 			u.uniform_type = RD::UNIFORM_TYPE_UNIFORM_BUFFER;
 			u.binding = 13;
@@ -2065,7 +2065,7 @@ RID RenderForwardClustered::_setup_render_pass_uniform_set(RenderListType p_rend
 		uniforms.push_back(u);
 	}
 
-	if (!low_end) {
+	{
 		{
 			RD::Uniform u;
 			u.binding = 11;
@@ -2616,7 +2616,7 @@ void RenderForwardClustered::_geometry_instance_update(GeometryInstance *p_geome
 	ginstance->store_transform_cache = store_transform;
 	ginstance->can_sdfgi = false;
 
-	if (!lightmap_instance_is_valid(ginstance->lightmap_instance) && !low_end) {
+	if (!lightmap_instance_is_valid(ginstance->lightmap_instance)) {
 		if (ginstance->gi_probes[0].is_null() && (ginstance->data->use_baked_light || ginstance->data->use_dynamic_gi)) {
 			ginstance->can_sdfgi = true;
 		}
@@ -2843,10 +2843,6 @@ RenderForwardClustered::RenderForwardClustered(RendererStorageRD *p_storage) :
 
 	{
 		String defines;
-		if (low_end) {
-			defines += "\n#define LOW_END_MODE \n";
-		}
-
 		defines += "\n#define MAX_ROUGHNESS_LOD " + itos(get_roughness_layers() - 1) + ".0\n";
 		if (is_using_radiance_cubemap_array()) {
 			defines += "\n#define USE_RADIANCE_CUBEMAP_ARRAY \n";
@@ -2856,7 +2852,7 @@ RenderForwardClustered::RenderForwardClustered(RendererStorageRD *p_storage) :
 
 		{
 			//lightmaps
-			scene_state.max_lightmaps = low_end ? 2 : MAX_LIGHTMAPS;
+			scene_state.max_lightmaps = MAX_LIGHTMAPS;
 			defines += "\n#define MAX_LIGHTMAP_TEXTURES " + itos(scene_state.max_lightmaps) + "\n";
 			defines += "\n#define MAX_LIGHTMAPS " + itos(scene_state.max_lightmaps) + "\n";
 
@@ -2872,7 +2868,7 @@ RenderForwardClustered::RenderForwardClustered(RendererStorageRD *p_storage) :
 			defines += "\n#define MATERIAL_UNIFORM_SET " + itos(MATERIAL_UNIFORM_SET) + "\n";
 		}
 
-		scene_shader.init(p_storage, defines, low_end);
+		scene_shader.init(p_storage, defines);
 	}
 
 	render_list_thread_threshold = GLOBAL_GET("rendering/limits/forward_renderer/threaded_render_minimum_instances");

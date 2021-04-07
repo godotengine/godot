@@ -51,7 +51,6 @@ protected:
 	RendererStorageRD *storage;
 	double time;
 	double time_step = 0;
-	bool low_end = false; // If true GI and Volumetric fog are disabled
 
 	struct RenderBufferData {
 		virtual void configure(RID p_color_buffer, RID p_depth_buffer, int p_width, int p_height, RS::ViewportMSAA p_msaa) = 0;
@@ -1189,8 +1188,6 @@ public:
 	int get_max_directional_lights() const;
 
 	void sdfgi_set_debug_probe_select(const Vector3 &p_position, const Vector3 &p_dir);
-
-	virtual bool is_low_end() const;
 
 	virtual bool is_dynamic_gi_supported() const;
 	virtual bool is_clustered_enabled() const;

@@ -317,7 +317,7 @@ void RendererSceneRenderRD::environment_set_sdfgi(RID p_env, bool p_enable, RS::
 	RendererSceneEnvironmentRD *env = environment_owner.getornull(p_env);
 	ERR_FAIL_COND(!env);
 
-	if (low_end) {
+	if (!is_dynamic_gi_supported()) {
 		return;
 	}
 
@@ -379,7 +379,7 @@ void RendererSceneRenderRD::environment_set_volumetric_fog(RID p_env, bool p_ena
 	RendererSceneEnvironmentRD *env = environment_owner.getornull(p_env);
 	ERR_FAIL_COND(!env);
 
-	if (low_end) {
+	if (!is_volumetric_supported()) {
 		return;
 	}
 
@@ -410,10 +410,6 @@ void RendererSceneRenderRD::environment_set_ssr(RID p_env, bool p_enable, int p_
 	RendererSceneEnvironmentRD *env = environment_owner.getornull(p_env);
 	ERR_FAIL_COND(!env);
 
-	if (low_end) {
-		return;
-	}
-
 	env->set_ssr(p_enable, p_max_steps, p_fade_int, p_fade_out, p_depth_tolerance);
 }
 
@@ -428,10 +424,6 @@ RS::EnvironmentSSRRoughnessQuality RendererSceneRenderRD::environment_get_ssr_ro
 void RendererSceneRenderRD::environment_set_ssao(RID p_env, bool p_enable, float p_radius, float p_intensity, float p_power, float p_detail, float p_horizon, float p_sharpness, float p_light_affect, float p_ao_channel_affect) {
 	RendererSceneEnvironmentRD *env = environment_owner.getornull(p_env);
 	ERR_FAIL_COND(!env);
-
-	if (low_end) {
-		return;
-	}
 
 	env->set_ssao(p_enable, p_radius, p_intensity, p_power, p_detail, p_horizon, p_sharpness, p_light_affect, p_ao_channel_affect);
 }
@@ -1347,7 +1339,7 @@ void RendererSceneRenderRD::gi_probe_instance_set_transform_to_data(RID p_probe,
 }
 
 bool RendererSceneRenderRD::gi_probe_needs_update(RID p_probe) const {
-	if (low_end) {
+	if (!is_dynamic_gi_supported()) {
 		return false;
 	}
 
@@ -1355,7 +1347,7 @@ bool RendererSceneRenderRD::gi_probe_needs_update(RID p_probe) const {
 }
 
 void RendererSceneRenderRD::gi_probe_update(RID p_probe, bool p_update_light_instances, const Vector<RID> &p_light_instances, const PagedArray<GeometryInstance *> &p_dynamic_objects) {
-	if (low_end) {
+	if (!is_dynamic_gi_supported()) {
 		return;
 	}
 
@@ -4091,11 +4083,6 @@ int RendererSceneRenderRD::get_max_directional_lights() const {
 	return cluster.max_directional_lights;
 }
 
-bool RendererSceneRenderRD::is_low_end() const {
-	// by default we switch this on this (may be ignored in some implementations)
-	return GLOBAL_GET("rendering/driver/rd_renderer/use_low_end_renderer");
-}
-
 bool RendererSceneRenderRD::is_dynamic_gi_supported() const {
 	// usable by default (unless low end = true)
 	return true;
@@ -4120,21 +4107,13 @@ RendererSceneRenderRD::RendererSceneRenderRD(RendererStorageRD *p_storage) {
 	directional_shadow.size = GLOBAL_GET("rendering/shadows/directional_shadow/size");
 	directional_shadow.use_16_bits = GLOBAL_GET("rendering/shadows/directional_shadow/16_bits");
 
-	uint32_t textures_per_stage = RD::get_singleton()->limit_get(RD::LIMIT_MAX_TEXTURES_PER_SHADER_STAGE);
-
-	low_end = is_low_end();
-
-	if (textures_per_stage < 48) {
-		low_end = true;
-	}
-
 	/* SKY SHADER */
 
 	sky.init(storage);
 
 	/* GI */
 
-	if (!low_end && is_dynamic_gi_supported()) {
+	if (is_dynamic_gi_supported()) {
 		gi.init(storage, &sky);
 	}
 
@@ -4172,7 +4151,7 @@ RendererSceneRenderRD::RendererSceneRenderRD(RendererStorageRD *p_storage) {
 		cluster.directional_light_buffer = RD::get_singleton()->uniform_buffer_create(directional_light_buffer_size);
 	}
 
-	if (!low_end && is_volumetric_supported()) {
+	if (is_volumetric_supported()) {
 		String defines = "\n#define MAX_DIRECTIONAL_LIGHT_DATA_STRUCTS " + itos(cluster.max_directional_lights) + "\n";
 		Vector<String> volumetric_fog_modes;
 		volumetric_fog_modes.push_back("\n#define MODE_DENSITY\n");
@@ -4230,7 +4209,7 @@ RendererSceneRenderRD::~RendererSceneRenderRD() {
 		RD::get_singleton()->free(sky.sky_scene_state.uniform_set);
 	}
 
-	if (!low_end) {
+	if (is_dynamic_gi_supported()) {
 		gi.free();
 
 		volumetric_fog.shader.version_free(volumetric_fog.shader_version);

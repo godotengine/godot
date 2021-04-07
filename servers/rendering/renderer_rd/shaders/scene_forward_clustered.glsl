@@ -1735,8 +1735,6 @@ void sdfgi_process(uint cascade, vec3 cascade_pos, vec3 cam_pos, vec3 cam_normal
 
 #ifndef MODE_RENDER_DEPTH
 
-#ifndef LOW_END_MODE
-
 vec4 volumetric_fog_process(vec2 screen_uv, float z) {
 	vec3 fog_pos = vec3(screen_uv, z * scene_data.volumetric_fog_inv_length);
 	if (fog_pos.z < 0.0) {
@@ -1747,7 +1745,6 @@ vec4 volumetric_fog_process(vec2 screen_uv, float z) {
 
 	return texture(sampler3D(volumetric_fog_texture, material_samplers[SAMPLER_LINEAR_CLAMP]), fog_pos);
 }
-#endif
 
 vec4 fog_process(vec3 vertex) {
 	vec3 fog_color = scene_data.fog_light_color;
@@ -2019,7 +2016,6 @@ FRAGMENT_SHADER_CODE
 		fog = fog_process(vertex);
 	}
 
-#ifndef LOW_END_MODE
 	if (scene_data.volumetric_fog_enabled) {
 		vec4 volumetric_fog = volumetric_fog_process(screen_uv, -vertex.z);
 		if (scene_data.fog_enabled) {
@@ -2037,7 +2033,6 @@ FRAGMENT_SHADER_CODE
 			fog = volumetric_fog;
 		}
 	}
-#endif //!LOW_END_MODE
 #endif //!CUSTOM_FOG_USED
 
 	uint fog_rg = packHalf2x16(fog.rg);
@@ -2377,7 +2372,7 @@ FRAGMENT_SHADER_CODE
 		specular_light = spec_accum.rgb;
 		ambient_light = amb_accum.rgb;
 	}
-#elif !defined(LOW_END_MODE)
+#else
 
 	if (bool(instances.data[instance_index].flags & INSTANCE_FLAGS_USE_GI_BUFFERS)) { //use GI buffers
 
@@ -2412,13 +2407,11 @@ FRAGMENT_SHADER_CODE
 	}
 #endif
 
-#ifndef LOW_END_MODE
 	if (scene_data.ssao_enabled) {
 		float ssao = texture(sampler2D(ao_buffer, material_samplers[SAMPLER_LINEAR_CLAMP]), screen_uv).r;
 		ao = min(ao, ssao);
 		ao_light_affect = mix(ao_light_affect, max(ao_light_affect, scene_data.ssao_light_affect), scene_data.ssao_ao_affect);
 	}
-#endif //LOW_END_MODE
 
 	{ // process reflections
 
