@@ -1852,6 +1852,9 @@ void ProjectManager::_notification(int p_what) {
 		case NOTIFICATION_WM_CLOSE_REQUEST: {
 			_dim_window();
 		} break;
+		case NOTIFICATION_WM_ABOUT: {
+			_show_about();
+		} break;
 	}
 }
 
@@ -2255,6 +2258,10 @@ void ProjectManager::_erase_missing_projects() {
 	erase_missing_ask->popup_centered();
 }
 
+void ProjectManager::_show_about() {
+	about->popup_centered(Size2(780, 500) * EDSCALE);
+}
+
 void ProjectManager::_language_selected(int p_id) {
 	String lang = language_btn->get_item_metadata(p_id);
 	EditorSettings::get_singleton()->set("interface/editor/editor_language", lang);
@@ -2444,12 +2451,7 @@ ProjectManager::ProjectManager() {
 	}
 
 	// TRANSLATORS: This refers to the application where users manage their Godot projects.
-	if (TS->is_locale_right_to_left(TranslationServer::get_singleton()->get_tool_locale())) {
-		// For RTL languages, embed translated part of the title (using control characters) to ensure correct order.
-		DisplayServer::get_singleton()->window_set_title(VERSION_NAME + String(" - ") + String::chr(0x202B) + TTR("Project Manager") + String::chr(0x202C) + String::chr(0x200E) + " - " + String::chr(0xA9) + " 2007-2021 Juan Linietsky, Ariel Manzur & Godot Contributors");
-	} else {
-		DisplayServer::get_singleton()->window_set_title(VERSION_NAME + String(" - ") + TTR("Project Manager") + " - " + String::chr(0xA9) + " 2007-2021 Juan Linietsky, Ariel Manzur & Godot Contributors");
-	}
+	DisplayServer::get_singleton()->window_set_title(VERSION_NAME + String(" - ") + TTR("Project Manager"));
 
 	FileDialog::set_default_show_hidden_files(EditorSettings::get_singleton()->get("filesystem/file_dialog/show_hidden_files"));
 
@@ -2583,6 +2585,13 @@ ProjectManager::ProjectManager() {
 		erase_missing_btn->set_text(TTR("Remove Missing"));
 		erase_missing_btn->connect("pressed", callable_mp(this, &ProjectManager::_erase_missing_projects));
 		tree_vb->add_child(erase_missing_btn);
+
+		tree_vb->add_spacer();
+
+		about_btn = memnew(Button);
+		about_btn->set_text(TTR("About"));
+		about_btn->connect("pressed", callable_mp(this, &ProjectManager::_show_about));
+		tree_vb->add_child(about_btn);
 	}
 
 	{
@@ -2716,6 +2725,9 @@ ProjectManager::ProjectManager() {
 		open_templates->get_ok_button()->set_text(TTR("Open Asset Library"));
 		open_templates->connect("confirmed", callable_mp(this, &ProjectManager::_open_asset_library));
 		add_child(open_templates);
+
+		about = memnew(EditorAbout);
+		add_child(about);
 	}
 
 	_load_recent_projects();
