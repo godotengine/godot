@@ -45,6 +45,10 @@
 #include "gdscript_parser.h"
 #include "gdscript_warning.h"
 
+#ifdef TESTS_ENABLED
+#include "tests/gdscript_test_runner.h"
+#endif
+
 ///////////////////////////
 
 GDScriptNativeClass::GDScriptNativeClass(const StringName &p_name) {
@@ -1766,6 +1770,10 @@ void GDScriptLanguage::init() {
 	for (List<Engine::Singleton>::Element *E = singletons.front(); E; E = E->next()) {
 		_add_global(E->get().name, E->get().ptr);
 	}
+
+#ifdef TESTS_ENABLED
+	GDScriptTests::GDScriptTestRunner::handle_cmdline();
+#endif
 }
 
 String GDScriptLanguage::get_type() const {
