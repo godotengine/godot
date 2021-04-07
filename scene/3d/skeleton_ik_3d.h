@@ -118,6 +118,8 @@ public:
 	static void set_goal(Task *p_task, const Transform &p_goal);
 	static void make_goal(Task *p_task, const Transform &p_inverse_transf, real_t blending_delta);
 	static void solve(Task *p_task, real_t blending_delta, bool override_tip_basis, bool p_use_magnet, const Vector3 &p_magnet_position);
+
+	static void _update_chain(const Skeleton3D *p_skeleton, ChainItem *p_chain_item);
 };
 
 class SkeletonIK3D : public Node {
