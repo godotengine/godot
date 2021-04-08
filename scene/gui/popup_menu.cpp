@@ -695,9 +695,11 @@ void PopupMenu::_close_pressed() {
 	// Only apply minimum lifetime to submenus.
 	PopupMenu *parent_pum = Object::cast_to<PopupMenu>(get_parent());
 	if (!parent_pum) {
+		print_line("NO PARENT!");
 		Popup::_close_pressed();
 		return;
 	}
+	print_line("PARENT!");
 
 	// If the timer has expired, close. If timer is still running, do nothing.
 	if (close_allowed) {

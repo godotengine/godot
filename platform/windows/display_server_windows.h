@@ -325,6 +325,8 @@ class DisplayServerWindows : public DisplayServer {
 
 		Vector<Vector2> mpath;
 
+		WindowID parent;
+
 		bool preserve_window_size = false;
 		bool pre_fs_valid = false;
 		RECT pre_fs_rect;
@@ -397,6 +399,7 @@ class DisplayServerWindows : public DisplayServer {
 	Map<WindowID, WindowData> windows;
 
 	WindowID last_focused_window = INVALID_WINDOW_ID;
+	WindowID overwrite_next_focus = INVALID_WINDOW_ID;
 
 	HCURSOR hCursor;
 

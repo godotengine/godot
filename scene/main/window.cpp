@@ -226,9 +226,14 @@ void Window::_make_window() {
 		}
 	}
 
-	Window *parent = get_parent_visible_window();
+	Window *parent = Object::cast_to<Window>(get_parent_viewport());
+	if (!parent) {
+		print_error("no parent window?");
+	}
 	DisplayServer::WindowID parent_id = parent != nullptr ? parent->window_id : DisplayServer::MAIN_WINDOW_ID;
 	DisplayServer::VSyncMode vsync_mode = DisplayServer::get_singleton()->window_get_vsync_mode(parent_id);
+
+	print_line(("Requesting position: " + position) + " | Size: " + size);
 
 	window_id = DisplayServer::get_singleton()->create_sub_window(DisplayServer::WindowMode(mode), vsync_mode, f, Rect2i(position, size), parent_id);
 	ERR_FAIL_COND(window_id == DisplayServer::INVALID_WINDOW_ID);
@@ -266,7 +271,7 @@ void Window::_update_from_window() {
 
 void Window::_clear_window() {
 	ERR_FAIL_COND(window_id == DisplayServer::INVALID_WINDOW_ID);
-
+	/*
 	if (transient_parent && transient_parent->window_id != DisplayServer::INVALID_WINDOW_ID) {
 		DisplayServer::get_singleton()->window_set_transient(window_id, DisplayServer::INVALID_WINDOW_ID);
 	}
@@ -276,7 +281,7 @@ void Window::_clear_window() {
 			DisplayServer::get_singleton()->window_set_transient(E->get()->window_id, DisplayServer::INVALID_WINDOW_ID);
 		}
 	}
-
+	*/
 	_update_from_window();
 
 	DisplayServer::get_singleton()->delete_sub_window(window_id);
@@ -354,9 +359,11 @@ void Window::_event_callback(DisplayServer::WindowEvent p_event) {
 
 void Window::show() {
 	set_visible(true);
+	print_line(vformat("Showing: %d", window_id));
 }
 
 void Window::hide() {
+	print_line(vformat("Hiding: %d", window_id));
 	set_visible(false);
 }
 
