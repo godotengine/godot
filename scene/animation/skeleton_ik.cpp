@@ -267,6 +267,18 @@ void FabrikInverseKinematic::make_goal(Task *p_task, const Transform &p_inverse_
 void FabrikInverseKinematic::solve(Task *p_task, real_t blending_delta, bool override_tip_basis, bool p_use_magnet, const Vector3 &p_magnet_position) {
 
 	if (blending_delta <= 0.01f) {
+		// Before skipping, make sure we undo the global pose overrides
+		ChainItem *ci(&p_task->chain.chain_root);
+		while (ci) {
+			p_task->skeleton->set_bone_global_pose_override(ci->bone, ci->initial_transform, 0.0, false);
+
+			if (!ci->children.empty()) {
+				ci = &ci->children.write[0];
+			} else {
+				ci = nullptr;
+			}
+		}
+
 		return; // Skip solving
 	}
 
@@ -281,8 +293,8 @@ void FabrikInverseKinematic::solve(Task *p_task, real_t blending_delta, bool ove
 	}
 
 	// Update the initial root transform
-	p_task->chain.chain_root.initial_transform = p_task->skeleton->get_bone_global_pose(p_task->chain.chain_root.bone);
-	p_task->chain.chain_root.current_pos = p_task->chain.chain_root.initial_transform.origin;
+	// (Needed to sync IK with animation)
+	_update_chain(p_task->skeleton, &p_task->chain.chain_root);
 
 	make_goal(p_task, p_task->skeleton->get_global_transform().affine_inverse(), blending_delta);
 
@@ -298,23 +310,49 @@ void FabrikInverseKinematic::solve(Task *p_task, real_t blending_delta, bool ove
 		Transform new_bone_pose(ci->initial_transform);
 		new_bone_pose.origin = ci->current_pos;
 
-		if (!ci->children.empty()) {
-
-			/// Rotate basis
-			const Vector3 initial_ori((ci->children[0].initial_transform.origin - ci->initial_transform.origin).normalized());
-			const Vector3 rot_axis(initial_ori.cross(ci->current_ori).normalized());
-
-			if (rot_axis[0] != 0 && rot_axis[1] != 0 && rot_axis[2] != 0) {
-				const real_t rot_angle(Math::acos(CLAMP(initial_ori.dot(ci->current_ori), -1, 1)));
-				new_bone_pose.basis.rotate(rot_axis, rot_angle);
+		// The root bone needs to be rotated differently so it isn't frozen in place
+		if (ci == &p_task->chain.chain_root && !ci->children.empty()) {
+			new_bone_pose = new_bone_pose.looking_at(ci->children[0].current_pos, Vector3(0, 1, 0));
+			const Vector3 bone_rest_dir = p_task->skeleton->get_bone_rest(ci->children[0].bone).origin.normalized().abs();
+			const Vector3 bone_rest_dir_abs = bone_rest_dir.abs();
+			if (bone_rest_dir_abs.x > bone_rest_dir_abs.y && bone_rest_dir_abs.x > bone_rest_dir_abs.z) {
+				if (bone_rest_dir.x < 0) {
+					new_bone_pose.basis.rotate_local(Vector3(0, 1, 0), -Math_PI / 2.0f);
+				} else {
+					new_bone_pose.basis.rotate_local(Vector3(0, 1, 0), Math_PI / 2.0f);
+				}
+			} else if (bone_rest_dir_abs.y > bone_rest_dir_abs.x && bone_rest_dir_abs.y > bone_rest_dir_abs.z) {
+				if (bone_rest_dir.y < 0) {
+					new_bone_pose.basis.rotate_local(Vector3(1, 0, 0), Math_PI / 2.0f);
+				} else {
+					new_bone_pose.basis.rotate_local(Vector3(1, 0, 0), -Math_PI / 2.0f);
+				}
+			} else {
+				if (bone_rest_dir.z < 0) {
+					// Do nothing!
+				} else {
+					new_bone_pose.basis.rotate_local(Vector3(0, 0, 1), Math_PI);
+				}
 			}
-
 		} else {
-			// Set target orientation to tip
-			if (override_tip_basis)
-				new_bone_pose.basis = p_task->chain.tips[0].end_effector->goal_transform.basis;
-			else
-				new_bone_pose.basis = new_bone_pose.basis * p_task->chain.tips[0].end_effector->goal_transform.basis;
+			if (!ci->children.empty()) {
+
+				/// Rotate basis
+				const Vector3 initial_ori((ci->children[0].initial_transform.origin - ci->initial_transform.origin).normalized());
+				const Vector3 rot_axis(initial_ori.cross(ci->current_ori).normalized());
+
+				if (rot_axis[0] != 0 && rot_axis[1] != 0 && rot_axis[2] != 0) {
+					const real_t rot_angle(Math::acos(CLAMP(initial_ori.dot(ci->current_ori), -1, 1)));
+					new_bone_pose.basis.rotate(rot_axis, rot_angle);
+				}
+
+			} else {
+				// Set target orientation to tip
+				if (override_tip_basis)
+					new_bone_pose.basis = p_task->chain.tips[0].end_effector->goal_transform.basis;
+				else
+					new_bone_pose.basis = new_bone_pose.basis * p_task->chain.tips[0].end_effector->goal_transform.basis;
+			}
 		}
 
 		// IK should not affect scale, so undo any scaling
@@ -327,6 +365,20 @@ void FabrikInverseKinematic::solve(Task *p_task, real_t blending_delta, bool ove
 			ci = &ci->children.write[0];
 		else
 			ci = NULL;
+	}
+}
+
+void FabrikInverseKinematic::_update_chain(const Skeleton *p_sk, ChainItem *p_chain_item) {
+	if (!p_chain_item) {
+		return;
+	}
+
+	p_chain_item->initial_transform = p_sk->get_bone_global_pose(p_chain_item->bone);
+	p_chain_item->current_pos = p_chain_item->initial_transform.origin;
+
+	ChainItem *items = p_chain_item->children.ptrw();
+	for (int i = 0; i < p_chain_item->children.size(); i += 1) {
+		_update_chain(p_sk, items + i);
 	}
 }
 
