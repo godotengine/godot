@@ -262,7 +262,7 @@ GDScriptCodeGenerator::Address GDScriptCompiler::_parse_expression(CodeGen &code
 					GDScriptNativeClass *nc = nullptr;
 					while (scr) {
 						if (scr->constants.has(identifier)) {
-							return GDScriptCodeGenerator::Address(GDScriptCodeGenerator::Address::CLASS_CONSTANT, gen->add_or_get_name(identifier)); // TODO: Get type here.
+							return codegen.add_constant(scr->constants[identifier]); // TODO: Get type here.
 						}
 						if (scr->native.is_valid()) {
 							nc = scr->native.ptr();
@@ -319,7 +319,8 @@ GDScriptCodeGenerator::Address GDScriptCompiler::_parse_expression(CodeGen &code
 
 			if (GDScriptLanguage::get_singleton()->get_global_map().has(identifier)) {
 				int idx = GDScriptLanguage::get_singleton()->get_global_map()[identifier];
-				return GDScriptCodeGenerator::Address(GDScriptCodeGenerator::Address::GLOBAL, idx); // TODO: Get type.
+				Variant global = GDScriptLanguage::get_singleton()->get_global_array()[idx];
+				return codegen.add_constant(global); // TODO: Get type.
 			}
 
 			// Try global classes.
@@ -347,7 +348,9 @@ GDScriptCodeGenerator::Address GDScriptCompiler::_parse_expression(CodeGen &code
 
 #ifdef TOOLS_ENABLED
 			if (GDScriptLanguage::get_singleton()->get_named_globals_map().has(identifier)) {
-				return GDScriptCodeGenerator::Address(GDScriptCodeGenerator::Address::NAMED_GLOBAL, gen->add_or_get_name(identifier)); // TODO: Get type.
+				GDScriptCodeGenerator::Address global = codegen.add_temporary(); // TODO: Get type.
+				gen->write_store_named_global(global, identifier);
+				return global;
 			}
 #endif
 
