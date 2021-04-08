@@ -350,6 +350,7 @@ public:
 		OPCODE_ITERATE_PACKED_VECTOR3_ARRAY,
 		OPCODE_ITERATE_PACKED_COLOR_ARRAY,
 		OPCODE_ITERATE_OBJECT,
+		OPCODE_STORE_NAMED_GLOBAL,
 		OPCODE_ASSERT,
 		OPCODE_BREAKPOINT,
 		OPCODE_LINE,
@@ -360,16 +361,18 @@ public:
 		ADDR_BITS = 24,
 		ADDR_MASK = ((1 << ADDR_BITS) - 1),
 		ADDR_TYPE_MASK = ~ADDR_MASK,
-		ADDR_TYPE_SELF = 0,
-		ADDR_TYPE_CLASS = 1,
+		ADDR_TYPE_STACK = 0,
+		ADDR_TYPE_CONSTANT = 1,
 		ADDR_TYPE_MEMBER = 2,
-		ADDR_TYPE_CLASS_CONSTANT = 3,
-		ADDR_TYPE_LOCAL_CONSTANT = 4,
-		ADDR_TYPE_STACK = 5,
-		ADDR_TYPE_STACK_VARIABLE = 6,
-		ADDR_TYPE_GLOBAL = 7,
-		ADDR_TYPE_NAMED_GLOBAL = 8,
-		ADDR_TYPE_NIL = 9
+	};
+
+	enum FixedAddresses {
+		ADDR_STACK_SELF = 0,
+		ADDR_STACK_CLASS = 1,
+		ADDR_STACK_NIL = 2,
+		ADDR_SELF = ADDR_STACK_SELF | (ADDR_TYPE_STACK << ADDR_BITS),
+		ADDR_CLASS = ADDR_STACK_CLASS | (ADDR_TYPE_STACK << ADDR_BITS),
+		ADDR_NIL = ADDR_STACK_NIL | (ADDR_TYPE_STACK << ADDR_BITS),
 	};
 
 	enum Instruction {
@@ -462,7 +465,7 @@ private:
 
 	List<StackDebug> stack_debug;
 
-	_FORCE_INLINE_ Variant *_get_variant(int p_address, GDScriptInstance *p_instance, GDScript *p_script, Variant &self, Variant &static_ref, Variant *p_stack, String &r_error) const;
+	_FORCE_INLINE_ Variant *_get_variant(int p_address, GDScriptInstance *p_instance, Variant *p_stack, String &r_error) const;
 	_FORCE_INLINE_ String _get_call_error(const Callable::CallError &p_err, const String &p_where, const Variant **argptrs) const;
 
 	friend class GDScriptLanguage;
@@ -497,7 +500,6 @@ public:
 #endif
 		Vector<uint8_t> stack;
 		int stack_size = 0;
-		Variant self;
 		uint32_t alloca_size = 0;
 		int ip = 0;
 		int line = 0;
