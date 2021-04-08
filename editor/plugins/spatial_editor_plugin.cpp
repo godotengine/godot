@@ -1264,7 +1264,7 @@ void SpatialEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 					clicked = 0;
 					clicked_includes_current = false;
 
-					if ((spatial_editor->get_tool_mode() == SpatialEditor::TOOL_MODE_SELECT && b->get_control()) || spatial_editor->get_tool_mode() == SpatialEditor::TOOL_MODE_ROTATE) {
+					if ((spatial_editor->get_tool_mode() == SpatialEditor::TOOL_MODE_SELECT && b->get_command()) || spatial_editor->get_tool_mode() == SpatialEditor::TOOL_MODE_ROTATE) {
 
 						/* HANDLE ROTATION */
 						if (get_selected_count() == 0)
