@@ -159,21 +159,6 @@ void EditorPlugin::remove_control_from_container(CustomControlContainer p_locati
 	}
 }
 
-void EditorPlugin::add_tool_menu_item(const String &p_name, const Callable &p_callable) {
-	EditorNode::get_singleton()->add_tool_menu_item(p_name, p_callable);
-}
-
-void EditorPlugin::add_tool_submenu_item(const String &p_name, Object *p_submenu) {
-	ERR_FAIL_NULL(p_submenu);
-	PopupMenu *submenu = Object::cast_to<PopupMenu>(p_submenu);
-	ERR_FAIL_NULL(submenu);
-	EditorNode::get_singleton()->add_tool_submenu_item(p_name, submenu);
-}
-
-void EditorPlugin::remove_tool_menu_item(const String &p_name) {
-	EditorNode::get_singleton()->remove_tool_menu_item(p_name);
-}
-
 void EditorPlugin::set_input_event_forwarding_always_enabled() {
 	input_event_forwarding_always_enabled = true;
 	EditorPluginList *always_input_forwarding_list = EditorNode::get_singleton()->get_editor_plugins_force_input_forwarding();
@@ -453,9 +438,6 @@ void EditorPlugin::_notification(int p_what) {
 void EditorPlugin::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("add_control_to_container", "container", "control"), &EditorPlugin::add_control_to_container);
 	ClassDB::bind_method(D_METHOD("remove_control_from_container", "container", "control"), &EditorPlugin::remove_control_from_container);
-	ClassDB::bind_method(D_METHOD("add_tool_menu_item", "name", "callable"), &EditorPlugin::add_tool_menu_item);
-	ClassDB::bind_method(D_METHOD("add_tool_submenu_item", "name", "submenu"), &EditorPlugin::add_tool_submenu_item);
-	ClassDB::bind_method(D_METHOD("remove_tool_menu_item", "name"), &EditorPlugin::remove_tool_menu_item);
 	ClassDB::bind_method(D_METHOD("add_custom_type", "type", "base", "script", "icon"), &EditorPlugin::add_custom_type);
 	ClassDB::bind_method(D_METHOD("remove_custom_type", "type"), &EditorPlugin::remove_custom_type);
 

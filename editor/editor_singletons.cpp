@@ -765,10 +765,30 @@ HBoxContainer *EditorTopBars::get_playtest_bar() {
 	return playtest_bar;
 }
 
+void EditorTopBars::add_tool_menu_item(const String &p_name, const Callable &p_callable) {
+	editor->add_tool_menu_item(p_name, p_callable);
+}
+
+void EditorTopBars::add_tool_submenu_item(const String &p_name, Object *p_submenu) {
+	ERR_FAIL_NULL(p_submenu);
+	PopupMenu *submenu = Object::cast_to<PopupMenu>(p_submenu);
+	ERR_FAIL_NULL(submenu);
+	editor->add_tool_submenu_item(p_name, submenu);
+}
+
+void EditorTopBars::remove_tool_menu_item(const String &p_name) {
+	editor->remove_tool_menu_item(p_name);
+}
+
 void EditorTopBars::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_main_menu_bar"), &EditorTopBars::get_main_menu_bar);
 	ClassDB::bind_method(D_METHOD("get_workspaces_bar"), &EditorTopBars::get_workspaces_bar);
 	ClassDB::bind_method(D_METHOD("get_playtest_bar"), &EditorTopBars::get_playtest_bar);
+
+	ClassDB::bind_method(D_METHOD("add_tool_menu_item", "name", "callable"), &EditorTopBars::add_tool_menu_item);
+	ClassDB::bind_method(D_METHOD("add_tool_submenu_item", "name", "submenu"), &EditorTopBars::add_tool_submenu_item);
+	ClassDB::bind_method(D_METHOD("remove_tool_menu_item", "name"), &EditorTopBars::remove_tool_menu_item);
+
 }
 
 EditorTopBars *EditorTopBars::singleton = nullptr;

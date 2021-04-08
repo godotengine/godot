@@ -94,10 +94,6 @@ public:
 	void add_control_to_container(CustomControlContainer p_location, Control *p_control);
 	void remove_control_from_container(CustomControlContainer p_location, Control *p_control);
 
-	void add_tool_menu_item(const String &p_name, const Callable &p_callable);
-	void add_tool_submenu_item(const String &p_name, Object *p_submenu);
-	void remove_tool_menu_item(const String &p_name);
-
 	void set_input_event_forwarding_always_enabled();
 	bool is_input_event_forwarding_always_enabled() { return input_event_forwarding_always_enabled; }
 

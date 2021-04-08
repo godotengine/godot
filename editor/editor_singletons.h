@@ -358,9 +358,16 @@ protected:
 
 public:
 	static EditorTopBars *get_singleton() { return singleton; }
+
+	// Getters
 	HBoxContainer *get_main_menu_bar();
 	HBoxContainer *get_workspaces_bar();
 	HBoxContainer *get_playtest_bar();
+
+	// Modifiers
+	void add_tool_menu_item(const String &p_name, const Callable &p_callable);
+	void add_tool_submenu_item(const String &p_name, Object *p_submenu);
+	void remove_tool_menu_item(const String &p_name);
 
 	EditorTopBars(EditorNode *p_editor);
 };
