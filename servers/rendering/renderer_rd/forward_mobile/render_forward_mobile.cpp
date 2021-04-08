@@ -1322,7 +1322,7 @@ void RenderForwardMobile::_fill_render_list(RenderListType p_render_list, const 
 	}
 	uint32_t lightmap_captures_used = 0;
 
-	Plane near_plane(p_render_data->cam_transform.origin, -p_render_data->cam_transform.basis.get_axis(Vector3::AXIS_Z));
+	Plane near_plane(-p_render_data->cam_transform.basis.get_axis(Vector3::AXIS_Z), p_render_data->cam_transform.origin);
 	near_plane.d += p_render_data->cam_projection.get_z_near();
 	float z_max = p_render_data->cam_projection.get_z_far() - p_render_data->cam_projection.get_z_near();
 

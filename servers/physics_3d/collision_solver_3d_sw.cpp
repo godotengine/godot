@@ -547,7 +547,7 @@ bool CollisionSolver3DSW::solve_distance(const Shape3DSW *p_shape_A, const Trans
 			real_t smin, smax;
 
 			if (use_cc_hint) {
-				cc_hint_aabb.project_range_in_plane(Plane(axis, 0), smin, smax);
+				cc_hint_aabb.project_range_in_plane(Plane(axis), smin, smax);
 			} else {
 				p_shape_A->project_range(axis, rel_transform, smin, smax);
 			}
