@@ -1258,6 +1258,7 @@ void LineEdit::set_text(String p_text) {
 
 	clear_internal();
 	append_at_cursor(p_text);
+	_create_undo_state();
 
 	if (expand_to_text_length) {
 		minimum_size_changed();
