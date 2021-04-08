@@ -104,6 +104,9 @@ Node *EditorSceneImporterFBX::import_scene(const String &p_path, uint32_t p_flag
 
 		bool is_binary = false;
 		data.resize(f->get_len());
+
+		ERR_FAIL_COND_V(data.size() < 64, NULL);
+
 		f->get_buffer(data.write().ptr(), data.size());
 		PoolByteArray fbx_header;
 		fbx_header.resize(64);
