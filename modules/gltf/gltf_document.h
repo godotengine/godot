@@ -71,6 +71,9 @@ class GLTFDocument : public Resource {
 	friend class GLTFSkin;
 	friend class GLTFSkeleton;
 
+private:
+	const float BAKE_FPS = 30.0f;
+
 public:
 	const int32_t JOINT_GROUP_SIZE = 4;
 	enum GLTFType {

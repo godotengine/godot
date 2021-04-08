@@ -2283,10 +2283,10 @@ Error GLTFDocument::_serialize_meshes(Ref<GLTFState> state) {
 				const Array &a = array[Mesh::ARRAY_WEIGHTS];
 				const Vector<Vector3> &vertex_array = array[Mesh::ARRAY_VERTEX];
 				if ((a.size() / JOINT_GROUP_SIZE) == vertex_array.size()) {
-					const int ret_size = a.size() / JOINT_GROUP_SIZE;
+					int32_t vertex_count = vertex_array.size();
 					Vector<Color> attribs;
-					attribs.resize(ret_size);
-					for (int i = 0; i < ret_size; i++) {
+					attribs.resize(vertex_count);
+					for (int i = 0; i < vertex_count; i++) {
 						attribs.write[i] = Color(a[(i * JOINT_GROUP_SIZE) + 0], a[(i * JOINT_GROUP_SIZE) + 1], a[(i * JOINT_GROUP_SIZE) + 2], a[(i * JOINT_GROUP_SIZE) + 3]);
 					}
 					attributes["WEIGHTS_0"] = _encode_accessor_as_weights(state, attribs, true);
@@ -2353,7 +2353,7 @@ Error GLTFDocument::_serialize_meshes(Ref<GLTFState> state) {
 
 			//blend shapes
 			print_verbose("glTF: Mesh has targets");
-			if (import_mesh->get_blend_shape_count()) {
+			if (import_mesh->get_blend_shape_count() && surface_i == 0) {
 				ArrayMesh::BlendShapeMode shape_mode = import_mesh->get_blend_shape_mode();
 				for (int morph_i = 0; morph_i < import_mesh->get_blend_shape_count(); morph_i++) {
 					Array array_morph = import_mesh->get_surface_blend_shape_arrays(surface_i, morph_i);
@@ -2380,16 +2380,16 @@ Error GLTFDocument::_serialize_meshes(Ref<GLTFState> state) {
 					Vector<real_t> tarr = array_morph[Mesh::ARRAY_TANGENT];
 					if (tarr.size()) {
 						const int ret_size = tarr.size() / 4;
-						Vector<Color> attribs;
+						Vector<Vector3> attribs;
 						attribs.resize(ret_size);
 						for (int i = 0; i < ret_size; i++) {
-							Color tangent;
-							tangent.r = tarr[(i * 4) + 0];
-							tangent.g = tarr[(i * 4) + 1];
-							tangent.b = tarr[(i * 4) + 2];
-							tangent.a = tarr[(i * 4) + 3];
+							Vector3 vec3;
+							vec3.x = tarr[(i * 4) + 0];
+							vec3.y = tarr[(i * 4) + 1];
+							vec3.z = tarr[(i * 4) + 2];
+							vec3 *= tarr[(i * 4) + 3] * -1;
 						}
-						t["TANGENT"] = _encode_accessor_as_color(state, attribs, true);
+						t["TANGENT"] = _encode_accessor_as_vec3(state, attribs, true);
 					}
 					targets.push_back(t);
 				}
@@ -2418,12 +2418,13 @@ Error GLTFDocument::_serialize_meshes(Ref<GLTFState> state) {
 		Dictionary e;
 		e["targetNames"] = target_names;
 
-		for (int j = 0; j < target_names.size(); j++) {
+		weights.resize(target_names.size());
+		for (int name_i = 0; name_i < target_names.size(); name_i++) {
 			real_t weight = 0.0;
-			if (j < state->meshes.write[gltf_mesh_i]->get_blend_weights().size()) {
-				weight = state->meshes.write[gltf_mesh_i]->get_blend_weights()[j];
+			if (name_i < state->meshes.write[gltf_mesh_i]->get_blend_weights().size()) {
+				weight = state->meshes.write[gltf_mesh_i]->get_blend_weights()[name_i];
 			}
-			weights.push_back(weight);
+			weights[name_i] = weight;
 		}
 		if (weights.size()) {
 			gltf_mesh["weights"] = weights;
@@ -4573,8 +4574,8 @@ Error GLTFDocument::_serialize_animations(Ref<GLTFState> state) {
 		Array channels;
 		Array samplers;
 
-		for (Map<int, GLTFAnimation::Track>::Element *track_i = gltf_animation->get_tracks().front(); track_i; track_i = track_i->next()) {
-			GLTFAnimation::Track track = track_i->get();
+		for (Map<int, GLTFAnimation::Track>::Element *anim_track_i = gltf_animation->get_tracks().front(); anim_track_i; anim_track_i = anim_track_i->next()) {
+			GLTFAnimation::Track track = anim_track_i->get();
 			if (track.translation_track.times.size()) {
 				Dictionary t;
 				t["sampler"] = samplers.size();
@@ -4590,7 +4591,7 @@ Error GLTFDocument::_serialize_animations(Ref<GLTFState> state) {
 
 				Dictionary target;
 				target["path"] = "translation";
-				target["node"] = track_i->key();
+				target["node"] = anim_track_i->key();
 
 				t["target"] = target;
 				channels.push_back(t);
@@ -4610,7 +4611,7 @@ Error GLTFDocument::_serialize_animations(Ref<GLTFState> state) {
 
 				Dictionary target;
 				target["path"] = "rotation";
-				target["node"] = track_i->key();
+				target["node"] = anim_track_i->key();
 
 				t["target"] = target;
 				channels.push_back(t);
@@ -4630,42 +4631,86 @@ Error GLTFDocument::_serialize_animations(Ref<GLTFState> state) {
 
 				Dictionary target;
 				target["path"] = "scale";
-				target["node"] = track_i->key();
+				target["node"] = anim_track_i->key();
 
 				t["target"] = target;
 				channels.push_back(t);
 			}
 			if (track.weight_tracks.size()) {
+				double length = 0.0f;
+
+				for (int32_t weight_track_i = 0; weight_track_i < track.weight_tracks.size(); weight_track_i++) {
+					int32_t last_time_index = track.weight_tracks[weight_track_i].times.size() - 1;
+					length = MAX(length, track.weight_tracks[weight_track_i].times[last_time_index]);
+				}
+
 				Dictionary t;
 				t["sampler"] = samplers.size();
 				Dictionary s;
-
 				Vector<real_t> times;
-				Vector<real_t> values;
-
-				for (int32_t times_i = 0; times_i < track.weight_tracks[0].times.size(); times_i++) {
-					real_t time = track.weight_tracks[0].times[times_i];
-					times.push_back(time);
+				const double increment = 1.0 / BAKE_FPS;
+				{
+					double time = 0.0;
+					bool last = false;
+					while (true) {
+						times.push_back(time);
+						if (last) {
+							break;
+						}
+						time += increment;
+						if (time >= length) {
+							last = true;
+							time = length;
+						}
+					}
 				}
 
-				values.resize(times.size() * track.weight_tracks.size());
-				// TODO Sort by order in blend shapes
+				for (int32_t interp_weight_track_i = 0; interp_weight_track_i < track.weight_tracks.size(); interp_weight_track_i++) {
+					double time = 0.0;
+					bool last = false;
+					Vector<real_t> weight_track;
+					while (true) {
+						float weight = _interpolate_track<float>(track.weight_tracks[interp_weight_track_i].times,
+								track.weight_tracks[interp_weight_track_i].values,
+								time,
+								track.weight_tracks[interp_weight_track_i].interpolation);
+						weight_track.push_back(weight);
+						if (last) {
+							break;
+						}
+						time += increment;
+						if (time >= length) {
+							last = true;
+							time = length;
+						}
+					}
+					track.weight_tracks.write[interp_weight_track_i].times = times;
+					track.weight_tracks.write[interp_weight_track_i].values = weight_track;
+				}
+
+				Vector<real_t> all_track_times = times;
+				Vector<real_t> all_track_values;
+				int32_t values_size = track.weight_tracks[0].values.size();
+				int32_t weight_tracks_size = track.weight_tracks.size();
+				all_track_values.resize(weight_tracks_size * values_size);
 				for (int k = 0; k < track.weight_tracks.size(); k++) {
 					Vector<float> wdata = track.weight_tracks[k].values;
 					for (int l = 0; l < wdata.size(); l++) {
-						values.write[l * track.weight_tracks.size() + k] = wdata.write[l];
+						int32_t index = k * weight_tracks_size + l;
+						ERR_BREAK(index >= all_track_values.size());
+						all_track_values.write[index] = wdata.write[l];
 					}
 				}
 
 				s["interpolation"] = interpolation_to_string(track.weight_tracks[track.weight_tracks.size() - 1].interpolation);
-				s["input"] = _encode_accessor_as_floats(state, times, false);
-				s["output"] = _encode_accessor_as_floats(state, values, false);
+				s["input"] = _encode_accessor_as_floats(state, all_track_times, false);
+				s["output"] = _encode_accessor_as_floats(state, all_track_values, false);
 
 				samplers.push_back(s);
 
 				Dictionary target;
 				target["path"] = "weights";
-				target["node"] = track_i->key();
+				target["node"] = anim_track_i->key();
 
 				t["target"] = target;
 				channels.push_back(t);
@@ -4793,7 +4838,7 @@ Error GLTFDocument::_parse_animations(Ref<GLTFState> state) {
 				track->weight_tracks.resize(wc);
 
 				const int expected_value_count = times.size() * output_count * wc;
-				ERR_FAIL_COND_V_MSG(weights.size() != expected_value_count, ERR_PARSE_ERROR, "Invalid weight data, expected " + itos(expected_value_count) + " weight values, got " + itos(weights.size()) + " instead.");
+				ERR_CONTINUE_MSG(weights.size() != expected_value_count, "Invalid weight data, expected " + itos(expected_value_count) + " weight values, got " + itos(weights.size()) + " instead.");
 
 				const int wlen = weights.size() / wc;
 				for (int k = 0; k < wc; k++) { //separate tracks, having them together is not such a good idea
@@ -6017,7 +6062,6 @@ GLTFAnimation::Track GLTFDocument::_convert_animation_track(Ref<GLTFState> state
 	for (int32_t key_i = 0; key_i < key_count; key_i++) {
 		times.write[key_i] = p_animation->track_get_key_time(p_track_i, key_i);
 	}
-	const float BAKE_FPS = 30.0f;
 	if (track_type == Animation::TYPE_TRANSFORM3D) {
 		p_track.translation_track.times = times;
 		p_track.translation_track.interpolation = gltf_interpolation;
@@ -6259,69 +6303,56 @@ void GLTFDocument::_convert_animation(Ref<GLTFState> state, AnimationPlayer *ap,
 			const Vector<String> node_suffix = String(orig_track_path).split(":blend_shapes/");
 			const NodePath path = node_suffix[0];
 			const String suffix = node_suffix[1];
-			const Node *node = ap->get_parent()->get_node_or_null(path);
-			for (Map<GLTFNodeIndex, Node *>::Element *transform_track_i = state->scene_nodes.front(); transform_track_i; transform_track_i = transform_track_i->next()) {
-				if (transform_track_i->get() == node) {
-					const MeshInstance3D *mi = Object::cast_to<MeshInstance3D>(node);
-					if (!mi) {
-						continue;
-					}
-					Ref<ArrayMesh> array_mesh = mi->get_mesh();
-					if (array_mesh.is_null()) {
-						continue;
-					}
-					if (node_suffix.size() != 2) {
-						continue;
-					}
-					GLTFNodeIndex mesh_index = -1;
-					for (GLTFNodeIndex node_i = 0; node_i < state->scene_nodes.size(); node_i++) {
-						if (state->scene_nodes[node_i] == node) {
-							mesh_index = node_i;
-							break;
-						}
-					}
-					ERR_CONTINUE(mesh_index == -1);
-					Ref<Mesh> mesh = mi->get_mesh();
-					ERR_CONTINUE(mesh.is_null());
-					for (int32_t shape_i = 0; shape_i < mesh->get_blend_shape_count(); shape_i++) {
-						if (mesh->get_blend_shape_name(shape_i) != suffix) {
-							continue;
-						}
-						GLTFAnimation::Track track;
-						Map<int, GLTFAnimation::Track>::Element *blend_shape_track_i = gltf_animation->get_tracks().find(mesh_index);
-						if (blend_shape_track_i) {
-							track = blend_shape_track_i->get();
-						}
-						Animation::InterpolationType interpolation = animation->track_get_interpolation_type(track_i);
-
-						GLTFAnimation::Interpolation gltf_interpolation = GLTFAnimation::INTERP_LINEAR;
-						if (interpolation == Animation::InterpolationType::INTERPOLATION_LINEAR) {
-							gltf_interpolation = GLTFAnimation::INTERP_LINEAR;
-						} else if (interpolation == Animation::InterpolationType::INTERPOLATION_NEAREST) {
-							gltf_interpolation = GLTFAnimation::INTERP_STEP;
-						} else if (interpolation == Animation::InterpolationType::INTERPOLATION_CUBIC) {
-							gltf_interpolation = GLTFAnimation::INTERP_CUBIC_SPLINE;
-						}
-						Animation::TrackType track_type = animation->track_get_type(track_i);
-						if (track_type == Animation::TYPE_VALUE) {
-							int32_t key_count = animation->track_get_key_count(track_i);
-							GLTFAnimation::Channel<float> weight;
-							weight.interpolation = gltf_interpolation;
-							weight.times.resize(key_count);
-							for (int32_t time_i = 0; time_i < key_count; time_i++) {
-								weight.times.write[time_i] = animation->track_get_key_time(track_i, time_i);
-							}
-							weight.values.resize(key_count);
-							for (int32_t value_i = 0; value_i < key_count; value_i++) {
-								weight.values.write[value_i] = animation->track_get_key_value(track_i, value_i);
-							}
-							track.weight_tracks.push_back(weight);
-						}
-						gltf_animation->get_tracks()[mesh_index] = track;
-					}
+			Node *node = ap->get_parent()->get_node_or_null(path);
+			MeshInstance3D *mi = cast_to<MeshInstance3D>(node);
+			Ref<Mesh> mesh = mi->get_mesh();
+			ERR_CONTINUE(mesh.is_null());
+			int32_t mesh_index = -1;
+			for (Map<GLTFNodeIndex, Node *>::Element *mesh_track_i = state->scene_nodes.front(); mesh_track_i; mesh_track_i = mesh_track_i->next()) {
+				if (mesh_track_i->get() == node) {
+					mesh_index = mesh_track_i->key();
 				}
 			}
-
+			ERR_CONTINUE(mesh_index == -1);
+			GLTFAnimation::Track track = gltf_animation->get_tracks().has(mesh_index) ? gltf_animation->get_tracks()[mesh_index] : GLTFAnimation::Track();
+			for (int32_t shape_i = 0; shape_i < mesh->get_blend_shape_count(); shape_i++) {
+				String shape_name = mesh->get_blend_shape_name(shape_i);
+				NodePath shape_path = String(path) + ":blend_shapes/" + shape_name;
+				int32_t shape_track_i = animation->find_track(shape_path);
+				if (shape_track_i == -1) {
+					GLTFAnimation::Channel<float> weight;
+					weight.interpolation = GLTFAnimation::INTERP_LINEAR;
+					weight.times.push_back(0.0f);
+					weight.values.push_back(0.0f);
+					track.weight_tracks.push_back(weight);
+					continue;
+				}
+				Animation::InterpolationType interpolation = animation->track_get_interpolation_type(track_i);
+				GLTFAnimation::Interpolation gltf_interpolation = GLTFAnimation::INTERP_LINEAR;
+				if (interpolation == Animation::InterpolationType::INTERPOLATION_LINEAR) {
+					gltf_interpolation = GLTFAnimation::INTERP_LINEAR;
+				} else if (interpolation == Animation::InterpolationType::INTERPOLATION_NEAREST) {
+					gltf_interpolation = GLTFAnimation::INTERP_STEP;
+				} else if (interpolation == Animation::InterpolationType::INTERPOLATION_CUBIC) {
+					gltf_interpolation = GLTFAnimation::INTERP_CUBIC_SPLINE;
+				}
+				int32_t key_count = animation->track_get_key_count(shape_track_i);
+				GLTFAnimation::Channel<float> weight;
+				weight.interpolation = gltf_interpolation;
+				weight.times.resize(key_count);
+				for (int32_t time_i = 0; time_i < key_count; time_i++) {
+					weight.times.write[time_i] = animation->track_get_key_time(shape_track_i, time_i);
+				}
+				weight.values.resize(key_count);
+				for (int32_t value_i = 0; value_i < key_count; value_i++) {
+					weight.values.write[value_i] = animation->track_get_key_value(shape_track_i, value_i);
+				}
+				weight.times.push_back(0.0f);
+				weight.values.push_back(0.0f);
+				track.weight_tracks.push_back(weight);
+			}
+			Map<int, GLTFAnimation::Track> &tracks = gltf_animation->get_tracks();
+			tracks[mesh_index] = track;
 		} else if (String(orig_track_path).find(":") != -1) {
 			//Process skeleton
 			const Vector<String> node_suffix = String(orig_track_path).split(":");
