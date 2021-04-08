@@ -787,6 +787,7 @@ void EditorSettings::_load_default_text_editor_theme() {
 
 	_initial_set("text_editor/highlighting/symbol_color", Color(0.73, 0.87, 1.0));
 	_initial_set("text_editor/highlighting/keyword_color", Color(1.0, 1.0, 0.7));
+	_initial_set("text_editor/highlighting/control_flow_keyword_color", Color(1.0, 0.85, 0.7));
 	_initial_set("text_editor/highlighting/base_type_color", Color(0.64, 1.0, 0.83));
 	_initial_set("text_editor/highlighting/engine_type_color", Color(0.51, 0.83, 1.0));
 	_initial_set("text_editor/highlighting/user_type_color", Color(0.42, 0.67, 0.93));

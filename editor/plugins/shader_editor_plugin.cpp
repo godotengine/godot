@@ -141,9 +141,14 @@ void ShaderTextEditor::_load_theme_settings() {
 	List<String> keywords;
 	ShaderLanguage::get_keyword_list(&keywords);
 	const Color keyword_color = EDITOR_GET("text_editor/highlighting/keyword_color");
+	const Color control_flow_keyword_color = EDITOR_GET("text_editor/highlighting/control_flow_keyword_color");
 
 	for (List<String>::Element *E = keywords.front(); E; E = E->next()) {
-		syntax_highlighter->add_keyword_color(E->get(), keyword_color);
+		if (ShaderLanguage::is_control_flow_keyword(E->get())) {
+			syntax_highlighter->add_keyword_color(E->get(), control_flow_keyword_color);
+		} else {
+			syntax_highlighter->add_keyword_color(E->get(), keyword_color);
+		}
 	}
 
 	// Colorize built-ins like `COLOR` differently to make them easier

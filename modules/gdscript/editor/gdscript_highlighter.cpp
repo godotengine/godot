@@ -485,10 +485,15 @@ void GDScriptSyntaxHighlighter::_update_cache() {
 
 	/* Reserved words. */
 	const Color keyword_color = EDITOR_GET("text_editor/highlighting/keyword_color");
+	const Color control_flow_keyword_color = EDITOR_GET("text_editor/highlighting/control_flow_keyword_color");
 	List<String> keyword_list;
 	gdscript->get_reserved_words(&keyword_list);
 	for (List<String>::Element *E = keyword_list.front(); E; E = E->next()) {
-		keywords[E->get()] = keyword_color;
+		if (gdscript->is_control_flow_keyword(E->get())) {
+			keywords[E->get()] = control_flow_keyword_color;
+		} else {
+			keywords[E->get()] = keyword_color;
+		}
 	}
 
 	/* Comments */

@@ -77,6 +77,10 @@ void PluginScriptLanguage::get_reserved_words(List<String> *p_words) const {
 	}
 }
 
+bool PluginScriptLanguage::is_control_flow_keyword(String p_keyword) const {
+	return false;
+}
+
 void PluginScriptLanguage::get_comment_delimiters(List<String> *p_delimiters) const {
 	if (_desc.comment_delimiters) {
 		const char **w = _desc.comment_delimiters;
