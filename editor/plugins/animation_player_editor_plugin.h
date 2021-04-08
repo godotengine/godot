@@ -103,7 +103,7 @@ class AnimationPlayerEditor : public VBoxContainer {
 	LineEdit *scale;
 	LineEdit *name;
 	Label *name_title;
-	UndoRedo *undo_redo;
+	UndoRedo *undo_redo = nullptr;
 	Ref<Texture2D> autoplay_icon;
 	Ref<Texture2D> reset_icon;
 	Ref<ImageTexture> autoplay_reset_icon;
@@ -112,7 +112,7 @@ class AnimationPlayerEditor : public VBoxContainer {
 
 	EditorFileDialog *file;
 	ConfirmationDialog *delete_dialog;
-	int current_option;
+	int current_option = 0;
 
 	struct BlendEditor {
 		AcceptDialog *dialog = nullptr;

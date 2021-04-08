@@ -245,14 +245,14 @@ private:
 		Image::Format format;
 		Image::Format validated_format;
 
-		int width;
-		int height;
-		int depth;
-		int layers;
-		int mipmaps;
+		int width = 0;
+		int height = 0;
+		int depth = 0;
+		int layers = 0;
+		int mipmaps = 0;
 
-		int height_2d;
-		int width_2d;
+		int height_2d = 0;
+		int width_2d = 0;
 
 		struct BufferSlice3D {
 			Size2i size;
@@ -262,8 +262,8 @@ private:
 		Vector<BufferSlice3D> buffer_slices_3d;
 		uint32_t buffer_size_3d = 0;
 
-		bool is_render_target;
-		bool is_proxy;
+		bool is_render_target = false;
+		bool is_proxy = false;
 
 		Ref<Image> image_cache_2d;
 		String path;
@@ -314,8 +314,8 @@ private:
 
 	struct DecalAtlas {
 		struct Texture {
-			int panorama_to_dp_users;
-			int users;
+			int panorama_to_dp_users = 0;
+			int users = 0;
 			Rect2 uv_rect;
 		};
 
@@ -359,36 +359,36 @@ private:
 	struct Material;
 
 	struct Shader {
-		ShaderData *data;
+		ShaderData *data = nullptr;
 		String code;
 		ShaderType type;
 		Map<StringName, RID> default_texture_parameter;
 		Set<Material *> owners;
 	};
 
-	ShaderDataRequestFunction shader_data_request_func[SHADER_TYPE_MAX];
+	ShaderDataRequestFunction shader_data_request_func[SHADER_TYPE_MAX]{};
 	mutable RID_Owner<Shader, true> shader_owner;
 
 	/* Material */
 
 	struct Material {
 		RID self;
-		MaterialData *data;
-		Shader *shader;
+		MaterialData *data = nullptr;
+		Shader *shader = nullptr;
 		//shortcut to shader data and type
 		ShaderType shader_type;
 		uint32_t shader_id = 0;
-		bool update_requested;
-		bool uniform_dirty;
-		bool texture_dirty;
-		Material *update_next;
+		bool update_requested = false;
+		bool uniform_dirty = false;
+		bool texture_dirty = false;
+		Material *update_next = nullptr;
 		Map<StringName, Variant> params;
-		int32_t priority;
+		int32_t priority = 0;
 		RID next_pass;
 		Dependency dependency;
 	};
 
-	MaterialDataRequestFunction material_data_request_func[SHADER_TYPE_MAX];
+	MaterialDataRequestFunction material_data_request_func[SHADER_TYPE_MAX]{};
 	mutable RID_Owner<Material, true> material_owner;
 
 	Material *material_update_list;
@@ -487,7 +487,7 @@ private:
 	mutable RID_Owner<Mesh, true> mesh_owner;
 
 	struct MeshInstance {
-		Mesh *mesh;
+		Mesh *mesh = nullptr;
 		RID skeleton;
 		struct Surface {
 			RID vertex_buffer;
@@ -759,7 +759,7 @@ private:
 
 		Dependency dependency;
 
-		ParticlesFrameParams frame_params;
+		ParticlesFrameParams frame_params{};
 	};
 
 	void _particles_process(Particles *p_particles, float p_delta);
@@ -817,7 +817,7 @@ private:
 		Vector<ShaderCompilerRD::GeneratedCode::Texture> texture_uniforms;
 
 		Vector<uint32_t> ubo_offsets;
-		uint32_t ubo_size;
+		uint32_t ubo_size = 0;
 
 		String path;
 		String code;
@@ -825,7 +825,7 @@ private:
 
 		RID pipeline;
 
-		bool uses_time;
+		bool uses_time = false;
 
 		virtual void set_code(const String &p_Code);
 		virtual void set_default_texture_param(const StringName &p_name, RID p_texture);
@@ -847,13 +847,13 @@ private:
 	}
 
 	struct ParticlesMaterialData : public MaterialData {
-		uint64_t last_frame;
-		ParticlesShaderData *shader_data;
+		uint64_t last_frame = 0;
+		ParticlesShaderData *shader_data = nullptr;
 		RID uniform_buffer;
 		RID uniform_set;
 		Vector<RID> texture_cache;
 		Vector<uint8_t> ubo_data;
-		bool uniform_set_updated;
+		bool uniform_set_updated = false;
 
 		virtual void set_render_priority(int p_priority) {}
 		virtual void set_next_pass(RID p_pass) {}
@@ -932,7 +932,7 @@ private:
 
 	struct Light {
 		RS::LightType type;
-		float param[RS::LIGHT_PARAM_MAX];
+		float param[RS::LIGHT_PARAM_MAX]{};
 		Color color = Color(1, 1, 1, 1);
 		Color shadow_color;
 		RID projector;
@@ -1056,7 +1056,7 @@ private:
 
 		struct BSP {
 			static const int32_t EMPTY_LEAF = INT32_MIN;
-			float plane[4];
+			float plane[4]{};
 			int32_t over = EMPTY_LEAF, under = EMPTY_LEAF;
 		};
 
@@ -1086,7 +1086,7 @@ private:
 		RD::DataFormat color_format_srgb = RD::DATA_FORMAT_R4G4_UNORM_PACK8;
 		Image::Format image_format = Image::FORMAT_L8;
 
-		bool flags[RENDER_TARGET_FLAG_MAX];
+		bool flags[RENDER_TARGET_FLAG_MAX]{};
 
 		RID backbuffer; //used for effects
 		RID backbuffer_fb;
@@ -1113,10 +1113,10 @@ private:
 
 		//texture generated for this owner (nor RD).
 		RID texture;
-		bool was_used;
+		bool was_used = false;
 
 		//clear request
-		bool clear_requested;
+		bool clear_requested = false;
 		Color clear_color;
 	};
 
@@ -1165,8 +1165,8 @@ private:
 			RS::GlobalVariableType type;
 			Variant value;
 			Variant override;
-			int32_t buffer_index; //for vectors
-			int32_t buffer_elements; //for vectors
+			int32_t buffer_index = 0; //for vectors
+			int32_t buffer_elements = 0; //for vectors
 		};
 
 		HashMap<StringName, Variable> variables;
@@ -1200,12 +1200,12 @@ private:
 		List<RID> materials_using_texture;
 
 		RID buffer;
-		Value *buffer_values;
-		ValueUsage *buffer_usage;
-		bool *buffer_dirty_regions;
+		Value *buffer_values = nullptr;
+		ValueUsage *buffer_usage = nullptr;
+		bool *buffer_dirty_regions = nullptr;
 		uint32_t buffer_dirty_region_count = 0;
 
-		uint32_t buffer_size;
+		uint32_t buffer_size = 0;
 
 		bool must_update_texture_materials = false;
 		bool must_update_buffer_materials = false;

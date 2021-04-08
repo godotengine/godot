@@ -193,7 +193,7 @@ class EditorAudioBuses : public VBoxContainer {
 	void _new_layout();
 
 	EditorFileDialog *file_dialog;
-	bool new_layout;
+	bool new_layout = false;
 
 	void _file_dialog_callback(const String &p_string);
 

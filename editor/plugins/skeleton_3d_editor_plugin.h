@@ -186,7 +186,7 @@ class EditorInspectorPluginSkeleton : public EditorInspectorPlugin {
 
 	friend class Skeleton3DEditorPlugin;
 
-	EditorNode *editor;
+	EditorNode *editor = nullptr;
 
 public:
 	virtual bool can_handle(Object *p_object) override;

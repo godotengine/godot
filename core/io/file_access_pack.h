@@ -60,11 +60,11 @@ class PackedData {
 public:
 	struct PackedFile {
 		String pack;
-		uint64_t offset; //if offset is ZERO, the file was ERASED
-		uint64_t size;
-		uint8_t md5[16];
-		PackSource *src;
-		bool encrypted;
+		uint64_t offset = 0; //if offset is ZERO, the file was ERASED
+		uint64_t size = 0;
+		uint8_t md5[16]{};
+		PackSource *src = nullptr;
+		bool encrypted = false;
 	};
 
 private:

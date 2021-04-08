@@ -60,7 +60,7 @@ private:
 	Set<StringName> disabled_editors;
 	Map<StringName, Set<StringName>> disabled_properties;
 
-	bool features_disabled[FEATURE_MAX];
+	bool features_disabled[FEATURE_MAX]{};
 	static const char *feature_names[FEATURE_MAX];
 	static const char *feature_identifiers[FEATURE_MAX];
 
@@ -116,7 +116,7 @@ class EditorFeatureProfileManager : public AcceptDialog {
 
 	LineEdit *current_profile_name;
 	OptionButton *profile_list;
-	Button *profile_actions[PROFILE_MAX];
+	Button *profile_actions[PROFILE_MAX]{};
 
 	HSplitContainer *h_split;
 

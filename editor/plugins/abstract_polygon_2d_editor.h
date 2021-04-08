@@ -83,11 +83,11 @@ class AbstractPolygon2DEditor : public HBoxContainer {
 	bool wip_active;
 	bool wip_destructive;
 
-	bool _polygon_editing_enabled;
+	bool _polygon_editing_enabled = false;
 
 	CanvasItemEditor *canvas_item_editor;
 	EditorNode *editor;
-	Panel *panel;
+	Panel *panel = nullptr;
 	ConfirmationDialog *create_resource;
 
 protected:

@@ -67,10 +67,10 @@ protected:
 	bool current = false;
 	real_t smoothing = 5.0;
 	bool smoothing_enabled = false;
-	int limit[4];
+	int limit[4]{};
 	bool limit_smoothing_enabled = false;
 
-	real_t drag_margin[4];
+	real_t drag_margin[4]{};
 	bool drag_horizontal_enabled = false;
 	bool drag_vertical_enabled = false;
 	real_t drag_horizontal_offset = 0.0;

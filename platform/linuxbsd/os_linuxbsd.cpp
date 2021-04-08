@@ -275,7 +275,7 @@ bool OS_LinuxBSD::is_disable_crash_handler() const {
 }
 
 static String get_mountpoint(const String &p_path) {
-	struct stat s;
+	struct stat s {};
 	if (stat(p_path.utf8().get_data(), &s)) {
 		return "";
 	}
@@ -287,7 +287,7 @@ static String get_mountpoint(const String &p_path) {
 		return "";
 	}
 
-	struct mntent mnt;
+	struct mntent mnt {};
 	char buf[1024];
 	size_t buflen = 1024;
 	while (getmntent_r(fd, &mnt, buf, buflen)) {
@@ -340,7 +340,7 @@ Error OS_LinuxBSD::move_to_trash(const String &p_path) {
 	// If there is a directory "[Mountpoint]/.Trash-[UID], use it as the trash can.
 	if (mnt != "") {
 		String path(mnt + "/.Trash-" + itos(getuid()));
-		struct stat s;
+		struct stat s {};
 		if (!stat(path.utf8().get_data(), &s)) {
 			trash_path = path;
 		}
@@ -388,7 +388,7 @@ Error OS_LinuxBSD::move_to_trash(const String &p_path) {
 	}
 
 	String dest_path = trash_path + "/files/" + file_name;
-	struct stat buff;
+	struct stat buff {};
 	int id_number = 0;
 	String fn = file_name;
 

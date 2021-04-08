@@ -241,7 +241,7 @@ private:
 	Rect2 last_vp_rect;
 
 	bool transparent_bg = false;
-	bool filter;
+	bool filter = false;
 	bool gen_mipmaps = false;
 
 	bool snap_controls_to_pixels = true;
@@ -298,7 +298,7 @@ private:
 
 	int shadow_atlas_size = 2048;
 	bool shadow_atlas_16_bits = true;
-	ShadowAtlasQuadrantSubdiv shadow_atlas_quadrant_subdiv[4];
+	ShadowAtlasQuadrantSubdiv shadow_atlas_quadrant_subdiv[4]{};
 
 	MSAA msaa = MSAA_DISABLED;
 	ScreenSpaceAA screen_space_aa = SCREEN_SPACE_AA_DISABLED;

@@ -74,7 +74,7 @@ int MainTimerSync::get_average_physics_steps(float &p_min, float &p_max) {
 
 // advance physics clock by p_process_step, return appropriate number of steps to simulate
 MainFrameTime MainTimerSync::advance_core(float p_physics_step, int p_physics_fps, float p_process_step) {
-	MainFrameTime ret;
+	MainFrameTime ret{};
 
 	ret.process_step = p_process_step;
 

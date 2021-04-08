@@ -815,11 +815,11 @@ int ConcavePolygonShape2DSW::_generate_bvh(BVH *p_bvh, int p_len, int p_depth) {
 	}
 
 	if (global_aabb.size.x > global_aabb.size.y) {
-		SortArray<BVH, BVH_CompareX> sort;
+		SortArray<BVH, BVH_CompareX> sort{};
 		sort.sort(p_bvh, p_len);
 
 	} else {
-		SortArray<BVH, BVH_CompareY> sort;
+		SortArray<BVH, BVH_CompareY> sort{};
 		sort.sort(p_bvh, p_len);
 	}
 
@@ -884,7 +884,7 @@ void ConcavePolygonShape2DSW::set_data(const Variant &p_data) {
 				pointmap[p2] = idx_p2;
 			}
 
-			Segment s;
+			Segment s{};
 			s.points[0] = idx_p1;
 			s.points[1] = idx_p2;
 			segments.push_back(s);

@@ -62,10 +62,10 @@ private:
 	struct Shape {
 		Transform xform;
 		Transform xform_inv;
-		BroadPhase3DSW::ID bpid;
+		BroadPhase3DSW::ID bpid = 0;
 		AABB aabb_cache; //for rayqueries
-		real_t area_cache;
-		Shape3DSW *shape;
+		real_t area_cache = 0.0;
+		Shape3DSW *shape = nullptr;
 		bool disabled;
 
 		Shape() { disabled = false; }

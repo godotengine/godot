@@ -43,7 +43,7 @@ protected:
 	};
 
 	struct Peer {
-		PacketPeerUDP *peer;
+		PacketPeerUDP *peer = nullptr;
 		IP_Address ip;
 		uint16_t port = 0;
 
@@ -51,7 +51,7 @@ protected:
 			return (ip == p_other.ip && port == p_other.port);
 		}
 	};
-	uint8_t recv_buffer[PACKET_BUFFER_SIZE];
+	uint8_t recv_buffer[PACKET_BUFFER_SIZE]{};
 
 	int bind_port = 0;
 	IP_Address bind_address;

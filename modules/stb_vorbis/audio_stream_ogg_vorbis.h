@@ -42,7 +42,7 @@ class AudioStreamPlaybackOGGVorbis : public AudioStreamPlaybackResampled {
 	GDCLASS(AudioStreamPlaybackOGGVorbis, AudioStreamPlaybackResampled);
 
 	stb_vorbis *ogg_stream = nullptr;
-	stb_vorbis_alloc ogg_alloc;
+	stb_vorbis_alloc ogg_alloc{};
 	uint32_t frames_mixed = 0;
 	bool active = false;
 	int loops = 0;

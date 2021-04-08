@@ -230,7 +230,7 @@ static Ref<Image> basis_universal_unpacker(const Vector<uint8_t> &p_buffer) {
 
 	ERR_FAIL_COND_V(!tr.validate_header(ptr, size), image);
 
-	basist::basisu_image_info info;
+	basist::basisu_image_info info{};
 	tr.get_image_info(ptr, size, info, 0);
 
 	int block_size = basist::basis_get_bytes_per_block(format);
@@ -247,7 +247,7 @@ static Ref<Image> basis_universal_unpacker(const Vector<uint8_t> &p_buffer) {
 		int ofs = 0;
 		tr.start_transcoding(ptr, size);
 		for (uint32_t i = 0; i < info.m_total_levels; i++) {
-			basist::basisu_image_level_info level;
+			basist::basisu_image_level_info level{};
 			tr.get_image_level_info(ptr, size, level, 0, i);
 
 			bool ret = tr.transcode_image_level(ptr, size, 0, i, dst + ofs, level.m_total_blocks - i, format);

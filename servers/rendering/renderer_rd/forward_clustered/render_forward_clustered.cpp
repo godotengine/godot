@@ -320,7 +320,7 @@ void RenderForwardClustered::_render_list_template(RenderingDevice::DrawListID p
 
 	bool shadow_pass = (p_params->pass_mode == PASS_MODE_SHADOW) || (p_params->pass_mode == PASS_MODE_SHADOW_DP);
 
-	SceneState::PushConstant push_constant;
+	SceneState::PushConstant push_constant{};
 
 	if (p_params->pass_mode == PASS_MODE_DEPTH_MATERIAL) {
 		push_constant.uv_offset = Math::make_half_float(p_params->uv_offset.y) << 16;

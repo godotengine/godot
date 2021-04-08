@@ -58,7 +58,7 @@ class RenderingServerDefault : public RenderingServer {
 	static int changes;
 	RID test_cube;
 
-	int black_margin[4];
+	int black_margin[4]{};
 	RID black_image[4];
 
 	struct FrameDrawnCallbacks {

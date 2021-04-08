@@ -67,7 +67,7 @@ public:
 			Body3DSW *B;
 		};
 
-		Body3DSW *_arr[2];
+		Body3DSW *_arr[2]{};
 	};
 
 	JacobianEntry3DSW m_jac[3]; //3 orthogonal linear constraints
@@ -76,7 +76,7 @@ public:
 	Transform m_rbAFrame;
 	Transform m_rbBFrame;
 
-	real_t m_limitSoftness;
+	real_t m_limitSoftness = 0.0;
 	real_t m_biasFactor;
 	real_t m_relaxationFactor;
 
@@ -87,15 +87,15 @@ public:
 	Vector3 m_swingAxis;
 	Vector3 m_twistAxis;
 
-	real_t m_kSwing;
-	real_t m_kTwist;
+	real_t m_kSwing = 0.0;
+	real_t m_kTwist = 0.0;
 
-	real_t m_twistLimitSign;
-	real_t m_swingCorrection;
-	real_t m_twistCorrection;
+	real_t m_twistLimitSign = 0.0;
+	real_t m_swingCorrection = 0.0;
+	real_t m_twistCorrection = 0.0;
 
-	real_t m_accSwingLimitImpulse;
-	real_t m_accTwistLimitImpulse;
+	real_t m_accSwingLimitImpulse = 0.0;
+	real_t m_accTwistLimitImpulse = 0.0;
 
 	bool m_angularOnly;
 	bool m_solveTwistLimit;

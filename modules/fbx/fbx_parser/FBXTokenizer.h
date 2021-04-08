@@ -169,7 +169,7 @@ private:
 
 	union {
 		size_t line;
-		size_t offset;
+		size_t offset = 0;
 	};
 	const unsigned int column = 0;
 };

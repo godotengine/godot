@@ -56,7 +56,7 @@ private:
 	CharString _request;
 	int _requested = 0;
 
-	uint8_t _resp_buf[WSL_MAX_HEADER_SIZE];
+	uint8_t _resp_buf[WSL_MAX_HEADER_SIZE]{};
 	int _resp_pos = 0;
 
 	String _response;

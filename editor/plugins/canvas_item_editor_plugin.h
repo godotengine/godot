@@ -223,7 +223,7 @@ private:
 	};
 
 	EditorSelection *editor_selection;
-	bool selection_menu_additive_selection;
+	bool selection_menu_additive_selection = false;
 
 	Tool tool;
 	Control *viewport;
@@ -370,7 +370,7 @@ private:
 	MenuButton *animation_menu;
 
 	MenuButton *presets_menu;
-	PopupMenu *anchors_and_margins_popup;
+	PopupMenu *anchors_and_margins_popup = nullptr;
 	PopupMenu *anchors_popup;
 
 	Button *anchor_mode_button;
@@ -384,8 +384,8 @@ private:
 	PopupMenu *selection_menu;
 	PopupMenu *add_node_menu;
 
-	Control *top_ruler;
-	Control *left_ruler;
+	Control *top_ruler = nullptr;
+	Control *left_ruler = nullptr;
 
 	DragType drag_type;
 	Point2 drag_from;
@@ -397,7 +397,7 @@ private:
 	bool is_hovering_h_guide;
 	bool is_hovering_v_guide;
 
-	bool updating_value_dialog;
+	bool updating_value_dialog = false;
 
 	Point2 box_selecting_to;
 
@@ -422,7 +422,7 @@ private:
 
 	ConfirmationDialog *snap_dialog;
 
-	CanvasItem *ref_item;
+	CanvasItem *ref_item = nullptr;
 
 	void _add_canvas_item(CanvasItem *p_canvas_item);
 
@@ -508,7 +508,7 @@ private:
 
 	void _solve_IK(Node2D *leaf_node, Point2 target_position);
 
-	SnapTarget snap_target[2];
+	SnapTarget snap_target[2]{};
 	Transform2D snap_transform;
 	void _snap_if_closer_float(
 			float p_value,
@@ -688,7 +688,7 @@ class CanvasItemEditorViewport : public Control {
 	Node2D *preview_node;
 	AcceptDialog *accept;
 	AcceptDialog *selector;
-	Label *selector_label;
+	Label *selector_label = nullptr;
 	Label *label;
 	Label *label_desc;
 	VBoxContainer *btn_group;

@@ -37,8 +37,8 @@ class Constraint3DSW {
 	Body3DSW **_body_ptr;
 	int _body_count;
 	uint64_t island_step;
-	Constraint3DSW *island_next;
-	Constraint3DSW *island_list_next;
+	Constraint3DSW *island_next = nullptr;
+	Constraint3DSW *island_list_next = nullptr;
 	int priority;
 	bool disabled_collisions_between_bodies;
 

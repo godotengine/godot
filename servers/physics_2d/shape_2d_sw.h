@@ -154,7 +154,7 @@ public:
 
 class LineShape2DSW : public Shape2DSW {
 	Vector2 normal;
-	real_t d;
+	real_t d = 0.0;
 
 public:
 	_FORCE_INLINE_ Vector2 get_normal() const { return normal; }
@@ -269,7 +269,7 @@ public:
 };
 
 class CircleShape2DSW : public Shape2DSW {
-	real_t radius;
+	real_t radius = 0.0;
 
 public:
 	_FORCE_INLINE_ const real_t &get_radius() const { return radius; }
@@ -374,8 +374,8 @@ public:
 };
 
 class CapsuleShape2DSW : public Shape2DSW {
-	real_t radius;
-	real_t height;
+	real_t radius = 0.0;
+	real_t height = 0.0;
 
 public:
 	_FORCE_INLINE_ const real_t &get_radius() const { return radius; }
@@ -488,11 +488,11 @@ class ConcavePolygonShape2DSW : public ConcaveShape2DSW {
 
 	struct BVH {
 		Rect2 aabb;
-		int left, right;
+		int left = 0, right = 0;
 	};
 
 	Vector<BVH> bvh;
-	int bvh_depth;
+	int bvh_depth = 0;
 
 	struct BVH_CompareX {
 		_FORCE_INLINE_ bool operator()(const BVH &a, const BVH &b) const {

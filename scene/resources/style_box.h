@@ -41,7 +41,7 @@ class StyleBox : public Resource {
 	GDCLASS(StyleBox, Resource);
 	RES_BASE_EXTENSION("stylebox");
 	OBJ_SAVE_TYPE(StyleBox);
-	float margin[4];
+	float margin[4]{};
 
 protected:
 	virtual float get_style_margin(Side p_side) const = 0;

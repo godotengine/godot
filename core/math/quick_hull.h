@@ -40,7 +40,7 @@ class QuickHull {
 public:
 	struct Edge {
 		union {
-			uint32_t vertices[2];
+			uint32_t vertices[2]{};
 			uint64_t id = 0;
 		};
 

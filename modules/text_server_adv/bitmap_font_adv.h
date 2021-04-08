@@ -52,7 +52,7 @@ private:
 	struct KerningPairKey {
 		union {
 			struct {
-				uint32_t A, B;
+				uint32_t A = 0, B = 0;
 			};
 
 			uint64_t pair = 0;

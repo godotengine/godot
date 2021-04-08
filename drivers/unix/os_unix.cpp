@@ -104,7 +104,7 @@ static void handle_interrupt(int sig) {
 
 void OS_Unix::initialize_debugging() {
 	if (EngineDebugger::is_active()) {
-		struct sigaction action;
+		struct sigaction action {};
 		memset(&action, 0, sizeof(action));
 		action.sa_handler = handle_interrupt;
 		sigaction(SIGINT, &action, nullptr);
@@ -159,20 +159,20 @@ String OS_Unix::get_name() const {
 }
 
 double OS_Unix::get_unix_time() const {
-	struct timeval tv_now;
+	struct timeval tv_now {};
 	gettimeofday(&tv_now, nullptr);
 	return (double)tv_now.tv_sec + double(tv_now.tv_usec) / 1000000;
 };
 
 OS::Date OS_Unix::get_date(bool utc) const {
 	time_t t = time(nullptr);
-	struct tm lt;
+	struct tm lt {};
 	if (utc) {
 		gmtime_r(&t, &lt);
 	} else {
 		localtime_r(&t, &lt);
 	}
-	Date ret;
+	Date ret{};
 	ret.year = 1900 + lt.tm_year;
 	// Index starting at 1 to match OS_Unix::get_date
 	//   and Windows SYSTEMTIME and tm_mon follows the typical structure
@@ -187,13 +187,13 @@ OS::Date OS_Unix::get_date(bool utc) const {
 
 OS::Time OS_Unix::get_time(bool utc) const {
 	time_t t = time(nullptr);
-	struct tm lt;
+	struct tm lt {};
 	if (utc) {
 		gmtime_r(&t, &lt);
 	} else {
 		localtime_r(&t, &lt);
 	}
-	Time ret;
+	Time ret{};
 	ret.hour = lt.tm_hour;
 	ret.min = lt.tm_min;
 	ret.sec = lt.tm_sec;
@@ -203,7 +203,7 @@ OS::Time OS_Unix::get_time(bool utc) const {
 
 OS::TimeZoneInfo OS_Unix::get_time_zone_info() const {
 	time_t t = time(nullptr);
-	struct tm lt;
+	struct tm lt {};
 	localtime_r(&t, &lt);
 	char name[16];
 	strftime(name, 16, "%Z", &lt);
@@ -231,7 +231,7 @@ OS::TimeZoneInfo OS_Unix::get_time_zone_info() const {
 
 void OS_Unix::delay_usec(uint32_t p_usec) const {
 	struct timespec requested = { static_cast<time_t>(p_usec / 1000000), (static_cast<long>(p_usec) % 1000000) * 1000 };
-	struct timespec remaining;
+	struct timespec remaining {};
 	while (nanosleep(&requested, &remaining) == -1 && errno == EINTR) {
 		requested.tv_sec = remaining.tv_sec;
 		requested.tv_nsec = remaining.tv_nsec;

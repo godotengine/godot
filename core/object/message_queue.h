@@ -52,9 +52,9 @@ class MessageQueue {
 
 	struct Message {
 		Callable callable;
-		int16_t type;
+		int16_t type = 0;
 		union {
-			int16_t notification;
+			int16_t notification = 0;
 			int16_t args;
 		};
 	};

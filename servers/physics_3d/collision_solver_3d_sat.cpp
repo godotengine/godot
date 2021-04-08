@@ -65,12 +65,12 @@
  *************************************************************************/
 
 struct _CollectorCallback {
-	CollisionSolver3DSW::CallbackResult callback;
-	void *userdata;
-	bool swap;
-	bool collided;
+	CollisionSolver3DSW::CallbackResult callback = nullptr;
+	void *userdata = nullptr;
+	bool swap = false;
+	bool collided = false;
 	Vector3 normal;
-	Vector3 *prev_axis;
+	Vector3 *prev_axis = nullptr;
 
 	_FORCE_INLINE_ void call(const Vector3 &p_point_A, const Vector3 &p_point_B) {
 		if (swap) {
@@ -147,7 +147,7 @@ static void _generate_contacts_edge_edge(const Vector3 *p_points_A, int p_point_
 		//sort all 4 points in axis
 		real_t dvec[4] = { axis.dot(p_points_A[0]), axis.dot(p_points_A[1]), axis.dot(p_points_B[0]), axis.dot(p_points_B[1]) };
 
-		SortArray<real_t> sa;
+		SortArray<real_t> sa{};
 		sa.sort(dvec, 4);
 
 		//use the middle ones as contacts

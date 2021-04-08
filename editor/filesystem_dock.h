@@ -132,7 +132,7 @@ private:
 	String searched_string;
 	Vector<String> uncollapsed_paths_before_search;
 
-	TextureRect *search_icon;
+	TextureRect *search_icon = nullptr;
 	HBoxContainer *path_hb;
 
 	FileListDisplayMode file_list_display_mode;

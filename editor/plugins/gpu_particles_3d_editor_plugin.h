@@ -40,10 +40,10 @@ class GPUParticles3DEditorBase : public Control {
 	GDCLASS(GPUParticles3DEditorBase, Control);
 
 protected:
-	Node3D *base_node;
-	Panel *panel;
-	MenuButton *options;
-	HBoxContainer *particles_editor_hb;
+	Node3D *base_node = nullptr;
+	Panel *panel = nullptr;
+	MenuButton *options = nullptr;
+	HBoxContainer *particles_editor_hb = nullptr;
 
 	SceneTreeDialog *emission_tree_dialog;
 

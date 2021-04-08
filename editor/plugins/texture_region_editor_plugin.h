@@ -91,14 +91,14 @@ class TextureRegionEditor : public VBoxContainer {
 
 	Rect2 rect;
 	Rect2 rect_prev;
-	float prev_margin;
+	float prev_margin = 0.0;
 	int edited_margin;
 	Map<RID, List<Rect2>> cache_map;
 	List<Rect2> autoslice_cache;
 	bool autoslice_is_dirty;
 
 	bool drag;
-	bool creating;
+	bool creating = false;
 	Vector2 drag_from;
 	int drag_index;
 

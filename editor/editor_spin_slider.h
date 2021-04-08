@@ -41,7 +41,7 @@ class EditorSpinSlider : public Range {
 	String label;
 	int updown_offset;
 	bool hover_updown;
-	bool mouse_hover;
+	bool mouse_hover = false;
 
 	TextureRect *grabber;
 	int grabber_range;
@@ -51,8 +51,8 @@ class EditorSpinSlider : public Range {
 	bool mousewheel_over_grabber;
 
 	bool grabbing_grabber;
-	int grabbing_from;
-	float grabbing_ratio;
+	int grabbing_from = 0;
+	float grabbing_ratio = 0.0;
 
 	bool grabbing_spinner_attempt;
 	bool grabbing_spinner;

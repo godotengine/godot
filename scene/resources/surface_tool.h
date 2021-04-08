@@ -119,7 +119,7 @@ private:
 
 	Color last_custom[RS::ARRAY_CUSTOM_COUNT];
 
-	CustomFormat last_custom_format[RS::ARRAY_CUSTOM_COUNT];
+	CustomFormat last_custom_format[RS::ARRAY_CUSTOM_COUNT]{};
 
 	void _create_list_from_arrays(Array arr, LocalVector<Vertex> *r_vertex, LocalVector<int> *r_index, uint32_t &lformat);
 	void _create_list(const Ref<Mesh> &p_existing, int p_surface, LocalVector<Vertex> *r_vertex, LocalVector<int> *r_index, uint32_t &lformat);

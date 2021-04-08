@@ -192,7 +192,7 @@ private:
 	int32_t _compute_bsp_tree(const Vector<Vector3> &p_points, const LocalVector<Plane> &p_planes, LocalVector<int32_t> &planes_tested, const LocalVector<BSPSimplex> &p_simplices, const LocalVector<int32_t> &p_simplex_indices, LocalVector<BSPNode> &bsp_nodes);
 
 	struct BakeStepUD {
-		Lightmapper::BakeStepFunc func;
+		Lightmapper::BakeStepFunc func = nullptr;
 		void *ud = nullptr;
 		float from_percent = 0.0;
 		float to_percent = 0.0;

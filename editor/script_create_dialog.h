@@ -60,11 +60,11 @@ class ScriptCreateDialog : public ConfirmationDialog {
 	Button *path_button;
 	EditorFileDialog *file_browse;
 	CheckBox *internal;
-	VBoxContainer *path_vb;
+	VBoxContainer *path_vb = nullptr;
 	AcceptDialog *alert;
 	CreateDialog *select_class;
-	bool path_valid;
-	bool create_new;
+	bool path_valid = false;
+	bool create_new = false;
 	bool is_browsing_parent;
 	String initial_bp;
 	bool is_new_script_created;

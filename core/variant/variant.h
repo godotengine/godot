@@ -204,7 +204,9 @@ private:
 		PackedArrayRefBase *packed_array;
 		void *_ptr; //generic pointer
 		uint8_t _mem[sizeof(ObjData) > (sizeof(real_t) * 4) ? sizeof(ObjData) : (sizeof(real_t) * 4)];
-	} _data alignas(8);
+	} _data {
+	}
+	alignas(8);
 
 	void reference(const Variant &p_variant);
 

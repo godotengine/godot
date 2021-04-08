@@ -51,7 +51,7 @@ class MeshInstance3DEditor : public Control {
 		MENU_OPTION_DEBUG_UV2,
 	};
 
-	MeshInstance3D *node;
+	MeshInstance3D *node = nullptr;
 
 	MenuButton *options;
 

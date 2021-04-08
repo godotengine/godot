@@ -62,8 +62,8 @@ public:
 
 private:
 	int id; // unique id for this, for internal use in case feeds are removed
-	int base_width;
-	int base_height;
+	int base_width = 0;
+	int base_height = 0;
 
 protected:
 	String name; // name of our camera feed

@@ -78,8 +78,8 @@ class AStar : public Reference {
 	struct Segment {
 		union {
 			struct {
-				int32_t u;
-				int32_t v;
+				int32_t u = 0;
+				int32_t v = 0;
 			};
 			uint64_t key = 0;
 		};

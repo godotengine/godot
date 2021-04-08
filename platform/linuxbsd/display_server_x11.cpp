@@ -2679,7 +2679,7 @@ bool DisplayServerX11::_wait_for_events() const {
 	FD_ZERO(&in_fds);
 	FD_SET(x11_fd, &in_fds);
 
-	struct timeval tv;
+	struct timeval tv {};
 	tv.tv_usec = 0;
 	tv.tv_sec = 1;
 
@@ -3949,7 +3949,7 @@ DisplayServerX11::DisplayServerX11(const String &p_rendering_driver, WindowMode 
 
 	if (xim == nullptr) {
 		WARN_PRINT("XOpenIM failed");
-		xim_style = 0L;
+		xim_style = 0;
 	} else {
 		::XIMCallback im_destroy_callback;
 		im_destroy_callback.client_data = (::XPointer)(this);
@@ -3960,14 +3960,14 @@ DisplayServerX11::DisplayServerX11(const String &p_rendering_driver, WindowMode 
 		}
 
 		::XIMStyles *xim_styles = nullptr;
-		xim_style = 0L;
+		xim_style = 0;
 		char *imvalret = XGetIMValues(xim, XNQueryInputStyle, &xim_styles, nullptr);
 		if (imvalret != nullptr || xim_styles == nullptr) {
 			fprintf(stderr, "Input method doesn't support any styles\n");
 		}
 
 		if (xim_styles) {
-			xim_style = 0L;
+			xim_style = 0;
 			for (int i = 0; i < xim_styles->count_styles; i++) {
 				if (xim_styles->supported_styles[i] ==
 						(XIMPreeditNothing | XIMStatusNothing)) {

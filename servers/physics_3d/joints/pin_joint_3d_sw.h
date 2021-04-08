@@ -60,7 +60,7 @@ class PinJoint3DSW : public Joint3DSW {
 			Body3DSW *B;
 		};
 
-		Body3DSW *_arr[2];
+		Body3DSW *_arr[2]{};
 	};
 
 	real_t m_tau; //bias

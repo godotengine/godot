@@ -182,7 +182,7 @@ private:
 		Volume volume;
 		Node *parent = nullptr;
 		union {
-			Node *childs[2];
+			Node *childs[2]{};
 			void *data;
 		};
 

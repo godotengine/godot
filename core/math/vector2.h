@@ -266,11 +266,11 @@ struct Vector2i {
 
 	union {
 		int32_t x = 0;
-		int32_t width;
+		int32_t width = 0;
 	};
 	union {
 		int32_t y = 0;
-		int32_t height;
+		int32_t height = 0;
 	};
 
 	_FORCE_INLINE_ int32_t &operator[](int p_idx) {

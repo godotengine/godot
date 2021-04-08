@@ -73,7 +73,7 @@ struct _IP_ResolverPrivate {
 
 	Thread thread;
 	//Semaphore* semaphore;
-	bool thread_abort;
+	bool thread_abort = false;
 
 	void resolve_queues() {
 		for (int i = 0; i < IP::RESOLVER_MAX_QUERIES; i++) {

@@ -51,7 +51,7 @@ class PluginScriptLanguage : public ScriptLanguage {
 	Ref<ResourceFormatLoaderPluginScript> _resource_loader;
 	Ref<ResourceFormatSaverPluginScript> _resource_saver;
 	const godot_pluginscript_language_desc _desc;
-	godot_pluginscript_language_data *_data;
+	godot_pluginscript_language_data *_data = nullptr;
 
 	Mutex _lock;
 	SelfList<PluginScript>::List _script_list;

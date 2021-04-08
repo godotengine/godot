@@ -2630,7 +2630,7 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 			} else if (wParam == windows[window_id].focus_timer_id) {
 				_process_activate_event(window_id, windows[window_id].saved_wparam, windows[window_id].saved_lparam);
 				KillTimer(windows[window_id].hWnd, wParam);
-				windows[window_id].focus_timer_id = 0U;
+				windows[window_id].focus_timer_id = 0;
 			}
 		} break;
 

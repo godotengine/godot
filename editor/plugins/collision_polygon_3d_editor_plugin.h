@@ -58,22 +58,22 @@ class CollisionPolygon3DEditor : public HBoxContainer {
 	Ref<StandardMaterial3D> handle_material;
 
 	EditorNode *editor;
-	Panel *panel;
+	Panel *panel = nullptr;
 	Node3D *node;
 	ImmediateGeometry3D *imgeom;
 	MeshInstance3D *pointsm;
 	Ref<ArrayMesh> m;
 
-	MenuButton *options;
+	MenuButton *options = nullptr;
 
-	int edited_point;
+	int edited_point = 0;
 	Vector2 edited_point_pos;
 	Vector<Vector2> pre_move_edit;
 	Vector<Vector2> wip;
 	bool wip_active;
 	bool snap_ignore;
 
-	float prev_depth;
+	float prev_depth = 0.0;
 
 	void _wip_close();
 	void _polygon_draw();

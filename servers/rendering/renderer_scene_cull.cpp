@@ -1941,7 +1941,7 @@ bool RendererSceneCull::_light_instance_update_shadow(Instance *p_instance, cons
 						}
 					};
 
-					CullConvex cull_convex;
+					CullConvex cull_convex{};
 					cull_convex.result = &instance_shadow_cull_result;
 
 					p_scenario->indexers[Scenario::INDEXER_GEOMETRY].convex_query(planes.ptr(), planes.size(), points.ptr(), points.size(), cull_convex);
@@ -2021,7 +2021,7 @@ bool RendererSceneCull::_light_instance_update_shadow(Instance *p_instance, cons
 						}
 					};
 
-					CullConvex cull_convex;
+					CullConvex cull_convex{};
 					cull_convex.result = &instance_shadow_cull_result;
 
 					p_scenario->indexers[Scenario::INDEXER_GEOMETRY].convex_query(planes.ptr(), planes.size(), points.ptr(), points.size(), cull_convex);
@@ -2084,7 +2084,7 @@ bool RendererSceneCull::_light_instance_update_shadow(Instance *p_instance, cons
 				}
 			};
 
-			CullConvex cull_convex;
+			CullConvex cull_convex{};
 			cull_convex.result = &instance_shadow_cull_result;
 
 			p_scenario->indexers[Scenario::INDEXER_GEOMETRY].convex_query(planes.ptr(), planes.size(), points.ptr(), points.size(), cull_convex);
@@ -3159,7 +3159,7 @@ void RendererSceneCull::render_particle_colliders() {
 				}
 			};
 
-			CullAABB cull_aabb;
+			CullAABB cull_aabb{};
 			cull_aabb.result = &instance_cull_result;
 			hfpc->scenario->indexers[Scenario::INDEXER_GEOMETRY].aabb_query(hfpc->transformed_aabb, cull_aabb);
 			hfpc->scenario->indexers[Scenario::INDEXER_VOLUMES].aabb_query(hfpc->transformed_aabb, cull_aabb);

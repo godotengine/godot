@@ -3092,7 +3092,7 @@ void RendererStorageRD::update_mesh_instances() {
 				RD::get_singleton()->compute_list_bind_uniform_set(compute_list, skeleton_shader.default_skeleton_uniform_set, SkeletonShader::UNIFORM_SET_SKELETON);
 			}
 
-			SkeletonShader::PushConstant push_constant;
+			SkeletonShader::PushConstant push_constant{};
 
 			push_constant.has_normal = mi->mesh->surfaces[i]->format & RS::ARRAY_FORMAT_NORMAL;
 			push_constant.has_tangent = mi->mesh->surfaces[i]->format & RS::ARRAY_FORMAT_TANGENT;
@@ -4513,7 +4513,7 @@ void RendererStorageRD::_particles_process(Particles *p_particles, float p_delta
 		}
 	}
 
-	ParticlesShader::PushConstant push_constant;
+	ParticlesShader::PushConstant push_constant{};
 
 	push_constant.clear = p_particles->clear;
 	push_constant.total_particles = p_particles->amount;
@@ -4617,7 +4617,7 @@ void RendererStorageRD::particles_set_view_axis(RID p_particles, const Vector3 &
 		axis = particles->emission_transform.basis.xform_inv(axis).normalized();
 	}
 
-	ParticlesShader::CopyPushConstant copy_push_constant;
+	ParticlesShader::CopyPushConstant copy_push_constant{};
 	copy_push_constant.total_particles = particles->amount;
 	copy_push_constant.sort_direction[0] = axis.x;
 	copy_push_constant.sort_direction[1] = axis.y;
@@ -4742,7 +4742,7 @@ void RendererStorageRD::update_particles() {
 		//copy particles to instance buffer
 
 		if (particles->draw_order != RS::PARTICLES_DRAW_ORDER_VIEW_DEPTH) {
-			ParticlesShader::CopyPushConstant copy_push_constant;
+			ParticlesShader::CopyPushConstant copy_push_constant{};
 			copy_push_constant.total_particles = particles->amount;
 
 			RD::ComputeListID compute_list = RD::get_singleton()->compute_list_begin();
@@ -7006,7 +7006,7 @@ void RendererStorageRD::render_target_sdf_process(RID p_render_target) {
 	ERR_FAIL_COND(!rt);
 	ERR_FAIL_COND(rt->sdf_buffer_write_fb.is_null());
 
-	RenderTargetSDF::PushConstant push_constant;
+	RenderTargetSDF::PushConstant push_constant{};
 
 	Rect2i r = _render_target_get_sdf_rect(rt);
 

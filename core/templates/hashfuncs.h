@@ -89,7 +89,7 @@ static inline uint32_t hash_djb2_one_float(double p_in, uint32_t p_prev = 5381) 
 	union {
 		double d;
 		uint64_t i;
-	} u;
+	} u{};
 
 	// Normalize +/- 0.0 and NaN values so they hash the same.
 	if (p_in == 0.0f) {
@@ -118,7 +118,7 @@ static inline uint64_t hash_djb2_one_float_64(double p_in, uint64_t p_prev = 538
 	union {
 		double d;
 		uint64_t i;
-	} u;
+	} u{};
 
 	// Normalize +/- 0.0 and NaN values so they hash the same.
 	if (p_in == 0.0f) {
@@ -141,7 +141,7 @@ static inline uint64_t make_uint64_t(T p_in) {
 	union {
 		T t;
 		uint64_t _u64;
-	} _u;
+	} _u{};
 	_u._u64 = 0; // in case p_in is smaller
 
 	_u.t = p_in;

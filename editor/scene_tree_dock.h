@@ -102,7 +102,7 @@ class SceneTreeDock : public VBoxContainer {
 	bool restore_script_editor_on_drag;
 	bool reset_create_dialog = false;
 
-	int current_option;
+	int current_option = 0;
 	CreateDialog *create_dialog;
 	RenameDialog *rename_dialog;
 
@@ -111,17 +111,17 @@ class SceneTreeDock : public VBoxContainer {
 	Button *button_create_script;
 	Button *button_detach_script;
 
-	Button *button_2d;
-	Button *button_3d;
-	Button *button_ui;
-	Button *button_custom;
+	Button *button_2d = nullptr;
+	Button *button_3d = nullptr;
+	Button *button_ui = nullptr;
+	Button *button_custom = nullptr;
 
 	HBoxContainer *button_hb;
 	Button *edit_local, *edit_remote;
 	SceneTreeEditor *scene_tree;
 	Control *remote_tree;
 
-	HBoxContainer *tool_hbc;
+	HBoxContainer *tool_hbc = nullptr;
 	void _tool_selected(int p_tool, bool p_confirm_override = false);
 	void _node_collapsed(Object *p_obj);
 
@@ -143,7 +143,7 @@ class SceneTreeDock : public VBoxContainer {
 	EditorFileDialog *new_scene_from_dialog;
 
 	LineEdit *filter;
-	TextureRect *filter_icon;
+	TextureRect *filter_icon = nullptr;
 
 	PopupMenu *menu;
 	PopupMenu *menu_subresources;

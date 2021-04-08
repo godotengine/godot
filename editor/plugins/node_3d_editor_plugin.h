@@ -251,9 +251,9 @@ public:
 	};
 
 private:
-	float cpu_time_history[FRAME_TIME_HISTORY];
+	float cpu_time_history[FRAME_TIME_HISTORY]{};
 	int cpu_time_history_index;
-	float gpu_time_history[FRAME_TIME_HISTORY];
+	float gpu_time_history[FRAME_TIME_HISTORY]{};
 	int gpu_time_history_index;
 
 	int index;
@@ -261,11 +261,11 @@ private:
 	void _menu_option(int p_option);
 	void _set_auto_orthogonal();
 	Node3D *preview_node;
-	AABB *preview_bounds;
+	AABB *preview_bounds = nullptr;
 	Vector<String> selected_files;
 	AcceptDialog *accept;
 
-	Node *target_node;
+	Node *target_node = nullptr;
 	Point2 drop_pos;
 
 	EditorNode *editor;
@@ -282,7 +282,7 @@ private:
 	Control *surface;
 	SubViewport *viewport;
 	Camera3D *camera;
-	bool transforming;
+	bool transforming = false;
 	bool orthogonal;
 	bool auto_orthogonal;
 	bool lock_rotation;
@@ -342,7 +342,7 @@ private:
 	ObjectID clicked;
 	Vector<_RayResult> selection_results;
 	bool clicked_includes_current;
-	bool clicked_wants_append;
+	bool clicked_wants_append = false;
 
 	PopupMenu *selection_menu;
 
@@ -442,7 +442,7 @@ private:
 	Node3DEditor *spatial_editor;
 
 	Camera3D *previewing;
-	Camera3D *preview;
+	Camera3D *preview = nullptr;
 
 	bool previewing_cinema;
 	bool _is_node_locked(const Node *p_node);
@@ -589,7 +589,7 @@ private:
 	EditorSelection *editor_selection;
 
 	Node3DEditorViewportContainer *viewport_base;
-	Node3DEditorViewport *viewports[VIEWPORTS_COUNT];
+	Node3DEditorViewport *viewports[VIEWPORTS_COUNT]{};
 	VSplitContainer *shader_split;
 	HSplitContainer *palette_split;
 
@@ -601,12 +601,12 @@ private:
 
 	RID origin;
 	RID origin_instance;
-	bool origin_enabled;
+	bool origin_enabled = false;
 	RID grid[3];
 	RID grid_instance[3];
-	bool grid_visible[3]; //currently visible
-	bool grid_enable[3]; //should be always visible if true
-	bool grid_enabled;
+	bool grid_visible[3]{}; //currently visible
+	bool grid_enable[3]{}; //should be always visible if true
+	bool grid_enabled = false;
 
 	Ref<ArrayMesh> move_gizmo[3], move_plane_gizmo[3], rotate_gizmo[4], scale_gizmo[3], scale_plane_gizmo[3];
 	Ref<StandardMaterial3D> gizmo_color[3];
@@ -669,8 +669,8 @@ private:
 		MENU_SNAP_TO_FLOOR
 	};
 
-	Button *tool_button[TOOL_MAX];
-	Button *tool_option_button[TOOL_OPT_MAX];
+	Button *tool_button[TOOL_MAX]{};
+	Button *tool_option_button[TOOL_OPT_MAX]{};
 
 	MenuButton *transform_menu;
 	PopupMenu *gizmos_menu;
@@ -687,11 +687,11 @@ private:
 	LineEdit *snap_translate;
 	LineEdit *snap_rotate;
 	LineEdit *snap_scale;
-	PanelContainer *menu_panel;
+	PanelContainer *menu_panel = nullptr;
 
-	LineEdit *xform_translate[3];
-	LineEdit *xform_rotate[3];
-	LineEdit *xform_scale[3];
+	LineEdit *xform_translate[3]{};
+	LineEdit *xform_rotate[3]{};
+	LineEdit *xform_scale[3]{};
 	OptionButton *xform_type;
 
 	VBoxContainer *settings_vbc;

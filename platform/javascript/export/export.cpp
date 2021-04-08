@@ -42,7 +42,7 @@ private:
 	Ref<TCP_Server> server;
 	Ref<StreamPeerTCP> connection;
 	uint64_t time = 0;
-	uint8_t req_buf[4096];
+	uint8_t req_buf[4096]{};
 	int req_pos = 0;
 
 	void _clear_client() {

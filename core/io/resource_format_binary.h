@@ -66,7 +66,7 @@ class ResourceLoaderBinary {
 
 	struct IntResource {
 		String path;
-		uint64_t offset;
+		uint64_t offset = 0;
 	};
 
 	Vector<IntResource> internal_resources;
@@ -116,12 +116,12 @@ class ResourceFormatSaverBinaryInstance {
 	String local_path;
 	String path;
 
-	bool relative_paths;
-	bool bundle_resources;
-	bool skip_editor;
-	bool big_endian;
-	bool takeover_paths;
-	FileAccess *f;
+	bool relative_paths = false;
+	bool bundle_resources = false;
+	bool skip_editor = false;
+	bool big_endian = false;
+	bool takeover_paths = false;
+	FileAccess *f = nullptr;
 	String magic;
 	Set<RES> resource_set;
 
@@ -139,7 +139,7 @@ class ResourceFormatSaverBinaryInstance {
 	List<RES> saved_resources;
 
 	struct Property {
-		int name_idx;
+		int name_idx = 0;
 		Variant value;
 		PropertyInfo pi;
 	};

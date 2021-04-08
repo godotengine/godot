@@ -240,7 +240,7 @@ void WSLPeer::poll() {
 Error WSLPeer::put_packet(const uint8_t *p_buffer, int p_buffer_size) {
 	ERR_FAIL_COND_V(!is_connected_to_host(), FAILED);
 
-	struct wslay_event_msg msg; // Should I use fragmented?
+	struct wslay_event_msg msg {}; // Should I use fragmented?
 	msg.opcode = write_mode == WRITE_MODE_TEXT ? WSLAY_TEXT_FRAME : WSLAY_BINARY_FRAME;
 	msg.msg = p_buffer;
 	msg.msg_length = p_buffer_size;

@@ -55,7 +55,7 @@ class RenderingDeviceVulkan : public RenderingDevice {
 	// our enums to enums used
 	// by vulkan.
 
-	VkPhysicalDeviceLimits limits;
+	VkPhysicalDeviceLimits limits{};
 	static const VkFormat vulkan_formats[DATA_FORMAT_MAX];
 	static const char *named_formats[DATA_FORMAT_MAX];
 	static const VkCompareOp compare_operators[COMPARE_OP_MAX];
@@ -122,7 +122,7 @@ class RenderingDeviceVulkan : public RenderingDevice {
 	struct Texture {
 		VkImage image = VK_NULL_HANDLE;
 		VmaAllocation allocation = nullptr;
-		VmaAllocationInfo allocation_info;
+		VmaAllocationInfo allocation_info{};
 		VkImageView view = VK_NULL_HANDLE;
 
 		TextureType type;
@@ -209,7 +209,7 @@ class RenderingDeviceVulkan : public RenderingDevice {
 		uint32_t usage = 0;
 		VkBuffer buffer = VK_NULL_HANDLE;
 		VmaAllocation allocation = nullptr;
-		VkDescriptorBufferInfo buffer_info; //used for binding
+		VkDescriptorBufferInfo buffer_info{}; //used for binding
 		Buffer() {
 		}
 	};
@@ -267,7 +267,7 @@ class RenderingDeviceVulkan : public RenderingDevice {
 	// IDs for a given format are always unique.
 	Map<FramebufferFormatKey, FramebufferFormatID> framebuffer_format_cache;
 	struct FramebufferFormat {
-		const Map<FramebufferFormatKey, FramebufferFormatID>::Element *E;
+		const Map<FramebufferFormatKey, FramebufferFormatID>::Element *E = nullptr;
 		VkRenderPass render_pass = VK_NULL_HANDLE; //here for constructing shaders, never used, see section (7.2. Render Pass Compatibility from Vulkan spec)
 		int color_attachments = 0; //used for pipeline validation
 		TextureSamples samples;
@@ -393,7 +393,7 @@ class RenderingDeviceVulkan : public RenderingDevice {
 		Vector<VertexAttribute> vertex_formats;
 		VkVertexInputBindingDescription *bindings = nullptr;
 		VkVertexInputAttributeDescription *attributes = nullptr;
-		VkPipelineVertexInputStateCreateInfo create_info;
+		VkPipelineVertexInputStateCreateInfo create_info{};
 	};
 
 	Map<VertexFormatID, VertexDescriptionCache> vertex_formats;
@@ -421,7 +421,7 @@ class RenderingDeviceVulkan : public RenderingDevice {
 
 	struct IndexArray {
 		uint32_t max_index = 0; //remember the maximum index here too, for validation
-		VkBuffer buffer; //not owned, inherited from index buffer
+		VkBuffer buffer = nullptr; //not owned, inherited from index buffer
 		uint32_t offset = 0;
 		uint32_t indices = 0;
 		VkIndexType index_type = VK_INDEX_TYPE_NONE_NV;
@@ -573,7 +573,7 @@ class RenderingDeviceVulkan : public RenderingDevice {
 	struct DescriptorPoolKey {
 		union {
 			struct {
-				uint16_t uniform_type[UNIFORM_TYPE_MAX]; // Using 16 bits because, for sending arrays, each element is a pool set.
+				uint16_t uniform_type[UNIFORM_TYPE_MAX]{}; // Using 16 bits because, for sending arrays, each element is a pool set.
 			};
 			struct {
 				uint64_t key1;
@@ -637,7 +637,7 @@ class RenderingDeviceVulkan : public RenderingDevice {
 		VkDescriptorSet descriptor_set = VK_NULL_HANDLE;
 		//VkPipelineLayout pipeline_layout; //not owned, inherited from shader
 		struct AttachableTexture {
-			uint32_t bind;
+			uint32_t bind = 0;
 			RID texture;
 		};
 
@@ -819,7 +819,7 @@ class RenderingDeviceVulkan : public RenderingDevice {
 			uint32_t local_group_size[3] = { 0, 0, 0 };
 			VkPipelineLayout pipeline_layout = VK_NULL_HANDLE;
 			uint32_t pipeline_push_constant_stages = 0;
-			bool allow_draw_overlap;
+			bool allow_draw_overlap = false;
 		} state;
 
 #ifdef DEBUG_ENABLED
@@ -880,7 +880,7 @@ class RenderingDeviceVulkan : public RenderingDevice {
 			uint64_t value = 0;
 		};
 
-		VkQueryPool timestamp_pool;
+		VkQueryPool timestamp_pool = nullptr;
 
 		String *timestamp_names = nullptr;
 		uint64_t *timestamp_cpu_values = nullptr;

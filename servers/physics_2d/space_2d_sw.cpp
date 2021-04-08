@@ -383,18 +383,18 @@ bool PhysicsDirectSpaceState2DSW::collide_shape(RID p_shape, const Transform2D &
 }
 
 struct _RestCallbackData2D {
-	const CollisionObject2DSW *object;
-	const CollisionObject2DSW *best_object;
-	int local_shape;
-	int best_local_shape;
-	int shape;
-	int best_shape;
+	const CollisionObject2DSW *object = nullptr;
+	const CollisionObject2DSW *best_object = nullptr;
+	int local_shape = 0;
+	int best_local_shape = 0;
+	int shape = 0;
+	int best_shape = 0;
 	Vector2 best_contact;
 	Vector2 best_normal;
-	real_t best_len;
+	real_t best_len = 0.0;
 	Vector2 valid_dir;
-	real_t valid_depth;
-	real_t min_allowed_depth;
+	real_t valid_depth = 0.0;
+	real_t min_allowed_depth = 0.0;
 };
 
 static void _rest_cbk_result(const Vector2 &p_point_A, const Vector2 &p_point_B, void *p_userdata) {
@@ -854,7 +854,7 @@ bool Space2DSW::test_body_motion(Body2DSW *p_body, const Transform2D &p_from, co
 					if (!did_collide && cbk.invalid_by_dir > 0) {
 						//this shape must be excluded
 						if (excluded_shape_pair_count < max_excluded_shape_pairs) {
-							ExcludedShapeSW esp;
+							ExcludedShapeSW esp{};
 							esp.local_shape = body_shape;
 							esp.against_object = col_obj;
 							esp.against_shape_index = shape_idx;

@@ -846,7 +846,7 @@ void RendererSceneGIRD::SDFGI::update_light() {
 	RD::ComputeListID compute_list = RD::get_singleton()->compute_list_begin();
 	RD::get_singleton()->compute_list_bind_compute_pipeline(compute_list, gi->sdfgi_shader.direct_light_pipeline[SDFGIShader::DIRECT_LIGHT_MODE_DYNAMIC]);
 
-	SDFGIShader::DirectLightPushConstant push_constant;
+	SDFGIShader::DirectLightPushConstant push_constant{};
 
 	push_constant.grid_size[0] = cascade_size;
 	push_constant.grid_size[1] = cascade_size;
@@ -888,7 +888,7 @@ void RendererSceneGIRD::SDFGI::update_light() {
 void RendererSceneGIRD::SDFGI::update_probes(RendererSceneEnvironmentRD *p_env, RendererSceneSkyRD::Sky *p_sky) {
 	RD::get_singleton()->draw_command_begin_label("SDFGI Update Probes");
 
-	SDFGIShader::IntegratePushConstant push_constant;
+	SDFGIShader::IntegratePushConstant push_constant{};
 	push_constant.grid_size[1] = cascade_size;
 	push_constant.grid_size[2] = cascade_size;
 	push_constant.grid_size[0] = cascade_size;
@@ -981,7 +981,7 @@ void RendererSceneGIRD::SDFGI::store_probes() {
 	RD::get_singleton()->barrier(RD::BARRIER_MASK_COMPUTE, RD::BARRIER_MASK_COMPUTE);
 	RD::get_singleton()->draw_command_begin_label("SDFGI Store Probes");
 
-	SDFGIShader::IntegratePushConstant push_constant;
+	SDFGIShader::IntegratePushConstant push_constant{};
 	push_constant.grid_size[1] = cascade_size;
 	push_constant.grid_size[2] = cascade_size;
 	push_constant.grid_size[0] = cascade_size;
@@ -1196,7 +1196,7 @@ void RendererSceneGIRD::SDFGI::debug_draw(const CameraMatrix &p_projection, cons
 	RD::get_singleton()->compute_list_bind_compute_pipeline(compute_list, gi->sdfgi_shader.debug_pipeline);
 	RD::get_singleton()->compute_list_bind_uniform_set(compute_list, debug_uniform_set, 0);
 
-	SDFGIShader::DebugPushConstant push_constant;
+	SDFGIShader::DebugPushConstant push_constant{};
 	push_constant.grid_size[0] = cascade_size;
 	push_constant.grid_size[1] = cascade_size;
 	push_constant.grid_size[2] = cascade_size;
@@ -1239,7 +1239,7 @@ void RendererSceneGIRD::SDFGI::debug_draw(const CameraMatrix &p_projection, cons
 }
 
 void RendererSceneGIRD::SDFGI::debug_probes(RD::DrawListID p_draw_list, RID p_framebuffer, const CameraMatrix &p_camera_with_transform) {
-	SDFGIShader::DebugProbesPushConstant push_constant;
+	SDFGIShader::DebugProbesPushConstant push_constant{};
 
 	for (int i = 0; i < 4; i++) {
 		for (int j = 0; j < 4; j++) {
@@ -1370,7 +1370,7 @@ void RendererSceneGIRD::SDFGI::debug_probes(RD::DrawListID p_draw_list, RID p_fr
 void RendererSceneGIRD::SDFGI::pre_process_gi(const Transform &p_transform, RendererSceneRenderRD *p_scene_render) {
 	/* Update general SDFGI Buffer */
 
-	SDFGIData sdfgi_data;
+	SDFGIData sdfgi_data{};
 
 	sdfgi_data.grid_size[0] = cascade_size;
 	sdfgi_data.grid_size[1] = cascade_size;
@@ -1563,7 +1563,7 @@ void RendererSceneGIRD::SDFGI::render_region(RID p_render_buffers, int p_region,
 		//done rendering! must update SDF
 		//clear dispatch indirect data
 
-		SDFGIShader::PreprocessPushConstant push_constant;
+		SDFGIShader::PreprocessPushConstant push_constant{};
 		zeromem(&push_constant, sizeof(SDFGIShader::PreprocessPushConstant));
 
 		RENDER_TIMESTAMP("Scroll SDF");
@@ -1615,7 +1615,7 @@ void RendererSceneGIRD::SDFGI::render_region(RID p_render_buffers, int p_region,
 			{
 				//scroll probes and their history also
 
-				SDFGIShader::IntegratePushConstant ipush_constant;
+				SDFGIShader::IntegratePushConstant ipush_constant{};
 				ipush_constant.grid_size[1] = cascade_size;
 				ipush_constant.grid_size[2] = cascade_size;
 				ipush_constant.grid_size[0] = cascade_size;
@@ -1976,7 +1976,7 @@ void RendererSceneGIRD::SDFGI::render_static_lights(RID p_render_buffers, uint32
 
 	RD::get_singleton()->compute_list_bind_compute_pipeline(compute_list, gi->sdfgi_shader.direct_light_pipeline[SDFGIShader::DIRECT_LIGHT_MODE_STATIC]);
 
-	SDFGIShader::DirectLightPushConstant dl_push_constant;
+	SDFGIShader::DirectLightPushConstant dl_push_constant{};
 
 	dl_push_constant.grid_size[0] = cascade_size;
 	dl_push_constant.grid_size[1] = cascade_size;
@@ -2426,7 +2426,7 @@ void RendererSceneGIRD::GIProbeInstance::update(bool p_update_light_instances, c
 
 			Vector3i probe_size = storage->gi_probe_get_octree_size(probe);
 
-			GIProbePushConstant push_constant;
+			GIProbePushConstant push_constant{};
 
 			push_constant.limits[0] = probe_size.x;
 			push_constant.limits[1] = probe_size.y;
@@ -2601,7 +2601,7 @@ void RendererSceneGIRD::GIProbeInstance::update(bool p_update_light_instances, c
 
 				p_scene_render->_render_material(to_world_xform * xform, cm, true, p_scene_render->cull_argument, dynamic_maps[0].fb, Rect2i(Vector2i(), rect.size));
 
-				GIProbeDynamicPushConstant push_constant;
+				GIProbeDynamicPushConstant push_constant{};
 				zeromem(&push_constant, sizeof(GIProbeDynamicPushConstant));
 				push_constant.limits[0] = octree_size.x;
 				push_constant.limits[1] = octree_size.y;
@@ -2726,7 +2726,7 @@ void RendererSceneGIRD::GIProbeInstance::debug(RD::DrawListID p_draw_list, RID p
 	int level = 0;
 	Vector3i octree_size = storage->gi_probe_get_octree_size(probe);
 
-	GIProbeDebugPushConstant push_constant;
+	GIProbeDebugPushConstant push_constant{};
 	push_constant.alpha = p_alpha;
 	push_constant.dynamic_range = storage->gi_probe_get_dynamic_range(probe);
 	push_constant.cell_offset = mipmaps[level].cell_offset;
@@ -3148,7 +3148,7 @@ void RendererSceneGIRD::process_gi(RID p_render_buffers, RID p_normal_roughness_
 		p_scene_render->_render_buffers_uniform_set_changed(p_render_buffers);
 	}
 
-	PushConstant push_constant;
+	PushConstant push_constant{};
 
 	push_constant.screen_size[0] = rb->width;
 	push_constant.screen_size[1] = rb->height;

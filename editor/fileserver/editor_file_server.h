@@ -47,7 +47,7 @@ class EditorFileServer : public Object {
 	};
 
 	struct ClientData {
-		Thread *thread;
+		Thread *thread = nullptr;
 		Ref<StreamPeerTCP> connection;
 		Map<int, FileAccess *> files;
 		EditorFileServer *efs = nullptr;
@@ -67,7 +67,7 @@ class EditorFileServer : public Object {
 	Command cmd;
 
 	String password;
-	int port;
+	int port = 0;
 	bool active;
 
 public:

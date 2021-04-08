@@ -379,9 +379,9 @@ public:
 	};
 
 	struct StackDebug {
-		int line;
-		int pos;
-		bool added;
+		int line = 0;
+		int pos = 0;
+		bool added = false;
 		StringName identifier;
 	};
 

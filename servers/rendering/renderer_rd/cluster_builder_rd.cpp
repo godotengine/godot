@@ -411,7 +411,7 @@ void ClusterBuilderRD::bake_cluster() {
 
 		{ //fill state uniform
 
-			StateUniform state;
+			StateUniform state{};
 
 			RendererStorageRD::store_camera(adjusted_projection, state.projection);
 			state.inv_z_far = 1.0 / z_far;
@@ -481,7 +481,7 @@ void ClusterBuilderRD::bake_cluster() {
 			RD::get_singleton()->compute_list_bind_compute_pipeline(compute_list, shared->cluster_store.shader_pipeline);
 			RD::get_singleton()->compute_list_bind_uniform_set(compute_list, cluster_store_uniform_set, 0);
 
-			ClusterBuilderSharedDataRD::ClusterStore::PushConstant push_constant;
+			ClusterBuilderSharedDataRD::ClusterStore::PushConstant push_constant{};
 			push_constant.cluster_render_data_size = render_element_max / 32 + render_element_max;
 			push_constant.max_render_element_count_div_32 = render_element_max / 32;
 			push_constant.cluster_screen_size[0] = cluster_screen_size.x;
@@ -510,7 +510,7 @@ void ClusterBuilderRD::debug(ElementType p_element) {
 	RD::get_singleton()->compute_list_bind_compute_pipeline(compute_list, shared->cluster_debug.shader_pipeline);
 	RD::get_singleton()->compute_list_bind_uniform_set(compute_list, debug_uniform_set, 0);
 
-	ClusterBuilderSharedDataRD::ClusterDebug::PushConstant push_constant;
+	ClusterBuilderSharedDataRD::ClusterDebug::PushConstant push_constant{};
 	push_constant.screen_size[0] = screen_size.x;
 	push_constant.screen_size[1] = screen_size.y;
 	push_constant.cluster_screen_size[0] = cluster_screen_size.x;

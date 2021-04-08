@@ -445,7 +445,7 @@ Error QuickHull::build(const Vector<Vector3> &p_points, Geometry3D::MeshData &r_
 	r_mesh.edges.resize(ret_edges.size());
 	idx = 0;
 	for (Map<Edge, RetFaceConnect>::Element *E = ret_edges.front(); E; E = E->next()) {
-		Geometry3D::MeshData::Edge e;
+		Geometry3D::MeshData::Edge e{};
 		e.a = E->key().vertices[0];
 		e.b = E->key().vertices[1];
 		r_mesh.edges.write[idx++] = e;

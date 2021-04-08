@@ -92,7 +92,7 @@ private:
 
 	struct RenderModeEnums {
 		Shader::Mode mode = Shader::Mode::MODE_MAX;
-		const char *string;
+		const char *string = nullptr;
 	};
 
 	HashMap<String, int> modes;
@@ -311,8 +311,8 @@ class VisualShaderNodeInput : public VisualShaderNode {
 		Shader::Mode mode = Shader::Mode::MODE_MAX;
 		VisualShader::Type shader_type = VisualShader::Type::TYPE_MAX;
 		PortType type = PortType::PORT_TYPE_MAX;
-		const char *name;
-		const char *string;
+		const char *name = nullptr;
+		const char *string = nullptr;
 	};
 
 	static const Port ports[];
@@ -366,8 +366,8 @@ public:
 		Shader::Mode mode = Shader::Mode::MODE_MAX;
 		VisualShader::Type shader_type = VisualShader::Type::TYPE_MAX;
 		PortType type = PortType::PORT_TYPE_MAX;
-		const char *name;
-		const char *string;
+		const char *name = nullptr;
+		const char *string = nullptr;
 	};
 
 	static const Port ports[];

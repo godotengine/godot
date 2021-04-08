@@ -751,7 +751,7 @@ Geometry3D::MeshData Geometry3D::build_convex_mesh(const Vector<Plane> &p_planes
 			if (found) {
 				continue;
 			}
-			MeshData::Edge edge;
+			MeshData::Edge edge{};
 			edge.a = a;
 			edge.b = b;
 			mesh.edges.push_back(edge);

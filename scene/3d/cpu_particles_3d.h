@@ -155,7 +155,7 @@ private:
 	float spread = 45.0;
 	float flatness = 0.0;
 
-	float parameters[PARAM_MAX];
+	float parameters[PARAM_MAX]{};
 	float randomness[PARAM_MAX] = {};
 
 	Ref<Curve> curve_parameters[PARAM_MAX];

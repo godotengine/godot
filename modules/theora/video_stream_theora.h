@@ -69,17 +69,17 @@ class VideoStreamPlaybackTheora : public VideoStreamPlayback {
 	bool theora_eos = false;
 	bool vorbis_eos = false;
 
-	ogg_sync_state oy;
-	ogg_page og;
-	ogg_stream_state vo;
-	ogg_stream_state to;
-	th_info ti;
-	th_comment tc;
+	ogg_sync_state oy{};
+	ogg_page og{};
+	ogg_stream_state vo{};
+	ogg_stream_state to{};
+	th_info ti{};
+	th_comment tc{};
 	th_dec_ctx *td = nullptr;
-	vorbis_info vi;
-	vorbis_dsp_state vd;
-	vorbis_block vb;
-	vorbis_comment vc;
+	vorbis_info vi{};
+	vorbis_dsp_state vd{};
+	vorbis_block vb{};
+	vorbis_comment vc{};
 	th_pixel_fmt px_fmt;
 	double videobuf_time = 0;
 	int pp_inc = 0;
@@ -99,7 +99,7 @@ class VideoStreamPlaybackTheora : public VideoStreamPlayback {
 
 	Ref<ImageTexture> texture;
 
-	AudioMixCallback mix_callback;
+	AudioMixCallback mix_callback = nullptr;
 	void *mix_udata = nullptr;
 	bool paused = false;
 

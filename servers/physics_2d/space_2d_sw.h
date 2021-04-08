@@ -79,7 +79,7 @@ private:
 		int against_shape_index;
 	};
 
-	uint64_t elapsed_time[ELAPSED_TIME_MAX];
+	uint64_t elapsed_time[ELAPSED_TIME_MAX]{};
 
 	PhysicsDirectSpaceState2DSW *direct_access;
 	RID self;
@@ -108,8 +108,8 @@ private:
 		INTERSECTION_QUERY_MAX = 2048
 	};
 
-	CollisionObject2DSW *intersection_query_results[INTERSECTION_QUERY_MAX];
-	int intersection_query_subindex_results[INTERSECTION_QUERY_MAX];
+	CollisionObject2DSW *intersection_query_results[INTERSECTION_QUERY_MAX]{};
+	int intersection_query_subindex_results[INTERSECTION_QUERY_MAX]{};
 
 	real_t body_linear_velocity_sleep_threshold;
 	real_t body_angular_velocity_sleep_threshold;

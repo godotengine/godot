@@ -5899,7 +5899,7 @@ RenderingDevice::DrawListID RenderingDeviceVulkan::draw_list_begin_for_screen(Di
 }
 
 Error RenderingDeviceVulkan::_draw_list_setup_framebuffer(Framebuffer *p_framebuffer, InitialAction p_initial_color_action, FinalAction p_final_color_action, InitialAction p_initial_depth_action, FinalAction p_final_depth_action, VkFramebuffer *r_framebuffer, VkRenderPass *r_render_pass) {
-	Framebuffer::VersionKey vk;
+	Framebuffer::VersionKey vk{};
 	vk.initial_color_action = p_initial_color_action;
 	vk.final_color_action = p_final_color_action;
 	vk.initial_depth_action = p_initial_depth_action;

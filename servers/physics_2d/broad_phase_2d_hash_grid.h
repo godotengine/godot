@@ -47,12 +47,12 @@ class BroadPhase2DHashGrid : public BroadPhase2DSW {
 	};
 
 	struct Element {
-		ID self;
-		CollisionObject2DSW *owner;
-		bool _static;
+		ID self = 0;
+		CollisionObject2DSW *owner = nullptr;
+		bool _static = false;
 		Rect2 aabb;
-		int subindex;
-		uint64_t pass;
+		int subindex = 0;
+		uint64_t pass = 0;
 		Map<Element *, PairData *> paired;
 	};
 
@@ -83,10 +83,10 @@ class BroadPhase2DHashGrid : public BroadPhase2DSW {
 	struct PairKey {
 		union {
 			struct {
-				ID a;
-				ID b;
+				ID a = 0;
+				ID b = 0;
 			};
-			uint64_t key;
+			uint64_t key = 0;
 		};
 
 		_FORCE_INLINE_ bool operator<(const PairKey &p_key) const {
@@ -110,10 +110,10 @@ class BroadPhase2DHashGrid : public BroadPhase2DSW {
 	int cell_size;
 	int large_object_min_surface;
 
-	PairCallback pair_callback;
-	void *pair_userdata;
-	UnpairCallback unpair_callback;
-	void *unpair_userdata;
+	PairCallback pair_callback = nullptr;
+	void *pair_userdata = nullptr;
+	UnpairCallback unpair_callback = nullptr;
+	void *unpair_userdata = nullptr;
 
 	void _enter_grid(Element *p_elem, const Rect2 &p_rect, bool p_static);
 	void _exit_grid(Element *p_elem, const Rect2 &p_rect, bool p_static);
@@ -147,10 +147,10 @@ class BroadPhase2DHashGrid : public BroadPhase2DSW {
 	};
 
 	struct PosBin {
-		PosKey key;
+		PosKey key{};
 		Map<Element *, RC> object_set;
 		Map<Element *, RC> static_object_set;
-		PosBin *next;
+		PosBin *next = nullptr;
 	};
 
 	uint32_t hash_table_size;

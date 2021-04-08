@@ -53,7 +53,7 @@ class RendererSceneRenderRD;
 
 class RendererSceneGIRD {
 private:
-	RendererStorageRD *storage;
+	RendererStorageRD *storage = nullptr;
 
 	/* GIPROBE INSTANCE */
 
@@ -109,8 +109,8 @@ private:
 		float pad[3];
 	};
 
-	GIProbeLight *gi_probe_lights;
-	uint32_t gi_probe_max_lights;
+	GIProbeLight *gi_probe_lights = nullptr;
+	uint32_t gi_probe_max_lights = 0;
 	RID gi_probe_lights_uniform;
 
 	enum {
@@ -331,8 +331,8 @@ public:
 
 	struct GIProbeInstance {
 		// access to our containers
-		RendererStorageRD *storage;
-		RendererSceneGIRD *gi;
+		RendererStorageRD *storage = nullptr;
+		RendererSceneGIRD *gi = nullptr;
 
 		RID probe;
 		RID texture;
@@ -343,9 +343,9 @@ public:
 			RID uniform_set;
 			RID second_bounce_uniform_set;
 			RID write_uniform_set;
-			uint32_t level;
-			uint32_t cell_offset;
-			uint32_t cell_count;
+			uint32_t level = 0;
+			uint32_t cell_offset = 0;
+			uint32_t cell_count = 0;
 		};
 		Vector<Mipmap> mipmaps;
 
@@ -358,8 +358,8 @@ public:
 			RID orm; //orm buffer for the first pass
 			RID fb; //used for rendering, only valid on first map
 			RID uniform_set;
-			uint32_t size;
-			int mipmap; // mipmap to write to, -1 if no mipmap assigned
+			uint32_t size = 0;
+			int mipmap = 0; // mipmap to write to, -1 if no mipmap assigned
 		};
 
 		Vector<DynamicMap> dynamic_maps;
@@ -438,7 +438,7 @@ public:
 			RID lightprobe_history_tex;
 			RID lightprobe_average_tex;
 
-			float cell_size;
+			float cell_size = 0.0;
 			Vector3i position;
 
 			static const Vector3i DIRTY_ALL;
@@ -455,8 +455,8 @@ public:
 		};
 
 		// access to our containers
-		RendererStorageRD *storage;
-		RendererSceneGIRD *gi;
+		RendererStorageRD *storage = nullptr;
+		RendererSceneGIRD *gi = nullptr;
 
 		// used for rendering (voxelization)
 		RID render_albedo;
@@ -474,7 +474,7 @@ public:
 		RID jump_flood_uniform_set[2];
 		RID jump_flood_half_uniform_set[2];
 		RID sdf_upscale_uniform_set;
-		int upscale_jfa_uniform_set_index;
+		int upscale_jfa_uniform_set_index = 0;
 		RID occlusion_uniform_set;
 
 		uint32_t cascade_size = 128;
@@ -514,7 +514,7 @@ public:
 
 		uint32_t render_pass = 0;
 
-		int32_t cascade_dynamic_light_count[SDFGI::MAX_CASCADES]; //used dynamically
+		int32_t cascade_dynamic_light_count[SDFGI::MAX_CASCADES]{}; //used dynamically
 		RID integrate_sky_uniform_set;
 
 		void create(RendererSceneEnvironmentRD *p_env, const Vector3 &p_world_position, uint32_t p_requested_history_size, RendererSceneGIRD *p_gi);

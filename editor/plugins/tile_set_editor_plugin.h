@@ -110,8 +110,8 @@ class TileSetEditor : public HSplitContainer {
 	EditorFileDialog *texture_dialog;
 
 	ItemList *texture_list;
-	int option;
-	Button *tileset_toolbar_buttons[TOOL_TILESET_MAX];
+	int option = 0;
+	Button *tileset_toolbar_buttons[TOOL_TILESET_MAX]{};
 	MenuButton *tileset_toolbar_tools;
 	Map<RID, Ref<Texture2D>> texture_map;
 
@@ -120,7 +120,7 @@ class TileSetEditor : public HSplitContainer {
 	bool tile_names_visible;
 	Vector2 region_from;
 	Rect2 edited_region;
-	bool draw_edited_region;
+	bool draw_edited_region = false;
 	Vector2 edited_shape_coord;
 	PackedVector2Array current_shape;
 	Map<Vector2i, SubtileData> current_tile_data;
@@ -134,19 +134,19 @@ class TileSetEditor : public HSplitContainer {
 	Ref<OccluderPolygon2D> edited_occlusion_shape;
 	Ref<NavigationPolygon> edited_navigation_shape;
 
-	int current_item_index;
+	int current_item_index = 0;
 	Sprite2D *preview;
 	ScrollContainer *scroll;
 	Label *empty_message;
 	Control *workspace_container;
-	bool draw_handles;
+	bool draw_handles = false;
 	Control *workspace_overlay;
 	Control *workspace;
-	Button *tool_workspacemode[WORKSPACE_MODE_MAX];
-	Button *tool_editmode[EDITMODE_MAX];
+	Button *tool_workspacemode[WORKSPACE_MODE_MAX]{};
+	Button *tool_editmode[EDITMODE_MAX]{};
 	HSeparator *separator_editmode;
 	HBoxContainer *toolbar;
-	Button *tools[TOOL_MAX];
+	Button *tools[TOOL_MAX]{};
 	VSeparator *separator_shape_toggle;
 	VSeparator *separator_bitmask;
 	VSeparator *separator_delete;

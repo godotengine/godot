@@ -46,18 +46,18 @@ class GroupDialog : public AcceptDialog {
 	ConfirmationDialog *error;
 
 	SceneTree *scene_tree;
-	TreeItem *groups_root;
+	TreeItem *groups_root = nullptr;
 
 	LineEdit *add_group_text;
 
 	Tree *groups;
 
 	Tree *nodes_to_add;
-	TreeItem *add_node_root;
+	TreeItem *add_node_root = nullptr;
 	LineEdit *add_filter;
 
 	Tree *nodes_to_remove;
-	TreeItem *remove_node_root;
+	TreeItem *remove_node_root = nullptr;
 	LineEdit *remove_filter;
 
 	Label *group_empty;
@@ -67,7 +67,7 @@ class GroupDialog : public AcceptDialog {
 
 	String selected_group;
 
-	UndoRedo *undo_redo;
+	UndoRedo *undo_redo = nullptr;
 
 	void _group_selected();
 
@@ -112,7 +112,7 @@ class GroupsEditor : public VBoxContainer {
 	Button *add;
 	Tree *tree;
 
-	UndoRedo *undo_redo;
+	UndoRedo *undo_redo = nullptr;
 
 	void update_tree();
 	void _add_group(const String &p_group = "");

@@ -88,7 +88,7 @@ private:
 	struct DataAtSize {
 		FT_Face face = nullptr;
 		TT_OS2 *os2 = nullptr;
-		FT_StreamRec stream;
+		FT_StreamRec stream{};
 
 		int size = 0;
 		float scale_color_font = 1.f;

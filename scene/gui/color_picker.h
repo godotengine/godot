@@ -59,9 +59,9 @@ private:
 	Button *btn_pick;
 	CheckButton *btn_hsv;
 	CheckButton *btn_raw;
-	HSlider *scroll[4];
-	SpinBox *values[4];
-	Label *labels[4];
+	HSlider *scroll[4]{};
+	SpinBox *values[4]{};
+	Label *labels[4]{};
 	Button *text_type;
 	LineEdit *c_text;
 	bool edit_alpha = true;

@@ -137,7 +137,7 @@ class LightmapperRD : public Lightmapper {
 	struct Seam {
 		Vector2i a;
 		Vector2i b;
-		uint32_t slice;
+		uint32_t slice = 0;
 		bool operator<(const Seam &p_seam) const {
 			return slice < p_seam.slice;
 		}

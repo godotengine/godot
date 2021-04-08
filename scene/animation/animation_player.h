@@ -150,11 +150,11 @@ private:
 
 	Map<TrackNodeCacheKey, TrackNodeCache> node_cache_map;
 
-	TrackNodeCache *cache_update[NODE_CACHE_UPDATE_MAX];
+	TrackNodeCache *cache_update[NODE_CACHE_UPDATE_MAX]{};
 	int cache_update_size = 0;
-	TrackNodeCache::PropertyAnim *cache_update_prop[NODE_CACHE_UPDATE_MAX];
+	TrackNodeCache::PropertyAnim *cache_update_prop[NODE_CACHE_UPDATE_MAX]{};
 	int cache_update_prop_size = 0;
-	TrackNodeCache::BezierAnim *cache_update_bezier[NODE_CACHE_UPDATE_MAX];
+	TrackNodeCache::BezierAnim *cache_update_bezier[NODE_CACHE_UPDATE_MAX]{};
 	int cache_update_bezier_size = 0;
 	Set<TrackNodeCache *> playing_caches;
 

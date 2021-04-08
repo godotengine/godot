@@ -63,10 +63,10 @@ public:
 
 		DisplayServer::WindowID viewport_to_screen;
 		Rect2 viewport_to_screen_rect;
-		bool viewport_render_direct_to_screen;
+		bool viewport_render_direct_to_screen = false;
 
-		bool hide_scenario;
-		bool hide_canvas;
+		bool hide_scenario = false;
+		bool hide_canvas = false;
 		bool disable_environment;
 		bool measure_render_time;
 
@@ -89,7 +89,7 @@ public:
 
 		uint64_t last_pass = 0;
 
-		int render_info[RS::VIEWPORT_RENDER_INFO_MAX];
+		int render_info[RS::VIEWPORT_RENDER_INFO_MAX]{};
 		RS::ViewportDebugDraw debug_draw;
 
 		RS::ViewportClearMode clear_mode;
@@ -120,10 +120,10 @@ public:
 		};
 
 		struct CanvasData {
-			CanvasBase *canvas;
+			CanvasBase *canvas = nullptr;
 			Transform2D transform;
-			int layer;
-			int sublayer;
+			int layer = 0;
+			int sublayer = 0;
 		};
 
 		Transform2D global_transform;

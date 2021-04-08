@@ -48,11 +48,11 @@ class Sprite2DEditor : public Control {
 
 	Menu selected_menu_item;
 
-	Sprite2D *node;
+	Sprite2D *node = nullptr;
 
 	MenuButton *options;
 
-	ConfirmationDialog *outline_dialog;
+	ConfirmationDialog *outline_dialog = nullptr;
 
 	AcceptDialog *err_dialog;
 

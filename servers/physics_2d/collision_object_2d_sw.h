@@ -55,9 +55,9 @@ private:
 	struct Shape {
 		Transform2D xform;
 		Transform2D xform_inv;
-		BroadPhase2DSW::ID bpid;
+		BroadPhase2DSW::ID bpid = 0;
 		Rect2 aabb_cache; //for rayqueries
-		Shape2DSW *shape;
+		Shape2DSW *shape = nullptr;
 		Variant metadata;
 		bool disabled;
 		bool one_way_collision;

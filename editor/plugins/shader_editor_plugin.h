@@ -100,10 +100,10 @@ class ShaderEditor : public PanelContainer {
 	PopupMenu *bookmarks_menu;
 	MenuButton *help_menu;
 	PopupMenu *context_menu;
-	uint64_t idle;
+	uint64_t idle = 0;
 
 	GotoLineDialog *goto_line_dialog;
-	ConfirmationDialog *erase_tab_confirm;
+	ConfirmationDialog *erase_tab_confirm = nullptr;
 	ConfirmationDialog *disk_changed;
 
 	ShaderTextEditor *shader_editor;

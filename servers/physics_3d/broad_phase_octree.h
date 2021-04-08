@@ -42,7 +42,7 @@ class BroadPhaseOctree : public BroadPhase3DSW {
 
 	PairCallback pair_callback;
 	void *pair_userdata;
-	UnpairCallback unpair_callback;
+	UnpairCallback unpair_callback = nullptr;
 	void *unpair_userdata;
 
 public:

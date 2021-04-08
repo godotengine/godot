@@ -38,9 +38,9 @@
 class Camera3DEditor : public Control {
 	GDCLASS(Camera3DEditor, Control);
 
-	Panel *panel;
+	Panel *panel = nullptr;
 	Button *preview;
-	Node *node;
+	Node *node = nullptr;
 
 	void _pressed();
 

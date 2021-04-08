@@ -71,7 +71,7 @@ private:
 	EditorInspector *parameters;
 	CheckButton *runnable;
 
-	Button *button_export;
+	Button *button_export = nullptr;
 	bool updating;
 
 	AcceptDialog *error_dialog;

@@ -2315,7 +2315,7 @@ void RendererSceneRenderRD::_setup_reflections(const PagedArray<RID> &p_reflecti
 	}
 
 	if (cluster.reflection_count > 0) {
-		SortArray<Cluster::InstanceSort<ReflectionProbeInstance>> sort_array;
+		SortArray<Cluster::InstanceSort<ReflectionProbeInstance>> sort_array{};
 		sort_array.sort(cluster.reflection_sort, cluster.reflection_count);
 	}
 
@@ -2594,12 +2594,12 @@ void RendererSceneRenderRD::_setup_lights(const PagedArray<RID> &p_lights, const
 	}
 
 	if (cluster.omni_light_count) {
-		SortArray<Cluster::InstanceSort<LightInstance>> sorter;
+		SortArray<Cluster::InstanceSort<LightInstance>> sorter{};
 		sorter.sort(cluster.omni_light_sort, cluster.omni_light_count);
 	}
 
 	if (cluster.spot_light_count) {
-		SortArray<Cluster::InstanceSort<LightInstance>> sorter;
+		SortArray<Cluster::InstanceSort<LightInstance>> sorter{};
 		sorter.sort(cluster.spot_light_sort, cluster.spot_light_count);
 	}
 
@@ -2809,7 +2809,7 @@ void RendererSceneRenderRD::_setup_decals(const PagedArray<RID> &p_decals, const
 	}
 
 	if (cluster.decal_count > 0) {
-		SortArray<Cluster::InstanceSort<DecalInstance>> sort_array;
+		SortArray<Cluster::InstanceSort<DecalInstance>> sort_array{};
 		sort_array.sort(cluster.decal_sort, cluster.decal_count);
 	}
 
@@ -3197,7 +3197,7 @@ void RendererSceneRenderRD::_update_volumetric_fog(RID p_render_buffers, RID p_e
 	rb->volumetric_fog->length = env->volumetric_fog_length;
 	rb->volumetric_fog->spread = env->volumetric_fog_detail_spread;
 
-	VolumetricFogShader::ParamsUBO params;
+	VolumetricFogShader::ParamsUBO params{};
 
 	Vector2 frustum_near_size = p_cam_projection.get_viewport_half_extents();
 	Vector2 frustum_far_size = p_cam_projection.get_far_plane_half_extents();

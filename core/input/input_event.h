@@ -182,7 +182,7 @@ class InputEventWithModifiers : public InputEventFromWindow {
 	bool control = false;
 #else
 	union {
-		bool command; //< windows/mac key
+		bool command = false; //< windows/mac key
 		bool control = false;
 	};
 	bool meta = false; //< windows/mac key

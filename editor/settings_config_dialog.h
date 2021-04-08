@@ -59,7 +59,7 @@ class EditorSettingsDialog : public AcceptDialog {
 		SHORTCUT_REVERT
 	};
 
-	int button_idx;
+	int button_idx = 0;
 	int current_action_event_index = -1;
 	bool editing_action = false;
 	String current_action;

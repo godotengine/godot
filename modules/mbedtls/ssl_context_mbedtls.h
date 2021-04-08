@@ -51,9 +51,9 @@ class CookieContextMbedTLS : public Reference {
 
 protected:
 	bool inited = false;
-	mbedtls_entropy_context entropy;
-	mbedtls_ctr_drbg_context ctr_drbg;
-	mbedtls_ssl_cookie_ctx cookie_ctx;
+	mbedtls_entropy_context entropy{};
+	mbedtls_ctr_drbg_context ctr_drbg{};
+	mbedtls_ssl_cookie_ctx cookie_ctx{};
 
 public:
 	Error setup();
@@ -73,10 +73,10 @@ public:
 	static void print_mbedtls_error(int p_ret);
 
 	Ref<X509CertificateMbedTLS> certs;
-	mbedtls_entropy_context entropy;
-	mbedtls_ctr_drbg_context ctr_drbg;
-	mbedtls_ssl_context ssl;
-	mbedtls_ssl_config conf;
+	mbedtls_entropy_context entropy{};
+	mbedtls_ctr_drbg_context ctr_drbg{};
+	mbedtls_ssl_context ssl{};
+	mbedtls_ssl_config conf{};
 
 	Ref<CookieContextMbedTLS> cookies;
 	Ref<CryptoKeyMbedTLS> pkey;

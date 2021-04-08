@@ -91,7 +91,7 @@ protected:
 
 	Map<Node *, Variant> nodes;
 	void _node_removed(Node *p_node);
-	bool enabler[ENABLER_MAX];
+	bool enabler[ENABLER_MAX]{};
 
 	void _change_node_state(Node *p_node, bool p_enabled);
 

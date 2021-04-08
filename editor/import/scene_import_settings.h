@@ -84,18 +84,18 @@ class SceneImportSettings : public ConfirmationDialog {
 	MeshInstance3D *mesh_preview;
 	Ref<SphereMesh> material_preview;
 
-	float cam_rot_x;
-	float cam_rot_y;
-	float cam_zoom;
+	float cam_rot_x = 0.0;
+	float cam_rot_y = 0.0;
+	float cam_zoom = 0.0;
 
 	void _update_scene();
 
 	struct MaterialData {
-		bool has_import_id;
+		bool has_import_id = false;
 		Ref<Material> material;
-		TreeItem *scene_node;
-		TreeItem *mesh_node;
-		TreeItem *material_node;
+		TreeItem *scene_node = nullptr;
+		TreeItem *mesh_node = nullptr;
+		TreeItem *material_node = nullptr;
 
 		float cam_rot_x = -Math_PI / 4;
 		float cam_rot_y = -Math_PI / 4;
@@ -106,10 +106,10 @@ class SceneImportSettings : public ConfirmationDialog {
 	Map<String, MaterialData> material_map;
 
 	struct MeshData {
-		bool has_import_id;
+		bool has_import_id = false;
 		Ref<Mesh> mesh;
-		TreeItem *scene_node;
-		TreeItem *mesh_node;
+		TreeItem *scene_node = nullptr;
+		TreeItem *mesh_node = nullptr;
 
 		float cam_rot_x = -Math_PI / 4;
 		float cam_rot_y = -Math_PI / 4;
@@ -120,14 +120,14 @@ class SceneImportSettings : public ConfirmationDialog {
 
 	struct AnimationData {
 		Ref<Animation> animation;
-		TreeItem *scene_node;
+		TreeItem *scene_node = nullptr;
 		Map<StringName, Variant> settings;
 	};
 	Map<String, AnimationData> animation_map;
 
 	struct NodeData {
-		Node *node;
-		TreeItem *scene_node;
+		Node *node = nullptr;
+		TreeItem *scene_node = nullptr;
 		Map<StringName, Variant> settings;
 	};
 	Map<String, NodeData> node_map;
@@ -173,7 +173,7 @@ class SceneImportSettings : public ConfirmationDialog {
 	void _menu_callback(int p_id);
 	void _save_dir_callback(const String &p_path);
 
-	int current_action;
+	int current_action = 0;
 
 	Vector<TreeItem *> save_path_items;
 

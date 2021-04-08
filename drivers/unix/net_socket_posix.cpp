@@ -262,13 +262,13 @@ _FORCE_INLINE_ Error NetSocketPosix::_change_multicast_group(IP_Address p_ip, St
 
 	if (level == IPPROTO_IP) {
 		ERR_FAIL_COND_V(!if_ip.is_valid(), ERR_INVALID_PARAMETER);
-		struct ip_mreq greq;
+		struct ip_mreq greq {};
 		int sock_opt = p_add ? IP_ADD_MEMBERSHIP : IP_DROP_MEMBERSHIP;
 		copymem(&greq.imr_multiaddr, p_ip.get_ipv4(), 4);
 		copymem(&greq.imr_interface, if_ip.get_ipv4(), 4);
 		ret = setsockopt(_sock, level, sock_opt, (const char *)&greq, sizeof(greq));
 	} else {
-		struct ipv6_mreq greq;
+		struct ipv6_mreq greq {};
 		int sock_opt = p_add ? IPV6_ADD_MEMBERSHIP : IPV6_DROP_MEMBERSHIP;
 		copymem(&greq.ipv6mr_multiaddr, p_ip.get_ipv6(), 16);
 		greq.ipv6mr_interface = if_v6id;
@@ -380,7 +380,7 @@ Error NetSocketPosix::bind(IP_Address p_addr, uint16_t p_port) {
 	ERR_FAIL_COND_V(!is_open(), ERR_UNCONFIGURED);
 	ERR_FAIL_COND_V(!_can_use_ip(p_addr, true), ERR_INVALID_PARAMETER);
 
-	sockaddr_storage addr;
+	sockaddr_storage addr{};
 	size_t addr_size = _set_addr_storage(&addr, p_addr, p_port, _ip_type);
 
 	if (::bind(_sock, (struct sockaddr *)&addr, addr_size) != 0) {
@@ -410,7 +410,7 @@ Error NetSocketPosix::connect_to_host(IP_Address p_host, uint16_t p_port) {
 	ERR_FAIL_COND_V(!is_open(), ERR_UNCONFIGURED);
 	ERR_FAIL_COND_V(!_can_use_ip(p_host, false), ERR_INVALID_PARAMETER);
 
-	struct sockaddr_storage addr;
+	struct sockaddr_storage addr {};
 	size_t addr_size = _set_addr_storage(&addr, p_host, p_port, _ip_type);
 
 	if (SOCK_CONNECT(_sock, (struct sockaddr *)&addr, addr_size) != 0) {
@@ -491,7 +491,7 @@ Error NetSocketPosix::poll(PollType p_type, int p_timeout) const {
 
 	return ready ? OK : ERR_BUSY;
 #else
-	struct pollfd pfd;
+	struct pollfd pfd {};
 	pfd.fd = _sock;
 	pfd.events = POLLIN;
 	pfd.revents = 0;
@@ -543,7 +543,7 @@ Error NetSocketPosix::recv(uint8_t *p_buffer, int p_len, int &r_read) {
 Error NetSocketPosix::recvfrom(uint8_t *p_buffer, int p_len, int &r_read, IP_Address &r_ip, uint16_t &r_port, bool p_peek) {
 	ERR_FAIL_COND_V(!is_open(), ERR_UNCONFIGURED);
 
-	struct sockaddr_storage from;
+	struct sockaddr_storage from {};
 	socklen_t len = sizeof(struct sockaddr_storage);
 	memset(&from, 0, len);
 
@@ -600,7 +600,7 @@ Error NetSocketPosix::send(const uint8_t *p_buffer, int p_len, int &r_sent) {
 Error NetSocketPosix::sendto(const uint8_t *p_buffer, int p_len, int &r_sent, IP_Address p_ip, uint16_t p_port) {
 	ERR_FAIL_COND_V(!is_open(), ERR_UNCONFIGURED);
 
-	struct sockaddr_storage addr;
+	struct sockaddr_storage addr {};
 	size_t addr_size = _set_addr_storage(&addr, p_ip, p_port, _ip_type);
 	r_sent = ::sendto(_sock, SOCK_CBUF(p_buffer), p_len, 0, (struct sockaddr *)&addr, addr_size);
 
@@ -720,7 +720,7 @@ Ref<NetSocket> NetSocketPosix::accept(IP_Address &r_ip, uint16_t &r_port) {
 	Ref<NetSocket> out;
 	ERR_FAIL_COND_V(!is_open(), out);
 
-	struct sockaddr_storage their_addr;
+	struct sockaddr_storage their_addr {};
 	socklen_t size = sizeof(their_addr);
 	SOCKET_TYPE fd = ::accept(_sock, (struct sockaddr *)&their_addr, &size);
 	if (fd == SOCK_EMPTY) {

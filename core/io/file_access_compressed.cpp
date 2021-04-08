@@ -71,7 +71,7 @@ Error FileAccessCompressed::open_after_magic(FileAccess *p_base) {
 	int acc_ofs = f->get_position() + bc * 4;
 	int max_bs = 0;
 	for (int i = 0; i < bc; i++) {
-		ReadBlock rb;
+		ReadBlock rb{};
 		rb.offset = acc_ofs;
 		rb.csize = f->get_32();
 		acc_ofs += rb.csize;

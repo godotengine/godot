@@ -77,7 +77,7 @@ private:
 
 	RID immediate;
 
-	bool flags[FLAG_MAX];
+	bool flags[FLAG_MAX]{};
 	AlphaCutMode alpha_cut = ALPHA_CUT_DISABLED;
 	StandardMaterial3D::BillboardMode billboard_mode = StandardMaterial3D::BILLBOARD_DISABLED;
 	bool pending_update = false;

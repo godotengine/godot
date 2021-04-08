@@ -52,7 +52,7 @@ class EditorSceneImporterMesh : public Resource {
 		Vector<BlendShape> blend_shape_data;
 		struct LOD {
 			Vector<int> indices;
-			float distance;
+			float distance = 0.0;
 		};
 		Vector<LOD> lods;
 		Ref<Material> material;

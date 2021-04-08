@@ -78,7 +78,7 @@ class PinJoint2DSW : public Joint2DSW {
 			Body2DSW *B;
 		};
 
-		Body2DSW *_arr[2];
+		Body2DSW *_arr[2]{};
 	};
 
 	Transform2D M;
@@ -108,7 +108,7 @@ class GrooveJoint2DSW : public Joint2DSW {
 			Body2DSW *B;
 		};
 
-		Body2DSW *_arr[2];
+		Body2DSW *_arr[2]{};
 	};
 
 	Vector2 A_groove_1;
@@ -117,13 +117,13 @@ class GrooveJoint2DSW : public Joint2DSW {
 	Vector2 B_anchor;
 	Vector2 jn_acc;
 	Vector2 gbias;
-	real_t jn_max;
-	real_t clamp;
+	real_t jn_max = 0.0;
+	real_t clamp = 0.0;
 	Vector2 xf_normal;
 	Vector2 rA, rB;
 	Vector2 k1, k2;
 
-	bool correct;
+	bool correct = false;
 
 public:
 	virtual PhysicsServer2D::JointType get_type() const { return PhysicsServer2D::JOINT_TYPE_GROOVE; }
@@ -141,7 +141,7 @@ class DampedSpringJoint2DSW : public Joint2DSW {
 			Body2DSW *B;
 		};
 
-		Body2DSW *_arr[2];
+		Body2DSW *_arr[2]{};
 	};
 
 	Vector2 anchor_A;
@@ -153,9 +153,9 @@ class DampedSpringJoint2DSW : public Joint2DSW {
 
 	Vector2 rA, rB;
 	Vector2 n;
-	real_t n_mass;
-	real_t target_vrn;
-	real_t v_coef;
+	real_t n_mass = 0.0;
+	real_t target_vrn = 0.0;
+	real_t v_coef = 0.0;
 
 public:
 	virtual PhysicsServer2D::JointType get_type() const { return PhysicsServer2D::JOINT_TYPE_DAMPED_SPRING; }

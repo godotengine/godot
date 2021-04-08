@@ -91,7 +91,7 @@ class EditorPropertyArray : public EditorProperty {
 	VBoxContainer *vbox;
 	EditorSpinSlider *length;
 	EditorSpinSlider *page;
-	HBoxContainer *page_hb;
+	HBoxContainer *page_hb = nullptr;
 	Variant::Type array_type;
 	Variant::Type subtype;
 	PropertyHint subtype_hint;
@@ -134,9 +134,9 @@ class EditorPropertyDictionary : public EditorProperty {
 	int changing_type_idx;
 	Button *edit;
 	VBoxContainer *vbox;
-	EditorSpinSlider *length;
+	EditorSpinSlider *length = nullptr;
 	EditorSpinSlider *page;
-	HBoxContainer *page_hb;
+	HBoxContainer *page_hb = nullptr;
 
 	void _page_changed(double p_page);
 	void _edit_pressed();

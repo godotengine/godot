@@ -128,7 +128,7 @@ void UPNP::parse_igd(Ref<UPNPDevice> dev, UPNPDev *devlist) {
 		return;
 	}
 
-	struct IGDdatas data;
+	struct IGDdatas data {};
 
 	memset(urls, 0, sizeof(struct UPNPUrls));
 

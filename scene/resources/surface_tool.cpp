@@ -993,7 +993,7 @@ void SurfaceTool::generate_tangents() {
 	SMikkTSpaceContext msc;
 	msc.m_pInterface = &mkif;
 
-	TangentGenerationContextUserData triangle_data;
+	TangentGenerationContextUserData triangle_data{};
 	triangle_data.vertices = &vertex_array;
 	for (uint32_t i = 0; i < vertex_array.size(); i++) {
 		vertex_array[i].binormal = Vector3();

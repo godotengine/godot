@@ -75,13 +75,13 @@ public:
 		//void *texture_cache; // implementation dependent
 		Rect2 rect_cache;
 		Transform2D xform_cache;
-		float radius_cache; //used for shadow far plane
+		float radius_cache = 0.0; //used for shadow far plane
 		//CameraMatrix shadow_matrix_cache;
 
 		Transform2D light_shader_xform;
 		//Vector2 light_shader_pos;
 
-		Light *shadows_next_ptr;
+		Light *shadows_next_ptr = nullptr;
 		Light *filter_next_ptr;
 		Light *next_ptr;
 		Light *directional_next_ptr;
@@ -182,7 +182,7 @@ public:
 				TYPE_CLIP_IGNORE,
 			};
 
-			Command *next;
+			Command *next = nullptr;
 			Type type;
 			virtual ~Command() {}
 		};
@@ -204,7 +204,7 @@ public:
 		struct CommandNinePatch : public Command {
 			Rect2 rect;
 			Rect2 source;
-			float margin[4];
+			float margin[4]{};
 			bool draw_center;
 			Color color;
 			RS::NinePatchAxisMode axis_x;
@@ -230,7 +230,7 @@ public:
 		};
 
 		struct CommandPrimitive : public Command {
-			uint32_t point_count;
+			uint32_t point_count = 0;
 			Vector2 points[4];
 			Vector2 uvs[4];
 			Color colors[4];
@@ -282,8 +282,8 @@ public:
 		};
 
 		struct ViewportRender {
-			RenderingServer *owner;
-			void *udata;
+			RenderingServer *owner = nullptr;
+			void *udata = nullptr;
 			Rect2 rect;
 		};
 
@@ -316,7 +316,7 @@ public:
 		struct CopyBackBuffer {
 			Rect2 rect;
 			Rect2 screen_rect;
-			bool full;
+			bool full = false;
 		};
 		CopyBackBuffer *copy_back_buffer;
 
@@ -455,7 +455,7 @@ public:
 						// If we need more blocks, we allocate them
 						// (they won't be freed until this CanvasItem is
 						// deleted, though).
-						CommandBlock cb;
+						CommandBlock cb{};
 						cb.memory = (uint8_t *)memalloc(CommandBlock::MAX_SIZE);
 						cb.usage = 0;
 						blocks.push_back(cb);

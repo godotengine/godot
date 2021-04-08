@@ -59,10 +59,10 @@ class MainTimerSync {
 	static const int CONTROL_STEPS = 12;
 
 	// sum of physics steps done over the last (i+1) frames
-	int accumulated_physics_steps[CONTROL_STEPS];
+	int accumulated_physics_steps[CONTROL_STEPS]{};
 
 	// typical value for accumulated_physics_steps[i] is either this or this plus one
-	int typical_physics_steps[CONTROL_STEPS];
+	int typical_physics_steps[CONTROL_STEPS]{};
 
 	int fixed_fps = 0;
 

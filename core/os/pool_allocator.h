@@ -76,19 +76,19 @@ private:
 	typedef int EntryArrayPos;
 	typedef int EntryIndicesPos;
 
-	Entry *entry_array;
-	int *entry_indices;
-	int entry_max;
-	int entry_count;
+	Entry *entry_array = nullptr;
+	int *entry_indices = nullptr;
+	int entry_max = 0;
+	int entry_count = 0;
 
-	uint8_t *pool;
+	uint8_t *pool = nullptr;
 	void *mem_ptr;
-	int pool_size;
+	int pool_size = 0;
 
-	int free_mem;
-	int free_mem_peak;
+	int free_mem = 0;
+	int free_mem_peak = 0;
 
-	unsigned int check_count;
+	unsigned int check_count = 0;
 	int align;
 
 	bool needs_locking;

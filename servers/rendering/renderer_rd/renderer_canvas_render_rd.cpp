@@ -404,7 +404,7 @@ void RendererCanvasRenderRD::_render_item(RD::DrawListID p_draw_list, const Item
 		current_repeat = p_item->texture_repeat;
 	}
 
-	PushConstant push_constant;
+	PushConstant push_constant{};
 	Transform2D base_transform = p_canvas_transform_inverse * p_item->final_transform;
 	_update_transform_2d_to_mat2x3(base_transform, push_constant.world);
 
@@ -1372,7 +1372,7 @@ void RendererCanvasRenderRD::canvas_render_items(RID p_to_render_target, Item *p
 
 	{
 		//update canvas state uniform buffer
-		State::Buffer state_buffer;
+		State::Buffer state_buffer{};
 
 		Size2i ssize = storage->render_target_get_size(p_to_render_target);
 
@@ -1625,7 +1625,7 @@ void RendererCanvasRenderRD::light_update_shadow(RID p_rid, int p_shadow_index, 
 		Vector3 cam_target = Basis(Vector3(0, 0, Math_TAU * ((i + 3) / 4.0))).xform(Vector3(0, 1, 0));
 		projection = projection * CameraMatrix(Transform().looking_at(cam_target, Vector3(0, 0, -1)).affine_inverse());
 
-		ShadowRenderPushConstant push_constant;
+		ShadowRenderPushConstant push_constant{};
 		for (int y = 0; y < 4; y++) {
 			for (int x = 0; x < 4; x++) {
 				push_constant.projection[y * 4 + x] = projection.matrix[y][x];
@@ -1703,7 +1703,7 @@ void RendererCanvasRenderRD::light_update_directional_shadow(RID p_rid, int p_sh
 	projection.set_orthogonal(-half_size, half_size, -0.5, 0.5, 0.0, distance);
 	projection = projection * CameraMatrix(Transform().looking_at(Vector3(0, 1, 0), Vector3(0, 0, -1)).affine_inverse());
 
-	ShadowRenderPushConstant push_constant;
+	ShadowRenderPushConstant push_constant{};
 	for (int y = 0; y < 4; y++) {
 		for (int x = 0; x < 4; x++) {
 			push_constant.projection[y * 4 + x] = projection.matrix[y][x];
@@ -1769,7 +1769,7 @@ void RendererCanvasRenderRD::render_sdf(RID p_render_target, LightOccluderInstan
 
 	CameraMatrix projection;
 
-	ShadowRenderPushConstant push_constant;
+	ShadowRenderPushConstant push_constant{};
 	for (int y = 0; y < 4; y++) {
 		for (int x = 0; x < 4; x++) {
 			push_constant.projection[y * 4 + x] = projection.matrix[y][x];
@@ -2662,7 +2662,7 @@ RendererCanvasRenderRD::RendererCanvasRenderRD(RendererStorageRD *p_storage) {
 	{ //default skeleton buffer
 
 		shader.default_skeleton_uniform_buffer = RD::get_singleton()->uniform_buffer_create(sizeof(SkeletonUniform));
-		SkeletonUniform su;
+		SkeletonUniform su{};
 		_update_transform_2d_to_mat4(Transform2D(), su.skeleton_inverse);
 		_update_transform_2d_to_mat4(Transform2D(), su.skeleton_transform);
 		RD::get_singleton()->buffer_update(shader.default_skeleton_uniform_buffer, 0, sizeof(SkeletonUniform), &su);

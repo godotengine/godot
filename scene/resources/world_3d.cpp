@@ -42,7 +42,7 @@ struct SpatialIndexer {
 
 	struct NotifierData {
 		AABB aabb;
-		OctreeElementID id;
+		OctreeElementID id = 0;
 	};
 
 	Map<VisibilityNotifier3D *, NotifierData> notifiers;

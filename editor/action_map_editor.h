@@ -84,7 +84,7 @@ private:
 	};
 	String mods[MOD_MAX] = { "Alt", "Shift", "Command", "Control", "Meta" };
 
-	CheckBox *mod_checkboxes[MOD_MAX];
+	CheckBox *mod_checkboxes[MOD_MAX]{};
 	CheckBox *store_command_checkbox;
 
 	CheckBox *physical_key_checkbox;

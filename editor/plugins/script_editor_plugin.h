@@ -234,12 +234,12 @@ class ScriptEditor : public PanelContainer {
 
 	HBoxContainer *menu_hb;
 	MenuButton *file_menu;
-	MenuButton *edit_menu;
+	MenuButton *edit_menu = nullptr;
 	MenuButton *script_search_menu;
-	MenuButton *debug_menu;
+	MenuButton *debug_menu = nullptr;
 	PopupMenu *context_menu;
 	Timer *autosave_timer;
-	uint64_t idle;
+	uint64_t idle = 0;
 
 	PopupMenu *recent_scripts;
 	PopupMenu *theme_submenu;
@@ -267,7 +267,7 @@ class ScriptEditor : public PanelContainer {
 	AcceptDialog *error_dialog;
 	ConfirmationDialog *erase_tab_confirm;
 	ScriptCreateDialog *script_create_dialog;
-	Button *scripts_visible;
+	Button *scripts_visible = nullptr;
 
 	String current_theme;
 

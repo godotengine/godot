@@ -44,10 +44,10 @@ class MultiMeshEditor : public Control {
 	AcceptDialog *err_dialog;
 	MenuButton *options;
 	MultiMeshInstance3D *_last_pp_node;
-	bool browsing_source;
+	bool browsing_source = false;
 
-	Panel *panel;
-	MultiMeshInstance3D *node;
+	Panel *panel = nullptr;
+	MultiMeshInstance3D *node = nullptr;
 
 	LineEdit *surface_source;
 	LineEdit *mesh_source;

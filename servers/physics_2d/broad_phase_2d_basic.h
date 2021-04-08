@@ -35,10 +35,10 @@
 #include "space_2d_sw.h"
 class BroadPhase2DBasic : public BroadPhase2DSW {
 	struct Element {
-		CollisionObject2DSW *owner;
-		bool _static;
+		CollisionObject2DSW *owner = nullptr;
+		bool _static = false;
 		Rect2 aabb;
-		int subindex;
+		int subindex = 0;
 	};
 
 	Map<ID, Element> element_map;
@@ -48,10 +48,10 @@ class BroadPhase2DBasic : public BroadPhase2DSW {
 	struct PairKey {
 		union {
 			struct {
-				ID a;
-				ID b;
+				ID a = 0;
+				ID b = 0;
 			};
-			uint64_t key;
+			uint64_t key = 0;
 		};
 
 		_FORCE_INLINE_ bool operator<(const PairKey &p_key) const {

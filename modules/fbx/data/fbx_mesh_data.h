@@ -57,7 +57,7 @@ struct VertexWeightMapping {
 
 template <class T>
 struct VertexData {
-	int polygon_index;
+	int polygon_index = 0;
 	T data;
 };
 

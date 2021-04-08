@@ -42,7 +42,7 @@ private:
 		PACKET_BUFFER_SIZE = 65536
 	};
 
-	uint8_t packet_buffer[PACKET_BUFFER_SIZE];
+	uint8_t packet_buffer[PACKET_BUFFER_SIZE]{};
 
 	Status status = STATUS_DISCONNECTED;
 	String hostname;
@@ -57,7 +57,7 @@ private:
 
 protected:
 	Ref<SSLContextMbedTLS> ssl_ctx;
-	mbedtls_timing_delay_context timer;
+	mbedtls_timing_delay_context timer{};
 
 	static void _bind_methods();
 

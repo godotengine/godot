@@ -93,7 +93,7 @@ class AnimationNodeStateMachineEditor : public AnimationTreeNodeEditorPlugin {
 	Vector2 add_node_pos;
 
 	bool dragging_selected_attempt;
-	bool dragging_selected;
+	bool dragging_selected = false;
 	Vector2 drag_from;
 	Vector2 drag_ofs;
 	StringName snap_x;
@@ -159,9 +159,9 @@ class AnimationNodeStateMachineEditor : public AnimationTreeNodeEditorPlugin {
 	StringName last_blend_from_node;
 	StringName last_current_node;
 	Vector<StringName> last_travel_path;
-	float last_play_pos;
-	float play_pos;
-	float current_length;
+	float last_play_pos = 0.0;
+	float play_pos = 0.0;
+	float current_length = 0.0;
 
 	float error_time;
 	String error_text;

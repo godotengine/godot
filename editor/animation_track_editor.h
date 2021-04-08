@@ -55,7 +55,7 @@ class AnimationTimelineEdit : public Range {
 	Ref<Animation> animation;
 	int name_limit;
 	Range *zoom;
-	Range *h_scroll;
+	Range *h_scroll = nullptr;
 	float play_position_pos;
 
 	HBoxContainer *len_hb;
@@ -65,26 +65,26 @@ class AnimationTimelineEdit : public Range {
 
 	MenuButton *add_track;
 	Control *play_position; //separate control used to draw so updates for only position changed are much faster
-	HScrollBar *hscroll;
+	HScrollBar *hscroll = nullptr;
 
 	void _zoom_changed(double);
 	void _anim_length_changed(double p_new_len);
 	void _anim_loop_pressed();
 
 	void _play_position_draw();
-	UndoRedo *undo_redo;
+	UndoRedo *undo_redo = nullptr;
 	Rect2 hsize_rect;
 
 	bool editing;
 	bool use_fps;
 
 	bool panning_timeline;
-	float panning_timeline_from;
-	float panning_timeline_at;
+	float panning_timeline_from = 0.0;
+	float panning_timeline_at = 0.0;
 	bool dragging_timeline;
 	bool dragging_hsize;
-	float dragging_hsize_from;
-	float dragging_hsize_at;
+	float dragging_hsize_from = 0.0;
+	float dragging_hsize_at = 0.0;
 
 	void _gui_input(const Ref<InputEvent> &p_event);
 	void _track_added(int p_track);
@@ -148,7 +148,7 @@ class AnimationTrackEdit : public Control {
 	NodePath node_path;
 
 	Ref<Animation> animation;
-	int track;
+	int track = 0;
 
 	Rect2 check_rect;
 	Rect2 path_rect;
@@ -178,14 +178,14 @@ class AnimationTrackEdit : public Control {
 	bool _is_value_key_valid(const Variant &p_key_value, Variant::Type &r_valid_type) const;
 
 	mutable int dropping_at;
-	float insert_at_pos;
+	float insert_at_pos = 0.0;
 	bool moving_selection_attempt;
 	int select_single_attempt;
 	bool moving_selection;
-	float moving_selection_from_ofs;
+	float moving_selection_from_ofs = 0.0;
 
 	bool in_group;
-	AnimationTrackEditor *editor;
+	AnimationTrackEditor *editor = nullptr;
 
 protected:
 	static void _bind_methods();
@@ -348,7 +348,7 @@ class AnimationTrackEditor : public VBoxContainer {
 	PropertySelector *prop_selector;
 	PropertySelector *method_selector;
 	SceneTreeDialog *pick_track;
-	int adding_track_type;
+	int adding_track_type = 0;
 	NodePath adding_track_path;
 
 	bool keying;
@@ -393,8 +393,8 @@ class AnimationTrackEditor : public VBoxContainer {
 
 	void _timeline_value_changed(double);
 
-	float insert_key_from_track_call_ofs;
-	int insert_key_from_track_call_track;
+	float insert_key_from_track_call_ofs = 0.0;
+	int insert_key_from_track_call_track = 0;
 	void _insert_key_from_track(float p_ofs, int p_track);
 	void _add_method_key(const String &p_method);
 
@@ -420,7 +420,7 @@ class AnimationTrackEditor : public VBoxContainer {
 	void _key_deselected(int p_key, int p_track);
 
 	bool moving_selection;
-	float moving_selection_offset;
+	float moving_selection_offset = 0.0;
 	void _move_selection_begin();
 	void _move_selection(float p_offset);
 	void _move_selection_commit();
@@ -463,7 +463,7 @@ class AnimationTrackEditor : public VBoxContainer {
 
 	void _edit_menu_about_to_popup();
 	void _edit_menu_pressed(int p_option);
-	int last_menu_track_opt;
+	int last_menu_track_opt = 0;
 
 	void _cleanup_animation(Ref<Animation> p_animation);
 

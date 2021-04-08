@@ -58,7 +58,7 @@ class AnimationBezierTrackEdit : public Control {
 	float play_position_pos;
 
 	Ref<Animation> animation;
-	int track;
+	int track = 0;
 
 	Vector<Rect2> view_rects;
 
@@ -89,18 +89,18 @@ class AnimationBezierTrackEdit : public Control {
 	bool moving_selection_attempt;
 	int select_single_attempt;
 	bool moving_selection;
-	int moving_selection_from_key;
+	int moving_selection_from_key = 0;
 
 	Vector2 moving_selection_offset;
 
 	bool box_selecting_attempt;
 	bool box_selecting;
-	bool box_selecting_add;
+	bool box_selecting_add = false;
 	Vector2 box_selection_from;
 	Vector2 box_selection_to;
 
 	int moving_handle; //0 no move -1 or +1 out
-	int moving_handle_key;
+	int moving_handle_key = 0;
 	Vector2 moving_handle_left;
 	Vector2 moving_handle_right;
 
@@ -117,7 +117,7 @@ class AnimationBezierTrackEdit : public Control {
 		float transition = 0;
 	};
 
-	AnimationTrackEditor *editor;
+	AnimationTrackEditor *editor = nullptr;
 
 	struct EditPoint {
 		Rect2 point_rect;
@@ -130,8 +130,8 @@ class AnimationBezierTrackEdit : public Control {
 	Set<int> selection;
 
 	bool panning_timeline;
-	float panning_timeline_from;
-	float panning_timeline_at;
+	float panning_timeline_from = 0.0;
+	float panning_timeline_at = 0.0;
 
 	void _draw_line_clipped(const Vector2 &p_from, const Vector2 &p_to, const Color &p_color, int p_clip_left, int p_clip_right);
 	void _draw_track(int p_track, const Color &p_color);

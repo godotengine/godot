@@ -118,7 +118,7 @@ void BroadPhase2DHashGrid::_enter_grid(Element *p_elem, const Rect2 &p_rect, boo
 
 	for (int i = from.x; i <= to.x; i++) {
 		for (int j = from.y; j <= to.y; j++) {
-			PosKey pk;
+			PosKey pk{};
 			pk.x = i;
 			pk.y = j;
 
@@ -212,7 +212,7 @@ void BroadPhase2DHashGrid::_exit_grid(Element *p_elem, const Rect2 &p_rect, bool
 
 	for (int i = from.x; i <= to.x; i++) {
 		for (int j = from.y; j <= to.y; j++) {
-			PosKey pk;
+			PosKey pk{};
 			pk.x = i;
 			pk.y = j;
 
@@ -388,7 +388,7 @@ int BroadPhase2DHashGrid::get_subindex(ID p_id) const {
 
 template <bool use_aabb, bool use_segment>
 void BroadPhase2DHashGrid::_cull(const Point2i p_cell, const Rect2 &p_aabb, const Point2 &p_from, const Point2 &p_to, CollisionObject2DSW **p_results, int p_max_results, int *p_result_indices, int &index) {
-	PosKey pk;
+	PosKey pk{};
 	pk.x = p_cell.x;
 	pk.y = p_cell.y;
 

@@ -168,7 +168,7 @@ void RendererCanvasCull::_cull_canvas_item(Item *p_canvas_item, const Transform2
 		int i = 0;
 		_collect_ysort_children(ci, Transform2D(), p_material_owner, child_items, i);
 
-		SortArray<Item *, ItemPtrSort> sorter;
+		SortArray<Item *, ItemPtrSort> sorter{};
 		sorter.sort(child_items, child_item_count);
 	}
 

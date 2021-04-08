@@ -36,10 +36,10 @@
 
 class BroadPhase3DBasic : public BroadPhase3DSW {
 	struct Element {
-		CollisionObject3DSW *owner;
-		bool _static;
+		CollisionObject3DSW *owner = nullptr;
+		bool _static = false;
 		AABB aabb;
-		int subindex;
+		int subindex = 0;
 	};
 
 	Map<ID, Element> element_map;
@@ -49,10 +49,10 @@ class BroadPhase3DBasic : public BroadPhase3DSW {
 	struct PairKey {
 		union {
 			struct {
-				ID a;
-				ID b;
+				ID a = 0;
+				ID b = 0;
 			};
-			uint64_t key;
+			uint64_t key = 0;
 		};
 
 		_FORCE_INLINE_ bool operator<(const PairKey &p_key) const {

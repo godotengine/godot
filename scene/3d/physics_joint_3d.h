@@ -95,7 +95,7 @@ public:
 	};
 
 protected:
-	real_t params[3];
+	real_t params[3]{};
 	virtual void _configure_joint(RID p_joint, PhysicsBody3D *body_a, PhysicsBody3D *body_b) override;
 	static void _bind_methods();
 
@@ -131,8 +131,8 @@ public:
 	};
 
 protected:
-	real_t params[PARAM_MAX];
-	bool flags[FLAG_MAX];
+	real_t params[PARAM_MAX]{};
+	bool flags[FLAG_MAX]{};
 	virtual void _configure_joint(RID p_joint, PhysicsBody3D *body_a, PhysicsBody3D *body_b) override;
 	static void _bind_methods();
 
@@ -194,7 +194,7 @@ protected:
 	void _set_lower_limit_angular(real_t p_limit_angular);
 	real_t _get_lower_limit_angular() const;
 
-	real_t params[PARAM_MAX];
+	real_t params[PARAM_MAX]{};
 	virtual void _configure_joint(RID p_joint, PhysicsBody3D *body_a, PhysicsBody3D *body_b) override;
 	static void _bind_methods();
 
@@ -227,7 +227,7 @@ protected:
 	void _set_twist_span(real_t p_limit_angular);
 	real_t _get_twist_span() const;
 
-	real_t params[PARAM_MAX];
+	real_t params[PARAM_MAX]{};
 	virtual void _configure_joint(RID p_joint, PhysicsBody3D *body_a, PhysicsBody3D *body_b) override;
 	static void _bind_methods();
 
@@ -299,12 +299,12 @@ protected:
 	void _set_angular_lo_limit_z(real_t p_limit_angular);
 	real_t _get_angular_lo_limit_z() const;
 
-	real_t params_x[PARAM_MAX];
-	bool flags_x[FLAG_MAX];
-	real_t params_y[PARAM_MAX];
-	bool flags_y[FLAG_MAX];
-	real_t params_z[PARAM_MAX];
-	bool flags_z[FLAG_MAX];
+	real_t params_x[PARAM_MAX]{};
+	bool flags_x[FLAG_MAX]{};
+	real_t params_y[PARAM_MAX]{};
+	bool flags_y[FLAG_MAX]{};
+	real_t params_z[PARAM_MAX]{};
+	bool flags_z[FLAG_MAX]{};
 
 	virtual void _configure_joint(RID p_joint, PhysicsBody3D *body_a, PhysicsBody3D *body_b) override;
 	static void _bind_methods();

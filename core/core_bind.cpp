@@ -448,8 +448,8 @@ int64_t _OS::get_unix_time_from_datetime(Dictionary datetime) const {
  * @return dictionary of date and time values
  */
 Dictionary _OS::get_datetime_from_unix_time(int64_t unix_time_val) const {
-	OS::Date date;
-	OS::Time time;
+	OS::Date date{};
+	OS::Time time{};
 
 	long dayclock, dayno;
 	int year = EPOCH_YR;

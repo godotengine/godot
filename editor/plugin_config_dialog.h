@@ -49,7 +49,7 @@ class PluginConfigDialog : public ConfirmationDialog {
 	LineEdit *script_edit;
 	CheckBox *active_edit;
 
-	bool _edit_mode;
+	bool _edit_mode = false;
 
 	void _clear_fields();
 	void _on_confirmed();

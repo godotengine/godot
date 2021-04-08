@@ -54,18 +54,18 @@ private:
 	RID particles;
 
 	bool one_shot;
-	int amount;
-	float lifetime;
-	float pre_process_time;
-	float explosiveness_ratio;
-	float randomness_ratio;
-	float speed_scale;
+	int amount = 0;
+	float lifetime = 0.0;
+	float pre_process_time = 0.0;
+	float explosiveness_ratio = 0.0;
+	float randomness_ratio = 0.0;
+	float speed_scale = 0.0;
 	AABB visibility_aabb;
-	bool local_coords;
-	int fixed_fps;
-	bool fractional_delta;
+	bool local_coords = false;
+	int fixed_fps = 0;
+	bool fractional_delta = false;
 	NodePath sub_emitter;
-	float collision_base_size;
+	float collision_base_size = 0.0;
 
 	Ref<Material> process_material;
 

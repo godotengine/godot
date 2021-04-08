@@ -42,7 +42,7 @@ class PackedDataContainer : public Resource {
 	};
 
 	struct DictKey {
-		uint32_t hash;
+		uint32_t hash = 0;
 		Variant key;
 		bool operator<(const DictKey &p_key) const { return hash < p_key.hash; }
 	};

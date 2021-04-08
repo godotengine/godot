@@ -164,10 +164,10 @@ class VisualScriptEditor : public ScriptEditorBase {
 	String member_name;
 
 	PortAction port_action;
-	int port_action_node;
-	int port_action_output;
+	int port_action_node = 0;
+	int port_action_output = 0;
 	Vector2 port_action_pos;
-	int port_action_new_node;
+	int port_action_new_node = 0;
 
 	bool saved_pos_dirty;
 	Vector2 saved_position;
@@ -253,12 +253,12 @@ class VisualScriptEditor : public ScriptEditorBase {
 	bool can_drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from) const;
 	void drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from);
 
-	int editing_id;
-	int editing_input;
+	int editing_id = 0;
+	int editing_input = 0;
 
-	bool can_swap;
-	int data_disconnect_node;
-	int data_disconnect_port;
+	bool can_swap = false;
+	int data_disconnect_node = 0;
+	int data_disconnect_port = 0;
 
 	void _default_value_changed();
 	void _default_value_edited(Node *p_button, int p_id, int p_input_port);
@@ -268,7 +268,7 @@ class VisualScriptEditor : public ScriptEditorBase {
 	void _graph_ofs_changed(const Vector2 &p_ofs);
 	void _comment_node_resized(const Vector2 &p_new_size, int p_node);
 
-	int selecting_method_id;
+	int selecting_method_id = 0;
 	void _selected_method(const String &p_method, const String &p_type, const bool p_connecting);
 
 	void _draw_color_over_button(Object *obj, Color p_color);

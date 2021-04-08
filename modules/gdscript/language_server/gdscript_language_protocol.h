@@ -49,7 +49,7 @@ private:
 	struct LSPeer : Reference {
 		Ref<StreamPeerTCP> connection;
 
-		uint8_t req_buf[LSP_MAX_BUFFER_SIZE];
+		uint8_t req_buf[LSP_MAX_BUFFER_SIZE]{};
 		int req_pos = 0;
 		bool has_header = false;
 		bool has_content = false;

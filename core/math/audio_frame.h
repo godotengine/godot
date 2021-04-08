@@ -38,7 +38,7 @@ static inline float undenormalise(volatile float f) {
 	union {
 		uint32_t i;
 		float f;
-	} v;
+	} v{};
 
 	v.f = f;
 

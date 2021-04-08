@@ -674,7 +674,7 @@ void EffectsRD::make_mipmap(RID p_source_rd_texture, RID p_dest_texture, const S
 }
 
 void EffectsRD::copy_cubemap_to_dp(RID p_source_rd_texture, RID p_dst_framebuffer, const Rect2 &p_rect, float p_z_near, float p_z_far, bool p_dp_flip) {
-	CopyToDPPushConstant push_constant;
+	CopyToDPPushConstant push_constant{};
 	push_constant.screen_rect[0] = p_rect.position.x;
 	push_constant.screen_rect[1] = p_rect.position.y;
 	push_constant.screen_rect[2] = p_rect.size.width;
@@ -1366,7 +1366,7 @@ void EffectsRD::cubemap_filter(RID p_source_cubemap, Vector<RID> p_dest_cubemap,
 }
 
 void EffectsRD::render_sky(RD::DrawListID p_list, float p_time, RID p_fb, RID p_samplers, RID p_fog, PipelineCacheRD *p_pipeline, RID p_uniform_set, RID p_texture_set, const CameraMatrix &p_camera, const Basis &p_orientation, float p_multiplier, const Vector3 &p_position) {
-	SkyPushConstant sky_push_constant;
+	SkyPushConstant sky_push_constant{};
 
 	zeromem(&sky_push_constant, sizeof(SkyPushConstant));
 
@@ -1402,7 +1402,7 @@ void EffectsRD::render_sky(RD::DrawListID p_list, float p_time, RID p_fb, RID p_
 }
 
 void EffectsRD::resolve_gi(RID p_source_depth, RID p_source_normal_roughness, RID p_source_giprobe, RID p_dest_depth, RID p_dest_normal_roughness, RID p_dest_giprobe, Vector2i p_screen_size, int p_samples, uint32_t p_barrier) {
-	ResolvePushConstant push_constant;
+	ResolvePushConstant push_constant{};
 	push_constant.screen_size[0] = p_screen_size.x;
 	push_constant.screen_size[1] = p_screen_size.y;
 	push_constant.samples = p_samples;
@@ -1424,7 +1424,7 @@ void EffectsRD::resolve_gi(RID p_source_depth, RID p_source_normal_roughness, RI
 }
 
 void EffectsRD::sort_buffer(RID p_uniform_set, int p_size) {
-	Sort::PushConstant push_constant;
+	Sort::PushConstant push_constant{};
 	push_constant.total_elements = p_size;
 
 	bool done = true;
@@ -1662,7 +1662,7 @@ EffectsRD::EffectsRD() {
 			}
 
 			ssao.gather_constants_buffer = RD::get_singleton()->uniform_buffer_create(sizeof(SSAOGatherConstants));
-			SSAOGatherConstants gather_constants;
+			SSAOGatherConstants gather_constants{};
 
 			const int sub_pass_count = 5;
 			for (int pass = 0; pass < 4; pass++) {

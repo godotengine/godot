@@ -49,7 +49,7 @@ class Callable {
 	StringName method;
 	union {
 		uint64_t object = 0;
-		CallableCustom *custom;
+		CallableCustom *custom = nullptr;
 	};
 
 public:

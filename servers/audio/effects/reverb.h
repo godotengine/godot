@@ -79,10 +79,10 @@ private:
 	AllPass allpass[MAX_ALLPASS];
 	float *input_buffer;
 	float *echo_buffer = nullptr;
-	int echo_buffer_size;
-	int echo_buffer_pos;
+	int echo_buffer_size = 0;
+	int echo_buffer_pos = 0;
 
-	float hpf_h1, hpf_h2 = 0;
+	float hpf_h1 = 0.0, hpf_h2 = 0;
 
 	struct Parameters {
 		float room_size;
@@ -95,7 +95,7 @@ private:
 		float predelay;
 		float predelay_fb;
 		float hpf;
-	} params;
+	} params{};
 
 	void configure_buffers();
 	void update_parameters();

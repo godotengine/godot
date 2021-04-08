@@ -57,7 +57,7 @@ static Vector<Vector<Face3>> convex_decompose(const Vector<Face3> &p_faces) {
 
 	for (int i = 0; i < hull_count; i++) {
 		Vector<Face3> triangles;
-		VHACD::IVHACD::ConvexHull hull;
+		VHACD::IVHACD::ConvexHull hull{};
 		decomposer->GetConvexHull(i, hull);
 		triangles.resize(hull.m_nTriangles);
 		for (uint32_t j = 0; j < hull.m_nTriangles; j++) {

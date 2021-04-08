@@ -108,9 +108,9 @@ private:
 	Vector<Metric> frame_metrics;
 	int last_metric;
 
-	int max_functions;
+	int max_functions = 0;
 
-	bool updating_frame;
+	bool updating_frame = false;
 
 	//int cursor_metric;
 	int hover_metric;

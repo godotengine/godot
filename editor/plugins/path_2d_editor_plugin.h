@@ -44,8 +44,8 @@ class Path2DEditor : public HBoxContainer {
 
 	CanvasItemEditor *canvas_item_editor;
 	EditorNode *editor;
-	Panel *panel;
-	Path2D *node;
+	Panel *panel = nullptr;
+	Path2D *node = nullptr;
 
 	HBoxContainer *base_hb;
 	Separator *sep;
@@ -83,11 +83,11 @@ class Path2DEditor : public HBoxContainer {
 	};
 
 	Action action;
-	int action_point;
+	int action_point = 0;
 	Point2 moving_from;
 	Point2 moving_screen_from;
-	float orig_in_length;
-	float orig_out_length;
+	float orig_in_length = 0.0;
+	float orig_out_length = 0.0;
 	Vector2 edge_point;
 
 	void _mode_selected(int p_mode);

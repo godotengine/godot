@@ -189,10 +189,10 @@ void SceneTree::_update_group_order(Group &g, bool p_use_priority) {
 	int node_count = g.nodes.size();
 
 	if (p_use_priority) {
-		SortArray<Node *, Node::ComparatorWithPriority> node_sort;
+		SortArray<Node *, Node::ComparatorWithPriority> node_sort{};
 		node_sort.sort(nodes, node_count);
 	} else {
-		SortArray<Node *, Node::Comparator> node_sort;
+		SortArray<Node *, Node::Comparator> node_sort{};
 		node_sort.sort(nodes, node_count);
 	}
 	g.changed = false;

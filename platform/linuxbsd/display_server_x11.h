@@ -62,7 +62,7 @@
 #include <X11/keysym.h>
 
 typedef struct _xrr_monitor_info {
-	Atom name;
+	Atom name = 0;
 	Bool primary = false;
 	Bool automatic = false;
 	int noutput = 0;
@@ -104,8 +104,8 @@ class DisplayServerX11 : public DisplayServer {
 #endif
 
 	struct WindowData {
-		Window x11_window;
-		::XIC xic;
+		Window x11_window = 0;
+		::XIC xic = nullptr;
 
 		Size2i min_size;
 		Size2i max_size;
@@ -146,10 +146,10 @@ class DisplayServerX11 : public DisplayServer {
 	WindowID _create_window(WindowMode p_mode, uint32_t p_flags, const Rect2i &p_rect);
 
 	String internal_clipboard;
-	Window xdnd_source_window;
+	Window xdnd_source_window = 0;
 	::Display *x11_display;
 	char *xmbstring;
-	int xmblen;
+	int xmblen = 0;
 	unsigned long last_timestamp;
 	::Time last_keyrelease_time;
 	::XIM xim;
@@ -167,22 +167,22 @@ class DisplayServerX11 : public DisplayServer {
 	uint64_t time_since_no_focus = 0;
 
 	struct {
-		int opcode;
+		int opcode = 0;
 		Vector<int> touch_devices;
 		Map<int, Vector2> absolute_devices;
 		Map<int, Vector2> pen_pressure_range;
 		Map<int, Vector2> pen_tilt_x_range;
 		Map<int, Vector2> pen_tilt_y_range;
-		XIEventMask all_event_mask;
+		XIEventMask all_event_mask{};
 		Map<int, Vector2> state;
-		double pressure;
-		bool pressure_supported;
+		double pressure = 0.0;
+		bool pressure_supported = false;
 		Vector2 tilt;
 		Vector2 mouse_pos_to_filter;
 		Vector2 relative_motion;
 		Vector2 raw_pos;
 		Vector2 old_raw_pos;
-		::Time last_relative_time;
+		::Time last_relative_time = 0;
 	} xi;
 
 	bool _refresh_device_info();
@@ -205,17 +205,17 @@ class DisplayServerX11 : public DisplayServer {
 
 	//bool minimized;
 	//bool window_has_focus;
-	bool do_mouse_warp;
+	bool do_mouse_warp = false;
 
 	const char *cursor_theme;
 	int cursor_size;
-	XcursorImage *img[CURSOR_MAX];
-	Cursor cursors[CURSOR_MAX];
+	XcursorImage *img[CURSOR_MAX]{};
+	Cursor cursors[CURSOR_MAX]{};
 	Cursor null_cursor;
 	CursorShape current_cursor;
 	Map<CursorShape, Vector<Variant>> cursors_cache;
 
-	bool layered_window;
+	bool layered_window = false;
 
 	String rendering_driver;
 	//bool window_focused;

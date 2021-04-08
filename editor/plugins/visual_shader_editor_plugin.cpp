@@ -1064,7 +1064,7 @@ void VisualShaderEditor::_update_options_menu() {
 		}
 	}
 	Vector<AddOption> options;
-	SortArray<AddOption, _OptionComparator> sorter;
+	SortArray<AddOption, _OptionComparator> sorter{};
 	sorter.sort(custom_options.ptrw(), custom_options.size());
 
 	options.append_array(custom_options);
@@ -4313,7 +4313,7 @@ public:
 class VisualShaderNodePluginDefaultEditor : public VBoxContainer {
 	GDCLASS(VisualShaderNodePluginDefaultEditor, VBoxContainer);
 	Ref<Resource> parent_resource;
-	int node_id;
+	int node_id = 0;
 	VisualShader::Type shader_type;
 
 public:
@@ -4373,7 +4373,7 @@ public:
 		EditorNode::get_singleton()->get_inspector()->edit(p_resource.ptr());
 	}
 
-	bool updating;
+	bool updating = false;
 	Ref<VisualShaderNode> node;
 	Vector<EditorProperty *> properties;
 	Vector<Label *> prop_names;

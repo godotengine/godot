@@ -48,7 +48,7 @@ class ShaderFileEditor : public PanelContainer {
 
 	HBoxContainer *stage_hb;
 	ItemList *versions;
-	Button *stages[RD::SHADER_STAGE_MAX];
+	Button *stages[RD::SHADER_STAGE_MAX]{};
 	RichTextLabel *error_text;
 
 	void _update_version(const StringName &p_version_txt, const RenderingDevice::ShaderStage p_stage);

@@ -91,7 +91,7 @@ void EditorQuickOpen::_update_search() {
 
 	if (entries.size() > 0) {
 		if (!empty_search) {
-			SortArray<Entry, EntryComparator> sorter;
+			SortArray<Entry, EntryComparator> sorter{};
 			sorter.sort(entries.ptrw(), entries.size());
 		}
 

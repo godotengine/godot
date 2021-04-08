@@ -41,11 +41,11 @@ class AudioEffectChorusInstance : public AudioEffectInstance {
 	Ref<AudioEffectChorus> base;
 
 	Vector<AudioFrame> audio_buffer;
-	unsigned int buffer_pos;
-	unsigned int buffer_mask;
+	unsigned int buffer_pos = 0;
+	unsigned int buffer_mask = 0;
 
 	AudioFrame filter_h[4];
-	uint64_t cycles[4];
+	uint64_t cycles[4]{};
 
 	void _process_chunk(const AudioFrame *p_src_frames, AudioFrame *p_dst_frames, int p_frame_count);
 

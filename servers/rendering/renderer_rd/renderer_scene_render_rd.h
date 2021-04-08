@@ -49,7 +49,7 @@ class RendererSceneRenderRD : public RendererSceneRender {
 
 protected:
 	RendererStorageRD *storage;
-	double time;
+	double time = 0.0;
 	double time_step = 0;
 	bool low_end = false; // If true GI and Volumetric fog are disabled
 
@@ -180,7 +180,7 @@ private:
 	struct ShadowShrinkStage {
 		RID texture;
 		RID filter_texture;
-		uint32_t size;
+		uint32_t size = 0;
 	};
 
 	struct ShadowAtlas {
@@ -279,11 +279,11 @@ private:
 		struct ShadowTransform {
 			CameraMatrix camera;
 			Transform transform;
-			float farplane;
-			float split;
-			float bias_scale;
-			float shadow_texel_size;
-			float range_begin;
+			float farplane = 0.0;
+			float split = 0.0;
+			float bias_scale = 0.0;
+			float shadow_texel_size = 0.0;
+			float range_begin = 0.0;
 			Rect2 atlas_rect;
 			Vector2 uv_scale;
 		};
@@ -396,8 +396,8 @@ private:
 
 			struct Mipmap {
 				RID texture;
-				int width;
-				int height;
+				int width = 0;
+				int height = 0;
 			};
 
 			Vector<Mipmap> mipmaps;
@@ -556,32 +556,32 @@ private:
 			}
 		};
 
-		ReflectionData *reflections;
-		InstanceSort<ReflectionProbeInstance> *reflection_sort;
-		uint32_t max_reflections;
+		ReflectionData *reflections = nullptr;
+		InstanceSort<ReflectionProbeInstance> *reflection_sort = nullptr;
+		uint32_t max_reflections = 0;
 		RID reflection_buffer;
-		uint32_t max_reflection_probes_per_instance;
+		uint32_t max_reflection_probes_per_instance = 0;
 		uint32_t reflection_count = 0;
 
-		DecalData *decals;
-		InstanceSort<DecalInstance> *decal_sort;
-		uint32_t max_decals;
+		DecalData *decals = nullptr;
+		InstanceSort<DecalInstance> *decal_sort = nullptr;
+		uint32_t max_decals = 0;
 		RID decal_buffer;
-		uint32_t decal_count;
+		uint32_t decal_count = 0;
 
-		LightData *omni_lights;
-		LightData *spot_lights;
+		LightData *omni_lights = nullptr;
+		LightData *spot_lights = nullptr;
 
-		InstanceSort<LightInstance> *omni_light_sort;
-		InstanceSort<LightInstance> *spot_light_sort;
-		uint32_t max_lights;
+		InstanceSort<LightInstance> *omni_light_sort = nullptr;
+		InstanceSort<LightInstance> *spot_light_sort = nullptr;
+		uint32_t max_lights = 0;
 		RID omni_light_buffer;
 		RID spot_light_buffer;
 		uint32_t omni_light_count = 0;
 		uint32_t spot_light_count = 0;
 
-		DirectionalLightData *directional_lights;
-		uint32_t max_directional_lights;
+		DirectionalLightData *directional_lights = nullptr;
+		uint32_t max_directional_lights = 0;
 		RID directional_light_buffer;
 
 	} cluster;
@@ -618,7 +618,7 @@ private:
 		LocalVector<int> shadows;
 		LocalVector<int> directional_shadows;
 
-		bool depth_prepass_used;
+		bool depth_prepass_used = false;
 	} render_state;
 
 	struct VolumetricFog {
@@ -630,8 +630,8 @@ private:
 		uint32_t height = 0;
 		uint32_t depth = 0;
 
-		float length;
-		float spread;
+		float length = 0.0;
+		float spread = 0.0;
 
 		RID light_density_map;
 		RID prev_light_density_map;

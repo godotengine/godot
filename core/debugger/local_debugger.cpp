@@ -84,7 +84,7 @@ struct LocalDebugger::ScriptsProfiler {
 			}
 		}
 
-		SortArray<ScriptLanguage::ProfilingInfo, ProfileInfoSort> sort;
+		SortArray<ScriptLanguage::ProfilingInfo, ProfileInfoSort> sort{};
 		sort.sort(pinfo.ptrw(), ofs);
 
 		// compute total script frame time

@@ -130,8 +130,8 @@ class VisualShaderEditor : public VBoxContainer {
 	friend class VisualShaderGraphPlugin;
 
 	CustomPropertyEditor *property_editor;
-	int editing_node;
-	int editing_port;
+	int editing_node = 0;
+	int editing_port = 0;
 
 	Ref<VisualShader> visual_shader;
 	GraphEdit *graph;
@@ -169,7 +169,7 @@ class VisualShaderEditor : public VBoxContainer {
 
 	bool preview_first = true;
 	bool preview_showed = false;
-	bool particles_mode;
+	bool particles_mode = false;
 
 	enum TypeFlags {
 		TYPE_FLAGS_VERTEX = 1,
@@ -367,7 +367,7 @@ class VisualShaderEditor : public VBoxContainer {
 	void _duplicate_nodes();
 
 	Vector2 selection_center;
-	int copy_type; // shader type
+	int copy_type = 0; // shader type
 	List<int> copy_nodes_buffer;
 	Set<int> copy_nodes_excluded_buffer;
 

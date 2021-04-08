@@ -53,9 +53,9 @@ class FindBar : public HBoxContainer {
 	TextureButton *hide_button;
 	String prev_search;
 
-	RichTextLabel *rich_text_label;
+	RichTextLabel *rich_text_label = nullptr;
 
-	int results_count;
+	int results_count = 0;
 
 	void _show_search();
 	void _hide_bar();
@@ -114,14 +114,14 @@ class EditorHelp : public VBoxContainer {
 	Map<String, int> constant_line;
 	Map<String, int> enum_line;
 	Map<String, Map<String, int>> enum_values_line;
-	int description_line;
+	int description_line = 0;
 
 	RichTextLabel *class_desc;
-	HSplitContainer *h_split;
+	HSplitContainer *h_split = nullptr;
 	static DocTools *doc;
 
-	ConfirmationDialog *search_dialog;
-	LineEdit *search;
+	ConfirmationDialog *search_dialog = nullptr;
+	LineEdit *search = nullptr;
 	FindBar *find_bar;
 
 	String base_path;

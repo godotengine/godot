@@ -50,7 +50,7 @@
 
 struct NativeScriptDesc {
 	struct Method {
-		godot_nativescript_instance_method method;
+		godot_nativescript_instance_method method{};
 		MethodInfo info;
 		int rpc_mode = 0;
 		uint16_t rpc_method_id = 0;
@@ -58,12 +58,12 @@ struct NativeScriptDesc {
 	};
 
 	struct Property {
-		godot_nativescript_property_set_func setter;
-		godot_nativescript_property_get_func getter;
+		godot_nativescript_property_set_func setter{};
+		godot_nativescript_property_get_func getter{};
 		PropertyInfo info;
 		Variant default_value;
 		int rset_mode = 0;
-		uint16_t rset_property_id;
+		uint16_t rset_property_id = 0;
 		String documentation;
 	};
 
@@ -80,8 +80,8 @@ struct NativeScriptDesc {
 	StringName base;
 	StringName base_native_type;
 	NativeScriptDesc *base_data = nullptr;
-	godot_nativescript_instance_create_func create_func;
-	godot_nativescript_instance_destroy_func destroy_func;
+	godot_nativescript_instance_create_func create_func{};
+	godot_nativescript_instance_destroy_func destroy_func{};
 
 	String documentation;
 
@@ -204,7 +204,7 @@ public:
 class NativeScriptInstance : public ScriptInstance {
 	friend class NativeScript;
 
-	Object *owner;
+	Object *owner = nullptr;
 	Ref<NativeScript> script;
 #ifdef DEBUG_ENABLED
 	StringName current_method_call;
@@ -213,7 +213,7 @@ class NativeScriptInstance : public ScriptInstance {
 	void _ml_call_reversed(NativeScriptDesc *script_data, const StringName &p_method, const Variant **p_args, int p_argcount);
 
 public:
-	void *userdata;
+	void *userdata = nullptr;
 
 	virtual bool set(const StringName &p_name, const Variant &p_value);
 	virtual bool get(const StringName &p_name, Variant &r_ret) const;

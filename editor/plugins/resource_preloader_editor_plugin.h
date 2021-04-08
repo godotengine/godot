@@ -56,7 +56,7 @@ class ResourcePreloaderEditor : public PanelContainer {
 
 	AcceptDialog *dialog;
 
-	ResourcePreloader *preloader;
+	ResourcePreloader *preloader = nullptr;
 
 	void _load_pressed();
 	void _load_scene_pressed();
@@ -67,7 +67,7 @@ class ResourcePreloaderEditor : public PanelContainer {
 	void _cell_button_pressed(Object *p_item, int p_column, int p_id);
 	void _item_edited();
 
-	UndoRedo *undo_redo;
+	UndoRedo *undo_redo = nullptr;
 
 	Variant get_drag_data_fw(const Point2 &p_point, Control *p_from);
 	bool can_drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from) const;

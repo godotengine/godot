@@ -201,7 +201,7 @@ class ItemListEditor : public HBoxContainer {
 
 	AcceptDialog *dialog;
 	EditorInspector *property_editor;
-	Tree *tree;
+	Tree *tree = nullptr;
 	Button *add_button;
 	Button *del_button;
 

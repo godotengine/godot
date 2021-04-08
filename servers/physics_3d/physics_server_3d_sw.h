@@ -43,8 +43,8 @@ class PhysicsServer3DSW : public PhysicsServer3D {
 
 	friend class PhysicsDirectSpaceState3DSW;
 	bool active;
-	int iterations;
-	real_t last_step;
+	int iterations = 0;
+	real_t last_step = 0.0;
 
 	int island_count;
 	int active_objects;
@@ -54,10 +54,10 @@ class PhysicsServer3DSW : public PhysicsServer3D {
 	bool doing_sync;
 	bool flushing_queries;
 
-	Step3DSW *stepper;
+	Step3DSW *stepper = nullptr;
 	Set<const Space3DSW *> active_spaces;
 
-	PhysicsDirectBodyState3DSW *direct_state;
+	PhysicsDirectBodyState3DSW *direct_state = nullptr;
 
 	mutable RID_PtrOwner<Shape3DSW, true> shape_owner;
 	mutable RID_PtrOwner<Space3DSW, true> space_owner;

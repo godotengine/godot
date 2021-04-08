@@ -271,7 +271,7 @@ class EditorExportPlatformAndroid : public EditorExportPlatform {
 	};
 
 	struct APKExportData {
-		zipFile apk;
+		zipFile apk = nullptr;
 		EditorProgress *ep = nullptr;
 	};
 

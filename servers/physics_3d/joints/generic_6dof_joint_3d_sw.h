@@ -134,7 +134,7 @@ public:
 	Vector3 m_damping; //!< Damping for linear limit
 	Vector3 m_restitution; //! Bounce parameter for linear limit
 	//!@}
-	bool enable_limit[3];
+	bool enable_limit[3]{};
 
 	G6DOFTranslationalLimitMotor3DSW() {
 		m_lowerLimit = Vector3(0.f, 0.f, 0.f);
@@ -179,7 +179,7 @@ protected:
 			Body3DSW *B;
 		};
 
-		Body3DSW *_arr[2];
+		Body3DSW *_arr[2]{};
 	};
 
 	//! relative_frames
@@ -207,7 +207,7 @@ protected:
 protected:
 	//! temporal variables
 	//!@{
-	real_t m_timeStep;
+	real_t m_timeStep = 0.0;
 	Transform m_calculatedTransformA;
 	Transform m_calculatedTransformB;
 	Vector3 m_calculatedAxisAngleDiff;

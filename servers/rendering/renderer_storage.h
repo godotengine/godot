@@ -206,7 +206,7 @@ public:
 
 	struct InstanceShaderParam {
 		PropertyInfo info;
-		int index;
+		int index = 0;
 		Variant default_value;
 	};
 

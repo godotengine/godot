@@ -56,12 +56,12 @@ class EditorAssetLibraryItem : public PanelContainer {
 	LinkButton *title;
 	LinkButton *category;
 	LinkButton *author;
-	TextureRect *stars[5];
+	TextureRect *stars[5]{};
 	Label *price;
 
-	int asset_id;
-	int category_id;
-	int author_id;
+	int asset_id = 0;
+	int category_id = 0;
+	int author_id = 0;
 
 	void _asset_clicked();
 	void _category_clicked();
@@ -101,7 +101,7 @@ class EditorAssetLibraryItemDescription : public ConfirmationDialog {
 
 	void set_image(int p_type, int p_index, const Ref<Texture2D> &p_image);
 
-	int asset_id;
+	int asset_id = 0;
 	String download_url;
 	String title;
 	String sha256;
@@ -144,7 +144,7 @@ class EditorAssetLibraryItemDownload : public PanelContainer {
 
 	int prev_status;
 
-	int asset_id;
+	int asset_id = 0;
 
 	bool external_install;
 
@@ -193,7 +193,7 @@ class EditorAssetLibrary : public PanelContainer {
 	Label *error_label;
 	MenuButton *support;
 
-	HBoxContainer *contents;
+	HBoxContainer *contents = nullptr;
 
 	HBoxContainer *asset_top_page;
 	GridContainer *asset_items;

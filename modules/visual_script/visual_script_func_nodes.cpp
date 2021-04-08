@@ -712,15 +712,15 @@ class VisualScriptNodeInstanceFunctionCall : public VisualScriptNodeInstance {
 public:
 	VisualScriptFunctionCall::CallMode call_mode;
 	NodePath node_path;
-	int input_args;
-	bool validate;
-	int returns;
+	int input_args = 0;
+	bool validate = false;
+	int returns = 0;
 	VisualScriptFunctionCall::RPCCallMode rpc_mode;
 	StringName function;
 	StringName singleton;
 
-	VisualScriptFunctionCall *node;
-	VisualScriptInstance *instance;
+	VisualScriptFunctionCall *node = nullptr;
+	VisualScriptInstance *instance = nullptr;
 
 	//virtual int get_working_memory_size() const { return 0; }
 	//virtual bool is_output_port_unsequenced(int p_idx) const { return false; }
@@ -1439,11 +1439,11 @@ public:
 	NodePath node_path;
 	StringName property;
 
-	VisualScriptPropertySet *node;
-	VisualScriptInstance *instance;
+	VisualScriptPropertySet *node = nullptr;
+	VisualScriptInstance *instance = nullptr;
 	VisualScriptPropertySet::AssignOp assign_op;
 	StringName index;
-	bool needs_get;
+	bool needs_get = false;
 
 	//virtual int get_working_memory_size() const { return 0; }
 	//virtual bool is_output_port_unsequenced(int p_idx) const { return false; }
@@ -2101,8 +2101,8 @@ public:
 	StringName property;
 	StringName index;
 
-	VisualScriptPropertyGet *node;
-	VisualScriptInstance *instance;
+	VisualScriptPropertyGet *node = nullptr;
+	VisualScriptInstance *instance = nullptr;
 
 	virtual int step(const Variant **p_inputs, Variant **p_outputs, StartMode p_start_mode, Variant *p_working_mem, Callable::CallError &r_error, String &r_error_str) {
 		switch (call_mode) {
@@ -2301,9 +2301,9 @@ void VisualScriptEmitSignal::_bind_methods() {
 
 class VisualScriptNodeInstanceEmitSignal : public VisualScriptNodeInstance {
 public:
-	VisualScriptEmitSignal *node;
-	VisualScriptInstance *instance;
-	int argcount;
+	VisualScriptEmitSignal *node = nullptr;
+	VisualScriptInstance *instance = nullptr;
+	int argcount = 0;
 	StringName name;
 
 	//virtual int get_working_memory_size() const { return 0; }

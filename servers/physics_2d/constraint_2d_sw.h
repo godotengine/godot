@@ -37,8 +37,8 @@ class Constraint2DSW {
 	Body2DSW **_body_ptr;
 	int _body_count;
 	uint64_t island_step;
-	Constraint2DSW *island_next;
-	Constraint2DSW *island_list_next;
+	Constraint2DSW *island_next = nullptr;
+	Constraint2DSW *island_list_next = nullptr;
 	bool disabled_collisions_between_bodies;
 
 	RID self;

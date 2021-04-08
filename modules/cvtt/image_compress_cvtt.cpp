@@ -46,7 +46,7 @@ struct CVTTCompressionJobParams {
 };
 
 struct CVTTCompressionRowTask {
-	const uint8_t *in_mm_bytes;
+	const uint8_t *in_mm_bytes = nullptr;
 	uint8_t *out_mm_bytes = nullptr;
 	int y_start = 0;
 	int width = 0;
@@ -55,7 +55,7 @@ struct CVTTCompressionRowTask {
 
 struct CVTTCompressionJobQueue {
 	CVTTCompressionJobParams job_params;
-	const CVTTCompressionRowTask *job_tasks;
+	const CVTTCompressionRowTask *job_tasks = nullptr;
 	uint32_t num_tasks = 0;
 	SafeNumeric<uint32_t> current_task;
 };

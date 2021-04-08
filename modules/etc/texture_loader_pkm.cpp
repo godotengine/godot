@@ -34,7 +34,7 @@
 #include <string.h>
 
 struct ETC1Header {
-	char tag[6]; // "PKM 10"
+	char tag[6]{}; // "PKM 10"
 	uint16_t format = 0; // Format == number of mips (== zero)
 	uint16_t texWidth = 0; // Texture dimensions, multiple of 4 (big-endian)
 	uint16_t texHeight = 0;

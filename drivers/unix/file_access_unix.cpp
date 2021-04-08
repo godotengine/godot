@@ -99,7 +99,7 @@ Error FileAccessUnix::_open(const String &p_path, int p_mode_flags) {
 	   backend (unix-compatible mostly) supports utf8 encoding */
 
 	//printf("opening %s as %s\n", p_path.utf8().get_data(), path.utf8().get_data());
-	struct stat st;
+	struct stat st {};
 	int err = stat(path.utf8().get_data(), &st);
 	if (!err) {
 		switch (st.st_mode & S_IFMT) {
@@ -270,7 +270,7 @@ void FileAccessUnix::store_buffer(const uint8_t *p_src, int p_length) {
 
 bool FileAccessUnix::file_exists(const String &p_path) {
 	int err;
-	struct stat st;
+	struct stat st {};
 	String filename = fix_path(p_path);
 
 	// Does the name exist at all?
@@ -301,7 +301,7 @@ bool FileAccessUnix::file_exists(const String &p_path) {
 
 uint64_t FileAccessUnix::_get_modified_time(const String &p_file) {
 	String file = fix_path(p_file);
-	struct stat flags;
+	struct stat flags {};
 	int err = stat(file.utf8().get_data(), &flags);
 
 	if (!err) {
@@ -313,7 +313,7 @@ uint64_t FileAccessUnix::_get_modified_time(const String &p_file) {
 
 uint32_t FileAccessUnix::_get_unix_permissions(const String &p_file) {
 	String file = fix_path(p_file);
-	struct stat flags;
+	struct stat flags {};
 	int err = stat(file.utf8().get_data(), &flags);
 
 	if (!err) {

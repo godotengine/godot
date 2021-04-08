@@ -34,7 +34,7 @@
 #include "core/string/print_string.h"
 
 StaticCString StaticCString::create(const char *p_ptr) {
-	StaticCString scs;
+	StaticCString scs{};
 	scs.ptr = p_ptr;
 	return scs;
 }

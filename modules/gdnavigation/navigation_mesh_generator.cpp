@@ -328,7 +328,7 @@ void NavigationMeshGenerator::_build_recast_navigation_mesh(
 	float bmin[3], bmax[3];
 	rcCalcBounds(verts, nverts, bmin, bmax);
 
-	rcConfig cfg;
+	rcConfig cfg{};
 	memset(&cfg, 0, sizeof(cfg));
 
 	cfg.cs = p_nav_mesh->get_cell_size();

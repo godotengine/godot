@@ -48,8 +48,8 @@ class EditorLog : public VBoxContainer {
 	Button *copybutton;
 	Label *title;
 	RichTextLabel *log;
-	HBoxContainer *title_hb;
-	Button *tool_button;
+	HBoxContainer *title_hb = nullptr;
+	Button *tool_button = nullptr;
 
 	static void _error_handler(void *p_self, const char *p_func, const char *p_file, int p_line, const char *p_error, const char *p_errorexp, ErrorHandlerType p_type);
 

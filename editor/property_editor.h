@@ -98,24 +98,24 @@ class CustomPropertyEditor : public PopupPanel {
 	Variant::Type type;
 	Variant v;
 	List<String> field_names;
-	int hint;
+	int hint = 0;
 	String hint_text;
-	HBoxContainer *value_hboxes[MAX_VALUE_EDITORS / 4];
+	HBoxContainer *value_hboxes[MAX_VALUE_EDITORS / 4]{};
 	VBoxContainer *value_vbox;
-	LineEdit *value_editor[MAX_VALUE_EDITORS];
+	LineEdit *value_editor[MAX_VALUE_EDITORS]{};
 	int focused_value_editor;
-	Label *value_label[MAX_VALUE_EDITORS];
-	HScrollBar *scroll[4];
-	Button *action_buttons[MAX_ACTION_BUTTONS];
+	Label *value_label[MAX_VALUE_EDITORS]{};
+	HScrollBar *scroll[4]{};
+	Button *action_buttons[MAX_ACTION_BUTTONS]{};
 	MenuButton *type_button;
 	Vector<String> inheritors_array;
 	TextureRect *texture_preview;
 	ColorPicker *color_picker;
 	TextEdit *text_edit;
 	bool read_only;
-	bool picking_viewport;
+	bool picking_viewport = false;
 	GridContainer *checks20gc;
-	CheckBox *checks20[20];
+	CheckBox *checks20[20]{};
 	SpinBox *spinbox;
 	HSlider *slider;
 
@@ -123,7 +123,7 @@ class CustomPropertyEditor : public PopupPanel {
 	CreateDialog *create_dialog;
 	PropertySelector *property_select;
 
-	Object *owner;
+	Object *owner = nullptr;
 
 	bool updating;
 

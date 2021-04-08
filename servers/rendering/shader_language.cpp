@@ -3466,7 +3466,7 @@ ShaderLanguage::Node *ShaderLanguage::_parse_expression(BlockNode *p_block, cons
 
 		} else if (tk.type == TK_FLOAT_CONSTANT) {
 			ConstantNode *constant = alloc_node<ConstantNode>();
-			ConstantNode::Value v;
+			ConstantNode::Value v{};
 			v.real = tk.constant;
 			constant->values.push_back(v);
 			constant->datatype = TYPE_FLOAT;
@@ -3474,7 +3474,7 @@ ShaderLanguage::Node *ShaderLanguage::_parse_expression(BlockNode *p_block, cons
 
 		} else if (tk.type == TK_INT_CONSTANT) {
 			ConstantNode *constant = alloc_node<ConstantNode>();
-			ConstantNode::Value v;
+			ConstantNode::Value v{};
 			v.sint = tk.constant;
 			constant->values.push_back(v);
 			constant->datatype = TYPE_INT;
@@ -3483,7 +3483,7 @@ ShaderLanguage::Node *ShaderLanguage::_parse_expression(BlockNode *p_block, cons
 		} else if (tk.type == TK_TRUE) {
 			//handle true constant
 			ConstantNode *constant = alloc_node<ConstantNode>();
-			ConstantNode::Value v;
+			ConstantNode::Value v{};
 			v.boolean = true;
 			constant->values.push_back(v);
 			constant->datatype = TYPE_BOOL;
@@ -3492,7 +3492,7 @@ ShaderLanguage::Node *ShaderLanguage::_parse_expression(BlockNode *p_block, cons
 		} else if (tk.type == TK_FALSE) {
 			//handle false constant
 			ConstantNode *constant = alloc_node<ConstantNode>();
-			ConstantNode::Value v;
+			ConstantNode::Value v{};
 			v.boolean = false;
 			constant->values.push_back(v);
 			constant->datatype = TYPE_BOOL;
@@ -3922,7 +3922,7 @@ ShaderLanguage::Node *ShaderLanguage::_parse_expression(BlockNode *p_block, cons
 		} else if (tk.type == TK_OP_ADD) {
 			continue; //this one does nothing
 		} else if (tk.type == TK_OP_SUB || tk.type == TK_OP_NOT || tk.type == TK_OP_BIT_INVERT || tk.type == TK_OP_INCREMENT || tk.type == TK_OP_DECREMENT) {
-			Expression e;
+			Expression e{};
 			e.is_op = true;
 
 			switch (tk.type) {
@@ -4464,7 +4464,7 @@ ShaderLanguage::Node *ShaderLanguage::_parse_expression(BlockNode *p_block, cons
 			}
 		}
 
-		Expression e;
+		Expression e{};
 		e.is_op = false;
 		e.node = expr;
 		expression.push_back(e);
@@ -4473,7 +4473,7 @@ ShaderLanguage::Node *ShaderLanguage::_parse_expression(BlockNode *p_block, cons
 		tk = _get_token();
 
 		if (is_token_operator(tk.type)) {
-			Expression o;
+			Expression o{};
 			o.is_op = true;
 
 			switch (tk.type) {
@@ -4897,7 +4897,7 @@ ShaderLanguage::Node *ShaderLanguage::_reduce_expression(BlockNode *p_block, Sha
 						values.push_back(cn->values[j]);
 					}
 				} else if (get_scalar_type(cn->datatype) == cn->datatype) {
-					ConstantNode::Value v;
+					ConstantNode::Value v{};
 					if (!convert_constant(cn, base, &v)) {
 						return p_node;
 					}
@@ -4914,7 +4914,7 @@ ShaderLanguage::Node *ShaderLanguage::_reduce_expression(BlockNode *p_block, Sha
 		if (values.size() == 1) {
 			if (type >= TYPE_MAT2 && type <= TYPE_MAT4) {
 				ConstantNode::Value value = values[0];
-				ConstantNode::Value zero;
+				ConstantNode::Value zero{};
 				zero.real = 0.0f;
 				int size = 2 + (type - TYPE_MAT2);
 
@@ -4949,7 +4949,7 @@ ShaderLanguage::Node *ShaderLanguage::_reduce_expression(BlockNode *p_block, Sha
 			Vector<ConstantNode::Value> values;
 
 			for (int i = 0; i < cn->values.size(); i++) {
-				ConstantNode::Value nv;
+				ConstantNode::Value nv{};
 				switch (base) {
 					case TYPE_BOOL: {
 						nv.boolean = !cn->values[i].boolean;
@@ -5112,7 +5112,7 @@ Error ShaderLanguage::_parse_block(BlockNode *p_block, const FunctionInfo &p_fun
 
 					ArrayDeclarationNode::Declaration decl;
 					decl.name = name;
-					decl.size = 0U;
+					decl.size = 0;
 
 					pos = _get_tkpos();
 					tk = _get_token();
@@ -5127,7 +5127,7 @@ Error ShaderLanguage::_parse_block(BlockNode *p_block, const FunctionInfo &p_fun
 								if (n->type == Node::TYPE_VARIABLE) {
 									VariableNode *vn = static_cast<VariableNode *>(n);
 									if (vn) {
-										ConstantNode::Value v;
+										ConstantNode::Value v{};
 										DataType data_type;
 
 										_find_identifier(p_block, false, p_function_info, vn->name, &data_type, nullptr, &is_const, nullptr, nullptr, &v);
@@ -5582,7 +5582,7 @@ Error ShaderLanguage::_parse_block(BlockNode *p_block, const FunctionInfo &p_fun
 									if (!vn) {
 										return ERR_PARSE_ERROR;
 									}
-									ConstantNode::Value v;
+									ConstantNode::Value v{};
 									_find_identifier(p_block, false, p_function_info, vn->name, nullptr, nullptr, nullptr, nullptr, nullptr, &v);
 									if (constants.has(v.sint)) {
 										_set_error("Duplicated case label: '" + itos(v.sint) + "'");
@@ -5649,7 +5649,7 @@ Error ShaderLanguage::_parse_block(BlockNode *p_block, const FunctionInfo &p_fun
 				vn->name = tk.text;
 				n = vn;
 			} else {
-				ConstantNode::Value v;
+				ConstantNode::Value v{};
 				v.sint = (int)tk.constant * sign;
 
 				ConstantNode *cn = alloc_node<ConstantNode>();

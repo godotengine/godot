@@ -60,7 +60,7 @@ class SpriteFramesEditor : public HSplitContainer {
 	bool loading_scene;
 	int sel;
 
-	HSplitContainer *split;
+	HSplitContainer *split = nullptr;
 	Button *new_anim;
 	Button *remove_anim;
 
@@ -72,7 +72,7 @@ class SpriteFramesEditor : public HSplitContainer {
 
 	AcceptDialog *dialog;
 
-	SpriteFrames *frames;
+	SpriteFrames *frames = nullptr;
 
 	StringName edited_anim;
 
@@ -88,7 +88,7 @@ class SpriteFramesEditor : public HSplitContainer {
 	Button *split_sheet_zoom_in;
 	EditorFileDialog *file_split_sheet;
 	Set<int> frames_selected;
-	int last_frame_selected;
+	int last_frame_selected = 0;
 
 	float scale_ratio;
 	int thumbnail_default_size;
@@ -126,7 +126,7 @@ class SpriteFramesEditor : public HSplitContainer {
 
 	bool updating;
 
-	UndoRedo *undo_redo;
+	UndoRedo *undo_redo = nullptr;
 
 	bool _is_drop_valid(const Dictionary &p_drag_data, const Dictionary &p_item_data) const;
 	Variant get_drag_data_fw(const Point2 &p_point, Control *p_from);

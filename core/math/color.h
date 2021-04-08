@@ -37,10 +37,10 @@
 struct Color {
 	union {
 		struct {
-			float r;
-			float g;
-			float b;
-			float a;
+			float r = 0.0;
+			float g = 0.0;
+			float b = 0.0;
+			float a = 0.0;
 		};
 		float components[4] = { 0, 0, 0, 1.0 };
 	};

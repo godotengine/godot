@@ -352,7 +352,7 @@ void FileAccessNetwork::_queue_page(int p_page) const {
 		{
 			MutexLock lock(nc->blockrequest_mutex);
 
-			FileAccessNetworkClient::BlockRequest br;
+			FileAccessNetworkClient::BlockRequest br{};
 			br.id = id;
 			br.offset = size_t(p_page) * page_size;
 			br.size = page_size;

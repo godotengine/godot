@@ -33,12 +33,12 @@
 #include "core/math/geometry_2d.h"
 
 struct _CollectorCallback2D {
-	CollisionSolver2DSW::CallbackResult callback;
-	void *userdata;
-	bool swap;
-	bool collided;
+	CollisionSolver2DSW::CallbackResult callback = nullptr;
+	void *userdata = nullptr;
+	bool swap = false;
+	bool collided = false;
 	Vector2 normal;
-	Vector2 *sep_axis;
+	Vector2 *sep_axis = nullptr;
 
 	_FORCE_INLINE_ void call(const Vector2 &p_point_A, const Vector2 &p_point_B) {
 		/*
@@ -107,7 +107,7 @@ _FORCE_INLINE_ static void _generate_contacts_edge_edge(const Vector2 *p_points_
 	dvec[3].a = false;
 	dvec[3].idx = 1;
 
-	SortArray<_generate_contacts_Pair> sa;
+	SortArray<_generate_contacts_Pair> sa{};
 	sa.sort(dvec, 4);
 
 	for (int i = 1; i <= 2; i++) {

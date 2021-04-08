@@ -77,10 +77,10 @@ class FindReplaceBar : public HBoxContainer {
 	HBoxContainer *hbc_button_replace;
 	HBoxContainer *hbc_option_replace;
 
-	CodeEdit *text_editor;
+	CodeEdit *text_editor = nullptr;
 
-	int result_line;
-	int result_col;
+	int result_line = 0;
+	int result_col = 0;
 	int results_count;
 
 	bool replace_all_mode;
@@ -147,7 +147,7 @@ class CodeTextEditor : public VBoxContainer {
 
 	Label *line_and_col_txt;
 
-	Label *info;
+	Label *info = nullptr;
 	Timer *idle;
 	Timer *code_complete_timer;
 
@@ -178,7 +178,7 @@ class CodeTextEditor : public VBoxContainer {
 	Color completion_string_color;
 	Color completion_comment_color;
 	CodeTextEditorCodeCompleteFunc code_complete_func;
-	void *code_complete_ud;
+	void *code_complete_ud = nullptr;
 
 	void _warning_label_gui_input(const Ref<InputEvent> &p_event);
 	void _warning_button_pressed();

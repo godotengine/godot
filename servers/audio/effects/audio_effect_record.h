@@ -47,16 +47,16 @@ class AudioEffectRecordInstance : public AudioEffectInstance {
 	friend class AudioEffectRecord;
 	Ref<AudioEffectRecord> base;
 
-	bool is_recording;
+	bool is_recording = false;
 	Thread io_thread;
 	bool thread_active = false;
 
 	Vector<AudioFrame> ring_buffer;
 	Vector<float> recording_data;
 
-	unsigned int ring_buffer_pos;
-	unsigned int ring_buffer_mask;
-	unsigned int ring_buffer_read_pos;
+	unsigned int ring_buffer_pos = 0;
+	unsigned int ring_buffer_mask = 0;
+	unsigned int ring_buffer_read_pos = 0;
 
 	void _io_thread_process();
 	void _io_store_buffer();

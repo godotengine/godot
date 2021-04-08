@@ -43,7 +43,7 @@ private:
 	};
 
 	struct Cell {
-		uint32_t children[8];
+		uint32_t children[8]{};
 		float albedo[3] = {}; //albedo in RGB24
 		float emission[3] = {}; //accumulated light in 16:16 fixed point (needs to be integer for moving lights fast)
 		float normal[3] = {};

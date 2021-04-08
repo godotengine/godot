@@ -122,7 +122,7 @@ private:
 	VScrollBar *v_scroll;
 
 	float port_grab_distance_horizontal = 0.0;
-	float port_grab_distance_vertical;
+	float port_grab_distance_vertical = 0.0;
 
 	bool connecting = false;
 	String connecting_from;
@@ -133,7 +133,7 @@ private:
 	bool connecting_target = false;
 	Vector2 connecting_to;
 	String connecting_target_to;
-	int connecting_target_index;
+	int connecting_target_index = 0;
 	bool just_disconnected = false;
 	bool connecting_valid = false;
 	Vector2 click_pos;
@@ -187,7 +187,7 @@ private:
 
 	Array _get_connection_list() const;
 
-	bool lines_on_bg;
+	bool lines_on_bg = false;
 
 	struct ConnType {
 		union {

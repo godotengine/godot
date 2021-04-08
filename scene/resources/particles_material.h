@@ -217,43 +217,43 @@ private:
 	_FORCE_INLINE_ bool _is_shader_dirty() const;
 
 	Vector3 direction;
-	float spread;
-	float flatness;
+	float spread = 0.0;
+	float flatness = 0.0;
 
-	float parameters[PARAM_MAX];
-	float randomness[PARAM_MAX];
+	float parameters[PARAM_MAX]{};
+	float randomness[PARAM_MAX]{};
 
 	Ref<Texture2D> tex_parameters[PARAM_MAX];
 	Color color;
 	Ref<Texture2D> color_ramp;
 
-	bool particle_flags[PARTICLE_FLAG_MAX];
+	bool particle_flags[PARTICLE_FLAG_MAX]{};
 
 	EmissionShape emission_shape;
-	float emission_sphere_radius;
+	float emission_sphere_radius = 0.0;
 	Vector3 emission_box_extents;
 	Ref<Texture2D> emission_point_texture;
 	Ref<Texture2D> emission_normal_texture;
 	Ref<Texture2D> emission_color_texture;
 	int emission_point_count = 1;
 
-	bool anim_loop;
+	bool anim_loop = false;
 
 	Vector3 gravity;
 
-	float lifetime_randomness;
+	float lifetime_randomness = 0.0;
 
 	SubEmitterMode sub_emitter_mode;
-	float sub_emitter_frequency;
-	int sub_emitter_amount_at_end;
-	bool sub_emitter_keep_velocity;
+	float sub_emitter_frequency = 0.0;
+	int sub_emitter_amount_at_end = 0;
+	bool sub_emitter_keep_velocity = false;
 	//do not save emission points here
 
-	bool attractor_interaction_enabled;
-	bool collision_enabled;
-	bool collision_scale;
-	float collision_friction;
-	float collision_bounce;
+	bool attractor_interaction_enabled = false;
+	bool collision_enabled = false;
+	bool collision_scale = false;
+	float collision_friction = 0.0;
+	float collision_bounce = 0.0;
 
 protected:
 	static void _bind_methods();

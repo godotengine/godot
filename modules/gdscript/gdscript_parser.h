@@ -500,8 +500,8 @@ public:
 
 			union {
 				ClassNode *m_class = nullptr;
-				ConstantNode *constant;
-				FunctionNode *function;
+				ConstantNode *constant = nullptr;
+				FunctionNode *function = nullptr;
 				SignalNode *signal;
 				VariableNode *variable;
 				EnumNode *m_enum;
@@ -767,7 +767,7 @@ public:
 
 		union {
 			ParameterNode *parameter_source = nullptr;
-			ConstantNode *constant_source;
+			ConstantNode *constant_source = nullptr;
 			VariableNode *variable_source;
 			IdentifierNode *bind_source;
 		};
@@ -848,7 +848,7 @@ public:
 
 		union {
 			LiteralNode *literal = nullptr;
-			IdentifierNode *bind;
+			IdentifierNode *bind = nullptr;
 			ExpressionNode *expression;
 		};
 		Vector<PatternNode *> array;
@@ -912,7 +912,7 @@ public:
 		ExpressionNode *base = nullptr;
 		union {
 			ExpressionNode *index = nullptr;
-			IdentifierNode *attribute;
+			IdentifierNode *attribute = nullptr;
 		};
 
 		bool is_attribute = false;
@@ -937,8 +937,8 @@ public:
 			Type type = UNDEFINED;
 			union {
 				ConstantNode *constant = nullptr;
-				VariableNode *variable;
-				ParameterNode *parameter;
+				VariableNode *variable = nullptr;
+				ParameterNode *parameter = nullptr;
 				IdentifierNode *bind;
 			};
 			StringName name;
@@ -1081,12 +1081,12 @@ public:
 		PropertyStyle property = PROP_NONE;
 		union {
 			SuiteNode *setter = nullptr;
-			IdentifierNode *setter_pointer;
+			IdentifierNode *setter_pointer = nullptr;
 		};
 		IdentifierNode *setter_parameter = nullptr;
 		union {
 			SuiteNode *getter = nullptr;
-			IdentifierNode *getter_pointer;
+			IdentifierNode *getter_pointer = nullptr;
 		};
 
 		bool exported = false;

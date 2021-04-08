@@ -97,7 +97,7 @@ class RenderForwardClustered : public RendererSceneRenderRD {
 		RID color_fb;
 		RID color_specular_fb;
 		RID specular_only_fb;
-		int width, height;
+		int width = 0, height = 0;
 
 		RID render_sdfgi_uniform_set;
 		void ensure_specular();
@@ -300,23 +300,23 @@ class RenderForwardClustered : public RendererSceneRenderRD {
 			float lightmap_uv_scale[4];
 		};
 
-		UBO ubo;
+		UBO ubo{};
 
 		LocalVector<RID> uniform_buffers;
 
-		LightmapData lightmaps[MAX_LIGHTMAPS];
+		LightmapData lightmaps[MAX_LIGHTMAPS]{};
 		RID lightmap_ids[MAX_LIGHTMAPS];
-		bool lightmap_has_sh[MAX_LIGHTMAPS];
+		bool lightmap_has_sh[MAX_LIGHTMAPS]{};
 		uint32_t lightmaps_used = 0;
-		uint32_t max_lightmaps;
+		uint32_t max_lightmaps = 0;
 		RID lightmap_buffer;
 
 		RID instance_buffer[RENDER_LIST_MAX];
 		uint32_t instance_buffer_size[RENDER_LIST_MAX] = { 0, 0, 0 };
 		LocalVector<InstanceData> instance_data[RENDER_LIST_MAX];
 
-		LightmapCaptureData *lightmap_captures;
-		uint32_t max_lightmap_captures;
+		LightmapCaptureData *lightmap_captures = nullptr;
+		uint32_t max_lightmap_captures = 0;
 		RID lightmap_capture_buffer;
 
 		RID giprobe_ids[MAX_GI_PROBES];
@@ -328,15 +328,15 @@ class RenderForwardClustered : public RendererSceneRenderRD {
 		bool used_sss = false;
 
 		struct ShadowPass {
-			uint32_t element_from;
-			uint32_t element_count;
-			bool flip_cull;
+			uint32_t element_from = 0;
+			uint32_t element_count = 0;
+			bool flip_cull = false;
 			PassMode pass_mode;
 
 			RID rp_uniform_set;
 			Plane camera_plane;
-			float lod_distance_multiplier;
-			float screen_lod_threshold;
+			float lod_distance_multiplier = 0.0;
+			float screen_lod_threshold = 0.0;
 
 			RID framebuffer;
 			RD::InitialAction initial_depth_action;
@@ -418,7 +418,7 @@ class RenderForwardClustered : public RendererSceneRenderRD {
 				uint64_t sort_key1;
 				uint64_t sort_key2;
 			};
-		} sort;
+		} sort{};
 
 		RS::PrimitiveType primitive = RS::PRIMITIVE_MAX;
 		uint32_t flags = 0;
@@ -448,7 +448,7 @@ class RenderForwardClustered : public RendererSceneRenderRD {
 		uint32_t flags_cache = 0;
 		bool store_transform_cache = true;
 		int32_t shader_parameters_offset = -1;
-		uint32_t lightmap_slice_index;
+		uint32_t lightmap_slice_index = 0;
 		Rect2 lightmap_uv_scale;
 		uint32_t layer_mask = 1;
 		RID transforms_uniform_set;
@@ -524,12 +524,12 @@ class RenderForwardClustered : public RendererSceneRenderRD {
 		};
 
 		void sort_by_key() {
-			SortArray<GeometryInstanceSurfaceDataCache *, SortByKey> sorter;
+			SortArray<GeometryInstanceSurfaceDataCache *, SortByKey> sorter{};
 			sorter.sort(elements.ptr(), elements.size());
 		}
 
 		void sort_by_key_range(uint32_t p_from, uint32_t p_size) {
-			SortArray<GeometryInstanceSurfaceDataCache *, SortByKey> sorter;
+			SortArray<GeometryInstanceSurfaceDataCache *, SortByKey> sorter{};
 			sorter.sort(elements.ptr() + p_from, p_size);
 		}
 
@@ -541,7 +541,7 @@ class RenderForwardClustered : public RendererSceneRenderRD {
 
 		void sort_by_depth() { //used for shadows
 
-			SortArray<GeometryInstanceSurfaceDataCache *, SortByDepth> sorter;
+			SortArray<GeometryInstanceSurfaceDataCache *, SortByDepth> sorter{};
 			sorter.sort(elements.ptr(), elements.size());
 		}
 
@@ -553,7 +553,7 @@ class RenderForwardClustered : public RendererSceneRenderRD {
 
 		void sort_by_reverse_depth_and_priority(bool p_alpha) { //used for alpha
 
-			SortArray<GeometryInstanceSurfaceDataCache *, SortByReverseDepthAndPriority> sorter;
+			SortArray<GeometryInstanceSurfaceDataCache *, SortByReverseDepthAndPriority> sorter{};
 			sorter.sort(elements.ptr(), elements.size());
 		}
 

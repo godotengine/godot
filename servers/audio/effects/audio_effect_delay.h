@@ -42,13 +42,13 @@ class AudioEffectDelayInstance : public AudioEffectInstance {
 
 	Vector<AudioFrame> ring_buffer;
 
-	unsigned int ring_buffer_pos;
-	unsigned int ring_buffer_mask;
+	unsigned int ring_buffer_pos = 0;
+	unsigned int ring_buffer_mask = 0;
 
 	/* feedback buffer */
 	Vector<AudioFrame> feedback_buffer;
 
-	unsigned int feedback_buffer_pos;
+	unsigned int feedback_buffer_pos = 0;
 
 	AudioFrame h;
 	void _process_chunk(const AudioFrame *p_src_frames, AudioFrame *p_dst_frames, int p_frame_count);

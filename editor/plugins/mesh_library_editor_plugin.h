@@ -43,7 +43,7 @@ class MeshLibraryEditor : public Control {
 	MenuButton *menu;
 	ConfirmationDialog *cd;
 	EditorFileDialog *file;
-	int to_erase;
+	int to_erase = 0;
 
 	enum {
 		MENU_OPTION_ADD_ITEM,
@@ -52,7 +52,7 @@ class MeshLibraryEditor : public Control {
 		MENU_OPTION_IMPORT_FROM_SCENE
 	};
 
-	int option;
+	int option = 0;
 	void _import_scene_cbk(const String &p_str);
 	void _menu_cbk(int p_option);
 	void _menu_confirm();

@@ -114,7 +114,7 @@ class EffectsRD {
 	};
 
 	struct Copy {
-		CopyPushConstant push_constant;
+		CopyPushConstant push_constant{};
 		CopyShaderRD shader;
 		RID shader_version;
 		RID pipelines[COPY_MODE_MAX];
@@ -142,7 +142,7 @@ class EffectsRD {
 	};
 
 	struct CopyToFb {
-		CopyToFbPushConstant push_constant;
+		CopyToFbPushConstant push_constant{};
 		CopyToFbShaderRD shader;
 		RID shader_version;
 		PipelineCacheRD pipelines[COPY_TO_FB_MAX];
@@ -159,7 +159,7 @@ class EffectsRD {
 	};
 
 	struct CubemapRoughness {
-		CubemapRoughnessPushConstant push_constant;
+		CubemapRoughnessPushConstant push_constant{};
 		CubemapRoughnessShaderRD shader;
 		RID shader_version;
 		RID pipeline;
@@ -204,7 +204,7 @@ class EffectsRD {
 	 * compute, as that framebuffer might be in different formats
 	 */
 	struct Tonemap {
-		TonemapPushConstant push_constant;
+		TonemapPushConstant push_constant{};
 		TonemapShaderRD shader;
 		RID shader_version;
 		PipelineCacheRD pipelines[TONEMAP_MODE_MAX];
@@ -226,7 +226,7 @@ class EffectsRD {
 	};
 
 	struct LuminanceReduce {
-		LuminanceReducePushConstant push_constant;
+		LuminanceReducePushConstant push_constant{};
 		LuminanceReduceShaderRD shader;
 		RID shader_version;
 		RID pipelines[LUMINANCE_REDUCE_MAX];
@@ -281,7 +281,7 @@ class EffectsRD {
 	};
 
 	struct Bokeh {
-		BokehPushConstant push_constant;
+		BokehPushConstant push_constant{};
 		BokehDofShaderRD shader;
 		RID shader_version;
 		RID pipelines[BOKEH_MAX];
@@ -375,30 +375,30 @@ class EffectsRD {
 	};
 
 	struct SSAO {
-		SSAODownsamplePushConstant downsample_push_constant;
+		SSAODownsamplePushConstant downsample_push_constant{};
 		SsaoDownsampleShaderRD downsample_shader;
 		RID downsample_shader_version;
 		RID downsample_uniform_set;
 
-		SSAOGatherPushConstant gather_push_constant;
+		SSAOGatherPushConstant gather_push_constant{};
 		SsaoShaderRD gather_shader;
 		RID gather_shader_version;
 		RID gather_uniform_set;
 		RID gather_constants_buffer;
 		bool gather_initialized = false;
 
-		SSAOImportanceMapPushConstant importance_map_push_constant;
+		SSAOImportanceMapPushConstant importance_map_push_constant{};
 		SsaoImportanceMapShaderRD importance_map_shader;
 		RID importance_map_shader_version;
 		RID importance_map_load_counter;
 		RID importance_map_uniform_set;
 		RID counter_uniform_set;
 
-		SSAOBlurPushConstant blur_push_constant;
+		SSAOBlurPushConstant blur_push_constant{};
 		SsaoBlurShaderRD blur_shader;
 		RID blur_shader_version;
 
-		SSAOInterleavePushConstant interleave_push_constant;
+		SSAOInterleavePushConstant interleave_push_constant{};
 		SsaoInterleaveShaderRD interleave_shader;
 		RID interleave_shader_version;
 
@@ -413,7 +413,7 @@ class EffectsRD {
 	};
 
 	struct RoughnessLimiter {
-		RoughnessLimiterPushConstant push_constant;
+		RoughnessLimiterPushConstant push_constant{};
 		RoughnessLimiterShaderRD shader;
 		RID shader_version;
 		RID pipeline;
@@ -426,7 +426,7 @@ class EffectsRD {
 	};
 
 	struct CubemapDownsampler {
-		CubemapDownsamplerPushConstant push_constant;
+		CubemapDownsamplerPushConstant push_constant{};
 		CubemapDownsamplerShaderRD shader;
 		RID shader_version;
 		RID pipeline;
@@ -448,7 +448,7 @@ class EffectsRD {
 		RID uniform_set;
 		RID image_uniform_set;
 		RID coefficient_buffer;
-		bool use_high_quality;
+		bool use_high_quality = false;
 
 	} filter;
 
@@ -507,7 +507,7 @@ class EffectsRD {
 	};
 
 	struct ScreenSpaceReflection {
-		ScreenSpaceReflectionPushConstant push_constant;
+		ScreenSpaceReflectionPushConstant push_constant{};
 		ScreenSpaceReflectionShaderRD shader;
 		RID shader_version;
 		RID pipelines[SCREEN_SPACE_REFLECTION_MAX];
@@ -533,7 +533,7 @@ class EffectsRD {
 	};
 
 	struct ScreenSpaceReflectionFilter {
-		ScreenSpaceReflectionFilterPushConstant push_constant;
+		ScreenSpaceReflectionFilterPushConstant push_constant{};
 		ScreenSpaceReflectionFilterShaderRD shader;
 		RID shader_version;
 		RID pipelines[SCREEN_SPACE_REFLECTION_FILTER_MAX];
@@ -550,7 +550,7 @@ class EffectsRD {
 	};
 
 	struct ScreenSpaceReflectionScale {
-		ScreenSpaceReflectionScalePushConstant push_constant;
+		ScreenSpaceReflectionScalePushConstant push_constant{};
 		ScreenSpaceReflectionScaleShaderRD shader;
 		RID shader_version;
 		RID pipeline;
@@ -571,7 +571,7 @@ class EffectsRD {
 	};
 
 	struct SubSurfaceScattering {
-		SubSurfaceScatteringPushConstant push_constant;
+		SubSurfaceScatteringPushConstant push_constant{};
 		SubsurfaceScatteringShaderRD shader;
 		RID shader_version;
 		RID pipelines[3]; //3 quality levels
@@ -590,7 +590,7 @@ class EffectsRD {
 	};
 
 	struct Resolve {
-		ResolvePushConstant push_constant;
+		ResolvePushConstant push_constant{};
 		ResolveShaderRD shader;
 		RID shader_version;
 		RID pipelines[RESOLVE_MODE_MAX]; //3 quality levels

@@ -42,7 +42,7 @@ private:
 	static SceneShaderForwardClustered *singleton;
 
 public:
-	RendererStorageRD *storage;
+	RendererStorageRD *storage = nullptr;
 
 	enum ShaderVersion {
 		SHADER_VERSION_DEPTH_PASS,
@@ -101,7 +101,7 @@ public:
 
 		bool valid;
 		RID version;
-		uint32_t vertex_input_mask;
+		uint32_t vertex_input_mask = 0;
 		PipelineCacheRD pipelines[CULL_VARIANT_MAX][RS::PRIMITIVE_MAX][SHADER_VERSION_MAX];
 
 		String path;
@@ -110,7 +110,7 @@ public:
 		Vector<ShaderCompilerRD::GeneratedCode::Texture> texture_uniforms;
 
 		Vector<uint32_t> ubo_offsets;
-		uint32_t ubo_size;
+		uint32_t ubo_size = 0;
 
 		String code;
 		Map<StringName, RID> default_texture_params;
@@ -118,25 +118,25 @@ public:
 		DepthDraw depth_draw;
 		DepthTest depth_test;
 
-		bool uses_point_size;
-		bool uses_alpha;
-		bool uses_blend_alpha;
-		bool uses_alpha_clip;
-		bool uses_depth_pre_pass;
-		bool uses_discard;
-		bool uses_roughness;
-		bool uses_normal;
+		bool uses_point_size = false;
+		bool uses_alpha = false;
+		bool uses_blend_alpha = false;
+		bool uses_alpha_clip = false;
+		bool uses_depth_pre_pass = false;
+		bool uses_discard = false;
+		bool uses_roughness = false;
+		bool uses_normal = false;
 
-		bool unshaded;
-		bool uses_vertex;
-		bool uses_sss;
-		bool uses_transmittance;
+		bool unshaded = false;
+		bool uses_vertex = false;
+		bool uses_sss = false;
+		bool uses_transmittance = false;
 		bool uses_screen_texture;
-		bool uses_depth_texture;
-		bool uses_normal_texture;
-		bool uses_time;
-		bool writes_modelview_or_projection;
-		bool uses_world_coordinates;
+		bool uses_depth_texture = false;
+		bool uses_normal_texture = false;
+		bool uses_time = false;
+		bool writes_modelview_or_projection = false;
+		bool uses_world_coordinates = false;
 
 		uint64_t last_pass = 0;
 		uint32_t index = 0;
@@ -162,8 +162,8 @@ public:
 	}
 
 	struct MaterialData : public RendererStorageRD::MaterialData {
-		uint64_t last_frame;
-		ShaderData *shader_data;
+		uint64_t last_frame = 0;
+		ShaderData *shader_data = nullptr;
 		RID uniform_buffer;
 		RID uniform_set;
 		Vector<RID> texture_cache;
@@ -171,7 +171,7 @@ public:
 		uint64_t last_pass = 0;
 		uint32_t index = 0;
 		RID next_pass;
-		uint8_t priority;
+		uint8_t priority = 0;
 		virtual void set_render_priority(int p_priority);
 		virtual void set_next_pass(RID p_pass);
 		virtual void update_parameters(const Map<StringName, Variant> &p_parameters, bool p_uniform_dirty, bool p_textures_dirty);

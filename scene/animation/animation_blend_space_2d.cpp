@@ -160,7 +160,7 @@ bool AnimationNodeBlendSpace2D::has_triangle(int p_x, int p_y, int p_z) const {
 	t.points[1] = p_y;
 	t.points[2] = p_z;
 
-	SortArray<int> sort;
+	SortArray<int> sort{};
 	sort.sort(t.points, 3);
 
 	for (int i = 0; i < triangles.size(); i++) {
@@ -191,7 +191,7 @@ void AnimationNodeBlendSpace2D::add_triangle(int p_x, int p_y, int p_z, int p_at
 	t.points[1] = p_y;
 	t.points[2] = p_z;
 
-	SortArray<int> sort;
+	SortArray<int> sort{};
 	sort.sort(t.points, 3);
 
 	for (int i = 0; i < triangles.size(); i++) {

@@ -1099,7 +1099,7 @@ AudioServer *AudioServer::singleton = nullptr;
 
 void AudioServer::add_callback(AudioCallback p_callback, void *p_userdata) {
 	lock();
-	CallbackItem ci;
+	CallbackItem ci{};
 	ci.callback = p_callback;
 	ci.userdata = p_userdata;
 	callbacks.insert(ci);
@@ -1108,7 +1108,7 @@ void AudioServer::add_callback(AudioCallback p_callback, void *p_userdata) {
 
 void AudioServer::remove_callback(AudioCallback p_callback, void *p_userdata) {
 	lock();
-	CallbackItem ci;
+	CallbackItem ci{};
 	ci.callback = p_callback;
 	ci.userdata = p_userdata;
 	callbacks.erase(ci);
@@ -1117,7 +1117,7 @@ void AudioServer::remove_callback(AudioCallback p_callback, void *p_userdata) {
 
 void AudioServer::add_update_callback(AudioCallback p_callback, void *p_userdata) {
 	lock();
-	CallbackItem ci;
+	CallbackItem ci{};
 	ci.callback = p_callback;
 	ci.userdata = p_userdata;
 	update_callbacks.insert(ci);
@@ -1126,7 +1126,7 @@ void AudioServer::add_update_callback(AudioCallback p_callback, void *p_userdata
 
 void AudioServer::remove_update_callback(AudioCallback p_callback, void *p_userdata) {
 	lock();
-	CallbackItem ci;
+	CallbackItem ci{};
 	ci.callback = p_callback;
 	ci.userdata = p_userdata;
 	update_callbacks.erase(ci);

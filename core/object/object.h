@@ -490,7 +490,7 @@ private:
 	friend class Reference;
 	bool type_is_reference = false;
 	SafeNumeric<uint32_t> instance_binding_count;
-	void *_script_instance_bindings[MAX_SCRIPT_INSTANCE_BINDINGS];
+	void *_script_instance_bindings[MAX_SCRIPT_INSTANCE_BINDINGS]{};
 
 	Object(bool p_reference);
 

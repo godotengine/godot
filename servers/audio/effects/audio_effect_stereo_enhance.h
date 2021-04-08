@@ -44,9 +44,9 @@ class AudioEffectStereoEnhanceInstance : public AudioEffectInstance {
 		MAX_DELAY_MS = 50
 	};
 
-	float *delay_ringbuff;
-	unsigned int ringbuff_pos;
-	unsigned int ringbuff_mask;
+	float *delay_ringbuff = nullptr;
+	unsigned int ringbuff_pos = 0;
+	unsigned int ringbuff_mask = 0;
 
 public:
 	virtual void process(const AudioFrame *p_src_frames, AudioFrame *p_dst_frames, int p_frame_count) override;
@@ -58,7 +58,7 @@ class AudioEffectStereoEnhance : public AudioEffect {
 	GDCLASS(AudioEffectStereoEnhance, AudioEffect);
 
 	friend class AudioEffectStereoEnhanceInstance;
-	float volume_db;
+	float volume_db = 0.0;
 
 	float pan_pullout;
 	float time_pullout;

@@ -47,7 +47,7 @@ class AudioDriver {
 	uint64_t _last_mix_frames;
 
 #ifdef DEBUG_ENABLED
-	uint64_t prof_ticks;
+	uint64_t prof_ticks = 0;
 	uint64_t prof_time;
 #endif
 
@@ -164,15 +164,15 @@ private:
 	uint64_t mix_time;
 	int mix_size;
 
-	uint32_t buffer_size;
-	uint64_t mix_count;
+	uint32_t buffer_size = 0;
+	uint64_t mix_count = 0;
 	uint64_t mix_frames;
 #ifdef DEBUG_ENABLED
 	uint64_t prof_time;
 #endif
 
-	float channel_disable_threshold_db;
-	uint32_t channel_disable_frames;
+	float channel_disable_threshold_db = 0.0;
+	uint32_t channel_disable_frames = 0;
 
 	int channel_count;
 	int to_mix;
@@ -181,11 +181,11 @@ private:
 
 	struct Bus {
 		StringName name;
-		bool solo;
-		bool mute;
-		bool bypass;
+		bool solo = false;
+		bool mute = false;
+		bool bypass = false;
 
-		bool soloed;
+		bool soloed = false;
 
 		//Each channel is a stereo pair.
 		struct Channel {
@@ -207,16 +207,16 @@ private:
 
 		struct Effect {
 			Ref<AudioEffect> effect;
-			bool enabled;
+			bool enabled = false;
 #ifdef DEBUG_ENABLED
-			uint64_t prof_time;
+			uint64_t prof_time = 0;
 #endif
 		};
 
 		Vector<Effect> effects;
-		float volume_db;
+		float volume_db = 0.0;
 		StringName send;
-		int index_cache;
+		int index_cache = 0;
 	};
 
 	Vector<Vector<AudioFrame>> temp_buffer; //temp_buffer for each level
@@ -376,7 +376,7 @@ class AudioBusLayout : public Resource {
 
 		struct Effect {
 			Ref<AudioEffect> effect;
-			bool enabled;
+			bool enabled = false;
 		};
 
 		Vector<Effect> effects;

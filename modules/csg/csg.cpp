@@ -493,19 +493,19 @@ int CSGBrushOperation::MeshMerge::_create_bvh(FaceBVH *facebvhptr, FaceBVH **fac
 
 	switch (li) {
 		case Vector3::AXIS_X: {
-			SortArray<FaceBVH *, FaceBVHCmpX> sort_x;
+			SortArray<FaceBVH *, FaceBVHCmpX> sort_x{};
 			sort_x.nth_element(0, p_size, p_size / 2, &facebvhptrptr[p_from]);
 			//sort_x.sort(&p_bb[p_from],p_size);
 		} break;
 
 		case Vector3::AXIS_Y: {
-			SortArray<FaceBVH *, FaceBVHCmpY> sort_y;
+			SortArray<FaceBVH *, FaceBVHCmpY> sort_y{};
 			sort_y.nth_element(0, p_size, p_size / 2, &facebvhptrptr[p_from]);
 			//sort_y.sort(&p_bb[p_from],p_size);
 		} break;
 
 		case Vector3::AXIS_Z: {
-			SortArray<FaceBVH *, FaceBVHCmpZ> sort_z;
+			SortArray<FaceBVH *, FaceBVHCmpZ> sort_z{};
 			sort_z.nth_element(0, p_size, p_size / 2, &facebvhptrptr[p_from]);
 			//sort_z.sort(&p_bb[p_from],p_size);
 		} break;
@@ -732,7 +732,7 @@ void CSGBrushOperation::MeshMerge::mark_inside_faces() {
 void CSGBrushOperation::MeshMerge::add_face(const Vector3 p_points[], const Vector2 p_uvs[], bool p_smooth, bool p_invert, const Ref<Material> &p_material, bool p_from_b) {
 	int indices[3];
 	for (int i = 0; i < 3; i++) {
-		VertexKey vk;
+		VertexKey vk{};
 		vk.x = int((double(p_points[i].x) + double(vertex_snap) * 0.31234) / double(vertex_snap));
 		vk.y = int((double(p_points[i].y) + double(vertex_snap) * 0.31234) / double(vertex_snap));
 		vk.z = int((double(p_points[i].z) + double(vertex_snap) * 0.31234) / double(vertex_snap));

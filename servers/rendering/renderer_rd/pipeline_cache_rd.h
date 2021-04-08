@@ -45,12 +45,12 @@ class PipelineCacheRD {
 	RD::PipelineMultisampleState multisample_state;
 	RD::PipelineDepthStencilState depth_stencil_state;
 	RD::PipelineColorBlendState blend_state;
-	int dynamic_state_flags;
+	int dynamic_state_flags = 0;
 
 	struct Version {
-		RD::VertexFormatID vertex_id;
-		RD::FramebufferFormatID framebuffer_id;
-		bool wireframe;
+		RD::VertexFormatID vertex_id = 0;
+		RD::FramebufferFormatID framebuffer_id = 0;
+		bool wireframe = false;
 		RID pipeline;
 	};
 

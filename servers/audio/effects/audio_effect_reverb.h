@@ -41,8 +41,8 @@ class AudioEffectReverbInstance : public AudioEffectInstance {
 
 	Ref<AudioEffectReverb> base;
 
-	float tmp_src[Reverb::INPUT_BUFFER_MAX_SIZE];
-	float tmp_dst[Reverb::INPUT_BUFFER_MAX_SIZE];
+	float tmp_src[Reverb::INPUT_BUFFER_MAX_SIZE]{};
+	float tmp_dst[Reverb::INPUT_BUFFER_MAX_SIZE]{};
 
 	friend class AudioEffectReverb;
 

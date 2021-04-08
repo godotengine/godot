@@ -114,10 +114,10 @@ class Body3DSW : public CollisionObject3DSW {
 	struct Contact {
 		Vector3 local_pos;
 		Vector3 local_normal;
-		real_t depth;
-		int local_shape;
+		real_t depth = 0.0;
+		int local_shape = 0;
 		Vector3 collider_pos;
-		int collider_shape;
+		int collider_shape = 0;
 		ObjectID collider_instance_id;
 		RID collider;
 		Vector3 collider_velocity_at_pos;
@@ -380,7 +380,7 @@ class PhysicsDirectBodyState3DSW : public PhysicsDirectBodyState3D {
 public:
 	static PhysicsDirectBodyState3DSW *singleton;
 	Body3DSW *body;
-	real_t step;
+	real_t step = 0.0;
 
 	virtual Vector3 get_total_gravity() const override { return body->gravity; } // get gravity vector working on this body space/area
 	virtual real_t get_total_angular_damp() const override { return body->area_angular_damp; } // get density of this body space/area

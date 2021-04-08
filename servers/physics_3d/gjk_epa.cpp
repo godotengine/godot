@@ -96,7 +96,7 @@ struct sResults	{
 
 	Vector3	witnesses[2];
 	Vector3	normal;
-	real_t	distance;
+	real_t	distance = 0.0;
 };
 
 // Shorthands
@@ -105,7 +105,7 @@ typedef unsigned char	U1;
 
 // MinkowskiDiff
 struct	MinkowskiDiff {
-	const Shape3DSW* m_shapes[2];
+	const Shape3DSW* m_shapes[2]{};
 
 	Transform transform_A;
 	Transform transform_B;
@@ -113,7 +113,7 @@ struct	MinkowskiDiff {
 	real_t margin_A = 0.0;
 	real_t margin_B = 0.0;
 
-	Vector3 (*get_support)(const Shape3DSW*, const Vector3&, real_t);
+	Vector3 (*get_support)(const Shape3DSW*, const Vector3&, real_t) = nullptr;
 
 	void Initialize(const Shape3DSW* shape0, const Transform& wtrs0, const real_t margin0,
 		const Shape3DSW* shape1, const Transform& wtrs1, const real_t margin1) {
@@ -191,13 +191,13 @@ struct	GJK
 		/* Fields		*/
 		tShape			m_shape;
 		Vector3		m_ray;
-		real_t		m_distance;
-		sSimplex		m_simplices[2];
+		real_t		m_distance = 0.0;
+		sSimplex		m_simplices[2]{};
 		sSV				m_store[4];
-		sSV*			m_free[4];
-		U				m_nfree;
-		U				m_current;
-		sSimplex*		m_simplex;
+		sSV*			m_free[4]{};
+		U				m_nfree = 0;
+		U				m_current = 0;
+		sSimplex*		m_simplex = nullptr;
 		eStatus::_		m_status;
 		/* Methods		*/
 		GJK()
@@ -548,12 +548,12 @@ struct	GJK
 		struct	sFace
 		{
 			Vector3	n;
-			real_t	d;
-			sSV*		c[3];
-			sFace*		f[3];
-			sFace*		l[2];
-			U1			e[3];
-			U1			pass;
+			real_t	d = 0.0;
+			sSV*		c[3]{};
+			sFace*		f[3]{};
+			sFace*		l[2]{};
+			U1			e[3]{};
+			U1			pass = 0;
 		};
 		struct	sList
 		{
@@ -581,12 +581,12 @@ struct	GJK
 			Failed		};};
 			/* Fields		*/
 			eStatus::_		m_status;
-			GJK::sSimplex	m_result;
+			GJK::sSimplex	m_result{};
 			Vector3		m_normal;
-			real_t		m_depth;
+			real_t		m_depth = 0.0;
 			sSV				m_sv_store[EPA_MAX_VERTICES];
 			sFace			m_fc_store[EPA_MAX_FACES];
-			U				m_nextsv;
+			U				m_nextsv = 0;
 			sList			m_hull;
 			sList			m_stock;
 			/* Methods		*/

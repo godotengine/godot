@@ -217,7 +217,7 @@ private:
 
 	ConfirmationDialog *video_restart_dialog;
 
-	int video_driver_current;
+	int video_driver_current = 0;
 	String video_driver_request;
 	void _video_driver_selected(int);
 	void _update_video_driver_color();
@@ -245,15 +245,15 @@ private:
 	PopupMenu *scene_tabs_context_menu;
 	Panel *tab_preview_panel;
 	TextureRect *tab_preview;
-	int tab_closing;
+	int tab_closing = 0;
 
 	bool exiting;
 	bool dimmed;
 
 	int old_split_ofs;
 	VSplitContainer *top_split;
-	HBoxContainer *bottom_hb;
-	Control *vp_base;
+	HBoxContainer *bottom_hb = nullptr;
+	Control *vp_base = nullptr;
 
 	HBoxContainer *menu_hb;
 	Control *main_control;
@@ -263,16 +263,16 @@ private:
 	MenuButton *settings_menu;
 	MenuButton *help_menu;
 	PopupMenu *tool_menu;
-	Button *export_button;
+	Button *export_button = nullptr;
 	Button *prev_scene;
 	Button *play_button;
 	Button *pause_button;
 	Button *stop_button;
-	Button *run_settings_button;
+	Button *run_settings_button = nullptr;
 	Button *play_scene_button;
 	Button *play_custom_scene_button;
-	Button *search_button;
-	TextureProgressBar *audio_vu;
+	Button *search_button = nullptr;
+	TextureProgressBar *audio_vu = nullptr;
 
 	Timer *screenshot_timer;
 
@@ -296,7 +296,7 @@ private:
 
 	ConfirmationDialog *confirmation;
 	ConfirmationDialog *save_confirmation;
-	ConfirmationDialog *import_confirmation;
+	ConfirmationDialog *import_confirmation = nullptr;
 	ConfirmationDialog *pick_main_scene;
 	AcceptDialog *accept;
 	EditorAbout *about;
@@ -333,7 +333,7 @@ private:
 	Node *_last_instanced_scene;
 
 	EditorLog *log;
-	CenterContainer *tabs_center;
+	CenterContainer *tabs_center = nullptr;
 	EditorQuickOpen *quick_open;
 	EditorQuickOpen *quick_run;
 
@@ -354,7 +354,7 @@ private:
 
 	Vector<Control *> floating_docks;
 
-	TabContainer *dock_slot[DOCK_SLOT_MAX];
+	TabContainer *dock_slot[DOCK_SLOT_MAX]{};
 	Rect2 dock_select_rect[DOCK_SLOT_MAX];
 	int dock_select_rect_over;
 	PopupPanel *dock_select_popup;
@@ -391,7 +391,7 @@ private:
 	bool changing_scene;
 	bool waiting_for_first_scan;
 
-	bool waiting_for_sources_changed;
+	bool waiting_for_sources_changed = false;
 
 	uint32_t update_spinner_step_msec;
 	uint64_t update_spinner_step_frame;
@@ -446,7 +446,7 @@ private:
 	void _dialog_display_save_error(String p_file, Error p_error);
 	void _dialog_display_load_error(String p_file, Error p_error);
 
-	int current_option;
+	int current_option = 0;
 	void _menu_option(int p_option);
 	void _menu_confirm_current();
 	void _menu_option_confirm(int p_option, bool p_confirmed);

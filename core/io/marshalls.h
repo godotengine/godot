@@ -71,7 +71,7 @@ static inline unsigned int encode_uint32(uint32_t p_uint, uint8_t *p_arr) {
 }
 
 static inline unsigned int encode_float(float p_float, uint8_t *p_arr) {
-	MarshallFloat mf;
+	MarshallFloat mf{};
 	mf.f = p_float;
 	encode_uint32(mf.i, p_arr);
 
@@ -89,7 +89,7 @@ static inline unsigned int encode_uint64(uint64_t p_uint, uint8_t *p_arr) {
 }
 
 static inline unsigned int encode_double(double p_double, uint8_t *p_arr) {
-	MarshallDouble md;
+	MarshallDouble md{};
 	md.d = p_double;
 	encode_uint64(md.l, p_arr);
 
@@ -141,7 +141,7 @@ static inline uint32_t decode_uint32(const uint8_t *p_arr) {
 }
 
 static inline float decode_float(const uint8_t *p_arr) {
-	MarshallFloat mf;
+	MarshallFloat mf{};
 	mf.i = decode_uint32(p_arr);
 	return mf.f;
 }
@@ -160,7 +160,7 @@ static inline uint64_t decode_uint64(const uint8_t *p_arr) {
 }
 
 static inline double decode_double(const uint8_t *p_arr) {
-	MarshallDouble md;
+	MarshallDouble md{};
 	md.l = decode_uint64(p_arr);
 	return md.d;
 }

@@ -117,7 +117,7 @@ struct _TECategory {
 
 	template <class T>
 	struct Item {
-		T item;
+		T item = 0;
 		String name;
 		bool operator<(const Item<T> &p) const { return name < p.name; }
 	};

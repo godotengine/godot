@@ -48,7 +48,7 @@ class RenderingServer : public Object {
 
 	static RenderingServer *singleton;
 
-	int mm_policy;
+	int mm_policy = 0;
 	bool render_loop_enabled = true;
 
 	Array _get_array_from_surface(uint32_t p_format, Vector<uint8_t> p_vertex_data, Vector<uint8_t> p_attrib_data, Vector<uint8_t> p_skin_data, int p_vertex_len, Vector<uint8_t> p_index_data, int p_index_len) const;
@@ -300,7 +300,7 @@ public:
 
 		AABB aabb;
 		struct LOD {
-			float edge_length;
+			float edge_length = 0.0;
 			Vector<uint8_t> index_data;
 		};
 		Vector<LOD> lods;
@@ -1425,8 +1425,8 @@ public:
 
 	struct FrameProfileArea {
 		String name;
-		float gpu_msec;
-		float cpu_msec;
+		float gpu_msec = 0.0;
+		float cpu_msec = 0.0;
 	};
 
 	virtual void set_frame_profiling_enabled(bool p_enable) = 0;

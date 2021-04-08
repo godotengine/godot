@@ -42,7 +42,7 @@
 
 class FabrikInverseKinematic {
 	struct EndEffector {
-		BoneId tip_bone;
+		BoneId tip_bone = 0;
 		Transform goal_transform;
 	};
 

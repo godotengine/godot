@@ -364,7 +364,7 @@ bool PhysicsDirectSpaceState3DSW::collide_shape(RID p_shape, const Transform &p_
 	bool collided = false;
 	r_result_count = 0;
 
-	PhysicsServer3DSW::CollCbkData cbk;
+	PhysicsServer3DSW::CollCbkData cbk{};
 	cbk.max = p_result_max;
 	cbk.amount = 0;
 	cbk.ptr = r_results;
@@ -400,16 +400,16 @@ bool PhysicsDirectSpaceState3DSW::collide_shape(RID p_shape, const Transform &p_
 }
 
 struct _RestCallbackData {
-	const CollisionObject3DSW *object;
-	const CollisionObject3DSW *best_object;
-	int local_shape;
-	int best_local_shape;
-	int shape;
-	int best_shape;
+	const CollisionObject3DSW *object = nullptr;
+	const CollisionObject3DSW *best_object = nullptr;
+	int local_shape = 0;
+	int best_local_shape = 0;
+	int shape = 0;
+	int best_shape = 0;
 	Vector3 best_contact;
 	Vector3 best_normal;
-	real_t best_len;
-	real_t min_allowed_depth;
+	real_t best_len = 0.0;
+	real_t min_allowed_depth = 0.0;
 };
 
 static void _rest_cbk_result(const Vector3 &p_point_A, int p_index_A, const Vector3 &p_point_B, int p_index_B, void *p_userdata) {
@@ -613,7 +613,7 @@ int Space3DSW::test_body_ray_separation(Body3DSW *p_body, const Transform &p_tra
 		const int max_results = 32;
 		int recover_attempts = 4;
 		Vector3 sr[max_results * 2];
-		PhysicsServer3DSW::CollCbkData cbk;
+		PhysicsServer3DSW::CollCbkData cbk{};
 		cbk.max = max_results;
 		PhysicsServer3DSW::CollCbkData *cbkptr = &cbk;
 		CollisionSolver3DSW::CallbackResult cbkres = PhysicsServer3DSW::_shape_col_cbk;
@@ -780,7 +780,7 @@ bool Space3DSW::test_body_motion(Body3DSW *p_body, const Transform &p_from, cons
 		Vector3 sr[max_results * 2];
 
 		do {
-			PhysicsServer3DSW::CollCbkData cbk;
+			PhysicsServer3DSW::CollCbkData cbk{};
 			cbk.max = max_results;
 			cbk.amount = 0;
 			cbk.ptr = sr;

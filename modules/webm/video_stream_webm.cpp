@@ -267,7 +267,7 @@ void VideoStreamPlaybackWebm::update(float p_delta) {
 		// It seems VPXDecoder::decode has to be executed even though we might skip this frame
 		if (video->decode(*video_frame)) {
 			VPXDecoder::IMAGE_ERROR err;
-			VPXDecoder::Image image;
+			VPXDecoder::Image image{};
 
 			if (should_process(*video_frame)) {
 				if ((err = video->getImage(image)) != VPXDecoder::NO_FRAME) {

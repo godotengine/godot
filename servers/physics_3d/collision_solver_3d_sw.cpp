@@ -257,18 +257,18 @@ bool CollisionSolver3DSW::solve_soft_body(const Shape3DSW *p_shape_A, const Tran
 }
 
 struct _ConcaveCollisionInfo {
-	const Transform *transform_A;
-	const Shape3DSW *shape_A;
-	const Transform *transform_B;
-	CollisionSolver3DSW::CallbackResult result_callback;
-	void *userdata;
-	bool swap_result;
-	bool collided;
-	int aabb_tests;
-	int collisions;
-	bool tested;
-	real_t margin_A;
-	real_t margin_B;
+	const Transform *transform_A = nullptr;
+	const Shape3DSW *shape_A = nullptr;
+	const Transform *transform_B = nullptr;
+	CollisionSolver3DSW::CallbackResult result_callback = nullptr;
+	void *userdata = nullptr;
+	bool swap_result = false;
+	bool collided = false;
+	int aabb_tests = 0;
+	int collisions = 0;
+	bool tested = false;
+	real_t margin_A = 0.0;
+	real_t margin_B = 0.0;
 	Vector3 close_A, close_B;
 };
 

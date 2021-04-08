@@ -39,7 +39,7 @@ class TriangleMesh : public Reference {
 
 	struct Triangle {
 		Vector3 normal;
-		int indices[3];
+		int indices[3]{};
 	};
 
 	Vector<Triangle> triangles;
@@ -48,10 +48,10 @@ class TriangleMesh : public Reference {
 	struct BVH {
 		AABB aabb;
 		Vector3 center; //used for sorting
-		int left;
-		int right;
+		int left = 0;
+		int right = 0;
 
-		int face_index;
+		int face_index = 0;
 	};
 
 	struct BVHCmpX {

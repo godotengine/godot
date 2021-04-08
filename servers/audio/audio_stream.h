@@ -117,8 +117,8 @@ class AudioStreamPlaybackMicrophone : public AudioStreamPlaybackResampled {
 	GDCLASS(AudioStreamPlaybackMicrophone, AudioStreamPlaybackResampled);
 	friend class AudioStreamMicrophone;
 
-	bool active;
-	unsigned int input_ofs;
+	bool active = false;
+	unsigned int input_ofs = 0;
 
 	Ref<AudioStreamMicrophone> microphone;
 
@@ -179,7 +179,7 @@ class AudioStreamPlaybackRandomPitch : public AudioStreamPlayback {
 	Ref<AudioStreamRandomPitch> random_pitch;
 	Ref<AudioStreamPlayback> playback;
 	Ref<AudioStreamPlayback> playing;
-	float pitch_scale;
+	float pitch_scale = 0.0;
 
 public:
 	virtual void start(float p_from_pos = 0.0) override;

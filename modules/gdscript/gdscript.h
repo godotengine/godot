@@ -330,7 +330,7 @@ class GDScriptLanguage : public ScriptLanguage {
 
 	static GDScriptLanguage *singleton;
 
-	Variant *_global_array;
+	Variant *_global_array = nullptr;
 	Vector<Variant> global_array;
 	Map<StringName, int> globals;
 	Map<StringName, Variant> named_globals;

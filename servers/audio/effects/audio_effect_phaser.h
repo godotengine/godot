@@ -40,7 +40,7 @@ class AudioEffectPhaserInstance : public AudioEffectInstance {
 	friend class AudioEffectPhaser;
 	Ref<AudioEffectPhaser> base;
 
-	float phase;
+	float phase = 0.0;
 	AudioFrame h;
 
 	class AllpassDelay {

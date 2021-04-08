@@ -44,7 +44,7 @@ struct CameraMatrix {
 		PLANE_BOTTOM
 	};
 
-	real_t matrix[4][4];
+	real_t matrix[4][4]{};
 
 	float determinant() const;
 	void set_identity();

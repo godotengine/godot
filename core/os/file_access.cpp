@@ -212,7 +212,7 @@ uint64_t FileAccess::get_64() const {
 }
 
 float FileAccess::get_float() const {
-	MarshallFloat m;
+	MarshallFloat m{};
 	m.i = get_32();
 	return m.f;
 }
@@ -226,7 +226,7 @@ real_t FileAccess::get_real() const {
 }
 
 double FileAccess::get_double() const {
-	MarshallDouble m;
+	MarshallDouble m{};
 	m.l = get_64();
 	return m.d;
 }
@@ -446,13 +446,13 @@ void FileAccess::store_real(real_t p_real) {
 }
 
 void FileAccess::store_float(float p_dest) {
-	MarshallFloat m;
+	MarshallFloat m{};
 	m.f = p_dest;
 	store_32(m.i);
 }
 
 void FileAccess::store_double(double p_dest) {
-	MarshallDouble m;
+	MarshallDouble m{};
 	m.d = p_dest;
 	store_64(m.l);
 }

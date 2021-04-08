@@ -60,14 +60,14 @@ class Polygon2DEditor : public AbstractPolygon2DEditor {
 		UV_MODE_MAX
 	};
 
-	Button *uv_edit_mode[4];
+	Button *uv_edit_mode[4]{};
 	Ref<ButtonGroup> uv_edit_group;
 
 	Polygon2D *node;
 
 	UVMode uv_mode;
 	AcceptDialog *uv_edit;
-	Button *uv_button[UV_MODE_MAX];
+	Button *uv_button[UV_MODE_MAX]{};
 	Button *b_snap_enable;
 	Button *b_snap_grid;
 	Panel *uv_edit_draw;
@@ -86,7 +86,7 @@ class Polygon2DEditor : public AbstractPolygon2DEditor {
 	SpinBox *bone_paint_radius;
 	Label *bone_paint_radius_label;
 	bool bone_painting;
-	int bone_painting_bone;
+	int bone_painting_bone = 0;
 	Vector<float> prev_weights;
 	Vector2 bone_paint_pos;
 	AcceptDialog *grid_settings;
@@ -100,7 +100,7 @@ class Polygon2DEditor : public AbstractPolygon2DEditor {
 	Vector<Vector2> uv_create_uv_prev;
 	Vector<Vector2> uv_create_poly_prev;
 	Vector<Color> uv_create_colors_prev;
-	int uv_create_prev_internal_vertices;
+	int uv_create_prev_internal_vertices = 0;
 	Array uv_create_bones_prev;
 	Array polygons_prev;
 

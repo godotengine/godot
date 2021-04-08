@@ -91,7 +91,7 @@ private:
 	//Button *action;
 	VBoxContainer *vbox;
 	FileMode mode;
-	bool can_create_dir;
+	bool can_create_dir = false;
 	LineEdit *dir;
 
 	Button *dir_prev;

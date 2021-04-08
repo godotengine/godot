@@ -39,7 +39,7 @@ class AudioEffectDistortionInstance : public AudioEffectInstance {
 	GDCLASS(AudioEffectDistortionInstance, AudioEffectInstance);
 	friend class AudioEffectDistortion;
 	Ref<AudioEffectDistortion> base;
-	float h[2];
+	float h[2]{};
 
 public:
 	virtual void process(const AudioFrame *p_src_frames, AudioFrame *p_dst_frames, int p_frame_count) override;

@@ -49,7 +49,7 @@
 #include "servers/xr/xr_interface.h"
 class RendererSceneCull : public RendererScene {
 public:
-	RendererSceneRender *scene_render;
+	RendererSceneRender *scene_render = nullptr;
 
 	enum {
 		SDFGI_MAX_CASCADES = 8,
@@ -254,7 +254,7 @@ public:
 		uint32_t layer_mask = 0; //for fast layer-mask discard
 		RID base_rid;
 		union {
-			uint64_t instance_data_rid;
+			uint64_t instance_data_rid = 0;
 			RendererSceneRender::GeometryInstance *instance_geometry;
 		};
 		Instance *instance = nullptr;
@@ -319,8 +319,8 @@ public:
 	/* INSTANCING API */
 
 	struct InstancePair {
-		Instance *a;
-		Instance *b;
+		Instance *a = nullptr;
+		Instance *b = nullptr;
 		SelfList<InstancePair> list_a;
 		SelfList<InstancePair> list_b;
 		InstancePair() :
@@ -530,7 +530,7 @@ public:
 	};
 
 	struct InstanceReflectionProbeData : public InstanceBaseData {
-		Instance *owner;
+		Instance *owner = nullptr;
 
 		Set<Instance *> geometries;
 
@@ -546,7 +546,7 @@ public:
 	};
 
 	struct InstanceDecalData : public InstanceBaseData {
-		Instance *owner;
+		Instance *owner = nullptr;
 		RID instance;
 
 		Set<Instance *> geometries;
@@ -585,7 +585,7 @@ public:
 	};
 
 	struct InstanceGIProbeData : public InstanceBaseData {
-		Instance *owner;
+		Instance *owner = nullptr;
 
 		Set<Instance *> geometries;
 		Set<Instance *> dynamic_geometries;
@@ -596,14 +596,14 @@ public:
 			RS::LightType type;
 			Transform transform;
 			Color color;
-			float energy;
-			float bake_energy;
-			float radius;
-			float attenuation;
-			float spot_angle;
-			float spot_attenuation;
-			bool has_shadow;
-			bool sky_only;
+			float energy = 0.0;
+			float bake_energy = 0.0;
+			float radius = 0.0;
+			float attenuation = 0.0;
+			float spot_angle = 0.0;
+			float spot_attenuation = 0.0;
+			bool has_shadow = false;
+			bool sky_only = false;
 		};
 
 		Vector<LightCache> light_cache;
@@ -642,8 +642,8 @@ public:
 		SelfList<InstancePair>::List pairs_found;
 		DynamicBVH *bvh = nullptr;
 		DynamicBVH *bvh2 = nullptr; //some may need to cull in two
-		uint32_t pair_mask;
-		uint64_t pair_pass;
+		uint32_t pair_mask = 0;
+		uint64_t pair_pass = 0;
 
 		_FORCE_INLINE_ bool operator()(void *p_data) {
 			Instance *p_instance = (Instance *)p_data;
@@ -829,7 +829,7 @@ public:
 
 	RID_PtrOwner<Instance, true> instance_owner;
 
-	uint32_t geometry_instance_pair_mask; // used in traditional forward, unnecesary on clustered
+	uint32_t geometry_instance_pair_mask = 0; // used in traditional forward, unnecesary on clustered
 
 	virtual RID instance_allocate();
 	virtual void instance_initialize(RID p_rid);
@@ -891,27 +891,27 @@ public:
 
 				CameraMatrix projection;
 				Transform transform;
-				real_t zfar;
-				real_t split;
-				real_t shadow_texel_size;
-				real_t bias_scale;
-				real_t range_begin;
+				real_t zfar = 0.0;
+				real_t split = 0.0;
+				real_t shadow_texel_size = 0.0;
+				real_t bias_scale = 0.0;
+				real_t range_begin = 0.0;
 				Vector2 uv_scale;
 
 			} cascades[RendererSceneRender::MAX_DIRECTIONAL_LIGHT_CASCADES]; //max 4 cascades
-			uint32_t cascade_count;
+			uint32_t cascade_count = 0;
 
 		} shadows[RendererSceneRender::MAX_DIRECTIONAL_LIGHTS];
 
-		uint32_t shadow_count;
+		uint32_t shadow_count = 0;
 
 		struct SDFGI {
 			//have arrays here because SDFGI functions expects this, plus regions can have areas
 			AABB region_aabb[SDFGI_MAX_CASCADES * SDFGI_MAX_REGIONS_PER_CASCADE]; //max 3 regions per cascade
-			uint32_t region_cascade[SDFGI_MAX_CASCADES * SDFGI_MAX_REGIONS_PER_CASCADE]; //max 3 regions per cascade
+			uint32_t region_cascade[SDFGI_MAX_CASCADES * SDFGI_MAX_REGIONS_PER_CASCADE]{}; //max 3 regions per cascade
 			uint32_t region_count = 0;
 
-			uint32_t cascade_light_index[SDFGI_MAX_CASCADES];
+			uint32_t cascade_light_index[SDFGI_MAX_CASCADES]{};
 			uint32_t cascade_light_count = 0;
 
 		} sdfgi;
@@ -922,12 +922,12 @@ public:
 	} cull;
 
 	struct FrustumCullData {
-		Cull *cull;
-		Scenario *scenario;
+		Cull *cull = nullptr;
+		Scenario *scenario = nullptr;
 		RID shadow_atlas;
 		Transform cam_transform;
-		uint32_t visible_layers;
-		Instance *render_reflection_probe;
+		uint32_t visible_layers = 0;
+		Instance *render_reflection_probe = nullptr;
 	};
 
 	void _frustum_cull_threaded(uint32_t p_thread, FrustumCullData *cull_data);

@@ -74,11 +74,11 @@ private:
 	VBoxContainer *commit_box_vbc;
 	HSplitContainer *stage_tools;
 	Tree *stage_files;
-	TreeItem *new_files;
-	TreeItem *modified_files;
-	TreeItem *renamed_files;
-	TreeItem *deleted_files;
-	TreeItem *typechange_files;
+	TreeItem *new_files = nullptr;
+	TreeItem *modified_files = nullptr;
+	TreeItem *renamed_files = nullptr;
+	TreeItem *deleted_files = nullptr;
+	TreeItem *typechange_files = nullptr;
 	Label *staging_area_label;
 	HSplitContainer *stage_buttons;
 	Button *stage_all_button;
@@ -89,7 +89,7 @@ private:
 	Label *commit_status;
 
 	PanelContainer *version_control_dock;
-	Button *version_control_dock_button;
+	Button *version_control_dock_button = nullptr;
 	VBoxContainer *diff_vbc;
 	HBoxContainer *diff_hbc;
 	Button *diff_refresh_button;

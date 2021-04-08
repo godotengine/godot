@@ -46,7 +46,7 @@ class OpenSimplexNoise : public Resource {
 	// to avoid freezing the editor for long periods of time.
 	static const int MAX_OCTAVES = 9;
 
-	osn_context contexts[MAX_OCTAVES];
+	osn_context contexts[MAX_OCTAVES]{};
 
 	int seed = 0;
 	float persistence = 0.5; // Controls details, value in [0,1]. Higher increases grain, lower increases smoothness.

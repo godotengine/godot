@@ -52,7 +52,7 @@
 class EditorExportPlatformIOS : public EditorExportPlatform {
 	GDCLASS(EditorExportPlatformIOS, EditorExportPlatform);
 
-	int version_code;
+	int version_code = 0;
 
 	Ref<ImageTexture> logo;
 

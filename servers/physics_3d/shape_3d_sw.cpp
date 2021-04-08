@@ -1433,7 +1433,7 @@ Vector3 ConcavePolygonShape3DSW::get_moment_of_inertia(real_t p_mass) const {
 struct _VolumeSW_BVH_Element {
 	AABB aabb;
 	Vector3 center;
-	int face_index;
+	int face_index = 0;
 };
 
 struct _VolumeSW_BVH_CompareX {
@@ -1456,10 +1456,10 @@ struct _VolumeSW_BVH_CompareZ {
 
 struct _VolumeSW_BVH {
 	AABB aabb;
-	_VolumeSW_BVH *left;
-	_VolumeSW_BVH *right;
+	_VolumeSW_BVH *left = nullptr;
+	_VolumeSW_BVH *right = nullptr;
 
-	int face_index;
+	int face_index = 0;
 };
 
 _VolumeSW_BVH *_volume_sw_build_bvh(_VolumeSW_BVH_Element *p_elements, int p_size, int &count) {
@@ -1488,16 +1488,16 @@ _VolumeSW_BVH *_volume_sw_build_bvh(_VolumeSW_BVH_Element *p_elements, int p_siz
 	bvh->aabb = aabb;
 	switch (aabb.get_longest_axis_index()) {
 		case 0: {
-			SortArray<_VolumeSW_BVH_Element, _VolumeSW_BVH_CompareX> sort_x;
+			SortArray<_VolumeSW_BVH_Element, _VolumeSW_BVH_CompareX> sort_x{};
 			sort_x.sort(p_elements, p_size);
 
 		} break;
 		case 1: {
-			SortArray<_VolumeSW_BVH_Element, _VolumeSW_BVH_CompareY> sort_y;
+			SortArray<_VolumeSW_BVH_Element, _VolumeSW_BVH_CompareY> sort_y{};
 			sort_y.sort(p_elements, p_size);
 		} break;
 		case 2: {
-			SortArray<_VolumeSW_BVH_Element, _VolumeSW_BVH_CompareZ> sort_z;
+			SortArray<_VolumeSW_BVH_Element, _VolumeSW_BVH_CompareZ> sort_z{};
 			sort_z.sort(p_elements, p_size);
 		} break;
 	}

@@ -55,15 +55,15 @@ class OS {
 	String _local_clipboard;
 	bool _no_window = false;
 	int _exit_code = EXIT_FAILURE; // unexpected exit is marked as failure
-	int _orientation;
+	int _orientation = 0;
 	bool _allow_hidpi = false;
 	bool _allow_layered = false;
-	bool _use_vsync;
-	bool _vsync_via_compositor;
+	bool _use_vsync = false;
+	bool _vsync_via_compositor = false;
 	bool _stdout_enabled = true;
 	bool _stderr_enabled = true;
 
-	char *last_error;
+	char *last_error = nullptr;
 
 	CompositeLogger *_logger = nullptr;
 
@@ -200,7 +200,7 @@ public:
 	};
 
 	struct TimeZoneInfo {
-		int bias;
+		int bias = 0;
 		String name;
 	};
 

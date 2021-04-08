@@ -624,7 +624,7 @@ void Input::_parse_input_event_impl(const Ref<InputEvent> &p_event, bool p_is_em
 		if (InputMap::get_singleton()->event_is_action(p_event, E.key())) {
 			// If not echo and action pressed state has changed
 			if (!p_event->is_echo() && is_action_pressed(E.key(), false) != p_event->is_action_pressed(E.key())) {
-				Action action;
+				Action action{};
 				action.physics_frame = Engine::get_singleton()->get_physics_frames();
 				action.process_frame = Engine::get_singleton()->get_process_frames();
 				action.pressed = p_event->is_action_pressed(E.key());
@@ -654,7 +654,7 @@ void Input::start_joy_vibration(int p_device, float p_weak_magnitude, float p_st
 	if (p_weak_magnitude < 0.f || p_weak_magnitude > 1.f || p_strong_magnitude < 0.f || p_strong_magnitude > 1.f) {
 		return;
 	}
-	VibrationInfo vibration;
+	VibrationInfo vibration{};
 	vibration.weak_magnitude = p_weak_magnitude;
 	vibration.strong_magnitude = p_strong_magnitude;
 	vibration.duration = p_duration;
@@ -664,7 +664,7 @@ void Input::start_joy_vibration(int p_device, float p_weak_magnitude, float p_st
 
 void Input::stop_joy_vibration(int p_device) {
 	_THREAD_SAFE_METHOD_
-	VibrationInfo vibration;
+	VibrationInfo vibration{};
 	vibration.weak_magnitude = 0;
 	vibration.strong_magnitude = 0;
 	vibration.duration = 0;
@@ -750,7 +750,7 @@ void Input::iteration(float p_step) {
 }
 
 void Input::action_press(const StringName &p_action, float p_strength) {
-	Action action;
+	Action action{};
 
 	action.physics_frame = Engine::get_singleton()->get_physics_frames();
 	action.process_frame = Engine::get_singleton()->get_process_frames();
@@ -761,7 +761,7 @@ void Input::action_press(const StringName &p_action, float p_strength) {
 }
 
 void Input::action_release(const StringName &p_action) {
-	Action action;
+	Action action{};
 
 	action.physics_frame = Engine::get_singleton()->get_physics_frames();
 	action.process_frame = Engine::get_singleton()->get_process_frames();
@@ -921,12 +921,12 @@ void Input::joy_axis(int p_device, int p_axis, const JoyAxisValue &p_value) {
 	//when changing direction quickly, insert fake event to release pending inputmap actions
 	float last = joy.last_axis[p_axis];
 	if (p_value.min == 0 && (last < 0.25 || last > 0.75) && (last - 0.5) * (p_value.value - 0.5) < 0) {
-		JoyAxisValue jx;
+		JoyAxisValue jx{};
 		jx.min = p_value.min;
 		jx.value = p_value.value < 0.5 ? 0.6 : 0.4;
 		joy_axis(p_device, p_axis, jx);
 	} else if (ABS(last) > 0.5 && last * p_value.value <= 0) {
-		JoyAxisValue jx;
+		JoyAxisValue jx{};
 		jx.min = p_value.min;
 		jx.value = last > 0 ? 0.1 : -0.1;
 		joy_axis(p_device, p_axis, jx);
@@ -1049,7 +1049,7 @@ void Input::_axis_event(int p_device, int p_axis, float p_value) {
 }
 
 Input::JoyEvent Input::_get_mapped_button_event(const JoyDeviceMapping &mapping, int p_button) {
-	JoyEvent event;
+	JoyEvent event{};
 	event.type = TYPE_MAX;
 
 	for (int i = 0; i < mapping.bindings.size(); i++) {
@@ -1085,7 +1085,7 @@ Input::JoyEvent Input::_get_mapped_button_event(const JoyDeviceMapping &mapping,
 }
 
 Input::JoyEvent Input::_get_mapped_axis_event(const JoyDeviceMapping &mapping, int p_axis, float p_value) {
-	JoyEvent event;
+	JoyEvent event{};
 	event.type = TYPE_MAX;
 
 	for (int i = 0; i < mapping.bindings.size(); i++) {
@@ -1286,7 +1286,7 @@ void Input::parse_mapping(String p_mapping) {
 		ERR_CONTINUE_MSG(output_button != JOY_BUTTON_INVALID && output_axis != JOY_AXIS_INVALID,
 				String("BUG: Output string matched both button and axis: " + output));
 
-		JoyBinding binding;
+		JoyBinding binding{};
 		if (output_button != JOY_BUTTON_INVALID) {
 			binding.outputType = TYPE_BUTTON;
 			binding.output.button = output_button;

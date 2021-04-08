@@ -97,7 +97,7 @@ class EditorHelpSearch::Runner : public Reference {
 	int phase = 0;
 
 	struct ClassMatch {
-		DocData::ClassDoc *doc;
+		DocData::ClassDoc *doc = nullptr;
 		bool name = false;
 		Vector<DocData::MethodDoc *> methods;
 		Vector<DocData::MethodDoc *> signals;

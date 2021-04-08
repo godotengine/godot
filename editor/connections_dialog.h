@@ -84,11 +84,11 @@ public:
 private:
 	Label *connect_to_label;
 	LineEdit *from_signal;
-	Node *source;
+	Node *source = nullptr;
 	StringName signal;
 	LineEdit *dst_method;
 	ConnectDialogBinds *cdbinds;
-	bool bEditMode;
+	bool bEditMode = false;
 	NodePath dst_path;
 	VBoxContainer *vbc_right;
 
@@ -159,7 +159,7 @@ class ConnectionsDock : public VBoxContainer {
 		DISCONNECT
 	};
 
-	Node *selectedNode;
+	Node *selectedNode = nullptr;
 	ConnectionsDockTree *tree;
 	EditorNode *editor;
 
@@ -168,7 +168,7 @@ class ConnectionsDock : public VBoxContainer {
 	Button *connect_button;
 	PopupMenu *signal_menu;
 	PopupMenu *slot_menu;
-	UndoRedo *undo_redo;
+	UndoRedo *undo_redo = nullptr;
 	LineEdit *search_box;
 
 	Map<StringName, Map<StringName, String>> descr_cache;

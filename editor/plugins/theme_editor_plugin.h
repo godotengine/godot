@@ -74,9 +74,9 @@ class ThemeEditor : public VBoxContainer {
 		POPUP_IMPORT_EDITOR_THEME
 	};
 
-	int popup_mode;
+	int popup_mode = 0;
 
-	Tree *test_tree;
+	Tree *test_tree = nullptr;
 
 	void _save_template_cbk(String fname);
 	void _dialog_cbk();

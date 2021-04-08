@@ -137,7 +137,7 @@ private:
 	real_t randomness_ratio = 0.0;
 	real_t lifetime_randomness = 0.0;
 	real_t speed_scale = 1.0;
-	bool local_coords;
+	bool local_coords = false;
 	int fixed_fps = 0;
 	bool fractional_delta = true;
 
@@ -152,14 +152,14 @@ private:
 	Vector2 direction = Vector2(1, 0);
 	real_t spread = 45.0;
 
-	real_t parameters[PARAM_MAX];
-	real_t randomness[PARAM_MAX];
+	real_t parameters[PARAM_MAX]{};
+	real_t randomness[PARAM_MAX]{};
 
 	Ref<Curve> curve_parameters[PARAM_MAX];
 	Color color;
 	Ref<Gradient> color_ramp;
 
-	bool particle_flags[PARTICLE_FLAG_MAX];
+	bool particle_flags[PARTICLE_FLAG_MAX]{};
 
 	EmissionShape emission_shape = EMISSION_SHAPE_POINT;
 	real_t emission_sphere_radius = 1.0;

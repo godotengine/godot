@@ -344,8 +344,8 @@ class DisplayServerWindows : public DisplayServer {
 		LPARAM saved_lparam;
 
 		// Timers.
-		uint32_t move_timer_id = 0U;
-		uint32_t focus_timer_id = 0U;
+		uint32_t move_timer_id = 0;
+		uint32_t focus_timer_id = 0;
 
 		HANDLE wtctx;
 		LOGCONTEXTW wtlc;

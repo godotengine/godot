@@ -44,7 +44,7 @@ public:
 		Map<StringName, bool *> usage_flag_pointers;
 		Map<StringName, bool *> write_flag_pointers;
 
-		Map<StringName, ShaderLanguage::ShaderNode::Uniform> *uniforms;
+		Map<StringName, ShaderLanguage::ShaderNode::Uniform> *uniforms = nullptr;
 	};
 
 	struct GeneratedCode {
@@ -55,13 +55,13 @@ public:
 			ShaderLanguage::ShaderNode::Uniform::Hint hint;
 			ShaderLanguage::TextureFilter filter;
 			ShaderLanguage::TextureRepeat repeat;
-			bool global;
+			bool global = false;
 		};
 
 		Vector<Texture> texture_uniforms;
 
 		Vector<uint32_t> uniform_offsets;
-		uint32_t uniform_total_size;
+		uint32_t uniform_total_size = 0;
 		String uniforms;
 		String vertex_global;
 		String vertex;
@@ -71,9 +71,9 @@ public:
 		String compute_global;
 		String compute;
 
-		bool uses_global_textures;
-		bool uses_fragment_time;
-		bool uses_vertex_time;
+		bool uses_global_textures = false;
+		bool uses_fragment_time = false;
+		bool uses_vertex_time = false;
 	};
 
 	struct DefaultIdentifierActions {
@@ -100,8 +100,8 @@ private:
 	void _dump_function_deps(const ShaderLanguage::ShaderNode *p_node, const StringName &p_for_func, const Map<StringName, String> &p_func_code, String &r_to_add, Set<StringName> &added);
 	String _dump_node_code(const ShaderLanguage::Node *p_node, int p_level, GeneratedCode &r_gen_code, IdentifierActions &p_actions, const DefaultIdentifierActions &p_default_actions, bool p_assigning, bool p_scope = true);
 
-	const ShaderLanguage::ShaderNode *shader;
-	const ShaderLanguage::FunctionNode *function;
+	const ShaderLanguage::ShaderNode *shader = nullptr;
+	const ShaderLanguage::FunctionNode *function = nullptr;
 	StringName current_func_name;
 	StringName vertex_name;
 	StringName fragment_name;

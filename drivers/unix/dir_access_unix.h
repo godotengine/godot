@@ -47,7 +47,7 @@ class DirAccessUnix : public DirAccess {
 
 	String current_dir;
 	bool _cisdir;
-	bool _cishidden;
+	bool _cishidden = false;
 
 protected:
 	virtual String fix_unicode_name(const char *p_name) const { return String::utf8(p_name); }

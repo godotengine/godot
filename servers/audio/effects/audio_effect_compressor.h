@@ -40,8 +40,8 @@ class AudioEffectCompressorInstance : public AudioEffectInstance {
 	friend class AudioEffectCompressor;
 	Ref<AudioEffectCompressor> base;
 
-	float rundb, averatio, runratio, runmax, maxover, gr_meter;
-	int current_channel;
+	float rundb = 0.0, averatio = 0.0, runratio = 0.0, runmax = 0.0, maxover = 0.0, gr_meter = 0.0;
+	int current_channel = 0;
 
 public:
 	void set_current_channel(int p_channel) { current_channel = p_channel; }

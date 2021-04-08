@@ -44,7 +44,7 @@ class CPUParticles3DEditor : public GPUParticles3DEditorBase {
 
 	};
 
-	CPUParticles3D *node;
+	CPUParticles3D *node = nullptr;
 
 	void _menu_option(int);
 

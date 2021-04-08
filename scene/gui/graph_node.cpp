@@ -201,7 +201,7 @@ void GraphNode::_resort() {
 		}
 
 		Size2i size = c->get_combined_minimum_size();
-		_MinSizeCache msc;
+		_MinSizeCache msc{};
 
 		stretch_min += size.height;
 		msc.min_size = size.height;

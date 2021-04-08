@@ -44,7 +44,7 @@ class Skeleton2DEditor : public Control {
 		MENU_OPTION_SET_REST,
 	};
 
-	Skeleton2D *node;
+	Skeleton2D *node = nullptr;
 
 	MenuButton *options;
 	AcceptDialog *err_dialog;

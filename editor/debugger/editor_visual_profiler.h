@@ -87,7 +87,7 @@ private:
 
 	StringName selected_area;
 
-	bool updating_frame;
+	bool updating_frame = false;
 
 	//int cursor_metric;
 	int hover_metric;

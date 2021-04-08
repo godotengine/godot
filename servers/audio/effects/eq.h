@@ -57,7 +57,7 @@ public:
 			float a1, a2, a3;
 			float b1, b2, b3;
 
-		} history;
+		} history{};
 
 	public:
 		inline void process_one(float &p_data);

@@ -62,7 +62,7 @@ void JoypadLinux::Joypad::reset() {
 	dpad = 0;
 	fd = -1;
 
-	Input::JoyAxisValue jx;
+	Input::JoyAxisValue jx{};
 	jx.min = -1;
 	jx.value = 0.0f;
 	for (int i = 0; i < MAX_ABS; i++) {
@@ -162,7 +162,7 @@ void JoypadLinux::monitor_joypads(udev *p_udev) {
 
 	while (!exit_monitor.is_set()) {
 		fd_set fds;
-		struct timeval tv;
+		struct timeval tv {};
 		int ret;
 
 		FD_ZERO(&fds);
@@ -346,7 +346,7 @@ void JoypadLinux::open_joypad(const char *p_path) {
 		char uid[128];
 		char namebuf[128];
 		String name = "";
-		input_id inpid;
+		input_id inpid{};
 		if (ioctl(fd, EVIOCGNAME(sizeof(namebuf)), namebuf) >= 0) {
 			name = namebuf;
 		}
@@ -391,7 +391,7 @@ void JoypadLinux::joypad_vibration_start(int p_id, float p_weak_magnitude, float
 		joypad_vibration_stop(p_id, p_timestamp);
 	}
 
-	struct ff_effect effect;
+	struct ff_effect effect {};
 	effect.type = FF_RUMBLE;
 	effect.id = -1;
 	effect.u.rumble.weak_magnitude = floor(p_weak_magnitude * (float)0xffff);
@@ -403,7 +403,7 @@ void JoypadLinux::joypad_vibration_start(int p_id, float p_weak_magnitude, float
 		return;
 	}
 
-	struct input_event play;
+	struct input_event play {};
 	play.type = EV_FF;
 	play.code = effect.id;
 	play.value = 1;
@@ -432,7 +432,7 @@ void JoypadLinux::joypad_vibration_stop(int p_id, uint64_t p_timestamp) {
 Input::JoyAxisValue JoypadLinux::axis_correct(const input_absinfo *p_abs, int p_value) const {
 	int min = p_abs->minimum;
 	int max = p_abs->maximum;
-	Input::JoyAxisValue jx;
+	Input::JoyAxisValue jx{};
 
 	if (min < 0) {
 		jx.min = -1;

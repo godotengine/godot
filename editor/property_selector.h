@@ -50,12 +50,12 @@ class PropertySelector : public ConfirmationDialog {
 
 	EditorHelpBit *help_bit;
 
-	bool properties;
+	bool properties = false;
 	String selected;
 	Variant::Type type;
 	String base_type;
 	ObjectID script;
-	Object *instance;
+	Object *instance = nullptr;
 	bool virtuals_only;
 
 	Vector<Variant::Type> type_filter;

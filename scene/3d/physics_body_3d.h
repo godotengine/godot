@@ -274,7 +274,7 @@ private:
 
 	uint16_t locked_axis = 0;
 
-	real_t margin;
+	real_t margin = 0.0;
 
 	Vector3 floor_normal;
 	Vector3 floor_velocity;

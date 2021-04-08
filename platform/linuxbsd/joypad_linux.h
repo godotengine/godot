@@ -53,9 +53,9 @@ private:
 	};
 
 	struct Joypad {
-		Input::JoyAxisValue curr_axis[MAX_ABS];
-		int key_map[MAX_KEY];
-		int abs_map[MAX_ABS];
+		Input::JoyAxisValue curr_axis[MAX_ABS]{};
+		int key_map[MAX_KEY]{};
+		int abs_map[MAX_ABS]{};
 		int dpad = 0;
 		int fd = -1;
 
