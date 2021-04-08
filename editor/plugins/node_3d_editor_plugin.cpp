@@ -2535,6 +2535,8 @@ void Node3DEditorViewport::_notification(int p_what) {
 				cpu_time += cpu_time_history[i];
 			}
 			cpu_time /= FRAME_TIME_HISTORY;
+			// Prevent unrealistically low values.
+			cpu_time = MAX(0.01, cpu_time);
 
 			gpu_time_history[gpu_time_history_index] = RS::get_singleton()->viewport_get_measured_render_time_gpu(viewport->get_viewport_rid());
 			gpu_time_history_index = (gpu_time_history_index + 1) % FRAME_TIME_HISTORY;
@@ -2543,16 +2545,19 @@ void Node3DEditorViewport::_notification(int p_what) {
 				gpu_time += gpu_time_history[i];
 			}
 			gpu_time /= FRAME_TIME_HISTORY;
+			// Prevent division by zero for the FPS counter (and unrealistically low values).
+			// This limits the reported FPS to 100000.
+			gpu_time = MAX(0.01, gpu_time);
 
 			// Color labels depending on performance level ("good" = green, "OK" = yellow, "bad" = red).
 			// Middle point is at 15 ms.
-			cpu_time_label->set_text(vformat(TTR("CPU Time: %s ms"), String::num(cpu_time, 1)));
+			cpu_time_label->set_text(vformat(TTR("CPU Time: %s ms"), rtos(cpu_time).pad_decimals(1)));
 			cpu_time_label->add_theme_color_override(
 					"font_color",
 					frame_time_gradient->get_color_at_offset(
 							Math::range_lerp(cpu_time, 0, 30, 0, 1)));
 
-			gpu_time_label->set_text(vformat(TTR("GPU Time: %s ms"), String::num(gpu_time, 1)));
+			gpu_time_label->set_text(vformat(TTR("GPU Time: %s ms"), rtos(gpu_time).pad_decimals(1)));
 			// Middle point is at 15 ms.
 			gpu_time_label->add_theme_color_override(
 					"font_color",
