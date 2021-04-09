@@ -53,17 +53,17 @@ int TriangleMesh::_create_bvh(BVH *p_bvh, BVH **p_bb, int p_from, int p_size, in
 
 	switch (li) {
 		case Vector3::AXIS_X: {
-			SortArray<BVH *, BVHCmpX> sort_x;
+			SortArray<BVH *, BVHCmpX> sort_x{};
 			sort_x.nth_element(0, p_size, p_size / 2, &p_bb[p_from]);
 			//sort_x.sort(&p_bb[p_from],p_size);
 		} break;
 		case Vector3::AXIS_Y: {
-			SortArray<BVH *, BVHCmpY> sort_y;
+			SortArray<BVH *, BVHCmpY> sort_y{};
 			sort_y.nth_element(0, p_size, p_size / 2, &p_bb[p_from]);
 			//sort_y.sort(&p_bb[p_from],p_size);
 		} break;
 		case Vector3::AXIS_Z: {
-			SortArray<BVH *, BVHCmpZ> sort_z;
+			SortArray<BVH *, BVHCmpZ> sort_z{};
 			sort_z.nth_element(0, p_size, p_size / 2, &p_bb[p_from]);
 			//sort_z.sort(&p_bb[p_from],p_size);
 

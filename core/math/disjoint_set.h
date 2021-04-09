@@ -42,7 +42,7 @@
 template <typename T, class C = Comparator<T>, class AL = DefaultAllocator>
 class DisjointSet {
 	struct Element {
-		T object;
+		T object = 0;
 		Element *parent = nullptr;
 		int rank = 0;
 	};

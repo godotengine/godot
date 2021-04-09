@@ -451,7 +451,8 @@ Dictionary _OS::get_datetime_from_unix_time(int64_t unix_time_val) const {
 	OS::Date date;
 	OS::Time time;
 
-	long dayclock, dayno;
+	long dayclock = 0;
+	long dayno = 0;
 	int year = EPOCH_YR;
 
 	if (unix_time_val >= 0) {

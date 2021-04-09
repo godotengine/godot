@@ -73,7 +73,7 @@ private:
 				OctreeElementID A;
 				OctreeElementID B;
 			};
-			uint64_t key;
+			uint64_t key = 0;
 		};
 
 		_FORCE_INLINE_ bool operator<(const PairKey &p_pair) const {
@@ -134,8 +134,8 @@ private:
 		List<PairData *, AL> pair_list;
 
 		struct OctantOwner {
-			Octant *octant;
-			typename List<Element *, AL>::Element *E;
+			Octant *octant = nullptr;
+			typename List<Element *, AL>::Element *E = nullptr;
 		}; // an element can be in max 8 octants
 
 		List<OctantOwner, AL> octant_owners;
@@ -144,11 +144,13 @@ private:
 	};
 
 	struct PairData {
-		int refcount;
-		bool intersect;
-		Element *A, *B;
-		void *ud;
-		typename List<PairData *, AL>::Element *eA, *eB;
+		int refcount = 0;
+		bool intersect = false;
+		Element *A = nullptr;
+		Element *B = nullptr;
+		void *ud = nullptr;
+		typename List<PairData *, AL>::Element *eA = nullptr;
+		typename List<PairData *, AL>::Element *eB = nullptr;
 	};
 
 	typedef Map<OctreeElementID, Element, Comparator<OctreeElementID>, AL> ElementMap;
@@ -161,13 +163,13 @@ private:
 	void *pair_callback_userdata;
 	void *unpair_callback_userdata;
 
-	OctreeElementID last_element_id;
-	uint64_t pass;
+	OctreeElementID last_element_id = 0;
+	uint64_t pass = 0;
 
-	real_t unit_size;
-	Octant *root;
-	int octant_count;
-	int pair_count;
+	real_t unit_size = 0.0;
+	Octant *root = nullptr;
+	int octant_count = 0;
+	int pair_count = 0;
 
 	_FORCE_INLINE_ void _pair_check(PairData *p_pair) {
 		bool intersect = p_pair->A->aabb.intersects_inclusive(p_pair->B->aabb);
@@ -294,14 +296,14 @@ private:
 	void _unpair_element(Element *p_element, Octant *p_octant);
 
 	struct _CullConvexData {
-		const Plane *planes;
-		int plane_count;
-		const Vector3 *points;
-		int point_count;
-		T **result_array;
-		int *result_idx;
-		int result_max;
-		uint32_t mask;
+		const Plane *planes = nullptr;
+		int plane_count = 0;
+		const Vector3 *points = nullptr;
+		int point_count = 0;
+		T **result_array = nullptr;
+		int *result_idx = nullptr;
+		int result_max = 0;
+		uint32_t mask = 0;
 	};
 
 	void _cull_convex(Octant *p_octant, _CullConvexData *p_cull);

@@ -38,7 +38,7 @@ static inline float undenormalise(volatile float f) {
 	union {
 		uint32_t i;
 		float f;
-	} v;
+	} v{};
 
 	v.f = f;
 
@@ -52,7 +52,8 @@ static const float AUDIO_MIN_PEAK_DB = -200.0f; // linear2db(AUDIO_PEAK_OFFSET)
 
 struct AudioFrame {
 	//left and right samples
-	float l, r;
+	float l = 0.0;
+	float r = 0.0;
 
 	_ALWAYS_INLINE_ const float &operator[](int idx) const { return idx == 0 ? l : r; }
 	_ALWAYS_INLINE_ float &operator[](int idx) { return idx == 0 ? l : r; }

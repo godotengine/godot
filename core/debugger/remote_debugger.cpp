@@ -231,7 +231,7 @@ struct RemoteDebugger::ScriptsProfiler {
 			ptrs.write[i] = &info.write[i];
 		}
 
-		SortArray<ScriptLanguage::ProfilingInfo *, ProfileInfoSort> sa;
+		SortArray<ScriptLanguage::ProfilingInfo *, ProfileInfoSort> sa{};
 		sa.sort(ptrs.ptrw(), ofs);
 
 		int to_send = MIN(ofs, max_frame_functions);

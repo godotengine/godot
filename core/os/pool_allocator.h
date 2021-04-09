@@ -76,26 +76,27 @@ private:
 	typedef int EntryArrayPos;
 	typedef int EntryIndicesPos;
 
-	Entry *entry_array;
-	int *entry_indices;
-	int entry_max;
-	int entry_count;
+	Entry *entry_array = nullptr;
+	int *entry_indices = nullptr;
+	int entry_max = 0;
+	int entry_count = 0;
 
-	uint8_t *pool;
-	void *mem_ptr;
-	int pool_size;
+	uint8_t *pool = nullptr;
+	void *mem_ptr = nullptr;
+	int pool_size = 0;
 
-	int free_mem;
-	int free_mem_peak;
+	int free_mem = 0;
+	int free_mem_peak = 0;
 
-	unsigned int check_count;
-	int align;
+	unsigned int check_count = 0;
+	int align = 0;
 
-	bool needs_locking;
+	bool needs_locking = false;
 
 	inline int entry_end(const Entry &p_entry) const {
 		return p_entry.pos + aligned(p_entry.len);
 	}
+
 	inline int aligned(int p_size) const {
 		int rem = p_size % align;
 		if (rem) {

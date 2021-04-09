@@ -39,10 +39,14 @@
 class FileAccessNetwork;
 
 class FileAccessNetworkClient {
+	friend class FileAccessNetwork;
+
+	static FileAccessNetworkClient *singleton;
+
 	struct BlockRequest {
-		int id;
-		uint64_t offset;
-		int size;
+		int id = 0;
+		uint64_t offset = 0;
+		int size = 0;
 	};
 
 	List<BlockRequest> block_requests;
@@ -69,9 +73,6 @@ class FileAccessNetworkClient {
 	void lock_mutex();
 	void unlock_mutex();
 
-	friend class FileAccessNetwork;
-	static FileAccessNetworkClient *singleton;
-
 public:
 	static FileAccessNetworkClient *get_singleton() { return singleton; }
 
@@ -82,19 +83,21 @@ public:
 };
 
 class FileAccessNetwork : public FileAccess {
+	friend class FileAccessNetworkClient;
+
 	Semaphore sem;
 	Semaphore page_sem;
 	Mutex buffer_mutex;
 	bool opened = false;
-	size_t total_size;
+	size_t total_size = 0;
 	mutable size_t pos = 0;
-	int id;
+	int id = 0;
 	mutable bool eof_flag = false;
 	mutable int last_page = -1;
 	mutable uint8_t *last_page_buff = nullptr;
 
-	int page_size;
-	int read_ahead;
+	int page_size = 0;
+	int read_ahead = 0;
 
 	mutable int waiting_on_page = -1;
 
@@ -106,10 +109,10 @@ class FileAccessNetwork : public FileAccess {
 
 	mutable Vector<Page> pages;
 
-	mutable Error response;
+	mutable Error response = FAILED;
 
-	uint64_t exists_modtime;
-	friend class FileAccessNetworkClient;
+	uint64_t exists_modtime = 0;
+
 	void _queue_page(int p_page) const;
 	void _respond(size_t p_len, Error p_status);
 	void _set_block(int p_offset, const Vector<uint8_t> &p_block);

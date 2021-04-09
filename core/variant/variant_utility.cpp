@@ -1091,16 +1091,16 @@ static _FORCE_INLINE_ Variant::Type get_ret_type_helper(void (*p_func)(P...)) {
 	register_utility_function<Func_##m_func>(#m_func, m_args)
 
 struct VariantUtilityFunctionInfo {
-	void (*call_utility)(Variant *r_ret, const Variant **p_args, int p_argcount, Callable::CallError &r_error);
-	Variant::ValidatedUtilityFunction validated_call_utility;
-	Variant::PTRUtilityFunction ptr_call_utility;
+	void (*call_utility)(Variant *r_ret, const Variant **p_args, int p_argcount, Callable::CallError &r_error) = nullptr;
+	Variant::ValidatedUtilityFunction validated_call_utility = nullptr;
+	Variant::PTRUtilityFunction ptr_call_utility = nullptr;
 	Vector<String> argnames;
-	bool is_vararg;
-	bool returns_value;
-	int argcount;
-	Variant::Type (*get_arg_type)(int);
-	Variant::Type return_type;
-	Variant::UtilityFunctionType type;
+	bool is_vararg = false;
+	bool returns_value = false;
+	int argcount = 0;
+	Variant::Type (*get_arg_type)(int) = nullptr;
+	Variant::Type return_type = Variant::NIL;
+	Variant::UtilityFunctionType type = Variant::UTILITY_FUNC_TYPE_GENERAL;
 };
 
 static OAHashMap<StringName, VariantUtilityFunctionInfo> utility_function_table;

@@ -74,14 +74,14 @@ Vector<Vector<Vector2>> Geometry2D::decompose_polygon_in_convex(Vector<Point2> p
 struct _AtlasWorkRect {
 	Size2i s;
 	Point2i p;
-	int idx;
+	int idx = 0;
 	_FORCE_INLINE_ bool operator<(const _AtlasWorkRect &p_r) const { return s.width > p_r.s.width; };
 };
 
 struct _AtlasWorkRectResult {
 	Vector<_AtlasWorkRect> result;
-	int max_w;
-	int max_h;
+	int max_w = 0;
+	int max_h = 0;
 };
 
 void Geometry2D::make_atlas(const Vector<Size2i> &p_rects, Vector<Point2i> &r_result, Size2i &r_size) {

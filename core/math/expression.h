@@ -53,8 +53,6 @@ private:
 	int str_ofs = 0;
 	bool expression_dirty = false;
 
-	bool _compile_expression();
-
 	enum TokenType {
 		TK_CURLY_BRACKET_OPEN,
 		TK_CURLY_BRACKET_CLOSE,
@@ -99,19 +97,9 @@ private:
 
 	static const char *token_name[TK_MAX];
 	struct Token {
-		TokenType type;
+		TokenType type = TK_MAX;
 		Variant value;
 	};
-
-	void _set_error(const String &p_err) {
-		if (error_set) {
-			return;
-		}
-		error_str = p_err;
-		error_set = true;
-	}
-
-	Error _get_token(Token &r_token);
 
 	String error_str;
 	bool error_set = true;
@@ -131,9 +119,8 @@ private:
 			TYPE_CALL
 		};
 
-		ENode *next = nullptr;
-
 		Type type = TYPE_INPUT;
+		ENode *next = nullptr;
 
 		ENode() {}
 		virtual ~ENode() {
@@ -147,11 +134,9 @@ private:
 		bool is_op = false;
 		union {
 			Variant::Operator op;
-			ENode *node;
+			ENode *node = nullptr;
 		};
 	};
-
-	ENode *_parse_expression();
 
 	struct InputNode : public ENode {
 		int index = 0;
@@ -161,7 +146,7 @@ private:
 	};
 
 	struct ConstantNode : public ENode {
-		Variant value = Variant::NIL;
+		Variant value;
 		ConstantNode() {
 			type = TYPE_CONSTANT;
 		}
@@ -169,9 +154,7 @@ private:
 
 	struct OperatorNode : public ENode {
 		Variant::Operator op = Variant::Operator::OP_ADD;
-
 		ENode *nodes[2] = { nullptr, nullptr };
-
 		OperatorNode() {
 			type = TYPE_OPERATOR;
 		}
@@ -186,7 +169,6 @@ private:
 	struct IndexNode : public ENode {
 		ENode *base = nullptr;
 		ENode *index = nullptr;
-
 		IndexNode() {
 			type = TYPE_INDEX;
 		}
@@ -195,7 +177,6 @@ private:
 	struct NamedIndexNode : public ENode {
 		ENode *base = nullptr;
 		StringName name;
-
 		NamedIndexNode() {
 			type = TYPE_NAMED_INDEX;
 		}
@@ -204,7 +185,6 @@ private:
 	struct ConstructorNode : public ENode {
 		Variant::Type data_type = Variant::Type::NIL;
 		Vector<ENode *> arguments;
-
 		ConstructorNode() {
 			type = TYPE_CONSTRUCTOR;
 		}
@@ -214,7 +194,6 @@ private:
 		ENode *base = nullptr;
 		StringName method;
 		Vector<ENode *> arguments;
-
 		CallNode() {
 			type = TYPE_CALL;
 		}
@@ -242,6 +221,26 @@ private:
 		}
 	};
 
+	ENode *root = nullptr;
+	ENode *nodes = nullptr;
+
+	Vector<String> input_names;
+
+	bool execution_error = false;
+
+	Error _get_token(Token &r_token);
+	ENode *_parse_expression();
+	bool _compile_expression();
+	bool _execute(const Array &p_inputs, Object *p_instance, Expression::ENode *p_node, Variant &r_ret, String &r_error_str);
+
+	void _set_error(const String &p_err) {
+		if (error_set) {
+			return;
+		}
+		error_str = p_err;
+		error_set = true;
+	}
+
 	template <class T>
 	T *alloc_node() {
 		T *node = memnew(T);
@@ -249,14 +248,6 @@ private:
 		nodes = node;
 		return node;
 	}
-
-	ENode *root = nullptr;
-	ENode *nodes = nullptr;
-
-	Vector<String> input_names;
-
-	bool execution_error = false;
-	bool _execute(const Array &p_inputs, Object *p_instance, Expression::ENode *p_node, Variant &r_ret, String &r_error_str);
 
 protected:
 	static void _bind_methods();

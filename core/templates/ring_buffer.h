@@ -38,7 +38,7 @@ class RingBuffer {
 	Vector<T> data;
 	int read_pos = 0;
 	int write_pos = 0;
-	int size_mask;
+	int size_mask = 0;
 
 	inline int inc(int &p_var, int p_size) const {
 		int ret = p_var;

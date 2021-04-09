@@ -5,7 +5,7 @@
 // this is not used as often as for more performance to make sense
 
 struct NamedColor {
-	const char *name;
+	const char *name = nullptr;
 	Color color;
 };
 

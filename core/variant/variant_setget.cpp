@@ -306,13 +306,13 @@ SETGET_NUMBER_STRUCT_FUNC(Color, double, s, set_s, get_s)
 SETGET_NUMBER_STRUCT_FUNC(Color, double, v, set_v, get_v)
 
 struct VariantSetterGetterInfo {
-	void (*setter)(Variant *base, const Variant *value, bool &valid);
-	void (*getter)(const Variant *base, Variant *value);
-	Variant::ValidatedSetter validated_setter;
-	Variant::ValidatedGetter validated_getter;
-	Variant::PTRSetter ptr_setter;
-	Variant::PTRGetter ptr_getter;
-	Variant::Type member_type;
+	void (*setter)(Variant *base, const Variant *value, bool &valid) = nullptr;
+	void (*getter)(const Variant *base, Variant *value) = nullptr;
+	Variant::ValidatedSetter validated_setter = nullptr;
+	Variant::ValidatedGetter validated_getter = nullptr;
+	Variant::PTRSetter ptr_setter = nullptr;
+	Variant::PTRGetter ptr_getter = nullptr;
+	Variant::Type member_type = Variant::NIL;
 };
 
 static LocalVector<VariantSetterGetterInfo> variant_setters_getters[Variant::VARIANT_MAX];
@@ -994,18 +994,18 @@ INDEXED_SETGET_STRUCT_TYPED(PackedColorArray, Color)
 INDEXED_SETGET_STRUCT_DICT(Dictionary)
 
 struct VariantIndexedSetterGetterInfo {
-	void (*setter)(Variant *base, int64_t index, const Variant *value, bool *valid, bool *oob);
-	void (*getter)(const Variant *base, int64_t index, Variant *value, bool *oob);
+	void (*setter)(Variant *base, int64_t index, const Variant *value, bool *valid, bool *oob) = nullptr;
+	void (*getter)(const Variant *base, int64_t index, Variant *value, bool *oob) = nullptr;
 
-	Variant::ValidatedIndexedSetter validated_setter;
-	Variant::ValidatedIndexedGetter validated_getter;
+	Variant::ValidatedIndexedSetter validated_setter = nullptr;
+	Variant::ValidatedIndexedGetter validated_getter = nullptr;
 
-	Variant::PTRIndexedSetter ptr_setter;
-	Variant::PTRIndexedGetter ptr_getter;
+	Variant::PTRIndexedSetter ptr_setter = nullptr;
+	Variant::PTRIndexedGetter ptr_getter = nullptr;
 
-	uint64_t (*get_indexed_size)(const Variant *base);
+	uint64_t (*get_indexed_size)(const Variant *base) = nullptr;
 
-	Variant::Type index_type;
+	Variant::Type index_type = Variant::NIL;
 
 	bool valid = false;
 };
@@ -1205,13 +1205,13 @@ struct VariantKeyedSetGetObject {
 };
 
 struct VariantKeyedSetterGetterInfo {
-	Variant::ValidatedKeyedSetter validated_setter;
-	Variant::ValidatedKeyedGetter validated_getter;
-	Variant::ValidatedKeyedChecker validated_checker;
+	Variant::ValidatedKeyedSetter validated_setter = nullptr;
+	Variant::ValidatedKeyedGetter validated_getter = nullptr;
+	Variant::ValidatedKeyedChecker validated_checker = nullptr;
 
-	Variant::PTRKeyedSetter ptr_setter;
-	Variant::PTRKeyedGetter ptr_getter;
-	Variant::PTRKeyedChecker ptr_checker;
+	Variant::PTRKeyedSetter ptr_setter = nullptr;
+	Variant::PTRKeyedGetter ptr_getter = nullptr;
+	Variant::PTRKeyedChecker ptr_checker = nullptr;
 
 	bool valid = false;
 };

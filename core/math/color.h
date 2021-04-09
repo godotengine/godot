@@ -42,7 +42,7 @@ struct Color {
 			float b;
 			float a;
 		};
-		float components[4] = { 0, 0, 0, 1.0 };
+		float components[4] = { 0.0, 0.0, 0.0, 1.0 };
 	};
 
 	uint32_t to_rgba32() const;

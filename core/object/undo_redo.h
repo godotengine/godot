@@ -60,7 +60,7 @@ private:
 			TYPE_REFERENCE
 		};
 
-		Type type;
+		Type type = TYPE_METHOD;
 		Ref<Reference> ref;
 		ObjectID object;
 		StringName name;
@@ -71,7 +71,7 @@ private:
 		String name;
 		List<Operation> do_ops;
 		List<Operation> undo_ops;
-		uint64_t last_tick;
+		uint64_t last_tick = 0;
 	};
 
 	Vector<Action> actions;
@@ -80,6 +80,7 @@ private:
 	MergeMode merge_mode = MERGE_DISABLE;
 	bool merging = false;
 	uint64_t version = 1;
+	int committing = 0;
 
 	void _pop_history_tail();
 	void _process_operation_list(List<Operation>::Element *E);
@@ -93,8 +94,6 @@ private:
 
 	MethodNotifyCallback method_callback = nullptr;
 	PropertyNotifyCallback property_callback = nullptr;
-
-	int committing = 0;
 
 protected:
 	static void _bind_methods();

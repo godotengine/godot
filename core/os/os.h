@@ -45,6 +45,7 @@
 class OS {
 	static OS *singleton;
 	static uint64_t target_ticks;
+
 	String _execpath;
 	List<String> _cmdline;
 	bool _keep_screen_on = true; // set default value to true, because this had been true before godot 2.0.
@@ -55,15 +56,15 @@ class OS {
 	String _local_clipboard;
 	bool _no_window = false;
 	int _exit_code = EXIT_FAILURE; // unexpected exit is marked as failure
-	int _orientation;
+	int _orientation = 0;
 	bool _allow_hidpi = false;
 	bool _allow_layered = false;
-	bool _use_vsync;
-	bool _vsync_via_compositor;
+	bool _use_vsync = false;
+	bool _vsync_via_compositor = false;
 	bool _stdout_enabled = true;
 	bool _stderr_enabled = true;
 
-	char *last_error;
+	char *last_error = nullptr;
 
 	CompositeLogger *_logger = nullptr;
 
@@ -186,21 +187,21 @@ public:
 	};
 
 	struct Date {
-		int year;
-		Month month;
-		int day;
-		Weekday weekday;
-		bool dst;
+		int year = 0;
+		Month month = MONTH_JANUARY;
+		int day = 0;
+		Weekday weekday = DAY_SUNDAY;
+		bool dst = false;
 	};
 
 	struct Time {
-		int hour;
-		int min;
-		int sec;
+		int hour = 0;
+		int min = 0;
+		int sec = 0;
 	};
 
 	struct TimeZoneInfo {
-		int bias;
+		int bias = 0;
 		String name;
 	};
 
@@ -296,6 +297,7 @@ public:
 	virtual Vector<String> get_granted_permissions() const { return Vector<String>(); }
 
 	virtual void process_and_drop_events() {}
+
 	OS();
 	virtual ~OS();
 };

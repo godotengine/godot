@@ -92,8 +92,8 @@ public:
 	};
 
 	struct JoyAxisValue {
-		int min;
-		float value;
+		int min = 0;
+		float value = 0.0;
 	};
 
 	typedef void (*EventDispatchFunc)(const Ref<InputEvent> &p_event);
@@ -104,7 +104,6 @@ private:
 	Set<int> keys_pressed;
 	Set<int> joy_buttons_pressed;
 	Map<int, float> _joy_axis;
-	//Map<StringName,int> custom_action_press;
 	Vector3 gravity;
 	Vector3 accelerometer;
 	Vector3 magnetometer;
@@ -113,12 +112,12 @@ private:
 	int64_t mouse_window = 0;
 
 	struct Action {
-		uint64_t physics_frame;
-		uint64_t process_frame;
-		bool pressed;
-		bool exact;
-		float strength;
-		float raw_strength;
+		uint64_t physics_frame = 0;
+		uint64_t process_frame = 0;
+		bool pressed = false;
+		bool exact = false;
+		float strength = 0.0;
+		float raw_strength = 0.0;
 	};
 
 	Map<StringName, Action> action_state;
@@ -130,12 +129,12 @@ private:
 	int mouse_from_touch_index = -1;
 
 	struct SpeedTrack {
-		uint64_t last_tick;
+		uint64_t last_tick = 0;
 		Vector2 speed;
 		Vector2 accum;
-		float accum_t;
-		float min_ref_frame;
-		float max_ref_frame;
+		float accum_t = 0.0;
+		float min_ref_frame = 0.1;
+		float max_ref_frame = 0.3;
 
 		void update(const Vector2 &p_delta_p);
 		void reset();
@@ -147,7 +146,7 @@ private:
 		StringName uid;
 		bool connected = false;
 		bool last_buttons[JOY_BUTTON_MAX] = { false };
-		float last_axis[JOY_AXIS_MAX] = { 0.0f };
+		float last_axis[JOY_AXIS_MAX] = { 0.0 };
 		int last_hat = HAT_MASK_CENTER;
 		int mapping = -1;
 		int hat_current = 0;
@@ -174,15 +173,15 @@ private:
 	};
 
 	struct JoyEvent {
-		int type;
-		int index;
-		float value;
+		JoyType type = TYPE_MAX;
+		int index = 0;
+		float value = 0.0;
 	};
 
 	struct JoyBinding {
-		JoyType inputType;
+		JoyType inputType = TYPE_MAX;
 		union {
-			int button;
+			int button = 0;
 
 			struct {
 				int axis;
@@ -194,18 +193,16 @@ private:
 				int hat;
 				HatMask hat_mask;
 			} hat;
-
 		} input;
 
-		JoyType outputType;
+		JoyType outputType = TYPE_MAX;
 		union {
-			JoyButton button;
+			JoyButton button = JOY_BUTTON_MAX;
 
 			struct {
 				JoyAxis axis;
 				JoyAxisRange range;
 			} axis;
-
 		} output;
 	};
 
@@ -242,10 +239,10 @@ private:
 
 protected:
 	struct VibrationInfo {
-		float weak_magnitude;
-		float strong_magnitude;
-		float duration; // Duration in seconds
-		uint64_t timestamp;
+		float weak_magnitude = 0.0;
+		float strong_magnitude = 0.0;
+		float duration = 0.0; // Duration in seconds
+		uint64_t timestamp = 0;
 	};
 
 	Map<int, VibrationInfo> joy_vibration;

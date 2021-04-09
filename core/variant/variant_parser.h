@@ -73,9 +73,9 @@ public:
 
 	struct ResourceParser {
 		void *userdata = nullptr;
-		ParseResourceFunc func;
-		ParseResourceFunc ext_func;
-		ParseResourceFunc sub_func;
+		ParseResourceFunc func = nullptr;
+		ParseResourceFunc ext_func = nullptr;
+		ParseResourceFunc sub_func = nullptr;
 	};
 
 	enum TokenType {

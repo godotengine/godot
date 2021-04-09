@@ -175,10 +175,9 @@ class InputEventWithModifiers : public InputEventFromWindow {
 	bool alt = false;
 #ifdef APPLE_STYLE_KEYS
 	union {
-		bool command;
-		bool meta = false; //< windows/mac key
+		bool command = false;
+		bool meta; //< windows/mac key
 	};
-
 	bool control = false;
 #else
 	union {
@@ -269,7 +268,6 @@ class InputEventMouse : public InputEventWithModifiers {
 	GDCLASS(InputEventMouse, InputEventWithModifiers);
 
 	int button_mask = 0;
-
 	Vector2 pos;
 	Vector2 global_pos;
 
@@ -292,7 +290,7 @@ public:
 class InputEventMouseButton : public InputEventMouse {
 	GDCLASS(InputEventMouseButton, InputEventMouse);
 
-	float factor = 1;
+	float factor = 1.0;
 	int button_index = 0;
 	bool pressed = false; //otherwise released
 	bool doubleclick = false; //last even less than doubleclick time
@@ -327,7 +325,7 @@ class InputEventMouseMotion : public InputEventMouse {
 	GDCLASS(InputEventMouseMotion, InputEventMouse);
 
 	Vector2 tilt;
-	float pressure = 0;
+	float pressure = 0.0;
 	Vector2 relative;
 	Vector2 speed;
 
@@ -358,8 +356,9 @@ public:
 
 class InputEventJoypadMotion : public InputEvent {
 	GDCLASS(InputEventJoypadMotion, InputEvent);
+
 	int axis = 0; ///< Joypad axis
-	float axis_value = 0; ///< -1 to 1
+	float axis_value = 0.0; ///< -1 to 1
 
 protected:
 	static void _bind_methods();
@@ -387,7 +386,8 @@ class InputEventJoypadButton : public InputEvent {
 
 	int button_index = 0;
 	bool pressed = false;
-	float pressure = 0; //0 to 1
+	float pressure = 0.0; //0 to 1
+
 protected:
 	static void _bind_methods();
 
@@ -415,6 +415,7 @@ public:
 
 class InputEventScreenTouch : public InputEventFromWindow {
 	GDCLASS(InputEventScreenTouch, InputEventFromWindow);
+
 	int index = 0;
 	Vector2 pos;
 	bool pressed = false;
@@ -441,6 +442,7 @@ public:
 
 class InputEventScreenDrag : public InputEventFromWindow {
 	GDCLASS(InputEventScreenDrag, InputEventFromWindow);
+
 	int index = 0;
 	Vector2 pos;
 	Vector2 relative;
@@ -474,7 +476,7 @@ class InputEventAction : public InputEvent {
 
 	StringName action;
 	bool pressed = false;
-	float strength = 1.0f;
+	float strength = 1.0;
 
 protected:
 	static void _bind_methods();
@@ -516,6 +518,7 @@ public:
 
 class InputEventMagnifyGesture : public InputEventGesture {
 	GDCLASS(InputEventMagnifyGesture, InputEventGesture);
+
 	real_t factor = 1.0;
 
 protected:

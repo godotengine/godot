@@ -42,12 +42,12 @@
 
 union MarshallFloat {
 	uint32_t i; ///< int
-	float f; ///< float
+	float f = 0.0; ///< float
 };
 
 union MarshallDouble {
 	uint64_t l; ///< long long
-	double d; ///< double
+	double d = 0.0; ///< double
 };
 
 static inline unsigned int encode_uint16(uint16_t p_uint, uint8_t *p_arr) {

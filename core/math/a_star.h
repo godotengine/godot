@@ -42,14 +42,13 @@
 
 class AStar : public Reference {
 	GDCLASS(AStar, Reference);
+
 	friend class AStar2D;
 
 	struct Point {
-		Point() {}
-
 		int id = 0;
 		Vector3 pos;
-		real_t weight_scale = 0;
+		real_t weight_scale = 0.0;
 		bool enabled = false;
 
 		OAHashMap<int, Point *> neighbours = 4u;
@@ -57,10 +56,12 @@ class AStar : public Reference {
 
 		// Used for pathfinding.
 		Point *prev_point = nullptr;
-		real_t g_score = 0;
-		real_t f_score = 0;
+		real_t g_score = 0.0;
+		real_t f_score = 0.0;
 		uint64_t open_pass = 0;
 		uint64_t closed_pass = 0;
+
+		Point() {}
 	};
 
 	struct SortPoints {
@@ -159,6 +160,7 @@ public:
 
 class AStar2D : public Reference {
 	GDCLASS(AStar2D, Reference);
+
 	AStar astar;
 
 	bool _solve(AStar::Point *begin_point, AStar::Point *end_point);

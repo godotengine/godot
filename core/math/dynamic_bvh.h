@@ -182,7 +182,7 @@ private:
 		Volume volume;
 		Node *parent = nullptr;
 		union {
-			Node *childs[2];
+			Node *childs[2]{};
 			void *data;
 		};
 
@@ -193,6 +193,7 @@ private:
 			ERR_FAIL_COND_V(!parent, 0);
 			return (parent->childs[1] == this) ? 1 : 0;
 		}
+
 		void get_max_depth(int depth, int &maxdepth) {
 			if (is_internal()) {
 				childs[0]->get_max_depth(depth + 1, maxdepth);
@@ -202,7 +203,6 @@ private:
 			}
 		}
 
-		//
 		int count_leaves() const {
 			if (is_internal()) {
 				return childs[0]->count_leaves() + childs[1]->count_leaves();
@@ -215,10 +215,7 @@ private:
 			return axis.dot(volume.get_center() - org) <= 0;
 		}
 
-		Node() {
-			childs[0] = nullptr;
-			childs[1] = nullptr;
-		}
+		Node() {}
 	};
 
 	PagedAllocator<Node> node_allocator;
@@ -416,6 +413,7 @@ void DynamicBVH::convex_query(const Plane *p_planes, int p_plane_count, const Ve
 		}
 	} while (depth > 0);
 }
+
 template <class QueryResult>
 void DynamicBVH::ray_query(const Vector3 &p_from, const Vector3 &p_to, QueryResult &r_result) {
 	if (!bvh_root) {
