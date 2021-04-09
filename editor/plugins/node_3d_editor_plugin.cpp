@@ -2215,6 +2215,12 @@ void Node3DEditorViewport::scale_cursor_distance(real_t scale) {
 		cursor.distance = CLAMP(cursor.distance * scale, min_distance, max_distance);
 	}
 
+	if (cursor.distance == max_distance || cursor.distance == min_distance) {
+		zoom_failed_attempts_count++;
+	} else {
+		zoom_failed_attempts_count = 0;
+	}
+
 	zoom_indicator_delay = ZOOM_FREELOOK_INDICATOR_DELAY_S;
 	surface->update();
 }
@@ -2396,6 +2402,7 @@ void Node3DEditorViewport::_notification(int p_what) {
 			zoom_indicator_delay -= delta;
 			if (zoom_indicator_delay <= 0) {
 				surface->update();
+				zoom_limit_label->hide();
 			}
 		}
 
@@ -2775,6 +2782,7 @@ void Node3DEditorViewport::_draw() {
 
 			} else {
 				// Show zoom
+				zoom_limit_label->set_visible(zoom_failed_attempts_count > 15);
 
 				real_t min_distance = MAX(camera->get_near() * 4, ZOOM_FREELOOK_MIN);
 				real_t max_distance = MIN(camera->get_far() / 4, ZOOM_FREELOOK_MAX);
@@ -4136,6 +4144,15 @@ Node3DEditorViewport::Node3DEditorViewport(Node3DEditor *p_spatial_editor, Edito
 	surface->add_child(locked_label);
 	locked_label->set_text(TTR("View Rotation Locked"));
 	locked_label->hide();
+
+	zoom_limit_label = memnew(Label);
+	zoom_limit_label->set_anchors_and_offsets_preset(LayoutPreset::PRESET_BOTTOM_LEFT);
+	zoom_limit_label->set_offset(Side::SIDE_TOP, -28 * EDSCALE);
+	zoom_limit_label->set_text(TTR("To zoom further, change the camera's clipping planes (View -> Settings...)"));
+	zoom_limit_label->set_name("ZoomLimitMessageLabel");
+	zoom_limit_label->add_theme_color_override("font_color", Color(1, 1, 1, 1));
+	zoom_limit_label->hide();
+	surface->add_child(zoom_limit_label);
 
 	frame_time_gradient = memnew(Gradient);
 	// The color is set when the theme changes.
