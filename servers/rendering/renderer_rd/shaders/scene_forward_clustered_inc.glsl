@@ -122,8 +122,6 @@ layout(set = 0, binding = 12, std430) restrict readonly buffer GlobalVariableDat
 }
 global_variables;
 
-#ifndef LOW_END_MODE
-
 struct SDFGIProbeCascadeData {
 	vec3 position;
 	float to_probe;
@@ -158,8 +156,6 @@ layout(set = 0, binding = 13, std140) uniform SDFGI {
 	SDFGIProbeCascadeData cascades[SDFGI_MAX_CASCADES];
 }
 sdfgi;
-
-#endif //LOW_END_MODE
 
 /* Set 2: Render Pass (changes per render pass) */
 
@@ -280,9 +276,7 @@ layout(set = 1, binding = 5) uniform texture2D directional_shadow_atlas;
 
 layout(set = 1, binding = 6) uniform texture2DArray lightmap_textures[MAX_LIGHTMAP_TEXTURES];
 
-#ifndef LOW_END_MOD
 layout(set = 1, binding = 7) uniform texture3D gi_probe_textures[MAX_GI_PROBES];
-#endif
 
 layout(set = 1, binding = 8, std430) buffer restrict readonly ClusterBuffer {
 	uint data[];
@@ -305,8 +299,6 @@ layout(r32ui, set = 1, binding = 12) uniform restrict uimage3D geom_facing_grid;
 
 layout(set = 1, binding = 9) uniform texture2D depth_buffer;
 layout(set = 1, binding = 10) uniform texture2D color_buffer;
-
-#ifndef LOW_END_MODE
 
 layout(set = 1, binding = 11) uniform texture2D normal_roughness_buffer;
 layout(set = 1, binding = 12) uniform texture2D ao_buffer;
@@ -337,8 +329,6 @@ layout(set = 1, binding = 17, std140) uniform GIProbes {
 gi_probes;
 
 layout(set = 1, binding = 18) uniform texture3D volumetric_fog_texture;
-
-#endif // LOW_END_MODE
 
 #endif
 

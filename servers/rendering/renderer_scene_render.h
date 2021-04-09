@@ -241,8 +241,6 @@ public:
 
 	virtual void sdfgi_set_debug_probe_select(const Vector3 &p_position, const Vector3 &p_dir) = 0;
 
-	virtual bool is_low_end() const = 0;
-
 	virtual void update() = 0;
 	virtual ~RendererSceneRender() {}
 };
