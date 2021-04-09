@@ -1566,6 +1566,34 @@ void CanvasItemEditor::_solve_IK(Node2D *leaf_node, Point2 target_position) {
 	}
 }
 
+void CanvasItemEditor::_popup_control_text_editor(CanvasItem *p_canvas_item) {
+	// Set the source so that the node's text can be updated with the TextEdit's "text_changed" signal.
+	control_text_source = p_canvas_item;
+	control_text_editing_bbcode = false;
+	control_text_editor->show();
+
+	RichTextLabel *rtl = Object::cast_to<RichTextLabel>(p_canvas_item);
+	if (rtl && rtl->is_using_bbcode()) {
+		// Edit the `bbcode_text` property instead of the `text` property,
+		// since editing `text` will not work as expected when BBCode is enabled.
+		control_text_editor->set_text(String(p_canvas_item->get("bbcode_text")));
+		control_text_editing_bbcode = true;
+	} else {
+		control_text_editor->set_text(String(p_canvas_item->get("text")));
+	}
+
+	// Move the TextEdit to be placed above the selected CanvasItem node.
+	const Transform2D parent_xform = p_canvas_item->get_global_transform_with_canvas() * p_canvas_item->get_transform().affine_inverse();
+	const Transform2D unscaled_transform = (transform * parent_xform * p_canvas_item->_edit_get_transform()).orthonormalized();
+	const Transform2D simple_xform = viewport->get_transform() * unscaled_transform;
+	control_text_editor->set_position(simple_xform.get_origin());
+
+	// Move the cursor to the end of the TextEdit and focus it automatically for quick editing.
+	control_text_editor->cursor_set_line(control_text_editor->get_line_count());
+	control_text_editor->cursor_set_column(1000);
+	control_text_editor->call_deferred("grab_focus");
+}
+
 bool CanvasItemEditor::_gui_input_rotate(const Ref<InputEvent> &p_event) {
 	Ref<InputEventMouseButton> b = p_event;
 	Ref<InputEventMouseMotion> m = p_event;
@@ -1664,6 +1692,28 @@ bool CanvasItemEditor::_gui_input_open_scene_on_double_click(const Ref<InputEven
 			}
 		}
 	}
+	return false;
+}
+
+bool CanvasItemEditor::_gui_input_edit_control_text_on_double_click(const Ref<InputEvent> &p_event) {
+	const Ref<InputEventMouseButton> b = p_event;
+
+	// Show a modal dialog to edit a CanvasItem's "text" property when double-clicking.
+	if (b.is_valid() && b->get_button_index() == MOUSE_BUTTON_LEFT && b->is_pressed() && b->is_doubleclick() && tool == TOOL_SELECT) {
+		List<CanvasItem *> selection = _get_edited_canvas_items();
+		if (selection.size() == 1) {
+			// Check if the CanvasItem has a "text" property.
+			// This is the case for most built-in Controls such as Label, BaseButton, RichTextLabel, etc.
+			// This will also work with user-defined nodes that have a property named "text".
+			bool valid = false;
+			selection[0]->get("text", &valid);
+			if (valid) {
+				_popup_control_text_editor(selection[0]);
+				return true;
+			}
+		}
+	}
+
 	return false;
 }
 
@@ -2725,6 +2775,8 @@ void CanvasItemEditor::_gui_input_viewport(const Ref<InputEvent> &p_event) {
 			//printf("Plugin\n");
 		} else if ((accepted = _gui_input_open_scene_on_double_click(p_event))) {
 			//printf("Open scene on double click\n");
+		} else if ((accepted = _gui_input_edit_control_text_on_double_click(p_event))) {
+			//printf("Edit Control text on double click\n");
 		} else if ((accepted = _gui_input_scale(p_event))) {
 			//printf("Set scale\n");
 		} else if ((accepted = _gui_input_pivot(p_event))) {
@@ -2761,6 +2813,26 @@ void CanvasItemEditor::_gui_input_viewport(const Ref<InputEvent> &p_event) {
 	// Grab focus
 	if (!viewport->has_focus() && (!get_focus_owner() || !get_focus_owner()->is_text_field())) {
 		viewport->call_deferred("grab_focus");
+	}
+}
+
+void CanvasItemEditor::_control_text_editor_text_changed() {
+	ERR_FAIL_NULL(control_text_source);
+	control_text_source->set(control_text_editing_bbcode ? "bbcode_text" : "text", control_text_editor->get_text());
+}
+
+void CanvasItemEditor::_control_text_editor_gui_input(const Ref<InputEvent> &p_event) {
+	const Ref<InputEventKey> k = p_event;
+	if (k.is_valid()) {
+		// Confirm when pressing Escape.
+		if (k->is_pressed() && k->get_keycode() == KEY_ESCAPE) {
+			control_text_editor->hide();
+		}
+		// Confirm when pressing Ctrl + Enter (Cmd + Enter on macOS).
+		// FIXME: A line break is still written in the TextEdit when pressing Enter, even when `accept_event()` is called here.
+		if (k->is_pressed() && k->get_command() && (k->get_keycode() == KEY_ENTER || k->get_keycode() == KEY_KP_ENTER)) {
+			control_text_editor->hide();
+		}
 	}
 }
 
@@ -4224,6 +4296,16 @@ void CanvasItemEditor::_notification(int p_what) {
 
 		presets_menu->set_icon(get_theme_icon("ControlLayout", "EditorIcons"));
 		PopupMenu *p = presets_menu->get_popup();
+
+		Ref<StyleBoxFlat> bg_translucent = EditorNode::get_singleton()->get_gui_base()->get_theme_stylebox("normal", "TextEdit")->duplicate();
+		bg_translucent->set_bg_color(Color(0, 0, 0, 0.5));
+		control_text_editor->add_theme_style_override("normal", bg_translucent);
+		Ref<StyleBoxFlat> bg_translucent_focus = EditorNode::get_singleton()->get_gui_base()->get_theme_stylebox("focus", "TextEdit")->duplicate();
+		// The background is already drawn by the "normal" stylebox which is drawn below the "focus" stylebox.
+		bg_translucent_focus->set_draw_center(false);
+		control_text_editor->add_theme_style_override("focus", bg_translucent_focus);
+		// Use a bold font for better readability on the translucent background.
+		control_text_editor->add_theme_font_override("font", get_theme_font("bold", "EditorFonts"));
 
 		p->clear();
 		p->add_icon_item(get_theme_icon("ControlAlignTopLeft", "EditorIcons"), TTR("Top Left"), ANCHORS_AND_OFFSETS_PRESET_TOP_LEFT);
@@ -5783,6 +5865,14 @@ CanvasItemEditor::CanvasItemEditor(EditorNode *p_editor) {
 	viewport->set_focus_mode(FOCUS_ALL);
 	viewport->connect("draw", callable_mp(this, &CanvasItemEditor::_draw_viewport));
 	viewport->connect("gui_input", callable_mp(this, &CanvasItemEditor::_gui_input_viewport));
+
+	control_text_editor = memnew(TextEdit);
+	control_text_editor->set_custom_minimum_size(Size2(300, 150) * EDSCALE);
+	control_text_editor->set_wrap_enabled(true);
+	control_text_editor->hide();
+	viewport->add_child(control_text_editor);
+	control_text_editor->connect("text_changed", callable_mp(this, &CanvasItemEditor::_control_text_editor_text_changed));
+	control_text_editor->connect("gui_input", callable_mp(this, &CanvasItemEditor::_control_text_editor_gui_input));
 
 	info_overlay = memnew(VBoxContainer);
 	info_overlay->set_anchors_and_offsets_preset(Control::PRESET_BOTTOM_LEFT);
