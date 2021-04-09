@@ -2244,7 +2244,7 @@ bool TileSet::_set(const StringName &p_name, const Variant &p_value) {
 				set_navigation_layer_layers(index, p_value);
 				return true;
 			}
-		} else if (components.size() == 2 && components[0].begins_with("custom_data_l<ayer_") && components[0].trim_prefix("custom_data_layer_").is_valid_integer()) {
+		} else if (components.size() == 2 && components[0].begins_with("custom_data_layer_") && components[0].trim_prefix("custom_data_layer_").is_valid_integer()) {
 			// Custom data layers.
 			int index = components[0].trim_prefix("custom_data_layer_").to_int();
 			ERR_FAIL_COND_V(index < 0, false);

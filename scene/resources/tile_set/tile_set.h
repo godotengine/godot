@@ -209,7 +209,7 @@ private:
 	// CustomData
 	struct CustomDataLayer {
 		String name;
-		Variant::Type type;
+		Variant::Type type = Variant::NIL;
 	};
 	Vector<CustomDataLayer> custom_data_layers;
 	Map<String, int> custom_data_layers_by_name;
