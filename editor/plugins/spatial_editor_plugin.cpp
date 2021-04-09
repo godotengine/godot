@@ -2220,6 +2220,12 @@ void SpatialEditorViewport::scale_cursor_distance(real_t scale) {
 		cursor.distance = CLAMP(cursor.distance * scale, min_distance, max_distance);
 	}
 
+	if (cursor.distance == max_distance || cursor.distance == min_distance) {
+		zoom_failed_attempts_count++;
+	} else {
+		zoom_failed_attempts_count = 0;
+	}
+
 	zoom_indicator_delay = ZOOM_FREELOOK_INDICATOR_DELAY_S;
 	surface->update();
 }
@@ -2371,6 +2377,7 @@ void SpatialEditorViewport::_notification(int p_what) {
 			zoom_indicator_delay -= delta;
 			if (zoom_indicator_delay <= 0) {
 				surface->update();
+				zoom_limit_label->hide();
 			}
 		}
 
@@ -2732,6 +2739,7 @@ void SpatialEditorViewport::_draw() {
 
 			} else {
 				// Show zoom
+				zoom_limit_label->set_visible(zoom_failed_attempts_count > 15);
 
 				real_t min_distance = MAX(camera->get_znear() * 4, ZOOM_FREELOOK_MIN);
 				real_t max_distance = MIN(camera->get_zfar() / 2, ZOOM_FREELOOK_MAX);
@@ -4003,6 +4011,15 @@ SpatialEditorViewport::SpatialEditorViewport(SpatialEditor *p_spatial_editor, Ed
 	surface->add_child(locked_label);
 	locked_label->set_text(TTR("View Rotation Locked"));
 	locked_label->hide();
+
+	zoom_limit_label = memnew(Label);
+	zoom_limit_label->set_anchors_and_margins_preset(LayoutPreset::PRESET_BOTTOM_LEFT);
+	zoom_limit_label->set_margin(Margin::MARGIN_TOP, -28 * EDSCALE);
+	zoom_limit_label->set_text(TTR("To zoom further, change the camera's clipping planes (View -> Settings...)"));
+	zoom_limit_label->set_name("ZoomLimitMessageLabel");
+	zoom_limit_label->add_color_override("font_color", Color(1, 1, 1, 1));
+	zoom_limit_label->hide();
+	surface->add_child(zoom_limit_label);
 
 	top_right_vbox = memnew(VBoxContainer);
 	top_right_vbox->set_anchors_and_margins_preset(PRESET_TOP_RIGHT, PRESET_MODE_MINSIZE, 2.0 * EDSCALE);

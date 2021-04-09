@@ -272,6 +272,7 @@ private:
 	Label *info_label;
 	Label *cinema_label;
 	Label *locked_label;
+	Label *zoom_limit_label;
 
 	VBoxContainer *top_right_vbox;
 	ViewportRotationControl *rotation_control;
@@ -394,6 +395,7 @@ private:
 	void scale_freelook_speed(real_t scale);
 
 	real_t zoom_indicator_delay;
+	int zoom_failed_attempts_count = 0;
 
 	RID move_gizmo_instance[3], move_plane_gizmo_instance[3], rotate_gizmo_instance[4], scale_gizmo_instance[3], scale_plane_gizmo_instance[3];
 
