@@ -2983,8 +2983,17 @@ Error GDScriptLanguage::complete_code(const String &p_code, const String &p_path
 							base_type.has_type = false;
 						}
 					} break;
-					case GDScriptParser::DataType::SCRIPT:
 					case GDScriptParser::DataType::GDSCRIPT: {
+						Ref<GDScript> scr = base_type.script_type;
+						if (scr.is_valid()) {
+							for (const Map<StringName, Ref<GDScript>>::Element *E = scr->get_subclasses().front(); E; E = E->next()) {
+								ScriptCodeCompletionOption option(E->key().operator String(), ScriptCodeCompletionOption::KIND_CLASS);
+								options.insert(option.display, option);
+							}
+						}
+						FALLTHROUGH;
+					}
+					case GDScriptParser::DataType::SCRIPT: {
 						Ref<Script> scr = base_type.script_type;
 						if (scr.is_valid()) {
 							Map<StringName, Variant> constants;
