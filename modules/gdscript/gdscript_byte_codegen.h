@@ -51,11 +51,11 @@ class GDScriptByteCodeGenerator : public GDScriptCodeGenerator {
 	List<Map<StringName, int>> block_identifier_stack;
 	Map<StringName, int> block_identifiers;
 
-	int current_stack_size = 0;
+	int current_stack_size = 3; // First 3 spots are reserved for self, class, and nil.
 	int current_temporaries = 0;
 	int current_locals = 0;
 	int current_line = 0;
-	int stack_max = 0;
+	int stack_max = 3;
 	int instr_args_max = 0;
 	int ptrcall_max = 0;
 
@@ -135,7 +135,7 @@ class GDScriptByteCodeGenerator : public GDScriptCodeGenerator {
 			ERR_PRINT("Leaving block with non-zero temporary variables: " + itos(current_temporaries));
 		}
 #endif
-		current_stack_size = current_locals;
+		current_stack_size = current_locals + 3; // Keep the 3 reserved slots for self, class, and nil.
 
 		if (debug_stack) {
 			for (Map<StringName, int>::Element *E = block_identifiers.front(); E; E = E->next()) {
@@ -300,26 +300,19 @@ class GDScriptByteCodeGenerator : public GDScriptCodeGenerator {
 	int address_of(const Address &p_address) {
 		switch (p_address.mode) {
 			case Address::SELF:
-				return GDScriptFunction::ADDR_TYPE_SELF << GDScriptFunction::ADDR_BITS;
+				return GDScriptFunction::ADDR_SELF;
 			case Address::CLASS:
-				return GDScriptFunction::ADDR_TYPE_CLASS << GDScriptFunction::ADDR_BITS;
+				return GDScriptFunction::ADDR_CLASS;
 			case Address::MEMBER:
 				return p_address.address | (GDScriptFunction::ADDR_TYPE_MEMBER << GDScriptFunction::ADDR_BITS);
-			case Address::CLASS_CONSTANT:
-				return p_address.address | (GDScriptFunction::ADDR_TYPE_CLASS_CONSTANT << GDScriptFunction::ADDR_BITS);
-			case Address::LOCAL_CONSTANT:
 			case Address::CONSTANT:
-				return p_address.address | (GDScriptFunction::ADDR_TYPE_LOCAL_CONSTANT << GDScriptFunction::ADDR_BITS);
+				return p_address.address | (GDScriptFunction::ADDR_TYPE_CONSTANT << GDScriptFunction::ADDR_BITS);
 			case Address::LOCAL_VARIABLE:
 			case Address::TEMPORARY:
 			case Address::FUNCTION_PARAMETER:
 				return p_address.address | (GDScriptFunction::ADDR_TYPE_STACK << GDScriptFunction::ADDR_BITS);
-			case Address::GLOBAL:
-				return p_address.address | (GDScriptFunction::ADDR_TYPE_GLOBAL << GDScriptFunction::ADDR_BITS);
-			case Address::NAMED_GLOBAL:
-				return p_address.address | (GDScriptFunction::ADDR_TYPE_NAMED_GLOBAL << GDScriptFunction::ADDR_BITS);
 			case Address::NIL:
-				return GDScriptFunction::ADDR_TYPE_NIL << GDScriptFunction::ADDR_BITS;
+				return GDScriptFunction::ADDR_NIL;
 		}
 		return -1; // Unreachable.
 	}
@@ -441,6 +434,7 @@ public:
 	virtual void write_assign_true(const Address &p_target) override;
 	virtual void write_assign_false(const Address &p_target) override;
 	virtual void write_assign_default_parameter(const Address &p_dst, const Address &p_src) override;
+	virtual void write_store_named_global(const Address &p_dst, const StringName &p_global) override;
 	virtual void write_cast(const Address &p_target, const Address &p_source, const GDScriptDataType &p_type) override;
 	virtual void write_call(const Address &p_target, const Address &p_base, const StringName &p_function_name, const Vector<Address> &p_arguments) override;
 	virtual void write_super_call(const Address &p_target, const StringName &p_function_name, const Vector<Address> &p_arguments) override;

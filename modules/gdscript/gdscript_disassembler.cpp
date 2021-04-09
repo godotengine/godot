@@ -69,35 +69,23 @@ static String _disassemble_address(const GDScript *p_script, const GDScriptFunct
 	int addr = p_address & GDScriptFunction::ADDR_MASK;
 
 	switch (p_address >> GDScriptFunction::ADDR_BITS) {
-		case GDScriptFunction::ADDR_TYPE_SELF: {
-			return "self";
-		} break;
-		case GDScriptFunction::ADDR_TYPE_CLASS: {
-			return "class";
-		} break;
 		case GDScriptFunction::ADDR_TYPE_MEMBER: {
 			return "member(" + p_script->debug_get_member_by_index(addr) + ")";
 		} break;
-		case GDScriptFunction::ADDR_TYPE_CLASS_CONSTANT: {
-			return "class_const(" + p_function.get_global_name(addr) + ")";
-		} break;
-		case GDScriptFunction::ADDR_TYPE_LOCAL_CONSTANT: {
+		case GDScriptFunction::ADDR_TYPE_CONSTANT: {
 			return "const(" + _get_variant_string(p_function.get_constant(addr)) + ")";
 		} break;
 		case GDScriptFunction::ADDR_TYPE_STACK: {
-			return "stack(" + itos(addr) + ")";
-		} break;
-		case GDScriptFunction::ADDR_TYPE_STACK_VARIABLE: {
-			return "var_stack(" + itos(addr) + ")";
-		} break;
-		case GDScriptFunction::ADDR_TYPE_GLOBAL: {
-			return "global(" + _get_variant_string(GDScriptLanguage::get_singleton()->get_global_array()[addr]) + ")";
-		} break;
-		case GDScriptFunction::ADDR_TYPE_NAMED_GLOBAL: {
-			return "named_global(" + p_function.get_global_name(addr) + ")";
-		} break;
-		case GDScriptFunction::ADDR_TYPE_NIL: {
-			return "nil";
+			switch (addr) {
+				case GDScriptFunction::ADDR_STACK_SELF:
+					return "self";
+				case GDScriptFunction::ADDR_STACK_CLASS:
+					return "class";
+				case GDScriptFunction::ADDR_STACK_NIL:
+					return "nil";
+				default:
+					return "stack(" + itos(addr) + ")";
+			}
 		} break;
 	}
 
@@ -885,6 +873,14 @@ void GDScriptFunction::disassemble(const Vector<String> &p_code_lines) const {
 				incr += 5;
 			} break;
 				DISASSEMBLE_ITERATE_TYPES(DISASSEMBLE_ITERATE);
+			case OPCODE_STORE_NAMED_GLOBAL: {
+				text += "store named global ";
+				text += DADDR(1);
+				text += " = ";
+				text += String(_global_names_ptr[_code_ptr[ip + 2]]);
+
+				incr += 3;
+			} break;
 			case OPCODE_LINE: {
 				int line = _code_ptr[ip + 1] - 1;
 				if (line >= 0 && line < p_code_lines.size()) {
