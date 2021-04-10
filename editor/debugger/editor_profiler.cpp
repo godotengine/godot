@@ -43,28 +43,34 @@ void EditorProfiler::_make_metric_ptrs(Metric &m) {
 	}
 }
 
+EditorProfiler::Metric EditorProfiler::_get_frame_metric(int index) {
+	return frame_metrics[(frame_metrics.size() + last_metric - (total_metrics - 1) + index) % frame_metrics.size()];
+}
+
 void EditorProfiler::add_frame_metric(const Metric &p_metric, bool p_final) {
 	++last_metric;
 	if (last_metric >= frame_metrics.size()) {
 		last_metric = 0;
 	}
 
+	total_metrics++;
+	if (total_metrics > frame_metrics.size()) {
+		total_metrics = frame_metrics.size();
+	}
+
 	frame_metrics.write[last_metric] = p_metric;
 	_make_metric_ptrs(frame_metrics.write[last_metric]);
 
 	updating_frame = true;
-	cursor_metric_edit->set_max(frame_metrics[last_metric].frame_number);
-	cursor_metric_edit->set_min(MAX(frame_metrics[last_metric].frame_number - frame_metrics.size(), 0));
+	clear_button->set_disabled(false);
+	cursor_metric_edit->set_editable(true);
+	cursor_metric_edit->set_max(p_metric.frame_number);
+	cursor_metric_edit->set_min(_get_frame_metric(0).frame_number);
 
 	if (!seeking) {
-		cursor_metric_edit->set_value(frame_metrics[last_metric].frame_number);
-		if (hover_metric != -1) {
-			hover_metric++;
-			if (hover_metric >= frame_metrics.size()) {
-				hover_metric = 0;
-			}
-		}
+		cursor_metric_edit->set_value(p_metric.frame_number);
 	}
+
 	updating_frame = false;
 
 	if (frame_delay->is_stopped()) {
@@ -83,6 +89,7 @@ void EditorProfiler::clear() {
 	metric_size = CLAMP(metric_size, 60, 1024);
 	frame_metrics.clear();
 	frame_metrics.resize(metric_size);
+	total_metrics = 0;
 	last_metric = -1;
 	variables->clear();
 	plot_sigs.clear();
@@ -93,6 +100,7 @@ void EditorProfiler::clear() {
 	cursor_metric_edit->set_min(0);
 	cursor_metric_edit->set_max(100); // Doesn't make much sense, but we can't have min == max. Doesn't hurt.
 	cursor_metric_edit->set_value(0);
+	cursor_metric_edit->set_editable(false);
 	updating_frame = false;
 	hover_metric = -1;
 	seeking = false;
@@ -187,11 +195,8 @@ void EditorProfiler::_update_plot() {
 	const bool use_self = display_time->get_selected() == DISPLAY_SELF_TIME;
 	float highest = 0;
 
-	for (int i = 0; i < frame_metrics.size(); i++) {
-		const Metric &m = frame_metrics[i];
-		if (!m.valid) {
-			continue;
-		}
+	for (int i = 0; i < total_metrics; i++) {
+		const Metric &m = _get_frame_metric(i);
 
 		for (Set<StringName>::Element *E = plot_sigs.front(); E; E = E->next()) {
 			const Map<StringName, Metric::Category *>::Element *F = m.category_ptrs.find(E->get());
@@ -220,78 +225,43 @@ void EditorProfiler::_update_plot() {
 
 		int *column = columnv.ptrw();
 
-		Map<StringName, int> plot_prev;
-		//Map<StringName,int> plot_max;
+		Map<StringName, int> prev_plots;
 
-		for (int i = 0; i < w; i++) {
+		for (int i = 0; i < total_metrics * w / frame_metrics.size() - 1; i++) {
 			for (int j = 0; j < h * 4; j++) {
 				column[j] = 0;
 			}
 
 			int current = i * frame_metrics.size() / w;
-			int next = (i + 1) * frame_metrics.size() / w;
-			if (next > frame_metrics.size()) {
-				next = frame_metrics.size();
-			}
-			if (next == current) {
-				next = current + 1; //just because for loop must work
-			}
 
 			for (Set<StringName>::Element *E = plot_sigs.front(); E; E = E->next()) {
-				int plot_pos = -1;
+				const Metric &m = _get_frame_metric(current);
 
-				for (int j = current; j < next; j++) {
-					//wrap
-					int idx = last_metric + 1 + j;
-					while (idx >= frame_metrics.size()) {
-						idx -= frame_metrics.size();
-					}
+				float value = 0;
 
-					//get
-					const Metric &m = frame_metrics[idx];
-					if (!m.valid) {
-						continue; //skip because invalid
-					}
-
-					float value = 0;
-
-					const Map<StringName, Metric::Category *>::Element *F = m.category_ptrs.find(E->get());
-					if (F) {
-						value = F->get()->total_time;
-					}
-
-					const Map<StringName, Metric::Category::Item *>::Element *G = m.item_ptrs.find(E->get());
-					if (G) {
-						if (use_self) {
-							value = G->get()->self;
-						} else {
-							value = G->get()->total;
-						}
-					}
-
-					plot_pos = MAX(CLAMP(int(value * h / highest), 0, h - 1), plot_pos);
+				const Map<StringName, Metric::Category *>::Element *F = m.category_ptrs.find(E->get());
+				if (F) {
+					value = F->get()->total_time;
 				}
 
+				const Map<StringName, Metric::Category::Item *>::Element *G = m.item_ptrs.find(E->get());
+				if (G) {
+					if (use_self) {
+						value = G->get()->self;
+					} else {
+						value = G->get()->total;
+					}
+				}
+
+				int plot_pos = CLAMP(int(value * h / highest), 0, h - 1);
+
 				int prev_plot = plot_pos;
-				Map<StringName, int>::Element *H = plot_prev.find(E->get());
+				Map<StringName, int>::Element *H = prev_plots.find(E->get());
 				if (H) {
 					prev_plot = H->get();
 					H->get() = plot_pos;
 				} else {
-					plot_prev[E->get()] = plot_pos;
-				}
-
-				if (plot_pos == -1 && prev_plot == -1) {
-					//don't bother drawing
-					continue;
-				}
-
-				if (prev_plot != -1 && plot_pos == -1) {
-					plot_pos = prev_plot;
-				}
-
-				if (prev_plot == -1 && plot_pos != -1) {
-					prev_plot = plot_pos;
+					prev_plots[E->get()] = plot_pos;
 				}
 
 				plot_pos = h - plot_pos - 1;
@@ -352,15 +322,13 @@ void EditorProfiler::_update_plot() {
 }
 
 void EditorProfiler::_update_frame() {
-	int cursor_metric = _get_cursor_index();
-
-	ERR_FAIL_INDEX(cursor_metric, frame_metrics.size());
+	int cursor_metric = cursor_metric_edit->get_value() - _get_frame_metric(0).frame_number;
 
 	updating_frame = true;
 	variables->clear();
 
 	TreeItem *root = variables->create_item();
-	const Metric &m = frame_metrics[cursor_metric];
+	const Metric &m = _get_frame_metric(cursor_metric);
 
 	int dtime = display_time->get_selected();
 
@@ -410,6 +378,7 @@ void EditorProfiler::_activate_pressed() {
 	if (activate->is_pressed()) {
 		activate->set_icon(get_theme_icon("Stop", "EditorIcons"));
 		activate->set_text(TTR("Stop"));
+		_clear_pressed();
 	} else {
 		activate->set_icon(get_theme_icon("Play", "EditorIcons"));
 		activate->set_text(TTR("Start"));
@@ -418,6 +387,7 @@ void EditorProfiler::_activate_pressed() {
 }
 
 void EditorProfiler::_clear_pressed() {
+	clear_button->set_disabled(true);
 	clear();
 	_update_plot();
 }
@@ -430,30 +400,16 @@ void EditorProfiler::_notification(int p_what) {
 }
 
 void EditorProfiler::_graph_tex_draw() {
-	if (last_metric < 0) {
+	if (total_metrics == 0) {
 		return;
 	}
 	if (seeking) {
-		int max_frames = frame_metrics.size();
-		int frame = cursor_metric_edit->get_value() - (frame_metrics[last_metric].frame_number - max_frames + 1);
-		if (frame < 0) {
-			frame = 0;
-		}
-
-		int cur_x = frame * graph->get_size().x / max_frames;
-
+		int frame = cursor_metric_edit->get_value() - _get_frame_metric(0).frame_number;
+		int cur_x = (2 * frame + 1) * graph->get_size().x / (2 * frame_metrics.size()) + 1;
 		graph->draw_line(Vector2(cur_x, 0), Vector2(cur_x, graph->get_size().y), Color(1, 1, 1, 0.8));
 	}
-
-	if (hover_metric != -1 && frame_metrics[hover_metric].valid) {
-		int max_frames = frame_metrics.size();
-		int frame = frame_metrics[hover_metric].frame_number - (frame_metrics[last_metric].frame_number - max_frames + 1);
-		if (frame < 0) {
-			frame = 0;
-		}
-
-		int cur_x = frame * graph->get_size().x / max_frames;
-
+	if (hover_metric > -1 && hover_metric < total_metrics) {
+		int cur_x = (2 * hover_metric + 1) * graph->get_size().x / (2 * frame_metrics.size()) + 1;
 		graph->draw_line(Vector2(cur_x, 0), Vector2(cur_x, graph->get_size().y), Color(1, 1, 1, 0.4));
 	}
 }
@@ -484,10 +440,10 @@ void EditorProfiler::_graph_tex_input(const Ref<InputEvent> &p_ev) {
 	if (
 			(mb.is_valid() && mb->get_button_index() == MOUSE_BUTTON_LEFT && mb->is_pressed()) ||
 			(mm.is_valid())) {
-		int x = me->get_position().x;
+		int x = me->get_position().x - 1;
 		x = x * frame_metrics.size() / graph->get_size().width;
 
-		bool show_hover = x >= 0 && x < frame_metrics.size();
+		hover_metric = x;
 
 		if (x < 0) {
 			x = 0;
@@ -497,41 +453,11 @@ void EditorProfiler::_graph_tex_input(const Ref<InputEvent> &p_ev) {
 			x = frame_metrics.size() - 1;
 		}
 
-		int metric = frame_metrics.size() - x - 1;
-		metric = last_metric - metric;
-		while (metric < 0) {
-			metric += frame_metrics.size();
-		}
-
-		if (show_hover) {
-			hover_metric = metric;
-
-		} else {
-			hover_metric = -1;
-		}
-
 		if (mb.is_valid() || mm->get_button_mask() & MOUSE_BUTTON_MASK_LEFT) {
-			//cursor_metric=x;
 			updating_frame = true;
 
-			//metric may be invalid, so look for closest metric that is valid, this makes snap feel better
-			bool valid = false;
-			for (int i = 0; i < frame_metrics.size(); i++) {
-				if (frame_metrics[metric].valid) {
-					valid = true;
-					break;
-				}
-
-				metric++;
-				if (metric >= frame_metrics.size()) {
-					metric = 0;
-				}
-			}
-
-			if (valid) {
-				cursor_metric_edit->set_value(frame_metrics[metric].frame_number);
-			}
-
+			if (x < total_metrics)
+				cursor_metric_edit->set_value(_get_frame_metric(x).frame_number);
 			updating_frame = false;
 
 			if (activate->is_pressed()) {
@@ -550,24 +476,6 @@ void EditorProfiler::_graph_tex_input(const Ref<InputEvent> &p_ev) {
 
 		graph->update();
 	}
-}
-
-int EditorProfiler::_get_cursor_index() const {
-	if (last_metric < 0) {
-		return 0;
-	}
-	if (!frame_metrics[last_metric].valid) {
-		return 0;
-	}
-
-	int diff = (frame_metrics[last_metric].frame_number - cursor_metric_edit->get_value());
-
-	int idx = last_metric - diff;
-	while (idx < 0) {
-		idx += frame_metrics.size();
-	}
-
-	return idx;
 }
 
 void EditorProfiler::disable_seeking() {
@@ -659,6 +567,7 @@ EditorProfiler::EditorProfiler() {
 	clear_button = memnew(Button);
 	clear_button->set_text(TTR("Clear"));
 	clear_button->connect("pressed", callable_mp(this, &EditorProfiler::_clear_pressed));
+	clear_button->set_disabled(true);
 	hb->add_child(clear_button);
 
 	hb->add_child(memnew(Label(TTR("Measure:"))));
@@ -687,6 +596,8 @@ EditorProfiler::EditorProfiler() {
 
 	cursor_metric_edit = memnew(SpinBox);
 	cursor_metric_edit->set_h_size_flags(SIZE_FILL);
+	cursor_metric_edit->set_value(0);
+	cursor_metric_edit->set_editable(false);
 	hb->add_child(cursor_metric_edit);
 	cursor_metric_edit->connect("value_changed", callable_mp(this, &EditorProfiler::_cursor_metric_changed));
 
@@ -726,6 +637,7 @@ EditorProfiler::EditorProfiler() {
 
 	int metric_size = CLAMP(int(EDITOR_DEF("debugger/profiler_frame_history_size", 600)), 60, 1024);
 	frame_metrics.resize(metric_size);
+	total_metrics = 0;
 	last_metric = -1;
 	hover_metric = -1;
 
