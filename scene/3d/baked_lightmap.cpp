@@ -36,7 +36,7 @@
 #include "core/math/delaunay_3d.h"
 #include "core/os/dir_access.h"
 #include "core/os/file_access.h"
-#include "core/os/os.h"
+#include "core/os/platform.h"
 #include "core/templates/sort_array.h"
 #include "lightmap_probe.h"
 

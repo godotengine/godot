@@ -35,7 +35,7 @@
 #include "collision_solver_2d_sw.h"
 #include "core/config/project_settings.h"
 #include "core/debugger/engine_debugger.h"
-#include "core/os/os.h"
+#include "core/os/platform.h"
 
 #define FLUSH_QUERY_CHECK(m_object) \
 	ERR_FAIL_COND_MSG(m_object->get_space() && flushing_queries, "Can't change this state while flushing queries. Use call_deferred() or set_deferred() to change monitoring state instead.");
@@ -1277,7 +1277,7 @@ void PhysicsServer2DSW::flush_queries() {
 
 	flushing_queries = true;
 
-	uint64_t time_beg = OS::get_singleton()->get_ticks_usec();
+	uint64_t time_beg = Platform::get_singleton()->get_ticks_usec();
 
 	for (Set<const Space2DSW *>::Element *E = active_spaces.front(); E; E = E->next()) {
 		Space2DSW *space = (Space2DSW *)E->get();
@@ -1313,7 +1313,7 @@ void PhysicsServer2DSW::flush_queries() {
 			values[i * 2 + 1] = USEC_TO_SEC(total_time[i]);
 		}
 		values.push_back("flush_queries");
-		values.push_back(USEC_TO_SEC(OS::get_singleton()->get_ticks_usec() - time_beg));
+		values.push_back(USEC_TO_SEC(Platform::get_singleton()->get_ticks_usec() - time_beg));
 
 		values.push_front("physics_2d");
 		EngineDebugger::profiler_add_frame_data("servers", values);

@@ -32,7 +32,7 @@
 
 #include "midi_driver_alsamidi.h"
 
-#include "core/os/os.h"
+#include "core/os/platform.h"
 #include "core/string/print_string.h"
 
 #include <errno.h>
@@ -120,7 +120,7 @@ void MIDIDriverALSAMidi::thread_func(void *p_udata) {
 
 		md->unlock();
 
-		OS::get_singleton()->delay_usec(1000);
+		Platform::get_singleton()->delay_usec(1000);
 	}
 }
 

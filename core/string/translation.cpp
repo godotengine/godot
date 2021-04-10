@@ -32,7 +32,7 @@
 
 #include "core/config/project_settings.h"
 #include "core/io/resource_loader.h"
-#include "core/os/os.h"
+#include "core/os/platform.h"
 
 #ifdef TOOLS_ENABLED
 #include "editor/editor_settings.h"
@@ -853,8 +853,8 @@ void Translation::set_locale(const String &p_locale) {
 		locale = univ_locale;
 	}
 
-	if (OS::get_singleton()->get_main_loop() && TranslationServer::get_singleton()->get_loaded_locales().has(this)) {
-		OS::get_singleton()->get_main_loop()->notification(MainLoop::NOTIFICATION_TRANSLATION_CHANGED);
+	if (Platform::get_singleton()->get_main_loop() && TranslationServer::get_singleton()->get_loaded_locales().has(this)) {
+		Platform::get_singleton()->get_main_loop()->notification(MainLoop::NOTIFICATION_TRANSLATION_CHANGED);
 	}
 }
 
@@ -986,8 +986,8 @@ void TranslationServer::set_locale(const String &p_locale) {
 		locale = univ_locale;
 	}
 
-	if (OS::get_singleton()->get_main_loop()) {
-		OS::get_singleton()->get_main_loop()->notification(MainLoop::NOTIFICATION_TRANSLATION_CHANGED);
+	if (Platform::get_singleton()->get_main_loop()) {
+		Platform::get_singleton()->get_main_loop()->notification(MainLoop::NOTIFICATION_TRANSLATION_CHANGED);
 	}
 
 	ResourceLoader::reload_translation_remaps();
@@ -1209,7 +1209,7 @@ void TranslationServer::setup() {
 	if (test != "") {
 		set_locale(test);
 	} else {
-		set_locale(OS::get_singleton()->get_locale());
+		set_locale(Platform::get_singleton()->get_locale());
 	}
 	fallback = GLOBAL_DEF("internationalization/locale/fallback", "en");
 #ifdef TOOLS_ENABLED

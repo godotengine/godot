@@ -34,7 +34,7 @@
 #include "core/math/math_funcs.h"
 #include "core/object/class_db.h"
 #include "core/object/reference.h"
-#include "core/os/os.h"
+#include "core/os/platform.h"
 #include "core/variant/variant_parser.h"
 
 const char *VisualScriptBuiltinFunc::func_name[VisualScriptBuiltinFunc::FUNC_MAX] = {
@@ -1073,7 +1073,7 @@ void VisualScriptBuiltinFunc::exec_func(BuiltinFunc p_func, const Variant **p_in
 		} break;
 		case VisualScriptBuiltinFunc::TEXT_PRINTRAW: {
 			String str = *p_inputs[0];
-			OS::get_singleton()->print("%s", str.utf8().get_data());
+			Platform::get_singleton()->print("%s", str.utf8().get_data());
 
 		} break;
 		case VisualScriptBuiltinFunc::VAR_TO_STR: {

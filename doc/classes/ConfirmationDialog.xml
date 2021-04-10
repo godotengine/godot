@@ -4,7 +4,7 @@
 		Dialog for confirmation of actions.
 	</brief_description>
 	<description>
-		Dialog for confirmation of actions. This dialog inherits from [AcceptDialog], but has by default an OK and Cancel button (in host OS order).
+		Dialog for confirmation of actions. This dialog inherits from [AcceptDialog], but has by default an OK and Cancel button (in host platform order).
 		To get cancel action, you can use:
 		[codeblocks]
 		[gdscript]

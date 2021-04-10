@@ -46,7 +46,7 @@
 #include "jni_utils.h"
 #include "main/main.h"
 #include "net_socket_android.h"
-#include "os_android.h"
+#include "platform_android.h"
 #include "string_android.h"
 #include "thread_jandroid.h"
 
@@ -56,7 +56,7 @@
 #include <android/native_window_jni.h>
 
 static JavaClassWrapper *java_class_wrapper = nullptr;
-static OS_Android *os_android = nullptr;
+static PlatformAndroid *platform_android = nullptr;
 static GodotJavaWrapper *godot_java = nullptr;
 static GodotIOJavaWrapper *godot_io_java = nullptr;
 
@@ -97,7 +97,7 @@ JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_initialize(JNIEnv *en
 	AudioDriverAndroid::setup(godot_io_java->get_instance());
 	NetSocketAndroid::setup(godot_java->get_member_object("netUtils", "Lorg/godotengine/godot/utils/GodotNetUtils;", env));
 
-	os_android = new OS_Android(godot_java, godot_io_java, p_use_apk_expansion);
+	platform_android = new PlatformAndroid(godot_java, godot_io_java, p_use_apk_expansion);
 
 	char wd[500];
 	getcwd(wd, 500);
@@ -113,8 +113,8 @@ JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_ondestroy(JNIEnv *env
 	if (godot_java) {
 		delete godot_java;
 	}
-	if (os_android) {
-		delete os_android;
+	if (platform_android) {
+		delete platform_android;
 	}
 }
 
@@ -163,14 +163,14 @@ JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_setup(JNIEnv *env, jc
 }
 
 JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_resize(JNIEnv *env, jclass clazz, jobject p_surface, jint p_width, jint p_height) {
-	if (os_android) {
-		os_android->set_display_size(Size2i(p_width, p_height));
+	if (platform_android) {
+		platform_android->set_display_size(Size2i(p_width, p_height));
 
 		// No need to reset the surface during startup
 		if (step > 0) {
 			if (p_surface) {
 				ANativeWindow *native_window = ANativeWindow_fromSurface(env, p_surface);
-				os_android->set_native_window(native_window);
+				platform_android->set_native_window(native_window);
 
 				DisplayServerAndroid::get_singleton()->reset_window();
 			}
@@ -179,17 +179,17 @@ JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_resize(JNIEnv *env, j
 }
 
 JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_newcontext(JNIEnv *env, jclass clazz, jobject p_surface, jboolean p_32_bits) {
-	if (os_android) {
+	if (platform_android) {
 		if (step == 0) {
 			// During startup
-			os_android->set_context_is_16_bits(!p_32_bits);
+			platform_android->set_context_is_16_bits(!p_32_bits);
 			if (p_surface) {
 				ANativeWindow *native_window = ANativeWindow_fromSurface(env, p_surface);
-				os_android->set_native_window(native_window);
+				platform_android->set_native_window(native_window);
 			}
 		} else {
 			// Rendering context recreated because it was lost; restart app to let it reload everything
-			os_android->main_loop_end();
+			platform_android->main_loop_end();
 			godot_java->restart(env);
 			step = -1; // Ensure no further steps are attempted
 		}
@@ -200,7 +200,7 @@ JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_back(JNIEnv *env, jcl
 	if (step == 0)
 		return;
 
-	os_android->main_loop_request_go_back();
+	platform_android->main_loop_request_go_back();
 }
 
 JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_step(JNIEnv *env, jclass clazz) {
@@ -221,7 +221,7 @@ JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_step(JNIEnv *env, jcl
 		}
 
 		godot_java->on_godot_setup_completed(env);
-		os_android->main_loop_begin();
+		platform_android->main_loop_begin();
 		godot_java->on_godot_main_loop_started(env);
 		++step;
 	}
@@ -231,7 +231,7 @@ JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_step(JNIEnv *env, jcl
 	DisplayServerAndroid::get_singleton()->process_magnetometer(magnetometer);
 	DisplayServerAndroid::get_singleton()->process_gyroscope(gyroscope);
 
-	if (os_android->main_loop_iterate()) {
+	if (platform_android->main_loop_iterate()) {
 		godot_java->force_quit(env);
 	}
 }
@@ -341,7 +341,7 @@ JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_joyhat(JNIEnv *env, j
 }
 
 JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_joyconnectionchanged(JNIEnv *env, jclass clazz, jint p_device, jboolean p_connected, jstring p_name) {
-	if (os_android) {
+	if (platform_android) {
 		String name = jstring_to_string(p_name, env);
 		Input::get_singleton()->joy_connection_changed(p_device, p_connected, name);
 	}
@@ -374,14 +374,14 @@ JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_focusin(JNIEnv *env, 
 	if (step == 0)
 		return;
 
-	os_android->main_loop_focusin();
+	platform_android->main_loop_focusin();
 }
 
 JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_focusout(JNIEnv *env, jclass clazz) {
 	if (step == 0)
 		return;
 
-	os_android->main_loop_focusout();
+	platform_android->main_loop_focusout();
 }
 
 JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_audio(JNIEnv *env, jclass clazz) {
@@ -456,8 +456,8 @@ JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_requestPermissionResu
 		AudioDriver::get_singleton()->capture_start();
 	}
 
-	if (os_android->get_main_loop()) {
-		os_android->get_main_loop()->emit_signal("on_request_permissions_result", permission, p_result == JNI_TRUE);
+	if (platform_android->get_main_loop()) {
+		platform_android->get_main_loop()->emit_signal("on_request_permissions_result", permission, p_result == JNI_TRUE);
 	}
 }
 
@@ -465,8 +465,8 @@ JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_onRendererResumed(JNI
 	if (step == 0)
 		return;
 
-	if (os_android->get_main_loop()) {
-		os_android->get_main_loop()->notification(MainLoop::NOTIFICATION_APPLICATION_RESUMED);
+	if (platform_android->get_main_loop()) {
+		platform_android->get_main_loop()->notification(MainLoop::NOTIFICATION_APPLICATION_RESUMED);
 	}
 }
 
@@ -474,8 +474,8 @@ JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_onRendererPaused(JNIE
 	if (step == 0)
 		return;
 
-	if (os_android->get_main_loop()) {
-		os_android->get_main_loop()->notification(MainLoop::NOTIFICATION_APPLICATION_PAUSED);
+	if (platform_android->get_main_loop()) {
+		platform_android->get_main_loop()->notification(MainLoop::NOTIFICATION_APPLICATION_PAUSED);
 	}
 }
 }

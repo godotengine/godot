@@ -31,7 +31,7 @@
 #include "audio_driver_dummy.h"
 
 #include "core/config/project_settings.h"
-#include "core/os/os.h"
+#include "core/os/platform.h"
 
 Error AudioDriverDummy::init() {
 	active = false;
@@ -67,7 +67,7 @@ void AudioDriverDummy::thread_func(void *p_udata) {
 			ad->unlock();
 		};
 
-		OS::get_singleton()->delay_usec(usdelay);
+		Platform::get_singleton()->delay_usec(usdelay);
 	};
 
 	ad->thread_exited = true;

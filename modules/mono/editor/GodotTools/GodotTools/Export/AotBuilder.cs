@@ -7,7 +7,7 @@ using System.Text;
 using GodotTools.Internals;
 using Directory = GodotTools.Utils.Directory;
 using File = GodotTools.Utils.File;
-using OS = GodotTools.Utils.OS;
+using Platform = GodotTools.Utils.Platform;
 using Path = System.IO.Path;
 
 namespace GodotTools.Export
@@ -63,12 +63,12 @@ namespace GodotTools.Export
                 }
             }
 
-            if (platform == OS.Platforms.iOS)
+            if (platform == Platform.Platforms.iOS)
             {
                 var architectures = GetEnablediOSArchs(features).ToArray();
                 CompileAssembliesForiOS(exporter, isDebug, architectures, aotOpts, aotTempDir, assembliesPrepared, bclDir);
             }
-            else if (platform == OS.Platforms.Android)
+            else if (platform == Platform.Platforms.Android)
             {
                 var abis = GetEnabledAndroidAbis(features).ToArray();
                 CompileAssembliesForAndroid(exporter, isDebug, abis, aotOpts, aotTempDir, assembliesPrepared, bclDir);
@@ -97,12 +97,12 @@ namespace GodotTools.Export
                     string aotAbiTempDir = Path.Combine(aotTempDir, abi);
                     string soFilePath = Path.Combine(aotAbiTempDir, outputFileName);
 
-                    var compilerArgs = GetAotCompilerArgs(OS.Platforms.Android, isDebug, abi, aotOpts, assemblyPath, soFilePath);
+                    var compilerArgs = GetAotCompilerArgs(Platform.Platforms.Android, isDebug, abi, aotOpts, assemblyPath, soFilePath);
 
                     // Make sure the output directory exists
                     Directory.CreateDirectory(aotAbiTempDir);
 
-                    string compilerDirPath = Path.Combine(GodotSharpDirs.DataEditorToolsDir, "aot-compilers", $"{OS.Platforms.Android}-{abi}");
+                    string compilerDirPath = Path.Combine(GodotSharpDirs.DataEditorToolsDir, "aot-compilers", $"{Platform.Platforms.Android}-{abi}");
 
                     ExecuteCompiler(FindCrossCompiler(compilerDirPath), compilerArgs, bclDir);
 
@@ -119,8 +119,8 @@ namespace GodotTools.Export
                 string assemblyName = assembly.Key;
                 string assemblyPath = assembly.Value;
 
-                string outputFileExtension = platform == OS.Platforms.Windows ? ".dll" :
-                    platform == OS.Platforms.MacOS ? ".dylib" :
+                string outputFileExtension = platform == Platform.Platforms.Windows ? ".dll" :
+                    platform == Platform.Platforms.MacOS ? ".dylib" :
                     ".so";
 
                 string outputFileName = assemblyName + ".dll" + outputFileExtension;
@@ -132,13 +132,13 @@ namespace GodotTools.Export
 
                 ExecuteCompiler(FindCrossCompiler(compilerDirPath), compilerArgs, bclDir);
 
-                if (platform == OS.Platforms.MacOS)
+                if (platform == Platform.Platforms.MacOS)
                 {
                     exporter.AddSharedObject(tempOutputFilePath, tags: null);
                 }
                 else
                 {
-                    string outputDataLibDir = Path.Combine(outputDataDir, "Mono", platform == OS.Platforms.Windows ? "bin" : "lib");
+                    string outputDataLibDir = Path.Combine(outputDataDir, "Mono", platform == Platform.Platforms.Windows ? "bin" : "lib");
                     File.Copy(tempOutputFilePath, Path.Combine(outputDataLibDir, outputFileName));
                 }
             }
@@ -165,12 +165,12 @@ namespace GodotTools.Export
                     string aotArchTempDir = Path.Combine(aotTempDir, arch);
                     string asmFilePath = Path.Combine(aotArchTempDir, asmFileName);
 
-                    var compilerArgs = GetAotCompilerArgs(OS.Platforms.iOS, isDebug, arch, aotOpts, assemblyPath, asmFilePath);
+                    var compilerArgs = GetAotCompilerArgs(Platform.Platforms.iOS, isDebug, arch, aotOpts, assemblyPath, asmFilePath);
 
                     // Make sure the output directory exists
                     Directory.CreateDirectory(aotArchTempDir);
 
-                    string compilerDirPath = Path.Combine(GodotSharpDirs.DataEditorToolsDir, "aot-compilers", $"{OS.Platforms.iOS}-{arch}");
+                    string compilerDirPath = Path.Combine(GodotSharpDirs.DataEditorToolsDir, "aot-compilers", $"{Platform.Platforms.iOS}-{arch}");
 
                     ExecuteCompiler(FindCrossCompiler(compilerDirPath), compilerArgs, bclDir);
 
@@ -200,7 +200,7 @@ namespace GodotTools.Export
 
                     clangArgs.Add(asmFilePath);
 
-                    int clangExitCode = OS.ExecuteCommand(XcodeHelper.FindXcodeTool("clang"), clangArgs);
+                    int clangExitCode = Platform.ExecuteCommand(XcodeHelper.FindXcodeTool("clang"), clangArgs);
                     if (clangExitCode != 0)
                         throw new Exception($"Command 'clang' exited with code: {clangExitCode}");
 
@@ -306,7 +306,7 @@ MONO_AOT_MODE_LAST = 1000,
                 foreach (string objFilePath in objFilePaths)
                     arArgs.Add(objFilePath);
 
-                int arExitCode = OS.ExecuteCommand(XcodeHelper.FindXcodeTool("ar"), arArgs);
+                int arExitCode = Platform.ExecuteCommand(XcodeHelper.FindXcodeTool("ar"), arArgs);
                 if (arExitCode != 0)
                     throw new Exception($"Command 'ar' exited with code: {arExitCode}");
 
@@ -324,7 +324,7 @@ MONO_AOT_MODE_LAST = 1000,
             lipoArgs.Add("-output");
             lipoArgs.Add(fatOutputFilePath);
 
-            int lipoExitCode = OS.ExecuteCommand(XcodeHelper.FindXcodeTool("lipo"), lipoArgs);
+            int lipoExitCode = Platform.ExecuteCommand(XcodeHelper.FindXcodeTool("lipo"), lipoArgs);
             if (lipoExitCode != 0)
                 throw new Exception($"Command 'lipo' exited with code: {lipoExitCode}");
 
@@ -388,7 +388,7 @@ MONO_AOT_MODE_LAST = 1000,
             // TODO: LLVM
 
             bool aotSoftDebug = isDebug && !aotOpts.EnableLLVM;
-            bool aotDwarfDebug = platform == OS.Platforms.iOS;
+            bool aotDwarfDebug = platform == Platform.Platforms.iOS;
 
             var aotOptions = new List<string>();
             var optimizerOptions = new List<string>();
@@ -411,7 +411,7 @@ MONO_AOT_MODE_LAST = 1000,
             if (aotDwarfDebug)
                 aotOptions.Add("dwarfdebug");
 
-            if (platform == OS.Platforms.Android)
+            if (platform == Platform.Platforms.Android)
             {
                 string abi = target;
 
@@ -442,7 +442,7 @@ MONO_AOT_MODE_LAST = 1000,
                 string triple = GetAndroidTriple(abi);
                 aotOptions.Add($"mtriple={triple}");
             }
-            else if (platform == OS.Platforms.iOS)
+            else if (platform == Platform.Platforms.iOS)
             {
                 if (!aotOpts.LLVMOnly && !aotOpts.UseInterpreter)
                     optimizerOptions.Add("gsharedvt");
@@ -575,25 +575,25 @@ MONO_AOT_MODE_LAST = 1000,
         {
             switch (platform)
             {
-                case OS.Platforms.Windows:
-                case OS.Platforms.UWP:
+                case Platform.Platforms.Windows:
+                case Platform.Platforms.UWP:
                     {
                         string arch = bits == "64" ? "x86_64" : "i686";
                         return $"windows-{arch}";
                     }
-                case OS.Platforms.MacOS:
+                case Platform.Platforms.MacOS:
                     {
                         Debug.Assert(bits == null || bits == "64");
                         string arch = "x86_64";
                         return $"{platform}-{arch}";
                     }
-                case OS.Platforms.LinuxBSD:
-                case OS.Platforms.Server:
+                case Platform.Platforms.LinuxBSD:
+                case Platform.Platforms.Server:
                     {
                         string arch = bits == "64" ? "x86_64" : "i686";
                         return $"linux-{arch}";
                     }
-                case OS.Platforms.Haiku:
+                case Platform.Platforms.Haiku:
                     {
                         string arch = bits == "64" ? "x86_64" : "i686";
                         return $"{platform}-{arch}";
@@ -606,7 +606,7 @@ MONO_AOT_MODE_LAST = 1000,
         // TODO: Replace this for a specific path for each platform
         private static string FindCrossCompiler(string monoCrossBin)
         {
-            string exeExt = OS.IsWindows ? ".exe" : string.Empty;
+            string exeExt = Platform.IsWindows ? ".exe" : string.Empty;
 
             var files = new DirectoryInfo(monoCrossBin).GetFiles($"*mono-sgen{exeExt}", SearchOption.TopDirectoryOnly);
             if (files.Length > 0)

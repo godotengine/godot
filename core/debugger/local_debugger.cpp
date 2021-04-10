@@ -31,7 +31,7 @@
 #include "local_debugger.h"
 
 #include "core/debugger/script_debugger.h"
-#include "core/os/os.h"
+#include "core/os/platform.h"
 #include "scene/main/scene_tree.h"
 
 struct LocalDebugger::ScriptsProfiler {
@@ -67,13 +67,13 @@ struct LocalDebugger::ScriptsProfiler {
 	}
 
 	void _print_frame_data(bool p_accumulated) {
-		uint64_t diff = OS::get_singleton()->get_ticks_usec() - idle_accum;
+		uint64_t diff = Platform::get_singleton()->get_ticks_usec() - idle_accum;
 
 		if (!p_accumulated && diff < 1000000) { //show every one second
 			return;
 		}
 
-		idle_accum = OS::get_singleton()->get_ticks_usec();
+		idle_accum = Platform::get_singleton()->get_ticks_usec();
 
 		int ofs = 0;
 		for (int i = 0; i < ScriptServer::get_language_count(); i++) {
@@ -110,7 +110,7 @@ struct LocalDebugger::ScriptsProfiler {
 	}
 
 	ScriptsProfiler() {
-		idle_accum = OS::get_singleton()->get_ticks_usec();
+		idle_accum = Platform::get_singleton()->get_ticks_usec();
 	}
 };
 
@@ -133,8 +133,8 @@ void LocalDebugger::debug(bool p_can_continue, bool p_is_error_breakpoint) {
 	int current_frame = 0;
 	int total_frames = script_lang->debug_get_stack_level_count();
 	while (true) {
-		OS::get_singleton()->print("debug> ");
-		String line = OS::get_singleton()->get_stdin_string().strip_edges();
+		Platform::get_singleton()->print("debug> ");
+		String line = Platform::get_singleton()->get_stdin_string().strip_edges();
 
 		// Cache options
 		String variable_prefix = options["variable_prefix"];

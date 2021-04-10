@@ -34,7 +34,7 @@
 #include "core/register_core_types.h"
 
 #include "core/core_constants.h"
-#include "core/os/os.h"
+#include "core/os/platform.h"
 #include "core/string/string_name.h"
 #include "core/string/ustring.h"
 #include "core/templates/ordered_hash_map.h"

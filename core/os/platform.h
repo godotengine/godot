@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  os.h                                                                 */
+/*  platform.h                                                           */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,8 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef OS_H
-#define OS_H
+#ifndef PLATFORM_H
+#define PLATFORM_H
 
 #include "core/config/engine.h"
 #include "core/io/image.h"
@@ -42,8 +42,8 @@
 #include <stdarg.h>
 #include <stdlib.h>
 
-class OS {
-	static OS *singleton;
+class Platform {
+	static Platform *singleton;
 	static uint64_t target_ticks;
 	String _execpath;
 	List<String> _cmdline;
@@ -91,7 +91,7 @@ protected:
 	HasServerFeatureCallback has_server_feature_callback = nullptr;
 	RenderThreadMode _render_thread_mode = RENDER_THREAD_SAFE;
 
-	// Functions used by Main to initialize/deinitialize the OS.
+	// Functions used by Main to initialize/deinitialize the Platform.
 	void add_logger(Logger *p_logger);
 
 	virtual void initialize() = 0;
@@ -110,7 +110,7 @@ protected:
 public:
 	typedef int64_t ProcessID;
 
-	static OS *get_singleton();
+	static Platform *get_singleton();
 
 	void print_error(const char *p_function, const char *p_file, int p_line, const char *p_code, const char *p_rationale, Logger::ErrorType p_type = Logger::ERR_ERROR);
 	void print(const char *p_format, ...) _PRINTF_FORMAT_ATTRIBUTE_2_3;
@@ -296,8 +296,8 @@ public:
 	virtual Vector<String> get_granted_permissions() const { return Vector<String>(); }
 
 	virtual void process_and_drop_events() {}
-	OS();
-	virtual ~OS();
+	Platform();
+	virtual ~Platform();
 };
 
-#endif // OS_H
+#endif // PLATFORM_H

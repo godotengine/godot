@@ -32,7 +32,7 @@
 
 #include "core/core_string_names.h"
 #include "core/io/image_loader.h"
-#include "core/os/os.h"
+#include "core/os/platform.h"
 #include "mesh.h"
 #include "scene/resources/bit_map.h"
 #include "servers/camera/camera_feed.h"
@@ -1690,9 +1690,9 @@ void AnimatedTexture::_update_proxy() {
 	float delta;
 	if (prev_ticks == 0) {
 		delta = 0;
-		prev_ticks = OS::get_singleton()->get_ticks_usec();
+		prev_ticks = Platform::get_singleton()->get_ticks_usec();
 	} else {
-		uint64_t ticks = OS::get_singleton()->get_ticks_usec();
+		uint64_t ticks = Platform::get_singleton()->get_ticks_usec();
 		delta = float(double(ticks - prev_ticks) / 1000000.0);
 		prev_ticks = ticks;
 	}

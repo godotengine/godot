@@ -30,7 +30,7 @@
 
 #include "gi_probe.h"
 
-#include "core/os/os.h"
+#include "core/os/platform.h"
 
 #include "mesh_instance_3d.h"
 #include "voxelizer.h"

@@ -32,7 +32,7 @@
 
 #include "core/input/input.h"
 #include "core/os/keyboard.h"
-#include "core/os/os.h"
+#include "core/os/platform.h"
 
 #ifdef TOOLS_ENABLED
 #include "editor/editor_scale.h"

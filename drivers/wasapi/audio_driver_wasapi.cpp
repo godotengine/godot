@@ -33,7 +33,7 @@
 #include "audio_driver_wasapi.h"
 
 #include "core/config/project_settings.h"
-#include "core/os/os.h"
+#include "core/os/platform.h"
 
 #include <functiondiscoverykeys.h>
 
@@ -740,7 +740,7 @@ void AudioDriverWASAPI::thread_func(void *p_udata) {
 
 		// Let the thread rest a while if we haven't read or write anything
 		if (written_frames == 0 && read_frames == 0) {
-			OS::get_singleton()->delay_usec(1000);
+			Platform::get_singleton()->delay_usec(1000);
 		}
 	}
 

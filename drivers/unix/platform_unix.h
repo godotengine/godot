@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  os_windows.h                                                         */
+/*  platform_unix.h                                                      */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,102 +28,56 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef OS_WINDOWS_H
-#define OS_WINDOWS_H
+#ifndef PLATFORM_UNIX_H
+#define PLATFORM_UNIX_H
 
-#include "core/config/project_settings.h"
-#include "core/input/input.h"
-#include "core/os/os.h"
-#include "crash_handler_windows.h"
+#ifdef UNIX_ENABLED
+
+#include "core/os/platform.h"
 #include "drivers/unix/ip_unix.h"
-#include "drivers/wasapi/audio_driver_wasapi.h"
-#include "drivers/winmidi/midi_driver_winmidi.h"
-#include "key_mapping_windows.h"
-#include "servers/audio_server.h"
-#include "servers/rendering/renderer_compositor.h"
-#include "servers/rendering_server.h"
-#ifdef XAUDIO2_ENABLED
-#include "drivers/xaudio2/audio_driver_xaudio2.h"
-#endif
 
-#if defined(OPENGL_ENABLED)
-#include "context_gl_windows.h"
-#endif
-
-#if defined(VULKAN_ENABLED)
-#include "drivers/vulkan/rendering_device_vulkan.h"
-#include "platform/windows/vulkan_context_win.h"
-#endif
-
-#include <fcntl.h>
-#include <io.h>
-#include <stdio.h>
-#include <windows.h>
-#include <windowsx.h>
-
-class JoypadWindows;
-class OS_Windows : public OS {
-#ifdef STDOUT_FILE
-	FILE *stdo;
-#endif
-
-	uint64_t ticks_start;
-	uint64_t ticks_per_second;
-
-	HINSTANCE hInstance;
-	MainLoop *main_loop;
-
-#ifdef WASAPI_ENABLED
-	AudioDriverWASAPI driver_wasapi;
-#endif
-#ifdef XAUDIO2_ENABLED
-	AudioDriverXAudio2 driver_xaudio2;
-#endif
-#ifdef WINMIDI_ENABLED
-	MIDIDriverWinMidi driver_midi;
-#endif
-
-	CrashHandler crash_handler;
-
-	bool force_quit;
-	HWND main_window;
-
-	// functions used by main to initialize/deinitialize the OS
+class PlatformUnix : public Platform {
 protected:
-	virtual void initialize() override;
+	// UNIX only handles the core functions.
+	// inheriting platforms under unix (eg. X11) should handle the rest
 
-	virtual void set_main_loop(MainLoop *p_main_loop) override;
-	virtual void delete_main_loop() override;
+	virtual void initialize_core();
+	virtual int unix_initialize_audio(int p_audio_driver);
+	//virtual Error initialize(int p_video_driver,int p_audio_driver);
 
-	virtual void finalize() override;
 	virtual void finalize_core() override;
-	virtual String get_stdin_string(bool p_block) override;
 
-	String _quote_command_line_argument(const String &p_text) const;
-
-	struct ProcessInfo {
-		STARTUPINFO si;
-		PROCESS_INFORMATION pi;
-	};
-	Map<ProcessID, ProcessInfo> *process_map;
+	String stdin_buf;
 
 public:
+	PlatformUnix();
+
+	virtual void alert(const String &p_alert, const String &p_title = "ALERT!");
+	virtual String get_stdin_string(bool p_block) override;
+
+	//virtual void set_mouse_show(bool p_show);
+	//virtual void set_mouse_grab(bool p_grab);
+	//virtual bool is_mouse_grab_enabled() const = 0;
+	//virtual void get_mouse_position(int &x, int &y) const;
+	//virtual void set_window_title(const String& p_title);
+
+	//virtual void set_video_mode(const VideoMode& p_video_mode);
+	//virtual VideoMode get_video_mode() const;
+	//virtual void get_fullscreen_mode_list(List<VideoMode> *p_list) const;
+
 	virtual Error open_dynamic_library(const String p_path, void *&p_library_handle, bool p_also_set_library_path = false) override;
 	virtual Error close_dynamic_library(void *p_library_handle) override;
 	virtual Error get_dynamic_library_symbol_handle(void *p_library_handle, const String p_name, void *&p_symbol_handle, bool p_optional = false) override;
 
-	virtual MainLoop *get_main_loop() const override;
+	virtual Error set_cwd(const String &p_cwd) override;
 
 	virtual String get_name() const override;
-
-	virtual void initialize_joypads() override {}
 
 	virtual Date get_date(bool utc) const override;
 	virtual Time get_time(bool utc) const override;
 	virtual TimeZoneInfo get_time_zone_info() const override;
-	virtual double get_unix_time() const override;
 
-	virtual Error set_cwd(const String &p_cwd) override;
+	virtual double get_unix_time() const override;
 
 	virtual void delay_usec(uint32_t p_usec) const override;
 	virtual uint64_t get_ticks_usec() const override;
@@ -136,40 +90,23 @@ public:
 	virtual bool has_environment(const String &p_var) const override;
 	virtual String get_environment(const String &p_var) const override;
 	virtual bool set_environment(const String &p_var, const String &p_value) const override;
-
-	virtual String get_executable_path() const override;
-
 	virtual String get_locale() const override;
 
 	virtual int get_processor_count() const override;
 
-	virtual String get_config_path() const override;
-	virtual String get_data_path() const override;
-	virtual String get_cache_path() const override;
-	virtual String get_godot_dir_name() const override;
-
-	virtual String get_system_dir(SystemDir p_dir) const override;
-	virtual String get_user_data_dir() const override;
-
-	virtual String get_unique_id() const override;
-
-	virtual Error shell_open(String p_uri) override;
-
-	void run();
-
-	virtual bool _check_internal_feature_support(const String &p_feature) override;
-
-	virtual void disable_crash_handler() override;
-	virtual bool is_disable_crash_handler() const override;
+	virtual void debug_break() override;
 	virtual void initialize_debugging() override;
 
-	virtual Error move_to_trash(const String &p_path) override;
-
-	void set_main_window(HWND p_main_window) { main_window = p_main_window; }
-
-	HINSTANCE get_hinstance() { return hInstance; }
-	OS_Windows(HINSTANCE _hInstance);
-	~OS_Windows();
+	virtual String get_executable_path() const override;
+	virtual String get_user_data_dir() const override;
 };
 
-#endif
+class UnixTerminalLogger : public StdLogger {
+public:
+	virtual void log_error(const char *p_function, const char *p_file, int p_line, const char *p_code, const char *p_rationale, ErrorType p_type = ERR_ERROR);
+	virtual ~UnixTerminalLogger();
+};
+
+#endif // UNIX_ENABLED
+
+#endif // PLATFORM_UNIX_H

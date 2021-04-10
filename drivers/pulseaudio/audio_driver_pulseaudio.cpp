@@ -33,7 +33,7 @@
 #ifdef PULSEAUDIO_ENABLED
 
 #include "core/config/project_settings.h"
-#include "core/os/os.h"
+#include "core/os/platform.h"
 
 void AudioDriverPulseAudio::pa_state_cb(pa_context *c, void *userdata) {
 	AudioDriverPulseAudio *ad = (AudioDriverPulseAudio *)userdata;
@@ -331,7 +331,7 @@ void AudioDriverPulseAudio::thread_func(void *p_udata) {
 	AudioDriverPulseAudio *ad = (AudioDriverPulseAudio *)p_udata;
 	unsigned int write_ofs = 0;
 	size_t avail_bytes = 0;
-	uint32_t default_device_msec = OS::get_singleton()->get_ticks_msec();
+	uint32_t default_device_msec = Platform::get_singleton()->get_ticks_msec();
 
 	while (!ad->exit_thread) {
 		size_t read_bytes = 0;
@@ -423,7 +423,7 @@ void AudioDriverPulseAudio::thread_func(void *p_udata) {
 
 		// If we're using the default device check that the current device is still the default
 		if (ad->device_name == "Default") {
-			uint32_t msec = OS::get_singleton()->get_ticks_msec();
+			uint32_t msec = Platform::get_singleton()->get_ticks_msec();
 			if (msec > (default_device_msec + 1000)) {
 				String old_default_device = ad->default_device;
 
@@ -517,7 +517,7 @@ void AudioDriverPulseAudio::thread_func(void *p_udata) {
 
 		// Let the thread rest a while if we haven't read or write anything
 		if (written_bytes == 0 && read_bytes == 0) {
-			OS::get_singleton()->delay_usec(1000);
+			Platform::get_singleton()->delay_usec(1000);
 		}
 	}
 

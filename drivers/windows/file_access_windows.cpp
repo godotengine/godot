@@ -32,7 +32,7 @@
 
 #include "file_access_windows.h"
 
-#include "core/os/os.h"
+#include "core/os/platform.h"
 #include "core/string/print_string.h"
 
 #include <shlwapi.h>
@@ -165,7 +165,7 @@ void FileAccessWindows::close() {
 			}
 			if (rename_error) {
 				attempts--;
-				OS::get_singleton()->delay_usec(100000); // wait 100msec and try again
+				Platform::get_singleton()->delay_usec(100000); // wait 100msec and try again
 			}
 		}
 

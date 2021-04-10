@@ -31,7 +31,7 @@
 #ifndef EDITOR_RUN_H
 #define EDITOR_RUN_H
 
-#include "core/os/os.h"
+#include "core/os/platform.h"
 #include "scene/main/node.h"
 class EditorRun {
 public:
@@ -41,7 +41,7 @@ public:
 		STATUS_STOP
 	};
 
-	List<OS::ProcessID> pids;
+	List<Platform::ProcessID> pids;
 
 private:
 	Status status;
@@ -54,8 +54,8 @@ public:
 	void run_native_notify() { status = STATUS_PLAY; }
 	void stop();
 
-	void stop_child_process(OS::ProcessID p_pid);
-	bool has_child_process(OS::ProcessID p_pid) const;
+	void stop_child_process(Platform::ProcessID p_pid);
+	bool has_child_process(Platform::ProcessID p_pid) const;
 	int get_child_process_count() const { return pids.size(); }
 
 	EditorRun();

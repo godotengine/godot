@@ -31,7 +31,7 @@
 #include "find_in_files.h"
 
 #include "core/os/dir_access.h"
-#include "core/os/os.h"
+#include "core/os/platform.h"
 #include "editor_node.h"
 #include "editor_scale.h"
 #include "scene/gui/box_container.h"
@@ -147,11 +147,11 @@ void FindInFiles::stop() {
 void FindInFiles::_process() {
 	// This part can be moved to a thread if needed
 
-	OS &os = *OS::get_singleton();
-	float time_before = os.get_ticks_msec();
+	Platform &platform = *Platform::get_singleton();
+	float time_before = platform.get_ticks_msec();
 	while (is_processing()) {
 		_iterate();
-		float elapsed = (os.get_ticks_msec() - time_before);
+		float elapsed = (platform.get_ticks_msec() - time_before);
 		if (elapsed > 1000.0 / 120.0) {
 			break;
 		}

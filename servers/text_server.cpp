@@ -81,8 +81,8 @@ TextServer *TextServerManager::initialize(int p_index, Error &r_error) {
 	}
 	if (server_create_functions[p_index].instance != nullptr) {
 		server = server_create_functions[p_index].instance;
-		if (OS::get_singleton()->get_main_loop()) {
-			OS::get_singleton()->get_main_loop()->notification(MainLoop::NOTIFICATION_TEXT_SERVER_CHANGED);
+		if (Platform::get_singleton()->get_main_loop()) {
+			Platform::get_singleton()->get_main_loop()->notification(MainLoop::NOTIFICATION_TEXT_SERVER_CHANGED);
 		}
 	}
 	return server_create_functions[p_index].instance;

@@ -33,10 +33,10 @@
 #include "core/config/project_settings.h"
 #include "core/io/ip.h"
 #include "core/io/marshalls.h"
-#include "core/os/os.h"
+#include "core/os/platform.h"
 
 //#define DEBUG_PRINT(m_p) print_line(m_p)
-//#define DEBUG_TIME(m_what) printf("MS: %s - %lli\n",m_what,OS::get_singleton()->get_ticks_usec());
+//#define DEBUG_TIME(m_what) printf("MS: %s - %lli\n",m_what,Platform::get_singleton()->get_ticks_usec());
 #define DEBUG_PRINT(m_p)
 #define DEBUG_TIME(m_what)
 
@@ -184,7 +184,7 @@ Error FileAccessNetworkClient::connect(const String &p_host, int p_port, const S
 	ERR_FAIL_COND_V_MSG(err != OK, err, "Cannot connect to host with IP: " + String(ip) + " and port: " + itos(p_port));
 	while (client->get_status() == StreamPeerTCP::STATUS_CONNECTING) {
 		//DEBUG_PRINT("trying to connect....");
-		OS::get_singleton()->delay_usec(1000);
+		Platform::get_singleton()->delay_usec(1000);
 	}
 
 	if (client->get_status() != StreamPeerTCP::STATUS_CONNECTED) {

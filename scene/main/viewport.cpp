@@ -34,7 +34,7 @@
 #include "core/core_string_names.h"
 #include "core/debugger/engine_debugger.h"
 #include "core/input/input.h"
-#include "core/os/os.h"
+#include "core/os/platform.h"
 #include "core/string/translation.h"
 
 #include "scene/2d/collision_object_2d.h"

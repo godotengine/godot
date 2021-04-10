@@ -31,7 +31,7 @@
 #ifndef SCRIPT_EDITOR_DEBUGGER_H
 #define SCRIPT_EDITOR_DEBUGGER_H
 
-#include "core/os/os.h"
+#include "core/os/platform.h"
 #include "editor/debugger/editor_debugger_inspector.h"
 #include "editor/debugger/editor_debugger_node.h"
 #include "editor/debugger/editor_debugger_server.h"
@@ -144,7 +144,7 @@ private:
 
 	EditorNode *editor;
 
-	OS::ProcessID remote_pid = 0;
+	Platform::ProcessID remote_pid = 0;
 	bool breaked = false;
 	bool can_debug = false;
 

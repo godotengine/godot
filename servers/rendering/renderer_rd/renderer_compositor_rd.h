@@ -31,7 +31,7 @@
 #ifndef RENDERING_SERVER_COMPOSITOR_RD_H
 #define RENDERING_SERVER_COMPOSITOR_RD_H
 
-#include "core/os/os.h"
+#include "core/os/platform.h"
 #include "core/templates/thread_work_pool.h"
 #include "servers/rendering/renderer_compositor.h"
 #include "servers/rendering/renderer_rd/forward_clustered/render_forward_clustered.h"

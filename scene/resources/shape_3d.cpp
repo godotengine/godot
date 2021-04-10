@@ -30,7 +30,7 @@
 
 #include "shape_3d.h"
 
-#include "core/os/os.h"
+#include "core/os/platform.h"
 #include "scene/main/scene_tree.h"
 #include "scene/resources/mesh.h"
 #include "servers/physics_server_3d.h"
@@ -81,7 +81,7 @@ Ref<ArrayMesh> Shape3D::get_debug_mesh() {
 		arr.resize(Mesh::ARRAY_MAX);
 		arr[Mesh::ARRAY_VERTEX] = array;
 
-		SceneTree *st = Object::cast_to<SceneTree>(OS::get_singleton()->get_main_loop());
+		SceneTree *st = Object::cast_to<SceneTree>(Platform::get_singleton()->get_main_loop());
 
 		debug_mesh_cache->add_surface_from_arrays(Mesh::PRIMITIVE_LINES, arr);
 

@@ -26,7 +26,7 @@ namespace GodotTools.Ides.MonoDevelop
 
             string command;
 
-            if (OS.IsMacOS)
+            if (Platform.IsMacOS)
             {
                 string bundleId = BundleIds[editorId];
 
@@ -45,12 +45,12 @@ namespace GodotTools.Ides.MonoDevelop
                 }
                 else
                 {
-                    command = OS.PathWhich(ExecutableNames[editorId]);
+                    command = Platform.PathWhich(ExecutableNames[editorId]);
                 }
             }
             else
             {
-                command = OS.PathWhich(ExecutableNames[editorId]);
+                command = Platform.PathWhich(ExecutableNames[editorId]);
             }
 
             args.Add("--ipc-tcp");
@@ -85,7 +85,7 @@ namespace GodotTools.Ides.MonoDevelop
 
         public Instance(string solutionFile, EditorId editorId)
         {
-            if (editorId == EditorId.VisualStudioForMac && !OS.IsMacOS)
+            if (editorId == EditorId.VisualStudioForMac && !Platform.IsMacOS)
                 throw new InvalidOperationException($"{nameof(EditorId.VisualStudioForMac)} not supported on this platform");
 
             this.solutionFile = solutionFile;
@@ -103,7 +103,7 @@ namespace GodotTools.Ides.MonoDevelop
 
         static Instance()
         {
-            if (OS.IsMacOS)
+            if (Platform.IsMacOS)
             {
                 ExecutableNames = new Dictionary<EditorId, string>
                 {
@@ -117,7 +117,7 @@ namespace GodotTools.Ides.MonoDevelop
                     {EditorId.VisualStudioForMac, "com.microsoft.visual-studio"}
                 };
             }
-            else if (OS.IsWindows)
+            else if (Platform.IsWindows)
             {
                 ExecutableNames = new Dictionary<EditorId, string>
                 {
@@ -128,7 +128,7 @@ namespace GodotTools.Ides.MonoDevelop
                     {EditorId.MonoDevelop, "MonoDevelop.exe"}
                 };
             }
-            else if (OS.IsUnixLike)
+            else if (Platform.IsUnixLike)
             {
                 ExecutableNames = new Dictionary<EditorId, string>
                 {

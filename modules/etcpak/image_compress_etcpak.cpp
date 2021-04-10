@@ -30,7 +30,7 @@
 
 #include "image_compress_etcpak.h"
 
-#include "core/os/os.h"
+#include "core/os/platform.h"
 #include "core/string/print_string.h"
 
 #include "thirdparty/etcpak/ProcessDxtc.hpp"
@@ -89,7 +89,7 @@ void _compress_bc(Image *r_img, float p_lossy_quality, Image::UsedChannels p_cha
 }
 
 void _compress_etcpak(EtcpakType p_compresstype, Image *r_img, float p_lossy_quality) {
-	uint64_t start_time = OS::get_singleton()->get_ticks_msec();
+	uint64_t start_time = Platform::get_singleton()->get_ticks_msec();
 
 	// TODO: See how to handle lossy quality.
 
@@ -180,5 +180,5 @@ void _compress_etcpak(EtcpakType p_compresstype, Image *r_img, float p_lossy_qua
 	// Replace original image with compressed one.
 	r_img->create(width, height, mipmaps, target_format, dest_data);
 
-	print_verbose(vformat("ETCPAK encode took %s ms.", rtos(OS::get_singleton()->get_ticks_msec() - start_time)));
+	print_verbose(vformat("ETCPAK encode took %s ms.", rtos(Platform::get_singleton()->get_ticks_msec() - start_time)));
 }

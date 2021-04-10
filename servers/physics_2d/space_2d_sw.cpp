@@ -31,7 +31,7 @@
 #include "space_2d_sw.h"
 
 #include "collision_solver_2d_sw.h"
-#include "core/os/os.h"
+#include "core/os/platform.h"
 #include "core/templates/pair.h"
 #include "physics_server_2d_sw.h"
 _FORCE_INLINE_ static bool _can_collide_with(CollisionObject2DSW *p_object, uint32_t p_collision_mask, bool p_collide_with_bodies, bool p_collide_with_areas) {

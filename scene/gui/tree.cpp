@@ -34,7 +34,7 @@
 #include "core/input/input.h"
 #include "core/math/math_funcs.h"
 #include "core/os/keyboard.h"
-#include "core/os/os.h"
+#include "core/os/platform.h"
 #include "core/string/print_string.h"
 #include "core/string/translation.h"
 #include "scene/main/window.h"
@@ -3869,7 +3869,7 @@ TreeItem *Tree::get_item_with_text(const String &p_find) const {
 }
 
 void Tree::_do_incr_search(const String &p_add) {
-	uint64_t time = OS::get_singleton()->get_ticks_usec() / 1000; // convert to msec
+	uint64_t time = Platform::get_singleton()->get_ticks_usec() / 1000; // convert to msec
 	uint64_t diff = time - last_keypress;
 	if (diff > uint64_t(GLOBAL_DEF("gui/timers/incremental_search_max_interval_msec", 2000))) {
 		incr_search = p_add;

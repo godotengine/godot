@@ -30,7 +30,7 @@
 
 #include "print_string.h"
 
-#include "core/os/os.h"
+#include "core/os/platform.h"
 
 #include <stdio.h>
 
@@ -63,7 +63,7 @@ void remove_print_handler(PrintHandlerList *p_handler) {
 		prev = l;
 		l = l->next;
 	}
-	//OS::get_singleton()->print("print handler list is %p\n",print_handler_list);
+	//Platform::get_singleton()->print("print handler list is %p\n",print_handler_list);
 
 	_global_unlock();
 	ERR_FAIL_COND(l == nullptr);
@@ -74,7 +74,7 @@ void print_line(String p_string) {
 		return;
 	}
 
-	OS::get_singleton()->print("%s\n", p_string.utf8().get_data());
+	Platform::get_singleton()->print("%s\n", p_string.utf8().get_data());
 
 	_global_lock();
 	PrintHandlerList *l = print_handler_list;
@@ -91,7 +91,7 @@ void print_error(String p_string) {
 		return;
 	}
 
-	OS::get_singleton()->printerr("%s\n", p_string.utf8().get_data());
+	Platform::get_singleton()->printerr("%s\n", p_string.utf8().get_data());
 
 	_global_lock();
 	PrintHandlerList *l = print_handler_list;
@@ -104,7 +104,7 @@ void print_error(String p_string) {
 }
 
 void print_verbose(String p_string) {
-	if (OS::get_singleton()->is_stdout_verbose()) {
+	if (Platform::get_singleton()->is_stdout_verbose()) {
 		print_line(p_string);
 	}
 }

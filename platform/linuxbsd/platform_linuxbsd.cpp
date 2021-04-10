@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  os_linuxbsd.cpp                                                      */
+/*  platform_linuxbsd.cpp                                                */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,7 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#include "os_linuxbsd.h"
+#include "platform_linuxbsd.h"
 
 #include "core/os/dir_access.h"
 #include "main/main.h"
@@ -51,19 +51,19 @@
 #include <sys/types.h>
 #include <unistd.h>
 
-void OS_LinuxBSD::initialize() {
+void PlatformLinuxBSD::initialize() {
 	crash_handler.initialize();
 
-	OS_Unix::initialize_core();
+	PlatformUnix::initialize_core();
 }
 
-void OS_LinuxBSD::initialize_joypads() {
+void PlatformLinuxBSD::initialize_joypads() {
 #ifdef JOYDEV_ENABLED
 	joypad = memnew(JoypadLinux(Input::get_singleton()));
 #endif
 }
 
-String OS_LinuxBSD::get_unique_id() const {
+String PlatformLinuxBSD::get_unique_id() const {
 	static String machine_id;
 	if (machine_id.is_empty()) {
 		if (FileAccess *f = FileAccess::open("/etc/machine-id", FileAccess::READ)) {
@@ -77,7 +77,7 @@ String OS_LinuxBSD::get_unique_id() const {
 	return machine_id;
 }
 
-void OS_LinuxBSD::finalize() {
+void PlatformLinuxBSD::finalize() {
 	if (main_loop) {
 		memdelete(main_loop);
 	}
@@ -94,22 +94,22 @@ void OS_LinuxBSD::finalize() {
 #endif
 }
 
-MainLoop *OS_LinuxBSD::get_main_loop() const {
+MainLoop *PlatformLinuxBSD::get_main_loop() const {
 	return main_loop;
 }
 
-void OS_LinuxBSD::delete_main_loop() {
+void PlatformLinuxBSD::delete_main_loop() {
 	if (main_loop) {
 		memdelete(main_loop);
 	}
 	main_loop = nullptr;
 }
 
-void OS_LinuxBSD::set_main_loop(MainLoop *p_main_loop) {
+void PlatformLinuxBSD::set_main_loop(MainLoop *p_main_loop) {
 	main_loop = p_main_loop;
 }
 
-String OS_LinuxBSD::get_name() const {
+String PlatformLinuxBSD::get_name() const {
 #ifdef __linux__
 	return "Linux";
 #elif defined(__FreeBSD__)
@@ -121,7 +121,7 @@ String OS_LinuxBSD::get_name() const {
 #endif
 }
 
-Error OS_LinuxBSD::shell_open(String p_uri) {
+Error PlatformLinuxBSD::shell_open(String p_uri) {
 	Error ok;
 	int err_code;
 	List<String> args;
@@ -158,11 +158,11 @@ Error OS_LinuxBSD::shell_open(String p_uri) {
 	return !err_code ? ok : FAILED;
 }
 
-bool OS_LinuxBSD::_check_internal_feature_support(const String &p_feature) {
+bool PlatformLinuxBSD::_check_internal_feature_support(const String &p_feature) {
 	return p_feature == "pc";
 }
 
-String OS_LinuxBSD::get_config_path() const {
+String PlatformLinuxBSD::get_config_path() const {
 	if (has_environment("XDG_CONFIG_HOME")) {
 		return get_environment("XDG_CONFIG_HOME");
 	} else if (has_environment("HOME")) {
@@ -172,7 +172,7 @@ String OS_LinuxBSD::get_config_path() const {
 	}
 }
 
-String OS_LinuxBSD::get_data_path() const {
+String PlatformLinuxBSD::get_data_path() const {
 	if (has_environment("XDG_DATA_HOME")) {
 		return get_environment("XDG_DATA_HOME");
 	} else if (has_environment("HOME")) {
@@ -182,7 +182,7 @@ String OS_LinuxBSD::get_data_path() const {
 	}
 }
 
-String OS_LinuxBSD::get_cache_path() const {
+String PlatformLinuxBSD::get_cache_path() const {
 	if (has_environment("XDG_CACHE_HOME")) {
 		return get_environment("XDG_CACHE_HOME");
 	} else if (has_environment("HOME")) {
@@ -192,7 +192,7 @@ String OS_LinuxBSD::get_cache_path() const {
 	}
 }
 
-String OS_LinuxBSD::get_system_dir(SystemDir p_dir) const {
+String PlatformLinuxBSD::get_system_dir(SystemDir p_dir) const {
 	String xdgparam;
 
 	switch (p_dir) {
@@ -232,14 +232,14 @@ String OS_LinuxBSD::get_system_dir(SystemDir p_dir) const {
 	String pipe;
 	List<String> arg;
 	arg.push_back(xdgparam);
-	Error err = const_cast<OS_LinuxBSD *>(this)->execute("xdg-user-dir", arg, &pipe);
+	Error err = const_cast<PlatformLinuxBSD *>(this)->execute("xdg-user-dir", arg, &pipe);
 	if (err != OK) {
 		return ".";
 	}
 	return pipe.strip_edges();
 }
 
-void OS_LinuxBSD::run() {
+void PlatformLinuxBSD::run() {
 	force_quit = false;
 
 	if (!main_loop) {
@@ -266,11 +266,11 @@ void OS_LinuxBSD::run() {
 	main_loop->finalize();
 }
 
-void OS_LinuxBSD::disable_crash_handler() {
+void PlatformLinuxBSD::disable_crash_handler() {
 	crash_handler.disable();
 }
 
-bool OS_LinuxBSD::is_disable_crash_handler() const {
+bool PlatformLinuxBSD::is_disable_crash_handler() const {
 	return crash_handler.is_disabled();
 }
 
@@ -302,7 +302,7 @@ static String get_mountpoint(const String &p_path) {
 	return "";
 }
 
-Error OS_LinuxBSD::move_to_trash(const String &p_path) {
+Error PlatformLinuxBSD::move_to_trash(const String &p_path) {
 	int err_code;
 	List<String> args;
 	args.push_back(p_path);
@@ -406,8 +406,8 @@ Error OS_LinuxBSD::move_to_trash(const String &p_path) {
 	file_name = fn;
 
 	// Generates the .trashinfo file
-	OS::Date date = OS::get_singleton()->get_date(false);
-	OS::Time time = OS::get_singleton()->get_time(false);
+	Platform::Date date = Platform::get_singleton()->get_date(false);
+	Platform::Time time = Platform::get_singleton()->get_time(false);
 	String timestamp = vformat("%04d-%02d-%02dT%02d:%02d:", date.year, date.month, date.day, time.hour, time.min);
 	timestamp = vformat("%s%02d", timestamp, time.sec); // vformat only supports up to 6 arguments.
 	String trash_info = "[Trash Info]\nPath=" + p_path.uri_encode() + "\nDeletionDate=" + timestamp + "\n";
@@ -447,7 +447,7 @@ Error OS_LinuxBSD::move_to_trash(const String &p_path) {
 	return OK;
 }
 
-OS_LinuxBSD::OS_LinuxBSD() {
+PlatformLinuxBSD::PlatformLinuxBSD() {
 	main_loop = nullptr;
 	force_quit = false;
 

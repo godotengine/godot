@@ -94,7 +94,7 @@ PhysicsServer2D *_createGodotPhysics2DCallback() {
 
 static bool has_server_feature_callback(const String &p_feature) {
 	if (RenderingServer::get_singleton()) {
-		if (RenderingServer::get_singleton()->has_os_feature(p_feature)) {
+		if (RenderingServer::get_singleton()->has_platform_feature(p_feature)) {
 			return true;
 		}
 	}
@@ -117,7 +117,7 @@ void preregister_server_types() {
 }
 
 void register_server_types() {
-	OS::get_singleton()->set_has_server_feature_callback(has_server_feature_callback);
+	Platform::get_singleton()->set_has_server_feature_callback(has_server_feature_callback);
 
 	ClassDB::register_virtual_class<DisplayServer>();
 	ClassDB::register_virtual_class<RenderingServer>();

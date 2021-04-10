@@ -30,7 +30,7 @@
 
 #include "test_utils.h"
 
-#include "core/os/os.h"
+#include "core/os/platform.h"
 
 String TestUtils::get_data_path(const String &p_file) {
 	String data_path = "../tests/data";
@@ -38,5 +38,5 @@ String TestUtils::get_data_path(const String &p_file) {
 }
 
 String TestUtils::get_executable_dir() {
-	return OS::get_singleton()->get_executable_path().get_base_dir();
+	return Platform::get_singleton()->get_executable_path().get_base_dir();
 }

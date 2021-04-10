@@ -35,7 +35,7 @@
 
 #import "godot_view.h"
 
-#include "os_iphone.h"
+#include "platform_iphone.h"
 
 JoypadIPhone::JoypadIPhone() {
 	observer = [[JoypadIPhoneObserver alloc] init];

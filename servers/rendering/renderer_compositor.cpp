@@ -30,7 +30,7 @@
 
 #include "renderer_compositor.h"
 
-#include "core/os/os.h"
+#include "core/os/platform.h"
 #include "core/string/print_string.h"
 
 RendererCompositor *(*RendererCompositor::_create_func)() = nullptr;

@@ -58,7 +58,7 @@ Error EditorRun::run(const String &p_scene, const String &p_custom_args, const L
 	args.push_back("tcp://" + remote_host + ":" + String::num(remote_port));
 
 	args.push_back("--allow_focus_steal_pid");
-	args.push_back(itos(OS::get_singleton()->get_process_id()));
+	args.push_back(itos(Platform::get_singleton()->get_process_id()));
 
 	bool debug_collisions = EditorSettings::get_singleton()->get_project_metadata("debug_options", "run_debug_collisons", false);
 	bool debug_navigation = EditorSettings::get_singleton()->get_project_metadata("debug_options", "run_debug_navigation", false);
@@ -92,7 +92,7 @@ Error EditorRun::run(const String &p_scene, const String &p_custom_args, const L
 		screen -= 3;
 	}
 
-	if (OS::get_singleton()->is_disable_crash_handler()) {
+	if (Platform::get_singleton()->is_disable_crash_handler()) {
 		args.push_back("--disable-crash-handler");
 	}
 
@@ -115,7 +115,7 @@ Error EditorRun::run(const String &p_scene, const String &p_custom_args, const L
 	bool hidpi_proj = ProjectSettings::get_singleton()->get("display/window/dpi/allow_hidpi");
 	int display_scale = 1;
 	if (DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_HIDPI)) {
-		if (OS::get_singleton()->is_hidpi_allowed()) {
+		if (Platform::get_singleton()->is_hidpi_allowed()) {
 			if (hidpi_proj) {
 				display_scale = 1; // Both editor and project runs in hiDPI mode, do not scale.
 			} else {
@@ -190,7 +190,7 @@ Error EditorRun::run(const String &p_scene, const String &p_custom_args, const L
 		}
 	}
 
-	String exec = OS::get_singleton()->get_executable_path();
+	String exec = Platform::get_singleton()->get_executable_path();
 
 	printf("Running: %s", exec.utf8().get_data());
 	for (List<String>::Element *E = args.front(); E; E = E->next()) {
@@ -200,8 +200,8 @@ Error EditorRun::run(const String &p_scene, const String &p_custom_args, const L
 
 	int instances = EditorSettings::get_singleton()->get_project_metadata("debug_options", "run_debug_instances", 1);
 	for (int i = 0; i < instances; i++) {
-		OS::ProcessID pid = 0;
-		Error err = OS::get_singleton()->create_process(exec, args, &pid);
+		Platform::ProcessID pid = 0;
+		Error err = Platform::get_singleton()->create_process(exec, args, &pid);
 		ERR_FAIL_COND_V(err, err);
 		pids.push_back(pid);
 	}
@@ -214,8 +214,8 @@ Error EditorRun::run(const String &p_scene, const String &p_custom_args, const L
 	return OK;
 }
 
-bool EditorRun::has_child_process(OS::ProcessID p_pid) const {
-	for (const List<OS::ProcessID>::Element *E = pids.front(); E; E = E->next()) {
+bool EditorRun::has_child_process(Platform::ProcessID p_pid) const {
+	for (const List<Platform::ProcessID>::Element *E = pids.front(); E; E = E->next()) {
 		if (E->get() == p_pid) {
 			return true;
 		}
@@ -223,17 +223,17 @@ bool EditorRun::has_child_process(OS::ProcessID p_pid) const {
 	return false;
 }
 
-void EditorRun::stop_child_process(OS::ProcessID p_pid) {
+void EditorRun::stop_child_process(Platform::ProcessID p_pid) {
 	if (has_child_process(p_pid)) {
-		OS::get_singleton()->kill(p_pid);
+		Platform::get_singleton()->kill(p_pid);
 		pids.erase(p_pid);
 	}
 }
 
 void EditorRun::stop() {
 	if (status != STATUS_STOP && pids.size() > 0) {
-		for (List<OS::ProcessID>::Element *E = pids.front(); E; E = E->next()) {
-			OS::get_singleton()->kill(E->get());
+		for (List<Platform::ProcessID>::Element *E = pids.front(); E; E = E->next()) {
+			Platform::get_singleton()->kill(E->get());
 		}
 	}
 

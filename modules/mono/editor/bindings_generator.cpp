@@ -37,7 +37,7 @@
 #include "core/io/compression.h"
 #include "core/os/dir_access.h"
 #include "core/os/file_access.h"
-#include "core/os/os.h"
+#include "core/os/platform.h"
 #include "core/string/ucaps.h"
 #include "main/main.h"
 
@@ -311,11 +311,11 @@ String BindingsGenerator::bbcode_to_xml(const String &p_bbcode, const TypeInterf
 
 			if (link_tag == "method") {
 				if (!target_itype || !target_itype->is_object_type) {
-					if (OS::get_singleton()->is_stdout_verbose()) {
+					if (Platform::get_singleton()->is_stdout_verbose()) {
 						if (target_itype) {
-							OS::get_singleton()->print("Cannot resolve method reference for non-Godot.Object type in documentation: %s\n", link_target.utf8().get_data());
+							Platform::get_singleton()->print("Cannot resolve method reference for non-Godot.Object type in documentation: %s\n", link_target.utf8().get_data());
 						} else {
-							OS::get_singleton()->print("Cannot resolve type from method reference in documentation: %s\n", link_target.utf8().get_data());
+							Platform::get_singleton()->print("Cannot resolve type from method reference in documentation: %s\n", link_target.utf8().get_data());
 						}
 					}
 
@@ -336,11 +336,11 @@ String BindingsGenerator::bbcode_to_xml(const String &p_bbcode, const TypeInterf
 				}
 			} else if (link_tag == "member") {
 				if (!target_itype || !target_itype->is_object_type) {
-					if (OS::get_singleton()->is_stdout_verbose()) {
+					if (Platform::get_singleton()->is_stdout_verbose()) {
 						if (target_itype) {
-							OS::get_singleton()->print("Cannot resolve member reference for non-Godot.Object type in documentation: %s\n", link_target.utf8().get_data());
+							Platform::get_singleton()->print("Cannot resolve member reference for non-Godot.Object type in documentation: %s\n", link_target.utf8().get_data());
 						} else {
-							OS::get_singleton()->print("Cannot resolve type from member reference in documentation: %s\n", link_target.utf8().get_data());
+							Platform::get_singleton()->print("Cannot resolve type from member reference in documentation: %s\n", link_target.utf8().get_data());
 						}
 					}
 
@@ -389,11 +389,11 @@ String BindingsGenerator::bbcode_to_xml(const String &p_bbcode, const TypeInterf
 				}
 			} else if (link_tag == "const") {
 				if (!target_itype || !target_itype->is_object_type) {
-					if (OS::get_singleton()->is_stdout_verbose()) {
+					if (Platform::get_singleton()->is_stdout_verbose()) {
 						if (target_itype) {
-							OS::get_singleton()->print("Cannot resolve constant reference for non-Godot.Object type in documentation: %s\n", link_target.utf8().get_data());
+							Platform::get_singleton()->print("Cannot resolve constant reference for non-Godot.Object type in documentation: %s\n", link_target.utf8().get_data());
 						} else {
-							OS::get_singleton()->print("Cannot resolve type from constant reference in documentation: %s\n", link_target.utf8().get_data());
+							Platform::get_singleton()->print("Cannot resolve type from constant reference in documentation: %s\n", link_target.utf8().get_data());
 						}
 					}
 
@@ -2038,7 +2038,7 @@ Error BindingsGenerator::generate_glue(const String &p_output_dir) {
 
 		List<InternalCall> &custom_icalls = itype.api_type == ClassDB::API_EDITOR ? editor_custom_icalls : core_custom_icalls;
 
-		OS::get_singleton()->print("Generating %s...\n", itype.name.utf8().get_data());
+		Platform::get_singleton()->print("Generating %s...\n", itype.name.utf8().get_data());
 
 		String ctor_method(ICALL_PREFIX + itype.proxy_name + "_Ctor"); // Used only for derived types
 
@@ -2172,7 +2172,7 @@ Error BindingsGenerator::generate_glue(const String &p_output_dir) {
 		return save_err;
 	}
 
-	OS::get_singleton()->print("Mono glue generated successfully\n");
+	Platform::get_singleton()->print("Mono glue generated successfully\n");
 
 	return OK;
 }
@@ -3598,7 +3598,7 @@ void BindingsGenerator::_log(const char *p_format, ...) {
 		va_list list;
 
 		va_start(list, p_format);
-		OS::get_singleton()->print("%s", str_format(p_format, list).utf8().get_data());
+		Platform::get_singleton()->print("%s", str_format(p_format, list).utf8().get_data());
 		va_end(list);
 	}
 }

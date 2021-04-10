@@ -32,7 +32,7 @@
 
 #include "core/config/project_settings.h"
 #include "core/math/math_defs.h"
-#include "core/os/os.h"
+#include "core/os/platform.h"
 
 #include "thirdparty/misc/cubemap_coeffs.h"
 

@@ -33,7 +33,7 @@
 #ifdef ALSA_ENABLED
 
 #include "core/config/project_settings.h"
-#include "core/os/os.h"
+#include "core/os/platform.h"
 
 #include <errno.h>
 
@@ -214,7 +214,7 @@ void AudioDriverALSA::thread_func(void *p_udata) {
 				ad->stop_counting_ticks();
 				ad->unlock();
 
-				OS::get_singleton()->delay_usec(1000);
+				Platform::get_singleton()->delay_usec(1000);
 
 				ad->lock();
 				ad->start_counting_ticks();

@@ -172,7 +172,7 @@ Error HTTPClient::request_raw(Method p_method, const String &p_url, const Vector
 		// Should it add utf8 encoding?
 	}
 	if (add_uagent) {
-		request += "User-Agent: GodotEngine/" + String(VERSION_FULL_BUILD) + " (" + OS::get_singleton()->get_name() + ")\r\n";
+		request += "User-Agent: GodotEngine/" + String(VERSION_FULL_BUILD) + " (" + Platform::get_singleton()->get_name() + ")\r\n";
 	}
 	if (add_accept) {
 		request += "Accept: */*\r\n";
@@ -245,7 +245,7 @@ Error HTTPClient::request(Method p_method, const String &p_url, const Vector<Str
 		// Should it add utf8 encoding?
 	}
 	if (add_uagent) {
-		request += "User-Agent: GodotEngine/" + String(VERSION_FULL_BUILD) + " (" + OS::get_singleton()->get_name() + ")\r\n";
+		request += "User-Agent: GodotEngine/" + String(VERSION_FULL_BUILD) + " (" + Platform::get_singleton()->get_name() + ")\r\n";
 	}
 	if (add_accept) {
 		request += "Accept: */*\r\n";

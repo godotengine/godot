@@ -191,7 +191,7 @@ void HTTPRequest::_thread_func(void *p_userdata) {
 			if (exit) {
 				break;
 			}
-			OS::get_singleton()->delay_usec(1);
+			Platform::get_singleton()->delay_usec(1);
 		}
 	}
 

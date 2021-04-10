@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  os_server.h                                                          */
+/*  platform_server.h                                                    */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,12 +28,12 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef OS_SERVER_H
-#define OS_SERVER_H
+#ifndef PLATFORM_SERVER_H
+#define PLATFORM_SERVER_H
 
 #include "core/input/input.h"
 #include "drivers/dummy/texture_loader_dummy.h"
-#include "drivers/unix/os_unix.h"
+#include "drivers/unix/platform_unix.h"
 #ifdef __APPLE__
 #include "platform/osx/crash_handler_osx.h"
 #include "platform/osx/semaphore_osx.h"
@@ -46,7 +46,7 @@
 
 #undef CursorShape
 
-class OS_Server : public OS_Unix {
+class PlatformServer : public PlatformUnix {
 	RenderingServer *rendering_server = nullptr;
 	VideoMode current_videomode;
 	List<String> args;
@@ -110,7 +110,7 @@ public:
 	void disable_crash_handler();
 	bool is_disable_crash_handler() const;
 
-	OS_Server();
+	PlatformServer();
 };
 
-#endif
+#endif // PLATFORM_SERVER_H

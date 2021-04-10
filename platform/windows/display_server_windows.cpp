@@ -33,7 +33,7 @@
 #include "core/io/marshalls.h"
 #include "core/math/geometry_2d.h"
 #include "main/main.h"
-#include "os_windows.h"
+#include "platform_windows.h"
 #include "scene/resources/texture.h"
 
 #include <avrt.h>
@@ -1412,7 +1412,7 @@ bool DisplayServerWindows::get_swap_cancel_ok() {
 	return true;
 }
 
-void DisplayServerWindows::enable_for_stealing_focus(OS::ProcessID pid) {
+void DisplayServerWindows::enable_for_stealing_focus(Platform::ProcessID pid) {
 	_THREAD_SAFE_METHOD_
 
 	AllowSetForegroundWindow(pid);
@@ -1844,8 +1844,8 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 			_set_mouse_mode_impl(mouse_mode);
 
 			if (!app_focused) {
-				if (OS::get_singleton()->get_main_loop()) {
-					OS::get_singleton()->get_main_loop()->notification(MainLoop::NOTIFICATION_APPLICATION_FOCUS_IN);
+				if (Platform::get_singleton()->get_main_loop()) {
+					Platform::get_singleton()->get_main_loop()->notification(MainLoop::NOTIFICATION_APPLICATION_FOCUS_IN);
 				}
 				app_focused = true;
 			}
@@ -1871,8 +1871,8 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 			}
 
 			if (!self_steal) {
-				if (OS::get_singleton()->get_main_loop()) {
-					OS::get_singleton()->get_main_loop()->notification(MainLoop::NOTIFICATION_APPLICATION_FOCUS_OUT);
+				if (Platform::get_singleton()->get_main_loop()) {
+					Platform::get_singleton()->get_main_loop()->notification(MainLoop::NOTIFICATION_APPLICATION_FOCUS_OUT);
 				}
 				app_focused = false;
 			}
@@ -3150,7 +3150,7 @@ DisplayServerWindows::DisplayServerWindows(const String &p_rendering_driver, Win
 	control_mem = false;
 	meta_mem = false;
 	console_visible = IsWindowVisible(GetConsoleWindow());
-	hInstance = ((OS_Windows *)OS::get_singleton())->get_hinstance();
+	hInstance = ((PlatformWindows *)Platform::get_singleton())->get_hinstance();
 
 	pressrc = 0;
 	old_invalid = true;
@@ -3187,7 +3187,7 @@ DisplayServerWindows::DisplayServerWindows(const String &p_rendering_driver, Win
 		tablet_drivers.push_back("winink");
 	}
 
-	if (OS::get_singleton()->is_hidpi_allowed()) {
+	if (Platform::get_singleton()->is_hidpi_allowed()) {
 		HMODULE Shcore = LoadLibraryW(L"Shcore.dll");
 
 		if (Shcore != nullptr) {
@@ -3298,7 +3298,7 @@ DisplayServerWindows::DisplayServerWindows(const String &p_rendering_driver, Win
 
 	//set_ime_active(false);
 
-	if (!OS::get_singleton()->is_in_low_processor_usage_mode()) {
+	if (!Platform::get_singleton()->is_in_low_processor_usage_mode()) {
 		//SetPriorityClass(GetCurrentProcess(), ABOVE_NORMAL_PRIORITY_CLASS);
 		SetPriorityClass(GetCurrentProcess(), ABOVE_NORMAL_PRIORITY_CLASS);
 		DWORD index = 0;
@@ -3319,7 +3319,7 @@ DisplayServerWindows::DisplayServerWindows(const String &p_rendering_driver, Win
 
 	r_error = OK;
 
-	((OS_Windows *)OS::get_singleton())->set_main_window(windows[MAIN_WINDOW_ID].hWnd);
+	((PlatformWindows *)Platform::get_singleton())->set_main_window(windows[MAIN_WINDOW_ID].hWnd);
 	Input::get_singleton()->set_event_dispatch_function(_dispatch_input_events);
 }
 

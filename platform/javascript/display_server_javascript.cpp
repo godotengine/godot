@@ -694,10 +694,10 @@ void DisplayServerJavaScript::set_icon(const Ref<Image> &p_icon) {
 }
 
 void DisplayServerJavaScript::_dispatch_input_event(const Ref<InputEvent> &p_event) {
-	OS_JavaScript *os = OS_JavaScript::get_singleton();
+	PlatformJavaScript *platform = PlatformJavaScript::get_singleton();
 
 	// Resume audio context after input in case autoplay was denied.
-	os->resume_audio();
+	platform->resume_audio();
 
 	Callable cb = get_singleton()->input_event_callback;
 	if (!cb.is_null()) {
@@ -720,7 +720,7 @@ DisplayServerJavaScript::DisplayServerJavaScript(const String &p_rendering_drive
 	godot_js_config_canvas_id_get(canvas_id, 256);
 
 	// Handle contextmenu, webglcontextlost
-	godot_js_display_setup_canvas(p_resolution.x, p_resolution.y, p_mode == WINDOW_MODE_FULLSCREEN, OS::get_singleton()->is_hidpi_allowed() ? 1 : 0);
+	godot_js_display_setup_canvas(p_resolution.x, p_resolution.y, p_mode == WINDOW_MODE_FULLSCREEN, Platform::get_singleton()->is_hidpi_allowed() ? 1 : 0);
 
 	// Check if it's windows.
 	swap_cancel_ok = godot_js_display_is_swap_ok_cancel() == 1;
@@ -756,7 +756,7 @@ DisplayServerJavaScript::DisplayServerJavaScript(const String &p_rendering_drive
 	}
 
 	if (gl_initialization_error) {
-		OS::get_singleton()->alert("Your browser does not seem to support WebGL. Please update your browser version.",
+		Platform::get_singleton()->alert("Your browser does not seem to support WebGL. Please update your browser version.",
 				"Unable to initialize video driver");
 		return ERR_UNAVAILABLE;
 	}

@@ -31,7 +31,7 @@
 #include "gdscript_text_document.h"
 
 #include "../gdscript.h"
-#include "core/os/os.h"
+#include "core/os/platform.h"
 #include "editor/editor_settings.h"
 #include "editor/plugins/script_text_editor.h"
 #include "gdscript_extend_parser.h"

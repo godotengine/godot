@@ -4086,7 +4086,7 @@ Node3DEditorViewport::Node3DEditorViewport(Node3DEditor *p_spatial_editor, Edito
 #ifndef _MSC_VER
 #warning this needs to be fixed
 #endif
-	//if (OS::get_singleton()->get_current_video_driver() == OS::VIDEO_DRIVER_GLES2) {
+	//if (Platform::get_singleton()->get_current_video_driver() == Platform::VIDEO_DRIVER_GLES2) {
 	if (false) {
 		// Alternate display modes only work when using the Vulkan renderer; make this explicit.
 		const int normal_idx = view_menu->get_popup()->get_item_index(VIEW_DISPLAY_NORMAL);

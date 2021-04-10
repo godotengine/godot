@@ -136,7 +136,7 @@ String DisplayServerX11::get_name() const {
 void DisplayServerX11::alert(const String &p_alert, const String &p_title) {
 	const char *message_programs[] = { "zenity", "kdialog", "Xdialog", "xmessage" };
 
-	String path = OS::get_singleton()->get_environment("PATH");
+	String path = Platform::get_singleton()->get_environment("PATH");
 	Vector<String> path_elems = path.split(":", false);
 	String program;
 
@@ -191,7 +191,7 @@ void DisplayServerX11::alert(const String &p_alert, const String &p_title) {
 	}
 
 	if (program.length()) {
-		OS::get_singleton()->execute(program, args);
+		Platform::get_singleton()->execute(program, args);
 	} else {
 		print_line(p_alert);
 	}
@@ -2749,18 +2749,18 @@ void DisplayServerX11::process_events() {
 		}
 
 		if (!focus_found) {
-			uint64_t delta = OS::get_singleton()->get_ticks_msec() - time_since_no_focus;
+			uint64_t delta = Platform::get_singleton()->get_ticks_msec() - time_since_no_focus;
 
 			if (delta > 250) {
 				//X11 can go between windows and have no focus for a while, when creating them or something else. Use this as safety to avoid unnecessary focus in/outs.
-				if (OS::get_singleton()->get_main_loop()) {
+				if (Platform::get_singleton()->get_main_loop()) {
 					DEBUG_LOG_X11("All focus lost, triggering NOTIFICATION_APPLICATION_FOCUS_OUT\n");
-					OS::get_singleton()->get_main_loop()->notification(MainLoop::NOTIFICATION_APPLICATION_FOCUS_OUT);
+					Platform::get_singleton()->get_main_loop()->notification(MainLoop::NOTIFICATION_APPLICATION_FOCUS_OUT);
 				}
 				app_focused = false;
 			}
 		} else {
-			time_since_no_focus = OS::get_singleton()->get_ticks_msec();
+			time_since_no_focus = Platform::get_singleton()->get_ticks_msec();
 		}
 	}
 
@@ -3049,8 +3049,8 @@ void DisplayServerX11::process_events() {
 #endif
 
 				if (!app_focused) {
-					if (OS::get_singleton()->get_main_loop()) {
-						OS::get_singleton()->get_main_loop()->notification(MainLoop::NOTIFICATION_APPLICATION_FOCUS_IN);
+					if (Platform::get_singleton()->get_main_loop()) {
+						Platform::get_singleton()->get_main_loop()->notification(MainLoop::NOTIFICATION_APPLICATION_FOCUS_IN);
 					}
 					app_focused = true;
 				}
@@ -3155,7 +3155,7 @@ void DisplayServerX11::process_events() {
 						XSetInputFocus(x11_display, wd.x11_window, RevertToPointerRoot, CurrentTime);
 					}
 
-					uint64_t diff = OS::get_singleton()->get_ticks_usec() / 1000 - last_click_ms;
+					uint64_t diff = Platform::get_singleton()->get_ticks_usec() / 1000 - last_click_ms;
 
 					if (mb->get_button_index() == last_click_button_index) {
 						if (diff < 400 && Vector2(last_click_pos).distance_to(Vector2(event.xbutton.x, event.xbutton.y)) < 5) {
@@ -3696,7 +3696,7 @@ DisplayServerX11::WindowID DisplayServerX11::_create_window(WindowMode p_mode, u
 		//associate PID
 		// make PID known to X11
 		{
-			const long pid = OS::get_singleton()->get_process_id();
+			const long pid = Platform::get_singleton()->get_process_id();
 			Atom net_wm_pid = XInternAtom(x11_display, "_NET_WM_PID", False);
 			if (net_wm_pid != None) {
 				XChangeProperty(x11_display, wd.x11_window, net_wm_pid, XA_CARDINAL, 32, PropModeReplace, (unsigned char *)&pid, 1);
@@ -3896,7 +3896,7 @@ DisplayServerX11::DisplayServerX11(const String &p_rendering_driver, WindowMode 
 	}
 
 	if (modifiers == nullptr) {
-		if (OS::get_singleton()->is_stdout_verbose()) {
+		if (Platform::get_singleton()->is_stdout_verbose()) {
 			WARN_PRINT("IME is disabled");
 		}
 		XSetLocaleModifiers("@im=none");

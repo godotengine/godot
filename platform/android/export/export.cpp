@@ -36,7 +36,7 @@
 #include "core/io/zip_io.h"
 #include "core/os/dir_access.h"
 #include "core/os/file_access.h"
-#include "core/os/os.h"
+#include "core/os/platform.h"
 #include "core/templates/safe_refcount.h"
 #include "core/version.h"
 #include "drivers/png/png_driver_common.h"
@@ -324,7 +324,7 @@ class EditorExportPlatformAndroid : public EditorExportPlatform {
 				List<String> args;
 				args.push_back("devices");
 				int ec;
-				OS::get_singleton()->execute(adb, args, &devices, &ec);
+				Platform::get_singleton()->execute(adb, args, &devices, &ec);
 
 				Vector<String> ds = devices.split("\n");
 				Vector<String> ldevices;
@@ -377,7 +377,7 @@ class EditorExportPlatformAndroid : public EditorExportPlatform {
 							int ec2;
 							String dp;
 
-							OS::get_singleton()->execute(adb, args, &dp, &ec2);
+							Platform::get_singleton()->execute(adb, args, &dp, &ec2);
 
 							Vector<String> props = dp.split("\n");
 							String vendor;
@@ -431,9 +431,9 @@ class EditorExportPlatformAndroid : public EditorExportPlatform {
 
 			uint64_t sleep = 200;
 			uint64_t wait = 3000000;
-			uint64_t time = OS::get_singleton()->get_ticks_usec();
-			while (OS::get_singleton()->get_ticks_usec() - time < wait) {
-				OS::get_singleton()->delay_usec(1000 * sleep);
+			uint64_t time = Platform::get_singleton()->get_ticks_usec();
+			while (Platform::get_singleton()->get_ticks_usec() - time < wait) {
+				Platform::get_singleton()->delay_usec(1000 * sleep);
 				if (ea->quit_request.is_set()) {
 					break;
 				}
@@ -448,7 +448,7 @@ class EditorExportPlatformAndroid : public EditorExportPlatform {
 
 			List<String> args;
 			args.push_back("kill-server");
-			OS::get_singleton()->execute(adb, args);
+			Platform::get_singleton()->execute(adb, args);
 		};
 	}
 
@@ -603,8 +603,8 @@ class EditorExportPlatformAndroid : public EditorExportPlatform {
 	}
 
 	static zip_fileinfo get_zip_fileinfo() {
-		OS::Time time = OS::get_singleton()->get_time();
-		OS::Date date = OS::get_singleton()->get_date();
+		Platform::Time time = Platform::get_singleton()->get_time();
+		Platform::Date date = Platform::get_singleton()->get_date();
 
 		zip_fileinfo zipfi;
 		zipfi.tmz_date.tm_hour = time.hour;
@@ -1458,7 +1458,7 @@ class EditorExportPlatformAndroid : public EditorExportPlatform {
 			print_verbose("Loading splash image: " + project_splash_path);
 			const Error err = ImageLoader::load_image(project_splash_path, splash_image);
 			if (err) {
-				if (OS::get_singleton()->is_stdout_verbose()) {
+				if (Platform::get_singleton()->is_stdout_verbose()) {
 					print_error("- unable to load splash image from " + project_splash_path + " (" + itos(err) + ")");
 				}
 				splash_image.unref();
@@ -1784,7 +1784,7 @@ public:
 			p_debug_flags |= DEBUG_FLAG_REMOTE_DEBUG_LOCALHOST;
 		}
 
-		String tmp_export_path = EditorSettings::get_singleton()->get_cache_dir().plus_file("tmpexport." + uitos(OS::get_singleton()->get_unix_time()) + ".apk");
+		String tmp_export_path = EditorSettings::get_singleton()->get_cache_dir().plus_file("tmpexport." + uitos(Platform::get_singleton()->get_unix_time()) + ".apk");
 
 #define CLEANUP_AND_RETURN(m_err)                         \
 	{                                                     \
@@ -1820,7 +1820,7 @@ public:
 			args.push_back(get_package_name(package_name));
 
 			output.clear();
-			err = OS::get_singleton()->execute(adb, args, &output, &rv, true);
+			err = Platform::get_singleton()->execute(adb, args, &output, &rv, true);
 			print_verbose(output);
 		}
 
@@ -1837,7 +1837,7 @@ public:
 		args.push_back(tmp_export_path);
 
 		output.clear();
-		err = OS::get_singleton()->execute(adb, args, &output, &rv, true);
+		err = Platform::get_singleton()->execute(adb, args, &output, &rv, true);
 		print_verbose(output);
 		if (err || rv != 0) {
 			EditorNode::add_io_error("Could not install to device.");
@@ -1856,7 +1856,7 @@ public:
 				args.push_back("reverse");
 				args.push_back("--remove-all");
 				output.clear();
-				OS::get_singleton()->execute(adb, args, &output, &rv, true);
+				Platform::get_singleton()->execute(adb, args, &output, &rv, true);
 				print_verbose(output);
 
 				if (p_debug_flags & DEBUG_FLAG_REMOTE_DEBUG) {
@@ -1869,7 +1869,7 @@ public:
 					args.push_back("tcp:" + itos(dbg_port));
 
 					output.clear();
-					OS::get_singleton()->execute(adb, args, &output, &rv, true);
+					Platform::get_singleton()->execute(adb, args, &output, &rv, true);
 					print_verbose(output);
 					print_line("Reverse result: " + itos(rv));
 				}
@@ -1885,7 +1885,7 @@ public:
 					args.push_back("tcp:" + itos(fs_port));
 
 					output.clear();
-					err = OS::get_singleton()->execute(adb, args, &output, &rv, true);
+					err = Platform::get_singleton()->execute(adb, args, &output, &rv, true);
 					print_verbose(output);
 					print_line("Reverse result2: " + itos(rv));
 				}
@@ -1915,7 +1915,7 @@ public:
 		args.push_back(get_package_name(package_name) + "/com.godot.game.GodotApp");
 
 		output.clear();
-		err = OS::get_singleton()->execute(adb, args, &output, &rv, true);
+		err = Platform::get_singleton()->execute(adb, args, &output, &rv, true);
 		print_verbose(output);
 		if (err || rv != 0) {
 			EditorNode::add_io_error("Could not execute on device.");
@@ -1932,7 +1932,7 @@ public:
 
 	static String get_adb_path() {
 		String exe_ext = "";
-		if (OS::get_singleton()->get_name() == "Windows") {
+		if (Platform::get_singleton()->get_name() == "Windows") {
 			exe_ext = ".exe";
 		}
 		String sdk_path = EditorSettings::get_singleton()->get("export/android/android_sdk_path");
@@ -1941,7 +1941,7 @@ public:
 
 	static String get_apksigner_path() {
 		String exe_ext = "";
-		if (OS::get_singleton()->get_name() == "Windows") {
+		if (Platform::get_singleton()->get_name() == "Windows") {
 			exe_ext = ".bat";
 		}
 		String apksigner_command_name = "apksigner" + exe_ext;
@@ -2168,7 +2168,7 @@ public:
 			}
 		}
 
-		last_custom_build_time = OS::get_singleton()->get_unix_time();
+		last_custom_build_time = Platform::get_singleton()->get_unix_time();
 		last_plugin_names = plugin_names;
 
 		return have_plugins_changed || first_build;
@@ -2316,7 +2316,7 @@ public:
 		}
 		int retval;
 		output.clear();
-		OS::get_singleton()->execute(apksigner, args, &output, &retval, true);
+		Platform::get_singleton()->execute(apksigner, args, &output, &retval, true);
 		print_verbose(output);
 		if (retval) {
 			EditorNode::add_io_error("'apksigner' returned with error #" + itos(retval));
@@ -2336,7 +2336,7 @@ public:
 		}
 
 		output.clear();
-		OS::get_singleton()->execute(apksigner, args, &output, &retval, true);
+		Platform::get_singleton()->execute(apksigner, args, &output, &retval, true);
 		print_verbose(output);
 		if (retval) {
 			EditorNode::add_io_error("'apksigner' verification of " + export_label + " failed.");
@@ -2487,7 +2487,7 @@ public:
 			store_file_at_path("res://android/build/assets/_cl_", command_line_flags);
 
 			print_verbose("Updating ANDROID_HOME environment to " + sdk_path);
-			OS::get_singleton()->set_environment("ANDROID_HOME", sdk_path); //set and overwrite if required
+			Platform::get_singleton()->set_environment("ANDROID_HOME", sdk_path); //set and overwrite if required
 			String build_command;
 
 #ifdef WINDOWS_ENABLED
@@ -2582,7 +2582,7 @@ public:
 			String export_filename = p_path.get_file();
 			String export_path = p_path.get_base_dir();
 			if (export_path.is_rel_path()) {
-				export_path = OS::get_singleton()->get_resource_dir().plus_file(export_path);
+				export_path = Platform::get_singleton()->get_resource_dir().plus_file(export_path);
 			}
 			export_path = ProjectSettings::get_singleton()->globalize_path(export_path).simplify_path();
 
@@ -2642,7 +2642,7 @@ public:
 		FileAccess *dst_f = nullptr;
 		io2.opaque = &dst_f;
 
-		String tmp_unaligned_path = EditorSettings::get_singleton()->get_cache_dir().plus_file("tmpexport-unaligned." + uitos(OS::get_singleton()->get_unix_time()) + ".apk");
+		String tmp_unaligned_path = EditorSettings::get_singleton()->get_cache_dir().plus_file("tmpexport-unaligned." + uitos(Platform::get_singleton()->get_unix_time()) + ".apk");
 
 #define CLEANUP_AND_RETURN(m_err)                            \
 	{                                                        \
@@ -2938,7 +2938,7 @@ public:
 
 void register_android_exporter() {
 	String exe_ext;
-	if (OS::get_singleton()->get_name() == "Windows") {
+	if (Platform::get_singleton()->get_name() == "Windows") {
 		exe_ext = "*.exe";
 	}
 

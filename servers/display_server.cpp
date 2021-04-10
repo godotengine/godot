@@ -250,7 +250,7 @@ bool DisplayServer::get_swap_cancel_ok() {
 	return false;
 }
 
-void DisplayServer::enable_for_stealing_focus(OS::ProcessID pid) {
+void DisplayServer::enable_for_stealing_focus(Platform::ProcessID pid) {
 }
 
 //plays video natively, in fullscreen, only implemented in mobile for now, likely not possible to implement on linux also.

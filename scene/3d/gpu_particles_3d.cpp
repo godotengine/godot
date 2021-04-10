@@ -30,7 +30,7 @@
 
 #include "gpu_particles_3d.h"
 
-#include "core/os/os.h"
+#include "core/os/platform.h"
 #include "scene/resources/particles_material.h"
 
 #include "servers/rendering_server.h"

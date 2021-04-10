@@ -33,7 +33,7 @@
 #include "core/math/math_funcs.h"
 #include "core/math/quick_hull.h"
 #include "core/os/main_loop.h"
-#include "core/os/os.h"
+#include "core/os/platform.h"
 #include "core/string/print_string.h"
 #include "core/templates/map.h"
 #include "servers/display_server.h"

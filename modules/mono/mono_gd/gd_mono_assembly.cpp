@@ -36,7 +36,7 @@
 #include "core/config/project_settings.h"
 #include "core/io/file_access_pack.h"
 #include "core/os/file_access.h"
-#include "core/os/os.h"
+#include "core/os/platform.h"
 #include "core/templates/list.h"
 
 #include "../godotsharp_dirs.h"
@@ -80,8 +80,8 @@ void GDMonoAssembly::fill_search_dirs(Vector<String> &r_search_dirs, const Strin
 	}
 
 	r_search_dirs.push_back(GodotSharpDirs::get_res_assemblies_base_dir());
-	r_search_dirs.push_back(OS::get_singleton()->get_resource_dir());
-	r_search_dirs.push_back(OS::get_singleton()->get_executable_path().get_base_dir());
+	r_search_dirs.push_back(Platform::get_singleton()->get_resource_dir());
+	r_search_dirs.push_back(Platform::get_singleton()->get_executable_path().get_base_dir());
 
 #ifdef TOOLS_ENABLED
 	r_search_dirs.push_back(GodotSharpDirs::get_data_editor_tools_dir());

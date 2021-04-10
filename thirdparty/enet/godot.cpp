@@ -37,7 +37,7 @@
 #include "core/io/net_socket.h"
 #include "core/io/packet_peer_dtls.h"
 #include "core/io/udp_server.h"
-#include "core/os/os.h"
+#include "core/os/platform.h"
 
 // This must be last for windows to compile (tested with MinGW)
 #include "enet/enet.h"
@@ -385,15 +385,15 @@ void enet_deinitialize(void) {
 }
 
 enet_uint32 enet_host_random_seed(void) {
-	return (enet_uint32)OS::get_singleton()->get_unix_time();
+	return (enet_uint32)Platform::get_singleton()->get_unix_time();
 }
 
 enet_uint32 enet_time_get(void) {
-	return OS::get_singleton()->get_ticks_msec() - timeBase;
+	return Platform::get_singleton()->get_ticks_msec() - timeBase;
 }
 
 void enet_time_set(enet_uint32 newTimeBase) {
-	timeBase = OS::get_singleton()->get_ticks_msec() - newTimeBase;
+	timeBase = Platform::get_singleton()->get_ticks_msec() - newTimeBase;
 }
 
 int enet_address_set_host(ENetAddress *address, const char *name) {

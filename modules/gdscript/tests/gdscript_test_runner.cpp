@@ -39,7 +39,7 @@
 #include "core/core_string_names.h"
 #include "core/io/file_access_pack.h"
 #include "core/os/dir_access.h"
-#include "core/os/os.h"
+#include "core/os/platform.h"
 #include "core/string/string_builder.h"
 #include "scene/resources/packed_scene.h"
 
@@ -196,7 +196,7 @@ bool GDScriptTestRunner::generate_outputs() {
 	}
 
 	for (int i = 0; i < tests.size(); i++) {
-		OS::get_singleton()->print(".");
+		Platform::get_singleton()->print(".");
 		GDScriptTest test = tests[i];
 		bool result = test.generate_output();
 
@@ -287,7 +287,7 @@ GDScriptTest::GDScriptTest(const String &p_source_path, const String &p_output_p
 }
 
 void GDScriptTestRunner::handle_cmdline() {
-	List<String> cmdline_args = OS::get_singleton()->get_cmdline_args();
+	List<String> cmdline_args = Platform::get_singleton()->get_cmdline_args();
 	// TODO: this could likely be ported to use test commands:
 	// https://github.com/godotengine/godot/pull/41355
 	// Currently requires to startup the whole engine, which is slow.
@@ -319,14 +319,14 @@ void GDScriptTestRunner::handle_cmdline() {
 
 void GDScriptTest::enable_stdout() {
 	// TODO: this could likely be handled by doctest or `tests/test_macros.h`.
-	OS::get_singleton()->set_stdout_enabled(true);
-	OS::get_singleton()->set_stderr_enabled(true);
+	Platform::get_singleton()->set_stdout_enabled(true);
+	Platform::get_singleton()->set_stderr_enabled(true);
 }
 
 void GDScriptTest::disable_stdout() {
 	// TODO: this could likely be handled by doctest or `tests/test_macros.h`.
-	OS::get_singleton()->set_stdout_enabled(false);
-	OS::get_singleton()->set_stderr_enabled(false);
+	Platform::get_singleton()->set_stdout_enabled(false);
+	Platform::get_singleton()->set_stderr_enabled(false);
 }
 
 void GDScriptTest::print_handler(void *p_this, const String &p_message, bool p_error) {

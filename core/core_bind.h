@@ -37,7 +37,7 @@
 #include "core/io/resource_saver.h"
 #include "core/os/dir_access.h"
 #include "core/os/file_access.h"
-#include "core/os/os.h"
+#include "core/os/platform.h"
 #include "core/os/semaphore.h"
 #include "core/os/thread.h"
 #include "core/templates/safe_refcount.h"
@@ -112,12 +112,12 @@ VARIANT_ENUM_CAST(_ResourceSaver::SaverFlags);
 
 class MainLoop;
 
-class _OS : public Object {
-	GDCLASS(_OS, Object);
+class _Platform : public Object {
+	GDCLASS(_Platform, Object);
 
 protected:
 	static void _bind_methods();
-	static _OS *singleton;
+	static _Platform *singleton;
 
 public:
 	enum VideoDriver {
@@ -247,15 +247,15 @@ public:
 	bool request_permissions();
 	Vector<String> get_granted_permissions() const;
 
-	static _OS *get_singleton() { return singleton; }
+	static _Platform *get_singleton() { return singleton; }
 
-	_OS() { singleton = this; }
+	_Platform() { singleton = this; }
 };
 
-VARIANT_ENUM_CAST(_OS::VideoDriver);
-VARIANT_ENUM_CAST(_OS::Weekday);
-VARIANT_ENUM_CAST(_OS::Month);
-VARIANT_ENUM_CAST(_OS::SystemDir);
+VARIANT_ENUM_CAST(_Platform::VideoDriver);
+VARIANT_ENUM_CAST(_Platform::Weekday);
+VARIANT_ENUM_CAST(_Platform::Month);
+VARIANT_ENUM_CAST(_Platform::SystemDir);
 
 class _Geometry2D : public Object {
 	GDCLASS(_Geometry2D, Object);

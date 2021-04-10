@@ -34,7 +34,7 @@
 #include "core/io/file_access_pack.h"
 #include "core/os/file_access.h"
 #include "core/os/main_loop.h"
-#include "core/os/os.h"
+#include "core/os/platform.h"
 #include "core/string/string_builder.h"
 #include "scene/resources/packed_scene.h"
 
@@ -196,7 +196,7 @@ static void test_compiler(const String &p_code, const String &p_script_path, con
 }
 
 void test(TestType p_type) {
-	List<String> cmdlargs = OS::get_singleton()->get_cmdline_args();
+	List<String> cmdlargs = Platform::get_singleton()->get_cmdline_args();
 
 	if (cmdlargs.is_empty()) {
 		return;

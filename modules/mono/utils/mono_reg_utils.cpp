@@ -33,7 +33,7 @@
 
 #ifdef WINDOWS_ENABLED
 
-#include "core/os/os.h"
+#include "core/os/platform.h"
 
 // Here, after os/os.h
 #include <windows.h>
@@ -161,7 +161,7 @@ String find_msbuild_tools_path() {
 
 	// Try to find 15.0 with vswhere
 
-	String vswhere_path = OS::get_singleton()->get_environment(sizeof(size_t) == 8 ? "ProgramFiles(x86)" : "ProgramFiles");
+	String vswhere_path = Platform::get_singleton()->get_environment(sizeof(size_t) == 8 ? "ProgramFiles(x86)" : "ProgramFiles");
 	vswhere_path += "\\Microsoft Visual Studio\\Installer\\vswhere.exe";
 
 	List<String> vswhere_args;
@@ -173,7 +173,7 @@ String find_msbuild_tools_path() {
 
 	String output;
 	int exit_code;
-	OS::get_singleton()->execute(vswhere_path, vswhere_args, &output, &exit_code);
+	Platform::get_singleton()->execute(vswhere_path, vswhere_args, &output, &exit_code);
 
 	if (exit_code == 0) {
 		Vector<String> lines = output.split("\n");

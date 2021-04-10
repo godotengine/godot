@@ -496,9 +496,9 @@ void DependencyRemoveDialog::ok_pressed() {
 			ProjectSettings::get_singleton()->set("audio/buses/default_bus_layout", "");
 		}
 
-		String path = OS::get_singleton()->get_resource_dir() + files_to_delete[i].replace_first("res://", "/");
+		String path = Platform::get_singleton()->get_resource_dir() + files_to_delete[i].replace_first("res://", "/");
 		print_verbose("Moving to trash: " + path);
-		Error err = OS::get_singleton()->move_to_trash(path);
+		Error err = Platform::get_singleton()->move_to_trash(path);
 		if (err != OK) {
 			EditorNode::get_singleton()->add_io_error(TTR("Cannot remove:") + "\n" + files_to_delete[i] + "\n");
 		} else {
@@ -513,9 +513,9 @@ void DependencyRemoveDialog::ok_pressed() {
 		}
 	} else {
 		for (int i = 0; i < dirs_to_delete.size(); ++i) {
-			String path = OS::get_singleton()->get_resource_dir() + dirs_to_delete[i].replace_first("res://", "/");
+			String path = Platform::get_singleton()->get_resource_dir() + dirs_to_delete[i].replace_first("res://", "/");
 			print_verbose("Moving to trash: " + path);
-			Error err = OS::get_singleton()->move_to_trash(path);
+			Error err = Platform::get_singleton()->move_to_trash(path);
 			if (err != OK) {
 				EditorNode::get_singleton()->add_io_error(TTR("Cannot remove:") + "\n" + dirs_to_delete[i] + "\n");
 			} else {

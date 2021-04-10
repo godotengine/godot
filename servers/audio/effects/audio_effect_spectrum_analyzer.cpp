@@ -99,7 +99,7 @@ static void smbFft(float *fftBuffer, long fftFrameSize, long sign)
 }
 
 void AudioEffectSpectrumAnalyzerInstance::process(const AudioFrame *p_src_frames, AudioFrame *p_dst_frames, int p_frame_count) {
-	uint64_t time = OS::get_singleton()->get_ticks_usec();
+	uint64_t time = Platform::get_singleton()->get_ticks_usec();
 
 	//copy everything over first, since this only really does capture
 	for (int i = 0; i < p_frame_count; i++) {
@@ -159,7 +159,7 @@ Vector2 AudioEffectSpectrumAnalyzerInstance::get_magnitude_for_frequency_range(f
 	if (last_fft_time == 0) {
 		return Vector2();
 	}
-	uint64_t time = OS::get_singleton()->get_ticks_usec();
+	uint64_t time = Platform::get_singleton()->get_ticks_usec();
 	float diff = double(time - last_fft_time) / 1000000.0 + base->get_tap_back_pos();
 	diff -= AudioServer::get_singleton()->get_output_latency();
 	float fft_time_size = float(fft_size) / mix_rate;

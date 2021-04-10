@@ -33,7 +33,7 @@
 #include "core/os/keyboard.h"
 #import "display_server_iphone.h"
 #include "main/main.h"
-#include "os_iphone.h"
+#include "platform_iphone.h"
 #include "servers/audio_server.h"
 
 #import <AudioToolbox/AudioServices.h>
@@ -57,7 +57,7 @@
 		return NO;
 	}
 
-	if (!OS::get_singleton()) {
+	if (!Platform::get_singleton()) {
 		exit(0);
 	}
 
@@ -68,7 +68,7 @@
 
 	if (!self.hasStartedMain) {
 		self.hasStartedMain = YES;
-		OSIPhone::get_singleton()->start();
+		PlatformIPhone::get_singleton()->start();
 		return YES;
 	}
 
@@ -107,11 +107,11 @@
 }
 
 - (void)renderOnView:(UIView *)view {
-	if (!OSIPhone::get_singleton()) {
+	if (!PlatformIPhone::get_singleton()) {
 		return;
 	}
 
-	OSIPhone::get_singleton()->iterate();
+	PlatformIPhone::get_singleton()->iterate();
 }
 
 @end

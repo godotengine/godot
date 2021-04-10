@@ -31,7 +31,7 @@
 #include "crash_handler_osx.h"
 
 #include "core/config/project_settings.h"
-#include "core/os/os.h"
+#include "core/os/platform.h"
 #include "main/main.h"
 
 #include <string.h>
@@ -70,13 +70,13 @@ static uint64_t load_address() {
 }
 
 static void handle_crash(int sig) {
-	if (OS::get_singleton() == nullptr) {
+	if (Platform::get_singleton() == nullptr) {
 		abort();
 	}
 
 	void *bt_buffer[256];
 	size_t size = backtrace(bt_buffer, 256);
-	String _execpath = OS::get_singleton()->get_executable_path();
+	String _execpath = Platform::get_singleton()->get_executable_path();
 
 	String msg;
 	const ProjectSettings *proj_settings = ProjectSettings::get_singleton();
@@ -87,8 +87,8 @@ static void handle_crash(int sig) {
 	// Dump the backtrace to stderr with a message to the user
 	fprintf(stderr, "%s: Program crashed with signal %d\n", __FUNCTION__, sig);
 
-	if (OS::get_singleton()->get_main_loop())
-		OS::get_singleton()->get_main_loop()->notification(MainLoop::NOTIFICATION_CRASH);
+	if (Platform::get_singleton()->get_main_loop())
+		Platform::get_singleton()->get_main_loop()->notification(MainLoop::NOTIFICATION_CRASH);
 
 	fprintf(stderr, "Dumping the backtrace. %s\n", msg.utf8().get_data());
 	char **strings = backtrace_symbols(bt_buffer, size);
@@ -119,7 +119,7 @@ static void handle_crash(int sig) {
 			String output = fname;
 
 			// Try to get the file/line number using atos
-			if (bt_buffer[i] > (void *)0x0 && OS::get_singleton()) {
+			if (bt_buffer[i] > (void *)0x0 && Platform::get_singleton()) {
 				List<String> args;
 				char str[1024];
 
@@ -135,7 +135,7 @@ static void handle_crash(int sig) {
 
 				int ret;
 				String out = "";
-				Error err = OS::get_singleton()->execute(String("atos"), args, &out, &ret);
+				Error err = Platform::get_singleton()->execute(String("atos"), args, &out, &ret);
 				if (err == OK && out.substr(0, 2) != "0x") {
 					out.erase(out.length() - 1, 1);
 					output = out;

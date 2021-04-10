@@ -31,7 +31,7 @@
 #include "gdscript_language_server.h"
 
 #include "core/os/file_access.h"
-#include "core/os/os.h"
+#include "core/os/platform.h"
 #include "editor/editor_log.h"
 #include "editor/editor_node.h"
 
@@ -71,7 +71,7 @@ void GDScriptLanguageServer::thread_main(void *p_userdata) {
 	while (self->thread_running) {
 		// Poll 20 times per second
 		self->protocol.poll();
-		OS::get_singleton()->delay_usec(50000);
+		Platform::get_singleton()->delay_usec(50000);
 	}
 }
 

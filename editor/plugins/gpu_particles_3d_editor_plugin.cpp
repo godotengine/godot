@@ -291,15 +291,15 @@ void GPUParticles3DEditor::_generate_aabb() {
 	bool was_emitting = node->is_emitting();
 	if (!was_emitting) {
 		node->set_emitting(true);
-		OS::get_singleton()->delay_usec(1000);
+		Platform::get_singleton()->delay_usec(1000);
 	}
 
 	AABB rect;
 
 	while (running < time) {
-		uint64_t ticks = OS::get_singleton()->get_ticks_usec();
+		uint64_t ticks = Platform::get_singleton()->get_ticks_usec();
 		ep.step("Generating...", int(running), true);
-		OS::get_singleton()->delay_usec(1000);
+		Platform::get_singleton()->delay_usec(1000);
 
 		AABB capture = node->capture_aabb();
 		if (rect == AABB()) {
@@ -308,7 +308,7 @@ void GPUParticles3DEditor::_generate_aabb() {
 			rect.merge_with(capture);
 		}
 
-		running += (OS::get_singleton()->get_ticks_usec() - ticks) / 1000000.0;
+		running += (Platform::get_singleton()->get_ticks_usec() - ticks) / 1000000.0;
 	}
 
 	if (!was_emitting) {

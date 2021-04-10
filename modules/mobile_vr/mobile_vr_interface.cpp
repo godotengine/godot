@@ -31,7 +31,7 @@
 #include "mobile_vr_interface.h"
 
 #include "core/input/input.h"
-#include "core/os/os.h"
+#include "core/os/platform.h"
 #include "servers/display_server.h"
 #include "servers/rendering/rendering_server_globals.h"
 
@@ -126,7 +126,7 @@ void MobileVRInterface::set_position_from_sensors() {
 	// 9dof is a misleading marketing term coming from 3 accelerometer axis + 3 gyro axis + 3 magnetometer axis = 9 axis
 	// but in reality this only offers 3 dof (yaw, pitch, roll) orientation
 
-	uint64_t ticks = OS::get_singleton()->get_ticks_usec();
+	uint64_t ticks = Platform::get_singleton()->get_ticks_usec();
 	uint64_t ticks_elapsed = ticks - last_ticks;
 	float delta_time = (double)ticks_elapsed / 1000000.0;
 
@@ -329,7 +329,7 @@ bool MobileVRInterface::initialize() {
 		// make this our primary interface
 		xr_server->set_primary_interface(this);
 
-		last_ticks = OS::get_singleton()->get_ticks_usec();
+		last_ticks = Platform::get_singleton()->get_ticks_usec();
 
 		initialized = true;
 	};

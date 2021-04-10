@@ -33,7 +33,7 @@
 
 #include "core/io/file_access_pack.h"
 #include "core/io/pck_packer.h"
-#include "core/os/os.h"
+#include "core/os/platform.h"
 
 #include "thirdparty/doctest/doctest.h"
 
@@ -44,7 +44,7 @@ constexpr const char *ENCRYPTION_KEY = "0000000000000000000000000000000000000000
 
 TEST_CASE("[PCKPacker] Pack an empty PCK file") {
 	PCKPacker pck_packer;
-	const String output_pck_path = OS::get_singleton()->get_cache_path().plus_file("output_empty.pck");
+	const String output_pck_path = Platform::get_singleton()->get_cache_path().plus_file("output_empty.pck");
 	CHECK_MESSAGE(
 			pck_packer.pck_start(
 					output_pck_path,
@@ -71,7 +71,7 @@ TEST_CASE("[PCKPacker] Pack an empty PCK file") {
 
 TEST_CASE("[PCKPacker] Pack a PCK file with some files and directories") {
 	PCKPacker pck_packer;
-	const String output_pck_path = OS::get_singleton()->get_cache_path().plus_file("output_with_files.pck");
+	const String output_pck_path = Platform::get_singleton()->get_cache_path().plus_file("output_with_files.pck");
 	CHECK_MESSAGE(
 			pck_packer.pck_start(
 					output_pck_path,
@@ -79,7 +79,7 @@ TEST_CASE("[PCKPacker] Pack a PCK file with some files and directories") {
 					ENCRYPTION_KEY) == OK,
 			"Starting a PCK file should return an OK error code.");
 
-	const String base_dir = OS::get_singleton()->get_executable_path().get_base_dir();
+	const String base_dir = Platform::get_singleton()->get_executable_path().get_base_dir();
 
 	CHECK_MESSAGE(
 			pck_packer.add_file("version.py", base_dir.plus_file("../version.py"), "version.py") == OK,

@@ -31,7 +31,7 @@
 #include "networked_multiplayer_enet.h"
 #include "core/io/ip.h"
 #include "core/io/marshalls.h"
-#include "core/os/os.h"
+#include "core/os/platform.h"
 
 void NetworkedMultiplayerENet::set_transfer_mode(TransferMode p_mode) {
 	transfer_mode = p_mode;
@@ -448,7 +448,7 @@ void NetworkedMultiplayerENet::close_connection(uint32_t wait_usec) {
 		enet_host_flush(host);
 
 		if (wait_usec > 0) {
-			OS::get_singleton()->delay_usec(wait_usec); // Wait for disconnection packets to send
+			Platform::get_singleton()->delay_usec(wait_usec); // Wait for disconnection packets to send
 		}
 	}
 
@@ -610,11 +610,11 @@ uint32_t NetworkedMultiplayerENet::_gen_unique_id() const {
 
 	while (hash == 0 || hash == 1) {
 		hash = hash_djb2_one_32(
-				(uint32_t)OS::get_singleton()->get_ticks_usec());
+				(uint32_t)Platform::get_singleton()->get_ticks_usec());
 		hash = hash_djb2_one_32(
-				(uint32_t)OS::get_singleton()->get_unix_time(), hash);
+				(uint32_t)Platform::get_singleton()->get_unix_time(), hash);
 		hash = hash_djb2_one_32(
-				(uint32_t)OS::get_singleton()->get_user_data_dir().hash64(), hash);
+				(uint32_t)Platform::get_singleton()->get_user_data_dir().hash64(), hash);
 		hash = hash_djb2_one_32(
 				(uint32_t)((uint64_t)this), hash); // Rely on ASLR heap
 		hash = hash_djb2_one_32(

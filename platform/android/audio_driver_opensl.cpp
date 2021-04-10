@@ -280,7 +280,7 @@ Error AudioDriverOpenSL::capture_init_device() {
 }
 
 Error AudioDriverOpenSL::capture_start() {
-	if (OS::get_singleton()->request_permission("RECORD_AUDIO")) {
+	if (Platform::get_singleton()->request_permission("RECORD_AUDIO")) {
 		return capture_init_device();
 	}
 

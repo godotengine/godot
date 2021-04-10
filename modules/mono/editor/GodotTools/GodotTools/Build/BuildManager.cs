@@ -6,7 +6,7 @@ using GodotTools.Internals;
 using JetBrains.Annotations;
 using static GodotTools.Internals.Globals;
 using File = GodotTools.Utils.File;
-using OS = GodotTools.Utils.OS;
+using Platform = GodotTools.Utils.Platform;
 
 namespace GodotTools.Build
 {
@@ -62,7 +62,7 @@ namespace GodotTools.Build
 
         private static void PrintVerbose(string text)
         {
-            if (Godot.OS.IsStdoutVerbose())
+            if (Godot.Platform.IsStdoutVerbose())
                 Godot.GD.Print(text);
         }
 
@@ -164,7 +164,7 @@ namespace GodotTools.Build
             var buildInfo = new BuildInfo(GodotSharpDirs.ProjectSlnPath, targets ?? new[] {"Build"}, config, restore: true);
 
             // If a platform was not specified, try determining the current one. If that fails, let MSBuild auto-detect it.
-            if (platform != null || OS.PlatformNameMap.TryGetValue(Godot.OS.GetName(), out platform))
+            if (platform != null || Platform.PlatformNameMap.TryGetValue(Godot.Platform.GetName(), out platform))
                 buildInfo.CustomProperties.Add($"GodotTargetPlatform={platform}");
 
             if (Internal.GodotIsRealTDouble())
@@ -231,23 +231,23 @@ namespace GodotTools.Build
 
             BuildTool msbuildDefault;
 
-            if (OS.IsWindows)
+            if (Platform.IsWindows)
             {
                 if (RiderPathManager.IsExternalEditorSetToRider(editorSettings))
                     msbuildDefault = BuildTool.JetBrainsMsBuild;
                 else
-                    msbuildDefault = !string.IsNullOrEmpty(OS.PathWhich("dotnet")) ? BuildTool.DotnetCli : BuildTool.MsBuildVs;
+                    msbuildDefault = !string.IsNullOrEmpty(Platform.PathWhich("dotnet")) ? BuildTool.DotnetCli : BuildTool.MsBuildVs;
             }
             else
             {
-                msbuildDefault = !string.IsNullOrEmpty(OS.PathWhich("dotnet")) ? BuildTool.DotnetCli : BuildTool.MsBuildMono;
+                msbuildDefault = !string.IsNullOrEmpty(Platform.PathWhich("dotnet")) ? BuildTool.DotnetCli : BuildTool.MsBuildMono;
             }
 
             EditorDef("mono/builds/build_tool", msbuildDefault);
 
             string hintString;
 
-            if (OS.IsWindows)
+            if (Platform.IsWindows)
             {
                 hintString = $"{PropNameMSBuildMono}:{(int)BuildTool.MsBuildMono}," +
                              $"{PropNameMSBuildVs}:{(int)BuildTool.MsBuildVs}," +

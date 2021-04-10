@@ -31,7 +31,7 @@
 #include "video_stream_theora.h"
 
 #include "core/config/project_settings.h"
-#include "core/os/os.h"
+#include "core/os/platform.h"
 
 #include "thirdparty/misc/yuv2rgb.h"
 
@@ -49,7 +49,7 @@ int VideoStreamPlaybackTheora::buffer_data() {
 			ring_buffer.read((uint8_t *)buffer, read);
 			ogg_sync_wrote(&oy, read);
 		} else {
-			OS::get_singleton()->delay_usec(100);
+			Platform::get_singleton()->delay_usec(100);
 		}
 
 	} while (read == 0);

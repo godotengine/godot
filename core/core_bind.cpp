@@ -40,7 +40,7 @@
 #include "core/math/geometry_2d.h"
 #include "core/math/geometry_3d.h"
 #include "core/os/keyboard.h"
-#include "core/os/os.h"
+#include "core/os/platform.h"
 
 /**
  *  Time constants borrowed from loc_time.h
@@ -185,61 +185,61 @@ void _ResourceSaver::_bind_methods() {
 	BIND_ENUM_CONSTANT(FLAG_REPLACE_SUBRESOURCE_PATHS);
 }
 
-////// _OS //////
+////// _Platform //////
 
-PackedStringArray _OS::get_connected_midi_inputs() {
-	return OS::get_singleton()->get_connected_midi_inputs();
+PackedStringArray _Platform::get_connected_midi_inputs() {
+	return Platform::get_singleton()->get_connected_midi_inputs();
 }
 
-void _OS::open_midi_inputs() {
-	OS::get_singleton()->open_midi_inputs();
+void _Platform::open_midi_inputs() {
+	Platform::get_singleton()->open_midi_inputs();
 }
 
-void _OS::close_midi_inputs() {
-	OS::get_singleton()->close_midi_inputs();
+void _Platform::close_midi_inputs() {
+	Platform::get_singleton()->close_midi_inputs();
 }
 
-void _OS::set_use_file_access_save_and_swap(bool p_enable) {
+void _Platform::set_use_file_access_save_and_swap(bool p_enable) {
 	FileAccess::set_backup_save(p_enable);
 }
 
-void _OS::set_low_processor_usage_mode(bool p_enabled) {
-	OS::get_singleton()->set_low_processor_usage_mode(p_enabled);
+void _Platform::set_low_processor_usage_mode(bool p_enabled) {
+	Platform::get_singleton()->set_low_processor_usage_mode(p_enabled);
 }
 
-bool _OS::is_in_low_processor_usage_mode() const {
-	return OS::get_singleton()->is_in_low_processor_usage_mode();
+bool _Platform::is_in_low_processor_usage_mode() const {
+	return Platform::get_singleton()->is_in_low_processor_usage_mode();
 }
 
-void _OS::set_low_processor_usage_mode_sleep_usec(int p_usec) {
-	OS::get_singleton()->set_low_processor_usage_mode_sleep_usec(p_usec);
+void _Platform::set_low_processor_usage_mode_sleep_usec(int p_usec) {
+	Platform::get_singleton()->set_low_processor_usage_mode_sleep_usec(p_usec);
 }
 
-int _OS::get_low_processor_usage_mode_sleep_usec() const {
-	return OS::get_singleton()->get_low_processor_usage_mode_sleep_usec();
+int _Platform::get_low_processor_usage_mode_sleep_usec() const {
+	return Platform::get_singleton()->get_low_processor_usage_mode_sleep_usec();
 }
 
-String _OS::get_executable_path() const {
-	return OS::get_singleton()->get_executable_path();
+String _Platform::get_executable_path() const {
+	return Platform::get_singleton()->get_executable_path();
 }
 
-Error _OS::shell_open(String p_uri) {
+Error _Platform::shell_open(String p_uri) {
 	if (p_uri.begins_with("res://")) {
 		WARN_PRINT("Attempting to open an URL with the \"res://\" protocol. Use `ProjectSettings.globalize_path()` to convert a Godot-specific path to a system path before opening it with `OS.shell_open()`.");
 	} else if (p_uri.begins_with("user://")) {
 		WARN_PRINT("Attempting to open an URL with the \"user://\" protocol. Use `ProjectSettings.globalize_path()` to convert a Godot-specific path to a system path before opening it with `OS.shell_open()`.");
 	}
-	return OS::get_singleton()->shell_open(p_uri);
+	return Platform::get_singleton()->shell_open(p_uri);
 }
 
-int _OS::execute(const String &p_path, const Vector<String> &p_arguments, Array r_output, bool p_read_stderr) {
+int _Platform::execute(const String &p_path, const Vector<String> &p_arguments, Array r_output, bool p_read_stderr) {
 	List<String> args;
 	for (int i = 0; i < p_arguments.size(); i++) {
 		args.push_back(p_arguments[i]);
 	}
 	String pipe;
 	int exitcode = 0;
-	Error err = OS::get_singleton()->execute(p_path, args, &pipe, &exitcode, p_read_stderr);
+	Error err = Platform::get_singleton()->execute(p_path, args, &pipe, &exitcode, p_read_stderr);
 	r_output.push_back(pipe);
 	if (err != OK) {
 		return -1;
@@ -247,45 +247,45 @@ int _OS::execute(const String &p_path, const Vector<String> &p_arguments, Array 
 	return exitcode;
 }
 
-int _OS::create_process(const String &p_path, const Vector<String> &p_arguments) {
+int _Platform::create_process(const String &p_path, const Vector<String> &p_arguments) {
 	List<String> args;
 	for (int i = 0; i < p_arguments.size(); i++) {
 		args.push_back(p_arguments[i]);
 	}
-	OS::ProcessID pid = 0;
-	Error err = OS::get_singleton()->create_process(p_path, args, &pid);
+	Platform::ProcessID pid = 0;
+	Error err = Platform::get_singleton()->create_process(p_path, args, &pid);
 	if (err != OK) {
 		return -1;
 	}
 	return pid;
 }
 
-Error _OS::kill(int p_pid) {
-	return OS::get_singleton()->kill(p_pid);
+Error _Platform::kill(int p_pid) {
+	return Platform::get_singleton()->kill(p_pid);
 }
 
-int _OS::get_process_id() const {
-	return OS::get_singleton()->get_process_id();
+int _Platform::get_process_id() const {
+	return Platform::get_singleton()->get_process_id();
 }
 
-bool _OS::has_environment(const String &p_var) const {
-	return OS::get_singleton()->has_environment(p_var);
+bool _Platform::has_environment(const String &p_var) const {
+	return Platform::get_singleton()->has_environment(p_var);
 }
 
-String _OS::get_environment(const String &p_var) const {
-	return OS::get_singleton()->get_environment(p_var);
+String _Platform::get_environment(const String &p_var) const {
+	return Platform::get_singleton()->get_environment(p_var);
 }
 
-bool _OS::set_environment(const String &p_var, const String &p_value) const {
-	return OS::get_singleton()->set_environment(p_var, p_value);
+bool _Platform::set_environment(const String &p_var, const String &p_value) const {
+	return Platform::get_singleton()->set_environment(p_var, p_value);
 }
 
-String _OS::get_name() const {
-	return OS::get_singleton()->get_name();
+String _Platform::get_name() const {
+	return Platform::get_singleton()->get_name();
 }
 
-Vector<String> _OS::get_cmdline_args() {
-	List<String> cmdline = OS::get_singleton()->get_cmdline_args();
+Vector<String> _Platform::get_cmdline_args() {
+	List<String> cmdline = Platform::get_singleton()->get_cmdline_args();
 	Vector<String> cmdlinev;
 	for (List<String>::Element *E = cmdline.front(); E; E = E->next()) {
 		cmdlinev.push_back(E->get());
@@ -294,39 +294,39 @@ Vector<String> _OS::get_cmdline_args() {
 	return cmdlinev;
 }
 
-String _OS::get_locale() const {
-	return OS::get_singleton()->get_locale();
+String _Platform::get_locale() const {
+	return Platform::get_singleton()->get_locale();
 }
 
-String _OS::get_model_name() const {
-	return OS::get_singleton()->get_model_name();
+String _Platform::get_model_name() const {
+	return Platform::get_singleton()->get_model_name();
 }
 
-Error _OS::set_thread_name(const String &p_name) {
+Error _Platform::set_thread_name(const String &p_name) {
 	return Thread::set_name(p_name);
 }
 
-Thread::ID _OS::get_thread_caller_id() const {
+Thread::ID _Platform::get_thread_caller_id() const {
 	return Thread::get_caller_id();
 };
 
-bool _OS::has_feature(const String &p_feature) const {
-	return OS::get_singleton()->has_feature(p_feature);
+bool _Platform::has_feature(const String &p_feature) const {
+	return Platform::get_singleton()->has_feature(p_feature);
 }
 
-uint64_t _OS::get_static_memory_usage() const {
-	return OS::get_singleton()->get_static_memory_usage();
+uint64_t _Platform::get_static_memory_usage() const {
+	return Platform::get_singleton()->get_static_memory_usage();
 }
 
-uint64_t _OS::get_static_memory_peak_usage() const {
-	return OS::get_singleton()->get_static_memory_peak_usage();
+uint64_t _Platform::get_static_memory_peak_usage() const {
+	return Platform::get_singleton()->get_static_memory_peak_usage();
 }
 
 /**
  *  Get current datetime with consideration for utc and
  *     dst
  */
-Dictionary _OS::get_datetime(bool utc) const {
+Dictionary _Platform::get_datetime(bool utc) const {
 	Dictionary dated = get_date(utc);
 	Dictionary timed = get_time(utc);
 
@@ -340,8 +340,8 @@ Dictionary _OS::get_datetime(bool utc) const {
 	return dated;
 }
 
-Dictionary _OS::get_date(bool utc) const {
-	OS::Date date = OS::get_singleton()->get_date(utc);
+Dictionary _Platform::get_date(bool utc) const {
+	Platform::Date date = Platform::get_singleton()->get_date(utc);
 	Dictionary dated;
 	dated[YEAR_KEY] = date.year;
 	dated[MONTH_KEY] = date.month;
@@ -351,8 +351,8 @@ Dictionary _OS::get_date(bool utc) const {
 	return dated;
 }
 
-Dictionary _OS::get_time(bool utc) const {
-	OS::Time time = OS::get_singleton()->get_time(utc);
+Dictionary _Platform::get_time(bool utc) const {
+	Platform::Time time = Platform::get_singleton()->get_time(utc);
 	Dictionary timed;
 	timed[HOUR_KEY] = time.hour;
 	timed[MINUTE_KEY] = time.min;
@@ -372,7 +372,7 @@ Dictionary _OS::get_time(bool utc) const {
  *
  * @return epoch calculated
  */
-int64_t _OS::get_unix_time_from_datetime(Dictionary datetime) const {
+int64_t _Platform::get_unix_time_from_datetime(Dictionary datetime) const {
 	// if datetime is an empty Dictionary throws an error
 	ERR_FAIL_COND_V_MSG(datetime.is_empty(), 0, "Invalid datetime Dictionary: Dictionary is empty");
 
@@ -447,9 +447,9 @@ int64_t _OS::get_unix_time_from_datetime(Dictionary datetime) const {
  *
  * @return dictionary of date and time values
  */
-Dictionary _OS::get_datetime_from_unix_time(int64_t unix_time_val) const {
-	OS::Date date;
-	OS::Time time;
+Dictionary _Platform::get_datetime_from_unix_time(int64_t unix_time_val) const {
+	Platform::Date date;
+	Platform::Time time;
 
 	long dayclock, dayno;
 	int year = EPOCH_YR;
@@ -458,7 +458,7 @@ Dictionary _OS::get_datetime_from_unix_time(int64_t unix_time_val) const {
 		dayno = unix_time_val / SECS_DAY;
 		dayclock = unix_time_val % SECS_DAY;
 		/* day 0 was a thursday */
-		date.weekday = static_cast<OS::Weekday>((dayno + 4) % 7);
+		date.weekday = static_cast<Platform::Weekday>((dayno + 4) % 7);
 		while (dayno >= YEARSIZE(year)) {
 			dayno -= YEARSIZE(year);
 			year++;
@@ -466,7 +466,7 @@ Dictionary _OS::get_datetime_from_unix_time(int64_t unix_time_val) const {
 	} else {
 		dayno = (unix_time_val - SECS_DAY + 1) / SECS_DAY;
 		dayclock = unix_time_val - dayno * SECS_DAY;
-		date.weekday = static_cast<OS::Weekday>(((dayno % 7) + 11) % 7);
+		date.weekday = static_cast<Platform::Weekday>(((dayno % 7) + 11) % 7);
 		do {
 			year--;
 			dayno += YEARSIZE(year);
@@ -486,7 +486,7 @@ Dictionary _OS::get_datetime_from_unix_time(int64_t unix_time_val) const {
 	}
 
 	/// Add 1 to month to make sure months are indexed starting at 1
-	date.month = static_cast<OS::Month>(imonth + 1);
+	date.month = static_cast<Platform::Month>(imonth + 1);
 
 	date.day = dayno + 1;
 
@@ -502,73 +502,73 @@ Dictionary _OS::get_datetime_from_unix_time(int64_t unix_time_val) const {
 	return timed;
 }
 
-Dictionary _OS::get_time_zone_info() const {
-	OS::TimeZoneInfo info = OS::get_singleton()->get_time_zone_info();
+Dictionary _Platform::get_time_zone_info() const {
+	Platform::TimeZoneInfo info = Platform::get_singleton()->get_time_zone_info();
 	Dictionary infod;
 	infod["bias"] = info.bias;
 	infod["name"] = info.name;
 	return infod;
 }
 
-double _OS::get_unix_time() const {
-	return OS::get_singleton()->get_unix_time();
+double _Platform::get_unix_time() const {
+	return Platform::get_singleton()->get_unix_time();
 }
 
 /** This method uses a signed argument for better error reporting as it's used from the scripting API. */
-void _OS::delay_usec(int p_usec) const {
+void _Platform::delay_usec(int p_usec) const {
 	ERR_FAIL_COND_MSG(
 			p_usec < 0,
 			vformat("Can't sleep for %d microseconds. The delay provided must be greater than or equal to 0 microseconds.", p_usec));
-	OS::get_singleton()->delay_usec(p_usec);
+	Platform::get_singleton()->delay_usec(p_usec);
 }
 
 /** This method uses a signed argument for better error reporting as it's used from the scripting API. */
-void _OS::delay_msec(int p_msec) const {
+void _Platform::delay_msec(int p_msec) const {
 	ERR_FAIL_COND_MSG(
 			p_msec < 0,
 			vformat("Can't sleep for %d milliseconds. The delay provided must be greater than or equal to 0 milliseconds.", p_msec));
-	OS::get_singleton()->delay_usec(int64_t(p_msec) * 1000);
+	Platform::get_singleton()->delay_usec(int64_t(p_msec) * 1000);
 }
 
-uint32_t _OS::get_ticks_msec() const {
-	return OS::get_singleton()->get_ticks_msec();
+uint32_t _Platform::get_ticks_msec() const {
+	return Platform::get_singleton()->get_ticks_msec();
 }
 
-uint64_t _OS::get_ticks_usec() const {
-	return OS::get_singleton()->get_ticks_usec();
+uint64_t _Platform::get_ticks_usec() const {
+	return Platform::get_singleton()->get_ticks_usec();
 }
 
-bool _OS::can_use_threads() const {
-	return OS::get_singleton()->can_use_threads();
+bool _Platform::can_use_threads() const {
+	return Platform::get_singleton()->can_use_threads();
 }
 
-bool _OS::is_userfs_persistent() const {
-	return OS::get_singleton()->is_userfs_persistent();
+bool _Platform::is_userfs_persistent() const {
+	return Platform::get_singleton()->is_userfs_persistent();
 }
 
-int _OS::get_processor_count() const {
-	return OS::get_singleton()->get_processor_count();
+int _Platform::get_processor_count() const {
+	return Platform::get_singleton()->get_processor_count();
 }
 
-bool _OS::is_stdout_verbose() const {
-	return OS::get_singleton()->is_stdout_verbose();
+bool _Platform::is_stdout_verbose() const {
+	return Platform::get_singleton()->is_stdout_verbose();
 }
 
-void _OS::dump_memory_to_file(const String &p_file) {
-	OS::get_singleton()->dump_memory_to_file(p_file.utf8().get_data());
+void _Platform::dump_memory_to_file(const String &p_file) {
+	Platform::get_singleton()->dump_memory_to_file(p_file.utf8().get_data());
 }
 
-struct _OSCoreBindImg {
+struct _PlatformCoreBindImg {
 	String path;
 	Size2 size;
 	int fmt = 0;
 	ObjectID id;
 	int vram = 0;
-	bool operator<(const _OSCoreBindImg &p_img) const { return vram == p_img.vram ? id < p_img.id : vram > p_img.vram; }
+	bool operator<(const _PlatformCoreBindImg &p_img) const { return vram == p_img.vram ? id < p_img.id : vram > p_img.vram; }
 };
 
-void _OS::print_all_textures_by_size() {
-	List<_OSCoreBindImg> imgs;
+void _Platform::print_all_textures_by_size() {
+	List<_PlatformCoreBindImg> imgs;
 	uint64_t total = 0;
 	{
 		List<Ref<Resource>> rsrc;
@@ -582,7 +582,7 @@ void _OS::print_all_textures_by_size() {
 			Size2 size = E->get()->call("get_size");
 			int fmt = E->get()->call("get_format");
 
-			_OSCoreBindImg img;
+			_PlatformCoreBindImg img;
 			img.size = size;
 			img.fmt = fmt;
 			img.path = E->get()->get_path();
@@ -595,12 +595,12 @@ void _OS::print_all_textures_by_size() {
 
 	imgs.sort();
 
-	for (List<_OSCoreBindImg>::Element *E = imgs.front(); E; E = E->next()) {
+	for (List<_PlatformCoreBindImg>::Element *E = imgs.front(); E; E = E->next()) {
 		total -= E->get().vram;
 	}
 }
 
-void _OS::print_resources_by_type(const Vector<String> &p_types) {
+void _Platform::print_resources_by_type(const Vector<String> &p_types) {
 	Map<String, int> type_count;
 
 	List<Ref<Resource>> resources;
@@ -628,23 +628,23 @@ void _OS::print_resources_by_type(const Vector<String> &p_types) {
 	}
 }
 
-void _OS::print_all_resources(const String &p_to_file) {
-	OS::get_singleton()->print_all_resources(p_to_file);
+void _Platform::print_all_resources(const String &p_to_file) {
+	Platform::get_singleton()->print_all_resources(p_to_file);
 }
 
-void _OS::print_resources_in_use(bool p_short) {
-	OS::get_singleton()->print_resources_in_use(p_short);
+void _Platform::print_resources_in_use(bool p_short) {
+	Platform::get_singleton()->print_resources_in_use(p_short);
 }
 
-void _OS::dump_resources_to_file(const String &p_file) {
-	OS::get_singleton()->dump_resources_to_file(p_file.utf8().get_data());
+void _Platform::dump_resources_to_file(const String &p_file) {
+	Platform::get_singleton()->dump_resources_to_file(p_file.utf8().get_data());
 }
 
-String _OS::get_user_data_dir() const {
-	return OS::get_singleton()->get_user_data_dir();
+String _Platform::get_user_data_dir() const {
+	return Platform::get_singleton()->get_user_data_dir();
 }
 
-bool _OS::is_debug_build() const {
+bool _Platform::is_debug_build() const {
 #ifdef DEBUG_ENABLED
 	return true;
 #else
@@ -652,118 +652,118 @@ bool _OS::is_debug_build() const {
 #endif
 }
 
-String _OS::get_system_dir(SystemDir p_dir) const {
-	return OS::get_singleton()->get_system_dir(OS::SystemDir(p_dir));
+String _Platform::get_system_dir(SystemDir p_dir) const {
+	return Platform::get_singleton()->get_system_dir(Platform::SystemDir(p_dir));
 }
 
-String _OS::get_keycode_string(uint32_t p_code) const {
+String _Platform::get_keycode_string(uint32_t p_code) const {
 	return keycode_get_string(p_code);
 }
 
-bool _OS::is_keycode_unicode(uint32_t p_unicode) const {
+bool _Platform::is_keycode_unicode(uint32_t p_unicode) const {
 	return keycode_has_unicode(p_unicode);
 }
 
-int _OS::find_keycode_from_string(const String &p_code) const {
+int _Platform::find_keycode_from_string(const String &p_code) const {
 	return find_keycode(p_code);
 }
 
-bool _OS::request_permission(const String &p_name) {
-	return OS::get_singleton()->request_permission(p_name);
+bool _Platform::request_permission(const String &p_name) {
+	return Platform::get_singleton()->request_permission(p_name);
 }
 
-bool _OS::request_permissions() {
-	return OS::get_singleton()->request_permissions();
+bool _Platform::request_permissions() {
+	return Platform::get_singleton()->request_permissions();
 }
 
-Vector<String> _OS::get_granted_permissions() const {
-	return OS::get_singleton()->get_granted_permissions();
+Vector<String> _Platform::get_granted_permissions() const {
+	return Platform::get_singleton()->get_granted_permissions();
 }
 
-String _OS::get_unique_id() const {
-	return OS::get_singleton()->get_unique_id();
+String _Platform::get_unique_id() const {
+	return Platform::get_singleton()->get_unique_id();
 }
 
-_OS *_OS::singleton = nullptr;
+_Platform *_Platform::singleton = nullptr;
 
-void _OS::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("get_connected_midi_inputs"), &_OS::get_connected_midi_inputs);
-	ClassDB::bind_method(D_METHOD("open_midi_inputs"), &_OS::open_midi_inputs);
-	ClassDB::bind_method(D_METHOD("close_midi_inputs"), &_OS::close_midi_inputs);
+void _Platform::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("get_connected_midi_inputs"), &_Platform::get_connected_midi_inputs);
+	ClassDB::bind_method(D_METHOD("open_midi_inputs"), &_Platform::open_midi_inputs);
+	ClassDB::bind_method(D_METHOD("close_midi_inputs"), &_Platform::close_midi_inputs);
 
-	ClassDB::bind_method(D_METHOD("set_low_processor_usage_mode", "enable"), &_OS::set_low_processor_usage_mode);
-	ClassDB::bind_method(D_METHOD("is_in_low_processor_usage_mode"), &_OS::is_in_low_processor_usage_mode);
+	ClassDB::bind_method(D_METHOD("set_low_processor_usage_mode", "enable"), &_Platform::set_low_processor_usage_mode);
+	ClassDB::bind_method(D_METHOD("is_in_low_processor_usage_mode"), &_Platform::is_in_low_processor_usage_mode);
 
-	ClassDB::bind_method(D_METHOD("set_low_processor_usage_mode_sleep_usec", "usec"), &_OS::set_low_processor_usage_mode_sleep_usec);
-	ClassDB::bind_method(D_METHOD("get_low_processor_usage_mode_sleep_usec"), &_OS::get_low_processor_usage_mode_sleep_usec);
+	ClassDB::bind_method(D_METHOD("set_low_processor_usage_mode_sleep_usec", "usec"), &_Platform::set_low_processor_usage_mode_sleep_usec);
+	ClassDB::bind_method(D_METHOD("get_low_processor_usage_mode_sleep_usec"), &_Platform::get_low_processor_usage_mode_sleep_usec);
 
-	ClassDB::bind_method(D_METHOD("get_processor_count"), &_OS::get_processor_count);
+	ClassDB::bind_method(D_METHOD("get_processor_count"), &_Platform::get_processor_count);
 
-	ClassDB::bind_method(D_METHOD("get_executable_path"), &_OS::get_executable_path);
-	ClassDB::bind_method(D_METHOD("execute", "path", "arguments", "output", "read_stderr"), &_OS::execute, DEFVAL(Array()), DEFVAL(false));
-	ClassDB::bind_method(D_METHOD("create_process", "path", "arguments"), &_OS::create_process);
-	ClassDB::bind_method(D_METHOD("kill", "pid"), &_OS::kill);
-	ClassDB::bind_method(D_METHOD("shell_open", "uri"), &_OS::shell_open);
-	ClassDB::bind_method(D_METHOD("get_process_id"), &_OS::get_process_id);
+	ClassDB::bind_method(D_METHOD("get_executable_path"), &_Platform::get_executable_path);
+	ClassDB::bind_method(D_METHOD("execute", "path", "arguments", "output", "read_stderr"), &_Platform::execute, DEFVAL(Array()), DEFVAL(false));
+	ClassDB::bind_method(D_METHOD("create_process", "path", "arguments"), &_Platform::create_process);
+	ClassDB::bind_method(D_METHOD("kill", "pid"), &_Platform::kill);
+	ClassDB::bind_method(D_METHOD("shell_open", "uri"), &_Platform::shell_open);
+	ClassDB::bind_method(D_METHOD("get_process_id"), &_Platform::get_process_id);
 
-	ClassDB::bind_method(D_METHOD("get_environment", "variable"), &_OS::get_environment);
-	ClassDB::bind_method(D_METHOD("set_environment", "variable", "value"), &_OS::set_environment);
-	ClassDB::bind_method(D_METHOD("has_environment", "variable"), &_OS::has_environment);
+	ClassDB::bind_method(D_METHOD("get_environment", "variable"), &_Platform::get_environment);
+	ClassDB::bind_method(D_METHOD("set_environment", "variable", "value"), &_Platform::set_environment);
+	ClassDB::bind_method(D_METHOD("has_environment", "variable"), &_Platform::has_environment);
 
-	ClassDB::bind_method(D_METHOD("get_name"), &_OS::get_name);
-	ClassDB::bind_method(D_METHOD("get_cmdline_args"), &_OS::get_cmdline_args);
+	ClassDB::bind_method(D_METHOD("get_name"), &_Platform::get_name);
+	ClassDB::bind_method(D_METHOD("get_cmdline_args"), &_Platform::get_cmdline_args);
 
-	ClassDB::bind_method(D_METHOD("get_datetime", "utc"), &_OS::get_datetime, DEFVAL(false));
-	ClassDB::bind_method(D_METHOD("get_date", "utc"), &_OS::get_date, DEFVAL(false));
-	ClassDB::bind_method(D_METHOD("get_time", "utc"), &_OS::get_time, DEFVAL(false));
-	ClassDB::bind_method(D_METHOD("get_time_zone_info"), &_OS::get_time_zone_info);
-	ClassDB::bind_method(D_METHOD("get_unix_time"), &_OS::get_unix_time);
-	ClassDB::bind_method(D_METHOD("get_datetime_from_unix_time", "unix_time_val"), &_OS::get_datetime_from_unix_time);
-	ClassDB::bind_method(D_METHOD("get_unix_time_from_datetime", "datetime"), &_OS::get_unix_time_from_datetime);
+	ClassDB::bind_method(D_METHOD("get_datetime", "utc"), &_Platform::get_datetime, DEFVAL(false));
+	ClassDB::bind_method(D_METHOD("get_date", "utc"), &_Platform::get_date, DEFVAL(false));
+	ClassDB::bind_method(D_METHOD("get_time", "utc"), &_Platform::get_time, DEFVAL(false));
+	ClassDB::bind_method(D_METHOD("get_time_zone_info"), &_Platform::get_time_zone_info);
+	ClassDB::bind_method(D_METHOD("get_unix_time"), &_Platform::get_unix_time);
+	ClassDB::bind_method(D_METHOD("get_datetime_from_unix_time", "unix_time_val"), &_Platform::get_datetime_from_unix_time);
+	ClassDB::bind_method(D_METHOD("get_unix_time_from_datetime", "datetime"), &_Platform::get_unix_time_from_datetime);
 
-	ClassDB::bind_method(D_METHOD("delay_usec", "usec"), &_OS::delay_usec);
-	ClassDB::bind_method(D_METHOD("delay_msec", "msec"), &_OS::delay_msec);
-	ClassDB::bind_method(D_METHOD("get_ticks_msec"), &_OS::get_ticks_msec);
-	ClassDB::bind_method(D_METHOD("get_ticks_usec"), &_OS::get_ticks_usec);
-	ClassDB::bind_method(D_METHOD("get_locale"), &_OS::get_locale);
-	ClassDB::bind_method(D_METHOD("get_model_name"), &_OS::get_model_name);
+	ClassDB::bind_method(D_METHOD("delay_usec", "usec"), &_Platform::delay_usec);
+	ClassDB::bind_method(D_METHOD("delay_msec", "msec"), &_Platform::delay_msec);
+	ClassDB::bind_method(D_METHOD("get_ticks_msec"), &_Platform::get_ticks_msec);
+	ClassDB::bind_method(D_METHOD("get_ticks_usec"), &_Platform::get_ticks_usec);
+	ClassDB::bind_method(D_METHOD("get_locale"), &_Platform::get_locale);
+	ClassDB::bind_method(D_METHOD("get_model_name"), &_Platform::get_model_name);
 
-	ClassDB::bind_method(D_METHOD("is_userfs_persistent"), &_OS::is_userfs_persistent);
-	ClassDB::bind_method(D_METHOD("is_stdout_verbose"), &_OS::is_stdout_verbose);
+	ClassDB::bind_method(D_METHOD("is_userfs_persistent"), &_Platform::is_userfs_persistent);
+	ClassDB::bind_method(D_METHOD("is_stdout_verbose"), &_Platform::is_stdout_verbose);
 
-	ClassDB::bind_method(D_METHOD("can_use_threads"), &_OS::can_use_threads);
+	ClassDB::bind_method(D_METHOD("can_use_threads"), &_Platform::can_use_threads);
 
-	ClassDB::bind_method(D_METHOD("is_debug_build"), &_OS::is_debug_build);
+	ClassDB::bind_method(D_METHOD("is_debug_build"), &_Platform::is_debug_build);
 
-	ClassDB::bind_method(D_METHOD("dump_memory_to_file", "file"), &_OS::dump_memory_to_file);
-	ClassDB::bind_method(D_METHOD("dump_resources_to_file", "file"), &_OS::dump_resources_to_file);
-	ClassDB::bind_method(D_METHOD("print_resources_in_use", "short"), &_OS::print_resources_in_use, DEFVAL(false));
-	ClassDB::bind_method(D_METHOD("print_all_resources", "tofile"), &_OS::print_all_resources, DEFVAL(""));
+	ClassDB::bind_method(D_METHOD("dump_memory_to_file", "file"), &_Platform::dump_memory_to_file);
+	ClassDB::bind_method(D_METHOD("dump_resources_to_file", "file"), &_Platform::dump_resources_to_file);
+	ClassDB::bind_method(D_METHOD("print_resources_in_use", "short"), &_Platform::print_resources_in_use, DEFVAL(false));
+	ClassDB::bind_method(D_METHOD("print_all_resources", "tofile"), &_Platform::print_all_resources, DEFVAL(""));
 
-	ClassDB::bind_method(D_METHOD("get_static_memory_usage"), &_OS::get_static_memory_usage);
-	ClassDB::bind_method(D_METHOD("get_static_memory_peak_usage"), &_OS::get_static_memory_peak_usage);
+	ClassDB::bind_method(D_METHOD("get_static_memory_usage"), &_Platform::get_static_memory_usage);
+	ClassDB::bind_method(D_METHOD("get_static_memory_peak_usage"), &_Platform::get_static_memory_peak_usage);
 
-	ClassDB::bind_method(D_METHOD("get_user_data_dir"), &_OS::get_user_data_dir);
-	ClassDB::bind_method(D_METHOD("get_system_dir", "dir"), &_OS::get_system_dir);
-	ClassDB::bind_method(D_METHOD("get_unique_id"), &_OS::get_unique_id);
+	ClassDB::bind_method(D_METHOD("get_user_data_dir"), &_Platform::get_user_data_dir);
+	ClassDB::bind_method(D_METHOD("get_system_dir", "dir"), &_Platform::get_system_dir);
+	ClassDB::bind_method(D_METHOD("get_unique_id"), &_Platform::get_unique_id);
 
-	ClassDB::bind_method(D_METHOD("print_all_textures_by_size"), &_OS::print_all_textures_by_size);
-	ClassDB::bind_method(D_METHOD("print_resources_by_type", "types"), &_OS::print_resources_by_type);
+	ClassDB::bind_method(D_METHOD("print_all_textures_by_size"), &_Platform::print_all_textures_by_size);
+	ClassDB::bind_method(D_METHOD("print_resources_by_type", "types"), &_Platform::print_resources_by_type);
 
-	ClassDB::bind_method(D_METHOD("get_keycode_string", "code"), &_OS::get_keycode_string);
-	ClassDB::bind_method(D_METHOD("is_keycode_unicode", "code"), &_OS::is_keycode_unicode);
-	ClassDB::bind_method(D_METHOD("find_keycode_from_string", "string"), &_OS::find_keycode_from_string);
+	ClassDB::bind_method(D_METHOD("get_keycode_string", "code"), &_Platform::get_keycode_string);
+	ClassDB::bind_method(D_METHOD("is_keycode_unicode", "code"), &_Platform::is_keycode_unicode);
+	ClassDB::bind_method(D_METHOD("find_keycode_from_string", "string"), &_Platform::find_keycode_from_string);
 
-	ClassDB::bind_method(D_METHOD("set_use_file_access_save_and_swap", "enabled"), &_OS::set_use_file_access_save_and_swap);
+	ClassDB::bind_method(D_METHOD("set_use_file_access_save_and_swap", "enabled"), &_Platform::set_use_file_access_save_and_swap);
 
-	ClassDB::bind_method(D_METHOD("set_thread_name", "name"), &_OS::set_thread_name);
-	ClassDB::bind_method(D_METHOD("get_thread_caller_id"), &_OS::get_thread_caller_id);
+	ClassDB::bind_method(D_METHOD("set_thread_name", "name"), &_Platform::set_thread_name);
+	ClassDB::bind_method(D_METHOD("get_thread_caller_id"), &_Platform::get_thread_caller_id);
 
-	ClassDB::bind_method(D_METHOD("has_feature", "tag_name"), &_OS::has_feature);
+	ClassDB::bind_method(D_METHOD("has_feature", "tag_name"), &_Platform::has_feature);
 
-	ClassDB::bind_method(D_METHOD("request_permission", "name"), &_OS::request_permission);
-	ClassDB::bind_method(D_METHOD("request_permissions"), &_OS::request_permissions);
-	ClassDB::bind_method(D_METHOD("get_granted_permissions"), &_OS::get_granted_permissions);
+	ClassDB::bind_method(D_METHOD("request_permission", "name"), &_Platform::request_permission);
+	ClassDB::bind_method(D_METHOD("request_permissions"), &_Platform::request_permissions);
+	ClassDB::bind_method(D_METHOD("get_granted_permissions"), &_Platform::get_granted_permissions);
 
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "low_processor_usage_mode"), "set_low_processor_usage_mode", "is_in_low_processor_usage_mode");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "low_processor_usage_mode_sleep_usec"), "set_low_processor_usage_mode_sleep_usec", "get_low_processor_usage_mode_sleep_usec");
@@ -2274,7 +2274,7 @@ int _Engine::get_frames_drawn() {
 
 MainLoop *_Engine::get_main_loop() const {
 	//needs to remain in OS, since it's actually OS that interacts with it, but it's better exposed here
-	return OS::get_singleton()->get_main_loop();
+	return Platform::get_singleton()->get_main_loop();
 }
 
 Dictionary _Engine::get_version_info() const {

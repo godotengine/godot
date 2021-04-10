@@ -34,7 +34,7 @@
 #include "core/io/marshalls.h"
 
 //#define DEBUG_PRINT(m_p) print_line(m_p)
-//#define DEBUG_TIME(m_what) printf("MS: %s - %lu\n", m_what, OS::get_singleton()->get_ticks_usec());
+//#define DEBUG_TIME(m_what) printf("MS: %s - %lu\n", m_what, Platform::get_singleton()->get_ticks_usec());
 
 #define DEBUG_PRINT(m_what)
 #define DEBUG_TIME(m_what)
@@ -82,7 +82,7 @@ void EditorFileServer::_subthread_start(void *s) {
 		if (s2 != cd->efs->password) {
 			encode_uint32(ERR_INVALID_DATA, buf4);
 			cd->connection->put_data(buf4, 4);
-			OS::get_singleton()->delay_usec(1000000);
+			Platform::get_singleton()->delay_usec(1000000);
 			_close_client(cd);
 			ERR_PRINT("CLIENT PASSWORD MISMATCH");
 			ERR_FAIL();
@@ -91,7 +91,7 @@ void EditorFileServer::_subthread_start(void *s) {
 		if (cd->efs->password != "") {
 			encode_uint32(ERR_INVALID_DATA, buf4);
 			cd->connection->put_data(buf4, 4);
-			OS::get_singleton()->delay_usec(1000000);
+			Platform::get_singleton()->delay_usec(1000000);
 			_close_client(cd);
 			ERR_PRINT("CLIENT PASSWORD MISMATCH (should be empty!)");
 			ERR_FAIL();
@@ -293,7 +293,7 @@ void EditorFileServer::_thread_start(void *s) {
 		}
 		self->wait_mutex.unlock();
 
-		OS::get_singleton()->delay_usec(100000);
+		Platform::get_singleton()->delay_usec(100000);
 	}
 }
 

@@ -34,7 +34,7 @@
 #if defined(OPENGL_ENABLED) || defined(GLES_ENABLED)
 
 #include "core/error/error_list.h"
-#include "core/os/os.h"
+#include "core/os/platform.h"
 
 #include <AppKit/AppKit.h>
 #include <ApplicationServices/ApplicationServices.h>

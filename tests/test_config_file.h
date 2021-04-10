@@ -124,7 +124,7 @@ TEST_CASE("[ConfigFile] Saving file") {
 	config_file.set_value("graphics", "antiAliasing", false);
 
 #ifdef WINDOWS_ENABLED
-	const String config_path = OS::get_singleton()->get_environment("TEMP").plus_file("config.ini");
+	const String config_path = Platform::get_singleton()->get_environment("TEMP").plus_file("config.ini");
 #else
 	const String config_path = "/tmp/config.ini";
 #endif

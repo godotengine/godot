@@ -41,7 +41,7 @@
 #define BYTE_ONLY_OR_NO_ARGS_SHIFT 6
 
 #ifdef DEBUG_ENABLED
-#include "core/os/os.h"
+#include "core/os/platform.h"
 #endif
 
 _FORCE_INLINE_ bool _should_call_local(MultiplayerAPI::RPCMode mode, bool is_master, bool &r_skip_rpc) {
@@ -194,7 +194,7 @@ void _profile_bandwidth_data(const String &p_inout, int p_size) {
 		Array values;
 		values.push_back("bandwidth");
 		values.push_back(p_inout);
-		values.push_back(OS::get_singleton()->get_ticks_msec());
+		values.push_back(Platform::get_singleton()->get_ticks_msec());
 		values.push_back(p_size);
 		EngineDebugger::profiler_add_frame_data("multiplayer", values);
 	}

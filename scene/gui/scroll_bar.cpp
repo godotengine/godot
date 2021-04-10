@@ -31,7 +31,7 @@
 #include "scroll_bar.h"
 
 #include "core/os/keyboard.h"
-#include "core/os/os.h"
+#include "core/os/platform.h"
 #include "core/string/print_string.h"
 #include "scene/main/window.h"
 

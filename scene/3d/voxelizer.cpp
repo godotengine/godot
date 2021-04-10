@@ -30,7 +30,7 @@
 
 #include "voxelizer.h"
 #include "core/math/geometry_3d.h"
-#include "core/os/os.h"
+#include "core/os/platform.h"
 #include "core/os/threaded_array_processor.h"
 
 #include <stdlib.h>

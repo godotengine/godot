@@ -606,7 +606,7 @@ public:
 	virtual RS::InstanceType get_base_type(RID p_rid) const = 0;
 	virtual bool free(RID p_rid) = 0;
 
-	virtual bool has_os_feature(const String &p_feature) const = 0;
+	virtual bool has_platform_feature(const String &p_feature) const = 0;
 
 	virtual void update_dirty_resources() = 0;
 

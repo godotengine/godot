@@ -32,7 +32,7 @@
 
 #include "core/os/file_access.h"
 #include "core/os/main_loop.h"
-#include "core/os/os.h"
+#include "core/os/platform.h"
 
 #include "core/string/print_string.h"
 #include "scene/gui/control.h"
@@ -306,7 +306,7 @@ static Error recreate_code(void *p_str, SL::ShaderNode *p_program) {
 }
 
 MainLoop *test() {
-	List<String> cmdlargs = OS::get_singleton()->get_cmdline_args();
+	List<String> cmdlargs = Platform::get_singleton()->get_cmdline_args();
 
 	if (cmdlargs.is_empty()) {
 		//try editor!

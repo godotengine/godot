@@ -32,7 +32,7 @@
 
 #include "core/config/project_settings.h"
 #include "core/core_string_names.h"
-#include "core/os/os.h"
+#include "core/os/platform.h"
 #include "scene/main/node.h"
 #include "visual_script_nodes.h"
 

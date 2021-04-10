@@ -43,7 +43,7 @@
 #include <ifaddrs.h>
 #endif
 
-#include "core/os/os.h"
+#include "core/os/platform.h"
 #include "core/string/ustring.h"
 #include "platform/android/java_godot_wrapper.h"
 #include "platform/android/os_android.h"
@@ -164,8 +164,8 @@ void *godot_dl_handle = nullptr;
 
 void *try_dlopen(const String &p_so_path, int p_flags) {
 	if (!FileAccess::exists(p_so_path)) {
-		if (OS::get_singleton()->is_stdout_verbose())
-			OS::get_singleton()->print("Cannot find shared library: '%s'\n", p_so_path.utf8().get_data());
+		if (Platform::get_singleton()->is_stdout_verbose())
+			Platform::get_singleton()->print("Cannot find shared library: '%s'\n", p_so_path.utf8().get_data());
 		return nullptr;
 	}
 
@@ -174,13 +174,13 @@ void *try_dlopen(const String &p_so_path, int p_flags) {
 	void *handle = dlopen(p_so_path.utf8().get_data(), lflags);
 
 	if (!handle) {
-		if (OS::get_singleton()->is_stdout_verbose())
-			OS::get_singleton()->print("Failed to open shared library: '%s'. Error: '%s'\n", p_so_path.utf8().get_data(), dlerror());
+		if (Platform::get_singleton()->is_stdout_verbose())
+			Platform::get_singleton()->print("Failed to open shared library: '%s'. Error: '%s'\n", p_so_path.utf8().get_data(), dlerror());
 		return nullptr;
 	}
 
-	if (OS::get_singleton()->is_stdout_verbose())
-		OS::get_singleton()->print("Successfully loaded shared library: '%s'\n", p_so_path.utf8().get_data());
+	if (Platform::get_singleton()->is_stdout_verbose())
+		Platform::get_singleton()->print("Successfully loaded shared library: '%s'\n", p_so_path.utf8().get_data());
 
 	return handle;
 }
@@ -361,7 +361,7 @@ void register_internal_calls() {
 
 void initialize() {
 	// We need to set this environment variable to make the monodroid BCL use btls instead of legacy as the default provider
-	OS::get_singleton()->set_environment("XA_TLS_PROVIDER", "btls");
+	Platform::get_singleton()->set_environment("XA_TLS_PROVIDER", "btls");
 
 	mono_dl_fallback_register(gd_mono_android_dlopen, gd_mono_android_dlsym, gd_mono_android_dlclose, nullptr);
 
@@ -508,7 +508,7 @@ static void interop_get_active_network_dns_servers(char **r_dns_servers, int *dn
 
 	JNIEnv *env = get_jni_env();
 
-	GodotJavaWrapper *godot_java = ((OS_Android *)OS::get_singleton())->get_godot_java();
+	GodotJavaWrapper *godot_java = ((PlatformAndroid *)Platform::get_singleton())->get_godot_java();
 	jobject activity = godot_java->get_activity();
 
 	ScopedLocalRef<jclass> activityClass(env, env->GetObjectClass(activity));

@@ -96,7 +96,7 @@ namespace GodotTools.Build
 
             string applicationData = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
 
-            if (Utils.OS.IsWindows)
+            if (Utils.Platform.IsWindows)
             {
                 // %APPDATA% for both
                 return new[] {Path.Combine(applicationData, "NuGet", "NuGet.Config")};

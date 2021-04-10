@@ -34,7 +34,7 @@
 #include "core/math/geometry_2d.h"
 #include "core/object/message_queue.h"
 #include "core/os/keyboard.h"
-#include "core/os/os.h"
+#include "core/os/platform.h"
 #include "core/string/print_string.h"
 #include "core/string/translation.h"
 

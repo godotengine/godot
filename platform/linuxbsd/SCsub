@@ -7,7 +7,7 @@ import platform_linuxbsd_builders
 
 common_x11 = [
     "crash_handler_linuxbsd.cpp",
-    "os_linuxbsd.cpp",
+    "platform_linuxbsd.cpp",
     "joypad_linux.cpp",
     "context_gl_x11.cpp",
     "detect_prime_x11.cpp",

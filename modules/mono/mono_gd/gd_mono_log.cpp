@@ -33,7 +33,7 @@
 #include <stdlib.h> // abort
 
 #include "core/os/dir_access.h"
-#include "core/os/os.h"
+#include "core/os/platform.h"
 
 #include "../godotsharp_dirs.h"
 #include "../utils/string_utils.h"
@@ -132,7 +132,7 @@ void GDMonoLog::_delete_old_log_files(const String &p_logs_dir) {
 
 		uint64_t modified_time = FileAccess::get_modified_time(da->get_current_dir().plus_file(current));
 
-		if (OS::get_singleton()->get_unix_time() - modified_time > MAX_SECS) {
+		if (Platform::get_singleton()->get_unix_time() - modified_time > MAX_SECS) {
 			da->remove(current);
 		}
 	}
@@ -141,7 +141,7 @@ void GDMonoLog::_delete_old_log_files(const String &p_logs_dir) {
 }
 
 void GDMonoLog::initialize() {
-	CharString log_level = OS::get_singleton()->get_environment("GODOT_MONO_LOG_LEVEL").utf8();
+	CharString log_level = Platform::get_singleton()->get_environment("GODOT_MONO_LOG_LEVEL").utf8();
 
 	if (log_level.length() != 0 && get_log_level_id(log_level.get_data()) == -1) {
 		ERR_PRINT(String() + "Mono: Ignoring invalid log level (GODOT_MONO_LOG_LEVEL): '" + log_level.get_data() + "'.");
@@ -157,14 +157,14 @@ void GDMonoLog::initialize() {
 	if (_try_create_logs_dir(logs_dir)) {
 		_delete_old_log_files(logs_dir);
 
-		OS::Date date_now = OS::get_singleton()->get_date();
-		OS::Time time_now = OS::get_singleton()->get_time();
+		Platform::Date date_now = Platform::get_singleton()->get_date();
+		Platform::Time time_now = Platform::get_singleton()->get_time();
 
 		String log_file_name = str_format("%04d-%02d-%02d_%02d.%02d.%02d",
 				date_now.year, date_now.month, date_now.day,
 				time_now.hour, time_now.min, time_now.sec);
 
-		log_file_name += str_format("_%d", OS::get_singleton()->get_process_id());
+		log_file_name += str_format("_%d", Platform::get_singleton()->get_process_id());
 
 		log_file_name += ".log";
 
@@ -180,10 +180,10 @@ void GDMonoLog::initialize() {
 	log_level_id = get_log_level_id(log_level.get_data());
 
 	if (log_file) {
-		OS::get_singleton()->print("Mono: Log file is: '%s'\n", log_file_path.utf8().get_data());
+		Platform::get_singleton()->print("Mono: Log file is: '%s'\n", log_file_path.utf8().get_data());
 		mono_trace_set_log_handler(mono_log_callback, this);
 	} else {
-		OS::get_singleton()->printerr("Mono: No log file, using default log handler\n");
+		Platform::get_singleton()->printerr("Mono: No log file, using default log handler\n");
 	}
 }
 

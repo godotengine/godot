@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  os_uwp.cpp                                                           */
+/*  platform_uwp.cpp                                                     */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -31,7 +31,7 @@
 // Must include Winsock before windows.h (included by os_uwp.h)
 #include "drivers/unix/net_socket_posix.h"
 
-#include "os_uwp.h"
+#include "platform_uwp.h"
 
 #include "core/config/project_settings.h"
 #include "core/io/marshalls.h"
@@ -64,22 +64,22 @@ using namespace concurrency;
 
 static const float earth_gravity = 9.80665;
 
-int OS_UWP::get_video_driver_count() const {
+int PlatformUWP::get_video_driver_count() const {
 	return 2;
 }
 
-Size2 OS_UWP::get_window_size() const {
+Size2 PlatformUWP::get_window_size() const {
 	Size2 size;
 	size.width = video_mode.width;
 	size.height = video_mode.height;
 	return size;
 }
 
-int OS_UWP::get_current_video_driver() const {
+int PlatformUWP::get_current_video_driver() const {
 	return video_driver_index;
 }
 
-void OS_UWP::set_window_size(const Size2 p_size) {
+void PlatformUWP::set_window_size(const Size2 p_size) {
 	Windows::Foundation::Size new_size;
 	new_size.Width = p_size.width;
 	new_size.Height = p_size.height;
@@ -92,7 +92,7 @@ void OS_UWP::set_window_size(const Size2 p_size) {
 	}
 }
 
-void OS_UWP::set_window_fullscreen(bool p_enabled) {
+void PlatformUWP::set_window_fullscreen(bool p_enabled) {
 	ApplicationView ^ view = ApplicationView::GetForCurrentView();
 
 	video_mode.fullscreen = view->IsFullScreenMode;
@@ -109,11 +109,11 @@ void OS_UWP::set_window_fullscreen(bool p_enabled) {
 	}
 }
 
-bool OS_UWP::is_window_fullscreen() const {
+bool PlatformUWP::is_window_fullscreen() const {
 	return ApplicationView::GetForCurrentView()->IsFullScreenMode;
 }
 
-void OS_UWP::set_keep_screen_on(bool p_enabled) {
+void PlatformUWP::set_keep_screen_on(bool p_enabled) {
 	if (is_keep_screen_on() == p_enabled)
 		return;
 
@@ -122,10 +122,10 @@ void OS_UWP::set_keep_screen_on(bool p_enabled) {
 	else
 		display_request->RequestRelease();
 
-	OS::set_keep_screen_on(p_enabled);
+	Platform::set_keep_screen_on(p_enabled);
 }
 
-void OS_UWP::initialize_core() {
+void PlatformUWP::initialize_core() {
 	last_button_state = 0;
 
 	//RedirectIOToConsole();
@@ -152,15 +152,15 @@ void OS_UWP::initialize_core() {
 	cursor_shape = CURSOR_ARROW;
 }
 
-void OS_UWP::set_window(Windows::UI::Core::CoreWindow ^ p_window) {
+void PlatformUWP::set_window(Windows::UI::Core::CoreWindow ^ p_window) {
 	window = p_window;
 }
 
-void OS_UWP::screen_size_changed() {
+void PlatformUWP::screen_size_changed() {
 	gl_context->reset();
 };
 
-Error OS_UWP::initialize(const VideoMode &p_desired, int p_video_driver, int p_audio_driver) {
+Error PlatformUWP::initialize(const VideoMode &p_desired, int p_video_driver, int p_audio_driver) {
 	main_loop = nullptr;
 	outside = true;
 
@@ -188,8 +188,9 @@ Error OS_UWP::initialize(const VideoMode &p_desired, int p_video_driver, int p_a
 	}
 
 	if (gl_initialization_error) {
-		OS::get_singleton()->alert("Your video card driver does not support any of the supported OpenGL versions.\n"
-								   "Please update your drivers or if you have a very old or integrated GPU upgrade it.",
+		Platform::get_singleton()->alert(
+				"Your video card driver does not support any of the supported OpenGL versions.\n"
+				"Please update your drivers or if you have a very old or integrated GPU upgrade it.",
 				"Unable to initialize video driver");
 		return ERR_UNAVAILABLE;
 	}
@@ -285,7 +286,7 @@ Error OS_UWP::initialize(const VideoMode &p_desired, int p_video_driver, int p_a
 	return OK;
 }
 
-void OS_UWP::set_clipboard(const String &p_text) {
+void PlatformUWP::set_clipboard(const String &p_text) {
 	DataPackage ^ clip = ref new DataPackage();
 	clip->RequestedOperation = DataPackageOperation::Copy;
 	clip->SetText(ref new Platform::String((LPCWSTR)(p_text.utf16().get_data())));
@@ -293,29 +294,29 @@ void OS_UWP::set_clipboard(const String &p_text) {
 	Clipboard::SetContent(clip);
 };
 
-String OS_UWP::get_clipboard() const {
+String PlatformUWP::get_clipboard() const {
 	if (managed_object->clipboard != nullptr)
 		return managed_object->clipboard->Data();
 	else
 		return "";
 };
 
-void OS_UWP::input_event(const Ref<InputEvent> &p_event) {
+void PlatformUWP::input_event(const Ref<InputEvent> &p_event) {
 	input->parse_input_event(p_event);
 };
 
-void OS_UWP::delete_main_loop() {
+void PlatformUWP::delete_main_loop() {
 	if (main_loop)
 		memdelete(main_loop);
 	main_loop = nullptr;
 }
 
-void OS_UWP::set_main_loop(MainLoop *p_main_loop) {
+void PlatformUWP::set_main_loop(MainLoop *p_main_loop) {
 	input->set_main_loop(p_main_loop);
 	main_loop = p_main_loop;
 }
 
-void OS_UWP::finalize() {
+void PlatformUWP::finalize() {
 	if (main_loop)
 		memdelete(main_loop);
 
@@ -333,17 +334,17 @@ void OS_UWP::finalize() {
 	joypad = nullptr;
 }
 
-void OS_UWP::finalize_core() {
+void PlatformUWP::finalize_core() {
 	NetSocketPosix::cleanup();
 }
 
-void OS_UWP::alert(const String &p_alert, const String &p_title) {
+void PlatformUWP::alert(const String &p_alert, const String &p_title) {
 	Platform::String ^ alert = ref new Platform::String((LPCWSTR)(p_alert.utf16().get_data()));
 	Platform::String ^ title = ref new Platform::String((LPCWSTR)(p_title.utf16().get_data()));
 
 	MessageDialog ^ msg = ref new MessageDialog(alert, title);
 
-	UICommand ^ close = ref new UICommand("Close", ref new UICommandInvokedHandler(managed_object, &OS_UWP::ManagedType::alert_close));
+	UICommand ^ close = ref new UICommand("Close", ref new UICommandInvokedHandler(managed_object, &PlatformUWP::ManagedType::alert_close));
 	msg->Commands->Append(close);
 	msg->DefaultCommandIndex = 0;
 
@@ -352,15 +353,15 @@ void OS_UWP::alert(const String &p_alert, const String &p_title) {
 	msg->ShowAsync();
 }
 
-void OS_UWP::ManagedType::alert_close(IUICommand ^ command) {
+void PlatformUWP::ManagedType::alert_close(IUICommand ^ command) {
 	alert_close_handle = false;
 }
 
-void OS_UWP::ManagedType::on_clipboard_changed(Platform::Object ^ sender, Platform::Object ^ ev) {
+void PlatformUWP::ManagedType::on_clipboard_changed(Platform::Object ^ sender, Platform::Object ^ ev) {
 	update_clipboard();
 }
 
-void OS_UWP::ManagedType::update_clipboard() {
+void PlatformUWP::ManagedType::update_clipboard() {
 	DataPackageView ^ data = Clipboard::GetContent();
 
 	if (data->Contains(StandardDataFormats::Text)) {
@@ -370,7 +371,7 @@ void OS_UWP::ManagedType::update_clipboard() {
 	}
 }
 
-void OS_UWP::ManagedType::on_accelerometer_reading_changed(Accelerometer ^ sender, AccelerometerReadingChangedEventArgs ^ args) {
+void PlatformUWP::ManagedType::on_accelerometer_reading_changed(Accelerometer ^ sender, AccelerometerReadingChangedEventArgs ^ args) {
 	AccelerometerReading ^ reading = args->Reading;
 
 	os->input->set_accelerometer(Vector3(
@@ -379,7 +380,7 @@ void OS_UWP::ManagedType::on_accelerometer_reading_changed(Accelerometer ^ sende
 			reading->AccelerationZ * earth_gravity));
 }
 
-void OS_UWP::ManagedType::on_magnetometer_reading_changed(Magnetometer ^ sender, MagnetometerReadingChangedEventArgs ^ args) {
+void PlatformUWP::ManagedType::on_magnetometer_reading_changed(Magnetometer ^ sender, MagnetometerReadingChangedEventArgs ^ args) {
 	MagnetometerReading ^ reading = args->Reading;
 
 	os->input->set_magnetometer(Vector3(
@@ -388,7 +389,7 @@ void OS_UWP::ManagedType::on_magnetometer_reading_changed(Magnetometer ^ sender,
 			reading->MagneticFieldZ));
 }
 
-void OS_UWP::ManagedType::on_gyroscope_reading_changed(Gyrometer ^ sender, GyrometerReadingChangedEventArgs ^ args) {
+void PlatformUWP::ManagedType::on_gyroscope_reading_changed(Gyrometer ^ sender, GyrometerReadingChangedEventArgs ^ args) {
 	GyrometerReading ^ reading = args->Reading;
 
 	os->input->set_magnetometer(Vector3(
@@ -397,7 +398,7 @@ void OS_UWP::ManagedType::on_gyroscope_reading_changed(Gyrometer ^ sender, Gyrom
 			reading->AngularVelocityZ));
 }
 
-void OS_UWP::set_mouse_mode(MouseMode p_mode) {
+void PlatformUWP::set_mouse_mode(MouseMode p_mode) {
 	if (p_mode == MouseMode::MOUSE_MODE_CAPTURED) {
 		CoreWindow::GetForCurrentThread()->SetPointerCapture();
 
@@ -417,37 +418,37 @@ void OS_UWP::set_mouse_mode(MouseMode p_mode) {
 	SetEvent(mouse_mode_changed);
 }
 
-OS_UWP::MouseMode OS_UWP::get_mouse_mode() const {
+PlatformUWP::MouseMode PlatformUWP::get_mouse_mode() const {
 	return mouse_mode;
 }
 
-Point2 OS_UWP::get_mouse_position() const {
+Point2 PlatformUWP::get_mouse_position() const {
 	return Point2(old_x, old_y);
 }
 
-int OS_UWP::get_mouse_button_state() const {
+int PlatformUWP::get_mouse_button_state() const {
 	return last_button_state;
 }
 
-void OS_UWP::set_window_title(const String &p_title) {
+void PlatformUWP::set_window_title(const String &p_title) {
 }
 
-void OS_UWP::set_video_mode(const VideoMode &p_video_mode, int p_screen) {
+void PlatformUWP::set_video_mode(const VideoMode &p_video_mode, int p_screen) {
 	video_mode = p_video_mode;
 }
 
-OS::VideoMode OS_UWP::get_video_mode(int p_screen) const {
+Platform::VideoMode PlatformUWP::get_video_mode(int p_screen) const {
 	return video_mode;
 }
 
-void OS_UWP::get_fullscreen_mode_list(List<VideoMode> *p_list, int p_screen) const {
+void PlatformUWP::get_fullscreen_mode_list(List<VideoMode> *p_list, int p_screen) const {
 }
 
-String OS_UWP::get_name() const {
+String PlatformUWP::get_name() const {
 	return "UWP";
 }
 
-OS::Date OS_UWP::get_date(bool utc) const {
+Platform::Date PlatformUWP::get_date(bool utc) const {
 	SYSTEMTIME systemtime;
 	if (utc)
 		GetSystemTime(&systemtime);
@@ -463,7 +464,7 @@ OS::Date OS_UWP::get_date(bool utc) const {
 	return date;
 }
 
-OS::Time OS_UWP::get_time(bool utc) const {
+Platform::Time PlatformUWP::get_time(bool utc) const {
 	SYSTEMTIME systemtime;
 	if (utc)
 		GetSystemTime(&systemtime);
@@ -477,7 +478,7 @@ OS::Time OS_UWP::get_time(bool utc) const {
 	return time;
 }
 
-OS::TimeZoneInfo OS_UWP::get_time_zone_info() const {
+Platform::TimeZoneInfo PlatformUWP::get_time_zone_info() const {
 	TIME_ZONE_INFORMATION info;
 	bool daylight = false;
 	if (GetTimeZoneInformation(&info) == TIME_ZONE_ID_DAYLIGHT)
@@ -496,7 +497,7 @@ OS::TimeZoneInfo OS_UWP::get_time_zone_info() const {
 	return ret;
 }
 
-uint64_t OS_UWP::get_unix_time() const {
+uint64_t PlatformUWP::get_unix_time() const {
 	FILETIME ft;
 	SYSTEMTIME st;
 	GetSystemTime(&st);
@@ -517,14 +518,14 @@ uint64_t OS_UWP::get_unix_time() const {
 	return (*(uint64_t *)&ft - *(uint64_t *)&fep) / 10000000;
 };
 
-void OS_UWP::delay_usec(uint32_t p_usec) const {
+void PlatformUWP::delay_usec(uint32_t p_usec) const {
 	int msec = p_usec < 1000 ? 1 : p_usec / 1000;
 
 	// no Sleep()
 	WaitForSingleObjectEx(GetCurrentThread(), msec, false);
 }
 
-uint64_t OS_UWP::get_ticks_usec() const {
+uint64_t PlatformUWP::get_ticks_usec() const {
 	uint64_t ticks;
 
 	// This is the number of clock ticks since start
@@ -554,12 +555,12 @@ uint64_t OS_UWP::get_ticks_usec() const {
 	return time;
 }
 
-void OS_UWP::process_events() {
+void PlatformUWP::process_events() {
 	joypad->process_controllers();
 	process_key_events();
 }
 
-void OS_UWP::process_key_events() {
+void PlatformUWP::process_key_events() {
 	for (int i = 0; i < key_event_pos; i++) {
 		KeyEvent &kev = key_event_buffer[i];
 
@@ -579,7 +580,7 @@ void OS_UWP::process_key_events() {
 	key_event_pos = 0;
 }
 
-void OS_UWP::queue_key_event(KeyEvent &p_event) {
+void PlatformUWP::queue_key_event(KeyEvent &p_event) {
 	// This merges Char events with the previous Key event, so
 	// the unicode can be retrieved without sending duplicate events.
 	if (p_event.type == KeyEvent::MessageType::CHAR_EVENT_MESSAGE && key_event_pos > 0) {
@@ -595,7 +596,7 @@ void OS_UWP::queue_key_event(KeyEvent &p_event) {
 	key_event_buffer[key_event_pos++] = p_event;
 }
 
-void OS_UWP::set_cursor_shape(CursorShape p_shape) {
+void PlatformUWP::set_cursor_shape(CursorShape p_shape) {
 	ERR_FAIL_INDEX(p_shape, CURSOR_MAX);
 
 	if (cursor_shape == p_shape)
@@ -626,61 +627,61 @@ void OS_UWP::set_cursor_shape(CursorShape p_shape) {
 	cursor_shape = p_shape;
 }
 
-OS::CursorShape OS_UWP::get_cursor_shape() const {
+Platform::CursorShape PlatformUWP::get_cursor_shape() const {
 	return cursor_shape;
 }
 
-void OS_UWP::set_custom_mouse_cursor(const RES &p_cursor, CursorShape p_shape, const Vector2 &p_hotspot) {
+void PlatformUWP::set_custom_mouse_cursor(const RES &p_cursor, CursorShape p_shape, const Vector2 &p_hotspot) {
 	// TODO
 }
 
-Error OS_UWP::execute(const String &p_path, const List<String> &p_arguments, String *r_pipe, int *r_exitcode, bool read_stderr, Mutex *p_pipe_mutex) {
+Error PlatformUWP::execute(const String &p_path, const List<String> &p_arguments, String *r_pipe, int *r_exitcode, bool read_stderr, Mutex *p_pipe_mutex) {
 	return FAILED;
 };
 
-Error OS_UWP::create_process(const String &p_path, const List<String> &p_arguments, ProcessID *r_child_id) {
+Error PlatformUWP::create_process(const String &p_path, const List<String> &p_arguments, ProcessID *r_child_id) {
 	return FAILED;
 };
 
-Error OS_UWP::kill(const ProcessID &p_pid) {
+Error PlatformUWP::kill(const ProcessID &p_pid) {
 	return FAILED;
 };
 
-Error OS_UWP::set_cwd(const String &p_cwd) {
+Error PlatformUWP::set_cwd(const String &p_cwd) {
 	return FAILED;
 }
 
-String OS_UWP::get_executable_path() const {
+String PlatformUWP::get_executable_path() const {
 	return "";
 }
 
-void OS_UWP::set_icon(const Ref<Image> &p_icon) {
+void PlatformUWP::set_icon(const Ref<Image> &p_icon) {
 }
 
-bool OS_UWP::has_environment(const String &p_var) const {
+bool PlatformUWP::has_environment(const String &p_var) const {
 	return false;
 };
 
-String OS_UWP::get_environment(const String &p_var) const {
+String PlatformUWP::get_environment(const String &p_var) const {
 	return "";
 };
 
-bool OS_UWP::set_environment(const String &p_var, const String &p_value) const {
+bool PlatformUWP::set_environment(const String &p_var, const String &p_value) const {
 	return false;
 }
 
-String OS_UWP::get_stdin_string(bool p_block) {
+String PlatformUWP::get_stdin_string(bool p_block) {
 	return String();
 }
 
-void OS_UWP::move_window_to_foreground() {
+void PlatformUWP::move_window_to_foreground() {
 }
 
-Error OS_UWP::shell_open(String p_uri) {
+Error PlatformUWP::shell_open(String p_uri) {
 	return FAILED;
 }
 
-String OS_UWP::get_locale() const {
+String PlatformUWP::get_locale() const {
 #if WINAPI_FAMILY == WINAPI_FAMILY_PHONE_APP // this should work on phone 8.1, but it doesn't
 	return "en";
 #else
@@ -689,33 +690,33 @@ String OS_UWP::get_locale() const {
 #endif
 }
 
-void OS_UWP::release_rendering_thread() {
+void PlatformUWP::release_rendering_thread() {
 	gl_context->release_current();
 }
 
-void OS_UWP::make_rendering_thread() {
+void PlatformUWP::make_rendering_thread() {
 	gl_context->make_current();
 }
 
-void OS_UWP::swap_buffers() {
+void PlatformUWP::swap_buffers() {
 	gl_context->swap_buffers();
 }
 
-bool OS_UWP::has_touchscreen_ui_hint() const {
+bool PlatformUWP::has_touchscreen_ui_hint() const {
 	TouchCapabilities ^ tc = ref new TouchCapabilities();
 	return tc->TouchPresent != 0 || UIViewSettings::GetForCurrentView()->UserInteractionMode == UserInteractionMode::Touch;
 }
 
-bool OS_UWP::has_virtual_keyboard() const {
+bool PlatformUWP::has_virtual_keyboard() const {
 	return UIViewSettings::GetForCurrentView()->UserInteractionMode == UserInteractionMode::Touch;
 }
 
-void OS_UWP::show_virtual_keyboard(const String &p_existing_text, const Rect2 &p_screen_rect, bool p_multiline, int p_max_input_length, int p_cursor_start, int p_cursor_end) {
+void PlatformUWP::show_virtual_keyboard(const String &p_existing_text, const Rect2 &p_screen_rect, bool p_multiline, int p_max_input_length, int p_cursor_start, int p_cursor_end) {
 	InputPane ^ pane = InputPane::GetForCurrentView();
 	pane->TryShow();
 }
 
-void OS_UWP::hide_virtual_keyboard() {
+void PlatformUWP::hide_virtual_keyboard() {
 	InputPane ^ pane = InputPane::GetForCurrentView();
 	pane->TryHide();
 }
@@ -732,21 +733,21 @@ static String format_error_message(DWORD id) {
 	return msg;
 }
 
-Error OS_UWP::open_dynamic_library(const String p_path, void *&p_library_handle, bool p_also_set_library_path) {
+Error PlatformUWP::open_dynamic_library(const String p_path, void *&p_library_handle, bool p_also_set_library_path) {
 	String full_path = "game/" + p_path;
 	p_library_handle = (void *)LoadPackagedLibrary((LPCWSTR)(full_path.utf16().get_data()), 0);
 	ERR_FAIL_COND_V_MSG(!p_library_handle, ERR_CANT_OPEN, "Can't open dynamic library: " + full_path + ", error: " + format_error_message(GetLastError()) + ".");
 	return OK;
 }
 
-Error OS_UWP::close_dynamic_library(void *p_library_handle) {
+Error PlatformUWP::close_dynamic_library(void *p_library_handle) {
 	if (!FreeLibrary((HMODULE)p_library_handle)) {
 		return FAILED;
 	}
 	return OK;
 }
 
-Error OS_UWP::get_dynamic_library_symbol_handle(void *p_library_handle, const String p_name, void *&p_symbol_handle, bool p_optional) {
+Error PlatformUWP::get_dynamic_library_symbol_handle(void *p_library_handle, const String p_name, void *&p_symbol_handle, bool p_optional) {
 	p_symbol_handle = (void *)GetProcAddress((HMODULE)p_library_handle, p_name.utf8().get_data());
 	if (!p_symbol_handle) {
 		if (!p_optional) {
@@ -758,7 +759,7 @@ Error OS_UWP::get_dynamic_library_symbol_handle(void *p_library_handle, const St
 	return OK;
 }
 
-void OS_UWP::run() {
+void PlatformUWP::run() {
 	if (!main_loop)
 		return;
 
@@ -781,21 +782,21 @@ void OS_UWP::run() {
 	main_loop->finish();
 }
 
-MainLoop *OS_UWP::get_main_loop() const {
+MainLoop *PlatformUWP::get_main_loop() const {
 	return main_loop;
 }
 
-String OS_UWP::get_user_data_dir() const {
+String PlatformUWP::get_user_data_dir() const {
 	Windows::Storage::StorageFolder ^ data_folder = Windows::Storage::ApplicationData::Current->LocalFolder;
 
 	return String(data_folder->Path->Data()).replace("\\", "/");
 }
 
-bool OS_UWP::_check_internal_feature_support(const String &p_feature) {
+bool PlatformUWP::_check_internal_feature_support(const String &p_feature) {
 	return p_feature == "pc";
 }
 
-OS_UWP::OS_UWP() {
+PlatformUWP::PlatformUWP() {
 	key_event_pos = 0;
 	force_quit = false;
 	alt_mem = false;
@@ -828,7 +829,7 @@ OS_UWP::OS_UWP() {
 	_set_logger(memnew(CompositeLogger(loggers)));
 }
 
-OS_UWP::~OS_UWP() {
+PlatformUWP::~PlatformUWP() {
 #ifdef STDOUT_FILE
 	fclose(stdo);
 #endif

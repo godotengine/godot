@@ -225,7 +225,7 @@ Error PacketPeerUDP::connect_to_host(const IP_Address &p_host, int p_port) {
 	err = _sock->connect_to_host(p_host, p_port);
 
 	// I see no reason why we should get ERR_BUSY (wouldblock/eagain) here.
-	// This is UDP, so connect is only used to tell the OS to which socket
+	// This is UDP, so connect is only used to tell the platform to which socket
 	// it should deliver packets when multiple are bound on the same address/port.
 	if (err != OK) {
 		close();

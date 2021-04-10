@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="OS" inherits="Object" version="4.0">
+<class name="Platform" inherits="Object" version="4.0">
 	<brief_description>
-		Operating System functions.
+		Platform functions.
 	</brief_description>
 	<description>
-		Operating System functions. OS wraps the most common functionality to communicate with the host operating system, such as the clipboard, video driver, date and time, timers, environment variables, execution of binaries, command line, etc.
+		Platform functions. Platform wraps the most common functionality to communicate with the host platform, such as the clipboard, video driver, date and time, timers, environment variables, execution of binaries, command line, etc.
 	</description>
 	<tutorials>
 		<link title="OS Test Demo">https://godotengine.org/asset-library/asset/677</link>
@@ -38,10 +38,10 @@
 				For example, running another instance of the project:
 				[codeblocks]
 				[gdscript]
-				var pid = OS.create_process(OS.get_executable_path(), [])
+				var pid = Platform.create_process(Platform.get_executable_path(), [])
 				[/gdscript]
 				[csharp]
-				var pid = OS.CreateProcess(OS.GetExecutablePath(), new string[] {});
+				var pid = Platform.CreateProcess(Platform.GetExecutablePath(), new string[] {});
 				[/csharp]
 				[/codeblocks]
 				See [method execute] if you wish to run an external command and retrieve the results.
@@ -106,22 +106,22 @@
 				[codeblocks]
 				[gdscript]
 				var output = []
-				var exit_code = OS.execute("ls", ["-l", "/tmp"], output)
+				var exit_code = Platform.execute("ls", ["-l", "/tmp"], output)
 				[/gdscript]
 				[csharp]
 				var output = new Godot.Collections.Array();
-				int exitCode = OS.Execute("ls", new string[] {"-l", "/tmp"}, output);
+				int exitCode = Platform.Execute("ls", new string[] {"-l", "/tmp"}, output);
 				[/csharp]
 				[/codeblocks]
 				To execute a composite command, a platform-specific shell can be invoked. For example:
 				[codeblocks]
 				[gdscript]
 				var output = []
-				OS.execute("CMD.exe", ["/C", "cd %TEMP% &amp;&amp; dir"], output)
+				Platform.execute("CMD.exe", ["/C", "cd %TEMP% &amp;&amp; dir"], output)
 				[/gdscript]
 				[csharp]
 				var output = new Godot.Collections.Array();
-				OS.Execute("CMD.exe", new string[] {"/C", "cd %TEMP% &amp;&amp; dir"}, output);
+				Platform.Execute("CMD.exe", new string[] {"/C", "cd %TEMP% &amp;&amp; dir"}, output);
 				[/csharp]
 				[/codeblocks]
 				[b]Note:[/b] This method is implemented on Android, iOS, Linux, macOS and Windows.
@@ -148,14 +148,14 @@
 				[codeblocks]
 				[gdscript]
 				var arguments = {}
-				for argument in OS.get_cmdline_args():
+				for argument in Platform.get_cmdline_args():
 				    if argument.find("=") &gt; -1:
 				        var key_value = argument.split("=")
 				        arguments[key_value[0].lstrip("--")] = key_value[1]
 				[/gdscript]
 				[csharp]
 				var arguments = new Godot.Collections.Dictionary();
-				foreach (var argument in OS.GetCmdlineArgs())
+				foreach (var argument in Platform.GetCmdlineArgs())
 				{
 				    if (argument.Find("=") &gt; -1)
 				    {
@@ -243,7 +243,7 @@
 			<return type="String">
 			</return>
 			<description>
-				Returns the host OS locale as a string of the form [code]language_Script_COUNTRY_VARIANT@extra[/code].
+				Returns the host platform locale as a string of the form [code]language_Script_COUNTRY_VARIANT@extra[/code].
 				[code]language[/code] - 2 or 3-letter [url=https://en.wikipedia.org/wiki/List_of_ISO_639-1_codes]language code[/url], in lower case.
 				[code]Script[/code] - optional, 4-letter [url=https://en.wikipedia.org/wiki/ISO_15924]script code[/url], in title case.
 				[code]COUNTRY[/code] - optional, 2 or 3-letter [url=https://en.wikipedia.org/wiki/ISO_3166-1]country code[/url], in upper case.
@@ -263,7 +263,7 @@
 			<return type="String">
 			</return>
 			<description>
-				Returns the name of the host OS. Possible values are: [code]"Android"[/code], [code]"iOS"[/code], [code]"HTML5"[/code], [code]"OSX"[/code], [code]"Server"[/code], [code]"Windows"[/code], [code]"UWP"[/code], [code]"X11"[/code].
+				Returns the name of the host platform. Possible values are: [code]"Android"[/code], [code]"iOS"[/code], [code]"HTML5"[/code], [code]"OSX"[/code], [code]"Server"[/code], [code]"Windows"[/code], [code]"UWP"[/code], [code]"X11"[/code].
 			</description>
 		</method>
 		<method name="get_process_id" qualifiers="const">
@@ -298,7 +298,7 @@
 		<method name="get_system_dir" qualifiers="const">
 			<return type="String">
 			</return>
-			<argument index="0" name="dir" type="int" enum="OS.SystemDir">
+			<argument index="0" name="dir" type="int" enum="Platform.SystemDir">
 			</argument>
 			<description>
 				Returns the actual path to commonly used folders across different platforms. Available locations are specified in [enum SystemDir].
@@ -408,7 +408,7 @@
 			<description>
 				Returns [code]true[/code] if the Godot binary used to run the project is a [i]debug[/i] export template, or when running in the editor.
 				Returns [code]false[/code] if the Godot binary used to run the project is a [i]release[/i] export template.
-				To check whether the Godot binary used to run the project is an export template (debug or release), use [code]OS.has_feature("standalone")[/code] instead.
+				To check whether the Godot binary used to run the project is an export template (debug or release), use [code]Platform.has_feature("standalone")[/code] instead.
 			</description>
 		</method>
 		<method name="is_keycode_unicode" qualifiers="const">
@@ -540,10 +540,10 @@
 			<argument index="0" name="uri" type="String">
 			</argument>
 			<description>
-				Requests the OS to open a resource with the most appropriate program. For example:
-				- [code]OS.shell_open("C:\\Users\name\Downloads")[/code] on Windows opens the file explorer at the user's Downloads folder.
-				- [code]OS.shell_open("https://godotengine.org")[/code] opens the default web browser on the official Godot website.
-				- [code]OS.shell_open("mailto:example@example.com")[/code] opens the default email client with the "To" field set to [code]example@example.com[/code]. See [url=https://blog.escapecreative.com/customizing-mailto-links/]Customizing [code]mailto:[/code] Links[/url] for a list of fields that can be added.
+				Requests the platform to open a resource with the most appropriate program. For example:
+				- [code]Platform.shell_open("C:\\Users\name\Downloads")[/code] on Windows opens the file explorer at the user's Downloads folder.
+				- [code]Platform.shell_open("https://godotengine.org")[/code] opens the default web browser on the official Godot website.
+				- [code]Platform.shell_open("mailto:example@example.com")[/code] opens the default email client with the "To" field set to [code]example@example.com[/code]. See [url=https://blog.escapecreative.com/customizing-mailto-links/]Customizing [code]mailto:[/code] Links[/url] for a list of fields that can be added.
 				Use [method ProjectSettings.globalize_path] to convert a [code]res://[/code] or [code]user://[/code] path into a system path for use with this method.
 				[b]Note:[/b] This method is implemented on Android, iOS, HTML5, Linux, macOS and Windows.
 			</description>

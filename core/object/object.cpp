@@ -35,7 +35,7 @@
 #include "core/object/class_db.h"
 #include "core/object/message_queue.h"
 #include "core/object/script_language.h"
-#include "core/os/os.h"
+#include "core/os/platform.h"
 #include "core/string/print_string.h"
 #include "core/string/translation.h"
 
@@ -1930,7 +1930,7 @@ void ObjectDB::cleanup() {
 		spin_lock.lock();
 
 		WARN_PRINT("ObjectDB instances leaked at exit (run with --verbose for details).");
-		if (OS::get_singleton()->is_stdout_verbose()) {
+		if (Platform::get_singleton()->is_stdout_verbose()) {
 			// Ensure calling the native classes because if a leaked instance has a script
 			// that overrides any of those methods, it'd not be OK to call them at this point,
 			// now the scripting languages have already been terminated.

@@ -8,7 +8,7 @@ javascript_files = [
     "http_client_javascript.cpp",
     "javascript_eval.cpp",
     "javascript_main.cpp",
-    "os_javascript.cpp",
+    "platform_javascript.cpp",
     "api/javascript_tools_editor_plugin.cpp",
 ]
 

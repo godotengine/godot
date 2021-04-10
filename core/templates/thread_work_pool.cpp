@@ -30,7 +30,7 @@
 
 #include "thread_work_pool.h"
 
-#include "core/os/os.h"
+#include "core/os/platform.h"
 
 void ThreadWorkPool::_thread_function(void *p_user) {
 	ThreadData *thread = static_cast<ThreadData *>(p_user);
@@ -47,7 +47,7 @@ void ThreadWorkPool::_thread_function(void *p_user) {
 void ThreadWorkPool::init(int p_thread_count) {
 	ERR_FAIL_COND(threads != nullptr);
 	if (p_thread_count < 0) {
-		p_thread_count = OS::get_singleton()->get_processor_count();
+		p_thread_count = Platform::get_singleton()->get_processor_count();
 	}
 
 	thread_count = p_thread_count;

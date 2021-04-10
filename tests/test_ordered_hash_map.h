@@ -31,7 +31,7 @@
 #ifndef TEST_ORDERED_HASH_MAP_H
 #define TEST_ORDERED_HASH_MAP_H
 
-#include "core/os/os.h"
+#include "core/os/platform.h"
 #include "core/templates/ordered_hash_map.h"
 #include "core/templates/pair.h"
 #include "core/templates/vector.h"

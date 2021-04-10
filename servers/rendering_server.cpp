@@ -1836,7 +1836,7 @@ void RenderingServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_default_clear_color", "color"), &RenderingServer::set_default_clear_color);
 
 	ClassDB::bind_method(D_METHOD("has_feature", "feature"), &RenderingServer::has_feature);
-	ClassDB::bind_method(D_METHOD("has_os_feature", "feature"), &RenderingServer::has_os_feature);
+	ClassDB::bind_method(D_METHOD("has_platform_feature", "feature"), &RenderingServer::has_platform_feature);
 	ClassDB::bind_method(D_METHOD("set_debug_generate_wireframes", "generate"), &RenderingServer::set_debug_generate_wireframes);
 
 	ClassDB::bind_method(D_METHOD("is_render_loop_enabled"), &RenderingServer::is_render_loop_enabled);

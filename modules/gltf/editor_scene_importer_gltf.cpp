@@ -33,7 +33,7 @@
 #include "core/math/disjoint_set.h"
 #include "core/math/math_defs.h"
 #include "core/os/file_access.h"
-#include "core/os/os.h"
+#include "core/os/platform.h"
 #include "editor/import/resource_importer_scene.h"
 #include "modules/gltf/gltf_state.h"
 #include "modules/regex/regex.h"

@@ -42,7 +42,7 @@
 #include "core/object/message_queue.h"
 #include "core/os/file_access.h"
 #include "core/os/keyboard.h"
-#include "core/os/os.h"
+#include "core/os/platform.h"
 #include "core/string/print_string.h"
 #include "core/string/translation.h"
 #include "core/version.h"
@@ -520,7 +520,7 @@ void EditorNode::_notification(int p_what) {
 
 			// update the animation frame of the update spinner
 			uint64_t frame = Engine::get_singleton()->get_frames_drawn();
-			uint32_t tick = OS::get_singleton()->get_ticks_msec();
+			uint32_t tick = Platform::get_singleton()->get_ticks_msec();
 
 			if (frame != update_spinner_step_frame && (tick - update_spinner_step_msec) > (1000 / 8)) {
 				update_spinner_step++;
@@ -551,7 +551,7 @@ void EditorNode::_notification(int p_what) {
 		case NOTIFICATION_ENTER_TREE: {
 			Engine::get_singleton()->set_editor_hint(true);
 
-			OS::get_singleton()->set_low_processor_usage_mode_sleep_usec(int(EDITOR_GET("interface/editor/low_processor_mode_sleep_usec")));
+			Platform::get_singleton()->set_low_processor_usage_mode_sleep_usec(int(EDITOR_GET("interface/editor/low_processor_mode_sleep_usec")));
 			get_tree()->get_root()->set_as_audio_listener(false);
 			get_tree()->get_root()->set_as_audio_listener_2d(false);
 			get_tree()->get_root()->set_snap_2d_transforms_to_pixel(false);
@@ -603,7 +603,7 @@ void EditorNode::_notification(int p_what) {
 
 		case NOTIFICATION_APPLICATION_FOCUS_IN: {
 			// Restore the original FPS cap after focusing back on the editor
-			OS::get_singleton()->set_low_processor_usage_mode_sleep_usec(int(EDITOR_GET("interface/editor/low_processor_mode_sleep_usec")));
+			Platform::get_singleton()->set_low_processor_usage_mode_sleep_usec(int(EDITOR_GET("interface/editor/low_processor_mode_sleep_usec")));
 
 			EditorFileSystem::get_singleton()->scan_changes();
 			_scan_external_changes();
@@ -611,7 +611,7 @@ void EditorNode::_notification(int p_what) {
 
 		case NOTIFICATION_APPLICATION_FOCUS_OUT: {
 			// Set a low FPS cap to decrease CPU/GPU usage while the editor is unfocused
-			OS::get_singleton()->set_low_processor_usage_mode_sleep_usec(int(EDITOR_GET("interface/editor/unfocused_low_processor_mode_sleep_usec")));
+			Platform::get_singleton()->set_low_processor_usage_mode_sleep_usec(int(EDITOR_GET("interface/editor/unfocused_low_processor_mode_sleep_usec")));
 		} break;
 
 		case NOTIFICATION_WM_ABOUT: {
@@ -718,7 +718,7 @@ void EditorNode::_update_update_spinner() {
 	update_popup->set_item_checked(update_popup->get_item_index(SETTINGS_UPDATE_CONTINUOUSLY), update_continuously);
 	update_popup->set_item_checked(update_popup->get_item_index(SETTINGS_UPDATE_WHEN_CHANGED), !update_continuously);
 
-	OS::get_singleton()->set_low_processor_usage_mode(!update_continuously);
+	Platform::get_singleton()->set_low_processor_usage_mode(!update_continuously);
 }
 
 void EditorNode::_on_plugin_ready(Object *p_script, const String &p_activate_name) {
@@ -852,7 +852,7 @@ void EditorNode::_fs_changed() {
 
 		if (!export_error.is_empty()) {
 			ERR_PRINT(export_error);
-			OS::get_singleton()->set_exit_code(EXIT_FAILURE);
+			Platform::get_singleton()->set_exit_code(EXIT_FAILURE);
 		}
 		_exit_editor();
 	}
@@ -1665,7 +1665,7 @@ void EditorNode::restart_editor() {
 		args.push_back(to_reopen);
 	}
 
-	OS::get_singleton()->set_restart_on_exit(true, args);
+	Platform::get_singleton()->set_restart_on_exit(true, args);
 }
 
 void EditorNode::_save_all_scenes() {
@@ -2699,11 +2699,11 @@ void EditorNode::_menu_option_confirm(int p_option, bool p_confirmed) {
 		} break;
 		case RUN_PROJECT_DATA_FOLDER: {
 			// ensure_user_data_dir() to prevent the edge case: "Open Project Data Folder" won't work after the project was renamed in ProjectSettingsEditor unless the project is saved
-			OS::get_singleton()->ensure_user_data_dir();
-			OS::get_singleton()->shell_open(String("file://") + OS::get_singleton()->get_user_data_dir());
+			Platform::get_singleton()->ensure_user_data_dir();
+			Platform::get_singleton()->shell_open(String("file://") + Platform::get_singleton()->get_user_data_dir());
 		} break;
 		case FILE_EXPLORE_ANDROID_BUILD_TEMPLATES: {
-			OS::get_singleton()->shell_open("file://" + ProjectSettings::get_singleton()->get_resource_path().plus_file("android"));
+			Platform::get_singleton()->shell_open("file://" + ProjectSettings::get_singleton()->get_resource_path().plus_file("android"));
 		} break;
 		case FILE_QUIT:
 		case RUN_PROJECT_MANAGER: {
@@ -2755,10 +2755,10 @@ void EditorNode::_menu_option_confirm(int p_option, bool p_confirmed) {
 			settings_config_dialog->popup_edit_settings();
 		} break;
 		case SETTINGS_EDITOR_DATA_FOLDER: {
-			OS::get_singleton()->shell_open(String("file://") + EditorSettings::get_singleton()->get_data_dir());
+			Platform::get_singleton()->shell_open(String("file://") + EditorSettings::get_singleton()->get_data_dir());
 		} break;
 		case SETTINGS_EDITOR_CONFIG_FOLDER: {
-			OS::get_singleton()->shell_open(String("file://") + EditorSettings::get_singleton()->get_settings_dir());
+			Platform::get_singleton()->shell_open(String("file://") + EditorSettings::get_singleton()->get_settings_dir());
 		} break;
 		case SETTINGS_MANAGE_EXPORT_TEMPLATES: {
 			export_template_manager->popup_manager();
@@ -2800,19 +2800,19 @@ void EditorNode::_menu_option_confirm(int p_option, bool p_confirmed) {
 			emit_signal("request_help_search", "");
 		} break;
 		case HELP_DOCS: {
-			OS::get_singleton()->shell_open("https://docs.godotengine.org/");
+			Platform::get_singleton()->shell_open("https://docs.godotengine.org/");
 		} break;
 		case HELP_QA: {
-			OS::get_singleton()->shell_open("https://godotengine.org/qa/");
+			Platform::get_singleton()->shell_open("https://godotengine.org/qa/");
 		} break;
 		case HELP_REPORT_A_BUG: {
-			OS::get_singleton()->shell_open("https://github.com/godotengine/godot/issues");
+			Platform::get_singleton()->shell_open("https://github.com/godotengine/godot/issues");
 		} break;
 		case HELP_SEND_DOCS_FEEDBACK: {
-			OS::get_singleton()->shell_open("https://github.com/godotengine/godot-docs/issues");
+			Platform::get_singleton()->shell_open("https://github.com/godotengine/godot-docs/issues");
 		} break;
 		case HELP_COMMUNITY: {
-			OS::get_singleton()->shell_open("https://godotengine.org/community");
+			Platform::get_singleton()->shell_open("https://godotengine.org/community");
 		} break;
 		case HELP_ABOUT: {
 			about->popup_centered(Size2(780, 500) * EDSCALE);
@@ -2833,11 +2833,11 @@ void EditorNode::_request_screenshot() {
 }
 
 void EditorNode::_screenshot(bool p_use_utc) {
-	String name = "editor_screenshot_" + OS::get_singleton()->get_iso_date_time(p_use_utc).replace(":", "") + ".png";
+	String name = "editor_screenshot_" + Platform::get_singleton()->get_iso_date_time(p_use_utc).replace(":", "") + ".png";
 	NodePath path = String("user://") + name;
 	_save_screenshot(path);
 	if (EditorSettings::get_singleton()->get("interface/editor/automatically_open_screenshots")) {
-		OS::get_singleton()->shell_open(String("file://") + ProjectSettings::get_singleton()->globalize_path(path));
+		Platform::get_singleton()->shell_open(String("file://") + ProjectSettings::get_singleton()->globalize_path(path));
 	}
 }
 
@@ -2957,14 +2957,14 @@ void EditorNode::_discard_changes(const String &p_str) {
 		case RUN_PROJECT_MANAGER: {
 			_menu_option_confirm(RUN_STOP, true);
 			_exit_editor();
-			String exec = OS::get_singleton()->get_executable_path();
+			String exec = Platform::get_singleton()->get_executable_path();
 
 			List<String> args;
 			args.push_back("--path");
 			args.push_back(exec.get_base_dir());
 			args.push_back("--project-manager");
 
-			Error err = OS::get_singleton()->create_process(exec, args);
+			Error err = Platform::get_singleton()->create_process(exec, args);
 			ERR_FAIL_COND(err);
 		} break;
 	}
@@ -3788,7 +3788,7 @@ void EditorNode::unregister_editor_types() {
 	_init_callbacks.clear();
 }
 
-void EditorNode::stop_child_process(OS::ProcessID p_pid) {
+void EditorNode::stop_child_process(Platform::ProcessID p_pid) {
 	if (has_child_process(p_pid)) {
 		editor_run.stop_child_process(p_pid);
 		if (!editor_run.get_child_process_count()) { // All children stopped. Closing.
@@ -5244,11 +5244,11 @@ void EditorNode::_global_menu_scene(const Variant &p_tag) {
 }
 
 void EditorNode::_global_menu_new_window(const Variant &p_tag) {
-	if (OS::get_singleton()->get_main_loop()) {
+	if (Platform::get_singleton()->get_main_loop()) {
 		List<String> args;
 		args.push_back("-p");
-		String exec = OS::get_singleton()->get_executable_path();
-		OS::get_singleton()->create_process(exec, args);
+		String exec = Platform::get_singleton()->get_executable_path();
+		Platform::get_singleton()->create_process(exec, args);
 	}
 }
 
@@ -5461,7 +5461,7 @@ void EditorNode::_update_video_driver_color() {
 void EditorNode::_video_driver_selected(int p_which) {
 	String driver = video_driver->get_item_metadata(p_which);
 
-	String current = ""; //OS::get_singleton()->get_video_driver_name(OS::get_singleton()->get_current_video_driver());
+	String current = ""; //Platform::get_singleton()->get_video_driver_name(Platform::get_singleton()->get_current_video_driver());
 
 	if (driver == current) {
 		return;
@@ -5579,7 +5579,7 @@ void EditorNode::_print_handler(void *p_this, const String &p_string, bool p_err
 
 static void _execute_thread(void *p_ud) {
 	EditorNode::ExecuteThreadArgs *eta = (EditorNode::ExecuteThreadArgs *)p_ud;
-	Error err = OS::get_singleton()->execute(eta->path, eta->args, &eta->output, &eta->exitcode, true, &eta->execute_output_mutex);
+	Error err = Platform::get_singleton()->execute(eta->path, eta->args, &eta->output, &eta->exitcode, true, &eta->execute_output_mutex);
 	print_verbose("Thread exit status: " + itos(eta->exitcode));
 	if (err != OK) {
 		eta->exitcode = err;
@@ -5615,7 +5615,7 @@ int EditorNode::execute_and_show_output(const String &p_title, const String &p_p
 				Main::iteration();
 			}
 		}
-		OS::get_singleton()->delay_usec(1000);
+		Platform::get_singleton()->delay_usec(1000);
 	}
 
 	eta.execute_output_thread.wait_to_finish();
@@ -6360,7 +6360,7 @@ EditorNode::EditorNode() {
 #endif
 	p->add_separator();
 
-	if (OS::get_singleton()->get_data_path() == OS::get_singleton()->get_config_path()) {
+	if (Platform::get_singleton()->get_data_path() == Platform::get_singleton()->get_config_path()) {
 		// Configuration and data folders are located in the same place (Windows/macOS)
 		p->add_item(TTR("Open Editor Data/Settings Folder"), SETTINGS_EDITOR_DATA_FOLDER);
 	} else {
@@ -6493,7 +6493,7 @@ EditorNode::EditorNode() {
 #endif
 #if 0
 	String video_drivers = ProjectSettings::get_singleton()->get_custom_property_info()["rendering/driver/driver_name"].hint_string;
-	String current_video_driver = OS::get_singleton()->get_video_driver_name(OS::get_singleton()->get_current_video_driver());
+	String current_video_driver = Platform::get_singleton()->get_video_driver_name(Platform::get_singleton()->get_current_video_driver());
 	video_driver_current = 0;
 	for (int i = 0; i < video_drivers.get_slice_count(","); i++) {
 		String driver = video_drivers.get_slice(",", i);
@@ -6872,7 +6872,7 @@ EditorNode::EditorNode() {
 		vshader_convert.instance();
 		resource_conversion_plugins.push_back(vshader_convert);
 	}
-	update_spinner_step_msec = OS::get_singleton()->get_ticks_msec();
+	update_spinner_step_msec = Platform::get_singleton()->get_ticks_msec();
 	update_spinner_step_frame = Engine::get_singleton()->get_frames_drawn();
 	update_spinner_step = 0;
 
@@ -6996,7 +6996,7 @@ EditorNode::EditorNode() {
 	add_child(screenshot_timer);
 	screenshot_timer->set_owner(get_owner());
 
-	String exec = OS::get_singleton()->get_executable_path();
+	String exec = Platform::get_singleton()->get_executable_path();
 	EditorSettings::get_singleton()->set_project_metadata("editor_metadata", "executable_path", exec); // Save editor executable path for third-party tools
 }
 

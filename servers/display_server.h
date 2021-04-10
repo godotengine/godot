@@ -33,7 +33,7 @@
 
 #include "core/input/input.h"
 #include "core/io/resource.h"
-#include "core/os/os.h"
+#include "core/os/platform.h"
 #include "core/variant/callable.h"
 
 class Texture2D;
@@ -322,7 +322,7 @@ public:
 
 	virtual bool get_swap_cancel_ok();
 
-	virtual void enable_for_stealing_focus(OS::ProcessID pid);
+	virtual void enable_for_stealing_focus(Platform::ProcessID pid);
 
 	//plays video natively, in fullscreen, only implemented in mobile for now, likely not possible to implement on linux also.
 	virtual Error native_video_play(String p_path, float p_volume, String p_audio_track, String p_subtitle_track, int p_screen = SCREEN_OF_MAIN_WINDOW);

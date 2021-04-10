@@ -31,7 +31,7 @@
 #include "command_queue_mt.h"
 
 #include "core/config/project_settings.h"
-#include "core/os/os.h"
+#include "core/os/platform.h"
 
 void CommandQueueMT::lock() {
 	mutex.lock();
@@ -43,7 +43,7 @@ void CommandQueueMT::unlock() {
 
 void CommandQueueMT::wait_for_flush() {
 	// wait one millisecond for a flush to happen
-	OS::get_singleton()->delay_usec(1000);
+	Platform::get_singleton()->delay_usec(1000);
 }
 
 CommandQueueMT::SyncSemaphore *CommandQueueMT::_alloc_sync_sem() {

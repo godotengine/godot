@@ -31,7 +31,7 @@
 #include "soft_body_3d.h"
 
 #include "core/object/class_db.h"
-#include "core/os/os.h"
+#include "core/os/platform.h"
 #include "core/templates/list.h"
 #include "core/templates/rid.h"
 #include "scene/3d/collision_object_3d.h"

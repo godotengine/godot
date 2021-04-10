@@ -33,7 +33,7 @@
 #include "core/input/input_map.h"
 #include "core/object/message_queue.h"
 #include "core/os/keyboard.h"
-#include "core/os/os.h"
+#include "core/os/platform.h"
 #include "core/string/print_string.h"
 #include "core/string/translation.h"
 #include "label.h"
@@ -260,7 +260,7 @@ void LineEdit::_gui_input(Ref<InputEvent> p_event) {
 
 			} else {
 				if (selecting_enabled) {
-					if (!b->is_doubleclick() && (OS::get_singleton()->get_ticks_msec() - selection.last_dblclk) < 600) {
+					if (!b->is_doubleclick() && (Platform::get_singleton()->get_ticks_msec() - selection.last_dblclk) < 600) {
 						// Triple-click select all.
 						selection.enabled = true;
 						selection.begin = 0;
@@ -277,7 +277,7 @@ void LineEdit::_gui_input(Ref<InputEvent> p_event) {
 								selection.begin = words[i].x;
 								selection.end = words[i].y;
 								selection.doubleclick = true;
-								selection.last_dblclk = OS::get_singleton()->get_ticks_msec();
+								selection.last_dblclk = Platform::get_singleton()->get_ticks_msec();
 								caret_column = selection.end;
 								break;
 							}

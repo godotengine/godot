@@ -32,7 +32,7 @@
 
 #include "core/math/math_defs.h"
 #include "core/os/keyboard.h"
-#include "core/os/os.h"
+#include "core/os/platform.h"
 #include "scene/scene_string_names.h"
 #include "servers/display_server.h"
 

@@ -32,7 +32,7 @@
 
 #include "core/config/project_settings.h"
 #include "core/io/marshalls.h"
-#include "core/os/os.h"
+#include "core/os/platform.h"
 #include "core/templates/sort_array.h"
 #include "renderer_canvas_cull.h"
 #include "renderer_scene_cull.h"
@@ -101,11 +101,11 @@ void RenderingServerDefault::_draw(bool p_swap_buffers, double frame_step) {
 
 	TIMESTAMP_BEGIN()
 
-	uint64_t time_usec = OS::get_singleton()->get_ticks_usec();
+	uint64_t time_usec = Platform::get_singleton()->get_ticks_usec();
 
 	RSG::scene->update(); //update scenes stuff before updating instances
 
-	frame_setup_time = double(OS::get_singleton()->get_ticks_usec() - time_usec) / 1000.0;
+	frame_setup_time = double(Platform::get_singleton()->get_ticks_usec() - time_usec) / 1000.0;
 
 	RSG::storage->update_particles(); //need to be done after instances are updated (colliders and particle transforms), and colliders are rendered
 
@@ -165,7 +165,7 @@ void RenderingServerDefault::_draw(bool p_swap_buffers, double frame_step) {
 
 	if (print_gpu_profile) {
 		if (print_frame_profile_ticks_from == 0) {
-			print_frame_profile_ticks_from = OS::get_singleton()->get_ticks_usec();
+			print_frame_profile_ticks_from = Platform::get_singleton()->get_ticks_usec();
 		}
 		float total_time = 0.0;
 
@@ -190,7 +190,7 @@ void RenderingServerDefault::_draw(bool p_swap_buffers, double frame_step) {
 			total_time = frame_profile[frame_profile.size() - 1].gpu_msec;
 		}
 
-		uint64_t ticks_elapsed = OS::get_singleton()->get_ticks_usec() - print_frame_profile_ticks_from;
+		uint64_t ticks_elapsed = Platform::get_singleton()->get_ticks_usec() - print_frame_profile_ticks_from;
 		print_frame_profile_frame_count++;
 		if (ticks_elapsed > 1000000) {
 			print_line("GPU PROFILE (total " + rtos(total_time) + "ms): ");
@@ -203,7 +203,7 @@ void RenderingServerDefault::_draw(bool p_swap_buffers, double frame_step) {
 				}
 			}
 			print_gpu_profile_task_time.clear();
-			print_frame_profile_ticks_from = OS::get_singleton()->get_ticks_usec();
+			print_frame_profile_ticks_from = Platform::get_singleton()->get_ticks_usec();
 			print_frame_profile_frame_count = 0;
 		}
 	}
@@ -238,7 +238,7 @@ void RenderingServerDefault::init() {
 			print_verbose("RenderingServerWrapMT: Starting render thread");
 		}
 		while (!draw_thread_up.is_set()) {
-			OS::get_singleton()->delay_usec(1000);
+			Platform::get_singleton()->delay_usec(1000);
 		}
 		print_verbose("RenderingServerWrapMT: Finished render thread");
 	} else {
@@ -312,8 +312,8 @@ RID RenderingServerDefault::get_test_cube() {
 	return test_cube;
 }
 
-bool RenderingServerDefault::has_os_feature(const String &p_feature) const {
-	return RSG::storage->has_os_feature(p_feature);
+bool RenderingServerDefault::has_platform_feature(const String &p_feature) const {
+	return RSG::storage->has_platform_feature(p_feature);
 }
 
 void RenderingServerDefault::set_debug_generate_wireframes(bool p_generate) {

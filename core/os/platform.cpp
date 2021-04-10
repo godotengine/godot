@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  os.cpp                                                               */
+/*  platform.cpp                                                         */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,7 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#include "os.h"
+#include "platform.h"
 
 #include "core/config/project_settings.h"
 #include "core/input/input.h"
@@ -40,20 +40,20 @@
 
 #include <stdarg.h>
 
-OS *OS::singleton = nullptr;
-uint64_t OS::target_ticks = 0;
+Platform *Platform::singleton = nullptr;
+uint64_t Platform::target_ticks = 0;
 
-OS *OS::get_singleton() {
+Platform *Platform::get_singleton() {
 	return singleton;
 }
 
-uint32_t OS::get_ticks_msec() const {
+uint32_t Platform::get_ticks_msec() const {
 	return get_ticks_usec() / 1000;
 }
 
-String OS::get_iso_date_time(bool local) const {
-	OS::Date date = get_date(local);
-	OS::Time time = get_time(local);
+String Platform::get_iso_date_time(bool local) const {
+	Platform::Date date = get_date(local);
+	Platform::Time time = get_time(local);
 
 	String timezone;
 	if (!local) {
@@ -80,22 +80,22 @@ String OS::get_iso_date_time(bool local) const {
 		   timezone;
 }
 
-double OS::get_unix_time() const {
+double Platform::get_unix_time() const {
 	return 0;
 }
 
-void OS::debug_break() {
+void Platform::debug_break() {
 	// something
 }
 
-void OS::_set_logger(CompositeLogger *p_logger) {
+void Platform::_set_logger(CompositeLogger *p_logger) {
 	if (_logger) {
 		memdelete(_logger);
 	}
 	_logger = p_logger;
 }
 
-void OS::add_logger(Logger *p_logger) {
+void Platform::add_logger(Logger *p_logger) {
 	if (!_logger) {
 		Vector<Logger *> loggers;
 		loggers.push_back(p_logger);
@@ -105,7 +105,7 @@ void OS::add_logger(Logger *p_logger) {
 	}
 }
 
-void OS::print_error(const char *p_function, const char *p_file, int p_line, const char *p_code, const char *p_rationale, Logger::ErrorType p_type) {
+void Platform::print_error(const char *p_function, const char *p_file, int p_line, const char *p_code, const char *p_rationale, Logger::ErrorType p_type) {
 	if (!_stderr_enabled) {
 		return;
 	}
@@ -113,7 +113,7 @@ void OS::print_error(const char *p_function, const char *p_file, int p_line, con
 	_logger->log_error(p_function, p_file, p_line, p_code, p_rationale, p_type);
 }
 
-void OS::print(const char *p_format, ...) {
+void Platform::print(const char *p_format, ...) {
 	if (!_stdout_enabled) {
 		return;
 	}
@@ -126,7 +126,7 @@ void OS::print(const char *p_format, ...) {
 	va_end(argp);
 }
 
-void OS::printerr(const char *p_format, ...) {
+void Platform::printerr(const char *p_format, ...) {
 	if (!_stderr_enabled) {
 		return;
 	}
@@ -139,129 +139,129 @@ void OS::printerr(const char *p_format, ...) {
 	va_end(argp);
 }
 
-void OS::set_low_processor_usage_mode(bool p_enabled) {
+void Platform::set_low_processor_usage_mode(bool p_enabled) {
 	low_processor_usage_mode = p_enabled;
 }
 
-bool OS::is_in_low_processor_usage_mode() const {
+bool Platform::is_in_low_processor_usage_mode() const {
 	return low_processor_usage_mode;
 }
 
-void OS::set_low_processor_usage_mode_sleep_usec(int p_usec) {
+void Platform::set_low_processor_usage_mode_sleep_usec(int p_usec) {
 	low_processor_usage_mode_sleep_usec = p_usec;
 }
 
-int OS::get_low_processor_usage_mode_sleep_usec() const {
+int Platform::get_low_processor_usage_mode_sleep_usec() const {
 	return low_processor_usage_mode_sleep_usec;
 }
 
-String OS::get_executable_path() const {
+String Platform::get_executable_path() const {
 	return _execpath;
 }
 
-int OS::get_process_id() const {
+int Platform::get_process_id() const {
 	return -1;
 }
 
-void OS::vibrate_handheld(int p_duration_ms) {
+void Platform::vibrate_handheld(int p_duration_ms) {
 	WARN_PRINT("vibrate_handheld() only works with Android and iOS");
 }
 
-bool OS::is_stdout_verbose() const {
+bool Platform::is_stdout_verbose() const {
 	return _verbose_stdout;
 }
 
-bool OS::is_stdout_debug_enabled() const {
+bool Platform::is_stdout_debug_enabled() const {
 	return _debug_stdout;
 }
 
-bool OS::is_stdout_enabled() const {
+bool Platform::is_stdout_enabled() const {
 	return _stdout_enabled;
 }
 
-bool OS::is_stderr_enabled() const {
+bool Platform::is_stderr_enabled() const {
 	return _stderr_enabled;
 }
 
-void OS::set_stdout_enabled(bool p_enabled) {
+void Platform::set_stdout_enabled(bool p_enabled) {
 	_stdout_enabled = p_enabled;
 }
 
-void OS::set_stderr_enabled(bool p_enabled) {
+void Platform::set_stderr_enabled(bool p_enabled) {
 	_stderr_enabled = p_enabled;
 }
 
-void OS::dump_memory_to_file(const char *p_file) {
+void Platform::dump_memory_to_file(const char *p_file) {
 	//Memory::dump_static_mem_to_file(p_file);
 }
 
-static FileAccess *_OSPRF = nullptr;
+static FileAccess *_PrintResourceFile = nullptr;
 
-static void _OS_printres(Object *p_obj) {
+static void _print_resource(Object *p_obj) {
 	Resource *res = Object::cast_to<Resource>(p_obj);
 	if (!res) {
 		return;
 	}
 
 	String str = itos(res->get_instance_id()) + String(res->get_class()) + ":" + String(res->get_name()) + " - " + res->get_path();
-	if (_OSPRF) {
-		_OSPRF->store_line(str);
+	if (_PrintResourceFile) {
+		_PrintResourceFile->store_line(str);
 	} else {
 		print_line(str);
 	}
 }
 
-void OS::print_all_resources(String p_to_file) {
-	ERR_FAIL_COND(p_to_file != "" && _OSPRF);
+void Platform::print_all_resources(String p_to_file) {
+	ERR_FAIL_COND(p_to_file != "" && _PrintResourceFile);
 	if (p_to_file != "") {
 		Error err;
-		_OSPRF = FileAccess::open(p_to_file, FileAccess::WRITE, &err);
+		_PrintResourceFile = FileAccess::open(p_to_file, FileAccess::WRITE, &err);
 		if (err != OK) {
-			_OSPRF = nullptr;
+			_PrintResourceFile = nullptr;
 			ERR_FAIL_MSG("Can't print all resources to file: " + String(p_to_file) + ".");
 		}
 	}
 
-	ObjectDB::debug_objects(_OS_printres);
+	ObjectDB::debug_objects(_print_resource);
 
 	if (p_to_file != "") {
-		if (_OSPRF) {
-			memdelete(_OSPRF);
+		if (_PrintResourceFile) {
+			memdelete(_PrintResourceFile);
 		}
-		_OSPRF = nullptr;
+		_PrintResourceFile = nullptr;
 	}
 }
 
-void OS::print_resources_in_use(bool p_short) {
+void Platform::print_resources_in_use(bool p_short) {
 	ResourceCache::dump(nullptr, p_short);
 }
 
-void OS::dump_resources_to_file(const char *p_file) {
+void Platform::dump_resources_to_file(const char *p_file) {
 	ResourceCache::dump(p_file);
 }
 
-void OS::set_no_window_mode(bool p_enable) {
+void Platform::set_no_window_mode(bool p_enable) {
 	_no_window = p_enable;
 }
 
-bool OS::is_no_window_mode_enabled() const {
+bool Platform::is_no_window_mode_enabled() const {
 	return _no_window;
 }
 
-int OS::get_exit_code() const {
+int Platform::get_exit_code() const {
 	return _exit_code;
 }
 
-void OS::set_exit_code(int p_code) {
+void Platform::set_exit_code(int p_code) {
 	_exit_code = p_code;
 }
 
-String OS::get_locale() const {
+String Platform::get_locale() const {
 	return "en";
 }
 
-// Helper function to ensure that a dir name/path will be valid on the OS
-String OS::get_safe_dir_name(const String &p_dir_name, bool p_allow_dir_separator) const {
+// Helper function to ensure that a dir name/path will be valid on the Platform
+String Platform::get_safe_dir_name(const String &p_dir_name, bool p_allow_dir_separator) const {
 	Vector<String> invalid_chars = String(": * ? \" < > |").split(" ");
 	if (p_allow_dir_separator) {
 		// Dir separators are allowed, but disallow ".." to avoid going up the filesystem
@@ -277,75 +277,75 @@ String OS::get_safe_dir_name(const String &p_dir_name, bool p_allow_dir_separato
 	return safe_dir_name;
 }
 
-// Path to data, config, cache, etc. OS-specific folders
+// Path to data, config, cache, etc. Platform-specific folders
 
 // Get properly capitalized engine name for system paths
-String OS::get_godot_dir_name() const {
+String Platform::get_godot_dir_name() const {
 	// Default to lowercase, so only override when different case is needed
 	return String(VERSION_SHORT_NAME).to_lower();
 }
 
-// OS equivalent of XDG_DATA_HOME
-String OS::get_data_path() const {
+// Platform equivalent of XDG_DATA_HOME
+String Platform::get_data_path() const {
 	return ".";
 }
 
-// OS equivalent of XDG_CONFIG_HOME
-String OS::get_config_path() const {
+// Platform equivalent of XDG_CONFIG_HOME
+String Platform::get_config_path() const {
 	return ".";
 }
 
-// OS equivalent of XDG_CACHE_HOME
-String OS::get_cache_path() const {
+// Platform equivalent of XDG_CACHE_HOME
+String Platform::get_cache_path() const {
 	return ".";
 }
 
 // Path to macOS .app bundle resources
-String OS::get_bundle_resource_dir() const {
+String Platform::get_bundle_resource_dir() const {
 	return ".";
 }
 
-// OS specific path for user://
-String OS::get_user_data_dir() const {
+// Platform specific path for user://
+String Platform::get_user_data_dir() const {
 	return ".";
 }
 
 // Absolute path to res://
-String OS::get_resource_dir() const {
+String Platform::get_resource_dir() const {
 	return ProjectSettings::get_singleton()->get_resource_path();
 }
 
 // Access system-specific dirs like Documents, Downloads, etc.
-String OS::get_system_dir(SystemDir p_dir) const {
+String Platform::get_system_dir(SystemDir p_dir) const {
 	return ".";
 }
 
-Error OS::shell_open(String p_uri) {
+Error Platform::shell_open(String p_uri) {
 	return ERR_UNAVAILABLE;
 }
 
 // implement these with the canvas?
 
-uint64_t OS::get_static_memory_usage() const {
+uint64_t Platform::get_static_memory_usage() const {
 	return Memory::get_mem_usage();
 }
 
-uint64_t OS::get_static_memory_peak_usage() const {
+uint64_t Platform::get_static_memory_peak_usage() const {
 	return Memory::get_mem_max_usage();
 }
 
-Error OS::set_cwd(const String &p_cwd) {
+Error Platform::set_cwd(const String &p_cwd) {
 	return ERR_CANT_OPEN;
 }
 
-uint64_t OS::get_free_static_memory() const {
+uint64_t Platform::get_free_static_memory() const {
 	return Memory::get_mem_available();
 }
 
-void OS::yield() {
+void Platform::yield() {
 }
 
-void OS::ensure_user_data_dir() {
+void Platform::ensure_user_data_dir() {
 	String dd = get_user_data_dir();
 	DirAccess *da = DirAccess::open(dd);
 	if (da) {
@@ -360,24 +360,24 @@ void OS::ensure_user_data_dir() {
 	memdelete(da);
 }
 
-String OS::get_model_name() const {
+String Platform::get_model_name() const {
 	return "GenericDevice";
 }
 
-void OS::set_cmdline(const char *p_execpath, const List<String> &p_args) {
+void Platform::set_cmdline(const char *p_execpath, const List<String> &p_args) {
 	_execpath = p_execpath;
 	_cmdline = p_args;
 }
 
-String OS::get_unique_id() const {
+String Platform::get_unique_id() const {
 	ERR_FAIL_V("");
 }
 
-int OS::get_processor_count() const {
+int Platform::get_processor_count() const {
 	return 1;
 }
 
-bool OS::can_use_threads() const {
+bool Platform::can_use_threads() const {
 #ifdef NO_THREADS
 	return false;
 #else
@@ -385,11 +385,11 @@ bool OS::can_use_threads() const {
 #endif
 }
 
-void OS::set_has_server_feature_callback(HasServerFeatureCallback p_callback) {
+void Platform::set_has_server_feature_callback(HasServerFeatureCallback p_callback) {
 	has_server_feature_callback = p_callback;
 }
 
-bool OS::has_feature(const String &p_feature) {
+bool Platform::has_feature(const String &p_feature) {
 	if (p_feature == get_name()) {
 		return true;
 	}
@@ -459,45 +459,45 @@ bool OS::has_feature(const String &p_feature) {
 	return false;
 }
 
-void OS::set_restart_on_exit(bool p_restart, const List<String> &p_restart_arguments) {
+void Platform::set_restart_on_exit(bool p_restart, const List<String> &p_restart_arguments) {
 	restart_on_exit = p_restart;
 	restart_commandline = p_restart_arguments;
 }
 
-bool OS::is_restart_on_exit_set() const {
+bool Platform::is_restart_on_exit_set() const {
 	return restart_on_exit;
 }
 
-List<String> OS::get_restart_on_exit_arguments() const {
+List<String> Platform::get_restart_on_exit_arguments() const {
 	return restart_commandline;
 }
 
-PackedStringArray OS::get_connected_midi_inputs() {
+PackedStringArray Platform::get_connected_midi_inputs() {
 	if (MIDIDriver::get_singleton()) {
 		return MIDIDriver::get_singleton()->get_connected_inputs();
 	}
 
 	PackedStringArray list;
-	ERR_FAIL_V_MSG(list, vformat("MIDI input isn't supported on %s.", OS::get_singleton()->get_name()));
+	ERR_FAIL_V_MSG(list, vformat("MIDI input isn't supported on %s.", Platform::get_singleton()->get_name()));
 }
 
-void OS::open_midi_inputs() {
+void Platform::open_midi_inputs() {
 	if (MIDIDriver::get_singleton()) {
 		MIDIDriver::get_singleton()->open();
 	} else {
-		ERR_PRINT(vformat("MIDI input isn't supported on %s.", OS::get_singleton()->get_name()));
+		ERR_PRINT(vformat("MIDI input isn't supported on %s.", Platform::get_singleton()->get_name()));
 	}
 }
 
-void OS::close_midi_inputs() {
+void Platform::close_midi_inputs() {
 	if (MIDIDriver::get_singleton()) {
 		MIDIDriver::get_singleton()->close();
 	} else {
-		ERR_PRINT(vformat("MIDI input isn't supported on %s.", OS::get_singleton()->get_name()));
+		ERR_PRINT(vformat("MIDI input isn't supported on %s.", Platform::get_singleton()->get_name()));
 	}
 }
 
-void OS::add_frame_delay(bool p_can_draw) {
+void Platform::add_frame_delay(bool p_can_draw) {
 	const uint32_t frame_delay = Engine::get_singleton()->get_frame_delay();
 	if (frame_delay) {
 		// Add fixed frame delay to decrease CPU/GPU usage. This doesn't take
@@ -532,7 +532,7 @@ void OS::add_frame_delay(bool p_can_draw) {
 	}
 }
 
-OS::OS() {
+Platform::Platform() {
 	singleton = this;
 
 	Vector<Logger *> loggers;
@@ -540,7 +540,7 @@ OS::OS() {
 	_set_logger(memnew(CompositeLogger(loggers)));
 }
 
-OS::~OS() {
+Platform::~Platform() {
 	memdelete(_logger);
 	singleton = nullptr;
 }

@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  os_android.cpp                                                       */
+/*  platform_android.cpp                                                 */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,7 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#include "os_android.h"
+#include "platform_android.h"
 
 #include "core/config/project_settings.h"
 #include "drivers/unix/dir_access_unix.h"
@@ -54,8 +54,8 @@ public:
 	virtual ~AndroidLogger() {}
 };
 
-void OS_Android::initialize_core() {
-	OS_Unix::initialize_core();
+void PlatformAndroid::initialize_core() {
+	PlatformUnix::initialize_core();
 
 	if (use_apk_expansion)
 		FileAccess::make_default<FileAccessUnix>(FileAccess::ACCESS_RESOURCES);
@@ -74,126 +74,126 @@ void OS_Android::initialize_core() {
 	NetSocketAndroid::make_default();
 }
 
-void OS_Android::initialize() {
+void PlatformAndroid::initialize() {
 	initialize_core();
 }
 
-void OS_Android::initialize_joypads() {
+void PlatformAndroid::initialize_joypads() {
 	Input::get_singleton()->set_fallback_mapping(godot_java->get_input_fallback_mapping());
 
 	// This queries/updates the currently connected devices/joypads.
 	godot_java->init_input_devices();
 }
 
-void OS_Android::set_main_loop(MainLoop *p_main_loop) {
+void PlatformAndroid::set_main_loop(MainLoop *p_main_loop) {
 	main_loop = p_main_loop;
 }
 
-void OS_Android::delete_main_loop() {
+void PlatformAndroid::delete_main_loop() {
 	if (main_loop) {
 		memdelete(main_loop);
 		main_loop = nullptr;
 	}
 }
 
-void OS_Android::finalize() {
+void PlatformAndroid::finalize() {
 }
 
-OS_Android *OS_Android::get_singleton() {
-	return (OS_Android *)OS::get_singleton();
+PlatformAndroid *PlatformAndroid::get_singleton() {
+	return (PlatformAndroid *)Platform::get_singleton();
 }
 
-GodotJavaWrapper *OS_Android::get_godot_java() {
+GodotJavaWrapper *PlatformAndroid::get_godot_java() {
 	return godot_java;
 }
 
-GodotIOJavaWrapper *OS_Android::get_godot_io_java() {
+GodotIOJavaWrapper *PlatformAndroid::get_godot_io_java() {
 	return godot_io_java;
 }
 
-bool OS_Android::request_permission(const String &p_name) {
+bool PlatformAndroid::request_permission(const String &p_name) {
 	return godot_java->request_permission(p_name);
 }
 
-bool OS_Android::request_permissions() {
+bool PlatformAndroid::request_permissions() {
 	return godot_java->request_permissions();
 }
 
-Vector<String> OS_Android::get_granted_permissions() const {
+Vector<String> PlatformAndroid::get_granted_permissions() const {
 	return godot_java->get_granted_permissions();
 }
 
-Error OS_Android::open_dynamic_library(const String p_path, void *&p_library_handle, bool p_also_set_library_path) {
+Error PlatformAndroid::open_dynamic_library(const String p_path, void *&p_library_handle, bool p_also_set_library_path) {
 	p_library_handle = dlopen(p_path.utf8().get_data(), RTLD_NOW);
 	ERR_FAIL_COND_V_MSG(!p_library_handle, ERR_CANT_OPEN, "Can't open dynamic library: " + p_path + ", error: " + dlerror() + ".");
 	return OK;
 }
 
-String OS_Android::get_name() const {
+String PlatformAndroid::get_name() const {
 	return "Android";
 }
 
-MainLoop *OS_Android::get_main_loop() const {
+MainLoop *PlatformAndroid::get_main_loop() const {
 	return main_loop;
 }
 
-void OS_Android::main_loop_begin() {
+void PlatformAndroid::main_loop_begin() {
 	if (main_loop)
 		main_loop->initialize();
 }
 
-bool OS_Android::main_loop_iterate() {
+bool PlatformAndroid::main_loop_iterate() {
 	if (!main_loop)
 		return false;
 	DisplayServerAndroid::get_singleton()->process_events();
 	return Main::iteration();
 }
 
-void OS_Android::main_loop_end() {
+void PlatformAndroid::main_loop_end() {
 	if (main_loop)
 		main_loop->finalize();
 }
 
-void OS_Android::main_loop_focusout() {
+void PlatformAndroid::main_loop_focusout() {
 	DisplayServerAndroid::get_singleton()->send_window_event(DisplayServer::WINDOW_EVENT_FOCUS_OUT);
 	audio_driver_android.set_pause(true);
 }
 
-void OS_Android::main_loop_focusin() {
+void PlatformAndroid::main_loop_focusin() {
 	DisplayServerAndroid::get_singleton()->send_window_event(DisplayServer::WINDOW_EVENT_FOCUS_IN);
 	audio_driver_android.set_pause(false);
 }
 
-void OS_Android::main_loop_request_go_back() {
+void PlatformAndroid::main_loop_request_go_back() {
 	DisplayServerAndroid::get_singleton()->send_window_event(DisplayServer::WINDOW_EVENT_GO_BACK_REQUEST);
 }
 
-Error OS_Android::shell_open(String p_uri) {
+Error PlatformAndroid::shell_open(String p_uri) {
 	return godot_io_java->open_uri(p_uri);
 }
 
-String OS_Android::get_resource_dir() const {
+String PlatformAndroid::get_resource_dir() const {
 	return "/"; //android has its own filesystem for resources inside the APK
 }
 
-String OS_Android::get_locale() const {
+String PlatformAndroid::get_locale() const {
 	String locale = godot_io_java->get_locale();
 	if (locale != "") {
 		return locale;
 	}
 
-	return OS_Unix::get_locale();
+	return PlatformUnix::get_locale();
 }
 
-String OS_Android::get_model_name() const {
+String PlatformAndroid::get_model_name() const {
 	String model = godot_io_java->get_model();
 	if (model != "")
 		return model;
 
-	return OS_Unix::get_model_name();
+	return PlatformUnix::get_model_name();
 }
 
-String OS_Android::get_user_data_dir() const {
+String PlatformAndroid::get_user_data_dir() const {
 	if (data_dir_cache != String())
 		return data_dir_cache;
 
@@ -222,27 +222,27 @@ String OS_Android::get_user_data_dir() const {
 	return ".";
 }
 
-String OS_Android::get_unique_id() const {
+String PlatformAndroid::get_unique_id() const {
 	String unique_id = godot_io_java->get_unique_id();
 	if (unique_id != "")
 		return unique_id;
 
-	return OS::get_unique_id();
+	return Platform::get_unique_id();
 }
 
-String OS_Android::get_system_dir(SystemDir p_dir) const {
+String PlatformAndroid::get_system_dir(SystemDir p_dir) const {
 	return godot_io_java->get_system_dir(p_dir);
 }
 
-void OS_Android::set_display_size(const Size2i &p_size) {
+void PlatformAndroid::set_display_size(const Size2i &p_size) {
 	display_size = p_size;
 }
 
-Size2i OS_Android::get_display_size() const {
+Size2i PlatformAndroid::get_display_size() const {
 	return display_size;
 }
 
-void OS_Android::set_context_is_16_bits(bool p_is_16) {
+void PlatformAndroid::set_context_is_16_bits(bool p_is_16) {
 #if defined(OPENGL_ENABLED)
 	//use_16bits_fbo = p_is_16;
 	//if (rasterizer)
@@ -250,20 +250,20 @@ void OS_Android::set_context_is_16_bits(bool p_is_16) {
 #endif
 }
 
-void OS_Android::set_opengl_extensions(const char *p_gl_extensions) {
+void PlatformAndroid::set_opengl_extensions(const char *p_gl_extensions) {
 #if defined(OPENGL_ENABLED)
 	ERR_FAIL_COND(!p_gl_extensions);
 	gl_extensions = p_gl_extensions;
 #endif
 }
 
-void OS_Android::set_native_window(ANativeWindow *p_native_window) {
+void PlatformAndroid::set_native_window(ANativeWindow *p_native_window) {
 #if defined(VULKAN_ENABLED)
 	native_window = p_native_window;
 #endif
 }
 
-ANativeWindow *OS_Android::get_native_window() const {
+ANativeWindow *PlatformAndroid::get_native_window() const {
 #if defined(VULKAN_ENABLED)
 	return native_window;
 #else
@@ -271,11 +271,11 @@ ANativeWindow *OS_Android::get_native_window() const {
 #endif
 }
 
-void OS_Android::vibrate_handheld(int p_duration_ms) {
+void PlatformAndroid::vibrate_handheld(int p_duration_ms) {
 	godot_java->vibrate(p_duration_ms);
 }
 
-bool OS_Android::_check_internal_feature_support(const String &p_feature) {
+bool PlatformAndroid::_check_internal_feature_support(const String &p_feature) {
 	if (p_feature == "mobile") {
 		return true;
 	}
@@ -295,7 +295,7 @@ bool OS_Android::_check_internal_feature_support(const String &p_feature) {
 	return false;
 }
 
-OS_Android::OS_Android(GodotJavaWrapper *p_godot_java, GodotIOJavaWrapper *p_godot_io_java, bool p_use_apk_expansion) {
+PlatformAndroid::PlatformAndroid(GodotJavaWrapper *p_godot_java, GodotIOJavaWrapper *p_godot_io_java, bool p_use_apk_expansion) {
 	display_size.width = 800;
 	display_size.height = 600;
 
@@ -325,5 +325,5 @@ OS_Android::OS_Android(GodotJavaWrapper *p_godot_java, GodotIOJavaWrapper *p_god
 	DisplayServerAndroid::register_android_driver();
 }
 
-OS_Android::~OS_Android() {
+PlatformAndroid::~PlatformAndroid() {
 }

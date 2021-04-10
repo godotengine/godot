@@ -32,7 +32,7 @@
 
 #include "core/config/engine.h"
 #include "core/io/resource_loader.h"
-#include "core/os/os.h"
+#include "core/os/platform.h"
 #include "scene/main/node.h"
 #include "scene/main/scene_tree.h"
 #include "visual_script_nodes.h"
@@ -83,7 +83,7 @@ Node *VisualScriptFunctionCall::_get_base_node() const {
 		return nullptr;
 	}
 
-	MainLoop *main_loop = OS::get_singleton()->get_main_loop();
+	MainLoop *main_loop = Platform::get_singleton()->get_main_loop();
 	SceneTree *scene_tree = Object::cast_to<SceneTree>(main_loop);
 
 	if (!scene_tree) {
@@ -913,7 +913,7 @@ Node *VisualScriptPropertySet::_get_base_node() const {
 		return nullptr;
 	}
 
-	MainLoop *main_loop = OS::get_singleton()->get_main_loop();
+	MainLoop *main_loop = Platform::get_singleton()->get_main_loop();
 
 	SceneTree *scene_tree = Object::cast_to<SceneTree>(main_loop);
 
@@ -1105,7 +1105,7 @@ String VisualScriptPropertySet::get_base_script() const {
 }
 
 void VisualScriptPropertySet::_update_cache() {
-	if (!Object::cast_to<SceneTree>(OS::get_singleton()->get_main_loop())) {
+	if (!Object::cast_to<SceneTree>(Platform::get_singleton()->get_main_loop())) {
 		return;
 	}
 
@@ -1654,7 +1654,7 @@ Node *VisualScriptPropertyGet::_get_base_node() const {
 		return nullptr;
 	}
 
-	MainLoop *main_loop = OS::get_singleton()->get_main_loop();
+	MainLoop *main_loop = Platform::get_singleton()->get_main_loop();
 
 	SceneTree *scene_tree = Object::cast_to<SceneTree>(main_loop);
 

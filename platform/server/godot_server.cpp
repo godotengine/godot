@@ -29,10 +29,10 @@
 /*************************************************************************/
 
 #include "main/main.h"
-#include "os_server.h"
+#include "platform_server.h"
 
 int main(int argc, char *argv[]) {
-	OS_Server os;
+	PlatformServer platform;
 
 	// We must override main when testing is enabled
 	TEST_MAIN_OVERRIDE
@@ -42,8 +42,8 @@ int main(int argc, char *argv[]) {
 		return 255;
 
 	if (Main::start())
-		os.run(); // it is actually the OS that decides how to run
+		platform.run(); // it is actually the platform that decides how to run
 	Main::cleanup();
 
-	return os.get_exit_code();
+	return platform.get_exit_code();
 }

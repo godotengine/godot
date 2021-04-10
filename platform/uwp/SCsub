@@ -9,7 +9,7 @@ files = [
     "joypad_uwp.cpp",
     "context_egl_uwp.cpp",
     "app.cpp",
-    "os_uwp.cpp",
+    "platform_uwp.cpp",
 ]
 
 if "build_angle" in env and env["build_angle"]:

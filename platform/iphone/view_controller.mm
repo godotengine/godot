@@ -35,7 +35,7 @@
 #import "godot_view_renderer.h"
 #import "keyboard_input_view.h"
 #import "native_video_view.h"
-#include "os_iphone.h"
+#include "platform_iphone.h"
 
 #import <AVFoundation/AVFoundation.h>
 #import <GameController/GameController.h>

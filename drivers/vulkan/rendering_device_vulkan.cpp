@@ -32,7 +32,7 @@
 
 #include "core/config/project_settings.h"
 #include "core/os/file_access.h"
-#include "core/os/os.h"
+#include "core/os/platform.h"
 #include "core/templates/hashfuncs.h"
 #include "drivers/vulkan/vulkan_context.h"
 
@@ -8038,7 +8038,7 @@ void RenderingDeviceVulkan::capture_timestamp(const String &p_name) {
 
 	vkCmdWriteTimestamp(frames[frame].draw_command_buffer, VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT, frames[frame].timestamp_pool, frames[frame].timestamp_count);
 	frames[frame].timestamp_names[frames[frame].timestamp_count] = p_name;
-	frames[frame].timestamp_cpu_values[frames[frame].timestamp_count] = OS::get_singleton()->get_ticks_usec();
+	frames[frame].timestamp_cpu_values[frames[frame].timestamp_count] = Platform::get_singleton()->get_ticks_usec();
 	frames[frame].timestamp_count++;
 }
 

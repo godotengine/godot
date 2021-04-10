@@ -605,9 +605,9 @@ icon = ui_service->get_icon("Object", "EditorIcons");*/
 
 bool EditorHelpSearch::Runner::work(uint64_t slot) {
 	// Return true when the search has been completed, otherwise false.
-	const uint64_t until = OS::get_singleton()->get_ticks_usec() + slot;
+	const uint64_t until = Platform::get_singleton()->get_ticks_usec() + slot;
 	while (!_slice()) {
-		if (OS::get_singleton()->get_ticks_usec() > until) {
+		if (Platform::get_singleton()->get_ticks_usec() > until) {
 			return false;
 		}
 	}

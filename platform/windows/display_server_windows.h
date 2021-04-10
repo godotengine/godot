@@ -35,7 +35,7 @@
 
 #include "core/config/project_settings.h"
 #include "core/input/input.h"
-#include "core/os/os.h"
+#include "core/os/platform.h"
 #include "crash_handler_windows.h"
 #include "drivers/unix/ip_unix.h"
 #include "drivers/wasapi/audio_driver_wasapi.h"
@@ -534,7 +534,7 @@ public:
 
 	virtual bool get_swap_cancel_ok();
 
-	virtual void enable_for_stealing_focus(OS::ProcessID pid);
+	virtual void enable_for_stealing_focus(Platform::ProcessID pid);
 
 	virtual int keyboard_get_layout_count() const;
 	virtual int keyboard_get_current_layout() const;

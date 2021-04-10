@@ -35,7 +35,7 @@
 
 #include "nativescript.h"
 
-#include "core/os/os.h"
+#include "core/os/platform.h"
 
 NativeScriptLanguage *native_script_language;
 

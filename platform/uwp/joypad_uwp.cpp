@@ -29,7 +29,7 @@
 /*************************************************************************/
 
 #include "joypad_uwp.h"
-#include "core/os/os.h"
+#include "core/os/platform.h"
 
 using namespace Windows::Gaming::Input;
 using namespace Windows::Foundation;
@@ -75,7 +75,7 @@ void JoypadUWP::process_controllers() {
 						joypad_vibration_start(i, strength.x, strength.y, duration, timestamp);
 					}
 				} else if (joy.vibrating && joy.ff_end_timestamp != 0) {
-					uint64_t current_time = OS::get_singleton()->get_ticks_usec();
+					uint64_t current_time = Platform::get_singleton()->get_ticks_usec();
 					if (current_time >= joy.ff_end_timestamp)
 						joypad_vibration_stop(i, current_time);
 				}

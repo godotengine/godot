@@ -31,7 +31,7 @@
 #include "video_player.h"
 #include "scene/scene_string_names.h"
 
-#include "core/os/os.h"
+#include "core/os/platform.h"
 #include "servers/audio_server.h"
 
 int VideoPlayer::sp_get_channel_count() const {
@@ -149,7 +149,7 @@ void VideoPlayer::_notification(int p_notification) {
 				return;
 			}
 
-			double audio_time = USEC_TO_SEC(OS::get_singleton()->get_ticks_usec());
+			double audio_time = USEC_TO_SEC(Platform::get_singleton()->get_ticks_usec());
 
 			double delta = last_audio_time == 0 ? 0 : audio_time - last_audio_time;
 			last_audio_time = audio_time;

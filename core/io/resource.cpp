@@ -34,7 +34,7 @@
 #include "core/io/resource_loader.h"
 #include "core/object/script_language.h"
 #include "core/os/file_access.h"
-#include "core/os/os.h"
+#include "core/os/platform.h"
 #include "scene/main/node.h" //only so casting works
 
 #include <stdio.h>
@@ -425,7 +425,7 @@ RWLock ResourceCache::path_cache_lock;
 void ResourceCache::clear() {
 	if (resources.size()) {
 		ERR_PRINT("Resources still in use at exit (run with --verbose for details).");
-		if (OS::get_singleton()->is_stdout_verbose()) {
+		if (Platform::get_singleton()->is_stdout_verbose()) {
 			const String *K = nullptr;
 			while ((K = resources.next(K))) {
 				Resource *r = resources[*K];

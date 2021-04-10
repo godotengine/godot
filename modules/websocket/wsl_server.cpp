@@ -32,7 +32,7 @@
 
 #include "wsl_server.h"
 #include "core/config/project_settings.h"
-#include "core/os/os.h"
+#include "core/os/platform.h"
 
 bool WSLServer::PendingPeer::_parse_request(const Vector<String> p_protocols) {
 	Vector<String> psa = String((char *)req_buf).split("\r\n");
@@ -96,7 +96,7 @@ bool WSLServer::PendingPeer::_parse_request(const Vector<String> p_protocols) {
 }
 
 Error WSLServer::PendingPeer::do_handshake(const Vector<String> p_protocols) {
-	if (OS::get_singleton()->get_ticks_msec() - time > WSL_SERVER_TIMEOUT) {
+	if (Platform::get_singleton()->get_ticks_msec() - time > WSL_SERVER_TIMEOUT) {
 		return ERR_TIMEOUT;
 	}
 	if (use_ssl) {
@@ -239,7 +239,7 @@ void WSLServer::poll() {
 			peer->connection = conn;
 		}
 		peer->tcp = conn;
-		peer->time = OS::get_singleton()->get_ticks_msec();
+		peer->time = Platform::get_singleton()->get_ticks_msec();
 		_pending.push_back(peer);
 	}
 }

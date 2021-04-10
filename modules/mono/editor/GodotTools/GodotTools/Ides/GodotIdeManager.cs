@@ -21,7 +21,7 @@ namespace GodotTools.Ides
                 return MessagingServer;
 
             MessagingServer?.Dispose();
-            MessagingServer = new MessagingServer(OS.GetExecutablePath(), ProjectSettings.GlobalizePath(GodotSharpDirs.ResMetadataDir), new GodotLogger());
+            MessagingServer = new MessagingServer(Platform.GetExecutablePath(), ProjectSettings.GlobalizePath(GodotSharpDirs.ResMetadataDir), new GodotLogger());
 
             _ = MessagingServer.Listen();
 
@@ -111,7 +111,7 @@ namespace GodotTools.Ides
                 {
                     MonoDevelop.Instance GetMonoDevelopInstance(string solutionPath)
                     {
-                        if (Utils.OS.IsMacOS && editorId == ExternalEditorId.VisualStudioForMac)
+                        if (Utils.Platform.IsMacOS && editorId == ExternalEditorId.VisualStudioForMac)
                         {
                             vsForMacInstance = (vsForMacInstance?.IsDisposed ?? true ? null : vsForMacInstance) ??
                                                new MonoDevelop.Instance(solutionPath, MonoDevelop.EditorId.VisualStudioForMac);
@@ -200,13 +200,13 @@ namespace GodotTools.Ides
         {
             public void LogDebug(string message)
             {
-                if (OS.IsStdoutVerbose())
+                if (Platform.IsStdoutVerbose())
                     Console.WriteLine(message);
             }
 
             public void LogInfo(string message)
             {
-                if (OS.IsStdoutVerbose())
+                if (Platform.IsStdoutVerbose())
                     Console.WriteLine(message);
             }
 

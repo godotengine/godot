@@ -38,7 +38,7 @@
 #include "core/core_string_names.h"
 #include "core/io/file_access_encrypted.h"
 #include "core/os/file_access.h"
-#include "core/os/os.h"
+#include "core/os/platform.h"
 #include "gdscript_analyzer.h"
 #include "gdscript_cache.h"
 #include "gdscript_compiler.h"

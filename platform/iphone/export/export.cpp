@@ -36,7 +36,7 @@
 #include "core/io/resource_saver.h"
 #include "core/io/zip_io.h"
 #include "core/os/file_access.h"
-#include "core/os/os.h"
+#include "core/os/platform.h"
 #include "core/templates/safe_refcount.h"
 #include "core/version.h"
 #include "editor/editor_export.h"
@@ -162,9 +162,9 @@ class EditorExportPlatformIOS : public EditorExportPlatform {
 			}
 
 			uint64_t wait = 3000000;
-			uint64_t time = OS::get_singleton()->get_ticks_usec();
-			while (OS::get_singleton()->get_ticks_usec() - time < wait) {
-				OS::get_singleton()->delay_usec(300000);
+			uint64_t time = Platform::get_singleton()->get_ticks_usec();
+			while (Platform::get_singleton()->get_ticks_usec() - time < wait) {
+				Platform::get_singleton()->delay_usec(300000);
 
 				if (ea->quit_request.is_set()) {
 					break;
@@ -980,7 +980,7 @@ Error EditorExportPlatformIOS::_codesign(String p_file, void *p_userdata) {
 		codesign_args.push_back("-s");
 		codesign_args.push_back(data->preset->get(data->debug ? "application/code_sign_identity_debug" : "application/code_sign_identity_release"));
 		codesign_args.push_back(p_file);
-		return OS::get_singleton()->execute("codesign", codesign_args);
+		return Platform::get_singleton()->execute("codesign", codesign_args);
 	}
 	return OK;
 }
@@ -1230,7 +1230,7 @@ Error EditorExportPlatformIOS::_copy_asset(const String &p_out_dir, const String
 			install_name_args.push_back(String("@rpath").plus_file(framework_name).plus_file(file_name));
 			install_name_args.push_back(destination);
 
-			OS::get_singleton()->execute("install_name_tool", install_name_args);
+			Platform::get_singleton()->execute("install_name_tool", install_name_args);
 		}
 
 		// Creating Info.plist
@@ -1874,7 +1874,7 @@ Error EditorExportPlatformIOS::export_project(const Ref<EditorExportPreset> &p_p
 	archive_args.push_back("archive");
 	archive_args.push_back("-archivePath");
 	archive_args.push_back(archive_path);
-	err = OS::get_singleton()->execute("xcodebuild", archive_args);
+	err = Platform::get_singleton()->execute("xcodebuild", archive_args);
 	ERR_FAIL_COND_V(err, err);
 
 	if (ep.step("Making .ipa", 4)) {
@@ -1889,7 +1889,7 @@ Error EditorExportPlatformIOS::export_project(const Ref<EditorExportPreset> &p_p
 	export_args.push_back("-allowProvisioningUpdates");
 	export_args.push_back("-exportPath");
 	export_args.push_back(dest_dir);
-	err = OS::get_singleton()->execute("xcodebuild", export_args);
+	err = Platform::get_singleton()->execute("xcodebuild", export_args);
 	ERR_FAIL_COND_V(err, err);
 #else
 	print_line(".ipa can only be built on macOS. Leaving Xcode project without building the package.");

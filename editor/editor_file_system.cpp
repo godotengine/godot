@@ -35,7 +35,7 @@
 #include "core/io/resource_loader.h"
 #include "core/io/resource_saver.h"
 #include "core/os/file_access.h"
-#include "core/os/os.h"
+#include "core/os/platform.h"
 #include "core/variant/variant_parser.h"
 #include "editor_node.h"
 #include "editor_resource_preview.h"
@@ -1095,7 +1095,7 @@ void EditorFileSystem::_notification(int p_what) {
 				//abort thread if in progress
 				abort_scan = true;
 				while (scanning) {
-					OS::get_singleton()->delay_usec(1000);
+					Platform::get_singleton()->delay_usec(1000);
 				}
 				active_thread.wait_to_finish();
 				WARN_PRINT("Scan thread aborted...");
@@ -2005,7 +2005,7 @@ void EditorFileSystem::reimport_files(const Vector<String> &p_files) {
 							current_index = data.max_index;
 							pr.step(reimport_files[current_index].path.get_file(), current_index);
 						}
-						OS::get_singleton()->delay_usec(1);
+						Platform::get_singleton()->delay_usec(1);
 					} while (!import_threads.is_done_dispatching());
 
 					import_threads.end_work();

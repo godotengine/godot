@@ -32,7 +32,7 @@
 
 #include "core/config/project_settings.h"
 #include "core/io/marshalls.h"
-#include "core/os/os.h"
+#include "core/os/platform.h"
 
 bool RemoteDebuggerPeerTCP::is_peer_connected() {
 	return connected;
@@ -172,7 +172,7 @@ Error RemoteDebuggerPeerTCP::connect_to_host(const String &p_host, uint16_t p_po
 			break;
 		} else {
 			const int ms = waits[i];
-			OS::get_singleton()->delay_usec(ms * 1000);
+			Platform::get_singleton()->delay_usec(ms * 1000);
 			print_verbose("Remote Debugger: Connection failed with status: '" + String::num(tcp_client->get_status()) + "', retrying in " + String::num(ms) + " msec.");
 		}
 	}
@@ -193,14 +193,14 @@ void RemoteDebuggerPeerTCP::_thread_func(void *p_ud) {
 	const uint64_t min_tick = 100;
 	RemoteDebuggerPeerTCP *peer = (RemoteDebuggerPeerTCP *)p_ud;
 	while (peer->running && peer->is_peer_connected()) {
-		uint64_t ticks_usec = OS::get_singleton()->get_ticks_usec();
+		uint64_t ticks_usec = Platform::get_singleton()->get_ticks_usec();
 		peer->_poll();
 		if (!peer->is_peer_connected()) {
 			break;
 		}
-		ticks_usec = OS::get_singleton()->get_ticks_usec() - ticks_usec;
+		ticks_usec = Platform::get_singleton()->get_ticks_usec() - ticks_usec;
 		if (ticks_usec < min_tick) {
-			OS::get_singleton()->delay_usec(min_tick - ticks_usec);
+			Platform::get_singleton()->delay_usec(min_tick - ticks_usec);
 		}
 	}
 }

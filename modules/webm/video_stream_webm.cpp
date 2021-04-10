@@ -32,7 +32,7 @@
 
 #include "core/config/project_settings.h"
 #include "core/os/file_access.h"
-#include "core/os/os.h"
+#include "core/os/platform.h"
 #include "servers/audio_server.h"
 
 #include "thirdparty/misc/yuv2rgb.h"
@@ -103,7 +103,7 @@ bool VideoStreamPlaybackWebm::open_file(const String &p_file) {
 	file_name = p_file;
 	webm = memnew(WebMDemuxer(new MkvReader(file_name), 0, audio_track));
 	if (webm->isOpen()) {
-		video = memnew(VPXDecoder(*webm, OS::get_singleton()->get_processor_count()));
+		video = memnew(VPXDecoder(*webm, Platform::get_singleton()->get_processor_count()));
 		if (video->isOpen()) {
 			audio = memnew(OpusVorbisDecoder(*webm));
 			if (audio->isOpen()) {

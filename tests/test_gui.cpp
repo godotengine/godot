@@ -33,7 +33,7 @@
 #include "test_gui.h"
 
 #include "core/io/image_loader.h"
-#include "core/os/os.h"
+#include "core/os/platform.h"
 #include "core/string/print_string.h"
 #include "scene/2d/sprite_2d.h"
 #include "scene/gui/button.h"

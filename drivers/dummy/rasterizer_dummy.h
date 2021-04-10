@@ -666,7 +666,7 @@ public:
 		return true;
 	}
 
-	bool has_os_feature(const String &p_feature) const override { return false; }
+	bool has_platform_feature(const String &p_feature) const override { return false; }
 
 	void update_dirty_resources() override {}
 

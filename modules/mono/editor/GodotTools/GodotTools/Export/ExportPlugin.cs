@@ -12,7 +12,7 @@ using JetBrains.Annotations;
 using static GodotTools.Internals.Globals;
 using Directory = GodotTools.Utils.Directory;
 using File = GodotTools.Utils.File;
-using OS = GodotTools.Utils.OS;
+using Platform = GodotTools.Utils.Platform;
 using Path = System.IO.Path;
 
 namespace GodotTools.Export
@@ -172,7 +172,7 @@ namespace GodotTools.Export
 
             string bclDir = DeterminePlatformBclDir(platform);
 
-            if (platform == OS.Platforms.Android)
+            if (platform == Platform.Platforms.Android)
             {
                 string godotAndroidExtProfileDir = GetBclProfileDir("godot_android_ext");
                 string monoAndroidAssemblyPath = Path.Combine(godotAndroidExtProfileDir, "Mono.Android.dll");
@@ -182,7 +182,7 @@ namespace GodotTools.Export
 
                 assemblies["Mono.Android"] = monoAndroidAssemblyPath;
             }
-            else if (platform == OS.Platforms.HTML5)
+            else if (platform == Platform.Platforms.HTML5)
             {
                 // Ideally these would be added automatically since they're referenced by the wasm BCL assemblies.
                 // However, at least in the case of 'WebAssembly.Net.Http' for some reason the BCL assemblies
@@ -277,13 +277,13 @@ namespace GodotTools.Export
             }
 
             // AOT compilation
-            bool aotEnabled = platform == OS.Platforms.iOS || (bool)ProjectSettings.GetSetting("mono/export/aot/enabled");
+            bool aotEnabled = platform == Platform.Platforms.iOS || (bool)ProjectSettings.GetSetting("mono/export/aot/enabled");
 
             if (aotEnabled)
             {
                 string aotToolchainPath = null;
 
-                if (platform == OS.Platforms.Android)
+                if (platform == Platform.Platforms.Android)
                     aotToolchainPath = (string)ProjectSettings.GetSetting("mono/export/aot/android_toolchain_path");
 
                 if (aotToolchainPath == string.Empty)
@@ -296,7 +296,7 @@ namespace GodotTools.Export
                     LLVMOnly = false,
                     LLVMPath = "",
                     LLVMOutputPath = "",
-                    FullAot = platform == OS.Platforms.iOS || (bool)(ProjectSettings.GetSetting("mono/export/aot/full_aot") ?? false),
+                    FullAot = platform == Platform.Platforms.iOS || (bool)(ProjectSettings.GetSetting("mono/export/aot/full_aot") ?? false),
                     UseInterpreter = (bool)ProjectSettings.GetSetting("mono/export/aot/use_interpreter"),
                     ExtraAotOptions = (string[])ProjectSettings.GetSetting("mono/export/aot/extra_aot_options") ?? new string[] { },
                     ExtraOptimizerOptions = (string[])ProjectSettings.GetSetting("mono/export/aot/extra_optimizer_options") ?? new string[] { },
@@ -381,14 +381,14 @@ namespace GodotTools.Export
         private static bool PlatformHasTemplateDir(string platform)
         {
             // OSX export templates are contained in a zip, so we place our custom template inside it and let Godot do the rest.
-            return !new[] {OS.Platforms.MacOS, OS.Platforms.Android, OS.Platforms.iOS, OS.Platforms.HTML5}.Contains(platform);
+            return !new[] {Platform.Platforms.MacOS, Platform.Platforms.Android, Platform.Platforms.iOS, Platform.Platforms.HTML5}.Contains(platform);
         }
 
         private static bool DeterminePlatformFromFeatures(IEnumerable<string> features, out string platform)
         {
             foreach (var feature in features)
             {
-                if (OS.PlatformNameMap.TryGetValue(feature, out platform))
+                if (Platform.PlatformNameMap.TryGetValue(feature, out platform))
                     return true;
             }
 
@@ -430,7 +430,7 @@ namespace GodotTools.Export
         /// </summary>
         private static bool PlatformRequiresCustomBcl(string platform)
         {
-            if (new[] {OS.Platforms.Android, OS.Platforms.iOS, OS.Platforms.HTML5}.Contains(platform))
+            if (new[] {Platform.Platforms.Android, Platform.Platforms.iOS, Platform.Platforms.HTML5}.Contains(platform))
                 return true;
 
             // The 'net_4_x' BCL is not compatible between Windows and the other platforms.
@@ -438,30 +438,30 @@ namespace GodotTools.Export
 
             bool isWinOrUwp = new[]
             {
-                OS.Platforms.Windows,
-                OS.Platforms.UWP
+                Platform.Platforms.Windows,
+                Platform.Platforms.UWP
             }.Contains(platform);
 
-            return OS.IsWindows ? !isWinOrUwp : isWinOrUwp;
+            return Platform.IsWindows ? !isWinOrUwp : isWinOrUwp;
         }
 
         private static string DeterminePlatformBclProfile(string platform)
         {
             switch (platform)
             {
-                case OS.Platforms.Windows:
-                case OS.Platforms.UWP:
+                case Platform.Platforms.Windows:
+                case Platform.Platforms.UWP:
                     return "net_4_x_win";
-                case OS.Platforms.MacOS:
-                case OS.Platforms.LinuxBSD:
-                case OS.Platforms.Server:
-                case OS.Platforms.Haiku:
+                case Platform.Platforms.MacOS:
+                case Platform.Platforms.LinuxBSD:
+                case Platform.Platforms.Server:
+                case Platform.Platforms.Haiku:
                     return "net_4_x";
-                case OS.Platforms.Android:
+                case Platform.Platforms.Android:
                     return "monodroid";
-                case OS.Platforms.iOS:
+                case Platform.Platforms.iOS:
                     return "monotouch";
-                case OS.Platforms.HTML5:
+                case Platform.Platforms.HTML5:
                     return "wasm";
                 default:
                     throw new NotSupportedException($"Platform not supported: {platform}");

@@ -779,8 +779,8 @@ public:
 
 	void notify_all_debug_sessions_exited();
 
-	OS::ProcessID has_child_process(OS::ProcessID p_pid) const { return editor_run.has_child_process(p_pid); }
-	void stop_child_process(OS::ProcessID p_pid);
+	Platform::ProcessID has_child_process(Platform::ProcessID p_pid) const { return editor_run.has_child_process(p_pid); }
+	void stop_child_process(Platform::ProcessID p_pid);
 
 	Ref<Theme> get_editor_theme() const { return theme; }
 	Ref<Script> get_object_custom_type_base(const Object *p_object) const;

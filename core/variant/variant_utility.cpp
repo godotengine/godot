@@ -33,7 +33,7 @@
 #include "core/core_string_names.h"
 #include "core/io/marshalls.h"
 #include "core/object/reference.h"
-#include "core/os/os.h"
+#include "core/os/platform.h"
 #include "core/templates/oa_hash_map.h"
 #include "core/variant/binder_common.h"
 #include "core/variant/variant_parser.h"
@@ -574,7 +574,7 @@ struct VariantUtilityFunctions {
 			}
 		}
 
-		OS::get_singleton()->print("%s", str.utf8().get_data());
+		Platform::get_singleton()->print("%s", str.utf8().get_data());
 		r_error.error = Callable::CallError::CALL_OK;
 	}
 

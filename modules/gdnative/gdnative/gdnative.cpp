@@ -34,7 +34,7 @@
 #include "core/core_constants.h"
 #include "core/error/error_macros.h"
 #include "core/object/class_db.h"
-#include "core/os/os.h"
+#include "core/os/platform.h"
 #include "core/variant/variant.h"
 
 #include "modules/gdnative/gdnative.h"

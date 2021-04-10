@@ -31,7 +31,7 @@
 #include "webrtc_multiplayer.h"
 
 #include "core/io/marshalls.h"
-#include "core/os/os.h"
+#include "core/os/platform.h"
 
 void WebRTCMultiplayer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("initialize", "peer_id", "server_compatibility"), &WebRTCMultiplayer::initialize, DEFVAL(false));

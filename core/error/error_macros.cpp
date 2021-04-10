@@ -31,7 +31,7 @@
 #include "error_macros.h"
 
 #include "core/io/logger.h"
-#include "core/os/os.h"
+#include "core/os/platform.h"
 #include "core/string/ustring.h"
 
 static ErrorHandlerList *error_handler_list = nullptr;
@@ -74,7 +74,7 @@ void _err_print_error(const char *p_function, const char *p_file, int p_line, co
 }
 
 void _err_print_error(const char *p_function, const char *p_file, int p_line, const char *p_error, const char *p_message, ErrorHandlerType p_type) {
-	OS::get_singleton()->print_error(p_function, p_file, p_line, p_error, p_message, (Logger::ErrorType)p_type);
+	Platform::get_singleton()->print_error(p_function, p_file, p_line, p_error, p_message, (Logger::ErrorType)p_type);
 
 	_global_lock();
 	ErrorHandlerList *l = error_handler_list;

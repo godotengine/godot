@@ -30,7 +30,7 @@
 
 #include "main/main.h"
 
-#include "os_osx.h"
+#include "platform_osx.h"
 
 #include <string.h>
 #include <unistd.h>
@@ -57,15 +57,15 @@ int main(int argc, char **argv) {
 	printf("Current path: %s\n", cwd);
 #endif
 
-	OS_OSX os;
+	PlatformOSX platform;
 	Error err;
 
 	// We must override main when testing is enabled
 	TEST_MAIN_OVERRIDE
 
-	if (os.open_with_filename != "") {
-		char *argv_c = (char *)malloc(os.open_with_filename.utf8().size());
-		memcpy(argv_c, os.open_with_filename.utf8().get_data(), os.open_with_filename.utf8().size());
+	if (platform.open_with_filename != "") {
+		char *argv_c = (char *)malloc(platform.open_with_filename.utf8().size());
+		memcpy(argv_c, platform.open_with_filename.utf8().get_data(), platform.open_with_filename.utf8().size());
 		err = Main::setup(argv[0], 1, &argv_c);
 		free(argv_c);
 	} else {
@@ -76,9 +76,9 @@ int main(int argc, char **argv) {
 		return 255;
 
 	if (Main::start())
-		os.run(); // it is actually the OS that decides how to run
+		platform.run(); // it is actually the platform that decides how to run
 
 	Main::cleanup();
 
-	return os.get_exit_code();
+	return platform.get_exit_code();
 };

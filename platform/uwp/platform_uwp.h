@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  os_uwp.h                                                             */
+/*  platform_uwp.h                                                       */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,13 +28,13 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef OS_UWP_H
-#define OS_UWP_H
+#ifndef PLATFORM_UWP_H
+#define PLATFORM_UWP_H
 
 #include "context_egl_uwp.h"
 #include "core/input/input.h"
 #include "core/math/transform_2d.h"
-#include "core/os/os.h"
+#include "core/os/platform.h"
 #include "core/string/ustring.h"
 #include "drivers/xaudio2/audio_driver_xaudio2.h"
 #include "joypad_uwp.h"
@@ -47,7 +47,7 @@
 #include <stdio.h>
 #include <windows.h>
 
-class OS_UWP : public OS {
+class PlatformUWP : public Platform {
 public:
 	struct KeyEvent {
 		enum MessageType {
@@ -136,7 +136,7 @@ private:
 		/* clang-format off */
 	internal:
 		ManagedType() { alert_close_handle = false; }
-		property OS_UWP* os;
+		property PlatformUWP* platform;
 		/* clang-format on */
 	};
 	ManagedType ^ managed_object;
@@ -251,8 +251,8 @@ public:
 
 	void queue_key_event(KeyEvent &p_event);
 
-	OS_UWP();
-	~OS_UWP();
+	PlatformUWP();
+	~PlatformUWP();
 };
 
-#endif
+#endif // PLATFORM_UWP_H

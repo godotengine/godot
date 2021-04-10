@@ -32,7 +32,7 @@
 
 #include "core/input/input.h"
 #include "core/os/keyboard.h"
-#include "core/os/os.h"
+#include "core/os/platform.h"
 #include "core/string/print_string.h"
 #include "core/string/translation.h"
 
@@ -367,7 +367,7 @@ void PopupMenu::_gui_input(const Ref<InputEvent> &p_event) {
 				initial_button_mask = 0;
 
 				// Disable clicks under a time threshold to avoid selection right when opening the popup.
-				uint64_t now = OS::get_singleton()->get_ticks_msec();
+				uint64_t now = Platform::get_singleton()->get_ticks_msec();
 				uint64_t diff = now - popup_time_msec;
 				if (diff < 100) {
 					return;
@@ -431,7 +431,7 @@ void PopupMenu::_gui_input(const Ref<InputEvent> &p_event) {
 	Ref<InputEventKey> k = p_event;
 
 	if (allow_search && k.is_valid() && k->get_unicode() && k->is_pressed()) {
-		uint64_t now = OS::get_singleton()->get_ticks_msec();
+		uint64_t now = Platform::get_singleton()->get_ticks_msec();
 		uint64_t diff = now - search_time_msec;
 		uint64_t max_interval = uint64_t(GLOBAL_DEF("gui/timers/incremental_search_max_interval_msec", 2000));
 		search_time_msec = now;
@@ -1682,7 +1682,7 @@ void PopupMenu::_bind_methods() {
 
 void PopupMenu::popup(const Rect2 &p_bounds) {
 	moved = Vector2();
-	popup_time_msec = OS::get_singleton()->get_ticks_msec();
+	popup_time_msec = Platform::get_singleton()->get_ticks_msec();
 	Popup::popup(p_bounds);
 }
 

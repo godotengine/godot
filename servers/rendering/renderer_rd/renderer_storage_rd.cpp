@@ -8426,7 +8426,7 @@ void RendererStorageRD::update_dirty_resources() {
 	_update_decal_atlas();
 }
 
-bool RendererStorageRD::has_os_feature(const String &p_feature) const {
+bool RendererStorageRD::has_platform_feature(const String &p_feature) const {
 	if (p_feature == "rgtc" && RD::get_singleton()->texture_is_format_supported_for_usage(RD::DATA_FORMAT_BC5_UNORM_BLOCK, RD::TEXTURE_USAGE_SAMPLING_BIT)) {
 		return true;
 	}

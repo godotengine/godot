@@ -31,7 +31,7 @@
 #ifdef MONO_GLUE_ENABLED
 
 #include "core/io/marshalls.h"
-#include "core/os/os.h"
+#include "core/os/platform.h"
 #include "core/string/ustring.h"
 #include "core/variant/array.h"
 #include "core/variant/variant.h"
@@ -129,7 +129,7 @@ void godot_icall_GD_printraw(MonoArray *p_what) {
 		str += elem_str;
 	}
 
-	OS::get_singleton()->print("%s", str.utf8().get_data());
+	Platform::get_singleton()->print("%s", str.utf8().get_data());
 }
 
 void godot_icall_GD_prints(MonoArray *p_what) {

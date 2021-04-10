@@ -33,7 +33,7 @@
 
 #include "core/math/a_star.h"
 #include "core/math/math_funcs.h"
-#include "core/os/os.h"
+#include "core/os/platform.h"
 
 #include <math.h>
 #include <stdio.h>

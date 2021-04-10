@@ -81,7 +81,7 @@ static Ref<ResourceFormatLoaderCrypto> resource_format_loader_crypto;
 
 static _ResourceLoader *_resource_loader = nullptr;
 static _ResourceSaver *_resource_saver = nullptr;
-static _OS *_os = nullptr;
+static _Platform *_platform = nullptr;
 static _Engine *_engine = nullptr;
 static _ClassDB *_classdb = nullptr;
 static _Marshalls *_marshalls = nullptr;
@@ -222,7 +222,7 @@ void register_core_types() {
 
 	_resource_loader = memnew(_ResourceLoader);
 	_resource_saver = memnew(_ResourceSaver);
-	_os = memnew(_OS);
+	_platform = memnew(_Platform);
 	_engine = memnew(_Engine);
 	_classdb = memnew(_ClassDB);
 	_marshalls = memnew(_Marshalls);
@@ -248,7 +248,7 @@ void register_core_singletons() {
 	ClassDB::register_class<_Geometry3D>();
 	ClassDB::register_class<_ResourceLoader>();
 	ClassDB::register_class<_ResourceSaver>();
-	ClassDB::register_class<_OS>();
+	ClassDB::register_class<_Platform>();
 	ClassDB::register_class<_Engine>();
 	ClassDB::register_class<_ClassDB>();
 	ClassDB::register_class<_Marshalls>();
@@ -265,7 +265,7 @@ void register_core_singletons() {
 	Engine::get_singleton()->add_singleton(Engine::Singleton("Geometry3D", _Geometry3D::get_singleton()));
 	Engine::get_singleton()->add_singleton(Engine::Singleton("ResourceLoader", _ResourceLoader::get_singleton()));
 	Engine::get_singleton()->add_singleton(Engine::Singleton("ResourceSaver", _ResourceSaver::get_singleton()));
-	Engine::get_singleton()->add_singleton(Engine::Singleton("OS", _OS::get_singleton()));
+	Engine::get_singleton()->add_singleton(Engine::Singleton("Platform", _Platform::get_singleton()));
 	Engine::get_singleton()->add_singleton(Engine::Singleton("Engine", _Engine::get_singleton()));
 	Engine::get_singleton()->add_singleton(Engine::Singleton("ClassDB", _classdb));
 	Engine::get_singleton()->add_singleton(Engine::Singleton("Marshalls", _Marshalls::get_singleton()));
@@ -279,7 +279,7 @@ void register_core_singletons() {
 void unregister_core_types() {
 	memdelete(_resource_loader);
 	memdelete(_resource_saver);
-	memdelete(_os);
+	memdelete(_platform);
 	memdelete(_engine);
 	memdelete(_classdb);
 	memdelete(_marshalls);

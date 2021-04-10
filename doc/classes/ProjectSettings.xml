@@ -97,11 +97,11 @@
 			<argument index="0" name="path" type="String">
 			</argument>
 			<description>
-				Returns the absolute, native OS path corresponding to the localized [code]path[/code] (starting with [code]res://[/code] or [code]user://[/code]). The returned path will vary depending on the operating system and user preferences. See [url=https://docs.godotengine.org/en/latest/tutorials/io/data_paths.html]File paths in Godot projects[/url] to see what those paths convert to. See also [method localize_path].
+				Returns the absolute, native platform path corresponding to the localized [code]path[/code] (starting with [code]res://[/code] or [code]user://[/code]). The returned path will vary depending on the operating system and user preferences. See [url=https://docs.godotengine.org/en/latest/tutorials/io/data_paths.html]File paths in Godot projects[/url] to see what those paths convert to. See also [method localize_path].
 				[b]Note:[/b] [method globalize_path] with [code]res://[/code] will not work in an exported project. Instead, prepend the executable's base directory to the path when running from an exported project:
 				[codeblock]
 				var path = ""
-				if OS.has_feature("editor"):
+				if Platform.has_feature("editor"):
 				    # Running from an editor binary.
 				    # `path` will contain the absolute path to `hello.txt` located in the project root.
 				    path = ProjectSettings.globalize_path("res://hello.txt")
@@ -110,7 +110,7 @@
 				    # `path` will contain the absolute path to `hello.txt` next to the executable.
 				    # This is *not* identical to using `ProjectSettings.globalize_path()` with a `res://` path,
 				    # but is close enough in spirit.
-				    path = OS.get_executable_path().get_base_dir().plus_file("hello.txt")
+				    path = Platform.get_executable_path().get_base_dir().plus_file("hello.txt")
 				[/codeblock]
 			</description>
 		</method>
@@ -144,7 +144,7 @@
 			<argument index="0" name="path" type="String">
 			</argument>
 			<description>
-				Returns the localized path (starting with [code]res://[/code]) corresponding to the absolute, native OS [code]path[/code]. See also [method globalize_path].
+				Returns the localized path (starting with [code]res://[/code]) corresponding to the absolute, native Platform [code]path[/code]. See also [method globalize_path].
 			</description>
 		</method>
 		<method name="property_can_revert">
@@ -239,7 +239,7 @@
 			If [code]true[/code], applies linear filtering when scaling the image (recommended for high resolution artwork). If [code]false[/code], uses nearest-neighbor interpolation (recommended for pixel art).
 		</member>
 		<member name="application/config/custom_user_dir_name" type="String" setter="" getter="" default="&quot;&quot;">
-			This user directory is used for storing persistent data ([code]user://[/code] filesystem). If left empty, [code]user://[/code] resolves to a project-specific folder in Godot's own configuration folder (see [method OS.get_user_data_dir]). If a custom directory name is defined, this name will be used instead and appended to the system-specific user data directory (same parent folder as the Godot configuration folder documented in [method OS.get_user_data_dir]).
+			This user directory is used for storing persistent data ([code]user://[/code] filesystem). If left empty, [code]user://[/code] resolves to a project-specific folder in Godot's own configuration folder (see [method Platform.get_user_data_dir]). If a custom directory name is defined, this name will be used instead and appended to the system-specific user data directory (same parent folder as the Godot configuration folder documented in [method Platform.get_user_data_dir]).
 			The [member application/config/use_custom_user_dir] setting must be enabled for this to take effect.
 		</member>
 		<member name="application/config/description" type="String" setter="" getter="" default="&quot;&quot;">
@@ -260,7 +260,7 @@
 			[b]Note:[/b] Regardless of this setting's value, [code]res://override.cfg[/code] will still be read to override the project settings.
 		</member>
 		<member name="application/config/use_custom_user_dir" type="bool" setter="" getter="" default="false">
-			If [code]true[/code], the project will save user data to its own user directory (see [member application/config/custom_user_dir_name]). This setting is only effective on desktop platforms. A name must be set in the [member application/config/custom_user_dir_name] setting for this to take effect. If [code]false[/code], the project will save user data to [code](OS user data directory)/Godot/app_userdata/(project name)[/code].
+			If [code]true[/code], the project will save user data to its own user directory (see [member application/config/custom_user_dir_name]). This setting is only effective on desktop platforms. A name must be set in the [member application/config/custom_user_dir_name] setting for this to take effect. If [code]false[/code], the project will save user data to [code](Platform user data directory)/Godot/app_userdata/(project name)[/code].
 		</member>
 		<member name="application/config/windows_native_icon" type="String" setter="" getter="" default="&quot;&quot;">
 			Icon set in [code].ico[/code] format used on Windows to set the game's icon. This is done automatically on start by calling [method DisplayServer.set_native_icon].
@@ -1354,7 +1354,7 @@
 			The video driver to use (currently only "Vulkan" is implemented).
 			[b]Note:[/b] The backend in use can be overridden at runtime via the [code]--rendering-driver[/code] command line argument.
 			[b]FIXME:[/b] No longer valid after DisplayServer split:
-			In such cases, this property is not updated, so use [code]OS.get_current_video_driver[/code] to query it at run-time.
+			In such cases, this property is not updated, so use [code]Platform.get_current_video_driver[/code] to query it at run-time.
 		</member>
 		<member name="rendering/driver/rd_renderer/use_low_end_renderer" type="bool" setter="" getter="" default="false">
 		</member>

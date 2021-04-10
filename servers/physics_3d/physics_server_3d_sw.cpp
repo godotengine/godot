@@ -33,7 +33,7 @@
 #include "broad_phase_3d_basic.h"
 #include "broad_phase_octree.h"
 #include "core/debugger/engine_debugger.h"
-#include "core/os/os.h"
+#include "core/os/platform.h"
 #include "joints/cone_twist_joint_3d_sw.h"
 #include "joints/generic_6dof_joint_3d_sw.h"
 #include "joints/hinge_joint_3d_sw.h"
@@ -1643,7 +1643,7 @@ void PhysicsServer3DSW::flush_queries() {
 
 	flushing_queries = true;
 
-	uint64_t time_beg = OS::get_singleton()->get_ticks_usec();
+	uint64_t time_beg = Platform::get_singleton()->get_ticks_usec();
 
 	for (Set<const Space3DSW *>::Element *E = active_spaces.front(); E; E = E->next()) {
 		Space3DSW *space = (Space3DSW *)E->get();
@@ -1679,7 +1679,7 @@ void PhysicsServer3DSW::flush_queries() {
 			values[i * 2 + 1] = USEC_TO_SEC(total_time[i]);
 		}
 		values.push_back("flush_queries");
-		values.push_back(USEC_TO_SEC(OS::get_singleton()->get_ticks_usec() - time_beg));
+		values.push_back(USEC_TO_SEC(Platform::get_singleton()->get_ticks_usec() - time_beg));
 
 		values.push_front("physics");
 		EngineDebugger::profiler_add_frame_data("servers", values);

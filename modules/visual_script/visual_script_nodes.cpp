@@ -34,7 +34,7 @@
 #include "core/config/project_settings.h"
 #include "core/core_constants.h"
 #include "core/input/input.h"
-#include "core/os/os.h"
+#include "core/os/platform.h"
 #include "scene/main/node.h"
 #include "scene/main/scene_tree.h"
 
@@ -2438,7 +2438,7 @@ VisualScriptSceneNode::TypeGuess VisualScriptSceneNode::guess_output_type(TypeGu
 		return tg;
 	}
 
-	MainLoop *main_loop = OS::get_singleton()->get_main_loop();
+	MainLoop *main_loop = Platform::get_singleton()->get_main_loop();
 	SceneTree *scene_tree = Object::cast_to<SceneTree>(main_loop);
 
 	if (!scene_tree) {
@@ -2475,7 +2475,7 @@ void VisualScriptSceneNode::_validate_property(PropertyInfo &property) const {
 			return;
 		}
 
-		MainLoop *main_loop = OS::get_singleton()->get_main_loop();
+		MainLoop *main_loop = Platform::get_singleton()->get_main_loop();
 		SceneTree *scene_tree = Object::cast_to<SceneTree>(main_loop);
 
 		if (!scene_tree) {

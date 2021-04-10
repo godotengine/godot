@@ -34,7 +34,7 @@
 #include "core/io/zip_io.h"
 #include "core/os/dir_access.h"
 #include "core/os/file_access.h"
-#include "core/os/os.h"
+#include "core/os/platform.h"
 #include "editor/editor_export.h"
 
 const String godot_project_name_xml_string = R"(<?xml version="1.0" encoding="utf-8"?>
@@ -147,7 +147,7 @@ Error store_string_at_path(const String &p_path, const String &p_data) {
 	String dir = p_path.get_base_dir();
 	Error err = create_directory(dir);
 	if (err != OK) {
-		if (OS::get_singleton()->is_stdout_verbose()) {
+		if (Platform::get_singleton()->is_stdout_verbose()) {
 			print_error("Unable to write data into " + p_path);
 		}
 		return err;
@@ -181,7 +181,7 @@ Error _create_project_name_strings_files(const Ref<EditorExportPreset> &p_preset
 	// Searches the Gradle project res/ directory to find all supported locales
 	DirAccessRef da = DirAccess::open("res://android/build/res");
 	if (!da) {
-		if (OS::get_singleton()->is_stdout_verbose()) {
+		if (Platform::get_singleton()->is_stdout_verbose()) {
 			print_error("Unable to open Android resources directory.");
 		}
 		return ERR_CANT_OPEN;

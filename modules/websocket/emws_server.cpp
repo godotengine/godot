@@ -31,7 +31,7 @@
 #ifdef JAVASCRIPT_ENABLED
 
 #include "emws_server.h"
-#include "core/os/os.h"
+#include "core/os/platform.h"
 
 Error EMWSServer::listen(int p_port, Vector<String> p_protocols, bool gd_mp_api) {
 	return FAILED;

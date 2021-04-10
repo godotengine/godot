@@ -144,7 +144,7 @@ void EditorHelp::_class_desc_select(const String &p_select) {
 			}
 		}
 	} else if (p_select.begins_with("http")) {
-		OS::get_singleton()->shell_open(p_select);
+		Platform::get_singleton()->shell_open(p_select);
 	}
 }
 

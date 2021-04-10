@@ -31,7 +31,7 @@
 #include "gdscript_function.h"
 
 #include "core/core_string_names.h"
-#include "core/os/os.h"
+#include "core/os/platform.h"
 #include "gdscript.h"
 #include "gdscript_lambda_callable.h"
 
@@ -534,7 +534,7 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 	uint64_t function_call_time = 0;
 
 	if (GDScriptLanguage::get_singleton()->profiling) {
-		function_start_time = OS::get_singleton()->get_ticks_usec();
+		function_start_time = Platform::get_singleton()->get_ticks_usec();
 		function_call_time = 0;
 		profile.call_count++;
 		profile.frame_call_count++;
@@ -1418,7 +1418,7 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 				uint64_t call_time = 0;
 
 				if (GDScriptLanguage::get_singleton()->profiling) {
-					call_time = OS::get_singleton()->get_ticks_usec();
+					call_time = Platform::get_singleton()->get_ticks_usec();
 				}
 
 #endif
@@ -1448,7 +1448,7 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 				}
 #ifdef DEBUG_ENABLED
 				if (GDScriptLanguage::get_singleton()->profiling) {
-					function_call_time += OS::get_singleton()->get_ticks_usec() - call_time;
+					function_call_time += Platform::get_singleton()->get_ticks_usec() - call_time;
 				}
 
 				if (err.error != Callable::CallError::CALL_OK) {
@@ -1526,7 +1526,7 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 				uint64_t call_time = 0;
 
 				if (GDScriptLanguage::get_singleton()->profiling) {
-					call_time = OS::get_singleton()->get_ticks_usec();
+					call_time = Platform::get_singleton()->get_ticks_usec();
 				}
 #endif
 
@@ -1540,7 +1540,7 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 
 #ifdef DEBUG_ENABLED
 				if (GDScriptLanguage::get_singleton()->profiling) {
-					function_call_time += OS::get_singleton()->get_ticks_usec() - call_time;
+					function_call_time += Platform::get_singleton()->get_ticks_usec() - call_time;
 				}
 
 				if (err.error != Callable::CallError::CALL_OK) {
@@ -1574,42 +1574,42 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 			DISPATCH_OPCODE;
 
 #ifdef DEBUG_ENABLED
-#define OPCODE_CALL_PTR(m_type)                                                      \
-	OPCODE(OPCODE_CALL_PTRCALL_##m_type) {                                           \
-		CHECK_SPACE(3 + instr_arg_count);                                            \
-		ip += instr_arg_count;                                                       \
-		int argc = _code_ptr[ip + 1];                                                \
-		GD_ERR_BREAK(argc < 0);                                                      \
-		GET_INSTRUCTION_ARG(base, argc);                                             \
-		GD_ERR_BREAK(_code_ptr[ip + 2] < 0 || _code_ptr[ip + 2] >= _methods_count);  \
-		MethodBind *method = _methods_ptr[_code_ptr[ip + 2]];                        \
-		bool freed = false;                                                          \
-		Object *base_obj = base->get_validated_object_with_check(freed);             \
-		if (freed) {                                                                 \
-			err_text = "Trying to call a function on a previously freed instance.";  \
-			OPCODE_BREAK;                                                            \
-		} else if (!base_obj) {                                                      \
-			err_text = "Trying to call a function on a null value.";                 \
-			OPCODE_BREAK;                                                            \
-		}                                                                            \
-		const void **argptrs = call_args_ptr;                                        \
-		for (int i = 0; i < argc; i++) {                                             \
-			GET_INSTRUCTION_ARG(v, i);                                               \
-			argptrs[i] = VariantInternal::get_opaque_pointer((const Variant *)v);    \
-		}                                                                            \
-		uint64_t call_time = 0;                                                      \
-		if (GDScriptLanguage::get_singleton()->profiling) {                          \
-			call_time = OS::get_singleton()->get_ticks_usec();                       \
-		}                                                                            \
-		GET_INSTRUCTION_ARG(ret, argc + 1);                                          \
-		VariantInternal::initialize(ret, Variant::m_type);                           \
-		void *ret_opaque = VariantInternal::OP_GET_##m_type(ret);                    \
-		method->ptrcall(base_obj, argptrs, ret_opaque);                              \
-		if (GDScriptLanguage::get_singleton()->profiling) {                          \
-			function_call_time += OS::get_singleton()->get_ticks_usec() - call_time; \
-		}                                                                            \
-		ip += 3;                                                                     \
-	}                                                                                \
+#define OPCODE_CALL_PTR(m_type)                                                            \
+	OPCODE(OPCODE_CALL_PTRCALL_##m_type) {                                                 \
+		CHECK_SPACE(3 + instr_arg_count);                                                  \
+		ip += instr_arg_count;                                                             \
+		int argc = _code_ptr[ip + 1];                                                      \
+		GD_ERR_BREAK(argc < 0);                                                            \
+		GET_INSTRUCTION_ARG(base, argc);                                                   \
+		GD_ERR_BREAK(_code_ptr[ip + 2] < 0 || _code_ptr[ip + 2] >= _methods_count);        \
+		MethodBind *method = _methods_ptr[_code_ptr[ip + 2]];                              \
+		bool freed = false;                                                                \
+		Object *base_obj = base->get_validated_object_with_check(freed);                   \
+		if (freed) {                                                                       \
+			err_text = "Trying to call a function on a previously freed instance.";        \
+			OPCODE_BREAK;                                                                  \
+		} else if (!base_obj) {                                                            \
+			err_text = "Trying to call a function on a null value.";                       \
+			OPCODE_BREAK;                                                                  \
+		}                                                                                  \
+		const void **argptrs = call_args_ptr;                                              \
+		for (int i = 0; i < argc; i++) {                                                   \
+			GET_INSTRUCTION_ARG(v, i);                                                     \
+			argptrs[i] = VariantInternal::get_opaque_pointer((const Variant *)v);          \
+		}                                                                                  \
+		uint64_t call_time = 0;                                                            \
+		if (GDScriptLanguage::get_singleton()->profiling) {                                \
+			call_time = Platform::get_singleton()->get_ticks_usec();                       \
+		}                                                                                  \
+		GET_INSTRUCTION_ARG(ret, argc + 1);                                                \
+		VariantInternal::initialize(ret, Variant::m_type);                                 \
+		void *ret_opaque = VariantInternal::OP_GET_##m_type(ret);                          \
+		method->ptrcall(base_obj, argptrs, ret_opaque);                                    \
+		if (GDScriptLanguage::get_singleton()->profiling) {                                \
+			function_call_time += Platform::get_singleton()->get_ticks_usec() - call_time; \
+		}                                                                                  \
+		ip += 3;                                                                           \
+	}                                                                                      \
 	DISPATCH_OPCODE
 #else
 #define OPCODE_CALL_PTR(m_type)                                                   \
@@ -1702,7 +1702,7 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 				uint64_t call_time = 0;
 
 				if (GDScriptLanguage::get_singleton()->profiling) {
-					call_time = OS::get_singleton()->get_ticks_usec();
+					call_time = Platform::get_singleton()->get_ticks_usec();
 				}
 #endif
 
@@ -1714,7 +1714,7 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 
 #ifdef DEBUG_ENABLED
 				if (GDScriptLanguage::get_singleton()->profiling) {
-					function_call_time += OS::get_singleton()->get_ticks_usec() - call_time;
+					function_call_time += Platform::get_singleton()->get_ticks_usec() - call_time;
 				}
 #endif
 				ip += 3;
@@ -1755,7 +1755,7 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 				uint64_t call_time = 0;
 
 				if (GDScriptLanguage::get_singleton()->profiling) {
-					call_time = OS::get_singleton()->get_ticks_usec();
+					call_time = Platform::get_singleton()->get_ticks_usec();
 				}
 #endif
 
@@ -1765,7 +1765,7 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 
 #ifdef DEBUG_ENABLED
 				if (GDScriptLanguage::get_singleton()->profiling) {
-					function_call_time += OS::get_singleton()->get_ticks_usec() - call_time;
+					function_call_time += Platform::get_singleton()->get_ticks_usec() - call_time;
 				}
 #endif
 				ip += 3;
@@ -1789,7 +1789,7 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 #ifdef DEBUG_ENABLED
 				uint64_t call_time = 0;
 				if (GDScriptLanguage::get_singleton()->profiling) {
-					call_time = OS::get_singleton()->get_ticks_usec();
+					call_time = Platform::get_singleton()->get_ticks_usec();
 				}
 #endif
 
@@ -1798,7 +1798,7 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 
 #ifdef DEBUG_ENABLED
 				if (GDScriptLanguage::get_singleton()->profiling) {
-					function_call_time += OS::get_singleton()->get_ticks_usec() - call_time;
+					function_call_time += Platform::get_singleton()->get_ticks_usec() - call_time;
 				}
 #endif
 
@@ -3206,7 +3206,7 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 	OPCODES_OUT
 #ifdef DEBUG_ENABLED
 	if (GDScriptLanguage::get_singleton()->profiling) {
-		uint64_t time_taken = OS::get_singleton()->get_ticks_usec() - function_start_time;
+		uint64_t time_taken = Platform::get_singleton()->get_ticks_usec() - function_start_time;
 		profile.total_time += time_taken;
 		profile.self_time += time_taken - function_call_time;
 		profile.frame_total_time += time_taken;

@@ -14,7 +14,7 @@ using GodotTools.ProjectEditor;
 using JetBrains.Annotations;
 using static GodotTools.Internals.Globals;
 using File = GodotTools.Utils.File;
-using OS = GodotTools.Utils.OS;
+using Platform = GodotTools.Utils.Platform;
 using Path = System.IO.Path;
 
 namespace GodotTools
@@ -239,10 +239,10 @@ namespace GodotTools
 
                     try
                     {
-                        if (Godot.OS.IsStdoutVerbose())
+                        if (Godot.Platform.IsStdoutVerbose())
                             Console.WriteLine($"Running: \"{command}\" {string.Join(" ", args.Select(a => $"\"{a}\""))}");
 
-                        OS.RunProcess(command, args);
+                        Platform.RunProcess(command, args);
                     }
                     catch (Exception e)
                     {
@@ -279,14 +279,14 @@ namespace GodotTools
                     if (string.IsNullOrEmpty(_vsCodePath) || !File.Exists(_vsCodePath))
                     {
                         // Try to search it again if it wasn't found last time or if it was removed from its location
-                        _vsCodePath = VsCodeNames.SelectFirstNotNull(OS.PathWhich, orElse: string.Empty);
+                        _vsCodePath = VsCodeNames.SelectFirstNotNull(Platform.PathWhich, orElse: string.Empty);
                     }
 
                     var args = new List<string>();
 
                     bool osxAppBundleInstalled = false;
 
-                    if (OS.IsMacOS)
+                    if (Platform.IsMacOS)
                     {
                         // The package path is '/Applications/Visual Studio Code.app'
                         const string vscodeBundleId = "com.microsoft.VSCode";
@@ -326,7 +326,7 @@ namespace GodotTools
 
                     string command;
 
-                    if (OS.IsMacOS)
+                    if (Platform.IsMacOS)
                     {
                         if (!osxAppBundleInstalled && string.IsNullOrEmpty(_vsCodePath))
                         {
@@ -349,7 +349,7 @@ namespace GodotTools
 
                     try
                     {
-                        OS.RunProcess(command, args);
+                        Platform.RunProcess(command, args);
                     }
                     catch (Exception e)
                     {
@@ -517,21 +517,21 @@ namespace GodotTools
 
             string settingsHintStr = "Disabled";
 
-            if (OS.IsWindows)
+            if (Platform.IsWindows)
             {
                 settingsHintStr += $",Visual Studio:{(int)ExternalEditorId.VisualStudio}" +
                                    $",MonoDevelop:{(int)ExternalEditorId.MonoDevelop}" +
                                    $",Visual Studio Code:{(int)ExternalEditorId.VsCode}" +
                                    $",JetBrains Rider:{(int)ExternalEditorId.Rider}";
             }
-            else if (OS.IsMacOS)
+            else if (Platform.IsMacOS)
             {
                 settingsHintStr += $",Visual Studio:{(int)ExternalEditorId.VisualStudioForMac}" +
                                    $",MonoDevelop:{(int)ExternalEditorId.MonoDevelop}" +
                                    $",Visual Studio Code:{(int)ExternalEditorId.VsCode}" +
                                    $",JetBrains Rider:{(int)ExternalEditorId.Rider}";
             }
-            else if (OS.IsUnixLike)
+            else if (Platform.IsUnixLike)
             {
                 settingsHintStr += $",MonoDevelop:{(int)ExternalEditorId.MonoDevelop}" +
                                    $",Visual Studio Code:{(int)ExternalEditorId.VsCode}" +

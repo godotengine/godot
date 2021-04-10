@@ -32,7 +32,7 @@
 
 #include "core/os/file_access.h"
 #include "core/os/keyboard.h"
-#include "core/os/os.h"
+#include "core/os/platform.h"
 #include "core/string/print_string.h"
 #include "dependency_editor.h"
 #include "editor_file_system.h"
@@ -663,7 +663,7 @@ void EditorFileDialog::_item_menu_id_pressed(int p_option) {
 					path = path.get_base_dir();
 				}
 			}
-			OS::get_singleton()->shell_open(String("file://") + path);
+			Platform::get_singleton()->shell_open(String("file://") + path);
 		} break;
 	}
 }
@@ -955,7 +955,7 @@ String EditorFileDialog::get_current_path() const {
 
 void EditorFileDialog::set_current_dir(const String &p_dir) {
 	if (p_dir.is_rel_path()) {
-		dir_access->change_dir(OS::get_singleton()->get_resource_dir());
+		dir_access->change_dir(Platform::get_singleton()->get_resource_dir());
 	}
 	dir_access->change_dir(p_dir);
 	update_dir();

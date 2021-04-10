@@ -30,7 +30,7 @@
 
 #include "image_compress_cvtt.h"
 
-#include "core/os/os.h"
+#include "core/os/platform.h"
 #include "core/os/thread.h"
 #include "core/string/print_string.h"
 #include "core/templates/safe_refcount.h"
@@ -219,7 +219,7 @@ void image_compress_cvtt(Image *p_image, float p_lossy_quality, Image::UsedChann
 #ifdef NO_THREADS
 	int num_job_threads = 0;
 #else
-	int num_job_threads = OS::get_singleton()->can_use_threads() ? (OS::get_singleton()->get_processor_count() - 1) : 0;
+	int num_job_threads = Platform::get_singleton()->can_use_threads() ? (Platform::get_singleton()->get_processor_count() - 1) : 0;
 #endif
 
 	Vector<CVTTCompressionRowTask> tasks;

@@ -35,7 +35,7 @@
 #include "core/os/dir_access.h"
 #include "core/os/file_access.h"
 #include "core/os/keyboard.h"
-#include "core/os/os.h"
+#include "core/os/platform.h"
 #include "core/templates/list.h"
 #include "editor_feature_profile.h"
 #include "editor_node.h"
@@ -1736,7 +1736,7 @@ void FileSystemDock::_file_option(int p_option, const Vector<String> &p_selected
 				fpath = fpath.get_base_dir();
 			}
 			String dir = ProjectSettings::get_singleton()->globalize_path(fpath);
-			OS::get_singleton()->shell_open(String("file://") + dir);
+			Platform::get_singleton()->shell_open(String("file://") + dir);
 		} break;
 
 		case FILE_OPEN: {

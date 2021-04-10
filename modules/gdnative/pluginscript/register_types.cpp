@@ -34,7 +34,7 @@
 #include "core/io/resource_loader.h"
 #include "core/io/resource_saver.h"
 #include "core/os/dir_access.h"
-#include "core/os/os.h"
+#include "core/os/platform.h"
 #include "scene/main/scene_tree.h"
 
 #include "pluginscript_language.h"

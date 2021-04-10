@@ -37,7 +37,7 @@
 #include "core/os/dir_access.h"
 #include "core/os/file_access.h"
 #include "core/os/keyboard.h"
-#include "core/os/os.h"
+#include "core/os/platform.h"
 #include "core/string/translation.h"
 #include "core/version.h"
 #include "core/version_hash.gen.h"
@@ -1290,8 +1290,8 @@ void ProjectList::update_dock_menu() {
 void ProjectList::_global_menu_new_window(const Variant &p_tag) {
 	List<String> args;
 	args.push_back("-p");
-	String exec = OS::get_singleton()->get_executable_path();
-	OS::get_singleton()->create_process(exec, args);
+	String exec = Platform::get_singleton()->get_executable_path();
+	Platform::get_singleton()->create_process(exec, args);
 }
 
 void ProjectList::_global_menu_open_project(const Variant &p_tag) {
@@ -1301,8 +1301,8 @@ void ProjectList::_global_menu_open_project(const Variant &p_tag) {
 		String conf = _projects[idx].path.plus_file("project.godot");
 		List<String> args;
 		args.push_back(conf);
-		String exec = OS::get_singleton()->get_executable_path();
-		OS::get_singleton()->create_process(exec, args);
+		String exec = Platform::get_singleton()->get_executable_path();
+		Platform::get_singleton()->create_process(exec, args);
 	}
 }
 
@@ -1699,7 +1699,7 @@ void ProjectList::erase_selected_projects(bool p_delete_project_contents) {
 			EditorSettings::get_singleton()->erase("favorite_projects/" + item.project_key);
 
 			if (p_delete_project_contents) {
-				OS::get_singleton()->move_to_trash(item.path);
+				Platform::get_singleton()->move_to_trash(item.path);
 			}
 
 			memdelete(item.control);
@@ -1802,7 +1802,7 @@ void ProjectList::_favorite_pressed(Node *p_hb) {
 }
 
 void ProjectList::_show_project(const String &p_path) {
-	OS::get_singleton()->shell_open(String("file://") + p_path);
+	Platform::get_singleton()->shell_open(String("file://") + p_path);
 }
 
 const char *ProjectList::SIGNAL_SELECTION_CHANGED = "selection_changed";
@@ -2044,20 +2044,20 @@ void ProjectManager::_open_selected_projects() {
 
 		args.push_back("--editor");
 
-		if (OS::get_singleton()->is_stdout_debug_enabled()) {
+		if (Platform::get_singleton()->is_stdout_debug_enabled()) {
 			args.push_back("--debug");
 		}
 
-		if (OS::get_singleton()->is_stdout_verbose()) {
+		if (Platform::get_singleton()->is_stdout_verbose()) {
 			args.push_back("--verbose");
 		}
 
-		if (OS::get_singleton()->is_disable_crash_handler()) {
+		if (Platform::get_singleton()->is_disable_crash_handler()) {
 			args.push_back("--disable-crash-handler");
 		}
 
-		String exec = OS::get_singleton()->get_executable_path();
-		Error err = OS::get_singleton()->create_process(exec, args);
+		String exec = Platform::get_singleton()->get_executable_path();
+		Error err = Platform::get_singleton()->create_process(exec, args);
 		ERR_FAIL_COND(err);
 	}
 
@@ -2138,12 +2138,12 @@ void ProjectManager::_run_project_confirm() {
 		args.push_back("--path");
 		args.push_back(path);
 
-		if (OS::get_singleton()->is_disable_crash_handler()) {
+		if (Platform::get_singleton()->is_disable_crash_handler()) {
 			args.push_back("--disable-crash-handler");
 		}
 
-		String exec = OS::get_singleton()->get_executable_path();
-		Error err = OS::get_singleton()->create_process(exec, args);
+		String exec = Platform::get_singleton()->get_executable_path();
+		Error err = Platform::get_singleton()->create_process(exec, args);
 		ERR_FAIL_COND(err);
 	}
 }
@@ -2271,9 +2271,9 @@ void ProjectManager::_language_selected(int p_id) {
 }
 
 void ProjectManager::_restart_confirm() {
-	List<String> args = OS::get_singleton()->get_cmdline_args();
-	String exec = OS::get_singleton()->get_executable_path();
-	Error err = OS::get_singleton()->create_process(exec, args);
+	List<String> args = Platform::get_singleton()->get_cmdline_args();
+	String exec = Platform::get_singleton()->get_executable_path();
+	Error err = Platform::get_singleton()->create_process(exec, args);
 	ERR_FAIL_COND(err);
 
 	_dim_window();
@@ -2756,7 +2756,7 @@ ProjectManager::ProjectManager() {
 
 	SceneTree::get_singleton()->get_root()->connect("files_dropped", callable_mp(this, &ProjectManager::_files_dropped));
 
-	OS::get_singleton()->set_low_processor_usage_mode(true);
+	Platform::get_singleton()->set_low_processor_usage_mode(true);
 }
 
 ProjectManager::~ProjectManager() {

@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  os_javascript.cpp                                                    */
+/*  platform_javascript.cpp                                              */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,7 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#include "os_javascript.h"
+#include "platform_javascript.h"
 
 #include "core/debugger/engine_debugger.h"
 #include "core/io/json.h"
@@ -49,8 +49,8 @@
 #include "godot_js.h"
 
 // Lifecycle
-void OS_JavaScript::initialize() {
-	OS_Unix::initialize_core();
+void PlatformJavaScript::initialize() {
+	PlatformUnix::initialize_core();
 	DisplayServerJavaScript::register_javascript_driver();
 
 #ifdef MODULE_WEBSOCKET_ENABLED
@@ -59,25 +59,25 @@ void OS_JavaScript::initialize() {
 #endif
 }
 
-void OS_JavaScript::resume_audio() {
+void PlatformJavaScript::resume_audio() {
 	if (audio_driver_javascript) {
 		audio_driver_javascript->resume();
 	}
 }
 
-void OS_JavaScript::set_main_loop(MainLoop *p_main_loop) {
+void PlatformJavaScript::set_main_loop(MainLoop *p_main_loop) {
 	main_loop = p_main_loop;
 }
 
-MainLoop *OS_JavaScript::get_main_loop() const {
+MainLoop *PlatformJavaScript::get_main_loop() const {
 	return main_loop;
 }
 
-void OS_JavaScript::fs_sync_callback() {
+void PlatformJavaScript::fs_sync_callback() {
 	get_singleton()->idb_is_syncing = false;
 }
 
-bool OS_JavaScript::main_loop_iterate() {
+bool PlatformJavaScript::main_loop_iterate() {
 	if (is_userfs_persistent() && idb_needs_sync && !idb_is_syncing) {
 		idb_is_syncing = true;
 		idb_needs_sync = false;
@@ -89,14 +89,14 @@ bool OS_JavaScript::main_loop_iterate() {
 	return Main::iteration();
 }
 
-void OS_JavaScript::delete_main_loop() {
+void PlatformJavaScript::delete_main_loop() {
 	if (main_loop) {
 		memdelete(main_loop);
 	}
 	main_loop = nullptr;
 }
 
-void OS_JavaScript::finalize() {
+void PlatformJavaScript::finalize() {
 	delete_main_loop();
 	if (audio_driver_javascript) {
 		memdelete(audio_driver_javascript);
@@ -106,34 +106,34 @@ void OS_JavaScript::finalize() {
 
 // Miscellaneous
 
-Error OS_JavaScript::execute(const String &p_path, const List<String> &p_arguments, String *r_pipe, int *r_exitcode, bool read_stderr, Mutex *p_pipe_mutex) {
+Error PlatformJavaScript::execute(const String &p_path, const List<String> &p_arguments, String *r_pipe, int *r_exitcode, bool read_stderr, Mutex *p_pipe_mutex) {
 	return create_process(p_path, p_arguments);
 }
 
-Error OS_JavaScript::create_process(const String &p_path, const List<String> &p_arguments, ProcessID *r_child_id) {
+Error PlatformJavaScript::create_process(const String &p_path, const List<String> &p_arguments, ProcessID *r_child_id) {
 	Array args;
 	for (const List<String>::Element *E = p_arguments.front(); E; E = E->next()) {
 		args.push_back(E->get());
 	}
 	String json_args = JSON::print(args);
 	int failed = godot_js_os_execute(json_args.utf8().get_data());
-	ERR_FAIL_COND_V_MSG(failed, ERR_UNAVAILABLE, "OS::execute() or create_process() must be implemented in JavaScript via 'engine.setOnExecute' if required.");
+	ERR_FAIL_COND_V_MSG(failed, ERR_UNAVAILABLE, "Platform::execute() or create_process() must be implemented in JavaScript via 'engine.setOnExecute' if required.");
 	return OK;
 }
 
-Error OS_JavaScript::kill(const ProcessID &p_pid) {
-	ERR_FAIL_V_MSG(ERR_UNAVAILABLE, "OS::kill() is not available on the HTML5 platform.");
+Error PlatformJavaScript::kill(const ProcessID &p_pid) {
+	ERR_FAIL_V_MSG(ERR_UNAVAILABLE, "Platform::kill() is not available on the HTML5 platform.");
 }
 
-int OS_JavaScript::get_process_id() const {
-	ERR_FAIL_V_MSG(0, "OS::get_process_id() is not available on the HTML5 platform.");
+int PlatformJavaScript::get_process_id() const {
+	ERR_FAIL_V_MSG(0, "Platform::get_process_id() is not available on the HTML5 platform.");
 }
 
-int OS_JavaScript::get_processor_count() const {
+int PlatformJavaScript::get_processor_count() const {
 	return godot_js_os_hw_concurrency_get();
 }
 
-bool OS_JavaScript::_check_internal_feature_support(const String &p_feature) {
+bool PlatformJavaScript::_check_internal_feature_support(const String &p_feature) {
 	if (p_feature == "HTML5" || p_feature == "web") {
 		return true;
 	}
@@ -157,38 +157,38 @@ bool OS_JavaScript::_check_internal_feature_support(const String &p_feature) {
 	return false;
 }
 
-String OS_JavaScript::get_executable_path() const {
-	return OS::get_executable_path();
+String PlatformJavaScript::get_executable_path() const {
+	return Platform::get_executable_path();
 }
 
-Error OS_JavaScript::shell_open(String p_uri) {
+Error PlatformJavaScript::shell_open(String p_uri) {
 	// Open URI in a new tab, browser will deal with it by protocol.
 	godot_js_os_shell_open(p_uri.utf8().get_data());
 	return OK;
 }
 
-String OS_JavaScript::get_name() const {
+String PlatformJavaScript::get_name() const {
 	return "HTML5";
 }
 
-String OS_JavaScript::get_user_data_dir() const {
+String PlatformJavaScript::get_user_data_dir() const {
 	return "/userfs";
 };
 
-String OS_JavaScript::get_cache_path() const {
+String PlatformJavaScript::get_cache_path() const {
 	return "/home/web_user/.cache";
 }
 
-String OS_JavaScript::get_config_path() const {
+String PlatformJavaScript::get_config_path() const {
 	return "/home/web_user/.config";
 }
 
-String OS_JavaScript::get_data_path() const {
+String PlatformJavaScript::get_data_path() const {
 	return "/home/web_user/.local/share";
 }
 
-void OS_JavaScript::file_access_close_callback(const String &p_file, int p_flags) {
-	OS_JavaScript *os = OS_JavaScript::get_singleton();
+void PlatformJavaScript::file_access_close_callback(const String &p_file, int p_flags) {
+	PlatformJavaScript *os = PlatformJavaScript::get_singleton();
 	if (!(os->is_userfs_persistent() && (p_flags & FileAccess::WRITE))) {
 		return; // FS persistence is not working or we are not writing.
 	}
@@ -202,25 +202,25 @@ void OS_JavaScript::file_access_close_callback(const String &p_file, int p_flags
 	}
 }
 
-bool OS_JavaScript::is_userfs_persistent() const {
+bool PlatformJavaScript::is_userfs_persistent() const {
 	return idb_available;
 }
 
-Error OS_JavaScript::open_dynamic_library(const String p_path, void *&p_library_handle, bool p_also_set_library_path) {
+Error PlatformJavaScript::open_dynamic_library(const String p_path, void *&p_library_handle, bool p_also_set_library_path) {
 	String path = p_path.get_file();
 	p_library_handle = dlopen(path.utf8().get_data(), RTLD_NOW);
 	ERR_FAIL_COND_V_MSG(!p_library_handle, ERR_CANT_OPEN, "Can't open dynamic library: " + p_path + ". Error: " + dlerror());
 	return OK;
 }
 
-OS_JavaScript *OS_JavaScript::get_singleton() {
-	return static_cast<OS_JavaScript *>(OS::get_singleton());
+PlatformJavaScript *PlatformJavaScript::get_singleton() {
+	return static_cast<PlatformJavaScript *>(Platform::get_singleton());
 }
 
-void OS_JavaScript::initialize_joypads() {
+void PlatformJavaScript::initialize_joypads() {
 }
 
-OS_JavaScript::OS_JavaScript() {
+PlatformJavaScript::PlatformJavaScript() {
 	char locale_ptr[16];
 	godot_js_config_locale_get(locale_ptr, 16);
 	setenv("LANG", locale_ptr, true);

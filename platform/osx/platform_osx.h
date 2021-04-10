@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  os_javascript.h                                                      */
+/*  platform_osx.h                                                       */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,72 +28,80 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef OS_JAVASCRIPT_H
-#define OS_JAVASCRIPT_H
+#ifndef PLATFORM_OSX_H
+#define PLATFORM_OSX_H
 
-#include "audio_driver_javascript.h"
 #include "core/input/input.h"
-#include "drivers/unix/os_unix.h"
+#include "crash_handler_osx.h"
+#include "drivers/coreaudio/audio_driver_coreaudio.h"
+#include "drivers/coremidi/midi_driver_coremidi.h"
+#include "drivers/unix/platform_unix.h"
+#include "joypad_osx.h"
 #include "servers/audio_server.h"
 
-#include <emscripten/html5.h>
+class PlatformOSX : public PlatformUnix {
+	virtual void delete_main_loop() override;
 
-class OS_JavaScript : public OS_Unix {
-	MainLoop *main_loop = nullptr;
-	AudioDriverJavaScript *audio_driver_javascript = nullptr;
+	bool force_quit;
 
-	bool idb_is_syncing = false;
-	bool idb_available = false;
-	bool idb_needs_sync = false;
+	JoypadOSX *joypad_osx = nullptr;
 
-	static void main_loop_callback();
+#ifdef COREAUDIO_ENABLED
+	AudioDriverCoreAudio audio_driver;
+#endif
+#ifdef COREMIDI_ENABLED
+	MIDIDriverCoreMidi midi_driver;
+#endif
 
-	static void file_access_close_callback(const String &p_file, int p_flags);
-	static void fs_sync_callback();
+	CrashHandler crash_handler;
 
-protected:
-	void initialize() override;
-
-	void set_main_loop(MainLoop *p_main_loop) override;
-	void delete_main_loop() override;
-
-	void finalize() override;
-
-	bool _check_internal_feature_support(const String &p_feature) override;
+	MainLoop *main_loop;
 
 public:
-	// Override return type to make writing static callbacks less tedious.
-	static OS_JavaScript *get_singleton();
+	String open_with_filename;
 
-	void initialize_joypads() override;
+protected:
+	virtual void initialize_core() override;
+	virtual void initialize() override;
+	virtual void finalize() override;
 
-	MainLoop *get_main_loop() const override;
-	bool main_loop_iterate();
+	virtual void initialize_joypads() override;
 
-	Error execute(const String &p_path, const List<String> &p_arguments, String *r_pipe = nullptr, int *r_exitcode = nullptr, bool read_stderr = false, Mutex *p_pipe_mutex = nullptr) override;
-	Error create_process(const String &p_path, const List<String> &p_arguments, ProcessID *r_child_id = nullptr) override;
-	Error kill(const ProcessID &p_pid) override;
-	int get_process_id() const override;
-	int get_processor_count() const override;
+	virtual void set_main_loop(MainLoop *p_main_loop) override;
 
-	String get_executable_path() const override;
+public:
+	virtual String get_name() const override;
+
+	virtual Error open_dynamic_library(const String p_path, void *&p_library_handle, bool p_also_set_library_path = false) override;
+
+	virtual MainLoop *get_main_loop() const override;
+
+	virtual String get_config_path() const override;
+	virtual String get_data_path() const override;
+	virtual String get_cache_path() const override;
+	virtual String get_bundle_resource_dir() const override;
+	virtual String get_godot_dir_name() const override;
+
+	virtual String get_system_dir(SystemDir p_dir) const override;
+
 	Error shell_open(String p_uri) override;
-	String get_name() const override;
-	// Override default OS implementation which would block the main thread with delay_usec.
-	// Implemented in javascript_main.cpp loop callback instead.
-	void add_frame_delay(bool p_can_draw) override {}
 
-	String get_cache_path() const override;
-	String get_config_path() const override;
-	String get_data_path() const override;
-	String get_user_data_dir() const override;
+	String get_locale() const override;
 
-	bool is_userfs_persistent() const override;
-	Error open_dynamic_library(const String p_path, void *&p_library_handle, bool p_also_set_library_path) override;
+	virtual String get_executable_path() const override;
 
-	void resume_audio();
+	virtual String get_unique_id() const override; //++
 
-	OS_JavaScript();
+	virtual bool _check_internal_feature_support(const String &p_feature) override;
+
+	void run();
+
+	virtual void disable_crash_handler() override;
+	virtual bool is_disable_crash_handler() const override;
+
+	virtual Error move_to_trash(const String &p_path) override;
+
+	PlatformOSX();
 };
 
-#endif
+#endif // PLATFORM_OSX_H

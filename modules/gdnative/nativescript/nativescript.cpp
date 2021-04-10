@@ -39,7 +39,7 @@
 #include "core/core_string_names.h"
 #include "core/io/file_access_encrypted.h"
 #include "core/os/file_access.h"
-#include "core/os/os.h"
+#include "core/os/platform.h"
 
 #include "main/main.h"
 
@@ -1242,7 +1242,7 @@ void _add_reload_node() {
 void NativeScriptLanguage::init() {
 #if defined(TOOLS_ENABLED) && defined(DEBUG_METHODS_ENABLED)
 
-	List<String> args = OS::get_singleton()->get_cmdline_args();
+	List<String> args = Platform::get_singleton()->get_cmdline_args();
 
 	List<String>::Element *E = args.find("--gdnative-generate-json-api");
 

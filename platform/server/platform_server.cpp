@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  os_server.cpp                                                        */
+/*  platform_server.cpp                                                  */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,7 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#include "os_server.h"
+#include "platform_server.h"
 
 #include "core/string/print_string.h"
 #include "drivers/dummy/rasterizer_dummy.h"
@@ -41,26 +41,26 @@
 #include <stdlib.h>
 #include <unistd.h>
 
-int OS_Server::get_video_driver_count() const {
+int PlatformServer::get_video_driver_count() const {
 	return 1;
 }
 
-const char *OS_Server::get_video_driver_name(int p_driver) const {
+const char *PlatformServer::get_video_driver_name(int p_driver) const {
 	return "Dummy";
 }
 
-int OS_Server::get_current_video_driver() const {
+int PlatformServer::get_current_video_driver() const {
 	return video_driver_index;
 }
 
-void OS_Server::initialize_core() {
+void PlatformServer::initialize_core() {
 	crash_handler.initialize();
 
-	OS_Unix::initialize_core();
+	PlatformUnix::initialize_core();
 }
 
-Error OS_Server::initialize(const VideoMode &p_desired, int p_video_driver, int p_audio_driver) {
-	args = OS::get_singleton()->get_cmdline_args();
+Error PlatformServer::initialize(const VideoMode &p_desired, int p_video_driver, int p_audio_driver) {
+	args = Platform::get_singleton()->get_cmdline_args();
 	current_videomode = p_desired;
 	main_loop = nullptr;
 
@@ -83,7 +83,7 @@ Error OS_Server::initialize(const VideoMode &p_desired, int p_video_driver, int 
 	return OK;
 }
 
-void OS_Server::finalize() {
+void PlatformServer::finalize() {
 	if (main_loop)
 		memdelete(main_loop);
 	main_loop = nullptr;
@@ -99,69 +99,69 @@ void OS_Server::finalize() {
 	args.clear();
 }
 
-void OS_Server::set_mouse_show(bool p_show) {
+void PlatformServer::set_mouse_show(bool p_show) {
 }
 
-void OS_Server::set_mouse_grab(bool p_grab) {
+void PlatformServer::set_mouse_grab(bool p_grab) {
 	grab = p_grab;
 }
 
-bool OS_Server::is_mouse_grab_enabled() const {
+bool PlatformServer::is_mouse_grab_enabled() const {
 	return grab;
 }
 
-int OS_Server::get_mouse_button_state() const {
+int PlatformServer::get_mouse_button_state() const {
 	return 0;
 }
 
-Point2 OS_Server::get_mouse_position() const {
+Point2 PlatformServer::get_mouse_position() const {
 	return Point2();
 }
 
-void OS_Server::set_window_title(const String &p_title) {
+void PlatformServer::set_window_title(const String &p_title) {
 }
 
-void OS_Server::set_video_mode(const VideoMode &p_video_mode, int p_screen) {
+void PlatformServer::set_video_mode(const VideoMode &p_video_mode, int p_screen) {
 }
 
-OS::VideoMode OS_Server::get_video_mode(int p_screen) const {
+Platform::VideoMode PlatformServer::get_video_mode(int p_screen) const {
 	return current_videomode;
 }
 
-Size2 OS_Server::get_window_size() const {
+Size2 PlatformServer::get_window_size() const {
 	return Vector2(current_videomode.width, current_videomode.height);
 }
 
-void OS_Server::get_fullscreen_mode_list(List<VideoMode> *p_list, int p_screen) const {
+void PlatformServer::get_fullscreen_mode_list(List<VideoMode> *p_list, int p_screen) const {
 }
 
-MainLoop *OS_Server::get_main_loop() const {
+MainLoop *PlatformServer::get_main_loop() const {
 	return main_loop;
 }
 
-void OS_Server::delete_main_loop() {
+void PlatformServer::delete_main_loop() {
 	if (main_loop)
 		memdelete(main_loop);
 	main_loop = nullptr;
 }
 
-void OS_Server::set_main_loop(MainLoop *p_main_loop) {
+void PlatformServer::set_main_loop(MainLoop *p_main_loop) {
 	main_loop = p_main_loop;
 	input->set_main_loop(p_main_loop);
 }
 
-String OS_Server::get_name() const {
+String PlatformServer::get_name() const {
 	return "Server";
 }
 
-void OS_Server::move_window_to_foreground() {
+void PlatformServer::move_window_to_foreground() {
 }
 
-bool OS_Server::_check_internal_feature_support(const String &p_feature) {
+bool PlatformServer::_check_internal_feature_support(const String &p_feature) {
 	return p_feature == "pc";
 }
 
-void OS_Server::run() {
+void PlatformServer::run() {
 	force_quit = false;
 
 	if (!main_loop)
@@ -177,7 +177,7 @@ void OS_Server::run() {
 	main_loop->finish();
 }
 
-String OS_Server::get_config_path() const {
+String PlatformServer::get_config_path() const {
 	if (has_environment("XDG_CONFIG_HOME")) {
 		return get_environment("XDG_CONFIG_HOME");
 	} else if (has_environment("HOME")) {
@@ -187,7 +187,7 @@ String OS_Server::get_config_path() const {
 	}
 }
 
-String OS_Server::get_data_path() const {
+String PlatformServer::get_data_path() const {
 	if (has_environment("XDG_DATA_HOME")) {
 		return get_environment("XDG_DATA_HOME");
 	} else if (has_environment("HOME")) {
@@ -197,7 +197,7 @@ String OS_Server::get_data_path() const {
 	}
 }
 
-String OS_Server::get_cache_path() const {
+String PlatformServer::get_cache_path() const {
 	if (has_environment("XDG_CACHE_HOME")) {
 		return get_environment("XDG_CACHE_HOME");
 	} else if (has_environment("HOME")) {
@@ -207,7 +207,7 @@ String OS_Server::get_cache_path() const {
 	}
 }
 
-String OS_Server::get_system_dir(SystemDir p_dir) const {
+String PlatformServer::get_system_dir(SystemDir p_dir) const {
 	String xdgparam;
 
 	switch (p_dir) {
@@ -247,21 +247,21 @@ String OS_Server::get_system_dir(SystemDir p_dir) const {
 	String pipe;
 	List<String> arg;
 	arg.push_back(xdgparam);
-	Error err = const_cast<OS_Server *>(this)->execute("xdg-user-dir", arg, true, nullptr, &pipe);
+	Error err = const_cast<PlatformServer *>(this)->execute("xdg-user-dir", arg, true, nullptr, &pipe);
 	if (err != OK)
 		return ".";
 	return pipe.strip_edges();
 }
 
-void OS_Server::disable_crash_handler() {
+void PlatformServer::disable_crash_handler() {
 	crash_handler.disable();
 }
 
-bool OS_Server::is_disable_crash_handler() const {
+bool PlatformServer::is_disable_crash_handler() const {
 	return crash_handler.is_disabled();
 }
 
-OS_Server::OS_Server() {
+PlatformServer::PlatformServer() {
 	//adriver here
 	grab = false;
 };

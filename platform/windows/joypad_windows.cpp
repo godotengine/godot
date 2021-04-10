@@ -352,7 +352,7 @@ void JoypadWindows::process_joypads() {
 				joypad_vibration_start_xinput(i, strength.x, strength.y, duration, timestamp);
 			}
 		} else if (joy.vibrating && joy.ff_end_timestamp != 0) {
-			uint64_t current_time = OS::get_singleton()->get_ticks_usec();
+			uint64_t current_time = Platform::get_singleton()->get_ticks_usec();
 			if (current_time >= joy.ff_end_timestamp)
 				joypad_vibration_stop_xinput(i, current_time);
 		}

@@ -30,7 +30,7 @@
 
 #include "image_loader_jpegd.h"
 
-#include "core/os/os.h"
+#include "core/os/platform.h"
 #include "core/string/print_string.h"
 
 #include <jpgd.h>

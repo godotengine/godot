@@ -34,7 +34,7 @@
 #include "core/core_constants.h"
 #include "core/io/file_access_encrypted.h"
 #include "core/os/file_access.h"
-#include "core/os/os.h"
+#include "core/os/platform.h"
 
 #include "scene/main/scene_tree.h"
 
@@ -181,7 +181,7 @@ void GDNativeLibrary::set_config_file(Ref<ConfigFile> p_config_file) {
 
 			bool skip = false;
 			for (int i = 0; i < tags.size(); i++) {
-				bool has_feature = OS::get_singleton()->has_feature(tags[i]);
+				bool has_feature = Platform::get_singleton()->has_feature(tags[i]);
 
 				if (!has_feature) {
 					skip = true;
@@ -213,7 +213,7 @@ void GDNativeLibrary::set_config_file(Ref<ConfigFile> p_config_file) {
 
 			bool skip = false;
 			for (int i = 0; i < tags.size(); i++) {
-				bool has_feature = OS::get_singleton()->has_feature(tags[i]);
+				bool has_feature = Platform::get_singleton()->has_feature(tags[i]);
 
 				if (!has_feature) {
 					skip = true;
@@ -320,7 +320,7 @@ bool GDNative::initialize() {
 			format_dict["name"] = lib_name;
 			String framework_path = framework_path_format.format(format_dict, "$_");
 
-			path = OS::get_singleton()->get_executable_path().get_base_dir().plus_file(framework_path);
+			path = Platform::get_singleton()->get_executable_path().get_base_dir().plus_file(framework_path);
 		}
 	}
 #elif defined(ANDROID_ENABLED)
@@ -336,7 +336,7 @@ bool GDNative::initialize() {
 	// So we need to replace the library path.
 	String path = ProjectSettings::get_singleton()->globalize_path(lib_path);
 	if (!FileAccess::exists(path)) {
-		path = OS::get_singleton()->get_executable_path().get_base_dir().plus_file("../Frameworks").plus_file(lib_path.get_file());
+		path = Platform::get_singleton()->get_executable_path().get_base_dir().plus_file("../Frameworks").plus_file(lib_path.get_file());
 	}
 #else
 	String path = ProjectSettings::get_singleton()->globalize_path(lib_path);
@@ -352,7 +352,7 @@ bool GDNative::initialize() {
 		}
 	}
 
-	Error err = OS::get_singleton()->open_dynamic_library(path, native_handle, true);
+	Error err = Platform::get_singleton()->open_dynamic_library(path, native_handle, true);
 	if (err != OK) {
 		return false;
 	}
@@ -367,7 +367,7 @@ bool GDNative::initialize() {
 	initialized = false;
 
 	if (err || !library_init) {
-		OS::get_singleton()->close_dynamic_library(native_handle);
+		Platform::get_singleton()->close_dynamic_library(native_handle);
 		native_handle = nullptr;
 		ERR_PRINT("Failed to obtain " + library->get_symbol_prefix() + "gdnative_init symbol");
 		return false;
@@ -436,7 +436,7 @@ bool GDNative::terminate() {
 	void *library_terminate;
 	Error error = get_symbol(library->get_symbol_prefix() + terminate_symbol, library_terminate);
 	if (error || !library_terminate) {
-		OS::get_singleton()->close_dynamic_library(native_handle);
+		Platform::get_singleton()->close_dynamic_library(native_handle);
 		native_handle = nullptr;
 		initialized = false;
 		return true;
@@ -454,7 +454,7 @@ bool GDNative::terminate() {
 
 	// GDNativeScriptLanguage::get_singleton()->initialized_libraries.erase(p_native_lib->path);
 
-	OS::get_singleton()->close_dynamic_library(native_handle);
+	Platform::get_singleton()->close_dynamic_library(native_handle);
 	native_handle = nullptr;
 
 	return true;
@@ -489,7 +489,7 @@ Variant GDNative::call_native(StringName p_native_call_type, StringName p_proced
 
 	void *procedure_handle;
 
-	Error err = OS::get_singleton()->get_dynamic_library_symbol_handle(
+	Error err = Platform::get_singleton()->get_dynamic_library_symbol_handle(
 			native_handle,
 			p_procedure_name,
 			procedure_handle);
@@ -511,7 +511,7 @@ Error GDNative::get_symbol(StringName p_procedure_name, void *&r_handle, bool p_
 		return ERR_CANT_OPEN;
 	}
 
-	Error result = OS::get_singleton()->get_dynamic_library_symbol_handle(
+	Error result = Platform::get_singleton()->get_dynamic_library_symbol_handle(
 			native_handle,
 			p_procedure_name,
 			r_handle,

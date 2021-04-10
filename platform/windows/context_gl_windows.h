@@ -36,7 +36,7 @@
 #define CONTEXT_GL_WIN_H
 
 #include "core/error/error_list.h"
-#include "core/os/os.h"
+#include "core/os/platform.h"
 
 #include <windows.h>
 

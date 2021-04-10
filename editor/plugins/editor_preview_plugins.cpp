@@ -32,7 +32,7 @@
 
 #include "core/io/file_access_memory.h"
 #include "core/io/resource_loader.h"
-#include "core/os/os.h"
+#include "core/os/platform.h"
 #include "editor/editor_node.h"
 #include "editor/editor_scale.h"
 #include "editor/editor_settings.h"
@@ -326,7 +326,7 @@ Ref<Texture2D> EditorMaterialPreviewPlugin::generate(const RES &p_from, const Si
 		RS::get_singleton()->request_frame_drawn_callback(const_cast<EditorMaterialPreviewPlugin *>(this), "_preview_done", Variant());
 
 		while (!preview_done.is_set()) {
-			OS::get_singleton()->delay_usec(10);
+			Platform::get_singleton()->delay_usec(10);
 		}
 
 		Ref<Image> img = RS::get_singleton()->texture_2d_get(viewport_texture);
@@ -715,7 +715,7 @@ Ref<Texture2D> EditorMeshPreviewPlugin::generate(const RES &p_from, const Size2 
 	RS::get_singleton()->request_frame_drawn_callback(const_cast<EditorMeshPreviewPlugin *>(this), "_preview_done", Variant());
 
 	while (!preview_done.is_set()) {
-		OS::get_singleton()->delay_usec(10);
+		Platform::get_singleton()->delay_usec(10);
 	}
 
 	Ref<Image> img = RS::get_singleton()->texture_2d_get(viewport_texture);
@@ -885,7 +885,7 @@ Ref<Texture2D> EditorFontPreviewPlugin::generate_from_path(const String &p_path,
 	RS::get_singleton()->request_frame_drawn_callback(const_cast<EditorFontPreviewPlugin *>(this), "_preview_done", Variant());
 
 	while (!preview_done.is_set()) {
-		OS::get_singleton()->delay_usec(10);
+		Platform::get_singleton()->delay_usec(10);
 	}
 
 	RS::get_singleton()->canvas_item_clear(canvas_item);

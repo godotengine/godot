@@ -196,7 +196,7 @@ void EditorAssetLibraryItemDescription::_bind_methods() {
 
 void EditorAssetLibraryItemDescription::_link_click(const String &p_url) {
 	ERR_FAIL_COND(!p_url.begins_with("http"));
-	OS::get_singleton()->shell_open(p_url);
+	Platform::get_singleton()->shell_open(p_url);
 }
 
 void EditorAssetLibraryItemDescription::_preview_click(int p_id) {

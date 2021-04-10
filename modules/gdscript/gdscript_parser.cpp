@@ -37,7 +37,7 @@
 #include "gdscript.h"
 
 #ifdef DEBUG_ENABLED
-#include "core/os/os.h"
+#include "core/os/platform.h"
 #include "core/string/string_builder.h"
 #endif // DEBUG_ENABLED
 

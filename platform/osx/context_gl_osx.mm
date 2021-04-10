@@ -49,11 +49,11 @@ void ContextGL_OSX::set_opacity(GLint p_opacity) {
 }
 
 int ContextGL_OSX::get_window_width() {
-	return OS::get_singleton()->get_video_mode().width;
+	return Platform::get_singleton()->get_video_mode().width;
 }
 
 int ContextGL_OSX::get_window_height() {
-	return OS::get_singleton()->get_video_mode().height;
+	return Platform::get_singleton()->get_video_mode().height;
 }
 
 void ContextGL_OSX::swap_buffers() {

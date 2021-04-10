@@ -78,7 +78,7 @@ void AudioEffectRecordInstance::_io_thread_process() {
 
 		if (is_recording) {
 			//Wait to avoid too much busy-wait
-			OS::get_singleton()->delay_usec(500);
+			Platform::get_singleton()->delay_usec(500);
 		}
 	}
 

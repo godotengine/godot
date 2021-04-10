@@ -111,7 +111,7 @@ void VersionControlEditorPlugin::_initialize_vcs() {
 	EditorVCSInterface::set_singleton(vcs_interface);
 	EditorFileSystem::get_singleton()->connect("filesystem_changed", callable_mp(this, &VersionControlEditorPlugin::_refresh_stage_area));
 
-	String res_dir = OS::get_singleton()->get_resource_dir();
+	String res_dir = Platform::get_singleton()->get_resource_dir();
 
 	ERR_FAIL_COND_MSG(!EditorVCSInterface::get_singleton()->initialize(res_dir), "VCS was not initialized");
 

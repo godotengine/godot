@@ -36,7 +36,7 @@
 #include <EGL/egl.h>
 
 #include "core/error/error_list.h"
-#include "core/os/os.h"
+#include "core/os/platform.h"
 
 using namespace Windows::UI::Core;
 

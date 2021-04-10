@@ -34,10 +34,10 @@
 #include <unistd.h>
 
 #include "main/main.h"
-#include "os_linuxbsd.h"
+#include "platform_linuxbsd.h"
 
 int main(int argc, char *argv[]) {
-	OS_LinuxBSD os;
+	PlatformLinuxBSD platform;
 
 	setlocale(LC_CTYPE, "");
 
@@ -55,7 +55,7 @@ int main(int argc, char *argv[]) {
 	}
 
 	if (Main::start()) {
-		os.run(); // it is actually the OS that decides how to run
+		platform.run(); // it is actually the platform that decides how to run
 	}
 	Main::cleanup();
 
@@ -66,5 +66,5 @@ int main(int argc, char *argv[]) {
 	}
 	free(cwd);
 
-	return os.get_exit_code();
+	return platform.get_exit_code();
 }

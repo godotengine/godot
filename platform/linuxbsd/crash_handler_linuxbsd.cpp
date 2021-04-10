@@ -31,7 +31,7 @@
 #include "crash_handler_linuxbsd.h"
 
 #include "core/config/project_settings.h"
-#include "core/os/os.h"
+#include "core/os/platform.h"
 #include "main/main.h"
 
 #ifdef DEBUG_ENABLED
@@ -46,13 +46,13 @@
 #include <stdlib.h>
 
 static void handle_crash(int sig) {
-	if (OS::get_singleton() == nullptr) {
+	if (Platform::get_singleton() == nullptr) {
 		abort();
 	}
 
 	void *bt_buffer[256];
 	size_t size = backtrace(bt_buffer, 256);
-	String _execpath = OS::get_singleton()->get_executable_path();
+	String _execpath = Platform::get_singleton()->get_executable_path();
 
 	String msg;
 	const ProjectSettings *proj_settings = ProjectSettings::get_singleton();
@@ -63,8 +63,8 @@ static void handle_crash(int sig) {
 	// Dump the backtrace to stderr with a message to the user
 	fprintf(stderr, "%s: Program crashed with signal %d\n", __FUNCTION__, sig);
 
-	if (OS::get_singleton()->get_main_loop()) {
-		OS::get_singleton()->get_main_loop()->notification(MainLoop::NOTIFICATION_CRASH);
+	if (Platform::get_singleton()->get_main_loop()) {
+		Platform::get_singleton()->get_main_loop()->notification(MainLoop::NOTIFICATION_CRASH);
 	}
 
 	fprintf(stderr, "Dumping the backtrace. %s\n", msg.utf8().get_data());
@@ -104,7 +104,7 @@ static void handle_crash(int sig) {
 
 			// Try to get the file/line number using addr2line
 			int ret;
-			Error err = OS::get_singleton()->execute(String("addr2line"), args, &output, &ret);
+			Error err = Platform::get_singleton()->execute(String("addr2line"), args, &output, &ret);
 			if (err == OK) {
 				output.erase(output.length() - 1, 1);
 			}

@@ -193,9 +193,9 @@ public:
 			}
 			tcp = server->take_connection();
 			peer = tcp;
-			time = OS::get_singleton()->get_ticks_usec();
+			time = Platform::get_singleton()->get_ticks_usec();
 		}
-		if (OS::get_singleton()->get_ticks_usec() - time > 1000000) {
+		if (Platform::get_singleton()->get_ticks_usec() - time > 1000000) {
 			_clear_client();
 			return;
 		}
@@ -943,7 +943,7 @@ Error EditorExportPlatformJavaScript::run(const Ref<EditorExportPreset> &p_prese
 		return err;
 	}
 
-	OS::get_singleton()->shell_open(String((use_ssl ? "https://" : "http://") + bind_host + ":" + itos(bind_port) + "/tmp_js_export.html"));
+	Platform::get_singleton()->shell_open(String((use_ssl ? "https://" : "http://") + bind_host + ":" + itos(bind_port) + "/tmp_js_export.html"));
 	// FIXME: Find out how to clean up export files after running the successfully
 	// exported game. Might not be trivial.
 	return OK;
@@ -956,7 +956,7 @@ Ref<Texture2D> EditorExportPlatformJavaScript::get_run_icon() const {
 void EditorExportPlatformJavaScript::_server_thread_poll(void *data) {
 	EditorExportPlatformJavaScript *ej = (EditorExportPlatformJavaScript *)data;
 	while (!ej->server_quit) {
-		OS::get_singleton()->delay_usec(1000);
+		Platform::get_singleton()->delay_usec(1000);
 		{
 			MutexLock lock(ej->server_lock);
 			ej->server->poll();

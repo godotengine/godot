@@ -34,7 +34,7 @@
 
 #include "core/config/project_settings.h"
 #include "core/io/file_access_pack.h"
-#include "core/os/os.h"
+#include "core/os/platform.h"
 
 #include "../mono_gd/gd_mono.h"
 #include "../mono_gd/gd_mono_assembly.h"

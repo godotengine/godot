@@ -30,7 +30,7 @@
 
 #include "physics_server_3d_wrap_mt.h"
 
-#include "core/os/os.h"
+#include "core/os/platform.h"
 
 void PhysicsServer3DWrapMT::thread_exit() {
 	exit = true;
@@ -96,10 +96,10 @@ void PhysicsServer3DWrapMT::end_sync() {
 
 void PhysicsServer3DWrapMT::init() {
 	if (create_thread) {
-		//OS::get_singleton()->release_rendering_thread();
+		//Platform::get_singleton()->release_rendering_thread();
 		thread.start(_thread_callback, this);
 		while (!step_thread_up) {
-			OS::get_singleton()->delay_usec(1000);
+			Platform::get_singleton()->delay_usec(1000);
 		}
 	} else {
 		physics_3d_server->init();

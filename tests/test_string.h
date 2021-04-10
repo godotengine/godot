@@ -37,7 +37,7 @@
 
 #include "core/io/ip_address.h"
 #include "core/os/main_loop.h"
-#include "core/os/os.h"
+#include "core/os/platform.h"
 #include "core/string/ustring.h"
 
 #include "tests/test_macros.h"

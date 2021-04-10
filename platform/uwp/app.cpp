@@ -89,7 +89,7 @@ void App::Initialize(CoreApplicationView ^ applicationView) {
 	// Information about the Suspending and Resuming event handlers can be found here:
 	// http://msdn.microsoft.com/en-us/library/windows/apps/xaml/hh994930.aspx
 
-	os = new OS_UWP;
+	platform = new PlatformUWP;
 }
 
 // Called when the CoreWindow object is created (or re-created).
@@ -133,7 +133,7 @@ void App::SetWindow(CoreWindow ^ p_window) {
 	window->KeyUp +=
 			ref new TypedEventHandler<CoreWindow ^, KeyEventArgs ^>(this, &App::OnKeyUp);
 
-	os->set_window(window);
+	platform->set_window(window);
 
 	unsigned int argc;
 	char **argv = get_command_line(&argc);
@@ -195,7 +195,7 @@ static bool _is_touch(Windows::UI::Input::PointerPoint ^ pointerPoint) {
 #endif
 }
 
-static Windows::Foundation::Point _get_pixel_position(CoreWindow ^ window, Windows::Foundation::Point rawPosition, OS *os) {
+static Windows::Foundation::Point _get_pixel_position(CoreWindow ^ window, Windows::Foundation::Point rawPosition, Platform *platform) {
 	Windows::Foundation::Point outputPosition;
 
 // Compute coordinates normalized from 0..1.
@@ -227,7 +227,7 @@ static Windows::Foundation::Point _get_pixel_position(CoreWindow ^ window, Windo
 	}
 #endif
 
-	OS::VideoMode vm = os->get_video_mode();
+	Platform::VideoMode vm = platform->get_video_mode();
 	outputPosition.X *= vm.width;
 	outputPosition.Y *= vm.height;
 
@@ -240,7 +240,7 @@ static int _get_finger(uint32_t p_touch_id) {
 
 void App::pointer_event(Windows::UI::Core::CoreWindow ^ sender, Windows::UI::Core::PointerEventArgs ^ args, bool p_pressed, bool p_is_wheel) {
 	Windows::UI::Input::PointerPoint ^ point = args->CurrentPoint;
-	Windows::Foundation::Point pos = _get_pixel_position(window, point->Position, os);
+	Windows::Foundation::Point pos = _get_pixel_position(window, point->Position, platform);
 	int but = _get_button(point);
 	if (_is_touch(point)) {
 		Ref<InputEventScreenTouch> screen_touch;
@@ -253,7 +253,7 @@ void App::pointer_event(Windows::UI::Core::CoreWindow ^ sender, Windows::UI::Cor
 		last_touch_x[screen_touch->get_index()] = pos.X;
 		last_touch_y[screen_touch->get_index()] = pos.Y;
 
-		os->input_event(screen_touch);
+		platform->input_event(screen_touch);
 	} else {
 		Ref<InputEventMouseButton> mouse_button;
 		mouse_button.instance();
@@ -274,12 +274,12 @@ void App::pointer_event(Windows::UI::Core::CoreWindow ^ sender, Windows::UI::Cor
 		last_touch_x[31] = pos.X;
 		last_touch_y[31] = pos.Y;
 
-		os->input_event(mouse_button);
+		platform->input_event(mouse_button);
 
 		if (p_is_wheel) {
 			// Send release for mouse wheel
 			mouse_button->set_pressed(false);
-			os->input_event(mouse_button);
+			platform->input_event(mouse_button);
 		}
 	}
 };
@@ -297,14 +297,14 @@ void App::OnPointerWheelChanged(Windows::UI::Core::CoreWindow ^ sender, Windows:
 }
 
 void App::OnMouseModeChanged(Windows::System::Threading::Core::SignalNotifier ^ signalNotifier, bool timedOut) {
-	OS::MouseMode mode = os->get_mouse_mode();
+	Platform::MouseMode mode = platform->get_mouse_mode();
 	SignalNotifier ^ notifier = mouseChangedNotifier;
 
 	window->Dispatcher->RunAsync(
 			CoreDispatcherPriority::High,
 			ref new DispatchedHandler(
 					[mode, notifier, this]() {
-						if (mode == OS::MOUSE_MODE_CAPTURED) {
+						if (mode == Platform::MOUSE_MODE_CAPTURED) {
 							this->MouseMovedToken = MouseDevice::GetForCurrentView()->MouseMoved +=
 									ref new TypedEventHandler<MouseDevice ^, MouseEventArgs ^>(this, &App::OnMouseMoved);
 
@@ -315,12 +315,12 @@ void App::OnMouseModeChanged(Windows::System::Threading::Core::SignalNotifier ^ 
 						notifier->Enable();
 					}));
 
-	ResetEvent(os->mouse_mode_changed);
+	ResetEvent(platform->mouse_mode_changed);
 }
 
 void App::OnPointerMoved(Windows::UI::Core::CoreWindow ^ sender, Windows::UI::Core::PointerEventArgs ^ args) {
 	Windows::UI::Input::PointerPoint ^ point = args->CurrentPoint;
-	Windows::Foundation::Point pos = _get_pixel_position(window, point->Position, os);
+	Windows::Foundation::Point pos = _get_pixel_position(window, point->Position, platform);
 
 	if (_is_touch(point)) {
 		Ref<InputEventScreenDrag> screen_drag;
@@ -330,10 +330,10 @@ void App::OnPointerMoved(Windows::UI::Core::CoreWindow ^ sender, Windows::UI::Co
 		screen_drag->set_index(_get_finger(point->PointerId));
 		screen_drag->set_relative(Vector2(screen_drag->get_position().x - last_touch_x[screen_drag->get_index()], screen_drag->get_position().y - last_touch_y[screen_drag->get_index()]));
 
-		os->input_event(screen_drag);
+		platform->input_event(screen_drag);
 	} else {
 		// In case the mouse grabbed, MouseMoved will handle this
-		if (os->get_mouse_mode() == OS::MouseMode::MOUSE_MODE_CAPTURED)
+		if (platform->get_mouse_mode() == Platform::MouseMode::MOUSE_MODE_CAPTURED)
 			return;
 
 		Ref<InputEventMouseMotion> mouse_motion;
@@ -345,13 +345,13 @@ void App::OnPointerMoved(Windows::UI::Core::CoreWindow ^ sender, Windows::UI::Co
 
 		last_mouse_pos = pos;
 
-		os->input_event(mouse_motion);
+		platform->input_event(mouse_motion);
 	}
 }
 
 void App::OnMouseMoved(MouseDevice ^ mouse_device, MouseEventArgs ^ args) {
 	// In case the mouse isn't grabbed, PointerMoved will handle this
-	if (os->get_mouse_mode() != OS::MouseMode::MOUSE_MODE_CAPTURED)
+	if (platform->get_mouse_mode() != Platform::MouseMode::MOUSE_MODE_CAPTURED)
 		return;
 
 	Windows::Foundation::Point pos;
@@ -367,11 +367,11 @@ void App::OnMouseMoved(MouseDevice ^ mouse_device, MouseEventArgs ^ args) {
 
 	last_mouse_pos = pos;
 
-	os->input_event(mouse_motion);
+	platform->input_event(mouse_motion);
 }
 
 void App::key_event(Windows::UI::Core::CoreWindow ^ sender, bool p_pressed, Windows::UI::Core::KeyEventArgs ^ key_args, Windows::UI::Core::CharacterReceivedEventArgs ^ char_args) {
-	OS_UWP::KeyEvent ke;
+	PlatformUWP::KeyEvent ke;
 
 	ke.control = sender->GetAsyncKeyState(VirtualKey::Control) == CoreVirtualKeyStates::Down;
 	ke.alt = sender->GetAsyncKeyState(VirtualKey::Menu) == CoreVirtualKeyStates::Down;
@@ -380,21 +380,21 @@ void App::key_event(Windows::UI::Core::CoreWindow ^ sender, bool p_pressed, Wind
 	ke.pressed = p_pressed;
 
 	if (key_args != nullptr) {
-		ke.type = OS_UWP::KeyEvent::MessageType::KEY_EVENT_MESSAGE;
+		ke.type = PlatformUWP::KeyEvent::MessageType::KEY_EVENT_MESSAGE;
 		ke.unicode = 0;
 		ke.keycode = KeyMappingWindows::get_keysym((unsigned int)key_args->VirtualKey);
 		ke.physical_keycode = KeyMappingWindows::get_scansym((unsigned int)key_args->KeyStatus.ScanCode);
 		ke.echo = (!p_pressed && !key_args->KeyStatus.IsKeyReleased) || (p_pressed && key_args->KeyStatus.WasKeyDown);
 
 	} else {
-		ke.type = OS_UWP::KeyEvent::MessageType::CHAR_EVENT_MESSAGE;
+		ke.type = PlatformUWP::KeyEvent::MessageType::CHAR_EVENT_MESSAGE;
 		ke.unicode = char_args->KeyCode;
 		ke.keycode = 0;
 		ke.physical_keycode = 0;
 		ke.echo = (!p_pressed && !char_args->KeyStatus.IsKeyReleased) || (p_pressed && char_args->KeyStatus.WasKeyDown);
 	}
 
-	os->queue_key_event(ke);
+	platform->queue_key_event(ke);
 }
 
 void App::OnKeyDown(CoreWindow ^ sender, KeyEventArgs ^ args) {
@@ -416,14 +416,14 @@ void App::Load(Platform::String ^ entryPoint) {
 // This method is called after the window becomes active.
 void App::Run() {
 	if (Main::start())
-		os->run();
+		platform->run();
 }
 
 // Terminate events do not cause Uninitialize to be called. It will be called if your IFrameworkView
 // class is torn down while the app is in the foreground.
 void App::Uninitialize() {
 	Main::cleanup();
-	delete os;
+	delete platform;
 }
 
 // Application lifecycle event handler.
@@ -451,7 +451,7 @@ void App::OnWindowSizeChanged(CoreWindow ^ sender, WindowSizeChangedEventArgs ^ 
 	// On Windows Phone 8.1, the window size changes when the device is rotated.
 	// The default framebuffer will not be automatically resized when this occurs.
 	// It is therefore up to the app to handle rotation-specific logic in its rendering code.
-	//os->screen_size_changed();
+	//platform->screen_size_changed();
 	UpdateWindowSize(args->Size);
 #endif
 }
@@ -469,12 +469,12 @@ void App::UpdateWindowSize(Size size) {
 	mWindowWidth = static_cast<GLsizei>(pixelSize.Width);
 	mWindowHeight = static_cast<GLsizei>(pixelSize.Height);
 
-	OS::VideoMode vm;
+	Platform::VideoMode vm;
 	vm.width = mWindowWidth;
 	vm.height = mWindowHeight;
 	vm.fullscreen = true;
 	vm.resizable = false;
-	os->set_video_mode(vm);
+	platform->set_video_mode(vm);
 }
 
 char **App::get_command_line(unsigned int *out_argc) {

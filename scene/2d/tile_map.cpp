@@ -32,7 +32,7 @@
 
 #include "collision_object_2d.h"
 #include "core/io/marshalls.h"
-#include "core/os/os.h"
+#include "core/os/platform.h"
 #include "scene/2d/area_2d.h"
 #include "servers/navigation_server_2d.h"
 #include "servers/physics_server_2d.h"

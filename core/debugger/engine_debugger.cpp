@@ -34,7 +34,7 @@
 #include "core/debugger/remote_debugger.h"
 #include "core/debugger/remote_debugger_peer.h"
 #include "core/debugger/script_debugger.h"
-#include "core/os/os.h"
+#include "core/os/platform.h"
 
 EngineDebugger *EngineDebugger::singleton = nullptr;
 ScriptDebugger *EngineDebugger::script_debugger = nullptr;
@@ -141,8 +141,8 @@ void EngineDebugger::initialize(const String &p_uri, bool p_skip_breakpoints, Ve
 	if (p_uri == "local://") {
 		singleton = memnew(LocalDebugger);
 		script_debugger = memnew(ScriptDebugger);
-		// Tell the OS that we want to handle termination signals.
-		OS::get_singleton()->initialize_debugging();
+		// Tell the platform that we want to handle termination signals.
+		Platform::get_singleton()->initialize_debugging();
 	} else if (p_uri.find("://") >= 0) {
 		const String proto = p_uri.substr(0, p_uri.find("://") + 3);
 		if (!protocols.has(proto)) {
@@ -156,7 +156,7 @@ void EngineDebugger::initialize(const String &p_uri, bool p_skip_breakpoints, Ve
 		script_debugger = memnew(ScriptDebugger);
 		// Notify editor of our pid (to allow focus stealing).
 		Array msg;
-		msg.push_back(OS::get_singleton()->get_process_id());
+		msg.push_back(Platform::get_singleton()->get_process_id());
 		singleton->send_message("set_pid", msg);
 	}
 	if (!singleton) {

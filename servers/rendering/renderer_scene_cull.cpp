@@ -31,7 +31,7 @@
 #include "renderer_scene_cull.h"
 
 #include "core/config/project_settings.h"
-#include "core/os/os.h"
+#include "core/os/platform.h"
 #include "rendering_server_default.h"
 #include "rendering_server_globals.h"
 
@@ -2653,7 +2653,7 @@ void RendererSceneCull::_render_scene(const Transform &p_cam_transform, const Ca
 		cull_data.camera_matrix = &p_cam_projection;
 //#define DEBUG_CULL_TIME
 #ifdef DEBUG_CULL_TIME
-		uint64_t time_from = OS::get_singleton()->get_ticks_usec();
+		uint64_t time_from = Platform::get_singleton()->get_ticks_usec();
 #endif
 		if (cull_to > thread_cull_threshold) {
 			//multiple threads
@@ -2675,7 +2675,7 @@ void RendererSceneCull::_render_scene(const Transform &p_cam_transform, const Ca
 #ifdef DEBUG_CULL_TIME
 		static float time_avg = 0;
 		static uint32_t time_count = 0;
-		time_avg += double(OS::get_singleton()->get_ticks_usec() - time_from) / 1000.0;
+		time_avg += double(Platform::get_singleton()->get_ticks_usec() - time_from) / 1000.0;
 		time_count++;
 		print_line("time taken: " + rtos(time_avg / time_count));
 #endif

@@ -7,7 +7,7 @@ import platform_osx_builders
 
 files = [
     "crash_handler_osx.mm",
-    "os_osx.mm",
+    "platform_osx.mm",
     "display_server_osx.mm",
     "godot_main_osx.mm",
     "dir_access_osx.mm",

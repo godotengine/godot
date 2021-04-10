@@ -76,7 +76,7 @@
 #include <limits>
 
 Error GLTFDocument::serialize(Ref<GLTFState> state, Node *p_root, const String &p_path) {
-	uint64_t begin_time = OS::get_singleton()->get_ticks_usec();
+	uint64_t begin_time = Platform::get_singleton()->get_ticks_usec();
 
 	_convert_scene_node(state, p_root, p_root, -1, -1);
 	if (!state->buffers.size()) {
@@ -183,7 +183,7 @@ Error GLTFDocument::serialize(Ref<GLTFState> state, Node *p_root, const String &
 	if (err != OK) {
 		return Error::FAILED;
 	}
-	uint64_t elapsed = OS::get_singleton()->get_ticks_usec() - begin_time;
+	uint64_t elapsed = Platform::get_singleton()->get_ticks_usec() - begin_time;
 	float elapsed_sec = double(elapsed) / 1000000.0;
 	elapsed_sec = Math::snapped(elapsed_sec, 0.01f);
 	print_line("glTF: Export time elapsed seconds " + rtos(elapsed_sec).pad_decimals(2));

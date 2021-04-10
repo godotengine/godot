@@ -33,7 +33,7 @@
 #include "core/config/project_settings.h"
 #include "core/os/dir_access.h"
 #include "core/os/file_access.h"
-#include "core/os/os.h"
+#include "core/os/platform.h"
 
 #ifdef WINDOWS_ENABLED
 #include <windows.h>

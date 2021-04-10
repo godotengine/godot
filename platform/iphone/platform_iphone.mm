@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  os_iphone.mm                                                         */
+/*  platform_iphone.mm                                                   */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -30,7 +30,8 @@
 
 #ifdef IPHONE_ENABLED
 
-#include "os_iphone.h"
+#include "platform_iphone.h"
+
 #import "app_delegate.h"
 #include "core/config/project_settings.h"
 #include "core/io/file_access_pack.h"
@@ -59,7 +60,7 @@ typedef void (*init_callback)();
 static init_callback *ios_init_callbacks = nullptr;
 static int ios_init_callbacks_count = 0;
 static int ios_init_callbacks_capacity = 0;
-HashMap<String, void *> OSIPhone::dynamic_symbol_lookup_table;
+HashMap<String, void *> PlatformIPhone::dynamic_symbol_lookup_table;
 
 void add_ios_init_callback(init_callback cb) {
 	if (ios_init_callbacks_count == ios_init_callbacks_capacity) {
@@ -76,14 +77,14 @@ void add_ios_init_callback(init_callback cb) {
 }
 
 void register_dynamic_symbol(char *name, void *address) {
-	OSIPhone::dynamic_symbol_lookup_table[String(name)] = address;
+	PlatformIPhone::dynamic_symbol_lookup_table[String(name)] = address;
 }
 
-OSIPhone *OSIPhone::get_singleton() {
-	return (OSIPhone *)OS::get_singleton();
+PlatformIPhone *PlatformIPhone::get_singleton() {
+	return (PlatformIPhone *)Platform::get_singleton();
 }
 
-OSIPhone::OSIPhone(String p_data_dir) {
+PlatformIPhone::PlatformIPhone(String p_data_dir) {
 	for (int i = 0; i < ios_init_callbacks_count; ++i) {
 		ios_init_callbacks[i]();
 	}
@@ -112,26 +113,26 @@ OSIPhone::OSIPhone(String p_data_dir) {
 	DisplayServerIPhone::register_iphone_driver();
 }
 
-OSIPhone::~OSIPhone() {}
+PlatformIPhone::~PlatformIPhone() {}
 
-void OSIPhone::initialize_core() {
-	OS_Unix::initialize_core();
+void PlatformIPhone::initialize_core() {
+	PlatformUnix::initialize_core();
 
 	set_user_data_dir(user_data_dir);
 }
 
-void OSIPhone::initialize() {
+void PlatformIPhone::initialize() {
 	initialize_core();
 }
 
-void OSIPhone::initialize_modules() {
+void PlatformIPhone::initialize_modules() {
 	ios = memnew(iOS);
 	Engine::get_singleton()->add_singleton(Engine::Singleton("iOS", ios));
 
 	joypad_iphone = memnew(JoypadIPhone);
 }
 
-void OSIPhone::deinitialize_modules() {
+void PlatformIPhone::deinitialize_modules() {
 	if (joypad_iphone) {
 		memdelete(joypad_iphone);
 	}
@@ -143,7 +144,7 @@ void OSIPhone::deinitialize_modules() {
 	godot_ios_plugins_deinitialize();
 }
 
-void OSIPhone::set_main_loop(MainLoop *p_main_loop) {
+void PlatformIPhone::set_main_loop(MainLoop *p_main_loop) {
 	main_loop = p_main_loop;
 
 	if (main_loop) {
@@ -151,11 +152,11 @@ void OSIPhone::set_main_loop(MainLoop *p_main_loop) {
 	}
 }
 
-MainLoop *OSIPhone::get_main_loop() const {
+MainLoop *PlatformIPhone::get_main_loop() const {
 	return main_loop;
 }
 
-void OSIPhone::delete_main_loop() {
+void PlatformIPhone::delete_main_loop() {
 	if (main_loop) {
 		main_loop->finalize();
 		memdelete(main_loop);
@@ -164,7 +165,7 @@ void OSIPhone::delete_main_loop() {
 	main_loop = nullptr;
 }
 
-bool OSIPhone::iterate() {
+bool PlatformIPhone::iterate() {
 	if (!main_loop) {
 		return true;
 	}
@@ -176,7 +177,7 @@ bool OSIPhone::iterate() {
 	return Main::iteration();
 }
 
-void OSIPhone::start() {
+void PlatformIPhone::start() {
 	godot_ios_plugins_initialize();
 
 	Main::start();
@@ -186,7 +187,7 @@ void OSIPhone::start() {
 	}
 }
 
-void OSIPhone::finalize() {
+void PlatformIPhone::finalize() {
 	deinitialize_modules();
 
 	// Already gets called
@@ -195,51 +196,51 @@ void OSIPhone::finalize() {
 
 // MARK: Dynamic Libraries
 
-Error OSIPhone::open_dynamic_library(const String p_path, void *&p_library_handle, bool p_also_set_library_path) {
+Error PlatformIPhone::open_dynamic_library(const String p_path, void *&p_library_handle, bool p_also_set_library_path) {
 	if (p_path.length() == 0) {
 		p_library_handle = RTLD_SELF;
 		return OK;
 	}
-	return OS_Unix::open_dynamic_library(p_path, p_library_handle, p_also_set_library_path);
+	return PlatformUnix::open_dynamic_library(p_path, p_library_handle, p_also_set_library_path);
 }
 
-Error OSIPhone::close_dynamic_library(void *p_library_handle) {
+Error PlatformIPhone::close_dynamic_library(void *p_library_handle) {
 	if (p_library_handle == RTLD_SELF) {
 		return OK;
 	}
-	return OS_Unix::close_dynamic_library(p_library_handle);
+	return PlatformUnix::close_dynamic_library(p_library_handle);
 }
 
-Error OSIPhone::get_dynamic_library_symbol_handle(void *p_library_handle, const String p_name, void *&p_symbol_handle, bool p_optional) {
+Error PlatformIPhone::get_dynamic_library_symbol_handle(void *p_library_handle, const String p_name, void *&p_symbol_handle, bool p_optional) {
 	if (p_library_handle == RTLD_SELF) {
-		void **ptr = OSIPhone::dynamic_symbol_lookup_table.getptr(p_name);
+		void **ptr = PlatformIPhone::dynamic_symbol_lookup_table.getptr(p_name);
 		if (ptr) {
 			p_symbol_handle = *ptr;
 			return OK;
 		}
 	}
-	return OS_Unix::get_dynamic_library_symbol_handle(p_library_handle, p_name, p_symbol_handle, p_optional);
+	return PlatformUnix::get_dynamic_library_symbol_handle(p_library_handle, p_name, p_symbol_handle, p_optional);
 }
 
-void OSIPhone::alert(const String &p_alert, const String &p_title) {
+void PlatformIPhone::alert(const String &p_alert, const String &p_title) {
 	const CharString utf8_alert = p_alert.utf8();
 	const CharString utf8_title = p_title.utf8();
 	iOS::alert(utf8_alert.get_data(), utf8_title.get_data());
 }
 
-String OSIPhone::get_name() const {
+String PlatformIPhone::get_name() const {
 	return "iOS";
 };
 
-String OSIPhone::get_model_name() const {
+String PlatformIPhone::get_model_name() const {
 	String model = ios->get_model();
 	if (model != "")
 		return model;
 
-	return OS_Unix::get_model_name();
+	return PlatformUnix::get_model_name();
 }
 
-Error OSIPhone::shell_open(String p_uri) {
+Error PlatformIPhone::shell_open(String p_uri) {
 	NSString *urlPath = [[NSString alloc] initWithUTF8String:p_uri.utf8().get_data()];
 	NSURL *url = [NSURL URLWithString:urlPath];
 
@@ -254,7 +255,7 @@ Error OSIPhone::shell_open(String p_uri) {
 	return OK;
 };
 
-void OSIPhone::set_user_data_dir(String p_dir) {
+void PlatformIPhone::set_user_data_dir(String p_dir) {
 	DirAccess *da = DirAccess::open(p_dir);
 
 	user_data_dir = da->get_current_dir();
@@ -262,11 +263,11 @@ void OSIPhone::set_user_data_dir(String p_dir) {
 	memdelete(da);
 }
 
-String OSIPhone::get_user_data_dir() const {
+String PlatformIPhone::get_user_data_dir() const {
 	return user_data_dir;
 }
 
-String OSIPhone::get_locale() const {
+String PlatformIPhone::get_locale() const {
 	NSString *preferedLanguage = [NSLocale preferredLanguages].firstObject;
 
 	if (preferedLanguage) {
@@ -277,21 +278,21 @@ String OSIPhone::get_locale() const {
 	return String::utf8([localeIdentifier UTF8String]).replace("-", "_");
 }
 
-String OSIPhone::get_unique_id() const {
+String PlatformIPhone::get_unique_id() const {
 	NSString *uuid = [UIDevice currentDevice].identifierForVendor.UUIDString;
 	return String::utf8([uuid UTF8String]);
 }
 
-void OSIPhone::vibrate_handheld(int p_duration_ms) {
+void PlatformIPhone::vibrate_handheld(int p_duration_ms) {
 	// iOS does not support duration for vibration
 	AudioServicesPlaySystemSound(kSystemSoundID_Vibrate);
 }
 
-bool OSIPhone::_check_internal_feature_support(const String &p_feature) {
+bool PlatformIPhone::_check_internal_feature_support(const String &p_feature) {
 	return p_feature == "mobile";
 }
 
-void OSIPhone::on_focus_out() {
+void PlatformIPhone::on_focus_out() {
 	if (is_focused) {
 		is_focused = false;
 
@@ -309,7 +310,7 @@ void OSIPhone::on_focus_out() {
 	}
 }
 
-void OSIPhone::on_focus_in() {
+void PlatformIPhone::on_focus_in() {
 	if (!is_focused) {
 		is_focused = true;
 

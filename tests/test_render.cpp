@@ -34,7 +34,7 @@
 #include "core/math/quick_hull.h"
 #include "core/os/keyboard.h"
 #include "core/os/main_loop.h"
-#include "core/os/os.h"
+#include "core/os/platform.h"
 #include "core/string/print_string.h"
 #include "servers/display_server.h"
 #include "servers/rendering_server.h"
@@ -133,7 +133,7 @@ public:
 		vs->material_set_shader(tcmat,sm);
 		*/
 
-		List<String> cmdline = OS::get_singleton()->get_cmdline_args();
+		List<String> cmdline = Platform::get_singleton()->get_cmdline_args();
 		int object_count = OBJECT_COUNT;
 		if (cmdline.size() > 0 && cmdline[cmdline.size() - 1].to_int()) {
 			object_count = cmdline[cmdline.size() - 1].to_int();

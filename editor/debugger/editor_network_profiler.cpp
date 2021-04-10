@@ -30,7 +30,7 @@
 
 #include "editor_network_profiler.h"
 
-#include "core/os/os.h"
+#include "core/os/platform.h"
 #include "editor/editor_scale.h"
 #include "editor/editor_settings.h"
 

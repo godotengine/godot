@@ -345,7 +345,7 @@ void XRServer::_process() {
 	/* called from renderer_viewport.draw_viewports right before we start drawing our viewports */
 
 	/* mark for our frame timing */
-	last_process_usec = OS::get_singleton()->get_ticks_usec();
+	last_process_usec = Platform::get_singleton()->get_ticks_usec();
 
 	/* process all active interfaces */
 	for (int i = 0; i < interfaces.size(); i++) {
@@ -359,7 +359,7 @@ void XRServer::_process() {
 
 void XRServer::_mark_commit() {
 	/* time this */
-	last_commit_usec = OS::get_singleton()->get_ticks_usec();
+	last_commit_usec = Platform::get_singleton()->get_ticks_usec();
 
 	/* now store our difference as we may overwrite last_process_usec before this is accessed */
 	last_frame_usec = last_commit_usec - last_process_usec;

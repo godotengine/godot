@@ -38,7 +38,7 @@
 #include "core/math/transform.h"
 #include "core/os/file_access.h"
 #include "core/os/keyboard.h"
-#include "core/os/os.h"
+#include "core/os/platform.h"
 #include "core/string/print_string.h"
 #include "core/string/ustring.h"
 #include "core/templates/vmap.h"
@@ -511,7 +511,7 @@ MainLoop *test() {
 		}
 	}
 
-	List<String> cmdlargs = OS::get_singleton()->get_cmdline_args();
+	List<String> cmdlargs = Platform::get_singleton()->get_cmdline_args();
 
 	if (cmdlargs.is_empty()) {
 		//try editor!
@@ -617,7 +617,7 @@ MainLoop *test() {
 
 	List<String> args;
 	args.push_back("-l");
-	Error err = OS::get_singleton()->execute("/bin/ls", args, &ret);
+	Error err = Platform::get_singleton()->execute("/bin/ls", args, &ret);
 	print_line("error: " + itos(err));
 	print_line(ret);
 

@@ -31,7 +31,7 @@
 #include "resource_importer.h"
 
 #include "core/config/project_settings.h"
-#include "core/os/os.h"
+#include "core/os/platform.h"
 #include "core/variant/variant_parser.h"
 
 bool ResourceFormatImporter::SortImporterByName::operator()(const Ref<ResourceImporter> &p_a, const Ref<ResourceImporter> &p_b) const {
@@ -81,7 +81,7 @@ Error ResourceFormatImporter::_get_path_and_type(const String &p_path, PathAndTy
 		if (assign != String()) {
 			if (!path_found && assign.begins_with("path.") && r_path_and_type.path == String()) {
 				String feature = assign.get_slicec('.', 1);
-				if (OS::get_singleton()->has_feature(feature)) {
+				if (Platform::get_singleton()->has_feature(feature)) {
 					r_path_and_type.path = value;
 					path_found = true; //first match must have priority
 				}

@@ -36,7 +36,7 @@
 #include "core/debugger/script_debugger.h"
 #include "core/input/input.h"
 #include "core/object/script_language.h"
-#include "core/os/os.h"
+#include "core/os/platform.h"
 #include "scene/main/node.h"
 #include "servers/display_server.h"
 
@@ -79,7 +79,7 @@ public:
 		ERR_FAIL_COND_V(p_buffer.size() == 0, 0);
 		int total_bandwidth = 0;
 
-		uint32_t timestamp = OS::get_singleton()->get_ticks_msec();
+		uint32_t timestamp = Platform::get_singleton()->get_ticks_msec();
 		uint32_t final_timestamp = timestamp - 1000;
 
 		int i = (p_pointer + p_buffer.size() - 1) % p_buffer.size();
@@ -165,7 +165,7 @@ public:
 	}
 
 	void tick(float p_frame_time, float p_idle_time, float p_physics_time, float p_physics_frame_time) {
-		uint64_t pt = OS::get_singleton()->get_ticks_msec();
+		uint64_t pt = Platform::get_singleton()->get_ticks_msec();
 		if (pt - last_bandwidth_time > 200) {
 			last_bandwidth_time = pt;
 			int incoming_bandwidth = bandwidth_usage(bandwidth_in, bandwidth_in_ptr);
@@ -383,7 +383,7 @@ struct RemoteDebugger::PerformanceProfiler {
 			return;
 		}
 
-		uint64_t pt = OS::get_singleton()->get_ticks_msec();
+		uint64_t pt = Platform::get_singleton()->get_ticks_msec();
 		if (pt - last_perf_time < 1000) {
 			return;
 		}
@@ -523,7 +523,7 @@ RemoteDebugger::ErrorMessage RemoteDebugger::_create_overflow_error(const String
 	oe.error = p_what;
 	oe.error_descr = p_descr;
 	oe.warning = false;
-	uint64_t time = OS::get_singleton()->get_ticks_msec();
+	uint64_t time = Platform::get_singleton()->get_ticks_msec();
 	oe.hr = time / 3600000;
 	oe.min = (time / 60000) % 60;
 	oe.sec = (time / 1000) % 60;
@@ -585,7 +585,7 @@ void RemoteDebugger::flush_output() {
 	}
 
 	// Update limits
-	uint64_t ticks = OS::get_singleton()->get_ticks_usec() / 1000;
+	uint64_t ticks = Platform::get_singleton()->get_ticks_usec() / 1000;
 
 	if (ticks - last_reset > 1000) {
 		last_reset = ticks;
@@ -613,7 +613,7 @@ void RemoteDebugger::send_error(const String &p_func, const String &p_file, int 
 	oe.source_line = p_line;
 	oe.source_func = p_func;
 	oe.warning = p_type == ERR_HANDLER_WARNING;
-	uint64_t time = OS::get_singleton()->get_ticks_msec();
+	uint64_t time = Platform::get_singleton()->get_ticks_msec();
 	oe.hr = time / 3600000;
 	oe.min = (time / 60000) % 60;
 	oe.sec = (time / 1000) % 60;
@@ -718,7 +718,7 @@ void RemoteDebugger::debug(bool p_can_continue, bool p_is_error_breakpoint) {
 	uint64_t loop_begin_usec = 0;
 	uint64_t loop_time_sec = 0;
 	while (is_peer_connected()) {
-		loop_begin_usec = OS::get_singleton()->get_ticks_usec();
+		loop_begin_usec = Platform::get_singleton()->get_ticks_usec();
 
 		flush_output();
 		peer->poll();
@@ -818,12 +818,12 @@ void RemoteDebugger::debug(bool p_can_continue, bool p_is_error_breakpoint) {
 				}
 			}
 		} else {
-			OS::get_singleton()->delay_usec(10000);
-			OS::get_singleton()->process_and_drop_events();
+			Platform::get_singleton()->delay_usec(10000);
+			Platform::get_singleton()->process_and_drop_events();
 		}
 
 		// This is for the camera override to stay live even when the game is paused from the editor
-		loop_time_sec = (OS::get_singleton()->get_ticks_usec() - loop_begin_usec) / 1000000.0f;
+		loop_time_sec = (Platform::get_singleton()->get_ticks_usec() - loop_begin_usec) / 1000000.0f;
 		RenderingServer::get_singleton()->sync();
 		if (RenderingServer::get_singleton()->has_changed()) {
 			RenderingServer::get_singleton()->draw(true, loop_time_sec * Engine::get_singleton()->get_time_scale());

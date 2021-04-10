@@ -31,7 +31,7 @@
 #include "step_3d_sw.h"
 #include "joints_3d_sw.h"
 
-#include "core/os/os.h"
+#include "core/os/platform.h"
 
 #define BODY_ISLAND_COUNT_RESERVE 128
 #define BODY_ISLAND_SIZE_RESERVE 512
@@ -146,7 +146,7 @@ void Step3DSW::step(Space3DSW *p_space, real_t p_delta, int p_iterations) {
 
 	/* INTEGRATE FORCES */
 
-	uint64_t profile_begtime = OS::get_singleton()->get_ticks_usec();
+	uint64_t profile_begtime = Platform::get_singleton()->get_ticks_usec();
 	uint64_t profile_endtime = 0;
 
 	int active_count = 0;
@@ -170,7 +170,7 @@ void Step3DSW::step(Space3DSW *p_space, real_t p_delta, int p_iterations) {
 	p_space->set_active_objects(active_count);
 
 	{ //profile
-		profile_endtime = OS::get_singleton()->get_ticks_usec();
+		profile_endtime = Platform::get_singleton()->get_ticks_usec();
 		p_space->set_elapsed_time(Space3DSW::ELAPSED_TIME_INTEGRATE_FORCES, profile_endtime - profile_begtime);
 		profile_begtime = profile_endtime;
 	}
@@ -255,7 +255,7 @@ void Step3DSW::step(Space3DSW *p_space, real_t p_delta, int p_iterations) {
 	}
 
 	{ //profile
-		profile_endtime = OS::get_singleton()->get_ticks_usec();
+		profile_endtime = Platform::get_singleton()->get_ticks_usec();
 		p_space->set_elapsed_time(Space3DSW::ELAPSED_TIME_GENERATE_ISLANDS, profile_endtime - profile_begtime);
 		profile_begtime = profile_endtime;
 	}
@@ -267,7 +267,7 @@ void Step3DSW::step(Space3DSW *p_space, real_t p_delta, int p_iterations) {
 	}
 
 	{ //profile
-		profile_endtime = OS::get_singleton()->get_ticks_usec();
+		profile_endtime = Platform::get_singleton()->get_ticks_usec();
 		p_space->set_elapsed_time(Space3DSW::ELAPSED_TIME_SETUP_CONSTRAINTS, profile_endtime - profile_begtime);
 		profile_begtime = profile_endtime;
 	}
@@ -281,7 +281,7 @@ void Step3DSW::step(Space3DSW *p_space, real_t p_delta, int p_iterations) {
 	}
 
 	{ //profile
-		profile_endtime = OS::get_singleton()->get_ticks_usec();
+		profile_endtime = Platform::get_singleton()->get_ticks_usec();
 		p_space->set_elapsed_time(Space3DSW::ELAPSED_TIME_SOLVE_CONSTRAINTS, profile_endtime - profile_begtime);
 		profile_begtime = profile_endtime;
 	}
@@ -310,7 +310,7 @@ void Step3DSW::step(Space3DSW *p_space, real_t p_delta, int p_iterations) {
 	}
 
 	{ //profile
-		profile_endtime = OS::get_singleton()->get_ticks_usec();
+		profile_endtime = Platform::get_singleton()->get_ticks_usec();
 		p_space->set_elapsed_time(Space3DSW::ELAPSED_TIME_INTEGRATE_VELOCITIES, profile_endtime - profile_begtime);
 		profile_begtime = profile_endtime;
 	}

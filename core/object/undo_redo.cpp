@@ -31,7 +31,7 @@
 #include "undo_redo.h"
 
 #include "core/io/resource.h"
-#include "core/os/os.h"
+#include "core/os/platform.h"
 
 void UndoRedo::_discard_redo() {
 	if (current_action == actions.size() - 1) {
@@ -71,7 +71,7 @@ bool UndoRedo::_redo(bool p_execute) {
 }
 
 void UndoRedo::create_action(const String &p_name, MergeMode p_mode) {
-	uint32_t ticks = OS::get_singleton()->get_ticks_msec();
+	uint32_t ticks = Platform::get_singleton()->get_ticks_msec();
 
 	if (action_level == 0) {
 		_discard_redo();

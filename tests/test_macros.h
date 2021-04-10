@@ -54,7 +54,7 @@
 // This allows to avoid polluting the test summary with error messages.
 // The `_print_error_enabled` boolean is defined in `core/print_string.cpp` and
 // works at global scope. It's used by various loggers in `should_log()` method,
-// which are used by error macros which call into `OS::print_error`, effectively
+// which are used by error macros which call into `Platform::print_error`, effectively
 // disabling any error messages to be printed from the engine side (not tests).
 #define ERR_PRINT_OFF _print_error_enabled = false;
 #define ERR_PRINT_ON _print_error_enabled = true;

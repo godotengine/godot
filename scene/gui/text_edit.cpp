@@ -36,7 +36,7 @@
 #include "core/object/message_queue.h"
 #include "core/object/script_language.h"
 #include "core/os/keyboard.h"
-#include "core/os/os.h"
+#include "core/os/platform.h"
 #include "core/string/translation.h"
 
 #include "scene/main/window.h"
@@ -3018,7 +3018,7 @@ void TextEdit::_gui_input(const Ref<InputEvent> &p_gui_input) {
 					selection.selecting_column = col;
 				}
 
-				if (!mb->is_doubleclick() && (OS::get_singleton()->get_ticks_msec() - last_dblclk) < 600 && cursor.line == prev_line) {
+				if (!mb->is_doubleclick() && (Platform::get_singleton()->get_ticks_msec() - last_dblclk) < 600 && cursor.line == prev_line) {
 					// Triple-click select line.
 					selection.selecting_mode = SelectionMode::SELECTION_MODE_LINE;
 					_update_selection_mode_line();
@@ -3027,7 +3027,7 @@ void TextEdit::_gui_input(const Ref<InputEvent> &p_gui_input) {
 					// Double-click select word.
 					selection.selecting_mode = SelectionMode::SELECTION_MODE_WORD;
 					_update_selection_mode_word();
-					last_dblclk = OS::get_singleton()->get_ticks_msec();
+					last_dblclk = Platform::get_singleton()->get_ticks_msec();
 				}
 
 				update();

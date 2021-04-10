@@ -10,7 +10,7 @@ using JetBrains.Annotations;
 namespace GodotTools.Utils
 {
     [SuppressMessage("ReSharper", "InconsistentNaming")]
-    public static class OS
+    public static class Platform
     {
         [MethodImpl(MethodImplOptions.InternalCall)]
         static extern string GetPlatformName();
@@ -63,12 +63,12 @@ namespace GodotTools.Utils
             [Names.HTML5] = Platforms.HTML5
         };
 
-        private static bool IsOS(string name)
+        private static bool IsPlatform(string name)
         {
             return name.Equals(GetPlatformName(), StringComparison.OrdinalIgnoreCase);
         }
 
-        private static bool IsAnyOS(IEnumerable<string> names)
+        private static bool IsAnyPlatform(IEnumerable<string> names)
         {
             return names.Any(p => p.Equals(GetPlatformName(), StringComparison.OrdinalIgnoreCase));
         }
@@ -80,16 +80,16 @@ namespace GodotTools.Utils
             new[] {Names.MacOS, Names.Server, Names.Haiku, Names.Android, Names.iOS}
                 .Concat(LinuxBSDPlatforms).ToArray();
 
-        private static readonly Lazy<bool> _isWindows = new Lazy<bool>(() => IsOS(Names.Windows));
-        private static readonly Lazy<bool> _isMacOS = new Lazy<bool>(() => IsOS(Names.MacOS));
-        private static readonly Lazy<bool> _isLinuxBSD = new Lazy<bool>(() => IsAnyOS(LinuxBSDPlatforms));
-        private static readonly Lazy<bool> _isServer = new Lazy<bool>(() => IsOS(Names.Server));
-        private static readonly Lazy<bool> _isUWP = new Lazy<bool>(() => IsOS(Names.UWP));
-        private static readonly Lazy<bool> _isHaiku = new Lazy<bool>(() => IsOS(Names.Haiku));
-        private static readonly Lazy<bool> _isAndroid = new Lazy<bool>(() => IsOS(Names.Android));
-        private static readonly Lazy<bool> _isiOS = new Lazy<bool>(() => IsOS(Names.iOS));
-        private static readonly Lazy<bool> _isHTML5 = new Lazy<bool>(() => IsOS(Names.HTML5));
-        private static readonly Lazy<bool> _isUnixLike = new Lazy<bool>(() => IsAnyOS(UnixLikePlatforms));
+        private static readonly Lazy<bool> _isWindows = new Lazy<bool>(() => IsPlatform(Names.Windows));
+        private static readonly Lazy<bool> _isMacOS = new Lazy<bool>(() => IsPlatform(Names.MacOS));
+        private static readonly Lazy<bool> _isLinuxBSD = new Lazy<bool>(() => IsAnyPlatform(LinuxBSDPlatforms));
+        private static readonly Lazy<bool> _isServer = new Lazy<bool>(() => IsPlatform(Names.Server));
+        private static readonly Lazy<bool> _isUWP = new Lazy<bool>(() => IsPlatform(Names.UWP));
+        private static readonly Lazy<bool> _isHaiku = new Lazy<bool>(() => IsPlatform(Names.Haiku));
+        private static readonly Lazy<bool> _isAndroid = new Lazy<bool>(() => IsPlatform(Names.Android));
+        private static readonly Lazy<bool> _isiOS = new Lazy<bool>(() => IsPlatform(Names.iOS));
+        private static readonly Lazy<bool> _isHTML5 = new Lazy<bool>(() => IsPlatform(Names.HTML5));
+        private static readonly Lazy<bool> _isUnixLike = new Lazy<bool>(() => IsAnyPlatform(UnixLikePlatforms));
 
         public static bool IsWindows => _isWindows.Value || IsUWP;
         public static bool IsMacOS => _isMacOS.Value;

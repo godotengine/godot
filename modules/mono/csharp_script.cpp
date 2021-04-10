@@ -40,7 +40,7 @@
 #include "core/io/json.h"
 #include "core/os/file_access.h"
 #include "core/os/mutex.h"
-#include "core/os/os.h"
+#include "core/os/platform.h"
 #include "core/os/thread.h"
 
 #ifdef TOOLS_ENABLED
@@ -102,7 +102,7 @@ Error CSharpLanguage::execute_file(const String &p_path) {
 
 void CSharpLanguage::init() {
 #ifdef DEBUG_METHODS_ENABLED
-	if (OS::get_singleton()->get_cmdline_args().find("--class-db-json")) {
+	if (Platform::get_singleton()->get_cmdline_args().find("--class-db-json")) {
 		class_db_api_to_json("user://class_db_api.json", ClassDB::API_CORE);
 #ifdef TOOLS_ENABLED
 		class_db_api_to_json("user://class_db_api_editor.json", ClassDB::API_EDITOR);
@@ -117,7 +117,7 @@ void CSharpLanguage::init() {
 	// Generate bindings here, before loading assemblies. 'initialize_load_assemblies' aborts
 	// the applications if the api assemblies or the main tools assembly is missing, but this
 	// is not a problem for BindingsGenerator as it only needs the tools project editor assembly.
-	List<String> cmdline_args = OS::get_singleton()->get_cmdline_args();
+	List<String> cmdline_args = Platform::get_singleton()->get_cmdline_args();
 	BindingsGenerator::handle_cmdline_args(cmdline_args);
 #endif
 
@@ -762,7 +762,7 @@ bool CSharpLanguage::is_assembly_reloading_needed() {
 	GDMonoAssembly *proj_assembly = gdmono->get_project_assembly();
 
 	String appname = ProjectSettings::get_singleton()->get("application/config/name");
-	String appname_safe = OS::get_singleton()->get_safe_dir_name(appname);
+	String appname_safe = Platform::get_singleton()->get_safe_dir_name(appname);
 	if (appname_safe.is_empty()) {
 		appname_safe = "UnnamedProject";
 	}
@@ -834,8 +834,8 @@ void CSharpLanguage::reload_assemblies(bool p_soft_reload) {
 
 			if (success) {
 				ManagedCallable::instances_pending_reload.insert(managed_callable, serialized_data);
-			} else if (OS::get_singleton()->is_stdout_verbose()) {
-				OS::get_singleton()->print("Failed to serialize delegate\n");
+			} else if (Platform::get_singleton()->is_stdout_verbose()) {
+				Platform::get_singleton()->print("Failed to serialize delegate\n");
 			}
 		}
 	}
@@ -1128,8 +1128,8 @@ void CSharpLanguage::reload_assemblies(bool p_soft_reload) {
 					if (success) {
 						ERR_CONTINUE(delegate == nullptr);
 						event_signal.field->set_value(csi->get_mono_object(), (MonoObject *)delegate);
-					} else if (OS::get_singleton()->is_stdout_verbose()) {
-						OS::get_singleton()->print("Failed to deserialize event signal delegate\n");
+					} else if (Platform::get_singleton()->is_stdout_verbose()) {
+						Platform::get_singleton()->print("Failed to deserialize event signal delegate\n");
 					}
 				}
 
@@ -1165,8 +1165,8 @@ void CSharpLanguage::reload_assemblies(bool p_soft_reload) {
 			if (success) {
 				ERR_CONTINUE(delegate == nullptr);
 				managed_callable->set_delegate(delegate);
-			} else if (OS::get_singleton()->is_stdout_verbose()) {
-				OS::get_singleton()->print("Failed to deserialize delegate\n");
+			} else if (Platform::get_singleton()->is_stdout_verbose()) {
+				Platform::get_singleton()->print("Failed to deserialize delegate\n");
 			}
 		}
 
@@ -1763,8 +1763,8 @@ void CSharpInstance::get_event_signals_state_for_reloading(List<Pair<StringName,
 
 		if (success) {
 			r_state.push_back(Pair<StringName, Array>(event_signal.field->get_name(), serialized_data));
-		} else if (OS::get_singleton()->is_stdout_verbose()) {
-			OS::get_singleton()->print("Failed to serialize event signal delegate\n");
+		} else if (Platform::get_singleton()->is_stdout_verbose()) {
+			Platform::get_singleton()->print("Failed to serialize event signal delegate\n");
 		}
 	}
 }

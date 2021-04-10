@@ -43,7 +43,7 @@
 #include "core/os/dir_access.h"
 #include "core/os/file_access.h"
 #include "core/os/keyboard.h"
-#include "core/os/os.h"
+#include "core/os/platform.h"
 #include "core/version.h"
 #include "editor/doc_translations.gen.h"
 #include "editor/editor_node.h"
@@ -305,7 +305,7 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 
 	{
 		String lang_hint = "en";
-		String host_lang = OS::get_singleton()->get_locale();
+		String host_lang = Platform::get_singleton()->get_locale();
 		host_lang = TranslationServer::standardize_locale(host_lang);
 
 		// Skip locales if Text server lack required features.
@@ -471,7 +471,7 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 	// Directories
 	_initial_set("filesystem/directories/autoscan_project_path", "");
 	hints["filesystem/directories/autoscan_project_path"] = PropertyInfo(Variant::STRING, "filesystem/directories/autoscan_project_path", PROPERTY_HINT_GLOBAL_DIR);
-	_initial_set("filesystem/directories/default_project_path", OS::get_singleton()->has_environment("HOME") ? OS::get_singleton()->get_environment("HOME") : OS::get_singleton()->get_system_dir(OS::SYSTEM_DIR_DOCUMENTS));
+	_initial_set("filesystem/directories/default_project_path", Platform::get_singleton()->has_environment("HOME") ? Platform::get_singleton()->get_environment("HOME") : Platform::get_singleton()->get_system_dir(Platform::SYSTEM_DIR_DOCUMENTS));
 	hints["filesystem/directories/default_project_path"] = PropertyInfo(Variant::STRING, "filesystem/directories/default_project_path", PROPERTY_HINT_GLOBAL_DIR);
 
 	// On save
@@ -908,7 +908,7 @@ void EditorSettings::create() {
 
 	Ref<ConfigFile> extra_config = memnew(ConfigFile);
 
-	String exe_path = OS::get_singleton()->get_executable_path().get_base_dir();
+	String exe_path = Platform::get_singleton()->get_executable_path().get_base_dir();
 	DirAccess *d = DirAccess::create_for_path(exe_path);
 	bool self_contained = false;
 
@@ -937,17 +937,17 @@ void EditorSettings::create() {
 		cache_dir = data_dir.plus_file("cache");
 	} else {
 		// Typically XDG_DATA_HOME or %APPDATA%
-		data_path = OS::get_singleton()->get_data_path();
-		data_dir = data_path.plus_file(OS::get_singleton()->get_godot_dir_name());
+		data_path = Platform::get_singleton()->get_data_path();
+		data_dir = data_path.plus_file(Platform::get_singleton()->get_godot_dir_name());
 		// Can be different from data_path e.g. on Linux or macOS
-		config_path = OS::get_singleton()->get_config_path();
-		config_dir = config_path.plus_file(OS::get_singleton()->get_godot_dir_name());
+		config_path = Platform::get_singleton()->get_config_path();
+		config_dir = config_path.plus_file(Platform::get_singleton()->get_godot_dir_name());
 		// Can be different from above paths, otherwise a subfolder of data_dir
-		cache_path = OS::get_singleton()->get_cache_path();
+		cache_path = Platform::get_singleton()->get_cache_path();
 		if (cache_path == data_path) {
 			cache_dir = data_dir.plus_file("cache");
 		} else {
-			cache_dir = cache_path.plus_file(OS::get_singleton()->get_godot_dir_name());
+			cache_dir = cache_path.plus_file(Platform::get_singleton()->get_godot_dir_name());
 		}
 	}
 
@@ -1749,7 +1749,7 @@ const Array EditorSettings::get_builtin_action_overrides(const String &p_name) c
 void EditorSettings::notify_changes() {
 	_THREAD_SAFE_METHOD_
 
-	SceneTree *sml = Object::cast_to<SceneTree>(OS::get_singleton()->get_main_loop());
+	SceneTree *sml = Object::cast_to<SceneTree>(Platform::get_singleton()->get_main_loop());
 
 	if (!sml) {
 		return;

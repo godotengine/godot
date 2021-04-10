@@ -37,7 +37,7 @@
 #include "ios.h"
 #import "keyboard_input_view.h"
 #import "native_video_view.h"
-#include "os_iphone.h"
+#include "platform_iphone.h"
 #import "view_controller.h"
 
 #import <Foundation/Foundation.h>
@@ -69,7 +69,7 @@ DisplayServerIPhone::DisplayServerIPhone(const String &p_rendering_driver, Displ
 		}
 
 		if (gl_initialization_error) {
-			OS::get_singleton()->alert("Your device does not support any of the supported OpenGL versions.", "Unable to initialize video driver");
+			Platform::get_singleton()->alert("Your device does not support any of the supported OpenGL versions.", "Unable to initialize video driver");
 			//        return ERR_UNAVAILABLE;
 		}
 
@@ -573,13 +573,13 @@ Error DisplayServerIPhone::native_video_play(String p_path, float p_volume, Stri
 	FileAccess *f = FileAccess::open(p_path, FileAccess::READ);
 	bool exists = f && f->is_open();
 
-	String user_data_dir = OSIPhone::get_singleton()->get_user_data_dir();
+	String user_data_dir = PlatformIPhone::get_singleton()->get_user_data_dir();
 
 	if (!exists) {
 		return FAILED;
 	}
 
-	String tempFile = OSIPhone::get_singleton()->get_user_data_dir();
+	String tempFile = PlatformIPhone::get_singleton()->get_user_data_dir();
 
 	if (p_path.begins_with("res://")) {
 		if (PackedData::get_singleton()->has_path(p_path)) {

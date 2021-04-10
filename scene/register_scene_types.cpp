@@ -32,7 +32,7 @@
 
 #include "core/config/project_settings.h"
 #include "core/object/class_db.h"
-#include "core/os/os.h"
+#include "core/os/platform.h"
 #include "scene/2d/animated_sprite_2d.h"
 #include "scene/2d/area_2d.h"
 #include "scene/2d/audio_stream_player_2d.h"
@@ -248,7 +248,7 @@ static Ref<ResourceFormatLoaderShader> resource_loader_shader;
 void register_scene_types() {
 	SceneStringNames::create();
 
-	OS::get_singleton()->yield(); //may take time to init
+	Platform::get_singleton()->yield(); //may take time to init
 
 	Node::init_node_hrcr();
 
@@ -281,7 +281,7 @@ void register_scene_types() {
 	resource_loader_shader.instance();
 	ResourceLoader::add_resource_format_loader(resource_loader_shader, true);
 
-	OS::get_singleton()->yield(); //may take time to init
+	Platform::get_singleton()->yield(); //may take time to init
 
 	ClassDB::register_class<Object>();
 
@@ -303,7 +303,7 @@ void register_scene_types() {
 	ClassDB::register_class<ButtonGroup>();
 	ClassDB::register_virtual_class<BaseButton>();
 
-	OS::get_singleton()->yield(); //may take time to init
+	Platform::get_singleton()->yield(); //may take time to init
 
 	ClassDB::register_class<Shortcut>();
 	ClassDB::register_class<Control>();
@@ -325,7 +325,7 @@ void register_scene_types() {
 	ClassDB::register_class<Panel>();
 	ClassDB::register_virtual_class<Range>();
 
-	OS::get_singleton()->yield(); //may take time to init
+	Platform::get_singleton()->yield(); //may take time to init
 
 	ClassDB::register_class<TextureRect>();
 	ClassDB::register_class<ColorRect>();
@@ -347,7 +347,7 @@ void register_scene_types() {
 	ClassDB::register_class<ScrollContainer>();
 	ClassDB::register_class<PanelContainer>();
 
-	OS::get_singleton()->yield(); //may take time to init
+	Platform::get_singleton()->yield(); //may take time to init
 
 	ClassDB::register_class<TextureProgressBar>();
 	ClassDB::register_class<ItemList>();
@@ -386,7 +386,7 @@ void register_scene_types() {
 	ClassDB::register_class<GraphNode>();
 	ClassDB::register_class<GraphEdit>();
 
-	OS::get_singleton()->yield(); //may take time to init
+	Platform::get_singleton()->yield(); //may take time to init
 
 	bool swap_cancel_ok = false;
 	if (DisplayServer::get_singleton()) {
@@ -430,7 +430,7 @@ void register_scene_types() {
 
 	ClassDB::register_class<ShaderGlobalsOverride>(); //can be used in any shader
 
-	OS::get_singleton()->yield(); //may take time to init
+	Platform::get_singleton()->yield(); //may take time to init
 
 #ifndef _3D_DISABLED
 	ClassDB::register_virtual_class<VisualInstance3D>();
@@ -477,7 +477,7 @@ void register_scene_types() {
 	ClassDB::register_class<RootMotionView>();
 	ClassDB::set_class_enabled("RootMotionView", false); //disabled by default, enabled by editor
 
-	OS::get_singleton()->yield(); //may take time to init
+	Platform::get_singleton()->yield(); //may take time to init
 
 	ClassDB::register_virtual_class<CollisionObject3D>();
 	ClassDB::register_virtual_class<PhysicsBody3D>();
@@ -521,7 +521,7 @@ void register_scene_types() {
 	ClassDB::register_class<NavigationAgent3D>();
 	ClassDB::register_class<NavigationObstacle3D>();
 
-	OS::get_singleton()->yield(); //may take time to init
+	Platform::get_singleton()->yield(); //may take time to init
 #endif
 
 	/* REGISTER SHADER */
@@ -647,7 +647,7 @@ void register_scene_types() {
 	ClassDB::register_class<YSort>();
 	ClassDB::register_class<BackBufferCopy>();
 
-	OS::get_singleton()->yield(); //may take time to init
+	Platform::get_singleton()->yield(); //may take time to init
 
 	ClassDB::register_class<Camera2D>();
 	ClassDB::register_virtual_class<Joint2D>();
@@ -661,7 +661,7 @@ void register_scene_types() {
 	ClassDB::register_class<TouchScreenButton>();
 	ClassDB::register_class<RemoteTransform2D>();
 
-	OS::get_singleton()->yield(); //may take time to init
+	Platform::get_singleton()->yield(); //may take time to init
 
 	/* REGISTER RESOURCES */
 
@@ -701,7 +701,7 @@ void register_scene_types() {
 
 	ClassDB::register_class<MeshLibrary>();
 
-	OS::get_singleton()->yield(); //may take time to init
+	Platform::get_singleton()->yield(); //may take time to init
 
 	ClassDB::register_virtual_class<Shape3D>();
 	ClassDB::register_class<RayShape3D>();
@@ -714,7 +714,7 @@ void register_scene_types() {
 	ClassDB::register_class<ConvexPolygonShape3D>();
 	ClassDB::register_class<ConcavePolygonShape3D>();
 
-	OS::get_singleton()->yield(); //may take time to init
+	Platform::get_singleton()->yield(); //may take time to init
 
 	ClassDB::register_class<VelocityTracker3D>();
 #endif
@@ -769,7 +769,7 @@ void register_scene_types() {
 	ClassDB::register_class<BitMap>();
 	ClassDB::register_class<Gradient>();
 
-	OS::get_singleton()->yield(); //may take time to init
+	Platform::get_singleton()->yield(); //may take time to init
 
 	ClassDB::register_class<AudioStreamPlayer>();
 	ClassDB::register_class<AudioStreamPlayer2D>();
@@ -779,7 +779,7 @@ void register_scene_types() {
 	ClassDB::register_virtual_class<VideoStream>();
 	ClassDB::register_class<AudioStreamSample>();
 
-	OS::get_singleton()->yield(); //may take time to init
+	Platform::get_singleton()->yield(); //may take time to init
 
 	ClassDB::register_virtual_class<Shape2D>();
 	ClassDB::register_class<LineShape2D>();
@@ -800,7 +800,7 @@ void register_scene_types() {
 	ClassDB::register_class<NavigationAgent2D>();
 	ClassDB::register_class<NavigationObstacle2D>();
 
-	OS::get_singleton()->yield(); //may take time to init
+	Platform::get_singleton()->yield(); //may take time to init
 
 	ClassDB::register_virtual_class<SceneState>();
 	ClassDB::register_class<PackedScene>();
@@ -947,7 +947,7 @@ void register_scene_types() {
 
 #endif /* DISABLE_DEPRECATED */
 
-	OS::get_singleton()->yield(); //may take time to init
+	Platform::get_singleton()->yield(); //may take time to init
 
 	for (int i = 0; i < 20; i++) {
 		GLOBAL_DEF_BASIC(vformat("layer_names/2d_render/layer_%d", i), "");

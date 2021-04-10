@@ -59,15 +59,15 @@ void ContextGL_Windows::make_current() {
 }
 
 int ContextGL_Windows::get_window_width() {
-	return OS::get_singleton()->get_video_mode().width;
+	return Platform::get_singleton()->get_video_mode().width;
 }
 
 int ContextGL_Windows::get_window_height() {
-	return OS::get_singleton()->get_video_mode().height;
+	return Platform::get_singleton()->get_video_mode().height;
 }
 
 bool ContextGL_Windows::should_vsync_via_compositor() {
-	if (OS::get_singleton()->is_window_fullscreen() || !OS::get_singleton()->is_vsync_via_compositor_enabled()) {
+	if (Platform::get_singleton()->is_window_fullscreen() || !Platform::get_singleton()->is_vsync_via_compositor_enabled()) {
 		return false;
 	}
 
@@ -126,9 +126,9 @@ Error ContextGL_Windows::initialize() {
 				PFD_SUPPORT_OPENGL | // Format Must Support OpenGL
 				PFD_DOUBLEBUFFER,
 		(BYTE)PFD_TYPE_RGBA,
-		(BYTE)(OS::get_singleton()->is_layered_allowed() ? 32 : 24),
+		(BYTE)(Platform::get_singleton()->is_layered_allowed() ? 32 : 24),
 		(BYTE)0, (BYTE)0, (BYTE)0, (BYTE)0, (BYTE)0, (BYTE)0, // Color Bits Ignored
-		(BYTE)(OS::get_singleton()->is_layered_allowed() ? 8 : 0), // Alpha Buffer
+		(BYTE)(Platform::get_singleton()->is_layered_allowed() ? 8 : 0), // Alpha Buffer
 		(BYTE)0, // Shift Bit Ignored
 		(BYTE)0, // No Accumulation Buffer
 		(BYTE)0, (BYTE)0, (BYTE)0, (BYTE)0, // Accumulation Bits Ignored

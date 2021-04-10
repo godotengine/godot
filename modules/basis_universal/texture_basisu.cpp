@@ -30,7 +30,7 @@
 
 #include "texture_basisu.h"
 #if 0
-#include "core/os/os.h"
+#include "core/os/platform.h"
 
 #ifdef TOOLS_ENABLED
 #include <basisu_comp.h>
@@ -86,11 +86,11 @@ void TextureBasisU::set_basisu_data(const Vector<uint8_t>& p_data) {
 	basist::transcoder_texture_format format;
 	Image::Format imgfmt;
 
-	if (OS::get_singleton()->has_feature("s3tc")) {
+	if (Platform::get_singleton()->has_feature("s3tc")) {
 		format = basist::cTFBC3; // get this from renderer
 		imgfmt = Image::FORMAT_DXT5;
 
-	} else if (OS::get_singleton()->has_feature("etc2")) {
+	} else if (Platform::get_singleton()->has_feature("etc2")) {
 		format = basist::cTFETC2;
 		imgfmt = Image::FORMAT_ETC2_RGBA8;
 	};

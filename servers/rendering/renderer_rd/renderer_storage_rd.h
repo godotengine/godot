@@ -2272,7 +2272,7 @@ public:
 
 	bool free(RID p_rid);
 
-	bool has_os_feature(const String &p_feature) const;
+	bool has_platform_feature(const String &p_feature) const;
 
 	void update_dirty_resources();
 

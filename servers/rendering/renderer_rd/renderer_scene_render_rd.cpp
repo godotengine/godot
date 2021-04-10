@@ -31,7 +31,7 @@
 #include "renderer_scene_render_rd.h"
 
 #include "core/config/project_settings.h"
-#include "core/os/os.h"
+#include "core/os/platform.h"
 #include "renderer_compositor_rd.h"
 #include "servers/rendering/rendering_server_default.h"
 
@@ -1013,7 +1013,7 @@ bool RendererSceneRenderRD::shadow_atlas_update_light(RID p_atlas, RID p_light_i
 
 	ERR_FAIL_COND_V(valid_quadrant_count == 0, false);
 
-	uint64_t tick = OS::get_singleton()->get_ticks_msec();
+	uint64_t tick = Platform::get_singleton()->get_ticks_msec();
 
 	//see if it already exists
 

@@ -31,7 +31,7 @@
 #ifndef TEST_VALIDATE_TESTING_H
 #define TEST_VALIDATE_TESTING_H
 
-#include "core/os/os.h"
+#include "core/os/platform.h"
 
 #include "tests/test_macros.h"
 

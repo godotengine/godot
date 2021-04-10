@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  os_osx.mm                                                            */
+/*  platform_osx.mm                                                      */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,7 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#include "os_osx.h"
+#include "platform_osx.h"
 
 #include "core/version_generated.gen.h"
 
@@ -93,10 +93,10 @@ public:
 };
 
 /*************************************************************************/
-/* OS_OSX                                                                */
+/* PlatformOSX                                                                */
 /*************************************************************************/
 
-String OS_OSX::get_unique_id() const {
+String PlatformOSX::get_unique_id() const {
 	static String serial_number;
 
 	if (serial_number.is_empty()) {
@@ -119,26 +119,26 @@ String OS_OSX::get_unique_id() const {
 	return serial_number;
 }
 
-void OS_OSX::initialize_core() {
-	OS_Unix::initialize_core();
+void PlatformOSX::initialize_core() {
+	PlatformUnix::initialize_core();
 
 	DirAccess::make_default<DirAccessOSX>(DirAccess::ACCESS_RESOURCES);
 	DirAccess::make_default<DirAccessOSX>(DirAccess::ACCESS_USERDATA);
 	DirAccess::make_default<DirAccessOSX>(DirAccess::ACCESS_FILESYSTEM);
 }
 
-void OS_OSX::initialize_joypads() {
+void PlatformOSX::initialize_joypads() {
 	joypad_osx = memnew(JoypadOSX(Input::get_singleton()));
 }
 
-void OS_OSX::initialize() {
+void PlatformOSX::initialize() {
 	crash_handler.initialize();
 
 	initialize_core();
 	//ensure_user_data_dir();
 }
 
-void OS_OSX::finalize() {
+void PlatformOSX::finalize() {
 #ifdef COREMIDI_ENABLED
 	midi_driver.close();
 #endif
@@ -150,22 +150,22 @@ void OS_OSX::finalize() {
 	}
 }
 
-void OS_OSX::set_main_loop(MainLoop *p_main_loop) {
+void PlatformOSX::set_main_loop(MainLoop *p_main_loop) {
 	main_loop = p_main_loop;
 }
 
-void OS_OSX::delete_main_loop() {
+void PlatformOSX::delete_main_loop() {
 	if (!main_loop)
 		return;
 	memdelete(main_loop);
 	main_loop = nullptr;
 }
 
-String OS_OSX::get_name() const {
+String PlatformOSX::get_name() const {
 	return "macOS";
 }
 
-Error OS_OSX::open_dynamic_library(const String p_path, void *&p_library_handle, bool p_also_set_library_path) {
+Error PlatformOSX::open_dynamic_library(const String p_path, void *&p_library_handle, bool p_also_set_library_path) {
 	String path = p_path;
 
 	if (!FileAccess::exists(path)) {
@@ -183,11 +183,11 @@ Error OS_OSX::open_dynamic_library(const String p_path, void *&p_library_handle,
 	return OK;
 }
 
-MainLoop *OS_OSX::get_main_loop() const {
+MainLoop *PlatformOSX::get_main_loop() const {
 	return main_loop;
 }
 
-String OS_OSX::get_config_path() const {
+String PlatformOSX::get_config_path() const {
 	if (has_environment("XDG_CONFIG_HOME")) {
 		return get_environment("XDG_CONFIG_HOME");
 	} else if (has_environment("HOME")) {
@@ -197,7 +197,7 @@ String OS_OSX::get_config_path() const {
 	}
 }
 
-String OS_OSX::get_data_path() const {
+String PlatformOSX::get_data_path() const {
 	if (has_environment("XDG_DATA_HOME")) {
 		return get_environment("XDG_DATA_HOME");
 	} else {
@@ -205,7 +205,7 @@ String OS_OSX::get_data_path() const {
 	}
 }
 
-String OS_OSX::get_cache_path() const {
+String PlatformOSX::get_cache_path() const {
 	if (has_environment("XDG_CACHE_HOME")) {
 		return get_environment("XDG_CACHE_HOME");
 	} else if (has_environment("HOME")) {
@@ -215,7 +215,7 @@ String OS_OSX::get_cache_path() const {
 	}
 }
 
-String OS_OSX::get_bundle_resource_dir() const {
+String PlatformOSX::get_bundle_resource_dir() const {
 	NSBundle *main = [NSBundle mainBundle];
 	NSString *resourcePath = [main resourcePath];
 
@@ -228,11 +228,11 @@ String OS_OSX::get_bundle_resource_dir() const {
 }
 
 // Get properly capitalized engine name for system paths
-String OS_OSX::get_godot_dir_name() const {
+String PlatformOSX::get_godot_dir_name() const {
 	return String(VERSION_SHORT_NAME).capitalize();
 }
 
-String OS_OSX::get_system_dir(SystemDir p_dir) const {
+String PlatformOSX::get_system_dir(SystemDir p_dir) const {
 	NSSearchPathDirectory id;
 	bool found = true;
 
@@ -273,7 +273,7 @@ String OS_OSX::get_system_dir(SystemDir p_dir) const {
 	return ret;
 }
 
-Error OS_OSX::shell_open(String p_uri) {
+Error PlatformOSX::shell_open(String p_uri) {
 	NSString *string = [NSString stringWithUTF8String:p_uri.utf8().get_data()];
 	NSURL *uri = [[NSURL alloc] initWithString:string];
 	// Escape special characters in filenames
@@ -284,12 +284,12 @@ Error OS_OSX::shell_open(String p_uri) {
 	return OK;
 }
 
-String OS_OSX::get_locale() const {
+String PlatformOSX::get_locale() const {
 	NSString *locale_code = [[NSLocale preferredLanguages] objectAtIndex:0];
 	return String([locale_code UTF8String]).replace("-", "_");
 }
 
-String OS_OSX::get_executable_path() const {
+String PlatformOSX::get_executable_path() const {
 	int ret;
 	pid_t pid;
 	char pathbuf[PROC_PIDPATHINFO_MAXSIZE];
@@ -297,7 +297,7 @@ String OS_OSX::get_executable_path() const {
 	pid = getpid();
 	ret = proc_pidpath(pid, pathbuf, sizeof(pathbuf));
 	if (ret <= 0) {
-		return OS::get_executable_path();
+		return Platform::get_executable_path();
 	} else {
 		String path;
 		path.parse_utf8(pathbuf);
@@ -306,7 +306,7 @@ String OS_OSX::get_executable_path() const {
 	}
 }
 
-void OS_OSX::run() {
+void PlatformOSX::run() {
 	force_quit = false;
 
 	if (!main_loop)
@@ -332,7 +332,7 @@ void OS_OSX::run() {
 	main_loop->finalize();
 }
 
-Error OS_OSX::move_to_trash(const String &p_path) {
+Error PlatformOSX::move_to_trash(const String &p_path) {
 	NSFileManager *fm = [NSFileManager defaultManager];
 	NSURL *url = [NSURL fileURLWithPath:@(p_path.utf8().get_data())];
 	NSError *err;
@@ -345,7 +345,7 @@ Error OS_OSX::move_to_trash(const String &p_path) {
 	return OK;
 }
 
-OS_OSX::OS_OSX() {
+PlatformOSX::PlatformOSX() {
 	main_loop = nullptr;
 	force_quit = false;
 
@@ -360,14 +360,14 @@ OS_OSX::OS_OSX() {
 	DisplayServerOSX::register_osx_driver();
 }
 
-bool OS_OSX::_check_internal_feature_support(const String &p_feature) {
+bool PlatformOSX::_check_internal_feature_support(const String &p_feature) {
 	return p_feature == "pc";
 }
 
-void OS_OSX::disable_crash_handler() {
+void PlatformOSX::disable_crash_handler() {
 	crash_handler.disable();
 }
 
-bool OS_OSX::is_disable_crash_handler() const {
+bool PlatformOSX::is_disable_crash_handler() const {
 	return crash_handler.is_disabled();
 }

@@ -933,7 +933,7 @@ public:
 
 	virtual bool has_feature(Features p_feature) const override;
 
-	virtual bool has_os_feature(const String &p_feature) const override;
+	virtual bool has_platform_feature(const String &p_feature) const override;
 	virtual void set_debug_generate_wireframes(bool p_generate) override;
 
 	virtual bool is_low_end() const override;

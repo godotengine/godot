@@ -35,7 +35,7 @@
 #include <wrl.h>
 
 #include "GLES2/gl2.h"
-#include "os_uwp.h"
+#include "platform_uwp.h"
 
 /** clang-format does not play nice with this C++/CX hybrid, needs investigation. */
 /* clang-format off */
@@ -102,7 +102,7 @@ namespace GodotUWP
 		EGLSurface mEglSurface = EGL_NO_SURFACE;
 
 		CoreWindow^ window;
-		OS_UWP* os;
+		PlatformUWP* platform;
 
 		int last_touch_x[32]; // 20 fingers, index 31 reserved for the mouse
 		int last_touch_y[32];

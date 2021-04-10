@@ -38,7 +38,7 @@
 #include "core/object/message_queue.h"
 #include "core/os/dir_access.h"
 #include "core/os/keyboard.h"
-#include "core/os/os.h"
+#include "core/os/platform.h"
 #include "core/string/print_string.h"
 #include "node.h"
 #include "scene/debugger/scene_debugger.h"
@@ -536,7 +536,7 @@ void SceneTree::finalize() {
 }
 
 void SceneTree::quit(int p_exit_code) {
-	OS::get_singleton()->set_exit_code(p_exit_code);
+	Platform::get_singleton()->set_exit_code(p_exit_code);
 	_quit = true;
 }
 

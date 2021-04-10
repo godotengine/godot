@@ -30,7 +30,7 @@
 
 #include "websocket_multiplayer_peer.h"
 
-#include "core/os/os.h"
+#include "core/os/platform.h"
 
 WebSocketMultiplayerPeer::WebSocketMultiplayerPeer() {
 }
@@ -44,11 +44,11 @@ int WebSocketMultiplayerPeer::_gen_unique_id() const {
 
 	while (hash == 0 || hash == 1) {
 		hash = hash_djb2_one_32(
-				(uint32_t)OS::get_singleton()->get_ticks_usec());
+				(uint32_t)Platform::get_singleton()->get_ticks_usec());
 		hash = hash_djb2_one_32(
-				(uint32_t)OS::get_singleton()->get_unix_time(), hash);
+				(uint32_t)Platform::get_singleton()->get_unix_time(), hash);
 		hash = hash_djb2_one_32(
-				(uint32_t)OS::get_singleton()->get_data_path().hash64(), hash);
+				(uint32_t)Platform::get_singleton()->get_data_path().hash64(), hash);
 		hash = hash_djb2_one_32(
 				(uint32_t)((uint64_t)this), hash); //rely on aslr heap
 		hash = hash_djb2_one_32(

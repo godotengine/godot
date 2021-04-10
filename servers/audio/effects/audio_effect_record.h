@@ -33,7 +33,7 @@
 
 #include "core/io/marshalls.h"
 #include "core/os/file_access.h"
-#include "core/os/os.h"
+#include "core/os/platform.h"
 #include "core/os/thread.h"
 #include "editor/import/resource_importer_wav.h"
 #include "scene/resources/audio_stream_sample.h"

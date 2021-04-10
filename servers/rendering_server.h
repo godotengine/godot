@@ -1494,7 +1494,7 @@ public:
 
 	virtual bool has_feature(Features p_feature) const = 0;
 
-	virtual bool has_os_feature(const String &p_feature) const = 0;
+	virtual bool has_platform_feature(const String &p_feature) const = 0;
 
 	virtual void set_debug_generate_wireframes(bool p_generate) = 0;
 

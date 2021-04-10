@@ -33,7 +33,7 @@
 #include "core/config/project_settings.h"
 #include "core/io/resource_importer.h"
 #include "core/os/file_access.h"
-#include "core/os/os.h"
+#include "core/os/platform.h"
 #include "core/string/print_string.h"
 #include "core/string/translation.h"
 #include "core/variant/variant_parser.h"
@@ -1098,7 +1098,7 @@ void ResourceLoader::remove_custom_loaders() {
 
 void ResourceLoader::initialize() {
 	thread_load_mutex = memnew(Mutex);
-	thread_load_max = OS::get_singleton()->get_processor_count();
+	thread_load_max = Platform::get_singleton()->get_processor_count();
 	thread_loading_count = 0;
 	thread_waiting_count = 0;
 	thread_suspended_count = 0;

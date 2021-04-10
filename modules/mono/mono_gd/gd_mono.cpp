@@ -41,7 +41,7 @@
 #include "core/debugger/engine_debugger.h"
 #include "core/os/dir_access.h"
 #include "core/os/file_access.h"
-#include "core/os/os.h"
+#include "core/os/platform.h"
 #include "core/os/thread.h"
 
 #include "../csharp_script.h"
@@ -89,9 +89,9 @@ void mono_wasm_load_runtime(const char *managed_path, int enable_debugging);
 #if !defined(JAVASCRIPT_ENABLED)
 
 void gd_mono_setup_runtime_main_args() {
-	CharString execpath = OS::get_singleton()->get_executable_path().utf8();
+	CharString execpath = Platform::get_singleton()->get_executable_path().utf8();
 
-	List<String> cmdline_args = OS::get_singleton()->get_cmdline_args();
+	List<String> cmdline_args = Platform::get_singleton()->get_cmdline_args();
 
 	List<CharString> cmdline_args_utf8;
 	Vector<char *> main_args;
@@ -118,8 +118,8 @@ void gd_mono_profiler_init() {
 	}
 
 	const String env_var_name = "MONO_ENV_OPTIONS";
-	if (OS::get_singleton()->has_environment(env_var_name)) {
-		const String mono_env_ops = OS::get_singleton()->get_environment(env_var_name);
+	if (Platform::get_singleton()->has_environment(env_var_name)) {
+		const String mono_env_ops = Platform::get_singleton()->get_environment(env_var_name);
 		// Usually MONO_ENV_OPTIONS looks like:   --profile=jb:prof=timeline,ctl=remote,host=127.0.0.1:55467
 		const String prefix = "--profile=";
 		if (mono_env_ops.begins_with(prefix)) {
@@ -130,10 +130,10 @@ void gd_mono_profiler_init() {
 }
 
 void gd_mono_debug_init() {
-	CharString da_args = OS::get_singleton()->get_environment("GODOT_MONO_DEBUGGER_AGENT").utf8();
+	CharString da_args = Platform::get_singleton()->get_environment("GODOT_MONO_DEBUGGER_AGENT").utf8();
 
 	if (da_args.length()) {
-		OS::get_singleton()->set_environment("GODOT_MONO_DEBUGGER_AGENT", String());
+		Platform::get_singleton()->set_environment("GODOT_MONO_DEBUGGER_AGENT", String());
 	}
 
 #ifdef TOOLS_ENABLED
@@ -217,7 +217,7 @@ void GDMono::add_mono_shared_libs_dir_to_path() {
 
 #if defined(WINDOWS_ENABLED) || defined(UNIX_ENABLED)
 	String path_var("PATH");
-	String path_value = OS::get_singleton()->get_environment(path_var);
+	String path_value = Platform::get_singleton()->get_environment(path_var);
 
 #ifdef WINDOWS_ENABLED
 	path_value += ';';
@@ -245,7 +245,7 @@ void GDMono::add_mono_shared_libs_dir_to_path() {
 	}
 #endif // WINDOWS_ENABLED
 
-	OS::get_singleton()->set_environment(path_var, path_value);
+	Platform::get_singleton()->set_environment(path_var, path_value);
 #endif // WINDOWS_ENABLED || UNIX_ENABLED
 }
 
@@ -368,8 +368,8 @@ void GDMono::initialize() {
 
 #if !defined(NO_MONO_THREADS_SUSPEND_WORKAROUND)
 	// FIXME: Temporary workaround. See: https://github.com/godotengine/godot/issues/29812
-	if (!OS::get_singleton()->has_environment("MONO_THREADS_SUSPEND")) {
-		OS::get_singleton()->set_environment("MONO_THREADS_SUSPEND", "preemptive");
+	if (!Platform::get_singleton()->has_environment("MONO_THREADS_SUSPEND")) {
+		Platform::get_singleton()->set_environment("MONO_THREADS_SUSPEND", "preemptive");
 	}
 #endif
 
@@ -432,7 +432,7 @@ void GDMono::initialize_load_assemblies() {
 	// The game may not be using .NET at all, or if the project does use .NET and
 	// we're running in the editor, it may just happen to be it wasn't built yet.
 	if (!_load_project_assembly()) {
-		if (OS::get_singleton()->is_stdout_verbose()) {
+		if (Platform::get_singleton()->is_stdout_verbose()) {
 			print_error("Mono: Failed to load project assembly");
 		}
 	}
@@ -877,7 +877,7 @@ bool GDMono::_load_editor_api_assembly(LoadedApiAssembly &r_loaded_api_assembly,
 bool GDMono::_try_load_api_assemblies(LoadedApiAssembly &r_core_api_assembly, LoadedApiAssembly &r_editor_api_assembly,
 		const String &p_config, bool p_refonly, CoreApiAssemblyLoadedCallback p_callback) {
 	if (!_load_core_api_assembly(r_core_api_assembly, p_config, p_refonly)) {
-		if (OS::get_singleton()->is_stdout_verbose()) {
+		if (Platform::get_singleton()->is_stdout_verbose()) {
 			print_error("Mono: Failed to load Core API assembly");
 		}
 		return false;
@@ -885,7 +885,7 @@ bool GDMono::_try_load_api_assemblies(LoadedApiAssembly &r_core_api_assembly, Lo
 
 #ifdef TOOLS_ENABLED
 	if (!_load_editor_api_assembly(r_editor_api_assembly, p_config, p_refonly)) {
-		if (OS::get_singleton()->is_stdout_verbose()) {
+		if (Platform::get_singleton()->is_stdout_verbose()) {
 			print_error("Mono: Failed to load Editor API assembly");
 		}
 		return false;
@@ -997,7 +997,7 @@ bool GDMono::_load_project_assembly() {
 	}
 
 	String appname = ProjectSettings::get_singleton()->get("application/config/name");
-	String appname_safe = OS::get_singleton()->get_safe_dir_name(appname);
+	String appname_safe = Platform::get_singleton()->get_safe_dir_name(appname);
 	if (appname_safe.is_empty()) {
 		appname_safe = "UnnamedProject";
 	}

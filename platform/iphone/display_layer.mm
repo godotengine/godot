@@ -33,7 +33,7 @@
 #include "core/os/keyboard.h"
 #include "display_server_iphone.h"
 #include "main/main.h"
-#include "os_iphone.h"
+#include "platform_iphone.h"
 #include "servers/audio_server.h"
 
 #import <AudioToolbox/AudioServices.h>
@@ -153,14 +153,14 @@
 		return NO;
 	}
 
-	//    if (OS::get_singleton()) {
-	//        OS::VideoMode vm;
+	//    if (Platform::get_singleton()) {
+	//        Platform::VideoMode vm;
 	//        vm.fullscreen = true;
 	//        vm.width = backingWidth;
 	//        vm.height = backingHeight;
 	//        vm.resizable = false;
-	//        OS::get_singleton()->set_video_mode(vm);
-	//        OSIPhone::get_singleton()->set_base_framebuffer(viewFramebuffer);
+	//        Platform::get_singleton()->set_video_mode(vm);
+	//        PlatformIPhone::get_singleton()->set_base_framebuffer(viewFramebuffer);
 	//    };
 	//    gl_view_base_fb = viewFramebuffer;
 

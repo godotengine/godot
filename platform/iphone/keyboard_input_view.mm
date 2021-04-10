@@ -32,7 +32,7 @@
 
 #include "core/os/keyboard.h"
 #include "display_server_iphone.h"
-#include "os_iphone.h"
+#include "platform_iphone.h"
 
 @interface GodotKeyboardInputView () <UITextViewDelegate>
 

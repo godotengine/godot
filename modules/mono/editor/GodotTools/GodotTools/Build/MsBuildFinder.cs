@@ -8,7 +8,7 @@ using Directory = System.IO.Directory;
 using Environment = System.Environment;
 using File = System.IO.File;
 using Path = System.IO.Path;
-using OS = GodotTools.Utils.OS;
+using Platform = GodotTools.Utils.Platform;
 
 namespace GodotTools.Build
 {
@@ -22,13 +22,13 @@ namespace GodotTools.Build
             var editorSettings = GodotSharpEditor.Instance.GetEditorInterface().GetEditorSettings();
             var buildTool = (BuildTool)editorSettings.GetSetting("mono/builds/build_tool");
 
-            if (OS.IsWindows)
+            if (Platform.IsWindows)
             {
                 switch (buildTool)
                 {
                     case BuildTool.DotnetCli:
                     {
-                        string dotnetCliPath = OS.PathWhich("dotnet");
+                        string dotnetCliPath = Platform.PathWhich("dotnet");
                         if (!string.IsNullOrEmpty(dotnetCliPath))
                             return (dotnetCliPath, BuildTool.DotnetCli);
                         GD.PushError($"Cannot find executable for '{BuildManager.PropNameDotnetCli}'. Fallback to MSBuild from Visual Studio.");
@@ -80,7 +80,7 @@ namespace GodotTools.Build
                 }
             }
 
-            if (OS.IsUnixLike)
+            if (Platform.IsUnixLike)
             {
                 switch (buildTool)
                 {
@@ -119,7 +119,7 @@ namespace GodotTools.Build
             {
                 var result = new List<string>();
 
-                if (OS.IsMacOS)
+                if (Platform.IsMacOS)
                 {
                     result.Add("/Library/Frameworks/Mono.framework/Versions/Current/bin/");
                     result.Add("/opt/local/bin/");
@@ -137,12 +137,12 @@ namespace GodotTools.Build
 
         private static string FindBuildEngineOnUnix(string name)
         {
-            string ret = OS.PathWhich(name);
+            string ret = Platform.PathWhich(name);
 
             if (!string.IsNullOrEmpty(ret))
                 return ret;
 
-            string retFallback = OS.PathWhich($"{name}.exe");
+            string retFallback = Platform.PathWhich($"{name}.exe");
 
             if (!string.IsNullOrEmpty(retFallback))
                 return retFallback;
@@ -160,7 +160,7 @@ namespace GodotTools.Build
 
         private static string FindMsBuildToolsPathOnWindows()
         {
-            if (!OS.IsWindows)
+            if (!Platform.IsWindows)
                 throw new PlatformNotSupportedException();
 
             // Try to find 15.0 with vswhere
@@ -184,7 +184,7 @@ namespace GodotTools.Build
             var vsWhereArgs = new[] {"-latest", "-products", "*", "-requires", "Microsoft.Component.MSBuild"};
 
             var outputArray = new Godot.Collections.Array<string>();
-            int exitCode = Godot.OS.Execute(vsWherePath, vsWhereArgs,
+            int exitCode = Godot.Platform.Execute(vsWherePath, vsWhereArgs,
                 output: (Godot.Collections.Array)outputArray);
 
             if (exitCode != 0)

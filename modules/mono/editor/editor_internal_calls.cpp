@@ -34,7 +34,7 @@
 #include <unistd.h> // access
 #endif
 
-#include "core/os/os.h"
+#include "core/os/platform.h"
 #include "core/version.h"
 #include "editor/debugger/editor_debugger_node.h"
 #include "editor/editor_node.h"
@@ -312,7 +312,7 @@ MonoString *godot_icall_Globals_TTR(MonoString *p_text) {
 }
 
 MonoString *godot_icall_Utils_OS_GetPlatformName() {
-	String os_name = OS::get_singleton()->get_name();
+	String os_name = Platform::get_singleton()->get_name();
 	return GDMonoMarshal::mono_string_from_godot(os_name);
 }
 

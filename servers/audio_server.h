@@ -33,7 +33,7 @@
 
 #include "core/math/audio_frame.h"
 #include "core/object/class_db.h"
-#include "core/os/os.h"
+#include "core/os/platform.h"
 #include "core/variant/variant.h"
 #include "servers/audio/audio_effect.h"
 
@@ -62,8 +62,8 @@ protected:
 	void input_buffer_write(int32_t sample);
 
 #ifdef DEBUG_ENABLED
-	_FORCE_INLINE_ void start_counting_ticks() { prof_ticks = OS::get_singleton()->get_ticks_usec(); }
-	_FORCE_INLINE_ void stop_counting_ticks() { prof_time += OS::get_singleton()->get_ticks_usec() - prof_ticks; }
+	_FORCE_INLINE_ void start_counting_ticks() { prof_ticks = Platform::get_singleton()->get_ticks_usec(); }
+	_FORCE_INLINE_ void stop_counting_ticks() { prof_time += Platform::get_singleton()->get_ticks_usec() - prof_ticks; }
 #else
 	_FORCE_INLINE_ void start_counting_ticks() {}
 	_FORCE_INLINE_ void stop_counting_ticks() {}

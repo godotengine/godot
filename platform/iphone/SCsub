@@ -4,7 +4,7 @@ Import("env")
 
 iphone_lib = [
     "godot_iphone.mm",
-    "os_iphone.mm",
+    "platform_iphone.mm",
     "main.m",
     "app_delegate.mm",
     "view_controller.mm",

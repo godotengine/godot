@@ -30,13 +30,13 @@
 
 #include "core/string/ustring.h"
 #include "main/main.h"
-#include "os_iphone.h"
+#include "platform_iphone.h"
 
 #include <stdio.h>
 #include <string.h>
 #include <unistd.h>
 
-static OSIPhone *os = nullptr;
+static PlatformIPhone *platform = nullptr;
 
 int add_path(int, char **);
 int add_cmdline(int, char **);
@@ -95,7 +95,7 @@ int iphone_main(int argc, char **argv, String data_dir) {
 	char cwd[512];
 	getcwd(cwd, sizeof(cwd));
 	printf("cwd %s\n", cwd);
-	os = new OSIPhone(data_dir);
+	platform = new PlatformIPhone(data_dir);
 
 	// We must override main when testing is enabled
 	TEST_MAIN_OVERRIDE
@@ -108,7 +108,7 @@ int iphone_main(int argc, char **argv, String data_dir) {
 	argc = add_path(argc, fargv);
 	argc = add_cmdline(argc, fargv);
 
-	printf("os created\n");
+	printf("platform created\n");
 
 	Error err = Main::setup(fargv[0], argc - 1, &fargv[1], false);
 	printf("setup %i\n", err);
@@ -116,7 +116,7 @@ int iphone_main(int argc, char **argv, String data_dir) {
 		return 255;
 	}
 
-	os->initialize_modules();
+	platform->initialize_modules();
 
 	return 0;
 };
@@ -124,5 +124,5 @@ int iphone_main(int argc, char **argv, String data_dir) {
 void iphone_finish() {
 	printf("iphone_finish\n");
 	Main::cleanup();
-	delete os;
+	delete platform;
 };

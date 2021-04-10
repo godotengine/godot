@@ -32,7 +32,7 @@
 #define THREADED_ARRAY_PROCESSOR_H
 
 #include "core/os/mutex.h"
-#include "core/os/os.h"
+#include "core/os/platform.h"
 #include "core/os/thread.h"
 #include "core/os/thread_safe.h"
 #include "core/templates/safe_refcount.h"
@@ -74,7 +74,7 @@ void thread_process_array(uint32_t p_elements, C *p_instance, M p_method, U p_us
 	data.elements = p_elements;
 	data.process(0); //process first, let threads increment for next
 
-	int thread_count = OS::get_singleton()->get_processor_count();
+	int thread_count = Platform::get_singleton()->get_processor_count();
 	Thread *threads = memnew_arr(Thread, thread_count);
 
 	for (int i = 0; i < thread_count; i++) {

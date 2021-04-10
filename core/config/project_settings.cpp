@@ -39,7 +39,7 @@
 #include "core/os/dir_access.h"
 #include "core/os/file_access.h"
 #include "core/os/keyboard.h"
-#include "core/os/os.h"
+#include "core/os/platform.h"
 #include "core/variant/variant_parser.h"
 
 #include <zlib.h>
@@ -153,7 +153,7 @@ String ProjectSettings::globalize_path(const String &p_path) const {
 		}
 		return p_path.replace("res://", "");
 	} else if (p_path.begins_with("user://")) {
-		String data_dir = OS::get_singleton()->get_user_data_dir();
+		String data_dir = Platform::get_singleton()->get_user_data_dir();
 		if (data_dir != "") {
 			return p_path.replace("user:/", data_dir);
 		}
@@ -191,7 +191,7 @@ bool ProjectSettings::_set(const StringName &p_name, const Variant &p_value) {
 				bool override_valid = false;
 				for (int i = 1; i < s.size(); i++) {
 					String feature = s[i].strip_edges();
-					if (OS::get_singleton()->has_feature(feature) || custom_features.has(feature)) {
+					if (Platform::get_singleton()->has_feature(feature) || custom_features.has(feature)) {
 						override_valid = true;
 						break;
 					}
@@ -352,7 +352,7 @@ void ProjectSettings::_convert_to_last_version(int p_from_version) {
  *      appending '.pck' to the binary name (e.g. 'linux_game' -> 'linux_game.pck').
  *    o PCK with the same basename as the binary in the current working directory.
  *      Same as above for the two possible PCK file names.
- *  - On relevant platforms (Android/iOS), lookup project file in OS resource path.
+ *  - On relevant platforms (Android/iOS), lookup project file in platform resource path.
  *    If found, load it or fail.
  *  - Lookup project file in passed `p_path` (--path passed by the user), i.e. we
  *    are running from source code.
@@ -389,7 +389,7 @@ Error ProjectSettings::_setup(const String &p_path, const String &p_main_pack, b
 		return err;
 	}
 
-	String exec_path = OS::get_singleton()->get_executable_path();
+	String exec_path = Platform::get_singleton()->get_executable_path();
 
 	if (exec_path != "") {
 		// We do several tests sequentially until one succeeds to find a PCK,
@@ -404,7 +404,7 @@ Error ProjectSettings::_setup(const String &p_path, const String &p_main_pack, b
 		String exec_filename = exec_path.get_file();
 		String exec_basename = exec_filename.get_basename();
 
-		// Based on the OS, it can be the exec path + '.pck' (Linux w/o extension, macOS in .app bundle)
+		// Based on the platform, it can be the exec path + '.pck' (Linux w/o extension, macOS in .app bundle)
 		// or the exec path's basename + '.pck' (Windows).
 		// We need to test both possibilities as extensions for Linux binaries are optional
 		// (so both 'mygame.bin' and 'mygame' should be able to find 'mygame.pck').
@@ -412,7 +412,7 @@ Error ProjectSettings::_setup(const String &p_path, const String &p_main_pack, b
 #ifdef OSX_ENABLED
 		if (!found) {
 			// Attempt to load PCK from macOS .app bundle resources.
-			found = _load_resource_pack(OS::get_singleton()->get_bundle_resource_dir().plus_file(exec_basename + ".pck")) || _load_resource_pack(OS::get_singleton()->get_bundle_resource_dir().plus_file(exec_filename + ".pck"));
+			found = _load_resource_pack(Platform::get_singleton()->get_bundle_resource_dir().plus_file(exec_basename + ".pck")) || _load_resource_pack(Platform::get_singleton()->get_bundle_resource_dir().plus_file(exec_filename + ".pck"));
 		}
 #endif
 
@@ -440,13 +440,13 @@ Error ProjectSettings::_setup(const String &p_path, const String &p_main_pack, b
 		}
 	}
 
-	// Try to use the filesystem for files, according to OS.
+	// Try to use the filesystem for files, according to platform.
 	// (Only Android -when reading from pck- and iOS use this.)
 
-	if (OS::get_singleton()->get_resource_dir() != "") {
-		// OS will call ProjectSettings->get_resource_path which will be empty if not overridden!
-		// If the OS would rather use a specific location, then it will not be empty.
-		resource_path = OS::get_singleton()->get_resource_dir().replace("\\", "/");
+	if (Platform::get_singleton()->get_resource_dir() != "") {
+		// Platform will call ProjectSettings->get_resource_path which will be empty if not overridden!
+		// If the platform would rather use a specific location, then it will not be empty.
+		resource_path = Platform::get_singleton()->get_resource_dir().replace("\\", "/");
 		if (resource_path != "" && resource_path[resource_path.length() - 1] == '/') {
 			resource_path = resource_path.substr(0, resource_path.length() - 1); // Chop end.
 		}

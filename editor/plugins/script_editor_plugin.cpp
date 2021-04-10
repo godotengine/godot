@@ -35,7 +35,7 @@
 #include "core/io/resource_loader.h"
 #include "core/os/file_access.h"
 #include "core/os/keyboard.h"
-#include "core/os/os.h"
+#include "core/os/platform.h"
 #include "editor/debugger/editor_debugger_node.h"
 #include "editor/editor_node.h"
 #include "editor/editor_run_script.h"
@@ -249,7 +249,7 @@ public:
 
 		Map<String, Cache>::Element *I = cached.front();
 		while (I) {
-			if ((OS::get_singleton()->get_ticks_msec() - I->get().time_loaded) > max_time_cache) {
+			if ((Platform::get_singleton()->get_ticks_msec() - I->get().time_loaded) > max_time_cache) {
 				to_clean.push_back(I);
 			}
 			I = I->next();
@@ -269,7 +269,7 @@ public:
 			E = cached.insert(p_path, c);
 		}
 
-		E->get().time_loaded = OS::get_singleton()->get_ticks_msec();
+		E->get().time_loaded = Platform::get_singleton()->get_ticks_msec();
 
 		if (cached.size() > max_cache_size) {
 			uint64_t older;
@@ -1196,7 +1196,7 @@ void ScriptEditor::_menu_option(int p_option) {
 			help_search_dialog->popup_dialog();
 		} break;
 		case SEARCH_WEBSITE: {
-			OS::get_singleton()->shell_open("https://docs.godotengine.org/");
+			Platform::get_singleton()->shell_open("https://docs.godotengine.org/");
 		} break;
 		case WINDOW_NEXT: {
 			_history_forward();
@@ -2211,7 +2211,7 @@ bool ScriptEditor::edit(const RES &p_resource, int p_line, int p_col, bool p_gra
 			args.push_back(script_path);
 		}
 
-		Error err = OS::get_singleton()->create_process(path, args);
+		Error err = Platform::get_singleton()->create_process(path, args);
 		if (err == OK) {
 			return false;
 		}

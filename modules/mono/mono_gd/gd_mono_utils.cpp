@@ -38,7 +38,7 @@
 #include "core/object/reference.h"
 #include "core/os/dir_access.h"
 #include "core/os/mutex.h"
-#include "core/os/os.h"
+#include "core/os/platform.h"
 
 #ifdef TOOLS_ENABLED
 #include "editor/debugger/editor_debugger_node.h"

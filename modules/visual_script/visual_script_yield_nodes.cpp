@@ -30,7 +30,7 @@
 
 #include "visual_script_yield_nodes.h"
 
-#include "core/os/os.h"
+#include "core/os/platform.h"
 #include "scene/main/node.h"
 #include "scene/main/scene_tree.h"
 #include "visual_script_nodes.h"
@@ -105,7 +105,7 @@ public:
 		} else {
 			//yield
 
-			SceneTree *tree = Object::cast_to<SceneTree>(OS::get_singleton()->get_main_loop());
+			SceneTree *tree = Object::cast_to<SceneTree>(Platform::get_singleton()->get_main_loop());
 			if (!tree) {
 				r_error_str = "Main Loop is not SceneTree";
 				r_error.error = Callable::CallError::CALL_ERROR_INVALID_METHOD;
@@ -249,7 +249,7 @@ Node *VisualScriptYieldSignal::_get_base_node() const {
 		return nullptr;
 	}
 
-	MainLoop *main_loop = OS::get_singleton()->get_main_loop();
+	MainLoop *main_loop = Platform::get_singleton()->get_main_loop();
 	SceneTree *scene_tree = Object::cast_to<SceneTree>(main_loop);
 
 	if (!scene_tree) {

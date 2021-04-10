@@ -713,7 +713,7 @@
 		</method>
 		<method name="push_error" qualifiers="vararg">
 			<description>
-				Pushes an error message to Godot's built-in debugger and to the OS terminal.
+				Pushes an error message to Godot's built-in debugger and to the platform terminal.
 				[codeblock]
 				push_error("test error") # Prints "test error" to debugger and terminal as error call
 				[/codeblock]
@@ -722,7 +722,7 @@
 		</method>
 		<method name="push_warning" qualifiers="vararg">
 			<description>
-				Pushes a warning message to Godot's built-in debugger and to the OS terminal.
+				Pushes a warning message to Godot's built-in debugger and to the platform terminal.
 				[codeblock]
 				push_warning("test warning") # Prints "test warning" to debugger and terminal as warning call
 				[/codeblock]
@@ -1209,9 +1209,6 @@
 		<member name="NavigationServer3D" type="NavigationServer3D" setter="" getter="">
 			The [NavigationServer2D] singleton.
 		</member>
-		<member name="OS" type="OS" setter="" getter="">
-			The [OS] singleton.
-		</member>
 		<member name="Performance" type="Performance" setter="" getter="">
 			The [Performance] singleton.
 		</member>
@@ -1220,6 +1217,9 @@
 		</member>
 		<member name="PhysicsServer3D" type="PhysicsServer3D" setter="" getter="">
 			The [PhysicsServer3D] singleton.
+		</member>
+		<member name="Platform" type="Platform" setter="" getter="">
+			The [Platform] singleton.
 		</member>
 		<member name="ProjectSettings" type="ProjectSettings" setter="" getter="">
 			The [ProjectSettings] singleton.

@@ -34,7 +34,7 @@ namespace GodotTools.Build
         {
             get
             {
-                if (OS.IsWindows)
+                if (Platform.IsWindows)
                 {
                     return (BuildTool)EditorSettings.GetSetting("mono/builds/build_tool")
                            == BuildTool.MsBuildMono;
@@ -57,7 +57,7 @@ namespace GodotTools.Build
 
             string launchMessage = $"Running: \"{startInfo.FileName}\" {startInfo.Arguments}";
             stdOutHandler?.Invoke(launchMessage);
-            if (Godot.OS.IsStdoutVerbose())
+            if (Godot.Platform.IsStdoutVerbose())
                 Console.WriteLine(launchMessage);
 
             startInfo.RedirectStandardOutput = true;

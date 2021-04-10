@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  os_android.h                                                         */
+/*  platform_android.h                                                   */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,13 +28,13 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef OS_ANDROID_H
-#define OS_ANDROID_H
+#ifndef PLATFORM_ANDROID_H
+#define PLATFORM_ANDROID_H
 
 #include "audio_driver_jandroid.h"
 #include "audio_driver_opensl.h"
 #include "core/os/main_loop.h"
-#include "drivers/unix/os_unix.h"
+#include "drivers/unix/platform_unix.h"
 #include "servers/audio_server.h"
 
 class GodotJavaWrapper;
@@ -42,7 +42,7 @@ class GodotIOJavaWrapper;
 
 struct ANativeWindow;
 
-class OS_Android : public OS_Unix {
+class PlatformAndroid : public PlatformUnix {
 private:
 	Size2i display_size;
 
@@ -80,7 +80,7 @@ public:
 
 	typedef int64_t ProcessID;
 
-	static OS_Android *get_singleton();
+	static PlatformAndroid *get_singleton();
 	GodotJavaWrapper *get_godot_java();
 	GodotIOJavaWrapper *get_godot_io_java();
 
@@ -122,8 +122,8 @@ public:
 	void vibrate_handheld(int p_duration_ms) override;
 
 	virtual bool _check_internal_feature_support(const String &p_feature) override;
-	OS_Android(GodotJavaWrapper *p_godot_java, GodotIOJavaWrapper *p_godot_io_java, bool p_use_apk_expansion);
-	~OS_Android();
+	PlatformAndroid(GodotJavaWrapper *p_godot_java, GodotIOJavaWrapper *p_godot_io_java, bool p_use_apk_expansion);
+	~PlatformAndroid();
 };
 
-#endif
+#endif // PLATFORM_ANDROID_H

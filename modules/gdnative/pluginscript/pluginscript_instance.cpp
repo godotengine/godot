@@ -31,7 +31,7 @@
 #include "pluginscript_instance.h"
 
 // Godot imports
-#include "core/os/os.h"
+#include "core/os/platform.h"
 #include "core/variant/variant.h"
 
 // PluginScript imports

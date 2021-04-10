@@ -32,7 +32,7 @@
 
 #include "core/input/input.h"
 #include "core/input/input_map.h"
-#include "core/os/os.h"
+#include "core/os/platform.h"
 #include "scene/main/window.h"
 #
 void TouchScreenButton::set_texture(const Ref<Texture2D> &p_texture) {

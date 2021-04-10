@@ -109,7 +109,7 @@ namespace GodotTools.Ides.Rider
             args.Add(scriptPath);
             try
             {
-                Utils.OS.RunProcess(path, args);
+                Utils.Platform.RunProcess(path, args);
             }
             catch (Exception e)
             {

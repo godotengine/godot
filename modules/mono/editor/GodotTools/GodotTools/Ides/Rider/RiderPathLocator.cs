@@ -10,7 +10,7 @@ using Directory = System.IO.Directory;
 using Environment = System.Environment;
 using File = System.IO.File;
 using Path = System.IO.Path;
-using OS = GodotTools.Utils.OS;
+using Platform = GodotTools.Utils.Platform;
 // ReSharper disable UnassignedField.Local
 // ReSharper disable InconsistentNaming
 // ReSharper disable UnassignedField.Global
@@ -28,19 +28,19 @@ namespace GodotTools.Ides.Rider
         {
             try
             {
-                if (OS.IsWindows)
+                if (Platform.IsWindows)
                 {
                     return CollectRiderInfosWindows();
                 }
-                if (OS.IsMacOS)
+                if (Platform.IsMacOS)
                 {
                     return CollectRiderInfosMac();
                 }
-                if (OS.IsUnixLike)
+                if (Platform.IsUnixLike)
                 {
                     return CollectAllRiderPathsLinux();
                 }
-                throw new Exception("Unexpected OS.");
+                throw new Exception("Unexpected Platform.");
             }
             catch (Exception e)
             {
@@ -132,13 +132,13 @@ namespace GodotTools.Ides.Rider
 
         private static string GetToolboxBaseDir()
         {
-            if (OS.IsWindows)
+            if (Platform.IsWindows)
             {
                 var localAppData = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
                 return GetToolboxRiderRootPath(localAppData);
             }
 
-            if (OS.IsMacOS)
+            if (Platform.IsMacOS)
             {
                 var home = Environment.GetEnvironmentVariable("HOME");
                 if (string.IsNullOrEmpty(home))
@@ -147,7 +147,7 @@ namespace GodotTools.Ides.Rider
                 return GetToolboxRiderRootPath(localAppData);
             }
 
-            if (OS.IsUnixLike)
+            if (Platform.IsUnixLike)
             {
                 var home = Environment.GetEnvironmentVariable("HOME");
                 if (string.IsNullOrEmpty(home))
@@ -209,11 +209,11 @@ namespace GodotTools.Ides.Rider
 
         private static string GetRelativePathToBuildTxt()
         {
-            if (OS.IsWindows || OS.IsUnixLike)
+            if (Platform.IsWindows || Platform.IsUnixLike)
                 return "../../build.txt";
-            if (OS.IsMacOS)
+            if (Platform.IsMacOS)
                 return "Contents/Resources/build.txt";
-            throw new Exception("Unknown OS.");
+            throw new Exception("Unknown Platform.");
         }
 
         private static void CollectPathsFromRegistry(string registryKey, List<string> installPaths)

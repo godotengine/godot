@@ -31,7 +31,7 @@
 #include "performance.h"
 
 #include "core/object/message_queue.h"
-#include "core/os/os.h"
+#include "core/os/platform.h"
 #include "scene/main/node.h"
 #include "scene/main/scene_tree.h"
 #include "servers/audio_server.h"
@@ -82,7 +82,7 @@ void Performance::_bind_methods() {
 }
 
 float Performance::_get_node_count() const {
-	MainLoop *ml = OS::get_singleton()->get_main_loop();
+	MainLoop *ml = Platform::get_singleton()->get_main_loop();
 	SceneTree *sml = Object::cast_to<SceneTree>(ml);
 	if (!sml) {
 		return 0;
@@ -238,13 +238,13 @@ void Performance::set_physics_process_time(float p_pt) {
 void Performance::add_custom_monitor(const StringName &p_id, const Callable &p_callable, const Vector<Variant> &p_args) {
 	ERR_FAIL_COND_MSG(has_custom_monitor(p_id), "Custom monitor with id '" + String(p_id) + "' already exists.");
 	_monitor_map.insert(p_id, MonitorCall(p_callable, p_args));
-	_monitor_modification_time = OS::get_singleton()->get_ticks_usec();
+	_monitor_modification_time = Platform::get_singleton()->get_ticks_usec();
 }
 
 void Performance::remove_custom_monitor(const StringName &p_id) {
 	ERR_FAIL_COND_MSG(!has_custom_monitor(p_id), "Custom monitor with id '" + String(p_id) + "' doesn't exists.");
 	_monitor_map.erase(p_id);
-	_monitor_modification_time = OS::get_singleton()->get_ticks_usec();
+	_monitor_modification_time = Platform::get_singleton()->get_ticks_usec();
 }
 
 bool Performance::has_custom_monitor(const StringName &p_id) {

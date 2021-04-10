@@ -5,7 +5,7 @@ import sys
 Import("env")
 
 common_server = [
-    "os_server.cpp",
+    "platform_server.cpp",
 ]
 
 if sys.platform == "darwin":

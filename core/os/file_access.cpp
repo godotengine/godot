@@ -34,7 +34,7 @@
 #include "core/crypto/crypto_core.h"
 #include "core/io/file_access_pack.h"
 #include "core/io/marshalls.h"
-#include "core/os/os.h"
+#include "core/os/platform.h"
 
 FileAccess::CreateFunc FileAccess::create_func[ACCESS_MAX] = { nullptr, nullptr };
 
@@ -137,7 +137,7 @@ String FileAccess::fix_path(const String &p_path) const {
 		} break;
 		case ACCESS_USERDATA: {
 			if (r_path.begins_with("user://")) {
-				String data_dir = OS::get_singleton()->get_user_data_dir();
+				String data_dir = Platform::get_singleton()->get_user_data_dir();
 				if (data_dir != "") {
 					return r_path.replace("user:/", data_dir);
 				}

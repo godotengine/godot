@@ -33,7 +33,7 @@
 #include "core/config/project_settings.h"
 #include "core/input/default_controller_mappings.h"
 #include "core/input/input_map.h"
-#include "core/os/os.h"
+#include "core/os/platform.h"
 
 #ifdef TOOLS_ENABLED
 #include "editor/editor_settings.h"
@@ -187,7 +187,7 @@ void Input::get_argument_options(const StringName &p_function, int p_idx, List<S
 }
 
 void Input::SpeedTrack::update(const Vector2 &p_delta_p) {
-	uint64_t tick = OS::get_singleton()->get_ticks_usec();
+	uint64_t tick = Platform::get_singleton()->get_ticks_usec();
 	uint32_t tdiff = tick - last_tick;
 	float delta_t = tdiff / 1000000.0;
 	last_tick = tick;
@@ -210,7 +210,7 @@ void Input::SpeedTrack::update(const Vector2 &p_delta_p) {
 }
 
 void Input::SpeedTrack::reset() {
-	last_tick = OS::get_singleton()->get_ticks_usec();
+	last_tick = Platform::get_singleton()->get_ticks_usec();
 	speed = Vector2();
 	accum_t = 0;
 }
@@ -533,7 +533,7 @@ void Input::_parse_input_event_impl(const Ref<InputEvent> &p_event, bool p_is_em
 			SpeedTrack &track = touch_speed_track[st->get_index()];
 			track.reset();
 		} else {
-			// Since a pointer index may not occur again (OSs may or may not reuse them),
+			// Since a pointer index may not occur again (platforms may or may not reuse them),
 			// imperatively remove it from the map to keep no fossil entries in it
 			touch_speed_track.erase(st->get_index());
 		}
@@ -658,7 +658,7 @@ void Input::start_joy_vibration(int p_device, float p_weak_magnitude, float p_st
 	vibration.weak_magnitude = p_weak_magnitude;
 	vibration.strong_magnitude = p_strong_magnitude;
 	vibration.duration = p_duration;
-	vibration.timestamp = OS::get_singleton()->get_ticks_usec();
+	vibration.timestamp = Platform::get_singleton()->get_ticks_usec();
 	joy_vibration[p_device] = vibration;
 }
 
@@ -668,12 +668,12 @@ void Input::stop_joy_vibration(int p_device) {
 	vibration.weak_magnitude = 0;
 	vibration.strong_magnitude = 0;
 	vibration.duration = 0;
-	vibration.timestamp = OS::get_singleton()->get_ticks_usec();
+	vibration.timestamp = Platform::get_singleton()->get_ticks_usec();
 	joy_vibration[p_device] = vibration;
 }
 
 void Input::vibrate_handheld(int p_duration_ms) {
-	OS::get_singleton()->vibrate_handheld(p_duration_ms);
+	Platform::get_singleton()->vibrate_handheld(p_duration_ms);
 }
 
 void Input::set_gravity(const Vector3 &p_gravity) {
@@ -714,7 +714,7 @@ Point2 Input::get_last_mouse_speed() const {
 }
 
 int Input::get_mouse_button_mask() const {
-	return mouse_button_mask; // do not trust OS implementation, should remove it - OS::get_singleton()->get_mouse_button_state();
+	return mouse_button_mask; // do not trust platform implementation, should remove it - Platform::get_singleton()->get_mouse_button_state();
 }
 
 void Input::warp_mouse_position(const Vector2 &p_to) {
@@ -780,7 +780,7 @@ bool Input::is_emulating_touch_from_mouse() const {
 }
 
 // Calling this whenever the game window is focused helps unsticking the "touch mouse"
-// if the OS or its abstraction class hasn't properly reported that touch pointers raised
+// if the platform or its abstraction class hasn't properly reported that touch pointers raised
 void Input::ensure_touch_mouse_raised() {
 	if (mouse_from_touch_index != -1) {
 		mouse_from_touch_index = -1;
@@ -1410,7 +1410,7 @@ Input::Input() {
 	}
 
 	// If defined, parse SDL_GAMECONTROLLERCONFIG for possible new mappings/overrides.
-	String env_mapping = OS::get_singleton()->get_environment("SDL_GAMECONTROLLERCONFIG");
+	String env_mapping = Platform::get_singleton()->get_environment("SDL_GAMECONTROLLERCONFIG");
 	if (env_mapping != "") {
 		Vector<String> entries = env_mapping.split("\n");
 		for (int i = 0; i < entries.size(); i++) {

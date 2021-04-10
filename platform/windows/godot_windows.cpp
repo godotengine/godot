@@ -29,7 +29,7 @@
 /*************************************************************************/
 
 #include "main/main.h"
-#include "os_windows.h"
+#include "platform_windows.h"
 
 #include <locale.h>
 #include <stdio.h>
@@ -136,7 +136,7 @@ char *wc_to_utf8(const wchar_t *wc) {
 }
 
 int widechar_main(int argc, wchar_t **argv) {
-	OS_Windows os(nullptr);
+	PlatformWindows platform(nullptr);
 
 	setlocale(LC_CTYPE, "");
 
@@ -159,7 +159,7 @@ int widechar_main(int argc, wchar_t **argv) {
 	}
 
 	if (Main::start())
-		os.run();
+		platform.run();
 	Main::cleanup();
 
 	for (int i = 0; i < argc; ++i) {
@@ -167,7 +167,7 @@ int widechar_main(int argc, wchar_t **argv) {
 	}
 	delete[] argv_utf8;
 
-	return os.get_exit_code();
+	return platform.get_exit_code();
 };
 
 int _main() {

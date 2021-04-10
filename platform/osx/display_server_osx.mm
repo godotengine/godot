@@ -30,7 +30,7 @@
 
 #include "display_server_osx.h"
 
-#include "os_osx.h"
+#include "platform_osx.h"
 
 #include "core/io/marshalls.h"
 #include "core/math/geometry_2d.h"
@@ -203,14 +203,14 @@ static NSCursor *_cursorFromSelector(SEL selector, SEL fallback = nil) {
 }
 
 - (void)applicationDidResignActive:(NSNotification *)notification {
-	if (OS_OSX::get_singleton()->get_main_loop()) {
-		OS_OSX::get_singleton()->get_main_loop()->notification(MainLoop::NOTIFICATION_APPLICATION_FOCUS_OUT);
+	if (PlatformOSX::get_singleton()->get_main_loop()) {
+		PlatformOSX::get_singleton()->get_main_loop()->notification(MainLoop::NOTIFICATION_APPLICATION_FOCUS_OUT);
 	}
 }
 
 - (void)applicationDidBecomeActive:(NSNotification *)notification {
-	if (OS_OSX::get_singleton()->get_main_loop()) {
-		OS_OSX::get_singleton()->get_main_loop()->notification(MainLoop::NOTIFICATION_APPLICATION_FOCUS_IN);
+	if (PlatformOSX::get_singleton()->get_main_loop()) {
+		PlatformOSX::get_singleton()->get_main_loop()->notification(MainLoop::NOTIFICATION_APPLICATION_FOCUS_IN);
 	}
 }
 
@@ -247,16 +247,16 @@ static NSCursor *_cursorFromSelector(SEL selector, SEL fallback = nil) {
 - (BOOL)application:(NSApplication *)sender openFile:(NSString *)filename {
 	// Note: may be called called before main loop init!
 	char *utfs = strdup([filename UTF8String]);
-	((OS_OSX *)(OS_OSX::get_singleton()))->open_with_filename.parse_utf8(utfs);
+	((PlatformOSX *)(PlatformOSX::get_singleton()))->open_with_filename.parse_utf8(utfs);
 	free(utfs);
 
 #ifdef TOOLS_ENABLED
 	// Open new instance
-	if (OS_OSX::get_singleton()->get_main_loop()) {
+	if (PlatformOSX::get_singleton()->get_main_loop()) {
 		List<String> args;
-		args.push_back(((OS_OSX *)(OS_OSX::get_singleton()))->open_with_filename);
-		String exec = OS::get_singleton()->get_executable_path();
-		OS::get_singleton()->create_process(exec, args);
+		args.push_back(((PlatformOSX *)(PlatformOSX::get_singleton()))->open_with_filename);
+		String exec = Platform::get_singleton()->get_executable_path();
+		Platform::get_singleton()->create_process(exec, args);
 	}
 #endif
 	return YES;
@@ -268,8 +268,8 @@ static NSCursor *_cursorFromSelector(SEL selector, SEL fallback = nil) {
 }
 
 - (void)showAbout:(id)sender {
-	if (OS_OSX::get_singleton()->get_main_loop()) {
-		OS_OSX::get_singleton()->get_main_loop()->notification(MainLoop::NOTIFICATION_WM_ABOUT);
+	if (PlatformOSX::get_singleton()->get_main_loop()) {
+		PlatformOSX::get_singleton()->get_main_loop()->notification(MainLoop::NOTIFICATION_WM_ABOUT);
 	}
 }
 
@@ -437,7 +437,7 @@ static NSCursor *_cursorFromSelector(SEL selector, SEL fallback = nil) {
 		wd.rect_changed_callback.call((const Variant **)&sizep, 1, ret, ce);
 	}
 
-	if (OS_OSX::get_singleton()->get_main_loop()) {
+	if (PlatformOSX::get_singleton()->get_main_loop()) {
 		Main::force_redraw();
 		//Event retrieval blocks until resize is over. Call Main::iteration() directly.
 		if (!Main::is_iterating()) { //avoid cyclic loop
@@ -630,7 +630,7 @@ static const NSRange kEmptyRange = { NSNotFound, 0 };
 		DS_OSX->im_text.parse_utf8([[markedText mutableString] UTF8String]);
 		DS_OSX->im_selection = Point2i(selectedRange.location, selectedRange.length);
 
-		OS_OSX::get_singleton()->get_main_loop()->notification(MainLoop::NOTIFICATION_OS_IME_UPDATE);
+		PlatformOSX::get_singleton()->get_main_loop()->notification(MainLoop::NOTIFICATION_OS_IME_UPDATE);
 	}
 }
 
@@ -651,7 +651,7 @@ static const NSRange kEmptyRange = { NSNotFound, 0 };
 		DS_OSX->im_text = String();
 		DS_OSX->im_selection = Point2i();
 
-		OS_OSX::get_singleton()->get_main_loop()->notification(MainLoop::NOTIFICATION_OS_IME_UPDATE);
+		PlatformOSX::get_singleton()->get_main_loop()->notification(MainLoop::NOTIFICATION_OS_IME_UPDATE);
 	}
 }
 
@@ -2315,7 +2315,7 @@ float DisplayServerOSX::screen_get_scale(int p_screen) const {
 	if (p_screen == SCREEN_OF_MAIN_WINDOW) {
 		p_screen = window_get_current_screen();
 	}
-	if (OS::get_singleton()->is_hidpi_allowed()) {
+	if (Platform::get_singleton()->is_hidpi_allowed()) {
 		NSArray *screenArray = [NSScreen screens];
 		if ((NSUInteger)p_screen < [screenArray count]) {
 			if ([[screenArray objectAtIndex:p_screen] respondsToSelector:@selector(backingScaleFactor)]) {
@@ -2708,7 +2708,7 @@ void DisplayServerOSX::_set_window_per_pixel_transparency_enabled(bool p_enabled
 	ERR_FAIL_COND(!windows.has(p_window));
 	WindowData &wd = windows[p_window];
 
-	if (!OS_OSX::get_singleton()->is_layered_allowed()) {
+	if (!PlatformOSX::get_singleton()->is_layered_allowed()) {
 		return;
 	}
 	if (wd.layered_window != p_enabled) {

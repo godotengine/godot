@@ -33,7 +33,7 @@
 #include "drivers/coreaudio/audio_driver_coreaudio.h"
 #import "godot_view.h"
 #include "main/main.h"
-#include "os_iphone.h"
+#include "platform_iphone.h"
 #import "view_controller.h"
 
 #import <AVFoundation/AVFoundation.h>
@@ -103,17 +103,17 @@ static ViewController *mainViewController = nil;
 	if ([notification.name isEqualToString:AVAudioSessionInterruptionNotification]) {
 		if ([[notification.userInfo valueForKey:AVAudioSessionInterruptionTypeKey] isEqualToNumber:[NSNumber numberWithInt:AVAudioSessionInterruptionTypeBegan]]) {
 			NSLog(@"Audio interruption began");
-			OSIPhone::get_singleton()->on_focus_out();
+			PlatformIPhone::get_singleton()->on_focus_out();
 		} else if ([[notification.userInfo valueForKey:AVAudioSessionInterruptionTypeKey] isEqualToNumber:[NSNumber numberWithInt:AVAudioSessionInterruptionTypeEnded]]) {
 			NSLog(@"Audio interruption ended");
-			OSIPhone::get_singleton()->on_focus_in();
+			PlatformIPhone::get_singleton()->on_focus_in();
 		}
 	}
 };
 
 - (void)applicationDidReceiveMemoryWarning:(UIApplication *)application {
-	if (OS::get_singleton()->get_main_loop()) {
-		OS::get_singleton()->get_main_loop()->notification(MainLoop::NOTIFICATION_OS_MEMORY_WARNING);
+	if (Platform::get_singleton()->get_main_loop()) {
+		Platform::get_singleton()->get_main_loop()->notification(MainLoop::NOTIFICATION_OS_MEMORY_WARNING);
 	}
 };
 
@@ -132,11 +132,11 @@ static ViewController *mainViewController = nil;
 // notification panel by swiping from the upper part of the screen.
 
 - (void)applicationWillResignActive:(UIApplication *)application {
-	OSIPhone::get_singleton()->on_focus_out();
+	PlatformIPhone::get_singleton()->on_focus_out();
 }
 
 - (void)applicationDidBecomeActive:(UIApplication *)application {
-	OSIPhone::get_singleton()->on_focus_in();
+	PlatformIPhone::get_singleton()->on_focus_in();
 }
 
 - (void)dealloc {

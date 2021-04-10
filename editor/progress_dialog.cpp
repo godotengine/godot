@@ -31,7 +31,7 @@
 #include "progress_dialog.h"
 
 #include "core/object/message_queue.h"
-#include "core/os/os.h"
+#include "core/os/platform.h"
 #include "editor_scale.h"
 #include "main/main.h"
 #include "servers/display_server.h"
@@ -188,7 +188,7 @@ bool ProgressDialog::task_step(const String &p_task, const String &p_state, int 
 	ERR_FAIL_COND_V(!tasks.has(p_task), cancelled);
 
 	if (!p_force_redraw) {
-		uint64_t tus = OS::get_singleton()->get_ticks_usec();
+		uint64_t tus = Platform::get_singleton()->get_ticks_usec();
 		if (tus - last_progress_tick < 200000) { //200ms
 			return cancelled;
 		}
@@ -202,7 +202,7 @@ bool ProgressDialog::task_step(const String &p_task, const String &p_state, int 
 	}
 
 	t.state->set_text(p_state);
-	last_progress_tick = OS::get_singleton()->get_ticks_usec();
+	last_progress_tick = Platform::get_singleton()->get_ticks_usec();
 	if (cancel_hb->is_visible()) {
 		DisplayServer::get_singleton()->process_events();
 	}

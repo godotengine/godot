@@ -30,7 +30,7 @@
 
 #include "item_list.h"
 #include "core/config/project_settings.h"
-#include "core/os/os.h"
+#include "core/os/platform.h"
 #include "core/string/translation.h"
 
 void ItemList::_shape(int p_idx) {
@@ -649,7 +649,7 @@ void ItemList::_gui_input(const Ref<InputEvent> &p_event) {
 	if (p_event->is_pressed() && items.size() > 0) {
 		if (p_event->is_action("ui_up")) {
 			if (search_string != "") {
-				uint64_t now = OS::get_singleton()->get_ticks_msec();
+				uint64_t now = Platform::get_singleton()->get_ticks_msec();
 				uint64_t diff = now - search_time_msec;
 
 				if (diff < uint64_t(ProjectSettings::get_singleton()->get("gui/timers/incremental_search_max_interval_msec")) * 2) {
@@ -679,7 +679,7 @@ void ItemList::_gui_input(const Ref<InputEvent> &p_event) {
 			}
 		} else if (p_event->is_action("ui_down")) {
 			if (search_string != "") {
-				uint64_t now = OS::get_singleton()->get_ticks_msec();
+				uint64_t now = Platform::get_singleton()->get_ticks_msec();
 				uint64_t diff = now - search_time_msec;
 
 				if (diff < uint64_t(ProjectSettings::get_singleton()->get("gui/timers/incremental_search_max_interval_msec")) * 2) {
@@ -779,7 +779,7 @@ void ItemList::_gui_input(const Ref<InputEvent> &p_event) {
 			Ref<InputEventKey> k = p_event;
 
 			if (k.is_valid() && k->get_unicode()) {
-				uint64_t now = OS::get_singleton()->get_ticks_msec();
+				uint64_t now = Platform::get_singleton()->get_ticks_msec();
 				uint64_t diff = now - search_time_msec;
 				uint64_t max_interval = uint64_t(GLOBAL_DEF("gui/timers/incremental_search_max_interval_msec", 2000));
 				search_time_msec = now;

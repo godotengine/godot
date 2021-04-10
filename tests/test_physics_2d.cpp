@@ -31,7 +31,7 @@
 #include "test_physics_2d.h"
 
 #include "core/os/main_loop.h"
-#include "core/os/os.h"
+#include "core/os/platform.h"
 #include "core/string/print_string.h"
 #include "core/templates/map.h"
 #include "scene/resources/texture.h"

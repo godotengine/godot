@@ -31,7 +31,7 @@
 #include "crash_handler_windows.h"
 
 #include "core/config/project_settings.h"
-#include "core/os/os.h"
+#include "core/os/platform.h"
 #include "main/main.h"
 
 #ifdef CRASH_HANDLER_EXCEPTION
@@ -123,14 +123,14 @@ DWORD CrashHandlerException(EXCEPTION_POINTERS *ep) {
 	DWORD cbNeeded;
 	std::vector<HMODULE> module_handles(1);
 
-	if (OS::get_singleton() == nullptr || OS::get_singleton()->is_disable_crash_handler() || IsDebuggerPresent()) {
+	if (Platform::get_singleton() == nullptr || Platform::get_singleton()->is_disable_crash_handler() || IsDebuggerPresent()) {
 		return EXCEPTION_CONTINUE_SEARCH;
 	}
 
 	fprintf(stderr, "%s: Program crashed\n", __FUNCTION__);
 
-	if (OS::get_singleton()->get_main_loop())
-		OS::get_singleton()->get_main_loop()->notification(MainLoop::NOTIFICATION_CRASH);
+	if (Platform::get_singleton()->get_main_loop())
+		Platform::get_singleton()->get_main_loop()->notification(MainLoop::NOTIFICATION_CRASH);
 
 	// Load the symbols:
 	if (!SymInitialize(process, nullptr, false))

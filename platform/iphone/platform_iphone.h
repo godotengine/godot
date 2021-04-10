@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  os_linuxbsd.h                                                        */
+/*  platform_iphone.h                                                    */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,78 +28,97 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef OS_LINUXBSD_H
-#define OS_LINUXBSD_H
+#ifdef IPHONE_ENABLED
 
-#include "core/input/input.h"
-#include "crash_handler_linuxbsd.h"
-#include "drivers/alsa/audio_driver_alsa.h"
-#include "drivers/alsamidi/midi_driver_alsamidi.h"
-#include "drivers/pulseaudio/audio_driver_pulseaudio.h"
-#include "drivers/unix/os_unix.h"
-#include "joypad_linux.h"
+#ifndef PLATFORM_IPHONE_H
+#define PLATFORM_IPHONE_H
+
+#include "drivers/coreaudio/audio_driver_coreaudio.h"
+#include "drivers/unix/platform_unix.h"
+#include "ios.h"
+#include "joypad_iphone.h"
 #include "servers/audio_server.h"
 #include "servers/rendering/renderer_compositor.h"
-#include "servers/rendering_server.h"
 
-class OS_LinuxBSD : public OS_Unix {
-	virtual void delete_main_loop() override;
-
-	bool force_quit;
-
-#ifdef JOYDEV_ENABLED
-	JoypadLinux *joypad = nullptr;
+#if defined(VULKAN_ENABLED)
+#include "drivers/vulkan/rendering_device_vulkan.h"
+#include "platform/iphone/vulkan_context_iphone.h"
 #endif
 
-#ifdef ALSA_ENABLED
-	AudioDriverALSA driver_alsa;
-#endif
+extern void godot_ios_plugins_initialize();
+extern void godot_ios_plugins_deinitialize();
 
-#ifdef ALSAMIDI_ENABLED
-	MIDIDriverALSAMidi driver_alsamidi;
-#endif
+class PlatformIPhone : public PlatformUnix {
+private:
+	static HashMap<String, void *> dynamic_symbol_lookup_table;
+	friend void register_dynamic_symbol(char *name, void *address);
 
-#ifdef PULSEAUDIO_ENABLED
-	AudioDriverPulseAudio driver_pulseaudio;
-#endif
+	AudioDriverCoreAudio audio_driver;
 
-	CrashHandler crash_handler;
+	iOS *ios;
+
+	JoypadIPhone *joypad_iphone;
 
 	MainLoop *main_loop;
 
-protected:
+	virtual void initialize_core() override;
 	virtual void initialize() override;
-	virtual void finalize() override;
 
-	virtual void initialize_joypads() override;
+	virtual void initialize_joypads() override {
+	}
 
 	virtual void set_main_loop(MainLoop *p_main_loop) override;
-
-public:
-	virtual String get_name() const override;
-
 	virtual MainLoop *get_main_loop() const override;
 
-	virtual String get_config_path() const override;
-	virtual String get_data_path() const override;
-	virtual String get_cache_path() const override;
+	virtual void delete_main_loop() override;
 
-	virtual String get_system_dir(SystemDir p_dir) const override;
+	virtual void finalize() override;
+
+	String user_data_dir;
+
+	bool is_focused = false;
+
+	void deinitialize_modules();
+
+public:
+	static PlatformIPhone *get_singleton();
+
+	PlatformIPhone(String p_data_dir);
+	~PlatformIPhone();
+
+	void initialize_modules();
+
+	bool iterate();
+
+	void start();
+
+	virtual Error open_dynamic_library(const String p_path, void *&p_library_handle, bool p_also_set_library_path = false) override;
+	virtual Error close_dynamic_library(void *p_library_handle) override;
+	virtual Error get_dynamic_library_symbol_handle(void *p_library_handle, const String p_name, void *&p_symbol_handle, bool p_optional = false) override;
+
+	virtual void alert(const String &p_alert,
+			const String &p_title = "ALERT!") override;
+
+	virtual String get_name() const override;
+	virtual String get_model_name() const override;
 
 	virtual Error shell_open(String p_uri) override;
 
+	void set_user_data_dir(String p_dir);
+	virtual String get_user_data_dir() const override;
+
+	virtual String get_locale() const override;
+
 	virtual String get_unique_id() const override;
+
+	virtual void vibrate_handheld(int p_duration_ms = 500) override;
 
 	virtual bool _check_internal_feature_support(const String &p_feature) override;
 
-	void run();
-
-	virtual void disable_crash_handler() override;
-	virtual bool is_disable_crash_handler() const override;
-
-	virtual Error move_to_trash(const String &p_path) override;
-
-	OS_LinuxBSD();
+	void on_focus_out();
+	void on_focus_in();
 };
 
-#endif
+#endif // PLATFORM_IPHONE_H
+
+#endif // IPHONE_ENABLED

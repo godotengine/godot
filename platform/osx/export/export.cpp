@@ -36,7 +36,7 @@
 #include "core/io/zip_io.h"
 #include "core/os/dir_access.h"
 #include "core/os/file_access.h"
-#include "core/os/os.h"
+#include "core/os/platform.h"
 #include "core/version.h"
 #include "editor/editor_export.h"
 #include "editor/editor_node.h"
@@ -443,7 +443,7 @@ Error EditorExportPlatformOSX::_notarize(const Ref<EditorExportPreset> &p_preset
 	args.push_back(p_path);
 
 	String str;
-	Error err = OS::get_singleton()->execute("xcrun", args, &str, nullptr, true);
+	Error err = Platform::get_singleton()->execute("xcrun", args, &str, nullptr, true);
 	ERR_FAIL_COND_V(err != OK, err);
 
 	print_line("altool (" + p_path + "):\n" + str);
@@ -502,7 +502,7 @@ Error EditorExportPlatformOSX::_code_sign(const Ref<EditorExportPreset> &p_prese
 	args.push_back(p_path);
 
 	String str;
-	Error err = OS::get_singleton()->execute("codesign", args, &str, nullptr, true);
+	Error err = Platform::get_singleton()->execute("codesign", args, &str, nullptr, true);
 	ERR_FAIL_COND_V(err != OK, err);
 
 	print_line("codesign (" + p_path + "):\n" + str);
@@ -523,7 +523,7 @@ Error EditorExportPlatformOSX::_create_dmg(const String &p_dmg_path, const Strin
 	List<String> args;
 
 	if (FileAccess::exists(p_dmg_path)) {
-		OS::get_singleton()->move_to_trash(p_dmg_path);
+		Platform::get_singleton()->move_to_trash(p_dmg_path);
 	}
 
 	args.push_back("create");
@@ -536,7 +536,7 @@ Error EditorExportPlatformOSX::_create_dmg(const String &p_dmg_path, const Strin
 	args.push_back(p_app_path_name);
 
 	String str;
-	Error err = OS::get_singleton()->execute("hdiutil", args, &str, nullptr, true);
+	Error err = Platform::get_singleton()->execute("hdiutil", args, &str, nullptr, true);
 	ERR_FAIL_COND_V(err != OK, err);
 
 	print_line("hdiutil returned: " + str);
@@ -604,7 +604,7 @@ Error EditorExportPlatformOSX::export_project(const Ref<EditorExportPreset> &p_p
 		pkg_name = "Unnamed";
 	}
 
-	pkg_name = OS::get_singleton()->get_safe_dir_name(pkg_name);
+	pkg_name = Platform::get_singleton()->get_safe_dir_name(pkg_name);
 
 	String export_format = use_dmg() && p_path.ends_with("dmg") ? "dmg" : "zip";
 
@@ -939,7 +939,7 @@ Error EditorExportPlatformOSX::export_project(const Ref<EditorExportPreset> &p_p
 					return ERR_SKIP;
 				}
 				if (FileAccess::exists(p_path)) {
-					OS::get_singleton()->move_to_trash(p_path);
+					Platform::get_singleton()->move_to_trash(p_path);
 				}
 
 				FileAccess *dst_f = nullptr;
@@ -985,8 +985,8 @@ void EditorExportPlatformOSX::_zip_folder_recursive(zipFile &p_zip, const String
 		} else {
 			bool is_executable = (p_folder.ends_with("MacOS") && (f == p_pkg_name));
 
-			OS::Time time = OS::get_singleton()->get_time();
-			OS::Date date = OS::get_singleton()->get_date();
+			Platform::Time time = Platform::get_singleton()->get_time();
+			Platform::Date date = Platform::get_singleton()->get_date();
 
 			zip_fileinfo zipfi;
 			zipfi.tmz_date.tm_hour = time.hour;

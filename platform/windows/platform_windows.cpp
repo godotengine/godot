@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  os_windows.cpp                                                       */
+/*  platform_windows.cpp                                                 */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -31,7 +31,7 @@
 // Must include Winsock before windows.h (included by os_windows.h)
 #include "drivers/unix/net_socket_posix.h"
 
-#include "os_windows.h"
+#include "platform_windows.h"
 
 #include "core/debugger/engine_debugger.h"
 #include "core/debugger/script_debugger.h"
@@ -165,11 +165,11 @@ BOOL WINAPI HandlerRoutine(_In_ DWORD dwCtrlType) {
 	}
 }
 
-void OS_Windows::initialize_debugging() {
+void PlatformWindows::initialize_debugging() {
 	SetConsoleCtrlHandler(HandlerRoutine, TRUE);
 }
 
-void OS_Windows::initialize() {
+void PlatformWindows::initialize() {
 	crash_handler.initialize();
 
 	//RedirectIOToConsole();
@@ -208,17 +208,17 @@ void OS_Windows::initialize() {
 	main_loop = nullptr;
 }
 
-void OS_Windows::delete_main_loop() {
+void PlatformWindows::delete_main_loop() {
 	if (main_loop)
 		memdelete(main_loop);
 	main_loop = nullptr;
 }
 
-void OS_Windows::set_main_loop(MainLoop *p_main_loop) {
+void PlatformWindows::set_main_loop(MainLoop *p_main_loop) {
 	main_loop = p_main_loop;
 }
 
-void OS_Windows::finalize() {
+void PlatformWindows::finalize() {
 #ifdef WINMIDI_ENABLED
 	driver_midi.close();
 #endif
@@ -229,14 +229,14 @@ void OS_Windows::finalize() {
 	main_loop = nullptr;
 }
 
-void OS_Windows::finalize_core() {
+void PlatformWindows::finalize_core() {
 	timeEndPeriod(1);
 
 	memdelete(process_map);
 	NetSocketPosix::cleanup();
 }
 
-Error OS_Windows::open_dynamic_library(const String p_path, void *&p_library_handle, bool p_also_set_library_path) {
+Error PlatformWindows::open_dynamic_library(const String p_path, void *&p_library_handle, bool p_also_set_library_path) {
 	String path = p_path.replace("/", "\\");
 
 	if (!FileAccess::exists(path)) {
@@ -267,14 +267,14 @@ Error OS_Windows::open_dynamic_library(const String p_path, void *&p_library_han
 	return OK;
 }
 
-Error OS_Windows::close_dynamic_library(void *p_library_handle) {
+Error PlatformWindows::close_dynamic_library(void *p_library_handle) {
 	if (!FreeLibrary((HMODULE)p_library_handle)) {
 		return FAILED;
 	}
 	return OK;
 }
 
-Error OS_Windows::get_dynamic_library_symbol_handle(void *p_library_handle, const String p_name, void *&p_symbol_handle, bool p_optional) {
+Error PlatformWindows::get_dynamic_library_symbol_handle(void *p_library_handle, const String p_name, void *&p_symbol_handle, bool p_optional) {
 	p_symbol_handle = (void *)GetProcAddress((HMODULE)p_library_handle, p_name.utf8().get_data());
 	if (!p_symbol_handle) {
 		if (!p_optional) {
@@ -286,11 +286,11 @@ Error OS_Windows::get_dynamic_library_symbol_handle(void *p_library_handle, cons
 	return OK;
 }
 
-String OS_Windows::get_name() const {
+String PlatformWindows::get_name() const {
 	return "Windows";
 }
 
-OS::Date OS_Windows::get_date(bool utc) const {
+Platform::Date PlatformWindows::get_date(bool utc) const {
 	SYSTEMTIME systemtime;
 	if (utc)
 		GetSystemTime(&systemtime);
@@ -306,7 +306,7 @@ OS::Date OS_Windows::get_date(bool utc) const {
 	return date;
 }
 
-OS::Time OS_Windows::get_time(bool utc) const {
+Platform::Time PlatformWindows::get_time(bool utc) const {
 	SYSTEMTIME systemtime;
 	if (utc)
 		GetSystemTime(&systemtime);
@@ -320,7 +320,7 @@ OS::Time OS_Windows::get_time(bool utc) const {
 	return time;
 }
 
-OS::TimeZoneInfo OS_Windows::get_time_zone_info() const {
+Platform::TimeZoneInfo PlatformWindows::get_time_zone_info() const {
 	TIME_ZONE_INFORMATION info;
 	bool daylight = false;
 	if (GetTimeZoneInformation(&info) == TIME_ZONE_ID_DAYLIGHT)
@@ -339,7 +339,7 @@ OS::TimeZoneInfo OS_Windows::get_time_zone_info() const {
 	return ret;
 }
 
-double OS_Windows::get_unix_time() const {
+double PlatformWindows::get_unix_time() const {
 	// 1 Windows tick is 100ns
 	const uint64_t WINDOWS_TICKS_PER_SECOND = 10000000;
 	const uint64_t TICKS_TO_UNIX_EPOCH = 116444736000000000LL;
@@ -356,14 +356,14 @@ double OS_Windows::get_unix_time() const {
 	return (double)(ticks_time - TICKS_TO_UNIX_EPOCH) / WINDOWS_TICKS_PER_SECOND;
 }
 
-void OS_Windows::delay_usec(uint32_t p_usec) const {
+void PlatformWindows::delay_usec(uint32_t p_usec) const {
 	if (p_usec < 1000)
 		Sleep(1);
 	else
 		Sleep(p_usec / 1000);
 }
 
-uint64_t OS_Windows::get_ticks_usec() const {
+uint64_t PlatformWindows::get_ticks_usec() const {
 	uint64_t ticks;
 
 	// This is the number of clock ticks since start
@@ -394,7 +394,7 @@ uint64_t OS_Windows::get_ticks_usec() const {
 	return time;
 }
 
-String OS_Windows::_quote_command_line_argument(const String &p_text) const {
+String PlatformWindows::_quote_command_line_argument(const String &p_text) const {
 	for (int i = 0; i < p_text.size(); i++) {
 		char32_t c = p_text[i];
 		if (c == ' ' || c == '&' || c == '(' || c == ')' || c == '[' || c == ']' || c == '{' || c == '}' || c == '^' || c == '=' || c == ';' || c == '!' || c == '\'' || c == '+' || c == ',' || c == '`' || c == '~') {
@@ -404,7 +404,7 @@ String OS_Windows::_quote_command_line_argument(const String &p_text) const {
 	return p_text;
 }
 
-Error OS_Windows::execute(const String &p_path, const List<String> &p_arguments, String *r_pipe, int *r_exitcode, bool read_stderr, Mutex *p_pipe_mutex) {
+Error PlatformWindows::execute(const String &p_path, const List<String> &p_arguments, String *r_pipe, int *r_exitcode, bool read_stderr, Mutex *p_pipe_mutex) {
 	String path = p_path.replace("/", "\\");
 	String command = _quote_command_line_argument(path);
 	for (const List<String>::Element *E = p_arguments.front(); E; E = E->next()) {
@@ -460,7 +460,7 @@ Error OS_Windows::execute(const String &p_path, const List<String> &p_arguments,
 	return OK;
 };
 
-Error OS_Windows::create_process(const String &p_path, const List<String> &p_arguments, ProcessID *r_child_id) {
+Error PlatformWindows::create_process(const String &p_path, const List<String> &p_arguments, ProcessID *r_child_id) {
 	String path = p_path.replace("/", "\\");
 	String command = _quote_command_line_argument(path);
 	for (const List<String>::Element *E = p_arguments.front(); E; E = E->next()) {
@@ -485,7 +485,7 @@ Error OS_Windows::create_process(const String &p_path, const List<String> &p_arg
 	return OK;
 };
 
-Error OS_Windows::kill(const ProcessID &p_pid) {
+Error PlatformWindows::kill(const ProcessID &p_pid) {
 	ERR_FAIL_COND_V(!process_map->has(p_pid), FAILED);
 
 	const PROCESS_INFORMATION pi = (*process_map)[p_pid].pi;
@@ -499,25 +499,25 @@ Error OS_Windows::kill(const ProcessID &p_pid) {
 	return ret != 0 ? OK : FAILED;
 };
 
-int OS_Windows::get_process_id() const {
+int PlatformWindows::get_process_id() const {
 	return _getpid();
 }
 
-Error OS_Windows::set_cwd(const String &p_cwd) {
+Error PlatformWindows::set_cwd(const String &p_cwd) {
 	if (_wchdir((LPCWSTR)(p_cwd.utf16().get_data())) != 0)
 		return ERR_CANT_OPEN;
 
 	return OK;
 }
 
-String OS_Windows::get_executable_path() const {
+String PlatformWindows::get_executable_path() const {
 	WCHAR bufname[4096];
 	GetModuleFileNameW(nullptr, bufname, 4096);
 	String s = String::utf16((const char16_t *)bufname).replace("\\", "/");
 	return s;
 }
 
-bool OS_Windows::has_environment(const String &p_var) const {
+bool PlatformWindows::has_environment(const String &p_var) const {
 #ifdef MINGW_ENABLED
 	return _wgetenv((LPCWSTR)(p_var.utf16().get_data())) != nullptr;
 #else
@@ -530,7 +530,7 @@ bool OS_Windows::has_environment(const String &p_var) const {
 #endif
 };
 
-String OS_Windows::get_environment(const String &p_var) const {
+String PlatformWindows::get_environment(const String &p_var) const {
 	WCHAR wval[0x7fff]; // MSDN says 32767 char is the maximum
 	int wlen = GetEnvironmentVariableW((LPCWSTR)(p_var.utf16().get_data()), wval, 0x7fff);
 	if (wlen > 0) {
@@ -539,11 +539,11 @@ String OS_Windows::get_environment(const String &p_var) const {
 	return "";
 }
 
-bool OS_Windows::set_environment(const String &p_var, const String &p_value) const {
+bool PlatformWindows::set_environment(const String &p_var, const String &p_value) const {
 	return (bool)SetEnvironmentVariableW((LPCWSTR)(p_var.utf16().get_data()), (LPCWSTR)(p_value.utf16().get_data()));
 }
 
-String OS_Windows::get_stdin_string(bool p_block) {
+String PlatformWindows::get_stdin_string(bool p_block) {
 	if (p_block) {
 		char buff[1024];
 		return fgets(buff, 1024, stdin);
@@ -552,12 +552,12 @@ String OS_Windows::get_stdin_string(bool p_block) {
 	return String();
 }
 
-Error OS_Windows::shell_open(String p_uri) {
+Error PlatformWindows::shell_open(String p_uri) {
 	ShellExecuteW(nullptr, nullptr, (LPCWSTR)(p_uri.utf16().get_data()), nullptr, nullptr, SW_SHOWNORMAL);
 	return OK;
 }
 
-String OS_Windows::get_locale() const {
+String PlatformWindows::get_locale() const {
 	const _WinLocale *wl = &_win_locales[0];
 
 	LANGID langid = GetUserDefaultUILanguage();
@@ -601,7 +601,7 @@ BOOL is_wow64() {
 	return wow64;
 }
 
-int OS_Windows::get_processor_count() const {
+int PlatformWindows::get_processor_count() const {
 	SYSTEM_INFO sysinfo;
 	if (is_wow64())
 		GetNativeSystemInfo(&sysinfo);
@@ -611,7 +611,7 @@ int OS_Windows::get_processor_count() const {
 	return sysinfo.dwNumberOfProcessors;
 }
 
-void OS_Windows::run() {
+void PlatformWindows::run() {
 	if (!main_loop)
 		return;
 
@@ -626,11 +626,11 @@ void OS_Windows::run() {
 	main_loop->finalize();
 }
 
-MainLoop *OS_Windows::get_main_loop() const {
+MainLoop *PlatformWindows::get_main_loop() const {
 	return main_loop;
 }
 
-String OS_Windows::get_config_path() const {
+String PlatformWindows::get_config_path() const {
 	if (has_environment("XDG_CONFIG_HOME")) { // unlikely, but after all why not?
 		return get_environment("XDG_CONFIG_HOME");
 	} else if (has_environment("APPDATA")) {
@@ -640,7 +640,7 @@ String OS_Windows::get_config_path() const {
 	}
 }
 
-String OS_Windows::get_data_path() const {
+String PlatformWindows::get_data_path() const {
 	if (has_environment("XDG_DATA_HOME")) {
 		return get_environment("XDG_DATA_HOME");
 	} else {
@@ -648,7 +648,7 @@ String OS_Windows::get_data_path() const {
 	}
 }
 
-String OS_Windows::get_cache_path() const {
+String PlatformWindows::get_cache_path() const {
 	if (has_environment("XDG_CACHE_HOME")) {
 		return get_environment("XDG_CACHE_HOME");
 	} else if (has_environment("TEMP")) {
@@ -659,11 +659,11 @@ String OS_Windows::get_cache_path() const {
 }
 
 // Get properly capitalized engine name for system paths
-String OS_Windows::get_godot_dir_name() const {
+String PlatformWindows::get_godot_dir_name() const {
 	return String(VERSION_SHORT_NAME).capitalize();
 }
 
-String OS_Windows::get_system_dir(SystemDir p_dir) const {
+String PlatformWindows::get_system_dir(SystemDir p_dir) const {
 	KNOWNFOLDERID id;
 
 	switch (p_dir) {
@@ -701,7 +701,7 @@ String OS_Windows::get_system_dir(SystemDir p_dir) const {
 	return path;
 }
 
-String OS_Windows::get_user_data_dir() const {
+String PlatformWindows::get_user_data_dir() const {
 	String appname = get_safe_dir_name(ProjectSettings::get_singleton()->get("application/config/name"));
 	if (appname != "") {
 		bool use_custom_dir = ProjectSettings::get_singleton()->get("application/config/use_custom_user_dir");
@@ -719,25 +719,25 @@ String OS_Windows::get_user_data_dir() const {
 	return ProjectSettings::get_singleton()->get_resource_path();
 }
 
-String OS_Windows::get_unique_id() const {
+String PlatformWindows::get_unique_id() const {
 	HW_PROFILE_INFO HwProfInfo;
 	ERR_FAIL_COND_V(!GetCurrentHwProfile(&HwProfInfo), "");
 	return String::utf16((const char16_t *)(HwProfInfo.szHwProfileGuid), HW_PROFILE_GUIDLEN);
 }
 
-bool OS_Windows::_check_internal_feature_support(const String &p_feature) {
+bool PlatformWindows::_check_internal_feature_support(const String &p_feature) {
 	return p_feature == "pc";
 }
 
-void OS_Windows::disable_crash_handler() {
+void PlatformWindows::disable_crash_handler() {
 	crash_handler.disable();
 }
 
-bool OS_Windows::is_disable_crash_handler() const {
+bool PlatformWindows::is_disable_crash_handler() const {
 	return crash_handler.is_disabled();
 }
 
-Error OS_Windows::move_to_trash(const String &p_path) {
+Error PlatformWindows::move_to_trash(const String &p_path) {
 	SHFILEOPSTRUCTW sf;
 
 	Char16String utf16 = p_path.utf16();
@@ -765,7 +765,7 @@ Error OS_Windows::move_to_trash(const String &p_path) {
 	return OK;
 }
 
-OS_Windows::OS_Windows(HINSTANCE _hInstance) {
+PlatformWindows::PlatformWindows(HINSTANCE _hInstance) {
 	ticks_per_second = 0;
 	ticks_start = 0;
 	main_loop = nullptr;
@@ -792,7 +792,7 @@ OS_Windows::OS_Windows(HINSTANCE _hInstance) {
 	_set_logger(memnew(CompositeLogger(loggers)));
 }
 
-OS_Windows::~OS_Windows() {
+PlatformWindows::~PlatformWindows() {
 #ifdef STDOUT_FILE
 	fclose(stdo);
 #endif

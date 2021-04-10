@@ -634,7 +634,7 @@ class EditorExportPlatformUWP : public EditorExportPlatform {
 
 	Ref<ImageTexture> logo;
 
-	enum Platform {
+	enum Architecture {
 		ARM,
 		X86,
 		X64
@@ -759,7 +759,7 @@ class EditorExportPlatformUWP : public EditorExportPlatform {
 		String version = itos(p_preset->get("version/major")) + "." + itos(p_preset->get("version/minor")) + "." + itos(p_preset->get("version/build")) + "." + itos(p_preset->get("version/revision"));
 		result = result.replace("$version_string$", version);
 
-		Platform arch = (Platform)(int)p_preset->get("architecture/target");
+		Architecture arch = (Architecture)(int)p_preset->get("architecture/target");
 		String architecture = arch == ARM ? "arm" : (arch == X86 ? "x86" : "x64");
 		result = result.replace("$architecture$", architecture);
 
@@ -1072,7 +1072,7 @@ public:
 
 		// Look for export templates (first official, and if defined custom templates).
 
-		Platform arch = (Platform)(int)(p_preset->get("architecture/target"));
+		Architecture arch = (Architecture)(int)(p_preset->get("architecture/target"));
 		String platform_infix;
 		switch (arch) {
 			case EditorExportPlatformUWP::ARM: {
@@ -1191,7 +1191,7 @@ public:
 
 		src_appx = src_appx.strip_edges();
 
-		Platform arch = (Platform)(int)p_preset->get("architecture/target");
+		Architecture arch = (Architecture)(int)p_preset->get("architecture/target");
 
 		if (src_appx == "") {
 			String err, infix;
@@ -1413,7 +1413,7 @@ public:
 		args.push_back(cert_pass);
 		args.push_back(p_path);
 
-		OS::get_singleton()->execute(signtool_path, args);
+		Platform::get_singleton()->execute(signtool_path, args);
 #endif // WINDOWS_ENABLED
 
 		return OK;

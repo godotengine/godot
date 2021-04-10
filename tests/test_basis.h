@@ -32,7 +32,7 @@
 #define TEST_BASIS_H
 
 #include "core/math/random_number_generator.h"
-#include "core/os/os.h"
+#include "core/os/platform.h"
 #include "core/string/ustring.h"
 
 #include "tests/test_macros.h"

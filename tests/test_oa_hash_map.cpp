@@ -30,7 +30,7 @@
 
 #include "test_oa_hash_map.h"
 
-#include "core/os/os.h"
+#include "core/os/platform.h"
 #include "core/templates/oa_hash_map.h"
 
 namespace TestOAHashMap {
@@ -67,7 +67,7 @@ struct CountedItem {
 int CountedItem::count;
 
 MainLoop *test() {
-	OS::get_singleton()->print("\n\n\nHello from test\n");
+	Platform::get_singleton()->print("\n\n\nHello from test\n");
 
 	// test element tracking.
 	{
@@ -80,10 +80,10 @@ MainLoop *test() {
 		int value = 0;
 		map.lookup(42, value);
 
-		OS::get_singleton()->print("capacity  %d\n", map.get_capacity());
-		OS::get_singleton()->print("elements  %d\n", map.get_num_elements());
+		Platform::get_singleton()->print("capacity  %d\n", map.get_capacity());
+		Platform::get_singleton()->print("elements  %d\n", map.get_num_elements());
 
-		OS::get_singleton()->print("map[42] = %d\n", value);
+		Platform::get_singleton()->print("map[42] = %d\n", value);
 	}
 
 	// rehashing and deletion
@@ -106,7 +106,7 @@ MainLoop *test() {
 			}
 		}
 
-		OS::get_singleton()->print("elements %d == %d.\n", map.get_num_elements(), num_elems);
+		Platform::get_singleton()->print("elements %d == %d.\n", map.get_num_elements(), num_elems);
 	}
 
 	// iteration
@@ -118,7 +118,7 @@ MainLoop *test() {
 		map.set("Godot rocks", 42);
 
 		for (OAHashMap<String, int>::Iterator it = map.iter(); it.valid; it = map.next_iter(it)) {
-			OS::get_singleton()->print("map[\"%s\"] = %d\n", it.key->utf8().get_data(), *it.value);
+			Platform::get_singleton()->print("map[\"%s\"] = %d\n", it.key->utf8().get_data(), *it.value);
 		}
 	}
 
@@ -137,14 +137,14 @@ MainLoop *test() {
 			map.set(keys[i], dummy);
 
 			if (!map.lookup(keys[i], dummy)) {
-				OS::get_singleton()->print("could not find 0x%X despite it was just inserted!\n", unsigned(keys[i]));
+				Platform::get_singleton()->print("could not find 0x%X despite it was just inserted!\n", unsigned(keys[i]));
 			}
 		}
 
 		// check whether the keys are still present
 		for (int i = 0; i < N; i++) {
 			if (!map.lookup(keys[i], dummy)) {
-				OS::get_singleton()->print("could not find 0x%X despite it has been inserted previously! (not checking the other keys, breaking...)\n", unsigned(keys[i]));
+				Platform::get_singleton()->print("could not find 0x%X despite it has been inserted previously! (not checking the other keys, breaking...)\n", unsigned(keys[i]));
 				break;
 			}
 		}
@@ -154,7 +154,7 @@ MainLoop *test() {
 
 	// regression test / test for issue related to #31402
 	{
-		OS::get_singleton()->print("test for issue #31402 started...\n");
+		Platform::get_singleton()->print("test for issue #31402 started...\n");
 
 		const int num_test_values = 12;
 		int test_values[num_test_values] = { 0, 24, 48, 72, 96, 120, 144, 168, 192, 216, 240, 264 };
@@ -167,7 +167,7 @@ MainLoop *test() {
 			map.set(test_values[i], dummy);
 		}
 
-		OS::get_singleton()->print("test for issue #31402 passed.\n");
+		Platform::get_singleton()->print("test for issue #31402 passed.\n");
 	}
 
 	// test collision resolution, should not crash or run indefinitely
@@ -204,7 +204,7 @@ MainLoop *test() {
 			}
 
 			if (CountedItem::count != 0) {
-				OS::get_singleton()->print("%d != 0 (not performing the other test sub-cases, breaking...)\n", CountedItem::count);
+				Platform::get_singleton()->print("%d != 0 (not performing the other test sub-cases, breaking...)\n", CountedItem::count);
 				break;
 			}
 		}
@@ -214,7 +214,7 @@ MainLoop *test() {
 	{
 		OAHashMap<int, String> original_map(0);
 		original_map.set(1, "1");
-		OS::get_singleton()->print("OAHashMap 0 capacity initialization passed.\n");
+		Platform::get_singleton()->print("OAHashMap 0 capacity initialization passed.\n");
 	}
 
 	// Test copy constructor.
@@ -241,16 +241,16 @@ MainLoop *test() {
 			}
 		}
 		if (pass) {
-			OS::get_singleton()->print("OAHashMap copy constructor test passed.\n");
+			Platform::get_singleton()->print("OAHashMap copy constructor test passed.\n");
 		} else {
-			OS::get_singleton()->print("OAHashMap copy constructor test FAILED.\n");
+			Platform::get_singleton()->print("OAHashMap copy constructor test FAILED.\n");
 		}
 
 		map_copy.set(1, "Random String");
 		if (*map_copy.lookup_ptr(1) == *original_map.lookup_ptr(1)) {
-			OS::get_singleton()->print("OAHashMap copy constructor, atomic copy test FAILED.\n");
+			Platform::get_singleton()->print("OAHashMap copy constructor, atomic copy test FAILED.\n");
 		} else {
-			OS::get_singleton()->print("OAHashMap copy constructor, atomic copy test passed.\n");
+			Platform::get_singleton()->print("OAHashMap copy constructor, atomic copy test passed.\n");
 		}
 	}
 
@@ -280,16 +280,16 @@ MainLoop *test() {
 			}
 		}
 		if (pass) {
-			OS::get_singleton()->print("OAHashMap assign operation test passed.\n");
+			Platform::get_singleton()->print("OAHashMap assign operation test passed.\n");
 		} else {
-			OS::get_singleton()->print("OAHashMap assign operation test FAILED.\n");
+			Platform::get_singleton()->print("OAHashMap assign operation test FAILED.\n");
 		}
 
 		map_copy.set(1, "Random String");
 		if (*map_copy.lookup_ptr(1) == *original_map.lookup_ptr(1)) {
-			OS::get_singleton()->print("OAHashMap assign operation atomic copy test FAILED.\n");
+			Platform::get_singleton()->print("OAHashMap assign operation atomic copy test FAILED.\n");
 		} else {
-			OS::get_singleton()->print("OAHashMap assign operation atomic copy test passed.\n");
+			Platform::get_singleton()->print("OAHashMap assign operation atomic copy test passed.\n");
 		}
 	}
 

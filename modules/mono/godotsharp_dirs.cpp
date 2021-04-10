@@ -32,7 +32,7 @@
 
 #include "core/config/project_settings.h"
 #include "core/os/dir_access.h"
-#include "core/os/os.h"
+#include "core/os/platform.h"
 
 #ifdef TOOLS_ENABLED
 #include "core/version.h"
@@ -68,20 +68,20 @@ String _get_mono_user_dir() {
 	} else {
 		String settings_path;
 
-		String exe_dir = OS::get_singleton()->get_executable_path().get_base_dir();
+		String exe_dir = Platform::get_singleton()->get_executable_path().get_base_dir();
 		DirAccessRef d = DirAccess::create_for_path(exe_dir);
 
 		if (d->file_exists("._sc_") || d->file_exists("_sc_")) {
 			// contain yourself
 			settings_path = exe_dir.plus_file("editor_data");
 		} else {
-			settings_path = OS::get_singleton()->get_data_path().plus_file(OS::get_singleton()->get_godot_dir_name());
+			settings_path = Platform::get_singleton()->get_data_path().plus_file(Platform::get_singleton()->get_godot_dir_name());
 		}
 
 		return settings_path.plus_file("mono");
 	}
 #else
-	return OS::get_singleton()->get_user_data_dir().plus_file("mono");
+	return Platform::get_singleton()->get_user_data_dir().plus_file("mono");
 #endif
 }
 
@@ -145,7 +145,7 @@ private:
 		build_logs_dir = mono_user_dir.plus_file("build_logs");
 
 		String appname = ProjectSettings::get_singleton()->get("application/config/name");
-		String appname_safe = OS::get_singleton()->get_safe_dir_name(appname);
+		String appname_safe = Platform::get_singleton()->get_safe_dir_name(appname);
 		if (appname_safe.is_empty()) {
 			appname_safe = "UnnamedProject";
 		}
@@ -156,7 +156,7 @@ private:
 		csproj_filepath = base_path.plus_file(appname_safe + ".csproj");
 #endif
 
-		String exe_dir = OS::get_singleton()->get_executable_path().get_base_dir();
+		String exe_dir = Platform::get_singleton()->get_executable_path().get_base_dir();
 
 #ifdef TOOLS_ENABLED
 
@@ -195,7 +195,7 @@ private:
 #else
 
 		String appname = ProjectSettings::get_singleton()->get("application/config/name");
-		String appname_safe = OS::get_singleton()->get_safe_dir_name(appname);
+		String appname_safe = Platform::get_singleton()->get_safe_dir_name(appname);
 		String data_dir_root = exe_dir.plus_file("data_" + appname_safe);
 		if (!DirAccess::exists(data_dir_root)) {
 			data_dir_root = exe_dir.plus_file("data_Godot");
