@@ -2993,6 +2993,7 @@ Error GDScriptLanguage::lookup_code(const String &p_code, const String &p_symbol
 			is_function = true;
 			[[fallthrough]];
 		}
+		case GDScriptParser::COMPLETION_CALL_ARGUMENTS:
 		case GDScriptParser::COMPLETION_IDENTIFIER: {
 			GDScriptParser::DataType base_type;
 			if (context.current_class) {
