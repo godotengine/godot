@@ -30,6 +30,7 @@
 
 #include "scene_importer_mesh.h"
 
+#include "core/math/math_defs.h"
 #include "scene/resources/surface_tool.h"
 
 void EditorSceneImporterMesh::add_blend_shape(const String &p_name) {
@@ -141,6 +142,18 @@ void EditorSceneImporterMesh::set_surface_material(int p_surface, const Ref<Mate
 	surfaces.write[p_surface].material = p_material;
 }
 
+Basis EditorSceneImporterMesh::compute_rotation_matrix_from_ortho_6d(Vector3 p_x_raw, Vector3 p_y_raw) {
+	Vector3 x = p_x_raw.normalized();
+	Vector3 z = x.cross(p_y_raw);
+	z = z.normalized();
+	Vector3 y = z.cross(x);
+	Basis basis;
+	basis.set_axis(Vector3::AXIS_X, x);
+	basis.set_axis(Vector3::AXIS_Y, y);
+	basis.set_axis(Vector3::AXIS_Z, z);
+	return basis;
+}
+
 void EditorSceneImporterMesh::generate_lods() {
 	if (!SurfaceTool::simplify_func) {
 		return;
@@ -149,6 +162,9 @@ void EditorSceneImporterMesh::generate_lods() {
 		return;
 	}
 	if (!SurfaceTool::simplify_sloppy_func) {
+		return;
+	}
+	if (!SurfaceTool::simplify_with_attrib_func) {
 		return;
 	}
 
@@ -163,59 +179,62 @@ void EditorSceneImporterMesh::generate_lods() {
 		if (indices.size() == 0) {
 			continue; //no lods if no indices
 		}
+		Vector<Vector3> normals = surfaces[i].arrays[RS::ARRAY_NORMAL];
 		uint32_t vertex_count = vertices.size();
 		const Vector3 *vertices_ptr = vertices.ptr();
-
-		int min_indices = 10;
-		int index_target = indices.size() / 2;
-		print_line("Total indices: " + itos(indices.size()));
-		float mesh_scale = SurfaceTool::simplify_scale_func((const float *)vertices_ptr, vertex_count, sizeof(Vector3));
-		const float target_error = 1e-3f;
-		float abs_target_error = target_error / mesh_scale;
+		Vector<float> attributes;
+		Vector<float> normal_weights;
+		int32_t attribute_count = 6;
+		if (normals.size()) {
+			attributes.resize(normals.size() * attribute_count);
+			for (int32_t normal_i = 0; normal_i < normals.size(); normal_i++) {
+				Basis basis;
+				basis.set_euler(normals[normal_i]);
+				Vector3 basis_x = basis.get_axis(0);
+				Vector3 basis_y = basis.get_axis(1);
+				basis = compute_rotation_matrix_from_ortho_6d(basis_x, basis_y);
+				basis_x = basis.get_axis(0);
+				basis_y = basis.get_axis(1);
+				attributes.write[normal_i * attribute_count + 0] = basis_x.x;
+				attributes.write[normal_i * attribute_count + 1] = basis_x.y;
+				attributes.write[normal_i * attribute_count + 2] = basis_x.z;
+				attributes.write[normal_i * attribute_count + 3] = basis_y.x;
+				attributes.write[normal_i * attribute_count + 4] = basis_y.y;
+				attributes.write[normal_i * attribute_count + 5] = basis_y.z;
+			}
+			normal_weights.resize(vertex_count);
+			for (int32_t weight_i = 0; weight_i < normal_weights.size(); weight_i++) {
+				normal_weights.write[weight_i] = 1.0;
+			}
+		} else {
+			attribute_count = 0;
+		}
+		const int min_indices = 10;
+		const float error_tolerance = 1.44224'95703; // Cube root of 3
+		const float threshold = 1.0 / error_tolerance;
+		int index_target = indices.size() * threshold;
+		float max_mesh_error_percentage = 1e0f;
+		float mesh_error = 0.0f;
 		while (index_target > min_indices) {
-			float error;
 			Vector<int> new_indices;
 			new_indices.resize(indices.size());
-			size_t new_len = SurfaceTool::simplify_func((unsigned int *)new_indices.ptrw(), (const unsigned int *)indices.ptr(), indices.size(), (const float *)vertices_ptr, vertex_count, sizeof(Vector3), index_target, abs_target_error, &error);
-			if ((int)new_len > (index_target * 120 / 100)) {
-				// Attribute discontinuities break normals.
-				bool is_sloppy = false;
-				if (is_sloppy) {
-					abs_target_error = target_error / mesh_scale;
-					index_target = new_len;
-					while (index_target > min_indices) {
-						Vector<int> sloppy_new_indices;
-						sloppy_new_indices.resize(indices.size());
-						new_len = SurfaceTool::simplify_sloppy_func((unsigned int *)sloppy_new_indices.ptrw(), (const unsigned int *)indices.ptr(), indices.size(), (const float *)vertices_ptr, vertex_count, sizeof(Vector3), index_target, abs_target_error, &error);
-						if ((int)new_len > (index_target * 120 / 100)) {
-							break; // 20 percent tolerance
-						}
-						sloppy_new_indices.resize(new_len);
-						Surface::LOD lod;
-						lod.distance = error * mesh_scale;
-						abs_target_error = lod.distance;
-						if (Math::is_equal_approx(abs_target_error, 0.0f)) {
-							return;
-						}
-						lod.indices = sloppy_new_indices;
-						print_line("Lod " + itos(surfaces.write[i].lods.size()) + " shoot for " + itos(index_target / 3) + " triangles, got " + itos(new_len / 3) + " triangles. Distance " + rtos(lod.distance) + ". Use simplify sloppy.");
-						surfaces.write[i].lods.push_back(lod);
-						index_target /= 2;
-					}
-				}
-				break; // 20 percent tolerance
+			size_t new_len = SurfaceTool::simplify_with_attrib_func((unsigned int *)new_indices.ptrw(), (const unsigned int *)indices.ptr(), indices.size(), (const float *)vertices_ptr, vertex_count, sizeof(Vector3), index_target, max_mesh_error_percentage, &mesh_error, (float *)attributes.ptrw(), normal_weights.ptrw(), attribute_count);
+			if ((int)new_len > (index_target * error_tolerance)) {
+				break;
+			}
+			Surface::LOD lod;
+			lod.distance = mesh_error;
+			if (Math::is_equal_approx(mesh_error, 0.0f)) {
+				break;
+			}
+			if (new_len <= 0) {
+				break;
 			}
 			new_indices.resize(new_len);
-			Surface::LOD lod;
-			lod.distance = error * mesh_scale;
-			abs_target_error = lod.distance;
-			if (Math::is_equal_approx(abs_target_error, 0.0f)) {
-				return;
-			}
 			lod.indices = new_indices;
-			print_line("Lod " + itos(surfaces.write[i].lods.size()) + " shoot for " + itos(index_target / 3) + " triangles, got " + itos(new_len / 3) + " triangles. Distance " + rtos(lod.distance));
+			print_line("Lod " + itos(surfaces.write[i].lods.size()) + " begin with " + itos(indices.size() / 3) + " triangles and shoot for " + itos(index_target / 3) + " triangles. Got " + itos(new_len / 3) + " triangles. Lod screen ratio " + rtos(lod.distance));
 			surfaces.write[i].lods.push_back(lod);
-			index_target /= 2;
+			index_target *= threshold;
 		}
 	}
 }

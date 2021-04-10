@@ -67,6 +67,7 @@ class EditorSceneImporterMesh : public Resource {
 	Ref<EditorSceneImporterMesh> shadow_mesh;
 
 	Size2i lightmap_size_hint;
+	Basis compute_rotation_matrix_from_ortho_6d(Vector3 p_x_raw, Vector3 y_raw);
 
 protected:
 	void _set_data(const Dictionary &p_data);
