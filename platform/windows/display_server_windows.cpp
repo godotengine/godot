@@ -504,7 +504,6 @@ void DisplayServerWindows::show_window(WindowID p_id) {
 	WindowData &wd = windows[p_id];
 
 	if (p_id != MAIN_WINDOW_ID) {
-		print_line("FUCK!");
 		_update_window_style(p_id);
 	}
 
@@ -523,20 +522,18 @@ void DisplayServerWindows::delete_sub_window(WindowID p_window) {
 
 	WindowData &wd = windows[p_window];
 
-	if (wd.is_child && wd.parent != wd.transient_parent) {
-		print_line(vformat("Reparenting to: %d", wd.parent));
-		SetWindowLongPtr(wd.hWnd, GWLP_HWNDPARENT, (LONG_PTR)windows[wd.parent].hWnd); // 1
-		if (SetParent(wd.hWnd, windows[wd.parent].hWnd) == NULL) { // 2
-			print_line("Can't set parent");
-		}
-		SetFocus(windows[wd.parent].hWnd); // 3
+	if (wd.is_child && wd.parent != wd.transient_parent && wd.parent != INVALID_WINDOW_ID && wd.transient_parent != INVALID_WINDOW_ID) {
+		//print_line(vformat("Reparenting to: %d", wd.parent));
 		// because of reasons, we have to hack the focus here. Any ideas?
 		overwrite_next_focus = wd.parent;
+		SetWindowLongPtr(wd.hWnd, GWLP_HWNDPARENT, (LONG_PTR)windows[wd.parent].hWnd); // 1
+		SetParent(wd.hWnd, windows[wd.parent].hWnd); // 2
+		SetFocus(windows[wd.parent].hWnd); // 3
 	}
 
 	while (wd.transient_children.size()) {
-		window_set_transient(wd.transient_children.front()->get(), INVALID_WINDOW_ID);
 		_send_window_event(windows[wd.transient_children.front()->get()], WINDOW_EVENT_CLOSE_REQUEST);
+		window_set_transient(wd.transient_children.front()->get(), INVALID_WINDOW_ID);
 	}
 
 	if (wd.transient_parent != INVALID_WINDOW_ID) {
@@ -567,6 +564,7 @@ void DisplayServerWindows::delete_sub_window(WindowID p_window) {
 			MapWindowPoints(wd.hWnd, parent, (LPPOINT)&r, sizeof(RECT) / sizeof(POINT));
 			sw.parent = wd.parent;
 			sw.is_child = wd.is_child;
+			SetParent(sw.hWnd, parent);
 		}
 	}
 
@@ -752,7 +750,6 @@ void DisplayServerWindows::window_set_position(const Point2i &p_position, Window
 	AdjustWindowRectEx(&rect, style, false, exStyle);
 
 	HWND parent = GetParent(wd.hWnd);
-	//HWND parent = windows.has(wd.parent) ? windows[wd.parent].hWnd : GetParent(wd.hWnd);
 	if (parent && wd.is_child) {
 		_constrain_child_window_size(parent, &rect);
 	}
@@ -799,7 +796,7 @@ void DisplayServerWindows::window_set_transient(WindowID p_window, WindowID p_pa
 	} else {
 		ERR_FAIL_COND(!windows.has(p_parent));
 		ERR_FAIL_COND_MSG(wd_window.transient_parent != INVALID_WINDOW_ID, "Window already has a transient parent");
-		// transient windows can't be parent's of transient windows (we will have bugs!) + we already figured out the correct window
+		// transient windows can't be parent's of transient windows (we will have bugs!)
 		while (p_parent != INVALID_WINDOW_ID && windows.has(p_parent)) {
 			WindowData &parent = windows[p_parent];
 			if (parent.transient_parent == INVALID_WINDOW_ID || !parent.is_child) {
@@ -883,8 +880,6 @@ void DisplayServerWindows::window_set_size(const Size2i p_size, WindowID p_windo
 	RECT rect;
 	GetWindowRect(wd.hWnd, &rect);
 	HWND parent = GetParent(wd.hWnd);
-	HWND parent2 = windows.has(wd.parent) ? windows[wd.parent].hWnd : nullptr;
-	print_line(vformat("Setting size\nParent: %d, Same: %s", wd.parent, parent == parent2));
 	if (parent && wd.is_child) {
 		rect.bottom = rect.top + h;
 		rect.right = rect.left + w;
@@ -972,7 +967,7 @@ void DisplayServerWindows::_get_window_style(bool p_main_window, bool p_fullscre
 	if (p_no_activate_focus) {
 		r_style_ex |= WS_EX_TOPMOST | WS_EX_NOACTIVATE;
 	}
-	r_style |= WS_CLIPCHILDREN; // | WS_CLIPSIBLINGS;
+	r_style |= WS_CLIPCHILDREN | WS_CLIPSIBLINGS;
 }
 
 void DisplayServerWindows::_update_window_style(WindowID p_window, bool p_repaint) {
@@ -993,12 +988,12 @@ void DisplayServerWindows::_update_window_style(WindowID p_window, bool p_repain
 	if (wd.always_on_top) {
 		z = HWND_TOPMOST;
 	} else if (wd.is_child) {
-		z = windows[wd.parent].hWnd;
+		z = HWND_TOP;
 	} else {
 		z = HWND_NOTOPMOST;
 	}
 
-	//SetWindowPos(wd.hWnd, z, 0, 0, 0, 0, SWP_FRAMECHANGED | SWP_NOMOVE | SWP_NOSIZE | (wd.no_focus ? SWP_NOACTIVATE : 0));
+	SetWindowPos(wd.hWnd, z, 0, 0, 0, 0, SWP_FRAMECHANGED | SWP_NOMOVE | SWP_NOSIZE | (wd.no_focus ? SWP_NOACTIVATE : 0));
 
 	if (p_repaint) {
 		RECT rect;
@@ -1887,18 +1882,22 @@ void DisplayServerWindows::_dispatch_input_event(const Ref<InputEvent> &p_event)
 			}
 			callable.call((const Variant **)&evp, 1, ret, ce);
 		}
-		//send to all windows, that request to always get input and have no focus
-		for (Map<WindowID, WindowData>::Element *E = windows.front(); E; E = E->next()) {
-			if (E->key() == event_from_window->get_window_id() || E->key() == MAIN_WINDOW_ID || (!E->get().input_without_focus)) {
-				continue;
-			}
-			Callable callable = E->get().input_event_callback;
-			if (callable.is_null()) {
-				continue;
-			}
-			callable.call((const Variant **)&evp, 1, ret, ce);
-		}
+		Ref<InputEventMouseButton> mouse_event = p_event;
+		if (mouse_event.is_valid()) {
+			//send to all windows, that request to always get input and have no focus, but only for mouse events.
+			for (Map<WindowID, WindowData>::Element *E = windows.front(); E; E = E->next()) {
+				if (E->key() == event_from_window->get_window_id() || E->key() == MAIN_WINDOW_ID || (!E->get().input_without_focus)) {
+					continue;
+				}
+				Callable callable = E->get().input_event_callback;
+				if (callable.is_null()) {
+					continue;
+				}
+				// we may want to calculate the local mouse position here, so we don't need to do it in the menu
 
+				callable.call((const Variant **)&evp, 1, ret, ce);
+			}
+		}
 	} else {
 		//send to all windows
 		for (Map<WindowID, WindowData>::Element *E = windows.front(); E; E = E->next()) {
@@ -1945,6 +1944,7 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 			windows[window_id].window_has_focus = true;
 			if (overwrite_next_focus != INVALID_WINDOW_ID) {
 				if (overwrite_next_focus != window_id) {
+					print_line(vformat("Ignoring set focus on %d. Waiting for %d", window_id, overwrite_next_focus));
 					break;
 				}
 				overwrite_next_focus = INVALID_WINDOW_ID;
@@ -1967,6 +1967,10 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 		case WM_KILLFOCUS: {
 			windows[window_id].window_has_focus = false;
 			if (overwrite_next_focus != INVALID_WINDOW_ID && overwrite_next_focus == window_id) {
+				print_line(vformat("Ignoring kill focus on %d", window_id));
+				if (overwrite_next_focus == MAIN_WINDOW_ID) {
+					print_error("That should never happen!");
+				}
 				break;
 			}
 			print_line(vformat("No Focus: %d", window_id));
@@ -3194,8 +3198,8 @@ DisplayServer::WindowID DisplayServerWindows::_create_window(WindowMode p_mode, 
 				wd.parent = p_parent_window_id; // Let's test someting :D
 			}
 			_constrain_child_window_size(parent_window, &WindowRect);
+			wd.input_without_focus = true; // This is perhaps only a workaround (works (only) without in X11). On X11 Input is propagated to the receiving child window and every parent.
 		}
-		wd.input_without_focus = true; // This is perhaps only a workaround (works (only) without in X11). On X11 Input is propagated to the receiving child window and every parent.
 	}
 
 	{

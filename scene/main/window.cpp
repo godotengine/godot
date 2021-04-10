@@ -363,7 +363,9 @@ void Window::show() {
 }
 
 void Window::hide() {
-	print_line(vformat("Hiding: %d", window_id));
+	if (window_id != -1) {
+		print_line(vformat("Hiding: %d", window_id));
+	}
 	set_visible(false);
 }
 

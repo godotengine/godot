@@ -39,7 +39,7 @@ void Popup::_input_from_window(const Ref<InputEvent> &p_event) {
 	if (key.is_valid() && key->is_pressed() && key->get_keycode() == KEY_ESCAPE) {
 		_close_pressed();
 	}
-	/*
+
 	if (is_embedded()) {
 		return;
 	}
@@ -54,7 +54,6 @@ void Popup::_input_from_window(const Ref<InputEvent> &p_event) {
 		}
 		_close_pressed();
 	}
-	*/
 }
 
 void Popup::_initialize_visible_parents() {
@@ -95,12 +94,6 @@ void Popup::_notification(int p_what) {
 		case NOTIFICATION_WM_WINDOW_FOCUS_IN: {
 			if (has_focus()) {
 				popped_up = true;
-			}
-		} break;
-		case NOTIFICATION_WM_WINDOW_FOCUS_OUT: {
-			if (has_focus()) {
-				print_line("Ich bin ein Popup und habe Ahnung!");
-				//_close_pressed();
 			}
 		} break;
 		case NOTIFICATION_EXIT_TREE: {
