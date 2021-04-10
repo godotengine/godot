@@ -1721,6 +1721,9 @@ void ScriptTextEditor::_enable_code_editor() {
 		color_picker->set_raw_mode(true);
 	}
 
+	int picker_shape = EDITOR_GET("interface/inspector/default_color_picker_shape");
+	color_picker->set_picker_shape((ColorPicker::PickerShapeType)picker_shape);
+
 	quick_open = memnew(ScriptEditorQuickOpen);
 	quick_open->connect("goto_line", callable_mp(this, &ScriptTextEditor::_goto_line));
 	add_child(quick_open);
