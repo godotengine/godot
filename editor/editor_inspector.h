@@ -37,13 +37,20 @@
 
 class UndoRedo;
 
+struct PropertyRevertStatus {
+	bool has_revert = false;
+	// If `true`, we are reverting to an instanced scene's value instead of the class' default value.
+	bool revert_from_instanced = false;
+	bool differs_from_class_default = false;
+};
+
 class EditorPropertyRevert {
 public:
 	static bool may_node_be_in_instance(Node *p_node);
 	static bool get_instanced_node_original_property(Node *p_node, const StringName &p_prop, Variant &value);
 	static bool is_node_property_different(Node *p_node, const Variant &p_current, const Variant &p_orig);
 
-	static bool can_property_revert(Object *p_object, const StringName &p_property);
+	static PropertyRevertStatus can_property_revert(Object *p_object, const StringName &p_property);
 };
 
 class EditorProperty : public Container {
@@ -78,6 +85,8 @@ private:
 	bool delete_hover = false;
 
 	bool can_revert;
+	bool revert_from_instanced = false;
+	bool differs_from_class_default = false;
 
 	bool use_folding;
 	bool draw_top_bg;
