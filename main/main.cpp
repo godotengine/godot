@@ -1267,8 +1267,8 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 	OS::get_singleton()->_vsync_via_compositor = window_vsync_via_compositor;
 
 	/* todo restore
-    OS::get_singleton()->_allow_layered = GLOBAL_DEF("display/window/per_pixel_transparency/allowed", false);
-    video_mode.layered = GLOBAL_DEF("display/window/per_pixel_transparency/enabled", false);
+	OS::get_singleton()->_allow_layered = GLOBAL_DEF("display/window/per_pixel_transparency/allowed", false);
+	video_mode.layered = GLOBAL_DEF("display/window/per_pixel_transparency/enabled", false);
 */
 	if (editor || project_manager) {
 		// The editor and project manager always detect and use hiDPI if needed
@@ -2459,6 +2459,11 @@ bool Main::iteration() {
 
 	bool exit = false;
 
+#ifdef CUSTOM_ITERATOR
+	exit = custom_iteration(process_step, physics_step, &advance, time_scale);
+#endif
+
+#ifndef DISABLE_MAIN_ITERATOR_PHYSICS
 	Engine::get_singleton()->_in_physics = true;
 
 	for (int iters = 0; iters < advance.physics_steps; ++iters) {
@@ -2493,13 +2498,16 @@ bool Main::iteration() {
 	}
 
 	Engine::get_singleton()->_in_physics = false;
+#endif
 
 	uint64_t process_begin = OS::get_singleton()->get_ticks_usec();
 
+#ifndef DISABLE_MAIN_ITERATOR_PROCESS
 	if (OS::get_singleton()->get_main_loop()->process(process_step * time_scale)) {
 		exit = true;
 	}
 	message_queue->flush();
+#endif
 
 	RenderingServer::get_singleton()->sync(); //sync if still drawing from previous frames.
 
@@ -2525,7 +2533,9 @@ bool Main::iteration() {
 		ScriptServer::get_language(i)->frame();
 	}
 
+#ifndef DISABLE_MAIN_ITERATOR_AUDIO
 	AudioServer::get_singleton()->update();
+#endif
 
 	if (EngineDebugger::is_active()) {
 		EngineDebugger::get_singleton()->iteration(frame_time, process_ticks, physics_process_ticks, physics_step);

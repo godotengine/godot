@@ -575,6 +575,18 @@ if selected_platform in platform_list:
                 env.module_icons_paths.append(path + "/" + "icons")
             modules_enabled[name] = path
 
+            if getattr(config, "has_custom_iterator", False) and config.has_custom_iterator():
+                env.AppendUnique(CPPDEFINES=["CUSTOM_ITERATOR"])
+
+            if getattr(config, "disable_main_iterator_process", False) and config.disable_main_iterator_process():
+                env.AppendUnique(CPPDEFINES=["DISABLE_MAIN_ITERATOR_PROCESS"])
+
+            if getattr(config, "disable_main_iterator_physics", False) and config.disable_main_iterator_physics():
+                env.AppendUnique(CPPDEFINES=["DISABLE_MAIN_ITERATOR_PHYSICS"])
+
+            if getattr(config, "disable_main_iterator_audio", False) and config.disable_main_iterator_audio():
+                env.AppendUnique(CPPDEFINES=["DISABLE_MAIN_ITERATOR_AUDIO"])
+
         sys.path.remove(path)
         sys.modules.pop("config")
 

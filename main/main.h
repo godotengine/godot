@@ -54,6 +54,9 @@ public:
 #endif
 	static bool start();
 
+#ifdef CUSTOM_ITERATOR
+	static bool custom_iteration(double p_process_step, double p_physics_step, class MainFrameTime *p_frame_time, float p_time_scale);
+#endif
 	static bool iteration();
 	static void force_redraw();
 
