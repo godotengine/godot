@@ -2213,10 +2213,10 @@ Vector<DisplayServer::WindowID> DisplayServerOSX::get_window_list() const {
 	return ret;
 }
 
-DisplayServer::WindowID DisplayServerOSX::create_sub_window(WindowMode p_mode, VSyncMode p_vsync_mode, uint32_t p_flags, const Rect2i &p_rect) {
+DisplayServer::WindowID DisplayServerOSX::create_sub_window(WindowMode p_mode, VSyncMode p_vsync_mode, uint32_t p_flags, const Rect2i &p_rect, WindowID p_parent) {
 	_THREAD_SAFE_METHOD_
 
-	WindowID id = _create_window(p_mode, p_vsync_mode, p_rect);
+	WindowID id = _create_window(p_mode, p_vsync_mode, p_flags, p_rect, p_parent);
 	for (int i = 0; i < WINDOW_FLAG_MAX; i++) {
 		if (p_flags & (1 << i)) {
 			window_set_flag(WindowFlags(i), true, id);
@@ -3495,7 +3495,7 @@ DisplayServer *DisplayServerOSX::create_func(const String &p_rendering_driver, W
 	return ds;
 }
 
-DisplayServerOSX::WindowID DisplayServerOSX::_create_window(WindowMode p_mode, VSyncMode p_vsync_mode, const Rect2i &p_rect) {
+DisplayServerOSX::WindowID DisplayServerOSX::_create_window(WindowMode p_mode, VSyncMode p_vsync_mode, uint32_t p_flags, const Rect2i &p_rect, WindowID p_parent) {
 	WindowID id;
 	const float scale = screen_get_max_scale();
 	{
@@ -3768,7 +3768,7 @@ DisplayServerOSX::DisplayServerOSX(const String &p_rendering_driver, WindowMode 
 	Point2i window_position(
 			screen_get_position(0).x + (screen_get_size(0).width - p_resolution.width) / 2,
 			screen_get_position(0).y + (screen_get_size(0).height - p_resolution.height) / 2);
-	WindowID main_window = _create_window(p_mode, p_vsync_mode, Rect2i(window_position, p_resolution));
+	WindowID main_window = _create_window(p_mode, p_vsync_mode, p_flags, Rect2i(window_position, p_resolution), INVALID_WINDOW_ID);
 	ERR_FAIL_COND(main_window == INVALID_WINDOW_ID);
 	for (int i = 0; i < WINDOW_FLAG_MAX; i++) {
 		if (p_flags & (1 << i)) {

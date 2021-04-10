@@ -45,7 +45,7 @@ void Popup::_input_from_window(const Ref<InputEvent> &p_event) {
 	}
 
 	Ref<InputEventMouseButton> button = p_event;
-	if (button.is_valid() && (button->get_button_index() == BUTTON_LEFT || button->get_button_index() == BUTTON_RIGHT) && !button->is_pressed() && button->get_window_id() != get_window_id()) {
+	if (button.is_valid() && (button->get_button_index() == MOUSE_BUTTON_LEFT || button->get_button_index() == MOUSE_BUTTON_RIGHT) && !button->is_pressed() && button->get_window_id() != get_window_id()) {
 		// Disable clicks under a time threshold to avoid selection right when opening the popup.
 		uint64_t now = OS::get_singleton()->get_ticks_msec();
 		uint64_t diff = now - popup_time_msec;

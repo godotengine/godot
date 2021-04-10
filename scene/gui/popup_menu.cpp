@@ -31,6 +31,7 @@
 #include "popup_menu.h"
 
 #include "core/input/input.h"
+#include "core/input/input_event.h"
 #include "core/os/keyboard.h"
 #include "core/os/os.h"
 #include "core/string/print_string.h"
@@ -361,7 +362,7 @@ void PopupMenu::_gui_input(const Ref<InputEvent> &p_event) {
 
 		int button_idx = b->get_button_index();
 		if (!control->get_rect().has_point(mouse_position)) {
-			if ((button_idx == BUTTON_LEFT || button_idx == BUTTON_RIGHT) && b->is_pressed() && OS::get_singleton()->get_ticks_msec() - popup_time_msec >= 250) {
+			if ((button_idx == MOUSE_BUTTON_LEFT || button_idx == MOUSE_BUTTON_RIGHT) && b->is_pressed() && OS::get_singleton()->get_ticks_msec() - popup_time_msec >= 250) {
 				hide();
 				return;
 			}
