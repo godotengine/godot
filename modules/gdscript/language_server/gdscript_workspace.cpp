@@ -42,6 +42,7 @@
 #include "scene/resources/packed_scene.h"
 
 void GDScriptWorkspace::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("didDeleteFiles"), &GDScriptWorkspace::did_delete_files);
 	ClassDB::bind_method(D_METHOD("symbol"), &GDScriptWorkspace::symbol);
 	ClassDB::bind_method(D_METHOD("parse_script", "path", "content"), &GDScriptWorkspace::parse_script);
 	ClassDB::bind_method(D_METHOD("parse_local_script", "path"), &GDScriptWorkspace::parse_local_script);
@@ -49,6 +50,16 @@ void GDScriptWorkspace::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_file_uri", "path"), &GDScriptWorkspace::get_file_uri);
 	ClassDB::bind_method(D_METHOD("publish_diagnostics", "path"), &GDScriptWorkspace::publish_diagnostics);
 	ClassDB::bind_method(D_METHOD("generate_script_api", "path"), &GDScriptWorkspace::generate_script_api);
+}
+
+void GDScriptWorkspace::did_delete_files(const Dictionary &p_params) {
+	Array files = p_params["files"];
+	for (int i = 0; i < files.size(); ++i) {
+		Dictionary file = files[i];
+		String uri = file["uri"];
+		String path = get_file_path(uri);
+		parse_script(path, "");
+	}
 }
 
 void GDScriptWorkspace::remove_cache_parser(const String &p_path) {

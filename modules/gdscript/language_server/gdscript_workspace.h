@@ -89,6 +89,7 @@ public:
 	void resolve_document_links(const String &p_uri, List<lsp::DocumentLink> &r_list);
 	Dictionary generate_script_api(const String &p_path);
 	Error resolve_signature(const lsp::TextDocumentPositionParams &p_doc_pos, lsp::SignatureHelp &r_signature);
+	void did_delete_files(const Dictionary &p_params);
 
 	GDScriptWorkspace();
 	~GDScriptWorkspace();

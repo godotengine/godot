@@ -49,8 +49,9 @@ void ExtendGDScriptParser::update_diagnostics() {
 		diagnostic.code = -1;
 		lsp::Range range;
 		lsp::Position pos;
-		int line = LINE_NUMBER_TO_INDEX(error.line);
-		const String &line_text = get_lines()[line];
+		const PackedStringArray lines = get_lines();
+		int line = CLAMP(LINE_NUMBER_TO_INDEX(error.line), 0, lines.size() - 1);
+		const String &line_text = lines[line];
 		pos.line = line;
 		pos.character = line_text.length() - line_text.strip_edges(true, false).length();
 		range.start = pos;
@@ -361,24 +362,73 @@ void ExtendGDScriptParser::parse_function_symbol(const GDScriptParser::FunctionN
 		r_symbol.detail += " -> " + p_func->get_datatype().to_string();
 	}
 
-	for (int i = 0; i < p_func->body->locals.size(); i++) {
-		const SuiteNode::Local &local = p_func->body->locals[i];
-		lsp::DocumentSymbol symbol;
-		symbol.name = local.name;
-		symbol.kind = local.type == SuiteNode::Local::CONSTANT ? lsp::SymbolKind::Constant : lsp::SymbolKind::Variable;
-		symbol.range.start.line = LINE_NUMBER_TO_INDEX(local.start_line);
-		symbol.range.start.character = LINE_NUMBER_TO_INDEX(local.start_column);
-		symbol.range.end.line = LINE_NUMBER_TO_INDEX(local.end_line);
-		symbol.range.end.character = LINE_NUMBER_TO_INDEX(local.end_column);
-		symbol.uri = uri;
-		symbol.script_path = path;
-		symbol.detail = SuiteNode::Local::CONSTANT ? "const " : "var ";
-		symbol.detail += symbol.name;
-		if (local.get_datatype().is_hard_type()) {
-			symbol.detail += ": " + local.get_datatype().to_string();
+	List<GDScriptParser::SuiteNode *> function_nodes;
+
+	List<GDScriptParser::Node *> node_stack;
+	node_stack.push_back(p_func->body);
+
+	while (!node_stack.is_empty()) {
+		GDScriptParser::Node *node = node_stack[0];
+		node_stack.pop_front();
+
+		switch (node->type) {
+			case GDScriptParser::TypeNode::IF: {
+				GDScriptParser::IfNode *if_node = (GDScriptParser::IfNode *)node;
+				node_stack.push_back(if_node->true_block);
+				if (if_node->false_block) {
+					node_stack.push_back(if_node->false_block);
+				}
+			} break;
+
+			case GDScriptParser::TypeNode::FOR: {
+				GDScriptParser::ForNode *for_node = (GDScriptParser::ForNode *)node;
+				node_stack.push_back(for_node->loop);
+			} break;
+
+			case GDScriptParser::TypeNode::WHILE: {
+				GDScriptParser::WhileNode *while_node = (GDScriptParser::WhileNode *)node;
+				node_stack.push_back(while_node->loop);
+			} break;
+
+			case GDScriptParser::TypeNode::MATCH_BRANCH: {
+				GDScriptParser::MatchBranchNode *match_node = (GDScriptParser::MatchBranchNode *)node;
+				node_stack.push_back(match_node->block);
+			} break;
+
+			case GDScriptParser::TypeNode::SUITE: {
+				GDScriptParser::SuiteNode *suite_node = (GDScriptParser::SuiteNode *)node;
+				function_nodes.push_back(suite_node);
+				for (int i = 0; i < suite_node->statements.size(); ++i) {
+					node_stack.push_back(suite_node->statements[i]);
+				}
+			} break;
+
+			default:
+				continue;
 		}
-		symbol.documentation = parse_documentation(LINE_NUMBER_TO_INDEX(local.start_line));
-		r_symbol.children.push_back(symbol);
+	}
+
+	for (List<GDScriptParser::SuiteNode *>::Element *N = function_nodes.front(); N; N = N->next()) {
+		const GDScriptParser::SuiteNode *suite_node = N->get();
+		for (int i = 0; i < suite_node->locals.size(); i++) {
+			const SuiteNode::Local &local = suite_node->locals[i];
+			lsp::DocumentSymbol symbol;
+			symbol.name = local.name;
+			symbol.kind = local.type == SuiteNode::Local::CONSTANT ? lsp::SymbolKind::Constant : lsp::SymbolKind::Variable;
+			symbol.range.start.line = LINE_NUMBER_TO_INDEX(local.start_line);
+			symbol.range.start.character = LINE_NUMBER_TO_INDEX(local.start_column);
+			symbol.range.end.line = LINE_NUMBER_TO_INDEX(local.end_line);
+			symbol.range.end.character = LINE_NUMBER_TO_INDEX(local.end_column);
+			symbol.uri = uri;
+			symbol.script_path = path;
+			symbol.detail = local.type == SuiteNode::Local::CONSTANT ? "const " : "var ";
+			symbol.detail += symbol.name;
+			if (local.get_datatype().is_hard_type()) {
+				symbol.detail += ": " + local.get_datatype().to_string();
+			}
+			symbol.documentation = parse_documentation(LINE_NUMBER_TO_INDEX(local.start_line));
+			r_symbol.children.push_back(symbol);
+		}
 	}
 }
 
