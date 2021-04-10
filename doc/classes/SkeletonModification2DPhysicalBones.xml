@@ -34,7 +34,7 @@
 			</argument>
 			<description>
 				Sets the [PhysicalBone2D] node at [code]joint_idx[/code].
-				[b]Note[/b]: This is just the index used for this modification, not the bone index used in the [Skeleton2D].
+				[b]Note:[/b] This is just the index used for this modification, not the bone index used in the [Skeleton2D].
 			</description>
 		</method>
 		<method name="start_simulation">

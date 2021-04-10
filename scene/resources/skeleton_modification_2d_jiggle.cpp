@@ -429,70 +429,70 @@ int SkeletonModification2DJiggle::get_jiggle_joint_bone_index(int p_joint_idx) c
 	return jiggle_data_chain[p_joint_idx].bone_idx;
 }
 
-void SkeletonModification2DJiggle::set_jiggle_joint_override(int joint_idx, bool p_override) {
-	ERR_FAIL_INDEX(joint_idx, jiggle_data_chain.size());
-	jiggle_data_chain.write[joint_idx].override_defaults = p_override;
+void SkeletonModification2DJiggle::set_jiggle_joint_override(int p_joint_idx, bool p_override) {
+	ERR_FAIL_INDEX(p_joint_idx, jiggle_data_chain.size());
+	jiggle_data_chain.write[p_joint_idx].override_defaults = p_override;
 	_update_jiggle_joint_data();
 	notify_property_list_changed();
 }
 
-bool SkeletonModification2DJiggle::get_jiggle_joint_override(int joint_idx) const {
-	ERR_FAIL_INDEX_V(joint_idx, jiggle_data_chain.size(), false);
-	return jiggle_data_chain[joint_idx].override_defaults;
+bool SkeletonModification2DJiggle::get_jiggle_joint_override(int p_joint_idx) const {
+	ERR_FAIL_INDEX_V(p_joint_idx, jiggle_data_chain.size(), false);
+	return jiggle_data_chain[p_joint_idx].override_defaults;
 }
 
-void SkeletonModification2DJiggle::set_jiggle_joint_stiffness(int joint_idx, float p_stiffness) {
+void SkeletonModification2DJiggle::set_jiggle_joint_stiffness(int p_joint_idx, float p_stiffness) {
 	ERR_FAIL_COND_MSG(p_stiffness < 0, "Stiffness cannot be set to a negative value!");
-	ERR_FAIL_INDEX(joint_idx, jiggle_data_chain.size());
-	jiggle_data_chain.write[joint_idx].stiffness = p_stiffness;
+	ERR_FAIL_INDEX(p_joint_idx, jiggle_data_chain.size());
+	jiggle_data_chain.write[p_joint_idx].stiffness = p_stiffness;
 }
 
-float SkeletonModification2DJiggle::get_jiggle_joint_stiffness(int joint_idx) const {
-	ERR_FAIL_INDEX_V(joint_idx, jiggle_data_chain.size(), -1);
-	return jiggle_data_chain[joint_idx].stiffness;
+float SkeletonModification2DJiggle::get_jiggle_joint_stiffness(int p_joint_idx) const {
+	ERR_FAIL_INDEX_V(p_joint_idx, jiggle_data_chain.size(), -1);
+	return jiggle_data_chain[p_joint_idx].stiffness;
 }
 
-void SkeletonModification2DJiggle::set_jiggle_joint_mass(int joint_idx, float p_mass) {
+void SkeletonModification2DJiggle::set_jiggle_joint_mass(int p_joint_idx, float p_mass) {
 	ERR_FAIL_COND_MSG(p_mass < 0, "Mass cannot be set to a negative value!");
-	ERR_FAIL_INDEX(joint_idx, jiggle_data_chain.size());
-	jiggle_data_chain.write[joint_idx].mass = p_mass;
+	ERR_FAIL_INDEX(p_joint_idx, jiggle_data_chain.size());
+	jiggle_data_chain.write[p_joint_idx].mass = p_mass;
 }
 
-float SkeletonModification2DJiggle::get_jiggle_joint_mass(int joint_idx) const {
-	ERR_FAIL_INDEX_V(joint_idx, jiggle_data_chain.size(), -1);
-	return jiggle_data_chain[joint_idx].mass;
+float SkeletonModification2DJiggle::get_jiggle_joint_mass(int p_joint_idx) const {
+	ERR_FAIL_INDEX_V(p_joint_idx, jiggle_data_chain.size(), -1);
+	return jiggle_data_chain[p_joint_idx].mass;
 }
 
-void SkeletonModification2DJiggle::set_jiggle_joint_damping(int joint_idx, float p_damping) {
+void SkeletonModification2DJiggle::set_jiggle_joint_damping(int p_joint_idx, float p_damping) {
 	ERR_FAIL_COND_MSG(p_damping < 0, "Damping cannot be set to a negative value!");
-	ERR_FAIL_INDEX(joint_idx, jiggle_data_chain.size());
-	jiggle_data_chain.write[joint_idx].damping = p_damping;
+	ERR_FAIL_INDEX(p_joint_idx, jiggle_data_chain.size());
+	jiggle_data_chain.write[p_joint_idx].damping = p_damping;
 }
 
-float SkeletonModification2DJiggle::get_jiggle_joint_damping(int joint_idx) const {
-	ERR_FAIL_INDEX_V(joint_idx, jiggle_data_chain.size(), -1);
-	return jiggle_data_chain[joint_idx].damping;
+float SkeletonModification2DJiggle::get_jiggle_joint_damping(int p_joint_idx) const {
+	ERR_FAIL_INDEX_V(p_joint_idx, jiggle_data_chain.size(), -1);
+	return jiggle_data_chain[p_joint_idx].damping;
 }
 
-void SkeletonModification2DJiggle::set_jiggle_joint_use_gravity(int joint_idx, bool p_use_gravity) {
-	ERR_FAIL_INDEX(joint_idx, jiggle_data_chain.size());
-	jiggle_data_chain.write[joint_idx].use_gravity = p_use_gravity;
+void SkeletonModification2DJiggle::set_jiggle_joint_use_gravity(int p_joint_idx, bool p_use_gravity) {
+	ERR_FAIL_INDEX(p_joint_idx, jiggle_data_chain.size());
+	jiggle_data_chain.write[p_joint_idx].use_gravity = p_use_gravity;
 	notify_property_list_changed();
 }
 
-bool SkeletonModification2DJiggle::get_jiggle_joint_use_gravity(int joint_idx) const {
-	ERR_FAIL_INDEX_V(joint_idx, jiggle_data_chain.size(), false);
-	return jiggle_data_chain[joint_idx].use_gravity;
+bool SkeletonModification2DJiggle::get_jiggle_joint_use_gravity(int p_joint_idx) const {
+	ERR_FAIL_INDEX_V(p_joint_idx, jiggle_data_chain.size(), false);
+	return jiggle_data_chain[p_joint_idx].use_gravity;
 }
 
-void SkeletonModification2DJiggle::set_jiggle_joint_gravity(int joint_idx, Vector2 p_gravity) {
-	ERR_FAIL_INDEX(joint_idx, jiggle_data_chain.size());
-	jiggle_data_chain.write[joint_idx].gravity = p_gravity;
+void SkeletonModification2DJiggle::set_jiggle_joint_gravity(int p_joint_idx, Vector2 p_gravity) {
+	ERR_FAIL_INDEX(p_joint_idx, jiggle_data_chain.size());
+	jiggle_data_chain.write[p_joint_idx].gravity = p_gravity;
 }
 
-Vector2 SkeletonModification2DJiggle::get_jiggle_joint_gravity(int joint_idx) const {
-	ERR_FAIL_INDEX_V(joint_idx, jiggle_data_chain.size(), Vector2(0, 0));
-	return jiggle_data_chain[joint_idx].gravity;
+Vector2 SkeletonModification2DJiggle::get_jiggle_joint_gravity(int p_joint_idx) const {
+	ERR_FAIL_INDEX_V(p_joint_idx, jiggle_data_chain.size(), Vector2(0, 0));
+	return jiggle_data_chain[p_joint_idx].gravity;
 }
 
 void SkeletonModification2DJiggle::_bind_methods() {

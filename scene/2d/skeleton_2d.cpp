@@ -314,20 +314,20 @@ void Bone2D::_notification(int p_what) {
 }
 
 #ifdef TOOLS_ENABLED
-bool Bone2D::_editor_get_bone_shape(Vector<Vector2> *shape, Vector<Vector2> *outline_shape, Bone2D *other_bone) {
+bool Bone2D::_editor_get_bone_shape(Vector<Vector2> *p_shape, Vector<Vector2> *p_outline_shape, Bone2D *p_other_bone) {
 	int bone_width = EditorSettings::get_singleton()->get("editors/2d/bone_width");
 	int bone_outline_width = EditorSettings::get_singleton()->get("editors/2d/bone_outline_size");
 
 	if (!is_inside_tree()) {
 		return false; //may have been removed
 	}
-	if (!other_bone && length <= 0) {
+	if (!p_other_bone && length <= 0) {
 		return false;
 	}
 
 	Vector2 rel;
-	if (other_bone) {
-		rel = (other_bone->get_global_transform().get_origin() - get_global_transform().get_origin());
+	if (p_other_bone) {
+		rel = (p_other_bone->get_global_transform().get_origin() - get_global_transform().get_origin());
 		rel = rel.rotated(-get_global_rotation()); // Undo Bone2D node's rotation so its drawn correctly regardless of the node's rotation
 	} else {
 		float angle_to_use = get_rotation() + bone_angle;
@@ -339,22 +339,22 @@ bool Bone2D::_editor_get_bone_shape(Vector<Vector2> *shape, Vector<Vector2> *out
 	Vector2 reln = rel.normalized();
 	Vector2 reltn = relt.normalized();
 
-	if (shape) {
-		shape->clear();
-		shape->push_back(Vector2(0, 0));
-		shape->push_back(rel * 0.2 + relt);
-		shape->push_back(rel);
-		shape->push_back(rel * 0.2 - relt);
+	if (p_shape) {
+		p_shape->clear();
+		p_shape->push_back(Vector2(0, 0));
+		p_shape->push_back(rel * 0.2 + relt);
+		p_shape->push_back(rel);
+		p_shape->push_back(rel * 0.2 - relt);
 	}
 
-	if (outline_shape) {
-		outline_shape->clear();
-		outline_shape->push_back((-reln - reltn) * bone_outline_width);
-		outline_shape->push_back((-reln + reltn) * bone_outline_width);
-		outline_shape->push_back(rel * 0.2 + relt + reltn * bone_outline_width);
-		outline_shape->push_back(rel + (reln + reltn) * bone_outline_width);
-		outline_shape->push_back(rel + (reln - reltn) * bone_outline_width);
-		outline_shape->push_back(rel * 0.2 - relt - reltn * bone_outline_width);
+	if (p_outline_shape) {
+		p_outline_shape->clear();
+		p_outline_shape->push_back((-reln - reltn) * bone_outline_width);
+		p_outline_shape->push_back((-reln + reltn) * bone_outline_width);
+		p_outline_shape->push_back(rel * 0.2 + relt + reltn * bone_outline_width);
+		p_outline_shape->push_back(rel + (reln + reltn) * bone_outline_width);
+		p_outline_shape->push_back(rel + (reln - reltn) * bone_outline_width);
+		p_outline_shape->push_back(rel * 0.2 - relt - reltn * bone_outline_width);
 	}
 	return true;
 }
@@ -696,16 +696,16 @@ RID Skeleton2D::get_skeleton() const {
 	return skeleton;
 }
 
-void Skeleton2D::set_bone_local_pose_override(int bone_idx, Transform2D p_override, float amount, bool persistent) {
-	ERR_FAIL_INDEX_MSG(bone_idx, bones.size(), "Bone index is out of range!");
-	bones.write[bone_idx].local_pose_override = p_override;
-	bones.write[bone_idx].local_pose_override_amount = amount;
-	bones.write[bone_idx].local_pose_override_persistent = persistent;
+void Skeleton2D::set_bone_local_pose_override(int p_bone_idx, Transform2D p_override, float p_amount, bool p_persistent) {
+	ERR_FAIL_INDEX_MSG(p_bone_idx, bones.size(), "Bone index is out of range!");
+	bones.write[p_bone_idx].local_pose_override = p_override;
+	bones.write[p_bone_idx].local_pose_override_amount = p_amount;
+	bones.write[p_bone_idx].local_pose_override_persistent = p_persistent;
 }
 
-Transform2D Skeleton2D::get_bone_local_pose_override(int bone_idx) {
-	ERR_FAIL_INDEX_V_MSG(bone_idx, bones.size(), Transform2D(), "Bone index is out of range!");
-	return bones[bone_idx].local_pose_override;
+Transform2D Skeleton2D::get_bone_local_pose_override(int p_bone_idx) {
+	ERR_FAIL_INDEX_V_MSG(p_bone_idx, bones.size(), Transform2D(), "Bone index is out of range!");
+	return bones[p_bone_idx].local_pose_override;
 }
 
 void Skeleton2D::set_modification_stack(Ref<SkeletonModificationStack2D> p_stack) {
@@ -734,7 +734,7 @@ Ref<SkeletonModificationStack2D> Skeleton2D::get_modification_stack() const {
 	return modification_stack;
 }
 
-void Skeleton2D::execute_modifications(float delta, int p_execution_mode) {
+void Skeleton2D::execute_modifications(float p_delta, int p_execution_mode) {
 	if (!modification_stack.is_valid()) {
 		return;
 	}
@@ -748,7 +748,7 @@ void Skeleton2D::execute_modifications(float delta, int p_execution_mode) {
 		modification_stack->set_skeleton(this);
 	}
 
-	modification_stack->execute(delta, p_execution_mode);
+	modification_stack->execute(p_delta, p_execution_mode);
 
 	// Only apply the local pose override on _process. Otherwise, just calculate the local_pose_override and reset the transform.
 	if (p_execution_mode == SkeletonModificationStack2D::EXECUTION_MODE::execution_mode_process) {

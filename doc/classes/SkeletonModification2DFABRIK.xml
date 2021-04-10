@@ -172,7 +172,7 @@
 			</argument>
 			<description>
 				Sets whether the joint at [code]joint_idx[/code] will use the target node's rotation rather than letting FABRIK rotate the node.
-				[b]Note[/b]: This option only works for the tip/final joint in the chain. For all other nodes, this option will be ignored.
+				[b]Note:[/b] This option only works for the tip/final joint in the chain. For all other nodes, this option will be ignored.
 			</description>
 		</method>
 	</methods>

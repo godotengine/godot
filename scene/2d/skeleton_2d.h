@@ -58,7 +58,7 @@ class Bone2D : public Node2D {
 
 #ifdef TOOLS_ENABLED
 	RID editor_gizmo_rid;
-	bool _editor_get_bone_shape(Vector<Vector2> *shape, Vector<Vector2> *outline_shape, Bone2D *other_bone);
+	bool _editor_get_bone_shape(Vector<Vector2> *p_shape, Vector<Vector2> *p_outline_shape, Bone2D *p_other_bone);
 	bool _editor_show_bone_gizmo = true;
 #endif // TOOLS ENABLED
 
@@ -153,12 +153,12 @@ public:
 
 	RID get_skeleton() const;
 
-	void set_bone_local_pose_override(int bone_idx, Transform2D p_override, float amount, bool persistent = true);
-	Transform2D get_bone_local_pose_override(int bone_idx);
+	void set_bone_local_pose_override(int p_bone_idx, Transform2D p_override, float p_amount, bool p_persistent = true);
+	Transform2D get_bone_local_pose_override(int p_bone_idx);
 
 	Ref<SkeletonModificationStack2D> get_modification_stack() const;
 	void set_modification_stack(Ref<SkeletonModificationStack2D> p_stack);
-	void execute_modifications(float delta, int p_execution_mode);
+	void execute_modifications(float p_delta, int p_execution_mode);
 
 	Skeleton2D();
 	~Skeleton2D();

@@ -4838,10 +4838,10 @@ void CanvasItemEditor::_popup_callback(int p_op) {
 	}
 }
 
-void CanvasItemEditor::_set_owner_for_node_and_children(Node *node, Node *owner) {
-	node->set_owner(owner);
-	for (int i = 0; i < node->get_child_count(); i++) {
-		_set_owner_for_node_and_children(node->get_child(i), owner);
+void CanvasItemEditor::_set_owner_for_node_and_children(Node *p_node, Node *p_owner) {
+	p_node->set_owner(p_owner);
+	for (int i = 0; i < p_node->get_child_count(); i++) {
+		_set_owner_for_node_and_children(p_node->get_child(i), p_owner);
 	}
 }
 
