@@ -128,7 +128,7 @@ protected:
 	bool sleeping = false;
 	bool ccd = false;
 
-	int max_contacts_reported = 0;
+	int max_contacts_reported = 1;
 
 	bool custom_integrator = false;
 

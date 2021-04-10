@@ -839,6 +839,10 @@ void RigidBody2D::_bind_methods() {
 RigidBody2D::RigidBody2D() :
 		PhysicsBody2D(PhysicsServer2D::BODY_MODE_RIGID) {
 	PhysicsServer2D::get_singleton()->body_set_force_integration_callback(get_rid(), this, "_direct_state_changed");
+	// Enable the contact monitor by default.
+	// This has a small performance impact, but it results in better usability, especially for beginners.
+	// The user will need to increase `max_contacts_reported` above 0 to get information about contacts.
+	set_contact_monitor(true);
 }
 
 RigidBody2D::~RigidBody2D() {

@@ -130,7 +130,7 @@ private:
 	real_t angular_velocity = 0.0;
 	bool sleeping = false;
 
-	int max_contacts_reported = 0;
+	int max_contacts_reported = 1;
 
 	bool custom_integrator = false;
 
