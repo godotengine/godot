@@ -572,7 +572,20 @@ void GDScriptAnalyzer::resolve_class_interface(GDScriptParser::ClassNode *p_clas
 
 				// Apply annotations.
 				for (List<GDScriptParser::AnnotationNode *>::Element *E = member.variable->annotations.front(); E; E = E->next()) {
-					E->get()->apply(parser, member.variable);
+					GDScriptParser::AnnotationNode *annotation = E->get();
+
+					String hint_string;
+					for (int j = 0; j < annotation->arguments.size(); j++) {
+						if (j > 0) {
+							hint_string += ",";
+						}
+						GDScriptParser::ExpressionNode *expression = annotation->arguments[j];
+						reduce_expression(expression);
+						hint_string += String(expression->reduced_value);
+					}
+					member.variable->export_info.hint_string = hint_string;
+
+					annotation->apply(parser, member.variable);
 				}
 			} break;
 			case GDScriptParser::ClassNode::Member::CONSTANT: {

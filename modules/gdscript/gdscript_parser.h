@@ -319,7 +319,6 @@ public:
 	struct AnnotationNode : public Node {
 		StringName name;
 		Vector<ExpressionNode *> arguments;
-		Vector<Variant> resolved_arguments;
 
 		AnnotationInfo *info = nullptr;
 

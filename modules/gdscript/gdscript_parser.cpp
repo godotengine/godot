@@ -3135,22 +3135,25 @@ bool GDScriptParser::validate_annotation_arguments(AnnotationNode *p_annotation)
 					const Variant *name = args.ptr();
 					Variant r;
 					Variant::construct(parameter.type, r, &(name), 1, error);
-					p_annotation->resolved_arguments.push_back(r);
 					if (error.error != Callable::CallError::CALL_OK) {
 						push_error(vformat(R"(Expected %s as argument %d of annotation "%s").)", Variant::get_type_name(parameter.type), i + 1, p_annotation->name));
-						p_annotation->resolved_arguments.remove(p_annotation->resolved_arguments.size() - 1);
 						return false;
 					}
 					break;
 				}
 				[[fallthrough]];
 			default: {
-				if (argument->type != Node::LITERAL) {
+				ExpressionNode *argument_to_check = argument;
+				if (argument->type == Node::UNARY_OPERATOR) {
+					argument_to_check = static_cast<UnaryOpNode *>(argument)->operand;
+				}
+
+				if (argument_to_check->type != Node::LITERAL) {
 					push_error(vformat(R"(Expected %s as argument %d of annotation "%s").)", Variant::get_type_name(parameter.type), i + 1, p_annotation->name));
 					return false;
 				}
 
-				Variant value = static_cast<LiteralNode *>(argument)->value;
+				Variant value = static_cast<LiteralNode *>(argument_to_check)->value;
 				if (!Variant::can_convert_strict(value.get_type(), parameter.type)) {
 					push_error(vformat(R"(Expected %s as argument %d of annotation "%s").)", Variant::get_type_name(parameter.type), i + 1, p_annotation->name));
 					return false;
@@ -3159,10 +3162,8 @@ bool GDScriptParser::validate_annotation_arguments(AnnotationNode *p_annotation)
 				const Variant *args = &value;
 				Variant r;
 				Variant::construct(parameter.type, r, &(args), 1, error);
-				p_annotation->resolved_arguments.push_back(r);
 				if (error.error != Callable::CallError::CALL_OK) {
 					push_error(vformat(R"(Expected %s as argument %d of annotation "%s").)", Variant::get_type_name(parameter.type), i + 1, p_annotation->name));
-					p_annotation->resolved_arguments.remove(p_annotation->resolved_arguments.size() - 1);
 					return false;
 				}
 				break;
@@ -3181,7 +3182,10 @@ bool GDScriptParser::tool_annotation(const AnnotationNode *p_annotation, Node *p
 bool GDScriptParser::icon_annotation(const AnnotationNode *p_annotation, Node *p_node) {
 	ERR_FAIL_COND_V_MSG(p_node->type != Node::CLASS, false, R"("@icon" annotation can only be applied to classes.)");
 	ClassNode *p_class = static_cast<ClassNode *>(p_node);
-	p_class->icon_path = p_annotation->resolved_arguments[0];
+	ExpressionNode *argument = p_annotation->arguments[0];
+	if (argument->type == Node::LITERAL) {
+		p_class->icon_path = static_cast<LiteralNode *>(argument)->value;
+	}
 	return true;
 }
 
@@ -3213,17 +3217,7 @@ bool GDScriptParser::export_annotations(const AnnotationNode *p_annotation, Node
 	variable->export_info.type = t_type;
 	variable->export_info.hint = t_hint;
 
-	String hint_string;
-	for (int i = 0; i < p_annotation->resolved_arguments.size(); i++) {
-		if (i > 0) {
-			hint_string += ",";
-		}
-		hint_string += String(p_annotation->resolved_arguments[i]);
-	}
-
-	variable->export_info.hint_string = hint_string;
-
-	// This is called after tne analyzer is done finding the type, so this should be set here.
+	// This is called after the analyzer is done finding the type, so this should be set here.
 	DataType export_type = variable->get_datatype();
 
 	if (p_annotation->name == "@export") {
