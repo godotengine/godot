@@ -515,6 +515,8 @@ void Skeleton3DEditor::_joint_tree_selection_changed() {
 		rest_editor->set_target(bone_path + "rest");
 		custom_pose_editor->set_target(bone_path + "custom_pose");
 
+		_update_properties();
+
 		pose_editor->set_visible(true);
 		rest_editor->set_visible(true);
 		custom_pose_editor->set_visible(true);
