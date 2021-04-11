@@ -1334,7 +1334,7 @@ Vector<uint8_t> _File::get_buffer(int p_length) const {
 	ERR_FAIL_COND_V(len < 0, Vector<uint8_t>());
 
 	if (len < p_length) {
-		data.resize(p_length);
+		data.resize(len);
 	}
 
 	return data;
