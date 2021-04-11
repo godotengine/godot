@@ -31,6 +31,8 @@
 #ifndef DISPLAY_SERVER_X11_H
 #define DISPLAY_SERVER_X11_H
 
+#define X11_ENABLED
+#define VULKAN_ENABLED
 #ifdef X11_ENABLED
 
 #include "servers/display_server.h"
@@ -114,7 +116,7 @@ class DisplayServerX11 : public DisplayServer {
 
 	struct WindowData {
 		Window x11_window;
-		WindowID parent;
+		WindowID parent = INVALID_WINDOW_ID;
 		::XIC xic;
 
 		Size2i min_size;
@@ -154,6 +156,7 @@ class DisplayServerX11 : public DisplayServer {
 	Map<WindowID, WindowData> windows;
 
 	WindowID window_id_counter = MAIN_WINDOW_ID;
+	void _constrain_child_window_size(const WindowData &p_window, Rect2i *r_rect);
 	WindowID _create_window(WindowMode p_mode, VSyncMode p_vsync_mode, uint32_t p_flags, const Rect2i &p_rect, const WindowID p_parent_window_id);
 
 	String internal_clipboard;
