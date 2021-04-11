@@ -3560,9 +3560,9 @@ Vector3 SpatialEditorViewport::_get_instance_position(const Point2 &p_pos) const
 AABB SpatialEditorViewport::_calculate_spatial_bounds(const Spatial *p_parent, bool p_exclude_toplevel_transform) {
 	AABB bounds;
 
-	const MeshInstance *mesh_instance = Object::cast_to<MeshInstance>(p_parent);
-	if (mesh_instance) {
-		bounds = mesh_instance->get_aabb();
+	const VisualInstance *visual_instance = Object::cast_to<VisualInstance>(p_parent);
+	if (visual_instance) {
+		bounds = visual_instance->get_aabb();
 	}
 
 	for (int i = 0; i < p_parent->get_child_count(); i++) {
