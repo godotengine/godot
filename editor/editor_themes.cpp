@@ -410,9 +410,13 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	theme->set_color("box_selection_fill_color", "Editor", accent_color * Color(1, 1, 1, 0.3));
 	theme->set_color("box_selection_stroke_color", "Editor", accent_color * Color(1, 1, 1, 0.8));
 
-	theme->set_color("axis_x_color", "Editor", Color(0.96, 0.20, 0.32));
-	theme->set_color("axis_y_color", "Editor", Color(0.53, 0.84, 0.01));
-	theme->set_color("axis_z_color", "Editor", Color(0.16, 0.55, 0.96));
+	const Color axis_x_color = Color(0.96, 0.20, 0.32);
+	const Color axis_y_color = Color(0.53, 0.84, 0.01);
+	const Color axis_z_color = Color(0.16, 0.55, 0.96);
+
+	theme->set_color("axis_x_color", "Editor", axis_x_color);
+	theme->set_color("axis_y_color", "Editor", axis_y_color);
+	theme->set_color("axis_z_color", "Editor", axis_z_color);
 
 	theme->set_color("font_color", "Editor", font_color);
 	theme->set_color("highlighted_font_color", "Editor", font_hover_color);
@@ -1285,6 +1289,11 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	theme->set_icon("picker_cursor", "ColorPicker", theme->get_icon("PickerCursor", "EditorIcons"));
 
 	theme->set_icon("bg", "ColorPickerButton", theme->get_icon("GuiMiniCheckerboard", "EditorIcons"));
+
+	// Texture Region Editor
+	theme->set_color("base_line_color", "TextureRegionEditor", mono_color);
+	theme->set_color("v_line_color", "TextureRegionEditor", axis_x_color);
+	theme->set_color("h_line_color", "TextureRegionEditor", axis_y_color);
 
 	// Information on 3D viewport
 	Ref<StyleBoxFlat> style_info_3d_viewport = style_default->duplicate();
