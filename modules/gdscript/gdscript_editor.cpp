@@ -738,7 +738,12 @@ static void _list_available_types(bool p_inherit_only, GDScriptParser::Completio
 
 static void _find_identifiers_in_suite(const GDScriptParser::SuiteNode *p_suite, Map<String, ScriptCodeCompletionOption> &r_result) {
 	for (int i = 0; i < p_suite->locals.size(); i++) {
-		ScriptCodeCompletionOption option(p_suite->locals[i].name, ScriptCodeCompletionOption::KIND_VARIABLE);
+		ScriptCodeCompletionOption option;
+		if (p_suite->locals[i].type == GDScriptParser::SuiteNode::Local::CONSTANT) {
+			option = ScriptCodeCompletionOption(p_suite->locals[i].name, ScriptCodeCompletionOption::KIND_CONSTANT);
+		} else {
+			option = ScriptCodeCompletionOption(p_suite->locals[i].name, ScriptCodeCompletionOption::KIND_VARIABLE);
+		}
 		r_result.insert(option.display, option);
 	}
 	if (p_suite->parent_block) {
