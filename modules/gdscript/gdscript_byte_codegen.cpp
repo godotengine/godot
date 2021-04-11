@@ -391,7 +391,7 @@ void GDScriptByteCodeGenerator::write_type_test(const Address &p_target, const A
 }
 
 void GDScriptByteCodeGenerator::write_type_test_builtin(const Address &p_target, const Address &p_source, Variant::Type p_type) {
-	append(GDScriptFunction::OPCODE_IS_BUILTIN, 3);
+	append(GDScriptFunction::OPCODE_IS_BUILTIN, 2);
 	append(p_source);
 	append(p_target);
 	append(p_type);
