@@ -389,6 +389,21 @@ void CPUParticles::set_emission_normals(const PoolVector<Vector3> &p_normals) {
 void CPUParticles::set_emission_colors(const PoolVector<Color> &p_colors) {
 	emission_colors = p_colors;
 }
+void CPUParticles::set_emission_ring_height(float p_height) {
+	emission_ring_height = p_height;
+}
+
+void CPUParticles::set_emission_ring_radius(float p_radius) {
+	emission_ring_radius = p_radius;
+}
+
+void CPUParticles::set_emission_ring_inner_radius(float p_offset) {
+	emission_ring_inner_radius = p_offset;
+}
+
+void CPUParticles::set_emission_ring_axis(Vector3 p_axis) {
+	emission_ring_axis = p_axis;
+}
 
 float CPUParticles::get_emission_sphere_radius() const {
 	return emission_sphere_radius;
@@ -405,6 +420,22 @@ PoolVector<Vector3> CPUParticles::get_emission_normals() const {
 
 PoolVector<Color> CPUParticles::get_emission_colors() const {
 	return emission_colors;
+}
+
+float CPUParticles::get_emission_ring_height() const {
+	return emission_ring_height;
+}
+
+float CPUParticles::get_emission_ring_inner_radius() const {
+	return emission_ring_inner_radius;
+}
+
+float CPUParticles::get_emission_ring_radius() const {
+	return emission_ring_radius;
+}
+
+Vector3 CPUParticles::get_emission_ring_axis() const {
+	return emission_ring_axis;
 }
 
 CPUParticles::EmissionShape CPUParticles::get_emission_shape() const {
@@ -431,11 +462,15 @@ void CPUParticles::_validate_property(PropertyInfo &property) const {
 		property.usage = 0;
 	}
 
-	if ((property.name == "emission_point_texture" || property.name == "emission_color_texture") && (emission_shape < EMISSION_SHAPE_POINTS)) {
+	if ((property.name == "emission_points" || property.name == "emission_colors") && (emission_shape != EMISSION_SHAPE_POINTS) && (emission_shape != EMISSION_SHAPE_DIRECTED_POINTS)) {
 		property.usage = 0;
 	}
 
 	if (property.name == "emission_normals" && emission_shape != EMISSION_SHAPE_DIRECTED_POINTS) {
+		property.usage = 0;
+	}
+
+	if (property.name.begins_with("emission_ring") && emission_shape != EMISSION_SHAPE_RING) {
 		property.usage = 0;
 	}
 
@@ -734,6 +769,21 @@ void CPUParticles::_particles_process(float p_delta) {
 						p.base_color = emission_colors.get(random_idx);
 					}
 				} break;
+				case EMISSION_SHAPE_RING: {
+					float ring_random_angle = Math::randf() * 2.0 * Math_PI;
+					float ring_random_radius = Math::randf() * (emission_ring_radius - emission_ring_inner_radius) + emission_ring_inner_radius;
+					Vector3 axis = emission_ring_axis.normalized();
+					Vector3 ortho_axis = Vector3();
+					if (axis == Vector3(1.0, 0.0, 0.0)) {
+						ortho_axis = Vector3(0.0, 1.0, 0.0).cross(axis);
+					} else {
+						ortho_axis = Vector3(1.0, 0.0, 0.0).cross(axis);
+					}
+					ortho_axis = ortho_axis.normalized();
+					ortho_axis.rotate(axis, ring_random_angle);
+					ortho_axis = ortho_axis.normalized();
+					p.transform.origin = ortho_axis * ring_random_radius + (Math::randf() * emission_ring_height - emission_ring_height / 2.0) * axis;
+				}
 				case EMISSION_SHAPE_MAX: { // Max value for validity check.
 					break;
 				}
@@ -1194,6 +1244,10 @@ void CPUParticles::convert_from_particles(Node *p_particles) {
 	set_emission_shape(EmissionShape(material->get_emission_shape()));
 	set_emission_sphere_radius(material->get_emission_sphere_radius());
 	set_emission_box_extents(material->get_emission_box_extents());
+	set_emission_ring_height(material->get_emission_ring_height());
+	set_emission_ring_inner_radius(material->get_emission_ring_inner_radius());
+	set_emission_ring_radius(material->get_emission_ring_radius());
+	set_emission_ring_axis(material->get_emission_ring_axis());
 
 	set_gravity(material->get_gravity());
 	set_lifetime_randomness(material->get_lifetime_randomness());
@@ -1327,6 +1381,18 @@ void CPUParticles::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_emission_colors", "array"), &CPUParticles::set_emission_colors);
 	ClassDB::bind_method(D_METHOD("get_emission_colors"), &CPUParticles::get_emission_colors);
 
+	ClassDB::bind_method(D_METHOD("set_emission_ring_radius", "radius"), &CPUParticles::set_emission_ring_radius);
+	ClassDB::bind_method(D_METHOD("get_emission_ring_radius"), &CPUParticles::get_emission_ring_radius);
+
+	ClassDB::bind_method(D_METHOD("set_emission_ring_inner_radius", "offset"), &CPUParticles::set_emission_ring_inner_radius);
+	ClassDB::bind_method(D_METHOD("get_emission_ring_inner_radius"), &CPUParticles::get_emission_ring_inner_radius);
+
+	ClassDB::bind_method(D_METHOD("set_emission_ring_height", "height"), &CPUParticles::set_emission_ring_height);
+	ClassDB::bind_method(D_METHOD("get_emission_ring_height"), &CPUParticles::get_emission_ring_height);
+
+	ClassDB::bind_method(D_METHOD("set_emission_ring_axis", "axis"), &CPUParticles::set_emission_ring_axis);
+	ClassDB::bind_method(D_METHOD("get_emission_ring_axis"), &CPUParticles::get_emission_ring_axis);
+
 	ClassDB::bind_method(D_METHOD("get_gravity"), &CPUParticles::get_gravity);
 	ClassDB::bind_method(D_METHOD("set_gravity", "accel_vec"), &CPUParticles::set_gravity);
 
@@ -1335,12 +1401,17 @@ void CPUParticles::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_update_render_thread"), &CPUParticles::_update_render_thread);
 
 	ADD_GROUP("Emission Shape", "emission_");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "emission_shape", PROPERTY_HINT_ENUM, "Point,Sphere,Box,Points,Directed Points", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED), "set_emission_shape", "get_emission_shape");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "emission_shape", PROPERTY_HINT_ENUM, "Point,Sphere,Box,Points,Directed Points, Ring", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED), "set_emission_shape", "get_emission_shape");
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "emission_sphere_radius", PROPERTY_HINT_RANGE, "0.01,128,0.01"), "set_emission_sphere_radius", "get_emission_sphere_radius");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "emission_box_extents"), "set_emission_box_extents", "get_emission_box_extents");
 	ADD_PROPERTY(PropertyInfo(Variant::POOL_VECTOR3_ARRAY, "emission_points"), "set_emission_points", "get_emission_points");
 	ADD_PROPERTY(PropertyInfo(Variant::POOL_VECTOR3_ARRAY, "emission_normals"), "set_emission_normals", "get_emission_normals");
 	ADD_PROPERTY(PropertyInfo(Variant::POOL_COLOR_ARRAY, "emission_colors"), "set_emission_colors", "get_emission_colors");
+	ADD_PROPERTY(PropertyInfo(Variant::REAL, "emission_ring_radius", PROPERTY_HINT_RANGE, "0.01,1000,0.01,or_greater"), "set_emission_ring_radius", "get_emission_ring_radius");
+	ADD_PROPERTY(PropertyInfo(Variant::REAL, "emission_ring_inner_radius", PROPERTY_HINT_RANGE, "0.0,1000,0.01,or_greater"), "set_emission_ring_inner_radius", "get_emission_ring_inner_radius");
+	ADD_PROPERTY(PropertyInfo(Variant::REAL, "emission_ring_height", PROPERTY_HINT_RANGE, "0.0,100,0.01,or_greater"), "set_emission_ring_height", "get_emission_ring_height");
+	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "emission_ring_axis"), "set_emission_ring_axis", "get_emission_ring_axis");
+
 	ADD_GROUP("Flags", "flag_");
 	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "flag_align_y"), "set_particle_flag", "get_particle_flag", FLAG_ALIGN_Y_TO_VELOCITY);
 	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "flag_rotate_y"), "set_particle_flag", "get_particle_flag", FLAG_ROTATE_Y);
@@ -1426,6 +1497,7 @@ void CPUParticles::_bind_methods() {
 	BIND_ENUM_CONSTANT(EMISSION_SHAPE_BOX);
 	BIND_ENUM_CONSTANT(EMISSION_SHAPE_POINTS);
 	BIND_ENUM_CONSTANT(EMISSION_SHAPE_DIRECTED_POINTS);
+	BIND_ENUM_CONSTANT(EMISSION_SHAPE_RING);
 	BIND_ENUM_CONSTANT(EMISSION_SHAPE_MAX);
 }
 
@@ -1476,6 +1548,10 @@ CPUParticles::CPUParticles() {
 	set_emission_shape(EMISSION_SHAPE_POINT);
 	set_emission_sphere_radius(1);
 	set_emission_box_extents(Vector3(1, 1, 1));
+	set_emission_ring_height(1.0);
+	set_emission_ring_radius(1.0);
+	set_emission_ring_inner_radius(0.0);
+	set_emission_ring_axis(Vector3(0.0, 0.0, 1.0));
 
 	set_gravity(Vector3(0, -9.8, 0));
 

@@ -77,6 +77,7 @@ public:
 		EMISSION_SHAPE_BOX,
 		EMISSION_SHAPE_POINTS,
 		EMISSION_SHAPE_DIRECTED_POINTS,
+		EMISSION_SHAPE_RING,
 		EMISSION_SHAPE_MAX
 	};
 
@@ -172,6 +173,10 @@ private:
 	PoolVector<Vector3> emission_normals;
 	PoolVector<Color> emission_colors;
 	int emission_point_count;
+	float emission_ring_height;
+	float emission_ring_inner_radius;
+	float emission_ring_radius;
+	Vector3 emission_ring_axis;
 
 	Vector3 gravity;
 
@@ -269,6 +274,10 @@ public:
 	void set_emission_normals(const PoolVector<Vector3> &p_normals);
 	void set_emission_colors(const PoolVector<Color> &p_colors);
 	void set_emission_point_count(int p_count);
+	void set_emission_ring_height(float p_height);
+	void set_emission_ring_inner_radius(float p_inner_radius);
+	void set_emission_ring_radius(float p_radius);
+	void set_emission_ring_axis(Vector3 p_axis);
 
 	EmissionShape get_emission_shape() const;
 	float get_emission_sphere_radius() const;
@@ -277,6 +286,10 @@ public:
 	PoolVector<Vector3> get_emission_normals() const;
 	PoolVector<Color> get_emission_colors() const;
 	int get_emission_point_count() const;
+	float get_emission_ring_height() const;
+	float get_emission_ring_inner_radius() const;
+	float get_emission_ring_radius() const;
+	Vector3 get_emission_ring_axis() const;
 
 	void set_gravity(const Vector3 &p_gravity);
 	Vector3 get_gravity() const;
