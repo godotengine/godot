@@ -31,19 +31,23 @@
 #include "step_2d_sw.h"
 #include "core/os/os.h"
 
-void Step2DSW::_populate_island(Body2DSW *p_body, Body2DSW **p_island, Constraint2DSW **p_constraint_island) {
-	p_body->set_island_step(_step);
-	p_body->set_island_next(*p_island);
-	*p_island = p_body;
+#define BODY_ISLAND_COUNT_RESERVE 128
+#define BODY_ISLAND_SIZE_RESERVE 512
+#define ISLAND_COUNT_RESERVE 128
+#define ISLAND_SIZE_RESERVE 512
 
-	for (const List<Pair<Constraint2DSW *, int>>::Element *E = p_body->get_constraint_list().front(); E; E = E->next()) {
+void Step2DSW::_populate_island(Body2DSW *p_body, LocalVector<Body2DSW *> &p_body_island, LocalVector<Constraint2DSW *> &p_constraint_island) {
+	p_body->set_island_step(_step);
+	p_body_island.push_back(p_body);
+
+	// Faster with reversed iterations.
+	for (const List<Pair<Constraint2DSW *, int>>::Element *E = p_body->get_constraint_list().back(); E; E = E->prev()) {
 		Constraint2DSW *c = (Constraint2DSW *)E->get().first;
 		if (c->get_island_step() == _step) {
 			continue; //already processed
 		}
 		c->set_island_step(_step);
-		c->set_island_next(*p_constraint_island);
-		*p_constraint_island = c;
+		p_constraint_island.push_back(c);
 
 		for (int i = 0; i < c->get_body_count(); i++) {
 			if (i == E->get().second) {
@@ -53,78 +57,62 @@ void Step2DSW::_populate_island(Body2DSW *p_body, Body2DSW **p_island, Constrain
 			if (b->get_island_step() == _step || b->get_mode() == PhysicsServer2D::BODY_MODE_STATIC || b->get_mode() == PhysicsServer2D::BODY_MODE_KINEMATIC) {
 				continue; //no go
 			}
-			_populate_island(c->get_body_ptr()[i], p_island, p_constraint_island);
+			_populate_island(c->get_body_ptr()[i], p_body_island, p_constraint_island);
 		}
 	}
 }
 
-bool Step2DSW::_setup_island(Constraint2DSW *p_island, real_t p_delta) {
-	Constraint2DSW *ci = p_island;
-	Constraint2DSW *prev_ci = nullptr;
-	bool removed_root = false;
-	while (ci) {
-		bool process = ci->setup(p_delta);
-
-		if (!process) {
-			//remove from island if process fails
-			if (prev_ci) {
-				prev_ci->set_island_next(ci->get_island_next());
-			} else {
-				removed_root = true;
-				prev_ci = ci;
-			}
-		} else {
-			prev_ci = ci;
+void Step2DSW::_setup_island(LocalVector<Constraint2DSW *> &p_constraint_island, real_t p_delta) {
+	uint32_t constraint_count = p_constraint_island.size();
+	uint32_t valid_constraint_count = 0;
+	for (uint32_t constraint_index = 0; constraint_index < constraint_count; ++constraint_index) {
+		Constraint2DSW *constraint = p_constraint_island[constraint_index];
+		if (p_constraint_island[constraint_index]->setup(p_delta)) {
+			// Keep this constraint for solving.
+			p_constraint_island[valid_constraint_count++] = constraint;
 		}
-		ci = ci->get_island_next();
 	}
-
-	return removed_root;
+	p_constraint_island.resize(valid_constraint_count);
 }
 
-void Step2DSW::_solve_island(Constraint2DSW *p_island, int p_iterations, real_t p_delta) {
+void Step2DSW::_solve_island(LocalVector<Constraint2DSW *> &p_constraint_island, int p_iterations, real_t p_delta) {
 	for (int i = 0; i < p_iterations; i++) {
-		Constraint2DSW *ci = p_island;
-		while (ci) {
-			ci->solve(p_delta);
-			ci = ci->get_island_next();
+		uint32_t constraint_count = p_constraint_island.size();
+		for (uint32_t constraint_index = 0; constraint_index < constraint_count; ++constraint_index) {
+			p_constraint_island[constraint_index]->solve(p_delta);
 		}
 	}
 }
 
-void Step2DSW::_check_suspend(Body2DSW *p_island, real_t p_delta) {
+void Step2DSW::_check_suspend(const LocalVector<Body2DSW *> &p_body_island, real_t p_delta) {
 	bool can_sleep = true;
 
-	Body2DSW *b = p_island;
-	while (b) {
-		if (b->get_mode() == PhysicsServer2D::BODY_MODE_STATIC || b->get_mode() == PhysicsServer2D::BODY_MODE_KINEMATIC) {
-			b = b->get_island_next();
-			continue; //ignore for static
+	uint32_t body_count = p_body_island.size();
+	for (uint32_t body_index = 0; body_index < body_count; ++body_index) {
+		Body2DSW *body = p_body_island[body_index];
+
+		if (body->get_mode() == PhysicsServer2D::BODY_MODE_STATIC || body->get_mode() == PhysicsServer2D::BODY_MODE_KINEMATIC) {
+			continue; // Ignore for static.
 		}
 
-		if (!b->sleep_test(p_delta)) {
+		if (!body->sleep_test(p_delta)) {
 			can_sleep = false;
 		}
-
-		b = b->get_island_next();
 	}
 
-	//put all to sleep or wake up everyoen
+	// Put all to sleep or wake up everyone.
+	for (uint32_t body_index = 0; body_index < body_count; ++body_index) {
+		Body2DSW *body = p_body_island[body_index];
 
-	b = p_island;
-	while (b) {
-		if (b->get_mode() == PhysicsServer2D::BODY_MODE_STATIC || b->get_mode() == PhysicsServer2D::BODY_MODE_KINEMATIC) {
-			b = b->get_island_next();
-			continue; //ignore for static
+		if (body->get_mode() == PhysicsServer2D::BODY_MODE_STATIC || body->get_mode() == PhysicsServer2D::BODY_MODE_KINEMATIC) {
+			continue; // Ignore for static.
 		}
 
-		bool active = b->is_active();
+		bool active = body->is_active();
 
 		if (active == can_sleep) {
-			b->set_active(!can_sleep);
+			body->set_active(!can_sleep);
 		}
-
-		b = b->get_island_next();
 	}
 }
 
@@ -159,33 +147,43 @@ void Step2DSW::step(Space2DSW *p_space, real_t p_delta, int p_iterations) {
 
 	/* GENERATE CONSTRAINT ISLANDS */
 
-	Body2DSW *island_list = nullptr;
-	Constraint2DSW *constraint_island_list = nullptr;
 	b = body_list->first();
 
-	int island_count = 0;
+	uint32_t body_island_count = 0;
+	uint32_t island_count = 0;
 
 	while (b) {
 		Body2DSW *body = b->self();
 
 		if (body->get_island_step() != _step) {
-			Body2DSW *island = nullptr;
-			Constraint2DSW *constraint_island = nullptr;
-			_populate_island(body, &island, &constraint_island);
+			++body_island_count;
+			if (body_islands.size() < body_island_count) {
+				body_islands.resize(body_island_count);
+			}
+			LocalVector<Body2DSW *> &body_island = body_islands[body_island_count - 1];
+			body_island.clear();
+			body_island.reserve(BODY_ISLAND_SIZE_RESERVE);
 
-			island->set_island_list_next(island_list);
-			island_list = island;
+			++island_count;
+			if (constraint_islands.size() < island_count) {
+				constraint_islands.resize(island_count);
+			}
+			LocalVector<Constraint2DSW *> &constraint_island = constraint_islands[island_count - 1];
+			constraint_island.clear();
+			constraint_island.reserve(ISLAND_SIZE_RESERVE);
 
-			if (constraint_island) {
-				constraint_island->set_island_list_next(constraint_island_list);
-				constraint_island_list = constraint_island;
-				island_count++;
+			_populate_island(body, body_island, constraint_island);
+
+			body_islands.push_back(body_island);
+
+			if (constraint_island.is_empty()) {
+				--island_count;
 			}
 		}
 		b = b->next();
 	}
 
-	p_space->set_island_count(island_count);
+	p_space->set_island_count((int)island_count);
 
 	const SelfList<Area2DSW>::List &aml = p_space->get_moved_area_list();
 
@@ -196,9 +194,13 @@ void Step2DSW::step(Space2DSW *p_space, real_t p_delta, int p_iterations) {
 				continue;
 			}
 			c->set_island_step(_step);
-			c->set_island_next(nullptr);
-			c->set_island_list_next(constraint_island_list);
-			constraint_island_list = c;
+			++island_count;
+			if (constraint_islands.size() < island_count) {
+				constraint_islands.resize(island_count);
+			}
+			LocalVector<Constraint2DSW *> &constraint_island = constraint_islands[island_count - 1];
+			constraint_island.clear();
+			constraint_island.push_back(c);
 		}
 		p_space->area_remove_from_moved_list((SelfList<Area2DSW> *)aml.first()); //faster to remove here
 	}
@@ -211,39 +213,8 @@ void Step2DSW::step(Space2DSW *p_space, real_t p_delta, int p_iterations) {
 
 	/* SETUP CONSTRAINT ISLANDS */
 
-	{
-		Constraint2DSW *ci = constraint_island_list;
-		Constraint2DSW *prev_ci = nullptr;
-		while (ci) {
-			if (_setup_island(ci, p_delta)) {
-				//removed the root from the island graph because it is not to be processed
-
-				Constraint2DSW *next = ci->get_island_next();
-
-				if (next) {
-					//root from list being deleted no longer exists, replace by next
-					next->set_island_list_next(ci->get_island_list_next());
-					if (prev_ci) {
-						prev_ci->set_island_list_next(next);
-					} else {
-						constraint_island_list = next;
-					}
-					prev_ci = next;
-				} else {
-					//list is empty, just skip
-					if (prev_ci) {
-						prev_ci->set_island_list_next(ci->get_island_list_next());
-
-					} else {
-						constraint_island_list = ci->get_island_list_next();
-					}
-				}
-			} else {
-				prev_ci = ci;
-			}
-
-			ci = ci->get_island_list_next();
-		}
+	for (uint32_t island_index = 0; island_index < island_count; ++island_index) {
+		_setup_island(constraint_islands[island_index], p_delta);
 	}
 
 	{ //profile
@@ -254,13 +225,8 @@ void Step2DSW::step(Space2DSW *p_space, real_t p_delta, int p_iterations) {
 
 	/* SOLVE CONSTRAINT ISLANDS */
 
-	{
-		Constraint2DSW *ci = constraint_island_list;
-		while (ci) {
-			//iterating each island separatedly improves cache efficiency
-			_solve_island(ci, p_iterations, p_delta);
-			ci = ci->get_island_list_next();
-		}
+	for (uint32_t island_index = 0; island_index < island_count; ++island_index) {
+		_solve_island(constraint_islands[island_index], p_iterations, p_delta);
 	}
 
 	{ //profile
@@ -280,12 +246,8 @@ void Step2DSW::step(Space2DSW *p_space, real_t p_delta, int p_iterations) {
 
 	/* SLEEP / WAKE UP ISLANDS */
 
-	{
-		Body2DSW *bi = island_list;
-		while (bi) {
-			_check_suspend(bi, p_delta);
-			bi = bi->get_island_list_next();
-		}
+	for (uint32_t island_index = 0; island_index < body_island_count; ++island_index) {
+		_check_suspend(body_islands[island_index], p_delta);
 	}
 
 	{ //profile
@@ -301,4 +263,7 @@ void Step2DSW::step(Space2DSW *p_space, real_t p_delta, int p_iterations) {
 
 Step2DSW::Step2DSW() {
 	_step = 1;
+
+	body_islands.reserve(BODY_ISLAND_COUNT_RESERVE);
+	constraint_islands.reserve(ISLAND_COUNT_RESERVE);
 }

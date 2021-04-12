@@ -658,8 +658,6 @@ Body2DSW::Body2DSW() :
 	omit_force_integration = false;
 	applied_torque = 0;
 	island_step = 0;
-	island_next = nullptr;
-	island_list_next = nullptr;
 	_set_static(false);
 	first_time_kinematic = false;
 	linear_damp = -1;
