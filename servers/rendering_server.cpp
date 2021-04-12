@@ -2282,6 +2282,10 @@ RenderingServer::RenderingServer() {
 	GLOBAL_DEF_RST("rendering/textures/vram_compression/import_etc2", true);
 	GLOBAL_DEF_RST("rendering/textures/vram_compression/import_pvrtc", false);
 
+	GLOBAL_DEF("rendering/textures/lossless_compression/force_png", false);
+	GLOBAL_DEF("rendering/textures/lossless_compression/webp_compression_level", 2);
+	ProjectSettings::get_singleton()->set_custom_property_info("rendering/textures/lossless_compression/webp_compression_level", PropertyInfo(Variant::INT, "rendering/textures/lossless_compression/webp_compression_level", PROPERTY_HINT_RANGE, "0,9,1"));
+
 	GLOBAL_DEF("rendering/limits/time/time_rollover_secs", 3600);
 	ProjectSettings::get_singleton()->set_custom_property_info("rendering/limits/time/time_rollover_secs", PropertyInfo(Variant::FLOAT, "rendering/limits/time/time_rollover_secs", PROPERTY_HINT_RANGE, "0,10000,1,or_greater"));
 
