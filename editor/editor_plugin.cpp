@@ -160,6 +160,10 @@ void EditorInterface::edit_resource(const Ref<Resource> &p_resource) {
 	EditorNode::get_singleton()->edit_resource(p_resource);
 }
 
+void EditorInterface::edit_node(Node *p_node) {
+	EditorNode::get_singleton()->edit_node(p_node);
+}
+
 void EditorInterface::open_scene_from_path(const String &scene_path) {
 	if (EditorNode::get_singleton()->is_changing_scene()) {
 		return;
@@ -312,6 +316,7 @@ void EditorInterface::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_base_control"), &EditorInterface::get_base_control);
 	ClassDB::bind_method(D_METHOD("get_editor_scale"), &EditorInterface::get_editor_scale);
 	ClassDB::bind_method(D_METHOD("edit_resource", "resource"), &EditorInterface::edit_resource);
+	ClassDB::bind_method(D_METHOD("edit_node", "node"), &EditorInterface::edit_node);
 	ClassDB::bind_method(D_METHOD("open_scene_from_path", "scene_filepath"), &EditorInterface::open_scene_from_path);
 	ClassDB::bind_method(D_METHOD("reload_scene_from_path", "scene_filepath"), &EditorInterface::reload_scene_from_path);
 	ClassDB::bind_method(D_METHOD("play_main_scene"), &EditorInterface::play_main_scene);
