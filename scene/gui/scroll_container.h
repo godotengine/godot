@@ -103,7 +103,7 @@ public:
 
 	virtual bool clips_input() const override;
 
-	virtual String get_configuration_warning() const override;
+	TypedArray<String> get_configuration_warnings() const override;
 
 	ScrollContainer();
 };

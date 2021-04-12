@@ -242,24 +242,18 @@ int LightOccluder2D::get_occluder_light_mask() const {
 	return mask;
 }
 
-String LightOccluder2D::get_configuration_warning() const {
-	String warning = Node2D::get_configuration_warning();
+TypedArray<String> LightOccluder2D::get_configuration_warnings() const {
+	TypedArray<String> warnings = Node::get_configuration_warnings();
 
 	if (!occluder_polygon.is_valid()) {
-		if (!warning.is_empty()) {
-			warning += "\n\n";
-		}
-		warning += TTR("An occluder polygon must be set (or drawn) for this occluder to take effect.");
+		warnings.push_back(TTR("An occluder polygon must be set (or drawn) for this occluder to take effect."));
 	}
 
 	if (occluder_polygon.is_valid() && occluder_polygon->get_polygon().size() == 0) {
-		if (!warning.is_empty()) {
-			warning += "\n\n";
-		}
-		warning += TTR("The occluder polygon for this occluder is empty. Please draw a polygon.");
+		warnings.push_back(TTR("The occluder polygon for this occluder is empty. Please draw a polygon."));
 	}
 
-	return warning;
+	return warnings;
 }
 
 void LightOccluder2D::set_as_sdf_collision(bool p_enable) {

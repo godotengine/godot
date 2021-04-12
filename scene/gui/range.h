@@ -97,7 +97,7 @@ public:
 	void share(Range *p_range);
 	void unshare();
 
-	virtual String get_configuration_warning() const override;
+	TypedArray<String> get_configuration_warnings() const override;
 
 	Range();
 	~Range();

@@ -544,8 +544,8 @@ void ScrollContainer::set_follow_focus(bool p_follow) {
 	follow_focus = p_follow;
 }
 
-String ScrollContainer::get_configuration_warning() const {
-	String warning = Container::get_configuration_warning();
+TypedArray<String> ScrollContainer::get_configuration_warnings() const {
+	TypedArray<String> warnings = Container::get_configuration_warnings();
 
 	int found = 0;
 
@@ -565,12 +565,10 @@ String ScrollContainer::get_configuration_warning() const {
 	}
 
 	if (found != 1) {
-		if (!warning.is_empty()) {
-			warning += "\n\n";
-		}
-		warning += TTR("ScrollContainer is intended to work with a single child control.\nUse a container as child (VBox, HBox, etc.), or a Control and set the custom minimum size manually.");
+		warnings.push_back(TTR("ScrollContainer is intended to work with a single child control.\nUse a container as child (VBox, HBox, etc.), or a Control and set the custom minimum size manually."));
 	}
-	return warning;
+
+	return warnings;
 }
 
 HScrollBar *ScrollContainer::get_h_scrollbar() {

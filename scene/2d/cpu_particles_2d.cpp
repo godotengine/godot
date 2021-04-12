@@ -244,18 +244,15 @@ bool CPUParticles2D::get_fractional_delta() const {
 	return fractional_delta;
 }
 
-String CPUParticles2D::get_configuration_warning() const {
-	String warnings = Node2D::get_configuration_warning();
+TypedArray<String> CPUParticles2D::get_configuration_warnings() const {
+	TypedArray<String> warnings = Node::get_configuration_warnings();
 
 	CanvasItemMaterial *mat = Object::cast_to<CanvasItemMaterial>(get_material().ptr());
 
 	if (get_material().is_null() || (mat && !mat->get_particles_animation())) {
 		if (get_param(PARAM_ANIM_SPEED) != 0.0 || get_param(PARAM_ANIM_OFFSET) != 0.0 ||
 				get_param_curve(PARAM_ANIM_SPEED).is_valid() || get_param_curve(PARAM_ANIM_OFFSET).is_valid()) {
-			if (warnings != String()) {
-				warnings += "\n";
-			}
-			warnings += "- " + TTR("CPUParticles2D animation requires the usage of a CanvasItemMaterial with \"Particles Animation\" enabled.");
+			warnings.push_back(TTR("CPUParticles2D animation requires the usage of a CanvasItemMaterial with \"Particles Animation\" enabled."));
 		}
 	}
 

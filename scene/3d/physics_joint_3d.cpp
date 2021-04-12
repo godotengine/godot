@@ -65,6 +65,7 @@ void Joint3D::_update_joint(bool p_only_free) {
 	if (p_only_free || !is_inside_tree()) {
 		PhysicsServer3D::get_singleton()->joint_clear(joint);
 		warning = String();
+		update_configuration_warnings();
 		return;
 	}
 
@@ -75,42 +76,25 @@ void Joint3D::_update_joint(bool p_only_free) {
 	PhysicsBody3D *body_b = Object::cast_to<PhysicsBody3D>(node_b);
 
 	if (node_a && !body_a && node_b && !body_b) {
-		PhysicsServer3D::get_singleton()->joint_clear(joint);
 		warning = TTR("Node A and Node B must be PhysicsBody3Ds");
-		update_configuration_warning();
-		return;
-	}
-
-	if (node_a && !body_a) {
-		PhysicsServer3D::get_singleton()->joint_clear(joint);
+	} else if (node_a && !body_a) {
 		warning = TTR("Node A must be a PhysicsBody3D");
-		update_configuration_warning();
-		return;
-	}
-
-	if (node_b && !body_b) {
-		PhysicsServer3D::get_singleton()->joint_clear(joint);
+	} else if (node_b && !body_b) {
 		warning = TTR("Node B must be a PhysicsBody3D");
-		update_configuration_warning();
-		return;
-	}
-
-	if (!body_a && !body_b) {
-		PhysicsServer3D::get_singleton()->joint_clear(joint);
+	} else if (!body_a && !body_b) {
 		warning = TTR("Joint is not connected to any PhysicsBody3Ds");
-		update_configuration_warning();
-		return;
-	}
-
-	if (body_a == body_b) {
-		PhysicsServer3D::get_singleton()->joint_clear(joint);
+	} else if (body_a == body_b) {
 		warning = TTR("Node A and Node B must be different PhysicsBody3Ds");
-		update_configuration_warning();
-		return;
+	} else {
+		warning = String();
 	}
 
-	warning = String();
-	update_configuration_warning();
+	update_configuration_warnings();
+
+	if (!warning.is_empty()) {
+		PhysicsServer3D::get_singleton()->joint_clear(joint);
+		return;
+	}
 
 	configured = true;
 
@@ -206,17 +190,14 @@ bool Joint3D::get_exclude_nodes_from_collision() const {
 	return exclude_from_collision;
 }
 
-String Joint3D::get_configuration_warning() const {
-	String node_warning = Node3D::get_configuration_warning();
+TypedArray<String> Joint3D::get_configuration_warnings() const {
+	TypedArray<String> warnings = Node3D::get_configuration_warnings();
 
 	if (!warning.is_empty()) {
-		if (!node_warning.is_empty()) {
-			node_warning += "\n\n";
-		}
-		node_warning += warning;
+		warnings.push_back(warning);
 	}
 
-	return node_warning;
+	return warnings;
 }
 
 void Joint3D::_bind_methods() {

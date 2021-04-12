@@ -249,7 +249,7 @@ void SoftBody3D::_softbody_changed() {
 	prepare_physics_server();
 	_reset_points_offsets();
 #ifdef TOOLS_ENABLED
-	update_configuration_warning();
+	update_configuration_warnings();
 #endif
 }
 
@@ -301,7 +301,7 @@ void SoftBody3D::_notification(int p_what) {
 
 	if (p_what == NOTIFICATION_LOCAL_TRANSFORM_CHANGED) {
 		if (Engine::get_singleton()->is_editor_hint()) {
-			update_configuration_warning();
+			update_configuration_warnings();
 		}
 	}
 
@@ -366,27 +366,19 @@ void SoftBody3D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "ray_pickable"), "set_ray_pickable", "is_ray_pickable");
 }
 
-String SoftBody3D::get_configuration_warning() const {
-	String warning = MeshInstance3D::get_configuration_warning();
+TypedArray<String> SoftBody3D::get_configuration_warnings() const {
+	TypedArray<String> warnings = Node::get_configuration_warnings();
 
 	if (get_mesh().is_null()) {
-		if (!warning.is_empty()) {
-			warning += "\n\n";
-		}
-
-		warning += TTR("This body will be ignored until you set a mesh.");
+		warnings.push_back(TTR("This body will be ignored until you set a mesh."));
 	}
 
 	Transform t = get_transform();
 	if ((ABS(t.basis.get_axis(0).length() - 1.0) > 0.05 || ABS(t.basis.get_axis(1).length() - 1.0) > 0.05 || ABS(t.basis.get_axis(2).length() - 1.0) > 0.05)) {
-		if (!warning.is_empty()) {
-			warning += "\n\n";
-		}
-
-		warning += TTR("Size changes to SoftBody3D will be overridden by the physics engine when running.\nChange the size in children collision shapes instead.");
+		warnings.push_back(TTR("Size changes to SoftBody3D will be overridden by the physics engine when running.\nChange the size in children collision shapes instead."));
 	}
 
-	return warning;
+	return warnings;
 }
 
 void SoftBody3D::_update_physics_server() {

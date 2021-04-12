@@ -110,7 +110,7 @@ public:
 	void set_texture(const Ref<Texture2D> &p_texture);
 	Ref<Texture2D> get_texture() const;
 
-	virtual String get_configuration_warning() const override;
+	TypedArray<String> get_configuration_warnings() const override;
 
 	void restart();
 	Rect2 capture_rect() const;

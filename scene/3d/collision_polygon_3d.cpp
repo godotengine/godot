@@ -121,7 +121,7 @@ void CollisionPolygon3D::set_polygon(const Vector<Point2> &p_polygon) {
 	if (parent) {
 		_build_polygon();
 	}
-	update_configuration_warning();
+	update_configuration_warnings();
 	update_gizmo();
 }
 
@@ -167,24 +167,18 @@ void CollisionPolygon3D::set_margin(real_t p_margin) {
 	}
 }
 
-String CollisionPolygon3D::get_configuration_warning() const {
-	String warning = Node3D::get_configuration_warning();
+TypedArray<String> CollisionPolygon3D::get_configuration_warnings() const {
+	TypedArray<String> warnings = Node::get_configuration_warnings();
 
 	if (!Object::cast_to<CollisionObject3D>(get_parent())) {
-		if (!warning.is_empty()) {
-			warning += "\n\n";
-		}
-		warning += TTR("CollisionPolygon3D only serves to provide a collision shape to a CollisionObject3D derived node. Please only use it as a child of Area3D, StaticBody3D, RigidBody3D, KinematicBody3D, etc. to give them a shape.");
+		warnings.push_back(TTR("CollisionPolygon3D only serves to provide a collision shape to a CollisionObject3D derived node. Please only use it as a child of Area3D, StaticBody3D, RigidBody3D, KinematicBody3D, etc. to give them a shape."));
 	}
 
 	if (polygon.is_empty()) {
-		if (!warning.is_empty()) {
-			warning += "\n\n";
-		}
-		warning += TTR("An empty CollisionPolygon3D has no effect on collision.");
+		warnings.push_back(TTR("An empty CollisionPolygon3D has no effect on collision."));
 	}
 
-	return warning;
+	return warnings;
 }
 
 bool CollisionPolygon3D::_is_editable_3d_polygon() const {

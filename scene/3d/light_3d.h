@@ -202,7 +202,7 @@ public:
 	void set_shadow_mode(ShadowMode p_mode);
 	ShadowMode get_shadow_mode() const;
 
-	virtual String get_configuration_warning() const override;
+	TypedArray<String> get_configuration_warnings() const override;
 
 	OmniLight3D();
 };
@@ -216,7 +216,7 @@ protected:
 	static void _bind_methods();
 
 public:
-	virtual String get_configuration_warning() const override;
+	TypedArray<String> get_configuration_warnings() const override;
 
 	SpotLight3D() :
 			Light3D(RenderingServer::LIGHT_SPOT) {}

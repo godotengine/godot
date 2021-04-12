@@ -76,17 +76,14 @@ NavigationObstacle3D::~NavigationObstacle3D() {
 	agent = RID(); // Pointless
 }
 
-String NavigationObstacle3D::get_configuration_warning() const {
-	String warning = Node::get_configuration_warning();
+TypedArray<String> NavigationObstacle3D::get_configuration_warnings() const {
+	TypedArray<String> warnings = Node::get_configuration_warnings();
 
-	if (!parent_node3d) {
-		if (!warning.is_empty()) {
-			warning += "\n\n";
-		}
-		warning += TTR("The NavigationObstacle3D only serves to provide collision avoidance to a spatial object.");
+	if (!Object::cast_to<Node3D>(get_parent())) {
+		warnings.push_back(TTR("The NavigationObstacle3D only serves to provide collision avoidance to a spatial object."));
 	}
 
-	return warning;
+	return warnings;
 }
 
 void NavigationObstacle3D::update_agent_shape() {
