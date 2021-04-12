@@ -184,7 +184,15 @@ public:
 		// first vertex of this batch in the vertex lists
 		uint32_t first_vert;
 
-		BatchColor color;
+		// we can keep the batch structure small because we either need to store
+		// the color if a handled batch, or the parent item if a default batch, so
+		// we can reference the correct originating command
+		union {
+			BatchColor color;
+
+			// for default batches we will store the parent item
+			const RasterizerCanvas::Item *item;
+		};
 	};
 
 	struct BatchTex {
@@ -655,8 +663,11 @@ public:
 			RAST_DEBUG_ASSERT(batch);
 		}
 
-		if (p_blank)
+		if (p_blank) {
 			memset(batch, 0, sizeof(Batch));
+		} else {
+			batch->item = nullptr;
+		}
 
 		return batch;
 	}
@@ -857,6 +868,7 @@ PREAMBLE(void)::_prefill_default_batch(FillState &r_fill_state, int p_command_nu
 			r_fill_state.curr_batch->type = RasterizerStorageCommon::BT_DEFAULT;
 			r_fill_state.curr_batch->first_command = extra_command;
 			r_fill_state.curr_batch->num_commands = 1;
+			r_fill_state.curr_batch->item = &p_item;
 
 			// revert to the original transform mode
 			// e.g. go back to NONE if we were in hardware transform mode
@@ -882,6 +894,7 @@ PREAMBLE(void)::_prefill_default_batch(FillState &r_fill_state, int p_command_nu
 		r_fill_state.curr_batch->type = RasterizerStorageCommon::BT_DEFAULT;
 		r_fill_state.curr_batch->first_command = p_command_num;
 		r_fill_state.curr_batch->num_commands = 1;
+		r_fill_state.curr_batch->item = &p_item;
 	}
 }
 
@@ -2445,15 +2458,14 @@ PREAMBLE(void)::flush_render_batches(RasterizerCanvas::Item *p_first_item, Raste
 	// send buffers to opengl
 	get_this()->_batch_upload_buffers();
 
-	RasterizerCanvas::Item::Command *const *commands = p_first_item->commands.ptr();
-
 #if defined(TOOLS_ENABLED) && defined(DEBUG_ENABLED)
 	if (bdata.diagnose_frame) {
+		RasterizerCanvas::Item::Command *const *commands = p_first_item->commands.ptr();
 		diagnose_batches(commands);
 	}
 #endif
 
-	get_this()->render_batches(commands, p_current_clip, r_reclip, p_material);
+	get_this()->render_batches(p_current_clip, r_reclip, p_material);
 
 	// if we overrode the fvf for lines, set it back to the joined item fvf
 	bdata.fvf = backup_fvf;
@@ -2552,15 +2564,14 @@ PREAMBLE(void)::_legacy_canvas_item_render_commands(RasterizerCanvas::Item *p_it
 
 	int command_count = p_item->commands.size();
 
-	RasterizerCanvas::Item::Command *const *commands = p_item->commands.ptr();
-
 	// legacy .. just create one massive batch and render everything as before
 	bdata.batches.reset();
 	Batch *batch = _batch_request_new();
 	batch->type = RasterizerStorageCommon::BT_DEFAULT;
 	batch->num_commands = command_count;
+	batch->item = p_item;
 
-	get_this()->render_batches(commands, p_current_clip, r_reclip, p_material);
+	get_this()->render_batches(p_current_clip, r_reclip, p_material);
 	bdata.reset_flush();
 }
 

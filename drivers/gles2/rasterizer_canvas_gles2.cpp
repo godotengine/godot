@@ -295,7 +295,7 @@ void RasterizerCanvasGLES2::_batch_render_generic(const Batch &p_batch, Rasteriz
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 }
 
-void RasterizerCanvasGLES2::render_batches(Item::Command *const *p_commands, Item *p_current_clip, bool &r_reclip, RasterizerStorageGLES2::Material *p_material) {
+void RasterizerCanvasGLES2::render_batches(Item *p_current_clip, bool &r_reclip, RasterizerStorageGLES2::Material *p_material) {
 
 	int num_batches = bdata.batches.size();
 
@@ -318,9 +318,12 @@ void RasterizerCanvasGLES2::render_batches(Item::Command *const *p_commands, Ite
 			default: {
 				int end_command = batch.first_command + batch.num_commands;
 
+				RAST_DEV_DEBUG_ASSERT(batch.item);
+				RasterizerCanvas::Item::Command *const *commands = batch.item->commands.ptr();
+
 				for (int i = batch.first_command; i < end_command; i++) {
 
-					Item::Command *command = p_commands[i];
+					Item::Command *command = commands[i];
 
 					switch (command->type) {
 
