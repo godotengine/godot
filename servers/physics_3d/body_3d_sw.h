@@ -135,8 +135,6 @@ class Body3DSW : public CollisionObject3DSW {
 	ForceIntegrationCallback *fi_callback;
 
 	uint64_t island_step;
-	Body3DSW *island_next;
-	Body3DSW *island_list_next;
 
 	_FORCE_INLINE_ void _compute_area_gravity_and_dampenings(const Area3DSW *p_area);
 
@@ -188,12 +186,6 @@ public:
 
 	_FORCE_INLINE_ uint64_t get_island_step() const { return island_step; }
 	_FORCE_INLINE_ void set_island_step(uint64_t p_step) { island_step = p_step; }
-
-	_FORCE_INLINE_ Body3DSW *get_island_next() const { return island_next; }
-	_FORCE_INLINE_ void set_island_next(Body3DSW *p_next) { island_next = p_next; }
-
-	_FORCE_INLINE_ Body3DSW *get_island_list_next() const { return island_list_next; }
-	_FORCE_INLINE_ void set_island_list_next(Body3DSW *p_next) { island_list_next = p_next; }
 
 	_FORCE_INLINE_ void add_constraint(Constraint3DSW *p_constraint, int p_pos) { constraint_map[p_constraint] = p_pos; }
 	_FORCE_INLINE_ void remove_constraint(Constraint3DSW *p_constraint) { constraint_map.erase(p_constraint); }

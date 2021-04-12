@@ -37,8 +37,6 @@ class Constraint3DSW {
 	Body3DSW **_body_ptr;
 	int _body_count;
 	uint64_t island_step;
-	Constraint3DSW *island_next;
-	Constraint3DSW *island_list_next;
 	int priority;
 	bool disabled_collisions_between_bodies;
 
@@ -59,12 +57,6 @@ public:
 
 	_FORCE_INLINE_ uint64_t get_island_step() const { return island_step; }
 	_FORCE_INLINE_ void set_island_step(uint64_t p_step) { island_step = p_step; }
-
-	_FORCE_INLINE_ Constraint3DSW *get_island_next() const { return island_next; }
-	_FORCE_INLINE_ void set_island_next(Constraint3DSW *p_next) { island_next = p_next; }
-
-	_FORCE_INLINE_ Constraint3DSW *get_island_list_next() const { return island_list_next; }
-	_FORCE_INLINE_ void set_island_list_next(Constraint3DSW *p_next) { island_list_next = p_next; }
 
 	_FORCE_INLINE_ Body3DSW **get_body_ptr() const { return _body_ptr; }
 	_FORCE_INLINE_ int get_body_count() const { return _body_count; }
