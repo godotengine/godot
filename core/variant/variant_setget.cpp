@@ -1045,6 +1045,7 @@ void register_indexed_setters_getters() {
 	REGISTER_INDEXED_MEMBER(PackedByteArray);
 	REGISTER_INDEXED_MEMBER(PackedInt32Array);
 	REGISTER_INDEXED_MEMBER(PackedInt64Array);
+	REGISTER_INDEXED_MEMBER(PackedFloat32Array);
 	REGISTER_INDEXED_MEMBER(PackedFloat64Array);
 	REGISTER_INDEXED_MEMBER(PackedVector2Array);
 	REGISTER_INDEXED_MEMBER(PackedVector3Array);
