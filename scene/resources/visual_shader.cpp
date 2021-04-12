@@ -300,6 +300,30 @@ String VisualShaderNodeCustom::generate_global_per_node(Shader::Mode p_mode, Vis
 	return "";
 }
 
+void VisualShaderNodeCustom::set_input_port_default_value(int p_port, const Variant &p_value) {
+	if (!is_initialized) {
+		VisualShaderNode::set_input_port_default_value(p_port, p_value);
+	}
+}
+
+void VisualShaderNodeCustom::set_default_input_values(const Array &p_values) {
+	if (!is_initialized) {
+		VisualShaderNode::set_default_input_values(p_values);
+	}
+}
+
+void VisualShaderNodeCustom::_set_input_port_default_value(int p_port, const Variant &p_value) {
+	VisualShaderNode::set_input_port_default_value(p_port, p_value);
+}
+
+bool VisualShaderNodeCustom::_is_initialized() {
+	return is_initialized;
+}
+
+void VisualShaderNodeCustom::_set_initialized(bool p_enabled) {
+	is_initialized = p_enabled;
+}
+
 void VisualShaderNodeCustom::_bind_methods() {
 	BIND_VMETHOD(MethodInfo(Variant::STRING, "_get_name"));
 	BIND_VMETHOD(MethodInfo(Variant::STRING, "_get_description"));
@@ -314,6 +338,12 @@ void VisualShaderNodeCustom::_bind_methods() {
 	BIND_VMETHOD(MethodInfo(Variant::STRING, "_get_code", PropertyInfo(Variant::ARRAY, "input_vars"), PropertyInfo(Variant::ARRAY, "output_vars"), PropertyInfo(Variant::INT, "mode"), PropertyInfo(Variant::INT, "type")));
 	BIND_VMETHOD(MethodInfo(Variant::STRING, "_get_global_code", PropertyInfo(Variant::INT, "mode")));
 	BIND_VMETHOD(MethodInfo(Variant::BOOL, "_is_highend"));
+
+	ClassDB::bind_method(D_METHOD("_set_initialized", "enabled"), &VisualShaderNodeCustom::_set_initialized);
+	ClassDB::bind_method(D_METHOD("_is_initialized"), &VisualShaderNodeCustom::_is_initialized);
+	ClassDB::bind_method(D_METHOD("_set_input_port_default_value", "port", "value"), &VisualShaderNodeCustom::_set_input_port_default_value);
+
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "initialized", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR | PROPERTY_USAGE_INTERNAL), "_set_initialized", "_is_initialized");
 }
 
 VisualShaderNodeCustom::VisualShaderNodeCustom() {
