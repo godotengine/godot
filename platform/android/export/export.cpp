@@ -201,8 +201,10 @@ static const char *android_perms[] = {
 	nullptr
 };
 
-static const char *SPLASH_IMAGE_EXPORT_PATH = "res/drawable/splash.png";
-static const char *SPLASH_BG_COLOR_PATH = "res/drawable/splash_bg_color.png";
+static const char *SPLASH_IMAGE_EXPORT_PATH = "res/drawable-nodpi/splash.png";
+static const char *LEGACY_BUILD_SPLASH_IMAGE_EXPORT_PATH = "res/drawable-nodpi-v4/splash.png";
+static const char *SPLASH_BG_COLOR_PATH = "res/drawable-nodpi/splash_bg_color.png";
+static const char *LEGACY_BUILD_SPLASH_BG_COLOR_PATH = "res/drawable-nodpi-v4/splash_bg_color.png";
 static const char *SPLASH_CONFIG_PATH = "res://android/build/res/drawable/splash_drawable.xml";
 
 const String SPLASH_CONFIG_XML_CONTENT = R"SPLASH(<?xml version="1.0" encoding="utf-8"?>
@@ -210,7 +212,7 @@ const String SPLASH_CONFIG_XML_CONTENT = R"SPLASH(<?xml version="1.0" encoding="
 	<item android:drawable="@drawable/splash_bg_color" />
 	<item>
 		<bitmap
-				android:gravity="%s"
+				android:gravity="center"
 				android:filter="%s"
 				android:src="@drawable/splash" />
 	</item>
@@ -1502,6 +1504,21 @@ class EditorExportPlatformAndroid : public EditorExportPlatform {
 			splash_image = Ref<Image>(memnew(Image(boot_splash_png)));
 		}
 
+		if (scale_splash) {
+			Size2 screen_size = Size2(ProjectSettings::get_singleton()->get("display/window/size/width"), ProjectSettings::get_singleton()->get("display/window/size/height"));
+			int width, height;
+			if (screen_size.width > screen_size.height) {
+				// scale horizontally
+				height = screen_size.height;
+				width = splash_image->get_width() * screen_size.height / splash_image->get_height();
+			} else {
+				// scale vertically
+				width = screen_size.width;
+				height = splash_image->get_height() * screen_size.width / splash_image->get_width();
+			}
+			splash_image->resize(width, height);
+		}
+
 		// Setup the splash bg color
 		bool bg_color_valid;
 		Color bg_color = ProjectSettings::get_singleton()->get("application/boot_splash/bg_color", &bg_color_valid);
@@ -1514,8 +1531,7 @@ class EditorExportPlatformAndroid : public EditorExportPlatform {
 		splash_bg_color_image->create(splash_image->get_width(), splash_image->get_height(), false, splash_image->get_format());
 		splash_bg_color_image->fill(bg_color);
 
-		String gravity = scale_splash ? "fill" : "center";
-		String processed_splash_config_xml = vformat(SPLASH_CONFIG_XML_CONTENT, gravity, bool_to_string(apply_filter));
+		String processed_splash_config_xml = vformat(SPLASH_CONFIG_XML_CONTENT, bool_to_string(apply_filter));
 		return processed_splash_config_xml;
 	}
 
@@ -2702,12 +2718,12 @@ public:
 			}
 
 			// Process the splash image
-			if (file == SPLASH_IMAGE_EXPORT_PATH && splash_image.is_valid() && !splash_image->is_empty()) {
+			if ((file == SPLASH_IMAGE_EXPORT_PATH || file == LEGACY_BUILD_SPLASH_IMAGE_EXPORT_PATH) && splash_image.is_valid() && !splash_image->is_empty()) {
 				_load_image_data(splash_image, data);
 			}
 
 			// Process the splash bg color image
-			if (file == SPLASH_BG_COLOR_PATH && splash_bg_color_image.is_valid() && !splash_bg_color_image->is_empty()) {
+			if ((file == SPLASH_BG_COLOR_PATH || file == LEGACY_BUILD_SPLASH_BG_COLOR_PATH) && splash_bg_color_image.is_valid() && !splash_bg_color_image->is_empty()) {
 				_load_image_data(splash_bg_color_image, data);
 			}
 
