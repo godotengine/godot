@@ -327,7 +327,7 @@ Ref<Image> StreamTexture2D::load_image_from_file(FileAccess *f, int p_size_limit
 	uint32_t mipmaps = f->get_32();
 	Image::Format format = Image::Format(f->get_32());
 
-	if (data_format == DATA_FORMAT_LOSSLESS || data_format == DATA_FORMAT_LOSSY || data_format == DATA_FORMAT_BASIS_UNIVERSAL) {
+	if (data_format == DATA_FORMAT_PNG || data_format == DATA_FORMAT_WEBP || data_format == DATA_FORMAT_BASIS_UNIVERSAL) {
 		//look for a PNG or WEBP file inside
 
 		int sw = w;
@@ -360,10 +360,10 @@ Ref<Image> StreamTexture2D::load_image_from_file(FileAccess *f, int p_size_limit
 			Ref<Image> img;
 			if (data_format == DATA_FORMAT_BASIS_UNIVERSAL) {
 				img = Image::basis_universal_unpacker(pv);
-			} else if (data_format == DATA_FORMAT_LOSSLESS) {
-				img = Image::lossless_unpacker(pv);
+			} else if (data_format == DATA_FORMAT_PNG) {
+				img = Image::png_unpacker(pv);
 			} else {
-				img = Image::lossy_unpacker(pv);
+				img = Image::webp_unpacker(pv);
 			}
 
 			if (img.is_null() || img->is_empty()) {

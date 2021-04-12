@@ -101,6 +101,6 @@ Vector<uint8_t> ImageLoaderPNG::lossless_pack_png(const Ref<Image> &p_image) {
 
 ImageLoaderPNG::ImageLoaderPNG() {
 	Image::_png_mem_loader_func = load_mem_png;
-	Image::lossless_unpacker = lossless_unpack_png;
-	Image::lossless_packer = lossless_pack_png;
+	Image::png_unpacker = lossless_unpack_png;
+	Image::png_packer = lossless_pack_png;
 }
