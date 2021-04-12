@@ -145,7 +145,7 @@ void VideoPlayer::_notification(int p_notification) {
 		case NOTIFICATION_INTERNAL_PROCESS: {
 			bus_index = AudioServer::get_singleton()->thread_find_bus_index(bus);
 
-			if (stream.is_null() || paused || playback.is_null() || !playback->is_playing()) {
+			if (stream.is_null() || (paused && process_while_paused) || playback.is_null() || !playback->is_playing()) {
 				return;
 			}
 
@@ -156,6 +156,10 @@ void VideoPlayer::_notification(int p_notification) {
 
 			if (delta == 0) {
 				return;
+			}
+
+			if (paused && process_while_paused) {
+				delta = 0;
 			}
 
 			playback->update(delta); // playback->is_playing() returns false in the last video frame
@@ -215,7 +219,13 @@ void VideoPlayer::set_stream(const Ref<VideoStream> &p_stream) {
 
 	if (!playback.is_null()) {
 		playback->set_loop(loops);
-		playback->set_paused(paused);
+
+		if (!process_while_paused) {
+			playback->set_paused(false);
+		} else {
+			playback->set_paused(paused);
+		}
+
 		texture = playback->get_texture();
 
 		const int channels = playback->get_channels();
@@ -289,14 +299,33 @@ bool VideoPlayer::is_playing() const {
 void VideoPlayer::set_paused(bool p_paused) {
 	paused = p_paused;
 	if (playback.is_valid()) {
-		playback->set_paused(p_paused);
-		set_process_internal(!p_paused);
+		if (!process_while_paused) {
+			playback->set_paused(p_paused);
+			set_process_internal(!p_paused);
+		}
 	};
 	last_audio_time = 0;
 };
 
 bool VideoPlayer::is_paused() const {
 	return paused;
+}
+
+void VideoPlayer::set_process_while_paused(bool p_process_while_paused) {
+	process_while_paused = p_process_while_paused;
+	if (process_while_paused) {
+		set_process_internal(true);
+		if (playback.is_valid()) {
+			playback->set_paused(false);
+		}
+	} else if (paused) {
+		set_process_internal(false);
+		playback->set_paused(paused);
+	}
+}
+
+bool VideoPlayer::is_processing_while_paused() const {
+	return process_while_paused;
 }
 
 void VideoPlayer::set_buffering_msec(int p_msec) {
@@ -418,6 +447,9 @@ void VideoPlayer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_paused", "paused"), &VideoPlayer::set_paused);
 	ClassDB::bind_method(D_METHOD("is_paused"), &VideoPlayer::is_paused);
 
+	ClassDB::bind_method(D_METHOD("set_process_while_paused", "process_while_paused"), &VideoPlayer::set_process_while_paused);
+	ClassDB::bind_method(D_METHOD("is_processing_while_paused"), &VideoPlayer::is_processing_while_paused);
+
 	ClassDB::bind_method(D_METHOD("set_volume", "volume"), &VideoPlayer::set_volume);
 	ClassDB::bind_method(D_METHOD("get_volume"), &VideoPlayer::get_volume);
 
@@ -455,6 +487,7 @@ void VideoPlayer::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "volume", PROPERTY_HINT_EXP_RANGE, "0,15,0.01", 0), "set_volume", "get_volume");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "autoplay"), "set_autoplay", "has_autoplay");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "paused"), "set_paused", "is_paused");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "process_while_paused"), "set_process_while_paused", "is_processing_while_paused");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "expand"), "set_expand", "has_expand");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "buffering_msec", PROPERTY_HINT_RANGE, "10,1000"), "set_buffering_msec", "get_buffering_msec");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "stream_position", PROPERTY_HINT_RANGE, "0,1280000,0.1", 0), "set_stream_position", "get_stream_position");

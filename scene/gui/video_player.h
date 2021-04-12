@@ -60,6 +60,7 @@ class VideoPlayer : public Control {
 	int wait_resampler_limit = 2;
 
 	bool paused = false;
+	bool process_while_paused = false;
 	bool autoplay = false;
 	float volume = 1.0;
 	double last_audio_time = 0.0;
@@ -96,6 +97,9 @@ public:
 
 	void set_paused(bool p_paused);
 	bool is_paused() const;
+
+	void set_process_while_paused(bool p_process_while_paused);
+	bool is_processing_while_paused() const;
 
 	void set_volume(float p_vol);
 	float get_volume() const;
