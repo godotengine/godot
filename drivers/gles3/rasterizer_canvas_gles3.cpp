@@ -502,7 +502,7 @@ void RasterizerCanvasGLES3::_legacy_canvas_render_item(Item *p_ci, RenderItemSta
 	}
 }
 
-void RasterizerCanvasGLES3::render_batches(Item::Command *const *p_commands, Item *p_current_clip, bool &r_reclip, RasterizerStorageGLES3::Material *p_material) {
+void RasterizerCanvasGLES3::render_batches(Item *p_current_clip, bool &r_reclip, RasterizerStorageGLES3::Material *p_material) {
 	//	bdata.reset_flush();
 	//	return;
 
@@ -527,9 +527,12 @@ void RasterizerCanvasGLES3::render_batches(Item::Command *const *p_commands, Ite
 			default: {
 				int end_command = batch.first_command + batch.num_commands;
 
+				RAST_DEV_DEBUG_ASSERT(batch.item);
+				RasterizerCanvas::Item::Command *const *commands = batch.item->commands.ptr();
+
 				for (int i = batch.first_command; i < end_command; i++) {
 
-					Item::Command *c = p_commands[i];
+					Item::Command *c = commands[i];
 
 					switch (c->type) {
 
