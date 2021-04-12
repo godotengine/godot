@@ -53,9 +53,8 @@
 		<member name="current_path" type="String" setter="set_current_path" getter="get_current_path" default="&quot;res://&quot;">
 			The file system path in the address bar.
 		</member>
-		<member name="dialog_hide_on_ok" type="bool" setter="set_hide_on_ok" getter="get_hide_on_ok" override="true" default="false" />
+		<member name="dialog_hide_on_ok" type="bool" setter="set_hide_on_ok" getter="get_hide_on_ok" overrides="AcceptDialog" default="false" />
 		<member name="disable_overwrite_warning" type="bool" setter="set_disable_overwrite_warning" getter="is_overwrite_warning_disabled" default="false">
-			If [code]true[/code], the [EditorFileDialog] will not warn the user before overwriting files.
 		</member>
 		<member name="display_mode" type="int" setter="set_display_mode" getter="get_display_mode" enum="EditorFileDialog.DisplayMode" default="0">
 			The view format in which the [EditorFileDialog] displays resources to the user.
@@ -66,61 +65,48 @@
 		<member name="show_hidden_files" type="bool" setter="set_show_hidden_files" getter="is_showing_hidden_files" default="false">
 			If [code]true[/code], hidden files and directories will be visible in the [EditorFileDialog].
 		</member>
-		<member name="title" type="String" setter="set_title" getter="get_title" override="true" default="&quot;Save a File&quot;" />
+		<member name="title" type="String" setter="set_title" getter="get_title" overrides="Window" default="&quot;Save a File&quot;" />
 	</members>
 	<signals>
 		<signal name="dir_selected">
 			<argument index="0" name="dir" type="String">
 			</argument>
 			<description>
-				Emitted when a directory is selected.
 			</description>
 		</signal>
 		<signal name="file_selected">
 			<argument index="0" name="path" type="String">
 			</argument>
 			<description>
-				Emitted when a file is selected.
 			</description>
 		</signal>
 		<signal name="files_selected">
 			<argument index="0" name="paths" type="PackedStringArray">
 			</argument>
 			<description>
-				Emitted when multiple files are selected.
 			</description>
 		</signal>
 	</signals>
 	<constants>
 		<constant name="FILE_MODE_OPEN_FILE" value="0" enum="FileMode">
-			The [EditorFileDialog] can select only one file. Accepting the window will open the file.
 		</constant>
 		<constant name="FILE_MODE_OPEN_FILES" value="1" enum="FileMode">
-			The [EditorFileDialog] can select multiple files. Accepting the window will open all files.
 		</constant>
 		<constant name="FILE_MODE_OPEN_DIR" value="2" enum="FileMode">
-			The [EditorFileDialog] can select only one directory. Accepting the window will open the directory.
 		</constant>
 		<constant name="FILE_MODE_OPEN_ANY" value="3" enum="FileMode">
-			The [EditorFileDialog] can select a file or directory. Accepting the window will open it.
 		</constant>
 		<constant name="FILE_MODE_SAVE_FILE" value="4" enum="FileMode">
-			The [EditorFileDialog] can select only one file. Accepting the window will save the file.
 		</constant>
 		<constant name="ACCESS_RESOURCES" value="0" enum="Access">
-			The [EditorFileDialog] can only view [code]res://[/code] directory contents.
 		</constant>
 		<constant name="ACCESS_USERDATA" value="1" enum="Access">
-			The [EditorFileDialog] can only view [code]user://[/code] directory contents.
 		</constant>
 		<constant name="ACCESS_FILESYSTEM" value="2" enum="Access">
-			The [EditorFileDialog] can view the entire local file system.
 		</constant>
 		<constant name="DISPLAY_THUMBNAILS" value="0" enum="DisplayMode">
-			The [EditorFileDialog] displays resources as thumbnails.
 		</constant>
 		<constant name="DISPLAY_LIST" value="1" enum="DisplayMode">
-			The [EditorFileDialog] displays resources as a list of filenames.
 		</constant>
 	</constants>
 </class>

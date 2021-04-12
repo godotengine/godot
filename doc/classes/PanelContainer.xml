@@ -12,7 +12,7 @@
 	<methods>
 	</methods>
 	<members>
-		<member name="mouse_filter" type="int" setter="set_mouse_filter" getter="get_mouse_filter" override="true" enum="Control.MouseFilter" default="0" />
+		<member name="mouse_filter" type="int" setter="set_mouse_filter" getter="get_mouse_filter" overrides="Control" enum="Control.MouseFilter" default="0" />
 	</members>
 	<constants>
 	</constants>

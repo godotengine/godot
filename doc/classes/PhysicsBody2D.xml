@@ -85,7 +85,7 @@
 		<member name="collision_mask" type="int" setter="set_collision_mask" getter="get_collision_mask" default="1">
 			The physics layers this area scans for collisions. See [url=https://docs.godotengine.org/en/latest/tutorials/physics/physics_introduction.html#collision-layers-and-masks]Collision layers and masks[/url] in the documentation for more information.
 		</member>
-		<member name="input_pickable" type="bool" setter="set_pickable" getter="is_pickable" override="true" default="false" />
+		<member name="input_pickable" type="bool" setter="set_pickable" getter="is_pickable" overrides="CollisionObject2D" default="false" />
 	</members>
 	<constants>
 	</constants>

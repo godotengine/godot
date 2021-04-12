@@ -68,9 +68,8 @@
 		<member name="current_path" type="String" setter="set_current_path" getter="get_current_path" default="&quot;res://&quot;">
 			The currently selected file path of the file dialog.
 		</member>
-		<member name="dialog_hide_on_ok" type="bool" setter="set_hide_on_ok" getter="get_hide_on_ok" override="true" default="false" />
+		<member name="dialog_hide_on_ok" type="bool" setter="set_hide_on_ok" getter="get_hide_on_ok" overrides="AcceptDialog" default="false" />
 		<member name="file_mode" type="int" setter="set_file_mode" getter="get_file_mode" enum="FileDialog.FileMode" default="4">
-			The dialog's open or save mode, which affects the selection behavior. See [enum FileMode].
 		</member>
 		<member name="filters" type="PackedStringArray" setter="set_filters" getter="get_filters" default="PackedStringArray(  )">
 			The available file type filters. For example, this shows only [code].png[/code] and [code].gd[/code] files: [code]set_filters(PackedStringArray(["*.png ; PNG Images","*.gd ; GDScript Files"]))[/code].
@@ -81,55 +80,44 @@
 		<member name="show_hidden_files" type="bool" setter="set_show_hidden_files" getter="is_showing_hidden_files" default="false">
 			If [code]true[/code], the dialog will show hidden files.
 		</member>
-		<member name="title" type="String" setter="set_title" getter="get_title" override="true" default="&quot;Save a File&quot;" />
+		<member name="title" type="String" setter="set_title" getter="get_title" overrides="Window" default="&quot;Save a File&quot;" />
 	</members>
 	<signals>
 		<signal name="dir_selected">
 			<argument index="0" name="dir" type="String">
 			</argument>
 			<description>
-				Emitted when the user selects a directory.
 			</description>
 		</signal>
 		<signal name="file_selected">
 			<argument index="0" name="path" type="String">
 			</argument>
 			<description>
-				Emitted when the user selects a file by double-clicking it or pressing the [b]OK[/b] button.
 			</description>
 		</signal>
 		<signal name="files_selected">
 			<argument index="0" name="paths" type="PackedStringArray">
 			</argument>
 			<description>
-				Emitted when the user selects multiple files.
 			</description>
 		</signal>
 	</signals>
 	<constants>
 		<constant name="FILE_MODE_OPEN_FILE" value="0" enum="FileMode">
-			The dialog allows selecting one, and only one file.
 		</constant>
 		<constant name="FILE_MODE_OPEN_FILES" value="1" enum="FileMode">
-			The dialog allows selecting multiple files.
 		</constant>
 		<constant name="FILE_MODE_OPEN_DIR" value="2" enum="FileMode">
-			The dialog only allows selecting a directory, disallowing the selection of any file.
 		</constant>
 		<constant name="FILE_MODE_OPEN_ANY" value="3" enum="FileMode">
-			The dialog allows selecting one file or directory.
 		</constant>
 		<constant name="FILE_MODE_SAVE_FILE" value="4" enum="FileMode">
-			The dialog will warn when a file exists.
 		</constant>
 		<constant name="ACCESS_RESOURCES" value="0" enum="Access">
-			The dialog only allows accessing files under the [Resource] path ([code]res://[/code]).
 		</constant>
 		<constant name="ACCESS_USERDATA" value="1" enum="Access">
-			The dialog only allows accessing files under user data path ([code]user://[/code]).
 		</constant>
 		<constant name="ACCESS_FILESYSTEM" value="2" enum="Access">
-			The dialog allows accessing files on the whole file system.
 		</constant>
 	</constants>
 	<theme_items>
@@ -137,31 +125,22 @@
 			Custom icon for the back arrow.
 		</theme_item>
 		<theme_item name="file" type="Texture2D">
-			Custom icon for files.
 		</theme_item>
 		<theme_item name="file_icon_modulate" type="Color" default="Color( 1, 1, 1, 1 )">
-			The color modulation applied to the file icon.
 		</theme_item>
 		<theme_item name="files_disabled" type="Color" default="Color( 0, 0, 0, 0.7 )">
-			The color tint for disabled files (when the [FileDialog] is used in open folder mode).
 		</theme_item>
 		<theme_item name="folder" type="Texture2D">
-			Custom icon for folders.
 		</theme_item>
 		<theme_item name="folder_icon_modulate" type="Color" default="Color( 1, 1, 1, 1 )">
-			The color modulation applied to the folder icon.
 		</theme_item>
 		<theme_item name="forward_folder" type="Texture2D">
-			Custom icon for the forward arrow.
 		</theme_item>
 		<theme_item name="parent_folder" type="Texture2D">
-			Custom icon for the parent folder arrow.
 		</theme_item>
 		<theme_item name="reload" type="Texture2D">
-			Custom icon for the reload button.
 		</theme_item>
 		<theme_item name="toggle_hidden" type="Texture2D">
-			Custom icon for the toggle hidden button.
 		</theme_item>
 	</theme_items>
 </class>
