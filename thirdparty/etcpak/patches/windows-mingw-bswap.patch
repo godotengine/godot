@@ -48,16 +48,3 @@ index 220d5c55e2..9dc5a78b67 100644
  #endif
  
  #ifndef _bswap
-diff --git a/thirdparty/etcpak/System.cpp b/thirdparty/etcpak/System.cpp
-index 1383d0ecd0..a09b289cb2 100644
---- a/thirdparty/etcpak/System.cpp
-+++ b/thirdparty/etcpak/System.cpp
-@@ -35,7 +35,7 @@ unsigned int System::CPUCores()
- 
- void System::SetThreadName( std::thread& thread, const char* name )
- {
--#ifdef _WIN32
-+#ifdef _MSC_VER
-     const DWORD MS_VC_EXCEPTION=0x406D1388;
- 
- #  pragma pack( push, 8 )

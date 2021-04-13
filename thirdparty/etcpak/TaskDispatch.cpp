@@ -1,5 +1,8 @@
 #include <assert.h>
 #include <stdio.h>
+#ifndef _MSC_VER
+#include <pthread.h>
+#endif
 
 #include "Debug.hpp"
 #include "System.hpp"
@@ -22,15 +25,19 @@ TaskDispatch::TaskDispatch( size_t workers )
     {
         char tmp[16];
         sprintf( tmp, "Worker %zu", i );
-#ifdef __APPLE__
+#ifdef _MSC_VER
+        auto worker = std::thread( [this]{ Worker(); } );
+        System::SetThreadName( worker, tmp );
+#else // Using pthread.
         auto worker = std::thread( [this, tmp]{
+#ifdef __APPLE__
             pthread_setname_np( tmp );
+#else // Linux or MinGW.
+            pthread_setname_np( pthread_self(), tmp );
+#endif
             Worker();
         } );
-#else
-        auto worker = std::thread( [this]{ Worker(); } );
 #endif
-        System::SetThreadName( worker, tmp );
         m_workers.emplace_back( std::move( worker ) );
     }
 
