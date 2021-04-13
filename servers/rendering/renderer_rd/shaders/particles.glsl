@@ -2,7 +2,7 @@
 
 #version 450
 
-VERSION_DEFINES
+#VERSION_DEFINES
 
 layout(local_size_x = 64, local_size_y = 1, local_size_z = 1) in;
 
@@ -146,11 +146,11 @@ layout(set = 2, binding = 1) uniform texture2D height_field_texture;
 
 /* SET 3: MATERIAL */
 
-#ifdef USE_MATERIAL_UNIFORMS
+#ifdef MATERIAL_UNIFORMS_USED
 layout(set = 3, binding = 0, std140) uniform MaterialUniforms{
-	/* clang-format off */
-MATERIAL_UNIFORMS
-	/* clang-format on */
+
+#MATERIAL_UNIFORMS
+
 } material;
 #endif
 
@@ -196,11 +196,7 @@ bool emit_subparticle(mat4 p_xform, vec3 p_velocity, vec4 p_color, vec4 p_custom
 	return true;
 }
 
-/* clang-format off */
-
-COMPUTE_SHADER_GLOBALS
-
-/* clang-format on */
+#GLOBALS
 
 void main() {
 	uint particle = gl_GlobalInvocationID.x;
@@ -540,10 +536,6 @@ void main() {
 	}
 
 	if (PARTICLE.is_active) {
-		/* clang-format off */
-
-COMPUTE_SHADER_CODE
-
-		/* clang-format on */
+#CODE : PROCESS
 	}
 }

@@ -22,7 +22,7 @@
 
 #version 450
 
-VERSION_DEFINES
+#VERSION_DEFINES
 
 #define BLOCK_SIZE 8
 

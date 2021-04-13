@@ -2,7 +2,7 @@
 
 #version 450
 
-VERSION_DEFINES
+#VERSION_DEFINES
 
 layout(location = 0) out vec2 uv_interp;
 
@@ -24,7 +24,7 @@ void main() {
 
 #version 450
 
-VERSION_DEFINES
+#VERSION_DEFINES
 
 #define M_PI 3.14159265359
 
@@ -88,13 +88,9 @@ layout(set = 0, binding = 3, std140) uniform DirectionalLights {
 
 directional_lights;
 
-#ifdef USE_MATERIAL_UNIFORMS
+#ifdef MATERIAL_UNIFORMS_USED
 layout(set = 1, binding = 0, std140) uniform MaterialUniforms{
-	/* clang-format off */
-
-MATERIAL_UNIFORMS
-
-	/* clang-format on */
+#MATERIAL_UNIFORMS
 } material;
 #endif
 
@@ -127,11 +123,7 @@ layout(set = 3, binding = 0) uniform texture3D volumetric_fog_texture;
 #define AT_QUARTER_RES_PASS false
 #endif
 
-/* clang-format off */
-
-FRAGMENT_SHADER_GLOBALS
-
-/* clang-format on */
+#GLOBALS
 
 layout(location = 0) out vec4 frag_color;
 
@@ -202,22 +194,10 @@ void main() {
 #endif
 #endif
 
-// unused, just here to make our compiler happy, make sure we don't execute any light code the user adds in..
-#ifndef REALLYINCLUDETHIS
 	{
-		/* clang-format off */
 
-LIGHT_SHADER_CODE
+#CODE : SKY
 
-		/* clang-format on */
-	}
-#endif
-	{
-		/* clang-format off */
-
-FRAGMENT_SHADER_CODE
-
-		/* clang-format on */
 	}
 
 	frag_color.rgb = color * params.position_multiplier.w;

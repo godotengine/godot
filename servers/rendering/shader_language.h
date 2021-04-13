@@ -331,6 +331,17 @@ public:
 		MAX_INSTANCE_UNIFORM_INDICES = 16
 	};
 
+	struct VaryingFunctionNames {
+		StringName fragment;
+		StringName vertex;
+		StringName light;
+		VaryingFunctionNames() {
+			fragment = "fragment";
+			vertex = "vertex";
+			light = "light";
+		}
+	};
+
 	struct Node {
 		Node *next = nullptr;
 
@@ -769,7 +780,8 @@ public:
 		Map<StringName, BuiltInInfo> built_ins;
 		Map<StringName, StageFunctionInfo> stage_functions;
 
-		bool can_discard;
+		bool can_discard = false;
+		bool main_function = false;
 	};
 	static bool has_builtin(const Map<StringName, ShaderLanguage::FunctionInfo> &p_functions, const StringName &p_name);
 
@@ -795,6 +807,8 @@ private:
 
 	StringName current_function;
 	bool last_const = false;
+
+	VaryingFunctionNames varying_function_names;
 
 	TkPos _get_tkpos() {
 		TkPos tkp;
@@ -898,8 +912,8 @@ public:
 	void clear();
 
 	static String get_shader_type(const String &p_code);
-	Error compile(const String &p_code, const Map<StringName, FunctionInfo> &p_functions, const Vector<StringName> &p_render_modes, const Set<String> &p_shader_types, GlobalVariableGetTypeFunc p_global_variable_type_func);
-	Error complete(const String &p_code, const Map<StringName, FunctionInfo> &p_functions, const Vector<StringName> &p_render_modes, const Set<String> &p_shader_types, GlobalVariableGetTypeFunc p_global_variable_type_func, List<ScriptCodeCompletionOption> *r_options, String &r_call_hint);
+	Error compile(const String &p_code, const Map<StringName, FunctionInfo> &p_functions, const Vector<StringName> &p_render_modes, const VaryingFunctionNames &p_varying_function_names, const Set<String> &p_shader_types, GlobalVariableGetTypeFunc p_global_variable_type_func);
+	Error complete(const String &p_code, const Map<StringName, FunctionInfo> &p_functions, const Vector<StringName> &p_render_modes, const VaryingFunctionNames &p_varying_function_names, const Set<String> &p_shader_types, GlobalVariableGetTypeFunc p_global_variable_type_func, List<ScriptCodeCompletionOption> *r_options, String &r_call_hint);
 
 	String get_error_text();
 	int get_error_line();

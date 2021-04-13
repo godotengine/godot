@@ -2,7 +2,7 @@
 
 #version 450
 
-VERSION_DEFINES
+#VERSION_DEFINES
 
 #define MAX_CASCADES 8
 
@@ -153,7 +153,7 @@ void main() {
 
 #version 450
 
-VERSION_DEFINES
+#VERSION_DEFINES
 
 layout(location = 0) out vec4 frag_color;
 

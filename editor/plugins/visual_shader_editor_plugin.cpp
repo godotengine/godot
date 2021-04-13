@@ -3398,7 +3398,7 @@ void VisualShaderEditor::_update_preview() {
 
 	ShaderLanguage sl;
 
-	Error err = sl.compile(code, ShaderTypes::get_singleton()->get_functions(RenderingServer::ShaderMode(visual_shader->get_mode())), ShaderTypes::get_singleton()->get_modes(RenderingServer::ShaderMode(visual_shader->get_mode())), ShaderTypes::get_singleton()->get_types(), _get_global_variable_type);
+	Error err = sl.compile(code, ShaderTypes::get_singleton()->get_functions(RenderingServer::ShaderMode(visual_shader->get_mode())), ShaderTypes::get_singleton()->get_modes(RenderingServer::ShaderMode(visual_shader->get_mode())), ShaderLanguage::VaryingFunctionNames(), ShaderTypes::get_singleton()->get_types(), _get_global_variable_type);
 
 	for (int i = 0; i < preview_text->get_line_count(); i++) {
 		preview_text->set_line_as_marked(i, false);
