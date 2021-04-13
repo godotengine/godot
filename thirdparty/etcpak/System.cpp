@@ -2,7 +2,6 @@
 #ifdef _WIN32
 #  include <windows.h>
 #else
-#  include <pthread.h>
 #  include <unistd.h>
 #endif
 
@@ -62,7 +61,5 @@ void System::SetThreadName( std::thread& thread, const char* name )
     __except(EXCEPTION_EXECUTE_HANDLER)
     {
     }
-#elif !defined(__APPLE__)
-    pthread_setname_np( thread.native_handle(), name );
 #endif
 }
