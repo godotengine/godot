@@ -218,8 +218,9 @@ static inline uint64_t get_plugin_modification_time(const PluginConfigIOS &plugi
 	} else {
 		String file_path = plugin_config.binary.get_base_dir();
 		String file_name = plugin_config.binary.get_basename().get_file();
-		String release_file_name = file_path.plus_file(file_name + ".release.a");
-		String debug_file_name = file_path.plus_file(file_name + ".debug.a");
+		String plugin_extension = plugin_config.binary.get_extension();
+		String release_file_name = file_path.plus_file(file_name + ".release." + plugin_extension);
+		String debug_file_name = file_path.plus_file(file_name + ".debug." + plugin_extension);
 
 		last_updated = MAX(last_updated, FileAccess::get_modified_time(release_file_name));
 		last_updated = MAX(last_updated, FileAccess::get_modified_time(debug_file_name));
