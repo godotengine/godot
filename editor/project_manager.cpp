@@ -2456,7 +2456,7 @@ ProjectManager::ProjectManager() {
 	HBoxContainer *tree_hb = memnew(HBoxContainer);
 	projects_hb = tree_hb;
 
-	projects_hb->set_name(TTR("Projects"));
+	projects_hb->set_name(TTR("Local Projects"));
 
 	tabs->add_child(tree_hb);
 
@@ -2579,7 +2579,7 @@ ProjectManager::ProjectManager() {
 
 	if (StreamPeerSSL::is_available()) {
 		asset_library = memnew(EditorAssetLibrary(true));
-		asset_library->set_name(TTR("Templates"));
+		asset_library->set_name(TTR("Asset Library Projects"));
 		tabs->add_child(asset_library);
 		asset_library->connect("install_asset", this, "_install_project");
 	} else {
