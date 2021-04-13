@@ -69,6 +69,7 @@ class CollisionObject : public Spatial {
 	bool ray_pickable;
 
 	Set<uint32_t> debug_shapes_to_update;
+	int debug_shape_count = 0;
 
 	void _update_pickable();
 
@@ -85,6 +86,7 @@ protected:
 	virtual void _mouse_exit();
 
 	void _update_debug_shapes();
+	void _clear_debug_shapes();
 
 public:
 	uint32_t create_shape_owner(Object *p_owner);
