@@ -294,7 +294,7 @@ class InputEventMouseButton : public InputEventMouse {
 	float factor = 1;
 	int button_index = 0;
 	bool pressed = false; //otherwise released
-	bool doubleclick = false; //last even less than doubleclick time
+	bool double_click = false; //last even less than double click time
 
 protected:
 	static void _bind_methods();
@@ -309,8 +309,8 @@ public:
 	void set_pressed(bool p_pressed);
 	virtual bool is_pressed() const override;
 
-	void set_doubleclick(bool p_doubleclick);
-	bool is_doubleclick() const;
+	void set_double_click(bool p_double_click);
+	bool is_double_click() const;
 
 	virtual Ref<InputEvent> xformed_by(const Transform2D &p_xform, const Vector2 &p_local_ofs = Vector2()) const override;
 	virtual bool action_match(const Ref<InputEvent> &p_event, bool *p_pressed, float *p_strength, float *p_raw_strength, float p_deadzone) const override;

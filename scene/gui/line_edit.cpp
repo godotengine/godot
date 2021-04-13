@@ -260,15 +260,15 @@ void LineEdit::_gui_input(Ref<InputEvent> p_event) {
 
 			} else {
 				if (selecting_enabled) {
-					if (!b->is_doubleclick() && (OS::get_singleton()->get_ticks_msec() - selection.last_dblclk) < 600) {
+					if (!b->is_double_click() && (OS::get_singleton()->get_ticks_msec() - selection.last_dblclk) < 600) {
 						// Triple-click select all.
 						selection.enabled = true;
 						selection.begin = 0;
 						selection.end = text.length();
-						selection.doubleclick = true;
+						selection.double_click = true;
 						selection.last_dblclk = 0;
 						caret_column = selection.begin;
-					} else if (b->is_doubleclick()) {
+					} else if (b->is_double_click()) {
 						// Double-click select word.
 						Vector<Vector2i> words = TS->shaped_text_get_word_breaks(text_rid);
 						for (int i = 0; i < words.size(); i++) {
@@ -276,7 +276,7 @@ void LineEdit::_gui_input(Ref<InputEvent> p_event) {
 								selection.enabled = true;
 								selection.begin = words[i].x;
 								selection.end = words[i].y;
-								selection.doubleclick = true;
+								selection.double_click = true;
 								selection.last_dblclk = OS::get_singleton()->get_ticks_msec();
 								caret_column = selection.end;
 								break;
@@ -308,11 +308,11 @@ void LineEdit::_gui_input(Ref<InputEvent> p_event) {
 				}
 			}
 
-			if ((!selection.creating) && (!selection.doubleclick)) {
+			if ((!selection.creating) && (!selection.double_click)) {
 				deselect();
 			}
 			selection.creating = false;
-			selection.doubleclick = false;
+			selection.double_click = false;
 
 			show_virtual_keyboard();
 		}
@@ -1532,7 +1532,7 @@ void LineEdit::deselect() {
 	selection.start_column = 0;
 	selection.enabled = false;
 	selection.creating = false;
-	selection.doubleclick = false;
+	selection.double_click = false;
 	update();
 }
 
@@ -1659,7 +1659,7 @@ void LineEdit::select(int p_from, int p_to) {
 	selection.begin = p_from;
 	selection.end = p_to;
 	selection.creating = false;
-	selection.doubleclick = false;
+	selection.double_click = false;
 	update();
 }
 

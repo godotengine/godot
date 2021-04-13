@@ -107,7 +107,7 @@ void GradientEdit::_gui_input(const Ref<InputEvent> &p_event) {
 
 	Ref<InputEventMouseButton> mb = p_event;
 	//Show color picker on double click.
-	if (mb.is_valid() && mb->get_button_index() == 1 && mb->is_doubleclick() && mb->is_pressed()) {
+	if (mb.is_valid() && mb->get_button_index() == 1 && mb->is_double_click() && mb->is_pressed()) {
 		grabbed = _get_point_from_pos(mb->get_position().x);
 		_show_color_picker();
 		accept_event();
