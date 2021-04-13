@@ -75,6 +75,11 @@ void CollisionObject3D::_notification(int p_what) {
 			}
 
 		} break;
+		case NOTIFICATION_PREDELETE: {
+			if (debug_shape_count > 0) {
+				_clear_debug_shapes();
+			}
+		} break;
 	}
 }
 
@@ -116,11 +121,13 @@ void CollisionObject3D::_update_debug_shapes() {
 	for (Set<uint32_t>::Element *shapedata_idx = debug_shapes_to_update.front(); shapedata_idx; shapedata_idx = shapedata_idx->next()) {
 		if (shapes.has(shapedata_idx->get())) {
 			ShapeData &shapedata = shapes[shapedata_idx->get()];
+			ShapeData::ShapeBase *shapes = shapedata.shapes.ptrw();
 			for (int i = 0; i < shapedata.shapes.size(); i++) {
-				ShapeData::ShapeBase &s = shapedata.shapes.write[i];
+				ShapeData::ShapeBase &s = shapes[i];
 				if (s.debug_shape) {
 					s.debug_shape->queue_delete();
 					s.debug_shape = nullptr;
+					--debug_shape_count;
 				}
 				if (s.shape.is_null() || shapedata.disabled) {
 					continue;
@@ -133,10 +140,28 @@ void CollisionObject3D::_update_debug_shapes() {
 				add_child(mi);
 				mi->force_update_transform();
 				s.debug_shape = mi;
+				++debug_shape_count;
 			}
 		}
 	}
 	debug_shapes_to_update.clear();
+}
+
+void CollisionObject3D::_clear_debug_shapes() {
+	for (Map<uint32_t, ShapeData>::Element *E = shapes.front(); E; E = E->next()) {
+		ShapeData &shapedata = E->get();
+		ShapeData::ShapeBase *shapes = shapedata.shapes.ptrw();
+		for (int i = 0; i < shapedata.shapes.size(); i++) {
+			ShapeData::ShapeBase &s = shapes[i];
+			if (s.debug_shape) {
+				s.debug_shape->queue_delete();
+				s.debug_shape = nullptr;
+				--debug_shape_count;
+			}
+		}
+	}
+
+	debug_shape_count = 0;
 }
 
 void CollisionObject3D::_update_shape_data(uint32_t p_owner) {
