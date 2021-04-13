@@ -8459,7 +8459,6 @@ void RasterizerStorageGLES3::initialize() {
 	config.support_npot_repeat_mipmap = true;
 
 	config.pvrtc_supported = config.extensions.has("GL_IMG_texture_compression_pvrtc");
-	config.srgb_decode_supported = config.extensions.has("GL_EXT_texture_sRGB_decode");
 
 	config.anisotropic_level = 1.0;
 	config.use_anisotropic_filter = config.extensions.has("GL_EXT_texture_filter_anisotropic");
@@ -8649,6 +8648,21 @@ void RasterizerStorageGLES3::initialize() {
 
 			if (renderer.findn(v) != -1) {
 				config.use_depth_prepass = false;
+			}
+		}
+	}
+
+	config.srgb_decode_supported = GLOBAL_GET("rendering/quality/srgb_decode/enable") && config.extensions.has("GL_EXT_texture_sRGB_decode");
+	if (config.srgb_decode_supported) {
+		String vendors = GLOBAL_GET("rendering/quality/srgb_decode/disable_for_vendors");
+		Vector<String> vendor_match = vendors.split(",");
+		for (int i = 0; i < vendor_match.size(); i++) {
+			String v = vendor_match[i].strip_edges();
+			if (v == String())
+				continue;
+
+			if (renderer.findn(v) != -1) {
+				config.srgb_decode_supported = false;
 			}
 		}
 	}
