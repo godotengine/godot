@@ -929,7 +929,7 @@ EditorPropertyFloat::EditorPropertyFloat() {
 void EditorPropertyEasing::_drag_easing(const Ref<InputEvent> &p_ev) {
 	const Ref<InputEventMouseButton> mb = p_ev;
 	if (mb.is_valid()) {
-		if (mb->is_doubleclick() && mb->get_button_index() == MOUSE_BUTTON_LEFT) {
+		if (mb->is_double_click() && mb->get_button_index() == MOUSE_BUTTON_LEFT) {
 			_setup_spin();
 		}
 

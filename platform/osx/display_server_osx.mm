@@ -830,7 +830,7 @@ static void _mouseDownEvent(DisplayServer::WindowID window_id, NSEvent *event, i
 	mb->set_global_position(pos);
 	mb->set_button_mask(DS_OSX->last_button_state);
 	if (index == MOUSE_BUTTON_LEFT && pressed) {
-		mb->set_doubleclick([event clickCount] == 2);
+		mb->set_double_click([event clickCount] == 2);
 	}
 
 	Input::get_singleton()->accumulate_input_event(mb);

@@ -1482,7 +1482,7 @@ void RichTextLabel::_gui_input(Ref<InputEvent> p_event) {
 		}
 
 		if (b->get_button_index() == MOUSE_BUTTON_LEFT) {
-			if (b->is_pressed() && !b->is_doubleclick()) {
+			if (b->is_pressed() && !b->is_double_click()) {
 				scroll_updated = false;
 				ItemFrame *c_frame = nullptr;
 				int c_line = 0;
@@ -1514,8 +1514,8 @@ void RichTextLabel::_gui_input(Ref<InputEvent> p_event) {
 						}
 					}
 				}
-			} else if (b->is_pressed() && b->is_doubleclick() && selection.enabled) {
-				//doubleclick: select word
+			} else if (b->is_pressed() && b->is_double_click() && selection.enabled) {
+				//double_click: select word
 
 				ItemFrame *c_frame = nullptr;
 				int c_line = 0;
@@ -1549,7 +1549,7 @@ void RichTextLabel::_gui_input(Ref<InputEvent> p_event) {
 			} else if (!b->is_pressed()) {
 				selection.click_item = nullptr;
 
-				if (!b->is_doubleclick() && !scroll_updated) {
+				if (!b->is_double_click() && !scroll_updated) {
 					Item *c_item = nullptr;
 
 					bool outside = true;

@@ -778,7 +778,7 @@ void DisplayServerAndroid::process_double_tap(int event_android_button_mask, Poi
 	ev->set_pressed(event_button_mask != 0);
 	ev->set_button_index(_button_index_from_mask(event_button_mask));
 	ev->set_button_mask(event_button_mask);
-	ev->set_doubleclick(true);
+	ev->set_double_click(true);
 	Input::get_singleton()->accumulate_input_event(ev);
 }
 
