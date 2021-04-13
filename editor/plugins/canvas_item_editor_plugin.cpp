@@ -1053,6 +1053,12 @@ void CanvasItemEditor::_reset_create_position() {
 	node_create_position = Point2();
 }
 
+void CanvasItemEditor::_update_mouse_position_label() {
+	// The mouse position has been faded when the mouse was moved, so give it full opacity again.
+	mouse_position->set_modulate(Color(1, 1, 1));
+	mouse_position->set_text(vformat("(%d, %d)", viewport_mouse_position.x, viewport_mouse_position.y));
+}
+
 bool CanvasItemEditor::_gui_input_rulers_and_guides(const Ref<InputEvent> &p_event) {
 	Ref<InputEventMouseButton> b = p_event;
 	Ref<InputEventMouseMotion> m = p_event;
@@ -2659,6 +2665,10 @@ bool CanvasItemEditor::_gui_input_hover(const Ref<InputEvent> &p_event) {
 	Ref<InputEventMouseMotion> m = p_event;
 	if (m.is_valid()) {
 		Point2 click = transform.affine_inverse().xform(m->get_position());
+		viewport_mouse_position = click;
+		mouse_position_debounce->start();
+		// Fade the mouse position as it's now outdated until the debounce timer times out.
+		mouse_position->set_modulate(Color(1, 1, 1, 0.8));
 
 		// Checks if the hovered items changed, update the viewport if so
 		Vector<_SelectResult> hovering_results_items;
@@ -5804,6 +5814,25 @@ CanvasItemEditor::CanvasItemEditor(EditorNode *p_editor) {
 	warning_child_of_container->add_theme_font_override("font", EditorNode::get_singleton()->get_gui_base()->get_theme_font("main", "EditorFonts"));
 	warning_child_of_container->add_theme_font_size_override("font_size", EditorNode::get_singleton()->get_gui_base()->get_theme_font_size("main_size", "EditorFonts"));
 	add_control_to_info_overlay(warning_child_of_container);
+
+	mouse_position = memnew(Label);
+	// Add a visible placeholder to show something until the mouse enters the viewport.
+	mouse_position->set_text("(0, 0)");
+	// Make the mouse position label less prominent.
+	mouse_position->add_theme_color_override("font_color", Color(1, 1, 1, 0.75));
+	// Use a fixed-width font to keep the label width more consistent when it changes.
+	mouse_position->add_theme_font_override("font", EditorNode::get_singleton()->get_gui_base()->get_theme_font("source", "EditorFonts"));
+	mouse_position->add_theme_font_size_override("font_size", EditorNode::get_singleton()->get_gui_base()->get_theme_font_size("main_size", "EditorFonts"));
+	add_control_to_info_overlay(mouse_position);
+
+	// Use a debounce timer to avoid redrawing the editor continuously when moving the mouse.
+	// This makes the reported mouse position update only when the mouse no longer moves,
+	// but this decreases the number of redraws very significantly.
+	mouse_position_debounce = memnew(Timer);
+	mouse_position_debounce->set_one_shot(true);
+	mouse_position_debounce->set_wait_time(0.05);
+	mouse_position_debounce->connect("timeout", callable_mp(this, &CanvasItemEditor::_update_mouse_position_label));
+	add_child(mouse_position_debounce);
 
 	h_scroll = memnew(HScrollBar);
 	viewport->add_child(h_scroll);

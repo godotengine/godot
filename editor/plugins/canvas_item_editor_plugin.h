@@ -240,6 +240,9 @@ private:
 	Map<Control *, Timer *> popup_temporarily_timers;
 
 	Label *warning_child_of_container;
+	Label *mouse_position;
+	Timer *mouse_position_debounce;
+	Vector2 viewport_mouse_position;
 	VBoxContainer *info_overlay;
 
 	Transform2D transform;
@@ -446,6 +449,7 @@ private:
 	void _add_node_pressed(int p_result);
 	void _node_created(Node *p_node);
 	void _reset_create_position();
+	void _update_mouse_position_label();
 
 	UndoRedo *undo_redo;
 	bool _build_bones_list(Node *p_node);
